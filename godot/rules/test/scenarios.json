@@ -9229,6 +9229,499 @@
    "scars": 2
   }
  },
+ "r1653_gunnery": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "vex",
+  "cmdRound": 2,
+  "relics": [
+   "gunnery"
+  ],
+  "seed": 165301,
+  "note": "Issue 1653: Anchored Fire Table (gunnery): ships that did not move deal +15% damage.",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "r1653_afterburn": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "vex",
+  "cmdRound": 2,
+  "relics": [
+   "afterburn"
+  ],
+  "seed": 165302,
+  "note": "Issue 1653: Overdriven Thruster Pins (afterburn): a ship that spends all its movement gains +10 evasion.",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "r1653_flankmark": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "grax",
+  "cmdRound": 2,
+  "relics": [
+   "flankmark"
+  ],
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "seed": 165303,
+  "note": "Issue 1653: Stern-Sight Beacon (flankmark): rear-arc hits mark the target for +15% fleet damage this round.",
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "r1653_spotter": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "ashgrove",
+  "cmdRound": 2,
+  "relics": [
+   "spotter"
+  ],
+  "fleet": [
+   "reliquary",
+   "reliquary",
+   "penitent",
+   "harrow"
+  ],
+  "seed": 165304,
+  "note": "Issue 1653: Forward Spotter Pods (spotter): an enemy hit by a wing takes +10% damage from your ships this round.",
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "r1653_lastlight": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "vex",
+  "cmdRound": 2,
+  "relics": [
+   "lastlight"
+  ],
+  "enemies": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_interdictor"
+  ],
+  "seed": 165305,
+  "note": "Issue 1653: Sinking Standard (lastlight): the flagship drops below 30% hull and the rest of the fleet gains +20% damage.",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony"
+ },
+ "r1653_coolant": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "razormaw",
+  "cmdRound": 2,
+  "relics": [
+   "coolant"
+  ],
+  "fleet": [
+   "b_razor",
+   "b_razor",
+   "b_spitter"
+  ],
+  "seed": 165306,
+  "note": "Issue 1653: Cracked Coolant Manifold (coolant): active cooldowns 1 shorter, each active use costs 3% hull.",
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "r1653_spare": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "vex",
+  "cmdRound": 1,
+  "relics": [
+   "spare"
+  ],
+  "seed": 165307,
+  "note": "Issue 1653: Reserve Signal Key (spare): the Command a second time at tier 0, from the next round.",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "r1653_ram": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "grax",
+  "cmdRound": 2,
+  "relics": [
+   "ram"
+  ],
+  "fleet": [
+   "c_marauder",
+   "c_hulk",
+   "c_reaver"
+  ],
+  "seed": 165308,
+  "note": "Issue 1653: Iron Ram Charter (ram): rams deal +50% damage, cap 50% of the target, no recoil.",
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "r1653_mirror": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "station",
+  "dep": "line",
+  "kind": "boss",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "vex",
+  "cmdRound": 2,
+  "relics": [
+   "mirror"
+  ],
+  "enemies": [
+   "h_boss",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "seed": 165309,
+  "note": "Issue 1653: Feedback Lattice Core (mirror) against a boss: the first hull hit on each ship sends half back, at most 10% of the boss's hull.",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony"
+ },
+ "r1653_beacon": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "vex",
+  "cmdRound": 2,
+  "relics": [
+   "beacon"
+  ],
+  "seed": 165310,
+  "note": "Issue 1653: Jump-Slip Beacon (beacon): +2 movement and +1 turn on round 1.",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "r1653_quiet": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "vex",
+  "cmdRound": 2,
+  "relics": [
+   "quiet"
+  ],
+  "seed": 165311,
+  "note": "Issue 1653: Cold-Hull Dampener (quiet): in round 1 enemies cannot target your ships from 6 or more hexes; the AI still advances.",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "r1653_locker": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "grax",
+  "cmdRound": 2,
+  "fleet": [
+   "c_hulk",
+   "c_marauder",
+   "c_reaver"
+  ],
+  "mods": [
+   [
+    "locker"
+   ],
+   [
+    "locker"
+   ],
+   []
+  ],
+  "seed": 165312,
+  "note": "Issue 1653: Heavy Breach Lockers (locker refit): boarding +40%, speed -1 (never below 2).",
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "r1653_chaser": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "vex",
+  "cmdRound": 2,
+  "mods": [
+   [
+    "chaser"
+   ],
+   [
+    "chaser"
+   ],
+   [
+    "chaser"
+   ],
+   []
+  ],
+  "seed": 165313,
+  "note": "Issue 1653: Swivel Arc Mounts (chaser refit): fore and flank weapons reach one arc wider at -20% damage.",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "r1653_spill": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "kassar",
+  "cmdRound": 2,
+  "fleet": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "mods": [
+   [
+    "spill"
+   ],
+   [
+    "spill"
+   ],
+   [
+    "spill"
+   ]
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "seed": 165314,
+  "note": "Issue 1653: Bleed-Off Capacitor (spill refit): a ship whose shields hit zero deals +30% on its next weapon attack."
+ },
+ "r1653_relay": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "vex",
+  "cmdRound": 2,
+  "mods": [
+   [
+    "relay"
+   ],
+   [
+    "relay"
+   ],
+   [
+    "relay"
+   ],
+   [
+    "relay"
+   ]
+  ],
+  "enemies": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor"
+  ],
+  "seed": 165315,
+  "note": "Issue 1653: Brace Shield Relay (relay refit): a bracing ship covers its most damaged uncovered ally within 2 hexes.",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony"
+ },
  "s1649_fold": {
   "obj": "rout",
   "shape": "open",

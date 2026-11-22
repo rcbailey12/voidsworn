@@ -450,6 +450,33 @@ func hasBoon(id) -> bool:
 	for b in RUN["boons"]:
 		if b["id"] == id: return true
 	return false
+# issue 1653 (build variety Part B+C): the new salvage (relics) and refits. rfx reads one relic value from the run.
+func rfx(k) -> float: return float(z0(runFx().get(k))) if RUN != null else 0.0
+# Cold-Hull Dampener: in round 1 enemies cannot target your ships from 6 or more hexes away (area blasts still hit)
+func quietBlocks(u, t) -> bool: return B != null and u != null and t != null and B["round"] == 1 and u["side"] == "enemy" and t["side"] == "player" and rfx("quiet") > 0 and hdist(u, t) >= rfx("quiet")
+# Swivel Arc Mounts: a non-turret fore or flank weapon reaches one arc wider (30 degrees each side), at -20% damage
+func chaserArc(u, w, t) -> bool:
+	if u == null or not jt(g(u.get("fx"), "chaser")) or w.get("k") == "turret" or w["arc"] == "T" or w["arc"] == "R": return false
+	var a = relAng(u, t)
+	if w["arc"] == "F": return absf(a) <= 90.5
+	if w["arc"] == "S": return a >= -0.5 and a <= 180.5
+	if w["arc"] == "P": return a <= 0.5 and a >= -180.5
+	return false
+# Sinking Standard: once the flagship drops below 30% hull or falls, every other ship deals +20% damage for the battle
+func lastLightCheck(t, fell := false) -> void:
+	if B == null or t == null or t.get("side") != "player" or not jt(t.get("pflag")) or rfx("lastlight") <= 0 or jt(B.get("lastlight")): return
+	if fell or t["hp"] < t["maxHp"] * 0.3:
+		B["lastlight"] = 1; flt(t, "Last light", "#f0b35a", -40); logm("Last light: every other ship deals +" + ns(JSM.jsround(rfx("lastlight") * 100)) + "% damage for the rest of the battle.", "p")
+# Brace Shield Relay: a bracing ship covers its most damaged uncovered ally within 2 hexes until that ally's next turn
+func relayCover(u) -> void:
+	var rc = float(z0(g(u.get("fx"), "relayCover")))
+	if rc <= 0 or B == null: return
+	var best = null
+	for x in B["units"]:
+		if jt(x.get("dead")) or is_same(x, u) or x["side"] != u["side"] or jt(x.get("isSq")) or hdist(x, u) > 2: continue
+		if jt(x.get("braced")) or jt(x.get("coverBy")) or x.get("relayBy") != null: continue
+		if best == null or float(x["hp"]) / x["maxHp"] < float(best["hp"]) / best["maxHp"]: best = x
+	if best != null: best["relayBy"] = {"id": u["id"], "v": rc}; flt(best, "Relay cover", "#7fd6c8", -24)
 func runFx() -> Dictionary:
 	if _runfx == null: _runfx = _runFx_raw()
 	return _runfx
@@ -476,6 +503,8 @@ func mkWeapon(id, arc, fx) -> Dictionary:
 	if b.get("k") == "lance" and jt(fx.get("lanceRange")):
 		w["r"] = w["r"] + fx["lanceRange"]; w["opt"] = w["opt"] + fx["lanceRange"]
 	return w
+# issue 1653 Heavy Breach Lockers: -1 speed, never below 2 (a ship already at 2 or less keeps its speed)
+func lockerSpeed(sp: float, fx) -> float: return (sp - 1.0 if sp - 1.0 >= 2.0 else min(sp, max(sp, 2.0))) if jt(fx.get("lockerSlow")) else sp
 func derive(ship: Dictionary) -> Dictionary:
 	var t: Dictionary = HULLS[ship["tpl"]]
 	var asp = []
@@ -495,7 +524,7 @@ func derive(ship: Dictionary) -> Dictionary:
 	for e in t["w"]: ws.append(mkWeapon(e[0], e[1], fx))
 	return {
 		"maxHp": maxHp, "shMax": JSM.jsround(float(t["sh"]) * mm * (1.0 + float(z0(fx.get("shPct")))) * float(TB.SHIELD_POOL_MULT) * _poolFac(t.get("fac"))), "regen": JSM.jsround(float(t["rg"]) * mm * (1.0 + float(z0(fx.get("regenPct")))) * float(TB.SHIELD_REGEN_MULT)),
-		"armor": min(0.6, float(t["ar"]) + float(z0(fx.get("armor")))), "speed": float(t["sp"]) + float(z0(fx.get("speed"))), "turns": float(t["tn"]) + float(z0(fx.get("turns"))), "ev": float(t["ev"]) + float(z0(fx.get("ev"))),
+		"armor": min(0.6, float(t["ar"]) + float(z0(fx.get("armor")))), "speed": lockerSpeed(float(t["sp"]) + float(z0(fx.get("speed"))), fx), "turns": float(t["tn"]) + float(z0(fx.get("turns"))), "ev": float(t["ev"]) + float(z0(fx.get("ev"))),
 		"aim": z0(fx.get("aim")), "crit": z0(fx.get("crit")), "dmg": 1.0 + 0.15 * (float(mk) - 1.0) + float(z0(fx.get("dmgPct"))) + 0.06 * tr, "fx": fx,
 		"hangar": (float(t["hangar"]) + float(z0(fx.get("hangar"))) + float(z0(fx.get("hive")))) if jt(t.get("hangar")) else z0(fx.get("hive")),
 		"hullRegen": float(z0(fx.get("hullRegen"))) + JSM.jsround(float(z0(fx.get("hullRegenPct"))) * maxHp) + JSM.jsround(float(z0(t.get("regen"))) * mm),
@@ -1732,6 +1761,10 @@ func startSideTurn(side) -> int:
 		u["braced"] = false; u["coverBy"] = null; u["postFire"] = false; u["postMp"] = 0; u["pivotUsed"] = false; u["moved"] = false;   # issue 1560: Full ahead opens again each turn
 		u["lockOn"] = false; u["focus"] = false; u["fullAhead"] = false; u["noTurn"] = false; u["evBuff"] = 0; u["order"] = null; u["ramBoost"] = 0
 		u["mp"] = max(1, u["speed"] - u["st"]["engine"]); u["turnsLeft"] = u["turns"]
+		for k in ["relayBy", "afterburnOn"]: u.erase(k)   # issue 1653: set only when used, so battles without them keep their saved states
+		if side == "player" and B["round"] == 1 and not jt(u.get("isSq")) and rfx("beacon") > 0:   # issue 1653 Jump-Slip Beacon
+			u["mp"] = u["mp"] + int(rfx("beacon")); u["turnsLeft"] = u["turnsLeft"] + 1; flt(u, "Jump slip", "#9fe3ff", -24)
+		if side == "player" and B["round"] == 1 and not jt(u.get("isSq")) and rfx("quiet") > 0: flt(u, "Shrouded", "#9fe3ff", -40)   # issue 1653 Cold-Hull Dampener
 		if u.get("m3Pin") != null and u["m3Pin"] == B["round"]: u["mp"] = 0   # issue 1650 Pinned in the Swarm
 		if u.get("m3EvR") != null and u["m3EvR"] == B["round"]: u["evBuff"] = min(float(TB.FX_CAPS.ev), z0(u.get("evBuff")) + 10.0)   # issue 1650 Archived Evasion
 		if side == "player" and u.get("burnCarry") != null:
@@ -1968,6 +2001,8 @@ func _commit(u, state, ctx: Dictionary) -> void:
 	for p in path:
 		if not jt(p.get("rot")): n += 1
 	u["hexMoved"] = z0(u.get("hexMoved")) + n
+	if u["side"] == "player" and not jt(u.get("isSq")) and rfx("afterburn") > 0 and u["mp"] <= 0 and z0(u.get("hexMoved")) >= 1 and not jt(u.get("afterburnOn")):   # issue 1653 Overdriven Thruster Pins
+		u["afterburnOn"] = 1; u["evBuff"] = min(45, z0(u.get("evBuff")) + rfx("afterburn")); flt(u, "Afterburn", "#9fe3ff", -24)
 	if state.get("passed") != null and state["passed"].size() > 0: treeFx(u, "allScars", "the scars carry")   # Grax T3a
 	for pD in path:
 		if jt(pD.get("dived")): u["treeDiveUsed"] = 1; treeFx(u, "mirrorAside", "the mirror steps aside"); break   # Vell T2a
@@ -2607,6 +2642,9 @@ func braceCover(u) -> Array:
 		x["coverBy"] = u["id"]; flt(x, "Covered", "#7fd6c8", -24)
 	return near
 func braceMul(t) -> float:
+	var rb = t.get("relayBy")
+	return _braceMul0(t) * ((1.0 - float(rb["v"])) if rb is Dictionary else 1.0)   # issue 1653 Brace Shield Relay
+func _braceMul0(t) -> float:
 	if jt(t.get("braced")): return max(0.15, 1.0 - 0.4 - z0(g(t.get("fx"), "bracePlus")))
 	if jt(t.get("coverBy")) and B != null:
 		for c in B["units"]:
@@ -2726,6 +2764,7 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 	var g0 = []
 	for k in TORP_GHOST_KEYS: g0.append(gh.get(k))
 	landVolley(gh, w, t, {"quad": quad, "shBefore": shBefore, "shots": shots, "called": S.get("called"), "res": res, "torp": true, "per": per, "by": shooter})
+	if shooter != null and shooter.has("spillReady"): shooter.erase("spillReady")   # issue 1653: the surge is spent on this attack
 	torpGhostBack(gh, g0, real)
 	if not jt(res.get("hits")) and reached > 0 and jt(g(gh.get("fx"), "spread")) and not jt(t.get("dead")):
 		var near = []
@@ -2787,7 +2826,8 @@ func inReach(u, w, t) -> bool:
 	var d = hdist(u, t)
 	if d < 1 or d > w["r"]: return false
 	if treeDeepBlocks(u, t): return false
-	if not inArc(u, t, w["arc"]): return false
+	if quietBlocks(u, t): return false   # issue 1653 Cold-Hull Dampener
+	if not inArc(u, t, w["arc"]) and not chaserArc(u, w, t): return false   # issue 1653 Swivel Arc Mounts
 	return los(u, t)
 func canFire(u, w, t) -> bool:
 	if jt(u.get("dead")) or jt(t.get("dead")) or u["side"] == t["side"] or jt(u.get("braced")) or w["k"] == "flak": return false
@@ -3059,6 +3099,14 @@ func dmgMult(u, w, t, rear) -> float:
 	if jt(fx.get("momPct")): m += min(4, z0(u.get("hexMoved"))) * fx["momPct"]
 	if jt(fx.get("prowPct")) and w["arc"] == "F": m += fx["prowPct"]
 	m += rakeBonus(u, w)
+	if u["side"] == "player" and B != null:   # issue 1653 salvage and refits
+		if not jt(u.get("isSq")):
+			if rfx("gunnery") > 0 and z0(u.get("hexMoved")) == 0: m += rfx("gunnery")
+			if rfx("lastlight") > 0 and jt(B.get("lastlight")) and not jt(u.get("pflag")): m += rfx("lastlight")
+			if rfx("spotter") > 0 and t.get("spotMark") == B["round"]: m += rfx("spotter")
+			if jt(u.get("spillReady")): m += float(z0(g(u.get("fx"), "spill")))
+			if jt(g(u.get("fx"), "chaser")) and not inArc(u, t, w["arc"]) and chaserArc(u, w, t): m -= float(g(u["fx"], "chaser"))
+		if rfx("flankmark") > 0 and t.get("flankMark") == B["round"]: m += rfx("flankmark")
 	var base: float = w["dmg"] * m
 	base *= (w["vsSq"] if jt(w.get("vsSq")) else 1.0) if jt(t.get("isSq")) else (w["vsCap"] if jt(w.get("vsCap")) else 1.0)
 	if jt(u.get("bloodied")) and not jt(u.get("isSq")): base *= 1.0 + 0.15 * u["bloodied"]
@@ -3082,7 +3130,7 @@ func expectedVs(u, w, t) -> Dictionary:
 				wi = i; break
 		var hu = int(z0(u.get("hexMoved"))); var ht = int(z0(t.get("hexMoved")))
 		var uq = int(u["q"]) + 64; var ur = int(u["r"]); var tq = int(t["q"]) + 64; var tr = int(t["r"]); var tf = int(t["facing"])
-		var uf = int(z0(u.get("facing"))) if treeSkill("silentArchive") != null else 0
+		var uf = int(z0(u.get("facing"))) if (treeSkill("silentArchive") != null or jt(g(u.get("fx"), "chaser"))) else 0   # issue 1653: Swivel Arc Mounts' damage reads the shooter's facing
 		if su != null and st != null and su < 64 and st < 64 and wi >= 0 and wi < 16 and hu < 16 and ht < 16 and uq >= 0 and uq < 128 and tq >= 0 and tq < 128 and ur >= 0 and ur < 64 and tr >= 0 and tr < 64 and tf >= 0 and tf < 8 and uf >= 0 and uf < 8:
 			var k = (((((((((su * 16 + wi) * 64 + st) * 128 + uq) * 64 + ur) * 128 + tq) * 64 + tr) * 16 + hu) * 16 + ht) * 8 + tf) * 8 + uf
 			var c = _ev.get(k)
@@ -3233,6 +3281,7 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	var s = z0(t["sh"][quad]); var sh0 = s; var sp0: float = float(z0(t.get("shp"))); var absorbed: float = min(shieldable, float(s) / ion)
 	if absorbed > 0: _spend_shield(t, quad, absorbed * ion)
 	shieldable -= absorbed
+	if sp0 > 0 and float(z0(t.get("shp"))) <= 0 and jt(g(t.get("fx"), "spill")) and not jt(t.get("spillReady")): t["spillReady"] = 1; flt(t, "Spill surge", "#ffe0a8", -40)   # issue 1653 Bleed-Off Capacitor
 	var gc = treeSkill("glassCorrected")
 	if gc != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(B["tr"].get("glassUsed")) and t["shMax"] > 0 and sp0 > 0 and float(z0(t.get("shp"))) <= 0:
 		t["shp"] = JSM.jsround(t["shMax"] * float(gc["n"])); syncShields(t); B["tr"]["glassUsed"] = 1; treeFx(t, "glassCorrected", "the emptied shield refills")
@@ -3309,6 +3358,15 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	if jt(of.get("pyre")) and not jt(t.get("isSq")) and t["hp"] < t["maxHp"] / 2.0: t["pyre"] = true
 	t["hp"] = t["hp"] - hull; att["dealt"] = att["dealt"] + hull
 	if t["hp"] <= 0 and jt(t.get("treePrivate")) and t["side"] == "player" and not jt(t.get("m3Held")) and capM3("privateWing"): t["hp"] = 1; t["m3Held"] = 1; m3Fx(t, "privateWing", "the private wing holds together"); flt(t, "Held together", "#f0b35a", -24)   # issue 1650 Welded Together Again
+	if (hull > 0 or absorbed > 0) and att != null and att.get("side") == "player" and t["side"] == "enemy" and not jt(t.get("isSq")) and B != null:   # issue 1653 marks: any landed hit, shields or hull
+		if rfx("flankmark") > 0 and rear and t.get("flankMark") != B["round"]: t["flankMark"] = B["round"]; flt(t, "Marked", "#f0b35a", -24)
+		if rfx("spotter") > 0 and jt(att.get("isSq")) and t.get("spotMark") != B["round"]: t["spotMark"] = B["round"]; flt(t, "Marked", "#f0b35a", -24)
+	lastLightCheck(t)
+	if hull > 0 and t["side"] == "player" and not jt(t.get("isSq")) and rfx("mirror") > 0 and not jt(t.get("mirrorUsed")) and att != null and not jt(att.get("isSq")) and att["side"] != t["side"] and not jt(att.get("dead")):
+		t["mirrorUsed"] = 1   # issue 1653 Feedback Lattice Core: the first hull hit sends half back after the volley
+		if not (B.get("mirrorQ") is Array): B["mirrorQ"] = []
+		B["mirrorQ"].append({"t": t, "att": att, "hull": hull})
+		if _volleyDepth == 0: settleMirror()
 	var hit_event := {"t": "hit", "unit": _uid(att), "target": t["id"], "quad": quad, "section": t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], "shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit}
 	if locks_regen:
 		hit_event["regenLock"] = true
@@ -3607,6 +3665,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 	if not jt(opts.get("intercept")) and u["side"] == "player" and not jt(u.get("pflag")) and not jt(u.get("isSq")): B["tr"]["indexTarget"] = {"id": t["id"], "r": B["round"]}   # Eclipse shared C1a
 	var preSSid = B["tr"].get("strikeSpeedId")
 	var landed = landVolley(u, w, t, {"quad": quad, "shBefore": shBefore, "shots": shots, "called": called, "res": res, "intercept": jt(opts.get("intercept")), "half": jt(opts.get("half")), "halfShot": halfShot})
+	if u.has("spillReady") and not jt(opts.get("intercept")): u.erase("spillReady")   # issue 1653: the surge is spent on this attack
 	if u.has("m3Pierce"): u.erase("m3Pierce")
 	if landed and not jt(opts.get("intercept")) and u["side"] == "player" and not jt(u.get("isSq")) and B["tr"].get("strikeSpeedId") == preSSid:
 		B["tr"]["strikeSpeed"] = u["speed"]; B["tr"]["strikeSpeedId"] = u["id"]   # Vorn T1b: the last ship that fired this round (a nested extra shot stays the last)
@@ -3642,7 +3701,30 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 			if not jt(xR.get("isSq")) and hdist(u, xR) == 1: nearR = true; break
 		if nearR: u["treeRushLogged"] = 1; treeFx(u, "rushRail", "hard breach on the burn")   # Grax T2b
 	return landed
-func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire and torpedo impact)
+# issue 1653: a Feedback Lattice reflect waits for the whole volley, then lands once, never a kill, bosses at most 10%
+var _volleyDepth := 0
+func settleMirror() -> void:
+	if B == null or not (B.get("mirrorQ") is Array): return
+	var q: Array = B["mirrorQ"]; B.erase("mirrorQ")
+	for e in q:
+		var t = e["t"]; var att = e["att"]
+		if jt(att.get("ghost")):   # a torpedo hits through a copy of its launcher: reflect onto the live ship (Artoo on PR 1744)
+			for x in B["units"]:
+				if x["id"] == att["id"]: att = x; break
+		if jt(att.get("dead")): continue
+		var back = JSM.jsround(e["hull"] * rfx("mirror"))
+		if jt(att.get("boss")): back = min(back, JSM.jsround(att["maxHp"] * 0.1))
+		back = min(back, att["hp"] - 1)
+		if back > 0:
+			att["hp"] = att["hp"] - back; flt(att, "Reflected", "#ffe0a8", -24)
+			logm(String(t["name"]) + " reflects " + ns(back) + " hull back to " + String(att["name"]) + ".", "p")
+func landVolley(u, w, t, o) -> bool:
+	_volleyDepth += 1
+	var r := _landVolley_raw(u, w, t, o)
+	_volleyDepth -= 1
+	if _volleyDepth == 0: settleMirror()
+	return r
+func _landVolley_raw(u, w, t, o) -> bool: # the shots of one weapon land (direct fire and torpedo impact)
 	var quad = o["quad"]; var shots = o["shots"]; var called = o["called"]; var res = o["res"]; var shBefore = o["shBefore"]
 	var evMark := events.size()   # issue 1481: a mid-section loss inside this volley already sends its own break
 	if called != null:
@@ -3933,11 +4015,12 @@ func ramEstimate(u, t, run = null) -> Dictionary:
 	var base = (14.0 + 46.0 * u["size"]) * (1.2 if jt(RAM_FAC.get(u["fac"])) else 1.0) * runk; var quad = shieldQuad(t, u)
 	var maw = treeSkill("mawOpens")
 	var mawAdd = treeAddVal(u, "ramPct", maw["n"]) if (maw != null and u["side"] == "player" and cmdActive(u["side"], "surge") and not jt(u.get("treeMawUsed"))) else 0.0   # Grax T3b
-	var raw = base * (1.0 + z0(f.get("ramPct")) + mawAdd) * (u["ramBoost"] if jt(u.get("ramBoost")) else 1.0) * (1.0 if quad == 0 else 1.2) * (1.0 - t["armor"] * 0.5)
+	var rch = rfx("ramCharter") if u["side"] == "player" else 0.0   # issue 1653 Iron Ram Charter: +50% damage, cap 50% of the target, no recoil
+	var raw = base * (1.0 + z0(f.get("ramPct")) + mawAdd + rch) * (u["ramBoost"] if jt(u.get("ramBoost")) else 1.0) * (1.0 if quad == 0 else 1.2) * (1.0 - t["armor"] * 0.5)
 	if u["side"] == "player" and u.get("burnCarry") != null and capM3("burnCarry"): raw *= 1.25   # issue 1650 Steel on the Second Burn
 	var soak: float = min(raw * 0.5, float(z0(t["sh"][quad])) if t.get("sh") != null else 0.0)
-	return {"dmg": JSM.jsround(min(raw - soak, t["maxHp"] * (0.4 + min(0.3, z0(f.get("ramCap")))))), "soak": JSM.jsround(soak),
-		"recoil": JSM.jsround(base * (0.35 if jt(RAM_FAC.get(u["fac"])) else 0.5) * clamp_(float(t["size"]) / u["size"], 0.5, 1.6) * (1.0 - u["armor"] * 0.5) * (1.0 - min(1, z0(f.get("ramGuard"))))), "sec": SEC_OF_QUAD[quad]}
+	return {"dmg": JSM.jsround(min(raw - soak, t["maxHp"] * (0.4 + (0.1 if rch > 0 else 0.0) + min(0.3, z0(f.get("ramCap")))))), "soak": JSM.jsround(soak),
+		"recoil": 0 if rch > 0 else JSM.jsround(base * (0.35 if jt(RAM_FAC.get(u["fac"])) else 0.5) * clamp_(float(t["size"]) / u["size"], 0.5, 1.6) * (1.0 - u["armor"] * 0.5) * (1.0 - min(1, z0(f.get("ramGuard"))))), "sec": SEC_OF_QUAD[quad]}
 func ramUnit(u) -> bool:
 	var mawPre = treeSkill("mawOpens") != null and u["side"] == "player" and cmdActive(u["side"], "surge") and not jt(u.get("treeMawUsed"))   # Grax T3b
 	var info = ramInfo(u)
@@ -4094,6 +4177,7 @@ func killCauseOf(w, t) -> String:
 		if JSM.to_u32(h) % 10 < 3: return "dark"
 	return "blast"
 func killUnit(t, by, defer_tail: bool = false) -> void:
+	lastLightCheck(t, true)   # issue 1653: a flagship that falls outright also lights Sinking Standard
 	if t != null and by != null and not jt(t.get("killedBy")):
 		if jt(by.get("isSq")):
 			var pu = null
@@ -4510,7 +4594,7 @@ func _giveOrder_raw(u, o) -> void:
 	if o == "brace":
 		fstat(u["fac"], "braces"); u["braced"] = true; u["mp"] = 0; flt(u, "Braced", "#7fd6c8", -24)
 		for w in u["weapons"]: w["fired"] = true
-		braceCover(u)
+		braceCover(u); relayCover(u)   # issue 1653 Brace Shield Relay
 		if jt(u["fx"].get("bastion")) and u["shMax"] > 0:
 			u["shp"] = u["shMax"]; syncShields(u); boonFx(u, "d_bastion", "shields full", -44)
 	if o == "full":
@@ -4519,7 +4603,7 @@ func _giveOrder_raw(u, o) -> void:
 		u["lockOn"] = true; u["mp"] = 0
 	if o == "helm": u["turnsLeft"] = u["turnsLeft"] + 1
 	logm(String(u["name"]) + ": " + String(ORDERS[o]["n"]) + ".", pp(u))
-func abilityCd(u) -> float: return max(1, ABILITIES[u["ab"]]["cd"] - z0(u["fx"].get("cdMod")))
+func abilityCd(u) -> float: return max(1, ABILITIES[u["ab"]]["cd"] - z0(u["fx"].get("cdMod")) - (1 if (u.get("side") == "player" and u["ab"] != "launch" and rfx("coolant") > 0) else 0))   # issue 1653 Cracked Coolant Manifold
 func liveFrom(u) -> Callable:
 	var b0 = B; var ep = z0(B.get("epoch")) if B != null else 0
 	return func(): return is_same(B, b0) and (z0(B.get("epoch")) if B != null else 0) == ep and (u == null or not jt(u.get("dead")))
@@ -5603,11 +5687,18 @@ func commandFor(side):
 	var id = RUN["admiral"] if RUN != null and jt(RUN.get("admiral")) else "vex"; var a = ADMIRALS.get(id)
 	if a != null and jt(a.get("cmd")): return a["cmd"]
 	return COMMANDS[id] if COMMANDS.has(id) else COMMANDS["vex"]
-func canCommand(side) -> bool: return B != null and not jt(B.get("over")) and side == "player" and commandFor(side) != null and B["round"] >= 1 and not jt(B.get("cmdUsed"))
+func canCommand(side) -> bool: return B != null and not jt(B.get("over")) and side == "player" and commandFor(side) != null and B["round"] >= 1 and (not jt(B.get("cmdUsed")) or spareReady())
+# issue 1653 Reserve Signal Key: the Command a second time each battle, at tier 0, never in the round of the first
+func spareReady() -> bool: return B != null and rfx("spare") > 0 and jt(B.get("cmdUsed")) and not jt(B.get("spareUsed")) and B.get("cmd") is Dictionary and B["round"] > int(B["cmd"]["round"])
 func useCommand(side) -> bool:
 	if not canCommand(side): return false
 	undoSpend()
-	var c = commandFor(side); var tier = cmdTier(); B["cmdUsed"] = true; B["cmd"] = {"id": c["id"], "side": side, "round": B["round"], "tier": tier}
+	var second = jt(B.get("cmdUsed"))   # issue 1653 Reserve Signal Key
+	var c = commandFor(side); var tier = 0 if second else cmdTier(); B["cmdUsed"] = true; B["cmd"] = {"id": c["id"], "side": side, "round": B["round"], "tier": tier}
+	if second:
+		B["spareUsed"] = true
+		for xS in alive(side):
+			if jt(xS.get("pflag")): flt(xS, "Second call", "#f0b35a", -40); break
 	if jt(B.get("usage")) and side == "player": B["usage"]["cmd"] = B["usage"]["cmd"] + 1
 	logm("Admiral's Command" + ((" at power " + ns(tier + 1) + " of 3") if jt(tier) else "") + ": " + String(c["n"]) + ". " + cmdDesc(c, tier, RUN["fac"] if (RUN != null and jt(RUN.get("fac"))) else "voidsworn"), "p" if side == "player" else "e")
 	emit({"t": "command", "side": side, "id": c["id"], "tier": tier, "unit": null})
@@ -6786,6 +6877,9 @@ func _useAbility_raw(u, arg = null) -> bool:
 		if not _blinkOk(u, blinkTo): return false
 	if a == "nova" and not _novaHexOk(u, arg): return false
 	undoSpend()
+	if u["side"] == "player" and a != "launch" and rfx("coolant") > 0:   # issue 1653 Cracked Coolant Manifold: 3% hull per active use, never below 1
+		var ccH = min(max(1, JSM.jsround(u["maxHp"] * rfx("coolant"))), u["hp"] - 1)
+		if ccH > 0: u["hp"] = u["hp"] - ccH; flt(u, "Coolant burn", "#ff7a6e", -40)
 	if jt(B.get("usage")) and u["side"] == "player": B["usage"]["ab"][u["ab"]] = z0(B["usage"]["ab"].get(u["ab"])) + 1
 	emit({"t": "ability", "unit": u["id"], "ab": a, "hex": arg.get("hex") if arg is Dictionary else null})
 	if a == "evasive":
@@ -6952,7 +7046,7 @@ func _ai_threat_cell(v: Dictionary, foes: Array[AiThreatSource]) -> AiThreatCell
 		var arc: AiThreatArc = null
 		for gun in foe.guns:
 			var w := gun.weapon
-			var in_arc := _in_arc_angle(angle, w["arc"])
+			var in_arc := _in_arc_angle(angle, w["arc"]) or chaserArc(p, w, v)   # issue 1653 Swivel Arc Mounts
 			var weight: float
 			if d <= w["r"] and in_arc:
 				weight = 1.0
@@ -7001,6 +7095,8 @@ func evalThreatVet(v: Dictionary, foes: Array[AiThreatSource], cells: Dictionary
 			# For a fixed shooter and target, range and rear status drive damage changes.
 			# Aim also reads movement, terrain and the line-evasion adjacency check.
 			var damage_key := arc.distance * 2 + int(rear)
+			var swivel := jt(g(arc.attacker.get("fx"), "chaser"))   # issue 1653: Swivel Arc Mounts' damage depends on the bearing, so it keys by hex
+			if swivel: damage_key = ((hex.x + 512) * 1024 + hex.y + 512) * 64 + damage_key
 			var aim_key := Vector4i(hex.x, hex.y, motion, 1) if line_evade else Vector4i(arc.distance, cell.terrain, motion, 0)
 			var estimates := PackedFloat64Array()
 			for i in range(arc.guns.size()):
@@ -7128,7 +7224,7 @@ func _ai_offense_targets(v: Dictionary, ready: Array, foes: Array) -> Array[AiOf
 	var targets: Array[AiOffenseTarget] = []
 	for t in foes:
 		var distance := hdist(v, t)
-		if distance < 1 or treeDeepBlocks(v, t): continue
+		if distance < 1 or treeDeepBlocks(v, t) or quietBlocks(v, t): continue   # mirrors inReach (issue 1653 Cold-Hull Dampener)
 		var guns := PackedInt32Array()
 		for i in range(ready.size()):
 			if ready[i]["k"] != "flak" and not (distance > ready[i]["r"]): guns.append(i)
@@ -7153,7 +7249,7 @@ func _ai_offense(v: Dictionary, ready: Array, foes: Array, cells: Dictionary, be
 		for i in range(entry.guns.size()):
 			var wi := entry.guns[i]
 			var w = ready[wi]
-			if not _in_arc_angle(angle, w["arc"]): continue
+			if not _in_arc_angle(angle, w["arc"]) and not chaserArc(v, w, t): continue   # mirrors inReach (issue 1653 Swivel Arc Mounts)
 			var scores := entry.scores[i]
 			var score = scores.get(pose)
 			if score == null:
@@ -7475,7 +7571,7 @@ func aiUnit(u) -> void:
 	var burn_evade := jt(g(u.get("fx"), "burnEv"))
 	var line_evade := jt(g(u.get("fx"), "lineEv"))
 	var offense_uses_motion := jt(g(u.get("fx"), "stillPct")) or jt(g(u.get("fx"), "momPct")) or jt(move_rules["rake"])
-	var offense_uses_facing := treeSkill("silentArchive") != null and cmdActive("player", "hunt")
+	var offense_uses_facing := (treeSkill("silentArchive") != null and cmdActive("player", "hunt")) or jt(g(u.get("fx"), "chaser"))   # issue 1653 Swivel Arc Mounts
 	var candidate = dup(u)
 	var start_moved = u.get("hexMoved")
 	eval_begin()

@@ -1,102 +1,10 @@
-Saved manifest before: f7cac068d3e97b593594fb9e0949be3b5cf236c74218001b8bf3e3e84bba7f6d
-Saved manifest after: e4e6e329bf9964af4e4f0039baa01acc5425301236cbb9c4f04a2ad6e41bad08
+Saved manifest before: 10126a8ae9afe10268d9072f5c14c0f5fa4190f383a1f0e823bd0619e5ad03d6
+Saved manifest after: 282a310d7967849d34d6a3a5e4351fb26325e185a37f0cf9a55d4bf5e6fdf0a6
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t7a_flightcast_m3
-  new battle; no saved result
-FAIL battle t7a_forgeahead_m3
-  new battle; no saved result
-FAIL battle t_ecl_outshadow_m3
-  new battle; no saved result
-FAIL battle t_ecl_longcopy_m3
-  new battle; no saved result
-FAIL battle t_rollwings_m3
-  new battle; no saved result
-FAIL battle t_oathwings_m3
-  new battle; no saved result
-FAIL battle t_hb_burncarry_m3
-  new battle; no saved result
-FAIL battle t_hb_warlordrun_m3
-  new battle; no saved result
-FAIL battle t_heg_livingrelay_m3
-  new battle; no saved result
-FAIL battle t_heg_onevoice_m3
-  new battle; no saved result
-FAIL battle t_ecl_tenthousand_m3
-  new battle; no saved result
-FAIL battle t_ecl_restoredfleet_m3
-  new battle; no saved result
-FAIL battle t7a_salvoend_m3
-  new battle; no saved result
-FAIL battle t_namedprey_m3
-  new battle; no saved result
-FAIL battle t_heg_standardcovers_m3
-  new battle; no saved result
-FAIL battle t_heg_flagshipstandard_m3
-  new battle; no saved result
-FAIL battle t7b_ch_nine_m3
-  new battle; no saved result
-FAIL battle t529_nostop_m3
-  new battle; no saved result
-FAIL battle t_tideend_m3
-  new battle; no saved result
-FAIL battle t_tornback_m3
-  new battle; no saved result
-FAIL battle t_wardglass_m3
-  new battle; no saved result
-FAIL battle t7a_facetlit_m3
-  new battle; no saved result
-FAIL battle t_hb_swarmscrap_m3
-  new battle; no saved result
-FAIL battle t_hb_privatewing_m3
-  new battle; no saved result
-FAIL battle t_ecl_tenthframe_m3
-  new battle; no saved result
-FAIL battle t_ecl_earliercopy_m3
-  new battle; no saved result
-FAIL battle t_throatred_m3
-  new battle; no saved result
-FAIL battle t_preyeverymouth_m3
-  new battle; no saved result
-FAIL battle t_heg_onetarget_m3
-  new battle; no saved result
-FAIL battle t_heg_standinggroup_m3
-  new battle; no saved result
-FAIL battle t_hb_darkknives_m3
-  new battle; no saved result
-FAIL battle t_hb_cutfeeds_m3
-  new battle; no saved result
-FAIL battle t_ecl_noonrepeat_m3
-  new battle; no saved result
-FAIL battle t_ecl_onesuncopy_m3
-  new battle; no saved result
-FAIL battle t_irontestament_m3
-  new battle; no saved result
-FAIL battle t7a_wallmoves_m3
-  new battle; no saved result
-FAIL battle t7a_fleetelsewhere_m3
-  new battle; no saved result
-FAIL battle t_falsehulls_m3
-  new battle; no saved result
-FAIL battle t7a_sunlens_m3
-  new battle; no saved result
-FAIL battle t_flawforever_m3
-  new battle; no saved result
-FAIL battle t_hb_weldedwhole_m3
-  new battle; no saved result
-FAIL battle t_hb_nothingbroken_m3
-  new battle; no saved result
-FAIL battle t7a_grandledger_m3
-  new battle; no saved result
-FAIL battle t7a_lastaccount_m3
-  new battle; no saved result
-FAIL battle t_volleygrows_m3
-  new battle; no saved result
-FAIL battle t_mouthdeep_m3
-  new battle; no saved result
-FAIL battle t_heg_permanentfile_m3
-  new battle; no saved result
-FAIL battle t_heg_oneorder_m3
-  new battle; no saved result
-FAIL: saved Godot results; 339 battles checked, 48 changed, 0 other files changed, 48 failures; 11.120 s
+FAIL battle r1653_coolant
+  turn 3, round 1, after ability x04; unit x04 (player b_razor)
+  state.units[0].focus: true -> false
+  later changed records: 170; total records: 174 -> 165
+FAIL: saved Godot results; 354 battles checked, 1 changed, 0 other files changed, 1 failures; 11.932 s
