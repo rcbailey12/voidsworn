@@ -474,6 +474,10 @@ func start_default() -> void:
 		for i in clampi(int(args["fleet-size"]), 1, 24):
 			nf.append(base_f[i % base_f.size()])
 		sc["fleet"] = nf
+	if args.has("fleet"):
+		sc["fleet"] = Array(str(args["fleet"]).split(","))   # issue 1589 captures: e.g. a Glasswright fleet (with --admiral aelith)
+	if args.has("admiral"):
+		sc["admiral"] = str(args["admiral"])
 	if args.has("obj"):
 		sc["obj"] = str(args["obj"])   # e.g. ambush: the fleets start inside gun reach (the Fire odds show in round 1)
 		if sc["obj"] == "ambush":
@@ -1015,6 +1019,7 @@ func _cmd(f: Callable) -> bool:
 	batches.append({"events": ev, "view": api.view()})
 	_clear_overlay()
 	_runner()
+	_refresh_ui()   # issue 1589 (Ryan, Nov 22): the runner is now busy, so the card leaves while the event plays
 	return bool(ok)
 
 
@@ -3089,6 +3094,10 @@ func _fan_mesh(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var n := 28
+	if a1 - a0 < 300.0:   # the same range line as _fan_edge: half a hex past the arc's line at full range (issue 1589)
+		var da := rad_to_deg(asin(clampf(board.HW * 0.5 / rad, 0.0, 1.0)))
+		a0 -= da
+		a1 += da
 	for i in n:
 		var t0 := deg_to_rad(lerpf(a0, a1, float(i) / n))
 		var t1 := deg_to_rad(lerpf(a0, a1, float(i + 1) / n))
@@ -3121,6 +3130,11 @@ func _fan_edge(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 	var w := 0.55
 	var n := 28
 	var c := Color(col.r, col.g, col.b, 0.75)
+	var sides := [a0, a1]
+	if a1 - a0 < 300.0:   # the range line meets the sides half a hex outside the arc's line (below)
+		var da := rad_to_deg(asin(clampf(board.HW * 0.5 / rad, 0.0, 1.0)))
+		a0 -= da
+		a1 += da
 	for i in n:
 		var t0 := deg_to_rad(lerpf(a0, a1, float(i) / n))
 		var t1 := deg_to_rad(lerpf(a0, a1, float(i + 1) / n))
@@ -3129,12 +3143,15 @@ func _fan_edge(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 		for v in [o0 * rad, o1 * rad, o1 * (rad - w), o0 * rad, o1 * (rad - w), o0 * (rad - w)]:
 			st.set_color(c)
 			st.add_vertex(v)
-	if a1 - a0 < 300.0:
-		for a in [a0, a1]:
+	if sides[1] - sides[0] < 300.0:
+		for a in sides:
 			var d := Vector3(cos(deg_to_rad(a)), 0, sin(deg_to_rad(a)))
 			var sd := Vector3(-d.z, 0, d.x) * (w * 0.5)
-			var near := d * 6.0
-			var far := d * rad
+			# issue 1589 (Ryan, Nov 22): a ship whose hex sits on the arc's line is in the arc (rules inArc), so each side
+			# runs half a hex outside that line, along the far edge of the hexes on it, never through their middles
+			var out: Vector3 = Vector3(d.z, 0, -d.x) * (board.HW * 0.5) * (1.0 if a == sides[0] else -1.0)
+			var near: Vector3 = d * 6.0 + out
+			var far: Vector3 = d * sqrt(maxf(rad * rad - board.HW * board.HW * 0.25, 1.0)) + out
 			for v in [[near - sd, 0.0], [far - sd, 0.5], [far + sd, 0.5], [near - sd, 0.0], [far + sd, 0.5], [near + sd, 0.0]]:
 				st.set_color(Color(col.r, col.g, col.b, v[1]))
 				st.add_vertex(v[0])

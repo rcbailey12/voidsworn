@@ -295,6 +295,8 @@ func _run() -> void:
 			all_fired = false
 	_check(picks.size() == 2 and all_fired, "every planned target is fired on in that batch (%s)" % str(hit_ids.keys()))
 	_check(b.plan == null and b.aims.is_empty(), "the plan is cleared once it is sent")
+	var card_now = b.hud._last.get("set_card", [{"open": true}])[0]
+	_check(card_now is Dictionary and (card_now as Dictionary).is_empty(), "the card leaves as soon as the event starts (Ryan, Nov 22)")
 	b.hold = false
 	await _wait_idle(90000)
 	var u1: Dictionary = b.VU.get(ship, {})
@@ -302,5 +304,27 @@ func _run() -> void:
 	_check(want_picks >= 1 and bool(u1.get("fired", false)), "the ship fired")
 	var unknown: Dictionary = b.get_meta("unknown_events", {})
 	_check(unknown.is_empty(), "no unknown event kind warning (%s)" % str(unknown.keys()))
+	# Ryan (Nov 22): a ship on the arc's line looked outside the drawn cone. The rules count it (inArc, 60.5 degrees), so
+	# each side of the drawn fan runs half a hex outside that line: the hexes on it sit wholly inside the drawing.
+	var HW: float = b.board.HW
+	var fan = b._fan_edge(-60.5, 60.5, 4.0 * HW + 0.5, Color.WHITE)
+	var vs: PackedVector3Array = fan.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	var fan_ok := vs.size() >= 12
+	for side in 2:
+		if not fan_ok:
+			break
+		var o := vs.size() - 12 + side * 6
+		var p0 := Vector2((vs[o].x + vs[o + 5].x) * 0.5, (vs[o].z + vs[o + 5].z) * 0.5)
+		var p1 := Vector2((vs[o + 1].x + vs[o + 2].x) * 0.5, (vs[o + 1].z + vs[o + 2].z) * 0.5)
+		var ang := deg_to_rad(-60.0 if side == 0 else 60.0)
+		for k in range(1, 5):
+			var hc := Vector2(cos(ang), sin(ang)) * HW * k   # the centre of the k-th hex on the arc's line
+			var dir := (p1 - p0).normalized()
+			var dist := absf(dir.cross(hc - p0))
+			if dist < HW * 0.5 - 0.05 or dist > HW * 0.6:
+				fan_ok = false
+				print("  fan side %d hex %d: %.2f from the line (want about %.2f)" % [side, k, dist, HW * 0.5])
+	fan.free()
+	_check(fan_ok, "the drawn cone's sides run along the far edge of the hexes on the arc's line, not through them")
 	print("plan commit check: ", "PASS" if fails == 0 else "FAIL (%d)" % fails)
 	quit(0 if fails == 0 else 1)

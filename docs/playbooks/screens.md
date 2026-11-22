@@ -113,6 +113,13 @@ The ship's turn is a plan on screen until the player commits it. Code: `battle.g
   guns while the hull brakes. A pick the move made impossible is dropped with a toast.
 - Backspace pops one step; with no plan open it is the rules' undo of a played move (9.17). Esc clears the whole plan. Any
   rules command clears the plan.
+- The card leaves as soon as any command starts playing (`_cmd` refreshes the UI once the runner is busy) and comes back
+  when the ship is up again (Ryan, Nov 22).
+- The drawn firing cone: a ship whose hex sits on an arc's line is in that arc (rules `inArc`, 60.5 degrees for the
+  prow), so `_fan_edge` draws each side half a hex outside that line, along the far edge of the hexes on it. Ryan read a
+  legal shot at an enemy on the line as out of the cone when the side ran through its middle (Nov 22).
+- Glasswrights keep part of their movement after firing (R396, issue 1560): after the commit the ship stays up with its
+  reach drawn, and the next planned move commits the same way. Capture: the probe's `--glass` strip GLS-1589.
 - Check: `godot/scenes/battle/test/plan_commit_check.gd`.
 
 ### The after-run screen (DB1, issue 805)

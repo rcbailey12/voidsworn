@@ -6,12 +6,15 @@ extends SceneTree
 #   PLN-1589_steps  four frames of the step controls: E turns the ghost, Backspace takes the turn back, the second pick,
 #                   Backspace takes that pick back
 #   ENY-1589        four frames of the enemy's next activation (it plays the same way)
-# Partial by design: s1 has no Glasswright, so the slip after firing is not in this run. The probe exits 1 (and names the
-# step) when it cannot show a ready ship, a planned hex with two distinct picks, or any of its pictures.
+# --glass (r2, the outside review on PR 1643): a Glasswright fleet instead of s1, one strip GLS-1589: the shot planned
+# from where the ship sits, the commit, the move it still has after firing (issue 1560, R396: firing ends movement for
+# every ship except Glasswrights) planned as a ghost, and that move playing. The probe exits 1 (and names the step) when
+# it cannot show a ready ship, a planned hex with two distinct picks (or, with --glass, a move left after firing), or any
+# of its pictures. --nopics skips the screen grabs (a headless logic run).
 # All waits are on the game clock, so a movie run (Godot's --write-movie with --fixed-fps 60) records the same moments as
 # one clip. Each strip is 2 by 2, no taller than 720 px, its code name and stage on every frame.
 # usage (needs a window): godot --path godot --script res://tools/probes/plan_commit_1589_shots.gd -- --out <folder>
-#   [--cam 170] [--stage "PC, installed in game"] [--seed 1001]
+#   [--cam 170] [--stage "PC, installed in game"] [--seed 1001] [--glass] [--nopics]
 
 var b
 const ShipViewS := preload("res://render/ship_view.gd")
@@ -56,6 +59,9 @@ func _sync() -> void:
 
 
 func _grab() -> Image:
+	if OS.get_cmdline_user_args().has("--nopics"):
+		await process_frame
+		return Image.create(640, 360, false, Image.FORMAT_RGB8)
 	await RenderingServer.frame_post_draw
 	var img: Image = root.get_viewport().get_texture().get_image()
 	img.resize(640, int(640.0 * img.get_height() / img.get_width()), Image.INTERPOLATE_LANCZOS)
@@ -79,7 +85,7 @@ func _save(code: String, frames: Array) -> void:
 
 
 func _tag(code: String, what: String) -> void:
-	label.text = "%s   %s   (1589 r1, %s)" % [code, what, stage]
+	label.text = "%s   %s   (1589 r2, %s)" % [code, what, stage]
 
 
 func _strip(code: String, what: String, at: Array) -> Array:
@@ -207,6 +213,72 @@ func _plan_and_commit() -> void:
 	await _save("ENY-1589", await _strip("ENY-1589", "enemy activation", ENEMY_AT))
 
 
+# --glass: a Glasswright fires, then still moves (the only faction whose firing does not end its movement)
+func _glass() -> void:
+	var R = b.api.R
+	var me = null
+	for u in R.alive("player"):
+		if not R.jt(u.get("isSq")) and not R.jt(u.get("activated")) and R.canFade(u):
+			me = u
+			break
+	if me == null:
+		_fail("no ready Glasswright ship"); return
+	var foes: Array = R.alive("enemy")
+	var d0: Array = R.DIRS[int(me["facing"])]
+	var spot := Vector2i(int(me["q"]) + d0[0] * 3, int(me["r"]) + d0[1] * 3)
+	if foes.is_empty() or not R.onBoard(spot.x, spot.y) or R.unitAt(spot.x, spot.y) != null:
+		_fail("no free hex ahead for the enemy"); return
+	foes[0]["q"] = spot.x
+	foes[0]["r"] = spot.y
+	_sync()
+	var id := str(me["id"])
+	var eid := str(foes[0]["id"])
+	b.select(id, "pick")
+	await _idle()
+	b.cam.focus(b._pos(id).lerp(b.board.hex_world(spot.x, spot.y), 0.5), float(_arg("cam", "170")))
+	await create_timer(1.2).timeout
+	b._target(eid)
+	if b.aims.size() != 1:
+		_fail("the Glasswright could not aim at the enemy ahead"); return
+	await create_timer(0.6).timeout
+	var frames: Array = []
+	_tag("GLS-1589", "1 Glasswright: the shot planned from where it sits")
+	frames.append(await _grab())
+	b._confirm()
+	await create_timer(1.4).timeout
+	_tag("GLS-1589", "2 commit: the shot plays")
+	frames.append(await _grab())
+	await _idle()
+	var after = b.api.unit(id)
+	if after == null or not R.jt(after.get("postFire")) or R.postFireMp(after) <= 0 or b.sel != id or b.reach_map.is_empty():
+		_fail("no move left after firing (postMp %s, up %s, %d hexes)" % [str(after.get("postMp")) if after != null else "?", b.sel, b.reach_map.size()]); return
+	var far = null
+	var far_d := -1
+	for k in b.reach_map:   # the reach hex farthest from the enemy: the Glasswright slips away after its shot
+		var st = b.reach_map[k]
+		var dd := int(R.hdist({"q": int(st.q), "r": int(st.r)}, {"q": spot.x, "r": spot.y}))
+		if b._unit_at(int(st.q), int(st.r)).is_empty() and dd > far_d:
+			far_d = dd
+			far = st
+	if far == null:
+		_fail("no free hex to move to after firing"); return
+	b.hover = Vector2i(int(far.q), int(far.r))
+	b._on_click()
+	b._overlay()
+	await create_timer(0.6).timeout
+	_tag("GLS-1589", "3 after firing: %d hex move left, planned as a ghost" % R.postFireMp(after))
+	frames.append(await _grab())
+	b._confirm()
+	await create_timer(1.6).timeout
+	_tag("GLS-1589", "4 the move after firing plays")
+	frames.append(await _grab())
+	await _idle()
+	var end = b.api.unit(id)
+	if end == null or int(end["q"]) != int(far.q) or int(end["r"]) != int(far.r):
+		_fail("the Glasswright did not reach the hex planned after firing"); return
+	await _save("GLS-1589", frames)
+
+
 var failed := ""
 
 
@@ -221,7 +293,11 @@ func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(out)
 	var scene: PackedScene = load("res://scenes/battle/battle.tscn")
 	b = scene.instantiate()
-	b.args["scenario"] = "s1"
+	var glass := OS.get_cmdline_user_args().has("--glass")
+	if glass:
+		b.args = {"fleet": "i_blade,i_song,i_wisp", "admiral": "aelith", "fac": "hegemony", "map": "open"}
+	else:
+		b.args["scenario"] = "s1"
 	b.args["seed"] = int(_arg("seed", "1001"))
 	root.add_child(b)
 	var cl := CanvasLayer.new(); cl.layer = 120; root.add_child(cl)
@@ -236,9 +312,12 @@ func _run() -> void:
 	await create_timer(2.5).timeout
 	await _idle()
 	b.tips_off = true
-	await _plan_and_commit()
+	if glass:
+		await _glass()
+	else:
+		await _plan_and_commit()
 	await create_timer(1.0).timeout
-	for f in ["PLN-1589_plan", "PLN-1589_steps", "PLN-1589_commit", "ENY-1589"]:
+	for f in (["GLS-1589"] if glass else ["PLN-1589_plan", "PLN-1589_steps", "PLN-1589_commit", "ENY-1589"]):
 		if failed == "" and not FileAccess.file_exists(out.path_join(f + ".jpg")):
 			_fail("%s.jpg was not written" % f)
 	print("[plan-1589-shots] ", "PASS" if failed == "" else "FAILED: " + failed)
