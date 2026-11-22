@@ -1,0 +1,38 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAYAAAC8osHuAAAAAXNSR0IArs4c6QAAAahJREFUeJzt1cEJACEQwMDbs/+atQlBCDMV5JeZWfsDAFL+1wEAwH0GDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEHBxsByNmXcbIAAAAASUVORK5CYII="
+	],
+	"date": "2026-11-22T00:12:09Z",
+	"image_sha256": "224f0c07587d68d6871d55d1d3cc9b9c1321b0da2a2caa1ee1d27a52227372e6",
+	"inputs": [],
+	"picture_name": "deathless_battle.png",
+	"schema": 1,
+	"source_commit": "44987b5b4822e14d934802b0d5205fa72e184f8a",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"source_dirty_files": {},
+	"sources": [
+		{
+			"source_commit": "44987b5b4822e14d934802b0d5205fa72e184f8a",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"source_dirty_files": {},
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		1342,
+		504,
+		1440
+	],
+	"stamp_template_sha256": "b8cae95d1a1e8bfacb83f73dee42a5c4b30852818bebb9d15c7f6a07b5eeb09b",
+	"strip_sha256": [
+		"b8cae95d1a1e8bfacb83f73dee42a5c4b30852818bebb9d15c7f6a07b5eeb09b"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}

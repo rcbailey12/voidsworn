@@ -1,0 +1,38 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAYAAAC8osHuAAAAAXNSR0IArs4c6QAAAahJREFUeJzt1cEJACEQwMDbs/+atQlBCDMV5JeZWfsDAFL+1wEAwH0GDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEHBxsByNmXcbIAAAAASUVORK5CYII="
+	],
+	"date": "2026-11-22T00:12:06Z",
+	"image_sha256": "d1ecb2b5b9f1f1c67e38f36b546088138b9565fc3e1a715e9d80164c95b6b4e9",
+	"inputs": [],
+	"picture_name": "ithar_motion_28.png",
+	"schema": 1,
+	"source_commit": "44987b5b4822e14d934802b0d5205fa72e184f8a",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"source_dirty_files": {},
+	"sources": [
+		{
+			"source_commit": "44987b5b4822e14d934802b0d5205fa72e184f8a",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"source_dirty_files": {},
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		1342,
+		504,
+		1440
+	],
+	"stamp_template_sha256": "8ea8d7811aa6b22522cf69442f7401d12e92ea44c1afb182099c6a7df36cd80a",
+	"strip_sha256": [
+		"8ea8d7811aa6b22522cf69442f7401d12e92ea44c1afb182099c6a7df36cd80a"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}

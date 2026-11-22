@@ -1,0 +1,38 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAYAAAC8osHuAAAAAXNSR0IArs4c6QAAAahJREFUeJzt1cEJACEQwMDbs/+atQlBCDMV5JeZWfsDAFL+1wEAwH0GDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEGDwBBBg8AQQYPAEEHBxsByNmXcbIAAAAASUVORK5CYII="
+	],
+	"date": "2026-11-22T00:11:54Z",
+	"image_sha256": "0d6a4c70c66f797c05def341edea878d8014273018eab4e8374e00cd3049d4be",
+	"inputs": [],
+	"picture_name": "chorus_motion_16.png",
+	"schema": 1,
+	"source_commit": "44987b5b4822e14d934802b0d5205fa72e184f8a",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"source_dirty_files": {},
+	"sources": [
+		{
+			"source_commit": "44987b5b4822e14d934802b0d5205fa72e184f8a",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"source_dirty_files": {},
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		1342,
+		504,
+		1440
+	],
+	"stamp_template_sha256": "d5d83f49235cc60038c1f6e71d1f34b96ef6709ef0ec770bfe8f806869b77abb",
+	"strip_sha256": [
+		"d5d83f49235cc60038c1f6e71d1f34b96ef6709ef0ec770bfe8f806869b77abb"
+	],
+	"strip_size": [
+		504,
+		98
+	]
+}

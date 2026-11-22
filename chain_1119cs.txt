@@ -1,0 +1,10 @@
+1373M PROBE18B start Sat 11/21/2026 18:09:56.90 
+PROBE18 prep 18:09:56.91 
+clone at 44987b5b4822e14d934802b0d5205fa72e184f8a
+kit ithar_GV2 copied from opus1373gv2m
+kit ithar_GW4 copied from opus1373gw4m
+entries ok: 2
+import exit 0 at 18:11:13.84 
+PROBE18 start 18:11:13.84 
+1373M PROBE18 exit 0 at 18:12:17.47 
+all done Sat 11/21/2026 18:12:17.48 
