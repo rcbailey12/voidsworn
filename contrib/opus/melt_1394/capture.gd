@@ -163,7 +163,7 @@ func _clip(id: String, radius: int) -> void:
 		for key in marks:
 			if not row.stills.has(key) and bench.fx.now >= float(marks[key]):
 				var img: Image = bench._grab()
-				if img == null or (not burst and not drift and CAP.save_png(img, folder.path_join(key + ".png"), "installed in game") != OK):
+				if img == null or (not burst and not drift and CAP.save_png(img, folder.path_join(key + ".png"), _stage()) != OK):
 					_fail("could not save %s %s" % [id, key])
 					continue
 				var small: Image = bench._crop(img, Vector2i(960, 540), Vector2i(960, 540)) if radius == 170 else img.duplicate()
@@ -183,3 +183,20 @@ func _write(file: String, data: Variant, directory: String) -> void:
 		_fail("Could not write " + file)
 		return
 	output.store_string(JSON.stringify(data, "  ") + "\n")
+
+
+# Artoo on PR 1583: the stage comes from the shared renderer check (issue 1567). The old pin (b1addd66) predates
+# capture_stage(), so there the same check is made here: only a forward_plus render on a real adapter is "installed in
+# game"; anything else is a "cloud direction check".
+func _stage() -> String:
+	var pp: Script = CAP
+	for m in pp.get_script_method_list():
+		if str(m.get("name", "")) == "capture_stage":
+			return str(pp.call("capture_stage"))
+	if RenderingServer.get_current_rendering_method() != "forward_plus":
+		return "cloud direction check"
+	var adapter := (RenderingServer.get_video_adapter_name() + " " + RenderingServer.get_video_adapter_vendor()).to_lower()
+	for soft in ["llvmpipe", "lavapipe", "swiftshader", "software", "mesa offscreen"]:
+		if adapter.contains(soft):
+			return "cloud direction check"
+	return "installed in game"
