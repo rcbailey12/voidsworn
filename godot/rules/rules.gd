@@ -1708,8 +1708,9 @@ func startSideTurn(side) -> int:
 		u["intercepts"] = max(0, 2 - z0(u.get("treeFlakDown"))) if _has_flak(u) else 0
 		u["boarded"] = false; u["rammed"] = false; u["emerg"] = false; u["repel"] = false
 		if terr(u["q"], u["r"]) == "storm" and not jt(u.get("isSq")) and u["shMax"] > 0:
-			u["shp"] = max(0, float(z0(u.get("shp"))) - 10); syncShields(u)
+			var shS = float(z0(u.get("shp"))); u["shp"] = max(0, shS - 10); syncShields(u)
 			emit({"t": "tick", "unit": u["id"], "kind": "storm", "hull": 0}); flt(u, "Ion storm", "#9fb8ff", -24)
+			shieldDrained(u, shS)   # issue 1481
 		if jt(u.get("crewMax")) and u["crew"] <= 0:
 			u["mp"] = 0; u["turnsLeft"] = 0
 			for w in u["weapons"]: w["fired"] = true
@@ -1717,7 +1718,8 @@ func startSideTurn(side) -> int:
 	var ev = B.get("event")
 	if jt(ev) and ev["k"] == "flare" and B["round"] == ev["r"] and jt(ev.get("done")):
 		for u in B["units"]:
-			if not jt(u.get("dead")) and u["side"] == side and u["shMax"] > 0: u["shp"] = 0; syncShields(u)
+			if not jt(u.get("dead")) and u["side"] == side and u["shMax"] > 0:
+				var shF = float(z0(u.get("shp"))); u["shp"] = 0; syncShields(u); shieldDrained(u, shF)   # issue 1481: the flare plays its break
 	for u in risen:
 		for w in u["weapons"]: w["fired"] = true
 	if burned: checkEnd()
@@ -2634,7 +2636,8 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 			logm(tv(w.get("n")) + " from " + String(gh["name"]) + " burst against " + String(t["name"]) + ", catching " + ns(near.size()) + " ship" + ("s" if near.size() > 1 else "") + ".", "p" if S["side"] == "player" else "e")
 			for x in near:
 				if jt(x.get("dead")): continue
-				var r = applyHit(gh, w, x, S["base"] * gh["fx"]["spread"], shieldQuad(x, gh)); boonFx(x, "e_spread", "−" + ns(r.hull), -20)
+				var qS = shieldQuad(x, gh); var shSp = float(z0(x.get("shp")))
+				var r = applyHit(gh, w, x, S["base"] * gh["fx"]["spread"], qS); shieldDrained(x, shSp, qS); boonFx(x, "e_spread", "−" + ns(r.hull), -20)
 				if x["hp"] <= 0:
 					x["killCause"] = "big"; killUnit(x, shooter)   # Spread Pattern
 	if real != null and not jt(real.get("dead")) and not jt(res.get("hits")): treeSecondKnife(real)   # Sable T2b: a torpedo that misses reloads one turn sooner than normal
@@ -3087,6 +3090,24 @@ func _spend_shield(t, quad: int, damage: float) -> void:
 		if not jt(t.get("route")): t["route"] = [0, 0, 0, 0]
 		t["route"][quad] = 1
 	syncShields(t)   # R246: route power on the struck side; when the pool empties all sides drop
+# Issue 1481: every way a pool empties outside a volley (storm, flare, mid-section loss, ram, ion pulse, nova and
+# the other splash hits) goes through here: a pool under 1 point is empty, the four sides follow it, and an emptied
+# pool sends shield_down so the scene plays the break. The volley keeps its own break at its end (landVolley) and
+# skips it when one of these already sent it (_shDownSince). Twin: battle.js shieldClamp (state only).
+func shieldDrained(t, before, quad = 0) -> void:
+	if t == null or jt(t.get("isSq")) or not (float(z0(t.get("shMax"))) > 0): return
+	var p := float(z0(t.get("shp")))
+	if p > 0 and p < 1: t["shp"] = 0; syncShields(t)   # the site already synced; only a clamp changes the sides
+	if float(before) > 0 and float(t["shp"]) <= 0 and not jt(t.get("dead")):
+		emit({"t": "shield_down", "unit": t["id"], "quad": int(quad) if quad != null else 0})
+func _shDownSince(id, mark: int) -> bool:
+	for i in range(mark, events.size()):
+		if events[i].get("t") == "shield_down" and events[i].get("unit") == id: return true
+	return false
+# Issue 1481: hull taken outside a volley's own shots (braced counter-fire, the ram shockwave, a reactor going up)
+# sends a hit, so the scene ticks the plates when it happens. "float": false: the boon float already shows the number.
+func _quietHit(att, t, hull) -> void:
+	emit({"t": "hit", "unit": _uid(att), "target": t["id"], "quad": 0, "section": null, "shield": 0, "hull": hull, "crit": false, "float": false})
 func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	var of = ownerFx(att); var rear = treeIsRear(att, t, quad); var pierce = 1.0 if (w.get("k") == "lance" and jt(of.get("lanceSure"))) else z0(w.get("pierce")); var ion = ionVs(att, w, t)
 	if jt(t.get("_treePierce")): pierce = 1.0; t["_treePierce"] = 0
@@ -3224,7 +3245,7 @@ func damageSection(t, sec, dmg, by) -> void:
 		for w in t["weapons"]:
 			if w["arc"] == "P" or w["arc"] == "S": w["off"] = 999
 		if t["shMax"] > 0:
-			t["st"]["shieldOff"] = 999; t["shp"] = 0; syncShields(t)
+			var shM = float(z0(t.get("shp"))); t["st"]["shieldOff"] = 999; t["shp"] = 0; syncShields(t); shieldDrained(t, shM)   # issue 1481
 	if sec == "eng":
 		t["secSave"] = {"turns": t["turns"], "ev": t["ev"]}; t["st"]["engine"] = max(0, t["speed"] - 1); t["turns"] = min(t["turns"], 1); t["ev"] = 0
 	flt(t, String(SEC_NAME[sec]).substr(0, 1).to_upper() + String(SEC_NAME[sec]).substr(1) + " destroyed", "#f0b35a", -36)
@@ -3489,6 +3510,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 	return landed
 func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire and torpedo impact)
 	var quad = o["quad"]; var shots = o["shots"]; var called = o["called"]; var res = o["res"]; var shBefore = o["shBefore"]
+	var evMark := events.size()   # issue 1481: a mid-section loss inside this volley already sends its own break
 	if called != null:
 		u["crit"] = u["crit"] + 15; t["_calledSec"] = called
 	var hiL = 0
@@ -3669,7 +3691,8 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 			JSM.ssort(adjs, func(a, b):
 				return -1.0 if str(a["id"]) < str(b["id"]) else 1.0)
 			if adjs.size() > 0:
-				var adj = adjs[0]; var rr = applyHit(u, w, adj, d * float(awF["n"]), shieldQuad(adj, u))
+				var adj = adjs[0]; var qA = shieldQuad(adj, u); var shA = float(z0(adj.get("shp")))
+				var rr = applyHit(u, w, adj, d * float(awF["n"]), qA); shieldDrained(adj, shA, qA)   # issue 1481
 				if rr.hull > 0: flt(adj, "−" + ns(rr.hull) + " hull", "#ffae42", 0) # Artoo on PR 1564: the splash shows over the ship it hit
 				if adj["hp"] <= 0: adj["killCause"] = "big"; killUnit(adj, u)
 				treeFx(u, "arcsWarm", "the corona splashes")
@@ -3708,7 +3731,8 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 	if res.shield > 0:
 		flt(t, "−" + ns(res.shield) + " shield", "#62ccff", -18)
 		if t["shMax"] > 0 and float(z0(t.get("shp"))) <= 0.5 and shBefore > 0.5:
-			emit({"t": "shield_down", "unit": t["id"], "quad": quad}); flt(t, "Shields down", "#9fe2ff", -40)
+			if not _shDownSince(t["id"], evMark): emit({"t": "shield_down", "unit": t["id"], "quad": quad})
+			flt(t, "Shields down", "#9fe2ff", -40)
 			if jt(ownerFx(u).get("chainSh")) and not jt(t.get("dead")):
 				t["chainCut"] = max(float(z0(t.get("chainCut"))), float(z0(ownerFx(u).get("chainSh"))))   # R246 pool: the broken shield's next recharge is cut
 				boonFx(t, "s_chain", "chain lightning", -62)
@@ -3739,7 +3763,7 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 	if not jt(o.get("torp")) and res.hits > 0 and jt(t.get("braced")) and not jt(t.get("dead")) and not jt(u.get("dead")) and not jt(o.get("intercept")) and t["side"] != u["side"]:
 		var rp = ownerFx(t).get("riposte")
 		if jt(rp):
-			u["hp"] = u["hp"] - rp; t["dealt"] = z0(t.get("dealt")) + rp; boonFx(u, "i_brace", "−" + ns(rp), -40)
+			u["hp"] = u["hp"] - rp; t["dealt"] = z0(t.get("dealt")) + rp; _quietHit(t, u, rp); boonFx(u, "i_brace", "−" + ns(rp), -40)
 			if u["hp"] <= 0: killUnit(u, t)
 	if t["hp"] <= 0:
 		t["killCause"] = killCauseOf(w, t); killUnit(t, o["by"] if o.get("by") != null else u)
@@ -3789,14 +3813,15 @@ func ramUnit(u) -> bool:
 				if B.get("boonStats") == null: B["boonStats"] = {}
 				B["boonStats"][id] = z0(B["boonStats"].get(id)) + 1
 	var e = ramEstimate(u, t, info.path.size())
-	emit({"t": "ram", "unit": u["id"], "target": t["id"], "path": info.path.duplicate(true), "dmg": e.dmg, "recoil": e.recoil, "soak": e.soak, "section": e.sec}); hook("ram", u)
+	var ramEv = {"t": "ram", "unit": u["id"], "target": t["id"], "path": info.path.duplicate(true), "dmg": e.dmg, "recoil": e.recoil, "soak": e.soak, "section": e.sec}
+	emit(ramEv); hook("ram", u)
 	if not live.call() or jt(t.get("dead")): return false
 	var qd = shieldQuad(t, u)
 	if jt(e.soak) and t["shMax"] > 0:
-		t["shp"] = max(0, float(z0(t.get("shp"))) - e.soak * 1.5)
-		if not jt(t.get("route")): t["route"] = [0, 0, 0, 0]
-		t["route"][qd] = 1
-		syncShields(t)
+		var shR = float(z0(t.get("shp")))
+		_spend_shield(t, qd, e.soak * 1.5)   # issue 1481: the shared spend (R246 routing loss, a pool under 1 point is empty)
+		ramEv["sh"] = t["sh"].duplicate()   # the scene's shield readout after the ram (played after this step returns)
+		shieldDrained(t, shR, qd)
 	t["hp"] = t["hp"] - e.dmg; u["dealt"] = u["dealt"] + e.dmg; damageSection(t, e.sec, e.dmg, u); u["hp"] = u["hp"] - e.recoil; damageSection(u, "prow", e.recoil, t)
 	flt(t, "−" + ns(e.dmg), "#f0b35a", 0); flt(u, "−" + ns(e.recoil), "#ff7a6e", 0)
 	logm(String(u["name"]) + " rams " + String(t["name"]) + " at full speed: " + ns(e.dmg) + " to its " + String(SEC_NAME[e.sec]) + ", " + ns(e.recoil) + " back to the ram.", pp(u))
@@ -3809,7 +3834,7 @@ func ramUnit(u) -> bool:
 		for x in B["units"]:
 			if not jt(x.get("dead")) and not is_same(x, t) and x["side"] == t["side"] and hdist(x, t) == 1: hitl.append(x)
 		for x in hitl:
-			x["hp"] = x["hp"] - sd; boonFx(x, "r_shock", "−" + ns(sd), -10)
+			x["hp"] = x["hp"] - sd; _quietHit(u, x, sd); boonFx(x, "r_shock", "−" + ns(sd), -10)
 			if x["hp"] <= 0: killUnit(x, u)
 	if t["hp"] <= 0:
 		t["killCause"] = "big"; killUnit(t, u)
@@ -4009,7 +4034,7 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 			var cf = ownerFx(by).get("chainFire")
 			for x in near:
 				if jt(x.get("dead")): continue
-				x["hp"] = x["hp"] - cb
+				x["hp"] = x["hp"] - cb; _quietHit(by, x, cb)   # issue 1481
 				if jt(cf) and not jt(x.get("isSq")):
 					x["st"]["fire"] = max(z0(x["st"].get("fire")), 2); x["st"]["fireDmg"] = max(x["st"]["fireDmg"] if jt(x["st"].get("fireDmg")) else 6, 6)
 				boonFx(x, "e_chain", "−" + ns(cb), -12)
@@ -4102,7 +4127,8 @@ func stationFire(dq) -> void:
 	ts = ts.slice(0, 2)
 	var att = {"side": "player", "dealt": 0, "kills": 0, "crit": 0, "lockOn": false, "fx": {}}
 	for t in ts:
-		var r = applyHit(att, {"crit": 0, "pierce": 0.2}, t, 12, shieldQuad(t, src))
+		var qSt = shieldQuad(t, src); var shSt = float(z0(t.get("shp")))
+		var r = applyHit(att, {"crit": 0, "pierce": 0.2}, t, 12, qSt); shieldDrained(t, shSt, qSt)   # issue 1481
 		flt(t, "Station −" + ns(r.hull + r.shield), "#7fd6ff", -30)
 		logm("Station batteries hit " + String(t["name"]) + ": " + ns(r.shield) + " shield, " + ns(r.hull) + " hull.", "p")
 		if t["hp"] <= 0 and not jt(t.get("dead")):
@@ -6469,13 +6495,29 @@ func launchHexes(u) -> Array:
 		var h = {"q": u["q"] + d[0], "r": u["r"] + d[1]}
 		if onBoard(h.q, h.r) and not blocks(terr(h.q, h.r)) and not occ.has(hkey(h.q, h.r)): o.append(h)
 	return o
+func _blinkOk(u, h) -> bool:
+	if not (h is Dictionary) or h.get("q") == null or h.get("r") == null: return false
+	for x in blinkHexes(u):
+		if x.q == h.q and x.r == h.r: return true
+	return false
+func _novaHexOk(arg) -> bool:
+	if not (arg is Dictionary) or not (arg.get("hex") is Dictionary): return false
+	var c = arg["hex"]
+	return c.get("q") != null and c.get("r") != null and onBoard(c.q, c.r)
 func useAbility(u, arg = null) -> bool:
 	var r = _useAbility_raw(u, arg); hook("ability", u); return r
 func _useAbility_raw(u, arg = null) -> bool:
 	if not inThisBattle(u) or not canAbility(u): return false
+	var a = u["ab"]
+	# issue 1481: check the target hex first, so a bad blink or nova hex is refused before it counts, spends the undo
+	# or plays the ability (twin: battle.js useAbility)
+	var blinkTo = null
+	if a == "blink":
+		blinkTo = arg["hex"] if (arg is Dictionary and jt(arg.get("hex"))) else autoBlink(u)
+		if not _blinkOk(u, blinkTo): return false
+	if a == "nova" and not _novaHexOk(arg): return false
 	undoSpend()
 	if jt(B.get("usage")) and u["side"] == "player": B["usage"]["ab"][u["ab"]] = z0(B["usage"]["ab"].get(u["ab"])) + 1
-	var a = u["ab"]
 	emit({"t": "ability", "unit": u["id"], "ab": a, "hex": arg.get("hex") if arg is Dictionary else null})
 	if a == "evasive":
 		u["evBuff"] = 25; u["mp"] = u["mp"] + 2; flt(u, "Evasive", "#9fe3ff", -24)
@@ -6508,18 +6550,12 @@ func _useAbility_raw(u, arg = null) -> bool:
 			if not jt(t.get("isSq")) and hdist(t, u) <= 4:
 				if z0(t.get("shMax")) > 0:
 					var was = float(z0(t.get("shp")))
-					t["shp"] = floor(was * 0.5); syncShields(t)
+					t["shp"] = floor(was * 0.5); syncShields(t); shieldDrained(t, was)   # issue 1481
 					if float(t["shp"]) < was: nf += 1
 		flt(u, "Ion pulse", "#9fd4ff", -24)
 		logm(String(u["name"]) + " fires an ion pulse: " + ns(nf) + " enemy ship" + ("" if nf == 1 else "s") + " lose half their shields.", pp(u))
 	if a == "blink":
-		var h = arg["hex"] if (arg is Dictionary and jt(arg.get("hex"))) else autoBlink(u)
-		var okh = false
-		if h != null:
-			for x in blinkHexes(u):
-				if x.q == h.q and x.r == h.r:
-					okh = true; break
-		if h == null or not okh: return false
+		var h = blinkTo
 		var live = liveFrom(u); var from = {"q": int(u["q"]), "r": int(u["r"])}
 		u["q"] = h.q; u["r"] = h.r; u["vis"] = null
 		emit({"t": "blink", "unit": u["id"], "from": from, "to": {"q": int(h.q), "r": int(h.r)}}); hook("blink", u)
@@ -6546,8 +6582,8 @@ func _useAbility_raw(u, arg = null) -> bool:
 			if hdist(x, c) <= 1: hitList.append(x)
 		for x in hitList:
 			var dmg = novaDamage(u, x, c)
-			var quad = shieldQuad(x, u)
-			var r = applyHit(u, {"pierce": 0.3, "crit": 5}, x, dmg, quad)
+			var quad = shieldQuad(x, u); var shN = float(z0(x.get("shp")))
+			var r = applyHit(u, {"pierce": 0.3, "crit": 5}, x, dmg, quad); shieldDrained(x, shN, quad)   # issue 1481
 			if jt(r.shield): flt(x, "−" + ns(r.shield), "#7fd6c8", -18)
 			flt(x, "−" + ns(r.hull), "#ff7a6e", 0)
 			logm("Spinal shell hits " + String(x["name"]) + " for " + ns(r.hull) + " hull" + ((" and " + ns(r.shield) + " shields") if jt(r.shield) else "") + ".", pe(x))

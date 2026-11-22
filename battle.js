@@ -114,6 +114,10 @@ function shieldCov(fac,cls){ const base=SHIELD_COV[cls]||SHIELD_COV.Dreadnought,
   return base.map((c,i)=>Math.min(SHIELD_COV_MAX,Math.max(SHIELD_COV_MIN,c+adj[i]))); }
 function syncShields(t){ if(!t||t.isSq||!(t.shMax>0)) return; const cov=t.cov||shieldCov(t.fac,t.cls);
   t.sh=cov.map((c,i)=>Math.round((t.shp||0)*Math.min(SHIELD_COV_MAX,c+((t.route&&t.route[i])?SHIELD_ROUTE_BOOST:0)))); }
+// the shared spend (R246): the struck side routes power at a loss; a pool under 1 point is empty (twin: rules.gd _spend_shield)
+function spendShield(t,quad,dmg){ const lossy=(t.route&&t.route[quad])?1+SHIELD_ROUTE_LOSS:1; t.shp=Math.max(0,(t.shp||0)-dmg*lossy); if(t.shp<1) t.shp=0; if(t.shp>0){ t.route=t.route||[0,0,0,0]; t.route[quad]=1; } syncShields(t); }
+// issue 1481: a pool drained outside a volley (storm, flare, ram, ion pulse) is empty under 1 point too (twin: rules.gd shieldDrained, which also sends the break)
+function shieldClamp(t){ if(!t||t.isSq||!(t.shMax>0)) return; if(t.shp>0&&t.shp<1){ t.shp=0; syncShields(t); } }
 function makeUnit(side, tpl, opts={}){
   const t=HULLS[tpl]; let s;
   if(opts.ship) s=derive(opts.ship);
@@ -444,7 +448,7 @@ function startSideTurn(side){
     u.hexMoved=0; if(u.fx&&u.fx.stormRegen&&u.shMax>0&&!(u.st.shieldOff>0)){ u.shp=Math.min(u.shMax,(u.shp||0)+Math.round(u.shMax*u.fx.stormRegen)); syncShields(u); }
     u.intercepts = u.weapons.some(w=>w.k==='flak')?Math.max(0,2-(u.treeFlakDown||0)):0;
     u.boarded=false; u.rammed=false; u.emerg=false; u.repel=false;
-    if(terr(u.q,u.r)==='storm'&&!u.isSq&&u.shMax>0){ u.shp=Math.max(0,(u.shp||0)-10); syncShields(u); if(typeof fxText==='function') fxText(u,'Ion storm','#9fb8ff',-24); }
+    if(terr(u.q,u.r)==='storm'&&!u.isSq&&u.shMax>0){ u.shp=Math.max(0,(u.shp||0)-10); syncShields(u); shieldClamp(u); if(typeof fxText==='function') fxText(u,'Ion storm','#9fb8ff',-24); }
     if(u.crewMax&&u.crew<=0){ u.mp=0; u.turnsLeft=0; for(const w of u.weapons) w.fired=true; }
     if(B.well&&wellTick(u,deaths)==='dead') burned=true;
   }
@@ -1220,7 +1224,7 @@ async function ramUnit(u){
   u.mp=0; u.turnsLeft=0; u.rammed=true; if(B.usage&&u.side==='player'){ B.usage.ram=(B.usage.ram||0)+1; for(const id of ['d_jugg','r_prow']) if(hasBoon(id)){ B.boonStats=B.boonStats||{}; B.boonStats[id]=(B.boonStats[id]||0)+1; } } const e=ramEstimate(u,t,info.path.length);
   if(mawPre){ u.treeMawUsed=1; treeFx(u,'mawOpens','the maw opens'); } // Grax T3b: the first ram of the burn
   if(typeof fxRam==='function') await fxRam(u,t); if(!live()||t.dead) return false;
-  const qd=shieldQuad(t,u); if(e.soak&&t.shMax>0){ t.shp=Math.max(0,(t.shp||0)-e.soak*1.5); t.route=t.route||[0,0,0,0]; t.route[qd]=1; syncShields(t); }
+  const qd=shieldQuad(t,u); if(e.soak&&t.shMax>0) spendShield(t,qd,e.soak*1.5); // issue 1481: the shared spend (R246 routing loss, a pool under 1 point is empty)
   t.hp-=e.dmg; u.dealt+=e.dmg; damageSection(t,e.sec,e.dmg,u); u.hp-=e.recoil; damageSection(u,'prow',e.recoil,t);
   if(typeof fxText==='function') fxText(t,'\u2212'+e.dmg,'#f0b35a',0); if(typeof fxText==='function') fxText(u,'\u2212'+e.recoil,'#ff7a6e',0);
   log(`${u.name} rams ${t.name} at full speed: ${e.dmg} to its ${SEC_NAME[e.sec]}, ${e.recoil} back to the ram.`, u.side==='player'?'p':'e');
@@ -2105,8 +2109,12 @@ function autoBlink(u){ const hs=blinkHexes(u), foes=alive(u.side==='player'?'ene
   return best; }
 function launchHexes(u){ const occ=occMap(); return DIRS.map(d=>({q:u.q+d[0],r:u.r+d[1]})).filter(h=>onBoard(h.q,h.r)&&!blocks(terr(h.q,h.r))&&!occ.has(hkey(h.q,h.r))); }
 async function useAbility(u,arg){
-  if(!inThisBattle(u)||!canAbility(u)) return false; undoSpend(); if(B.usage&&u.side==='player') B.usage.ab[u.ab]=(B.usage.ab[u.ab]||0)+1;
+  if(!inThisBattle(u)||!canAbility(u)) return false;
   const a=u.ab;
+  // issue 1481: check the target hex first, so a bad blink or nova hex is refused before it counts or spends the undo (twin: rules.gd _useAbility_raw)
+  let blinkTo=null; if(a==='blink'){ blinkTo=arg&&arg.hex?arg.hex:autoBlink(u); if(!blinkTo||blinkTo.q==null||blinkTo.r==null||!blinkHexes(u).some(x=>x.q===blinkTo.q&&x.r===blinkTo.r)) return false; }
+  if(a==='nova'&&!(arg&&arg.hex&&arg.hex.q!=null&&arg.hex.r!=null&&onBoard(arg.hex.q,arg.hex.r))) return false;
+  undoSpend(); if(B.usage&&u.side==='player') B.usage.ab[u.ab]=(B.usage.ab[u.ab]||0)+1;
   if(a==='evasive'){ u.evBuff=25; u.mp+=2; if(typeof fxText==='function') fxText(u,'Evasive','#9fe3ff',-24); }
   if(a==='reload'){ for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; } if(typeof fxText==='function') fxText(u,'Tubes loaded','#f0b35a',-24); }
   if(a==='focus'){ u.focus=true; if(typeof fxText==='function') fxText(u,'Focus fire','#f0b35a',-24); }
@@ -2115,8 +2123,8 @@ async function useAbility(u,arg){
   if(a==='overburn'){ u.mp+=3; u.ramBoost=1.5; if(typeof fxText==='function') fxText(u,'Overburn','#ffb35c',-24); }
   if(a==='regrow'){ const h=Math.min(u.maxHp-u.hp,Math.round(u.maxHp*.25)); u.hp+=h; if(typeof fxText==='function') fxText(u,'+'+h+' hull','#8ff0a0',-24); }
   if(a==='reclaim'){ const ts=alive(u.side).filter(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp).sort((p,q)=>p.hp/p.maxHp-q.hp/q.maxHp), t=ts[0]; if(t){ const h=Math.min(t.maxHp-t.hp,Math.round(t.maxHp*.2)); t.hp+=h; if(typeof fxText==='function') fxText(t,'+'+h+' hull','#7dff9b',-24); log(u.name+' rebuilds '+(t===u?'its own hull':t.name)+' for '+h+'.',u.side==='player'?'p':'e'); } }
-  if(a==='ionpulse'){ const foes=alive(u.side==='player'?'enemy':'player').filter(t=>!t.isSq&&hdist(t,u)<=4); let nf=0; for(const t of foes){ if(t.shMax>0){ const was=t.shp||0; t.shp=Math.floor(was*.5); syncShields(t); if(t.shp<was) nf++; } try{ if(typeof fxShield==='function') fxShield(t,-1); }catch(e){} } if(typeof fxText==='function') fxText(u,'Ion pulse','#9fd4ff',-24); log(u.name+' fires an ion pulse: '+nf+' enemy ship'+(nf===1?'':'s')+' lose half their shields.',u.side==='player'?'p':'e'); }
-  if(a==='blink'){ const h=arg&&arg.hex?arg.hex:autoBlink(u); if(!h||!blinkHexes(u).some(x=>x.q===h.q&&x.r===h.r)) return false; const live=liveFrom(u), from={q:u.q,r:u.r}; u.q=h.q; u.r=h.r; u.vis=null; try{ if(typeof animBlink==='function') await animBlink(u,from); }catch(e){} if(!live()){ u.abCd=abilityCd(u); return false; } /* B1 (B-6): a jump whose animation stalled still lands, so it still costs the cooldown */ if(typeof fxText==='function') fxText(u,'Phase jump','#9fe3ff',-24); objAfterMove(u); } // v53: hex re-checked before the jump, live check after it (the jump itself is instant, so the hex is set before animBlink draws the arrival)
+  if(a==='ionpulse'){ const foes=alive(u.side==='player'?'enemy':'player').filter(t=>!t.isSq&&hdist(t,u)<=4); let nf=0; for(const t of foes){ if(t.shMax>0){ const was=t.shp||0; t.shp=Math.floor(was*.5); syncShields(t); shieldClamp(t); if(t.shp<was) nf++; } try{ if(typeof fxShield==='function') fxShield(t,-1); }catch(e){} } if(typeof fxText==='function') fxText(u,'Ion pulse','#9fd4ff',-24); log(u.name+' fires an ion pulse: '+nf+' enemy ship'+(nf===1?'':'s')+' lose half their shields.',u.side==='player'?'p':'e'); }
+  if(a==='blink'){ const h=blinkTo; const live=liveFrom(u), from={q:u.q,r:u.r}; u.q=h.q; u.r=h.r; u.vis=null; try{ if(typeof animBlink==='function') await animBlink(u,from); }catch(e){} if(!live()){ u.abCd=abilityCd(u); return false; } /* B1 (B-6): a jump whose animation stalled still lands, so it still costs the cooldown */ if(typeof fxText==='function') fxText(u,'Phase jump','#9fe3ff',-24); objAfterMove(u); } // v53: hex re-checked before the jump, live check after it (the jump itself is instant, so the hex is set before animBlink draws the arrival)
   if(a==='surge'){ u.shp=u.shMax; syncShields(u); if(u.st.shieldOff<99) u.st.shieldOff=0; if(typeof fxShield==='function') fxShield(u,-1); if(typeof fxText==='function') fxText(u,'Shields surge','#7fd6c8',-24); }
   if(a==='launch'){
     const h=arg&&arg.hex ? arg.hex : pick(launchHexes(u));

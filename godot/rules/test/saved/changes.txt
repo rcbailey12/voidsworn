@@ -1,10 +1,130 @@
-Saved manifest before: 460877ce1ff226e76c45e6e66880ad644da7bc02c79b4a23f5717958e4f4fa86
-Saved manifest after: 681fd93f2ff5e3a47fc318e18399be654f54f6babf88483a8afe0491d147d7fb
+Saved manifest before: b575700885f19de590ee7461a881acf4b3031f10370c3bfe79afbb457e111073
+Saved manifest after: 6f976398fc4b6e04bb56d15aa18c2f66105f6250b1ccd085bc73813c9c5e45d0
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t_ecl_arcswarm
-  turn 46, round 2, after fire x06; unit none (battle state)
-  state.b.log[27].m: "Ninth Winter fires Corona arc at Hullbreaker raider: 13 to prow shields, 50 hull." -> "Ninth Winter fires Corona arc at Hullbreaker raider: 13 to prow shields, 42 hull."
-  later changed records: 14; total records: 61 -> 61
-FAIL: saved Godot results; 288 battles checked, 1 changed, 0 other files changed, 1 failures; 10.643 s
+FAIL battle s12
+  turn 44, round 1, after fire x013; unit x08 (player warden)
+  state.units[3].route[0]: 1 -> 0
+  later changed records: 1; total records: 176 -> 176
+FAIL battle s17
+  turn 73, round 3, after end activation; unit x08 (enemy c_reaver)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 11; total records: 98 -> 98
+FAIL battle s18
+  turn 56, round 2, after end activation; unit x010 (enemy h_interdictor)
+  state.units[5].route[0]: 1 -> 0
+  later changed records: 4; total records: 274 -> 274
+FAIL battle s21
+  turn 76, round 3, after fire x05; unit x012 (enemy h_picket)
+  state.units[7].route[0]: 1 -> 0
+  later changed records: 7; total records: 183 -> 183
+FAIL battle s23
+  turn 622, round 10, after fire x013; unit x025 (enemy h_interdictor)
+  state.units[14].route[3]: 1 -> 0
+  later changed records: 20; total records: 656 -> 656
+FAIL battle s25
+  turn 229, round 4, after order x011; unit x09 (player c_reaver)
+  state.units[3].route[1]: 1 -> 0
+  later changed records: 22; total records: 334 -> 334
+FAIL battle s30
+  turn 106, round 2, after fire x015; unit x010 (player warden)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 204; total records: 311 -> 311
+FAIL battle s36
+  turn 156, round 4, after fire x08; unit x020 (enemy i_song)
+  state.units[9].route[0]: 1 -> 0
+  later changed records: 23; total records: 206 -> 206
+FAIL battle s37
+  turn 179, round 5, after fire x07; unit x09 (enemy harrow)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 116; total records: 296 -> 296
+FAIL battle s49
+  turn 26, round 2, after fire x03; unit x05 (enemy h_picket)
+  state.units[2].route[0]: 1 -> 0
+  later changed records: 165; total records: 197 -> 197
+FAIL battle t_flagshipLedger
+  turn 23, round 2, after fire x04; unit x05 (enemy h_interdictor)
+  state.units[2].route[0]: 1 -> 0
+  later changed records: 2; total records: 34 -> 34
+FAIL battle t_debthunts
+  turn 41, round 4, after fire x02; unit x03 (enemy h_interdictor)
+  state.units[1].route[0]: 1 -> 0
+  later changed records: 5; total records: 53 -> 53
+FAIL battle t_oathwings
+  turn 55, round 2, after activation x06; unit x03 (player reliquary)
+  state.units[0].route[0]: 1 -> 0
+  later changed records: 5; total records: 72 -> 72
+FAIL battle t_holdcounted
+  turn 23, round 2, after fire x04; unit x05 (enemy h_interdictor)
+  state.units[2].route[0]: 1 -> 0
+  later changed records: 2; total records: 40 -> 40
+FAIL battle t_oathstillness
+  turn 32, round 3, after fire x03; unit x05 (enemy h_interdictor)
+  state.units[2].route[0]: 1 -> 0
+  later changed records: 8; total records: 41 -> 41
+FAIL battle t_ecl_uncopiedtarget
+  turn 52, round 3, after fire x05; unit x09 (enemy h_picket)
+  state.units[5].route[0]: 1 -> 0
+  later changed records: 16; total records: 69 -> 69
+FAIL battle t_throatspits
+  turn 135, round 9, after end activation; unit x03 (enemy h_dominion)
+  state.units[1].route[3]: 1 -> 0
+  later changed records: 5; total records: 141 -> 141
+FAIL battle t_hb_runbigger
+  turn 24, round 2, after fire x04; unit x07 (enemy h_interdictor)
+  state.units[3].route[0]: 1 -> 0
+  later changed records: 9; total records: 34 -> 34
+FAIL battle t_hb_rushrail
+  turn 26, round 2, after fire x04; unit x08 (enemy h_picket)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 53; total records: 80 -> 80
+FAIL battle t_hb_mawopens
+  turn 24, round 2, after fire x04; unit x07 (enemy h_picket)
+  state.units[3].route[0]: 1 -> 0
+  later changed records: 29; total records: 54 -> 54
+FAIL battle t_hb_knifeback
+  turn 24, round 2, after fire x04; unit x07 (enemy h_interdictor)
+  state.units[3].route[0]: 1 -> 0
+  later changed records: 15; total records: 40 -> 40
+FAIL battle t_hb_smilecut
+  turn 26, round 2, after fire x04; unit x07 (enemy h_interdictor)
+  state.units[3].route[0]: 1 -> 0
+  later changed records: 10; total records: 37 -> 37
+FAIL battle t_hb_preyscent
+  turn 43, round 3, after fire x04; unit x08 (enemy h_picket)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 11; total records: 55 -> 55
+FAIL battle t_hb_trophystandard
+  turn 14, round 2, after fire x02; unit x03 (enemy h_picket)
+  state.units[1].route[0]: 1 -> 0
+  later changed records: 11; total records: 35 -> 35
+FAIL battle t7a_grandledger
+  turn 24, round 2, after fire x04; unit x06 (enemy h_picket)
+  state.units[3].route[0]: 1 -> 0
+  later changed records: 6; total records: 57 -> 57
+FAIL battle t7a_screensshift
+  turn 32, round 3, after fire x03; unit x05 (enemy h_interdictor)
+  state.units[2].route[0]: 1 -> 0
+  later changed records: 9; total records: 47 -> 47
+FAIL battle t7b_ecl_formation_b
+  turn 57, round 3, after fire x06; unit x011 (enemy h_picket)
+  state.units[6].route[0]: 1 -> 0
+  later changed records: 30; total records: 88 -> 88
+FAIL battle t7b_ecl_archive
+  turn 36, round 2, after death x06; unit x09 (enemy h_picket)
+  state.units[5].route[0]: 1 -> 0
+  later changed records: 4; total records: 107 -> 107
+FAIL battle t529_roles_change
+  turn 27, round 2, after fire x04; unit x08 (enemy h_picket)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 61; total records: 89 -> 89
+FAIL battle t529_scent
+  turn 39, round 2, after fire x06; unit x08 (enemy h_picket)
+  state.units[4].route[0]: 1 -> 0
+  later changed records: 7; total records: 53 -> 53
+FAIL battle s983_station_plain
+  turn 12, round 1, after fire x05; unit x09 (enemy c_raider)
+  state.units[5].route[0]: 1 -> 0
+  later changed records: 18; total records: 87 -> 87
+FAIL: saved Godot results; 288 battles checked, 31 changed, 0 other files changed, 31 failures; 13.314 s

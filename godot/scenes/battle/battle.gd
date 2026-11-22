@@ -1480,12 +1480,14 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			music_hits += 1
 			if e.get("target") != null:
 				_impact(e["target"], e, Color(1, 0.6, 0.3))
-				_float_hit(e["target"], float(e["shield"]), float(e["hull"]), e["crit"])
+				if e.get("float", true):   # issue 1481: counter-fire, ram shockwave and reactor hits already float their boon number
+					_float_hit(e["target"], float(e["shield"]), float(e["hull"]), e["crit"])
 			await wait(160.0)
 		"shield_down":
 			var d: Dictionary = disp.get(e["unit"], {})
-			if d.has("sh"):
-				d["sh"][int(e["quad"])] = 0
+			if d.get("sh") is Array:
+				for qi in range((d["sh"] as Array).size()):
+					d["sh"][qi] = 0   # R246: an empty pool drops every side at once (issue 1481)
 			_float(e["unit"], "Shields down", Color("#9fe2ff"), -40)
 			sfx.shield(_pos(e["unit"]), true)
 			# issue 1239 (F2.5): a shield that drops with no volley to carry it (a storm, a special) still plays its failure
@@ -1557,6 +1559,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			var d: Dictionary = disp.get(e["target"], {})
 			if d.has("hp"):
 				d["hp"] = float(d["hp"]) - float(e["dmg"])
+			if e.get("sh") is Array and d.has("sh"):
+				d["sh"] = (e["sh"] as Array).duplicate()   # issue 1481: the ram's soak shows on the shield readout too
 			var d2: Dictionary = disp.get(e["unit"], {})
 			if d2.has("hp"):
 				d2["hp"] = float(d2["hp"]) - float(e["recoil"])
@@ -2378,8 +2382,9 @@ func _shield_downs(land: Dictionary) -> void:
 	land["downs_played"] = true
 	for g in land["downs"]:
 		var d: Dictionary = disp.get(g["unit"], {})
-		if d.has("sh"):
-			d["sh"][int(g["quad"])] = 0
+		if d.get("sh") is Array:
+			for qi in range((d["sh"] as Array).size()):
+				d["sh"][qi] = 0   # R246: an empty pool drops every side at once (issue 1481)
 		var sf = land.get("sh_f")
 		if str(g["unit"]) == str(land.get("t_id", "")) and sf is Dictionary and is_instance_valid((sf as Dictionary)["lbl"]):
 			# one label, two lines: "Shields down" over the volley's shield count, never a second label on top of it
@@ -2632,6 +2637,19 @@ func _play_death(e: Dictionary) -> void:
 
 # ---------------------------------------------------------------- end of battle
 
+# The end banner's [ships of yours lost, enemy ships destroyed]. Issue 1481: wings are not ships (the campaign card
+# skips them too), and a ship that fled is not lost.
+static func end_tally(view: Dictionary) -> Array:
+	var lost := 0
+	var killed := 0
+	for u in view.get("units", []):
+		if u["dead"] and not u["fled"] and not u.get("squadron", false):
+			if u["side"] == "player":
+				lost += 1
+			else:
+				killed += 1
+	return [lost, killed]
+
 # One end sound (issue 1448): the music's fanfare, or the synth sting only when the music cannot play one (music off,
 # volume at zero or no track). Both used to start in the same moment. Returns which one played: "music" or "sting".
 func _end_sound(win: bool) -> String:
@@ -2652,14 +2670,9 @@ func _end_flow() -> void:
 		_end_sound(win)
 	hud.banner(heading, Color("#ff8a3a") if win else Color("#ff8a72"), 1.6)
 	await get_tree().create_timer(1.2).timeout
-	var lost := 0
-	var killed := 0
-	for u in V["units"]:
-		if u["dead"] and not u["fled"]:
-			if u["side"] == "player":
-				lost += 1
-			else:
-				killed += 1
+	var tally := end_tally(V)
+	var lost: int = tally[0]
+	var killed: int = tally[1]
 	result = {"result": outcome, "rounds": int(V["round"]), "killed": killed, "lost": lost, "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V,
 		"pipeline_compiles": _pipe_count() - pipe_base if pipe_base >= 0 else -1, "pace": pace_stats()}
 	var body := "%d enemy ship%s destroyed, %d of yours lost, in %d round%s." % [killed, "" if killed == 1 else "s", lost, int(V["round"]), "" if int(V["round"]) == 1 else "s"]
@@ -4566,7 +4579,7 @@ func _on_action(name: String, arg) -> void:
 			var rep := {"version": ProjectSettings.get_setting("application/config/version", "dev"), "round": V.get("round"), "phase": api.phase if api != null else "",
 				"seed": api.world_info().get("seed") if api != null and api.has_method("world_info") else null, "errors": errors, "log": lines.slice(maxi(0, lines.size() - 60))}
 			DisplayServer.clipboard_set(JSON.stringify(rep, "  "))
-			hud.toast("Problem report copied. Paste it into a message to Ryan's helpers.")
+			hud.toast("Problem report copied to the clipboard. Paste it wherever you report bugs.")
 		"opt":
 			_toggle_opt(str(arg))
 		"to_title":
