@@ -418,9 +418,10 @@ CELLS_PER_LENGTH = 109.0         # LOOK mosaic cell_scale (4.2 per world unit) o
 # Strike craft (issue 1373, Nov 21): at 109 cells per length a 1.6-unit craft's cells fall to a few texels of its 1024 atlas,
 # so the W4b bomber's wide lobes read as pastel noise, not stained glass. Craft take fewer, bigger cells (scene length <= 1.6).
 CRAFT_CELLS_PER_LENGTH = 45.0
-# Ryan Nov 21 6:18 PM CT (issue 1373, GV2/GW4 in game): "a little more saturation ... just a bit, nothing crazy". Craft only:
-# the small marble reads pale at game range, so the stone colours get a gentle push. Capitals keep 1.0.
-CRAFT_SATURATION = 1.25
+# Ryan Nov 21 6:18 PM CT (issue 1373, GV2/GW4 in game): "a little more saturation ... just a bit, nothing crazy"; 8:29 PM CT:
+# "Maybe do the same on the big ships too". Every Glasswright hull, craft and capitals alike: the marble reads pale at game
+# range, so the stone colours get a gentle push (once, in the shared mosaic).
+SATURATION = 1.25
 
 
 def cells_per_length():
@@ -506,8 +507,8 @@ def surface_layers(c, zone, tiles):
         edges.inputs['Scale'].default_value = cells_per_length()
         nt.links.new(c.pos, cells.inputs['Vector']); nt.links.new(c.pos, edges.inputs['Vector'])
         tint = tile_swap(nt, tint, cells.outputs['Color'], glow)
-        if cells_per_length() == CRAFT_CELLS_PER_LENGTH and CRAFT_SATURATION != 1.0:
-            hs = node(nt, 'ShaderNodeHueSaturation'); hs.inputs['Saturation'].default_value = CRAFT_SATURATION
+        if SATURATION != 1.0:
+            hs = node(nt, 'ShaderNodeHueSaturation'); hs.inputs['Saturation'].default_value = SATURATION
             nt.links.new(tint, hs.inputs['Color']); tint = hs.outputs['Color']
         sep = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(cells.outputs['Color'], sep.inputs[0])
         bright = node(nt, 'ShaderNodeMapRange'); nt.links.new(sep.outputs[0], bright.inputs[0])
