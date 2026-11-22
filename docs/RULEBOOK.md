@@ -671,6 +671,20 @@ gun reads as sliced, a torn plate as blown apart (R186, "blown apart, never slic
 of the broken A16 as big flat squares (Ryan, Nov 12, issue 600). Set: Board, Nov 12 (R226; insides added from Ryan's eye,
 issue 600). Ids: ships-2c.
 
+5.18 **The ship detail standard: textures by size, AO and LODs on import, one authored look, full hard points.** For every
+ship from now on: (1) stage 7 exports maps by the ship's length band, flagships and battleships (length 21 and up) at 4096
+(stage 5 already bakes 4096), cruisers, carriers, destroyers and frigates (6.5 to 16.5) at 2048, strike craft (1.6) at 1024
+(issue 1680); (2) every hull gets a calibrated `ao_light_affect` (never Godot's default 0.0; per faction in look.gd READ, 0.35
+to 0.55, Glasswrights 0.2) and automatic Godot mesh LODs on import (issues 1678, 1679); (3) each faction's paint stack moves
+to `authored_look = 1`, calibrated to the one battle light rig, the next time that faction is baked or repainted, and its
+look.gd READ albedo lift (Navy 0.4x, Eclipse 2.2x and the rest) retires with it; (4) every new destroyer and larger carries
+`hp_rcs` and `hp_board` hard points, plus articulated turrets where the faction uses them. Comparison sheets go on Ryan's Pick
+Sheet; GPU captures only after green checks and Artoo (3.12). Why: hero hulls were downsampled to 2048 while fighters carried
+39 MB of maps, baked seam AO vanished under the key light, and each faction leaned on a different after-the-fact lift
+(Ryan's Ship Graphical Detail and Consistency Upgrade Plan). Set: Ryan, Nov 22 2026 (R411). Replaces the Nov 19 park of
+far-away LODs until a speed check (R328 notes, issue 1152) and, for the game, issue 592's "the game loads no LOD chain":
+stage 6's hand chain stays an analysis product, the game makes its own LODs at import.
+
 ## 6. Battle look
 
 6.1 **Judge everything at the battle camera (camera 170, the radius Ryan plays at) at true pixel size, before any close-up.**
