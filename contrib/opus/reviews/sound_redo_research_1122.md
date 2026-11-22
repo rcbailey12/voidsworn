@@ -56,7 +56,7 @@ so using it changes that line. The pick stays free unless the listening page sho
 | Stable Audio 3 Medium (local music) | Free | Same. Up to about 6 min, inpainting, continuation. | Unproven. | Same. |
 | ACE-Step 1.5 (local music) | Free | MIT; model card says outputs may be used commercially. Windows portable package. | Unproven. Under 4 GB VRAM. | Same. |
 | ElevenLabs Sound Effects | Starter $6/mo 150 generations; Creator $22/mo 605; extra $0.03 to $0.04 | Paid plans "Commercial"; Free is personal use only. Max 30 s, WAV 48 kHz on paid. Rights after cancel not read (icon row). | Unproven on ours. | Sign up, API key. |
-| ElevenLabs Music | Starter 11 min/mo (no streaming); Creator $22/mo about 33 min, 2 and 4 stems | Music Terms (Oct 9 2026): self-serve plans allow games except "Studio Games"; an Indie Game is under $500k game revenue and the studio under $1M a year. No attribution on paid plans. Output stays under the plan it was made on after a downgrade. | Stems are the one thing nobody else gives. | Same. |
+| ElevenLabs Music | Starter about 33 min/mo (no streaming); Creator $22/mo about 134 min, 2 and 4 stems (pricing page; the Music Terms table shows lower limits, conflict). One 121k credit pool on Creator is shared with sound effects (605 sounds = 121k / 200). | Music Terms (Oct 9 2026): self-serve plans allow games except "Studio Games"; an Indie Game is under $500k game revenue and the studio under $1M a year. No attribution on paid plans. Output stays under the plan it was made on after a downgrade. | Stems are the one thing nobody else gives. | Same. |
 | Meta AudioCraft, MMAudio | Free | No: weights CC BY-NC 4.0. | n/a | n/a |
 | BBC Sound Effects | n/a | No (Muse study, Nov 10). | n/a | n/a |
 
