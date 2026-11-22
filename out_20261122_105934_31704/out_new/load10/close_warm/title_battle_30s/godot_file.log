@@ -1,0 +1,59 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 38 ms
+[sfx] 71 cues, 67 clip sets, loaded in 265 ms
+[load] battle scene ready in 940 ms
+[world] baked c0de1c31b4a1093f0d55e70b136b3c499e5568e48f7d31786706c49937f2d084 4096x2048 in 414 ms (worker; stages ms { "began": 5004, "device": 168, "spirv": 74, "pipeline": 1, "dispatch": 107, "worst_strip": 4, "readback": 37, "save": "deferred (a load is running)", "mips": 16 }; queued at 5003, worker from 5003, handed back at 5417 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.076, target 4.4; visual tuning (R191)
+[world] baked a32b6eb8a143fa7eef2e11fdec96a73e2f717487dd3c4a0c6148cfbdc602328c 4096x2048 in 648 ms (worker; stages ms { "began": 5419, "device": 207, "spirv": 4, "pipeline": 1, "dispatch": 17, "worst_strip": 2, "readback": 37, "save": "deferred (a load is running)", "mips": 14 }; queued at 5183, worker from 5418, handed back at 5831 ms)
+[world] baked bcf5fdfef8c6c96e2a68f93eb8c8d38a8a7b713a9a8d0b4e1b51d5e793df0d01 4096x2048 in 432 ms (worker; stages ms { "began": 5883, "device": 216, "spirv": 3, "pipeline": 1, "dispatch": 15, "worst_strip": 2, "readback": 45, "save": "deferred (a load is running)", "mips": 15 }; queued at 5834, worker from 5882, handed back at 6266 ms)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[load] 8 ships built in 1682 ms over 25 frames: longest stretch 211 ms; ship setup 274 ms (worst 95 ms, V16_37: inst 0, look_new_mats 1, look_assign 73, look_worst_assign 15, look_counts 17, look 75, look_touch 0, fit 0, rest 14), effects registration 626 ms (worst 193 ms, C14s_23: analyse 191, damage_root 0, engines 1, shield 0, collider 1), hull geometry 592 ms (worst 210 ms, C14s_23), waiting on hull files and worker instances 2 ms; 8 hulls instanced on workers
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[world] saved c0de1c31b4a1093f0d55e70b136b3c499e5568e48f7d31786706c49937f2d084 later (stages ms { "save_began": 23572, "save": 3467, "prune": 13 })
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[world] saved a32b6eb8a143fa7eef2e11fdec96a73e2f717487dd3c4a0c6148cfbdc602328c later (stages ms { "save_began": 27063, "save": 2617, "prune": 13 })
+[main] leaving the battle for the title at 30972 ms
+[attach] battle x04 V16_37: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x07 C14s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x08 C14s_23: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[attach] battle x09 C14s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x010 C13s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x011 C13s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[world] saved bcf5fdfef8c6c96e2a68f93eb8c8d38a8a7b713a9a8d0b4e1b51d5e793df0d01 later (stages ms { "save_began": 29709, "save": 1261, "prune": 13 })
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[load] battle scene ready in 89 ms (title backdrop)
+[main] battle to title: leave frame 98.4 ms, first title frame 97.9 ms after the leave
+[main] battle to title parts (ms): battle_out 34.9, title_build 32.3, battle_free 29.4, battle exit_tree 1.4, pre@68.1, draw@97.9, step@98.4, draw@122.3, step@122.4, draw@146.4, step@146.5, draw@146.7, step@146.8, draw@147.2
+[main] battle to title: worst frame in the first second 215.3 ms
+[world] baked f3a1d546f935716713af58dc977c4f4d772b11bfba3259ec1aa0e36d91525e10 4096x2048 in 443 ms (worker; stages ms { "began": 32998, "device": 281, "spirv": 2, "pipeline": 1, "dispatch": 89, "worst_strip": 5, "readback": 47, "save": "deferred (a load is running)", "mips": 13 }; queued at 32997, worker from 32997, handed back at 33441 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.541, target 4.4; visual tuning (R191)
+[world] baked 472e1416b43b281616b64a750dfcb21be7ec8cdc539c1ca80d501057a6a58b0d 4096x2048 in 700 ms (worker; stages ms { "began": 33442, "device": 193, "spirv": 4, "pipeline": 2, "dispatch": 17, "worst_strip": 2, "readback": 37, "save": "deferred (a load is running)", "mips": 13 }; queued at 33024, worker from 33441, handed back at 33724 ms)
+[world] baked 9a7666551ea4cbe0b33099f8f815ee2e17bb811983311eb4406bc4ea370f4b49 1024x512 in 969 ms (worker; stages ms { "began": 33725, "device": 206, "spirv": 4, "pipeline": 1, "dispatch": 10, "worst_strip": 2, "readback": 38, "save": "deferred (a load is running)", "mips": 1 }; queued at 33024, worker from 33725, handed back at 33993 ms)
+[world] baked f9137021ae0e9dfdd9af1459c45e719aa1df55af386ffbb77f3b59b1a1f09f1c 1024x512 in 1241 ms (worker; stages ms { "began": 33995, "device": 163, "spirv": 4, "pipeline": 1, "dispatch": 9, "worst_strip": 2, "readback": 26, "save": "deferred (a load is running)", "mips": 1 }; queued at 33024, worker from 33994, handed back at 34265 ms)
+[world] baked dc394eba5a43a7a80c8ec1c5746a4000d49f11ca6583b0fa0cf9819df63bf72f 4096x2048 in 646 ms (worker; stages ms { "began": 34267, "device": 211, "spirv": 3, "pipeline": 1, "dispatch": 15, "worst_strip": 2, "readback": 43, "save": "deferred (a load is running)", "mips": 13 }; queued at 33932, worker from 34266, handed back at 34578 ms)
+[world] baked feb1cdbc768926cf95ec705780a02f99b016708e9423c3c93fdbefd2815f50f2 1024x512 in 841 ms (worker; stages ms { "began": 34579, "device": 153, "spirv": 4, "pipeline": 1, "dispatch": 9, "worst_strip": 2, "readback": 26, "save": "deferred (a load is running)", "mips": 0 }; queued at 33996, worker from 34579, handed back at 34837 ms)
+[world] baked 1280898f02613fd9d428e65ce38598817250917cd916599ddd754cd3683e1636 1024x512 in 670 ms (worker; stages ms { "began": 34838, "device": 213, "spirv": 4, "pipeline": 1, "dispatch": 4, "worst_strip": 2, "readback": 30, "save": "deferred (a load is running)", "mips": 0 }; queued at 34479, worker from 34838, handed back at 35149 ms)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on D9_23: arc -180 to 180, trains all round
+[load] 8 ships built in 2035 ms over 25 frames (title backdrop): longest stretch 113 ms; ship setup 798 ms (worst 527 ms, V16_37: inst 0, look_new_mats 1, look_assign 470, look_worst_assign 97, look_counts 17, look 472, look_touch 0, fit 0, rest 27), effects registration 250 ms (worst 60 ms, V14_23: analyse 58, damage_root 0, engines 0, shield 0, collider 1), hull geometry 243 ms (worst 86 ms, V16_37), waiting on hull files and worker instances 4 ms; 8 hulls instanced on workers
+[main] quit (window) at 36676 ms
+[main] frames before the close, oldest first: 6 ms (backdrop settle; draw 6 ms), 6 ms (backdrop settle; draw 6 ms), 6 ms (backdrop settle; draw 6 ms), 6 ms (backdrop settle; draw 6 ms), 6 ms (backdrop settle; draw 6 ms), 6 ms (backdrop settle; draw 6 ms), 6 ms (backdrop settle; draw 6 ms), 118 ms (backdrop settle; draw 6 ms), 34 ms so far (this frame; draw 33 ms)
+[main] loading at the close: backdrop settle
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)
+[main] quit stages: scenes freed + 2 frames 88 ms, statics and fx drain 3574 ms, engine exit from 40338 ms

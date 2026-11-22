@@ -1,0 +1,33 @@
+{
+ "acts": [
+  {
+   "acts": [],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 6916,
+   "end": "battle_end",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Ashen Vigil",
+   "plans": 0,
+   "r": 1,
+   "ship": "x04",
+   "targets": 0,
+   "think_ms": 6916,
+   "tpl": "penitent"
+  }
+ ],
+ "battle": {
+  "campaign": false,
+  "enemy": "corsair",
+  "obj": "rout",
+  "seed": 764534
+ },
+ "enemy_s": {},
+ "hurries": 0,
+ "result": "quit",
+ "rounds": 1,
+ "secs": 26.6,
+ "tips": [],
+ "v": 1
+}

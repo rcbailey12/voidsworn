@@ -1,0 +1,23 @@
+{
+  "ai": "standard",
+  "cine": "key",
+  "follow": true,
+  "fps_cap": 0.0,
+  "fullscreen": true,
+  "movement": "cinematic",
+  "music": true,
+  "music_volume": 0.7,
+  "nebula_wake_on": true,
+  "quality": "max",
+  "reduce_flashing": false,
+  "reduce_motion": false,
+  "render_scale": 1.0,
+  "shake": 1.0,
+  "sound": true,
+  "speed": 1.0,
+  "taa": false,
+  "tips": true,
+  "ui_scale": 1.0,
+  "volume": 0.25,
+  "vsync": true
+}

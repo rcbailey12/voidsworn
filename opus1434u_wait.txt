@@ -1,0 +1,10 @@
+OPUS1434U_WAIT.bat waiting for OPUS1633_PROBE2 exit in opus1633b_wait.txt Sun 11/22/2026  7:45:43.26 
+swapped out while only waiting 08:24:38: replaced by OPUS1434U_WAIT2.bat (now waits for OPUS1589C exit; Board Nov 22 14:27 UTC)
+OPUS1434U_WAIT2.bat waiting for OPUS1589C exit in opus1589c_wait.txt Sun 11/22/2026  8:24:39.07 
+swapped out while only waiting 08:25:23: replaced by OPUS1434U_WAIT3.bat (back to OPUS1633_PROBE2 exit; Board Nov 22 14:30 UTC)
+OPUS1434U_WAIT3.bat waiting for OPUS1633_PROBE2 exit in opus1633b_wait.txt Sun 11/22/2026  8:25:23.49 
+OPUS1434_LOAD20 start 10:59:33.70 
+OPUS1434_LOAD20 exit 1 at 11:24:09.18 
+run folder out_20261122_105934_31704
+result: done FAILED: new load10, new load10: a graded item failed, see load10\load10_result.txt
+all done Sun 11/22/2026 11:24:09.58 

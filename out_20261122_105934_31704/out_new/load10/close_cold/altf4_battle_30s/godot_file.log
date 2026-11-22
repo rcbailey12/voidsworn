@@ -1,0 +1,35 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 33 ms
+[sfx] 71 cues, 67 clip sets, loaded in 298 ms
+[load] battle scene ready in 972 ms
+[world] baked 08eaa4428a2aa9af596c3195233cb942b07560d818741b5b92bf51840f4cadb7 4096x2048 in 398 ms (worker; stages ms { "began": 6290, "device": 187, "spirv": 3, "pipeline": 1, "dispatch": 130, "worst_strip": 28, "readback": 37, "save": "deferred (a load is running)", "mips": 14 }; queued at 6289, worker from 6289, handed back at 6687 ms)
+[world] baked eb6c96aca37975c7b4e2a5c202cb58dbd7b06d4d629c1a638cc705e70dfc4428 4096x2048 in 541 ms (worker; stages ms { "began": 6689, "device": 237, "spirv": 3, "pipeline": 1, "dispatch": 23, "worst_strip": 5, "readback": 37, "save": "deferred (a load is running)", "mips": 14 }; queued at 6489, worker from 6688, handed back at 7030 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.623, target 4.4; visual tuning (R191)
+[world] baked 6c3464299a7f1cf8d9dca6e704788800986754ccd0a77f4ee488446c8941614d 1024x512 in 946 ms (worker; stages ms { "began": 7031, "device": 209, "spirv": 6, "pipeline": 2, "dispatch": 7, "worst_strip": 1, "readback": 48, "save": "deferred (a load is running)", "mips": 0 }; queued at 6492, worker from 7030, handed back at 7438 ms)
+[world] baked eee1d6bc1061e4bcc0484b5fb3e315ebdadcbd131c9cd83022545784df3e5c2c 1024x512 in 1213 ms (worker; stages ms { "began": 7439, "device": 202, "spirv": 4, "pipeline": 1, "dispatch": 6, "worst_strip": 1, "readback": 29, "save": "deferred (a load is running)", "mips": 1 }; queued at 6493, worker from 7438, handed back at 7706 ms)
+[world] baked 3f95bad8eb773257de391dcb586f2202793982579aef1c9c37204e61982cd99b 1024x512 in 1576 ms (worker; stages ms { "began": 7707, "device": 213, "spirv": 3, "pipeline": 1, "dispatch": 9, "worst_strip": 2, "readback": 36, "save": "deferred (a load is running)", "mips": 0 }; queued at 6493, worker from 7707, handed back at 8069 ms)
+[world] baked b0b3ae58841240c5cb51c289a005a41f23a1c98a15b311e72740dae5a3c1d028 4096x2048 in 1567 ms (worker; stages ms { "began": 8070, "device": 164, "spirv": 7, "pipeline": 2, "dispatch": 16, "worst_strip": 2, "readback": 88, "save": "deferred (a load is running)", "mips": 19 }; queued at 7175, worker from 8070, handed back at 8742 ms)
+[world] baked 7b95dc10175c431059de75d912c39babbdef0ab6f799405198de8111440bb168 1024x512 in 1368 ms (worker; stages ms { "began": 8743, "device": 180, "spirv": 4, "pipeline": 2, "dispatch": 5, "worst_strip": 1, "readback": 28, "save": "deferred (a load is running)", "mips": 1 }; queued at 7646, worker from 8742, handed back at 9014 ms)
+[world] baked aaf6d4401421ab45c79cc2691edcf4a264c22a063041860618fc34da14dcde1c 1024x512 in 1439 ms (worker; stages ms { "began": 9016, "device": 233, "spirv": 9, "pipeline": 3, "dispatch": 5, "worst_strip": 2, "readback": 33, "save": "deferred (a load is running)", "mips": 1 }; queued at 7925, worker from 9015, handed back at 9364 ms)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[world] baked 67f5dd9b1082eaebbf0f9def5516a0217b7fd1e96bad4f63d26a1f476697e1db 1024x512 in 1391 ms (worker; stages ms { "began": 9366, "device": 192, "spirv": 3, "pipeline": 1, "dispatch": 8, "worst_strip": 1, "readback": 32, "save": "deferred (a load is running)", "mips": 1 }; queued at 8253, worker from 9365, handed back at 9644 ms)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (P1) on C15s_23: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_1 (P2) on C15s_23: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (S1) on C15s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_3 (S2) on C15s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_4 (T1) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_5 (T2) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[load] 7 ships built in 2908 ms over 25 frames: longest stretch 251 ms; ship setup 277 ms (worst 54 ms, C14s_23: inst 0, look_new_mats 1, look_assign 52, look_worst_assign 22, look_counts 13, look 54, look_touch 0, fit 0, rest 0), effects registration 704 ms (worst 211 ms, C14s_23: analyse 208, damage_root 0, engines 1, shield 0, collider 1), hull geometry 730 ms (worst 250 ms, C14s_23), waiting on hull files and worker instances 3 ms; 7 hulls instanced on workers
+[main] quit (window) at 30879 ms
+[main] frames before the close, oldest first: 6 ms (-; draw 6 ms), 6 ms (-; draw 6 ms), 7 ms (-; draw 6 ms), 6 ms (-; draw 6 ms), 6 ms (-; draw 6 ms), 6 ms (-; draw 6 ms), 6 ms (-; draw 6 ms), 6 ms (-; draw 6 ms), 79 ms so far (this frame; draw 75 ms)
+[main] loading at the close: nothing
+[attach] battle x05 V15_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[main] quit stages: scenes freed + 2 frames 124 ms, statics and fx drain 2153 ms, engine exit from 33156 ms
