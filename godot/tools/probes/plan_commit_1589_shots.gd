@@ -180,13 +180,16 @@ func _plan_and_commit() -> void:
 	await create_timer(0.5).timeout
 	_tag("PLN-1589", "steps 1 Backspace: the second pick is taken back (%d left)" % b.aims.size())
 	steps.append(await _grab())
-	var keep = b.plan
+	var f_keep := int(b.plan.f)
 	b._rotate(1)
+	if b.plan == null or int(b.plan.f) == f_keep:
+		_fail("E did not turn the ghost"); return
 	await create_timer(0.6).timeout
 	_tag("PLN-1589", "steps 2 E: the ghost turns")
 	steps.append(await _grab())
-	if b.plan != keep:
-		b._on_key(KEY_BACKSPACE)
+	b._on_key(KEY_BACKSPACE)
+	if b.plan == null or int(b.plan.f) != f_keep:
+		_fail("Backspace did not turn the ghost back"); return
 	await create_timer(0.6).timeout
 	_tag("PLN-1589", "steps 3 Backspace: the turn is taken back")
 	steps.append(await _grab())

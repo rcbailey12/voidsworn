@@ -46,6 +46,11 @@ func _enemies() -> Array:
 	return out
 
 
+func _click_unit(id: String) -> void:
+	var u: Dictionary = b.VU[id]
+	_click_hex(int(u["q"]), int(u["r"]))
+
+
 func _click_hex(q: int, r: int) -> void:
 	b.hover = Vector2i(q, r)
 	b._on_click()
@@ -79,9 +84,11 @@ func _run() -> void:
 	var d1: Array = R.DIRS[(f + 1) % 6]
 	var spots := [Vector2i(int(me["q"]) + d0[0] * 4, int(me["r"]) + d0[1] * 4),
 		Vector2i(int(me["q"]) + d0[0] * 4 + d1[0] * 2, int(me["r"]) + d0[1] * 4 + d1[1] * 2)]
-	for i in mini(2, foes.size()):
-		foes[i]["q"] = spots[i].x
-		foes[i]["r"] = spots[i].y
+	spots.append(Vector2i(int(me["q"]) + d0[0] * 9, int(me["r"]) + d0[1] * 9))   # a third, out of reach (Burn and fire)
+	for i in mini(3, foes.size()):
+		if b.api.R.onBoard(spots[i].x, spots[i].y):
+			foes[i]["q"] = spots[i].x
+			foes[i]["r"] = spots[i].y
 	b.V = b.api.view()
 	b._index_view()
 	# the ship and planned hex where the most enemies come under the guns, so two picks can be made
@@ -125,24 +132,36 @@ func _run() -> void:
 		return
 	b.select(ship, "roster")
 	await _wait_idle(5000)
-	# a skill's free turn (Artoo on PR 1643): with one earned, Q/E still turn at once through the rules' rotate, which spends
-	# the free turn and no movement; Backspace then takes it back as a played move (R376)
+	# a turn in place is planned too, a skill's free turn included (Codex on PR 1643): E turns the ghost and nothing reaches
+	# the rules; Backspace takes it back; a click on the ghost on the ship's own hex commits it through the rules' rotate,
+	# which spends the free turn and no movement and leaves the move counter alone
 	var ru = b.api.unit(ship)
 	var mp0 = ru["mp"]
 	var f0 := int(ru["facing"])
 	ru["treeFreeTurn"] = 1
+	var moves0 := int(b.api.R.B.get("usage", {}).get("moves", 0))
+	var r0 := _rules()
+	b.hover = Vector2i(99999, 99999)
 	b._rotate(1)
+	ru = b.api.unit(ship)
+	_check(b.plan != null and b.plan.has("rot") and int(b.plan.f) == posmod(f0 + 1, 6) and _rules() == r0 and int(ru["facing"]) == f0
+		and float(b._z0(ru.get("treeFreeTurn"))) == 1.0, "E turns the ghost in place; the rules and the free turn are untouched")
+	b._on_key(KEY_BACKSPACE)
+	_check(b.plan == null and _rules() == r0, "Backspace takes the planned turn back")
+	b._rotate(1)
+	_click_hex(int(ru["q"]), int(ru["r"]))
 	await _wait_idle(30000)
 	ru = b.api.unit(ship)
-	_check(b.plan == null and int(ru["facing"]) == posmod(f0 + 1, 6) and ru["mp"] == mp0 and float(b._z0(ru.get("treeFreeTurn"))) == 0.0,
-		"with a free turn earned, Q/E turn through the rules at once and spend no movement")
+	_check(b.plan == null and int(ru["facing"]) == posmod(f0 + 1, 6) and ru["mp"] == mp0 and float(b._z0(ru.get("treeFreeTurn"))) == 0.0
+		and int(b.api.R.B.get("usage", {}).get("moves", 0)) == moves0,
+		"a click on the turned ghost commits it: the rules' rotate spends the free turn, no movement, and no move is counted")
 	var tw := Time.get_ticks_msec()
 	while not _idle() and Time.get_ticks_msec() - tw < 30000:   # the threat map restarts after the turn; undo waits for it
 		await process_frame
 	b._on_key(KEY_BACKSPACE)
 	await _wait_idle(30000)
 	ru = b.api.unit(ship)
-	_check(int(ru["facing"]) == f0, "Backspace takes that turn back")
+	_check(int(ru["facing"]) == f0, "with no plan open, Backspace takes the played turn back (R376)")
 	ru["treeFreeTurn"] = 0
 	b.select(ship, "roster")
 	await _wait_idle(5000)
@@ -165,7 +184,7 @@ func _run() -> void:
 	var picks: Array = []
 	for e in _enemies():
 		if not b._firing_set(e).is_empty():
-			b._target(e)
+			_click_unit(e)
 			picks.append(e)
 			if picks.size() == 2:
 				break
@@ -196,13 +215,28 @@ func _run() -> void:
 	_check(_rules() == before, "stepping back changed nothing in the rules")
 	# Esc clears the plan
 	_click_hex(int(best.q), int(best.r))
-	b._target(picks[0])
+	_click_unit(picks[0])
 	b._on_key(KEY_ESCAPE)
 	_check(b.plan == null and b.aims.is_empty() and b.plan_steps.is_empty(), "Esc clears the whole plan")
 	# plan again and commit: one batch, the move then the fire
+	# a Burn and fire replaced by a planned move (Codex on PR 1643): its target is no pick, so the next enemy click aims
+	var far := ""
+	for e in _enemies():
+		if e not in picks and b._firing_set(e).is_empty() and b._attack_move(e) != null:
+			far = e
+			break
+	_check(far != "", "an enemy out of reach that a Burn and fire can reach exists")
+	if far != "":
+		_click_unit(far)
+		_check(b.atk != null and b.target == far, "a click on it plans a Burn and fire")
+		_click_hex(int(best.q), int(best.r))
+		_check(b.atk == null and b.target == "" and b.plan != null, "a click on a blue hex replaces it with the planned move")
+		_click_unit(picks[0])
+		_check(b.aims.size() == 1 and b.batches.is_empty() and _rules() == before, "the next enemy click aims from the ghost; nothing is committed")
+		b._on_key(KEY_ESCAPE)
 	_click_hex(int(best.q), int(best.r))
 	for e in picks:
-		b._target(e)
+		_click_unit(e)
 	var want_picks: int = b.aims.size()
 	b.hold = true
 	b._confirm()
