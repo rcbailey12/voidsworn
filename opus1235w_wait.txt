@@ -1,0 +1,10 @@
+OPUS1235W_WAIT.bat waiting for OPUS1547_SHOTS2 exit in opus1547b_wait.txt Sat 11/21/2026 20:35:03.16 
+swapped out while only waiting 21:47:27: replaced by OPUS1235W_WAIT2.bat (waits for OPUS1547_SHOTS3 exit in opus1547c_wait.txt, Board Nov 22 03:46 UTC)
+OPUS1235W_WAIT2.bat waiting for OPUS1547_SHOTS3 exit in opus1547c_wait.txt Sat 11/21/2026 21:47:27.63 
+swapped out while only waiting 22:32:18: replaced by OPUS1235W_WAIT3.bat (same trigger, plus waits for C: 75 GB free; Board Nov 22 04:31 UTC)
+OPUS1235W_WAIT3.bat waiting for OPUS1547_SHOTS3 exit in opus1547c_wait.txt Sat 11/21/2026 22:32:18.45 
+OPUS1235_WEAR start 22:45:19.87 
+OPUS1235_WEAR exit 0 at 23:40:08.55 
+run folder out_20261121_224521_13803
+result: done PASS
+all done Sat 11/21/2026 23:40:08.97 

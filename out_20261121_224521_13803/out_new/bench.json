@@ -1,0 +1,281 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "bench_sha256": "ceee1b242af52a1539fb62d928c484c7b7a86a571963ff3f6844f1081c4a3a0c",
+ "commit": "",
+ "fixed_fps": 60,
+ "godot": "4.7.2-stable (official)",
+ "late_shader_names": [],
+ "late_shaders_after_warmup": 0,
+ "moments_sha256": "4f03755b4f6522b645890802f143a91c1741f402c54dcd5b1213c7a9b400429f",
+ "parts": {
+  "0": {
+   "start_frame": 9900
+  },
+  "2": {
+   "start_frame": 10800
+  },
+  "3": {
+   "start_frame": 16200
+  },
+  "moments": {
+   "region": "frontier",
+   "start_frame": 10020
+  }
+ },
+ "pipelines_compiled": 1492,
+ "stills": [
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 4874,
+     "t": 0.1014
+    },
+    {
+     "step": 5108,
+     "t": 4.0013
+    },
+    {
+     "step": 5348,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/wr_V16_37_hp55__c170.png",
+   "id": "wr_V16_37_hp55",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 5638,
+     "t": 0.1014
+    },
+    {
+     "step": 5872,
+     "t": 4.0013
+    },
+    {
+     "step": 6112,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/wr_V16_37_hp55__c26.png",
+   "id": "wr_V16_37_hp55",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 6402,
+     "t": 0.1014
+    },
+    {
+     "step": 6636,
+     "t": 4.0013
+    },
+    {
+     "step": 6876,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/wr_V16_37_hp22__c170.png",
+   "id": "wr_V16_37_hp22",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 7166,
+     "t": 0.1014
+    },
+    {
+     "step": 7400,
+     "t": 4.0013
+    },
+    {
+     "step": 7640,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/wr_V16_37_hp22__c26.png",
+   "id": "wr_V16_37_hp22",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 7930,
+     "t": 0.1157
+    },
+    {
+     "step": 8164,
+     "t": 4.0157
+    },
+    {
+     "step": 8404,
+     "t": 8.0157
+    }
+   ],
+   "file": "moments/wr_I15_11_hp55__c170.png",
+   "id": "wr_I15_11_hp55",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 8694,
+     "t": 0.1157
+    },
+    {
+     "step": 8928,
+     "t": 4.0157
+    },
+    {
+     "step": 9168,
+     "t": 8.0157
+    }
+   ],
+   "file": "moments/wr_I15_11_hp55__c26.png",
+   "id": "wr_I15_11_hp55",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 9458,
+     "t": 0.1157
+    },
+    {
+     "step": 9692,
+     "t": 4.0157
+    },
+    {
+     "step": 9932,
+     "t": 8.0157
+    }
+   ],
+   "file": "moments/wr_I15_11_hp22__c170.png",
+   "id": "wr_I15_11_hp22",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 10222,
+     "t": 0.1157
+    },
+    {
+     "step": 10456,
+     "t": 4.0157
+    },
+    {
+     "step": 10696,
+     "t": 8.0157
+    }
+   ],
+   "file": "moments/wr_I15_11_hp22__c26.png",
+   "id": "wr_I15_11_hp22",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 10986,
+     "t": 0.1038
+    },
+    {
+     "step": 11220,
+     "t": 4.0013
+    },
+    {
+     "step": 11460,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/wr_B21_11_hp55__c170.png",
+   "id": "wr_B21_11_hp55",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 11750,
+     "t": 0.1038
+    },
+    {
+     "step": 11984,
+     "t": 4.0013
+    },
+    {
+     "step": 12224,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/wr_B21_11_hp55__c26.png",
+   "id": "wr_B21_11_hp55",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 12514,
+     "t": 0.1038
+    },
+    {
+     "step": 12748,
+     "t": 4.0013
+    },
+    {
+     "step": 12988,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/wr_B21_11_hp22__c170.png",
+   "id": "wr_B21_11_hp22",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 13278,
+     "t": 0.1038
+    },
+    {
+     "step": 13512,
+     "t": 4.0013
+    },
+    {
+     "step": 13752,
+     "t": 8.0013
+    }
+   ],
+   "file": "moments/wr_B21_11_hp22__c26.png",
+   "id": "wr_B21_11_hp22",
+   "impacts": [],
+   "part": "moments"
+  }
+ ],
+ "warnings": []
+}
