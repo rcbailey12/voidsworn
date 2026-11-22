@@ -60,7 +60,7 @@
 #   survey                                     read only: every job attempt and ship clone under voidsworn_test with its
 #                                              size and what the rules above would do with it. Deletes nothing.
 # Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
-param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropcache', 'droprepo', 'survey')][string]$Action,
+param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropjobs', 'dropcache', 'droprepo', 'survey')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$Folder = '')
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
@@ -358,7 +358,23 @@ function Get-BlobSha($path) {
     return (($sha.Hash | ForEach-Object { $_.ToString('x2') }) -join '')
   } finally { $f.Dispose(); $sha.Dispose() }
 }
+function Lock-Mirror {
+  # The mirror writers' lock (the same <mirror>.lock every fetch takes). A removal holds it from its relay and history
+  # proof through the delete, so no fetch or prune between them can drop a ref the proof relied on (Artoo on PR 1592).
+  $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
+  while (-not $lock) {
+    try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
+  }
+  return $lock
+}
 function Update-Mirror {
+  # Under a removal's held lock (Lock-Mirror), fetch in it rather than wait on our own handle.
+  if ($script:mirrorLock) {
+    if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin' }
+    Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+    return
+  }
   $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
   while (-not $lock) {
     try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
@@ -468,7 +484,7 @@ function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
   if (-not $want.Count) { throw "no result files under $base to prove the relay" }
   $bad = $null; $big = @()
   for ($try = 0; $try -lt 2; $try++) {
-    if ($try) { Update-Mirror }
+    if ($try) { if ($script:dropDry) { break }; Update-Mirror }
     $r = Test-ReceiptTree $receipt $want
     if ($null -eq $r) { $bad = @("branch $($receipt.Ref) (from $($receipt.From)) is not on origin at the shared mirror's commit"); continue }
     $big = @(); $bad = @()
@@ -493,14 +509,27 @@ function Drop-Attempt($attempt) {
   if ($state -ne 'PASS') { Write-Output "checkouts kept: $attempt $(if ($state) { 'failed' } else { 'has no result yet' }) (the janitor handles old failures)"; return }
   $listed = @(); $ckFile = Join-Path $attempt 'checkouts.txt'
   if (Test-Path -LiteralPath $ckFile -PathType Leaf) { $listed = @(foreach ($l in [IO.File]::ReadAllLines($ckFile)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z') { $Matches[1] } }) }
-  foreach ($o in @(Complete-Removing $attempt $listed)) { if ($o -is [long]) { $script:freed += $o } else { Write-Output $o } }
+  if (-not $script:dropDry) { foreach ($o in @(Complete-Removing $attempt $listed)) { if ($o -is [long]) { $script:freed += $o } else { Write-Output $o } } }
+  else { foreach ($n in $listed) { if (Test-Path -LiteralPath (Join-Path $attempt "$n.removing")) { Write-Output "earlier removal would be finished if removing.txt recorded it: $(Join-Path $attempt "$n.removing")" } } }
   $list = Join-Path $attempt 'checkouts.txt'
   if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { Write-Output "no checkouts listed in $attempt"; return }
   $present = @(foreach ($line in [IO.File]::ReadAllLines($list)) { if ($line -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $attempt $Matches[1]))) { $Matches[1] } })
   if (-not $present.Count) { Write-Output "no listed checkout left in $attempt"; return }
   $outs = @((Get-Item -LiteralPath $attempt -Force).EnumerateDirectories('out_*') | ForEach-Object { $_.FullName })
+  if (-not $script:dropDry) {
+    try { $script:mirrorLock = Lock-Mirror } catch { Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
+  }
+  try { Drop-Proven $attempt $list $outs } finally { if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
+}
+function Drop-Proven($attempt, $list, $outs) {
+  # Drop-Attempt's proof and removals, under the held mirror lock on a live run.
+  $present = @(foreach ($line in [IO.File]::ReadAllLines($list)) { if ($line -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $attempt $Matches[1]))) { $Matches[1] } })
   try { Assert-Relayed $attempt $outs @('checkout_leftovers') (Split-Path -Leaf (Split-Path -Parent $attempt)) (Split-Path -Leaf $attempt) }
   catch { Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
+  if ($script:dropDry) {
+    foreach ($n in $present) { Write-Output "checkout $n would be checked and removed after the relay: $(Join-Path $attempt $n)" }
+    return
+  }
   $src = $null
   $srcFile = Join-Path $attempt 'ships_source.txt'
   if (Test-Path -LiteralPath $srcFile -PathType Leaf) { $src = ([IO.File]::ReadAllText($srcFile)).Trim() }
@@ -569,6 +598,17 @@ function Assert-Rebuildable($repo) {
   $stash = @(Run-Git -C $repo for-each-ref '--format=%(objectname)' refs/stash | Where-Object { $_ })
   if ($stash.Count) { throw 'it has a stash' }
   $tips = @((Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1)
+  # Issue 1396 (review of PR 1592): a detached checkout can go back to its pin and look clean while its reflog still holds
+  # a commit made there, and a linked worktree can hold work under this .git. Every commit in the reflog of HEAD and of
+  # each local branch counts as a tip (remote-tracking reflogs are copies of the mirror's history), and a second
+  # worktree keeps the checkout.
+  $worktrees = @(Run-Git -C $repo worktree list --porcelain | Where-Object { "$_".StartsWith('worktree ') })
+  if ($worktrees.Count -ne 1) { throw "it has $($worktrees.Count) worktrees, not 1" }
+  $logged = @('HEAD') + @(Run-Git -C $repo for-each-ref '--format=%(refname)' refs/heads/ | Where-Object { $_ })
+  foreach ($ref in $logged) {
+    if (-not (Test-Path -LiteralPath (Join-Path (Join-Path $repo '.git') (Join-Path 'logs' $ref)) -PathType Leaf)) { continue }
+    $tips += @(Run-Git -C $repo reflog show '--format=%H' $ref -- | Where-Object { "$_" -match '\A[0-9a-f]{40}\z' })
+  }
   foreach ($line in @(Run-Git -C $repo for-each-ref '--format=%(objectname) %(refname)' | Where-Object { $_ })) {
     $own, $name = "$line".Trim() -split ' ', 2
     if ($name.StartsWith('refs/remotes/') -or $name.StartsWith('refs/heads/')) { continue }
@@ -744,6 +784,34 @@ switch ($Action) {
     }
     Write-Free $script:freed
   }
+  'dropjobs' {
+    # Issue 1396 (Board, Nov 22): the relay always lands after a job's tail, and no session runs dropcheckouts by hand, so
+    # the janitor calls this hourly and after jobs. Every PASS attempt <job>\out_* that still lists a
+    # checkout gets the same proof as dropcheckouts (origin's relay branch holds every out file byte for byte); anything
+    # else is logged as kept. dry (a janitor dry run) removes nothing, finishes no earlier removal and fetches nothing.
+    # One job folder per call (A): the janitor takes that folder's lease, issue lock, keep list and process checks
+    # first and holds them through this call (Artoo on PR 1592), so this never sweeps folders it was not handed.
+    $script:dropDry = $B -eq 'dry'
+    if ($B -and -not $script:dropDry) { throw "dropjobs takes only dry after the job folder, got: $B" }
+    $script:freed = [long]0
+    $one = Get-Item -LiteralPath ([IO.Path]::GetFullPath($A).TrimEnd('\', '/')) -Force -ErrorAction SilentlyContinue
+    if (-not $A -or -not (Test-PlainDir $one) -or $one.Name -notmatch '\A[A-Za-z0-9_-]+\z' -or
+        -not (Split-Path -Parent $one.FullName).Equals($vt, [StringComparison]::OrdinalIgnoreCase)) { throw "dropjobs needs a job folder voidsworn_test\<job>, got: $A" }
+    foreach ($job in @($one)) {
+      foreach ($att in @($job.EnumerateDirectories('out_*'))) {
+        if (-not (Test-PlainDir $att) -or (Get-AttemptState $att.FullName) -ne 'PASS') { continue }
+        $list = Join-Path $att.FullName 'checkouts.txt'
+        if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { continue }
+        # A listed checkout, or its recorded <name>.removing left by a removal a lock stopped (review of PR 1592), is left.
+        $left = @(foreach ($l in [IO.File]::ReadAllLines($list)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and ((Test-Path -LiteralPath (Join-Path $att.FullName $Matches[1])) -or (Test-Path -LiteralPath (Join-Path $att.FullName "$($Matches[1]).removing")))) { $Matches[1] } })
+        if (-not $left.Count) { continue }
+        $problem = Get-AttemptProblem $att.FullName
+        if ($problem) { Write-Output "checkouts kept: $problem"; continue }
+        Drop-Attempt $att.FullName
+      }
+    }
+    if (-not $script:dropDry) { Write-Free $script:freed }
+  }
   'dropcache' {
     try {
       $repo = Test-ShipClone ([IO.Path]::GetFullPath($A).TrimEnd('\', '/'))
@@ -770,6 +838,7 @@ switch ($Action) {
       $repo = Test-ShipClone $jobDir
       $head = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
       if ($head -ne $B) { throw "HEAD is $head, not the published commit $B" }
+      $script:mirrorLock = Lock-Mirror
       Assert-Rebuildable $repo
       $export = Join-Path (Join-Path (Join-Path (Join-Path $jobDir 'out') 'recipe') 'export') $C
       if (-not (Test-Path -LiteralPath $export -PathType Container)) { throw "no collected export $export" }
@@ -786,6 +855,7 @@ switch ($Action) {
       Write-Output ("ship clone removed after the publish ({0:N1} GB): {1}" -f ($gone / 1GB), $repo)
       Write-Free $gone
     } catch { Write-Output "ship clone kept: $($_.Exception.Message)" }
+    finally { if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
   }
   'survey' {
     # Read only. What the job rules would do with every attempt and ship clone already on the PC (for a Board one-off).

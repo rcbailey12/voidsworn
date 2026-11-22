@@ -55,6 +55,7 @@ const REACT_IMPULSE := {"torp": 6.0, "star": 6.5, "ram": 8.0, "rockets": 2.0, "m
 	"gflak": 0.25, "spores": 0.1, "spine": 0.45, "tendril": 0.7, "sporeb": 0.2, "bombs": 0.8, "lance": 0.08, "needle": 0.05,
 	"pulsar": 0.05, "ion": 0.03, "doom": 0.1, "nlance": 0.12, "gsentry": 0.25, "junk": 0.45, "plasma_cannon": 0.7}
 const PLASMA_HOT := Color(0.86, 0.95, 1.0)
+const MELT_SPOTS := 6   # R398: the acid hits a ship remembers for its melt death (fx_shaders MELT_GLOW holds six)
 const CRIT_BEAT := 0.12
 # Issue 1239 (F2.2): the shot that breaks a shield and still hurts the hull lands its hull fire this much after the
 # shield failure's flash, so the two read as two beats instead of one orange smear
@@ -1964,6 +1965,13 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var lhp: Vector3 = tg["lp"] if tg.has("lp") else Tg.xf().affine_inverse() * p
 		var ldr: Vector3 = (Tg.xf().basis.inverse() * dir).normalized()
 		fx.later(T, func l_hit_react() -> void: Tg.hit_react(fx, imp, lhp, ldr))
+		if bio and not bool(tg.get("shield", false)):
+			# R398 (issue 1394): where acid ate into the hull, so an acid kill glows green only there
+			fx.later(T, func l_acid_spot() -> void:
+				var sp: Array = Tg.get_meta("acid_spots", [])
+				sp.append([lhp, fx.now])
+				while sp.size() > MELT_SPOTS: sp.pop_front()
+				Tg.set_meta("acid_spots", sp))
 	if bool(tg.get("shield", false)):
 		_shield_impact(fx, lk, w, Tg, tg, T, dir, k, sustain, torp, beam, bio, light, col)
 		return

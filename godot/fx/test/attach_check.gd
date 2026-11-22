@@ -278,7 +278,7 @@ func _walk(id: String, s, real: bool) -> Dictionary:
 	var L: float = float(sv.get("L")) if sv.get("L") != null and sv is SV else h.L
 	var hw: float = float(sv.get("half_w")) if sv is SV else h.W * 0.5
 	var hh: float = float(sv.get("half_h")) if sv is SV else h.H * 0.5
-	for kind in ["couple", "retro", "aft", "side"]:
+	for kind in ["couple", "retro", "aft", "side", "lift"]:
 		for sgn in [1.0, -1.0]:
 			for j in SV.jet_aims(kind, sgn, L, hw, hh):
 				var o: Vector3 = (j[2] as Vector3).normalized()
