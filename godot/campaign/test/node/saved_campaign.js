@@ -21,7 +21,9 @@ if (!['check', 'update'].includes(mode) || !/^\d+$/.test(a) || !/^\d+$/.test(z) 
 const seeds = []; for (let s = +a; s <= +z; s++) seeds.push(s);
 const out = fs.mkdtempSync(path.join(process.env.RUNNER_TEMP || os.tmpdir(), 'voidsworn-campaign-'));
 const godot = (args, log) => {
-  const r = spawnSync(G, ['--headless', '--path', P, '--script', ...args], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, timeout: 1500 * 1000 });
+  // Issue 1739: GODOT may name a .js stand-in (tests), run with this node, since Windows cannot start a script by itself
+  const cmd = /\.js$/i.test(G) ? [process.execPath, [G, '--headless', '--path', P, '--script', ...args]] : [G, ['--headless', '--path', P, '--script', ...args]];
+  const r = spawnSync(cmd[0], cmd[1], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, timeout: 1500 * 1000 });
   fs.writeFileSync(path.join(out, log), (r.stdout || '') + (r.stderr || ''));
   const errs = ((r.stdout || '') + (r.stderr || '')).split('\n').filter(l => /SCRIPT ERROR|^ERROR:/.test(l)).slice(0, 5);
   return { ok: r.status === 0 && !errs.length, errs, status: r.status };

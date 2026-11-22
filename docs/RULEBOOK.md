@@ -313,6 +313,7 @@ watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md,
 On Nov 19, about 350 GB disappeared overnight (392 GB free after the Nov 18 cleanup, 41 GB the next morning). The hand cleanup removed 173 folders and raised free space to 199 GB. It kept 42 checkout copies, 26 because generated campaign outputs, audio UIDs or onboarding output were outside the safe list.
 Set: Ryan, Nov 18 (R326) and Nov 19, 16:30 UTC (R336); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 Ryan's yes to a delete counts when he gives it in the Board thread himself, typed in his own words. The Board passes it to the PC session with his message id as the receipt and the PC acts on it; nobody asks him to repeat it or to go to the PC just to say yes. A note from the coordinator, a helper or another agent is still not his yes. Why: on Nov 21 he typed "Yes remove saved runs" three times from his phone and the PC refused each as a relay, so the cleanup nearly waited a night with C: under the job floor. Set: Ryan, Nov 22, 04:35 UTC, "Yes fix that" (R400).
+An install or refresh that deletes nothing is already approved: a tools_live install, a lane runner refresh, a watcher swap or a playtest promotion that keeps the old copy runs without asking Ryan again (`lane_tools_refresh.ps1 -NoRotate`; on the PC, `ALLOW_NODELETE_INSTALLS.bat` lets Claude run exactly that command without a prompt). Anything that deletes or rotates away a file still needs his own yes, as above. Why: on Nov 22 the PC refused two tools_live installs until he typed an OK himself, holding the Codex lane fix and the relay re-proof. Set: Ryan, Nov 22, 20:13 UTC, "alos yes any install that deletes nothing is approved" (R417).
 
 Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
 (including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
@@ -346,7 +347,13 @@ each slot like a board lane's, and accepts a runner-managed sparse copy under th
 checkout per run and picture folders in code jobs drove up disk use (issue 1186).
 
 
-Helper PC jobs (`opus_job_head.bat`) remove their own pinned checkouts once the attempt passed and every result file is
+Helper PC jobs with `OJ_SLOTS=1` (issue 1659; the template's switch, off until the Board's Windows proof) reset one of three warm slots under `voidsworn_test\slots`
+(slot_gpu_1, slot_gpu_2, slot_cpu: reused `clone --local` copies of the mirror, the import cache kept) to their pin instead
+of making a checkout per attempt; the last job's unproven leftovers are saved into its own attempt before each reset, a
+slot whose leftovers cannot be saved is set aside with `hold.txt` for the Board, and the reset deletes only inside `slots`
+(docs/playbooks/pc.md). Why: a fresh checkout cost about 10 GB real per attempt (ships copy plus import cache), measured
+on the Nov 22 deletes; Ryan approved the warm slots on Nov 22 (studio ops upgrade, Wave 2.1). Set: Ryan, Nov 22.
+Older bats without it keep their own pinned checkouts, which they remove once the attempt passed and every result file is
 on a relay branch: the Board runs the job head's checkout step right after each relay, and the same job's later tails
 repeat it. A file the job left in a checkout that is not a proven rebuildable leftover is saved into the job's own
 `out_<name>\checkout_leftovers` first (at most 200 MB, read back by SHA-256); more, a staged change, a stash or a local
@@ -501,7 +508,12 @@ Set: Ryan, Nov 15; audit fixes approved Nov 17 (R309).
 3.12 **No GPU capture on a pull request before its checks are green and its diff has passed review.** `player_path`, `look_bench`
 and other heavy GPU captures are queued only after "All checks" is green and Artoo or the code review seat has passed the diff
 at that head commit; a later push needs both again. Overnight, when the PC is idle, gpu_go.txt is clear and main changed game
-files, `build\export` refreshes by itself (issue 1663). Why: "Never queue `player_path`, `look_bench`, or heavy GPU captures on
+files, `build\export` refreshes by itself (issue 1663): the root watcher runs `tools/pc/overnight_export.ps1` every 10
+minutes when idle, and it queues one `overnight_export_job.bat` only between 1 and 5 AM Central, with gpu_go.txt clear, 75 GB
+free on C:, no job, GPU claim or Voidsworn, Godot or Blender process running, and main's `godot/` tree changed since the
+last overnight export; one try a night. The job exports main through the existing g2_export check, smoke and promotion and
+never changes `build\godot`; g2_export refuses to replace `build\export` while Voidsworn is running, so the game Ryan
+launches is never swapped under him. R319 still holds for playtest captures (`g2_pt_*`): those wait for Ryan to ask. Why: "Never queue `player_path`, `look_bench`, or heavy GPU captures on
 a PR until `checks` is green and Artoo (or the code review seat) has passed the diff." and "Auto-refresh `build\export` overnight
 when idle (`gpu_go.txt` clear) and `main` changed game files." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R407, R408).
 

@@ -3,11 +3,12 @@
 const { spawnSync } = require('child_process');
 const path = require('path');
 const root = path.resolve(__dirname, '../../..');
-for (const py of process.env.PYTHON ? [process.env.PYTHON] : ['python', 'python3']) {
+// Issue 1739: a real Python 3 that has Pillow (never the Windows Store alias)
+const py = require('./find_python').findPython(['PIL']);
+if (py) {
   const result = spawnSync(py, [path.join(__dirname, 'picture_provenance_selftest.py')], {
     cwd: root, encoding: 'utf8', windowsHide: true, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' }
   });
-  if (result.error && result.error.code === 'ENOENT') continue;
   process.stdout.write((result.stdout || '') + (result.stderr || ''));
   process.exit(result.status === null ? 1 : result.status);
 }

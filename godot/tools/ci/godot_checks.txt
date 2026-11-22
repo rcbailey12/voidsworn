@@ -149,6 +149,7 @@ headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stan
 headless|fx/test/first_hit_scars_check.gd|-|-|issue 1235: first-hit mark size, heavy and newest marks kept under the cap, bomber marks, turrets out of the static damage, LOD kept on undamaged meshes, stage 4 hole size
 headless|fx/test/hull_wear_check.gd|-|-|issue 1235 run 2: wear on the live damage shader as HP falls (no ember heat), soot patches on the hit sides, the crippled list below 35% HP and its repair
 headless|fx/test/live_wounds_1587_check.gd|-|-|issue 1587: sick engine nozzle gutters and coughs, wounded-section turret jams with a capped wisp and spark pops, uneven hull power on its own uniform, one-shot blowouts on stage 3 and 4 crossings only, ion crawl threads and power dip, no leftover nodes
+headless|fx/test/capability_loss_check.gd|-|-|issue 1741 M3 (R416, Wounds V2): a knocked-out weapon slot jams its own turret and kills its own fixed mount, repair frees them; tiered engine loss with soot only on Hullbreakers; shield generator crackle on shielded ships; flag off keeps main
 headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage opens a break, exhaust stays in space
 headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-in craft
 headless|fx/test/torpedo_flat_flight_check.gd|-|-|issue 1713 (Ryan, Nov 22: "I'd think we'd keep it flat"): a torpedo or rocket slides out of a deck tube at most about 20 degrees up, then never climbs above the higher of its ignition point and its target
