@@ -1,0 +1,14 @@
+waiting for all done in opus1232\wait_run2.txt Thu 11/19/2026 16:44:41.53 
+shots1235 start Thu 11/19/2026 19:54:12.19 
+shots1235 exit 0 at 20:17:12.39 
+all done 20:17:12.39 
+OPUS1235_WAIT.bat waiting for OPUS1143_REC1 exit in opus1143rec1_wait.txt Sat 11/21/2026  8:55:14.20 
+swapped out while only waiting 16:35:37: replaced by OPUS1235_WAIT2.bat (waits for OPUS1439_MEASURE4 exit in opus1439d_wait.txt, Board Nov 21 22:34 UTC)
+OPUS1235_WAIT2.bat waiting for OPUS1439_MEASURE4 exit in opus1439d_wait.txt Sat 11/21/2026 16:35:37.26 
+swapped out while only waiting 18:31:14: replaced by OPUS1235_WAIT3.bat (waits for OPUS1434_LOAD15 exit in opus1434o_wait.txt, Board Nov 22 00:30 UTC)
+OPUS1235_WAIT3.bat waiting for OPUS1434_LOAD15 exit in opus1434o_wait.txt Sat 11/21/2026 18:31:14.82 
+OPUS1235_FIRSTHIT start 19:13:14.22 
+OPUS1235_FIRSTHIT exit 0 at 19:50:49.88 
+run folder out_20261121_191315_32105
+result: done PASS
+all done Sat 11/21/2026 19:50:50.26 

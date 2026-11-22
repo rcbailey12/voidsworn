@@ -1,0 +1,341 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "bench_sha256": "4540ea700becbe4d46402df0d420dc325f613444556ffe7b94ca7e50b20955ac",
+ "commit": "",
+ "fixed_fps": 60,
+ "godot": "4.7.2-stable (official)",
+ "late_shader_names": [],
+ "late_shaders_after_warmup": 0,
+ "moments_sha256": "4f03755b4f6522b645890802f143a91c1741f402c54dcd5b1213c7a9b400429f",
+ "parts": {
+  "0": {
+   "start_frame": 9000
+  },
+  "2": {
+   "start_frame": 9900
+  },
+  "3": {
+   "start_frame": 13500
+  },
+  "moments": {
+   "region": "frontier",
+   "start_frame": 9120
+  }
+ },
+ "pipelines_compiled": 1362,
+ "stills": [
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 3064,
+     "t": 1.6167
+    },
+    {
+     "step": 3085,
+     "t": 1.9513
+    },
+    {
+     "step": 3157,
+     "t": 3.1513
+    },
+    {
+     "step": 3307,
+     "t": 5.6513
+    },
+    {
+     "step": 3547,
+     "t": 9.6513
+    }
+   ],
+   "file": "moments/fh_V16_37_torpedo__c170.png",
+   "id": "fh_V16_37_torpedo",
+   "impacts": [
+    1.6437387625825
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 3717,
+     "t": 1.6167
+    },
+    {
+     "step": 3738,
+     "t": 1.9513
+    },
+    {
+     "step": 3810,
+     "t": 3.1513
+    },
+    {
+     "step": 3960,
+     "t": 5.6513
+    },
+    {
+     "step": 4200,
+     "t": 9.6513
+    }
+   ],
+   "file": "moments/fh_V16_37_torpedo__c26.png",
+   "id": "fh_V16_37_torpedo",
+   "impacts": [
+    1.6437387625825
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 4273,
+     "t": 0.0
+    },
+    {
+     "step": 4363,
+     "t": 1.5
+    },
+    {
+     "step": 4513,
+     "t": 4.0
+    }
+   ],
+   "file": "moments/fh_V16_37_stage4__c170.png",
+   "id": "fh_V16_37_stage4",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 4586,
+     "t": 0.0
+    },
+    {
+     "step": 4676,
+     "t": 1.5
+    },
+    {
+     "step": 4826,
+     "t": 4.0
+    }
+   ],
+   "file": "moments/fh_V16_37_stage4__c26.png",
+   "id": "fh_V16_37_stage4",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 4996,
+     "t": 1.6167
+    },
+    {
+     "step": 5016,
+     "t": 1.9347
+    },
+    {
+     "step": 5088,
+     "t": 3.1347
+    },
+    {
+     "step": 5238,
+     "t": 5.6347
+    },
+    {
+     "step": 5478,
+     "t": 9.6347
+    }
+   ],
+   "file": "moments/fh_I15_11_torpedo__c170.png",
+   "id": "fh_I15_11_torpedo",
+   "impacts": [
+    1.63286576788272
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 5648,
+     "t": 1.6167
+    },
+    {
+     "step": 5668,
+     "t": 1.9347
+    },
+    {
+     "step": 5740,
+     "t": 3.1347
+    },
+    {
+     "step": 5890,
+     "t": 5.6347
+    },
+    {
+     "step": 6130,
+     "t": 9.6347
+    }
+   ],
+   "file": "moments/fh_I15_11_torpedo__c26.png",
+   "id": "fh_I15_11_torpedo",
+   "impacts": [
+    1.63286576788272
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 6203,
+     "t": 0.0
+    },
+    {
+     "step": 6293,
+     "t": 1.5
+    },
+    {
+     "step": 6443,
+     "t": 4.0
+    }
+   ],
+   "file": "moments/fh_I15_11_stage4__c170.png",
+   "id": "fh_I15_11_stage4",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 6516,
+     "t": 0.0
+    },
+    {
+     "step": 6606,
+     "t": 1.5
+    },
+    {
+     "step": 6756,
+     "t": 4.0
+    }
+   ],
+   "file": "moments/fh_I15_11_stage4__c26.png",
+   "id": "fh_I15_11_stage4",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 6923,
+     "t": 1.5667
+    },
+    {
+     "step": 6944,
+     "t": 1.9013
+    },
+    {
+     "step": 7016,
+     "t": 3.1013
+    },
+    {
+     "step": 7166,
+     "t": 5.6013
+    },
+    {
+     "step": 7406,
+     "t": 9.6013
+    }
+   ],
+   "file": "moments/fh_B21_11_torpedo__c170.png",
+   "id": "fh_B21_11_torpedo",
+   "impacts": [
+    1.58513270710745
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 7573,
+     "t": 1.5667
+    },
+    {
+     "step": 7594,
+     "t": 1.9013
+    },
+    {
+     "step": 7666,
+     "t": 3.1013
+    },
+    {
+     "step": 7816,
+     "t": 5.6013
+    },
+    {
+     "step": 8056,
+     "t": 9.6013
+    }
+   ],
+   "file": "moments/fh_B21_11_torpedo__c26.png",
+   "id": "fh_B21_11_torpedo",
+   "impacts": [
+    1.58513270710745
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 8129,
+     "t": 0.0
+    },
+    {
+     "step": 8219,
+     "t": 1.5
+    },
+    {
+     "step": 8369,
+     "t": 4.0
+    }
+   ],
+   "file": "moments/fh_B21_11_stage4__c170.png",
+   "id": "fh_B21_11_stage4",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 8442,
+     "t": 0.0
+    },
+    {
+     "step": 8532,
+     "t": 1.5
+    },
+    {
+     "step": 8682,
+     "t": 4.0
+    }
+   ],
+   "file": "moments/fh_B21_11_stage4__c26.png",
+   "id": "fh_B21_11_stage4",
+   "impacts": [],
+   "part": "moments"
+  }
+ ],
+ "warnings": []
+}
