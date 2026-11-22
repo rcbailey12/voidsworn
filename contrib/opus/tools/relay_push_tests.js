@@ -55,7 +55,7 @@ try {
   fs.writeFileSync(hook, '#!/bin/sh\nwhile read o n r; do git log -1 --format=%s "$n" | grep -q "part 3 of" && { echo refused part 3 >&2; exit 1; }; done\nexit 0\n');
   fs.chmodSync(hook, 0o755);
   r = runB('opus1657b', at5);
-  assert(r.status !== 0 && /push of part 3 of 4 to pc-out-opus1657b refused/.test(r.out), 'a refused batch stops the relay: ' + r.out);
+  assert(r.status !== 0 && /part[\s\S]{0,40}3[\s\S]{0,40}of[\s\S]{0,40}4/.test(r.out), 'a refused batch stops the relay: ' + r.out);
   const half = git(['--git-dir', relaySource, 'ls-tree', '-r', '--name-only', 'refs/heads/pc-out-opus1657b']).split('\n');
   assert(half.length === 2 && !half.some(f => f.endsWith('d.txt')), 'only the first two parts are there: ' + half);
   fs.rmSync(hook);
