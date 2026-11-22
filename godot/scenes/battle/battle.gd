@@ -80,7 +80,7 @@ const TIPS := [
 	["fired", "Taking turns", "Sides take turns, one ship at a time, until every ship has acted. That is one round. Press Space to end this ship early, or Tab for the next ship. A ship with nothing left to do ends itself."],
 	["move", "Shields and hull", "The blue bar shows your shield pool. All four sides share it. Sides with more coverage block more damage while shields hold. Shields recharge each round. The pale bar shows hull. Hull damage needs repairs."],
 	["threat", "Threat map", "Press R for the threat map. It shades every hex enemy guns can reach next turn. Darker means more damage waiting there."],
-	["reinforce_warn", "More ships are coming", "Reinforcements arrive at the map edge. A flash marks where they enter, and a toast names the ship. A new arrival acts in the turn order like any other ship."],
+	["reinforce_warn", "More ships are coming", "Reinforcements arrive at the map edge. A glowing strip on the edge marks where they will enter, and a toast names the ship when they do. A new arrival acts in the turn order like any other ship."],
 	["close", "Close action", "Up close you have two more attacks. Press X to ram an enemy dead ahead. Press G to board an enemy next to your ship. Win a boarding and the ship is yours for the rest of the fight."],
 	["resolve", "Admiral's Command", "Your admiral's Command is ready. Hover over it to see what it does now and what waiting adds. You can give it once per battle. The icon turns orange after the first press; press again to give the order."],
 	["objective", "Objectives", "Look beside the round counter at the top left for this fight's goal. Completing that goal can win the battle even with enemy ships still on the board."],
@@ -514,6 +514,7 @@ func _begin(a) -> void:
 	retiring = false
 	_click_q = {}
 	_threat_version = -1
+	_threat_one_ver = -1
 	api = a
 	warming = true
 	hud.loading(true)
@@ -3053,6 +3054,79 @@ func _fans(id: String, host: Node3D = null) -> void:
 		fan_root.add_child(_fan_edge(ARC_SPAN[arc][0], ARC_SPAN[arc][1], rad, col))
 
 
+# Issue 1446: the inspected enemy's gun arcs, one quiet bone outline per arc and range (line_style "arc_enemy", R362),
+# under the enemy ship, so you can see which of its sides you would be standing in. A gun counts when it will be ready in
+# the enemy's next turn (the rules clear "fired" and take one off reload and offline when that turn starts), which is
+# what you are planning against. Flak never shows (as your own).
+var efan_root: Node3D
+var efan_key := ""
+
+
+func _enemy_fans(id: String) -> void:
+	var ru = VU.get(id) if id != "" else null
+	var k := ""
+	if ru != null and views.has(id):
+		k = "%s|%d|%d|%d|" % [id, int(ru["q"]), int(ru["r"]), int(ru["facing"])]
+		for w in ru["weapons"]:
+			k += "1" if _ready_next(w) else "0"
+	if k == efan_key:
+		return
+	efan_key = k
+	if efan_root != null:
+		if is_instance_valid(efan_root):
+			efan_root.queue_free()
+		efan_root = null
+	if k == "":
+		return
+	efan_root = Node3D.new()
+	efan_root.name = "EnemyArcs"
+	views[id].add_child(efan_root)
+	efan_root.position.y = -0.36
+	var col: Color = Board.LS.ROLE["arc_enemy"]
+	var done := {}
+	# the fans stop at the board edge (a long gun's range ran out over open space in the PC pictures)
+	var xf := efan_root.global_transform
+	var keep := func(v: Vector3) -> bool:
+		var h: Vector2i = board.world_hex(xf * v)
+		return board.on_board(h.x, h.y)
+	for w in ru["weapons"]:
+		var arc := str(w["arc"])
+		if not _ready_next(w) or w["kind"] == "flak" or not ARC_SPAN.has(arc):
+			continue
+		var rad: float = float(w["range"]) * board.HW + 0.5
+		var dk := "%s%d" % [arc, int(rad)]
+		if done.has(dk):
+			continue
+		done[dk] = true
+		efan_root.add_child(_fan_edge(ARC_SPAN[arc][0], ARC_SPAN[arc][1], rad, col, 0.4, col.a, keep))
+
+
+# Issue 1446 (R246): the sides the rules have routed this ship's shield power to (a side that was struck since its own
+# turn began, while the pool holds). A routed side covers 0.20 more of each hit (SHIELD_ROUTE_BOOST), and hits there drain the pool 30%
+# faster. Quad order prow, starboard, rear, port.
+static func _routed_sides(u: Dictionary) -> Array:
+	var out: Array = []
+	var r = u.get("route")
+	if not (r is Array) or float(u.get("shMax", 0) if u.get("shMax") != null else 0) <= 0.0 or float(u.get("shp", 0) if u.get("shp") != null else 0) < 1.0:
+		return out
+	for i in mini((r as Array).size(), 4):
+		if r[i] != null and float(r[i]) > 0.0:
+			out.append(i)
+	return out
+
+
+static func _route_line(sides: Array) -> String:
+	var names := PackedStringArray()
+	for q in sides:
+		names.append(QUAD_NAME[int(q)])
+	var which := " and ".join(names)
+	return "Shields routed to the %s side%s: %s catch more of each hit, but hits there drain the pool 30%% faster. It clears at the ship's next turn." % [which, "s" if sides.size() > 1 else "", "they" if sides.size() > 1 else "it"]
+
+
+static func _ready_next(w: Dictionary) -> bool:
+	return float(w["cd"] if w.get("cd") != null else 0) <= 1.0 and float(w["off"] if w.get("off") != null else 0) <= 1.0
+
+
 func _fan_mesh(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -3083,17 +3157,18 @@ func _fan_mesh(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 
 
 # F1: the outline of a firing fan: a bright line along its range and its two sides, so arc and range read at a glance
-func _fan_edge(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
+func _fan_edge(a0: float, a1: float, rad: float, col: Color, w := 0.55, alpha := 0.75, keep = null) -> MeshInstance3D:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var w := 0.55
 	var n := 28
-	var c := Color(col.r, col.g, col.b, 0.75)
+	var c := Color(col.r, col.g, col.b, alpha)
 	for i in n:
 		var t0 := deg_to_rad(lerpf(a0, a1, float(i) / n))
 		var t1 := deg_to_rad(lerpf(a0, a1, float(i + 1) / n))
 		var o0 := Vector3(cos(t0), 0, sin(t0))
 		var o1 := Vector3(cos(t1), 0, sin(t1))
+		if keep != null and not bool(keep.call((o0 + o1) * 0.5 * rad)):
+			continue   # issue 1446: this stretch of the rim lies off the board
 		for v in [o0 * rad, o1 * rad, o1 * (rad - w), o0 * rad, o1 * (rad - w), o0 * (rad - w)]:
 			st.set_color(c)
 			st.add_vertex(v)
@@ -3102,9 +3177,14 @@ func _fan_edge(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 			var d := Vector3(cos(deg_to_rad(a)), 0, sin(deg_to_rad(a)))
 			var sd := Vector3(-d.z, 0, d.x) * (w * 0.5)
 			var near := d * 6.0
-			var far := d * rad
+			var reach_r := rad
+			if keep != null:
+				reach_r = 6.0
+				while reach_r + 1.0 <= rad and bool(keep.call(d * (reach_r + 1.0))):
+					reach_r += 1.0
+			var far := d * reach_r
 			for v in [[near - sd, 0.0], [far - sd, 0.5], [far + sd, 0.5], [near - sd, 0.0], [far + sd, 0.5], [near + sd, 0.0]]:
-				st.set_color(Color(col.r, col.g, col.b, v[1]))
+				st.set_color(Color(col.r, col.g, col.b, v[1] * alpha / 0.75))
 				st.add_vertex(v[0])
 	var mi := MeshInstance3D.new()
 	mi.mesh = st.commit()
@@ -3121,6 +3201,7 @@ func _fan_edge(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 
 func _clear_overlay() -> void:
 	_fans("")
+	_enemy_fans("")
 	board.set_overlay({}, {})
 	board.show_blockers([])
 	board.set_outline({})
@@ -3134,7 +3215,7 @@ func _clear_overlay() -> void:
 func _overlay() -> void:
 	if quitting or board == null or not is_instance_valid(board):
 		return
-	if (threat_on or _danger_shown()) and _threat_idle() and not _threat_busy and not _threat_current():
+	if _threat_wanted() and _threat_idle() and not _threat_busy:
 		# Start after this UI pass, so its own rule reads do not immediately join the worker.
 		_threat_request.call_deferred()
 	if board != null and board.has_method("set_danger"):
@@ -3231,6 +3312,7 @@ func _overlay() -> void:
 	if target != "" and VU.has(target) and not VU[target]["dead"]:
 		rings[board.key(VU[target]["q"], VU[target]["r"])] = TARGET_ON
 	_fans(sel if (arcs_on and _usable(u)) else "", ghost if (pst != null and ghost != null and ghost.visible) else null)
+	_enemy_fans(_inspected_enemy() if arcs_on else "")
 	var hk: String = board.key(hover.x, hover.y)
 	if reach_map.has(hk) and _unit_at(hover.x, hover.y).is_empty() and _usable(u) and not ability_mode and hk != plan_k:
 		var st = _hover_state(hk)
@@ -3247,6 +3329,14 @@ func _overlay() -> void:
 		board.show_blockers(_shot_blockers(shot_target))
 	else:
 		board.show_blockers([])
+	# issue 1446: an inspected enemy you are not aiming at shows every hex its guns can reach next turn, faintly, under
+	# whatever else the board shows (the threat map's own bone, at a quarter of its full strength)
+	var reach := {}
+	if _one_current() and _one_want() != "":
+		for k in _threat_one:
+			if float(_threat_one[k]) > 0.0:
+				reach[k] = true
+	board.set_reach(reach)   # an outline round the area, not a fill (PC pictures, Nov 22)
 	board.set_overlay(fills, rings, styles)
 	board.set_focus(_pos(sel) if sel != "" and views.has(sel) else cam.t)
 
@@ -3372,15 +3462,52 @@ func _threat_current() -> bool:
 	return _threat_version >= 0 and _threat_idle() and _threat_version == int(api.version)
 
 
+# Issue 1446: the one enemy whose own reach the board shows: the enemy you inspect (clicked, or the one the panel shows)
+# while you are not aiming at it. Its map rides the same worker as the threat map (only_id), never the main thread.
+var _threat_one := {}
+var _threat_one_for := ""
+var _threat_one_pending := ""
+var _threat_one_ver := -1
+
+
+func _inspected_enemy() -> String:
+	if inspect == "" or not VU.has(inspect) or VU[inspect]["dead"] or VU[inspect]["side"] != "enemy" or bool(VU[inspect].get("squadron", false)):
+		return ""
+	return inspect
+
+
+func _one_want() -> String:
+	var id := _inspected_enemy()
+	return id if (id != "" and target != id and not bot and not showcase and not ended) else ""
+
+
+func _one_current() -> bool:
+	return _threat_one_ver >= 0 and _threat_idle() and _threat_one_ver == int(api.version) and _threat_one_for == _one_want()
+
+
+func _threat_wanted() -> bool:
+	if (threat_on or _danger_shown()) and not _threat_current():
+		return true
+	return _one_want() != "" and not _one_current()
+
+
 # The damage map and reach counts share the API's versioned result, computed off the main thread.
 func _threat_request() -> void:
-	if quitting or not _threat_idle() or _threat_busy or _threat_current() or not (threat_on or _danger_shown()):
+	if quitting or not _threat_idle() or _threat_busy or not _threat_wanted():
 		return
 	_threat_pending_version = int(api.version)
 	_threat_gen = _gen
 	_threat_busy = true
+	# issue 1446: the fleet map only when an overlay needs it, the one enemy's map only when one is inspected; each has
+	# its own version, so inspecting an enemy with both fleet overlays off never pays for every enemy's reach
+	var all := (threat_on or _danger_shown()) and not _threat_current()
+	var one := _one_want() if not _one_current() else ""
+	_threat_one_pending = one
 	var tid := WorkerThreadPool.add_task(func() -> void:
-		_threat_next = api.threat_both())
+		var r: Dictionary = api.threat_both() if all else {}
+		if one != "":
+			r["one"] = api.threat_map(one)
+		_threat_next = r)
 	_threat_tid = tid
 	_threat_wait(tid)
 
@@ -3447,9 +3574,14 @@ func _threat_done() -> void:
 	if not _threat_idle() or _threat_pending_version != int(api.version):
 		_threat_request.call_deferred()
 		return
-	_threat_version = _threat_pending_version
-	_threat_cache = _threat_next["dmg"]
-	_danger = _threat_next["n"]
+	if _threat_next.has("dmg"):
+		_threat_version = _threat_pending_version
+		_threat_cache = _threat_next["dmg"]
+		_danger = _threat_next["n"]
+	if _threat_next.has("one"):
+		_threat_one = _threat_next["one"]
+		_threat_one_for = _threat_one_pending
+		_threat_one_ver = _threat_pending_version
 	# the danger badges on the fleet list and the shell, and any UI pass that waited for this publish
 	_refresh_ui.call_deferred()
 	_overlay.call_deferred()
@@ -4615,6 +4747,8 @@ func _attack_tip(t_id: String) -> String:
 	var t := "[b][color=#ff8a72]%s[/color][/b]\n[color=#a7b09d]Hull %s/%s, %s[/color]\n" % [str(tv["name"]), Campaign.hull_text(tv["hp"]), Campaign.hull_text(tv["maxHp"]), _target_defenses(tu)]
 	if float(tv["shMax"]) > 0:
 		t += "Hits the [color=#92b8e8][b]%s shield[/b][/color] (pool [color=#92b8e8]%d[/color]/%d, this side catches %d)%s." % [QUAD_NAME[quad], int(_z0(tu.get("shp"))), int(tv["shMax"]), int(tv["sh"][quad]), " [color=#ffad3b]down, straight to hull[/color]" if float(_z0(tu.get("shp"))) < 1 else ""]
+		if quad in _routed_sides(tv) and float(_z0(tu.get("shp"))) >= 1:
+			t += " [color=#9fd4ff]Its power is routed to this side: it catches more, but each hit drains the pool 30% faster.[/color]"   # issue 1446 (R246)
 	else:
 		t += "Target is unshielded: [color=#ffad3b]every hit lands on the hull[/color]."
 	if rear:
@@ -4999,6 +5133,27 @@ func _toggle_opt(k: String) -> void:
 
 # ---------------------------------------------------------------- HUD refresh
 
+# Issue 1446: the strip at the board edge where the warned reinforcements will come in, from the warning round until
+# they land; asked again whenever the rules move on (the arrival hex follows that side's fleet, as the rules pick it)
+var _arrival_ver := -1
+
+
+func _sync_arrival() -> void:
+	if board == null or not board.has_method("set_arrival"):
+		return
+	if ended or showcase or not api.has_method("arrival_strip"):
+		board.set_arrival({})
+		return
+	if _arrival_ver == int(api.version):
+		return
+	_arrival_ver = int(api.version)
+	var a: Dictionary = api.arrival_strip()
+	var keys := {}
+	for h in a.get("hexes", []):
+		keys[board.key(int(h["q"]), int(h["r"]))] = true
+	board.set_arrival(keys, str(a.get("side", "enemy")))
+
+
 func _refresh_ui() -> void:
 	if api == null or V.is_empty() or quitting or not is_instance_valid(hud):
 		return
@@ -5030,6 +5185,7 @@ func _refresh_ui() -> void:
 		command_ready and Time.get_ticks_msec() / 1000.0 - cmd_armed_t <= 3.0, _command_tip(command))
 	if board != null and board.get("_look_btn") != null:
 		hud.adopt_grid(board.get("_look_btn"))   # UI pass: board look C's Grid (Z) button goes in the top bar
+	_sync_arrival()
 	hud.set_info(_battle_info())
 	hud.set_top(int(V["round"]), turn, _objective(), end_text, mine and not busy, user_speed < 1.0, threat_on)
 	hud.set_nemesis(_nem_info())
@@ -5300,7 +5456,8 @@ func _panel_info() -> Dictionary:
 	var ru = api.unit(id)
 	var d: Dictionary = disp.get(id, {"hp": u["hp"], "sh": u["sh"]})
 	var view: ShipView = views.get(id)
-	var info := {"name": u["name"], "cls": _class_label(u["cls"]), "side": u["side"], "flag": u["flagship"], "code": view.code if is_instance_valid(view) else "", "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"], "shp": _z0(u.get("shp"))}
+	var info := {"name": u["name"], "cls": _class_label(u["cls"]), "side": u["side"], "flag": u["flagship"], "code": view.code if is_instance_valid(view) else "", "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"], "shp": _z0(u.get("shp")),
+		"routed": _routed_sides(u)}
 	var mleft := int(u.get("moveLeft", u["mp"])) if u.get("moveLeft") != null else int(u["mp"])
 	var stats := "Hull [color=#ffad3b]%s/%s[/color]   Armor %d%%   Evasion %d\nMovement %d of %d   Turns %d" % [Campaign.hull_text(d["hp"]), Campaign.hull_text(u["maxHp"]), int(round(float(ru.get("armor", 0)) * 100.0)), int(_z0(ru.get("ev"))), mleft, int(_z0(ru.get("speed"))), int(u["turnsLeft"])]
 	if u.get("fired", false) and mleft < int(u["mp"]):
@@ -5311,6 +5468,8 @@ func _panel_info() -> Dictionary:
 		stats += "\n[color=#9fd4ff]Braced: hull damage −40% until its next turn.[/color]"
 	if u["burning"]:
 		stats += "\n[color=#f08a4b]On fire.[/color]"
+	if not (info["routed"] as Array).is_empty():
+		stats += "\n[color=#9fd4ff]%s[/color]" % _route_line(info["routed"])
 	if u.get("ab") == "launch":
 		stats += "\nWings launch and fight automatically. Replacements use spares and fight next round."
 	info["stats"] = stats
@@ -5947,6 +6106,9 @@ func _target_info() -> Dictionary:
 	var shields := int(round(es))
 	var hull := int(round(eh))
 	var total := shields + hull
+	# issue 1446: the side this volley strikes (the best gun's), and whether the rules have routed power to it
+	var quad := int(volley[best_index].get("quad", -1)) if best_index >= 0 and volley.has(best_index) else -1
+	var routed := _routed_sides(tu)
 	var line := ""
 	if set.is_empty():
 		line = "[color=#a7b09d]%s[/color]" % ("No ready gun bears on it from the planned hex." if plan != null else _cant_fire_reason(tid))
@@ -5958,7 +6120,8 @@ func _target_info() -> Dictionary:
 		# target's hull bar already shows the hull reaching zero
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]), "shp": float(_z0(tu.get("shp"))),
-		"defenses": _target_defenses(foe), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind}
+		"defenses": _target_defenses(foe), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind,
+		"quad": quad, "routed": routed, "struck_routed": quad >= 0 and quad in routed}
 
 
 func _float_hit(id, sh: float, hull: float, crit) -> void:
