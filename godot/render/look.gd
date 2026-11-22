@@ -115,11 +115,17 @@ const V2 := {
 	"ambient": 0.095, "normal_bias": 0.3, "bias": 0.06, "rim_spec": 3.0,
 	"emit": {"voidsworn": 1.6, "hegemony": 1.35, "corsair": 1.3, "chorus": 1.25, "ithar": 1.0, "deathless": 1.45},
 	"tiles": 0.9,
-	"reach": [1.8, 120.0, 420.0],   # the key light's shadow reach: camera radius times k, clamped (battle.gd, each frame)
+	# the key light's shadow reach (battle.gd, each frame): the camera's distance to its focus plus the farthest board hex
+	# from that focus plus a margin, at least the floor. Fable's review of the standard (H12): a plain clamp of cam_r x 1.8
+	# at 420 dropped shadows off the far board once the camera pulled past r 233
+	"reach": [120.0, 12.0],   # [floor, margin]
 	# Godot 4.7 material channels per faction (Ryan's engine audit, PR 1781), judged on the sheets; damaged hulls keep them
 	# (fx_hull.gd EXTERIOR). aniso: anisotropy (along the glTF tangents); coat/coat_rough: clearcoat; sss: subsurface
-	# scattering strength; back: backlight colour (light through thin membranes); refract: Glasswright refraction, kept
-	# off until its PC cost and sorting are measured (it moves the hull into the transparent pass). Anisotropy is wired but
+	# scattering strength; back: backlight colour (light through thin membranes). Refraction is
+	# never used: it moves the hull into the transparent pass, where beams and shields are not in the screen copy (they
+	# would not bend) and sorting against effects and wounds breaks (Fable's review, H12); the Glasswrights are dark glass
+	# with clearcoat and the rim's fresnel instead. Chorus has no SSS: a screen-space pass for nothing visible at camera
+	# 170 (same review); backlight and coat carry it. Anisotropy is wired but
 	# 0 for Sunward and the Directorate: with no flow map it follows the glTF tangents, which run every way across a baked
 	# atlas, and the cloud probe (contrib/opus/tools/issue1777/README.md) showed blotchy smeared highlights instead of a
 	# brushed sheen. It needs a direction the hull's look carries (an authored flow map, #1778) before it goes on.
@@ -127,16 +133,16 @@ const V2 := {
 		"voidsworn": {"aniso": 0.0},
 		"hegemony": {"aniso": 0.0},
 		"corsair": {},
-		"chorus": {"coat": 0.35, "coat_rough": 0.35, "sss": 0.25, "back": [0.30, 0.10, 0.08]},
-		"ithar": {"coat": 0.6, "coat_rough": 0.08, "refract": 0.0},
+		"chorus": {"coat": 0.35, "coat_rough": 0.35, "back": [0.30, 0.10, 0.08]},
+		"ithar": {"coat": 0.6, "coat_rough": 0.08},
 		"deathless": {"coat": 0.25, "coat_rough": 0.2},
 	},
 }
 
 
-static func shadow_reach(cam_r: float) -> float:
+static func shadow_reach(cam_r: float, board_far: float) -> float:
 	var k: Array = v2_of("reach")
-	return clampf(cam_r * float(k[0]), float(k[1]), float(k[2]))
+	return maxf(cam_r + board_far + float(k[1]), float(k[0]))
 
 
 # Issue 1777: the faction's native Godot material channels (V2 "pbr").
@@ -156,9 +162,7 @@ static func _pbr_channels(m: BaseMaterial3D, faction: String) -> void:
 	if back.size() >= 3:
 		m.backlight_enabled = true
 		m.backlight = Color(float(back[0]), float(back[1]), float(back[2]))
-	if float(p.get("refract", 0.0)) > 0.0:
-		m.refraction_enabled = true
-		m.refraction_scale = float(p["refract"])
+
 const DETAIL_DIR := "res://assets/ships/detail/"
 const DETAIL_FACTIONS := ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]
 static var _detail := {}   # faction -> [grain texture, normal texture]

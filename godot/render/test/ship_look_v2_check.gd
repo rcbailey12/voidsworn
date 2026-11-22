@@ -167,11 +167,11 @@ func _run() -> void:
 	var ba := FileAccess.get_file_as_string("res://render/build_assets.gd")
 	check(ba.contains("Image.COMPRESS_S3TC, Image.COMPRESS_SOURCE_NORMAL"), "build_assets.gd compresses normals from the normal source")
 	# 6. zoom-tracked shadow reach: camera 26 and 170 inside the clamp, never the old fixed 600
-	check(is_equal_approx(LOOK.shadow_reach(26.0), 120.0) and is_equal_approx(LOOK.shadow_reach(170.0), 306.0) and LOOK.shadow_reach(900.0) <= 420.0,
-		"shadow reach follows the zoom (26 -> 120, 170 -> 306, capped 420)")
+	check(is_equal_approx(LOOK.shadow_reach(26.0, 40.0), 120.0) and is_equal_approx(LOOK.shadow_reach(170.0, 150.0), 332.0)
+		and LOOK.shadow_reach(900.0, 150.0) >= 1050.0, "shadow reach covers camera distance plus the far board at every zoom")
 	# 7. faction material channels, and a damaged hull keeps them
 	var ch := _hull("chorus")
-	check(ch.clearcoat_enabled and ch.backlight_enabled and ch.subsurf_scatter_enabled and ch.metallic_specular >= 0.0, "chorus: coat, backlight, sss")
+	check(ch.clearcoat_enabled and ch.backlight_enabled and not ch.subsurf_scatter_enabled, "chorus: coat and backlight, no SSS pass")
 	check(HULL.damage_material(ch, Transform3D.IDENTITY, {}, 10.0).get_shader_parameter("hull_coat") > 0.0, "chorus: damaged hull keeps the coat")
 	check(not _hull("hegemony").anisotropy_enabled, "hegemony: anisotropy off until it has a flow direction")
 	var pbr: Dictionary = (LOOK.V2["pbr"] as Dictionary).duplicate(true)
@@ -180,7 +180,7 @@ func _run() -> void:
 	var hg := _hull("hegemony")
 	check(hg.anisotropy_enabled and HULL.damage_material(hg, Transform3D.IDENTITY, {}, 10.0).get_shader_parameter("hull_aniso") > 0.0, "tuned anisotropy is kept when damaged")
 	LOOK.tune = {}
-	check(not _hull("ithar").refraction_enabled, "ithar: refraction stays off until measured on the PC")
+	check(not _hull("ithar").refraction_enabled, "ithar: never refraction (transparent pass; Fable H12)")
 	check(_hull("ithar").clearcoat_enabled and _hull("deathless").clearcoat_enabled, "ithar and deathless: clearcoat")
 	# 8. two hulls from one glb fitted at different lengths get their own grain scale (ShipView look cache, Board audit)
 	var shared := _hull("corsair")

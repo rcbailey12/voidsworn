@@ -6142,6 +6142,21 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 var showcase_ready := false
 
 
+# Issue 1777: how far the farthest board hex lies from a point (the shadow reach must cover the whole board at any zoom)
+var _board_cells_xz := PackedVector2Array()
+func _board_far(p: Vector3) -> float:
+	if _board_cells_xz.size() != board.cells.size():
+		_board_cells_xz.clear()
+		for c in board.cells:
+			var w: Vector3 = board.hex_world(float(c["q"]), float(c["r"]))
+			_board_cells_xz.append(Vector2(w.x, w.z))
+	var far := 0.0
+	var p2 := Vector2(p.x, p.z)
+	for c in _board_cells_xz:
+		far = maxf(far, p2.distance_squared_to(c))
+	return sqrt(far)
+
+
 func _process(dt: float) -> void:
 	game_t += dt
 	if not torp_ft.is_empty():
@@ -6151,8 +6166,8 @@ func _process(dt: float) -> void:
 		cam.a += dt * 0.035
 	# issue 1777 (Ship Look V2): the key light's shadow reach follows the zoom, so its cascades spend their texels on the
 	# ships in view (the fixed 600 spread them over empty space: soft, blocky hull shadows)
-	if key_light != null and LOOK.ship_look_v2_enabled():
-		key_light.directional_shadow_max_distance = LOOK.shadow_reach(float(cam.r))
+	if key_light != null and board != null and LOOK.ship_look_v2_enabled():
+		key_light.directional_shadow_max_distance = LOOK.shadow_reach(float(cam.r), _board_far(cam.t))
 	if world != null and world.has_method("step"):
 		world.step(dt)
 	if api == null:
