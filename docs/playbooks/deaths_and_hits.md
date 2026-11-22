@@ -271,11 +271,16 @@ Three upgrades run through all of them:
    1 hit, 50% hull, 20% hull, capability loss and death transition) instead of 2D paint-overs. Six rules govern the build:
    (a) **Real mid-battle cutouts into authored interiors (RULEBOOK 6.14):** light grazes and healthy armor take surface marks
    only; heavy hits on weakened sections and Stage 2+ section wear (~55% section HP) cut real 3D openings through outer
-   plating and `_inside_skin` with thick faction-shaped rims, exposing the modeled decks, bulkheads, organs and light cores
-   (legacy hollow hulls keep the 20% guard). (b) **Unified breach-lit and wreck interior shader plus cavity lights:** authored
-   interiors stay dark behind closed seams, lift into moody structural contrast with crisp faction accents inside open breach
-   mouths (lit by 1 to 2 pooled `s._hole_lights` per wounded ship), and transition smoothly into dying and settled wrecks
-   without universal matte-black `wreck_interior` soot on glass or flesh. (c) **Geometry-locked placement:** 8-ray perimeter
+   plating and `_inside_skin` with thick faction-shaped rims and faction-specific 3D breach-mouth dressing (snapped I-beams
+   and sparking conduits on metal hulls, snapped bone ribs and wet tendon strands on Chorus, faceted crystal shards on
+   Glasswrights, sheared obsidian plates and violet power buses on Eclipse), exposing the modeled decks, bulkheads, organs
+   and light cores (legacy hollow hulls keep the 20% guard). (b) **Unified triplanar PBR breach-lit and wreck interior
+   shader plus cavity lights (Layers 1 + 2 in #1741 across all 45 installed ships; Layer 3 Blender kit upgrade in #1743):**
+   authored interiors stay dark behind closed seams, lift into moody structural contrast inside open breach mouths using
+   ship-local orientation-aware triplanar PBR (normal, roughness, metallic, deep-corner cavity AO, and faction patterns so
+   existing untextured interior geometry reads with crisp close-up detail at camera 26), catch directional specular from 1 to
+   2 pooled `s._hole_lights` per wounded ship, and transition smoothly into dying and settled wrecks without universal
+   matte-black `wreck_interior` soot on glass or flesh. (c) **Geometry-locked placement:** 8-ray perimeter
    footprint validation clamps radius or nudges cuts onto solid hull, converts thin exterior structures (such as Eclipse ring
    arcs) into edge-shear or plate delamination instead of floating holes, gates overlays by normal alignment and tight depth
    slabs, and clears turrets and bay doors on all marks. (d) **Six distinct faction material failures:** Sunward forged iron
@@ -287,7 +292,7 @@ Three upgrades run through all of them:
    archive vaults or truss ribs (zero neon grids, zero green). (e) **Capability-loss coupling:** disabled weapon slots
    (`weapons[i].off > 0`) jam and smoke the exact authored turret or casemate mounts of that slot; engine damage steps across
    real engine nozzles (fixing the `fx_ship.gd` soot leak onto non-Hullbreaker drives); midship shield generator loss adds
-   failed-emitter crackles; live wisps and blowouts vent from the real open breach mouths. (f) **Folded Wave 2A marks:**
+   failed-emitter crackles; live wisps and blowouts vent from the real open breach mouths and torn conduit/bus tips. (f) **Folded Wave 2A marks:**
    distinct `prism`, `star` and `nlance` hull marks (#1692 item d) live directly inside Wounds V2 (#1741). Soot and wear
    darkening stay on metal ships only and are dropped for glass (Glasswrights) and flesh (the Chorus).
 2. **Light on neighbours.** Torpedo hits and every death light the hulls around them for the length of the flash. (Built:

@@ -29,7 +29,8 @@ Every stage below must read from the stage before it rather than inventing paral
 4. **Shared/off-lore wound shaders:** `faction_looks.json` maps Sunward, Directorate, and Hullbreakers all to `wound_kind: 0`; `fx_shaders.gd` `MARK` (L1991-2013) hardcodes orange scorch on all metal factions; Chorus `MARK:2055` and `HOLE:1636` hardcode purple-magenta (violating `factions.md` Never list); Glasswright `MARK:2059-2064` draws radial sine spiderwebs; Eclipse `MARK:2066-2076` draws a black 3x3 neon grid square.
 5. **Disconnected capability loss and engine soot leak:** `fx_ship.gd:1596-1643` (`sync`) ignores `u["weapons"][i]["off"]` completely and jams a random turret by section instead of the actual knocked-out weapon slot; `fx_ship.gd:331` (`var corsair = extra == "soot" or _eng_sputter`) forces black Hullbreaker soot onto every faction's damaged engines and disables Chorus spores and Eclipse embers.
 6. **Live-to-wreck interior discontinuity:** `fx.gd:1449-1459` (`wreck_interior`) crushes every faction's authored interior surfaces to `WRECK_SOOT` matte black (`roughness = 1.0`) when a ship splits, erasing Glasswright glowing braided light cores and Chorus wet tissue/bone.
-7. **Eclipse green interior core leak:** `tools/blender/kits/eclipse/stack.py:81` still defines `CORE_RGB = (44, 255, 24)` (green), which feeds `inside_material()` (routed into the #1422 Eclipse rebake).
+7. **Eclipse green interior core leak:** `tools/blender/kits/eclipse/stack.py:81` still defines `CORE_RGB = (44, 255, 24)` (green), which feeds `inside_material()` (routed into the #1422 Eclipse rebake and #1743).
+8. **Untextured low-detail blockout interiors in the Blender ship assets:** Auditing all 45 ships showed that `tools/blender/build_sheets/kit.py:1170-1198` (`K.room`, `K.deck`, `K.bulkhead`) builds plain chamfered boxes (`ch=0.05`) and flat slabs on Sunward, Directorate, Hullbreakers, and Eclipse; Chorus (`kit.py:1065-1153`) builds smooth blob organs/hoops/septa; Glasswrights (`tools/blender/kits/ithar/hull.py:670-711`) builds smooth untextured decks/frames/cores; and `tools/blender/kits/shared/paint_stack.py:18, 1226`, `tools/recipe/detail_check.py:124`, and `tools/recipe/density.py:56` explicitly skip `role == 'interior'`. Every faction's `inside_material()` outputs one flat solid `Principled BSDF` color (`Roughness = 0.9` on metal/Eclipse, `0.34` on Chorus) with zero UVs, zero normal maps, and zero ORM maps. Lighting flat boxes without interior surface detail and breach-mouth framing would look blocky at close-up (`camera 26` / `60`).
 
 ---
 
@@ -39,12 +40,12 @@ Extend each faction entry in `godot/fx/faction_looks.json` with a `wound` dictio
 
 | Faction | `wound_kind` | Substance | Cutout / Rim Geometry | Surface Mark Character | Exposed Interior Look (Live -> Wreck) |
 |---|---|---|---|---|---|
-| `voidsworn` | `0` | `metal` | Ragged heavy plate tear, thick curled forged-iron lip, bare-steel spall edge | Dark soot streak, bare steel gouge, ember-cooling rim | Riveted iron deck grating, warm ember-lit gunnery galleries & plenum glow -> sooted cooling iron |
-| `hegemony` | `1` | `metal` | Clean rectilinear/modular panel shear stepped along panel seams, straight recessed lip | Cool steel scorch, pale-blue electrical burn (zero orange) | Bright pale-grey/white modular corridors, equipment racks, pulsing implant-blue emergency strips -> powered-down pale corridors with failing blue arc |
-| `corsair` | `2` | `metal` | Jagged ripped patchwork plates peeled back off welds, torn scrap tabs | Heavy dark soot, rust-brown grime, red-amber slag | Raw rusted girders, scavenged hull framing, crooked conduits, dirty red-amber work glow -> charred scrap girders |
-| `chorus` | `3` | `bio` | Splintered horn-bone chitin scute shell edge, curled wet hide margin (zero metal peel) | Cracked chitin flakes over muddy olive-umber / deep maroon-brown hide (**zero magenta**, zero soot) | Curved ivory/ochre bone hoops (ribs), glistening wet dark-umber living tissue, pulsing yellow-green bile sacs -> ruptured wet tissue & dull pale bone (never dry matte black soot) |
-| `ithar` | `4` | `glass` | Sharp straight-edged angular mosaic pane cutout, faceted crystalline bevel rim | **Zero soot, zero black holes, zero sine webs.** Straight Voronoi crystal fracture planes catching specular & rainbow caustics | Frosted annealed glass frames and luminous braided amber/violet/emerald waveguide light cores glowing crisp white-gold -> dim frosted shards with fading white-gold light (never sooted black) |
-| `deathless` | `5` | `obsidian` | Clean stepped delamination of precision ordered obsidian plates; thin ring arcs shear into exposed dark truss ribs | Zero neon grid squares, zero green, zero soot wash. Crisp stepped obsidian chip with thin cold violet-white seam bleed | Dark machined obsidian archive vaults, ordered frames, subtle trapped violet-white core spill -> cold dark obsidian vaults with fading violet seam |
+| `voidsworn` | `0` | `metal` | Ragged heavy plate tear, thick curled forged-iron lip, bare-steel spall edge | Dark soot streak, bare steel gouge, ember-cooling rim | Riveted iron deck grating, ribbed bulkhead panels, warm ember-lit gunnery galleries & plenum glow -> sooted cooling iron |
+| `hegemony` | `1` | `metal` | Clean rectilinear/modular panel shear stepped along panel seams, straight recessed lip | Cool steel scorch, pale-blue electrical burn (zero orange) | Bright pale-grey/white modular paneled corridors, louvered equipment racks, brushed steel framing, pulsing implant-blue emergency strips -> powered-down pale corridors with failing blue arc |
+| `corsair` | `2` | `metal` | Jagged ripped patchwork plates peeled back off welds, torn scrap tabs | Heavy dark soot, rust-brown grime, red-amber slag | Heavy bolted scrap steel plates, raw rusted girders, crooked conduits, dirty red-amber work glow -> charred scrap girders |
+| `chorus` | `3` | `bio` | Splintered horn-bone chitin scute shell edge, curled wet hide margin (zero metal peel) | Cracked chitin flakes over muddy olive-umber / deep maroon-brown hide (**zero magenta**, zero soot) | Porous curved ivory/ochre bone hoops (ribs), glistening wet striated dark-umber muscle tissue, pulsing yellow-green bile veins on sacs -> ruptured wet tissue & dull pale bone (never dry matte black soot) |
+| `ithar` | `4` | `glass` | Sharp straight-edged angular mosaic pane cutout, faceted crystalline bevel rim | **Zero soot, zero black holes, zero sine webs.** Straight Voronoi crystal fracture planes catching specular & rainbow caustics | Faceted crystalline micro-normal glass frames and luminous braided amber/violet/emerald waveguide light cores glowing crisp white-gold -> dim frosted shards with fading white-gold light (never sooted black) |
+| `deathless` | `5` | `obsidian` | Clean stepped delamination of precision ordered obsidian plates; thin ring arcs shear into exposed dark truss ribs | Zero neon grid squares, zero green, zero soot wash. Crisp stepped obsidian chip with thin cold violet-white seam bleed | Precision-milled dark obsidian machine ribbing, archive vaults, recessed violet-white power channels -> cold dark obsidian vaults with fading violet seam |
 
 Add under each faction in `faction_looks.json`:
 ```json
@@ -90,7 +91,7 @@ Before finalizing any `K_HOLE` cutout or heavy mark of radius `R` at `(c, n)`:
 
 ---
 
-## 5. Mid-Battle Cutouts, Thick Rims, Lit Authored Interiors & Folded `#1692(d)` Marks
+## 5. Mid-Battle Cutouts, Thick Rims, Three-Layer Interior Quality & Folded `#1692(d)` Marks
 
 ### 5.1 Damage Progression (Pick 1=A, Updated RULEBOOK 6.14)
 On authored-interior hulls (`s.hull.authored`):
@@ -101,24 +102,39 @@ On authored-interior hulls (`s.hull.authored`):
   - Cap simultaneous open cutouts per ship (e.g., max 6 per ship, 2 per section) so performance and silhouette clarity hold even in 20-ship battles.
 - **Legacy hollow hulls (`not s.hull.authored`):** Keep RULEBOOK 6.14's existing 20% section HP threshold and procedural `_throat` cavity fallback.
 
-### 5.2 Thick Faction Armor Rims & Gap Framing
+### 5.2 Layer 2: Thick Faction Armor Rims & Breach-Mouth 3D Dressing (`fx_breach.gd`, all 45 ships immediately)
+Upgrade `fx_breach.gd` rims and `conduits()` so every open cutout frames the authored interior behind it with crisp, faction-authentic foreground 3D detail (working immediately on all 45 installed ships with zero Blender rebakes):
 - Replace `e.th = R * 0.05` in `fx_breach.gd:229` with real plate depth `clampf(Dt * 0.14, hull.L * 0.008, R * 0.24)` so every cut edge shows chunky, readable armor slab thickness.
 - Shape the cut outline and rim lip by `wound.rim_style`:
   - `curled` (Sunward) / `ragged` (Hullbreakers): organic torn petal waves, outward/inward bent tabs.
   - `modular` (Directorate) / `stepped` (Eclipse): snapped rectilinear/orthogonal panel edges (`square` / stepped hull-aligned frame) so panels look cleanly sheared off structural seams.
   - `chitin` (Chorus): jagged layered horn-plate fracture bevel with soft curled hide rim underneath.
   - `facet` (Glasswright): crisp polygonal straight-segment crystal pane edges (6 to 8 straight segments, zero curved metal waves, zero metal bend!).
-- For authored hulls where the inward ray behind a `K_HOLE` travels further than `R * 0.45` before hitting a modeled deck or room box, add 2 to 3 minimal faction-styled collar ribs/conduits (or bone strands for Chorus, glass struts for Glasswright) tucked directly inside the rim so grazing camera angles never see empty space between skin and deck.
+- **Faction breach-mouth 3D dressing (replaces generic tube-only `conduits()` and removes the Chorus skip):**
+  - **Metal factions (Sunward, Directorate, Hullbreakers):** 2 to 3 snapped structural I-beams/stringers crossing part of the opening just inside the lip, severed conduit pipes and dangling cables anchored to real interior depth (never protruding past intact plating), returning exact torn tips for live spark/arc emitters.
+  - **Chorus (`organic`):** Torn wet chitin rim teeth, 2 to 3 snapped jagged bone ribs jutting across the opening, and glistening stretched tendon/membrane strands spanning the wound lip (using the bone/tissue palette, never metal pipes or magenta!).
+  - **Glasswrights:** Jagged faceted crystal shards clinging around the stepped aperture rim and fractured internal prism splinters catching the braided light core.
+  - **Eclipse:** Precision-sheared layered obsidian plates, dark mechanical truss ribs spanning the recess, and severed cold violet-white power bus rails returning crisp violet arc tips (zero green!).
+- Where an inward ray behind a `K_HOLE` travels further than `R * 0.45` before hitting a modeled deck or room box, tuck 2 to 3 faction-styled collar ribs directly inside the rim so grazing camera angles never see empty space between outer skin and inner decks.
 
-### 5.3 Unified Breach-Lit & Wreck Interior Shader + Cavity Lights (Pick 2=A)
-- Build one shared spatial shader (`SH.INTERIOR` / `HULL.interior_material_v2`, with `fog_disabled`, warmed in `fx.gd` startup) applied to `interior: true` authored surfaces **only once a ship opens its first breach or begins dying** (zero cost on intact ships):
-  - Keeps the original surface's baked albedo/emission/roughness inputs.
-  - **Live mode (`fx_wreck = 0.0`):** Computes proximity `open_f` to the nearest open `fx_mouths[i]` (same uniform array already maintained by `fx_breach._mouth_uniforms()`).
-    - Where `open_f == 0`: surface stays at its dark baked value (zero light leak through closed hull seams).
-    - Where `open_f > 0`: lifts the crushed `0.02` albedo toward `wound.interior_lift` (moody structural contrast, never neon portal wash), adds subtle ship-space triplanar detail matching `wound.interior_pattern` (deck grating / riveted iron, modular white corridor panels + pulsing blue emergency strip, rusted scrap ribs, glistening muscle fibers + ivory bone highlight, frosted glass framing + bright white-gold waveguide core boost, dark obsidian vault ribs + thin violet seam), and adds soft depth-attenuated internal illumination from the breach center (`em` clamped so nothing blooms like a portal).
-  - **Wreck mode (`fx_wreck = 0.0 -> 1.0`):** Smoothly transitions those exact same interior surfaces during death tell (`fx_flick` / power-down) into settled wreck state using `wound.wreck_soot` (sooted charred iron for metal, dull pale bone & wet dark tissue for Chorus, dim frosted glass & fading light cores for Glasswrights, cold dark obsidian vaults for Eclipse). Replaces `fx.gd:1449` universal matte-black `wreck_interior()`.
+### 5.3 Layer 1: Unified Triplanar PBR Breach-Lit & Wreck Interior Shader + Cavity Lights (`fx_shaders.gd`, `fx.gd`, all 45 ships immediately)
+Build one shared spatial shader (`SH.INTERIOR` / `HULL.interior_material_v2`, with `fog_disabled`, warmed in `fx.gd` startup) applied to `interior: true` authored surfaces **only once a ship opens its first breach or begins dying** (zero cost on intact ships):
+- Keeps the original surface's baked albedo/emission/roughness inputs (and blends seamlessly with Layer 3 UV trim textures once ships carry them in #1743).
+- **Ship-local triplanar procedural PBR (`ALBEDO`, analytic normal perturbation / `NORMAL_MAP`, `ROUGHNESS`, `METALLIC`, `EMISSION`, plus cavity AO):** Because existing ship interiors have zero UVs, triplanar projection in ship-local coordinates gives all 45 ships crisp close-up detail immediately with zero rebakes.
+- **Orientation-aware surface differentiation (`abs(local_n.y)`):** Horizontal floors/decks draw grating, ribbed plating, or membrane creases; ceilings draw structural cross-bracing; vertical walls/bulkheads draw paneled bays, equipment louvers, bone striations, or milled ribs.
+- **Six faction interior PBR patterns (`wound.interior_pattern` 0..5):**
+  - `0` Sunward: riveted dark iron deck grates, ribbed forged bulkhead panels, warm soot corners, dim ember conduit seams.
+  - `1` Directorate: clean paneled pale-grey/white corridors, louvered equipment rack faces, brushed steel framing, pulsing implant-blue ceiling/conduit strips.
+  - `2` Hullbreakers: bolted patchwork scrap steel plates, heavy cross-bolted structural ribs, rust/grime/soot streaks, dirty red-amber trim seams.
+  - `3` Chorus: wet striated muscle fibers, cellular organic bump normal (`roughness` 0.22 to 0.38 wet specular sheen), porous ivory bone trabeculae on hoops, bioluminescent bile-green vein pulses on glands/heart vat (zero magenta).
+  - `4` Glasswrights: faceted crystalline micro-normals, internal prismatic fresnel edges, luminous braided core veins (amber/violet/green boosted to crisp white-gold).
+  - `5` Eclipse: precision-milled dark violet-obsidian machine ribbing, fine circuit/conduit channels, subtle violet-white power bus seams (zero green).
+- **Mouth-masked live mode (`fx_wreck = 0.0`) & cavity AO:** Computes proximity `open_f` to the nearest open `fx_mouths[i]` (same uniform array maintained by `fx_breach._mouth_uniforms()`).
+  - Where `open_f == 0`: surface stays at its dark baked value (zero light leak through closed hull seams).
+  - Where `open_f > 0`: lifts crushed `0.02` albedo toward `wound.interior_lift` with deep-corner cavity AO (darkening recesses and wall/deck seams so silhouettes pop with moody architectural depth, never glowing flat portals), plus clamped internal accent glow.
+- **Wreck mode (`fx_wreck = 0.0 -> 1.0`):** Smoothly transitions those exact same triplanar-detailed interior surfaces during death tell (`fx_flick` / power-down) into settled wreck state using `wound.wreck_soot` (sooted charred iron for metal, dull pale bone & wet dark tissue for Chorus, dim frosted glass & fading light cores for Glasswrights, cold dark obsidian vaults for Eclipse). Replaces `fx.gd:1449` universal matte-black `wreck_interior()`.
 - **Cavity point lights (`s._hole_lights`):**
-  - Activate `s._hole_lights` using the existing pooled `fx.light(...)` / `OmniLight3D` budget: at most **2 active subtle cavity lights per wounded ship** (strictly capped across the battlefield to protect the 12.5 ms RTX 5080 gate), tucked `0.25 * R` *inside* the largest open breach mouths, tinted by `wound.interior_accent`, radius `R * 2.2`, low energy so real 3D decks and beveled armor rims catch genuine directional specular and shadow contrast.
+  - Activate `s._hole_lights` using the existing pooled `fx.light(...)` / `OmniLight3D` budget: at most **2 active subtle cavity lights per wounded ship** (strictly capped across the battlefield to protect the 12.5 ms RTX 5080 gate), tucked `0.25 * R` *inside* the largest open breach mouths, tinted by `wound.interior_accent`, radius `R * 2.2`, low energy so real 3D decks, triplanar normal bumps, breach-mouth beams, and beveled armor rims catch genuine directional specular and shadow contrast.
 
 ### 5.4 Folded `#1692` Item (d) Weapon Marks
 Implemented cleanly inside the new `fx_breach.gd` `marks_for()` and `SH.MARK`:
@@ -149,17 +165,19 @@ Tie visible ship damage directly to the rules engine's actual lost systems (view
    - While `shield_offline` is active on a shielded faction, emit intermittent low-intensity failed-emitter arc crackles on the midship hull surface near `hp_core` or an open midship breach (respecting `reduce_flashing`), making "Shield generator offline" immediately readable on the 3D hull.
 4. **Data bridge without touching rules or saved results (R405):**
    - `u["weapons"]` (`off`), `u["sec"]` (`broken`), `u["burning"]`, and `u["regenLock"]` are ALREADY present in `battle_api.gd:_i_view()` (L252-259).
-   - For `"Engines hit"` (`st.engine > 0`) and `"Shield generator down"` (`st.shieldOff > 0`), either forward those system events from `battle.gd` (`case "system":` / `section_down`) directly to `gfx.system_damage(id, kind)` (100% zero touch to `godot/rules/`!), OR verify `battle_api.gd` view-only fields leave all 289 battles and 30 campaign runs byte-identical. Forwarding from `battle.gd` (plus reading `sec.eng.broken` / `sec.mid.broken` / `weapons[i].off` in `fx_ship.sync`) is the cleanest zero-risk route.
+   - For `"Engines hit"` (`st.engine > 0`) and `"Shield generator down"` (`st.shieldOff > 0`), forward those system events from `battle.gd` (`case "system":` / `section_down`) directly to `gfx.system_damage(id, kind)` (100% zero touch to `godot/rules/`), plus read `sec.eng.broken`, `sec.mid.broken`, and `weapons[i].off` in `fx_ship.sync`.
 5. **Anchor live damage emitters inside real open breaches:**
-   - When a section has an open `K_HOLE`, place its `fire`, `smoke`, `vent`, and `#1587` blowout emitters inside that actual open breach mouth rather than an unbreached surface point.
+   - When a section has an open `K_HOLE`, place its `fire`, `smoke`, `vent`, and `#1587` blowout emitters inside that actual open breach mouth (and on snapped breach-mouth conduit/bus tips) rather than an unbreached surface point.
 
 ---
 
-## 7. Ship-Build Stack Cohesion (Folded into Active Rebakes, Zero Extra Rebakes)
+## 7. Layer 3: Blender Interior Kit V2 & Ship-Build Cohesion (Issue #1743 + Active Rebakes)
 
-While Wounds V2 works immediately on all 27+ already-installed ships via the runtime breach-lit interior shader, upcoming faction rebakes carry the ship-build side of R416 so Blender assets and runtime FX agree from the ground up:
-- **#1422 (Eclipse all-violet repaint):** Flip `CORE_RGB = (44, 255, 24)` in `tools/blender/kits/eclipse/stack.py:81` to Eclipse violet-white (`faction_looks.json`), and lift `INSIDE_TINT` from `0.20` toward `0.50` to `0.55`.
-- **#1681 (Navy) and #1684 (Hullbreakers) and future Sunward rebakes:** Lift `INSIDE_TINT` from `0.18` toward `0.55` in the shared faction `stack.py` (`hegemony`, `hullbreakers`, `voidsworn`) whenever that stack is next touched, keeping closed hulls 0 px surface-check clean while giving exposed rooms richer baked material separation.
+Layers 1 and 2 in `#1741` immediately upgrade all 45 already-installed ships in Godot with zero rebakes. **Layer 3 (Issue #1743)** upgrades the Blender ship pipeline itself so every active rebake (`#1422` Eclipse, `#1681` Directorate, `#1684` Hullbreakers) and every future ship ships true modeled interior architecture and shared trim maps from the ground up:
+1. **Modeled interior kit modules (`tools/blender/build_sheets/kit.py`, `tools/blender/kits/ithar/hull.py`):** Upgrade `K.deck`, `K.bulkhead`, `K.room` (by `kind`: `core`/`ecore`, `engroom`, `magazine`, `hrack`/`machinery`, `hangar`, `bridge`/`hcorr`/`crew`/`archive`), `K.organ_room`, `K.hoop`, `K.septum`, and `hl.insides` in place (backward compatible with every existing ship build sheet) so plain chamfered boxes and flat slabs become girdered decks, arched ribbed bulkheads, cylindrical reactors/turbines/shell racks/equipment bays, sculpted organic sacs/bone struts, and collared crystal waveguides. Keep every part strictly within `_room_fit()` skin margins and R226 seam bounds.
+2. **Shared per-faction interior trim atlas (`tools/blender/kits/shared/paint_stack.py`, `tools/blender/kits/<faction>/stack.py`, reusing `tools/recipe/export7.py:568`):** Auto-apply box/triplanar UVs to `role == 'interior'` geometry and bind one shared 512px or 1024px interior trim set (`albedo`, `normal`, `orm`, optional `emission`) per faction so interiors carry real baked normal/roughness/AO maps with negligible VRAM cost.
+3. **Contrast & palette fixes folded into active rebakes:** Lift `INSIDE_TINT` from `0.18`/`0.20` toward `0.55` across `voidsworn`, `hegemony`, `hullbreakers`, and `eclipse`, and flip `CORE_RGB = (44, 255, 24)` in `tools/blender/kits/eclipse/stack.py:81` to Eclipse violet-white (`#1422`, zero green inside).
+4. **Cutaway QA & export audit gate (`tools/blender/build_sheets/layout.py`, `tools/recipe/check_export.py`, `tools/recipe/check_export_selftest.py`):** Add a cutaway/section render to ship build review sheets and report/check interior trim maps and structural triangle counts on V2 stack exports, while preserving `surface_check.py` (0 outside room pixels, R99) and `death_seam_check.gd` (0 seam leaks, R226).
 
 ---
 
@@ -170,15 +188,15 @@ While Wounds V2 works immediately on all 27+ already-installed ships via the run
 2. 8-ray footprint check shrinks/nudges cutouts on a narrow ring-arc stand-in (Eclipse Zenith geometry) and switches thin plates (`thickness < 0.4 * R`) to `thin_shear`, producing zero off-hull vertices or floating overlays.
 3. Normal-gated overlay projection produces zero back-face or opposite-strut overlay triangles.
 4. Mid-battle cutouts open `K_HOLE` at Stage 2+ and on heavy hits on authored-interior hulls while preserving all `interior: true` triangles and keeping legacy hollow hulls sealed until Stage 4.
-5. All 6 `wound_kind` values (0..5) load from `faction_looks.json`, shaders compile with zero warnings, `late_shader_check.gd` reports 0 late shaders, Chorus shaders contain zero magenta literals, and Glasswright/Chorus/Directorate marks emit zero soot or hardcoded orange.
+5. **Layer 1 + Layer 2 verification:** Unified triplanar PBR interior shader (`SH.INTERIOR`) compiles cleanly for all 6 `wound_kind` patterns (0..5), `late_shader_check.gd` reports 0 late shaders, Chorus shaders contain zero magenta literals, Glasswright/Chorus/Directorate marks emit zero soot or hardcoded orange, and breach-mouth 3D dressing spawns faction-appropriate snapped beams/conduits (metal), bone ribs/tendons (Chorus), crystal shards (Glasswrights), or obsidian trusses/violet buses (Eclipse) with zero out-of-hull drift.
 6. Folded `#1692(d)` checks: `prism`, `star`, and `nlance` each emit their own distinct mark styles (`S_PRISM`, `S_STAR`, `S_NLANCE`).
 7. Capability-loss checks: disabling `weapons[slot].off > 0` jams that exact slot's turret(s) and unjams on repair; tiered engine degradation shuts down nozzles cleanly and NEVER triggers Hullbreaker black soot on Glasswright, Chorus, Eclipse, or Directorate hulls.
 8. Live-to-wreck continuity check: Glasswright and Chorus wreck interiors keep their faction interior shader (never matte black `roughness = 1.0` `WRECK_SOOT`).
 
 ### Real 3D GPU Look-Bench Proof (`godot/bench/look_moments_wounds_v2.json`, queued after green CI + passed review per R407)
-Capture all 6 reference ships (`V16_37` Sunward Vigil, `H10_23` Directorate Dominion, `C15s_23` Hullbreaker Wrecker, `B21_11` Chorus Bladeback, `I15_11` Glasswright Prism, `D21_23` Eclipse Zenith) at **camera 170** and **camera 26**, before (`VS_WOUNDS_V2=0`) beside after (`VS_WOUNDS_V2=1`), at most 720 px tall with code names and revision stamped:
+Capture all 6 reference ships (`V16_37` Sunward Vigil, `H10_23` Directorate Dominion, `C15s_23` Hullbreaker Wrecker, `B21_11` Chorus Bladeback, `I15_11` Glasswright Prism, `D21_23` Eclipse Zenith) at **camera 170** and **camera 26** (close-up inspection of triplanar interior PBR, breach-mouth 3D beams/ribs/shards/trusses, and cavity lighting), before (`VS_WOUNDS_V2=0`) beside after (`VS_WOUNDS_V2=1`), at most 720 px tall with code names and revision stamped:
 1. 1 heavy hit (healthy hull -> surface fracture/scuff or small tight breach)
-2. Mid-battle 50% hull (real cutouts + lit authored interiors + capability loss: knocked-out turret & guttering engine)
+2. Mid-battle 50% hull (real cutouts + Layer 1 triplanar lit authored interiors + Layer 2 breach-mouth 3D dressing + capability loss: knocked-out turret & guttering engine)
 3. Severe 20% hull (crippled engines, open breached compartments, venting live wounds)
 4. Death break transition (showing seamless interior continuity from live breach into broken wreck)
 5. Solo GPU frame-time gate check (20-ship battle, p99 within the 12.5 ms RTX 5080 gate).
