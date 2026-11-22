@@ -27,6 +27,7 @@ func _init() -> void:
 	R = api.R
 	var cases := [
 		["fold: an unspent Fold ends when the ship's next turn starts", c_fold_ends],
+		["fold: an enemy Fold crosses the round boundary and ends when the enemy's next turn starts", c_fold_enemy],
 		["fold: a spent Fold makes exactly one attack miss", c_fold_once],
 		["frenzy: the +20% bonus ends when the ship's next turn starts", c_frenzy_ends],
 		["frenzy: regrowth and ordinary feeding share the Chorus feed cap in a round", c_shared_cap],
@@ -75,3 +76,13 @@ func c_shared_cap() -> Array:
 	var total = u["hp"] - 100
 	var fr2 = R.frenzyRegrow(u, 1000)
 	return [total == cap and fed == 80 and fr == cap - 80 and fr2 == 0, "cap %s, feed %s, frenzy %s, total %s, again %s" % [cap, fed, fr, total, fr2]]
+
+func c_fold_enemy() -> Array:
+	fresh(["h_picket"], "hegemony", "vex", "deathless", ["d_scythe"])
+	var e = E[0]; e["fold"] = true   # folded on the enemy turn, the last turn of the round
+	var r0 = B["round"]
+	B["round"] = r0 + 1; R.startSideTurn("player")   # the next round opens with the player's turn
+	var kept = R.jt(e.get("fold"))
+	var s1 = [true, true]; var missed = R.foldMiss(e, s1)   # the player's attack in the new round
+	e["fold"] = true; R.startSideTurn("enemy")
+	return [kept and missed and s1 == [false, false] and not R.jt(e.get("fold")), "kept into round %d %s, player shot missed %s, after the enemy's next turn %s" % [r0 + 1, kept, missed, e.get("fold")]]
