@@ -94,6 +94,24 @@ What moved behind a hover or a key (all still reachable):
 | the old log | three lines or a one-line ticker above the shelf; L opens the full history |
 | the status line's state words | hover the status line for their definitions |
 
+### Planning a ship's turn (issue 1589, RULEBOOK 9.17a)
+
+The ship's turn is a plan on screen until the player commits it. Code: `battle.gd` `plan` (the ghost's reach state),
+`aims` (each pick: an enemy and the guns aimed at it), `plan_steps` (what the plan was before each step, for Backspace).
+
+- Blue hex: the ghost moves there. Q/E: it turns (on the ship's own hex too, as the rules' own reach state with that
+  facing). Enemy with a red ring: every free gun that bears from the ghost aims at it. An enemy no gun reaches, with
+  nothing planned yet, plans a Burn and fire (the ghost stands on its stop).
+- The ghost is the see-through hull with a bright outline (an inverted shell, `GHOST_EDGE`); picked enemies wear the lock
+  ring; the card lists the move, each pick with its expected damage from the ghost, and the free guns left.
+- Moving or turning the ghost keeps the picks whose guns still bear and says which fell away.
+- Commit (Enter, the card's button, or a second click on the planned hex or a picked enemy): one `_cmd` sends `api.move`
+  and then each pick's `api.fire`, so the batch plays move then fire as one event, and issue 1581's look-ahead turns the
+  guns while the hull brakes. A pick the move made impossible is dropped with a toast.
+- Backspace pops one step; with no plan open it is the rules' undo of a played move (9.17). Esc clears the whole plan. Any
+  rules command clears the plan.
+- Check: `godot/scenes/battle/test/plan_commit_check.gd`.
+
 ### The after-run screen (DB1, issue 805)
 
 Ryan picked DB1, The Ledger Page (R260 and R261). Build from
