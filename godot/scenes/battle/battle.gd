@@ -3886,7 +3886,10 @@ func _rotate(d: int) -> void:
 	# states a move that starts with a turn uses). Only when the search has none (a skill's free turn) does it go to the
 	# rules at once, as before.
 	var own: String = board.key(u["q"], u["r"])
-	if plan == null and atk == null and _usable(u) and reach_alt.has(own):
+	var ru0 = api.unit(sel) if _api_join() else null
+	var free_turn: bool = ru0 != null and float(_z0(ru0.get("treeFreeTurn"))) > 0.0   # Artoo on PR 1643: the reach search
+	# does not price a skill's free turn, so with one earned the turn goes to the rules' own rotate, as before
+	if plan == null and atk == null and _usable(u) and reach_alt.has(own) and not free_turn:
 		var want := posmod(int(u["facing"]) + d, 6)
 		var best = null
 		for st in reach_alt[own]:
@@ -4224,14 +4227,22 @@ func _target(tid: String) -> void:
 		target = tid
 		armed = -1
 		sfx.play("ui_confirm", {"gain": 0.707946})
-	elif plan == null and aims.is_empty():
+	elif aims.is_empty():
+		# Burn and fire, also over a planned move (Artoo on PR 1643): the ghost goes to the stop the rules pick for this
+		# target, as one more step that Backspace takes back
 		_plan_step()
+		var had = plan
+		var had_k := plan_k
+		plan = null
+		plan_k = ""
 		_update_target_plan(tid)
 		if target != "":
 			sfx.play("ui_confirm", {"gain": 0.707946})
 		else:
 			plan_steps.pop_back()
-			hud.toast(_cant_fire_reason(tid))
+			plan = had
+			plan_k = had_k
+			hud.toast(("No ready gun bears on %s from the planned hex, and no stop on the way reaches it." % _name(tid)) if had != null else _cant_fire_reason(tid))
 	elif _firing_set(tid, false).is_empty():
 		hud.toast(("No ready gun bears on %s from the planned hex." % _name(tid)) if plan != null else _cant_fire_reason(tid))
 	else:

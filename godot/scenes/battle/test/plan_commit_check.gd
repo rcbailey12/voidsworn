@@ -125,6 +125,27 @@ func _run() -> void:
 		return
 	b.select(ship, "roster")
 	await _wait_idle(5000)
+	# a skill's free turn (Artoo on PR 1643): with one earned, Q/E still turn at once through the rules' rotate, which spends
+	# the free turn and no movement; Backspace then takes it back as a played move (R376)
+	var ru = b.api.unit(ship)
+	var mp0 = ru["mp"]
+	var f0 := int(ru["facing"])
+	ru["treeFreeTurn"] = 1
+	b._rotate(1)
+	await _wait_idle(30000)
+	ru = b.api.unit(ship)
+	_check(b.plan == null and int(ru["facing"]) == posmod(f0 + 1, 6) and ru["mp"] == mp0 and float(b._z0(ru.get("treeFreeTurn"))) == 0.0,
+		"with a free turn earned, Q/E turn through the rules at once and spend no movement")
+	var tw := Time.get_ticks_msec()
+	while not _idle() and Time.get_ticks_msec() - tw < 30000:   # the threat map restarts after the turn; undo waits for it
+		await process_frame
+	b._on_key(KEY_BACKSPACE)
+	await _wait_idle(30000)
+	ru = b.api.unit(ship)
+	_check(int(ru["facing"]) == f0, "Backspace takes that turn back")
+	ru["treeFreeTurn"] = 0
+	b.select(ship, "roster")
+	await _wait_idle(5000)
 	var before := _rules()
 	_click_hex(int(best.q), int(best.r))
 	var bk: String = b.board.key(int(best.q), int(best.r))
@@ -148,7 +169,7 @@ func _run() -> void:
 			picks.append(e)
 			if picks.size() == 2:
 				break
-	_check(b.aims.size() == picks.size() and picks.size() >= 1, "each enemy clicked becomes a pick from the ghost (%d)" % b.aims.size())
+	_check(b.aims.size() == 2 and picks.size() == 2, "two enemies clicked become two picks from the ghost (%d)" % b.aims.size())
 	if b.aims.size() == 2:
 		var a0: Array = b.aims[0]["guns"]
 		var a1: Array = b.aims[1]["guns"]
@@ -187,13 +208,21 @@ func _run() -> void:
 	b._confirm()
 	_check(b.batches.size() == 1, "the commit makes one batch (%d)" % b.batches.size())
 	var kinds: Array = []
+	var hit_ids := {}
 	if b.batches.size() >= 1:
 		for ev in b.batches[0]["events"]:
 			var t := str(ev.get("t", ""))
+			if t == "fire" and str(ev.get("unit", "")) == ship:
+				hit_ids[str(ev.get("target", ""))] = true
 			if t in ["move", "fire"] and str(ev.get("unit", ev.get("by", ev.get("src", ship)))) == ship:
 				if kinds.is_empty() or kinds[-1] != t:
 					kinds.append(t)
 	_check(kinds.size() >= 2 and kinds[0] == "move" and kinds[1] == "fire", "in that batch the move plays first, then the fire (%s)" % str(kinds))
+	var all_fired := want_picks == picks.size()
+	for e in picks:
+		if not hit_ids.has(e):
+			all_fired = false
+	_check(picks.size() == 2 and all_fired, "every planned target is fired on in that batch (%s)" % str(hit_ids.keys()))
 	_check(b.plan == null and b.aims.is_empty(), "the plan is cleared once it is sent")
 	b.hold = false
 	await _wait_idle(90000)
