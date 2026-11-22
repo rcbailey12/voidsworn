@@ -391,11 +391,29 @@ function note(message) {
   process.stdout.write(JSON.stringify({ systemMessage: message }) + '\n');
 }
 
+// Compare what the Godot loader can read at each end of the turn, including untracked scenes.
+function dirtyGodotFiles(root, head) {
+  const names = [
+    git(root, ['diff', '--name-only', '--no-renames', '-z', head, '--', 'godot']),
+    git(root, ['ls-files', '--others', '--exclude-standard', '-z', '--', 'godot'])
+  ].join('').split('\0').filter(file => godotCode.test(file));
+  const dirty = {};
+  for (const file of names) {
+    const target = path.join(root, file);
+    const stat = fs.lstatSync(target, { throwIfNoEntry: false });
+    if (stat?.isFile()) dirty[file] = createHash('sha256').update(fs.readFileSync(target)).digest('hex');
+    else if (stat?.isSymbolicLink()) dirty[file] = 'link:' + fs.readlinkSync(target);
+    else dirty[file] = null;
+  }
+  return dirty;
+}
+
 function godotTurn(event) {
   const { root } = projectCheckout(event.cwd);
   const file = stateFile(process.env.CLAUDE_PROJECT_DIR || root, event.session_id);
   if (event.hook_event_name === 'UserPromptSubmit') {
-    fs.writeFileSync(file, JSON.stringify({ head: git(root, ['rev-parse', 'HEAD']).trim() }), { mode: 0o600 });
+    const head = git(root, ['rev-parse', 'HEAD']).trim();
+    fs.writeFileSync(file, JSON.stringify({ head, dirty: dirtyGodotFiles(root, head) }), { mode: 0o600 });
     return;
   }
   if (event.hook_event_name === 'SessionEnd') {
@@ -405,11 +423,10 @@ function godotTurn(event) {
   const state = readState(file);
   const start = typeof state.head === 'string' ? state.head : 'HEAD';
   if (!/^(?:[a-f0-9]{40,64}|HEAD)$/.test(start)) throw new Error('Invalid Godot check baseline.');
-  const changed = [
-    git(root, ['diff', '--name-only', '--no-renames', '-z', start, '--', 'godot']),
-    git(root, ['ls-files', '--others', '--exclude-standard', '-z', '--', 'godot'])
-  ].join('').split('\0');
-  if (!changed.some(file => godotCode.test(file))) return;
+  const before = state.dirty || {};
+  const after = dirtyGodotFiles(root, start);
+  if (Object.keys(before).length === Object.keys(after).length &&
+      Object.keys(after).every(name => before[name] === after[name])) return;
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'voidsworn-godot-parse-'));
   let check;
   try {
@@ -442,7 +459,10 @@ function godotTurn(event) {
     fs.writeFileSync(file, JSON.stringify({ ...state, failure: digest }), { mode: 0o600 });
     return 'Godot parse check failed. Fix the errors before ending the turn.\n' + failure;
   }
-  if (state.failure) fs.writeFileSync(file, JSON.stringify({ head: state.head }), { mode: 0o600 });
+  if (state.failure) {
+    delete state.failure;
+    fs.writeFileSync(file, JSON.stringify(state), { mode: 0o600 });
+  }
   process.stdout.write('Godot parse check passed.\n');
 }
 

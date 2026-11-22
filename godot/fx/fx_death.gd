@@ -2263,10 +2263,10 @@ static func _death_inner(fx, s, cause: String) -> float:
 	var T: float = fx.now
 	s.set_meta("death_wall_usec", Time.get_ticks_usec())   # issue 1232: the break's wait for a late cut is in real time
 	s.remove_collider()
-	if s.squadron:
-		return _wing_death(fx, s)
 	if cause == "melt" and s.faction != "chorus": s.set_meta("death_melt", true)
 	s.set_meta("death_cause", cause)   # issue 1586 (fx_death_beats.gd)
+	if s.squadron:
+		return _wing_death(fx, s)
 	# a metal acid kill's break and cook-off spark in its faction's colours (Neon on PR 1646); a Chorus acid kill stays green
 	var tint := dcol(s, "spark", Color(0.95, 0.34, 0.08)) if cause != "melt" else (boom_col(s, "spark", Color(0.95, 0.34, 0.08)) if melting(s) else Color(0.55, 0.65, 0.12))
 	_power_down(fx, s)
@@ -2374,7 +2374,8 @@ static func _wing_death(fx, s) -> float:
 static func _wing_spark(fx, s, p: Vector3, frame: Transform3D) -> void:
 	var soft: bool = fx.reduce_flashing or not fx.flash_at(p, fx.now, 28.0 * STAGING_UNITS_PER_PIXEL, 28.0, 1.0 / 60.0)
 	_pic(fx, s, p, "weapons/impact/flash_", 28.0, 0.20 if soft else 1.0 / 60.0, 3.2, 1.25 if soft else 5.2, soft, "flash", frame, Vector3.ZERO, {"seed": 0})
-	fx.later(fx.now + 1.0 / 60.0, _smoke_one.bind(fx, s, p, 24.0, 0.22, frame, Vector3.ZERO, {"seed": 0}))
+	if not melting(s):
+		fx.later(fx.now + 1.0 / 60.0, _smoke_one.bind(fx, s, p, 24.0, 0.22, frame, Vector3.ZERO, {"seed": 0}))
 
 
 # Samples leave the spinning hit point in world space. Each new normal turns with the hull, curling the trail.
