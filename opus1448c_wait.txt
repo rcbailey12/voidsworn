@@ -1,0 +1,8 @@
+OPUS1448C_WAIT.bat waiting for OPUS1434_LOAD14 exit in opus1434n_wait.txt Sat 11/21/2026 17:20:12.66 
+HELD 17:31:00: OPUS1448C_WAIT stopped while only waiting for the 1413f publishes (Board Nov 21 23:30 UTC); restarts as OPUS1448C_WAIT2.bat after
+OPUS1448C_WAIT2.bat waiting for OPUS1434_LOAD14 exit in opus1434n_wait.txt Sat 11/21/2026 17:37:16.09 
+OPUS1448_SND1C start 17:37:16.10 
+OPUS1448_SND1C exit 0 at 18:02:02.52 
+run folder out_20261121_173716_21528
+result: done PASS
+all done Sat 11/21/2026 18:02:02.96 

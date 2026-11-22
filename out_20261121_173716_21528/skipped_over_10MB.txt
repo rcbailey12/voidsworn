@@ -1,0 +1,2 @@
+out_new\export\Voidsworn.exe 104.2 MB
+out_new\export\Voidsworn.pck 6,624.9 MB

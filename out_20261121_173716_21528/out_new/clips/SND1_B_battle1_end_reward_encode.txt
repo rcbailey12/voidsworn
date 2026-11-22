@@ -1,0 +1,17 @@
+[aist#0:1/pcm_s16le @ 000002047f524b00] Guessed Channel Layout: stereo
+Input #0, avi, from 'C:\Users\rcbai\Downloads\voidsworn_test\opus1448\out_20261121_173716_21528\out_new\SND1_route10.avi':
+  Duration: 00:06:22.90, start: 0.000000, bitrate: 44053 kb/s
+  Stream #0:0: Video: mjpeg (Baseline) (MJPG / 0x47504A4D), yuvj420p(pc, bt470bg/unknown/unknown), 1920x1080 [SAR 1:1 DAR 16:9], 42509 kb/s, 30 fps, 30 tbr, 30 tbn
+  Stream #0:1: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, stereo, s16, 1536 kb/s
+Stream mapping:
+  Stream #0:1 -> #0:0 (pcm_s16le (native) -> aac (native))
+Press [q] to stop, [?] for help
+Output #0, ipod, to 'C:\Users\rcbai\Downloads\voidsworn_test\opus1448\out_20261121_173716_21528\out_new\clips\SND1_B_battle1_end_reward.m4a':
+  Metadata:
+    encoder         : Lavf63.1.102
+  Stream #0:0: Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 160 kb/s
+    Metadata:
+      encoder         : Lavc63.1.102 aac
+[out#0/ipod @ 000002047f4c1740] video:0KiB audio:404KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 1.423008%
+size=     410KiB time=00:00:27.10 bitrate= 124.0kbits/s speed=  75x elapsed=0:00:00.36    
+[aac @ 000002047f532200] Qavg: 17001.486

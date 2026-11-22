@@ -1,0 +1,36 @@
+Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'C:\Users\rcbai\Downloads\voidsworn_test\opus1448\out_20261121_173716_21528\out_new\clips\SND1_C_battle2_end_reward.m4a':
+  Metadata:
+    major_brand     : M4A 
+    minor_version   : 512
+    compatible_brands: M4A isomiso2
+    encoder         : Lavf63.1.102
+  Duration: 00:00:21.80, start: 0.000000, bitrate: 162 kb/s
+  Stream #0:0[0x1](und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 160 kb/s (default)
+    Metadata:
+      handler_name    : SoundHandler
+[Parsed_volumedetect_0 @ 000001b21455d600] n_samples: 0
+Stream mapping:
+  Stream #0:0 -> #0:0 (aac (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'pipe:':
+  Metadata:
+    major_brand     : M4A 
+    minor_version   : 512
+    compatible_brands: M4A isomiso2
+    encoder         : Lavf63.1.102
+  Stream #0:0(und): Audio: pcm_s16le, 48000 Hz, stereo, s16, 1536 kb/s (default)
+    Metadata:
+      encoder         : Lavc63.1.102 pcm_s16le
+      handler_name    : SoundHandler
+[Parsed_volumedetect_0 @ 000001b214581d40] n_samples: 2092800
+[Parsed_volumedetect_0 @ 000001b214581d40] mean_volume: -29.0 dB
+[Parsed_volumedetect_0 @ 000001b214581d40] max_volume: -12.9 dB
+[Parsed_volumedetect_0 @ 000001b214581d40] histogram_12db: 5
+[Parsed_volumedetect_0 @ 000001b214581d40] histogram_13db: 43
+[Parsed_volumedetect_0 @ 000001b214581d40] histogram_14db: 65
+[Parsed_volumedetect_0 @ 000001b214581d40] histogram_15db: 65
+[Parsed_volumedetect_0 @ 000001b214581d40] histogram_16db: 196
+[Parsed_volumedetect_0 @ 000001b214581d40] histogram_17db: 770
+[Parsed_volumedetect_0 @ 000001b214581d40] histogram_18db: 2442
+[out#0/null @ 000001b2144facc0] video:0KiB audio:4088KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+size=N/A time=00:00:21.80 bitrate=N/A speed=1.65e+03x elapsed=0:00:00.01    
