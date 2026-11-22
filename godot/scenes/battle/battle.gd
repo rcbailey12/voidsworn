@@ -3936,16 +3936,15 @@ func _turns_ok(rot: int) -> bool:
 		if not R.canRotate(v):
 			return false
 		if float(_z0(v.get("treeFreeTurn"))) > 0.0:
-			v["treeFreeTurn"] = 0
-			v["facing"] = posmod(int(v["facing"]) + signi(rot), 6)
-			continue
-		if R.freePivot(v):
-			v["pivotUsed"] = true
+			v["treeFreeTurn"] = 0   # a skill's free turn: no movement, no turn charge (Artoo on PR 1643: still checked below)
 		else:
-			v["mp"] = v["mp"] - 1
-			if R.jt(v.get("postFire")):
-				v["postMp"] = maxi(0, int(_z0(v.get("postMp"))) - 1)
-		v["turnsLeft"] = v["turnsLeft"] - 1
+			if R.freePivot(v):
+				v["pivotUsed"] = true
+			else:
+				v["mp"] = v["mp"] - 1
+				if R.jt(v.get("postFire")):
+					v["postMp"] = maxi(0, int(_z0(v.get("postMp"))) - 1)
+			v["turnsLeft"] = v["turnsLeft"] - 1
 		v["facing"] = posmod(int(v["facing"]) + signi(rot), 6)
 		if k < n - 1 and v["mp"] <= 0 and not _any_shot(v):
 			return false

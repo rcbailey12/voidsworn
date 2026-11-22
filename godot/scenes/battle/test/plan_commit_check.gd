@@ -163,6 +163,28 @@ func _run() -> void:
 	ru = b.api.unit(ship)
 	_check(int(ru["facing"]) == f0, "with no plan open, Backspace takes the played turn back (R376)")
 	ru["treeFreeTurn"] = 0
+	# a two-step turn whose middle heading leaves no movement and no shot is refused before commit: the rules would end the
+	# activation after the first step (Codex run 2, Artoo on PR 1643: a free first step included)
+	var keep := {"mp": ru["mp"], "turnsLeft": ru["turnsLeft"], "pivotUsed": ru.get("pivotUsed"), "fac": ru["fac"]}
+	var fired_keep: Array = []
+	for w in ru["weapons"]:
+		fired_keep.append(w.get("fired"))
+		w["fired"] = true
+	ru["mp"] = 0
+	ru["turnsLeft"] = 2
+	ru["treeFreeTurn"] = 1
+	ru["fac"] = "chorus"   # the Chorus' free pivot makes the second step legal on its own, as in Codex's fixture
+	ru["pivotUsed"] = false
+	var one: bool = b._turns_ok(1)
+	var two: bool = b._turns_ok(2)
+	_check(one and not two, "a free first turn is allowed, a second step through a dead middle heading is refused (%s, %s)" % [one, two])
+	for i in ru["weapons"].size():
+		ru["weapons"][i]["fired"] = fired_keep[i]
+	ru["mp"] = keep["mp"]
+	ru["turnsLeft"] = keep["turnsLeft"]
+	ru["pivotUsed"] = keep["pivotUsed"]
+	ru["fac"] = keep["fac"]
+	ru["treeFreeTurn"] = 0
 	b.select(ship, "roster")
 	await _wait_idle(5000)
 	var before := _rules()
