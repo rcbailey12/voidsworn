@@ -1,0 +1,473 @@
+{
+ "about": "Issue 1235 run 2: hull wear as HP falls. Four hits (torpedo, battery, torpedo, battery) on a Sunward, Glasswright and Chorus cruiser, then hull HP set to 55% (wear, no list) and 22% (full wear and the crippled list), at camera 170 and 26. Run with --moments res://bench/look_moments_wear.json on main (before, with this branch's look_bench.gd for the pre and sync_t keys) and opus/issue-1235-wear (after).",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "26": [
+   768,
+   432
+  ]
+ },
+ "rows": [
+  {
+   "id": "wr_V16_37_hp55",
+   "group": "issue 1235 run 2 wear",
+   "label": "V16_37 at 55% hull after four hits",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp"
+    ],
+    [
+     "battery",
+     "battery"
+    ],
+    [
+     "torp",
+     "torp"
+    ],
+    [
+     "battery",
+     "battery"
+    ]
+   ],
+   "sync_t": {
+    "hp": 55.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 80,
+      "max": 100
+     },
+     "mid": {
+      "hp": 45,
+      "max": 100
+     },
+     "prow": {
+      "hp": 60,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wr_V16_37_hp22",
+   "group": "issue 1235 run 2 wear",
+   "label": "V16_37 at 22% hull after four hits",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp"
+    ],
+    [
+     "battery",
+     "battery"
+    ],
+    [
+     "torp",
+     "torp"
+    ],
+    [
+     "battery",
+     "battery"
+    ]
+   ],
+   "sync_t": {
+    "hp": 22.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 40,
+      "max": 100
+     },
+     "mid": {
+      "hp": 15,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wr_I15_11_hp55",
+   "group": "issue 1235 run 2 wear",
+   "label": "I15_11 at 55% hull after four hits",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp"
+    ],
+    [
+     "battery",
+     "battery"
+    ],
+    [
+     "torp",
+     "torp"
+    ],
+    [
+     "battery",
+     "battery"
+    ]
+   ],
+   "sync_t": {
+    "hp": 55.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 80,
+      "max": 100
+     },
+     "mid": {
+      "hp": 45,
+      "max": 100
+     },
+     "prow": {
+      "hp": 60,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wr_I15_11_hp22",
+   "group": "issue 1235 run 2 wear",
+   "label": "I15_11 at 22% hull after four hits",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp"
+    ],
+    [
+     "battery",
+     "battery"
+    ],
+    [
+     "torp",
+     "torp"
+    ],
+    [
+     "battery",
+     "battery"
+    ]
+   ],
+   "sync_t": {
+    "hp": 22.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 40,
+      "max": 100
+     },
+     "mid": {
+      "hp": 15,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wr_B21_11_hp55",
+   "group": "issue 1235 run 2 wear",
+   "label": "B21_11 at 55% hull after four hits",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp"
+    ],
+    [
+     "battery",
+     "battery"
+    ],
+    [
+     "torp",
+     "torp"
+    ],
+    [
+     "battery",
+     "battery"
+    ]
+   ],
+   "sync_t": {
+    "hp": 55.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 80,
+      "max": 100
+     },
+     "mid": {
+      "hp": 45,
+      "max": 100
+     },
+     "prow": {
+      "hp": 60,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wr_B21_11_hp22",
+   "group": "issue 1235 run 2 wear",
+   "label": "B21_11 at 22% hull after four hits",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp"
+    ],
+    [
+     "battery",
+     "battery"
+    ],
+    [
+     "torp",
+     "torp"
+    ],
+    [
+     "battery",
+     "battery"
+    ]
+   ],
+   "sync_t": {
+    "hp": 22.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 40,
+      "max": 100
+     },
+     "mid": {
+      "hp": 15,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     8.0,
+     1
+    ]
+   ]
+  }
+ ]
+}
