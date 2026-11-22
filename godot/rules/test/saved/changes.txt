@@ -1,10 +1,414 @@
-Saved manifest before: 10126a8ae9afe10268d9072f5c14c0f5fa4190f383a1f0e823bd0619e5ad03d6
-Saved manifest after: 282a310d7967849d34d6a3a5e4351fb26325e185a37f0cf9a55d4bf5e6fdf0a6
+Saved manifest before: 282a310d7967849d34d6a3a5e4351fb26325e185a37f0cf9a55d4bf5e6fdf0a6
+Saved manifest after: 156809b0448969ff4f5ca6b245123f23ec8f1b72cc960eb9536db8866790d32c
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
+FAIL battle s9
+  turn 43, round 2, after tick enemy; unit x017 (enemy d_jackal)
+  state.units[12].fold: true -> <missing>
+  later changed records: 458; total records: 502 -> 348
+FAIL battle s13
+  turn 76, round 3, after death x014; unit x09 (enemy b_razor)
+  state.units[4].frenzy: true -> <missing>
+  later changed records: 170; total records: 183 -> 247
+FAIL battle s15
+  turn 38, round 2, after tick enemy; unit x010 (enemy d_jackal)
+  state.units[5].fold: true -> <missing>
+  later changed records: 144; total records: 183 -> 173
+FAIL battle s19
+  turn 34, round 2, after tick enemy; unit x010 (enemy d_jackal)
+  state.units[5].fold: true -> <missing>
+  later changed records: 208; total records: 243 -> 179
+FAIL battle s27
+  turn 56, round 2, after tick enemy; unit x012 (enemy b_razor)
+  state.units[6].frenzy: true -> <missing>
+  later changed records: 183; total records: 194 -> 240
+FAIL battle s28
+  turn 39, round 2, after tick player; unit x08 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 301; total records: 250 -> 341
+FAIL battle s30
+  turn 67, round 2, after tick enemy; unit x013 (enemy b_razor)
+  state.units[7].frenzy: true -> <missing>
+  later changed records: 275; total records: 323 -> 343
+FAIL battle s39
+  turn 61, round 2, after tick enemy; unit x014 (enemy d_jackal)
+  state.units[7].fold: true -> <missing>
+  later changed records: 352; total records: 414 -> 366
+FAIL battle s40
+  turn 80, round 2, after fire x014; unit x014 (enemy b_razor)
+  state.units[9].fed: <missing> -> 2
+  later changed records: 190; total records: 248 -> 271
+FAIL battle s44
+  turn 31, round 2, after tick enemy; unit x07 (enemy d_jackal_h)
+  state.units[3].fold: false -> <missing>
+  later changed records: 96; total records: 128 -> 123
+FAIL battle s45
+  turn 41, round 2, after tick player; unit x04 (player b_razor_e)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 87; total records: 119 -> 129
+FAIL battle s48
+  turn 57, round 2, after activation x010; unit x010 (enemy b_razor)
+  state.units[5].fed: 1 -> 5
+  later changed records: 86; total records: 144 -> 144
+FAIL battle t_longfocus
+  turn 27, round 2, after tick enemy; unit x08 (enemy d_scythe_s)
+  state.units[4].fold: true -> <missing>
+  later changed records: 15; total records: 43 -> 40
+FAIL battle t_recordedangle
+  turn 18, round 2, after tick enemy; unit x08 (enemy d_scythe_s)
+  state.units[4].fold: true -> <missing>
+  later changed records: 35; total records: 53 -> 54
+FAIL battle t_flawforever
+  turn 18, round 2, after tick enemy; unit x08 (enemy d_scythe_s)
+  state.units[4].fold: true -> <missing>
+  later changed records: 38; total records: 57 -> 50
+FAIL battle t_refraction
+  turn 29, round 3, after tick enemy; unit x05 (enemy d_scythe_s)
+  state.units[2].fold: false -> <missing>
+  later changed records: 45; total records: 83 -> 83
+FAIL battle t_mirrorturns
+  turn 30, round 3, after tick enemy; unit x05 (enemy d_scythe_s)
+  state.units[2].fold: false -> <missing>
+  later changed records: 26; total records: 57 -> 57
+FAIL battle t_rechargelit
+  turn 17, round 2, after tick enemy; unit x05 (enemy d_scythe_s)
+  state.units[2].fold: false -> <missing>
+  later changed records: 21; total records: 39 -> 39
+FAIL battle t_deployread
+  turn 15, round 2, after tick enemy; unit x05 (enemy d_scythe_s)
+  state.units[2].fold: false -> <missing>
+  later changed records: 8; total records: 24 -> 24
+FAIL battle t_castcorrected
+  turn 15, round 2, after tick enemy; unit x05 (enemy d_scythe_s)
+  state.units[2].fold: false -> <missing>
+  later changed records: 17; total records: 33 -> 33
+FAIL battle t_ecl_restoreninth
+  turn 23, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 58; total records: 82 -> 82
+FAIL battle t_ecl_restoredbeyond
+  turn 21, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 115; total records: 137 -> 134
+FAIL battle t_ecl_copiescontribute
+  turn 20, round 2, after tick player; unit x06 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 49; total records: 70 -> 70
+FAIL battle t_ecl_tenthframe
+  turn 28, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 87; total records: 115 -> 116
+FAIL battle t_ecl_earliercopy
+  turn 17, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 64; total records: 82 -> 81
+FAIL battle t_ecl_arcswarm
+  turn 39, round 2, after tick player; unit x07 (player d_jackal)
+  state.units[2].fold: false -> <missing>
+  later changed records: 34; total records: 74 -> 74
+FAIL battle t_ecl_noonchoice
+  turn 18, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 68; total records: 87 -> 87
+FAIL battle t_ecl_copyfires
+  turn 19, round 2, after tick player; unit x07 (player d_jackal)
+  state.units[2].fold: true -> <missing>
+  later changed records: 37; total records: 57 -> 57
+FAIL battle t_ecl_coronashadow
+  turn 20, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: false -> <missing>
+  later changed records: 35; total records: 56 -> 56
+FAIL battle t_ecl_everyframe
+  turn 17, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 56; total records: 74 -> 74
+FAIL battle t_ecl_noonrepeat
+  turn 19, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 50; total records: 70 -> 68
+FAIL battle t_ecl_onesuncopy
+  turn 18, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 44; total records: 63 -> 63
+FAIL battle t_ecl_copiedbehind
+  turn 19, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 106; total records: 126 -> 124
+FAIL battle t_ecl_unseenarchive
+  turn 22, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 37; total records: 60 -> 60
+FAIL battle t_ecl_uncopiedtarget
+  turn 17, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 62; total records: 80 -> 80
+FAIL battle t_ecl_iterationkill
+  turn 19, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 75; total records: 95 -> 95
+FAIL battle t_ecl_silentarchive
+  turn 18, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 75; total records: 94 -> 94
+FAIL battle t_ecl_outshadow
+  turn 24, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 49; total records: 64 -> 74
+FAIL battle t_ecl_longcopy
+  turn 18, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 48; total records: 63 -> 67
+FAIL battle t_ecl_platesshadow
+  turn 17, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 71; total records: 89 -> 84
+FAIL battle t_ecl_twicerestored
+  turn 19, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 82; total records: 102 -> 102
+FAIL battle t_ecl_layersshift
+  turn 20, round 2, after tick player; unit x06 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 55; total records: 72 -> 76
+FAIL battle t_ecl_nolayer
+  turn 22, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 87; total records: 110 -> 106
+FAIL battle t_ecl_stillness
+  turn 25, round 2, after tick player; unit x06 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 107; total records: 129 -> 133
+FAIL battle t_ecl_tenthousand
+  turn 27, round 2, after tick player; unit x06 (player d_scythe)
+  state.units[1].fold: true -> <missing>
+  later changed records: 141; total records: 169 -> 169
+FAIL battle t_ecl_restoredfleet
+  turn 20, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 87; total records: 105 -> 108
+FAIL battle t_ecl_iterationswap
+  turn 21, round 2, after tick player; unit x06 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 28; total records: 50 -> 49
+FAIL battle t_ecl_flagshipindex
+  turn 23, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 41; total records: 65 -> 65
+FAIL battle t_ecl_framezero
+  turn 19, round 2, after tick player; unit x04 (player d_scythe)
+  state.units[0].fold: false -> <missing>
+  later changed records: 80; total records: 100 -> 61
+FAIL battle t_rundown
+  turn 15, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 62; total records: 77 -> 78
+FAIL battle t_razorprey
+  turn 18, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 75; total records: 94 -> 94
+FAIL battle t_frenzyfeeds
+  turn 18, round 2, after tick player; unit x04 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 106; total records: 121 -> 125
+FAIL battle t_breathbite
+  turn 22, round 2, after tick player; unit x06 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 116; total records: 125 -> 139
+FAIL battle t_throatred
+  turn 17, round 2, after tick player; unit x04 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 49; total records: 67 -> 67
+FAIL battle t_preyeverymouth
+  turn 21, round 2, after tick player; unit x04 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 86; total records: 107 -> 108
+FAIL battle t_growhurts
+  turn 12, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 91; total records: 102 -> 104
+FAIL battle t_skinthick
+  turn 11, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 45; total records: 68 -> 68
+FAIL battle t_fleshknit
+  turn 11, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 42; total records: 54 -> 54
+FAIL battle t_tideend
+  turn 11, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 31; total records: 43 -> 43
+FAIL battle t_acidseams
+  turn 14, round 2, after tick player; unit x06 (player b_razor)
+  state.units[2].frenzy: true -> <missing>
+  later changed records: 33; total records: 48 -> 48
+FAIL battle t_firstthroat
+  turn 12, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 52; total records: 65 -> 61
+FAIL battle t_throatdeep
+  turn 10, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 21; total records: 32 -> 32
+FAIL battle t7a_onelens
+  turn 30, round 2, after tick enemy; unit x08 (enemy d_scythe_s)
+  state.units[4].fold: true -> <missing>
+  later changed records: 11; total records: 42 -> 41
+FAIL battle t7a_sunlens
+  turn 30, round 2, after tick enemy; unit x08 (enemy d_scythe_s)
+  state.units[4].fold: true -> <missing>
+  later changed records: 10; total records: 41 -> 41
+FAIL battle t7a_weakside
+  turn 16, round 2, after tick enemy; unit x05 (enemy d_scythe_s)
+  state.units[2].fold: false -> <missing>
+  later changed records: 22; total records: 39 -> 39
+FAIL battle t7a_prismsface
+  turn 17, round 2, after tick enemy; unit x05 (enemy d_scythe_s)
+  state.units[2].fold: false -> <missing>
+  later changed records: 21; total records: 39 -> 39
+FAIL battle t7a_lensrotates
+  turn 16, round 2, after tick enemy; unit x05 (enemy d_scythe_s)
+  state.units[2].fold: true -> <missing>
+  later changed records: 21; total records: 38 -> 38
+FAIL battle t7a_facetlit
+  turn 17, round 2, after tick enemy; unit x05 (enemy d_scythe_s)
+  state.units[2].fold: false -> <missing>
+  later changed records: 17; total records: 35 -> 35
+FAIL battle t7b_ecl_formation_a
+  turn 20, round 2, after tick player; unit x06 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 75; total records: 96 -> 95
+FAIL battle t7b_ecl_formation_b
+  turn 21, round 2, after tick player; unit x06 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 67; total records: 87 -> 89
+FAIL battle t7b_ecl_formation_c
+  turn 20, round 2, after tick player; unit x06 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 36; total records: 57 -> 57
+FAIL battle t7b_ecl_formation_d
+  turn 26, round 2, after tick player; unit x06 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 33; total records: 60 -> 60
+FAIL battle t7b_ecl_shadow
+  turn 17, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 35; total records: 53 -> 53
+FAIL battle t7b_ecl_wall
+  turn 26, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: false -> <missing>
+  later changed records: 85; total records: 112 -> 112
+FAIL battle t7b_ecl_archive
+  turn 18, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 71; total records: 90 -> 78
+FAIL battle t7b_ecl_iterfire
+  turn 17, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 90; total records: 91 -> 108
+FAIL battle t7b_ecl_triage
+  turn 18, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 89; total records: 94 -> 108
+FAIL battle t7b_ch_teeth
+  turn 14, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 82; total records: 94 -> 97
+FAIL battle t7b_ch_growth
+  turn 12, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 96; total records: 109 -> 109
+FAIL battle t7b_ecl_targetarchived
+  turn 20, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 10; total records: 31 -> 31
+FAIL battle t529_roles_screen
+  turn 14, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 61; total records: 73 -> 76
+FAIL battle t529_roles_mend
+  turn 13, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 68; total records: 81 -> 82
+FAIL battle t529_roles_change
+  turn 17, round 2, after tick player; unit x04 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 71; total records: 89 -> 89
+FAIL battle t529_scent
+  turn 17, round 2, after tick player; unit x04 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 35; total records: 49 -> 53
+FAIL battle t529_may_grow_no
+  turn 12, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 86; total records: 99 -> 99
 FAIL battle r1653_coolant
-  turn 3, round 1, after ability x04; unit x04 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 170; total records: 174 -> 165
-FAIL: saved Godot results; 354 battles checked, 1 changed, 0 other files changed, 1 failures; 11.932 s
+  turn 21, round 2, after tick player; unit x04 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 149; total records: 165 -> 171
+FAIL battle s1649_fold
+  turn 35, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[0].fold: false -> <missing>
+  later changed records: 127; total records: 163 -> 109
+FAIL battle s1649_frenzy
+  turn 6, round 1, after end activation; unit x04 (player b_razor)
+  state.units[0].fed: <missing> -> 0
+  later changed records: 112; total records: 100 -> 119
+FAIL battle t_ecl_outshadow_m3
+  turn 24, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 49; total records: 69 -> 74
+FAIL battle t_ecl_longcopy_m3
+  turn 18, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 48; total records: 63 -> 67
+FAIL battle t_ecl_tenthousand_m3
+  turn 25, round 2, after tick player; unit x06 (player d_scythe)
+  state.units[1].fold: true -> <missing>
+  later changed records: 143; total records: 169 -> 167
+FAIL battle t_ecl_restoredfleet_m3
+  turn 20, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 87; total records: 105 -> 108
+FAIL battle t_tideend_m3
+  turn 12, round 2, after tick player; unit x03 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 13; total records: 26 -> 26
+FAIL battle t7a_facetlit_m3
+  turn 17, round 2, after tick enemy; unit x05 (enemy d_scythe_s)
+  state.units[2].fold: false -> <missing>
+  later changed records: 17; total records: 35 -> 35
+FAIL battle t_ecl_tenthframe_m3
+  turn 28, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 87; total records: 115 -> 116
+FAIL battle t_ecl_earliercopy_m3
+  turn 17, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 65; total records: 83 -> 82
+FAIL battle t_throatred_m3
+  turn 17, round 2, after tick player; unit x04 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 38; total records: 50 -> 56
+FAIL battle t_preyeverymouth_m3
+  turn 36, round 2, after tick player; unit x06 (player b_razor)
+  state.units[0].frenzy: true -> <missing>
+  later changed records: 87; total records: 124 -> 100
+FAIL battle t_ecl_noonrepeat_m3
+  turn 19, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 50; total records: 70 -> 53
+FAIL battle t_ecl_onesuncopy_m3
+  turn 19, round 2, after tick player; unit x05 (player d_jackal)
+  state.units[1].fold: true -> <missing>
+  later changed records: 50; total records: 70 -> 70
+FAIL battle t7a_sunlens_m3
+  turn 30, round 2, after tick enemy; unit x08 (enemy d_scythe_s)
+  state.units[4].fold: false -> <missing>
+  later changed records: 10; total records: 41 -> 41
+FAIL battle t_flawforever_m3
+  turn 18, round 2, after tick enemy; unit x08 (enemy d_scythe_s)
+  state.units[4].fold: true -> <missing>
+  later changed records: 38; total records: 57 -> 50
+FAIL: saved Godot results; 354 battles checked, 102 changed, 0 other files changed, 102 failures; 15.443 s
