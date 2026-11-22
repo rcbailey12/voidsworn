@@ -13,6 +13,8 @@ extends Node
 #   moments  every row of bench/look_moments.json (weapons on a hull and on a shield, shield states, death classes, one
 #            weapon on every weight, the eight PR 327 looks), each at the three cameras, as 30 frames a second strips:
 #            DIR/moments/<id>__c<cam>.png (cells side by side, 384x216 each; camera 170 is a 1 to 1 pixel crop).
+#   props    (issue 1767, only when asked: --part props) the live board's stations and hulks at cameras 170 and 26 through
+#            render/board.gd itself: DIR/props/<item>__c<cam>.png, 1280x720 at 1 to 1 (VS_1767_OLD=1 draws the old path).
 #   fleet    all 36 hulls of render/hull_table.gd AI_HULLS at the battle camera (170) at true pixel size over every
 #            region's sky and a storm map (the sheet maker names the darkest and brightest by measurement):
 #            DIR/fleet/<sky>/<nn>_<code>.png (400x240, 1 to 1).
@@ -171,6 +173,8 @@ func _run() -> void:
 		await _fleet_part()
 	if part == "all" or part == "moments":
 		await _moments_part()
+	if part == "props":   # issue 1767 only (not in "all", so the standing sets do not change)
+		await _props_part()
 	report["pipelines_compiled"] = _pipelines()
 	report["late_shaders_after_warmup"] = HULL.late_shader_count()
 	report["late_shader_names"] = HULL.late_shader_names()
@@ -745,3 +749,112 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		"impacts": impacts})
 	_log("%s at %d: %d cells" % [id, int(r), ci])
 	return true
+
+
+# ---------------------------------------------------------------- props (issue 1767): stations and hulks on the live board
+
+class PropRules extends RefCounted:
+	var v := {}
+	var w := {}
+	func view() -> Dictionary:
+		return v
+	func world_info() -> Dictionary:
+		return w
+
+
+const PROP_CELL := Vector2i(1280, 720)
+
+
+# the real render/board.gd built over `terrain` (and station holes), in the bench world, for one board of the part
+func _prop_board(terrain: Dictionary, holes: Array, map: Dictionary, units: Array, kind: String) -> Node3D:
+	var hexes := []
+	for q in range(-8, 9):
+		for r in range(-8, 9):
+			if absi(q + r) <= 8:
+				hexes.append({"q": q, "r": r})
+	var m := map.duplicate()
+	m["holes"] = holes
+	var rules := PropRules.new()
+	rules.v = {"hexes": hexes, "terrain": terrain, "units": units, "map": m}
+	rules.w = {"seed": 7, "biome": {"rock": "stone", "planet": 4, "station": kind}}
+	var board: Node3D = load("res://render/board.gd").new()
+	board.name = "prop_board"
+	world.add_child(board)
+	board.build(rules)
+	return board
+
+
+func _prop_still(item: String, focus: Vector3, cams: Array) -> void:
+	var d := out.path_join("props")
+	DirAccess.make_dir_recursive_absolute(d)
+	for r in cams:
+		_cam(focus, float(r))
+		for k in 8:
+			await _step()
+		var img := _grab()
+		if img == null:
+			_warn("empty frame for props %s c%d" % [item, int(r)])
+			continue
+		var name := "%s__c%d.png" % [item, int(r)]
+		preload("res://tools/picture_provenance.gd").save_png(_crop(img, PROP_CELL, PROP_CELL), d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
+		report["stills"].append({"part": "props", "id": item, "cam": int(r), "file": "props/" + name, "step": steps,
+			"old_path": OS.get_environment("VS_1767_OLD") == "1"})
+
+
+func _props_part() -> void:
+	var tag := "old" if OS.get_environment("VS_1767_OLD") == "1" else "new"
+	await _world({"rock": "stone", "planet": 4}, {}, [{"q": 0, "r": 0}])
+	report["parts"]["props"] = {"region": str(wld.setting.get("region", "")), "path": tag}
+	var stations := [
+		# item, terrain cells, holes, map, ship hex (the next hex out, for lamp spill), biome kind
+		["ST1_teaching_3hex", ["0,0", "1,0", "0,1"], [], {"station": {"q": 0, "r": 0}, "stationR": 1}, Vector2i(1, 1), "rig"],
+		["ST2_big_19hex", [], [], {"station": {"q": 0, "r": 0}, "stationR": 2}, Vector2i(3, 0), "ring"],
+		["ST3_hole_1hex", [], [{"kind": "station", "cells": [[0, 0]]}], {}, Vector2i(1, 0), "spire"],
+	]
+	for st in stations:
+		var cells: Array = st[1]
+		if str(st[0]).begins_with("ST2"):
+			for q in range(-2, 3):
+				for r in range(-2, 3):
+					if absi(q + r) <= 2:
+						cells.append("%d,%d" % [q, r])
+		var terrain := {}
+		for k in cells:
+			terrain[k] = "station"
+		_clear()
+		seed(2070)
+		fx.rng.seed = 11
+		var board := _prop_board(terrain, st[2], st[3], [], str(st[5]))
+		var sh: Vector2i = st[4]
+		var sp := _hex(sh.x, sh.y)
+		var sv = _ship("A", "hegemony", "Cruiser", sp, 3)
+		if sv == null:
+			return
+		var centre := Vector3.ZERO
+		for k in cells:
+			var qr: PackedStringArray = str(k).split(",")
+			centre += _hex(int(qr[0]), int(qr[1]))
+		centre = centre / float(cells.size()) if not cells.is_empty() else _hex(0, 0)
+		await _prop_still("%s_%s" % [st[0], tag], (centre + sp) * 0.5, [170, 26])
+		world.remove_child(board)
+		board.queue_free()
+	# a graveyard: 31 hulk hexes, no fleet (every faction may be drawn); one overview, then each faction's first hulk
+	var field := {}
+	for q in range(-6, 7):
+		for r in range(-6, 7):
+			if absi(q + r) <= 6 and (q * 7 + r * 3) % 4 == 0:
+				field["%d,%d" % [q, r]] = "hulk"
+	_clear()
+	var gy := _prop_board(field, [], {}, [], "")
+	await _prop_still("HK0_graveyard_%s" % tag, Vector3.ZERO, [170])
+	var seen := {}
+	for n in gy.find_children("*", "Node3D", true, false):
+		var fac := str(n.get_meta("hulk_faction", "")) if n.has_meta("hulk_faction") else ""
+		if fac != "" and not seen.has(fac):
+			seen[fac] = true
+			await _prop_still("HK_%s_%s" % [fac, tag], (n as Node3D).global_position, [170, 26])
+	report["parts"]["props"]["hulk_factions"] = seen.keys()
+	_log("props %s: hulk factions %s" % [tag, str(seen.keys())])
+	world.remove_child(gy)
+	gy.queue_free()
+	_clear()

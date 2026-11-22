@@ -82,6 +82,13 @@ const STATION_KINDS := {
 	"spire": {"scene": "res://gen/ships/station_spire.scn", "light": Color(0.78, 0.94, 1.0)},
 }
 const KIND_LIGHT_ENERGY := 0.6
+# VS_1767_OLD=1: the path before issue 1767 (T2 only on the big cluster, O1_37 elsewhere, four factions' hulks, soot on
+# every hulk), for before and after captures on one commit (bench/look_bench.gd --part props). Never set in the game.
+const OLD_HULKS := ["H8_23", "V15_37", "C14s_23", "D20_23"]
+
+
+static func old_path() -> bool:
+	return OS.get_environment("VS_1767_OLD") == "1"
 static var _reach := {}    # not GPU: scene path -> measured horizontal reach at unit scale
 static var _outline := {}  # not GPU: scene path -> PackedVector2Array, its mesh boxes' corners and edge points (x, z)
 
@@ -165,6 +172,10 @@ static func fit_scale(points: PackedVector2Array, cells: Array, hex_r: float, be
 # centre (x, z), `hex_r` their corner radius and `bearing` the turn the caller will give it: when `cells` is set and the
 # cluster is smaller than the big station, T2 is fitted inside them.
 static func station(size: float, debris_clearance := 0.0, kind := "", with_debris := true, cells: Array = [], hex_r := 10.0, bearing := 0.0) -> Node3D:
+	if old_path():
+		if size != LARGE_STATION_SIZE:
+			return _o1(size, "")
+		kind = ""
 	var info: Dictionary = STATION_KINDS.get(kind, {})
 	var path := T2_PATH
 	if info.has("scene") and ResourceLoader.exists(str(info["scene"])):
@@ -222,6 +233,11 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 			lamp.position = Vector3(0, 6.0, 0)
 			t2.add_child(lamp)
 		return t2
+	return _o1(size, kind)
+
+
+# the old normalized O1_37 at `size` (the fallback when T2 is not built)
+static func _o1(size: float, kind: String) -> Node3D:
 	var n := _scene("O1_37")
 	if n == null:
 		return null
@@ -301,6 +317,8 @@ static func pick_hulk(v: int, local: Array = []) -> String:
 		if fac in local:
 			near.append_array(HULKS[fac])
 	v = absi(v)
+	if old_path():
+		return OLD_HULKS[v % OLD_HULKS.size()]
 	var pool := near if not near.is_empty() and v % 100 < HULK_LOCAL_PCT else every
 	return str(pool[(v / 100) % pool.size()])
 
@@ -357,6 +375,8 @@ static func into_band(c: Color) -> Color:
 static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 	var b := src.duplicate() as BaseMaterial3D
 	b.emission_enabled = false
+	if old_path():
+		fac = ""
 	match fac:
 		"chorus":
 			var c := src.albedo_color

@@ -48,7 +48,7 @@ func _run() -> void:
 		_report(false, "T2 must be in the cache for this check")
 		quit(1)
 		return
-	var ships := {}
+	var ships := {"O1_37": {"res": STUB}}
 	for fac in PROPS.HULKS:
 		for code in PROPS.HULKS[fac]:
 			ships[code] = {"res": STUB}
@@ -56,6 +56,7 @@ func _run() -> void:
 	_props_checks()
 	_hulk_checks()
 	_board_checks()
+	_old_path_checks()
 	_keep.clear()
 	quit(0 if failures == 0 else 1)
 
@@ -269,3 +270,28 @@ func _board_checks() -> void:
 	print("  hulks by faction: %s" % str(got))
 	_report(local >= 3 and mirrored == 0, "a Chorus and Glasswright battle's six hulk hexes draw mostly their hulls (%d), none mirrored" % local)
 	b2.free()
+
+
+# VS_1767_OLD=1 (before pictures only): the old path comes back whole, and nothing of it leaks when the switch is off
+func _old_path_checks() -> void:
+	OS.set_environment("VS_1767_OLD", "1")
+	var small := PROPS.station(34.0, 2.0 * HS, "rig", true, [Vector2.ZERO], HS, 0.0)
+	var big := PROPS.station(46.0, 3.0 * HS, "rig")
+	var facs := {}
+	for v in 400:
+		facs[PROPS.hulk_faction(PROPS.pick_hulk(v * 7919))] = true
+	var glass := StandardMaterial3D.new()
+	glass.albedo_color = Color(0.5, 0.8, 0.9)
+	var g := PROPS.derelict(glass, "ithar")
+	OS.set_environment("VS_1767_OLD", "")
+	_report(small != null and not small.has_meta("station_T2") and small.get_child_count() == 1
+		and small.get_child(0).scale.is_equal_approx(Vector3.ONE * 34.0), "VS_1767_OLD: a small cluster gets O1_37 at its size again")
+	_report(big != null and big.has_meta("station_T2") and big.find_child("station_kind_light", true, false) == null,
+		"VS_1767_OLD: the big cluster keeps T2 with no kind lamp")
+	_report(facs.size() == 4 and not facs.has("chorus") and not facs.has("ithar"), "VS_1767_OLD: the old four factions' hulks only")
+	_report(g.albedo_color.is_equal_approx(Color(0.32, 0.29, 0.27)), "VS_1767_OLD: the old soot on every hulk")
+	var after := PROPS.station(34.0, 2.0 * HS, "", true, [Vector2.ZERO], HS, 0.0)
+	_report(after != null and after.has_meta("station_T2"), "switch off again: T2 is back")
+	for n in [small, big, after]:
+		if n != null:
+			n.free()
