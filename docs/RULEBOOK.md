@@ -104,6 +104,12 @@ Set: Ryan. Ids: agents-11, loop-05.
 1.7 **Picks, looks and money are Ryan's.** Payments, top-ups and sign-ups stay his. Why: his game and his accounts. Set: Ryan
 (AGENTS.md seat table; R126b).
 
+1.8 **Ryan's non-urgent picks go in two numbered Pick Sheets a day, Morning and Evening; he answers in the form `1=B, 2=Yes`.**
+Product and visual calls that can wait are batched there, each with its pick and one current labelled picture. Outside the
+sheets the Board interrupts him only for an emergency: PC disk under 75 GB, a key to paste, or a stuck job to kill. Why:
+"Move Ryan's non-urgent product/visual calls into two numbered Pick Sheets per day (Morning and Evening, format `1=B, 2=Yes`).
+Only interrupt outside that batch for emergencies (disk <75 GB, key paste, stuck kill)." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R408).
+
 ## 2. The Board and the agents
 
 2.1 **The Board owns the whole board.** One Claude thread in the Project (Opus 5.5 since Nov 11) holds design calls, the final
@@ -264,6 +270,12 @@ and every start screen's fonts, buttons, labels, rows, cards and sounds in godot
 request names who else picks the change up; the Board returns a one-off fix unless the pull request says why it is specific.
 Why: "let's make sure all the changes we're doing are cohesive and tied together. so like the fixes to the chorus skin should
 apply everywhere once we land it, etc." Set: Ryan, Nov 19 (R333).
+
+2.18 **No paid OpenAI API review of a pull request that a free seat already covers.** Artoo (ChatGPT) or the Claude code review
+seat reviews it; `[openai]` audit jobs on the API key are filed only for work no subscription seat can do. Why: "Stop filing
+paid `[openai]` API PR audits (like #1647) whenever free Artoo (ChatGPT) or Claude `/code-review` already covers the PR. Save
+cash OpenAI API credits only for tasks no subscription seat can do." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Issue 1647, OK'd before this ruling, finishes.
+Set: Ryan, Nov 22 (R406).
 
 ## 3. PC and tools
 
@@ -494,6 +506,13 @@ Only the final "safe to restart" line in pc_pause.txt means a restart is safe; a
 unresolved work before restarting the PC. Why: "I don't want to cause anything to get lost or deleted with the pauses as well,
 so let's bake that in" (R272); quiet agent processes did not prove a runner in final checks had pushed (R309, issue 944).
 Set: Ryan, Nov 15; audit fixes approved Nov 17 (R309).
+
+3.12 **No GPU capture on a pull request before its checks are green and its diff has passed review.** `player_path`, `look_bench`
+and other heavy GPU captures are queued only after "All checks" is green and Artoo or the code review seat has passed the diff
+at that head commit; a later push needs both again. Overnight, when the PC is idle, gpu_go.txt is clear and main changed game
+files, `build\export` refreshes by itself (issue 1663). Why: "Never queue `player_path`, `look_bench`, or heavy GPU captures on
+a PR until `checks` is green and Artoo (or the code review seat) has passed the diff." and "Auto-refresh `build\export` overnight
+when idle (`gpu_go.txt` clear) and `main` changed game files." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R407, R408).
 
 ## 4. Ships and concepts
 
