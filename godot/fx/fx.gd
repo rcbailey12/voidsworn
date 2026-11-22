@@ -1786,40 +1786,27 @@ func hull_mark(id: String, look: String, w := 2, world_p := Vector3.INF, dir := 
 # The rules' "board" event (API.md 11): the boarding party's breach in the target's hull at a plausible boarding point
 # (the side facing the attacker, mid section, near the waterline of the hull's side, never on top or below), venting
 # gas and lit from inside while the fight goes on (about 3 s), then a dark gash. Returns seconds until it has played.
-# Issue 1547: at battle camera 110 and 170 the first breach (look "r0") was a few dots. The look options for Ryan's pick:
-#   A  a bigger breach: the hatch mark about three times wider, a bigger burst, vent plume and inside light with pixel
-#      floors so they hold at camera 170, and a short hold before the enemy turn;
-#   B  A plus the boarding lines: amber lines (the shared line style's "board" role, the same amber as the boarding
-#      target ring) run from the attacker's hatch to the breach and hold while the party crosses;
-#   C  B plus the fight inside: small flashes in the target's hull spreading out from the breach during the hold.
-# "hold" is how long the battle waits (ms, at speed 1) before the next event, so the player sees it before the enemy turn.
-const BOARD_LOOKS := {
-	"r0": {"hatch": 1.0, "ring_px": 0.0, "burst": 1.0, "burst_px": 0.0, "vent": 1.0, "vent_px": 0.0, "spark_px": 0.0, "light": 2.5,
-		"reach": 0.0, "lines": 0, "inside": 0, "hold": 600.0},
-	"A": {"hatch": 4.0, "ring_px": 70.0, "burst": 2.2, "burst_px": 60.0, "vent": 2.2, "vent_px": 22.0, "spark_px": 3.0, "light": 7.0,
-		"reach": 22.0, "lines": 0, "inside": 0, "hold": 1400.0},
-	"B": {"hatch": 4.0, "ring_px": 70.0, "burst": 2.2, "burst_px": 60.0, "vent": 2.2, "vent_px": 22.0, "spark_px": 3.0, "light": 7.0,
-		"reach": 22.0, "lines": 3, "inside": 0, "hold": 1600.0},
-	"C": {"hatch": 4.0, "ring_px": 70.0, "burst": 2.2, "burst_px": 60.0, "vent": 2.2, "vent_px": 22.0, "spark_px": 3.0, "light": 7.0,
-		"reach": 22.0, "lines": 3, "inside": 9, "hold": 1900.0},
-}
-var board_look := "B"
-var board_inside_s := 0.0  # when the last of look C's inside flashes ends (s after the call; checked against the hold)
-var board_lines_s := 0.0
-var board_pop_lives: Array = []   # fx-time lives of look C's inside pops as they start (checked with the fx clock slowed)   # how long the last boarding lines stay on screen (s; checked against the battle's hold)
+# Issue 1547 (Ryan picked look B, Nov 22 2026): at battle camera 110 and 170 the first breach (PR 1527) was a few dots.
+# Now: the hatch mark four times wider, a pop ring, burst, vent plume and inside light with pixel floors so they hold at
+# camera 170, and amber boarding lines (the shared line style's "board" role, the boarding target ring's amber) from the
+# attacker's hatch to the breach. "hold" is how long the battle waits (ms, at speed 1) before the next event, so the
+# player sees it before the enemy turn. The A and C looks shown beside it on the look sheets were removed.
+const BOARD := {"hatch": 4.0, "ring_px": 70.0, "burst": 2.2, "burst_px": 60.0, "vent": 2.2, "vent_px": 22.0,
+	"spark_px": 3.0, "light": 7.0, "reach": 22.0, "lines": 3, "hold": 1600.0}
+var board_lines_s := 0.0   # how long the last boarding lines stay on screen (s; checked against the battle's hold)
 
 
 # how long the battle holds on a boarding before the next event (ms at speed 1; issue 1547)
 func board_hold_ms() -> float:
-	return float((BOARD_LOOKS.get(board_look, BOARD_LOOKS["B"]) as Dictionary)["hold"])
+	return float(BOARD["hold"])
 
 
-# pace: the battle's pace (its wait() scale), so the lines and the fight inside end with the battle's hold (Artoo, PR 1549)
+# pace: the battle's pace (its wait() scale), so the lines end with the battle's hold (Artoo, PR 1549)
 func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -> float:
 	if not ships.has(target_id):
 		return 0.0
 	var s: SHIP = ships[target_id]
-	var bl: Dictionary = BOARD_LOOKS.get(board_look, BOARD_LOOKS["B"])
+	var bl: Dictionary = BOARD
 	# issue 370: the party leaves the attacker from its boarding hatch (hp_board on the side facing the target, else the
 	# side plating facing it through its core) and breaks in through the target's side plating facing that hatch, on
 	# the line through the target's core. Either missing: nothing to show (logged and counted by the hull).
@@ -1840,8 +1827,7 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 	# issue 1547: a party coming from dead ahead or astern (no clear side) breaks in on the side the camera sees; the
 	# first cloud shots put it on the far side, hidden by the hull
 	var cam := get_viewport().get_camera_3d() if is_inside_tree() else null
-	# (look r0 keeps PR 1527's side choice, so the "before" pictures show main as it was; Sol review of PR 1549)
-	if board_look != "r0" and absf(tl.z - s.hull.core.z) < s.hull.W * 0.75 and cam != null:
+	if absf(tl.z - s.hull.core.z) < s.hull.W * 0.75 and cam != null:
 		var cl: Vector3 = inv * cam.global_position
 		side = Vector3(0, 0, 1.0 if cl.z >= s.hull.core.z else -1.0)
 	var h: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05, 0, 0), side)
@@ -1865,15 +1851,13 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 	for j in int(18 * sqrt(bk)):
 		stk(wp, T + 0.3 + randf() * 2.6, 0.3 + randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05 * bk, 0.08 * k * bk, 1,
 			(wn + rdir() * 0.6).normalized() * (5 + randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
-	if float(bl["ring_px"]) > 0.0:
-		# a soft pop ring on the plating round the hatch, sized to hold at camera 170 (issue 1547)
-		ring(wp + wn * 0.05 * k, wn, T, 0.7, Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
+	# a soft pop ring on the plating round the hatch, sized to hold at camera 170 (issue 1547)
+	ring(wp + wn * 0.05 * k, wn, T, 0.7, Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
 	# the inside light in the boarding amber (render/line_style.gd "board"), not explosion orange (Muse council)
-	light(wp + wn * 0.6 * k * bk, T, 3.0, float(bl["light"]), Color(1, 0.75, 0.3) if board_look != "r0" else Color(1, 0.6, 0.3), 1, float(bl["reach"]))
+	light(wp + wn * 0.6 * k * bk, T, 3.0, float(bl["light"]), Color(1, 0.75, 0.3), 1, float(bl["reach"]))
 	shake(T, 0.06, wp)
 	var hold: float = float(bl["hold"]) / 1000.0 * pace
-	board_inside_s = 0.0
-	if int(bl["lines"]) > 0 and from_hatch != Vector3.INF:
+	if from_hatch != Vector3.INF:
 		# Muse council: the lines land at points spread along the flank round the breach (grapples securing the two
 		# ships), not on one dot, so they never read as a beam; the attacker's hatch flashes where they leave
 		var ends: Array = []
@@ -1884,29 +1868,7 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 			ends.append(s.to_world(hi["p"]) if not hi.is_empty() else wp)
 		_board_lines(from_hatch, ends, hold, pace)
 		sprx(18.0, from_hatch, now + minf(0.3 * pace, hold * 0.2), minf(0.3, hold * 0.2), Color(1, 0.75, 0.3), 2.0, 0.3 * k, 0.8 * k, 2)
-	for j in int(bl["inside"]):
-		# the fight spreading inside: dim pops at hull points of the boarded section and its neighbours, breach first
-		var smp: Dictionary = s.hull.random_sample(clampi(s.hull.section_of(lp.x) + (j % 3) - 1, 0, 2), 0.6)
-		var ip: Vector3 = s.to_world(smp["p"])
-		# staggered over the same hold as the battle's wait and gone by its end at any pace (Artoo, PR 1549). Sol review:
-		# the battle's wait runs on a scene timer, not the fx clock (which a hit pause or kill slow-mo slows), so each pop
-		# starts from a scene timer too and takes its life in fx time at the fx clock's speed when it starts
-		var t_in: float = hold * (0.2 + 0.55 * float(j) / maxf(1.0, float(int(bl["inside"]) - 1)))
-		var life: float = minf(0.35, hold * 0.2)
-		var pp: Vector3 = ip + s.dir_world(smp["n"]) * 0.1 * k
-		board_inside_s = maxf(board_inside_s, t_in + life)
-		if is_inside_tree():
-			get_tree().create_timer(t_in).timeout.connect(_board_pop.bind(pp, life, k))
-		else:
-			_board_pop(pp, life, k)
 	return maxf(3.2, hold)
-
-
-# one of look C's inside pops, now, living `life` seconds of scene time (in fx time at the fx clock's current speed)
-func _board_pop(p: Vector3, life: float, k: float) -> void:
-	var life_fx: float = life * clampf(_speed, 0.01, 1.0)
-	board_pop_lives.append(life_fx)
-	sprx(14.0, p, now, life_fx, Color(1, 0.72, 0.45), 2.2, 0.3 * k, 0.9 * k, 2)
 
 
 # Issue 1547 (R362): the boarding lines, drawn in the one shared line style (render/line_style.gd, role "board": the

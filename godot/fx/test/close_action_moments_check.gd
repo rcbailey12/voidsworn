@@ -65,7 +65,7 @@ class RecFx extends Node:
 	func board(...a: Array) -> float:
 		_r("board", a)
 		return 3.2
-	# issue 1547: the breach look's hold before the next event (fx.gd BOARD_LOOKS)
+	# issue 1547: the breach look's hold before the next event (fx.gd BOARD)
 	func board_hold_ms() -> float:
 		return BOARD_HOLD
 

@@ -136,40 +136,12 @@ func _run() -> void:
 		fx.board("a", "b", "fight", pace)
 		var want: float = fx.board_hold_ms() / 1000.0 * pace
 		_check(fx.board_lines_s > 0.0 and fx.board_lines_s <= want + 0.001, "the boarding lines end with the hold at pace %.2f (%.2f s, hold %.2f s)" % [pace, fx.board_lines_s, want])
-	# look C's inside flashes are staggered over the hold and end inside it, at normal and fast pace
-	var was: String = fx.board_look
-	fx.board_look = "C"
-	for pace in [1.0, 0.25]:
-		fx.board("a", "b", "fight", pace)
-		var want: float = fx.board_hold_ms() / 1000.0 * pace
-		_check(fx.board_inside_s > 0.0 and fx.board_inside_s <= want + 0.001, "look C's inside flashes end with the hold at pace %.2f (%.2f s, hold %.2f s)" % [pace, fx.board_inside_s, want])
-	# Sol review: with the fx clock slowed (kill slow-mo), each pop's fx-time life shrinks with it, so it still ends
-	# inside the battle's scene-timer hold
-	await create_timer(fx.board_hold_ms() / 1000.0 + 0.1).timeout   # the pace checks' pops start first
-	fx._speed = 0.35
-	fx._death_slow_left = 30.0
-	fx.board_pop_lives.clear()
-	fx.board("a", "b", "fight", 1.0)
-	await create_timer(fx.board_hold_ms() / 1000.0 + 0.1).timeout
-	var lives: Array = fx.board_pop_lives.duplicate()
-	var life_max: float = minf(0.35, fx.board_hold_ms() / 1000.0 * 0.2)
-	_check(lives.size() == 9 and lives.all(func(v): return float(v) <= life_max * 0.35 + 0.001), "look C's pops take a slowed fx clock's speed (%s, want 9 at most %.3f)" % [str(lives), life_max * 0.35])
-	fx._death_slow_left = 0.0
-	fx._speed = 1.0
-	# Sol review: each hatch mark keeps the width it was made with, so a regrade made while another look is active (a
-	# second boarding on the same spot grows the old mark) never swaps an r0 hatch to B's width
-	var widths := []
-	for lk in ["r0", "B"]:
-		fx.board_look = lk
-		fx.board("b", "a", "fight", 1.0)
-		var hk := -1.0
-		for m in (fx.ships["a"] as Object).get("_marks"):
-			if m.look == "board":
-				hk = m.hatch_k
-		widths.append(hk)
-	fx.board_look = was
-	_check(widths == [1.0, 1.0], "an r0 hatch regrown while look B is active keeps its own width (%s, want [1, 1])" % str(widths))
-	fx.board_look = was
+	# Sol review: each hatch mark keeps the width it was made with (Ent.hatch_k), not a shared value read on regrade
+	var hk := -1.0
+	for m in (fx.ships["b"] as Object).get("_marks"):
+		if m.look == "board":
+			hk = m.hatch_k
+	_check(is_equal_approx(hk, float(fx.BOARD["hatch"])), "the boarding hatch mark carries its own width (%.1f)" % hk)
 	fx.calls.clear()
 	# no boarding point to draw at (an unknown target): the pop stands in
 	await battle._play_event({"t": "board", "unit": "a", "target": "nobody", "result": "fight", "kill": 0, "loss": 0})

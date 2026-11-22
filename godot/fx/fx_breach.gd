@@ -125,7 +125,7 @@ class Ent:
 	var ldir := Vector3.ZERO
 	var part_i := 0
 	var grow := 1.0
-	var hatch_k := 1.0   # issue 1547: this boarding hatch's width factor (fx.gd BOARD_LOOKS "hatch"), kept for regrades
+	var hatch_k := 1.0   # issue 1547: this boarding hatch's width factor (fx.gd BOARD "hatch"), kept for regrades
 	var section_damage := 1.0
 	var hit_origin := Vector3.ZERO
 	var hit_normal := Vector3.UP
@@ -1880,7 +1880,7 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 			# the rammer's own bow folds too, a smaller crumple
 			out.append(dent(p, n, L * 0.06 * g, L * 0.012 * g, seed_v, S_RAM))
 		"board":
-			# issue 1547: hatch_k widens the hatch for the boarding look it was made with (fx.gd BOARD_LOOKS); each mark
+			# issue 1547: hatch_k widens the hatch it was made with (fx.gd BOARD); each mark
 			# keeps its own (Ent.hatch_k), so a regrade rebuilds it at the width it had
 			out.append(cluster(p, n, L * 0.012 * g * hatch_k, 5, L * 0.003 * hatch_k, 0.0, seed_v, S_HATCH))
 	for j in out.size():

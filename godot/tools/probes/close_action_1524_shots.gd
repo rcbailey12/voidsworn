@@ -7,8 +7,6 @@ extends SceneTree
 # --write-movie with --fixed-fps) records the same moments as a clip (RAM-FX, BRD-FX, CMD-FX at camera 170).
 # usage (needs a window): godot --path godot --script res://tools/probes/close_action_1524_shots.gd -- --scenario s1
 #   --out <folder> --arm before|after [--items RAM,BRD,CMD] [--cam 110] [--stage "PC, installed in game"]
-#   Issue 1547: [--look r0|A|B|C] picks the boarding breach look (fx.gd BOARD_LOOKS); the BRD picture is then named
-#   BRD-1547-<look>_<arm>.jpg and tagged with that look.
 
 var b
 const ShipViewS := preload("res://render/ship_view.gd")
@@ -87,7 +85,7 @@ func _save(code: String, frames: Array) -> void:
 
 
 func _tag(code: String, what: String, t: float) -> void:
-	label.text = "%s %s   %s +%.2f s   (%s, %s)" % [code, arm, what, t, "1547 look " + _arg("look") if _arg("look") != "" else "1524 r2", stage]
+	label.text = "%s %s   %s +%.2f s   (1524 r2, %s)" % [code, arm, what, t, stage]
 
 
 func _look(at: Vector3) -> void:
@@ -161,8 +159,7 @@ func _board() -> void:
 			var tid: String = foe["id"]
 			if not b._cmd(func(): return b.api.board(id, tid)):
 				print("[close-action-shots] BRD: the rules refused the boarding"); return
-			var code := "BRD-1547-" + _arg("look") if _arg("look") != "" else "BRD-1524"
-			await _save(code, await _strip(code, "boarding", BRD_AT))
+			await _save("BRD-1524", await _strip("BRD-1524", "boarding", BRD_AT))
 			return
 	print("[close-action-shots] BRD: no ship with boarders found")
 
@@ -219,8 +216,6 @@ func _run() -> void:
 	await create_timer(2.5).timeout
 	await _idle()
 	b.tips_off = true
-	if _arg("look") != "" and b.gfx != null:
-		b.gfx.board_look = _arg("look")
 	for it in _arg("items", "RAM,BRD,CMD").split(","):
 		match it:
 			"RAM": await _ram()
