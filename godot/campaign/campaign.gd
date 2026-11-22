@@ -20,7 +20,7 @@ const TABLES_PATH := "res://campaign/data/campaign_tables.json"
 # ---------------- tables ----------------
 var TB: Dictionary = {}
 var W_; var HULLS; var FACTIONS; var MODULES; var PERKS; var RELICS; var ADMIRALS; var RANKS; var RANK_XP; var PATRONS; var BOONS
-var BOON_FX; var BOON_D; var BOON_NEED; var RARITY; var ASPECTS; var HEAT; var HULL_VARIANTS; var MASTERY_XP; var MASTERY_PERKS; var LINEAGE_XP; var LINEAGE_TREES; var TREE_FX; var CAPSTONE_MASTERY_XP; var CAPSTONE_MASTERY_PERKS
+var BOON_FX; var BOON_D; var BOON_NEED; var RARITY; var ASPECTS; var HEAT; var HULL_VARIANTS; var MASTERY_XP; var MASTERY_PERKS; var LINEAGE_XP; var LINEAGE_TREES; var TREE_FX; var CAPSTONE_MASTERY_XP; var CAPSTONE_MASTERY_PERKS; var CAPSTONE_MASTERY_FX; var MASTERY_I_FX
 var FAVOUR_TIERS; var SECTOR_CONDS; var SECTOR_POOL; var EVENTS; var CAPTAINS; var SHIP_NAMES; var MORE_SHIP_NAMES; var FNAMES
 var MOD_NEED; var MOD_NAMES; var RELIC_NAMES; var RUN_WORD; var ENCOUNTERS; var ENC_POOL; var ENC_SPECIAL; var REGIONS; var FAC_REGION
 var REGION_BIOME; var ROCK_KINDS; var DEEP_MAPS; var FAC_MAP; var BEVENTS; var KILL_CAUSES; var FAC_WNAMES; var FAC_WTRAIT; var WTRAITS
@@ -72,7 +72,7 @@ var tel_log: Array = []     # a slim run log (events only), kept with the save; 
 # ======================= setup =======================
 # Every table the campaign reads. load_tables refuses to start when one is missing, and export_campaign.js fails when the oracle
 # lacks one (it also scans the campaign scripts for every TB table they read, so a new table cannot slip past this list).
-const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CINDER_FIRST_RUN", "CINDER_PRIZES", "CLASS_TRACK_MAX", "CMD_TEXT", "CORE_EAT_HULL", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_VOICE", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "TREE_FX", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS", "LATE_SHOP", "CULLET", "BIO_KILL"]
+const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CINDER_FIRST_RUN", "CINDER_PRIZES", "CLASS_TRACK_MAX", "CMD_TEXT", "CORE_EAT_HULL", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "CAPSTONE_MASTERY_FX", "MASTERY_I_FX", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_VOICE", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "TREE_FX", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS", "LATE_SHOP", "CULLET", "BIO_KILL"]
 func load_tables(path: String = TABLES_PATH) -> String:
 	var txt = FileAccess.get_file_as_string(path)
 	var j = JSON.parse_string(txt)
@@ -88,7 +88,7 @@ func load_tables(path: String = TABLES_PATH) -> String:
 	W_ = TB.W; HULLS = TB.HULLS; FACTIONS = TB.FACTIONS; MODULES = TB.MODULES; PERKS = TB.PERKS; RELICS = TB.RELICS; ADMIRALS = TB.ADMIRALS
 	RANKS = TB.RANKS; RANK_XP = TB.RANK_XP; PATRONS = TB.PATRONS; BOONS = TB.BOONS; BOON_FX = TB.BOON_FX; BOON_D = TB.BOON_D; BOON_NEED = TB.BOON_NEED
 	RARITY = TB.RARITY; ASPECTS = TB.ASPECTS; HEAT = TB.HEAT; HULL_VARIANTS = TB.HULL_VARIANTS; MASTERY_XP = TB.MASTERY_XP; MASTERY_PERKS = TB.MASTERY_PERKS; LINEAGE_XP = TB.LINEAGE_XP; LINEAGE_TREES = TB.LINEAGE_TREES; TREE_FX = TB.TREE_FX
-	CAPSTONE_MASTERY_XP = TB.CAPSTONE_MASTERY_XP; CAPSTONE_MASTERY_PERKS = TB.CAPSTONE_MASTERY_PERKS
+	CAPSTONE_MASTERY_XP = TB.CAPSTONE_MASTERY_XP; CAPSTONE_MASTERY_PERKS = TB.CAPSTONE_MASTERY_PERKS; CAPSTONE_MASTERY_FX = TB.CAPSTONE_MASTERY_FX; MASTERY_I_FX = TB.MASTERY_I_FX
 	FAVOUR_TIERS = TB.FAVOUR_TIERS; SECTOR_CONDS = TB.SECTOR_CONDS; SECTOR_POOL = TB.SECTOR_POOL; EVENTS = TB.EVENTS; CAPTAINS = TB.CAPTAINS
 	SHIP_NAMES = TB.SHIP_NAMES; MORE_SHIP_NAMES = TB.MORE_SHIP_NAMES; FNAMES = TB.FNAMES; MOD_NEED = TB.MOD_NEED; MOD_NAMES = TB.MOD_NAMES
 	RELIC_NAMES = TB.RELIC_NAMES; RUN_WORD = TB.RUN_WORD; ENCOUNTERS = TB.ENCOUNTERS; ENC_POOL = TB.ENC_POOL; ENC_SPECIAL = TB.ENC_SPECIAL
@@ -586,10 +586,17 @@ func fleetFxList() -> Array:
 	if RUN != null:
 		for r in RUN["relics"]:
 			if RELICS.has(r) and jt(RELICS[r].get("fx")): l.append(RELICS[r]["fx"])
-		if ADMIRALS.has(RUN["admiral"]): l.append(ADMIRALS[RUN["admiral"]].get("fx"))
+		if ADMIRALS.has(RUN["admiral"]): l.append(admiralFx(RUN["admiral"]))
 		for b in or_(RUN.get("boons"), []):
 			if BOONS.has(b["id"]): l.append(BOON_FX[b["id"]][int(z0(b.get("r")))])
 	return l
+# Issue 1650 (R404) Mastery I: from capstone mastery I the admiral's doctrine bonus is the authored row in MASTERY_I_FX
+func runCapMastery() -> int:
+	var L = RUN.get("lineage") if RUN != null else null
+	return int(z0(L.get("mastery"))) if L is Dictionary and L.get("capstone") != null else 0
+func admiralFx(id) -> Variant:
+	if runCapMastery() >= 1 and RUN["admiral"] == id and MASTERY_I_FX.has(id): return MASTERY_I_FX[id]
+	return ADMIRALS[id].get("fx")
 func ensurePatrons() -> void:
 	if RUN == null: return
 	if not jt(RUN.get("patrons")) or RUN["patrons"].size() == 0: RUN["patrons"] = shuffle(PATRONS.keys()).slice(0, 4)
@@ -1197,6 +1204,11 @@ func capstoneMasteryLevel(id) -> int:
 	return l
 func capstoneMasteryPerk(level) -> Variant:
 	return CAPSTONE_MASTERY_PERKS[level - 1] if level >= 1 and level <= CAPSTONE_MASTERY_PERKS.size() else null
+# issue 1650: the Mastery III signature (name and line) of the admiral's chosen capstone, or null before one is chosen
+func capstoneSignature(id) -> Variant:
+	if not LINEAGE_TREES.has(id): return null
+	var c = lineageBuild(id)["capstone"]
+	return null if c == null else CAPSTONE_MASTERY_FX.get("%s:cap:%d" % [id, int(c)])
 func capstoneMasteryNext(id) -> Variant:
 	var l = capstoneMasteryLevel(id)
 	return null if l >= CAPSTONE_MASTERY_XP.size() else CAPSTONE_MASTERY_XP[l]
@@ -1398,7 +1410,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 			if f["cap"]["perks"].size() < 2: f["cap"]["perks"].append(pick(PERKS.keys().filter(func(p): return not f["cap"]["perks"].has(p))))
 			f["hp"] = derive(f)["maxHp"]
 	var lb = lineageBuild(admiralId)   # issue #305: a run snapshots the flown admiral's tree, because picks can only change between runs
-	RUN["lineage"] = {"id": admiralId, "picks": lb["picks"].duplicate(), "capstone": lb["capstone"]}
+	RUN["lineage"] = {"id": admiralId, "picks": lb["picks"].duplicate(), "capstone": lb["capstone"], "mastery": capstoneMasteryLevel(admiralId) if lb["capstone"] != null else 0}   # issue 1650: capstone mastery steps earned when the run starts
 	var dev = null
 	for p in RUN["patrons"]:
 		if favourTier(p) >= 2: dev = p; break

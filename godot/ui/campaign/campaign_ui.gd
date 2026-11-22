@@ -2307,8 +2307,10 @@ func _capstone_mastery(id) -> Control:
 	var row = flow(10)
 	for i in range(C.CAPSTONE_MASTERY_PERKS.size()):
 		var earned = l > i; var cv = card(earned, 300)
-		cv[1].add_child(lbl("Mastery " + C.roman(i + 1) + (" (earned)" if earned else ""), 18, BONE, font_semi))
+		cv[1].add_child(lbl("Mastery " + C.roman(i + 1) + ": " + str(C.CAPSTONE_MASTERY_PERKS[i].get("n", "")) + (" (earned)" if earned else ""), 18, BONE, font_semi))
 		var effect := _capstone_effect(i)
+		var sig = C.capstoneSignature(id) if i == 2 else null   # issue 1650: Mastery III names the chosen capstone's own signature
+		if sig is Dictionary: effect = str(sig["n"]) + ". " + str(sig["d"])
 		if not effect.is_empty(): cv[1].add_child(lbl(effect, 17, BONE2))
 		cv[1].add_child(lbl(C.numstr(C.CAPSTONE_MASTERY_XP[i]) + " XP", 17, BONE3))
 		if not earned: cv[0].modulate.a = 0.55
