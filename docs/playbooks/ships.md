@@ -565,3 +565,28 @@ its drive and baked nozzle glow dark (a torpedo for 0.7 s, rockets 0.14 s, the s
 nozzle, then turns onto the target with only a low lift. Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
 rockets 0.7 of the old round, with trail and flashes to match; the slide distance does not shrink with it
 (fx_weapons.gd `_launch`, `_launch_step`, `_ignite`).
+
+## 10. The ship detail standard (Ryan, Nov 22 2026, R410; RULEBOOK 5.18)
+
+Ryan approved the Ship Graphical Detail and Consistency Upgrade Plan as the standing standard for every ship from now on.
+A build brief, sheet or PR for any ship follows all four; a ship that cannot says why on its sheet.
+
+1. **Maps by size band.** Stage 7 exports at 4096 for flagships and battleships (length 21 and up), 2048 for cruisers,
+   carriers, destroyers and frigates (6.5 to 16.5), 1024 for strike craft (1.6). The export reads the band from
+   `length_world`; no per-ship flag (issue 1680, RECIPE.md stage 7).
+2. **AO light and LODs.** Every hull's material gets a calibrated `ao_light_affect` from its faction's look.gd READ row
+   (0.35 to 0.55, Glasswrights 0.2), never Godot's 0.0, and the importer generates Godot mesh LODs for far cameras
+   (issues 1678, 1679).
+3. **One authored look per faction.** When a faction is next baked or repainted, its stack writes `authored_look = 1`
+   calibrated to the single battle light rig, and that faction's READ albedo lift stops applying to those hulls. Order as
+   the work lands: Eclipse (1422), Navy flagship H4_11 (1681), Glasswright flagship I8_37 (1682), Chorus (1683),
+   Hullbreakers (1684), Sunward at its next fleet update. Never lift a single ship by hand to match.
+4. **Hard points and turrets.** Every new destroyer and larger carries `hp_rcs` and `hp_board`, and articulated turrets
+   where the faction uses them (HARDPOINTS.md). Known gaps: V16_37 (next Sunward update), D20_23 (inside 1422).
+
+Priorities Ryan set: P1 engine and lighting first, no rebakes (1678 import fixes and LODs, 1679 AO light and reflection
+gradient, sharing its sheet with 1463 SG); P2 folds into active bakes (1680 map bands and re-exports, 1422 Eclipse relief,
+1681 H4_11, 1682 I8_37, 1683 Chorus recess glow); P3 roster and polish (1412 Navy escorts, 1145 Sunward Bastion and Hearth,
+1684 Hullbreaker mesh diet and relief, tied to the 1645 hitch, 1685 faction idle motion). None of it holds an active
+gameplay PR.
+
