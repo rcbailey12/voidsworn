@@ -913,6 +913,19 @@ work (issue 1454). Set: Ryan (R380).
 an ability, leaves by an exit edge, or ends its activation). Why: a misclick in a permadeath game should not cost a ship
 (Neon player audit, Nov 21). Both rules copies (3.1). Set: Ryan (R376, issue 1450).
 
+9.17a **A player ship's turn is planned on its ghost, then committed, and plays out as one event.** Clicking a blue hex moves
+the ghost there, Q and E turn it, and clicking an enemy aims every free gun that bears from the ghost (a second enemy takes
+the guns still free). Nothing reaches the rules until the commit (Enter, or a second click on the hex or a target); then the
+move and every planned volley go as one command and play as one event, with the guns turning onto the first target while
+the hull brakes (issue 1581). Backspace takes back the plan's last step; with no plan open it still undoes a move already
+made (9.17). A turn in place commits through the rules' own rotate (so a skill's free turn or a free pivot is spent
+there, at the commit), a move through the rules' move. A shot the move made impossible is dropped with a message, never silently. Each ship plays out right after its
+commit (not the whole fleet at the end of the turn); the old instant move-and-shoot is gone; enemy activations play the same
+way. UI only: no rule changes, and firing still ends movement for every ship except Glasswrights (R396). Why: Ryan, Nov 22
+2026: "you see the firing options at your destination and make your firing decisions ... then it actually moves and
+happens", "Which lines up with undo"; picks 1a, 2a, 3b, 4b, 5a ("Maybe we test 1b down the line but not now"). Set: Ryan
+(issue 1589). Detail: docs/playbooks/screens.md, "Planning a ship's turn".
+
 9.18 **A campaign battle saves at the start of each round and resumes there**, with Save and Quit to title in the battle
 menu; the snapshot clears when the battle ends. Why: a crash or a real-life interruption sent a 20 minute boss fight back to
 round 1 (Neon player audit, Nov 21). Set: Ryan (R378, issue 1451).

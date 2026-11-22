@@ -9,7 +9,7 @@ extends Node3D
 #   --shots <folder> (screenshot job: saves PNGs at fixed moments and quits) | --quit-after N (seconds)
 #
 # Controls as today's game (index_test.html): click your ship, click a gold hex to move, click an enemy to fire every gun
-# that bears (1-6 pick one), Q/E turn in place, Backspace undo a move (issue 1450), B brace, X ram, G board, Tab next ship, Enter end activation (or hurry the
+# that bears (1-6 pick one), Q/E turn in place, Backspace steps back through the plan, then undoes a move (issues 1589, 1450), B brace, X ram, G board, Tab next ship, Enter end activation (or hurry the
 # enemy), Space hurry, Esc cancel, R threat map, V arcs, T top-down, F focus, Home reset view; right-drag orbit,
 # left-drag or WASD pan, wheel zoom.
 
@@ -194,6 +194,11 @@ var plan = null               # a rehearsed move: the reach state the ghost show
 var plan_k := ""              # its hex
 var target := ""              # the enemy the ship that is up has targeted: the odds show; a second click, Enter or Fire commits
 var atk = null                # a rehearsed attack-move on that target: {st, n, of} (the target is out of reach from here)
+# Issue 1589 (Ryan, Nov 22 2026): the whole turn is planned on the ghost, then one commit plays it as one event. aims are the
+# planned volleys from the ghost ({tid, guns}); plan_steps holds what the plan looked like before each step, so Backspace
+# takes one step back. Nothing here reaches the rules until the commit.
+var aims: Array = []
+var plan_steps: Array = []
 var up_idx := -1              # fleet-list index of the last ship handed over (the next hand-over goes on from there)
 var handed_t := -9.0          # real time of the last hand-over: Space cannot end a ship in its first half second
 var ghost: Node3D             # the planned position: a see-through copy of the hull
@@ -473,6 +478,10 @@ func start_default() -> void:
 		for i in clampi(int(args["fleet-size"]), 1, 24):
 			nf.append(base_f[i % base_f.size()])
 		sc["fleet"] = nf
+	if args.has("fleet"):
+		sc["fleet"] = Array(str(args["fleet"]).split(","))   # issue 1589 captures: e.g. a Glasswright fleet (with --admiral aelith)
+	if args.has("admiral"):
+		sc["admiral"] = str(args["admiral"])
 	if args.has("obj"):
 		sc["obj"] = str(args["obj"])   # e.g. ambush: the fleets start inside gun reach (the Fire odds show in round 1)
 		if sc["obj"] == "ambush":
@@ -560,10 +569,7 @@ func _begin(a) -> void:
 	sel = ""
 	inspect = ""
 	armed = -1
-	plan = null
-	plan_k = ""
-	target = ""
-	atk = null
+	_plan_clear()
 	up_idx = -1
 	ending = false
 	arrived.clear()
@@ -1005,9 +1011,11 @@ func _cmd(f: Callable) -> bool:
 		_error("NOT PORTED: " + np)
 	if ev.is_empty() and not ok:
 		return false
+	_plan_clear()   # issue 1589: once the rules have acted, a plan made before is stale
 	batches.append({"events": ev, "view": api.view()})
 	_clear_overlay()
 	_runner()
+	_refresh_ui()   # issue 1589 (Ryan, Nov 22): the runner is now busy, so the card leaves while the event plays
 	return bool(ok)
 
 
@@ -2934,10 +2942,7 @@ func select(id: String, how := "pick") -> void:
 	armed = -1
 	mode = ""
 	wing_sel = ""
-	plan = null
-	plan_k = ""
-	target = ""
-	atk = null
+	_plan_clear()
 	hover_pick.clear()
 	_update_reach()
 	sfx.play("ui_select")
@@ -2989,18 +2994,41 @@ func _best_facing(u: Dictionary) -> void:
 		reach_map[k] = st
 
 
-func _firing_set(t_id: String) -> Array:
+# The guns that would fire on t_id: from the ghost when a move is planned (issue 1589), else from where the ship sits. With
+# free_only, guns already aimed at another pick in the plan are left out. pick overrides the armed gun ([-1] = all guns).
+func _firing_set(t_id: String, free_only := true, pick = null) -> Array:
 	var out: Array = []
 	if not _api_join():
 		return out
 	var ru = api.unit(sel)
-	if ru == null:
+	var tu = api.unit(t_id)
+	if ru == null or tu == null:
 		return out
-	var idx: Array = [armed] if armed >= 0 else range(ru["weapons"].size())
+	var arm: int = armed if pick == null else int(pick[0])
+	var idx: Array = [arm] if arm >= 0 else range(ru["weapons"].size())
+	var taken := {}
+	if free_only:
+		for a in aims:
+			for i in a["guns"]:
+				taken[int(i)] = true
+	var src = api.R.stateView(ru, plan) if plan != null else null
 	for i in idx:
-		if api.can_fire(sel, i, t_id):
+		if taken.has(int(i)):
+			continue
+		if src == null:
+			if api.can_fire(sel, i, t_id):
+				out.append(i)
+		elif api.R.canFire(src, ru["weapons"][i], tu):
 			out.append(i)
 	return out
+
+
+# the guns the card and odds show for an enemy: its pick's guns when it is aimed, else the free guns that bear
+func _shown_set(t_id: String) -> Array:
+	for a in aims:
+		if str(a["tid"]) == t_id:
+			return (a["guns"] as Array).duplicate()
+	return _firing_set(t_id)
 
 
 func _attack_move(t_id: String):
@@ -3135,6 +3163,10 @@ func _fan_mesh(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var n := 28
+	if a1 - a0 < 300.0:   # the same range line as _fan_edge: half a hex past the arc's line at full range (issue 1589)
+		var da := rad_to_deg(asin(clampf(board.HW * 0.5 / rad, 0.0, 1.0)))
+		a0 -= da
+		a1 += da
 	for i in n:
 		var t0 := deg_to_rad(lerpf(a0, a1, float(i) / n))
 		var t1 := deg_to_rad(lerpf(a0, a1, float(i + 1) / n))
@@ -3166,6 +3198,11 @@ func _fan_edge(a0: float, a1: float, rad: float, col: Color, w := 0.55, alpha :=
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var n := 28
 	var c := Color(col.r, col.g, col.b, alpha)
+	var sides := [a0, a1]
+	if a1 - a0 < 300.0:   # the range line meets the sides half a hex outside the arc's line (below)
+		var da := rad_to_deg(asin(clampf(board.HW * 0.5 / rad, 0.0, 1.0)))
+		a0 -= da
+		a1 += da
 	for i in n:
 		var t0 := deg_to_rad(lerpf(a0, a1, float(i) / n))
 		var t1 := deg_to_rad(lerpf(a0, a1, float(i + 1) / n))
@@ -3176,17 +3213,21 @@ func _fan_edge(a0: float, a1: float, rad: float, col: Color, w := 0.55, alpha :=
 		for v in [o0 * rad, o1 * rad, o1 * (rad - w), o0 * rad, o1 * (rad - w), o0 * (rad - w)]:
 			st.set_color(c)
 			st.add_vertex(v)
-	if a1 - a0 < 300.0:
-		for a in [a0, a1]:
+	if sides[1] - sides[0] < 300.0:
+		for a in sides:
 			var d := Vector3(cos(deg_to_rad(a)), 0, sin(deg_to_rad(a)))
 			var sd := Vector3(-d.z, 0, d.x) * (w * 0.5)
-			var near := d * 6.0
-			var reach_r := rad
-			if keep != null:
+			# issue 1589 (Ryan, Nov 22): a ship whose hex sits on the arc's line is in the arc (rules inArc), so each side
+			# runs half a hex outside that line, along the far edge of the hexes on it, never through their middles
+			var out: Vector3 = Vector3(d.z, 0, -d.x) * (board.HW * 0.5) * (1.0 if a == sides[0] else -1.0)
+			var near: Vector3 = d * 6.0 + out
+			var reach_r := sqrt(maxf(rad * rad - board.HW * board.HW * 0.25, 1.0))
+			if keep != null:   # issue 1446: stop the side where it leaves the board
+				var full := reach_r
 				reach_r = 6.0
-				while reach_r + 1.0 <= rad and bool(keep.call(d * (reach_r + 1.0))):
+				while reach_r + 1.0 <= full and bool(keep.call(d * (reach_r + 1.0) + out)):
 					reach_r += 1.0
-			var far := d * reach_r
+			var far: Vector3 = d * reach_r + out
 			for v in [[near - sd, 0.0], [far - sd, 0.5], [far + sd, 0.5], [near - sd, 0.0], [far + sd, 0.5], [near + sd, 0.0]]:
 				st.set_color(Color(col.r, col.g, col.b, v[1] * alpha / 0.75))
 				st.add_vertex(v[0])
@@ -3301,8 +3342,10 @@ func _overlay() -> void:
 			var ek: String = board.key(e["q"], e["r"])
 			if rings.get(ek) == TARGET_RING:
 				continue
+			if plan != null:
+				continue   # issue 1589: a plain plan's red rings come from _firing_set (the guns a click would aim)
 			for w in u["weapons"]:
-				if plan == null and atk["weapons"] != null and int(w["i"]) not in atk["weapons"]:
+				if atk["weapons"] != null and int(w["i"]) not in atk["weapons"]:
 					continue
 				if w["ready"] and w["kind"] != "flak" and api.in_reach(sel, int(w["i"]), e["id"], pst):
 					rings[ek] = TARGET_PLAN
@@ -3315,6 +3358,10 @@ func _overlay() -> void:
 			_path_dots(u, {"path": rm2["path"]})   # issue 1444: the ram's run as the shared path line
 	if target != "" and VU.has(target) and not VU[target]["dead"]:
 		rings[board.key(VU[target]["q"], VU[target]["r"])] = TARGET_ON
+	for a in aims:   # issue 1589: every enemy picked in the plan shows the lock ring
+		var at: Dictionary = VU.get(str(a["tid"]), {})
+		if not at.is_empty() and not at["dead"]:
+			rings[board.key(at["q"], at["r"])] = TARGET_ON
 	_fans(sel if (arcs_on and _usable(u)) else "", ghost if (pst != null and ghost != null and ghost.visible) else null)
 	_enemy_fans(_inspected_enemy() if arcs_on else "")
 	var hk: String = board.key(hover.x, hover.y)
@@ -3366,8 +3413,10 @@ func _path_dots(u: Dictionary, st) -> void:
 	path_line.mesh = line.commit()
 	path_line.visible = true
 
-# the planned position: a see-through blue copy of the ship's hull standing on the planned hex, facing the planned way
-const GHOST_COL := Color(0.45, 0.78, 1.0, 0.32)
+# the planned position: a see-through blue copy of the ship's hull standing on the planned hex, facing the planned way.
+# Issue 1589 (Ryan's pick 3b): a bright outline around it, so the plan reads as the ship's stand-in from the battle camera.
+const GHOST_COL := Color(0.45, 0.78, 1.0, 0.30)
+const GHOST_EDGE := Color(0.72, 0.92, 1.0, 0.95)
 
 
 func _ghost_show(u: Dictionary, st) -> void:
@@ -3386,6 +3435,15 @@ func _ghost_show(u: Dictionary, st) -> void:
 		m.albedo_color = GHOST_COL
 		m.cull_mode = BaseMaterial3D.CULL_BACK
 		m.no_depth_test = false
+		# the outline: the same hull pushed out a little along its normals, drawn back faces only (an inverted shell)
+		var edge := StandardMaterial3D.new()
+		edge.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		edge.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		edge.albedo_color = GHOST_EDGE
+		edge.cull_mode = BaseMaterial3D.CULL_FRONT
+		edge.grow = true
+		edge.grow_amount = clampf(float(sv.L) * 0.012, 0.18, 0.6)
+		m.next_pass = edge
 		if sv.hull != null:
 			var h: Node3D = sv.hull.duplicate(0)
 			ghost.add_child(h)
@@ -3667,10 +3725,7 @@ func _ram_press() -> void:
 	if not rm is Dictionary:
 		return
 	mode = "ram"
-	plan = null
-	plan_k = ""
-	target = ""
-	atk = null
+	_plan_clear()
 	plog.note("arms ram")
 	_refresh_ui()
 
@@ -3887,7 +3942,7 @@ func _on_key(k: int) -> void:
 			elif wing_sel != "":
 				wing_sel = ""
 				hud.toast("Wing order cancelled.")
-			elif plan != null or target != "":
+			elif plan != null or target != "" or not aims.is_empty():
 				_cancel("esc")
 				return
 			elif armed >= 0:
@@ -3905,7 +3960,7 @@ func _on_key(k: int) -> void:
 			# F1: Enter confirms what is planned (the move, the fire, the attack-move, an armed ram); it never ends a ship
 			if mode == "ram":
 				_ram_commit()
-			elif plan != null or target != "":
+			elif plan != null or target != "" or not aims.is_empty():
 				_confirm()
 			elif _can_act():
 				hud.toast("Nothing planned. Click a blue hex to plan a move, or an enemy to target it. Space ends the ship.")
@@ -3955,8 +4010,8 @@ func _arm(i: int) -> void:
 	if u.is_empty() or i >= (u["weapons"] as Array).size():
 		return
 	armed = -1 if armed == i else i
-	if target != "":
-		_update_target_plan(target)
+	if atk != null and target != "":
+		_update_target_plan(target)   # the Burn and fire stop depends on which guns go
 	sfx.play("ui_click")
 	_refresh_ui()
 
@@ -3965,11 +4020,35 @@ func _rotate(d: int) -> void:
 	var u := _sel_unit()
 	if not _can_act() or u.is_empty():
 		return
+	if not _usable(u):
+		return
+	# Issue 1589: a turn in place is planned too. The ghost turns on the ship's own hex; nothing reaches the rules until the
+	# commit, which turns the ship with the rules' own rotate (as Q/E always did: a skill's free turn and a free pivot are
+	# spent there, not here), then fires.
+	var own: String = board.key(u["q"], u["r"])
+	var hk0: String = board.key(hover.x, hover.y)
+	if _usable(u) and atk == null and ((plan != null and plan.has("rot")) or (plan == null and not (reach_alt.has(hk0) and hk0 != own))):
+		var rot: int = (int(plan["rot"]) if plan != null else 0) + d
+		if rot > 3: rot -= 6
+		if rot < -3: rot += 6
+		if rot != 0 and not _turns_ok(rot):
+			hud.toast("No turn left this activation." if absi(rot) == 1 else "It cannot turn that far in place this activation (it would stop at the middle heading).")
+			return
+		_plan_step()
+		plan = null if rot == 0 else {"q": int(u["q"]), "r": int(u["r"]), "f": posmod(int(u["facing"]) + rot, 6), "cost": 0, "t": absi(rot), "path": [], "rot": rot}
+		plan_k = "" if rot == 0 else own
+		_aims_check()
+		plog.note("plans")
+		sfx.play("ui_click")
+		_refresh_ui()
+		return
 	if plan != null and reach_alt.has(plan_k):
 		# F1: turning a planned move: the next facing the planned hex can be reached in (nothing is sent to the rules)
 		var alts: Array = reach_alt[plan_k]
 		var i := maxi(0, alts.find(plan))
+		_plan_step()
 		plan = alts[posmod(i + (1 if d > 0 else -1), alts.size())]
+		_aims_check()
 		_refresh_ui()
 		return
 	var hk: String = board.key(hover.x, hover.y)
@@ -3978,25 +4057,52 @@ func _rotate(d: int) -> void:
 		hover_pick[hk] = int(hover_pick.get(hk, _alt_index(hk))) + (1 if d > 0 else -1 + reach_alt[hk].size())
 		_overlay()
 		return
-	# turning in place: the rules' own rotate (G1) when present
-	if api.has_method("rotate"):
-		var rid := sel
-		if _cmd(func(): return api.rotate(rid, d)):
-			plog.act("rotate", {"d": d})
+	# Issue 1589 (Codex on PR 1643, run 2): Q/E never send anything to the rules. With a Burn and fire planned the rules
+	# pick its stop and facing, so the ghost stays as it is.
+	if atk != null:
+		hud.toast("Burn and fire picks its own stop and facing. Click a blue hex to plan the move yourself, or Backspace.")
+
+
+# Issue 1589: can the ship that is up turn in place by rot steps now (sign = way)? Read on a copy of the rules' own unit with
+# canRotate, spending what _rotateUnit_raw spends for each turn (a skill's free turn, then a free pivot, then movement and a
+# turn charge). Each step is its own rotate at the commit, and the rules end the activation after a step that leaves the
+# ship with no movement and no gun on an enemy (battle_api _done_raw), so a middle heading like that cannot be planned
+# through (Codex on PR 1643, run 2). Read only: the copy is thrown away.
+func _turns_ok(rot: int) -> bool:
+	var n := absi(rot)
+	if not _api_join():
+		return false
+	var ru = api.unit(sel)
+	if ru == null:
+		return false
+	var R = api.R
+	var v = R.dup(ru)
+	for k in n:
+		if not R.canRotate(v):
+			return false
+		if float(_z0(v.get("treeFreeTurn"))) > 0.0:
+			v["treeFreeTurn"] = 0   # a skill's free turn: no movement, no turn charge (Artoo on PR 1643: still checked below)
 		else:
-			hud.toast("No turn left this activation.")
-		return
-	var want := posmod(int(u["facing"]) + d, 6)
-	var best = null
-	for st in reach_states:
-		if int(st.q) == int(u["q"]) and int(st.r) == int(u["r"]) and int(st.f) == want:
-			if best == null or float(st.cost) < float(best.cost):
-				best = st
-	if best != null:
-		var id := sel
-		_cmd(func(): return api.move(id, best))
-	else:
-		hud.toast("No turn left this activation.")
+			if R.freePivot(v):
+				v["pivotUsed"] = true
+			else:
+				v["mp"] = v["mp"] - 1
+				if R.jt(v.get("postFire")):
+					v["postMp"] = maxi(0, int(_z0(v.get("postMp"))) - 1)
+			v["turnsLeft"] = v["turnsLeft"] - 1
+		v["facing"] = posmod(int(v["facing"]) + signi(rot), 6)
+		if k < n - 1 and v["mp"] <= 0 and not _any_shot(v):
+			return false
+	return true
+
+
+func _any_shot(v) -> bool:
+	for w in v["weapons"]:
+		if api.R.weaponReady(w):
+			for t in api.R.alive("enemy"):
+				if api.R.canFire(v, w, t):
+					return true
+	return false
 
 
 func _alt_index(hk: String) -> int:
@@ -4012,9 +4118,7 @@ func _order(o: String) -> void:
 	if not bool(_ui(id).get("orders", {}).get(o, false)):
 		hud.toast("Can't brace after firing." if _sel_unit().get("fired", false) else "This ship can't brace now.")
 		return
-	plan = null
-	target = ""
-	atk = null
+	_plan_clear()
 	plog.act(o)
 	if o == "brace":
 		plog.close("brace")
@@ -4086,9 +4190,7 @@ func _end_ship(how: String) -> void:
 	sfx.play("ui_confirm")
 	sel = ""
 	armed = -1
-	plan = null
-	target = ""
-	atk = null
+	_plan_clear()
 
 
 func _end_activation() -> void:
@@ -4099,7 +4201,14 @@ func _end_activation() -> void:
 # allow it only while nothing else has happened since (no shot, ram, boarding, ability, order, Command or dice: view undo).
 # Each press takes back one; after the first move is undone the ship is free again and another may go first.
 func _undo(how: String) -> void:
-	if not _can_act() or not api.has_method("undo"):
+	if not _can_act():
+		return
+	# issue 1589: while a plan is open, Backspace takes back its last step (a target, a turn or a move); nothing reaches the
+	# rules. With no plan open it takes back a move the rules already made, as R376 says.
+	if not plan_steps.is_empty():
+		_plan_back(how)
+		return
+	if not api.has_method("undo"):
 		return
 	var id := _active_id()
 	if id == "":
@@ -4109,10 +4218,7 @@ func _undo(how: String) -> void:
 		if how == "backspace" and not u.is_empty() and u["side"] == "player":
 			hud.toast("Nothing to undo. A move can be taken back only until the ship fires, rams, boards or uses an ability.")
 		return
-	plan = null
-	plan_k = ""
-	target = ""
-	atk = null
+	_plan_clear()
 	armed = -1
 	mode = ""
 	if _cmd(func(): return api.undo(id)):
@@ -4226,7 +4332,9 @@ func _on_click() -> void:
 		return
 	if not u.is_empty() and u["side"] == "player":
 		if u["id"] == sel:
-			if plan != null or target != "":
+			if plan != null and plan_k == board.key(int(u["q"]), int(u["r"])):
+				_confirm()   # issue 1589: the ghost turned on the ship's own hex; a click on it commits, as on any planned hex
+			elif plan != null or target != "" or not aims.is_empty():
 				_cancel("click")
 			return
 		var act := _active_id()
@@ -4249,7 +4357,7 @@ func _on_click() -> void:
 		# F1 (R63, Ryan Nov 1): clicking an enemy never fires. The first click targets it (or only inspects it when the
 		# ship that is up cannot reach it); a second click on the same enemy, Enter, or the card's Fire button commits.
 		if _usable(s):
-			if target == u["id"]:
+			if (atk != null and target == u["id"]) or _aimed(str(u["id"])):
 				_confirm()
 				return
 			_target(u["id"])
@@ -4264,15 +4372,18 @@ func _on_click() -> void:
 		if plan != null and plan_k == hk:
 			_confirm()
 			return
+		_plan_step()
 		plan = _hover_state(hk)
 		plan_k = hk
-		target = ""
+		if atk != null:
+			target = ""   # Codex on PR 1643: the Burn and fire target is no pick of the new plan
 		atk = null
+		_aims_check()   # issue 1589: picks that still bear from the new ghost stay
 		plog.note("plans")
 		sfx.play("ui_click")
 		_refresh_ui()
 		return
-	if plan != null or target != "":
+	if plan != null or target != "" or not aims.is_empty():
 		_cancel("click")
 		return
 	if inspect != "":
@@ -4281,17 +4392,106 @@ func _on_click() -> void:
 
 
 # F1: target an enemy with the ship that is up (no rules call that changes anything)
+# Issue 1589: the guns that bear go into the plan as one pick, fired from the ghost when a move is planned. A second enemy
+# takes the guns still free. An enemy no gun reaches from here, with nothing planned yet, plans a Burn and fire instead.
 func _target(tid: String) -> void:
-	plan = null
-	plan_k = ""
 	inspect = tid
 	plog.note("targets")
-	_update_target_plan(tid)
-	if target != "":
+	var guns := _firing_set(tid)
+	if not guns.is_empty():
+		_plan_step()
+		atk = null
+		aims.append({"tid": tid, "guns": guns})
+		target = tid
+		armed = -1
 		sfx.play("ui_confirm", {"gain": 0.707946})
+	elif aims.is_empty():
+		# Burn and fire, also over a planned move (Artoo on PR 1643): the ghost goes to the stop the rules pick for this
+		# target, as one more step that Backspace takes back
+		_plan_step()
+		var had = plan
+		var had_k := plan_k
+		plan = null
+		plan_k = ""
+		_update_target_plan(tid)
+		if target != "":
+			sfx.play("ui_confirm", {"gain": 0.707946})
+		else:
+			plan_steps.pop_back()
+			plan = had
+			plan_k = had_k
+			hud.toast(("No ready gun bears on %s from the planned hex, and no stop on the way reaches it." % _name(tid)) if had != null else _cant_fire_reason(tid))
+	elif _firing_set(tid, false).is_empty():
+		hud.toast(("No ready gun bears on %s from the planned hex." % _name(tid)) if plan != null else _cant_fire_reason(tid))
 	else:
-		hud.toast(_cant_fire_reason(tid))
+		hud.toast("Every gun that bears on %s is already aimed. Backspace takes the last pick back." % _name(tid))
 	_refresh_ui()
+
+
+func _gun_aimed(i: int) -> bool:
+	for a in aims:
+		if int(i) in (a["guns"] as Array):
+			return true
+	return false
+
+
+func _aimed(tid: String) -> bool:
+	for a in aims:
+		if str(a["tid"]) == tid:
+			return true
+	return false
+
+
+# what the plan looked like before this step (Backspace goes back to it)
+func _plan_step() -> void:
+	plan_steps.append({"plan": plan, "k": plan_k, "target": target, "atk": atk, "aims": aims.duplicate(true), "armed": armed})
+
+
+func _plan_back(how: String) -> void:
+	var s: Dictionary = plan_steps.pop_back()
+	plan = s["plan"]
+	plan_k = s["k"]
+	target = s["target"]
+	atk = s["atk"]
+	aims = s["aims"]
+	armed = int(s["armed"])
+	plog.note("steps back")
+	if how == "backspace":
+		sfx.play("ui_cancel")
+	_refresh_ui()
+
+
+func _plan_clear() -> void:
+	plan = null
+	plan_k = ""
+	target = ""
+	atk = null
+	aims = []
+	plan_steps = []
+
+
+# after the ghost moves or turns: keep each pick's guns that still bear from it, and say which picks fell away
+func _aims_check() -> void:
+	if aims.is_empty():
+		return
+	var keep: Array = []
+	var lost := PackedStringArray()
+	var taken: Array = []
+	for a in aims:
+		var ok: Array = []
+		for i in _firing_set(str(a["tid"]), false, [-1]):
+			if i in a["guns"] and i not in taken:
+				ok.append(i)
+		taken.append_array(ok)
+		if ok.is_empty():
+			lost.append(_name(str(a["tid"])))
+		else:
+			keep.append({"tid": a["tid"], "guns": ok})
+	aims = keep
+	if not _aimed(target):
+		target = "" if aims.is_empty() else str(aims[-1]["tid"])
+	if not lost.is_empty():
+		hud.toast("No gun bears on %s from here: that pick is dropped." % ", ".join(lost))
 
 
 func _update_target_plan(tid: String) -> void:
@@ -4306,14 +4506,11 @@ func _update_target_plan(tid: String) -> void:
 
 # F1: drop the plan or the target; nothing was sent to the rules, so nothing changes
 func _cancel(why: String) -> void:
-	if plan != null or target != "":
+	if plan != null or target != "" or not aims.is_empty():
 		plog.note("cancels")
 	if mode == "ram":
 		mode = ""
-	plan = null
-	plan_k = ""
-	target = ""
-	atk = null
+	_plan_clear()
 	wing_sel = ""
 	sfx.play("ui_cancel")
 	_refresh_ui()
@@ -4327,41 +4524,75 @@ func _confirm() -> void:
 		_ram_commit()   # issue 1444: the armed ram's second step
 		return
 	var id := sel
-	if plan != null:
-		var st = plan
-		plan = null
-		plan_k = ""
-		plog.act("move", {"cost": int(st.cost), "to": "%d,%d" % [int(st.q), int(st.r)], "f": int(st.f)})
-		sfx.play("ui_confirm", {"gain": 0.707946})
-		_cmd(func(): return api.move(id, st))
-		return
-	if target == "":
-		return
 	var tid := target
-	if atk != null:
+	if atk != null and tid != "":
 		var wsel = atk["weapons"]
 		plog.act("attack_move", {"cost": int(atk["st"].cost), "guns": int(atk["n"]), "target": str(VU.get(tid, {}).get("cls", "")), "tid": tid})
-		atk = null
+		_plan_clear()
 		armed = -1
 		sfx.play("ui_confirm")
 		_cmd(func(): return api.attack_move(id, tid, wsel))
 		return
-	var set := _firing_set(tid)
-	if set.is_empty():
-		hud.toast(_cant_fire_reason(tid))
+	# Issue 1589 (Ryan, Nov 22 2026): the commit. The planned move and every planned volley go to the rules in one command,
+	# so they come back as one batch and play as one event (issue 1581's hand-off turns the guns onto the first target while
+	# the hull brakes). A pick the move made impossible (damage on the way, the ship lost) is dropped and the toast says so.
+	var st = plan
+	var rot := 0
+	if st != null and st.has("rot"):
+		rot = int(st["rot"])   # a turn in place: the rules' rotate, once per step, as Q/E always did
+		st = null
+	elif st != null and int(st.cost) == 0 and int(st.q) == int(_sel_unit()["q"]) and int(st.r) == int(_sel_unit()["r"]) and int(st.f) == int(_sel_unit()["facing"]):
+		st = null   # the ghost is where the ship already sits: nothing to move
+	var picks: Array = aims.duplicate(true)
+	if st == null and rot == 0 and picks.is_empty():
 		return
-	sfx.play("ui_confirm")
-	plog.act("fire", {"guns": set.size(), "target": str(VU.get(tid, {}).get("cls", "")), "tid": tid, "armed": armed >= 0})
+	_plan_clear()
+	armed = -1
+	if st != null:
+		plog.act("move", {"cost": int(st.cost), "to": "%d,%d" % [int(st.q), int(st.r)], "f": int(st.f)})
+	if rot != 0:
+		plog.act("rotate", {"d": rot})
+	for pk in picks:
+		plog.act("fire", {"guns": (pk["guns"] as Array).size(), "target": str(VU.get(str(pk["tid"]), {}).get("cls", "")), "tid": str(pk["tid"]), "planned": st != null})
+	sfx.play("ui_confirm", {"gain": 0.707946} if picks.is_empty() else {})
+	var dropped: Array = []   # an Array, not a packed one: the lambda below must add to this same list
+	var moved_ok := [true]
 	_cmd(func():
 		var any := false
-		for i in set:
-			if api.fire(id, i, tid):
-				any = true
-			var tu = api.unit(tid)
-			if tu == null or _jt(tu.get("dead")) or api.phase != "player":
+		if st != null:
+			if not api.move(id, st):
+				moved_ok[0] = false
+				return false
+			any = true
+		for k in absi(rot):
+			if not api.rotate(id, signi(rot)):
+				moved_ok[0] = any
 				break
+			any = true
+		for pk in picks:
+			var t_id := str(pk["tid"])
+			var shot := false
+			var lost := false
+			for i in pk["guns"]:
+				var me = api.unit(id)
+				var tu = api.unit(t_id)
+				if me == null or _jt(me.get("dead")) or api.phase != "player":
+					lost = true
+					break
+				if tu == null or _jt(tu.get("dead")):
+					break
+				if api.can_fire(id, int(i), t_id) and api.fire(id, int(i), t_id):
+					shot = true
+					any = true
+				else:
+					lost = true
+			if lost or not shot:
+				dropped.append(_name(t_id))
 		return any)
-	armed = -1
+	if not moved_ok[0]:
+		hud.toast("That move or turn can no longer be made from here. Plan it again.")
+	elif not dropped.is_empty():
+		hud.toast("Not every planned shot could fire after the move (%s). The card shows what is left." % ", ".join(PackedStringArray(dropped)))
 
 
 # F1: after the picture has caught up with the rules in the player's phase: keep the acting ship up, end a ship that has
@@ -4713,16 +4944,17 @@ func _attack_tip(t_id: String) -> String:
 	var hull := 0.0
 	var sh := 0.0
 	var n := 0
-	# Same current-position weapon set as the activation card, including while a move is planned.
-	var firing := _firing_set(t_id)
-	var volley := _volley_preview(sel, firing, t_id)
+	# The same weapon set as the activation card: from the ghost when a move is planned (issue 1589).
+	var firing := _shown_set(t_id)
+	var volley := _volley_preview(sel, firing, t_id, plan)
 	var idx: Array = [armed] if armed >= 0 else range(su["weapons"].size())
 	for i in idx:
 		var vw: Dictionary = su["weapons"][i]
 		var w = ru["weapons"][i]
 		var tg := _wtarget(sel, i, t_id)
-		quad = int(tg.get("quad", quad))
-		rear = bool(tg.get("rear", rear))
+		if plan == null:
+			quad = int(tg.get("quad", quad))
+			rear = bool(tg.get("rear", rear))
 		var right := ""
 		if i in firing:
 			tg = tg.duplicate()
@@ -4741,6 +4973,8 @@ func _attack_tip(t_id: String) -> String:
 			right = "[color=#7c8674]point defense[/color]"
 		elif su["braced"]:
 			right = "[color=#7c8674]braced[/color]"
+		elif plan != null:
+			right = "[color=#7c8674]%s[/color]" % ("aimed at another target" if _gun_aimed(i) else "no shot from the ghost")
 		elif not tg.get("inRange", false):
 			right = "[color=#7c8674]out of range (%d/%d)[/color]" % [int(tg.get("range", 0)), int(vw["range"])]
 		elif not tg.get("inArc", false):
@@ -4748,6 +4982,11 @@ func _attack_tip(t_id: String) -> String:
 		elif not tg.get("los", false):
 			right = "[color=#7c8674]blocked[/color]"
 		rows += "%s  %s\n" % [str(vw["name"]), right]
+	if plan != null:
+		# Codex on PR 1643: the side it hits and the rear arc are read from the ghost, as the damage is
+		var gsrc = api.R.stateView(ru, plan)
+		quad = int(api.R.shieldQuad(tu, gsrc))
+		rear = bool(api.R.treeIsRear(gsrc, tu, quad))
 	var t := "[b][color=#ff8a72]%s[/color][/b]\n[color=#a7b09d]Hull %s/%s, %s[/color]\n" % [str(tv["name"]), Campaign.hull_text(tv["hp"]), Campaign.hull_text(tv["maxHp"]), _target_defenses(tu)]
 	if float(tv["shMax"]) > 0:
 		t += "Hits the [color=#92b8e8][b]%s shield[/b][/color] (pool [color=#92b8e8]%d[/color]/%d, this side catches %d)%s." % [QUAD_NAME[quad], int(_z0(tu.get("shp"))), int(tv["shMax"]), int(tv["sh"][quad]), " [color=#ffad3b]down, straight to hull[/color]" if float(_z0(tu.get("shp"))) < 1 else ""]
@@ -4758,12 +4997,12 @@ func _attack_tip(t_id: String) -> String:
 	if rear:
 		t += " [color=#ffb23e]Rear arc: armor halved, +15% crit.[/color]"
 	if plan != null:
-		t += "\n[color=#7fc4ff]From current position (move not taken yet).[/color]"
+		t += "\n[color=#7fc4ff]From the ghost (nothing has moved yet).[/color]"
 	t += "\n" + rows
 	if not _shot_blockers(tv).is_empty(): t += "[color=#ffb875]%s[/color]\n" % _blocker_text(tv)
 	if n > 0:
 		t += "Expected: about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage.\n[color=#ff8a3a]%s[/color]" % [int(round(sh)), int(round(hull)),
-			("Targeted. Click again or Enter to fire %d weapon%s." % [n, "s" if n > 1 else ""]) if target == t_id else "Click to target (nothing fires yet)."]
+			("Aimed. Click again or Enter to play the plan (%d weapon%s here)." % [n, "s" if n > 1 else ""]) if _aimed(t_id) else "Click to aim (nothing fires yet)."]
 	else:
 		var am = (atk if (target == t_id and atk != null) else (_attack_move(t_id) if int(su.get("moveLeft", 0)) > 0 else null))
 		if am != null:
@@ -5229,6 +5468,51 @@ func _refresh_ui() -> void:
 
 # F1: the activation card. Which ship is up, its three steps (move, fire, end) with what is left of each, one plain
 # sentence on what to do next (never "done" while something is left: the same test as the automatic end), and the buttons.
+# Issue 1589: the card's words for the open plan: the move, each pick with its expected damage from the ghost, what is still
+# free, and the button that commits it all.
+func _plan_text(id: String) -> Dictionary:
+	var rows := PackedStringArray()
+	var says := PackedStringArray()
+	var u := _sel_unit()
+	var moves := plan != null and not (int(plan.cost) == 0 and int(plan.q) == int(u["q"]) and int(plan.r) == int(u["r"]) and int(plan.f) == int(u["facing"]))
+	if moves:
+		var tn := int(plan.get("t", 0))
+		var turns := (", %d turn%s" % [tn, "" if tn == 1 else "s"]) if tn > 0 else ""
+		if int(plan.q) == int(u["q"]) and int(plan.r) == int(u["r"]):
+			rows.append("[color=#7fc4ff]Turn in place[/color]%s (Q/E turn the ghost)." % turns)
+			says.append("Turn in place.")
+		else:
+			rows.append("[color=#7fc4ff]Move:[/color] %d movement%s. The ghost shows where it ends and which way it faces (Q/E turn it)." % [int(plan.cost), turns])
+			says.append("Move %d%s." % [int(plan.cost), turns])
+	var guns := 0
+	for a in aims:
+		var set: Array = a["guns"]
+		guns += set.size()
+		var volley := _volley_preview(id, set, str(a["tid"]), plan)
+		var sh := 0.0
+		var hl := 0.0
+		for i in set:
+			sh += float((volley.get(i, {}) as Dictionary).get("shield", 0))
+			hl += float((volley.get(i, {}) as Dictionary).get("hull", 0))
+		rows.append("[color=#ff8a6a]%d gun%s at %s:[/color] about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage." % [set.size(), "" if set.size() == 1 else "s", _name(str(a["tid"])), int(round(sh)), int(round(hl))])
+		says.append("%d gun%s at %s." % [set.size(), "" if set.size() == 1 else "s", _name(str(a["tid"]))])
+	var free := 0
+	var seen := {}
+	for e in V["units"]:
+		if e["side"] == "enemy" and not e["dead"]:
+			for i in _firing_set(str(e["id"])):
+				seen[int(i)] = true
+	free = seen.size()
+	if free > 0:
+		rows.append("%d more gun%s bear%s %s: click an enemy with a red ring to aim %s." % [free, "" if free == 1 else "s", "s" if free == 1 else "", "from the ghost" if plan != null else "from here", "it" if free == 1 else "them"])
+	elif aims.is_empty():
+		rows.append("No gun bears from the ghost yet. Move or turn it until an enemy gets a red ring.")
+	rows.append("[b]Enter, or click the hex or a target again, plays it all out.[/b] Backspace steps back, Esc clears the plan.")
+	var turn_only: bool = plan != null and plan.has("rot")
+	var go := ("Turn and fire (Enter)" if turn_only else "Move and fire (Enter)") if moves and guns > 0 else ("Fire %d gun%s (Enter)" % [guns, "" if guns == 1 else "s"] if guns > 0 else ("Turn here (Enter)" if plan != null and int(plan.q) == int(u["q"]) and int(plan.r) == int(u["r"]) else "Move here (Enter)"))
+	return {"hint": "\n".join(rows), "say": " ".join(says) if not says.is_empty() else "Planning.", "go": go}
+
+
 func _card_info() -> Dictionary:
 	if _classic() or api == null or api.phase != "player" or ended:
 		return {}
@@ -5292,6 +5576,7 @@ func _card_info() -> Dictionary:
 		{"n": 3, "label": "End ship", "detail": "Space", "st": en_st}]
 	var hint := ""
 	var say := ""   # issue 271: the sheet's one short sentence for what to do now (the full hint is on the action's hover)
+	var keys := ""   # issue 1589 (Ryan, Nov 22): the keys of an open plan, always on screen beside what it does
 	var btns: Array = []
 	if nothing or ending:
 		hint = "[color=#a7b09d]Nothing left to do this round: handing over to the next ship.[/color]"
@@ -5315,31 +5600,20 @@ func _card_info() -> Dictionary:
 		hint = "[color=#ffc04d]Board:[/color] click a gold-ringed enemy to send the boarders. Esc cancels.\n" + "\n".join(rows)
 		say = "Board: click a gold-ringed enemy."
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
-	elif plan != null:
-		hint = "[color=#7fc4ff]Planned move:[/color] %d movement%s, the ghost shows where it ends and which way it faces (Q/E turn it). [b]Click the hex again or press Enter to go.[/b] Esc cancels. Backspace takes a move back until the ship fires." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
-		say = "Planned move: %d movement%s." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
-		btns.append({"text": "Move here (Enter)", "act": "confirm", "on": true, "primary": true})
-		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif target != "" and atk != null:
 		hint = "[color=#ffb23e]%s is out of reach from here.[/color] The ghost shows where the ship would stop: it burns %d movement and fires %d of %d guns on the way. [b]Click it again or press Enter to go.[/b] Esc cancels." % [_name(target), int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
 		say = "Out of reach: it burns %d movement and fires %d of %d guns on the way." % [int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
 		btns.append({"text": "Burn and fire (Enter)", "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
-	elif target != "":
-		var set := _firing_set(target)
-		var volley := _volley_preview(id, set, target)
-		var sh := 0.0
-		var hl := 0.0
-		for i in set:
-			var tg: Dictionary = volley[i]
-			sh += float(tg.get("shield", 0))
-			hl += float(tg.get("hull", 0))
-		if set.is_empty():
-			hint = _cant_fire_reason(target)
-		else:
-			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl))]
-			btns.append({"text": "Fire %d weapon%s (Enter)" % [set.size(), "" if set.size() == 1 else "s"], "act": "confirm", "on": true, "primary": true})
-			btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
+		keys = "Enter goes · Backspace undoes · Esc cancels"
+	elif plan != null or not aims.is_empty():
+		# issue 1589: the open plan, step by step; the commit plays all of it as one event
+		var pt := _plan_text(id)
+		hint = pt["hint"]
+		say = pt["say"]
+		btns.append({"text": pt["go"], "act": "confirm", "on": true, "primary": true})
+		btns.append({"text": "Clear plan (Esc)", "act": "cancel", "on": true})
+		keys = "Enter plays · Backspace undoes · Esc clears"
 	elif fired and bear > 0:
 		hint = "%d gun%s still ready. Click an enemy with a red ring to target it, or end the ship (Space)." % [bear, "" if bear == 1 else "s"]
 		say = "%d gun%s still ready: pick another target, or end the ship." % [bear, "" if bear == 1 else "s"]
@@ -5369,11 +5643,14 @@ func _card_info() -> Dictionary:
 		"tip": "Switch to another ready ship. Once a ship has moved or fired it stays up until it ends."})
 	btns.append({"text": "End ship (Space)", "act": "end", "on": true, "big": true, "primary": plan == null and target == "",
 		"tip": "This ship is done for the round%s; the enemy moves one of theirs." % ("" if u["active"] else " (it holds position)")})
-	if bool(u.get("undo", false)):
+	if not plan_steps.is_empty():
+		btns.append({"text": "Step back (Backspace)", "act": "undo", "on": true,
+			"tip": "Take back the last step of the plan: a target, a turn or a move. Nothing has happened yet."})
+	elif bool(u.get("undo", false)):
 		btns.append({"text": "Undo move (Backspace)", "act": "undo", "on": true,
 			"tip": "Take back the last move or turn. Allowed until the ship fires, rams, boards or uses an ability."})
 	return {"name": str(u["name"]), "cls": _class_label(u["cls"]), "flag": u["flagship"], "tag": "ACTING" if u["active"] else "UP",
-		"more": ("%d more ready" % more) if more > 0 else "last ship this round", "steps": steps, "hint": hint, "say": say, "buttons": btns, "aim": target != "" and plan == null}
+		"more": ("%d more ready" % more) if more > 0 else "last ship this round", "steps": steps, "hint": hint, "say": say, "keys": keys, "buttons": btns, "aim": target != "" and plan == null}
 
 
 # F1: the play log goes three places: the battle result (campaign_host hands results to the campaign), the campaign's
@@ -6081,15 +6358,7 @@ func _target_info() -> Dictionary:
 	if ru == null or foe == null: return {}
 	var d: Dictionary = disp.get(tid, {"hp": tu["hp"], "sh": tu["sh"]})
 	# with a move planned, the odds are read as the ship would stand at the planned hex (the Fire block does the same)
-	var set: Array = []
-	if plan != null:
-		var planned = api.R.stateView(ru, plan)
-		var idx: Array = [armed] if armed >= 0 else range(ru["weapons"].size())
-		for i in idx:
-			if _vweapon_ready(sel, int(i)) and api.R.canFire(planned, ru["weapons"][i], foe):
-				set.append(i)
-	else:
-		set = _firing_set(tid)
+	var set: Array = _shown_set(tid)
 	var volley := _volley_preview(sel, set, tid, plan)
 	var es := 0.0
 	var eh := 0.0
