@@ -3,7 +3,11 @@ extends SceneTree
 # the first ready ship (s1 opens far apart), then:
 #   PLN-1589_plan   four frames while planning: the ghost on the planned hex, the first pick, the second pick, the card
 #   PLN-1589_commit four frames after the commit, on the game clock: the move and the volley playing as one event
+#   PLN-1589_steps  four frames of the step controls: E turns the ghost, Backspace takes the turn back, the second pick,
+#                   Backspace takes that pick back
 #   ENY-1589        four frames of the enemy's next activation (it plays the same way)
+# Partial by design: s1 has no Glasswright, so the slip after firing is not in this run. The probe exits 1 (and names the
+# step) when it cannot show a ready ship, a planned hex with two distinct picks, or any of its pictures.
 # All waits are on the game clock, so a movie run (Godot's --write-movie with --fixed-fps 60) records the same moments as
 # one clip. Each strip is 2 by 2, no taller than 720 px, its code name and stage on every frame.
 # usage (needs a window): godot --path godot --script res://tools/probes/plan_commit_1589_shots.gd -- --out <folder>
@@ -107,7 +111,7 @@ func _plan_and_commit() -> void:
 			me = u
 			break
 	if me == null:
-		print("[plan-1589-shots] no ready ship"); return
+		_fail("no ready ship"); return
 	var foes: Array = R.alive("enemy")
 	var f := int(me["facing"])
 	var d0: Array = R.DIRS[f]
@@ -130,15 +134,21 @@ func _plan_and_commit() -> void:
 			continue
 		b.plan = st
 		var n := 0
-		for e in _enemies():
-			if not b._firing_set(e).is_empty():
+		var used := {}
+		for e in _enemies():   # count an enemy only when it brings guns no earlier one took (two distinct picks)
+			var fresh := false
+			for i in b._firing_set(e):
+				if not used.has(int(i)):
+					fresh = true
+					used[int(i)] = true
+			if fresh:
 				n += 1
 		b.plan = null
 		if n > best_n:
 			best_n = n
 			best = st
-	if best == null:
-		print("[plan-1589-shots] no planned hex puts an enemy under the guns"); return
+	if best == null or best_n < 2:
+		_fail("no planned hex gives two distinct picks (%d)" % best_n); return
 	var mid: Vector3 = b._pos(str(me["id"])).lerp(b.board.hex_world(int(best.q), int(best.r)), 0.5)
 	b.cam.focus(mid, float(_arg("cam", "170")))
 	await create_timer(1.2).timeout
@@ -149,26 +159,58 @@ func _plan_and_commit() -> void:
 	await create_timer(0.6).timeout
 	_tag("PLN-1589", "1 ghost on the planned hex (nothing has moved)")
 	frames.append(await _grab())
-	var picks := 0
+	var picks: Array = []
 	for e in _enemies():
-		if picks < 2 and not b._firing_set(e).is_empty():
+		if picks.size() < 2 and not b._firing_set(e).is_empty():
 			b._target(e)
-			picks += 1
-			await create_timer(0.6).timeout
-			_tag("PLN-1589", "%d pick %d aimed from the ghost" % [picks + 1, picks])
-			frames.append(await _grab())
-	while frames.size() < 3:
-		frames.append(frames[-1])
+			if b.aims.size() == picks.size() + 1:
+				picks.append(e)
+				await create_timer(0.6).timeout
+				_tag("PLN-1589", "%d pick %d aimed from the ghost" % [picks.size() + 1, picks.size()])
+				frames.append(await _grab())
+	if picks.size() < 2:
+		_fail("only %d distinct picks could be made" % picks.size()); return
 	b._refresh_ui()
 	await create_timer(0.4).timeout
 	_tag("PLN-1589", "4 the card: Move and fire")
 	frames.append(await _grab())
 	await _save("PLN-1589_plan", frames)
+	# the step controls: take the second pick back, turn the ghost and take the turn back, then aim the second pick again
+	var steps: Array = []
+	b._on_key(KEY_BACKSPACE)
+	await create_timer(0.5).timeout
+	_tag("PLN-1589", "steps 1 Backspace: the second pick is taken back (%d left)" % b.aims.size())
+	steps.append(await _grab())
+	var keep = b.plan
+	b._rotate(1)
+	await create_timer(0.6).timeout
+	_tag("PLN-1589", "steps 2 E: the ghost turns")
+	steps.append(await _grab())
+	if b.plan != keep:
+		b._on_key(KEY_BACKSPACE)
+	await create_timer(0.6).timeout
+	_tag("PLN-1589", "steps 3 Backspace: the turn is taken back")
+	steps.append(await _grab())
+	b._target(picks[1])
+	await create_timer(0.6).timeout
+	_tag("PLN-1589", "steps 4 the second pick again (%d picks)" % b.aims.size())
+	steps.append(await _grab())
+	await _save("PLN-1589_steps", steps)
+	if b.aims.size() != 2 or b.plan == null:
+		_fail("the plan did not come back to the move and two picks"); return
 	b._confirm()
 	await _save("PLN-1589_commit", await _strip("PLN-1589", "commit: one event", COMMIT_AT))
 	await _idle()
 	b._end_ship("probe")
 	await _save("ENY-1589", await _strip("ENY-1589", "enemy activation", ENEMY_AT))
+
+
+var failed := ""
+
+
+func _fail(why: String) -> void:
+	failed = why
+	print("[plan-1589-shots] FAILED: ", why)
 
 
 func _run() -> void:
@@ -194,4 +236,8 @@ func _run() -> void:
 	b.tips_off = true
 	await _plan_and_commit()
 	await create_timer(1.0).timeout
-	quit(0)
+	for f in ["PLN-1589_plan", "PLN-1589_steps", "PLN-1589_commit", "ENY-1589"]:
+		if failed == "" and not FileAccess.file_exists(out.path_join(f + ".jpg")):
+			_fail("%s.jpg was not written" % f)
+	print("[plan-1589-shots] ", "PASS" if failed == "" else "FAILED: " + failed)
+	quit(0 if failed == "" else 1)
