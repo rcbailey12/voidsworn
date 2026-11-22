@@ -4,6 +4,7 @@ extends Control
 
 signal closed
 
+const Kit := preload("res://ui/theme/orders_kit.gd")   # issue 1448: the shared ui cues
 const INK := Color("#0f1626")
 const IRON := Color("#182133")
 const IRON3 := Color("#2d3a56")
@@ -104,8 +105,12 @@ func open(st) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", px(10))
 	row.alignment = BoxContainer.ALIGNMENT_END
-	row.add_child(_btn("Keep the name", _close, semi, false))
-	row.add_child(_btn("Rename", _save, semi, true))
+	var keep := _btn("Keep the name", _close, semi, false)
+	Kit.wire_sound(keep, "back")
+	row.add_child(keep)
+	var save := _btn("Rename", _save, semi, true)
+	Kit.wire_sound(save, "primary")
+	row.add_child(save)
 	v.add_child(row)
 	edit.grab_focus.call_deferred()
 	edit.select_all.call_deferred()
@@ -140,4 +145,5 @@ func _close() -> void:
 func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventKey and e.pressed and (e as InputEventKey).keycode == KEY_ESCAPE:
 		get_viewport().set_input_as_handled()
+		Kit.play("ui_cancel")
 		_close()

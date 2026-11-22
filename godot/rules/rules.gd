@@ -1639,9 +1639,15 @@ func escortsBreak() -> void:
 	B["escortsFled"] = true
 	for e in esc:
 		e["dead"] = true; e["fled"] = true; emit({"t": "fled", "unit": e["id"]})
+	fleeRisers(boss)
 	boss["regen"] = 0; boss["hullRegen"] = 0; boss["reanimate"] = false
 	boss["shp"] = JSM.jsround(float(z0(boss.get("shp"))) * 0.5); syncShields(boss); boss["burning"] = true
 	logm(String(boss["name"]) + " is burning. " + ("Its escorts break off and flee. " if esc.size() > 0 else "") + "Its shields falter and it can no longer repair itself.", "s")
+	if esc.size() > 0: checkEnd()   # issue 1560: the rout line is checked at once
+# issue 1560: escorts that break and flee take their wrecks with them, so a Deathless escort killed earlier no longer reassembles
+func fleeRisers(keep) -> void:
+	for u in B["units"]:
+		if jt(u.get("dead")) and u["side"] == "enemy" and not is_same(u, keep) and not jt(u.get("isSq")) and not jt(u.get("transport")) and u.get("riseAt") != null and not jt(u.get("fled")): u["riseAt"] = null
 func startSideTurn(side) -> int:
 	var deaths = []
 	if side == "player": treeRoundStart()
@@ -1661,7 +1667,8 @@ func startSideTurn(side) -> int:
 	for u in B["units"]:
 		if jt(u.get("dead")) or u["side"] != side: continue
 		if jt(u.get("isSq")): u["activated"] = false
-		u["braced"] = false; u["coverBy"] = null; u["postFire"] = false; u["postMp"] = 0; u["pivotUsed"] = false; u["lockOn"] = false; u["focus"] = false; u["fullAhead"] = false; u["noTurn"] = false; u["evBuff"] = 0; u["order"] = null; u["ramBoost"] = 0
+		u["braced"] = false; u["coverBy"] = null; u["postFire"] = false; u["postMp"] = 0; u["pivotUsed"] = false; u["moved"] = false;   # issue 1560: Full ahead opens again each turn
+		u["lockOn"] = false; u["focus"] = false; u["fullAhead"] = false; u["noTurn"] = false; u["evBuff"] = 0; u["order"] = null; u["ramBoost"] = 0
 		u["mp"] = max(1, u["speed"] - u["st"]["engine"]); u["turnsLeft"] = u["turns"]
 		if side == "player" and u.get("burnCarry") != null:
 			u["mp"] = u["mp"] + z0(u["burnCarry"].get("mp")); u["turnsLeft"] = u["turnsLeft"] + z0(u["burnCarry"].get("turns"))   # Grax capstone 1: the last burn carries over
@@ -1753,6 +1760,7 @@ func _sk(s) -> String:
 		var a = s["passed"].duplicate(); a.sort(); var pk = ""
 		for x in a: pk += ("-" if pk != "" else "") + str(x)
 		base += "|" + pk
+	if z0(s.get("dv")) > 0: base += "|d"
 	return base
 func _passAdd(s, nq, nr) -> Array:
 	var out = (s.get("passed") if s.get("passed") != null else []).duplicate()
@@ -1802,7 +1810,7 @@ func computeReach(u, states_only: bool = false) -> Dictionary:
 		if s.cost > MP or (limited and not _reachAllowed(s, u, baseMP, mb, scar, loose, fwd)): continue
 		states.append(s)
 		state_keys.append(key)
-		if s.cost >= MP: continue
+		if s.cost >= MP and not (pivotFree and not noOver and int(s.t) == 0 and can_turn and s.t < turns): continue   # issue 1560: the free pivot is still offered with no movement left (not after firing, R396)
 		if sq:
 			for f in range(6):
 				var d = DIRS[f]; var nq = s.q + d[0]; var nr = s.r + d[1]
@@ -1818,7 +1826,7 @@ func computeReach(u, states_only: bool = false) -> Dictionary:
 				var df: int = o3[0]; var c0 = o3[1]; var kind = o3[2]
 				var d = DIRS[df]; var nq = s.q + d[0]; var nr = s.r + d[1]
 				if not onBoard(nq, nr): continue
-				var c = min(c0, MP) if (kind != null and s.cost == 0) else c0
+				var c = min(c0, MP) if (kind != null and s.cost == 0 and MP > 0) else c0
 				var over = 0; var tt = terr(nq, nr)
 				if blocks(tt):
 					if tt != "rock" and tt != "hulk": continue
@@ -1833,7 +1841,8 @@ func computeReach(u, states_only: bool = false) -> Dictionary:
 				var cost = s.cost + c
 				if cost > MP: continue
 				var passed = _passAdd(s, nq, nr) if scar else null
-				var k = _sk({"q": nq, "r": nr, "f": s.f, "t": s.t, "passed": passed}) if scar else Vector4i(int(nq), int(nr), sf, int(s.t))
+				var dv := 1 if dive and (z0(s.get("dived")) > 0 or dived) else 0   # issue 1560: a state that has used its free dive is not the same as one that still has it
+				var k = _sk({"q": nq, "r": nr, "f": s.f, "t": s.t, "passed": passed, "dv": dv}) if scar else Vector4i(int(nq), int(nr), sf, int(s.t) + 64 * dv)
 				if seen.get(k, INF) <= cost: continue
 				var st = {"q": nq, "r": nr, "f": s.f}
 				if kind != null: st[kind] = 1
@@ -1850,11 +1859,12 @@ func computeReach(u, states_only: bool = false) -> Dictionary:
 					var f = (int(s.f) + dd + 6) % 6
 					var t = s.t + 1
 					var cost = s.cost + tc
-					var k = _sk({"q": s.q, "r": s.r, "f": f, "t": t, "passed": s.passed}) if scar else Vector4i(int(s.q), int(s.r), f, int(t))
+					var dv := 1 if dive and z0(s.get("dived")) > 0 else 0
+					var k = _sk({"q": s.q, "r": s.r, "f": f, "t": t, "passed": s.passed, "dv": dv}) if scar else Vector4i(int(s.q), int(s.r), f, int(t) + 64 * dv)
 					if seen.get(k, INF) <= cost: continue
 					var pth: Array = s.path.duplicate(); pth.append({"q": s.q, "r": s.r, "f": f, "rot": true})
 					seen[k] = cost; keys.append(k)
-					queue.append({"q": s.q, "r": s.r, "f": f, "t": t, "cost": cost, "path": pth, "slips": s.get("slips"), "revs": s.get("revs"), "overs": s.get("overs"), "passed": s.get("passed")})
+					queue.append({"q": s.q, "r": s.r, "f": f, "t": t, "cost": cost, "path": pth, "slips": s.get("slips"), "revs": s.get("revs"), "overs": s.get("overs"), "dived": s.get("dived"), "passed": s.get("passed")})
 	var ok = []
 	var prey = treePrey() if mb > 0.0 else null
 	for i in range(states.size()):
@@ -1911,7 +1921,7 @@ func _moveUnit_raw(u, state, opts = null) -> void:
 	objAfterMove(u)
 
 func freePivot(u) -> bool: return jt(moveRules(u).get("pivot")) and not jt(u.get("pivotUsed"))
-func canRotate(u) -> bool: return not jt(u.get("dead")) and not jt(u.get("isSq")) and not jt(u.get("noTurn")) and (u["turnsLeft"] > 0 or z0(u.get("treeFreeTurn")) > 0) and (u["mp"] > 0 or freePivot(u) or z0(u.get("treeFreeTurn")) > 0) and not jt(u.get("braced"))
+func canRotate(u) -> bool: return not jt(u.get("dead")) and not jt(u.get("isSq")) and not jt(u.get("noTurn")) and (u["turnsLeft"] > 0 or z0(u.get("treeFreeTurn")) > 0) and (u["mp"] > 0 or freePivot(u) or z0(u.get("treeFreeTurn")) > 0) and not jt(u.get("braced")) and (not jt(u.get("postFire")) or z0(u.get("treeFreeTurn")) > 0 or postFireMp(u) > 0)   # R396: firing ends a non-Glasswright ship's movement, turns in place included
 func rotateUnit(u, dir) -> void:
 	var um = undoMark(u); _rotateUnit_raw(u, dir); undoSeal(u, um)
 func _rotateUnit_raw(u, dir) -> void:
@@ -1920,7 +1930,9 @@ func _rotateUnit_raw(u, dir) -> void:
 	var freeTurn = z0(u.get("treeFreeTurn")) > 0
 	if freeTurn: u["treeFreeTurn"] = 0
 	elif freePivot(u): u["pivotUsed"] = true
-	else: u["mp"] = u["mp"] - 1
+	else:
+		u["mp"] = u["mp"] - 1
+		if jt(u.get("postFire")): u["postMp"] = max(0, z0(u.get("postMp")) - 1)
 	if not freeTurn: u["turnsLeft"] = u["turnsLeft"] - 1; u["moved"] = true
 	else: u["moved"] = true
 	emit({"t": "move", "unit": u["id"], "path": [{"q": int(u["q"]), "r": int(u["r"]), "f": f, "rot": true}], "late_fire": false}); hook("rotate", u)
@@ -2417,7 +2429,9 @@ func nemBreak() -> void:
 		if not is_same(u, f) and not jt(u.get("isSq")) and not jt(u.get("transport")): esc.append(u)
 	for e in esc:
 		e["dead"] = true; e["fled"] = true; emit({"t": "fled", "unit": e["id"]})
+	fleeRisers(f)
 	logm(String(f["name"]) + "'s flagship is burning. " + ("The escorts lose formation and break off." if esc.size() > 0 else ""), "s")
+	if esc.size() > 0: checkEnd()
 func ionVs(att, w, t) -> float: return ionOf(att, w) * (1.5 if (t != null and jt(t.get("nem")) and nemWeak("ion") and (jt(w.get("ion")) or w.get("k") == "lance")) else 1.0)
 func applyVerb(id) -> void:
 	var P = []
@@ -2428,7 +2442,8 @@ func applyVerb(id) -> void:
 		for u in P:
 			var fx = u["fx"].duplicate(); fx["lineGuard"] = z0(u["fx"].get("lineGuard")) + 0.15; u["fx"] = fx
 	if id == "drill":
-		B["syncR"] = {"player": TB.SYNC_R + 1}; B["syncDmg"] = {"player": 0.2}
+		var srD = (B["syncR"].duplicate() if B.get("syncR") is Dictionary else {}); srD["player"] = max(syncR("player"), TB.SYNC_R + 1); B["syncR"] = srD   # issue 1560: merged, so a wider tree radius (Kassar) is kept
+		var sdD = (B["syncDmg"].duplicate() if B.get("syncDmg") is Dictionary else {}); sdD["player"] = max(syncDmg("player"), 0.2); B["syncDmg"] = sdD
 	if id == "attune":
 		for u in P:
 			if u["shMax"] > 0:
@@ -2444,7 +2459,7 @@ func wingStance(sv) -> String:
 	if sv != null and jt(sv.get("isSq")):
 		p = null
 		for x in B["units"]:
-			if x["id"] == sv.get("parent"): p = x; break
+			if x["id"] == sv.get("parent") and x["side"] == sv["side"]: p = x; break   # issue 1560: a captured carrier no longer leads its old side's wings
 	return String(p["stance"]) if (p != null and jt(p.get("stance"))) else "strike"
 func canStance(u) -> bool: return B != null and u != null and not jt(u.get("dead")) and not jt(u.get("isSq")) and (u.get("ab") == "launch" or jt(g(u.get("fx"), "hive"))) and u.get("stanceRound") != B["round"]
 func setStance(u, st) -> bool:
@@ -2569,6 +2584,16 @@ func torpSalvoOf(u, w, t, opts, keep) -> Dictionary:   # R364: the damage multip
 		if prot: S["oath"] = 1; treeFx(t, "oathWings", "the escort wall closes")   # Ashgrove capstone 2
 	return S
 # R364 torpedo impact, in the same shot: roll, point defence and wings, the flight, then the hits land. A torpedo that reaches the target and misses bursts with Spread Pattern; one shot down does not.
+# issue 1560: a torpedo lands as a copy of its ship, so the one-shot tree flags landVolley spends or grants on the copy go back to the real ship
+# (Sable capstone 1 and T2a, Razormaw T1b and T3a, Nadir T2a); movement is added as the change, since the real ship may have moved since the launch
+const TORP_GHOST_KEYS = ["treeHuntRearNext", "treeFreeTurn", "treeTeethUsed", "treeIterFire", "treeFrenzyMove", "mp", "postMp"]
+func torpGhostBack(gh, g0: Array, real) -> void:
+	if real == null or jt(real.get("dead")): return
+	for i in range(TORP_GHOST_KEYS.size()):
+		var k = TORP_GHOST_KEYS[i]; var a = gh.get(k); var b = g0[i]
+		if typeof(a) == typeof(b) and a == b: continue
+		if k == "mp" or k == "postMp": real[k] = z0(real.get(k)) + (z0(a) - z0(b))
+		else: real[k] = a
 func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 	var w = S["w"]; var gh = S["ghost"]
 	var real = null; var t = null
@@ -2598,7 +2623,10 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 	syncMarkShot(shooter, t); fstat(S["fac"], "torpLaunch")
 	var d0 = z0(gh.get("dealt")); var reached = shots.size() - int(z0(res.get("pd")))   # torpedoes that got past point defence and the wings
 	var per = func(rear): return S["base"] + (S["rearAdd"] if rear else 0.0)
+	var g0 = []
+	for k in TORP_GHOST_KEYS: g0.append(gh.get(k))
 	landVolley(gh, w, t, {"quad": quad, "shBefore": shBefore, "shots": shots, "called": S.get("called"), "res": res, "torp": true, "per": per, "by": shooter})
+	torpGhostBack(gh, g0, real)
 	if not jt(res.get("hits")) and reached > 0 and jt(g(gh.get("fx"), "spread")) and not jt(t.get("dead")):
 		var near = []
 		for x in alive(t["side"]):
@@ -2709,7 +2737,7 @@ func _hitChance_raw(u, w, t) -> float:
 	if jt(t.get("isSq")) and wingStance(t) == "hunt": c += 10
 	if jt(t.get("fx")) and jt(t["fx"].get("lineEv")) and B != null:
 		for x in B["units"]:
-			if not jt(x.get("dead")) and not is_same(x, t) and x["side"] == t["side"] and not jt(x.get("isSq")) and hdist(x, t) == 1:
+			if not jt(x.get("dead")) and x["id"] != t.get("id") and x["side"] == t["side"] and not jt(x.get("isSq")) and hdist(x, t) == 1:   # issue 1560: by id, so a planned position never counts the ship itself
 				c -= t["fx"]["lineEv"]; break
 	if B != null and B.get("mark") != null and B["mark"].get(u["side"]) != null and B["mark"][u["side"]]["r"] == B["round"] and B["mark"][u["side"]]["id"] == t.get("id"): c += float(B["mark"][u["side"]].get("aim", 10.0))
 	var tl = treeSkill("flagshipLens")
@@ -2796,7 +2824,7 @@ func _guard_raw(t) -> float:
 	if B == null or jt(t.get("isSq")): return 1.0
 	var m = 1.0; var near = []
 	for x in B["units"]:
-		if not jt(x.get("dead")) and not is_same(x, t) and x["side"] == t["side"] and not jt(x.get("isSq")) and hdist(x, t) == 1: near.append(x)
+		if not jt(x.get("dead")) and x["id"] != t.get("id") and x["side"] == t["side"] and not jt(x.get("isSq")) and hdist(x, t) == 1: near.append(x)   # issue 1560: by id, so a planned position never counts the ship itself
 	if near.size() == 0: return 1.0
 	if jt(t.get("fx")) and jt(t["fx"].get("lineGuard")): m *= 1.0 - min(0.5, t["fx"]["lineGuard"])
 	var aura = 0.0
@@ -2964,8 +2992,12 @@ func _expectedVs_raw(u, w, t) -> Dictionary:
 	var raw: float = per * w["shots"] * hit
 	var ion = ionVs(u, w, t)
 	var absorbed := _expected_absorbed(raw, _expected_pierce(u, w), t["sh"][quad], ion)
-	var hull := _expected_hull(raw, absorbed, t["armor"], rear, braceMul(t), cmdTaken(t) * guardMul(t))
+	var hull := _expected_hull(raw, absorbed, hitArmor(u, w, t), rear, braceMul(t), cmdTaken(t) * guardMul(t))   # issue 1560: the same armour as the real hit (shred, gauss, acid seams)
 	return {"hit": hit, "raw": raw, "hull": hull, "shield": absorbed * ion, "quad": quad, "rear": rear}
+# the armour a hit meets: spines strip it (shredded), gauss ignores half of it, Voice T3a acid finds the seams below half hull
+func hitArmor(att, w, t) -> float:
+	var seams: bool = treeSkill("acidSeams") != null and B != null and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == "player" and att != null and att["side"] == "player" and t["side"] == "enemy" and t["hp"] < t["maxHp"] / 2.0   # Voice T3a
+	return 0.0 if seams else max(0, t["armor"] - z0(t.get("shredded"))) * (1.0 - z0(w.get("armorPierce")))
 func _expected_pierce(u, w) -> float:
 	return 1.0 if (w.get("k") == "lance" and jt(ownerFx(u).get("lanceSure"))) else z0(w.get("pierce"))
 func _expected_absorbed(raw: float, pierce: float, shield, ion: float) -> float:
@@ -2989,7 +3021,10 @@ func previewVolley(u: Dictionary, guns: Array, t: Dictionary) -> Dictionary:
 	var brace = braceMul(t); var guard = cmdTaken(t) * guardMul(t)
 	# R364: torpedoes land in the same shot, in firing order, with their warhead (and Torpedoes Run True's +10 in the salvo round)
 	var torp_true: bool = u["side"] == "player" and cmdActive("player", "hunt") and treeSkill("torpFirst") != null
-	var states := {float(z0(target.get("shp"))): 1.0}
+	var pnP = treeSkill("preyName")   # Malek T1a: the named prey takes more from every torpedo
+	var prey_bonus: float = treeAddVal(u, "torpPct", pnP["n"]) if (pnP != null and u["side"] == "player" and B.get("treePrey") != null and B["treePrey"]["r"] == B["round"] and B["treePrey"]["id"] == t["id"]) else 0.0
+	var torp_carry: float = float(z0(u.get("treeTorpCarry"))) if (treeSkill("twoSalvos") != null and u["side"] == "player") else 0.0   # Malek T3b: the first torpedo keeps the salvo bonus
+	var states := {Vector2(float(z0(target.get("shp"))), 0.0): 1.0}   # issue 1560: each state is (pool left, this facing routed yet), so a miss never reads as a routed hit
 	for i in guns:
 		var w: Dictionary = u["weapons"][i]
 		var hit := hitChance(source, w, t)
@@ -2998,44 +3033,51 @@ func previewVolley(u: Dictionary, guns: Array, t: Dictionary) -> Dictionary:
 		var shot := {"hit": hit, "shield": 0.0, "hull": 0.0, "quad": quad, "rear": rear}
 		out[i] = shot
 		var torp := torpSalvo(w, u)
-		if torp and torp_true: shot["hit"] = minf(95.0, float(shot["hit"]) + 10.0)
-		states = _estimate_gun(u, w, target, shot, brace, guard, float(TB.TORP_WARHEAD) if torp else 1.0, states)
+		var scale := 1.0
+		if torp:   # issue 1560: the same torpedo aim and warhead bonuses as torpSalvoOf and torpImpact
+			var extra := (10.0 if torp_true else 0.0) + (15.0 if (jt(t.get("nem")) and nemWeak("torp")) else 0.0)
+			if extra > 0.0: shot["hit"] = clampf(float(shot["hit"]) + extra, 5.0, 95.0)
+			scale = float(TB.TORP_WARHEAD)
+			if prey_bonus > 0.0: scale *= 1.0 + prey_bonus
+			if torp_carry > 0.0: scale *= 1.0 + torp_carry; torp_carry = 0.0
+		states = _estimate_gun(u, w, target, shot, brace, guard, scale, states)
 	return out
-# A state key is the shield pool left after some landed hits; its value is the chance of reaching it.
-# The pool and whether this facing is already routed decide every later catch, so a hit removes a real
-# pool amount while a miss leaves the pool alone. Keys are rounded to whole points so the state count
+# A state key is (the shield pool left after some landed hits, 1 once a hit has routed this facing); its value is the chance of
+# reaching it. The pool and whether this facing is already routed decide every later catch, so a hit removes a real
+# pool amount and routes the side while a miss leaves both alone. Keys are rounded to whole points so the state count
 # stays at most the pool plus one, however many guns and shots the volley has (HUD runs this on hover).
 func _estimate_gun(u, w, t, shot: Dictionary, brace: float, guard: float, damage_scale: float, states: Dictionary) -> Dictionary:
 	var per := dmgMult(u, w, t, shot.rear) * damage_scale
 	var odds := float(shot.hit) / 100.0
 	var quad := int(shot.quad)
 	var pierce := _expected_pierce(u, w); var ion := ionVs(u, w, t)
-	var armor: float = maxf(0.0, float(t["armor"]) - z0(t.get("shredded"))) * (1.0 - z0(w.get("armorPierce")))
+	var armor: float = hitArmor(u, w, t)
 	var cov: Array = t["cov"] if jt(t.get("cov")) else shieldCov(t["fac"], t["cls"])
 	var base_c: float = min(float(TB.SHIELD_COV_MAX), float(cov[quad]))
 	var route_c: float = min(float(TB.SHIELD_COV_MAX), float(cov[quad]) + float(TB.SHIELD_ROUTE_BOOST))
-	var start_pool := float(z0(t.get("shp")))
 	var routed0: bool = jt(t.get("route")) and jt(t["route"][quad])
 	var lossy: float = 1.0 + float(TB.SHIELD_ROUTE_LOSS)
 	for i in int(w["shots"]):
 		var next := {}
-		for pool in states:
-			var p: float = states[pool]
-			var was_routed: bool = routed0 or float(pool) < start_pool
+		for key in states:
+			var p: float = states[key]
+			var pool: float = key.x
+			var was_routed: bool = routed0 or key.y > 0.0
 			var c: float = route_c if was_routed else base_c
 			var absorbed: float = _expected_absorbed(per, pierce, JSM.jsround(float(pool) * c), ion)
 			if odds > 0.0:
 				shot.shield += p * odds * absorbed * ion
 				shot.hull += p * odds * _expected_hull(per, absorbed, armor, shot.rear, brace, guard)
-				var hit_pool := float(pool)
+				var hit_pool := float(pool); var hit_routed: float = key.y
 				if absorbed > 0.0:
 					hit_pool = maxf(0.0, float(pool) - absorbed * ion * (lossy if was_routed else 1.0))
 					if hit_pool < 1.0: hit_pool = 0.0
-				hit_pool = float(JSM.jsround(hit_pool))
-				next[hit_pool] = float(next.get(hit_pool, 0.0)) + p * odds
+					if hit_pool > 0.0: hit_routed = 1.0
+				var hk := Vector2(float(JSM.jsround(hit_pool)), hit_routed)
+				next[hk] = float(next.get(hk, 0.0)) + p * odds
 			if odds < 1.0:
-				var miss_pool := float(JSM.jsround(float(pool)))
-				next[miss_pool] = float(next.get(miss_pool, 0.0)) + p * (1.0 - odds)
+				var mk := Vector2(float(JSM.jsround(float(pool))), key.y)
+				next[mk] = float(next.get(mk, 0.0)) + p * (1.0 - odds)
 		states = next
 	return states
 func _spend_shield(t, quad: int, damage: float) -> void:
@@ -3075,8 +3117,7 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	var ceH = treeSkill("columnEndures")
 	if ceH != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(B["tr"].get("columnUsed")) and t["shMax"] > 0 and sp0 > 0 and float(z0(t.get("shp"))) <= 0:
 		t["shp"] = JSM.jsround(t["shMax"] * float(ceH["n"])); syncShields(t); B["tr"]["columnUsed"] = 1; treeFx(t, "columnEndures", "the emptied shield refills")   # Maren T3a
-	var seams: bool = treeSkill("acidSeams") != null and B != null and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == "player" and att != null and att["side"] == "player" and t["side"] == "enemy" and t["hp"] < t["maxHp"] / 2.0   # Voice T3a
-	var arm: float = 0.0 if seams else max(0, t["armor"] - z0(t.get("shredded"))) * (1.0 - z0(w.get("armorPierce"))); var hull: float = (through + shieldable) * (1.0 - (arm * 0.5 if rear else arm))
+	var arm: float = hitArmor(att, w, t); var hull: float = (through + shieldable) * (1.0 - (arm * 0.5 if rear else arm))
 	hull *= braceMul(t)
 	hull *= cmdTaken(t) * guardMul(t)
 	var esH = treeSkill("escorts")
@@ -3625,13 +3666,12 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 		if jt(u.get("treeSmile")): u["treeSmile"] = 0   # Sable T3a: the bonus belongs to the first shot only
 		var awF = treeSkill("arcsWarm")
 		if awF != null and u["side"] == "player" and w.get("id") == "doom" and B != null and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == u["side"] and not jt(o.get("intercept")):
-			var adjs = alive("enemy").filter(func(x): return not is_same(x, t))
+			var adjs = alive("enemy").filter(func(x): return not is_same(x, t) and not jt(x.get("isSq")) and hdist(x, t) == 1)   # issue 1560: one enemy ship adjacent to the target, as the skill says
 			JSM.ssort(adjs, func(a, b):
-				var dd = hdist(a, t) - hdist(b, t)
-				if dd != 0: return dd
 				return -1.0 if str(a["id"]) < str(b["id"]) else 1.0)
 			if adjs.size() > 0:
-				var adj = adjs[0]; var rr = applyHit(u, w, adj, d * float(awF["n"]), shieldQuad(adj, u)); res.hull += rr.hull
+				var adj = adjs[0]; var rr = applyHit(u, w, adj, d * float(awF["n"]), shieldQuad(adj, u))
+				if rr.hull > 0: flt(adj, "−" + ns(rr.hull) + " hull", "#ffae42", 0) # Artoo on PR 1564: the splash shows over the ship it hit
 				if adj["hp"] <= 0: adj["killCause"] = "big"; killUnit(adj, u)
 				treeFx(u, "arcsWarm", "the corona splashes")
 		var bs3 = treeSkill("burnStays")
@@ -3707,7 +3747,7 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 	return true
 func ramInfo(u) -> Variant:
 	if u == null or jt(u.get("isSq")) or jt(u.get("braced")) or jt(u.get("dead")) or jt(u.get("rammed")) or (jt(u.get("crewMax")) and u["crew"] <= 0): return null
-	var left = min(u["mp"], max(1, u["speed"] - u["st"]["engine"]))
+	var left = min(postFireMp(u), max(1, u["speed"] - u["st"]["engine"]))   # R396: no ram after firing, except a Glasswright's post-fire budget
 	if left < 1: return null
 	var d = DIRS[int(u["facing"])]; var q = u["q"]; var r = u["r"]; var path = []
 	var i = 0
@@ -4039,7 +4079,7 @@ static func count_player_survivors(units: Array) -> int:
 		if player_ship_survives(u): n += 1
 	return n
 static func player_ship_survives(u: Dictionary) -> bool:
-	return u["side"] == "player" and not jt(u.get("isSq")) and (not jt(u.get("dead")) or jt(u.get("exited")))
+	return u["side"] == "player" and not jt(u.get("isSq")) and not jt(u.get("reinf")) and (not jt(u.get("dead")) or jt(u.get("exited")))   # issue 1560: the Garrison ally never turns a loss into a retreat
 # R314: rules that measure from the station (defend, guns, guard, wing support) measure from its edge, not its centre.
 # The edge distances match the old 7-hex station: damage and the guard ring 1 hex out (the hexes touching the station body),
 # guns 4 hexes out, wing support 2 hexes out. The enemy pull aims one ring outside the damaging perimeter.
@@ -4308,7 +4348,7 @@ func cmdTier(rounds_ahead: int = 0) -> float:
 	var bonus = 0; var lost = 0
 	for u in B["units"]:
 		if u["side"] == "player" and not jt(u.get("dead")) and jt(u.get("fx")) and jt(u["fx"].get("cmdTier")): bonus = 1
-		if u["side"] == "player" and not jt(u.get("isSq")) and not jt(u.get("transport")) and jt(u.get("dead")): lost = 1
+		if u["side"] == "player" and not jt(u.get("isSq")) and not jt(u.get("transport")) and jt(u.get("dead")) and not jt(u.get("exited")): lost = 1   # issue 1560: a ship that broke through is not a loss
 	return max(0, min(2, B["round"] + rounds_ahead - 1 + bonus + lost - (1 if heatOn("h_cmd") else 0)))
 # ---------- admiral tree effects (issue #305 job 1: H0 plumbing, H1 choice, H2 counters, H3 next round) ----------
 func treeBuild() -> Array:
@@ -4874,8 +4914,10 @@ func treeRoundStart() -> void:
 			for x in B["units"]:
 				if x["id"] == id: u = x; break
 			if u == null or jt(u.get("dead")): continue
-			var h = edgeHex("player"); u["treeOff"] = 0
-			if h != null: u["q"] = h.q; u["r"] = h.r
+			var h = edgeHex("player")
+			if h == null: h = legionRiseHex(u)
+			if h == null: keepR.append(id); continue   # issue 1560: never onto a taken hex; with no room it waits a round
+			u["treeOff"] = 0; u["q"] = h.q; u["r"] = h.r
 			u["hp"] = u["maxHp"]; u["treeReserve"] = 0; u["activated"] = false
 			treeFx(u, rk, "the reserve joins the line")
 		B["treeReserve"] = keepR
@@ -5367,7 +5409,7 @@ func cmdTaken(t) -> float:
 		if B.get("treeShiftDown") != null and B["treeShiftDown"]["r"] == B["round"] and t["id"] == B["treeShiftDown"]["id"]: cut = max(0.0, cut - float(shC["n"]))   # Thale T1b
 	var weC = treeSkill("wallEarly")
 	if weC != null and t["side"] == "player" and cmdActive("player", "iron") and B != null and z0(B.get("treeWallEarly")) == B["round"]: cut = min(0.95, cut + float(weC["n"]))   # Thale T2a
-	return 1.0 - cut - (0.0 if jt(t.get("shMax")) else 0.1) if cut > 0 else 1.0
+	return max(0.05, 1.0 - cut - (0.0 if jt(t.get("shMax")) else 0.1)) if cut > 0 else 1.0   # issue 1560: a hit always takes at least 5%
 func bossCmdTick() -> void:
 	if B == null or jt(B.get("over")) or jt(B.get("cmdEUsed")): return
 	var boss: Variant = null
@@ -6264,7 +6306,7 @@ func sqPlan(s):
 	if foes.size() == 0: return null
 	var carrier = null
 	for x in B["units"]:
-		if x["id"] == s.get("parent") and not jt(x.get("dead")):
+		if x["id"] == s.get("parent") and not jt(x.get("dead")) and x["side"] == s["side"]:
 			carrier = x; break
 	var ready = readyList(s); var states = computeReach(s, true).states; var here = {"q": s["q"], "r": s["r"], "f": s["facing"], "cost": 0, "stay": true}
 	var stc = null if ord != null else wingStance(s)
@@ -6352,7 +6394,7 @@ func swarmPhase(side) -> void: # each wing runs under stallGuard in the game; he
 func squadronsOf(u) -> Array:
 	var o = []
 	for x in alive():
-		if x.get("parent") == u["id"]: o.append(x)
+		if x.get("parent") == u["id"] and x["side"] == u["side"]: o.append(x)
 	return o
 # R88: player replacement launches use the same reserves, cooldown and next-round readiness.
 func launchReady(u) -> bool:
@@ -6532,6 +6574,7 @@ func evalOffense(a, ready: Array, targets: Array) -> float:
 	var tot = 0.0
 	for w in ready:
 		var best = 0.0
+		if w["k"] == "flak": continue   # issue 1560: point defence never fires at ships
 		for t in targets:
 			if not inReach(a, w, t): continue
 			var e = expectedVs(a, w, t); var v: float = e.hull + e.shield * 0.3
@@ -6668,7 +6711,7 @@ func evalThreatVet(v: Dictionary, foes: Array[AiThreatSource], cells: Dictionary
 					if _evc: gun.damage[damage_key] = damage
 				var raw: float = damage * gun.weapon["shots"] * hit
 				var absorbed := _expected_absorbed(raw, gun.pierce, v["sh"][quad], gun.ion)
-				var hull := _expected_hull(raw, absorbed, v["armor"], rear, cell.brace_factor, cell.guard_factor)
+				var hull := _expected_hull(raw, absorbed, hitArmor(arc.attacker, gun.weapon, v), rear, cell.brace_factor, cell.guard_factor)
 				estimates.append((hull + absorbed * gun.ion * 0.2) * arc.weights[i])
 			values = estimates
 			if _evc: arc.estimates[key] = values
@@ -6678,7 +6721,7 @@ func evalThreatVet(v: Dictionary, foes: Array[AiThreatSource], cells: Dictionary
 	return tot + cell.storm
 func aiGunLive(p, w) -> bool:
 	if w["k"] == "flak": return false
-	if B != null and jt(B.get("alt")) and (jt(w.get("fired")) or jt(p.get("braced"))): return false
+	if B != null and jt(B.get("alt")) and (jt(w.get("fired")) or jt(p.get("braced")) or jt(p.get("activated")) or gt(w.get("cdLeft"), 0)): return false   # issue 1560: one horizon, this round
 	return true
 # issue 1160: an ion storm drains 10 shield from a shielded hull at the start of its turn, so both threat models (and every side and level
 # that reads them) count that cover as lost when a ship would end its move in one
@@ -6698,6 +6741,16 @@ func aiRearScore(v, ready: Array, foes: Array) -> float:
 	return best
 # issue 1160: only the movement left after this move counts (the ram after the volley, as tacticRam makes it); a ram lined up for next round
 # meets a target that has moved, so it scores nothing
+# R396: the ram after the volley only has the post-fire budget (none unless the ship fades); a ship with no gun to fire keeps its movement
+func aiRamLeft(u, ready, left):
+	var armed := false
+	for w in ready:
+		if w["k"] != "flak": armed = true; break
+	if not armed: return left
+	if not canFade(u): return 0
+	if treeFullFade(u): return left
+	var ff = z0(g(u.get("fx"), "fade")); if ff <= 0.0: ff = 0.5
+	return floor(left * ff)
 func ramSetup(v, u, left = null) -> float:
 	if left == null: left = u["speed"] if jt(u.get("speed")) else 2
 	if left < 1: return 0.0
@@ -6723,8 +6776,7 @@ func aiFocusVal(t, shooters: Array) -> float:
 	if t == null or jt(t.get("dead")) or jt(t.get("isSq")): return 0.0
 	var br: float = braceMul(t)
 	var take: float = max(0.15, br * guardMul(t) * cmdTaken(t))
-	var shs = 0.0
-	for x in t["sh"]: shs += x
+	var shs = float(z0(t.get("shp")))   # issue 1560: the real shield pool, not the four per-side catches added up (about 2.35 x the pool since R246)
 	var ehp: float = t["hp"] / take + shs * 0.3; var n = 0
 	for u in shooters:
 		var rr = 0.0
@@ -6750,6 +6802,7 @@ func evalOffenseVet(a, ready: Array, targets: Array, focus) -> float:
 	var tot = 0.0
 	for w in ready:
 		var best = 0.0
+		if w["k"] == "flak": continue
 		for t in targets:
 			if not inReach(a, w, t): continue
 			var e = expectedVs(a, w, t); var v: float = e.hull + e.shield * 0.3
@@ -6774,7 +6827,7 @@ func _ai_offense_targets(v: Dictionary, ready: Array, foes: Array) -> Array[AiOf
 		if distance < 1 or treeDeepBlocks(v, t): continue
 		var guns := PackedInt32Array()
 		for i in range(ready.size()):
-			if not (distance > ready[i]["r"]): guns.append(i)
+			if ready[i]["k"] != "flak" and not (distance > ready[i]["r"]): guns.append(i)
 		if guns.is_empty() or not los(v, t): continue
 		var entry := AiOffenseTarget.new()
 		entry.target = t
@@ -6829,7 +6882,7 @@ func aiPickActivation(list: Array) -> Variant:
 		for t in foes:
 			var d = hdist(u, t)
 			for w in ready:
-				if d <= w["r"] + (u["speed"] if jt(u.get("speed")) else 2): reach = max(reach, w["dmg"] * w["shots"] * (1.3 if (foc != null and is_same(t, foc)) else 1.0))
+				if w["k"] != "flak" and d <= w["r"] + (u["speed"] if jt(u.get("speed")) else 2): reach = max(reach, w["dmg"] * w["shots"] * (1.3 if (foc != null and is_same(t, foc)) else 1.0))
 		var val: float = mx + reach * 0.5 + evalThreat(u, foes) * 0.25 + (10.0 if u["hp"] < u["maxHp"] * 0.3 else 0.0)
 		if val > bv: bv = val; best = u
 	eval_end()
@@ -7130,7 +7183,7 @@ func aiUnit(u) -> void:
 		if score_range:
 			if prof["range"] > 0: score -= max(0, prof["range"] - hd) * prof["rw"]
 			else: score -= max(0, hd + prof["range"]) * prof["rw"]
-		if score_ram: score += ramSetup(candidate, u, min(u["mp"] - s.cost, (u["speed"] if jt(u.get("speed")) else 2) - z0(u["st"].get("engine")))) * float(prof["rs"])
+		if score_ram: score += ramSetup(candidate, u, min(aiRamLeft(u, ready, u["mp"] - s.cost), (u["speed"] if jt(u.get("speed")) else 2) - z0(u["st"].get("engine")))) * float(prof["rs"])
 		if rear_w != 0.0:   # issue 1160: a persona with the rear flag (Cunning) works round to your flanks
 			score += aiRearScore(candidate, ready, foes) * rear_w
 		if flE != null:

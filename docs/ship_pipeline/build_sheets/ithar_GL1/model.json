@@ -1,0 +1,496 @@
+{
+  "code": "ithar_GL1",
+  "name": "Glasswright lancet GL1",
+  "game_ship": "i_blade",
+  "cls": "Destroyer",
+  "length": 9.5,
+  "camera": {
+    "az": 62.0,
+    "el": 30.0,
+    "roll": -14.0,
+    "scale": 30.0
+  },
+  "features": [
+    {
+      "id": "S1",
+      "kind": "gun",
+      "what": "three drawn-glass shard needles at the bow / shard",
+      "count": 1,
+      "pos": [
+        3.3499999046325684,
+        0.0,
+        0.0
+      ],
+      "aim": [
+        0,
+        0.0
+      ],
+      "slot": "F",
+      "weapon": "shard",
+      "src": "picture",
+      "note": "The Prism shards grown into the bow optic: three drawn needles on the centreline; fixed forward, F arc.",
+      "muzzle": [
+        [
+          4.699999809265137,
+          5.51091050576101e-18,
+          0.09000000357627869
+        ],
+        [
+          4.699999809265137,
+          -0.07794228941202164,
+          -0.04500000178813934
+        ],
+        [
+          4.699999809265137,
+          0.07794228941202164,
+          -0.04500000178813934
+        ]
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "inv": [
+        "bow_shards"
+      ]
+    },
+    {
+      "id": "T1",
+      "kind": "gun",
+      "what": "star torpedo carried in a grown keel cradle / startorp",
+      "count": 1,
+      "pos": [
+        0.3499999940395355,
+        0.0,
+        -1.0309430360794067
+      ],
+      "aim": [
+        0,
+        0.0
+      ],
+      "slot": "F",
+      "weapon": "startorp",
+      "src": "picture",
+      "note": "One star torpedo on the keel in a grown pearl cradle; fixed forward, F arc.",
+      "muzzle": [
+        [
+          1.996999979019165,
+          0.0,
+          -1.0309430360794067
+        ]
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "inv": [
+        "star_torpedo"
+      ]
+    },
+    {
+      "id": "E1",
+      "kind": "engine",
+      "what": "grown stern drive optic, white bloom",
+      "count": 1,
+      "pos": [
+        -4.578,
+        0.0,
+        0.0
+      ],
+      "exit": [
+        -4.578,
+        0.0,
+        0.0
+      ],
+      "radius": 0.34400000000000003,
+      "aim": [
+        180,
+        0
+      ],
+      "src": "picture",
+      "note": "Drive lens only; no flame, exhaust mesh or weapon.",
+      "inv": [
+        "stern_drive"
+      ]
+    }
+  ],
+  "masses": [
+    {
+      "name": "Mosaic leaf core",
+      "obj": "ithar_GL1_mosaic_core",
+      "role": "opaque glowing stained-glass mosaic",
+      "src": "picture",
+      "note": "One slender leaf; amber, violet and green panels between the ribbons; never see-through."
+    }
+  ],
+  "inside": [
+    {
+      "kind": "deck",
+      "name": "deck at 32% height",
+      "z": -0.35,
+      "x": [
+        -3.85,
+        3.0
+      ],
+      "note": "layered glass deck follows the leaf, one span per compartment"
+    },
+    {
+      "kind": "deck",
+      "name": "deck at 62% height",
+      "z": 0.25,
+      "x": [
+        -3.85,
+        3.0
+      ],
+      "note": "layered glass deck follows the leaf, one span per compartment"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 01",
+      "x": -1.0899999999999999,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 02",
+      "x": -1.0899999999999999,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 03",
+      "x": -0.8531250000000004,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 04",
+      "x": 0.0031249999999998224,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 05",
+      "x": 0.8593749999999996,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 06",
+      "x": 1.3399999999999999,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "space",
+      "name": "continuous light core",
+      "x": [
+        -3.85,
+        3.0
+      ],
+      "y": [
+        -0.3,
+        0.3
+      ],
+      "z": [
+        -0.3,
+        0.3
+      ],
+      "mat": "layered glass and light",
+      "note": "three braided waveguides of amber, violet and green light"
+    },
+    {
+      "kind": "armour",
+      "name": "annealed outer glass",
+      "t": 0.025,
+      "note": "actual shell thickness; layered blown glass, no armour plates"
+    },
+    {
+      "kind": "break",
+      "name": "B1",
+      "x": -2.05,
+      "note": "ragged shatter path aft of the waist; the stern optic stays whole",
+      "path": [
+        [
+          -2.05,
+          -2.6
+        ],
+        [
+          -1.8599999999999999,
+          -1.3
+        ],
+        [
+          -2.2253846153846153,
+          -0.6066666666666666
+        ],
+        [
+          -1.9184615384615382,
+          0.0
+        ],
+        [
+          -2.2546153846153842,
+          0.5633333333333334
+        ],
+        [
+          -1.8746153846153844,
+          1.3
+        ],
+        [
+          -2.05,
+          2.6
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "B2",
+      "x": 2.3,
+      "note": "ragged shatter path forward of the torpedo cradle; the shard optic stays whole on the bow piece",
+      "path": [
+        [
+          2.3,
+          -2.6
+        ],
+        [
+          2.4899999999999998,
+          -1.3
+        ],
+        [
+          2.1246153846153844,
+          -0.6066666666666666
+        ],
+        [
+          2.4315384615384614,
+          0.0
+        ],
+        [
+          2.0953846153846154,
+          0.5633333333333334
+        ],
+        [
+          2.4753846153846153,
+          1.3
+        ],
+        [
+          2.3,
+          2.6
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "colour",
+      "name": "opaque pearl ribbons, silver edges",
+      "x": [
+        3.7,
+        -4.45
+      ],
+      "where": "seven narrow ribbons and four low crest leaves sweep stern to bow",
+      "note": ""
+    },
+    {
+      "kind": "colour",
+      "name": "amber, violet, green mosaic panels",
+      "x": [
+        3.7,
+        -4.45
+      ],
+      "where": "the core between the ribbons; glows from within",
+      "note": ""
+    },
+    {
+      "kind": "colour",
+      "name": "soft white bloom",
+      "x": [
+        -4.15,
+        -4.75
+      ],
+      "where": "stern drive optic, no flame",
+      "note": ""
+    }
+  ],
+  "points": [
+    {
+      "kind": "core",
+      "name": "hp_core",
+      "pos": [
+        -0.4,
+        0,
+        0.0
+      ],
+      "side": "",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_0",
+      "pos": [
+        2.95,
+        0.40834508830764077,
+        0.09347379424106105
+      ],
+      "side": "port",
+      "section": "prow",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_1",
+      "pos": [
+        -3.05,
+        -0.351782473838058,
+        0.0805261126402406
+      ],
+      "side": "stbd",
+      "section": "eng",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "rcs",
+      "name": "hp_rcs_0",
+      "pos": [
+        -2.9,
+        0.40028191748253494,
+        0.0
+      ],
+      "side": "port",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "board",
+      "name": "hp_board_0",
+      "pos": [
+        -3.4,
+        0.26005182414334915,
+        0.0
+      ],
+      "side": "port",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "rcs",
+      "name": "hp_rcs_1",
+      "pos": [
+        2.2,
+        -0.7057811563227959,
+        6.396061491520298e-17
+      ],
+      "side": "stbd",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "board",
+      "name": "hp_board_1",
+      "pos": [
+        1.7000000000000002,
+        -0.8255832160483481,
+        7.481754037929065e-17
+      ],
+      "side": "stbd",
+      "section": "",
+      "note": "",
+      "dir": null
+    }
+  ],
+  "changes": [
+    [
+      "Opaque pearl ribbons over a glowing mosaic core instead of the sketch's clear glass",
+      "R337 (Ryan, Nov 19): the Glasswright finish is opaque reflective pearl with glowing stained-glass panels; nothing see-through."
+    ],
+    [
+      "The bow optic is three short drawn needles on the centreline, not an open glass tube",
+      "data.js shard F fires three shots, one per needle; the sketch habit of tube optics is written against (README)."
+    ],
+    [
+      "The star torpedo hangs under the forward body in a pearl cradle of two hoops and four arms grown into the belly",
+      "destroyer.md: the cradle must read as carried, not docked. The sketch's pod becomes the weapon itself: a glowing capsule in a pointed pearl sheath open down each flank, swept fins fore and aft (Ryan Nov 21: richer torpedo)."
+    ],
+    [
+      "A waist before a round stern bulb; one stern optic with a white bloom and a rose-cut face",
+      "The sketch's bottle-neck stern; family drive language from CD5; no flame."
+    ]
+  ],
+  "budget": {
+    "outside": {
+      "triangles": 220844,
+      "unjoined_surfaces": 59,
+      "material_surfaces": 10,
+      "materials": [
+        "gw_beam",
+        "gw_drive",
+        "gw_drive_core",
+        "gw_drive_cut",
+        "gw_lance",
+        "gw_light",
+        "gw_mosaic",
+        "gw_pearl",
+        "gw_silver",
+        "gw_tip"
+      ]
+    },
+    "inside": {
+      "triangles": 8916,
+      "unjoined_surfaces": 21,
+      "material_surfaces": 4,
+      "materials": [
+        "gw_in_amber",
+        "gw_in_frame",
+        "gw_in_green",
+        "gw_in_violet"
+      ]
+    },
+    "note": "unjoined material surfaces are draw submissions; joined-by-material is an estimate only; no game frame measurement"
+  },
+  "mesh_groups": {
+    "S1": [
+      "S1_mount_gw_lance",
+      "S1_mount_gw_silver",
+      "S1_mount_gw_tip",
+      "S1_mount_gw_light",
+      "S1_mount_gw_pearl"
+    ],
+    "T1": [
+      "T1_mount_gw_light",
+      "T1_mount_gw_silver",
+      "T1_mount_gw_pearl",
+      "T1_mount_gw_beam",
+      "T1_mount_gw_drive_cut"
+    ],
+    "E1": [
+      "E1_grown_stern",
+      "E1_deep_lens",
+      "E1_white_bloom",
+      "E1_cut_face",
+      "E1_silver_flow_00",
+      "E1_silver_flow_01",
+      "E1_silver_flow_02",
+      "E1_silver_flow_03",
+      "E1_silver_flow_04",
+      "E1_silver_flow_05",
+      "E1_silver_flow_06",
+      "E1_silver_flow_07",
+      "E1_silver_flow_08",
+      "E1_silver_flow_09",
+      "E1_silver_flow_10"
+    ]
+  },
+  "dimensions": [
+    9.286999702453613,
+    2.3644580841064453,
+    2.5576759576797485
+  ],
+  "design_sha256": "40823d55e8adbd51e7049c90ee690d9df34e4124f2598166b3a7561491bba4d6",
+  "kit_sha256": "8112e03470e6c76ef0098ec39d3917b4b2eebd7a825f74eca8c289747d13470b"
+}
