@@ -23,6 +23,7 @@ headless|campaign/test/boon_fleet_test.gd|-|-|issues 1075 and 1147: protocol car
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
 headless|campaign/test/truth_pass_test.gd|-|-|issues 1144 and 1147: starters, capstones, Nemesis, selection, repair prices, join messages and battle tooltips
 headless|campaign/test/cinder_prizes_test.gd|-|-|issue 41 (R78 Q9): captured Hegemony and Eclipse hulls at the Crusade yards from run 3, links ripped out, Crusade prices; gate, stock, price, ripped buy, ripped battle rules
+headless|campaign/test/salvage_1653_test.gd|-|-|issue 1653: the new salvage relics and refits are only offered where they can act, every new id has data and card text, ledger2 raises the Command cap
 headless|campaign/test/core_eat_test.gd|-|-|issue 42 (R78 Q15): the Chorus core-eating offer in sector 3, the growth, the lost protocols, refusing, the save round trip and other factions
 headless|campaign/test/core_sync_test.gd|-|res://campaign/test/core_sync_cases.json|core sync announcements match the saved cases; the optional shots argument is omitted
 headless|campaign/test/event_distribution_test.gd|-|-|issue 1149: all faction event cards, choices, saved keys and the quiet fallback
@@ -78,6 +79,7 @@ headless|rules/test/ion_pulse_ai_test.gd|-|-|issue 1447: when the enemy AI fires
 headless|rules/test/rules_1560_test.gd|-|-|issue 1560 and R396: battle rules audit fixes (no turn or ram after firing, hits never heal, fleeing escorts stay gone, AI and forecast fixes); twin of contrib/opus/tools/rules_1560_tests.js
 headless|rules/test/rules_1481_test.gd|-|-|issue 1481: every shield drop sends the break (storm, flare, mid section, ram, ion pulse, nova), rams use the shared spend, counter-fire, ram shockwave and reactor hits send a hit, a bad blink or nova hex is refused before it counts; twin of contrib/opus/tools/rules_1481_tests.js
 headless|rules/test/rules_1479_test.gd|-|-|issue 1479: overrunning the Nemesis flagship, a hunt target or a convoy transport destroys it (R383), a captured carrier's wings lose their carrier, and an Eclipse wreck rising next round keeps the fight open (browser twin contrib/opus/tools/rules_1479_tests.js)
+headless|rules/test/rules_1653_test.gd|-|-|issue 1653: the twelve salvage relics and four refits each do what their card says, checked on rules.gd directly
 headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|parity and saved Godot results share one batch; saved/check.js reports changed battles and whole-step time (issue 990)
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)

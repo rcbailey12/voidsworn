@@ -810,6 +810,8 @@ func mkWeapon(id, arc, fx) -> Dictionary:
 	if b.get("k") == "lance" and jt(fx.get("lanceRange")):   # Long Silence, Epic
 		w["r"] = w["r"] + fx["lanceRange"]; w["opt"] = w["opt"] + fx["lanceRange"]
 	return w
+# issue 1653 Heavy Breach Lockers: -1 speed, never below 2 (a ship already at 2 or less keeps its speed)
+func lockerSpeed(sp: float, fx) -> float: return (sp - 1.0 if sp - 1.0 >= 2.0 else min(sp, max(sp, 2.0))) if jt(fx.get("lockerSlow")) else sp
 func derive(ship: Dictionary) -> Dictionary:
 	var t: Dictionary = HULLS[ship["tpl"]]
 	var asp = []
@@ -830,7 +832,7 @@ func derive(ship: Dictionary) -> Dictionary:
 	return {
 		"maxHp": maxHp, "shMax": jsround(float(t["sh"]) * mm * (1.0 + float(z0(fx.get("shPct")))) * float(TB.SHIELD_POOL_MULT) * (float(TB.SHIELD_POOL_FAC[t["fac"]]) if (t.get("fac") != null and TB.SHIELD_POOL_FAC.has(t["fac"])) else 1.0)),   # core.js (SHIELD_POOL_FAC[t.fac]||1)
 		"regen": jsround(float(t["rg"]) * mm * (1.0 + float(z0(fx.get("regenPct")))) * float(TB.SHIELD_REGEN_MULT)),
-		"armor": min(0.6, float(t["ar"]) + float(z0(fx.get("armor")))), "speed": float(t["sp"]) + float(z0(fx.get("speed"))), "turns": float(t["tn"]) + float(z0(fx.get("turns"))), "ev": float(t["ev"]) + float(z0(fx.get("ev"))),
+		"armor": min(0.6, float(t["ar"]) + float(z0(fx.get("armor")))), "speed": lockerSpeed(float(t["sp"]) + float(z0(fx.get("speed"))), fx), "turns": float(t["tn"]) + float(z0(fx.get("turns"))), "ev": float(t["ev"]) + float(z0(fx.get("ev"))),
 		"aim": z0(fx.get("aim")), "crit": z0(fx.get("crit")), "dmg": 1.0 + 0.15 * (mk - 1.0) + float(z0(fx.get("dmgPct"))) + 0.06 * tr, "fx": fx,
 		"hangar": (float(t["hangar"]) + float(z0(fx.get("hangar"))) + float(z0(fx.get("hive")))) if jt(t.get("hangar")) else z0(fx.get("hive")),
 		"hullRegen": float(z0(fx.get("hullRegen"))) + jsround(float(z0(fx.get("hullRegenPct"))) * maxHp) + jsround(float(z0(t.get("regen"))) * mm),
@@ -916,6 +918,8 @@ func modName(m) -> String:
 	var f = RUN["fac"] if RUN != null and jt(RUN.get("fac")) else "voidsworn"
 	if MOD_NAMES.has(f) and jt(MOD_NAMES[f].get(m)): return MOD_NAMES[f][m]
 	return MODULES[m]["n"]
+# issue 1653: the effect line, then the flavour line when the salvage has one (the card footer)
+func relicText(r) -> String: return str(RELICS[r]["d"]) + (("\n" + str(RELICS[r]["fl"])) if jt(RELICS[r].get("fl")) else "")
 func relicName(r) -> String:
 	var f = RUN["fac"] if RUN != null and jt(RUN.get("fac")) else "voidsworn"
 	if RELIC_NAMES.has(f) and jt(RELIC_NAMES[f].get(r)): return RELIC_NAMES[f][r]
@@ -931,6 +935,11 @@ func relicUseful(r) -> bool:
 	if r == "coils": return F.any(func(s): return HULLS.has(s["tpl"]) and jt(HULLS[s["tpl"]].get("ab")))
 	if r == "logbook": return F.any(func(s): return s.get("cap") is Dictionary and float(z0(s["cap"].get("rank"))) < RANKS.size() - 1)
 	if r == "martyr": return F.size() > 1
+	# issue 1653 offer gates for the new salvage: each needs the fleet shape it works with
+	if r == "spotter": return F.any(func(s): return HULLS.has(s["tpl"]) and HULLS[s["tpl"]].get("ab") == "launch")
+	if r == "lastlight": return F.size() > 1
+	if r == "coolant": return F.any(func(s): return HULLS.has(s["tpl"]) and jt(HULLS[s["tpl"]].get("ab")) and HULLS[s["tpl"]].get("ab") != "launch")
+	if r == "ram": return RUN != null and (jt(TB["RAM_FAC"].get(RUN.get("fac"))) or F.any(func(s): return HULLS.has(s["tpl"]) and HULLS[s["tpl"]].get("ab") == "overburn"))
 	return true
 # R1 (MOD-3, Codex PR #1): a refit fits only where it can do something: a free slot, the hull type it is for, the weapon or system it improves
 func canFitModule(sh, m) -> bool:
@@ -942,6 +951,12 @@ func canFitModule(sh, m) -> bool:
 	var need = MOD_NEED.get(m)
 	if need == "shields": return float(z0(t.get("sh"))) > 0.0
 	if need == "carrier": return t.get("ab") == "launch" and float(z0(t.get("hangar"))) > 0.0
+	if need == "board": return true   # issue 1653: every ship has a crew that can board
+	if need == "brace": return not (FAC_GATES.has(t.get("fac")) and jt(FAC_GATES[t["fac"]].get("noBrace")))   # issue 1653: never on hulls that cannot brace
+	if need == "chaser":   # issue 1653: a non-turret fore or flank weapon to swivel
+		for pair in t.get("w", []):
+			if W_.has(pair[0]) and W_[pair[0]].get("k") != "turret" and (pair[1] == "F" or pair[1] == "S" or pair[1] == "P"): return true
+		return false
 	var kind = {"batt": "battery", "lance": "lance", "torp": "torp", "flak": "flak"}.get(need)
 	if kind != null:
 		for pair in t.get("w", []):
@@ -1373,7 +1388,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	if jt(META["unlocked"].get("cmd2")): RUN["cpCap"] += 2
 	if jt(META["unlocked"].get("founder")):
 		var r = randomRelic()
-		if r != null: RUN["relics"].append(r)
+		if r != null: addRelic(r)
 	RUN["heat"] = or_(opt.get("heat"), []).filter(func(k): return HEAT.has(k)); RUN["mastery"] = masteryLevel(admiralId)
 	var plan = altFleetPlan(admiralId, fac) if (jt(opt.get("alt")) and RUN["mastery"] >= 1) else null
 	var start = []
@@ -2121,7 +2136,7 @@ func ACT_lateBuy(id: String) -> void:
 	if o == null or not o["ok"]: return
 	var st = yard_node["stock"]["late"]; shopPay(o["cost"])
 	if o["kind"] == "relic":
-		st["bought"].append(o["r"]); changeFleet(func(): RUN["relics"].append(o["r"]))
+		st["bought"].append(o["r"]); changeFleet(func(): addRelic(o["r"]))
 		toast(relicName(o["r"]) + " is yours. " + str(RELICS[o["r"]]["d"]))
 	else:
 		st["cp"] = true; RUN["lateCp"] = float(z0(RUN.get("lateCp"))) + 1; RUN["cpCap"] = float(RUN["cpCap"]) + 1
@@ -3116,7 +3131,7 @@ func applyOutcome(r) -> Array:
 	if jt(r.get("relic")):
 		var rl = randomRelic()
 		if rl != null:
-			RUN["relics"].append(rl); changeFleet(_noop); out.append("Salvage gained: " + relicName(rl) + ". " + str(RELICS[rl]["d"]))
+			addRelic(rl); changeFleet(_noop); out.append("Salvage gained: " + relicName(rl) + ". " + str(RELICS[rl]["d"]))
 		else:
 			RUN["credits"] = float(RUN["credits"]) + 80; out.append("No salvage left to find. +80 credits instead.")
 	if jt(r.get("dmgOne")):
@@ -3664,7 +3679,11 @@ func relicStep() -> void:
 		for r in rc: A(acts, "takeRelic", r)
 		show_modal("relic", {"boss": or_(W.get("rewardCfg"), {}).get("kind") == "boss", "opts": rc}, acts); return
 	promotionsStep()
-func _add_relic(r) -> void: RUN["relics"].append(r)
+func _add_relic(r) -> void: addRelic(r)
+# issue 1653: every way a relic joins the run goes through here, so Black Fleet Ledger's command point is never missed
+func addRelic(r) -> void:
+	RUN["relics"].append(r)
+	if r == "ledger2": RUN["cpCap"] = float(RUN["cpCap"]) + 1
 func ACT_takeRelic(r: String) -> void:
 	if not or_(W.get("relicChoice"), []).has(r): return
 	changeFleet(_add_relic.bind(r))
