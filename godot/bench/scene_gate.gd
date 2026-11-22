@@ -218,8 +218,14 @@ func _settle(fx) -> void:
 			while not WorkerThreadPool.is_task_completed(int(sh._dmg_task)):
 				OS.delay_usec(500)
 		if sh.has_meta("cut_task"):
+			# issue 1236: a cut that keeps the clock waiting names itself, at 5, 10, 20 s and so on
+			var t0 := Time.get_ticks_msec()
+			var told := 5000
 			while not WorkerThreadPool.is_task_completed(int(sh.get_meta("cut_task"))):
 				OS.delay_usec(500)
+				if Time.get_ticks_msec() - t0 > told:
+					print("[scene_gate] settle: %s's death cut still running after %d s" % [str(id), told / 1000])
+					told *= 2
 
 
 func _still_run() -> void:
