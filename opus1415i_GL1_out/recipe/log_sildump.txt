@@ -1,0 +1,3 @@
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GL1\GL1.npz (220844, 3, 3) objects 59
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-24b7a99d015c49b69a5e096238da621f\runner-step-14e89d22f0b94a6f8cede601f43ef4fd

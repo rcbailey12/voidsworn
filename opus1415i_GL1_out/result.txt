@@ -1,0 +1,39 @@
+start ithar_GL1 I11_37 board/pin-1415i Sat 11/21/2026 21:32:30.40 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)     -> claude/project-thread-3i2fya
+ - [deleted]             (none)     -> refs/pull/1578/merge
+   79fe8d6b4..28f324666  main       -> main
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1\repo
+commit=752bfcba5f1715b52d11a7d9557b505cb78c9d21
+the clone's tools\pc\tmo.bat hands off to C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+import exit 0 
+1_concept_in start 21:37:37.11 
+1_concept_in exit 0 at 21:37:40.75 
+2_shape_ref start 21:37:40.75 
+2_shape_ref exit 0 at 21:37:41.66 
+3_trace_hull start 21:37:41.67 
+3_trace_hull exit 0 at 21:39:06.07 
+4_parts_kit start 21:39:06.08 
+4_parts_kit exit 0 at 21:39:39.21 
+5_paint_bake start 21:39:39.21 
+5_paint_bake exit 0 at 21:43:54.37 
+6_lod start 21:43:54.37 
+6_lod exit 0 at 21:45:01.44 
+7_export start 21:45:01.44 
+7_export exit 0 at 21:46:19.02 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1\repo\godot\assets\ships\I11_37\I11_37.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots stamped with C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\picture_provenance.py 
+shots exit 0 
+collected 150 files this run wrote; 0 older files from earlier runs
+import cache removed after the PASS (0.9 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.9 GB in all, C: 90.7 GB free
+done PASS Sat 11/21/2026 21:46:49.12 
+all done 
+job scratch removed after PASS: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-24b7a99d015c49b69a5e096238da621f

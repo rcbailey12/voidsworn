@@ -1,0 +1,19 @@
+GPU: waiting for shared claim, weight 1 (1415)
+GPU: acquired shared claim a2451800-335b-40e4-92af-b873d73a8ba9
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-24b7a99d015c49b69a5e096238da621f\voidsworn-run-d750af68980048c39587aa050cf9ce2e\godot-profile-34a1079a27fc4eea8595b169d1a1ad0e
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[a4shots] window (1920, 1080) viewport (1920.0, 1080.0)
+[a4shots] out C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1\out\shots facs ["ithar"] sets ["battle", "close"]
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1\out\shots/ithar_battle.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1\out\shots/ithar_battle_near.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1\out\shots/I11_37_q.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1\out\shots/I11_37_s.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1\out\shots/I11_37_b.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1\out\shots/I11_37_t.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1\out\shots/I11_37_d.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GL1\out\shots/I11_37_u.jpg
+[a4shots] done
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-24b7a99d015c49b69a5e096238da621f\voidsworn-run-d750af68980048c39587aa050cf9ce2e\godot-profile-34a1079a27fc4eea8595b169d1a1ad0e
+GPU: released shared claim a2451800-335b-40e4-92af-b873d73a8ba9

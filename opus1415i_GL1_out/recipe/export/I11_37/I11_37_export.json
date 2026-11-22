@@ -1,0 +1,580 @@
+{
+ "ship": "ithar_GL1",
+ "code": "I11_37",
+ "cell": "GL1",
+ "game_ship": "i_blade",
+ "faction": "ithar",
+ "cls": "Destroyer",
+ "band": "M",
+ "expected_breach": 2,
+ "unbaked": false,
+ "maps": 2048,
+ "triangles": 229760,
+ "turret_triangles": 0,
+ "turrets": [],
+ "door_triangles": 0,
+ "doors": [],
+ "surfaces": 13,
+ "destruction": {
+  "version": 1,
+  "seams": [
+   {
+    "p": [
+     -0.22073867402605735,
+     0,
+     0
+    ],
+    "n": [
+     1,
+     0,
+     0
+    ],
+    "path": [
+     [
+      -0.22073867402605735,
+      0.2799612451062191
+     ],
+     [
+      -0.2002799676529106,
+      0.13998062255310956
+     ],
+     [
+      -0.23962363375511594,
+      0.06532429052478445
+     ],
+     [
+      -0.20657495422926342,
+      -0.0
+     ],
+     [
+      -0.24277112704329235,
+      -0.06065826977301414
+     ],
+     [
+      -0.20185371429699878,
+      -0.13998062255310956
+     ],
+     [
+      -0.22073867402605735,
+      -0.2799612451062191
+     ]
+    ]
+   },
+   {
+    "p": [
+     0.24765802451703997,
+     0,
+     0
+    ],
+    "n": [
+     1,
+     0,
+     0
+    ],
+    "path": [
+     [
+      0.24765802451703997,
+      0.2799612451062191
+     ],
+     [
+      0.2681167308901867,
+      0.13998062255310956
+     ],
+     [
+      0.2287730647879814,
+      0.06532429052478445
+     ],
+     [
+      0.26182174431383387,
+      -0.0
+     ],
+     [
+      0.225625571499805,
+      -0.06065826977301414
+     ],
+     [
+      0.2665429842460985,
+      -0.13998062255310956
+     ],
+     [
+      0.24765802451703997,
+      -0.2799612451062191
+     ]
+    ]
+   }
+  ],
+  "interior_materials": [
+   "I11_37_inside_0",
+   "I11_37_inside_skin",
+   "I11_37_inside_2",
+   "I11_37_inside_3",
+   "I11_37_inside_4"
+  ],
+  "machines": [
+   {
+    "name": "E1",
+    "kind": "engine",
+    "lo": [
+     -0.485625,
+     -0.04221,
+     -0.040056
+    ],
+    "hi": [
+     -0.412404,
+     0.04221,
+     0.040056
+    ]
+   },
+   {
+    "name": "S1",
+    "kind": "gun",
+    "lo": [
+     0.337461,
+     -0.035663,
+     -0.035653
+    ],
+    "hi": [
+     0.507053,
+     0.035663,
+     0.035663
+    ]
+   },
+   {
+    "name": "T1",
+    "kind": "gun",
+    "lo": [
+     -0.108539,
+     -0.167111,
+     -0.065484
+    ],
+    "hi": [
+     0.212124,
+     -0.059142,
+     0.065484
+    ]
+   }
+  ]
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "shard",
+   "arc": "F",
+   "hard_points": [
+    "hp_w0_shard_F_0",
+    "hp_w0_shard_F_1",
+    "hp_w0_shard_F_2"
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "startorp",
+   "arc": "F",
+   "hard_points": [
+    "hp_w1_startorp_F_0"
+   ]
+  }
+ ],
+ "slots_without_hard_points": [],
+ "hardpoints": {
+  "gun": 4,
+  "engine": 1,
+  "bay": 0,
+  "breach": 2,
+  "core": 1,
+  "rcs": 2,
+  "board": 2
+ },
+ "length_world": 9.5,
+ "sheet": "ithar_GL1",
+ "points_from": "the build (r209_points)",
+ "authored_moved": {
+  "hp_breach_0": 0.0,
+  "hp_breach_1": 0.0032,
+  "hp_rcs_0": 0.0,
+  "hp_rcs_1": 0.0,
+  "hp_board_0": 0.0,
+  "hp_board_1": 0.0
+ },
+ "hard_points": [
+  {
+   "name": "hp_w0_shard_F_0",
+   "p": [
+    0.50608,
+    0.0,
+    0.00969
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "F",
+   "arc_deg": 30,
+   "slot": 0,
+   "weapon": "shard",
+   "radius": 0.002691935049098261,
+   "socket": "S1"
+  },
+  {
+   "name": "hp_w0_shard_F_1",
+   "p": [
+    0.50608,
+    -0.00839,
+    -0.00485
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "F",
+   "arc_deg": 30,
+   "slot": 0,
+   "weapon": "shard",
+   "radius": 0.002691935049098261,
+   "socket": "S1"
+  },
+  {
+   "name": "hp_w0_shard_F_2",
+   "p": [
+    0.50608,
+    0.00839,
+    -0.00485
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "F",
+   "arc_deg": 30,
+   "slot": 0,
+   "weapon": "shard",
+   "radius": 0.002691935049098261,
+   "socket": "S1"
+  },
+  {
+   "name": "hp_w1_startorp_F_0",
+   "p": [
+    0.21503,
+    0.0,
+    -0.11101
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "F",
+   "arc_deg": 30,
+   "slot": 1,
+   "weapon": "startorp",
+   "radius": 0.004307096078557217,
+   "socket": "T1"
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.49295,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.03704102627559207,
+   "engine": "E1"
+  },
+  {
+   "name": "hp_breach_0",
+   "p": [
+    0.31765,
+    0.04396,
+    0.01007
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.3643,
+    0.8154,
+    0.45
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "breach",
+   "radius": 0.0,
+   "section": "prow",
+   "side": "P",
+   "clear": 0.038
+  },
+  {
+   "name": "hp_breach_1",
+   "p": [
+    -0.32842,
+    -0.04112,
+    0.00867
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    -0.3555,
+    -0.792,
+    0.4963
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "breach",
+   "radius": 0.0,
+   "section": "eng",
+   "side": "S",
+   "clear": 0.0898
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    -0.04307,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "core"
+  },
+  {
+   "name": "hp_rcs_0",
+   "p": [
+    -0.31226,
+    0.0431,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "rcs",
+   "side": "P",
+   "radius": 0.0
+  },
+  {
+   "name": "hp_rcs_1",
+   "p": [
+    0.23689,
+    -0.076,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "rcs",
+   "side": "S",
+   "radius": 0.0
+  },
+  {
+   "name": "hp_board_0",
+   "p": [
+    -0.3661,
+    0.02804,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "board",
+   "side": "P",
+   "radius": 0.0
+  },
+  {
+   "name": "hp_board_1",
+   "p": [
+    0.18305,
+    -0.08889,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    -1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "board",
+   "side": "S",
+   "radius": 0.0
+  }
+ ],
+ "manifest": {
+  "name": "Glasswright lancet GL1",
+  "faction": "ithar",
+  "cls": "Destroyer",
+  "band": "M",
+  "game_ship": "i_blade",
+  "length_world": 9.5,
+  "hardpoints": {
+   "gun": 4,
+   "engine": 1,
+   "breach": 2,
+   "core": 1,
+   "rcs": 2,
+   "board": 2
+  },
+  "breaches": 2,
+  "turrets": 0,
+  "files": {
+   "I11_37.glb": {
+    "bytes": 9882632,
+    "sha256": "df9f533f8b8405ab8b9db0336f5da7fb642a90241d0356109057c9b5dfc5fb2d"
+   },
+   "I11_37_base.jpg": {
+    "bytes": 1406169,
+    "sha256": "4bc3bf5a7d2fae4e4849018be56066c5baa1e3939aa6118b734fe4a1bd15116e"
+   },
+   "I11_37_emission.jpg": {
+    "bytes": 665738,
+    "sha256": "c61e85506c90a0cad8892ab29c49744f62d455e38de5e20b1020de95b1e3f6f8"
+   },
+   "I11_37_normal.png": {
+    "bytes": 4752988,
+    "sha256": "5b09e19c8b67c98d6b423fcc10a8141951049f113de7d022a6714fef68f7a122"
+   },
+   "I11_37_orm.png": {
+    "bytes": 4928626,
+    "sha256": "2f82cc5525cf8d155a00bb8774ec67a0b90476a01eb1edc82b03fdcabdb5e83a"
+   },
+   "I11_37_parts_base.jpg": {
+    "bytes": 951454,
+    "sha256": "7384181d30494ded0469870954baf453f3d16ca4dcfb74152fe3b176898c1f3f"
+   },
+   "I11_37_parts_normal.png": {
+    "bytes": 6057025,
+    "sha256": "a894d851530be6ab04a3bbd2844c16e0a76726438a10870a1281ca7098a17e1b"
+   },
+   "I11_37_parts_orm.png": {
+    "bytes": 4980468,
+    "sha256": "5bd900a09db448aabcb1adc973b69894069e18e227903b6e09aabc1d833285c4"
+   }
+  },
+  "pc_path": "godot/assets/ships/I11_37/"
+ },
+ "files": {
+  "I11_37.glb": {
+   "bytes": 9882632,
+   "sha256": "df9f533f8b8405ab8b9db0336f5da7fb642a90241d0356109057c9b5dfc5fb2d"
+  },
+  "I11_37_base.jpg": {
+   "bytes": 1406169,
+   "sha256": "4bc3bf5a7d2fae4e4849018be56066c5baa1e3939aa6118b734fe4a1bd15116e"
+  },
+  "I11_37_emission.jpg": {
+   "bytes": 665738,
+   "sha256": "c61e85506c90a0cad8892ab29c49744f62d455e38de5e20b1020de95b1e3f6f8"
+  },
+  "I11_37_normal.png": {
+   "bytes": 4752988,
+   "sha256": "5b09e19c8b67c98d6b423fcc10a8141951049f113de7d022a6714fef68f7a122"
+  },
+  "I11_37_orm.png": {
+   "bytes": 4928626,
+   "sha256": "2f82cc5525cf8d155a00bb8774ec67a0b90476a01eb1edc82b03fdcabdb5e83a"
+  },
+  "I11_37_parts_base.jpg": {
+   "bytes": 951454,
+   "sha256": "7384181d30494ded0469870954baf453f3d16ca4dcfb74152fe3b176898c1f3f"
+  },
+  "I11_37_parts_normal.png": {
+   "bytes": 6057025,
+   "sha256": "a894d851530be6ab04a3bbd2844c16e0a76726438a10870a1281ca7098a17e1b"
+  },
+  "I11_37_parts_orm.png": {
+   "bytes": 4980468,
+   "sha256": "5bd900a09db448aabcb1adc973b69894069e18e227903b6e09aabc1d833285c4"
+  }
+ },
+ "seconds": 14.2,
+ "not_written": [
+  "<CODE>_wreck.glb (the death pieces)",
+  "<CODE>_damage.glb and the skin_<n> hull patches (breach damage)",
+  "<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)"
+ ]
+}
