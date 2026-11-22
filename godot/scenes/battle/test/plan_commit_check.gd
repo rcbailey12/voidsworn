@@ -279,6 +279,19 @@ func _run() -> void:
 	var card_plan = b.hud._last.get("set_card", [{}])[0]
 	var keys_say := str((card_plan as Dictionary).get("keys", "")) if card_plan is Dictionary else ""
 	_check("Enter" in keys_say and "Backspace" in keys_say and "Esc" in keys_say, "the open plan's card names its keys on screen (%s)" % keys_say)
+	# Artoo on PR 1643: the keys must be drawn, whole and on the sheet, at the compact and the full width
+	var L = b.hud.ledger
+	var keep_size: Vector2 = L.size
+	for sz in [Vector2(1280, 720), Vector2(1920, 1080)]:
+		L.size = sz
+		L.layout()
+		var shown := false
+		for it in L.items:
+			if str(it.get("role", "")) == "keys" and str(it["t"]) == keys_say and float(it["y"]) + float(it["h"]) <= sz.y:
+				shown = true
+		_check(shown, "at %dx%d the plan's keys are drawn whole under the action" % [int(sz.x), int(sz.y)])
+	L.size = keep_size
+	L.layout()
 	b.hold = true
 	b._confirm()
 	_check(b.batches.size() == 1, "the commit makes one batch (%d)" % b.batches.size())

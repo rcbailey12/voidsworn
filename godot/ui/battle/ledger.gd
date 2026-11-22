@@ -275,10 +275,18 @@ func layout() -> void:
 	var after_odds := _target_block(target_x, y, target_w, compact)
 	_status(gun_x, maxf(after_guns, after_odds) + px(3), gun_w + gap + target_w, foot)
 	var primary := _action()
+	var orders_y := y + px(62)
 	if not primary.is_empty():
 		_action_box(Rect2(action_x, y, action_w, px(56)), primary)
+		# issue 1589 (Ryan, Nov 22; Artoo on PR 1643): an open plan's keys get their own row under the action, so no
+		# odds or status height can push them off the sheet
+		var keys := plain(str(card.get("keys", "")))
+		if keys != "" and str(primary.get("act", "")) == "confirm":
+			var kl := _trim(keys, f_body, 16, action_w)
+			_text(roundf(action_x + (action_w - _width(kl, f_body, 16)) * 0.5), y + px(57), kl, f_body, 16, TEXT2, "keys")
+			orders_y += px(20)
 	if mine_turn() and ask.is_empty():
-		_orders(action_x, y + px(62), action_w, foot, primary, compact)
+		_orders(action_x, orders_y, action_w, foot, primary, compact)
 	_fleet(pad, foot, usable)
 	_log(vs.x - pad, shelf_y - px(12), minf(px(540), usable * 0.58))
 	_hover = hit_at(get_local_mouse_position()) if is_inside_tree() else -1
@@ -493,9 +501,8 @@ static func keyword_tip(line: String) -> String:
 
 func _status(x: float, y: float, w: float, foot: float) -> void:
 	var fl := plain(str(ship.get("flags", "")))
-	var keys := plain(str(card.get("keys", "")))
-	if keys != "":   # issue 1589 (Ryan, Nov 22): an open plan says what it does and its keys; the ship's flags wait for the tip
-		var plan_say := plain(str(card.get("say", ""))) + " " + keys
+	if plain(str(card.get("keys", ""))) != "":   # issue 1589: an open plan says what it does (its keys sit under the action)
+		var plan_say := plain(str(card.get("say", "")))
 		if y + px(23) > foot:
 			return
 		var plan_end := _paragraph(x, y, plan_say, w, mini(2, int((foot - y) / (ceilf(_text_h(f_body, 17)) + px(2)))))

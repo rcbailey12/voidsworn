@@ -5453,7 +5453,7 @@ func _card_info() -> Dictionary:
 		say = "Out of reach: it burns %d movement and fires %d of %d guns on the way." % [int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
 		btns.append({"text": "Burn and fire (Enter)", "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
-		keys = "Enter goes. Backspace steps back. Esc cancels."
+		keys = "Enter goes · Backspace undoes · Esc cancels"
 	elif plan != null or not aims.is_empty():
 		# issue 1589: the open plan, step by step; the commit plays all of it as one event
 		var pt := _plan_text(id)
@@ -5461,7 +5461,7 @@ func _card_info() -> Dictionary:
 		say = pt["say"]
 		btns.append({"text": pt["go"], "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Clear plan (Esc)", "act": "cancel", "on": true})
-		keys = "Enter plays it. Backspace steps back. Esc clears."
+		keys = "Enter plays · Backspace undoes · Esc clears"
 	elif fired and bear > 0:
 		hint = "%d gun%s still ready. Click an enemy with a red ring to target it, or end the ship (Space)." % [bear, "" if bear == 1 else "s"]
 		say = "%d gun%s still ready: pick another target, or end the ship." % [bear, "" if bear == 1 else "s"]

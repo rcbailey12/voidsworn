@@ -113,9 +113,9 @@ The ship's turn is a plan on screen until the player commits it. Code: `battle.g
   guns while the hull brakes. A pick the move made impossible is dropped with a toast.
 - Backspace pops one step; with no plan open it is the rules' undo of a played move (9.17). Esc clears the whole plan. Any
   rules command clears the plan.
-- While a plan is open the card's status line says what the plan does and its keys ("Enter plays it. Backspace steps
-  back. Esc clears."), ahead of the ship's flags (they move to its tip): Ryan wants every action clearly understood
-  (Nov 22). Enemies a click would aim at wear the red ring; the target block shows each gun's hit chance from the ghost.
+- While a plan is open the card's status line says what the plan does, ahead of the ship's flags (they move to its tip),
+  and its keys ("Enter plays · Backspace undoes · Esc clears") get their own row under the action button, so no odds
+  height pushes them off the sheet (Artoo on PR 1643): Ryan wants every action clearly understood (Nov 22). Enemies a click would aim at wear the red ring; the target block shows each gun's hit chance from the ghost.
 - The card leaves as soon as any command starts playing (`_cmd` refreshes the UI once the runner is busy) and comes back
   when the ship is up again (Ryan, Nov 22).
 - The drawn firing cone: a ship whose hex sits on an arc's line is in that arc (rules `inArc`, 60.5 degrees for the
