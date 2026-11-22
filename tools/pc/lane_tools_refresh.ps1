@@ -8,7 +8,10 @@
 param(
   [Parameter(Mandatory = $true)]
   [ValidateSet('build_b', 'build_c', 'build_d', 'build_e', 'work217', 'build', 'tools_live')]
-  [string]$Build
+  [string]$Build,
+  # R417 (Ryan, Nov 22 2026): -NoRotate installs or refreshes and deletes nothing (no old tools_live version, no old
+  # backup), so a relayed install needs no new yes from him. The rotation then waits for a run without it.
+  [switch]$NoRotate
 )
 
 $ErrorActionPreference = 'Stop'
@@ -63,7 +66,22 @@ function Assert-IdleLane {
     } catch {
       throw "refused: cannot verify runner status at $file"
     }
-    if ($state.status -eq 'running') { throw "refused: job still running at $file" }
+    if ($state.status -eq 'running') {
+      # A record that still says running but was last written over a day ago, with no live process naming its issue
+      # number, is a run that died without closing its record (board_c issue-1194 and board_d issue-1180, Nov 19).
+      # It is skipped and left as it is. Unknown process list or any doubt still refuses.
+      $age = [DateTime]::UtcNow - (Get-Item -LiteralPath $file).LastWriteTimeUtc
+      $issueNo = [regex]::Match($file, 'issue-(\d+)').Groups[1].Value
+      if ($age.TotalHours -ge 24 -and $issueNo) {
+        $commands = Get-RunningCommandLines
+        if ($null -ne $commands -and
+            -not @($commands | Where-Object { $_ -and $_ -match "(?<!\d)$issueNo(?!\d)" }).Count) {
+          Write-Step "skipped stale record (running, last written $([int]$age.TotalHours) h ago, no live process): $file"
+          continue
+        }
+      }
+      throw "refused: job still running at $file"
+    }
   }
 }
 
@@ -352,7 +370,8 @@ try {
     if ($previous -ne $version) {
       Write-Step "tools_live now uses $version (was $(if ($previous) { $previous } else { 'none' }))"
     } else { Write-Step "tools_live already uses $version" }
-    try { Remove-OldLiveVersions $version } catch { Write-Step "kept old tools_live versions: $($_.Exception.Message)" }
+    if ($NoRotate) { Write-Step 'kept old tools_live versions: -NoRotate (R417)' }
+    else { try { Remove-OldLiveVersions $version } catch { Write-Step "kept old tools_live versions: $($_.Exception.Message)" } }
     exit 0
   }
   if (Test-ToolsMatch $liveTools $snapshot $sourceFiles) {
@@ -388,7 +407,8 @@ try {
     } catch { throw "restore failed, old tools kept at ${original}: $($_.Exception.Message)" }
     throw $installError
   }
-  try { Remove-OldBackups } catch { Write-Step "kept old backups: $($_.Exception.Message)" }
+  if ($NoRotate) { Write-Step 'kept old backups: -NoRotate (R417)' }
+  else { try { Remove-OldBackups } catch { Write-Step "kept old backups: $($_.Exception.Message)" } }
 } catch {
   $message = "FAILED: $($_.Exception.Message)"
   try { Write-Step $message } catch { Write-Host "$Build $message" }

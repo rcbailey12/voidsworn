@@ -134,6 +134,8 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	if S.get("lineage") != null: run["lineage"] = S.lineage.duplicate(true)   # issue #305: the run snapshot of the flown admiral's tree
 	R.RUN = run
 	for t in S.fleet: run["fleet"].append(R.newShip(t, R.jt(S.get("vet"))))
+	if S.get("mods") is Array:   # issue 1653: refits per fleet ship, in fleet order
+		for i in range(min(S.mods.size(), run["fleet"].size())): run["fleet"][i]["mods"] = S.mods[i].duplicate()
 	run["flagUid"] = run["fleet"][0]["uid"]
 	var cfg := {"kind": S.kind, "fac": S.fac, "col": 3 if S.get("col") == null else S.col, "seed": seed, "obj": S.obj, "shape": S.shape, "map": S.map, "dep": S.dep}
 	if R.jt(S.get("arch")): cfg["arch"] = S.arch
@@ -861,7 +863,7 @@ func _ai_activate(u) -> void:
 				if p["hp"] < p["maxHp"] * 0.5: hurt = true
 			var hpR = hp / mx; var id = c["id"]; var off = id in ["barrage", "hunt", "scramble", "surge"]
 			var cf = R.B.get("cfg"); var cr = cf.get("cmdRound") if cf is Dictionary else null
-			if (cr != null and R.B["round"] == cr) or (cr == null and ((off and (near >= 2 or R.B["round"] >= 4)) or (id == "restore" and hpR < 0.6) or (id == "iron" and (hurt or near >= 2)) or R.B["round"] >= 6)):
+			if (cr != null and (R.B["round"] == cr or (R.spareReady() and R.B["round"] == cr + 1))) or (cr == null and ((off and (near >= 2 or R.B["round"] >= 4)) or (id == "restore" and hpR < 0.6) or (id == "iron" and (hurt or near >= 2)) or R.B["round"] >= 6)):
 				command()
 	if gone.call(): return
 	if R.jt(u.get("ab")) and R.canAbility(u) and _can_use(u):
