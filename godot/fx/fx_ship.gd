@@ -46,7 +46,7 @@ var _eng_mat: ShaderMaterial
 var _eng_rib_mat: ShaderMaterial
 var _eng_sputter = false
 var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t, level], seed, r}
-var _tclock := 0.0         # issue 1581: the trails' own clock (runs faster while the drive is cold under way)
+var _trail_extra := 0.0    # issue 1581: extra age the trails carry (they age faster while the drive is cold under way)
 static var _trail_indices: Dictionary = {}   # not GPU: index arrays (PackedInt32Array)
 var _last_pos = Vector3.INF
 var _moving = 0.0
@@ -401,13 +401,15 @@ func update(fx, dt: float) -> void:
 		_eng_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8))
 	# issue 1581 (Nov 21 audit: rear trails lingered as skid marks while the retros braked): once the battle cuts the
 	# drive cold in a flown move, the ribbon behind it shortens fast instead of hanging for its full life
-	_tclock += dt * (TRAIL_COLD_AGE if (_moving > 0.0 and engine_level < 0.12 and not dead) else 1.0)
+	if _moving > 0.0 and engine_level < 0.12 and not dead:
+		_trail_extra += dt * (TRAIL_COLD_AGE - 1.0)
 	_update_trails(fx, moved > 1e-4)
 	if _shield_mi != null:
 		_shield_mi.visible = fx.now < _shield_until
 
 
 func _update_trails(fx, _moved: bool) -> void:
+	var _tclock: float = fx.now + _trail_extra   # the trails' clock (issue 1581)
 	if _trails.is_empty():
 		return
 	var xfm = xf()
@@ -443,6 +445,7 @@ func _update_trails(fx, _moved: bool) -> void:
 
 
 func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
+	var _tclock: float = fx.now + _trail_extra
 	var hist: Array = t["hist"]
 	var mi: MeshInstance3D = t["mi"]
 	var n := hist.size()
