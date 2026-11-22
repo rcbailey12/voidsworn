@@ -2511,6 +2511,9 @@ static func _power_surface(fx, s, mi: MeshInstance3D, i: int, pose: Transform3D)
 	if source is ShaderMaterial and source.has_meta("fx_hull_source"):
 		mat = source.duplicate()
 		mat.shader = template.shader
+		# Fable audit Nov 22, finding 1: the live surface may hold a hit brownout or the wound flicker (fx_flick); the death
+		# copy starts at full light so the power-down beat, not a frozen dip, darkens the hull
+		mat.set_shader_parameter("fx_flick", 1.0)
 	else:
 		mat = template.duplicate()
 		HULL.set_damage_pose(mat, pose, {})
