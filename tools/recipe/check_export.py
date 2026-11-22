@@ -148,6 +148,21 @@ def open_rectangular_exhaust(p, fwd, up, aperture, vertices, tol):
     return dict(ok=not why, why='; '.join(why), aperture=list(aperture), rim_corners=quadrants,
                 plane_tolerance=round(plane, 6), throat_vertices=throat, exhaust_vertices=plug)
 
+def image_size(path):
+    """(width, height) read from a PNG or JPEG header, without decoding; None for anything else"""
+    with open(path, 'rb') as f:
+        head = f.read(26)
+        if head[:8] == b'\x89PNG\r\n\x1a\n': return struct.unpack('>II', head[16:24])
+        if head[:2] != b'\xff\xd8': return None
+        f.seek(2)
+        while True:
+            m = f.read(4)
+            if len(m) < 4 or m[0] != 0xFF: return None
+            ln = struct.unpack('>H', m[2:4])[0]
+            if m[1] in (0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF):
+                h, w = struct.unpack('>xHH', f.read(5)); return (w, h)
+            f.seek(ln - 2, 1)
+
 def main():
     a = sys.argv[1:]; shipj, out = a[0], a[1]; kw = dict(x.split('=', 1) for x in a[2:] if '=' in x)
     TOL_FRAC = float(kw.get('tol', .012)); UNBAKED = kw.get('unbaked') == '1'
@@ -396,6 +411,20 @@ def main():
     if not unb and not imgs: probs.append('the glb names no maps')
     for u in imgs:
         if not u or not os.path.exists(os.path.join(out, u)): probs.append(f'map {u} is named by the glb but is not in the folder')
+    # Artoo on PR 1724: the hull and parts maps are measured as written, against the R411 band target (stage 7's own report
+    # target when it ran with maps=); a smaller older bake is never upscaled, so it fails here until stage 5 rebakes it
+    if not unb and not wing:
+        rep = os.path.join(out, code + '_export.json')
+        target = json.load(open(rep)).get('maps_target') if os.path.exists(rep) else None
+        target = target or HP_CONTRACT.map_size(cls, ship.get('length_world'))
+        sizes = {}
+        for u in imgs:
+            if u and os.path.exists(os.path.join(out, u)) and re.fullmatch(re.escape(code) + r'(_parts)?_(base|orm|normal|emission)\.\w+', u):
+                wh = image_size(os.path.join(out, u))
+                if wh: sizes[u] = max(wh)
+        under = sorted(u for u, v in sizes.items() if v < target)
+        notes.append(f'maps measured: {", ".join(f"{u} {v}" for u, v in sorted(sizes.items())) or "none"} (target {target})')
+        if under: probs.append(f'maps under the {target} target (a smaller source bake; rebake at stage 5): ' + ', '.join(f'{u} {sizes[u]}' for u in under))
     mp = os.path.join(out, 'manifest_entry.json')
     if not os.path.exists(mp):
         probs.append('no manifest_entry.json: the export must write the point counts into the ship\'s manifest entry')
