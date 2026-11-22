@@ -517,6 +517,9 @@ func _begin(a) -> void:
 	api = a
 	warming = true
 	hud.loading(true)
+	var obj0 = api.view().get("obj")
+	if obj0 is Dictionary and str(obj0.get("type", "")) == "hold":
+		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
 	if DisplayServer.get_name() != "headless":
@@ -609,23 +612,10 @@ func _begin(a) -> void:
 	_sync(V)
 	if world != null: world.use_ship_debris(views.values())
 	# open on your fleet, looking toward the enemy (the browser game's camera starts over the player's side)
-	var pc := Vector3.ZERO
-	var ec := Vector3.ZERO
-	var np := 0
-	var ne2 := 0
-	for u in V["units"]:
-		if u["side"] == "player":
-			pc += board.hex_world(u["q"], u["r"])
-			np += 1
-		else:
-			ec += board.hex_world(u["q"], u["r"])
-			ne2 += 1
-	pc /= maxf(1.0, np)
-	ec = ec / maxf(1.0, ne2) if ne2 > 0 else pc
-	cam.home = pc.lerp(ec, 0.3)
-	cam.home.y = 0.0
+	var hv: Dictionary = board.home_view(V["units"])   # shared with the Hold relay beacon's placement (issue 1536)
+	cam.home = hv["target"]
 	cam.reset_view()
-	cam.home_r = clampf(pc.distance_to(ec) * 0.75, 130.0, 210.0)
+	cam.home_r = hv["r"]
 	cam.r = cam.home_r
 	cam.snap()
 	hud.log_text.clear()
@@ -778,6 +768,7 @@ func _pipe_count() -> int:
 
 var warming := false
 const ArrivalWarm := preload("res://render/arrival_warm.gd")
+const A4P := preload("res://assets/ships/a4_props.gd")   # issue 1536: the Hold relay beacon prefetch
 var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arrive mid-battle (render/arrival_warm.gd)
 
 
