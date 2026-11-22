@@ -44,14 +44,21 @@ function secretPath(target) {
   return target.split(/[\\/]/).some(part => part.split(':').some(name => secretName.test(name.replace(/[. ]+$/, ''))));
 }
 
-function isBoard(event) {
-  return !event.agent_id && Boolean(event.session_id) &&
-    event.session_id === process.env.VOIDSWORN_BOARD_SESSION_ID;
+// Main seats (the Board and every Opus project thread) get the credential guard and the main-branch guard only.
+// The contrib/<seat>/ fence applies only when a launch names a non-main seat (AGENTS.md "If you are not the main agent").
+const mainSeats = new Set(['', 'opus', 'board', 'main', 'claude']);
+
+function seat() {
+  return (process.env.VOIDSWORN_CLAUDE_SEAT || '').trim().toLowerCase();
+}
+
+function fenced() {
+  return !mainSeats.has(seat());
 }
 
 function workerArea(root) {
-  const seat = process.env.VOIDSWORN_CLAUDE_SEAT || '';
-  return /^[a-z][a-z0-9-]*$/.test(seat) ? path.join(root, 'contrib', seat) : null;
+  const name = seat();
+  return /^[a-z][a-z0-9-]*$/.test(name) ? path.join(root, 'contrib', name) : null;
 }
 
 function inside(root, target) {
@@ -84,12 +91,12 @@ function ownsFile(root, target) {
 function protectPath(event, root, input) {
   const target = input.file_path || input.notebook_path || input.path;
   if (target) {
-    const resolved = path.resolve(event.cwd, target);
+    const resolved = path.resolve(event.cwd || '.', target);
     if (secretPath(target) || secretPath(realPath(resolved))) {
       return 'Use the masked key installer for credentials. Claude cannot open protected files.';
     }
-    if (fileEdits.has(event.tool_name) && !isBoard(event) && !ownsFile(root, resolved)) {
-      return 'Worker edits stay under contrib/<seat>/. Set VOIDSWORN_CLAUDE_SEAT at launch.';
+    if (root && fileEdits.has(event.tool_name) && !ownsFile(root, resolved)) {
+      return 'This seat (' + seat() + ') edits only under contrib/' + seat() + '/. Main seats launch without VOIDSWORN_CLAUDE_SEAT.';
     }
   } else if (fileEdits.has(event.tool_name)) {
     return 'The edit hook needs a file path.';
@@ -100,7 +107,7 @@ function protectPath(event, root, input) {
 
 function bareWords(command) {
   // Recognize a single command with literal arguments. The shell must see the same words.
-  const token = /(?:[A-Za-z0-9_./:@+=,-]+|'[^'\\%\r\n]*'|"[^"\\\x60$%\r\n]*")(?=[ \t]|$)/y;
+  const token = /(?:[A-Za-z0-9_./:@+=,~-]+|'[^'\\%\r\n]*'|"[^"\\\x60$%\r\n]*")(?=[ \t]|$)/y;
   const words = [];
   let index = 0;
   while (index < command.length) {
@@ -118,35 +125,143 @@ function bareWords(command) {
   return words;
 }
 
-function gitPush(cwd, words, board) {
-  // Use an explicit destination. Default, wildcard, delete and forced pushes cannot be verified here.
-  const args = words.slice(2);
-  if (args[0] === '-u' || args[0] === '--set-upstream') args.shift();
-  const [remote, ...specs] = args;
-  const branch = '(?:refs/heads/)?[A-Za-z0-9][A-Za-z0-9._/-]*';
-  const refspec = new RegExp('^(' + branch + ')(?::(' + branch + '))?$');
-  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(remote || '') || specs.length !== 1 || !refspec.test(specs[0])) {
-    return 'Use one explicit refspec with git push origin <branch> or git push origin HEAD:refs/heads/<branch>.';
+const isMain = name => /^(?:refs\/heads\/)?(?:main|master)$/i.test(name || '');
+const branchName = ref => String(ref || '').replace(/^\+/, '').replace(/^refs\/heads\//, '');
+
+function currentBranch(cwd) {
+  try {
+    return git(cwd, ['branch', '--show-current']).trim();
+  } catch {
+    return '';
   }
-  const [, source, destination] = refspec.exec(specs[0]);
-  const target = (destination || source).replace(/^refs\/heads\//, '');
-  if (!destination && target === 'HEAD') return 'Give the push its destination branch explicitly.';
-  if (target.toLowerCase() !== 'main') return;
-  if (!board) return 'Only the Board can push the two Board logs to main. Push your issue branch.';
+}
+
+function checkMainPush(cwd, remote, source, alone) {
+  // A push that lands on main must be a fast-forward whose commits each change only the two Board logs (R102).
+  if (fenced()) return 'Only a main seat can push the Board logs to main. Push your issue branch.';
+  // The check reads commits that exist now; a commit made earlier in the same command would slip past it.
+  if (!alone) return 'Push to main in a Bash call of its own (cd is fine), after the commit, so the hook can check every commit.';
   const pushUrl = git(cwd, ['remote', 'get-url', '--push', '--all', remote]).trim();
   if (!pushUrl || /\r?\n/.test(pushUrl)) return 'Use a remote with exactly one push URL.';
   const liveRef = git(cwd, ['ls-remote', '--exit-code', '--', pushUrl, 'refs/heads/main']).trim();
   const base = /^([a-f0-9]{40,64})\trefs\/heads\/main$/.exec(liveRef)?.[1];
   if (!base) return 'Could not verify the remote main. Fetch the remote and retry.';
-  const sourceRef = source === 'HEAD' || source.startsWith('refs/heads/') ? source : 'refs/heads/' + source;
+  const sourceRef = source === 'HEAD' || source.startsWith('refs/') ? source : 'refs/heads/' + source;
   const tip = git(cwd, ['rev-parse', '--verify', sourceRef + '^{commit}']).trim();
-  git(cwd, ['merge-base', '--is-ancestor', base, tip]);
+  try {
+    git(cwd, ['merge-base', '--is-ancestor', base, tip]);
+  } catch {
+    return 'A push to main must be a fast-forward of the live main. Fetch, rebase the log commit and retry.';
+  }
   for (const commit of git(cwd, ['rev-list', base + '..' + tip]).trim().split('\n').filter(Boolean)) {
     const parents = git(cwd, ['rev-list', '--parents', '-n', '1', commit]).trim().split(' ');
     const changed = git(cwd, ['diff-tree', '--no-commit-id', '--no-renames', '--name-only', '-r', '-z', commit])
       .split('\0').filter(Boolean);
     if (parents.length !== 2 || !changed.length || changed.some(file => !boardLogs.has(file))) {
-      return 'Each commit pushed to main must change only contrib/opus/LOOP.md or contrib/opus/FINDINGS.md.';
+      return 'Each commit pushed to main must change only contrib/opus/LOOP.md or contrib/opus/FINDINGS.md. ' +
+        'Everything else goes through an issue branch and a pull request.';
+    }
+  }
+}
+
+// git push options that take a separate value.
+const pushValueOptions = new Set(['--repo', '-o', '--push-option', '--receive-pack', '--exec']);
+
+function gitPush(cwd, words, alone) {
+  // Only pushes that land on main are checked. Every other push goes through untouched.
+  let index = 1;
+  while (index < words.length && words[index] !== 'push') {
+    if (words[index] === '-C') cwd = path.resolve(cwd, words[++index] || '.');
+    else if (words[index] === '-c') index++;
+    index++;
+  }
+  const options = [];
+  const positional = [];
+  for (index++; index < words.length; index++) {
+    const word = words[index];
+    if (word === '--') {
+      positional.push(...words.slice(index + 1));
+      break;
+    }
+    if (word.startsWith('-') && word !== '-') {
+      options.push(word);
+      if (pushValueOptions.has(word)) index++;
+    } else {
+      positional.push(word);
+    }
+  }
+  if (options.some(option => /^--(?:all|mirror|branches)$/.test(option))) {
+    return 'Push named branches instead of --all, --mirror or --branches, so main cannot move by accident.';
+  }
+  const deleting = options.some(option => option === '--delete' || option === '-d');
+  const forced = options.some(option => /^(?:-f|--force|--force-with-lease(?:=.*)?|--force-if-includes)$/.test(option) ||
+    /^-[a-zA-Z]*f[a-zA-Z]*$/.test(option));
+  const [remote = 'origin', ...specs] = positional;
+  const targets = [];
+  if (!specs.length) {
+    const current = currentBranch(cwd);
+    targets.push({ source: 'HEAD', destination: current, force: forced });
+  }
+  for (const spec of specs) {
+    const force = forced || spec.startsWith('+');
+    const body = spec.replace(/^\+/, '');
+    const colon = body.indexOf(':');
+    let source = colon < 0 ? body : body.slice(0, colon);
+    let destination = colon < 0 ? body : body.slice(colon + 1);
+    if (colon < 0 && source === 'HEAD') destination = currentBranch(cwd);
+    if (deleting) {
+      destination = body;
+      source = '';
+    }
+    targets.push({ source, destination: branchName(destination), force });
+  }
+  for (const { source, destination, force } of targets) {
+    if (!isMain(destination)) continue;
+    if (!source) return 'Main cannot be deleted.';
+    if (force) return 'Main takes fast-forward pushes only. Drop the force flag.';
+    const reason = checkMainPush(cwd, remote, source, alone);
+    if (reason) return reason;
+  }
+}
+
+function gitSubcommand(words) {
+  for (let index = 1; index < words.length; index++) {
+    if (words[index] === '-C' || words[index] === '-c') index++;
+    else if (!words[index].startsWith('-')) return words[index];
+  }
+  return '';
+}
+
+function shellSegments(command) {
+  // Split on shell separators so a push inside "cd x && git push ..." or a retry loop is still checked.
+  return command.split(/&&|\|\||[;|\r\n]/).map(part => part.trim()).filter(Boolean);
+}
+
+function pushPolicy(cwd, command) {
+  let here = cwd;
+  const segments = shellSegments(command);
+  for (const raw of segments) {
+    // Output redirections do not change what is pushed.
+    const segment = raw.replace(/(?:^|\s)(?:\d?>>?|&>)\s*(?:&\d|[^\s]+)/g, ' ').trim();
+    let words = bareWords(segment);
+    if (words) {
+      while (words.length && (/^(?:do|then|else|time|!|\{|\(|sudo)$/.test(words[0]) || /^[A-Za-z_][A-Za-z0-9_]*=/.test(words[0]))) {
+        words = words.slice(1);
+      }
+      if (words[0] === 'cd' && words.length === 2) {
+        here = path.resolve(here, words[1].replace(/^~(?=$|\/)/, os.homedir()));
+        continue;
+      }
+    }
+    const mentionsPush = /\bgit(?:\.exe)?\b[\s\S]*\bpush\b|\bgit[- ]send-pack\b/i.test(segment);
+    if (!mentionsPush) continue;
+    if (words && /^git(?:\.exe)?$/i.test(words[0])) {
+      if (gitSubcommand(words) !== 'push') continue;
+      const others = segments.filter(part => part !== raw && !/^cd\s/.test(part));
+      const reason = gitPush(here, words, others.length === 0);
+      if (reason) return reason;
+    } else if (/\b(?:main|master)\b|--(?:all|mirror|branches)\b|\bsend-pack\b|\$/.test(segment)) {
+      return 'Run this push as a plain git push command with literal names, so the hook can check it does not land on main.';
     }
   }
 }
@@ -163,45 +278,73 @@ function workerGit(root, cwd, words) {
   if (command === 'commit' && args.length === 2 && args[0] === '-m' &&
       git(cwd, ['diff', '--cached', '--no-renames', '--name-only', '-z'])
         .split('\0').filter(Boolean).every(file => ownsFile(root, path.join(root, file)))) return;
-  return 'Worker shell writes are limited to staging and committing your own files. Use Claude file tools for edits.';
+  if (command === 'push') return;
+  return 'Fenced seat shell writes are limited to staging, committing and pushing your own files. Use Claude file tools for edits.';
+}
+
+function shellSecret(word) {
+  // A bare "secret" or "secrets" is an ordinary word in commit messages and searches; only a path is a credential.
+  if (/^\.?secrets?$/i.test(word)) return false;
+  return secretPath(word);
+}
+
+function ghApiPolicy(command) {
+  if (!/\bgh(?:\.exe)?\s+api\b/i.test(command)) return;
+  const contents = /\/contents(?:\/|\b)/i.test(command);
+  const refs = /\/git\/(?:refs|matching-refs)(?:\/|\b)/i.test(command);
+  if (!contents && !refs) return;
+  const writes = /(?:--method|-X)(?:\s+|=)(?:POST|PATCH|PUT|DELETE)\b|(?:--input|--(?:raw-)?field|-[fF])(?:[\s=]|[A-Z])/i.test(command) &&
+    !/(?:--method|-X)(?:\s+|=)GET\b/i.test(command);
+  if (!writes) return;
+  if (fenced()) return 'Fenced seats push their own branch with git push.';
+  if (/heads\/(?:main|master)\b|\bbranch[=:]\s*["']?(?:main|master)\b/i.test(command) || (contents && !/\bbranch[=:]/i.test(command))) {
+    return 'Direct writes to main are blocked. Name a branch other than main, or push the Board logs with git push.';
+  }
 }
 
 function shellPolicy(event, root, input) {
   const command = input.command;
   if (typeof command !== 'string') return 'The shell hook needs a command.';
   // Check literal credential names even in compound commands and PowerShell arguments.
-  if (command.split(/[\s"'=|&;<>()[\]{},]+/).some(secretPath) ||
+  if (command.split(/[\s"'=|&;<>()[\]{},]+/).some(shellSecret) ||
       /(?:^|[\s;|&])(?:printenv\b|env\s*(?:$|[;|&])|gh\s+auth\s+token\b|git\s+credential\b|(?:Get-ChildItem|gci|dir|ls)\s+Env:|Get-Item\s+Env:)|(?:\$env:|\$\{?)[\w]*(?:TOKEN|PASSWORD|SECRET|API_KEY)\b/i.test(command)) {
     return 'Use the masked key installer for credentials. Claude cannot read protected files or print credentials.';
   }
+  const pushReason = pushPolicy(event.cwd || '.', command);
+  if (pushReason) return pushReason;
+  const apiReason = ghApiPolicy(command);
+  if (apiReason) return apiReason;
+  if (!root) return;
   const words = bareWords(command.trim());
-  const board = isBoard(event);
-  if (/\b(?:git(?:\.exe)?\b[\s\S]*\bpush\b|git[- ]send-pack\b)/i.test(command)) {
-    if (!words || !/^git(?:\.exe)?$/i.test(words[0]) || words[1] !== 'push') {
-      return 'Run git push as a single plain command so the hook can check its destination.';
-    }
-    return gitPush(event.cwd, words, board);
-  }
-  if (/\bgh(?:\.exe)?\s+api\b/i.test(command) &&
-      /(?:\/(?:git\/(?:refs|matching-refs)|contents)(?:\/|\b))/i.test(command) &&
-      /(?:--method|-X)(?:\s+|=)(?:POST|PATCH|PUT|DELETE)\b|(?:--input|--(?:raw-)?field|-[fF])(?:[\s=]|[A-Z])/i.test(command)) {
-    return 'Use the checked git push command for direct file and branch updates.';
-  }
-  if (board || (words?.length === 1 && words[0] === 'pwd')) return;
+  if (words?.length === 1 && words[0] === 'pwd') return;
   if (words && /^git(?:\.exe)?$/i.test(words[0])) return workerGit(root, event.cwd, words);
-  return 'Workers use Claude file tools to read and edit. Run other shell work through the Board.';
+  return 'Fenced seats use Claude file tools to read and edit. Ask the Board for other shell work.';
+}
+
+function directWrite(event) {
+  const input = event.tool_input || {};
+  if (fenced()) return 'Fenced seats push their own branch with git push.';
+  const name = event.tool_name.replace(/^mcp__.*__/, '');
+  const target = input.branch ?? input.ref ?? input.head;
+  if (name === 'create_branch') return isMain(branchName(input.branch)) ? 'Main already exists and cannot be recreated.' : undefined;
+  if (target === undefined || target === null || target === '') {
+    return 'Name the branch for this direct write. A write without a branch lands on main.';
+  }
+  if (isMain(branchName(String(target).replace(/^heads\//, '')))) {
+    return 'Direct writes to main are blocked. Push the Board logs with git push, everything else through a pull request.';
+  }
 }
 
 function preTool(event) {
   const input = event.tool_input || {};
-  if (directWrites.test(event.tool_name)) return 'Use the checked git push command for direct file and branch updates.';
-  if (isBoard(event)) {
-    return shells.has(event.tool_name) ? shellPolicy(event, null, input) : protectPath(event, null, input);
+  if (directWrites.test(event.tool_name)) return directWrite(event);
+  let root = null;
+  if (fenced()) {
+    const checkout = projectCheckout(event.cwd);
+    if (shells.has(event.tool_name) && !checkout.inProject) return 'Fenced seat shell commands need the project checkout.';
+    root = checkout.root;
   }
-  const { root, inProject } = projectCheckout(event.cwd);
-  if (!shells.has(event.tool_name)) return protectPath(event, root, input);
-  if (!inProject) return 'Worker shell commands need the project checkout.';
-  return shellPolicy(event, root, input);
+  return shells.has(event.tool_name) ? shellPolicy(event, root, input) : protectPath(event, root, input);
 }
 
 function emDash(event) {
@@ -221,24 +364,39 @@ function stateFile(root, sessionId) {
   return path.join(os.tmpdir(), 'voidsworn-claude-' + id + '.head');
 }
 
+function readState(file) {
+  try {
+    const state = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return state && typeof state === 'object' ? state : {};
+  } catch {
+    return {};
+  }
+}
+
 function godotCommand() {
   if (process.env.GODOT_EXE || process.env.GODOT) return process.env.GODOT_EXE || process.env.GODOT;
   const installed = path.join(os.homedir(), 'Downloads', 'voidsworn_test', 'godot', 'Godot_v4.7.2-stable_win64_console.exe');
   return process.platform === 'win32' && fs.existsSync(installed) ? installed : 'godot';
 }
 
+function note(message) {
+  // Shown to the person; never blocks. Used when the check could not run, so a missing setup cannot loop the turn.
+  process.stdout.write(JSON.stringify({ systemMessage: message }) + '\n');
+}
+
 function godotTurn(event) {
   const { root } = projectCheckout(event.cwd);
-  const state = stateFile(process.env.CLAUDE_PROJECT_DIR || root, event.session_id);
+  const file = stateFile(process.env.CLAUDE_PROJECT_DIR || root, event.session_id);
   if (event.hook_event_name === 'UserPromptSubmit') {
-    fs.writeFileSync(state, git(root, ['rev-parse', 'HEAD']).trim(), { mode: 0o600 });
+    fs.writeFileSync(file, JSON.stringify({ head: git(root, ['rev-parse', 'HEAD']).trim() }), { mode: 0o600 });
     return;
   }
   if (event.hook_event_name === 'SessionEnd') {
-    fs.rmSync(state, { force: true });
+    fs.rmSync(file, { force: true });
     return;
   }
-  const start = fs.existsSync(state) ? fs.readFileSync(state, 'utf8').trim() : 'HEAD';
+  const state = readState(file);
+  const start = typeof state.head === 'string' ? state.head : 'HEAD';
   if (!/^(?:[a-f0-9]{40,64}|HEAD)$/.test(start)) throw new Error('Invalid Godot check baseline.');
   const changed = [
     git(root, ['diff', '--name-only', '--no-renames', '-z', start, '--', 'godot']),
@@ -257,20 +415,38 @@ function godotTurn(event) {
   } finally {
     fs.rmSync(profile, { force: true, recursive: true });
   }
-  if (check.error) return 'Godot parse check could not run. Set GODOT_EXE or put Godot on PATH. ' + check.error.code;
+  if (check.error) {
+    // Missing Godot or a loader timeout is a setup problem the model cannot fix by retrying: never block on it.
+    note('Godot parse check skipped: Godot could not run here (' + (check.error.code || check.error.message) +
+      '). Set GODOT_EXE or put Godot on PATH. GitHub checks still run the full load.');
+    return;
+  }
   const output = check.stdout + '\n' + check.stderr;
   if (check.status !== 0 || /SCRIPT ERROR|Parse Error|load all: FAILED/.test(output) ||
       !/^load all: \d+ scripts, \d+ scenes, 0 failed\r?$/m.test(output)) {
-    return 'Godot parse check failed. Fix the errors before ending the turn.\n' + output.trim().slice(0, 4500);
+    const failure = output.trim().slice(0, 4500);
+    const digest = createHash('sha256').update(failure.replace(/\d+(?:\.\d+)?\s*ms\b/g, '')).digest('hex');
+    if (event.stop_hook_active && state.failure === digest) {
+      // The model already had one turn to fix this exact failure and nothing changed: stop instead of looping.
+      note('Godot parse check still fails after one retry. Ending the turn so it does not loop; report the failure.\n' +
+        failure.slice(0, 1500));
+      return;
+    }
+    fs.writeFileSync(file, JSON.stringify({ ...state, failure: digest }), { mode: 0o600 });
+    return 'Godot parse check failed. Fix the errors before ending the turn.\n' + failure;
   }
+  if (state.failure) fs.writeFileSync(file, JSON.stringify({ head: state.head }), { mode: 0o600 });
   process.stdout.write('Godot parse check passed.\n');
 }
 
 try {
-  const event = JSON.parse(fs.readFileSync(0, 'utf8').replace(/^\uFEFF/, ''));
+  const event = JSON.parse(fs.readFileSync(0, 'utf8').replace(/^﻿/, ''));
   const hook = process.argv[2];
   const reason = { pre: preTool, 'em-dash': emDash, godot: godotTurn }[hook](event);
   if (reason) block(reason);
 } catch (error) {
-  block('Voidsworn hook could not verify this action. ' + error.message);
+  // Tool calls fail closed. The turn hooks (prompt, stop, session end) and the em dash note fail open, so a broken
+  // setup can never block a prompt or restart the same turn.
+  if (process.argv[2] === 'pre') block('Voidsworn hook could not verify this action. ' + error.message);
+  else note('Voidsworn ' + process.argv[2] + ' hook skipped: ' + error.message);
 }

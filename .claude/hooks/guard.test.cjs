@@ -12,8 +12,13 @@ const work = path.join(temp, 'fixture');
 const remote = path.join(temp, 'origin.git');
 const root = path.resolve(__dirname, '../..');
 const session_id = path.basename(temp);
-const env = { ...process.env, CLAUDE_PROJECT_DIR: work,
-  VOIDSWORN_CLAUDE_SEAT: 'opus', VOIDSWORN_BOARD_SESSION_ID: session_id + '-board' };
+// Main seat: no seat variable, as every cloud Opus thread (Board and workers) launches.
+const mainEnv = { ...process.env, CLAUDE_PROJECT_DIR: work };
+delete mainEnv.VOIDSWORN_CLAUDE_SEAT;
+delete mainEnv.VOIDSWORN_BOARD_SESSION_ID;
+// Fenced seat: a launch that names a non-main seat keeps the contrib/<seat>/ fence.
+const fencedEnv = { ...mainEnv, VOIDSWORN_CLAUDE_SEAT: 'fable' };
+const opusEnv = { ...mainEnv, VOIDSWORN_CLAUDE_SEAT: 'opus' };
 
 function git(...args) {
   const result = spawnSync('git', args, { cwd: work, encoding: 'utf8', windowsHide: true });
@@ -28,6 +33,8 @@ function write(file, content) {
 }
 
 function hook(hook_event_name, tool_name, tool_input, options = {}) {
+  const { env = mainEnv, ...extra } = options;
+  options = extra;
   const spec = settings.hooks[hook_event_name].find(group => !group.matcher ||
     new RegExp('^(?:' + group.matcher + ')$').test(tool_name));
   assert.ok(spec, 'Missing configured hook for ' + hook_event_name + ' ' + tool_name);
@@ -72,62 +79,103 @@ try {
   git('commit', '-m', 'Seed isolated fixture');
   git('push', 'origin', 'main');
 
-  const board = { session_id: env.VOIDSWORN_BOARD_SESSION_ID };
-  const workerInBoard = { ...board, agent_id: 'helper' };
+  const main = {};
+  const fence = { env: fencedEnv };
+  const subagent = { agent_id: 'helper' };
   const preGuard = settings.hooks.PreToolUse[0].hooks[0];
   assert.equal(preGuard.onFailure, 'block');
   assert.ok(settings.permissions.deny.includes('Read(//**/.env)'));
   assert.ok(settings.permissions.deny.includes('Read(//**/secrets/**)'));
-  deny(pre('Read', { file_path: path.join(work, 'nested/.env') }, board), /protected files/);
-  deny(pre('Read', { file_path: 'nested/.envrc' }, board), /protected files/);
-  deny(pre('Grep', { path: 'nested/SECRETS/readme.txt' }, board), /protected files/);
-  deny(pre('Read', { file_path: 'nested/server.key' }), /protected files/);
-  deny(shell('cat "nested/.env.local"', board), /protected files/);
-  deny(pre('PowerShell', { command: 'Get-Content -LiteralPath secrets/credentials.json' }, board), /protected files/);
-  deny(shell('git show HEAD:.env', board), /protected files/);
-  permit(pre('Read', { file_path: 'README.md' }, board));
-  console.log('PASS credential guard: blocked file, search, Bash, PowerShell and Git reads');
+  deny(pre('Read', { file_path: path.join(work, 'nested/.env') }, main), /protected files/);
+  deny(pre('Read', { file_path: 'nested/.envrc' }, main), /protected files/);
+  deny(pre('Grep', { path: 'nested/SECRETS/readme.txt' }, main), /protected files/);
+  deny(pre('Read', { file_path: 'nested/server.key' }, fence), /protected files/);
+  deny(shell('cat "nested/.env.local"', main), /protected files/);
+  deny(pre('PowerShell', { command: 'Get-Content -LiteralPath secrets/credentials.json' }, main), /protected files/);
+  deny(shell('git show HEAD:.env', main), /protected files/);
+  permit(pre('Read', { file_path: 'README.md' }, main));
+  permit(shell('git commit -m "Move secrets note to the README"', main));
+  permit(shell('grep -rn secrets .github/workflows', main));
+  console.log('PASS credential guard: blocked file, search, Bash, PowerShell and Git reads; plain word "secrets" allowed');
 
-  deny(pre('Edit', { file_path: 'README.md' }), /Worker edits/);
-  deny(pre('Write', { file_path: 'contrib/muse/notes.md' }), /Worker edits/);
-  deny(pre('NotebookEdit', { notebook_path: 'contrib/opus/../../README.md' }), /Worker edits/);
-  deny(pre('Write', { file_path: path.join(temp, 'outside.txt') }), /Worker edits/);
-  deny(pre('Write', { file_path: 'contrib/opus/notes.md' }, { cwd: temp }), /Worker edits/);
-  deny(pre('Edit', { file_path: 'README.md' }, workerInBoard), /Worker edits/);
-  deny(shell('echo changed > README.md'), /Workers use Claude file tools/);
-  permit(pre('Write', { file_path: 'contrib/opus/new/notes.md' }));
-  permit(pre('Edit', { file_path: 'README.md' }, board));
-  fs.symlinkSync(temp, path.join(work, 'contrib/opus/link'), process.platform === 'win32' ? 'junction' : 'dir');
-  deny(pre('Write', { file_path: 'contrib/opus/link/new.txt' }), /Worker edits/);
-  fs.unlinkSync(path.join(work, 'contrib/opus/link'));
-  console.log('PASS seat guard: blocked sibling seats, traversal, symlink escapes and shell writes');
+  // Must pass: main seats (no seat variable, or seat opus) work anywhere in the repo, as Opus helper threads do.
+  permit(pre('Edit', { file_path: 'godot/rules/battle.gd' }, main));
+  permit(pre('Write', { file_path: 'tools/new_tool.js' }, main));
+  permit(pre('Edit', { file_path: 'docs/RULEBOOK.md' }, subagent));
+  permit(pre('Edit', { file_path: 'godot/rules/battle.gd' }, { env: opusEnv }));
+  permit(shell('godot --headless --path godot --script res://tools/ci/load_all.gd', main));
+  permit(shell('node contrib/opus/tools/sync_skills.js && node tools/checks.js', main));
+  permit(shell('echo changed > README.md', main));
+  console.log('PASS main seat: edits in godot/, tools/ and docs/, and ordinary shell, all allowed with no seat set');
 
-  deny(shell('git push origin main'), /Only the Board/);
-  deny(shell('git push origin HEAD:refs/heads/MAIN'), /Only the Board/);
-  deny(shell('git push origin HEAD:refs/heads/main', workerInBoard), /Only the Board/);
-  deny(shell('git push origin HEAD', board), /destination branch/);
-  deny(shell('git push --mirror origin', board), /explicit refspec/);
-  deny(shell('git push origin :main', board), /explicit refspec/);
-  deny(shell('git -C . push origin main', board), /single plain command/);
-  deny(shell('git status && git push origin main', board), /single plain command/);
-  deny(pre('mcp__github__push_files', { branch: 'main' }, board), /checked git push/);
-  deny(shell('gh api -X PATCH repos/team/game/git/refs/heads/main -f sha=abc', board), /checked git push/);
-  permit(shell('gh api -X GET repos/team/game/git/refs/heads/main', board));
-  permit(shell('git push -u origin HEAD:refs/heads/opus/issue-1660'));
-  permit(shell('git push relay HEAD:refs/heads/pc-out-proof', board));
+  deny(pre('Edit', { file_path: 'README.md' }, fence), /edits only under contrib\/fable/);
+  deny(pre('Write', { file_path: 'contrib/muse/notes.md' }, fence), /contrib\/fable/);
+  deny(pre('NotebookEdit', { notebook_path: 'contrib/fable/../../README.md' }, fence), /contrib\/fable/);
+  deny(pre('Write', { file_path: path.join(temp, 'outside.txt') }, fence), /contrib\/fable/);
+  deny(shell('echo changed > README.md', fence), /Fenced seats use Claude file tools/);
+  permit(pre('Write', { file_path: 'contrib/fable/new/notes.md' }, fence));
+  fs.mkdirSync(path.join(work, 'contrib/fable'), { recursive: true });
+  fs.symlinkSync(temp, path.join(work, 'contrib/fable/link'), process.platform === 'win32' ? 'junction' : 'dir');
+  deny(pre('Write', { file_path: 'contrib/fable/link/new.txt' }, fence), /contrib\/fable/);
+  fs.unlinkSync(path.join(work, 'contrib/fable/link'));
+  console.log('PASS fenced seat: a named non-main seat is held to contrib/<seat>/, traversal and symlink escapes blocked');
+
+  // Must pass: ordinary pushes, never checked beyond "does it land on main".
+  git('switch', '-q', '-c', 'opus/issue-1660');
+  permit(shell('git push -q origin opus/issue-1660', main));
+  permit(shell('git push -u origin HEAD:refs/heads/opus/issue-1660', main));
+  permit(shell('git push origin A:refs/heads/board/pin-a B:refs/heads/board/pin-b', main));
+  permit(shell('git push --force-with-lease origin opus/issue-1660', main));
+  permit(shell('cd ' + work + ' && git push -u origin opus/issue-1660', main));
+  permit(shell('for i in 1 2 3; do git push -u origin opus/issue-1660 && break; sleep 2; done', main));
+  permit(shell('git push', main));
+  permit(shell('git push relay HEAD:refs/heads/pc-out-proof', main));
+  permit(shell('git push -q origin opus/issue-1660', fence));
+  permit(shell('git commit -m "main menu push fix"', main));
+  console.log('PASS ordinary pushes: -q, -u, two pins in one call, lease, compound and retry loops all go through');
+
+  deny(shell('git push origin HEAD:refs/heads/main', fence), /Only a main seat/);
+  deny(shell('git push --mirror origin', main), /named branches/);
+  deny(shell('git push origin :main', main), /cannot be deleted/);
+  deny(shell('git push origin --delete main', main), /cannot be deleted/);
+  deny(shell('git push -f origin HEAD:main', main), /fast-forward/);
+  deny(shell('git push origin +HEAD:main', main), /fast-forward/);
+  write('godot/feature.gd', 'extends Node\n');
+  git('add', 'godot/feature.gd');
+  git('commit', '-m', 'Feature work on the issue branch');
+  deny(shell('git push origin opus/issue-1660:main', main), /Each commit/);
+  deny(shell('git push origin "$B":main', main), /plain git push/);
+  deny(pre('mcp__github__push_files', { branch: 'main' }, main), /Direct writes to main/);
+  deny(pre('mcp__github__create_or_update_file', { path: 'x' }, main), /Name the branch/);
+  permit(pre('mcp__github__push_files', { branch: 'opus/issue-1660' }, main));
+  permit(pre('mcp__github__create_branch', { branch: 'opus/issue-1660', from_branch: 'main' }, main));
+  deny(shell('gh api -X PATCH repos/team/game/git/refs/heads/main -f sha=abc', main), /Direct writes to main/);
+  deny(shell('gh api -X PUT repos/team/game/contents/README.md -f message=x -f content=eA==', main), /Direct writes to main/);
+  permit(shell('gh api -X PUT repos/team/game/contents/README.md -f message=x -f content=eA== -f branch=opus/issue-1660', main));
+  permit(shell('gh api -X GET repos/team/game/git/refs/heads/main', main));
+  console.log('PASS main guard: force, delete, mirror, unverifiable and direct API writes to main blocked; branch writes allowed');
+
+  git('switch', '-q', 'main');
   write('contrib/opus/LOOP.md', 'after\n');
   write('contrib/opus/FINDINGS.md', 'after\n');
   git('add', 'contrib');
   git('commit', '-m', 'Change only both Board logs');
-  permit(shell('git push origin main', board));
-  permit(shell('git push origin HEAD:refs/heads/main', board));
+  permit(shell('git push origin main', main));
+  permit(shell('git push origin HEAD:refs/heads/main', main));
+  permit(shell('git push', main));
+  permit(shell('cd ' + work + ' && git push origin main 2>&1', main));
   write('README.md', 'planted outside change\n');
   git('add', 'README.md');
   git('commit', '-m', 'Plant a disallowed change');
-  deny(shell('git push origin main', board), /Each commit/);
+  deny(shell('git push origin main', main), /Each commit/);
+  deny(shell('git push', main), /Each commit/);
+  deny(shell('git status && git push origin main', main), /Bash call of its own/);
+  deny(shell("git commit -qam 'x' && git push origin main 2>&1", main), /Bash call of its own/);
+  deny(shell('git push origin main 2>&1', main), /Each commit/);
+  deny(shell('git -C ' + work + ' push origin main', main), /Each commit/);
   git('revert', '--no-edit', 'HEAD');
-  deny(shell('git push origin main', board), /Each commit/);
-  console.log('PASS push guard: allowed Board log commits and blocked main pushes with an outside change even if reverted');
+  deny(shell('git push origin main', main), /Each commit/);
+  console.log('PASS Board log push: LOOP.md and FINDINGS.md fast-forward to main allowed; any other change blocked even if reverted');
 
   const dash = String.fromCharCode(0x2014);
   const warning = hook('PostToolUse', 'Edit', { new_string: 'one' + dash + 'two' });
@@ -138,6 +186,7 @@ try {
   assert.equal(fixed.stdout, '');
   console.log('PASS punctuation hook: flagged the planted em dash and cleared after replacement');
 
+  git('reset', '-q', '--hard', 'origin/main');
   permit(hook('UserPromptSubmit'));
   const clean = hook('Stop');
   permit(clean);
@@ -147,12 +196,30 @@ try {
   git('add', 'godot/probe.gd');
   git('commit', '-m', 'Commit the planted script while the turn is open');
   deny(hook('Stop'), /Godot parse check failed[\s\S]*(?:Parse Error|load all: FAILED)/);
+  // The retry the hook caused, with the same failure: end the turn with a visible note instead of looping.
+  const looped = hook('Stop', undefined, undefined, { stop_hook_active: true });
+  permit(looped);
+  assert.match(JSON.parse(looped.stdout).systemMessage, /still fails after one retry/);
   write('godot/probe.gd', 'extends Node\n');
-  const fixedGodot = hook('Stop');
+  const fixedGodot = hook('Stop', undefined, undefined, { stop_hook_active: true });
   permit(fixedGodot);
   assert.match(fixedGodot.stdout, /Godot parse check passed/);
-  console.log('PASS Godot hook: skipped a clean turn, blocked a real parse error before and after commit, then passed the fix');
-  console.log('PASS all five Claude hook checks');
+  console.log('PASS Godot hook: skipped a clean turn, blocked a real parse error, ended after one unchanged retry, passed the fix');
+
+  // Godot missing: never block, on the first stop or the retry; say it was skipped.
+  write('godot/probe.gd', 'extends Node\nfunc broken(\n');
+  const noGodotEnv = { ...mainEnv, GODOT_EXE: path.join(temp, 'no-such-godot') };
+  for (const stop_hook_active of [false, true]) {
+    const missing = hook('Stop', undefined, undefined, { env: noGodotEnv, stop_hook_active });
+    permit(missing);
+    assert.match(JSON.parse(missing.stdout).systemMessage, /Godot parse check skipped/);
+  }
+  // A folder with no git repo must not block a prompt or a stop either.
+  const outside = { cwd: temp, env: { ...mainEnv, CLAUDE_PROJECT_DIR: temp } };
+  permit(hook('UserPromptSubmit', undefined, undefined, outside));
+  permit(hook('Stop', undefined, undefined, outside));
+  console.log('PASS setup failures: missing Godot or no repo never blocks a prompt or a stop, so no turn can loop');
+  console.log('PASS all Claude hook checks');
 } finally {
   permit(hook('SessionEnd'));
   fs.rmSync(temp, { recursive: true, force: true });
