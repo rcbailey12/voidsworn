@@ -9228,5 +9228,57 @@
    ],
    "scars": 2
   }
+ },
+ "s1649_fold": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "map": "open",
+  "note": "Issue 1649 (R404): Eclipse Fold skip on both sides. Scythes and Jackals fold after moving when a foe with a ready gun can reach them (the next weapon attack on that ship misses outright, +1 movement, cooldown 4), or early under half hull",
+  "seed": 1649001,
+  "sector": 2,
+  "admiral": "anuket",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_jackal",
+   "d_scythe",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_jackal",
+   "d_scythe",
+   "d_scythe",
+   "d_jackal"
+  ]
+ },
+ "s1649_frenzy": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "map": "open",
+  "note": "Issue 1649 (R404): Chorus Blood frenzy on both sides. Razors use it at aim when a gun can fire: +20% damage, and the ship regrows 30% of the hull damage it deals, at most 20% of its max hull per turn",
+  "seed": 1649002,
+  "sector": 2,
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor",
+   "b_razor",
+   "b_razor_s"
+  ],
+  "fac": "chorus",
+  "enemies": [
+   "b_razor",
+   "b_razor",
+   "b_razor_e"
+  ]
  }
 }
