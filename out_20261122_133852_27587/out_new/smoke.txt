@@ -1,0 +1,6 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+list elevenlabs_pilot.json: 1 steps, 1 still to make, estimate 40 credits (stems priced at their song's cost; stop at 500 used; the key's own cap at elevenlabs.io is the real ceiling)
+account balance unreadable: the stop uses the estimate
+made fac_ithar_crack_t1.mp3
+made 1, failed 0, estimate 11 credits, 0 of 1 steps not done
+ELEVENLABS GEN PASS

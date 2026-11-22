@@ -1,0 +1,31 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+list elevenlabs_pilot.json: 27 steps, 26 still to make, estimate 2797 credits (stems priced at their song's cost; stop at 4000 used; the key's own cap at elevenlabs.io is the real ceiling)
+account balance unreadable: the stop uses the estimate
+made battle_preview_t1.mp3
+made reward_preview_t1.mp3
+made ui_boss_t1.mp3
+made ui_reward_t1.mp3
+made ladder_macro_t1.mp3
+made ladder_macro_v2ab_t1.mp3
+made ladder_torp_t1.mp3
+made shield_break_t1.mp3
+made shield_break_v2ab_t1.mp3
+made arrive_jump_t1.mp3
+made fac_chorus_burst_t1.mp3
+made fac_deathless_peel_t1.mp3
+made map_bed_t1.mp3
+made r412_broadside_thump_t1.mp3
+made r412_gauss_charge_t1.mp3
+made r412_gauss_crack_t1.mp3
+made r412_gauss_rip_t1.mp3
+made r412_glass_shatter_t1.mp3
+made r412_chorus_sizzle_t1.mp3
+made r412_chorus_lash_t1.mp3
+made r409_navy_blackout_t1.mp3
+made r409_tether_snap_t1.mp3
+made r409_fracture_crackle_t1.mp3
+made r409_turret_spark_t1.mp3
+made r409_blowout_hiss_t1.mp3
+made r409_ion_crawl_t1.mp3
+made 26, failed 0, estimate 1587 credits, 0 of 27 steps not done
+ELEVENLABS GEN PASS

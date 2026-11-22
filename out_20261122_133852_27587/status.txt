@@ -1,0 +1,34 @@
+[Sun 11/22/2026 13:38:52.28] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-22T19:38:53Z
+found node: C:\Users\rcbai\Downloads\voidsworn_test\node\node.exe
+all tools found
+[Sun 11/22/2026 13:38:53.63] ready: GPU label 1585
+relay to: tools\pc\relay_push.bat opus1585pilot5 "C:\Users\rcbai\Downloads\voidsworn_test\opus1585pilot5\out_20261122_133852_27587" (voidsworn-relay branch pc-out-opus1585pilot5, folder out_20261122_133852_27587/), then dropcheckouts "C:\Users\rcbai\Downloads\voidsworn_test\opus1585pilot5\out_20261122_133852_27587"
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\jobs\opus_job_head.bat
+verified 9c056cde0b53aa51d9c6916fa1b53cfe73710c60a6a1c72a14ba043d158050f1 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\tmo.bat
+verified 0507cd51f6b03d19acb4f57e7dfe7304f338a7ab134a2b48a2571b06a461fc39 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+verified d63e797e8c26aa0ed478915a92e9eeedc67f50cd8fcc9a3f2f849fe36677fc35 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\jobs\opus_job_head.bat
+verified 7b39c46cdbfc22cfa371d6dd008b2d8b2f26ab01b4de882aacc5a094c80653be C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1 (tools_live version 1bf30b74c032)
+watchdog 9c056cde0b53aa51d9c6916fa1b53cfe73710c60a6a1c72a14ba043d158050f1 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\tmo.bat
+watchdog 0507cd51f6b03d19acb4f57e7dfe7304f338a7ab134a2b48a2571b06a461fc39 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new d169ee30e614a8e89b9b532b885e4a3e3f92ffd8 C:\Users\rcbai\Downloads\voidsworn_test\opus1585pilot5\out_20261122_133852_27587\new
+[Sun 11/22/2026 13:39:12.04] step new selftest start
+[Sun 11/22/2026 13:39:15.42] step new selftest ok
+[Sun 11/22/2026 13:39:15.44] step new dry start
+[Sun 11/22/2026 13:39:16.70] step new dry ok
+[Sun 11/22/2026 13:39:16.71] step new smoke start
+[Sun 11/22/2026 13:39:19.51] step new smoke ok
+[Sun 11/22/2026 13:39:19.53] step new pilot start
+[Sun 11/22/2026 13:40:00.35] step new pilot ok
+[Sun 11/22/2026 13:40:00.38] step new listen start
+[Sun 11/22/2026 13:40:02.54] step new listen ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Sun 11/22/2026 13:40:03.80
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1585pilot5\out_20261122_133852_27587 (results not relayed yet: relay/pc-out-opus1585pilot5:out_20261122_133852_27587: branch relay/pc-out-opus1585pilot5 (from relay_branch.txt) is not on origin at the shared mirror's commit)
+disk: checkouts freed 0.0 GB in all, C: 224.2 GB free
+checkouts: a hidden waiter clears them once the relay is on origin; log in the job folder, dropwait_*.txt
