@@ -27,5 +27,17 @@ if (a.some(x => x.includes('nem_scenarios.gd'))) fs.writeFileSync(a[at + 1], zli
   assert.deepEqual(snap(), before, 'a refused update changes no saved archive and not the manifest');
   r = spawnSync(process.execPath, [TOOL, 'check', '1', '1'], { env: { ...process.env, GODOT: fake, RUNNER_TEMP: tmp }, encoding: 'utf8' });
   assert.notEqual(r.status, 0, 'check passed a truncated run: ' + r.stdout);
-  console.log('PASS saved_campaign update: the shape self-test passes, and a truncated run fails check and update with every saved file unchanged');
+  // Artoo on 3ca8bd98: a Nemesis file cut to its first valid line is refused by update, every saved file unchanged
+  const nemFirst = path.join(tmp, 'godot_nem');
+  fs.writeFileSync(nemFirst, `#!${process.execPath}
+const fs = require('fs'), zlib = require('zlib'), a = process.argv.slice(2), at = a.indexOf('--');
+if (a.some(x => x.includes('parity_campaign.gd'))) fs.writeFileSync(require('path').join(a[at + 1], 'c1.jsonl'), zlib.brotliDecompressSync(fs.readFileSync(${JSON.stringify(path.join(SAVED, 'c1.jsonl.br'))})));
+if (a.some(x => x.includes('nem_scenarios.gd'))) fs.writeFileSync(a[at + 1], zlib.brotliDecompressSync(fs.readFileSync(${JSON.stringify(path.join(SAVED, 'nem.txt.br'))})).toString().split('\\n')[0] + '\\n');
+`);
+  fs.chmodSync(nemFirst, 0o755);
+  r = spawnSync(process.execPath, [TOOL, 'update', '1', '1'], { env: { ...process.env, GODOT: nemFirst, RUNNER_TEMP: tmp }, encoding: 'utf8' });
+  assert.notEqual(r.status, 0, 'update accepted a one-line Nemesis file: ' + r.stdout);
+  assert(/nem\.txt: the scenario lines differ from the saved list/.test(r.stdout), r.stdout);
+  assert.deepEqual(snap(), before, 'a refused Nemesis update changes no saved file');
+  console.log('PASS saved_campaign update: the shape self-test passes, and a truncated run or a one-line Nemesis file fails update with every saved file unchanged');
 } finally { fs.rmSync(tmp, { recursive: true, force: true }); }

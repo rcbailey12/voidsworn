@@ -2,6 +2,8 @@
 // reviewed results in the repo (godot/campaign/test/saved/), not against a fresh JS run.
 //   GODOT=... node godot/campaign/test/node/saved_campaign.js check  [first_seed last_seed]   (default 1 30)
 //   GODOT=... node godot/campaign/test/node/saved_campaign.js update [first_seed last_seed]   (after a reviewed change)
+//   SAVED_CAMPAIGN_NEW_NEMESIS=1 ... update    only when Nemesis scenarios were added or removed on purpose (else the saved
+//                                             scenario list must match line for line)
 // It plays the seeded bot runs (parity_campaign.gd) and the Nemesis scenarios (nem_scenarios.gd) in Godot and compares the
 // exact bytes with the saved copies. A changed run names its first changed step and field (compare_campaign.js), so a
 // pull request that changes campaign rules shows what moved; update rewrites the saved copies for that same pull request.
@@ -51,6 +53,7 @@ function problem(name, bytes) {
   }
   return null;
 }
+const nemTags = b => b.toString('utf8').replace(/\n$/, '').split('\n').map(l => l.split(' ')[0]);
 if (process.env.SAVED_CAMPAIGN_SELFTEST) {
   // node saved_campaign.js with SAVED_CAMPAIGN_SELFTEST=1: every saved archive passes; a truncated or reordered run fails.
   const m = JSON.parse(fs.readFileSync(path.join(HOME, 'results.json'), 'utf8'));
@@ -91,6 +94,13 @@ for (const name of items) {
   if (broken) { fail(`${name}: Godot wrote a broken result: ${broken} (see ${file})`); continue; }
   if (mode === 'update') {
     if (!g1.ok || !g2.ok) continue;
+    // Artoo on PR 1669 (3ca8bd98): a parseable subset must not replace the Nemesis baseline. The reviewed saved file is the
+    // expected list of scenario lines, in order; adding or removing scenarios on purpose needs SAVED_CAMPAIGN_NEW_NEMESIS=1.
+    if (name === 'nem.txt' && entry && !process.env.SAVED_CAMPAIGN_NEW_NEMESIS) {
+      const was = nemTags(zlib.brotliDecompressSync(fs.readFileSync(path.join(HOME, entry.archive)))), now = nemTags(bytes);
+      const k = Array.from({ length: Math.max(was.length, now.length) }, (_, j) => j).find(j => was[j] !== now[j]);
+      if (k !== undefined) { fail(`nem.txt: the scenario lines differ from the saved list at line ${k + 1} (saved ${was[k] || 'none'}, now ${now[k] || 'none'}; ${was.length} saved, ${now.length} now). Set SAVED_CAMPAIGN_NEW_NEMESIS=1 only when scenarios were added or removed on purpose.`); continue; }
+    }
     if (!entry || entry.sha256 !== sha(bytes)) { writes.push([path.join(HOME, name + '.br'), bytes]); changed++; }
     manifest.files[name] = { sha256: sha(bytes), bytes: bytes.length, archive: name + '.br' };
     continue;
