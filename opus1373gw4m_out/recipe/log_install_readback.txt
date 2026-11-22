@@ -1,0 +1,5 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-377a9e5597244d79a3253a349295c562\voidsworn-run-2af71fd25d6c4b04ac290256dbf07337\godot-profile-8f34e3322cc34986a682bd128954dd03
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+INSTALL READBACK PASS code=ithar_GW4 nodes=4
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-377a9e5597244d79a3253a349295c562\runner-step-81853c6e78bd4439a5a43601094c2713

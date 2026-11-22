@@ -1,0 +1,21 @@
+{
+ "faction": "ithar",
+ "floors": {
+  "normal": 0.47,
+  "albedo": 0.02,
+  "rough": 0.01
+ },
+ "opt_out": null,
+ "problem": null,
+ "measured": {
+  "normal": 4.957994768528789,
+  "albedo": 0.06953659225621543,
+  "rough": 0.12706426806098398,
+  "texels": 512870,
+  "from_uvs": true,
+  "covered_share": 0.29
+ },
+ "low": [],
+ "verdict": "PASS",
+ "line": "PASS detail check: normal relief 4.96 deg (floor 0.47), albedo contrast 0.070 (floor 0.020), roughness spread 0.127 (floor 0.010), 512870 texels"
+}

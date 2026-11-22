@@ -1,0 +1,6 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-377a9e5597244d79a3253a349295c562\voidsworn-run-0307745994394663ad3108e01f05c110\godot-profile-a97f6bcdc91c4b70b90b9d18ee1f8a52
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+DEATH_SEAM skipped: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4m\repo\godot\assets\ships\ithar_GW4\ithar_GW4.glb is a strike craft (cls Squadron): no seams, its death is a hidden spark (fx_death.gd _wing_death)
+DEATH_SEAM failures=0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-377a9e5597244d79a3253a349295c562\voidsworn-run-0307745994394663ad3108e01f05c110\godot-profile-a97f6bcdc91c4b70b90b9d18ee1f8a52

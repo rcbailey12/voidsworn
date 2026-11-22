@@ -1,0 +1,235 @@
+{
+ "ship": "ithar_GW4",
+ "code": "ithar_GW4",
+ "cell": "GW4",
+ "game_ship": "bomber",
+ "faction": "ithar",
+ "cls": "Squadron",
+ "band": "S",
+ "expected_breach": 0,
+ "unbaked": false,
+ "maps": 2048,
+ "triangles": 114328,
+ "turret_triangles": 0,
+ "turrets": [],
+ "door_triangles": 0,
+ "doors": [],
+ "surfaces": 6,
+ "destruction": {
+  "interior_materials": []
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "bombs",
+   "arc": "T",
+   "hard_points": [
+    "hp_w0_bombs_T_0",
+    "hp_w0_bombs_T_1"
+   ]
+  }
+ ],
+ "slots_without_hard_points": [],
+ "hardpoints": {
+  "gun": 2,
+  "engine": 1,
+  "bay": 0,
+  "breach": 0,
+  "core": 1,
+  "rcs": 0,
+  "board": 0
+ },
+ "length_world": 1.6,
+ "sheet": "ithar_GW4",
+ "points_from": "the build (r209_points)",
+ "authored_moved": {},
+ "hard_points": [
+  {
+   "name": "hp_w0_bombs_T_0",
+   "p": [
+    0.52268,
+    0.07318,
+    -0.13056
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "M",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 0,
+   "weapon": "bombs",
+   "radius": 0.041814761784502115,
+   "socket": "BT"
+  },
+  {
+   "name": "hp_w0_bombs_T_1",
+   "p": [
+    0.52268,
+    -0.07318,
+    -0.13056
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "M",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 0,
+   "weapon": "bombs",
+   "radius": 0.041814761784502115,
+   "socket": "BT"
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.44324,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.016725904713800848,
+   "engine": "Ec"
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "core"
+  }
+ ],
+ "manifest": {
+  "name": "The Heliograph Prism, the Glasswright bomber wing craft (The Glasswrights)",
+  "faction": "ithar",
+  "cls": "Squadron",
+  "band": "S",
+  "game_ship": "bomber",
+  "length_world": 1.6,
+  "hardpoints": {
+   "gun": 2,
+   "engine": 1,
+   "core": 1
+  },
+  "breaches": 0,
+  "turrets": 0,
+  "files": {
+   "ithar_GW4.glb": {
+    "bytes": 4519740,
+    "sha256": "9ce86aefa62b2d10e06a354c84653e50ad431ff87c822cf14b2ad0bc05745a2b"
+   },
+   "ithar_GW4_base.jpg": {
+    "bytes": 1171763,
+    "sha256": "f1415c46d623ec53f2b25a1423046163e403d6d6d7b8104ec080d8bec414dc54"
+   },
+   "ithar_GW4_emission.jpg": {
+    "bytes": 688719,
+    "sha256": "eaf507628f0a425f1880bd3fe5cbed68fd00a82b5d9193629315306428c19d90"
+   },
+   "ithar_GW4_normal.png": {
+    "bytes": 4400657,
+    "sha256": "09677d06db1a7e72f8f7293d81d4579cd9e6627570139b31a8412dd04a4e9f0b"
+   },
+   "ithar_GW4_orm.png": {
+    "bytes": 4659906,
+    "sha256": "6fea19d1094cf4911bbe68e49f4b6b0db2ccdf4aef07d17331b8a5a51f18f4fe"
+   },
+   "ithar_GW4_parts_base.jpg": {
+    "bytes": 233591,
+    "sha256": "d51f56a09ca648cd93b21680214fa7c334e3082d21a6a8fe4a33647803f91078"
+   },
+   "ithar_GW4_parts_normal.png": {
+    "bytes": 4096544,
+    "sha256": "199aa057482bebf7738cac5965763f5b754b116c3cf9dbbb2fcab102e4bf53f5"
+   },
+   "ithar_GW4_parts_orm.png": {
+    "bytes": 3484068,
+    "sha256": "5f356a6921c3283dece2417726d1d0393a878706dfaca107465773ff9db6b78d"
+   }
+  },
+  "pc_path": "godot/assets/ships/ithar_GW4/",
+  "wing_role": "bomber"
+ },
+ "files": {
+  "ithar_GW4.glb": {
+   "bytes": 4519740,
+   "sha256": "9ce86aefa62b2d10e06a354c84653e50ad431ff87c822cf14b2ad0bc05745a2b"
+  },
+  "ithar_GW4_base.jpg": {
+   "bytes": 1171763,
+   "sha256": "f1415c46d623ec53f2b25a1423046163e403d6d6d7b8104ec080d8bec414dc54"
+  },
+  "ithar_GW4_emission.jpg": {
+   "bytes": 688719,
+   "sha256": "eaf507628f0a425f1880bd3fe5cbed68fd00a82b5d9193629315306428c19d90"
+  },
+  "ithar_GW4_normal.png": {
+   "bytes": 4400657,
+   "sha256": "09677d06db1a7e72f8f7293d81d4579cd9e6627570139b31a8412dd04a4e9f0b"
+  },
+  "ithar_GW4_orm.png": {
+   "bytes": 4659906,
+   "sha256": "6fea19d1094cf4911bbe68e49f4b6b0db2ccdf4aef07d17331b8a5a51f18f4fe"
+  },
+  "ithar_GW4_parts_base.jpg": {
+   "bytes": 233591,
+   "sha256": "d51f56a09ca648cd93b21680214fa7c334e3082d21a6a8fe4a33647803f91078"
+  },
+  "ithar_GW4_parts_normal.png": {
+   "bytes": 4096544,
+   "sha256": "199aa057482bebf7738cac5965763f5b754b116c3cf9dbbb2fcab102e4bf53f5"
+  },
+  "ithar_GW4_parts_orm.png": {
+   "bytes": 3484068,
+   "sha256": "5f356a6921c3283dece2417726d1d0393a878706dfaca107465773ff9db6b78d"
+  }
+ },
+ "seconds": 13.2,
+ "not_written": [
+  "<CODE>_wreck.glb (the death pieces)",
+  "<CODE>_damage.glb and the skin_<n> hull patches (breach damage)",
+  "<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)"
+ ]
+}

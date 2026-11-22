@@ -1,0 +1,46 @@
+start ithar_GW4 ithar_GW4 board/pin-1373m Sat 11/21/2026 17:48:46.81 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)               -> codex/issue-1143
+ - [deleted]             (none)               -> opus/issue-1413-detail
+ - [deleted]             (none)               -> refs/pull/1215/merge
+ - [deleted]             (none)               -> refs/pull/1525/merge
+ * [new branch]          board/pc-out-1434n   -> board/pc-out-1434n
+ * [new branch]          board/pc-out-publish1413f-1121 -> board/pc-out-publish1413f-1121
+   d0a306f10..44fb5e247  main                 -> main
+ * [new branch]          opus/issue-1413-rows -> opus/issue-1413-rows
+ * [new ref]             refs/pull/1555/head  -> refs/pull/1555/head
+ * [new ref]             refs/pull/1555/merge -> refs/pull/1555/merge
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4m\repo
+commit=44987b5b4822e14d934802b0d5205fa72e184f8a
+the clone's tools\pc\tmo.bat hands off to C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+import exit 0 
+1_concept_in start 17:53:56.34 
+1_concept_in exit 0 at 17:53:58.63 
+2_shape_ref start 17:53:58.64 
+2_shape_ref exit 0 at 17:53:59.45 
+3_trace_hull start 17:53:59.46 
+3_trace_hull exit 0 at 17:55:13.81 
+4_parts_kit start 17:55:13.81 
+4_parts_kit exit 0 at 17:55:45.05 
+5_paint_bake start 17:55:45.06 
+5_paint_bake exit 0 at 18:05:35.29 
+6_lod start 18:05:35.29 
+6_lod exit 0 at 18:06:34.56 
+7_export start 18:06:34.56 
+7_export exit 0 at 18:07:14.50 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4m\repo\godot\assets\ships\ithar_GW4\ithar_GW4.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots stamped with C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\picture_provenance.py 
+shots exit 0 
+collected 150 files this run wrote; 0 older files from earlier runs
+import cache removed after the PASS (0.9 GB): C:\Users\rcbai\Downloads\voidsworn_test\opus1373gw4m\repo\godot\.godot; the clone stays for the publish
+disk: checkouts freed 0.9 GB in all, C: 204.0 GB free
+done PASS Sat 11/21/2026 18:07:31.28 
+all done 
+job scratch removed after PASS: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-377a9e5597244d79a3253a349295c562

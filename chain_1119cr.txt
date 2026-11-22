@@ -1,0 +1,9 @@
+chain CR waiting for the end of publish_1121j.txt Sat 11/21/2026 17:31:55.71 
+mirror fetch exit 0
+44987b5b4822e14d934802b0d5205fa72e184f8a reachable in the mirror
+1373M GV2 start 17:36:56.12 
+1373M GV2 exit 0 at 17:48:45.42 
+1373M GW4 start 17:48:45.42 
+1373M GW4 exit 0 at 18:07:31.70 
+after-job janitor ran 18:07:48.15 
+all done Sat 11/21/2026 18:07:48.15 

@@ -1,0 +1,6 @@
+GPU: waiting for shared claim, weight 2 (1373)
+GPU: acquired shared claim 8b868d0e-f509-4659-bfeb-fd7b7a2fd2cc
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GW4\GW4.blend"
+PASS detail check: normal relief 4.96 deg (floor 0.47), albedo contrast 0.070 (floor 0.020), roughness spread 0.127 (floor 0.010), 512870 texels
+GPU: released shared claim 8b868d0e-f509-4659-bfeb-fd7b7a2fd2cc
