@@ -119,51 +119,68 @@ No visual rule stays intact if it relies on human memory alone. Add these automa
 3. **Rock Scan Channel Gate:** Inspect every rock `.glb` in `godot/world/rocks/scans.json` and assert `COLOR_0.b` spans usable dynamic range (`>= 0.45`) and minimum triangle quality (preventing flat/low-poly outlier regressions like `scan_07` and crushed `COLOR_0.b`).
 4. **Zero-Purple & Starfield Budget Gate:** Assert zero indigo-to-purple entries in `world_sky.gd` (`PLANETS`, `PLANETS_ALT`) and `godot/fx/faction_looks.json` (`nebula`), and assert default `star_floor == 0.0` and grounded starfield thresholds in `world_sky.gd`.
 
-### 6.3 Audio Pack Gate (`contrib/opus/tools/sound/`)
+### 6.3 Audio Pack & Engine Gate (`contrib/opus/tools/sound/`, `#1752`)
 - Keep automated `elevenlabs_gen_selftest.js` + manifest lint checking: one shot per wired SFX clip, zero naval/ocean/pink-elephant words, zero em dashes, exact `today` baseline mapping against `godot/audio/cues.json`, and `FAC_WNAMES` roster coverage.
+- Gate 3 Godot wiring (`#1752`) uses Godot 4.7's native `AudioStreamSynchronized` / `AudioStreamInteractive` for beat-synced, bar-locked 4-stem adaptive battle music plus a dynamic `AudioEffectLowPassFilter` on `battle_sfx` during slow-motion death beats, tactical pause, and extreme zoom-out.
 
 ---
 
-## 7. Law 6: AAA Ship Exterior Lighting, Per-Faction Micro-Detail & PBR Standard (#1777 Godot + #1778 Blender)
+## 7. Law 6: AAA Ship Exterior Lighting, Per-Faction Micro-Detail, PBR & Godot 4.7 Engine Standard (#1777, #1778, #1779, #1780)
 
-Visual and code audits of live in-game ship renders (`S9`, `S10`, `S8`, `H10`, `A16`, `C11`, `C14`, `E12`) vs accepted concepts proved that even newly built hulls read slightly clay-ish or miniature-like due to global Godot lighting defaults and mid-roughness/mid-metallic PBR values (`metal = 0.48`, `VS_FLEET_LIGHTING` off by default, `ao_light_affect = 0.0`, `shadow_normal_bias = 2.0`, `LookRim spec = 8.0`, zero tiling micro-detail normal/roughness layer, missing scale cues, and lossy `.jpg` normals on legacy hulls).
+Visual and code audits of live in-game ship renders (`S9`, `S10`, `S8`, `H10`, `A16`, `C11`, `C14`, `E12`) vs accepted concepts proved that even newly built hulls read slightly clay-ish or miniature-like due to global Godot lighting defaults and mid-roughness/mid-metallic PBR values (`metal = 0.48`, `VS_FLEET_LIGHTING` off by default, `ao_light_affect = 0.0`, `shadow_normal_bias = 2.0`, `LookRim spec = 8.0`, zero tiling micro-detail normal/roughness layer, zero advanced PBR channels, hardcoded `600.0` shadow cascades, `COMPRESS_S3TC` normal compression bug in `build_assets.gd:159`, missing scale cues, and lossy `.jpg` normals on legacy hulls).
 
-### 7.1 Global Godot Ship Look & Per-Faction Micro-Detail Layer (#1777, Lifts All 45 Ships Instantly)
+### 7.1 Global Godot Ship Look, Advanced PBR Channels & Micro-Detail Layer (#1777, Lifts All 45 Ships Instantly)
 1. **Default-On Multi-Lobe Space PBR Reflection IBL & `ao_light_affect`:** Graduate `#1679` ON by default in `godot/render/look.gd` and `godot/world/world.gd` with warm sun specular + cool nebula/planet bounce lobes + deep dark-space troughs, plus per-faction `ao_light_affect` so baked AO darkens sunlit seams and recesses.
-2. **Crisp Contact Shadows & Cinematic Contrast:** Reduce `key.shadow_normal_bias` from `2.0` down to a calibrated crisp contact-shadow range (`~0.15 to 0.35`), lower flat diffuse `ambient_light_energy` (`0.50` -> `~0.16 to 0.22`) so shadow sides deepen while IBL preserves silhouette readability, and tame `LookRim` `spec: 8.0` plastic glare streaks across beveled decks.
-3. **Alive HDR Ship Emissives:** Push hot ship focal accents (Sunward ember spires, engine bells, core slits, Directorate bays, Eclipse corona rims) cleanly above bloom threshold (`0.8`) so vents glow warmly rather than reading as flat orange/blue paint stickers.
-4. **Faction-by-Faction Tiling Micro-Detail Normal + Roughness Layer (`godot/assets/ships/detail/`):** Inject six dedicated tileable micro-detail normal/roughness maps (mip-faded to prevent camera-170 shimmer) so every faction has unmistakable close-up surface tactility without rebaking:
+2. **Crisp Contact Shadows & Zoom-Tracked Cascades (`look.gd:167`, `battle.gd:350,360`):** Reduce `key.shadow_normal_bias` from `2.0` down to a calibrated crisp contact-shadow range (`~0.15 to 0.35`), replace hardcoded `directional_shadow_max_distance = 600.0` with zoom-tracked `clampf(cam_r * 1.8, 120.0, 420.0)` and tighter near-split ratios (~3x sharper hull shadows for free), lower flat diffuse `ambient_light_energy` (`0.50` -> `~0.16 to 0.22`), and tame `LookRim` `spec: 8.0` plastic glare streaks across beveled decks.
+3. **True BC5 / RGTC Ship Normal Compression (`godot/render/build_assets.gd:158-159`):** Fix the silent normal-map compression mismatch where line 156 asks for BC5/RGTC while line 159 passes `Image.COMPRESS_S3TC` (BC3 5-6-5 swizzled); switch to true `Image.COMPRESS_RGTC` (dual-8-bit normal precision) for cleaner specular highlights at identical VRAM size.
+4. **Alive HDR Ship Emissives:** Push hot ship focal accents (Sunward ember spires, engine bells, core slits, Directorate bays, Eclipse corona rims) cleanly above bloom threshold (`0.8`) so vents glow warmly rather than reading as flat orange/blue paint stickers.
+5. **Per-Faction Native Godot 4.7 PBR Channels (`BaseMaterial3D`) & Tiling Micro-Detail Maps (`godot/assets/ships/detail/`):** Inject six dedicated tileable micro-detail normal/roughness maps (mip-faded to prevent camera-170 shimmer) paired with native Godot 4.7 physical surface channels tailored per faction:
 
-| Faction | Godot Tiling Micro-Detail Normal + Roughness (#1777) | Blender Exterior PBR Separation & Scale Cues (#1778) |
+| Faction | Godot Native PBR + Tiling Micro-Detail (#1777) | Blender Exterior PBR Separation & Scale Cues (#1778) |
 | :--- | :--- | :--- |
-| **Sunward Crusade (`voidsworn`)** | Rolled/forged dark cast-iron micro-grain + subtle furnace carbon mottling + fine weld seam pitting | Raw forged dark iron (`metal 0.80..0.92`, varied `rough 0.25..0.50`) vs deep matte furnace soot crevices (`metal 0.0`, `rough 0.88`), brass fittings (`metal 0.92`), recessed hot ember spires + micro-porthole strips and stenciled markings |
-| **Meridian Directorate (`hegemony`)** | Tight directional brushed aerospace alloy + crisp micro-machined panel fastener grit | Satin coated clinical navy-slate (`metal 0.10..0.20`, `rough 0.36..0.52`) contrasting sharply with bare chipped/machined titanium edge wear (`metal 0.90`, `rough 0.20`), deep recessed armor seams, crisp fleet stripes & viewport rows |
+| **Sunward Crusade (`voidsworn`)** | `anisotropy_enabled` rolled forged-iron highlight + rolled cast-iron micro-grain, weld seam pitting & carbon mottling | Raw forged dark iron (`metal 0.80..0.92`, varied `rough 0.25..0.50`) vs deep matte furnace soot crevices (`metal 0.0`, `rough 0.88`), brass fittings (`metal 0.92`), recessed hot ember spires + micro-porthole strips and stenciled markings |
+| **Meridian Directorate (`hegemony`)** | `anisotropy_enabled` brushed titanium highlight + tight directional brushed aerospace alloy & micro-machined fastener grit | Satin coated clinical navy-slate (`metal 0.10..0.20`, `rough 0.36..0.52`) contrasting sharply with bare chipped/machined titanium edge wear (`metal 0.90`, `rough 0.20`), deep recessed armor seams, crisp fleet stripes & viewport rows |
 | **Ashfall Hullbreakers (`corsair`)** | Coarse hammered/pitted salvage iron + rough oxidized rust crust & oil-streak micro-roughness breakup | Dark oil-streaked raw salvage iron base (`metal 0.72..0.88`) with localized weathered rust-red plates and matte rust crusts (`metal 0.0`, `rough 0.85..0.95`; pull back from uniform bright red plastic on `A16`), vent grates, weld scars & stencils |
-| **The Chorus (`chorus`)** | Directional keratin/chitin striations + wet organic micro-pores & dermal wrinkles (zero metal) | High-relief multi-scale keratin/scute grooves, porous bone ridges, wet mucosa crevice sheen (`rough 0.16..0.28`) vs dry chalky horn lips (`rough 0.58..0.74`, `metal 0.0`), eliminating smooth wax/play-doh close-ups (`C11`, `C14`) |
-| **The Glasswrights (`ithar`)** | Fine annealed crystal micro-facets + delicate optical edge micro-refraction grain (zero metal, zero grime) | Deep refractive/reflective smoked seafoam & amber annealed glass (dark glassy internal depth + sharp Fresnel grazing mirror reflections + fine etched prism rings, replacing blinding white origami A4 hulls via `#1682` / `#1146`) |
-| **Eclipse (`deathless`)** | Smooth-yet-etched obsidian-slate micro-fracture grain + hairline geometric veining | Deep satin obsidian-violet composite plates (`metal 0.15..0.35`, `rough 0.22..0.42`) contrasted with mirror-dark metallic bus channels (`metal 0.88`), fine monolith geometric seams, and crisp all-violet corona rims (`#1422`) |
+| **The Chorus (`chorus`)** | `subsurf_scatter_enabled` + `backlight_enabled` (translucent warm rim glow through thin chitin/membranes/veils) + wet `clearcoat_enabled` + keratin striations & wet organic micro-pores (zero metal) | High-relief multi-scale keratin/scute grooves, porous bone ridges, wet mucosa crevice sheen (`rough 0.16..0.28`) vs dry chalky horn lips (`rough 0.58..0.74`, `metal 0.0`), eliminating smooth wax/play-doh close-ups (`C11`, `C14`) |
+| **The Glasswrights (`ithar`)** | `refraction_enabled` + crystal `clearcoat_enabled` (bending background starlight and weapon beams through glass) + fine annealed crystal micro-facets & optical edge grain (zero metal, zero grime) | Deep refractive/reflective smoked seafoam & amber annealed glass (dark glassy internal depth + sharp Fresnel grazing mirror reflections + fine etched prism rings, replacing blinding white origami A4 hulls via `#1682` / `#1146`) |
+| **Eclipse (`deathless`)** | Subtle obsidian `clearcoat_enabled` + smooth-yet-etched obsidian-slate micro-fracture grain & hairline geometric veining | Deep satin obsidian-violet composite plates (`metal 0.15..0.35`, `rough 0.22..0.42`) contrasted with mirror-dark metallic bus channels (`metal 0.88`), fine monolith geometric seams, and crisp all-violet corona rims (`#1422`) |
 
 ### 7.2 Blender Exterior PBR, Scale-Cue & Lossless-Normal Pipeline (#1778)
 - Pair directly with `#1680` (4K capital map sizing) and PR `#1763` (`#1743` Interior Kit V2) so every active and upcoming rebake (`#1681`, `#1682`, `#1684`, `#1422`, `#1412`, `#1291`, `#1153`, `#1155`) automatically exits the `metal = 0.48` clay dead zone, gains faction-matched massive-scale cues, and exports strictly lossless `.png` / BC5 normal and ORM maps.
+
+### 7.3 Godot 4.7 Cinematic Post-FX & Lens Look (#1779)
+1. **Per-Region Battle Color-Grading 3D LUT (`env.adjustment_enabled`, `adjustment_color_correction`):** Bring subtle filmic 3D LUT grading (currently only on campaign map `map3d.gd:136`) into battles so ships, FX, planets, and sky share one cohesive cinematic tone curve without tinting UI.
+2. **Kill-Cam & Close-Up `CameraAttributesPractical`:** Keep Depth-of-Field strictly OFF during tactical play (`c170`); smoothly engage subtle far-background bokeh during close-up kill-cams, flagship podium previews, and close hull inspection.
+3. **Selective RTX 5080 `Max` SSR & `CompositorEffect` Benchmark:** Benchmark half-res `env.ssr_enabled` on crystal, obsidian, and wet hulls under live weapon fire, and prototype a lightweight Godot 4.7 RD `CompositorEffect` for subtle capital-death shockwave distortion and Dead Star gravitational lensing polish.
+4. **Forward+ Clustered `Decal`s:** Use hardware-accelerated Forward+ `Decal`s for non-cutout scorch and plasma burn marks on `station_T2` and asteroids (keeping Compatibility safe-mode fallback intact).
+
+### 7.4 Godot 4.7 Performance, VRAM & Stutter Optimization (#1780)
+1. **Eliminate 48 Runtime `Shader.new()` Compiles Across 17 Live Scripts:** Move hot inline string shaders (`world.gd`, `world_planet.gd`, `world_rocks.gd`, `world_living.gd`, `board.gd`, `fx_death.gd`, `fx_hull.gd`, `battle.gd`, `line_style.gd`, `squadron_wing.gd`, `squadron_craft.gd`, `map3d.gd`) to preloaded `.gdshader` files (or cached static `Shader` singletons) so Godot 4.7's Vulkan binary PSO disk cache eliminates first-battle load stalls and mid-battle first-death stutters (`#1439`, `#1542`).
+2. **BC7 World VRAM Compression (`godot/world/world_bake.gd:45-48`):** GPU-compress baked sky/planet color maps and `R01` albedo maps to BC7 (`COMPRESS_BPTC`), cutting world VRAM by 60 to 75 percent (from >1 GB raw RGBA8) while keeping height/relief and 16-bit `#1502` sky gradients high-precision (`RGBAH` / BC6H).
+3. **AMD FSR 2.2 (`Viewport.SCALING_3D_MODE_FSR2`) vs 4x MSAA (`battle.gd:393-399`):** Add FSR 2.2 (Native AA at `1.0` scale and 4K Quality at `0.75..0.85`) benchmarked side-by-side against 4x MSAA to kill metallic specular and thin-line shimmer while freeing major 4K GPU headroom.
+4. **Empty Volumetric Fog Gate & Prop Distance Culling (`world_living.gd:55`, `world_rocks.gd`, `backdrop.gd`):** Enable `env.volumetric_fog_enabled` ONLY on boards containing actual `FogVolume` terrain (avoiding wasted `128x128` froxel raymarches on clear space maps); tune `visibility_range` fade and `Viewport.mesh_lod_threshold` on dense asteroid fields.
 
 ---
 
 ## 8. Global Execution Sequence (Zero Overlap, Maximum Cohesion)
 
 1. **Gate 0 (Immediate Merges & Guardrails):**
-   - Land this master standard PR (`opus/issue-1774`), merge PR `#1753` (confirming `main` holds the 72-item sound pack) -> launch Audio Wave A (`--max-credits 1200`).
+   - `main` now holds PR `#1775` (R420 / `RULEBOOK 3.14`) and PR `#1753` (verified 72-item / 138-file Audio V2 manifest, ready for Audio Wave A `--max-credits 1200`).
    - Land `#1724`'s `export7.py` map-size fix, then apply Law 2 + Section 6.1 automated gates to **PR `#1763`** (`#1743` Interior Kit V2) and verify on one unified 6-faction lineup cutaway sheet before merging.
 2. **Wave A (Parallel, Zero File Overlap):**
-   - **`#1777` (Godot AAA Ship Exteriors: Space PBR IBL, crisp contact shadows, 6-faction micro-detail normal/roughness maps, HDR emissive bloom):** lifts all 45 installed ships immediately.
+   - **`#1777` (Godot AAA Ship Exteriors: Space PBR IBL, crisp zoom-tracked shadows, BC5 normal fix, native per-faction PBR channels, 6-faction micro-detail normal/roughness maps, HDR emissive bloom):** lifts all 45 installed ships immediately.
    - **`#1741` (Wounds V2 Layers 1+2, `VS_WOUNDS_V2=1`):** calibrated jointly with `#1777`'s lighting and PR `#1763`'s moody interior values (`<= 0.10` linear walls) so breach-mouth cavity lights look dramatic, never washed out.
    - **`#1765` (Planets V2, coordinated with `#1463`)**
    - **`#1361` (Asteroids & Crystals V2)**
    - **`#1767` (Stations & 6-Faction Hulks V2)**
-3. **Wave B (Coordinated Sky, Blender PBR & Audio Follow-Up):**
+3. **Wave B (Coordinated Sky, Blender PBR, Performance & Audio Follow-Up):**
+   - **`#1780` (Godot 4.7 Performance, VRAM & Stutter Optimization: `.gdshader` PSO cache, BC7 world VRAM, FSR 2.2 vs MSAA benchmark, empty volumetric fog gate):** frees GPU headroom and kills shader stutters before heavy post-FX.
    - **`#1778` (Blender Faction-by-Faction Exterior PBR, Scale Cues & Lossless Normal/ORM Gate):** lands right before active rebakes (`#1681`, `#1682`, `#1684`, `#1422`, `#1412`, `#1291`) so every rebake ships at full AAA fidelity.
    - **`#1766` (Grounded Cinematic Space Sky & Dead Star Seam)** sequenced cleanly with **`#1502` (16-bit sky bake)** and **`#1328` / `#1360`** (volumetric clouds & storm bolts).
-   - **Audio Wave B** (after Ryan ear-checks Wave A listening page).
-4. **Wave C (Unified Final Polish):**
+   - **Audio Wave B** (after Ryan ear-checks Wave A listening page) -> **Gate 3** using native `AudioStreamSynchronized` / `AudioStreamInteractive` + dynamic `AudioEffectLowPassFilter`.
+4. **Wave C (Cinematic Post-FX & Unified Final Polish):**
+   - **`#1779` (Godot 4.7 Cinematic Post-FX: per-region battle 3D LUT, kill-cam `CameraAttributesPractical` DoF, selective SSR & `CompositorEffect` benchmark, Forward+ `Decal`s):** final visual glue over finished lighting, skies, and hulls.
    - **`#1362` (Graveyard debris scraps from faction ship kits)** aligned with R416 (`#1741` + `#1743`) and `#1778` PBR standards so combat wreckage and terrain graveyards share one visual language.
-   - Full `independent-audit` (RULEBOOK 3.13) + solo RTX 5080 frame-time check + full 6-faction / multi-biome PC capture pass for Ryan's final visual sign-off.
+   - Full `independent-audit` (RULEBOOK 3.13) + solo RTX 5080 frame-time/VRAM check + full 6-faction / multi-biome PC capture pass for Ryan's final visual sign-off.
+
 
