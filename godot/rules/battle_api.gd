@@ -252,6 +252,7 @@ func _i_view() -> Dictionary:
 			ws.append({"i": i, "id": w["id"], "name": w.get("n"), "kind": w["k"], "arc": w["arc"], "range": w["r"], "ready": R.weaponReady(w), "cd": w.get("cdLeft"), "off": w.get("off")})   # get(): B-20 refits lack them
 		us.append({"id": u["id"], "side": u["side"], "tpl": u["tpl"], "name": u["name"], "cls": u.get("cls"), "fac": u["fac"], "size": u["size"], "squadron": R.jt(u.get("isSq")),
 			"q": int(u["q"]), "r": int(u["r"]), "facing": int(u["facing"]), "hp": u["hp"], "maxHp": u["maxHp"], "sh": u["sh"].duplicate(), "shMax": u["shMax"], "shp": u.get("shp"),
+			"route": u["route"].duplicate() if u.get("route") is Array else [0, 0, 0, 0], "cov": u["cov"].duplicate() if u.get("cov") is Array else null,   # issue 1446: R246 shield routing for the HUD and the bubble
 			"regenLock": R.jt(u.get("regenLock")),
 			"sec": u.get("sec").duplicate(true) if u.get("sec") != null else null, "crew": u.get("crew"), "crewMax": u.get("crewMax"), "dead": R.jt(u.get("dead")), "fled": R.jt(u.get("fled")),
 			"activated": R.jt(u.get("activated")), "active": B.get("activeUnit") != null and is_same(B["activeUnit"], u), "braced": R.jt(u.get("braced")), "mp": u["mp"], "turnsLeft": u["turnsLeft"],
@@ -777,6 +778,28 @@ func arrival_previews() -> Array:
 			out.append({"id": "arrival_warm_0", "side": side, "tpl": tpl, "fac": t["fac"] if R.jt(t.get("fac")) else fac,
 				"cls": t.get("cls"), "size": t.get("size", 1.0), "facing": 0 if side == "player" else 3, "squadron": false,
 				"flagship": false, "hp": t.get("hp", 1), "maxHp": t.get("hp", 1)})
+	_leave(false)
+	return out
+
+# Issue 1446: where the next reinforcements will come in, while the warning is up (from the warning round until they
+# arrive). The rules pick the arrival hex when the wave lands (edgeHex: the free edge hex on that side's own approach), so
+# this asks the same question now and returns that hex and the clear board hexes within 2 of it: a strip on the edge.
+# Read only: no dice, no state change. {} when no wave is coming; else {side, round (when they land), hexes: [{q, r}]}.
+func arrival_strip() -> Dictionary:
+	_enter()
+	var out := {}
+	var B = R.B
+	var e = B.get("event") if B is Dictionary else null
+	if e is Dictionary and e.get("k") in ["reinf_enemy", "reinf_ally"] and not R.jt(e.get("done")) and not R.jt(B.get("over")) \
+			and int(B["round"]) >= int(R.z0(e.get("warnR"))) and int(B["round"]) < int(R.z0(e.get("r"))):
+		var side := "enemy" if e["k"] == "reinf_enemy" else "player"
+		var h = R.edgeHex(side)
+		if h != null:
+			var hexes: Array = []
+			for c in R.boardHexes():
+				if R.hdist(c, h) <= 2 and not R.blocks(R.terr(c.q, c.r)):
+					hexes.append({"q": int(c.q), "r": int(c.r)})
+			out = {"side": side, "round": int(e["r"]), "hexes": hexes}
 	_leave(false)
 	return out
 

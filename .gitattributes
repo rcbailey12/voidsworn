@@ -10,3 +10,9 @@
 *.patch text eol=lf
 *.bat text eol=crlf
 *.cmd text eol=crlf
+*.glb binary
+*.png binary
+*.jpg binary
+*.webp binary
+*.ogg binary
+*.wav binary

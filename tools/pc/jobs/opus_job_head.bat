@@ -79,8 +79,9 @@ rem Issue 1535: where the Board relays this attempt, written by the head before 
 rem receipt by hand. dropcheckouts proves the relay itself: origin's branch must hold every out_* file's exact bytes at
 rem <attempt folder name>/ (git ls-remote, then the tree).
 for %%L in ("%OJ_OUT%") do set "OJ_LEAF=%%~nxL"
-> "%OJ_OUT%\relay_branch.txt" echo board/pc-out-%OJ_JOB% %OJ_LEAF%
->> "%OJ_ST%" echo relay to: board/pc-out-%OJ_JOB% with this attempt folder at %OJ_LEAF%/ in its tree, then dropcheckouts "%OJ_OUT%"
+rem Issue 1657: results go to the private relay repo (voidsworn-relay, branch pc-out-<job>) by tools\pc\relay_push.bat.
+> "%OJ_OUT%\relay_branch.txt" echo relay/pc-out-%OJ_JOB% %OJ_LEAF%
+>> "%OJ_ST%" echo relay to: tools\pc\relay_push.bat %OJ_JOB% "%OJ_OUT%" (voidsworn-relay branch pc-out-%OJ_JOB%, folder %OJ_LEAF%/), then dropcheckouts "%OJ_OUT%"
 >> "%OJ_ST%" echo head %~f0
 if "%OJ_PRE%"=="1" >> "%OJ_ST%" echo head: OPUS_JOB_HEAD_PREMERGE=1, running a pre-merge copy (smoke only); job_wrap from tools_live
 powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" bundle "%OJ_HERE%." "%JW_TOOLS%" "%JW_HASHES%" %OJ_PRE% >> "%OJ_ST%" 2>&1
@@ -165,8 +166,8 @@ call "%JW%" fail "Ryan's real options changed during the job"
 :oj_tail_end
 rem The job's own pinned checkouts are rebuildable from their pins (RULEBOOK 3.3, R326) and run to 22 GB each. They go
 rem once the attempt passed and its results are relayed (issue 1497, Artoo on PR 1498): the Board runs
-rem "opus_job_head.ps1 dropcheckouts <attempt>" right after the relay, and every tail does the same for this job's earlier
-rem attempts. Any small file the job left in a checkout is saved first into out_<name>\checkout_leftovers. Here the
+rem "opus_job_head.ps1 dropcheckouts <attempt>" right after the relay (this attempt only; earlier attempts go through
+rem their own waiter or the janitor, review of PR 1644). Any small file the job left in a checkout is saved first into out_<name>\checkout_leftovers. Here the
 rem result is not relayed yet, so this attempt's checkouts stay and the log says so. A failed attempt is never touched
 rem here. OJ_KEEP_CHECKOUTS=1 skips the step (logged).
 rem It runs after job_wrap end has written the done line, so a slow or stuck step can never delay or lose the result.
@@ -175,4 +176,16 @@ if "%OJ_KEEP_CHECKOUTS%"=="1" (>> "%OJ_ST%" echo checkouts kept: OJ_KEEP_CHECKOU
 call "%JW%" end
 set "OJ_RC=%ERRORLEVEL%"
 if defined OJ_DROP powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1
+rem Issue 1396 (Board, Nov 22; review of PR 1644): the relay lands after this tail, so a hidden waiter (dropwait) asks
+rem origin for the relay branch every 5 minutes for up to 12 hours, then takes the job lease and issue lock, runs the
+rem janitor's checks and the same proof and drop for this attempt only. The attempt goes in OJ_DROPWAIT_ATTEMPT, not on
+rem the command line, so no process check ever reads the waiter as a user of the job folder. Its log is
+rem <job>\dropwait_<attempt>.txt. A launch that fails is logged as such; the job's own result and exit code stand.
+rem OJ_NO_DROPWAIT=1 skips the waiter (tests).
+set "OJ_WAIT="
+if defined OJ_DROP if not "%OJ_NO_DROPWAIT%"=="1" set "OJ_WAIT=1"
+set "OJ_DROPWAIT_ATTEMPT=%OJ_OUT%"
+set "OJ_DROPWAIT_LOG=1"
+if defined OJ_WAIT powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; Start-Process -WindowStyle Hidden -FilePath powershell.exe -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -File \"{0}\" dropwait' -f $env:OJ_PS)" > nul 2>&1
+if defined OJ_WAIT if errorlevel 1 (>> "%OJ_ST%" echo checkouts: the relay waiter could not be started; the janitor's relay sweep clears them later) else (>> "%OJ_ST%" echo checkouts: a hidden waiter clears them once the relay is on origin; log in the job folder, dropwait_*.txt)
 exit /b %OJ_RC%

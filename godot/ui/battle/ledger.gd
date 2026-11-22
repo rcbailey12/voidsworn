@@ -462,21 +462,39 @@ func _ship_block(r: Rect2, compact: bool) -> void:
 	if not compact:
 		_hit(shape, "", null, detail_bb)
 	var yy := y + px(95 if compact else 54)
-	_integrity(bars_x, yy, bars_w, "Shield", float(ship.get("shp", 0)), float(ship.get("shMax", 0)), true)
+	_integrity(bars_x, yy, bars_w, "Shield", float(ship.get("shp", 0)), float(ship.get("shMax", 0)), true, _routed_tag(ship.get("routed", [])))
 	_integrity(bars_x, yy + px(43), bars_w, "Hull", hp, mx, false)
 	_hit(Rect2(bars_x, yy, bars_w, px(82)), "", null, detail_bb)
+
+
+# issue 1446: "stbd routed" for the KEEL shield readout (quad order prow, starboard, rear, port)
+static func _routed_tag(sides) -> String:
+	if not (sides is Array) or (sides as Array).is_empty():
+		return ""
+	var words := ["fore", "stbd", "aft", "port"]   # short, so the tag fits beside the numbers (the ship tip spells them out)
+	var names := PackedStringArray()
+	for q in sides:
+		names.append(words[int(q)])
+	return "/".join(names) + " routed"
 
 
 static func _ratio(value: float, cap: float) -> float:
 	return clampf(value / cap, 0, 1) if cap > 0 else 0.0
 
 
-func _integrity(x: float, y: float, w: float, label: String, value: float, cap: float, shield: bool) -> void:
+func _integrity(x: float, y: float, w: float, label: String, value: float, cap: float, shield: bool, tag := "") -> void:
 	var col := GLACIER if shield else (DMG if value < cap - 0.5 else TEXT)
 	_glyph("shield" if shield else "hull", Vector2(x, y), 20, col)
-	_text(x + px(27), y, label, f_med, 17, TEXT2)
+	var lw := _text(x + px(27), y, label, f_med, 17, TEXT2)
 	var numbers := "%s / %s" % [Campaign.hull_text(value), Campaign.hull_text(cap)] if cap > 0 else "None"
 	_right(x + w, y, numbers, f_num, 17, col, "shield" if shield else "figure")
+	if tag != "":
+		# issue 1446 (R246): the routed side, in the shield colour, between the label and the numbers
+		var room := w - px(27) - lw - px(8) - _width(numbers, f_num, 17) - px(8)
+		var shown := _trim(tag, f_med, 15, room)
+		if room > px(24) and shown != "":
+			var tx := x + px(27) + lw + px(8)
+			_text(tx, y + px(2), shown, f_med, 15, GLACIER, "shield")
 	_bar(Rect2(x, y + px(24), w, px(9)), _ratio(value, cap), GLACIER if shield else TEXT, GS.SHIELD_TRACK if shield else Color(DMG, 0.25))
 
 
@@ -635,9 +653,12 @@ func _target_tip() -> String:
 		var sh: Array = target.get("sh", [0, 0, 0, 0])
 		var parts := PackedStringArray()
 		var words := ["prow", "starboard", "rear", "port"]
+		var routed: Array = target.get("routed", [])
 		for i in mini(sh.size(), 4):
-			parts.append("%s %d" % [words[i], int(sh[i])])
+			parts.append("%s %d%s" % [words[i], int(sh[i]), " (routed)" if i in routed else ""])
 		s += "\nShield pool %d of %d. Sides catch: %s." % [int(target.get("shp", 0)), int(target.shMax), ", ".join(parts)]
+		if bool(target.get("struck_routed", false)):
+			s += "\nThis volley hits its %s side, where it routed power: that side catches more, but each hit drains the pool 30%% faster." % words[int(target.get("quad", 0))]
 	if str(target.get("line", "")) != "":
 		s += "\n" + plain(str(target.line))
 	return s
