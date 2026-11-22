@@ -17,18 +17,38 @@ function args(argv) {
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-function todayParts(repo, cueName) {
+// An item's optional "today" field names the baseline exactly: "cue" or "cue:variant" (null = no clip today). It wins
+// over reading the free-text "cue" label, which missed "(ithar variant: ...)" labels (Artoo on PR 1753, finding 1).
+function todayParts(repo, cueName, today) {
   const cues = JSON.parse(fs.readFileSync(path.join(repo, 'godot/audio/cues.json'), 'utf8'));
   const index = JSON.parse(fs.readFileSync(path.join(repo, 'godot/audio/clips/index.json'), 'utf8'));
-  const base = String(cueName || '').split(' ')[0];
-  const variant = (String(cueName).match(/\((\w+) variant\)/) || [])[1];
+  if (today === null) return [];
+  const exact = typeof today === 'string' ? today.split(':') : null;
+  const base = exact ? exact[0] : String(cueName || '').split(' ')[0];
+  const variant = exact ? exact[1] : (String(cueName).match(/\((\w+) variant[):]/) || [])[1];
   const c = cues[base];
   if (!c) return [];
-  const out = [];
-  const layers = variant && c.variants && c.variants[variant] ? [...(c.variants[variant].layers || []), ...c.layers] : c.layers;
-  for (const l of layers || []) { const f = (index[l.s] || [])[0]; if (f) out.push({ file: path.join(repo, 'godot/audio/clips', f), label: l.s }); }
-  for (const f of (c.synth || []).slice(0, 1)) out.push({ file: path.join(repo, 'godot/audio/synth', f), label: 'synth ' + f });
-  return out.filter(x => fs.existsSync(x.file)).slice(0, 4);
+  // Mirrors sfx.gd _layers(): sampled layers whose clip exists, plus the synth take when nothing sampled played (or a
+  // "syn" layer asks for it); a variant marked "replace" with anything playable is the whole sound, otherwise it adds
+  // to the base (Artoo on PR 1761: the page showed base steel under replace variants).
+  const parts = (cue, synthName) => {
+    const out = []; let sampled = false, syn = false;
+    for (const l of cue.layers || []) {
+      if (l.s) { const f = (index[l.s] || [])[0]; const file = f && path.join(repo, 'godot/audio/clips', f);
+        if (file && fs.existsSync(file)) { out.push({ file, label: l.s }); sampled = true; } }
+      else if (l.syn) syn = true;
+    }
+    if (!sampled || syn) for (const f of (cue.synth || []).slice(0, 1)) {
+      const file = path.join(repo, 'godot/audio/synth', f);
+      if (fs.existsSync(file)) out.push({ file, label: 'synth ' + f + (synthName ? ' (' + synthName + ')' : '') });
+    }
+    return out;
+  };
+  const baseParts = parts(c, '');
+  const vd = variant && c.variants && c.variants[variant];
+  if (!vd) return baseParts.slice(0, 4);
+  const vParts = parts({ layers: vd.layers || [], synth: vd.synth || c.synth || [] }, variant);
+  return (vd.replace && vParts.length ? vParts : [...vParts, ...baseParts]).slice(0, 4);
 }
 
 function main() {
@@ -43,7 +63,7 @@ function main() {
   const player = (src, label) => `<figure><audio controls preload="none" src="${esc(src)}"></audio><figcaption>${esc(label)}</figcaption></figure>`;
   let rows = '', missing = 0, charged = 0, estimated = 0;
   for (const it of list.items) {
-    const today = it.kind === 'music' ? [] : todayParts(a.repo, it.cue);
+    const today = it.kind === 'music' ? [] : todayParts(a.repo, it.cue, it.today);
     const todayHtml = today.length ? today.map((p, i) => player(copy(p.file, `${it.id}_today${i}${path.extname(p.file)}`), p.label)).join('')
       : `<p class="none">${it.kind === 'music' ? 'today: the current OpenGameArt tracks' : 'no clip today'}</p>`;
     let freeHtml = '<p class="none">not pulled yet</p>';
