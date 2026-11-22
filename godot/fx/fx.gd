@@ -167,7 +167,7 @@ var defer_initial_cuts := false
 var passive := false
 # issue 1434: with defer_initial_cuts, add_ship leaves each shield for prepare_battle_hulls (battle.gd sets it for its load)
 var defer_shields := false
-var warmup_batch := 0   # issue 1434: warm meshes revealed this many per frame (0: all at once); battle.gd sets 4
+var warmup_batch := 0   # issue 1434: warm meshes revealed this many per frame (0: all at once); battle.gd sets 2
 var _piece_builds: Array = []
 var _shield_jobs := {}
 const LOAD_PIECE_BUDGET := 16000  # microseconds per frame while the cover is up
@@ -2112,8 +2112,15 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	if warmup_batch > 0: await get_tree().process_frame   # issue 1434: the sliced load spreads the warm-up's setup
 	var tmp = Node3D.new()
 	tmp.name = "fx_warmup"
-	add_child(tmp)
-	tmp.global_position = at
+	tmp.position = global_transform.affine_inverse() * at
+	if warmup_batch > 0:
+		# issue 1434 (LOAD20, cloud trace: 64 warm meshes entering the scene in one frame compiled 173 pipelines in one
+		# draw, hidden or not): the warm root stays out of the tree while it fills, and its meshes enter a few a frame
+		# below. If the effects leave the tree first, the unattached root goes with them.
+		tree_exiting.connect(func() -> void:
+			if is_instance_valid(tmp) and not (tmp as Node).is_inside_tree(): (tmp as Node).free(), CONNECT_ONE_SHOT)
+	else:
+		add_child(tmp)
 	var box = BoxMesh.new()
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
@@ -2264,18 +2271,34 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# pipelines compiled in one frame. They now appear WARM_BATCH at a time, a frame apart, and all of them stay up for
 	# the closing frames as before (outside the load cover, warmup_batch 0 keeps the old one-frame reveal).
 	if warmup_batch > 0:
-		var shown: Array = []
-		# Artoo on PR 1445: every visible mesh under the warm root, nested ones too (issue 1528's munition bodies sit
-		# under a plain Node3D), so none skips the batch
+		# issue 1434 (LOAD20 and a cloud trace: 64 warm meshes added in one frame compiled 173 pipelines in one draw,
+		# hidden or not): the renderer makes a mesh's pipelines when the mesh enters the scene, not when it shows. So
+		# the warm root (out of the tree until now) goes in empty, and its meshes follow warmup_batch at a time, a frame apart;
+		# all of them stay up for the closing frames as before. Only the outermost meshes move (a nested one travels
+		# with its parent); Artoo on PR 1445: nested ones under a plain Node3D (issue 1528's munition bodies) are
+		# outermost meshes too. Outside the load cover, warmup_batch 0 keeps the old one-frame reveal.
+		var parked: Array = []   # [mesh, its parent]
 		for wc in tmp.find_children("*", "GeometryInstance3D", true, false):
-			if (wc as GeometryInstance3D).visible:
-				(wc as GeometryInstance3D).visible = false
-				shown.append(wc)
-		for i in shown.size():
-			if is_instance_valid(shown[i]):
-				(shown[i] as GeometryInstance3D).visible = true
+			var up: Node = wc.get_parent()
+			var nested := false
+			while up != null and up != tmp:
+				if up is GeometryInstance3D:
+					nested = true
+					break
+				up = up.get_parent()
+			if not nested:
+				parked.append([wc, wc.get_parent()])
+		for pk in parked:
+			(pk[1] as Node).remove_child(pk[0])
+		add_child(tmp)
+		for i in parked.size():
+			if is_instance_valid(parked[i][0]) and is_instance_valid(parked[i][1]):
+				(parked[i][1] as Node).add_child(parked[i][0])
 			if (i + 1) % warmup_batch == 0:
 				await RenderingServer.frame_post_draw
+		for pk in parked:   # a parent gone meanwhile left its mesh out of the tree: free it here
+			if is_instance_valid(pk[0]) and not (pk[0] as Node).is_inside_tree():
+				(pk[0] as Node).free()
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	warmed = true

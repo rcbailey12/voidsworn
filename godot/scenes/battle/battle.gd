@@ -596,7 +596,7 @@ func _begin(a) -> void:
 		if "defer_shields" in gfx:
 			gfx.defer_shields = gfx.defer_initial_cuts   # issue 1434: shields wait for prepare_battle_hulls, sliced
 		if "warmup_batch" in gfx:
-			gfx.warmup_batch = 4 if gfx.defer_initial_cuts else 0   # issue 1434: warm pipelines a few per frame
+			gfx.warmup_batch = 2 if gfx.defer_initial_cuts else 0   # issue 1434: warm pipelines a few per frame (LOAD20: 4 cost up to 0.8 s)
 	if sliced:
 		# issue 1434: the hull files start loading on worker threads now, while the board and the world are built
 		_preload_hulls(a.view())

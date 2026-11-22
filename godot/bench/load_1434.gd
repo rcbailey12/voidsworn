@@ -65,6 +65,39 @@ var _draw_step := ""
 
 
 var _draw_ins := {}   # hull-prep installs before the draws of this row
+# issue 1434 (LOAD20: 83 pipelines in one hull-prep draw, no install named): the meshes added to the tree before the
+# draws of this row, by name without its digits and its parent's, and the texture and buffer memory at each row
+var _nodes_now := {}
+var _draw_nodes := {}
+var _mem_last := -1.0
+var _digits := RegEx.create_from_string("[0-9@]+")
+
+
+func _on_node_added(n: Node) -> void:
+	if n is GeometryInstance3D:
+		var p := n.get_parent()
+		var key := "%s<%s" % [_digits.sub(str(n.name), "", true), _digits.sub(str(p.name), "", true) if p != null else "-"]
+		_nodes_now[key] = int(_nodes_now.get(key, 0)) + 1
+
+
+func _nodes_take() -> String:
+	var keys := _draw_nodes.keys()
+	if keys.is_empty():
+		return "-"
+	var total := 0
+	for k in keys: total += int(_draw_nodes[k])
+	keys.sort_custom(func(x, y): return int(_draw_nodes[x]) > int(_draw_nodes[y]))
+	var out := PackedStringArray()
+	for k in keys.slice(0, 5): out.append("%s x%d" % [str(k), int(_draw_nodes[k])])
+	_draw_nodes = {}
+	return "%d: %s" % [total, ", ".join(out)]
+
+
+func _mem_take() -> String:
+	var m := (Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED) + Performance.get_monitor(Performance.RENDER_BUFFER_MEM_USED)) / 1048576.0
+	var d := m - _mem_last if _mem_last >= 0.0 else 0.0
+	_mem_last = m
+	return "%+.0f MB" % d
 var _draw_made: Array = []   # new shaders before the draws of this row
 var _draw_pipes := {}   # pipelines inside the draws of this row, by source
 var _pipe_at_pre := {}
@@ -86,6 +119,8 @@ func _on_pre_draw() -> void:
 			for k in d: _draw_ins[k] = int(_draw_ins.get(k, 0)) + int(d[k])
 	_draw_made.append_array(SKEEP.made)
 	SKEEP.made.clear()
+	for k in _nodes_now: _draw_nodes[k] = int(_draw_nodes.get(k, 0)) + int(_nodes_now[k])
+	_nodes_now = {}
 
 
 func _on_post_draw() -> void:
@@ -139,6 +174,7 @@ func _init() -> void:
 	SKEEP.watch = true
 	RenderingServer.frame_pre_draw.connect(_on_pre_draw)
 	RenderingServer.frame_post_draw.connect(_on_post_draw)
+	node_added.connect(_on_node_added)
 	var a := OS.get_cmdline_user_args()
 	var i := a.find("--out")
 	if i >= 0 and i + 1 < a.size():
@@ -206,7 +242,7 @@ func _split(fs: Array) -> PackedStringArray:
 	var out := PackedStringArray()
 	for f in fs:
 		out.append("%d ms %s (began at %d ms): draw %.0f ms, before the draw %.0f ms (process step %.0f ms), render cpu %.0f ms, gpu %.0f ms, %d pipelines compiled, %d world bakes pending" % [
-			f[0], f[1], f[7], f[9], maxf(0.0, float(f[0]) - float(f[9])), f[6], f[2], f[3], f[4], f[5]] + (" (inside the draw by source: %s)" % f[11]) + (", bake worker %s" % f[8]) + (", effects work %s" % f[10]) + (", new shaders %s" % f[12]))
+			f[0], f[1], f[7], f[9], maxf(0.0, float(f[0]) - float(f[9])), f[6], f[2], f[3], f[4], f[5]] + (" (inside the draw by source: %s)" % f[11]) + (", bake worker %s" % f[8]) + (", effects work %s" % f[10]) + (", new shaders %s" % f[12]) + (", meshes added %s, texture and buffer memory %s" % [f[13], f[14]]))
 	return out
 
 
@@ -241,6 +277,9 @@ func _battle(tag: String, args: Dictionary) -> void:
 	SKEEP.made.clear()
 	_draw_made = []
 	_draw_ins = {}
+	_nodes_now = {}
+	_draw_nodes = {}
+	_mem_take()
 	var gaps := 0
 	var stalls := 0
 	while (b.warming or b.load_stats.is_empty()) and Time.get_ticks_msec() - w0 < 240000:
@@ -261,10 +300,16 @@ func _battle(tag: String, args: Dictionary) -> void:
 			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
 			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes,
 			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000, _stage_name(ws0) + " -> " + _stage_name(BAKER.work_stage),
-			_take_draw(), _fx_work(b), _pipes_by(), _made_take()])
+			_take_draw(), _fx_work(b), _pipes_by(), _made_take(), _nodes_take(), _mem_take()])
 		pipes0 = pipes
 		last = now
 	_shift_process(frames)
+	if OS.has_environment("VS_LOAD_ALL_ROWS"):   # a cloud trial: every row from the hull prep on, in order
+		var from := -1
+		for i in frames.size():
+			if from < 0 and str(frames[i][1]).contains("prepare_hulls"): from = i
+		if from >= 0:
+			for r in _split(frames.slice(from)): print("[load1434] %s row: %s" % [tag, r])
 	frames.sort_custom(func(x, y): return x[0] > y[0])
 	var top := PackedStringArray()
 	for f in frames.slice(0, 5):
@@ -331,6 +376,9 @@ func _title() -> void:
 	SKEEP.made.clear()
 	_draw_made = []
 	_draw_ins = {}
+	_nodes_now = {}
+	_draw_nodes = {}
+	_mem_take()
 	_take_draw()
 	var last := Time.get_ticks_usec()
 	var w0 := Time.get_ticks_msec()
@@ -357,7 +405,7 @@ func _title() -> void:
 			RenderingServer.viewport_get_measured_render_time_cpu(vp_rid) + RenderingServer.get_frame_setup_time_cpu(),
 			RenderingServer.viewport_get_measured_render_time_gpu(vp_rid), pipes - pipes0, bakes,
 			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, last / 1000, _stage_name(ws0) + " -> " + _stage_name(BAKER.work_stage),
-			_take_draw(), _fx_work(sc1), _pipes_by(), _made_take()])
+			_take_draw(), _fx_work(sc1), _pipes_by(), _made_take(), _nodes_take(), _mem_take()])
 		pipes0 = pipes
 		last = now
 		if _bus() != before: moved.append(_bus())
