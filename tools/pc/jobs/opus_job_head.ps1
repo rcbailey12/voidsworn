@@ -571,6 +571,36 @@ function Get-ListedLeft($attempt) {
   if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { return @() }
   return @(foreach ($l in [IO.File]::ReadAllLines($list)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and ((Test-Path -LiteralPath (Join-Path $attempt $Matches[1])) -or (Test-Path -LiteralPath (Join-Path $attempt "$($Matches[1]).removing")))) { $Matches[1] } })
 }
+function Get-WaitGuard($attempt) {
+  # The janitor's checks before it removes anything from a job folder (Artoo on PR 1644): the Board keep list, read fresh
+  # each time, no running process naming the attempt, and no Board PC pause. '' when clear, else why: the waiter keeps
+  # everything and tries again at its next poll. The caller also holds the job lease through the drop.
+  $jobDir = Split-Path -Parent $attempt
+  $keepFile = Join-Path $vt 'janitor_keep.txt'
+  $keepItem = Get-Item -LiteralPath $keepFile -Force -ErrorAction SilentlyContinue
+  if ($keepItem) {
+    if ($keepItem -isnot [IO.FileInfo] -or ($keepItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return "the Board keep list is not a plain file: $keepFile" }
+    foreach ($line in [IO.File]::ReadAllLines($keepFile)) {
+      $p = $line.Trim().TrimStart([char]0xFEFF)
+      if (-not $p -or $p.StartsWith('#')) { continue }
+      $keep = [IO.Path]::GetFullPath($p).TrimEnd('\', '/')
+      foreach ($mine in @($jobDir, $attempt)) {
+        if ($keep.Equals($mine, [StringComparison]::OrdinalIgnoreCase) -or $keep.StartsWith($mine + $sep, [StringComparison]::OrdinalIgnoreCase) -or
+            $mine.StartsWith($keep + $sep, [StringComparison]::OrdinalIgnoreCase)) { return "on the Board keep list ($keep)" }
+      }
+    }
+  }
+  $lines = $null
+  if ($test -and $null -ne $env:PC_TEST_COMMAND_LINES) { $lines = @($env:PC_TEST_COMMAND_LINES -split "`n" | Where-Object { $_ } | ForEach-Object { [pscustomobject]@{ Id = 0; Line = $_ } }) }
+  else {
+    try { $lines = @(Get-CimInstance Win32_Process -ErrorAction Stop | Where-Object { $_.CommandLine -and $_.ProcessId -ne $PID } | ForEach-Object { [pscustomobject]@{ Id = $_.ProcessId; Line = $_.CommandLine } }) }
+    catch { return 'running processes could not be checked' }
+  }
+  $needle = [regex]::Escape($attempt) + '(?=$|[\\/"''\s])'
+  foreach ($proc in $lines) { if ($proc.Line -match $needle -and $proc.Line -notmatch '\bdropwait\b') { return "a running process names this attempt (process $($proc.Id))" } }
+  if (Test-Paused) { return 'the Board PC pause is active' }
+  return ''
+}
 function Get-AttemptState($attempt) {
   # PASS or FAILED from job_wrap's done.txt; '' when the attempt never finished (killed, timed out or still running)
   $done = Join-Path $attempt 'done.txt'
@@ -814,7 +844,7 @@ switch ($Action) {
     $poll = 300; if ("$env:OJ_DROPWAIT_POLL_SECONDS" -match '\A[1-9][0-9]{0,4}\z') { $poll = [int]$env:OJ_DROPWAIT_POLL_SECONDS }
     $limit = 43200; if ("$env:OJ_DROPWAIT_SECONDS" -match '\A[0-9]{1,6}\z') { $limit = [int]$env:OJ_DROPWAIT_SECONDS }
     Write-Output "waiting for $($place.Ref) on origin (from $($place.From)) to clear $attempt; every $poll s for up to $limit s"
-    $clock = [Diagnostics.Stopwatch]::StartNew(); $seen = ''
+    $clock = [Diagnostics.Stopwatch]::StartNew(); $seen = ''; $retry = $false
     while ($true) {
       if (-not @(Get-ListedLeft $attempt).Count) { Write-Output "no listed checkout left in $attempt"; break }
       $tip = ''
@@ -822,10 +852,25 @@ switch ($Action) {
         $line = @(Run-Git ls-remote $source "refs/heads/$($place.Ref)") | Where-Object { "$_" -match '\A[0-9a-f]{40}\t' } | Select-Object -First 1
         if ($line) { $tip = "$line".Substring(0, 40) }
       } catch { Write-Output "relay check failed, tried again later: $($_.Exception.Message)" }
-      if ($tip -and $tip -ne $seen) {
-        $seen = $tip
-        Write-Output "relay branch $($place.Ref) is on origin at $tip"
-        Drop-Attempt $attempt
+      # A new or moved branch, or one whose last try was held back for a passing reason (Artoo on PR 1644: a pause, the
+      # lease, a running process, the mirror lock), gets a try. A proof that refused for good waits for the branch to move.
+      if ($tip -and ($tip -ne $seen -or $retry)) {
+        if ($tip -ne $seen) { Write-Output "relay branch $($place.Ref) is on origin at $tip" }
+        $seen = $tip; $retry = $false
+        $why = Get-WaitGuard $attempt
+        $lease = $null
+        if (-not $why -and -not $script:dropDry) {
+          try { $lease = [IO.File]::Open((Join-Path (Split-Path -Parent $attempt) '.voidsworn-run-active'), 'OpenOrCreate', 'ReadWrite', 'None') }
+          catch { $why = 'a helper run holds the job folder''s lease' }
+        }
+        if ($why) { Write-Output "checkouts kept for now: $attempt ($why); tried again at the next look"; $retry = $true }
+        else {
+          try {
+            $said = @(Drop-Attempt $attempt)
+            foreach ($o in $said) { Write-Output $o }
+            if (($said -join "`n") -match 'pause is active|stayed locked') { $retry = $true }
+          } finally { if ($lease) { $lease.Dispose() } }
+        }
       }
       if ($script:dropDry) { if (-not $tip) { Write-Output "checkouts kept: $($place.Ref) is not on origin yet (dry: one look)" }; break }
       if ($clock.Elapsed.TotalSeconds + $poll -gt $limit) {

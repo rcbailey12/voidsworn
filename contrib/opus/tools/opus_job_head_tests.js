@@ -452,7 +452,7 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
     return { status: w.status, out: `${w.stdout}\n${w.stderr}` };
   };
   const waited = job1535('opus1396wait');
-  r = waitRun({ OJ_DROPWAIT_POLL_SECONDS: '1', OJ_DROPWAIT_SECONDS: '3' }, 'dropwait', waited);
+  r = waitRun({ OJ_DROPWAIT_POLL_SECONDS: '1', OJ_DROPWAIT_SECONDS: '3', PC_TEST_COMMAND_LINES: 'fixture.exe unrelated' }, 'dropwait', waited);
   assert.equal(r.status, 0, r.out);
   assert(fs.existsSync(path.join(waited, 'new')) && /waiting for board\/pc-out-opus1396wait on origin \(from the job name\)/.test(r.out) && /still lists checkouts after 3 s; the janitor's relay sweep handles it later/.test(r.out), 'no relay: the waiter keeps the checkout and stops at its limit: ' + r.out);
   r = run('dropwait', waited, 'dry');
@@ -462,12 +462,31 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   const stagedSha = git(['--git-dir', source, 'rev-parse', `refs/heads/${staged}`]);
   // the relay lands two seconds after the waiter starts
   const landed = spawnSync('bash', ['-c', '(sleep 2; git --git-dir "$1" update-ref refs/heads/board/pc-out-opus1396wait "$2") & exec "$3" -NoProfile -ExecutionPolicy Bypass -File "$4" dropwait "$5"',
-    'x', source, stagedSha, shell, path.join(jobs, 'opus_job_head.ps1'), waited], { env: { ...env, OJ_DROPWAIT_POLL_SECONDS: '1', OJ_DROPWAIT_SECONDS: '60' }, encoding: 'utf8', timeout: 90000 });
+    'x', source, stagedSha, shell, path.join(jobs, 'opus_job_head.ps1'), waited], { env: { ...env, OJ_DROPWAIT_POLL_SECONDS: '1', OJ_DROPWAIT_SECONDS: '60', PC_TEST_COMMAND_LINES: 'fixture.exe unrelated' }, encoding: 'utf8', timeout: 90000 });
   const landedOut = `${landed.stdout}\n${landed.stderr}`;
   assert.equal(landed.status, 0, landedOut);
   assert(!fs.existsSync(path.join(waited, 'new')) && landedOut.includes(`relay branch board/pc-out-opus1396wait is on origin at ${stagedSha}`) && /checkout new removed after the job/.test(landedOut) && /disk: checkouts freed/.test(landedOut), 'the waiter clears the checkout once the relay lands: ' + landedOut);
   assert.equal(fs.readFileSync(path.join(waited, 'out_new', 'result.txt'), 'utf8'), 'opus1396wait result\n', 'results stay');
   assert(fs.existsSync(path.join(gone, 'new')), 'and only its own attempt');
+  // Artoo on PR 1644: the waiter checks what the janitor checks before a removal (the Board keep list, no running process
+  // naming the attempt, the PC pause, the job lease) and keeps everything while any holds; a passing refusal is tried
+  // again at the next look on the same relay, without waiting for the branch to move.
+  const guarded = job1535('opus1396guard');
+  relay([[path.join(guarded, 'out_new'), 'out_1/out_new']], 'board/pc-out-opus1396guard');
+  const quick = { OJ_DROPWAIT_POLL_SECONDS: '1', OJ_DROPWAIT_SECONDS: '2', PC_TEST_COMMAND_LINES: 'fixture.exe unrelated' };
+  write(path.join(vt, 'janitor_keep.txt'), `# Board\r\n${path.join(guarded, 'new')}\r\n`);
+  r = waitRun(quick, 'dropwait', guarded);
+  assert(fs.existsSync(path.join(guarded, 'new')) && /checkouts kept for now: \S+ \(on the Board keep list/.test(r.out), 'a keep-listed checkout survives its relay: ' + r.out);
+  fs.rmSync(path.join(vt, 'janitor_keep.txt'));
+  r = waitRun({ ...quick, PC_TEST_COMMAND_LINES: `godot.exe --path "${path.join(guarded, 'new')}"` }, 'dropwait', guarded);
+  assert(fs.existsSync(path.join(guarded, 'new')) && /a running process names this attempt/.test(r.out), 'a checkout in use survives its relay: ' + r.out);
+  const pauseFile = path.join(tmp, 'pause1644.txt');
+  write(pauseFile, 'GPU not cleared: paused by the Board for a fixture\r\n');
+  const resumed = spawnSync('bash', ['-c', '(sleep 2; rm -f "$1") & exec "$2" -NoProfile -ExecutionPolicy Bypass -File "$3" dropwait "$4"',
+    'x', pauseFile, shell, path.join(jobs, 'opus_job_head.ps1'), guarded], { env: { ...env, ...quick, OJ_DROPWAIT_SECONDS: '60', PC_CLEANUP_PAUSE_FILE: pauseFile }, encoding: 'utf8', timeout: 90000 });
+  const resumedOut = `${resumed.stdout}\n${resumed.stderr}`;
+  assert.equal(resumed.status, 0, resumedOut);
+  assert(/checkouts kept for now: \S+ \(the Board PC pause is active\)/.test(resumedOut) && !fs.existsSync(path.join(guarded, 'new')) && /checkout new removed after the job/.test(resumedOut), 'a pause holds the drop, and the same relay clears it once the pause ends: ' + resumedOut);
   assert.equal(fs.readFileSync(path.join(later, 'out_new', 'result.txt'), 'utf8'), 'opus1396later result\n', 'results stay');
   // Review of PR 1592: the sweep keeps a checkout whose reflog holds a commit no mirror ref reaches (a detached checkout
   // that went back to its pin), and one with a second worktree; and it finishes a recorded <name>.removing left alone.

@@ -68,7 +68,9 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   mid-removal leaves a half-removed checkout behind.
 - The relay lands after a job's tail, so the tail also starts a hidden waiter (`opus_job_head.ps1 dropwait <attempt>`,
   log `<job>\dropwait_<attempt>.txt`). It asks origin for the attempt's relay branch every 5 minutes for up to 12 hours,
-  and each time the branch appears or moves it runs the same proof and drop for that attempt only. Past 12 hours the
+  and each time the branch appears or moves it runs the same proof and drop for that attempt only, after the janitor's
+  own checks (the Board keep list, no running process naming the attempt, no PC pause, the job lease held through the
+  drop); a refusal for one of those is tried again at the next look. Past 12 hours the
   janitor's relay sweep covers it. `OJ_NO_DROPWAIT=1` skips the waiter (issue 1396; Nov 22, with a new job name every
   night no later attempt cleared the last one: 20 checkouts, about 8 GB each).
 - Every live removal that rests on the shared mirror (the job head's relay sweep and `droprepo`, the janitor's helper
