@@ -10,7 +10,7 @@ has the new recipe file layout. It does not prove the approved look is in those 
 column says what Ryan accepted and what is still pending, and issue 1410 checks the model the game renders. None
 of this is the playable exe (that is a separate snapshot).
 
-**Totals:** 36 ship slots. 25 new builds installed, 2 with a build sheet but the old hull in game, 0 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
+**Totals:** 36 ship slots. 27 new builds installed, 0 with a build sheet but the old hull in game, 0 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
 
 ## Sunward Crusade (`voidsworn`)
 
@@ -85,8 +85,8 @@ of this is the playable exe (that is a separate snapshot).
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
 | Defence station (small teaching station) | station | `O1_37` | Old hull kept on purpose |  | none |  |  |  | Stays as it is by design. |
-| Convoy transport | transport | `O2_37` | Build sheet made, old hull in game | Accepted: Ryan, Nov 21 23:28 UTC (offer sheet of PC run 1413f, decision card "Publish all four"; glb 559e6387) | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/hegemony_O2/concept_beauty.jpg) | R369 | hegemony_O2 | #1413 |  |
-| Relay beacon | beacon | `O3_11` | Build sheet made, old hull in game | Accepted: Ryan, Nov 21 23:28 UTC (offer sheet of PC run 1413f, decision card "Publish all four"; glb 8ff62d4b) | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/hegemony_O3/concept_beauty.jpg) | R369 | hegemony_O3 | #1413 |  |
+| Convoy transport | transport | `O2_37` | New-format build on main | Accepted: Ryan, Nov 21 23:28 UTC (offer sheet of PC run 1413f, decision card "Publish all four"; glb 559e6387) | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/hegemony_O2/concept_beauty.jpg) | R369 | hegemony_O2 | #1413 |  |
+| Relay beacon | beacon | `O3_11` | New-format build on main | Accepted: Ryan, Nov 21 23:28 UTC (offer sheet of PC run 1413f, decision card "Publish all four"; glb 8ff62d4b) | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/hegemony_O3/concept_beauty.jpg) | R369 | hegemony_O3 | #1413 |  |
 
 ## Not a slot yet
 
