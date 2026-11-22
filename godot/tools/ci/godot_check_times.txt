@@ -24,6 +24,8 @@ camera_shake_check 7
 campaign_face_check 3
 campaign_music_1482_check 1
 capstone_mastery_test 1
+capstone_mastery_iii_test 1
+rules_1650_test 1
 career_honours_test 3
 career_readability_test 0
 cinder_prizes_test 1
@@ -159,3 +161,6 @@ volley_voice_check 5
 wing_cancel_test 1
 wreck_contact_check 22
 wreck_hex_check 24
+rules_1653_test 3
+salvage_1653_test 3
+salvage_1653_shots 3

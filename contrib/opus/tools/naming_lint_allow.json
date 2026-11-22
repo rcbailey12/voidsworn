@@ -26,5 +26,10 @@
   ],
   "godot/portraits/index.json": [
     "Matriarch"
-  ]
+  ],
+  "_phrases": {
+    "the Knife": [
+      "Turn of the Knife"
+    ]
+  }
 }

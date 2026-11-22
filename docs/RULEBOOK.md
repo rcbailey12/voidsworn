@@ -284,6 +284,16 @@ paid `[openai]` API PR audits (like #1647) whenever free Artoo (ChatGPT) or Clau
 cash OpenAI API credits only for tasks no subscription seat can do." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Issue 1647, OK'd before this ruling, finishes.
 Set: Ryan, Nov 22 (R406).
 
+2.19 **A paid API call never loses its work: no tight answer caps, and every call saves partial output as it streams.** Any
+script that calls a paid model API (Claude, OpenAI, Kimi, DeepSeek) sets the output limit to the model's ceiling, not a small
+guess, sets no advisory task budget, and streams the answer, the visible thinking summary and the raw event stream to files
+as they arrive, so a cut, a timeout or a max-tokens stop still leaves every event the provider returned, and marks the
+deliverable as complete, partial or missing in its result file. Hidden reasoning that the provider never returns cannot be
+saved, so long jobs ask for visible checkpoints. Spend limits Ryan approved (a credit cap on a key) are separate and stay. Why: on Nov 22 the Fable
+review of the Gate 2 sound plan (issue 1752) hit a 64,000-token cap entirely in unsaved thinking, cost about $3.83 and
+returned an empty review. "yes, stop randomly capping and make sure thatr work gets saved" (Ryan, Nov 22 2026, 20:53 UTC).
+Set: Ryan, Nov 22 (R418).
+
 ## 3. PC and tools
 
 3.1 **The product is the Godot 4 game on Ryan's Windows PC only, and Godot (`godot/`) is the only rules source.** The browser
@@ -313,6 +323,7 @@ watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md,
 On Nov 19, about 350 GB disappeared overnight (392 GB free after the Nov 18 cleanup, 41 GB the next morning). The hand cleanup removed 173 folders and raised free space to 199 GB. It kept 42 checkout copies, 26 because generated campaign outputs, audio UIDs or onboarding output were outside the safe list.
 Set: Ryan, Nov 18 (R326) and Nov 19, 16:30 UTC (R336); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 Ryan's yes to a delete counts when he gives it in the Board thread himself, typed in his own words. The Board passes it to the PC session with his message id as the receipt and the PC acts on it; nobody asks him to repeat it or to go to the PC just to say yes. A note from the coordinator, a helper or another agent is still not his yes. Why: on Nov 21 he typed "Yes remove saved runs" three times from his phone and the PC refused each as a relay, so the cleanup nearly waited a night with C: under the job floor. Set: Ryan, Nov 22, 04:35 UTC, "Yes fix that" (R400).
+An install or refresh that deletes nothing is already approved: a tools_live install, a lane runner refresh, a watcher swap or a playtest promotion that keeps the old copy runs without asking Ryan again (`lane_tools_refresh.ps1 -NoRotate`; on the PC, `ALLOW_NODELETE_INSTALLS.bat` lets Claude run exactly that command without a prompt). Anything that deletes or rotates away a file still needs his own yes, as above. Why: on Nov 22 the PC refused two tools_live installs until he typed an OK himself, holding the Codex lane fix and the relay re-proof. Set: Ryan, Nov 22, 20:13 UTC, "alos yes any install that deletes nothing is approved" (R417).
 
 Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
 (including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
