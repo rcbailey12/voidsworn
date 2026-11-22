@@ -675,7 +675,7 @@ look.gd READ albedo lift (Navy 0.4x, Eclipse 2.2x and the rest) retires with it;
 `hp_rcs` and `hp_board` hard points, plus articulated turrets where the faction uses them. Comparison sheets go on Ryan's Pick
 Sheet; GPU captures only after green checks and Artoo (3.12). Why: hero hulls were downsampled to 2048 while fighters carried
 39 MB of maps, baked seam AO vanished under the key light, and each faction leaned on a different after-the-fact lift
-(Ryan's Ship Graphical Detail and Consistency Upgrade Plan). Set: Ryan, Nov 22 2026 (R410). Replaces the Nov 19 park of
+(Ryan's Ship Graphical Detail and Consistency Upgrade Plan). Set: Ryan, Nov 22 2026 (R411). Replaces the Nov 19 park of
 far-away LODs until a speed check (R328 notes, issue 1152) and, for the game, issue 592's "the game loads no LOD chain":
 stage 6's hand chain stays an analysis product, the game makes its own LODs at import.
 

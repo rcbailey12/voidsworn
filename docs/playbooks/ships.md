@@ -566,7 +566,7 @@ nozzle, then turns onto the target with only a low lift. Drawn size against the 
 rockets 0.7 of the old round, with trail and flashes to match; the slide distance does not shrink with it
 (fx_weapons.gd `_launch`, `_launch_step`, `_ignite`).
 
-## 10. The ship detail standard (Ryan, Nov 22 2026, R410; RULEBOOK 5.18)
+## 10. The ship detail standard (Ryan, Nov 22 2026, R411; RULEBOOK 5.18)
 
 Ryan approved the Ship Graphical Detail and Consistency Upgrade Plan as the standing standard for every ship from now on.
 A build brief, sheet or PR for any ship follows all four; a ship that cannot says why on its sheet.
