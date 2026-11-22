@@ -41,7 +41,7 @@ function main() {
   fs.mkdirSync(audio, { recursive: true });
   const copy = (src, name) => { fs.copyFileSync(src, path.join(audio, name)); return 'audio/' + name; };
   const player = (src, label) => `<figure><audio controls preload="none" src="${esc(src)}"></audio><figcaption>${esc(label)}</figcaption></figure>`;
-  let rows = '', missing = 0, credits = 0;
+  let rows = '', missing = 0, charged = 0, estimated = 0;
   for (const it of list.items) {
     const today = it.kind === 'music' ? [] : todayParts(a.repo, it.cue);
     const todayHtml = today.length ? today.map((p, i) => player(copy(p.file, `${it.id}_today${i}${path.extname(p.file)}`), p.label)).join('')
@@ -55,7 +55,7 @@ function main() {
     for (let t = 1; t <= (it.takes || 1); t++) {
       const file = `${it.id}_t${t}.mp3`, r = man.get(file);
       if (r && fs.existsSync(path.join(a.gen, file))) {
-        credits += r.charged ?? r.estimate ?? 0;
+        if (r.charged != null) charged += r.charged; else estimated += r.estimate ?? 0;
         takes.push(player(copy(path.join(a.gen, file), 'el_' + file), `${r.params.model_id}, ${r.charged ?? '~' + r.estimate} credits`));
       } else { missing++; takes.push('<p class="none">not made</p>'); }
     }
@@ -73,10 +73,10 @@ figcaption{font-size:12px;color:var(--mut)}.none{color:var(--mut);font-style:ita
 @media (max-width:700px){table,tr,th,td{display:block;width:auto}th{border:0}}
 </style></head><body><h1>Sound pilot: pick by ear</h1>
 <p>Issue 1585, Gate 1. Left to right: what the game uses today (its parts), a free Sonniss or CC0 candidate, and the ElevenLabs take.
-For each row, say which one wins, or "none". Your picks decide Gate 2. Credits used: ${credits}. Takes missing: ${missing}.</p>
+For each row, say which one wins, or "none". Your picks decide Gate 2. Credits: ${charged} charged (vendor cost header) + ${estimated} estimated (music has no cost header). Takes missing: ${missing}.</p>
 <table><thead><tr><th>Sound</th><th>Today</th><th>Free</th><th>ElevenLabs</th></tr></thead><tbody>
 ${rows}</tbody></table></body></html>`;
   fs.writeFileSync(path.join(a.out, 'index.html'), html);
-  console.log(`LISTEN PAGE written: ${path.join(a.out, 'index.html')} (${list.items.length} rows, ${missing} takes missing, ${credits} credits)`);
+  console.log(`LISTEN PAGE written: ${path.join(a.out, 'index.html')} (${list.items.length} rows, ${missing} takes missing, ${charged} charged + ${estimated} estimated credits)`);
 }
 main();

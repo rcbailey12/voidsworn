@@ -132,13 +132,18 @@ async function post(base, key, route, body, form) {
   }
 }
 
+// Returns the account's used credits, or null with the reason in balanceWhy. A key made with only Sound Effects and
+// Music allowed cannot read /v1/user/subscription (it needs the key's User: read permission), so null is normal then.
+let balanceWhy = '';
 async function usedCredits(base, key) {
   try {
     const r = await fetch(base + '/v1/user/subscription', { headers: { 'xi-api-key': key }, redirect: 'error' });
-    if (!r.ok) return null;
+    if (!r.ok) { balanceWhy = 'HTTP ' + r.status + (r.status === 401 || r.status === 403 ? ', the key has no User: read permission' : ''); await r.text().catch(() => ''); return null; }
     const j = await r.json();
-    return Number.isFinite(j.character_count) ? { tier: j.tier, used: j.character_count, limit: j.character_limit } : null;
-  } catch (e) { return null; }
+    if (Number.isFinite(j.character_count)) return { tier: j.tier, used: j.character_count, limit: j.character_limit };
+    balanceWhy = 'no character_count in the answer';
+    return null;
+  } catch (e) { balanceWhy = e.name; return null; }
 }
 
 function sha(buf) { return crypto.createHash('sha256').update(buf).digest('hex'); }
@@ -233,8 +238,8 @@ async function work(a) {
   const redact = t => String(t).split(key).join('[redacted]');
   const before = await usedCredits(a.base, key);
   if (before) console.log(`account: ${before.tier}, ${before.used} of ${before.limit} credits used`);
-  else console.log('account balance unreadable: the stop uses the estimate');
-  let estSpent = 0, made = 0, failed = 0, stopped = '';   // estSpent: header cost where given, else the estimate
+  else console.log(`account balance unreadable (${balanceWhy}): the stop uses the cost header where given, else the estimate`);
+  let hdrSum = 0, noHdrEst = 0, estSpent = 0, made = 0, failed = 0, stopped = '';   // estSpent: header cost where given, else the estimate
   for (const s of todo) {
     const now = before ? await usedCredits(a.base, key) : null;
     const spent = now ? now.used - before.used : estSpent;
@@ -271,6 +276,7 @@ async function work(a) {
         res = await post(a.base, key, '/v1/music/stem-separation?output_format=mp3_44100_192', null, form);
       }
       estSpent += res.charged ?? s.credits;
+      if (res.charged != null) hdrSum += res.charged; else noHdrEst += s.credits;
       // If any write below fails, the pending line stays last and the step is held for RECONCILE.
       try {
         receipt(receiptsFile, { file: s.file, state: 'accepted', charged: res.charged, estimate: s.credits, request_id: res.req });
@@ -316,7 +322,7 @@ async function work(a) {
   if (stopped) console.log('STOP: ' + stopped);
   rows = readManifest(manifest);
   const left = steps.filter(s => !done(a.out, rows, s));
-  console.log(`made ${made}, failed ${failed}, estimate ${estSpent} credits, ${left.length} of ${steps.length} steps not done`);
+  console.log(`made ${made}, failed ${failed}, credits: ${hdrSum} charged (cost header) + ${noHdrEst} estimated (no header, e.g. music) = about ${estSpent}, ${left.length} of ${steps.length} steps not done`);
   for (const s of left.slice(0, 20)) console.log('  not done: ' + s.file);
   console.log(left.length === 0 ? 'ELEVENLABS GEN PASS' : 'ELEVENLABS GEN INCOMPLETE');
   return left.length === 0 ? 0 : 1;
