@@ -374,7 +374,9 @@ static func wound_of(fac: String) -> Dictionary:
 	return w
 
 
-# the mean colour of a material's albedo texture (white when it has none), read once from its smallest mip
+# the mean colour of a material's albedo texture (white when it has none), cached per texture. Artoo on PR 1772: only a
+# small mip is decompressed and averaged (a 4 x 4 to 8 x 8 level, 16 to 64 pixels), never the whole map; a texture
+# without mips is averaged from a nearest-sampled 16 x 16 copy.
 static func texture_mean(m: BaseMaterial3D) -> Color:
 	var t := m.albedo_texture
 	if t == null:
@@ -385,14 +387,39 @@ static func texture_mean(m: BaseMaterial3D) -> Color:
 	var out := Color.WHITE
 	var img := t.get_image()
 	if img != null and not img.is_empty():
-		if img.is_compressed():
-			img.decompress()
-		img.convert(Image.FORMAT_RGBA8)
-		while img.get_width() > 1 or img.get_height() > 1:   # halving with bilinear is a 2 x 2 box mean: a true average
-			img.resize(maxi(1, img.get_width() / 2), maxi(1, img.get_height() / 2), Image.INTERPOLATE_BILINEAR)
-		out = img.get_pixel(0, 0)
+		out = image_mean(img)
 	_tex_mean[key] = out
 	return out
+
+
+static func image_mean(img: Image) -> Color:
+	var small: Image = null
+	if img.has_mipmaps():
+		var w := img.get_width()
+		var h := img.get_height()
+		var count := img.get_mipmap_count()
+		var level := 0
+		for l in range(count + 1):
+			if maxi(1, w >> l) >= 4 and maxi(1, h >> l) >= 4:
+				level = l
+		var data := img.get_data()
+		var start := img.get_mipmap_offset(level) if level > 0 else 0
+		var end := img.get_mipmap_offset(level + 1) if level < count else data.size()
+		small = Image.create_from_data(maxi(1, w >> level), maxi(1, h >> level), false, img.get_format(), data.slice(start, end))
+	else:
+		small = img.duplicate() as Image
+		if small.is_compressed():
+			small.decompress()
+		small.resize(16, 16, Image.INTERPOLATE_NEAREST)
+	if small.is_compressed():
+		small.decompress()
+	small.convert(Image.FORMAT_RGBAF)
+	var acc := Color(0, 0, 0, 0)
+	for y in small.get_height():
+		for x in small.get_width():
+			acc += small.get_pixel(x, y)
+	var n := float(small.get_width() * small.get_height())
+	return Color(acc.r / n, acc.g / n, acc.b / n, acc.a / n)
 
 
 static func linear_luma(c: Color) -> float:

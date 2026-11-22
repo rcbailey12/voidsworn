@@ -210,6 +210,17 @@ func _hulk_checks() -> void:
 	var pg := PROPS.derelict(pale, "ithar")
 	var eff := PROPS.texture_mean(pale) * pg.albedo_color
 	var ye := PROPS.linear_luma(Color(eff.r, eff.g, eff.b))
+	# the mean comes from a small mip, not the whole map (Artoo on PR 1772): a 1024 map of two-tone squares, mipmapped
+	var big := Image.create(1024, 1024, false, Image.FORMAT_RGBA8)
+	for y in 64:
+		for x in 64:
+			big.fill_rect(Rect2i(x * 16, y * 16, 16, 16), Color(0.8, 0.4, 0.2) if (x + y) % 2 == 0 else Color(0.2, 0.4, 0.6))
+	big.generate_mipmaps()
+	var t0 := Time.get_ticks_usec()
+	var mean := PROPS.image_mean(big)
+	var us := Time.get_ticks_usec() - t0
+	_report(absf(mean.r - 0.5) < 0.03 and absf(mean.b - 0.4) < 0.03 and us < 20000,
+		"the texture mean reads a small mip: %s in %d us" % [str(mean), us])
 	_report(ye <= PROPS.HULK_BAND.y + 1e-3 and ye >= PROPS.HULK_BAND.x - 1e-3, "a textured pale Glasswright hulk lands at %.3f linear, inside the dull band" % ye)
 
 
