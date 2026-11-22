@@ -569,26 +569,28 @@ def glow_material(zone, hull=False):
     return m
 
 
-# Interior Kit V2 (issue 1743, R416 Layer 3): the shared trim maps (tools/blender/kits/shared/interior_trim.py) as the same
-# annealed glass as the hull: faceted panes and fine annealing lines, a faint seafoam stored light in the lines; no metal, no soot.
-INSIDE_TRIM = dict(style='glass', seed=1748, cells=60, facet=0.12, line_w=2.5, rough=(0.08, 0.3),
-                   glow=dict(rgb=(0.35, 1.0, 0.64), share=0.35, strength=0.8))
+# Interior Kit V2 (issue 1743, R416 Layer 3) under R420 (Ryan, Nov 22; contrib/opus/plans/global_cohesion_standard.md 3):
+# deep annealed seafoam crystal bulkheads and struts, the same glass as the hull: faceted panes and fine annealing lines with a
+# faint seafoam edge light (strength at most 0.6); zero metal, zero soot, zero grime. The amber, green and violet glass layers
+# keep only a small shift of their own (at most 15 percent). The values match the 1741 breach interior.
+INSIDE_ROLES = dict(glass=dict(rgb=(.06, .08, .075), tint=dict(gw_in_amber=(1.12, 1.0, 0.88), gw_in_green=(0.92, 1.1, 0.98),
+                                                                gw_in_violet=(1.06, 0.9, 1.12))),
+                    glass_strut=dict(rgb=(.07, .09, .085)))
+INSIDE_TRIMS = dict(main=dict(style='glass', seed=1748, cells=60, facet=0.12, line_w=2.5, rough=(0.08, 0.28),
+                              glow=dict(rgb=(0.35, 1.0, 0.64), share=0.35, strength=0.6)))
 
 
 def inside_material(zone, trim=False):
     """the interior, seen only in the break-up: layered glass and light, opaque. trim: the insides carry the Interior Kit V2
-    UVs, so the zone takes the Glasswright trim maps (issue 1743), its own light kept"""
+    UVs, so the zone takes its role's colour and trim from INSIDE_ROLES (R420; the kit's zone colour and light are never read)"""
     import bpy
     src = bpy.data.materials.get(zone)
-    if trim and src is not None and src.use_nodes and src.node_tree.nodes.get('Principled BSDF'):
+    if trim:
         import os, sys
         sh_ = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'shared')
         if sh_ not in sys.path: sys.path.insert(0, sh_)
         import interior_trim
-        sb = src.node_tree.nodes['Principled BSDF']
-        col = tuple(sb.inputs['Base Color'].default_value)[:3]; em = sb.inputs['Emission Strength'].default_value
-        m = interior_trim.trim_material(f'ithar_inside_{zone}', 'ithar', INSIDE_TRIM, tuple(min(.5, v) for v in col),
-                                        emission=(tuple(sb.inputs['Emission Color'].default_value)[:3], em) if em > 0 else None)
+        m = interior_trim.role_material(f'ithar_inside_{zone}', 'ithar', zone, INSIDE_ROLES, INSIDE_TRIMS)
         m['authored_look'] = 1
         return m
     m = src.copy() if src else bpy.data.materials.new(zone)

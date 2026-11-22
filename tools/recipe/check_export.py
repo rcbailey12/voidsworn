@@ -163,6 +163,65 @@ def image_size(path):
                 h, w = struct.unpack('>xHH', f.read(5)); return (w, h)
             f.seek(ln - 2, 1)
 
+def _map_mean(g, out, contract, tex):
+    """a texture's linear mean rgb: measured from its file when PIL is there, else stage 7's own measure (interior_map_means)"""
+    if not tex: return None
+    uri = g['images'][g['textures'][tex['index']]['source']].get('uri', '')
+    try:
+        from PIL import Image
+        with Image.open(os.path.join(out, uri)) as im: a = np.asarray(im.convert('RGB'), dtype=np.float64) / 255.0
+        if not uri.endswith('_orm.png'): a = np.where(a <= 0.04045, a / 12.92, ((a + 0.055) / 1.055) ** 2.4)
+        return a.reshape(-1, 3).mean(0)
+    except ImportError:
+        m = contract.get('interior_map_means', {}).get(uri)
+        return None if m is None else np.array(m, float)
+
+def interior_palette(g, out, contract, fac, mats, notes):
+    """R420 (Ryan, Nov 22; contrib/opus/plans/global_cohesion_standard.md 6.1): every painted V2 room material names its role
+    (interior_role, from the faction's role table, never a kit.py zone colour); walls stay under the shared value ceiling; no
+    surface but the core carries a constant light and trim light stays inside the area budget; the faction guards hold
+    (Chorus: no metal, no glowing bone, no magenta or neon lime; Glasswrights: no metal; Eclipse: no green)."""
+    import interior_trim as IT
+    probs = []; rows = []
+    chorus = fac in ('chorus',); glass = fac in ('ithar', 'glasswright', 'glasswrights'); eclipse = fac in ('deathless', 'eclipse')
+    green = lambda c: c[1] > c[0] * 1.15 and c[1] > c[2] * 1.15 and c.max() > 1e-4
+    magenta = lambda c: c[0] > c[1] * 1.3 and c[2] > c[1] * 1.3 and c.max() > 1e-4
+    lime = lambda c: c[1] > c[0] * 1.05 and c[1] > c[2] * 2.0 and c.max() > 1e-4
+    for name in mats:
+        mm = next(x for x in g['materials'] if x.get('name') == name); pbr = mm.get('pbrMetallicRoughness', {})
+        role = (mm.get('extras') or {}).get('interior_role')
+        if role is None:
+            probs.append(f'interior palette: {name} names no interior_role (a kit zone colour, not the faction role table)'); continue
+        base = _map_mean(g, out, contract, pbr.get('baseColorTexture'))
+        if base is None:
+            probs.append(f'interior palette: {name} base map has no measured mean'); continue
+        alb = np.array(pbr.get('baseColorFactor', [1, 1, 1, 1])[:3], float) * base
+        ef = np.array(mm.get('emissiveFactor', [0, 0, 0]), float)
+        st = float((mm.get('extensions') or {}).get('KHR_materials_emissive_strength', {}).get('emissiveStrength', 1.0))
+        emt = mm.get('emissiveTexture'); em = _map_mean(g, out, contract, emt) if emt else None
+        light = ef * st * (em if em is not None else 1.0) if ef.max() > 0 else np.zeros(3)
+        orm = _map_mean(g, out, contract, pbr.get('metallicRoughnessTexture'))
+        metal = float(pbr.get('metallicFactor', 1.0)) * (orm[2] if orm is not None else 1.0)
+        rows.append(f'{name} {role} albedo {alb.mean():.3f} light {light.mean():.3f}')
+        if role not in IT.EXEMPT and alb.mean() > IT.WALL_MAX + .005:
+            probs.append(f'interior palette: {name} ({role}) albedo {alb.mean():.3f} is over the {IT.WALL_MAX} wall ceiling')
+        if role != 'core':
+            if ef.max() > 0 and emt is None:
+                probs.append(f'interior palette: {name} ({role}) has a constant light; only the core may')
+            elif light.mean() > IT.EMISSION_AREA_MAX + .01:
+                probs.append(f'interior palette: {name} ({role}) light {light.mean():.3f} is over the {IT.EMISSION_AREA_MAX} non-core emission budget')
+        if chorus:
+            if metal > .01: probs.append(f'interior palette: Chorus {name} carries metal ({metal:.2f})')
+            if role == 'bone' and light.max() > 0: probs.append(f'interior palette: Chorus bone {name} glows')
+            for c, what in ((alb, 'albedo'), (light, 'light')):
+                if magenta(c) or (what == 'albedo' and lime(c)): probs.append(f'interior palette: Chorus {name} {what} is magenta or neon lime')
+        if glass and metal > .01: probs.append(f'interior palette: Glasswright {name} carries metal ({metal:.2f})')
+        if eclipse:
+            for c, what in ((alb, 'albedo'), (light, 'light')):
+                if green(c): probs.append(f'interior palette: Eclipse {name} {what} is green')
+    notes.append('interior palette (R420): ' + '; '.join(rows))
+    return probs
+
 def main():
     a = sys.argv[1:]; shipj, out = a[0], a[1]; kw = dict(x.split('=', 1) for x in a[2:] if '=' in x)
     TOL_FRAC = float(kw.get('tol', .012)); UNBAKED = kw.get('unbaked') == '1'
@@ -266,6 +325,8 @@ def main():
                 probs.append(f'interior kit v2: {n_room_mats - len(trimmed)} room materials lack the shared interior trim maps (albedo, ORM, normal)')
             if share > INTERIOR_SHARE_MAX:
                 probs.append(f'interior kit v2: interior triangles are {share * 100:.1f} percent of the ship, over the {INTERIOR_SHARE_MAX * 100:.0f} percent budget')
+            if not UNBAKED:
+                probs.extend(interior_palette(g, out, contract, fac, sorted({g['materials'][pr['material']]['name'] for pr in room_prims}), notes))
     for seam in seams:
         if len(seam.get('p', [])) != 3: continue
         p = np.array(seam['p'], float); n = np.array(seam.get('n', [0, 0, 0]), float)

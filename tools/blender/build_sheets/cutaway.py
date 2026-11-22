@@ -24,6 +24,8 @@ opts = dict(a.split('=', 1) for a in sys.argv[1:] if '=' in a)
 BLEND, OUT, TITLE = args[-3:]
 STAGE = opts.get('stage', 'cloud direction check')
 SAMPLES = int(opts.get('samples', 24)); RES = float(opts.get('res', 1))
+VIEWS = opts.get('views', 'section,plan,close').split(',')      # cutaway_lineup.py asks for section,close and no sheet
+SHEET = opts.get('sheet', '1') == '1'
 os.makedirs(OUT, exist_ok=True)
 bpy.ops.wm.open_mainfile(filepath=BLEND)
 sc = bpy.context.scene
@@ -35,6 +37,19 @@ inside = [o for o in sc.objects if o.type == 'MESH' and (o.get('role') == 'inter
 for o in inside:
     o.hide_render = False
 outside = [o for o in meshes if o not in inside]
+# the hull's thickness as the game has it: stage 7 turns each hull's 'skin' (solidify) modifier on, its inner shell in the dark
+# liner (tools/recipe/export7.py prep(), <CODE>_inside_skin); the stage 5 blend keeps it off, so without this a cutaway would
+# show the outside paint on the inner face of the hull, which no game ship shows
+LINER = bpy.data.materials.new('cut_liner'); LINER.use_nodes = True
+_lb = LINER.node_tree.nodes['Principled BSDF']; _lb.inputs['Base Color'].default_value = (.035, .028, .022, 1); _lb.inputs['Roughness'].default_value = .85
+for o in outside:
+    sk = o.modifiers.get('skin')
+    if sk is None or o.get('role') == 'interior':
+        continue
+    sk.show_viewport = True; sk.show_render = True
+    if LINER.name not in o.data.materials: o.data.materials.append(LINER)
+    li = list(o.data.materials).index(LINER)
+    sk.material_offset = li; sk.material_offset_rim = 0 if o.get('open_cut') else li
 P = [o.matrix_world @ Vector(c) for o in outside for c in o.bound_box]
 LO = Vector((min(p.x for p in P), min(p.y for p in P), min(p.z for p in P))); HI = Vector((max(p.x for p in P), max(p.y for p in P), max(p.z for p in P)))
 C = (LO + HI) / 2; D = HI - LO; L = D.x
@@ -112,16 +127,21 @@ def shot(path):
 
 
 views = []
-cut((0, 1, 0), C)
-camera('section', (0, -1, 0), 1.06 * L, (1600, max(240, int(1600 * D.z / L * 1.25))), C)
-views.append(shot(os.path.join(OUT, code + '_cut_section.png')))
-cut((0, 0, 1), C + Vector((0, 0, 0.08 * D.z)))
-camera('plan', (0, 0, -1), 1.06 * L, (1600, max(240, int(1600 * D.y / L * 1.15))), C, up=(0, 1, 0))
-views.append(shot(os.path.join(OUT, code + '_cut_plan.png')))
-cut((0, 1, 0), C)
-tgt = C + Vector((0.02 * L, -0.06 * D.y, -0.02 * D.z))
-camera('close', (-0.45, -0.8, -0.4), None, (1280, 800), tgt, dist=0.24 * L, lens=30)
-views.append(shot(os.path.join(OUT, code + '_cut_close.png')))
+if 'section' in VIEWS:
+    cut((0, 1, 0), C)
+    camera('section', (0, -1, 0), 1.06 * L, (1600, max(240, int(1600 * D.z / L * 1.25))), C)
+    views.append(shot(os.path.join(OUT, code + '_cut_section.png')))
+if 'plan' in VIEWS:
+    cut((0, 0, 1), C + Vector((0, 0, 0.08 * D.z)))
+    camera('plan', (0, 0, -1), 1.06 * L, (1600, max(240, int(1600 * D.y / L * 1.15))), C, up=(0, 1, 0))
+    views.append(shot(os.path.join(OUT, code + '_cut_plan.png')))
+if 'close' in VIEWS:
+    cut((0, 1, 0), C)
+    tgt = C + Vector((0.02 * L, -0.06 * D.y, -0.02 * D.z))
+    camera('close', (-0.45, -0.8, -0.4), None, (1280, 800), tgt, dist=0.24 * L, lens=30)
+    views.append(shot(os.path.join(OUT, code + '_cut_close.png')))
+if not SHEET:
+    sys.exit(0)
 
 # the three on one sheet: 1280 wide, at most 720 tall
 from PIL import Image, ImageDraw, ImageFont

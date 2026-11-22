@@ -409,26 +409,36 @@ def glow_material(zone):
 # so the game still knows its insides (export7 lists them as interior materials), in the liner's dark, a faint tint per room so a
 # broken ship's spaces are not all one; the reactor core keeps its light.
 INSIDE_BASE = (.035, .028, .022)
-INSIDE_TINT = .55      # issue 1743 (R416): lifted from .18 so a broken ship's rooms read apart
-# Interior Kit V2 (issue 1743, R416 Layer 3): the shared trim maps (tools/blender/kits/shared/interior_trim.py) in this
-# faction's look: scavenged mismatched plates, soot and rust, a few red-orange lamps (factions.md, Hullbreakers: scavenged
-# frames, loot holds; never bright light; soot and rust are theirs alone). INSIDE_LIFT lifts the room colour the maps carry
-# (R416 root cause 2: crushed, unlit insides).
-INSIDE_LIFT = 2.4
-INSIDE_TRIM = None      # made on first use (it reads the faction's light colours)
+INSIDE_TINT = .18
+# Interior Kit V2 (issue 1743, R416 Layer 3) under R420 (Ryan, Nov 22; contrib/opus/plans/global_cohesion_standard.md 3):
+# dark oil-stained scavenged steel, mismatched plates, rust and soot pockets (theirs alone), sparse dim red-orange cage lamps
+# (factions.md, Hullbreakers: scavenged frames, loot holds; never bright light). Each zone takes its role's colour here, inside
+# the shared budgets of tools/blender/kits/shared/interior_trim.py; the values match the 1741 breach interior.
+FAC_KEY = 'hullbreakers'
+INSIDE_ROLES = dict(wall=dict(rgb=(.055, .045, .038)), deck=dict(rgb=(.048, .04, .034)), frame=dict(rgb=(.045, .038, .033), light=False),
+                    machinery=dict(rgb=(.058, .048, .04)), core=dict(rgb=(.05, .042, .035)))
+_TRIMS = None
 
 
-def inside_trim():
-    global INSIDE_TRIM
-    if INSIDE_TRIM is None:
-        INSIDE_TRIM = dict(style='panels', seed=1745, panel=7, split=0.85, var=0.3, grime=0.45, grille=0.25, conduit_rows=3, metal=0.3,
-                      rough=(0.55, 0.92), relief=7.0, rust=0.35, tones=((1.0, 0.95, 0.9), (0.72, 0.7, 0.68), (1.15, 1.0, 0.85)),
-                      strip=dict(rgb=(1.0, 0.3, 0.08), every=7, strength=1.2))
-    return INSIDE_TRIM
+def inside_trims():
+    global _TRIMS
+    if _TRIMS is None:
+        _TRIMS = dict(main=dict(style='panels', seed=1745, panel=7, split=0.85, var=0.3, grime=0.45, grille=0.25, conduit_rows=3, metal=0.3,
+                    rough=(0.55, 0.92), relief=7.0, rust=0.35, tones=((1.0, 0.95, 0.9), (0.72, 0.7, 0.68), (1.15, 1.0, 0.85)),
+                    strip=dict(rgb=(1.0, 0.3, 0.08), every=7, strength=1.1)))
+    return _TRIMS
+
+
+def CORE_LIGHT():
+    return ((1.0, 0.55, 0.18), 4.0)
 
 
 def inside_material(room, trim=False):
-    """trim: the insides carry the Interior Kit V2 UVs, so the room takes the faction's shared trim maps (issue 1743)"""
+    """trim: the insides carry the Interior Kit V2 UVs, so the zone takes its role's colour and trim from INSIDE_ROLES (R420; the
+    kit's zone colour and light are never read, only the core keeps its light)"""
+    if trim:
+        import interior_trim
+        return interior_trim.role_material(f'ps_inside_{room}', FAC_KEY, room, INSIDE_ROLES, inside_trims(), core=CORE_LIGHT())
     src = bpy.data.materials.get(room); m = bpy.data.materials.new(f'ps_inside_{room}'); m.use_nodes = True
     b = m.node_tree.nodes['Principled BSDF']; rgb = (1, 1, 1)
     if src is not None and src.use_nodes and src.node_tree.nodes.get('Principled BSDF'):
@@ -439,9 +449,6 @@ def inside_material(room, trim=False):
     mx = max(rgb) or 1
     b.inputs['Base Color'].default_value = tuple(INSIDE_BASE[i] * (1 - INSIDE_TINT + INSIDE_TINT * rgb[i] / mx) for i in range(3)) + (1,)
     b.inputs['Roughness'].default_value = .9; b.inputs['Metallic'].default_value = .2
-    if trim:
-        import interior_trim
-        return interior_trim.upgrade(m, 'hullbreakers', inside_trim(), INSIDE_LIFT)
     m['ps_inside'] = 1
     return m
 

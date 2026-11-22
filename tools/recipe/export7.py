@@ -30,7 +30,7 @@
 #   craft, issue 1680); maps=N overrides it for a test or a hand run and the log says so.
 #   unbaked=1 is for testing the geometry and hard points on a build that has not been baked (no maps are written and the
 #   export json says so; check_export.py fails such a folder unless it is told the same).
-import os, sys, json, math, struct, hashlib, shutil, time, random
+import os, sys, json, math, struct, hashlib, shutil, time, random, re
 import bpy, bmesh
 import numpy as np
 from mathutils import Vector, Matrix
@@ -578,7 +578,9 @@ role = {}
 def use(mat, slot, tex):
     if tex is None: return
     i = g['textures'][tex['index']]['source']; pre = CODE if mat['name'] == CODE + '_hull' else mat['name']
-    if mat['name'] in destruction['interior_materials']: pre = CODE + '_inside_trim'    # issue 1743: one shared trim set per ship
+    if mat['name'] in destruction['interior_materials']:      # issue 1743: one shared trim set per style (R420: panels, flesh, gland, bone, glass)
+        st = re.match(r'trim_[a-z]+_([a-z]+)_[0-9a-f]{8}_', str(g['images'][i].get('name', '')))
+        pre = CODE + '_inside_' + (st.group(1) + '_' + st.group(0).split('_')[-2] if st else 'trim')
     nm = f'{pre}_{slot}'
     if mat['name'] in destruction['interior_materials'] and i in role: return  # authored trim maps may be shared
     if i in role and role[i][0] != nm: die(f'one image does two jobs ({role[i][0]} and {nm}): the ORM map must hold occlusion, roughness and metal together')
@@ -623,6 +625,18 @@ for i, im in enumerate(g.get('images', [])):
     im['name'] = image_name
     if 'mimeType' in im:
         im['mimeType'] = 'image/png' if lossless else 'image/jpeg'
+# R420 (global_cohesion_standard.md 6.1): the interior maps' linear means, measured from the files as written, so
+# check_export.py can hold every room to the wall ceiling and the emission budget (base colour factor x the map's mean)
+imaps = {}
+for im in g.get('images', []):
+    if im['name'].startswith(CODE + '_inside_') and im['name'].rsplit('_', 1)[-1] in ('base', 'emission', 'orm'):
+        with Image.open(os.path.join(OUT, im['uri'])) as image:
+            a = np.asarray(image.convert('RGB'), dtype=np.float64) / 255.0
+        lin = a if im['name'].endswith('_orm') else np.where(a <= 0.04045, a / 12.92, ((a + 0.055) / 1.055) ** 2.4)
+        imaps[im['uri']] = [round(float(v), 5) for v in lin.reshape(-1, 3).mean(0)]
+if imaps:
+    root_ex = next(n for n in g['nodes'] if n.get('name') == CODE).setdefault('extras', {})
+    root_ex.setdefault('voidsworn_destruct', {})['interior_map_means'] = imaps
 if not UNBAKED:
     need = {CODE + '_base', CODE + '_orm', CODE + '_normal', CODE + '_parts_base', CODE + '_parts_orm'}
     if ship.get('bake') == 'stack':

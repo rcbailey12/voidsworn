@@ -1,5 +1,5 @@
 # Shared interior trim maps (issue 1743, R416 Layer 3; RULEBOOK 5.4). Shared plumbing only, no look of its own: every colour,
-# panel size, strip, vein and facet setting comes from the faction's stack (INSIDE_TRIM in tools/blender/kits/<faction>/stack.py,
+# panel size, strip, vein and facet setting comes from the faction's stack (INSIDE_ROLES and its trims in tools/blender/kits/<faction>/stack.py,
 # RULEBOOK 4.5). Paint (stage 5) calls trim_material() from each faction's inside_material() when the ship's insides carry the
 # Interior Kit V2 UVs (tools/blender/build_sheets/interior_kit.py).
 #
@@ -12,7 +12,13 @@
 # (shared by every interior material, tools/recipe/export7.py "authored trim maps may be shared").
 # Styles: 'panels' (metal factions: a panel grid with seams, bolts, grilles, conduits and light strips; rust only where the stack
 # asks, so soot and rust stay on the Hullbreakers), 'flesh' (the Chorus: cells, raised veins, pores; wet, no metal), 'glass'
-# (the Glasswrights: annealed facets and fine lines; no metal, no soot).
+# (the Glasswrights: annealed facets and fine lines; no metal, no soot), 'bone' (Chorus frames: dry weathered bone, no glow).
+#
+# R420 (Ryan, Nov 22; contrib/opus/plans/global_cohesion_standard.md sections 3 and 6.1): the kit's zone colours
+# (tools/blender/build_sheets/kit.py, engroom orange, magazine red, vat lime and the rest) are role tags only, never a final
+# colour or light. role_material() maps each zone to a ROLE and takes its colour from the faction's own role table
+# (INSIDE_ROLES in the stack), inside one shared value budget (WALL_MAX) and emission budget (EMISSION_AREA_MAX); only the core
+# keeps a constant light. check_export.py fails an export outside these budgets.
 import hashlib, json, math
 import numpy as np
 
@@ -148,9 +154,30 @@ def maps(spec, n=SIZE):
         rough = rlo + (rhi - rlo) * (1 - dome) + 0.1 * pores
         metal = np.zeros((n, n))
         if spec.get('glow'):
-            g = spec['glow']; mask = (border > 0.85) & (_noise(n, n * 0.04, rng) > 1 - g.get('share', 0.25))
-            em = np.array(g['rgb'], float)[None, None] * mask[..., None] * border[..., None]
+            g = spec['glow']
+            if g.get('where') == 'pores':      # R420: only a few deep pores glow, never the veins or the wall
+                deep = (fine > 0.72) & (border < 0.3)      # the deeper pits round the pores, in about half the cells
+                mask = deep & (pr < min(1.0, 6 * g.get('share', 0.08)))
+                em = np.array(g['rgb'], float)[None, None] * mask[..., None] * 1.0
+            else:
+                mask = (border > 0.85) & (_noise(n, n * 0.04, rng) > 1 - g.get('share', 0.25))
+                em = np.array(g['rgb'], float)[None, None] * mask[..., None] * border[..., None]
         nrm = _normal(h, spec.get('relief', 5.0))
+    elif style == 'bone':                                                     # dry weathered bone: no veins, no glow
+        grain = _noise(n, n * 0.01, rng); fine = _noise(n, 2.0, rng)
+        Y, X = np.mgrid[0:n, 0:n].astype(float)
+        streak = 0.5 + 0.5 * np.sin(2 * math.pi * (Y / n * spec.get('streaks', 9) + 0.35 * _noise(n, n * 0.05, rng)))
+        pits = (fine > spec.get('pits', 0.86))
+        h = 0.6 * grain + 0.25 * streak + 0.1 * fine
+        h = np.where(pits, h - 0.3, h)
+        cav = np.clip(_blur(h, 3.0) - h, 0, None)
+        ao = np.clip(1 - 3.0 * cav, 0.35, 1)
+        tone = np.array(spec.get('bone_tone', (1.0, 0.92, 0.75)), float)
+        alb = tone[None, None] * (0.85 + 0.3 * grain[..., None]) * (0.75 + 0.25 * ao[..., None]) * np.where(pits, 0.55, 1.0)[..., None]
+        rlo, rhi = spec.get('rough', (0.6, 0.72))
+        rough = rlo + (rhi - rlo) * (0.5 * grain + 0.5 * fine)
+        metal = np.zeros((n, n))
+        nrm = _normal(h, spec.get('relief', 4.0))
     else:                                                                     # glass
         F1, F2, idn = _cells(n, int(spec.get('cells', 60)), rng)
         k = int(spec.get('cells', 60))
@@ -171,6 +198,9 @@ def maps(spec, n=SIZE):
     srgb = lambda c: np.where(c <= 0.0031308, 12.92 * c, 1.055 * np.clip(c, 0, None) ** (1 / 2.4) - 0.055)
     out = dict(base=srgb(alb), orm=np.stack([ao, np.clip(rough, 0.04, 1), np.clip(metal, 0, 1)], -1),
                normal=nrm * 0.5 + 0.5, emission=None if em is None else srgb(np.clip(em, 0, 1)))
+    # the linear means the budgets read (base about 0.5 per channel by construction; emission: the area its light covers)
+    out['_stats'] = dict(base=[float(v) for v in alb.reshape(-1, 3).mean(0)],
+                         emission=None if em is None else [float(v) for v in np.clip(em, 0, 1).reshape(-1, 3).mean(0)])
     return out
 
 
@@ -185,10 +215,10 @@ def images(fac, spec, n=SIZE):
     """the faction's packed Blender images (made once per blend: a second call returns the same images)"""
     import bpy
     key = _key(fac, spec)
-    pre = 'trim_%s_%s' % (fac, key)
+    pre = 'trim_%s_%s_%s' % (fac, spec.get('style', 'panels'), key)    # export7 names the files by the style (one set per style)
     if bpy.data.images.get(pre + '_base') is not None:
         return {k: bpy.data.images.get('%s_%s' % (pre, k)) for k in ('base', 'orm', 'normal', 'emission')}
-    m = maps(spec, n); out = {}
+    m = maps(spec, n); out = {}; stats = m.pop('_stats')
     for k, a in m.items():
         if a is None:
             out[k] = None; continue
@@ -197,14 +227,15 @@ def images(fac, spec, n=SIZE):
         px = np.concatenate([a.astype(np.float32), np.ones((n, n, 1), np.float32)], -1)
         im.pixels.foreach_set(px.ravel()); im.update()
         im.file_format = 'PNG'; im.pack()
-        im['interior_trim'] = fac
+        im['interior_trim'] = fac; im['interior_style'] = spec.get('style', 'panels')
+        if stats.get(k) is not None: im['mean_linear'] = stats[k]
         out[k] = im
     return out
 
 
-def trim_material(name, fac, spec, albedo, emission=None, strip_strength=None):
+def trim_material(name, fac, spec, albedo, emission=None, strip_strength=None, light=True):
     """one interior material: the faction's trim maps, scaled by the room's albedo (linear rgb, each at most 0.5), with its own
-    constant emission (the core: rgb, strength) or else the faction's strip emission map"""
+    constant emission (the core: rgb, strength) or else, when light, the faction's strip emission map"""
     import bpy
     ims = images(fac, spec)
     m = bpy.data.materials.new(name); m.use_nodes = True; nt = m.node_tree; N = nt.nodes; Lk = nt.links
@@ -227,24 +258,72 @@ def trim_material(name, fac, spec, albedo, emission=None, strip_strength=None):
     Lk.new(tn.outputs['Color'], nm.inputs['Color']); Lk.new(nm.outputs['Normal'], b.inputs['Normal'])
     if emission is not None:
         b.inputs['Emission Color'].default_value = (*emission[0], 1); b.inputs['Emission Strength'].default_value = emission[1]
-    elif ims['emission'] is not None:
+    elif light and ims['emission'] is not None:
         te = N.new('ShaderNodeTexImage'); te.image = ims['emission']
         Lk.new(te.outputs['Color'], b.inputs['Emission Color']); b.inputs['Emission Strength'].default_value = strip_strength or spec.get('strip', spec.get('glow', {})).get('strength', 1.0)
     m['ps_inside'] = 1; m['interior_trim'] = fac
     return m
 
 
-def upgrade(flat, fac, spec, lift, base=None, flat_base=None):
-    """the V2 material for a faction's flat inside material (the legacy one its inside_material() just made): the same room
-    colour, lifted by the stack's INSIDE_LIFT (each channel at most 0.5), and its own light (the core) kept; the flat one is removed.
-    base: the stack's own interior colour for the trim (the Directorate's white corridors), carrying the room's tint over
-    flat_base (the liner colour the flat one was made from) instead of the lift"""
-    import bpy
-    b = flat.node_tree.nodes['Principled BSDF']
-    col = tuple(b.inputs['Base Color'].default_value)[:3]
-    if base is not None:
-        col = tuple(base[i] * col[i] / max(flat_base[i], 1e-6) for i in range(3)); lift = 1.0
-    em = b.inputs['Emission Strength'].default_value
-    emission = (tuple(b.inputs['Emission Color'].default_value)[:3], em) if em > 0 else None
-    name = flat.name; bpy.data.materials.remove(flat)
-    return trim_material(name, fac, spec, tuple(min(0.5, c * lift) for c in col), emission=emission)
+# ------------------------------------------------------------------------------------------------------------ roles (R420)
+WALL_MAX = 0.11            # linear mean albedo of every interior surface but bone and glass (global_cohesion_standard.md 6.1.2)
+EMISSION_AREA_MAX = 0.25   # a non-core surface's light: strength x the emission map's mean, area weighted (6.1.3)
+TINT_MAX = 0.15            # a zone's own shift off its role colour, so rooms are not all one but never colour-coded (3.1)
+EXEMPT = ('bone', 'glass', 'glass_strut')      # roles the wall ceiling does not bind (dry bone and crystal read lighter)
+# Every kit zone names a role; the zone's kit.py colour and light are never read (3.1). A zone missing here stops the paint.
+ZONE_ROLE = {
+    'deck': 'deck', 'darkdeck': 'deck',
+    'frame': 'frame', 'armour': 'frame', 'truss': 'frame',
+    'core': 'core', 'ecore': 'core',
+    'engroom': 'machinery', 'machinery': 'machinery', 'magazine': 'machinery', 'hrack': 'machinery',
+    'hangar': 'wall', 'hold': 'wall', 'crew': 'wall', 'bridge': 'wall', 'archive': 'wall', 'hcorr': 'wall', 'hemerg': 'wall',
+    'gallery': 'wall',
+    'organ': 'organ', 'gut': 'organ', 'brood': 'organ', 'ganglion': 'organ', 'septum': 'organ', 'tissue': 'organ', 'vein': 'organ',
+    'gland': 'gland', 'vat': 'gland',
+    'bonefr': 'bone',
+    'gw_in_frame': 'glass_strut', 'gw_in_amber': 'glass', 'gw_in_green': 'glass', 'gw_in_violet': 'glass',
+}
+
+
+def role_of(zone, zones=None):
+    """the zone's role: the faction's own override (its INSIDE_ZONES) first, then the shared table; never a silent default"""
+    r = (zones or {}).get(zone) or ZONE_ROLE.get(zone)
+    if r is None:
+        raise KeyError(f'interior zone {zone!r} has no role: add it to interior_trim.ZONE_ROLE or the stack\'s INSIDE_ZONES')
+    return r
+
+
+def _jitter(zone):
+    """a fixed small value shift per zone, within TINT_MAX (seeded by the name, so every bake is the same)"""
+    h = int(hashlib.sha1(zone.encode()).hexdigest()[:6], 16) / float(0xFFFFFF)
+    return 1 + (h - 0.5) * TINT_MAX
+
+
+def role_material(name, fac, zone, roles, trims, core=None, zones=None):
+    """the Interior Kit V2 material for one kit zone (R420): its role's colour from the faction's role table (roles: role ->
+    dict(rgb linear, trim key into trims, light True|False, tint rgb multiplier)), the role's trim maps, light only from the
+    trim's own strips or pores inside EMISSION_AREA_MAX, and a constant light on the core alone (core: (rgb, strength))"""
+    role = role_of(zone, zones)
+    if role not in roles:
+        raise KeyError(f'{fac}: interior role {role!r} (zone {zone!r}) has no entry in the stack\'s INSIDE_ROLES')
+    r = roles[role]; j = _jitter(zone)
+    tint = r.get('tint', {}).get(zone, (1.0, 1.0, 1.0))
+    rgb = tuple(c * j * t for c, t in zip(r['rgb'], tint))
+    if role not in EXEMPT and sum(rgb) / 3 > WALL_MAX:
+        raise ValueError(f'{fac}: interior role {role} ({zone}) albedo {sum(rgb) / 3:.3f} is over the {WALL_MAX} wall ceiling')
+    spec = trims[r.get('trim', 'main')]
+    emission = strength = None; light = bool(r.get('light', True))
+    if role == 'core':
+        if core is None: raise ValueError(f'{fac}: the core zone {zone!r} needs the faction core light')
+        emission = (tuple(core[0]), float(core[1])); light = False
+    elif light:
+        ims = images(fac, spec)
+        if ims['emission'] is None:
+            light = False
+        else:
+            mean = sum(ims['emission'].get('mean_linear', [0, 0, 0])) / 3
+            want = spec.get('strip', spec.get('glow', {})).get('strength', 1.0)
+            strength = min(want, EMISSION_AREA_MAX * 0.98 / mean) if mean > 0 else want
+    m = trim_material(name, fac, spec, rgb, emission=emission, strip_strength=strength, light=light)
+    m['interior_role'] = role; m['interior_zone'] = zone
+    return m

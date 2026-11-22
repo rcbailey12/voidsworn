@@ -201,10 +201,12 @@ R225: one home per fact):
 6. gives every inside the faction's dark liner (`inside_material`: one material per room, the liner's dark with a faint tint, the
    core keeps its light), so an inside seen through an opening or a gap never shows a sheet room colour (R99 Q1). Insides the
    Interior Kit V2 built (issue 1743: every one carries `interior_kit = 2` and its box UVs) take `inside_material(zone,
-   trim=True)` instead: the faction's shared interior trim maps (`tools/blender/kits/shared/interior_trim.py`, the look in the
-   stack's `INSIDE_TRIM`), scaled per room by the room's lifted colour, its own light kept; the paint report records
-   `interior_kit`. Stage 7 writes the set once per ship as `<CODE>_inside_trim_base`, `_orm`, `_normal` and `_emission`, and
-   records `voidsworn_destruct.interior_kit`; check_export.py holds a V2 export to them (docs/playbooks/ships.md 2b);
+   trim=True)` instead (R420): each zone takes its role's colour and trim set from the stack's `INSIDE_ROLES` through
+   `interior_trim.role_material()` (`tools/blender/kits/shared/interior_trim.py`), never the kit's zone colour or light, inside
+   the shared wall ceiling and emission budget, the core alone keeping a constant light; the paint report records
+   `interior_kit`. Stage 7 writes one set per trim style as `<CODE>_inside_<style>_<key>_base`, `_orm`, `_normal` and
+   `_emission`, records `voidsworn_destruct.interior_kit` and each interior map's measured mean (`interior_map_means`);
+   check_export.py holds a V2 export to them (docs/playbooks/ships.md 2b);
 7. measures R224 (`tools/recipe/density.py`): per part type, triangles and edge features per square unit, texels per square
    unit and paint detail (the share of the surface as busy as the hull's busiest 30 percent), each against the hull; a part type
    under 0.75 of the hull is flagged in `density.json` and printed by stage 5 (reported, not a pass bar).

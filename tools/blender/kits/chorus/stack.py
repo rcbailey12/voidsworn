@@ -316,24 +316,32 @@ def glow_material(zone, hull=False):
     return material
 
 
-# Interior Kit V2 (issue 1743, R416 Layer 3): the shared trim maps (tools/blender/kits/shared/interior_trim.py) as wet flesh:
-# cells, raised dark red veins, pores, a little bile yellow-green light in some veins; no metal, never magenta or maroon
-# (factions.md, the Chorus: inside flesh and bone, wet and lit from within).
-INSIDE_TRIM = dict(style='flesh', seed=1747, cells=170, vein_w=7.0, warp=0.05, relief=5.0, rough=(0.26, 0.5), flesh_tone=(1.0, 0.95, 0.7),
-                   vein_tone=(0.55, 0.12, 0.08), glow=dict(rgb=(0.55, 0.85, 0.08), share=0.2, strength=0.6))
+# Interior Kit V2 (issue 1743, R416 Layer 3) under R420 (Ryan, Nov 22; contrib/opus/plans/global_cohesion_standard.md 3):
+# the tissue is deep wet dark crimson-umber (bruised mahogany), wet and never metal, never magenta, never neon lime; the bone
+# hoops and struts (bonefr) are dry weathered muted ochre-ivory bone with no glow, kept apart from the flesh trim; light only as
+# a few dim olive-amber pores deep in the glands and vats. The kit's organ colours (vat lime 2.0, gland yellow-green, brood
+# yellow) are role tags only. Ryan's tissue wording here (Nov 22) replaces factions.md's "never red flesh" for the insides only;
+# the hull keeps its olive-brown hide. The values match the 1741 breach interior (faction_looks.json wound).
+INSIDE_ROLES = dict(organ=dict(rgb=(.07, .035, .028), trim='flesh', light=False),
+                    gland=dict(rgb=(.06, .03, .024), trim='gland'),
+                    bone=dict(rgb=(.17, .15, .11), trim='bone', light=False))
+INSIDE_ZONES = dict(engroom='organ', machinery='organ', core='gland', frame='bone', deck='organ')      # no metal rooms on the Chorus
+_FLESH = dict(style='flesh', seed=1747, cells=170, vein_w=7.0, warp=0.05, relief=5.0, rough=(0.24, 0.46), flesh_tone=(1.0, 0.92, 0.88),
+              vein_tone=(0.55, 0.3, 0.26))
+INSIDE_TRIMS = dict(flesh=_FLESH,
+                    gland=dict(_FLESH, seed=1749, glow=dict(rgb=(0.6, 0.52, 0.14), share=0.08, strength=0.25, where='pores')),
+                    bone=dict(style='bone', seed=1750, rough=(0.6, 0.72), relief=4.0, bone_tone=(1.0, 0.94, 0.8)))
 
 
 def inside_material(zone, trim=False):
-    """trim: the insides carry the Interior Kit V2 UVs, so the zone takes the Chorus trim maps (issue 1743)"""
+    """trim: the insides carry the Interior Kit V2 UVs, so the zone takes its role's colour and trim from INSIDE_ROLES (R420; the
+    kit's zone colour and light are never read)"""
     if trim:
         import os, sys
         sh_ = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'shared')
         if sh_ not in sys.path: sys.path.insert(0, sh_)
         import interior_trim
-        sb = bpy.data.materials[zone].node_tree.nodes.get('Principled BSDF')
-        col = tuple(sb.inputs['Base Color'].default_value)[:3]; em = sb.inputs['Emission Strength'].default_value
-        m = interior_trim.trim_material(f'chorus_inside_{zone}', 'chorus', INSIDE_TRIM, tuple(min(.5, v * .54) for v in col),
-                                        emission=(tuple(sb.inputs['Emission Color'].default_value)[:3], em) if em > 0 else None)
+        m = interior_trim.role_material(f'chorus_inside_{zone}', 'chorus', zone, INSIDE_ROLES, INSIDE_TRIMS, zones=INSIDE_ZONES)
         m['authored_look'] = 1
         return m
     material = bpy.data.materials[zone].copy()

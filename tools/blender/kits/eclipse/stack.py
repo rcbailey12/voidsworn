@@ -341,26 +341,37 @@ def engine_glow_nodes(nt, r, e, d, a, tc, H):
 # An inside seen from outside reads as the dark inner liner (R99 Q1), never a room colour from outside: the Eclipse liner is a
 # dark violet-black (their dark decks), a faint tint per room so a broken ship's spaces are not all one; the core keeps its light.
 INSIDE_BASE = (.010, .008, .014)
-INSIDE_TINT = .55      # issue 1743 (R416): lifted from .20 so a broken ship's rooms read apart
-# Interior Kit V2 (issue 1743, R416 Layer 3): the shared trim maps (tools/blender/kits/shared/interior_trim.py) in this
-# faction's look: dark violet-black decks, violet-white bus rails from faction_looks.json (factions.md, Eclipse: archive
-# vaults, dark decks, the core's light; no green, no rust). INSIDE_LIFT lifts the room colour the maps carry (R416 root cause
-# 2: crushed, unlit insides).
-INSIDE_LIFT = 2.6
-INSIDE_TRIM = None      # made on first use (it reads the faction's light colours)
+INSIDE_TINT = .20
+# Interior Kit V2 (issue 1743, R416 Layer 3) under R420 (Ryan, Nov 22; contrib/opus/plans/global_cohesion_standard.md 3):
+# deep obsidian-violet monolithic vaults in satin dark alloy, hairline violet-white bus rails from faction_looks.json
+# (deathless death.fire), the core in the same violet-white; zero green from archive or ecore, zero rust (factions.md, Eclipse:
+# archive vaults, dark decks). Each zone takes its role's colour here, inside the shared budgets of
+# tools/blender/kits/shared/interior_trim.py; the values match the 1741 breach interior.
+FAC_KEY = 'eclipse'
+INSIDE_ROLES = dict(wall=dict(rgb=(.035, .028, .045)), deck=dict(rgb=(.03, .024, .04)), frame=dict(rgb=(.028, .024, .034), light=False),
+                    machinery=dict(rgb=(.038, .031, .048)), core=dict(rgb=(.03, .024, .04)))
+_TRIMS = None
 
 
-def inside_trim():
-    global INSIDE_TRIM
-    if INSIDE_TRIM is None:
-        INSIDE_TRIM = dict(style='panels', seed=1746, panel=8, split=0.3, var=0.1, grime=0.15, grille=0.1, conduit_rows=1, metal=0.3,
-                 rough=(0.3, 0.6), relief=5.0, tones=((1.0, 0.9, 1.1), (0.86, 0.8, 0.96)),
-                 strip=dict(rgb=tuple(faction_look()['death']['fire']), every=4, strength=2.0))
-    return INSIDE_TRIM
+def inside_trims():
+    global _TRIMS
+    if _TRIMS is None:
+        _TRIMS = dict(main=dict(style='panels', seed=1746, panel=8, split=0.3, var=0.1, grime=0.15, grille=0.1, conduit_rows=1, metal=0.3,
+                    rough=(0.28, 0.55), relief=5.0, tones=((1.0, 0.9, 1.1), (0.86, 0.8, 0.96)),
+                    strip=dict(rgb=tuple(faction_look()['death']['fire']), every=4, strength=1.6)))
+    return _TRIMS
+
+
+def CORE_LIGHT():
+    return (tuple(float(c) for c in faction_look()['death']['fire']), 4.0)
 
 
 def inside_material(room, trim=False):
-    """trim: the insides carry the Interior Kit V2 UVs, so the room takes the faction's shared trim maps (issue 1743)"""
+    """trim: the insides carry the Interior Kit V2 UVs, so the zone takes its role's colour and trim from INSIDE_ROLES (R420; the
+    kit's zone colour and light are never read, only the core keeps its light)"""
+    if trim:
+        import interior_trim
+        return interior_trim.role_material(f'ps_inside_{room}', FAC_KEY, room, INSIDE_ROLES, inside_trims(), core=CORE_LIGHT())
     src = bpy.data.materials.get(room); m = bpy.data.materials.new(f'ps_inside_{room}'); m.use_nodes = True
     b = m.node_tree.nodes['Principled BSDF']; rgb = (1, 1, 1)
     if src is not None and src.use_nodes and src.node_tree.nodes.get('Principled BSDF'):
@@ -374,9 +385,6 @@ def inside_material(room, trim=False):
     mx = max(rgb) or 1
     b.inputs['Base Color'].default_value = tuple(INSIDE_BASE[i] * (1 - INSIDE_TINT + INSIDE_TINT * rgb[i] / mx) for i in range(3)) + (1,)
     b.inputs['Roughness'].default_value = .9; b.inputs['Metallic'].default_value = .2
-    if trim:
-        import interior_trim
-        return interior_trim.upgrade(m, 'eclipse', inside_trim(), INSIDE_LIFT)
     m['ps_inside'] = 1
     return m
 

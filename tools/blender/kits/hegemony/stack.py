@@ -501,29 +501,38 @@ def emissive_audit(job_dir, cell):
 # An inside seen from outside reads as the dark inner liner (R99 Q1): hegemony.md's liner, dark with a faint cold tint, a faint
 # tint per room so a broken ship's spaces are not all one; the core and the blue emergency strips keep their light, in blue.
 INSIDE_BASE = lin(CONCEPT['liner'][1])
-INSIDE_TINT = .55      # issue 1743 (R416): lifted from .18 so a broken ship's rooms read apart
-# Interior Kit V2 (issue 1743, R416 Layer 3): the shared trim maps (tools/blender/kits/shared/interior_trim.py) in this
-# faction's look: white corridors, blue emergency lines, every panel the same (factions.md, Directorate: inside white
-# corridors, blue emergency light, racks of identical equipment; never rust, never warm light). INSIDE_LIFT lifts the room
-# colour the maps carry (R416 root cause 2: crushed, unlit insides).
-INSIDE_LIFT = 3.4
-# the corridors are white (hegemony.md, factions.md): the trim takes this pale grey instead of the lifted navy liner, each room
-# keeping its own tint over the liner; dim in linear terms (sRGB about 115), so a breach reads as lit white panelling, never a glare
-INSIDE_TRIM_BASE = (.17, .175, .185)
-INSIDE_TRIM = None      # made on first use (it reads the faction's light colours)
+INSIDE_TINT = .18
+# Interior Kit V2 (issue 1743, R416 Layer 3) under R420 (Ryan, Nov 22; contrib/opus/plans/global_cohesion_standard.md 3):
+# cool brushed clinical steel-slate, cleaner, cooler and a little lighter than Sunward and the Hullbreakers, never chalk-white
+# clay (the 0.175 matte corridors are retired); crisp cold-blue emergency strips carry the sterile look (factions.md,
+# Directorate: racks of identical equipment, blue emergency light; never rust, never warm light). Each zone takes its role's
+# colour here, inside the shared budgets of tools/blender/kits/shared/interior_trim.py; the values match the 1741 breach
+# interior (faction_looks.json wound).
+FAC_KEY = 'hegemony'
+INSIDE_ROLES = dict(wall=dict(rgb=(.08, .085, .095)), deck=dict(rgb=(.07, .075, .083)), frame=dict(rgb=(.065, .07, .078), light=False),
+                    machinery=dict(rgb=(.085, .088, .096)), core=dict(rgb=(.07, .075, .083)))
+_TRIMS = None
 
 
-def inside_trim():
-    global INSIDE_TRIM
-    if INSIDE_TRIM is None:
-        INSIDE_TRIM = dict(style='panels', seed=1744, panel=8, split=0.0, var=0.05, grime=0.08, grille=0.25, conduit_rows=2, metal=0.2,
-                   rough=(0.35, 0.55), relief=5.0, tones=((1.0, 1.0, 1.0), (0.93, 0.95, 0.98)),
-                   strip=dict(rgb=tuple(min(1.0, c) for c in engine_rgb()), every=3, strength=2.2))
-    return INSIDE_TRIM
+def inside_trims():
+    global _TRIMS
+    if _TRIMS is None:
+        _TRIMS = dict(main=dict(style='panels', seed=1744, panel=8, split=0.0, var=0.10, grime=0.10, grille=0.25, conduit_rows=2, metal=0.45,
+                    rough=(0.3, 0.5), relief=5.0, tones=((1.0, 1.0, 1.0), (0.93, 0.95, 0.98)),
+                    strip=dict(rgb=tuple(min(1.0, c) for c in engine_rgb()), every=3, strength=2.2)))
+    return _TRIMS
+
+
+def CORE_LIGHT():
+    return (tuple(engine_rgb()), 4.0)
 
 
 def inside_material(room, trim=False):
-    """trim: the insides carry the Interior Kit V2 UVs, so the room takes the faction's shared trim maps (issue 1743)"""
+    """trim: the insides carry the Interior Kit V2 UVs, so the zone takes its role's colour and trim from INSIDE_ROLES (R420; the
+    kit's zone colour and light are never read, only the core keeps its light)"""
+    if trim:
+        import interior_trim
+        return interior_trim.role_material(f'ps_inside_{room}', FAC_KEY, room, INSIDE_ROLES, inside_trims(), core=CORE_LIGHT())
     src = bpy.data.materials.get(room); m = bpy.data.materials.new(f'ps_inside_{room}'); m.use_nodes = True
     b = m.node_tree.nodes['Principled BSDF']; rgb = (1, 1, 1)
     if src is not None and src.use_nodes and src.node_tree.nodes.get('Principled BSDF'):
@@ -534,9 +543,6 @@ def inside_material(room, trim=False):
     mx = max(rgb) or 1
     b.inputs['Base Color'].default_value = tuple(INSIDE_BASE[i] * (1 - INSIDE_TINT + INSIDE_TINT * rgb[i] / mx) for i in range(3)) + (1,)
     b.inputs['Roughness'].default_value = .9; b.inputs['Metallic'].default_value = .2
-    if trim:
-        import interior_trim
-        return interior_trim.upgrade(m, 'hegemony', inside_trim(), INSIDE_LIFT, base=INSIDE_TRIM_BASE, flat_base=INSIDE_BASE)
     m['ps_inside'] = 1
     return m
 

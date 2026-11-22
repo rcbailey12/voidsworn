@@ -32,6 +32,10 @@
 #   interior_no_uv  (an Interior Kit V2 export, issue 1743) one room surface's UVs      must FAIL (a room surface without interior UVs)
 #                   taken off
 #   interior_no_trim (a painted V2 export) one room material's detail normal taken off must FAIL (the shared trim maps missing)
+#   interior_no_role (a painted V2 export, R420) a room material's interior_role off   must FAIL (a kit zone colour, no role)
+#   interior_bright the same, a wall's base colour factor four times over             must FAIL (over the wall ceiling)
+#   interior_glow   the same, a non-core room given a constant lime light              must FAIL (only the core may)
+#   interior_guard  (Chorus) a bone material given a light; (Eclipse) a green room     must FAIL (the faction guard)
 #   maps_undersized (a painted export, Artoo on PR 1724) stage 7's report asks for     must FAIL (maps under the target)
 #                   twice the size its maps were written at
 # A case whose points the export does not carry is skipped and named (issue 1413: an objective has no guns, and the Relay beacon
@@ -186,6 +190,23 @@ def interior_no_uv(g):  # issue 1743: an Interior Kit V2 room surface without it
 def interior_no_trim(g):  # issue 1743: a painted V2 room material without the shared trim's detail normal
     root, mats = _room_mats(g)
     next(m for m in g['materials'] if m.get('name') in mats and m.get('normalTexture')).pop('normalTexture')
+def _room(g, test):   # the first painted V2 room material that test accepts
+    root, mats = _room_mats(g)
+    return next(m for m in g['materials'] if m.get('name') in mats and test(m))
+def _role(m): return (m.get('extras') or {}).get('interior_role')
+def interior_no_role(g):  # R420: a room material that names no role (a kit.py zone colour)
+    _room(g, lambda m: _role(m))['extras'].pop('interior_role')
+def interior_bright(g):  # R420: a wall over the shared value ceiling (the chalk-white corridor)
+    m = _room(g, lambda m: _role(m) not in ('bone', 'glass', 'glass_strut', None))
+    m['pbrMetallicRoughness']['baseColorFactor'] = [min(1.0, 4 * c) for c in m['pbrMetallicRoughness']['baseColorFactor'][:3]] + [1]
+def interior_glow(g):  # R420: a non-core room with a constant full-surface light (the neon vat)
+    m = _room(g, lambda m: _role(m) not in ('core', None))
+    m.pop('emissiveTexture', None); m['emissiveFactor'] = [0.55, 0.85, 0.1]
+def interior_guard(g):  # R420 faction guards: Chorus bone that glows; Eclipse green
+    if FAC == 'chorus':
+        m = _room(g, lambda m: _role(m) == 'bone'); m['emissiveFactor'] = [0.3, 0.3, 0.1]
+    else:
+        m = _room(g, lambda m: _role(m) not in ('core', None)); m['pbrMetallicRoughness']['baseColorFactor'] = [0.05, 0.2, 0.05, 1]
 def turret_merged(g):   # issue 560: the turrets folded back into the ship mesh (turret nodes gone, their muzzles on the ship node)
     W, par = CE.world_matrices(g); root = next(i for i, n in enumerate(g['nodes']) if n.get('name') == code)
     for i, n in enumerate(g['nodes']):
@@ -230,6 +251,16 @@ if not wing:
     V2 = int(_root0.get('extras', {}).get('voidsworn_destruct', {}).get('interior_kit', 0) or 0) >= 2
     want(['interior_no_uv'], V2, (('interior_no_uv', interior_no_uv, 1, 'have no interior UVs'),))
     want(['interior_no_trim'], V2 and 'unbaked=1' not in sys.argv[3:], (('interior_no_trim', interior_no_trim, 1, 'lack the shared interior trim maps'),))
+    PAINTED = V2 and 'unbaked=1' not in sys.argv[3:]
+    FAC = ship.get('faction')
+    _roles0 = {_role(m) for m in _g0.get('materials', []) if m.get('name') in _room_mats(_g0)[1]}
+    want(['interior_no_role', 'interior_glow'], PAINTED,
+         (('interior_no_role', interior_no_role, 1, 'names no interior_role'), ('interior_glow', interior_glow, 1, 'has a constant light')))
+    # the Glasswrights' rooms are all glass, which the wall ceiling does not bind
+    want(['interior_bright'], PAINTED and bool(_roles0 - {'bone', 'glass', 'glass_strut', None}),
+         (('interior_bright', interior_bright, 1, 'wall ceiling'),))
+    if PAINTED and FAC in ('chorus', 'eclipse'):
+        CASES += (('interior_guard', interior_guard, 1, 'Chorus bone' if FAC == 'chorus' else 'is green'),)
 
 def sided_points(g, kind, side):
     return [n for n in g['nodes'] if n.get('name', '').startswith(f'hp_{kind}_') and n.get('extras', {}).get('side') == side]
