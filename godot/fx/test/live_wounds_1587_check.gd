@@ -166,6 +166,16 @@ func _run() -> void:
 		s.root.position += Vector3(1, 0, 0)
 		fx.step(0.02)
 		check(_log(s, "cough") == c0 + 1, "%s: a stop and start inside the cough gap does not cough again" % faction)
+		# Artoo on PR 1631 (after movement 1581 merged): a wounded ship braking with its drive cold still gutters and
+		# its trails still age fast; both paths run in the same update
+		var te0: float = s._trail_extra
+		s.engine_level = 0.05
+		for j in 20:
+			s.root.position += Vector3(0.5, 0, 0)
+			fx.step(0.05)
+		s.engine_level = 1.0
+		check(s._trail_extra > te0 + 0.5 and s.sick_nozzle >= 0 and s._sick_mat != null,
+			"%s: braking with a cold drive ages the trails fast (%.2f) and the sick nozzle stays" % [faction, s._trail_extra - te0])
 		s.sync(fx, _state(100, 100, 100))
 		flush(s)
 		check(s.sick_nozzle == -1 and s._sick_mat == null, "%s: repaired engines lose the sick nozzle" % faction)
