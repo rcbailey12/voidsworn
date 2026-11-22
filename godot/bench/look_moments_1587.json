@@ -1,0 +1,872 @@
+{
+ "about": "Issue 1587: live hull wounds. Wounded cruisers of every faction (every section at stage 3: the sick engine nozzle, the jammed turret with its wisp, the uneven power), the one-shot blowout as a section crosses into stage 3, an ion lance's crawl and brownout, and a lance cut cooling over 10 s, at camera 170 and 26. Run with --moments res://bench/look_moments_1587.json on main (before; it ignores the sync event, so the blowout rows show the ship unchanged) and opus/issue-1587 (after).",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "26": [
+   768,
+   432
+  ]
+ },
+ "rows": [
+  {
+   "id": "lw_void_wounded",
+   "group": "issue 1587 live wounds",
+   "label": "Sunward cruiser, every section at stage 3: sick nozzle, jammed turret, wisp, power flicker",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 30.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 30,
+      "max": 100
+     },
+     "mid": {
+      "hp": 30,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.6,
+     1
+    ],
+    [
+     "event",
+     1.1,
+     1
+    ],
+    [
+     "event",
+     2.5,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "lw_itha_wounded",
+   "group": "issue 1587 live wounds",
+   "label": "Glasswright cruiser, every section at stage 3: sick nozzle, jammed turret, wisp, power flicker",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 30.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 30,
+      "max": 100
+     },
+     "mid": {
+      "hp": 30,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.6,
+     1
+    ],
+    [
+     "event",
+     1.1,
+     1
+    ],
+    [
+     "event",
+     2.5,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "lw_chor_wounded",
+   "group": "issue 1587 live wounds",
+   "label": "Chorus cruiser, every section at stage 3: sick nozzle, jammed turret, wisp, power flicker",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 30.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 30,
+      "max": 100
+     },
+     "mid": {
+      "hp": 30,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.6,
+     1
+    ],
+    [
+     "event",
+     1.1,
+     1
+    ],
+    [
+     "event",
+     2.5,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "lw_hege_wounded",
+   "group": "issue 1587 live wounds",
+   "label": "Navy cruiser, every section at stage 3: sick nozzle, jammed turret, wisp, power flicker",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 30.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 30,
+      "max": 100
+     },
+     "mid": {
+      "hp": 30,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.6,
+     1
+    ],
+    [
+     "event",
+     1.1,
+     1
+    ],
+    [
+     "event",
+     2.5,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "lw_cors_wounded",
+   "group": "issue 1587 live wounds",
+   "label": "Hullbreaker cruiser, every section at stage 3: sick nozzle, jammed turret, wisp, power flicker",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 30.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 30,
+      "max": 100
+     },
+     "mid": {
+      "hp": 30,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.6,
+     1
+    ],
+    [
+     "event",
+     1.1,
+     1
+    ],
+    [
+     "event",
+     2.5,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "lw_deat_wounded",
+   "group": "issue 1587 live wounds",
+   "label": "Eclipse cruiser, every section at stage 3: sick nozzle, jammed turret, wisp, power flicker",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 30.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 30,
+      "max": 100
+     },
+     "mid": {
+      "hp": 30,
+      "max": 100
+     },
+     "prow": {
+      "hp": 30,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.6,
+     1
+    ],
+    [
+     "event",
+     1.1,
+     1
+    ],
+    [
+     "event",
+     2.5,
+     1
+    ],
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "lw_void_blowout",
+   "group": "issue 1587 live wounds",
+   "label": "Sunward cruiser, mid section pushed from stage 2 to 3: the one-shot blowout",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "sync",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 63.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 70,
+      "max": 100
+     },
+     "mid": {
+      "hp": 50,
+      "max": 100
+     },
+     "prow": {
+      "hp": 70,
+      "max": 100
+     }
+    }
+   },
+   "sync_ev": {
+    "hp": 57.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 70,
+      "max": 100
+     },
+     "mid": {
+      "hp": 30,
+      "max": 100
+     },
+     "prow": {
+      "hp": 70,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.05,
+     1
+    ],
+    [
+     "event",
+     0.25,
+     1
+    ],
+    [
+     "event",
+     0.5,
+     1
+    ],
+    [
+     "event",
+     0.9,
+     1
+    ],
+    [
+     "event",
+     1.4,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "lw_hege_blowout",
+   "group": "issue 1587 live wounds",
+   "label": "Navy cruiser, mid section pushed from stage 2 to 3: the one-shot blowout",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "sync",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 63.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 70,
+      "max": 100
+     },
+     "mid": {
+      "hp": 50,
+      "max": 100
+     },
+     "prow": {
+      "hp": 70,
+      "max": 100
+     }
+    }
+   },
+   "sync_ev": {
+    "hp": 57.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 70,
+      "max": 100
+     },
+     "mid": {
+      "hp": 30,
+      "max": 100
+     },
+     "prow": {
+      "hp": 70,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.05,
+     1
+    ],
+    [
+     "event",
+     0.25,
+     1
+    ],
+    [
+     "event",
+     0.5,
+     1
+    ],
+    [
+     "event",
+     0.9,
+     1
+    ],
+    [
+     "event",
+     1.4,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "lw_ion_crawl",
+   "group": "issue 1587 live wounds",
+   "label": "Navy ion lance on a Sunward hull: crawl threads and the brownout",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "ion",
+   "on": "hull",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 63.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 70,
+      "max": 100
+     },
+     "mid": {
+      "hp": 50,
+      "max": 100
+     },
+     "prow": {
+      "hp": 70,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0.05,
+     1
+    ],
+    [
+     "impact",
+     0.2,
+     1
+    ],
+    [
+     "impact",
+     0.4,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "lw_lance_cool",
+   "group": "issue 1587 live wounds",
+   "label": "Sunward lance cut on an Eclipse hull cooling: white, orange, cherry, cold char",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "lance",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0.5,
+     1
+    ],
+    [
+     "impact",
+     2.0,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     7.0,
+     1
+    ],
+    [
+     "impact",
+     10.0,
+     1
+    ]
+   ]
+  }
+ ]
+}
