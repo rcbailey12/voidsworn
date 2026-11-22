@@ -96,7 +96,7 @@ func _scene(scene: String, variant: String, times: Array) -> void:
 		await RenderingServer.frame_post_draw
 		var img := vp.get_texture().get_image()
 		var path := out.path_join("%s_%s_t%03d.png" % [scene, variant, int(round(float(t) * 1000.0))])
-		preload("res://tools/picture_provenance.gd").save_png(img, path, "cloud effects probe, no ships")
+		preload("res://tools/picture_provenance.gd").save_png(img, path, "cloud direction check")
 		print("[shots] ", path)
 
 
