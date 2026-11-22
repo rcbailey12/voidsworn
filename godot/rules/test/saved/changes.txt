@@ -1,186 +1,1164 @@
-Saved manifest before: 873ff1289ab5410612fe751453c092675b485e0d454f7e77ce145598914e8abc
-Saved manifest after: 98b1603fdd8dc3c874b4cc2b014d84da4ac10ba04c45ec1309925b8e2a2d537e
+Saved manifest before: 98b1603fdd8dc3c874b4cc2b014d84da4ac10ba04c45ec1309925b8e2a2d537e
+Saved manifest after: 2316c52cefd83ed73ac73f151b2e87fe44c717a9e0782b9d5d2ab8ad013c4f88
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
 FAIL battle s1
-  turn 39, round 3, after move x07; unit x05 (player warden)
-  state.units[1].sh[0]: 9 -> 18
-  later changed records: 142; total records: 175 -> 182
+  turn 0, round 1, after tick player; unit x04 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 181; total records: 182 -> 170
 FAIL battle s2
-  turn 54, round 3, after move x010; unit x07 (player warden)
-  state.units[2].sh[0]: 6 -> 13
-  later changed records: 180; total records: 235 -> 218
+  turn 0, round 1, after tick player; unit x05 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 216; total records: 218 -> 141
+FAIL battle s3
+  turn 0, round 1, after tick player; unit x04 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 125; total records: 126 -> 118
 FAIL battle s4
-  turn 14, round 1, after ability x022; unit x012 (player penitent)
-  state.units[1].sh[0]: 38 -> 19
-  later changed records: 267; total records: 264 -> 282
+  turn 0, round 1, after tick player; unit x011 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 281; total records: 282 -> 272
+FAIL battle s5
+  turn 0, round 1, after tick player; unit x011 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 352; total records: 353 -> 323
+FAIL battle s6
+  turn 0, round 1, after tick player; unit x06 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 251; total records: 252 -> 198
 FAIL battle s7
-  turn 161, round 3, after ability x011; unit none (battle state)
-  state.b.log[68].m: "Cordon destroyer fires an ion pulse: 4 enemy ships lose half their shields." -> "Cordon destroyer fires an ion pulse: 2 enemy ships lose half their shields."
-  later changed records: 182; total records: 344 -> 342
+  turn 0, round 1, after tick player; unit x05 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 375; total records: 342 -> 376
+FAIL battle s8
+  turn 0, round 1, after tick player; unit x05 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 128; total records: 128 -> 129
+FAIL battle s9
+  turn 0, round 1, after tick player; unit x05 (player ascendant)
+  state.units[0].moved: <missing> -> false
+  later changed records: 379; total records: 324 -> 381
+FAIL battle s10
+  turn 0, round 1, after tick player; unit x05 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 267; total records: 181 -> 268
 FAIL battle s11
-  turn 37, round 2, after move x011; unit x08 (player warden)
-  state.units[3].sh[0]: 9 -> 18
-  later changed records: 124; total records: 162 -> 133
+  turn 0, round 1, after tick player; unit x05 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 132; total records: 133 -> 131
+FAIL battle s12
+  turn 0, round 1, after tick player; unit x05 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 175; total records: 168 -> 176
+FAIL battle s13
+  turn 0, round 1, after tick player; unit x05 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 245; total records: 165 -> 247
+FAIL battle s14
+  turn 0, round 1, after tick player; unit x05 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 144; total records: 145 -> 134
+FAIL battle s15
+  turn 0, round 1, after tick player; unit x05 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 180; total records: 155 -> 181
 FAIL battle s16
-  turn 94, round 3, after move x010; unit x07 (player harrow)
-  state.units[2].sh[0]: 10 -> 20
-  later changed records: 155; total records: 250 -> 248
+  turn 0, round 1, after tick player; unit x05 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 271; total records: 248 -> 272
+FAIL battle s17
+  turn 0, round 1, after tick player; unit x04 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 98; total records: 99 -> 98
 FAIL battle s18
-  turn 34, round 2, after move x010; unit x08 (player warden)
-  state.units[3].sh[0]: 10 -> 20
-  later changed records: 213; total records: 248 -> 221
+  turn 0, round 1, after tick player; unit x05 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 273; total records: 221 -> 274
+FAIL battle s19
+  turn 0, round 1, after tick player; unit x05 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 182; total records: 183 -> 173
+FAIL battle s20
+  turn 0, round 1, after tick player; unit x04 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 66; total records: 68 -> 63
 FAIL battle s21
-  turn 158, round 5, after ability x010; unit none (battle state)
-  state.b.log[92].m: "Cordon destroyer fires an ion pulse: 2 enemy ships lose half their shields." -> "Cordon destroyer fires an ion pulse: 1 enemy ship lose half their shields."
-  later changed records: 51; total records: 210 -> 210
+  turn 0, round 1, after tick player; unit x05 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 209; total records: 210 -> 183
+FAIL battle s22
+  turn 0, round 1, after tick player; unit x04 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 109; total records: 84 -> 110
 FAIL battle s23
-  turn 260, round 3, after ability x026; unit none (battle state)
-  state.b.log[111].m: "Cordon destroyer fires an ion pulse: 4 enemy ships lose half their shields." -> "Cordon destroyer fires an ion pulse: 3 enemy ships lose half their shields."
-  later changed records: 481; total records: 702 -> 742
+  turn 0, round 1, after tick player; unit x011 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 741; total records: 742 -> 656
 FAIL battle s24
-  turn 294, round 4, after ability x018; unit x07 (player reliquary)
-  state.units[0].sh[0]: 22 -> 11
-  later changed records: 304; total records: 599 -> 550
+  turn 0, round 1, after tick player; unit x07 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 594; total records: 550 -> 595
 FAIL battle s25
-  turn 56, round 1, after move x017; unit x08 (player c_marauder)
-  state.units[2].sh[0]: 9 -> 19
-  later changed records: 285; total records: 342 -> 342
+  turn 0, round 1, after tick player; unit x06 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 341; total records: 342 -> 334
 FAIL battle s26
-  turn 37, round 1, after ability x012; unit x07 (player h_interdictor)
-  state.units[1].sh[0]: 31 -> 15
-  later changed records: 120; total records: 157 -> 158
+  turn 0, round 1, after tick player; unit x06 (player h_vanguard)
+  state.units[0].moved: <missing> -> false
+  later changed records: 190; total records: 158 -> 191
+FAIL battle s27
+  turn 0, round 1, after tick player; unit x06 (player i_carrier)
+  state.units[0].moved: <missing> -> false
+  later changed records: 239; total records: 236 -> 240
+FAIL battle s28
+  turn 0, round 1, after tick player; unit x07 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 288; total records: 289 -> 245
 FAIL battle s29
-  turn 76, round 3, after move x013; unit x09 (player harrow)
-  state.units[3].sh[0]: 13 -> 25
-  later changed records: 120; total records: 197 -> 187
+  turn 0, round 1, after tick player; unit x06 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 186; total records: 187 -> 163
+FAIL battle s30
+  turn 0, round 1, after tick player; unit x06 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 367; total records: 368 -> 311
+FAIL battle s31
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 258; total records: 259 -> 165
+FAIL battle s32
+  turn 0, round 1, after tick player; unit x04 (player warden)
+  state.units[0].moved: <missing> -> false
+  later changed records: 115; total records: 89 -> 116
+FAIL battle s33
+  turn 0, round 1, after tick player; unit x05 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 134; total records: 133 -> 135
+FAIL battle s34
+  turn 0, round 1, after tick player; unit x05 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 149; total records: 150 -> 141
+FAIL battle s35
+  turn 0, round 1, after tick player; unit x06 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 276; total records: 277 -> 215
+FAIL battle s36
+  turn 0, round 1, after tick player; unit x07 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 205; total records: 145 -> 206
+FAIL battle s37
+  turn 0, round 1, after tick player; unit x05 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 313; total records: 314 -> 296
 FAIL battle s38
-  turn 95, round 3, after move x013; unit x09 (player harrow)
-  state.units[3].sh[0]: 1 -> 3
-  later changed records: 198; total records: 291 -> 294
+  turn 0, round 1, after tick player; unit x06 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 293; total records: 294 -> 151
+FAIL battle s39
+  turn 0, round 1, after tick player; unit x07 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 430; total records: 426 -> 431
+FAIL battle s40
+  turn 0, round 1, after tick player; unit x05 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 335; total records: 336 -> 306
 FAIL battle s41
-  turn 136, round 4, after ability x010; unit x06 (player penitent)
-  state.units[1].sh[0]: 38 -> 19
-  later changed records: 145; total records: 282 -> 271
+  turn 0, round 1, after tick player; unit x05 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 274; total records: 271 -> 276
+FAIL battle s42
+  turn 0, round 1, after tick player; unit x05 (player h_vanguard)
+  state.units[0].moved: <missing> -> false
+  later changed records: 195; total records: 196 -> 174
+FAIL battle s43
+  turn 0, round 1, after tick player; unit x04 (player b_brood)
+  state.units[0].moved: <missing> -> false
+  later changed records: 207; total records: 208 -> 162
+FAIL battle s44
+  turn 0, round 1, after tick player; unit x04 (player c_marauder_g)
+  state.units[0].moved: <missing> -> false
+  later changed records: 191; total records: 192 -> 127
+FAIL battle s45
+  turn 0, round 1, after tick player; unit x04 (player b_razor_e)
+  state.units[0].moved: <missing> -> false
+  later changed records: 129; total records: 132 -> 129
 FAIL battle s46
-  turn 61, round 3, after ability x07; unit x05 (player cathedral)
-  state.units[1].sh[0]: 57 -> 29
-  later changed records: 98; total records: 152 -> 160
+  turn 0, round 1, after tick player; unit x04 (player vs_penitent_l)
+  state.units[0].moved: <missing> -> false
+  later changed records: 208; total records: 160 -> 209
+FAIL battle s47
+  turn 0, round 1, after tick player; unit x03 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 48; total records: 51 -> 51
+FAIL battle s48
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[0].moved: <missing> -> false
+  later changed records: 143; total records: 141 -> 144
+FAIL battle s49
+  turn 0, round 1, after tick player; unit x03 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 194; total records: 132 -> 197
+FAIL battle s50
+  turn 0, round 1, after tick player; unit x03 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 114; total records: 115 -> 101
+FAIL battle s51
+  turn 0, round 1, after tick player; unit x04 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 161; total records: 162 -> 138
 FAIL battle s52
-  turn 47, round 3, after move x07; unit x06 (player h_picket)
-  state.units[2].sh[0]: 9 -> 17
-  later changed records: 70; total records: 118 -> 117
+  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
+  state.units[0].moved: <missing> -> false
+  later changed records: 155; total records: 117 -> 157
+FAIL battle s53
+  turn 0, round 1, after tick player; unit x04 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 109; total records: 111 -> 87
+FAIL battle s54
+  turn 0, round 1, after tick player; unit x04 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 76; total records: 78 -> 56
+FAIL battle s55
+  turn 0, round 1, after tick player; unit x04 (player i_carrier)
+  state.units[0].moved: <missing> -> false
+  later changed records: 218; total records: 219 -> 181
 FAIL battle s56
-  turn 143, round 5, after move x08; unit x05 (player i_song)
-  state.units[1].sh[0]: 12 -> 25
-  later changed records: 64; total records: 208 -> 208
+  turn 0, round 1, after tick player; unit x04 (player i_carrier)
+  state.units[0].moved: <missing> -> false
+  later changed records: 206; total records: 208 -> 198
 FAIL battle s57
-  turn 35, round 2, after move x09; unit x07 (player warden)
-  state.units[2].sh[0]: 9 -> 18
-  later changed records: 37; total records: 73 -> 73
+  turn 0, round 1, after tick player; unit x05 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 72; total records: 73 -> 72
+FAIL battle t_casttwice
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].moved: <missing> -> false
+  later changed records: 96; total records: 93 -> 99
+FAIL battle t_flakskip
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].moved: <missing> -> false
+  later changed records: 100; total records: 106 -> 106
+FAIL battle t_lensaloft
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].moved: <missing> -> false
+  later changed records: 55; total records: 58 -> 55
+FAIL battle t_longfocus
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 38; total records: 36 -> 39
+FAIL battle t_recordedangle
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 49; total records: 55 -> 55
+FAIL battle t_burnflaw
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 30; total records: 34 -> 34
+FAIL battle t_longlight
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 32; total records: 38 -> 38
+FAIL battle t_flawforever
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 47; total records: 49 -> 49
+FAIL battle t_twoimages
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 64; total records: 68 -> 69
+FAIL battle t_angles
+  turn 0, round 1, after tick player; unit x04 (player i_wisp)
+  state.units[0].moved: <missing> -> false
+  later changed records: 77; total records: 76 -> 78
+FAIL battle t_refraction
+  turn 0, round 1, after tick player; unit x03 (player i_wisp)
+  state.units[0].moved: <missing> -> false
+  later changed records: 51; total records: 56 -> 55
+FAIL battle t_mirrorturns
+  turn 0, round 1, after tick player; unit x03 (player i_wisp)
+  state.units[0].moved: <missing> -> false
+  later changed records: 45; total records: 50 -> 50
+FAIL battle t_falsehulls
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 56; total records: 62 -> 62
+FAIL battle t_rechargelit
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 21; total records: 24 -> 24
+FAIL battle t_glasscorrected
+  turn 0, round 1, after tick player; unit x03 (player i_wisp)
+  state.units[0].moved: <missing> -> false
+  later changed records: 111; total records: 99 -> 112
+FAIL battle t_hardlight
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 61; total records: 70 -> 70
+FAIL battle t_wardglass
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 47; total records: 54 -> 54
+FAIL battle t_deployread
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 18; total records: 21 -> 21
+FAIL battle t_castcorrected
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 27; total records: 32 -> 32
+FAIL battle t_flagshiplens
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 30; total records: 36 -> 36
+FAIL battle t_firstlight
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 48; total records: 55 -> 55
+FAIL battle t_heldaccount
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 41; total records: 41 -> 42
+FAIL battle t_namedledger
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 50; total records: 58 -> 58
+FAIL battle t_inheritedaim
+  turn 0, round 1, after tick player; unit x02 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 83; total records: 82 -> 85
+FAIL battle t_everygun
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 78; total records: 79 -> 81
+FAIL battle t_sworndeploy
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 37; total records: 40 -> 40
+FAIL battle t_debtsreserve
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 28; total records: 29 -> 28
 FAIL battle t_flagshipLedger
-  turn 17, round 2, after ability x05; unit x03 (player penitent)
-  state.units[0].sh[0]: 38 -> 19
-  later changed records: 16; total records: 33 -> 34
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 32; total records: 34 -> 34
+FAIL battle t_standardreroll
+  turn 0, round 1, after tick player; unit x02 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 53; total records: 55 -> 53
+FAIL battle t_preyname
+  turn 0, round 1, after tick player; unit x03 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 48; total records: 55 -> 55
+FAIL battle t_salvotwohands
+  turn 0, round 1, after tick player; unit x03 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 54; total records: 63 -> 63
 FAIL battle t_debthunts
-  turn 17, round 2, after ability x03; unit x02 (player penitent)
-  state.units[0].sh[0]: 38 -> 19
-  later changed records: 50; total records: 68 -> 68
+  turn 0, round 1, after tick player; unit x02 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 66; total records: 68 -> 53
+FAIL battle t_twosalvos
+  turn 0, round 1, after tick player; unit x03 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 55; total records: 63 -> 63
+FAIL battle t_namedprey
+  turn 0, round 1, after tick player; unit x03 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 62; total records: 63 -> 62
+FAIL battle t_escortname
+  turn 0, round 1, after tick player; unit x03 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 31; total records: 37 -> 37
+FAIL battle t_firstwave
+  turn 0, round 1, after tick player; unit x03 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 56; total records: 58 -> 46
+FAIL battle t_wingreserve
+  turn 0, round 1, after tick player; unit x03 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 68; total records: 70 -> 60
+FAIL battle t_generation
+  turn 0, round 1, after tick player; unit x03 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 44; total records: 45 -> 29
+FAIL battle t_wingsdebt
+  turn 0, round 1, after tick player; unit x03 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 88; total records: 80 -> 89
+FAIL battle t_rollwings
+  turn 0, round 1, after tick player; unit x03 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 86; total records: 87 -> 80
+FAIL battle t_oathwings
+  turn 0, round 1, after tick player; unit x03 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 73; total records: 74 -> 72
+FAIL battle t_holdcounted
+  turn 0, round 1, after tick player; unit x03 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 35; total records: 40 -> 40
+FAIL battle t_oathstillness
+  turn 0, round 1, after tick player; unit x03 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 46; total records: 48 -> 41
+FAIL battle t_unpaid
+  turn 0, round 1, after tick player; unit x04 (player warden)
+  state.units[0].moved: <missing> -> false
+  later changed records: 132; total records: 130 -> 133
+FAIL battle t_wallanswers
+  turn 0, round 1, after tick player; unit x03 (player warden)
+  state.units[0].moved: <missing> -> false
+  later changed records: 82; total records: 84 -> 85
+FAIL battle t_irontestament
+  turn 0, round 1, after tick player; unit x03 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 43; total records: 45 -> 45
+FAIL battle t_ecl_restoreninth
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 91; total records: 92 -> 83
+FAIL battle t_ecl_restoredbeyond
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 128; total records: 132 -> 133
+FAIL battle t_ecl_copiescontribute
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 69; total records: 71 -> 70
+FAIL battle t_ecl_tenthframe
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 116; total records: 110 -> 117
+FAIL battle t_ecl_earliercopy
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 81; total records: 85 -> 85
+FAIL battle t_ecl_arcswarm
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 188; total records: 191 -> 183
+FAIL battle t_ecl_noonchoice
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 88; total records: 89 -> 76
+FAIL battle t_ecl_copyfires
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 112; total records: 55 -> 113
+FAIL battle t_ecl_coronashadow
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 57; total records: 58 -> 56
+FAIL battle t_ecl_everyframe
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 94; total records: 95 -> 54
+FAIL battle t_ecl_noonrepeat
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 68; total records: 65 -> 69
+FAIL battle t_ecl_onesuncopy
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 64; total records: 59 -> 65
+FAIL battle t_ecl_copiedbehind
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 72; total records: 63 -> 75
+FAIL battle t_ecl_unseenarchive
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 58; total records: 59 -> 58
+FAIL battle t_ecl_uncopiedtarget
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 80; total records: 83 -> 69
+FAIL battle t_ecl_iterationkill
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 96; total records: 75 -> 99
+FAIL battle t_ecl_silentarchive
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 92; total records: 96 -> 75
+FAIL battle t_ecl_outshadow
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 86; total records: 87 -> 68
+FAIL battle t_ecl_longcopy
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_ecl_platesshadow
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 91; total records: 93 -> 89
+FAIL battle t_ecl_twicerestored
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 111; total records: 112 -> 108
+FAIL battle t_ecl_layersshift
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 73; total records: 75 -> 75
+FAIL battle t_ecl_nolayer
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 100; total records: 105 -> 105
+FAIL battle t_ecl_stillness
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 149; total records: 121 -> 150
+FAIL battle t_ecl_tenthousand
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 160; total records: 162 -> 165
+FAIL battle t_ecl_restoredfleet
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 108; total records: 108 -> 109
+FAIL battle t_ecl_iterationswap
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 49; total records: 50 -> 50
+FAIL battle t_ecl_flagshipindex
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 64; total records: 59 -> 65
+FAIL battle t_ecl_framezero
+  turn 0, round 1, after tick player; unit x04 (player d_scythe)
+  state.units[0].moved: <missing> -> false
+  later changed records: 118; total records: 114 -> 120
+FAIL battle t_choosebrood
+  turn 0, round 1, after tick player; unit x03 (player b_brood)
+  state.units[0].moved: <missing> -> false
+  later changed records: 69; total records: 71 -> 53
+FAIL battle t_sporetide
+  turn 0, round 1, after tick player; unit x03 (player b_brood)
+  state.units[0].moved: <missing> -> false
+  later changed records: 83; total records: 84 -> 35
+FAIL battle t_everythroat
+  turn 0, round 1, after tick player; unit x03 (player b_brood)
+  state.units[0].moved: <missing> -> false
+  later changed records: 71; total records: 72 -> 49
+FAIL battle t_secondthroat
+  turn 0, round 1, after tick player; unit x03 (player b_brood)
+  state.units[0].moved: <missing> -> false
+  later changed records: 98; total records: 101 -> 101
+FAIL battle t_rundown
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 81; total records: 84 -> 78
+FAIL battle t_razorprey
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 87; total records: 96 -> 94
+FAIL battle t_frenzyfeeds
+  turn 0, round 1, after tick player; unit x04 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 120; total records: 122 -> 122
+FAIL battle t_breathbite
+  turn 0, round 1, after tick player; unit x06 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 128; total records: 130 -> 130
+FAIL battle t_throatred
+  turn 0, round 1, after tick player; unit x04 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 71; total records: 74 -> 67
+FAIL battle t_preyeverymouth
+  turn 0, round 1, after tick player; unit x04 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 104; total records: 101 -> 108
+FAIL battle t_growhurts
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 103; total records: 105 -> 104
+FAIL battle t_skinthick
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 62; total records: 69 -> 68
+FAIL battle t_fleshknit
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 43; total records: 54 -> 54
+FAIL battle t_refuseholes
+  turn 0, round 1, after tick player; unit x04 (player b_drone)
+  state.units[0].moved: <missing> -> false
+  later changed records: 91; total records: 99 -> 99
+FAIL battle t_tideend
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 41; total records: 43 -> 43
+FAIL battle t_tornback
+  turn 0, round 1, after tick player; unit x04 (player b_drone)
+  state.units[0].moved: <missing> -> false
+  later changed records: 132; total records: 125 -> 134
+FAIL battle t_acidbeforeaim
+  turn 0, round 1, after tick player; unit x04 (player b_spitter)
+  state.units[0].moved: <missing> -> false
+  later changed records: 60; total records: 58 -> 62
+FAIL battle t_throatspits
+  turn 0, round 1, after tick player; unit x02 (player b_brood)
+  state.units[0].moved: <missing> -> false
+  later changed records: 154; total records: 150 -> 155
+FAIL battle t_burnstays
+  turn 0, round 1, after tick player; unit x03 (player b_spitter)
+  state.units[0].moved: <missing> -> false
+  later changed records: 83; total records: 87 -> 85
+FAIL battle t_acidseams
+  turn 0, round 1, after tick player; unit x04 (player b_spitter)
+  state.units[0].moved: <missing> -> false
+  later changed records: 46; total records: 46 -> 48
+FAIL battle t_manymouths
+  turn 0, round 1, after tick player; unit x05 (player b_spitter)
+  state.units[0].moved: <missing> -> false
+  later changed records: 65; total records: 73 -> 73
+FAIL battle t_volleygrows
+  turn 0, round 1, after tick player; unit x03 (player b_spitter)
+  state.units[0].moved: <missing> -> false
+  later changed records: 86; total records: 90 -> 89
+FAIL battle t_mouthdeep
+  turn 0, round 1, after tick player; unit x03 (player b_spitter)
+  state.units[0].moved: <missing> -> false
+  later changed records: 87; total records: 89 -> 86
+FAIL battle t_broodreserve
+  turn 0, round 1, after tick player; unit x03 (player b_brood)
+  state.units[0].moved: <missing> -> false
+  later changed records: 40; total records: 40 -> 41
+FAIL battle t_firstthroat
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 59; total records: 62 -> 61
+FAIL battle t_throatdeep
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 30; total records: 32 -> 32
+FAIL battle t_hb_runbigger
+  turn 0, round 1, after tick player; unit x04 (player c_marauder)
+  state.units[0].moved: <missing> -> false
+  later changed records: 31; total records: 34 -> 34
 FAIL battle t_hb_railboarding
-  turn 28, round 2, after move x07; unit x05 (player c_raider)
-  state.units[1].sh[0]: 6 -> 13
-  later changed records: 50; total records: 79 -> 79
+  turn 0, round 1, after tick player; unit x04 (player c_raider)
+  state.units[0].moved: <missing> -> false
+  later changed records: 78; total records: 79 -> 78
+FAIL battle t_hb_packcloses
+  turn 0, round 1, after tick player; unit x04 (player c_marauder)
+  state.units[0].moved: <missing> -> false
+  later changed records: 43; total records: 46 -> 46
+FAIL battle t_hb_rushrail
+  turn 0, round 1, after tick player; unit x04 (player c_raider)
+  state.units[0].moved: <missing> -> false
+  later changed records: 80; total records: 81 -> 80
+FAIL battle t_hb_allscars
+  turn 0, round 1, after tick player; unit x04 (player c_marauder)
+  state.units[0].moved: <missing> -> false
+  later changed records: 61; total records: 36 -> 62
+FAIL battle t_hb_mawopens
+  turn 0, round 1, after tick player; unit x04 (player c_marauder)
+  state.units[0].moved: <missing> -> false
+  later changed records: 51; total records: 42 -> 54
 FAIL battle t_hb_burncarry
-  turn 34, round 2, after move x07; unit x05 (player c_reaver)
-  state.units[1].sh[0]: 8 -> 16
-  later changed records: 35; total records: 70 -> 69
+  turn 0, round 1, after tick player; unit x04 (player c_marauder)
+  state.units[0].moved: <missing> -> false
+  later changed records: 69; total records: 69 -> 72
+FAIL battle t_hb_warlordrun
+  turn 0, round 1, after tick player; unit x04 (player c_marauder)
+  state.units[0].moved: <missing> -> false
+  later changed records: 55; total records: 55 -> 56
 FAIL battle t_hb_knifeback
-  turn 26, round 2, after move x07; unit x04 (player c_reaver)
-  state.units[0].sh[0]: 2 -> 3
-  later changed records: 14; total records: 41 -> 40
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].moved: <missing> -> false
+  later changed records: 37; total records: 40 -> 40
 FAIL battle t_hb_darktorps
-  turn 42, round 3, after move x07; unit x06 (player c_raider)
-  state.units[2].sh[0]: 6 -> 13
-  later changed records: 19; total records: 62 -> 61
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].moved: <missing> -> false
+  later changed records: 65; total records: 61 -> 68
 FAIL battle t_hb_cutturn
-  turn 34, round 2, after move x07; unit x05 (player c_reaver)
-  state.units[1].sh[0]: 8 -> 16
-  later changed records: 22; total records: 57 -> 57
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].moved: <missing> -> false
+  later changed records: 69; total records: 57 -> 70
+FAIL battle t_hb_secondknife
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].moved: <missing> -> false
+  later changed records: 74; total records: 80 -> 75
 FAIL battle t_hb_smilecut
-  turn 7, round 1, after ability x07; unit x04 (player c_marauder)
-  state.units[0].sh[0]: 27 -> 14
-  later changed records: 29; total records: 36 -> 37
+  turn 0, round 1, after tick player; unit x04 (player c_marauder)
+  state.units[0].moved: <missing> -> false
+  later changed records: 34; total records: 37 -> 37
+FAIL battle t_hb_everyknife
+  turn 0, round 1, after tick player; unit x05 (player c_raider)
+  state.units[0].moved: <missing> -> false
+  later changed records: 38; total records: 44 -> 44
+FAIL battle t_hb_darkknives
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].moved: <missing> -> false
+  later changed records: 64; total records: 67 -> 67
+FAIL battle t_hb_cutfeeds
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].moved: <missing> -> false
+  later changed records: 93; total records: 94 -> 75
+FAIL battle t_hb_patchedwing
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 59; total records: 61 -> 57
+FAIL battle t_hb_hulkmore
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 55; total records: 56 -> 31
 FAIL battle t_hb_retasked
-  turn 62, round 3, after move x05; unit x04 (player c_reaver)
-  state.units[1].sh[0]: 8 -> 16
-  later changed records: 42; total records: 105 -> 101
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 99; total records: 101 -> 87
+FAIL battle t_hb_wreckline
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 26; total records: 28 -> 28
+FAIL battle t_hb_wholeyard
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 60; total records: 65 -> 58
+FAIL battle t_hb_screaming
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 113; total records: 120 -> 115
+FAIL battle t_hb_swarmscrap
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 64; total records: 65 -> 66
+FAIL battle t_hb_privatewing
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 86; total records: 88 -> 60
+FAIL battle t_hb_weldmatters
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 115; total records: 116 -> 116
+FAIL battle t_hb_patchguns
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].moved: <missing> -> false
+  later changed records: 154; total records: 149 -> 155
+FAIL battle t_hb_scrapfront
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 146; total records: 148 -> 144
+FAIL battle t_hb_weldedfight
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 119; total records: 123 -> 106
+FAIL battle t_hb_doublebolted
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].moved: <missing> -> false
+  later changed records: 151; total records: 152 -> 148
+FAIL battle t_hb_packbites
+  turn 0, round 1, after tick player; unit x03 (player c_reaver)
+  state.units[0].moved: <missing> -> false
+  later changed records: 123; total records: 126 -> 111
+FAIL battle t_hb_weldedwhole
+  turn 0, round 1, after tick player; unit x03 (player c_reaver)
+  state.units[0].moved: <missing> -> false
+  later changed records: 131; total records: 139 -> 106
+FAIL battle t_hb_nothingbroken
+  turn 0, round 1, after tick player; unit x03 (player c_raider)
+  state.units[0].moved: <missing> -> false
+  later changed records: 116; total records: 117 -> 92
+FAIL battle t_hb_preyscent
+  turn 0, round 1, after tick player; unit x04 (player c_marauder)
+  state.units[0].moved: <missing> -> false
+  later changed records: 54; total records: 44 -> 55
 FAIL battle t_hb_loosepack
-  turn 7, round 1, after move x03; unit x02 (player c_raider)
-  state.units[0].sh[0]: 6 -> 13
-  later changed records: 23; total records: 31 -> 30
+  turn 0, round 1, after tick player; unit x02 (player c_raider)
+  state.units[0].moved: <missing> -> false
+  later changed records: 27; total records: 30 -> 30
 FAIL battle t_hb_firstscar
-  turn 23, round 2, after ability x07; unit x05 (player c_marauder)
-  state.units[1].sh[0]: 27 -> 14
-  later changed records: 24; total records: 48 -> 48
+  turn 0, round 1, after tick player; unit x04 (player c_raider)
+  state.units[0].moved: <missing> -> false
+  later changed records: 43; total records: 48 -> 48
+FAIL battle t_hb_trophystandard
+  turn 0, round 1, after tick player; unit x02 (player c_marauder)
+  state.units[0].moved: <missing> -> false
+  later changed records: 34; total records: 17 -> 35
+FAIL battle t_heg_widenet
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 80; total records: 81 -> 71
+FAIL battle t_heg_secondvolley
+  turn 0, round 1, after tick player; unit x04 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 136; total records: 138 -> 121
+FAIL battle t_heg_sharedsolution
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 86; total records: 87 -> 63
+FAIL battle t_heg_colddrill
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 70; total records: 71 -> 69
 FAIL battle t_heg_rollingfire
-  turn 45, round 2, after ability x07; unit none (battle state)
-  state.b.log[16].m: "HNS Forecast fires an ion pulse: 2 enemy ships lose half their shields." -> "HNS Forecast fires an ion pulse: 1 enemy ship lose half their shields."
-  later changed records: 25; total records: 71 -> 71
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 76; total records: 71 -> 77
 FAIL battle t_heg_irontempo
-  turn 33, round 2, after move x09; unit x04 (player h_picket)
-  state.units[0].sh[0]: 9 -> 17
-  later changed records: 163; total records: 187 -> 197
+  turn 0, round 1, after tick player; unit x04 (player h_picket)
+  state.units[0].moved: <missing> -> false
+  later changed records: 195; total records: 197 -> 193
+FAIL battle t_heg_livingrelay
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 70; total records: 71 -> 69
+FAIL battle t_heg_onevoice
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_heg_formation
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 62; total records: 57 -> 63
+FAIL battle t_heg_drill
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 70; total records: 71 -> 68
+FAIL battle t_heg_beacon
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 61; total records: 62 -> 43
+FAIL battle t_heg_stdforward
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 77; total records: 78 -> 43
+FAIL battle t_heg_filedtriplicate
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 66; total records: 67 -> 56
+FAIL battle t_heg_strikebook
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 82; total records: 80 -> 83
+FAIL battle t_heg_crossfire
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 76; total records: 77 -> 67
+FAIL battle t_heg_filedbefore
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 120; total records: 118 -> 122
+FAIL battle t_heg_totalinterdiction
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 117; total records: 121 -> 114
+FAIL battle t_heg_sevenbreach
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 115; total records: 113 -> 117
+FAIL battle t_heg_permanentfile
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 69; total records: 64 -> 70
+FAIL battle t_heg_oneorder
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 72; total records: 65 -> 73
+FAIL battle t_heg_cruisers
+  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
+  state.units[0].moved: <missing> -> false
+  later changed records: 74; total records: 74 -> 75
+FAIL battle t_heg_launchorder
+  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
+  state.units[0].moved: <missing> -> false
+  later changed records: 68; total records: 69 -> 51
+FAIL battle t_heg_secondwave
+  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
+  state.units[0].moved: <missing> -> false
+  later changed records: 105; total records: 106 -> 70
+FAIL battle t_heg_rehearsed
+  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
+  state.units[0].moved: <missing> -> false
+  later changed records: 96; total records: 77 -> 97
+FAIL battle t_heg_fullgroup
+  turn 0, round 1, after tick player; unit x02 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 124; total records: 129 -> 119
+FAIL battle t_heg_escorts
+  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
+  state.units[0].moved: <missing> -> false
+  later changed records: 92; total records: 93 -> 91
+FAIL battle t_heg_onetarget
+  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
+  state.units[0].moved: <missing> -> false
+  later changed records: 43; total records: 44 -> 44
+FAIL battle t_heg_standinggroup
+  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
+  state.units[0].moved: <missing> -> false
+  later changed records: 73; total records: 74 -> 54
 FAIL battle t_heg_columnstraight
-  turn 36, round 2, after move x010; unit x07 (player h_picket)
-  state.units[2].sh[0]: 9 -> 19
-  later changed records: 83; total records: 120 -> 120
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 124; total records: 120 -> 125
 FAIL battle t_heg_overflow
-  turn 49, round 2, after move x010; unit x07 (player h_picket)
-  state.units[2].sh[0]: 9 -> 19
-  later changed records: 86; total records: 136 -> 134
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 133; total records: 134 -> 130
 FAIL battle t_heg_bell
-  turn 51, round 2, after move x010; unit x07 (player h_picket)
-  state.units[2].sh[0]: 9 -> 19
-  later changed records: 81; total records: 133 -> 131
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 133; total records: 131 -> 134
 FAIL battle t_heg_rotation
-  turn 70, round 3, after move x011; unit x09 (player h_picket)
-  state.units[3].sh[0]: 9 -> 19
-  later changed records: 62; total records: 133 -> 132
+  turn 0, round 1, after tick player; unit x06 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 144; total records: 132 -> 145
 FAIL battle t_heg_columnendures
-  turn 33, round 2, after move x011; unit x05 (player h_picket)
-  state.units[0].sh[0]: 9 -> 19
-  later changed records: 93; total records: 127 -> 125
+  turn 0, round 1, after tick player; unit x05 (player h_picket)
+  state.units[0].moved: <missing> -> false
+  later changed records: 122; total records: 125 -> 98
+FAIL battle t_heg_filedarmor
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 142; total records: 145 -> 136
 FAIL battle t_heg_standardcovers
-  turn 38, round 2, after ability x09; unit x05 (player h_dominion)
-  state.units[0].sh[0]: 63 -> 32
-  later changed records: 127; total records: 166 -> 132
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 131; total records: 132 -> 125
 FAIL battle t_heg_flagshipstandard
-  turn 31, round 2, after move x09; unit x07 (player h_picket)
-  state.units[2].sh[0]: 9 -> 19
-  later changed records: 118; total records: 135 -> 150
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].moved: <missing> -> false
+  later changed records: 148; total records: 150 -> 136
+FAIL battle t7a_flightpaths
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].moved: <missing> -> false
+  later changed records: 84; total records: 87 -> 89
+FAIL battle t7a_replay
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].moved: <missing> -> false
+  later changed records: 107; total records: 105 -> 110
+FAIL battle t7a_starlings
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].moved: <missing> -> false
+  later changed records: 93; total records: 96 -> 95
+FAIL battle t7a_flightcast
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].moved: <missing> -> false
+  later changed records: 93; total records: 98 -> 94
+FAIL battle t7a_forgeahead
+  turn 0, round 1, after tick player; unit x03 (player i_carrier)
+  state.units[0].moved: <missing> -> false
+  later changed records: 98; total records: 99 -> 103
+FAIL battle t7a_onelens
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 37; total records: 36 -> 38
+FAIL battle t7a_lighttogether
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 27; total records: 31 -> 31
+FAIL battle t7a_sunlens
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 32; total records: 37 -> 37
+FAIL battle t7a_mirroraside
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 61; total records: 66 -> 66
+FAIL battle t7a_splitthree
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 46; total records: 53 -> 53
+FAIL battle t7a_fleetelsewhere
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 58; total records: 63 -> 63
+FAIL battle t7a_weakside
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 31; total records: 36 -> 36
+FAIL battle t7a_prismsface
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 32; total records: 37 -> 37
+FAIL battle t7a_lensrotates
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 22; total records: 23 -> 23
+FAIL battle t7a_facetlit
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].moved: <missing> -> false
+  later changed records: 21; total records: 24 -> 24
+FAIL battle t7a_ledgerarcs
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 33; total records: 35 -> 34
+FAIL battle t7a_debtdue
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 51; total records: 52 -> 51
+FAIL battle t7a_grandledger
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 56; total records: 58 -> 57
+FAIL battle t7a_lastaccount
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 55; total records: 56 -> 40
+FAIL battle t7a_torpfirst
+  turn 0, round 1, after tick player; unit x03 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 63; total records: 64 -> 64
+FAIL battle t7a_rearreckoning
+  turn 0, round 1, after tick player; unit x03 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 32; total records: 36 -> 36
+FAIL battle t7a_salvoend
+  turn 0, round 1, after tick player; unit x03 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 76; total records: 77 -> 77
+FAIL battle t7a_accountsplits
+  turn 0, round 1, after tick player; unit x03 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 92; total records: 93 -> 94
+FAIL battle t7a_screensshift
+  turn 0, round 1, after tick player; unit x03 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 45; total records: 34 -> 47
 FAIL battle t7a_wallearly
-  turn 18, round 2, after ability x05; unit x03 (player cathedral)
-  state.units[0].sh[0]: 63 -> 31
-  later changed records: 22; total records: 41 -> 41
+  turn 0, round 1, after tick player; unit x03 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 36; total records: 41 -> 41
+FAIL battle t7a_wallmoves
+  turn 0, round 1, after tick player; unit x03 (player cathedral)
+  state.units[0].moved: <missing> -> false
+  later changed records: 39; total records: 47 -> 47
+FAIL battle t7b_ecl_formation_a
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 97; total records: 99 -> 97
+FAIL battle t7b_ecl_formation_b
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 86; total records: 83 -> 88
+FAIL battle t7b_ecl_formation_c
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 99; total records: 96 -> 101
+FAIL battle t7b_ecl_formation_d
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 68; total records: 62 -> 69
+FAIL battle t7b_ecl_shadow
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 74; total records: 76 -> 64
+FAIL battle t7b_ecl_wall
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 119; total records: 113 -> 120
+FAIL battle t7b_ecl_archive
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 94; total records: 96 -> 90
+FAIL battle t7b_ecl_iterfire
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 111; total records: 112 -> 88
+FAIL battle t7b_ecl_triage
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 108; total records: 108 -> 110
+FAIL battle t7b_ch_broodsplits
+  turn 0, round 1, after tick player; unit x03 (player b_brood)
+  state.units[0].moved: <missing> -> false
+  later changed records: 62; total records: 64 -> 59
+FAIL battle t7b_ch_nine
+  turn 0, round 1, after tick player; unit x03 (player b_brood)
+  state.units[0].moved: <missing> -> false
+  later changed records: 86; total records: 88 -> 59
+FAIL battle t7b_ch_teeth
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 82; total records: 97 -> 97
+FAIL battle t7b_ch_tideearly
+  turn 0, round 1, after tick player; unit x04 (player b_drone)
+  state.units[0].moved: <missing> -> false
+  later changed records: 113; total records: 117 -> 99
+FAIL battle t7b_ch_growth
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 98; total records: 107 -> 109
+FAIL battle t7b_ch_spat
+  turn 0, round 1, after tick player; unit x03 (player b_spitter)
+  state.units[0].moved: <missing> -> false
+  later changed records: 82; total records: 83 -> 84
+FAIL battle t7b_ecl_targetarchived
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].moved: <missing> -> false
+  later changed records: 28; total records: 31 -> 31
+FAIL battle t529_roles_strike
+  turn 0, round 1, after tick player; unit x03 (player b_brood)
+  state.units[0].moved: <missing> -> false
+  later changed records: 88; total records: 90 -> 68
+FAIL battle t529_roles_screen
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 78; total records: 80 -> 76
+FAIL battle t529_roles_mend
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 79; total records: 82 -> 82
+FAIL battle t529_roles_change
+  turn 0, round 1, after tick player; unit x04 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 89; total records: 92 -> 89
+FAIL battle t529_spawned
+  turn 0, round 1, after tick player; unit x03 (player b_brood)
+  state.units[0].moved: <missing> -> false
+  later changed records: 67; total records: 67 -> 68
+FAIL battle t529_nostop
+  turn 0, round 1, after tick player; unit x04 (player b_brood)
+  state.units[0].moved: <missing> -> false
+  later changed records: 127; total records: 128 -> 101
+FAIL battle t529_scent
+  turn 0, round 1, after tick player; unit x04 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 51; total records: 53 -> 53
+FAIL battle t529_may_debt_no
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 55; total records: 57 -> 45
+FAIL battle t529_may_grow_no
+  turn 0, round 1, after tick player; unit x03 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 91; total records: 99 -> 99
 FAIL battle s983_station_defend
-  turn 88, round 3, after ability x010; unit x05 (player penitent)
-  state.units[0].sh[0]: 38 -> 19
-  later changed records: 86; total records: 175 -> 174
+  turn 0, round 1, after tick player; unit x05 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 173; total records: 174 -> 124
+FAIL battle s983_station_plain
+  turn 0, round 1, after tick player; unit x04 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 91; total records: 92 -> 87
 FAIL battle s983_teaching_station_defend
-  turn 35, round 2, after move x07; unit x05 (player warden)
-  state.units[1].sh[0]: 9 -> 18
-  later changed records: 32; total records: 68 -> 67
+  turn 0, round 1, after tick player; unit x04 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 63; total records: 67 -> 67
 FAIL battle s1450_undo
-  turn 258, round 8, after ability x07; unit none (battle state)
-  state.b.log[50].m: "Cordon destroyer fires an ion pulse: 3 enemy ships lose half their shields." -> "Cordon destroyer fires an ion pulse: 2 enemy ships lose half their shields."
-  later changed records: 104; total records: 363 -> 362
+  turn 0, round 1, after tick player; unit x04 (player harrow)
+  state.units[0].moved: <missing> -> false
+  later changed records: 361; total records: 362 -> 278
+FAIL battle s1450_undo_chorus
+  turn 0, round 1, after tick player; unit x04 (player b_razor)
+  state.units[0].moved: <missing> -> false
+  later changed records: 199; total records: 201 -> 157
 FAIL battle s1450_undo_classic
-  turn 183, round 4, after ability x010; unit x07 (player harrow)
-  state.units[2].sh[0]: 25 -> 13
-  later changed records: 216; total records: 400 -> 400
+  turn 0, round 1, after tick player; unit x05 (player reliquary)
+  state.units[0].moved: <missing> -> false
+  later changed records: 399; total records: 400 -> 349
 FAIL battle s1447_ion_pulse
-  new battle; no saved result
+  turn 0, round 1, after tick player; unit x05 (player penitent)
+  state.units[0].moved: <missing> -> false
+  later changed records: 156; total records: 97 -> 157
 FAIL file threat_s4.json
-  map.3.-1,19: "405087ae147ae148" -> "404575c28f5c28f6"
-FAIL: saved Godot results; 288 battles checked, 45 changed, 1 other files changed, 46 failures; 16.699 s
+  map.2.-1,10: "406c6b851eb851eb" -> "407178f5c28f5c28"
+FAIL file threat_s19.json
+  map.2.-1,14: "404a199999999999" -> <missing>
+FAIL file threat_s23.json
+  map.2.10,10: "40753e147ae147ae" -> "40745f5c28f5c290"
+FAIL: saved Godot results; 288 battles checked, 288 changed, 3 other files changed, 291 failures; 19.476 s
