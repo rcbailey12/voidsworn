@@ -17,32 +17,29 @@ $relayMirror = Join-Path $vt 'relay-mirror.git'
 $relaySource = 'https://github.com/rcbailey12/voidsworn-relay'
 if ($test) { $relaySource = $env:PC_TEST_RELAY_SOURCE }
 $web = 'https://github.com/rcbailey12/voidsworn-relay'
+# Issue 1739: git prints names as UTF-8 (core.quotepath=false); Windows PowerShell 5.1 would read them in the console's
+# OEM code page, so a non-ASCII name would never match in the tree check. A process with no console may refuse the change.
+try { [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false) } catch { }
 $gitExe = 'git.exe'; if ($unix) { $gitExe = @(Get-Command git -CommandType Application)[0].Source }
 $OutputEncoding = New-Object System.Text.UTF8Encoding $false
 function Run-Git {
   $ErrorActionPreference = 'Continue'
   $out = & $gitExe @args 2>&1 | ForEach-Object { "$_" }
   if ($LASTEXITCODE -ne 0) { throw ('git failed: ' + ($args -join ' ') + ': ' + ($out -join ' ')) }; $out }
-function Run-GitIn($lines) {
-  # git with lines on stdin (hash-object --stdin-paths, update-index --index-info). Issue 1739: Windows PowerShell 5.1 pipes
-  # text to a native program as CRLF lines in its own encoding, and update-index --index-info keeps the CR, so every
-  # path got a trailing CR and the relay pushed a commit whose tree held none of the files. The lines go to git's stdin
-  # as UTF-8 bytes with LF endings instead, the same under 5.1 and pwsh.
-  $a = @($args | ForEach-Object { "$_" })
-  $psi = New-Object Diagnostics.ProcessStartInfo
-  $psi.FileName = $gitExe
-  $psi.Arguments = (($a | ForEach-Object {
-    if ($_ -and $_ -notmatch '[\s"]') { $_ } else { '"' + ($_ -replace '(\\*)"', '$1$1\"' -replace '(\\+)\z', '$1$1') + '"' } }) -join ' ')
-  $psi.UseShellExecute = $false; $psi.CreateNoWindow = $true
-  $psi.RedirectStandardInput = $true; $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
-  $psi.StandardOutputEncoding = New-Object Text.UTF8Encoding($false); $psi.StandardErrorEncoding = $psi.StandardOutputEncoding
-  $p = [Diagnostics.Process]::Start($psi)
-  $outTask = $p.StandardOutput.ReadToEndAsync(); $errTask = $p.StandardError.ReadToEndAsync()
-  $bytes = (New-Object Text.UTF8Encoding($false)).GetBytes((@($lines | ForEach-Object { "$_" + "`n" }) -join ''))
-  $p.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length); $p.StandardInput.Close()
-  $p.WaitForExit()
-  $out = @($outTask.Result -split "`r?`n" | Where-Object { $_ -ne '' })
-  if ($p.ExitCode -ne 0) { throw ('git failed: ' + ($a -join ' ') + ': ' + (($out + $errTask.Result) -join ' ')) }; $out }
+function Run-GitChunks($fixed, $items) {
+  # Issue 1739: no stdin into git at all. Windows PowerShell 5.1 changed what reached git's stdin twice over (CRLF lines,
+  # then a UTF-8 byte order mark before the first path that .NET Framework's redirected stdin writes on start), so the
+  # paths and index entries go as arguments, in calls kept well under Windows' 32,767-character command line.
+  # An item may be a group of arguments that must stay in one call (--cacheinfo and its value).
+  $out = @(); $chunk = @(); $len = 0
+  foreach ($it in $items) {
+    $group = @($it | ForEach-Object { "$_" }); $glen = ($group | Measure-Object -Property Length -Sum).Sum + 3 * $group.Count
+    if ($chunk.Count -and $len + $glen -gt 6000) { $out += @(Run-Git @fixed @chunk); $chunk = @(); $len = 0 }
+    $chunk += $group; $len += $glen
+  }
+  if ($chunk.Count) { $out += @(Run-Git @fixed @chunk) }
+  $out
+}
 
 if ($Mode -and $Mode -ne 'dry') { throw "the third argument may only be dry, got: $Mode" }
 $dry = $Mode -eq 'dry'
@@ -139,20 +136,26 @@ try {
         # the first batch of a resend replaces the attempt's folder whole; later batches add to what the earlier ones sent
         if ($b -eq 0) {
           $old = @(Run-Git --git-dir $relayMirror -c core.quotepath=false ls-files -- "$leaf/")
-          if ($old.Count) { Run-GitIn @($old | ForEach-Object { "0 0000000000000000000000000000000000000000`t$_" }) --git-dir $relayMirror update-index --index-info | Out-Null }
+          if ($old.Count) {
+            # --force-remove wants a work tree; an empty one of our own, so nothing outside the index is ever read
+            $empty = Join-Path ([IO.Path]::GetTempPath()) ("voidsworn-relay-empty-" + [guid]::NewGuid().ToString('N'))
+            $null = [IO.Directory]::CreateDirectory($empty)
+            try { Run-GitChunks @('--git-dir', $relayMirror, '--work-tree', $empty, 'update-index', '--force-remove', '--') $old | Out-Null }
+            finally { [IO.Directory]::Delete($empty) }
+          }
         }
       } else { Run-Git --git-dir $relayMirror read-tree --empty | Out-Null }
-      $shas = @(Run-GitIn @($part | ForEach-Object { $_.Path }) --git-dir $relayMirror hash-object -w --no-filters --stdin-paths)
+      $shas = @(Run-GitChunks @('--git-dir', $relayMirror, 'hash-object', '-w', '--no-filters', '--') @($part | ForEach-Object { $_.Path }))
       if ($shas.Count -ne $part.Count) { throw "hashed $($shas.Count) of $($part.Count) files" }
-      $info = for ($i = 0; $i -lt $part.Count; $i++) { "100644 $($shas[$i])`t$($part[$i].Key)" }
+      $info = for ($i = 0; $i -lt $part.Count; $i++) { "100644,$($shas[$i]),$($part[$i].Key)" }
       if ($last -and $skipped.Count) {
         $tmpList = Join-Path ([IO.Path]::GetTempPath()) ("voidsworn-relay-skipped-" + [guid]::NewGuid().ToString('N') + '.txt')
         [IO.File]::WriteAllText($tmpList, (($skipped -join "`r`n") + "`r`n"))
         $ls = (Run-Git --git-dir $relayMirror hash-object -w --no-filters -- $tmpList) | Select-Object -Last 1
         Remove-Item -LiteralPath $tmpList -Force
-        $info = @($info) + "100644 $ls`t$leaf/skipped_over_10MB.txt"
+        $info = @($info) + "100644,$ls,$leaf/skipped_over_10MB.txt"
       }
-      Run-GitIn @($info) --git-dir $relayMirror update-index --add --index-info | Out-Null
+      Run-GitChunks @('--git-dir', $relayMirror, 'update-index', '--add') @($info | ForEach-Object { ,@('--cacheinfo', $_) }) | Out-Null
       $tree = (Run-Git --git-dir $relayMirror write-tree) | Select-Object -Last 1
       # issue 1739: never push a tree that lost files on the way in (a pushed empty tree was a silent PASS)
       $inTree = @{}; foreach ($n in @(Run-Git --git-dir $relayMirror -c core.quotepath=false ls-tree -r --name-only $tree)) { $inTree["$n"] = $true }
