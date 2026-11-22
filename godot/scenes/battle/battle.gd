@@ -794,6 +794,7 @@ func _warmup() -> void:
 	warming = true
 	hud.loading(true)
 	if world != null: await world.wait_ready()
+	await board.wait_planet()   # issue 1765: the board planet's maps load or bake behind the cover
 	var keep := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
 	cam.b = 0.6
 	cam.r = maxf(cam.bounds.x, cam.bounds.y) * 2.4

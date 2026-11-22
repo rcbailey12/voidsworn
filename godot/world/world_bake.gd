@@ -8,7 +8,8 @@ const CACHE_DIR := "user://world_bakes/v3"
 # R79: the sector map primes the same 4K surface the backdrop planet uses.
 # Size and shader source are part of cache_key, so older bakes cannot be reused.
 const PLANET_SIZE := Vector2i(4096, 2048)
-const MOON_SIZE := Vector2i(1024, 512)
+# Issue 1765: moons bake at 2K so craters and rays stay crisp when a moon sits large in the frame.
+const MOON_SIZE := Vector2i(2048, 1024)
 # Issue 1265: the disk cache on C: is capped. A sector bakes about three 4096 by 2048 maps (sky, planet a and b) plus
 # moons, so 500 MB holds the last several sectors (Neon audit P6). After a bake is saved, least recently used maps go
 # first; maps the running battle holds never go; a stray .tmp older than a day goes. Only rebuildable bakes are removed.
@@ -74,12 +75,14 @@ func authored(path: String, size: Vector2i, float_mips := false) -> Image:
 	while not job.done: await get_tree().process_frame
 	return job.image
 
-func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int) -> Image:
+# half_mips (issue 1765): the image is turned to half floats before its mips are made, for a 16-bit height packed in R
+# and G (the board planet's relief), so averaging the high and low bytes never rounds the high byte into false ridges.
+func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int, half_mips := false) -> Image:
 	var owner := service(get_tree())
 	key = cache_key(key, code, params, size)
 	if _cache.has(key): return _cache[key]
 	if not owner._jobs.has(key):
-		owner._jobs[key] = {"code": code, "params": params.duplicate(true), "size": size,
+		owner._jobs[key] = {"code": code, "params": params.duplicate(true), "size": size, "half_mips": half_mips,
 			"done": false, "image": null, "started": Time.get_ticks_msec(),
 			"compute": DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "gl_compatibility"}
 		owner._queue.append(key)
@@ -107,7 +110,7 @@ func _process(_dt: float) -> void:
 				job.done = true
 				return
 			_thread = Thread.new()
-			_thread.start(_finish_image.bind(_active, img, _keep_keys()))
+			_thread.start(_finish_image.bind(_active, img, _keep_keys(), bool(job.get("half_mips", false))))
 			return
 		job.image = result.image
 		job.done = true
@@ -182,6 +185,7 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 					prune(folder, CACHE_CAP_BYTES, keep, key)
 	elif source == "loaded":
 		touch(folder, key)
+	if img != null and job.get("half_mips", false): img.convert(Image.FORMAT_RGBAH)
 	if img != null and not img.has_mipmaps(): img.generate_mipmaps()
 	return {"image": img, "source": source, "error": error}
 
@@ -213,13 +217,14 @@ static func _authored_tiles(path: String, size: Vector2i) -> Image:
 		image.blit_rect(tile, Rect2i(Vector2i.ZERO, tile_size), pos)
 	return image
 
-static func _finish_image(key: String, img: Image, keep: Dictionary = {}) -> Dictionary:
+static func _finish_image(key: String, img: Image, keep: Dictionary = {}, half_mips := false) -> Dictionary:
 	if img != null:
 		var folder := _folder()
 		if DirAccess.make_dir_recursive_absolute(folder) == OK:
 			var path := folder.path_join(key + ".png")
 			if img.save_png(path + ".tmp") == OK and DirAccess.rename_absolute(path + ".tmp", path) == OK:
 				prune(folder, CACHE_CAP_BYTES, keep, key)
+		if half_mips: img.convert(Image.FORMAT_RGBAH)
 		img.generate_mipmaps()
 	return {"image": img, "source": "baked"}
 

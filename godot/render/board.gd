@@ -7,6 +7,7 @@ const HT := preload("res://render/hull_table.gd")
 const BL := preload("res://world/board_look.gd")   # the board look trial (today, A holo, B living, C cinematic + tactical)
 const A4P := preload("res://assets/ships/a4_props.gd")  # A4's painted station and derelicts (null when not built)
 const BV := preload("res://world/blocker_visuals.gd")
+const PL := preload("res://world/world_planet.gd")   # issue 1765: the board planet's surfaces
 const LS := preload("res://render/line_style.gd")   # issue 1374 (R362): the one line style (width, glow, fade, role colours)
 const HS := 10.0
 var HW := HS * sqrt(3.0)
@@ -23,8 +24,10 @@ var api = null               # the rules API (godot/rules/battle_api.gd): read t
 var VW := {}                 # the view the board was built from
 var WI := {}                 # world_info()
 var planet_node: MeshInstance3D = null   # the board planet, when the map has one
+var planet_pending := false              # issue 1765: its maps are still loading or baking
 var sun_dir := Vector3(0.4, 0.6, 0.7)   # toward the battle's key light (battle.gd sets it before build)
-# the board planet's look per battle: [kind (G3 map shader: 0 rock, 1 terran, 3 ice, 4 lava, 5 barren), colour a, b, atmosphere]
+# the board planet's look per battle: [kind (0 rock, 1 terran, 3 ice, 4 lava, 5 barren; world_planet.gd BOARD_LOOKS draws
+# each), colour a, b, atmosphere]. The colours are the old map shader's, kept for anything that reads the table.
 const PLANET_LOOKS := [
 	[0, Color(0.55, 0.42, 0.3), Color(0.22, 0.15, 0.1), Color(0.9, 0.65, 0.4)],
 	[1, Color(0.36, 0.42, 0.24), Color(0.07, 0.15, 0.3), Color(0.45, 0.7, 1.0)],
@@ -1073,57 +1076,40 @@ func _planet() -> void:
 	var sp := SphereMesh.new()
 	sp.radius = rad
 	sp.height = rad * 2.0
-	sp.radial_segments = 96
-	sp.rings = 48
+	sp.radial_segments = 192   # issue 1765: a smooth limb when the planet fills half the frame
+	sp.rings = 96
 	var mi := MeshInstance3D.new()
 	mi.mesh = sp
 	# Keep the map's radius and sink 78% of it. At radius 50: centre -39, cap 11, board-plane chord about 63.
 	mi.position = hex_world(pl.q, pl.r, -rad * 0.78)
 	props.add_child(mi)
 	planet_node = mi
-	# the campaign map's planet look (G3's map3d_shaders.gd PLANET and ATMO, which Ryan has seen on the map): surface
-	# detail per kind, a night side away from the battle's key light, a thin lit limb; the flat matte ball only if the
-	# shaders are missing from the build
-	var MS = load("res://ui/campaign/map3d_shaders.gd") if ResourceLoader.exists("res://ui/campaign/map3d_shaders.gd") else null
-	if MS == null:
-		var m := StandardMaterial3D.new()
-		m.albedo_color = Color(0.33, 0.29, 0.27)
-		m.roughness = 0.95
-		mi.material_override = m
-		return
+	# Issue 1765 (R419, Planets V2): the planet's surface comes from world_planet.gd. Rocky and barren worlds draw the
+	# authored 8K R01 relief, turned and tinted per battle; terran, ice and volcanic worlds bake a 4K surface with a
+	# 16-bit relief map. The campaign map's icon shader is no longer used here.
 	var seed_v := int(WI.get("seed", 1)) if WI.get("seed") != null else 1
 	var look: Array = PLANET_LOOKS[posmod(seed_v, PLANET_LOOKS.size())]
 	var sun := mi.position + sun_dir.normalized() * 100000.0
-	var pm := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = MS.PLANET
-	pm.shader = sh
-	pm.set_shader_parameter("kind", float(look[0]))
-	pm.set_shader_parameter("a", look[1])
-	pm.set_shader_parameter("b", look[2])
-	pm.set_shader_parameter("atmo", look[3])
-	pm.set_shader_parameter("seed", float(posmod(seed_v, 97)) * 1.37)
-	pm.set_shader_parameter("sun_pos", sun)
-	pm.set_shader_parameter("q", 1.0)
-	mi.material_override = pm
 	var shell := MeshInstance3D.new()
 	var ss := SphereMesh.new()
 	ss.radius = rad * 1.03
 	ss.height = rad * 2.06
-	ss.radial_segments = 96
-	ss.rings = 48
+	ss.radial_segments = 128
+	ss.rings = 64
 	shell.mesh = ss
-	var am := ShaderMaterial.new()
-	var ash := Shader.new()
-	ash.code = MS.ATMO
-	am.shader = ash
-	am.set_shader_parameter("atmo", look[3])
-	am.set_shader_parameter("sun_pos", sun)
-	am.set_shader_parameter("gain", 1.0)
-	shell.material_override = am
 	shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	shell.position = mi.position
 	props.add_child(shell)
+	planet_pending = true
+	await PL.install_board(mi, shell, int(look[0]), seed_v, sun)
+	planet_pending = false
+
+
+# Issue 1765: the battle's loading cover waits for the board planet's maps (capped, like the world's bakes).
+func wait_planet() -> void:
+	var t0 := Time.get_ticks_msec()
+	while planet_pending and Time.get_ticks_msec() - t0 < 20000:
+		await get_tree().process_frame
 
 
 # issue 1236: a dead cruiser or capital's hex became a wreck in the rules ("wreck" event). The board marks it as it marks
