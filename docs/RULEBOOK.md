@@ -545,7 +545,7 @@ hull, interior, weapons, wounds, deaths, hulks and sound; (4) the world and audi
 automated anti-drift checks (export, Godot world, exterior and palette, sound pack) are added and kept green; (6) AAA ship
 exterior lighting, per-faction micro-detail, PBR separation and Godot 4.7 engine hygiene (#1777, #1778, #1779, #1780:
 default-on Space PBR reflection IBL and per-faction `ao_light_affect`, zoom-tracked crisp contact shadows without `LookRim`
-plastic glare, true BC5/RGTC ship normal compression, native per-faction PBR channels and six faction tiling micro-detail
+plastic glare, BC5 ship normal compression (already true BC5: S3TC with the normal source, as Godot 4.7 has no RGTC mode; guarded by `ship_look_v2_check`), native per-faction PBR channels and six faction tiling micro-detail
 normal/roughness maps, true paint-vs-metal separation, massive-scale cues, a hard export ban on lossy `.jpg` normal and ORM
 maps, battle 3D LUT + kill-cam DoF + selective SSR/CompositorEffect benchmark, plus cached `.gdshader` PSOs, BC7 world VRAM
 compression, FSR 2.2 AA option and empty volumetric fog gating). A fix for one faction is made at the shared root for all
@@ -554,6 +554,13 @@ ship exteriors under black-space reflection defaults, purple and mustard leaks, 
 stutters and raw RGBA8 VRAM bloat); Ryan: "We are moving from one-off visual tweaks to one global visual, material, world,
 and audio standard so subsystems stop drifting in silos." and "Yeah, A for all. Let's do everything and anything we can here."
 (Nov 22 2026, tracker #1774). Set: Ryan, Nov 22 (R420).
+R421 (Ryan, Nov 22 2026, on the Fable and Astra cohesion reviews): no Glasswright refraction (dark glass with clearcoat
+and fresnel instead); anisotropy stays at 0 until #1778 bakes flow maps; before Ship Look V2 goes default-on, the warm sun
+reflection lobe is desaturated to a neutral warm-white so Eclipse stays obsidian-violet in deep shadow. Interiors (#1763,
+#1755) merge only after the #1755 breach-material and strip-mask fixes and one joint intact, breached and broken sheet under
+the #1786 lighting. The world PRs fold in the audit cleanups before merge: an obsidian Eclipse hulk finish (#1772), a
+procedural planet fallback when the remix is off (#1776), crystal `_lo` LODs (#1782); the planet relief map's VRAM is
+budgeted in #1780.
 
 ## 4. Ships and concepts
 
@@ -619,8 +626,8 @@ tells (R174). Set: Ryan (R82, R216, R353).
 10.10 **The battle board is the dead star's gravity well.** Why: it is the game's identity, the Hollow Sun setting (R216).
 Set: Ryan, Oct 24 (R216).
 
-10.11 **The battle sky is Grounded Cinematic Space: mostly near-black, never wall-to-wall star snow.** About 85% fewer stars
-than the Nov 22 sky (about 250 to 500 pinpoints in a 45-degree battle frame), faint stars gathered along a tilted galactic band,
+10.11 **The battle sky is Grounded Cinematic Space: mostly near-black, never wall-to-wall star snow.** About 400 star
+pinpoints in a 45-degree battle frame (about 96% fewer than the Nov 22 sky; Ryan picked 400 over 1,200, R421), faint stars gathered along a tilted galactic band,
 a steep brightness curve so only a few hero stars gleam, and opaque dark dust lanes (`star_floor = 0.0`; the `VS_STAR_FLOOR`
 override stays for tuning sheets) that black out the stars behind them. No mustard fog and no purple Eclipse nebula (10.9).
 Planets, rocks, crystal clusters, stations and hulks are lifted to one bar across every region: the 8K rocky planet maps (godot/world/rocks/r01) and all
