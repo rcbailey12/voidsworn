@@ -599,6 +599,10 @@ try {
   for (const dir of relayGuarded) assert(!dry.includes(`job relay check exit 0 in ${dir}`) && !dry.includes(`job relay: checkouts kept: ${dir}`), `the head never ran for ${dir}`);
   assert.match(decision(dry, jobKeptOut, 'would keep'), /results not all relayed: 1 of 2 out files are not on a relay branch/);
   assert.match(decision(dry, jobKeptRepo, 'would remove'), /kept checkout would remove \(rebuildable\)/);
+  // DRY2 on the PC (Artoo on PR 1592): a checkout inside an out folder is not output. Its files and pack are never hashed
+  // as results; it takes the Git proof instead. pt1120c's out_A holds repo_A beside two unrelayed results: 2 of 2.
+  assert.match(decision(dry, playtest, 'would keep'), /results not all relayed: 2 of 2 out files are not on a relay branch/);
+  assert(!/helper file not on a relay branch: [^\r\n]*[\\/]\.git[\\/]/.test(dry) && !dry.includes(`helper file not on a relay branch: ${playtestRepo}`), 'no file inside a checkout is hashed as a result');
   assert.match(decision(dry, playtestRepo, 'would remove'), /kept checkout would remove \(rebuildable\)/);
   const headOf = dir => git(['-C', dir, 'rev-parse', 'HEAD']);
   for (const dir of jobCheckoutsGone) assert(dry.includes(`job checkout record: ${dir} HEAD ${headOf(dir)}, `), `HEAD and status logged for ${dir}`);

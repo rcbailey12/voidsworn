@@ -197,10 +197,28 @@ function Test-RelayedResults($dir, $mirror) {
   $whole = $dir.Name -match '^opus[1-9][0-9]*out'
   $outFiles = @(); $other = @(); $checkouts = @()
   $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
-  if ($whole) { $outFiles = @($dir.EnumerateFiles('*', [IO.SearchOption]::AllDirectories)) }
+  # A Git checkout inside an out folder (job_head attempts keep theirs in out_*) is not a result: it gets the same Git
+  # proof as a checkout beside out, and its files and pack are never hashed as output (DRY2 on the PC hashed a 16.25 GB
+  # pack under opus1235\out_*\new\.git; Artoo on PR 1592).
+  $collectOut = {
+    param($top)
+    $files = @(); $walk = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'; $walk.Push($top)
+    while ($walk.Count) {
+      $d = $walk.Pop()
+      foreach ($item in $d.EnumerateFileSystemInfos()) {
+        if ($item -is [IO.DirectoryInfo]) {
+          if (Test-Path -LiteralPath (Join-Path $item.FullName '.git') -PathType Container) { $script:outCheckouts += $item }
+          else { $walk.Push($item) }
+        } else { $files += $item }
+      }
+    }
+    return $files
+  }
+  $script:outCheckouts = @()
+  if ($whole) { $outFiles = @(& $collectOut $dir) }
   else {
     foreach ($item in $dir.EnumerateFileSystemInfos()) {
-      if ($item -is [IO.DirectoryInfo] -and $item.Name -like 'out*') { $outFiles += @($item.EnumerateFiles('*', [IO.SearchOption]::AllDirectories)) }
+      if ($item -is [IO.DirectoryInfo] -and $item.Name -like 'out*') { $outFiles += @(& $collectOut $item) }
       elseif ($item -is [IO.DirectoryInfo]) { $pending.Push($item) }
       elseif ($helperBookkeeping -contains $item.Name) { continue }
       else { $other += $item }
@@ -213,6 +231,7 @@ function Test-RelayedResults($dir, $mirror) {
       }
     }
   }
+  $checkouts += $script:outCheckouts
   if (-not $outFiles.Count) { throw 'no out folder to prove the results were relayed' }
   $hashes = @(Salvage-Git @('--git-dir',$mirror,'hash-object','--no-filters','--stdin-paths') @($outFiles | ForEach-Object { $_.FullName }))
   if ($hashes.Count -ne $outFiles.Count) { throw 'result hashes could not be read' }
