@@ -1,0 +1,16 @@
+{
+ "acts": [],
+ "battle": {
+  "campaign": false,
+  "enemy": "corsair",
+  "obj": "rout",
+  "seed": 35215
+ },
+ "enemy_s": {},
+ "hurries": 0,
+ "result": "quit",
+ "rounds": 1,
+ "secs": 1.8,
+ "tips": [],
+ "v": 1
+}

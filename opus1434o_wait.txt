@@ -1,0 +1,6 @@
+OPUS1434O_WAIT.bat waiting for OPUS1439_MEASURE4 exit in opus1439d_wait.txt Sat 11/21/2026 18:31:14.80 
+OPUS1434_LOAD15 start 18:35:14.14 
+OPUS1434_LOAD15 exit 1 at 19:12:40.47 
+run folder out_20261121_183514_32105
+result: done FAILED: new load10, new load10: a graded item failed, see load10\load10_result.txt
+all done Sat 11/21/2026 19:12:40.83 
