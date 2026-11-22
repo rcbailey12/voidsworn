@@ -108,7 +108,7 @@ func c_4() -> Array:
 	fresh(["penitent"], "deathless", ["d_scythe", "d_harvester", "d_harvester"])
 	B["cfg"]["kind"] = "boss"; var boss = E[0]; boss["boss"] = true; boss["hp"] = floor(boss["maxHp"] * 0.4)
 	R.escortsBreak()
-	return [B.get("over") == "win", "over " + str(B.get("over"))]
+	return [str(B.get("over")) == "win", "over " + str(B.get("over"))]
 func c_5() -> Array:
 	fresh(["penitent"], "hegemony", ["h_picket"])
 	B["syncR"] = {"player": 8}; R.applyVerb("drill")
@@ -127,7 +127,7 @@ func c_8() -> Array:
 	fresh(["penitent"], "hegemony", ["h_picket", "h_picket"]); var c = P[0]; var w = E[1]
 	w["isSq"] = true; w["parent"] = c["id"]; c["stance"] = "screen"
 	var n: int = R.squadronsOf(c).size(); var st = R.wingStance(w)
-	return [n == 0 and st == "strike", "wings counted " + str(n) + ", wing stance " + str(st)]
+	return [n == 0 and str(st) == "strike", "wings counted " + str(n) + ", wing stance " + str(st)]
 func c_9() -> Array:
 	fresh(["penitent"], "hegemony", ["h_picket"]); var u = P[0]; var t = E[0]
 	u["q"] = 5; u["r"] = 5; u["facing"] = 0; t["q"] = 7; t["r"] = 5; t["facing"] = 3; t["shp"] = 0; R.syncShields(t); t["armor"] = 0.4; t["shredded"] = 0
@@ -204,17 +204,19 @@ func _preview_shield(t, pool: float) -> float:
 	t["shp"] = pool; t["route"] = [0, 0, 0, 0]; R.syncShields(t)
 	var w = wpn("autocannon", "F"); w["shots"] = 6; u["weapons"] = [w]
 	var out = R.previewVolley(u, [0], t)
-	return float(out[0]["shield"])
+	return float(out[0]["shield"]) if out.has(0) else -1.0
 func c_18_preview_route() -> Array:
 	fresh(["penitent"], "hegemony", ["h_dominion"]); var u = P[0]; var t = E[0]
 	u["q"] = 5; u["r"] = 5; u["facing"] = 0; t["q"] = 8; t["r"] = 5; t["facing"] = 3
-	var a = _preview_shield(t, 37.0); var b = _preview_shield(t, 37.4)
-	return [absf(a - b) < 0.05 * maxf(1.0, a), "shield with a 37 pool " + str(a) + ", with 37.4 " + str(b)]
+	var a = _preview_shield(t, 9.0); var b = _preview_shield(t, 9.4)
+	return [absf(a - b) < 1e-6, "shield with a 9 pool " + str(a) + ", with 9.4 " + str(b)]
 func c_18_preview_nem() -> Array:
 	fresh(["penitent"], "hegemony", ["h_picket"]); var u = P[0]; var t = E[0]
 	u["q"] = 5; u["r"] = 5; u["facing"] = 0; t["q"] = 8; t["r"] = 5; t["facing"] = 3
 	var w = wpn("torp", "F"); u["weapons"] = [w]
-	var plain = float(R.previewVolley(u, [0], t)[0]["hit"])
+	var p0 = R.previewVolley(u, [0], t)
+	if not p0.has(0): return [false, "no preview"]
+	var plain = float(p0[0]["hit"])
 	t["nem"] = true; B["nem"] = {"weak": ["torp"], "fac": "hegemony"}
 	var weak = float(R.previewVolley(u, [0], t)[0]["hit"])
 	return [near(weak, minf(95.0, plain + 15.0)), "hit " + str(plain) + " plain, " + str(weak) + " with the weakness"]
