@@ -602,7 +602,7 @@ Set: Ryan, Oct 24 (R216).
 than the Nov 22 sky (about 250 to 500 pinpoints in a 45-degree battle frame), faint stars gathered along a tilted galactic band,
 a steep brightness curve so only a few hero stars gleam, and opaque dark dust lanes (`star_floor = 0.0`; the `VS_STAR_FLOOR`
 override stays for tuning sheets) that black out the stars behind them. No mustard fog and no purple Eclipse nebula (10.9).
-Planets, rocks, crystal clusters, stations and hulks are lifted to one bar across every region: the 8K R01 board planet and all
+Planets, rocks, crystal clusters, stations and hulks are lifted to one bar across every region: the 8K rocky planet maps (godot/world/rocks/r01) and all
 five foreground planet types on the high-relief planet pipeline, five asteroid biomes that read apart, faceted Blender crystal
 clusters, `station_T2` at every cluster size, and derelict hulks from all six factions. The track plan and its five
 silent-regression traps are `contrib/opus/plans/world_consistency_v2.md`; each track runs independent-audit (3.13) before its
