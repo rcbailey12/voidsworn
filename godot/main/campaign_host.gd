@@ -115,18 +115,30 @@ static func has_save(path: String = Campaign.SAVE_PATH) -> bool:
 	return Campaign.has_saved_run(path)
 
 
-var _music_page := ""
+var _music_page := ""   # the music key last played (music_key); "" after a battle, so the page plays again
+
+
+# Issue 1482: which music a campaign page asks for. "title", "map:<sector>" (the map and the service stop: a run page
+# keeps its sector's map track, and a new sector is a new key even when the page kind stays "map"), or the page kind
+# itself for pages that keep whatever plays (the battle briefing, the end card, setup pages).
+const MAP_MUSIC_PAGES := ["map", "shipyard"]
+static func music_key(kind: String, run) -> String:
+	if kind == "title":
+		return "title"
+	if kind in MAP_MUSIC_PAGES and run is Dictionary:
+		return "map:%d" % int((run as Dictionary).get("sector", 1))
+	return kind
 
 
 func _on_changed() -> void:
 	C.set_teaching_tips(not bot and not Teaching.is_off() and not main.args.has("no-tips"))
 	# the map's music per sector (the music helper's player)
-	var kind := str(C.page.get("kind", ""))
-	if main.music != null and kind != _music_page:
-		_music_page = kind
-		if kind == "map" and C.RUN != null:
-			main.music.play_map(int(C.RUN.get("sector", 1)))
-		elif kind == "title":
+	var key := music_key(str(C.page.get("kind", "")), C.RUN)
+	if main.music != null and key != _music_page:
+		_music_page = key
+		if key.begins_with("map:"):
+			main.music.play_map(int(key.substr(4)))
+		elif key == "title":
 			main.music.play_title()
 	# back on the title page (the player left the run, or the run ended and they pressed Title): hand back to main's title
 	if not bot and C.page.get("kind", "") == "title" and C.modal_d == null:
@@ -222,6 +234,7 @@ func _play_battle() -> void:
 		if ui != null:
 			ui.visible = true
 		in_battle = false
+		_music_page = ""   # issue 1482
 		_save_round()   # the newest round start the rules packed, if the scene had not written it yet
 		C.leave_battle_saved()
 		return
@@ -237,6 +250,7 @@ func _play_battle() -> void:
 	if bot:
 		log_b.append(_battle_line(a, res, r))
 	C.set_teaching_tips(not bot and not Teaching.is_off() and not main.args.has("no-tips"))
+	_music_page = ""   # issue 1482: the battle played its own music; whatever page follows (even the same one) plays its track
 	C.finish_battle(res if res in ["win", "loss", "retreat"] else "loss", _bstate(a))
 
 
