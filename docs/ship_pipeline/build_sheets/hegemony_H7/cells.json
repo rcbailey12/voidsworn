@@ -1,0 +1,489 @@
+{
+ "rows": [
+  {
+   "cell": "bow/top",
+   "id": "dart",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "bow_face",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "module_bands",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "deck_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "casemate",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "sensor_fin",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "latches",
+   "built": 8,
+   "listed": 8,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "vents",
+   "built": 8,
+   "listed": 8,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "hatches",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "dart",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "bow_face",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "module_bands",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "blue_line",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "flank_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "casemate",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "sensor_fin",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "thrusters",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "dart",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "module_bands",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "deck_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "barbette",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "latches",
+   "built": 8,
+   "listed": 8,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "vents",
+   "built": 8,
+   "listed": 8,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "hatches",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "dart",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "belly_step",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "module_bands",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "blue_line",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "flank_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "belly_panels",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "vents",
+   "built": 8,
+   "listed": 8,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "hatches",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "dart",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "module_bands",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "deck_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "engines",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "latches",
+   "built": 8,
+   "listed": 8,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "vents",
+   "built": 8,
+   "listed": 8,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "hatches",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "dart",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "module_bands",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "blue_line",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "flank_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "engines",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "thrusters",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "drone_doors",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "windows",
+   "built": 4,
+   "listed": 4,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  }
+ ],
+ "failing": 0,
+ "structure": [
+  {
+   "cell": "bow/top",
+   "concept": 2,
+   "build": 3
+  },
+  {
+   "cell": "bow/side",
+   "concept": 2,
+   "build": 3
+  },
+  {
+   "cell": "bow/below",
+   "concept": null,
+   "build": 3
+  },
+  {
+   "cell": "mid/top",
+   "concept": 3,
+   "build": 3
+  },
+  {
+   "cell": "mid/side",
+   "concept": 2,
+   "build": 3
+  },
+  {
+   "cell": "mid/below",
+   "concept": null,
+   "build": 2
+  },
+  {
+   "cell": "stern/top",
+   "concept": 2,
+   "build": 2
+  },
+  {
+   "cell": "stern/side",
+   "concept": 2,
+   "build": 2
+  },
+  {
+   "cell": "stern/below",
+   "concept": null,
+   "build": 2
+  }
+ ],
+ "ratios": {
+  "concept": {
+   "env_LB": 2.77,
+   "env_LH": 5.18,
+   "hull_LB": 2.81,
+   "hull_LH": 6.59
+  },
+  "build": {
+   "env_LB": 3.08,
+   "env_LH": 4.72,
+   "hull_LB": 3.28,
+   "hull_LH": 6.52
+  }
+ }
+}

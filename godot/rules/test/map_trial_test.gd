@@ -1,4 +1,7 @@
 # Saved map-trial inputs and results from node/map_trial_fixtures.js at the R405 cutover.
+# An approved fleet change (R414, issue 1722) refreshes the saved results and the pin from Godot itself:
+#   godot --headless --path godot --script res://rules/test/map_trial_test.gd -- update
+# then review the diff and say in the pull request why the fleets moved.
 extends SceneTree
 
 const Rules = preload("res://rules/rules.gd")
@@ -53,6 +56,9 @@ func _initialize() -> void:
 		printerr(error)
 		quit(1)
 		return
+	if OS.get_cmdline_user_args().has("update"):
+		update(R, fixtures, pin)
+		return
 	var failures := 0
 	var seeds := {}
 	for f in fixtures:
@@ -80,3 +86,23 @@ func _initialize() -> void:
 	if failures == 0: print("PASS: %d map trial battles match the saved results and the pinned fleets across %d encounters" % [fixtures.size(), ENCOUNTERS.size()])
 	else: printerr("FAIL: ", failures, " map trial comparisons failed")
 	quit(0 if failures == 0 else 1)
+
+# Rewrites each case's expected result and its pinned fleet with what Godot builds now; the inputs stay as saved.
+func update(R: Rules, fixtures: Array, pin: Dictionary) -> void:
+	var changed := 0
+	for f in fixtures:
+		R.RUN = f.run.duplicate(true)
+		R.RUN["mapTrial"] = true
+		R.startBattle(f.cfg.duplicate(true))
+		var actual := snapshot(R)
+		if compare_case(actual, f.expected) != "": changed += 1
+		f.expected = actual
+		var key := "%s|%d" % [f.enc, int(f.seed)]
+		pin.cases[key] = {"shape": actual.shape, "arena": actual.arena, "units": actual.units}
+	pin["revision"] = "Godot rules (map_trial_test.gd -- update)"
+	var out := FileAccess.open("res://rules/test/map_trial_cases.json.gz", FileAccess.WRITE)
+	out.store_buffer(JSON.stringify(fixtures, "", false).to_utf8_buffer().compress(FileAccess.COMPRESSION_GZIP)); out.close()
+	var pf := FileAccess.open("res://rules/test/node/map_trial_pinned.json", FileAccess.WRITE)
+	pf.store_string(JSON.stringify(pin, "", false) + "\n"); pf.close()
+	print("updated %d map trial cases (%d changed) and the pinned fleets from Godot" % [fixtures.size(), changed])
+	quit(0)

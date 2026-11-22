@@ -261,8 +261,16 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 	return mat
 
 
-# Issue 1235: a live ship's wear on its damage surface (fx_ship._set_wear): mottled darker plating, dimmer lights and soot
-# patches (centre, reach) where it was hit. Heat stays 0: no embers, so no faction gets an orange glow from wear.
+# The same hull substance drives contact effects and live wear (R402).
+static func target_substance(faction: String) -> String:
+	match faction:
+		"ithar": return "glass"
+		"chorus": return "bio"
+		"deathless": return "obsidian"
+	return "metal"
+
+
+# Every hull's lights dim as it wears. Metal surfaces also darken and collect soot at their hits.
 const WEAR_WEATHER := 0.45   # fx_weather at full wear
 const WEAR_POWER := 0.65     # the share of the hull's light lost at full wear
 # fx_power is the wear's steady value (and the death fade's); a hit's brownout rides on fx_flick (fx_ship hit_power).
@@ -271,7 +279,7 @@ static func set_power(mat: ShaderMaterial, wear: float) -> void:
 
 
 static func set_wear(mat: ShaderMaterial, wear: float, patches: Array) -> void:
-	mat.set_shader_parameter("fx_weather", wear * WEAR_WEATHER)
+	mat.set_shader_parameter("fx_weather", wear * WEAR_WEATHER if mat.get_meta("fx_metal_wear", true) else 0.0)
 	set_power(mat, wear)
 	var n := mini(patches.size(), 8)
 	mat.set_shader_parameter("fx_scorch_count", n)

@@ -1,0 +1,3 @@
+# Issue 1659: ignored files Claude Code copies into a new worktree of this repo. Only small local settings: never the
+# Godot import cache, built ships or anything under hulls*/ (the PC slots reuse those in place, docs/playbooks/pc.md).
+.claude/settings.local.json

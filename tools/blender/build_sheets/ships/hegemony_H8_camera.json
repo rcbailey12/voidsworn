@@ -1,0 +1,21 @@
+{
+ "az": 46.56395902065913,
+ "el": 29.89552792384535,
+ "roll": 0.4355924435690589,
+ "dist": 63.19181870763434,
+ "mm": 205.99871150287342,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": 0.0030544715691199977,
+ "sy": -0.007300643732984782,
+ "res": [
+  1920,
+  1200
+ ],
+ "iou": 0.92,
+ "body_iou": 0.9211,
+ "note": "Cordon beauty (issue 1412): view angles from contrib/opus/tools/issue738/grid.py over the blockout outline, then fit.py refined all seven camera numbers (never the ship); concept mask: contrib/opus/tools/issue738/mask.py"
+}

@@ -1468,12 +1468,9 @@ func end_brownout() -> void:
 
 # ---------------------------------------------------------------- hull wear and the crippled list (issue 1235)
 
-# Neon's damage audit F1.2: as hull HP falls the whole ship looks worn, not only its breach anchors. hull_wear (0 above
-# WEAR_FROM of max HP, 1 at WEAR_FULL) drives, through HULL.set_wear, the damage shader's own uniforms (fx_hull.gd DAMAGE_UNIFORMS): fx_weather
-# darkens and mottles the plating, fx_power dims the hull's lights and glowing panels, and fx_scorch lays soot patches
-# where the ship was actually hit (wear_patches). The scorch heat stays 0 on a live ship, so no faction gets orange
-# embers from this (the faction's own wound colour stays on its marks and holes). Below LIST_FROM of max HP the hull
-# lists LIST_MIN to LIST_MAX degrees about its bow toward the side last hit: the view only, the rules never see it.
+# hull_wear (0 above WEAR_FROM of max HP, 1 at WEAR_FULL) dims every hull's lights through fx_power.
+# fx_weather darkening and the soot patches at the hit sites apply only to metal (R402). Below LIST_FROM of max HP,
+# every hull lists LIST_MIN to LIST_MAX degrees about its bow toward the side last hit.
 const WEAR_FROM := 0.8
 const WEAR_FULL := 0.2
 const LIST_FROM := 0.35
@@ -1541,7 +1538,7 @@ func _apply_wear() -> void:
 const WEAR_PATCHES_SEC := 3
 func wear_patches() -> Array:
 	var out: Array = []
-	if hull_wear <= 0.0 or hull == null:
+	if hull_wear <= 0.0 or hull == null or HULL.target_substance(faction) != "metal":
 		return out
 	var L: float = hull.L
 	var secs := [0, 1, 2]
@@ -2086,7 +2083,10 @@ func damage_surface(fx, mi: MeshInstance3D, si: int, src: Material) -> ShaderMat
 	var key := [mi.get_instance_id(), si]
 	var entry: Array = _damage_surfaces.get(key, [])
 	if entry.is_empty() or entry[0] != template:
-		entry = [template, template.duplicate()]
+		var surface := template.duplicate() as ShaderMaterial
+		# The breach rebuild also applies wear, so the gate travels with the ship's own surface.
+		surface.set_meta("fx_metal_wear", HULL.target_substance(faction) == "metal")
+		entry = [template, surface]
 		_damage_surfaces[key] = entry
 	return entry[1]
 
@@ -2137,7 +2137,7 @@ func _build_section(fx, i: int, up: bool) -> void:
 		else:
 			fx.stk(wp, fx.now, 0.45, glow, 2.0, 0.04, 0.08, 1, fx.rcone(wn, 0.8) * hull.L * 0.18)
 	if st == 4 and faction != "chorus":
-		for j in 4: fx.shd(wp, fx.now, 2.0, fx.rcone(wn, 0.8) * hull.L * 0.07, hull.L * 0.009, 0.8)
+		for j in 4: DEATH.BEATS.debris(fx, self, wp, fx.now, 2.0, fx.rcone(wn, 0.8) * hull.L * 0.07, hull.L * 0.009, 0.8)
 
 
 func _set_burning(fx, on: bool) -> void:
@@ -2489,7 +2489,7 @@ func _blowout(fx, i: int) -> void:
 		fx.spr(p + n * L * 0.01, t, BLOWOUT_LIFE - j * 0.08, col, 0.55 if heavy else 0.45, L * 0.008, L * (0.06 if heavy else 0.045),
 			kind, fx.rcone(n, 0.22) * L * (0.38 - j * 0.03), 1.6)
 	for j in 3 + posmod(_seed + i, 2):
-		fx.shd(p, fx.now + j * 0.05, 1.6, fx.rcone(n, 0.6) * L * (0.10 + 0.05 * fx.rng.randf()), L * 0.006, 0.5)
+		DEATH.BEATS.debris(fx, self, p, fx.now + j * 0.05, 1.6, fx.rcone(n, 0.6) * L * (0.10 + 0.05 * fx.rng.randf()), L * 0.006, 0.5)
 	fx.light(p + n * L * 0.03, fx.now, 0.35, 2.5, glow.lerp(Color.WHITE, 0.5), 1)
 	_wlog(["blowout", i, fx.now])
 

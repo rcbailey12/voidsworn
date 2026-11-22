@@ -96,6 +96,14 @@ try {
   permit(pre('Read', { file_path: 'README.md' }, main));
   permit(shell('git commit -m "Move secrets note to the README"', main));
   permit(shell('grep -rn secrets .github/workflows', main));
+  // Fable's audit of PR 1706: code such as board.key( is not a key file; a path or an existing file still is
+  permit(shell('grep -n "board.key(" godot/battle.gd', main));
+  deny(shell('cat certs/server.key', main), /protected files/);
+  deny(shell('cat HEAD:server.pem', main), /protected files/);
+  write('server.key', 'not really\n');
+  deny(shell('cat server.key', main), /protected files/);
+  fs.rmSync(path.join(work, 'server.key'));
+  deny(shell('cat .env.key', main), /protected files/);
   console.log('PASS credential guard: blocked file, search, Bash, PowerShell and Git reads; plain word "secrets" allowed');
 
   // Must pass: main seats (no seat variable, or seat opus) work anywhere in the repo, as Opus helper threads do.
