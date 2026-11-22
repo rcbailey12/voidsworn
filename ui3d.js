@@ -15,8 +15,8 @@ const OBJS=[['rout','Engagement'],['ambush','Ambush'],['defend','Hold the statio
 const SHAPE_OPTS=[['random','Random'],['open','Open void'],['corridor','Corridor'],['lanes','Split lanes'],['ring','Ring'],['dense','Dense field'],['deadstar','Hollow Sun']];
 const ARENA_OPTS=[['random','Random'],['strip','Classic strip'],['square','Square (diagonal or crossing)'],['round','Round (any angle, pincers)']];
 const MAPS=[['random','Random'],['belt','Asteroid belt'],['station','Derelict station'],['planet','Planet edge'],['storm','Ion storm'],['graveyard','Ship graveyard']], DEPS=[['line','Line'],['flank','Flank'],['ambush','Ambush']];
-const SEC_LBL={prow:'Prow',mid:'Midships',eng:'Engines'};
-const FNAMES={hegemony:['HNS Dominator','HNS Relentless','HNS Sovereign','HNS Comptroller','HNS Allocation','HNS Forecast','HNS Adjudicator','HNS Vigilance','HNS Tyrant','HNS Resolute'],
+const SEC_LBL={prow:'Fore',mid:'Core',eng:'Engines'};
+const FNAMES={hegemony:['MDV Precedent','MDV Relentless','MDV Quorum','MDV Comptroller','MDV Allocation','MDV Forecast','MDV Adjudicator','MDV Vigilance','MDV Variance','MDV Azimuth'],
   corsair:['Rust Maw','Gutter Queen','Red Tally','Scrapjaw','Ashen Grin','Cold Trail','Cinder Wolf','Bad Omen','Salvage Right','Bent Crown'],
   chorus:['Node Ashk','Brood Vessel Ul','Shrieker','Mawling','Gorebloom','Sac-mother','Sour Spine','Tidehunger','Wet Maw','Crawling Gut'],
   ithar:['Silverthorn','Clear Whisper','Lament of Stars','Glass Heron','Still Glass','Far Focus','Pale Current','Starfall','Quiet Prism','Evening Tide'],
@@ -61,7 +61,7 @@ function buildHud(){
   const st=document.getElementById('stage');
   st.insertAdjacentHTML('beforeend',`
   <div class="hud" id="btop"><span class="t">Embers of the Hollow Sun</span><span class="muted" id="scenName"></span><span class="num" id="roundlbl"></span><span class="gilt" id="turnlbl"></span><span class="num" id="resolvelbl" title="Admiral\u2019s Command: a fleet-wide signature move, once per battle, growing each round you hold it"></span><span class="spacer"></span>
-    <span class="num" id="objlbl"></span><button data-act="threat" id="b_threat2" title="Where the enemy can hit next turn (R)">Threat</button><button data-act="fleetToggle" id="b_fleet">Fleet</button><button data-act="settings" id="b_set" title="Display, camera and sound options"><span class="sl">Settings</span><span class="si">\u2699</span></button><div class="hud setpanel hidden" id="setpanel"><div class="dim" style="font-size:12.5px;margin-bottom:6px">Battle view</div><button data-act="arcs" id="b_arcs" title="Toggle firing arcs (V)"></button><button data-act="threat" id="b_threat" title="Where the enemy can hit next turn (R)"></button><button data-act="cine" id="b_cine" title="Camera swings in on big attacks"></button><button data-act="aihull" id="b_aihull" title="Test hulls made from the concept art (Hegemony dreadnought for now)"></button><button data-act="top" id="b_top" title="Top-down planning view (T)"></button>
+    <span class="num" id="objlbl"></span><button data-act="threat" id="b_threat2" title="Where the enemy can hit next turn (R)">Threat</button><button data-act="fleetToggle" id="b_fleet">Fleet</button><button data-act="settings" id="b_set" title="Display, camera and sound options"><span class="sl">Settings</span><span class="si">\u2699</span></button><div class="hud setpanel hidden" id="setpanel"><div class="dim" style="font-size:12.5px;margin-bottom:6px">Battle view</div><button data-act="arcs" id="b_arcs" title="Toggle firing arcs (V)"></button><button data-act="threat" id="b_threat" title="Where the enemy can hit next turn (R)"></button><button data-act="cine" id="b_cine" title="Camera swings in on big attacks"></button><button data-act="aihull" id="b_aihull" title="Test hulls made from the concept art (Directorate dreadnought for now)"></button><button data-act="top" id="b_top" title="Top-down planning view (T)"></button>
     <button data-act="quality" id="b_quality" title="Ultra: supersampling, ambient occlusion, god rays, planet relief. High: shadows, live nebulae, full hull shading. Medium: tuned for phones"></button><button data-act="fxmode" id="b_fx" title="Reduce flashes and strobing lights"></button><button data-act="shakemode" id="b_shake" title="Reduce screen shake"></button><button data-act="follow" id="b_follow" title="Camera moves to each ship as it activates"></button><button data-act="aiLevel" id="b_ai" title="How cleverly the enemy fights"></button><button data-act="taa" id="b_taa" title="Temporal anti-aliasing: smoother fine detail, may ghost on fast effects (Ultra only)"></button><button data-act="sound" id="b_sound"></button><button data-act="speed" id="b_speed" title="Animation speed (Space)"></button><button data-act="logToggle" id="b_log" title="Show the battle log over the board (phones)">Battle log</button><button data-act="restart" id="b_restart">Restart battle</button><button data-act="reportProblem" title="Save a snapshot of the game state for debugging">Report a problem</button><button data-act="copyReport" title="Copy your recent play data to paste to Claude">Copy report</button><button data-act="diag" title="Render diagnostics (Shift+D)">Diagnostics</button></div><button data-act="c3retreat" id="b_retreat" title="Jump the fleet out. Every surviving ship loses 10% hull.">Retreat</button><button class="primary" data-act="endTurn" id="endbtn">End turn</button></div>
   <div class="hud" id="roster"></div><div class="hud" id="panel"></div><div class="hud" id="log" aria-live="polite"></div>
   <div class="hud" id="camhint"><span><kbd>Right-drag</kbd> orbit</span><span><kbd>Left-drag</kbd> or <kbd>WASD</kbd> pan</span><span><kbd>Wheel</kbd> zoom</span><span><kbd>F</kbd> focus ship</span><span><kbd>T</kbd> top-down</span></div>`);
@@ -439,7 +439,7 @@ function aimLine(a,t){ try{ const line=hexLine(a,t); let cut=-1; for(let i=1;i<l
     const dim=aimMat('dim',new C3(1,.35,.3),.35), d=to.subtract(b), L=d.length(), n=Math.max(2,Math.floor(L/(HS*.7))); for(let i=0;i<n;i+=2){ const p0=b.add(d.scale(i/n)), p1=b.add(d.scale(Math.min(1,(i+1)/n))); aimTube('aimR',[p0,p1],dim,R*.7); } }catch(e){ console.warn(e); } }
 function boardTip(){
   const h=B.hover; if(!h||B.busy) return null; const u=unitAt(h.q,h.r), s=B.sel;
-  if(B.mode==='nova'&&s){ if(!novaTargets(s).some(x=>x.q===h.q&&x.r===h.r)) return '<div class="h">Out of the nova cannon\u2019s arc</div><div class="muted">Pick a hex in the prow arc, 3 to 9 hexes away.</div>';
+  if(B.mode==='nova'&&s){ if(!novaTargets(s).some(x=>x.q===h.q&&x.r===h.r)) return '<div class="h">Out of the spinal cannon\u2019s arc</div><div class="muted">Pick a hex in the fore arc, 3 to 9 hexes away.</div>';
     const hit=alive().filter(x=>hdist(x,h)<=1); return `<div class="h">Spinal shell impact</div><div>40 damage here, 20 to every adjacent hex.</div>${hit.length?`<div class="muted" style="margin-top:4px">Caught in the blast: ${hit.map(x=>`<span class="${x.side==='player'?'verd':'blood'}">${esc(x.name)}</span>`).join(', ')}</div>`:''}`; }
   if(B.mode==='board'&&s&&u&&boardTargets(s).includes(u)){ const o=boardOdds(s,u); return `<div class="h">Board ${esc(u.name)}</div><div class="num">Your ${s.crew} crew against their ${u.crew}. Expect to kill about ${o.kill} and lose about ${o.loss}.</div><div class="${o.capture?'ember':'muted'}" style="margin-top:4px">${o.chance>0?`${o.chance}% chance to capture: the ship joins your fleet.${o.chance<100?' Otherwise saboteurs may still knock out a system.':''}`:'No chance to capture this time, but saboteurs may knock out a system.'}</div>`; }
   if(u&&s&&s.side==='player'&&u.side==='enemy'&&B.side==='player') return attackTip(s,u);
@@ -461,15 +461,15 @@ function moveDmgLine(s,st){ try{ const t=st.gunTarget; if(!t||t.dead||!st.guns) 
     for(const i of idx){ const w=s.weapons[i]; if(!w||!canFire(v,w,t)) continue; const e=expectedVs(v,w,t); sh+=e.shield; hull+=e.hull; n++; } if(!n) return '';
     return `<div class="num" style="margin-top:2px">Expected: about <span class="shv">${Math.round(sh)} shield</span> and <span class="hlv">${Math.round(hull)} hull</span> damage${hull>=t.hp?' <span class="ember">(likely kill)</span>':''}.</div>`; }catch(e){ return ''; } }
 function motionNote(a,t){ const m=motionHit(t), out=[]; if(m>0) out.push(`<span class="ember">Sitting still: +${m} to hit.</span>`); else if(m<0) out.push(`<span class="muted">Burning evasive: \u2212${-m} to hit.</span>`);
-  const rk=a.weapons.some(w=>weaponReady(w)&&rakeBonus(a,w)>0); if(rk) out.push(`<span class="gilt">Raking pass: broadsides +${Math.round(moveRules(a).rake*100)}%.</span>`); return out.length?' '+out.join(' '):''; }
+  const rk=a.weapons.some(w=>weaponReady(w)&&rakeBonus(a,w)>0); if(rk) out.push(`<span class="gilt">Flanking burn: flank guns +${Math.round(moveRules(a).rake*100)}%.</span>`); return out.length?' '+out.join(' '):''; }
 function unitTip(u){ return `<div class="h ${u.side==='player'?'verd':'blood'}">${esc(u.isSq?u.t.n:u.name)}</div><div class="muted">${esc(u.t.n)}${u.elite?', elite':''}</div>
-  <div class="num">Hull ${Math.max(0,u.hp)}/${u.maxHp}${u.shMax?`. Shield pool ${Math.round(u.shp||0)}/${u.shMax}; sides catch prow ${Math.round(u.sh[0])}, port ${Math.round(u.sh[3])}, starboard ${Math.round(u.sh[1])}, rear ${Math.round(u.sh[2])}`:''}.</div><div class="dim">Armor ${pct(u.armor)}, evasion ${u.ev+(u.evBuff||0)}, speed ${u.speed}</div>${u.sec?`<div class="dim num">Prow ${u.sec.prow.hp}, midships ${u.sec.mid.hp}, engines ${u.sec.eng.hp}. Crew ${u.crew}/${u.crewMax}.</div>`:''}`; }
+  <div class="num">Hull ${Math.max(0,u.hp)}/${u.maxHp}${u.shMax?`. Shield pool ${Math.round(u.shp||0)}/${u.shMax}; sides catch prow ${Math.round(u.sh[0])}, port ${Math.round(u.sh[3])}, starboard ${Math.round(u.sh[1])}, rear ${Math.round(u.sh[2])}`:''}.</div><div class="dim">Armor ${pct(u.armor)}, evasion ${u.ev+(u.evBuff||0)}, speed ${u.speed}</div>${u.sec?`<div class="dim num">Fore ${u.sec.prow.hp}, core ${u.sec.mid.hp}, engines ${u.sec.eng.hp}. Crew ${u.crew}/${u.crewMax}.</div>`:''}`; }
 // which boons and aspect bonuses apply to this shot, so the player sees them working
 function boonMods(a,t){ if(!a||a.side!=='player'||typeof RUN==='undefined'||!RUN) return []; const f=a.fx||{}, out=[], quad=shieldQuad(t,a), ready=a.weapons.filter(weaponReady), pctS=x=>Math.round(x*100)+'%';
   const add=(id,txt)=>{ const b=BOONS[id], P=b&&(b.p?PATRONS[b.p]:PATRONS[b.duo[0]]); out.push(`<span style="color:${P?P.col:'#f0b35a'}">${esc(b?b.n:id)}</span> ${txt}`); };
   if(hasBoon('i_still')&&!a.hexMoved&&ready.some(w=>w.arc==='P'||w.arc==='S'||w.k==='battery')) add('i_still',`+${pctS(f.stillPct)} (held still)`);
   if(hasBoon('r_mom')&&a.hexMoved) add('r_mom',`+${pctS(Math.min(4,a.hexMoved)*f.momPct)} (moved ${a.hexMoved})`);
-  if(hasBoon('i_broad')&&ready.some(w=>w.arc==='P'||w.arc==='S')) add('i_broad','broadsides hit harder');
+  if(hasBoon('i_broad')&&ready.some(w=>w.arc==='P'||w.arc==='S')) add('i_broad','flank guns hit harder');
   if(hasBoon('a_lance')&&ready.some(w=>w.k==='lance')) add('a_lance','lances hit harder');
   if(hasBoon('e_war')&&ready.some(w=>w.k==='torp')) add('e_war','torpedoes hit harder');
   if(hasBoon('e_hunt')&&t.hp<t.maxHp/2) add('e_hunt','target below half hull');
@@ -479,7 +479,7 @@ function boonMods(a,t){ if(!a||a.side!=='player'||typeof RUN==='undefined'||!RUN
   if(hasBoon('e_kindle')) add('e_kindle',`${pctS(f.igniteCh||0)} fire chance per hull hit`);
   if(hasBoon('e_chain')) add('e_chain','a kill blasts its neighbours');
   if(hasBoon('a_crit')) add('a_crit','harder criticals');
-  if(RUN.aspect==='lancer'&&a.pflag&&ready.some(w=>w.arc==='F')) out.push(`<span class="gilt">Aspect of the Spear</span> forward guns +50%`);
+  if(RUN.aspect==='lancer'&&a.pflag&&ready.some(w=>w.arc==='F')) out.push(`<span class="gilt">Spearhead Refit</span> forward guns +50%`);
   return out; }
 function attackTip(a,t){
   const quad=shieldQuad(t,a), rear=quad===2, idx=B.armed!=null?[B.armed]:a.weapons.map((w,i)=>i); let rows='',hull=0,sh=0,n=0;
@@ -705,7 +705,7 @@ const TIPS=[
   [
     "c_tree",
     "Your admiral's skill tree",
-    "Spend experience on your admiral's skill tree between runs. Heat is a difficulty you choose: each point of Heat gives +2 experience to the admiral you fly and +1 to your faction's shared pool, and makes the run harder."
+    "Spend experience on your admiral's skill tree between runs. Threat is a difficulty you choose: each point of Threat gives +2 experience to the admiral you fly and +1 to your faction's shared pool, and makes the run harder."
   ]
 ];
 function tutorialCheck(){ try{ if(!B||B.showcase||B.over||document.body.classList.contains('app-on')||document.querySelector('.intro')) return; const o=META.opts=META.opts||{}; if(o.tipsOff) return; o.tips=o.tips||{}; o.tips.start=1; o.tips.turns=1;
@@ -718,7 +718,7 @@ function tutorialCheck(){ try{ if(!B||B.showcase||B.over||document.body.classLis
 ACT.tipOk=id=>{ const o=META.opts=META.opts||{}; o.tips=o.tips||{}; o.tips[id]=1; try{ Persist.saveLocal(); }catch(e){} const el=document.getElementById('tipcard'); if(el) el.remove(); setTimeout(tutorialCheck,400); };
 ACT.tipOff=()=>{ const o=META.opts=META.opts||{}; o.tipsOff=true; try{ Persist.saveLocal(); }catch(e){} const el=document.getElementById('tipcard'); if(el) el.remove(); };
 
-const AIM_NAME={'':'Anywhere',prow:'Prow',mid:'Midships',eng:'Engines'};
+const AIM_NAME={'':'Anywhere',prow:'Fore',mid:'Core',eng:'Engines'};
 function actionStrip(u){ if(!u||u.dead||u.side!=='player'||u.isSq||!B||B.over||B.side!=='player') return ''; const use=canUse(u)&&!B.busy;
   const btn=(act,arg,label,on,cls='')=>`<button class="${cls}" ${on?'':'disabled'} data-act="${act}" ${arg?`data-arg="${arg}"`:''}>${label}</button>`;
   const res=B.resolve.player||0, ri=ramInfo(u), bt=boardTargets(u), A=u.ab?ABILITIES[u.ab]:null, moved=u.mp<u.speed, canHit=OV.targets&&OV.targets.length>0;

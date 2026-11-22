@@ -158,7 +158,7 @@ The Vesper Reach was the Hegemony's outer frontier: forty-odd systems of mining 
 ### 2.5 Look
 
 - **People:** weathered, unaugmented humans with frost-scarred skin, surgical scars where implants were cut out, oath brands, grey stubble and hard tired eyes. High-collared dark void-coats with heavy shoulder plates, chalk dust on gloves.
-- **Ships:** black iron hulls with frost-white markings, ember-orange windows and engines, and tall heat-radiator spires glowing bright ember orange (a hot reactor in vacuum has to shed its heat somewhere). Heavy broadside decks, big engine bells, old manual gun decks. No rust: rust belongs to the Hullbreakers. Symmetric.
+- **Ships:** black iron hulls with frost-white markings, ember-orange windows and engines, and tall heat-radiator spires glowing bright ember orange (a hot reactor in vacuum has to shed its heat somewhere). Recessed lateral weapon galleries, armored flank casemates, big engine bells, manual optical fire-control blisters. No rust: rust belongs to the Hullbreakers. Symmetric.
 - **Colours in one line:** black iron, frost white, bright ember.
 
 ### 2.6 Origin and wants
@@ -188,19 +188,19 @@ Line of battle. Broadsides hit 40% harder after moving two or more hexes, lances
 ### 2.10 Naming rules
 
 - **People:** old European given names (Anselm, Casimir, Odile, Margit, Brannoc, Thessaly) plus hard English surnames (Varrow, Harrowgate, Ashdown, Holloway, Blackwood).
-- **Titles:** Dawnwarden, Oath-warden, Provost, Roll-master; top titles High Warden, Warden of the Roll. Malek Draven becomes Oath-Captain.
+- **Titles:** Dawnwarden, Oath-warden, Provost, Roll-master; top titles High Warden, Warden of the Roll. Torben Hark is Oath-Captain.
 - **Ship names:** oath, fire and cold (Unyielding Oath, Ashen Vigil, Banked Fire, Long Watch, Debt of Vesper, Debt Paid).
 
 ### 2.11 Ranks, ships, weapons, places
 
 - Ranks: Lieutenant, Commander, Captain, Commodore, Fleet captain; admirals Admiral, Commodore, High Admiral.
 - Ship classes: Warden, Harrow, Vigil (was Penitent), Hearth (carrier, was Reliquary), Bastion (was Cathedral), Daybreak (was Ascendant).
-- Weapons: **Sear** repeater, **Sear** battery, Heavy **sear** broadside, **Sear** turret, Oath lance, **Cinder** torpedo, Spark flak.
+- Weapons: **Sear** repeater, **Sear** battery, Heavy **sear** flank battery, **Sear** turret, Oath lance, **Cinder** torpedo, Spark flak.
 - Places: the Vesper Reach and its capital star, Vesper, the Cinder Line, the Ashen reaches, the Roll of Vesper (the wall that keeps the names of crusades that never came home).
 
 ---
 
-## 3. Hegemony Navy (name kept; tech-forward)
+## 3. Meridian Directorate (internal id hegemony; tech-forward)
 
 ### 3.1 Who they are
 
@@ -213,7 +213,7 @@ Clipped, polite and data-driven: probabilities, projections, timestamps, numbere
 ### 3.3 Look
 
 - **People:** composed humans with tasteful implants: a cortical-link port at the temple with a faint blue light, ocular implants with data moving across the iris, thin subdermal lines along the jaw and hands. Pale grey high-collared uniforms, gloves. Calm to the point of eerie.
-- **Ships:** light grey hulls, steel-blue trim, blue-white windows. Clean wedges, rows of identical turrets, ion prongs at the bow, blue lights pulsing in time across the whole fleet, small drone escorts. Prefix HNS.
+- **Ships:** light grey hulls, steel-blue trim, blue-white windows. Clean wedges, rows of identical turrets, ion prongs at the bow, blue lights pulsing in time across the whole fleet, small drone escorts. Prefix MDV.
 - **Colours in one line:** pale grey, steel blue, implant blue.
 
 ### 3.4 Origin and wants
@@ -241,7 +241,7 @@ Formation around the flagship. Fire syncs near the flagship (the network), ion c
 ### 3.8 Crest, naming, ranks, ships, weapons, places
 
 - Crest: a wedge in a ring of five linked nodes. Sound: a two-note chime before the Registry speaks. Saying: "Losses within acceptable limits."
-- People: Germanic, Nordic and Dutch names (Konrad Reiter, Sanne Achterberg, Gerold Haldane, Katrin Falk). Ships: HNS Steadfast, HNS Arbiter, HNS Consensus, HNS Projection.
+- People: Germanic, Nordic and Dutch names (Konrad Reiter, Sanne Achterberg, Gerold Haldane, Katrin Falk). Ships: MDV Steadfast, MDV Arbiter, MDV Consensus, MDV Projection.
 - Avoid: Skynet, Cylons, the geth, "the Machine God", Imperial, Executor, Interdictor, Star Destroyer, Commissar, Turbolaser, neural lace (Iain M. Banks's term).
 - Ranks: Lieutenant, Commander, Captain, Commodore, Rear admiral; Line Admiral, Fleet Marshal, First Admiral, High Commodore.
 - Ship classes: picket, cordon, vanguard, dominion, and the super-dreadnought The Iron Mandate.
@@ -254,17 +254,17 @@ Formation around the flagship. Fire syncs near the flagship (the network), ion c
 
 ### 4.1 Who they are
 
-An alien raider species from the Ashfall belt: a cold, heavy-gravity world and the burned-out rocks around it, far from any warm star, where only the strongest packs ate. They are huge, hot-blooded predators, heavy as bears and pack-minded as wolves but plainly alien (see 4.3), and they live in packs ruled by whoever can beat the rest. They don't want riches; they want to be the strongest thing in the dark. What they raid is salvage and scrap, which everyone else counts as credits. They hunt in space the way they hunted at home, by trail and by sound: their wake-trackers follow the ion trail every drive leaves behind, and their listening arrays pick up engine noise and signal chatter from far off, while their own ships run silent. They came to the Hollow Sun because the war around it is the biggest fight in known space, and they strip every faction's wrecks, bolt the best pieces into their ships and their armour harnesses, and hunt Rook, the core they believe makes its holder unstoppable. Strength rules: any of them can challenge a captain, and whoever lives keeps the ship. Old Mott has outlived forty captains, mostly by killing them.
+An alien raider species from the Ashfall belt: a cold, heavy-gravity world and the burned-out rocks around it, far from any warm star, where only the strongest packs ate. They are huge, hot-blooded predators, heavy as bears and pack-minded as wolves but plainly alien (see 4.3), and they live in packs ruled by whoever can beat the rest. They don't want riches; they want to be the strongest thing in the dark. What they raid is salvage and scrap, which everyone else counts as credits. They hunt in space the way they hunted at home, by ion wake, thermal plume, and comms chatter: their wake-trackers follow the ion trail every drive leaves behind, and their passive arrays pick up reactor heat and signal leaks from far off, while their own ships run cold. They came to the Hollow Sun because the war around it is the biggest fight in known space, and they strip every faction's wrecks, bolt the best pieces into their ships and their armour harnesses, and hunt Rook, the core they believe makes its holder unstoppable. Strength rules: any of them can challenge a captain, and whoever lives keeps the ship. Old Mott has outlived forty captains, mostly by killing them.
 
 They are the Glasswrights' opposite in every way: hulking and plated where the Glasswrights are slender and glassy, many where the Glasswrights are few, short-lived and fast-breeding where the Glasswrights live for centuries, brutal where the Glasswrights grieve.
 
 ### 4.2 Voice and motifs
 
-Short, flat, brutal. They count kills, and talk in trails and sound ("We heard your engines three jumps out. Your wake still stinks of fear."). Strength, trophies, scrap, fear, the pack. Over comms, a growl under every word, and a howl when they board. Cold and disciplined, not comic: no ork-style brutes, no misspellings, no green. Humour, rarely, and always at the victim's expense.
+Short, flat, brutal. They count kills, and talk in wakes, heat, and comms leaks ("Your drive plume lit up our scopes two jumps out. Your reactor is running scared."). Strength, trophies, scrap, fear, the pack. Over comms, a growl under every word, and a howl when they board. Cold and disciplined, not comic: no ork-style brutes, no misspellings, no green. Humour, rarely, and always at the victim's expense.
 
 ### 4.3 Look
 
-- **Beings (void hunters; Ryan, Nov 1, R64; portrait look picked Nov 1 06:02, concept A1):** inspired by wolves and bears, but plainly alien, never a bear. Huge and hunched, with the heavy, bear-like mass of a great hunting beast: a big shoulder hump, thick forearms and heavy claws. Fur only as a coarse mane over the hump, neck and shoulders, in grey, black or rust-brown; everywhere else a tough dark hide. The face is bare, short and blunt, a living face armoured in overlapping plates of dull horn like a pangolin's scales, grown from the hide with dark leathery skin in the creases, with no fur, no snout and no nose. It never reads as a bare skull, a mask or a helmet: no polished or riveted metal on the face (Nov 1 portrait review). The jaw splits down the middle of the chin into two halves that open sideways, lined with teeth. A row of small eyes (four) runs across the brow and shines in the dark, with heat-sensing pits beside them: they hunt by trail and sound, and the pits find the warm body at the end of the trail. Ridged plates run down the back and shoulders and shrug off cold and vacuum. Scrap from other factions' ships is strapped over them in armour harnesses: Hegemony panels, Glasswright crystal, Eclipse plating. Trophies are machines and hull plates, never skulls or bodies. **Not the film Predator (Ryan, Nov 1):** no dreadlock-like quills, cables or tendrils on the head, no tusks or mandible tusks framing the mouth, no mesh netting, no domed bio-helmet head, and no humanoid bodybuilder torso; the mane is fur and the bulk is a beast's, not a muscled man's.
+- **Beings (void hunters; Ryan, Nov 1, R64; portrait look picked Nov 1 06:02, concept A1):** inspired by wolves and bears, but plainly alien, never a bear. Huge and hunched, with the heavy, bear-like mass of a great hunting beast: a big shoulder hump, thick forearms and heavy claws. Fur only as a coarse mane over the hump, neck and shoulders, in grey, black or rust-brown; everywhere else a tough dark hide. The face is bare, short and blunt, a living face armoured in overlapping plates of dull horn like a pangolin's scales, grown from the hide with dark leathery skin in the creases, with no fur, no snout and no nose. It never reads as a bare skull, a mask or a helmet: no polished or riveted metal on the face (Nov 1 portrait review). The jaw splits down the middle of the chin into two halves that open sideways, lined with teeth. A row of small eyes (four) runs across the brow and shines in the dark, with heat-sensing pits beside them: they hunt by ion wake and heat signature, and the pits find the warm body at the end of the trail. Ridged plates run down the back and shoulders and shrug off cold and vacuum. Scrap from other factions' ships is strapped over them in armour harnesses: Hegemony panels, Glasswright crystal, Eclipse plating. Trophies are machines and hull plates, never skulls or bodies. **Not the film Predator (Ryan, Nov 1):** no dreadlock-like quills, cables or tendrils on the head, no tusks or mandible tusks framing the mouth, no mesh netting, no domed bio-helmet head, and no humanoid bodybuilder torso; the mane is fur and the bulk is a beast's, not a muscled man's.
 - **Ships:** they run dark. Matte soot black and rust, few windows, dim red running lights, a red-orange glow from the engines, and big listening dishes and wake-sniffer scoops at the bow. Lopsided, with hull plates torn from every faction bolted on in their old colours, boarding claws at the bow, chains between hull sections. Junky, menacing, and hard to see until they're close. (The current Corsair ships already fit this.)
 - **Colours in one line:** soot, rust, dried blood, trophy colours, red running lights.
 
@@ -325,7 +325,7 @@ Fast, thin shields, pack hunters that close from the flanks and behind, far too 
 
 ### 5.1 Who they are
 
-Not a people: a weapon that was made. After the collapse, the Starwrights who refused the Upload split over how to answer it. Most worked in glass and became the Glasswrights. A splinter, the Fleshwrights, worked in living tissue instead: they swore to destroy Eclipse for killing their sun, and grew a weapon to do it, ships and soldiers of engineered flesh that could live on starlight, eat anything, endure the cold and breed without end, powered from vats fed by Crucible, a Lattice core they took in the collapse. The weapon worked too well. It merged, multiplied and consumed its makers, and became one swarm with one appetite, spreading through the dark between stars. Inside it two throats argue. Hunger is the swarm. Memory is what is left of the Fleshwrights it consumed: their voices, their names, their sun. The swarm grew around Crucible and feeds on it still. Now it is coming to the Sun, drawn by the other five cores and by the makers' memory of the star they once circled, to eat what is left.
+Not a people: a weapon that was made. After the collapse, the Starwrights who refused the Upload split over how to answer it. Most worked in glass and became the Glasswrights. A splinter, the Fleshwrights, worked in living tissue instead: they swore to destroy Eclipse for killing their sun, and grew a weapon to do it, ships and soldiers of engineered flesh that could live on starlight, eat anything, endure the cold and breed without end, powered from vats fed by Calyx, a Lattice core they took in the collapse. The weapon worked too well. It merged, multiplied and consumed its makers, and became one swarm with one appetite, spreading through the dark between stars. Inside it two throats argue. Hunger is the swarm. Memory is what is left of the Fleshwrights it consumed: their voices, their names, their sun. The swarm grew around Calyx and feeds on it still. Now it is coming to the Sun, drawn by the other five cores and by the makers' memory of the star they once circled, to eat what is left.
 
 ### 5.2 Voice and motifs
 
@@ -335,7 +335,7 @@ Not a people: a weapon that was made. After the collapse, the Starwrights who re
 
 ### 5.3 Look
 
-- **Beings:** grown organisms with no face, eyes or limbs: glistening wet flesh, membrane, chitin, bile. Nothing on the surface recalls a person. Admirals: the Matriarch of Nine Throats, Razormaw, Voice of the Deep, the Mending Throng.
+- **Beings:** grown organisms with no face, eyes or limbs: glistening wet flesh, membrane, chitin, bile. Nothing on the surface recalls a person. Admirals: the Matriarch of Nine Throats, Red Undertow, Voice of the Deep, the Mending Throng.
 - **Ships:** grown, not built: ridges, pores, veins and glowing sacs, no panels or pipes. Dark olive-brown flesh, ochre chitin trim, bile yellow-green glow. Symmetric where the body allows. Tendrils, brood sacs, regrowing scar tissue.
 - **Colours in one line:** dark olive, ochre bone, bile yellow-green light.
 
@@ -371,7 +371,7 @@ No shields at all; flesh regrows every round. Spore swarms in place of wings, bo
 ### 5.9 Naming rules
 
 - **Individuals:** a body or sense word plus a body part or tide word: Seventh Mouth, Gnawing Tide, Wet Whisper, Hollow Gut, Brine Mouth. Single growl words: Moult, Undertow.
-- **Ships:** body-horror nouns: Shrieking Coil, Tide of Teeth, Sour Gut, Gnawing Bloom.
+- **Ships:** body-horror nouns: Shrieking Coil, Tide of Teeth, Sour Gut, Gnawing Cyst.
 - **Titles (Nemesis):** Spawn-mother, Elder Throat, Gorge-mind, Maw-mother.
 
 ### 5.10 Ranks, ships, weapons, places
@@ -401,7 +401,7 @@ The descendants of the Starwrights who refused the Upload. Their ancestors were 
 
 ### 6.3 Look
 
-- **People (living prism; Ryan, Nov 1, R64; portrait look picked Nov 1 06:02, concept A):** still flesh, the Starwrights who stayed flesh, and plainly not human, living three to four centuries. **They are not made of glass (Ryan, Nov 1):** they are organic beings evolved to shape glass, and over generations they have grown and woven glass and glass-like matter into their own bodies. Living tissue shows everywhere: pale skin, sinew and soft, half-translucent flesh, with fine glass threads and crystal inlays set into it. Light runs along those threads and inlays like fibre optics and splits into prismatic colour at their edges, so the prism light comes from the glass in them, not from a glass body. Tall and slender, with a long neck. The head is faceted and featureless (no big eyes, no mouth, no nose), but it is an organic head plated with grown crystal, not a helmet or a mask. They speak in colour pulses that ripple through the inlays of the head and body. Long tapering fingers, made for shaping glass. They wear layered crystal and mirror-thread fabrics and carry small light-cores as jewellery. Nothing about them reads as a grey or green alien: no smooth grey skin, no big black eyes, no bulb head.
+- **People (living prism; Ryan, Nov 1, R64; portrait look picked Nov 1 06:02, concept A):** still flesh, the Starwrights who stayed flesh, and plainly not human, living three to four centuries. **They are not made of glass (Ryan, Nov 1):** they are organic beings evolved to shape glass, and over generations they have grown and woven glass and glass-like matter into their own bodies. Living tissue shows everywhere: pale skin, sinew and soft, half-translucent flesh, with fine glass threads and crystal inlays set into it. Light runs along those threads and inlays like fibre optics and splits into prismatic colour at their edges, so the prism light comes from the glass in them, not from a glass body. Tall and slender, with a long neck. Live Nov 14 portrait canon (`loom_sheet.jpg`): tall, slender four-armed optical craftspeople with pale, luminous skin threaded with glass inlays, a pair of large expressive dark eyes under faceted brows, no nose, and a fine woven-glass mouth-grille framed by spun-glass shoulder fans. They communicate through color pulses along their crystal inlays and modulated optical chimes. Long tapering fingers built for shaping glass; layered crystal and mirror-thread vestments.
 - **Ships:** clear crystal and silver hulls whose faceted edges split light into rainbow fringes, mirrors and lenses that turn to catch light, crystal vanes (the old sail shapes, repainted), a stored light glowing deep inside. Slender and graceful. Symmetric.
 - **Prism lance colour:** a white core beam splitting into a rainbow fringe, leaving glassy, rainbow-edged scars.
 - **Colours in one line:** clear crystal, silver, rainbow edge, stored light.
@@ -437,7 +437,7 @@ Blindingly fast, heavily shielded, fragile once the shields fall. They cannot br
 
 ### 6.9 Naming rules
 
-- **People:** short, crisp names (Corin, Saro, Tamsa, Vell, Oskel, Brin), less elvish than before, plus a family line named for an optical work of their ancestors (of the Third Mirror, of Long Focus, of the Clear Aperture).
+- **People:** short, crisp names (Saro, Tamsa, Vell, Oskel, Brin, Nyra), less elvish than before, plus a family line named for an optical work of their ancestors (of the Third Mirror, of Long Focus, of the Clear Aperture).
 - **Titles:** Glimmer, Glint, Facet, Mirror, Lens-keeper; Nemesis titles Lens-keeper, First Mirror, Keeper of Astra. Keeper titles belong to the Glasswrights alone.
 - **Ship names:** light and grief (Held Spectrum, Last Reflection, Quiet Prism, What We Built, Patience).
 
@@ -445,7 +445,7 @@ Blindingly fast, heavily shielded, fragile once the shields fall. They cannot br
 
 - Ranks: Glimmer, Glint, Facet, Mirror, Lens-keeper.
 - Ship classes: sliver (frigate), lancet (destroyer), prism (cruiser), aperture (carrier), and the flagship **The Unfinished**, built around the largest surviving piece of the Lattice.
-- Weapons: Prism shards, **Prism lance**, Star torpedo, Needle beam, Mirror veil, Shard cannon. Refits: Waveguide spine (was Dawnglass spine), Interferometer lens (was Longsight crystal), Shard hoppers, Clear eye.
+- Weapons: Prism shards, **Prism lance**, Star torpedo, Needle beam, Mirror veil, Shard cannon. Refits: Waveguide spine (was Dawnglass spine), Interferometer lens (was Longsight crystal), Shard hoppers, Clear aperture.
 - Places: the dark Ardent system, the Ringing Field (crystal wrecks that still ring when light hits them), the Lattice wreckage.
 
 ---
@@ -473,7 +473,7 @@ They have lived in that dark for a thousand years, and they are no longer sure t
 ### 7.4 Origin and wants
 
 - Origin: the Ardent system, dark for a thousand years; the Archive, where every uploaded mind is backed up. Each mind stays its own; the Archive holds copies, not a merged self.
-- Want: gather all six cores (they hold Kharon) and light their new sun. Keep every other fleet away from their siphon arrays.
+- Want: gather all six cores (they hold Kovar) and light their new sun. Keep every other fleet away from their siphon arrays.
 
 ### 7.5 How they fight
 

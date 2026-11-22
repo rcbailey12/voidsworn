@@ -55,7 +55,7 @@ const TARGET_RING: Color = Board.LS.ROLE["target"]
 const TARGET_PLAN: Color = Board.LS.ROLE["target_plan"]
 const TARGET_ON: Color = Board.LS.ROLE["target_on"]
 const QUAD_NAME := ["prow", "starboard", "rear", "port"]
-const SEC_NAME := {"prow": "prow", "mid": "midships", "eng": "engines"}
+const SEC_NAME := {"prow": "fore", "mid": "core", "eng": "engines"}
 const MOVE_PER := {"voidsworn": 1.25, "hegemony": 0.75, "corsair": 0.85, "chorus": 1.1, "ithar": 1.0, "deathless": 0.6}
 # F2 move pace (R64, Nov 1: about twice as slow, one ship at a time): ms per hex for an escort and for a battleship or
 # bigger (in between by size; the faction factor above enters as its square root), the build-and-bleed allowance, the cap
@@ -1297,6 +1297,9 @@ func _play_batch(bt: Dictionary) -> void:
 			for g in grp:
 				if g["t"] == "hit":
 					music_hits += 1
+			_voice_event(e)
+			for g in grp:
+				_voice_event(g)
 			await _play_fire(e, grp)
 			_tip_completed(e)
 			if enemy:
@@ -1383,11 +1386,18 @@ func _who(id) -> String:
 var voice = null   # story hook: godot/story/battle_voice.gd (null when the story folder is missing)
 
 
+# story hook: every rules event reaches battle voice exactly once, including a volley's fire and its grouped hits,
+# which _play_batch plays through _play_fire and never hands to _play_event (Artoo on PR 1552, issue 1551)
+func _voice_event(e: Dictionary) -> void:
+	if voice == null:
+		return
+	for l in voice.on_event(e):
+		hud.add_log(l["text"], l["kind"])
+		recording_cue.emit("voice", l["text"])
+
+
 func _play_event(e: Dictionary, batch_view := {}) -> void:
-	if voice != null:   # story hook
-		for l in voice.on_event(e):
-			hud.add_log(l["text"], l["kind"])
-			recording_cue.emit("voice", l["text"])
+	_voice_event(e)
 	match e["t"]:
 		"adaptation":
 			if not adaptation_heard:
@@ -1495,7 +1505,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				gfx.shield_break(str(e["unit"]), int(e["quad"]))
 		"section_down":
 			var sec := str(e["section"])
-			_log("%s: %s destroyed. %s" % [_name(e["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Broadsides and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(e["unit"]) == "player" else "p")
+			_log("%s: %s destroyed. %s" % [_name(e["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Flank guns and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(e["unit"]) == "player" else "p")
 		"system":
 			_log("%s: %s." % [_name(e["unit"]), str(e["text"])], "e" if _side(e["unit"]) == "player" else "p")
 		"burning":
@@ -1606,7 +1616,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			wrecked[e["unit"]] = Vector2i(int(e["q"]), int(e["r"]))
 			if gfx != null and gfx.has_method("anchor_wreck"):
 				gfx.anchor_wreck(str(e["unit"]), board.hex_world(int(e["q"]), int(e["r"])), board.HS * WRECK_LEASH_K)
-			_log("The wreck of %s drifts in place, blocking movement and fire." % _name(e["unit"]), "x")
+			_log("The wreck of %s breaks into tumbling wreckage, blocking movement and line of fire." % _name(e["unit"]), "x")
 		"death":
 			await _play_death(e)
 			if wrecked.has(e["unit"]):
@@ -3456,9 +3466,9 @@ func _nova_tip(q: int, r: int) -> String:
 		return ""
 	var blast := _nova_blast(q, r)
 	if (blast["hexes"] as Array).is_empty():
-		return "[b]Nova shell[/b]\n[color=#a7b09d]Out of the shell's reach: pick a white hex 3 to 9 ahead.[/color]"
+		return "[b]Spinal shell[/b]\n[color=#a7b09d]Out of the shell's reach: pick a white hex 3 to 9 ahead.[/color]"
 	# the raw damage per ship comes from the rules (rules.gd novaDamage, the same call the hit makes)
-	var t := "[b][color=#ffd27a]Nova shell[/color][/b]\nBlasts this hex and the 6 around it, 30% through shields. Damage before shields and armour:"
+	var t := "[b][color=#ffd27a]Spinal shell[/color][/b]\nBlasts this hex and the 6 around it, 30% through shields. Damage before shields and armor:"
 	var foes: Array = []
 	var mine: Array = []
 	for p in api.nova_preview(sel, q, r):
@@ -4424,7 +4434,7 @@ func _attack_tip(t_id: String) -> String:
 		elif not vw["ready"]:
 			right = "[color=#7c8674]fired[/color]"
 		elif vw["kind"] == "flak":
-			right = "[color=#7c8674]point defence[/color]"
+			right = "[color=#7c8674]point defense[/color]"
 		elif su["braced"]:
 			right = "[color=#7c8674]braced[/color]"
 		elif not tg.get("inRange", false):
@@ -4494,7 +4504,7 @@ func _on_action(name: String, arg) -> void:
 				var ab := str(_sel_unit().get("ab", ""))
 				if ab in ["nova", "blink"]:
 					mode = "" if mode == ab else ab
-					hud.toast({"nova": "Click a hex 3 to 9 ahead for the nova shell.", "blink": "Click an open hex within 3 to jump to."}[ab])
+					hud.toast({"nova": "Click a hex 3 to 9 ahead for the spinal shell.", "blink": "Click an open hex within 3 to jump to."}[ab])
 					_refresh_ui()
 				else:
 					plog.act("ability", {"ab": ab})
@@ -5236,7 +5246,7 @@ func _panel_info() -> Dictionary:
 		if u.get("stance") != null:
 			for stn in ["strike", "screen", "hunt"]:
 				orders.append({"text": "Wings: %s" % stn, "act": "stance", "arg": stn, "active": str(u.get("stance")) == stn, "on": bool(u.get("canStance")) and str(u.get("stance")) != stn and _can_act(),
-					"tip": {"strike": "Wings range out and strike.", "screen": "Wings stay within 2 hexes, hunt craft first and shoot down torpedoes aimed at ships beside them.", "hunt": "Wings range 4 hexes further, +20% against crippled ships, easier to hit."}[stn]})
+					"tip": {"strike": "Wings range out and strike.", "screen": "Wings stay within 3 hexes, hunt enemy craft first, and intercept torpedoes aimed within 2 hexes.", "hunt": "Wings range 4 hexes further, +20% against crippled ships, easier to hit."}[stn]})
 		if str(u.get("role", "")) != "" and u.get("role") != null:   # issue 529: Roles Assigned at Hatching, one change per battle
 			var rn := str(u["role"]).capitalize()
 			orders.append({"text": "Role: %s" % rn, "act": "role", "on": _can_act() and bool(u.get("canRole")),
@@ -5248,7 +5258,7 @@ func _panel_info() -> Dictionary:
 
 
 # ---------------------------------------------------------------- the full ship sheet (ui3d.js refreshPanel)
-const SEC_LBL := {"prow": "Prow", "mid": "Midships", "eng": "Engines"}
+const SEC_LBL := {"prow": "Fore", "mid": "Core", "eng": "Engines"}
 static var _boon_d = null   # not GPU: campaign_tables.json BOON_D: boon id -> description per rarity
 
 
@@ -5346,12 +5356,12 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 		var fac := str(ru.get("fac", ""))
 		if fac == "hegemony":
 			if _jt(ru.get("ripped")):
-				tr.append("Links ripped out: she answers no Registry net, no synchronized fire.")
+				tr.append("Links ripped out: it answers no Directorate net, no synchronized fire.")
 			else:
 				var anc = R.syncAnchor(ru["side"])
 				var sr := int(TBL.get("SYNC_R", 3))
 				if not (ru["side"] == "player" and Bs["round"] == 1 and _jt(Bs.get("cfg", {}).get("storyMods", {}).get("syncDown"))):
-					tr.append("Synchronized fire lost: the flagship is gone." if not _jt(anc) else ("Sync anchor: Hegemony ships within %d hexes fire as one." % sr if _jt(ru.get("anchor")) else ("In sync with the flagship." if R.inSync(ru) else "Out of sync: more than %d hexes from the flagship." % sr)))
+					tr.append("Synchronized fire lost: the flagship is gone." if not _jt(anc) else ("Sync anchor: Directorate ships within %d hexes fire as one." % sr if _jt(ru.get("anchor")) else ("In sync with the flagship." if R.inSync(ru) else "Out of sync: more than %d hexes from the flagship." % sr)))
 		if fac == "ithar" and float(u["shMax"]) > 0.0:
 			tr.append("Prism charge: an untouched pool snaps back to full; a pool struck since its last turn recharges twice.")
 		if fac == "chorus":
@@ -5640,7 +5650,7 @@ func _battle_info() -> Dictionary:
 			if H is Dictionary:
 				heat += int(_z0(H.get("w")))
 				parts.append(str(H.get("n", h)))
-		tip = "Heat %d of 9: the run's difficulty level, from the optional rules chosen when the run began%s" % [heat, (": " + ", ".join(parts) + ".") if not parts.is_empty() else " (none)."]
+		tip = "Threat %d of 9: the run's difficulty level, from the optional rules chosen when the run began%s" % [heat, (": " + ", ".join(parts) + ".") if not parts.is_empty() else " (none)."]
 	_info_last = {"foe_name": str(F.get("n", "")) if F is Dictionary else "", "foe_crest": _fac_crest(fac), "foe_ships": foes, "heat": heat, "heat_tip": tip}
 	return _info_last
 
