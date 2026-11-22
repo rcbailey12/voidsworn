@@ -1,0 +1,28 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1415i_GL1",
+ "ship": "ithar_GL1",
+ "code": "I11_37",
+ "commit": "752bfcba5f1715b52d11a7d9557b505cb78c9d21",
+ "glb": "df9f533f8b8405ab8b9db0336f5da7fb642a90241d0356109057c9b5dfc5fb2d",
+ "files": {
+  "I11_37.glb": "df9f533f8b8405ab8b9db0336f5da7fb642a90241d0356109057c9b5dfc5fb2d",
+  "I11_37_base.jpg": "4bc3bf5a7d2fae4e4849018be56066c5baa1e3939aa6118b734fe4a1bd15116e",
+  "I11_37_emission.jpg": "c61e85506c90a0cad8892ab29c49744f62d455e38de5e20b1020de95b1e3f6f8",
+  "I11_37_normal.png": "5b09e19c8b67c98d6b423fcc10a8141951049f113de7d022a6714fef68f7a122",
+  "I11_37_orm.png": "2f82cc5525cf8d155a00bb8774ec67a0b90476a01eb1edc82b03fdcabdb5e83a",
+  "I11_37_parts_base.jpg": "7384181d30494ded0469870954baf453f3d16ca4dcfb74152fe3b176898c1f3f",
+  "I11_37_parts_normal.png": "a894d851530be6ab04a3bbd2844c16e0a76726438a10870a1281ca7098a17e1b",
+  "I11_37_parts_orm.png": "5bd900a09db448aabcb1adc973b69894069e18e227903b6e09aabc1d833285c4"
+ },
+ "checked": [
+  "I11_37.glb",
+  "I11_37_base.jpg",
+  "I11_37_emission.jpg",
+  "I11_37_normal.png",
+  "I11_37_orm.png",
+  "I11_37_parts_base.jpg",
+  "I11_37_parts_normal.png",
+  "I11_37_parts_orm.png"
+ ],
+ "detail": "PASS detail check: normal relief 6.21 deg (floor 0.47), albedo contrast 0.125 (floor 0.020), roughness spread 0.106 (floor 0.010), 350871 texels"
+}

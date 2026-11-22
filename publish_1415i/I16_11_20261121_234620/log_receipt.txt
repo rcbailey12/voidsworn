@@ -1,0 +1,2 @@
+[publish] receipt ok: ithar_GA1 I16_11 commit 752bfcba5f1715b52d11a7d9557b505cb78c9d21, glb 8efcd98f9af249a687fcd4b859304906032ec6545b7f0acdc10f95d58f6d77fc, 8 listed and 8 checked files
+SHIP=ithar_GA1

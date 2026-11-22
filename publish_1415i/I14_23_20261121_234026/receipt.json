@@ -1,0 +1,28 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1415i_GS1",
+ "ship": "ithar_GS1",
+ "code": "I14_23",
+ "commit": "752bfcba5f1715b52d11a7d9557b505cb78c9d21",
+ "glb": "6421b23a73fa0628cf7e6184be1efd7224aa398a9c744fb2aa9f38d9a68f5ecb",
+ "files": {
+  "I14_23.glb": "6421b23a73fa0628cf7e6184be1efd7224aa398a9c744fb2aa9f38d9a68f5ecb",
+  "I14_23_base.jpg": "6863b61f4f2a340f58f10139ac4aa66dcb20d4ff65b665681d14de4e1b1112c5",
+  "I14_23_emission.jpg": "3bdb6d1ae4379d4579f2e29384b2cac527f83585373ed94a8d05a8fea99a5017",
+  "I14_23_normal.png": "c474a7653a6186ffc453730a2cc613112f6ac07c332a1734afa86436d7ebe3fc",
+  "I14_23_orm.png": "5a9b3e84b7ef774deb23c991734321654ee42a83ff9366b153076d462d0b2abc",
+  "I14_23_parts_base.jpg": "3a20bdb790f849f99188f124e311c28c530dd0d529dafc1382eec42dec414d71",
+  "I14_23_parts_normal.png": "b1728104e7634387d0a25c49b7b96e7177bfd29892a027ba49924e71b6be7b02",
+  "I14_23_parts_orm.png": "00995bab1e87360efec0dad966db0df3c3ed98880895c6130de9318cccb44ddd"
+ },
+ "checked": [
+  "I14_23.glb",
+  "I14_23_base.jpg",
+  "I14_23_emission.jpg",
+  "I14_23_normal.png",
+  "I14_23_orm.png",
+  "I14_23_parts_base.jpg",
+  "I14_23_parts_normal.png",
+  "I14_23_parts_orm.png"
+ ],
+ "detail": "PASS detail check: normal relief 5.98 deg (floor 0.47), albedo contrast 0.096 (floor 0.020), roughness spread 0.102 (floor 0.010), 248371 texels"
+}

@@ -1,0 +1,2 @@
+[publish] receipt ok: ithar_GS1 I14_23 commit 752bfcba5f1715b52d11a7d9557b505cb78c9d21, glb 6421b23a73fa0628cf7e6184be1efd7224aa398a9c744fb2aa9f38d9a68f5ecb, 8 listed and 8 checked files
+SHIP=ithar_GS1

@@ -1,0 +1,27 @@
+start publish opus1415i_GA1 I16_11 752bfcba5f1715b52d11a7d9557b505cb78c9d21 8efcd98f9af249a687fcd4b859304906032ec6545b7f0acdc10f95d58f6d77fc Sat 11/21/2026 23:46:21.11 
+profile guard APPDATA=C:\Users\rcbai\Downloads\voidsworn_test\publish\I16_11_20261121_234620\profile\Roaming 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\tmo.bat 
+publish tool C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\recipe\publish_ship.py 
+[publish] receipt ok: ithar_GA1 I16_11 commit 752bfcba5f1715b52d11a7d9557b505cb78c9d21, glb 8efcd98f9af249a687fcd4b859304906032ec6545b7f0acdc10f95d58f6d77fc, 8 listed and 8 checked files
+SHIP=ithar_GA1
+[publish] kept I16_11 as it was in C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\I16_11_20261121_234620
+undo: C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\I16_11_20261121_234620\UNDO_I16_11.bat (after a failed install manifest_merge has already rolled back; the undo is for a live publish) 
+install exit 0 
+INSTALL READBACK PASS code=I16_11 nodes=17
+[publish] sealed what is now live for I16_11
+ships cache exit 0 
+[assets] ships refreshed: 46 A4 ships in res://gen/manifest.json
+readback exit 0 
+INSTALL READBACK PASS code=I16_11 nodes=17
+[publish] sealed what is now live for I16_11
+shots exit 0 
+Ryan's real options before: 
+C92FE4CA1D3E462B0CF27077E15F331AE2815199E1FAA0D2201BE434D556AAD9 battle_opts.json
+E9E03D93A3ECB04EA33934F1694541B23F91202F8E2763CEBC526DA01121630E board_look.cfg
+Ryan's real options after: 
+C92FE4CA1D3E462B0CF27077E15F331AE2815199E1FAA0D2201BE434D556AAD9 battle_opts.json
+E9E03D93A3ECB04EA33934F1694541B23F91202F8E2763CEBC526DA01121630E board_look.cfg
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+ship clone kept: results not relayed yet: board/pc-out-opus1415i_GA1:opus1415i_GA1_out: branch board/pc-out-opus1415i_GA1 (from the job name) is not on origin at the shared mirror's commit
+published I16_11 from opus1415i_GA1 at 752bfcba5f1715b52d11a7d9557b505cb78c9d21 into C:\Users\rcbai\Downloads\voidsworn_test\build\godot 
+all done PASS Sat 11/21/2026 23:49:04.59 

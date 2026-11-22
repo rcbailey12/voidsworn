@@ -1,0 +1,27 @@
+start publish opus1415i_GS1 I14_23 752bfcba5f1715b52d11a7d9557b505cb78c9d21 6421b23a73fa0628cf7e6184be1efd7224aa398a9c744fb2aa9f38d9a68f5ecb Sat 11/21/2026 23:40:26.99 
+profile guard APPDATA=C:\Users\rcbai\Downloads\voidsworn_test\publish\I14_23_20261121_234026\profile\Roaming 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat 
+publish tool C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\recipe\publish_ship.py 
+[publish] receipt ok: ithar_GS1 I14_23 commit 752bfcba5f1715b52d11a7d9557b505cb78c9d21, glb 6421b23a73fa0628cf7e6184be1efd7224aa398a9c744fb2aa9f38d9a68f5ecb, 8 listed and 8 checked files
+SHIP=ithar_GS1
+[publish] kept I14_23 as it was in C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\I14_23_20261121_234026
+undo: C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\I14_23_20261121_234026\UNDO_I14_23.bat (after a failed install manifest_merge has already rolled back; the undo is for a live publish) 
+install exit 0 
+INSTALL READBACK PASS code=I14_23 nodes=10
+[publish] sealed what is now live for I14_23
+ships cache exit 0 
+[assets] ships refreshed: 46 A4 ships in res://gen/manifest.json
+readback exit 0 
+INSTALL READBACK PASS code=I14_23 nodes=10
+[publish] sealed what is now live for I14_23
+shots exit 0 
+Ryan's real options before: 
+C92FE4CA1D3E462B0CF27077E15F331AE2815199E1FAA0D2201BE434D556AAD9 battle_opts.json
+E9E03D93A3ECB04EA33934F1694541B23F91202F8E2763CEBC526DA01121630E board_look.cfg
+Ryan's real options after: 
+C92FE4CA1D3E462B0CF27077E15F331AE2815199E1FAA0D2201BE434D556AAD9 battle_opts.json
+E9E03D93A3ECB04EA33934F1694541B23F91202F8E2763CEBC526DA01121630E board_look.cfg
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+ship clone kept: results not relayed yet: no relay_receipt.txt in C:\Users\rcbai\Downloads\voidsworn_test\opus1415i_GS1\out (the Board writes it when it relays)
+published I14_23 from opus1415i_GS1 at 752bfcba5f1715b52d11a7d9557b505cb78c9d21 into C:\Users\rcbai\Downloads\voidsworn_test\build\godot 
+all done PASS Sat 11/21/2026 23:42:02.85 
