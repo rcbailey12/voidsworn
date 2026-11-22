@@ -506,6 +506,9 @@ func _begin(a) -> void:
 	api = a
 	warming = true
 	hud.loading(true)
+	var obj0 = api.view().get("obj")
+	if obj0 is Dictionary and str(obj0.get("type", "")) == "hold":
+		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
 	if DisplayServer.get_name() != "headless":
@@ -767,6 +770,7 @@ func _pipe_count() -> int:
 
 var warming := false
 const ArrivalWarm := preload("res://render/arrival_warm.gd")
+const A4P := preload("res://assets/ships/a4_props.gd")   # issue 1536: the Hold relay beacon prefetch
 var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arrive mid-battle (render/arrival_warm.gd)
 
 

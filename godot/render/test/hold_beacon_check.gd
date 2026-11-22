@@ -5,7 +5,9 @@ extends SceneTree
 #   a Hold battle: exactly one relay_beacon node, centred under the hold hex, no longer than BEACON_LEN and inside its hex,
 #     its top under the board plane (a ship holding the hex floats over it), its lens (+x) turned toward +z and tipped up;
 #   a battle with another objective: no beacon;
-#   a Hold battle on a build without O3_11: no beacon and no error (the gold hex alone, as before).
+#   a Hold battle on a build without O3_11: no beacon and no error (the gold hex alone, as before);
+#   a stale manifest row naming a missing file: no beacon, and no load is tried (PR 1561 review);
+#   the threaded prefetch the battle starts (A4P.prefetch_beacon) is collected by the board build, none left pending.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const BOARD := preload("res://render/board.gd")
@@ -62,7 +64,10 @@ func _box(n: Node3D) -> AABB:
 func _run() -> void:
 	A4P._man = {"ships": {"O3_11": {"res": STUB}}}
 	var hold := {"type": "hold", "hex": {"q": 1, "r": -1}, "score": 0, "escore": 0}
+	A4P.prefetch_beacon()
+	_check(A4P._pending.has(STUB), "the beacon prefetch did not start a threaded load")
 	var board := _board(hold)
+	_check(A4P._pending.is_empty(), "the board build left the beacon prefetch uncollected")
 	var found := _beacons(board)
 	_check(found.size() == 1, "a Hold battle draws %d relay beacons, want 1" % found.size())
 	if found.size() == 1:
@@ -83,6 +88,13 @@ func _run() -> void:
 	A4P._man = {"ships": {}}
 	board = _board(hold)
 	_check(_beacons(board).is_empty(), "a build without O3_11 draws a relay beacon")
+	board.free()
+	A4P._man = {"ships": {"O3_11": {"res": "res://render/test/fixtures/beacon/missing_beacon.scn"}}}
+	_check(A4P._res("O3_11") == "", "a stale manifest row still names a file to load")
+	A4P.prefetch_beacon()
+	_check(A4P._pending.is_empty(), "a stale manifest row started a threaded load")
+	board = _board(hold)
+	_check(_beacons(board).is_empty(), "a stale manifest row draws a relay beacon")
 	board.free()
 	A4P._man = null
 	print("hold_beacon_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)
