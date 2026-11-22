@@ -57,6 +57,7 @@ FITS = {
     'shard': ({'gun'}, {'fixed', 'turret'}),                  # battery: the Glasswright Prism shards, drawn needles at the bow (issue 1415)
     'startorp': ({'gun'}, {'fixed'}),                         # torp: the Glasswright star torpedo, carried in a grown keel cradle (issue 1415)
     'turbo': ({'gun'}, {'turret', 'casemate'}),               # battery: the Hegemony plasma lance (issue 768: the Iron Mandate's bridge turret)
+    'laser': ({'gun'}, {'turret', 'casemate', 'fixed'}),      # battery: the Navy Plasma cannon, a fixed twin casemate in the Picket's bow face (issue 1412)
     'tendril': ({'tendril', 'mane', 'drape'}, {'turret', 'fixed'}),   # bio: a tendril crown turns; the mane and C12's drape are fixed organs
     # squadron craft (issue 769, R253: own fighter and bomber models per faction; Godot fighter and bomber, both arc T)
     'guns': ({'gun'}, {'turret'}),                            # sq: a fighter's interceptor guns turn on a traverse ring
