@@ -40,7 +40,17 @@ for ll in L_LINES:
     if len(ll) != 3 or not ll[1] < ll[2]:
         fail.append(f'the build\'s longitudinal seam is not one [z, x0, x1] with x0 below x1: {list(ll)}')
 if not hull: fail.append('no hull object (role hull) in the build')
-if not guns: fail.append('no guns recorded (r209_guns is empty)')
+def _unarmed():
+    """issue 1413: an objective prop (gamedata.OBJECTIVES, e.g. the Convoy transport) has no weapon slot, so no gun is right"""
+    sys.path.insert(0, HERE)
+    import gamedata
+    try:
+        return gamedata.weapons(str(sc.get('r209_game_ship', ''))) == []
+    except ValueError:
+        return False
+
+
+if not guns and not _unarmed(): fail.append('no guns recorded (r209_guns is empty)')
 else:
     bare = [g[0] for g in guns if g[2] is None]
     if bare: fail.append(f'{len(bare)} of {len(guns)} guns carry no mount normal, so the into-the-ship test could not run for them: ' + ', '.join(bare[:8]))

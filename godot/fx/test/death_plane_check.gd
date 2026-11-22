@@ -110,15 +110,20 @@ func _exit_with_cut() -> void:
 		OS.delay_msec(100)
 		gate.post()
 		gate.post())
-	battle.free()  # FX _exit_tree must join both detached tasks as well as the current cut
+	# Issue 1435: scene exit no longer waits for running cuts on the caller; it retires them (none lost) and quit drains
+	# them (FX.clear_static, from static_caches clear_all), so every task is joined before the rendering server goes.
+	battle.free()
+	_check(FX.retired_count() >= 1, "scene exit retired the running cuts instead of dropping them (%d)" % FX.retired_count())
 	unblock.wait_to_finish()
+	FX.clear_static()
+	_check(FX.retired_count() == 0, "quit drained every retired cut")
 	for tid in tasks:
 		# Godot reports an invalid ID here if the FX session already joined it. Silence that deliberate probe.
 		Engine.print_error_messages = false
 		var result := WorkerThreadPool.wait_for_task_completion(tid)
 		Engine.print_error_messages = true
 		_check(result == ERR_INVALID_PARAMETER, "scene exit left worker task %d unjoined" % tid)
-	_verdict(before, "death-cut workers joined on battle exit")
+	_verdict(before, "death-cut workers retired on battle exit and joined by quit")
 
 func _risen_takes_wreck() -> void:
 	var before := failures

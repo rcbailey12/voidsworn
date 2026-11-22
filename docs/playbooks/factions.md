@@ -176,6 +176,12 @@ ships catch, store and release light.
 - **Colours (R337, Ryan Nov 19):** opaque, reflective pearl ribbons with silver edges, and glowing amber, violet and green
   mosaic panels between them, like stained glass. Nothing is see-through: nothing inside an intact hull shows. This replaces
   the clear, lit-from-inside glass direction (issue 1058 runs 2 to 6 for CD5); issue 1183 rebuilds CD5 to it.
+  The colours run together as marbled veins that cross the gaps and wander along the hull, and about a quarter of the
+  tiles take another palette colour, so no gap or panel reads as one colour (Ryan Nov 21, after look test C still showed
+  "rectangle after rectangle of same color"; look test D, issue 1415; tools/blender/kits/ithar/parts.py MIX 'marble' and
+  stack.py TILE_SWAP). Never one colour per block or per streak. Ryan Nov 21 1:45 PM CT on the in-game sheets: "tone down
+  red and amber with a bit more blue and green and purple": amber is about a third of the panels and golden, not red;
+  violet and green rise, and a sapphire blue joins the palette (stack.py PALETTE, WEIGHTS 32/26/22/20, TONES).
 - **Guns sit:** on the optical axis. The prism lance is the hull's stored light let out through the bow optic: a white core
   with a rainbow fringe. Smaller lenses along the hull are the secondary guns.
 - **Engines:** no flame. A soft white bloom at the stern optic.
@@ -204,8 +210,8 @@ the deaths and the color file", Ryan answered "yes ... agree with you". Eclipse 
   gun at its centre, "like a glass cannon" (R256, Ryan Nov 15 07:02).
 - **Colours:** dark violet-black plates, the violet-white corona line, a small bright violet-white core, white-gold accents.
   Engines, weapon bolts, damage glow and deaths come from godot/fx/faction_looks.json `deathless`, the one faction colour
-  file (issue 1205 removed the all-green hull_table FAC3D override). The only green left there is the Doom gun's
-  `weapon_core` (R263), a weapon ruling of its own, kept until Ryan says otherwise. The hull paint lives in
+  file (issue 1205 removed the all-green hull_table FAC3D override). The Doom gun's `weapon_core` is deep violet too (Ryan
+  Nov 21 2026, "Yes make it a violet core", issue 1503; replaces R263's green core): no green is left in that file. The hull paint lives in
   tools/blender/kits/eclipse/stack.py: until that stack is repainted and the hulls rebaked (contrib/opus/plans/eclipse_1419.md),
   the installed E11 to E14 hulls still show the old green corona.
 - **Panels (R243, Ryan Nov 13):** precise, dead even, ordered and aligned across hull and shade, with recessed seams and
@@ -244,14 +250,21 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
   that wrap down both flanks to the keel (kit `plates.armadillo`, its default `plates.WRAP`; a sheet never stops them
   higher), banded and ridged, lips aft, hide rolled up into their edges, broken only round the organs; where a fitting cuts
   a band, a half band still grows on its clear side (`fill`), so the shell hugs each fitting. Sacs and pods show dark veins and
-  only thin bile slits, never round lit windows or glowing veins (kit `parts.sac` default window 'slit'; Ryan Nov 20: "random
-  yellow circles on the pods ... looks odd").
+  no lit spots at all: each sac's crown is cut open into a dark pore with a bore going down and a fleshy lip, never a round lit window, a glowing slit or
+  glowing veins (kit `parts.sac` default window 'slit'; Ryan Nov 20: "random yellow circles on the pods ... looks odd", Nov 21:
+  "the same weird yellow circle or patch on the sacs"). Gland vents are real openings: the knoll's crown is cut away under
+  the puckered lip and a matte dark bore runs down into it (kit `parts.spinal` style 'gland', zone 'pit'; Ryan Nov 21: "no actual
+  holes like the concept", then on dark discs: "these are clearly not holes"). Never a dark disc on a closed dome. An organ whose bore runs down into the body (C14's launch mouths) cuts the hull and any
+  band open under it, and keeps the inside rooms clear of the bore (`K.open_hull` with depth, after the armour and rooms; Ryan Nov 21: "There are no actual holes, it's just caps"). A launch
+  mouth carries a lobed flesh door, shut between launches, plain flesh, opening from the middle (`launch_mouth(door=6)`, issue
+  1543; Ryan Nov 21: "Closer and plain flesh"); the lobes are their own hinged nodes and the game opens them on launch
+  (docs/ship_pipeline/HARDPOINTS.md "Doors").
   Flank and brood sacs wear flat chitin caps, two rings of thin plates lying close with the slit open at the crown (kit
   `plates.dome_caps(flat=True)`; Ryan: "caps, but flatter"). The belly is banded too, so `plates.fused_patches` is only for a spot
   the bands cannot reach. No flat stone tiles: the R341 shell (`plates.armour`) is retired for new builds.
   Every Chorus hull uses these kit calls, so a fix in the kit reaches C10 to C14 at once (R333). The grown paint is the
-  stack's default for every Chorus ship (a recipe opts out only with "chorus_look": "r341"), and every Chorus ship is gated
-  by the stage 5 detail check unless its recipe says "surface_detail": false. Surface detail must read at
+  stack's default for every Chorus ship (a recipe opts out only with "chorus_look": "r341"), and every ship of every faction is
+  gated by the stage 5 detail check (issue 1517; ships.md section 0, rule 16). Surface detail must read at
   camera 26 and still give texture at 170; stage 5's detail check (tools/recipe/detail_check.py) fails a flat clay skin.
 - **Guns sit:** in throats, spines and sacs: a weapon is an organ. Brood sacs along the flanks for the wings.
 - **Engines:** no nozzles. Pulsing vents or trailing membranes with a yellow-green glow.

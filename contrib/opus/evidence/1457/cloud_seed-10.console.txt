@@ -1,0 +1,3 @@
+[player-path] ROUTE DRIFT after Battle 2: planned 2-2, taking 2-1; offered [{ "id": "2-1", "type": "battle", "enc": "flagship", "fac": "hegemony", "nemesis": false }, { "id": "2-2", "type": "event", "enc": "", "fac": "", "nemesis": false }]
+[player-path] completed three battles (route drift: 1 stops, see route_drift rows)
+rc=0

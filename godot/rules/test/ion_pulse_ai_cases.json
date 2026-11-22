@@ -1,0 +1,17 @@
+{
+  "note": "Issue 1447: when the enemy AI fires the Cordon's ion pulse. Fixed expectations, read by contrib/opus/tools/ion_pulse_ai_tests.js (battle.js) and godot/rules/test/ion_pulse_ai_test.gd (rules.gd). The Cordon (h_interdictor) sits at hex 10,10; each target sits 'dist' hexes away with its pool set to 'shp'. 'moveTo' moves the Cordon to that many hexes from the first target before the 'aim' check (the committed destination).",
+  "cases": [
+    { "name": "a lone 13-pool frigate is not worth a pulse (the old four-side sum read it as about 31)",
+      "targets": [{ "tpl": "warden", "dist": 3, "shp": 13 }], "mode": "pre", "pulse": false },
+    { "name": "a 30-point pool in range is worth a pulse before moving",
+      "targets": [{ "tpl": "penitent", "dist": 3, "shp": 30 }], "mode": "pre", "pulse": true, "logN": 1 },
+    { "name": "two frigates with 15 each add up to 30 and get the pulse",
+      "targets": [{ "tpl": "warden", "dist": 2, "shp": 15 }, { "tpl": "warden", "dist": 4, "shp": 15 }], "mode": "pre", "pulse": true, "logN": 2 },
+    { "name": "a target out of range at the start gets no pulse before moving",
+      "targets": [{ "tpl": "penitent", "dist": 6, "shp": 30 }], "mode": "pre", "pulse": false },
+    { "name": "after moving into range 4 the ship pulses before it fires",
+      "targets": [{ "tpl": "penitent", "dist": 6, "shp": 30 }], "mode": "aim", "moveTo": 3, "pulse": true, "logN": 1 },
+    { "name": "the log counts only ships that lost shields, not every ship in range",
+      "targets": [{ "tpl": "penitent", "dist": 3, "shp": 30 }, { "tpl": "warden", "dist": 2, "shp": 0 }], "mode": "pre", "pulse": true, "logN": 1 }
+  ]
+}

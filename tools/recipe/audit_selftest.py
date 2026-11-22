@@ -16,7 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); AUDIT = os.path.join(HERE, 'a
 out = sys.argv[sys.argv.index('--') + 1]; os.makedirs(out, exist_ok=True); blend = bpy.data.filepath; ok = True
 WHY = dict(into_ship='aims into the ship', no_break_lines='no break lines of its own', empty_break_lines='break lines are empty',
            no_normals='carry no mount normal', one_normal_missing='1 of ', bad_longitudinal='longitudinal seam', no_longitudinal=None,
-           machine_across=None, structure_across=None)
+           machine_across=None, structure_across=None, armed_no_guns='no guns recorded')
 from mathutils import Vector
 
 def onto_seam(sc, machine):
@@ -32,9 +32,27 @@ def onto_seam(sc, machine):
     for o in mine: o.matrix_world.translation.x += x - cx
     return g
 
+sys.path.insert(0, HERE)
+import gamedata
+
+
+def unarmed(sc):
+    """issue 1413: the build is an objective prop with no weapon slot (gamedata.OBJECTIVES) and records no gun"""
+    try:
+        return not json.loads(sc.get('r209_guns', '[]')) and gamedata.weapons(str(sc.get('r209_game_ship', ''))) == []
+    except ValueError:
+        return False
+
+
 for case in ('into_ship', 'no_break_lines', 'empty_break_lines', 'bad_longitudinal', 'no_normals', 'one_normal_missing', 'no_longitudinal',
-             'machine_across', 'structure_across'):
+             'machine_across', 'structure_across', 'armed_no_guns'):
     bpy.ops.wm.open_mainfile(filepath=blend); sc = bpy.context.scene; g = json.loads(sc.get('r209_guns', '[]')); made = True
+    if case in ('into_ship', 'no_normals', 'one_normal_missing') and unarmed(sc):
+        print(f'n/a  {case}: an unarmed objective prop carries no gun (armed_no_guns proves the gun rule still holds)', flush=True); continue
+    if case == 'armed_no_guns':
+        if not unarmed(sc):
+            print(f'n/a  {case}: this build carries guns', flush=True); continue
+        sc['r209_game_ship'] = 'harrow'                         # the same gunless build named as an armed ship must be refused
     if case == 'into_ship':
         k = next((i for i, x in enumerate(g) if len(x) > 2 and x[2]), None); made = k is not None
         if made: g[k][1] = [-v for v in g[k][2]]; sc['r209_guns'] = json.dumps(g)      # aimed straight back into its own mount

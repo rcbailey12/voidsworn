@@ -26,17 +26,48 @@ var bot_mode := false
 var player_path: Node
 
 
-# every quit goes through here: free what statics hold first, then quit (see ShipView.clear_static)
-func quit_clean(code := 0) -> void:
-	if battle != null and is_instance_valid(battle):
-		battle.queue_free()
+# every quit goes through here: free what statics hold first, then quit (see ShipView.clear_static).
+# Issue 1435 (W3): the window close button and Alt-F4 come here too (auto accept is off, see _notification), and it runs
+# once however many ask: no new showcase or load work starts, the scenes are freed, the fx jobs drain once
+# (static_caches clear_all, fx.gd clear_static) and the statics are cleared before the process ends.
+var quitting := false
+var quit_route := ""   # what started the quit ("menu" or "window"), for logs and the quit route check
+
+
+func quit_clean(code := 0, route := "menu") -> void:
+	if quitting:
+		return
+	quitting = true
+	quit_route = route
+	var t0 := Time.get_ticks_msec()
+	print("[main] quit (%s) at %d ms" % [route, t0])
+	# Issue 1435: the player asked to close, so the window goes at once; the clean-up below still runs to the end
+	if route == "window" and DisplayServer.get_name() != "headless":
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
+	for n in [battle, showcase]:
+		if n != null and is_instance_valid(n):
+			if "quitting" in n:
+				n.quitting = true   # issue 521: an awaiting command must not draw on the freed HUD
+			n.queue_free()
 	if campaign != null and is_instance_valid(campaign):
 		campaign.queue_free()
+	if music != null and is_instance_valid(music) and music.has_method("release"):
+		music.release()
 	await get_tree().process_frame
 	await get_tree().process_frame
+	var t1 := Time.get_ticks_msec()
 	# issue 1204: every script with a GPU-holding static is on one list (render/static_caches.gd)
 	load("res://render/static_caches.gd").clear_all()
+	var t2 := Time.get_ticks_msec()
+	print("[main] quit stages: scenes freed + 2 frames %d ms, statics and fx drain %d ms, engine exit from %d ms" % [t1 - t0, t2 - t1, t2])
 	get_tree().quit(code)
+
+
+# Issue 1435 (W3): the system close (title bar X, Alt-F4) used to end the process straight from SceneTree, past
+# quit_clean, so the statics were released after the rendering server (the crash class static_caches.gd describes).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		quit_clean(0, "window")
 
 
 # bot runs: count every engine and script error per run (Godot 4.5+ Logger), since a script error never reaches the run's
@@ -74,6 +105,7 @@ var ui_sound: Node           # issue 1217: the front-end sound (godot/audio/sfx.
 
 func _ready() -> void:
 	name = "Main"
+	get_tree().set_auto_accept_quit(false)   # issue 1435: the window close runs quit_clean (see _notification)
 	_args()
 	if args.has("player-path"):
 		var recorder = load("res://main/player_path.gd")
@@ -323,7 +355,7 @@ static func next_showcase_fac() -> String:
 
 
 func _start_showcase() -> void:
-	if title == null or not is_instance_valid(title) or showcase != null:
+	if quitting or title == null or not is_instance_valid(title) or showcase != null:
 		return
 	showcase = BattleScene.instantiate()
 	showcase.showcase = true
@@ -401,9 +433,28 @@ func quick_battle() -> void:
 	battle = b
 	b.start_default()
 	b.finished.connect(func(_r) -> void:
+		var t_leave := Time.get_ticks_usec()
 		b.queue_free()
 		battle = null
-		show_title(), CONNECT_ONE_SHOT)
+		show_title()
+		_time_title_return(t_leave), CONNECT_ONE_SHOT)
+	# --title-after S (issue 1435 PC proof): leave the quick battle for the title after S seconds, as the menu's "to title"
+	if args.has("title-after"):
+		get_tree().create_timer(float(args["title-after"]), true, false, true).timeout.connect(func() -> void:
+			if is_instance_valid(b) and battle == b:
+				print("[main] leaving the battle for the title at %d ms" % Time.get_ticks_msec())
+				b._on_action("to_title", null))
+
+
+# Issue 1435: how long leaving a battle holds the player: the leave frame itself (the battle is freed at its end, which
+# retires any running cut) and the first title frame after it.
+func _time_title_return(t_leave: int) -> void:
+	await get_tree().process_frame
+	var t_free := Time.get_ticks_usec()
+	await get_tree().process_frame
+	var t_title := Time.get_ticks_usec()
+	print("[main] battle to title: leave frame %.1f ms, first title frame %.1f ms after the leave" % [
+		float(t_free - t_leave) / 1000.0, float(t_title - t_leave) / 1000.0])
 
 
 # The campaign hands a battle over and gets the result back (README.md). run = the campaign run dictionary, cfg = the
@@ -449,6 +500,8 @@ func play_api(a, opts := {}) -> Dictionary:
 	b.bot = bot_mode or bool(opts.get("bot", false))
 	b.can_retreat = bool(opts.get("can_retreat", false))
 	b.in_campaign = true
+	if opts.get("on_round") is Callable:
+		b.round_save_cb = opts["on_round"]   # issue 1451: the campaign saves each round start
 	if campaign != null and campaign.C.RUN != null:
 		b.args["sector_setting"] = load("res://world/world.gd").sector_setting(campaign.C.RUN)
 		b.args["stop"] = stop_of(a, campaign.C.RUN)   # issue 1272: rival, boss and wreck-field stops change the sky

@@ -1,0 +1,2 @@
+[player-path] FAIL the route lost Battle 3
+rc=1

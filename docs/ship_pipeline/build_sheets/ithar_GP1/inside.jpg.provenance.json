@@ -1,0 +1,36 @@
+{
+  "source_commit": "5d7a6ce5af6f87a8f843eaf7c1e9cdee3f5a1230",
+  "source_dirty": true,
+  "source_diff_sha256": "e4658832ad2195c59aa958016ff1a872ab6d86862ae3b3e5fb0cc71e19249a69",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "inside.jpg",
+  "date": "2026-11-21T19:57:52Z",
+  "sources": [
+    {
+      "source_commit": "5d7a6ce5af6f87a8f843eaf7c1e9cdee3f5a1230",
+      "source_dirty": true,
+      "source_diff_sha256": "e4658832ad2195c59aa958016ff1a872ab6d86862ae3b3e5fb0cc71e19249a69",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "087678c78fab0ee48a72df00e8379a6f5a19ba5e4e76ae14e2c57d2c4defb9a0"
+  ],
+  "stamp_template_sha256": "13d2a8927ec5e1bcd9fdadac7a0ca52e1456f9e4aad7f9cac774c3546273bf9b",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkElEQVR4nO3VoQHAIADAsDGHxPP/nXgeoCK5oK5jrv0BQMn/OgAAbuYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOQdtuAD6ke1SPAAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "6748fa5da6e4e80b67de46594b58da69c3ec6cfa1dbbded4913c0f2b80d013b7"
+}

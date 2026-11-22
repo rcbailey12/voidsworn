@@ -512,7 +512,7 @@ flare is larger than the emitter flare, and both ends cool in green over
 existing public paths.
 
 `faction_looks.json` owns two weapon-only Eclipse colours: `weapon_core` and
-`weapon_sheath`. The Doom and null cannon recipes use the green core; the two
+`weapon_sheath`. The Doom and null cannon recipes use the core colour (deep violet since Nov 21 2026, issue 1503; it was green); the two
 alpha materials take their dark sheath from the same data. Existing ship,
 engine, shield and backdrop colours retain their separate fields.
 
@@ -564,7 +564,7 @@ are Doom, gauss, gauss flak and the gauss exit.
 This section supersedes section 18's smooth arc profiles and kind-5 two-frame,
 26 px limit. Other streak caps and every other beam shader remain unchanged.
 
-Doom keeps the weapon_core green and weapon_sheath violet-black fields. Its
+Doom keeps its own weapon_core (deep violet since Nov 21 2026, issue 1503; it was green) and weapon_sheath violet-black fields. Its
 96-segment channel carries three thin, independently twisting hot filaments.
 Only a filament's central subpixel profile is white. Two advected noise scales
 and the existing flow mask swell and pinch the body, erode its silhouette and
@@ -581,7 +581,7 @@ streak tapers from the muzzle and fades over 0.52 s after impact. A faint ionise
 wake persists to 0.70 s. The head fades at contact, so the lingering trace never
 becomes another slug. Gauss flak uses the same route with its existing 0.02 s
 flight, preserving its burst timing. The existing
-faction weapon field supplies violet-white; Doom alone uses weapon_core green.
+faction weapon field supplies violet-white; Doom alone uses weapon_core deep violet.
 The sharp muzzle flash, displaced-gas ring and hull impact spark burst remain.
 Widths use the game's 1080-line pixel convention, so they scale with resolution;
 the tracer's length follows the shot, with no short screen-space length cap.

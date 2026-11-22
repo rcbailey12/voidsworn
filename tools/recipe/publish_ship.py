@@ -3,10 +3,12 @@
   publish_ship.py receipt JOB CODE COMMIT GLB_SHA RECORD.json
       Refuses unless JOB/out/result.txt is a ship_job receipt for CODE built at exactly COMMIT that passed: one "start SHIP
       CODE ..." first line, exactly one "commit=COMMIT" line, a "done PASS" line and no "done FAILED" line, and a tail of
-      "all done" or "all done" then "pin ok COMMIT" (the pinned wrappers). The collected export JOB/out/recipe/export/CODE
+      "all done" or "all done" then "pin ok COMMIT" (the pinned wrappers); scratch_done.ps1's "job scratch ..." and
+      "older failed scratch ..." lines after "all done" are set aside first. The collected export JOB/out/recipe/export/CODE
       must hold every file its CODE_export.json lists with that sha256, its glb must be exactly GLB_SHA, and every file the job
       checked (the clone's installed JOB/repo/godot/assets/ships/CODE, Godot's .import and .uid files aside) must be byte for
-      byte the export's. Writes RECORD.json and prints SHIP=<ship id>.
+      byte the export's. JOB/out/recipe/log_detail.txt must hold one surface-detail verdict, a PASS or a dated opt-out
+      from Ryan (issue 1517). Writes RECORD.json and prints SHIP=<ship id>.
   publish_ship.py backup GAME CODE BACKUP
       Before the install: copies the ship folder and its three cache scenes to BACKUP and records CODE's own rows of both
       manifests in BACKUP/before.json. Marks this attempt as the latest publish of CODE in GAME/_replaced/CODE.owner.
@@ -81,6 +83,24 @@ def _listed(files, code):
     return listed, sizes
 
 
+DETAIL_OK = ('PASS detail check', 'OPT-OUT detail check')
+
+
+def detail_pass(log):
+    """issue 1517: the job's stage 5 surface-detail verdict (tools/recipe/detail_check.py) must be a PASS, or a dated opt-out
+    from Ryan; a missing log, a FAIL or a ship whose detail was never measured is refused. Returns the verdict line."""
+    if not Path(log).is_file():
+        raise ValueError(f'{log} is missing: the job has no stage 5 surface-detail verdict, so it cannot be published')
+    lines = [l.strip() for l in Path(log).read_text(encoding='utf-8', errors='replace').splitlines()]
+    verdicts = [l for l in lines if l.startswith(DETAIL_OK) or l.startswith(('detail check FAIL', 'detail check NOT RUN'))]
+    if len(verdicts) != 1 or not verdicts[0].startswith(DETAIL_OK):
+        raise ValueError(f'{log} has no surface-detail PASS (issue 1517): {verdicts or "no verdict line"}')
+    return verdicts[0]
+
+
+SCRATCH_REPORT = ('job scratch ', 'older failed scratch ')
+
+
 def receipt(job, code, commit, glb_sha, record):
     job = Path(job)
     if not re.fullmatch(r'[0-9a-f]{40}', commit):
@@ -101,6 +121,11 @@ def receipt(job, code, commit, glb_sha, record):
         raise ValueError(f'{res} commit lines {commits} are not exactly [{commit}]')
     if any(l.startswith('done FAILED') for l in lines):
         raise ValueError(f'{res} has a done FAILED line')
+    # (issue 1535/1537) ship_job's scratch_done.ps1 writes its own report after "all done"; those lines say nothing about
+    # the build, so they are set aside before the tail is read. Only lines after the last "all done" are dropped.
+    if 'all done' in lines:
+        cut = len(lines) - 1 - lines[::-1].index('all done')
+        lines = lines[:cut + 1] + [l for l in lines[cut + 1:] if not l.startswith(SCRATCH_REPORT)]
     if len(lines) >= 2 and lines[-1] == 'all done':
         before_end = lines[-2]
     elif len(lines) >= 3 and lines[-2] == 'all done' and lines[-1] == 'pin ok ' + commit:
@@ -109,6 +134,7 @@ def receipt(job, code, commit, glb_sha, record):
         raise ValueError(f'{res} ends {lines[-2:]!r}, not "all done" or "all done" then "pin ok {commit}"')
     if not before_end.startswith('done PASS'):
         raise ValueError(f'{res}: the line before "all done" is {before_end!r}, not done PASS')
+    detail = detail_pass(job / 'out' / 'recipe' / 'log_detail.txt')
     export = job / 'out' / 'recipe' / 'export' / code
     listed, sizes = _listed(read_json(export / f'{code}_export.json').get('files', {}), code)
     if f'{code}.glb' not in listed:
@@ -127,7 +153,8 @@ def receipt(job, code, commit, glb_sha, record):
     for name in checked:
         if not (export / name).is_file() or sha256(export / name) != sha256(inst / name):
             raise ValueError(f'{name} was checked by the job but differs from (or is missing in) its collected export')
-    write_json(record, dict(job=str(job), ship=ship, code=code, commit=commit, glb=glb_sha, files=listed, checked=checked))
+    write_json(record, dict(job=str(job), ship=ship, code=code, commit=commit, glb=glb_sha, files=listed, checked=checked,
+                            detail=detail))
     print(f'[publish] receipt ok: {ship} {code} commit {commit}, glb {glb_sha}, {len(listed)} listed and {len(checked)} checked files')
     print(f'SHIP={ship}')
 

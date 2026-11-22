@@ -2,7 +2,7 @@ param(
   [string]$Install,
   [string]$Full,
   [string]$Review,
-  [ValidateSet(10, 121)][int[]]$Seeds = @(121, 10)
+  [ValidateSet(10, 31, 121)][int[]]$Seeds = @(31, 10)
 )
 $ErrorActionPreference = 'Stop'
 $pc = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test'

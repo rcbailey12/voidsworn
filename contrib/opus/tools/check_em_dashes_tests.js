@@ -28,6 +28,9 @@ fs.renameSync(path.join(cwd, 'old-name.ps1'), path.join(cwd, 'renamed path.ps1')
 put('tools/with spaces.bat', mark);
 put('tools/normal.ps1', Buffer.from('\ufeff' + mark, 'utf16le'));
 put('.github/workflows/sample.yml', mark);
+// Issue 1488: Godot shader and resource text, .toml and .cmd files are text too.
+const added = ['godot/fx/glow.gdshader', 'godot/fx/common.gdshaderinc', 'godot/ships/look.tres', 'tools/sample.toml', 'tools/run.cmd'];
+for (const name of added) put(name, `x ${mark} y\n`);
 put('assets/image.png', mark);
 if (process.platform !== 'win32') put('tools/with\na newline.sh', mark);
 
@@ -44,7 +47,7 @@ function scan() {
 }
 const bad = scan();
 assert.equal(bad.status, 1, (bad.stderr || '') + (bad.stdout || ''));
-for (const name of ['renamed path.ps1', 'tools/with spaces.bat', 'tools/normal.ps1', '.github/workflows/sample.yml']) {
+for (const name of ['renamed path.ps1', 'tools/with spaces.bat', 'tools/normal.ps1', '.github/workflows/sample.yml', ...added]) {
   assert(bad.stdout.includes(name), `missing planted mark in ${name}`);
   put(name, 'clean\n');
 }
@@ -56,4 +59,4 @@ assert(!bad.stdout.includes('unchanged.md') && !bad.stdout.includes('image.png')
 put('clean.md', 'clean\n');
 const good = scan();
 assert.equal(good.status, 0, good.stderr);
-console.log('PASS: punctuation gate catches planted marks in renamed, spaced, PowerShell and workflow paths');
+console.log('PASS: punctuation gate catches planted marks in renamed, spaced, PowerShell, workflow, shader, resource, toml and cmd paths');

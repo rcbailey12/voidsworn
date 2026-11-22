@@ -103,7 +103,13 @@ var _drag := false
 var _drag_at := Vector2.ZERO
 var _arrive_t := 0.0
 var _last_pos = null
-var loading := false
+var loading := false:
+	set(v):
+		loading = v
+		# A Jump pressed under the loading cover runs once the cover clears (issue 1448).
+		if not v and _queued_jump: _run_queued_jump.call_deferred()
+var _queued_jump := false   # a Jump pressed during loading; it jumps to the confirmed pick when loading clears (a new pick cancels it)
+var _queued_id := ""        # the stop the queued Jump confirmed; the jump runs only if it is still the pick and still offered
 var sector_world: Node3D
 var _fill: DirectionalLight3D
 
@@ -202,7 +208,10 @@ func _cancel_sector_load(cover: CanvasLayer) -> bool:
 	var C = _C()
 	if C != null and C.RUN != null: return false
 	cover.queue_free()
+	var had_jump := _queued_jump
+	_queued_jump = false; _queued_id = ""
 	loading = false
+	if had_jump: _reset_jump_label()
 	_sig = ""
 	return true
 
@@ -1221,6 +1230,11 @@ func _input(e: InputEvent) -> void:
 		_finish_flight()
 
 func fly_to(id: String) -> void:
+	if loading and not _flying and not backdrop:
+		_queued_jump = true; _queued_id = id
+		var lbl = ui.get("_jump_lbl") if ui != null else null
+		if lbl is Label and is_instance_valid(lbl): lbl.text = "JUMPING WHEN READY"
+		return
 	if _flying or loading or backdrop or token == null or not _avail().has(id) or not _nodes.has(id) or _C().modal_d != null: return
 	if _arrival_tween != null: _arrival_tween.kill()
 	_flying = true; card.visible = false; _drag = false
@@ -1232,6 +1246,24 @@ func fly_to(id: String) -> void:
 	_wake_samples.clear(); _set_hot(""); _paint_lanes()
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 	grab_focus()
+
+# Runs the campaign UI's _jump only when the pick is still the stop the queued Jump confirmed and that stop is still offered,
+# so a pick changed by any path (pick_route, or a map redraw that auto-picks the first route) never flies. _jump then passes
+# all its guards (modal, overlay). A dropped jump puts the Jump label back.
+func _run_queued_jump() -> void:
+	if loading or not _queued_jump: return
+	var want := _queued_id
+	_queued_jump = false; _queued_id = ""
+	var still := ui != null and want != "" and str(ui.get("picked")) == want and _avail().has(want)
+	if still and ui.has_method("_jump"): ui._jump()
+	if not _flying: _reset_jump_label()
+
+# A selection change while a jump is queued cancels it; the caller's rail rebuild puts back JUMP TO <new pick>.
+func cancel_queued_jump() -> void:
+	_queued_jump = false; _queued_id = ""
+
+func _reset_jump_label() -> void:
+	if ui != null and ui.has_method("_show_pick"): ui._show_pick()   # rebuilds the rail: JUMP TO <pick>
 
 # Cosine acceleration, constant-speed cruise, then matching braking. The
 # integral is continuous in speed and acceleration, including both endpoints.

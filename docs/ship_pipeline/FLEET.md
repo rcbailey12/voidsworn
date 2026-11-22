@@ -10,14 +10,14 @@ has the new recipe file layout. It does not prove the approved look is in those 
 column says what Ryan accepted and what is still pending, and issue 1410 checks the model the game renders. None
 of this is the playable exe (that is a separate snapshot).
 
-**Totals:** 36 ship slots. 19 new builds installed, 0 with a build sheet but the old hull in game, 8 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
+**Totals:** 36 ship slots. 27 new builds installed, 0 with a build sheet but the old hull in game, 0 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
 
 ## Sunward Crusade (`voidsworn`)
 
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
 | Warden | Frigate | `V14_23` | New-format build on main | Accepted: Ryan, Nov 20 (round 3, PR 1164; brighter ember R360) | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/voidsworn_S9/concept_beauty.jpg) | R331 | voidsworn_S9 |  |  |
-| Harrow | Destroyer | `V15_37` | Concept picked, old hull in game |  | none | R369 |  | #1414 | Round 2 picked Nov 20 (four small spires at 0.85). Its picture is on PR 1163 until that merges; set the path here when it does. |
+| Harrow | Destroyer | `V15_37` | New-format build on main | Accepted: Ryan, Nov 21 03:00 UTC (in-game look sheet of PC run 1414d, decision card; published glb e18f3f0c) | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/voidsworn_S11/concept_beauty.jpg) | R369 | voidsworn_S11 |  | Round 2 picked Nov 20 (four small spires at 0.85); the sheet's concept_beauty.jpg is that round 2 picture (PR 1163), the same file the recipe reads. |
 | Vigil | Cruiser | `V16_37` | New-format build on main | Accepted: Ryan, Nov 20 (PR 1166) | [vigil_beauty.webp](../../contrib/muse/design/class_family_sunward_2026_11/vigil_beauty.webp) | R331 | voidsworn_S10 |  |  |
 | Bastion | Battleship | `V17_37` | Old hull, no pick yet |  | none |  |  | #1145 | Never drawn. Concept is issue 1145 run 3. |
 | Hearth | Carrier | `V18_51` | Old hull, no pick yet |  | none |  |  | #1145 | Never drawn. Concept is issue 1145 run 3. |
@@ -47,20 +47,20 @@ of this is the playable exe (that is a separate snapshot).
 
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
-| Drone-spawn | Frigate | `B19_11` | New-format build on main | Pending: Round G skin run (PR 1342). | [chorus_C12_drone_spawn_v10.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C12_drone_spawn_v10.jpg) |  | chorus_C12 | #1291 | Skin is the round G Chorus look (issue 1291), not the concept's colours. |
-| Spitter | Destroyer | `B20_11` | New-format build on main | Pending: Tail band fix, run H (PR 1411). Accepted before that: Ryan, Nov 20 (round G, PR 1308). | [chorus_C13_spitter_v7.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C13_spitter_v7.jpg) |  | chorus_C13 |  |  |
-| Bladeback | Cruiser | `B21_11` | New-format build on main | Pending: Round G armour: the installed files still carry the old armour (PR 1347). | [chorus_C11_beauty.jpg](../../contrib/muse/design/concept_round8b_2026_11/chorus_C11_beauty.jpg) | R204 | chorus_C11 | #1291 |  |
-| Brood-sac | Carrier | `B22_11` | Concept picked, old hull in game |  | [chorus_C14_brood_sac_v11.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C14_brood_sac_v11.jpg) |  |  | #1155 | Built on PR 1172 (draft); waits for its round G re-dress. |
-| The Ninefold Maw (flagship) | Bio-titan | `B16_23` | New-format build on main | Not recorded | [chorus_C10_beauty.jpg](../../contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg) | R204 | chorus_C10 | #1291 | Round G run is PR 1351. |
+| Drone-spawn | Frigate | `B19_11` | New-format build on main | Accepted: Ryan, Nov 20 (armour almost everywhere, R374) | [chorus_C12_drone_spawn_v10.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C12_drone_spawn_v10.jpg) |  | chorus_C12 | #1291 | Run D published Nov 20 (B19_11); skin is the round G Chorus look, not the concept's colours. |
+| Spitter | Destroyer | `B20_11` | New-format build on main | Pending: Armour almost everywhere (R374): run I on the PC. Accepted before that: Ryan, Nov 20 (round G, PR 1308). | [chorus_C13_spitter_v7.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C13_spitter_v7.jpg) |  | chorus_C13 |  |  |
+| Bladeback | Cruiser | `B21_11` | New-format build on main | Accepted: Ryan, Nov 20 (armour almost everywhere, R374) | [chorus_C11_beauty.jpg](../../contrib/muse/design/concept_round8b_2026_11/chorus_C11_beauty.jpg) | R204 | chorus_C11 | #1291 | Run D published Nov 20 (PR 1347). |
+| Brood-sac | Carrier | `B22_11` | New-format build on main | Accepted: Ryan, Nov 20 (armour almost everywhere, R374) | [chorus_C14_brood_sac_v11.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C14_brood_sac_v11.jpg) |  | chorus_C14 | #1155 | Run H published Nov 20 (PR 1172). |
+| The Ninefold Maw (flagship) | Bio-titan | `B16_23` | New-format build on main | Accepted: Ryan, Nov 20 (armour almost everywhere, R374) | [chorus_C10_beauty.jpg](../../contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg) | R204 | chorus_C10 | #1291 | Run E published Nov 20 (PR 1351). |
 
 ## The Glasswrights (`ithar`)
 
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
-| Sliver | Frigate | `I14_23` | Concept picked, old hull in game |  | [frigate_sliver_r2a.webp](../../contrib/muse/design/glasswright_family_2026_11/img/frigate_sliver_r2a.webp) | R369 |  | #1415 | Ryan's Nov 16 pick R2a. Built in the CD5 finish (R337). |
-| Lancet | Destroyer | `I11_37` | Concept picked, old hull in game |  | [destroyer_lancet_s1.webp](../../contrib/muse/design/glasswright_family_2026_11/img/destroyer_lancet_s1.webp) | R369 |  | #1415 | Ryan's Nov 16 pick Step 1. |
-| Prism | Cruiser | `I15_11` | Concept picked, old hull in game |  | [cruiser_prism_s3.webp](../../contrib/muse/design/glasswright_family_2026_11/img/cruiser_prism_s3.webp) | R369 |  | #1415 | Ryan's Nov 16 pick Step 3, twin pane hulls. |
-| Aperture | Carrier | `I16_11` | Concept picked, old hull in game |  | [carrier_aperture_v1.webp](../../contrib/muse/design/glasswright_family_2026_11/img/carrier_aperture_v1.webp) | R369 |  | #1415 | Ryan's Nov 16 pick V1. |
+| Sliver | Frigate | `I14_23` | New-format build on main | Accepted: Ryan, Nov 21 22:40 UTC (decision card on the in-game sheets of PC run 1415h, pin ddc85277; published glb 6421b23a) | [frigate_sliver_r2a.webp](../../contrib/muse/design/glasswright_family_2026_11/img/frigate_sliver_r2a.webp) | R369 | ithar_GS1 |  | Ryan's Nov 16 pick R2a. Built in the CD5 finish (R337). |
+| Lancet | Destroyer | `I11_37` | New-format build on main | Accepted: Ryan, Nov 21 22:40 UTC (decision card on the in-game sheets of PC run 1415h, pin ddc85277; published glb df9f533f) | [destroyer_lancet_s1.webp](../../contrib/muse/design/glasswright_family_2026_11/img/destroyer_lancet_s1.webp) | R369 | ithar_GL1 |  | Ryan's Nov 16 pick Step 1. |
+| Prism | Cruiser | `I15_11` | New-format build on main | Accepted: Ryan, Nov 21 22:40 UTC (decision card on the in-game sheets of PC run 1415h, pin ddc85277; published glb cdb9a547) | [cruiser_prism_s3.webp](../../contrib/muse/design/glasswright_family_2026_11/img/cruiser_prism_s3.webp) | R369 | ithar_GP1 |  | Ryan's Nov 16 pick Step 3, twin pane hulls. |
+| Aperture | Carrier | `I16_11` | New-format build on main | Accepted: Ryan, Nov 21 22:40 UTC (decision card on the in-game sheets of PC run 1415h, pin ddc85277; published glb 8efcd98f) | [carrier_aperture_v1.webp](../../contrib/muse/design/glasswright_family_2026_11/img/carrier_aperture_v1.webp) | R369 | ithar_GA1 |  | Ryan's Nov 16 pick V1. |
 | The Unfinished (flagship, CD5) | Ark | `I8_37` | New-format build on main | Pending: Warming round, champagne ribbons (issue 1282). Accepted before that: Ryan, Nov 20 (R348, put it in, then warm it up). | [concept.jpg](../../docs/ship_pipeline/build_sheets/ithar_CD5/concept.jpg) | R298 | ithar_CD5 |  |  |
 
 ## Eclipse (`deathless`)
@@ -85,8 +85,8 @@ of this is the playable exe (that is a separate snapshot).
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
 | Defence station (small teaching station) | station | `O1_37` | Old hull kept on purpose |  | none |  |  |  | Stays as it is by design. |
-| Convoy transport | transport | `O2_37` | Concept picked, old hull in game |  | [convoy_beauty.webp](../../contrib/muse/design/class_family_hegemony_2026_11/convoy_beauty.webp) | R369 |  | #1413 |  |
-| Relay beacon | beacon | `O3_11` | Concept picked, old hull in game |  | [relay_beauty.webp](../../contrib/muse/design/class_family_hegemony_2026_11/relay_beauty.webp) | R369 |  | #1413 |  |
+| Convoy transport | transport | `O2_37` | New-format build on main | Accepted: Ryan, Nov 21 23:28 UTC (offer sheet of PC run 1413f, decision card "Publish all four"; glb 559e6387) | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/hegemony_O2/concept_beauty.jpg) | R369 | hegemony_O2 | #1413 |  |
+| Relay beacon | beacon | `O3_11` | New-format build on main | Accepted: Ryan, Nov 21 23:28 UTC (offer sheet of PC run 1413f, decision card "Publish all four"; glb 8ff62d4b) | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/hegemony_O3/concept_beauty.jpg) | R369 | hegemony_O3 | #1413 |  |
 
 ## Not a slot yet
 

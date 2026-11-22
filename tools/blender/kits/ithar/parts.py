@@ -115,7 +115,63 @@ def _pick(g, bay, palette, weights, seed):
     return colour
 
 
-def mosaic_tint(x, a, gaps, palette, weights, seed=0, tones=None):
+import os as _os
+# How the panel colours mix (Ryan Nov 20 7:48 PM CT, look test A/B/C, issue 1415: picked C): 'streaks' runs thin streaks of
+# mixed amber, violet and green side by side down each gap between the ribbons, each its own colour and length, for every
+# Glasswright hull. 'blocks' (one colour per leaf panel, R337 round 5) stays for comparison only; GW_MIX overrides it in a test.
+MIX = _os.environ.get('GW_MIX', 'marble')
+
+
+def _hash2(i, j, seed):
+    h = math.sin(i * 127.1 + j * 311.7 + seed * 74.7) * 43758.5453
+    return h - math.floor(h)
+
+
+def _vnoise(u, v, seed, period_v=None):
+    """smooth value noise; v wraps with period_v (whole cells round the hull) when given"""
+    i0, j0 = math.floor(u), math.floor(v)
+    fu, fv = u - i0, v - j0
+    su, sv = fu * fu * (3 - 2 * fu), fv * fv * (3 - 2 * fv)
+    def h(i, j):
+        if period_v:
+            j = j % period_v
+        return _hash2(i, j, seed)
+    a = h(i0, j0) + (h(i0 + 1, j0) - h(i0, j0)) * su
+    b = h(i0, j0 + 1) + (h(i0 + 1, j0 + 1) - h(i0, j0 + 1)) * su
+    return a + (b - a) * sv
+
+
+def marble_field(x, a, seed=0):
+    """a flowing, marbled colour field over the hull: long veins along the ship that meander, split and run into each other
+    (domain-warped value noise, stretched along x). Returns 0..1."""
+    P = 20                                     # cells round the hull (whole, so the field wraps seamlessly)
+    v = a / (2 * math.pi) * P
+    u = x * 0.85
+    wu = _vnoise(u * 0.7 + 3.1, v * 0.5, seed + 5, P) - 0.5
+    wv = _vnoise(u * 0.9 + 7.7, v * 0.5 + 1.3, seed + 9, P) - 0.5
+    uu, vv = u + 1.2 * wu, v + 2.6 * wv
+    n = 0.62 * _vnoise(uu, vv, seed, P) + 0.38 * _vnoise(uu * 2.3, vv * 2.0 + 0.5, seed + 3, 2 * P)
+    return n
+
+
+_MARBLE_CUTS = {}
+
+
+def _marble_cuts(weights, seed):
+    """the field values that split it into the palette's shares (55/27/18): measured once on a sample"""
+    key = (tuple(weights), seed)
+    if key not in _MARBLE_CUTS:
+        vals = sorted(marble_field(i * 0.173, j * 0.0911, seed) for i in range(140) for j in range(70))
+        tot, acc, cuts = sum(weights), 0.0, []
+        for w in weights[:-1]:
+            acc += w / tot
+            cuts.append(vals[int(acc * (len(vals) - 1))])
+        _MARBLE_CUTS[key] = cuts
+    return _MARBLE_CUTS[key]
+
+
+
+def mosaic_tint(x, a, gaps, palette, weights, seed=0, tones=None, streak=False):
     """the colour and glow a core point carries. `gaps` gives (gap index, along-coordinate[, across 0..1]) for the point;
     each gap is cut into leaf-length bays and every bay picks one colour from the palette by weight, so panels read as
     leaves of one colour each, never salt and pepper.
@@ -123,16 +179,68 @@ def mosaic_tint(x, a, gaps, palette, weights, seed=0, tones=None):
     R337 round 5 (outside read: "flat blocks, not lit from behind"): a panel is lit from behind, so its glow is hottest in
     the middle and falls to dark at its lead border, along AND across; with `tones` (name -> (deep rgb, hot rgb)) the colour
     itself runs from the deep tone at the border to the hot tone in the middle, and near a bay end it runs into the next
-    leaf's colour along the flow. Returns (rgb or palette name, glow)."""
+    leaf's colour along the flow. Returns (rgb or palette name, glow).
+
+    streak=True (issue 1415, Ryan Nov 20: the Prism and the W4b bomber read as "random circles of light"): on a wide body the
+    ribbons no longer hide a bay's dark border, so the hot-middle fall-off shows as a lit disk. The streak style keeps only a
+    thin dark rim (outer 15% along, 20% across), lights the pane evenly inside and adds a soft hot line down its long axis,
+    so each pane reads as a streak of stained glass between the leading. Off by default: CD5 and the slim hulls keep R337."""
     r = gaps(x, a)
     g, along = r[0], r[1]
     across = r[2] if len(r) > 2 else 0.5
+    if MIX == 'marble':
+        # Ryan Nov 21: intermixed, the colours running together, never rectangle after rectangle of one colour
+        n = marble_field(x, a, seed)
+        cuts = _marble_cuts(weights, seed)
+        ac = min(1.0, max(0.0, across))
+        glow = 0.06 + 0.80 * min(1.0, min(ac, 1 - ac) / 0.18) ** 0.8 * (0.55 + 0.45 * _vnoise(x * 1.7, a * 9.0, seed + 21))
+        if not tones:
+            k = sum(1 for c in cuts if n > c)
+            return palette[k], glow
+        def tone(name):
+            deep, hot = tones[name]
+            return [d + (h - d) * glow ** 1.5 for d, h in zip(deep, hot)]
+        cols = [tone(c) for c in palette]
+        k = sum(1 for c in cuts if n > c)
+        rgb = cols[k]
+        bw = 0.035                              # the colours run into each other across a soft seam
+        for i, c in enumerate(cuts):
+            if abs(n - c) < bw:
+                t = 0.5 + 0.5 * (n - c) / bw
+                rgb = [p + (q - p) * t for p, q in zip(cols[i], cols[i + 1])]
+                break
+        return tuple(rgb), glow
+    if MIX == 'streaks':
+        # thin streaks of mixed colour side by side down each gap, each its own colour and length
+        n = 4
+        ac = min(0.999, max(0.0, across)) * n
+        sub = int(ac)
+        sa = along * 0.55 + 0.37 * sub
+        bay = math.floor(sa)
+        frac = sa - bay
+        colour = _pick(g * 7 + sub, bay, palette, weights, seed + 11)
+        fa = ac - sub
+        rim_c = min(1.0, min(fa, 1 - fa) / 0.22)
+        rim_a = min(1.0, min(frac, 1 - frac) / 0.08)
+        glow = 0.06 + 0.78 * (rim_a * rim_c) ** 0.7 * (0.40 + 0.60 * math.sin(math.pi * fa) ** 1.5) * (0.6 + 0.4 * math.sin(math.pi * min(1.0, max(0.0, across))))
+        if not tones:
+            return colour, glow
+        deep, hot = tones[colour]
+        return tuple(d + (h - d) * glow ** 1.5 for d, h in zip(deep, hot)), glow
     bay = math.floor(along)
     frac = along - bay
     colour = _pick(g, bay, palette, weights, seed)
     # the ribbons hide the outer quarter of a gap each side, so the fall-off is steep across: dark at the visible border
-    glow = (max(0.0, math.sin(math.pi * frac)) ** 1.2) * (max(0.0, math.sin(math.pi * min(1.0, max(0.0, across)))) ** 3.0)
-    glow = 0.06 + 0.94 * glow
+    if streak:
+        ac = min(1.0, max(0.0, across))
+        rim_a = min(1.0, min(frac, 1 - frac) / 0.15)
+        rim_c = min(1.0, min(ac, 1 - ac) / 0.20)
+        rim = (rim_a * rim_c) ** 0.7
+        line = math.exp(-((ac - 0.5) / 0.16) ** 2)
+        glow = 0.06 + 0.94 * rim * (0.62 + 0.38 * line)
+    else:
+        glow = (max(0.0, math.sin(math.pi * frac)) ** 1.2) * (max(0.0, math.sin(math.pi * min(1.0, max(0.0, across)))) ** 3.0)
+        glow = 0.06 + 0.94 * glow
     if not tones:
         return colour, glow
     def tone(name, k):
@@ -141,7 +249,7 @@ def mosaic_tint(x, a, gaps, palette, weights, seed=0, tones=None):
     rgb = tone(colour, glow ** 1.5)
     # run into the neighbouring leaf along the flow over the last fifth of the bay
     edge = min(frac, 1 - frac)
-    if edge < 0.2:
+    if edge < 0.2 and not streak:
         other = _pick(g, bay + (1 if frac > 0.5 else -1), palette, weights, seed)
         w = 0.5 * (1 - edge / 0.2) ** 2
         rgb = [c + (o - c) * w for c, o in zip(rgb, tone(other, glow ** 1.5))]

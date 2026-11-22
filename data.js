@@ -140,7 +140,7 @@ const FACTIONS = {
   ithar:{n:'The Glasswrights',hull:'#eef3f1',trim:'#d7c88a',glow:'#9fffd2',style:'sail',
     blurb:'Few, long-lived masters of light and crystal. Blindingly fast, heavily shielded, fragile once the shields fall.',
     roster:['i_wisp','i_blade','i_song','i_carrier'],boss:'i_boss',sq:'fighter'},
-  deathless:{n:'Eclipse',hull:'#1d2220',trim:'#1fbf4a',glow:'#3dff6a',style:'tomb',
+  deathless:{n:'Eclipse',hull:'#291f36',trim:'#994dff',glow:'#b385ff',style:'tomb',
     blurb:'Starwright minds in machine bodies, siphoning stellar energy to light a new sun. Null weapons cut through shields and armor, and wrecks rebuild themselves.',
     roster:['d_scythe','d_jackal','d_harvester'],boss:'d_boss',sq:null},
 };

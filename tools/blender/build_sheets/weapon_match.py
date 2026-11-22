@@ -54,6 +54,8 @@ FITS = {
     'ion': ({'ion_trench'}, {'fixed'}),
     'lance': ({'lance'}, {'fixed'}),                          # lance: the Sunward Oath lance, one emitter in the spearhead's point (issue 1157, the Vigil)                       # lance: the Hegemony ion cannon, an emitter trench in the bow face (R183 (1))
     'pulsar': ({'gun'}, {'fixed', 'turret'}),                 # lance: Glasswright bow waveguide or grown turning optic (CD5, issue 912)
+    'shard': ({'gun'}, {'fixed', 'turret'}),                  # battery: the Glasswright Prism shards, drawn needles at the bow (issue 1415)
+    'startorp': ({'gun'}, {'fixed'}),                         # torp: the Glasswright star torpedo, carried in a grown keel cradle (issue 1415)
     'turbo': ({'gun'}, {'turret', 'casemate'}),               # battery: the Hegemony plasma lance (issue 768: the Iron Mandate's bridge turret)
     'tendril': ({'tendril', 'mane', 'drape'}, {'turret', 'fixed'}),   # bio: a tendril crown turns; the mane and C12's drape are fixed organs
     # squadron craft (issue 769, R253: own fighter and bomber models per faction; data.js fighter and bomber, both arc T)
