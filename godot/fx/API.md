@@ -277,13 +277,20 @@ null lance, star, gauss exit, weight 3+) on a section under 80% HP opens one whe
 section, clear of turrets and bay doors (`fx_ship._clear_spot`). Every cutout goes through
 `fx_breach.validate_footprint` (8 rays at 0.85 R: shrink to 0.75 R and 0.55 R, slide toward the plating, else a small
 surface mark) and `place_hole` (faction rim, plate thickness `clamp(Dt * 0.14, 0.008 L, 0.24 R)`; a plate thinner than
-0.4 R chips with `thin_shear` instead of opening). Overlays skip faces turned more than about 70 degrees from the hit and
+0.4 R chips with `thin_shear` instead of opening; `thickness` marches through stacked plating within 1.2 R to the first
+real cavity, so layered armour opens). Overlays skip faces turned more than about 70 degrees from the hit and
 sit in a tighter slab; the hull shader's cut skips walls at right angles to it. `fx_breach.dress` puts the faction's own
 3D dressing inside each mouth (beams and cables, bone ribs and tendons, crystal shards, obsidian truss and violet bus),
-`inside_lights` adds at most 2 soft lights per ship in `interior_accent`, and the built interior takes the shared
-`fx_shaders.INTERIOR` shader (`fx_hull.interior_material_v2`) once a mouth is open; `fx.wreck_interior(source, faction)`
-hands the same shader to the wreck pieces. `fx_breach.open_mouths(s)` lists a ship's open mouths ({c, n, R}, hull
-frame) for vents and embers. With V2 on, prism, star and null lance hits leave `S_PRISM`, `S_STAR` and `S_NLANCE` marks.
+`inside_lights` adds at most 2 soft lights per ship (8 in the battle, `BATTLE_HOLE_LIGHTS`) in `interior_accent`, and
+the built interior takes the shared `fx_shaders.INTERIOR` shader (`fx_hull.interior_material_v2`) once a mouth is open.
+That shader multiplies the faction pattern over the surface: a surface whose glTF material extras name an
+`interior_role` (Interior Kit V2) keeps its own colour and trim maps; an older one keeps only its texture's light and dark
+in the faction's `interior_lift`, and its own glow keeps only its brightness, in `interior_accent`
+(`fx_hull.interior_role`: wall, bone, core, glass, organ). Walls are held to 0.11 and non-core glow to 0.25 by scaling
+the colour, never per channel; cores, rim heat, bus tips and fresh burns pass. `fx.wreck_interior(source, faction)`
+hands the same shader to the wreck pieces, settling into the wreck look over 4 s from the death. Over the caps the
+oldest cutouts stay open (`cap_holes`). `fx_breach.open_mouths(s)` lists a ship's open mouths ({c, n, R}, hull
+frame, after the caps) for vents and embers. With V2 on, prism, star and null lance hits leave `S_PRISM`, `S_STAR` and `S_NLANCE` marks.
 Proof: `fx/test/wounds_v2_check.gd`, look-bench rows `bench/look_moments_wounds_v2.json` (cameras 170 and 26).
 
 **Refinement (r5).** Coarse geometry (kit plates and big AI hull panels are a few large triangles) is split locally before a mark is cut: edges longer than the mark needs, near the mark, are split (conforming on both sides, every vertex attribute interpolated, so the vertex format and materials stay), so a hole or crater smaller than a plate is still cut and dented. The overlay skin covers every triangle that reaches into the mark, not only those whose centre does.

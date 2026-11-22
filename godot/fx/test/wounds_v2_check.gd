@@ -265,6 +265,21 @@ func _run() -> void:
 			if e.has_cut() and e.v2 >= 0:
 				per2[clampi(e.sec, 0, 2)] += 1
 		check(per2[0] + per2[1] + per2[2] <= BREACH.V2_HOLES_SHIP and per2.max() <= BREACH.V2_HOLES_SEC, "%s: hits then a stage rise still keep the caps in what is drawn (%s)" % [faction, str(per2)])
+		fx.remove_ship(s.id)   # one faction at a time, so the battle light cap below is tested on its own
+		fx.remove_ship(s2.id)
+	# Fable review M2: the battle cap on breach lights, across every ship
+	var many: Array = []
+	for j in 6:
+		var sm = _ship(["voidsworn", "corsair", "deathless"][j % 3], true)
+		sm.sync(fx, _state(30, 30, 30))
+		flush(sm)
+		many.append(sm)
+	var lit_all := 0
+	for sm in many:
+		lit_all += _lights(sm).size()
+	check(lit_all >= 1 and lit_all <= BREACH.BATTLE_HOLE_LIGHTS, "M2: six opened ships light %d breach lights in all (cap %d)" % [lit_all, BREACH.BATTLE_HOLE_LIGHTS])
+	for sm in many:
+		fx.remove_ship(sm.id)
 	var sl = _ship("voidsworn", false)
 	sl.sync(fx, _state(100, 30, 100))
 	flush(sl)
@@ -305,7 +320,7 @@ func _run() -> void:
 		var lift: Array = FL.of(faction)["wound"]["interior_lift"]
 		var mean := (float(lift[0]) + float(lift[1]) + float(lift[2])) / 3.0
 		check(float(lift.max()) <= 0.11 and mean >= 0.025 and mean <= 0.10, "%s: wound interior lift within the R420 ceiling (mean %.3f)" % [faction, mean])
-	check(SH.INTERIOR.contains("lit = min(lit, vec3(0.11))") and SH.INTERIOR.contains("vec3(0.25));"), "R420: the interior shader clamps walls to 0.11 and non-core glow to 0.25")
+	check(SH.INTERIOR.contains("lit *= lm > 0.11 ? 0.11 / lm : 1.0;") and SH.INTERIOR.contains("soft *= pk > 0.25 ? 0.25 / pk : 1.0;"), "R420: the interior shader holds walls to 0.11 and non-core glow to 0.25 by scaling the colour")
 	var ch: Dictionary = FL.of("chorus")["wound"]
 	var mag := false
 	for key in ["scorch_col", "rim_metal", "interior_lift", "interior_accent"]:
@@ -352,8 +367,9 @@ func _run() -> void:
 		flush(sd)
 		fx.death(sd.id, "blast")
 		var found := 0
-		for k in 240:
+		for k in 600:
 			fx.step(0.05)
+			OS.delay_msec(10)   # the death cut runs on a worker thread: give it wall time, not only game time
 			for w in fx.dstate.get("wrecks", []):
 				if w["id"] != sd.id: continue
 				for nd in w["nodes"]:
@@ -377,5 +393,82 @@ func _run() -> void:
 	var old = fx.wreck_interior(src, "ithar", 24.0)
 	check(old is BaseMaterial3D and (old as BaseMaterial3D).roughness == 1.0, "switch off: the wreck keeps the old sooted copy")
 	OS.unset_environment("VS_WOUNDS_V2")
+	_review_fixes()
 	print("wounds_v2_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)
 	quit(0 if failures == 0 else 1)
+
+
+# Fable's blind review of the cohesion package (Nov 22, board/1774/fable_cohesion_review.md): B2, B3, H5, M2
+func _review_fixes() -> void:
+	OS.set_environment("VS_WOUNDS_V2", "1")
+	# B2: the pattern's line() is 1 on a seam and 0 across the panel (the shader's own text, mirrored here)
+	var code: String = SH.INTERIOR
+	check(code.contains("float line(float x, float w) { return smoothstep(0.0, w, abs(fract(x) - 0.5) * 2.0 - (1.0 - w * 2.0)); }"), "B2: the interior seam line is not inverted")
+	var on_seam := smoothstep(0.0, 0.03, absf(fposmod(0.0, 1.0) - 0.5) * 2.0 - (1.0 - 0.03 * 2.0))
+	var mid_panel := smoothstep(0.0, 0.03, absf(fposmod(0.5, 1.0) - 0.5) * 2.0 - (1.0 - 0.03 * 2.0))
+	var lit := 0
+	for k in 1000:
+		var x := float(k) / 1000.0
+		lit += 1 if smoothstep(0.0, 0.025, absf(fposmod(x, 1.0) - 0.5) * 2.0 - (1.0 - 0.025 * 2.0)) > 0.5 else 0
+	check(on_seam > 0.99 and mid_panel < 0.01 and lit < 40, "B2: a 0.025 line lights %d of 1000 samples (seam %.2f, panel %.2f)" % [lit, on_seam, mid_panel])
+	# B3: surface roles. A role-table surface (glTF extras interior_role) is trusted; an older one is read by name and light
+	var bone := StandardMaterial3D.new()
+	bone.set_meta("extras", {"interior_role": "bone"})
+	var core := StandardMaterial3D.new()
+	core.resource_name = "C19_51_inside_8"
+	core.emission_enabled = true
+	core.emission = Color(1, 0.75, 0.2)
+	core.emission_energy_multiplier = 4.0
+	var wall := StandardMaterial3D.new()
+	wall.resource_name = "C19_51_inside_3"
+	check(HULL.interior_role(bone) == [1, true] and HULL.interior_role(core) == [2, false] and HULL.interior_role(wall) == [0, false], "B3: bone from the role table, a lit inside as a core, a plain inside as a wall")
+	var im: ShaderMaterial = HULL.interior_material_v2(core, Transform3D.IDENTITY, {"count": 1, "mouths": [Vector4.ZERO], "axes": [Vector4(0, 1, 0, 1)]}, BREACH.wound_of("deathless"), 20.0)
+	check(int(im.get_shader_parameter("role")) == 2 and not bool(im.get_shader_parameter("trusted")), "B3: the shader gets the surface role")
+	check(code.contains("vec3 lit = surf * mix(1.0, r.x * ao") and not code.contains("lit = min(lit, vec3(0.11))"), "B3 and H2: the pattern multiplies over the surface; the wall ceiling scales, never clips per channel")
+	check(code.contains("v2_interior_accent / max(am, 1e-3) * bl"), "H3: an older surface's own light is recoloured to the faction accent")
+	var hole: String = SH.HOLE
+	check(hole.contains("em_hdr") and not hole.contains("vec3(wound_v2 >= 0 ? 0.25 : 0.35)"), "H2: the breach glow scales to 0.25 and rim heat, bus tips and burns pass")
+	# M2: the oldest open holes keep their place; a newer one past the cap seals
+	var hl = _hull_of(_box_faces(Vector3(24, 5, 8)), 24.0)
+	var ents: Array = []
+	for k in 3:
+		var e = BREACH.place_hole(hl, Vector3(-6 + k * 4, 2.5, 0), Vector3.UP, 0.9, float(k), "voidsworn")
+		e.sec = 1
+		e.t0 = [5.0, 1.0, 3.0][k]
+		ents.append(e)
+	var capped: Array = BREACH.cap_holes(ents)
+	check(capped.size() == 3, "M2: every entry keeps its place in the list")
+	check(not capped[0].has_cut() and capped[1].has_cut() and capped[2].has_cut(), "M2: the newest hole (t0 5) seals, the two older ones stay open")
+	# H5: on the real C19_51 export (the A16 fixture, outer plating only in the hull reader), a midship cutout opens
+	var path := "res://fx/test/fixtures/C19_51_unbaked.glb.gz"
+	var bytes := FileAccess.get_file_as_bytes(path).decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP)
+	var doc := GLTFDocument.new()
+	var st := GLTFState.new()
+	check(not bytes.is_empty() and doc.append_from_buffer(bytes, path.get_base_dir(), st) == OK, "H5: the C19_51 fixture loads")
+	var ship := doc.generate_scene(st) as Node3D
+	var holder := Node3D.new()
+	world.add_child(holder)
+	holder.position = Vector3(0, 0, 300)
+	holder.add_child(ship)
+	fx.add_ship("c19_fixture", holder, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22, "shielded": false})
+	fx._later.clear()
+	var sf = fx.ship("c19_fixture")
+	check(sf.hull.authored, "H5: the fixture reads as an authored-interior hull")
+	var L: float = sf.hull.L
+	var opened := 0
+	var tried := 0
+	var notes: Array = []
+	for x in [-0.08, 0.0, 0.08]:
+		for d in [Vector3.UP, Vector3.BACK, Vector3.FORWARD]:
+			var hit: Dictionary = sf.hull.ray(Vector3(x * L, 0, 0) + d * L, -d)
+			if hit.is_empty():
+				continue
+			tried += 1
+			var eh = BREACH.place_hole(sf.hull, hit["p"], hit["n"], L * BREACH.V2_HOLE_L[1], 0.3, "corsair")
+			var fp: Dictionary = BREACH.validate_footprint(sf.hull, hit["p"], hit["n"], L * BREACH.V2_HOLE_L[1])
+			notes.append("x%.2f %s Dt/R %.2f %s" % [x, str(d), float(fp["Dt"]) / maxf(float(fp["R"]), 1e-4), "open" if eh.has_cut() and not eh.thin_shear else ("thin" if eh.thin_shear else "mark")])
+			if eh.has_cut() and not eh.thin_shear:
+				opened += 1
+	print("  H5 midship: ", ", ".join(notes))
+	check(tried > 0 and opened == tried, "H5: midship cutouts on the real hull open into the ship, not chip (%d of %d)" % [opened, tried])
+	OS.unset_environment("VS_WOUNDS_V2")

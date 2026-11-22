@@ -1216,7 +1216,7 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 			if Q.distance_squared_to(Em.c) > reach * reach:
 				continue
 			if _tri_in_overlay(a, b, c, Q, Em, n0 + n1 + n2):
-				_otri(parts[lmap[lj]], Dp[i0] + n0 * ovl, Dp[i1] + n1 * ovl, Dp[i2] + n2 * ovl, n0, n1, n2, n0 + n1 + n2, Color(float(Em.style) / 16.0, 0, 0, 1))
+				_otri(parts[lmap[lj]], Dp[i0] + n0 * ovl, Dp[i1] + n1 * ovl, Dp[i2] + n2 * ovl, n0, n1, n2, n0 + n1 + n2, Color(float(Em.style) / 32.0, 0, 0, 1))   # styles to 31 (the MARK shader reads the exact style from CUSTOM2.w)
 		if not cz:
 			continue
 		tri_i[0] = i0
@@ -2053,7 +2053,7 @@ static func _foot_count(hull, c: Vector3, n: Vector3, R: float) -> Array:
 
 
 # The plate's thickness under (c, n): the median of the centre and four half-radius inward rays (1e9: no far face).
-static func thickness(hull, c: Vector3, n: Vector3, R: float) -> float:
+static func thickness(hull, c: Vector3, n: Vector3, R: float, lim := 0.0) -> float:
 	if hull == null:
 		return 1e9
 	var tb := _basis(n)
@@ -2066,8 +2066,25 @@ static func thickness(hull, c: Vector3, n: Vector3, R: float) -> float:
 			if h0.is_empty() or absf(((h0["p"] as Vector3) - c).dot(n)) > R * 0.6:
 				continue
 			o = h0["p"]
-		var far: Dictionary = hull.ray(o - n * (R * 0.03), -n)
-		ds.append(1e9 if far.is_empty() else ((far["p"] as Vector3) - o).length() + R * 0.03)
+		# Fable review H5: real hulls stack plating (armour plates, superstructure decks a few hundredths of the
+		# length apart). A gap thinner than lim, within 1.2 R of the surface, is layered plating, not the far side of a
+		# thin part: march on through it to the first real cavity, so a midship cutout opens instead of chipping
+		var at := o
+		var d := 1e9
+		for layer in 6:
+			var far: Dictionary = hull.ray(at - n * (R * 0.03), -n)
+			if far.is_empty():
+				if layer > 0:
+					d = (at - o).length() + R * 0.03   # out the far side through plating only: a thin part after all
+				break
+			var fp: Vector3 = far["p"]
+			var gap := (fp - at).length() + R * 0.03
+			var depth := (fp - o).length()
+			if lim <= 0.0 or gap >= lim or depth > R * 1.2:
+				d = depth + R * 0.03 if lim > 0.0 and layer > 0 else gap
+				break
+			at = fp
+		ds.append(d)
 	if ds.is_empty():
 		return 1e9
 	ds.sort()
@@ -2104,9 +2121,10 @@ static func validate_footprint(hull, c: Vector3, n: Vector3, R: float) -> Dictio
 				cc = h["p"]
 				nn = h["n"]
 	if bool(out["ok"]):
-		var Dt := thickness(hull, out["c"], out["n"], out["R"])
+		var lim := maxf(float(out["R"]) * 0.4, hull.L * 0.018)
+		var Dt := thickness(hull, out["c"], out["n"], out["R"], lim)
 		out["Dt"] = Dt
-		out["thin"] = Dt < maxf(float(out["R"]) * 0.4, hull.L * 0.018)
+		out["thin"] = Dt < lim
 	return out
 
 
@@ -2168,7 +2186,7 @@ static func open_mouths(s) -> Array:
 	for i in 3:
 		ents.append_array(s._ents[i])
 	ents.append_array(s._marks)
-	for x in ents:
+	for x in cap_holes(ents):   # the list the hull draws: no vent on a hole the caps sealed (Fable review M2)
 		var e: Ent = x
 		if e.has_cut() and not e.thin_shear:
 			out.append({"c": e.c, "n": e.n, "R": e.R})
@@ -2176,27 +2194,46 @@ static func open_mouths(s) -> Array:
 
 
 # The V2 cutout caps over the final entry list a rebuild draws (Artoo on PR 1755: the stage path and the hit path each
-# checked their own list, so their sum could pass the caps): in list order (the stage cutouts first, then the marks the
-# cap keeps), a V2 cutout past V2_HOLES_SHIP on the ship or V2_HOLES_SEC in its section is left out. Every other entry
-# stays. With V2 off no entry has v2 >= 0, so the list comes back unchanged.
+# checked their own list, so their sum could pass the caps). The oldest cutouts keep their holes (by opening time, list
+# order on a tie): a newer one past V2_HOLES_SHIP on the ship or V2_HOLES_SEC in its section becomes a sealed dent, so a
+# hole that is already open never heals when a later one arrives (Fable review M2). Every other entry stays, in its
+# place. With V2 off no entry has v2 >= 0, so the list comes back unchanged.
 static func cap_holes(ents: Array) -> Array:
-	var out: Array = []
+	var cuts: Array = []
+	for i in ents.size():
+		var e: Ent = ents[i]
+		if e.has_cut() and e.v2 >= 0:
+			cuts.append(i)
+	if cuts.size() <= 1:
+		return ents
+	cuts.sort_custom(func(a: int, b: int) -> bool:
+		var ta: float = (ents[a] as Ent).t0
+		var tb: float = (ents[b] as Ent).t0
+		return ta < tb if ta != tb else a < b)
+	var shut := {}
 	var total := 0
 	var per := {}
-	for x in ents:
-		var e: Ent = x
-		if e.has_cut() and e.v2 >= 0:
-			if total >= V2_HOLES_SHIP or int(per.get(e.sec, 0)) >= V2_HOLES_SEC:
-				# past the caps: a sealed dent where it would have opened, never nothing (audit, PR 1755)
-				var d := crater(e.c, e.n, e.R * 0.6, e.R * 0.12, e.seed_v, S_DENT)
-				d.v2 = e.v2
-				d.sec = e.sec
-				d.t0 = e.t0
-				out.append(d)
-				continue
-			total += 1
-			per[e.sec] = int(per.get(e.sec, 0)) + 1
-		out.append(e)
+	for i in cuts:
+		var e: Ent = ents[i]
+		if total >= V2_HOLES_SHIP or int(per.get(e.sec, 0)) >= V2_HOLES_SEC:
+			shut[i] = true
+			continue
+		total += 1
+		per[e.sec] = int(per.get(e.sec, 0)) + 1
+	if shut.is_empty():
+		return ents
+	var out: Array = []
+	for i in ents.size():
+		var e: Ent = ents[i]
+		if shut.has(i):
+			# past the caps: a sealed dent where it would have opened, never nothing (audit, PR 1755)
+			var d := crater(e.c, e.n, e.R * 0.6, e.R * 0.12, e.seed_v, S_DENT)
+			d.v2 = e.v2
+			d.sec = e.sec
+			d.t0 = e.t0
+			out.append(d)
+		else:
+			out.append(e)
 	return out
 
 
@@ -2348,6 +2385,7 @@ static func dress(hull, pt: Part, E: Ent, r: RandomNumberGenerator) -> Array:
 # R416 5.3: at most two soft lights inside a ship's open V2 mouths (the biggest), a quarter radius in, tinted by the
 # faction's interior accent, reach about 2.2 radii, so the built decks and the rim dressing catch real light.
 const INSIDE_LIGHTS := 2
+const BATTLE_HOLE_LIGHTS := 8   # every ship's breach lights together (Fable review M2)
 const INSIDE_LIGHT_E := 0.7   # R420: interiors sit at 0.03 to 0.10 linear, so the cavity light carries the read
 
 
@@ -2360,9 +2398,18 @@ static func inside_lights(fx, s, mi: Node3D, ents: Array, accent: Color) -> int:
 		if e.has_cut() and e.v2 >= 0 and not e.thin_shear:
 			cuts.append(e)
 	cuts.sort_custom(func(a: Ent, b: Ent) -> bool: return a.R > b.R)
+	# the battle cap (Fable review M2): at most BATTLE_HOLE_LIGHTS breach lights across every ship, so a big fight
+	# of open wounds stays inside the light budget; this ship's own lights were cleared before the rebuild
+	var used := 0
+	var all = fx.get("ships")
+	if all is Dictionary:
+		for sid in all:
+			var o = all[sid]
+			if o != null and o != s and o.get("_hole_lights") is Array:
+				used += (o.get("_hole_lights") as Array).size()
 	var k := 0
 	for e in cuts:
-		if k >= INSIDE_LIGHTS:
+		if k >= INSIDE_LIGHTS or used + k >= BATTLE_HOLE_LIGHTS:
 			break
 		var E: Ent = e
 		var off := E.c - E.n * (E.R * 0.25 + E.th)

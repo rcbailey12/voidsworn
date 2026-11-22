@@ -1453,9 +1453,14 @@ func dark_interior(source: Material) -> Material:
 func wreck_interior(source: Material, faction := "", L := 1.0) -> Material:
 	if source == null: return source
 	if faction != "" and BREACH.v2_on():
-		var key := [source, faction, snappedf(L, 0.01)]
+		# Fable review M2: the wreck look settles in over WRECK_SETTLE seconds from the death, not in one step, so the
+		# material is kept per death moment (a tenth of a second) as well as per surface, faction and length
+		var t0 := snappedf(now, 0.1)
+		var key := [source, faction, snappedf(L, 0.01), t0]
 		if not _wreck_interiors.has(key):
-			_wreck_interiors[key] = HULL.interior_material_v2(source, Transform3D.IDENTITY, {}, BREACH.wound_of(faction), L, 1.0)
+			var m := HULL.interior_material_v2(source, Transform3D.IDENTITY, {}, BREACH.wound_of(faction), L, 1.0)
+			m.set_shader_parameter("fx_wreck_t0", t0)
+			_wreck_interiors[key] = m
 		return _wreck_interiors[key]
 	if not _wreck_interiors.has(source):
 		var dark: Material = (dark_interior(source) as Material).duplicate()

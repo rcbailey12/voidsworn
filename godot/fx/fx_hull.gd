@@ -367,8 +367,9 @@ for (int i = 0; i < 64; i++) {
 	if (fx_v2 >= 0) { fx_near = max(fx_near, 1.0 - smoothstep(R * 1.2, R * 3.0, length(fx_hull_p - fx_mouths[i].xyz))); }
 	if (h < -fx_axes[i].w || h > R * 0.8) { continue; }
 	// R416 4.2: only plating facing along the cut (or straight against it: the inner liner) is cut, never a wall at
-	// right angles or a face standing above the hole
-	if (fx_v2 >= 0 && (h > R * 0.45 || abs(dot(normalize(fx_hull_n), fx_axes[i].xyz)) < 0.25)) { continue; }
+	// right angles or a face standing above the hole. The facing test holds only out past 0.6 R from the centre, so the
+	// side faces of raised plates inside the mouth are cut with it, not left as strips across it (Fable review M3)
+	if (fx_v2 >= 0 && (h > R * 0.45 || (length(fx_hull_p - fx_mouths[i].xyz - fx_axes[i].xyz * h) > R * 0.6 && abs(dot(normalize(fx_hull_n), fx_axes[i].xyz)) < 0.25))) { continue; }
 	float edge = fx_mouth_edge(i, fx_hull_p);
 	if (edge < -R * 0.035) { discard; }
 	fx_soot = max(fx_soot, 1.0 - smoothstep(0.0, R * 0.65, max(edge, 0.0)));
@@ -407,7 +408,7 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 		// round the wounds: a single-sided fin or sail seen from behind keeps its old look)
 		ALBEDO = mix(ALBEDO, fx_v2_lift * (0.45 + 0.55 * max(rib, beam)), fx_near);
 		ROUGHNESS = mix(ROUGHNESS, fx_v2 == 4 ? 0.1 : (fx_v2 == 3 ? 0.25 : 0.6), fx_near);
-		METALLIC = (fx_v2 <= 2 || fx_v2 == 5) ? 0.4 * fx_near : 0.0;
+		METALLIC = mix(METALLIC, (fx_v2 <= 2 || fx_v2 == 5) ? 0.4 : 0.0, fx_near);   // mixed, so no ring at 3 R (M3)
 		SPECULAR = 0.4 * fx_near;
 		EMISSION = mix(EMISSION, fx_v2_lift * 0.03 + fx_v2_accent * (fx_v2 == 4 ? 0.05 : 0.01), fx_near);
 	}
@@ -480,14 +481,29 @@ static func interior_material_v2(src: Material, frame: Transform3D, mouths: Dict
 		src = src.get_meta("fx_hull_source")
 	var m := ShaderMaterial.new()
 	m.shader = shared_shader(SHD.INTERIOR, "interior v2")
+	var rl := interior_role(src)
+	m.set_shader_parameter("role", int(rl[0]))
+	m.set_shader_parameter("trusted", bool(rl[1]))
 	if src is BaseMaterial3D:
 		var b := src as BaseMaterial3D
 		m.set_shader_parameter("base_albedo", b.albedo_color)
 		if b.albedo_texture != null:
 			m.set_shader_parameter("base_tex", b.albedo_texture)
+		m.set_shader_parameter("base_rough", b.roughness)
+		m.set_shader_parameter("base_metal", b.metallic)
+		# Fable review B3: the trim's own maps are read, not dropped (glTF packs occlusion, roughness, metal in one map)
+		if b.normal_enabled and b.normal_texture != null:
+			m.set_shader_parameter("base_normal", b.normal_texture)
+			m.set_shader_parameter("has_normal", true)
+		var orm: Texture2D = b.roughness_texture if b.roughness_texture != null else b.metallic_texture
+		if orm != null:
+			m.set_shader_parameter("base_orm", orm)
+			m.set_shader_parameter("has_orm", true)
 		if b.emission_enabled:
 			m.set_shader_parameter("base_emission", b.emission)
 			m.set_shader_parameter("base_emission_energy", b.emission_energy_multiplier)
+			if b.emission_texture != null:
+				m.set_shader_parameter("base_em_tex", b.emission_texture)
 	m.set_shader_parameter("tri_scale", 1.0 / maxf(L * 0.012, 1e-3))
 	m.set_shader_parameter("wound_v2", int(wv.get("kind", 0)))
 	for key in ["scorch_col", "rim_metal", "interior_lift", "interior_accent"]:
@@ -504,6 +520,37 @@ static func interior_material_v2(src: Material, frame: Transform3D, mouths: Dict
 	if src != null:
 		m.set_meta("fx_hull_source", src)
 	return m
+
+
+# Fable review B3: an inside surface's role for the interior shader, [role, trusted]: 0 wall (deck, frame, machinery),
+# 1 bone, 2 core, 3 glass, 4 organ or gland. A surface from the Interior Kit V2 (PR 1763) names its role in the glTF
+# material extras (interior_role), and its colour came from the faction role table, so it is trusted and kept; an older
+# surface is read from its name and light, and only its texture's light and dark are kept.
+const INTERIOR_ROLES := {"bone": 1, "core": 2, "glass": 3, "glass_strut": 3, "organ": 4, "gland": 4}
+
+
+static func interior_role(src: Material) -> Array:
+	if src == null:
+		return [0, false]
+	var ex = src.get_meta("extras", {})
+	var named := str(src.get_meta("interior_role", ex.get("interior_role", "") if ex is Dictionary else ""))
+	if named != "":
+		return [int(INTERIOR_ROLES.get(named, 0)), true]
+	var nm := src.resource_name.to_lower()
+	if nm.contains("bone") or nm.contains("rib"):
+		return [1, false]
+	if nm.contains("core") or nm.contains("reactor"):
+		return [2, false]
+	if src is BaseMaterial3D:
+		var b := src as BaseMaterial3D
+		var e := b.emission * b.emission_energy_multiplier
+		if b.emission_enabled and maxf(e.r, maxf(e.g, e.b)) >= 1.0:
+			return [2, false]
+	if nm.contains("vat") or nm.contains("organ") or nm.contains("gland"):
+		return [4, false]
+	if nm.contains("glass") or nm.contains("gw_in"):
+		return [3, false]
+	return [0, false]
 
 
 static func set_interior_pose(m: ShaderMaterial, frame: Transform3D, mouths: Dictionary) -> void:
