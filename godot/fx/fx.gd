@@ -2057,6 +2057,7 @@ func _warm_hull_meshes(tmp: Node3D, sh: SHIP, seen: Dictionary, hk: int) -> int:
 		_warm_seen[smi.mesh.get_instance_id()] = true
 		var overlays := [dstate["tear_mat"] if dstate.has("tear_mat") else mat(SH.TEAR, 1)]
 		if death_story and dstate.has("tear_strain_mat"): overlays.append(dstate["tear_strain_mat"])
+		overlays.append(mat(SH.MELT_GLOW, 1))   # R398: the acid death's glow, compiled before the first acid kill
 		for ov in overlays:
 			var wm := MeshInstance3D.new()
 			wm.mesh = smi.mesh

@@ -292,9 +292,21 @@ static func route_material(fx, code: String, rel: String, production := false, s
 # A faction's death style comes from faction_looks.json ("death"), the one file the ships, engines, shields and damage
 # already take their colours from. A faction without one keeps today's shared orange fire. Colours are linear RGB.
 static var _styles: Dictionary = {}   # not GPU: per-faction death colours and numbers only
+# R398 (issue 1394, Ryan Nov 21, option B: "B but why is there smoke and haze?", then "No vapour. The whole hull shouldn't
+# glow green either. Just specific affected areas"): a metal hull killed by acid or spines (rules killCause "melt") dies
+# in the acid's colour whatever its faction: no tear, no strain crack, no faction break, the green only where the acid
+# hit (MELT_GLOW), a soft pale bloom (never the hard white core), no fire, no smoke, no vapour. Chorus hulls keep their
+# own rupture.
+const MELT_STYLE := {"style": "melt", "fire": Color(0.80, 0.95, 0.55), "fire_mid": Color(0.45, 0.70, 0.12),
+	"rim": Color(0.45, 0.62, 0.10), "spark": Color(0.55, 0.65, 0.12), "light": Color(0.70, 0.85, 0.45), "smoke": 0.0, "prism": 0.0}
+
+
+static func melting(src) -> bool:
+	return src is Object and is_instance_valid(src) and src.has_meta("death_melt")
 
 static func dstyle(src) -> Dictionary:
 	if not (src is Object) or not is_instance_valid(src): return {}
+	if src.has_meta("death_melt"): return MELT_STYLE
 	if not ("fac" in src) or not ("faction" in src) or not (src.fac is Dictionary): return {}
 	var key := str(src.faction)
 	if _styles.has(key): return _styles[key]
@@ -2198,6 +2210,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 	s.remove_collider()
 	if s.squadron:
 		return _wing_death(fx, s)
+	if cause == "melt" and s.faction != "chorus": s.set_meta("death_melt", true)
 	var tint := dcol(s, "spark", Color(0.95, 0.34, 0.08)) if cause != "melt" else Color(0.55, 0.65, 0.12)
 	_power_down(fx, s)
 	s.set_meta("death_start", T)
@@ -2252,14 +2265,16 @@ static func _death_inner(fx, s, cause: String) -> float:
 	if not lines.is_empty():
 		at = lines[0][0]
 		axis = lines[0][1]
-	if s.death_big and fx.death_story:
+	var melt := melting(s)
+	if s.death_big and fx.death_story and not melt:
 		_strain_begin(fx, s, T, timeline, seeds, lines)
 	match str(dstyle(s).get("style", "")):
 		"peel": _peel(fx, s, T, timeline)
 		"drumbeat": _drumbeat(fx, s, T, timeline)
 		"patch": _patch_tear(fx, s, T, timeline)
+		"melt": _melt_glow(fx, s, T, timeline)
 		# "arc" strikes from _break_up_inner, once the wreck really exists (a cold cut can split late: Artoo on 1399)
-	if s.death_big:
+	if s.death_big and not melt:
 		_tell(fx, s, T, timeline, cause, seeds, lines)
 	var hit: Dictionary = s.hull.ray(at + Vector3.UP * s.hull.L, Vector3.DOWN) if s.death_big else _small_hit(fx, s)
 	var lp: Vector3 = hit.get("p", at)
@@ -2307,7 +2322,7 @@ static func _small_pose(s, motion: Transform3D) -> Transform3D:
 
 
 static func _small_trail(fx, s, age: float, motion: Transform3D) -> void:
-	if fx.quality == "low" or age >= 0.70 or age < float(s.get_meta("death_trail_next", 0.10)): return
+	if fx.quality == "low" or age >= 0.70 or age < float(s.get_meta("death_trail_next", 0.10)) or melting(s): return
 	s.set_meta("death_trail_next", age + 0.10)
 	var site: Array = s.get_meta("death_tear", [])
 	if site.size() != 2: return
@@ -2458,6 +2473,7 @@ static func _power_surface(fx, s, mi: MeshInstance3D, i: int, pose: Transform3D)
 
 static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s or s.has_meta("death_hidden") or fx.quality == "low": return
+	if melting(s): return   # R398: no vent jet, no ignition, no vapour
 	# Issue 354: the gas root is the real plating, found the same way as the braking puffs since PR 327: cast from
 	# outside, a further L along the tear normal, back toward the hull. A ray that misses has no plating behind it, so
 	# skip the vent rather than float it beside the ship.
@@ -2843,6 +2859,7 @@ static func _pic(fx, src, p: Vector3, rel: String, px: float, life: float, divis
 # white (always the softened picture).
 static func _blast(fx, src, p: Vector3, n: Vector3, px: float, tint: Color, frame = null, pale := false) -> void:
 	if not p.is_finite(): return
+	pale = pale or melting(src)
 	var soft: bool = pale or fx.reduce_flashing or not fx.flash_at(p, fx.now, px * STAGING_UNITS_PER_PIXEL, px, 0.16)
 	_pic(fx, src, p, "weapons/impact/flash_", px, 0.50 if soft else 0.16, 0.97 if soft else 3.0, 1.25 if soft else 5.2, soft, "flash", frame)
 	# issue 1077 (prototype): Ryan on pass 4B, "way too much smoke": a strained death's blasts keep one smaller puff
@@ -2895,6 +2912,7 @@ static func _smoke_clump(fx, src, p: Vector3, n: Vector3, px: float, life: float
 
 
 static func _smoke_one(fx, src, p: Vector3, px: float, life: float, frame, vel: Vector3, look: Dictionary) -> void:
+	if dsmoke(src) < 0.02: return   # a death with no smoke (the Glasswrights, R398 acid)
 	_pic(fx, src, p, "weapons/impact/impact_", px, life, 0.80, 2.0, false, "impact", frame, vel, look)
 
 
@@ -2919,10 +2937,10 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 	# body and the gas over it sat on the wreck: no body puff and no gas veil
 	var story: bool = fx.death_story
 	# pass 5 (Ryan: no haze at the split): no body puff either; the chain blasts' small puffs are the smoke
-	if not story: _smoke_clump(fx, s, p, (away_w + Vector3.UP * 0.5).normalized(), body_px, 2.0 if capital else 1.6, frame, 0.12, 3, 3)
+	if not story and not melting(s): _smoke_clump(fx, s, p, (away_w + Vector3.UP * 0.5).normalized(), body_px, 2.0 if capital else 1.6, frame, 0.12, 3, 3)
 	if fx.quality != "low":
 		# pass 5: no gas veil on a strained death (Ryan: no haze at the split); the sparks below stay
-		if not story:
+		if not story and not melting(s):
 			var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, s.get_meta("death_velocity", Vector3.ZERO) * 0.5, 0.38, atlas_band(s.hull.L), null)
 			(gas.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.45)
 			gas.set_meta("spawn_frame", frame)
@@ -2964,12 +2982,43 @@ static func _glitter(fx, s, p: Vector3, L: float) -> void:
 # short flash in the faction's light colour with a white star, and a ring of sparks in its spark colour. Its intensity
 # (2.4) is under fx.FLASH_I, so fx.spr would not book it: it books itself (Artoo on PR 1400), and with reduce flashing or
 # a full flash budget it becomes the same soft lift fx.spr gives a refused flash.
+# R398: the acid's tell. Only where the acid hit (fx_weapons keeps the last MELT_SPOTS hull hits as "acid_spots"; the
+# last hit, then a surface point, when none is recent), the plating glows sick green in a ragged patch that spreads until
+# the hull parts. One overlay per mesh (the tear is not drawn on a melt death, so the overlay slot is free).
+static func _melt_glow(fx, s, T: float, tl: DeathTimeline) -> void:
+	var spots: Array = []
+	for sp in s.get_meta("acid_spots", []):
+		if T - float(sp[1]) <= 6.0: spots.append(sp[0])
+	if spots.is_empty():
+		var last: Array = s.get_meta("last_hit", [])
+		if last.size() >= 1: spots.append(last[0])
+	if spots.is_empty():
+		var hit := _small_hit(fx, s)
+		if not hit.is_empty(): spots.append(hit["p"])
+	var rad: float = s.hull.L * (0.13 if s.death_big else 0.28)
+	var arr := PackedVector4Array()
+	for i in 6:
+		var v: Vector3 = spots[spots.size() - 1 - i] if i < spots.size() else Vector3.ZERO
+		arr.append(Vector4(v.x, v.y, v.z, rad * (1.0 if i == 0 else 0.8)))
+	var m: ShaderMaterial = fx.mat(SH.MELT_GLOW, 1)
+	m.set_shader_parameter("spots", arr)
+	m.set_shader_parameter("n_spots", mini(spots.size(), 6))
+	m.set_shader_parameter("rise", Vector2(T - 0.05, T + maxf(tl.cut, 0.3)))
+	s.set_meta("death_melt_spots", spots)
+	for mm in s.meshes:
+		if is_instance_valid(mm):
+			var mi := mm as MeshInstance3D
+			var local: ShaderMaterial = m.duplicate()
+			local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
+			mi.material_overlay = local
+
+
 static func _fac_pop(fx, s, p: Vector3, L: float) -> void:
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	var life := 0.32
 	var kind := 0
 	var i := 2.4
-	if fx.reduce_flashing or not fx.flash_at(p, fx.now, L * 1.1, 64.0, life):
+	if fx.reduce_flashing or melting(s) or not fx.flash_at(p, fx.now, L * 1.1, 64.0, life):
 		kind = 18
 		i *= 0.4
 		life = 0.96
@@ -3597,6 +3646,7 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 	var row: Array = {"small": [CORE_FLASH_PX["small"], 0.18, 0.55, 2.45, 0.884], "destroyer": [CORE_FLASH_PX["destroyer"], 0.19, 0.575, 2.31, 0.9175], "cruiser": [CORE_FLASH_PX["cruiser"], 0.20, 0.60, 1.97, 0.96], "capital": [CORE_FLASH_PX["capital"], 0.22, 0.65, 1.37, 0.96]}[band]
 	if staged: px = float(row[0])
 	var allowed: bool = fx.flash_ok(fx.now, p, px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, px, float(row[1]))
+	if melting(src): allowed = false   # R398: a soft pale bloom, never the hard white core
 	if staged:
 		var soft: bool = fx.reduce_flashing or not allowed
 		var life: float = float(row[2] if soft else row[1])
@@ -3615,7 +3665,7 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 		var flash := flipbook(fx, p, Vector3.UP, R * 3.0, "flash", 0.20, Vector3.ZERO, 6.0, atlas_band(R / 0.16), src)
 		(flash.material_override as ShaderMaterial).set_shader_parameter("min_pixels", px)
 		fx.light(p, fx.now, 0.12, 9.0, dcol(src, "light", Color(0.65, 0.75, 0.91)), 0, CORE_LIGHT_REACH[band])
-	else:
+	elif not melting(src):
 		flipbook(fx, p, Vector3.UP, R * 2.8, "cool", 0.65, Vector3.ZERO, 0.5, atlas_band(R / 0.16), src)
 
 
@@ -3642,7 +3692,7 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 	wreck["cut_events"].append({"section": index, "t": fx.now})
 	if wreck.get("organic", false): return
 	# issue 1077 (prototype): Ryan on pass 5, no haze at the split: a strained big hull's pieces part without the cool puff
-	if fx.quality != "low" and not (big and fx.death_story):
+	if fx.quality != "low" and not (big and fx.death_story) and not melting(src):
 		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * (0.35 if big else 0.5), "cool", 1.1, vel * 0.65, 0.4 if big else 0.7, atlas_band(L), src)
 	if not big and src != null and fx.quality != "low":
 		var p: Vector3 = node.to_global(node.get_meta("tear_site", Vector3.ZERO))

@@ -2062,6 +2062,41 @@ void fragment() {
 # Issue 462, the tell: a tear along one or two break lines (a capital has two), drawn as an overlay on the dying hull. It
 # grows across the hull from the hit side (grow, half_span: -1 at the hit side, +1 across), white-hot at its moving tip
 # and ember behind, at least two pixels wide at any camera. straight = 1 for a lance cut (the beam's own line).
+# R398 (issue 1394, Ryan Nov 21: "The whole hull shouldn't glow green either. Just specific affected areas"): an acid
+# kill's tell. Up to six spots in the ship's frame (xyz, radius), each a sick green patch with a ragged, eaten edge that
+# spreads from a third of its radius to all of it between rise.x and rise.y (scene_t). No line, no white.
+const MELT_GLOW := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_back, shadows_disabled, fog_disabled;
+""" + COMMON + """
+uniform mat4 frame;
+uniform vec4 spots[6];
+uniform int n_spots = 0;
+uniform vec2 rise = vec2(0.0, 1.0);
+uniform vec3 hot = vec3(0.62, 0.85, 0.18);
+uniform vec3 deep = vec3(0.26, 0.40, 0.05);
+varying vec3 hp;
+void vertex() {
+	hp = (frame * vec4(VERTEX, 1.0)).xyz;
+}
+void fragment() {
+	float u = clamp((scene_t - rise.x) / max(rise.y - rise.x, 0.0001), 0.0, 1.0);
+	float g = 0.0;
+	for (int i = 0; i < 6; i++) {
+		if (i >= n_spots) { break; }
+		float rad = max(spots[i].w, 0.001);
+		float r = rad * (0.35 + 0.65 * u);
+		vec3 q = (hp - spots[i].xyz) / rad;
+		float eaten = (vnoise(q.xy * 3.1 + q.z * 1.7 + float(i) * 4.3) - 0.5) * 0.55;
+		float d = distance(hp, spots[i].xyz) / r + eaten;
+		g = max(g, 1.0 - smoothstep(0.35, 1.0, d));
+	}
+	float pulse = 0.88 + 0.12 * sin(scene_t * 4.5 + hp.x * 0.7);
+	ALBEDO = clamp(mix(deep, hot, g * g) * g * u * pulse * 2.6 * fx_gain, 0.0, 8.0);
+}
+"""
+
+
 const TEAR := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
