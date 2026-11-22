@@ -3669,7 +3669,8 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 			JSM.ssort(adjs, func(a, b):
 				return -1.0 if str(a["id"]) < str(b["id"]) else 1.0)
 			if adjs.size() > 0:
-				var adj = adjs[0]; var rr = applyHit(u, w, adj, d * float(awF["n"]), shieldQuad(adj, u)); res.hull += rr.hull
+				var adj = adjs[0]; var rr = applyHit(u, w, adj, d * float(awF["n"]), shieldQuad(adj, u))
+				if rr.hull > 0: flt(adj, "−" + ns(rr.hull) + " hull", "#ffae42", 0) # Artoo on PR 1564: the splash shows over the ship it hit
 				if adj["hp"] <= 0: adj["killCause"] = "big"; killUnit(adj, u)
 				treeFx(u, "arcsWarm", "the corona splashes")
 		var bs3 = treeSkill("burnStays")
