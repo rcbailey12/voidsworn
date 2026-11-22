@@ -1,0 +1,58 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+PASS stage 5 and bench 207 scripts carry the issue 873 failure checks
+PASS campaign parity, sweep and audio launchers search parent folders for the PC bundle
+Evidence: C:\Users\rcbai\AppData\Local\Temp\stage873 Au5EdH
+PASS stage 5 missing Blender script stops the stage
+PASS stage 5 bake exit code stops the stage
+PASS stage 5 render pass 3 exit code stops the stage
+PASS stage 5 render pass 2 exit code stops the stage
+PASS stage 5 render pass 2 missing output stops the stage
+PASS stage 5 success case: all three render passes finish and the stage exits 0
+PASS stage 5 rejects zero-exit compile error: out of SVM stack space
+PASS stage 5 rejects zero-exit compile error: failed to compile
+PASS stage 5 rejects zero-exit compile error: shader compile error
+PASS stage 5 rejects zero-exit compile error: shader compilation failed
+PASS stage 5 rejects zero-exit compile error: shader compilation error
+PASS stage 5 rejects zero-exit compile error: error compiling
+PASS stage 5 rejects negative bake exit
+PASS stage 5 rejects negative render exit
+PASS stage 5 rejects negative surface exit
+PASS stage 5 surface exit fails even with a PASS marker
+PASS stage 5 rejects negative close exit
+PASS stage 5 stops a ship under its surface-detail floor
+PASS issue 726 helper accepts one completion in each of three good logs
+PASS issue 726 helper rejects missing log_render.txt
+PASS issue 726 helper rejects incomplete log_render.txt
+FAIL stage5_fail_selftest: Error: sheet paint views failed: ok
+ok
+PASS surface check
+Stage 5 FAILED: the surface-detail check failed: a flat clay surface. See C:\Users\rcbai\AppData\Local\Temp\stage873 Au5EdH\s5-sheetviews\Downloads\voidsworn_test\recipe\T873sheetviews\log_detail.txt 
+
+    at check (C:\Users\rcbai\Downloads\voidsworn_test\OPUS1739DIAGC\out_20261122_134145_28152\new\tools\recipe\stage5_fail_selftest.js:15:43)
+    at C:\Users\rcbai\Downloads\voidsworn_test\OPUS1739DIAGC\out_20261122_134145_28152\new\tools\recipe\stage5_fail_selftest.js:320:3
+    at C:\Users\rcbai\Downloads\voidsworn_test\OPUS1739DIAGC\out_20261122_134145_28152\new\tools\recipe\stage5_fail_selftest.js:280:5
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async runCases (C:\Users\rcbai\Downloads\voidsworn_test\OPUS1739DIAGC\out_20261122_134145_28152\new\tools\recipe\stage5_fail_selftest.js:512:7)
+    at async Promise.all (index 1)
+PASS issue 726 helper rejects missing log_render_concept.txt
+PASS issue 726 helper rejects incomplete log_render_concept.txt
+PASS issue 726 helper rejects missing log_render_far.txt
+PASS issue 726 helper rejects incomplete log_render_far.txt
+PASS issue 726 helper rejects pooled completions
+PASS issue 726 helper rejects a bake shader failure
+PASS bench 207 import failure stops the job
+PASS bench 207 build_assets failure stops the job
+PASS bench 207 build_assets missing output stops the job
+PASS bench 207 bench run2 failure stops the job
+PASS bench 207 bench run2 missing output stops the job
+PASS bench 207 run1 rejects zero exit with empty output
+PASS bench 207 run1 rejects zero exit with stale output
+PASS bench 207 success case: import, build_assets and all three bench runs finish and the job exits 0
+PASS bench 207 missing hi setting stops the job
+PASS bench 207 missing env folder stops the job
+PASS bench 207 missing settings file stops the job
+PASS bench 207 run2 rejects zero exit with empty output
+PASS bench 207 run2 rejects zero exit with stale output
+PASS bench 207 run3_res rejects zero exit with empty output
+PASS bench 207 run3_res rejects zero exit with stale output
+PASS bench 207 accepts fresh scene_gate.json reports in all three reused output folders

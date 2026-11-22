@@ -1,0 +1,43 @@
+[Sun 11/22/2026 13:41:45.58] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-22T19:41:46Z
+found node: C:\Users\rcbai\Downloads\voidsworn_test\node\node.exe
+all tools found
+[Sun 11/22/2026 13:41:46.83] ready: GPU label 1739
+relay to: tools\pc\relay_push.bat opus1739diagc "C:\Users\rcbai\Downloads\voidsworn_test\opus1739diagc\out_20261122_134145_28152" (voidsworn-relay branch pc-out-opus1739diagc, folder out_20261122_134145_28152/), then dropcheckouts "C:\Users\rcbai\Downloads\voidsworn_test\opus1739diagc\out_20261122_134145_28152"
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\jobs\opus_job_head.bat
+verified 9c056cde0b53aa51d9c6916fa1b53cfe73710c60a6a1c72a14ba043d158050f1 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\tmo.bat
+verified 0507cd51f6b03d19acb4f57e7dfe7304f338a7ab134a2b48a2571b06a461fc39 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+verified d63e797e8c26aa0ed478915a92e9eeedc67f50cd8fcc9a3f2f849fe36677fc35 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\jobs\opus_job_head.bat
+verified 7b39c46cdbfc22cfa371d6dd008b2d8b2f26ab01b4de882aacc5a094c80653be C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1 (tools_live version 1bf30b74c032)
+watchdog 9c056cde0b53aa51d9c6916fa1b53cfe73710c60a6a1c72a14ba043d158050f1 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\tmo.bat
+watchdog 0507cd51f6b03d19acb4f57e7dfe7304f338a7ab134a2b48a2571b06a461fc39 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+fetching the shared mirror for 3aa488111735e1dbbdf97bfbb5b1d64e7406c0e3
+checkout new 3aa488111735e1dbbdf97bfbb5b1d64e7406c0e3 C:\Users\rcbai\Downloads\voidsworn_test\opus1739diagc\out_20261122_134145_28152\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1739diagc\out_20261122_134145_28152\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1739diagc\out_20261122_134145_28152\new
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1739diagc\out_20261122_134145_28152\new_ships_identity.txt
+ships copy recorded: 955 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1739diagc\out_20261122_134145_28152\new_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+[Sun 11/22/2026 13:42:39.95] step picture_provenance_tests start
+[Sun 11/22/2026 13:44:53.96] step picture_provenance_tests exit 1
+optional step picture_provenance_tests failed; the job goes on
+[Sun 11/22/2026 13:44:54.09] step publish_ship_tests start
+[Sun 11/22/2026 13:45:14.92] step publish_ship_tests ok
+[Sun 11/22/2026 13:45:15.02] step pysite_1535_tests start
+[Sun 11/22/2026 13:45:17.26] step pysite_1535_tests ok
+[Sun 11/22/2026 13:45:17.29] step relay_push_tests start
+[Sun 11/22/2026 13:45:38.70] step relay_push_tests ok
+[Sun 11/22/2026 13:45:38.71] step saved_campaign_update_tests start
+[Sun 11/22/2026 13:45:41.12] step saved_campaign_update_tests ok
+[Sun 11/22/2026 13:45:41.13] step stage5_fail_selftest start
+[Sun 11/22/2026 13:46:02.95] step stage5_fail_selftest exit 1
+optional step stage5_fail_selftest failed; the job goes on
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Sun 11/22/2026 13:46:03.94
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1739diagc\out_20261122_134145_28152 (results not relayed yet: relay/pc-out-opus1739diagc:out_20261122_134145_28152: branch relay/pc-out-opus1739diagc (from relay_branch.txt) is not on origin at the shared mirror's commit)
+disk: checkouts freed 0.0 GB in all, C: 215.3 GB free
+checkouts: a hidden waiter clears them once the relay is on origin; log in the job folder, dropwait_*.txt

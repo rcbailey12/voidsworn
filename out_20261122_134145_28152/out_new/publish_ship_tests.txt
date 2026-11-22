@@ -1,0 +1,11 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+PASS CRLF line ends
+PASS every failure reaches the guard before the next command
+PASS receipt before any change; old files kept and the undo written before the install; sealed after it; restore on a failed install; cache build locked
+PASS every Godot and Python step runs through tools_live tmo.bat
+PASS nothing is deleted, by the job or by its undo
+PASS every way out ends in all done PASS or all done FAILED
+PASS the shots step uses tools_live's stamp tool and the Blender python
+PASS Ryan's real options are hashed before and after into result.txt, every step runs in a throwaway profile, and the undo-bat check can fail
+PASS publish_ship_selftest.py: publish_ship_selftest: 29 passed
+publish_ship_tests: 9 passed
