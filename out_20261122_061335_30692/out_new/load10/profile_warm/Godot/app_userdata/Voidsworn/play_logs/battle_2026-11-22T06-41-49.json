@@ -1,0 +1,33 @@
+{
+ "acts": [
+  {
+   "acts": [],
+   "cancels": 0,
+   "cls": "Cruiser",
+   "dur_ms": 11967,
+   "end": "battle_end",
+   "how": "auto",
+   "inspects": 0,
+   "name": "Vigilant Ash",
+   "plans": 0,
+   "r": 1,
+   "ship": "x04",
+   "targets": 0,
+   "think_ms": 11967,
+   "tpl": "penitent"
+  }
+ ],
+ "battle": {
+  "campaign": false,
+  "enemy": "hegemony",
+  "obj": "rout",
+  "seed": 804842
+ },
+ "enemy_s": {},
+ "hurries": 0,
+ "result": "quit",
+ "rounds": 1,
+ "secs": 26.2,
+ "tips": [],
+ "v": 1
+}

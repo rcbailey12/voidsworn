@@ -1,0 +1,60 @@
+{
+  "source_commit": "99a8e8b0c2afd8b3239b61288067c8619361a0e7",
+  "source_commit_date": "2026-11-22T05:37:05Z",
+  "stage": "installed in game",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "schema": 1,
+  "date": "2026-11-22T13:01:42Z",
+  "seed": 10,
+  "build_sha256": "5f75d77c93a3cce53a976b610e8eab4b10cb245116dfc2bc5f8108d8c79aad42",
+  "manifest_sha256": "5e3a322aec111ea31d54041c2adfac3643837ee5f54b1940759f7fcc92b9eca6",
+  "fps": 30,
+  "battle": 1,
+  "enemy": "hegemony",
+  "objective": "rout",
+  "picture_name": "navy-b1-p03.mp4",
+  "sources": [
+    {
+      "source_commit": "99a8e8b0c2afd8b3239b61288067c8619361a0e7",
+      "source_commit_date": "2026-11-22T05:37:05Z",
+      "stage": "installed in game",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "schema": 1,
+      "date": "2026-11-22T13:01:42Z",
+      "seed": 10,
+      "build_sha256": "5f75d77c93a3cce53a976b610e8eab4b10cb245116dfc2bc5f8108d8c79aad42",
+      "manifest_sha256": "5e3a322aec111ea31d54041c2adfac3643837ee5f54b1940759f7fcc92b9eca6",
+      "fps": 30,
+      "battle": 1,
+      "enemy": "hegemony",
+      "objective": "rout"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "seed-10.avi",
+      "source_commit": "99a8e8b0c2afd8b3239b61288067c8619361a0e7",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-22T13:01:42Z",
+      "image_sha256": "b4bd18f3f67bb2605f770acddddf02a32cade82155a6a2911c490c0880aff1cf",
+      "sources": [
+        {
+          "source_commit": "99a8e8b0c2afd8b3239b61288067c8619361a0e7",
+          "source_commit_date": "2026-11-22T05:37:05Z",
+          "stage": "installed in game",
+          "source_dirty": false,
+          "source_diff_sha256": ""
+        }
+      ],
+      "source_commit_date": "2026-11-22T05:37:05Z"
+    }
+  ],
+  "seconds_in_battle": 96,
+  "duration_s": 20.2,
+  "stamp_template_sha256": "f9a997dbf3d42750ffc0f9729267c4cd9bd14b9a52fde05d4a10c678c477acd4",
+  "image_sha256": "3a0088a8f74568e9a06693885d878e8425d2437a399e9536a8a8a0d83f13ac13"
+}

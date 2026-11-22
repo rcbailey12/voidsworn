@@ -1,0 +1,109 @@
+{
+  "source_commit": "99a8e8b0c2afd8b3239b61288067c8619361a0e7",
+  "source_commit_date": "2026-11-22T05:37:05Z",
+  "stage": "installed in game",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "schema": 1,
+  "date": "2026-11-22T12:50:58Z",
+  "seed": 31,
+  "build_sha256": "5f75d77c93a3cce53a976b610e8eab4b10cb245116dfc2bc5f8108d8c79aad42",
+  "manifest_sha256": "5e3a322aec111ea31d54041c2adfac3643837ee5f54b1940759f7fcc92b9eca6",
+  "fps": 30,
+  "battle": 1,
+  "enemy": "hegemony",
+  "objective": "rout",
+  "picture_name": "hullbreakers-b1.jpg",
+  "sources": [
+    {
+      "source_commit": "99a8e8b0c2afd8b3239b61288067c8619361a0e7",
+      "source_commit_date": "2026-11-22T05:37:05Z",
+      "stage": "installed in game",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "schema": 1,
+      "date": "2026-11-22T12:50:47Z",
+      "seed": 31,
+      "build_sha256": "5f75d77c93a3cce53a976b610e8eab4b10cb245116dfc2bc5f8108d8c79aad42",
+      "manifest_sha256": "5e3a322aec111ea31d54041c2adfac3643837ee5f54b1940759f7fcc92b9eca6",
+      "fps": 30,
+      "battle": 1,
+      "enemy": "hegemony",
+      "objective": "rout"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "seed-31.avi",
+      "source_commit": "99a8e8b0c2afd8b3239b61288067c8619361a0e7",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-22T12:50:47Z",
+      "image_sha256": "6af3333b8e6e4b901c9e9eed7fa59bbedc24b99cbef097eafe540090a2d0b800",
+      "sources": [
+        {
+          "source_commit": "99a8e8b0c2afd8b3239b61288067c8619361a0e7",
+          "source_commit_date": "2026-11-22T05:37:05Z",
+          "stage": "installed in game",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "schema": 1,
+          "date": "2026-11-22T12:50:47Z",
+          "seed": 31,
+          "build_sha256": "5f75d77c93a3cce53a976b610e8eab4b10cb245116dfc2bc5f8108d8c79aad42",
+          "manifest_sha256": "5e3a322aec111ea31d54041c2adfac3643837ee5f54b1940759f7fcc92b9eca6",
+          "fps": 30,
+          "battle": 1,
+          "enemy": "hegemony",
+          "objective": "rout"
+        }
+      ],
+      "source_commit_date": "2026-11-22T05:37:05Z"
+    }
+  ],
+  "stamp_box": [
+    0,
+    632,
+    498,
+    720
+  ],
+  "strip_size": [
+    498,
+    88
+  ],
+  "strip_sha256": [
+    "ccac0f01474b8fdb7c57265429281cab371cffcf4716ba2c521d9c358fcf714d"
+  ],
+  "stamp_template_sha256": "226be85f73e8e01d90a0462536bb3afd5e020a70d2af5af33e284c58cd37a089",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAfIAAABYCAIAAACBA+K7AAABV0lEQVR4nO3UMQ0AIQDAQHgFLKz4l/kmSEiaOwWdOtc+A4CK73UAADfZOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOk2DpAiq0DpNg6QIqtA6TYOkCKrQOMkh87IwDzR50e2AAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "0a5fd412618630760e56d8c82d61681d8b518ba284fa2a85e7bef7f1a75a74b1",
+  "frames": [
+    {
+      "seconds": 7.17,
+      "label": "Opening board"
+    },
+    {
+      "seconds": 8.14,
+      "label": "Move preview"
+    },
+    {
+      "seconds": 8.67,
+      "label": "Card / select"
+    },
+    {
+      "seconds": 26.82,
+      "label": "Battle in progress"
+    },
+    {
+      "seconds": 29.77,
+      "label": "Cut-in / lance"
+    },
+    {
+      "seconds": 81.17,
+      "label": "Win"
+    }
+  ]
+}

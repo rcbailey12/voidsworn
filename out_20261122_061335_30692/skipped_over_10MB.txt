@@ -1,0 +1,15 @@
+out_new\export\Voidsworn.exe 104.2 MB
+out_new\export\Voidsworn.pck 6,645.9 MB
+out_new\load10\profile_warm\Godot\app_userdata\Voidsworn\load1434_b2r_bakes_42000\7c58ff509022762f51bbbaffa4dc989dda4614f114db7042e4ddbc39ffe04ba6.png 10.7 MB
+out_new\load10\profile_warm\Godot\app_userdata\Voidsworn\load1434_b2r_bakes_42084\7c58ff509022762f51bbbaffa4dc989dda4614f114db7042e4ddbc39ffe04ba6.png 10.7 MB
+out_new\load10\profile_warm\Godot\app_userdata\Voidsworn\vulkan\pipelines.forward_plus.nvidia_geforce_rtx_5080.cache 50.3 MB
+out_new\load10\profile_warm\Godot\app_userdata\Voidsworn\world_bakes\v3\2fa049fd5b5487c6f46201594ed4571473dff48ad031fbdff1d52d3a0e03a034.png 10.9 MB
+out_new\load10\profile_warm\Godot\app_userdata\Voidsworn\world_bakes\v3\3aa7452c0fe817b777d7850d2ebaeb0610d6cb58f9cc3a5d35aa4e078c7332d5.png 10.4 MB
+out_new\load10\profile_warm\Godot\app_userdata\Voidsworn\world_bakes\v3\7c58ff509022762f51bbbaffa4dc989dda4614f114db7042e4ddbc39ffe04ba6.png 10.7 MB
+out_new\load10\profile_warm\Godot\app_userdata\Voidsworn\world_bakes\v3\8158c5d071cecc3afe1fa74f2c0f8535c16158c2ebe50b1664dd10b7473eed82.png 11.3 MB
+out_new\load10\profile_warm\Godot\app_userdata\Voidsworn\world_bakes\v3\b3194a05cc93f124b0146100958dc99cc6761a75473feb1ae0229924d4d26551.png 11.0 MB
+out_new\load10\profile_warm\Godot\app_userdata\Voidsworn\world_bakes\v3\cce312b5f1e0a0b7ede33fbfe1da98c6f8689488374b483b4e2121e4f14a6b23.png 10.9 MB
+out_new\load10\profile_warm\Godot\app_userdata\Voidsworn\world_bakes\v3\d745b844806d1d8469d6858c38eaa90353b25d3eaea8434af8acee32f28ca147.png 10.1 MB
+out_new\load10\profile_warm\Godot\app_userdata\Voidsworn\world_bakes\v3\ffe79a3e0b48e45ce93141b63603d8f63d0a4b28dd25b4e7c1a16ac0a94a3af8.png 10.8 MB
+out_new\player_path\seed-10.avi 1,911.9 MB
+out_new\player_path\seed-31.avi 2,363.6 MB

@@ -1,0 +1,20 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 44 ms
+[sfx] 71 cues, 67 clip sets, loaded in 468 ms
+[load] battle scene ready in 1506 ms
+[main] leaving the battle for the title at 8134 ms
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[load] battle scene ready in 69 ms (title backdrop)
+[main] battle to title: leave frame 223.8 ms, first title frame 222.9 ms after the leave
+[main] battle to title parts (ms): battle_out 0.6, title_build 75.7, battle_free 8.9, battle exit_tree 0.1, pre@109.8, draw@222.9, step@223.8, draw@225.0, step@225.0, draw@248.9, step@249.0, draw@250.4, step@250.4, draw@252.9
+[main] battle to title: worst frame in the first second 292.4 ms
+[world] baked dc2afe01f2ae399bdffcba151e5b4332348d9c0abbd6237b2b22f7ab75a8a39a 4096x2048 in 560 ms (worker; stages ms { "began": 10148, "device": 228, "spirv": 3, "pipeline": 1, "dispatch": 95, "worst_strip": 12, "readback": 59, "save": "deferred (a load is running)", "mips": 21 }; queued at 10146, worker from 10147, handed back at 10706 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.531, target 4.4; visual tuning (R191)
+[main] quit (window) at 10931 ms
+[main] frames before the close, oldest first: 5 ms (backdrop start; draw 0 ms), 4 ms (backdrop board_build; draw 0 ms), 13 ms (backdrop board; draw 12 ms), 157 ms (backdrop world_build, world sky done; draw 3 ms), 239 ms (backdrop world_build, world system done; draw 229 ms), 61 ms (backdrop world_build, world terrain done; draw 57 ms), 258 ms (backdrop world_build, world fields done; draw 42 ms), 192 ms (backdrop world_build, world rocks done; draw 1 ms, bake handed back dc2afe01f2ae), 34 ms so far (this frame; draw 32 ms)
+[main] loading at the close: backdrop world_build, world bake 730e2609b7a6
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)
+[world] baked 730e2609b7a6622878a695d4eb3aea16c1e4ea676c77ad82bcedf7aab2128150 4096x2048 in 648 ms (worker; stages ms { "began": 10710, "device": 184, "spirv": 7, "pipeline": 2, "dispatch": 14, "worst_strip": 3, "readback": 47, "save": "deferred (a load is running)", "mips": 24 }; queued at 10385, worker from 10710, handed back at 11033 ms)
+[main] quit stages: scenes freed + 2 frames 274 ms, statics and fx drain 105 ms, engine exit from 11310 ms

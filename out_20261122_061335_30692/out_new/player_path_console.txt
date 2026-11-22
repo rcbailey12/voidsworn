@@ -1,0 +1,7 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+Recording seed 31 to C:\Users\rcbai\Downloads\voidsworn_test\opus1434t\out_20261122_061335_30692\out_new\player_path\seed-31.avi
+Recording seed 10 to C:\Users\rcbai\Downloads\voidsworn_test\opus1434t\out_20261122_061335_30692\out_new\player_path\seed-10.avi
+Full run: 1,180 seconds
+Full 1080p recordings: C:\Users\rcbai\Downloads\voidsworn_test\opus1434t\out_20261122_061335_30692\out_new\player_path
+Review clips and sheets: C:\Users\rcbai\Downloads\voidsworn_test\opus1434t\out_20261122_061335_30692\out_new\player_path\review
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-6bb3e1ec37314accb352b31db122428e

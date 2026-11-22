@@ -1,0 +1,16 @@
+{
+ "acts": [],
+ "battle": {
+  "campaign": false,
+  "enemy": "hegemony",
+  "obj": "rout",
+  "seed": 346189
+ },
+ "enemy_s": {},
+ "hurries": 0,
+ "result": "quit",
+ "rounds": 0,
+ "secs": 1.5,
+ "tips": [],
+ "v": 1
+}

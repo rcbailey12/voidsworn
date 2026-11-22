@@ -1,0 +1,39 @@
+[Sun 11/22/2026  6:13:36.00] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-22T12:13:37Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Sun 11/22/2026  6:13:37.55] ready: GPU label 1434
+relay to: board/pc-out-opus1434t with this attempt folder at out_20261122_061335_30692/ in its tree, then dropcheckouts "C:\Users\rcbai\Downloads\voidsworn_test\opus1434t\out_20261122_061335_30692"
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+verified 033cfafb60df908ce5b8a75bfe7a6747d97c68486f254a382da30f999c8a6cb9 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\jobs\opus_job_head.bat
+verified 226978f9ab40d06ed0d021cd53ec2df139c6d6fcb807d6db43b9493ceeb73174 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1 (tools_live version 142ea5895b0d)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\142ea5895b0d\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new 99a8e8b0c2afd8b3239b61288067c8619361a0e7 C:\Users\rcbai\Downloads\voidsworn_test\opus1434t\out_20261122_061335_30692\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1434t\out_20261122_061335_30692\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1434t\out_20261122_061335_30692\new
+ships match their cache: 46 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1434t\out_20261122_061335_30692\new_ships_identity.txt
+ships copy recorded: 955 file(s) matching C:\Users\rcbai\Downloads\voidsworn_test\build\godot in C:\Users\rcbai\Downloads\voidsworn_test\opus1434t\out_20261122_061335_30692\new_ships_copied.txt; 0 untracked file(s) there did not match the source and are not recorded
+[Sun 11/22/2026  6:14:30.42] step new import start
+[Sun 11/22/2026  6:32:05.18] step new import ok
+[Sun 11/22/2026  6:32:05.21] step new load10 start
+[Sun 11/22/2026  6:42:02.55] step new load10 exit 1
+FAILED: new load10
+FAILED: new load10: a graded item failed, see load10\load10_result.txt
+[Sun 11/22/2026  6:42:03.25] step new export start
+[Sun 11/22/2026  6:42:57.60] step new export ok
+[Sun 11/22/2026  6:42:57.61] step new check export start
+[Sun 11/22/2026  6:43:00.58] step new check export ok
+[Sun 11/22/2026  6:43:00.59] step new player path start
+[Sun 11/22/2026  7:02:42.63] step new player path ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done FAILED: new load10, new load10: a graded item failed, see load10\load10_result.txt
+all done Sun 11/22/2026  7:02:43.55
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1434t\out_20261122_061335_30692 failed (the janitor handles old failures)
+disk: checkouts freed 0.0 GB in all, C: 103.9 GB free

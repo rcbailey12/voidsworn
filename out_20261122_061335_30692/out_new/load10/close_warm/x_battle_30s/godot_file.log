@@ -1,0 +1,37 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 31 ms
+[sfx] 71 cues, 67 clip sets, loaded in 327 ms
+[load] battle scene ready in 1115 ms
+[world] baked cce312b5f1e0a0b7ede33fbfe1da98c6f8689488374b483b4e2121e4f14a6b23 4096x2048 in 432 ms (worker; stages ms { "began": 5708, "device": 161, "spirv": 80, "pipeline": 1, "dispatch": 111, "worst_strip": 12, "readback": 42, "save": "deferred (a load is running)", "mips": 16 }; queued at 5707, worker from 5707, handed back at 6139 ms)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] loaded 6c3464299a7f1cf8d9dca6e704788800986754ccd0a77f4ee488446c8941614d 1024x512 in 284 ms (worker; stages ms {  }; queued at 5881, worker from 6146, handed back at 6165 ms)
+[world] baked eee1d6bc1061e4bcc0484b5fb3e315ebdadcbd131c9cd83022545784df3e5c2c 1024x512 in 691 ms (worker; stages ms { "began": 6168, "device": 199, "spirv": 4, "pipeline": 2, "dispatch": 8, "worst_strip": 2, "readback": 29, "save": "deferred (a load is running)", "mips": 1 }; queued at 5882, worker from 6167, handed back at 6573 ms)
+[world] loaded 7b95dc10175c431059de75d912c39babbdef0ab6f799405198de8111440bb168 1024x512 in 271 ms (worker; stages ms {  }; queued at 6370, worker from 6575, handed back at 6641 ms)
+[world] baked aaf6d4401421ab45c79cc2691edcf4a264c22a063041860618fc34da14dcde1c 1024x512 in 407 ms (worker; stages ms { "began": 6644, "device": 185, "spirv": 5, "pipeline": 1, "dispatch": 7, "worst_strip": 1, "readback": 29, "save": "deferred (a load is running)", "mips": 1 }; queued at 6577, worker from 6643, handed back at 6984 ms)
+[turret] turret_0 (G1) on V15_37: arc -180 to 180, trains all round
+[turret] turret_1 (G2) on V15_37: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (S4) on C14s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_1 (S5) on C14s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+[load] 8 ships built in 2476 ms over 30 frames: longest stretch 318 ms; ship setup 388 ms (worst 104 ms, V16_37: inst 0, look_new_mats 2, look_assign 79, look_worst_assign 17, look_counts 17, look 81, look_touch 0, fit 0, rest 15), effects registration 854 ms (worst 269 ms, C16s_23: analyse 265, damage_root 0, engines 1, shield 0, collider 1), hull geometry 1005 ms (worst 318 ms, C16s_23), waiting on hull files and worker instances 1 ms; 6 hulls instanced on workers
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C14s_23: no authored point fits this request; using the surface ray
+[world] saved cce312b5f1e0a0b7ede33fbfe1da98c6f8689488374b483b4e2121e4f14a6b23 later (stages ms { "save_began": 20645, "save": 4056, "prune": 14 })
+[world] saved eee1d6bc1061e4bcc0484b5fb3e315ebdadcbd131c9cd83022545784df3e5c2c later (stages ms { "save_began": 24730, "save": 170, "prune": 12 })
+[world] saved aaf6d4401421ab45c79cc2691edcf4a264c22a063041860618fc34da14dcde1c later (stages ms { "save_began": 24924, "save": 128, "prune": 14 })
+[attach] hp_rcs on C16s_23: no authored point fits this request; using the surface ray
+[main] quit (window) at 30672 ms
+[main] frames before the close, oldest first: 6 ms (-; draw 6 ms), 6 ms (-; draw 6 ms), 6 ms (-; draw 5 ms), 6 ms (-; draw 5 ms), 6 ms (-; draw 6 ms), 6 ms (-; draw 6 ms), 6 ms (-; draw 6 ms), 6 ms (-; draw 6 ms), 9 ms so far (this frame; draw 6 ms)
+[main] loading at the close: nothing
+[attach] battle x04 V16_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x07 C14s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x08 C16s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x09 C14s_23: skipped 0; rcs hp 1 ray 1 centre 0 skip 0
+[main] quit stages: scenes freed + 2 frames 135 ms, statics and fx drain 41 ms, engine exit from 30848 ms

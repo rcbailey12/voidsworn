@@ -1,0 +1,6 @@
+OPUS1434T_WAIT.bat waiting for OPUS1235RC exit in opus1235rc_wait.txt Sat 11/21/2026 23:58:30.60 
+OPUS1434_LOAD19 start  6:13:34.73 
+OPUS1434_LOAD19 exit 1 at  7:02:44.32 
+run folder out_20261122_061335_30692
+result: done FAILED: new load10, new load10: a graded item failed, see load10\load10_result.txt
+all done Sun 11/22/2026  7:02:44.99 
