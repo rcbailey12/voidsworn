@@ -36,6 +36,7 @@ const DeathAudio := preload("res://audio/death_audio.gd")
 const Backdrop := preload("res://render/backdrop.gd")
 const PG := preload("res://render/placeholder_guard.gd")
 const LOOK := preload("res://render/look.gd")
+const WORLD_SKY := preload("res://world/world_sky.gd")
 const LIVING := preload("res://world/world_living.gd")
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
@@ -297,10 +298,13 @@ func _build_world() -> void:
 	if sky_res != "" and ResourceLoader.exists(sky_res):
 		var sh := Shader.new()
 		# the dead-star sky (A3), mipmapped so the 8K star field does not alias into speckle, and kept dim and subtle
-		sh.code = "shader_type sky;\nuniform sampler2D pano : source_color, filter_linear_mipmap_anisotropic, repeat_enable;\nvoid sky() {\n\tvec3 c = texture(pano, SKY_COORDS).rgb;\n\tCOLOR = min(c * 0.8, vec3(0.6));\n}\n"
+		sh.code = WORLD_SKY.PANORAMA_SKY
 		var pano := ShaderMaterial.new()
 		pano.shader = sh
 		pano.set_shader_parameter("pano", load(sky_res))
+		if LOOK.fleet_lighting_enabled():
+			pano.set_shader_parameter("sun_dir", -LOOK.KEY_DIR.normalized())
+			pano.set_shader_parameter("fleet_reflections", true)
 		var sky := Sky.new()
 		sky.sky_material = pano
 		sky.radiance_size = Sky.RADIANCE_SIZE_256
