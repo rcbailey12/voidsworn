@@ -114,6 +114,8 @@ func open(st) -> void:
 	v.add_child(row)
 	edit.grab_focus.call_deferred()
 	edit.select_all.call_deferred()
+	# issue 1559 item 22: modal for the keyboard (Tab cannot reach the intro or fleet buttons behind the dim)
+	load("res://ui/theme/modal_focus.gd").attach(self, edit)
 
 
 func _btn(txt: String, cb: Callable, f: Font, primary: bool) -> Button:

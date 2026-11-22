@@ -456,6 +456,9 @@ static func drawer(parent: Control, k: float, w: float, slide := true, reduce_mo
 	p.offset_left = -w
 	p.offset_right = 0
 	parent.add_child(p)
+	# issue 1559 item 22: a drawer is modal for the keyboard (Tab and the arrows cannot reach the screen behind it);
+	# focus goes back to what had it when the drawer closes
+	load("res://ui/theme/modal_focus.gd").attach(p)
 	if slide:
 		play(OPEN_CUE)
 	if slide and not reduce_motion:

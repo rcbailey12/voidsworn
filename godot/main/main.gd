@@ -271,6 +271,16 @@ func _apply_display() -> void:
 		DisplayServer.window_set_vsync_mode(vs)
 
 
+# issue 1559 item 23: a volume slider being dragged sets only the volumes, every step; the file is written (and the rest of
+# _apply_settings run: window mode, UI scale) once, when the drag ends
+func apply_volumes() -> void:
+	if music != null:
+		music.set_volume(float(settings.get("music_volume", 0.7)))
+	if battle != null and is_instance_valid(battle) and battle.sfx != null:
+		battle.sfx.set_volume(float(settings["volume"]))
+	_settings_to_ui_sound()
+
+
 func _settings_to_ui_sound() -> void:
 	if ui_sound != null and is_instance_valid(ui_sound):
 		ui_sound.set_on(bool(settings.get("sound", true)))
@@ -328,7 +338,7 @@ func _career_shot(path: String) -> void:
 	load("res://story/story.gd").open_standalone(title)
 	await get_tree().create_timer(2.5).timeout
 	await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), path)
+	preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), path, preload("res://tools/picture_provenance.gd").capture_stage())
 	print("[career] shot saved ", path)
 	quit_clean(0)
 
@@ -392,7 +402,7 @@ func _start_showcase() -> void:
 			title._settings()
 			await get_tree().create_timer(0.5).timeout
 		await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), str(args["title-shot"]))
+		preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), str(args["title-shot"]), preload("res://tools/picture_provenance.gd").capture_stage())
 		print("[title] shot saved ", args["title-shot"])
 		quit_clean(0)
 

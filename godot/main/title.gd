@@ -584,9 +584,18 @@ func _slider(t: String, key: String, lo: float, hi: float) -> Control:
 	sl.value = float(main.settings[key])
 	sl.custom_minimum_size.y = s(24)
 	sl.add_theme_stylebox_override("focus", GS.focus_ring(k))
+	# issue 1559 item 23: a drag sets the volume live and saves once when it ends; a key or controller step saves at once
+	var dragging := [false]
+	sl.drag_started.connect(func() -> void: dragging[0] = true)
+	sl.drag_ended.connect(func(_changed: bool) -> void:
+		dragging[0] = false
+		main.save_settings())
 	sl.value_changed.connect(func(x: float) -> void:
 		main.settings[key] = x
-		main.save_settings())  # saved on every change, so arrow keys and a controller save too
+		if dragging[0]:
+			main.apply_volumes()
+		else:
+			main.save_settings())
 	return Kit.row(t, sl, k, _ctrl_w)
 
 

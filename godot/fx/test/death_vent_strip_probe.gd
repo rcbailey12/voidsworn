@@ -133,7 +133,7 @@ func _pass(label: String, fac: String, cls: String, cause: String, r: int) -> vo
 			strip.blit_rect(img, Rect2i(Vector2i.ZERO, CELL), Vector2i(ci * CELL.x, 0))
 		next_t += 1.0 / float(FPS)
 	var name := "%s_c%d.png" % [label, r]
-	preload("res://tools/picture_provenance.gd").save_png(strip, out.path_join(name))
+	preload("res://tools/picture_provenance.gd").save_png(strip, out.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 	print("[death_strip] %s r=%d t=%.2f cells=%d %s" % [label, r, t_ev, 24, name])
 
 

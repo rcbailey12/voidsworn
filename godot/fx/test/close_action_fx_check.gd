@@ -43,8 +43,8 @@ class RecFX extends "res://fx/fx.gd":
 		var r: Dictionary = super.volley(a, kind, t, opts)
 		calls.append(["volley", a, kind, t, str(opts.get("weapon_id", "")), (r.get("impacts", []) as Array).size()])
 		return r
-	func board(a: String, t: String, res := "") -> float:
-		var r: float = super.board(a, t, res)
+	func board(a: String, t: String, res := "", pace := 1.0) -> float:
+		var r: float = super.board(a, t, res, pace)
 		calls.append(["board", a, t, res, r])
 		return r
 	func command(id: String, cmd := "") -> void:
@@ -130,6 +130,18 @@ func _run() -> void:
 		_check(b[0][1] == "a" and b[0][2] == "b" and b[0][3] == "fight", "board(a, b, result) (%s)" % str(b[0]))
 		_check(float(b[0][4]) > 0.0, "the breach played (%.2f s)" % float(b[0][4]))
 	_check(_named(fx, "pop").is_empty(), "no generic pop when the breach played")
+	# issue 1547 (Artoo, PR 1549): the boarding lines end with the battle's hold, at normal and fast pace
+	for pace in [1.0, 0.25]:
+		fx.board_lines_s = 0.0
+		fx.board("a", "b", "fight", pace)
+		var want: float = fx.board_hold_ms() / 1000.0 * pace
+		_check(fx.board_lines_s > 0.0 and fx.board_lines_s <= want + 0.001, "the boarding lines end with the hold at pace %.2f (%.2f s, hold %.2f s)" % [pace, fx.board_lines_s, want])
+	# Sol review: each hatch mark keeps the width it was made with (Ent.hatch_k), not a shared value read on regrade
+	var hk := -1.0
+	for m in (fx.ships["b"] as Object).get("_marks"):
+		if m.look == "board":
+			hk = m.hatch_k
+	_check(is_equal_approx(hk, float(fx.BOARD["hatch"])), "the boarding hatch mark carries its own width (%.1f)" % hk)
 	fx.calls.clear()
 	# no boarding point to draw at (an unknown target): the pop stands in
 	await battle._play_event({"t": "board", "unit": "a", "target": "nobody", "result": "fight", "kill": 0, "loss": 0})

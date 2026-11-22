@@ -59,7 +59,7 @@ func _shot(dir: String, name: String) -> void:
 	if C.page.get("kind") == "map" and ui.use_3d_map: await get_tree().create_timer(2.2).timeout   # the 3D map's arrival camera settles first
 	await RenderingServer.frame_post_draw
 	var img = get_viewport().get_texture().get_image()
-	preload("res://tools/picture_provenance.gd").save_png(img, dir.path_join(name + ".png")); print("shot ", name)
+	preload("res://tools/picture_provenance.gd").save_png(img, dir.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()); print("shot ", name)
 
 func _covered(n: Node) -> bool:
 	if n.get_script() != null and str(n.get_script().resource_path).ends_with("load_screen.gd"): return true
@@ -215,12 +215,12 @@ func _ro_shot(name: String, crop_side := false) -> void:
 		print("built ", name); return
 	await RenderingServer.frame_post_draw
 	var img = get_viewport().get_texture().get_image()
-	preload("res://tools/picture_provenance.gd").save_png(img, _ro_dir.path_join(name + ".png")); print("shot ", name)
+	preload("res://tools/picture_provenance.gd").save_png(img, _ro_dir.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()); print("shot ", name)
 	if crop_side:
 		var host = _ro_find_shell()
 		if host != null:
 			var r = Rect2i(Vector2i(host.global_position), Vector2i(host.size)).intersection(Rect2i(Vector2i.ZERO, img.get_size()))
-			if r.size.x > 0 and r.size.y > 0: preload("res://tools/picture_provenance.gd").save_png(img.get_region(r), _ro_dir.path_join(name.replace("01_map", "01c_side_panel") + ".png"))
+			if r.size.x > 0 and r.size.y > 0: preload("res://tools/picture_provenance.gd").save_png(img.get_region(r), _ro_dir.path_join(name.replace("01_map", "01c_side_panel") + ".png"), preload("res://tools/picture_provenance.gd").capture_stage())
 func _ro_covered(n: Node) -> bool:
 	if n.get_script() != null and str(n.get_script().resource_path).ends_with("load_screen.gd") and (not (n is CanvasItem) or n.visible): return true
 	for ch in n.get_children():

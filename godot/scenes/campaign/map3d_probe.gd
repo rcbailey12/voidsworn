@@ -20,20 +20,20 @@ func _ready() -> void:
 	if PG.stop_if_any():
 		return
 	var a = OS.get_cmdline_user_args()
-	if a.size() > 0: preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), a[0])
+	if a.size() > 0: preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), a[0], preload("res://tools/picture_provenance.gd").capture_stage())
 	var mid = C.RUN["map"]["cols"][3][0]["id"]
 	get_viewport().warp_mouse(m._screen(m._nodes[mid]["pos"]))   # exactly on the node, so the motion event keeps it hot
 	for i in 3: await get_tree().process_frame
 	m._set_hot(mid)
 	for i in 8: await get_tree().process_frame
 	await RenderingServer.frame_post_draw
-	if a.size() > 0: preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), a[0].replace(".png", "_route.png"))
+	if a.size() > 0: preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), a[0].replace(".png", "_route.png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	print("routes through ", mid, ": ", m._routes.map(func(r): return [r["name"], r["path"], r["st"]["fights"], r["st"]["worst_name"]]))
 	var av = C.page["data"]["avail"]
 	m._set_hot("")
 	m.fly_to(av[0])
 	for i in 20: await get_tree().process_frame
-	if a.size() > 0: preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), a[0].replace(".png", "_flying.png"))
+	if a.size() > 0: preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), a[0].replace(".png", "_flying.png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	await get_tree().create_timer(1.2).timeout
 	print("after the jump: page ", C.page["kind"], " pos ", C.RUN["pos"])
 	PG.finish(0)

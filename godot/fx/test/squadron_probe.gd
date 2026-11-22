@@ -111,7 +111,7 @@ func _still(name: String) -> void:
 	if PG.stop_if_any():
 		return
 	for frame in 3: await RenderingServer.frame_post_draw
-	var err := preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join(name + ".png"))
+	var err := preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	if err != OK:
 		push_error("Capture failed: " + name)
 		quit(2)

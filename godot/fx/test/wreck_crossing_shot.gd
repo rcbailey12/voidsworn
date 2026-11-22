@@ -145,7 +145,7 @@ func _run() -> void:
 		await RenderingServer.frame_post_draw
 		if i % 2 == 0:
 			var p := out.path_join("frames/f_%03d.jpg" % (i / 2))
-			var err: Error = preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), p, 0.88)
+			var err: Error = preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), p, 0.88, preload("res://tools/picture_provenance.gd").capture_stage())
 			if err != OK or not FileAccess.file_exists(p): save_errors.append("%s: %s" % [p.get_file(), error_string(err)])
 			else: saved.append(p)
 	# the plates the hull's path reached (within 4 units of its centre line) and how far each was pushed
@@ -173,7 +173,7 @@ func _run() -> void:
 		im = im.get_region(Rect2i(320, 180, 640, 360))
 		im.resize(426, 240, Image.INTERPOLATE_LANCZOS)
 		sheet.blit_rect(im, Rect2i(0, 0, 426, 240), Vector2i((k % 3) * 426, (k / 3) * 240))
-	var sheet_err: Error = preload("res://tools/picture_provenance.gd").save_png(sheet, out.path_join("sheet.png"))
+	var sheet_err: Error = preload("res://tools/picture_provenance.gd").save_png(sheet, out.path_join("sheet.png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	if sheet_err != OK or not FileAccess.file_exists(out.path_join("sheet.png")): save_errors.append("sheet.png: %s" % error_string(sheet_err))
 	if saved.size() != (n + 60 + 1) / 2: save_errors.append("frames saved %d of %d" % [saved.size(), (n + 60 + 1) / 2])
 	# written last, so crossing.json exists only when every picture did; moved may be 0 (the before arm reports that)

@@ -3,14 +3,38 @@ extends RefCounted
 ## Python and Godot share tools/picture_font.json and the same sidecar schema.
 const BUILD_INFO := "res://build_info.json"
 const BUILD_FONT := "res://tools/picture_font.json"
+const PLACEHOLDER_GUARD := preload("res://render/placeholder_guard.gd")
 static var _contexts: Dictionary = {}
 static var _glyphs: Dictionary = {}
 
-static func save_png(image: Image, path: String, stage: String = "installed in game") -> Error:
+## Issue 1567: every save names its stage (no default: a caller that forgot it used to claim "installed in game").
+## "cloud direction check" is a cloud or software render, the compatibility renderer, or a scene with a placeholder hull.
+const STAGES := ["sheet built", "paint proof", "installed in game", "cloud direction check"]
+
+static func save_png(image: Image, path: String, stage: String) -> Error:
 	return _save(image, path, stage, false, 0.9)
 
-static func save_jpg(image: Image, path: String, quality: float = 0.9, stage: String = "installed in game") -> Error:
+static func save_jpg(image: Image, path: String, quality: float, stage: String) -> Error:
 	return _save(image, path, stage, true, quality)
+
+## The stage of a frame this process renders: "installed in game" only for the game's own renderer (Forward+) on a
+## real GPU with every ship drawn from its built file; anything else is a "cloud direction check".
+static func capture_stage() -> String:
+	return "cloud direction check" if capture_is_direction_check() else "installed in game"
+
+static func capture_is_direction_check() -> bool:
+	# a headless process draws nothing itself (it lays out sheets from saved frames), so it keeps the old stage
+	if DisplayServer.get_name() == "headless":
+		return false
+	if RenderingServer.get_current_rendering_method() != "forward_plus":
+		return true
+	var adapter := (RenderingServer.get_video_adapter_name() + " " + RenderingServer.get_video_adapter_vendor()).to_lower()
+	for soft in ["llvmpipe", "lavapipe", "swiftshader", "software", "mesa offscreen"]:
+		if adapter.contains(soft):
+			return true
+	if int(PLACEHOLDER_GUARD.count) > 0:
+		return true
+	return false
 
 static func _hash(bytes: PackedByteArray) -> String:
 	var hash := HashingContext.new()
@@ -143,7 +167,7 @@ static func _strip(record: Dictionary, size: Vector2i) -> Image:
 
 static func _save(image: Image, path: String, stage: String, jpeg: bool, quality: float) -> Error:
 	var context := _context()
-	if context.is_empty() or _glyphs.is_empty() or stage not in ["sheet built", "paint proof", "installed in game"]:
+	if context.is_empty() or _glyphs.is_empty() or stage not in STAGES:
 		return _failed(path)
 	var absolute := ProjectSettings.globalize_path(path)
 	var source := context.duplicate()

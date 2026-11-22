@@ -395,10 +395,18 @@ func open_rename() -> void:
 	d.open(self)
 
 
+var _career: WeakRef = null
+
+
 func open_career() -> Node:
 	if not is_inside_tree() or not ResourceLoader.exists(CAREER_UI):
 		return null
+	# issue 1559 item 14: one Career at a time; a second open (a tab or key behind it) gets the open one
+	var cur = _career.get_ref() if _career != null else null
+	if cur != null and is_instance_valid(cur) and not cur.is_queued_for_deletion():
+		return cur
 	var s = load(CAREER_UI).new()
 	_layer().add_child(s)
 	s.open(self)
+	_career = weakref(s)
 	return s

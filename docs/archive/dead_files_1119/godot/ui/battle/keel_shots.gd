@@ -168,7 +168,7 @@ func _snap(name: String) -> bool:
 	if frame.get_size() != RES:
 		_fail("window capture was not 1920x1080: %s" % str(frame.get_size()))
 		return false
-	if raw != "" and preload("res://tools/picture_provenance.gd").save_png(frame, raw.path_join(name + "_1080.png")) != OK:
+	if raw != "" and preload("res://tools/picture_provenance.gd").save_png(frame, raw.path_join(name + "_1080.png"), preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 		_fail("native frame could not be saved")
 		return false
 	# Review canvas reserves space for the provenance strip below the actual game frame.
@@ -177,7 +177,7 @@ func _snap(name: String) -> bool:
 	var review := Image.create(1280, 720, false, Image.FORMAT_RGB8)
 	review.fill(Color("#11151b"))
 	review.blit_rect(frame, Rect2i(Vector2i.ZERO, frame.get_size()), Vector2i(96, 0))
-	if preload("res://tools/picture_provenance.gd").save_png(review, out.path_join(name + ".png")) != OK:
+	if preload("res://tools/picture_provenance.gd").save_png(review, out.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 		_fail("stamped frame could not be saved")
 		return false
 	print("PASS capture: ", name, " (1920x1080 source)")
