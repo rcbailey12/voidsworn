@@ -81,6 +81,45 @@ $vt = [IO.Path]::GetFullPath($vt).TrimEnd('\', '/')
 $mirror = Join-Path $vt 'repo-mirror.git'
 $source = 'https://github.com/rcbailey12/voidsworn'
 if ($test) { $source = $env:PC_TEST_SOURCE }
+# Issue 1657 (Ryan, Nov 22 2026): PC results go to the private relay repo, not the main repo. Its own bare mirror (a
+# mirror fetch of one remote prunes every ref the other lacks, so the two cannot share one). A receipt names it as
+# relay/pc-out-<job>: branch pc-out-<job> of voidsworn-relay. Older board/pc-out-* receipts on the main repo still count.
+$relayMirror = Join-Path $vt 'relay-mirror.git'
+$relaySource = 'https://github.com/rcbailey12/voidsworn-relay'
+if ($test) { $relaySource = $env:PC_TEST_RELAY_SOURCE }
+$relayPattern = '(?:board|relay)/pc-out-[A-Za-z0-9._-]+'
+function Get-RelayRepo($ref) {
+  # Which repo and mirror hold a receipt's branch: @{ Mirror; Source; Ref (the branch name in that repo) }.
+  if ($ref -like 'relay/*') { return @{ Mirror = $relayMirror; Source = $relaySource; Ref = $ref.Substring(6); Lock = $relayMirror + '.lock' } }
+  return @{ Mirror = $mirror; Source = $source; Ref = $ref; Lock = $mirror + '.lock' }
+}
+function Lock-RelayMirror {
+  # The relay mirror's writers' lock, held with Lock-Mirror from a removal's proof through its delete (Artoo on PR 1592).
+  # A caller with its own end (the relay waiter, PR 1644) waits no longer than that.
+  $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
+  if ($script:waitUntil -and $script:waitUntil -lt $deadline) { $deadline = $script:waitUntil }
+  while (-not $lock) {
+    try { $lock = [IO.File]::Open($relayMirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'relay repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
+  }
+  return $lock
+}
+function Update-RelayMirror {
+  # The relay repo's own mirror: made on first use, fetched under its own lock. Never touches the shared repo mirror.
+  if (-not $relaySource) { return }
+  # A removal already holds the lock ($script:relayLock): make and fetch the mirror under it (the first relay proof of a
+  # PC happens inside a removal, so the mirror must be made there too). Otherwise take the lock for this fetch only.
+  $lock = $null
+  if (-not $script:relayLock) { $lock = Lock-RelayMirror }
+  try {
+    if (-not (Test-Path -LiteralPath (Join-Path $relayMirror 'HEAD'))) {
+      Run-Git init -q --bare $relayMirror | Out-Null
+      Run-Git --git-dir $relayMirror remote add --mirror=fetch origin $relaySource | Out-Null
+    }
+    if ((Run-Git --git-dir $relayMirror config --get remote.origin.url) -ne $relaySource) { throw 'relay repo copy has an unexpected origin' }
+    Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+  } finally { if ($lock) { $lock.Dispose() } }
+}
 $gitExe = 'git.exe'; if ($unix) { $gitExe = @(Get-Command git -CommandType Application)[0].Source }
 function Run-Git {
   # PowerShell 5.1 turns native stderr into errors under 'Stop'; read it as text instead.
@@ -409,7 +448,7 @@ function Read-RelayReceipt($folder, $name = 'relay_receipt.txt') {
   $file = Join-Path $folder $name
   if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { return $null }
   $line = [string](Get-Content -LiteralPath $file -TotalCount 1)
-  if ($line -notmatch '\A(board/pc-out-[A-Za-z0-9._-]+) ([A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*)\s*\z' -or $line.Contains('..')) { return $null }
+  if ($line -notmatch ('\A(' + $relayPattern + ') ([A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*)\s*\z') -or $line.Contains('..')) { return $null }
   return @{ Ref = $Matches[1]; Path = $Matches[2]; From = $name }
 }
 function Get-RelayPlace($base, $job, $tree) {
@@ -422,11 +461,18 @@ function Get-RelayPlace($base, $job, $tree) {
   $r = Read-RelayReceipt $base 'relay_branch.txt'
   if ($r) { return $r }
   if ("board/pc-out-$job $tree" -notmatch '\Aboard/pc-out-[A-Za-z0-9._-]+ [A-Za-z0-9._-]+\z' -or "$job$tree".Contains('..')) { return $null }
+  # Issue 1657: the relay repo first when its mirror holds pc-out-<job>, else the main repo's board/pc-out-<job>.
+  if (Test-Path -LiteralPath (Join-Path $relayMirror 'HEAD')) {
+    $ErrorActionPreference = 'Continue'
+    $null = & $gitExe --git-dir $relayMirror rev-parse --verify -q "refs/heads/pc-out-$job^{commit}" 2>$null
+    $found = $LASTEXITCODE -eq 0; $ErrorActionPreference = 'Stop'
+    if ($found) { return @{ Ref = "relay/pc-out-$job"; Path = $tree; From = 'the job name' } }
+  }
   return @{ Ref = "board/pc-out-$job"; Path = $tree; From = 'the job name' }
 }
 function Write-RelayReceipt($folder, $ref, $path) {
   if (-not $ref) { return }
-  if ("$ref $path" -notmatch '\Aboard/pc-out-[A-Za-z0-9._-]+ [A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\z' -or $path.Contains('..')) { throw "relay receipt not accepted: $ref $path" }
+  if ("$ref $path" -notmatch ('\A' + $relayPattern + ' [A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\z') -or $path.Contains('..')) { throw "relay receipt not accepted: $ref $path" }
   [IO.File]::WriteAllText((Join-Path $folder 'relay_receipt.txt'), "$ref $path`r`n")
   Write-Output "relay receipt written: $ref $path"
 }
@@ -434,21 +480,23 @@ function Test-ReceiptTree($receipt, $want) {
   # The wanted paths (relative to the receipt's folder) the receipt's branch tree does not hold with exactly that blob,
   # each as @{ Key; Absent } (Absent: no such path in the tree at all), plus the relay's own skipped_over_10MB.txt lines
   # in that folder. $null when the branch is not in the mirror.
+  $repo = Get-RelayRepo $receipt.Ref
+  if (-not $repo.Source -or -not (Test-Path -LiteralPath (Join-Path $repo.Mirror 'HEAD'))) { return $null }
   $ErrorActionPreference = 'Continue'
-  $sha = (& $gitExe --git-dir $mirror rev-parse --verify -q "refs/heads/$($receipt.Ref)^{commit}" 2>$null) | Select-Object -Last 1
+  $sha = (& $gitExe --git-dir $repo.Mirror rev-parse --verify -q "refs/heads/$($repo.Ref)^{commit}" 2>$null) | Select-Object -Last 1
   if ($LASTEXITCODE -ne 0 -or -not $sha) { return $null }
   $ErrorActionPreference = 'Stop'
   # Origin itself must hold the branch at this commit (git ls-remote), so a branch deleted or moved on GitHub since the
   # last fetch proves nothing; a different commit refetches once (issue 1535). A failed ls-remote throws: kept.
-  $remote = @(Run-Git ls-remote $source "refs/heads/$($receipt.Ref)") | Where-Object { "$_" -match '\A[0-9a-f]{40}\t' } | Select-Object -First 1
+  $remote = @(Run-Git ls-remote $repo.Source "refs/heads/$($repo.Ref)") | Where-Object { "$_" -match '\A[0-9a-f]{40}\t' } | Select-Object -First 1
   if (-not $remote -or "$remote".Substring(0, 40) -ne $sha) { return $null }
   $have = @{}
-  foreach ($l in (Run-Git --git-dir $mirror -c core.quotepath=false ls-tree -r $sha $receipt.Path)) {
+  foreach ($l in (Run-Git --git-dir $repo.Mirror -c core.quotepath=false ls-tree -r $sha $receipt.Path)) {
     if ("$l" -match '\A\d+ blob ([0-9a-f]{40})\t(.+)\z') { $have[$Matches[2]] = $Matches[1] }
   }
   $skipped = @()
   if ($have.ContainsKey($receipt.Path + '/skipped_over_10MB.txt')) {
-    $skipped = @(Run-Git --git-dir $mirror cat-file -p ($have[$receipt.Path + '/skipped_over_10MB.txt']))
+    $skipped = @(Run-Git --git-dir $repo.Mirror cat-file -p ($have[$receipt.Path + '/skipped_over_10MB.txt']))
   }
   $miss = @(foreach ($k in $want.Keys) {
     $at = $receipt.Path + '/' + $k
@@ -525,7 +573,7 @@ function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
   if (-not $want.Count) { throw "no result files under $base to prove the relay" }
   $bad = $null; $big = @()
   for ($try = 0; $try -lt 2; $try++) {
-    if ($try) { if ($script:dropDry) { break }; Update-Mirror }
+    if ($try) { if ($script:dropDry) { break }; if ($receipt.Ref -like 'relay/*') { Update-RelayMirror } else { Update-Mirror } }
     $r = Test-ReceiptTree $receipt $want
     if ($null -eq $r) { $bad = @("branch $($receipt.Ref) (from $($receipt.From)) is not on origin at the shared mirror's commit"); continue }
     $big = @(); $bad = @()
@@ -558,9 +606,12 @@ function Drop-Attempt($attempt) {
   if (-not @(Get-ListedLeft $attempt).Count) { Write-Output "no listed checkout left in $attempt"; return }
   $outs = @((Get-Item -LiteralPath $attempt -Force).EnumerateDirectories('out_*') | ForEach-Object { $_.FullName })
   if (-not $script:dropDry) {
-    try { $script:mirrorLock = Lock-Mirror } catch { Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
+    try { $script:mirrorLock = Lock-Mirror; $script:relayLock = Lock-RelayMirror }
+    catch { if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null }; Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
   }
-  try { Drop-Proven $attempt $list $outs $pins } finally { if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
+  try { Drop-Proven $attempt $list $outs $pins } finally {
+    if ($script:relayLock) { $script:relayLock.Dispose(); $script:relayLock = $null }
+    if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
 }
 function Drop-Proven($attempt, $list, $outs, $pins) {
   # Drop-Attempt's proof and removals, under the held mirror lock on a live run.
@@ -654,7 +705,10 @@ function Invoke-LsRemote($ref, $seconds) {
   # origin; throws when Git fails or runs past the limit (then killed).
   $psi = New-Object Diagnostics.ProcessStartInfo
   $psi.FileName = $gitExe; $psi.UseShellExecute = $false; $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true; $psi.CreateNoWindow = $true
-  $psi.Arguments = "ls-remote `"$source`" `"refs/heads/$ref`""
+  # A relay/pc-out-<job> place is branch pc-out-<job> of the relay repo (issue 1657); board/pc-out-* is the main repo.
+  $repo = Get-RelayRepo $ref
+  if (-not $repo.Source) { throw "no relay repo address for $ref" }
+  $psi.Arguments = "ls-remote `"$($repo.Source)`" `"refs/heads/$($repo.Ref)`""
   $psi.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'; $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
   $p = [Diagnostics.Process]::Start($psi)
   $out = $p.StandardOutput.ReadToEndAsync(); $null = $p.StandardError.ReadToEndAsync()
@@ -1100,7 +1154,7 @@ switch ($Action) {
       $repo = Test-ShipClone $jobDir
       $head = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
       if ($head -ne $B) { throw "HEAD is $head, not the published commit $B" }
-      $script:mirrorLock = Lock-Mirror
+      $script:mirrorLock = Lock-Mirror; $script:relayLock = Lock-RelayMirror
       Assert-Rebuildable $repo
       $export = Join-Path (Join-Path (Join-Path (Join-Path $jobDir 'out') 'recipe') 'export') $C
       if (-not (Test-Path -LiteralPath $export -PathType Container)) { throw "no collected export $export" }
@@ -1117,7 +1171,9 @@ switch ($Action) {
       Write-Output ("ship clone removed after the publish ({0:N1} GB): {1}" -f ($gone / 1GB), $repo)
       Write-Free $gone
     } catch { Write-Output "ship clone kept: $($_.Exception.Message)" }
-    finally { if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
+    finally {
+      if ($script:relayLock) { $script:relayLock.Dispose(); $script:relayLock = $null }
+      if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
   }
   'survey' {
     # Read only. What the job rules would do with every attempt and ship clone already on the PC (for a Board one-off).

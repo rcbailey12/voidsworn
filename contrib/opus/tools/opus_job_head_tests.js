@@ -107,7 +107,8 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'opus-job-head-'));
 const vt = path.join(tmp, 'vt');
 const source = path.join(tmp, 'source.git');
 const realu = path.join(tmp, 'realu');
-const env = { ...process.env, PC_TEST_HELPER: '1', PC_TEST_HELPER_VT: vt, PC_TEST_SOURCE: source, PC_TEST_REALU: realu };
+const relaySource = path.join(tmp, 'relay-source.git');   // issue 1657: the private relay repo's stand-in
+const env = { ...process.env, PC_TEST_HELPER: '1', PC_TEST_HELPER_VT: vt, PC_TEST_SOURCE: source, PC_TEST_RELAY_SOURCE: relaySource, PC_TEST_REALU: realu };
 const write = (file, text) => { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, text); };
 function git(args, cwd = tmp) {
   const r = spawnSync('git', args, { cwd, encoding: 'utf8' });
@@ -228,7 +229,7 @@ assert.notEqual(run('shipcheck', sc, ident).status, 0, 'a missing gen manifest f
 // first (issue 1497); out_* and logs stay; the Board's pause and a folder outside voidsworn_test\<job>\out_* remove
 // nothing; earlier passed and relayed attempts of the job are cleared too, failed or unfinished ones never.
 let relays = 0;
-const relay = (entries, branch = '') => {
+const relay = (entries, branch = '', target = source) => {
   // what the Board's relay does: commit result folders on a new board/pc-out branch of the origin, each [local folder,
   // folder in the tree]; returns the branch the receipt names
   const rr = path.join(tmp, `relay${++relays}`);
@@ -242,7 +243,7 @@ const relay = (entries, branch = '') => {
   git(['add', '-A'], rr);
   git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'relay'], rr);
   const ref = branch || `board/pc-out-t${relays}`;
-  git(['push', '-q', '-f', source, `HEAD:refs/heads/${ref}`], rr);
+  git(['push', '-q', '-f', target, `HEAD:refs/heads/${ref}`], rr);
   return ref;
 };
 const listed = fs.readFileSync(path.join(attempt, 'checkouts.txt'), 'utf8');
@@ -422,6 +423,32 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   git(['--git-dir', source, 'update-ref', '-d', 'refs/heads/board/pc-out-opus1535c']);
   r = run('dropcheckouts', gone);
   assert(fs.existsSync(path.join(gone, 'new')) && /branch board\/pc-out-opus1535c \(from the job name\) is not on origin/.test(r.out), 'a branch gone from origin keeps the checkout: ' + r.out);
+  // Issue 1657 (Ryan, Nov 22): results go to the private relay repo. relay_branch.txt names relay/pc-out-<job> (branch
+  // pc-out-<job> of the relay repo); the head makes and fetches the relay repo's own mirror, proves the same way, and a
+  // branch only on the main repo under that name proves nothing for it.
+  git(['init', '-q', '--bare', relaySource]);
+  const rel = job1535('opus1657rel', 'out_20261122_130000_1');
+  write(path.join(rel, 'relay_branch.txt'), 'relay/pc-out-opus1657rel out_20261122_130000_1\r\n');
+  relay([[path.join(rel, 'out_new'), 'out_20261122_130000_1/out_new']], 'board/pc-out-opus1657rel');
+  r = run('dropcheckouts', rel);
+  assert(fs.existsSync(path.join(rel, 'new')) && /results not relayed yet: relay\/pc-out-opus1657rel:out_20261122_130000_1: branch relay\/pc-out-opus1657rel \(from relay_branch\.txt\) is not on origin/.test(r.out), 'a relay-repo receipt is not proven by the main repo: ' + r.out);
+  const wrong1657 = path.join(tmp, 'stage1657');
+  write(path.join(wrong1657, 'out_new', 'result.txt'), 'other bytes\n');
+  relay([[wrong1657, 'out_20261122_130000_1']], 'pc-out-opus1657rel', relaySource);
+  r = run('dropcheckouts', rel);
+  assert(fs.existsSync(path.join(rel, 'new')) && /relay\/pc-out-opus1657rel:out_20261122_130000_1: out_new\/result\.txt differs on the relay/.test(r.out), 'other bytes on the relay repo prove nothing: ' + r.out);
+  assert(fs.existsSync(path.join(vt, 'relay-mirror.git', 'HEAD')), 'the head made the relay mirror');
+  relay([[path.join(rel, 'out_new'), 'out_20261122_130000_1/out_new']], 'pc-out-opus1657rel', relaySource);
+  r = run('dropcheckouts', rel);
+  assert.equal(r.status, 0, r.out);
+  assert(!fs.existsSync(path.join(rel, 'new')) && /results relayed: 1 of 1 result file\(s\) are on relay\/pc-out-opus1657rel/.test(r.out), 'the relay repo with the right bytes clears it: ' + r.out);
+  assert.equal(fs.readFileSync(path.join(rel, 'out_new', 'result.txt'), 'utf8'), 'opus1657rel result\n', 'results stay');
+  // by the job's own name: the relay repo wins once its mirror holds pc-out-<job>
+  const relNamed = job1535('opus1657named');
+  relay([[path.join(relNamed, 'out_new'), 'out_1/out_new']], 'pc-out-opus1657named', relaySource);
+  git(['--git-dir', path.join(vt, 'relay-mirror.git'), 'fetch', '-q', 'origin', '+refs/heads/pc-out-opus1657named:refs/heads/pc-out-opus1657named']);
+  r = run('dropcheckouts', relNamed);
+  assert(!fs.existsSync(path.join(relNamed, 'new')) && /on relay\/pc-out-opus1657named under out_1/.test(r.out), 'the job name finds the relay repo branch: ' + r.out);
   // Issue 1396 (Board, Nov 22): the relay lands after the tail, so the janitor runs dropjobs over every PASS attempt that
   // still lists checkouts. dry removes and fetches nothing; the live run clears only what the relay proof clears.
   const later = job1535('opus1396later');
@@ -469,6 +496,13 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   assert(!fs.existsSync(path.join(waited, 'new')) && landedOut.includes(`relay branch board/pc-out-opus1396wait is on origin at ${stagedSha}`) && /checkout new removed after the job/.test(landedOut) && /disk: checkouts freed/.test(landedOut), 'the waiter clears the checkout once the relay lands: ' + landedOut);
   assert.equal(fs.readFileSync(path.join(waited, 'out_new', 'result.txt'), 'utf8'), 'opus1396wait result\n', 'results stay');
   assert(fs.existsSync(path.join(gone, 'new')), 'and only its own attempt');
+  // Issue 1657 with 1644: the waiter asks the relay repo (not the main repo) for a relay/pc-out-<job> place
+  const rwait = job1535('opus1657wait', 'out_20261122_190000_1');
+  write(path.join(rwait, 'relay_branch.txt'), 'relay/pc-out-opus1657wait out_20261122_190000_1\r\n');
+  relay([[path.join(rwait, 'out_new'), 'out_20261122_190000_1/out_new']], 'pc-out-opus1657wait', relaySource);
+  r = waitRun({ OJ_DROPWAIT_POLL_SECONDS: '1', OJ_DROPWAIT_SECONDS: '30', PC_TEST_COMMAND_LINES: 'fixture.exe unrelated' }, 'dropwait', rwait);
+  assert.equal(r.status, 0, r.out);
+  assert(!fs.existsSync(path.join(rwait, 'new')) && /relay branch relay\/pc-out-opus1657wait is on origin at [0-9a-f]{40}/.test(r.out) && /checkout new removed after the job/.test(r.out), 'the waiter proves a relay-repo place: ' + r.out);
   // Artoo on PR 1644: the waiter checks what the janitor checks before a removal (the Board keep list, no running process
   // naming the attempt, the PC pause, the job lease) and keeps everything while any holds; a passing refusal is tried
   // again at the next look on the same relay, without waiting for the branch to move.
