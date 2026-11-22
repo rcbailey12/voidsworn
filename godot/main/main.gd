@@ -18,7 +18,7 @@ const SETTINGS_PATH := "user://settings.json"
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true, "render_scale": 1.0, "fps_cap": 0.0, "vsync": true}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -248,12 +248,27 @@ func _apply_settings() -> void:
 		var want := DisplayServer.WINDOW_MODE_FULLSCREEN if settings["fullscreen"] else DisplayServer.WINDOW_MODE_MAXIMIZED
 		if DisplayServer.window_get_mode() != want:
 			DisplayServer.window_set_mode(want)
+	if not bot_mode and not capture and not player_path_window and DisplayServer.get_name() != "headless":
+		_apply_display()
 	if battle != null and is_instance_valid(battle):
 		_settings_to_battle(battle)
 	if music != null:
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
 	_settings_to_ui_sound()
+
+
+# Issue 1437 (item 8): Render scale, Frame cap and V-Sync, in Display. The defaults are today's game (full scale, no cap,
+# V-Sync on as project.godot sets it); any new default is Ryan's pick after a rendered comparison. Bot, capture and
+# player-path runs never read them, so timing jobs stay uncapped and recordings stay on the player defaults.
+func _apply_display() -> void:
+	var rs := clampf(float(settings.get("render_scale", 1.0)), 0.5, 1.0)
+	get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR if rs >= 1.0 else Viewport.SCALING_3D_MODE_FSR
+	get_viewport().scaling_3d_scale = rs
+	Engine.max_fps = maxi(0, int(settings.get("fps_cap", 0)))
+	var vs := DisplayServer.VSYNC_ENABLED if bool(settings.get("vsync", true)) else DisplayServer.VSYNC_DISABLED
+	if DisplayServer.window_get_vsync_mode() != vs:
+		DisplayServer.window_set_vsync_mode(vs)
 
 
 func _settings_to_ui_sound() -> void:

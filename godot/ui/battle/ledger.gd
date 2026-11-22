@@ -75,9 +75,14 @@ func px(v: float) -> float:
 	return roundf(v * k)
 
 
+static var _tag_re: RegEx = null   # issue 1437 (item 9): compiled once, not on every call
+static var _key_re: RegEx = null
+
+
 static func plain(bb: String) -> String:
-	var re := RegEx.create_from_string("\\[[^\\]]*\\]")
-	return re.sub(bb, "", true).strip_edges()
+	if _tag_re == null:
+		_tag_re = RegEx.create_from_string("\\[[^\\]]*\\]")
+	return _tag_re.sub(bb, "", true).strip_edges()
 
 
 func _width(s: String, f: Font, fs: float) -> float:
@@ -193,7 +198,9 @@ func _button_data(id: String) -> Dictionary:
 
 
 static func _without_key(s: String) -> String:
-	return RegEx.create_from_string("\\s+\\([A-Za-z0-9]+\\)$").sub(s, "")
+	if _key_re == null:
+		_key_re = RegEx.create_from_string("\\s+\\([A-Za-z0-9]+\\)$")
+	return _key_re.sub(s, "")
 
 
 func _action() -> Dictionary:

@@ -301,7 +301,7 @@ func _dialog_box() -> StyleBoxFlat:
 # names wrap. Esc or Done saves and closes. Changing the UI scale rebuilds the panel and keeps focus on that row.
 const SETTINGS_LAYOUT := [   # [section, column, rows]
 	["Sound and music", 0, [["toggle", "Sound", "sound"], ["slider", "Volume", "volume"], ["toggle", "Music", "music"], ["slider", "Music volume", "music_volume"]]],
-	["Display", 0, [["choice", "UI scale", "ui_scale"], ["toggle", "Full screen", "fullscreen"], ["choice", "Graphics", "quality"], ["toggle", "Temporal AA (smoother edges, softer motion)", "taa"], ["toggle", "Nebula wakes (ships stir the clouds)", "nebula_wake_on"]]],
+	["Display", 0, [["choice", "UI scale", "ui_scale"], ["toggle", "Full screen", "fullscreen"], ["choice", "Graphics", "quality"], ["toggle", "Temporal AA (smoother edges, softer motion)", "taa"], ["toggle", "Nebula wakes (ships stir the clouds)", "nebula_wake_on"], ["choice", "Render scale", "render_scale"], ["choice", "Frame cap", "fps_cap"], ["toggle", "V-Sync", "vsync"]]],
 	["Battle", 1, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Teaching tips", "tips"]]],
 	["Comfort", 1, [["toggle", "Reduce motion", "reduce_motion"], ["toggle", "Reduce flashing", "reduce_flashing"], ["choice", "Screen shake", "shake"]]],
 ]
@@ -313,6 +313,9 @@ const SETTINGS_CHOICES := {
 	"shake": [[1.0, "Full"], [0.5, "Reduced"], [0.0, "Off"]],
 	"cine": [["key", "Key moments"], ["all", "Every attack"], ["off", "Off"]],
 	"quality": [["max", "Max"], ["high", "High"], ["low", "Low"]],
+	# issue 1437: performance options, today's game first (full scale, no cap)
+	"render_scale": [[1.0, "100%"], [0.85, "85%"], [0.7, "70%"]],
+	"fps_cap": [[0.0, "Off"], [60.0, "60"], [120.0, "120"], [144.0, "144"]],
 }
 var _settings_focus := ""   # the setting whose control takes focus when the panel is rebuilt (the UI scale row)
 var _ctrl_w := 0.0

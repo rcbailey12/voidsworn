@@ -159,8 +159,10 @@ static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLi
 		key.shadow_enabled = true
 		# Smooth the stippled self-shadows on the densely plated painted hulls.
 		key.shadow_normal_bias = 2.0
-		RenderingServer.directional_soft_shadow_filter_set_quality(RenderingServer.SHADOW_QUALITY_SOFT_HIGH)
-		key.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+		# issue 1437 (item 8): Low takes the cheaper soft filter and two splits; Max and High keep today's
+		var low := q == "low"
+		RenderingServer.directional_soft_shadow_filter_set_quality(RenderingServer.SHADOW_QUALITY_SOFT_LOW if low else RenderingServer.SHADOW_QUALITY_SOFT_HIGH)
+		key.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS if low else DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
 	if fill != null:
 		fill.transform = Transform3D(Basis.looking_at(FILL_DIR.normalized(), Vector3.UP), Vector3.ZERO)
 		fill.light_color = FILL_COL

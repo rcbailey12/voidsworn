@@ -846,8 +846,13 @@ func _arrive(new_sector: bool) -> void:   # the camera starts leaning on where t
 	tw.tween_property(self, "_cam_zoom", 1.0, float(sys.approach["arrival_seconds"]) if new_sector else 1.1)
 	tw.parallel().tween_property(self, "_cam_focus", Vector3.ZERO, float(sys.approach["arrival_seconds"]) if new_sector else 1.1)
 
+# issue 1437 (Astra W1): the host hides its whole UI for a battle, which leaves this Control's own `visible` true, so
+# the map kept flying, drifting, blinking and patrolling behind combat. Its SubViewport already stops drawing then.
+func map_live() -> bool:
+	return is_visible_in_tree() and _C() != null and _C().RUN != null and root3 != null
+
 func _process(delta: float) -> void:
-	if not visible or _C() == null or _C().RUN == null or root3 == null: return
+	if not map_live(): return
 	_t += delta
 	var mp = get_local_mouse_position() / size.max(Vector2.ONE) - Vector2(0.5, 0.5)
 	mp = mp.clamp(Vector2(-0.5, -0.5), Vector2(0.5, 0.5))
