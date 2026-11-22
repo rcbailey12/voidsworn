@@ -146,6 +146,7 @@ func _run() -> void:
 	report["godot"] = Engine.get_version_info().get("string", "")
 	report["adapter"] = RenderingServer.get_video_adapter_name()
 	report["fixed_fps"] = Engine.get_physics_ticks_per_second()
+	report["fleet_lighting"] = LOOK.fleet_lighting_enabled()   # issue 1679: which lighting this run drew (VS_FLEET_LIGHTING)
 	report["moments_sha256"] = FileAccess.get_sha256(MOMENTS)
 	report["bench_sha256"] = FileAccess.get_sha256("res://bench/look_bench.gd")
 	headless = DisplayServer.get_name() == "headless"

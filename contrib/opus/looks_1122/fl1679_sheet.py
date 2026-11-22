@@ -9,6 +9,11 @@ Writes into DIR, each picture no taller than 720 px, revision and stage stamped 
   FL1679_brightest_c170.jpg  the same six on the brightest sky (the other end of the readability band)
   CH1683_before_<code>.png  each Chorus hull today at --chorus-cams, darkest sky: the "before" for issue 1683's sheet
   summary.txt          which skies were darkest and brightest (corner brightness, as look_bench_sheets.py measures)
+Refuses, writing nothing, unless (Artoo on PR 1717): RUN_OFF's bench.json says fleet_lighting false and RUN_ON's true;
+both name the same non-empty commit and every input still's provenance names one source commit; every input carries
+the same stage, and that stage is "installed in game" (a cloud smoke passes --allow-stage "cloud direction check" and its
+sheets keep that stage); every expected still exists (six ships at each camera on the darkest and brightest sky, five
+Chorus hulls at each Chorus camera); and DIR is new or empty.
 """
 import argparse
 import json
@@ -18,10 +23,10 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(next(p for p in Path(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
-from picture_provenance import Review, open_picture  # noqa: E402
+from picture_provenance import Review, open_picture, verify  # noqa: E402
 from PIL import Image, ImageDraw, ImageFont, ImageStat  # noqa: E402
 
-PICTURES = Review('installed in game')
+PICTURES = None   # set in main from the inputs' own stage (Artoo on PR 1717)
 # One new-format build per faction, near cruiser size (docs/ship_pipeline/FLEET.md, Nov 22). Navy's cruiser H9 is
 # still an old hull, so the Navy pick is the new battleship H10.
 SHIPS = [("voidsworn", "V16_37", "Sunward Vigil"), ("hegemony", "H10_23", "Navy H10"), ("corsair", "C15s_23", "Hullbreaker A17"),
@@ -63,9 +68,7 @@ def corner_level(paths):
 def pick_sheet(off, on, sky, cam, title, commit):
     pairs = []
     for fac, code, name in SHIPS:
-        a, b = off.get((sky, code, cam)), on.get((sky, code, cam))
-        if a is None or b is None:
-            raise SystemExit("missing %s at c%d on %s in one of the runs" % (code, cam, sky))
+        a, b = off[(sky, code, cam)], on[(sky, code, cam)]
         pairs.append((name, code, PICTURES.open(a), PICTURES.open(b)))
     cw, ch = pairs[0][2].size
     lab, head, gap = 22, 48, 8
@@ -89,26 +92,61 @@ def pick_sheet(off, on, sky, cam, title, commit):
     return sheet
 
 
+def refuse(why):
+    print("FL1679 SHEETS REFUSED: " + why)
+    raise SystemExit(1)
+
+
 def main():
+    global PICTURES
     ap = argparse.ArgumentParser()
     ap.add_argument("--off", required=True)
     ap.add_argument("--on", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--cams", default="170,110")
     ap.add_argument("--chorus-cams", default="170,60")
+    ap.add_argument("--allow-stage", default="installed in game")
     a = ap.parse_args()
     rep_off, off = stills(a.off)
     rep_on, on = stills(a.on)
-    if rep_off.get("commit") != rep_on.get("commit"):
-        raise SystemExit("the two runs are different commits: %s and %s" % (rep_off.get("commit"), rep_on.get("commit")))
+    if rep_off.get("fleet_lighting") is not False or rep_on.get("fleet_lighting") is not True:
+        refuse("--off must be a fleet_lighting false run and --on a true one (bench.json says %r and %r)"
+               % (rep_off.get("fleet_lighting"), rep_on.get("fleet_lighting")))
     commit = str(rep_off.get("commit", ""))
-    os.makedirs(a.out, exist_ok=True)
-    skies = sorted({k[0] for k in off})
+    if not commit or commit != str(rep_on.get("commit", "")):
+        refuse("the two runs must name the same non-empty commit: %r and %r" % (rep_off.get("commit"), rep_on.get("commit")))
+    if Path(a.out).exists() and any(Path(a.out).iterdir()):
+        refuse("the output folder is not empty: " + a.out)
+    cams = [int(c) for c in a.cams.split(",") if c]
+    ccams = [int(c) for c in a.chorus_cams.split(",") if c]
+    skies = sorted({k[0] for k in off if k[2] == 170})
+    if not skies:
+        refuse("no camera 170 fleet stills in --off")
     level = {s: corner_level([p for k, p in off.items() if k[0] == s and k[2] == 170]) for s in skies}
     dark = min(skies, key=lambda s: level[s])
     bright = max(skies, key=lambda s: level[s])
+    need = [(dark, code, cam) for _, code, _ in SHIPS for cam in cams] + [(bright, code, 170) for _, code, _ in SHIPS]
+    missing = ["%s %s c%d %s" % (name, k[1], k[2], k[0]) for name, run in (("off", off), ("on", on)) for k in need if k not in run]
+    missing += ["off %s c%d %s (Chorus before)" % (code, c, dark) for code in CHORUS for c in ccams if (dark, code, c) not in off]
+    if missing:
+        refuse("missing stills: " + "; ".join(missing))
+    used = {off[k] for k in need} | {on[k] for k in need} | {off[(dark, code, c)] for code in CHORUS for c in ccams}
+    stages, srcs = set(), set()
+    for p in used:
+        try:
+            r = verify(p)
+        except Exception as e:  # noqa: BLE001 - any provenance failure refuses the sheet
+            refuse("input provenance does not verify: %s (%s)" % (p, e))
+        stages.add(r["stage"])
+        srcs.add(r["source_commit"])
+    if len(stages) != 1 or stages != {a.allow_stage}:
+        refuse("inputs carry stage %s, want only %r" % (sorted(stages), a.allow_stage))
+    if len(srcs) != 1 or len(commit) < 7 or not next(iter(srcs)).startswith(commit):
+        refuse("input stills come from source commits %s, want one matching %s" % (sorted(srcs), commit))
+    PICTURES = Review(a.allow_stage)
+    os.makedirs(a.out, exist_ok=True)
     made = []
-    for cam in [int(c) for c in a.cams.split(",") if c]:
+    for cam in cams:
         sh = pick_sheet(off, on, dark, cam, "FL1679 fleet lighting, camera %d, darkest sky" % cam, commit)
         p = os.path.join(a.out, "FL1679_c%d.jpg" % cam)
         PICTURES.save(sh, p, quality=92)
@@ -118,12 +156,8 @@ def main():
     PICTURES.save(sh, p, quality=92)
     made.append(p)
     # the "before" for issue 1683: each Chorus hull as installed today, darkest sky, flag off
-    ccams = [int(c) for c in a.chorus_cams.split(",") if c]
     for code in CHORUS:
-        ims = [off.get((dark, code, c)) for c in ccams]
-        if any(i is None for i in ims):
-            continue
-        ims = [PICTURES.open(i).convert("RGB") for i in ims]
+        ims = [PICTURES.open(off[(dark, code, c)]).convert("RGB") for c in ccams]
         lab = 22
         W = sum(i.width for i in ims) + 8 * (len(ims) - 1)
         H = lab + max(i.height for i in ims)
