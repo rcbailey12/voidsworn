@@ -47,7 +47,7 @@ static func _scene(code: String) -> Node3D:
 
 # PR 1561 review: the relay beacon file is large, so a Hold battle starts reading it on a worker thread as the battle
 # begins (scenes/battle/battle.gd _begin), and the board build only collects it. Paths whose threaded load was requested:
-static var _pending := {}
+static var _pending := {}   # not GPU: paths only (path -> true), the loaded scene stays in the ResourceLoader
 
 
 static func prefetch_beacon() -> void:
