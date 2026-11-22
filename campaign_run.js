@@ -103,6 +103,7 @@ ACT.enterNode=id=>{
   tel('node',{type:n.type,col:n.col});
   if(n.type==='battle'||n.type==='elite'||n.type==='boss'||nemNodeIs(n)){ // issue 1175: an unmet Nemesis meets you at any column 4 stop
     let kind=n.type, fac=nodeFaction(n);
+    if(n.type==='boss'&&nemNodeIs(n)){ battleScreen({kind:'boss',fac:nodeFaction(n),col:n.col,node:id,nemesis:nemBattleCfg()}); return; } // issue 1480 (R384): he joins the boss fight
     if(nemNodeIs(n)){ const N=nemActive(); const fa=nemBeh().fleet; battleScreen(Object.assign({kind:'elite',fac:N.fac,col:n.col,node:id,nemesis:nemBattleCfg()},ARCHETYPES[fa]?{arch:fa}:{})); return; } // B4: the Nemesis fight (marked on the map beforehand)
     if(RUN.ambush && kind==='battle'){ kind='elite'; fac=RUN.fac==='hegemony'?RUN.map.fac:'hegemony'; RUN.ambush=false; toast('The Directorate escort you robbed has found you.'); }
     battleScreen({kind,fac,col:n.col,node:id});
@@ -121,6 +122,9 @@ function resumeServiceStop(){
   if(n&&!n.done&&RUN.curNode===n.id&&(n.nemCleared||(['drydock','field'].includes(n.type)&&!nemNodeIs(n))||(n.type==='shipyard'&&RUN.inYard===n.id)||(n.type==='event'&&n.evId))) openStop(n); // issue 1556: a save inside a yard or an event reopens it
 }
 function completeNode(){ const n=findNode(RUN.curNode); if(n) n.done=true; RUN.curNode=null; delete RUN.inYard; saveRun(); }
+// issue 1480 (R381, RULEBOOK 11.8): a retreat puts the fleet back on the stop it came from (the visited stop one column back, or
+// the sector's start before the first column); the stop it fled stays on the map unbeaten, with the same seed and enemy
+function retreatBack(){ const n=findNode(RUN.curNode); let from=null; if(n) for(const e of RUN.map.edges){ const p=findNode(e[0]); if(e[1]===n.id&&p&&p.done){ from=p.id; break; } } RUN.pos=from; RUN.curNode=null; delete RUN.inYard; saveRun(); }
 
 // ---------- fleet management ----------
 function shipCard(s, opts={}){
@@ -404,7 +408,7 @@ function nemReveal(){ const N=ensureNemesis(); if(!N) return null; const w=N.wea
 // R42: his faction behaviour firing (raid, tithe, flee, revive, feed, fast_adapt, reinforce, duel, challenge) is logged as a 'nem_signature' event
 // #122: the event and his capped list (40, oldest dropped) belong to the commander who acted (the active one unless given), tagged with his faction
 function nemSignature(kind,N0){ const N=N0||nemActive(); if(!N) return; (N.signatures=N.signatures||[]).push(kind); if(N.signatures.length>40) N.signatures.shift(); try{ tel('nem_signature',{fac:N.fac,kind,sector:RUN.sector}); }catch(e){} }
-function nemWarnLine(N){ const s=nemBeh().strike; if(RUN.nemStrike||N.met>=RUN.sector||nemClockGet()+(nemBeh().clock||1)<NEM_CLOCK) return '';
+function nemWarnLine(N){ const s=nemBeh().strike; if(nemBossOnly(N)||RUN.nemStrike||N.met>=RUN.sector||nemClockGet()+(nemBeh().clock||1)<NEM_CLOCK) return '';
   if(s==='raid'){ const canTow=RUN.fleet.length>=3; return `<p class="blood" style="font-size:13px;margin:2px 0 0">${esc(nemSay('Your next win fills his clock: he will raid',N))} ${RUN.credits>=30?Math.round(RUN.credits*.25)+' credits':canTow?'your most damaged ship (repair it above 25% hull, or keep 30 credits, to stop it)':'and find nothing to take'}.</p>`; } // NEM-5: the warning names the tow when the fleet is big enough, since the fight can cripple a ship before the strike lands
   if(s==='tithe') return `<p class="blood" style="font-size:13px;margin:2px 0 0">Your next win fills the clock: every ship will lose 6% of its hull (never below 1).</p>`;
   return `<p class="blood" style="font-size:13px;margin:2px 0 0">${esc(nemSay('Your next win fills the clock: your next fight will be his.',N))}</p>`; }
@@ -416,7 +420,7 @@ function nemBeh(){ const N=nemActive(); return (N&&NEM_FAC[N.fac]&&NEM_FAC[N.fac
 // until the next sector's first add, when the incoming commander's met is 0.
 function nemClockGet(){ return RUN&&typeof RUN.nemClock==='number'?RUN.nemClock:0; }
 function nemClockAdd(n){ const N=ensureNemesis(); if(!N||N.dead) return ''; const step=n>0?n*(nemBeh().clock||1):n; RUN.nemClock=clamp(Math.round((nemClockGet()+step)*2)/2,0,NEM_CLOCK);
-  if(RUN.nemClock>=NEM_CLOCK&&N.met<RUN.sector&&!RUN.nemStrike){ RUN.nemStrike=true; const extra=nemStrike(); return nemSay(`${nemFull()} has found your trail. Your next fight will be against his fleet.${extra?' '+extra:''}`,N); } return ''; } // #122: through nemSay (a she or an it read "his")
+  if(RUN.nemClock>=NEM_CLOCK&&N.met<RUN.sector&&!RUN.nemStrike&&!nemBossOnly(N)){ RUN.nemStrike=true; const extra=nemStrike(); return nemSay(`${nemFull()} has found your trail. Your next fight will be against his fleet.${extra?' '+extra:''}`,N); } return ''; } // #122: through nemSay (a she or an it read "his")
 // #282: the map card's strike line is text like the rest of the card: through nemSay so a she or an it reads right
 function nemStrikeLine(N){ return nemSay('His fleet is coming: your next fight is his.',N); }
 // what a full clock does on the map, by faction (always written on his card beforehand)
@@ -432,12 +436,14 @@ function nemStrike(){ const N=nemActive(), s=nemBeh().strike;
   if(s==='challenge') return 'His flagship will challenge yours to single combat; screen your flagship.';
   return ''; }
 // is this battle node his? (strike pending, or the last fight before the rest stop when he has not been met this sector)
-function nemNodeIs(n){ const N=nemActive(); if(!N||N.dead||N.met>=RUN.sector||!n||n.type==='boss') return false; const c4=RUN.map.cols.length-3; if(n.type!=='battle'&&n.type!=='elite') return n.col===c4; return !!RUN.nemStrike||n.col>=c4; } // issue 1175: unmet, every column 4 stop is his, whatever its type
+function nemNodeIs(n){ const N=nemActive(); if(!N||N.dead||N.met>=RUN.sector||!n) return false; if(nemBossOnly(N)) return n.type==='boss'; /* issue 1480 (R384): the revived Eclipse rival's last fight is the Sector 3 boss battle, and no stop before it */ if(n.type==='boss') return false; const c4=RUN.map.cols.length-3; if(n.type!=='battle'&&n.type!=='elite') return n.col===c4; return !!RUN.nemStrike||n.col>=c4; } // issue 1175: unmet, every column 4 stop is his, whatever its type
 // Job 7 step 7 (R85 Q5): the map tag and the one sentence that name the meeting as a certainty, not a chance. The meeting
 // is mandatory once a sector and belongs to the sector's assigned hunter; the run's one clock only brings it sooner.
+function nemBossOnly(N){ return !!(N&&N.revived)&&RUN.sector>=3; } // issue 1480 (R384): the revived rival waits for the boss battle
 function nemNodeTag(n){ return nemNodeIs(n)?'Nemesis meeting':''; }
 function nemMeetingLine(N0){ const N=N0||nemActive(); if(!N) return '';
   if(N.dead) return `${nemFull(N)} is dead. No hunter will meet you this sector.`;
+  if(nemBossOnly(N)&&N.met<RUN.sector) return nemSay(`${nemFull(N)} came back. He waits for you in the Sector 3 boss battle.`,N);
   if(N.met>=RUN.sector) return nemSay(`You have met ${nemFull(N)} this sector. That meeting is done; the next sector brings the next hunter.`,N);
   return nemSay(`You will meet ${nemFull(N)} this sector. One meeting every sector is certain, and it comes at the latest before the rest stop. The clock is only an accelerant: every fight you win moves it at his pace, and a full clock brings the meeting sooner, never later.`,N); }
 function nemBattleCfg(){ const N=ensureNemesis(); return {gloat:N.gloat||null,honed:N.honed||0,beaten:N.beaten||0,name:nemFull().replace(N.title+' ',''),title:N.title,fac:N.fac,persona:N.persona,traits:N.traits.slice(),weak:N.weak.slice(),revealed:N.revealed.slice(),adapt:N.adapt.slice(),scars:N.scars,fed:N.fed,riches:N.riches,last_beat:N.last_beat,g:N.g,met:N.beaten+N.scars>0,line:nemOpenLine(N)}; }
@@ -477,7 +483,9 @@ function nemLessonAdd(N,w,taught){ N.lessons=Array.isArray(N.lessons)?N.lessons:
 // each survival adds a scar (a portrait overlay keyed by how he was hurt) and a new epithet
 function nemScar(cause){ const N=nemActive(), F=NEM_FAC[N.fac]; N.scars++; N.scarKinds=N.scarKinds||[]; N.epithets=N.epithets||[]; N.scarKinds.push(cause||'blast'); const tag=cause==='fled'?'fled':['melt','flay','tidal'].includes(cause)?'burn':'wound', byC=((F.scarBy||{})[tag]||[]).filter(x=>!N.epithets.includes(x)), left=byC.length?byC:F.scars.filter(x=>!N.epithets.includes(x)); if(left.length){ N.epithet=pick(left); N.epithets.push(N.epithet); } } // scarKinds: how each scar was made (fled, big, cut, flay, melt, dark, blast, tidal), for the portrait overlays
 // after his battle: returns plain lines for the reward summary. fled = he withdrew (Corsair, Ithar); flagDead = his flagship was destroyed
-function nemAfterBattle(result,flagDead,o){ const N=nemActive(); if(!N) return []; o=o||{}; const out=[], beh=nemBeh(), P=nemPr(N), say=t=>nemSay(t,N), speak=k=>{ const l=nemSpeak(N,k); if(l) out.push(l); }; N.met=RUN.sector; RUN.nemStrike=false; RUN.nemClock=0; let back=false; // #121: any meeting resets the run's clock and strike
+function nemAfterBattle(result,flagDead,o){ const N=nemActive(); if(!N) return []; o=o||{}; const out=[], beh=nemBeh(), P=nemPr(N), say=t=>nemSay(t,N), speak=k=>{ const l=nemSpeak(N,k); if(l) out.push(l); };
+  if(result==='retreat'){ N.gloat='retreat'; out.push(say(`You pull back. ${nemFull()} holds the field, and the meeting still waits.`)); return out; } // issue 1480 (R381): a retreat is not the meeting
+  N.met=RUN.sector; RUN.nemStrike=false; RUN.nemClock=0; let back=false; // #121: any meeting resets the run's clock and strike
   if(result==='win'){ N.beaten++; N.gloat=null; if(o.beat){ N.last_beat=o.beat; nemBeatTeach(o.beat); } const w=nemReveal(); if(w) out.push(say(`His captured logs reveal a weakness: ${nemEntryName(NEM_WEAK,w,N.fac)}.`));
     if(o.fled){ if(beh.strike==='raid') N.riches++; if(beh.strike==='duel') N.honed=(N.honed||0)+1; nemScar('fled'); nemSignature('flee',N); nemEscape(N,'fled'); out.push(say(`${nemFull()} breaks off and runs before you can finish him.${beh.strike==='raid'?' He will come back richer.':beh.strike==='duel'?' He will be back with the same few ships, honed sharper.':' He will be back.'}`)); speak('flee'); }
     else if(flagDead&&RUN.sector>=3&&beh.revive&&!N.revived){ N.revived=true; back=true; nemScar(o.cause||'big'); nemSignature('revive',N); N.met=RUN.sector-1; out.push(say(`${nemFull()}'s flagship is destroyed, and then the wreck begins to move. He is reassembling for one last fight.`)); speak('fall_final'); } // A1: the kill that triggers the revive

@@ -1,0 +1,78 @@
+{
+  "note": "issue 1480 (R381, R384; RULEBOOK 11.8 and 11.11): a retreat sends the fleet back to the stop it came from with the fight kept, a retreat is not the Nemesis meeting, a Nemesis-held service stop survives a retreat, and the revived Eclipse rival's last fight is the Sector 3 boss battle, with no ordinary late stop, strike or full clock taking the meeting first (Artoo on PR 1626). Each case builds a fresh run (admiral vex, Sunward Crusade, run seed 1480) and reads the twins' own functions. Read by contrib/opus/tools/retreat_nemesis_1480_tests.js (browser twin) and godot/campaign/test/retreat_nemesis_1480.gd (Godot twin); both must give the expected result. Every case fails on main.",
+  "fac": "voidsworn",
+  "admiral": "vex",
+  "seed": 1480,
+  "cases": [
+    {
+      "name": "retreat from a column 2 fight goes back to the column 1 stop",
+      "kind": "retreat",
+      "col": 1,
+      "expect": {
+        "pos": "from",
+        "done": false,
+        "avail": true,
+        "seedKept": true
+      }
+    },
+    {
+      "name": "retreat from a first-column fight goes back to the sector start",
+      "kind": "retreat",
+      "col": 0,
+      "expect": {
+        "pos": null,
+        "done": false,
+        "avail": true,
+        "seedKept": true
+      }
+    },
+    {
+      "name": "a retreat from the Nemesis meeting is not the meeting",
+      "kind": "nem_retreat",
+      "expect": {
+        "met": 0,
+        "nemClock": 2,
+        "nemStrike": true,
+        "gloat": "retreat",
+        "stillHis": true
+      }
+    },
+    {
+      "name": "a retreat from a Nemesis-held service stop keeps the stop",
+      "kind": "nem_stop_retreat",
+      "expect": {
+        "done": false,
+        "stillHis": true,
+        "avail": true
+      }
+    },
+    {
+      "name": "the revived Eclipse rival's last fight is the Sector 3 boss battle",
+      "kind": "eclipse_boss",
+      "revived": true,
+      "expect": {
+        "boss": true,
+        "tag": "Nemesis meeting"
+      }
+    },
+    {
+      "name": "before the revive the boss battle is not his",
+      "kind": "eclipse_boss",
+      "revived": false,
+      "expect": {
+        "boss": false,
+        "tag": ""
+      }
+    },
+    {
+      "name": "the revived rival waits for the boss battle, not an earlier stop",
+      "kind": "eclipse_wait",
+      "expect": {
+        "lateFight": false,
+        "strikeFight": false,
+        "clockStrike": false,
+        "boss": true
+      }
+    }
+  ]
+}

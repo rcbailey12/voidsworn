@@ -46,6 +46,7 @@ headless|campaign/test/post_win_modal_count_test.gd|-|-|issue 1177: count victor
 headless|campaign/test/late_run_shots.gd|-|-|issue 1178: the Sector 3 late market, the Chorus biomass shipyard, Eclipse recovered cores and the Glasswright cullet line build
 headless|campaign/test/late_fixes_1290.gd|-|-|issue 1290: no ledger, logbook or Scrap rig in the late market, a regrown Eclipse ship sells for 0 until it fights, Chorus decommission pays biomass
 headless|campaign/test/relic_trade_1449.gd|-|-|issue 1449: relic trades pick which salvage to give up (shared fixture with the browser twin), and the Full specs drawer on shipyard and prize cards shows armor, guns and ability text
+headless|campaign/test/retreat_nemesis_1480.gd|-|-|issue 1480: a retreat goes back to the last stop with the fight still on the map, a Nemesis-held stop or meeting survives a retreat, the revived Eclipse rival joins the Sector 3 boss fight, and the Nemesis medal waits for his true death
 headless|campaign/test/shipyard_repair_text_test.gd|-|-|issue 1551: the shipyard repair line reads credits and a fresh lieutenant for a normal faction, biomass and a fresh spawn-mind for the Chorus
 headless|scenes/battle/test/volley_voice_check.gd|-|-|issue 1551: a volley's fire and grouped hits reach battle voice exactly once, and a grouped enemy volley leaving the player flagship below 40% says the flag_hurt line
 headless|campaign/test/late_fixes_1384.gd|-|-|issue 1384: selling the flagship hands it on, a regrown Eclipse ship never sells above its regrow cost, ascendant and captured hulls carry the Crusade shop discount, an eaten core is remapped in beat 3 and boonStep
@@ -181,6 +182,7 @@ gpu|render/test/door_check.gd|-|-|issue 1543: the installed C14 (B22_11) launch 
 gpu|campaign/test/debrief_mock_shots.gd|-|{out}|debrief mock screenshots for issue 92 (still open): needs a window
 gpu|campaign/test/heat_ui_shots.gd|-|{out}|run setup Heat card screenshots: needs a window
 gpu|campaign/test/nem_col4_shots.gd|-|{out}|issue 1175: the orders rail with a column 4 shipyard holding the Nemesis meeting and the flagship stop with its objective and board; needs a window, draws no ship
+gpu|campaign/test/retreat_map_1480_shots.gd|-|{out}|issue 1480 RET-1: the map after a real retreat, the fleet back on the stop it jumped from and the fight still on the map; needs a window and the built hulls
 gpu|campaign/test/nem_panel_shots.gd|-|{out} --no-tips|Nemesis panel screenshots (issue 122): needs a window
 gpu|campaign/test/post_win_shots.gd|compat|{out}|issue 1177: victory with salvage, promotions, drydock and field repairs cards, no ship models needed
 gpu|campaign/test/map_approach_shots.gd|-|{out} --no-tips|sector approach at a matched jump, region fleets, far stops, Map key, spacing and uncapped frame times (issues 420 and 438)
