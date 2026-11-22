@@ -2559,6 +2559,8 @@ func _capability_step(fx) -> void:
 # A failed shield emitter arcs on the midship plating: a short jagged run of small sparks in the shield's own colour (a dim
 # local light with it, none under reduce flashing). Small and brief: never a big flash (RULEBOOK 6.2).
 func _gen_crackle(fx) -> void:
+	if faction == "chorus":
+		return   # flesh throws no sparks (R416 trap 2); the Chorus carry no shield today, this keeps it true if one is given
 	var a := _anchor(1, "sc0")
 	if a.is_empty():
 		var c: Dictionary = hull.core_point()
