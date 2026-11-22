@@ -2354,6 +2354,12 @@ func eventScreen(n) -> void:
 		if n != null: n["evId"] = event["id"]
 	if n != null and jt(n.get("nemCleared")): n["nemEvent"] = event["id"]
 	if n != null: saveRun()
+	if n != null and (jt(n.get("nemCleared")) or n.get("evFight") != null):   # issue 1628: a stop whose fight choice was made (then retreated from) goes straight back to that fight (twin: campaign_run.js)
+		var evf = _event_for_faction(event); var want_k = n["evFight"] if n.get("evFight") != null else RUN["flags"].get(event["id"])
+		for i in range(evf["o"].size()):
+			var o = evf["o"][i]; var r = o.get("r")
+			if want_k == or_(o.get("k"), str(i)) and r is Dictionary and jt(r.get("fight")):
+				battleScreen(_event_battle_cfg(n, r)); return
 	show_event(_event_for_faction(event))
 func show_event(ev: Dictionary) -> void:
 	cur_event = ev
@@ -3272,6 +3278,7 @@ func ACT_eventChoice(a: String) -> void:
 		r = r.duplicate(); r["payRelicAt"] = j
 	if r is Dictionary and jt(r.get("fight")):
 		var n = findNode(RUN["curNode"])
+		if n != null: n["evFight"] = or_(o.get("k"), str(i))   # issue 1628
 		if n != null and jt(n.get("nemCleared")): saveRun()
 		close_modal(); battleScreen(_event_battle_cfg(n, r)); return
 	var lines = applyOutcome(r)

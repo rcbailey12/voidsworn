@@ -327,9 +327,9 @@ function eventScreen(n){
   if(!ev){ ev=nextEvent(); if(n) n.evId=ev.id; }
   if(n&&n.nemCleared) n.nemEvent=ev.id;
   if(n) saveRun();
-  if(n&&n.nemCleared){
+  if(n&&(n.nemCleared||n.evFight!=null)){ /* issue 1628: a stop whose fight choice was made (then retreated from) goes straight back to that fight */
     const choices=(ev.v&&ev.v[RUN.fac]&&ev.v[RUN.fac].o)||ev.o;
-    const fight=choices.find((o,i)=>RUN.flags[ev.id]===(o.k||String(i))&&o.r&&o.r.fight);
+    const fight=choices.find((o,i)=>(n.evFight!=null?n.evFight:RUN.flags[ev.id])===(o.k||String(i))&&o.r&&o.r.fight);
     if(fight){ battleScreen({kind:'elite',fac:fight.r.fight,col:n.col+1,node:n.id,eventRelic:true}); return; }
   }
   curEvent=Object.assign({},ev,(ev.v&&ev.v[RUN.fac])||{}); /* each faction tells it in its own words */
@@ -663,7 +663,7 @@ ACT.eventChoice=a=>{
     saveRun(); mapScreen();
     modal(`<h2>${esc(curEvent.t)}</h2>${lines.map(l=>`<p>${esc(l)}</p>`).join('')}<button class="primary" data-act="${RUN.reward&&RUN.reward.kind==='story'?'storyCore':'closeModal'}">Continue</button>`); return;
   }
-  if(o.r&&o.r.fight){ const n=findNode(RUN.curNode); if(n.nemCleared) saveRun(); closeModal(); battleScreen({kind:'elite',fac:o.r.fight,col:n.col+1,node:RUN.curNode,eventRelic:true}); return; }
+  if(o.r&&o.r.fight){ const n=findNode(RUN.curNode); n.evFight=o.k||String(+i); /* issue 1628 */ if(n.nemCleared) saveRun(); closeModal(); battleScreen({kind:'elite',fac:o.r.fight,col:n.col+1,node:RUN.curNode,eventRelic:true}); return; }
   const lines=applyOutcome(j!=null&&o.r.payRelic?{...o.r,payRelicAt:+j}:o.r);
   completeNode(); mapScreen();
   modal(`<h2>${esc(curEvent.t)}</h2>${lines.map(l=>`<p>${esc(l)}</p>`).join('')}<button class="primary" data-act="closeModal">Continue</button>`);
