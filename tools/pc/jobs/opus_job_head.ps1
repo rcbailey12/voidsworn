@@ -62,10 +62,15 @@
 #                                              <job>\out\checkout_leftovers_repo (installed files under
 #                                              godot\assets\ships\<code> that match the job's collected export count as
 #                                              rebuildable). The job's out\, the publish folder and build\godot stay.
+#   relayfind <attempt folder>|all [dry]       issue 1695: for a passed attempt that still lists checkouts and whose own
+#                                              relay place does not prove, with no relay_receipt.txt or relay_branch.txt,
+#                                              finds the board/pc-out-* folder in the shared mirror that holds all its
+#                                              result files byte for byte and writes it as a new relay_branch.txt. Writes
+#                                              nothing else, removes nothing; dry writes and fetches nothing
 #   survey                                     read only: every job attempt and ship clone under voidsworn_test with its
 #                                              size and what the rules above would do with it. Deletes nothing.
 # Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
-param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'dropcache', 'droprepo', 'survey')][string]$Action,
+param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'relayfind', 'dropcache', 'droprepo', 'survey')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$Folder = '')
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
@@ -467,15 +472,9 @@ function Test-RelaySkipped($skipped, $key, $file) {
   }
   return $false
 }
-function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
-  # Issue 1497 (Artoo on PR 1498): a checkout goes only once this folder's own results are relayed. $base names its
-  # receipt (relay_receipt.txt: the branch and the tree folder that holds $base's results). Every file under each of
-  # $dirs ($skip names leftovers folders this file writes after the relay) must be in that branch's tree at the
-  # receipt's folder plus its path under $base, with the same bytes, or be a file over 10 MB the relay left out and
-  # listed in that folder's skipped_over_10MB.txt (Test-RelaySkipped; it stays on the PC). No receipt, no branch or any
-  # other difference: kept, and the reason names the first files.
-  $receipt = Get-RelayPlace $base $job $tree
-  if (-not $receipt) { throw "results not relayed yet: no relay branch named for $base" }
+function Get-ResultWant($base, [string[]]$dirs, $skip) {
+  # Every result file under $dirs (each a plain folder: $base itself or one inside it), keyed by its path under $base
+  # with /, as Want (git blob id) and Files (full path). $skip names leftovers folders; relay_receipt.txt is not a result.
   $baseFull = [IO.Path]::GetFullPath($base).TrimEnd('\', '/')
   $receiptFile = Join-Path $baseFull 'relay_receipt.txt'
   $want = @{}; $files = @{}
@@ -497,6 +496,32 @@ function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
       }
     }
   }
+  return @{ Want = $want; Files = $files }
+}
+function Test-PlaceProof($place, $got) {
+  # '' when $place (@{ Ref; Path }) proves every result in $got (Get-ResultWant) the way Assert-Relayed does, without a
+  # fetch; else the first reasons it does not (issue 1695).
+  try { $r = Test-ReceiptTree $place $got.Want } catch { return "origin could not be asked: $($_.Exception.Message)" }
+  if ($null -eq $r) { return "branch $($place.Ref) is not on origin at the shared mirror's commit" }
+  $bad = @(foreach ($m in $r.Missing) {
+    if ($m.Absent -and (Test-RelaySkipped $r.Skipped $m.Key $got.Files[$m.Key])) { continue }
+    if ($m.Absent) { "$($m.Key) is not on the relay" } else { "$($m.Key) differs on the relay" }
+  })
+  if (-not $bad.Count) { return '' }
+  $more = if ($bad.Count -gt 3) { "; and $($bad.Count - 3) more" } else { '' }
+  return ((($bad | Select-Object -First 3) -join '; ') + $more)
+}
+function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
+  # Issue 1497 (Artoo on PR 1498): a checkout goes only once this folder's own results are relayed. $base names its
+  # receipt (relay_receipt.txt: the branch and the tree folder that holds $base's results). Every file under each of
+  # $dirs ($skip names leftovers folders this file writes after the relay) must be in that branch's tree at the
+  # receipt's folder plus its path under $base, with the same bytes, or be a file over 10 MB the relay left out and
+  # listed in that folder's skipped_over_10MB.txt (Test-RelaySkipped; it stays on the PC). No receipt, no branch or any
+  # other difference: kept, and the reason names the first files.
+  $receipt = Get-RelayPlace $base $job $tree
+  if (-not $receipt) { throw "results not relayed yet: no relay branch named for $base" }
+  $got = Get-ResultWant $base $dirs $skip
+  $want = $got.Want; $files = $got.Files
   if (-not $want.Count) { throw "no result files under $base to prove the relay" }
   $bad = $null; $big = @()
   for ($try = 0; $try -lt 2; $try++) {
@@ -970,6 +995,84 @@ switch ($Action) {
       }
     }
     if (-not $script:dropDry) { Write-Free $script:freed }
+  }
+  'relayfind' {
+    # Issue 1695 (Board, Nov 22): attempts relayed before PR 1644 under another branch name or folder (board/pc-out-1547c
+    # and so on) name no place the proof finds, so their checkouts never clear. For each passed attempt that still lists
+    # a checkout and whose own place (Get-RelayPlace) does not prove, with no relay_receipt.txt or relay_branch.txt of its
+    # own, this looks through every board/pc-out-* branch in the shared mirror for the folder holding one of its result
+    # files, then runs the same byte check as the drop (Test-PlaceProof: every result file at that folder with the same
+    # blob, or a listed skipped file over 10 MB). Only a place that proves is written, as the attempt's relay_branch.txt
+    # (a new file, never over an existing one). It is only a place to look: the waiter and the janitor's relay sweep prove
+    # the bytes again under the mirror lock before any removal. Writes nothing else and removes nothing. <attempt> or all
+    # (every voidsworn_test\<job>\out_*); dry writes nothing and fetches nothing; live fetches the mirror once first.
+    $live = $B -ne 'dry'
+    if ($B -and $live) { throw "relayfind takes only dry after the attempt folder or all, got: $B" }
+    if (-not $A) { throw 'relayfind needs an attempt folder voidsworn_test\<job>\out_* or all' }
+    $sweep = $A -eq 'all'
+    $atts = if ($sweep) {
+      @(foreach ($j in @((Get-Item -LiteralPath $vt -Force).EnumerateDirectories())) { if (Test-PlainDir $j) { foreach ($x in @($j.EnumerateDirectories('out_*'))) { $x.FullName } } })
+    } else { @([IO.Path]::GetFullPath($A).TrimEnd('\', '/')) }
+    $script:dropDry = $true
+    if ($live) { Update-Mirror }
+    $todo = @()
+    foreach ($att in $atts) {
+      $problem = Get-AttemptProblem $att
+      if ($problem) { Write-Output "relay place not looked for: $problem"; continue }
+      if ((Get-AttemptState $att) -ne 'PASS') { if (-not $sweep) { Write-Output "relay place not looked for: $att is not a passed attempt" }; continue }
+      if (-not (Test-Path -LiteralPath (Join-Path $att 'checkouts.txt') -PathType Leaf) -or -not @(Get-ListedLeft $att).Count) {
+        if (-not $sweep) { Write-Output "relay place not looked for: no listed checkout left in $att" }; continue
+      }
+      $job = Split-Path -Leaf (Split-Path -Parent $att); $leaf = Split-Path -Leaf $att
+      $outs = @((Get-Item -LiteralPath $att -Force).EnumerateDirectories('out_*') | ForEach-Object { $_.FullName })
+      try { $got = Get-ResultWant $att $outs @('checkout_leftovers') } catch { Write-Output "relay place not looked for: $att ($($_.Exception.Message))"; continue }
+      if (-not $got.Want.Count) { Write-Output "relay place not looked for: no result files under $att"; continue }
+      $place = Get-RelayPlace $att $job $leaf
+      $why = if ($place) { Test-PlaceProof $place $got } else { 'no place named' }
+      if (-not $why) { Write-Output "relay place already proven: $att ($($place.Ref) $($place.Path), from $($place.From))"; continue }
+      $own = @(foreach ($n in 'relay_receipt.txt', 'relay_branch.txt') { if (Test-Path -LiteralPath (Join-Path $att $n)) { $n } })
+      if ($own.Count) { Write-Output "relay place left alone: $att has its own $($own[0]), which does not prove ($why)"; continue }
+      # One result file of 10 MB or less to search for (a larger one may be left off the relay).
+      $anchor = @($got.Want.Keys | Sort-Object | Where-Object { (Get-Item -LiteralPath $got.Files[$_] -Force).Length -le 10000000 } | Select-Object -First 1)
+      if (-not $anchor.Count) { Write-Output "relay place not looked for: every result file under $att is over 10 MB"; continue }
+      $todo += @{ Attempt = $att; Got = $got; Anchor = $anchor[0]; Blob = $got.Want[$anchor[0]]; Why = $why }
+    }
+    if (-not $todo.Count) { Write-Output 'relay places to look for: none'; break }
+    # One pass over the relay branches in the shared mirror: every path that holds one of the searched blobs.
+    $blobs = @{}; foreach ($t in $todo) { $blobs[$t.Blob] = @() }
+    $refs = @(Run-Git --git-dir $mirror for-each-ref '--format=%(refname:strip=2)' refs/heads/board/ | Where-Object { "$_" -match '\Aboard/pc-out-[A-Za-z0-9._-]+\z' })
+    Write-Output "looking through $($refs.Count) relay branch(es) for $($todo.Count) attempt(s)"
+    foreach ($ref in $refs) {
+      foreach ($l in @(Run-Git --git-dir $mirror -c core.quotepath=false ls-tree -r "refs/heads/$ref")) {
+        if ("$l" -match '\A\d+ blob ([0-9a-f]{40})\t(.+)\z' -and $blobs.ContainsKey($Matches[1])) { $blobs[$Matches[1]] += , @{ Ref = $ref; Path = $Matches[2] } }
+      }
+    }
+    foreach ($t in $todo) {
+      $att = $t.Attempt; $tail = '/' + $t.Anchor
+      $cands = @(foreach ($h in $blobs[$t.Blob]) {
+        if (-not $h.Path.EndsWith($tail, [StringComparison]::Ordinal)) { continue }
+        $p = $h.Path.Substring(0, $h.Path.Length - $tail.Length)
+        if ("$($h.Ref) $p" -notmatch '\Aboard/pc-out-[A-Za-z0-9._-]+ [A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\z' -or $p.Contains('..')) { continue }
+        @{ Ref = $h.Ref; Path = $p; From = 'the relay search' }
+      })
+      $found = $null; $near = ''
+      foreach ($cand in $cands) {
+        $w = Test-PlaceProof $cand $t.Got
+        if (-not $w) { $found = $cand; break }
+        if (-not $near) { $near = "closest $($cand.Ref) $($cand.Path): $w" }
+      }
+      if (-not $found) {
+        if (-not $near) { $near = "no relay branch holds $($t.Anchor) with its bytes" }
+        Write-Output "relay place not found: $att (own place: $($t.Why); $near)"; continue
+      }
+      $line = "$($found.Ref) $($found.Path)"
+      if (-not $live) { Write-Output "relay place would be written: $(Join-Path $att 'relay_branch.txt') = $line ($($cands.Count) folder(s) hold $($t.Anchor))"; continue }
+      try {
+        $fs = [IO.File]::Open((Join-Path $att 'relay_branch.txt'), 'CreateNew', 'Write', 'None')
+        try { $bytes = [Text.Encoding]::ASCII.GetBytes("$line`r`n"); $fs.Write($bytes, 0, $bytes.Length) } finally { $fs.Dispose() }
+        Write-Output "relay place written: $(Join-Path $att 'relay_branch.txt') = $line"
+      } catch { Write-Output "relay place not written: $att ($($_.Exception.Message))" }
+    }
   }
   'dropcache' {
     try {
