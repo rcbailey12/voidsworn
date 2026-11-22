@@ -1358,6 +1358,10 @@ var _wear_shown := -1.0
 var _wear_marks := -1
 var list_target := 0.0       # radians about the bow
 var _list := 0.0
+# the side (+1 starboard, -1 port) of the last HULL hit, set only by add_mark (a shield-only hit never reaches it;
+# Sol review of PR 1570: hit_react's last_hit also takes shield hits); 0 while unknown (a view rebuilt after Continue)
+var _hull_side := 0.0
+var _list_side := 0.0        # held from the moment the list starts until the ship is repaired above LIST_FROM
 
 
 func _set_wear(fx, hpf: float) -> void:
@@ -1366,16 +1370,17 @@ func _set_wear(fx, hpf: float) -> void:
 	hull_wear = clampf((WEAR_FROM - hpf) / (WEAR_FROM - WEAR_FULL), 0.0, 1.0)
 	if hpf < LIST_FROM and hpf > 0.0:
 		var k := clampf((LIST_FROM - hpf) / LIST_FROM, 0.0, 1.0)
-		var side := 1.0
-		if has_meta("last_hit"):
-			var lh: Array = get_meta("last_hit")
-			side = -1.0 if float((lh[0] as Vector3).z) < 0.0 else 1.0
-		elif list_target != 0.0:
-			side = signf(list_target)
-		list_target = deg_to_rad(lerpf(LIST_MIN, LIST_MAX, k)) * side
+		# the side is picked once, when the list starts, and held (no flip on every later hit): the last hull hit's
+		# side, or, when no hull hit is known (a view rebuilt after Continue), a fixed side from the ship's id, so the
+		# same ship always leans the same way
+		if _list_side == 0.0:
+			_list_side = _hull_side if _hull_side != 0.0 else (1.0 if posmod(_seed, 2) == 0 else -1.0)
+		list_target = deg_to_rad(lerpf(LIST_MIN, LIST_MAX, k)) * _list_side
 	else:
 		list_target = 0.0
-	if absf(hull_wear - _wear_shown) > 0.02 or _wear_marks != _marks.size():
+		_list_side = 0.0
+	# a refresh also whenever wear reaches or leaves zero (Sol review: a small last repair left fx_weather at 0.0075)
+	if absf(hull_wear - _wear_shown) > 0.02 or _wear_marks != _marks.size() or ((hull_wear == 0.0) != (_wear_shown == 0.0)):
 		_apply_wear()
 
 
@@ -1840,6 +1845,8 @@ func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3)
 	var es: Array = BREACH.marks_for(hull, look, w, lp, ln, ldir, float(posmod(_seed, 997)) * 0.013 + _mark_n * 1.37, faction, 1.0, 1.0 - section_fraction[hull.section_of(lp.x)])
 	if es.is_empty():
 		return
+	if absf(lp.z) > 1e-3:
+		_hull_side = signf(lp.z)
 	for e in es:
 		e.t0 = fx.now
 		e.sec = hull.section_of(e.c.x)

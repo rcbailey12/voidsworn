@@ -90,7 +90,6 @@ func _run() -> void:
 		# hits on the port side of the mid and prow sections
 		s.add_mark(fx, "torp", 4, Vector3(0, 2.5, -2), Vector3.UP, Vector3.DOWN)
 		s.add_mark(fx, "macro", 2, Vector3(8, 2.5, -1), Vector3.UP, Vector3.DOWN)
-		s.hit_react(fx, 1.0, Vector3(8, 0, -4), Vector3(0, 0, 1))
 		s.sync(fx, _state(50.0, 90, 40, 60))
 		flush(s)
 		check(absf(s.hull_wear - 0.5) < 1e-4, "%s: half HP is half wear (%.3f)" % [faction, s.hull_wear])
@@ -124,6 +123,14 @@ func _run() -> void:
 		var deg := rad_to_deg(absf(s.list_target))
 		check(deg >= SHIP.LIST_MIN - 1e-3 and deg <= SHIP.LIST_MAX + 1e-3, "%s: a crippled ship lists %.2f degrees" % [faction, deg])
 		check(s.list_target < 0.0, "%s: it lists toward the side last hit (port)" % faction)
+		# Sol review of PR 1570: a shield-only hit on the other side (hit_react, no mark) does not turn the list round,
+		# and neither does a later hull hit on the other side while it already lists
+		s.hit_react(fx, 1.0, Vector3(4, 0, 4), Vector3(0, 0, -1))
+		s.sync(fx, _state(19.0, 60, 14, 30))
+		check(s.list_target < 0.0, "%s: a shield hit on the far side leaves the list where it was" % faction)
+		s.add_mark(fx, "macro", 2, Vector3(-6, 0.5, 4), Vector3(0, 0, 1), Vector3(0, 0, -1))
+		s.sync(fx, _state(18.0, 60, 13, 30))
+		check(s.list_target < 0.0, "%s: a later hull hit on the far side does not flip a list already set" % faction)
 		settle(SHIP.LIST_T * 3.0)
 		check(absf(s.root.rotation.x - s.list_target) < deg_to_rad(0.15), "%s: the hull settles at its list (%.2f against %.2f degrees)" % [faction, rad_to_deg(s.root.rotation.x), rad_to_deg(s.list_target)])
 		# a hit while listing: the reaction rides on the list and comes back to it
@@ -134,9 +141,23 @@ func _run() -> void:
 		s.sync(fx, _state(95.0, 95, 95, 95))
 		settle(SHIP.LIST_T * 3.0)
 		check(s.hull_wear == 0.0 and s.list_target == 0.0 and absf(s.root.rotation.x) < deg_to_rad(0.15), "%s: a repaired ship is unworn and level again" % faction)
+		# Sol review: a small last repair (wear 0.0167 to 0) must still clear the shader
+		s.sync(fx, _state(79.0, 79, 79, 79))
+		check(s.hull_wear > 0.0 and s.hull_wear < 0.02, "%s: a nearly repaired ship has a trace of wear (%.4f)" % [faction, s.hull_wear])
+		s.sync(fx, _state(95.0, 95, 95, 95))
 		var clean := true
 		for m in _mats(s):
 			clean = clean and float((m as ShaderMaterial).get_shader_parameter("fx_weather")) == 0.0 and float((m as ShaderMaterial).get_shader_parameter("fx_power")) == 1.0
 		check(clean, "%s: the repaired ship's surfaces lose the wear" % faction)
+	# a view rebuilt after Continue: no hull hit known, so the side comes from the ship's id, the same every time
+	var sides: Array = []
+	for n in 2:
+		var r = _ship("rebuilt", "voidsworn", Vector3(0, 0, 60 + 40 * n))
+		r.sync(fx, _state(20.0, 60, 15, 30))
+		check(r.list_target != 0.0, "a rebuilt crippled ship still lists (try %d)" % n)
+		sides.append(signf(r.list_target))
+		fx.remove_ship("rebuilt")
+		settle(0.2)
+	check(sides.size() == 2 and sides[0] == sides[1], "a rebuilt ship with no known hit side leans the same way every time")
 	print("hull_wear_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)
 	quit(1 if failures > 0 else 0)
