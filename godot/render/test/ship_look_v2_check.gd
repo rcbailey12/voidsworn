@@ -16,6 +16,20 @@ const HULL := preload("res://fx/fx_hull.gd")
 var fails: Array = []
 
 
+# Shader compile errors print, but never stop a headless run; this counts them (the V2 sky lobes once redefined the sky
+# shader's own "band" uniform and broke every battle sky, flag on or off, with every headless check still green).
+class _ShaderErrors extends Logger:
+	var _lock := Mutex.new()
+	var count := 0
+	func _log_error(_function: String, _file: String, _line: int, code: String, rationale: String, _editor_notify: bool,
+			error_type: int, _script_backtraces: Array[ScriptBacktrace]) -> void:
+		if error_type == ERROR_TYPE_SHADER or (code + rationale).contains("Shader compilation failed"):
+			_lock.lock()
+			count += 1
+			_lock.unlock()
+var _shader_errors := _ShaderErrors.new()
+
+
 func _init() -> void:
 	GUARD.arm(self, "ship_look_v2_check")
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
@@ -77,7 +91,22 @@ func _seam(img: Image) -> float:
 	return steps[w - 1] / maxf(inner, 0.0001)
 
 
+func _compiles(code: String) -> bool:
+	var before := _shader_errors.count
+	var sh := Shader.new()
+	sh.code = code
+	sh.get_shader_uniform_list()
+	return _shader_errors.count == before
+
+
 func _run() -> void:
+	OS.add_logger(_shader_errors)
+	# 0. every shader V2 touches compiles (the battle sky, the dead-star panorama, the hull exterior and its alpha twin)
+	var SKY = load("res://world/world_sky.gd")
+	check(_compiles(SKY.SKY), "the battle sky shader compiles")
+	check(_compiles(SKY.PANORAMA_SKY), "the panorama sky shader compiles")
+	check(_compiles(HULL.EXTERIOR), "the hull exterior shader compiles")
+	check(_compiles(HULL.exterior_alpha_code()), "the see-through hull exterior shader compiles")
 	# 1. off
 	LOOK.v2_force = 0
 	var off := _lights()
@@ -166,6 +195,7 @@ func _run() -> void:
 	var none := _hull("not_a_faction")
 	check(not none.detail_enabled, "unknown faction: no layer, no error")
 	LOOK.v2_force = -1
+	check(_shader_errors.count == 0, "no shader compile error anywhere in the run (damage and death shaders included): %d" % _shader_errors.count)
 
 	if fails.is_empty():
 		print("SHIP LOOK V2 PASS")
