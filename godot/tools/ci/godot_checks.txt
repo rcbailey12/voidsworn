@@ -123,6 +123,7 @@ headless|fx/test/broadside_mount_check.gd|-|-|issue 1117: every muzzle tier chec
 headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
 headless|fx/test/munition_body_check.gd|-|-|issue 1379 (R362): torpedo and rocket bodies come from the faction part kits with the hull finish, keep the casing frame; no-file factions and the star torpedo keep their old look
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
+headless|fx/test/first_hit_scars_check.gd|-|-|issue 1235: first-hit mark size, heavy and newest marks kept under the cap, bomber marks, turrets out of the static damage, LOD kept on undamaged meshes, stage 4 hole size
 headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage opens a break, exhaust stays in space
 headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-in craft
 headless|render/test/arrival_warm_check.gd|-|-|issue 1289: the arrival warm kit builds the reinforcement's hull into the effects for the load, then parks it hidden and keeps it loaded

@@ -1,14 +1,10 @@
 Saved manifest before: 460877ce1ff226e76c45e6e66880ad644da7bc02c79b4a23f5717958e4f4fa86
-Saved manifest after: 4781f16d2b62abff3ada67b0953a4bec33eeb35ec00a1cb7e7f8e73979394939
+Saved manifest after: 681fd93f2ff5e3a47fc318e18399be654f54f6babf88483a8afe0491d147d7fb
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle s2
-  turn 0, round 1, after tick player; unit x09 (enemy h_boss)
-  state.units[4].hp: 238 -> 210
-  later changed records: 158; total records: 141 -> 159
-FAIL battle s24
-  turn 0, round 1, after tick player; unit x013 (enemy h_boss)
-  state.units[6].hp: 413 -> 365
-  later changed records: 594; total records: 595 -> 595
-FAIL: saved Godot results; 288 battles checked, 2 changed, 0 other files changed, 2 failures; 10.609 s
+FAIL battle t_ecl_arcswarm
+  turn 46, round 2, after fire x06; unit none (battle state)
+  state.b.log[27].m: "Ninth Winter fires Corona arc at Hullbreaker raider: 13 to prow shields, 50 hull." -> "Ninth Winter fires Corona arc at Hullbreaker raider: 13 to prow shields, 42 hull."
+  later changed records: 14; total records: 61 -> 61
+FAIL: saved Godot results; 288 battles checked, 1 changed, 0 other files changed, 1 failures; 10.643 s
