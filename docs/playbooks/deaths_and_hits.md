@@ -105,8 +105,8 @@ The cruiser's death, longer and heavier:
 - It breaks into three pieces along its authored lines: two halves and one more (a spire line, a module, a shade band: the
   faction's sheet says which).
 - Ten secondaries. Coals cool for about 14 s. The pieces drift apart slowly and stay.
-- Board proposal for Ryan's eye on the sheet: straight after the core flash the whole scene dims a little for a fifth of a
-  second, so the flash feels like it took the light with it. Off under reduce flashing.
+- No scene dim for a capital in general: the dim straight after the core flash is Eclipse's own (R367, see "How each
+  faction dies"); the general option was removed (R389, issue 1509). Off under reduce flashing.
 
 Installed (issue 1077, on by default since Ryan's yes on pass 6, Nov 20 2026; `rendering/effects/death_story="off"` or
 `VS_DEATH_STORY=off` turns it off for comparisons) adds strain to every cruiser and capital death before the split above, in the shared death code

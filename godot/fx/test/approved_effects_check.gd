@@ -19,7 +19,7 @@ const FX := preload("res://fx/fx.gd")
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const SHIP := preload("res://fx/fx_ship.gd")
 const REG := "res://fx/test/approved_effects.json"
-const ENV := ["VS_DEATH_STORY", "VS_DEATH_DIM", "VS_SHIELD_FAILURE", "VS_SHIELD_FAILURE_Q", "VS_SHIELD_CLOSE", "VS_SHIELD_SHAPE"]
+const ENV := ["VS_DEATH_STORY", "VS_SHIELD_FAILURE", "VS_SHIELD_FAILURE_Q", "VS_SHIELD_CLOSE", "VS_SHIELD_SHAPE"]
 var failures := 0
 
 
@@ -44,16 +44,17 @@ func _probe(name: String, fx) -> Variant:
 		"death_story":
 			return fx.death_story
 		"eclipse_only_dim":
-			# R389: no general scene dim; the Eclipse (peel) death still dims. dim_scene(t) without force must not dim,
-			# with force it must, and fx_death.gd must force it for the peel style only.
+			# R389 (issue 1509): no general scene dim option is left (no scene_dim switch, no VS_DEATH_DIM), the dim itself
+			# still works, and fx_death.gd calls it once, for the Eclipse (peel) style only.
+			var fx_src := _text("res://fx/fx.gd")
+			var general: bool = ("scene_dim" in fx) or fx_src.contains("VS_DEATH_DIM")
 			var cam := Camera3D.new()
 			root.add_child(cam)
 			fx.camera = cam
 			fx.dim_scene(fx.now)
-			var general: bool = fx._dim_t0 >= 0.0
-			fx.dim_scene(fx.now, true)
 			var eclipse: bool = fx._dim_t0 >= 0.0
-			var wired := _text("res://fx/fx_death.gd").contains('fx.dim_scene(fx.now + 0.20, style == "peel")')
+			var death_src := _text("res://fx/fx_death.gd")
+			var wired: bool = death_src.count("fx.dim_scene(") == 1 and death_src.contains('if style == "peel": fx.dim_scene(fx.now + 0.20)')
 			fx.camera = null
 			cam.queue_free()
 			return "general %s, eclipse %s, peel only %s" % [general, eclipse, wired]

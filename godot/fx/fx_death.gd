@@ -673,6 +673,33 @@ static func _piece_hulls(pieces: Array) -> void:
 		for i in hp.size():
 			hp[i] -= cen
 		pc["hull"] = hp
+		pc["reach"] = _piece_reach(pc)
+
+
+# Issue 1395 (Neon F9): the piece's reach for the leash (see _measure_reach), worked out here on the cut's worker from
+# the very vertex arrays its mesh is built from, so the wreck's draw-in reads no faces on the main thread. The middle is
+# the middle of the mesh's box (every surface and the cap), the reach the farthest vertex from it on the board plane.
+static func _piece_reach(pc: Dictionary) -> float:
+	var lists: Array = []
+	for sd in pc["surfs"]:
+		var v = (sd["arrays"] as Array)[Mesh.ARRAY_VERTEX]
+		if v is PackedVector3Array and not (v as PackedVector3Array).is_empty(): lists.append(v)
+	if pc.has("cap"):
+		var v = (pc["cap"] as Array)[Mesh.ARRAY_VERTEX]
+		if v is PackedVector3Array and not (v as PackedVector3Array).is_empty(): lists.append(v)
+	if lists.is_empty(): return -1.0
+	var lo := Vector3.INF
+	var hi := -Vector3.INF
+	for vs in lists:
+		for v in (vs as PackedVector3Array):
+			lo = lo.min(v)
+			hi = hi.max(v)
+	var mid := (lo + hi) * 0.5
+	var far := 0.0
+	for vs in lists:
+		for v in (vs as PackedVector3Array):
+			far = maxf(far, (v.x - mid.x) * (v.x - mid.x) + (v.z - mid.z) * (v.z - mid.z))
+	return sqrt(far)
 
 
 static func _init_dirs() -> void:
@@ -2900,7 +2927,7 @@ static func _smoke_one(fx, src, p: Vector3, px: float, life: float, frame, vel: 
 
 # Beat 2's flash: 0.28 s after the break, on the lip of the torn face. The core (route B, the tier's own row), the body
 # (fire seen through gas, at most 0.70 s of fire, then gas that thins and drifts), shrapnel streamers along the plane of
-# the break (a torpedo or ram: in a cone away from the impact) and, behind a switch, the capital's scene dim.
+# the break (a torpedo or ram: in a cone away from the impact) and, for an Eclipse death, the scene dim (R367).
 static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: Color, cause: String, tl: DeathTimeline) -> void:
 	var node := node_ref.get_ref() as Node3D
 	if not is_instance_valid(node) or node.is_queued_for_deletion():
@@ -2940,11 +2967,10 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 				d = (d - axis_w * d.dot(axis_w)).normalized()
 			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.6 + fx.rng.randf() * 0.5, dcol(s, "spark", Color(1.0, 0.62, 0.3)), 6.0, 0.06, maxf(L * 0.004, 0.05), 1, d * L * fx.rng.randf_range(0.6, 1.3), 0.8, 0.0, 2.0, 10.0)
 	# R367 (issue 1399): a Glasswright's stored light spills as glittering dust; Eclipse's core gutters out and the scene
-	# dims for an instant on every big Eclipse death
+	# dims for an instant on every big Eclipse death (Eclipse only, R389: no other faction dims the scene)
 	var style := str(dstyle(s).get("style", ""))
 	if style == "shatter": _glitter(fx, s, p, s.hull.L)
-	if capital or style == "peel":
-		fx.dim_scene(fx.now + 0.20, style == "peel")
+	if style == "peel": fx.dim_scene(fx.now + 0.20)
 
 
 # R367 (issue 1399): the Glasswrights' stored light spills from the core as glittering dust that drifts and fades slowly
@@ -3357,6 +3383,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		fx.phys_root.add_child(node)
 		node.global_transform = Transform3D(xf.basis, xf * cen)
 		node.set_meta("piece_cen", cen)
+		if float(pc.get("reach", -1.0)) >= 0.0: node.set_meta("reach_pre", float(pc["reach"]))   # issue 1395, _measure_reach
 		if s.death_big and not organic:
 			node.set_meta("sec_sites", pc["sec_sites"] if pc.has("sec_sites") else _piece_sites(h, seeds, cen, 5, plan, i))
 		if s.death_big or is_main: wreck["scorch_mats"].append_array(pc.get("hull_mats", []))
@@ -3985,6 +4012,10 @@ static func leash_half(nd: Node3D) -> float:
 # measure a piece's real reach once (leash_half); a big piece's faces are read only when its wreck starts to draw in
 static func _measure_reach(nd: Node3D) -> void:
 	if nd.has_meta("leash_rad"): return
+	# issue 1395: the cut's worker already measured it from the piece's own vertex arrays (_piece_reach)
+	if nd.has_meta("reach_pre"):
+		nd.set_meta("leash_rad", float(nd.get_meta("reach_pre")))
+		return
 	for ch in nd.get_children():
 		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
 			var mi := ch as MeshInstance3D
