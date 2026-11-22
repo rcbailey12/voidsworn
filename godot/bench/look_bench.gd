@@ -381,18 +381,21 @@ func _settle() -> void:
 	for id in fx.ships:
 		var sh = fx.ships[id]
 		if int(sh._dmg_task) >= 0:
-			while not WorkerThreadPool.is_task_completed(int(sh._dmg_task)):
-				OS.delay_usec(300)
+			_wait_task(int(sh._dmg_task), "hull damage rebuild", id)
 		if sh.has_meta("cut_task"):
-			# issue 1236 (WRECK1 sat 25 minutes with no log): a cut that keeps the clock waiting names itself, at 5, 10,
-			# 20 s and so on; nothing is printed while cuts finish in time
-			var t0 := Time.get_ticks_msec()
-			var told := 5000
-			while not WorkerThreadPool.is_task_completed(int(sh.get_meta("cut_task"))):
-				OS.delay_usec(300)
-				if Time.get_ticks_msec() - t0 > told:
-					_log("settle: %s's death cut still running after %d s" % [str(id), told / 1000])
-					told *= 2
+			_wait_task(int(sh.get_meta("cut_task")), "death cut", id)
+
+
+# issue 1236 (WRECK1 sat 25 minutes with no log): a worker job that keeps the clock waiting names its ship and kind, at
+# 5, 10, 20 s and so on; nothing is printed while jobs finish in time (Artoo on PR 1785: the damage wait logs too)
+func _wait_task(task: int, kind: String, id) -> void:
+	var t0 := Time.get_ticks_msec()
+	var told := 5000
+	while not WorkerThreadPool.is_task_completed(task):
+		OS.delay_usec(300)
+		if Time.get_ticks_msec() - t0 > told:
+			_log("settle: %s's %s still running after %d s" % [str(id), kind, told / 1000])
+			told *= 2
 
 
 func _clear() -> void:
