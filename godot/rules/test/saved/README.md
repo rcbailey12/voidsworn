@@ -1,15 +1,24 @@
 # Saved Godot results
 
-Issue 990, Path D step 3. Parity still compares every battle against the browser.
-This second gate compares Godot with the results accepted in the repo. A mistake
-in both rules copies can pass parity and still fail here, by battle name.
+Issue 990, Path D step 3. Since issue 1654 (R405, Nov 22 2026) the browser rules
+twin is retired and this is the rules gate: `run_parity.sh` runs Godot alone and
+compares every battle, the PRNG draws, the math verdict and the threat maps with
+the results accepted in the repo. The math inputs come from the saved `math.txt`.
+`RULES_TWIN=browser` still runs the old comparison with the frozen browser files,
+for history only. It exports to a scratch file, never to the live table, and stops if
+the Godot table no longer matches the frozen export. CI also lists every saved result
+a branch changes compared with main (`diff_vs_main.js`), so a deliberate update stays
+visible even when the check is green. Read "browser parity" below as that historical mode; an update
+needs no browser check in the default mode. The campaign has its own saved
+results: `godot/campaign/test/saved/`, checked by `run_campaign_checks.sh`.
 
 Double-click `tools/pc/saved_results.bat`, or call it with `nopause` from a watcher.
 It runs fresh parity and this check using the same Godot batch records. It prints
 PASS or FAIL, battle names, the saved comparison time, and the whole parity step
 time. It discovers bundled Node 22 and `godot_path.txt` above any lane checkout;
 an existing `GODOT` override is honored. No campaign check is added to this
-launcher. The ordinary `parity.bat` keeps its campaign hand-off.
+launcher. The ordinary `parity.bat` runs the Godot saved campaign check after the rules (R405);
+`parity_campaign.bat` is the old browser campaign comparison, kept for history only.
 
 On Linux, `GODOT=/path/to/godot sh godot/rules/test/run_parity.sh` runs both gates.
 No new CI command or second Godot run is needed. The existing parity step runs
@@ -108,21 +117,6 @@ Every normal run keeps `changed-battles.txt`, `saved_summary.json`, and the whol
 and appends the report, saved comparison time and whole-step time to
 `GITHUB_STEP_SUMMARY`. A rules PR's tracked `changes.txt` remains directly linkable.
 
-The PC worker may not edit workflows or push, so this job has no measured CI
-run yet. The existing workflow already enforces the gate through `run_parity.sh`.
-For downloadable evidence on failed CI runs, the Board should add this step
-immediately after the existing rules parity step in `.github/workflows/checks.yml`:
-
-```yaml
-- name: Keep changed-battles evidence
-  if: ${{ always() }}
-  uses: actions/upload-artifact@v4
-  with:
-    name: saved-godot-results
-    path: |
-      ${{ runner.temp }}/voidsworn-parity-*/changed-battles.txt
-      ${{ runner.temp }}/voidsworn-parity-*/saved_summary.json
-      ${{ runner.temp }}/voidsworn-parity-*/summary.json
-```
-
+CI keeps these files with the step "Keep changed-battles evidence" in `.github/workflows/checks.yml`
+(artifact `saved-godot-results`), together with `saved_changes_vs_main.txt` from `diff_vs_main.js`.
 This upload is for access to the files; the gate and CI timing do not depend on it.

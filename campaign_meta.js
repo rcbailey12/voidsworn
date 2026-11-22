@@ -1,4 +1,4 @@
-// ======================= UI: shell, title, meta =======================
+// ======================= UI: shell, title, meta ======================= FROZEN since Nov 22 2026 (R405, RULEBOOK 3.1, issue 1654): Godot is the only rules source; change godot/ instead (ship weapon lists and hull entries: both, until issue 1667)
 const app=document.getElementById('app');
 const tipEl=document.getElementById('tip');
 const ACT={};

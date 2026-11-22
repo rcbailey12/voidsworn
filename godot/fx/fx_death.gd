@@ -302,12 +302,27 @@ const MELT_STYLE := {"style": "melt", "fire": Color(0.80, 0.95, 0.55), "fire_mid
 	"rim": Color(0.45, 0.62, 0.10), "spark": Color(0.55, 0.65, 0.12), "light": Color(0.70, 0.85, 0.45), "smoke": 0.0, "prism": 0.0}
 
 
+# Ryan, Nov 22 2026 5:39 AM CT, on the 1394D sheets: "I like everything about it except I think it might still be good
+# to have the faction specific explosion when it breaks off. Like the engines and weapons are cooking off." While a
+# cook-off blast is drawn (_core_flash, _blast, _fac_pop) an acid kill reads its faction's own colours; the green glow,
+# the green wreck heat and the missing smoke, haze and vapour stay.
+static var _boom := 0
+
+
+# A cook-off colour looked up outside a blast (Artoo on PR 1646: a secondary's light and sparks took the melt tint).
+static func boom_col(src, key: String, fallback: Color) -> Color:
+	_boom += 1
+	var c := dcol(src, key, fallback)
+	_boom -= 1
+	return c
+
+
 static func melting(src) -> bool:
 	return src is Object and is_instance_valid(src) and src.has_meta("death_melt")
 
 static func dstyle(src) -> Dictionary:
 	if not (src is Object) or not is_instance_valid(src): return {}
-	if src.has_meta("death_melt"): return MELT_STYLE
+	if src.has_meta("death_melt") and _boom == 0: return MELT_STYLE
 	if not ("fac" in src) or not ("faction" in src) or not (src.fac is Dictionary): return {}
 	var key := str(src.faction)
 	if _styles.has(key): return _styles[key]
@@ -329,6 +344,7 @@ static func dcol(src, key: String, today: Color) -> Color:
 
 # The share of a death's smoke this faction keeps (1 today).
 static func dsmoke(src) -> float:
+	if melting(src): return 0.0   # R398: an acid kill has no smoke, even in its faction's cook-off blasts
 	return float(dstyle(src).get("smoke", 1.0))
 
 
@@ -2251,7 +2267,8 @@ static func _death_inner(fx, s, cause: String) -> float:
 		return _wing_death(fx, s)
 	if cause == "melt" and s.faction != "chorus": s.set_meta("death_melt", true)
 	s.set_meta("death_cause", cause)   # issue 1586 (fx_death_beats.gd)
-	var tint := dcol(s, "spark", Color(0.95, 0.34, 0.08)) if cause != "melt" else Color(0.55, 0.65, 0.12)
+	# a metal acid kill's break and cook-off spark in its faction's colours (Neon on PR 1646); a Chorus acid kill stays green
+	var tint := dcol(s, "spark", Color(0.95, 0.34, 0.08)) if cause != "melt" else (boom_col(s, "spark", Color(0.95, 0.34, 0.08)) if melting(s) else Color(0.55, 0.65, 0.12))
 	_power_down(fx, s)
 	s.set_meta("death_start", T)
 	s.set_meta("death_hull_motion", s.hull_motion())
@@ -2876,13 +2893,13 @@ static func _chain_blast(fx, s, i: int, tl: DeathTimeline, cause: String, T: flo
 	var pose: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY)
 	var p: Vector3 = pose * (hit["p"] as Vector3)
 	var n: Vector3 = (pose.basis * (hit["n"] as Vector3)).normalized()
-	var melt := cause == "melt"
 	# issue 484: the cruiser's chain blasts measured 24 to 57 px on the strip against a 75 px floor; drawn at 100 now
-	_blast(fx, s, p, n, 100.0 if s.death_tier == "cruiser" else 84.0, Color(0.55, 0.65, 0.12) if melt else dcol(s, "spark", Color(1.0, 0.62, 0.28)), pose, melt)
+	# (an acid kill draws no chain; if one ever does, it is a cook-off in the faction's colours, Neon on PR 1646)
+	_blast(fx, s, p, n, 100.0 if s.death_tier == "cruiser" else 84.0, boom_col(s, "spark", Color(1.0, 0.62, 0.28)), pose)
 	# a narrow jet of fire, then gas, from the opened plating
 	if fx.quality != "low":
 		var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-		fx.spr(p + n * s.hull.L * 0.02, fx.now, 0.55, dcol(s, "spark", Color(0.95, 0.5, 0.18)), 2.5, s.hull.L * 0.012, s.hull.L * 0.06, 20, inherited + n * s.hull.L * 0.25, 1.2)
+		fx.spr(p + n * s.hull.L * 0.02, fx.now, 0.55, boom_col(s, "spark", Color(0.95, 0.5, 0.18)), 2.5, s.hull.L * 0.012, s.hull.L * 0.06, 20, inherited + n * s.hull.L * 0.25, 1.2)
 	if s.death_tier == "capital":
 		s.set_meta("death_jolt", fx.now)
 
@@ -2923,16 +2940,13 @@ static func _pic(fx, src, p: Vector3, rel: String, px: float, life: float, divis
 # draws its softened twin at the same size (0.50 s rise and fall, no full-heat hold). `pale`: the melt look, no hard
 # white (always the softened picture).
 static func _blast(fx, src, p: Vector3, n: Vector3, px: float, tint: Color, frame = null, pale := false) -> void:
+	_boom += 1
+	_blast_inner(fx, src, p, n, px, tint, frame, pale)
+	_boom -= 1
+
+
+static func _blast_inner(fx, src, p: Vector3, n: Vector3, px: float, tint: Color, frame = null, pale := false) -> void:
 	if not p.is_finite(): return
-	pale = pale or melting(src)
-	if melting(src):
-		# R398 (1394 PC run): even the softened blast picture read as a green cloud. Acid: a soft light and a few sparks.
-		fx.light(p + n * 0.6, fx.now, 0.40, 3.0, tint, 3)
-		if fx.quality != "low":
-			var km: float = px * STAGING_UNITS_PER_PIXEL / 10.0
-			for j in 3:
-				fx.stk(p + n * 0.1, fx.now, 0.30 + fx.rng.randf() * 0.2, tint, 3.0, 0.04, 0.08, 1, fx.rcone(n, 0.7) * (6.0 + fx.rng.randf() * 6.0) * km, 2.0)
-		return
 	var soft: bool = pale or fx.reduce_flashing or not fx.flash_at(p, fx.now, px * STAGING_UNITS_PER_PIXEL, px, 0.16)
 	_pic(fx, src, p, "weapons/impact/flash_", px, 0.50 if soft else 0.16, 0.97 if soft else 3.0, 1.25 if soft else 5.2, soft, "flash", frame)
 	# issue 1077 (prototype): Ryan on pass 4B, "way too much smoke": a strained death's blasts keep one smaller puff
@@ -3044,7 +3058,7 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 			else:
 				d = fx.rdir()
 				d = (d - axis_w * d.dot(axis_w)).normalized()
-			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.6 + fx.rng.randf() * 0.5, dcol(s, "spark", Color(1.0, 0.62, 0.3)), 6.0, 0.06, maxf(L * 0.004, 0.05), 1, d * L * fx.rng.randf_range(0.6, 1.3), 0.8, 0.0, 2.0, 10.0)
+			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.6 + fx.rng.randf() * 0.5, boom_col(s, "spark", Color(1.0, 0.62, 0.3)), 6.0, 0.06, maxf(L * 0.004, 0.05), 1, d * L * fx.rng.randf_range(0.6, 1.3), 0.8, 0.0, 2.0, 10.0)
 	# R367 (issue 1399): a Glasswright's stored light spills as glittering dust; Eclipse's core gutters out and the scene
 	# dims for an instant on every big Eclipse death (Eclipse only, R389: no other faction dims the scene)
 	var style := str(dstyle(s).get("style", ""))
@@ -3074,8 +3088,13 @@ static func _glitter(fx, s, p: Vector3, L: float) -> void:
 # the hull parts. One overlay per mesh (the tear is not drawn on a melt death, so the overlay slot is free).
 static func _melt_glow(fx, s, T: float, tl: DeathTimeline) -> void:
 	var spots: Array = []
-	for sp in s.get_meta("acid_spots", []):
+	var stored: Array = s.get_meta("acid_spots", [])
+	for sp in stored:
 		if T - float(sp[1]) <= 6.0: spots.append(sp[0])
+	# Neon on PR 1646: an acid burn tick can kill a turn or more after the volley. Its stored hits are still where the
+	# acid is, so the last three of them win over a later non-acid hit.
+	if spots.is_empty():
+		for sp in stored.slice(maxi(stored.size() - 3, 0)): spots.append(sp[0])
 	if spots.is_empty():
 		var last: Array = s.get_meta("last_hit", [])
 		if last.size() >= 1: spots.append(last[0])
@@ -3101,12 +3120,17 @@ static func _melt_glow(fx, s, T: float, tl: DeathTimeline) -> void:
 
 
 static func _fac_pop(fx, s, p: Vector3, L: float) -> void:
-	if melting(s): return   # R398 (1394 PC run): the soft faction pop drew a green cloud the size of the hull
+	_boom += 1
+	_fac_pop_inner(fx, s, p, L)
+	_boom -= 1
+
+
+static func _fac_pop_inner(fx, s, p: Vector3, L: float) -> void:
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	var life := 0.32
 	var kind := 0
 	var i := 2.4
-	if fx.reduce_flashing or melting(s) or not fx.flash_at(p, fx.now, L * 1.1, 64.0, life):
+	if fx.reduce_flashing or not fx.flash_at(p, fx.now, L * 1.1, 64.0, life):
 		kind = 18
 		i *= 0.4
 		life = 0.96
@@ -3321,7 +3345,7 @@ static func _secondary_on(fx, s, node_ref: WeakRef, ship_p: Vector3) -> void:
 	var frame: Transform3D = node.global_transform * Transform3D(Basis.IDENTITY, -(node.get_meta("piece_cen", Vector3.ZERO) as Vector3))
 	var p: Vector3 = frame * ship_p
 	# issue 484: secondaries vary plainly in size (the playbook floor is 75 px)
-	_blast(fx, s, p, frame.basis.y.normalized(), _death_rng(s).randf_range(76.0, 140.0), dcol(s, "spark", Color(1.0, 0.6, 0.26)), frame)
+	_blast(fx, s, p, frame.basis.y.normalized(), _death_rng(s).randf_range(76.0, 140.0), boom_col(s, "spark", Color(1.0, 0.6, 0.26)), frame)
 
 
 static func _hide_ship(s) -> void:
@@ -3750,6 +3774,12 @@ const CORE_LIGHT_REACH := {"small": 26.0, "destroyer": 30.0, "cruiser": 35.0, "c
 
 
 static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO, src = null, band_override := "", frame = null) -> void:
+	_boom += 1
+	_core_flash_inner(fx, p, R, px, tint, node, local_p, src, band_override, frame)
+	_boom -= 1
+
+
+static func _core_flash_inner(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO, src = null, band_override := "", frame = null) -> void:
 	if is_instance_valid(node): p = node.to_global(local_p)
 	if not p.is_finite() or R <= 0.0: return
 	# Main core flashes use the approved row. Issue 462: a cruiser or capital death uses its class's row
@@ -3762,11 +3792,6 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 	var row: Array = {"small": [CORE_FLASH_PX["small"], 0.18, 0.55, 2.45, 0.884], "destroyer": [CORE_FLASH_PX["destroyer"], 0.19, 0.575, 2.31, 0.9175], "cruiser": [CORE_FLASH_PX["cruiser"], 0.20, 0.60, 1.97, 0.96], "capital": [CORE_FLASH_PX["capital"], 0.22, 0.65, 1.37, 0.96]}[band]
 	if staged: px = float(row[0])
 	var allowed: bool = fx.flash_ok(fx.now, p, px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, px, float(row[1]))
-	# R398: the 1394 PC run (Nov 22) showed the soft core bloom as a big green cloud over the hull, the haze Ryan said no
-	# to. An acid kill draws no core flash picture at all: only a soft light on the hulls round it.
-	if melting(src):
-		if not fx.reduce_flashing: fx.light(p, fx.now, float(row[2]), 4.0, dcol(src, "light", Color(0.65, 0.75, 0.91)), 3, CORE_LIGHT_REACH[band])
-		return
 	if staged:
 		var soft: bool = fx.reduce_flashing or not allowed
 		var life: float = float(row[2] if soft else row[1])
@@ -3816,7 +3841,7 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * (0.35 if big else 0.5), "cool", 1.1, vel * 0.65, 0.4 if big else 0.7, atlas_band(L), src)
 	if not big and src != null and fx.quality != "low":
 		var p: Vector3 = node.to_global(node.get_meta("tear_site", Vector3.ZERO))
-		fx.stk(p, fx.now, 0.65, dcol(src, "spark", Color(1.0, 0.62, 0.30)), 4.0, 0.05, 0.08, 1, vel + fx.rdir() * L * 0.55, 0.8, 0.0, 2.0, 8.0)
+		fx.stk(p, fx.now, 0.65, boom_col(src, "spark", Color(1.0, 0.62, 0.30)), 4.0, 0.05, 0.08, 1, vel + fx.rdir() * L * 0.55, 0.8, 0.0, 2.0, 8.0)
 	# Big hulls' secondaries are scheduled once per kill (_schedule_secondaries), never a per-piece fire loop.
 
 
