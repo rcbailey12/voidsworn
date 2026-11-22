@@ -304,13 +304,14 @@ func _build_hi(code: String) -> void:
 			return
 		var jm: Array = st.json.get("materials", [])
 		var mats := st.get_materials()
+		var compressed := {}
 		for mi in mini(jm.size(), mats.size()):
 			var bm := mats[mi] as BaseMaterial3D
 			if bm == null:
 				continue
 			if (jm[mi] as Dictionary).has("emissiveTexture") and not ((jm[mi] as Dictionary).get("extensions", {}) as Dictionary).has("KHR_materials_emissive_strength"):
 				bm.emission_energy_multiplier = 4.0   # as the A2 max mode: windows and running lights reach bloom
-			_compress_material(bm)
+			_compress_material(bm, compressed)
 		var scene := doc.generate_scene(st)
 		root.add_child(scene)
 	_own(root, root)
@@ -341,18 +342,15 @@ func _build_a4_ships() -> void:
 		if not FileAccess.file_exists(src):
 			continue
 		var out := gen_root.path_join("ships/%s.scn" % code)
-		# A4 re-exports ships under the same names: a changed source (time or size of the ship, damage or wreck glb)
-		# rebuilds that ship even when the generator version is current
+		# Artoo on PR 1714: hashing every map is slow on a whole fleet, so a time-limited run checks its budget before
+		# fingerprinting the next ship; the version marker stays unset and the next run carries on from here.
+		if max_s > 0.0 and (Time.get_ticks_msec() - t_start) / 1000.0 > max_s:
+			out_of_time = true
+			break
+		# A4 re-exports ships under the same names. Check geometry and paint even when the generator version is current.
 		var stamp := source_stamp(base, code)
-		var newest := 0
-		for suf in ["", "_damage", "_wreck"]:
-			var sp0 := base.path_join(code).path_join(code + suf + ".glb")
-			if FileAccess.file_exists(sp0):
-				newest = maxi(newest, FileAccess.get_modified_time(sp0))
 		if manifest["ships"].has(code):
 			var me: Dictionary = manifest["ships"][code]
-			if not me.has("src") and FileAccess.file_exists(out) and FileAccess.get_modified_time(out) >= newest:
-				me["src"] = stamp  # built before stamps were kept, from these same files
 			if str(me.get("src", "")) != stamp:
 				me["v"] = 0
 		if _current(manifest["ships"], code, out):
@@ -368,16 +366,37 @@ func _build_a4_ships() -> void:
 	_check_a4_ships()
 
 
-# the stamp of a ship's source files (time and size of the ship, damage and wreck glb): a changed stamp rebuilds the ship.
-# One home: the install readback (render/test/installed_ship_check.gd) reads the same function.
+# Shared by the builder and the install readback. The new stamp format also refreshes older ship scenes once.
 static func source_stamp(base: String, code: String) -> String:
-	var stamp := ""
+	var dir := base.path_join(code)
+	var sources := {}
 	for suf in ["", "_damage", "_wreck"]:
-		var sp0 := base.path_join(code).path_join(code + suf + ".glb")
-		if FileAccess.file_exists(sp0):
-			var fa := FileAccess.open(sp0, FileAccess.READ)
-			stamp += "%d:%d;" % [FileAccess.get_modified_time(sp0), fa.get_length() if fa != null else 0]
-	return stamp
+		var file_name: String = code + suf + ".glb"
+		var glb := dir.path_join(file_name)
+		var file := FileAccess.open(glb, FileAccess.READ)
+		if file == null:
+			continue
+		sources[file_name] = [FileAccess.get_modified_time(glb), file.get_length()]
+		for image: Dictionary in _glb_json(file).get("images", []):
+			var uri := ShipSourceImages.external_image_path(image)
+			if uri.is_empty() or sources.has(uri):
+				continue
+			var path := dir.path_join(uri)
+			var map := FileAccess.open(path, FileAccess.READ)
+			sources[uri] = [FileAccess.get_modified_time(path), map.get_length(), FileAccess.get_sha256(path)] if map != null else []
+	return JSON.stringify(sources)
+
+
+static func _glb_json(file: FileAccess) -> Dictionary:
+	# Read only the first (JSON) chunk. The binary chunk can hold the hull and all its baked maps.
+	if file.get_length() < 20 or file.get_32() != 0x46546C67 or file.get_32() != 2:
+		return {}
+	file.seek(12)
+	var size := file.get_32()
+	if file.get_32() != 0x4E4F534A or size > file.get_length() - file.get_position():
+		return {}
+	var json = JSON.parse_string(file.get_buffer(size).get_string_from_utf8())
+	return json if json is Dictionary else {}
 
 
 # one line per A4 ship as the game will load it: skins, heavy skins, hard points, breach holes and heavies, wreck chunks
@@ -425,9 +444,13 @@ func _glb_to_scene(path: String, out: String, name: String) -> bool:
 	if append_ship_glb(doc, path, st) != OK:
 		push_warning("glTF not loaded: " + path)
 		return false
+	var compressed := {}
 	for m in st.get_materials():
 		if m is BaseMaterial3D:
-			_compress_material(m as BaseMaterial3D)
+			_compress_material(m as BaseMaterial3D, compressed)
+	for mesh in st.get_meshes():
+		# Generate before glTF turns the shared ImporterMeshes into runtime ArrayMeshes.
+		mesh.get_mesh().generate_lods(60.0, 25.0, [])
 	var scene := doc.generate_scene(st)
 	scene.name = name
 	_own(scene, scene)
@@ -452,14 +475,18 @@ static func append_ship_glb(doc: GLTFDocument, path: String, state: GLTFState) -
 
 
 class ShipSourceImages extends GLTFDocumentExtension:
+	static func external_image_path(image: Dictionary) -> String:
+		var uri := str(image.get("uri", ""))
+		return "" if uri.is_empty() or uri.begins_with("data:") else uri.uri_decode().simplify_path()
+
 	func _import_preflight(state: GLTFState, _extensions: PackedStringArray) -> Error:
 		# Godot resolves external image URIs through ResourceLoader first. A stale editor
 		# import can put the old hull's paint on the new UVs, even in a fresh ship cache.
 		for image: Dictionary in state.json.get("images", []):
-			var uri := str(image.get("uri", ""))
-			if uri.is_empty() or uri.begins_with("data:"):
+			var image_path := external_image_path(image)
+			if image_path.is_empty():
 				continue
-			var path := state.base_path.path_join(uri.uri_decode())
+			var path := state.base_path.path_join(image_path)
 			var bytes := FileAccess.get_file_as_bytes(path)
 			if bytes.is_empty():
 				push_warning("Ship map could not be read: " + path)
@@ -471,13 +498,18 @@ class ShipSourceImages extends GLTFDocumentExtension:
 		return OK
 
 
-func _compress_material(bm: BaseMaterial3D) -> void:
+func _compress_material(bm: BaseMaterial3D, compressed: Dictionary) -> void:
 	for prop in ["albedo_texture", "normal_texture", "orm_texture", "roughness_texture", "metallic_texture", "emission_texture", "ao_texture"]:
 		var t = bm.get(prop)
 		if t is Texture2D and not (t is CompressedTexture2D):
-			var img: Image = (t as Texture2D).get_image()
-			if img != null and not img.is_empty():
-				bm.set(prop, _compress(img, prop == "normal_texture"))
+			var normal: bool = prop == "normal_texture"
+			var key := [t.get_instance_id(), normal]
+			if not compressed.has(key):
+				var img: Image = (t as Texture2D).get_image()
+				if img == null or img.is_empty():
+					continue
+				compressed[key] = _compress(img, normal)
+			bm.set(prop, compressed[key])
 
 
 func _own(n: Node, owner_node: Node) -> void:

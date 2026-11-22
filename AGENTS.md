@@ -1,14 +1,15 @@
 # Voidsworn: rules for any AI agent (Claude or another model)
 
 **The game.** Embers of the Hollow Sun (repo name voidsworn) is a hex fleet-tactics roguelite. The product is the Godot 4 game in
-`godot/`, played on Ryan's Windows PC only; the browser rules are a live reference copy: every rules change goes into both until Ryan approves their retirement (RULEBOOK 3.1, R312).
+`godot/`, played on Ryan's Windows PC only. Godot is the only rules source: the browser rules files at the repo root are retired, frozen history, and CI checks Godot against its own saved results (RULEBOOK 3.1, R405, Nov 22 2026).
 The owner is Ryan. He is not a coder: he judges work by pictures. Faction ids never change; their display names do
 (contrib/opus/compute/rename_map_final.md): `voidsworn` = Sunward Crusade, `corsair` = Ashfall Hullbreakers, `ithar` = the
-Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Hegemony Navy.
+Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Meridian Directorate.
 
 **Read first.**
 1. `docs/RULEBOOK.md`: every rule in force, each with its reason. **It wins** over this file and every older doc (its section 0.3
-   says which document wins after it).
+   says which document wins after it). Sections 3.5 to 9 live in four files under `.claude/rules/` (pc-harness, ships,
+   godot-battle, godot-ui); they are plain Markdown and part of the rulebook for every seat, not only Claude (issue 1660).
 2. HANDOFF.md section 0 and contrib/opus/LOOP.md ("The seats", the LATEST lines): what is running now. They win for status only.
 3. The playbook for your area: `docs/playbooks/` (PROGRAM.md first).
 4. contrib/opus/FINDINGS.md is the dated history of rulings, not the live source. Anything under `docs/archive/` is history:
@@ -71,6 +72,12 @@ and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R29
   Its FINDINGS row says "landed in <repo path>" or "one-off job decision"; the memory lint fails it otherwise (R291).
 - Commits say "Refs #N", never a GitHub closing word before an issue number; use `gh api` REST, never GraphQL (RULEBOOK 2.5).
 
+## Agent skills (issue 1658)
+
+Skills for every seat live in `.agents/skills/` (copied to `.claude/skills/` by `node contrib/opus/tools/sync_skills.js`);
+read `.agents/skills/README.md` first, its house notes win over the skill text. Issue tracker: `docs/agents/issue-tracker.md`.
+Domain words: `GLOSSARY.md`; decisions are RULEBOOK rules and FINDINGS rows, never ADRs (`docs/agents/domain.md`).
+
 ## If you are not the main agent: work in your own folder (RULEBOOK 2.12)
 
 - Put everything you make in `contrib/<your-agent-name>/`. Do not edit files outside it: no game source, no tools, no docs, no
@@ -88,7 +95,9 @@ and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R29
 - Anything Ryan runs himself is a double-click `.bat` file (Windows 10, PowerShell 5.1, no Python of his own).
 - Before anything bigger than a quick fix, ask 3 to 5 plain multiple-choice scope questions in one batch.
 - Questions for Ryan go to him in your own chat, never as GitHub tags or comments; message him only when something lands or
-  needs him.
+  needs him. Non-urgent picks wait for the Morning or Evening Pick Sheet (RULEBOOK 1.8, R408).
+- No paid OpenAI API review where Artoo or Claude code review covers the PR (2.18, R406); no GPU capture on a PR before green
+  checks and a passed review (3.12, R407).
 - Heavy work (AI models, Blender, Godot captures) runs on Ryan's PC through the queue. GPU work is sized to the job and to
   what the RTX 5080 can hold, not a fixed job count (R293, RULEBOOK 3.4); frame-time measurements claim the GPU solo, lane C
   stays code only, and gpu_go.txt still wins.

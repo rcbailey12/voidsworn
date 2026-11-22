@@ -1,0 +1,69 @@
+{
+  "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+  "source_dirty": true,
+  "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+  "source_dirty_files": {
+    "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
+    "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
+    "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+  },
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "cells.jpg",
+  "date": "2026-11-22T17:25:28Z",
+  "sources": [
+    {
+      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_dirty": true,
+      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "source_dirty_files": {
+        "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
+        "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
+        "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+      },
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "cells.jpg",
+      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_dirty": true,
+      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "stage": "sheet built",
+      "date": "2026-11-22T17:25:25Z",
+      "image_sha256": "45f08d6d66295588d19097cb822b3e0d55e337099b4539bdc1466c30b0ca8a9b",
+      "sources": [
+        {
+          "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+          "source_dirty": true,
+          "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+          "source_dirty_files": {
+            "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
+            "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
+            "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+          },
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    2522,
+    564,
+    2620
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "311a1b077653753b039e227ec8703baadb3029be46b523ab5fa4264359e753f2"
+  ],
+  "stamp_template_sha256": "0c70303f1cc58835fc28c4ab1b2a9e26b4c61ac0f1e291880c045c9aceeb255c",
+  "covered_pixels": [
+    "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"
+  ],
+  "image_sha256": "5aaa76e7e2f5260e277d48c4f44f9c3ce3e3d4ca3384535564f5c61dbcea6adb"
+}

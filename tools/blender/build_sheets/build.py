@@ -15,7 +15,7 @@ from picture_provenance import stamp_file as _stamp_picture
 # fit:    builds, runs the fit check (clash.py) and writes <code>_fit.json and <code>_model.json, no renders.
 # match:  builds and runs only the weapon-match check (weapon_match.py, R241); exit 1 when it fails. Every mode that builds
 #         runs it and writes <code>_weapon_match.json.
-# --variant=<data.js id>: build that sheet's named variant into <outdir>/<data.js id>/.
+# --variant=<Godot id>: build that sheet's named variant into <outdir>/<Godot id>/.
 # render runs the fit check too (round 3, R217).
 import sys, os, json, math, importlib.util
 import bpy
@@ -117,7 +117,7 @@ def write_model():
 
 
 views = {}
-# issue 676 (R241): the weapon-match check on every build: every weapon the ship shows is one of its data.js weapons, tied to
+# issue 676 (R241): the weapon-match check on every build: every weapon the ship shows is one of its Godot weapons, tied to
 # that slot's hard point, of a kind that fits it, facing its arc, a turret turning under its own node (weapon_match.py)
 import weapon_match  # noqa: E402
 MATCH, _mp = weapon_match.run(K, K.game_ship)
@@ -222,7 +222,7 @@ def look_cam(name, az, el, dist, mm, res, target, roll=0.0, shift=(0, 0)):
 def weapon_shots():
     """R221 (ships.md 2c: the sheet shows each weapon type beside its lore line): one close-up per weapon type the ship carries,
     at the first mount of that type (deck mounts first), 35 degrees to port of its aim and 22 up, the weapon alone (the hull
-    hidden). Writes weapon_<data.js id>.png and returns the list for the model json."""
+    hidden). Writes weapon_<Godot id>.png and returns the list for the model json."""
     out, seen = [], set()
     W_ = getattr(kit.HP, 'WEAPONS', {})
     guns = sorted([f for f in K.features if f['kind'] == 'gun' and f.get('weapon')], key=lambda f: (f.get('normal', (0, 0, 1))[2] < 0, f['id']))

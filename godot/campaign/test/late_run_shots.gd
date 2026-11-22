@@ -103,7 +103,7 @@ func _page(kind: String, code: String, must: String) -> bool:
 	var img := root.get_texture().get_image()
 	if img.get_height() > 720:
 		img.resize(roundi(img.get_width() * 720.0 / img.get_height()), 720, Image.INTERPOLATE_LANCZOS)
-	if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(code + ".png")) != OK:
+	if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(code + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 		_fail("could not write " + code)
 		return false
 	print("Saved ", code)

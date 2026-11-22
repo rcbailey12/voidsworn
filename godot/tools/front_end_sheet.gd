@@ -46,7 +46,7 @@ func _init() -> void:
 			t.resize(tw, th, Image.INTERPOLATE_LANCZOS)
 			sheet.blit_rect(t, Rect2i(0, 0, tw, th), Vector2i(GAP + (i % best_cols) * (tw + GAP), GAP + (i / best_cols) * (th + GAP)))
 		var dest := out.path_join("sheet_" + pre + ".png")
-		preload("res://tools/picture_provenance.gd").save_png(sheet, dest)
+		preload("res://tools/picture_provenance.gd").save_png(sheet, dest, preload("res://tools/picture_provenance.gd").capture_stage())
 		print("[front-end-sheet] ", dest, " ", n, " pictures, ", sheet.get_width(), "x", sheet.get_height())
 		made += 1
 	print("[front-end-sheet] ", made, " sheet(s)")

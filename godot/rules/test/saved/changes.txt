@@ -1,10 +1,46 @@
-Saved manifest before: 460877ce1ff226e76c45e6e66880ad644da7bc02c79b4a23f5717958e4f4fa86
-Saved manifest after: 681fd93f2ff5e3a47fc318e18399be654f54f6babf88483a8afe0491d147d7fb
+Saved manifest before: 375fa502f0695f353afb52fb4b6ca0b29e1ebf4be67da97bcabcaaf9ce91a0e6
+Saved manifest after: 19b5b624266a63f7c1c747f7861440f9ff3df05083032ff9c0c24844a969cff3
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t_ecl_arcswarm
-  turn 46, round 2, after fire x06; unit none (battle state)
-  state.b.log[27].m: "Ninth Winter fires Corona arc at Hullbreaker raider: 13 to prow shields, 50 hull." -> "Ninth Winter fires Corona arc at Hullbreaker raider: 13 to prow shields, 42 hull."
-  later changed records: 14; total records: 61 -> 61
-FAIL: saved Godot results; 288 battles checked, 1 changed, 0 other files changed, 1 failures; 10.643 s
+FAIL battle s7
+  turn 0, round 1, after tick player; unit x016 (enemy h_interdictor)
+  state.units[11].ab: "evasive" -> "ionpulse"
+  later changed records: 375; total records: 376 -> 370
+FAIL battle s9
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 6 -> 5
+  later changed records: 469; total records: 381 -> 470
+FAIL battle s24
+  turn 0, round 1, after tick player; unit x019 (enemy h_interdictor)
+  state.units[12].ab: "evasive" -> "ionpulse"
+  later changed records: 594; total records: 595 -> 551
+FAIL battle s33
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 3 -> 2
+  later changed records: 179; total records: 135 -> 180
+FAIL battle s34
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 0 -> 3
+  later changed records: 253; total records: 141 -> 254
+FAIL battle s36
+  turn 0, round 1, after tick player; unit x08 (player penitent)
+  state.units[1].q: -1 -> 0
+  later changed records: 272; total records: 206 -> 273
+FAIL battle s37
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: -4 -> -1
+  later changed records: 295; total records: 296 -> 291
+FAIL battle s38
+  turn 0, round 1, after tick player; unit x07 (player penitent)
+  state.units[1].q: 10 -> 6
+  later changed records: 272; total records: 151 -> 273
+FAIL battle s41
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 6 -> 7
+  later changed records: 275; total records: 276 -> 255
+FAIL battle s1480
+  turn 0, round 1, after tick player; unit x07 (player penitent)
+  state.units[1].q: 0 -> 1
+  later changed records: 214; total records: 194 -> 215
+FAIL: saved Godot results; 289 battles checked, 10 changed, 0 other files changed, 10 failures; 16.833 s

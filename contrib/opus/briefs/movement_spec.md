@@ -27,12 +27,12 @@ change any of them for a better look, and says so with a strip.
   turn-in-place rate, eased in and out:
   - a spin lasts as long as its net angle needs: the rules' route can turn one way and back inside one group (+60,
     -60, +60 is a real route); that is flown as one 60 degree spin, and a group that nets to nothing costs no time;
-  - a turn before the run: the spin goes first and the hull sets off when the nose is within about 29 degrees of the
-    new heading (`GL_POINT` 0.5 rad): point, then burn, with a little overlap so it never reads as stop-start;
+  - a turn before the run: the spin goes first and the hull sets off once 95 percent of it is flown (`GL_LEAD`, issue
+    1581; was `GL_POINT`, within 29 degrees);
   - a turn at a corner: centred on the hull's passage through the corner; a turn of two steps or more brings the hull
     to rest there for 40 percent of the spin (`GL_DWELL`) while it swings, then it burns out on the new heading;
-  - the final facing: starts while the hull is still braking (it overlaps 45 percent of its own length, `GL_TRAIL`) and
-    finishes after the hull stops. A visible, weighty manoeuvre, never a late snap.
+  - the final facing: starts as the hull brakes to under 6 percent of cruise (`GL_REST`, issue 1581; was a 45 percent
+    overlap, `GL_TRAIL`) and finishes after the hull stops. A visible, weighty manoeuvre, never a late snap.
 - **Slides.** A one-hex sidestep or back-off keeps the heading exactly and slides on side or retro jets, smooth in and
   out, slower than a burn. A dogleg (a run, then a one-hex sidestep) keeps the nose and drifts sideways at the bend.
   A longer move is flown nose first (section 1a).
@@ -56,15 +56,16 @@ cruise speed, so several diagonal steps looked like a ship skating sideways acro
   change every hex). The nose comes round onto the first leg before the burn (section 1's turn before the run), onto
   each later leg at its corner, the main engine does the travelling, and the ship turns to the ruled final facing while
   it brakes (section 1's final facing). The rules' own turn steps inside the move are not flown; only their result is.
-- Inside a leg the hull is drawn 60 percent of the way onto the leg's straight line (`LEG_PULL`), so it still passes
-  inside every hex of the ruled route (a hex centre is at most 0.2 of a hex off the flown line).
+- Inside a leg the hull is drawn 85 percent of the way onto the leg's straight line (`LEG_PULL`; 60 percent until issue
+  1581, section 1b), so it still passes inside every hex of the ruled route (within 0.43 of a hex of each centre).
 - A one-hex slide stays on side or retro jets: a one-hex sidestep or back-off, or a one-hex sidestep at the end or start
   of a longer run (the dogleg drift, on the heading of the leg before it).
 - A run straight astern of both the heading and the final facing (more than `ASTERN` 120 degrees off each, a straight
   back-off of two hexes) is backed on retro jets with the heading held: turning a heavy hull round and back again for
   two hexes would be two half-turns of spin for nothing.
-- A move flown only on thrusters (the two cases above) takes `SLIDE_PACE` 1.45 times the burn's time per hex, and its
-  ramps scale with it, so it is visibly slower and gentler than the main engine.
+- A move flown only on thrusters (the two cases above) takes 1.45 times the burn's time per hex from battleship up
+  (`SLIDE_PACE`) and 1.6 for an escort (`SLIDE_PACE_ESCORT`, issue 1581, via `_slide_pace`), and its ramps scale with
+  it, so it is visibly slower and gentler than the main engine.
 - Checked by godot/scenes/battle/test/nose_first_check.gd (headless): real rules routes through battle.gd's own
   `_glide_steps`; under way at more than half its peak speed the nose stays within 35 degrees of the course on every run
   of two hexes or more (except a straight back-off and a dogleg's last hex); ends on the rules hex and facing; passes
@@ -72,6 +73,55 @@ cruise speed, so several diagonal steps looked like a ship skating sideways acro
 
 The small jets: in a flown move no jet starts smaller than `PUFF_MIN` 2.4 world units (about 18 px at the battle
 camera, r 170), so a frigate's jets read; puffs live 0.4 to 0.55 s (was 0.3 to 0.55).
+
+## 1b. Turn, then burn, then turn (issue 1581, Nov 22 2026)
+
+Ryan on the Nov 20 playtest build (Nov 21): "what is in the play test seems way faster and like sliding on ice than I
+remember". The Nov 21 outside motion audit (Neon, the PC clips in board/motion_1121 against the approved Nov 11 numbers)
+found the cause: issue 521's nose-first moves overlapped their turns with the burn (`NF_POINT` 0.75 rad, `NF_TRAIL` 0.7),
+so five of six turn and final moves ran 0.15 to 0.50 s faster than Nov 11 and the hull skidded 8 to 24 degrees off its
+nose at the start and end of a move; a one-hex dreadnought sidestep fired its main drive at 0.49 sliding 60 degrees
+off-nose; rear trails lingered while the retros braked; escorts snapped to speed and glided on a dim drive with faint
+jets. Ryan approved the stage 1 fix (issue 1581). LOOK only, as always: routes, end hexes, facings and rules unchanged.
+
+- **Turn, burn, turn.** A turn before the run is 95 percent flown before the drive lights (`GL_LEAD`); the turn to the
+  final facing starts once the hull is under 6 percent of cruise speed (`GL_REST`); a nose-first move comes to rest at
+  every corner it turns at (`GL_DWELL_NF` 0.9 of the spin) or bends hard at (a dogleg's last hex), and a knot where the
+  hull rests is a true corner of the curve (no swing wide). `NF_POINT` and `NF_TRAIL` are gone.
+- **No weave skid.** Inside a straight leg the hull is drawn 85 percent onto the line (`LEG_PULL`, was 0.6), so it passes
+  0.43 of a hex from each ruled centre, and under way the nose follows the flown line's small bends (`_gl_crab`, fading
+  out as the hull slows, so every rest pose and facing is the rules' own). Checked: under way above a quarter of peak
+  speed, an engine-flown move keeps its nose within 5 degrees of its course (nose_first_check.gd).
+- **Ignition beat.** A drive-flown move whose first push is along the nose flares its nozzles for 0.10 s (escort) to
+  0.28 s (dreadnought) before the hull moves (`GL_IGNITE`; half with Reduce motion), as a timed flash that no frame rate
+  or hurry can skip.
+- **Drive discipline.** The drive pushes only within about 20 degrees of the nose; any push further off (a sidestep, the
+  forward share of a slide) is the aft jets' work, and a move flown on thrusters never lights the drive. Braking cuts the
+  drive cold (no coast glow, it falls at 14 a second); the battle feeds a cold drive `ENGINE_COLD` 0.06, under
+  fx_ship.gd's 0.12 trail threshold, and a moving ship with its drive cold ages its trail 3.5 times faster
+  (`TRAIL_COLD_AGE`), so no ribbon lingers as a skid mark while the retros fire.
+- **Jets.** Retro jets flash in at 18 a second at braking onset. The turning jets read each spin's own push (not the
+  move's hardest), so every turn opens with one crisp pair and the opposite pair kills it (a spin under about 10 degrees
+  fires softer). An escort's jets have a strength floor of 0.6, start at `PUFF_MIN_ESCORT` 3.4 world units, brighter and
+  longer lived (fading to the old values at battleship size).
+- **Escort weight.** Up to 14 percent more hex time (`MOVE_ESCORT_PACE`: a frigate's peak burn about 36 to 31 units a
+  second) and 30 percent more turn weight (`MOVE_ESCORT_TURN`: about 123 to 98 degrees a second), easing to none at
+  battleship size; thruster moves `_slide_pace` 1.6 for an escort to 1.45 from battleship up (a frigate's two-hex back-off
+  about 25 to 20 units a second); escort ramps `GL_TR` 0.7 to 1.0 units (battleship 1.7 to 1.75).
+- **Trim and drift.** A 1 to 2 degree nod about the beam on a hard ignition or stop (`GL_NOD`), laid on the hull node,
+  never a roll; at rest a slow station-keeping drift of about 0.14 units. Reduce motion turns off the nod, drift and bob.
+- **Over and under.** Clearance scales with the hulls (battle.gd `_clearance`): over a rock 7.5 (escort) to 10.5
+  (dreadnought) up; under an enemy 5.5 to 8 down plus up to 3 for a bigger ship above. A heavy hull slows to 70 percent
+  of cruise over or under it. Dorsal and ventral jets (`jet_aims` "lift") lift the hull and catch it.
+- **Boarding.** The boarding ship trims its height toward the target hull (eased, up to 4 units) before the breach and
+  eases back after it.
+- **Burn and fire.** A move followed in the same batch by a volley from the same ship hands the target to the move;
+  the turrets that volley will use (its own slot, weapon and shot count, fx_hull.gd `gun_turrets`) take their aim at the
+  target's centre for the hull's end pose (fx.gd `pre_aim`) once it starts its last brake, or earlier when the slowest
+  of them needs more time than is left, so the first shot leaves as the hull settles; a turret not there yet still
+  makes the volley wait. The volley still follows the move; what may move after firing is RULEBOOK 7.9.
+- Not in stage 1: mass-scaled drive and jet audio (parked with the sound redo until the ship rebuilds are done, Ryan
+  Nov 21).
 
 ## 2. What makes each light (all read from the forces on the hull, in its own frame)
 
@@ -81,7 +131,7 @@ smooth speed profile along the path and the bend of the curve (`_gl_force`), and
 
 | Light | Lit by | Level |
 |---|---|---|
-| Main drive | forward push while the hull is not backing | full burn at the hardest push; a hot low glow while coasting (`GL_COAST` 0.15, about 0.6 of the battle's 0..2 drive level); fades with speed as it brakes |
+| Main drive | forward push within about 20 degrees of the nose while the hull is not backing (issue 1581) | full burn at the hardest push; a hot low glow while coasting with the velocity on the nose (`GL_COAST` 0.15, about 0.6 of the battle's 0..2 drive level); cold while braking, sliding or on a thruster move (section 1b) |
 | Retro jets (bow pair, firing forward) | backward push: braking, setting off on a back-off | share of the hardest push |
 | Aft jets (stern pair) | forward push while backing: stopping a back-off (the main drive stays low) | share of the hardest push |
 | Side jets (matched bow and stern pair) | sideways push: slides, the drift at a dogleg | share of the hardest push; quiet while the turning jets work (fewer, clearer jets) |
@@ -103,15 +153,17 @@ smooth speed profile along the path and the bend of the curve (`_gl_force`), and
   up moved alike. The first strips used the full slope (a dreadnought 1.5): its moves ran 1.6 to 2.3 s longer than
   before, more than "a little", so the slope past battleship was halved (now 0.8 to 1.3 s longer).
 - Cruise time per hex: 560 ms for an escort to 860 ms for a battleship, on past it by the same line (a dreadnought
-  about 940 ms), times the faction factor to its 0.35 power (`MOVE_PER`, unchanged); the hull cruises a hex in 80
-  percent of that (`MOVE_CRUISE`).
-- Time to build cruise from rest: 0.7 units for an escort to 1.7 for a battleship (`GL_TR`), on past it (a dreadnought
-  about 1.95 units); the stop is the same curve.
+  about 940 ms), times the faction factor to its 0.35 power (`MOVE_PER`, unchanged), and since issue 1581 times up to
+  1.14 for an escort easing to 1 at battleship size (`MOVE_ESCORT_PACE`); the hull cruises a hex in 80 percent of that
+  (`MOVE_CRUISE`).
+- Time to build cruise from rest: 1.0 units for an escort to 1.75 for a battleship (`GL_TR`; 0.7 and 1.7 until issue
+  1581), on past it; the stop is the same curve.
 - Turn: a 60 degree step weighs 0.6 hexes of time for an escort to 1.1 for a battleship (`MOVE_ROT`), on past it, times
-  `GL_SPIN` 2.4; the spin builds and bleeds over 30 to 50 percent of its time by size (`gl_ta`).
-- Measured (headless, godot/scenes/battle/test/movement_flight_check.gd, 60 frames a second): a frigate reaches speed in
-  0.43 s, stops in 0.37 s and turns at up to 133 degrees a second; a cruiser 1.07 s, 0.85 s, 76; a battleship 1.55 s,
-  1.22 s, 59; a dreadnought 1.87 s, 1.52 s, 53. The captured numbers are in contrib/opus/reviews/movement_build_report.md.
+  up to 1.3 for an escort easing to 1 at battleship size (`MOVE_ESCORT_TURN`, issue 1581), times `GL_SPIN` 2.4; the
+  spin builds and bleeds over 30 to 50 percent of its time by size (`gl_ta`).
+- Historical (issue 505, before issue 1581's escort changes; headless, movement_flight_check.gd, 60 frames a second): a
+  frigate reached speed in 0.43 s, stopped in 0.37 s and turned at up to 133 degrees a second; a cruiser 1.07 s, 0.85 s,
+  76; a battleship 1.55 s, 1.22 s, 59; a dreadnought 1.87 s, 1.52 s, 53. Issue 1581's PC numbers are on PR 1591.
 - Cap: no move runs longer than 7 s at normal speed (`MOVE_CAP`); a longer one plays faster as a whole.
 
 ## 4. Unchanged
@@ -120,8 +172,9 @@ smooth speed profile along the path and the bend of the curve (`_gl_force`), and
   move starts and ends at rest; a rules change, not planned).
 - Brisk (a player option) and strike craft keep the older eased motion; `--movement segments` keeps the old rest-to-rest
   segments as a debug flag.
-- Climb heights over rocks (9 up, 7.5 down), the dead star's pull (played as a normal move), routes and the suggested
-  facing are outside this spec's last build (issue 505 left them alone; see the movement audit findings 6, 7, 9, 10).
+- The dead star's pull (played as a normal move), routes and the suggested facing are outside this spec (issue 505 left
+  them alone; see the movement audit findings 6, 7, 9, 10). Climb heights over rocks and under hulls scale with the hulls
+  since issue 1581 (section 1b; were a flat 9 up and 7.5 down).
 
 ## 5. What this spec governs
 

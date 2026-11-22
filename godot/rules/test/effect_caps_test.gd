@@ -1,5 +1,6 @@
-# node contrib/opus/tools/effect_caps_tests.js <temp fixtures.json>, then:
 # Godot --headless --path godot --script res://rules/test/effect_caps_test.gd -- <fixtures.json>
+# Saved from contrib/opus/tools/effect_caps_tests.js at the R405 cutover.
+# Replay the saved baseline with -- res://rules/test/effect_caps_cases.json.
 extends SceneTree
 const RulesScript = preload("res://rules/rules.gd")
 const CampaignScript = preload("res://campaign/campaign.gd")
@@ -8,10 +9,10 @@ const JSM = preload("res://rules/jsm.gd")
 func _init() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() != 1:
-		printerr("Expected the browser fixture JSON path"); quit(2); return
+		printerr("Expected the saved fixture JSON path"); quit(2); return
 	var fixtures = JSON.parse_string(FileAccess.get_file_as_string(args[0]))
 	if not fixtures is Dictionary:
-		printerr("Cannot read browser fixtures"); quit(2); return
+		printerr("Cannot read saved fixtures"); quit(2); return
 	var bad := 0
 	for script in [RulesScript, CampaignScript]:
 		var port = script.new()

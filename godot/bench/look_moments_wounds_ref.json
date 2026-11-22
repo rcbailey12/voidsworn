@@ -1,0 +1,436 @@
+{
+ "about": "R402 faction wounds: today's hit damage on the newest ship of each faction (three hits, hull at 50%), for the concept paint-over and the later before/after. Target 30 units toward -z so the hits face the camera.",
+ "cameras": [
+  170,
+  60,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "60": [
+   768,
+   432
+  ],
+  "26": [
+   768,
+   432
+  ]
+ },
+ "rows": [
+  {
+   "id": "wd_V16_37",
+   "group": "faction wounds reference (R402)",
+   "label": "V16_37 Sunward Vigil: three hits, hull at 50%",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wd_H10_23",
+   "group": "faction wounds reference (R402)",
+   "label": "H10_23 Navy Dominion: three hits, hull at 50%",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Battleship"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wd_C15s_23",
+   "group": "faction wounds reference (R402)",
+   "label": "C15s_23 Hullbreaker Wrecker: three hits, hull at 50%",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wd_B21_11",
+   "group": "faction wounds reference (R402)",
+   "label": "B21_11 Chorus Bladeback: three hits, hull at 50%",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wd_I15_11",
+   "group": "faction wounds reference (R402)",
+   "label": "I15_11 Glasswright Prism: three hits, hull at 50%",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wd_D21_23",
+   "group": "faction wounds reference (R402)",
+   "label": "D21_23 Eclipse Zenith: three hits, hull at 50%",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  }
+ ]
+}

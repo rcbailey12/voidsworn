@@ -201,7 +201,7 @@ func _hstory(sid: String, story: String, radius: float, dir: String) -> void:
 		var padded := Image.create(HCELL.x, HCELL.y + STILL_MARGIN, false, Image.FORMAT_RGB8)
 		padded.fill(Color(0.05, 0.05, 0.07))
 		padded.blit_rect(img, Rect2i(Vector2i.ZERO, HCELL), Vector2i.ZERO)
-		if preload("res://tools/picture_provenance.gd").save_png(padded, dir.path_join(name)) != OK:
+		if preload("res://tools/picture_provenance.gd").save_png(padded, dir.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 			_fail("could not save " + name)
 			return
 		row["moments"]["%.2f" % float(k)] = fx.now
@@ -304,7 +304,7 @@ func _hsheet(sid: String, story: String, code: String, runs: Array) -> void:
 	var sheet := vp.get_texture().get_image()
 	sheet.convert(Image.FORMAT_RGB8)
 	var name := "SHIELD1239_%s_%s_%s_%s.png" % [HREV, code, sid, story]
-	if preload("res://tools/picture_provenance.gd").save_png(sheet, out.path_join(name)) != OK:
+	if preload("res://tools/picture_provenance.gd").save_png(sheet, out.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 		_fail("could not stamp the sheet " + name)
 	vp.queue_free()
 	print("SHIELD1239 sheet ", name)
@@ -344,7 +344,7 @@ func _pace() -> void:
 			var card := await _card("SHIELD1239 %s · %s %s · fitted shield · camera %d" % [HREV, code, str(rules_hulls[sid].get("n", sid)), int(radius)],
 				str(PACE_NAMES.get(c, c + " s")))
 			for i in 30:
-				preload("res://tools/picture_provenance.gd").save_jpg(card, cdir.path_join("f_%04d.jpg" % n), 0.9)
+				preload("res://tools/picture_provenance.gd").save_jpg(card, cdir.path_join("f_%04d.jpg" % n), 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 				n += 1
 			var tb: float = bench.fx.now
 			bench.fx.shield_break("T", 3)
@@ -362,7 +362,7 @@ func _pace() -> void:
 						var fr: Image = bench._grab()
 						if fr != null:
 							fr = bench._crop(fr, Vector2i(1280, 720), Vector2i(1280, 720))
-							preload("res://tools/picture_provenance.gd").save_jpg(fr, cdir.path_join("f_%04d.jpg" % n), 0.9)
+							preload("res://tools/picture_provenance.gd").save_jpg(fr, cdir.path_join("f_%04d.jpg" % n), 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 							n += 1
 				var img: Image = bench._grab()
 				if img == null or img.is_empty():
@@ -375,7 +375,7 @@ func _pace() -> void:
 					var fr: Image = bench._grab()
 					if fr != null:
 						fr = bench._crop(fr, Vector2i(1280, 720), Vector2i(1280, 720))
-						preload("res://tools/picture_provenance.gd").save_jpg(fr, cdir.path_join("f_%04d.jpg" % n), 0.9)
+						preload("res://tools/picture_provenance.gd").save_jpg(fr, cdir.path_join("f_%04d.jpg" % n), 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 						n += 1
 			rows.append([c, cells])
 			hreport["rows"].append({"subject": sid, "code": code, "close": float(c), "frames": n})
@@ -421,7 +421,7 @@ func _pace_sheet(sid: String, code: String, rows: Array, radius: float) -> void:
 	var sheet := vp.get_texture().get_image()
 	sheet.convert(Image.FORMAT_RGB8)
 	var name := "SHIELD1239_%s_pace_%s_%s.png" % [HREV, code, sid]
-	if preload("res://tools/picture_provenance.gd").save_png(sheet, out.path_join(name)) != OK:
+	if preload("res://tools/picture_provenance.gd").save_png(sheet, out.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 		_fail("could not stamp the sheet " + name)
 	vp.queue_free()
 	print("SHIELD1239 sheet ", name)

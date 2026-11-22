@@ -58,7 +58,7 @@ def die(msg):
 if not GAME: die('the ship json has no "game_ship" (the ship id in data.js)')
 sys.path.insert(0, HERE)
 import gamedata
-try: WEAPONS = gamedata.weapons(GAME)      # [(kind, arc), ...] in slot order, from the game's data.js
+try: WEAPONS = gamedata.weapons(GAME)      # [(kind, arc), ...] in slot order, from the Godot HULLS table
 except ValueError as e: die(str(e))
 CLS = gamedata.ship_attr(GAME, 'cls', default='Cruiser')
 FAC = gamedata.ship_attr(GAME, 'fac', default=ship.get('faction'))

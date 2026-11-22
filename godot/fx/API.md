@@ -125,7 +125,7 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 
 - `fx.ability(id, ab)` and `fx.command(id, cmd)`: a short faction-coloured pulse on the ship (a stand-in until each ability gets its own look; coming).
 - `fx.launch(carrier_id, squadron_id)`: bay flare and craft streaming out toward the new wing.
-- `var t = fx.board(attacker_id, target_id, result)` on the rules' `board` event: a breach in the target's hull at a plausible boarding point (its side facing the attacker, mid section), venting gas and lit from inside for about 3 s, then a dark gash that stays as a mark. Returns seconds until it has played. (G2: this replaces the stub flash at the board event.)
+- `var t = fx.board(attacker_id, target_id, result)` on the rules' `board` event: a breach in the target's hull at a plausible boarding point (its side facing the attacker, mid section), venting gas and lit from inside for about 3 s, then a dark gash that stays as a mark. Returns seconds until it has played. (G2: this replaces the stub flash at the board event.) Issue 1547: a party from dead ahead or astern breaks in on the side the camera sees; the look Ryan picked (B: a wider hatch, pop ring, burst, vent and amber inside light, and the amber boarding lines in the shared line style) comes from `BOARD`, and `fx.board_hold_ms()` is how long the battle holds on it before the next event.
 - `fx.hull_mark(id, look, w, world_p, dir, sec)`: a weapon mark without a volley (look as in volley, plus `board` and `ram`).
 - `fx.tick(id, kind)` for turn-start damage (`fire`, `acid`, `tidal`, `storm`): a small flare-up of that kind on the ship.
 - `fx.hull_point(id, section, toward)`: `{p, n}` in world space on the hull (section `"prow"`, `"mid"`, `"eng"` or `""`, on the side facing the point `toward`), for anything G2 wants to anchor there.
@@ -136,19 +136,21 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 - Hit pause never blocks input: fx slows its own clock for a few frames on heavy weapon hits. Deaths use a separate R73 beat only for cruiser class and above or flagships, independent of their draw scale. It runs at 0.35 speed for 0.48 real seconds, with a short recovery (measured under 0.64 s total at 30/60/144 Hz). Small kills add no pause. `fx.anim_speed()` reports the presentation speed; wreck velocities follow it without touching `Engine.time_scale`, input or rules.
 - `fx.hurry_death()` immediately clears the active beat and suppresses a queued death beat for three effect seconds. The only hook outside `fx/` is four lines in `scenes/battle/battle.gd`: the existing Enter/Space hurry branch calls it, and a death started while already hurrying calls it too. No rule or result logic changes.
 
-### Hit reactions (R50)
+### Hit reactions (R50, R412)
 
 A hit no longer just flashes: the ship reacts with its mass, in three beats (r5, after Ryan's "no cartoon push back"; the ship never springs out and back):
 
-1. **Onset:** the kick builds over a few frames (0.03 s for craft up to 0.16 s for a capital hull, whose mass soaks it up) while a structural shudder runs through the hull (lower and longer in big hulls: 11 Hz for craft down to 4 Hz for capital ships; big hulls show more shudder than motion).
-2. **Arrest:** a moment later the attitude thrusters fire and brake the spin and the slide at a steady rate, a visible burn of gas puffs at the hull's corners picked to oppose the motion, over 0.35 s (craft) to 1.2 s (capital).
-3. **Recovery:** once stopped, the helm brings the ship back level and onto its hex, slowly and without overshoot (critically damped).
+1. **Onset.** The kick builds over 0.03 s for craft up to 0.16 s for capital hulls. The structural tremor runs from 6 Hz for craft down to 3.5 Hz for capitals and fades in about 0.22 s. The roll axis sits below mid-hull so one broadside heels the ship consistently. Heavy and capital hulls take half the linear kick.
+2. **Arrest.** Attitude corrections oppose the spin and slide over 0.35 s for craft up to 1.2 s for capitals. Sunward and Meridian use cold gas, Ashfall uses warm grey jets, Glasswrights use gold glints and Eclipse uses violet shimmers. Chorus uses no mechanical jets.
+3. **Recovery.** The hull eases back onto its hex and returns to its resting angle, including the list of a crippled ship.
 
 **Zoom punch (F3).** `fx.punch(t, amount, pos)`: the camera's field of view narrows by `amount` (0.01 = 1%) over about 0.05 s and eases back over about 0.4 s; smaller far from the camera (amount / (1 + distance / 400)), never more than 6% at once. fx plays it on heavy gauss slugs (0.8%), crits (0.6%), torpedo and ram hits (1.4%) and kills (1% for a light ship up to 3.4% for a capital, more for torpedo kills and flagships). fx writes `camera.fov` only while a punch plays and puts the camera's own value back after; if G2 or the camera rig changes the field of view meanwhile, fx takes the new value as the base. `fx.punch_now()` is the current punch (0 when none).
 
-Torpedoes and rams shove, shells and gauss slugs kick, light guns tap, lances and ions are energy and barely move a ship. Mass by class: a frigate takes a real jolt (a torpedo rolls it about 6.6 degrees at its peak, about 0.6 s after the hit, and slides it 3% of its length; settled in about 3.4 s); a super-dreadnought barely moves (a torpedo: about 1.4 degrees, peaking after 1.3 s; settled in about 5 s). Heavy hits also make the drive stutter. The camera shake (above) scales with the hit and distance and follows `shake_scale`. Measured by `fx/test/fx_react_probe.gd` (it also writes a per-frame trace and, with PROBE_CLIP=1, clips).
+Torpedoes and rams shove, shells and gauss slugs kick, and lances and ions carry little momentum. Shields pass through 12% of an absorbed impact's impulse. Hull damage, shield breaks, crits and ion hits stutter the drive. Heavy hull hits, crits, gauss punches, lances and ion hits briefly dim deck lights. Batteries, gauss and heavy ordnance kick the shooter back on the shot's fire time. A turret's barrel assembly retracts and recovers on that same clock.
 
-**For G2 (shared root):** fx writes the ship root's `rotation.x` and `rotation.z` (roll and pitch; ShipView never writes them) while a reaction plays and sets them back to 0 when it settles. Yaw and the small drift are added to `rotation.y` and `position` only while `root.busy()` is false (ShipView writes position and yaw itself during a path); fx takes its own offset back out when the ship settles, and drops it when a path starts. G2's weighty movement (R50 part 2) can keep its own RCS puffs for turns and burns; fx's puffs only answer hits. If G2 later wants to own the whole root, `fx.ship(id)._ra` (angles) and `_pd` (drift) are the state to read instead.
+ShipView owns board position and heading. FX moves `hull_pivot`, keeping the hex marker and selection ring on the board. The pivot's translation follows the ShipView heading while the hull yaws under it. ShipView takes idle bob time from the effect clock so it follows hit pause.
+
+Missed projectiles pass the target plane and leave a fading trail. Close misses can spark at the shield edge, and the positional pass-by cue plays on the effect clock. `fx/test/wave_1a_check.gd` covers the hit, recoil and miss behavior.
 
 ## 8. Accessibility
 

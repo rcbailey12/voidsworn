@@ -489,7 +489,7 @@ func _fleet_part() -> void:
 				_warn("empty frame for fleet %s %s" % [sky[0], fc[1]])
 				continue
 			var name := "%02d_%s.png" % [n, fc[1]]
-			preload("res://tools/picture_provenance.gd").save_png(_crop(img, FLEET_CELL, FLEET_CELL), d.path_join(name))
+			preload("res://tools/picture_provenance.gd").save_png(_crop(img, FLEET_CELL, FLEET_CELL), d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 			report["stills"].append({"part": "fleet", "sky": sky[0], "file": "fleet/%s/%s" % [sky[0], name], "code": fc[1],
 				"what": fc[0], "length": float(sv.L), "step": steps})
 			n += 1
@@ -557,7 +557,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var id := str(row["id"])
 	_clear()
 	_make_fx()
-	# Issue 462: a row may set effect switches (for example the capital death's scene dim, or reduce flashing). Set by
+	# Issue 462: a row may set effect switches (for example reduce flashing). Set by
 	# name so a commit without the switch simply ignores it.
 	var opts = row.get("fx", {})
 	if opts is Dictionary:
@@ -607,6 +607,28 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	_cam(focus, r)
 	for k in 72:   # 1.2 s: engines up, the first damage and cut jobs done
 		await _step()
+	# Issue 1235 run 2: a row may land hits on the target first ("pre": [[kind, weapon, section], ...], one shot each,
+	# 0.75 s apart, each on its named hull section: eng, mid or prow; Artoo on PR 1570: without it every hit took "mid")
+	# and then set its hull state ("sync_t": a unit view, as the game's sync sends), for worn-ship rows; "do": "hold"
+	# then shows the ship as it stands. A commit without these keys ignores them.
+	# Issue 1235 recheck (Artoo on PR 1570): a pre entry may hit the shield ([kind, weapon, section, "shield"]) or be a
+	# boarding party (["board"], the game's fx.board), for the list-side and boarding-then-wear rows.
+	for pv in row.get("pre", []):
+		if str(pv[0]) == "board":
+			fx.board("A", "T")
+			for k in 90:
+				await _step()
+			continue
+		var ph: Array = _hits(1, (pv as Array).size() > 3 and str(pv[3]) == "shield", false)
+		if (pv as Array).size() > 2:
+			ph[0]["section"] = str(pv[2])
+		fx.volley("A", str(pv[0]), "T", {"weapon_id": str(pv[1]), "shots": [true], "hits": ph})
+		for k in 45:
+			await _step()
+	if row.get("sync_t") is Dictionary:
+		fx.sync_ship("T", row["sync_t"])
+		for k in 30:
+			await _step()
 	fx.rng.seed = 11
 	seed(2070)
 	var t_ev: float = fx.now
@@ -634,7 +656,18 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		t_ev = fx.now
 		fx.shield_break("T", 3)
 	elif what == "death":
+		# issue 1586: a row may pick the small-hull archetype ("arch": 0 torch, 1 snap, 2 roll, 3 pop); a commit without
+		# the archetypes ignores it
+		if row.has("arch") and fx.ship("T") != null:
+			fx.ship("T").set_meta("death_arch_force", int(row["arch"]))
+		# and may put the Hollow Sun's well near the target ("well": [dx, dy, dz] from the target) for a tidal kill;
+		# a strike craft target is a "Squadron" class (fx treats that class as a wing)
+		if row.has("well"):
+			var wv: Array = row["well"]
+			fx.well = T.global_position + Vector3(float(wv[0]), float(wv[1]), float(wv[2]))
 		fx.death("T", str(row.get("cause", "blast")))
+		if row.has("well"):
+			fx.later(fx.now + 8.0, func l_well_off() -> void: fx.well = Vector3.INF)
 		if death_audio != null:
 			death_audio.watch("T", T.global_position)
 	# issue 370 (attach points): where a launch, the movement jets and the wounds start on the attacker's hull
@@ -647,6 +680,11 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		A._aft_puffs(1.0)
 		A._side_puffs(1.0, 1.0)
 		A._couple_puffs(1.0, 1.0)
+	elif what == "sync":
+		# issue 1587: the event is a hull state change ("sync_ev", a unit view as the game's sync sends), for a section
+		# crossing into stage 3 or 4 (the one-shot blowout); a commit without this key shows the ship unchanged
+		if row.get("sync_ev") is Dictionary:
+			fx.sync_ship("T", row["sync_ev"])
 	elif what == "wounds":
 		fx.sync_ship("A", {"hp": 25.0, "maxHp": 100.0, "burning": false, "sh": [5, 5, 5, 5],
 			"sec": {"eng": {"hp": 10, "max": 100}, "mid": {"hp": 10, "max": 100}, "prow": {"hp": 10, "max": 100}}})
@@ -702,7 +740,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if not keep:
 		return true
 	var name := "%s__c%d.png" % [id, int(r)]
-	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name))
+	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts})
 	_log("%s at %d: %d cells" % [id, int(r), ci])

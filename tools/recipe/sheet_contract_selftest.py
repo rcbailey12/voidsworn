@@ -88,7 +88,7 @@ if drop is None:
     check(not own and not used, 'an unarmed objective: no data.js weapon and no sheet weapon, so no weapon can be taken out')
 else:
     lacking = [w for w in own if w != drop]
-    _weapons = gamedata.weapons; gamedata.weapons = lambda gid, data_js=None: lacking if gid == SHIP['game_ship'] else _weapons(gid, data_js)
+    _weapons = gamedata.weapons; gamedata.weapons = lambda gid, tables_json=None: lacking if gid == SHIP['game_ship'] else _weapons(gid, tables_json)
     try: contract.to_recipe(K, SHIP); check(False, f'a ship whose weapon list lacks a sheet weapon ({drop[0]} {drop[1]}) was refused')
     except contract.ContractError as e: check('names 0 slots' in str(e), f'a ship whose weapon list lacks a sheet weapon ({drop[0]} {drop[1]}) was refused: {e}')
     finally: gamedata.weapons = _weapons

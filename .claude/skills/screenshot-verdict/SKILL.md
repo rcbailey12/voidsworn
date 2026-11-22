@@ -64,4 +64,4 @@ even though the game runs them on real time (R118).
   still. A change to those two looks cannot be judged on the bench until they move to the effect clock.
 - Effects that are fine in one renderer can draw black squares on the real GPU (NaN from pow with a negative base or a zero-length
   normalize, spread by bloom): guard shaders with `pow(max(b, 0.0), e)`, a safe normalize and clamped outputs.
-- The frozen browser build's tools (closeshot.py, fxshot.py, boardshot.py) are history; the browser game is the rules oracle only.
+- The frozen browser build's tools (closeshot.py, fxshot.py, boardshot.py) are history; the browser rules are retired too (R405).

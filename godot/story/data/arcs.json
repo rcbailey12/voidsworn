@@ -1,11 +1,11 @@
 {
-  "_about": "What finishing a faction arc gives (Ryan, Oct 26: both a cosmetic reward and a gameplay unlock). An arc is finished by winning its beat 3 fight (the Nemesis's last). Cosmetic side, owned by the story layer and kept in the career profile: a medal, a Chronicle entry, a title added to the admiral's name, and a flagship paint scheme the player can switch on or off per faction. Gameplay side: one hull variant per faction (unlock_variant), drafted in godot/story/unlocks.md; its rules belong to stream B, and the story layer only reports that it was earned (story.arc_unlocks()). Paint colours are hex; pattern is a short note for whoever paints it (G4 look, A4 ships). Text follows lore round 8 (R59); ids (medal, paint, unlock_variant) never change. No em dashes.",
+  "_about": "What finishing a faction arc awards (Ryan, Oct 26: cosmetic reward plus gameplay unlock). Ids (medal, paint, unlock_variant) stay unchanged for save compatibility. Text updated to space-first US English and aligned with STORY_BEAT3.",
   "voidsworn": {
     "arc": "The Oath at the Hollow Sun",
     "medal": {
       "id": "arc_voidsworn",
       "n": "Oath Kept",
-      "d": "Break the siphon at the Hollow Sun: finish the Sunward Crusade story.",
+      "d": "Burn out the siphon relay at the Hollow Sun to finish the Sunward Crusade story.",
       "glyph": "O",
       "col": "#ffb35a"
     },
@@ -16,7 +16,7 @@
       "hull": "#d9dde2",
       "trim": "#24211f",
       "glow": "#ff8a3a",
-      "pattern": "Frost-white plate over black iron trim, ember radiator spires, the captains' names chalked along the flanks."
+      "pattern": "Frost-white armor plate over matte black iron trim, glowing ember radiator fins, and chalked crew names along the flanks."
     },
     "unlock_variant": "vs_penitent_l",
     "unlock_name": "Vigil lance-cruiser"
@@ -26,18 +26,18 @@
     "medal": {
       "id": "arc_hegemony",
       "n": "Order Fulfilled",
-      "d": "Secure the anchorage at the Hollow Sun: finish the Hegemony story.",
+      "d": "Secure the Hollow Sun orbital perimeter to finish the Meridian Directorate story.",
       "glyph": "A",
       "col": "#9fc4ff"
     },
-    "title": "Holder of the Anchorage",
+    "title": "Warden of the Rim",
     "paint": {
       "id": "anchorage_black",
-      "n": "Anchorage Black",
+      "n": "Bastion Black",
       "hull": "#1c2433",
       "trim": "#c4ccd5",
       "glow": "#9fc4ff",
-      "pattern": "Near-black hull, silver wedge trim, one white escort stripe for the column that lived."
+      "pattern": "Charcoal stealth hull with silver wedge trim and a single white stripe commemorating the column that survived."
     },
     "unlock_variant": "h_interdictor_e",
     "unlock_name": "Cordon column escort"
@@ -47,49 +47,49 @@
     "medal": {
       "id": "arc_corsair",
       "n": "Strongest Keeps It",
-      "d": "Take the wreck field around Rook: finish the Hullbreaker story.",
+      "d": "Claim R-5 Rook from the wreck field to finish the Ashfall Hullbreakers story.",
       "glyph": "R",
       "col": "#ff6b4a"
     },
-    "title": "Rook-Hunter",
+    "title": "Rook-Claimer",
     "paint": {
       "id": "treasure_gilt",
       "n": "Trophy Plate",
       "hull": "#2a2420",
       "trim": "#8a3a2a",
       "glow": "#ff4a3a",
-      "pattern": "Soot-black hull hammered over with trophy plates from every faction in their own colours, red running lights doubled along the flanks."
+      "pattern": "Soot-black hull riveted over with mismatched trophy plates from all six factions and twin crimson running lights along the flanks."
     },
     "unlock_variant": "c_marauder_g",
     "unlock_name": "Trophy wrecker"
   },
   "chorus": {
-    "arc": "Eat the Sun",
+    "arc": "Consume the Cores",
     "medal": {
       "id": "arc_chorus",
-      "n": "Sun-Eater",
-      "d": "Eat the warm thing at the Hollow Sun: finish the Chorus story.",
+      "n": "Core-Devourer",
+      "d": "Swallow the surviving Lattice cores at the Hollow Sun to finish the Chorus story.",
       "glyph": "S",
       "col": "#ffd27a"
     },
-    "title": "Who Ate the Sun",
+    "title": "Devourer of the Cores",
     "paint": {
       "id": "sunheart",
       "n": "Sunheart",
       "hull": "#4a2a1c",
       "trim": "#ffb040",
       "glow": "#ffd27a",
-      "pattern": "Ember-coloured flesh with veins of slow gold light, pulsing in time."
+      "pattern": "Dark scorched carapace veined with slow-pulsing gold thermal channels."
     },
     "unlock_variant": "b_razor_e",
-    "unlock_name": "Sun-eater bladeback"
+    "unlock_name": "Star-gorged bladeback"
   },
   "ithar": {
     "arc": "The Last Lens",
     "medal": {
       "id": "arc_ithar",
       "n": "Lens Returned",
-      "d": "Bring the Lattice's last lens home: finish the Glasswright story.",
+      "d": "Recover the Lattice's last primary lens to finish the Glasswrights story.",
       "glyph": "L",
       "col": "#e8f2ff"
     },
@@ -100,7 +100,7 @@
       "hull": "#2b2f3a",
       "trim": "#e8e4f0",
       "glow": "#c9b8ff",
-      "pattern": "Smoked crystal with pearl edges, the vanes faintly violet, family lines etched small near the prow."
+      "pattern": "Smoked crystal with pearlescent bevels, pale violet optical vanes, and ancestor lineages etched along the forward spine."
     },
     "unlock_variant": "i_carrier_a",
     "unlock_name": "Ringing aperture"
@@ -110,18 +110,18 @@
     "medal": {
       "id": "arc_deathless",
       "n": "Noon Remembered",
-      "d": "Bring the keys home to the Hollow Sun: finish the Eclipse story.",
+      "d": "Bring the remaining cores home to Ardent's rim to finish Eclipse's story.",
       "glyph": "N",
       "col": "#ffe7a0"
     },
-    "title": "Bringer of the Homecoming",
+    "title": "Herald of the Homecoming",
     "paint": {
       "id": "court_gold",
       "n": "Noon Gold",
       "hull": "#1a1622",
       "trim": "#e8c870",
       "glow": "#ffe7a0",
-      "pattern": "Violet-black plates with white-gold inlay; the glow turns from violet-white to the gold of a remembered noon."
+      "pattern": "Violet-black sunshade plates inlaid with pale gold, shifting the corona glow from cold violet to remembered sunlight."
     },
     "unlock_variant": "d_jackal_h",
     "unlock_name": "Archive guard flare"

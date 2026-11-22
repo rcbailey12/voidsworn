@@ -55,12 +55,30 @@ static func _h(s: String) -> int:
 	return h
 
 
-func _pick(pool, nem, key: String, seed: int) -> String:
+func _pick(pool, nem, key: String, seed: int, spoken = null) -> String:
 	if pool is String:
 		return pool
 	if not (pool is Array) or pool.is_empty():
 		return ""
-	return str(pool[_h(str(nem.get("name", "")) + "|" + key + "|" + str(seed)) % pool.size()])
+	var n: int = pool.size()
+	var base := _h(str(nem.get("name", "")) + "|" + key + "|" + str(seed))
+	if not (spoken is Dictionary):
+		return str(pool[base % n])
+	var pid := "nem:%s:%s" % [str(nem.get("fac", "")), key]
+	var used: Array = spoken.get(pid, [])
+	if used.size() >= n:
+		used = []
+	var avail: Array = []
+	for i in n:
+		if not used.has(i):
+			avail.append(i)
+	if avail.is_empty():
+		avail = range(n)
+		used = []
+	var idx: int = avail[(base + used.size()) % avail.size()]
+	used.append(idx)
+	spoken[pid] = used
+	return str(pool[idx])
 
 
 func _fac(nem) -> Dictionary:
@@ -138,7 +156,7 @@ func final_hail(nem, flags = {}, seed := 0, ctx: Dictionary = {}) -> String:
 
 
 # One line for a moment: beaten, death, gloat, kill, signature (and hail, again, final, scar).
-func line(moment: String, nem, seed := 0, ctx: Dictionary = {}) -> String:
+func line(moment: String, nem, seed := 0, ctx: Dictionary = {}, spoken = null) -> String:
 	var F := _fac(nem)
 	var pers := persona_of(nem)
 	# a personality line for beaten and hail when he has one (half the time, so the faction pool still shows)
@@ -146,19 +164,19 @@ func line(moment: String, nem, seed := 0, ctx: Dictionary = {}) -> String:
 		var pl := str(F["personality"][pers].get(moment, ""))
 		if pl != "":
 			return fill(pl, nem, ctx)
-	return fill(_pick(F.get(moment), nem, moment, seed), nem, ctx)
+	return fill(_pick(F.get(moment), nem, moment, seed, spoken), nem, ctx)
 
 
 # His opening line for a battle against his fleet.
 #   sector III: his final line (the arc's beat 3 line);
 #   a later meeting: what he remembers (how you beat him), his scars, or a rematch line;
-#   the first meeting: a hail (his personality's or the faction's).
-func opening(nem, sector: int, seed := 0, ctx: Dictionary = {}) -> String:
+#   the first meeting: a vs_faction rivalry hail (40% when player_fac is supplied) or a hail.
+func opening(nem, sector: int, seed := 0, ctx: Dictionary = {}, spoken = null) -> String:
 	if not (nem is Dictionary):
 		return ""
 	var F := _fac(nem)
 	if sector >= 3:
-		return fill(_pick(F.get("final"), nem, "final", seed), nem, ctx)
+		return fill(_pick(F.get("final"), nem, "final", seed, spoken), nem, ctx)
 	var met := int(nem.get("beaten", 0)) > 0 or int(nem.get("scars", 0)) > 0
 	if met:
 		var opts: Array = ["again"]
@@ -171,5 +189,10 @@ func opening(nem, sector: int, seed := 0, ctx: Dictionary = {}) -> String:
 		var o: String = opts[_h(str(nem.get("name", "")) + "open" + str(seed)) % opts.size()]
 		if o == "memory":
 			return fill(str(F["memory"][mk]), nem, ctx)
-		return fill(_pick(F.get(o), nem, o, seed), nem, ctx)
-	return line("hail", nem, seed, ctx)
+		return fill(_pick(F.get(o), nem, o, seed, spoken), nem, ctx)
+	var pfac := str(ctx.get("player_fac", ""))
+	if pfac != "" and F.get("vs_faction", {}).has(pfac) and _h(str(nem.get("name", "")) + "|vs|" + pfac + "|" + str(seed)) % 5 < 2:
+		var vl := str(F["vs_faction"][pfac])
+		if vl != "":
+			return fill(vl, nem, ctx)
+	return line("hail", nem, seed, ctx, spoken)

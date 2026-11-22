@@ -1,6 +1,6 @@
 # Embers of the Hollow Sun: the rulebook
 
-The one list of rules in force for the whole project (issue 492, FINDINGS R190). Each rule says what to do, why (the problem
+The index and shared rules for the whole project (issue 492, FINDINGS R190). Each rule says what to do, why (the problem
 Ryan was reacting to, in his words where they exist), who set it and when, and its old ids. Rules of play and balance numbers
 are not here (R190's scope): they live in the browser oracle, godot/rules and their FINDINGS rows (for example battles growing
 over a run toward about 20 ships, a guide and not a cap, R1; capture as add, strip or ransom, R4).
@@ -29,6 +29,9 @@ issue 890).
 win for current status only. Between two of Ryan's rulings the later one wins, and the entry here is edited, never only a new
 FINDINGS row. Why: corrections written as new rows left the old wording reading as the rule (R183's withdrawn gate line).
 Set: Board, Nov 11, from Muse's outside sweep (contrib/muse/reviews/rules_sweep_2026_11.md, Parts 4 and 6).
+
+The numbered rules in the path-scoped files linked below are part of this book and have the same priority. Claude Code
+loads them when it reads matching files. Other seats follow the section links when working in that area.
 
 0.4 **A number in a document is a starting point judged by eye, unless it protects comfort, frame rate, saves, crashes or rules
 parity.** A number names its measurement, or says it is a tuning value. Why: every hit size was tuned under a cap that was
@@ -77,6 +80,10 @@ LOOP.md's LATEST lines roll into a dated summary once they pass about 15. Muse a
 Why: several models and fresh chats read the repo cold; on Nov 14 a one-day choice nearly became a rule, an A20 note was stretched to
 every ship before Ryan ratified it (R244), and a summary line inverted Ryan's call on A18 and A19.
 
+0.11 **Claude Code runs the no-exception checks as hooks.** The [hook setup](../.claude/hooks/README.md) covers seat
+assignment, credential protection, direct pushes, punctuation and the Godot parse check. Tool calls and turn endings give
+workers feedback before review (issue 1660).
+
 ## 1. Working with Ryan
 
 1.1 **Plain words, the answer first, your pick and why; no em dashes; no human-hour estimates** (estimate in agent runs and
@@ -104,6 +111,12 @@ Set: Ryan. Ids: agents-11, loop-05.
 1.7 **Picks, looks and money are Ryan's.** Payments, top-ups and sign-ups stay his. Why: his game and his accounts. Set: Ryan
 (AGENTS.md seat table; R126b).
 
+1.8 **Ryan's non-urgent picks go in two numbered Pick Sheets a day, Morning and Evening; he answers in the form `1=B, 2=Yes`.**
+Product and visual calls that can wait are batched there, each with its pick and one current labelled picture. Outside the
+sheets the Board interrupts him only for an emergency: PC disk under 75 GB, a key to paste, or a stuck job to kill. Why:
+"Move Ryan's non-urgent product/visual calls into two numbered Pick Sheets per day (Morning and Evening, format `1=B, 2=Yes`).
+Only interrupt outside that batch for emergencies (disk <75 GB, key paste, stuck kill)." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R408).
+
 ## 2. The Board and the agents
 
 2.1 **The Board owns the whole board.** One Claude thread in the Project (Opus 5.5 since Nov 11) holds design calls, the final
@@ -119,12 +132,12 @@ the Board's diff review while Muse is idle, with the check still asked for. Set:
 Board (R162). Ids: agents-13, claude-04, R132c, R162b.
 
 2.3 **Review every pull request by its diff, never its title, then sweep its impact** (every caller, saves and old profiles,
-both rule twins, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
+the Godot rules and their saved results, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
 job has finished. Why: a merged change left existing profiles with Heat closed (R129); PR 542 merged before its parity jobs
 ended (LOOP, Nov 12). Set: Board (R129); Ryan's project instructions. Ids: R129a, loop-03.
 
 Pictures carry their revision and stage. Every picture shown to Ryan is labelled with the revision that produced it and its
-stage (sheet built, paint proof, installed in game, Ryan accepted); a stale picture is never shown as current, and if the
+stage (sheet built, paint proof, installed in game, cloud direction check for a cloud, software or placeholder render (issue 1567), Ryan accepted); a stale picture is never shown as current, and if the
 picture is stale the review stops there rather than judging it. A visual pull request merges only after its picture has been
 compared with the concept and the ruling it answers, in a view that actually shows the feature being judged, and the Board
 says plainly in the pull request where it misses. What a ruling can measure is measured on the painted output and reported
@@ -241,8 +254,8 @@ quote per finding, OBSERVED or INFERRED. Findings come ranked, most important fi
 review-01, review-02, review-03.
 
 2.12 **Outside agents work in contrib/<agent>/; Muse may deliver low-code fixes (text, data, tests, tools, docs) as pull
-requests, and a rules or data change is made the same way in the Godot port.** Why: "keep muse cooking" (R81); the twins must
-not drift (R155b). Set: Ryan, Nov 2 (R81). Ids: R81, agents-15, muse-06.
+requests; a rules or data change is made in Godot only (3.1).** Why: "keep muse cooking" (R81); Godot is the only rules
+source since R405 (the browser twin is retired). Set: Ryan, Nov 2 (R81); Ryan, Nov 22 (R405). Ids: R81, agents-15, muse-06.
 
 2.13 **A job's scope lists every folder its earlier runs touched, and every baked picture keeps its bake script in the repo.**
 Why: PR 327 merged without its bake scripts (R157). Set: Board.
@@ -265,19 +278,31 @@ request names who else picks the change up; the Board returns a one-off fix unle
 Why: "let's make sure all the changes we're doing are cohesive and tied together. so like the fixes to the chorus skin should
 apply everywhere once we land it, etc." Set: Ryan, Nov 19 (R333).
 
+2.18 **No paid OpenAI API review of a pull request that a free seat already covers.** Artoo (ChatGPT) or the Claude code review
+seat reviews it; `[openai]` audit jobs on the API key are filed only for work no subscription seat can do. Why: "Stop filing
+paid `[openai]` API PR audits (like #1647) whenever free Artoo (ChatGPT) or Claude `/code-review` already covers the PR. Save
+cash OpenAI API credits only for tasks no subscription seat can do." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Issue 1647, OK'd before this ruling, finishes.
+Set: Ryan, Nov 22 (R406).
+
 ## 3. PC and tools
 
-3.1 **The product is the Godot 4 game on Ryan's Windows PC only; the browser rules (data.js, core.js, battle.js and the
-campaign files) are a live reference copy: every rules change goes into both until Ryan approves their retirement.** The browser
-game and pages ship nothing. Parity runs in full on every push, never skipped and never cut (no skip rule), made faster by
-running battles in parallel workers (issue 978), and a Godot-only safety net runs beside it (issue 979, then saved Godot
-results with a changed-battles review on rules PRs, piloted for whether its review cost is worth it). Ten rules PRs is a
-progress checkpoint, not approval to retire parity. The browser rules stay until the replacement data home, a Godot balance
-simulator, the ported tests and the PC tools work and are verified; retirement is then a separate recommendation to Ryan.
-Why: "Godot seems way better. It's very noticeable now." (R32); PC-only (Oct 24); "Let's go with Path D ... Don't implement
-the skip rule or reduce coverage ... Keep the browser rules until the replacement data, balance simulator, relevant tests and
-tools are working and verified, and bring me a separate retirement recommendation then." (R312). The old "frozen" wording was
-wrong: every new rule since went into both copies (round 2 review, Nov 17). Set: Ryan. Ids: R32, R33a, agents-02, R312.
+3.1 **The product is the Godot 4 game on Ryan's Windows PC only, and Godot (`godot/`) is the only rules source.** The browser
+rules (data.js, core.js, battle.js and the campaign files at the repo root) are retired: frozen history that no rules change
+touches and the game never reads. A rules or campaign change edits the Godot files and the table files
+(`godot/rules/data/tables.json`, `godot/campaign/data/campaign_tables.json`; reseal their checksums with
+`godot --headless --path godot --script res://rules/tools/reseal_tables.gd`). CI compares every battle, the 30 seeded campaign
+runs and the Nemesis scenarios byte for byte with the reviewed saved Godot results in the repo, beside the cache on/off safety
+net; a pull request that changes them updates the saved results in the same pull request (`godot/rules/test/saved/README.md`,
+`node godot/campaign/test/node/saved_campaign.js update`) and says why each changed battle or run moved. One exception until
+issue 1667 moves the ship tools onto the Godot tables: a change to a ship's weapon list or hull entry also goes into data.js,
+because the ship pipeline still reads it (weapon definitions, kind and shots, are read from the Godot table already:
+`tools/recipe/gamedata.py` weapon_stats). The balance simulator (`node sim3d.js`) plays the frozen browser rules, so it measures
+nothing new until its Godot port (issue 1656) lands. Why: "RETIRE THE BROWSER JS TWIN (RULEBOOK 3.1): Approved. Land a clean
+retirement PR BEFORE coding starts on #1453 Build Variety parts (including #1652). Godot (`godot/`) is now the sole rules source
+of truth, backed by headless Godot tests." (Ryan, Nov 22 2026, 12:09 UTC, R405). It replaces Path D's keep-both rule (R312),
+under which every rules change went into both copies; at retirement both copies matched on all 289 battles and 30 campaign
+runs (issue 1654). "Godot seems way better. It's very noticeable now." (R32); PC-only (Oct 24). Set: Ryan. Ids: R32, R33a,
+agents-02, R312, R405.
 
 3.2 **Heavy work runs on Ryan's PC (RTX 5080) through the queue; the cloud sandbox is for editing.** Why: the sandbox has about
 8 GB and no GPU and runs out of memory on full meshes. Set: Ryan, Oct 21. Id: agents-23.
@@ -287,6 +312,7 @@ Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voidsworn_test, mos
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). On Nov 18 the drive fell under the 60 GB job floor from about 45 kept workspace copies and 390 GB of job scratch in the temp folder; Ryan chose (Nov 18 20:46 UTC) to let jobs clean up after themselves (R326).
 On Nov 19, about 350 GB disappeared overnight (392 GB free after the Nov 18 cleanup, 41 GB the next morning). The hand cleanup removed 173 folders and raised free space to 199 GB. It kept 42 checkout copies, 26 because generated campaign outputs, audio UIDs or onboarding output were outside the safe list.
 Set: Ryan, Nov 18 (R326) and Nov 19, 16:30 UTC (R336); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
+Ryan's yes to a delete counts when he gives it in the Board thread himself, typed in his own words. The Board passes it to the PC session with his message id as the receipt and the PC acts on it; nobody asks him to repeat it or to go to the PC just to say yes. A note from the coordinator, a helper or another agent is still not his yes. Why: on Nov 21 he typed "Yes remove saved runs" three times from his phone and the PC refused each as a relay, so the cleanup nearly waited a night with C: under the job floor. Set: Ryan, Nov 22, 04:35 UTC, "Yes fix that" (R400).
 
 Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
 (including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
@@ -356,7 +382,7 @@ through helper_clone.bat, which holds the folder's `.voidsworn-run-active` lease
 switch that checkout mid-job. Before copying ships it stops if a file it would replace differs from both the shared build
 and the folder's own last copy (`ships_copied.txt`), so local work is never overwritten (Artoo on PR 1275). After the
 Board relays a PASS, `helper_clone.bat <job folder> release` checks that the latest attempt ran its job steps and they
-exited 0 (a setup-only call or an early stop never qualifies) and that every out file is on a board/pc-out branch, then
+exited 0 (a setup-only call or an early stop never qualifies) and that every out file is on a relay branch (the relay repo's pc-out branch, or an older board/pc-out one), then
 removes only the ship and gen copies still matching that record and the `.godot` import cache; the clone stays, and a
 FAILED run keeps everything (R326, own leftovers). Ship jobs and the look bench give their tools an owned TEMP folder. A helper proof job's head (opus_job_head.bat, issue 1303) removes, at its tail and only after a PASS, the pinned checkouts its own checkout step listed in that attempt folder whose HEAD is still the pin and whose files hold no work beyond the import cache, ship copies still matching their source, byte copies of tracked files and the .import/.uid sidecars of those (rebuildable from the mirror; about 16 GB each); a failed job keeps them, and its out folders, logs and ship records always stay. Stage 7 removes its checked export scratch after a
 successful install. A TEMP folder untouched for three hours can be removed when it carries a valid `.voidsworn-run-owner`
@@ -367,13 +393,13 @@ run_parity.js, `stage7-checked-<code>-<8 characters>` from manifest_merge.py), i
 process names it (the whole folder name, so `opus121` never matches `opus1211`). Links inside any TEMP scratch, owned or
 older, are removed as links and never followed, and the log names each link's target; a folder another account owns
 (Codex sandbox scratch) cannot be read, so it is left in place and the rest is removed. Other name matches are report-only, and agent-chosen
-names go to Ryan as a one-off list. The janitor removes an `opus<N>` or `opus<N>out*` helper folder after a day untouched
-only when no running process names it, every file in its out folders is a blob committed on a board/pc-out relay branch
+names go to Ryan as a one-off list. The janitor removes an `opus<N>` helper folder (with any suffix, such as `opus<N>out*`, `opus1369b` or `opus1211_run6`, and playtest folders `pt<MMDD><letters>`, issue 1396) after a day untouched
+only when no running process names it, every file in its out folders is a blob committed on a relay branch (the relay repo's pc-out-* or an older board/pc-out-*)
 in the repo mirror (a loose blob is not a receipt), and everything else in it is a checkout Git shows as rebuildable with
 all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. helper_clone's
 own top-level files (`.voidsworn-run-active`, `attempt.txt`, `repo_commit.txt`, `ships_copied.txt`) do not count as
 other files. The janitor takes the helper folder's lease before deciding and holds it through the deletion, removing the
-lease file and the then-empty folder last, so a held lease keeps the folder (PR 1275). A ship file with no twin in the shared build
+lease file and the then-empty folder last, so a held lease keeps the folder (PR 1275). When such a folder is kept, its Git checkouts (at any depth, links never followed) can still go on their own after the whole folder is 6 hours untouched, under the same lease, issue lock and process checks, when Git shows nothing in them beyond rebuildable install outputs and every local commit is in the mirror; their HEAD and status are logged first, and the out folders, pictures, logs and every file outside a checkout stay (issue 1396, Ryan's typed OK in the Board thread, Nov 20). Each janitor run also runs the job head's relay proof (`opus_job_head.ps1 dropjobs`) over every passed job attempt that still lists checkouts, so a relay that lands after the job's tail still frees them; it runs per job folder only after the same keep list, lease, issue lock, process and pause checks, removes only what that proof clears and logs the rest (Board, Nov 22; Artoo on PR 1592). A ship job's clone `<job>\repo` (its `out\result.txt` starts with ship_job's `start` line) is never removed by the janitor, whole folder or checkout-only: `publish_ship.bat` installs with it and removes it after a published PASS, and an abandoned one goes to the Board as a one-off (review of PR 1592). A checkout whose HEAD or local-branch reflog holds a commit no mirror ref reaches, or that has a second worktree, is kept (review of PR 1592). A ship file with no twin in the shared build
 is a superseded candidate when the build holds that ship code installed later, and a generated file under `godot/gen` with
 no build twin is one when the build's `gen/manifest.json` was written later (the newer gen no longer makes it); both are archived like any other
 (issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. The Board's keep list, `voidsworn_test\janitor_keep.txt` (one exact folder path per line, `#` for notes), keeps any candidate that is a listed path, holds one or sits inside one, logged as "kept: on the Board keep list"; a keep list that cannot be read stops the janitor (issue 1180, Board Nov 20). Active board `repo` folders, `build*`,
@@ -384,7 +410,7 @@ every process of that launch has exited, links as links, never a job's own profi
 Ship jobs and the look bench hand their owned TEMP folder to `tools/pc/scratch_done.ps1` at the end: a pass removes it;
 a failure marks it `.voidsworn-run-failed` with the job's name and keeps only the newest failure per job, which the
 janitor keeps for one day. While their tools run, both put `tools/pc/pysite` on PYTHONPATH, whose sitecustomize makes
-Python's `tempfile.mkdtemp` folders with a plain mkdir that inherits the TEMP folder's access, and the picture
+Python's `tempfile.mkdtemp` folders with a plain mkdir that inherits the TEMP folder's access (only inside the job's own `voidsworn-run-*` scratch; any other folder keeps Python's private one, Artoo after PR 1537), and the picture
 provenance self-test removes its own folder after a PASS (issue 1535: Python 3.12.4+ on Windows gives mkdtemp folders a
 private access list, and 31 such folders, about 49 GB, could not be removed by cleanup 4 on Nov 21; the PC proof board/pc-out-1535 showed that private list alone is the cause, with no elevation involved). When a job_wrap job ends, the janitor runs once more with `--after-job` in a
 hidden window. That run shares the hourly allowance with the low-space trigger, skips without a word while another
@@ -394,6 +420,22 @@ Board's pause right before each removal and keep the folder for a later pass. Wh
 refilled C: by about 120 GB a day between nightly runs (issue 1180 dry run 2).
 The log gives each candidate's size, decision and reason, along with free space before and after. The Board reads the dry
 run before the first live run. A pause removes nothing (3.11).
+
+3.3a **PC results go to the private relay repo, never the main repo.** Videos, sheets, renders and logs from PC jobs go to
+`rcbailey12/voidsworn-relay` on branch `pc-out-<job>`, the attempt folder at `<attempt folder name>/` in its tree, through
+`tools\pc\relay_push.bat <job> <attempt folder>` (out_* folders and the top text files; files over 10 MB stay on the PC,
+listed in `skipped_over_10MB.txt`), in pushes of at most 512 MB each (GitHub refuses a push over 2 GiB); a relay stopped
+between pushes proves nothing until it is run again. The PR comment carries the links it prints. A job's cleanup proves the relay the same way
+as before, now from `relay/pc-out-<job>` (relay_branch.txt) or an older board/pc-out branch. No new board/pc-out branch is
+pushed to the main repo. Stale board/pc-out-* and board/pin-* branches go only through `tools\pc\PRUNE_RELAY_BRANCHES_DRY.bat`
+(lists, deletes nothing) and then `PRUNE_RELAY_BRANCHES_LIVE.bat` after Ryan's own yes on that list; a branch still named by
+a queued job, in `voidsworn_test\prune\keep.txt`, under 3 days old, used by an open PR or still needed to prove a PC job's
+relay is kept, and the live run checks every one of those again just before each delete, so a keep line or queued job
+added after the dry run still keeps an unmoved branch. Why: the main repo was 22.66 GB with 701 branches, 316 board/pc-out and 133 board/pin (Nov 22); Ryan picked
+"Private GitHub relay repo" (Nov 22 2026, 12:14 UTC, decision card in thread "Upgrade studio ops and PC harness"), and approved
+the plan: "Route binary PC outputs ... to a disposable private relay repo (`rcbailey12/voidsworn-relay`, wiped monthly) ...
+Ship a safe double-click Windows `.bat` script (dry-run default first) ... to prune the 447 stale `board/pc-out-*` and
+`board/pin-*` branches" (12:09 UTC). Set: Ryan, Nov 22 (R410).
 
 3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
 solo. Lanes C and D stay code only.** The Board decides per job how many share the card: light captures and probes can run side by
@@ -427,45 +469,7 @@ GPU admission has a separate clock. It defaults to 1500 seconds in the agent run
 limit, and 3600 seconds in the shared ship runner. Why: a Jolt stall in the issue 1078 probe held the GPU solo for
 almost an hour and queued work timed out behind it (Board, Nov 19, issue 1192).
 
-3.5 **Every PC queue job is wrapped in the tmo.bat watchdog, ends with exit /b, and carries no |, &, < or > in its
-arguments.** Agent runs stop after STALL_MIN minutes without progress (default 30), or at a hard ceiling (default six
-hours; CODEX_CAP and WORK_CAP override the ceiling in seconds). Progress is a changed file write time in the run repo,
-a new commit, or new bytes in log.txt (also stderr for workhorse runs). Git housekeeping does not count. A stall or ceiling
-stop writes its reason, changed files and last log lines to the out folder's resume.txt and the -partial commit message;
-the next run reads that note. timeouts.log records STALLED after N min or CEILING. Short queue commands and runner checks
-keep their explicit time limits. Why: hung Godot windows blocked the queue for about three hours (G-3), but the old two-hour
-agent cap killed jobs that were still working (367 and 371). Ryan, Nov 15: "do we need to get rid of that random 2 hour rule
-if it's timing out actual work?" He took up a stall check, a high backstop and a saved resume note (issue 818). Set: Board
-(G-3), Ryan (issue 818). Ids: G-3, feel-06, skill-pb-05.
-
-PC jobs never use Ryan's real game profile. The watchdog gives each Godot start a fresh profile so captures cannot overwrite his settings (issue 1228, Nov 19).
-
-PC jobs run one tools copy and report honestly (issue 1194, Board, Nov 20). `lane_tools_refresh.ps1 -Build tools_live`
-installs main's tools as a verified, never-edited version under `Downloads\voidsworn_test\tools_live\` with its own
-hashes, named by `tools_live\current.txt`; every `tmo.bat` outside it hands its step to that copy, so an old `build\tools`
-or branch checkout never runs its own watchdog or slot reader (self-tests set `TMO_OWN_COPY=1`). The main watcher refreshes
-tools_live and `build\tools` between jobs. Old lane backups and old tools_live versions rotate instead of stopping the
-refresh: a backup goes only when every file in it is kept in a newer copy or a saved main snapshot, a version only when it
-was replaced over a day ago and no running process names it (the refresh's own rebuildable copies, 3.3). Job bats run
-their steps through `tools/pc/job_wrap.bat`: a GPU label on every claim, the tool preflight before any clone or GPU claim
-(exit 2 on a missing tool), the strict watchdog hash check, a stop on a failed step unless it is marked optional, non-empty
-declared outputs, and `done PASS` or `done FAILED: <steps>` then `all done`, with a non-zero exit after any failure. Helper
-(Opus) proof bats start from `tools/pc/jobs/opus_job_template.bat` and call `opus_job_head.bat` from tools_live: exact
-commit pins in a fresh checkout per attempt, the safe ships copy with a tracked-file check, the throwaway profile and
-Ryan's options hashed before and after; the Board checks only that a bat calls the head (docs/playbooks/pc.md, issue
-1303, Board Nov 20: seven bats sent back on Nov 19 and 20 for the same four mistakes). The
-watchers log each job's exit code and move a failed job to `queue\failed` (`queue_b\failed`). `PC_DOCTOR.bat` is a
-read-only look at the GPU claims (owner, child, age, health), damaged slot files, stuck Godot or Blender processes and
-failed jobs. Why: a stale Nov 18 `build\tools` copy ran the hung 1078 probe, jobs wrote "all done" after failed steps,
-the watcher filed every job as done, and a missing ffmpeg or Pillow showed only after an hour on the GPU (Neon's PC
-pipeline audit, checked by the Board, Nov 19).
-
-3.6 **The Board may double-click .bat files on the PC itself by computer use, a few clicks at a time, releasing the lock at
-once, never while Ryan is playing; it never drives the PC by remote clicks to unstick a job.** Why: "can't you use computer
-use for all of this?" (R126); holding the lock hides his windows; Task Manager ignores remote clicks. Set: Ryan (R126); Board
-(the limits). Ids: R126a, R126b, loop-16, skill-pb-06.
-
-3.7 **Clone on the PC with `git -c core.autocrlf=false`.** Why: CRLF breaks the campaign table export. Set: Board. Id: loop-14.
+3.5 to 3.7 **PC harness.** See the [PC harness rules](../.claude/rules/pc-harness.md) for queue and watchdog jobs, Board PC control and PC clones.
 
 3.8 **Free tools and sources, local first; a paid service only with Ryan's yes, for that one evaluation.** Why: money is his.
 Set: Ryan (AGENTS.md; R110). Ids: R110b, agents-20, audit-02.
@@ -494,376 +498,43 @@ unresolved work before restarting the PC. Why: "I don't want to cause anything t
 so let's bake that in" (R272); quiet agent processes did not prove a runner in final checks had pushed (R309, issue 944).
 Set: Ryan, Nov 15; audit fixes approved Nov 17 (R309).
 
+3.12 **No GPU capture on a pull request before its checks are green and its diff has passed review.** `player_path`, `look_bench`
+and other heavy GPU captures are queued only after "All checks" is green and Artoo or the code review seat has passed the diff
+at that head commit; a later push needs both again. Overnight, when the PC is idle, gpu_go.txt is clear and main changed game
+files, `build\export` refreshes by itself (issue 1663). Why: "Never queue `player_path`, `look_bench`, or heavy GPU captures on
+a PR until `checks` is green and Artoo (or the code review seat) has passed the diff." and "Auto-refresh `build\export` overnight
+when idle (`gpu_go.txt` clear) and `main` changed game files." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R407, R408).
+
+3.13 **Every review of a Godot FX, rendering, ship import, audio or battle-feel pull request applies the independent-audit
+skill** (`.agents/skills/independent-audit/SKILL.md`) before merge and before its GPU capture: Opus, Codex and Muse review runs
+alike, findings grouped Blocking, High / Medium, Ready, naming the commit read. Why: Neon's wrap-up pass found silent
+regressions on PR 1699 (shield-blocked brownouts, a miss streak divided by speed, two competing light-dim paths) that green
+checks missed; Ryan: "Instruct Opus, Codex, and Muse review runs to apply `independent-audit` before merging any Godot FX,
+rendering, ship import, audio, or battle-feel PR." (Ryan, Nov 22 2026, 16:48 UTC, Board thread). Set: Ryan, Nov 22 (R413).
+
 ## 4. Ships and concepts
 
-4.1 **Space ships, never sea ships, in the whole shape.** No boat profile, keel, raked prow, deck house, mast, funnel, crane,
-railings, porthole rows or anything hanging off; a worked belly. Why: Ryan, Oct 22: "careful that these don't stretch into
-obvious naval-looking ships. again, these are SPACE ships"; Nov 11: "I don't understand the random things hanging off, it reads
-as naval. We need to do a full pass across all ships and factions so not naval" (R185). Set: Ryan (Oct 22, Oct 24, R185). Ids:
-agents-19, agents-25, R8b, R185a, concepts-16. Detail: docs/playbooks/concepts_round2.md gate line 11.
-
-4.2 **No gun faces backward or into the ship at rest; a turret may turn aft only to follow a target its rules arc lets it hit
-(6.16, R222).** Why: "no ship in the game fires backward" (Oct 22). Set: Ryan (Oct 22; the turret line Nov 12, R222).
-Ids: agents-17, blob-03, R222.
-
-4.3 **Parts look like they belong: snapped to the real hull on a visible mount, in matched pairs at sensible hard points; the
-Hullbreakers may be junky.** Why: bolt-ons on the AI hulls floated, sank or sat anywhere (Oct 21). Set: Ryan, Oct 21. Ids:
-agents-18, agents-24, factions-02.
-
-4.4 **A ship reads as armed from above at thumbnail size; each faction mounts its forward weapon its own way, never a long
-barrel on the nose tip; no two factions share an outline from above; identity shows under the battle camera.** Why: "It's
-really hard to tell if there's any guns right now so it barely looks like a warship" (R176); "same giant gun directly on nose.
-It's good to have forward facing but it always looks the same across factions" (R183). Set: Ryan's complaints; wording Board
-(R176, R183). Ids: R176b, R183a, R183b, concepts-04, concepts-05.
-
-4.5 **Every faction is its own: its own parts kit and shape language; only invisible plumbing is shared.** Why: "all the
-factions are supposed to be unique and different. Having the same parts everywhere is against that" (R151). Set: Ryan. Ids:
-R151b. The faction sheets (shape, colour, where guns sit, how it breaks, its Never list) are docs/playbooks/factions.md.
-
-4.6 **One concept style for every faction: realistic and detailed, like a photograph of a real built object**
-(contrib/muse/design/concept_directions_2026_11/corsair_A.jpg); a picture that reads as an illustration, a toy or a cartoon
-fails. Ryan judges the style, side by side; the Board never declares it. Why: "Pretty realistic and detailed to help with the
-builds... this style is how it should look in game" (R197); "It's semi realistic but not quite" (R198). Set: Ryan, Nov 11.
-
-4.7 **When Ryan likes a picture, the next image job edits that picture**; colour alone never sends a picture back; when image
-rounds cannot reach the style without breaking the shape, stop and use the Opus build-sheet route. Why: six Hullbreaker rounds
-were lost redescribing a liked picture in words (R192); "we can fix color ourselves rather than get stuck in a loop with color
-fixes with image generation" (R204). Set: Ryan and Board, Nov 11 (R192, R204, R206).
-
-4.8 **No generated concept reaches a build, or Ryan, without the Board's review against the written gate**
-(docs/playbooks/concepts_round2.md). The gate's ratios and fractions (proportions per class, the stern fraction) are starting
-points for a drawing, not identity. Why: "I need you to do a much more in depth review and refinement before these ever go to
-actual builds" (R172); Hegemony's 4.5 : 1 was overruled by R183's 3 : 1. Set: Ryan (R172); the ratio note Board. Ids: R172a,
-R172b, concepts-08, concepts-14.
-
-4.9 **Start from what was already liked.** Why: two rounds were lost designing the Glasswrights and Hullbreakers afresh and
-sanding off what made them theirs (R180). Set: Board lesson after Ryan's review (R180). Ids: R180c, factions-17.
-
-4.10 **The finished battle is Sunward Crusade against Eclipse, on the dead-star board.** Why: one finished fight proves every
-recipe and is the reference for later jobs (R167: "I want this to end with something that opus or other models can run
-from"). Set: Ryan (R167, R180). Ids: R167b, R180d, handoff-01.
-
-4.11 **Every part has a job and every weapon is its faction's own.** A part with no purpose is cut; weapons, turrets and
-launchers are designed per faction from the lore bible and the faction sheet (how the weapon works shows in its mount,
-housing, barrel and muzzle), never a shared silhouette; a gun in another weapon's firing lane or backblast is a clash. Why:
-Ryan on the Hullbreakers: "let's get rid of the chains randomly around the ship. There's no purpose" and "a gun directly
-behind the rocket pods on a16 ... seems like it conflicts"; on Eclipse: "their turrets look the same as hullbreakers" (R221).
-Set: Ryan, Nov 12 (R221). Parts carry the hull's detail density: triangles and edge features per square unit, per part
-type, within 25 percent of the hull's, reported on every sheet (R224: "They also just look smoother and less detailed, maybe
-slightly less poly than the rest of the ship").
+See the [ship rules](../.claude/rules/ships.md) for concepts and faction shapes (4.1 to 4.11).
 
 ## 5. Ship build pipeline
 
-5.1 **No ship is built until its build sheet passes the concept standard** (contrib/muse/design/concept_standard_2026_11/standard.md:
-true side and top at one scale, underside, bow-on, length from game data, scale bar, a feature table that outranks the
-pictures). Why: "I want to make sure that they are good enough to actually hand build from in blender" (R203). Set: Ryan,
-Nov 11.
-
-5.2 **The concept guides the build; it is not traced.** The Opus builder is the designer of record: it keeps the picture's
-identity (mass, outline from above, character, palette, where the big features sit), fixes what would not work as a built
-object, takes guns from the hull's data.js slots as batteries that make sense, carries every tier and change of height the
-picture shows, and lists every change on the sheet. Why: "Use it to guide, not the very final exact design" (R207); "The guns
-look randomly placed and don't make sense... the builds look like square blocks basically" and "The concept should inform and
-guide but it's not a final play by play guide" (R213). Set: Ryan, Nov 11. Ids: R25 (concepts are inspiration), R207, R213.
-The Board (Opus) is the final designer and director; Muse concepts. Between an accepted concept and the build the Board makes
-the design calls, family distinctness included (a class that reads as a small copy of another class from above is changed in
-the build), lists them on the sheet and shows Ryan the result instead of asking first. Ryan's picks of concepts and his
-verdicts on pictures stand. Why: "You're the final designer and director. Muse is just concepting" (R233). Set: Ryan, Nov 12.
-
-5.3 **The settled build method is binding** (docs/playbooks/ships.md section 0; docs/ship_pipeline/RECIPE.md): the hull designed
-on the approved build sheet (5.1, 5.2), which the recipe builds as it is and never traces again (issue 592), with the stage 2
-AI shape reference made from the accepted concept as an outline and grime reference only, never shipped; hand-built parts, AI parts only through a reviewed faction
-library; paint from geometry masks, trim sheets and decals, never projected concept art; the seven stages. Why: projected
-concept paint was dropped on all 36 hulls (R82); Ryan adopted the research route (R96); the method kept drifting between
-documents (R214). Set: Ryan (R82, R96, R214, R215). Ids: R82d, R96a, R96c, R150a.
-
-5.4 **Breakable by design, with comprehensive insides.** Every hull has real thickness and insides through the whole hull
-(decks, frames, spaces, machinery; Chorus flesh and bone; Glasswright layered glass), rim bands and a dark liner where the
-intact ship shows; the build check fails a hull whose broken pieces show a hollow or flat inside. Hulls built before this rule
-rely on the game-side interior fallback (issue 167). Why: "the broken open pieces
-are visibly empty" (R98); "so we don't run into the issues of before with just empty looking husks" (R209); "I think it's
-better to be comprehensive with internal if we can without performance issues" (R215). Set: Ryan, Nov 4 and 11. Ids: R70,
-R98a, R98b, R99a, R209, R215.
-
-5.5 **Breaks follow the faction's rule and the class, never a fixed count or a straight cut**; hard points and breach anchors
-scale with class and faction, read from one table (factions.md; the check reads it, issue 363). Why: "is 28 hard points for
-every ship? It should vary by size of ship, faction, etc. We want things to be on theme." (R164); wrecks must look blown
-apart (R186). Set: Ryan (R164, R186, R215). R99 Q2 (two transverse lines plus one longitudinal) and AGENTS.md's "two or three
-break lines" are retired. Ids: R164d, R99b, R98b, ships-07, factions-04.
-
-5.6 **Hand-built parts carry the hull's level of surface detail.** Why: "the level of texture and details seem to vary wildly"
-(Oct 21). Set: Ryan. Id: agents-28.
-
-5.7 **Structure first: the massing carries the concept's variety of shape before any detail.** Why: "There's so much less
-variety in the shape and structure of it, so it's not just adding but almost removal." (R140). Set: Ryan, Nov 9. Ids: R140,
-R213.
-
-5.8 **The outline overlap against the concept is reported, not a pass bar** (was 90 percent, R147). Why: the builder is told
-to depart from the picture where it does not work (R207), and a 90 percent pass let a wrong bow through (R157). Set: Board,
-Nov 11 (reworded). Ids: R147, ships-05, recipe-03.
-
-5.9 **The blob sweep (nine cells: bow, midship, stern from top, side and below) is a viewing instrument for Ryan's eye, not a
-pass bar.** Why: assumed gates stop binding until measured (R121). Set: Ryan (R121d). Ids: agents-27, ships-08, blob-01.
-
-5.10 **The guns are never bent to fit a score.** Why: casemate barrels had been bent to raise the outline match (R156). Set:
-Ryan ("I agree with all of your takes", R156). Id: R156a.
-
-5.11 **Every recipe stage is one double-click, stops on its own failure with a non-zero exit, deletes nothing, and stage 7
-copies aside what it replaces before copying into the game.** Why: Ryan is not a coder; missing things fail loudly (R158).
-Set: Board and Muse's conditions (R158). Ids: recipe-01, recipe-02, recipe-08.
-
-5.12 **Ship assets ship as glb copied into the PC build; .vsm belongs to the frozen browser game.** Why: Godot cannot load
-.vsm. Set: Board (G-9, G-11).
-
-5.13 **Assets only under CC0 (Kenney, KayKit, Poly Haven, ambientCG); Quaternius is out.** Why: its licence is not CC0 (D11).
-Set: Board. Ids: D11, X14.
-
-5.14 **A build pull request carries its done-when evidence and a method line** (build sheet link, manifest, budget numbers,
-changes made to the sheet); the outside check returns one without them as blocking. Why: R214. Set: Ryan, Nov 11.
-
-5.15 **Parts read as what they are and fit together: the fit check.** Engines are bells with throats and rings, guns have a base,
-mantlet, breech and muzzle, launch tubes have depth; the bow and big masses carry the concept's shaping. No part inside
-another, in another gun's arc, in an exhaust cone or blocking a launcher; a fit view and fit report on every sheet and build.
-Why: round 2 sheets had guns blocking rockets and in front of an engine, tubes as flat circles, engines and guns as plain
-tubes, and a flat-block bow (Ryan, Nov 11, R217). Set: Ryan, Nov 11 (R217). Ids: ships-2c.
-
-5.16 **Fidelity is whole-ship: a parts inventory, one detail level, kit first, region by region.** Every feature the concept
-shows is listed with its sub-parts and modelled; every part sits at the same detail level as its neighbours; each faction's
-kit holds every part type at that level; the fit check covers every part; the sheet ticks the inventory per blob-sweep cell
-beside the concept. Feedback on one part becomes a rule for all parts. Why: "Engines and guns are the reference but we want
-to carry that through to the whole model. Don't just patch singular behavior or examples, use it for global learning and
-shaping the approach" (Ryan, Nov 11, R218). Set: Ryan, Nov 11 (R218). Ids: ships-2c.
-
-5.17 **A machine never crosses a seam; structure that crosses a seam is torn at it, insides included.** Guns, turrets,
-casemates, launchers, engines, thrusters, claws and sensor masts ride whole with one piece: the seam moves, or kinks round
-them in plan. Hull plating, frames, ribs, rails, openings such as a launch bay, and every inside (decks, bulkheads, rooms,
-the liner) tear across a seam, along the same ragged line as the plating over them: no inside panel stays whole across a
-break or sticks out past its piece's broken hull. The stage 4 audit reads each part's kind from the build (the faction kit's
-MACHINES) and fails only a machine across a seam; the export carries each seam's path and each machine's box, and the game's
-death cut reads them there (fx/test/death_seam_check.gd: zero machines split, zero insides outside their piece). Why: a cut
-gun reads as sliced, a torn plate as blown apart (R186, "blown apart, never sliced"); whole deck and bulkhead slabs stuck out
-of the broken A16 as big flat squares (Ryan, Nov 12, issue 600). Set: Board, Nov 12 (R226; insides added from Ryan's eye,
-issue 600). Ids: ships-2c.
+See the [ship rules](../.claude/rules/ships.md) for build sheets, hulls, kits and exports (5.1 to 5.18).
 
 ## 6. Battle look
 
-6.1 **Judge everything at the battle camera (camera 170, the radius Ryan plays at) at true pixel size, before any close-up.**
-Why: review sheets were made closer than the camera can go (R157); Ryan plays at the standard radius and zooms in for effects
-(R123). Set: Board (R157, R160); camera harness Ryan (R123c). Ids: R157a, program-02, skill-sv-01.
-
-6.2 **Comfort is protected for everyone.** At most three big flashes a second, "big" by the W3C guideline's combined area in a
-10 degree window, worked from a stated screen (default 32 inch at 24 inches); a reduce flashing option that keeps sizes and
-softens the rise and fall. Tune inside the counter; never quote a strictness figure without doing the arithmetic. Why: WCAG
-2.3.1 photosensitivity; Ryan: "Count by area" (R193). Set: Ryan (R187, R193); Board (R187b). Ids: R49d, R187b, uispec-04,
-plan-08.
-
-6.3 **Every explosion is route B: flash plus hot core.** Why: Ryan: "Far right in both for sure." (R170). Set: Ryan, Nov 10.
-
-6.4 **Flame flashes and snuffs out: no flame over 0.70 s, no hot core at full heat over 0.25 s; this cap is for flame only.**
-Sparks, debris, gas and cooling embers live longer, so hits throw things and leave marks. Why: fire looked wrong for space and
-deaths felt sudden (R88); the cap had been applied to everything, so nothing was thrown (R193: "Flame only"). Set: Ryan (R88,
-R158, R193). Ids: R88b, R158a, effects-03, deaths-02.
-
-6.5 **Wrecks look blown apart, never sliced**: uneven pieces, no straight line across the hull, a missing bite where the core
-went, ragged scorched rims, fragments between. A lance kill may stay cleaner along the beam. Why: "It's like straight lines and
-even halves. It doesn't feel like an explosion or major hit happened." (R186). Set: Ryan, Nov 11. Ids: R186, deaths-05,
-deaths-09, deaths-11.
-
-6.6 **The kill moment holds and slows on cruiser, capital and flagship kills** (the camera stays through the core flash, a
-short skippable slow beat). Why: "just do big ships and flagship for slow mo" (R73); "Hold and slow" (R193). Set: Ryan (R73,
-R193); replaces the Board's R123 "the camera is never taken for a capital death". Ids: R73a, R123a, deaths-04, uispec-05.
-
-6.7 **Effects start on the ship** (a hard point, a breach anchor or the hit surface), never at a box corner or in empty space.
-Why: "random thrusters or smoke popped up away from the ship itself? it looks all wrong" (R150). Set: Ryan (R150); method
-Board (R153). Built: the attach point service in godot/fx/fx_hull.gd (authored point, else surface ray, else skipped and
-counted), checked by godot/fx/test/attach_check.gd (issue 370). Ids: R150b, R153, effects-05.
-
-6.8 **Hits are weighty and readable at the battle camera**: mass-scaled shudder and kicks corrected by thrusters, damage on the
-hull itself with per-weapon marks, wounds that cool to scars, thrown matter big enough to read at camera 170; light on
-neighbouring hulls stays faint until the counter measures lit area. Why: "a simple cartoonish push back. It doesn't feel
-weighty, cinematic or accurate." (R50); "it's just an orange shape with weird smoke, the actual underlying ship looks the same"
-(R39); "Merge, then push harder" (R208). Set: Ryan (R39, R43, R50, R208). Ids: R39, R43, R50a, R208.
-
-6.9 **No flat lines for fire or hits**: weapon fire and hits are baked sims (flipbooks), sparks are small glowing points with
-curved, slowing trails. Why: "It looks so simple and like Microsoft paint." (R146). Set: Ryan, Nov 9. Ids: R146, R90a.
-
-6.10 **A bigger ship dies longer, not just larger; each faction breaks its own way; the flash core stays near white so a death
-always reads as a death.** Why: every faction died the same faint puff (deaths_and_hits.md). Set: Board, Nov 11, from Muse's
-staging table; the sizes and times are tuning values (0.4). Ids: deaths-03, deaths-10. Detail:
-docs/playbooks/deaths_and_hits.md. R367 (Ryan, Nov 20 2026, decision card: "Full faction deaths"): each metal faction dies in its
-own colours and break as deaths_and_hits.md "How each faction dies" describes, replacing the shared orange fire; the colours
-come from faction_looks.json, the one faction colour file (Eclipse violet-white and white-gold, not green). Built for the
-Glasswrights and Eclipse in issue 1399; the Crusade, Hegemony and Hullbreakers follow.
-
-6.11 **Shields in space keep their faction colours; at rest, Rim and Gap: a faint rim in the faction edge colour on live
-sides, a dark gap where a side is open, nothing else** (R246, Nov 14). Why: his Oct 24 ruling (the cyan-only rule retired) and his
-Rim and Gap pick with Muse (R246). Set: Ryan (R3, R246). SUPERSEDED, kept so nobody follows it: "at rest invisible, a faint edge
-glow on zoom, hover or a recent hit" (R163, ended by R246). Ids: R3a, R163a, R246, effects-04.
-
-6.12 **Effects may spend the RTX 5080's headroom inside the scene gate, with a lower setting kept.** Set: Ryan (R88c). See
-3.9.
-
-6.13 **Plasma is light blue.** Why: his call on the damage marks reference (R46). Set: Ryan, Oct 26. Ids: R46a, lore-04.
-
-6.14 **Normal hits mark the hull (scorch, wounds, scars); a hull opens into a real break only when a section is nearly gone or
-on death.** 20 percent of a section's hull is the starting value, judged by eye. Why: cut-out holes on every hit "looked like
-hollow cardboard" (Nov 1 playtest). Set: Ryan (R80, R216).
-
-6.15 **Section damage tint may show on small ships if it reads at camera 170**; the hits pass tries it by eye on frigates (the
-old ban had no reason and is retired). Set: Ryan (R80, retired R216).
-
-6.16 **Spend death effect cost where the eye is (the tell, the break, the core flash); long cooling stays cheap.** 2 s and 14 s
-are starting values. Why: deaths now run 3.5 to over 10 seconds in three beats (R186, R193). Set: Ryan (R90, R216).
-
-6.17 **Turret guns turn to face their target when they fire; fixed side guns (casemates, broadside batteries) stay fixed.**
-A turret traverses smoothly (never snaps, RULEBOOK 7.1), within its arc, and returns to rest; the gun's muzzle and its effects
-start at the turned barrel. Why: today every gun is a fixed mesh (no aim code in godot/render/ship_view.gd or
-godot/fx/fx_weapons.gd); turning turrets make a fight read and suit the detailed guns now being built (R217). Set: Ryan, Nov 11
-(R219: "I agree with your design on turrets"). A turret may turn aft only to follow a target its rules arc lets it hit
-there; at rest no gun ever points backward (4.2). Set: Ryan, Nov 12 (R222: "yes agree on your turret facing rule"). Built (issue 560): a turret is its own node in the ship's glb
-(docs/ship_pipeline/HARDPOINTS.md "Turrets"; the kit marks it, tools/blender/kits/README.md); the attach point service in
-godot/fx/fx_hull.gd turns it, checked by godot/render/test/turret_check.gd. Hulls exported before it keep fixed guns.
+See the [Godot battle rules](../.claude/rules/godot-battle.md) for battle camera, effects, damage and shields (6.1 to 6.17).
 
 ## 7. Movement
 
-7.1 **Movement is never sudden, jerky or stop-start, and feels like space**: thrusters fire wherever a ship would need them
-(braking, turning, stopping a turn, sliding). Why: "I don't want things to look jerky and the smooth call was because movement
-was very stop/start and sudden. Thrusters should be involved when it makes sense on braking and turns." (R189). Set: Ryan,
-Nov 11. Replaces the letter of R76 ("thruster puffs only on turns, no side-to-side shuffle"). Ids: R76a, R189a, movespec-01.
+See the [Godot battle rules](../.claude/rules/godot-battle.md) for movement playback and rules (7.1 to 7.9).
 
-7.2 **The main engine does the travelling.** A one-hex sidestep or back-off may slide on thrusters; a longer run turns its nose
-onto the course and burns the main engine; anything flown on thrusters alone is visibly slower and gentler. Why: "for one tile
-over, it tracks but not when they're going like 3-10 tiles down just almost skating on thrusters" (R195). Set: Ryan, Nov 11.
+## 8. Battle sound
 
-7.3 **One ship moves at a time, at a weighty pace (about twice as slow as Nov 1); longer enemy turns are accepted; cinematic is
-the default with a brisk option.** Why: "I don't want to sacrifice the feel of the game/space/the ships." (R50). Set: Ryan
-(R50, R64); option Board (R50d). Ids: R50b, R50d, R64a, movespec-06.
-
-7.4 **Movement playback never changes rules results.** A LOOK change keeps the route, end hex and facing; a RULE change (route
-or facing) needs Ryan's own ruling and touches both rule twins. Why: R188's frame for the audit. Set: Board, Nov 11 (R188).
-
-7.5 **No roll into turns.** Why: nothing in space leans a ship; the audit reversed the earlier bank (movement_audit_code.md).
-Set: Board, Nov 11. Id: movespec-04 (the 4 degree bank, retired).
-
-7.6 **Flip and burn stays off for now, to be looked at again now that braking jets are on screen.** Why: left alone on the
-Board's advice (R193). Set: Ryan (R64, R193). Ids: R64c, feel-02.
-
-7.7 **Every number in contrib/opus/briefs/movement_spec.md is a tuning value chosen by eye from motion strips.** Set: Board
-(R189's rewrite). Ids: R131a, R131b, movespec-02, movespec-03, movespec-05, movespec-07.
-
-7.8 **Strike craft move like small agile craft (quick turns, short burns), still never jerky.** Why: small craft should feel
-quick, inside 7.1 (R189, R195). Set: Ryan (R55, R216).
-
-7.9 **Firing ends a non-Glasswright ship's movement for that activation: no move, turn in place or ram after it fires.**
-Glasswright ships keep their post-fire move budget, and a turn after firing spends it. Admiral tree skills that hand out
-movement after firing (Fleet Elsewhere, The Wall Moves) add to that same budget. A free turn granted by an admiral tree skill
-(Cut and Turn, Fleet Elsewhere, Trophy Standard) still turns a ship after firing; that skill is the exception it grants (Set:
-Ryan, Nov 22, R397). Why:
-Ryan, "Agree no" (issue 1560 item 14) and "Yes agree on skills". Set: Ryan, Nov 22 (R396, R397). Code: canRotate and ramInfo in both rules twins.
-
-8.1 **A battle sounds clean and tactical; never thin and weak, cheesy or arcade-like, harsh or annoying.** No zaps, pews,
-rising whooshes or stock explosions; weight in the low and low-mid with a soft top. Why: "The sounds that I've heard from the
-game so far are bad" (R163). Set: Ryan (R163, R171). Ids: R171b, program-13, sound-01, sound-03.
-
-8.2 **Weapons stay dry; big moments get weight**: deaths, capital hits and shield breaks get tails, sub-bass, a bed for the
-length of the picture, ducking under the core flash and a beat of near-silence after a capital dies. Why: "short and dry" was
-built as no tails, so a ten second death had a one second sound (audit item 9); Ryan said "Go, in my order" (R193). Set:
-Board's reword, Ryan's go (R187, R193). Id: sound-02.
-
-8.3 **The gun chooses the sound of its hit**, by weapon and by what it struck. Why: one family of hit clips played whatever
-fired (audit item 8). Set: Ryan's go (R193); built in issue 506.
-
-8.4 **Variation: a cue heard often never plays the same take twice in a row; four takes is the starting count.** Set: Board
-(reworded from "at least four"). Id: sound-04.
-
-8.5 **Free and licensed sources only; music from free licensed tracks first; in battle brass and tactical percussion, a synth
-drone on the map.** Why: money and licences (3.8); his picks of Muse's decision pack ("For muse picks, agreed on all counts",
-R37). Set: Ryan (R37, R40). Ids: R37b, R40a, sound-05.
+See the [Godot battle rules](../.claude/rules/godot-battle.md) for sound and music (8.1 to 8.5).
 
 ## 9. Screens and interface
 
-9.1 **One interface for the whole game: the ember orders sheet; lime is retired.** Words on a smooth darkening of the scene, no
-panels, square corners, one accent (ember #ff8a3a) for the next action, NEM red for the Nemesis only. Why: "The whole thing
-clearly reads as a Claude based UI." (R137); "the faction specific views went wayyyy too hard. We still need one specific UI
-for the game that is consistent." (R141); "Retire lime" (R191). Set: Ryan (R137, R141, R176, R191). Ids: R137b, R141, R149,
-R176a, rail-01, rail-04. Detail: docs/playbooks/screens.md.
-
-9.2 **Avoid the AI-made look**: neon accent on dark slate, glass or frosted panels, pill buttons, identical cards, indigo to
-purple gradients, glowing blurs. Why: "I really like the concept but it's getting pretty busy and it also reads as AI generated
-still" (R164); his list (R174). Set: Ryan. Ids: R164c, R174c.
-
-9.3 **Say less**: a screen holds only what its decision needs; the rest is one hover or key away; nothing is deleted from the
-game, and the pull request lists every moved item. Why: "We don't need to over explain EVERYTHING in this one UI." (R177).
-Set: Ryan. Ids: R177, screens-06, briefing-05, rail-05.
-
-9.4 **Readable: nothing read below 17 px at 1080, 4.5 to 1 contrast over the brightest and darkest board, no overlaps at any
-fleet size.** One floor, 17 (the old 12 px floor is retired). Why: Ryan asked for a readability pass (R176); text overlapped
-the flagship name (R177). Set: Ryan (R176); one floor Board. Ids: rail-06, uispec-02, R136b.
-
-9.5 **Battle screen: KEEL, the bottom shelf and two corner blocks.** Ryan picked KEEL v5 on Nov 17 (issue 1021) to open up
-the board, replacing the E1 Ledger rail. **Glacier #92b8e8 is for shield readouts only, on every screen; the shields drawn in
-space keep faction colours.** Set: Ryan, Nov 11 (R210: "Glacier pale blue", "Yes, that's right"). Replaces R3's "interface
-shield bars stay cyan". Ids: R3b, plan-02. See docs/playbooks/screens.md for the layout.
-
-9.6 **In battle, faction colour never touches names, plates, bars or panels; the enemy faction is its crest and plain name.**
-Why: one UI with faction colour only as a small accent (R141). Set: Board (R125). Ids: R125b, uistyle-06.
-
-9.7 **One UI scale law, k = clamp(height / 1080, 0.6, 2.2) times the player's UI scale, in ui_scale.gd only.** Why: six copies
-disagreed. Set: Board (R136). Ids: R136a, uispec-01.
-
-9.8 **Comfort settings (UI scale, reduce motion, reduce flashing) are reachable mid-battle; the developer surface hides behind
-a dev flag.** Set: Board (R125). Id: R125a.
-
-9.9 **Opening a screen never changes the run or the save.** Why: Muse found a draw call that created a record (PR 349). Set:
-Board. Id: screens-11.
-
-9.10 **Options first, then build**: anything new in look is shown as two or three options, Ryan picks, then it is built.
-Why: "Options first, then build" (R167); "every step" of the redesign shows distinct options (R137c). Set: Ryan. Ids: R137c,
-program-01.
-
-9.11 **Torpedoes fire now: they fly and land in the same activation as any gun, after a heavy flight of about 1.5 s, and
-show their hit chance like any gun.** No lane on the board, no hex aim, no parked torpedo and no strike at the next turn; point
-defence and screening wings still get their chance to shoot a salvo down. Why: "i really dont like the way torpedoes look today
-and how they act. the arrow lines, the delay, etc. it's not intuitive, it doesnt fit the vibe, UI or graphics of the rest of
-the game" (Nov 20, 17:59 UTC); he picked TP-B "Fire now" over a lock-on and a cleaner lane (18:46 UTC). Set: Ryan, Nov 20.
-Id: R364 (replaces R76b's lane and next-turn strike; the visible flight and the clear hit or miss stay).
-
-9.12 **The run debrief shows, in order: headline, first loss, what this run bought, the heir, the recap, the next run, exits.**
-Why: a run is meant to be lost; the debrief names what the death bought (contrib/opus/briefs/debrief_spec.md). Set: Ryan
-(R137a). Id: debrief-01.
-
-9.13 **After a battle: one prize screen, one confirm; a prize may open for detail before the confirm.** Set: Ryan (R23, R216).
-
-9.14 **Keep every ship reachable from the battle HUD when the fleet outgrows its space.** KEEL pages the fleet strip when it
-fills; hover gives the full name and health. This replaces E1's "and N more" hover (R220, Ryan: "yes that's fine"). Why: a
-large fleet can outgrow the available space, but the strip is also how the player picks a ship. See issue 1021.
-
-9.15 **The start screens (title, Settings, Credits, faction and admiral, flagship aspect, Progression, Lineage, Help) build
-from one kit, godot/ui/theme/orders_kit.gd, on glass_shell's orders sheet.** One font set (Big Shoulders Display heads,
-Barlow words, Azeret Mono figures), one ember primary per screen with quiet secondaries, labels that wrap inside their
-container, rows with one control column, cards whose actions line up, the Back left and the primary right, and the ui_*
-sounds on hover, press, back and confirm. Esc goes Back on every start page. The player's UI scale is never capped: a layout
-fits 831 design pixels tall (Larger at any 16:9 window) instead. Why: the start flow mixed three font sets and every screen
-built its own widgets (Neon front-end audit, Nov 19; R333 cohesion), and Ryan: "the title screen is SUPER basic,
-faction/admiral selection is also very basic and also formatting looks odd and not lined up". Set: Board under R333 (issue
-1217). Detail: docs/playbooks/screens.md section 2.
-
-9.16 **The game is mouse and keyboard only: no controller play in battle or on the map.** Menus may keep their arrow-key and
-Enter focus. Why: Neon's player audit (Nov 21) found menus promise controller focus while battle and map have no gamepad
-input; Ryan scoped the game to mouse and keyboard. Key rebinding, a colorblind mode and an in-game rules reference are later
-work (issue 1454). Set: Ryan (R380).
-
-9.17 **A ship's move and turn can be undone until it does something that cannot be taken back** (fires, rams, boards, uses
-an ability, leaves by an exit edge, or ends its activation). Why: a misclick in a permadeath game should not cost a ship
-(Neon player audit, Nov 21). Both rules copies (3.1). Set: Ryan (R376, issue 1450).
-
-9.18 **A campaign battle saves at the start of each round and resumes there**, with Save and Quit to title in the battle
-menu; the snapshot clears when the battle ends. Why: a crash or a real-life interruption sent a 20 minute boss fight back to
-round 1 (Neon player audit, Nov 21). Set: Ryan (R378, issue 1451).
-
-9.19 **New boss and build-variety content is options first** (9.10): bosses get a second phase at half health from an
-options sheet Ryan picks (issue 1452); capstone perks, relics, admiral command twists and own Glasswright and Chorus abilities
-come as a design pack first (issue 1453). Set: Ryan (R377, R379).
+See the [Godot UI rules](../.claude/rules/godot-ui.md) for interface, controls and screen behavior (9.1 to 9.19).
 
 ## 10. The campaign map, space and the board
 
@@ -939,7 +610,8 @@ Set: Ryan (R381, issue 1480).
 
 11.9 **Chorus biomass pays for refits, upgrade tracks, rerolls and the late market, as credits do for other fleets.** Why:
 Chorus turns its whole purse and payouts into biomass, so credit-only shops starved it (audit F-13). Set: Ryan (R382,
-issue 1484).
+issue 1484). How: biomass pays when it covers the price, otherwise credits, one purse per purchase; a Chorus run still earns
+credits (repair stipends, ransoms, scrap, declined protocols), so biomass only would strand them (Board reading, Nov 22, PR 1627).
 
 11.10 **Overrunning the Nemesis flagship, a hunt target or a convoy transport by boarding counts as destroying it** for
 kills, loot and objectives. The hull does not join your fleet. Why: a capture broke Nemesis outcomes and hunt and intercept wins (audit F-01). Set: Ryan
@@ -964,8 +636,10 @@ A push that changes only .md files and pictures under docs/, contrib/ or the rep
 standing checks and skips the four Godot jobs; the "All checks" job gives every run one mark, and a merge conflict with
 main fails the run. Why: docs-only review pushes ran 45 runner-minutes of Godot work for nothing (audit GH-03, issue 1487).
 
-12.4 **A change to data.js or battle.js names every copy it must refresh, and rules parity passes.** Why: the oracle copies
-drifted (R155). Set: Board. Id: R155b.
+12.4 **A rules or data change is made in Godot only and passes the saved-results checks (3.1); a pull request that updates
+the saved results says why each changed battle or run moved.** The frozen browser files change only under 3.1's ship exception
+until issue 1667. Why: the oracle copies drifted (R155); the browser twin is retired (R405). Set: Board; Ryan, Nov 22 (R405).
+Id: R155b.
 
 12.5 **The look bench: bench a commit twice and keep the second run; a change differs where it is meant to and nowhere else;
 a new baseline is committed only when the Board accepts the change.** Why: the first run pays for shader warm-up (R162).

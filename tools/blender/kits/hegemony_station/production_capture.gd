@@ -122,7 +122,7 @@ func _run() -> void:
 		await RenderingServer.frame_post_draw
 		var image := viewport.get_texture().get_image()
 		# Native 1080p source lives in TEMP. Review compositor makes 1:1 crops.
-		if preload("res://tools/picture_provenance.gd").save_png(image, out.path_join(view.name + ".png")) != OK:
+		if preload("res://tools/picture_provenance.gd").save_png(image, out.path_join(view.name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 			quit(1); return
 		var draw_calls := RenderingServer.viewport_get_render_info(viewport.get_viewport_rid(), 0, 2)
 		station.visible = false

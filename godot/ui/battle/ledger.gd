@@ -18,6 +18,9 @@ const GLACIER := GS.GLACIER
 const DMG := GS.HULL_LOW
 const SHELF_H := 248.0
 const FLEET_H := 49.0
+const FLEET_SLOT_W := 84.0
+const FLEET_PAGING_W := 59.0
+const COMPACT_MARGIN := 20.0
 const MARGIN := 40.0
 
 var k := 1.0
@@ -26,6 +29,7 @@ var info := {}
 var nem := {}
 var rows: Array = []
 var ship := {}
+var playing := false   # issue 1708 (Ryan, Nov 22): an event is playing; the bottom sheet steps aside until it ends
 var target := {}
 var card := {}
 var cmd := {}
@@ -75,9 +79,14 @@ func px(v: float) -> float:
 	return roundf(v * k)
 
 
+static var _tag_re: RegEx = null   # not GPU: compiled text patterns, built once (issue 1437 item 9)
+static var _key_re: RegEx = null   # not GPU: a compiled text pattern
+
+
 static func plain(bb: String) -> String:
-	var re := RegEx.create_from_string("\\[[^\\]]*\\]")
-	return re.sub(bb, "", true).strip_edges()
+	if _tag_re == null:
+		_tag_re = RegEx.create_from_string("\\[[^\\]]*\\]")
+	return _tag_re.sub(bb, "", true).strip_edges()
 
 
 func _width(s: String, f: Font, fs: float) -> float:
@@ -193,7 +202,9 @@ func _button_data(id: String) -> Dictionary:
 
 
 static func _without_key(s: String) -> String:
-	return RegEx.create_from_string("\\s+\\([A-Za-z0-9]+\\)$").sub(s, "")
+	if _key_re == null:
+		_key_re = RegEx.create_from_string("\\s+\\([A-Za-z0-9]+\\)$")
+	return _key_re.sub(s, "")
 
 
 func _action() -> Dictionary:
@@ -232,9 +243,13 @@ func layout() -> void:
 	marks.clear()
 	hits.clear()
 	blockers.clear()
-	var vs := size if size.x > 10 and size.y > 10 else Vector2(1920, 1080) * k
+	# A startup or headless control can be too small even for the compact shelf.
+	var vs := size
+	var min_width := 2 * px(COMPACT_MARGIN) + px(FLEET_SLOT_W) + px(FLEET_PAGING_W)
+	if vs.x < min_width or vs.y < px(SHELF_H):
+		vs = Vector2(1920, 1080) * k
 	var compact := vs.x < px(1510)
-	var pad := px(20 if compact else MARGIN)
+	var pad := px(COMPACT_MARGIN if compact else MARGIN)
 	var top_y := px(32 if not compact else 16)
 	var usable := vs.x - 2 * pad
 	var turn_w := minf(px(435), usable * 0.43)
@@ -242,7 +257,14 @@ func layout() -> void:
 	_turn_block(Rect2(pad, top_y, turn_w, 0))
 	_top_right(Rect2(vs.x - pad - foe_w, top_y, foe_w, 0))
 	var shelf_y := vs.y - px(SHELF_H)
-	sheet_r = Rect2(0, shelf_y, vs.x, vs.y - shelf_y)
+	sheet_r = Rect2(0, shelf_y, vs.x, vs.y - shelf_y)   # kept while hidden too: tips and toasts still place above it
+	if playing:
+		# issue 1708: while a move, volley or enemy turn plays, the whole bottom sheet (ship, guns, odds, orders, fleet)
+		# leaves so the scene has the screen; the log stays where it was, and the sheet pops back when the event ends
+		_log(vs.x - pad, shelf_y - px(12), minf(px(540), usable * 0.58))
+		_hover = hit_at(get_local_mouse_position()) if is_inside_tree() else -1
+		_dirty = false
+		return   # no blocker either (Neon on PR 1709): clicks and camera drags reach the scene while the sheet is away
 	_veil(sheet_r, Brand.KEEL_VEIL, Vector4(0, px(17), 0, 0))
 	blockers.append(sheet_r)
 	var y := shelf_y + px(28)
@@ -261,10 +283,18 @@ func layout() -> void:
 	var after_odds := _target_block(target_x, y, target_w, compact)
 	_status(gun_x, maxf(after_guns, after_odds) + px(3), gun_w + gap + target_w, foot)
 	var primary := _action()
+	var orders_y := y + px(62)
 	if not primary.is_empty():
 		_action_box(Rect2(action_x, y, action_w, px(56)), primary)
+		# issue 1589 (Ryan, Nov 22; Artoo on PR 1643): an open plan's keys get their own row under the action, so no
+		# odds or status height can push them off the sheet
+		var keys := plain(str(card.get("keys", "")))
+		if keys != "" and str(primary.get("act", "")) == "confirm":
+			var kl := _trim(keys, f_body, 16, action_w)
+			_text(roundf(action_x + (action_w - _width(kl, f_body, 16)) * 0.5), y + px(57), kl, f_body, 16, TEXT2, "keys")
+			orders_y += px(20)
 	if mine_turn() and ask.is_empty():
-		_orders(action_x, y + px(62), action_w, foot, primary, compact)
+		_orders(action_x, orders_y, action_w, foot, primary, compact)
 	_fleet(pad, foot, usable)
 	_log(vs.x - pad, shelf_y - px(12), minf(px(540), usable * 0.58))
 	_hover = hit_at(get_local_mouse_position()) if is_inside_tree() else -1
@@ -364,8 +394,8 @@ func _top_right(r: Rect2) -> void:
 	var hw := 0.0
 	if int(info.get("heat", -1)) >= 0:
 		hw = _right(xr, y, str(clampi(int(info.heat), 0, 9)), f_num, 18, TEXT)
-		hw += px(8) + _right(xr - hw - px(8), y, "Heat", f_body, 18, TEXT3, "join")
-		_hit(Rect2(xr - hw - px(4), y - px(3), hw + px(8), px(27)), "", null, str(info.get("heat_tip", "Heat: the run's difficulty level, up to 9.")))
+		hw += px(8) + _right(xr - hw - px(8), y, "Threat", f_body, 18, TEXT3, "join")
+		_hit(Rect2(xr - hw - px(4), y - px(3), hw + px(8), px(27)), "", null, str(info.get("heat_tip", "Threat: the run's difficulty level, up to 9.")))
 		hw += px(20)
 	var faction := str(info.get("foe_name", ""))
 	if faction != "":
@@ -440,21 +470,39 @@ func _ship_block(r: Rect2, compact: bool) -> void:
 	if not compact:
 		_hit(shape, "", null, detail_bb)
 	var yy := y + px(95 if compact else 54)
-	_integrity(bars_x, yy, bars_w, "Shield", float(ship.get("shp", 0)), float(ship.get("shMax", 0)), true)
+	_integrity(bars_x, yy, bars_w, "Shield", float(ship.get("shp", 0)), float(ship.get("shMax", 0)), true, _routed_tag(ship.get("routed", [])))
 	_integrity(bars_x, yy + px(43), bars_w, "Hull", hp, mx, false)
 	_hit(Rect2(bars_x, yy, bars_w, px(82)), "", null, detail_bb)
+
+
+# issue 1446: "stbd routed" for the KEEL shield readout (quad order prow, starboard, rear, port)
+static func _routed_tag(sides) -> String:
+	if not (sides is Array) or (sides as Array).is_empty():
+		return ""
+	var words := ["fore", "stbd", "aft", "port"]   # short, so the tag fits beside the numbers (the ship tip spells them out)
+	var names := PackedStringArray()
+	for q in sides:
+		names.append(words[int(q)])
+	return "/".join(names) + " routed"
 
 
 static func _ratio(value: float, cap: float) -> float:
 	return clampf(value / cap, 0, 1) if cap > 0 else 0.0
 
 
-func _integrity(x: float, y: float, w: float, label: String, value: float, cap: float, shield: bool) -> void:
+func _integrity(x: float, y: float, w: float, label: String, value: float, cap: float, shield: bool, tag := "") -> void:
 	var col := GLACIER if shield else (DMG if value < cap - 0.5 else TEXT)
 	_glyph("shield" if shield else "hull", Vector2(x, y), 20, col)
-	_text(x + px(27), y, label, f_med, 17, TEXT2)
+	var lw := _text(x + px(27), y, label, f_med, 17, TEXT2)
 	var numbers := "%s / %s" % [Campaign.hull_text(value), Campaign.hull_text(cap)] if cap > 0 else "None"
 	_right(x + w, y, numbers, f_num, 17, col, "shield" if shield else "figure")
+	if tag != "":
+		# issue 1446 (R246): the routed side, in the shield colour, between the label and the numbers
+		var room := w - px(27) - lw - px(8) - _width(numbers, f_num, 17) - px(8)
+		var shown := _trim(tag, f_med, 15, room)
+		if room > px(24) and shown != "":
+			var tx := x + px(27) + lw + px(8)
+			_text(tx, y + px(2), shown, f_med, 15, GLACIER, "shield")
 	_bar(Rect2(x, y + px(24), w, px(9)), _ratio(value, cap), GLACIER if shield else TEXT, GS.SHIELD_TRACK if shield else Color(DMG, 0.25))
 
 
@@ -469,7 +517,7 @@ static func keyword_tip(line: String) -> String:
 	var keywords := {
 		"Braced": "Braced: the ship takes 40% less hull damage until its next turn. A braced ship does not turn or fire. A Sunward ship also covers one adjacent ally facing the same way.",
 		"On fire": "On fire: its shields falter and it can no longer repair itself.",
-		"focusing its fire": "Focus fire: the enemy fleet favours this ship when it picks targets.",
+		"focusing its fire": "Focus fire: the enemy fleet favors this ship when it picks targets.",
 		"Fired": "Most ships cannot move after firing. Glasswright ships and ships with the Slip the Net protocol can keep some movement."}
 	for kw in keywords:
 		if line.contains(kw):
@@ -479,6 +527,13 @@ static func keyword_tip(line: String) -> String:
 
 func _status(x: float, y: float, w: float, foot: float) -> void:
 	var fl := plain(str(ship.get("flags", "")))
+	if plain(str(card.get("keys", ""))) != "":   # issue 1589: an open plan says what it does (its keys sit under the action)
+		var plan_say := plain(str(card.get("say", "")))
+		if y + px(23) > foot:
+			return
+		var plan_end := _paragraph(x, y, plan_say, w, mini(2, int((foot - y) / (ceilf(_text_h(f_body, 17)) + px(2)))))
+		_hit(Rect2(x, y, w, plan_end - y), "", null, plain(str(card.get("hint", ""))) + ("\n" + fl if fl != "" else ""))
+		return
 	var say := fl if fl != "" else plain(str(card.get("say", "")))
 	if say == "" or y + px(23) > foot:
 		return
@@ -606,9 +661,12 @@ func _target_tip() -> String:
 		var sh: Array = target.get("sh", [0, 0, 0, 0])
 		var parts := PackedStringArray()
 		var words := ["prow", "starboard", "rear", "port"]
+		var routed: Array = target.get("routed", [])
 		for i in mini(sh.size(), 4):
-			parts.append("%s %d" % [words[i], int(sh[i])])
+			parts.append("%s %d%s" % [words[i], int(sh[i]), " (routed)" if i in routed else ""])
 		s += "\nShield pool %d of %d. Sides catch: %s." % [int(target.get("shp", 0)), int(target.shMax), ", ".join(parts)]
+		if bool(target.get("struck_routed", false)):
+			s += "\nThis volley hits its %s side, where it routed power: that side catches more, but each hit drains the pool 30%% faster." % words[int(target.get("quad", 0))]
 	if str(target.get("line", "")) != "":
 		s += "\n" + plain(str(target.line))
 	return s
@@ -722,11 +780,12 @@ func _fleet(x: float, y: float, w: float) -> void:
 		fleet_fit = {"shown": 0, "total": 0}
 		return
 	_line(Vector2(x, y), Vector2(x + w, y), GS.SHEET_HAIR)
-	var minimum := px(84)
+	var minimum := px(FLEET_SLOT_W)
 	var gap := px(8)
+	var paging := px(FLEET_PAGING_W)
 	var capacity := maxi(1, int((w + gap) / (minimum + gap)))
 	if count > capacity:
-		capacity = maxi(1, int((w - px(59) + gap) / (minimum + gap)))
+		capacity = maxi(1, int((w - paging + gap) / (minimum + gap)))
 	var n := mini(count, capacity)
 	var selected := ""
 	for i in count:
@@ -739,7 +798,7 @@ func _fleet(x: float, y: float, w: float) -> void:
 	var last_page := int(ceilf(float(count) / n)) - 1
 	fleet_page = clampi(fleet_page, 0, last_page)
 	var paged := last_page > 0
-	var cell := minf(px(383), floorf((w - (px(59) if paged else 0.0) + gap) / n) - gap)
+	var cell := minf(px(383), floorf((w - (paging if paged else 0.0) + gap) / n) - gap)
 	var shown := mini(n, count - fleet_page * n)
 	for i in shown:
 		var r: Dictionary = rows[fleet_page * n + i]
@@ -916,8 +975,14 @@ func dark_at(p: Vector2) -> float:
 
 func _has_point(p: Vector2) -> bool:
 	ensure_layout()
-	# Only interactive areas and the shelf/log take input. The corner veils are cosmetic.
-	return sheet_r.has_point(p) or log_r.has_point(p) or hit_at(p) >= 0
+	# Only interactive areas, the shelf/log and the corner words take input (issue 1559 item 20: a click on "Round N", the
+	# objective or the foe's name planned a move on the board under it). The veils' soft edges past the words are cosmetic.
+	if sheet_r.has_point(p) or log_r.has_point(p) or hit_at(p) >= 0:
+		return true
+	for b in blockers:
+		if b.has_point(p):
+			return true
+	return false
 
 
 func hit_at(p: Vector2) -> int:

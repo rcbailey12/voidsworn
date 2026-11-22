@@ -1,5 +1,5 @@
 @echo off
-rem Rules parity: the same five steps and diagnostics as run_parity.sh, with separate start /b workers.
+rem Rules check (Godot only, against the saved results, R405) and the saved campaign check, as in CI.
 rem Double-click, or parity.bat nopause from a watcher. Set PARITY_RUN_ROOT to keep detailed rules records.
 setlocal enableextensions disabledelayedexpansion
 set "HERE=%~dp0"
@@ -26,16 +26,13 @@ if not defined GODOT if exist "%HERE%godot_path.txt" set /p GODOT=<"%HERE%godot_
 if not defined GODOT ( echo FAIL: no godot_path.txt found. & goto :end )
 "%NODE%" "%GAME%\godot\rules\test\node\run_parity.js"
 set "RESULT=%ERRORLEVEL%"
-rem Keep the existing campaign hand-off. Its implementation and coverage are unchanged.
-if exist "%HERE%parity_campaign.bat" (
-  call "%HERE%parity_campaign.bat" nopause
-) else if exist "%HERE%tools\pc\parity_campaign.bat" (
-  call "%HERE%tools\pc\parity_campaign.bat" nopause
-) else (
-  echo FAIL: parity_campaign.bat not found next to parity.bat or in tools\pc\.
-  set "RESULT=1"
-  goto :end
-)
+rem Issue 1654 (R405): the campaign is checked in Godot against its saved results, never against the frozen browser files.
+rem parity_campaign.bat is the old browser comparison, kept for history only.
+set "SAVED_CAMPAIGN_SELFTEST=1"
+"%NODE%" "%GAME%\godot\campaign\test\node\saved_campaign.js"
+if errorlevel 1 set "RESULT=1"
+set "SAVED_CAMPAIGN_SELFTEST="
+"%NODE%" "%GAME%\godot\campaign\test\node\saved_campaign.js" check 1 30
 if errorlevel 1 set "RESULT=1"
 :end
 echo.

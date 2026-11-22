@@ -65,22 +65,22 @@ class and faction (issue 363), never from a constant.
   Hearth and Bastion (R333). Ryan, Nov 20 2026, on the Warden's lit fins reading as copper: "fix ember glow" (issue 1156).
   The ember is bright: the whole core sits near the tip's level (stack.py SPIRE, root .70 of the tip), the tip still under
   the 0.8 glow threshold. Why: Ryan, Nov 20 2026 13:43 UTC, on S8 in game beside a brighter mock-up: "A bit brighter".
-- **Shape language:** forged, heavy, vertical. Broadside gun decks in long straight rows. Big engine bells. Plate with rivet
+- **Shape language:** forged, heavy, vertical. Recessed lateral weapon galleries in long straight rows. Big engine bells. Plate with rivet
   lines, never rust.
 - **Colours:** black iron, frost-white markings, bright ember (windows, engines, and the spires, which glow because they shed
   the reactor's heat).
-- **Guns sit:** in broadside rows along both flanks, plus one heavy pair at the bow. Old manual gun decks: many small ports,
+- **Guns sit:** in armored flank casemates along both sides, plus one heavy pair at the bow. Manual optical fire-control blisters and recessed gun ports,
   evenly spaced.
 - **Engines:** two to four large bells, ember orange, deep-set.
-- **How it breaks:** along the gun decks. The hull splits lengthwise between deck rows, and the spire line snaps off as one
-  piece. Inside: iron decks, ember-lit, gun crews' galleries. Breach anchors sit on the broadside deck line, evenly spaced.
+- **How it breaks:** along the lateral weapon galleries. The hull splits lengthwise between flank casemate runs, and the spire line snaps off as one
+  piece. Inside: iron corridors, ember-lit, armored flank gunnery galleries. Breach anchors sit along the flank belt, evenly spaced.
 - **Never:** rust (that is the Hullbreakers), blue light, a ram prow shaped like a ship's stem, cathedral windows so literal
   that it reads as another game's ship. The spires are radiators, not steeples: no crosses, no statues.
 - **What the present concepts get wrong:** V1b_r_23 is a cathedral on a boat hull (stem bow, stepped decks): keep its mass and
   spire cluster, redraw the hull as a blade. V14_23 has wheel-like pods and red light: ember orange, and pods become radiator
   blocks.
 
-## Hegemony Navy (`hegemony`)
+## Meridian Directorate (`hegemony`)
 
 **In one line:** a pale wedge with a line of blue light.
 
@@ -181,7 +181,9 @@ ships catch, store and release light.
   "rectangle after rectangle of same color"; look test D, issue 1415; tools/blender/kits/ithar/parts.py MIX 'marble' and
   stack.py TILE_SWAP). Never one colour per block or per streak. Ryan Nov 21 1:45 PM CT on the in-game sheets: "tone down
   red and amber with a bit more blue and green and purple": amber is about a third of the panels and golden, not red;
-  violet and green rise, and a sapphire blue joins the palette (stack.py PALETTE, WEIGHTS 32/26/22/20, TONES).
+  violet and green rise, and a sapphire blue joins the palette (stack.py PALETTE, WEIGHTS 32/26/22/20, TONES). Ryan Nov 21 on the
+  strike craft, then 8:29 PM CT for the big ships too: the stones are 25% more saturated on every Glasswright hull ("a little,
+  nothing crazy"; stack.py SATURATION 1.25, applied once in the shared mosaic).
 - **Guns sit:** on the optical axis. The prism lance is the hull's stored light let out through the bow optic: a white core
   with a rainbow fringe. Smaller lenses along the hull are the secondary guns.
 - **Engines:** no flame. A soft white bloom at the stern optic.
@@ -296,7 +298,7 @@ from the current lore, direction first ("Direction first, then fleets"), and onl
 | Eclipse | flagship E11; ring cruiser E12 | ACCEPTED (R206); sheets built and both in the game (issues 618, 642, 1057) | contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg, deathless_E12_beauty.jpg | Keep the Eclipse purple (E10 lost it, R201). The builder adds the struts the E12 ring arcs lack (R207: "Where there are gaps like eclipse rings not all having structural connections... you should build differently"). |
 | The Chorus | flagship C10; bladeback cruiser C11 | ACCEPTED (R204); sheets built and through the recipe (issue 623; C10 relief, issue 921) | contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg, chorus_C11_beauty.jpg | R204: "The chorus ones look good, we can fix color ourselves rather than get stuck in a loop with color fixes with image generation." Bile yellow-green set in the build sheet's colour notes. The two read as two classes (the README's outline sheet). |
 | Sunward Crusade | flagship, S8 shape; fighter SF3, bomber SB4 | FLAGSHIP SHEET ACCEPTED (R254); painted in the sandbox (PR 772), hull to come up a step lighter toward the concept's grey before the PC recipe run (R256); craft SF3 and SB4 confirmed (R256), sheets built (PR 776) | docs/ship_pipeline/build_sheets/voidsworn_S8/ (build sheet); craft: contrib/muse/design/squadron_concepts_2026_11/sunward/round_2/SF3.jpg, SB4.jpg | R254: "Everything for sunward flagship is good. The fighters and bombers need a ton of work, new concepts to come." R255: "Agree on sf3 and sb4". Round 1 craft read as jets (no canopies, aero wings or tail fins). |
-| Hegemony Navy | Dominion (h_dominion), H10 shape; Iron Mandate (h_boss), IM5 | BOTH SHEETS ACCEPTED (R256): Dominion (PR 767) and Iron Mandate (PR 775); the Hegemony paint stack is next | docs/ship_pipeline/build_sheets/hegemony_H10/ (build sheet); Iron Mandate: contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg | R198: "H10 but I don't think it's in the same style as we see in hullbreakers. It's semi realistic but not quite." R254: "Can we do a mix of im2 and im3"; R255: "Im5 is my preference". A well-kept navy, never rusty; guns low, sunk in and real (R185). |
+| Meridian Directorate | Dominion (h_dominion), H10 shape; Iron Mandate (h_boss), IM5 | BOTH SHEETS ACCEPTED (R256): Dominion (PR 767) and Iron Mandate (PR 775); the Hegemony paint stack is next | docs/ship_pipeline/build_sheets/hegemony_H10/ (build sheet); Iron Mandate: contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg | R198: "H10 but I don't think it's in the same style as we see in hullbreakers. It's semi realistic but not quite." R254: "Can we do a mix of im2 and im3"; R255: "Im5 is my preference". A well-kept navy, never rusty; guns low, sunk in and real (R185). |
 | The Glasswrights | flagship CD5 (Flowing Integrated Optics) | ACCEPTED (R298); build sheet done (issue 912); look restarting from the concept (R337, issue 1183) | Downloads\voidsworn_test\concepts\glasswright_r9\Glasswright_CD5_flowing_integrated_optics.png on the PC; the build sheet (issue 912) copies it into its own folder as concept.jpg | R298: "I love the overall design and the forward lances. The three other optics look somewhat left-heavy and randomly spaced, so clean up their placement in Blender while keeping them integrated into the flowing glass and consistent with their all-direction firing arcs. Treat the picture as a reference, not a literal placement guide." Made in ChatGPT image generation from G15's base (R296). |
 | Station | Vesper Reach, damaged | ACCEPTED (R206: "T2 damaged"); build sheet, then issue 373 | contrib/muse/design/station_concept_2026_11/station_T2_beauty.jpg | Concept picture first, then the build (R201 (3)). |
 

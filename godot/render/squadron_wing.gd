@@ -51,7 +51,7 @@ var _stern := Vector3(-0.47, 0.0, 0.0)
 # not every frame. Same maths as the old per-frame GDScript build.
 const TRAIL := """
 shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 uniform float clock_now = 0.0;
 uniform float trail_len = 1.0;
 uniform float width_k = 0.026;
@@ -425,7 +425,9 @@ func step(dt: float) -> void:
 		if active and sample:
 			hist.push_front([stern, clock, -n.global_basis.x.normalized()])
 			changed = true
-		while not hist.is_empty() and (clock - float(hist[-1][1]) > trail_life or hist.size() > 20):
+		# issue 1558 item 9: drop old samples on the same 30 Hz step that adds one, so the mesh is rebuilt once per sample,
+		# not on the frames between (the oldest sample lingers at most 1/30 s past its life, where the shader has faded it)
+		while not hist.is_empty() and (sample or not active) and (clock - float(hist[-1][1]) > trail_life or hist.size() > 20):
 			hist.pop_back()
 			changed = true
 		# issue 221: the shader ages the ribbon; the mesh only changes with its samples

@@ -1,4 +1,4 @@
-// ======================= CORE =======================
+// ======================= CORE ======================= FROZEN since Nov 22 2026 (R405, RULEBOOK 3.1, issue 1654): Godot is the only rules source; change godot/ instead (ship weapon lists and hull entries: both, until issue 1667)
 // v41: seeded rules randomness (mulberry32). Each battle reseeds from B.seed, so a seed plus the same moves replays a fight;
 // the simulator takes SEED from the environment so whole runs repeat exactly. Cosmetic effects keep Math.random.
 let RNG_S=(Math.random()*4294967296)>>>0;
@@ -231,11 +231,19 @@ function legendaryFor(p,minR){ if(!(minR>=1)) return null; if(RUN&&p===RUN.eaten
 function rollNodeReward(type){ ensurePatrons(); const ps=RUN.eatenCore?RUN.patrons.filter(q=>q!==RUN.eatenCore):RUN.patrons; const p=pick(ps.length?ps:RUN.patrons); if(type==='elite'||type==='boss') return {k:'boon',p,min:1}; const x=rnd(); return x<.62?{k:'boon',p}:x<.78?{k:'mod'}:x<.9?{k:'cred'}:{k:'repair'}; }
 function flagshipOf(){ return RUN&&RUN.fleet&&RUN.fleet.find(s=>s.uid===RUN.flagUid); }
 // issue 1178 (R335, the 1085 sim pick): the Chorus pay for hull work (repairs, new hulls, Marks) in biomass, earned flat per win
-// plus 2 per kill (at most 12 a battle); credits still buy refits, class refits, events and the late market. Every other faction: credits.
+// plus BIO_KILL per kill; refits, class refits, rerolls and the late market take biomass first, then credits (shopKey, issue 1484);
+// events take credits. Every other faction: credits.
 function hullKey(){ return RUN&&RUN.fac==='chorus'?'bio':'credits'; }
 function hullFunds(){ return (RUN&&RUN[hullKey()])||0; }
 function hullPay(c){ RUN[hullKey()]=hullFunds()-c; }
 function hullWord(){ return hullKey()==='bio'?'biomass':'credits'; }
+// issue 1484 (R382): the Chorus pay for refits, class refit tracks, protocol rerolls and the late market in biomass when it covers the
+// price, otherwise in credits (credits still reach a Chorus run from repair stipends, ransoms, scrap and declined protocols). Every
+// other fleet pays these in credits. One purse per purchase, never split.
+function shopKey(c){ return RUN&&RUN.fac==='chorus'&&(RUN.bio||0)>=c?'bio':'credits'; }
+function shopCan(c){ return !!RUN&&(RUN[shopKey(c)]||0)>=c; }
+function shopPay(c){ const k=shopKey(c); RUN[k]=(RUN[k]||0)-c; }
+function shopWord(c){ return RUN&&RUN.fac==='chorus'?(shopKey(c)==='bio'||(RUN.credits||0)<c?' biomass':' credits'):''; }
 const BIO_KILL={per:8,cap:50}; // issue 1178: the Chorus biomass kill bonus on a win (per enemy ship destroyed, at most cap a battle)
 const LATE_SHOP={relic:120,cp:130,cpMax:2,core:.2,skip:['ledger','logbook','salvage']}; // issue 1178: Sector 3 market prices (times priceMult); core restore = 20% of the hull's value
 // issue 1290: skip = relics the late market never offers: +25% battle credits, +30% XP and the Scrap rig (15 credits and 8% hull a
@@ -278,9 +286,19 @@ function derive(ship){
 const CLASS_TRACK_MAX=3;
 function classTrack(cls){ return (typeof RUN!=='undefined'&&RUN&&RUN.classTrack&&RUN.classTrack[cls])||0; }
 function classTrackCost(cls){ return Math.round((60+50*classTrack(cls))*priceMult()); }
-function buyClassTrack(cls){ if(!RUN||classTrack(cls)>=CLASS_TRACK_MAX) return false; const c=classTrackCost(cls); if(RUN.credits<c) return false; RUN.credits-=c; changeFleet(()=>{ RUN.classTrack=RUN.classTrack||{}; RUN.classTrack[cls]=classTrack(cls)+1; }); return true; }
-function changeShip(ship, fn){ const before=derive(ship).maxHp; fn(ship); const after=derive(ship).maxHp; ship.hp=clamp(ship.hp+(after-before),1,after); }
-function changeFleet(fn){ const b=RUN.fleet.map(s=>derive(s).maxHp); fn(); RUN.fleet.forEach((s,i)=>{ const a=derive(s).maxHp; s.hp=clamp(s.hp+(a-b[i]),1,a); }); }
+function buyClassTrack(cls){ if(!RUN||classTrack(cls)>=CLASS_TRACK_MAX) return false; const c=classTrackCost(cls); if(!shopCan(c)) return false; shopPay(c); changeFleet(()=>{ RUN.classTrack=RUN.classTrack||{}; RUN.classTrack[cls]=classTrack(cls)+1; }); return true; }
+// issue 1556: a change that would take the hull under 1 keeps what it could not take (hpOwed [amount, the hull it left]), and a later
+// gain on the same hull pays it back first, so taking a hull refit off and on again never adds hull (twin: campaign.gd changeShip)
+// The owed amount stays through changes that do not raise max hull, a partial gain carries the rest, and anything else that moves
+// the hull (a repair, a battle) ends it (Artoo on PR 1602).
+// One hull adjustment for every max-hull change, one ship (changeShip) or the fleet (changeFleet: class refits, the Aspect).
+function changeShip(ship, fn){ const before=derive(ship).maxHp; fn(ship); adjustHull(ship,before,derive(ship).maxHp); }
+function adjustHull(ship, before, after){ const ow=ship.hpOwed;
+  let owed=(Array.isArray(ow)&&ship.hp===ow[1])?ow[0]:0, hp=ship.hp+(after-before);
+  if(after>before&&owed>0){ const pay=Math.min(owed,after-before); hp-=pay; owed-=pay; }
+  if(hp<1){ owed+=1-hp; hp=1; } hp=clamp(hp,1,after);
+  if(owed>0) ship.hpOwed=[owed,hp]; else delete ship.hpOwed; ship.hp=hp; }
+function changeFleet(fn){ const b=RUN.fleet.map(s=>derive(s).maxHp); fn(); RUN.fleet.forEach((s,i)=>adjustHull(s,b[i],derive(s).maxHp)); }
 function fleetCP(){ return RUN.fleet.reduce((a,s)=>a+HULLS[s.tpl].cp,0); }
 function priceMult(){ const c=sectorCond(); return (META.unlocked.wrights?.85:1)*(heatOn('h_coffers')?1.25:1)*((c&&c.price)||1); }
 function heatOn(k){ return !!(typeof RUN!=='undefined'&&RUN&&RUN.heat&&RUN.heat.includes(k)); }
