@@ -5,8 +5,8 @@ extends SceneTree
 #     and a station hole whenever T2 is installed (GitHub stands it in as a box with T2's bounds);
 #   hulks: A4P.HULKS names a hull for every faction in the rules FACTIONS table, every named code is a manifest ship of
 #     that faction, and the real board's _hulk() draws all six factions over a field of hulk hexes;
-#   band and identity: every faction's derelict finish keeps base albedo inside band 3 (0.04 to 0.30 linear), Eclipse
-#     hulks carry no green, Glasswright and Chorus hulks no metal soot.
+#   band and identity: every faction's derelict finish keeps base albedo in the dull part of band 3 (A4P.HULK_BAND,
+#     0.04 to 0.12 linear), Eclipse hulks carry no green, and no faction wears the old shared soot.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const A4P := preload("res://assets/ships/a4_props.gd")
@@ -150,8 +150,8 @@ func _finishes() -> void:
 			var g := d.albedo_color
 			if fac == "deathless" and g.g > g.r * 1.15 and g.g > g.b * 1.15:
 				worst = "green %s" % str(g)
-			if fac in ["chorus", "ithar"] and g.is_equal_approx(SOOT):
-				worst = "metal soot"
+			if g.is_equal_approx(SOOT):
+				worst = "the old shared soot"
 			if d.emission_enabled:
 				worst = "lights still on"
-		_report(worst == "", "%s derelicts stay in band 3 with their identity (%s)" % [fac, worst if worst != "" else "ok"])
+		_report(worst == "", "%s derelicts stay in the dull band with their identity (%s)" % [fac, worst if worst != "" else "ok"])

@@ -72,6 +72,7 @@ static func _collect(p: String) -> Resource:
 const T2_PATH := "res://gen/ships/station_T2.scn"
 const T2_DEBRIS_PATH := "res://gen/ships/station_T2_debris.scn"
 const T2_REACH := 60.8   # T2's horizontal reach from its centre at unit scale (bounds 99.2 x 70.2: production_checks.json)
+const BIG_FOOTPRINT_CELLS := 19   # the rules' big station (every hex within 2 of its centre, R314)
 const FIT_ANGLES := 720  # rays from the cluster centre used to measure its footprint
 # The biome's station kind (rules REGION_BIOME "station": rig, ring, spire). Hook for bespoke kits: when a kind's `scene` is
 # installed it replaces T2 for that kind with no board change; until then T2 stands in and the kind only sets a faint
@@ -191,9 +192,12 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 				far = maxf(far, (q as Vector2).length())
 			_reach[path] = far if far > 0.0 else T2_REACH
 		var k := 1.0
-		if size < LARGE_STATION_SIZE:
+		# only the approved big 19-hex station keeps unit scale; any other cluster that names its cells is fitted (a 5 to
+		# 18 hex cluster too: Fable on PR 1772, L2)
+		var fit := cells.size() < BIG_FOOTPRINT_CELLS if not cells.is_empty() else size < LARGE_STATION_SIZE
+		if fit:
 			if not cells.is_empty() and not (_outline[path] as PackedVector2Array).is_empty():
-				k = fit_scale(_outline[path], cells, hex_r, bearing)
+				k = minf(1.0, fit_scale(_outline[path], cells, hex_r, bearing))
 			else:
 				k = clampf(size / LARGE_STATION_SIZE, 0.05, 1.0)
 		t2.scale = Vector3.ONE * k
@@ -310,23 +314,22 @@ static func hulk_faction(code: String) -> String:
 # one hulk code from one random draw `v` (so the board keeps its old number of draws): HULK_LOCAL_PCT of the time a hull of
 # a faction in `local` (the battle's factions), else any faction's
 static func pick_hulk(v: int, local: Array = []) -> String:
-	var every: Array = []
-	var near: Array = []
-	for fac in HULKS:
-		every.append_array(HULKS[fac])
-		if fac in local:
-			near.append_array(HULKS[fac])
 	v = absi(v)
 	if old_path():
 		return OLD_HULKS[v % OLD_HULKS.size()]
-	var pool := near if not near.is_empty() and v % 100 < HULK_LOCAL_PCT else every
-	return str(pool[(v / 100) % pool.size()])
+	# the faction first, then one of its hulls, so a faction with two hulls is drawn no more often (Fable on PR 1772, L2)
+	var every: Array = HULKS.keys()
+	var near: Array = every.filter(func(f): return f in local)
+	var pool: Array = near if not near.is_empty() and v % 100 < HULK_LOCAL_PCT else every
+	var rest := v / 100
+	var codes: Array = HULKS[pool[rest % pool.size()]]
+	return str(codes[(rest / pool.size()) % codes.size()])
 
 
 # a derelict: the A4 hull in its own paint, burnt (darker, rougher, its windows and engines dead), unit length: scale it as the
-# board scales its hulks. The burn suits the material (R416, R419 trap 4): metal hulls take soot over the paint; Chorus
-# chitin keeps its own colour, darkened and dried; Glasswright crystal keeps its hue, gloss and clarity, only darkened, so
-# glass and flesh never read as the same charcoal metal.
+# board scales its hulks. The burn suits the material (R416, R420 Law 3): the paint is dimmed and pulled toward the
+# faction's own scorch colour by its wreck_soot, so Chorus chitin and Glasswright glass (wreck_soot 0) keep their own
+# hue and gloss and Eclipse keeps its violet-black (never the old shared warm soot), then held in the dull band.
 static func hulk(code: String) -> Node3D:
 	var n := _scene(code)
 	if n == null:
@@ -345,9 +348,51 @@ static func hulk(code: String) -> Node3D:
 	return n
 
 
-# R420 Law 1 band 3 (contrib/opus/plans/global_cohesion_standard.md): a lit hulk's base albedo sits between 0.04 and 0.30
-# linear luminance; the Chorus and Glasswright burns keep their hue and are only scaled into that band
-const HULK_BAND := Vector2(0.04, 0.30)
+
+# R420 Law 1 band 3 (contrib/opus/plans/global_cohesion_standard.md): a lit hulk is a dead hull, so its effective base
+# albedo (paint texture times tint) sits in the dull lower part of band 3: 0.04 to 0.12 linear luminance, so no faction's
+# derelict (the Glasswrights' pale glass above all: Fable on PR 1772, H9) is the brightest thing in a graveyard.
+const HULK_BAND := Vector2(0.04, 0.12)
+const DEAD_DIM := 0.6   # a dead hull with no lights: its paint dimmed before any soot
+# The burn comes from the faction's own wound profile (fx/faction_looks.json "wound": scorch_col, wreck_soot; PR 1755,
+# issue 1741), the one home for how a faction's hull scorches. Until that block is on main these are its values.
+const WOUND_FALLBACK := {
+	"voidsworn": {"scorch_col": [0.1, 0.08, 0.07], "wreck_soot": 0.55},
+	"hegemony": {"scorch_col": [0.16, 0.18, 0.22], "wreck_soot": 0.25},
+	"corsair": {"scorch_col": [0.09, 0.06, 0.045], "wreck_soot": 0.7},
+	"chorus": {"scorch_col": [0.2, 0.13, 0.07], "wreck_soot": 0.0},
+	"ithar": {"scorch_col": [0.8, 0.86, 0.95], "wreck_soot": 0.0},
+	"deathless": {"scorch_col": [0.1, 0.07, 0.14], "wreck_soot": 0.15},
+}
+static var _tex_mean := {}   # not GPU: albedo texture resource path or id -> its mean colour
+
+
+static func wound_of(fac: String) -> Dictionary:
+	var w = load("res://fx/faction_look.gd").of(fac).get("wound", {}) if fac != "" else {}
+	if not (w is Dictionary) or not (w as Dictionary).has("wreck_soot"):
+		w = WOUND_FALLBACK.get(fac, WOUND_FALLBACK["voidsworn"])
+	return w
+
+
+# the mean colour of a material's albedo texture (white when it has none), read once from its smallest mip
+static func texture_mean(m: BaseMaterial3D) -> Color:
+	var t := m.albedo_texture
+	if t == null:
+		return Color.WHITE
+	var key: String = t.resource_path if t.resource_path != "" else str(t.get_instance_id())
+	if _tex_mean.has(key):
+		return _tex_mean[key]
+	var out := Color.WHITE
+	var img := t.get_image()
+	if img != null and not img.is_empty():
+		if img.is_compressed():
+			img.decompress()
+		img.convert(Image.FORMAT_RGBA8)
+		while img.get_width() > 1 or img.get_height() > 1:   # halving with bilinear is a 2 x 2 box mean: a true average
+			img.resize(maxi(1, img.get_width() / 2), maxi(1, img.get_height() / 2), Image.INTERPOLATE_BILINEAR)
+		out = img.get_pixel(0, 0)
+	_tex_mean[key] = out
+	return out
 
 
 static func linear_luma(c: Color) -> float:
@@ -355,9 +400,9 @@ static func linear_luma(c: Color) -> float:
 	return 0.2126 * l.r + 0.7152 * l.g + 0.0722 * l.b
 
 
-# scale a colour's value (same hue and alpha) so its linear luminance lies inside HULK_BAND
-static func into_band(c: Color) -> Color:
-	var y := linear_luma(c)
+# scale a tint (same hue and alpha) so the effective albedo `mean * tint` lies inside HULK_BAND
+static func into_band(c: Color, mean := Color.WHITE) -> Color:
+	var y := linear_luma(Color(mean.r * c.r, mean.g * c.g, mean.b * c.b))
 	if y <= 1e-5:
 		return c
 	var want := clampf(y, HULK_BAND.x, HULK_BAND.y)
@@ -370,22 +415,19 @@ static func into_band(c: Color) -> Color:
 	return out
 
 
-# the burnt copy of one hull material for a faction's derelict (R420 Law 3 hulk column: no soot on Glasswright glass or
-# Chorus chitin; the metal soot is a warm grey, never green, so Eclipse hulks carry no green)
+# the burnt copy of one hull material for a faction's derelict
 static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 	var b := src.duplicate() as BaseMaterial3D
 	b.emission_enabled = false
 	if old_path():
-		fac = ""
-	match fac:
-		"chorus":
-			var c := src.albedo_color
-			b.albedo_color = into_band(Color(c.r * 0.5, c.g * 0.45, c.b * 0.45, c.a))   # dried chitin, its own hue, a touch warmer
-			b.roughness = minf(1.0, src.roughness * 1.1)
-		"ithar":
-			var g := src.albedo_color
-			b.albedo_color = into_band(Color(g.r * 0.6, g.g * 0.6, g.b * 0.62, g.a))    # dead crystal: darker, same hue, alpha and gloss
-		_:
-			b.albedo_color = Color(0.32, 0.29, 0.27)  # soot over the paint; the paint's own pattern still shows
-			b.roughness = minf(1.0, b.roughness * 1.2)
+		b.albedo_color = Color(0.32, 0.29, 0.27)  # the old shared soot (VS_1767_OLD before pictures only)
+		b.roughness = minf(1.0, b.roughness * 1.2)
+		return b
+	var w := wound_of(fac)
+	var soot := clampf(float(w.get("wreck_soot", 0.0)), 0.0, 1.0)
+	var sc: Array = w.get("scorch_col", [0.1, 0.1, 0.1])
+	var c := src.albedo_color
+	var burn := Color(DEAD_DIM, DEAD_DIM, DEAD_DIM).lerp(Color(float(sc[0]), float(sc[1]), float(sc[2])), soot)
+	b.albedo_color = into_band(Color(c.r * burn.r, c.g * burn.g, c.b * burn.b, c.a), texture_mean(src))
+	b.roughness = minf(1.0, src.roughness * (1.0 + 0.35 * soot))   # soot dulls metal; glass and chitin keep their gloss
 	return b

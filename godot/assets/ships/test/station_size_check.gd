@@ -6,7 +6,7 @@ extends SceneTree
 #   A4P: the big cluster gets T2 at unit scale; a smaller cluster and a lone hole get T2 scaled so every mesh box (corners
 #     and points along each edge, at the placed bearing) projects inside the cluster's own hexes, tested here with its own
 #     point-in-hex sum, not A4P's (Artoo on PR 1772: a circle round the corners let the flats overhang); the biome station kind is recorded and lights a faint lamp in its colour; a hole has no debris;
-#   A4P: the hulk pool holds all six factions, the draw prefers the battle's factions about 70 percent of the time, and the
+#   A4P: the hulk pool holds all six factions, each faction drawn equally often (then one of its hulls), the draw prefers the battle's factions about 70 percent of the time, and the
 #     derelict finish keeps Glasswright glass and Chorus chitin in their own hue (never the metal soot);
 #   the real board: a teaching (3-hex) cluster and a station hole build T2, level, inside their own hexes (the teaching
 #     cluster on six board seeds, so six bearings); the big (19-hex) cluster keeps unit scale; a Chorus and Glasswright battle's hulk hexes draw their hulls, at positive scale (true chirality).
@@ -182,7 +182,35 @@ func _hulk_checks() -> void:
 	var soot := PROPS.derelict(chitin, "hegemony")
 	_report(c.albedo_color.r > c.albedo_color.g and not c.albedo_color.is_equal_approx(soot.albedo_color),
 		"a dead Chorus keeps its own chitin colour, not the metal soot")
-	_report(soot.albedo_color.is_equal_approx(Color(0.32, 0.29, 0.27)), "metal hulls keep the old soot finish")
+	var grey := StandardMaterial3D.new()
+	grey.albedo_color = Color(0.7, 0.7, 0.7)
+	var navy := PROPS.derelict(grey, "hegemony")
+	var crusade := PROPS.derelict(grey, "voidsworn")
+	var hull_breaker := PROPS.derelict(grey, "corsair")
+	print("  grey paint burnt: hegemony %.3f, voidsworn %.3f, corsair %.3f linear" % [PROPS.linear_luma(navy.albedo_color), PROPS.linear_luma(crusade.albedo_color), PROPS.linear_luma(hull_breaker.albedo_color)])
+	_report(PROPS.linear_luma(hull_breaker.albedo_color) <= PROPS.linear_luma(crusade.albedo_color) + 1e-4
+		and PROPS.linear_luma(crusade.albedo_color) < PROPS.linear_luma(navy.albedo_color),
+		"metal hulks burn by their own wound profile (Hullbreakers sootiest, Directorate cleanest), not one shared soot")
+	# an equal draw per faction when no faction is local (two-hull factions are not drawn twice as often)
+	var per := {}
+	for v in 6000:
+		var f := PROPS.hulk_faction(PROPS.pick_hulk(v * 2654435 + 7))
+		per[f] = int(per.get(f, 0)) + 1
+	var lo := 6000
+	var hi := 0
+	for f in per:
+		lo = mini(lo, per[f])
+		hi = maxi(hi, per[f])
+	_report(per.size() == 6 and lo > 6000 * 0.12 and hi < 6000 * 0.22, "an ambient draw gives each faction about a sixth: %s" % str(per))
+	# a textured pale glass hull stays in the dull band once its texture is counted (Fable on PR 1772, H9)
+	var img := Image.create(8, 8, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.95, 0.97, 1.0))
+	var pale := StandardMaterial3D.new()
+	pale.albedo_texture = ImageTexture.create_from_image(img)
+	var pg := PROPS.derelict(pale, "ithar")
+	var eff := PROPS.texture_mean(pale) * pg.albedo_color
+	var ye := PROPS.linear_luma(Color(eff.r, eff.g, eff.b))
+	_report(ye <= PROPS.HULK_BAND.y + 1e-3 and ye >= PROPS.HULK_BAND.x - 1e-3, "a textured pale Glasswright hulk lands at %.3f linear, inside the dull band" % ye)
 
 
 func _board(terrain: Dictionary, holes: Array, units: Array, map: Dictionary, radius: int, seed := 7) -> Node3D:
