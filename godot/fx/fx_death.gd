@@ -629,6 +629,11 @@ static func _settle_debris(fx) -> void:
 # is not scaled a second time (Artoo on PR 1476); a plate a hull knocked awake starts at the speed it was knocked at.
 static func _debris_speed(fx) -> void:
 	var speed: float = maxf(fx.anim_speed(), 0.01)
+	# Most frames the clock holds still: every plate thrown or knocked since stored this same speed, so nothing to do
+	# (PC run 3 on 1a8daa75: the per-plate pass every frame cost about 0.07 ms on the 20-kill fleet probe)
+	var last: float = float(fx.dstate.get("debris_speed", -1.0))
+	fx.dstate["debris_speed"] = speed
+	if absf(speed - last) < 1e-6: return
 	for b in fx.dstate.get("debris_awake", {}):
 		if not is_instance_valid(b): continue
 		var rb := b as RigidBody3D
