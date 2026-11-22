@@ -201,7 +201,8 @@ R225: one home per fact):
 6. gives every inside the faction's dark liner (`inside_material`: one material per room, the liner's dark with a faint tint, the
    core keeps its light), so an inside seen through an opening or a gap never shows a sheet room colour (R99 Q1). Insides the
    Interior Kit V2 built (issue 1743: every one carries `interior_kit = 2` and its box UVs) take `inside_material(zone,
-   trim=True)` instead (R420): each zone takes its role's colour and trim set from the stack's `INSIDE_ROLES` through
+   trim=True)` instead (R420): each zone takes its role's colour from the faction's `interior` table in
+   `godot/fx/faction_looks.json` and its trim set from the stack through
    `interior_trim.role_material()` (`tools/blender/kits/shared/interior_trim.py`), never the kit's zone colour or light, inside
    the shared wall ceiling and emission budget, the core alone keeping a constant light; the paint report records
    `interior_kit`. Stage 7 writes one set per trim style as `<CODE>_inside_<style>_<key>_base`, `_orm`, `_normal` and

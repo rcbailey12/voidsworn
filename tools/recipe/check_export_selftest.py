@@ -36,6 +36,8 @@
 #   interior_bright the same, a wall's base colour factor four times over             must FAIL (over the wall ceiling)
 #   interior_glow   the same, a non-core room given a constant lime light              must FAIL (only the core may)
 #   interior_guard  (Chorus) a bone material given a light; (Eclipse) a green room     must FAIL (the faction guard)
+#   interior_wrong_role a lit non-core room relabelled core (Artoo on PR 1763)         must FAIL (the role does not match its zone)
+#   interior_role_contract the contract's interior_roles taken off (PR 1755 reads it)  must FAIL (the game would not see the roles)
 #   maps_undersized (a painted export, Artoo on PR 1724) stage 7's report asks for     must FAIL (maps under the target)
 #                   twice the size its maps were written at
 # A case whose points the export does not carry is skipped and named (issue 1413: an objective has no guns, and the Relay beacon
@@ -202,6 +204,12 @@ def interior_bright(g):  # R420: a wall over the shared value ceiling (the chalk
 def interior_glow(g):  # R420: a non-core room with a constant full-surface light (the neon vat)
     m = _room(g, lambda m: _role(m) not in ('core', None))
     m.pop('emissiveTexture', None); m['emissiveFactor'] = [0.55, 0.85, 0.1]
+def interior_wrong_role(g):  # Artoo on PR 1763: a lit wall relabelled core, so the exemptions would let it through
+    m = _room(g, lambda m: _role(m) not in ('core', None)); m['extras']['interior_role'] = 'core'
+    m.pop('emissiveTexture', None); m['emissiveFactor'] = [1, 1, 1]
+    root, _ = _room_mats(g); root['extras']['voidsworn_destruct'].setdefault('interior_roles', {})[m['name']] = 'core'   # the contract agrees
+def interior_role_contract(g):  # PR 1755: a room role the contract does not carry never reaches the game
+    root, _ = _room_mats(g); root['extras']['voidsworn_destruct'].pop('interior_roles', None)
 def interior_guard(g):  # R420 faction guards: Chorus bone that glows; Eclipse green
     if FAC == 'chorus':
         m = _room(g, lambda m: _role(m) == 'bone'); m['emissiveFactor'] = [0.3, 0.3, 0.1]
@@ -254,8 +262,10 @@ if not wing:
     PAINTED = V2 and 'unbaked=1' not in sys.argv[3:]
     FAC = ship.get('faction')
     _roles0 = {_role(m) for m in _g0.get('materials', []) if m.get('name') in _room_mats(_g0)[1]}
-    want(['interior_no_role', 'interior_glow'], PAINTED,
-         (('interior_no_role', interior_no_role, 1, 'names no interior_role'), ('interior_glow', interior_glow, 1, 'has a constant light')))
+    want(['interior_no_role', 'interior_glow', 'interior_wrong_role', 'interior_role_contract'], PAINTED,
+         (('interior_no_role', interior_no_role, 1, 'names no interior_role'), ('interior_glow', interior_glow, 1, 'has a constant light'),
+          ('interior_wrong_role', interior_wrong_role, 1, 'does not match its zone'),
+          ('interior_role_contract', interior_role_contract, 1, 'missing from the contract interior_roles')))
     # the Glasswrights' rooms are all glass, which the wall ceiling does not bind
     want(['interior_bright'], PAINTED and bool(_roles0 - {'bone', 'glass', 'glass_strut', None}),
          (('interior_bright', interior_bright, 1, 'wall ceiling'),))

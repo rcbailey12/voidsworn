@@ -452,18 +452,22 @@ we don't run into the issues of before with just empty looking husks". What he w
   Paint (stage 5) then gives each zone its role's material (R420, Ryan Nov 22; contrib/opus/plans/global_cohesion_standard.md
   sections 3 and 6.1): the kit's zone colours and lights in `kit.py` (engroom orange, magazine red, vat lime and the rest) are
   role tags only. `interior_trim.ZONE_ROLE` maps every zone to a role (wall, deck, frame, machinery, core, organ, gland, bone,
-  glass, glass_strut; an unknown zone stops the paint), and each faction stack's `INSIDE_ROLES` gives that role's colour, trim
-  set (`interior_trim.py`: panels, flesh, bone, glass; albedo, ORM, normal, emission) and whether it carries trim light. Rooms
+  glass, glass_strut; an unknown zone stops the paint), and the faction's `interior` block in `godot/fx/faction_looks.json`
+  (one table for Blender and the game) gives each role's colour, which roles stay unlit, the strip strength, the core light,
+  the glow and the area light budget; the stack only picks the trim set per role (`interior_trim.py`: panels, flesh, bone,
+  glass; albedo, ORM, normal, emission). Rooms
   differ by their modeled pieces, roughness and panel contrast, and a fixed per-zone shift of at most 15 percent, never by
   colour coding. Shared budgets: every role but bone and glass at most 0.11 linear albedo (`WALL_MAX`), trim light at most
   0.25 area weighted (`EMISSION_AREA_MAX`), and only the core keeps a constant light. The values match the 1741 breach interior
   (faction_looks.json `wound`). Chorus bone is dry ochre-ivory with no glow and its tissue deep wet crimson-umber with a few
   dim olive-amber pores (Ryan, Nov 22, insides only; the hull keeps its olive hide); the Directorate is cool brushed steel-slate
-  with blue strips. Stage 7 writes one `<CODE>_inside_<style>_<key>_*` set per trim style and records each interior map's
-  measured mean, and `check_export.py` fails a V2 export with a room surface without UVs, a painted room material without the
-  trim maps or without its `interior_role`, a wall over the ceiling, a non-core constant light or trim light over the budget, a
-  Chorus room with metal, magenta, neon lime or glowing bone, a Glasswright room with metal, an Eclipse room with green, or
-  interior triangles over 45 percent of the ship. Review the result with
+  with blue strips. Stage 7 writes one `<CODE>_inside_<style>_<key>_*` set per trim style, records each interior map's
+  measured mean and copies each room material's role into the contract as `interior_roles` (Godot's glTF import drops material
+  extras; the game's breach shader reads this, PR 1755), and `check_export.py` fails a V2 export with a room surface without UVs, a painted room material without the
+  trim maps or without its `interior_role`, a role that does not match its zone, a room off its faction's table, a wall over the
+  ceiling, a non-core constant light, a lit unlit role or trim light over the faction's budget, a Chorus room with metal,
+  magenta, neon lime or glowing bone, a Glasswright room with metal, or an Eclipse room whose green is not its lowest channel;
+  interior triangles over 45 percent of the ship are reported, never a fail (rule 3.9). Review the result with
   `python tools/blender/build_sheets/cutaway.py <blend> <out> "<title>"` (centreline section, plan section, close cutaway;
   stamped with revision and stage), on the stage 4 build or the painted stage 5 blend; the build sheet's own cutaway view shows
   the modeled pieces too; `cutaway_lineup.py OUT "<title>" <blends>` puts the six reference ships on one strip at one exposure (R420). (2) **Palette

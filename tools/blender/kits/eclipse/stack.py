@@ -348,22 +348,26 @@ INSIDE_TINT = .20
 # archive vaults, dark decks). Each zone takes its role's colour here, inside the shared budgets of
 # tools/blender/kits/shared/interior_trim.py; the values match the 1741 breach interior.
 FAC_KEY = 'eclipse'
-INSIDE_ROLES = dict(wall=dict(rgb=(.035, .028, .045)), deck=dict(rgb=(.03, .024, .04)), frame=dict(rgb=(.028, .024, .034), light=False),
-                    machinery=dict(rgb=(.038, .031, .048)), core=dict(rgb=(.03, .024, .04)))
+INSIDE_ROLES = None      # from godot/fx/faction_looks.json "interior" (one table for Blender and the game), on first use
 _TRIMS = None
 
 
 def inside_trims():
-    global _TRIMS
+    global _TRIMS, INSIDE_ROLES
+    import interior_trim
+    if INSIDE_ROLES is None:
+        INSIDE_ROLES = interior_trim.roles_for(FAC_KEY, {})
     if _TRIMS is None:
         _TRIMS = dict(main=dict(style='panels', seed=1746, panel=8, split=0.3, var=0.1, grime=0.15, grille=0.1, conduit_rows=1, metal=0.3,
                     rough=(0.28, 0.55), relief=5.0, tones=((1.0, 0.9, 1.1), (0.86, 0.8, 0.96)),
-                    strip=dict(rgb=tuple(faction_look()['death']['fire']), every=4, strength=1.6)))
+                    strip=dict(rgb=tuple(faction_look()['death']['fire']), every=4, strength=interior_trim.faction_interior(FAC_KEY)['strip'])))
     return _TRIMS
 
 
 def CORE_LIGHT():
-    return (tuple(float(c) for c in faction_look()['death']['fire']), 4.0)
+    import interior_trim
+    t = interior_trim.faction_interior(FAC_KEY)
+    return (tuple(t.get('core_rgb') or tuple(float(c) for c in faction_look()['death']['fire'])), t['core_strength'])
 
 
 def inside_material(room, trim=False):
@@ -371,7 +375,8 @@ def inside_material(room, trim=False):
     kit's zone colour and light are never read, only the core keeps its light)"""
     if trim:
         import interior_trim
-        return interior_trim.role_material(f'ps_inside_{room}', FAC_KEY, room, INSIDE_ROLES, inside_trims(), core=CORE_LIGHT())
+        trims = inside_trims()
+        return interior_trim.role_material(f'ps_inside_{room}', FAC_KEY, room, INSIDE_ROLES, trims, core=CORE_LIGHT())
     src = bpy.data.materials.get(room); m = bpy.data.materials.new(f'ps_inside_{room}'); m.use_nodes = True
     b = m.node_tree.nodes['Principled BSDF']; rgb = (1, 1, 1)
     if src is not None and src.use_nodes and src.node_tree.nodes.get('Principled BSDF'):

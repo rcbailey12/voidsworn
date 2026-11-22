@@ -285,6 +285,50 @@ ZONE_ROLE = {
 }
 
 
+# ---- the one interior table (R420; Fable on PR 1763): godot/fx/faction_looks.json "interior", read by Blender and the game
+LOOKS_KEY = dict(voidsworn='voidsworn', hegemony='hegemony', hullbreakers='corsair', corsair='corsair', chorus='chorus',
+                 ithar='ithar', glasswright='ithar', eclipse='deathless', deathless='deathless')
+_LOOKS = None
+
+
+def faction_interior(fac):
+    """the faction's interior block from faction_looks.json (roles, unlit, strip, core, glow, zone_tint, light_area_max)"""
+    global _LOOKS
+    if _LOOKS is None:
+        import os
+        here = os.path.dirname(os.path.abspath(__file__))
+        _LOOKS = json.load(open(os.path.join(here, '..', '..', '..', '..', 'godot', 'fx', 'faction_looks.json')))
+    key = LOOKS_KEY.get(str(fac).lower())
+    if key is None or 'interior' not in _LOOKS.get(key, {}):
+        raise KeyError(f'faction {fac!r} has no "interior" block in godot/fx/faction_looks.json')
+    return _LOOKS[key]['interior']
+
+
+def roles_for(fac, trim_of):
+    """role_material()'s role table for the faction: colour, light and zone tints from faction_looks.json, the trim set per role
+    from the stack (trim_of: role -> trim key; Blender-only plumbing)"""
+    t = faction_interior(fac)
+    return {r: dict(rgb=tuple(rgb), trim=trim_of.get(r, 'main'), light=r not in t.get('unlit', []), tint=t.get('zone_tint', {}))
+            for r, rgb in t['roles'].items()}
+
+
+def green_leak(c):
+    """Eclipse: green must be the lowest channel (teal and lime both fail; no absolute floor)"""
+    return c[1] > min(c[0], c[2]) * 1.02 and max(c) > 1e-5
+
+
+def magenta(c):
+    return c[0] > c[1] * 1.3 and c[2] > c[1] * 1.3 and max(c) > 1e-5
+
+
+def lime(c):
+    return c[1] > c[0] * 1.05 and c[1] > c[2] * 2.0 and max(c) > 1e-5
+
+
+# a faction's own zone roles over the shared table (here, not in the stack, so check_export.py reads the same mapping)
+FACTION_ZONES = dict(chorus=dict(engroom='organ', machinery='organ', core='gland', frame='bone', deck='organ'))   # no metal rooms
+
+
 def role_of(zone, zones=None):
     """the zone's role: the faction's own override (its INSIDE_ZONES) first, then the shared table; never a silent default"""
     r = (zones or {}).get(zone) or ZONE_ROLE.get(zone)
@@ -303,7 +347,7 @@ def role_material(name, fac, zone, roles, trims, core=None, zones=None):
     """the Interior Kit V2 material for one kit zone (R420): its role's colour from the faction's role table (roles: role ->
     dict(rgb linear, trim key into trims, light True|False, tint rgb multiplier)), the role's trim maps, light only from the
     trim's own strips or pores inside EMISSION_AREA_MAX, and a constant light on the core alone (core: (rgb, strength))"""
-    role = role_of(zone, zones)
+    role = role_of(zone, zones or FACTION_ZONES.get(fac))
     if role not in roles:
         raise KeyError(f'{fac}: interior role {role!r} (zone {zone!r}) has no entry in the stack\'s INSIDE_ROLES')
     r = roles[role]; j = _jitter(zone)
@@ -323,7 +367,8 @@ def role_material(name, fac, zone, roles, trims, core=None, zones=None):
         else:
             mean = sum(ims['emission'].get('mean_linear', [0, 0, 0])) / 3
             want = spec.get('strip', spec.get('glow', {})).get('strength', 1.0)
-            strength = min(want, EMISSION_AREA_MAX * 0.98 / mean) if mean > 0 else want
+            cap = min(EMISSION_AREA_MAX, faction_interior(fac).get('light_area_max', EMISSION_AREA_MAX))
+            strength = min(want, cap * 0.98 / mean) if mean > 0 else want
     m = trim_material(name, fac, spec, rgb, emission=emission, strip_strength=strength, light=light)
     m['interior_role'] = role; m['interior_zone'] = zone
     return m

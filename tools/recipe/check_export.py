@@ -21,8 +21,8 @@
 #     there.
 #   - the authored interior/seams record or real room geometry is missing (a liner alone is not a room).
 #   - an Interior Kit V2 export (issue 1743: voidsworn_destruct.interior_kit 2) has a room surface without interior UVs, a painted
-#     room material without the shared trim maps (base colour, ORM, normal, occlusion), or interior triangles over
-#     INTERIOR_SHARE_MAX of the ship.
+#     room material without the shared trim maps (base colour, ORM, normal, occlusion), or a room off the faction's interior
+#     table in godot/fx/faction_looks.json (R420); interior triangles over INTERIOR_SHARE_MAX of the ship are reported only (rule 3.9).
 #   - turrets (issue 560, RULEBOOK 6.17; docs/ship_pipeline/HARDPOINTS.md "Turrets"): a turret the kit marks (a ship json part
 #     whose part is 'turret', or the asset extras turrets_marked the export recorded from the blend) has no turret_<n> node of its
 #     own (the export merged it into the ship mesh), or one of its muzzles hangs on the ship node instead of under its turret; a
@@ -35,7 +35,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 SHARED = os.path.normpath(os.path.join(HERE, '..', 'blender', 'kits', 'shared')); sys.path.insert(0, SHARED)
 import gamedata, hardpoints as HP_CONTRACT
-INTERIOR_SHARE_MAX = .45   # issue 1743: the modeled interior's ceiling, as a share of the ship's triangles (H10 34, A16 30 at V2)
+INTERIOR_SHARE_MAX = .45   # issue 1743: the modeled interior's guide (reported, never a fail: rule 3.9), as a share of the ship's triangles (H10 34, A16 30 at V2)
 BREACH_CLEAR = .030; BREACH_SECTIONS = ('prow', 'mid', 'eng'); WEAPON_EXTRAS = ('kind', 'size', 'arc', 'arc_deg', 'slot', 'weapon', 'radius', 'socket')
 
 from glb_io import read_glb  # noqa: E402 (one copy, shared with stage 7)
@@ -184,14 +184,28 @@ def interior_palette(g, out, contract, fac, mats, notes):
     import interior_trim as IT
     probs = []; rows = []
     chorus = fac in ('chorus',); glass = fac in ('ithar', 'glasswright', 'glasswrights'); eclipse = fac in ('deathless', 'eclipse')
-    green = lambda c: c[1] > c[0] * 1.15 and c[1] > c[2] * 1.15 and c.max() > 1e-4
-    magenta = lambda c: c[0] > c[1] * 1.3 and c[2] > c[1] * 1.3 and c.max() > 1e-4
-    lime = lambda c: c[1] > c[0] * 1.05 and c[1] > c[2] * 2.0 and c.max() > 1e-4
+    green, magenta, lime = IT.green_leak, IT.magenta, IT.lime      # one shared definition of each (Fable M7)
+    try:
+        table = IT.faction_interior(fac)      # the faction's role table in godot/fx/faction_looks.json (Fable M8)
+    except KeyError as e:
+        return [f'interior palette: {e}']
+    area_max = min(IT.EMISSION_AREA_MAX, table.get('light_area_max', IT.EMISSION_AREA_MAX))
     for name in mats:
         mm = next(x for x in g['materials'] if x.get('name') == name); pbr = mm.get('pbrMetallicRoughness', {})
         role = (mm.get('extras') or {}).get('interior_role')
+        if role is not None and contract.get('interior_roles', {}).get(name) != role:      # the game reads the contract copy (PR 1755)
+            probs.append(f'interior palette: {name} role {role} is missing from the contract interior_roles the game reads'); continue
         if role is None:
             probs.append(f'interior palette: {name} names no interior_role (a kit zone colour, not the faction role table)'); continue
+        # Artoo on PR 1763: the label is checked against the shared zone mapping before any exemption trusts it
+        zone = (mm.get('extras') or {}).get('interior_zone')
+        fkey = 'chorus' if chorus else 'ithar' if glass else 'eclipse' if eclipse else str(fac)
+        try:
+            want = IT.role_of(zone, IT.FACTION_ZONES.get(fkey)) if zone else None
+        except KeyError:
+            want = None
+        if want is None or want != role:
+            probs.append(f'interior palette: {name} role {role} does not match its zone {zone!r} (the shared mapping gives {want})'); continue
         base = _map_mean(g, out, contract, pbr.get('baseColorTexture'))
         if base is None:
             probs.append(f'interior palette: {name} base map has no measured mean'); continue
@@ -205,11 +219,20 @@ def interior_palette(g, out, contract, fac, mats, notes):
         rows.append(f'{name} {role} albedo {alb.mean():.3f} light {light.mean():.3f}')
         if role not in IT.EXEMPT and alb.mean() > IT.WALL_MAX + .005:
             probs.append(f'interior palette: {name} ({role}) albedo {alb.mean():.3f} is over the {IT.WALL_MAX} wall ceiling')
+        if role not in table['roles']:
+            probs.append(f'interior palette: {name} role {role} is not in this faction\'s interior table')
+        else:      # the albedo is the table's colour for that role and zone, within the zone shift (and the map's rounding)
+            ref = np.array(table['roles'][role], float) * np.array(table.get('zone_tint', {}).get(zone, (1, 1, 1)), float)
+            off = np.abs(alb / np.maximum(ref, 1e-6) - 1)
+            if off.max() > IT.TINT_MAX / 2 + .08:
+                probs.append(f'interior palette: {name} ({role}) albedo {np.round(alb, 3).tolist()} is off the faction table {np.round(ref, 3).tolist()}')
         if role != 'core':
             if ef.max() > 0 and emt is None:
                 probs.append(f'interior palette: {name} ({role}) has a constant light; only the core may')
-            elif light.mean() > IT.EMISSION_AREA_MAX + .01:
-                probs.append(f'interior palette: {name} ({role}) light {light.mean():.3f} is over the {IT.EMISSION_AREA_MAX} non-core emission budget')
+            elif role in table.get('unlit', []) and light.max() > 1e-4:
+                probs.append(f'interior palette: {name} ({role}) is lit; the faction table keeps {role} unlit')
+            elif light.mean() > area_max + .005:
+                probs.append(f'interior palette: {name} ({role}) light {light.mean():.3f} is over the faction\'s {area_max} emission budget')
         if chorus:
             if metal > .01: probs.append(f'interior palette: Chorus {name} carries metal ({metal:.2f})')
             if role == 'bone' and light.max() > 0: probs.append(f'interior palette: Chorus bone {name} glows')
@@ -323,8 +346,8 @@ def main():
             if uv < len(room_prims): probs.append(f'interior kit v2: {len(room_prims) - uv} room surfaces have no interior UVs')
             if not UNBAKED and len(trimmed) < n_room_mats:
                 probs.append(f'interior kit v2: {n_room_mats - len(trimmed)} room materials lack the shared interior trim maps (albedo, ORM, normal)')
-            if share > INTERIOR_SHARE_MAX:
-                probs.append(f'interior kit v2: interior triangles are {share * 100:.1f} percent of the ship, over the {INTERIOR_SHARE_MAX * 100:.0f} percent budget')
+            if share > INTERIOR_SHARE_MAX:      # rule 3.9: triangles are reported, never capped (Fable M6)
+                notes.append(f'interior kit v2: NOTE interior triangles are {share * 100:.1f} percent of the ship, over the {INTERIOR_SHARE_MAX * 100:.0f} percent guide')
             if not UNBAKED:
                 probs.extend(interior_palette(g, out, contract, fac, sorted({g['materials'][pr['material']]['name'] for pr in room_prims}), notes))
     for seam in seams:
