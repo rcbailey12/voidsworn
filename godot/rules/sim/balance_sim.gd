@@ -165,26 +165,41 @@ func _campaign_cells() -> Array:
 
 
 func _campaign(count: int, carry_rewards: bool) -> void:
-	battle.timed = true
-	for cell in _campaign_cells():
-		var totals := {"wins": 0, "rounds": 0, "hull": 0.0, "lost": 0, "timeouts": 0, "player": 0, "enemy": 0}
-		var carried := {"boons": 0, "relics": 0, "refits": 0, "marks": 0, "credits": 0.0, "top": {}}
-		battle.reset_timing()
-		for trial in range(count):
-			_next_pair()
-			if not _campaign_trial(cell, carry_rewards, totals, carried):
+	var selected := OS.get_environment("PFACTION")
+	if not selected.is_empty() and selected not in campaign.RUN_FACTIONS:
+		_fail("Unknown PFACTION faction: " + selected)
+		return
+	var factions: Array = campaign.RUN_FACTIONS if selected.is_empty() else [selected]
+	var cells := _campaign_cells()
+	for faction in factions:
+		pair_index = 0
+		for cell in cells:
+			_campaign_cell(faction, cell, count, carry_rewards)
+			if failed:
 				return
-		_print_campaign(cell, count, totals, carried if carry_rewards else {})
 
 
-func _campaign_trial(cell: Array, carry_rewards: bool, totals: Dictionary, carried: Dictionary) -> bool:
+func _campaign_cell(player_faction: String, cell: Array, count: int, carry_rewards: bool) -> void:
+	battle.timed = true
+	var totals := {"wins": 0, "rounds": 0, "hull": 0.0, "lost": 0, "timeouts": 0, "player": 0, "enemy": 0,
+		"fired": {}}
+	var carried := {"boons": 0, "relics": 0, "refits": 0, "marks": 0, "credits": 0.0, "top": {}}
+	battle.reset_timing()
+	for trial in range(count):
+		_next_pair()
+		if not _campaign_trial(player_faction, cell, carry_rewards, totals, carried):
+			return
+	_print_campaign(player_faction, cell, count, totals, carried if carry_rewards else {})
+
+
+func _campaign_trial(player_faction: String, cell: Array, carry_rewards: bool, totals: Dictionary, carried: Dictionary) -> bool:
 	var sector: int = cell[0]
 	var kind: String = cell[1]
 	var column: int = cell[2]
-	_new_run("vex", "voidsworn", sector, 120 if carry_rewards else 0, 40)
+	_new_run("vex", player_faction, sector, 120 if carry_rewards else 0, 40)
 	var run: Dictionary = campaign.RUN
 	for hull in CAMPAIGN_FLEETS[sector]:
-		run.fleet.append(battle.newShip(hull, true))
+		run.fleet.append(battle.newShip(campaign.equivHull(hull, player_faction), true))
 	if carry_rewards:
 		campaign.ensurePatrons()
 		run.flagUid = run.fleet[0].uid
@@ -204,6 +219,9 @@ func _campaign_trial(cell: Array, carry_rewards: bool, totals: Dictionary, carri
 		if not unit.isSq:
 			totals[unit.side] += 1
 	battle.fight(bot, alternating)
+	var fired := battle.player_abilities_fired()
+	for id in fired:
+		totals.fired[id] = totals.fired.get(id, 0) + fired[id]
 	var hp := 0.0
 	var max_hp := 0.0
 	for unit in battle.B.units:
@@ -232,16 +250,22 @@ func _count_carry(carried: Dictionary, run: Dictionary) -> void:
 		carried.top[boon.id] = carried.top.get(boon.id, 0) + 1
 
 
-func _print_campaign(cell: Array, count: float, totals: Dictionary, carried: Dictionary) -> void:
+func _print_campaign(player_faction: String, cell: Array, count: float, totals: Dictionary, carried: Dictionary) -> void:
 	var clock: Dictionary = battle.clock
 	var tempo: Dictionary = battle.tempo
 	var rounds := maxf(1.0, clock.rounds)
-	var round_line := "sector %d %-6s win %d%%  rounds %.1f  hull left %d%%  ships lost %.1f  timeouts %d"
+	var round_line := "sector %d %-6s col %d  player %-9s  win %d%%  rounds %.1f  hull left %d%%  ships lost %.1f  timeouts %d"
 	var wait_line := "  wait old %ds new %ds  real %ds  per round %.1fs  max round %.1fs  ships %.1f+%.1f"
-	print((round_line + wait_line) % [cell[0], cell[1], JSM.jsround(totals.wins / count * 100),
+	print((round_line + wait_line) % [cell[0], cell[1], cell[2], player_faction, JSM.jsround(totals.wins / count * 100),
 		totals.rounds / count, JSM.jsround(totals.hull / count * 100), totals.lost / count, totals.timeouts,
 		JSM.jsround(clock.old / count), JSM.jsround(clock.neu / count), JSM.jsround(clock.real / count),
 		clock.real / rounds, clock.max_round, totals.player / count, totals.enemy / count])
+	var fired_ids: Array = totals.fired.keys()
+	fired_ids.sort()
+	var fired_labels := PackedStringArray()
+	for id in fired_ids:
+		fired_labels.append("%s %.2f (%d total)" % [id, totals.fired[id] / count, totals.fired[id]])
+	print("   player abilities fired per battle: " + (", ".join(fired_labels) if not fired_labels.is_empty() else "none"))
 	var first := "%.1f" % (float(tempo.first_loss) / tempo.first_count) if tempo.first_count > 0 else "none"
 	print("   tempo: enemy activations per player activation %.2f, enemy ships firing per round %.1f, first player ship lost in round %s" %
 		[tempo.enemy / maxf(1.0, tempo.player), tempo.fire / rounds, first])
