@@ -27,4 +27,4 @@ marked "Artoo (technical review):" and naming the commit it read. The Board chec
 and contrib/opus/OPEN_WORK.md (generated from GitHub).
 
 **Ryan's open picks.** FL5 The Manifest and CR4 The Honours Board are settled as the fleet and Career directions (R285, R286;
-builds 868, 869). Still open: effects round 3 (815) when it lands, the 368 storm look (717), the shield hit (855), and the issue 211 Foley probe (close or keep).
+builds 868, 869). Effects round 3 (815), the 368 storm look (717) and the shield hit (855) are closed. Still open: the issue 211 Foley probe (close or keep).

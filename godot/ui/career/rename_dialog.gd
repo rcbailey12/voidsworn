@@ -4,6 +4,7 @@ extends Control
 
 signal closed
 
+const Kit := preload("res://ui/theme/orders_kit.gd")   # issue 1448: the shared ui cues
 const INK := Color("#0f1626")
 const IRON := Color("#182133")
 const IRON3 := Color("#2d3a56")
@@ -40,8 +41,50 @@ func _sb(bg: Color, border: Color, bw := 1, rad := 4, pad := 10.0) -> StyleBoxFl
 	return s
 
 
+var _trap: Node = null
+var _relayout_t := -1.0
+
+
 func open(st) -> void:
 	story = st
+	_build(story.flagship_name())
+	edit.grab_focus.call_deferred()
+	edit.select_all.call_deferred()
+	# issue 1559 item 22: modal for the keyboard (Tab cannot reach the intro or fleet buttons behind the dim)
+	_trap = load("res://ui/theme/modal_focus.gd").attach(self, edit)
+	get_viewport().size_changed.connect(_on_resize)
+
+
+func _on_resize() -> void:
+	_relayout_t = 0.12
+
+
+# issue 1559 item 28: a window resize lays the dialog out again at the new scale, keeping the name typed so far
+func _process(dt: float) -> void:
+	if _relayout_t < 0.0:
+		return
+	_relayout_t -= dt
+	if _relayout_t <= 0.0:
+		_relayout_t = -1.0
+		relayout()
+
+
+func relayout() -> void:
+	if absf(load("res://ui/ui_scale.gd").k_for(get_viewport_rect().size) - k) < 0.004:
+		return
+	var typed := edit.text
+	var caret := edit.caret_column
+	for c in get_children():   # the keyboard trap is an internal child and stays
+		remove_child(c)
+		c.queue_free()
+	_build(typed)
+	edit.caret_column = caret
+	if _trap != null and is_instance_valid(_trap):
+		_trap.set("first", edit)
+	edit.grab_focus()   # the dialog's one field keeps the keyboard (on_edit or not: the buttons it had were rebuilt)
+
+
+func _build(name_text: String) -> void:
 	k = load("res://ui/ui_scale.gd").k_for(get_viewport_rect().size)   # the one shared law (ui_spec.md section 4); its ceiling was 2.0 here
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -76,14 +119,22 @@ func open(st) -> void:
 	h.add_child(t)
 	v.add_child(h)
 	var p := Label.new()
-	p.text = "She carries your colours and your Command into every fight this run. The crews will paint the name on her prow tonight."
+	var _rename_sub := {
+		"voidsworn": "This hull leads the push toward the Hollow Sun. Your crews are chalking its name along the flank plating before jump.",
+		"hegemony": "Your command vessel anchors every synchronized volley this campaign. Confirm its official Directorate designation before departure.",
+		"corsair": "Every pack in the belt will know this flagship by its transponder and bow plate. Stamp the name you want them cursing.",
+		"chorus": "This primary brood-hull guides the swarm's thermal pulse across the dark. Set the designation Memory keeps for it.",
+		"ithar": "Your flagship carries your family's optical standard toward Ardent. Confirm the name etched into its forward crystal spine.",
+		"deathless": "This chassis anchors the Homecoming and holds your command uplink. Register its vessel name in the Archive."
+	}
+	p.text = _rename_sub.get(crest.fac, "This hull carries your Command into every battle this run. Confirm its flagship name before jump.")
 	p.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_theme_font_override("font", regular)
 	p.add_theme_font_size_override("font_size", px(17))
 	p.add_theme_color_override("font_color", BONE2)
 	v.add_child(p)
 	edit = LineEdit.new()
-	edit.text = story.flagship_name()
+	edit.text = name_text
 	edit.max_length = 28
 	edit.select_all_on_focus = true
 	edit.add_theme_font_override("font", semi)
@@ -96,11 +147,13 @@ func open(st) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", px(10))
 	row.alignment = BoxContainer.ALIGNMENT_END
-	row.add_child(_btn("Keep the name", _close, semi, false))
-	row.add_child(_btn("Rename", _save, semi, true))
+	var keep := _btn("Keep the name", _close, semi, false)
+	Kit.wire_sound(keep, "back")
+	row.add_child(keep)
+	var save := _btn("Rename", _save, semi, true)
+	Kit.wire_sound(save, "primary")
+	row.add_child(save)
 	v.add_child(row)
-	edit.grab_focus.call_deferred()
-	edit.select_all.call_deferred()
 
 
 func _btn(txt: String, cb: Callable, f: Font, primary: bool) -> Button:
@@ -132,4 +185,5 @@ func _close() -> void:
 func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventKey and e.pressed and (e as InputEventKey).keycode == KEY_ESCAPE:
 		get_viewport().set_input_as_handled()
+		Kit.play("ui_cancel")
 		_close()

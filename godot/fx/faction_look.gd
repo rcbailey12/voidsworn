@@ -67,3 +67,30 @@ static func of(faction: String) -> Dictionary:
 # Drop the cache (a look editor or a test that rewrites the json).
 static func reload() -> void:
 	_cache = {}
+
+
+# Issue 1205 (R333): the one source for faction effect colours outside fx/. hull_table's old FAC3D table (windows,
+# engines, bolts, beams, shields) is gone; battle fallbacks, ShipView's guessed engine glows and the test benches read here.
+static func has(faction: String) -> bool:
+	return table().has(faction.to_lower())
+
+
+static func _pick(faction: String, key: String, alt: String) -> Color:
+	var d := of(faction)
+	var v = d.get(key)
+	if not (v is Color):
+		v = d.get(alt)
+	return v if v is Color else Color(1, 1, 1)
+
+
+static func engine(faction: String) -> Color:
+	return _pick(faction, "engine", "weapon")
+
+
+static func weapon(faction: String) -> Color:
+	return _pick(faction, "weapon", "engine")
+
+
+# A faction with no shield bubble (shield null) still gets a hit flash: its weapon colour.
+static func shield(faction: String) -> Color:
+	return _pick(faction, "shield", "weapon")

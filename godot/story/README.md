@@ -113,7 +113,7 @@ Per run, at the end screen: the title earned, the run's line in the history, the
 
 **Titles** (`data/titles.json`, rules in plain words in each row): brawler (rams and boardings), prize taker (captures), lancer (lance and null share; the rules id is still `gauss`), torpedoer, carrier, broadside (port and starboard share), gunline (battery share), marksman (aimed shots), anvil (braces), unscarred (battles with no loss), butcher (kills per battle), tactician (abilities per battle). A run needs 3 battles. The strongest score wins; otherwise the fallback (the Steadfast).
 
-**Medals** (`data/medals.json`): First Blood, Flagship Breaker, Lightning Strike, Last Stand, Unbroken, Prize Master, Nemesis Slain, Victor, Forged in Heat, Centurion, Long Service, Six Banners.
+**Medals** (`data/medals.json`): First Blood, Flagship Breaker, Lightning Strike, Last Stand, Unbroken, Prize Master, Nemesis Slain, Victor, Against the Odds, Centurion, Long Service, Six Banners.
 
 ## Story arcs (step 3, after Ryan approves `outlines.md`)
 

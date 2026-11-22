@@ -5,7 +5,8 @@ const { execFileSync } = require('child_process');
 const revision = process.argv[2] || 'origin/main...HEAD';
 const changed = execFileSync('git', ['diff', '--name-only', '-z', '--find-renames', '--diff-filter=ACMRT', revision, '--'],
   { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
-const text = /\.(?:bat|cfg|css|csv|gd|godot|html|import|js|json|jsonl|log|md|mjs|patch|ps1|py|sh|svg|tscn|tsv|txt|uid|ya?ml)$/i;
+// Issue 1488 (audit GH-06) added Godot shader and resource text (.gdshader, .gdshaderinc, .tres), .toml and .cmd.
+const text = /\.(?:bat|cfg|cmd|css|csv|gd|gdshader|gdshaderinc|godot|html|import|js|json|jsonl|log|md|mjs|patch|ps1|py|sh|svg|toml|tres|tscn|tsv|txt|uid|ya?ml)$/i;
 const mark = String.fromCodePoint(0x2014);
 for (const file of changed.split('\0')) {
   if (!text.test(file) || !fs.lstatSync(file).isFile()) continue;

@@ -104,6 +104,12 @@ Set: Ryan. Ids: agents-11, loop-05.
 1.7 **Picks, looks and money are Ryan's.** Payments, top-ups and sign-ups stay his. Why: his game and his accounts. Set: Ryan
 (AGENTS.md seat table; R126b).
 
+1.8 **Ryan's non-urgent picks go in two numbered Pick Sheets a day, Morning and Evening; he answers in the form `1=B, 2=Yes`.**
+Product and visual calls that can wait are batched there, each with its pick and one current labelled picture. Outside the
+sheets the Board interrupts him only for an emergency: PC disk under 75 GB, a key to paste, or a stuck job to kill. Why:
+"Move Ryan's non-urgent product/visual calls into two numbered Pick Sheets per day (Morning and Evening, format `1=B, 2=Yes`).
+Only interrupt outside that batch for emergencies (disk <75 GB, key paste, stuck kill)." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R408).
+
 ## 2. The Board and the agents
 
 2.1 **The Board owns the whole board.** One Claude thread in the Project (Opus 5.5 since Nov 11) holds design calls, the final
@@ -119,12 +125,12 @@ the Board's diff review while Muse is idle, with the check still asked for. Set:
 Board (R162). Ids: agents-13, claude-04, R132c, R162b.
 
 2.3 **Review every pull request by its diff, never its title, then sweep its impact** (every caller, saves and old profiles,
-both rule twins, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
+the Godot rules and their saved results, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
 job has finished. Why: a merged change left existing profiles with Heat closed (R129); PR 542 merged before its parity jobs
 ended (LOOP, Nov 12). Set: Board (R129); Ryan's project instructions. Ids: R129a, loop-03.
 
 Pictures carry their revision and stage. Every picture shown to Ryan is labelled with the revision that produced it and its
-stage (sheet built, paint proof, installed in game, Ryan accepted); a stale picture is never shown as current, and if the
+stage (sheet built, paint proof, installed in game, cloud direction check for a cloud, software or placeholder render (issue 1567), Ryan accepted); a stale picture is never shown as current, and if the
 picture is stale the review stops there rather than judging it. A visual pull request merges only after its picture has been
 compared with the concept and the ruling it answers, in a view that actually shows the feature being judged, and the Board
 says plainly in the pull request where it misses. What a ruling can measure is measured on the painted output and reported
@@ -166,9 +172,9 @@ those old jobs were already merged? That's a big miss."). Set: Board (R288).
 | Work | Seat | Why |
 |---|---|---|
 | Board: reviews, merges, specs, visual calls, picks put to Ryan | One Claude thread, Opus 5.5 | judgement is the bottleneck (R128, R194) |
-| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station); hard or open-ended builds; read-only code audits | Opus 5.5 workers, two or three at once | Ryan: "I think builds in blender should come from Opus" (R205); "keep it to 2 or 3 threads at once, and propose big threads before starting them" (project instructions) |
+| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station); hard or open-ended builds; read-only code audits | Opus 5.5 workers; not capped while Ryan's ultra plan clears the backlog (Ryan, Nov 19), back to two or three at once when it ends | Ryan: "I think builds in blender should come from Opus" (R205); the earlier "keep it to 2 or 3 threads at once, and propose big threads before starting them" (project instructions) is lifted for the backlog push (Ryan, Nov 19) |
 | Well-specified code: rules, tests, scripts, screens to a spec | DeepSeek V4.1 Flash workhorse on the PC | merged on one review pass for nine cents (R127, R134) |
-| Pipeline and engine jobs that need Codex's depth (export, import, effects plumbing); captures and benches only when no cheaper seat can run them | Codex on the PC, one job at a time, while its weekly usage lasts | "Codex and deepseek should do other work to free you up on these crucial items" (R206); "We're starting to run low on codex usage ... We may just need to move other things to opus instead of codex being the workhorse with DeepSeek" (R219) |
+| Pipeline and engine jobs that need Codex's depth (export, import, effects plumbing); captures and benches only when no cheaper seat can run them | Codex on the PC, up to four local lanes, one job per lane (lanes C and D code only; R268, R301), while its weekly usage lasts | "Codex and deepseek should do other work to free you up on these crucial items" (R206); "We're starting to run low on codex usage ... We may just need to move other things to opus instead of codex being the workhorse with DeepSeek" (R219) |
 | Checks of a seat's own work: a different model checks it (Codex's pipeline work is traced or checked by Opus or Muse) | Opus worker or Muse | "It feels like that makes sense to be checked by a different model" (R219) |
 | Concept pictures by image to image, research, design text, outside checks | Muse (Rey chairs); Ryan starts every run | several models, an outside view (R128) |
 | Ideation and legs | Grok and Google Flash, through Muse: a leg in every Muse action, beside DeepSeek and Qwen (R231) | free and broad; Qwen's daily cap emptied three seats on Nov 12 |
@@ -241,8 +247,8 @@ quote per finding, OBSERVED or INFERRED. Findings come ranked, most important fi
 review-01, review-02, review-03.
 
 2.12 **Outside agents work in contrib/<agent>/; Muse may deliver low-code fixes (text, data, tests, tools, docs) as pull
-requests, and a rules or data change is made the same way in the Godot port.** Why: "keep muse cooking" (R81); the twins must
-not drift (R155b). Set: Ryan, Nov 2 (R81). Ids: R81, agents-15, muse-06.
+requests; a rules or data change is made in Godot only (3.1).** Why: "keep muse cooking" (R81); Godot is the only rules
+source since R405 (the browser twin is retired). Set: Ryan, Nov 2 (R81); Ryan, Nov 22 (R405). Ids: R81, agents-15, muse-06.
 
 2.13 **A job's scope lists every folder its earlier runs touched, and every baked picture keeps its bake script in the repo.**
 Why: PR 327 merged without its bake scripts (R157). Set: Board.
@@ -257,32 +263,172 @@ LOOP.md; rules to this book. Why: the other models only see the repo. Set: Ryan 
 2.16 **Argon stays off.** Why: "My subscription ran out and it just wasn't that useful to justify the cost" (R216). Ends when
 Ryan pays for it again. Set: Ryan, Nov 5 and 11 (R216).
 
+2.17 **A fix lands in the shared kit, so it reaches everything of its kind at once.** Every fix or look change goes where all
+ships, screens or systems of that kind read it: a faction's skin in its kit stack (every ship of that faction rebakes from it),
+a parts option every hull of the family uses, pipeline fixes in shared helpers, AI rules in battle.js and rules.gd together,
+and every start screen's fonts, buttons, labels, rows, cards and sounds in godot/ui/theme/orders_kit.gd (9.15). Each pull
+request names who else picks the change up; the Board returns a one-off fix unless the pull request says why it is specific.
+Why: "let's make sure all the changes we're doing are cohesive and tied together. so like the fixes to the chorus skin should
+apply everywhere once we land it, etc." Set: Ryan, Nov 19 (R333).
+
+2.18 **No paid OpenAI API review of a pull request that a free seat already covers.** Artoo (ChatGPT) or the Claude code review
+seat reviews it; `[openai]` audit jobs on the API key are filed only for work no subscription seat can do. Why: "Stop filing
+paid `[openai]` API PR audits (like #1647) whenever free Artoo (ChatGPT) or Claude `/code-review` already covers the PR. Save
+cash OpenAI API credits only for tasks no subscription seat can do." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Issue 1647, OK'd before this ruling, finishes.
+Set: Ryan, Nov 22 (R406).
+
 ## 3. PC and tools
 
-3.1 **The product is the Godot 4 game on Ryan's Windows PC only; the browser game is frozen as the rules oracle** (changed only
-for rules fixes, so the parity check has something true to compare against). Why: "Godot seems way better. It's very
-noticeable now." (R32); PC-only (Oct 24). Set: Ryan. Ids: R32, R33a, agents-02.
+3.1 **The product is the Godot 4 game on Ryan's Windows PC only, and Godot (`godot/`) is the only rules source.** The browser
+rules (data.js, core.js, battle.js and the campaign files at the repo root) are retired: frozen history that no rules change
+touches and the game never reads. A rules or campaign change edits the Godot files and the table files
+(`godot/rules/data/tables.json`, `godot/campaign/data/campaign_tables.json`; reseal their checksums with
+`godot --headless --path godot --script res://rules/tools/reseal_tables.gd`). CI compares every battle, the 30 seeded campaign
+runs and the Nemesis scenarios byte for byte with the reviewed saved Godot results in the repo, beside the cache on/off safety
+net; a pull request that changes them updates the saved results in the same pull request (`godot/rules/test/saved/README.md`,
+`node godot/campaign/test/node/saved_campaign.js update`) and says why each changed battle or run moved. One exception until
+issue 1667 moves the ship tools onto the Godot tables: a change to a ship's weapon list or hull entry also goes into data.js,
+because the ship pipeline still reads it (weapon definitions, kind and shots, are read from the Godot table already:
+`tools/recipe/gamedata.py` weapon_stats). The balance simulator (`node sim3d.js`) plays the frozen browser rules, so it measures
+nothing new until its Godot port (issue 1656) lands. Why: "RETIRE THE BROWSER JS TWIN (RULEBOOK 3.1): Approved. Land a clean
+retirement PR BEFORE coding starts on #1453 Build Variety parts (including #1652). Godot (`godot/`) is now the sole rules source
+of truth, backed by headless Godot tests." (Ryan, Nov 22 2026, 12:09 UTC, R405). It replaces Path D's keep-both rule (R312),
+under which every rules change went into both copies; at retirement both copies matched on all 289 battles and 30 campaign
+runs (issue 1654). "Godot seems way better. It's very noticeable now." (R32); PC-only (Oct 24). Set: Ryan. Ids: R32, R33a,
+agents-02, R312, R405.
 
 3.2 **Heavy work runs on Ryan's PC (RTX 5080) through the queue; the cloud sandbox is for editing.** Why: the sandbox has about
 8 GB and no GPU and runs out of memory on full meshes. Set: Ryan, Oct 21. Id: agents-23.
 
-3.3 **Nothing on Ryan's PC is deleted except a job's own leftovers.** A job may remove the temp copies and scratch folders it created, and old kept workspace copies that Git shows hold only rebuildable files, once its work is pushed. Everything else stays until Ryan says yes. Keep every job's PC folder lean, and the Board lists the PC folder sizes at each disk check.
+3.3 **Jobs and the janitor may remove only the leftovers covered here.** Everything else stays until Ryan says yes. Keep every job's PC folder lean, and the Board lists the PC folder sizes at each disk check.
 Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voidsworn_test, mostly old run copies), the queue
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). On Nov 18 the drive fell under the 60 GB job floor from about 45 kept workspace copies and 390 GB of job scratch in the temp folder; Ryan chose (Nov 18 20:46 UTC) to let jobs clean up after themselves (R326).
-Set: Ryan, Nov 18 (R326); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
+On Nov 19, about 350 GB disappeared overnight (392 GB free after the Nov 18 cleanup, 41 GB the next morning). The hand cleanup removed 173 folders and raised free space to 199 GB. It kept 42 checkout copies, 26 because generated campaign outputs, audio UIDs or onboarding output were outside the safe list.
+Set: Ryan, Nov 18 (R326) and Nov 19, 16:30 UTC (R336); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
+Ryan's yes to a delete counts when he gives it in the Board thread himself, typed in his own words. The Board passes it to the PC session with his message id as the receipt and the PC acts on it; nobody asks him to repeat it or to go to the PC just to say yes. A note from the coordinator, a helper or another agent is still not his yes. Why: on Nov 21 he typed "Yes remove saved runs" three times from his phone and the PC refused each as a relay, so the cleanup nearly waited a night with C: under the job floor. Set: Ryan, Nov 22, 04:35 UTC, "Yes fix that" (R400).
 
 Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
 (including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
-`__pycache__` and `.pyc` caches, and ignored files under `godot/assets/ships/` whose size and SHA-256 match the same path
-in the shared build (issue 1107). It fetches and switches to the new branch with those files in place. A collision or an
+`__pycache__` and `.pyc` caches, regenerated `golden/*.jsonl`, `out/` and `parity_campaign_log.txt` under
+`godot/campaign/test/`, regenerated `golden/`, `out/` and `parity_log.txt` under `godot/rules/test/`, ignored Godot `.uid`
+files including script UIDs and those under `godot/audio/build/`, and
+ignored `.onboarding_checks/` output. All ignored files under `godot/gen/` and other ignored files under `godot/assets/ships/` must match the same path in
+the shared build by size and SHA-256 (issue 1107). For removal only, never for reuse, a differing ship or `godot/gen/` file
+is a candidate when the shared build holds the same file written strictly later; a copy file with no trusted time (before
+2000 or in the future) is kept, and each such call logs both times and sizes. Times only nominate: the janitor copies
+those files once each into `salvage\superseded_store\<sha256>.bin`, reads each back by size and SHA-256, lists them in
+`salvage\<lane>_<name>_superseded\superseded_manifest.txt`, and only then removes the copy;
+any failed check keeps it (issue 1180 run 7, Board Nov 20; Artoo on PR 1260). The safe list also includes stage 7 leftovers in `godot/.stage7-replaced-*`
+and `godot/assets/ships/manifest.bak_*`. The runner fetches and switches to the new branch with those files in place. A collision or an
 uncertain check keeps the earlier checkout beside repo. More than two `repo-kept-*` copies triggers a warning naming each
-copy and its size; older copies are removed only as the next paragraph allows. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
+copy and its size. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
 unique ignored work (issue 860, run 2, Board Nov 16).
 A checkout that changes while the runner starts is never reset; the job stops instead.
 
-Parity removes its own default temp folder when it finishes, pass or fail. After a checked push the runner removes
-the scratch folder it recorded for that run. It keeps the newest `repo-kept-*` copy in the board folder and removes
-older ones only when the same rebuildable-file and Git history checks pass. It logs each decision. A pause removes nothing (3.11).
+Workhorse runs share one checkout per arm in `work217/slot_<arm>/repo`, reused under the same checks as the Codex lanes.
+The arm's slot lock (`repo.checkout.lock` beside it) and the issue lock are inherited by the whole work_issue.bat process
+tree, so they stay held until every process of that run has exited, even if the PowerShell that took them dies; the
+Codex lane lock works the same way (Artoo on PR 1250). A work217 tools refresh takes every supported arm's slot lock,
+live and dry run, creating any that do not exist yet, so a fresh arm cannot start mid-refresh (Artoo on PR 1334). Logs and results stay in each run's own `out/` folder. The old
+`remove_repo_copy_after_push` setting no longer applies. Code-only lanes C and D and the Workhorse slots omit
+`docs/shots/`, `docs/ship_pipeline/build_sheets/`, `contrib/muse/design/`, `hulls_hi/` and `rocks_hi/` unless the opening
+fixed block's Brief or Deliver to line names a path there. A checkout on the same runner-managed sparse profile is reused;
+a profile change sets the previous checkout aside beside the slot. A left-out file that is on disk while Git marks it
+skip-worktree counts as possible hidden work and keeps the checkout. The janitor prunes older `repo-kept-*` copies beside
+each slot like a board lane's, and accepts a runner-managed sparse copy under the same checks. Why: a fresh Workhorse
+checkout per run and picture folders in code jobs drove up disk use (issue 1186).
+
+
+Helper PC jobs (`opus_job_head.bat`) remove their own pinned checkouts once the attempt passed and every result file is
+on a relay branch: the Board runs the job head's checkout step right after each relay, and the same job's later tails
+repeat it. A file the job left in a checkout that is not a proven rebuildable leftover is saved into the job's own
+`out_<name>\checkout_leftovers` first (at most 200 MB, read back by SHA-256); more, a staged change, a stash or a local
+commit keeps the checkout. Failed and unfinished attempts are left to the janitor's rules. A ship job drops only its
+clone's import cache on PASS; its publish removes the clone after the relay, saving leftovers the same way. Nothing
+outside the job's own folders is touched. Why: on Nov 21 every passing job kept a 14 to 22 GB checkout for a
+build_info.json or a few .import files, and C: fell from 176 to 55 GB in three hours (issue 1497; relay and Git-state
+checks from Artoo on PR 1498).
+Set: Board, Nov 21, under R326; playbook detail in docs/playbooks/pc.md.
+
+Parity removes its own default temp folder when it finishes, pass or fail. After writing the result, the runner cleans up
+its own recorded scratch at every ending. It keeps the newest failed, timed-out or cancelled run's scratch for one day for
+a retry. The janitor runs from the queue watcher between 3:00 and 6:00 AM Central and at runner start when C: is under `janitor_free_gb`
+(default 150 GB), at most once an hour across all lanes for low space. The runner then checks its 60 GB floor.
+The janitor keeps the newest `repo-kept-*` copy in each of `board`, `board_b`, `board_c` and `board_d`. Older copies and
+finished `work217/issue-<N>-<arm>/<stamp>/repo` folders must be untouched for at least three hours and pass the same
+rebuildable-file, Git history and lock checks. Workhorse `out/` folders and runner settings and hashes stay in place.
+The checkout age uses the newest working file write time and skips `.git`. Git checks use `--no-optional-locks` with the
+filesystem monitor and diff index refresh disabled so inspecting a checkout leaves it unchanged. Why: an index write can
+make an old copy look fresh on the next scan or look like an edit during the current scan (issue 1180).
+If an otherwise eligible copy holds tracked edits, untracked files or local-only commits and has been untouched for at least
+one day, the janitor saves a binary patch against HEAD, a separate staged patch, a zip of untracked work and, when needed,
+a bundle of local-only commits under `voidsworn_test/salvage/<lane>_<name>/`. It checks that the patches apply, the bundle
+verifies and the zip entries match before it removes the copy. An unreadable checkout, unknown ignored file or failed check
+keeps the copy. Salvage folders are kept. Why: old job copies can be large and still hold work worth saving. Set: Ryan,
+Nov 19, 17:01 UTC, "Yes, after a checked backup" (R339).
+
+Helper PC jobs get their checkout from `tools\pc\helper_clone.bat <job folder> <branch> [ships] [job steps]`: one `git clone --local`
+of the shared `repo-mirror.git` per helper folder (objects shared, no new download), reused on later runs without ever
+resetting local work, and ship files copied and checked by get_ship_files.bat, never hardlinked, because tools rewrite
+them in place. A helper .bat never clones from GitHub itself (issue 1180, Board Nov 20). The helper runs its job steps
+through helper_clone.bat, which holds the folder's `.voidsworn-run-active` lease until they end, so no second run can
+switch that checkout mid-job. Before copying ships it stops if a file it would replace differs from both the shared build
+and the folder's own last copy (`ships_copied.txt`), so local work is never overwritten (Artoo on PR 1275). After the
+Board relays a PASS, `helper_clone.bat <job folder> release` checks that the latest attempt ran its job steps and they
+exited 0 (a setup-only call or an early stop never qualifies) and that every out file is on a relay branch (the relay repo's pc-out branch, or an older board/pc-out one), then
+removes only the ship and gen copies still matching that record and the `.godot` import cache; the clone stays, and a
+FAILED run keeps everything (R326, own leftovers). Ship jobs and the look bench give their tools an owned TEMP folder. A helper proof job's head (opus_job_head.bat, issue 1303) removes, at its tail and only after a PASS, the pinned checkouts its own checkout step listed in that attempt folder whose HEAD is still the pin and whose files hold no work beyond the import cache, ship copies still matching their source, byte copies of tracked files and the .import/.uid sidecars of those (rebuildable from the mirror; about 16 GB each); a failed job keeps them, and its out folders, logs and ship records always stay. Stage 7 removes its checked export scratch after a
+successful install. A TEMP folder untouched for three hours can be removed when it carries a valid `.voidsworn-run-owner`
+token or a runner's `status.json` names its exact path with the same token and creation time (a record without both, or
+a folder that no longer matches it, is report-only). Older scratch with no token can go after a day untouched only when
+its whole name is one our tools generate (`voidsworn-run-[<issue>-]<32 hex>`, `voidsworn-parity-<6 characters>` from
+run_parity.js, `stage7-checked-<code>-<8 characters>` from manifest_merge.py), its issue lock is free and no running
+process names it (the whole folder name, so `opus121` never matches `opus1211`). Links inside any TEMP scratch, owned or
+older, are removed as links and never followed, and the log names each link's target; a folder another account owns
+(Codex sandbox scratch) cannot be read, so it is left in place and the rest is removed. Other name matches are report-only, and agent-chosen
+names go to Ryan as a one-off list. The janitor removes an `opus<N>` helper folder (with any suffix, such as `opus<N>out*`, `opus1369b` or `opus1211_run6`, and playtest folders `pt<MMDD><letters>`, issue 1396) after a day untouched
+only when no running process names it, every file in its out folders is a blob committed on a relay branch (the relay repo's pc-out-* or an older board/pc-out-*)
+in the repo mirror (a loose blob is not a receipt), and everything else in it is a checkout Git shows as rebuildable with
+all local commits in the mirror; files the relay skipped and other files are listed and keep the folder. helper_clone's
+own top-level files (`.voidsworn-run-active`, `attempt.txt`, `repo_commit.txt`, `ships_copied.txt`) do not count as
+other files. The janitor takes the helper folder's lease before deciding and holds it through the deletion, removing the
+lease file and the then-empty folder last, so a held lease keeps the folder (PR 1275). When such a folder is kept, its Git checkouts (at any depth, links never followed) can still go on their own after the whole folder is 6 hours untouched, under the same lease, issue lock and process checks, when Git shows nothing in them beyond rebuildable install outputs and every local commit is in the mirror; their HEAD and status are logged first, and the out folders, pictures, logs and every file outside a checkout stay (issue 1396, Ryan's typed OK in the Board thread, Nov 20). Each janitor run also runs the job head's relay proof (`opus_job_head.ps1 dropjobs`) over every passed job attempt that still lists checkouts, so a relay that lands after the job's tail still frees them; it runs per job folder only after the same keep list, lease, issue lock, process and pause checks, removes only what that proof clears and logs the rest (Board, Nov 22; Artoo on PR 1592). A ship job's clone `<job>\repo` (its `out\result.txt` starts with ship_job's `start` line) is never removed by the janitor, whole folder or checkout-only: `publish_ship.bat` installs with it and removes it after a published PASS, and an abandoned one goes to the Board as a one-off (review of PR 1592). A checkout whose HEAD or local-branch reflog holds a commit no mirror ref reaches, or that has a second worktree, is kept (review of PR 1592). A ship file with no twin in the shared build
+is a superseded candidate when the build holds that ship code installed later, and a generated file under `godot/gen` with
+no build twin is one when the build's `gen/manifest.json` was written later (the newer gen no longer makes it); both are archived like any other
+(issue 1180 run 8, Board Nov 20). A held issue lock or a held helper lock protects scratch. The Board's keep list, `voidsworn_test\janitor_keep.txt` (one exact folder path per line, `#` for notes), keeps any candidate that is a listed path, holds one or sits inside one, logged as "kept: on the Board keep list"; a keep list that cannot be read stops the janitor (issue 1180, Board Nov 20). Active board `repo` folders, `build*`,
+repo mirrors, `recipe`, `runner_backups` and other locations stay out of the scan.
+Jobs also stop refilling TEMP themselves (issue 1180, Board Nov 20). The runner self-test removes its evidence folder
+after a PASS (RUNNER_SELFTEST_KEEP=1 keeps it). The watchdog removes the Godot profile folder it made for one launch once
+every process of that launch has exited, links as links, never a job's own profile (PC_KEEP_GODOT_PROFILE=1 keeps it).
+Ship jobs and the look bench hand their owned TEMP folder to `tools/pc/scratch_done.ps1` at the end: a pass removes it;
+a failure marks it `.voidsworn-run-failed` with the job's name and keeps only the newest failure per job, which the
+janitor keeps for one day. While their tools run, both put `tools/pc/pysite` on PYTHONPATH, whose sitecustomize makes
+Python's `tempfile.mkdtemp` folders with a plain mkdir that inherits the TEMP folder's access (only inside the job's own `voidsworn-run-*` scratch; any other folder keeps Python's private one, Artoo after PR 1537), and the picture
+provenance self-test removes its own folder after a PASS (issue 1535: Python 3.12.4+ on Windows gives mkdtemp folders a
+private access list, and 31 such folders, about 49 GB, could not be removed by cleanup 4 on Nov 21; the PC proof board/pc-out-1535 showed that private list alone is the cause, with no elevation involved). When a job_wrap job ends, the janitor runs once more with `--after-job` in a
+hidden window. That run shares the hourly allowance with the low-space trigger, skips without a word while another
+janitor holds its lock, any `gpu_slot_N` or `gpu_solo` claim file is non-empty or the Board's pause is on, and stops
+between folders if a GPU claim starts, so a solo measurement is never timed alongside it. The watchdog and scratch_done.ps1 check the
+Board's pause right before each removal and keep the folder for a later pass. Why: these four leftovers
+refilled C: by about 120 GB a day between nightly runs (issue 1180 dry run 2).
+The log gives each candidate's size, decision and reason, along with free space before and after. The Board reads the dry
+run before the first live run. A pause removes nothing (3.11).
+
+3.3a **PC results go to the private relay repo, never the main repo.** Videos, sheets, renders and logs from PC jobs go to
+`rcbailey12/voidsworn-relay` on branch `pc-out-<job>`, the attempt folder at `<attempt folder name>/` in its tree, through
+`tools\pc\relay_push.bat <job> <attempt folder>` (out_* folders and the top text files; files over 10 MB stay on the PC,
+listed in `skipped_over_10MB.txt`), in pushes of at most 512 MB each (GitHub refuses a push over 2 GiB); a relay stopped
+between pushes proves nothing until it is run again. The PR comment carries the links it prints. A job's cleanup proves the relay the same way
+as before, now from `relay/pc-out-<job>` (relay_branch.txt) or an older board/pc-out branch. No new board/pc-out branch is
+pushed to the main repo. Stale board/pc-out-* and board/pin-* branches go only through `tools\pc\PRUNE_RELAY_BRANCHES_DRY.bat`
+(lists, deletes nothing) and then `PRUNE_RELAY_BRANCHES_LIVE.bat` after Ryan's own yes on that list; a branch still named by
+a queued job, in `voidsworn_test\prune\keep.txt`, under 3 days old, used by an open PR or still needed to prove a PC job's
+relay is kept, and the live run checks every one of those again just before each delete, so a keep line or queued job
+added after the dry run still keeps an unmoved branch. Why: the main repo was 22.66 GB with 701 branches, 316 board/pc-out and 133 board/pin (Nov 22); Ryan picked
+"Private GitHub relay repo" (Nov 22 2026, 12:14 UTC, decision card in thread "Upgrade studio ops and PC harness"), and approved
+the plan: "Route binary PC outputs ... to a disposable private relay repo (`rcbailey12/voidsworn-relay`, wiped monthly) ...
+Ship a safe double-click Windows `.bat` script (dry-run default first) ... to prune the 447 stale `board/pc-out-*` and
+`board/pin-*` branches" (12:09 UTC). Set: Ryan, Nov 22 (R410).
 
 3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
 solo. Lanes C and D stay code only.** The Board decides per job how many share the card: light captures and probes can run side by
@@ -290,12 +436,31 @@ side, heavy bakes and Blender renders take more of it, and nothing is started th
 graphics memory. The launchers take and release claims themselves through tools/pc/gpu_slots.js (shared capacity from
 Downloads\voidsworn_test\gpu_slots.json, {"sharedSlots":2} by default, raised by the Board; captures weigh 1, Blender and heavy
 bakes 2, with PC_GPU_WEIGHT for the job's chosen weight), or a solo claim that waits for every slot
-to empty and blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU
-work starts unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is
-unchanged. Why: "that one GPU job at a time is an outdated rule, we should be flexible based on the task and what my
+to empty and blocks new GPU work while it measures. Slot files are replaced atomically. A slot or solo claim with damaged JSON
+is moved to a retained `gpu_slot_corrupt_*` file so admission can resume. Damaged capacity settings stop admission.
+Claims name the issue, job directory or script. The watchdog and its GPU child each have a recorded PID, start time and
+executable name. The child is recorded before it can start work. A failed kill logs the survivors and leaves an
+`orphaned_child` claim until those exact processes are gone. Claims from older ship checkouts stay held while their PID
+is alive. Admission checks a snapshot outside the shared lock at most once a second. If the lookup fails or the claim files
+change during the lookup, admission waits and checks again. Child registration waits for the lock before starting the child.
+Drain GPU jobs before updating all shared tools copies together, since older launchers cannot track the child.
+A partial write or a reused PID could block the queue, and losing
+the watchdog or failing to kill its child could free capacity while the child was still using it (Board, issue 1193).
+`gpu_go.txt` still wins: no new GPU work starts unless its first line is `GPU cleared` (optionally followed by `: reason`);
+the gaming pause in 3.11 is unchanged. Why: "that one GPU job at a time is an outdated rule, we should be flexible based on the task and what my
 graphicsa card can actually handle as a 5080. we don't want to overwhelm it but we don't want to artificially restrict small
 jobs and extend things out" (Ryan, Nov 16, R293). Solo measurements keep speed numbers honest. Replaces the two-job cap
 (R276, Nov 15) and the one-job limit before it (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 16 (R293).
+
+Each wrapped step has a ceiling sized to its work. A solo claim follows that ceiling by default.
+`PC_GPU_SOLO_MAX_S` can set an earlier limit from acquisition. A job with several timed sessions claims the card once
+per session. The watchdog counts output, new files in the step's output folder, and CPU time across the process tree
+as progress. The idle limit is 300 seconds for Godot and 600 seconds for other tools. A step can raise it with
+`TMO_IDLE_S`. The Jolt job-system line stops the step immediately. A step may add a pattern through
+`TMO_FATAL_PATTERN`. A stop returns 124, retains the child logs, and records the step and reason in `timeouts.log`.
+GPU admission has a separate clock. It defaults to 1500 seconds in the agent runners, below their 30-minute stall
+limit, and 3600 seconds in the shared ship runner. Why: a Jolt stall in the issue 1078 probe held the GPU solo for
+almost an hour and queued work timed out behind it (Board, Nov 19, issue 1192).
 
 3.5 **Every PC queue job is wrapped in the tmo.bat watchdog, ends with exit /b, and carries no |, &, < or > in its
 arguments.** Agent runs stop after STALL_MIN minutes without progress (default 30), or at a hard ceiling (default six
@@ -307,6 +472,28 @@ keep their explicit time limits. Why: hung Godot windows blocked the queue for a
 agent cap killed jobs that were still working (367 and 371). Ryan, Nov 15: "do we need to get rid of that random 2 hour rule
 if it's timing out actual work?" He took up a stall check, a high backstop and a saved resume note (issue 818). Set: Board
 (G-3), Ryan (issue 818). Ids: G-3, feel-06, skill-pb-05.
+
+PC jobs never use Ryan's real game profile. The watchdog gives each Godot start a fresh profile so captures cannot overwrite his settings (issue 1228, Nov 19).
+
+PC jobs run one tools copy and report honestly (issue 1194, Board, Nov 20). `lane_tools_refresh.ps1 -Build tools_live`
+installs main's tools as a verified, never-edited version under `Downloads\voidsworn_test\tools_live\` with its own
+hashes, named by `tools_live\current.txt`; every `tmo.bat` outside it hands its step to that copy, so an old `build\tools`
+or branch checkout never runs its own watchdog or slot reader (self-tests set `TMO_OWN_COPY=1`). The main watcher refreshes
+tools_live and `build\tools` between jobs. Old lane backups and old tools_live versions rotate instead of stopping the
+refresh: a backup goes only when every file in it is kept in a newer copy or a saved main snapshot, a version only when it
+was replaced over a day ago and no running process names it (the refresh's own rebuildable copies, 3.3). Job bats run
+their steps through `tools/pc/job_wrap.bat`: a GPU label on every claim, the tool preflight before any clone or GPU claim
+(exit 2 on a missing tool), the strict watchdog hash check, a stop on a failed step unless it is marked optional, non-empty
+declared outputs, and `done PASS` or `done FAILED: <steps>` then `all done`, with a non-zero exit after any failure. Helper
+(Opus) proof bats start from `tools/pc/jobs/opus_job_template.bat` and call `opus_job_head.bat` from tools_live: exact
+commit pins in a fresh checkout per attempt, the safe ships copy with a tracked-file check, the throwaway profile and
+Ryan's options hashed before and after; the Board checks only that a bat calls the head (docs/playbooks/pc.md, issue
+1303, Board Nov 20: seven bats sent back on Nov 19 and 20 for the same four mistakes). The
+watchers log each job's exit code and move a failed job to `queue\failed` (`queue_b\failed`). `PC_DOCTOR.bat` is a
+read-only look at the GPU claims (owner, child, age, health), damaged slot files, stuck Godot or Blender processes and
+failed jobs. Why: a stale Nov 18 `build\tools` copy ran the hung 1078 probe, jobs wrote "all done" after failed steps,
+the watcher filed every job as done, and a missing ffmpeg or Pillow showed only after an hour on the GPU (Neon's PC
+pipeline audit, checked by the Board, Nov 19).
 
 3.6 **The Board may double-click .bat files on the PC itself by computer use, a few clicks at a time, releasing the lock at
 once, never while Ryan is playing; it never drives the PC by remote clicks to unstick a job.** Why: "can't you use computer
@@ -341,6 +528,13 @@ Only the final "safe to restart" line in pc_pause.txt means a restart is safe; a
 unresolved work before restarting the PC. Why: "I don't want to cause anything to get lost or deleted with the pauses as well,
 so let's bake that in" (R272); quiet agent processes did not prove a runner in final checks had pushed (R309, issue 944).
 Set: Ryan, Nov 15; audit fixes approved Nov 17 (R309).
+
+3.12 **No GPU capture on a pull request before its checks are green and its diff has passed review.** `player_path`, `look_bench`
+and other heavy GPU captures are queued only after "All checks" is green and Artoo or the code review seat has passed the diff
+at that head commit; a later push needs both again. Overnight, when the PC is idle, gpu_go.txt is clear and main changed game
+files, `build\export` refreshes by itself (issue 1663). Why: "Never queue `player_path`, `look_bench`, or heavy GPU captures on
+a PR until `checks` is green and Artoo (or the code review seat) has passed the diff." and "Auto-refresh `build\export` overnight
+when idle (`gpu_go.txt` clear) and `main` changed game files." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R407, R408).
 
 ## 4. Ships and concepts
 
@@ -493,6 +687,20 @@ gun reads as sliced, a torn plate as blown apart (R186, "blown apart, never slic
 of the broken A16 as big flat squares (Ryan, Nov 12, issue 600). Set: Board, Nov 12 (R226; insides added from Ryan's eye,
 issue 600). Ids: ships-2c.
 
+5.18 **The ship detail standard: textures by size, AO and LODs on import, one authored look, full hard points.** For every
+ship from now on: (1) stage 7 exports maps by the ship's length band, flagships and battleships (length 21 and up) at 4096
+(stage 5 already bakes 4096), cruisers, carriers, destroyers and frigates (6.5 to 16.5) at 2048, strike craft (1.6) at 1024
+(issue 1680); (2) every hull gets a calibrated `ao_light_affect` (never Godot's default 0.0; per faction in look.gd READ, 0.35
+to 0.55, Glasswrights 0.2) and automatic Godot mesh LODs on import (issues 1678, 1679); (3) each faction's paint stack moves
+to `authored_look = 1`, calibrated to the one battle light rig, the next time that faction is baked or repainted, and its
+look.gd READ albedo lift (Navy 0.4x, Eclipse 2.2x and the rest) retires with it; (4) every new destroyer and larger carries
+`hp_rcs` and `hp_board` hard points, plus articulated turrets where the faction uses them. Comparison sheets go on Ryan's Pick
+Sheet; GPU captures only after green checks and Artoo (3.12). Why: hero hulls were downsampled to 2048 while fighters carried
+39 MB of maps, baked seam AO vanished under the key light, and each faction leaned on a different after-the-fact lift
+(Ryan's Ship Graphical Detail and Consistency Upgrade Plan). Set: Ryan, Nov 22 2026 (R411). Replaces the Nov 19 park of
+far-away LODs until a speed check (R328 notes, issue 1152) and, for the game, issue 592's "the game loads no LOD chain":
+stage 6's hand chain stays an analysis product, the game makes its own LODs at import.
+
 ## 6. Battle look
 
 6.1 **Judge everything at the battle camera (camera 170, the radius Ryan plays at) at true pixel size, before any close-up.**
@@ -538,7 +746,10 @@ curved, slowing trails. Why: "It looks so simple and like Microsoft paint." (R14
 6.10 **A bigger ship dies longer, not just larger; each faction breaks its own way; the flash core stays near white so a death
 always reads as a death.** Why: every faction died the same faint puff (deaths_and_hits.md). Set: Board, Nov 11, from Muse's
 staging table; the sizes and times are tuning values (0.4). Ids: deaths-03, deaths-10. Detail:
-docs/playbooks/deaths_and_hits.md.
+docs/playbooks/deaths_and_hits.md. R367 (Ryan, Nov 20 2026, decision card: "Full faction deaths"): each metal faction dies in its
+own colours and break as deaths_and_hits.md "How each faction dies" describes, replacing the shared orange fire; the colours
+come from faction_looks.json, the one faction colour file (Eclipse violet-white and white-gold, not green). Built for the
+Glasswrights and Eclipse in issue 1399; the Crusade, Hegemony and Hullbreakers follow.
 
 6.11 **Shields in space keep their faction colours; at rest, Rim and Gap: a faint rim in the faction edge colour on live
 sides, a dark gap where a side is open, nothing else** (R246, Nov 14). Why: his Oct 24 ruling (the cyan-only rule retired) and his
@@ -585,7 +796,7 @@ the default with a brisk option.** Why: "I don't want to sacrifice the feel of t
 (R50, R64); option Board (R50d). Ids: R50b, R50d, R64a, movespec-06.
 
 7.4 **Movement playback never changes rules results.** A LOOK change keeps the route, end hex and facing; a RULE change (route
-or facing) needs Ryan's own ruling and touches both rule twins. Why: R188's frame for the audit. Set: Board, Nov 11 (R188).
+or facing) needs Ryan's own ruling and touches the Godot rules (R405). Why: R188's frame for the audit. Set: Board, Nov 11 (R188).
 
 7.5 **No roll into turns.** Why: nothing in space leans a ship; the audit reversed the earlier bank (movement_audit_code.md).
 Set: Board, Nov 11. Id: movespec-04 (the 4 degree bank, retired).
@@ -599,7 +810,12 @@ Board's advice (R193). Set: Ryan (R64, R193). Ids: R64c, feel-02.
 7.8 **Strike craft move like small agile craft (quick turns, short burns), still never jerky.** Why: small craft should feel
 quick, inside 7.1 (R189, R195). Set: Ryan (R55, R216).
 
-## 8. Battle sound
+7.9 **Firing ends a non-Glasswright ship's movement for that activation: no move, turn in place or ram after it fires.**
+Glasswright ships keep their post-fire move budget, and a turn after firing spends it. Admiral tree skills that hand out
+movement after firing (Fleet Elsewhere, The Wall Moves) add to that same budget. A free turn granted by an admiral tree skill
+(Cut and Turn, Fleet Elsewhere, Trophy Standard) still turns a ship after firing; that skill is the exception it grants (Set:
+Ryan, Nov 22, R397). Why:
+Ryan, "Agree no" (issue 1560 item 14) and "Yes agree on skills". Set: Ryan, Nov 22 (R396, R397). Code: canRotate and ramInfo in both rules twins.
 
 8.1 **A battle sounds clean and tactical; never thin and weak, cheesy or arcade-like, harsh or annoying.** No zaps, pews,
 rising whooshes or stock explosions; weight in the low and low-mid with a soft top. Why: "The sounds that I've heard from the
@@ -661,8 +877,12 @@ Board. Id: screens-11.
 Why: "Options first, then build" (R167); "every step" of the redesign shows distinct options (R137c). Set: Ryan. Ids: R137c,
 program-01.
 
-9.11 **Torpedoes show their hit chance and a visible flight with a clear hit or miss.** Why: his playtest call (R76). Set:
-Ryan, Nov 2. Id: R76b.
+9.11 **Torpedoes fire now: they fly and land in the same activation as any gun, after a heavy flight of about 1.5 s, and
+show their hit chance like any gun.** No lane on the board, no hex aim, no parked torpedo and no strike at the next turn; point
+defence and screening wings still get their chance to shoot a salvo down. Why: "i really dont like the way torpedoes look today
+and how they act. the arrow lines, the delay, etc. it's not intuitive, it doesnt fit the vibe, UI or graphics of the rest of
+the game" (Nov 20, 17:59 UTC); he picked TP-B "Fire now" over a lock-on and a cleaner lane (18:46 UTC). Set: Ryan, Nov 20.
+Id: R364 (replaces R76b's lane and next-turn strike; the visible flight and the clear hit or miss stay).
 
 9.12 **The run debrief shows, in order: headline, first loss, what this run bought, the heir, the recap, the next run, exits.**
 Why: a run is meant to be lost; the debrief names what the death bought (contrib/opus/briefs/debrief_spec.md). Set: Ryan
@@ -673,6 +893,46 @@ Why: a run is meant to be lost; the debrief names what the death bought (contrib
 9.14 **Keep every ship reachable from the battle HUD when the fleet outgrows its space.** KEEL pages the fleet strip when it
 fills; hover gives the full name and health. This replaces E1's "and N more" hover (R220, Ryan: "yes that's fine"). Why: a
 large fleet can outgrow the available space, but the strip is also how the player picks a ship. See issue 1021.
+
+9.15 **The start screens (title, Settings, Credits, faction and admiral, flagship aspect, Progression, Lineage, Help) build
+from one kit, godot/ui/theme/orders_kit.gd, on glass_shell's orders sheet.** One font set (Big Shoulders Display heads,
+Barlow words, Azeret Mono figures), one ember primary per screen with quiet secondaries, labels that wrap inside their
+container, rows with one control column, cards whose actions line up, the Back left and the primary right, and the ui_*
+sounds on hover, press, back and confirm. Esc goes Back on every start page. The player's UI scale is never capped: a layout
+fits 831 design pixels tall (Larger at any 16:9 window) instead. Why: the start flow mixed three font sets and every screen
+built its own widgets (Neon front-end audit, Nov 19; R333 cohesion), and Ryan: "the title screen is SUPER basic,
+faction/admiral selection is also very basic and also formatting looks odd and not lined up". Set: Board under R333 (issue
+1217). Detail: docs/playbooks/screens.md section 2.
+
+9.16 **The game is mouse and keyboard only: no controller play in battle or on the map.** Menus may keep their arrow-key and
+Enter focus. Why: Neon's player audit (Nov 21) found menus promise controller focus while battle and map have no gamepad
+input; Ryan scoped the game to mouse and keyboard. Key rebinding, a colorblind mode and an in-game rules reference are later
+work (issue 1454). Set: Ryan (R380).
+
+9.17 **A ship's move and turn can be undone until it does something that cannot be taken back** (fires, rams, boards, uses
+an ability, leaves by an exit edge, or ends its activation). Why: a misclick in a permadeath game should not cost a ship
+(Neon player audit, Nov 21). Both rules copies (3.1). Set: Ryan (R376, issue 1450).
+
+9.17a **A player ship's turn is planned on its ghost, then committed, and plays out as one event.** Clicking a blue hex moves
+the ghost there, Q and E turn it, and clicking an enemy aims every free gun that bears from the ghost (a second enemy takes
+the guns still free). Nothing reaches the rules until the commit (Enter, or a second click on the hex or a target); then the
+move and every planned volley go as one command and play as one event, with the guns turning onto the first target while
+the hull brakes (issue 1581). Backspace takes back the plan's last step; with no plan open it still undoes a move already
+made (9.17). A turn in place commits through the rules' own rotate (so a skill's free turn or a free pivot is spent
+there, at the commit), a move through the rules' move. A shot the move made impossible is dropped with a message, never silently. Each ship plays out right after its
+commit (not the whole fleet at the end of the turn); the old instant move-and-shoot is gone; enemy activations play the same
+way. UI only: no rule changes, and firing still ends movement for every ship except Glasswrights (R396). Why: Ryan, Nov 22
+2026: "you see the firing options at your destination and make your firing decisions ... then it actually moves and
+happens", "Which lines up with undo"; picks 1a, 2a, 3b, 4b, 5a ("Maybe we test 1b down the line but not now"). Set: Ryan
+(issue 1589). Detail: docs/playbooks/screens.md, "Planning a ship's turn".
+
+9.18 **A campaign battle saves at the start of each round and resumes there**, with Save and Quit to title in the battle
+menu; the snapshot clears when the battle ends. Why: a crash or a real-life interruption sent a 20 minute boss fight back to
+round 1 (Neon player audit, Nov 21). Set: Ryan (R378, issue 1451).
+
+9.19 **New boss and build-variety content is options first** (9.10): bosses get a second phase at half health from an
+options sheet Ryan picks (issue 1452); capstone perks, relics, admiral command twists and own Glasswright and Chorus abilities
+come as a design pack first (issue 1453). Set: Ryan (R377, R379).
 
 ## 10. The campaign map, space and the board
 
@@ -705,8 +965,11 @@ detail than the first pass.** Why: "T2 damaged" (R206); stations looked plain (R
 10.8 **A battle opens with both fleets in view; markers at the screen edge only where a ship can leave the view.** Set: Ryan
 (R62, R216).
 
-10.9 **Nebula colour is picked per region by eye on the sky sheet; no indigo to purple gradient; the faction tint share is a
-tuning value.** Why: Ryan listed indigo to purple gradients among the AI-made tells (R174). Set: Ryan (R82, R216).
+10.9 **The battle nebula is one rose colour (the hydrogen pink of real glowing gas) in every region and against every
+faction; no indigo to purple gradient.** It replaces R82's violet and the faction tint share (world_living.gd NEBULA_*).
+Why: "shouldn't we have nebulas be one color? ... I want it to be semi realistic", then "Yes agree on rose" on the NEB1268
+sheet (Nov 20 2026); rose reads apart from the teal ion storm; Ryan listed indigo to purple gradients among the AI-made
+tells (R174). Set: Ryan (R82, R216, R353).
 
 10.10 **The battle board is the dead star's gravity well.** Why: it is the game's identity, the Hollow Sun setting (R216).
 Set: Ryan, Oct 24 (R216).
@@ -728,6 +991,33 @@ of it.** Why: avoid a known film creature; the species is not made of glass (R66
 11.5 **The "Playtest: everything unlocked" switch stays on, with renown progression intact underneath, until Ryan says
 progression is ready to test.** Why: he tests the whole game, not the unlock path (R69). Set: Ryan (R69). Id: progression-01.
 
+11.6 **The dawn finale plays on every run from run 5 on that reaches the final boss** (the sector 3 boss), not only on run 5.
+Why: a player who reaches the boss on run 6 or later never saw it. Replaces the run 5 only part of R78 Q18. Set: Ryan, Nov
+20 2026 01:11 UTC ("Picks ok" on the backdrop audit check, Board thread). Job: issue 1271.
+
+11.7 **On a first run, Battle 2 opens on Battle 1's open strip** (open space, strip arena, line deployment, edge feature);
+its Corsairs and the forced round 3 to 4 enemy reinforcements stay. Why: Battle 2 was a big difficulty jump before the first
+shipyard (Neon review finding 9, PR 1380; the council playtest lost seed 121 there). Set: Ryan, Nov 20 2026 19:45 UTC ("Give it
+Battle 1's open strip", Board thread card). Id: R366. Job: issue 1393.
+
+
+11.8 **Retreat returns the fleet to the stop it came from; the fight stays on the map, and the 10% hull cost stays.** A
+retreat never completes the node or clears a Nemesis meeting. Why: an independent audit (Nov 21, F-05) found a round-1
+retreat skipped any non-boss fight for 10% hull and could lock out Nemesis-held service stops. Both rules copies (3.1).
+Set: Ryan (R381, issue 1480).
+
+11.9 **Chorus biomass pays for refits, upgrade tracks, rerolls and the late market, as credits do for other fleets.** Why:
+Chorus turns its whole purse and payouts into biomass, so credit-only shops starved it (audit F-13). Set: Ryan (R382,
+issue 1484). How: biomass pays when it covers the price, otherwise credits, one purse per purchase; a Chorus run still earns
+credits (repair stipends, ransoms, scrap, declined protocols), so biomass only would strand them (Board reading, Nov 22, PR 1627).
+
+11.10 **Overrunning the Nemesis flagship, a hunt target or a convoy transport by boarding counts as destroying it** for
+kills, loot and objectives. The hull does not join your fleet. Why: a capture broke Nemesis outcomes and hunt and intercept wins (audit F-01). Set: Ryan
+(R383, issue 1479).
+
+11.11 **The Eclipse rival's revived fight is the Sector 3 boss battle**, not an extra fight. Why: audit (issue 1480 item 1);
+checked against issue 1271. Set: Ryan (R384).
+
 ## 12. Automatic checks
 
 12.1 **Checks protect crashes, saves, rules parity, comfort and frame rate. A test that pins a look number is updated in the
@@ -740,10 +1030,21 @@ Why: a fixture typed by hand let 137 checks pass while real play was broken (R15
 
 12.3 **Every push to an agent branch runs the checks once; every test script under godot/**/test/ has its line in
 godot/tools/ci/godot_checks.txt.** Why: a missing test must fail loudly (PR 400). Set: Board. Ids: handoff-07, loop-10.
+A push that changes only .md files and pictures under docs/, contrib/ or the repo root (tools/ci/docs_only.js) runs the
+standing checks and skips the four Godot jobs; the "All checks" job gives every run one mark, and a merge conflict with
+main fails the run. Why: docs-only review pushes ran 45 runner-minutes of Godot work for nothing (audit GH-03, issue 1487).
 
-12.4 **A change to data.js or battle.js names every copy it must refresh, and rules parity passes.** Why: the oracle copies
-drifted (R155). Set: Board. Id: R155b.
+12.4 **A rules or data change is made in Godot only and passes the saved-results checks (3.1); a pull request that updates
+the saved results says why each changed battle or run moved.** The frozen browser files change only under 3.1's ship exception
+until issue 1667. Why: the oracle copies drifted (R155); the browser twin is retired (R405). Set: Board; Ryan, Nov 22 (R405).
+Id: R155b.
 
 12.5 **The look bench: bench a commit twice and keep the second run; a change differs where it is meant to and nowhere else;
 a new baseline is committed only when the Board accepts the change.** Why: the first run pays for shader warm-up (R162).
 Set: Board. Ids: R162c, program-07, skill-sv-02, skill-sv-03.
+
+12.6 **The player-path recording of Battles 1 to 3 is the acceptance check for visual and teaching changes.** Use
+`tools/pc/jobs/player_path.bat` on the shared installed build with a fresh, isolated profile and player defaults. Judge the change
+in those recordings. Use the look bench and bot captures for comparison and diagnosis. Earlier captures hid the
+cut-ins, danger overlay, teaching cards, target card and battle voice that a new player encounters. The look bench also
+draws meshes at full detail. Set: Ryan, Nov 19 (R328).

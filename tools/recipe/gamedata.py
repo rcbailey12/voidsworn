@@ -2,6 +2,14 @@
 # check_export.py outside it), so hard point names always follow the rules file and never a copy of it.
 import os, re
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, '..', '..'))
+# Objective props are no data.js ship (issue 1413): the game flies any roster hull as an intercept transport with its weapons
+# cleared (battle.js intercept: u.transport, u.weapons=[]) and draws it with the obj|transport mesh, and the relay beacon is a
+# fixed prop (godot/render/hull_table.gd AI_HULLS obj|transport, obj|beacon). Their sheets name these ids as game_ship; the
+# classes are the hard point table's 'transport' and 'beacon' (tools/blender/kits/shared/hardpoints.py).
+OBJECTIVES = {
+    'obj_transport': {'cls': 'transport', 'fac': 'hegemony', 'w': []},
+    'obj_beacon': {'cls': 'beacon', 'fac': 'hegemony', 'w': []},
+}
 
 
 def _block(ship_id, data_js=None):
@@ -18,6 +26,8 @@ def _block(ship_id, data_js=None):
 
 def weapons(ship_id, data_js=None):
     """[(weapon kind, arc), ...] in slot order for the ship with this id in data.js; raises ValueError when it cannot be read"""
+    if ship_id in OBJECTIVES:
+        return list(OBJECTIVES[ship_id]['w'])
     body = _block(ship_id, data_js)
     w = re.search(r'(?<![A-Za-z0-9_])w\s*:\s*\[((?:\s*\[[^\]]*\]\s*,?)*)\s*\]', body)
     if not w:
@@ -30,6 +40,8 @@ def weapons(ship_id, data_js=None):
 
 def ship_attr(ship_id, key, data_js=None, default=None, _seen=None):
     """a simple value from the ship's data.js entry (cls, fac, hangar and the like); default when the key is not there"""
+    if ship_id in OBJECTIVES:
+        return OBJECTIVES[ship_id].get(key, default)
     body = _block(ship_id, data_js)
     seen = set(_seen or ())
     if ship_id in seen:
@@ -50,23 +62,22 @@ def ship_attr(ship_id, key, data_js=None, default=None, _seen=None):
         return v
 
 
-def weapon_stats(weapon_id, data_js=None):
-    """{'k': weapon kind, 'shots': shots per volley, 'n': name} of one weapon in data.js's weapon table W (issue 676, R241:
-    the weapon-match check reads what each weapon is and how many shots its volley fires); raises ValueError when absent"""
-    src = open(data_js or os.path.join(REPO, 'data.js'), encoding='utf-8').read()
-    t = re.search(r'const\s+W\s*=\s*\{(.*?)\n\};', src, re.S)
-    if not t:
-        raise ValueError('data.js has no weapon table W')
-    m = re.search(r'(?<![A-Za-z0-9_])' + re.escape(weapon_id) + r'\s*:\s*\{([^}]*)\}', t.group(1))
-    if not m:
-        raise ValueError(f'weapon {weapon_id} is not in the data.js weapon table W')
-    body = m.group(1)
-    k = re.search(r"(?<![A-Za-z0-9_])k\s*:\s*'([^']*)'", body)
-    s = re.search(r'(?<![A-Za-z0-9_])shots\s*:\s*([0-9]+)', body)
-    n = re.search(r"(?<![A-Za-z0-9_])n\s*:\s*'([^']*)'", body)
-    if not k or not s:
-        raise ValueError(f'weapon {weapon_id} has no kind or shots in data.js')
-    return dict(k=k.group(1), shots=int(s.group(1)), n=n.group(1) if n else weapon_id)
+def weapon_stats(weapon_id, tables_json=None):
+    """{'k': weapon kind, 'shots': shots per volley, 'n': name} of one weapon in the Godot rules table W (issue 676, R241:
+    the weapon-match check reads what each weapon is and how many shots its volley fires). Since R405 (issue 1654) it reads
+    godot/rules/data/tables.json, the only rules source, not the frozen data.js; raises ValueError when absent."""
+    import json
+    path = tables_json or os.path.join(REPO, 'godot', 'rules', 'data', 'tables.json')
+    with open(path, encoding='utf-8') as f:
+        table = json.load(f).get('tables', {}).get('W')
+    if not isinstance(table, dict):
+        raise ValueError('the Godot rules table has no weapon table W')
+    w = table.get(weapon_id)
+    if not isinstance(w, dict):
+        raise ValueError(f'weapon {weapon_id} is not in the Godot weapon table W')
+    if not isinstance(w.get('k'), str) or not isinstance(w.get('shots'), int):
+        raise ValueError(f'weapon {weapon_id} has no kind or shots in the Godot weapon table W')
+    return dict(k=w['k'], shots=w['shots'], n=w.get('n') or weapon_id)
 
 
 if __name__ == '__main__':

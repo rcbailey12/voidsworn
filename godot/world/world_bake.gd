@@ -9,6 +9,13 @@ const CACHE_DIR := "user://world_bakes/v3"
 # Size and shader source are part of cache_key, so older bakes cannot be reused.
 const PLANET_SIZE := Vector2i(4096, 2048)
 const MOON_SIZE := Vector2i(1024, 512)
+# Issue 1265: the disk cache on C: is capped. A sector bakes about three 4096 by 2048 maps (sky, planet a and b) plus
+# moons, so 500 MB holds the last several sectors (Neon audit P6). After a bake is saved, least recently used maps go
+# first; maps the running battle holds never go; a stray .tmp older than a day goes. Only rebuildable bakes are removed.
+const CACHE_CAP_BYTES := 500 * 1024 * 1024
+const TMP_MAX_AGE := 86400
+# Last use per key. Windows often leaves file access times frozen, so the game keeps its own stamps.
+const USED_INDEX := "used.json"
 static var _cache := {}
 static var _textures := {}
 var _jobs := {}
@@ -49,6 +56,7 @@ static func remember(key: String, img: Image) -> void:
 	_cache[key] = img
 
 static func clear_static() -> void:
+	_old_swept = false
 	_textures.clear()
 	_cache.clear()
 
@@ -79,6 +87,11 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 	while not job.done: await get_tree().process_frame
 	return job.image
 
+var _exiting := false   # issue 1482: set in _exit_tree; a raster that finishes after it starts no worker
+
+func _enter_tree() -> void:
+	_exiting = false
+
 func _process(_dt: float) -> void:
 	if _thread != null:
 		if _thread.is_alive(): return
@@ -88,8 +101,13 @@ func _process(_dt: float) -> void:
 		if result.image == null and not job.has("path") and not job.compute and DisplayServer.get_name() != "headless" and not job.get("raster_done", false):
 			job.raster_done = true
 			var img: Image = await _canvas(job.code, job.params, job.size)
+			# issue 1482: the raster awaited frames; if the service left the tree meanwhile, _exit_tree already joined
+			# and cleared every job, so no new worker may start (it would never be joined)
+			if _exiting or not is_inside_tree():
+				job.done = true
+				return
 			_thread = Thread.new()
-			_thread.start(_finish_image.bind(_active, img))
+			_thread.start(_finish_image.bind(_active, img, _keep_keys()))
 			return
 		job.image = result.image
 		job.done = true
@@ -103,7 +121,7 @@ func _process(_dt: float) -> void:
 	if _active != "" or _queue.is_empty(): return
 	_active = _queue.pop_front()
 	_thread = Thread.new()
-	var err := _thread.start(_work.bind(_active, _jobs[_active]))
+	var err := _thread.start(_work.bind(_active, _jobs[_active], _keep_keys()))
 	if err != OK:
 		_jobs[_active].done = true
 		_jobs.erase(_active)
@@ -113,13 +131,24 @@ func _process(_dt: float) -> void:
 
 func _exit_tree() -> void:
 	# Deleting a world does not cancel its shared job. Only shutdown joins it.
+	_exiting = true
 	if _thread != null: _thread.wait_to_finish()
 	for job in _jobs.values(): job.done = true
 	_jobs.clear()
 	_queue.clear()
 	clear_static()
 
-static func _work(key: String, job: Dictionary) -> Dictionary:
+# Keys the running game holds or is about to load. Read on the main thread, handed to the worker by value.
+func _keep_keys() -> Dictionary:
+	var keep := {}
+	for k in _cache: keep[k] = true
+	for k in _jobs: keep[k] = true
+	return keep
+
+static func _folder() -> String:
+	return OS.get_environment("VS_WORLD_CACHE") if OS.has_environment("VS_WORLD_CACHE") else CACHE_DIR
+
+static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictionary:
 	if job.has("path"):
 		var authored_image: Image = null
 		if str(job.path).ends_with(".json"):
@@ -134,7 +163,7 @@ static func _work(key: String, job: Dictionary) -> Dictionary:
 		if job.get("float_mips", false): authored_image.convert(Image.FORMAT_RGBAF)
 		authored_image.generate_mipmaps()
 		return {"image": authored_image, "source": "authored"}
-	var folder := OS.get_environment("VS_WORLD_CACHE") if OS.has_environment("VS_WORLD_CACHE") else CACHE_DIR
+	var folder := _folder()
 	var path := folder.path_join(key + ".png")
 	var img: Image = null
 	if FileAccess.file_exists(path): img = Image.load_from_file(path)
@@ -149,7 +178,10 @@ static func _work(key: String, job: Dictionary) -> Dictionary:
 			source = "baked"
 			if img != null and DirAccess.make_dir_recursive_absolute(folder) == OK:
 				var tmp := path + ".tmp"
-				if img.save_png(tmp) == OK: DirAccess.rename_absolute(tmp, path)
+				if img.save_png(tmp) == OK and DirAccess.rename_absolute(tmp, path) == OK:
+					prune(folder, CACHE_CAP_BYTES, keep, key)
+	elif source == "loaded":
+		touch(folder, key)
 	if img != null and not img.has_mipmaps(): img.generate_mipmaps()
 	return {"image": img, "source": source, "error": error}
 
@@ -181,14 +213,105 @@ static func _authored_tiles(path: String, size: Vector2i) -> Image:
 		image.blit_rect(tile, Rect2i(Vector2i.ZERO, tile_size), pos)
 	return image
 
-static func _finish_image(key: String, img: Image) -> Dictionary:
+static func _finish_image(key: String, img: Image, keep: Dictionary = {}) -> Dictionary:
 	if img != null:
-		var folder := OS.get_environment("VS_WORLD_CACHE") if OS.has_environment("VS_WORLD_CACHE") else CACHE_DIR
+		var folder := _folder()
 		if DirAccess.make_dir_recursive_absolute(folder) == OK:
 			var path := folder.path_join(key + ".png")
-			if img.save_png(path + ".tmp") == OK: DirAccess.rename_absolute(path + ".tmp", path)
+			if img.save_png(path + ".tmp") == OK and DirAccess.rename_absolute(path + ".tmp", path) == OK:
+				prune(folder, CACHE_CAP_BYTES, keep, key)
 		img.generate_mipmaps()
 	return {"image": img, "source": "baked"}
+
+# Issue 1265. The index maps a cache key to the unix time a battle last loaded or saved it. A missing stamp (older
+# bakes, a lost write) falls back to the newer of the file's modified and access times. Runs on the bake worker only.
+static func _read_used(folder: String) -> Dictionary:
+	var text := FileAccess.get_file_as_string(folder.path_join(USED_INDEX))
+	var parsed = JSON.parse_string(text) if text != "" else null
+	return parsed if parsed is Dictionary else {}
+
+static func _write_used(folder: String, used: Dictionary) -> void:
+	var path := folder.path_join(USED_INDEX)
+	var f := FileAccess.open(path + ".tmp", FileAccess.WRITE)
+	if f == null: return
+	f.store_string(JSON.stringify(used))
+	f.close()
+	DirAccess.rename_absolute(path + ".tmp", path)
+
+static func touch(folder: String, key: String, now: float = -1.0) -> void:
+	var used := _read_used(folder)
+	used[key] = Time.get_unix_time_from_system() if now < 0.0 else now
+	_write_used(folder, used)
+
+# Removes stale .tmp files, then least recently used maps until the folder is under cap. Only names the game writes
+# (<64 hex>.png, its .tmp, used.json's .tmp) are ever removed. `keep` (keys the running game holds) and `fresh` (the
+# map just saved) are never removed. Returns what it did, for logs and the check.
+static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now: float = -1.0) -> Dictionary:
+	if now < 0.0: now = Time.get_unix_time_from_system()
+	var used := _read_used(folder)
+	if fresh != "": used[fresh] = now
+	var maps: Array = []
+	var total := 0
+	var removed: Array = []
+	for name in DirAccess.get_files_at(folder):
+		if not _bake_name(name): continue   # only names the game writes, never a stranger's file
+		var path := folder.path_join(name)
+		if name.ends_with(".tmp"):
+			if now - FileAccess.get_modified_time(path) > TMP_MAX_AGE and DirAccess.remove_absolute(path) == OK:
+				removed.append(name)
+			continue
+		if not name.ends_with(".png"): continue
+		var key := name.get_basename()
+		var size := FileAccess.get_size(path)
+		var stamp: float = float(used.get(key, maxi(FileAccess.get_modified_time(path), FileAccess.get_access_time(path))))
+		maps.append({"key": key, "path": path, "size": size, "stamp": stamp})
+		total += size
+	var before := total
+	if total > cap:
+		maps.sort_custom(func(a, b): return a.stamp < b.stamp)
+		for m in maps:
+			if total <= cap: break
+			if keep.has(m.key) or m.key == fresh: continue
+			if DirAccess.remove_absolute(m.path) == OK:
+				total -= int(m.size)
+				removed.append(m.key + ".png")
+	removed.append_array(_sweep_old_versions(folder, folder == CACHE_DIR))
+	var live := {}
+	for m in maps:
+		if FileAccess.file_exists(m.path) and used.has(m.key): live[m.key] = used[m.key]
+	_write_used(folder, live)
+	if not removed.is_empty():
+		print("[world] bake cache %d -> %d MB (cap %d MB), removed %d files" % [before >> 20, total >> 20, cap >> 20, removed.size()])
+	return {"before": before, "after": total, "removed": removed}
+
+# Issue 1265 (Board, Nov 20: the PC held 0.15 GB of v2 never read again): bake folders of older cache versions under
+# the game's own cache root (user://world_bakes/v1 .. v<N-1>) are cleared once per run. Never for a VS_WORLD_CACHE
+# override (Artoo on PR 1295: its neighbours are not the game's). Only names the game writes go: <64 hex>.png, that
+# plus .tmp, and used.json; then the folder if it is empty. Anything else stays.
+static var _old_swept := false
+
+static func _bake_name(f: String) -> bool:
+	if f == USED_INDEX or f == USED_INDEX + ".tmp": return true
+	var key := f.trim_suffix(".tmp").trim_suffix(".png")
+	if key.length() != 64 or not (f.ends_with(".png") or f.ends_with(".png.tmp")): return false
+	for c in key:
+		if not c in "0123456789abcdef": return false
+	return true
+
+static func _sweep_old_versions(folder: String, owned: bool) -> Array:
+	var removed: Array = []
+	var name := folder.get_file()
+	if not owned or _old_swept or not name.begins_with("v") or not name.substr(1).is_valid_int(): return removed
+	_old_swept = true
+	var parent := folder.get_base_dir()
+	for n in range(1, int(name.substr(1))):
+		var old := parent.path_join("v%d" % n)
+		if not DirAccess.dir_exists_absolute(old): continue
+		for f in DirAccess.get_files_at(old):
+			if _bake_name(f) and DirAccess.remove_absolute(old.path_join(f)) == OK: removed.append("v%d/%s" % [n, f])
+		if DirAccess.get_files_at(old).is_empty() and DirAccess.get_directories_at(old).is_empty():
+			DirAccess.remove_absolute(old)
+	return removed
 
 # The two bake shaders use the GLSL subset of Godot's shader language. Reuse
 # their equations, with a storage buffer for uniforms and an image output.

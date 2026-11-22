@@ -88,6 +88,11 @@ SUBPARTS = {
     'pipe': ['trunk', 'collar', 'flange', 'saddle'],
     'capbank': ['base', 'cell', 'cap', 'bus', 'strip'],
     'exchanger': ['base', 'housing', 'fin', 'frame', 'port'],
+    # issue 1413 (hegemony_O2, the Convoy transport): a cargo module locked in the cargo well
+    'container': ['frame', 'lid', 'seam', 'rib', 'clamp'],
+    # issue 1413 (hegemony_O3, the Relay beacon): the oversized recessed relay lens
+    'relay_lens': ['face', 'ring', 'lens', 'glow'],
+    'bomb_tube': ['housing', 'frame', 'collar', 'bore', 'ring', 'back', 'warhead'],
 }
 
 
@@ -581,6 +586,127 @@ def hatchbox(w, l, h, fins=0):
     return p
 
 
+def container(l, w, h, ribs=3):
+    """a cargo module (issue 1413, the Convoy transport: designs.md "FOUR identical container modules ... plain slab sides,
+    mooring clamps"): origin at the middle of its floor, +X along the ship (l), +Y across (w), +Z up (h). A plain chamfered slab
+    box sitting in the cargo well (the mount), an inset lid with a seam round it, flat stiffener ribs up the fore and aft faces,
+    corner castings, and mooring clamps at the foot of each face that lock it to the well floor."""
+    p = Part('container')
+    p.add('frame', 'mount', 'hgrey', _zblock(-l / 2, l / 2, -w / 2, w / 2, 0.0, h, ch=0.04))
+    p.add('seam', 'body', 'dark', _zblock(-l / 2 + 0.045, l / 2 - 0.045, -w / 2 + 0.045, w / 2 - 0.045, h - 0.01, h + 0.006))
+    p.add('lid', 'body', 'hpanel', _zblock(-l / 2 + 0.06, l / 2 - 0.06, -w / 2 + 0.06, w / 2 - 0.06, h - 0.01, h + 0.016, ch=0.008))
+    for k in range(ribs):
+        y = -w / 2 + w * (k + 1) / (ribs + 1)
+        for sx in (1, -1):
+            x0, x1 = (l / 2 - 0.01, l / 2 + 0.022) if sx > 0 else (-l / 2 - 0.022, -l / 2 + 0.01)
+            p.add('rib%d%s' % (k, 'f' if sx > 0 else 'a'), 'body', 'hgrey2', _zblock(x0, x1, y - 0.03, y + 0.03, 0.07, h - 0.07))
+    for sy in (1, -1):
+        for sx in (1, -1):
+            cx, cy = sx * (l / 2 - 0.035), sy * (w / 2 - 0.035)
+            p.add('clampc%s%s' % ('f' if sx > 0 else 'a', 'p' if sy > 0 else 's'), 'body', 'htrim', _zblock(cx - 0.05, cx + 0.05, cy - 0.05, cy + 0.05, h - 0.02, h + 0.03))
+            x0, x1 = (l / 2, l / 2 + 0.07) if sx > 0 else (-l / 2 - 0.07, -l / 2)
+            yc = sy * (w / 2 - 0.22)
+            p.add('clamp%s%s' % ('f' if sx > 0 else 'a', 'p' if sy > 0 else 's'), 'body', 'hmetal', _zblock(x0, x1, yc - 0.08, yc + 0.08, 0.0, 0.16, ch=0.02))
+    # issue 1413 round 2 (Ryan, Nov 21: the modules "look like clay"): the working detail of a Registry cargo module, still in
+    # the Navy's flush, even order. Each end face (+-Y, the face seen over the rails) carries a framed inset panel with three
+    # stiffeners, a registry data plate and a row of hand-holds; the lid carries two access hatches, three lifting eyes down
+    # its middle and a stencil plate.
+    for sy in (1, -1):
+        y0 = sy * w / 2; o = sy * 0.012; tag = 'p' if sy > 0 else 's'
+        fx, fz0, fz1 = l / 2 - 0.08, 0.12, h - 0.14
+        for nm, xa, xb, za, zb in (('t', -fx, fx, fz1 - 0.03, fz1), ('b', -fx, fx, fz0, fz0 + 0.03),
+                                   ('f', fx - 0.03, fx, fz0, fz1), ('a', -fx, -fx + 0.03, fz0, fz1)):
+            p.add('frame_end%s%s' % (tag, nm), 'body', 'hgrey2', _zblock(xa, xb, *sorted((y0, y0 + o)), za, zb))
+        for k in range(3):
+            xk = -fx + 2 * fx * (k + 1) / 4
+            p.add('rib_end%s%d' % (tag, k), 'body', 'hgrey2', _zblock(xk - 0.018, xk + 0.018, *sorted((y0, y0 + o * 1.6)), fz0 + 0.03, fz1 - 0.03))
+        p.add('plate_end%s' % tag, 'body', 'htrim', _zblock(-fx + 0.05, -fx + 0.21, *sorted((y0, y0 + o * 2.2)), fz1 - 0.16, fz1 - 0.07))
+        for k in range(4):
+            zk = fz0 + 0.06 + k * 0.1
+            p.add('grip_end%s%d' % (tag, k), 'body', 'hmetal', _zblock(fx - 0.11, fx - 0.06, *sorted((y0, y0 + o * 2.6)), zk, zk + 0.018))
+    for k, xh in enumerate((-l / 4, l / 4)):
+        for sy in (1, -1):
+            yh = sy * w * 0.28
+            p.add('lid_hatch%d%s' % (k, 'p' if sy > 0 else 's'), 'body', 'hgrey2', _zblock(xh - 0.11, xh + 0.11, yh - 0.15, yh + 0.15, h + 0.012, h + 0.026, ch=0.006))
+            p.add('lid_hatchrim%d%s' % (k, 'p' if sy > 0 else 's'), 'body', 'htrim', _zblock(xh - 0.03, xh + 0.03, yh - 0.12, yh - 0.08, h + 0.02, h + 0.034))
+    for k, yk in enumerate((-w * 0.08, 0.0, w * 0.08)):
+        p.add('lid_eye%d' % k, 'body', 'hmetal', _zblock(-0.035, 0.035, yk - 0.025, yk + 0.025, h + 0.012, h + 0.05, ch=0.01))
+    p.add('lid_plate', 'body', 'htrim', _zblock(-0.09, 0.09, -w * 0.44, -w * 0.44 + 0.08, h + 0.012, h + 0.022))
+    return p
+
+
+def relay_lens(half, r, depth, steps=5, ch=0.2, n=32):
+    """the Relay beacon's lens (issue 1413; designs.md: ONE oversized recessed blue lens in the module's forward face, stepped
+    machined rings, NO muzzle lip, no capacitor trench, a thin blue ring at its base): origin at the middle of the face's back,
+    local +Z out of the face (a surface part, like the vent). A square face block (half-width `half`, its corners chamfered by ch) `depth` deep with a round mouth of
+    radius r; inside it machined rings step down toward a glowing blue lens at the back; a thin blue ring round the mouth; four
+    bolt bosses in the face's corners."""
+    p = Part('relay_lens')
+    angs = [2 * math.pi * i / n + math.pi / n for i in range(n)]
+
+    def sq(a):
+        c, s_ = math.cos(a), math.sin(a)
+        t = min(half / max(abs(c), 1e-9), half / max(abs(s_), 1e-9), (2 * half - ch) / max(abs(c) + abs(s_), 1e-9))
+        return (t * c, t * s_)
+    outer = [sq(a) for a in angs]
+    inner = [(r * math.cos(a), r * math.sin(a)) for a in angs]
+    x0, x1 = 0.0, depth
+    V = [(x0, y, z) for (y, z) in outer] + [(x1, y, z) for (y, z) in outer] + [(x0, y, z) for (y, z) in inner] + [(x1, y, z) for (y, z) in inner]
+    F = []
+    for i in range(n):
+        j = (i + 1) % n
+        F.append((i, j, n + j, n + i)); F.append((2 * n + j, 2 * n + i, 3 * n + i, 3 * n + j))
+        F.append((j, i, 2 * n + i, 2 * n + j)); F.append((n + i, n + j, 3 * n + j, 3 * n + i))
+    p.add('face', 'mount', 'hpanel', (V, F))   # issue 1413 round 4: the small plate grid, so the broad face reads as plates
+    # the stepped machined rings, each a little smaller and deeper, down to the lens
+    prof = []
+    for k in range(steps):
+        rr = r * (1.0 - 0.1 * k)
+        xa = x1 - depth * 0.65 * k / steps
+        xb = x1 - depth * 0.65 * (k + 1) / steps
+        prof += [(xa, rr), (xb + 0.02, rr), (xb + 0.02, rr * 0.93)]
+    rlast = prof[-1][1]
+    p.add('ring', 'mount', 'hmetal', revolve([(x1, r * 1.001)] + prof + [(prof[-1][0] - 0.03, rlast), (prof[-1][0] - 0.03, rlast + 0.06), (x1 - 0.002, r + 0.06)],
+                                               n, closed=True, phase=math.pi / n))
+    # issue 1413 round 2 (Ryan's look sheet, Nov 21: the lens read as one flat white disc): a thin blue light ring on the
+    # face of every machined step, so the lens reads as the concept's nested blue rings, over a dark dish
+    for k in range(steps):
+        rr = r * (1.0 - 0.1 * k); xs = x1 - depth * 0.65 * (k + 1) / steps + 0.02
+        p.add('step_glow%d' % k, 'body', 'hblue', revolve([(xs + 0.004, rr * 0.995), (xs + 0.004, rr * 0.955)], n, phase=math.pi / n))
+    xl = prof[-1][0] - 0.01
+    # the lens: a dark dish (so the step rings read) round a small bright core
+    p.add('lens', 'body', 'hgrey2', revolve([(xl, rlast * 0.98), (xl + rlast * 0.08, rlast * 0.7), (xl + rlast * 0.1, rlast * 0.36), (xl + rlast * 0.1, 0.001)],
+                                             n, cap0=True, phase=math.pi / n))
+    p.add('lens_core', 'body', 'hblue', revolve([(xl + rlast * 0.09, rlast * 0.34), (xl + rlast * 0.2, rlast * 0.26), (xl + rlast * 0.27, 0.001)], n, cap0=True, phase=math.pi / n))
+    p.add('glow', 'body', 'hblue', ring_band(x1 - 0.03, r * 0.985, 0.03, r * 0.025, n))
+    for (yy, zz) in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
+        c = (half - ch * 0.9) * 0.92
+        p.add('face_boss%d%d' % (yy > 0, zz > 0), 'mount', 'dark', moved(revolve([(x1 - 0.01, 0.1), (x1 + 0.03, 0.1), (x1 + 0.04, 0.07), (x1 + 0.04, 0.001)], 12),
+                                                                         Matrix.Translation((0, yy * c, zz * c))))
+    # issue 1413 round 3 (Ryan, Nov 21: "so they don't look like clay"; the detail check read the bare face block as the flattest
+    # surface on the Relay): the face block carries the Navy's flush plates. Each side face gets two plates split along the depth
+    # and a trim strip at the front edge; the front face a trim collar round the mouth and a plate in the middle of each edge
+    e = half - ch - 0.04
+    for sgn in (1, -1):
+        for k, (xa, xb) in enumerate(((0.03, depth * 0.48), (depth * 0.52, depth - 0.07))):
+            p.add('side_plate_y%d%d' % (sgn > 0, k), 'mount', 'hgrey2', _zblock(xa, xb, sgn * half - 0.006, sgn * half + 0.012, -e, e) if sgn > 0 else
+                  _zblock(xa, xb, sgn * half - 0.012, sgn * half + 0.006, -e, e))
+            p.add('side_plate_z%d%d' % (sgn > 0, k), 'mount', 'hgrey2', _zblock(xa, xb, -e, e, sgn * half - 0.006, sgn * half + 0.012) if sgn > 0 else
+                  _zblock(xa, xb, -e, e, sgn * half - 0.012, sgn * half + 0.006))
+        p.add('side_trim_y%d' % (sgn > 0), 'mount', 'htrim', _zblock(depth - 0.05, depth - 0.01, sgn * half - 0.006, sgn * half + 0.008, -e, e) if sgn > 0 else
+              _zblock(depth - 0.05, depth - 0.01, sgn * half - 0.008, sgn * half + 0.006, -e, e))
+        p.add('side_trim_z%d' % (sgn > 0), 'mount', 'htrim', _zblock(depth - 0.05, depth - 0.01, -e, e, sgn * half - 0.006, sgn * half + 0.008) if sgn > 0 else
+              _zblock(depth - 0.05, depth - 0.01, -e, e, sgn * half - 0.008, sgn * half + 0.006))
+    p.add('mouth_collar', 'mount', 'htrim', revolve([(x1 - 0.004, r * 1.10), (x1 + 0.014, r * 1.10), (x1 + 0.014, r * 1.035), (x1 - 0.004, r * 1.035)],
+                                                     n, closed=True, phase=math.pi / n))
+    m = (half + r * 1.10) / 2
+    for k, (yy, zz, wy, wz) in enumerate(((0, m, 0.32, 0.05), (0, -m, 0.32, 0.05), (m, 0, 0.05, 0.32), (-m, 0, 0.05, 0.32))):
+        p.add('face_plate%d' % k, 'mount', 'hpanel', _zblock(x1 - 0.004, x1 + 0.012, yy - wy, yy + wy, zz - wz, zz + wz))
+    p.transform(Matrix.Rotation(-math.pi / 2, 4, 'Y'))   # built along +X, turned so the face looks along local +Z
+    p.fit = dict(exits=[], radius=r)
+    return p
+
+
 def vent(w, h, slats=5, depth=0.08):
     """a heat louvre (local +Z out): a machined frame and straight slats over a dark recess (never warm light)"""
     p = Part('vent')
@@ -777,6 +903,35 @@ def _cassette(p, barrels, cal, blen, s, pitch, variant):
 
 
 GUN_BUILDERS['guns'] = _cassette
+
+
+def rocket_rack(rows, cols, cell, depth, variant=0):
+    """the Navy bomb cassette (data.js bombs; issue 1373, the Navy bomber HB1). The sheet kit's K.launcher asks every faction
+    kit for rocket_rack(rows, cols, cell, depth); the Navy answer is a machined module of bomb tubes set into the bow: a pale grey
+    block with a steel-blue trim frame round its face, round bores with machined collars and an implant-blue ring deep inside,
+    the next bomb seated in each bore. Local +X the firing direction, +Z up, origin at the centre of the front face; cell the
+    tube pitch, depth how far the bores run back. Every piece is mount: the cassette is part of the hull (factions.md: modules,
+    rectangular, machined)."""
+    p = Part('launcher')
+    p.type = 'bomb_tube'
+    r = cell * 0.3
+    hw, hh = cols * cell / 2, rows * cell / 2
+    ch = cell * 0.1
+    n = 16
+    ctr = [((i - (cols - 1) / 2) * cell, (j - (rows - 1) / 2) * cell) for j in range(rows) for i in range(cols)]
+    p.add('housing', 'mount', 'hgrey', block(-depth * 1.1, -r * 0.12, hw, hh, ch))
+    p.add('frame', 'mount', 'htrim', block(-r * 0.25, r * 0.08, hw * 1.04, hh * 1.06, ch))
+    for k_, (cy, cz) in enumerate(ctr):
+        T = Matrix.Translation((0, cy, cz))
+        p.add('collar%d' % k_, 'mount', 'hmetal', moved(revolve([(-r * 0.3, r * 1.0), (-r * 0.3, r * 1.28), (r * 0.18, r * 1.28), (r * 0.24, r * 1.18),
+                                                               (r * 0.24, r * 1.0)], 12, closed=True, phase=math.pi / 12), T))
+        p.add('bore%d' % k_, 'mount', 'hgrey2', moved(revolve([(r * 0.2, r * 1.0), (-depth, r * 1.0)], n), T))
+        p.add('ring%d' % k_, 'mount', 'hblue', moved(ring_band(-depth * 0.35, r * 0.98, r * 0.12, r * 0.04, n), T))
+        p.add('back%d' % k_, 'mount', 'dark', moved(revolve([(-depth * 0.99, r * 1.0), (-depth * 0.99, 0.0001)], n), T))
+        p.add('warhead%d' % k_, 'mount', 'hmetal', moved(revolve([(-depth * 0.97, r * 0.82), (-depth * 0.7, r * 0.8), (-depth * 0.55, r * 0.42),
+                                                                 (-depth * 0.5, 0.0001)], n), T))
+    p.fit = dict(exits=[dict(pos=P((r * 0.24, cy, cz)), axis=D((1, 0, 0)), radius=r) for (cy, cz) in ctr], radius=max(hw, hh) * 1.1)
+    return p
 
 
 def craft_drive(w, h, body_len, depth=None, cells=3):

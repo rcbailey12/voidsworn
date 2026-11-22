@@ -146,7 +146,7 @@ func _capture(shots: String, name: String, size: Vector2i) -> void:
 	var crop := size * 3 / 4
 	image = image.get_region(Rect2i((size - crop) / 2, crop))
 	image.resize(1280, 720, Image.INTERPOLATE_LANCZOS)
-	_ok(preload("res://tools/picture_provenance.gd").save_jpg(image, shots.path_join(name)) == OK, "captured " + name)
+	_ok(preload("res://tools/picture_provenance.gd").save_jpg(image, shots.path_join(name), 0.9, preload("res://tools/picture_provenance.gd").capture_stage()) == OK, "captured " + name)
 
 
 func _show_cases(shots: String, base: String, before_ui: GDScript) -> void:
@@ -201,7 +201,7 @@ func _show_cases(shots: String, base: String, before_ui: GDScript) -> void:
 					ui.show()
 	_ok(ui._boon_fleet_line("not_in_BOON_NEED", 0) == "", "unknown need makes no claim")
 	_set_fleet(c, [["warden", "Oath"], ["harrow", "Spark"]])
-	_ok(ui._boon_fleet_line("i_still", 0) == "Affects 2 ships with broadside guns or batteries that have not moved: Oath, Spark", "Anchored Volley names its hold-position condition")
+	_ok(ui._boon_fleet_line("i_still", 0) == "Affects 2 ships with flank guns or batteries that have not moved: Oath, Spark", "Anchored Volley names its hold-position condition")
 	c.RUN["aspect"] = "hive"
 	var flagship: String = c.flagshipOf()["name"]
 	_ok(ui._boon_fleet_line("h_wings", 0).ends_with(": " + flagship) and not ui._boon_fleet_line("h_hatch", 0).begins_with("Affects"),
@@ -215,6 +215,27 @@ func _show_cases(shots: String, base: String, before_ui: GDScript) -> void:
 	_ok(not ui._boon_fleet_line("h_wings", 0).contains("in your hold"), "a refit cannot qualify a ship without a free slot")
 	c.RUN["fac"] = "corsair"
 	_ok(ui._boon_fleet_line("a_lance", 0) == "No current ship with lances.", "a future hull must pass the faction's equipment gate")
+	c.newRun("aelith", "ithar")
+	c.RUN["patrons"] = ["iron", "storm"]
+	c.RUN["boons"] = [{"id": "s_cap", "r": 0}]
+	_set_fleet(c, [["i_wisp", "Still Light"], ["i_blade", "Far Focus"]])
+	var brace_offers := [{"id": "d_bastion", "r": 0}, {"id": "i_brace", "r": 0}, {"id": "i_wall", "r": 0}]
+	c.RUN["reward"] = {"kind": "elite", "stage": "pick", "rw": {"k": "boon", "p": "iron"}, "boonOffer": brace_offers}
+	c.show_page("battle", {}, [])
+	var pool: Array = c.boonOfferPool("iron")
+	var duos: Array = c.boonOfferDuos("iron")
+	JSM.rnd_seed(75)
+	c.resumeReward()
+	var saved: String = c.save_text()
+	await _settle()
+	var lines := _details(ui, c)
+	_ok(lines.size() == 3 and lines.all(func(line): return line.ends_with("No effect on this fleet: none of its ships can Brace.")),
+		"all three Brace offers show no effect on the real Glasswright reward screen")
+	_ok(pool.has("i_brace") and pool.has("i_wall") and duos.has("d_bastion") and c.modal_d["data"]["offer"] == brace_offers
+		and JSM.rng_u32() == 75 and c.save_text() == saved, "Brace explanations do not change the Glasswright pool, saved offer, or RNG")
+	var captured: Dictionary = c.newShip("warden"); captured["name"] = "Added Escort"; c.RUN["fleet"].append(captured)
+	_ok(brace_offers.all(func(entry): return ui._boon_fleet_line(entry.id, 0) == "Affects 1 ship that can Brace: Added Escort"),
+		"a captured ship can benefit from Brace protocols in a Glasswright fleet")
 	ui.free()
 
 

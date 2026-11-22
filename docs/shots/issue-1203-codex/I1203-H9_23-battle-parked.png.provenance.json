@@ -1,0 +1,54 @@
+{
+  "source_commit": "977b7af529d2825f9cb98d05ffb2e7a906d293cf",
+  "source_dirty": true,
+  "source_diff_sha256": "671ba8b7bfaff016f1b47a7c75f416789f33dc35c42f8fdc3071c0eaaf2575b5",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "I1203-H9_23-battle-parked.png",
+  "date": "2026-11-19T20:18:26Z",
+  "sources": [
+    {
+      "source_commit": "977b7af529d2825f9cb98d05ffb2e7a906d293cf",
+      "source_dirty": true,
+      "source_diff_sha256": "671ba8b7bfaff016f1b47a7c75f416789f33dc35c42f8fdc3071c0eaaf2575b5",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "issue1203-after-battle_parked.png",
+      "source_commit": "977b7af529d2825f9cb98d05ffb2e7a906d293cf",
+      "source_dirty": true,
+      "source_diff_sha256": "671ba8b7bfaff016f1b47a7c75f416789f33dc35c42f8fdc3071c0eaaf2575b5",
+      "stage": "installed in game",
+      "date": "2026-11-19T20:18:10Z",
+      "image_sha256": "c49da26ccc738dbfd6095117dd33a943a1a9c83ec040363b5d03457f423a985f",
+      "sources": [
+        {
+          "source_commit": "977b7af529d2825f9cb98d05ffb2e7a906d293cf",
+          "source_dirty": true,
+          "source_diff_sha256": "671ba8b7bfaff016f1b47a7c75f416789f33dc35c42f8fdc3071c0eaaf2575b5",
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "4d8ffdfa6c6ab2850624839993cecd7c288278c54c01fa4837bd05a9fceaa6b1"
+  ],
+  "stamp_template_sha256": "4d8ffdfa6c6ab2850624839993cecd7c288278c54c01fa4837bd05a9fceaa6b1",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABnUlEQVR4nO3XMREAIAADMUABIw7w7xAV/JQY6PjXuc8dAMB/K9gAAEQXADqeLgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAMBoPPYMBE7kwmuAAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "27e01f8066fc8679dbb2b4e164f5d8227b9bbb39575297c3f55663bb5f43734b"
+}

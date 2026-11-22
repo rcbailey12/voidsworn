@@ -1,0 +1,252 @@
+[
+ {
+  "glow": "",
+  "lit": "",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "boneyard",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "A_violet"
+ },
+ {
+  "glow": "0.80,0.84,0.92",
+  "lit": "0.17,0.20,0.26",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "boneyard",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "B_slate"
+ },
+ {
+  "glow": "1.0,0.84,0.6",
+  "lit": "0.40,0.19,0.05",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "boneyard",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "C_gold"
+ },
+ {
+  "glow": "0.75,0.88,1.0",
+  "lit": "0.10,0.20,0.48",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "boneyard",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "D_steel"
+ },
+ {
+  "glow": "1.0,0.72,0.76",
+  "lit": "0.50,0.12,0.20",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "boneyard",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "E_rose"
+ },
+ {
+  "glow": "",
+  "lit": "",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "deep",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "A_violet"
+ },
+ {
+  "glow": "0.80,0.84,0.92",
+  "lit": "0.17,0.20,0.26",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "deep",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "B_slate"
+ },
+ {
+  "glow": "1.0,0.84,0.6",
+  "lit": "0.40,0.19,0.05",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "deep",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "C_gold"
+ },
+ {
+  "glow": "0.75,0.88,1.0",
+  "lit": "0.10,0.20,0.48",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "deep",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "D_steel"
+ },
+ {
+  "glow": "1.0,0.72,0.76",
+  "lit": "0.50,0.12,0.20",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "deep",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "E_rose"
+ },
+ {
+  "glow": "",
+  "lit": "",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "frontier",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "A_violet"
+ },
+ {
+  "glow": "0.80,0.84,0.92",
+  "lit": "0.17,0.20,0.26",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "frontier",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "B_slate"
+ },
+ {
+  "glow": "1.0,0.84,0.6",
+  "lit": "0.40,0.19,0.05",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "frontier",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "C_gold"
+ },
+ {
+  "glow": "0.75,0.88,1.0",
+  "lit": "0.10,0.20,0.48",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "frontier",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "D_steel"
+ },
+ {
+  "glow": "1.0,0.72,0.76",
+  "lit": "0.50,0.12,0.20",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "frontier",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "E_rose"
+ },
+ {
+  "glow": "",
+  "lit": "",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "nebula",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "A_violet"
+ },
+ {
+  "glow": "0.80,0.84,0.92",
+  "lit": "0.17,0.20,0.26",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "nebula",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "B_slate"
+ },
+ {
+  "glow": "1.0,0.84,0.6",
+  "lit": "0.40,0.19,0.05",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "nebula",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "C_gold"
+ },
+ {
+  "glow": "0.75,0.88,1.0",
+  "lit": "0.10,0.20,0.48",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "nebula",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "D_steel"
+ },
+ {
+  "glow": "1.0,0.72,0.76",
+  "lit": "0.50,0.12,0.20",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "nebula",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "E_rose"
+ },
+ {
+  "glow": "",
+  "lit": "",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "world",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "A_violet"
+ },
+ {
+  "glow": "0.80,0.84,0.92",
+  "lit": "0.17,0.20,0.26",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "world",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "B_slate"
+ },
+ {
+  "glow": "1.0,0.84,0.6",
+  "lit": "0.40,0.19,0.05",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "world",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "C_gold"
+ },
+ {
+  "glow": "0.75,0.88,1.0",
+  "lit": "0.10,0.20,0.48",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "world",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "D_steel"
+ },
+ {
+  "glow": "1.0,0.72,0.76",
+  "lit": "0.50,0.12,0.20",
+  "neb_hexes": 10,
+  "pair_distance": 2.0,
+  "region": "world",
+  "seed": 1269,
+  "storm_hexes": 24,
+  "tag": "E_rose"
+ }
+]

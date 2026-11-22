@@ -27,6 +27,7 @@ static func profile(fourth := false) -> Dictionary:
 			"titles": {title: 1}, "last_title": title,
 			"flagships": [{"vex": "Wrath of Vesper", "kassar": "Order Forty-One", "grax": "Rust Bucket"}[id]]}
 	p.arc_rewards.hegemony = {"title": "Holder of the Anchorage", "admirals": ["kassar"]}
+	p.paint_on.hegemony = true
 	if fourth:
 		p.admirals.aelith = {"runs": 1, "wins": 0, "best": 2, "battles": 6, "kills": 30, "lost": 1, "titles": {}, "flagships": ["Glasswing"]}
 	return p
@@ -64,7 +65,7 @@ func capture(name: String) -> void:
 		return
 	await settle()
 	await RenderingServer.frame_post_draw
-	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join(name + ".png")) == OK, "captured " + name)
+	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()) == OK, "captured " + name)
 
 
 func geometry(scr: Control, tag: String) -> void:
@@ -184,6 +185,10 @@ func _run() -> void:
 					scr._unhandled_input(key)
 					await settle()
 					check(scr.tab == scr.TABS[i][0], tag + ": tab key " + str(i + 1))
+					if scenario == "three" and scr.tab == "chronicle":
+						check(descendants(scr.body, "Label").any(func(l): return "Holder of the Anchorage" in l.text)
+							and not descendants(scr.body, "Button").any(func(b): return b.text in ["Flying it", "Not flying it"]),
+							tag + ": earned arc title remains visible and saved paint has no toggle")
 					geometry(scr, tag + " " + scr.tab)
 					if scenario == "three" and sz.y == 1080 and i > 0:
 						await capture("CR4_" + scr.tab + "_" + tag)

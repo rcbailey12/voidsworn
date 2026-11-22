@@ -30,7 +30,7 @@ check(has(liv, 'float rate = band < 0.5 ? 0.6 : (band < 1.5 ? 1.0 : (band < 2.5 
 check(has(liv, 'sin(gas_time * 0.785398 + phase) * 0.025'), 'body breathing: period 8 s, amplitude 0.025 (section 3)');
 check(has(liv, 'uniform float flat_rates = 0.0;'), 'the flattened-rate capture variant defaults off (section 2)');
 // 2. NB11: the storm flash radius, in hexes (section 4)
-check(has(liv, 'rng.randf_range(2.2, 6.5)') && has(liv, 'dt / 0.45'), 'bolt cadence 2.2 to 6.5 s and tick flare 0.45 s (section 4)');
+check(has(liv, 'rng.randf_range(2.2, 6.5)') && /const STORM_TICK_LIFE := 0\.45\b/.test(liv) && has(liv, 'clock - float(flares.front().start) >= STORM_TICK_LIFE'), 'bolt cadence 2.2 to 6.5 s and tick flare 0.45 s (section 4)');
 // R289 / RULEBOOK 12.1: check active shaders and the new ruling, never dead storm code in calm gas.
 const calm = liv.split('const GAS_SHADER :=')[1].split('const BOLT_SHADER :=')[0];
 check(has(liv, 'ION.CARDS if storm else GAS_SHADER') && has(liv, 'ION.FOG if storm else FOG_SHADER'), 'both storm tiers use the separate ion module');

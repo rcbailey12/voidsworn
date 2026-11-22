@@ -1,0 +1,100 @@
+{"battle":0,"build":{"commit":"25adec313dd8370fa2007032939378eec2d29097","commit_date":"2026-11-20T17:27:14Z"},"frame":45,"headless":false,"kind":"run","manifest_sha256":"103c35b5f594b92b10aa001de48c8cded944b19fba6ea4bd7ef6852bf1a9d2a5","mesh_lod_threshold":1.0,"profile_isolated":true,"sector_enemy":"corsair","seed":121,"settings":{"ai":"standard","cine":"key","follow":true,"fullscreen":true,"movement":"cinematic","music":true,"music_volume":0.7,"nebula_wake_on":true,"quality":"max","reduce_flashing":false,"reduce_motion":false,"shake":1.0,"sound":true,"speed":1.0,"taa":false,"tips":true,"ui_scale":1.0,"volume":0.8},"user_data_dir":"C:/Users/rcbai/AppData/Local/Temp/voidsworn-player-path-9215059e-dd8b-4204-8815-ce2bf1cea50d/seed-121-attempt-1/profile/Godot/app_userdata/Voidsworn/"}
+{"action":"startRun","battle":0,"choice":"","frame":76,"kind":"campaign_choice","page":"admiral"}
+{"action":"pickAspect","battle":0,"choice":"ram","frame":120,"kind":"campaign_choice","page":"aspect"}
+{"battle":0,"frame":164,"id":"name_flagship","kind":"campaign_card"}
+{"action":"closeModal","battle":0,"choice":"","frame":268,"kind":"campaign_choice","page":"map"}
+{"battle":0,"frame":312,"id":"c_map","kind":"campaign_card"}
+{"battle":0,"frame":427,"id":"c_clock","kind":"campaign_card"}
+{"battle":1,"enemy":"hegemony","frame":645,"kind":"battle_start","node":"0-0","objective":"rout","seed":4018790901,"teaching_battle":1}
+{"battle":1,"frame":647,"kind":"voice","text":"Admiral Roderic Vex: \"Hold the line. Let them come to the broadsides.\""}
+{"battle":1,"cut_ins":"key","fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Bright Censure","side":"player"},{"asset":"res://gen/ships/V15_37.scn","class":"Destroyer","code":"V15_37","parted_hull":true,"ship":"Ashen Vigil","side":"player"},{"asset":"res://gen/ships/V14_23.scn","class":"Frigate","code":"V14_23","parted_hull":true,"ship":"Dawn of Cinders","side":"player"},{"asset":"res://gen/ships/H8_23.scn","class":"Destroyer","code":"H8_23","parted_hull":true,"ship":"Cordon destroyer","side":"enemy"},{"asset":"res://gen/ships/H7_23.scn","class":"Frigate","code":"H7_23","parted_hull":true,"ship":"Hegemony picket","side":"enemy"},{"asset":"res://gen/ships/H7_23.scn","class":"Frigate","code":"H7_23","parted_hull":true,"ship":"Hegemony picket","side":"enemy"}],"frame":805,"hud":true,"kind":"board","tips_on":true,"voice_on":true}
+{"battle":1,"frame":805,"kind":"danger","round":1}
+{"battle":1,"frame":805,"hex":[6.0,11.0],"kind":"move_preview","round":1,"ship":"Bright Censure"}
+{"battle":1,"frame":1047,"id":"select","kind":"teaching_card","round":1}
+{"battle":1,"frame":1147,"hex":[7.0,9.0],"kind":"move_preview","round":1,"ship":"Ashen Vigil"}
+{"battle":1,"frame":1271,"id":"move","kind":"teaching_card","round":1}
+{"battle":1,"frame":1379,"kind":"target_preview","round":1,"ship":"Hegemony picket"}
+{"battle":1,"frame":1534,"hex":[5.0,13.0],"kind":"move_preview","round":1,"ship":"Dawn of Cinders"}
+{"battle":1,"frame":1750,"kind":"cut_start","text":"torp: Ashen Vigil to Hegemony picket"}
+{"battle":1,"frame":1831,"kind":"cut_end","text":"torp: Ashen Vigil to Hegemony picket"}
+{"battle":1,"frame":1834,"id":"threat","kind":"teaching_card","round":2}
+{"battle":1,"frame":1934,"kind":"attack_move_preview","ship":"Cordon destroyer"}
+{"battle":1,"frame":2243,"kind":"command","name":"Fire for effect","round":2}
+{"battle":1,"frame":2256,"kind":"voice","text":"Admiral Roderic Vex: \"Fire for effect. Every gun, every deck, now.\""}
+{"battle":1,"frame":2272,"kind":"cut_start","text":"lance: Bright Censure to Cordon destroyer"}
+{"battle":1,"frame":2352,"kind":"cut_end","text":"lance: Bright Censure to Cordon destroyer"}
+{"battle":1,"frame":2382,"kind":"target_preview","round":2,"ship":"Cordon destroyer"}
+{"battle":1,"frame":2402,"kind":"cut_start","text":"lance: Bright Censure to Cordon destroyer"}
+{"battle":1,"frame":2482,"kind":"cut_end","text":"lance: Bright Censure to Cordon destroyer"}
+{"battle":1,"frame":2575,"kind":"attack_move_preview","ship":"Cordon destroyer"}
+{"battle":1,"frame":2811,"kind":"target_preview","round":3,"ship":"Hegemony picket"}
+{"battle":1,"frame":3013,"kind":"target_preview","round":3,"ship":"Cordon destroyer"}
+{"battle":1,"frame":3033,"kind":"cut_start","text":"lance: Bright Censure to Cordon destroyer"}
+{"battle":1,"frame":3113,"kind":"cut_end","text":"lance: Bright Censure to Cordon destroyer"}
+{"battle":1,"frame":3241,"kind":"target_preview","round":3,"ship":"Cordon destroyer"}
+{"battle":1,"frame":3353,"kind":"voice","text":"Admiral Roderic Vex: \"A ship of the line is gone. Chalk her name. Close the gap. The line does not break.\""}
+{"battle":1,"frame":3386,"kind":"target_preview","round":4,"ship":"Cordon destroyer"}
+{"battle":1,"frame":3406,"kind":"cut_start","text":"lance: Bright Censure to Cordon destroyer"}
+{"battle":1,"frame":3488,"kind":"cut_end","text":"lance: Bright Censure to Cordon destroyer"}
+{"battle":1,"frame":3488,"kind":"cut_start","text":"kill: Cordon destroyer"}
+{"battle":1,"frame":3536,"kind":"cut_end","text":"kill: Cordon destroyer"}
+{"battle":1,"frame":3653,"kind":"target_preview","round":4,"ship":"Hegemony picket"}
+{"battle":1,"frame":3870,"kind":"target_preview","round":5,"ship":"Hegemony picket"}
+{"battle":1,"frame":3890,"kind":"cut_start","text":"lance: Bright Censure to Hegemony picket"}
+{"battle":1,"frame":3969,"kind":"cut_end","text":"lance: Bright Censure to Hegemony picket"}
+{"battle":1,"frame":4039,"kind":"voice","text":"Admiral Roderic Vex: \"The line held. It always holds.\""}
+{"battle":1,"errors":[],"fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Bright Censure","side":"player"},{"asset":"res://gen/ships/V15_37.scn","class":"Destroyer","code":"V15_37","parted_hull":true,"ship":"Ashen Vigil","side":"player"},{"asset":"res://gen/ships/H7_23.scn","class":"Frigate","code":"H7_23","parted_hull":true,"ship":"Hegemony picket","side":"enemy"}],"frame":4040,"kind":"end_card","result":"win","rounds":5}
+{"battle":1,"frame":4130,"kind":"battle_end"}
+{"battle":1,"frame":4143,"id":"c_reward","kind":"campaign_card"}
+{"action":"takeSalvage","battle":1,"choice":"0:mod","frame":4258,"kind":"campaign_choice","page":"battle"}
+{"action":"takePerk","battle":1,"choice":"xmwp9po8r1:killer","frame":4302,"kind":"campaign_choice","page":"battle"}
+{"battle":2,"enemy":"corsair","frame":4449,"kind":"battle_start","node":"1-0","objective":"hold","seed":3651819552,"teaching_battle":2}
+{"battle":2,"frame":4451,"kind":"voice","text":"Admiral Roderic Vex: \"Run out the guns. Present the flank.\""}
+{"battle":2,"cut_ins":"key","fleet":[{"asset":"res://gen/ships/V16_37.scn","class":"Cruiser","code":"V16_37","parted_hull":true,"ship":"Bright Censure","side":"player"},{"asset":"res://gen/ships/V15_37.scn","class":"Destroyer","code":"V15_37","parted_hull":true,"ship":"Ashen Vigil","side":"player"},{"asset":"res://gen/ships/C14s_23.scn","class":"Destroyer","code":"C14s_23","parted_hull":true,"ship":"Hullbreaker gutship","side":"enemy"},{"asset":"res://gen/ships/C13s_23.scn","class":"Frigate","code":"C13s_23","parted_hull":true,"ship":"Hullbreaker raider","side":"enemy"},{"asset":"res://gen/ships/C13s_23.scn","class":"Frigate","code":"C13s_23","parted_hull":true,"ship":"Hullbreaker raider","side":"enemy"}],"frame":4788,"hud":true,"kind":"board","tips_on":true,"voice_on":true}
+{"battle":2,"frame":4788,"kind":"danger","round":1}
+{"battle":2,"frame":4788,"hex":[6.0,16.0],"kind":"move_preview","round":1,"ship":"Bright Censure"}
+{"battle":2,"frame":5108,"id":"objective","kind":"teaching_card","round":1}
+{"battle":2,"frame":5208,"hex":[4.0,17.0],"kind":"move_preview","round":1,"ship":"Ashen Vigil"}
+{"battle":2,"frame":5547,"kind":"cut_start","text":"torp: Hullbreaker gutship to Ashen Vigil"}
+{"battle":2,"frame":5628,"kind":"cut_end","text":"torp: Hullbreaker gutship to Ashen Vigil"}
+{"battle":2,"frame":5631,"id":"reinforce_warn","kind":"teaching_card","round":2}
+{"battle":2,"frame":5731,"kind":"command","name":"Fire for effect","round":2}
+{"battle":2,"frame":5745,"kind":"voice","text":"Admiral Roderic Vex: \"Fire for effect. Every gun, every deck, now.\""}
+{"battle":2,"frame":5813,"kind":"cut_start","text":"lance: Bright Censure to Hullbreaker raider"}
+{"battle":2,"frame":5865,"kind":"cut_end","text":"lance: Bright Censure to Hullbreaker raider"}
+{"battle":2,"frame":5927,"kind":"target_preview","round":2,"ship":"Hullbreaker raider"}
+{"battle":2,"frame":6075,"hex":[10.0,12.0],"kind":"move_preview","round":2,"ship":"Bright Censure"}
+{"battle":2,"frame":6219,"kind":"target_preview","round":2,"ship":"Hullbreaker raider"}
+{"battle":2,"frame":6449,"kind":"arrival","ship":"Hullbreaker raider","side":"enemy"}
+{"battle":2,"frame":6559,"kind":"cut_start","text":"torp: Hullbreaker gutship to Bright Censure"}
+{"battle":2,"frame":6638,"kind":"cut_end","text":"torp: Hullbreaker gutship to Bright Censure"}
+{"battle":2,"frame":6640,"id":"close","kind":"teaching_card","round":3}
+{"battle":2,"frame":6748,"kind":"target_preview","round":3,"ship":"Hullbreaker raider"}
+{"battle":2,"frame":6957,"hex":[8.0,13.0],"kind":"move_preview","round":3,"ship":"Ashen Vigil"}
+{"battle":2,"frame":7075,"kind":"target_preview","round":3,"ship":"Hullbreaker raider"}
+{"battle":2,"frame":7427,"hex":[9.0,12.0],"kind":"move_preview","round":4,"ship":"Ashen Vigil"}
+{"battle":2,"frame":7492,"kind":"target_preview","round":4,"ship":"Hullbreaker raider"}
+{"battle":2,"frame":7686,"kind":"target_preview","round":4,"ship":"Hullbreaker gutship"}
+{"battle":2,"frame":7994,"kind":"cut_start","text":"torp: Hullbreaker gutship to Bright Censure"}
+{"battle":2,"frame":8075,"kind":"cut_end","text":"torp: Hullbreaker gutship to Bright Censure"}
+{"battle":2,"frame":8094,"kind":"target_preview","round":5,"ship":"Hullbreaker raider"}
+{"battle":2,"frame":8309,"kind":"voice","text":"Admiral Roderic Vex: \"A ship of the line is gone. Chalk her name. Close the gap. The line does not break.\""}
+{"battle":2,"frame":8309,"kind":"cut_start","text":"kill: Ashen Vigil"}
+{"battle":2,"frame":8334,"kind":"cut_end","text":"kill: Ashen Vigil"}
+{"battle":2,"frame":8348,"kind":"target_preview","round":5,"ship":"Hullbreaker raider"}
+{"battle":2,"frame":8402,"kind":"cut_start","text":"lance: Bright Censure to Hullbreaker raider"}
+{"battle":2,"frame":8454,"kind":"cut_end","text":"lance: Bright Censure to Hullbreaker raider"}
+{"battle":2,"frame":8568,"kind":"cut_start","text":"torp: Hullbreaker gutship to Bright Censure"}
+{"battle":2,"frame":8649,"kind":"cut_end","text":"torp: Hullbreaker gutship to Bright Censure"}
+{"battle":2,"frame":8664,"kind":"target_preview","round":6,"ship":"Hullbreaker raider"}
+{"battle":2,"frame":8725,"kind":"cut_start","text":"lance: Bright Censure to Hullbreaker raider"}
+{"battle":2,"frame":8777,"kind":"cut_end","text":"lance: Bright Censure to Hullbreaker raider"}
+{"battle":2,"frame":8913,"kind":"target_preview","round":7,"ship":"Hullbreaker gutship"}
+{"battle":2,"frame":8933,"kind":"cut_start","text":"lance: Bright Censure to Hullbreaker gutship"}
+{"battle":2,"frame":9013,"kind":"cut_end","text":"lance: Bright Censure to Hullbreaker gutship"}
+{"battle":2,"frame":9320,"kind":"cut_start","text":"kill: Bright Censure"}
+{"battle":2,"frame":9396,"kind":"cut_end","text":"kill: Bright Censure"}
+{"battle":2,"frame":9450,"kind":"voice","text":"Admiral Roderic Vex: \"The line is broken. Add my name to the wall, under the others.\""}
+{"battle":2,"errors":[],"fleet":[{"asset":"res://gen/ships/C14s_23.scn","class":"Destroyer","code":"C14s_23","parted_hull":true,"ship":"Hullbreaker gutship","side":"enemy"},{"asset":"res://gen/ships/C13s_23.scn","class":"Frigate","code":"C13s_23","parted_hull":true,"ship":"Hullbreaker raider","side":"enemy"}],"frame":9451,"kind":"end_card","result":"loss","rounds":7}
+{"battle":2,"frame":9541,"kind":"battle_end"}
+{"battle":2,"frame":9541,"kind":"failure","reason":"the route lost Battle 2"}

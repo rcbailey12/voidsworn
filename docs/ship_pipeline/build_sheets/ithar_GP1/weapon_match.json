@@ -1,0 +1,54 @@
+{
+  "code": "ithar_GP1",
+  "result": "PASS",
+  "problems": [],
+  "slots": [
+    {
+      "slot": 0,
+      "weapon": "pulsar",
+      "arc": "F",
+      "shots": 2,
+      "mounts": [
+        {
+          "id": "L1",
+          "type": "gun",
+          "mount": "fixed",
+          "barrels": 1,
+          "muzzles": 1
+        }
+      ]
+    },
+    {
+      "slot": 1,
+      "weapon": "pulsar",
+      "arc": "F",
+      "shots": 2,
+      "mounts": [
+        {
+          "id": "L2",
+          "type": "gun",
+          "mount": "fixed",
+          "barrels": 1,
+          "muzzles": 1
+        }
+      ]
+    },
+    {
+      "slot": 2,
+      "weapon": "turret",
+      "arc": "T",
+      "shots": 2,
+      "mounts": [
+        {
+          "id": "O1",
+          "type": "gun",
+          "mount": "turret",
+          "barrels": 1,
+          "muzzles": 1
+        }
+      ]
+    }
+  ],
+  "game_ship": "i_song",
+  "variant": ""
+}

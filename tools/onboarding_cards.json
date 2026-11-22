@@ -2,7 +2,7 @@
   [
     "select",
     "Moving and facing",
-    "This is the ship that is up. Click a blue hex to plan its move, and turn it with Q and E before you confirm. A ship that stays in the same hex is easier to hit: enemy shots against it get +10 to their hit chance. Moving 3 or more hexes gives -5 instead. Or Brace: the ship stays put, takes less damage, and does not take the +10, but it cannot move or fire again this turn."
+    "Click a blue hex to plan a move. Turn with Q and E before you confirm. Staying in place gives enemies +10 to hit; moving 3 or more hexes normally gives them -5. Most ships can Brace instead of firing: this cuts hull damage and removes the +10, but ends the ship's turn. Glasswright ships cannot Brace."
   ],
   [
     "target",
@@ -17,7 +17,7 @@
   [
     "move",
     "Shields and hull",
-    "The cyan bars are shields, one for each side of the ship. Shields soak hits and come back each round. The amber bar is hull. Hull damage stays until you pay for repairs. Keep your strongest shield side facing the guns."
+    "The blue bar shows your shield pool. All four sides share it. Sides with more coverage block more damage while shields hold. Shields recharge each round. The pale bar shows hull. Hull damage needs repairs."
   ],
   [
     "threat",
@@ -27,7 +27,7 @@
   [
     "reinforce_warn",
     "More ships are coming",
-    "More enemy ships are on their way. They arrive at the map edge, and a banner will name the ship and flash where it came in. A new arrival acts in the turn order like any other ship."
+    "Reinforcements arrive at the map edge. A glowing strip on the edge marks where they will enter, and a toast names the ship when they do. A new arrival acts in the turn order like any other ship."
   ],
   [
     "close",
@@ -37,12 +37,12 @@
   [
     "resolve",
     "Admiral's Command",
-    "Your admiral's Command is ready. It fires once per battle, and it grows stronger each round you wait, and when you lose a ship. The button glows gold while it is ready."
+    "Your admiral's Command is ready. Hover over it to see what it does now and what waiting adds. You can give it once per battle. The icon turns orange after the first press; press again to give the order."
   ],
   [
     "objective",
     "Objectives",
-    "The bar at the top shows this fight's goal. When the goal is not wiping the enemy out, doing the goal wins the fight even if enemy ships are left."
+    "Look beside the round counter at the top left for this fight's goal. Completing that goal can win the battle even with enemy ships still on the board."
   ],
   [
     "c_map",
@@ -52,26 +52,21 @@
   [
     "c_clock",
     "The Nemesis clock",
-    "Every jump moves the clock at the top. When it runs out, the Nemesis catches up and the fights ahead get harder. Side stops pay, but they cost jumps."
+    "Winning fights and some choices fill the Nemesis clock. A full clock can bring your one meeting for this sector forward. It does not add another meeting."
   ],
   [
     "c_reward",
     "Rewards",
-    "Winning pays credits, and offers salvage: guns and parts you can fit at a shipyard. Sometimes you can claim a beaten enemy ship instead. If your fleet is full, a claimed ship is scrapped for credits on the spot. Rerolls are not free: when one is offered, it costs credits."
+    "Winning pays credits and can offer protocols or refit modules. Sometimes you can claim a captured ship. If it would put you over your command point limit, choose Strip for parts or Ransom for credits. A protocol reroll costs credits."
   ],
   [
     "c_shipyard",
     "Repair and refit",
-    "Here you spend credits to repair hull damage, refit (swap guns and parts between your ships), and buy ships. After a boss fight you also regroup here: repair, upgrade, or buy before the next sector."
+    "Spend credits here to repair hull damage, upgrade ships or buy new ones. Use Refits to swap modules between ships or move them to and from the hold."
   ],
   [
     "c_loss",
     "The next run",
     "The run is over, and that is expected. Losing teaches your faction: renown, core progress, and what your admiral learned all carry into the next run. Your ships and credits do not."
-  ],
-  [
-    "c_tree",
-    "Your admiral's skill tree",
-    "Spend experience on your admiral's skill tree between runs. Heat is a difficulty you choose: each point of Heat gives +2 experience to the admiral you fly and +1 to your faction's shared pool, and makes the run harder."
   ]
 ]

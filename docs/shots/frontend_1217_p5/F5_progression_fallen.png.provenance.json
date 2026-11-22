@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAT4AAAAxCAYAAABDGcVRAAAAAXNSR0IArs4c6QAABglJREFUeJzt3VtsHNUBh/HvzN7Xazu+4MaQOLaJuUSQ0DhxE5VWpKXETSOFS6VWiFKktnmgKiUSqDcQtDxUVRFS1MtDS4SgD1QqEiCi0EIbSISQI2PJcQoOgYg6IVFI4mB713udmdOH7ToglBIg4J3M//fmvVhnV9pPZ2fOmTWApU4YY7DWsvKqZRyceIdSuYIxZr6H9aGMMZTKFboXL8QrF/jPoaPzPSQR+T+c+R6AiMhnTeETkdBR+EQkdBQ+EQkdhU9EQkfhE5HQUfhEJHSi8z2AT8oYQ8Q53W8L+L6PtR9veaIxBscxeJ5/jkYoIvUm0OEzxlCpVMgXC5xeh22IxJMkEvGPHL/qQuQyXqlMKtNwzscrIvUhsOFzHEOxWOayS3q55dvXz4Uul5tlxz9eZGT0VeLx2P8e62CMwfd9fN9/z/9wcBwDFnxrKRSLDKxczhdWr2DbY0/geR7RaATP+/gzSBGpP4E9xmeMwXNdPtfRztVr+9n37/28MjKG67rc//M76Lt4CeVyhUrFJTc9RXZqktnZ/NwWOGMM+XyB7NQpstPv4roevu+z6KKFrB1YSSwWpeK6ZKdOUakEY+uciJydwM74ahMw31pOnDzFI48+Tu3r7qPbfsfAqhWMv/Y6S3qWsOG6a2hrXcCeV0Z5Yfce4vEY5XKZL67p5+q1q5jJ5Xh6+/McOXwI13UplkoUiyU62lu59ebv88STzzJx+AjRaGDfLhF5j2B/kg1Y3yeRiHPttesoFIr0LV1CQzrJ6NhrZJqbuO9nP8JaeP3AQX6yZTMN6TRPPb2dwcGvceftt7Fz9xDLLl3KV7+8hs133EPF9ahUXBKJOL+4+3aKxRLHT04SiUTm+9WKyDkS7PBRPW6XSMS5adN6SqUyfUu7Gds3zt59+2lva+FPj/yV4ZExvHKBSDTC2oHP89Qzz7FxcB3b//4Cv//jw8SSGe768ffo6GjHdV1isSgP3LuFnu7FfOcHd5HL5Umlku87PigiwRXs8FlLJBohl8vz0/sepFAo0HFBGw/cu4UN669hx45/srp/OX946Jf4vk9vTxcvD42QTCVpaWnmrYnDEIkTi0X59W+2AtC1qJMrll3C8MgYU1MzXHF5H7t2D6FDfCLnj8Ce3JhjwfM8ctkc5UKRtw9NMDWdpbd7Mf2rruLOH97Gs8/v4rdbH2Z4ZIx4PE65UmF2Nk9bawt4ZfKzeb6xYT0XLlqM7/sce+cE9/zqIZ7b+RLfvOHrOLGo1vWJnEcCO+OrzcCMY2htXcCNm9ZTKJa4uKeL1Suv5C+PP0ljpgHHGI6fmKS9rYUVV17OgTfewi8X2blriFtvvoFsbpbeni42Dq7ju5vvJplMMDOTYyab418vvswt39rEQP9y9gzvJZlMzO+LFpFzIgLcP9+DqKktGelceAHvTs/ief4Zl5EYU91d0dSYobvrIvqWdnNpXy9NjRm2PfY3hoZHOXb8JL7ns3HwK7S3tnDk6DEOvX2Uva++wZsHJ/A8j3VfWkMqleTBrX9m//g4nZ2dpNMpRveOc/zEJE1NGZqbGxkdGz/jWd3aWBY0Z7Cey9R09lN7j0TkkzME+NLztZ0blWIBcKrTQGvBcUimklgLpUKh+mDHAc8FJ0K6IY3neZQKxep91kI0SjqV/MDOjUIujxOLkkwmzriIWZeeFwmWwH7VBbDWEotFicebP3C7tRZjIJ1pqMbT2rnCW2txHOf0fVh8v/qcRDyOScTx/eqj040Nc88RkfNDoMMH1cmatWc+8VCL4NneV73t/X+LyPkl+Gd1RUQ+IoVPREJH4ROR0FH4RCR0FD4RCR2FT0RCR+ETkdBR+EQkdOozfLa6jy44S4dtbSX1fA9ERM5CXe7ciESc6g8BGROI37owxmAch0gkgu/W/3hFwq4uw1cslris90Jc16teRiEAfN+STiU58ObkfA9FRD5EXV2dRUTks1Cfx/hERD5FCp+IhI7CJyKho/CJSOgofCISOgqfiISOwicioaPwiUjoKHwiEjoKn4iEjsInIqGj8IlI6Ch8IhI6Cp+IhI7CJyKh819JtUBzBlD9LAAAAABJRU5ErkJggg=="
+	],
+	"date": "2026-11-19T21:48:23Z",
+	"image_sha256": "207d82882f96a56f6d7620bf0660a8981e89aad46903e75d63a597f2aeedbd8c",
+	"inputs": [],
+	"picture_name": "F5_progression_fallen.png",
+	"schema": 1,
+	"source_commit": "4e7f379032ea2260ebea301b760b1d03337263fa",
+	"source_diff_sha256": "b0a4d9fe31b5fb5c42c6f63b251128062e7fc6677c46863eb479c9f8bf36d502",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "4e7f379032ea2260ebea301b760b1d03337263fa",
+			"source_diff_sha256": "b0a4d9fe31b5fb5c42c6f63b251128062e7fc6677c46863eb479c9f8bf36d502",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		671,
+		318,
+		720
+	],
+	"stamp_template_sha256": "58abc95c062a1f293dbc1fd3722f9fd4202411a66ba3d153ae8150fd7d59883a",
+	"strip_sha256": [
+		"58abc95c062a1f293dbc1fd3722f9fd4202411a66ba3d153ae8150fd7d59883a"
+	],
+	"strip_size": [
+		318,
+		49
+	]
+}

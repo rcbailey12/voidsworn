@@ -168,8 +168,8 @@ func _breakthrough() -> void:
 	c.finish_battle(scene.result["result"], r.B)
 	_check(hud.heading == "Withdrawal" and hud.banner_text == "Withdrawal" and scene.result["result"] == "retreat",
 		"2 HUD: a failed breakthrough with a ship clear is called Withdrawal")
-	_check(c.page["kind"] == "map" and c.RUN != null and c.RUN["fleet"].size() == 1 and c.RUN["fleet"][0]["uid"] == uid and c.findNode(id)["done"] and c.SAVED_RUN != null and career.result == "retreat",
-		"2 campaign and Career: the ship that jumped clear survives and the run continues")
+	_check(c.page["kind"] == "map" and c.RUN != null and c.RUN["fleet"].size() == 1 and c.RUN["fleet"][0]["uid"] == uid and not c.findNode(id)["done"] and c.RUN.get("curNode") == null and c.SAVED_RUN != null and career.result == "retreat",
+		"2 campaign and Career: the ship that jumped clear survives, the run continues, and the fight stays on the map (R381, issue 1480)")
 	scene.free()
 	story.free()
 
@@ -216,10 +216,10 @@ func _boss_payout() -> void:
 		c.act("battle", "win")
 		assert(c.RUN["reward"]["kind"] == "boss")
 		var legacy := ""
-		var before_credits: float = c.RUN["credits"]
 		for i in range(20):
 			if c.RUN == null or c.RUN.get("reward") == null: break
-			var acts: Array = c.screen_acts().filter(func(a): return a[2] == 1)
+			# Keep the default prize choices and advance to the next reward.
+			var acts: Array = c.screen_acts().filter(func(a): return a[2] == 1 and a[0] != "prizeSet")
 			var click: Array = acts[0]
 			c.writes.clear()
 			c.act(click[0], click[1])
@@ -234,7 +234,8 @@ func _boss_payout() -> void:
 		d.act("continueRun")
 		var advanced: bool = d.page["kind"] == "end" and d.SAVED_RUN == null if sector == 3 else d.RUN["sector"] == 2 and d.RUN["cpCap"] == cap_once + 3 and not d.availableNodes().is_empty()
 		var settled: Dictionary = d.page["data"]["run"] if d.page["kind"] == "end" else d.RUN
-		_check(advanced and settled["credits"] == credits_once and credits_once >= before_credits,
+		# issue 1175: the old save is a fixed file, so its credits are not compared with this seeded run's (the boss roll moved them)
+		_check(advanced and settled["credits"] == credits_once,
 			"5 legacy: paid sector %d boss advances on Continue without paying again" % sector)
 
 func _prize_reload() -> void:
@@ -261,11 +262,12 @@ func _prize_reload() -> void:
 	d.act("continueRun")
 	_check(_salvage_then_reward(d, credits), "7: reloading a paid prize shows salvage and then the next reward, with one ransom")
 	d = _load(_legacy("prize"))
+	var legacy_credits: float = d.SAVED_RUN["credits"]
 	d.act("continueRun")
-	_check(_salvage_then_reward(d, credits), "7 legacy: an empty prize stage still shows salvage and the next reward")
+	_check(_salvage_then_reward(d, legacy_credits), "7 legacy: an empty prize stage still shows salvage and the next reward")
 
 func _salvage_then_reward(c, credits: float) -> bool:
-	if c.modal_d == null or c.modal_d["kind"] != "salvage" or c.RUN["credits"] != credits or c.RUN["ransoms"] != 1: return false
+	if c.modal_d == null or c.modal_d["kind"] != "victory" or c.RUN["credits"] != credits or c.RUN["ransoms"] != 1: return false
 	c.act("takeSalvage", "0:cred")
 	return c.modal_d != null and c.modal_d["kind"] in ["boon", "mod", "relic"] and c.RUN["credits"] > credits and c.RUN["ransoms"] == 1
 

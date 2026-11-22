@@ -1,0 +1,39 @@
+{
+  "code": "ithar_GL1",
+  "result": "PASS",
+  "problems": [],
+  "slots": [
+    {
+      "slot": 0,
+      "weapon": "shard",
+      "arc": "F",
+      "shots": 3,
+      "mounts": [
+        {
+          "id": "S1",
+          "type": "gun",
+          "mount": "fixed",
+          "barrels": 1,
+          "muzzles": 3
+        }
+      ]
+    },
+    {
+      "slot": 1,
+      "weapon": "startorp",
+      "arc": "F",
+      "shots": 1,
+      "mounts": [
+        {
+          "id": "T1",
+          "type": "gun",
+          "mount": "fixed",
+          "barrels": 1,
+          "muzzles": 1
+        }
+      ]
+    }
+  ],
+  "game_ship": "i_blade",
+  "variant": ""
+}

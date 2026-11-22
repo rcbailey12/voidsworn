@@ -265,7 +265,7 @@ func _still(key: String) -> void:
 		row.stills[key] = {"fx_time": bench.fx.now}
 		return
 	var image: Image = bench._grab()
-	if image == null or CAP.save_png(image, folder.path_join(key + ".png")) != OK:
+	if image == null or CAP.save_png(image, folder.path_join(key + ".png"), CAP.capture_stage()) != OK:
 		_fail("Could not stamp the " + key + " still")
 		return
 	row.stills[key] = {"frame": frame_number, "fx_time": bench.fx.now}
@@ -438,7 +438,7 @@ func _storm(subject: Dictionary) -> void:
 				await process_frame
 			await RenderingServer.frame_post_draw
 			var name := "storm_%02d_%s.png" % [centers.size(), state]
-			if CAP.save_png(root.get_texture().get_image(), out.path_join(name)) != OK:
+			if CAP.save_png(root.get_texture().get_image(), out.path_join(name), CAP.capture_stage()) != OK:
 				_fail("Could not stamp " + name)
 	_write("storm.json", {"seed": 4103, "subject": subject, "storm_hexes": battle.world._terr_pts.storm.size(),
 		"nebula_hexes": battle.world._terr_pts.neb.size(), "patches": centers}, out)

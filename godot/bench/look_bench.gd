@@ -6,6 +6,8 @@ extends Node
 #   godot --path godot --fixed-fps 60 --disable-vsync --resolution 1920x1080 res://bench/look_bench.tscn -- --out DIR
 #         [--part all|moments|fleet] [--only id1,id2] [--commit SHA] [--allow-blocks] [--no-warm]
 # --allow-blocks is for a cloud smoke run of the script only (no hulls there): it draws the blocks instead of stopping.
+# --sound (issue 1238): the game's own death sounds play (audio/sfx.gd and audio/death_audio.gd, as the battle wires them)
+# and the bench picture is shown in the window, so Godot's --write-movie FILE.avi records a clip with picture and sound.
 #
 # Parts:
 #   moments  every row of bench/look_moments.json (weapons on a hull and on a shield, shield states, death classes, one
@@ -80,6 +82,8 @@ var report := {"stills": [], "warnings": [], "parts": {}}
 var cfg := {}
 var steps := 0
 var headless := false
+var sfx: Node = null          # --sound only
+var death_audio: Node = null
 
 
 func _ready() -> void:
@@ -100,7 +104,7 @@ func _ready() -> void:
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	Engine.max_fps = 0
 	OS.low_processor_usage_mode = false
-	AudioServer.set_bus_mute(0, true)
+	AudioServer.set_bus_mute(0, not args.has("sound"))
 	BL.set_look("cine", false)   # Ryan's board look (Nov 1), whatever user://board_look.cfg says; not saved
 	_run.call_deferred()
 
@@ -159,6 +163,8 @@ func _run() -> void:
 		_placeholder("no built hull file for " + ", ".join(bad))
 		return
 	_setup_view()
+	if args.has("sound"):
+		_sound_setup()
 	HULL.reset_late()   # issue 376: count only the shaders first built after a warm-up in this run
 	var part := str(args.get("part", "all"))
 	if part == "all" or part == "fleet":
@@ -268,6 +274,29 @@ func _setup_view() -> void:
 	_make_fx()
 
 
+# --sound: the battle's sound player and death observer, and the bench picture on screen for --write-movie.
+func _sound_setup() -> void:
+	# The death cues are positional (AudioStreamPlayer3D). They are heard only through a listener in their own world:
+	# the bench camera lives in the SubViewport, whose 3D listener is off by default, and a player in the root window's
+	# world has no camera at all. PC run 1 (issue 1238) recorded digital silence that way. So the sound player lives in
+	# the SubViewport's world and that viewport listens.
+	vp.audio_listener_enable_3d = true
+	sfx = preload("res://audio/sfx.gd").new()
+	world.add_child(sfx)
+	sfx.cam = cam
+	death_audio = preload("res://audio/death_audio.gd").new()
+	death_audio.sfx = sfx
+	death_audio.fx = fx
+	add_child(death_audio)
+	var tr := TextureRect.new()
+	tr.texture = vp.get_texture()
+	tr.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tr.stretch_mode = TextureRect.STRETCH_SCALE
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	add_child(tr)
+	_log("sound on: death cues play and the picture shows in the window (for --write-movie)")
+
+
 # A fresh effects system: every moment starts from the same empty state (no smoke, wrecks or debris left over from the
 # moment before, the effect clock at 0).
 func _make_fx() -> void:
@@ -281,6 +310,10 @@ func _make_fx() -> void:
 	# warming a new moment, not a shader first built mid-battle, so the late log stays off until the moment's warm-up.
 	HULL.pause_late_watch()
 	fx.setup({"camera": cam, "quality": "max", "reduce_flashing": false, "shake": 0.0, "unit": 1.0, "seed": 20261026})
+	if death_audio != null:
+		death_audio.fx = fx
+		death_audio.deaths.clear()
+		sfx.stop_all()
 
 
 func _hex(q: int, r: int) -> Vector3:
@@ -456,7 +489,7 @@ func _fleet_part() -> void:
 				_warn("empty frame for fleet %s %s" % [sky[0], fc[1]])
 				continue
 			var name := "%02d_%s.png" % [n, fc[1]]
-			preload("res://tools/picture_provenance.gd").save_png(_crop(img, FLEET_CELL, FLEET_CELL), d.path_join(name))
+			preload("res://tools/picture_provenance.gd").save_png(_crop(img, FLEET_CELL, FLEET_CELL), d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 			report["stills"].append({"part": "fleet", "sky": sky[0], "file": "fleet/%s/%s" % [sky[0], name], "code": fc[1],
 				"what": fc[0], "length": float(sv.L), "step": steps})
 			n += 1
@@ -524,7 +557,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var id := str(row["id"])
 	_clear()
 	_make_fx()
-	# Issue 462: a row may set effect switches (for example the capital death's scene dim, or reduce flashing). Set by
+	# Issue 462: a row may set effect switches (for example reduce flashing). Set by
 	# name so a commit without the switch simply ignores it.
 	var opts = row.get("fx", {})
 	if opts is Dictionary:
@@ -574,6 +607,28 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	_cam(focus, r)
 	for k in 72:   # 1.2 s: engines up, the first damage and cut jobs done
 		await _step()
+	# Issue 1235 run 2: a row may land hits on the target first ("pre": [[kind, weapon, section], ...], one shot each,
+	# 0.75 s apart, each on its named hull section: eng, mid or prow; Artoo on PR 1570: without it every hit took "mid")
+	# and then set its hull state ("sync_t": a unit view, as the game's sync sends), for worn-ship rows; "do": "hold"
+	# then shows the ship as it stands. A commit without these keys ignores them.
+	# Issue 1235 recheck (Artoo on PR 1570): a pre entry may hit the shield ([kind, weapon, section, "shield"]) or be a
+	# boarding party (["board"], the game's fx.board), for the list-side and boarding-then-wear rows.
+	for pv in row.get("pre", []):
+		if str(pv[0]) == "board":
+			fx.board("A", "T")
+			for k in 90:
+				await _step()
+			continue
+		var ph: Array = _hits(1, (pv as Array).size() > 3 and str(pv[3]) == "shield", false)
+		if (pv as Array).size() > 2:
+			ph[0]["section"] = str(pv[2])
+		fx.volley("A", str(pv[0]), "T", {"weapon_id": str(pv[1]), "shots": [true], "hits": ph})
+		for k in 45:
+			await _step()
+	if row.get("sync_t") is Dictionary:
+		fx.sync_ship("T", row["sync_t"])
+		for k in 30:
+			await _step()
 	fx.rng.seed = 11
 	seed(2070)
 	var t_ev: float = fx.now
@@ -602,6 +657,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.shield_break("T", 3)
 	elif what == "death":
 		fx.death("T", str(row.get("cause", "blast")))
+		if death_audio != null:
+			death_audio.watch("T", T.global_position)
 	# issue 370 (attach points): where a launch, the movement jets and the wounds start on the attacker's hull
 	elif what == "launch":
 		fx.launch("A", "T")
@@ -612,6 +669,11 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		A._aft_puffs(1.0)
 		A._side_puffs(1.0, 1.0)
 		A._couple_puffs(1.0, 1.0)
+	elif what == "sync":
+		# issue 1587: the event is a hull state change ("sync_ev", a unit view as the game's sync sends), for a section
+		# crossing into stage 3 or 4 (the one-shot blowout); a commit without this key shows the ship unchanged
+		if row.get("sync_ev") is Dictionary:
+			fx.sync_ship("T", row["sync_ev"])
 	elif what == "wounds":
 		fx.sync_ship("A", {"hp": 25.0, "maxHp": 100.0, "burning": false, "sh": [5, 5, 5, 5],
 			"sec": {"eng": {"hp": 10, "max": 100}, "mid": {"hp": 10, "max": 100}, "prow": {"hp": 10, "max": 100}}})
@@ -667,7 +729,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if not keep:
 		return true
 	var name := "%s__c%d.png" % [id, int(r)]
-	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name))
+	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts})
 	_log("%s at %d: %d cells" % [id, int(r), ci])

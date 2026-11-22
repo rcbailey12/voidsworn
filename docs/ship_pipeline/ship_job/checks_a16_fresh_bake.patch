@@ -1,0 +1,125 @@
+diff --git a/.github/workflows/checks.yml b/.github/workflows/checks.yml
+index 8b51a708..b97116dd 100644
+--- a/.github/workflows/checks.yml
++++ b/.github/workflows/checks.yml
+@@ -139,7 +139,7 @@ jobs:
+   # The load step is the gate: when a script or scene does not load, the job fails there in seconds and names the file,
+   # and the steps after it do not run (they would only repeat the same error, some by waiting out their time limits).
+   # When everything loads, the list step and the bot battle each run even if the other fails. Every step has its own
+-  # time limit: load 120 s, import 300 s, the list 780 s, the bot battle 360 s and the fixture 2 minutes, 28 minutes in all
++  # time limit: load 120 s, import 300 s, the list 780 s and the bot battle 360 s, 26 minutes in all (the A16 seam has its own job, issue 1174)
+   # before setup and the Godot download, so the job can still be cut off (shown as "cancelled") by the 30 minute limit
+   # when every step runs to its cap, as on the broken test commit 138ff38; the load gate makes that rare (audit 706, 9c).
+   godot-game:
+@@ -185,7 +185,7 @@ jobs:
+           if grep -q 'SCRIPT ERROR' "$RUNNER_TEMP/load_all.log"; then echo "SCRIPT ERROR lines above"; bad=1; fi
+           if [ $code -ne 0 ]; then echo "load_all.gd ended with exit code $code (124 or 137 is its 120 s time limit)"; bad=1; fi
+           if [ $bad -ne 0 ]; then
+-            echo 'The Godot checks after this step were not run (the A16 fixture step still runs: it needs no Godot): a file above does not load. Repair it first.' | tee -a "$GITHUB_STEP_SUMMARY"
++            echo 'The Godot checks after this step were not run: a file above does not load. Repair it first.' | tee -a "$GITHUB_STEP_SUMMARY"
+             exit 1
+           fi
+       # The game's fonts, crests, world and effect textures, imported as the editor would, so the checks below draw with
+@@ -224,11 +224,83 @@ jobs:
+           { echo '### Bot battle'; echo '```'; grep '^bot battle:' "$RUNNER_TEMP/bot_battle.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+           if grep -qE 'SCRIPT ERROR|unknown event' "$RUNNER_TEMP/bot_battle.log"; then echo "SCRIPT ERROR or unknown event lines above"; exit 1; fi
+           exit $code
+-      # (d) the unpainted A16 fixture that fx/test/death_seam_check.gd falls back to is fresh: the sha256 of every file that makes
+-      # its geometry matches its record (tools/recipe/sheet_fixture_hash.py; Muse's check of PR 611, BLOCKING 1). Plain Python, no
+-      # Blender: a PR that changes an input without regenerating the fixture fails here by name.
+-      - name: A16 death fixture is fresh (sheet_fixture_hash.py --check)
+-        if: ${{ !cancelled() }}
++  # (d) the A16 death seam (issue 600) on its own job, so a stale fixture record never fails a branch by itself (issue 1174).
++  # The record (tools/recipe/sheet_fixture_hash.py) hashes shared kit files (kit.py, export7.py, contract.py, variants.py,
++  # gamedata.py, shared hardpoints.py and turrets.py), so every shared kit fix (R333) used to fail here until someone rebaked
++  # on the PC: 6 of 8 failed runs on Nov 19 14:00 to 15:51 UTC. Now: a fresh record runs the seam check on the committed
++  # fixture, as before. A stale record bakes A16 again here with pinned Blender 4.5.14 (cached), into the runner's temp
++  # folder only, and runs the same seam check on that bake: a clean seam passes, with "fixture record stale: refresh before
++  # merge" in the summary; a seam failure on the fresh bake fails. A broken record (missing or unreadable) still fails.
++  # godot/tools/ci/godot_checks.txt marks death_seam_check.gd "step:" so the list step does not run it a second time.
++  a16-fixture:
++    name: A16 death seam (fixture or fresh bake)
++    runs-on: ubuntu-latest
++    timeout-minutes: 20
++    env:
++      XDG_DATA_HOME: ${{ github.workspace }}/.godot_user
++      BLENDER_VERSION: 4.5.14
++    steps:
++      - uses: actions/checkout@v4
++        with:
++          fetch-depth: 0
++      - name: Merge main in (test the branch as it would land)
++        if: github.ref != 'refs/heads/main'
++        run: |
++          git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
++          if git merge -q --no-edit origin/main; then
++            echo "Testing ${GITHUB_SHA::7} merged with main $(git rev-parse --short origin/main)."
++          else
++            git merge --abort 2>/dev/null || true
++            echo "::warning::main could not be merged into this branch (a conflict), so these checks ran on the branch alone. Merge main into the branch and push again."
++          fi
++      - name: Is the A16 fixture record fresh? (sheet_fixture_hash.py --check)
++        id: record
+         timeout-minutes: 2
+         run: |
+-          python3 tools/recipe/sheet_fixture_hash.py --check | tee -a "$GITHUB_STEP_SUMMARY"; exit ${PIPESTATUS[0]}
++          set +e
++          python3 tools/recipe/sheet_fixture_hash.py --check --quiet-stale; code=$?
++          case $code in
++            0) echo "state=fresh" >> "$GITHUB_OUTPUT" ;;
++            3) echo "state=stale" >> "$GITHUB_OUTPUT"
++               echo "fixture record stale: refresh before merge (this run bakes A16 fresh and checks the seam on that bake)" | tee -a "$GITHUB_STEP_SUMMARY" ;;
++            *) echo "The fixture record is missing or unreadable (exit $code): repair it, a rebake alone will not." | tee -a "$GITHUB_STEP_SUMMARY"; exit 1 ;;
++          esac
++      - name: Get Godot 4.7.2 (headless)
++        run: |
++          curl -sSL --retry 3 --retry-all-errors -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
++          unzip -q godot.zip -d "$RUNNER_TEMP/godot"
++          echo "GODOT=$RUNNER_TEMP/godot/Godot_v4.7.2-stable_linux.x86_64" >> "$GITHUB_ENV"
++      - name: Blender cache (stale record only)
++        if: steps.record.outputs.state == 'stale'
++        id: blender-cache
++        uses: actions/cache@v4
++        with:
++          path: ~/blender-${{ env.BLENDER_VERSION }}
++          key: blender-${{ env.BLENDER_VERSION }}-linux-x64
++      - name: Get Blender 4.5.14 for Linux (stale record only)
++        if: steps.record.outputs.state == 'stale'
++        run: |
++          sudo apt-get update -qq && sudo apt-get install -y -qq libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1 libxkbcommon0 libsm6 libice6 > /dev/null
++          if [ ! -x ~/blender-$BLENDER_VERSION/blender ]; then
++            curl -sSL --retry 3 --retry-all-errors -o blender.tar.xz https://download.blender.org/release/Blender4.5/blender-$BLENDER_VERSION-linux-x64.tar.xz
++            mkdir -p ~/blender-$BLENDER_VERSION
++            tar -xJf blender.tar.xz -C ~/blender-$BLENDER_VERSION --strip-components=1
++          fi
++          ~/blender-$BLENDER_VERSION/blender --version | head -1
++      - name: Bake A16 fresh into the runner's temp folder (stale record only)
++        if: steps.record.outputs.state == 'stale'
++        timeout-minutes: 8
++        run: |
++          set +e   # the step shell is bash -e: keep going after a failed bake so its log tail is printed
++          python3 tools/recipe/sheet_fixture_hash.py --bake ~/blender-$BLENDER_VERSION/blender --out "$RUNNER_TEMP/a16" > "$RUNNER_TEMP/a16_bake.log" 2>&1
++          code=$?
++          tail -40 "$RUNNER_TEMP/a16_bake.log"
++          exit $code
++      - name: Death seam check (fx/test/death_seam_check.gd)
++        timeout-minutes: 5
++        run: |
++          if [ "${{ steps.record.outputs.state }}" = "stale" ]; then ship="$RUNNER_TEMP/a16/C19_51_unbaked.glb.gz"; src="fresh bake (record stale)"; else ship=""; src="committed fixture"; fi
++          timeout -k 10 300 "$GODOT" --headless --path godot --script res://fx/test/death_seam_check.gd ${ship:+--} $ship 2>&1 | tee "$RUNNER_TEMP/death_seam.log"; code=${PIPESTATUS[0]}
++          { echo "### A16 death seam on the $src"; echo '```'; grep -E '^DEATH_SEAM (ship|fixture|machines|inside|failures)' "$RUNNER_TEMP/death_seam.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
++          if grep -q 'SCRIPT ERROR' "$RUNNER_TEMP/death_seam.log"; then echo "SCRIPT ERROR lines above"; exit 1; fi
++          exit $code
+diff --git a/godot/tools/ci/godot_checks.txt b/godot/tools/ci/godot_checks.txt
+index b1d5d15a..313c6f4e 100644
+--- a/godot/tools/ci/godot_checks.txt
++++ b/godot/tools/ci/godot_checks.txt
+@@ -64,7 +64,7 @@ headless|fx/test/kill_slowmo_check.gd|-|-|issue 521: the kill slow-motion beat s
+ headless|fx/test/late_shader_check.gd|-|-|issue 376: after warm-up, any shader or material first built mid-battle logs its name and the frame time and is counted
+ headless|fx/test/destruction_steps_check.gd|-|-|break geometry: every open edge is sealed; DESTRUCTION_OUT unset, so no pictures
+ headless|fx/test/authored_interiors_check.gd|-|-|issue 557: authored GLB interiors and seams reach damage and death; moving a seam changes piece ownership; old hulls keep fallback
+-headless|fx/test/death_seam_check.gd|-|-|issue 600: kills A16 (C19_51, its unpainted export kept in fx/test/fixtures) and counts machines split across pieces and inside triangles outside their own piece's hull: both zero; prints the cut's worker time; issue 616: the power-down after the kill finishes within 30 frames with every hull surface powered down, and prints the kill frame's fx.death time
++headless|fx/test/death_seam_check.gd|step:A16 death seam (fixture or fresh bake)|-|its own job in checks.yml (issue 1174: a stale fixture record bakes A16 fresh there instead of failing); issue 600: kills A16 (C19_51, its unpainted export kept in fx/test/fixtures) and counts machines split across pieces and inside triangles outside their own piece's hull: both zero; prints the cut's worker time; issue 616: the power-down after the kill finishes within 30 frames with every hull surface powered down, and prints the kill frame's fx.death time
+ headless|fx/test/damage_alpha_check.gd|-|-|issue 569: a transparent sail surface stays transparent after damage; the opaque hull stays on the opaque shader
+ headless|fx/test/flash_area_check.gd|-|-|issue 504: the flash counter by area on a staged worst second, checked against a brute-force area count; zero in calm mode
+ headless|fx/test/flash_projection.gd|-|-|issue 1116: projected flash width and the three-flash cap at the edge, with and without pixel floors

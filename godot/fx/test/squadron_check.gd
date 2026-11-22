@@ -77,6 +77,21 @@ func _run() -> void:
 				for craft: Node3D in sv.hull.craft:
 					var box: AABB = sv.hull._mesh_bounds(craft)
 					check(is_equal_approx(box.size.x, 1.0) and box.get_center().is_zero_approx(), "model fits the craft root")
+			# R362 (issue 1373): every craft surface takes the hull finish (LOOK.hull's mark, so the rim light finds it), and
+			# all craft of a wing share one finished material per source material
+			var marked := 0
+			var surfaces := 0
+			var finished := {}
+			for craft: Node3D in sv.hull.craft:
+				for mi: MeshInstance3D in craft.find_children("*", "MeshInstance3D", true, false):
+					for si in mi.mesh.get_surface_count():
+						var m: Material = mi.get_active_material(si)
+						surfaces += 1
+						if m != null and str(m.get_meta("look_hull", "")) == faction:
+							marked += 1
+							finished[m.get_instance_id()] = true
+			check(surfaces > 0 and marked == surfaces, "craft carry the hull finish " + faction + kind)
+			check(finished.size() * sv.hull.craft.size() <= surfaces, "craft share finished materials " + faction + kind)
 			var anchor := sv.position
 			var start: Transform3D = sv.hull.craft[0].transform
 			for frame in 60: sv.hull.step(1.0 / 60.0)

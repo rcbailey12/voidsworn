@@ -1,33 +1,31 @@
 ## Sunward Crusade
 
-### Core decision: What Is Owed
-
-Scene purpose: Seren, the Last Flame, is in range and offering protocols. The crusade must choose what its sacrifice buys: taking Seren fire deep into the flagship costs a quarter of its hull for one battle of power, and refusing leaves the fleet whole and ordinary against the siphon crews.
+### Core decision: The Siphon at the Rim
 
 Node:
 ```
-id:'arc_vs_owed', t:'What Is Owed', fight:false,
+id:"arc_vs_owed", t:"The Siphon at the Rim", fight:false,
 o:[
- {t:'Burn deep: take Seren fire into the flagship', r:{dmgFlag:.25, power:1}, tx:'Seren fire runs in the flagship guns for one battle and eats a quarter of its hull to do it. The crews chalk nothing. There is no room left on the hull near the guns.'},
- {t:'Burn clean: refuse the deep burn', r:{repair:.15}, tx:'You refuse. The yards along the Cinder Line patch what they can, and the fleet goes in whole and ordinary. The Roll-master approves. The gunners do not.'}
+ {"t":"Overcharge the flagship with Seren's core fire","r":{"dmgFlag":0.25,"power":1},"tx":"Your engineers bleed Seren's thermal charge straight into the flagship's main bus. Every gun on the hull runs white-hot for the coming battle, though the heat buckles a quarter of the inner bulkheads before you even cross the jump."},
+ {"t":"Keep the reactors clean and patch the fleet","r":{"repair":0.15},"tx":"You lock the core casing shut and put the welders on standard hull repairs instead. The Roll-master nods once; the gunnery crews grumble over their cooling coils, though every ship enters the rim intact."}
 ]
 ```
 
 Text lines:
-- Roll-master: "Seren offers. Seren always offers. The last crusade took the deep burn at this exact dark."
-- Captain: "Did it save them?"
-- Roll-master: "It saved the route. Read the Roll. Their names end here, and the route goes on. That is the whole of the bargain, every time."
+- Roll-master: "There's the siphon relay, Admiral, drinking Vesper's light straight across the black hole's rim. The last expedition overdrove their flagship with Seren's charge right here."
+- Captain: "And did they make it home?"
+- Roll-master: "No. They cracked the outer collector rings wide enough for us to reach it, though. Your call whether we pay the same price or fight it cold."
 
-Debrief: "The choice is chalked where the crews can read it from their stations."
+Debrief: "Every captain chalked the fleet's decision beside their helm station before entering firing range."
 
-Learning payoff: "Win or lose, the next crusade stands at this same dark and reads what you chose, in chalk, before it chooses."
+Learning payoff: "Win or lose, the next expedition out of Vesper will pull your flight recorders from the rim and build their approach around what worked here."
 
 ### Admiral spotlights
 
-- Admiral Roderic Vex: "Vex walks the gun decks before the dawn watch and chalks one name, in silence, every time. The crews have stopped asking whose."
-- Oath-Captain Malek Draven: "Malek counts torpedoes the way other captains count debts. 'Every one of these is a name the other side will have to learn.'"
-- Commodore Sera Ashgrove: "Ashgrove launches her wings and says only, 'Bring them home or do not come back empty.' Her wings have never once come back empty."
-- High Admiral Oryn Thale: "Thale reads the Roll before the battle plot, every time. 'The arithmetic was done on us once. We keep the Roll.'"
+- Admiral Roderic Vex: "Vex checks the chalked crew roll beside the dorsal airlock before every jump, quietly adding a single date beneath the last column."
+- Oath-Captain Torben Hark: "Torben runs a gloved hand along the loaded torpedo rails. 'Every warhead in this bay is paid for by a frozen farm moon back in the Reach.'"
+- Commodore Sera Ashgrove: "Ashgrove taps her headset mic as the launch lights turn amber. 'Tight lanes, kids. Bring those fighters back to my rails in one piece.'"
+- High Admiral Oryn Thale: "Thale pours lukewarm tea from a battered thermos while the proximity alarms chirp. 'Meridian wrote Vesper off seventy years ago. Let's make them check their math again.'"
 
 ### Flags
 

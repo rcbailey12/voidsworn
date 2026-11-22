@@ -34,15 +34,7 @@ SHARED = os.path.normpath(os.path.join(HERE, '..', 'blender', 'kits', 'shared'))
 import gamedata, hardpoints as HP_CONTRACT
 BREACH_CLEAR = .030; BREACH_SECTIONS = ('prow', 'mid', 'eng'); WEAPON_EXTRAS = ('kind', 'size', 'arc', 'arc_deg', 'slot', 'weapon', 'radius', 'socket')
 
-def read_glb(path):
-    b = open(path, 'rb').read(); magic, ver, total = struct.unpack_from('<4sII', b, 0)
-    if magic != b'glTF': raise ValueError('not a glb')
-    off = 12; js = None; blob = b''
-    while off < total:
-        n, kind = struct.unpack_from('<I4s', b, off); data = b[off + 8:off + 8 + n]; off += 8 + n
-        if kind == b'JSON': js = json.loads(data)
-        elif kind == b'BIN\0': blob = data
-    return js, blob
+from glb_io import read_glb  # noqa: E402 (one copy, shared with stage 7)
 
 CT = {5120: np.int8, 5121: np.uint8, 5122: np.int16, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}
 NC = dict(SCALAR=1, VEC2=2, VEC3=3, VEC4=4)
@@ -194,6 +186,9 @@ def main():
     turret_ids = [i for i, n in enumerate(nodes) if re.fullmatch(HP_CONTRACT.TURRET_PATTERN, str(n.get('name', ''))) or (n.get('extras') or {}).get('kind') == 'turret']
     turn_meshes = [(i, nodes[i]) for i, n in enumerate(nodes) if 'mesh' in n and parent.get(i) in turret_ids]
     prims = [(pr, None) for pr in g['meshes'][nodes[root]['mesh']]['primitives']]
+    # issue 1543: a door lobe's mesh hangs under its hinge node (HARDPOINTS.md "Doors"); shut, it is part of the ship's surface
+    lobe_ids = {i for i, n in enumerate(nodes) if re.fullmatch(r'door_\d+_lobe_\d+', str(n.get('name', '')))}
+    turn_meshes += [(i, nodes[i]) for i, n in enumerate(nodes) if 'mesh' in n and parent.get(i) in lobe_ids]
     for i, n in turn_meshes: prims += [(pr, WM[i]) for pr in g['meshes'][n['mesh']]['primitives']]
     for pr, M in prims:
         pos = accessor(g, blob, pr['attributes']['POSITION']).astype(np.float64)

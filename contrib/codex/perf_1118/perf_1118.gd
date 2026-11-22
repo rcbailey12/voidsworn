@@ -31,6 +31,8 @@ var draw_visibility := {}
 
 
 func _ready() -> void:
+	# Keep the same cold-load allowance as the original 1070 replay.
+	build_wait_usec = 180_000_000
 	first.process_priority = -10000
 	last.process_priority = 10000
 	add_child(first)
@@ -77,10 +79,10 @@ func _run() -> void:
 			storm_trace = {"event": "storm_first_live", "samples": [], "started": 0, "pre_frames": 0}
 			storm_frame = 0
 			RenderingServer.frame_post_draw.connect(_watch_storm)
-		await _build(parts[3], 4207)
+		var built := await _build(parts[3], 4207)
 		if PG.stop_if_any():
 			return
-		if b == null or b.warming or b.busy or failures > 0:
+		if not built or failures > 0:
 			push_error("Battle did not finish loading: " + spec)
 			PG.finish(1)
 			return
@@ -130,7 +132,7 @@ func _run() -> void:
 	PG.finish(0 if failures == 0 else 1)
 
 
-func _build(mode: String, seed: int) -> void:
+func _build(mode: String, seed: int) -> bool:
 	var vp := get_viewport()
 	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_DISABLED
 	vp.scaling_3d_scale = 1.0
@@ -139,12 +141,11 @@ func _build(mode: String, seed: int) -> void:
 	volley_t = 0.0
 	if fixture == "gate" and quality == "max":
 		var start := Time.get_ticks_usec()
-		await super._build(mode, seed)
-		while (b.warming or b.busy) and Time.get_ticks_usec() - start < 180000000:
-			await get_tree().process_frame
+		if not await super._build(mode, seed):
+			return false
 		build_ms = (Time.get_ticks_usec() - start) / 1000.0
 		_engagement_camera()
-		return
+		return true
 	HULL.reset_late()
 	var sc := {"seed": seed, "sector": 3, "admiral": "vex", "fleet": FLEET,
 		"enemies": ENEMIES, "fac": "corsair", "obj": "rout",
@@ -158,8 +159,7 @@ func _build(mode: String, seed: int) -> void:
 	var error: String = api.load_rules()
 	if not error.is_empty():
 		push_error(error)
-		failures += 1
-		return
+		return false
 	api.new_battle_scenario(sc, int(sc.seed))
 	if fixture == "gate":
 		for u in api.R.B["units"]:
@@ -181,8 +181,10 @@ func _build(mode: String, seed: int) -> void:
 	b.battle_cfg = sc
 	var started := Time.get_ticks_usec()
 	b.begin_with(api)
-	while (b.warming or b.busy) and Time.get_ticks_usec() - started < 180000000:
+	while (b.warming or b.busy) and Time.get_ticks_usec() - started < build_wait_usec:
 		await get_tree().process_frame
+	if b.warming or b.busy:
+		return false
 	build_ms = (Time.get_ticks_usec() - started) / 1000.0
 	b.cam.input_enabled = false
 	b.cam.keyboard_enabled = false
@@ -207,6 +209,7 @@ func _build(mode: String, seed: int) -> void:
 			side_ids[str(u["side"])].append(id)
 			fac_of[id] = str(u["fac"])
 	await get_tree().process_frame
+	return true
 
 
 func _engagement_camera() -> void:
@@ -597,5 +600,5 @@ func _review(variant: String) -> void:
 		await _post()
 		var image := get_viewport().get_texture().get_image()
 		var name := "PERF1070_%s_%s_c%d.png" % [fixture, variant, radius]
-		if image == null or image.is_empty() or STAMP.save_png(image, out.path_join(name)) != OK:
+		if image == null or image.is_empty() or STAMP.save_png(image, out.path_join(name), STAMP.capture_stage()) != OK:
 			failures += 1

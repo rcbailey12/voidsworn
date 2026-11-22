@@ -72,8 +72,19 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    live in `CONCEPT_REGISTERS` in the stack: saturated brick rust, brighter worn metal and the concept's violet strength.
    Near-white is exposed metal and small scrapes; R274's larger grey trophy plates remain dark salvaged metal, at R252 size.
    Plate geometry and tiling scale are unchanged in this run; report the painted-output plate measure for review.
+   **The Glasswright finish** (R337, Ryan Nov 18 and 19 2026: "glass like, so almost reflective", restart CD5 from the concept;
+   issue 1183), set in `tools/blender/kits/ithar/` for every Glasswright sheet ship, never on one ship (R333): opaque,
+   reflective champagne pearl ribbons (warm, never lilac grey: issue 1282), many and fine, each a bundle of strands with silver
+   lines and a colour shift, over a core of emissive amber, violet and emerald stained-glass mosaic panels lit from behind (hot
+   in the middle, dark at the lead edge); ribbons cover under half the hull; a slender spindle, about 4 to 1; stones are cut and
+   glowing, and optics are small glints, never domes (round 5 outside read, Nov 19). Judge each round at camera 170 beside the
+   concept first. Never see-through: every intact-hull surface has transmission 0 and the interior shows only in the break-up.
+   No wear. The bake marks it authored_look so the game keeps its values (R329). The game's rim back light skips Glasswright
+   hulls (`godot/render/look.gd` READ ithar rim_light 0, issue 1315): its specular flared white on the pearl lips.
    **The Eclipse paint** (issue 642, set in `tools/blender/kits/eclipse/stack.py` for every Eclipse sheet ship, never on one
-   ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of green-white fire at its edge. (1) Dark
+   ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of violet-white fire at its edge; all violet, no green on the hull (Ryan, Nov 20 2026,
+   issue 1419, replacing the green corona of Nov 10 and R237; the installed E11 to E14 keep the green until the stack is
+   repainted and rebaked, contrib/opus/plans/eclipse_1419.md). (1) Dark
    violet-black plates judged under the game's Eclipse battle lift 2.2 (R227): the stack's colours are the tones to show at the
    lift, divided by it (read from look.gd), never lavender or grey; (2) separation by structure, not noise (Ryan, Nov 13 2026
    11:06 CST, on the first E11 picture: "Not a ton of details elsewhere, it looks like grainy paint almost. Everything kind of
@@ -84,12 +95,12 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    no rust or soot; a roughness floor of 0.50. R243 (Ryan, Nov 13): panels are dead even, ordered and aligned across the hull
    and crescent, with recessed seams and slight relief; the stack bakes that relief into the hull's detail normal. E11's
    accepted colour pairs stay unchanged. This order is the Eclipse's own, never the Hullbreakers' patchwork;
-   (3) the green is light, not paint (Ryan, same message: "that green looks so plain
-   and stark, just like neon paint"): the corona line on every shade rim is the faint green ring of a real eclipse, thin at rest,
-   brighter arcs and dimmer stretches along it with a few short breaks, a soft falloff into the plate edge, cold green-white at
-   its hottest and deeper green where dim. R243: brighter through the same thin strip so it reads at camera 170, including
-   E12's ring segments; brighter arcs may cross the game's glow threshold. The core glows green like the concept, white-hot
-   only at its very centre, reading at camera 170; never green pooled in hollows, ribs or sockets. Every light is drawn on one
+   (3) the corona is light, not paint (Ryan, same message: "that green looks so plain
+   and stark, just like neon paint"; still binding in violet): the corona line on every shade rim is a faint ring of light, thin at rest,
+   brighter arcs and dimmer stretches along it with a few short breaks, a soft falloff into the plate edge, cold violet-white at
+   its hottest (white-gold on the brightest arcs) and deeper violet where dim, in faction_looks.json's Eclipse colours. R243: brighter through the same thin strip so it reads at camera 170, including
+   E12's ring segments; brighter arcs may cross the game's glow threshold. The core glows violet-white, white-hot
+   only at its very centre, reading at camera 170; never light pooled in hollows, ribs or sockets, and no green anywhere on the hull. Every light is drawn on one
    emission map; only the hull's rim trim material is marked hull_surface for breach clearance, never engines, core or lens.
    (4) engines are an eclipse ring of pale light round a
    black shade disc, in the game's Eclipse engine colour paled toward white, with shared brightness, tint, hot spots and
@@ -104,6 +115,34 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    (E13's layer lines and panel rows, the kit's plate_slab fasteners and housing panels). Measured on a top view with the port
    half mirrored onto the starboard (tools/blender/build_sheets/studies/mirror_check.py), reported, not a bar (RULEBOOK 0.4).
    Each engine ring shares the ship's normalized pattern (R308).
+   **New finishes keep their own look in the game** (R329, the Board, Nov 19 2026, on an outside review of the Glasswright and
+   Chorus builds): a new no-wear paint stack sets AUTHORED_LOOK, the export writes the glTF extra authored_look, and look.gd
+   keeps that material's albedo, emission, metallic and specular as painted (factor 1.0) instead of the old A4 calibration; the
+   old A4 and the approved satin finishes stay byte-identical. Every finish sheet carries an accepted ship (C19_51) in the same
+   light as a value reference.
+   **The Chorus armour and paint** (R341, Ryan, Nov 19 2026 22:04 UTC: "the armor should be comprehensive and across the entire
+   body, minus things like the spine, maw, 'engines', weapons, etc. it should be almost like an armadillo, pangolin, etc. not
+   exactly the same, still alien, but think about it as a warship. we should have that textured feel and armored shell defense";
+   issue 1234). Every Chorus sheet calls the shared kit's `plates.armour` (tools/blender/kits/chorus/plates.py, R333), never
+   its own plates: thick keratin scutes in bands from belly to back on both flanks, each band lapping the one below and offset
+   half a scute, every free lip standing proud aft over the next scute's root. Round 2 (the Board and Ryan, Nov 19: not round
+   pebble plates; "close the gap around open skin"): each scute comes to a point or a squared chisel aft, is thickest at the lip
+   with a dark shadow gap under it and carries one or two raised keels; the bands run from belly to spine, smaller scutes
+   fill round each fitting, sacs and knolls get caps of smaller scutes (`plates.dome_caps`, the sac's bile window open at its
+   crown) and a gland's knoll a ring round its slopes, its vent and spines open. Round 3 (Neon's review, Nov 19): fewer, bolder bands
+   (5 or 6), a roof keel splitting each face into a lit and a shaded plane, the lip thickest; a scute that meets a fitting is
+   shortened or cut back from that side, never replaced by a patch of small scutes; a seed per ship. The keep-outs are read from the sheet's own
+   fittings (guns, maws, glands, sacs, siphons, vents, the spine row; `keep` names grown-in features such as a face or C13's
+   knolls), so they stand in sockets of wet hide, siphons and vents in wider ones clear of their jets; what lies on the hull
+   (C12's tendrils, `skip`) lies over it. No skin folds, pore fields or flank veins under the shell. The paint
+   (tools/blender/kits/chorus/stack.py): warm brown hide between the plates, not dark olive; horn-brown scutes with coarse
+   grooves along their length, pits, growth lines parallel to the lip, a dark root and a paler worn lip, all reading at camera 26; the trailing veils dark torn membrane with
+   a faint warm glow, not flat lime; the bile light only in sac windows and deep in the vents. Round 3 (Neon): the hide deep wet
+   maroon-umber well under the horn; pale weathered horn on the keel crests and lips (the shell's scute_ridge and
+   scute_progress), charred at the roots, waxy crests and chalky grooves; a restrained yellow-green glow at each veil's root and
+   along its ribs (kit material veilroot), the torn tips dark; the sac windows narrow bile slits under the caps. Ryan accepted
+   round 3 on Nov 19 2026 23:38 UTC ("Accept, keep yellow-green glow"): the yellow-green glow stays. C13's bare stern and the
+   skin between its knolls are fixed in the C13 rebuild (issue 1154).
    Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
@@ -156,6 +195,44 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    Cut the housing behind the opening too: a detailed tube embedded in a closed hull still reads as a disc. Big hull flanks
    carry angled facets, chamfers and stepped planes as their concept shows. Why: on A20 Ryan saw "just circles" at the bow
    and "flat walls" where the concept was angular. A20 is the first correction (issue 688); this binds every sheet ship.
+13. **One shared ship job (issue 1174, Board, Nov 19 2026).** Every ship build run on the PC is a three-line wrapper around
+   `tools/pc/jobs/ship_job.bat` (docs/ship_pipeline/ship_job/README.md): it stops after a failed stage, takes shots only of
+   this run's own checked install, waits up to 3600 s for the GPU and ends "done PASS" or "done FAILED: <step>", then
+   "all done". Why: on Nov 19 the C12 and C13 runners and S9's first run took pictures after a failed build, and 1155, 1157
+   and 1158 failed a stage on the old 300 s GPU wait.
+14. **One fix reaches every ship of its kind (R333, Ryan, Nov 19 2026).** A fix or look change lands in the faction kit, the
+   paint stack, the shared parts or a shared helper, never in one ship's file alone, and its pull request names which other
+   ships pick it up and how (rebuilt from the kit, rebaked from the stack, or already calling the shared option). A change
+   that is truly one ship's says why in its pull request. Why: "let's make sure all the changes we're doing are cohesive and
+   tied together. so like the fixes to the chorus skin should apply everywhere once we land it". First case: the Sunward spire
+   treatment is one parts option, `radiator(..., glow='slats')` (factions.md, Sunward), used by S8 (issue 1158) and every
+   later Sunward build. Second case: how bright the spire ember is lives only in the Sunward stack (`SPIRE` in
+   tools/blender/kits/voidsworn/stack.py), never in a ship's sheet; a change there reaches S8, S9, S10, SF3 and SB4 on their
+   next stage 5 rebake (Ryan, Nov 20 2026 13:43 UTC: "A bit brighter", applied to every Sunward ship, not one hull).
+15. **A build is not "in" until build\godot holds it (issue 1311, Board, Nov 20 2026).** A ship job installs only into its
+   own clone. After Ryan says yes to its pictures, the Board queues `tools/pc/jobs/publish_ship.bat JOB_DIR CODE COMMIT GLB_SHA`
+   with the full commit from the job's receipt and the full glb sha256 from its export's CODE_export.json. It refuses a
+   receipt that is not a passed ship_job run of exactly that commit (tail "all done", or "all done" then "pin ok COMMIT"),
+   and an export whose files are not the listed hashes or not what the job checked. It keeps the old ship and its cache
+   scenes in build\godot\_replaced\CODE_<stamp>\ with an UNDO_CODE.bat, installs through manifest_merge.py --install,
+   rebuilds the ship cache, reads it back and takes the in-game shots from build\godot. The undo restores only that ship's
+   files and manifest rows, under the install lock, and refuses if the ship changed since. Why: Ryan accepted Warden S9 and
+   CD5 on Nov 19, but build\godot still held their Nov 1 hulls, and a capture job drew the old CD5.
+16. **No ship reaches Ryan without a surface-detail PASS (issue 1517, Nov 21 2026).** Stage 5's detail check
+   (tools/recipe/detail_check.py) gates every ship of every faction built through the recipe, hulls and strike craft alike, against
+   its faction's floors (docs/ship_pipeline/detail_floors.md), and a FAIL fails the stage. A pick or publish picture of a
+   build is made only with `tools/recipe/offer_sheet.py JOB_OUT OUT.jpg`, which refuses a job whose
+   `out/recipe/log_detail.txt` has no PASS, takes as proof only the job's own pictures stamped with its commit and the
+   sheet's stage (the in-game shots for "installed in game"; a concept goes in only as a labelled `--reference`; a shot
+   from a dirty tree only when every dirty file is the install ship_job.bat recorded for that job: its own ship files, its
+   manifest row, the watchdog hand-off, .import and .uid, issue 1539),
+   and prints the three numbers on the sheet; `publish_ship.py receipt` refuses the
+   same job. A ship under its floor passes only with a dated opt-out holding Ryan's own words in its recipe json
+   (`"surface_detail": {"opt_out": {"date": "YYYY-MM-DD", "ryan": "..."}}`). Why: Navy O2 and O3 went to Ryan for a publish OK
+   while the check only reported their flat skins (it failed Chorus ships alone), and he caught it himself: "Just make sure
+   the level of detail is on both so they don't look like clay". The same happened with an earlier build of strike craft KF1 ("it
+   looks unfinished"). Torpedo and rocket bodies (the munitions builder, PR 1416) have no stage 5 bake, so no atlas to
+   measure: they are not covered until they get one.
 
 ### Named variant parts (issue 812)
 
@@ -212,7 +289,15 @@ review sheets in the job's shots folder. No test export is installed into the li
 
 ## 2. Inputs (what must exist before a hull is started)
 
+The fleet list (docs/ship_pipeline/FLEET.md, made from docs/ship_pipeline/fleet.json; issue 1421) names, for every ship the
+game draws, the concept Ryan approved, its ruling, its job and whether the new build is installed. Read its row before
+writing a concept or build brief, and copy its "Approved pick" line into the brief. A new pick is added to fleet.json in
+the same pull request that records it.
+
 1. Ryan's picked direction for the faction (docs/playbooks/factions.md, "The concept redo"; FINDINGS has each pick).
+   Every concept or build brief names the folder of that faction's earlier accepted picks (for the Glasswrights,
+   contrib/muse/design/glasswright_family_2026_11/, Ryan's Nov 16 picks; search contrib/muse/design/ for the faction first),
+   so a new run cannot skip them (issue 1415: the 1146 clay redo ignored Ryan's Nov 16 Glasswright picks, Nov 20 2026).
 2. A fleet brief for the faction: one written feature table per ship (class, length, beam, weapon slots from data.js, engines,
    break lines, the three or four features that make it that ship). The table outranks every picture.
 3. A three-view concept sheet for the ship, to contrib/muse/design/concept_standard_2026_11/standard.md: side, top, front, one
@@ -365,6 +450,7 @@ we don't run into the issues of before with just empty looking husks". What he w
 | F | Blob sweep: nine cells, bow, midship, stern from top, side and below, beside the concept views | docs/ship_pipeline/BLOB_SWEEP.md | Opus worker or Codex renders, Board looks, Ryan's eye decides |
 | G | The ship in the game on the look bench, battle camera first | tools/pc/jobs/look_bench.bat | Codex |
 | H | Ryan sees one image: the ship at the battle camera beside its concept | | Board |
+| I | Only after Ryan's yes: publish the checked build into build\godot (section 0, rule 15) | tools/pc/jobs/publish_ship.bat JOB_DIR CODE COMMIT GLB_SHA | Board queues it |
 
 The seven recipe stages, each a double-click file that stops with FAILED and a non-zero exit when it should:
 1 concept in, 2 the AI shape reference (TRELLIS.2, a shape and grime source only, never shipped), 3 the traced hull and the
@@ -383,6 +469,8 @@ hard points.
   inside its own arc, and the breach anchors meet their contract. An install refreshes the game's ship cache and reads the
   ship back through ShipView, or the stage fails. The contract's count comes from the hull's class and faction
   (factions.md, "Breach anchors by class"; issue 363), never from a constant.
+- Stage 5: the surface-detail check passes against the faction's floors (section 0, rule 16; issue 1517). A FAIL is a
+  flat clay skin: fix it in the faction's paint stack (R333), never by lowering the floor.
 - Stage 6 reports cost; costs are never capped (R111).
 - The insides (R209): a break render of each authored break line at the battle camera and at camera 60 shows decks, frames
   and machinery, never a hollow or flat interior. A hull that shows one is not done.
@@ -404,7 +492,8 @@ hard points.
 - A model's own visual check is a hint, never proof (an AI inspector once passed a prop clipping through a sill); the scripted
   stage 4 audit is the check. Generators drop thin wires, text and fine greebles: build those in code (from the archived
   harness brief, docs/archive/briefs/blender_build_harness.md).
-- Heavy work runs on the PC; GPU work is sized to the job (RULEBOOK 3.4, R293). Never delete anything on the PC.
+- Heavy work runs on the PC; GPU work is sized to the job (RULEBOOK 3.4, R293). Deleting on the PC follows RULEBOOK 3.3:
+  jobs and the cleanup janitor may remove their own rebuildable leftovers under its safe rules; nothing else without Ryan.
 - A hull whose weapon list changes in data.js needs stage 7 again, or check_export.py fails on a missing hard point.
 
 ## 6. Worked example
@@ -422,6 +511,7 @@ Deliver to: tools/recipe/ships/SHIP.json, tools/blender/kits/FACTION/ (only what
 Branch: opus/issue-<number>
 Effort: one Opus worker; GPU jobs through the PC queue
 Done when: stages 1 to 7 end without FAILED; the outline overlap is reported, the audit and check_export.py pass and their output is pasted in the report; the manifest matches the build sheet (run_all_checks); a break render of every break line shows decks and frames, never a hollow; the nine-cell blob sweep and one battle camera bench image are committed. What Ryan will see: the ship at the battle camera beside its concept.
+Approved pick: <the line from `node contrib/opus/tools/fleet_list.js --pick "FACTION|Class"`: the concept Ryan approved, with its ruling>
 Build sheet: docs/ship_pipeline/build_sheets/SHIP/ (passed standard.md on <date>; Ryan's look on <date>)
 Route per part: kit, hand-built, or generated (generated names its reviewed part-library entry, R96 Q5)
 Inside: the sheet's INSIDE section (decks, frames, spaces and machinery through the whole hull, armour, break lines by the faction's rule, breach anchors)
@@ -441,3 +531,62 @@ An Opus worker builds every ship model and runs the recipe (R205, RULEBOOK 2.6);
 shape no ship. Muse draws. DeepSeek does well-specified tool repairs (a check, a table, a file format). The Board
 writes the fleet briefs, accepts sheets, looks at every sweep and puts one image in front of Ryan. Hand a picture back to the
 Board whenever a gate passes but the ship looks wrong: a pass on the numbers is not a pass on the look.
+
+## 9. Solid objects near ships share the hull finish (Ryan, Nov 20 2026, R362)
+
+Anything solid that flies or floats near a ship is built from the ship part kits and gets the hull finish: the faction's
+paint, the LOOK.hull brightness band (look.gd READ) and the rim light (look_rim.gd), at a detail level that holds up
+beside the hulls at c26. That covers torpedoes and rockets (the torpedo redesign thread), strike craft (fighters,
+bombers, spores; issue 1373), battlefield wreckage (issue 1362) and anything new of the same kind. Glowing effects
+(beams, shields, flashes, explosions, skies) stay effects and are not covered. Why: code-made tubes, boxes and grey scrap
+sat beside fully painted hulls and made the whole scene look cheaper (inventory:
+/mnt/project-files/board/asset_sources_1120/blender_vs_code.md). A new solid object that skips the kits needs Ryan's yes.
+
+**Torpedoes and rockets (issue 1379 run 2).** `tools/blender/build_sheets/munitions/munitions.py` builds each body from its
+faction kit's own parts (plates, rivet rings, the craft drive, the rack's rocket noses) in the old casing's frame (+X the
+nose, x -1.15 to 1.15) and writes `godot/fx/munition_bodies/<faction>_<look>.glb` (small files, kept in the repo like the rocks).
+`fx_weapons.gd` flies that body with LOOK.hull on every surface; a faction with no file keeps the code casing.
+`fx/test/munition_body_check.gd` checks the frame and the finish. A new torpedo faction adds a builder there, never a
+code shape. Each body is painted by its faction's paint stack (`kits/<kit>/stack.py` through `kits/shared/paint_stack.py`,
+the Hullbreaker stack at its craft sizes) into small 512 atlases, so it wears the same paint as the hulls (Ryan, Nov 20:
+"are we going to paint it and add more detail after?"). A munition is a few pixels on the board, so it carries detail at
+the ships' density (seams, fins, conduits, slits, bolts) and its baked albedo may be lifted per faction (`LIFT` in
+munitions.py; Sunward 2.3, since the black-iron finish read near black in game: Ryan, Nov 20, "Brighten"). A kit body
+drives like a ship: a ship-size engine core at its nozzle and the ships' own engine trail (SH.TRAIL, faction engine colour
+and trail style, a short wake), never a flame card, a halo or smoke puffs (Ryan, Nov 20: "the trails/engine effects look
+super basic and weird"; fx_weapons.gd `_kit_trail_*`). A munition shot down by point defence never burns and never
+flashes like a hit (look PD-C, Ryan's pick Nov 21 from board/torpedo_rework/tp_pd_*.jpg, after "it's hard to distinguish
+whats a hull hit vs explosion"): pale tracer dashes from the target to the round, cold blue-white sparks, dark flak puffs,
+and the round's drive goes out and it tumbles away trailing grey smoke (fx_weapons.gd `_pd_fire`, `_shot_down`). Fire and
+an orange fireball belong only to a round that reaches the hull.
+A munition leaves its own ship (Ryan, Nov 21: the torpedo "appears out of thin air" and "shoots straight up"; picks from
+board/torpedo_rework/launch_1121/TL_*.jpg, "Yes much better"): it starts at its mount, slides clear along the tube with
+its drive and baked nozzle glow dark (a torpedo for 0.7 s, rockets 0.14 s, the star 0.22 s), lights with a flash at the
+nozzle, then turns onto the target with only a low lift. Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
+rockets 0.7 of the old round, with trail and flashes to match; the slide distance does not shrink with it
+(fx_weapons.gd `_launch`, `_launch_step`, `_ignite`).
+
+## 10. The ship detail standard (Ryan, Nov 22 2026, R411; RULEBOOK 5.18)
+
+Ryan approved the Ship Graphical Detail and Consistency Upgrade Plan as the standing standard for every ship from now on.
+A build brief, sheet or PR for any ship follows all four; a ship that cannot says why on its sheet.
+
+1. **Maps by size band.** Stage 7 exports at 4096 for flagships and battleships (length 21 and up), 2048 for cruisers,
+   carriers, destroyers and frigates (6.5 to 16.5), 1024 for strike craft (1.6). The export reads the band from
+   `length_world`; no per-ship flag (issue 1680, RECIPE.md stage 7).
+2. **AO light and LODs.** Every hull's material gets a calibrated `ao_light_affect` from its faction's look.gd READ row
+   (0.35 to 0.55, Glasswrights 0.2), never Godot's 0.0, and the importer generates Godot mesh LODs for far cameras
+   (issues 1678, 1679).
+3. **One authored look per faction.** When a faction is next baked or repainted, its stack writes `authored_look = 1`
+   calibrated to the single battle light rig, and that faction's READ albedo lift stops applying to those hulls. Order as
+   the work lands: Eclipse (1422), Navy flagship H4_11 (1681), Glasswright flagship I8_37 (1682), Chorus (1683),
+   Hullbreakers (1684), Sunward at its next fleet update. Never lift a single ship by hand to match.
+4. **Hard points and turrets.** Every new destroyer and larger carries `hp_rcs` and `hp_board`, and articulated turrets
+   where the faction uses them (HARDPOINTS.md). Known gaps: V16_37 (next Sunward update), D20_23 (inside 1422).
+
+Priorities Ryan set: P1 engine and lighting first, no rebakes (1678 import fixes and LODs, 1679 AO light and reflection
+gradient, sharing its sheet with 1463 SG); P2 folds into active bakes (1680 map bands and re-exports, 1422 Eclipse relief,
+1681 H4_11, 1682 I8_37, 1683 Chorus recess glow); P3 roster and polish (1412 Navy escorts, 1145 Sunward Bastion and Hearth,
+1684 Hullbreaker mesh diet and relief, tied to the 1645 hitch, 1685 faction idle motion). None of it holds an active
+gameplay PR.
+

@@ -5,6 +5,7 @@ const HUD := preload("res://ui/battle/hud.gd")
 const Brand := preload("res://ui/battle/brand.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
 const GS := preload("res://ui/theme/glass_shell.gd")
+const Kit := preload("res://ui/theme/orders_kit.gd")   # issue 1217: the shared front-end kit (fonts, buttons, rows, sound)
 
 const T_GILT := Color("#d0a64b")  # The title wordmark keeps its original gold.
 
@@ -39,16 +40,16 @@ func s(v: float) -> int:
 
 
 func _ready() -> void:
-	font = _font("BarlowSemiCondensed-Regular.ttf")
-	font_semi = _font("BarlowSemiCondensed-SemiBold.ttf")
+	font = Kit.body_font()        # the kit's one font set (issue 1217); the wordmark keeps its own display face
+	font_semi = Kit.medium_font()
 	font_goth = Brand.display()  # the sci-fi display face (lore round 5); the blackletter is retired
 	_build()
 	_report.call_deferred()
 	# screenshot jobs: --title-open credits opens the Credits screen (main.gd opens Settings for --title-open settings)
 	if main != null and "args" in main and main.args.has("title-rebuild-test"):   # the rebuild a window resize triggers
-		get_tree().create_timer(1.0).timeout.connect(func() -> void: _built_vs = Vector2.ONE)
+		get_tree().create_timer(1.0).timeout.connect(set.bind("_built_vs", Vector2.ONE))   # issue 1482: a bound method, dropped with the title
 	if main != null and "args" in main and str(main.args.get("title-open", "")) == "credits":
-		get_tree().create_timer(1.5).timeout.connect(func() -> void: _credits())
+		get_tree().create_timer(1.5).timeout.connect(_credits)   # issue 1482: a bound method, dropped with the title
 
 
 # UI pass (Nov 1): the title is built for the window it is in, and built again when the window changes size (the game
@@ -58,12 +59,21 @@ var _built_vs := Vector2.ZERO
 var _resize_t := -1.0
 
 
+# Phase 2 (issue 1217): the words sit in one column on a smooth left veil (glass_shell sheet_veil) and the showcase battle
+# keeps the rest of the screen. One ember action (Continue run when a save exists, else New run), then quiet links in two
+# groups, the playtest note in the bottom corner. Settings and Credits open as drawers from the right edge over a light dim,
+# so the menu and the battle stay in view.
+const SHADE_SKY := 0.30      # the even dim over the sky picture while the battle loads
+const SHADE_SHOWN := 0.10    # once the battle is in: the veil carries the words, the battle stays bright
+var _veil: TextureRect
+
 func _build() -> void:
 	var vs := get_viewport().get_visible_rect().size
 	_built_vs = vs
 	k = UiScale.k_for(vs)
 	root = Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.theme = Kit.theme(k)
 	add_child(root)
 	var bg := TextureRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -76,69 +86,126 @@ func _build() -> void:
 	root.add_child(bg)
 	var shade := ColorRect.new()
 	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
-	shade.color = Color(GS.HALO, 0.55)
+	shade.color = Color(GS.HALO, SHADE_SKY)
+	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(shade)
 	_bg = bg
 	_shade = shade
+	# the veil: near black under the column, clear by about 60% of the window
+	var vw := vs.x
+	var veil_w := clampf(vw * 0.62, float(s(900)), vw)
+	_veil = TextureRect.new()
+	_veil.texture = GS.sheet_veil()
+	_veil.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_veil.stretch_mode = TextureRect.STRETCH_SCALE
+	_veil.anchor_bottom = 1.0
+	_veil.offset_right = veil_w
+	_veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_veil)
+	var margin := float(s(104))
+	var col_w := minf(float(s(620)), vw - margin * 2.0)
 	var v := VBoxContainer.new()
-	v.set_anchors_preset(Control.PRESET_CENTER)
-	v.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	v.anchor_top = 0.46
+	v.anchor_bottom = 0.46
+	v.offset_left = margin
+	v.offset_right = margin + col_w
 	v.grow_vertical = Control.GROW_DIRECTION_BOTH
-	v.alignment = BoxContainer.ALIGNMENT_CENTER
 	v.add_theme_constant_override("separation", s(14))
 	root.add_child(v)
-	# the game's name (brand.gd TITLE, the one place to rename it): one line at the largest size that fits 88% of the
-	# window width; if that would be small (a narrow window), two centred lines at a larger size instead
-	var vw := vs.x
+	# the game's name (brand.gd TITLE, the one place to rename it), in its gold, on one or two lines fitted to the column
 	var h := _label(Brand.TITLE, 84, T_GILT, font_goth)
-	h.text = _title_text(vw * 0.88)
+	h.text = _title_text(col_w)
 	h.add_theme_font_size_override("font_size", _title_size)
-	h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	h.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	h.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	h.add_theme_constant_override("line_spacing", -int(round(_title_size * 0.22)))   # two lines read as one name
 	title_lbl = h
 	v.add_child(h)
-	var sub := _label(Brand.TAGLINE, 19, GS.TEXT2, font)
-	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	sub.custom_minimum_size = Vector2(minf(vw * 0.86, font.get_string_size(Brand.TAGLINE, HORIZONTAL_ALIGNMENT_LEFT, -1, s(19)).x + s(4)), 0)
-	sub.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var rule := ColorRect.new()
+	rule.color = GS.MAP_EMBER
+	rule.custom_minimum_size = Vector2(s(96), maxi(2, s(3)))
+	rule.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(rule)
+	var sub := Kit.label(Brand.TAGLINE, 20, k, GS.TEXT2, null, true, col_w / k)
+	sub.custom_minimum_size.x = col_w
 	v.add_child(sub)
-	# The playtest notice (R1, Nov 1) reports whether every admiral, hull and variant is unlocked.
-	var pt := _playtest_on()
-	if pt != null:
-		var pl := _label("Playtest: everything unlocked (all admirals, carriers, battleships and hull variants)" if pt else "Playtest unlocks are off: unlock admirals and hulls with renown", 17, GS.TEXT if pt else GS.TEXT2, font_semi)
-		pl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		pl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		pl.custom_minimum_size = Vector2(minf(vw * 0.86, font_semi.get_string_size(pl.text, HORIZONTAL_ALIGNMENT_LEFT, -1, s(17)).x + s(4)), 0)
-		pl.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		playtest_lbl = pl
-		v.add_child(pl)
+	var gap := Control.new()
+	gap.custom_minimum_size.y = s(6)
+	v.add_child(gap)
 	menu = VBoxContainer.new()
-	menu.add_theme_constant_override("separation", s(8))
-	menu.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	menu.custom_minimum_size = Vector2(s(300), 0)
+	menu.add_theme_constant_override("separation", s(4))
+	menu.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	v.add_child(menu)
 	var camp: bool = main.has_campaign()
 	var saved := camp and _campaign_has_save()
+	var first: Button
 	if saved:
-		menu.add_child(_button("Continue run", func() -> void: main.new_run({"continue": true}), true))
-	menu.add_child(_button("New run", func() -> void: main.new_run({}), not saved))
+		first = _button("Continue run", func() -> void: main.new_run({"continue": true}), true)
+	else:
+		first = _button("New run", func() -> void: main.new_run({}), true)
+	first.custom_minimum_size = Vector2(s(340), s(56))
+	first.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	menu.add_child(first)
+	_menu_gap(10)
+	if saved:
+		_menu_link("New run", func() -> void: main.new_run({}))
+	_menu_link("Quick battle", func() -> void: main.quick_battle())
 	if camp:
-		menu.add_child(_button("Progression", func() -> void: main.new_run({"screen": "legacy"})))
-		menu.add_child(_button("How to play", func() -> void: main.new_run({"screen": "help"})))
+		_menu_link("Progression", func() -> void: main.new_run({"screen": "legacy"}))
 	if ResourceLoader.exists("res://story/story.gd"):   # story hook: the Career screen (godot/story/README.md)
-		menu.add_child(_button("Career", func() -> void: load("res://story/story.gd").open_standalone(self)))
-	menu.add_child(_button("Quick battle", func() -> void: main.quick_battle()))
-	menu.add_child(_button("Settings", func() -> void: _settings()))
-	menu.add_child(_button("Credits", func() -> void: _credits()))
-	menu.add_child(_button("Quit", func() -> void: main.quit_clean()))
-	(menu.get_child(0) as Control).grab_focus.call_deferred()  # arrow keys, Enter and a controller work from the start
+		_menu_link("Career", func() -> void: load("res://story/story.gd").open_standalone(self))
+	if camp:
+		_menu_link("How to play", func() -> void: main.new_run({"screen": "help"}))
+	_menu_gap(10)
+	_menu_link("Settings", func() -> void: _settings())
+	_menu_link("Credits", func() -> void: _credits())
+	_menu_link("Quit", func() -> void: main.quit_clean(), "back")
+	first.grab_focus.call_deferred()  # arrow keys, Enter and a controller work from the start
+	# The playtest notice (R1, Nov 1) reports whether every admiral, hull and variant is unlocked: a quiet line in the corner.
+	var pt := _playtest_on()
+	if pt != null:
+		var pl := Kit.label("Playtest: everything unlocked (all admirals, carriers, battleships and hull variants)" if pt else "Playtest unlocks are off: unlock admirals and hulls with renown", 17, k, GS.TEXT3, null, true, col_w / k)
+		pl.custom_minimum_size.x = col_w
+		pl.anchor_top = 1.0
+		pl.anchor_bottom = 1.0
+		pl.offset_left = margin
+		pl.offset_right = margin + col_w
+		pl.grow_vertical = Control.GROW_DIRECTION_BEGIN
+		pl.offset_top = -s(28)
+		pl.offset_bottom = -s(28)
+		playtest_lbl = pl
+		root.add_child(pl)
+	# the toast sits a fixed distance above the bottom edge and grows upwards when it wraps (issue 1217: it used to grow
+	# down off the screen)
 	toast_lbl = _label("", 17, GS.TEXT, font_semi)
 	toast_lbl.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	toast_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	toast_lbl.custom_minimum_size = Vector2(minf(vs.x * 0.8, float(s(900))), 0)
 	toast_lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	toast_lbl.offset_top = -s(80)
+	toast_lbl.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	toast_lbl.offset_left = -toast_lbl.custom_minimum_size.x * 0.5
+	toast_lbl.offset_right = toast_lbl.custom_minimum_size.x * 0.5
+	toast_lbl.offset_top = -s(96)
+	toast_lbl.offset_bottom = -s(96)
 	root.add_child(toast_lbl)
+
+
+func _menu_link(t: String, cb: Callable, role := "link") -> Button:
+	var b := Kit.link(t, k, cb, 20)
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.custom_minimum_size = Vector2(s(340), s(33))
+	if role == "back":
+		Kit.wire_sound(b, "back")
+	menu.add_child(b)
+	return b
+
+
+func _menu_gap(h: float) -> void:
+	var g := Control.new()
+	g.custom_minimum_size.y = s(h)
+	g.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	menu.add_child(g)
 
 
 var title_lbl: Label
@@ -147,8 +214,9 @@ var _title_size := 84
 
 
 # the title's text (one line, or two at the middle word) and its size, for a width in pixels
+const TITLE_MAX := 76   # the wordmark's largest size at 1080 in the left column
 func _title_text(w: float) -> String:
-	var one := Brand.fit_size(Brand.TITLE, font_goth, s(84), w)
+	var one := Brand.fit_size(Brand.TITLE, font_goth, s(TITLE_MAX), w)
 	_title_size = one
 	var words := Brand.TITLE.split(" ")
 	if one >= s(56) or words.size() < 2:
@@ -158,7 +226,7 @@ func _title_text(w: float) -> String:
 	for i in range(1, words.size()):
 		var a := " ".join(words.slice(0, i))
 		var b := " ".join(words.slice(i))
-		var sz := mini(Brand.fit_size(a, font_goth, s(84), w), Brand.fit_size(b, font_goth, s(84), w))
+		var sz := mini(Brand.fit_size(a, font_goth, s(TITLE_MAX), w), Brand.fit_size(b, font_goth, s(TITLE_MAX), w))
 		if sz > best_sz:
 			best_sz = sz
 			best = a + "\n" + b
@@ -195,37 +263,11 @@ func _label(t: String, size: int, col: Color, f: Font) -> Label:
 	return l
 
 
-func _button(t: String, cb := Callable(), primary := false) -> Button:
-	var b := Button.new()
-	b.text = t
-	b.focus_mode = Control.FOCUS_ALL  # keyboard and controller reach every title and settings button (WCAG 2.1.1)
-	b.add_theme_font_override("font", font_semi if primary else font)
-	b.add_theme_font_size_override("font_size", s(19))
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(GS.CAREER_INK, 0.85)
-	sb.border_color = GS.MAP_EMBER if primary else GS.SHEET_HAIR
-	sb.set_border_width_all(maxi(2, s(2)) if primary else 1)
-	sb.content_margin_top = s(9)
-	sb.content_margin_bottom = s(9)
-	sb.content_margin_left = s(20)   # a short label (Done) keeps clear of its own edges
-	sb.content_margin_right = s(20)
-	var sh := sb.duplicate() as StyleBoxFlat
-	sh.bg_color = GS.MAP_EMBER if primary else GS.CAREER_PICTURE
-	sh.border_color = GS.MAP_EMBER if primary else GS.TEXT3
-	b.add_theme_stylebox_override("normal", sb)
-	b.add_theme_stylebox_override("hover", sh)
-	b.add_theme_stylebox_override("pressed", sh)
-	var sf := GS.focus_ring(k)  # a visible focus ring (WCAG 2.4.7)
-	sf.border_color = GS.TEXT
-	b.add_theme_stylebox_override("focus", sf)
-	var idle := GS.MAP_EMBER if primary else GS.TEXT2
-	var active := GS.ON_EMBER if primary else GS.TEXT
-	for state in ["font_color", "font_focus_color"]:
-		b.add_theme_color_override(state, idle)
-	for state in ["font_hover_color", "font_pressed_color", "font_hover_pressed_color"]:
-		b.add_theme_color_override(state, active)
-	if cb.is_valid():
-		b.pressed.connect(cb)
+# every title and settings button comes from the kit: one ember primary, quiet secondaries, the shared focus ring (WCAG
+# 2.4.7), keyboard and controller focus (WCAG 2.1.1) and the front-end sound
+func _button(t: String, cb := Callable(), primary := false, role := "") -> Button:
+	var b := Kit.button(t, k, role if role != "" else ("primary" if primary else "quiet"), cb, 19)
+	b.custom_minimum_size.y = s(46) if primary else 0
 	return b
 
 
@@ -251,73 +293,147 @@ func _process(dt: float) -> void:
 # ---------------------------------------------------------------- settings (the game's options menu)
 
 func _dialog_box() -> StyleBoxFlat:
-	var box := GS.flat(GS.CAREER_INK, 28, 20, k)
-	box.border_color = GS.SHEET_HAIR
-	box.set_border_width_all(1)
-	return box
+	return Kit.sheet_box(k)
+
+
+# The settings, in four sections on two columns so the whole panel fits the window at every UI scale without scrolling
+# (Larger at 1080 leaves 831 design pixels; issue 1217). Every control sits in one right-hand column of one width; long
+# names wrap. Esc or Done saves and closes. Changing the UI scale rebuilds the panel and keeps focus on that row.
+const SETTINGS_LAYOUT := [   # [section, column, rows]
+	["Sound and music", 0, [["toggle", "Sound", "sound"], ["slider", "Volume", "volume"], ["toggle", "Music", "music"], ["slider", "Music volume", "music_volume"]]],
+	["Display", 0, [["choice", "UI scale", "ui_scale"], ["toggle", "Full screen", "fullscreen"], ["choice", "Graphics", "quality"], ["toggle", "Temporal AA (smoother edges, softer motion)", "taa"], ["toggle", "Nebula wakes (ships stir the clouds)", "nebula_wake_on"], ["choice", "Render scale", "render_scale"], ["choice", "Frame cap", "fps_cap"], ["toggle", "V-Sync", "vsync"]]],
+	["Battle", 1, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Teaching tips", "tips"]]],
+	["Comfort", 1, [["toggle", "Reduce motion", "reduce_motion"], ["toggle", "Reduce flashing", "reduce_flashing"], ["choice", "Screen shake", "shake"]]],
+]
+const SETTINGS_CHOICES := {
+	"speed": [[1.0, "Normal"], [0.45, "Fast"]],
+	"movement": [["cinematic", "Cinematic"], ["brisk", "Brisk"]],
+	"ai": [["veteran", "Veteran"], ["standard", "Standard"]],
+	"ui_scale": [[0.9, "Small"], [1.0, "Normal"], [1.15, "Large"], [1.3, "Larger"]],
+	"shake": [[1.0, "Full"], [0.5, "Reduced"], [0.0, "Off"]],
+	"cine": [["key", "Key moments"], ["all", "Every attack"], ["off", "Off"]],
+	"quality": [["max", "Max"], ["high", "High"], ["low", "Low"]],
+	# issue 1437: performance options, today's game first (full scale, no cap)
+	"render_scale": [[1.0, "100%"], [0.85, "85%"], [0.7, "70%"]],
+	"fps_cap": [[0.0, "Off"], [60.0, "60"], [120.0, "120"], [144.0, "144"]],
+}
+var _settings_focus := ""   # the setting whose control takes focus when the panel is rebuilt (the UI scale row)
+var _ctrl_w := 0.0
+
+
+# Settings and Credits are drawers (phase 2): an opaque sheet on the right edge, full height, over a light dim, so the menu
+# and the battle stay in view. A click on the dim closes the drawer like Esc. It slides in unless Reduce motion is on.
+const DIM_A := 0.45
+
+func _ensure_dim() -> void:
+	if settings_dim == null:
+		settings_dim = ColorRect.new()
+		settings_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+		settings_dim.color = Color(GS.HALO, DIM_A)
+		settings_dim.mouse_filter = Control.MOUSE_FILTER_STOP
+		settings_dim.gui_input.connect(func(e: InputEvent) -> void:
+			if e is InputEventMouseButton and (e as InputEventMouseButton).pressed and (e as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+				if credits_panel != null and is_instance_valid(credits_panel): _close_credits()
+				elif settings_panel != null and is_instance_valid(settings_panel): _close_settings())
+		root.add_child(settings_dim)
+
+
+func _drawer(w: float, slide := true) -> PanelContainer:
+	return Kit.drawer(root, k, w, slide, bool(main.settings.get("reduce_motion", false)))
 
 
 func _settings() -> void:
 	if settings_panel != null:
 		settings_panel.queue_free()
-	var S: Dictionary = main.settings
 	# the title dims hard behind the panel (a modal over the menu, not a window into it), and the panel itself is opaque
-	if settings_dim == null:
-		settings_dim = ColorRect.new()
-		settings_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-		settings_dim.color = Color(GS.HALO, 0.93)
-		settings_dim.mouse_filter = Control.MOUSE_FILTER_STOP
-		root.add_child(settings_dim)
-	settings_panel = PanelContainer.new()
-	settings_panel.add_theme_stylebox_override("panel", _dialog_box())
-	settings_panel.set_anchors_preset(Control.PRESET_CENTER)
-	settings_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	settings_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-	root.add_child(settings_panel)
+	_ensure_dim()
+	var texts: Array = ["On", "Off"]
+	for key in SETTINGS_CHOICES:
+		for o in SETTINGS_CHOICES[key]:
+			texts.append(o[1])
+	_ctrl_w = maxf(Kit.fit_width(texts, k, 19), float(s(150)))
+	var vs := get_viewport().get_visible_rect().size
+	var dw := minf(float(s(1080)), vs.x - float(s(24)))
+	settings_panel = _drawer(dw, _settings_focus == "")   # a rebuild for a new UI scale does not slide in again
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", s(10))
-	v.custom_minimum_size = Vector2(s(460), 0)
+	v.add_theme_constant_override("separation", s(18))
 	settings_panel.add_child(v)
-	v.add_child(_label("Settings", 24, GS.TEXT, font_goth))
-	# the rows scroll when the panel would be taller than the window at the larger UI scales, while the title and Done stay put
+	v.add_child(Kit.heading("Settings", 34, k))
+	# the columns scroll only if a window's shape leaves no room (a very narrow or very short window); the heading and
+	# Done stay put
 	var sc := ScrollContainer.new()
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	v.add_child(sc)
-	var rows := VBoxContainer.new()
-	rows.add_theme_constant_override("separation", s(10))
-	rows.custom_minimum_size = Vector2(s(460), 0)
-	sc.add_child(rows)
-	rows.add_child(_toggle("Sound", "sound"))
-	rows.add_child(_slider("Volume", "volume", 0.0, 1.0))
-	rows.add_child(_toggle("Music", "music"))
-	rows.add_child(_slider("Music volume", "music_volume", 0.0, 1.0))
-	rows.add_child(_choice("Speed", "speed", [[1.0, "Normal"], [0.45, "Fast"]]))
-	rows.add_child(_choice("Movement", "movement", [["cinematic", "Cinematic"], ["brisk", "Brisk"]]))
-	rows.add_child(_choice("Enemy AI", "ai", [["veteran", "Veteran"], ["standard", "Standard"]]))
-	rows.add_child(_choice("UI scale", "ui_scale", [[0.9, "Small"], [1.0, "Normal"], [1.15, "Large"], [1.3, "Larger"]]))
-	rows.add_child(_toggle("Reduce motion", "reduce_motion"))
-	rows.add_child(_toggle("Reduce flashing", "reduce_flashing"))
-	rows.add_child(_choice("Screen shake", "shake", [[1.0, "Full"], [0.5, "Reduced"], [0.0, "Off"]]))
-	rows.add_child(_toggle("Follow enemy activations", "follow"))
-	rows.add_child(_choice("Cut-ins", "cine", [["key", "Key moments"], ["all", "Every attack"], ["off", "Off"]]))
-	rows.add_child(_toggle("Teaching tips", "tips"))
-	rows.add_child(_toggle("Full screen", "fullscreen"))
-	rows.add_child(_choice("Graphics", "quality", [["max", "Max"], ["high", "High"], ["low", "Low"]]))
-	rows.add_child(_toggle("Temporal AA (smoother edges, softer motion)", "taa"))
-	var row := HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_END
-	row.add_child(_button("Done", func() -> void:
-		main.save_settings()
-		settings_panel.queue_free()
-		settings_panel = null
-		if settings_dim != null:
-			settings_dim.queue_free()
-			settings_dim = null
-		_focus_first(menu), true))
-	v.add_child(row)
+	var cols := HBoxContainer.new()
+	cols.add_theme_constant_override("separation", s(48))
+	cols.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sc.add_child(cols)
+	var two := dw >= float(s(1000))   # a narrow window stacks the sections in one column
+	var col_a := _settings_column()
+	cols.add_child(col_a)
+	var col_b := col_a
+	if two:
+		col_b = _settings_column()
+		cols.add_child(col_b)
+	for i in SETTINGS_LAYOUT.size():
+		var sec: Array = SETTINGS_LAYOUT[i]
+		var col := col_a if int(sec[1]) == 0 else col_b
+		if i > 0 and col.get_child_count() > 0:
+			var gap := Control.new()
+			gap.custom_minimum_size.y = s(8)
+			col.add_child(gap)
+		col.add_child(Kit.section(sec[0], k))
+		for item in sec[2]:
+			match str(item[0]):
+				"toggle": col.add_child(_toggle(item[1], item[2]))
+				"slider": col.add_child(_slider(item[1], item[2], 0.0, 1.0))
+				"choice": col.add_child(_choice(item[1], item[2], SETTINGS_CHOICES[item[2]]))
+	var done := _button("Done", func() -> void: _close_settings(), true)
+	var fill := Control.new()
+	fill.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(fill)
+	v.add_child(Kit.action_bar(k, [], done))
+	sc.custom_minimum_size = Vector2(0, minf(cols.get_combined_minimum_size().y, vs.y - s(190)))
+	_fit_settings.call_deferred(sc, cols)
+	if _settings_focus != "":
+		for c in settings_panel.find_children("*", "Control", true, false):
+			if str(c.get_meta("setting_key", "")) == _settings_focus:
+				(c as Control).grab_focus.call_deferred()
+				break
+		_settings_focus = ""
+	else:
+		_focus_first(settings_panel)
+
+
+func _settings_column() -> VBoxContainer:
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", s(8))
+	col.custom_minimum_size.x = s(440)
+	col.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	return col
+
+
+# after layout (wrapped names know their height only then): the scroll area is exactly as tall as the columns, or the
+# window's room if that is less
+func _fit_settings(sc: ScrollContainer, cols: Control) -> void:
+	await get_tree().process_frame
+	if not is_instance_valid(sc) or not is_instance_valid(cols):
+		return
 	var vs := get_viewport().get_visible_rect().size
-	sc.custom_minimum_size = Vector2(s(460), minf(rows.get_combined_minimum_size().y, vs.y - s(150)))
-	_focus_first(settings_panel)
+	sc.custom_minimum_size.y = minf(cols.get_combined_minimum_size().y, vs.y - s(190))
+
+
+func _close_settings() -> void:
+	if settings_panel == null or not is_instance_valid(settings_panel):
+		return
+	main.save_settings()
+	settings_panel.queue_free()
+	settings_panel = null
+	if settings_dim != null:
+		settings_dim.queue_free()
+		settings_dim = null
+	_focus_first(menu)
 
 
 # ---------------------------------------------------------------- credits (the game, and every music track's attribution)
@@ -330,26 +446,16 @@ var credits_panel: PanelContainer
 func _credits() -> void:
 	if credits_panel != null and is_instance_valid(credits_panel):
 		credits_panel.queue_free()
-	if settings_dim == null:
-		settings_dim = ColorRect.new()
-		settings_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-		settings_dim.color = Color(GS.HALO, 0.93)
-		settings_dim.mouse_filter = Control.MOUSE_FILTER_STOP
-		root.add_child(settings_dim)
+	_ensure_dim()
 	var vs := get_viewport().get_visible_rect().size
-	credits_panel = PanelContainer.new()
-	credits_panel.add_theme_stylebox_override("panel", _dialog_box())
-	credits_panel.set_anchors_preset(Control.PRESET_CENTER)
-	credits_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	credits_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-	root.add_child(credits_panel)
+	credits_panel = _drawer(minf(float(s(820)), vs.x - float(s(24))))
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", s(10))
+	v.add_theme_constant_override("separation", s(18))
 	credits_panel.add_child(v)
-	v.add_child(_label("Credits", 24, GS.TEXT, font_goth))
+	v.add_child(Kit.heading("Credits", 34, k))
 	var sc := ScrollContainer.new()
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	sc.custom_minimum_size = Vector2(minf(float(s(760)), vs.x * 0.8), minf(float(s(560)), vs.y * 0.62))
+	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL   # the list fills the drawer's height and scrolls inside it
 	sc.focus_mode = Control.FOCUS_ALL   # arrow keys and a controller scroll the list
 	v.add_child(sc)
 	var t := RichTextLabel.new()
@@ -364,11 +470,9 @@ func _credits() -> void:
 	t.add_theme_color_override("default_color", GS.TEXT2)
 	t.text = credits_bbcode()
 	sc.add_child(t)
-	var row := HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_END
-	row.add_child(_button("Done", func() -> void: _close_credits(), true))
-	v.add_child(row)
-	(row.get_child(0) as Control).grab_focus.call_deferred()
+	var done := _button("Done", func() -> void: _close_credits(), true)
+	v.add_child(Kit.action_bar(k, [], done))
+	done.grab_focus.call_deferred()
 
 
 func _close_credits() -> void:
@@ -381,9 +485,17 @@ func _close_credits() -> void:
 	_focus_first(menu)
 
 
+# Esc (or a pad's back) closes Credits, then Settings (saving them), the same as their Done buttons
 func _unhandled_input(e: InputEvent) -> void:
-	if credits_panel != null and is_instance_valid(credits_panel) and e.is_action_pressed("ui_cancel"):
+	if not e.is_action_pressed("ui_cancel"):
+		return
+	if credits_panel != null and is_instance_valid(credits_panel):
+		Kit.play("ui_cancel")
 		_close_credits()
+		get_viewport().set_input_as_handled()
+	elif settings_panel != null and is_instance_valid(settings_panel):
+		Kit.play("ui_cancel")
+		_close_settings()
 		get_viewport().set_input_as_handled()
 
 
@@ -391,7 +503,7 @@ func _unhandled_input(e: InputEvent) -> void:
 func credits_bbcode() -> String:
 	var text_hex := GS.TEXT.to_html(false)
 	var detail_hex := GS.TEXT2.to_html(false)
-	var out := "[b][color=#%s]%s[/color][/b]\nA game by Ryan Bailey. Made with the Godot Engine (MIT licence, godotengine.org).\nFonts: Michroma, Oxanium and Barlow Semi Condensed (SIL Open Font Licence).\n\n[b][color=#%s]Music[/color][/b]\nEvery track comes from OpenGameArt.org. The game plays edited versions (cut, looped, levelled, re-encoded).\n" % [text_hex, Brand.TITLE, text_hex]
+	var out := "[b][color=#%s]%s[/color][/b]\nA game by Ryan Bailey. Made with the Godot Engine (MIT licence, godotengine.org).\nFonts: %s (SIL Open Font Licence).\n\n[b][color=#%s]Music[/color][/b]\nEvery track comes from OpenGameArt.org. The game plays edited versions (cut, looped, levelled, re-encoded).\n" % [text_hex, Brand.TITLE, Kit.credits_fonts(), text_hex]
 	var p := "res://music/music.json"
 	var d = JSON.parse_string(FileAccess.get_file_as_string(p)) if FileAccess.file_exists(p) else null
 	if not (d is Dictionary) or not (d.get("tracks") is Dictionary):
@@ -422,38 +534,32 @@ func _focus_first(n: Node) -> void:
 			return
 
 
-func _row(t: String) -> HBoxContainer:
-	var r := HBoxContainer.new()
-	var l := _label(t, 18, GS.TEXT, font)
-	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	r.add_child(l)
-	return r
-
-
 func _toggle(t: String, key: String) -> Control:
-	var r := _row(t)
 	if key == "tips": main.settings["tips"] = not preload("res://ui/campaign/campaign_tips.gd").is_off()
 	if not main.settings.has(key):
 		main.settings[key] = true
 	var b := _button("On" if main.settings[key] else "Off")
+	b.set_meta("setting_key", key)
 	b.pressed.connect(func() -> void:
 		main.settings[key] = not bool(main.settings[key])
 		if key == "tips": preload("res://ui/campaign/campaign_tips.gd").set_off(not main.settings[key])
 		b.text = "On" if main.settings[key] else "Off"
-		main.save_settings())
-	b.custom_minimum_size = Vector2(s(110), 0)
-	r.add_child(b)
-	return r
+		main.save_settings()
+		if key == "taa" and main.has_method("restart_showcase"):
+			main.restart_showcase())
+	return Kit.row(t, b, k, _ctrl_w)
 
 
 func _choice(t: String, key: String, opts: Array) -> Control:
-	var r := _row(t)
+	if not main.settings.has(key):
+		main.settings[key] = opts[0][0]   # a settings file from before this row reads as the list's first value
 	var label_of := func() -> String:
 		for o in opts:
 			if str(o[0]) == str(main.settings[key]):
 				return o[1]
 		return str(opts[0][1])
 	var b := _button(label_of.call())
+	b.set_meta("setting_key", key)
 	b.pressed.connect(func() -> void:
 		var i := 0
 		for j in opts.size():
@@ -462,28 +568,39 @@ func _choice(t: String, key: String, opts: Array) -> Control:
 		main.settings[key] = opts[(i + 1) % opts.size()][0]
 		b.text = label_of.call()
 		main.save_settings()
+		if key == "quality" and main.has_method("restart_showcase"):
+			main.restart_showcase()   # issue 1437: the battle behind the menu takes the new Graphics at once
 		if key == "ui_scale":
+			_settings_focus = key   # the rebuilt panel puts focus back on this row, not on Sound
 			_rebuild())
-	b.custom_minimum_size = Vector2(s(110), 0)
-	r.add_child(b)
-	return r
+	return Kit.row(t, b, k, _ctrl_w)
 
 
 func _slider(t: String, key: String, lo: float, hi: float) -> Control:
-	var r := _row(t)
 	var sl := HSlider.new()
 	sl.min_value = lo
 	sl.max_value = hi
 	sl.step = 0.05
+	sl.focus_mode = Control.FOCUS_ALL
+	sl.set_meta("setting_key", key)
 	if not main.settings.has(key):
 		main.settings[key] = 0.7
 	sl.value = float(main.settings[key])
-	sl.custom_minimum_size = Vector2(s(200), s(24))
+	sl.custom_minimum_size.y = s(24)
+	sl.add_theme_stylebox_override("focus", GS.focus_ring(k))
+	# issue 1559 item 23: a drag sets the volume live and saves once when it ends; a key or controller step saves at once
+	var dragging := [false]
+	sl.drag_started.connect(func() -> void: dragging[0] = true)
+	sl.drag_ended.connect(func(_changed: bool) -> void:
+		dragging[0] = false
+		main.save_settings())
 	sl.value_changed.connect(func(x: float) -> void:
 		main.settings[key] = x
-		main.save_settings())  # saved on every change, so arrow keys and a controller save too
-	r.add_child(sl)
-	return r
+		if dragging[0]:
+			main.apply_volumes()
+		else:
+			main.save_settings())
+	return Kit.row(t, sl, k, _ctrl_w)
 
 
 # main's decorative battle is ready behind the menu: the sky picture fades out over it, the shade stays for the menu
@@ -497,12 +614,12 @@ func _rebuild() -> void:
 	var had_settings := settings_panel != null and is_instance_valid(settings_panel)
 	var had_credits := credits_panel != null and is_instance_valid(credits_panel)
 	credits_panel = null
-	var shade_a := _shade.color.a if _shade != null else 0.55
+	var shade_a := _shade.color.a if _shade != null else SHADE_SKY
 	var bg_a := _bg.modulate.a if _bg != null else 1.0
 	if _revealed:   # the showcase is (or is fading) in: finish the fade on the new parts
 		if _reveal_tw != null and _reveal_tw.is_valid():
 			_reveal_tw.kill()
-		shade_a = 0.42
+		shade_a = SHADE_SHOWN
 		bg_a = 0.0
 	remove_child(root)
 	root.queue_free()
@@ -542,12 +659,27 @@ func _report() -> void:
 	line += ", menu %s (bottom %d)" % ["on screen" if mok else "OFF SCREEN", int(mr.end.y)]
 	var fo := get_viewport().gui_get_focus_owner()
 	var nfocus := 0
+	var nbuttons := 0
 	for b in menu.get_children():
-		if b is Button and (b as Button).focus_mode == Control.FOCUS_ALL:
-			nfocus += 1
-	line += ", %d of %d menu buttons take keyboard focus, focus on %s" % [nfocus, menu.get_child_count(), ("\"" + (fo as Button).text + "\"") if fo is Button else "nothing"]
-	ok = ok and nfocus == menu.get_child_count() and fo != null
+		if b is Button:
+			nbuttons += 1
+			if (b as Button).focus_mode == Control.FOCUS_ALL:
+				nfocus += 1
+	line += ", %d of %d menu buttons take keyboard focus, focus on %s" % [nfocus, nbuttons, ("\"" + (fo as Button).text + "\"") if fo is Button else "nothing"]
+	ok = ok and nfocus == nbuttons and fo != null
 	print(line + (" PASS" if ok else " FAIL"))
+
+
+# Issue 1437 (review on PR 1607): the showcase was rebuilt for a new Graphics or TAA setting, or removed for Low: the sky
+# picture comes back until the new battle is in
+func cover_showcase() -> void:
+	if _reveal_tw != null and _reveal_tw.is_valid():
+		_reveal_tw.kill()
+	_revealed = false
+	if _bg != null and is_instance_valid(_bg):
+		_bg.modulate.a = 1.0
+	if _shade != null and is_instance_valid(_shade):
+		_shade.color.a = SHADE_SKY
 
 
 func reveal_showcase() -> void:
@@ -556,4 +688,4 @@ func reveal_showcase() -> void:
 	_revealed = true
 	_reveal_tw = create_tween().set_parallel(true)
 	_reveal_tw.tween_property(_bg, "modulate:a", 0.0, 2.5)
-	_reveal_tw.tween_property(_shade, "color:a", 0.42, 2.5)
+	_reveal_tw.tween_property(_shade, "color:a", SHADE_SHOWN, 2.5)

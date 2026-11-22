@@ -56,23 +56,31 @@ class and faction (issue 363), never from a constant.
 **In one line:** a black iron blade with burning spires.
 
 - **Silhouette:** long, narrow dagger or spearhead, widest at the stern third. A row of tall radiator spires along the spine,
-  tallest amidships. Symmetric.
-- **Shape language:** forged, heavy, vertical. Broadside gun decks in long straight rows. Big engine bells. Plate with rivet
+  tallest amidships. Symmetric. The spires stand at about 70 percent of the concept table heights, with the same count,
+  stations and profiles, and the ember shows in the fin slats, never as a whole lit tower: every Sunward build makes them
+  with the one shared spire option, `radiator(..., glow='slats')` in tools/blender/kits/voidsworn/parts.py: the heat
+  core glows ember the full height of the column and dark iron ribs, 0.15 apart, cross it, so the glow shows between the
+  ribs as on the concepts; the fins themselves never glow. Why: Ryan, Nov 19 2026 (R331), on the Sunward concepts: "can we
+  scale down the giant radiator/orange towers on each ship a bit too?"; S8 first (issue 1158), then Warden, Vigil, Harrow,
+  Hearth and Bastion (R333). Ryan, Nov 20 2026, on the Warden's lit fins reading as copper: "fix ember glow" (issue 1156).
+  The ember is bright: the whole core sits near the tip's level (stack.py SPIRE, root .70 of the tip), the tip still under
+  the 0.8 glow threshold. Why: Ryan, Nov 20 2026 13:43 UTC, on S8 in game beside a brighter mock-up: "A bit brighter".
+- **Shape language:** forged, heavy, vertical. Recessed lateral weapon galleries in long straight rows. Big engine bells. Plate with rivet
   lines, never rust.
 - **Colours:** black iron, frost-white markings, bright ember (windows, engines, and the spires, which glow because they shed
   the reactor's heat).
-- **Guns sit:** in broadside rows along both flanks, plus one heavy pair at the bow. Old manual gun decks: many small ports,
+- **Guns sit:** in armored flank casemates along both sides, plus one heavy pair at the bow. Manual optical fire-control blisters and recessed gun ports,
   evenly spaced.
 - **Engines:** two to four large bells, ember orange, deep-set.
-- **How it breaks:** along the gun decks. The hull splits lengthwise between deck rows, and the spire line snaps off as one
-  piece. Inside: iron decks, ember-lit, gun crews' galleries. Breach anchors sit on the broadside deck line, evenly spaced.
+- **How it breaks:** along the lateral weapon galleries. The hull splits lengthwise between flank casemate runs, and the spire line snaps off as one
+  piece. Inside: iron corridors, ember-lit, armored flank gunnery galleries. Breach anchors sit along the flank belt, evenly spaced.
 - **Never:** rust (that is the Hullbreakers), blue light, a ram prow shaped like a ship's stem, cathedral windows so literal
   that it reads as another game's ship. The spires are radiators, not steeples: no crosses, no statues.
 - **What the present concepts get wrong:** V1b_r_23 is a cathedral on a boat hull (stem bow, stepped decks): keep its mass and
   spire cluster, redraw the hull as a blade. V14_23 has wheel-like pods and red light: ember orange, and pods become radiator
   blocks.
 
-## Hegemony Navy (`hegemony`)
+## Meridian Directorate (`hegemony`)
 
 **In one line:** a pale wedge with a line of blue light.
 
@@ -150,6 +158,11 @@ ships catch, store and release light.
 
 - **Who they are (lore 6.1):** the Starwrights who stayed flesh; the finest optical engineers who ever lived. They built the
   collectors, mirrors and beam lines that carried a star's light across a system, and watched that machine kill their sun.
+- **A small elite fleet, never a swarm (Ryan, Nov 20, issue 1298).** "Glasswrights aren't supposed to be a swarm faction like
+  chorus or even hullbreakers. A little more elite." Few ships, each worth more: balance them with more hull on the
+  four fleet hulls (sliver, lancet, prism, aperture; player and enemy copies alike, "so it's consistent"), not with cheaper
+  or more numerous ships. The boss, The Unfinished, is not a fleet hull and keeps its own hull (470). They stay
+  glassy: no armour added, evasion and shields still carry them.
 - **First rule, ahead of any shape rule (R192).** Ryan, Nov 11: "It doesn't match with how I envision the glasswrights being
   artistic, thoughtful in creation and looking to create beauty with function, even in these warships." Every structural
   part is shaped with care and is also the ornament; the weapons are the centrepieces and must make sense.
@@ -157,11 +170,20 @@ ships catch, store and release light.
   you'd expect with their lore. It should feel almost seamless and less bolted on. Like a work of art or blown glass, though
   able to rotate, etc." One continuous skin of glass and metal; no pod, bracket, ring mount or visible seam between lens and
   ship. Forward lenses visibly point forward. G17 (clear bubbles) and G18 (cream tubes) failed this (R201, R206).
-- **Shape language:** a long leaf of flowing, twisted blown glass lit from inside (CD5, R298; it grew from the G13 and G15 base). Rigid,
+- **Shape language:** a long leaf of flowing, twisted pearl ribbons (CD5, R298; it grew from the G13 and G15 base). Rigid,
   symmetric about the long axis. Nothing that reads as a wing, a petal, a sail or a body. No crystal object on a hull and no
   hull shaped like a crystal (R180, R183 (5): every crystal and prism route was scrapped).
-- **Colours:** clear and pearly glass with silver veins, a rainbow fringe on cut edges, a stored light glowing deep inside.
-  Since R298 (the CD5 flagship) the glass also holds amber, violet and green panes lit from inside, like stained blown glass.
+- **Colours (R337, Ryan Nov 19):** opaque, reflective pearl ribbons with silver edges, and glowing amber, violet and green
+  mosaic panels between them, like stained glass. Nothing is see-through: nothing inside an intact hull shows. This replaces
+  the clear, lit-from-inside glass direction (issue 1058 runs 2 to 6 for CD5); issue 1183 rebuilds CD5 to it.
+  The colours run together as marbled veins that cross the gaps and wander along the hull, and about a quarter of the
+  tiles take another palette colour, so no gap or panel reads as one colour (Ryan Nov 21, after look test C still showed
+  "rectangle after rectangle of same color"; look test D, issue 1415; tools/blender/kits/ithar/parts.py MIX 'marble' and
+  stack.py TILE_SWAP). Never one colour per block or per streak. Ryan Nov 21 1:45 PM CT on the in-game sheets: "tone down
+  red and amber with a bit more blue and green and purple": amber is about a third of the panels and golden, not red;
+  violet and green rise, and a sapphire blue joins the palette (stack.py PALETTE, WEIGHTS 32/26/22/20, TONES). Ryan Nov 21 on the
+  strike craft, then 8:29 PM CT for the big ships too: the stones are 25% more saturated on every Glasswright hull ("a little,
+  nothing crazy"; stack.py SATURATION 1.25, applied once in the shared mosaic).
 - **Guns sit:** on the optical axis. The prism lance is the hull's stored light let out through the bow optic: a white core
   with a rainbow fringe. Smaller lenses along the hull are the secondary guns.
 - **Engines:** no flame. A soft white bloom at the stern optic.
@@ -171,34 +193,40 @@ ships catch, store and release light.
 
 ## Eclipse (`deathless`)
 
-Ryan, Nov 10: "Shapes are the biggest issue. They look like just giant spinning tops, at least capital ships. I like the green
-glow but it should be on brand with eclipse". This overrides the lore bible's colour line for ships (white-gold and
-violet-white): the green stays, as the light of an eclipse.
+Ryan, Nov 10: "Shapes are the biggest issue. They look like just giant spinning tops, at least capital ships." His colour
+line that day ("I like the green glow but it should be on brand with eclipse") kept a green corona on the hulls. **Superseded
+Nov 20 2026 (issue 1419):** asked "the rim is written as green and the weapons as violet ... my pick is all violet, to match
+the deaths and the color file", Ryan answered "yes ... agree with you". Eclipse is all violet: no green on the hulls.
 
-**In one line:** a black shade with a thin ring of green-white fire at its edge.
+**In one line:** a black shade with a thin ring of violet-white fire at its edge.
 
 - **Who they are (lore 7.1):** the Starwrights who uploaded. Machine bodies in a system they made dark, each with a small core
   of trapped light, all that is left of their sun.
-- **The green, on brand:** a real total eclipse shows a faint green ring in the sun's corona. That is the Eclipse green: a
-  thin, cold green-white line along the rim of every shade plate, and the trapped light core seen through gaps. Never a
-  pooled glow inside ribs or sockets, which reads as undead.
+- **The corona:** a thin, cold violet-white line along the rim of every shade plate, white-gold at its hottest arcs, and the
+  trapped light core seen through gaps, violet-white grading to violet. Never a pooled glow inside ribs or sockets, which
+  reads as undead.
 - **Shape language:** sunshades and heat shields: broad layered plates with the ship sheltering behind them. The shade always
   faces the enemy, like a shield held forward. Wide and flat, or a forward-facing arc or ring. The shade sits over the ship
   as a sunshade, the ship's heart and guns under and behind it, as E13 is built (R256, Ryan Nov 15). Guns never fire through
   slots in a shade. E14 is the exception being redesigned: its ring stands upright as in the concept, built around one larger
   gun at its centre, "like a glass cannon" (R256, Ryan Nov 15 07:02).
-- **Colours:** dark violet-black plates, the green-white corona line, a small bright core.
+- **Colours:** dark violet-black plates, the violet-white corona line, a small bright violet-white core, white-gold accents.
+  Engines, weapon bolts, damage glow and deaths come from godot/fx/faction_looks.json `deathless`, the one faction colour
+  file (issue 1205 removed the all-green hull_table FAC3D override). The Doom gun's `weapon_core` is deep violet too (Ryan
+  Nov 21 2026, "Yes make it a violet core", issue 1503; replaces R263's green core): no green is left in that file. The hull paint lives in
+  tools/blender/kits/eclipse/stack.py: until that stack is repainted and the hulls rebaked (contrib/opus/plans/eclipse_1419.md),
+  the installed E11 to E14 hulls still show the old green corona.
 - **Panels (R243, Ryan Nov 13):** precise, dead even, ordered and aligned across hull and shade, with recessed seams and
   slight relief. Keep E11's accepted dark violet-black colour. This is machine precision; the Hullbreakers' irregular
   patchwork is their own. The thin uneven corona must read at camera 170, including E12's ring segments. The core glows
-  green like the concept, white-hot only at its very centre, and reads at camera 170.
+  violet-white (Nov 20, all violet), white-hot only at its very centre, and reads at camera 170.
 - **Guns sit (R256, Ryan Nov 15):** clear of the shades: on mounts at the shade's heart or root firing over its plates (E13),
   or at the centre of a ring (E14, being redesigned). This replaces "behind the shade's rim, firing through gaps between plates".
-- **Engines:** no flaming bells. An eclipse ring of pale light.
+- **Engines:** no flaming bells. An eclipse ring of pale violet light.
 - **How it breaks:** in layers. Shade plates peel away band by band, then the body behind is bare. Inside: archive vaults,
   dark decks, the core's light. Breach anchors sit on the shade's bands.
 - **Never:** a disc or cone on a vertical spindle (the spinning top), a spire through the centre of a disc, bone, ribs,
-  skulls, green pooled in hollows, flame.
+  skulls, any green on the hull, glow pooled in hollows, flame.
 - **The E14 exception (R256, PR 804):** E14 is the accepted flare redesign, its ring standing upright around one fixed lance through the centre.
 
 ## The Chorus (`chorus`)
@@ -213,9 +241,33 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
   appetite. The Fleshwrights were kin to the Glasswrights, so a Chorus ship may echo a Glasswright shape in flesh.
 - **Shape language:** grown, not built. Scale and menace first: slow, heavy, deep-sea. Hide, membrane, chitin ridges, light
   inside the body. Symmetric where a body would be, ragged where it has been scarred and regrown.
-- **Colours:** dark olive-brown hide, ochre bone and chitin, bile yellow-green light from inside. The C10 and C11 pictures came
-  out greyer; the colour is set in the build sheet's colour notes and the paint stage, not by more image rounds (R204; Ryan:
-  "we can fix color ourselves rather than get stuck in a loop with color fixes with image generation").
+- **Colours:** muddy olive-brown hide with dark red veins, pores and wrinkles (never maroon, never "red clay"), chitin a bone to
+  horn tone, bile yellow-green light from inside at the veil roots and bile slits. The colour lives in the shared Chorus paint
+  stack (tools/blender/kits/chorus/stack.py) and the build sheet's colour notes, not in more image rounds (R204; Ryan: "we can
+  fix color ourselves rather than get stuck in a loop with color fixes with image generation"). Veils are satin (roughness
+  0.6), not gloss, so they show no white hot spots.
+- **Body and armour (R349, Ryan Nov 20; C13 round G accepted in game Nov 20, PR 1308):** a full body of lumpy fused swellings,
+  deep folds and wrinkles grown into the skin (kit `body.field`), never a smooth tube with plates on top. Armour is grown
+  chitin almost everywhere (Ryan, Nov 20 4:18 PM CT: "cover the chorus ships in armor almost everywhere"): armadillo bands
+  that wrap down both flanks to the keel (kit `plates.armadillo`, its default `plates.WRAP`; a sheet never stops them
+  higher), banded and ridged, lips aft, hide rolled up into their edges, broken only round the organs; where a fitting cuts
+  a band, a half band still grows on its clear side (`fill`), so the shell hugs each fitting. Sacs and pods show dark veins and
+  no lit spots at all: each sac's crown is cut open into a dark pore with a bore going down and a fleshy lip, never a round lit window, a glowing slit or
+  glowing veins (kit `parts.sac` default window 'slit'; Ryan Nov 20: "random yellow circles on the pods ... looks odd", Nov 21:
+  "the same weird yellow circle or patch on the sacs"). Gland vents are real openings: the knoll's crown is cut away under
+  the puckered lip and a matte dark bore runs down into it (kit `parts.spinal` style 'gland', zone 'pit'; Ryan Nov 21: "no actual
+  holes like the concept", then on dark discs: "these are clearly not holes"). Never a dark disc on a closed dome. An organ whose bore runs down into the body (C14's launch mouths) cuts the hull and any
+  band open under it, and keeps the inside rooms clear of the bore (`K.open_hull` with depth, after the armour and rooms; Ryan Nov 21: "There are no actual holes, it's just caps"). A launch
+  mouth carries a lobed flesh door, shut between launches, plain flesh, opening from the middle (`launch_mouth(door=6)`, issue
+  1543; Ryan Nov 21: "Closer and plain flesh"); the lobes are their own hinged nodes and the game opens them on launch
+  (docs/ship_pipeline/HARDPOINTS.md "Doors").
+  Flank and brood sacs wear flat chitin caps, two rings of thin plates lying close with the slit open at the crown (kit
+  `plates.dome_caps(flat=True)`; Ryan: "caps, but flatter"). The belly is banded too, so `plates.fused_patches` is only for a spot
+  the bands cannot reach. No flat stone tiles: the R341 shell (`plates.armour`) is retired for new builds.
+  Every Chorus hull uses these kit calls, so a fix in the kit reaches C10 to C14 at once (R333). The grown paint is the
+  stack's default for every Chorus ship (a recipe opts out only with "chorus_look": "r341"), and every ship of every faction is
+  gated by the stage 5 detail check (issue 1517; ships.md section 0, rule 16). Surface detail must read at
+  camera 26 and still give texture at 170; stage 5's detail check (tools/recipe/detail_check.py) fails a flat clay skin.
 - **Guns sit:** in throats, spines and sacs: a weapon is an organ. Brood sacs along the flanks for the wings.
 - **Engines:** no nozzles. Pulsing vents or trailing membranes with a yellow-green glow.
 - **How it breaks:** it bursts and tears. Sacs rupture first, then the body tears open. Inside: flesh and bone (R98), wet and
@@ -243,11 +295,11 @@ from the current lore, direction first ("Direction first, then fleets"), and onl
 | Faction | Ship | State | Reference picture | Ryan's words, and what is left |
 |---|---|---|---|---|
 | Ashfall Hullbreakers | flagship (Warlord's Pyre-Barge) A16; cruiser (Pack Hunter) A17 | ACCEPTED (R201); build sheets round 2 running (issue 532) | contrib/muse/design/concept_round8_2026_11/corsair_A16_beauty.jpg, corsair_A17_beauty.jpg (from round 1 corsair_A.jpg and corsair_B.jpg) | R197: "Yes! Scrap brick as the primary and pack hunter as like a cruiser or something." Round 1 sheets failed (R213: "The guns look randomly placed and don't make sense... the builds look like square blocks basically. It barely looks like the concepts."). A17: "Keep it lean" (length to beam about 3.0). |
-| Eclipse | flagship E11; ring cruiser E12 | ACCEPTED (R206); build sheets next | contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg, deathless_E12_beauty.jpg | Keep the Eclipse purple (E10 lost it, R201). The builder adds the struts the E12 ring arcs lack (R207: "Where there are gaps like eclipse rings not all having structural connections... you should build differently"). |
-| The Chorus | flagship C10; bladeback cruiser C11 | ACCEPTED (R204); build sheets next | contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg, chorus_C11_beauty.jpg | R204: "The chorus ones look good, we can fix color ourselves rather than get stuck in a loop with color fixes with image generation." Bile yellow-green set in the build sheet's colour notes. The two read as two classes (the README's outline sheet). |
+| Eclipse | flagship E11; ring cruiser E12 | ACCEPTED (R206); sheets built and both in the game (issues 618, 642, 1057) | contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg, deathless_E12_beauty.jpg | Keep the Eclipse purple (E10 lost it, R201). The builder adds the struts the E12 ring arcs lack (R207: "Where there are gaps like eclipse rings not all having structural connections... you should build differently"). |
+| The Chorus | flagship C10; bladeback cruiser C11 | ACCEPTED (R204); sheets built and through the recipe (issue 623; C10 relief, issue 921) | contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg, chorus_C11_beauty.jpg | R204: "The chorus ones look good, we can fix color ourselves rather than get stuck in a loop with color fixes with image generation." Bile yellow-green set in the build sheet's colour notes. The two read as two classes (the README's outline sheet). |
 | Sunward Crusade | flagship, S8 shape; fighter SF3, bomber SB4 | FLAGSHIP SHEET ACCEPTED (R254); painted in the sandbox (PR 772), hull to come up a step lighter toward the concept's grey before the PC recipe run (R256); craft SF3 and SB4 confirmed (R256), sheets built (PR 776) | docs/ship_pipeline/build_sheets/voidsworn_S8/ (build sheet); craft: contrib/muse/design/squadron_concepts_2026_11/sunward/round_2/SF3.jpg, SB4.jpg | R254: "Everything for sunward flagship is good. The fighters and bombers need a ton of work, new concepts to come." R255: "Agree on sf3 and sb4". Round 1 craft read as jets (no canopies, aero wings or tail fins). |
-| Hegemony Navy | Dominion (h_dominion), H10 shape; Iron Mandate (h_boss), IM5 | BOTH SHEETS ACCEPTED (R256): Dominion (PR 767) and Iron Mandate (PR 775); the Hegemony paint stack is next | docs/ship_pipeline/build_sheets/hegemony_H10/ (build sheet); Iron Mandate: contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg | R198: "H10 but I don't think it's in the same style as we see in hullbreakers. It's semi realistic but not quite." R254: "Can we do a mix of im2 and im3"; R255: "Im5 is my preference". A well-kept navy, never rusty; guns low, sunk in and real (R185). |
-| The Glasswrights | flagship CD5 (Flowing Integrated Optics) | ACCEPTED (R298); build sheet next (issue 912) | Downloads\voidsworn_test\concepts\glasswright_r9\Glasswright_CD5_flowing_integrated_optics.png on the PC; the build sheet (issue 912) copies it into its own folder as concept.jpg | R298: "I love the overall design and the forward lances. The three other optics look somewhat left-heavy and randomly spaced, so clean up their placement in Blender while keeping them integrated into the flowing glass and consistent with their all-direction firing arcs. Treat the picture as a reference, not a literal placement guide." Made in ChatGPT image generation from G15's base (R296). |
+| Meridian Directorate | Dominion (h_dominion), H10 shape; Iron Mandate (h_boss), IM5 | BOTH SHEETS ACCEPTED (R256): Dominion (PR 767) and Iron Mandate (PR 775); the Hegemony paint stack is next | docs/ship_pipeline/build_sheets/hegemony_H10/ (build sheet); Iron Mandate: contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg | R198: "H10 but I don't think it's in the same style as we see in hullbreakers. It's semi realistic but not quite." R254: "Can we do a mix of im2 and im3"; R255: "Im5 is my preference". A well-kept navy, never rusty; guns low, sunk in and real (R185). |
+| The Glasswrights | flagship CD5 (Flowing Integrated Optics) | ACCEPTED (R298); build sheet done (issue 912); look restarting from the concept (R337, issue 1183) | Downloads\voidsworn_test\concepts\glasswright_r9\Glasswright_CD5_flowing_integrated_optics.png on the PC; the build sheet (issue 912) copies it into its own folder as concept.jpg | R298: "I love the overall design and the forward lances. The three other optics look somewhat left-heavy and randomly spaced, so clean up their placement in Blender while keeping them integrated into the flowing glass and consistent with their all-direction firing arcs. Treat the picture as a reference, not a literal placement guide." Made in ChatGPT image generation from G15's base (R296). |
 | Station | Vesper Reach, damaged | ACCEPTED (R206: "T2 damaged"); build sheet, then issue 373 | contrib/muse/design/station_concept_2026_11/station_T2_beauty.jpg | Concept picture first, then the build (R201 (3)). |
 
 History, not targets: every earlier pick (S8's own render, S9, S10, E4, E8, E9, E10, H8, H9, H11, H12, A10 to A15, G9 to G14,

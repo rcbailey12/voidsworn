@@ -221,6 +221,7 @@ func _build_ships() -> void:
 				var mat := mi.get_active_material(si)
 				if mat is BaseMaterial3D:
 					mi.set_surface_override_material(si, LOOK.hull(mat, s["fac"], true))
+		load("res://render/mesh_watch.gd").touch(sv)   # issue 1204: hull materials set after the ship entered the scene
 		ships[s["id"]] = sv
 	var n_fleet := int(args.get("fleet", "0"))
 	for i in maxi(0, n_fleet - FLAGS.size()):
@@ -604,7 +605,7 @@ func _capture(path: String) -> void:
 	var img := vp.get_texture().get_image()
 	if img != null and not img.is_empty():
 		img.convert(Image.FORMAT_RGB8)
-		preload("res://tools/picture_provenance.gd").save_png(img, path)
+		preload("res://tools/picture_provenance.gd").save_png(img, path, preload("res://tools/picture_provenance.gd").capture_stage())
 		print("[gallery] wrote %s at t=%.2f" % [path, clock])
 	pending -= 1
 
@@ -674,7 +675,7 @@ func _process_clip() -> void:
 		var img := vp.get_texture().get_image()
 		if img != null and not img.is_empty():
 			img.convert(Image.FORMAT_RGB8)
-			preload("res://tools/picture_provenance.gd").save_jpg(img, dir.path_join("f%04d.jpg" % clip_n), 0.88)
+			preload("res://tools/picture_provenance.gd").save_jpg(img, dir.path_join("f%04d.jpg" % clip_n), 0.88, preload("res://tools/picture_provenance.gd").capture_stage())
 			clip_n += 1
 	if clock > t1:
 		print("[gallery] clip: %d frames" % clip_n)

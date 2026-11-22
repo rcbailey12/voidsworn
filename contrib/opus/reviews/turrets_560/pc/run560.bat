@@ -47,6 +47,7 @@ for %%C in (V14_23 D21_23) do robocopy "%R%\build\godot\assets\ships\%%C" "%P%\a
 if not exist "%P%\assets\ships\C15s_23" mkdir "%P%\assets\ships\C15s_23"
 copy /y "%EX%\C15s_23.glb" "%P%\assets\ships\C15s_23\" >> "%D%\log_copy.txt" 2>&1
 copy /y "%EX%\C15s_23_*.jpg" "%P%\assets\ships\C15s_23\" >> "%D%\log_copy.txt" 2>&1
+if exist "%EX%\C15s_23_*.png" copy /y "%EX%\C15s_23_*.png" "%P%\assets\ships\C15s_23\" >> "%D%\log_copy.txt" 2>&1
 echo copied %time% >> "%D%\status.txt"
 call "%D%\tmo.bat" 3600 "%G%" --headless --path "%P%" --import > "%D%\log_import.txt" 2>&1
 echo import exit !errorlevel! %time% >> "%D%\status.txt"

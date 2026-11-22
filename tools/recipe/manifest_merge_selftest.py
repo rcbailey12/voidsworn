@@ -11,34 +11,51 @@ import manifest_merge as stage
 CODE = 'TEST_1101'
 GLB = CODE + '.glb'
 JPG = CODE + '_base.jpg'
+NORMAL = CODE + '_normal.png'
+ORM = CODE + '_parts_orm.png'
 OLD_MAP = CODE + '_old.jpg'
+OLD_PNG = CODE + '_old_normal.png'
 
 
-def check_snapshot(root):
-    export, snapshot = root / 'export', root / 'checked'
-    export.mkdir(parents=True)
-    snapshot.mkdir()
-    doc = json.dumps({'images': [{'uri': JPG}]}).encode('utf-8')
+def write_glb(path, *maps):
+    doc = json.dumps({'images': [{'uri': name} for name in maps]}).encode('utf-8')
     doc += b' ' * (-len(doc) % 4)
     glb = struct.pack('<4sIII4s', b'glTF', 2, 20 + len(doc), len(doc), b'JSON') + doc
-    (export / GLB).write_bytes(glb)
+    path.write_bytes(glb)
+
+
+def make_export(export):
+    export.mkdir(parents=True)
+    write_glb(export / GLB, JPG, NORMAL, ORM)
     (export / JPG).write_bytes(b'checked texture')
+    (export / NORMAL).write_bytes(b'checked normal')
+    (export / ORM).write_bytes(b'checked orm')
     (export / OLD_MAP).write_bytes(b'left over from a previous export')
-    (export / stage.ENTRY).write_bytes(b'{}')
-    expected = stage.export_snapshot(export, snapshot, CODE)
-    assert set(expected) == {GLB, JPG, stage.ENTRY}
-    assert {path.name for path in snapshot.iterdir()} == set(expected)
-    stage.verify(snapshot, expected)
-    print('PASS exact export set')
+    (export / stage.ENTRY).write_text('{"hardpoints":{"core":1}}', encoding='utf-8')
+
+
+def check_stray_maps(root):
+    export, snapshot = root / 'export', root / 'checked'
+    make_export(export)
+    snapshot.mkdir()
+    for stray in (CODE + '_base.png', '../' + NORMAL, 'OTHER_normal.png'):
+        write_glb(export / GLB, JPG, NORMAL, ORM, stray)
+        try:
+            stage.export_snapshot(export, snapshot, CODE)
+        except ValueError as exc:
+            assert 'unsupported export texture path' in str(exc), exc
+        else:
+            raise AssertionError(f'accepted stray texture name {stray}')
+    print('PASS stray texture paths rejected')
 
 
 def setup(root):
-    snapshot = root / 'checked'
-    snapshot.mkdir(parents=True)
-    (snapshot / GLB).write_bytes(b'checked hull')
-    (snapshot / JPG).write_bytes(b'checked texture')
-    (snapshot / stage.ENTRY).write_text('{"hardpoints":{"core":1}}', encoding='utf-8')
-    expected = {path.name: stage.sha256(path) for path in snapshot.iterdir()}
+    export, snapshot = root / 'export', root / 'checked'
+    make_export(export)
+    snapshot.mkdir()
+    expected = stage.export_snapshot(export, snapshot, CODE)
+    assert set(expected) == {GLB, JPG, NORMAL, ORM, stage.ENTRY}
+    assert {path.name for path in snapshot.iterdir()} == set(expected)
 
     project = root / 'project with spaces'
     live = project / 'assets' / 'ships' / CODE
@@ -46,6 +63,7 @@ def setup(root):
     live.mkdir(parents=True)
     scene.parent.mkdir(parents=True)
     originals = {live / GLB: b'old hull', live / JPG: b'old texture',
+                 live / OLD_PNG: b'old lossless map',
                  live / OLD_MAP: b'old map', live / (CODE + '_wreck.glb'): b'old wreck',
                  live / (CODE + '_damage.glb'): b'old damage', live / 'notes.txt': b'keep',
                  live.parent / 'manifest.json': b'{"ships":{"other":{"keep":true}}}',
@@ -58,6 +76,7 @@ def setup(root):
 
 def exercise(root, fault):
     project, live, scene, snapshot, expected, originals = setup(root)
+    checked_glb = (snapshot / GLB).read_bytes()
     manifest = live.parent / 'manifest.json'
     cache = scene.parent.parent / 'manifest.json'
     refreshed = False
@@ -66,7 +85,7 @@ def exercise(root, fault):
         nonlocal refreshed
         refreshed = True
         assert [child.name for child in ships.iterdir()] == [CODE]
-        assert (ships / CODE / GLB).read_bytes() == b'checked hull'
+        assert (ships / CODE / GLB).read_bytes() == checked_glb
         assert not scene.exists(), 'the old cache scene could suppress a rebuild'
         # A second stage or manifest-only merge cannot write inside this window.
         try:
@@ -82,10 +101,12 @@ def exercise(root, fault):
 
     def readback():
         assert scene.read_bytes() == b'new cached scene'
-        assert (live / GLB).read_bytes() == b'checked hull'
+        assert (live / GLB).read_bytes() == checked_glb
         assert (live / JPG).read_bytes() == b'checked texture'
+        assert (live / NORMAL).read_bytes() == b'checked normal'
+        assert (live / ORM).read_bytes() == b'checked orm'
         assert (live / 'notes.txt').read_bytes() == b'keep'
-        assert set(path.name for path in live.iterdir()) == {GLB, JPG, 'notes.txt'}
+        assert set(path.name for path in live.iterdir()) == {GLB, JPG, NORMAL, ORM, 'notes.txt'}
         assert json.loads(manifest.read_bytes())['ships'] == {
             'other': {'keep': True}, CODE: {'hardpoints': {'core': 1}}}
         if fault == 'readback':
@@ -139,9 +160,40 @@ def exercise(root, fault):
     print(f'PASS {fault or "install"}')
 
 
+def exercise_scratch(root, failed):
+    project, _, _, _, _, _ = setup(root)
+    job = root / 'job'
+    job.mkdir()
+    export = root / 'export'
+    snapshots = []
+
+    def run_check(command, log):
+        snapshot = Path(command[4])
+        (snapshot / (CODE + '_check.json')).write_text('{}', encoding='utf-8')
+
+    def install(project, code, snapshot, expected, refresh, readback):
+        stage.verify(snapshot, expected)
+        snapshots.append(snapshot)
+        if failed:
+            raise RuntimeError('injected install failure')
+
+    with patch.object(stage.tempfile, 'tempdir', str(root)), patch.object(stage, 'run_check', run_check), patch.object(stage, 'install', install):
+        try:
+            assert stage.install_export(export, project, CODE, 'godot', job, 'ship.json') == 0
+        except RuntimeError as exc:
+            assert failed and 'injected install failure' in str(exc)
+        else:
+            assert not failed
+    assert len(snapshots) == 1 and snapshots[0].exists() == failed
+    print('PASS stage 7 scratch ' + ('kept after failed install' if failed else 'removed after successful install'))
+
+
 if __name__ == '__main__':
-    root = Path(tempfile.mkdtemp(prefix='stage7-selftest-'))
-    check_snapshot(root / 'snapshot')
-    for fault in (None, 'changed_checked_glb', 'stage_copy', 'backup_copy', 'backup_move',
-                  'refresh', 'readback', 'changed_installed_map'):
-        exercise(root / (fault or 'success'), fault)
+    with tempfile.TemporaryDirectory(prefix='stage7-selftest-') as temp:
+        root = Path(temp)
+        check_stray_maps(root / 'stray')
+        for fault in (None, 'changed_checked_glb', 'stage_copy', 'backup_copy', 'backup_move',
+                      'refresh', 'readback', 'changed_installed_map'):
+            exercise(root / (fault or 'success'), fault)
+        exercise_scratch(root / 'scratch_success', False)
+        exercise_scratch(root / 'scratch_failure', True)

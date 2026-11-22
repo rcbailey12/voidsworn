@@ -25,7 +25,7 @@ func shot(dir: String, name: String) -> void:
 				for scroll in ui.page_box.find_children("*", "ScrollContainer", true, false): scroll.ensure_control_visible(label)
 		for i in range(4): await process_frame
 	await RenderingServer.frame_post_draw
-	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), dir.path_join(name + ".png")) == OK, "save " + name)
+	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), dir.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()) == OK, "save " + name)
 
 func _run() -> void:
 	var args = OS.get_cmdline_user_args()

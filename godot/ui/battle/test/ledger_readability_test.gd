@@ -351,7 +351,7 @@ func _run() -> void:
 		for i in 3:
 			ws.append({"i": 3 + i, "name": "Hellfire torpedo rack", "arc": "T", "kind": "torp", "range": 9, "distance": 6, "hit": 41 + i, "ready": true, "armed": i == 1, "dmg": 30, "cost": "CD 3", "desc": "Turret, 1x30 damage."})
 		var long_ship := ship("Sunward Martyr of the Ninth Pyre", "Pyre-Barge, elite captain", ws, orders(true),
-			"[color=#9fd4ff]Braced: hull damage -40% until its next turn.[/color] [color=#ff8a72]Torpedoes inbound: move 3 or more hexes from its marked hex to dodge.[/color]")
+			"[color=#9fd4ff]Braced: hull damage -40% until its next turn.[/color] [color=#ff8a72]The enemy fleet is focusing its fire on this ship.[/color]")
 		var big := rows(20, true)
 		feed(h, {"rows": big})
 		await process_frame

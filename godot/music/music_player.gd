@@ -182,6 +182,28 @@ func play_map(sector := 1) -> void:
 	_play_single(id, "map")
 
 
+# Issue 1217: the faction desk plays the picked faction's own theme (its fac_* track: the intense layer, else the calm
+# layer, else the bed) as one loop, crossfaded like a map change. Unknown factions, or a faction with no track, keep the
+# title music. Leaving the desk calls play_title() or play_map() as usual.
+func faction_preview_id(fac: String) -> String:
+	var fl := _flavour(fac)
+	for slot in ["intense", "calm", "bed"]:
+		if fl.has(slot):
+			var v = fl[slot]
+			var id := str(v[0]) if v is Array and not (v as Array).is_empty() else str(v)
+			if id.begins_with("fac_") and not _track(id).is_empty():
+				return id
+	return ""
+
+
+func play_faction_preview(fac: String) -> void:
+	var id := faction_preview_id(fac)
+	if id == "":
+		play_title()
+		return
+	_play_single(id, "preview")
+
+
 func _play_single(id: String, mode: String) -> void:
 	_stop_sting()
 	if _single != null and _single.playing and _single.get_meta("id", "") == id:
@@ -287,17 +309,19 @@ func feed(d: Dictionary) -> float:
 
 # ---------- stings ----------
 
-func victory(boss := false) -> void:
+func victory(boss := false) -> bool:
 	# a boss win (or any win in a battle started with boss = true) gets the champion fanfare when one is listed
 	# (sting_finished still reports "victory")
-	_sting_play("victory", "victory_boss" if (boss or _boss) and _slot(["stings", "victory_boss"]) != "" else "victory")
+	return _sting_play("victory", "victory_boss" if (boss or _boss) and _slot(["stings", "victory_boss"]) != "" else "victory")
 
 
-func defeat() -> void:
-	_sting_play("defeat")
+func defeat() -> bool:
+	return _sting_play("defeat")
 
 
-func _sting_play(kind: String, slot := "") -> void:
+# Issue 1448: true when the player will hear this music sting (music on, volume up and the track found), so the battle
+# plays its own synth sting only when the music cannot (two victory sounds at once before).
+func _sting_play(kind: String, slot := "") -> bool:
 	_stop_sting()
 	_battle_target = 0.0
 	_fade_out_single(1.2)
@@ -306,11 +330,12 @@ func _sting_play(kind: String, slot := "") -> void:
 	var s := _stream(id, false)
 	if s == null:
 		sting_finished.emit(kind)
-		return
+		return false
 	_sting.stream = s
 	_sting.volume_db = _gain(id)
 	_sting.set_meta("kind", kind)
 	_sting.play()
+	return on and vol > 0.001
 
 
 func _on_sting_done() -> void:
@@ -328,6 +353,20 @@ func stop(dur := 2.0) -> void:
 	_stop_sting()
 	_fade_out_single(dur)
 	_battle_target = 0.0
+	_mode = ""
+
+
+# Issue 1457: quit_clean calls this before the tree quits. A player still playing at exit keeps its
+# AudioStreamPlayback, so the title track was reported as a resource in use at exit.
+func release() -> void:
+	set_process(false)
+	# every player child, including faded ones already queued for freeing
+	for p in get_children():
+		if p is AudioStreamPlayer:
+			p.stop()
+			p.stream = null
+	_old.clear()
+	_streams.clear()
 	_mode = ""
 
 

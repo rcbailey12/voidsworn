@@ -54,6 +54,103 @@ const PLANETS := [
 const FLOOK := preload("res://fx/faction_look.gd")
 
 
+# Issue 1272 (R352): remixed planet looks, one per base look, picked per campaign sector so a run shows more than the three
+# planets its biomes name. Same kinds, new palettes, remixed past recognition (RULEBOOK 10.3). Index i + 8 remixes PLANETS[i].
+const PLANETS_ALT := [
+	{"kind": 0, "a": Vector3(0.62, 0.66, 0.58), "b": Vector3(0.28, 0.3, 0.22), "c": Vector3(0.9, 0.92, 0.82), "atmo": Vector3(0.75, 0.88, 0.7), "rings": false, "moons": 2},
+	{"kind": 1, "a": Vector3(0.3, 0.62, 0.66), "b": Vector3(0.12, 0.34, 0.4), "c": Vector3(0.75, 0.95, 0.95), "atmo": Vector3(0.45, 0.9, 0.95), "rings": true, "moons": 1},
+	{"kind": 0, "a": Vector3(0.74, 0.5, 0.46), "b": Vector3(0.36, 0.18, 0.16), "c": Vector3(0.96, 0.84, 0.76), "atmo": Vector3(1.0, 0.7, 0.6), "rings": true, "moons": 3},
+	{"kind": 2, "a": Vector3(0.42, 0.34, 0.22), "b": Vector3(0.05, 0.08, 0.12), "c": Vector3(0.82, 0.76, 0.66), "atmo": Vector3(0.5, 0.7, 0.95), "rings": false, "moons": 2},
+	{"kind": 3, "a": Vector3(0.36, 0.32, 0.3), "b": Vector3(0.12, 0.08, 0.07), "c": Vector3(0.95, 0.42, 0.18), "atmo": Vector3(0.9, 0.42, 0.25), "rings": false, "moons": 1},
+	{"kind": 4, "a": Vector3(0.52, 0.44, 0.36), "b": Vector3(0.22, 0.17, 0.13), "c": Vector3(0.7, 0.62, 0.52), "atmo": Vector3(0.0, 0.0, 0.0), "rings": true, "moons": 1},
+	{"kind": 5, "a": Vector3(0.82, 0.8, 0.86), "b": Vector3(0.4, 0.44, 0.56), "c": Vector3(0.7, 0.86, 1.0), "atmo": Vector3(0.7, 0.8, 1.0), "rings": false, "moons": 0},
+	{"kind": 0, "a": Vector3(0.66, 0.6, 0.38), "b": Vector3(0.3, 0.24, 0.12), "c": Vector3(0.95, 0.92, 0.7), "atmo": Vector3(0.9, 0.85, 0.5), "rings": false, "moons": 2},
+]
+
+# Issue 1272 (R352): each fight stop keeps the sector's sky and anchor planet but frames and colours it for the stop. One table.
+#   rival: a fight against another faction than the sector's own: some of that faction's nebula colours seep into the sky.
+#   boss: brighter, harder sky and the planet brought nearer. salvage: a fight on a wreck-field map: heavy dust, dimmer glow.
+# The keys scale the setting's own values; "mix" blends c1/c3 toward the rival faction's nebula colours.
+const STOP_MOOD := {
+	"rival": {"mix": 0.45, "mix3": 0.4},
+	"boss": {"neb": 1.6, "cover": 1.25, "c3": 1.3, "frame": 1.5},
+	"salvage": {"dust": 2.6, "neb": 0.6, "band": 0.6},
+}
+# Per-stop framing of the anchor planet (seeded by the stop): how big it sits in the sky and how far round it turns.
+const STOP_FRAMES := [{"scale": 1.0, "az": 0.0}, {"scale": 1.3, "az": -0.1}, {"scale": 0.8, "az": 0.22}, {"scale": 1.12, "az": 0.12}]
+
+
+# Which mood a fight stop gets. stop: {kind, fac, sector_fac}; map_kind from world.gd map_kind (graveyard = wreck field).
+static func stop_kind(stop: Dictionary, map_kind: String) -> String:
+	if str(stop.get("kind", "")) == "boss": return "boss"
+	var fac := str(stop.get("fac", ""))
+	if fac != "" and str(stop.get("sector_fac", fac)) != fac: return "rival"
+	if map_kind == "graveyard": return "salvage"
+	return "plain"
+
+
+# The sector setting for one stop: the same sky seed and anchor planet, with the stop's mood and framing laid on.
+static func stop_mood(s0: Dictionary, stop: Dictionary, map_kind: String) -> Dictionary:
+	var s := s0.duplicate(true)
+	var mood := stop_kind(stop, map_kind)
+	s["mood"] = mood
+	# The sky picture stays the sector's own bake (its inputs are kept here); the mood rides on cheap sky uniforms, so a
+	# mood stop loads like a plain one (1332 timing on the 5080: a rebake per mood cost 3.7 to 6.1 s).
+	var bake := {}
+	for k in ["c1", "c2", "c3", "neb", "cover", "dust", "band"]: bake[k] = s0[k]
+	s["bake"] = bake
+	var m: Dictionary = STOP_MOOD.get(mood, {})
+	for k in ["neb", "cover", "dust", "band"]:
+		if m.has(k): s[k] = float(s[k]) * float(m[k])
+	s["cover"] = minf(float(s["cover"]), 1.0)
+	if m.has("c3"): s["c3"] = (s["c3"] as Vector3) * float(m["c3"])
+	if m.has("mix"):
+		var rv: Array = FLOOK.of(str(stop["fac"])).get("nebula", FLOOK.of("voidsworn")["nebula"])
+		s["c1"] = (s["c1"] as Vector3).lerp((rv[1] as Vector3) * 1.3, float(m["mix"]))
+		s["c3"] = (s["c3"] as Vector3).lerp(rv[2] as Vector3, float(m["mix3"]))
+		var t: Vector3 = rv[1]
+		s["mood_tint"] = t / maxf(t.length(), 0.001)
+		s["mood_mix"] = float(m["mix"])
+	# the baked gas brightness follows neb; dust darkens the gas and swallows more stars
+	s["mood_gain"] = float(m.get("neb", 1.0))
+	s["mood_dim"] = clampf((float(m.get("dust", 1.0)) - 1.0) * 0.25, 0.0, 0.6)
+	var h := absi(hash(str(stop.get("node", "")) + "|" + str(stop.get("kind", ""))))
+	var f: Dictionary = STOP_FRAMES[h % STOP_FRAMES.size()] if stop.has("node") else STOP_FRAMES[0]
+	s["frame_scale"] = float(m.get("frame", f["scale"]))
+	s["frame_az"] = float(f["az"])
+	s["haze"] = ((s["c1"] as Vector3) * 0.5 + (s["c2"] as Vector3) * 0.5) * (0.05 + 0.06 * float(s["neb"]))
+	return s
+
+
+# A sector's anchor planet: the biome's look or its remix, picked by the sector's own map (stable across save and load).
+static func planet_variant(s0: Dictionary, sector_key: String) -> Dictionary:
+	var s := s0.duplicate(true)
+	if absi(hash(sector_key)) % 2 == 1:
+		var i := int(s["planet_i"]) % PLANETS_ALT.size()
+		s["planet_base_i"] = int(s["planet_i"])
+		s["planet_i"] = i + PLANETS.size()
+		s["planet"] = PLANETS_ALT[i]
+	return s
+
+
+# The setting with the sector's own bake inputs (no stop mood): what the sky picture is baked from.
+static func bake_view(s0: Dictionary) -> Dictionary:
+	if not s0.has("bake"): return s0
+	var s := s0.duplicate(true)
+	for k in s0["bake"]: s[k] = s0["bake"][k]
+	return s
+
+
+# The sector's own base planet look (undoes planet_variant), for boards that keep today's look.
+static func base_planet(s0: Dictionary) -> Dictionary:
+	if not s0.has("planet_base_i"): return s0
+	var s := s0.duplicate(true)
+	s["planet_i"] = int(s["planet_base_i"])
+	s["planet"] = PLANETS[s["planet_i"]]
+	s.erase("planet_base_i")
+	return s
+
+
 static func region_for(biome: Dictionary) -> String:
 	var rock := str(biome.get("rock", ""))
 	var pl := int(biome.get("planet", -1))
@@ -178,15 +275,19 @@ void field(vec3 p, out float gas, out float dst, out float hue) {
 
 vec3 galaxy_band(vec3 d, out float rift) {
 	float y = dot(d, band_n);
-	float core = exp(-pow(y / 0.17, 2.0));
-	float wide = exp(-pow(y / 0.42, 2.0));
+	// y is signed (negative on one side of the band); GLSL leaves pow() undefined for a negative base, so square by hand
+	float yc = y / 0.17;
+	float yw = y / 0.42;
+	float yr = y / 0.06;
+	float core = exp(-yc * yc);
+	float wide = exp(-yw * yw);
 	// the galactic centre is warmer and brighter on one side of the band
 	vec3 cdir = normalize(cross(band_n, vec3(0.31, 0.0, 0.95)));
 	float cen = 0.5 + 0.5 * dot(normalize(d - band_n * y), cdir);
 	float clump = fbm3n(d * 9.0 + seed * 0.7, 5);
 	float lum = (core * (0.4 + 0.9 * smoothstep(0.35, 0.75, clump)) + wide * 0.18) * (0.6 + 0.9 * cen * cen);
 	float rn = fbm3n(d * 6.0 + vec3(5.0, seed, 1.0), 5);
-	rift = 1.0 - exp(-pow(y / 0.06, 2.0)) * smoothstep(0.35, 0.6, rn) * 0.85 - core * smoothstep(0.55, 0.75, rn) * 0.4;
+	rift = 1.0 - exp(-yr * yr) * smoothstep(0.35, 0.6, rn) * 0.85 - core * smoothstep(0.55, 0.75, rn) * 0.4;
 	vec3 col = mix(vec3(0.55, 0.62, 0.8), vec3(1.0, 0.82, 0.6), cen * cen);
 	return col * lum * band * 0.06;
 }
@@ -268,11 +369,41 @@ void fragment() {
 
 # ---------------------------------------------------------------- the per-frame sky shader
 
+# Issue 1679, SG option. Broad, subdued lobes in linear light. The sun side is warmer and brighter than the back-bounce.
+const FLEET_REFLECTIONS := """
+uniform bool fleet_reflections = false;
+
+vec3 fleet_reflection_gradient(vec3 direction, vec3 sun_direction) {
+	float sun_side = dot(direction, sun_direction);
+	float warm = smoothstep(0.0, 1.0, sun_side);
+	float cool = smoothstep(0.0, 1.0, -sun_side);
+	return vec3(0.12, 0.10, 0.075) * warm + vec3(0.025, 0.036, 0.05) * cool;
+}
+"""
+
+const PANORAMA_SKY := """
+shader_type sky;
+uniform sampler2D pano : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform vec3 sun_dir;
+""" + FLEET_REFLECTIONS + """
+void sky() {
+	vec3 c = texture(pano, SKY_COORDS).rgb;
+	COLOR = min(c * 0.8, vec3(0.6));
+	if (AT_CUBEMAP_PASS && fleet_reflections) {
+		COLOR += fleet_reflection_gradient(EYEDIR, sun_dir);
+	}
+}
+"""
+
 const SKY := """
 shader_type sky;
 uniform sampler2D neb_tex : filter_linear, repeat_enable;
 uniform float has_neb = 0.0;
 uniform float neb_gain = 1.0;
+uniform vec3 mood_tint = vec3(1.0);   // issue 1272: a stop's mood on the sector's baked gas (defaults change nothing)
+uniform float mood_mix = 0.0;
+uniform float mood_gain = 1.0;
+uniform float mood_dim = 0.0;
 uniform float seed = 0.0;
 uniform float star_k = 1.0;
 uniform float star_floor = 0.15;   // E18/BD8: brightness of a star seen through the nebula body
@@ -291,6 +422,7 @@ uniform float has_pano = 0.0;
 uniform float sun_k = 1.0;
 uniform float dawn = 0.0;
 uniform vec3 dawn_dir = vec3(-0.6, 0.7, -0.2);
+""" + FLEET_REFLECTIONS + """
 
 float sh31(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
 vec3 sh33(vec3 p) { p = fract(p * vec3(0.1031, 0.103, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
@@ -335,12 +467,15 @@ void sky() {
 	if (has_neb > 0.5) {
 		vec2 uv = vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359);
 		vec4 t = texture(neb_tex, uv);
-		col += pow(t.rgb, vec3(2.2)) * neb_gain;
-		T = t.a;
+		vec3 g = pow(t.rgb, vec3(2.2)) * neb_gain * mood_gain;
+		g = mix(g, mood_tint * dot(g, vec3(0.3, 0.59, 0.11)) * 1.7, mood_mix);
+		col += g * (1.0 - mood_dim);
+		T = t.a * (1.0 - mood_dim * 0.6);
 	}
 	if (!AT_CUBEMAP_PASS) {
 		float y = dot(d, band_n);
-		float bd = exp(-pow(y / 0.25, 2.0)) * band;
+		float yb = y / 0.25;   // signed: square by hand, never pow() (undefined for a negative base)
+		float bd = exp(-yb * yb) * band;
 		vec3 st = star_layer(d, 120.0, 0.955, 1.0, bd * 0.03) + star_layer(d, 300.0, 0.985, 0.55, bd * 0.012) + star_layer(d, 650.0, 0.994, 0.35, bd * 0.004);
 		col += st * star_k * mix(star_floor, 1.0, T) * (1.0 - 0.6 * has_pano);
 		// the stars inside the gas, with halos
@@ -357,6 +492,9 @@ void sky() {
 	float catch_light = pow(max(0.0, 0.5 + 0.5 * dot(EYEDIR, normalize(dawn_dir))), 2.0);
 	col = mix(col, col * vec3(1.18, 1.03, 0.84), dawn * 0.55);
 	col += vec3(0.10, 0.047, 0.016) * catch_light * dawn;
+	if (AT_CUBEMAP_PASS && fleet_reflections) {
+		col += fleet_reflection_gradient(EYEDIR, normalize(sun_dir));
+	}
 	COLOR = col;
 }
 """

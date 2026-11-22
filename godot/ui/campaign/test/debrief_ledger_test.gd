@@ -4,6 +4,7 @@ const Campaign = preload("res://campaign/campaign.gd")
 const UI = preload("res://ui/campaign/campaign_ui.gd")
 const GS = preload("res://ui/theme/glass_shell.gd")
 const JSM = preload("res://rules/jsm.gd")
+const UiScale = preload("res://ui/ui_scale.gd")
 var failures := 0
 var C
 var ui
@@ -123,7 +124,7 @@ func capture(name: String) -> void:
 	if shots == "": return
 	await frames(12); await RenderingServer.frame_post_draw
 	if preload("res://render/placeholder_guard.gd").stop_if_any(): return
-	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join("DB1_" + name + ".png")) == OK, "capture " + name)
+	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join("DB1_" + name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()) == OK, "capture " + name)
 	print("shot DB1_" + name)
 
 func run() -> void:
@@ -156,6 +157,17 @@ func run() -> void:
 				key(entry[0]); await frames(); await capture(entry[1]); key(KEY_ESCAPE); await frames()
 		if shots != "":
 			check(ui.debrief.ship_portrait == null or ui.debrief.ship_portrait.installed, state + ": capture uses installed model")
+	# Issue 1559 item 3: at the player's Large and Larger UI scale, and in a 4:3 window, every line and action of the page
+	# stays on screen and nothing overlaps (it ran off the bottom at Larger and lost width in 4:3)
+	for case in [[1.15, Vector2i(1920, 1080), "large"], [1.3, Vector2i(1920, 1080), "larger"], [1.0, Vector2i(1440, 1080), "four_three"], [1.3, Vector2i(1440, 1080), "four_three_larger"]]:
+		UiScale.set_player(case[0]); root.size = case[1]
+		if shots != "": DisplayServer.window_set_size(case[1])
+		await frames(); ui._rescale(); fixture("loss"); ui.render(); await frames()
+		readability("loss_" + str(case[2]))
+		await capture("loss_" + str(case[2]))
+	UiScale.set_player(1.0); root.size = Vector2i(1920, 1080)
+	if shots != "": DisplayServer.window_set_size(Vector2i(1920, 1080))
+	await frames(); ui._rescale(); fixture("loss"); ui.render(); await frames()
 	# Exercise every moved item through the actual keys and buttons.
 	for code in [KEY_S, KEY_L, KEY_R, KEY_B, KEY_A, KEY_F]:
 		var before_open = C.save_text(); key(code); await frames()
@@ -174,7 +186,7 @@ func run() -> void:
 		if code == KEY_S:
 			for row in paid["cores"]: check(text.contains(str(C.PATRONS[row["id"]]["n"])) and text.contains(C.numstr(row["total"])), "sync keeps count for " + str(row["id"]))
 		if code == KEY_R:
-			check(text.contains(str(C.TB.STORY_BEAT3[run_data["fac"]]["learning"])), "record keeps story payoff")
+			check(not text.contains(str(C.TB.STORY_BEAT3[run_data["fac"]]["learning"])), "record does not invent a story payoff for this Sector II run")
 			for card in UI.CampaignTips.CARDS:
 				if card[0] == "c_loss": check(text.contains(str(card[2])), "record keeps original next-run teaching card")
 		if code == KEY_F:

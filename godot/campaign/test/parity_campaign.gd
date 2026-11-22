@@ -8,10 +8,10 @@ const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and
 const CampaignScript = preload("res://campaign/campaign.gd")
 var C
 
-const STAY := {"closeModal": 1, "buyHull": 1, "buyMod": 1, "repair": 1, "repairAll": 1, "upgradeMk": 1, "sellShip": 1, "sellConfirm": 1, "yardFleet": 1, "equip": 1, "unequip": 1, "promote": 1,
+const STAY := {"lateBuy": 1, "restoreCore": 1, "closeModal": 1, "buyHull": 1, "buyMod": 1, "repair": 1, "repairAll": 1, "upgradeMk": 1, "sellShip": 1, "sellConfirm": 1, "yardFleet": 1, "equip": 1, "unequip": 1, "promote": 1,
 	"fleetScreen": 1, "pickFaction": 1, "pickAdmiral": 1, "optAlt": 1, "optCmd": 1, "optHeat": 1, "progTab": 1, "buyVariant": 1, "factionVerb": 1, "buyTrack": 1, "buyLegacy": 1, "buyAdmiral": 1}
-const WT := {"enterNode": 10, "c3retreat": 2, "c3retreatYes": 1, "c3retreatNo": 1, "prizeSet": 3, "prizeConfirm": 4, "prizeStep": 1, "salvageStep": 1, "rewardNext": 1, "takeSalvage": 1,
-	"takeBoon": 1, "takeMod": 1, "takeRelic": 1, "takePerk": 1, "eventChoice": 1, "pickAspect": 1, "closeModal": 1, "fleetFromModal": 1, "buyHull": 3, "buyMod": 3, "repair": 2, "repairAll": 3,
+const WT := {"lateBuy": 2, "restoreCore": 2, "enterNode": 10, "c3retreat": 2, "c3retreatYes": 1, "c3retreatNo": 1, "prizeSet": 3, "prizeConfirm": 4, "rewardNext": 1, "takeSalvage": 1,
+	"takeBoon": 1, "takeMod": 1, "takeRelic": 1, "takePerk": 1, "eventChoice": 1, "pickAspect": 1, "closeModal": 1, "repairStop": 1, "buyHull": 3, "buyMod": 3, "repair": 2, "repairAll": 3,
 	"upgradeMk": 3, "sellShip": 1, "sellConfirm": 1, "yardFleet": 1, "leaveYard": 2, "equip": 4, "unequip": 1, "promote": 4, "backMap": 3, "backShipyard": 3, "fleetScreen": 1, "saveQuit": 1,
 	"continueRun": 20, "newRunScreen": 2, "pickFaction": 1, "pickAdmiral": 2, "optAlt": 1, "optCmd": 1, "optHeat": 1, "startRun": 3, "progTab": 1, "buyVariant": 3, "nextFac": 0, "abandonRun": 0,
 	"discardBrokenRun": 0, "factionVerb": 2, "boonReroll": 1, "boonDecline": 1, "buyTrack": 2, "buyLegacy": 3, "buyAdmiral": 2, "eatCore": 1, "refuseCoreEat": 1}   # R1: the purchase paths (PROG-2); R78 Q15: the Chorus core-eating choice (issue 42)

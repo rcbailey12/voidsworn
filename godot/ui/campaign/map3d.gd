@@ -35,7 +35,8 @@ const REGION_NEBULA_LANDMARK_SPREAD := 5.0
 const CAM_DIR := Vector3(0.0, 0.79, 0.62)
 const TOKEN_OFF := Vector3(0.0, 1.8, 3.0)   # where the fleet holds over a stop (above it, toward the camera)
 
-const GS = preload("res://ui/theme/glass_shell.gd")   # Lime Tactical pieces for the map words (issue #344)
+const GS = preload("res://ui/theme/glass_shell.gd")
+const Kit = preload("res://ui/theme/orders_kit.gd")   # issue 1448: the map's clicks use the same ui cues as the buttons   # Lime Tactical pieces for the map words (issue #344)
 const View = preload("res://campaign/campaign_view.gd")   # the stop's words and the Nemesis, read only
 const COL_W := 540.0          # the briefing column over the left of the chart (campaign_ui.gd)
 const BACKDROP_K := 0.5       # the backdrop's strength in the Briefing build ("dimmed about half")
@@ -85,6 +86,9 @@ var _flight_rotation := Quaternion.IDENTITY
 var _flight_heights := Vector2.ZERO
 var _arrival_tween: Tween
 var _engine_mounts: Array[Vector3] = []
+var _token_ships: Array[Node3D] = []
+var _token_glow: MeshInstance3D
+var _token_light: OmniLight3D
 var _wake_samples: Array = []
 var _wake_mesh: ImmediateMesh
 var _wake_node: MeshInstance3D
@@ -100,7 +104,13 @@ var _drag := false
 var _drag_at := Vector2.ZERO
 var _arrive_t := 0.0
 var _last_pos = null
-var loading := false
+var loading := false:
+	set(v):
+		loading = v
+		# A Jump pressed under the loading cover runs once the cover clears (issue 1448).
+		if not v and _queued_jump: _run_queued_jump.call_deferred()
+var _queued_jump := false   # a Jump pressed during loading; it jumps to the confirmed pick when loading clears (a new pick cancels it)
+var _queued_id := ""        # the stop the queued Jump confirmed; the jump runs only if it is still the pick and still offered
 var sector_world: Node3D
 var _fill: DirectionalLight3D
 
@@ -110,6 +120,11 @@ func _ready() -> void:
 	focus_mode = Control.FOCUS_ALL
 	vpc = SubViewportContainer.new(); vpc.stretch = true; vpc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); vpc.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(vpc)
 	vp = SubViewport.new(); vp.own_world_3d = true; vpc.add_child(vp)
+	# issue 1437: the player's Render scale (main.gd _apply_display) covers this full-screen view too
+	vp.add_to_group("player_3d_viewport")
+	var rs := float(Engine.get_meta("render_scale", 1.0))
+	vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR if rs >= 1.0 else Viewport.SCALING_3D_MODE_FSR
+	vp.scaling_3d_scale = rs
 	env = Environment.new()
 	env.background_mode = Environment.BG_COLOR; env.background_color = Color(0.004, 0.006, 0.012)
 	env.tonemap_mode = Environment.TONE_MAPPER_ACES; env.tonemap_exposure = 1.0; env.tonemap_white = 6.0
@@ -199,7 +214,10 @@ func _cancel_sector_load(cover: CanvasLayer) -> bool:
 	var C = _C()
 	if C != null and C.RUN != null: return false
 	cover.queue_free()
+	var had_jump := _queued_jump
+	_queued_jump = false; _queued_id = ""
 	loading = false
+	if had_jump: _reset_jump_label()
 	_sig = ""
 	return true
 
@@ -215,11 +233,11 @@ func _hull(fac: String, cls: String, length: float, code: String = "") -> Node3D
 	var sv = SV.new()
 	var u = {"fac": fac, "cls": cls, "facing": 0, "tpl": "", "id": "map"}
 	if code != "": u["code"] = code
+	sv.campaign_map = true
 	sv.setup(u, Vector3.ZERO, false)
 	var wrap = Node3D.new(); wrap.add_child(sv)
 	if sv.ring != null: sv.ring.visible = false
 	var k = length / max(0.1, float(sv.L)); wrap.scale = Vector3.ONE * k
-	sv.set_process(false)
 	return wrap
 # A wreck from A4's real death pieces (gen/wreck/<CODE>_wreck.scn, G2's asset build): the chunks of the ship drifted
 # apart and turned, smouldering at the torn edges. null when the build has no wreck pieces (the cloud sandbox).
@@ -525,7 +543,7 @@ func _torus(r0: float, r1: float) -> TorusMesh:
 # white: lime drawn as lime comes out a pale yellow, and no longer matches the lime of the marker and the button. This
 # finds the colour to draw so that the screen shows the colour asked for, as near as the tone map can reach, and never
 # brighter than 1.0 in any channel (so a route cannot bloom). One search per colour, then cached.
-static var _shown_cache := {}
+static var _shown_cache := {}   # not GPU: colour values
 static func _lin(v: float) -> float: return v / 12.92 if v <= 0.04045 else pow((v + 0.055) / 1.055, 2.4)
 static func _srgb(v: float) -> float:
 	v = clampf(v, 0.0, 1.0)
@@ -565,7 +583,7 @@ func for_screen(want: Color) -> Color:
 	return Color(out, want.a)
 # A pale line: the sage at a share of its strength as the eye reads it on the dark chart. The line blends in linear light,
 # where an alpha of 0.2 shows as about half strength (the first PC capture did), so the alpha is found from the tone map.
-static var _pale_cache := {}
+static var _pale_cache := {}   # not GPU: alpha values
 func pale(share: float) -> Color:
 	var base = for_screen(Color(GS.BONE, 1.0))
 	if _pale_cache.has(share): return Color(base, _pale_cache[share])
@@ -630,6 +648,7 @@ func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real h
 	var C = _C(); var t = Node3D.new(); var L = System.look(C.RUN["fac"])
 	_wake_samples.clear()
 	_engine_mounts.clear()
+	_token_ships.clear()
 	var fs = C.flagshipOf()
 	var h = null
 	if fs != null: h = _hull(C.RUN["fac"], str(C.HULLS[fs["tpl"]].get("cls", "Cruiser")), TOKEN_FLAGSHIP_LEN)
@@ -650,16 +669,30 @@ func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real h
 		if e != null:
 			e.position = Vector3(-3.8, -0.4, 3.0 if i == 0 else -3.0); t.add_child(e)
 			_add_engine_mounts(e)
-	sys.glow(t, L["light"], 3.6, stern, 2.0, 0.6)
-	var l = OmniLight3D.new(); l.light_color = L["light"]; l.light_energy = 2.4; l.omni_range = 9.0; l.position = stern; t.add_child(l)
+	_token_glow = sys.glow(t, L["light"], 3.6, stern, 2.0, 0.6)
+	_token_light = OmniLight3D.new()
+	_token_light.light_color = L["light"]; _token_light.omni_range = 9.0; _token_light.position = stern
+	t.add_child(_token_light)
+	_set_token_drive(0.0)
 	return t
 
 func _add_engine_mounts(h: Node3D) -> void:
 	# _hull wraps the ship view at map scale. Read its actual engine sprites
 	# through both transforms, including the escort's formation offset.
 	var sv = h.get_child(0)
+	_token_ships.append(sv)
 	for engine in sv.engines:
 		_engine_mounts.append(h.transform * sv.transform * engine.position)
+
+func _set_token_drive(burn: float) -> void:
+	for ship in _token_ships:
+		ship.set_fallback_drive(burn)
+	# The shared nozzle sprites supply the pilot glow. The broad light is for flight.
+	if _token_glow != null:
+		_token_glow.visible = burn > 0.0
+		_token_glow.material_override.set_shader_parameter("gain", 0.6 * burn)
+	if _token_light != null:
+		_token_light.light_energy = 2.4 * burn
 
 func _engine_positions() -> Array:
 	var positions: Array = []
@@ -702,7 +735,7 @@ func _refresh() -> void:
 		# your stop and the next jumps keep full models; stops further on are smaller and darker; behind you or cut off, dimmer still
 		_set_tier(d, 0 if (current or av.has(id)) else (2 if (done or bypassed) else 1))
 		if not done: _danger[id] = intel.danger(n)
-		d["nem"] = not done and n["type"] in ["battle", "elite"] and View.nem_node_is(C, n)
+		d["nem"] = not done and View.nem_node_is(C, n)   # issue 1175: rest and event stops in column 4 too
 		if not done or current: _kb_order.append(id)
 	_kb_order.sort_custom(func(a, b):
 		var na = _nodes[a]["n"]; var nb = _nodes[b]["n"]
@@ -818,8 +851,21 @@ func _arrive(new_sector: bool) -> void:   # the camera starts leaning on where t
 	tw.tween_property(self, "_cam_zoom", 1.0, float(sys.approach["arrival_seconds"]) if new_sector else 1.1)
 	tw.parallel().tween_property(self, "_cam_focus", Vector3.ZERO, float(sys.approach["arrival_seconds"]) if new_sector else 1.1)
 
+# issue 1437 (Astra W1): the host hides its whole UI for a battle, which leaves this Control's own `visible` true, so
+# the map kept flying, drifting, blinking and patrolling behind combat. Its SubViewport already stops drawing then.
+func map_live() -> bool:
+	return is_visible_in_tree() and _C() != null and _C().RUN != null and root3 != null
+
 func _process(delta: float) -> void:
-	if not visible or _C() == null or _C().RUN == null or root3 == null: return
+	var live := map_live()
+	# the arrival camera move is a tween, which runs on its own: hold it while the map is hidden and go on from there
+	if _arrival_tween != null and _arrival_tween.is_valid():
+		if live and not _arrival_tween.is_running(): _arrival_tween.play()
+		elif not live and _arrival_tween.is_running(): _arrival_tween.pause()
+	if live: _live_frame(delta)
+
+
+func _live_frame(delta: float) -> void:   # everything the map animates, only while it shows
 	_t += delta
 	var mp = get_local_mouse_position() / size.max(Vector2.ONE) - Vector2(0.5, 0.5)
 	mp = mp.clamp(Vector2(-0.5, -0.5), Vector2(0.5, 0.5))
@@ -1173,6 +1219,8 @@ func _gui_input(e: InputEvent) -> void:
 			var id = _node_at(e.position)
 			if id != "" and _avail().has(id):   # a click picks the route; a double click flies it (so does Enter or the lime button)
 				accept_event()
+				if e.double_click: Kit.play("ui_confirm")
+				elif str(ui.get("picked")) != id: Kit.play(Kit.HOVER_CUE)
 				if ui.has_method("pick_route"): ui.pick_route(id)
 				if e.double_click: fly_to(id)
 			elif e.double_click: reset_view()
@@ -1192,7 +1240,7 @@ func _gui_input(e: InputEvent) -> void:
 			_hot_by_key = true; _set_hot(_kb_order[_kb]); accept_event()
 		elif e.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
 			var pk = str(ui.picked) if ui.get("picked") != null else ""
-			if not e.echo and pk != "": accept_event(); fly_to(pk)
+			if not e.echo and pk != "": accept_event(); Kit.play("ui_confirm"); fly_to(pk)
 func _input(e: InputEvent) -> void:
 	# Consume the skip before a side-panel button can start another action.
 	if not _flying or not is_visible_in_tree(): return
@@ -1203,6 +1251,11 @@ func _input(e: InputEvent) -> void:
 		_finish_flight()
 
 func fly_to(id: String) -> void:
+	if loading and not _flying and not backdrop:
+		_queued_jump = true; _queued_id = id
+		var lbl = ui.get("_jump_lbl") if ui != null else null
+		if lbl is Label and is_instance_valid(lbl): lbl.text = "JUMPING WHEN READY"
+		return
 	if _flying or loading or backdrop or token == null or not _avail().has(id) or not _nodes.has(id) or _C().modal_d != null: return
 	if _arrival_tween != null: _arrival_tween.kill()
 	_flying = true; card.visible = false; _drag = false
@@ -1214,6 +1267,24 @@ func fly_to(id: String) -> void:
 	_wake_samples.clear(); _set_hot(""); _paint_lanes()
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 	grab_focus()
+
+# Runs the campaign UI's _jump only when the pick is still the stop the queued Jump confirmed and that stop is still offered,
+# so a pick changed by any path (pick_route, or a map redraw that auto-picks the first route) never flies. _jump then passes
+# all its guards (modal, overlay). A dropped jump puts the Jump label back.
+func _run_queued_jump() -> void:
+	if loading or not _queued_jump: return
+	var want := _queued_id
+	_queued_jump = false; _queued_id = ""
+	var still := ui != null and want != "" and str(ui.get("picked")) == want and _avail().has(want)
+	if still and ui.has_method("_jump"): ui._jump()
+	if not _flying: _reset_jump_label()
+
+# A selection change while a jump is queued cancels it; the caller's rail rebuild puts back JUMP TO <new pick>.
+func cancel_queued_jump() -> void:
+	_queued_jump = false; _queued_id = ""
+
+func _reset_jump_label() -> void:
+	if ui != null and ui.has_method("_show_pick"): ui._show_pick()   # rebuilds the rail: JUMP TO <pick>
 
 # Cosine acceleration, constant-speed cruise, then matching braking. The
 # integral is continuous in speed and acceleration, including both endpoints.
@@ -1245,8 +1316,10 @@ func _advance_flight(delta: float) -> void:
 	# depths pass naturally. Avoid the old close zoom that lost the whole sun.
 	_cam_focus = _cam_focus.lerp(p + lead, follow)
 	_cam_zoom = lerpf(_cam_zoom, 0.86, follow)
+	var burn := smoothstep(0.0, 0.15, t) * (1.0 - smoothstep(0.85, 1.0, t))
+	_set_token_drive(burn)
 	# Sample every presented frame so the head never lags behind the engines.
-	_wake_samples.append({"time": _t, "engines": _engine_positions()})
+	_wake_samples.append({"time": _t, "engines": _engine_positions(), "burn": burn})
 	if t >= 1.0: _finish_flight()
 
 func _finish_flight() -> void:
@@ -1259,6 +1332,7 @@ func _finish_flight() -> void:
 	var forward := (token.position - _flight_point(0.995)).normalized()
 	token.basis = Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.UP, PI * 0.5)
 	_flying = false; _flight_id = ""
+	_set_token_drive(0.0)
 	_C().act("enterNode", id)
 	_last_pos = _C().RUN.get("pos")
 	_arrive(false)
@@ -1282,8 +1356,15 @@ func _update_wake() -> void:
 	while not _wake_samples.is_empty() and _t - _wake_samples[0]["time"] > 0.65: _wake_samples.pop_front()
 	_wake_mesh.clear_surfaces()
 	if _wake_samples.size() < 2: return
-	# Keep the fading arrival tip on the engines as the idle bob resumes.
-	_wake_samples.back()["engines"] = _engine_positions()
+	var cutoff := 1.0
+	if _flying:
+		_wake_samples.back()["engines"] = _engine_positions()
+	else:
+		# Leave spent exhaust in space and clear it quickly after arrival.
+		cutoff = 1.0 - smoothstep(0.0, 0.2, _t - float(_wake_samples.back()["time"]))
+		if cutoff <= 0.0:
+			_wake_samples.clear()
+			return
 	for engine in _engine_mounts.size():
 		_wake_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
 		for i in _wake_samples.size():
@@ -1292,7 +1373,8 @@ func _update_wake() -> void:
 			var after: Vector3 = _wake_samples[mini(_wake_samples.size() - 1, i + 1)]["engines"][engine]
 			var side := (after - before).cross(cam.position - p).normalized()
 			var life := clampf(1.0 - (_t - float(_wake_samples[i]["time"])) / 0.65, 0.0, 1.0)
-			_wake_mesh.surface_set_color(Color(1.5, 1.5, 1.5, life * life * 0.85))
+			var alpha := life * life * 0.85 * float(_wake_samples[i]["burn"]) * cutoff
+			_wake_mesh.surface_set_color(Color(1.5, 1.5, 1.5, alpha))
 			_wake_mesh.surface_add_vertex(p - side * life * 0.26)
 			_wake_mesh.surface_add_vertex(p + side * life * 0.26)
 		_wake_mesh.surface_end()

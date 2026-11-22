@@ -1,394 +1,98 @@
-Saved manifest before: de431264a80388563e2f13d09787db6b8f720f06f284d78bb80daf883e43318e
-Saved manifest after: 99dd946bde8d8f3a1413e99da67a5e2e2dcdac72cd03a546c752737a698232b6
+Saved manifest before: c89541392e4431393427be745cfcc28ecbf9d587a854a4bcb0e07ec45066da7a
+Saved manifest after: 0bbfadbe6e4a5e2f8e5b2f62a1eefe9010854360b2caa7cf9a80239def947aa4
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle s6
-  turn 53, round 1, after move x011; unit x011 (enemy c_hulk)
-  state.units[5].abCd: 1 -> 0
-  later changed records: 193; total records: 217 -> 247
-FAIL battle s7
-  turn 229, round 5, after move x09; unit x09 (enemy h_dominion)
-  state.units[4].abCd: 1 -> 0
-  later changed records: 203; total records: 433 -> 432
-FAIL battle s8
-  turn 26, round 1, after move x09; unit x09 (enemy i_carrier)
-  state.units[4].abCd: 1 -> 0
-  later changed records: 105; total records: 132 -> 123
-FAIL battle s9
-  turn 80, round 3, after activation x016; unit x016 (enemy d_scythe)
-  state.units[11].facing: 3 -> 4
-  later changed records: 339; total records: 420 -> 325
-FAIL battle s10
-  turn 52, round 1, after activation x012; unit x012 (enemy b_spitter)
-  state.units[7].hexMoved: 5 -> 3
-  later changed records: 190; total records: 222 -> 243
-FAIL battle s11
-  turn 62, round 2, after move x09; unit x09 (enemy h_vanguard)
-  state.units[4].abCd: 1 -> 0
-  later changed records: 80; total records: 142 -> 143
-FAIL battle s12
-  turn 55, round 2, after move x09; unit x09 (enemy c_hulk)
-  state.units[4].abCd: 1 -> 0
-  later changed records: 124; total records: 180 -> 99
-FAIL battle s16
-  turn 162, round 5, after move x09; unit x09 (enemy h_dominion)
-  state.units[4].abCd: 1 -> 0
-  later changed records: 1; total records: 242 -> 242
-FAIL battle s18
-  turn 142, round 5, after move x09; unit x09 (enemy h_vanguard)
-  state.units[4].abCd: 1 -> 0
-  later changed records: 29; total records: 266 -> 266
-FAIL battle s20
-  turn 73, round 4, after activation x08; unit x08 (enemy h_picket)
-  state.units[4].facing: 1 -> 2
-  later changed records: 57; total records: 131 -> 131
-FAIL battle s21
-  turn 50, round 2, after move x09; unit x011 (enemy h_picket)
-  state.units[6].facing: 0 -> 1
-  later changed records: 155; total records: 176 -> 206
-FAIL battle s23
-  turn 308, round 4, after move x022; unit x022 (enemy h_vanguard)
-  state.units[11].abCd: 1 -> 0
-  later changed records: 381; total records: 603 -> 690
-FAIL battle s24
-  turn 246, round 4, after move x014; unit x014 (enemy h_dominion)
-  state.units[7].abCd: 1 -> 0
-  later changed records: 279; total records: 525 -> 526
-FAIL battle s26
-  turn 59, round 2, after move x011; unit x011 (enemy h_dominion)
-  state.units[5].abCd: 1 -> 0
-  later changed records: 157; total records: 217 -> 167
-FAIL battle s27
-  turn 91, round 2, after move x011; unit x011 (enemy b_brood)
-  state.units[5].abCd: 1 -> 0
-  later changed records: 141; total records: 240 -> 232
-FAIL battle s28
-  turn 163, round 4, after activation x019; unit x019 (enemy d_scythe)
-  state.units[12].facing: 5 -> 4
-  later changed records: 153; total records: 317 -> 277
-FAIL battle s29
-  turn 128, round 4, after move x011; unit x011 (enemy h_vanguard)
-  state.units[5].abCd: 1 -> 0
-  later changed records: 51; total records: 153 -> 180
-FAIL battle s30
-  turn 45, round 1, after move x011; unit x011 (enemy b_brood)
-  state.units[5].abCd: 1 -> 0
-  later changed records: 284; total records: 330 -> 322
-FAIL battle s31
-  turn 36, round 2, after fire x011; unit x011 (enemy h_vanguard)
-  state.units[5].aiLastT: <missing> -> "@x010"
-  later changed records: 193; total records: 222 -> 230
-FAIL battle s33
-  turn 73, round 2, after activation x09; unit x09 (enemy i_blade)
-  state.units[4].activated: false -> true
-  later changed records: 110; total records: 184 -> 135
-FAIL battle s34
-  turn 41, round 2, after fire x010; unit x010 (enemy b_drone)
-  state.units[5].activated: true -> false
-  later changed records: 231; total records: 273 -> 168
-FAIL battle s36
-  turn 143, round 4, after move x017; unit x017 (enemy i_carrier)
-  state.units[8].abCd: 1 -> 0
-  later changed records: 57; total records: 201 -> 201
-FAIL battle s37
-  turn 58, round 2, after move x011; unit x011 (enemy reliquary)
-  state.units[6].abCd: 1 -> 0
-  later changed records: 213; total records: 267 -> 272
-FAIL battle s38
-  turn 54, round 2, after activation x014; unit x014 (enemy h_picket)
-  state.units[8].hexMoved: 4 -> 2
-  later changed records: 314; total records: 320 -> 369
-FAIL battle s39
-  turn 286, round 5, after activation x017; unit x017 (enemy d_scythe)
-  state.units[10].activated: false -> true
-  later changed records: 230; total records: 506 -> 517
-FAIL battle s40
-  turn 37, round 1, after move x013; unit x013 (enemy b_brood)
-  state.units[8].abCd: 1 -> 0
-  later changed records: 232; total records: 252 -> 270
-FAIL battle s41
-  turn 99, round 3, after activation x09; unit x09 (enemy h_picket)
-  state.units[4].mp: 2 -> 3
-  later changed records: 129; total records: 198 -> 229
-FAIL battle s46
-  turn 44, round 2, after activation x09; unit x09 (enemy h_picket)
-  state.units[5].facing: 2 -> 3
-  later changed records: 152; total records: 103 -> 197
-FAIL battle s47
-  turn 33, round 2, after activation x05; unit x05 (enemy h_interdictor)
-  state.units[2].facing: 4 -> 3
-  later changed records: 101; total records: 135 -> 89
-FAIL battle s48
-  turn 108, round 4, after activation x09; unit x09 (enemy b_brood)
-  state.units[4].hexMoved: 1 -> 2
-  later changed records: 9; total records: 118 -> 118
-FAIL battle s49
-  turn 56, round 4, after activation x07; unit x07 (enemy h_picket)
-  state.units[4].facing: 3 -> 2
-  later changed records: 5; total records: 62 -> 62
-FAIL battle s53
-  turn 35, round 2, after activation x09; unit x09 (enemy h_picket)
-  state.units[5].hexMoved: 2 -> 1
-  later changed records: 74; total records: 90 -> 110
-FAIL battle s56
-  turn 84, round 3, after move x07; unit x07 (enemy h_vanguard)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 68; total records: 153 -> 153
-FAIL battle t_inheritedaim
-  turn 45, round 4, after move x03; unit x03 (enemy h_dominion)
-  state.units[1].abCd: 1 -> 0
-  later changed records: 36; total records: 82 -> 82
-FAIL battle t_everygun
-  turn 24, round 2, after move x05; unit x05 (enemy h_dominion)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 52; total records: 77 -> 73
-FAIL battle t_debtsreserve
-  turn 30, round 3, after activation x05; unit x05 (enemy h_picket)
-  state.units[2].activated: false -> true
-  later changed records: 10; total records: 41 -> 40
-FAIL battle t_standardreroll
-  turn 26, round 2, after activation x04; unit x04 (enemy h_picket)
-  state.units[2].facing: 3 -> 4
-  later changed records: 53; total records: 80 -> 66
-FAIL battle t_preyname
-  turn 37, round 3, after move x05; unit x05 (enemy h_vanguard)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 30; total records: 68 -> 68
-FAIL battle t_salvotwohands
-  turn 23, round 2, after move x05; unit x05 (enemy h_vanguard)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 46; total records: 68 -> 70
-FAIL battle t_twosalvos
-  turn 50, round 4, after move x05; unit x05 (enemy h_vanguard)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 15; total records: 65 -> 66
-FAIL battle t_namedprey
-  turn 32, round 3, after move x05; unit x05 (enemy h_vanguard)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 32; total records: 65 -> 64
-FAIL battle t_wingsdebt
-  turn 33, round 2, after move x05; unit x05 (enemy h_vanguard)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 46; total records: 79 -> 80
-FAIL battle t_rollwings
-  turn 32, round 2, after move x05; unit x05 (enemy h_vanguard)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 56; total records: 89 -> 87
-FAIL battle t_oathwings
-  turn 106, round 4, after move x07; unit x07 (enemy c_reaver)
-  state.units[4].activated: true -> false
-  later changed records: 43; total records: 150 -> 132
-FAIL battle t_holdcounted
-  turn 34, round 3, after order x05; unit x05 (enemy h_interdictor)
-  state.units[2].activated: true -> false
-  later changed records: 5; total records: 39 -> 40
-FAIL battle t_unpaid
-  turn 0, round 1, after tick player; unit x04 (player warden)
-  state.units[0].name: "Everwatch" -> "Pale Crusader"
-  later changed records: 132; total records: 124 -> 133
-FAIL battle t_wallanswers
-  turn 26, round 2, after move x05; unit x05 (enemy h_dominion)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 1; total records: 84 -> 84
-FAIL battle t_ecl_restoredbeyond
-  turn 64, round 3, after move x07; unit x07 (enemy h_vanguard)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 44; total records: 109 -> 109
-FAIL battle t_ecl_copiescontribute
-  turn 62, round 3, after activation x010; unit x010 (enemy h_picket)
-  state.units[5].hexMoved: 6 -> 4
-  later changed records: 10; total records: 73 -> 73
-FAIL battle t_ecl_tenthframe
-  turn 38, round 2, after move x07; unit x07 (enemy h_vanguard)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 44; total records: 110 -> 110
-FAIL battle t_ecl_arcswarm
-  turn 44, round 2, after move x010; unit x010 (enemy h_vanguard)
-  state.units[5].abCd: 1 -> 0
-  later changed records: 135; total records: 180 -> 180
-FAIL battle t_ecl_noonchoice
-  turn 31, round 2, after activation x09; unit x09 (enemy h_picket)
-  state.units[5].activated: false -> true
-  later changed records: 57; total records: 89 -> 89
-FAIL battle t_ecl_everyframe
-  turn 32, round 2, after activation x09; unit x09 (enemy h_picket)
-  state.units[5].activated: false -> true
-  later changed records: 63; total records: 96 -> 95
-FAIL battle t_ecl_noonrepeat
-  turn 38, round 2, after activation x09; unit x09 (enemy h_picket)
-  state.units[5].activated: false -> true
-  later changed records: 28; total records: 67 -> 65
-FAIL battle t_ecl_unseenarchive
-  turn 22, round 1, after activation x08; unit x08 (enemy h_picket)
-  state.units[4].facing: 5 -> 4
-  later changed records: 37; total records: 60 -> 60
-FAIL battle t_ecl_uncopiedtarget
-  turn 39, round 2, after activation x09; unit x09 (enemy h_picket)
-  state.units[5].facing: 4 -> 3
-  later changed records: 18; total records: 57 -> 58
-FAIL battle t_ecl_longcopy
-  turn 41, round 2, after activation x09; unit x09 (enemy h_picket)
-  state.units[5].activated: false -> true
-  later changed records: 26; total records: 68 -> 67
-FAIL battle t_ecl_twicerestored
-  turn 60, round 3, after move x07; unit x07 (enemy h_vanguard)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 54; total records: 114 -> 115
-FAIL battle t_ecl_stillness
-  turn 43, round 2, after ability x09; unit x013 (enemy fighter)
-  state.units[8].q: 5 -> 4
-  later changed records: 87; total records: 111 -> 131
-FAIL battle t_ecl_tenthousand
-  turn 56, round 2, after move x09; unit x09 (enemy h_vanguard)
-  state.units[4].abCd: 1 -> 0
-  later changed records: 69; total records: 162 -> 163
-FAIL battle t_ecl_iterationswap
-  turn 42, round 2, after activation x011; unit x011 (enemy h_picket)
-  state.units[6].hexMoved: 3 -> 1
-  later changed records: 7; total records: 50 -> 50
-FAIL battle t_breathbite
-  turn 0, round 1, after tick player; unit x06 (player b_razor)
-  state.units[0].name: "Sac-mother" -> "Node Vesk"
-  later changed records: 134; total records: 135 -> 130
-FAIL battle t_preyeverymouth
-  turn 28, round 2, after move x07; unit x07 (enemy h_dominion)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 78; total records: 107 -> 101
-FAIL battle t_growhurts
-  turn 21, round 2, after move x05; unit x05 (enemy h_dominion)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 83; total records: 103 -> 105
-FAIL battle t_refuseholes
-  turn 22, round 2, after move x07; unit x07 (enemy h_dominion)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 78; total records: 97 -> 101
-FAIL battle t_tornback
-  turn 42, round 3, after move x07; unit x07 (enemy h_dominion)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 95; total records: 138 -> 125
-FAIL battle t_acidbeforeaim
-  turn 49, round 3, after activation x08; unit x08 (enemy h_picket)
-  state.units[4].facing: 1 -> 2
-  later changed records: 8; total records: 58 -> 58
-FAIL battle t_throatspits
-  turn 131, round 9, after move x03; unit x03 (enemy h_dominion)
-  state.units[1].abCd: 1 -> 0
-  later changed records: 18; total records: 150 -> 150
-FAIL battle t_burnstays
-  turn 27, round 2, after move x05; unit x05 (enemy h_dominion)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 65; total records: 93 -> 87
-FAIL battle t_manymouths
-  turn 32, round 2, after move x09; unit x09 (enemy h_dominion)
-  state.units[4].abCd: 1 -> 0
-  later changed records: 40; total records: 73 -> 73
-FAIL battle t_volleygrows
-  turn 28, round 2, after move x05; unit x05 (enemy h_dominion)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 61; total records: 90 -> 90
-FAIL battle t_mouthdeep
-  turn 23, round 2, after move x05; unit x05 (enemy h_dominion)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 25; total records: 88 -> 88
-FAIL battle t_hb_railboarding
-  turn 37, round 2, after activation x08; unit x08 (enemy h_picket)
-  state.units[4].activated: false -> true
-  later changed records: 17; total records: 55 -> 54
-FAIL battle t_hb_darkknives
-  turn 26, round 2, after move x07; unit x07 (enemy h_dominion)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 33; total records: 93 -> 93
-FAIL battle t_hb_cutfeeds
-  turn 105, round 6, after move x07; unit x07 (enemy h_dominion)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 11; total records: 116 -> 117
-FAIL battle t_hb_weldmatters
-  turn 67, round 4, after move x05; unit x05 (enemy h_dominion)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 92; total records: 160 -> 158
-FAIL battle t_hb_patchguns
-  turn 41, round 3, after move x07; unit x07 (enemy h_dominion)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 1; total records: 121 -> 121
-FAIL battle t_hb_packbites
-  turn 0, round 1, after tick player; unit x03 (player c_reaver)
-  state.units[0].name: "No Quarter" -> "Bent Crown"
-  later changed records: 140; total records: 124 -> 141
-FAIL battle t_heg_rollingfire
-  turn 69, round 3, after activation x011; unit x011 (enemy c_reaver)
-  state.units[6].aiLastT: "@x05" -> "@x06"
-  later changed records: 4; total records: 74 -> 74
-FAIL battle t_heg_irontempo
-  turn 127, round 5, after move x08; unit x08 (enemy h_vanguard)
-  state.units[4].abCd: 1 -> 0
-  later changed records: 38; total records: 166 -> 166
-FAIL battle t_heg_filedbefore
-  turn 15, round 1, after move x09; unit x09 (enemy h_dominion)
-  state.units[4].abCd: 1 -> 0
-  later changed records: 111; total records: 127 -> 112
-FAIL battle t_heg_standinggroup
-  turn 78, round 3, after activation x09; unit x09 (enemy c_reaver)
-  state.units[5].activated: false -> true
-  later changed records: 15; total records: 94 -> 87
-FAIL battle t_heg_standardcovers
-  turn 54, round 2, after activation x011; unit x011 (enemy h_picket)
-  state.units[6].facing: 3 -> 4
-  later changed records: 98; total records: 134 -> 153
-FAIL battle t7a_lastaccount
-  turn 31, round 2, after activation x05; unit x05 (enemy h_picket)
-  state.units[2].facing: 4 -> 3
-  later changed records: 12; total records: 42 -> 44
-FAIL battle t7a_torpfirst
-  turn 22, round 2, after move x05; unit x05 (enemy h_vanguard)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 26; total records: 70 -> 70
-FAIL battle t7a_rearreckoning
-  turn 22, round 2, after move x05; unit x05 (enemy h_vanguard)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 49; total records: 71 -> 72
-FAIL battle t7a_salvoend
-  turn 24, round 2, after move x05; unit x05 (enemy h_vanguard)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 36; total records: 84 -> 84
-FAIL battle t7b_ecl_formation_b
-  turn 0, round 1, after tick player; unit x05 (player d_harvester)
-  state.units[0].name: "Ninth Winter" -> "Remembered Noon"
-  later changed records: 88; total records: 89 -> 77
-FAIL battle t7b_ecl_formation_c
-  turn 41, round 2, after activation x011; unit x011 (enemy h_picket)
+FAIL battle t_lensaloft
+  turn 53, round 3, after round; unit x09 (player bomber)
   state.units[6].activated: false -> true
-  later changed records: 60; total records: 102 -> 101
-FAIL battle t7b_ecl_wall
-  turn 69, round 3, after move x07; unit x07 (enemy h_vanguard)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 39; total records: 113 -> 113
-FAIL battle t7b_ch_teeth
-  turn 60, round 4, after move x05; unit x05 (enemy h_dominion)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 43; total records: 104 -> 97
-FAIL battle t7b_ch_tideearly
-  turn 21, round 1, after move x07; unit x07 (enemy h_dominion)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 95; total records: 100 -> 117
-FAIL battle t529_roles_mend
-  turn 67, round 5, after move x05; unit x05 (enemy h_dominion)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 14; total records: 82 -> 82
-FAIL battle t529_roles_change
-  turn 31, round 2, after move x07; unit x07 (enemy h_dominion)
-  state.units[3].abCd: 1 -> 0
-  later changed records: 60; total records: 84 -> 92
-FAIL battle t529_may_grow_no
-  turn 38, round 3, after move x05; unit x05 (enemy h_dominion)
-  state.units[2].abCd: 1 -> 0
-  later changed records: 65; total records: 104 -> 99
-FAIL battle s983_station_defend
-  turn 62, round 2, after move x09; unit x09 (enemy h_vanguard)
-  state.units[4].abCd: 1 -> 0
-  later changed records: 73; total records: 135 -> 136
-FAIL battle s983_teaching_station_defend
-  turn 61, round 3, after order x08; unit x08 (enemy h_picket)
-  state.units[4].q: 11 -> 10
-  later changed records: 63; total records: 124 -> 125
-FAIL: saved Godot results; 284 battles checked, 97 changed, 0 other files changed, 97 failures; 58.841 s
+  later changed records: 1; total records: 55 -> 55
+FAIL battle t_burnflaw
+  turn 32, round 2, after command player; unit none (battle state)
+  state.b.log[24]: {"c":"s","m":"The enemy fleet breaks and flees."} -> <missing>
+  later changed records: 1; total records: 34 -> 34
+FAIL battle t_longlight
+  turn 37, round 3, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 38 -> 39
+FAIL battle t_twoimages
+  turn 68, round 5, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 69 -> 70
+FAIL battle t_refraction
+  turn 54, round 4, after end activation; unit x04 (player i_wisp)
+  state.units[1].activated: false -> true
+  later changed records: 7; total records: 55 -> 62
+FAIL battle t_mirrorturns
+  turn 49, round 4, after end activation; unit x03 (player i_wisp)
+  state.units[0].activated: false -> true
+  later changed records: 16; total records: 50 -> 66
+FAIL battle t_falsehulls
+  turn 61, round 4, after end activation; unit x04 (player i_wisp)
+  state.units[1].activated: false -> true
+  later changed records: 10; total records: 62 -> 72
+FAIL battle t_rechargelit
+  turn 23, round 2, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 24 -> 25
+FAIL battle t_hardlight
+  turn 69, round 5, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 70 -> 71
+FAIL battle t_wardglass
+  turn 53, round 4, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 17; total records: 54 -> 71
+FAIL battle t_deployread
+  turn 20, round 2, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 21 -> 22
+FAIL battle t_flagshiplens
+  turn 35, round 3, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 36 -> 37
+FAIL battle t_firstlight
+  turn 54, round 4, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 11; total records: 55 -> 66
+FAIL battle t7a_onelens
+  turn 36, round 2, after fire x05; unit x05 (player i_song)
+  state.units[1].postFire: false -> true
+  later changed records: 5; total records: 38 -> 42
+FAIL battle t7a_lighttogether
+  turn 29, round 2, after command player; unit x06 (player i_song)
+  state.units[2].treeAimPlus: <missing> -> 0
+  later changed records: 1; total records: 31 -> 31
+FAIL battle t7a_sunlens
+  turn 35, round 2, after fire x04; unit x04 (player i_song)
+  state.units[0].postFire: false -> true
+  later changed records: 5; total records: 37 -> 41
+FAIL battle t7a_mirroraside
+  turn 65, round 5, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 66 -> 67
+FAIL battle t7a_splitthree
+  turn 52, round 4, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 11; total records: 53 -> 64
+FAIL battle t7a_fleetelsewhere
+  turn 62, round 4, after end activation; unit x04 (player i_wisp)
+  state.units[1].activated: false -> true
+  later changed records: 9; total records: 63 -> 72
+FAIL battle t7a_weakside
+  turn 35, round 3, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 36 -> 37
+FAIL battle t7a_prismsface
+  turn 36, round 3, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 37 -> 38
+FAIL battle t7a_lensrotates
+  turn 37, round 3, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 38 -> 39
+FAIL battle t7a_facetlit
+  turn 23, round 2, after end activation; unit x03 (player i_song)
+  state.units[0].activated: false -> true
+  later changed records: 1; total records: 24 -> 25
+FAIL: saved Godot results; 288 battles checked, 23 changed, 0 other files changed, 23 failures; 11.772 s

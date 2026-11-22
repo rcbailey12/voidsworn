@@ -1,0 +1,20 @@
+{
+ "ship": "ithar_GP1",
+ "name": "Glasswright prism GP1",
+ "faction": "ithar",
+ "game_ship": "i_song",
+ "game_code": "I15_11",
+ "sheet": "ithar_GP1",
+ "concept": "docs/ship_pipeline/build_sheets/ithar_GP1/concept.jpg",
+ "concept_camera": "",
+ "hull": "sheet_hull",
+ "tune": "",
+ "bake": "stack",
+ "cell": "GP1",
+ "outline_gate": 0.9,
+ "outline_third_slack": 5,
+ "lights": {},
+ "light_min_px": 2,
+ "notes": "Issue 1415 (R368): built from Ryan's Nov 16 pick Step 3 on the shared Glasswright kit (tools/blender/kits/ithar, hull.py) in the R337 finish: pearl ribbons, silver edges, glowing mosaic (the hull's emission atlas), cut glowing stones; nothing see-through; no wear. Replaces the Nov 1 hull I15_11.",
+ "parts": []
+}

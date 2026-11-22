@@ -50,8 +50,8 @@ check('MOD-3 a refit fits only where it does something; equip refuses bad fits a
   const refused = !w.mods.includes('crystal') && r1 === false && r2 === false && r3 === false && r4 === false && R.inventory.length === 1;
   T.ACT.equip('0:' + p.uid); return a && refused && p.mods.includes('crystal') && R.inventory.length === 0; });
 check('FR-2 a lost Nemesis meeting reveals exactly one new weakness; a complete file reveals nothing; a battle discovery counts as the one', () => {
-  const R1 = nemFix('hegemony', 1); const l1 = T.nemAfterBattle('loss', false, {}); const one = R1.nem.revealed.length === 1 && l1.some(x => /analysts piece together the engagement\. Weakness found: /.test(x));
-  const R2 = nemFix('hegemony', 1, { revealed: ['ion', 'torp'] }); const l2 = T.nemAfterBattle('retreat', false, {}); const none = R2.nem.revealed.length === 2 && l2.some(x => /file on Test Nem is complete/.test(x));
+  const R1 = nemFix('hegemony', 1); const l1 = T.nemAfterBattle('loss', false, {}); const one = R1.nem.revealed.length === 1 && l1.some(x => /After-action telemetry breaks down the engagement\. Weakness found: /.test(x));
+  const R2 = nemFix('hegemony', 1, { revealed: ['ion', 'torp'] }); const l2 = T.nemAfterBattle('loss', false, {}); const none = R2.nem.revealed.length === 2 && l2.some(x => /Combat telemetry confirms what you already knew about Test Nem\./.test(x));
   const R3 = nemFix('hegemony', 1); T.nemAfterBattle('loss', false, { found: ['torp'] }); const conf = R3.nem.revealed.length === 1 && R3.nem.revealed[0] === 'torp';
   const R4 = nemFix('hegemony', 1); const l4 = T.nemAfterBattle('win', false, { found: ['torp'] }); const win = R4.nem.revealed.length === 2 && l4.some(x => /Weakness confirmed/.test(x));
   return one && none && conf && win; });
@@ -91,10 +91,11 @@ check('EVT-5 every fight-start event has a free way out (haven gets one)', () =>
   const free = o => !o.need && o.r && Object.keys(o.r).every(k => k === 'cred' || k === 'xp');
   const bad = T.EVENTS.filter(e => e.o.some(o => o.r && o.r.fight) && !e.o.some(free)).map(e => e.id); return bad.length === 0 && T.EVENTS.find(e => e.id === 'haven').o.some(o => o.k === 'leave'); });
 check('AI-1 a veteran that moves under heavy fire with nothing to shoot braces (mid-move path)', async () => {
+  // issue 1160: the enemy line starts 6 hexes off (was 8). At 8 a Veteran, which now prices guns that can move into range at 0.8, rightly waits outside them
   T.AI = 'veteran'; fresh('voidsworn', ['penitent', 'penitent', 'penitent']);
   T.startBattle({ kind: 'battle', fac: 'deathless', col: 3, obj: 'rout', shape: 'open', map: 'storm', dep: 'line', arena: 'strip', seed: 11, enemies: [{ tpl: 'd_jackal' }] });
   const B = T.B; B.terrain = {}; const pens = B.units.filter(u => u.side === 'player'), m = B.units.find(u => u.side === 'enemy');
-  [[6, 5], [6, 7], [6, 9]].forEach((p, i) => { const h = T.offToAx(p[0], p[1]); pens[i].q = h.q; pens[i].r = h.r; }); const mh = T.offToAx(14, 7); m.q = mh.q; m.r = mh.r;
+  [[8, 5], [8, 7], [8, 9]].forEach((p, i) => { const h = T.offToAx(p[0], p[1]); pens[i].q = h.q; pens[i].r = h.r; }); const mh = T.offToAx(14, 7); m.q = mh.q; m.r = mh.r;
   for (const p of pens) { let bf = 0, bd = 1e9; for (let f = 0; f < 6; f++) { const d = T.hdist({ q: p.q + T.DIRS[f][0], r: p.r + T.DIRS[f][1] }, m); if (d < bd) { bd = d; bf = f; } } p.facing = bf; }
   // A loaded short-range gun lets the ship close, but stays out of reach at the firing position.
   const w = T.mkWeapon('scatter', 'T', {}); w.fired = false; w.cdLeft = 0; w.off = 0; m.weapons = [w]; m.ab = null; m.maxHp = 100; m.hp = 60; m.sh = [0, 0, 0, 0]; m.shMax = 0;

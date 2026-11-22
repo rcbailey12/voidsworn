@@ -3,6 +3,8 @@ extends Control
 const GS = preload("res://ui/theme/glass_shell.gd")
 const Portraits = preload("res://portraits/portraits.gd")
 const ShipPortrait = preload("res://ui/campaign/ledger_ship.gd")
+const FIT_H := 1080.0   # issue 1559 item 3: the design sheet the fixed layout needs (height, and width before columns meet)
+const FIT_W := 1800.0
 const KEYS := {KEY_S: "cores", KEY_L: "nemesis", KEY_R: "record", KEY_P: "spend", KEY_B: "renown", KEY_V: "hulls", KEY_A: "lineage", KEY_F: "fleet"}
 var ui
 var C
@@ -22,11 +24,18 @@ var flagship: Dictionary = {}
 var ship_portrait: Control
 
 func setup(host, data: Dictionary) -> void:
-	ui = host; C = ui.C; d = data; R = d["run"]; receipt = R["carry"]["inheritance"]; k = ui.k
-	width = ui.get_viewport().get_visible_rect().size.x / k
+	ui = host; C = ui.C; d = data; R = d["run"]; receipt = R["carry"]["inheritance"]
+	# issue 1559 item 3: the page is laid out in fixed places on a 1080-high, at least 1800-wide design sheet, so its scale
+	# is the shared one capped where that sheet still fits the window. At Large and Larger (and in a narrow window) the
+	# page stops growing instead of running off the bottom or squeezing its columns into each other.
+	var vs: Vector2 = ui.get_viewport().get_visible_rect().size
+	k = minf(ui.k, minf(vs.y / FIT_H, vs.x / FIT_W))
+	width = vs.x / k
 	name = "DB1"; set_anchors_preset(Control.PRESET_FULL_RECT); theme = GS.ledger_theme(k)
 	var veil = TextureRect.new(); veil.texture = GS.ledger_veil(); veil.set_anchors_preset(Control.PRESET_FULL_RECT); veil.mouse_filter = MOUSE_FILTER_IGNORE; add_child(veil)
 	_build()
+
+func px(v: float) -> int: return int(round(v * k))   # this page's own scale (see setup)
 
 func _at(node: Control, rect: Rect2, parent: Control = self) -> Control:
 	parent.add_child(node); node.position = rect.position * k; node.size = rect.size * k
@@ -35,7 +44,7 @@ func _at(node: Control, rect: Rect2, parent: Control = self) -> Control:
 func words(t: String, rect: Rect2, size_px := 18, col := GS.TEXT2, face: Font = null, parent: Control = self) -> Label:
 	var l = Label.new(); l.text = t; l.mouse_filter = MOUSE_FILTER_IGNORE
 	l.add_theme_font_override("font", GS.sheet_body() if face == null else face)
-	l.add_theme_font_size_override("font_size", ui.px(size_px)); l.add_theme_color_override("font_color", col)
+	l.add_theme_font_size_override("font_size", px(size_px)); l.add_theme_color_override("font_color", col)
 	l.autowrap_mode = TextServer.AUTOWRAP_OFF if t in ["S", "L", "R", "P", "V", "A", "F", "Esc", "Enter"] else TextServer.AUTOWRAP_WORD_SMART
 	_at(l, rect, parent); ink.append({"node": l, "size": size_px, "color": col, "text": t})
 	return l
@@ -52,7 +61,7 @@ func link(t: String, rect: Rect2, cb: Callable, tip := "", parent: Control = sel
 	var parts = t.rsplit(" ", true, 1)
 	if parts.size() == 2 and parts[1] in ["S", "L", "R", "P", "V", "A", "F", "Esc"]:
 		b.text = parts[0].strip_edges()
-		var start = GS.sheet_body().get_string_size(b.text, HORIZONTAL_ALIGNMENT_LEFT, -1, ui.px(18)).x / k + 10
+		var start = GS.sheet_body().get_string_size(b.text, HORIZONTAL_ALIGNMENT_LEFT, -1, px(18)).x / k + 10
 		var key_label = words(parts[1], Rect2(start, 0, rect.size.x - start, rect.size.y), 17, GS.TEXT2, GS.num(), b)
 		key_label.autowrap_mode = TextServer.AUTOWRAP_OFF; key_label.size.y = rect.size.y * k; key_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	ink.append({"node": b, "size": 18, "color": GS.TEXT2, "text": b.text})
@@ -76,7 +85,7 @@ func meter(rect: Rect2, value: float, total: float, ticks: Array = []) -> Contro
 func _build() -> void:
 	var w = width - 144.0; var left = (w - 80.0) * 0.5; var right = 72.0 + left + 80.0
 	var first = not d["victory"] and not d["abandoned"] and int(C.META["stats"].get("losses", 0)) == 1
-	if first: words("THE FIRST CRUSADE FALLS. THE CHALK REMEMBERS." if R["fac"] == "voidsworn" else "THE FIRST RUN ENDS. THE NEXT INHERITS.", Rect2(72, 20, w, 25), 17)
+	if first: words("FIRST EXPEDITION LOST. THE LESSONS STAY." if R["fac"] == "voidsworn" else "FIRST RUN COMPLETE. KNOWLEDGE CARRIES FORWARD.", Rect2(72, 20, w, 25), 17)
 	var title = str(C.WIN_TITLE.get(R["fac"], "Victory")) if d["victory"] else ("Run abandoned" if d["abandoned"] else "The fleet is lost")
 	var h = heading(title, Rect2(72, 46, w, 112), 84)
 	var context = ui._story_text() + "\nVictories so far: " + str(C.META["stats"].get("wins", 0)) + ".\nWon with: "
@@ -182,7 +191,7 @@ func _build_renown(w: float) -> void:
 		words("ALL WITHIN REACH" if not target.is_empty() else "ALL OWNED", Rect2(72 + w * 0.76, 663, w * 0.24, 32), 17, GS.TEXT3)
 	var reward_lines = [detail, str(next.get("n", "")), str(aff[1]) + " rewards newly within reach."]
 	for item in receipt["affordable"]: reward_lines.append(str(item["n"]) + ": " + C.numstr(item["cost"]) + " renown")
-	if float(cy["hl"]) > 0: reward_lines.append("Heat " + C.numstr(cy["hl"]) + ": renown paid at x" + C.numstr(1 + 0.1 * float(cy["hl"])) + ".")
+	if float(cy["hl"]) > 0: reward_lines.append("Threat " + C.numstr(cy["hl"]) + ": renown paid at x" + C.numstr(1 + 0.1 * float(cy["hl"])) + ".")
 	if float(cy["ren"]) == 0: reward_lines.append("No renown earned this run.")
 	bar.tooltip_text = "\n".join(PackedStringArray(reward_lines)) + "\nSpend renown P; full receipt B; view hull rewards V."
 	earned.tooltip_text += "\n" + bar.tooltip_text
@@ -203,7 +212,7 @@ func _build_admiral(w: float) -> void:
 	link("View admiral line   A", Rect2(176, 849, w - 104, 32), func(): open_detail("lineage"))
 
 func _build_heirs(x: float, w: float) -> void:
-	heading("Heir to the line", Rect2(x, 507, w, 41))
+	heading("Priority training", Rect2(x, 507, w, 41))
 	var ids = C.shadowAdmirals(R["fac"], R["admiral"])
 	var current = str(C.META["heirs"].get(R["fac"], "")); var cw = (w - 32) / maxf(1, ids.size())
 	var group = ButtonGroup.new()
@@ -226,22 +235,22 @@ func _build_heirs(x: float, w: float) -> void:
 		words(shadow, Rect2(cx + 16, 790, cw - 32, 29), 17, GS.TEXT2, GS.num())
 		var tip = ranked + ". Total " + C.numstr(line["xp"]) + " shadow XP. " + ("Fully mastered." if line["next"] == null else C.numstr(line["remaining"]) + " XP to next level.") + "\nDouble earnings for this line when named."
 		for row in receipt["shadow"]:
-			if row["id"] == id: tip += "\n+" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP this run (Level " + C.numstr(row["level"]) + ")." + (" Heir: double rate." if float(row["rate"]) == 0.5 else "")
-		if id == current: tip += "\nCurrent heir. Confirming this card keeps the current heir."
+			if row["id"] == id: tip += "\n+" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP this run (Level " + C.numstr(row["level"]) + ")." + (" Priority: double rate." if float(row["rate"]) == 0.5 else "")
+		if id == current: tip += "\nActive focus. Confirming keeps this admiral on double shadow XP."
 		card.tooltip_text = tip
 		if id == current:
-			var current_label = words("CURRENT HEIR", Rect2(cx + 8, 550, cw - 16, 25), 17, GS.TEXT3)
+			var current_label = words("ACTIVE FOCUS", Rect2(cx + 8, 550, cw - 16, 25), 17, GS.TEXT3)
 			current_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if ids.is_empty(): words("No benched admirals to name. Confirm to continue.", Rect2(x, 570, w, 90), 20)
 	var note = "Named: " + str(C.ADMIRALS[ui._end_heir_pick]["n"]) if ui._end_confirmed and ui._end_heir_pick != "" else "Whoever is named earns double for this line."
-	if current == "" and not ui._end_confirmed: note = "No heir named. Confirm the selected line to continue."
+	if current == "" and not ui._end_confirmed: note = "No priority admiral set. Confirm selection to continue."
 	words(note, Rect2(x, 823, w, 26), 17)
 	primary = Button.new(); primary.name = "ConfirmHeir"; primary.set_meta("end_primary", true)
 	for state in ["normal", "hover", "pressed", "disabled"]: primary.add_theme_stylebox_override(state, GS.sheet_jump_boxes(k)[state])
 	primary.add_theme_stylebox_override("focus", GS.ledger_focus(k))
 	primary.add_theme_color_override("font_color", GS.TEXT); primary.add_theme_color_override("font_hover_color", GS.ON_EMBER)
 	_at(primary, Rect2(x, 851, w, 56))
-	var label = "CONFIRM HEIR" if not ui._end_confirmed else ("PLAY AS " + str(C.FACTIONS[d["next"]]["n"]).to_upper() if d["next"] != null else "PICK THE NEXT FACTION")
+	var label = "CONFIRM PRIORITY" if not ui._end_confirmed else ("PLAY AS " + str(C.FACTIONS[d["next"]]["n"]).to_upper() if d["next"] != null else "PICK THE NEXT FACTION")
 	var action_words = words(label, Rect2(22, 0, w - 130, 56), 20, GS.TEXT, GS.sheet_medium(), primary)
 	var key_words = words("Enter", Rect2(w - 90, 0, 74, 56), 17, GS.TEXT2, GS.num(), primary)
 	action_words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER; key_words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -292,7 +301,7 @@ func _build_fleet(w: float, right: float) -> void:
 		words(caption, Rect2(360, 1044, 320, 28), 17, GS.TEXT2, GS.num())
 	else: words("No ships still flying.\nThe fleet and its losses are recorded.   F", Rect2(72, 965, 560, 76), 20)
 	var lost_text = _fallen_text()
-	if GS.sheet_body().get_string_size(lost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, ui.px(18)).x > (width - 1448) * k:
+	if GS.sheet_body().get_string_size(lost_text, HORIZONTAL_ALIGNMENT_LEFT, -1, px(18)).x > (width - 1448) * k:
 		lost_text = "Captains lost: " + str(R["fallen"].size()) + " - full roll F"
 	var lost = words(lost_text, Rect2(704, 1000, width - 1448, 28), 18); hover(lost, _fallen_text())
 	link("Core sync S", Rect2(704, 1027, 135, 32), func(): open_detail("cores"))
@@ -306,7 +315,7 @@ func _build_fleet(w: float, right: float) -> void:
 	var pick = link("Pick a faction", Rect2(nx, 1033, 140, 32), func(): ui._campaign_action("newRunScreen"))
 	var title = link("Title screen", Rect2(nx + 160, 1033, 130, 32), func(): ui._campaign_action("title"))
 	for exit in [pick, title]:
-		exit.disabled = not ui._end_confirmed; exit.tooltip_text = "Confirm the heir first." if exit.disabled else ""; exits.append(exit)
+		exit.disabled = not ui._end_confirmed; exit.tooltip_text = "Confirm priority training first." if exit.disabled else ""; exits.append(exit)
 
 func open_detail(which: String) -> void:
 	if is_instance_valid(overlay): overlay.queue_free()
@@ -319,13 +328,15 @@ func open_detail(which: String) -> void:
 	_at(panel, Rect2((width - 1080) / 2, 110, 1080, 860), overlay)
 	var col = ui.vbox(16); panel.add_child(col)
 	var close = link("Close   Esc", Rect2(0, 0, 160, 34), close_detail, "", col)
-	close.custom_minimum_size.y = ui.px(40)
+	close.custom_minimum_size.y = px(40)
 	var titles = {"cores": "Core sync", "nemesis": "Nemesis lesson", "record": "The record", "renown": "What it bought", "lineage": "Admiral line", "fleet": "The fleet", "admirals": "Admiral rewards"}
 	var title = ui.lbl(str(titles.get(which, which)).to_upper(), 32, GS.TEXT, GS.sheet_name()); col.add_child(title)
 	var sc = ScrollContainer.new(); sc.size_flags_vertical = SIZE_EXPAND_FILL; sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; col.add_child(sc)
 	var body = ui._end_detail_body(d, which); body.size_flags_horizontal = SIZE_EXPAND_FILL; sc.add_child(body)
 	if which == "fleet" and R["fleet"].is_empty(): body.add_child(ui.lbl("No ships still flying.", 18, GS.TEXT2))
 	close.grab_focus()
+	# issue 1559 item 16: modal for the keyboard (Tab cannot reach the heir cards or Confirm behind the shade)
+	load("res://ui/theme/modal_focus.gd").attach(overlay, close)
 
 func close_detail() -> void:
 	if is_instance_valid(overlay): overlay.queue_free()
