@@ -1403,6 +1403,16 @@ func startBattle(cfg: Dictionary) -> void:
 			JSM.ssort(pr, func(x, y): return y[1] - x[1])
 			elite = ei == pr[0][0]
 		B["units"].append(makeUnit("enemy", e["tpl"], {"scale": scale, "dmg": dmg, "elite": elite, "fac": cfg["fac"]}))
+	# issue 1480 (R384): a Nemesis in a boss fight (the revived Eclipse rival's last fight) comes in on his own flagship, his faction's biggest hull, beside the boss
+	if cfg.get("kind") == "boss" and jt(cfg.get("nemesis")) and FACTIONS.has(cfg["nemesis"].get("fac")):
+		var nf = cfg["nemesis"]["fac"]; var nros = []
+		for id in FACTIONS[nf]["roster"]:
+			if HULLS.has(id) and not jt(HULLS[id].get("boss")) and HULLS[id].get("ab") != "launch": nros.append(id)
+		JSM.ssort(nros, func(a, b):
+			var d = (HULLS[b]["cp"] if jt(HULLS[b].get("cp")) else 1) - (HULLS[a]["cp"] if jt(HULLS[a].get("cp")) else 1)
+			return d if d != 0 else HULLS[b]["hp"] - HULLS[a]["hp"])
+		if nros.size() > 0:
+			var nu = makeUnit("enemy", nros[0], {"scale": sc, "dmg": dm, "elite": true, "fac": nf}); nu["nemJoin"] = true; B["units"].append(nu)
 	if heatOn("h_undying"):
 		for u in B["units"]:
 			if u["side"] == "enemy" and not jt(u.get("isSq")) and not jt(u["t"].get("boss")): u["reanimate"] = true
@@ -2209,6 +2219,8 @@ func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, fac
 	var tr = N["traits"] if N.get("traits") != null else []
 	var ad = N["adapt"] if N.get("adapt") != null else []
 	var srt = es.duplicate(); JSM.ssort(srt, func(a, b): return _byCpHp(a, b)); var fl = srt[0]
+	for u in es:   # issue 1480: in a boss fight he flies the flagship he came in on
+		if jt(u.get("nemJoin")): fl = u; break
 	fl["nemFlag"] = true; fl["elite"] = true; fl["name"] = String(N["title"]) + " " + String(N["name"]); fl["dmg"] = fl["dmg"] * (1.0 + 0.1 * z0(N.get("scars")))
 	if beh.get("strike") == "duel" and es.size() > 4: # R42 duelist (Ithar): at most four hulls
 		var rest = []

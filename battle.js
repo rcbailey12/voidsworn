@@ -368,6 +368,8 @@ function startBattle(cfg){
   const eliteIdx=cfg.kind==='elite'?new Set(eList.map((e,i)=>[i,HULLS[e.tpl].cp||1]).sort((x,y)=>y[1]-x[1]).slice(0,Math.ceil(eList.length/2)).map(x=>x[0])):null; // elite fights: the bigger half of their fleet are elites
   const thin=cfg.enemies?1:(RAMP.thin[s]||1)*(cfg.kind==='boss'?RAMP.escort:1); // boss fights: the escorts are leaner still, the flagship is the fight // B2: generated fleets are bigger, so each ship is a little less tough (set fleets from sims or events are not)
   eList.forEach((e,ei)=>B.units.push(makeUnit('enemy', e.tpl, {scale:sc*(HULLS[e.tpl].boss?BOSS_SCALE[s]*bossFit*(BOSS_FAC[cfg.fac]||1)*(heatOn('h_flag')?1.2:1):thin), dmg:dm*(HULLS[e.tpl].boss?BOSS_DMG[s]:thin), elite:!!(eliteIdx&&eliteIdx.has(ei))||cfg.kind==='boss'&&!HULLS[e.tpl].boss&&rnd()<.3||heatOn('h_elite')&&ei===(HULLS[eList[0].tpl].boss&&eList.length>1?1:0)||cfg.mod==='veteran'&&ei===eList.map((x,i)=>[i,HULLS[x.tpl].cp||1]).sort((x,y)=>y[1]-x[1])[0][0], fac:cfg.fac})));
+  // issue 1480 (R384): a Nemesis in a boss fight (the revived Eclipse rival's last fight) comes in on his own flagship, his faction's biggest hull, beside the boss
+  if(cfg.kind==='boss'&&cfg.nemesis&&FACTIONS[cfg.nemesis.fac]){ const nf=cfg.nemesis.fac, ros=FACTIONS[nf].roster.filter(id=>HULLS[id]&&!HULLS[id].boss&&HULLS[id].ab!=='launch').sort((a,b)=>(HULLS[b].cp||1)-(HULLS[a].cp||1)||HULLS[b].hp-HULLS[a].hp); if(ros.length){ const u=makeUnit('enemy',ros[0],{scale:sc,dmg:dm,elite:true,fac:nf}); u.nemJoin=true; B.units.push(u); } }
   if(heatOn('h_undying')) for(const u of B.units) if(u.side==='enemy'&&!u.isSq&&!u.t.boss) u.reanimate=true;
   // enemies adapt to carrier-heavy fleets: escorts bolt on point defense
   { const nCar0=RUN.fleet.filter(sh=>sh.hp>0&&HULLS[sh.tpl]&&HULLS[sh.tpl].hangar).length, carDoc=(ADMIRALS[RUN.admiral]&&ADMIRALS[RUN.admiral].cmd&&ADMIRALS[RUN.admiral].cmd.id==='scramble')||RUN.aspect==='hive';
@@ -677,7 +679,7 @@ function torpGhostBack(g,g0,real){ if(!real||real.dead) return; TORP_GHOST_KEYS.
 function nemWeak(k){ return !!(B&&B.nem&&B.nem.weak&&B.nem.weak.includes(k)); }
 function applyNemesis(N){ B.nem=N; let es=B.units.filter(u=>u.side==='enemy'&&!u.isSq&&!u.transport); if(!es.length) return;
   const NF=(typeof NEM_FAC!=='undefined'&&NEM_FAC[N.fac])||{beh:{}}, beh=NF.beh||{}, tr=N.traits||[], ad=N.adapt||[];
-  const fl=es.slice().sort((a,b)=>(b.t.cp||1)-(a.t.cp||1)||b.maxHp-a.maxHp)[0]; fl.nemFlag=true; fl.elite=true; fl.name=`${N.title} ${N.name}`; fl.dmg*=1+.1*(N.scars||0); // each scar makes him angrier: +10% damage on his flagship
+  const fl=es.find(u=>u.nemJoin)||es.slice().sort((a,b)=>(b.t.cp||1)-(a.t.cp||1)||b.maxHp-a.maxHp)[0]; /* issue 1480: in a boss fight he flies the flagship he came in on */ fl.nemFlag=true; fl.elite=true; fl.name=`${N.title} ${N.name}`; fl.dmg*=1+.1*(N.scars||0); // each scar makes him angrier: +10% damage on his flagship
   // R42 duelist (Ithar): a small elite fleet, at most four hulls, every one elite
   if(beh.strike==='duel'&&es.length>4){ const keep=new Set([fl,...es.filter(u=>u!==fl).sort((a,b)=>(b.t.cp||1)-(a.t.cp||1)).slice(0,3)]); B.units=B.units.filter(u=>u.side!=='enemy'||u.isSq||u.transport||keep.has(u)||(u.parent&&keep.has(B.units.find(x=>x.id===u.parent)))); es=es.filter(u=>keep.has(u)); }
   if(beh.strike==='duel') for(const u of es) if(!u.elite){ u.elite=true; u.aim+=6; u.crit+=5; }
