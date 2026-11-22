@@ -1,352 +1,184 @@
-Saved manifest before: 375fa502f0695f353afb52fb4b6ca0b29e1ebf4be67da97bcabcaaf9ce91a0e6
-Saved manifest after: 99e78fe7e93a9a0ec76317f58e0ba6442122fd7bbccc25b7ba3744fdfbd46ad9
+Saved manifest before: 19b5b624266a63f7c1c747f7861440f9ff3df05083032ff9c0c24844a969cff3
+Saved manifest after: f7cac068d3e97b593594fb9e0949be3b5cf236c74218001b8bf3e3e84bba7f6d
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
 FAIL battle s9
-  turn 36, round 1, after ability x019; unit x019 (enemy d_jackal)
-  state.units[14].abCd: 0 -> 4
-  later changed records: 344; total records: 381 -> 332
+  turn 15, round 1, after ability x017; unit x017 (enemy d_jackal)
+  state.units[12].abCd: 0 -> 4
+  later changed records: 486; total records: 470 -> 502
 FAIL battle s13
-  turn 50, round 2, after ability x09; unit x09 (enemy b_razor)
-  state.units[4].focus: true -> false
-  later changed records: 196; total records: 247 -> 183
+  saved archive hash/size differs
 FAIL battle s15
-  turn 8, round 1, after ability x011; unit x011 (enemy d_scythe)
-  state.units[6].abCd: 0 -> 4
-  later changed records: 174; total records: 181 -> 183
+  saved archive hash/size differs
 FAIL battle s19
-  turn 7, round 1, after ability x012; unit x012 (enemy d_scythe)
-  state.units[7].abCd: 0 -> 4
-  later changed records: 235; total records: 173 -> 243
+  saved archive hash/size differs
 FAIL battle s27
-  turn 32, round 1, after ability x012; unit x012 (enemy b_razor)
-  state.units[6].focus: true -> false
-  later changed records: 207; total records: 240 -> 194
+  saved archive hash/size differs
 FAIL battle s28
-  turn 6, round 1, after ability x017; unit x017 (enemy d_scythe)
-  state.units[10].abCd: 0 -> 4
-  later changed records: 243; total records: 245 -> 250
+  saved archive hash/size differs
 FAIL battle s30
-  turn 53, round 1, after ability x013; unit x013 (enemy b_razor)
-  state.units[7].focus: true -> false
-  later changed records: 269; total records: 311 -> 323
+  saved archive hash/size differs
 FAIL battle s39
-  turn 14, round 1, after ability x017; unit x017 (enemy d_scythe)
-  state.units[10].abCd: 0 -> 4
-  later changed records: 416; total records: 431 -> 414
+  saved archive hash/size differs
 FAIL battle s40
-  turn 78, round 2, after ability x014; unit x014 (enemy b_razor)
-  state.units[9].focus: true -> false
-  later changed records: 227; total records: 306 -> 248
+  saved archive hash/size differs
 FAIL battle s44
-  turn 8, round 1, after move x07; unit x07 (enemy d_jackal_h)
-  state.units[3].abCd: 3 -> 0
-  later changed records: 119; total records: 127 -> 128
+  saved archive hash/size differs
 FAIL battle s45
-  turn 7, round 1, after ability x04; unit x04 (player b_razor_e)
-  state.units[0].focus: true -> false
-  later changed records: 121; total records: 129 -> 119
+  saved archive hash/size differs
 FAIL battle s48
-  turn 55, round 2, after ability x010; unit x010 (enemy b_razor)
-  state.units[5].focus: true -> false
-  later changed records: 88; total records: 144 -> 144
+  saved archive hash/size differs
 FAIL battle t_longfocus
-  turn 18, round 1, after ability x08; unit x08 (enemy d_scythe_s)
-  state.units[4].abCd: 0 -> 4
-  later changed records: 24; total records: 39 -> 43
+  saved archive hash/size differs
 FAIL battle t_recordedangle
-  turn 7, round 1, after ability x08; unit x08 (enemy d_scythe_s)
-  state.units[4].abCd: 0 -> 4
-  later changed records: 47; total records: 55 -> 53
+  saved archive hash/size differs
 FAIL battle t_flawforever
-  turn 7, round 1, after ability x08; unit x08 (enemy d_scythe_s)
-  state.units[4].abCd: 0 -> 4
-  later changed records: 49; total records: 49 -> 57
+  saved archive hash/size differs
 FAIL battle t_refraction
-  turn 9, round 1, after fire x05; unit x05 (enemy d_scythe_s)
-  state.units[2].abCd: 3 -> 0
-  later changed records: 73; total records: 62 -> 83
+  saved archive hash/size differs
 FAIL battle t_mirrorturns
-  turn 9, round 1, after fire x05; unit x05 (enemy d_scythe_s)
-  state.units[2].abCd: 3 -> 0
-  later changed records: 56; total records: 66 -> 57
+  saved archive hash/size differs
 FAIL battle t_rechargelit
-  turn 8, round 1, after ability x05; unit x05 (enemy d_scythe_s)
-  state.units[2].abCd: 0 -> 4
-  later changed records: 30; total records: 25 -> 39
+  saved archive hash/size differs
 FAIL battle t_deployread
-  turn 7, round 1, after ability x05; unit x05 (enemy d_scythe_s)
-  state.units[2].abCd: 0 -> 4
-  later changed records: 16; total records: 22 -> 24
+  saved archive hash/size differs
 FAIL battle t_castcorrected
-  turn 7, round 1, after ability x05; unit x05 (enemy d_scythe_s)
-  state.units[2].abCd: 0 -> 4
-  later changed records: 25; total records: 32 -> 33
+  saved archive hash/size differs
 FAIL battle t_ecl_restoreninth
-  turn 9, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 73; total records: 83 -> 82
+  saved archive hash/size differs
 FAIL battle t_ecl_restoredbeyond
-  turn 9, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 127; total records: 133 -> 137
+  saved archive hash/size differs
 FAIL battle t_ecl_copiescontribute
-  turn 7, round 1, after ability x06; unit x06 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 62; total records: 70 -> 70
+  saved archive hash/size differs
 FAIL battle t_ecl_tenthframe
-  turn 11, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 105; total records: 117 -> 115
+  saved archive hash/size differs
 FAIL battle t_ecl_earliercopy
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 77; total records: 85 -> 82
+  saved archive hash/size differs
 FAIL battle t_ecl_arcswarm
-  turn 19, round 1, after ability x07; unit x07 (player d_jackal)
-  state.units[2].abCd: 3 -> 4
-  later changed records: 54; total records: 61 -> 74
+  saved archive hash/size differs
 FAIL battle t_ecl_noonchoice
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 79; total records: 76 -> 87
+  saved archive hash/size differs
 FAIL battle t_ecl_copyfires
-  turn 11, round 1, after ability x07; unit x07 (player d_jackal)
-  state.units[2].abCd: 3 -> 4
-  later changed records: 101; total records: 113 -> 57
+  saved archive hash/size differs
 FAIL battle t_ecl_coronashadow
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 48; total records: 56 -> 56
+  saved archive hash/size differs
 FAIL battle t_ecl_everyframe
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 66; total records: 54 -> 74
+  saved archive hash/size differs
 FAIL battle t_ecl_noonrepeat
-  turn 8, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 61; total records: 69 -> 70
+  saved archive hash/size differs
 FAIL battle t_ecl_onesuncopy
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 57; total records: 65 -> 63
+  saved archive hash/size differs
 FAIL battle t_ecl_copiedbehind
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 118; total records: 75 -> 126
+  saved archive hash/size differs
 FAIL battle t_ecl_unseenarchive
-  turn 9, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 50; total records: 58 -> 60
+  saved archive hash/size differs
 FAIL battle t_ecl_uncopiedtarget
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 72; total records: 69 -> 80
+  saved archive hash/size differs
 FAIL battle t_ecl_iterationkill
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 107; total records: 115 -> 95
+  saved archive hash/size differs
 FAIL battle t_ecl_silentarchive
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 86; total records: 75 -> 94
+  saved archive hash/size differs
 FAIL battle t_ecl_outshadow
-  turn 9, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 58; total records: 68 -> 64
+  saved archive hash/size differs
 FAIL battle t_ecl_longcopy
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 59; total records: 67 -> 63
+  saved archive hash/size differs
 FAIL battle t_ecl_platesshadow
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 81; total records: 89 -> 89
+  saved archive hash/size differs
 FAIL battle t_ecl_twicerestored
-  turn 9, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 94; total records: 104 -> 102
+  saved archive hash/size differs
 FAIL battle t_ecl_layersshift
-  turn 7, round 1, after ability x06; unit x06 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 67; total records: 75 -> 72
+  saved archive hash/size differs
 FAIL battle t_ecl_nolayer
-  turn 9, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 100; total records: 105 -> 110
+  saved archive hash/size differs
 FAIL battle t_ecl_stillness
-  turn 9, round 1, after ability x06; unit x06 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 140; total records: 150 -> 129
+  saved archive hash/size differs
 FAIL battle t_ecl_tenthousand
-  turn 11, round 1, after ability x06; unit x06 (player d_scythe)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 157; total records: 165 -> 169
+  saved archive hash/size differs
 FAIL battle t_ecl_restoredfleet
-  turn 9, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 99; total records: 109 -> 105
+  saved archive hash/size differs
 FAIL battle t_ecl_iterationswap
-  turn 7, round 1, after ability x06; unit x06 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 42; total records: 50 -> 50
+  saved archive hash/size differs
 FAIL battle t_ecl_flagshipindex
-  turn 9, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 55; total records: 65 -> 65
+  saved archive hash/size differs
 FAIL battle t_ecl_framezero
-  turn 3, round 1, after ability x04; unit x04 (player d_scythe)
-  state.units[0].abCd: 3 -> 4
-  later changed records: 116; total records: 120 -> 100
+  saved archive hash/size differs
 FAIL battle t_rundown
-  turn 3, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 74; total records: 78 -> 77
+  saved archive hash/size differs
 FAIL battle t_razorprey
-  turn 4, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 89; total records: 94 -> 94
+  saved archive hash/size differs
 FAIL battle t_frenzyfeeds
-  turn 3, round 1, after ability x04; unit x04 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 118; total records: 122 -> 121
+  saved archive hash/size differs
 FAIL battle t_breathbite
-  turn 3, round 1, after ability x06; unit x06 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 135; total records: 139 -> 125
+  saved archive hash/size differs
 FAIL battle t_throatred
-  turn 3, round 1, after ability x04; unit x04 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 63; total records: 67 -> 67
+  saved archive hash/size differs
 FAIL battle t_preyeverymouth
-  turn 4, round 1, after ability x04; unit x04 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 103; total records: 108 -> 107
+  saved archive hash/size differs
 FAIL battle t_growhurts
-  turn 3, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 100; total records: 104 -> 102
+  saved archive hash/size differs
 FAIL battle t_skinthick
-  turn 4, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 63; total records: 68 -> 68
+  saved archive hash/size differs
 FAIL battle t_fleshknit
-  turn 4, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 49; total records: 54 -> 54
+  saved archive hash/size differs
 FAIL battle t_tideend
-  turn 4, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 38; total records: 43 -> 43
+  saved archive hash/size differs
 FAIL battle t_acidseams
-  turn 11, round 1, after ability x06; unit x06 (player b_razor)
-  state.units[2].focus: true -> false
-  later changed records: 36; total records: 48 -> 48
+  saved archive hash/size differs
 FAIL battle t_firstthroat
-  turn 3, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 61; total records: 61 -> 65
+  saved archive hash/size differs
 FAIL battle t_throatdeep
-  turn 3, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 28; total records: 32 -> 32
+  saved archive hash/size differs
 FAIL battle t7a_onelens
-  turn 20, round 1, after move x08; unit x08 (enemy d_scythe_s)
-  state.units[4].abCd: 3 -> 0
-  later changed records: 21; total records: 42 -> 42
+  saved archive hash/size differs
 FAIL battle t7a_sunlens
-  turn 19, round 1, after move x08; unit x08 (enemy d_scythe_s)
-  state.units[4].abCd: 3 -> 0
-  later changed records: 21; total records: 41 -> 41
+  saved archive hash/size differs
 FAIL battle t7a_weakside
-  turn 8, round 1, after ability x05; unit x05 (enemy d_scythe_s)
-  state.units[2].abCd: 0 -> 4
-  later changed records: 30; total records: 37 -> 39
+  saved archive hash/size differs
 FAIL battle t7a_prismsface
-  turn 8, round 1, after ability x05; unit x05 (enemy d_scythe_s)
-  state.units[2].abCd: 0 -> 4
-  later changed records: 30; total records: 38 -> 39
+  saved archive hash/size differs
 FAIL battle t7a_lensrotates
-  turn 8, round 1, after ability x05; unit x05 (enemy d_scythe_s)
-  state.units[2].abCd: 0 -> 4
-  later changed records: 30; total records: 39 -> 38
+  saved archive hash/size differs
 FAIL battle t7a_facetlit
-  turn 8, round 1, after ability x05; unit x05 (enemy d_scythe_s)
-  state.units[2].abCd: 0 -> 4
-  later changed records: 26; total records: 25 -> 35
+  saved archive hash/size differs
 FAIL battle t7b_ecl_formation_a
-  turn 7, round 1, after ability x06; unit x06 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 89; total records: 97 -> 96
+  saved archive hash/size differs
 FAIL battle t7b_ecl_formation_b
-  turn 7, round 1, after ability x06; unit x06 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 80; total records: 88 -> 87
+  saved archive hash/size differs
 FAIL battle t7b_ecl_formation_c
-  turn 7, round 1, after ability x06; unit x06 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 93; total records: 101 -> 57
+  saved archive hash/size differs
 FAIL battle t7b_ecl_formation_d
-  turn 8, round 1, after ability x06; unit x06 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 60; total records: 69 -> 60
+  saved archive hash/size differs
 FAIL battle t7b_ecl_shadow
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 85; total records: 93 -> 53
+  saved archive hash/size differs
 FAIL battle t7b_ecl_wall
-  turn 11, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 108; total records: 120 -> 112
+  saved archive hash/size differs
 FAIL battle t7b_ecl_archive
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 99; total records: 107 -> 90
+  saved archive hash/size differs
 FAIL battle t7b_ecl_iterfire
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 83; total records: 88 -> 91
+  saved archive hash/size differs
 FAIL battle t7b_ecl_triage
-  turn 7, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 102; total records: 110 -> 94
+  saved archive hash/size differs
 FAIL battle t7b_ch_teeth
-  turn 3, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 93; total records: 97 -> 94
+  saved archive hash/size differs
 FAIL battle t7b_ch_growth
-  turn 3, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 105; total records: 109 -> 109
+  saved archive hash/size differs
 FAIL battle t7b_ecl_targetarchived
-  turn 9, round 1, after ability x05; unit x05 (player d_jackal)
-  state.units[1].abCd: 3 -> 4
-  later changed records: 21; total records: 31 -> 31
+  saved archive hash/size differs
 FAIL battle t529_roles_screen
-  turn 3, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 72; total records: 76 -> 73
+  saved archive hash/size differs
 FAIL battle t529_roles_mend
-  turn 3, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 78; total records: 82 -> 81
+  saved archive hash/size differs
 FAIL battle t529_roles_change
-  turn 3, round 1, after ability x04; unit x04 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 85; total records: 89 -> 89
+  saved archive hash/size differs
 FAIL battle t529_scent
-  turn 3, round 1, after ability x04; unit x04 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 49; total records: 53 -> 49
+  saved archive hash/size differs
 FAIL battle t529_may_grow_no
-  turn 3, round 1, after ability x03; unit x03 (player b_razor)
-  state.units[0].focus: true -> false
-  later changed records: 95; total records: 99 -> 99
+  saved archive hash/size differs
 FAIL battle s1649_fold
   new battle; no saved result
 FAIL battle s1649_frenzy
   new battle; no saved result
 FAIL file threat_s19.json
-  map.3.10,1: <missing> -> "404a199999999999"
-FAIL: saved Godot results; 291 battles checked, 87 changed, 1 other files changed, 88 failures; 12.871 s
+  saved archive hash/size differs
+FAIL: saved Godot results; 291 battles checked, 3 changed, 0 other files changed, 88 failures; 11.187 s
