@@ -1,0 +1,144 @@
+{
+ "batch": "elevenlabs_pilot",
+ "gate": 1,
+ "made_for": "issue 1585 Gate 1 Calibration Pilot (Ryan, Nov 22 2026)",
+ "note": "One take of 12 benchmark cues plus 2 v2 A/B takes. No stems (Gate 3 only, on picked songs). Menu clicks come from free Sonniss/CC0 switches, not here. Death beats are atomic layers for godot/audio/death_audio.gd (crack and burst have no boom; the boom, bass drop, tail and wreck stay separate cues).",
+ "sfx_model": "eleven_text_to_sound_v3",
+ "music_model": "music_v2",
+ "items": [
+  {
+   "id": "battle_preview",
+   "kind": "music",
+   "cue": "battle music",
+   "group": "music",
+   "seconds": 45,
+   "prompt": "Instrumental space fleet battle music for a tactical strategy game, restrained and clear, brass and tactical percussion over a low string ostinato, steady 90 BPM, steady energy throughout so it can loop, no lead melody that tires the ear, no vocals.",
+   "takes": 1
+  },
+  {
+   "id": "reward_preview",
+   "kind": "music",
+   "cue": "reward screen music",
+   "group": "music",
+   "seconds": 30,
+   "prompt": "Short instrumental reward-screen music for a space strategy game, warm brass and strings, quietly triumphant, calm, not cheesy, no vocals.",
+   "takes": 1
+  },
+  {
+   "id": "ui_boss",
+   "kind": "sfx",
+   "cue": "ui_boss",
+   "group": "menu",
+   "seconds": 2.0,
+   "prompt": "Huge bulkhead locking clamps slamming shut one after another, deep metallic booms and a low hull groan, ominous. No beeps or synth tones.",
+   "takes": 1
+  },
+  {
+   "id": "ui_reward",
+   "kind": "sfx",
+   "cue": "ui_reward",
+   "group": "menu",
+   "seconds": 1.5,
+   "prompt": "Heavy brass lock tumblers turning and a vault latch releasing with a satisfying low clunk, then a faint ring of metal. No beeps or synth tones.",
+   "takes": 1
+  },
+  {
+   "id": "ladder_macro",
+   "kind": "sfx",
+   "cue": "gun_shell",
+   "group": "ladder",
+   "seconds": 1.2,
+   "prompt": "Macro cannon firing: heavy breech block slamming, a deep cannon thump felt through the deck, brief metallic ring. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1
+  },
+  {
+   "id": "ladder_macro_v2ab",
+   "kind": "sfx",
+   "cue": "gun_shell",
+   "group": "ab",
+   "seconds": 1.2,
+   "model": "eleven_text_to_sound_v2",
+   "prompt": "Macro cannon firing: heavy breech block slamming, a deep cannon thump felt through the deck, brief metallic ring. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1
+  },
+  {
+   "id": "ladder_torp",
+   "kind": "sfx",
+   "cue": "torp",
+   "group": "ladder",
+   "seconds": 1.6,
+   "prompt": "Torpedo launch from a tube: pneumatic clamp release, a heavy mechanical shove, then a muffled rocket motor igniting and rumbling away. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1
+  },
+  {
+   "id": "shield_break",
+   "kind": "sfx",
+   "cue": "shield_break",
+   "group": "hit",
+   "seconds": 1.4,
+   "prompt": "Energy shield collapsing: a deep electrical thump and a fading crackle like a huge capacitor discharging, clean and heavy. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1
+  },
+  {
+   "id": "shield_break_v2ab",
+   "kind": "sfx",
+   "cue": "shield_break",
+   "group": "ab",
+   "seconds": 1.4,
+   "model": "eleven_text_to_sound_v2",
+   "prompt": "Energy shield collapsing: a deep electrical thump and a fading crackle like a huge capacitor discharging, clean and heavy. Heard from inside a warship's hull: weighty low end, soft top, no arcade zaps or pews.",
+   "takes": 1
+  },
+  {
+   "id": "arrive_jump",
+   "kind": "sfx",
+   "cue": "arrive_jump",
+   "group": "event",
+   "seconds": 1.8,
+   "prompt": "Warship arriving from a warp jump: a pressure-wave rush and a deep air-displacement boom, then a short hull creak.",
+   "influence": 0.4,
+   "takes": 1
+  },
+  {
+   "id": "fac_ithar_crack",
+   "kind": "sfx",
+   "cue": "death_crack (ithar variant)",
+   "group": "death beat",
+   "seconds": 1.0,
+   "prompt": "Thick crystal hull fracturing: fast bright glass cracks racing across a large pane, low resonant body, no explosion, no boom.",
+   "influence": 0.6,
+   "takes": 1
+  },
+  {
+   "id": "fac_chorus_burst",
+   "kind": "sfx",
+   "cue": "boom_l (chorus variant)",
+   "group": "death beat",
+   "seconds": 1.6,
+   "prompt": "A huge living organic ship bursting at the moment it splits: one deep wet fleshy rupture with a rush of breath, short, no fire, no metal.",
+   "influence": 0.6,
+   "takes": 1
+  },
+  {
+   "id": "fac_deathless_peel",
+   "kind": "sfx",
+   "cue": "death_crack (deathless variant)",
+   "group": "death beat",
+   "seconds": 1.0,
+   "prompt": "Dark armor plates peeling and lifting off a hull with a soft dry tearing hiss, low and muffled, no explosion, no boom.",
+   "influence": 0.6,
+   "takes": 1
+  },
+  {
+   "id": "map_bed",
+   "kind": "sfx",
+   "cue": "ambient (map bed)",
+   "group": "bed",
+   "seconds": 12.0,
+   "loop": true,
+   "influence": 0.3,
+   "prompt": "Quiet deep-space ship interior ambience: low engine hum, faint air recyclers, a distant metal creak, calm and steady, seamless loop.",
+   "takes": 1
+  }
+ ]
+}

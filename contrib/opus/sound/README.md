@@ -1,19 +1,52 @@
-# ElevenLabs sound candidates (issue 1572 follow-up)
+# ElevenLabs sound candidates (issues 1572 and 1585)
 
-Ryan, Nov 22 2026: ElevenLabs Creator, monthly ($11 first month, then $22), for sound redo candidates. Generation now;
-wiring into godot/ stays parked until the ship rebuilds are done, and only after Ryan listens.
+Ryan, Nov 22 2026: ElevenLabs Creator, monthly ($11 first month, then $22), for sound redo candidates. Ryan, 04:10 UTC
+(issue 1585, Neon's pre-flight on PR 1577): hold the blind Batch 1, run a small Gate 1 pilot first, pick by ear, then
+Gate 2 production and Gate 3 stems. Nothing is wired into godot/ until Ryan picks.
 
-- `elevenlabs_batch1.json`: batch 1. 3 battle music songs (180 s, each split into stems), 2 reward-screen takes, 1 map
-  music bed, then 112 sound effect takes (menus as mechanical clicks and relays, the five ladder steps, deaths, hits,
-  faction guns and deaths, map and battle beds). About 34,100 of the 121,000 monthly credits (pricing FAQ: 200 per
-  sound effect, 900 per music minute; stem splitting cost is not published).
-- `../tools/sound/elevenlabs_gen.js`: makes the files. Live calls go only to api.elevenlabs.io (no redirects). Each song, stems zip and take is its own resumable step with its own manifest row; PASS needs all of them. The credit cap on the key at elevenlabs.io is the real ceiling; `--max-credits` is a second stop read from the account balance. A paid call is not retried after a 5xx or a lost answer. Writes `manifest.jsonl`
-  (prompt, settings, sha256, request id) next to the files. Offline check: `node elevenlabs_gen_selftest.js`.
-- Key: Ryan double-clicks `tools/pc/elevenlabs_api_key.bat` once. It saves `VOIDSWORN_ELEVENLABS_API_KEY` as a Windows
-  user setting, never in a file. He should give the key only Sound Effects and Music access and a credit cap.
-- The cloud cannot reach elevenlabs.io, so this runs on the PC through the Board's queue.
-- Outputs are candidates, not game assets. They go to the job's out folder and are relayed for listening; none are
-  committed into godot/ until Ryan picks. Licence: ElevenLabs paid plan, commercial; music under the Music Terms
-  (Oct 9 2026) "Indie Game" rule; no attribution needed on paid plans. Record the plan and date in the credits when
-  a pick is wired in.
-- API output: sound effects as MP3 192 kbps (WAV over the API needs Pro); music MP3 44.1 kHz 192 kbps.
+## The three gates
+
+- **Gate 1, calibration pilot** (`elevenlabs_pilot.json`, about 2,200 credits, under 2% of 121,000): one take each of
+  12 benchmark cues (a 45 s battle music preview, a 30 s reward preview, 10 sound effects) plus 2 v2 A/B takes. No
+  stems. Menu clicks are not made here: they come from free Sonniss or CC0 switches. Output goes to a listening page
+  (today vs free vs ElevenLabs, built by `../tools/sound/listen_page.js`).
+- **Gate 2, production** (after Ryan's picks): full-length versions of the music he approves, 2 takes of each winning
+  sound. The game's layering, pitch jitter and round robin (godot/audio/sfx.gd) turn 2 takes into many variations.
+- **Gate 3, stems**: split into stems only the 1 or 2 battle songs Ryan picks, for one-song adaptive battle music. The
+  generator refuses stems in any list not marked `"gate": 3`.
+
+## Tools
+
+- `../tools/sound/elevenlabs_gen.js`: makes the files. Live calls go only to api.elevenlabs.io (no redirects). Every
+  output is its own resumable step with its own manifest row; PASS needs all of them. Defaults: `eleven_text_to_sound_v3`
+  and `music_v2` with `output_format=auto` (models page, Nov 22 2026: `eleven_text_to_sound_v2` is removed Mar 1 2027,
+  `music_v1` Jan 31 2027; an item's `model` keeps v2 for an A/B). Estimates: 40 credits a second for a sound effect
+  with a set duration, 900 a minute of music, stems at the song's own cost (unpublished). The `character-cost` response
+  header is logged in `manifest.jsonl` on every call and counted. The key's credit cap at elevenlabs.io is the real
+  ceiling; `--max-credits` is a second stop read from the account balance. A paid call is never retried after a 5xx or
+  a lost answer. Offline check: `node elevenlabs_gen_selftest.js`.
+- `generation_mode` ("loop", "ambience", "track") was asked for in issue 1585 but is not in the ElevenLabs API reference
+  for POST /v1/music read on Nov 22 2026, so the generator sends it only when an item sets it, and the pilot does not.
+- Death sounds are atomic beat layers for godot/audio/death_audio.gd (powerdown, bed, vent, crack, boom at the split,
+  bass drop at +0.28 s, tail at +0.35 s, wreck at +0.7 s, quiet at +0.9 s): a crack or a burst has no boom in it, and
+  no multi-stage death story goes into one cue. Pilot crack takes are 1.0 s so they can be trimmed to the 0.4 s cue.
+- Key: `tools/pc/elevenlabs_api_key.bat` (on the PC: ELEVENLABS_API_KEY.bat). Hidden PowerShell prompt; the same
+  process saves `VOIDSWORN_ELEVENLABS_API_KEY` as a Windows user setting. The key is never shown, never on a command
+  line, never in a file. `/selftest` checks the save path with a dummy value under a separate name and removes it.
+  Make the key with only Sound Effects and Music allowed and a credit cap.
+- The cloud cannot reach elevenlabs.io: this runs on the PC through the Board's queue.
+
+## Licence and repo rules
+
+- Paid plan only. Never use Free-plan outputs (personal use only, attribution required).
+- Music Terms (last updated Oct 9 2026): paid self-serve plans allow commercial use in an Indie Game: under $500,000
+  revenue for the game since release and under $1,000,000 a year for the studio. If the game stops qualifying, there are
+  60 days to move to a plan that covers Studio Games; copies already distributed keep their music. No attribution on
+  paid plans. Output stays under the plan it was made on after a downgrade or cancel. Sound effects: paid plans are
+  marked Commercial on the pricing page.
+- Never feed Sonniss GDC audio into ElevenLabs or any AI (Sonniss licence v2.0, "NO AI TRAINING OR USAGE").
+- Raw masters, MP3s and stem zips stay out of git. When a pick is wired in: level loudness, roll off harsh highs once,
+  export Ogg (mono for positional battle sounds, stereo for music, beds and menus), and record the plan, date and these
+  terms in godot/audio/SFX_CREDITS.md or godot/music/CREDITS.md and docs/playbooks/sound.md.
+- The playbook line "Free tools and free sources only" (docs/playbooks/sound.md) predates Ryan's Nov 22 buy; the Board
+  updates it with the first wired pick.

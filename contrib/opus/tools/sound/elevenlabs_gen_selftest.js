@@ -9,21 +9,21 @@ let used = 0, failStems = false, fail500 = false;
 const srv = http.createServer((q, r) => {
   q.on('data', () => {}); q.on('end', () => {
     const route = q.url.split('?')[0];
-    calls.push({ route, key: q.headers['xi-api-key'] });
+    calls.push({ route, key: q.headers['xi-api-key'], query: q.url.split('?')[1] || '' });
     if (route === '/v1/redirect') { r.writeHead(302, { location: 'http://127.0.0.1:1/' }); return r.end(); }
     if (q.headers['xi-api-key'] !== MOCK_KEY) { r.writeHead(401); return r.end('bad key'); }
     if (route === '/v1/user/subscription') { r.writeHead(200, { 'content-type': 'application/json' }); return r.end(JSON.stringify({ tier: 'creator', character_count: used, character_limit: 121000 })); }
     if (route === '/v1/music/stem-separation' && failStems) { r.writeHead(400); return r.end('stems refused'); }
     if (fail500) { r.writeHead(500); return r.end('boom'); }
     used += route === '/v1/sound-generation' ? 200 : route === '/v1/music' ? 900 : 300;
-    r.writeHead(200, { 'request-id': 'req' + calls.length }); r.end(Buffer.alloc(64, calls.length % 250));
+    r.writeHead(200, { 'request-id': 'req' + calls.length, 'character-cost': '40' }); r.end(Buffer.alloc(64, calls.length % 250));
   });
 });
 srv.listen(0, '127.0.0.1', async () => {
   const base = 'http://127.0.0.1:' + srv.address().port;
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elgen-'));
   const list = path.join(dir, 'list.json');
-  fs.writeFileSync(list, JSON.stringify({ items: [
+  fs.writeFileSync(list, JSON.stringify({ gate: 3, items: [
     { id: 'a', kind: 'sfx', seconds: 1, takes: 2, prompt: 'click' },
     { id: 'm', kind: 'music', seconds: 60, takes: 1, stems: true, prompt: 'song' } ] }));
   const out = path.join(dir, 'out');
@@ -54,6 +54,14 @@ srv.listen(0, '127.0.0.1', async () => {
   ck(count('/v1/music') === songsBefore, 'resume made stems from the saved song, no new song');
   const man = fs.readFileSync(path.join(out, 'manifest.jsonl'), 'utf8').trim().split('\n').map(JSON.parse);
   ck(man.length === 4 && man.every(x => x.sha256 && x.bytes), 'one manifest row per output');
+  ck(man.every(x => x.charged === 40 && x.cost_headers['character-cost'] === '40'), 'character-cost header logged');
+  ck(man.filter(x => x.step === 'sfx').every(x => x.params.model_id === 'eleven_text_to_sound_v3' && x.estimate === 40), 'sfx v3 default, 40 per second');
+  ck(man.filter(x => x.step === 'song').every(x => x.params.model_id === 'music_v2' && !('generation_mode' in x.params)), 'music v2 default, no undocumented field');
+  ck(calls.some(c => c.route === '/v1/music' && /output_format=auto/.test(c.query)), 'music output_format=auto');
+  const bad = path.join(dir, 'bad.json');
+  fs.writeFileSync(bad, JSON.stringify({ items: [{ id: 'x', kind: 'music', seconds: 30, stems: true, prompt: 'p' }] }));
+  const rb = await new Promise(res => { const c = spawn(process.execPath, [gen, '--list', bad, '--out', out, '--dry']); let o = ''; c.stdout.on('data', d => o += d); c.on('close', code => res({ out: o, code })); });
+  ck(rb.code === 2 && /stems only in a Gate 3 list/.test(rb.out), 'stems refused outside Gate 3');
 
   fs.unlinkSync(path.join(out, 'manifest.jsonl'));
   r = await run(['--base', base, '--dry'], mock);

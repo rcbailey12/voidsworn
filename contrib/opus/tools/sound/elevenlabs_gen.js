@@ -17,7 +17,12 @@
 // published estimate (200 per sound effect, 900 per music minute; stem cost unpublished) only if that read fails.
 // A paid call is never retried after an error that could mean it ran (5xx, timeout); only 429 (not run) is retried.
 // API facts (docs read Nov 22 2026): POST /v1/sound-generation, POST /v1/music, POST /v1/music/stem-separation (zip),
-// header xi-api-key.
+// header xi-api-key. Issue 1585 (Neon pre-flight on PR 1577): defaults are eleven_text_to_sound_v3 and music_v2
+// (models page: eleven_text_to_sound_v2 removed Mar 1 2027, music_v1 removed Jan 31 2027); a per-item "model" keeps
+// v2 for an A/B. Sound effects with a set duration cost 40 credits a second (capabilities page). Music v2 uses
+// output_format=auto. The cost header ElevenLabs returns (character-cost) is logged on every call and counted. Stems
+// are allowed only in a list marked "gate": 3 and are estimated at the song's own cost (not published).
+// "generation_mode" is NOT in the API reference read Nov 22 2026, so it is sent only when an item sets it.
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -25,7 +30,8 @@ const crypto = require('crypto');
 const { execFileSync } = require('child_process');
 
 const LIVE_BASE = 'https://api.elevenlabs.io';
-const CREDITS_SFX = 200;
+const CREDITS_SFX_AUTO = 200;          // no duration set: flat per generation
+const CREDITS_SFX_PER_S = 40;          // duration set
 const CREDITS_MUSIC_PER_MIN = 900;
 
 function args(argv) {
@@ -69,17 +75,19 @@ function plan(list, only) {
     if (!/^[a-z0-9_]+$/.test(it.id || '')) throw new Error('bad id ' + it.id);
     if (ids.has(it.id)) throw new Error('duplicate id ' + it.id);
     ids.add(it.id);
+    if (it.stems && list.gate !== 3) throw new Error(it.id + ': stems only in a Gate 3 list (issue 1585)');
     if (only && !only.has(it.id)) continue;
     const n = it.takes || 1;
     for (let t = 1; t <= n; t++) {
       const file = `${it.id}_t${t}.mp3`;
       if (it.kind === 'sfx') {
         if (!(it.seconds >= 0.5 && it.seconds <= 30)) throw new Error(it.id + ': seconds must be 0.5..30');
-        steps.push({ it, t, step: 'sfx', file, credits: CREDITS_SFX });
+        steps.push({ it, t, step: 'sfx', file, credits: Math.ceil(it.seconds * CREDITS_SFX_PER_S) });
       } else if (it.kind === 'music') {
         if (!(it.seconds >= 3 && it.seconds <= 600)) throw new Error(it.id + ': seconds must be 3..600');
         steps.push({ it, t, step: 'song', file, credits: Math.ceil(it.seconds / 60 * CREDITS_MUSIC_PER_MIN) });
-        if (it.stems) steps.push({ it, t, step: 'stems', file: file.replace(/\.mp3$/, '_stems.zip'), song: file, credits: 0 });
+        const songCost = Math.ceil(it.seconds / 60 * CREDITS_MUSIC_PER_MIN);
+        if (it.stems) steps.push({ it, t, step: 'stems', file: file.replace(/\.mp3$/, '_stems.zip'), song: file, credits: songCost });
       } else throw new Error(it.id + ': kind must be sfx or music');
     }
   }
@@ -100,7 +108,13 @@ async function post(base, key, route, body, form) {
       err.ambiguous = true;
       throw err;
     }
-    if (r.ok) return { buf: Buffer.from(await r.arrayBuffer()), req: r.headers.get('request-id') || r.headers.get('x-request-id') || '' };
+    if (r.ok) {
+      const cost = {};
+      for (const [k, v] of r.headers) if (/cost|character|credit/i.test(k)) cost[k] = v;
+      const n = Number(r.headers.get('character-cost'));
+      return { buf: Buffer.from(await r.arrayBuffer()), req: r.headers.get('request-id') || r.headers.get('x-request-id') || '',
+        cost, charged: Number.isFinite(n) && r.headers.has('character-cost') ? n : null };
+    }
     const text = (await r.text()).slice(0, 400);
     if (r.status === 429 && attempt < 4) { await new Promise(s => setTimeout(s, 10000 * attempt)); continue; }
     const err = new Error(`HTTP ${r.status} on ${route}: ${text}`);
@@ -154,7 +168,7 @@ async function main() {
   const todo = steps.filter(s => !done(a.out, rows, s));
   const est = todo.reduce((n, s) => n + s.credits, 0);
   console.log(`list ${path.basename(a.list)}: ${steps.length} steps, ${todo.length} still to make, estimate ${est} credits ` +
-    `(stems not priced; stop at ${a.max} used; the key's own cap at elevenlabs.io is the real ceiling)`);
+    `(stems priced at their song's cost; stop at ${a.max} used; the key's own cap at elevenlabs.io is the real ceiling)`);
   if (a.dry) { for (const s of todo) console.log(`  would make ${s.file} (${s.step}, est ${s.credits})`); console.log('DRY RUN: nothing sent'); return 0; }
   const key = readKey(a);
   if (!key) { console.log('FAILED: no key saved. Double-click ELEVENLABS_API_KEY.bat first.'); return 2; }
@@ -162,7 +176,7 @@ async function main() {
   const before = await usedCredits(a.base, key);
   if (before) console.log(`account: ${before.tier}, ${before.used} of ${before.limit} credits used`);
   else console.log('account balance unreadable: the stop uses the estimate');
-  let estSpent = 0, made = 0, failed = 0, stopped = '';
+  let estSpent = 0, made = 0, failed = 0, stopped = '';   // estSpent: header cost where given, else the estimate
   for (const s of todo) {
     const now = before ? await usedCredits(a.base, key) : null;
     const spent = now ? now.used - before.used : estSpent;
@@ -173,12 +187,13 @@ async function main() {
       let res, params;
       if (s.step === 'sfx') {
         params = { text: it.prompt, duration_seconds: it.seconds, loop: !!it.loop, prompt_influence: it.influence ?? 0.5,
-          model_id: it.model || list.sfx_model || 'eleven_text_to_sound_v2' };
+          model_id: it.model || list.sfx_model || 'eleven_text_to_sound_v3' };
         res = await post(a.base, key, '/v1/sound-generation?output_format=mp3_44100_192', params);
       } else if (s.step === 'song') {
         params = { prompt: it.prompt, music_length_ms: Math.round(it.seconds * 1000), force_instrumental: it.instrumental !== false,
-          model_id: it.model || list.music_model || 'music_v1' };
-        res = await post(a.base, key, '/v1/music?output_format=' + (it.format || 'mp3_44100_192'), params);
+          model_id: it.model || list.music_model || 'music_v2' };
+        if (it.generation_mode) params.generation_mode = it.generation_mode;
+        res = await post(a.base, key, '/v1/music?output_format=' + (it.format || 'auto'), params);
       } else {
         const songFile = path.join(a.out, s.song);
         if (!done(a.out, rows, { file: s.song })) { console.log(`SKIP ${s.file}: its song ${s.song} is not made yet`); failed++; continue; }
@@ -188,9 +203,10 @@ async function main() {
         res = await post(a.base, key, '/v1/music/stem-separation?output_format=mp3_44100_192', null, form);
       }
       save(a.out, s.file, res.buf);
-      estSpent += s.credits; made++;
+      estSpent += res.charged ?? s.credits; made++;
       const rec = { id: it.id, take: s.t, step: s.step, file: s.file, kind: it.kind, cue: it.cue || null, group: it.group || null,
-        params, bytes: res.buf.length, sha256: sha(res.buf), request_id: res.req, started,
+        params, bytes: res.buf.length, sha256: sha(res.buf), request_id: res.req, cost_headers: res.cost, charged: res.charged,
+        estimate: s.credits, started,
         source: 'ElevenLabs API, Creator plan (commercial)' };
       fs.appendFileSync(manifest, JSON.stringify(rec) + '\n');
       rows.set(s.file, rec);
