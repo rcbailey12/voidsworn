@@ -326,6 +326,8 @@ func open_detail(which: String) -> void:
 	var body = ui._end_detail_body(d, which); body.size_flags_horizontal = SIZE_EXPAND_FILL; sc.add_child(body)
 	if which == "fleet" and R["fleet"].is_empty(): body.add_child(ui.lbl("No ships still flying.", 18, GS.TEXT2))
 	close.grab_focus()
+	# issue 1559 item 16: modal for the keyboard (Tab cannot reach the heir cards or Confirm behind the shade)
+	load("res://ui/theme/modal_focus.gd").attach(overlay, close)
 
 func close_detail() -> void:
 	if is_instance_valid(overlay): overlay.queue_free()

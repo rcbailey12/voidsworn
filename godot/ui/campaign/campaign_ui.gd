@@ -12,6 +12,7 @@ const Map3D = preload("res://ui/campaign/map3d.gd")
 const ChoiceScript = preload("res://ui/campaign/choice_button.gd")
 const Crest = preload("res://ui/campaign/crest.gd")
 const UiScale = preload("res://ui/ui_scale.gd")
+const ModalFocus = preload("res://ui/theme/modal_focus.gd")   # issue 1559
 
 const GS = preload("res://ui/theme/glass_shell.gd")
 const Kit = preload("res://ui/theme/orders_kit.gd")   # issue 1217: the shared front-end kit (wrap-safe labels, sound)
@@ -433,11 +434,13 @@ func _focus_first() -> void:
 		return
 	# the map page: the keys go to the chart (arrows, Enter, zoom), so no button wears a ring when the screen opens;
 	# with a slide-over open they go to its Close
-	if modal_box.get_child_count() == 0 and C.page.get("kind") == "map" and use_3d_map and map3d != null and map3d.visible:
+	# issue 1559 item 6: the last render's nodes are still children until the frame ends (queue_free), so count and
+	# search only the live ones; a dialog that just closed must not keep the map from taking the keys
+	if _live_count(modal_box) == 0 and C.page.get("kind") == "map" and use_3d_map and map3d != null and map3d.visible:
 		if _overlay == "": map3d.grab_focus()
 		else: get_viewport().gui_release_focus()   # a slide-over: Esc or Close shuts it, Tab walks its buttons
 		return
-	var host = modal_box if modal_box.get_child_count() > 0 else page_box
+	var host = modal_box if _live_count(modal_box) > 0 else page_box
 	# issue 1261: the Run options drawer holds keyboard and controller focus while it is open (the control that was
 	# focused before a re-render keeps it), and closing it gives focus back to Run options
 	if host == page_box and C.page.get("kind") == "admiral":
@@ -489,13 +492,20 @@ func _trap_focus(root_n: Node, keep: Node) -> void:
 		if ch is Control and ch.focus_mode != Control.FOCUS_NONE: ch.focus_mode = Control.FOCUS_NONE
 		_trap_focus(ch, keep)
 func _end_primary(n: Node) -> Button:
+	if n.is_queued_for_deletion(): return null   # issue 1559 item 6
 	if n is Button and n.get_meta("end_primary", false): return n
 	for ch in n.get_children():
 		var found = _end_primary(ch)
 		if found != null: return found
 	return null
+func _live_count(n: Node) -> int:
+	var c := 0
+	for ch in n.get_children():
+		if not ch.is_queued_for_deletion(): c += 1
+	return c
 func _first_button(n: Node) -> Control:
 	for ch in n.get_children():
+		if ch.is_queued_for_deletion(): continue   # issue 1559 item 6: the last render's buttons are on their way out
 		if (ch is Button or ch.get_script() == ChoiceScript) and not ch.disabled and ch.visible: return ch
 		var r = _first_button(ch)
 		if r != null: return r
@@ -2526,6 +2536,7 @@ func esc_back() -> bool:
 	return false
 func _unhandled_input(e: InputEvent) -> void:
 	if C == null or not root.visible or not (e is InputEventKey) or not e.pressed or e.echo: return
+	if ModalFocus.covered(self): return   # issue 1559 item 5: Career (or another overlay) over the page has the keys
 	if e.keycode == KEY_ESCAPE and esc_back(): get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "fleet" and is_instance_valid(fleet_manifest):
 		if fleet_manifest.handle_key(e): _key_cue(e); get_viewport().set_input_as_handled(); return

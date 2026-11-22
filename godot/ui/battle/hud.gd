@@ -1319,6 +1319,16 @@ func hide_ask() -> void:
 	ask_panel = null
 
 
+# the menu row the keyboard is on (row 0 is the first item), or -1 with no menu or no focus in it
+func menu_row() -> int:
+	if menu == null or not is_instance_valid(menu):
+		return -1
+	var fo := get_viewport().gui_get_focus_owner()
+	if fo != null and menu.is_ancestor_of(fo):
+		return maxi(0, fo.get_index() - 1)   # row 0 is the title label
+	return -1
+
+
 func hide_menu() -> void:
 	_last.erase("show_menu")
 	if menu != null:

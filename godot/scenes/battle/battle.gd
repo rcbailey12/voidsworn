@@ -4706,7 +4706,7 @@ func _first_player() -> String:
 signal option_changed(key: String, value: Variant)
 
 
-func _open_menu() -> void:
+func _open_menu(row := -1) -> void:
 	var items: Array = [["Resume", "menu_close"]]
 	items.append(["Sound: %s" % ("on" if sfx.on else "off"), "opt", "sound"])
 	items.append(["Speed: %s" % ("fast" if user_speed < 1.0 else "normal"), "opt", "speed"])
@@ -4739,7 +4739,7 @@ func _open_menu() -> void:
 		items.append(["Fight again", "restart"])
 	items.append(["Copy a problem report", "report"])
 	items.append(["Quit the game", "quit"])
-	hud.show_menu("Menu", items)
+	hud.show_menu("Menu", items, row)
 
 
 func _open_controls() -> void:
@@ -4757,6 +4757,8 @@ func _ui_scale_name() -> String:
 
 
 func _toggle_opt(k: String) -> void:
+	# issue 1559 item 18: the menu comes back on the row that was toggled, even after a UI scale rebuild threw it away
+	var keep_row: int = hud.menu_row() if hud != null and is_instance_valid(hud) else -1
 	match k:
 		"sound":
 			sfx.set_on(not sfx.on)
@@ -4804,7 +4806,7 @@ func _toggle_opt(k: String) -> void:
 			arcs_on = not arcs_on
 	_save_opts()
 	_refresh_ui()
-	_open_menu()
+	_open_menu(keep_row)
 
 
 # ---------------------------------------------------------------- HUD refresh

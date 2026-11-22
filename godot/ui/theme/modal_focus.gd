@@ -46,13 +46,41 @@ static func any_open() -> bool:
 	return not _stack.is_empty()
 
 
+# The newest open overlay's panel, or null. A screen's own key handler gives way to an overlay that is not part of it:
+# if top_panel() is not null and not inside the screen, the key is the overlay's (issue 1559 item 5).
+static func top_panel() -> Control:
+	_prune()
+	if _stack.is_empty():
+		return null
+	var o = instance_from_id(_stack.back())
+	return o.panel if o != null and is_instance_valid(o.panel) else null
+
+
+# True when the screen under `screen` should leave keys alone because an overlay outside it is open.
+static func covered(screen: Node) -> bool:
+	var t := top_panel()
+	return t != null and screen != null and t != screen and not screen.is_ancestor_of(t)
+
+
 static func _prune() -> void:
 	var keep: Array[int] = []
 	for id in _stack:
 		var o = instance_from_id(id)
-		if o != null and is_instance_valid(o) and (o as Node).is_inside_tree():
+		if o != null and is_instance_valid(o) and (o as Node).is_inside_tree() and not o._gone():
 			keep.append(id)
 	_stack = keep
+
+
+# the overlay is closing: it, or a screen it sits in, is queued for deletion (a re-render frees the old page whole)
+func _gone() -> bool:
+	if not is_instance_valid(panel):
+		return true
+	var n: Node = panel
+	while n != null:
+		if n.is_queued_for_deletion():
+			return true
+		n = n.get_parent()
+	return false
 
 
 func _ready() -> void:
@@ -73,21 +101,28 @@ func _exit_tree() -> void:
 	if vp != null and vp.gui_focus_changed.is_connected(_on_focus):
 		vp.gui_focus_changed.disconnect(_on_focus)
 	if _prev != null:
-		var p = _prev.get_ref()
-		if p != null and is_instance_valid(p):
-			_restore.call_deferred(p)
+		_restore.call_deferred(_prev)
 
 
-static func _restore(p: Control) -> void:
-	if not is_instance_valid(p) or p.is_queued_for_deletion() or not p.is_visible_in_tree():
+# ref: a WeakRef to the control that had focus before the overlay opened (it may be gone by the time this runs)
+static func _restore(ref: WeakRef) -> void:
+	var p = ref.get_ref()
+	if p == null or not is_instance_valid(p) or not (p is Control) or p.is_queued_for_deletion() or not p.is_visible_in_tree():
 		return
-	var vp := p.get_viewport()
+	var vp: Viewport = (p as Control).get_viewport()
 	if vp == null:
 		return
-	# a newer overlay opened meanwhile keeps the keyboard
-	if any_open():
+	# an overlay still open (a newer one, or the one this closed overlay sat on) keeps the keyboard: back to p when it is
+	# inside that overlay, else to the overlay's own last control
+	_prune()
+	if not _stack.is_empty():
+		var top = instance_from_id(_stack.back())
+		if top != null and top._inside(p):
+			p.grab_focus()
+		elif top != null:
+			top._take()
 		return
-	var fo := vp.gui_get_focus_owner()
+	var fo: Control = vp.gui_get_focus_owner()
 	if fo == null or fo.is_queued_for_deletion() or not fo.is_visible_in_tree():
 		p.grab_focus()
 
@@ -102,7 +137,7 @@ func _is_top() -> bool:
 
 
 func _on_focus(c: Control) -> void:
-	if _fixing or not is_instance_valid(panel) or panel.is_queued_for_deletion() or not panel.is_visible_in_tree():
+	if _fixing or _gone() or not panel.is_visible_in_tree():
 		return
 	if _inside(c):
 		_last = weakref(c)
@@ -113,7 +148,7 @@ func _on_focus(c: Control) -> void:
 
 # focus back inside: the control that last had it there, else the named first one, else the first focusable control
 func _take() -> void:
-	if not is_inside_tree() or not is_instance_valid(panel) or panel.is_queued_for_deletion() or not panel.is_visible_in_tree():
+	if not is_inside_tree() or _gone() or not panel.is_visible_in_tree():
 		return
 	if not _is_top():
 		return

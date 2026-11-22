@@ -1,5 +1,5 @@
 extends SceneTree
-# Issue 1559 item 1 (menus audit): the battle Esc menu is modal. Test battle s1 in the real battle scene, a player ship
+# Issue 1559 items 1 and 18 (menus audit): the battle Esc menu is modal and keeps its row. Test battle s1 in the real battle scene, a player ship
 # picked, the menu opened. Checks, through the engine's own input path (Viewport.push_input):
 #   - the keyboard is inside the menu on open, and a control outside that grabs focus is put back inside;
 #   - order keys (B brace, X ram, G board, C command, Q/E turn, 1 weapon, Backspace undo) change nothing in the battle;
@@ -124,9 +124,25 @@ func _run() -> void:
 	await _click(foe_px)
 	await _frames(3)
 	_check(_state() == before, "a click on the board behind the menu plans and picks nothing")
+	# item 18: Enter on the UI scale row keeps the keyboard on that row after the HUD rebuilds for the new scale
+	var ui_row := -1
+	var v: Node = b.hud.menu.get_child(0)
+	for i in v.get_child_count():
+		var c = v.get_child(i)
+		if c is Button and (c as Button).text.begins_with("UI scale"):
+			ui_row = i - 1
+			(c as Button).grab_focus()
+	await _frames(2)
+	var rows_ok := ui_row >= 0
+	for n in 4:   # four scales: back to where it started
+		await _key(KEY_ENTER)
+		await _frames(4)
+		rows_ok = rows_ok and b.hud.menu != null and b.hud.menu_row() == ui_row
+	_check(rows_ok, "item 18: cycling the UI scale keeps the keyboard on its row (row %d)" % ui_row)
 	await _key(KEY_ESCAPE)
 	await _frames(3)
 	_check(b.hud.menu == null, "Esc closes the menu")
+	await _wait_idle(20000)   # a UI scale rebuild redraws the threat map first
 	await _key(KEY_B)
 	await _frames(3)
 	_check(_state() != before, "with the menu closed, B acts again")

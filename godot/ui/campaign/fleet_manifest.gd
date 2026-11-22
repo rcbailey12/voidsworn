@@ -127,6 +127,10 @@ func row(ship: Dictionary, damaged: bool, parent: Control) -> void:
 	var b = Button.new(); b.text = ""; style_link(b)
 	b.custom_minimum_size.y = ui.px(rh); parent.add_child(b)
 	b.pressed.connect(func(): select_ship(str(ship["uid"])))
+	# issue 1559 item 9: a mouse click picks the row without keeping the keyboard on it, so Enter is the screen's Done
+	b.gui_input.connect(func(ev: InputEvent) -> void:
+		if ev is InputEventMouseButton and not (ev as InputEventMouseButton).pressed:
+			(func() -> void: if is_instance_valid(b) and b.has_focus(): b.release_focus()).call_deferred())
 	var ability = C.ABILITIES.get(hull.get("ab"), {})
 	b.tooltip_text = str(ship["name"]) + "\n" + str(hull["n"]) + " Mk " + C.roman(ship["mk"]) + "\nHull " + C.hull_text(ship["hp"]) + " / " + C.hull_text(derived["maxHp"]) + "\n" + str(ability.get("n", "")) + ": " + str(ability.get("d", ""))
 	picture(ship, Rect2(22, 5, 150, 40), b)
