@@ -10,6 +10,7 @@ const HULL := preload("res://fx/fx_hull.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
 const SHIELD_CACHE := preload("res://fx/fx_shield_cache.gd")
+const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
@@ -59,6 +60,22 @@ var _stages_seen := false   # the first stage update is the ship's state as it a
 var wound_log_on := false
 var wound_log: Array = []
 var _eng_sputter = false
+# Issue 1741 Milestone 3 (R416, Wounds V2, behind VS_WOUNDS_V2=1): what the rules actually took, shown on the hull. The
+# knocked-out weapon slots jam their own turrets and kill their own fixed mounts; the drive fails in tiers; a shield
+# generator that is out crackles on the midship hull. View only: it reads the view (weapons[i].off, sec, engHit, shieldOff).
+var wounds_v2 := wounds_v2_setting()
+var eng_tier := 0               # 0 healthy, 1 engine hit or eng stage 2, 2 eng stage 3, 3 engines crippled (stage 4)
+var dead_nozzles: Array = []    # nozzles dark at tiers 2 and 3 (never every nozzle: one always gutters on)
+var _sick_len := SICK_LEN
+var eng_soot := false           # the drive's last build coughs black soot (the Hullbreakers only, under Wounds V2)
+var _want_off := {}             # weapon slot -> true: the slots the last view held off
+var _exact_slots := false       # the last view carried a weapons list (the old section turret picker stays off)
+var _slot_off := {}             # weapon slot -> true, as shown
+var _mount_dead := {}           # weapon slot -> {p, n, sec, next}: the fixed mount that smokes and sparks for that slot
+var _want_eng_hit := false
+var _want_gen := false
+var gen_down := false           # the shield generator is out and crackles (shielded ships only)
+var _gen_next := 0.0
 var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t, level], seed, r}
 var _trail_extra := 0.0    # issue 1581: extra age the trails carry (they age faster while the drive is cold under way)
 static var _trail_indices: Dictionary = {}   # not GPU: index arrays (PackedInt32Array)
@@ -328,7 +345,10 @@ func _build_engines(fx) -> void:
 	var rb = POOLS.Batch.new()
 	var eng: Color = fac["engine"]
 	var extra := String(fac.get("engine_extra", "none"))
-	var corsair = extra == "soot" or _eng_sputter
+	# issue 1741 (R416): under Wounds V2 a damaged drive keeps its own faction's exhaust; only the Hullbreakers cough soot
+	# (main: any sputtering drive took the Hullbreaker soot, on glass, flesh and obsidian too)
+	var corsair = extra == "soot" or (_eng_sputter and not wounds_v2)
+	eng_soot = corsair
 	var q = POOLS.quad_shape()
 	var rs = POOLS.ribbon_shape(14)
 	var b_main = b
@@ -336,7 +356,13 @@ func _build_engines(fx) -> void:
 	var sb = POOLS.Batch.new()
 	var srb = POOLS.Batch.new()
 	sick_nozzle = posmod(_seed, hull.nozzles.size()) if _eng_sputter and not hull.nozzles.is_empty() else -1
+	dead_nozzles = []
+	_sick_len = SICK_LEN
+	if wounds_v2:
+		_engine_nozzles()
 	for ni in hull.nozzles.size():
+		if dead_nozzles.has(ni):
+			continue   # a dead nozzle is dark: no core, no plume (its bell smokes: _refresh_damage_emitters)
 		var nz: Dictionary = hull.nozzles[ni]
 		b = sb if ni == sick_nozzle else b_main
 		rb = srb if ni == sick_nozzle else rb_main
@@ -450,10 +476,12 @@ func update(fx, dt: float) -> void:
 			var sg := g * sick_gate(fx.now, fx.reduce_flashing)
 			_sick_mat.set_shader_parameter("gate", sg)
 			_sick_rib_mat.set_shader_parameter("gate", sg)
-			_sick_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8) * SICK_LEN)
+			_sick_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8) * _sick_len)
 	var moving_now: bool = _moving > 0.0 and not dead
 	if moving_now and not _was_moving and sick_nozzle >= 0 and fx.now >= _cough_next:
 		_cough(fx)
+		if wounds_v2 and eng_tier >= 3:
+			_stern_sparks(fx)
 	_was_moving = moving_now
 	_wound_step(fx)
 	# issue 1581 (Nov 21 audit: rear trails lingered as skid marks while the retros braked): once the battle cuts the
@@ -478,7 +506,7 @@ func _update_trails(fx, _moved: bool) -> void:
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
 	var plume = clampf(1.5 * hull.W, 2.0, 32.0)
-	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or _eng_sputter) else int(fac["trail"])
+	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or (_eng_sputter and not wounds_v2)) else int(fac["trail"])
 	for ti in _trails.size():
 		var t: Dictionary = _trails[ti]
 		var hist: Array = t["hist"]
@@ -486,6 +514,8 @@ func _update_trails(fx, _moved: bool) -> void:
 		# Neon on PR 1631: the sick nozzle's ribbon gutters with its plume (one trail per nozzle, in order); the dim samples
 		# still go in, so the ribbon fades through the gap instead of bridging it bright
 		var lvl_t: float = lvl * (sick_gate(fx.now, fx.reduce_flashing) if ti == sick_nozzle else 1.0)
+		if dead_nozzles.has(ti):
+			lvl_t = 0.0   # issue 1741: a dead nozzle lays no fresh trail (the dim samples let the old ribbon fade out)
 		var start: Vector3 = xfm * (t["p"] as Vector3) + (xfm.basis * (t["d"] as Vector3)).normalized() * (0.3 * plume)
 		# Each sample belongs to world space for its entire life. Turning, stopping
 		# or throttling down never drags old exhaust along with the nozzle.
@@ -995,6 +1025,10 @@ func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, 
 # (the old per-faction break) or "shear" (one connected crack network); rendering/effects/shield_failure_quality="low"
 # (or VS_SHIELD_FAILURE_Q=low) gives the shear its cheaper crack network. Anything else plays the collapse.
 const FAIL_LOOKS := ["today", "shear", "collapse"]
+
+
+static func wounds_v2_setting() -> bool:
+	return WOUNDS.v2()
 
 
 static func fail_look_setting() -> int:
@@ -1614,6 +1648,8 @@ func sync(fx, u: Dictionary) -> void:
 		want[i] = st
 	_regrade_marks(fx)
 	_set_wear(fx, hpf)
+	if wounds_v2:
+		_read_capability(u, sec)
 	if squadron:
 		want = [0, 0, 0]
 		_squad_smoke = hpf < 0.5 and not fx.compat
@@ -1677,7 +1713,18 @@ func _apply_stages(fx, want: Array) -> void:
 	_stages_seen = true
 
 	_refresh_wounds(fx)
+	if wounds_v2:
+		_refresh_capability(fx)
 	_refresh_damage_emitters(fx)
+	if wounds_v2:
+		var tier := engine_tier_for(int(stage[0]), _want_eng_hit) if not squadron else 0
+		if tier != eng_tier:
+			eng_tier = tier
+			_eng_sputter = tier >= 1
+			_build_engines(fx)
+			_refresh_damage_emitters(fx)   # the dead nozzles' bell smoke (the key carries the tier)
+			_wlog(["eng_tier", tier, fx.now])
+		return
 	var sp: bool = int(stage[0]) >= 3
 	if sp != _eng_sputter:
 		_eng_sputter = sp
@@ -2265,7 +2312,7 @@ func damage_counts() -> Dictionary:
 
 
 func _refresh_damage_emitters(fx) -> void:
-	var key := str(stage) + str(_burning) + str(fx.compat)
+	var key := str(stage) + str(_burning) + str(fx.compat) + str(_jammed.keys()) + str(_mount_dead.keys()) + str(dead_nozzles)
 	if key == _emitter_key: return
 	_emitter_key = key
 	for e in _fading_emitters: e.node.queue_free()
@@ -2293,8 +2340,19 @@ func _refresh_damage_emitters(fx) -> void:
 					smoke += 1
 		# issue 1587: a jammed turret's thin smoke wisp takes a smoke slot (the class caps hold)
 		for i in _jammed:
+			var jsec: int = int(_jammed[i].get("sec", i))
+			if smoke < caps.y and bool(_jammed[i].get("wisp", true)):
+				desired.append({"id": "wisp" + str(i), "kind": "smoke", "sec": jsec, "st": stage[jsec], "tur": int(_jammed[i]["k"])})
+				smoke += 1
+		# issue 1741: a knocked-out slot's fixed mount, and each dead nozzle's bell, smoke the same thin wisp
+		for slot in _mount_dead:
+			var md: Dictionary = _mount_dead[slot]
 			if smoke < caps.y:
-				desired.append({"id": "wisp%d" % i, "kind": "smoke", "sec": i, "st": stage[i], "tur": int(_jammed[i]["k"])})
+				desired.append({"id": "mount%d" % slot, "kind": "smoke", "sec": int(md["sec"]), "st": stage[int(md["sec"])], "mp": md["p"]})
+				smoke += 1
+		for ni in dead_nozzles:
+			if smoke < caps.y:
+				desired.append({"id": "bell%d" % ni, "kind": "smoke", "sec": 0, "st": stage[0], "mp": hull.nozzles[ni]["p"]})
 				smoke += 1
 	var keep: Array = []
 	for e in _damage_emitters:
@@ -2318,7 +2376,7 @@ func _refresh_damage_emitters(fx) -> void:
 
 
 func _build_damage_emitter(fx, e: Dictionary) -> void:
-	if e.has("tur"):
+	if e.has("tur") or e.has("mp"):
 		_build_wisp(fx, e)
 		return
 	var a := _anchor(e.sec, "a")
@@ -2438,6 +2496,10 @@ func _cough(fx) -> void:
 	if faction != "ithar":
 		var col := Color(0.06, 0.05, 0.045)
 		var kind := 3
+		if wounds_v2 and faction == "voidsworn":
+			col = Color(0.13, 0.115, 0.10)    # issue 1741: forged-iron drive smoke, grey, never the Hullbreaker soot
+		elif wounds_v2 and faction == "hegemony":
+			col = Color(0.30, 0.36, 0.44); kind = 7   # issue 1741: the Directorate's cold vapour (no soot, no orange)
 		if faction == "deathless":
 			col = Color(0.055, 0.025, 0.09); kind = 8
 		elif faction == "chorus":
@@ -2445,10 +2507,215 @@ func _cough(fx) -> void:
 		for j in 4:
 			fx.spr(p + d * r * 0.5, fx.now + j * 0.06, 0.9 + 0.2 * fx.rng.randf(), col, 0.55, r * 1.1, r * 4.2, kind,
 				fx.rcone(d, 0.35) * r * (5.0 + 3.0 * fx.rng.randf()), 2.0)
-	for j in 5:
+	for j in (0 if wounds_v2 and faction == "chorus" else 5):   # issue 1741: a Chorus drive coughs spores, no sparks
 		fx.stk(p + d * r * 0.4, fx.now + fx.rng.randf() * 0.12, 0.18 + 0.12 * fx.rng.randf(), eng.lerp(Color.WHITE, 0.3), 3.0,
 			0.06, 0.08, 1, fx.rcone(d, 0.6) * r * (8.0 + 6.0 * fx.rng.randf()), 2.0)
 	_wlog(["cough", sick_nozzle, fx.now])
+
+
+# ---------------------------------------------------------------- capability loss (issue 1741 Milestone 3, R416)
+# Behind VS_WOUNDS_V2=1 (rendering/effects/wounds_v2). The rules' own lost systems drive what the hull shows, so a
+# "Forward weapons silenced" or "Engines crippled" line in the log has a picture on the ship:
+#   - a weapon slot the view holds off (weapons[i].off > 0: a crit's 2, a lost section's 999) jams every turret that slot
+#     owns (its hp_w<slot>_* muzzles hang under them) and kills its fixed mounts (one smokes and sparks for the slot);
+#     a repair (off back to 0) frees them. Without a weapons list (a bench unit) the old section picker stays.
+#   - the drive fails in tiers (engine_tier_for): one nozzle gutters, then one goes dark, then all but one are dark.
+#   - a shielded ship whose generator is out (shieldOff, or the midship lost) crackles on the midship plating.
+const SICK_LEN_CRIPPLED := 0.35   # the last nozzle's plume when the engines are crippled
+const GEN_GAP := Vector2(1.4, 3.0)          # seconds between two generator crackles (reduce flashing: twice as long)
+
+
+# The drive's damage tier: 1 an engine hit or the engine section at stage 2, 2 at stage 3, 3 at stage 4 (crippled).
+static func engine_tier_for(eng_stage: int, engine_hit: bool) -> int:
+	if eng_stage >= 4:
+		return 3
+	if eng_stage == 3:
+		return 2
+	return 1 if eng_stage == 2 or engine_hit else 0
+
+
+# Which nozzles gutter and which are dark for this tier (sick_nozzle, dead_nozzles, _sick_len). One nozzle always burns.
+func _engine_nozzles() -> void:
+	var n: int = hull.nozzles.size()
+	if eng_tier <= 0 or n == 0 or squadron:
+		sick_nozzle = -1
+		return
+	sick_nozzle = posmod(_seed, n)
+	if eng_tier == 1:
+		_sick_len = 0.65
+	elif eng_tier == 2:
+		_sick_len = SICK_LEN
+		if n >= 2:
+			dead_nozzles = [(sick_nozzle + 1) % n]
+	else:
+		_sick_len = SICK_LEN_CRIPPLED
+		for ni in n:
+			if ni != sick_nozzle:
+				dead_nozzles.append(ni)
+
+
+# What the view says the ship has lost (read in sync; shown when the stages apply, after the volley's hits land).
+func _read_capability(u: Dictionary, sec: Dictionary) -> void:
+	_exact_slots = u.get("weapons") is Array
+	_want_off = {}
+	if _exact_slots:
+		var ws: Array = u["weapons"]
+		for j in ws.size():
+			var w = ws[j]
+			if w is Dictionary and w.get("off") != null and float(w["off"]) > 0.0:
+				_want_off[int(w.get("i", j)) if w.get("i") != null else j] = str(w.get("arc", "")) if w.get("arc") != null else ""
+	_want_eng_hit = u.get("engHit") == true
+	var mid_lost: bool = sec.get("mid") is Dictionary and (sec["mid"] as Dictionary).get("broken") == true
+	_want_gen = shielded and not squadron and (u.get("shieldOff") == true or mid_lost)
+
+
+func _refresh_capability(fx) -> void:
+	if hull == null or squadron:
+		return
+	var want: Dictionary = _want_off if _exact_slots else {}
+	for slot in _slot_off.keys():
+		if want.has(slot):
+			continue
+		for key in _jammed.keys():
+			if int(_jammed[key].get("slot", -1)) == int(slot):
+				hull.unjam_turret(int(_jammed[key]["k"]), fx.now)
+				_jammed.erase(key)
+		_mount_dead.erase(slot)
+		_slot_off.erase(slot)
+		_wlog(["slot_on", slot, fx.now])
+	for slot in want:
+		if _slot_off.has(slot):
+			continue
+		_slot_off[slot] = true
+		var ks: Array = hull.turrets_for_slot(int(slot))
+		for ti in ks.size():
+			var k: int = ks[ti]
+			if hull.turret_jammed(k):
+				continue
+			var h := absi(_seed + int(slot) * 7919 + k * 104729)
+			var off := (12.0 + float(h % 13)) * (1.0 if (h >> 4) % 2 == 0 else -1.0)
+			var droop := 4.0 + float((h >> 6) % 4)
+			hull.jam_turret(k, hull.turret_yaw(k, fx.now) + off, droop, fx.now)
+			# two wisps per slot at most (the smoke slots are shared with the sections' own smoke)
+			_jammed["s%d_t%d" % [int(slot), k]] = {"k": k, "next": fx.now + 1.0 + fx.rng.randf() * 2.0,
+				"sec": hull.turret_section(k), "slot": int(slot), "wisp": ti < 2}
+		var ms: Array = hull.mounts_for_slot(int(slot))
+		if ks.is_empty() and ms.is_empty():
+			# a hull with no point for this slot (an old A4 build): the slot's own section by its rules arc (F the prow,
+			# P and S the midship, as the rules' section losses), else nothing; counted in the log, never silent
+			var sec_for := {"F": HULL.SEC_PROW, "P": HULL.SEC_MID, "S": HULL.SEC_MID}
+			var arc := str(want[slot])
+			var picked := -1
+			if sec_for.has(arc):
+				# Artoo on PR 1749: only a turret no slot owns (an old hull's turret with no muzzle points); a turret that
+				# belongs to a live slot never jams for another slot's loss
+				for k in hull.turrets.size():
+					if hull.turret_section(k) == int(sec_for[arc]) and not hull.turret_jammed(k) and not hull.turret_owned(k):
+						picked = k
+						break
+			if picked >= 0:
+				var h2 := absi(_seed + int(slot) * 7919)
+				hull.jam_turret(picked, hull.turret_yaw(picked, fx.now) + (12.0 + float(h2 % 13)) * (1.0 if (h2 >> 4) % 2 == 0 else -1.0), 4.0 + float((h2 >> 6) % 4), fx.now)
+				_jammed["s%d_t%d" % [int(slot), picked]] = {"k": picked, "next": fx.now + 1.0 + fx.rng.randf() * 2.0,
+					"sec": hull.turret_section(picked), "slot": int(slot), "wisp": true}
+			elif sec_for.has(arc):
+				# no unowned turret: the section's plating smokes and sparks for the slot, no gun's state changes
+				var sa := _anchor(int(sec_for[arc]), "sc1")
+				if not sa.is_empty():
+					_mount_dead[slot] = {"p": sa["p"], "n": sa["n"], "sec": int(sec_for[arc]), "next": fx.now + 0.6 + fx.rng.randf() * 1.5}
+			_wlog(["slot_fallback", slot, picked])
+		if not ms.is_empty() and not _mount_dead.has(slot):
+			var pt: Dictionary = ms[ms.size() / 2]
+			var mp: Vector3 = pt["p"]
+			_mount_dead[slot] = {"p": mp, "n": pt.get("n", Vector3.UP), "sec": hull.section_of(mp.x),
+				"next": fx.now + 0.6 + fx.rng.randf() * 1.5}
+		_wlog(["slot_off", slot, fx.now])
+	var g: bool = _want_gen and not dead
+	if g != gen_down:
+		gen_down = g
+		_gen_next = fx.now + 0.15   # the generator's first crackle comes right as it goes
+		_wlog(["gen", 1 if g else 0, fx.now])
+
+
+# Every frame (from _wound_step): sparks at the dead fixed mounts and the failing generator's crackle.
+func _capability_step(fx) -> void:
+	for slot in _mount_dead:
+		var md: Dictionary = _mount_dead[slot]
+		if fx.now < float(md["next"]):
+			continue
+		md["next"] = fx.now + 2.0 + fx.rng.randf() * 2.5
+		_wlog(["mount_spark", slot, fx.now])
+		if faction == "chorus":
+			continue   # flesh: the mount's spore wisp only, no metal sparks (R416 trap 2)
+		var p := to_world(md["p"])
+		var n := dir_world(md["n"]).normalized()
+		var sc: Color = (fac["engine"] as Color).lerp(Color.WHITE, 0.55)
+		for j in 3:
+			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.18 + fx.rng.randf() * 0.12, sc, 3.5, 0.05, 0.07, 1,
+				(fx.rcone(n, 0.7)) * hull.L * (0.06 + 0.05 * fx.rng.randf()), 2.0)
+	if gen_down and fx.now >= _gen_next:
+		var k: float = 2.0 if fx.reduce_flashing else 1.0
+		_gen_next = fx.now + (GEN_GAP.x + fx.rng.randf() * (GEN_GAP.y - GEN_GAP.x)) * k
+		_gen_crackle(fx)
+
+
+# A failed shield emitter arcs on the midship plating: a short jagged run of small sparks in the shield's own colour (a dim
+# local light with it, none under reduce flashing). Small and brief: never a big flash (RULEBOOK 6.2).
+func _gen_crackle(fx) -> void:
+	if faction == "chorus":
+		return   # flesh throws no sparks (R416 trap 2); the Chorus carry no shield today, this keeps it true if one is given
+	var a := _anchor(1, "sc0")
+	if a.is_empty():
+		var c: Dictionary = hull.core_point()
+		if c.is_empty():
+			return
+		a = {"p": c["p"], "n": Vector3.UP}
+	var n: Vector3 = (a["n"] as Vector3).normalized()
+	var tng := n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
+	var p0 := to_world(a["p"] + n * hull.L * 0.004)
+	var col: Color = fac.get("shield") if fac.get("shield") is Color else (fac["engine"] as Color)
+	col = col.lerp(Color.WHITE, 0.45)
+	var wt := dir_world(tng).normalized()
+	var wn := dir_world(n).normalized()
+	var step: float = hull.L * 0.012
+	var p := p0
+	for j in 5:
+		var jag: Vector3 = (wt + wn * (fx.rng.randf() - 0.3) * 0.8).normalized()
+		fx.stk(p, fx.now + j * 0.02, 0.12 + 0.06 * fx.rng.randf(), col, 4.0, step * 1.2, 0.05, 1, jag * step * 6.0, 0.5)
+		p += jag * step
+	if not fx.reduce_flashing:
+		fx.light(p0, fx.now, 0.12, 0.9, col, 1)
+	_wlog(["gen_arc", 1, fx.now])
+
+
+# Engines crippled: as the ship tries to move, the dark bells spit a few sparks.
+func _stern_sparks(fx) -> void:
+	_wlog(["stern_spark", dead_nozzles.size(), fx.now])
+	if faction == "chorus":
+		return   # a dead Chorus drive only coughs its spores (_cough)
+	var eng: Color = (fac["engine"] as Color).lerp(Color.WHITE, 0.4)
+	for ni in dead_nozzles:
+		var nz: Dictionary = hull.nozzles[ni]
+		var p := to_world(nz["p"])
+		var d := dir_world(nz.get("d", Vector3(-1, 0, 0))).normalized()
+		for j in 3:
+			fx.stk(p, fx.now + fx.rng.randf() * 0.1, 0.16 + 0.1 * fx.rng.randf(), eng, 3.0, 0.05, 0.07, 1,
+				fx.rcone(d, 0.7) * float(nz["r"]) * (6.0 + 4.0 * fx.rng.randf()), 2.0)
+
+
+# The knocked-out slots as shown, the turrets jammed for them and the slots whose fixed mount smokes (for the checks).
+func capability_state() -> Dictionary:
+	var tur: Array = []
+	for key in _jammed:
+		if _jammed[key].has("slot"):
+			tur.append(int(_jammed[key]["k"]))
+	tur.sort()
+	var off: Array = _slot_off.keys()
+	off.sort()
+	var md: Array = _mount_dead.keys()
+	md.sort()
+	return {"off": off, "turrets": tur, "mounts": md, "eng_tier": eng_tier, "sick": sick_nozzle,
+		"dead_nozzles": dead_nozzles.duplicate(), "gen": gen_down}
 
 
 func _wlog(e: Array) -> void:
@@ -2459,6 +2726,13 @@ func _wlog(e: Array) -> void:
 # Jam one turret in each mid or prow section at stage 3+, free it when the section is repaired below 3.
 func _refresh_wounds(fx) -> void:
 	if hull == null:
+		return
+	if wounds_v2 and _exact_slots:
+		# issue 1741: the view says which slots are out, so the section's random turret is never jammed
+		for sec in [1, 2]:
+			if _jammed.has(sec):
+				hull.unjam_turret(int(_jammed[sec]["k"]), fx.now)
+				_jammed.erase(sec)
 		return
 	for sec in [1, 2]:
 		var hurt: bool = not squadron and int(stage[sec]) >= 3
@@ -2474,7 +2748,7 @@ func _refresh_wounds(fx) -> void:
 			var off := (12.0 + float(h % 13)) * (1.0 if (h >> 4) % 2 == 0 else -1.0)
 			var droop := 4.0 + float((h >> 6) % 4)
 			hull.jam_turret(k, hull.turret_yaw(k, fx.now) + off, droop, fx.now)
-			_jammed[sec] = {"k": k, "next": fx.now + 1.0 + fx.rng.randf() * 2.0}
+			_jammed[sec] = {"k": k, "next": fx.now + 1.0 + fx.rng.randf() * 2.0, "sec": sec}
 		elif not hurt and _jammed.has(sec):
 			hull.unjam_turret(int(_jammed[sec]["k"]), fx.now)
 			_jammed.erase(sec)
@@ -2489,8 +2763,7 @@ func jammed_turrets() -> Array:
 
 # A jammed turret's wisp: a thin looping smoke from its base (a damage emitter entry, so it fades and frees like one).
 func _build_wisp(fx, e: Dictionary) -> void:
-	var k: int = e["tur"]
-	var p: Vector3 = (hull.turrets[k]["xf"] as Transform3D).origin + Vector3.UP * hull.L * 0.01
+	var p: Vector3 = (e["mp"] as Vector3) if e.has("mp") else (hull.turrets[int(e["tur"])]["xf"] as Transform3D).origin + Vector3.UP * hull.L * 0.01
 	var glow: Color = fac.damage_glow
 	var kind := 3
 	var color := Color(0.15, 0.14, 0.13)
@@ -2534,12 +2807,19 @@ func _wound_step(fx) -> void:
 		var k: int = jm["k"]
 		var p := to_world((hull.turrets[k]["xf"] as Transform3D).origin)
 		var sc := Color(0.75, 0.85, 1.0)
+		if wounds_v2 and faction == "deathless":
+			sc = (fac["damage_glow"] as Color).lerp(Color.WHITE, 0.4)   # issue 1741: Eclipse sparks in its own violet
+		if wounds_v2 and faction == "chorus":
+			_wlog(["spark", k, fx.now])   # issue 1741 (R416 trap 2): flesh does not throw metal sparks; the wisp carries it
+			continue
 		for j in 4:
 			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.2 + fx.rng.randf() * 0.15, sc, 4.0, 0.05, 0.08, 1,
 				(fx.rdir() + Vector3.UP * 0.6).normalized() * hull.L * (0.08 + 0.06 * fx.rng.randf()), 2.0)
 		if not fx.reduce_flashing:
 			fx.light(p, fx.now, 0.15, 1.5, sc, 1)
 		_wlog(["spark", k, fx.now])
+	if wounds_v2:
+		_capability_step(fx)
 	_write_flick(power_flicker(fx.now, fx.reduce_flashing) * (1.0 - _power_dip))
 
 
