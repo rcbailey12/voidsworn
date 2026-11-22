@@ -65,7 +65,7 @@ func capture(name: String) -> void:
 		return
 	await settle()
 	await RenderingServer.frame_post_draw
-	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join(name + ".png")) == OK, "captured " + name)
+	check(preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), shots.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage()) == OK, "captured " + name)
 
 
 func geometry(scr: Control, tag: String) -> void:

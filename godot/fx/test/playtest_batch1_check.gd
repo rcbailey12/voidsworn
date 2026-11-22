@@ -122,7 +122,7 @@ func _run() -> void:
 	if OS.get_environment("FB1_SHOTS") != "" and DisplayServer.get_name() != "headless":
 		for i in 8: await process_frame
 		await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), OS.get_environment("FB1_SHOTS").path_join("chorus_rupture.png"))
+		preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), OS.get_environment("FB1_SHOTS").path_join("chorus_rupture.png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	check(organic.has_meta("death_hidden"), "Chorus live skin is replaced at rupture")
 	for i in 60: fx.step(1.0 / 60.0)
 	var remains: Array = fx.dstate.wrecks.filter(func(w): return w.id == "organic")
@@ -156,7 +156,7 @@ func captures(s, wounded, organic, crystal, chunks: Array) -> void:
 		camera.position = target + Vector3(7, 17, 19); camera.look_at(target)
 		for i in 12: await process_frame
 		await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), out.path_join(pair[1] + ".png"))
+		preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), out.path_join(pair[1] + ".png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	var holder := Node3D.new(); world.add_child(holder); holder.position = Vector3(0, 0, 32)
 	for i in mini(4, chunks.size()):
 		var mi := MeshInstance3D.new(); mi.mesh = chunks[i]; holder.add_child(mi)
@@ -164,5 +164,5 @@ func captures(s, wounded, organic, crystal, chunks: Array) -> void:
 	camera.position = Vector3(0, 45, 70); camera.look_at(holder.position)
 	for i in 10: await process_frame
 	await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), out.path_join("loaded_hull_chunks.png"))
+	preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), out.path_join("loaded_hull_chunks.png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	camera.position = organic.to_world(Vector3(7, 17, 19)); camera.look_at(organic.to_world(Vector3(0, 1.5, 0)))

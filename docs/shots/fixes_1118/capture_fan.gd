@@ -118,4 +118,4 @@ func _run() -> void:
 			panel.resize(PANEL.x, PANEL.y, Image.INTERPOLATE_LANCZOS)
 			sheet.blit_rect(panel, Rect2i(Vector2i.ZERO, PANEL), Vector2i(column * PANEL.x, 0))
 	var out := args[0].path_join("F6_fan_c170.png")
-	quit(0 if Provenance.save_png(sheet, out) == OK else 1)
+	quit(0 if Provenance.save_png(sheet, out, Provenance.capture_stage()) == OK else 1)

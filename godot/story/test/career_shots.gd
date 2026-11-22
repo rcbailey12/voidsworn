@@ -70,7 +70,7 @@ func _save(p: String) -> void:
 	if PG.stop_if_any():
 		return
 	var img := root.get_texture().get_image()
-	preload("res://tools/picture_provenance.gd").save_png(img, p)
+	preload("res://tools/picture_provenance.gd").save_png(img, p, preload("res://tools/picture_provenance.gd").capture_stage())
 
 
 class FakeCampaign:

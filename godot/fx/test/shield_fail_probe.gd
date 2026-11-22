@@ -219,7 +219,7 @@ func _story(sid: String, shape: String, look: String, radius: int) -> void:
 		var card := await _card("SHIELD1078 %s · prototype · %s shield · %s · camera %d" % [REV, shape, str(rules_hulls[sid].get("n", sid)), radius],
 			LOOK_NAMES.get(look, look))
 		for i in 30:
-			preload("res://tools/picture_provenance.gd").save_jpg(card, clip_dir.path_join("f_%04d.jpg" % clip_n), 0.9)
+			preload("res://tools/picture_provenance.gd").save_jpg(card, clip_dir.path_join("f_%04d.jpg" % clip_n), 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 			clip_n += 1
 	var row := {"subject": sid, "shape": shape, "look": look, "radius": radius, "moments": {}}
 	# 1. one shield hit
@@ -263,7 +263,7 @@ func _until(t: float, key: String, row: Dictionary) -> void:
 			var img: Image = bench._grab()
 			if img != null:
 				img = bench._crop(img, Vector2i(1280, 720), Vector2i(1280, 720))
-				preload("res://tools/picture_provenance.gd").save_jpg(img, clip_dir.path_join("f_%04d.jpg" % clip_n), 0.9)
+				preload("res://tools/picture_provenance.gd").save_jpg(img, clip_dir.path_join("f_%04d.jpg" % clip_n), 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 				clip_n += 1
 	if key != "":
 		var img: Image = bench._grab()
@@ -271,7 +271,7 @@ func _until(t: float, key: String, row: Dictionary) -> void:
 			_fail("empty frame")
 			return
 		if key == "fail_0.30" and _env("PROBE_FULL", "") == "1":
-			preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("full_%s_%s_c%d_%s.png" % [row.subject, row.shape, row.radius, row.look]))
+			preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("full_%s_%s_c%d_%s.png" % [row.subject, row.shape, row.radius, row.look]), preload("res://tools/picture_provenance.gd").capture_stage())
 		stills[key] = bench._crop(img, CROP.get(int(row.radius), CELL), CELL)
 		row["moments"][key] = bench.fx.now
 
@@ -321,7 +321,7 @@ func _sheet(sid: String, shape: String, radius: int, rows: Array) -> void:
 	var sheet := vp.get_texture().get_image()
 	sheet.convert(Image.FORMAT_RGB8)
 	var name := "SHIELD1078_%s_%s_%s_c%d.png" % [REV, sid, shape, radius]
-	if preload("res://tools/picture_provenance.gd").save_png(sheet, out.path_join(name)) != OK:
+	if preload("res://tools/picture_provenance.gd").save_png(sheet, out.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 		_fail("could not stamp the sheet " + name)
 	vp.queue_free()
 	print("SHIELD1078 sheet ", name)
@@ -522,7 +522,7 @@ func _flash_group(group: String, subjects: Array, shape: String, looks: PackedSt
 			report["flash"].append(row)
 			print("SHIELD1078 flash ", JSON.stringify(row))
 			var still := out.path_join("SHIELD1078_%s_flash_%s_%s_%s_%s.png" % [REV, group, shape, look, "calm" if calm else "normal"])
-			if peak_img == null or preload("res://tools/picture_provenance.gd").save_png(peak_img, still) != OK:
+			if peak_img == null or preload("res://tools/picture_provenance.gd").save_png(peak_img, still, preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 				_fail("flash pass: could not save " + still)
 				return false
 			for id in ids:

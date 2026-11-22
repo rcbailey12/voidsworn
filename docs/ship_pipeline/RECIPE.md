@@ -115,8 +115,10 @@ readback/self-test. It does not replace the faction's queued paint bake or the m
 
 Every review picture is stamped at its save step by `tools/picture_provenance.py` (Godot uses
 `godot/tools/picture_provenance.gd`): its name, full source commit in the `.provenance.json` sidecar, short revision on the
-picture, working-change digest when needed, stage (`sheet built`, `paint proof`, or `installed in game`) and UTC date.
-The stage 6 LOD studio preview is `paint proof`; only captures of the installed game say `installed in game`.
+picture, working-change digest when needed, stage (`sheet built`, `paint proof`, `installed in game`, or `cloud direction check`) and UTC date.
+The stage 6 LOD studio preview is `paint proof`; only captures of the installed game say `installed in game`. Every save
+names its stage (issue 1567: no default); a Godot capture passes `capture_stage()`, which says `cloud direction check`
+for the compatibility renderer, a software GPU (cloud lavapipe) or any placeholder hull.
 Sheet helpers read stamped inputs and keep their source revisions, including both sides of a comparison; they refuse
 unstamped captures rather than relabel old files. The sidecar preserves the corner pixels hidden by the strip, so sheet
 measurements use `open_picture`/`Review.open` and retain their original alpha and dimensions. Keep each review picture and

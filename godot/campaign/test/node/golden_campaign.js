@@ -31,7 +31,7 @@ function stubStart(cfg){
   const ne=2+RUN.sector+(cfg.kind==='elite'?1:0);
   for(let i=0;i<ne;i++) list.push(pick(ros));
   for(const tpl of list){ const H=HULLS[tpl]; n++; B.units.push({id:'s'+n,side:'enemy',tpl,t:H,name:H.n,fac:cfg.fac,hp:H.hp,maxHp:H.hp,dealt:0,kills:0,dead:false,boss:!!H.boss,weapons:H.w.map(e=>({k:W[e[0]].k})),ab:H.ab||null,shMax:H.sh||0,regen:H.regen||0}); }
-  if(cfg.nemesis){ const e=B.units.find(u=>u.side==='enemy'); if(e) e.nemFlag=true; } // B4: the Nemesis flagship
+  if(cfg.nemesis){ const e=B.units.find(u=>u.side==='enemy'&&!(cfg.kind==='boss'&&u.boss)); if(e) e.nemFlag=true; } // B4: the Nemesis flagship (issue 1480: in a boss fight, beside the boss)
 }
 function stubResolve(o){
   const P=B.units.filter(u=>u.side==='player'), E=B.units.filter(u=>u.side==='enemy'), loss=o==='loss';

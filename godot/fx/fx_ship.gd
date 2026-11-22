@@ -371,6 +371,7 @@ func update(fx, dt: float) -> void:
 	if not hull.doors.is_empty():
 		hull.door_step(fx.now)      # issue 1543: each launch mouth's door lobes at their pose for the effect clock
 	_update_damage_emitters(fx)
+	_list_step(dt)
 	_react_step(fx, dt)
 	_hide_placeholder_engines()
 	if _shield_mi != null and _shield_mi.visible:
@@ -1264,6 +1265,7 @@ func _react_apply(fx, wi: int) -> void:
 	var busy: bool = root.has_method("busy") and bool(root.call("busy"))
 	# Keep the cinematic flight bank under the damage reaction.
 	var flight_bank := float(root.get("glide_bank")) if root.get("glide_bank") != null else 0.0
+	flight_bank += _list   # issue 1235: a crippled ship's list stays under the hit reaction
 	root.rotation.x = flight_bank + _ra.x + shx
 	root.rotation.z = _ra.z + shz
 	# yaw and drift: only while G2 is not driving the root (it sets position and yaw itself during a path)
@@ -1346,6 +1348,116 @@ func _rcs(fx) -> void:
 		fx.spr(wp, fx.now, 0.06, Color(0.9, 0.95, 1.0), 1.5, 0.08 * k, 0.15 * k, 18)
 
 
+# ---------------------------------------------------------------- hull wear and the crippled list (issue 1235)
+
+# Neon's damage audit F1.2: as hull HP falls the whole ship looks worn, not only its breach anchors. hull_wear (0 above
+# WEAR_FROM of max HP, 1 at WEAR_FULL) drives, through HULL.set_wear, the damage shader's own uniforms (fx_hull.gd DAMAGE_UNIFORMS): fx_weather
+# darkens and mottles the plating, fx_power dims the hull's lights and glowing panels, and fx_scorch lays soot patches
+# where the ship was actually hit (wear_patches). The scorch heat stays 0 on a live ship, so no faction gets orange
+# embers from this (the faction's own wound colour stays on its marks and holes). Below LIST_FROM of max HP the hull
+# lists LIST_MIN to LIST_MAX degrees about its bow toward the side last hit: the view only, the rules never see it.
+const WEAR_FROM := 0.8
+const WEAR_FULL := 0.2
+const LIST_FROM := 0.35
+const LIST_MIN := 2.0        # degrees, at LIST_FROM
+const LIST_MAX := 5.0        # degrees, near 0 HP
+const LIST_T := 2.5          # seconds for the list to settle
+var hull_wear := 0.0
+var _wear_shown := -1.0
+var _wear_marks := -1
+var list_target := 0.0       # radians about the bow
+var _list := 0.0
+# the side (+1 starboard, -1 port) of the last HULL hit, set only by add_mark (a shield-only hit never reaches it;
+# Sol review of PR 1570: hit_react's last_hit also takes shield hits); 0 while unknown (a view rebuilt after Continue)
+var _hull_side := 0.0
+var _list_side := 0.0        # held from the moment the list starts until the ship is repaired above LIST_FROM
+
+
+func _set_wear(fx, hpf: float) -> void:
+	if squadron or weight <= 0:
+		return
+	hull_wear = clampf((WEAR_FROM - hpf) / (WEAR_FROM - WEAR_FULL), 0.0, 1.0)
+	if hpf < LIST_FROM and hpf > 0.0:
+		var k := clampf((LIST_FROM - hpf) / LIST_FROM, 0.0, 1.0)
+		# the side is picked once, when the list starts, and held (no flip on every later hit): the last hull hit's
+		# side, or, when no hull hit is known (a view rebuilt after Continue), a fixed side from the ship's id, so the
+		# same ship always leans the same way
+		if _list_side == 0.0:
+			_list_side = _hull_side if _hull_side != 0.0 else (1.0 if posmod(_seed, 2) == 0 else -1.0)
+		list_target = deg_to_rad(lerpf(LIST_MIN, LIST_MAX, k)) * _list_side
+	else:
+		list_target = 0.0
+		_list_side = 0.0
+	# a refresh also whenever wear reaches or leaves zero (Sol review: a small last repair left fx_weather at 0.0075)
+	if absf(hull_wear - _wear_shown) > 0.02 or _wear_marks != _marks.size() or ((hull_wear == 0.0) != (_wear_shown == 0.0)):
+		_apply_wear()
+
+
+# Push the wear onto every damage surface this ship has now (a rebuild applies it to new ones in fx_breach).
+func _apply_wear() -> void:
+	_wear_shown = hull_wear
+	_wear_marks = _marks.size()
+	var patches := wear_patches()
+	for key in _damage_surfaces:
+		var entry: Array = _damage_surfaces[key]
+		if entry.size() > 1 and entry[1] is ShaderMaterial:
+			HULL.set_wear(entry[1], hull_wear, patches)
+
+
+# Soot patches on the sides that were hit: per hurt section (worst first), up to WEAR_PATCHES_SEC of its drawn marks,
+# heavy then newest, one patch per spot (marks closer than a patch merge); at most 8 on the ship (the shader's array).
+const WEAR_PATCHES_SEC := 3
+func wear_patches() -> Array:
+	var out: Array = []
+	if hull_wear <= 0.0 or hull == null:
+		return out
+	var L: float = hull.L
+	var secs := [0, 1, 2]
+	secs.sort_custom(func(a: int, b: int) -> bool: return section_fraction[a] < section_fraction[b])
+	for sec in secs:
+		var f: float = section_fraction[sec]
+		if f >= WEAR_FROM:
+			continue
+		var hurt := clampf((WEAR_FROM - f) / (WEAR_FROM - WEAR_FULL), 0.0, 1.0)
+		var R: float = L * (0.045 + 0.06 * hurt) * (0.6 + 0.4 * hull_wear)
+		var idx: Array = []
+		for j in _marks.size():
+			if _marks[j].sec == sec:
+				idx.append(j)
+		idx.sort_custom(func(a: int, b: int) -> bool:
+			var ha := _heavy_mark(_marks[a])
+			var hb := _heavy_mark(_marks[b])
+			if ha != hb:
+				return ha
+			return a > b)
+		var n := 0
+		for j in idx:
+			if n >= WEAR_PATCHES_SEC or out.size() >= 8:
+				break
+			var c: Vector3 = _marks[j].c
+			var near := false
+			for q in out:
+				if Vector3(q.x, q.y, q.z).distance_to(c) < R * 0.8:
+					near = true
+					break
+			if near:
+				continue
+			out.append(Vector4(c.x, c.y, c.z, R))
+			n += 1
+	return out
+
+
+func _list_step(dt: float) -> void:
+	if absf(list_target - _list) < 1e-5:
+		return
+	var prev := _list
+	_list += (list_target - _list) * (1.0 - exp(-dt * 3.0 / LIST_T))
+	if absf(list_target - _list) < 1e-4:
+		_list = list_target
+	if not _reacting and is_instance_valid(root):
+		root.rotation.x += _list - prev
+
+
 # ---------------------------------------------------------------- staged damage (API.md 2)
 
 func sync(fx, u: Dictionary) -> void:
@@ -1371,6 +1483,7 @@ func sync(fx, u: Dictionary) -> void:
 		section_fraction[i] = clampf(f, 0.0, 1.0)
 		want[i] = st
 	_regrade_marks(fx)
+	_set_wear(fx, hpf)
 	if squadron:
 		want = [0, 0, 0]
 		_squad_smoke = hpf < 0.5 and not fx.compat
@@ -1733,14 +1846,16 @@ func _cut_refresh(fx) -> void:
 # A weapon's own mark on the hull where a shot landed (R43): look and weight pick it (fx_breach.marks_for); lp, ln and
 # ldir are the hit point, its normal and the shot's direction in the ship frame. A fresh hit on an old mark of the same
 # style grows and reheats it instead of stacking more geometry (_place_mark has the budget).
-func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3) -> void:
+func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3, hatch_k := 1.0) -> void:
 	if squadron or weight <= 0 or dead or gone:
 		return
 	_mark_n += 1
 	var t_m := Time.get_ticks_usec()
-	var es: Array = BREACH.marks_for(hull, look, w, lp, ln, ldir, float(posmod(_seed, 997)) * 0.013 + _mark_n * 1.37, faction, 1.0, 1.0 - section_fraction[hull.section_of(lp.x)])
+	var es: Array = BREACH.marks_for(hull, look, w, lp, ln, ldir, float(posmod(_seed, 997)) * 0.013 + _mark_n * 1.37, faction, 1.0, 1.0 - section_fraction[hull.section_of(lp.x)], hatch_k)
 	if es.is_empty():
 		return
+	if absf(lp.z) > 1e-3:
+		_hull_side = signf(lp.z)
 	for e in es:
 		e.t0 = fx.now
 		e.sec = hull.section_of(e.c.x)
@@ -1762,7 +1877,7 @@ func _place_mark(fx, e) -> void:
 			continue
 		if whole_sec or o.c.distance_to(e.c) < o.R * 0.8 + e.R * 0.5 + o.hl:
 			var g: float = minf(o.grow * 1.2, BREACH.GROW_MAX)
-			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.hit_origin, o.hit_normal, o.ldir, o.seed_v, faction, g, 1.0 - section_fraction[o.sec])
+			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.hit_origin, o.hit_normal, o.ldir, o.seed_v, faction, g, 1.0 - section_fraction[o.sec], o.hatch_k)
 			if o.part_i < es2.size():
 				var n2 = es2[o.part_i]
 				n2.t0 = fx.now
@@ -2082,7 +2197,7 @@ func _regrade_marks(fx) -> void:
 		# issue 1235 (F1.1): regrade only when the size really changes (a repair, or a section badly hurt since), so
 		# the sync right after a volley does not rebuild the hull a second time for a few percent
 		if absf(BREACH.mark_scale(e.section_damage) - BREACH.mark_scale(damage)) > 0.05:
-			var entries := BREACH.marks_for(hull, e.look, e.wt, e.hit_origin, e.hit_normal, e.ldir, e.seed_v, faction, e.grow, damage)
+			var entries := BREACH.marks_for(hull, e.look, e.wt, e.hit_origin, e.hit_normal, e.ldir, e.seed_v, faction, e.grow, damage, e.hatch_k)
 			if e.part_i < entries.size():
 				var replacement = entries[e.part_i]
 				replacement.t0 = e.t0

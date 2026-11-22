@@ -225,7 +225,7 @@ assert.notEqual(run('shipcheck', sc, ident).status, 0, 'a missing gen manifest f
 // first (issue 1497); out_* and logs stay; the Board's pause and a folder outside voidsworn_test\<job>\out_* remove
 // nothing; earlier passed and relayed attempts of the job are cleared too, failed or unfinished ones never.
 let relays = 0;
-const relay = entries => {
+const relay = (entries, branch = '') => {
   // what the Board's relay does: commit result folders on a new board/pc-out branch of the origin, each [local folder,
   // folder in the tree]; returns the branch the receipt names
   const rr = path.join(tmp, `relay${++relays}`);
@@ -238,8 +238,9 @@ const relay = entries => {
   }
   git(['add', '-A'], rr);
   git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'relay'], rr);
-  git(['push', '-q', source, `HEAD:refs/heads/board/pc-out-t${relays}`], rr);
-  return `board/pc-out-t${relays}`;
+  const ref = branch || `board/pc-out-t${relays}`;
+  git(['push', '-q', '-f', source, `HEAD:refs/heads/${ref}`], rr);
+  return ref;
 };
 const listed = fs.readFileSync(path.join(attempt, 'checkouts.txt'), 'utf8');
 assert.match(listed, new RegExp(`^old ${one1}\\r?$`, 'm'), 'checkout lists old');
@@ -343,7 +344,7 @@ assert.equal(r.status, 0, r.out);
 assert(fs.existsSync(path.join(attempt, 'new')) && /checkouts kept: .*has no result yet/.test(r.out), 'an attempt with no done.txt keeps its checkouts: ' + r.out);
 write(path.join(attempt, 'done.txt'), 'PASS\r\n');
 r = run('dropcheckouts', attempt);
-assert(fs.existsSync(path.join(attempt, 'new')) && /results not relayed yet: no relay_receipt\.txt/.test(r.out), 'a passed attempt keeps its checkouts until the relay receipt: ' + r.out);
+assert(fs.existsSync(path.join(attempt, 'new')) && /results not relayed yet: board\/pc-out-opus1303:out_1: branch board\/pc-out-opus1303 \(from the job name\) is not on origin/.test(r.out), 'a passed attempt keeps its checkouts until the relay receipt: ' + r.out);
 // a receipt whose tree folder does not hold this attempt's files (the bytes sit under another folder) proves nothing
 const other = relay([[path.join(attempt, 'out_new'), 'opus9999/out_9/out_new']]);
 r = run('dropcheckouts', attempt, other, 'out_1');
@@ -376,6 +377,48 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   assert.equal(r.status, 0, r.out);
   assert(!fs.existsSync(path.join(big, 'new')) && /result kept on the PC only: out_new\/big\.glb/.test(r.out) && /1 of 2 result file\(s\) are on/.test(r.out), 'a listed skipped file lets the checkout go: ' + r.out);
   assert.equal(fs.statSync(path.join(big, 'out_new', 'big.glb')).size, 11 * 1024 * 1024, 'the skipped file stays on the PC');
+}
+// Issue 1535 (Board, Nov 22): no session writes relay_receipt.txt any more. The head proves the relay itself from the job:
+// the relay_branch.txt the head wrote at init, else board/pc-out-<job> with the attempt folder at the tree's root, and
+// origin (git ls-remote) must hold that branch at the commit checked. Wrong folder, wrong bytes or a branch deleted on
+// origin since the last fetch keep everything.
+{
+  const job1535 = (job, n = 'out_1') => {
+    const at = path.join(vt, job, n);
+    assert.equal(run('checkout', at, 'new', two).status, 0);
+    write(path.join(at, 'out_new', 'result.txt'), `${job} result\n`);
+    write(path.join(at, 'done.txt'), 'PASS\r\n');
+    return at;
+  };
+  // by the job's own name, no receipt of any kind
+  const named = job1535('opus1535a');
+  relay([[path.join(named, 'out_new'), 'out_9/out_new']], 'board/pc-out-opus1535a');
+  r = run('dropcheckouts', named);
+  assert(fs.existsSync(path.join(named, 'new')) && /results not relayed yet: board\/pc-out-opus1535a:out_1: out_new\/result\.txt is not on the relay/.test(r.out), 'the job branch with the attempt under another folder proves nothing: ' + r.out);
+  relay([[path.join(named, 'out_new'), 'out_1/out_new']], 'board/pc-out-opus1535a');
+  r = run('dropcheckouts', named);
+  assert.equal(r.status, 0, r.out);
+  assert(!fs.existsSync(path.join(named, 'new')) && /checkout new removed after the job/.test(r.out) && !fs.existsSync(path.join(named, 'relay_receipt.txt')), 'the job branch at the attempt folder clears the checkout, no receipt written: ' + r.out);
+  assert.equal(fs.readFileSync(path.join(named, 'out_new', 'result.txt'), 'utf8'), 'opus1535a result\n', 'results stay');
+  // the head's relay_branch.txt wins over the job name; wrong bytes on it keep the checkout
+  const recorded = job1535('opus1535b', 'out_20261122_041500_123');
+  write(path.join(recorded, 'relay_branch.txt'), 'board/pc-out-1535rec out_20261122_041500_123\r\n');
+  const wrong = path.join(tmp, 'stage1535');
+  write(path.join(wrong, 'out_new', 'result.txt'), 'other bytes\n');
+  relay([[wrong, 'out_20261122_041500_123']], 'board/pc-out-1535rec');
+  relay([[path.join(recorded, 'out_new'), 'out_20261122_041500_123/out_new']], 'board/pc-out-opus1535b');
+  r = run('dropcheckouts', recorded);
+  assert(fs.existsSync(path.join(recorded, 'new')) && /board\/pc-out-1535rec:out_20261122_041500_123: out_new\/result\.txt differs on the relay/.test(r.out), 'relay_branch.txt names the place, and other bytes there prove nothing: ' + r.out);
+  relay([[path.join(recorded, 'out_new'), 'out_20261122_041500_123/out_new']], 'board/pc-out-1535rec');
+  r = run('dropcheckouts', recorded);
+  assert(!fs.existsSync(path.join(recorded, 'new')), 'the recorded branch with the right bytes clears it: ' + r.out);
+  // a branch the shared mirror still has but origin deleted proves nothing
+  const gone = job1535('opus1535c');
+  relay([[path.join(gone, 'out_new'), 'out_1/out_new']], 'board/pc-out-opus1535c');
+  git(['--git-dir', path.join(vt, 'repo-mirror.git'), 'fetch', '-q', 'origin', '+refs/heads/board/pc-out-opus1535c:refs/heads/board/pc-out-opus1535c']);
+  git(['--git-dir', source, 'update-ref', '-d', 'refs/heads/board/pc-out-opus1535c']);
+  r = run('dropcheckouts', gone);
+  assert(fs.existsSync(path.join(gone, 'new')) && /branch board\/pc-out-opus1535c \(from the job name\) is not on origin/.test(r.out), 'a branch gone from origin keeps the checkout: ' + r.out);
 }
 // A file locked for a moment (Board, AFTERRELAY2 on Nov 21: a pack .idx denied, free a minute later) is retried; one
 // locked past the retries leaves <name>.removing, which the next run finishes. A read-only folder stands in for the lock.

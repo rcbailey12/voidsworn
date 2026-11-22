@@ -117,11 +117,11 @@ func _run() -> void:
 					settle = fx.now - t_imp
 				if clip and fx.now >= t_clip0 and fx.now < t_imp + 3.5 and fi % 2 == 0:
 					await RenderingServer.frame_post_draw
-					preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), "%s/f%03d.jpg" % [cdir, ci], 0.88)
+					preload("res://tools/picture_provenance.gd").save_jpg(vp.get_texture().get_image(), "%s/f%03d.jpg" % [cdir, ci], 0.88, preload("res://tools/picture_provenance.gd").capture_stage())
 					ci += 1
 				elif out != "" and stills and mi < marks.size() and fx.now >= t_imp + float(marks[mi]):
 					await RenderingServer.frame_post_draw
-					preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/%s_%s_%d.png" % [out, id, sh[2], mi])
+					preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), "%s/%s_%s_%d.png" % [out, id, sh[2], mi], preload("res://tools/picture_provenance.gd").capture_stage())
 					mi += 1
 				else:
 					await process_frame

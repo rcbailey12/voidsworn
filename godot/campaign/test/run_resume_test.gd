@@ -168,8 +168,8 @@ func _breakthrough() -> void:
 	c.finish_battle(scene.result["result"], r.B)
 	_check(hud.heading == "Withdrawal" and hud.banner_text == "Withdrawal" and scene.result["result"] == "retreat",
 		"2 HUD: a failed breakthrough with a ship clear is called Withdrawal")
-	_check(c.page["kind"] == "map" and c.RUN != null and c.RUN["fleet"].size() == 1 and c.RUN["fleet"][0]["uid"] == uid and c.findNode(id)["done"] and c.SAVED_RUN != null and career.result == "retreat",
-		"2 campaign and Career: the ship that jumped clear survives and the run continues")
+	_check(c.page["kind"] == "map" and c.RUN != null and c.RUN["fleet"].size() == 1 and c.RUN["fleet"][0]["uid"] == uid and not c.findNode(id)["done"] and c.RUN.get("curNode") == null and c.SAVED_RUN != null and career.result == "retreat",
+		"2 campaign and Career: the ship that jumped clear survives, the run continues, and the fight stays on the map (R381, issue 1480)")
 	scene.free()
 	story.free()
 

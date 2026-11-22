@@ -333,7 +333,10 @@ func record_battle(run: Dictionary, B: Dictionary, result: String) -> Dictionary
 			award("lightning")
 		if alive == 1:
 			award("last_stand")
-		if nem_kill and int(run.get("sector", 1)) >= 3:
+		# issue 1480: only the kill that ends him (the campaign has settled the fight by now); the Eclipse rival's first
+		# Sector 3 kill only makes him reassemble for one last fight
+		var nem_dead: bool = run.get("nem") is Dictionary and _t(run["nem"].get("dead"))
+		if nem_kill and int(run.get("sector", 1)) >= 3 and nem_dead:
 			award("nemesis_slain")
 	if int(L["captures"]) >= 3 and not P["medals"].has("prize_master"):
 		award("prize_master")
@@ -379,7 +382,7 @@ static func title_stats(L: Dictionary) -> Dictionary:
 		"share_torp": float(kind.get("torp", 0)) / tot if tot > 0 else 0.0,
 		"share_sq": float(kind.get("sq", 0)) / tot if tot > 0 else 0.0,
 		"share_battery": float(kind.get("battery", 0)) / tot if tot > 0 else 0.0,
-		"share_broad": (float(fire.get("Port broadside", 0)) + float(fire.get("Starboard broadside", 0))) / ftot if ftot > 0 else 0.0,
+		"share_broad": (float(fire.get("Port flank", 0)) + float(fire.get("Starboard flank", 0)) + float(fire.get("Port broadside", 0)) + float(fire.get("Starboard broadside", 0))) / ftot if ftot > 0 else 0.0,
 		"aimed": float(L.get("aim", 0)),
 		"braces": float(L.get("ord", {}).get("brace", 0)),
 		"unscarred": float(L.get("unscarred", 0)),

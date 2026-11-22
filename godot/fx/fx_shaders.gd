@@ -969,6 +969,30 @@ void fragment() {
 }
 """
 
+# Issue 1558 item 8: a kit torpedo/rocket trail. Same look as TRAIL, but the strip is one shared fixed mesh (point i
+# in VERTEX.x, side in UV.y) and its samples come in the `pts` array (xyz world position, w birth time), so a moving
+# round only uploads a small uniform each frame instead of building a new ArrayMesh. Samples past `count` collapse
+# onto the last one with no width, so the unused end of the strip has no area.
+static func kit_trail_code(points: int) -> String:
+	var c: String = TRAIL.replace("uniform float trail_elapsed = 0.0;",
+		"uniform vec4 pts[%d];\nuniform int count = 0;\nuniform float life = 0.38;\nuniform vec4 eng = vec4(1.0);\nuniform vec3 widths = vec3(0.1, 0.2, 0.0);" % points)
+	c = c.replace("""	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	vec3 wd = snorm((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
+	float s = clamp(UV.x + trail_elapsed, 0.0, 1.0);
+	float w = mix(CUSTOM1.x, CUSTOM1.y, s);""", """	int n = max(count, 1);
+	int i = int(VERTEX.x + 0.5);
+	int k = min(i, n - 1);
+	vec3 wp = pts[k].xyz;
+	vec3 wd = snorm(pts[min(k + 1, n - 1)].xyz - pts[max(k - 1, 0)].xyz);
+	float s = clamp((scene_t - pts[k].w) / max(life, 0.001), 0.0, 1.0);
+	float w = i < n ? mix(widths.x, widths.y, s) : 0.0;""")
+	c = c.replace("w = max(w, du * 10.0);", "w = i < n ? max(w, du * 10.0) : 0.0;")
+	c = c.replace("float seed = CUSTOM1.z;", "float seed = widths.z;")
+	c = c.replace("vCol = CUSTOM0;", "vCol = eng;")
+	assert(c.contains("uniform vec4 pts[") and c.contains("vCol = eng;") and c.contains("float seed = widths.z;") and c.contains("i < n ? max(w"))
+	return c
+
+
 # Strike-craft history from squadron_wing's real stern samples. Kept here so
 # attack runs and live wings use the same kit without changing their movement.
 const CRAFT_TRAIL := """

@@ -91,10 +91,10 @@ func _run() -> void:
 		await _settle()
 		await RenderingServer.frame_post_draw
 		var img := get_viewport().get_texture().get_image()
-		preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(v + ".png"))
+		preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(v + ".png"), preload("res://tools/picture_provenance.gd").capture_stage())
 		# the bar was counted on a4's jpg (quality 0.9), so the main count is on the same jpg, read back; png count beside it
 		var jp := out.path_join(v + ".jpg")
-		preload("res://tools/picture_provenance.gd").save_jpg(img, jp, 0.9)  # stamp: bottom left, off the box
+		preload("res://tools/picture_provenance.gd").save_jpg(img, jp, 0.9, preload("res://tools/picture_provenance.gd").capture_stage())  # stamp: bottom left, off the box
 		var m := measure(Image.load_from_file(jp), STERN)
 		var r := measure(img, STERN)
 		line = "BLOOM_PROBE %s stern over245=%d over200=%d of %d (raw png over245=%d)" % [v, m["over245"], m["over200"],

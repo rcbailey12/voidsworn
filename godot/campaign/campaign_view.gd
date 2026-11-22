@@ -238,7 +238,7 @@ static func nem_panel(C, N) -> Dictionary:
 
 # ---------------------------------------------------------------- the map's words
 
-const KIND_WORD := {"battle": "Fight", "elite": "Elite fight", "boss": "Flagship fight", "event": "Event", "shipyard": "Shipyard", "drydock": "Drydock", "field": "Field repairs"}
+const KIND_WORD := {"battle": "Fight", "elite": "Elite fight", "boss": "Flagship fight", "event": "Event", "shipyard": "Shipyard", "drydock": "Repair dock", "field": "Field repairs"}
 const KIND_NOTE := {"shipyard": "buy, repair, upgrade", "drydock": "repairs or repairs with credits", "field": "a hull patch or a smaller patch with credits", "event": "anything can happen"}
 
 

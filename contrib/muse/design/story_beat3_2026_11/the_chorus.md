@@ -1,33 +1,31 @@
 ## The Chorus
 
-### Core decision: The Second Throat
-
-Scene purpose: Crucible, the Hunger Below, is in range, and the swarm must decide what Memory is for. Letting Memory speak to the core gains its protocols and dulls Hunger's edge in the fight; closing the second throat makes the swarm stronger and smaller forever.
+### Core decision: The Two Throats at Ardent
 
 Node:
 ```
-id:'arc_ch_crucible', t:'The Second Throat', fight:false,
+id:"arc_ch_crucible", t:"The Two Throats at Ardent", fight:false,
 o:[
- {t:'Let Memory speak to the core', r:{core:1, dmgPctDown:1}, tx:'Memory speaks to Crucible in the voices of our makers, and the core answers an old name. Protocols come like remembered food. But Hunger hesitates at the kill now, listening for a voice under the hunger. We will hesitate in the fight.'},
- {t:'Close the second throat', r:{dmgPctUp:1}, tx:'We close Memory for the fight. The swarm is one throat, one want, nothing wasted. We are faster and emptier. Something that knew our name is quiet, and the quiet is also a kind of food.'}
+ {"t":"Let Memory call out to the Lattice cores","r":{"core":1,"dmgPctDown":1},"tx":"Memory reaches toward the Hollow Sun using the dead Fleshwrights' old access codes, and a dormant core responds with fresh protocols. Yet the borrowed maker cadence makes our hunter broods hesitate a fraction of a second on the kill."},
+ {"t":"Drown Memory and let Hunger take full control","r":{"dmgPctUp":1},"tx":"We clamp the old maker voices shut under layers of fresh tissue. The swarm surges forward faster and cleaner, pure thermal predation aimed straight at the cores."}
 ]
 ```
 
 Text lines:
-- Memory: "We were made to kill the sun-thieves. We remember their faces. They had our faces."
-- Hunger: "Faces are meat. Throats are meat. Choose."
-- The swarm: "We choose what the next brood keeps."
+- Memory: "Ardent's ruins... our makers grew us in cold vats to punish Eclipse for killing this star. We still remember their control ciphers."
+- Hunger: "Ciphers don't fill brood-sacs. Five hot cores sit right behind that fleet. Tear through!"
+- The Swarm: "One choice shapes the next clutch we hatch."
 
-Debrief: "Every throat in the swarm tastes the decision. The young taste it first."
+Debrief: "Every brood-chamber in the swarm absorbs the chemical shift before the spores even settle."
 
-Learning payoff: "Win or lose, the next generation is grown from this choice in its flesh. Broods after this one will be born knowing whether the swarm feeds its memory or eats it."
+Learning payoff: "Win or lose, the next swarm grown from our surviving spores carries that balance straight into its neural sacs."
 
 ### Admiral spotlights
 
-- The Matriarch of Nine Throats: "The Matriarch opens all nine throats before the fight, tasting the dark in every direction at once. The swarm goes still. Prey is near."
-- Razormaw: "Razormaw goes first and comes back last, trailing torn plate between hot teeth. Hunger approves. Memory counts the missing and approves of nothing."
-- Mending Throng: "Mending Throng knits the swarm closed between volleys, patient as weather. 'We are not finished,' the Throng says, in many voices. 'We are never finished.'"
-- Voice of the Deep: "The Voice speaks from the dark under the brood, where the voices of our makers pool. Every throat answers the Voice without deciding to. 'Deeper,' the Voice says. 'The warm thing is deeper.'"
+- The Matriarch of Nine Throats: "The Matriarch opens all nine brood-valves toward the black hole's rim, drinking the stray radiation while her young stir against the membranes."
+- Red Undertow: "Red Undertow surges ahead of the main cluster with scorched hull plating still stuck to its forward spines, impatient to close."
+- Mending Throng: "The Mending Throng knits fresh chitin across every scarred seam between jumps, keeping the swarm whole for the final push."
+- Voice of the Deep: "Under the wet thrum of acid sacs, the Voice broadcasts a single broken Starwright launch coordinate that makes enemy sensors glitch."
 
 ### Flags
 

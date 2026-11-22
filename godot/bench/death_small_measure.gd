@@ -126,7 +126,7 @@ func _run() -> void:
 						if node is MeshInstance3D and node.has_meta("fx_picture_kind") and node.get_meta("fx_picture_kind") != "flash": node.visible = false
 				await process_frame
 				await RenderingServer.frame_post_draw
-				preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image().get_region(Rect2i(640, 300, 640, 480)), folder.path_join("%03d.png" % frame))
+				preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image().get_region(Rect2i(640, 300, 640, 480)), folder.path_join("%03d.png" % frame), preload("res://tools/picture_provenance.gd").capture_stage())
 			fx.release()
 			if measured_ship != null: measured_ship.queue_free()
 			world.remove_child(fx)

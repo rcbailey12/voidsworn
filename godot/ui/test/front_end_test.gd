@@ -124,7 +124,7 @@ func title_checks(snd: FakeSound) -> void:
 			rows += 1
 			var lb: Label = r.get_child(0)
 			if lb.autowrap_mode == TextServer.AUTOWRAP_OFF or lb.get_global_rect().end.x > r.get_child(1).get_global_rect().position.x: unwrapped += 1
-	check(rows == 18 and unwrapped == 0, "all 18 settings names wrap and stay clear of their control (%d rows, %d bad)" % [rows, unwrapped])
+	check(rows == 21 and unwrapped == 0, "all 21 settings names (issue 1437 added Render scale, Frame cap and V-Sync) wrap and stay clear of their control (%d rows, %d bad)" % [rows, unwrapped])
 	var xs := {}
 	for c in t.settings_panel.find_children("*", "Control", true, false):
 		if c.has_meta("setting_key"): xs[int(round(c.size.x))] = true
@@ -306,9 +306,13 @@ func campaign_checks(snd: FakeSound) -> void:
 	if ui._aspect_cards.size() > 1:
 		for b in (ui._aspect_cards[1][0] as Node).find_children("*", "Button", true, false): hit = b
 	var found_hit := hit != null   # the button is freed by the re-render, so remember that it was there
+	var podium0 = ui.podium
 	if found_hit: hit.pressed.emit()
 	await frames(3)
 	go = ui.page_box.find_child("LaunchButton", true, false)
+	# issue 1559 item 27: the pick keeps the live podium (its turning ship carries on; no reload, no snap to the start angle)
+	check(podium0 != null and is_instance_valid(podium0) and ui.podium == podium0 and podium0.is_inside_tree() and ui.page_box.is_ancestor_of(podium0),
+		"an aspect pick keeps the same flagship podium on the new render (item 27)")
 	check(found_hit and go != null and not go.disabled and ui.aspect_pick == pick_id and go.text.ends_with(str(C.ASPECTS[pick_id]["n"])),
 		"clicking an aspect card picks it and Launch names it (%s)" % (go.text if go != null else "no button"))
 	var bk: Button = null

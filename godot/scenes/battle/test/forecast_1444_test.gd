@@ -308,7 +308,7 @@ func _nova() -> void:
 	b._ptr_depth += 1
 	var tp2 := b._tip()
 	b._ptr_depth -= 1
-	_check(b._threat_tid < 0 and not b._threat_busy and tp2.contains("Nova shell") and tp2.contains("centre"), "NOVA-1 once the worker is done the same hover reaps it and shows the nova forecast")
+	_check(b._threat_tid < 0 and not b._threat_busy and tp2.contains("Spinal shell") and tp2.contains("centre"), "NOVA-1 once the worker is done the same hover reaps it and shows the nova forecast")
 	_done(b)
 
 

@@ -111,7 +111,7 @@ class Driver extends Scene:
 		evidence.append({"fleet_visible_rows": int(round(fleet_scroll.size.y / ui.px(36))), "name": name, "scale": ui.k, "words": words, "overlaps": overlaps, "fleet_lines": C.RUN["fleet"].size()})
 		if background:
 			ui.page_box.hide(); await _frames(3); await RenderingServer.frame_post_draw
-			preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), _ro_dir.path_join(name + "_background.png")); ui.page_box.show()
+			preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), _ro_dir.path_join(name + "_background.png"), preload("res://tools/picture_provenance.gd").capture_stage()); ui.page_box.show()
 	func _words(node: Node, out: Array):
 		if node is Control and node.is_visible_in_tree():
 			var rect = node.get_global_rect()

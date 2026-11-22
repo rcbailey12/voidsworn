@@ -105,8 +105,8 @@ The cruiser's death, longer and heavier:
 - It breaks into three pieces along its authored lines: two halves and one more (a spire line, a module, a shade band: the
   faction's sheet says which).
 - Ten secondaries. Coals cool for about 14 s. The pieces drift apart slowly and stay.
-- Board proposal for Ryan's eye on the sheet: straight after the core flash the whole scene dims a little for a fifth of a
-  second, so the flash feels like it took the light with it. Off under reduce flashing.
+- No scene dim for a capital in general: the dim straight after the core flash is Eclipse's own (R367, see "How each
+  faction dies"); the general option was removed (R389, issue 1509). Off under reduce flashing.
 
 Installed (issue 1077, on by default since Ryan's yes on pass 6, Nov 20 2026; `rendering/effects/death_story="off"` or
 `VS_DEATH_STORY=off` turns it off for comparisons) adds strain to every cruiser and capital death before the split above, in the shared death code
@@ -233,6 +233,10 @@ Three upgrades run through all of them:
    (CRATER_MAX_L, so first hit and worst state never read the same size), the section's drawn marks are the heavy ones and then the newest (never
    the oldest), bomber runs leave a crater, turret meshes take no baked scars, only meshes a wound reaches lose their
    automatic LOD, the stage 4 hole is 0.048 of the ship's length (was 0.032) and moves off a turret's foot. godot/fx/test/first_hit_scars_check.gd.
+   Issue 1235 run 2: below 80% hull HP the whole ship wears (fx_ship hull_wear, 1 at 20%): the damage shader's
+   fx_weather mottles and darkens the plating, fx_power dims its lights, and soot patches sit where it was actually hit
+   (worst section first, up to 8), with no ember heat, so no faction gets orange from wear. Below 35% it lists 2 to 5
+   degrees toward the side last hit, view only. godot/fx/test/hull_wear_check.gd.
 2. **Light on neighbours.** Torpedo hits and every death light the hulls around them for the length of the flash. (Built:
    a torpedo's light reaches about two hexes, 36 units; a death's core flash 1.5, 2 and 3 hexes for a frigate, cruiser and
    capital; every other light keeps the standing 30 units, about 1.7 hexes.)
@@ -303,11 +307,17 @@ said a macro hit); Chorus acid is a torpedo row with the melt
 look (built in issue 461 as its own wet splash with bile drops and an acid fume that hangs, at the bio size; the
 Glasswright prism shard gun is the energy row with a rainbow glint).
 
+Boarding (issue 1547, look B; fx.gd `board` and its `BOARD` table): the breach goes on the target's side facing the attacker (from dead
+ahead or astern, the side the camera sees), with a hatch mark four times the first build's width, a pop ring and burst with pixel
+floors that hold at camera 170, a vent, an amber inside light, and three amber boarding lines in the shared line style (role
+`board`) from the attacker's hatch, fanned along the target's flank, held for the battle's 1.6 s boarding pause (paced with
+battle speed) so the player sees it before the next event. godot/fx/test/close_action_fx_check.gd. Set: Ryan, Nov 22 (R401).
+
 ## What Ryan will be shown
 
 1. The hit ladder: one strip at the battle camera, las to torpedo, before above after.
 2. A cruiser death: eight frames across its three beats, before above after.
-3. A capital death: the same, with the scene-dim proposal on and off.
+3. A capital death: the same. No dim on and off pair: the dim is Eclipse's own (R389), so a non-Eclipse capital shows none.
 4. Later, per rebuilt faction: its death beside the shared one.
 
 ## Build order (jobs written from docs/playbooks/effects.md's template)

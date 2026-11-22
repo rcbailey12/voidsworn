@@ -95,7 +95,7 @@ func _still(name: String) -> void:
 		return
 	for i in 4:
 		await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join(name + ".png"))
+	preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage())
 
 func _capture() -> void:
 	for c in CASES:

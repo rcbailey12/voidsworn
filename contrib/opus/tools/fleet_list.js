@@ -22,7 +22,7 @@ const HULL_TABLE = 'godot/render/hull_table.gd';
 const MANIFEST = 'godot/assets/ships/manifest.json';
 const RECIPES = 'tools/recipe/ships';
 
-const FACTION_NAMES = { voidsworn: 'Sunward Crusade', hegemony: 'Hegemony Navy', corsair: 'Ashfall Hullbreakers',
+const FACTION_NAMES = { voidsworn: 'Sunward Crusade', hegemony: 'Meridian Directorate', corsair: 'Ashfall Hullbreakers',
   chorus: 'The Chorus', ithar: 'The Glasswrights', deathless: 'Eclipse', craft: 'Strike craft (old shared hulls)',
   obj: 'Objectives' };
 

@@ -120,7 +120,7 @@ const VENT_ROOT_FRAC := 0.40
 
 const SLAG := """
 shader_type spatial;
-render_mode unshaded, cull_disabled, depth_draw_opaque;
+render_mode unshaded, cull_disabled, depth_draw_opaque, fog_disabled;
 global uniform float fx_gain;
 uniform float heat = 1.0;
 uniform bool organic = false;
@@ -165,7 +165,7 @@ void fragment() {
 
 const DEBRIS_BODY := """
 shader_type spatial;
-render_mode cull_disabled;
+render_mode cull_disabled, fog_disabled;
 global uniform float scene_t;
 global uniform float fx_gain;
 instance uniform float spawn_t = -100.0;
@@ -425,6 +425,7 @@ static func tear_particles(fx, p: Vector3, n: Vector3, L: float, inherited: Vect
 			var mesh := QuadMesh.new(); mesh.size = Vector2(0.28, 1.2) if sparks else Vector2.ONE
 			var mat := StandardMaterial3D.new()
 			mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			mat.disable_fog = true   # issue 1558 item 3: a nebula never dulls a blast (effects.md section 1)
 			mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 			mat.vertex_color_use_as_albedo = true
 			mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
@@ -673,6 +674,35 @@ static func _piece_hulls(pieces: Array) -> void:
 		for i in hp.size():
 			hp[i] -= cen
 		pc["hull"] = hp
+		var tr := Time.get_ticks_usec()
+		pc["reach"] = _piece_reach(pc)
+		pc["reach_usec"] = Time.get_ticks_usec() - tr   # issue 1395: the worker's share, printed by fx/test/death_cost_check.gd
+
+
+# Issue 1395 (Neon F9): the piece's reach for the leash (see _measure_reach), worked out here on the cut's worker from
+# the very vertex arrays its mesh is built from, so the wreck's draw-in reads no faces on the main thread. The middle is
+# the middle of the mesh's box (every surface and the cap), the reach the farthest vertex from it on the board plane.
+static func _piece_reach(pc: Dictionary) -> float:
+	var lists: Array = []
+	for sd in pc["surfs"]:
+		var v = (sd["arrays"] as Array)[Mesh.ARRAY_VERTEX]
+		if v is PackedVector3Array and not (v as PackedVector3Array).is_empty(): lists.append(v)
+	if pc.has("cap"):
+		var v = (pc["cap"] as Array)[Mesh.ARRAY_VERTEX]
+		if v is PackedVector3Array and not (v as PackedVector3Array).is_empty(): lists.append(v)
+	if lists.is_empty(): return -1.0
+	var lo := Vector3.INF
+	var hi := -Vector3.INF
+	for vs in lists:
+		for v in (vs as PackedVector3Array):
+			lo = lo.min(v)
+			hi = hi.max(v)
+	var mid := (lo + hi) * 0.5
+	var far := 0.0
+	for vs in lists:
+		for v in (vs as PackedVector3Array):
+			far = maxf(far, (v.x - mid.x) * (v.x - mid.x) + (v.z - mid.z) * (v.z - mid.z))
+	return sqrt(far)
 
 
 static func _init_dirs() -> void:
@@ -1360,14 +1390,20 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "out": null,
 		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan, "authored": s.hull.authored,
 		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
-		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn}
+		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn,
+		# the worker's results (its timings, and the uploaded geometry on a windowed run), keyed here before the job is
+		# shared: the worker only overwrites these values and never adds a key while the main thread may read the
+		# dictionary (a cold kill reads it before "out" is set; issue 1395 review)
+		"cut_usec": 0, "hulls_usec": 0, "geo": []}
 	s.set_meta("cut_job", job)
 	_init_dirs()
 	var tid: int = fx.submit_death_cut(func() -> void:
 		var tc := Time.get_ticks_usec()
 		var pieces := _cut(job)
-		job["cut_usec"] = Time.get_ticks_usec() - tc
+		var cut_usec := Time.get_ticks_usec() - tc
+		var th := Time.get_ticks_usec()
 		_piece_hulls(pieces)
+		var hulls_usec := Time.get_ticks_usec() - th   # issue 1395: includes each piece's reach (_piece_reach)
 		if bool(job.get("sites", false)):
 			var n_main: int = int(job["plan"]["n_main"]) if not (job["plan"] as Dictionary).is_empty() else pieces.size()
 			for i in mini(n_main, pieces.size()):
@@ -1380,6 +1416,8 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 			for pc in pieces:
 				geo.append(_piece_geometry(pc))
 			job["geo"] = geo
+		job["cut_usec"] = cut_usec   # handed over with the result, on keys that already exist
+		job["hulls_usec"] = hulls_usec
 		job["out"] = pieces)
 	s.set_meta("cut_task", tid)
 	if not under_cover:
@@ -2861,6 +2899,22 @@ static func _blast(fx, src, p: Vector3, n: Vector3, px: float, tint: Color, fram
 # all on the blast point (rule 4: it starts on the ship) but drifting at different speeds into one side of the blast,
 # turned and stretched differently, some darker. The asymmetric baked seed (s0, "shards") is preferred; the round seeds
 # are stretched when used. Seeded per ship, so a replay matches. Fire stays inside the cap: lives only shrink.
+const CORE_VEIL_DELAY := 0.45
+
+
+# Issue 1558 item 2: the big-death gas veil, born after the core's full-heat window, so it never sits over the flash.
+static func _core_gas_veil(fx, s, node_ref: WeakRef, local: Vector3, capital: bool, vel: Vector3) -> void:
+	# born 0.45 s after the flash: read the piece where it is now (it drifts), and skip the veil if it is already gone
+	var node := node_ref.get_ref() as Node3D
+	if not is_instance_valid(node) or node.is_queued_for_deletion() or not node.is_inside_tree():
+		return
+	var p: Vector3 = node.to_global(local)
+	var frame: Transform3D = node.global_transform * Transform3D(Basis.IDENTITY, -(node.get_meta("piece_cen", Vector3.ZERO) as Vector3))
+	var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, vel, 0.38, atlas_band(s.hull.L), null)
+	gas.set_meta("spawn_frame", frame)
+	fx.record_spawn(s, p, false, frame)
+
+
 static func _death_rng(s) -> RandomNumberGenerator:
 	if s == null or not (s is Object) or not s.has_method("set_meta"):
 		return RandomNumberGenerator.new()
@@ -2900,7 +2954,7 @@ static func _smoke_one(fx, src, p: Vector3, px: float, life: float, frame, vel: 
 
 # Beat 2's flash: 0.28 s after the break, on the lip of the torn face. The core (route B, the tier's own row), the body
 # (fire seen through gas, at most 0.70 s of fire, then gas that thins and drifts), shrapnel streamers along the plane of
-# the break (a torpedo or ram: in a cone away from the impact) and, behind a switch, the capital's scene dim.
+# the break (a torpedo or ram: in a cone away from the impact) and, for an Eclipse death, the scene dim (R367).
 static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: Color, cause: String, tl: DeathTimeline) -> void:
 	var node := node_ref.get_ref() as Node3D
 	if not is_instance_valid(node) or node.is_queued_for_deletion():
@@ -2923,10 +2977,9 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 	if fx.quality != "low":
 		# pass 5: no gas veil on a strained death (Ryan: no haze at the split); the sparks below stay
 		if not story:
-			var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, s.get_meta("death_velocity", Vector3.ZERO) * 0.5, 0.38, atlas_band(s.hull.L), null)
-			(gas.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.45)
-			gas.set_meta("spawn_frame", frame)
-			fx.record_spawn(s, p, false, frame)
+			# Issue 1558 item 2: the veil is spawned 0.45 s late (light first, then matter). Moving `born` ahead after the
+			# picture was made drew frame 0 at full alpha over the core flash, then the pool took it back while still visible.
+			fx.later(fx.now + CORE_VEIL_DELAY, _core_gas_veil.bind(fx, s, node_ref, local, capital, s.get_meta("death_velocity", Vector3.ZERO) * 0.5))
 		var gm: Array = s.get_meta("death_grow", [])
 		var axis_w: Vector3 = (s.xf().basis * (gm[3] as Vector3)).normalized() if gm.size() >= 4 else s.xf().basis.x
 		var away: Vector3 = (s.xf().basis * (gm[0] as Vector3)).normalized() if gm.size() >= 4 else Vector3.FORWARD
@@ -2940,11 +2993,10 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 				d = (d - axis_w * d.dot(axis_w)).normalized()
 			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.6 + fx.rng.randf() * 0.5, dcol(s, "spark", Color(1.0, 0.62, 0.3)), 6.0, 0.06, maxf(L * 0.004, 0.05), 1, d * L * fx.rng.randf_range(0.6, 1.3), 0.8, 0.0, 2.0, 10.0)
 	# R367 (issue 1399): a Glasswright's stored light spills as glittering dust; Eclipse's core gutters out and the scene
-	# dims for an instant on every big Eclipse death
+	# dims for an instant on every big Eclipse death (Eclipse only, R389: no other faction dims the scene)
 	var style := str(dstyle(s).get("style", ""))
 	if style == "shatter": _glitter(fx, s, p, s.hull.L)
-	if capital or style == "peel":
-		fx.dim_scene(fx.now + 0.20, style == "peel")
+	if style == "peel": fx.dim_scene(fx.now + 0.20)
 
 
 # R367 (issue 1399): the Glasswrights' stored light spills from the core as glittering dust that drifts and fades slowly
@@ -3357,6 +3409,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		fx.phys_root.add_child(node)
 		node.global_transform = Transform3D(xf.basis, xf * cen)
 		node.set_meta("piece_cen", cen)
+		if float(pc.get("reach", -1.0)) >= 0.0: node.set_meta("reach_pre", float(pc["reach"]))   # issue 1395, _measure_reach
 		if s.death_big and not organic:
 			node.set_meta("sec_sites", pc["sec_sites"] if pc.has("sec_sites") else _piece_sites(h, seeds, cen, 5, plan, i))
 		if s.death_big or is_main: wreck["scorch_mats"].append_array(pc.get("hull_mats", []))
@@ -3985,6 +4038,10 @@ static func leash_half(nd: Node3D) -> float:
 # measure a piece's real reach once (leash_half); a big piece's faces are read only when its wreck starts to draw in
 static func _measure_reach(nd: Node3D) -> void:
 	if nd.has_meta("leash_rad"): return
+	# issue 1395: the cut's worker already measured it from the piece's own vertex arrays (_piece_reach)
+	if nd.has_meta("reach_pre"):
+		nd.set_meta("leash_rad", float(nd.get_meta("reach_pre")))
+		return
 	for ch in nd.get_children():
 		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
 			var mi := ch as MeshInstance3D

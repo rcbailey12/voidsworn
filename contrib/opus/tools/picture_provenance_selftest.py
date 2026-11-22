@@ -381,6 +381,52 @@ def run():
     print('PASS picture provenance self-test; its own folder removed: ' + str(folder))
 
 
+def _call_args(text, start):
+    # the top-level arguments of a call whose "(" ends at start, strings and brackets kept whole
+    depth, cur, out, quote, i = 0, '', [], None, start
+    while i < len(text):
+        c = text[i]
+        if quote:
+            cur += c
+            if c == '\\' and i + 1 < len(text):
+                cur += text[i + 1]; i += 2; continue
+            if c == quote:
+                quote = None
+        elif c in '"\'':
+            quote = c; cur += c
+        elif c in '([{':
+            depth += 1; cur += c
+        elif c in ')]}':
+            if depth == 0:
+                out.append(cur.strip())
+                return [a for a in out if a]
+            depth -= 1; cur += c
+        elif c == ',' and depth == 0:
+            out.append(cur.strip()); cur = ''
+        else:
+            cur += c
+        i += 1
+    return [a for a in out if a]
+
+
+# Issue 1567: save_png(image, path, stage) and save_jpg(image, path, quality, stage) have no default stage, so every call
+# names one. GDScript under godot/ fails to load without it; this also covers the scripts kept beside build sheets.
+def stage_unnamed_saves():
+    missing = []
+    files = subprocess.run(['git', '-C', str(ROOT), 'grep', '-l', 'picture_provenance.gd', '--', '*.gd'],
+                           capture_output=True, text=True, check=True).stdout.split()
+    for rel in files:
+        if rel == 'godot/tools/picture_provenance.gd' or rel.startswith('docs/archive/'):
+            continue
+        text = (ROOT / rel).read_text(encoding='utf-8-sig')
+        aliases = re.findall(r'(?:const|var)\s+([A-Za-z_]\w*)\s*:?=?\s*(?:pre)?load\("res://tools/picture_provenance\.gd"\)', text)
+        receiver = r'(?:(?:pre)?load\("res://tools/picture_provenance\.gd"\)' + ''.join('|' + re.escape(a) + r'\b' for a in aliases) + ')'
+        for m in re.finditer(receiver + r'\s*\.\s*save_(png|jpg)\s*\(', text):
+            if len(_call_args(text, m.end())) < (3 if m.group(1) == 'png' else 4):
+                missing.append(rel + ':' + str(text.count('\n', 0, m.start()) + 1))
+    return missing
+
+
 def checks(folder):
     repo, out = folder / 'repo', folder / 'out'
     repo.mkdir(); (out / 'shots').mkdir(parents=True)
@@ -401,6 +447,9 @@ def checks(folder):
                 unstamped_saves.append(str(path.relative_to(ROOT)) + ':' + str(number))
     assert not unstamped_saves, 'capture saves bypass the shared stamp: ' + ', '.join(unstamped_saves)
     print('PASS capture save sweep: game, probes, recipe previews and tool captures use the shared writer')
+    unnamed = stage_unnamed_saves()
+    assert not unnamed, 'shared writer calls that do not name their stage (issue 1567): ' + ', '.join(unnamed)
+    print('PASS stage sweep: every shared writer call names its stage (no default claims installed in game)')
     original = Image.new('RGBA', (1280, 720), (15, 28, 44, 255))
     review_outputs(folder, original)
     publish_outputs(folder, original)

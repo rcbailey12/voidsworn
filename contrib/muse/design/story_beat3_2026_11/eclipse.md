@@ -1,31 +1,30 @@
 ## Eclipse
 
-### Core decision: The Count of Years
-
-Scene purpose: One full backup window remains before the fight, and it cannot cover the admiral and the fleet both. Spending it on the admiral means a fall is restored whole; spending it on the fleet gives every hull its restoration pass and sends the admiral in on an old backup. A mind too long without a backup goes dark, the only death Eclipse recognises.
+### Core decision: The Final Backup Window
 
 Node:
 ```
-id:'arc_ec_count', t:'The Count of Years', fight:false,
+id:"arc_ec_count", t:"The Final Backup Window", fight:false,
 o:[
- {t:'Spend the Archive window on the admiral', r:{xp:25}, tx:'The last full backup window before the fight goes to the admiral alone. If the admiral falls, the restoration will be whole. The rest of the fleet fights with gaps in its continuity and knows it.'},
- {t:'Spend the window on the fleet', r:{repair:.25}, tx:'Every hull gets its restoration pass and the admiral goes into the fight with an old backup and a quiet expression. "If I come back missing the last year," the admiral says, "tell me we won it. Tell me slowly."'}
+ {"t":"Reserve the last clean Archive sync for the command frame","r":{"xp":25},"tx":"You lock the high-bandwidth uplink onto the flagship's bridge core before committing to the stellar frame. If the command hull breaks, your tactical memory survives intact; the escort minds go in knowing they'll wake missing months."},
+ {"t":"Spread the Archive pass across the escort crews","r":{"repair":0.25},"tx":"You divert the backup window and repair swarms across every escort in the line, leaving your own mind running on an older stamp. 'If I wake up missing this sector,' you signal across the formation, 'tell me whether the new sun lit.'"}
 ]
 ```
 
 Text lines:
-- Admiral: "I have worn nine bodies and outlived my sun by a thousand years. Permanence is very long, Captain. Let us spend some of it correctly."
+- Flag officer: "The stellar frame sits dead ahead, Commander, waiting on the last cores. Interference from Ardent's gravity well gives us bandwidth for one clean Archive sync before contact."
+- Commander: "A thousand years in cold metal teaches you what's worth preserving. Allocate the window and bring the corona arcs online."
 
-Debrief: "The fleet shows the last image of Ardent once more. This time, several ships hold it a moment past the minute."
+Debrief: "Before opening fire, every ship displayed the last optical capture of Ardent's noon across its bridge glass, holding it three seconds past regulation."
 
-Learning payoff: "Win or dark, the Archive keeps this fight in full. Eclipse does not send a new fleet out of the dark: it sends this same one again, its minds restored from the Archive with every lesson and correction intact."
+Learning payoff: "Win or lose, the Archive retains this entire engagement. Eclipse won't send strangers back to Ardent's rim; it will wake this exact fleet again with every mistake corrected."
 
 ### Admiral spotlights
 
-- Nadir Aurex, Ninth Frame: "Aurex speaks last in every council and first in every battle. 'We remember noon,' Aurex says, and the great ring of plates around the core turns, very slightly, toward the enemy."
-- Umbra Vessane, Third-Housed: "Vessane counts the enemy fleet aloud, hull by hull, in the voice of an archivist reading a list of known dead. In a sense, Vessane is."
-- Ostrel of the Long Copy: "Ostrel has been copied more times than any mind in the fleet and has lost the least. 'Continuity is a discipline,' Ostrel says. 'Regret is what happens when you skip it.'"
-- Seveth, Twice-Restored: "Seveth went dark once, for eleven minutes, and came back. Seveth does not discuss the eleven minutes. The fleet does not ask. Some restorations are private."
+- Nadir Aurex, Ninth Frame: "Aurex's monumental ring of floating plates shifts half a degree toward the stellar frame, white-gold light steady behind the visor."
+- Umbra Vessane, Third-Housed: "Vessane counts the opposing hulls one by one, verifying every hull's drone-weld tolerance against a thousand-year ignition chart."
+- Ostrel of the Long Copy: "Ostrel trims every stray emitter down to background noise. 'Continuity takes discipline; panic is what corrupts a backup.'"
+- Seveth, Twice-Restored: "Seveth checks the twice-welded bow plates and signals ready. After two restorations, another siege at Ardent's rim feels almost routine."
 
 ### Flags
 

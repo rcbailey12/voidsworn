@@ -70,6 +70,29 @@ func _run() -> void:
 		ok = ok and is_equal_approx(float(restored.settings["volume"]), 0.35) and is_equal_approx(UiScale.player, 1.15)
 		ok = ok and scale_after != null and scale_after.text == "Large"
 		restored.free()
+	# Issue 1559 item 23: dragging a volume slider saves once, when the drag ends; a key step still saves at once
+	var vol: HSlider = null
+	if main.title.settings_panel != null and is_instance_valid(main.title.settings_panel):
+		for sl in main.title.settings_panel.find_children("*", "HSlider", true, false):
+			if str(sl.get_meta("setting_key", "")) == "volume":
+				vol = sl
+	var drag_ok := vol != null
+	if drag_ok:
+		var n0: int = main.saves
+		vol.drag_started.emit()
+		for v in [0.5, 0.55, 0.6, 0.65]:
+			vol.value = v
+		drag_ok = main.saves == n0 and is_equal_approx(float(main.settings["volume"]), 0.65)
+		vol.drag_ended.emit(true)
+		drag_ok = drag_ok and main.saves == n0 + 1
+		vol.value = 0.7   # a key step
+		drag_ok = drag_ok and main.saves == n0 + 2
+		var back := Main.new()
+		back._load_settings()
+		drag_ok = drag_ok and is_equal_approx(float(back.settings["volume"]), 0.7)
+		back.free()
+	print(("PASS" if drag_ok else "FAIL") + ": a volume drag saves once when it ends, a key step saves at once (issue 1559 item 23)")
+	ok = ok and drag_ok
 	for i in 3: await process_frame  # Let the title and its rebuild finish their layout reports.
 	main.free()
 	if ok: print("PASS: title settings update their labels, save each press, and apply UI scale live; an old nebula_wake false no longer keeps the wake off; the Nebula wakes toggle starts on and its Off survives a restart")
