@@ -260,7 +260,7 @@ def build(K):
     K.mass('Flak barbette plinth', K._obj('H7_barbette', pv, pf, 'hgrey2', grp='hull'), 'recessed grey', note='the low faceted barbette the Picket lasers turn on')
     pv, pf = HP._poly_prism([(bx + (x - bx) * 1.02, y * 1.02) for (x, y) in oct_], zd + bh * 0.45, zd + bh * 0.6)
     K._obj('H7_barbetteband', pv, pf, 'htrim', grp='hull')
-    K.mark('barbette_plinth', 'tier', ['face', 'roof', 'opening'])
+    K.mark('barbette', 'tier', ['face', 'roof', 'opening'], fid='barbette_plinth')
     K.gun('F1', (bx, 0.0, zd + bh), 0.0, 10.0, barrels=3, cal=0.04, blen=0.28, size=0.8, slot='T', weapon='flak', inv='barbette',
           note='the Picket lasers (flak T, 3 shots over 3 emitters, one each volley) on the dorsal barbette; the plinth lifts the emitters over the low sensor fin (R240)')
 

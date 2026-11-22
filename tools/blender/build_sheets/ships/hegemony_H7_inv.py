@@ -49,7 +49,7 @@ INVENTORY = [
          what='long louvres on the deck and the belly', count=8, cells=ALL_TOP + ['mid/side'], reads='a machined frame, straight slats over a dark recess', src='picture'),
     dict(id='windows', job='blue-white windows of the crew deck (lore 3.3)', type='slit', what='window slits on the flank band aft', count=4,
          cells=['stern/side'], reads='a trim frame round a recessed pane', src='picture'),
-    dict(id='hatches', job='crew and stores access: deck, belly and flank hatches', type='hatch', what='flush rectangular armoured hatches', count=8,
+    dict(id='hatches', job='crew and stores access: deck, belly and flank hatches', type='hatch', what='flush rectangular armoured hatches', count=6,
          cells=['bow/top', 'mid/top', 'stern/top', 'mid/side'], reads='a trim rim, a flush door, a seam, a recessed grip', src='picture'),
 ]
 LEFT_PLAIN = [
@@ -57,5 +57,5 @@ LEFT_PLAIN = [
     'The concept\'s scattered surface greebles are not built one for one: the even Navy panel grid and the fittings with a job stand in for them (R221).',
     'Stencil marks are paint, not modelled (the Hegemony stack).',
 ]
-STRUCTURE = {'bow/top': 2, 'bow/side': 2, 'mid/top': 3, 'mid/side': 2, 'stern/top': 2, 'stern/side': 3}
-STRUCTURE_NOTE = 'Picket run 3: bow, the blunt face and the casemate; midships, the dart\'s widest part, the fin and the barbette; stern, the chamfer, the transom and the two nozzle pods'
+STRUCTURE = {'bow/top': 2, 'bow/side': 2, 'mid/top': 3, 'mid/side': 2, 'stern/top': 2, 'stern/side': 2}
+STRUCTURE_NOTE = 'Picket run 3: bow, the blunt face and the casemate; midships, the dart\'s widest part, the fin and the barbette; stern, the chamfer and the transom with the two nozzle pods seated flush in it (the side view shows them as one block)'
