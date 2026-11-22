@@ -2171,6 +2171,13 @@ func _warm_hull_meshes(tmp: Node3D, sh: SHIP, seen: Dictionary, hk: int) -> int:
 		_warm_seen[smi.mesh.get_instance_id()] = true
 		var overlays := [dstate["tear_mat"] if dstate.has("tear_mat") else mat(SH.TEAR, 1)]
 		if death_story and dstate.has("tear_strain_mat"): overlays.append(dstate["tear_strain_mat"])
+		# R398: the acid death's glow, compiled before the first acid kill. The overlay's pipeline depends only on the
+		# mesh's vertex format, so one draw per format a battle has (Artoo on PR 1583: not one per hull mesh)
+		var fmt_key := "melt_warm_%d" % smi.mesh.surface_get_format(0) if smi.mesh.get_surface_count() > 0 else "melt_warm_none"
+		if not _warm_seen.has(fmt_key):
+			_warm_seen[fmt_key] = true
+			overlays.append(mat(SH.MELT_GLOW, 1))
+			stats["melt_warm_draws"] = int(stats.get("melt_warm_draws", 0)) + 1
 		for ov in overlays:
 			var wm := MeshInstance3D.new()
 			wm.mesh = smi.mesh
