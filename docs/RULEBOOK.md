@@ -536,6 +536,13 @@ files, `build\export` refreshes by itself (issue 1663). Why: "Never queue `playe
 a PR until `checks` is green and Artoo (or the code review seat) has passed the diff." and "Auto-refresh `build\export` overnight
 when idle (`gpu_go.txt` clear) and `main` changed game files." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R407, R408).
 
+3.13 **Every review of a Godot FX, rendering, ship import, audio or battle-feel pull request applies the independent-audit
+skill** (`.agents/skills/independent-audit/SKILL.md`) before merge and before its GPU capture: Opus, Codex and Muse review runs
+alike, findings grouped Blocking, High / Medium, Ready, naming the commit read. Why: Neon's wrap-up pass found silent
+regressions on PR 1699 (shield-blocked brownouts, a miss streak divided by speed, two competing light-dim paths) that green
+checks missed; Ryan: "Instruct Opus, Codex, and Muse review runs to apply `independent-audit` before merging any Godot FX,
+rendering, ship import, audio, or battle-feel PR." (Ryan, Nov 22 2026, 16:48 UTC, Board thread). Set: Ryan, Nov 22 (R413).
+
 ## 4. Ships and concepts
 
 4.1 **Space ships, never sea ships, in the whole shape.** No boat profile, keel, raked prow, deck house, mast, funnel, crane,
