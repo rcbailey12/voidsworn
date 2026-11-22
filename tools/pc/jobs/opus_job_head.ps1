@@ -494,6 +494,7 @@ function Drop-Attempt($attempt) {
   $listed = @(); $ckFile = Join-Path $attempt 'checkouts.txt'
   if (Test-Path -LiteralPath $ckFile -PathType Leaf) { $listed = @(foreach ($l in [IO.File]::ReadAllLines($ckFile)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z') { $Matches[1] } }) }
   if (-not $script:dropDry) { foreach ($o in @(Complete-Removing $attempt $listed)) { if ($o -is [long]) { $script:freed += $o } else { Write-Output $o } } }
+  else { foreach ($n in $listed) { if (Test-Path -LiteralPath (Join-Path $attempt "$n.removing")) { Write-Output "earlier removal would be finished if removing.txt recorded it: $(Join-Path $attempt "$n.removing")" } } }
   $list = Join-Path $attempt 'checkouts.txt'
   if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { Write-Output "no checkouts listed in $attempt"; return }
   $present = @(foreach ($line in [IO.File]::ReadAllLines($list)) { if ($line -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $attempt $Matches[1]))) { $Matches[1] } })
@@ -573,6 +574,17 @@ function Assert-Rebuildable($repo) {
   $stash = @(Run-Git -C $repo for-each-ref '--format=%(objectname)' refs/stash | Where-Object { $_ })
   if ($stash.Count) { throw 'it has a stash' }
   $tips = @((Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1)
+  # Issue 1396 (review of PR 1592): a detached checkout can go back to its pin and look clean while its reflog still holds
+  # a commit made there, and a linked worktree can hold work under this .git. Every commit in the reflog of HEAD and of
+  # each local branch counts as a tip (remote-tracking reflogs are copies of the mirror's history), and a second
+  # worktree keeps the checkout.
+  $worktrees = @(Run-Git -C $repo worktree list --porcelain | Where-Object { "$_".StartsWith('worktree ') })
+  if ($worktrees.Count -ne 1) { throw "it has $($worktrees.Count) worktrees, not 1" }
+  $logged = @('HEAD') + @(Run-Git -C $repo for-each-ref '--format=%(refname)' refs/heads/ | Where-Object { $_ })
+  foreach ($ref in $logged) {
+    if (-not (Test-Path -LiteralPath (Join-Path (Join-Path $repo '.git') (Join-Path 'logs' $ref)) -PathType Leaf)) { continue }
+    $tips += @(Run-Git -C $repo reflog show '--format=%H' $ref -- | Where-Object { "$_" -match '\A[0-9a-f]{40}\z' })
+  }
   foreach ($line in @(Run-Git -C $repo for-each-ref '--format=%(objectname) %(refname)' | Where-Object { $_ })) {
     $own, $name = "$line".Trim() -split ' ', 2
     if ($name.StartsWith('refs/remotes/') -or $name.StartsWith('refs/heads/')) { continue }
@@ -766,7 +778,8 @@ switch ($Action) {
         if (-not (Test-PlainDir $att) -or (Get-AttemptState $att.FullName) -ne 'PASS') { continue }
         $list = Join-Path $att.FullName 'checkouts.txt'
         if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { continue }
-        $left = @(foreach ($l in [IO.File]::ReadAllLines($list)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and (Test-Path -LiteralPath (Join-Path $att.FullName $Matches[1]))) { $Matches[1] } })
+        # A listed checkout, or its recorded <name>.removing left by a removal a lock stopped (review of PR 1592), is left.
+        $left = @(foreach ($l in [IO.File]::ReadAllLines($list)) { if ($l -match '\A([A-Za-z0-9_-]{1,40}) [0-9a-f]{40}\z' -and ((Test-Path -LiteralPath (Join-Path $att.FullName $Matches[1])) -or (Test-Path -LiteralPath (Join-Path $att.FullName "$($Matches[1]).removing")))) { $Matches[1] } })
         if (-not $left.Count) { continue }
         $problem = Get-AttemptProblem $att.FullName
         if ($problem) { Write-Output "checkouts kept: $problem"; continue }

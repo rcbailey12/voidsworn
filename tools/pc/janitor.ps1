@@ -160,17 +160,20 @@ function Assert-NoProcessUses($dir) {
 $legacyScratch = '\A(?:voidsworn-run-(?:(?<issue>[1-9][0-9]*)-)?[0-9a-f]{32}|voidsworn-parity-[A-Za-z0-9]{6}|stage7-checked-[A-Za-z0-9_][A-Za-z0-9_-]*-[a-z0-9_]{8})\z'
 function Get-RelayReceipts($mirror) {
   # Objects reachable from the relay branches (board/pc-out-*): a committed receipt, not a loose blob (Artoo, PR 1266).
-  if ($script:relayReceipts) { return $script:relayReceipts }
-  $set = New-Object 'Collections.Generic.HashSet[string]'
-  $refs = @(Read-CleanupGit @('--git-dir',$mirror,'for-each-ref','--format=%(objectname)','refs/heads/board/pc-out-*'))
+  # Read again whenever the relay refs differ from the last read (review of PR 1592: the relay sweep's child or another
+  # runner can fetch and prune the mirror between two folders).
+  $refs = @(Read-CleanupGit @('--git-dir',$mirror,'for-each-ref','--format=%(objectname) %(refname)','refs/heads/board/pc-out-*'))
   if ($gitExit -ne 0) { throw 'relay branches could not be read' }
+  $key = $refs -join "`n"
+  if ($script:relayReceipts -and $script:relayReceiptsKey -ceq $key) { return $script:relayReceipts }
+  $set = New-Object 'Collections.Generic.HashSet[string]'
   if ($refs.Count) {
     foreach ($line in @(Read-CleanupGit @('--git-dir',$mirror,'rev-list','--objects','--glob=refs/heads/board/pc-out-*'))) {
       $null = $set.Add(($line -split ' ', 2)[0])
     }
     if ($gitExit -ne 0) { throw 'relay branches could not be read' }
   }
-  $script:relayReceipts = $set
+  $script:relayReceipts = $set; $script:relayReceiptsKey = $key
   return $set
 }
 # helper_clone.ps1's own small files at the top of a helper folder (lease, attempt ID, commit, ship copy record): they
@@ -188,6 +191,19 @@ function Remove-HelperFolder($dir, $lease) {
   }
   if ($lease) { $lease.Dispose(); [IO.File]::Delete($leasePath) }
   [IO.Directory]::Delete($dir.FullName, $false)
+}
+function Get-ShipCloneReason($jobDir, $checkout) {
+  # Issue 1396 (review of PR 1592): a ship job's clone <job>\repo stays until its publish: publish_ship.bat installs with
+  # that clone's tools and removes it itself (droprepo) after a published PASS. ship_job.bat's receipt out\result.txt
+  # starts with "start <ship> <code> <branch>". The janitor never removes such a clone; an abandoned one goes to the Board.
+  if (-not $checkout.FullName.Equals((Join-Path $jobDir.FullName 'repo'), [StringComparison]::OrdinalIgnoreCase)) { return '' }
+  $receipt = Join-Path (Join-Path $jobDir.FullName 'out') 'result.txt'
+  $item = Get-Item -LiteralPath $receipt -Force -ErrorAction SilentlyContinue
+  if (-not ($item -is [IO.FileInfo]) -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return '' }
+  $first = ''
+  try { $first = [string](Get-Content -LiteralPath $receipt -TotalCount 1) } catch { return 'ship receipt unreadable, so the clone may still be needed for its publish' }
+  if ($first -match '\Astart \S+ \S+ \S+') { return 'a ship clone waits for its publish (publish_ship.bat removes it; the janitor never does)' }
+  return ''
 }
 function Test-RelayedResults($dir, $mirror) {
   # A helper folder goes only when (1) every file in its out folders is a blob committed on a board/pc-out relay branch
@@ -246,6 +262,8 @@ function Test-RelayedResults($dir, $mirror) {
   foreach ($file in ($other | Select-Object -First 20)) { Log "helper file outside out and outside a checkout: $($file.FullName) ($($file.Length) bytes)" }
   if ($other.Count) { throw "$($other.Count) files outside out are not in a rebuildable checkout" }
   foreach ($checkout in $checkouts) {
+    $ship = Get-ShipCloneReason $dir $checkout
+    if ($ship) { throw "checkout $($checkout.FullName): $ship" }
     try { Assert-NoGitLocalState $checkout.FullName; Assert-NoLiveWorktree $checkout.FullName; $state = Get-RepoCleanupState $checkout.FullName $mirror '' $false $true }
     catch { throw "checkout $($checkout.FullName) is not rebuildable: $($_.Exception.Message)" }
     # Superseded ship or gen files are only candidates; this path has no checked archive, so they keep the folder (Artoo).
@@ -276,6 +294,16 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     # followed, so its target does not matter (Board, R8 dry run). Helper folders still keep on any link.
     $scratchKind = $legacy -or $tempScratch
     $stats = Measure-CleanupDirectory $dir -AllowLinks:$scratchKind -AllowUnreadable:$scratchKind
+    if ($helper) {
+      $script:folderStats = @{ Dir = $dir.FullName; Stats = $stats }
+      # A live run holds the lease even when the folder had none (review of PR 1592: an existing-only open returns no
+      # handle, and a helper run could start while the folder is removed). Taken after the measure, so the new file is
+      # not a touch; the process check below still runs after it is held.
+      if (-not $dryRun -and -not $helperLease -and -not $leaseBusy) {
+        try { $helperLease = Open-CleanupLock (Join-Path $dir.FullName '.voidsworn-run-active') $false }
+        catch { $leaseBusy = $true }
+      }
+    }
     $size = "$($stats.Bytes) bytes"
     if ($stats.Links.Count) { $size += ", $($stats.Links.Count) links not followed" }
     if ($stats.Unreadable.Count) { $size += ", $($stats.Unreadable.Count) folders another account owns left in place" }
@@ -376,7 +404,10 @@ function Clear-JobCheckouts($dir, $issue, $temp, $now, $dryRun, $activeLegacy, $
     if ($listed) { throw $listed }
     # Measured before the lease is taken: creating a lease file must not count as a touch. Each checkout is measured again
     # just before its removal (Clear-KeptCheckout).
-    $stats = Measure-CleanupDirectory $dir -AllowLinks -AllowUnreadable
+    # The helper rule's measure of this folder in this run, taken before any lease was created, is reused (issue 1396:
+    # one walk of each job folder, not two).
+    if ($script:folderStats -and $script:folderStats.Dir -eq $dir.FullName) { $stats = $script:folderStats.Stats }
+    else { $stats = Measure-CleanupDirectory $dir -AllowLinks -AllowUnreadable }
     if ($stats.Latest -gt $now.AddHours(-$checkoutIdleHours)) { throw "job folder touched in the last $checkoutIdleHours hours" }
     # A live run takes the lease even when the folder has none yet (created, never deleted, so helper_clone's own
     # OpenOrCreate meets it held) and holds it through every removal: a helper run cannot start here meanwhile, which a
@@ -400,6 +431,8 @@ function Clear-JobCheckouts($dir, $issue, $temp, $now, $dryRun, $activeLegacy, $
       Log "job checkout record: $($checkout.FullName) HEAD $headText, $statusText"
       foreach ($line in ($status | Where-Object { $_ -notmatch '^!! "?godot/\.godot/' } | Select-Object -First 20)) { Log "job checkout status: $($checkout.FullName): $line" }
       # The strict rule: no salvage root, so local work, superseded ship files or anything not rebuildable keeps it.
+      $ship = Get-ShipCloneReason $dir $checkout
+      if ($ship) { Log "kept checkout retained: $($checkout.FullName) (0 bytes counted, not sized; $ship)"; continue }
       Clear-KeptCheckout $checkout $mirror $dryRun $now '' ''
     }
   } catch {
@@ -464,31 +497,62 @@ function Invoke-JobRelayCleanup($dir, $issue, $temp, $dryRun, $activeLegacy) {
 }
 
 # Issue 1396 (Board, Nov 22: the first dry run ran 1 h 47 min without finishing). Each run has a time budget checked
-# between folders, not a hard timeout (PC_JANITOR_CAP_SECONDS, 2700 s): the TEMP folders get the first half, the job
-# folders the rest. A run past its budget starts no new folder, which only keeps things, and says where it stopped; a live run writes that name to
+# between items, not a hard timeout (PC_JANITOR_CAP_SECONDS, 2700 s): the board lanes and Workhorse runs until a quarter,
+# the TEMP folders until half, the job folders until the end. A run past its budget starts no new folder, which only keeps things, and says where it stopped; a live run writes that name to
 # janitor_resume.txt so the next run starts there and wraps around, and every folder is reached in turn. A dry run reads
 # the file and never writes it. Folders that take 10 s or more get a "folder time" line.
+function Test-PlainResumeFile($path) {
+  # Missing is fine; anything else than a plain file (a link, a folder) is refused (review of PR 1592).
+  $item = Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+  if (-not $item) { return $true }
+  return ($item -is [IO.FileInfo]) -and -not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)
+}
 function Read-JanitorResume($path) {
-  $resume = @{ temp = ''; root = '' }
+  $resume = @{ lane = ''; temp = ''; root = '' }
+  if (-not (Test-PlainResumeFile $path)) { Log "resume file ignored: $path is not a plain file"; return $resume }
   try {
     foreach ($line in [IO.File]::ReadAllLines($path)) {
-      if ($line -match '\A(temp|root) (.+)\z') { $resume[$Matches[1]] = $Matches[2] }
+      if ($line -match '\A(lane|temp|root) (.+)\z') { $resume[$Matches[1]] = $Matches[2] }
     }
   } catch {}
   return $resume
 }
-function Get-RotatedFolders($parent, $start) {
-  $all = @((Get-Item -LiteralPath $parent -Force).EnumerateDirectories() | Sort-Object Name)
-  if (-not $start -or -not $all.Count) { return $all }
-  $at = 0
-  while ($at -lt $all.Count -and [string]::Compare($all[$at].Name, $start, [StringComparison]::OrdinalIgnoreCase) -lt 0) { $at++ }
-  if ($at -ge $all.Count) { return $all }
+function Write-JanitorResume($path, [string[]]$lines) {
+  # A fresh sibling file, then one replace, so a link or a half-written file never takes the place of the resume file.
+  if (-not (Test-PlainResumeFile $path)) { Log "resume file not written: $path is not a plain file"; return }
+  if (-not $lines.Count) { if (Test-Path -LiteralPath $path -PathType Leaf) { [IO.File]::Delete($path) }; return }
+  $fresh = "$path.new"
+  if (Test-Path -LiteralPath $fresh) {
+    if (-not (Test-PlainResumeFile $fresh)) { Log "resume file not written: $fresh is not a plain file"; return }
+    [IO.File]::Delete($fresh)
+  }
+  [IO.File]::WriteAllLines($fresh, $lines)
+  if (Test-Path -LiteralPath $path -PathType Leaf) { [IO.File]::Replace($fresh, $path, $null) } else { [IO.File]::Move($fresh, $path) }
+}
+function Get-Rotated($items, [string[]]$names, $start) {
+  # One ordering for the walk and the lookup (ordinal, case blind), and an exact name wins (review of PR 1592: Sort-Object
+  # and an ordinal lookup disagreed on opus1211_run6 and opus12110).
+  $all = [object[]]@($items).Clone(); $keys = [string[]]@($names).Clone()
+  if (-not $all.Count) { return @() }
+  [Array]::Sort($keys, $all, [StringComparer]::OrdinalIgnoreCase)
+  if (-not $start) { return $all }
+  $at = -1
+  for ($i = 0; $i -lt $keys.Count; $i++) { if ([string]::Equals($keys[$i], $start, [StringComparison]::OrdinalIgnoreCase)) { $at = $i; break } }
+  if ($at -lt 0) {
+    $at = 0
+    while ($at -lt $keys.Count -and [StringComparer]::OrdinalIgnoreCase.Compare($keys[$at], $start) -lt 0) { $at++ }
+    if ($at -ge $keys.Count) { return $all }
+  }
   return @($all[$at..($all.Count - 1)]) + @(if ($at) { $all[0..($at - 1)] })
 }
-function Test-JanitorCap($kind, $dir, $limit) {
+function Get-RotatedFolders($parent, $start) {
+  $all = @((Get-Item -LiteralPath $parent -Force).EnumerateDirectories())
+  return Get-Rotated $all @($all | ForEach-Object { $_.Name }) $start
+}
+function Test-JanitorCap($kind, $name, $limit) {
   if ($script:clock.Elapsed.TotalSeconds -lt $limit) { return $false }
-  Log "time cap: stopped the $kind folders at $($dir.Name) after $([int]$script:clock.Elapsed.TotalSeconds) s (cap $limit s); the next run starts there"
-  $script:resume[$kind] = $dir.Name
+  Log "time cap: stopped the $kind folders at $name after $([int]$script:clock.Elapsed.TotalSeconds) s (cap $limit s); the next run starts there"
+  $script:resume[$kind] = $name
   return $true
 }
 function Write-FolderTime($dir, $since) {
@@ -550,8 +614,8 @@ try {
   if ($env:PC_JANITOR_CAP_SECONDS -match '\A[0-9]{1,6}\z') { $capSeconds = [int]$env:PC_JANITOR_CAP_SECONDS }
   $resumePath = Join-Path $root 'janitor_resume.txt'
   $script:resume = Read-JanitorResume $resumePath
-  $resumeAt = @{ temp = $script:resume.temp; root = $script:resume.root }
-  $script:resume.temp = ''; $script:resume.root = ''
+  $resumeAt = @{ lane = $script:resume.lane; temp = $script:resume.temp; root = $script:resume.root }
+  $script:resume.lane = ''; $script:resume.temp = ''; $script:resume.root = ''
   Log "free space before: $($drive.AvailableFreeSpace) bytes"
   $script:boardKeep = Read-BoardKeepList (Join-Path $root 'janitor_keep.txt')
   Log "Board keep list: $($script:boardKeep.Count) paths"
@@ -564,23 +628,29 @@ try {
       Where-Object { $_.Name -cmatch '\Aslot_(deepseek|deepseekpro|kimi|kimicode|sonnet|opus|openai)\z' -and
         -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) } | ForEach-Object { "work217\$($_.Name)" })
   }
-  foreach ($lane in (@('board','board_b','board_c','board_d') + $slots)) {
-    $board = Join-Path $root $lane
-    if (-not (Test-Path -LiteralPath $board -PathType Container)) { continue }
-    Assert-GpuQuiet
-    try { Remove-OlderKeptRepos $board $mirror $dryRun $now $salvageRoot }
-    catch { Log "kept lane $board (scan unavailable: $($_.Exception.Message))" }
-  }
   $runs = @(Get-CleanupRuns $root)
   $recordedScratch = Get-RecordedTempScratch $runs $temp
   # Check old runners once, and take each current issue lock again immediately before making its decision.
   $activeLegacy = @(Get-ActiveLegacyIssues $runs)
   $script:commandLines = Get-CommandLines
-  Assert-GpuQuiet
-  Clear-WorkRunRepos @($runs | Where-Object { $_.Lane -eq 'work217' }) $mirror $dryRun $now $temp $salvageRoot $activeLegacy
+  # The board lanes and the recorded Workhorse runs share the first quarter of the budget, one lane at a time, in turn
+  # from where the last capped run stopped (review of PR 1592: they ran before any cap check).
+  $lanes = @(@('board','board_b','board_c','board_d') + $slots + @('work217-runs'))
+  foreach ($lane in (Get-Rotated $lanes $lanes $resumeAt.lane)) {
+    if (Test-JanitorCap 'lane' $lane ([int]($capSeconds / 4))) { break }
+    Assert-GpuQuiet
+    if ($lane -eq 'work217-runs') {
+      Clear-WorkRunRepos @($runs | Where-Object { $_.Lane -eq 'work217' }) $mirror $dryRun $now $temp $salvageRoot $activeLegacy
+      continue
+    }
+    $board = Join-Path $root $lane
+    if (-not (Test-Path -LiteralPath $board -PathType Container)) { continue }
+    try { Remove-OlderKeptRepos $board $mirror $dryRun $now $salvageRoot }
+    catch { Log "kept lane $board (scan unavailable: $($_.Exception.Message))" }
+  }
   Log "time: lanes and runner records done at $([int]$script:clock.Elapsed.TotalSeconds) s"
   foreach ($dir in (Get-RotatedFolders $temp $resumeAt.temp)) {
-    if (Test-JanitorCap 'temp' $dir ([int]($capSeconds / 2))) { break }
+    if (Test-JanitorCap 'temp' $dir.Name ([int]($capSeconds / 2))) { break }
     $since = $script:clock.Elapsed.TotalSeconds
     Assert-GpuQuiet
     $records = $recordedScratch[$dir.FullName]
@@ -604,7 +674,9 @@ try {
     $issue = ''
     if ($dir.Name -match $helperJobName) { $issue = $Matches['issue'] }
     elseif ($dir.Name -notmatch $playtestJobName) { continue }
-    if (Test-JanitorCap 'root' $dir $capSeconds) { break }
+    # A linked job folder is never entered: no lease or file inside it is opened (review of PR 1592).
+    if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { Log "$(if ($dryRun) { 'would keep' } else { 'kept' }) $($dir.FullName) (a linked job folder is never entered)"; continue }
+    if (Test-JanitorCap 'root' $dir.Name $capSeconds) { break }
     $since = $script:clock.Elapsed.TotalSeconds
     Assert-GpuQuiet
     $script:helperGone = $false
@@ -617,9 +689,8 @@ try {
   }
   Log "time: job folders done at $([int]$script:clock.Elapsed.TotalSeconds) s"
   if (-not $dryRun) {
-    $lines = @(foreach ($k in @('temp','root')) { if ($script:resume[$k]) { "$k $($script:resume[$k])" } })
-    if ($lines.Count) { [IO.File]::WriteAllLines($resumePath, [string[]]$lines) }
-    elseif (Test-Path -LiteralPath $resumePath -PathType Leaf) { Remove-Item -LiteralPath $resumePath -Force }
+    $lines = @(foreach ($k in @('lane','temp','root')) { if ($script:resume[$k]) { "$k $($script:resume[$k])" } })
+    Write-JanitorResume $resumePath ([string[]]$lines)
   }
 } catch {
   if ($script:log) { Log "janitor stopped: $($_.Exception.Message)" }

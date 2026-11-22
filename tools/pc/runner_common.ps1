@@ -458,7 +458,9 @@ function Get-RepoCleanupState($repo, $mirror, $patterns = @(), $allowWork = $fal
   if ($script:cacheMirrorCommits) {
     $refLines = @(Read-CleanupGit @('--git-dir',$mirror,'for-each-ref','--format=%(objectname) %(refname)'))
     if ($gitExit -ne 0) { throw 'mirror refs not verified' }
-    $refSnapshot = $refLines -join "`n"
+    # HEAD too: rev-list --all walks it, and a detached mirror HEAD can be the only thing holding a commit.
+    $mirrorHead = @(Read-CleanupGit @('--git-dir',$mirror,'rev-parse','--verify','-q','HEAD'))
+    $refSnapshot = ($refLines -join "`n") + "`nHEAD " + ($mirrorHead -join ' ')
   }
   if ($refSnapshot -and $script:mirrorCommitCache -and $script:mirrorCommitCache.Mirror -eq $mirror -and
       $script:mirrorCommitCache.Refs -ceq $refSnapshot) {

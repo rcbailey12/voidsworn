@@ -73,11 +73,12 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   <commit> <code> <branch> <tree folder>`, every local commit in the shared mirror or a merge of mirror commits, every tag or other non-branch ref in the mirror under the same name and object, no stash or staged change;
   installed files matching the collected export count as
   rebuildable, anything else is saved into `out\checkout_leftovers_repo` first). A ship build that is never published
-  keeps its slimmer clone for the janitor (issue 1396). A second publish from the same job folder needs a new ship run.
+  keeps its slimmer clone: the janitor never removes a ship clone (issue 1396); an abandoned one goes to the Board as a
+  one-off. A second publish from the same job folder needs a new ship run.
 - `opus_job_head.ps1 survey` lists every job checkout and ship clone on the PC with its size and state, read only, for
   a Board one-off cleanup request to Ryan.
 
-Each janitor run has a 45 minute budget checked between folders (the TEMP folders get the first half; a folder already started runs to its end): once it is spent the run starts no new folder, says where it stopped and a live run writes that folder to `janitor_resume.txt`, so the next run starts there; it never removes more for stopping early. Folders that take 10 s or more get a `folder time` line (issue 1396: the first full dry run ran 1 h 47 min unfinished).
+Each janitor run has a 45 minute budget checked between items, not a hard timeout: the board lanes and the Workhorse runs (one lane at a time) until a quarter of it, the TEMP folders until half, the job folders until the end. A lane or folder already started runs to its end. Past a stop point the run starts no new item of that kind, says where it stopped, and a live run writes that name to `janitor_resume.txt` (replaced whole, never through a link), so the next run starts there and wraps around; it never removes more for stopping early. Folders that take 10 s or more get a `folder time` line (issue 1396: the first full dry run ran 1 h 47 min unfinished).
 Nothing else is deleted (RULEBOOK 3.3, R326). The after-job janitor stays off unless `OPUS_JOB_JANITOR=1`, which needs Ryan's approval.
 
 ## What the Board checks

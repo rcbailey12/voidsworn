@@ -408,6 +408,11 @@ try {
   const nestDirtyRepo = makeCopy('repo', 2, path.join(nestDirty, 'out'));
   write(path.join(nestDirtyRepo, 'notes.txt'), 'unsaved notes in a nested checkout');
   dateTree(nestDirty, 30);
+  // Review of PR 1592: a ship job's clone waits for its publish; the janitor never removes it, whole folder or checkout.
+  const shipJob = helperFolder('opus1396s', { 'out/result.txt': 'start S5 T9_11 opus/issue-1396 Sun 11/22/2026 1:00\r\ndone PASS\r\nall done\r\n' });
+  relay(path.join(shipJob, 'out', 'result.txt'));
+  const shipClone = makeCopy('repo', 2, shipJob);
+  dateTree(shipJob, 30);
   const nestLocal = helperFolder('opus1396u', { 'out/result.txt': 'opus1396u result relayed' });
   relay(path.join(nestLocal, 'out', 'result.txt'));
   const nestLocalRepo = makeCopy('repo', 2, path.join(nestLocal, 'out'));
@@ -547,7 +552,7 @@ try {
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
   const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, genNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
     legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, ownedLinked, legacyNear, oldStage7, workClean, suffixRelayed, ...jobCheckoutsGone, ...recover];
-  const preserve = [boardKept, worktreeLive, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, nestDirty, nestLocal, nestDirtyRepo, nestLocalRepo, jobKeptOut, playtest, jobRecent, jobWork, ...jobCheckoutsKept, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+  const preserve = [boardKept, worktreeLive, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, nestDirty, nestLocal, nestDirtyRepo, nestLocalRepo, shipJob, shipClone, jobKeptOut, playtest, jobRecent, jobWork, ...jobCheckoutsKept, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -616,6 +621,8 @@ try {
   // DRY2 on the PC (Artoo on PR 1592): a checkout inside an out folder is not output. Its files and pack are never hashed
   // as results; it takes the Git proof instead. pt1120c's out_A holds repo_A beside two unrelayed results: 2 of 2.
   assert.match(decision(dry, playtest, 'would keep'), /results not all relayed: 2 of 2 out files are not on a relay branch/);
+  assert.match(decision(dry, shipJob, 'would keep'), /a ship clone waits for its publish/);
+  assert.match(decision(dry, shipClone, 'retained'), /a ship clone waits for its publish/);
   for (const [dir, repo] of [[nestDirty, nestDirtyRepo], [nestLocal, nestLocalRepo]]) {
     assert.match(decision(dry, dir, 'would keep'), new RegExp(`checkout ${repo.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')} is not rebuildable: `), 'a nested checkout with local work keeps its folder: ' + dry);
   }
@@ -668,11 +675,15 @@ try {
   // Issue 1396 (the first PC dry run ran 1 h 47 min unfinished): the time cap stops before the next folder and says where;
   // a dry run never writes janitor_resume.txt; a resume file makes the job folders start at its name and wrap around.
   const resumeFile = path.join(pc, 'janitor_resume.txt');
+  const ordinalTwin = scratch(pc, 'opus12110', 30);
   const jobTimes = report => report.split(/\r?\n/).filter(l => l.startsWith('folder time: ' + pc + path.sep)).map(l => l.slice(13).replace(/ \d+ s$/, ''));
   const capDry = runJanitor('--dry-run', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
   assert.match(capDry, /time cap: stopped the temp folders at \S+ after \d+ s \(cap 0 s\); the next run starts there/);
   assert.match(capDry, /time cap: stopped the root folders at (?:opus|pt)\S* after \d+ s \(cap 0 s\); the next run starts there/);
   assert(!/folder time: /.test(capDry) && !/job relay check exit/.test(capDry), 'a capped run reaches no folder: ' + capDry);
+  // Review of PR 1592: the board lanes and the Workhorse runs stop at the cap too, so no lane checkout is even sized.
+  assert.match(capDry, /time cap: stopped the lane folders at \S+ after \d+ s \(cap 0 s\); the next run starts there/);
+  assert(!/kept checkout (?:would remove|retained|removed)/.test(capDry), 'a capped run reaches no lane checkout: ' + capDry);
   assert(!fs.existsSync(resumeFile), 'a dry run never writes janitor_resume.txt');
   const allJobs = jobTimes(dry);
   assert(allJobs.includes(path.join(pc, 'opus1396relay')) && allJobs.length > 5, 'every job folder has a folder time line in test mode: ' + allJobs);
@@ -681,6 +692,12 @@ try {
   assert.equal(resumed[0], path.join(pc, 'opus1396relay'), 'the job folders start at the resume name: ' + resumed);
   assert.deepEqual([...resumed].sort(), [...allJobs].sort(), 'and wrap around to reach every job folder once');
   assert.equal(read(resumeFile), 'root opus1396relay\r\n', 'a dry run leaves the resume file as it was');
+  // Review of PR 1592: one ordering for the walk and the lookup. Sort-Object put opus1211_run6 before opus12110 while the
+  // ordinal lookup judged it greater, so a cursor at opus12110 restarted at opus1211_run6.
+  write(resumeFile, 'root opus12110\r\n');
+  const resumedAt = jobTimes(runJanitor('--dry-run'));
+  assert.equal(resumedAt[0], ordinalTwin, 'an exact resume name starts there: ' + resumedAt);
+  assert.deepEqual([...resumedAt].sort(), [...allJobs].sort());
   fs.rmSync(resumeFile);
   const live = runJanitor('--low-space');
   assert(!fs.existsSync(resumeFile), 'a run that reached every folder leaves no resume file');
@@ -701,6 +718,8 @@ try {
   // The missing-lease case (Artoo on PR 1592): the live run created and held a lease in each folder that had none, so a
   // helper_clone start (OpenOrCreate, no sharing) during the removal would have stopped instead of overlapping.
   for (const dir of [jobKeptOut, playtest]) assert(fs.existsSync(path.join(dir, '.voidsworn-run-active')), `live run took no lease in ${dir}`);
+  // Review of PR 1592: the whole-folder rule creates and holds the lease on a live run when the folder had none.
+  assert(fs.existsSync(path.join(helperUnrelayed, '.voidsworn-run-active')), 'live run took the helper lease in a folder that had none');
   assert.equal(read(path.join(linkTarget, 'B16_23.glb')), 'shared ship the link points at', 'a removed link never touches its target');
   if (legacyUnreadable) {
     decision(live, legacyUnreadable, 'removed all but 1 folders another account owns');
@@ -727,9 +746,21 @@ try {
   assert.match(live, /0 new bytes in the shared store, 1 already stored\)/);
   decision(live, failedSalvage, 'untracked path cannot be verified');
   // A live run that reaches its cap writes where each loop stopped, for the next run.
+  if (!windows) {
+    // Review of PR 1592: a resume file that is a link is never written through (its target outside stays as it was).
+    const outside = path.join(root, 'resume-target.txt');
+    write(outside, 'not the janitor\'s file\n');
+    fs.symlinkSync(outside, resumeFile);
+    const linked = runJanitor('', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
+    assert.match(linked, /resume file (?:ignored|not written): .* is not a plain file/, linked);
+    assert.equal(read(outside), 'not the janitor\'s file\n', 'the link target is untouched');
+    assert(fs.lstatSync(resumeFile).isSymbolicLink(), 'the link stays a link');
+    fs.rmSync(resumeFile);
+  }
   const capLive = runJanitor('', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
-  const stopped = [...capLive.matchAll(/time cap: stopped the (temp|root) folders at (\S+) after/g)].map(m => m[1] + ' ' + m[2]);
-  assert.equal(stopped.length, 2, 'both loops stop at a zero cap: ' + capLive);
+  const stopped = [...capLive.matchAll(/time cap: stopped the (lane|temp|root) folders at (\S+) after/g)].map(m => m[1] + ' ' + m[2]);
+  assert.equal(stopped.length, 3, 'the lanes, TEMP and job folders each stop at a zero cap: ' + capLive);
+  assert(!fs.existsSync(resumeFile + '.new'), 'no half-written resume file is left');
   assert.equal(read(resumeFile).replace(/\r\n/g, '\n'), stopped.join('\n') + '\n');
   fs.rmSync(resumeFile);
   assert(fs.existsSync(failedSalvage));

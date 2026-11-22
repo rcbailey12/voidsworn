@@ -443,6 +443,35 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   assert(!fs.existsSync(path.join(later, 'new')) && /checkout new removed after the job/.test(r.out) && /disk: checkouts freed/.test(r.out), 'the live run clears the relayed attempt: ' + r.out);
   assert(fs.existsSync(path.join(gone, 'new')) && fs.existsSync(path.join(attempt, 'new')), 'and nothing the proof refuses: ' + r.out);
   assert.equal(fs.readFileSync(path.join(later, 'out_new', 'result.txt'), 'utf8'), 'opus1396later result\n', 'results stay');
+  // Review of PR 1592: the sweep keeps a checkout whose reflog holds a commit no mirror ref reaches (a detached checkout
+  // that went back to its pin), and one with a second worktree; and it finishes a recorded <name>.removing left alone.
+  const relayed = (job) => {
+    const at = job1535(job);
+    relay([[path.join(at, 'out_new'), 'out_1/out_new']], `board/pc-out-${job}`);
+    git(['--git-dir', path.join(vt, 'repo-mirror.git'), 'fetch', '-q', 'origin', `+refs/heads/board/pc-out-${job}:refs/heads/board/pc-out-${job}`]);
+    return at;
+  };
+  const reflogAt = relayed('opus1396reflog');
+  const reflogRepo = path.join(reflogAt, 'new');
+  git(['-c', 'user.name=fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-q', '--allow-empty', '-m', 'only in the reflog'], reflogRepo);
+  const onlyReflog = git(['rev-parse', 'HEAD'], reflogRepo);
+  git(['checkout', '-q', '--detach', two], reflogRepo);
+  assert.equal(fs.readFileSync(path.join(reflogRepo, '.git', 'HEAD'), 'utf8').trim(), two, 'back at its pin');
+  r = run('dropjobs', path.dirname(reflogAt));
+  assert(fs.existsSync(reflogRepo) && r.out.includes(`checkout new kept: ${reflogRepo} (commit ${onlyReflog} is on no branch or tag of the shared mirror`), 'a reflog-only commit keeps the checkout: ' + r.out);
+  const treeAt = relayed('opus1396wt');
+  const treeRepo = path.join(treeAt, 'new');
+  git(['worktree', 'add', '-q', '--detach', path.join(tmp, 'opus1396wt-linked'), two], treeRepo);
+  r = run('dropjobs', path.dirname(treeAt));
+  assert(fs.existsSync(treeRepo) && r.out.includes(`checkout new kept: ${treeRepo} (it has 2 worktrees, not 1)`), 'a second worktree keeps the checkout: ' + r.out);
+  const tombAt = relayed('opus1396tomb');
+  fs.renameSync(path.join(tombAt, 'new'), path.join(tombAt, 'new.removing'));
+  fs.writeFileSync(path.join(tombAt, 'removing.txt'), `new.removing ${two}\r\n`);
+  r = run('dropjobs', path.dirname(tombAt), 'dry');
+  assert(fs.existsSync(path.join(tombAt, 'new.removing')) && r.out.includes(`earlier removal would be finished if removing.txt recorded it: ${path.join(tombAt, 'new.removing')}`), 'a dry sweep names a left tomb and keeps it: ' + r.out);
+  r = run('dropjobs', path.dirname(tombAt));
+  assert(!fs.existsSync(path.join(tombAt, 'new.removing')) && r.out.includes(`finished an earlier removal`), 'the live sweep finishes a recorded tomb with no checkout left beside it: ' + r.out);
+  assert(fs.existsSync(path.join(tombAt, 'out_new', 'result.txt')), 'results stay');
 }
 // A file locked for a moment (Board, AFTERRELAY2 on Nov 21: a pack .idx denied, free a minute later) is retried; one
 // locked past the retries leaves <name>.removing, which the next run finishes. A read-only folder stands in for the lock.
