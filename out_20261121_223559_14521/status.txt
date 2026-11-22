@@ -1,0 +1,24 @@
+[Sat 11/21/2026 22:35:59.48] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-22T04:36:00Z
+found node: C:\Users\rcbai\Downloads\voidsworn_test\node\node.exe
+all tools found
+[Sat 11/21/2026 22:36:00.54] ready: GPU label 1585
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+verified 4e3783d42a698614bf8467ddc4d839ef54e4713e5ff470aa2408d166bcd8c61f C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\jobs\opus_job_head.bat
+verified 4ac7794ef042cdbdf09fd39d809b01b677ef5cb10aa049ec98a06f9429d52094 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1 (tools_live version a41a4147845e)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\a41a4147845e\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new baf255a042d2c13934a9d1c74281a4e9abeb0b5d C:\Users\rcbai\Downloads\voidsworn_test\opus1585key\out_20261121_223559_14521\new
+[Sat 11/21/2026 22:36:23.06] step new keytest start
+[Sat 11/21/2026 22:36:29.88] step new keytest ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Sat 11/21/2026 22:36:30.41
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1585key\out_20261121_223559_14521 (results not relayed yet: no relay_receipt.txt in C:\Users\rcbai\Downloads\voidsworn_test\opus1585key\out_20261121_223559_14521 (the Board writes it when it relays))
+disk: checkouts freed 0.0 GB in all, C: 157.8 GB free
