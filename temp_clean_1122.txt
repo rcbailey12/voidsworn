@@ -1,0 +1,33 @@
+temp clean 1122 (Ryan 'Okay to clean temp', Board Nov 22 04:12 UTC; scope: the cleanup4 SKIPPED *.removing folders only). Normal delete under rcbai, no elevation, no takeown/icacls. C free before 74.8 GB
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0592fe522a994357a9b4a4d1c6b4d85b.removing -> left: picture889-4fresrad
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-096fcda062c04820b365672a12e1e725.removing -> left: close1076-tErDDR
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0a5ba3f8cc3b4936baa4722685fd6d89.removing -> left: picture889-n94xf9c1, picture889-rc7w_p77
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1029146854084a55be8f7e5cbef7432d.removing -> left: picture889-8gh4zwhl
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1cd66982941249fc8cf002ed52bccdec.removing -> left: picture889-mawn30fk
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1feeba5e919f457c92bcf268f02538d0.removing -> left: picture889-8zkh4n_5, picture889-qdyl8a_j
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-212d86aa70c74373b9cf3a53366709ef.removing -> left: a16-fixture-vto_1xe8, stage7-selftest-o86a_x4b, stage7-selftest-zfvi_q76
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2c77816056da466d911a631e0acdc995.removing -> left: picture889-lfkurcub
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-49ee68fd69154bb991cb65bbbba55f7d.removing -> left: picture889-551qanaw
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-516ab44bd6e5489f8204ac433c8bf68b.removing -> left: picture889-3d82ob4j
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-5660932789454f799423a15cdbe79157.removing -> left: picture889-f2qz6lha, picture889-jirho2l5, picture889-vy4bh8in
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-679b801e1cb64bd58239d0ed409c69ae.removing -> left: picture889-ru7xi3jk, picture889-upbuoacs, player-path-package-zq7xherd, player-path-stamp-67ng4y97, player-path-stamp-qsxmg884
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-6a82604fc40449089604810626cb730b.removing -> left: picture889-1p4ofbu1
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-76037b3c57f44545a479839d25f22f6e.removing -> left: hardlink-1187-extra-x9wu6oc4, hardlink-1187-f7loz996, hardlink-1187-v917u71n, picture889-4sb42rym, stage7-selftest-s1mlfzsl
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8b223a64168e41ec81278d00dc743df6.removing -> left: picture889-wul9q5qz, stage7-selftest-vq11zeyu
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8b7cd6eb643a4311b275ba918dc4996f.removing -> left: picture889-_mgf31et
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-94fdd5cee40c41cea555a1e1a1bc6253.removing -> left: picture889-zdtu5uad
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-acf3918ca6d541179cad4ee23c59a30f.removing -> left: a16-fixture-4ogn6r72, a16-fixture-rwqgcc65, picture889-o7s2ol2i, review, stage7-checked-B21_11-sit6314d, stage7-checked-I8_37-h2knufmb
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b9efeea17ec34a02b8c960d2d6d89036.removing -> left: picture889-7e2v30ds
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-c27e60aed22246d1a54c121bb1d29aa8.removing -> left: storm-drain-gm0XRO
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-c3a0f93d3f55499da85fe414a8c3bb56.removing -> left: picture889-ymlwadj0
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-ce9565d4d5004b63837c782304d601d7.removing -> left: picture889-b8tvx89h, picture889-x74khsob
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-da92310f5d3541eca3b5840e2e243e31.removing -> left: picture889-3otup3ej
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-ddc05ff5f6094a9a9e6ba81071071de1.removing -> left: picture889-dk8b_3zo, picture889-gdlo5x97
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-de77f47589ee4590ab6e89b3c1b347c0.removing -> left: picture889-8_rn02vr, picture889-gkq70hci, picture889-ro71n6x7, picture889-tw3gddx4
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-e9951aa3bab74a91a6713b1208fecd15.removing -> left: picture889-txw0lhv9
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-ee965be24a39431f9fb0b1639fe961c3.removing -> left: picture889-tpzsfo1d, picture889-_ts5t3in
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f09f6fe17ecc435199493a46dcb5ce45.removing -> left: picture889-7j1pp132
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f880c1064c91426ca0d600d0873a7c65.removing -> left: picture889-rvldbld2
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f9fd79a03f18487690a4a9fd0cffafd1.removing -> left: picture889-425xhlqf, picture889-vudjb3bg, picture889-y2yeddin
+needs elevation (left, 0.00 GB freed from parts we own): C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-fb6cbb420eee49299c7dbcb30141a3eb.removing -> left: picture889-3ow16be1, picture889-juam02ga
+C free after 74.8 GB (freed 0.00 GB)
