@@ -164,7 +164,7 @@ func _clip(id: String, radius: int) -> void:
 		for key in marks:
 			if not row.stills.has(key) and bench.fx.now >= float(marks[key]):
 				var img: Image = bench._grab()
-				if img == null or (not burst and not drift and CAP.save_png(img, folder.path_join(key + ".png")) != OK):
+				if img == null or (not burst and not drift and CAP.save_png(img, folder.path_join(key + ".png"), CAP.capture_stage()) != OK):
 					_fail("could not save %s %s" % [id, key])
 					continue
 				var small: Image = bench._crop(img, Vector2i(960, 540), Vector2i(960, 540)) if radius == 170 else img.duplicate()

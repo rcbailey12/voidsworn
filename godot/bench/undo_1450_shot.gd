@@ -38,7 +38,7 @@ func _shot(name: String) -> void:
 	await process_frame
 	var img: Image = root.get_texture().get_image()
 	DirAccess.make_dir_recursive_absolute(out_dir)
-	preload("res://tools/picture_provenance.gd").save_png(img, out_dir.path_join(name + ".png"))
+	preload("res://tools/picture_provenance.gd").save_png(img, out_dir.path_join(name + ".png"), preload("res://tools/picture_provenance.gd").capture_stage())
 	_say("[undo1450] saved " + name)
 
 

@@ -127,6 +127,10 @@ func row(ship: Dictionary, damaged: bool, parent: Control) -> void:
 	var b = Button.new(); b.text = ""; style_link(b)
 	b.custom_minimum_size.y = ui.px(rh); parent.add_child(b)
 	b.pressed.connect(func(): select_ship(str(ship["uid"])))
+	# issue 1559 item 9: a mouse click picks the row without keeping the keyboard on it, so Enter is the screen's Done
+	b.gui_input.connect(func(ev: InputEvent) -> void:
+		if ev is InputEventMouseButton and not (ev as InputEventMouseButton).pressed:
+			(func() -> void: if is_instance_valid(b) and b.has_focus(): b.release_focus()).call_deferred())
 	var ability = C.ABILITIES.get(hull.get("ab"), {})
 	b.tooltip_text = str(ship["name"]) + "\n" + str(hull["n"]) + " Mk " + C.roman(ship["mk"]) + "\nHull " + C.hull_text(ship["hp"]) + " / " + C.hull_text(derived["maxHp"]) + "\n" + str(ability.get("n", "")) + ": " + str(ability.get("d", ""))
 	picture(ship, Rect2(22, 5, 150, 40), b)
@@ -251,7 +255,7 @@ func specification(ship: Dictionary) -> void:
 	if C.jt(cap.get("pending")):
 		var promote = Button.new(); promote.text = "Choose promotion perk"; style_link(promote)
 		promote.pressed.connect(func(): C.act("promote", ship["uid"])); v.add_child(promote)
-	v.add_child(body("Repairs and mark upgrades happen at shipyards and drydocks.", 17))
+	v.add_child(body("Repairs and Mark upgrades happen at shipyards and repair docks.", 17))
 	var st = ui._story()
 	if st != null and C.flagshipOf() != null and C.flagshipOf()["uid"] == ship["uid"]:
 		var rename = Button.new(); rename.text = "Rename flagship"; style_link(rename); rename.pressed.connect(func(): st.open_rename()); v.add_child(rename)

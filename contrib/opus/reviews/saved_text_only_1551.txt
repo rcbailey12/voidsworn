@@ -1,0 +1,33 @@
+Issue 1551 text-only proof. Parity run of commit 6f1c1683 rules (cloud, Godot 4.7.2.stable, 288/288 parity PASS),
+compared with main's saved baseline at 9c8839f3 before the refresh. Command:
+node contrib/opus/tools/saved_text_only_diff.js --base-rev 9c8839f33c45b5c5d86b1b50c3e289384a229070 <run folder>
+
+baseline 9c8839f33c45b5c5d86b1b50c3e289384a229070 = 9c8839f33c45b5c5d86b1b50c3e289384a229070, manifest ccfa5f8ac45ef5bb61e232ed6c1633db6bd4097f6551834c48415461838f85e7
+battles in baseline 288, checked 288, missing 0
+non-text differences 0, usage key differences 0, distinct string changes 2937
+  35060 Hegemony picket -> Directorate picket
+  16269 Hegemony picket: Evasive burn. -> Directorate picket: Evasive burn.
+  15207 Hegemony picket intercepts with Picket lasers at Bomber wing -> Directorate picket intercepts with Picket lasers at Bomber w
+  10584 Heavy sear broadside -> Heavy sear flank battery
+  8642 Vanguard cruiser -> Vector cruiser
+  8207 Hegemony picket is destroyed. -> Directorate picket is destroyed.
+  6430 Hegemony picket: prow destroyed. Forward weapons silenced. -> Directorate picket: fore destroyed. Forward weapons silenced
+  5208 Cordon destroyer: prow destroyed. Forward weapons silenced. -> Cordon destroyer: fore destroyed. Forward weapons silenced.
+  5095 Contact: Hegemony Navy. 3 ships on the scanners. -> Contact: Meridian Directorate. 3 ships on the scanners.
+  5068 Contact: Hegemony Navy. 1 ship on the scanners. -> Contact: Meridian Directorate. 1 ship on the scanners.
+  4999 Hegemony picket: midships destroyed. Broadsides and shield g -> Directorate picket: core destroyed. Flank guns and shield ge
+  3892 Vanguard cruiser's wings: Screen. -> Vector cruiser's wings: Screen.
+  3292 Judgement Bell -> Judgment Bell
+  2868 Hegemony picket: engines destroyed. Engines crippled. -> Directorate picket: engines destroyed. Engines crippled.
+  2576 Contact: Hegemony Navy. 2 ships on the scanners. -> Contact: Meridian Directorate. 2 ships on the scanners.
+  2508 Cordon destroyer intercepts with Picket lasers at Bomber win -> Cordon destroyer intercepts with Picket lasers at Bomber win
+  2380 Oathkeeper -> Cold Watch
+  2287 Bomber wing (Judgement Bell) -> Bomber wing (Judgment Bell)
+  2237 Vanguard cruiser launches a fighter wing. -> Vector cruiser launches a fighter wing.
+  2163 Hullbreaker raider: prow destroyed. Forward weapons silenced -> Hullbreaker raider: fore destroyed. Forward weapons silenced
+  2083 The Iron Mandate fires its nova cannon. -> The Iron Mandate fires its spinal cannon.
+  1840 Eclipse mote: prow destroyed. Forward weapons silenced. -> Eclipse mote: fore destroyed. Forward weapons silenced.
+  1796 Hullbreaker raider: midships destroyed. Broadsides and shiel -> Hullbreaker raider: core destroyed. Flank guns and shield ge
+  1746 Vanguard cruiser fires Plasma battery at Fighter wing (Debt  -> Vector cruiser fires Plasma battery at Fighter wing (Debt of
+  1618 Cordon destroyer fires Plasma battery at Bomber wing (Judgem -> Cordon destroyer fires Plasma battery at Bomber wing (Judgme
+PASS: text-only against 9c8839f33c45b5c5d86b1b50c3e289384a229070

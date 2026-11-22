@@ -17,13 +17,13 @@ const TIMES := ["never", "once", "twice", "three times", "four times", "five tim
 # Pronouns when stream B's Nemesis carries no gender field yet: feminine first names in the game's captain pools
 # (data.js CAPTAINS and CAP_FIRST). Stream B is asked to add nem.g = "m" | "f" | "n"; this list is only the fallback.
 const FEMININE := ["Ilse", "Vera", "Odile", "Sabine", "Helka", "Rosalind", "Margery", "Thessaly", "Elsbeth", "Yara", "Ninette", "Clemence", "Calla", "Mathilde",
-	"Marit", "Mara", "Rhea", "Lena", "Petra", "Sanne", "Ines", "Katrin",
+	"Marit", "Mara", "Rhea", "Lena", "Petra", "Sanne", "Ines", "Katrin", "Anneliese", "Bettina", "Freya", "Maren", "Astrid",
 	"Margit", "Ida", "Hedda", "Agathe", "Edda",
 	"Tamsa", "Ilvy", "Ressa", "Nell", "Sefa", "Orra",
 	"Desmae", "Imra", "Rhosse", "Altheve"]
 # Nemesis names are built from parts (data.js NEM_FAC pre + post); a name that starts with one of these feminine fronts is "she"
 # (the same fronts as NEM_FAC[fac].fem, used by campaign_run.js nemGender).
-const FEMININE_FRONTS := ["Marit", "Petra", "Katrin", "Sanne", "Margit", "Ida", "Hedda", "Agathe", "Edda", "Ves", "Ish", "Ny", "Dre", "Ess", "Kae", "Iv"]
+const FEMININE_FRONTS := ["Marit", "Petra", "Katrin", "Sanne", "Anneliese", "Bettina", "Freya", "Maren", "Astrid", "Margit", "Ida", "Hedda", "Agathe", "Edda", "Ves", "Ish", "Ny", "Dre", "Ess", "Kae", "Iv"]
 
 const FALLBACK := {"first_lost": "a ship of the line", "best_captain": "your senior captain", "fallen_name": "a captain long gone", "prior_flagship": "a flagship you once knew",
 	"flagship": "the flagship", "you": "the admiral", "rival": "the enemy commander", "rival_short": "the enemy commander", "rival_line": "", "rival_deed": ""}

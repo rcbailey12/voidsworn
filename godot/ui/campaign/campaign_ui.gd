@@ -12,6 +12,7 @@ const Map3D = preload("res://ui/campaign/map3d.gd")
 const ChoiceScript = preload("res://ui/campaign/choice_button.gd")
 const Crest = preload("res://ui/campaign/crest.gd")
 const UiScale = preload("res://ui/ui_scale.gd")
+const ModalFocus = preload("res://ui/theme/modal_focus.gd")   # issue 1559
 
 const GS = preload("res://ui/theme/glass_shell.gd")
 const Kit = preload("res://ui/theme/orders_kit.gd")   # issue 1217: the shared front-end kit (wrap-safe labels, sound)
@@ -272,6 +273,19 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 		var lb = GS.lit_boxes(k, accent)
 		for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, lb[st])
 		for fc in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]: b.add_theme_color_override(fc, accent)
+	# issue 1559 item 7: in a dialog its number key shows after the label, as on the choices and the finishing action (a
+	# boon's 4 and 5 ran Reroll and Decline with no cap shown, and Decline cannot be taken back)
+	var kk = _key_for(list, act, arg)
+	if kk != "":
+		var cap = keycap(kk); cap.mouse_filter = Control.MOUSE_FILTER_IGNORE; cap.name = "keycap"
+		cap.anchor_left = 1.0; cap.anchor_right = 1.0; cap.anchor_top = 0.5; cap.anchor_bottom = 0.5
+		cap.offset_left = -px(10); cap.offset_right = -px(10); cap.offset_top = 0; cap.offset_bottom = 0
+		cap.grow_horizontal = Control.GROW_DIRECTION_BEGIN; cap.grow_vertical = Control.GROW_DIRECTION_BOTH
+		b.add_child(cap)
+		var tw = b.get_theme_font("font").get_string_size(b.text, HORIZONTAL_ALIGNMENT_LEFT, -1, b.get_theme_font_size("font_size")).x
+		var cw = font_num_b.get_string_size(kk, HORIZONTAL_ALIGNMENT_LEFT, -1, px(17)).x + px(20)
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.custom_minimum_size.x = maxf(b.custom_minimum_size.x, ceil(tw) + cw + px(44))
 	var aa = found[1]
 	press_tag(b, act, aa)
 	b.pressed.connect(func(): _campaign_action(act, aa))
@@ -345,8 +359,8 @@ func _boon_fleet_line(id: String, rarity: int) -> String:
 	var relevance: Dictionary = C.boonFleetRelevance(id, rarity)
 	if relevance.get("brace_blocked", false): return "No effect on this fleet: none of its ships can Brace."
 	var kit: String = {
-		"lance": "with lances", "torp": "with torpedoes", "broad": "with broadside guns",
-		"still": "with broadside guns or batteries", "shields": "with shields",
+		"lance": "with lances", "torp": "with torpedoes", "broad": "with flank guns",
+		"still": "with flank guns or batteries", "shields": "with shields",
 		"brace": "that can Brace",
 		"carrier": "with hangars", "sq": "with squadrons",
 	}.get(relevance.get("need"), "")
@@ -433,11 +447,13 @@ func _focus_first() -> void:
 		return
 	# the map page: the keys go to the chart (arrows, Enter, zoom), so no button wears a ring when the screen opens;
 	# with a slide-over open they go to its Close
-	if modal_box.get_child_count() == 0 and C.page.get("kind") == "map" and use_3d_map and map3d != null and map3d.visible:
+	# issue 1559 item 6: the last render's nodes are still children until the frame ends (queue_free), so count and
+	# search only the live ones; a dialog that just closed must not keep the map from taking the keys
+	if _live_count(modal_box) == 0 and C.page.get("kind") == "map" and use_3d_map and map3d != null and map3d.visible:
 		if _overlay == "": map3d.grab_focus()
 		else: get_viewport().gui_release_focus()   # a slide-over: Esc or Close shuts it, Tab walks its buttons
 		return
-	var host = modal_box if modal_box.get_child_count() > 0 else page_box
+	var host = modal_box if _live_count(modal_box) > 0 else page_box
 	# issue 1261: the Run options drawer holds keyboard and controller focus while it is open (the control that was
 	# focused before a re-render keeps it), and closing it gives focus back to Run options
 	if host == page_box and C.page.get("kind") == "admiral":
@@ -489,13 +505,20 @@ func _trap_focus(root_n: Node, keep: Node) -> void:
 		if ch is Control and ch.focus_mode != Control.FOCUS_NONE: ch.focus_mode = Control.FOCUS_NONE
 		_trap_focus(ch, keep)
 func _end_primary(n: Node) -> Button:
+	if n.is_queued_for_deletion(): return null   # issue 1559 item 6
 	if n is Button and n.get_meta("end_primary", false): return n
 	for ch in n.get_children():
 		var found = _end_primary(ch)
 		if found != null: return found
 	return null
+func _live_count(n: Node) -> int:
+	var c := 0
+	for ch in n.get_children():
+		if not ch.is_queued_for_deletion(): c += 1
+	return c
 func _first_button(n: Node) -> Control:
 	for ch in n.get_children():
+		if ch.is_queued_for_deletion(): continue   # issue 1559 item 6: the last render's buttons are on their way out
 		if (ch is Button or ch.get_script() == ChoiceScript) and not ch.disabled and ch.visible: return ch
 		var r = _first_button(ch)
 		if r != null: return r
@@ -589,7 +612,7 @@ func _page_finish(kind: String) -> void:
 func _title() -> Control:
 	var cc = CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT)
 	var v = vbox(10); v.custom_minimum_size.x = px(640); v.alignment = BoxContainer.ALIGNMENT_CENTER
-	var title_txt = "VOIDSWORN"   # the game's name from G2's brand.gd (one place for the title, R59)
+	var title_txt = "EMBERS OF THE HOLLOW SUN"   # the game's name from G2's brand.gd (one place for the title, R59)
 	if ResourceLoader.exists("res://ui/battle/brand.gd"): title_txt = str(load("res://ui/battle/brand.gd").TITLE).to_upper()
 	var h = lbl(title_txt, 96 if title_txt.length() <= 12 else 58, BONE, font_goth, false); h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(h)
 	var s = lbl("Command a fleet through three contested sectors to the Hollow Sun. Every hull you lose stays lost, and so does its captain.", 20, BONE2)
@@ -804,7 +827,7 @@ func _run_opts_summary() -> String:
 	if C.run_opt.get("alt", false): bits.append("alternate fleet")
 	if C.run_opt.get("cmdAlt", false): bits.append("alternate Command")
 	var hl = C.heatLevel(C.run_opt.get("heat", []))
-	if float(hl) > 0: bits.append("Heat " + C.numstr(hl))
+	if float(hl) > 0: bits.append("Threat " + C.numstr(hl))
 	if C.map_trial_choice: bits.append("test maps")
 	return (": " + ", ".join(PackedStringArray(bits))) if not bits.is_empty() else ""
 func _desk_drawer(host: Control) -> void:
@@ -877,7 +900,7 @@ func _mastery_bar(id, short := false) -> Control:
 	v.add_child(rich(c(label, BONE) + ("" if short else " " + c(right, BONE3)), 17))
 	if short: v.set_meta("next_line", right)   # the desk's narrow card shows the next unlock on hover
 	var b = GS.seg_bar(k, f, VERD, GS.BAR_TRACK, 6, 10); b.size_flags_horizontal = Control.SIZE_EXPAND_FILL; v.add_child(b)   # progress, not an action: VERD
-	v.add_child(lbl(("Heir: 50%" if C.META["heirs"].get(C.or_(C.ADMIRALS[id].get("fac"), "voidsworn")) == id else "Shadow: 25%") + " XP while benched", 17, BONE3))
+	v.add_child(lbl(("Priority: 50%" if C.META["heirs"].get(C.or_(C.ADMIRALS[id].get("fac"), "voidsworn")) == id else "Shadow: 25%") + " XP while benched", 17, BONE3))
 	return v
 func _run_options() -> Control:
 	var v = vbox(10)
@@ -910,15 +933,15 @@ func _run_options() -> Control:
 	if o["heat"]:
 		var hl = C.heatLevel(C.run_opt["heat"]); var best = float(C.z0(C.META["heatBest"].get(C.picked_faction)))
 		var cv3 = card(false, 420)
-		cv3[1].add_child(rich("[b]Heat " + C.numstr(hl) + "[/b] " + c("+" + C.numstr(hl * 10) + "% renown" + ((" \u00b7 best win with this faction: Heat " + C.numstr(best)) if best > 0 else ""), BONE3), 19))
+		cv3[1].add_child(rich("[b]Threat " + C.numstr(hl) + "[/b] " + c("+" + C.numstr(hl * 10) + "% renown" + ((" \u00b7 best win with this faction: Threat " + C.numstr(best)) if best > 0 else ""), BONE3), 19))
 		cv3[1].add_child(lbl("Optional rules that make the run harder. Pick any.", 17, BONE3))
 		for kk in C.HEAT.keys():
 			var h = C.HEAT[kk]
 			add(cv3[1], choice(h["n"] + "  +" + C.numstr(h["w"]), h["d"], "optHeat", kk, null, null, "", BONE2, C.run_opt["heat"].has(kk)))
 		cards.add_child(cv3[0])
 	else:
-		var cv4 = card(false, 380); cv4[0].modulate.a = 0.55; cv4[1].add_child(lbl("Heat", 20, BONE, font_semi))
-		cv4[1].add_child(lbl("Lose a run to unlock Heat: optional rules that make runs harder and pay more renown.", 18, BONE3)); cards.add_child(cv4[0])
+		var cv4 = card(false, 380); cv4[0].modulate.a = 0.55; cv4[1].add_child(lbl("Threat", 20, BONE, font_semi))
+		cv4[1].add_child(lbl("Lose a run to unlock Threat: optional rules that make runs harder and pay more renown.", 18, BONE3)); cards.add_child(cv4[0])
 	v.add_child(cards)
 	return v
 
@@ -950,8 +973,15 @@ func _podium() -> Control:
 	host.add_child(stage)
 	var glow = TextureRect.new(); glow.texture = _podium_glow(accent); glow.set_anchors_preset(Control.PRESET_FULL_RECT)
 	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; glow.stretch_mode = TextureRect.STRETCH_SCALE; glow.mouse_filter = Control.MOUSE_FILTER_IGNORE; stage.add_child(glow)
-	podium = Podium.new(); podium.set_anchors_preset(Control.PRESET_FULL_RECT); podium.offset_bottom = -px(120); stage.add_child(podium)
-	podium.setup(C, f, accent, _reduce_motion())
+	# issue 1559 item 27: a pick re-renders the page; the same flagship keeps its live podium (no reload hitch, and the
+	# turning ship carries on from where it was instead of snapping back to its start angle)
+	var pkey = str(f.get("uid", "")) + "|" + str(f["tpl"]) + "|" + accent.to_html() + "|" + str(_reduce_motion())
+	if podium != null and is_instance_valid(podium) and not podium.is_queued_for_deletion() and str(podium.get_meta("podium_key", "")) == pkey:
+		if podium.get_parent() != null: podium.get_parent().remove_child(podium)
+		stage.add_child(podium); podium.offset_bottom = -px(120)
+	else:
+		podium = Podium.new(); podium.set_anchors_preset(Control.PRESET_FULL_RECT); podium.offset_bottom = -px(120); stage.add_child(podium)
+		podium.setup(C, f, accent, _reduce_motion()); podium.set_meta("podium_key", pkey)
 	var plate = VBoxContainer.new(); plate.add_theme_constant_override("separation", px(4)); plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	plate.anchor_top = 1.0; plate.anchor_bottom = 1.0; plate.anchor_right = 1.0; plate.offset_top = -px(112); stage.add_child(plate)
 	plate.add_child(Kit.section("Your flagship", k))
@@ -963,8 +993,8 @@ func _podium() -> Control:
 	sc.offset_left = left + stage_w + px(40); sc.offset_right = sc.offset_left + col_w; sc.offset_top = px(28); sc.anchor_bottom = 1.0; sc.offset_bottom = -px(96)
 	host.add_child(sc)
 	var v = VBoxContainer.new(); v.custom_minimum_size.x = col_w - px(4); v.add_theme_constant_override("separation", px(12)); sc.add_child(v)
-	v.add_child(Kit.heading("Choose its aspect", 36, k))
-	v.add_child(Kit.label("One aspect for the whole " + C.runWord() + ". If the flagship falls, it passes to your next-largest ship.", 18, k, GS.TEXT2, null, true, (col_w - px(4)) / k))
+	v.add_child(Kit.heading("Choose its refit", 36, k))
+	v.add_child(Kit.label("One refit for the whole " + C.runWord() + ". If the flagship falls, it passes to your next-largest ship.", 18, k, GS.TEXT2, null, true, (col_w - px(4)) / k))
 	_aspect_cards = []
 	for kk in d["opts"]:
 		var ac = _aspect_card(str(kk), col_w - px(4), accent); v.add_child(ac); _aspect_cards.append([ac, str(kk)])
@@ -974,7 +1004,7 @@ func _podium() -> Control:
 	if R.get("heat") is Array and R["heat"].size() > 0:
 		var hn = []
 		for kk in R["heat"]: hn.append(C.HEAT[kk]["n"])
-		v.add_child(Kit.label("Heat " + C.numstr(C.heatLevel(R["heat"])) + ": " + ", ".join(PackedStringArray(hn)) + ".", 17, k, BLOOD, null, true, (col_w - px(4)) / k))
+		v.add_child(Kit.label("Threat " + C.numstr(C.heatLevel(R["heat"])) + ": " + ", ".join(PackedStringArray(hn)) + ".", 17, k, BLOOD, null, true, (col_w - px(4)) / k))
 	var ps = []
 	for p in R["patrons"]: ps.append("[b]" + c(esc(C.PATRONS[p]["n"]), Color(C.PATRONS[p]["col"])) + "[/b]")
 	var pl = rich(c("Cores in range: ", BONE3) + ", ".join(PackedStringArray(ps)) + c(". Win battles carrying their signal to earn their protocols.", BONE3), 17)
@@ -986,7 +1016,7 @@ func _podium() -> Control:
 	var go: Button
 	if aspect_pick != "": go = kbtn("Launch with " + str(C.ASPECTS[aspect_pick]["n"]), "pickAspect", aspect_pick, "primary")
 	else:
-		go = Kit.button("Pick an aspect to launch", k, "primary", Callable()); go.disabled = true
+		go = Kit.button("Pick a refit to launch", k, "primary", Callable()); go.disabled = true
 	go.name = "LaunchButton"
 	var bar = Kit.action_bar(k, [back], go)
 	bar.anchor_top = 1.0; bar.anchor_bottom = 1.0; bar.anchor_right = 1.0
@@ -1189,7 +1219,7 @@ func _approach_strip(H: Dictionary) -> Control:
 	return h
 
 func _condition_line(S: Dictionary) -> String:
-	var short = {"Ion season": "shields recharge 25% slower.", "Dark sector": "nebula hexes give -15 to hit.", "Wreck belt": "salvage pays 15% more.", "War zone": "reinforcements; fights pay 20% more.", "Scarcity": "repairs restore 25% less."}
+	var short = {"Ion season": "shields recharge 25% slower.", "Dark sector": "nebula hexes give -15 to hit.", "Wreck belt": "wreckage pays 15% more credits.", "War zone": "reinforcements; fights pay 20% more.", "Scarcity": "repairs restore 25% less."}
 	return str(S["cond_n"]) + ": " + str(short.get(S["cond_n"], S["cond_d"])) if S["cond_n"] != "" else ""
 
 func _briefing_column() -> Control:
@@ -1207,7 +1237,8 @@ func _briefing_column() -> Control:
 	var region_name = _sheet_name(H["region"] if H["region"] != "" else "Sector " + H["sector_roman"], 70, cw - 52, 1)
 	region_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL; region_line.add_child(region_name)
 	region_line.add_child(GS.region_emblem(_region_key(H["region"]), k)); upper.add_child(region_line)
-	upper.add_child(_sheet_words("Held by " + "the " + str(S["holder"]).trim_prefix("The "), 21, GS.TEXT, true))
+	var _holder := str(S["holder"])
+	upper.add_child(_sheet_words(("Held by " + _holder) if _holder == "Eclipse" else ("Held by the " + _holder.trim_prefix("The ")), 21, GS.TEXT, true))
 	if H["map_trial"]:   # issue 1175: the issue 1050 trial label shows only while the trial is on
 		var trial_status := _sheet_words("Test map package on", 17, GS.TEXT2)
 		trial_status.name = "MapTrialStatus"
@@ -1226,7 +1257,7 @@ func _briefing_column() -> Control:
 	fleet_scroll.custom_minimum_size.y = px(36 * mini(7, fleet.size())); fleet_scroll.add_child(list); v.add_child(fleet_scroll)
 	v.add_child(gap(6))
 	var pend = View.promotion_waiting(C)
-	var fleet_tip = "Captains, perks, refits, the hold and your faction purchase."
+	var fleet_tip = "Captains, perks, refits, spare hold, and faction map action."
 	if map3d != null and map3d.intel != null:
 		var fc = map3d.intel.fleet_condition()
 		if fc["hurt"]:
@@ -1252,7 +1283,7 @@ func _objective_line(r: Dictionary) -> String:
 	var be := str(r.get("boss_enc", ""))
 	if be != "" and short.has(be):   # issue 1175: the flagship stop names the fight it rolled with the map
 		var o := str(short[be]).trim_suffix(".")
-		return be + ": " + o.substr(0, 1).to_lower() + o.substr(1) + ", or sink the command ship."
+		return be + ": " + o.substr(0, 1).to_lower() + o.substr(1) + ", or destroy the command ship."
 	return str(short.get(r["name"], str(r["objective"]).split(". ")[0].trim_suffix(".") + ".")) if r["objective"] != "" else ""
 
 func _route_row(r: Dictionary) -> Control:
@@ -1351,6 +1382,10 @@ func route_num(id: String) -> int:   # the number a next jump wears in the list 
 	return 0
 # pick a next jump (a row click, its number key, or its stop on the map): the row lights, the button names it
 func pick_route(id: String) -> void:
+	# issue 1559 item 24: the fleet is already flying to its pick; a new pick would relight a route it is not taking
+	if map3d != null and bool(map3d.get("_flying")): return
+	# item 25: with the Dossier or the Map key open, a route on the rail still works: it shuts the slide-over first
+	if _overlay != "": _close_overlay()
 	if id == picked or not _routes.any(func(r): return r["id"] == id): return
 	# A new pick is only a selection: it cancels a Jump queued under the loading cover, so the player confirms again (issue 1448).
 	if map3d != null and map3d.has_method("cancel_queued_jump"): map3d.cancel_queued_jump()
@@ -1370,7 +1405,8 @@ func _rebuild_rail() -> void:
 		for r in _rows:
 			if r["id"] == restore: r["btn"].grab_focus()
 func _jump() -> void:
-	if picked == "" or C.modal_d != null or _overlay != "" or _find(_acts, "enterNode", picked).is_empty(): return
+	if picked == "" or C.modal_d != null or _find(_acts, "enterNode", picked).is_empty(): return
+	if _overlay != "": _close_overlay()   # issue 1559 item 25: Jump on the rail works with a slide-over open
 	if map3d != null and map3d.visible and not map3d.backdrop: map3d.fly_to(picked)   # the fleet flies the route, then the campaign enters the stop
 	else: C.act("enterNode", picked)
 # The Nemesis block: [control, its height at 1080]
@@ -1523,7 +1559,7 @@ func _map_key() -> Control:
 	if S["heat"].size() > 0:
 		var hs: Array = []
 		for hh in S["heat"]: hs.append("[b]" + esc(hh["n"]) + "[/b] " + esc(str(hh["d"]).trim_suffix(".")))
-		body.add_child(_over_text("[b]Heat " + C.numstr(S["heat_level"]) + "[/b] " + "; ".join(PackedStringArray(hs)) + ".", 17))
+		body.add_child(_over_text("[b]Threat " + C.numstr(S["heat_level"]) + "[/b] " + "; ".join(PackedStringArray(hs)) + ".", 17))
 	head.call("Your run")
 	var A = RN["admiral"]; var HH = View.header(C)
 	body.add_child(_over_text("[b]" + esc(_admiral_title(A["id"])) + "[/b] " + esc(A["doc"].to_lower()) + ". Sector " + HH["sector_roman"] + " of III, " + str(HH["fights"]) + " fight" + ("" if HH["fights"] == 1 else "s") + " won this run.", 17))
@@ -1704,7 +1740,7 @@ func _shipyard() -> Control:
 	if rb != null: rb.size_flags_vertical = Control.SIZE_SHRINK_CENTER; head.add_child(rb)
 	v.add_child(head)   # Leave shipyard is the finishing action, fixed at the bottom right (_page_finish)
 	if hw != "": v.add_child(lbl("The Chorus regrow with biomass: repairs, new hulls and Marks are paid in biomass. Credits buy refits.", 18, VERD))
-	v.add_child(lbl("Repairs cost %s per 2 hull, rounded up. A Mark upgrade adds 20%% hull and shields and 15%% damage. New hulls come with a fresh lieutenant." % (("1" if pm == 1.0 else C.numstr(snappedf(pm, 0.0001))) + (hw if hw != "" else (" credit" if pm == 1.0 else " credits"))), 18, BONE2))
+	v.add_child(lbl("Repairs cost %s per 2 hull, rounded up. A Mark upgrade adds 20%% hull and shields and 15%% damage. New hulls come with a fresh %s." % [(("1" if pm == 1.0 else C.numstr(snappedf(pm, 0.0001))) + (hw if hw != "" else (" credit" if pm == 1.0 else " credits"))), str(C.CAPTAINS.get(str(R["fac"]), C.CAPTAINS["voidsworn"])["ranks"][0]).to_lower()], 18, BONE2))
 	var allMiss = 0.0
 	for s in R["fleet"]: allMiss += float(C.derive(s)["maxHp"]) - float(s["hp"])
 	_yard_bar = abtn(("Repair entire fleet for " + C.numstr(ceil(allMiss / 2.0 * pm)) + hw) if allMiss > 0 else "Fleet fully repaired", "repairAll")   # the teaching card keeps off this bar
@@ -1723,7 +1759,7 @@ func _shipyard() -> Control:
 		v.add_child(crow)
 	if st.get("late") is Dictionary:   # issue 1178: the Sector 3 market
 		v.add_child(sec_head("Late market"))
-		v.add_child(lbl("Sector 3 yards sell what the war has left: relics, and room for one more ship.", 17, BONE3))
+		v.add_child(lbl("Sector 3 yards sell whatever the war left behind: salvage and room for one more ship.", 17, BONE3))
 		var lm = flow()
 		for o in C.lateShopOffers():
 			var lc = card(false, 300)
@@ -1760,7 +1796,7 @@ func _shipyard() -> Control:
 	v.add_child(hs)
 	if st.get("cap") is Array and not st["cap"].is_empty():
 		v.add_child(sec_head("Captured hulls"))
-		v.add_child(lbl("Prizes taken from the Hegemony and Eclipse, refitted along the Cinder Line. Their links are ripped out: no synchronized fire, no Archive restore. Sold at Crusade prices.", 17, BONE3))
+		v.add_child(lbl("Prizes taken from the Meridian Directorate and Eclipse, refitted along the Cinder Line. Their links are ripped out: no synchronized fire, no Archive restore. Sold at Crusade prices.", 17, BONE3))
 		var cs = flow()
 		for h in st["cap"]:
 			var t2 = C.HULLS[h]; var cost2 = C.capturedHullPrice(t2); var fits2 = cp + float(t2["cp"]) <= float(R["cpCap"])
@@ -1815,7 +1851,7 @@ func _legacy() -> Control:
 	for r in [["Runs launched", C.numstr(st["runs"]), BONE], ["Deepest sector", C.numstr(C.z0(st.get("best"))), BONE], ["Runs won", C.numstr(st["wins"]), BONE], ["Renown", C.numstr(C.z0(M.get("renown"))), GS.MAP_EMBER]]:
 		head.add_child(_readout(r[0], r[1], r[2], true))
 	var tabs = hbox(6)
-	for t in [["variants", "Hull variants"], ["legacy", "Legacy"], ["mastery", "Admiral mastery"], ["favour", "Core sync"], ["heat", "Heat"], ["fallen", "Hall of the fallen"]]:
+	for t in [["variants", "Hull variants"], ["legacy", "Legacy"], ["mastery", "Admiral mastery"], ["favour", "Core sync"], ["heat", "Threat"], ["fallen", "Hall of the fallen"]]:
 		if _find(_acts, "progTab", t[0]).is_empty(): continue
 		var tt = t[0]
 		var tb = Kit.tab_button(t[1], k, C.prog_tab == tt, GS.MAP_EMBER, func(): _campaign_action("progTab", tt))
@@ -1826,7 +1862,7 @@ func _legacy() -> Control:
 	v.add_child(tabs)
 	match C.prog_tab:
 		"variants":
-			v.add_child(rich(c("Spend renown to add a variant hull to your faction's shipyards. It sits beside the standard hull whenever that hull is in stock. ", BONE2) + c("You have " + C.numstr(C.z0(M.get("renown"))) + " renown.", BONE) + c(" Renown comes from every run: battles, elites, flagships and sectors reached, plus 10% per Heat level.", BONE2), 17))
+			v.add_child(rich(c("Spend renown to add a variant hull to your faction's shipyards. It sits beside the standard hull whenever that hull is in stock. ", BONE2) + c("You have " + C.numstr(C.z0(M.get("renown"))) + " renown.", BONE) + c(" Renown comes from every run: battles, elites, flagships and sectors reached, plus 10% per Threat level.", BONE2), 17))
 			for f in C.favFirst():
 				var vs = []
 				for vid in C.HULL_VARIANTS.keys():
@@ -1883,15 +1919,15 @@ func _legacy() -> Control:
 				r.add_child(rich("[right][b]" + c(esc(C.FAVOUR_TIERS[t]["n"]), Color(P["col"])) + "[/b]\n" + c(C.numstr(f) + ((" / " + C.numstr(nx["at"])) if nx != null else ""), BONE3) + "[/right]", 17)); v.add_child(r)
 		"heat":
 			var heat_open = C.heatUnlocked()
-			v.add_child(lbl("Heat is open. Pick rules on the admiral screen before a run; each level adds 10% renown." if heat_open else "Lose a run to open Heat.", 17, BONE2))
+			v.add_child(lbl("Threat is open. Pick rules on the admiral screen before a run; each level adds 10% renown." if heat_open else "Lose a run to open Threat.", 17, BONE2))
 			var hc = flow()
 			for kk in C.HEAT.keys():
 				var cv = card(false, 300); cv[1].add_child(rich("[b]" + esc(C.HEAT[kk]["n"]) + "[/b] " + c("+" + C.numstr(C.HEAT[kk]["w"]), BONE3), 19)); cv[1].add_child(lbl(C.HEAT[kk]["d"], 18, BONE2)); hc.add_child(cv[0])
-			v.add_child(hc); v.add_child(Kit.section("Best Heat won", k))
+			v.add_child(hc); v.add_child(Kit.section("Best Threat won", k))
 			var bc = flow()
 			for f in C.RUN_FACTIONS:
 				var hb = float(C.z0(M["heatBest"].get(f))); var won = C.or_(st.get("wonFacs"), []).has(f)
-				var cv = card(false, 220); cv[1].add_child(lbl(C.FACTIONS[f]["n"], 18, BONE, font_semi)); cv[1].add_child(lbl(("Heat " + C.numstr(hb)) if hb > 0 else ("Won at Heat 0" if won else "Not yet won"), 18, BONE if hb > 0 else BONE3)); bc.add_child(cv[0])
+				var cv = card(false, 220); cv[1].add_child(lbl(C.FACTIONS[f]["n"], 18, BONE, font_semi)); cv[1].add_child(lbl(("Threat " + C.numstr(hb)) if hb > 0 else ("Won at Threat 0" if won else "Not yet won"), 18, BONE if hb > 0 else BONE3)); bc.add_child(cv[0])
 			v.add_child(bc)
 		"fallen":
 			var fallen = M["fallen"].slice(max(0, M["fallen"].size() - 40)); fallen.reverse()
@@ -1899,23 +1935,23 @@ func _legacy() -> Control:
 			else:
 				var fc2 = flow()
 				for f in fallen:
-					var cv = card(false, 260); cv[1].add_child(lbl(f["name"], 18, BONE, font_semi)); cv[1].add_child(lbl(C.rankName(f) + " of the " + str(f.get("ship", "")), 17, BONE2)); cv[1].add_child(lbl("Lost in sector " + C.roman(f.get("sector", 1)), 17, BONE3)); fc2.add_child(cv[0])
+					var cv = card(false, 260); cv[1].add_child(lbl(f["name"], 18, BONE, font_semi)); cv[1].add_child(lbl(C.rankName(f) + ", " + str(f.get("ship", "")), 17, BONE2)); cv[1].add_child(lbl("Lost in sector " + C.roman(f.get("sector", 1)), 17, BONE3)); fc2.add_child(cv[0])
 				v.add_child(fc2)
 	return v   # Back sits in the page's fixed bar (_kit_page)
 const HELP := [
-	["", "Embers of the Hollow Sun is a roguelite. Each run crosses three sectors, each ending in a flagship battle. Ships and captains you lose are gone for the run; every faction, admiral and ship is available from the start."],
-	["", "What carries between runs (Progression, on the title screen): renown buys hull variants for your shipyards; each admiral levels up as you fly with them, unlocking an alternate fleet, a fourth aspect, a second Command and a veteran flag captain; cores sync with you as you take their protocols, offering rarer protocols and eventually a gift at the start of a run; and after your first loss, Heat lets you add harder rules for more renown. After each sector flagship falls, the fleet docks at a shipyard before its next fight."],
-	["Your turn", "Every ship can move, turn and fire each of its weapons once per turn, in any order. Click a ship, then click a highlighted hex to move. Moving forward costs 1 movement. Turning 60° also costs 1 movement and uses one of the ship’s turns; big ships only get one turn per round, so plan their heading early. Press Q and E to turn in place."],
-	["", "Thrusters keep you from getting boxed in. A ship can slip into either forward-diagonal hex, or back off one hex, without changing its heading (2 movement each; a slow ship can always spend its whole move on one hop). It can climb over a rock or wreck, or dive under an enemy ship, for +1 movement, but cannot stop there. Each faction bends one of these rules: see the Helm panel."],
-	["", "Ships fight on the move. Click an enemy your guns can't reach yet and the ship burns to the best spot and fires as it arrives."],
-	["", "Moving matters. A ship that did not move last turn gets hit more easily (+10 to hit). One that moved 3+ hexes is harder to hit (−5). Port and starboard guns hit 10% harder on a raking pass, after moving 2+ hexes."],
-	["Firing arcs", "Weapons only fire into their arc. Prow weapons cover the 120° in front, port and starboard broadsides each cover a wide 120° cone to the side, and turrets fire anywhere. The tinted hexes around a selected ship show where its guns reach: amber for the prow, teal for broadsides. Click an enemy to fire everything that can reach it, or press a number key to fire a single weapon."],
-	["Shields and flanking", "Each ship has one shield pool that covers four sides: prow, port, starboard and rear. A hit drains the pool through the side that points at the attacker, and each side catches only its share (the prow the most, the rear the least). A side hit again draws extra power at a loss, and when the pool runs dry every side drops at once. Shields regenerate at the start of each of your turns. Rear hits halve armor and are far more likely to crit, so getting behind a battleship matters. Lances and bombers punch partly or fully through shields. Ion cannons shred shields; null weapons mostly ignore them."],
-	["Different fights", "Each fight on the sector map is labelled with its goal. Engagements and ambushes end when one fleet breaks. In Hold the station you keep enemies off a friendly station until round 6 ends. In a Hunt their flagship runs and jumps out after round 6. In an Intercept you destroy transports before they cross the field. In a Breakthrough you get half your fleet off the far edge. Missing a Hunt or Intercept still pays half; losing the station or a breakthrough means a retreat, not the end of the run. Click the chip under the top bar in battle for the rules and the coloured hexes."],
-	["", "Some fights change partway through: reinforcements for either side, or a solar flare that knocks out every shield for a round. You always get a round of warning."],
-	["Brace, abilities and Command", "Brace is the alternative to firing: a ship that hasn’t fired can brace to take 40% less hull damage until your next turn (it can still move first). To ram, point your bow at an enemy ship with at least one clear hex between you and enough movement left to cross the gap: a red lane shows when a ram is ready, and red-ringed move hexes line one up. A longer run-up hits harder; a ram can’t take more than 40% of a healthy ship’s hull without protocols. Boarding an adjacent enemy can capture it for your fleet; enemy boarders can cripple your ships, but never take them. Carriers start every battle with their wings already flying; the wings fight on their own unless you order them: click a wing, then click an enemy ship to strike it or one of your ships to guard it. At round start, each ready carrier automatically replaces one lost wing if it has a spare and an open hex beside it. Replacements fight from the following round. Most hulls have an ability with a cooldown, and each faction has its own. Enemy flagships carry a Command too: they announce it a round ahead, so you can brace or scatter. Once per battle, your admiral’s Command is a fleet-wide signature move. It gets stronger each round you hold it (power 1 in round 1, 2 in round 2, full power from round 3, and losing a ship charges it a level), so the choice is a smaller boost now or a bigger one later, if the fight lasts that long. The ship panel shows exactly what the next level adds."],
-	["Cores, protocols and your flagship", "Each run, four of the six cores are in range. Battles on the map carry a core’s signal: win there and that core offers three protocols, and you take one. Protocols change the rules (fires, chain explosions, rams that shake the whole formation) and come in Common, Rare and Epic strength. Hold protocols from two cores and a duo protocol can appear. At the start of a run you also pick one of three aspects for your flagship, which shapes how it fights for the whole run. Each sector’s enemies have a set strength, so a stronger fleet feels stronger; a battered fleet meets slightly smaller ones."],
-	["Between battles", "Hull damage carries between battles. Shipyards sell hulls, refits and repairs, and can upgrade a ship’s Mark. Captains earn experience and pick a perk at each promotion. Salvage gives fleet-wide bonuses that last for the run."],
+	["", "Embers of the Hollow Sun is a hex fleet-tactics roguelite. Lead your ships across three contested sectors toward the Hollow Sun, fighting a sector flagship at the end of each map. Any hull or captain lost in battle stays lost for the rest of the run."],
+	["", "Between runs, check Progression on the title screen: spend renown to unlock hull variants and permanent legacy upgrades, level up admirals to open branch skills and Command evolutions, and raise sync with Lattice cores so they offer rarer protocols (and eventually a starting gift). Finishing your first run unlocks Threat modifiers for extra difficulty and renown."],
+	["Your turn", "Each ship moves, turns, and then fires its ready weapons once per round. Most hulls cannot move after firing (Glasswright ships and the Slip the Net protocol are the exceptions). Forward hexes cost 1 movement; turning 60° costs 1 movement and uses a turn charge (capital ships only turn once per round, so plan headings early). Press Q or E to pivot in place."],
+	["", "Attitude thrusters keep your formation flexible: ships can sideslip diagonally or reverse one hex without rotating (2 movement each, or a slow hull's entire move). Ships can also pass above or below asteroids, wrecks, and enemy hulls for +1 movement, though they cannot end their move on an occupied hex. Each faction bends one thruster rule (check the Helm readout)."],
+	["", "Click an enemy outside current weapon range to auto-plot the cleanest burn into firing range and open fire on arrival."],
+	["", "Keep moving. Stationary ships take +10 enemy aim, while moving 3+ hexes grants -5 to be hit. Port and starboard flank batteries hit 10% harder after moving 2+ hexes (45% harder for Sunward Crusade)."],
+	["Firing arcs", "Weapons only fire inside their mounted arc: fore guns cover a 120° front cone, port and starboard flank mounts cover 120° to each side, and turrets track 360°. Colored hex overlays show weapon reach (amber fore, teal flanks). Click a target to fire all bearing weapons, or press 1 to 6 to fire one gun alone."],
+	["Shields and flanking", "Each shielded ship shares one shield pool across four quadrants (fore catches the highest share, aft the least). Repeated hits on one side route extra power at a drain penalty, and once the pool empties, shields drop everywhere at once. Shields recharge at the start of your turn. Aft hits halve armor and boost crit odds. Lances and bombers pierce shields, ion cannons strip pools fast, and null cannons cut through both shields and armor."],
+	["Different fights", "Every battle stop shows its objective on the star map: Engagement and Ambush end when one fleet breaks; Hold the station defends an ally through round 6; Hunt destroys a fleeing flagship before round 6; Intercept stops escaping transports; Breakthrough gets half your fleet onto the far jump edge; Relay holds the central beacon unopposed for 3 rounds; and Decapitation breaks the enemy fleet by killing its flagship."],
+	["", "Some battles shift mid-fight with jump-in reinforcements or a solar flare that knocks shields offline for a round. You always receive one full round of warning."],
+	["Brace, abilities and Command", "Brace skips firing to cut incoming hull damage by 40% until your next turn. Ramming requires a clear straight line ahead and deals heavier damage with longer run-ups (capped at 40% of a healthy hull without protocols). Boarding an adjacent enemy can capture it outright; enemy boarders can cripple your systems, never steal your ships. Carriers start with squadrons already launched, replace one lost wing per round from spares, and let you order wings directly to Strike or Guard. Once per battle, trigger your admiral's Command; holding it until round 3 (or losing a ship) raises it to full power."],
+	["Cores, protocols and your flagship", "Four of the six Lattice cores are in range each run. Winning battles carrying a core's signal lets you pick one of three run-long protocols (Common, Rare, or Epic). Mixing protocols from two cores unlocks Duo protocols, and every run opens by choosing a flagship Refit."],
+	["Between battles", "Hull damage persists between battles. Dock at shipyards to repair, buy hulls, fit modules, or upgrade ship Marks. Captains earn XP and pick perks on promotion, while Salvage grants permanent fleet-wide bonuses for the run."],
 	["Keys", "Tab next ship, Q/E turn, Backspace take back a move (until the ship fires), 1 to 6 arm a weapon, B brace, A toggle arcs, Esc or right-click to cancel, Enter end turn. On campaign screens: Tab and the arrow keys move between buttons, Enter presses, Esc closes a dialog, 1 to 9 pick a dialog's choices."]]
 # How to play: an index of the sections on the left (a link scrolls to its section), the text in one readable column.
 func _help() -> Control:
@@ -2028,7 +2064,7 @@ func _end_nem(v: VBoxContainer, R: Dictionary) -> void:
 			v.add_child(rich("Nemesis lesson: " + who + " adapted. " + esc(C.nemAdaptName(ad, N["fac"])) + ": " + esc(C.nemAdaptWhyLine(ad, N)) + ".", 18)); shown = true
 		if float(N.get("loot", 0)) > 0:
 			v.add_child(rich("Raided: " + c(esc(N["name"]), GS.NEM) + "'s Hullbreakers took " + C.numstr(N["loot"]) + " credits this run. One raider line crossed.", 18)); shown = true
-		if N.get("dead", false): v.add_child(rich("Nemesis lesson: " + who + " is dead. What he taught you is yours to keep.", 18)); shown = true
+		if N.get("dead", false): v.add_child(rich("Nemesis lesson: " + who + " is destroyed. Everything you learned fighting them carries forward.", 18)); shown = true
 	if not shown: v.add_child(lbl("No Nemesis meeting this run." if int(nz.get("met", 0)) == 0 else "No weakness was taught this run.", 18, GS.TEXT2))
 
 func _end_heir_rank_words() -> Array:
@@ -2102,7 +2138,7 @@ func _end_detail_body(d: Dictionary, section: String) -> Control:
 		r1.add_child(lbl("Renown: " + C.numstr(cy["ren"]) + " earned. " + C.numstr(receipt["balance"]) + " in the vault.", 18, GS.TEXT))
 		if float(cy["ren"]) == 0: r1.add_child(lbl("No renown earned this run", 18, GS.TEXT2))
 		r1.add_child(lbl(C.numstr(float(s["battles"]) * 2) + " from battles, " + C.numstr(float(s["elites"]) * 4) + " from elites, " + C.numstr(float(s["bosses"]) * 15) + " from flagships, " + C.numstr(floor(float(s["kills"]) / 4)) + " from kills, " + C.numstr((float(R["sector"]) - 1) * 5) + " for sectors reached.", 17, GS.TEXT2))
-		if float(cy["hl"]) > 0: r1.add_child(lbl("Heat " + C.numstr(cy["hl"]) + ": renown paid at x" + C.numstr(1 + 0.1 * float(cy["hl"])) + ".", 17, GS.TEXT2))
+		if float(cy["hl"]) > 0: r1.add_child(lbl("Threat " + C.numstr(cy["hl"]) + ": renown paid at x" + C.numstr(1 + 0.1 * float(cy["hl"])) + ".", 17, GS.TEXT2))
 		var aff = _end_afford(R); var target = aff[0]
 		var at = "Playtest: everything unlocked. Earnings recorded." if C.playtestAll() else ("Now affordable: " + str(target["n"]) + ", " + C.numstr(target["cost"]) + " renown" + (", and " + str(aff[1] - 1) + " more within reach." if aff[1] > 1 else ".") if aff[2] else ("Next: " + str(target["n"]) + " at " + C.numstr(target["cost"]) + ". " + C.numstr(max(0, float(target["cost"]) - float(receipt["balance"]))) + " more renown." if not target.is_empty() else "All rewards owned."))
 		var affordability = lbl(at, 18, GS.TEXT); affordability.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -2146,12 +2182,12 @@ func _end_detail_body(d: Dictionary, section: String) -> Control:
 			r2.add_child(linebtn)
 		for row in receipt["shadow"]:
 			if float(row["xp"]) > 0:
-				var shadow = lbl(str(C.ADMIRALS[row["id"]]["n"]) + ": +" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP (Level " + C.numstr(row["level"]) + ")." + (" Heir: double rate." if float(row["rate"]) == 0.5 else ""), 17, GS.TEXT2)
+				var shadow = lbl(str(C.ADMIRALS[row["id"]]["n"]) + ": +" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP (Level " + C.numstr(row["level"]) + ")." + (" Priority: double rate." if float(row["rate"]) == 0.5 else ""), 17, GS.TEXT2)
 				shadow.mouse_filter = Control.MOUSE_FILTER_PASS; shadow.tooltip_text = "Total " + C.numstr(row["total"]) + " XP. " + ("Fully mastered." if row["next"] == null else C.numstr(row["remaining"]) + " XP to " + ("capstone mastery " + C.roman(int(row.get("capLevel", 0)) + 1) if row.get("hasCap", false) else "level " + str(int(row["level"]) + 1)) + ".")
 				r2.add_child(shadow)
 		if float(cy["mxOverflow"]) > 0: r2.add_child(lbl(C.numstr(cy["mxOverflow"]) + " XP past this line's cap went to shadow learning.", 17, GS.TEXT2))
 		if float(cy["shadowBank"]) > 0: r2.add_child(lbl(C.numstr(cy["shadowBank"]) + " shadow XP saved for an uncapped benched line.", 17, GS.TEXT2))
-		if float(cy["hl"]) > 0: r2.add_child(lbl("Heat " + C.numstr(cy["hl"]) + " paid " + C.numstr(float(cy["hl"]) * 2) + " XP to " + str(C.ADMIRALS[R["admiral"]]["n"]) + " and " + C.numstr(cy["hl"]) + " XP to the faction shadow pool.", 17, GS.TEXT2))
+		if float(cy["hl"]) > 0: r2.add_child(lbl("Threat " + C.numstr(cy["hl"]) + " paid " + C.numstr(float(cy["hl"]) * 2) + " XP to " + str(C.ADMIRALS[R["admiral"]]["n"]) + " and " + C.numstr(cy["hl"]) + " XP to the faction shadow pool.", 17, GS.TEXT2))
 	if section == "cores":
 		var r3 = _end_row(v, "Core sync"); var cores = receipt.get("cores", []).duplicate(); cores.sort_custom(func(x, y): return x["tierUp"] and not y["tierUp"])
 		if cores.is_empty(): r3.add_child(lbl("No protocols taken this run.", 18, GS.TEXT2))
@@ -2186,7 +2222,7 @@ func _end_detail_body(d: Dictionary, section: String) -> Control:
 		var payoff: String = C.beat3Payoff(R)
 		if payoff != "": v.add_child(lbl(payoff, 18, GS.TEXT))
 		if C.jt(R.get("eatenCore")) and C.PATRONS.has(R["eatenCore"]): v.add_child(lbl("The swarm ate " + str(C.PATRONS[R["eatenCore"]]["n"]) + ".", 18, GS.TEXT2))
-		if first: v.add_child(lbl("No crusade wins the first dark. That is the oath working, not failing. What this run bought is already written: renown in the vault, mastery in the bloodline, and the weakness the enemy showed you at cost. Do not mourn the fleet. Read the record." if crusade else "You will lose runs. That is the design, not a verdict. Every death names what the next generation carries: renown in the vault, mastery in the bloodline, and a lesson the enemy taught you at cost. Read the panel below as an inheritance, not a score.", 18, GS.TEXT))
+		if first: v.add_child(lbl("Your first expedition did not reach the rim, and Vesper always knew it might take more than one push. Every credit of renown, every admiral XP point, and every enemy weakness you exposed carries straight into the next fleet." if crusade else "Your fleet fell short, though the effort stays with you. Keep the renown you earned, the admiral XP you banked, and the tactical weaknesses you uncovered, and take a sharper build into the next run.", 18, GS.TEXT))
 		if victory:
 			var wf = []
 			for f in C.or_(C.META["stats"].get("wonFacs"), []): wf.append(C.FACTIONS[f]["n"])
@@ -2227,7 +2263,8 @@ func _lineage(id) -> Control:
 	var v = vbox(12); var tree = C.LINEAGE_TREES[id]; var build = C.lineageBuild(id); var nodes = C.lineageNodes(id); var level = C.masteryLevel(id)
 	v.add_child(Kit.section("Lineage", k))
 	v.add_child(Kit.heading(str(C.ADMIRALS[id]["n"]), 44, k))
-	v.add_child(lbl("Recorded in the glass. One pick at each of levels 5, 6 and 7. Choose a branch, then one skill at its next tier. Its partner locks until you reset this line.", 17, BONE2))
+	var _lin_lead: String = {"voidsworn": "Chalked into Vesper's fleet doctrine.", "hegemony": "Logged into Meridian command doctrine.", "corsair": "Passed down through the Ashfall dens.", "chorus": "Encoded into the next brood's neural sacs.", "ithar": "Recorded in optical glass.", "deathless": "Committed permanently to the Archive."}.get(str(C.ADMIRALS[id].get("fac", "")), "Recorded in fleet doctrine.")
+	v.add_child(lbl(_lin_lead + " Pick one branch skill at levels 5, 6, and 7; its partner locks until you reset this line.", 17, BONE2))
 	v.add_child(_mastery_bar(id))
 	v.add_child(lbl(str(maxi(0, mini(3, level - 4) - build["picks"].size())) + " branch picks ready. Capstone at level 8 (230 XP).", 17, BONE2))
 	v.add_child(lbl("Command skills and capstones use " + str(C.ADMIRALS[id]["cmd"]["n"]) + ", the primary Command. Fleet and flagship branches open their first tier.", 17, BONE3))
@@ -2329,11 +2366,14 @@ func _modal(md: Dictionary) -> void:
 			h2.call("Abandon the current run?"); p.call("Starting over ends your saved run. Your best result so far is kept either way.", BONE2)
 			v.add_child(foot([abtn("Keep it", "closeModal", "", false, false, acts), fin("Abandon and start over", "abandonRun", "", acts)]))
 		"sell":
-			h2.call("Decommission the " + str(d["ship"]["name"]) + "?"); p.call("Its captain retires and its refits return to the hold. You receive " + C.numstr(d["value"]) + " " + str(d.get("word", "credits")) + "." + (" A regrown ship has nothing to strip until it has fought." if d["ship"].get("regrown") else ""), BONE2)
+			var _s_fac := str(R.get("fac", "")); var _s_nm := str(d["ship"]["name"])
+			h2.call(("Reabsorb " if _s_fac == "chorus" else "Decommission ") + _s_nm + "?")
+			var _s_body: String = ("Its refits return to the hold and you recover " if _s_fac == "chorus" else ("Its mind-core returns to the Archive and its refits return to the hold. You recover " if _s_fac == "deathless" else "Its crew stands down and its refits return to the hold. You recover ")) + C.numstr(d["value"]) + " " + str(d.get("word", "credits")) + "." + (" A regrown ship has nothing to strip until it has fought." if d["ship"].get("regrown") else "")
+			p.call(_s_body, BONE2)
 			v.add_child(foot([abtn("Keep it", "closeModal", "", false, false, acts), fin("Decommission", "sellConfirm", d["ship"]["uid"], acts)]))
 		"repair_stop":
 			var drydock: bool = d["kind"] == "drydock"
-			h2.call("Drydock" if drydock else "Field repairs")
+			h2.call("Repair dock" if drydock else "Field repairs")
 			for i in range(d["options"].size()):
 				var opt: Dictionary = d["options"][i]
 				var detail := "%s of each ship's %s hull. +%s hull across the fleet" % [opt["rate"], "missing" if drydock else "maximum", C.numstr(opt["hp"])]
@@ -2362,7 +2402,7 @@ func _modal(md: Dictionary) -> void:
 			if not sm.is_empty(): v.add_child(rich(C.numstr(sm["kills"]) + " enemy ship" + ("" if int(sm["kills"]) == 1 else "s") + " destroyed in " + C.numstr(sm["rounds"]) + " round" + ("" if float(sm["rounds"]) == 1 else "s") + ". " + c("+", VERD) + n_(C.numstr(d["econ"]["bio"] if d.get("econ") is Dictionary and d["econ"].has("bio") else d["credits"]), VERD) + c(" biomass." if d.get("econ") is Dictionary and d["econ"].has("bio") else " credits.", VERD), 17))
 			if not sm.get("lost", []).is_empty():
 				var ls = []
-				for l in sm["lost"]: ls.append("the " + str(l["ship"]) + " and " + str(l["cap"]))
+				for l in sm["lost"]: ls.append(C.ship_with_article(str(l["ship"])) + " and " + str(l["cap"]))
 				p.call("Lost: " + ", ".join(PackedStringArray(ls)) + ".", BLOOD)
 			var econ: Dictionary = d["econ"] if d.get("econ") is Dictionary else {}   # issue 1178: faction economies on the victory card
 			if econ.has("cullet"): p.call("Cullet from the lost glass: +" + C.numstr(econ["cullet"]) + " credits.", VERD)
@@ -2376,8 +2416,8 @@ func _modal(md: Dictionary) -> void:
 				var tks = tstats.keys(); tks.sort(); var tls = []
 				for key in tks: tls.append(_tree_name(str(key)) + " x" + C.numstr(tstats[key]))
 				p.call("Lineage in action: " + ", ".join(PackedStringArray(tls)) + ".", VERD)
-			if d.get("flagName", "") != "": p.call("The admiral transfers the flag to the " + str(d["flagName"]) + ". Its aspect goes with it.", VERD)
-			for x in sm.get("xp", []): v.add_child(rich("• " + esc(x["cap"]) + " of the " + esc(x["ship"]) + ": +" + C.numstr(x["xp"]) + " experience" + ((" " + c("promoted to " + str(C.RANKS[int(x["rank"])]), VERD)) if x["up"] else ""), 18))
+			if d.get("flagName", "") != "": p.call("The admiral transfers the flag to " + C.ship_with_article(str(d["flagName"])) + ". Its refit goes with it.", VERD)
+			for x in sm.get("xp", []): v.add_child(rich("• " + esc(x["cap"]) + " (" + esc(x["ship"]) + "): +" + C.numstr(x["xp"]) + " experience" + ((" " + c("promoted to " + str(C.RANKS[int(x["rank"])]), VERD)) if x["up"] else ""), 18))
 			if d["wrecks"].is_empty():
 				var rw = d["rw"]
 				var next := "Continue"
@@ -2460,7 +2500,7 @@ func _modal(md: Dictionary) -> void:
 					options.add_child(button)
 				pv.add_child(options); v.add_child(pp)
 		"retreat":
-			h2.call("Retreat?"); p.call("The fleet jumps out. Every surviving ship loses 10% of its hull, and this node counts as passed.")
+			h2.call("Retreat?"); p.call("The fleet jumps clear. Every surviving ship takes 10% hull strain, and this stop counts as cleared.")
 			v.add_child(foot([abtn("Stay and fight", "c3retreatNo", "", false, false, acts), fin("Jump out", "c3retreatYes", "", acts)]))
 		_:
 			for a in acts: add(v, abtn(a[0] + " " + a[1], a[0], a[1], false, false, acts))
@@ -2526,6 +2566,7 @@ func esc_back() -> bool:
 	return false
 func _unhandled_input(e: InputEvent) -> void:
 	if C == null or not root.visible or not (e is InputEventKey) or not e.pressed or e.echo: return
+	if ModalFocus.covered(self): return   # issue 1559 item 5: Career (or another overlay) over the page has the keys
 	if e.keycode == KEY_ESCAPE and esc_back(): get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "fleet" and is_instance_valid(fleet_manifest):
 		if fleet_manifest.handle_key(e): _key_cue(e); get_viewport().set_input_as_handled(); return
@@ -2546,10 +2587,11 @@ func _unhandled_input(e: InputEvent) -> void:
 	if C.modal_d != null:
 		var acts = C.modal_d["acts"]
 		if e.keycode == KEY_ESCAPE:
-			for a in acts:
-				if a[2] == 1 and (a[0] == "closeModal" or a[0] == "c3retreatNo"):
+			for a in acts:   # issue 1559 item 26: the relic pick's Back (eventBack) answers Esc too
+				if a[2] == 1 and (a[0] == "closeModal" or a[0] == "c3retreatNo" or a[0] == "eventBack"):
 					Kit.play("ui_cancel"); C.act(a[0], a[1]); get_viewport().set_input_as_handled(); return
 		var n = e.keycode - KEY_1
+		if n < 0 or n >= 9: n = e.keycode - KEY_KP_1   # the keypad's digits too, as on the map (item 26)
 		if n >= 0 and n < 9:
 			var on = acts.filter(func(a): return a[2] == 1)
 			if n < on.size():

@@ -379,7 +379,7 @@ static func title_stats(L: Dictionary) -> Dictionary:
 		"share_torp": float(kind.get("torp", 0)) / tot if tot > 0 else 0.0,
 		"share_sq": float(kind.get("sq", 0)) / tot if tot > 0 else 0.0,
 		"share_battery": float(kind.get("battery", 0)) / tot if tot > 0 else 0.0,
-		"share_broad": (float(fire.get("Port broadside", 0)) + float(fire.get("Starboard broadside", 0))) / ftot if ftot > 0 else 0.0,
+		"share_broad": (float(fire.get("Port flank", 0)) + float(fire.get("Starboard flank", 0)) + float(fire.get("Port broadside", 0)) + float(fire.get("Starboard broadside", 0))) / ftot if ftot > 0 else 0.0,
 		"aimed": float(L.get("aim", 0)),
 		"braces": float(L.get("ord", {}).get("brace", 0)),
 		"unscarred": float(L.get("unscarred", 0)),

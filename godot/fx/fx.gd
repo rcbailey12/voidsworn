@@ -106,8 +106,10 @@ var apply_shake = true
 # --- clock
 var now = 0.0
 var _speed = 1.0
-var _pause_until = -1.0
+var _pause_until = -1.0   # effect time; checks hold a pause open with it
+var _pause_left = 0.0      # issue 1558 item 4: the hit pause in real seconds, so it lasts the same at any frame rate
 var _pause_depth = 1.0
+const SPEED_EASE := 55.0  # 1 - exp(-k / 60) = 0.6: the old per-frame lerp at 60 fps, now the same at every frame rate
 var _death_slow_left = 0.0  # real seconds, never Engine.time_scale
 var _death_hurry_until = -1.0
 
@@ -477,17 +479,38 @@ func _process(delta: float) -> void:
 var step_count := 0   # fx steps taken (issue 1237: the shared power-down budget is per step, manual tests included)
 
 
+# Effect seconds over `t` real seconds while the clock eases from speed `a` to `b` (the exact integral of the ease, so the
+# time a hit pause costs is the same at any frame rate)
+static func _eased(a: float, b: float, t: float) -> float:
+	return b * t - (b - a) * (1.0 - exp(-t * SPEED_EASE)) / SPEED_EASE
+
+
 func step(delta: float) -> void:
 	step_count += 1
 	# hit pause: the effect clock slows to a crawl for a few frames, then eases back (input is never blocked)
-	var spd = 1.0
-	if now < _pause_until:
-		spd = _pause_depth
+	var base := 1.0
 	if _death_slow_left > 0.0:
 		_death_slow_left = maxf(0.0, _death_slow_left - delta)
-		spd = minf(spd, 0.35) if _death_slow_left > 0.0 else spd
-	_speed = lerpf(_speed, spd, 0.6)
-	var dt = delta * _speed
+		base = 0.35 if _death_slow_left > 0.0 else 1.0
+	var crawl_spd: float = minf(float(_pause_depth), base)
+	# issue 1558 item 4: the hit pause is real seconds. The clock drops into it at once (so a 3-frame pause lands) and
+	# crawls only for the time left in it: a long frame (30 fps, a hitch) that ends the pause is split at the boundary
+	# and eases back by real time for the rest, so a 50 ms pause crawls 50 ms at any frame rate.
+	var real := maxf(delta, 0.0)
+	var hold: bool = now < _pause_until
+	var crawl: float = 0.0 if hold else minf(real, float(_pause_left))
+	_pause_left = maxf(0.0, _pause_left - real)
+	var dt: float
+	if hold or (crawl > 1e-6 and crawl >= real - 1e-9):
+		_speed = crawl_spd
+		dt = real * _speed
+	elif crawl > 1e-6:
+		var rest := real - crawl
+		dt = crawl * crawl_spd + _eased(crawl_spd, base, rest)
+		_speed = lerpf(crawl_spd, base, 1.0 - exp(-rest * SPEED_EASE))
+	else:
+		dt = _eased(float(_speed), base, real)
+		_speed = lerpf(_speed, base, 1.0 - exp(-real * SPEED_EASE))
 	now += dt
 	RenderingServer.global_shader_parameter_set(&"scene_t", now)
 	var t0 := Time.get_ticks_usec()
@@ -1247,6 +1270,7 @@ func hurry_death() -> void:
 	skip_death_slowmo()
 	_death_hurry_until = now + 3.0
 	_pause_until = -1.0
+	_pause_left = 0.0
 	_pauses.clear()
 	_speed = 1.0
 
@@ -1284,7 +1308,7 @@ func _update_feel(delta: float) -> void:
 	for p in _pauses:
 		if float(p[0]) <= now:
 			var dur = float(p[1]) / 60.0
-			_pause_until = maxf(_pause_until, now + dur * 0.08)
+			_pause_left = maxf(_pause_left, dur)
 			_pause_depth = 0.08
 		else:
 			keep.append(p)
@@ -1830,45 +1854,137 @@ func hull_mark(id: String, look: String, w := 2, world_p := Vector3.INF, dir := 
 # The rules' "board" event (API.md 11): the boarding party's breach in the target's hull at a plausible boarding point
 # (the side facing the attacker, mid section, near the waterline of the hull's side, never on top or below), venting
 # gas and lit from inside while the fight goes on (about 3 s), then a dark gash. Returns seconds until it has played.
-func board(attacker_id: String, target_id: String, _result := "") -> float:
+# Issue 1547 (Ryan picked look B, Nov 22 2026): at battle camera 110 and 170 the first breach (PR 1527) was a few dots.
+# Now: the hatch mark four times wider, a pop ring, burst, vent plume and inside light with pixel floors so they hold at
+# camera 170, and amber boarding lines (the shared line style's "board" role, the boarding target ring's amber) from the
+# attacker's hatch to the breach. "hold" is how long the battle waits (ms, at speed 1) before the next event, so the
+# player sees it before the enemy turn. The A and C looks shown beside it on the look sheets were removed.
+const BOARD := {"hatch": 4.0, "ring_px": 70.0, "burst": 2.2, "burst_px": 60.0, "vent": 2.2, "vent_px": 22.0,
+	"spark_px": 3.0, "light": 7.0, "reach": 22.0, "lines": 3, "hold": 1600.0}
+var board_lines_s := 0.0   # how long the last boarding lines stay on screen (s; checked against the battle's hold)
+
+
+# how long the battle holds on a boarding before the next event (ms at speed 1; issue 1547)
+func board_hold_ms() -> float:
+	return float(BOARD["hold"])
+
+
+# pace: the battle's pace (its wait() scale), so the lines end with the battle's hold (Artoo, PR 1549)
+func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -> float:
 	if not ships.has(target_id):
 		return 0.0
 	var s: SHIP = ships[target_id]
+	var bl: Dictionary = BOARD
 	# issue 370: the party leaves the attacker from its boarding hatch (hp_board on the side facing the target, else the
 	# side plating facing it through its core) and breaks in through the target's side plating facing that hatch, on
 	# the line through the target's core. Either missing: nothing to show (logged and counted by the hull).
 	var toward: Vector3
+	var from_hatch := Vector3.INF
 	if ships.has(attacker_id):
 		var a: SHIP = ships[attacker_id]
 		var o: Dictionary = a.hull.board_origin(a.xf().affine_inverse() * s.to_world(s.hull.core))
 		if o.is_empty():
 			return 0.0
 		toward = a.to_world(o["p"])
+		from_hatch = toward
 	else:
 		toward = s.to_world(s.hull.core + Vector3(0, 0, s.hull.W * 3.0))
 	var inv: Transform3D = s.xf().affine_inverse()
 	var tl: Vector3 = inv * toward
 	var side := Vector3(0, 0, signf(tl.z - s.hull.core.z) if absf(tl.z - s.hull.core.z) > 1e-3 else 1.0)
+	# issue 1547: a party coming from dead ahead or astern (no clear side) breaks in on the side the camera sees; the
+	# first cloud shots put it on the far side, hidden by the hull
+	var cam := get_viewport().get_camera_3d() if is_inside_tree() else null
+	if absf(tl.z - s.hull.core.z) < s.hull.W * 0.75 and cam != null:
+		var cl: Vector3 = inv * cam.global_position
+		side = Vector3(0, 0, 1.0 if cl.z >= s.hull.core.z else -1.0)
 	var h: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05, 0, 0), side)
 	if h.is_empty():
 		s.hull._took("board", "skip")
 		return 0.0
 	var lp: Vector3 = h["p"]
 	var ln: Vector3 = h["n"]
-	s.add_mark(self, "board", 2, lp, ln, -ln)
+	s.add_mark(self, "board", 2, lp, ln, -ln, float(bl["hatch"]))
 	var wp: Vector3 = s.to_world(lp)
 	var wn: Vector3 = s.dir_world(ln)
 	var k: float = s.scale_k()
 	var T: float = now + 0.1
+	var bk: float = float(bl["burst"])
+	var vk: float = float(bl["vent"])
 	# a pried-open hatch: a short, dull blast (not a counted flash), then gas venting and sparks from inside
-	spr(wp + wn * 0.3 * k, T, 0.4, Color(1, 0.65, 0.35), 2.5, 0.6 * k, 1.8 * k, 2)
+	sprx(float(bl["burst_px"]), wp + wn * 0.3 * k * bk, T, 0.4 * sqrt(bk), Color(1, 0.65, 0.35), 2.5, 0.6 * k * bk, 1.8 * k * bk, 2)
 	for j in 14:
-		spr(wp + wn * 0.2 * k, T + 0.15 + j * 0.2, 1.4, Color(0.62, 0.66, 0.74), 0.25, 0.3 * k, 2.2 * k, 7, (wn + rdir() * 0.25).normalized() * 4.0 * k, 0.8)
-	for j in 18:
-		stk(wp, T + 0.3 + randf() * 2.6, 0.3 + randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05, 0.08 * k, 1, (wn + rdir() * 0.6).normalized() * (5 + randf() * 8) * k, 2.0)
-	light(wp + wn * 0.6 * k, T, 3.0, 2.5, Color(1, 0.6, 0.3), 1)
+		spr(wp + wn * 0.2 * k * vk, T + 0.15 + j * 0.2, 1.4, Color(0.62, 0.66, 0.74), 0.25 * sqrt(vk), 0.3 * k * vk, 2.2 * k * vk, 7,
+			(wn + rdir() * 0.25).normalized() * 4.0 * k * vk, 0.8, 0.0, 0.0, float(bl["vent_px"]))
+	for j in int(18 * sqrt(bk)):
+		stk(wp, T + 0.3 + randf() * 2.6, 0.3 + randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05 * bk, 0.08 * k * bk, 1,
+			(wn + rdir() * 0.6).normalized() * (5 + randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
+	# a soft pop ring on the plating round the hatch, sized to hold at camera 170 (issue 1547)
+	ring(wp + wn * 0.05 * k, wn, T, 0.7, Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
+	# the inside light in the boarding amber (render/line_style.gd "board"), not explosion orange (Muse council)
+	light(wp + wn * 0.6 * k * bk, T, 3.0, float(bl["light"]), Color(1, 0.75, 0.3), 1, float(bl["reach"]))
 	shake(T, 0.06, wp)
-	return 3.2
+	var hold: float = float(bl["hold"]) / 1000.0 * pace
+	if from_hatch != Vector3.INF:
+		# Muse council: the lines land at points spread along the flank round the breach (grapples securing the two
+		# ships), not on one dot, so they never read as a beam; the attacker's hatch flashes where they leave
+		var ends: Array = []
+		var nl: int = int(bl["lines"])
+		for i in nl:
+			var dx: float = (float(i) - float(nl - 1) * 0.5) * s.hull.L * 0.12
+			var hi: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05 + dx, 0, 0), side) if dx != 0.0 else h
+			ends.append(s.to_world(hi["p"]) if not hi.is_empty() else wp)
+		_board_lines(from_hatch, ends, hold, pace)
+		sprx(18.0, from_hatch, now + minf(0.3 * pace, hold * 0.2), minf(0.3, hold * 0.2), Color(1, 0.75, 0.3), 2.0, 0.3 * k, 0.8 * k, 2)
+	return maxf(3.2, hold)
+
+
+# Issue 1547 (R362): the boarding lines, drawn in the one shared line style (render/line_style.gd, role "board": the
+# boarding target ring's amber, core only). One line per landing point, from the attacker's hatch to that point on the
+# target's flank, a shallow arc each. Muse council (contrib/muse/reviews/boarding_1547.md section 4): they draw in one
+# after another (0.2 s apart at speed 1), stay at full strength for the whole hold, pulse once mid-hold (the crew
+# crossing) and fade only in the hold's last tenth, so none outlives the battle's wait at any pace.
+func _board_lines(a: Vector3, ends: Array, hold: float, pace := 1.0) -> void:
+	var LSt = load("res://render/line_style.gd")
+	board_lines_s = 0.0
+	var n := ends.size()
+	for i in n:
+		var b: Vector3 = ends[i]
+		var d := b - a
+		var side := d.cross(Vector3.UP).normalized()
+		if side == Vector3.ZERO:
+			side = Vector3.RIGHT
+		var lift: float = d.length() * (0.10 + 0.04 * i)
+		var pts: Array = []
+		for j in 11:
+			var t := float(j) / 10.0
+			pts.append(a.lerp(b, t) + Vector3.UP * lift * sin(t * PI))
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for j in 10:
+			LSt.strip_into(st, pts[j], pts[j + 1], side, side, "board", Color(-1, -1, -1, -1), true)
+			LSt.strip_into(st, pts[j], pts[j + 1], -side, -side, "board", Color(-1, -1, -1, -1), true)
+		var mi := MeshInstance3D.new()
+		mi.mesh = st.commit()
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var m: ShaderMaterial = LSt.material(false)
+		m.set_shader_parameter("gain", 0.0)
+		mi.material_override = m
+		add_child(mi)
+		var t0: float = minf(0.2 * pace * i, hold * 0.3)
+		var t_in: float = minf(0.2, hold * 0.15)
+		var t_out: float = minf(0.15, hold * 0.1)
+		var rest: float = maxf(0.0, hold - t0 - t_in - t_out)
+		var tw := mi.create_tween()
+		tw.tween_interval(t0)
+		tw.tween_property(m, "shader_parameter/gain", 1.0, t_in)
+		tw.tween_interval(rest * 0.4)
+		tw.tween_property(m, "shader_parameter/gain", 1.8, rest * 0.1)
+		tw.tween_property(m, "shader_parameter/gain", 1.0, rest * 0.1)
+		tw.tween_interval(rest * 0.4)
+		tw.tween_property(m, "shader_parameter/gain", 0.0, t_out)
+		tw.tween_callback(mi.queue_free)
+		board_lines_s = maxf(board_lines_s, t0 + t_in + rest + t_out)
 
 
 func command(id: String, _cmd := "") -> void:
@@ -2093,6 +2209,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 					(b as RigidBody3D).angular_velocity = Vector3.ZERO
 					(b as RigidBody3D).sleeping = true)
 	WEAP.warm_craft_trail(self, tmp)
+	dstate["warm_munitions"] = WEAP.warm_munitions(self, tmp)   # issue 1528: the first salvo's body, materials and trail
 	# Issue 1434 (PC run 1: cover frames of 2 to 9 s): every warm mesh drew its first frame together, so all their
 	# pipelines compiled in one frame. They now appear WARM_BATCH at a time, a frame apart, and all of them stay up for
 	# the closing frames as before (outside the load cover, warmup_batch 0 keeps the old one-frame reveal).

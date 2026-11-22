@@ -57,7 +57,7 @@
   [
     "c_reward",
     "Rewards",
-    "Winning pays credits and can offer protocols or refit modules. Sometimes you can claim a captured ship. If it would put you over your command point limit, choose Strip for salvage or Ransom for credits. A protocol reroll costs credits."
+    "Winning pays credits and can offer protocols or refit modules. Sometimes you can claim a captured ship. If it would put you over your command point limit, choose Strip for parts or Ransom for credits. A protocol reroll costs credits."
   ],
   [
     "c_shipyard",

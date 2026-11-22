@@ -80,7 +80,7 @@ func _save(code: String, frames: Array) -> void:
 	if sheet.get_height() > 720:
 		sheet.resize(int(sheet.get_width() * 720.0 / sheet.get_height()), 720, Image.INTERPOLATE_LANCZOS)
 	var p := out.path_join("%s_%s.jpg" % [code, arm])
-	preload("res://tools/picture_provenance.gd").save_jpg(sheet, p, 0.9)
+	preload("res://tools/picture_provenance.gd").save_jpg(sheet, p, 0.9, preload("res://tools/picture_provenance.gd").capture_stage())
 	print("[close-action-shots] ", p)
 
 

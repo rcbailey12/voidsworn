@@ -186,6 +186,10 @@ func handle_input(e: InputEvent) -> bool:
 static func keyboard_pan(viewport: Viewport, arrows := true) -> Vector2:
 	if DisplayServer.get_name() != "headless" and not viewport.get_window().has_focus():
 		return Vector2.ZERO
+	# issue 1559 (Artoo on PR 1601): an open modal overlay (the battle menu, Career, a drawer) has the keyboard, so held
+	# WASD and arrows move its focus, never the camera behind it
+	if load("res://ui/theme/modal_focus.gd").any_open():
+		return Vector2.ZERO
 	var owner := viewport.gui_get_focus_owner()
 	if owner is LineEdit or owner is TextEdit or Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_ALT) or Input.is_key_pressed(KEY_META):
 		return Vector2.ZERO

@@ -301,7 +301,7 @@ func _dialog_box() -> StyleBoxFlat:
 # names wrap. Esc or Done saves and closes. Changing the UI scale rebuilds the panel and keeps focus on that row.
 const SETTINGS_LAYOUT := [   # [section, column, rows]
 	["Sound and music", 0, [["toggle", "Sound", "sound"], ["slider", "Volume", "volume"], ["toggle", "Music", "music"], ["slider", "Music volume", "music_volume"]]],
-	["Display", 0, [["choice", "UI scale", "ui_scale"], ["toggle", "Full screen", "fullscreen"], ["choice", "Graphics", "quality"], ["toggle", "Temporal AA (smoother edges, softer motion)", "taa"], ["toggle", "Nebula wakes (ships stir the clouds)", "nebula_wake_on"]]],
+	["Display", 0, [["choice", "UI scale", "ui_scale"], ["toggle", "Full screen", "fullscreen"], ["choice", "Graphics", "quality"], ["toggle", "Temporal AA (smoother edges, softer motion)", "taa"], ["toggle", "Nebula wakes (ships stir the clouds)", "nebula_wake_on"], ["choice", "Render scale", "render_scale"], ["choice", "Frame cap", "fps_cap"], ["toggle", "V-Sync", "vsync"]]],
 	["Battle", 1, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Teaching tips", "tips"]]],
 	["Comfort", 1, [["toggle", "Reduce motion", "reduce_motion"], ["toggle", "Reduce flashing", "reduce_flashing"], ["choice", "Screen shake", "shake"]]],
 ]
@@ -313,6 +313,9 @@ const SETTINGS_CHOICES := {
 	"shake": [[1.0, "Full"], [0.5, "Reduced"], [0.0, "Off"]],
 	"cine": [["key", "Key moments"], ["all", "Every attack"], ["off", "Off"]],
 	"quality": [["max", "Max"], ["high", "High"], ["low", "Low"]],
+	# issue 1437: performance options, today's game first (full scale, no cap)
+	"render_scale": [[1.0, "100%"], [0.85, "85%"], [0.7, "70%"]],
+	"fps_cap": [[0.0, "Off"], [60.0, "60"], [120.0, "120"], [144.0, "144"]],
 }
 var _settings_focus := ""   # the setting whose control takes focus when the panel is rebuilt (the UI scale row)
 var _ctrl_w := 0.0
@@ -541,11 +544,15 @@ func _toggle(t: String, key: String) -> Control:
 		main.settings[key] = not bool(main.settings[key])
 		if key == "tips": preload("res://ui/campaign/campaign_tips.gd").set_off(not main.settings[key])
 		b.text = "On" if main.settings[key] else "Off"
-		main.save_settings())
+		main.save_settings()
+		if key == "taa" and main.has_method("restart_showcase"):
+			main.restart_showcase())
 	return Kit.row(t, b, k, _ctrl_w)
 
 
 func _choice(t: String, key: String, opts: Array) -> Control:
+	if not main.settings.has(key):
+		main.settings[key] = opts[0][0]   # a settings file from before this row reads as the list's first value
 	var label_of := func() -> String:
 		for o in opts:
 			if str(o[0]) == str(main.settings[key]):
@@ -561,6 +568,8 @@ func _choice(t: String, key: String, opts: Array) -> Control:
 		main.settings[key] = opts[(i + 1) % opts.size()][0]
 		b.text = label_of.call()
 		main.save_settings()
+		if key == "quality" and main.has_method("restart_showcase"):
+			main.restart_showcase()   # issue 1437: the battle behind the menu takes the new Graphics at once
 		if key == "ui_scale":
 			_settings_focus = key   # the rebuilt panel puts focus back on this row, not on Sound
 			_rebuild())
@@ -579,9 +588,18 @@ func _slider(t: String, key: String, lo: float, hi: float) -> Control:
 	sl.value = float(main.settings[key])
 	sl.custom_minimum_size.y = s(24)
 	sl.add_theme_stylebox_override("focus", GS.focus_ring(k))
+	# issue 1559 item 23: a drag sets the volume live and saves once when it ends; a key or controller step saves at once
+	var dragging := [false]
+	sl.drag_started.connect(func() -> void: dragging[0] = true)
+	sl.drag_ended.connect(func(_changed: bool) -> void:
+		dragging[0] = false
+		main.save_settings())
 	sl.value_changed.connect(func(x: float) -> void:
 		main.settings[key] = x
-		main.save_settings())  # saved on every change, so arrow keys and a controller save too
+		if dragging[0]:
+			main.apply_volumes()
+		else:
+			main.save_settings())
 	return Kit.row(t, sl, k, _ctrl_w)
 
 
@@ -650,6 +668,18 @@ func _report() -> void:
 	line += ", %d of %d menu buttons take keyboard focus, focus on %s" % [nfocus, nbuttons, ("\"" + (fo as Button).text + "\"") if fo is Button else "nothing"]
 	ok = ok and nfocus == nbuttons and fo != null
 	print(line + (" PASS" if ok else " FAIL"))
+
+
+# Issue 1437 (review on PR 1607): the showcase was rebuilt for a new Graphics or TAA setting, or removed for Low: the sky
+# picture comes back until the new battle is in
+func cover_showcase() -> void:
+	if _reveal_tw != null and _reveal_tw.is_valid():
+		_reveal_tw.kill()
+	_revealed = false
+	if _bg != null and is_instance_valid(_bg):
+		_bg.modulate.a = 1.0
+	if _shade != null and is_instance_valid(_shade):
+		_shade.color.a = SHADE_SKY
 
 
 func reveal_showcase() -> void:

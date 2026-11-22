@@ -71,7 +71,7 @@ func _run() -> void:
 		frame_ms.append(ms)
 		var prof: Dictionary = fx.prof_take()
 		if ms > 20.0: print("FLEET_HITCH frame=%d ms=%.2f process_ms=%.2f physics_ms=%.2f fx=%s" % [frame, ms, Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0, str(prof)])
-		if frame in [180, 380, 580]: preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join("fleet_%d.png" % frame))
+		if frame in [180, 380, 580]: preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), out.path_join("fleet_%d.png" % frame), preload("res://tools/picture_provenance.gd").capture_stage())
 		previous = Time.get_ticks_usec()  # image readback/file I/O are outside the frame measurement
 	frame_ms.sort()
 	fx_ms.sort()
