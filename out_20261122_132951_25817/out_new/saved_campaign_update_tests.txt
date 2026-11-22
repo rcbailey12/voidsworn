@@ -1,0 +1,2 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+PASS saved_campaign update: the shape self-test passes, and a truncated run, a one-line Nemesis file or a swapped faction row fails update with every saved file unchanged

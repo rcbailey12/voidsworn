@@ -1,0 +1,49 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+PASS capture save sweep: game, probes, recipe previews and tool captures use the shared writer
+PASS stage sweep: every shared writer call names its stage (no default claims installed in game)
+PASS consecutive Review saves keep only their own input and revision
+PASS refused save without new or explicitly reused inputs
+PASS refused unsupported output format
+PASS cached inputs survive reuse, composite inputs deduplicate, retries retain inputs and copies stay separate
+PASS real build-sheet publisher isolates every copy and retains both composite input revisions
+PASS PNG has a visible stamp, full revision, UTC date, and exact restored alpha/pixels
+PASS JPEG, WebP and every animated GIF frame carry verifiable strips
+PASS composites preserve both input revisions and cached pictures are never relabelled
+PASS real look-bench moments, overviews and fleet skies isolate inputs while retaining reused captures
+PASS real look-bench sheets retain both revisions and compare original pixels with zero label noise
+PASS refused unstamped sheet input
+PASS refused unstamped PR picture
+PASS refused PC picture link
+PASS refused file URL
+PASS refused web picture link
+PASS refused reference-style PC link
+Rewrote picture link: C:\Users\rcbai\AppData\Local\Temp\picture889-14aa8733900d11ce\out\shots\PROVENANCE_889.png -> docs/shots/issue-889/PROVENANCE_889.png
+PASS refused uncommitted picture/sidecar
+PASS runner copies stamped evidence, rewrites PC links, and checks the staged pair
+PASS checkout picture links are rewritten, logged, and accepted with the staged pair
+PASS prepare refuses outside checkout paths, file URLs, web URLs and UNC paths
+PASS refused modified or removed strip
+PASS refused sidecar stage disagrees with burned text
+PASS actual PowerShell PR body entry refuses bad evidence and accepts the staged pair
+FAIL picture provenance self-test; artifacts kept for diagnosis in C:\Users\rcbai\AppData\Local\Temp\picture889-14aa8733900d11ce
+Traceback (most recent call last):
+  File "C:\Users\rcbai\Downloads\voidsworn_test\OPUS1739DIAGB\out_20261122_132951_25817\new\contrib\opus\tools\picture_provenance_selftest.py", line 606, in <module>
+    run()
+  File "C:\Users\rcbai\Downloads\voidsworn_test\OPUS1739DIAGB\out_20261122_132951_25817\new\contrib\opus\tools\picture_provenance_selftest.py", line 379, in run
+    checks(folder)
+  File "C:\Users\rcbai\Downloads\voidsworn_test\OPUS1739DIAGB\out_20261122_132951_25817\new\contrib\opus\tools\picture_provenance_selftest.py", line 600, in checks
+    native_outputs(folder, godot)
+  File "C:\Users\rcbai\Downloads\voidsworn_test\OPUS1739DIAGB\out_20261122_132951_25817\new\contrib\opus\tools\picture_provenance_selftest.py", line 241, in native_outputs
+    invoke(editor, 'no build info', env, expected=1)
+  File "C:\Users\rcbai\Downloads\voidsworn_test\OPUS1739DIAGB\out_20261122_132951_25817\new\contrib\opus\tools\picture_provenance_selftest.py", line 228, in invoke
+    result = subprocess.run([*command, '--', str(out)], cwd=build, env=settings,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rcbai\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 1630, in _communicate
+    raise TimeoutExpired(self.args, orig_timeout)
+subprocess.TimeoutExpired: Command '['C:\\Users\\rcbai\\Downloads\\voidsworn_test\\godot\\Godot_v4.7.2-stable_win64_console.exe', '--headless', '--path', 'C:\\Users\\rcbai\\AppData\\Local\\Temp\\picture889-14aa8733900d11ce\\archive build\\godot', '--', 'C:\\Users\\rcbai\\AppData\\Local\\Temp\\picture889-14aa8733900d11ce\\no build info']' timed out after 300 seconds

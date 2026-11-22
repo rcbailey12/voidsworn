@@ -1,0 +1,6 @@
+C:\Users\rcbai\AppData\Local\Programs\Python\Python312\python.exe
+C:\Users\rcbai\AppData\Local\Microsoft\WindowsApps\python.exe
+C:\Users\rcbai\AppData\Local\Microsoft\WindowsApps\python3.exe
+INFO: Could not find files for the given pattern(s).
+Python 3.12.10
+Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.

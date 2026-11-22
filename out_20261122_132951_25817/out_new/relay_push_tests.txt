@@ -1,0 +1,39 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\1bf30b74c032\pc\run_timeout.ps1
+node:assert:90
+  throw new AssertionError(obj);
+  ^
+
+AssertionError [ERR_ASSERTION]: tree: 
+relay_push said: relay: 4 file(s) to https://github.com/rcbailey12/voidsworn-relay branch pc-out-opus1657 under out_20261122_140000_1/ (11.0 MB in all), 1 over 10 MB kept on the PC
+relayed: 4 file(s) on pc-out-opus1657 at a748387468553e792970817309157d11e235b839; 1 over 10 MB listed as skipped
+receipt place: relay/pc-out-opus1657 out_20261122_140000_1
+folder link: https://github.com/rcbailey12/voidsworn-relay/tree/pc-out-opus1657/out_20261122_140000_1
+picture link: https://github.com/rcbailey12/voidsworn-relay/blob/a748387468553e792970817309157d11e235b839/out_20261122_140000_1/out_new/deep/clip.mp4
+picture link: https://github.com/rcbailey12/voidsworn-relay/blob/a748387468553e792970817309157d11e235b839/out_20261122_140000_1/out_new/shot.png
+
+
+branch log: a748387468553e792970817309157d11e235b839 relay opus1657 out_20261122_140000_1 (part 1 of 1, 4 files)
+shell: powershell
+    at Object.<anonymous> (C:\Users\rcbai\Downloads\voidsworn_test\OPUS1739DIAGB\out_20261122_132951_25817\new\contrib\opus\tools\relay_push_tests.js:34:10)
+    at Module._compile (node:internal/modules/cjs/loader:1546:14)
+    at Object..js (node:internal/modules/cjs/loader:1689:10)
+    at Module.load (node:internal/modules/cjs/loader:1318:32)
+    at Function._load (node:internal/modules/cjs/loader:1128:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:315:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:218:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [ '' ],
+  expected: [
+    'out_20261122_140000_1/done.txt',
+    'out_20261122_140000_1/out_new/deep/clip.mp4',
+    'out_20261122_140000_1/out_new/shot.png',
+    'out_20261122_140000_1/skipped_over_10MB.txt',
+    'out_20261122_140000_1/status.txt'
+  ],
+  operator: 'deepEqual'
+}
+
+Node.js v22.11.0
