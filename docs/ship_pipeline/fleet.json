@@ -8,9 +8,9 @@
     "voidsworn|Carrier": {"ship": "Hearth", "concept": null, "job": 1145, "note": "Never drawn. Concept is issue 1145 run 3."},
     "voidsworn|Dreadnought": {"ship": "Daybreak (flagship)", "concept": "docs/ship_pipeline/build_sheets/voidsworn_S8/beauty_vs_blockout.jpg", "ruling": "R254", "accepted": "Ryan, Nov 20 (R360, brighter ember before and after, PR 1331)"},
 
-    "hegemony|Frigate": {"ship": "Picket", "concept": null, "ruling": "R369", "job": 1146, "note": "First concepts sent back Nov 20: the three escorts read as one wedge. Redo with its own outline, then build 1412."},
-    "hegemony|Destroyer": {"ship": "Cordon", "concept": null, "ruling": "R369", "job": 1146, "note": "Sent back with Picket. Build 1412 waits."},
-    "hegemony|Cruiser": {"ship": "Vanguard", "concept": null, "ruling": "R369", "job": 1146, "note": "Sent back with Picket. Build 1412 waits."},
+    "hegemony|Frigate": {"ship": "Picket", "concept": "contrib/muse/design/class_family_hegemony_2026_11/picket_sheet.webp", "picked": true, "ruling": "R369", "job": 1412, "note": "Ryan, Nov 22 16:58 UTC: run 3 dart (PR 1707) picked, 'Agree with picket changes': keep the dart outline, flatten the speedboat keel into a space hull in the build."},
+    "hegemony|Destroyer": {"ship": "Cordon", "concept": "contrib/muse/design/class_family_hegemony_2026_11/cordon_sheet.webp", "picked": true, "ruling": "R369", "job": 1412, "note": "Ryan, Nov 22 16:58 UTC: run 3 anvil (PR 1707) taken; he named only Vanguard and Picket as needing work."},
+    "hegemony|Cruiser": {"ship": "Vanguard", "concept": null, "ruling": "R369", "job": 1146, "note": "Run 3 catamaran (PR 1707) sent back, Ryan Nov 22 16:58 UTC: 'just wide open and doesn't really make sense as a cruiser class'. Muse redraws; its 1412 build waits."},
     "hegemony|Battleship": {"ship": "Dominion", "concept": "docs/ship_pipeline/build_sheets/hegemony_H10/beauty_vs_blockout.jpg", "ruling": "R256", "accepted": "Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043)"},
     "hegemony|Super-dreadnought": {"ship": "Iron Mandate (flagship)", "concept": "contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg", "ruling": "R256", "accepted": "Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043)"},
 
