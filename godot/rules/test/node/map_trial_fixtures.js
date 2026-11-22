@@ -9,7 +9,11 @@ const { harness, setupBattle, encounters, sources, huntSettings } =
 // battle start, as the live campaign does, with the same JS trial placements.
 const rules = 'current';
 const revision = require('child_process').execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-const trial = harness({ rules, revision });
+// R405 froze the browser rules, so the JS twin takes the fleet budget levers from the Godot table (R414 changed them).
+const decode = v => typeof v === 'string' && v.startsWith('#d:') ? Buffer.from(v.slice(3), 'hex').readDoubleBE(0) : v;
+const godotRamp = JSON.parse(fs.readFileSync(require('path').join(__dirname, '../../data/tables.json'), 'utf8')).tables.RAMP;
+const ramp = { std: decode(godotRamp.std), vet: decode(godotRamp.vet) };
+const trial = harness({ rules, revision, ramp });
 const huntTuning = { ...huntSettings[0], approachTurns: 6, exitLane: 0.15 };
 const factions = Object.keys(trial.FACTIONS);
 const fixtures = [];
