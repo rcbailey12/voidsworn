@@ -1,0 +1,5 @@
+out_new\gen\ships\B21_11.scn 47.3 MB
+out_new\gen\ships\D21_23.scn 50.4 MB
+out_new\gen\ships\H10_23.scn 54.4 MB
+out_new\gen\ships\I15_11.scn 43.5 MB
+out_new\gen\ships\V16_37.scn 48.7 MB

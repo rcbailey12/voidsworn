@@ -1,0 +1,15 @@
+ Volume in drive C has no label.
+ Volume Serial Number is 866D-799D
+
+ Directory of C:\Users\rcbai\Downloads\voidsworn_test\opus1235gx\out_20261122_132243_24416\out_new\gen\ships
+
+11/22/2026  01:23 PM    <DIR>          .
+11/22/2026  01:23 PM    <DIR>          ..
+11/21/2026  10:14 AM          49582625 B21_11.scn
+11/18/2026  07:59 AM           1390581 C15s_23.scn
+11/18/2026  01:26 PM          52825992 D21_23.scn
+11/21/2026  05:36 PM          57018444 H10_23.scn
+11/21/2026  11:45 PM          45654217 I15_11.scn
+11/20/2026  11:09 AM          51072915 V16_37.scn
+               6 File(s)      257544774 bytes
+               2 Dir(s)    254266155008 bytes free
