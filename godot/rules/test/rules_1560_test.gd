@@ -55,6 +55,7 @@ func _init() -> void:
 		["13: a turn in place does not give back the free dive (Vell T2a)", c_13],
 		["15: no ram after firing, from the move overlay either", c_15],
 		["16: the corona splash hits only a ship next to the target", c_16],
+		["16: the corona splash counts over the ship it hit, not in the target's hull number", c_16_attrib],
 		["17: Full ahead opens again on the next turn", c_17],
 		["18: the Garrison ally never turns a loss into a retreat", c_18_garrison],
 		["18: the Chorus free pivot is offered with no movement left", c_18_pivot],
@@ -185,6 +186,16 @@ func c_16() -> Array:
 	var res = {"shield": 0, "hull": 0, "crits": 0, "hits": 0, "misses": 0, "sys": null}
 	R.landVolley(u, w, t, {"quad": R.shieldQuad(t, u), "shBefore": R.z0(t.get("shp")), "shots": [true], "called": null, "res": res})
 	return [far["hp"] == hp0, "ship 7 hexes away lost " + str(hp0 - far["hp"])]
+func c_16_attrib() -> Array:
+	fresh(["penitent"], "hegemony", ["h_picket", "h_picket"]); var u = P[0]; var t = E[0]; var nb = E[1]
+	u["q"] = 5; u["r"] = 5; u["facing"] = 0; t["q"] = 8; t["r"] = 5; nb["q"] = 9; nb["r"] = 5
+	var th0 = float(t["hp"]); var n0 = float(nb["hp"]) + float(R.z0(nb.get("shp")))
+	var w = wpn("doom", "F"); u["weapons"] = [w]
+	B["tree"] = [{"k": "arcsWarm", "key": "t1560:arcsWarm", "n": 0.25}]; B["volleyMul"] = {"side": "player", "m": 1}
+	var res = {"shield": 0, "hull": 0, "crits": 0, "hits": 0, "misses": 0, "sys": null}
+	R.landVolley(u, w, t, {"quad": R.shieldQuad(t, u), "shBefore": R.z0(t.get("shp")), "shots": [true], "called": null, "res": res})
+	var nLost = n0 - float(nb["hp"]) - float(R.z0(nb.get("shp")))
+	return [int(R.hdist(t, nb)) == 1 and nLost > 0 and near(res.hull, th0 - float(t["hp"])), "target lost " + str(th0 - float(t["hp"])) + ", res.hull " + str(res.hull) + ", neighbour lost " + str(nLost)]
 func c_17() -> Array:
 	fresh(["penitent"], "hegemony", ["h_picket"]); var u = P[0]
 	u["moved"] = true; R.startSideTurn("player")
