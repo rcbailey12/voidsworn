@@ -1507,6 +1507,35 @@ func _want_yaw(k: int, target_local: Vector3) -> float:
 
 # Turn turret k toward a point (root frame), starting at time now on the effect clock. Returns {"yaw", "arrive", "clamped"}:
 # the yaw it will hold, when it gets there and whether the target lay outside its reach (it then holds the nearest edge).
+# Issue 1581 (OpenAI review F3): the turrets a volley of n shots from this slot and weapon would use, without aiming or
+# counting anything (the same pick as guns(): the same points, the same rotation offset). [] for fixed guns.
+func gun_turrets(slot: int, weapon: String, target_local: Vector3, n: int) -> Array:
+	var d := target_local - core
+	d = d.normalized() if d.length() > 1e-4 else Vector3(1, 0, 0)
+	var pts := _gun_points(slot, weapon, target_local, d)
+	var out: Array = []
+	if pts.is_empty():
+		return out
+	var key := "%d|%s" % [slot, weapon]
+	var off: int = int(_gun_turn.get(key, posmod(hash(code + key), pts.size())))
+	for i in maxi(n, 1):
+		var pt: Dictionary = pts[posmod(off + i, pts.size())]
+		if pt.has("tur") and not out.has(int(pt["tur"])):
+			out.append(int(pt["tur"]))
+	return out
+
+
+# Issue 1581: seconds turret k needs from its pose at `now` to bear on target_local (0 when it already does).
+func turret_need(k: int, target_local: Vector3, now: float) -> float:
+	var t: Dictionary = turrets[k]
+	var want := _want_yaw(k, target_local)
+	var y0 := turret_yaw(k, now)
+	var goal := want + 360.0 * roundf((y0 - want) / 360.0) if bool(t["full"]) else want
+	if absf(goal - y0) <= 0.25:
+		return 0.0
+	return _traverse_time(goal - y0, _turret_speed(k, now))
+
+
 func turret_aim(k: int, target_local: Vector3, now: float) -> Dictionary:
 	var t: Dictionary = turrets[k]
 	var want := _want_yaw(k, target_local)

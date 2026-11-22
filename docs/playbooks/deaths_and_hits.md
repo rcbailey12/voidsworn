@@ -149,7 +149,7 @@ A single-frame spark and a puff, under 40 px, no wreck. Twenty of them dying mus
 | Lance (cut) | The tear is the cut: a straight white line along the beam's path. | Two clean halves; the cut faces glow longest. |
 | Torpedo or ram (big) | Chain blasts walk away from the impact. | Shrapnel leaves in a cone away from the impact. |
 | Gauss (flay) | Many small punctures, each a thin gas jet. | More, smaller pieces; no single big half. |
-| Acid or spines (melt) | No tear: the hull sags and glows a sick yellow-green. | Few pieces; a soft bloom, pale core, no hard white. |
+| Acid or spines (melt) | No tear and no strain crack: the plating glows a sick yellow-green only where the acid hit (each hit a ragged patch that spreads until the hull parts), never the whole hull. Any metal faction dies this way when acid kills it; its own faction break is not drawn. | Few pieces; no flash picture at all (the soft bloom read as a green cloud on the PC run), only a soft light on the hulls round it; the torn faces and wound plating stay acid green, never orange; no fire, no smoke, no vapour (R398). |
 | Burn-out (dark) | Lights and engines die; one vent of gas. | No break: a whole cold hulk drifts. No fire at all. |
 | The dead star (tidal) | The hull stretches toward the well. | Pieces stream toward the star in a curve. |
 
@@ -237,6 +237,12 @@ Three upgrades run through all of them:
    fx_weather mottles and darkens the plating, fx_power dims its lights, and soot patches sit where it was actually hit
    (worst section first, up to 8), with no ember heat, so no faction gets orange from wear. Below 35% it lists 2 to 5
    degrees toward the side last hit, view only. godot/fx/test/hull_wear_check.gd.
+   Faction hit damage (R402, Ryan Nov 22): wounds, scars and wear read as each faction's own material, for all six
+   factions in one build, on every hull of the faction, player and enemy. Glasswrights take cracks in the same glass,
+   behaving like glass (straight-running fractures that catch light, never bent or warped metal), plus a few missing
+   panes with white light inside; never a black hole. Soot and the wear darkening above stay on metal ships only and
+   are dropped for glass (Glasswrights) and flesh (the Chorus). A painted concept sheet of all six goes to Ryan before
+   the build; the build issue opens after he approves it.
 2. **Light on neighbours.** Torpedo hits and every death light the hulls around them for the length of the flash. (Built:
    a torpedo's light reaches about two hexes, 36 units; a death's core flash 1.5, 2 and 3 hexes for a frigate, cruiser and
    capital; every other light keeps the standing 30 units, about 1.7 hexes.)
