@@ -1,5 +1,5 @@
 {
- "about": "Issue 1235 run 2: hull wear as HP falls. Four hits (torpedo, battery, torpedo, battery) on a Sunward, Glasswright and Chorus cruiser, then hull HP set to 55% (wear, no list) and 22% (full wear and the crippled list), at camera 170 and 26. Run with --moments res://bench/look_moments_wear.json on main (before, with this branch's look_bench.gd for the pre and sync_t keys) and opus/issue-1235-wear (after).",
+ "about": "Issue 1235 run 2: hull wear as HP falls. Four hits (torpedo mid, battery prow, torpedo eng, battery mid) on a Sunward, Glasswright and Chorus cruiser, then hull HP set to 55% (wear, no list) and 22% (full wear and the crippled list), at camera 170 and 26. Run with --moments res://bench/look_moments_wear.json on main (before, with this branch's look_bench.gd for the pre and sync_t keys) and opus/issue-1235-wear (after). The Chorus target sits 30 units toward -z (the camera looks toward -z from the +z side) so its hits land on the side facing the camera.",
  "cameras": [
   170,
   26
@@ -35,19 +35,23 @@
    "pre": [
     [
      "torp",
-     "torp"
+     "torp",
+     "mid"
     ],
     [
      "battery",
-     "battery"
+     "battery",
+     "prow"
     ],
     [
      "torp",
-     "torp"
+     "torp",
+     "eng"
     ],
     [
      "battery",
-     "battery"
+     "battery",
+     "mid"
     ]
    ],
    "sync_t": {
@@ -110,19 +114,23 @@
    "pre": [
     [
      "torp",
-     "torp"
+     "torp",
+     "mid"
     ],
     [
      "battery",
-     "battery"
+     "battery",
+     "prow"
     ],
     [
      "torp",
-     "torp"
+     "torp",
+     "eng"
     ],
     [
      "battery",
-     "battery"
+     "battery",
+     "mid"
     ]
    ],
    "sync_t": {
@@ -185,19 +193,23 @@
    "pre": [
     [
      "torp",
-     "torp"
+     "torp",
+     "mid"
     ],
     [
      "battery",
-     "battery"
+     "battery",
+     "prow"
     ],
     [
      "torp",
-     "torp"
+     "torp",
+     "eng"
     ],
     [
      "battery",
-     "battery"
+     "battery",
+     "mid"
     ]
    ],
    "sync_t": {
@@ -260,19 +272,23 @@
    "pre": [
     [
      "torp",
-     "torp"
+     "torp",
+     "mid"
     ],
     [
      "battery",
-     "battery"
+     "battery",
+     "prow"
     ],
     [
      "torp",
-     "torp"
+     "torp",
+     "eng"
     ],
     [
      "battery",
-     "battery"
+     "battery",
+     "mid"
     ]
    ],
    "sync_t": {
@@ -335,19 +351,23 @@
    "pre": [
     [
      "torp",
-     "torp"
+     "torp",
+     "mid"
     ],
     [
      "battery",
-     "battery"
+     "battery",
+     "prow"
     ],
     [
      "torp",
-     "torp"
+     "torp",
+     "eng"
     ],
     [
      "battery",
-     "battery"
+     "battery",
+     "mid"
     ]
    ],
    "sync_t": {
@@ -392,6 +412,10 @@
      8.0,
      1
     ]
+   ],
+   "tgt_at": [
+    34,
+    -30
    ]
   },
   {
@@ -410,19 +434,23 @@
    "pre": [
     [
      "torp",
-     "torp"
+     "torp",
+     "mid"
     ],
     [
      "battery",
-     "battery"
+     "battery",
+     "prow"
     ],
     [
      "torp",
-     "torp"
+     "torp",
+     "eng"
     ],
     [
      "battery",
-     "battery"
+     "battery",
+     "mid"
     ]
    ],
    "sync_t": {
@@ -467,6 +495,10 @@
      8.0,
      1
     ]
+   ],
+   "tgt_at": [
+    34,
+    -30
    ]
   }
  ]
