@@ -72,7 +72,7 @@
 #   survey                                     read only: every job attempt and ship clone under voidsworn_test with its
 #                                              size and what the rules above would do with it. Deletes nothing.
 # Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
-param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'relayfind', 'dropcache', 'droprepo', 'survey', 'slot', 'slothold', 'slotrelease')][string]$Action,
+param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'relayfind', 'dropcache', 'droprepo', 'survey', 'slot', 'slothold', 'slotrelease', 'slotcheck')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$Folder = '')
 $ErrorActionPreference = 'Stop'
 # Git emits the relay tree paths and manifest as UTF-8, even under Windows PowerShell 5.1.
@@ -944,7 +944,7 @@ function Enter-Slot($attempt) {
       $dir = Join-Path $slotsRoot $n
       if (-not (Test-Path -LiteralPath $dir)) { $null = New-Item -ItemType Directory -Path $dir }
       Assert-SlotDir $dir
-      if (Test-Path -LiteralPath (Join-Path $dir 'hold.txt')) { continue }
+      if (Test-SlotHold $dir) { continue }
       try { ([IO.File]::Open((Join-Path $dir '.slot-lease'), 'OpenOrCreate', 'ReadWrite', 'None')).Dispose() } catch [IO.IOException] { continue }
       $token = [guid]::NewGuid().ToString('N')
       Start-SlotHolder $dir $owner $ownerStart $token $attempt
@@ -952,6 +952,11 @@ function Enter-Slot($attempt) {
       while ([DateTime]::UtcNow -lt $until) {
         if (Test-Path -LiteralPath $ready) { $got = [IO.File]::ReadAllText($ready).Trim(); if ($got) { break } }
         Start-Sleep -Milliseconds 200
+      }
+      # Holds are read again under the new lease (Astra run 5 on PR 1835): a hold the PC daemon restored while this
+      # claimant was between its two looks is seen here, and the slot is let go untouched.
+      if ($got -like 'held *' -and (Test-SlotHeld $dir $token) -and (Test-SlotHold $dir)) {
+        [IO.File]::WriteAllText((Join-Path $dir "release_$token"), 'held by hold.txt'); continue
       }
       if ($got -like 'held *' -and (Test-SlotHeld $dir $token)) {
         [IO.File]::WriteAllText((Join-Path $attempt 'slot.txt'), "$dir|$token`r`n")
@@ -964,6 +969,12 @@ function Enter-Slot($attempt) {
     if (-not $said) { Write-Output "waiting for a free $kind slot ($($names -join ', '))"; $said = $true }
     Start-Sleep -Seconds $(if ($test) { 1 } else { 15 })
   }
+}
+function Test-SlotHold($dir) {
+  # The slot is set aside for the Board: hold.txt, or the PC daemon's in-flight marker while it is being cleared
+  # (pc_daemon.js clearInFlight renames it to hold.txt.<token>.clearing for a moment).
+  if (Test-Path -LiteralPath (Join-Path $dir 'hold.txt')) { return $true }
+  return [bool]@(Get-ChildItem -LiteralPath $dir -Force -File -Filter 'hold.txt.*.clearing' -ErrorAction SilentlyContinue).Count
 }
 function Test-SlotHeld($dir, $token) {
   # Artoo on PR 1728: a holder stopped abruptly leaves its marker behind, so the marker alone proves nothing. All three
@@ -991,19 +1002,33 @@ function Set-SlotHold($dir, $why, $u) {
   [IO.File]::WriteAllText((Join-Path $dir 'hold.txt'), "$why`r`nlast use: $($u.attempt) $($u.name)`r`nThe Board removes this file once it has looked.`r`n")
   throw "slot held: $why"
 }
-function Exit-Slot($attempt) {
+function Exit-Slot($attempt, $expect = $null) {
   $f = Join-Path $attempt 'slot.txt'
-  if (-not (Test-Path -LiteralPath $f -PathType Leaf)) { Write-Output "no slot held by $attempt"; return }
-  $parts = [IO.File]::ReadAllText($f).Trim().Split('|')
+  if (-not (Test-Path -LiteralPath $f -PathType Leaf)) {
+    # a caller that was given a lease (the PC daemon) never takes a missing receipt as a release (Artoo on 7fd738f2)
+    if ($expect) { throw "slot kept: no slot.txt in $attempt for the lease it was given ($expect); nothing was released" }
+    Write-Output "no slot held by $attempt"; return
+  }
+  $receipt = [IO.File]::ReadAllText($f).Trim()
+  $parts = $receipt.Split('|')
+  # Artoo on PR 1835 (Astra run 6): a release only ever touches the slot this attempt holds. The receipt must be one slot
+  # and one token, match the lease the caller was given (the PC daemon passes it), and owner.txt must name exactly this
+  # attempt and this token; anything else keeps the slot as it is and fails, so a stale or edited receipt can never
+  # release another job's slot.
+  if ($parts.Count -ne 2 -or $parts[1] -notmatch '\A[0-9a-f]{32}\z' -or -not [IO.Path]::IsPathRooted($parts[0])) { throw "slot kept: slot.txt not readable in $attempt" }
+  if ($expect -and $receipt -ne $expect) { throw "slot kept: slot.txt in $attempt no longer matches the lease it was given ($expect); nothing was released" }
   $ready = Join-Path $parts[0] "holder_$($parts[1]).txt"
   # Artoo on PR 1728: on the PC the recorded job process is the long-lived watcher shell, so a dead holder would keep the
   # slot busy until the watcher ends. The tail therefore marks its own token released itself, only while owner.txt still
-  # names that token (a later job's owner.txt is never touched); the holder, when alive, ends on the release file.
+  # names that attempt and token (a later job's owner.txt is never touched); the holder, when alive, ends on the release file.
   $ownerTxt = Join-Path $parts[0] 'owner.txt'
-  if (Test-Path -LiteralPath $ownerTxt -PathType Leaf) {
-    $txt = [IO.File]::ReadAllText($ownerTxt)
-    if ($txt -match ('(?m)^token ' + [regex]::Escape($parts[1]) + '\r?$') -and $txt -notmatch '(?m)^released') {
-      [IO.File]::AppendAllText($ownerTxt, "released $([DateTime]::UtcNow.ToString('o'))`r`n") } }
+  $txt = if (Test-Path -LiteralPath $ownerTxt -PathType Leaf) { [IO.File]::ReadAllText($ownerTxt) } else { '' }
+  $mine = ($txt -match ('(?m)^attempt ' + [regex]::Escape($attempt) + '\r?$')) -and ($txt -match ('(?m)^token ' + [regex]::Escape($parts[1]) + '\r?$'))
+  if (-not $mine) {
+    if ($expect) { throw "slot kept: owner.txt in $($parts[0]) does not name this attempt and token; nothing was released" }
+    Write-Output "slot $($parts[0]) already let go (owner.txt names another attempt or token; it was left alone)"; return
+  }
+  if ($txt -notmatch '(?m)^released') { [IO.File]::AppendAllText($ownerTxt, "released $([DateTime]::UtcNow.ToString('o'))`r`n") }
   if (-not (Test-Path -LiteralPath $ready)) { Write-Output "slot $($parts[0]) already let go"; return }
   [IO.File]::WriteAllText((Join-Path $parts[0] "release_$($parts[1])"), "release`r`n")
   $until = [DateTime]::UtcNow.AddSeconds(30)
@@ -1026,6 +1051,8 @@ function Reset-Slot($dir, $attempt, $name, $pin) {
   try {
     if (-not (Test-SlotHeld $dir $token)) { throw "the lease on $dir is no longer held for this attempt; nothing in it was touched" }
     if ($test -and $env:PC_TEST_SLOT_RESET_DELAY) { [IO.File]::WriteAllText((Join-Path $dir 'test_reset_in_flight'), ''); Start-Sleep -Seconds ([int]$env:PC_TEST_SLOT_RESET_DELAY) }
+    # and once more under the lease and the reset lock, right before anything in the slot is touched
+    if (Test-SlotHold $dir) { throw "slot held: $dir was set aside (hold.txt) after this attempt took it; nothing in it was touched" }
     Reset-SlotInner $dir $attempt $name $pin
     if (-not (Test-SlotHeld $dir $token)) { throw "the lease on $dir was lost during the reset; this checkout is not used" }
   } finally { $lock.Dispose() }
@@ -1205,8 +1232,18 @@ switch ($Action) {
     }
   }
   'slotrelease' {
-    # The tail: lets this attempt's slot go (the holder ends) and waits up to 30 s for the lease to be free.
-    Exit-Slot ([IO.Path]::GetFullPath($A).TrimEnd('\', '/'))
+    # The tail: lets this attempt's slot go (the holder ends) and waits up to 30 s for the lease to be free. The PC daemon
+    # passes the lease it was given as OJ_SLOT_EXPECT (<slot>|<token>); a receipt that no longer matches keeps the slot.
+    $expect = $env:OJ_SLOT_EXPECT; $env:OJ_SLOT_EXPECT = $null
+    Exit-Slot ([IO.Path]::GetFullPath($A).TrimEnd('\', '/')) $expect
+  }
+  'slotcheck' {
+    # Read only (issue 1662, the PC daemon): the live proof that this attempt still holds its slot (Test-SlotHeld: the
+    # holder process with its start time, owner.txt naming the token, the lease file locked now). Prints
+    # "held <slot>|<token>"; fails otherwise.
+    $h = Get-HeldSlot ([IO.Path]::GetFullPath($A).TrimEnd('\', '/'))
+    if (-not $h) { throw "no slot recorded for $A" }
+    Write-Output "held $($h.Dir)|$($h.Token)"
   }
 
   'tracked' {
