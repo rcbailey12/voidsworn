@@ -184,6 +184,10 @@ ships catch, store and release light.
   violet and green rise, and a sapphire blue joins the palette (stack.py PALETTE, WEIGHTS 32/26/22/20, TONES). Ryan Nov 21 on the
   strike craft, then 8:29 PM CT for the big ships too: the stones are 25% more saturated on every Glasswright hull ("a little,
   nothing crazy"; stack.py SATURATION 1.25, applied once in the shared mosaic).
+  The pearl is the shell and the glass is the seams (R431, Ryan Nov 23 2026, I8_37 against I15_11: "the top is how we want
+  it to look ascross the board"): every Glasswright hull, craft included, shows the coloured glass only in the leaf-shaped
+  seams and openings between pearl ribbons, never as a whole-hull mosaic; the kit review fails a hull above stack.MOSAIC_MAX
+  (0.42) bare glass from above or the battle camera. The marbled colours above live inside those seams.
 - **Guns sit:** on the optical axis. The prism lance is the hull's stored light let out through the bow optic: a white core
   with a rainbow fringe. Smaller lenses along the hull are the secondary guns.
 - **Engines:** no flame. A soft white bloom at the stern optic.

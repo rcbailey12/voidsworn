@@ -718,6 +718,42 @@ def ragged_break(K, name, x, width, note, jitter=None):
 
 
 # ------------------------------------------------------------------------------------------------------------ review renders
+def mosaic_share(objs, res=160):
+    """R431 (Ryan Nov 23 2026): the share of the visible outside that is bare stained glass (gw_mosaic), by rays from the top,
+    the side and the battle camera's tilt (34 degrees up), over the hull's bounding box. Every Glasswright hull reads as I8_37:
+    a pearl shell with the coloured glass only in the seams and openings, so this stays at or under stack.MOSAIC_MAX."""
+    import bpy
+    from mathutils import Vector
+    objs = [o for o in objs if o.type == 'MESH']
+    names = {o.name for o in objs}
+    lo = Vector([min((o.matrix_world @ Vector(c))[i] for o in objs for c in o.bound_box) for i in range(3)])
+    hi = Vector([max((o.matrix_world @ Vector(c))[i] for o in objs for c in o.bound_box) for i in range(3)])
+    ctr, size = (lo + hi) / 2, max(hi - lo)
+    dg = bpy.context.evaluated_depsgraph_get()
+    sc = bpy.context.scene
+    out = {}
+    for name, az, el in (('top', 270, 90), ('side', 270, 0), ('battle', 250, 34)):
+        a, e = math.radians(az), math.radians(el)
+        d = Vector((math.cos(e) * math.cos(a), math.cos(e) * math.sin(a), math.sin(e)))
+        u = Vector((0, 0, 1)).cross(d) if abs(d.z) < 0.99 else Vector((1, 0, 0))
+        u.normalize(); v = d.cross(u); v.normalize()
+        hits = glass = 0
+        for i in range(res):
+            for j in range(res // 2):
+                p = ctr + d * size * 2 + u * size * 0.6 * (2 * i / res - 1) + v * size * 0.3 * (4 * j / res - 1)
+                ok, _, _, idx, ob, _ = sc.ray_cast(dg, p, -d)
+                if not ok or ob.name not in names:
+                    continue
+                hits += 1
+                mats = ob.data.materials
+                ev = ob.evaluated_get(dg).data
+                mi = ev.polygons[idx].material_index if idx < len(ev.polygons) else 0
+                if mi < len(mats) and mats[mi] and mats[mi].name == 'gw_mosaic':
+                    glass += 1
+        out[name] = round(glass / max(1, hits), 3)
+    return out
+
+
 def review(mod, out):
     import bpy
     from mathutils import Vector
@@ -737,6 +773,12 @@ def review(mod, out):
     (out / 'fit.json').write_text(json.dumps(fit, indent=2))
     if any(fit['counts'].values()):
         raise ValueError('Fit failed: ' + str(fit['counts']))
+    share = mosaic_share(list(K.coll.objects))   # R431: pearl shell, glass only in the seams
+    cap = gw_kit('stack').MOSAIC_MAX
+    print('MOSAIC SHARE', mod.CODE, share, 'max', cap)
+    if max(share['top'], share['battle']) > cap:
+        raise ValueError('R431: %s shows %s bare stained glass from above or the battle camera (max %.2f); widen the pearl '
+                         'so the glass shows only in the seams (kit README)' % (mod.CODE, share, cap))
     dg = bpy.context.evaluated_depsgraph_get()
 
     def cost(coll):
@@ -760,7 +802,7 @@ def review(mod, out):
         raise ValueError('A recorded part has no actual meshes: %s' % [k for k, v in groups.items() if not v])
     model = dict(code=mod.CODE, name=mod.NAME, game_ship=gs, cls=mod.CLASS, length=mod.LENGTH, camera=mod.CAMERA,
                  features=K.features, masses=K.masses, inside=K.inside, points=K.points, changes=K.changes, budget=budget,
-                 mesh_groups=groups, dimensions=[float(hi[i] - lo[i]) for i in range(3)],
+                 mesh_groups=groups, mosaic_share=share, dimensions=[float(hi[i] - lo[i]) for i in range(3)],
                  design_sha256=hashlib.sha256(Path(mod.__file__).read_bytes()).hexdigest(),
                  kit_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
     (out / 'model.json').write_text(json.dumps(model, indent=2))

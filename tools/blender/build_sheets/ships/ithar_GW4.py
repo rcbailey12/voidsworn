@@ -79,7 +79,7 @@ def lowest_z(x):
     t = (x - F.X0) / (F.X1 - F.X0)
     return belly_z(x, F.HW * C_LOBE / (C_LOBE + R_LOBE) * env(t) ** 0.5)
 F.NRIB = 10
-F.HALF = 0.045   # narrow: the ribbons read as the concept's silver veins over the stained panes
+F.HALF = 0.22    # R431 (Ryan Nov 23, I8_37 look everywhere): broad pearl bands, the stained panes show in the seams between them
 F.TWIST = lambda x: -0.4                   # straight meridian veins bow to stern; -0.4 sets them at 0, 36, 72.. degrees so the grooves (90, 270) stay open
 # F.MOSAIC_WEIGHTS: the kit's four-colour weights (issue 1415, Ryan Nov 21 1:45 PM CT: less red and amber, more blue, green and
 # purple); the Nov 20 three-colour override would have dropped blue from the marble.

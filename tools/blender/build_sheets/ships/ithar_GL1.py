@@ -99,7 +99,7 @@ def build(K):
         ribbons.append(gw.Ribbon(
             XS + 0.10 + 0.08 * math.sin(2.3 * k), XB - 0.05 - 0.12 * (k % 3), f.centre(k),
             # round 2 (Ryan Nov 21, "sleek"): seven narrow ribbons lying close on the leaf, like the pick's filigree
-            lambda t, k=k: (0.11 + 0.015 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.45, 0.42 + 0.05 * math.sin(k), tip=0.0)(t),
+            lambda t, k=k: (0.25 + 0.015 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.45, 0.42 + 0.05 * math.sin(k), tip=0.0)(t),   # R431: wider, glass in the seams
             lambda t, v: S * (0.015 + 0.035 * (1 - v * v) ** 0.5 * (0.5 + 0.5 * math.sin(math.pi * t) ** 0.5)),
             name='long_ribbon_%d' % k))
     for k, (x0, x1, base, wd) in enumerate(LEAVES):

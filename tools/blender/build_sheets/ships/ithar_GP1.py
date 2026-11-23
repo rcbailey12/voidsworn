@@ -4,7 +4,8 @@ bridges, stored light glowing in the cleft between them; one lens point at each 
 amidships (the turret), a white bloom at each stern. Ryan likes the parallel read: the hulls are never merged.
 
 Built in the R337 finish on the shared Glasswright kit (tools/blender/kits/ithar: parts.py, stack.py, hull.py). This hull is
-the pane-heavy one of the family: narrow pearl ribbons over a mostly mosaic skin, as the pick's thick lens panes.
+the paned one of the family: since R431 (Ryan Nov 23 2026) broad flush pearl panels make the shell, as on I8_37, and the
+thick lens panes show in the leaf-shaped seams between them.
 Nothing is see-through. Replaces the Nov 1 hull I15_11 (R368).
   python THIS_FILE review TEMP_OUT
   python THIS_FILE layout TEMP_OUT docs/ship_pipeline/build_sheets/ithar_GP1
@@ -29,7 +30,7 @@ SHEET = dict(version=1, round='R337 / issue 1415', date='2026-11-20', stage='blo
 CAMERA = dict(az=58.0, el=42.0, roll=-8.0, scale=33.0)
 CLOSE = dict(daz=-12, del_=6, scale=0.45, target=(0.0, 0, 0.03))
 COMPARE_NOTE = ['Two parallel pane hulls joined by two arched bridges; seafoam stored light on the inner flanks.',
-                'Opaque (R337): mostly glowing panes with narrow pearl ribbons. Lens points at both bows, blister on top.']
+                'Opaque (R337): a pearl shell of flush panels, glowing panes in the seams (R431). Lens points at both bows, blister on top.']
 SIDE_NOTE = 'Two hulls, each about 6.5 to 1, side by side; the bridges arch above the cleft.'
 INSIDE_NOTE = 'Each hull: two shaped glass decks, open annealed frames and three braided light cores, cut at both break lines.'
 
@@ -69,7 +70,7 @@ TWIST = lambda x: 0.035 * x + 0.10 * math.sin(0.30 * x)
 
 def field(side):
     hl = hk('hull')
-    return hl.RibbonField(8, lambda x: side * TWIST(x), sway=0.0, leaf_f=1.1, start=0.15)
+    return hl.RibbonField(8, lambda x: side * TWIST(x), sway=0.10, leaf_f=1.1, start=0.15)   # R431: sway opens leaf seams
 
 
 def light(side):
@@ -127,22 +128,23 @@ def build(K):
         core = hl.mosaic_core(K, '%s_%s_pane_hull' % (CODE, tag), skin, XS, XB, f.gap_of, nu=180, nv=120, thick=0.04,
                               seed=5 if side > 0 else 8, light=light(side))
         K.mass('%s pane hull' % tag.capitalize(), core, 'opaque glowing stained-glass panes',
-               note='One of the two parallel hulls; thick amber, violet and green panes under narrow pearl ribbons.')
-        # Round 2 (Ryan Nov 21, "agree with the prism pods"): no raised ribbons (they read as corn-cob lobes). As the pick,
-        # each pod is big stained-glass panes in a grid of leading: eight flush pearl lines along the pod and a silver ring
-        # round it about every 1.2 units.
+               note='One of the two parallel hulls; flush pearl panels over thick amber, violet and green panes that show in the seams.')
+        # Round 2 (Ryan Nov 21, "agree with the prism pods"): no raised ribbons (they read as corn-cob lobes).
+        # R431 (Ryan Nov 23, "the top is how we want it to look across the board"): the I8_37 treatment. Eight broad flush
+        # pearl panels lie along each pod, so the pod reads as a pearl shell and the stained glass shows only in the narrow
+        # leaf-shaped seams between them (kit rule MOSAIC_MAX); still flush, so no corn cob, and the silver rings stay.
         ribbons = []
         for k in range(f.n):
             ribbons.append(gw.Ribbon(
                 XS + 0.15, XB - 0.30, f.centre(k),
-                lambda t: 0.032 * gw.leaf(0.12, 0.12, 0.5, tip=0.6)(t),
-                lambda t, v: S * (0.012 + 0.016 * (1 - v * v) ** 0.5),
-                name='%s_lead_%d' % (tag, k)))
-        hl.lay_ribbons(K, ribbons, skin, 0.025 * S, 0.018 * S, nu=160, nv=4)
+                lambda t, k=k: (0.30 + 0.02 * math.sin(1.7 * k)) * gw.leaf(0.10, 0.10, 0.5, tip=0.35)(t),
+                lambda t, v: S * (0.014 + 0.018 * (1 - v * v) ** 0.5),
+                name='%s_panel_%d' % (tag, k)))
+        hl.lay_ribbons(K, ribbons, skin, 0.025 * S, 0.018 * S, nu=160, nv=12)
         for j, xr in enumerate([XS + 0.9 + 1.2 * i for i in range(11)]):
             if xr > XB - 0.6:
                 break
-            ring = [skin(xr, hl.TAU * i / 72, -0.01) for i in range(73)]
+            ring = [skin(xr, hl.TAU * i / 72, -0.045 * S) for i in range(73)]   # R431: rides over the pearl panels
             K._obj('%s_%s_ring_%d' % (CODE, tag, j), *hl.tube_mesh(ring, [0.035 * S] * 73, 6), 'gw_silver', smooth=True)
         hl.lance(K, 'L%d' % (1 if side > 0 else 2), (XB - 0.22, side * YP, 0.0), 1.55, 0.36,
                  note='One pulsar lance per hull: a grown lens point at the bow on the hull\'s own axis; fixed forward, F arc.',
