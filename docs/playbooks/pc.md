@@ -134,9 +134,10 @@ through `"%JW%" run`. The head and `contrib/opus/tools/opus_job_head_tests.js` h
 `tools/pc/mission/pc_daemon.js` runs PC jobs straight from pull requests, one at a time. `PC_DAEMON.bat` (double-click)
 is a dry run: it reads GitHub once and prints what it would run. `PC_DAEMON.bat live` runs jobs.
 
-A pull request runs when it is open, from this repo (never a fork), labelled `pc-ready`, its "All checks" run is green at
-its head commit, and its newest "PC go" comment from the owner account names that head commit (RULEBOOK 3.12). The Board
-writes that comment after the review, one comment per run:
+A pull request runs when it is open, from this repo (never a fork), labelled `pc-ready`, its "All checks" run from
+`.github/workflows/checks.yml` on GitHub Actions is green at its head commit, and the newest owner comment that starts
+"PC go" names that head commit and is well formed (RULEBOOK 3.12). A newer malformed one holds the job; an older good one
+never wins. The Board writes that comment after the review, one comment per run:
 
 ```
 PC go: <40-character head commit>
@@ -148,21 +149,27 @@ args: <arguments; {out} is the results folder, {repo} the slot checkout>
 expect: <paths under the results folder that must exist and not be empty>
 ```
 
-Optional lines: `slot: gpu|cpu`, `gpu: shared|solo|none`, `weight: 1-8`, `ships: yes|no`, `hulls: <codes>`,
-`headless: yes|no`, `timeout: <seconds, at most 21600>`, `stall: <minutes>`. A push after the go comment refuses the run
-(the label comes off with a note); a new go comment and the label start it again. The daemon never runs the same commit
-and job twice once it has a result (its ledger `voidsworn_test\pc_daemon\ran.txt` and its own done marker on the PR); a
-job cut off before its result does not block a new go. The done marker goes on only with the relay links: a failed relay
-is retried every 30 minutes from the kept attempt without rerunning the job. One live daemon per PC
-(`pc_daemon\daemon.lock`: a lock whose pid still runs is never taken over). A process tree that will not end after five stop requests puts the
-daemon in quarantine: it keeps that slot, GPU claim and profile held and starts nothing until the Board has looked.
+Optional lines: `slot: gpu|cpu`, `gpu: auto|solo|none` (auto: the watchdog's classifier picks; none is for Blender only),
+`ships: yes|no`, `hulls: <codes>`, `headless: yes|no`, `timeout: <seconds, at most 21600>`, `stall: <minutes with no
+output, 5 to 360>`. A cpu slot job does no GPU work: a headless Godot, or a Blender with `gpu: none`. A push after the go
+comment refuses the run (the label comes off with a note); a new go comment and the label start it again.
 
-Per job: `pc-ready` off and `running` on, a new attempt `voidsworn_test\<job>\out_<stamp>_<n>` with results in
-`out_<job>` (the job reads it as `VS_OUT`), the tool preflight, Ryan's options hashed, a warm slot reset to the head
-commit and the built ships copied in (the head's `slot`, `tracked`, `shipcheck`, `shiprecord`, as above), a GPU claim
-through `gpu_slots.js`, the step under the daemon's own watchdog (hard ceiling, stall stop, the whole process tree killed)
-with a throwaway profile in `slots\profiles`, the outputs and options checked, `done.txt`, the slot let go, the relay push,
-a result comment with the links, `running` off. Nothing starts during the Board pause or while Voidsworn runs. It deletes
-only its own throwaway profiles in `voidsworn_test\slots\profiles` (never through a link); the slot reset deletes only in
-`slots`. Stop it between jobs with `voidsworn_test\pc_daemon\stop.txt`. Run 1 still calls the tools_live PowerShell for the
-slot lease, the ships checks, the preflight and the relay; later runs move each one into Node and retire its wrapper.
+Per job: `pc-ready` must come off (else nothing starts), `running` on, a new attempt `voidsworn_test\<job>\out_<stamp>_<n>`
+with results in `out_<job>` (the job reads it as `VS_OUT`), the tool preflight, Ryan's options hashed, a warm slot reset to
+the head commit and the built ships copied in (the head's `slot`, `tracked`, `shipcheck`, `shiprecord`, as above). Right
+before launch the daemon reads the pull request, the go comment, the checks, the Board pause and the game again; any
+change aborts the job (nothing ran, the run key stays free, the slot is let go). The step itself runs through the
+installed watchdog `run_timeout.ps1` in step mode (RULEBOOK 3.5: hard ceiling, idle stop, Job Object kill with proof,
+GPU admission by its classifier, the game-open wait, its own throwaway profile). Then the outputs and options are checked,
+`done.txt`, the slot let go, the relay push, a result comment with the links, `running` off.
+
+The done marker goes on only with the relay links: a failed relay is retried every 30 minutes from the kept attempt,
+never a rerun. Its ledger `voidsworn_test\pc_daemon\ran.txt` keeps start, aborted, the result and delivered apart; only a
+result blocks a new go for that commit and job. One live daemon per PC (an exclusive localhost bind on port 47662 the
+system frees when the process ends), only on `%USERPROFILE%\Downloads\voidsworn_test` with no link anywhere on that path.
+A process tree the watchdog cannot prove gone (KILL FAILED, an orphaned GPU claim, or no end within the ceiling plus the
+waits) is a quarantine: the slot gets `hold.txt`, the daemon writes `pc_daemon\hold.txt` and starts nothing, even after a
+restart, until the Board has looked and removed both. Nothing starts during the Board pause or while Voidsworn runs (or
+when the process list cannot be read). The daemon deletes nothing of its own on the PC. Stop it between jobs with
+`voidsworn_test\pc_daemon\stop.txt`. Run 1 still calls the tools_live PowerShell for the slot lease, the ships checks, the
+preflight, the watchdog and the relay; later runs move each one into Node and retire its wrapper.
