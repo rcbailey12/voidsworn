@@ -264,6 +264,7 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     const cases = [
       ['push', gh => { gh.pullObj = pull(OLD); }, /approval changed/],
       ['newer malformed go', gh => { gh.commentList = [...gh.commentList, owner('PC go: nope')]; }, /approval changed/],
+      ['same job and commit, new arguments', gh => { gh.commentList = [...gh.commentList, owner(goText().replace('--ship A17', '--ship C10'))]; }, /replaced this job spec/],
       ['checks turned red', gh => { gh.runs = green(SHA, 'completed', 'failure'); }, /approval changed/],
       ['closed', gh => { gh.pullObj = { ...pull(), state: 'closed' }; }, /approval changed/],
       ['pause', (gh, vt) => fs.writeFileSync(path.join(vt, 'gpu_go.txt'), 'GPU not cleared: paused by the Board\r\n'), /Board pause/]

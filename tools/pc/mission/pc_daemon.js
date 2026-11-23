@@ -507,7 +507,10 @@ class Daemon {
       const why = this.paused() ? 'the Board pause began' : this.held() ? 'a hold was set' : this.tools.gameRunning() !== false ? 'Voidsworn may be running' : null;
       if (why) { aborted = why; return; }
       const { g } = this.look(n, { claimed: true });
-      if (g.verdict !== 'run' || g.spec.job !== spec.job || g.spec.sha !== sha) aborted = `the approval changed while waiting (${g.why})`;
+      // the whole approved spec must be the same, not only its job and commit (Artoo on a33b94f4: a replacement go for
+      // the same job could change the arguments, outputs or limits while the old command was about to launch)
+      if (g.verdict !== 'run') aborted = `the approval changed while waiting (${g.why})`;
+      else if (JSON.stringify(g.spec) !== JSON.stringify(spec)) aborted = 'the approval changed while waiting (a newer PC go replaced this job spec)';
     });
     await step('run', async () => {
       const { args, cwd } = command(spec, repo, outDir);
