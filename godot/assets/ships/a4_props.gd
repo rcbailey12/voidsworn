@@ -386,6 +386,7 @@ static var _burn_cache := {}
 const DEAD_DIM := 0.6   # a dead hull with no lights: its paint dimmed before any soot
 const OBSIDIAN := Color(0.22, 0.19, 0.28)   # an Eclipse hulk's effective albedo: violet-black obsidian (R420 Law 3)
 const OBSIDIAN_ROUGH := 0.3                 # obsidian keeps a glassy sheen
+const CHITIN_DRY_ROUGH := 0.85              # a dead Chorus hull is dry, matte chitin
 # The burn comes from the faction's own wound profile (fx/faction_looks.json "wound": scorch_col, wreck_soot; PR 1755,
 # issue 1741), the one home for how a faction's hull scorches. Until that block is on main these are its values.
 const WOUND_FALLBACK := {
@@ -498,6 +499,10 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 	var burn := Color(DEAD_DIM, DEAD_DIM, DEAD_DIM).lerp(Color(float(sc[0]), float(sc[1]), float(sc[2])), soot)
 	b.albedo_color = into_band(Color(c.r * burn.r, c.g * burn.g, c.b * burn.b, c.a), mean)
 	b.roughness = minf(1.0, src.roughness * (1.0 + 0.35 * soot))   # soot dulls metal; glass and chitin keep their gloss
+	if fac == "chorus":
+		# dead chitin dries out (Board on PROPS_H, Nov 23: the Chorus wrecks still pop in the field). Its albedo already sits
+		# on the band 3 floor (R420: 0.04 linear is the floor for hulks), so the wet sheen goes instead of more darkening.
+		b.roughness = maxf(b.roughness, CHITIN_DRY_ROUGH)
 	if soot > 0.0:
 		b.detail_enabled = true
 		b.detail_blend_mode = BaseMaterial3D.BLEND_MODE_MUL

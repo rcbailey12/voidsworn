@@ -256,6 +256,10 @@ func _hulk_checks() -> void:
 	var held := weakref(worn)
 	worn = null
 	_report(held.get_ref() == null, "a burnt copy is freed with the last hulk wearing it, not held by the cache")
+	var wet := StandardMaterial3D.new()
+	wet.roughness = 0.2
+	_report(PROPS.derelict(wet, "chorus").roughness >= 0.85 - 1e-4 and PROPS.derelict(wet, "ithar").roughness <= 0.2 + 1e-4,
+		"a Chorus hulk is dry matte chitin; Glasswright glass keeps its gloss")
 
 
 func _board(terrain: Dictionary, holes: Array, units: Array, map: Dictionary, radius: int, seed := 7) -> Node3D:
