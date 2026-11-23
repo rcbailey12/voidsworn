@@ -231,7 +231,9 @@ def silver(name='gw_silver'):
 # Ryan Nov 21: the colours intermixed, "either as the individual tiles or more as streaks among others". The core's
 # marbled colour field (parts.MIX 'marble') gives the veins; on top, about a third of the tiles take another palette
 # colour of their own, so neighbouring tiles mix inside every vein (as the Nov 16 picks' stained glass does).
-TILE_SWAP = 0.26
+# R431 (Ryan Nov 23): I8_37's leaves are one colour each, so no tile swaps outside the old marble mix.
+import os as _os
+TILE_SWAP = 0.26 if _os.environ.get('GW_MIX', 'blocks') == 'marble' else 0.0
 
 
 def tile_swap(nt, tint, cell_colour, glow):
