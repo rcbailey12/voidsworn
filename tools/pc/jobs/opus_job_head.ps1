@@ -72,7 +72,7 @@
 #   survey                                     read only: every job attempt and ship clone under voidsworn_test with its
 #                                              size and what the rules above would do with it. Deletes nothing.
 # Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
-param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'relayfind', 'dropcache', 'droprepo', 'survey', 'slot', 'slothold', 'slotrelease')][string]$Action,
+param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'relayfind', 'dropcache', 'droprepo', 'survey', 'slot', 'slothold', 'slotrelease', 'slotcheck')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$Folder = '')
 $ErrorActionPreference = 'Stop'
 # Issue 1739: sizes say what removal really frees (a hard link shared outside a checkout frees nothing). Optional.
@@ -1174,6 +1174,14 @@ switch ($Action) {
   'slotrelease' {
     # The tail: lets this attempt's slot go (the holder ends) and waits up to 30 s for the lease to be free.
     Exit-Slot ([IO.Path]::GetFullPath($A).TrimEnd('\', '/'))
+  }
+  'slotcheck' {
+    # Read only (issue 1662, the PC daemon): the live proof that this attempt still holds its slot (Test-SlotHeld: the
+    # holder process with its start time, owner.txt naming the token, the lease file locked now). Prints
+    # "held <slot>|<token>"; fails otherwise.
+    $h = Get-HeldSlot ([IO.Path]::GetFullPath($A).TrimEnd('\', '/'))
+    if (-not $h) { throw "no slot recorded for $A" }
+    Write-Output "held $($h.Dir)|$($h.Token)"
   }
 
   'tracked' {

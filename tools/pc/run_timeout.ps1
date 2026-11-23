@@ -413,14 +413,14 @@ function Stop-StepTree($Job, $Log, $Step) {
     $usage = $Job.ReadUsage()
     if (-not $usage.Active) {
       Write-KillLog $Log "$Step kill verified: all $($usage.Total) processes gone (root PID $($Job.Pid))"
-      $script:rec.treeEmpty = $true
+      Set-StepRec treeEmpty ($true)
       return
     }
     if ($simulateFailedKill) { break }
     Start-Sleep -Milliseconds 50
   } while ($clock.Elapsed.TotalSeconds -lt 15)
   $survivors = ($Job.ActivePids() | Sort-Object) -join ', '
-  $script:rec.treeEmpty = $false
+  Set-StepRec treeEmpty ($false)
   throw "KILL FAILED: surviving PIDs $survivors for $Step"
 }
 function Protect-GpuStepClaim($Job, $Log) {
@@ -428,7 +428,7 @@ function Protect-GpuStepClaim($Job, $Log) {
   while ($true) {
     $processes = @()
     try {
-      if (-not $Job.ReadUsage().Active) { $script:rec.treeEmpty = $true; return }
+      if (-not $Job.ReadUsage().Active) { Set-StepRec treeEmpty ($true); return }
       foreach ($id in $Job.ActivePids()) {
         try { $child = [Diagnostics.Process]::GetProcessById([int]$id) }
         catch [ArgumentException] { continue }
@@ -436,7 +436,7 @@ function Protect-GpuStepClaim($Job, $Log) {
       }
       $survivors = @($processes | Where-Object { -not $_.HasExited -and $Job.IsMember($_.Handle) })
       if ($survivors.Count) {
-        $script:rec.treeEmpty = $false
+        Set-StepRec treeEmpty ($false)
         Update-GpuClaim orphan $survivors
         Write-KillLog $Log "GPU: retaining claim $gpuToken as orphaned_child for PIDs $($survivors.Id -join ', ')"
         return
@@ -473,7 +473,7 @@ function New-GodotProfile($Target, $Arguments) {
   $profile = Join-Path $scratch ("godot-profile-" + [Guid]::NewGuid().ToString('N'))
   $null = New-Item -ItemType Directory -Path $profile
   $script:createdProfile = $profile
-  $script:rec.profile = $profile
+  Set-StepRec profile ($profile)
   if ($env:PC_GODOT_EXPORT_TEMPLATES -and $Arguments -match '(?:^|\s)--export-release\s') {
     # Exporting needs these shared tools, but does not need the player's user data.
     $templates = $env:PC_GODOT_EXPORT_TEMPLATES
@@ -534,7 +534,7 @@ function Remove-CreatedProfile {
       [IO.File]::Delete((Join-Path $script:createdScratch '.voidsworn-run-owner'))
       [IO.Directory]::Delete($script:createdScratch, $false)
     }
-    $script:rec.profileRemoved = $true
+    Set-StepRec profileRemoved ($true)
     Write-Output "run_timeout: Godot profile removed: $($script:createdProfile)"
   } catch { Write-Output "run_timeout: Godot profile kept for the janitor ($($script:createdProfile)): $($_.Exception.Message)" }
   $script:createdProfile = $null; $script:createdScratch = $null
@@ -557,18 +557,24 @@ function Start-WithGodotProfile($Profile, [scriptblock]$Start) {
     foreach ($k in $saved.Keys) { [Environment]::SetEnvironmentVariable($k, $saved[$k]) }
   }
 }
+function Set-StepRec($Key, $Value) {
+  # The step record exists only in a normal (not -LibraryOnly) run; library callers keep their own variables untouched.
+  if ($null -ne $script:pcStepRec) { $script:pcStepRec[$Key] = $Value }
+}
 function Write-StepRecord {
   # PC_STEP_RECORD (the PC daemon, issue 1662): the watchdog's own account of the step, separate from the child's
   # output, so a log line that quotes an old failure can never set a quarantine (Astra finding F). treeEmpty is true
   # only when the Job Object was seen empty (or the step never started); anything else means the tree is unproven.
-  if (-not $script:rec.started -and $null -eq $script:rec.treeEmpty) { $script:rec.treeEmpty = $true }
+  if (-not $script:pcStepRec.started -and $null -eq $script:pcStepRec.treeEmpty) { $script:pcStepRec.treeEmpty = $true }
   $tmp = $script:stepRecord + '.tmp'
-  [IO.File]::WriteAllText($tmp, ($script:rec | ConvertTo-Json -Compress))
+  [IO.File]::WriteAllText($tmp, ($script:pcStepRec | ConvertTo-Json -Compress))
   if (Test-Path -LiteralPath $script:stepRecord) { [IO.File]::Replace($tmp, $script:stepRecord, $null) }
   else { [IO.File]::Move($tmp, $script:stepRecord) }
 }
-$script:rec = [ordered]@{ version = 1; exit = $null; reason = ''; started = $false; treeEmpty = $null; gated = ''; profile = ''; profileRemoved = $false }
 if ($LibraryOnly) { return }
+# pc-step-settings: 1
+# (the PC daemon checks for the line above before it launches anything: a watchdog without these settings is refused)
+$script:pcStepRec = [ordered]@{ version = 1; exit = $null; reason = ''; started = $false; treeEmpty = $null; gated = ''; profile = ''; profileRemoved = $false }
 # Opt-in step settings of the PC daemon (issue 1662). Read once here and cleared before the child starts, so a nested
 # tmo.bat inside the job never inherits them. Unset, the watchdog behaves exactly as before.
 $script:stepRecord = $env:PC_STEP_RECORD
@@ -667,7 +673,7 @@ if ($gpuMode -eq 'solo' -and $env:PC_GPU_SOLO_MAX_S) {
 if ($gpuMode) {
   if (-not $gpuClass.label) {
     Write-Output 'GPU: set PC_GPU_ISSUE or JOB_DIR, or pass the script name for admission'
-    $script:rec.exit = 126; $script:rec.reason = 'GPU admission: no label'
+    Set-StepRec exit (126); Set-StepRec reason ('GPU admission: no label')
     exit 126
   }
   Write-Output "GPU: waiting for $gpuMode claim, weight $($gpuClass.weight) ($($gpuClass.label))"
@@ -689,7 +695,7 @@ if ($gpuMode) {
   } finally { $ErrorActionPreference = $ea }
   if ($admissionExit -ne 0 -or -not $gpuToken) {
     Write-Output 'GPU: admission failed; command was not started'
-    $script:rec.exit = 126; $script:rec.reason = 'GPU admission failed'
+    Set-StepRec exit (126); Set-StepRec reason ('GPU admission failed')
     exit 126
   }
   Write-Output "GPU: acquired $gpuMode claim $gpuToken"
@@ -707,7 +713,7 @@ if (-not $watch -and $gateJs) {
   finally { $ErrorActionPreference = $ea }
   if ($gateExit -ne 0) {
     if (-not $gateText) { $gateText = "launch gate exit $gateExit" }
-    $script:rec.gated = $gateText; $script:rec.exit = 125; $script:rec.reason = 'launch gate said no'
+    Set-StepRec gated ($gateText); Set-StepRec exit (125); Set-StepRec reason ('launch gate said no')
     Write-Output "run_timeout: launch gate said no (exit $gateExit): $gateText"
     Write-KillLog $log "GATED $stepName ($Exe): $gateText"
     exit 125
@@ -753,11 +759,11 @@ if (-not $watch) {
       }
       $timer = [Diagnostics.Stopwatch]::StartNew()
       $mayBeRunning = $true
-      $script:rec.started = $true
+      Set-StepRec started ($true)
       $job.Resume()
     } catch {
       Write-KillLog $log "START FAILED $stepName ($Exe): $($_.Exception.Message)"
-      $script:rec.exit = 125; $script:rec.reason = "START FAILED: $($_.Exception.Message)"
+      Set-StepRec exit (125); Set-StepRec reason ("START FAILED: $($_.Exception.Message)")
       exit 125
     }
     $lastProgress = 0.0
@@ -786,9 +792,9 @@ if (-not $watch) {
         $finished = $true
         $retainGpuClaim = $false # GPU steps reach this branch only with an empty job.
         $keepSpool = [bool]$usage.Active
-        $script:rec.treeEmpty = -not $keepSpool
+        Set-StepRec treeEmpty (-not $keepSpool)
         if ($keepSpool) { Write-Output "run_timeout: background output continues in $spool" }
-        $script:rec.exit = $p.ExitCode; $script:rec.reason = 'exited'
+        Set-StepRec exit ($p.ExitCode); Set-StepRec reason ('exited')
         exit $p.ExitCode
       }
       if ($elapsed -ge $Seconds) { $reason = 'CEILING'; break }
@@ -817,7 +823,7 @@ if (-not $watch) {
       Write-KillLog $log $_.Exception.Message
     }
     Write-KillLog $log "TIMEOUT $stepName ($Exe): $reason at $stoppedAfter s (ceiling $Seconds s). Child logs: $spool"
-    $script:rec.exit = 124; $script:rec.reason = "TIMEOUT $reason at $stoppedAfter s"
+    Set-StepRec exit (124); Set-StepRec reason ("TIMEOUT $reason at $stoppedAfter s")
     exit 124
   } finally {
     try {

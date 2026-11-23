@@ -134,7 +134,13 @@ function parseGo(body) {
 // Returns { verdict, why, spec }: run (start it), wait (look again later), refuse (tell the PR once, take the label off),
 // skip (already done or not ours; say nothing). claimed: the recheck right before launch, after this daemon took the
 // pc-ready label off itself and before any result exists.
-function gate({ pull, comments, complete = true, checkRuns, workflowRuns = [], ledger = new Set(), owners = OWNERS, repo = REPO, claimed = false }) {
+// The newest checks.yml run at a commit, newest attempt first (its jobs are read for that attempt).
+function newestChecksRun(workflowRuns, sha) {
+  const num = v => Number(v) || 0;
+  return workflowRuns.filter(w => w.path === CHECKS_WORKFLOW && w.head_sha === sha)
+    .sort((a, b) => num(b.run_number) - num(a.run_number) || num(b.run_attempt) - num(a.run_attempt) || String(b.created_at || '').localeCompare(String(a.created_at || '')))[0] || null;
+}
+function gate({ pull, comments, complete = true, workflowRuns = [], jobs = [], ledger = new Set(), owners = OWNERS, repo = REPO, claimed = false }) {
   const sha = pull?.head?.sha;
   if (!pull || pull.state !== 'open') return { verdict: 'skip', why: 'not open' };
   if (pull.head?.repo?.full_name !== repo) return { verdict: 'refuse', why: 'the branch is on a fork; the PC never runs fork code' };
@@ -151,17 +157,14 @@ function gate({ pull, comments, complete = true, checkRuns, workflowRuns = [], l
   if (go.sha !== sha) return { verdict: 'refuse', why: `the newest PC go names ${go.sha.slice(0, 8)} but the head is ${sha.slice(0, 8)}; a later push needs green checks and a review again (RULEBOOK 3.12)` };
   if (go.error) return { verdict: 'refuse', why: 'the newest PC go comment is not usable: ' + go.error };
   if (!claimed && (done.has(sha + ' ' + go.job) || ledger.has(sha + ' ' + go.job))) return { verdict: 'skip', why: `${go.job} already ran at ${sha.slice(0, 8)}` };
-  // The newest checks.yml run at this commit (and its newest attempt) decides, through its own "All checks" (Astra run 2,
-  // item 8): an older green run never stands in for a newer run that has not reached its aggregate yet.
-  const num = v => Number(v) || 0;
-  const wr = workflowRuns.filter(w => w.path === CHECKS_WORKFLOW && w.head_sha === sha)
-    .sort((a, b) => num(b.run_number) - num(a.run_number) || num(b.run_attempt) - num(a.run_attempt) || String(b.created_at || '').localeCompare(String(a.created_at || '')))[0];
+  // The newest checks.yml run at this commit and its newest attempt decide, through that attempt's own "All checks" job
+  // (Astra runs 2 and 3, item 8): an older green run, or an earlier attempt of a rerun, never stands in.
+  const wr = newestChecksRun(workflowRuns, sha);
   if (!wr) return { verdict: 'wait', why: `no ${CHECKS_WORKFLOW} run at ${sha.slice(0, 8)} yet`, spec: go };
   if (wr.status !== 'completed') return { verdict: 'wait', why: `the newest ${CHECKS_WORKFLOW} run is ${wr.status}`, spec: go };
   if (wr.conclusion !== 'success') return { verdict: 'refuse', why: `the newest ${CHECKS_WORKFLOW} run ended ${wr.conclusion} at ${sha.slice(0, 8)}` };
-  const run = checkRuns.filter(r => r.name === CHECK_NAME && r.head_sha === sha && r.app?.slug === 'github-actions' && r.check_suite?.id === wr.check_suite_id)
-    .sort((a, b) => String(b.started_at || '').localeCompare(String(a.started_at || '')))[0];
-  if (!run) return { verdict: 'wait', why: `no "${CHECK_NAME}" in the newest ${CHECKS_WORKFLOW} run at ${sha.slice(0, 8)}`, spec: go };
+  const run = jobs.find(j => j.name === CHECK_NAME && j.run_id === wr.id && Number(j.run_attempt || 1) === Number(wr.run_attempt || 1) && j.head_sha === sha);
+  if (!run) return { verdict: 'wait', why: `no "${CHECK_NAME}" job in attempt ${wr.run_attempt || 1} of the newest ${CHECKS_WORKFLOW} run at ${sha.slice(0, 8)}`, spec: go };
   if (run.status !== 'completed') return { verdict: 'wait', why: `"${CHECK_NAME}" is ${run.status}`, spec: go };
   if (run.conclusion !== 'success') return { verdict: 'refuse', why: `"${CHECK_NAME}" ended ${run.conclusion} at ${sha.slice(0, 8)}` };
   return { verdict: 'run', why: 'green checks, review named, PC go at the head commit', spec: go };
@@ -264,7 +267,7 @@ class GhCli {
   readyPulls() { return this.pages(`repos/${this.repo}/issues?state=open&labels=${READY}`).items.filter(i => i.pull_request).map(i => i.number); }
   pull(n) { return this.api([`repos/${this.repo}/pulls/${n}`]); }
   comments(n) { return this.pages(`repos/${this.repo}/issues/${n}/comments`); }
-  checkRuns(sha) { return this.pages(`repos/${this.repo}/commits/${sha}/check-runs?check_name=${encodeURIComponent(CHECK_NAME)}`, 'check_runs').items; }
+  runJobs(runId, attempt) { return this.pages(`repos/${this.repo}/actions/runs/${runId}/attempts/${attempt || 1}/jobs`, 'jobs').items; }
   workflowRuns(sha) { return this.pages(`repos/${this.repo}/actions/runs?head_sha=${sha}`, 'workflow_runs').items; }
   addLabel(n, label) { this.api(['-X', 'POST', `repos/${this.repo}/issues/${n}/labels`], { labels: [label] }); }
   removeLabel(n, label) { this.api(['-X', 'DELETE', `repos/${this.repo}/issues/${n}/labels/${encodeURIComponent(label)}`]); }
@@ -321,7 +324,7 @@ class PcTools {
   }
   ps(script, args, { env = {}, timeoutMs = 1800000, log } = {}) {
     const r = this.run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, ...args],
-      { encoding: 'utf8', timeout: timeoutMs, windowsHide: true, env: { ...process.env, ...env }, maxBuffer: 64 << 20 });
+      { encoding: 'utf8', timeout: timeoutMs, windowsHide: true, env: { ...process.env, ...(this.testEnv || {}), ...env }, maxBuffer: 64 << 20 });
     const text = `${r.stdout || ''}${r.stderr || ''}`;
     if (log) fs.appendFileSync(log, `> ${path.basename(script)} ${args.join(' ')}\n${text}`);
     if (r.status !== 0) throw new Error(`${path.basename(script)} ${args[0]} failed (exit ${r.status}): ${text.trim().split(/\r?\n/).slice(-3).join(' | ')}`);
@@ -331,10 +334,15 @@ class PcTools {
   // The attempt's tools version, checked against its own hashes.txt by the head's bundle check (tmo.bat,
   // run_timeout.ps1, opus_job_head.bat and .ps1; RULEBOOK 3.5's strict watchdog check), then pinned: every later call of
   // the attempt uses that same version even if a refresh moves current.txt meanwhile (Astra run 2, item D).
+  // The verified watchdog must also carry the daemon's step settings (its "# pc-step-settings: 1" line; Astra run 3,
+  // item G): an older installed watchdog would run without the launch gate, the tree wait or the profile in the slot.
   pin(log) {
     this.pinned = null;
     const pc = this.pc();
     this.ps(path.join(pc, 'jobs', 'opus_job_head.ps1'), ['bundle', 'daemon', pc, path.join(path.dirname(pc), 'hashes.txt')], { log, timeoutMs: 120000 });
+    if (!/^# pc-step-settings: 1\r?$/m.test(fs.readFileSync(path.join(pc, 'run_timeout.ps1'), 'utf8'))) {
+      throw new Error(`the installed watchdog ${path.join(pc, 'run_timeout.ps1')} has no PC daemon step settings; refresh tools_live from a main that has them`);
+    }
     this.pinned = pc;
     return pc;
   }
@@ -370,28 +378,46 @@ class PcTools {
     if (!lines.includes(`token ${token}`)) throw new Error(`${dir}\\owner.txt does not name this attempt's token`);
     if (!lines.some(l => l.startsWith('attempt ') && same(l.slice(8), attempt))) throw new Error(`${dir}\\owner.txt does not name this attempt`);
     if (lines.some(l => l.startsWith('released'))) throw new Error(`the lease on ${dir} was already let go`);
-    if (!/^held \d+ \d+/.test(fs.readFileSync(path.join(dir, `holder_${token}.txt`), 'utf8').trim())) throw new Error(`no holder answers for ${dir}`);
+    this.slotCheck(attempt, { dir, token });
     return { dir, token };
+  }
+  // The slot helper's own live proof (opus_job_head.ps1 slotcheck: Test-SlotHeld, the holder process and its start
+  // time, owner.txt naming the token, the lease file locked now), for this attempt's lease (Astra run 3, item 5).
+  slotCheck(attempt, lease, log) {
+    const out = this.head(['slotcheck', attempt], { log, timeoutMs: 120000 });
+    const m = /^held (.+)\|([0-9a-f]{32})\s*$/m.exec(out);
+    if (!m || path.resolve(m[1]).toLowerCase() !== path.resolve(lease.dir).toLowerCase() || m[2] !== lease.token) {
+      throw new Error(`the slot helper does not prove ${lease.dir} held by this attempt: ${out.trim().slice(-200)}`);
+    }
   }
   // Before the step starts, the slot is set aside with hold.txt naming this attempt (Enter-Slot skips a slot with
   // hold.txt). If the daemon stops mid-step, the slot holder lets the lease go with the daemon's process, but the
   // marker keeps every later job out of a slot whose step may still run, until the Board has looked (Astra run 2,
   // item 4). Also makes the step's own scratch folder beside the slot repo. Returns { marker, text, scratch }.
   inFlight(lease, attempt) {
+    // the scratch folder is ready and checked before the marker exists, so a failure here strands nothing (item I)
+    const scratch = path.join(lease.dir, 'run_scratch');
+    fs.mkdirSync(scratch, { recursive: true });
+    plainChain(scratch);
     const marker = path.join(lease.dir, 'hold.txt');
     const text = `pc_daemon in flight: attempt ${attempt} token ${lease.token}\r\n` +
       `set by pc_daemon.js ${new Date().toISOString()}. If no daemon is running this attempt, its step may still be running here.\r\n` +
       'The daemon removes this file itself only after the watchdog proved the step gone; otherwise the Board removes it once it has looked.\r\n';
     fs.writeFileSync(marker, text, { flag: 'wx' });
-    const scratch = path.join(lease.dir, 'run_scratch');
-    fs.mkdirSync(scratch, { recursive: true });
-    plainChain(scratch);
-    return { marker, text, scratch };
+    return { marker, text, scratch, lease, attempt };
   }
   clearInFlight(f) {
-    // only the exact marker this attempt wrote: anything added to it (a quarantine, the Board) keeps it
-    if (fs.readFileSync(f.marker, 'utf8') !== f.text) throw new Error(`${f.marker} changed since the daemon wrote it; kept`);
-    fs.unlinkSync(f.marker);
+    // Only while the slot helper still proves this attempt holds the slot, and only the exact marker this attempt
+    // wrote: it is first renamed aside (one atomic step), so an edit by the Board or a quarantine line can never be
+    // lost between the compare and the delete; a marker that differs is put back.
+    this.slotCheck(f.attempt, f.lease);
+    const aside = `${f.marker}.${f.lease.token}.clearing`;
+    fs.renameSync(f.marker, aside);
+    if (fs.readFileSync(aside, 'utf8') !== f.text) {
+      fs.renameSync(aside, f.marker);
+      throw new Error(`${f.marker} changed since the daemon wrote it; kept`);
+    }
+    fs.unlinkSync(aside);
   }
   holdInFlight(f, why) { fs.appendFileSync(f.marker, `QUARANTINE: ${why}\r\nThe Board removes this file once it has looked.\r\n`); }
   ships(attempt, repo, name, hulls, log) {
@@ -432,11 +458,24 @@ class PcTools {
   }
   relay(job, attempt, log) { return this.ps(path.join(this.pc(), 'relay_push.ps1'), [job, attempt], { log, timeoutMs: 3 * 3600000 }); }
   gameRunning() {
-    // Ryan playing (R173): true, false, or null when the process list could not be read (the caller waits on null)
-    const r = this.run('tasklist', ['/FI', 'IMAGENAME eq Voidsworn*', '/FO', 'CSV', '/NH'], { encoding: 'utf8', timeout: 30000, windowsHide: true });
+    // Ryan playing (R173), read as the watchdog reads it (run_timeout.ps1 Test-RyanPlaying; Astra run 3, item 6): any
+    // Voidsworn*.exe or Godot*.exe that is not a console copy and has no job argument after its --path. true, false,
+    // or null when the process list could not be read (the caller holds on null).
+    const ps = "Get-CimInstance Win32_Process -Filter \"Name LIKE 'Voidsworn%.exe' OR Name LIKE 'Godot%.exe'\" | " +
+      "ForEach-Object { [pscustomobject]@{ n = [string]$_.Name; c = [string]$_.CommandLine } } | ConvertTo-Json -Compress";
+    const r = this.run('powershell.exe', ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from('$ErrorActionPreference = "Stop"; @(' + ps + ')', 'utf16le').toString('base64')],
+      { encoding: 'utf8', timeout: 60000, windowsHide: true });
     if (r.status !== 0) return null;
-    return /Voidsworn/i.test(String(r.stdout || ''));
+    let list;
+    try { const t = String(r.stdout || '').trim(); list = t ? JSON.parse(t) : []; } catch { return null; }
+    return (Array.isArray(list) ? list : [list]).some(p => playing(p.n, p.c));
   }
+}
+
+function playing(name, commandLine) {
+  if (/_console\.exe$/i.test(String(name || ''))) return false;
+  const rest = String(commandLine || '').replace(/^\s*("[^"]*"|\S+)/, '').replace(/--path\s+("[^"]*"|\S+)/, '');
+  return !/--?\w/.test(rest);
 }
 
 // ---------------------------------------------------------------------------------------- the one-per-PC lease
@@ -489,7 +528,9 @@ class Daemon {
   // ran.txt lines: "<time> <sha> <job> PR<n> <state> <attempt>", state start, aborted, PASS, FAILED or delivered.
   // An abort (approval changed before launch) does not block a new go; a result does, and a result with no delivered
   // line is relayed and reported again without a rerun. A start with nothing after it from an earlier daemon process
-  // means that daemon stopped mid-job: interrupted() sets the daemon hold for the Board (Astra run 2, item 4).
+  // means that daemon stopped mid-job: interrupted() sets the daemon hold for the Board (Astra run 2, item 4). Once the
+  // Board has checked that attempt's tree is gone, `node pc_daemon.js --clear <attempt>` writes its "cleared" line, so
+  // the next look does not set the hold again (Astra run 3, item H).
   entries() {
     try {
       return fs.readFileSync(this.ledgerFile, 'utf8').split(/\r?\n/).filter(Boolean).map(l => {
@@ -527,23 +568,25 @@ class Daemon {
   // to start, and the job stays eligible (Astra run 2, item C). The watchdog calls it again through --recheck after
   // its game-open wait and GPU admission, right before the start.
   recheck(n, spec) {
-    if (this.paused()) return 'the Board pause began';
-    if (this.held()) return 'a daemon hold was set';
-    const game = this.tools.gameRunning();
-    if (game !== false) return game === null ? 'the process list could not be read, so the game check failed' : 'Voidsworn is running';
     let g;
     try { ({ g } = this.look(n, { claimed: true })); } catch (e) { return `GitHub could not be read for the recheck (${e.message})`; }
     if (g.verdict !== 'run') return `the approval changed while waiting (${g.why})`;
     // the whole approved spec must be the same, not only its job and commit
     if (JSON.stringify(g.spec) !== JSON.stringify(spec)) return 'the approval changed while waiting (a newer PC go replaced this job spec)';
+    // the local checks last, after the GitHub reads, so they are as fresh as they can be at the start
+    if (this.paused()) return 'the Board pause began (or gpu_go.txt could not be read)';
+    if (this.held()) return 'a daemon hold was set';
+    const game = this.tools.gameRunning();
+    if (game !== false) return game === null ? 'the process list could not be read, so the game check failed' : 'the game is open (Voidsworn, or a windowed Godot started with no job arguments)';
     return null;
   }
   look(n, { claimed = false } = {}) {
     const pull = this.gh.pull(n);
     const { items: comments, complete } = this.gh.comments(n);
     const sha = pull?.head?.sha;
-    const checkRuns = sha ? this.gh.checkRuns(sha) : [], workflowRuns = sha ? this.gh.workflowRuns(sha) : [];
-    return { pull, g: gate({ pull, comments, complete, checkRuns, workflowRuns, ledger: this.ledger(), claimed }) };
+    const workflowRuns = sha ? this.gh.workflowRuns(sha) : [], wr = sha ? newestChecksRun(workflowRuns, sha) : null;
+    const jobs = wr ? this.gh.runJobs(wr.id, wr.run_attempt) : [];
+    return { pull, g: gate({ pull, comments, complete, workflowRuns, jobs, ledger: this.ledger(), claimed }) };
   }
   // One look at the board. Returns what it decided per PR, and runs at most one job (live only).
   async tick() {
@@ -615,6 +658,7 @@ class Daemon {
     };
     let exe = null, repo = null;
     try {
+      // the verified tools version stays pinned through the options check, the slot release and the first relay
       await step('tools', () => say(`tools ${this.tools.pin(st)} (hashes verified)`));
       await step('preflight', () => { exe = this.tools.preflight(attempt, [spec.flow], st)[spec.flow]; });
       await step('options before', () => this.tools.hashes(path.join(attempt, 'real_options_before.txt'), st));
@@ -659,10 +703,11 @@ class Daemon {
           catch (e) { say(`the in-flight marker stays: ${e.message}`); }
         }
       }
-    } finally { this.tools.unpin(); }
+    } catch (e) { this.tools.unpin(); throw e; }
     if (!aborted) await step('outputs', () => { const miss = expectMissing(outDir, spec.expect); if (miss.length) throw new Error(`missing or empty: ${miss.join(', ')}`); });
-    // the options check runs even after a failed step: a job that touched Ryan's settings must say so
-    try {
+    // the options check runs even after a failed step: a job that touched Ryan's settings must say so (not with tools
+    // that failed their check)
+    if (!failed.includes('tools')) try {
       const after = this.tools.hashes(path.join(attempt, 'real_options_after.txt'), st);
       const before = fs.readFileSync(path.join(attempt, 'real_options_before.txt'), 'utf8');
       if (before !== after) { failed.push('options'); say("FAILED options: Ryan's real battle_opts.json or board_look.cfg changed during the job"); }
@@ -675,6 +720,7 @@ class Daemon {
       this.note(sha, spec.job, n, 'aborted', attempt);
       this.report(n, () => this.gh.comment(n, `PC daemon (issue 1662): ${spec.job} not started at ${sha.slice(0, 8)}: ${aborted}. Nothing ran. Put the ${READY} label back (with a new "PC go:" comment if the head moved) to try again.`), 'comment');
       this.report(n, () => this.gh.removeLabel(n, RUNNING), `remove ${RUNNING}`);
+      this.tools.unpin();
       return { pass: false, aborted, attempt };
     }
     const pass = failed.length === 0;
@@ -682,7 +728,8 @@ class Daemon {
     say(pass ? 'done PASS' : `done FAILED: ${failed.join(', ')}`);
     writeAtomic(path.join(attempt, 'pc_daemon_result.json'), JSON.stringify({ pr: n, spec, pass, failed, watch, quarantine }, null, 2));
     this.note(sha, spec.job, n, pass ? 'PASS' : 'FAILED', attempt);
-    const links = this.deliver({ sha, job: spec.job, pr: n, attempt });
+    let links;
+    try { links = this.deliver({ sha, job: spec.job, pr: n, attempt }); } finally { this.tools.unpin(); }
     this.report(n, () => this.gh.removeLabel(n, RUNNING), `remove ${RUNNING}`);
     return { pass, failed, attempt, watch, links, quarantine };
   }
@@ -754,6 +801,17 @@ function describe(spec) {
   return `${spec.flow} ${args.join(' ')} | ${spec.slot} slot, gpu ${spec.gpu}, ships ${spec.ships ? 'yes' : 'no'}, ceiling ${spec.ceilingS} s, idle stop ${spec.stallMin} min, expect ${spec.expect.join(' ')}`;
 }
 
+// The Board's word that an interrupted attempt's step is gone (after it looked): node pc_daemon.js --clear <attempt>.
+function clearMain(attemptArg) {
+  const attempt = path.resolve(String(attemptArg || ''));
+  const vt = checkRoot(path.dirname(path.dirname(attempt)), { live: process.platform === 'win32' });
+  const d = new Daemon({ vt, gh: null, tools: null });
+  const e = d.interrupted().find(x => path.resolve(x.attempt).toLowerCase() === attempt.toLowerCase());
+  if (!e) { console.log(`not an interrupted attempt in ${d.ledgerFile}: ${attempt}`); return 2; }
+  d.note(e.sha, e.job, e.pr, 'cleared', e.attempt);
+  console.log(`cleared ${e.job} (PR ${e.pr}) ${e.attempt}; remove pc_daemon\\hold.txt and the slot's hold.txt once the slot is checked`);
+  return 0;
+}
 // The watchdog's launch gate (PC_STEP_GATE_JS): node pc_daemon.js --recheck <attempt>. Exit 0 starts the step; any
 // other exit, or a crash, keeps it from starting.
 function recheckMain(attemptArg) {
@@ -767,6 +825,7 @@ function recheckMain(attemptArg) {
 }
 async function main(argv) {
   if (argv[0] === '--recheck') { process.exitCode = recheckMain(argv[1]); return; }
+  if (argv[0] === '--clear') { process.exitCode = clearMain(argv[1]); return; }
   const live = argv.includes('--live'), once = argv.includes('--once') || !live && !argv.includes('--loop');
   if (live && process.platform !== 'win32') throw new Error('--live runs on Ryan\'s PC only');
   const fallback = process.env.USERPROFILE ? path.join(process.env.USERPROFILE, 'Downloads', 'voidsworn_test') : '';
@@ -782,5 +841,5 @@ async function main(argv) {
   }
 }
 if (require.main === module) main(process.argv.slice(2)).then(() => process.exit(process.exitCode || 0), e => { console.error('PC daemon: ' + e.message); process.exit(1); });
-module.exports = { parseGo, gate, runLogged, readWatchdog, readRecord, winQuote, GhCli, PcTools, Daemon, command, describe, relayLinks,
+module.exports = { parseGo, gate, newestChecksRun, playing, clearMain, runLogged, readWatchdog, readRecord, winQuote, GhCli, PcTools, Daemon, command, describe, relayLinks,
   expectMissing, checkRoot, checkSlotRepo, plainChain, takeLease, recheckMain, DONE_MARK, READY, RUNNING, CHECKS_WORKFLOW };

@@ -23,9 +23,10 @@ ${extra}`;
 let at = 0;
 const owner = body => ({ user: { login: 'rcbailey12' }, author_association: 'OWNER', body, created_at: `2026-11-23T10:${String(at++).padStart(2, '0')}:00Z` });
 const pull = (sha = SHA, fork = false, labels = ['pc-ready']) => ({ number: 7, state: 'open', labels: labels.map(name => ({ name })), head: { sha, repo: { full_name: fork ? 'someone/voidsworn' : 'rcbailey12/voidsworn' } } });
-const green = (sha = SHA, status = 'completed', conclusion = 'success', suite = 11) => [{ name: 'All checks', head_sha: sha, status, conclusion, started_at: '2026-11-23T10:00:00Z', app: { slug: 'github-actions' }, check_suite: { id: suite } }];
+// the "All checks" job of one workflow run attempt (run ids double as suite numbers here)
+const green = (sha = SHA, status = 'completed', conclusion = 'success', run = 11, attempt = 1) => [{ name: 'All checks', head_sha: sha, status, conclusion, run_id: run, run_attempt: attempt }];
 const wf = (sha = SHA, suite = 11, p = d.CHECKS_WORKFLOW, status = 'completed', conclusion = 'success', runNumber = 5) =>
-  [{ path: p, head_sha: sha, check_suite_id: suite, status, conclusion, run_number: runNumber, run_attempt: 1, created_at: '2026-11-23T09:59:00Z' }];
+  [{ id: suite, path: p, head_sha: sha, check_suite_id: suite, status, conclusion, run_number: runNumber, run_attempt: 1, created_at: '2026-11-23T09:59:00Z' }];
 const rec = (o = {}) => ({ version: 1, exit: 0, reason: 'exited', started: true, treeEmpty: true, gated: '', profile: '', profileRemoved: true, ...o });
 let passed = 0;
 async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
@@ -74,25 +75,28 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
   });
 
   // ------------------------------------------------------------------------------------------------- gate
-  const g = (o) => d.gate({ pull: pull(), comments: [owner(goText())], checkRuns: green(), workflowRuns: wf(), ledger: new Set(), ...o });
-  await t('gate: runs only on green checks.yml at the go commit', () => {
+  const g = (o) => d.gate({ pull: pull(), comments: [owner(goText())], jobs: green(), workflowRuns: wf(), ledger: new Set(), ...o });
+  await t('gate: runs only on the green "All checks" job of the newest checks.yml run and attempt', () => {
     assert.equal(g({}).verdict, 'run');
-    assert.equal(g({ checkRuns: [] }).verdict, 'wait');
-    assert.equal(g({ checkRuns: green(SHA, 'in_progress', null) }).verdict, 'wait');
-    assert.equal(g({ checkRuns: green(SHA, 'completed', 'failure') }).verdict, 'refuse');
-    assert.equal(g({ checkRuns: green(OLD) }).verdict, 'wait', 'a green run on another commit counts for nothing');
-    const newest = [...green(SHA, 'completed', 'failure'), { ...green()[0], started_at: '2026-11-23T11:00:00Z' }];
-    assert.equal(g({ checkRuns: newest }).verdict, 'run', 'the newest All checks run decides');
-    assert.equal(g({ workflowRuns: wf(SHA, 11, '.github/workflows/other.yml') }).verdict, 'wait', 'a same-name check from another workflow');
-    assert.equal(g({ workflowRuns: wf(SHA, 12) }).verdict, 'wait', 'a suite that is not checks.yml');
-    assert.equal(g({ checkRuns: [{ ...green()[0], app: { slug: 'some-app' } }] }).verdict, 'wait', 'another check producer');
-    // Astra run 2, item 8: the newest checks.yml run decides, not an older green one
+    assert.equal(g({ jobs: [] }).verdict, 'wait');
+    assert.equal(g({ jobs: green(SHA, 'in_progress', null) }).verdict, 'wait');
+    assert.equal(g({ jobs: green(SHA, 'completed', 'failure') }).verdict, 'refuse');
+    assert.equal(g({ jobs: green(OLD) }).verdict, 'wait', 'a green job on another commit counts for nothing');
+    assert.equal(g({ workflowRuns: wf(SHA, 11, '.github/workflows/other.yml') }).verdict, 'wait', 'a same-name job from another workflow');
+    assert.equal(g({ jobs: green(SHA, 'completed', 'success', 12) }).verdict, 'wait', 'a job from another run');
+    assert.equal(g({ workflowRuns: wf(OLD) }).verdict, 'wait', 'a run at another commit');
+    // the newest run decides, not an older green one
     const rerun = [...wf(SHA, 11), ...wf(SHA, 12, d.CHECKS_WORKFLOW, 'in_progress', null, 6)];
     assert.equal(g({ workflowRuns: rerun }).verdict, 'wait', 'a newer run still going holds the job even with an older green aggregate');
     assert.equal(g({ workflowRuns: [...wf(SHA, 11), ...wf(SHA, 12, d.CHECKS_WORKFLOW, 'completed', 'failure', 6)] }).verdict, 'refuse');
     assert.equal(g({ workflowRuns: [...wf(SHA, 12, d.CHECKS_WORKFLOW, 'completed', 'success', 6), ...wf(SHA, 11, d.CHECKS_WORKFLOW, 'completed', 'failure', 5)],
-      checkRuns: [...green(SHA, 'completed', 'failure', 11), ...green(SHA, 'completed', 'success', 12)] }).verdict, 'run', 'its own aggregate, not the older one');
-    assert.equal(g({ workflowRuns: wf(SHA, 11, d.CHECKS_WORKFLOW, 'completed', 'success') , checkRuns: green(SHA, 'completed', 'success', 99) }).verdict, 'wait', 'no aggregate in the newest run yet');
+      jobs: green(SHA, 'completed', 'success', 12) }).verdict, 'run', 'its own aggregate, not the older one');
+    // a rerun of the same workflow run: attempt 2 decides, never attempt 1's job (Astra run 3, item 8)
+    const second = [{ ...wf()[0], run_attempt: 2 }];
+    assert.equal(g({ workflowRuns: second, jobs: green(SHA, 'completed', 'success', 11, 1) }).verdict, 'wait', 'attempt 1\'s green job does not count for attempt 2');
+    assert.equal(g({ workflowRuns: second, jobs: [...green(SHA, 'completed', 'success', 11, 1), ...green(SHA, 'completed', 'success', 11, 2)] }).verdict, 'run');
+    assert.equal(g({ workflowRuns: [{ ...second[0], status: 'in_progress', conclusion: null }], jobs: green(SHA, 'completed', 'success', 11, 1) }).verdict, 'wait', 'a rerun still going');
+    assert.equal(d.newestChecksRun([...wf(SHA, 11), { ...wf(SHA, 11)[0], run_attempt: 3 }], SHA).run_attempt, 3);
   });
   await t('gate: the newest owner go decides, and must name the head', () => {
     assert.equal(g({ comments: [] }).verdict, 'wait');
@@ -208,6 +212,9 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     // the attempt pins the version its bundle check verified, even if current.txt moves on
     const ran = [];
     const pinTools = new d.PcTools({ vt, run: (exe, args) => { ran.push(args); return { status: 0, stdout: 'verified', stderr: '' }; } });
+    assert.throws(() => pinTools.pin(), /no PC daemon step settings/, 'an older verified watchdog is refused (Astra run 3, item G)');
+    assert.equal(pinTools.pinned, null);
+    fs.writeFileSync(path.join(pc, 'run_timeout.ps1'), 'param()\r\n# pc-step-settings: 1\r\n');
     assert.equal(pinTools.pin(), pc);
     assert.deepEqual(ran[0].slice(4), [path.join(pc, 'jobs', 'opus_job_head.ps1'), 'bundle', 'daemon', pc, path.join(vt, 'tools_live', 'v1', 'hashes.txt')]);
     fs.writeFileSync(path.join(vt, 'tools_live', 'current.txt'), 'v2\r\n');
@@ -222,6 +229,8 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
   await t('slot lease: the receipt must be the leased slot of the asked kind, and the marker is the daemon\'s own', () => {
     const vt = tmp(), attempt = path.join(vt, 'job', 'out_1'); fs.mkdirSync(attempt, { recursive: true });
     const token = 'c'.repeat(32), tools = new d.PcTools({ vt });
+    let live = true; const checks = [];
+    tools.slotCheck = (att, lease) => { checks.push(lease.dir); if (!live) throw new Error('the slot helper does not prove it held'); };
     const mk = (name, tok = token, att = attempt, extra = '') => {
       const dir = path.join(vt, 'slots', name); fs.mkdirSync(path.join(dir, 'repo'), { recursive: true });
       fs.writeFileSync(path.join(dir, 'owner.txt'), `attempt ${att}\r\ntoken ${tok}\r\njob process 1 2\r\nholder 3\r\n${extra}`);
@@ -237,14 +246,41 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     assert.throws(() => tools.slotLease(attempt, path.join(g2, 'repo'), 'gpu'), /token/, 'another attempt\'s lease');
     mk('slot_gpu_1', token, attempt, 'released 2026\r\n'); fs.writeFileSync(path.join(attempt, 'slot.txt'), `${g1}|${token}\r\n`);
     assert.throws(() => tools.slotLease(attempt, path.join(g1, 'repo'), 'gpu'), /let go/);
-    // the in-flight marker: written once, cleared only while it is exactly the daemon's own text
+    fs.writeFileSync(path.join(g1, 'owner.txt'), `attempt ${attempt}\r\ntoken ${token}\r\n`);
+    live = false;
+    assert.throws(() => tools.slotLease(attempt, path.join(g1, 'repo'), 'gpu'), /does not prove/, 'saved files alone are not a held lease');
+    live = true; checks.length = 0;
+    // the in-flight marker: written once, cleared only while the lease is proven live and it is exactly the daemon's text
     const f = tools.inFlight({ dir: g2, token }, attempt);
     assert.ok(fs.existsSync(path.join(g2, 'run_scratch')));
     assert.throws(() => tools.inFlight({ dir: g2, token }, attempt), /EEXIST/, 'never over an existing hold');
-    tools.clearInFlight(f); assert.ok(!fs.existsSync(f.marker));
+    live = false;
+    assert.throws(() => tools.clearInFlight(f), /does not prove/); assert.ok(fs.existsSync(f.marker), 'no live lease, no removal');
+    live = true;
+    tools.clearInFlight(f); assert.ok(!fs.existsSync(f.marker)); assert.deepEqual(checks, [g2, g2]);
     const f2 = tools.inFlight({ dir: g2, token }, attempt);
     tools.holdInFlight(f2, 'survivors');
     assert.throws(() => tools.clearInFlight(f2), /changed/); assert.match(fs.readFileSync(f2.marker, 'utf8'), /QUARANTINE: survivors/);
+    assert.deepEqual(fs.readdirSync(g2).filter(n => /clearing/.test(n)), [], 'a changed marker is put back whole');
+    fs.unlinkSync(f2.marker);
+    // the scratch folder is checked before the marker exists (Astra run 3, item I)
+    const g3 = path.join(vt, 'slots', 'slot_cpu'); fs.mkdirSync(g3, { recursive: true });
+    fs.symlinkSync(tmp(), path.join(g3, 'run_scratch'), process.platform === 'win32' ? 'junction' : 'dir');
+    assert.throws(() => tools.inFlight({ dir: g3, token }, attempt), /plain folder/);
+    assert.ok(!fs.existsSync(path.join(g3, 'hold.txt')), 'no marker stranded');
+  });
+  await t('play check: the watchdog\'s rule, read through one process query', () => {
+    assert.equal(d.playing('Voidsworn.exe', '"C:\\Games\\Voidsworn.exe"'), true);
+    assert.equal(d.playing('Godot_v4.7.exe', '"C:\\Godot\\Godot_v4.7.exe" --path "C:\\vs\\godot"'), true, 'a windowed Godot with only --path is play');
+    assert.equal(d.playing('Godot_v4.7.exe', 'Godot_v4.7.exe --path C:\\slot\\godot --headless --script x.gd'), false, 'a job');
+    assert.equal(d.playing('Godot_v4.7_console.exe', 'Godot_v4.7_console.exe'), false);
+    assert.equal(d.playing('Voidsworn.exe', ''), true, 'an unreadable command line counts as play');
+    const answer = out => new d.PcTools({ vt: tmp(), run: () => out });
+    assert.equal(answer({ status: 0, stdout: '' }).gameRunning(), false);
+    assert.equal(answer({ status: 0, stdout: JSON.stringify({ n: 'Godot.exe', c: 'Godot.exe' }) }).gameRunning(), true);
+    assert.equal(answer({ status: 0, stdout: JSON.stringify([{ n: 'Godot.exe', c: 'Godot.exe --headless' }]) }).gameRunning(), false);
+    assert.equal(answer({ status: 1, stdout: '' }).gameRunning(), null);
+    assert.equal(answer({ status: 0, stdout: '{broken' }).gameRunning(), null);
   });
   await t('lease: one daemon per PC, freed when its process ends', async () => {
     const port = 47000 + Math.floor(Math.random() * 900);
@@ -293,7 +329,7 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     };
     gh.comments = function () { return { items: this.commentList, complete: true }; };
     gh.commentList = comments;
-    gh.checkRuns = function () { return this.runs; };
+    gh.runJobs = function (id, attempt) { assert.equal(id, 11); assert.equal(attempt, 1); return this.runs; };
     gh.workflowRuns = function () { return this.workflow; };
     let opt = 0;
     const step = (name, fn) => (...a) => { calls.push(name); if (failStep === name) throw new Error('fake ' + name + ' failure'); return fn(...a); };
@@ -307,7 +343,7 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
       unpin: () => {},
       slotLease: step('slotLease', (attempt, repo) => ({ dir: path.dirname(repo), token: 'e'.repeat(32) })),
       inFlight: step('inFlight', (lease, attempt) => d.PcTools.prototype.inFlight(lease, attempt)),
-      clearInFlight: step('clearInFlight', f => d.PcTools.prototype.clearInFlight(f)),
+      clearInFlight: step('clearInFlight', f => d.PcTools.prototype.clearInFlight.call({ slotCheck: () => {} }, f)),
       holdInFlight: step('holdInFlight', (f, why) => d.PcTools.prototype.holdInFlight(f, why)),
       watchdog: step('watchdog', async o => {
         watchArgs = o;
@@ -493,6 +529,18 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     fs.mkdirSync(path.join(ok.vt, 'pc_daemon'));
     fs.writeFileSync(path.join(ok.vt, 'pc_daemon', 'ran.txt'), `t ${OLD} lb_1777 PR7 start A1\r\nt ${OLD} lb_1777 PR7 aborted A1\r\n`);
     assert.equal((await ok.daemon.tick())[0].verdict, 'run');
+    // the Board's clearance of that attempt lets the next look go on (Astra run 3, item H)
+    fs.unlinkSync(path.join(f.vt, 'pc_daemon', 'hold.txt'));
+    f.daemon.note(SHA, 'lb_1777', 7, 'cleared', 'C:\\vt\\lb_1777\\out_1');
+    assert.equal((await f.daemon.tick())[0].verdict, 'run'); assert.ok(f.calls.includes('watchdog'));
+    if (process.platform !== 'win32') {
+      const c = fakes(), a2 = path.join(c.vt, 'lb_1777', 'out_9');
+      fs.mkdirSync(path.join(c.vt, 'pc_daemon'));
+      fs.writeFileSync(path.join(c.vt, 'pc_daemon', 'ran.txt'), `t ${SHA} lb_1777 PR7 start ${a2}\r\n`);
+      const log = console.log; console.log = () => {};
+      try { assert.equal(d.clearMain(a2), 0); assert.equal(d.clearMain(a2), 2, 'only an interrupted attempt'); } finally { console.log = log; }
+      assert.deepEqual(c.daemon.interrupted(), []);
+    }
     const dry = fakes(); dry.daemon.live = false;
     fs.mkdirSync(path.join(dry.vt, 'pc_daemon'));
     fs.writeFileSync(path.join(dry.vt, 'pc_daemon', 'ran.txt'), `t ${SHA} lb_1777 PR7 start A1\r\n`);
@@ -567,10 +615,21 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
       fs.mkdirSync(path.join(pc, 'jobs'), { recursive: true });
       fs.copyFileSync(path.join(src, 'run_timeout.ps1'), path.join(pc, 'run_timeout.ps1'));
       fs.copyFileSync(path.join(src, 'gpu_slots.js'), path.join(pc, 'gpu_slots.js'));
-      for (const f of ['jobs/opus_job_head.ps1', 'relay_push.ps1', 'runner_common.ps1']) fs.writeFileSync(path.join(pc, f), '');
+      fs.copyFileSync(path.join(src, 'jobs', 'opus_job_head.ps1'), path.join(pc, 'jobs', 'opus_job_head.ps1'));
+      for (const f of ['relay_push.ps1', 'runner_common.ps1']) fs.writeFileSync(path.join(pc, f), '');
       fs.writeFileSync(path.join(vt, 'tools_live', 'current.txt'), 'v1\r\n');
-      const scratch = path.join(vt, 'slots', 'slot_cpu', 'run_scratch'); fs.mkdirSync(scratch, { recursive: true });
-      const outDir = path.join(vt, 'job', 'out_1', 'out_job'); fs.mkdirSync(outDir, { recursive: true });
+      const attempt = path.join(vt, 'job', 'out_1'), outDir = path.join(attempt, 'out_job'); fs.mkdirSync(outDir, { recursive: true });
+      // a real slot lease: the head's own holder process, owned by this test process, holding slot_cpu's lease file
+      const slotDir = path.join(vt, 'slots', 'slot_cpu'); fs.mkdirSync(path.join(slotDir, 'repo'), { recursive: true });
+      const token = require('crypto').randomBytes(16).toString('hex');
+      const ticks = require('child_process').execFileSync('powershell.exe', ['-NoProfile', '-Command', `(Get-Process -Id ${process.pid}).StartTime.ToUniversalTime().Ticks`], { encoding: 'utf8' }).trim();
+      const holder = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(pc, 'jobs', 'opus_job_head.ps1'), 'slothold'],
+        { stdio: 'ignore', windowsHide: true, env: { ...process.env, PC_TEST_HELPER: '1', PC_TEST_HELPER_VT: vt, OJ_SLOT_DIR: slotDir, OJ_SLOT_TOKEN: token,
+          OJ_SLOT_OWNER: String(process.pid), OJ_SLOT_OWNER_START: ticks, OJ_SLOT_ATTEMPT: attempt } });
+      const holderExit = new Promise(r => holder.once('exit', r));
+      const ready = path.join(slotDir, `holder_${token}.txt`);
+      for (let i = 0; i < 600 && !(fs.existsSync(ready) && /^held /.test(fs.readFileSync(ready, 'utf8'))); i++) await new Promise(r => setTimeout(r, 100));
+      fs.writeFileSync(path.join(attempt, 'slot.txt'), `${slotDir}|${token}\r\n`);
       const later = path.join(vt, 'grandchild_done.txt');
       const standin = path.join(vt, 'standin.js');
       fs.writeFileSync(standin, `const fs = require('fs'), { spawn } = require('child_process');
@@ -582,7 +641,9 @@ spawn(process.execPath, ['-e', 'setTimeout(() => require("fs").writeFileSync(' +
       fs.writeFileSync(gateOk, 'console.log("go: test")');
       fs.writeFileSync(gateNo, 'console.log("not started: test gate"); process.exit(3)');
       const tools = new d.PcTools({ vt, testEnv: { PC_RUNNER_TEST: '1', PC_TEST_TIMEOUT_LOG: path.join(vt, 'timeouts.log'),
-        PC_TEST_GPU_ROOT: path.join(vt, 'gpu'), PC_CLEANUP_PAUSE_FILE: path.join(vt, 'no_pause.txt') } });
+        PC_TEST_GPU_ROOT: path.join(vt, 'gpu'), PC_CLEANUP_PAUSE_FILE: path.join(vt, 'no_pause.txt'), PC_TEST_HELPER: '1', PC_TEST_HELPER_VT: vt } });
+      const lease = tools.slotLease(attempt, path.join(slotDir, 'repo'), 'cpu'); // the head's live proof, not saved files
+      const flight = tools.inFlight(lease, attempt), scratch = flight.scratch;
       const spaced = path.join(vt, 'a dir') + '\\';
       const args = [standin, spaced, '--next', 'plain'];
       const run = (record, gateJs) => tools.watchdog({ exe: process.execPath, args, cwd: vt, env: { ...process.env }, ceilingS: 120, stallMin: 5,
@@ -601,12 +662,20 @@ spawn(process.execPath, ['-e', 'setTimeout(() => require("fs").writeFileSync(' +
       assert.equal(rec1.profileRemoved, true); assert.ok(!fs.existsSync(rec1.profile));
       assert.deepEqual(fs.readdirSync(scratch), [], 'the profile, its run folder and the child logs are all gone');
       assert.equal(d.readWatchdog(r1, rec1, scratch).ok, true);
+      // the lease is still live after the descendant ended, so the marker comes off under the head's proof
+      tools.clearInFlight(flight); assert.ok(!fs.existsSync(flight.marker));
       fs.unlinkSync(path.join(outDir, 'seen.json'));
       const r2 = await run(path.join(vt, 'rec2.json'), gateNo);
       const rec2 = d.readRecord(path.join(vt, 'rec2.json'));
       assert.equal(r2.code, 125); assert.equal(rec2.started, false); assert.match(rec2.gated, /not started: test gate/);
       assert.ok(!fs.existsSync(path.join(outDir, 'seen.json')), 'the gate stopped the start');
       assert.match(d.readWatchdog(r2, rec2, scratch).gated, /test gate/);
+      // once the lease is let go, nothing proves it held: no marker removal
+      const f3 = tools.inFlight(lease, attempt);
+      fs.writeFileSync(path.join(slotDir, `release_${token}`), 'release\r\n');
+      await holderExit;
+      assert.throws(() => tools.clearInFlight(f3), /slotcheck failed|does not prove/);
+      assert.ok(fs.existsSync(f3.marker), 'kept for the Board');
     });
   }
   console.log(`PASS: pc_daemon ${passed} checks (go comment, gate, step runner, watchdog contract, lease, paths, daemon order, recheck, failures, quarantine, delivery, commands, gh calls)`);
