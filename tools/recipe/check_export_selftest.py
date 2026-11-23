@@ -33,6 +33,7 @@
 #                   twice the size its maps were written at
 #   maps_oversized  (a painted export, strike craft too)   the report asks for half    must FAIL (maps over the target)
 #                   the smallest side its maps were written at
+#   maps_unreadable (a painted export, Artoo on PR 1724)   one map's header zeroed     must FAIL (size could not be read)
 # A case whose points the export does not carry is skipped and named (issue 1413: an objective has no guns, and the Relay beacon
 # has no engines, braking or boarding points and no breach anchors). The 'pass' case still proves the check accepts that export,
 # so a point the game requires and the export lacks fails there, not here.
@@ -282,10 +283,14 @@ def maps_oversized(d):
     r['maps_target'] = min(min(CE.image_size(os.path.join(d, f)) or (2, 2)) for f in os.listdir(d)
                            if re.fullmatch(re.escape(code) + r'_(base|orm|normal)\.\w+', f)) // 2
     json.dump(r, open(rp, 'w'), indent=1)
+def maps_unreadable(d):
+    f = sorted(f for f in os.listdir(d) if re.fullmatch(re.escape(code) + r'_(base|orm|normal)\.\w+', f))[0]
+    b = open(os.path.join(d, f), 'rb').read(); open(os.path.join(d, f), 'wb').write(b'\x00' * 32 + b[32:])
 # strike craft too (Board audit on PR 1724): their maps are checked against the 1024 band like every other ship
 if 'unbaked=1' not in sys.argv[3:] and os.path.exists(os.path.join(src, code + '_export.json')):
-    CASES += (('maps_undersized', None, 1, 'maps under the'), ('maps_oversized', None, 1, 'maps over the'))
-    POST['maps_undersized'] = maps_undersized; POST['maps_oversized'] = maps_oversized
+    CASES += (('maps_undersized', None, 1, 'maps under the'), ('maps_oversized', None, 1, 'maps over the'),
+              ('maps_unreadable', None, 1, 'size could not be read'))
+    POST['maps_undersized'] = maps_undersized; POST['maps_oversized'] = maps_oversized; POST['maps_unreadable'] = maps_unreadable
 if SKIPPED: print('skip', ', '.join(SKIPPED) + ': the export carries none of their points (the pass case proves the check accepts that)')
 bad = 0; base = os.path.join(src, '_selftest')
 for name, fn, want, why_must in CASES:
