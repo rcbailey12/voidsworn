@@ -345,3 +345,45 @@ The raw file contents from GitHub at the pin matched the Windows test sources af
 **Board decision.** Send PR 1835 back for finding 1. Before merge, require a Windows regression showing that a refused launch leaves another active attempt's owner record and lease intact.
 
 Not checked: a production daemon, an actual cross-attempt release, or a live GPU or relay job. The Windows slot fixture introduced the hold during the reset wait. It did not schedule the daemon's rename and restore between two allocator probes. The watchdog integration used stand-in gates. The full standing suite result came from GitHub.
+
+## Run 7 recheck
+
+**Recommend merging PR 1835 at `7aff7a5f8ada307b5d640c953f22c93676a7f74a`.** The run 6 release blocker and clearance finding both passed on Windows. GitHub reported this SHA as the PR head. The pinned daemon self-test passed 31/31 on Node 22.11.0, including the real Windows watchdog group.
+
+### Release ownership
+
+X and Y each took a separate temporary slot through the pinned helper on Windows PowerShell 5.1. The stock slot suite passed its static check and skips its live group on Windows. The Windows fixture below exercised the cases at `contrib/opus/tools/opus_job_slots_tests.js:269` through line 295. All `jobs/` and `mission/` paths below start at `tools/pc/`.
+
+After **each** of a, a2, b and c, the fixture compared X's `owner.txt` and holder receipt byte for byte, checked the same holder PID was alive, found no `release_<token>` and got Windows sharing violation 32 on an exclusive open of `.slot-lease`.
+
+| Case | Finding | Evidence | File:line | Exact quote | Windows result | Fix | Confidence |
+|---|---|---|---|---|---|---|---|
+| a | NOTE, copied receipt | OBSERVED | `jobs/opus_job_head.ps1:995` | `does not name this attempt and token` | With X's receipt copied to Y and `OJ_SLOT_EXPECT` set to that receipt, `slotrelease Y` exited 1 and identified the owner mismatch. | None | High |
+| a2 | NOTE, missing receipt | OBSERVED | `jobs/opus_job_head.ps1:976` | `slot kept: no slot.txt` | With X's receipt moved aside and its original expectation still set, `slotrelease X` exited 1. The lock check worked while the receipt was absent. | None | High |
+| b | NOTE, ordinary tail | OBSERVED | `jobs/opus_job_head.ps1:996` | `it was left alone` | With the copy still in Y and `OJ_SLOT_EXPECT` unset, `slotrelease Y` exited 0 and reported that it left the slot alone. | None | High |
+| c | NOTE, wrong token | OBSERVED | `jobs/opus_job_head.ps1:986` | `no longer matches the lease it was given` | With X's receipt restored and the expected token changed, `slotrelease X` exited 1. | None | High |
+| d | NOTE, matching lease | OBSERVED | `jobs/opus_job_head.ps1:1004` | `slot $($parts[0]) let go` | With X's matching receipt and expectation, release exited 0. The owner record gained a `released` line, the holder marker disappeared, and an exclusive open succeeded. | None | High |
+
+### Reporting, clearance and run 6 checks
+
+| # | Finding | Evidence | File:line | Exact quote | Windows result | Fix | Confidence |
+|---|---|---|---|---|---|---|---|
+| 6 | NOTE, refused release reporting | OBSERVED | `mission/pc_daemon.js:762`, `mission/pc_daemon.js:753`, `mission/pc_daemon_selftest.js:514` | `failed.push('slot release')`, `The slot was NOT let go`, `the outputs are still delivered` | After a worker ran, `done.txt` read `done FAILED: slot release`. The log and picture remained, and the ledger recorded `FAILED` then `delivered` through the fixture relay. The gate-refused job recorded `ABORTED` and its report said the slot was kept. | None | High |
+| 7 | NOTE, interrupted attempt clearance | OBSERVED | `mission/pc_daemon.js:863`, `mission/pc_daemon.js:869`, `mission/pc_daemon.js:866` | `Nothing was recorded`, `this attempt took no slot`, `hold.txt.${parts[1]}.clearing` | With a slot path but no token, `--clear` exited 3, preserved every ledger byte and printed no `undefined`. With no receipt it exited 0 and named only `pc_daemon\hold.txt` for removal. A valid receipt exited 0, named the matching clearing file and the newer hold to inspect, then exited 2 on repeat. Both slot hold files and the daemon hold retained their contents. | None | High |
+| 8 | NOTE, hold under the lease | OBSERVED | `jobs/opus_job_head.ps1:1022` | `was set aside (hold.txt) after this attempt took it` | A hold written during the instrumented reset wait stopped the claimant with exit 1. The hold and survivor file kept their bytes, HEAD stayed at `2e312f0d` despite a request for `42ded109`, and the lease unlocked. With just the clearing file present, the next claim also exited 1. | None | High |
+| 9 | NOTE, launch gate receipts | OBSERVED | `mission/pc_daemon.js:887`, `mission/pc_daemon.js:889` | `is not the version the step was bound to`, `is not the lease the step was bound to` | The actual `--recheck` exited 3 for missing, empty or mismatched tools receipts, and for a missing slot receipt, a different slot or a different token. With both slots held and X's receipt copied into Y, the gate bound to Y also exited 3. Calling cleanup with Y's original lease exited 1. X passed the same byte, PID, signal and lock checks afterward. | None | High |
+
+### Source record
+
+The four raw files from GitHub at the reviewed SHA matched the sources used on Windows after line-ending normalization. The ranges below identify the focused reads. The daemon self-test ran in full.
+
+| File | Lines | First 40 characters of final line, or entire shorter line | Focused reads |
+|---|---:|---|---|
+| `tools/pc/jobs/opus_job_head.ps1` | 1586 | `}` | 74 to 88, 826 to 846, 851 to 1079, 1134 to 1214, 1578 to 1586 |
+| `tools/pc/mission/pc_daemon.js` | 923 | `  expectMissing, checkRoot, checkSlotRep` | 279 to 303, 367 to 376, 706 to 716, 748 to 770, 846 to 923 |
+| `tools/pc/mission/pc_daemon_selftest.js` | 770 | `})().catch(e => { console.error('FAIL: '` | 1 to 35, 220 to 234, 506 to 521, 608 to 632, 733 to 770 |
+| `contrib/opus/tools/opus_job_slots_tests.js` | 310 | `}` | Windows skip at 35 to 38 and slot fixtures at 247 to 295 |
+
+**Board decision.** Merge PR 1835 at the reviewed head. Release required the matching owner and lease in every Windows case, and the daemon reported both types of refusal. GitHub reported success for the [standing suite](https://github.com/rcbailey12/voidsworn/actions/runs/45278697669/job/138057380559) and [All checks](https://github.com/rcbailey12/voidsworn/actions/runs/45278697669/job/138063296212).
+
+Not checked: a production daemon job, GPU execution or a real relay upload. The two-slot fixture invoked the real gate and cleanup separately. The reporting self-test used a fixture relay. The full standing suite result came from GitHub.
