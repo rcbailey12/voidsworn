@@ -147,9 +147,9 @@ set "PUSHMODE=test"
 :branchset
 rem The run's commit carries Ryan's git identity, as before.
 set "GIT_AUTHOR_NAME=Ryan Bailey"
-set "GIT_AUTHOR_EMAIL=rcbailey12@gmail.com"
+set "GIT_AUTHOR_EMAIL=rcbailey12@users.noreply.github.com"
 set "GIT_COMMITTER_NAME=Ryan Bailey"
-set "GIT_COMMITTER_EMAIL=rcbailey12@gmail.com"
+set "GIT_COMMITTER_EMAIL=rcbailey12@users.noreply.github.com"
 set "K=issue-%N%-%ARM%"
 if /i "%MODE%"=="dryrun" set "K=dryrun-%N%-%ARM%"
 :runfolder

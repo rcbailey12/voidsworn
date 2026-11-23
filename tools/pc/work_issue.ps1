@@ -97,6 +97,21 @@ function Profile-Root {
   if ($env:HOME) { return $env:HOME }
   return ''
 }
+# Issue 1490: a runner receipt must not print a full Windows user path. A path below the voidsworn_test folder is
+# shown from that folder down (for example work217\issue-1-deepseek\20261122_120000); anything else is left as is.
+function Relative-ToVoidswornTest([string]$path) {
+  if (-not $path) { return $path }
+  $parts = @(($path -replace '/', '\') -split '\\+')
+  for ($i = $parts.Count - 1; $i -ge 0; $i--) {
+    if ($parts[$i] -ieq 'voidsworn_test') {
+      $rest = @()
+      if ($i -lt $parts.Count - 1) { $rest = @($parts[($i + 1)..($parts.Count - 1)] | Where-Object { $_ -ne '' }) }
+      if ($rest.Count) { return ($rest -join '\') }
+      return '.'
+    }
+  }
+  return $path
+}
 function Rewrite-ReportPaths([string]$text, [string]$repo, [string]$branch, [string]$profileRoot) {
   if (-not $text) { return $text }
   $repoPat = Path-Pattern $repo
@@ -669,7 +684,7 @@ elseif ($mode -eq 'guard') {
   Write-Lines (Join-Path $gdir 'scope_warnings.txt') $warn
   $md = @()
   if ($refused.Count) {
-    Write-Host "REFUSED $($refused.Count) file(s): not committed, copies kept in $gdir\refused (never deleted):"
+    Write-Host "REFUSED $($refused.Count) file(s): not committed, copies kept in $(Relative-ToVoidswornTest ($gdir + '\refused')) (never deleted):"
     $rl | ForEach-Object { Write-Host "  $_" }
     $md += "Refused by the runner, not committed ($($refused.Count); copies kept on the PC in the run's out folder, $grel\refused):"
     $md += @($rl | Select-Object -First 30 | ForEach-Object { "- $_" })
@@ -850,8 +865,8 @@ elseif ($mode -eq 'disk') {
       if (Test-Path -LiteralPath $entry.path) {
         $bytes = (Get-ChildItem -LiteralPath $entry.path -Recurse -Force -File | Measure-Object -Property Length -Sum).Sum
       }
-      Write-Host ('disk: {0} {1} logical bytes ({2:N2} GiB) at {3}' -f $entry.label, [long]$bytes, ($bytes / 1GB), $entry.path)
-    } catch { Write-Host "disk: could not measure $($entry.label) at $($entry.path): $($_.Exception.Message)" }
+      Write-Host ('disk: {0} {1} logical bytes ({2:N2} GiB) at {3}' -f $entry.label, [long]$bytes, ($bytes / 1GB), (Relative-ToVoidswornTest $entry.path))
+    } catch { Write-Host "disk: could not measure $($entry.label) at $(Relative-ToVoidswornTest $entry.path): $($_.Exception.Message)" }
   }
   exit 0
 }
