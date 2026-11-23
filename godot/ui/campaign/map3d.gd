@@ -37,6 +37,7 @@ const TOKEN_OFF := Vector3(0.0, 1.8, 3.0)   # where the fleet holds over a stop 
 
 const GS = preload("res://ui/theme/glass_shell.gd")
 const Kit = preload("res://ui/theme/orders_kit.gd")   # issue 1448: the map's clicks use the same ui cues as the buttons   # Lime Tactical pieces for the map words (issue #344)
+const ModalFocus = preload("res://ui/theme/modal_focus.gd")
 const View = preload("res://campaign/campaign_view.gd")   # the stop's words and the Nemesis, read only
 const COL_W := 540.0          # the briefing column over the left of the chart (campaign_ui.gd)
 const BACKDROP_K := 0.5       # the backdrop's strength in the Briefing build ("dimmed about half")
@@ -63,7 +64,10 @@ var overlay: Control
 var card: PanelContainer      # the hover tip: the only box on the map
 var card_box: VBoxContainer
 var quality := "high"         # "high" or "low" (ui.map_quality)
-var backdrop := false         # true: drawn behind another page (no labels, no hover, no input)
+var backdrop := false:        # true: drawn behind another page (no labels, no hover, no input)
+	set(value):
+		backdrop = value
+		if value: _drag = false
 var _sig := ""
 var _nodes := {}              # id -> {n, pos, obj, ring, rmat, mats, top, rival, theta, r}
 var _lanes := {}              # "a>b" -> {a, b, mi, mat, hazard}
@@ -102,11 +106,13 @@ var _pan := Vector3.ZERO         # the player's pan on the chart plane (eased to
 var _pan_t := Vector3.ZERO
 var _drag := false
 var _drag_at := Vector2.ZERO
+var _pointer_offset := Vector2.ZERO
 var _arrive_t := 0.0
 var _last_pos = null
 var loading := false:
 	set(v):
 		loading = v
+		if v: _drag = false
 		# A Jump pressed under the loading cover runs once the cover clears (issue 1448).
 		if not v and _queued_jump: _run_queued_jump.call_deferred()
 var _queued_jump := false   # a Jump pressed during loading; it jumps to the confirmed pick when loading clears (a new pick cancels it)
@@ -173,6 +179,7 @@ func _entry_pos() -> Vector3:
 # ---------------- building the sector ----------------
 func sync() -> void:
 	sheet_veil.visible = not backdrop
+	if _controls_covered(): _drag = false
 	var C = _C()
 	if C == null or C.RUN == null: return
 	if intel == null or intel.C != C: intel = Intel.new(C)
@@ -813,7 +820,9 @@ func _route_lanes() -> Dictionary:   # the lanes of the safest way on through th
 # The routes: lime and solid to a next jump (the one line you can fly now), one thin pale line for every other route, fainter
 # when it is cut off. Routes behind the fleet are hidden. Two channels, colour and width (ui_spec.md 5.2). No blue routes.
 func _paint_lanes() -> void:
-	var C = _C(); var R = C.RUN; var av = _avail(); var lit = _route_lanes(); var kk = float(ui.k) if ui != null and ui.get("k") != null else 1.0
+	var C = _C()
+	if C == null or C.RUN == null: return
+	var R = C.RUN; var av = _avail(); var lit = _route_lanes(); var kk = float(ui.k) if ui != null and ui.get("k") != null else 1.0
 	var current_col = int(_nodes[R["pos"]]["n"]["col"]) if R.get("pos") != null and _nodes.has(R["pos"]) else -1
 	for k in _lanes:
 		var L = _lanes[k]
@@ -867,8 +876,6 @@ func _process(delta: float) -> void:
 
 func _live_frame(delta: float) -> void:   # everything the map animates, only while it shows
 	_t += delta
-	var mp = get_local_mouse_position() / size.max(Vector2.ONE) - Vector2(0.5, 0.5)
-	mp = mp.clamp(Vector2(-0.5, -0.5), Vector2(0.5, 0.5))
 	# the frame is fitted again when the fleet leaves the sector's edge (the waiting fleet no longer has to be in it)
 	var fr = _free_rect(); var fk0 = str(size) + "|" + _sig + "|" + str(fr.position.round()) + str(fr.size.round()); var fk = fk0 + "|" + str(_C().RUN.get("pos") == null)
 	if fk != _fit_key:
@@ -886,7 +893,7 @@ func _live_frame(delta: float) -> void:   # everything the map animates, only wh
 	var drift = Vector3(sin(_t * 0.05) * 1.0, sin(_t * 0.037) * 0.4, cos(_t * 0.043) * 0.7)   # small: the fitted frame must hold
 	var base_t = _fit_target_now + _pan
 	var target = base_t.lerp(_cam_focus, clamp((1.0 - _cam_zoom) / 0.4, 0.0, 1.0)) if _cam_focus != Vector3.ZERO else base_t
-	cam.position = target + CAM_DIR * dist + drift * _cam_zoom * _uz + Vector3(mp.x * 1.4, -mp.y * 0.9, 0) * _uz
+	cam.position = target + CAM_DIR * dist + drift * _cam_zoom * _uz + Vector3(_pointer_offset.x * 1.4, -_pointer_offset.y * 0.9, 0) * _uz
 	cam.look_at(target, Vector3.UP)
 	if _debris != null: _debris.rotate_y(delta * 0.012)
 	for sp in _spinners:
@@ -975,6 +982,9 @@ func _fit(fr: Rect2) -> void:
 # campaign map exception to ui_style.md 3). Current and next stops keep their captions. Every other stop has a type glyph;
 # a Nemesis meeting adds its red diamond above it. The tip card shows on hover or keyboard focus (_update_card).
 func _draw_overlay() -> void:
+	_caption_hits.clear()
+	_icon_hits.clear()
+	_body_hits.clear()
 	var C = _C()
 	if C == null or C.RUN == null or root3 == null or cam.position.length_squared() < 1.0: return
 	var av = _avail(); var s: float = ui.k; var pos = C.RUN.get("pos")
@@ -995,10 +1005,12 @@ func _draw_overlay() -> void:
 				GS.stop_icon(overlay, tp, str(d["n"]["type"]), icon_scale, GS.STOP_ICON_FADED if faded else 1.0)
 				var icon_box = Rect2(tp - Vector2.ONE * 12.0 * icon_scale, Vector2.ONE * 24.0 * icon_scale)
 				taken.append(icon_box); _words.append(icon_box)
+				_icon_hits[id] = icon_box
 			if d["nem"]: GS.diamond(overlay, tp + Vector2(0, -20.0 * s), 5.0 * s, GS.NEM)
-	var bodies = _nodes.keys()   # larger enemy groups also keep captions off models farther on
-	for id in bodies:
-		if _nodes.has(id) and not cam.is_position_behind(_nodes[id]["pos"]): taken.append(_body_rect(id, s))
+	for id in _nodes:   # larger enemy groups also keep captions off models farther on
+		if cam.is_position_behind(_nodes[id]["pos"]): continue
+		_body_hits[id] = _body_rect(id, s)
+		taken.append(_body_hits[id])
 	# where your fleet is
 	var f18: Font = GS.sheet_medium(); var f14: Font = GS.sheet_body()
 	if not _flying:
@@ -1035,7 +1047,7 @@ func _draw_overlay() -> void:
 		var nm = View.stop_name(C, _nodes[id]["n"])
 		var tw = f20.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 		var cw = m + gp + tw
-		var body = _body_rect(id, s)
+		var body: Rect2 = _body_hits[id]
 		var cy = body.get_center().y - m * 0.5
 		# beside the model first (as the mockup sets a name beside its marker), then under it, over it, and the four corners
 		var cands = [Vector2(body.end.x + 8.0 * s, cy), Vector2(body.position.x - 8.0 * s - cw, cy),
@@ -1062,6 +1074,7 @@ func _draw_overlay() -> void:
 			at.x = maxf(left, sun_rect.position.x - cw - 12.0 * s)
 			if Rect2(at, Vector2(cw, m)).intersects(sun_rect): at.y = sun_rect.end.y + 12.0 * s
 		taken.append(Rect2(at, Vector2(cw, m))); _words.append(taken.back())
+		_caption_hits[id] = taken.back()
 		var num = int(ui.route_num(id)) if ui.has_method("route_num") else i + 1   # the same number as its row
 		GS.marker(overlay, at + Vector2(m, m) * 0.5, s, str(num if num > 0 else i + 1), ui.font_num_b, id == str(ui.picked))
 		GS.halo_text(overlay, f20, Vector2(at.x + m + gp, at.y + m * 0.5 + (f20.get_ascent(fs) - f20.get_descent(fs)) * 0.5), nm, fs, GS.TEXT, s)
@@ -1069,9 +1082,11 @@ func _draw_overlay() -> void:
 		var t2 = "In flight. Click or press Space to skip."; var fr = _free_rect()
 		var w3 = f14.get_string_size(t2, HORIZONTAL_ALIGNMENT_LEFT, -1, int(17 * s)).x
 		GS.halo_text(overlay, f14, Vector2(fr.get_center().x - w3 * 0.5, fr.end.y + 40.0 * s), t2, int(17 * s), GS.TEXT2, s)
-	if has_focus() and _hot_by_key and _hot != "" and _nodes.has(_hot) and not _flying:   # keyboard focus: the sage ring (ui_spec.md 6)
-		var br = _body_rect(_hot, s).grow(3.0 * s)
-		overlay.draw_rect(br, GS.TEXT, false, max(2.0, 2.0 * s))
+	if not _flying and not _controls_covered() and _body_hits.has(_hot):
+		var body: Rect2 = _body_hits[_hot]
+		var color := GS.TEXT if _hot_by_key else GS.MAP_EMBER
+		if body.position.x >= left and (has_focus() if _hot_by_key else av.has(_hot)):
+			overlay.draw_rect(body.grow(3.0 * s), color, false, max(2.0, 2.0 * s))
 
 func _sun_rect() -> Rect2:
 	var r = SUN_R * float(sys.approach["sun_scale"]) * float(sys.approach["disc_outer"])
@@ -1094,6 +1109,22 @@ func _body_rect(id: String, s: float) -> Rect2:
 	var y0 = min(top.y, c.y - rx * 0.6); var y1 = max(bot.y + 10.0 * s, c.y + rx * 0.6)
 	return Rect2(c.x - rx, y0, rx * 2.0, y1 - y0)
 func _node_at(sp: Vector2) -> String:
+	if sp.x < _sheet_edge(): return ""
+	# Captions are painted over icons and models. Prefer the last-painted label when labels overlap.
+	for spots in [_caption_hits, _icon_hits]:
+		var ids: Array = spots.keys()
+		ids.reverse()
+		for id in ids:
+			if spots[id].has_point(sp): return id
+	var body := ""
+	var body_distance := INF
+	for id in _body_hits:
+		if not _body_hits[id].has_point(sp): continue
+		var distance := sp.distance_squared_to(_body_hits[id].get_center())
+		if distance < body_distance:
+			body = id
+			body_distance = distance
+	if body != "": return body
 	var best = ""; var bd = 1e9
 	for id in _nodes:
 		var d = _nodes[id]
@@ -1108,13 +1139,16 @@ func _node_at(sp: Vector2) -> String:
 var _card_key := ""
 var _hot_by_key := false
 var _words: Array = []        # where the map's words were drawn last frame: the tip card keeps off them when it can
+var _caption_hits := {}
+var _icon_hits := {}
+var _body_hits := {}
 # The tip card: the one box on the map. It shows for a stop that is not your stop or a next jump (the route list already says
 # everything about those), on hover or when the arrow keys reach it: the name, what it is and against whom, the danger as
 # four pips and a word (or the stop's one-line note), a modifier or an unusual board, the reward, the Nemesis line in red
 # where true, and the safest and the richest way on from it to the flagship (the old hover card's route planner).
 func _update_card() -> void:
 	var C = _C()
-	if _hot == "" or _flying or not _nodes.has(_hot) or _avail().has(_hot) or C.RUN.get("pos") == _hot or C.modal_d != null:
+	if _hot == "" or _flying or not _nodes.has(_hot) or _avail().has(_hot) or C.RUN.get("pos") == _hot or _controls_covered():
 		card.visible = false; return
 	var ck = _hot + "|" + str(_routes.size()) + "|" + str(_danger.get(_hot, {}).get("ratio", 0)) + "|" + str(ui.k)
 	if ck != _card_key:   # the words only change with the stop, its routes or its danger
@@ -1178,12 +1212,24 @@ func _set_hot(h: String) -> void:
 	var next = h != "" and _avail().has(h)
 	_routes = intel.routes_through(h) if (h != "" and intel != null and not next) else []
 	_paint_lanes()
-	if next and ui != null and ui.has_method("pick_route"): ui.pick_route(h)   # pointing at a next jump picks its row
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if next else Control.CURSOR_ARROW
+
+func clear_keyboard_preview() -> void:
+	if not _hot_by_key: return
+	_hot_by_key = false
+	_set_hot("")
+
+func _sheet_edge() -> float:
+	return float(ui.px(COL_W))
+
+func _controls_covered() -> bool:
+	var C = _C()
+	return C == null or C.modal_d != null or ui.get("_overlay") not in [null, ""] or ModalFocus.covered(self)
+
 const ZOOM_MIN := 0.38
 const ZOOM_MAX := 1.2
 func _pan_keyboard(delta: float) -> void:
-	if not is_visible_in_tree() or loading or _flying or backdrop or _C().modal_d != null: return
+	if not is_visible_in_tree() or loading or _flying or backdrop or _controls_covered(): return
 	# Arrow keys still choose routes. WASD pans even while a side-panel button has focus.
 	var p := CamRig.keyboard_pan(get_viewport(), false)
 	if p != Vector2.ZERO: pan_by(Vector3(p.x, 0, -p.y) * delta * 45.0 * _uz_t)
@@ -1202,8 +1248,13 @@ func _clamp_pan() -> void:
 	if _pan_t.length() > lim: _pan_t = _pan_t.normalized() * lim
 	if _uz_t >= 0.999: _pan_t = _pan_t.limit_length(_outer_radius() * 0.5)
 func _gui_input(e: InputEvent) -> void:
-	if loading or _flying or backdrop: return
+	if loading or _flying or backdrop or _controls_covered(): return
+	if e is InputEventMouse and e.position.x < _sheet_edge():
+		_drag = false
+		if not _hot_by_key: _set_hot("")
+		return
 	if e is InputEventMouseMotion:
+		_pointer_offset = (e.position / size.max(Vector2.ONE) - Vector2(0.5, 0.5)).clamp(Vector2(-0.5, -0.5), Vector2(0.5, 0.5))
 		if _drag:
 			var a = _ground(_drag_at); var b = _ground(e.position); _drag_at = e.position
 			pan_by(a - b); accept_event(); return
@@ -1219,11 +1270,12 @@ func _gui_input(e: InputEvent) -> void:
 			var id = _node_at(e.position)
 			if id != "" and _avail().has(id):   # a click picks the route; a double click flies it (so does Enter or the lime button)
 				accept_event()
-				if e.double_click: Kit.play("ui_confirm")
-				elif str(ui.get("picked")) != id: Kit.play(Kit.HOVER_CUE)
+				_hot_by_key = false
+				_set_hot(id)
+				Kit.play("ui_confirm" if e.double_click else "ui_click")
 				if ui.has_method("pick_route"): ui.pick_route(id)
 				if e.double_click: fly_to(id)
-			elif e.double_click: reset_view()
+			elif id == "" and e.double_click: reset_view()
 	elif e is InputEventKey and e.pressed:
 		match e.keycode:
 			KEY_HOME: reset_view(); accept_event(); return
@@ -1238,12 +1290,17 @@ func _gui_input(e: InputEvent) -> void:
 				_kb = max(0, cur)
 			else: _kb = (cur + (1 if e.keycode in [KEY_RIGHT, KEY_DOWN] else -1) + _kb_order.size()) % _kb_order.size()
 			_hot_by_key = true; _set_hot(_kb_order[_kb]); accept_event()
+			if _avail().has(_hot) and ui.has_method("pick_route"): ui.pick_route(_hot)
 		elif e.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
 			var pk = str(ui.picked) if ui.get("picked") != null else ""
-			if not e.echo and pk != "": accept_event(); Kit.play("ui_confirm"); fly_to(pk)
+			accept_event()
+			if _hot_by_key and _hot != "" and not _avail().has(_hot): return
+			if not e.echo and pk != "": Kit.play("ui_confirm"); fly_to(pk)
 func _input(e: InputEvent) -> void:
+	if e is InputEventMouseButton and not e.pressed and e.button_index in [MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
+		_drag = false
 	# Consume the skip before a side-panel button can start another action.
-	if not _flying or not is_visible_in_tree(): return
+	if not _flying or not is_visible_in_tree() or _controls_covered(): return
 	var click = e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT
 	var key = e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]
 	if click or key:
