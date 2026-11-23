@@ -151,7 +151,11 @@ expect: <paths under the results folder that must exist and not be empty>
 Optional lines: `slot: gpu|cpu`, `gpu: shared|solo|none`, `weight: 1-8`, `ships: yes|no`, `hulls: <codes>`,
 `headless: yes|no`, `timeout: <seconds, at most 21600>`, `stall: <minutes>`. A push after the go comment refuses the run
 (the label comes off with a note); a new go comment and the label start it again. The daemon never runs the same commit
-and job twice (its ledger `voidsworn_test\pc_daemon\ran.txt` and its own done marker on the PR).
+and job twice once it has a result (its ledger `voidsworn_test\pc_daemon\ran.txt` and its own done marker on the PR); a
+job cut off before its result does not block a new go. The done marker goes on only with the relay links: a failed relay
+is retried every 30 minutes from the kept attempt without rerunning the job. One live daemon per PC
+(`pc_daemon\daemon.lock`, a pid and a heartbeat). A process tree that will not end after five stop requests puts the
+daemon in quarantine: it keeps that slot, GPU claim and profile held and starts nothing until the Board has looked.
 
 Per job: `pc-ready` off and `running` on, a new attempt `voidsworn_test\<job>\out_<stamp>_<n>` with results in
 `out_<job>` (the job reads it as `VS_OUT`), the tool preflight, Ryan's options hashed, a warm slot reset to the head

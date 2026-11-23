@@ -117,6 +117,18 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     const r = await d.watch({ exe: node, args: ['-e', script], cwd: dir, env: process.env, ceilingMs: 20000, stallMs: 500, progressDirs: [out], logFile: path.join(dir, 'log.txt'), pollMs: 50 });
     assert.equal(r.reason, 'exit');
   });
+  await t('watchdog: stop requests repeat, and a tree that never ends comes back unkilled', async () => {
+    const dir = tmp(); let asks = 0, pid = 0;
+    const r = await d.watch({ exe: node, args: ['-e', 'setTimeout(()=>{},60000)'], cwd: dir, env: process.env, ceilingMs: 30000, stallMs: 300,
+      logFile: path.join(dir, 'log.txt'), pollMs: 30, killRetryMs: 100, killTries: 3, kill: p => { asks++; pid = p; if (asks === 1) throw new Error('taskkill exit 1'); } });
+    assert.equal(r.unkilled, true); assert.equal(asks, 3); assert.equal(r.reason, 'stall');
+    assert.match(fs.readFileSync(path.join(dir, 'log.txt'), 'utf8'), /stop request failed: taskkill exit 1/);
+    d.killTree(pid);
+    let got = 0;
+    const r2 = await d.watch({ exe: node, args: ['-e', 'setTimeout(()=>{},60000)'], cwd: dir, env: process.env, ceilingMs: 30000, stallMs: 300,
+      logFile: path.join(dir, 'log.txt'), pollMs: 30, killRetryMs: 100, kill: p => { if (++got === 2) d.killTree(p); } });
+    assert.equal(r2.unkilled, false); assert.equal(got, 2, 'the second request ended it');
+  });
   if (process.platform !== 'win32') await t('watchdog: a stop kills the whole process tree', async () => {
     const dir = tmp(), pidFile = path.join(dir, 'grandchild.pid');
     const script = `const c=require('child_process').spawn(process.execPath,['-e','setTimeout(()=>{},60000)'],{stdio:'ignore'});require('fs').writeFileSync(${JSON.stringify(pidFile)},String(c.pid));setTimeout(()=>{},60000)`;
@@ -156,7 +168,7 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
   });
 
   // ---------------------------------------------------------------------------------------------- the daemon
-  function fakes({ comments = [owner(goText())], runs = green(), exit = 0, writeOutputs = true, optionsChange = false, failStep = null, ghFails = false } = {}) {
+  function fakes({ comments = [owner(goText())], runs = green(), exit = 0, writeOutputs = true, optionsChange = false, failStep = null, ghFails = false, relayFails = 0, unkilled = false } = {}) {
     const vt = tmp(), calls = [], gh = {
       writes: [],
       readyPulls: () => [7], pull: () => pull(), comments: () => comments, checkRuns: () => runs,
@@ -174,7 +186,7 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
       gpuAcquire: step('gpuAcquire', () => '12345678-1234-1234-1234-123456789abc'),
       gpuRelease: step('gpuRelease', () => {}),
       slotRelease: step('slotRelease', () => {}),
-      relay: step('relay', () => 'folder link: https://github.com/rcbailey12/voidsworn-relay/tree/pc-out-lb_1777/x\npicture link: https://example.invalid/a.png\n'),
+      relay: step('relay', () => { if (relayFails-- > 0) throw new Error('relay offline'); return 'folder link: https://github.com/rcbailey12/voidsworn-relay/tree/pc-out-lb_1777/x\npicture link: https://example.invalid/a.png\n'; }),
       gameRunning: () => false
     };
     let seenEnv = null;
@@ -183,6 +195,7 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
       assert.match(o.env.APPDATA, /slots[\\/]profiles[\\/]pcd-profile-[0-9a-f]{32}$/);
       assert.ok(fs.existsSync(o.env.APPDATA));
       if (writeOutputs) { fs.mkdirSync(path.join(o.progressDirs[0], 'shots')); fs.writeFileSync(path.join(o.progressDirs[0], 'shots', 'a.png'), 'png'); fs.writeFileSync(path.join(o.progressDirs[0], 'log.txt'), 'ok'); }
+      if (unkilled) return { code: null, signal: null, reason: 'stall', ms: 1000, bytes: 0, unkilled: true };
       return { code: exit, signal: null, reason: 'exit', ms: 1000, bytes: 10 };
     };
     const daemon = new d.Daemon({ vt, gh, tools, live: true, log: () => {}, watchImpl, clock: () => new Date('2026-11-23T14:00:00Z') });
@@ -257,6 +270,53 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     await p.daemon.tick();
     assert.deepEqual(p.calls, []); assert.deepEqual(p.gh.writes, []);
   });
+  await t('daemon: a failed relay keeps the run key but not the done marker, and is retried without a rerun', async () => {
+    const f = fakes({ relayFails: 1 });
+    await f.daemon.tick();
+    const notes = f.gh.writes.filter(w => w[0] === 'comment');
+    assert.match(notes[1][2], /relay failed/); assert.ok(!notes.some(w => w[2].includes('pc-daemon done')), 'no done marker without delivery');
+    assert.deepEqual(f.daemon.undelivered().map(e => e.state), ['PASS']);
+    f.calls.length = 0; f.gh.writes.length = 0;
+    await f.daemon.tick();
+    assert.deepEqual(f.calls, [], 'inside the retry wait nothing runs or relays');
+    f.daemon.retryMs = 0;
+    await f.daemon.tick();
+    assert.deepEqual(f.calls, ['relay'], 'only the relay runs again');
+    const result = f.gh.writes.find(w => w[0] === 'comment')[2];
+    assert.match(result, /PASS/); assert.match(result, /relayed on try 2/); assert.ok(result.includes(d.DONE_MARK(SHA, 'lb_1777')));
+    assert.deepEqual(f.daemon.undelivered(), []);
+    f.calls.length = 0; await f.daemon.tick(); assert.deepEqual(f.calls, []);
+  });
+  await t('daemon: a start with no result (stopped mid-job) does not block a new go', async () => {
+    const f = fakes();
+    fs.mkdirSync(path.join(f.vt, 'pc_daemon'));
+    fs.writeFileSync(path.join(f.vt, 'pc_daemon', 'ran.txt'), `2026-11-23T13:00:00Z ${SHA} lb_1777 PR7 start\r\n`);
+    assert.equal((await f.daemon.tick())[0].verdict, 'run');
+    assert.ok(f.calls.includes('preflight'));
+  });
+  await t('daemon: a tree that will not die is quarantined: slot, GPU and profile kept, nothing new starts', async () => {
+    const f = fakes({ unkilled: true });
+    await f.daemon.tick();
+    assert.ok(!f.calls.includes('gpuRelease') && !f.calls.includes('slotRelease'));
+    assert.equal(fs.readdirSync(path.join(f.vt, 'slots', 'profiles')).length, 1, 'the profile in use stays');
+    assert.match(f.gh.writes.find(w => /FAILED/.test(w[2] || ''))[2], /QUARANTINE/);
+    f.calls.length = 0;
+    fs.appendFileSync(path.join(f.vt, 'pc_daemon', 'ran.txt'), ''); // a fresh go would still not start
+    assert.deepEqual(await f.daemon.tick(), []); assert.deepEqual(f.calls, []);
+  });
+  await t('daemon lock: one live daemon per root, a stale lock is taken over, no sweep without it', async () => {
+    const vt = tmp(), mk = () => new d.Daemon({ vt, gh: {}, tools: {}, live: true, log: () => {} });
+    const a = mk(); a.lease();
+    assert.throws(() => mk().lease(), /another PC daemon/);
+    const lock = path.join(vt, 'pc_daemon', 'daemon.lock');
+    fs.writeFileSync(lock, JSON.stringify({ pid: 999999999, beat: Date.now(), id: 'old' }));
+    const b = mk(); b.lease({ alive: () => false });
+    assert.equal(JSON.parse(fs.readFileSync(lock, 'utf8')).id, b.leaseId);
+    assert.throws(() => a.beat(), /taken over/, 'the old holder notices and stops');
+    fs.writeFileSync(lock, JSON.stringify({ pid: process.pid, beat: Date.now() - 6 * 60000, id: 'quiet' }));
+    mk().lease();
+    assert.throws(() => mk().sweepProfiles(), /lock first/);
+  });
   await t('commands: godot and blender lines, placeholders filled, no shell', () => {
     const s = d.parseGo(goText('headless: yes'));
     const c = d.command(s, path.join('S', 'repo'), path.join('A', 'out'));
@@ -279,5 +339,5 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     assert.deepEqual(seen[2].args.slice(1, 4), ['-X', 'DELETE', 'repos/rcbailey12/voidsworn/issues/5/labels/pc-ready']);
     assert.throws(() => new d.GhCli({ run: () => ({ status: 1, stdout: '', stderr: 'HTTP 404' }) }).pull(1), /404/);
   });
-  console.log(`PASS: pc_daemon ${passed} checks (go comment, gate, watchdog, profile removal, daemon order and failures, commands, gh calls)`);
+  console.log(`PASS: pc_daemon ${passed} checks (go comment, gate, watchdog, profile removal, daemon order, failures, delivery retry, quarantine and lock, commands, gh calls)`);
 })().catch(e => { console.error('FAIL: ' + (e.stack || e.message)); process.exit(1); });

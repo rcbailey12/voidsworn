@@ -161,25 +161,32 @@ function newestTime(dirs, cap = 20000) {
 }
 function killTree(pid, platform = process.platform) {
   if (!pid) return;
-  if (platform === 'win32') spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true, timeout: 60000 });
+  if (platform === 'win32') {
+    const r = spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true, timeout: 60000, encoding: 'utf8' });
+    if (r.status !== 0) throw new Error(`taskkill exit ${r.status}: ${String(r.stderr || r.stdout || '').trim().slice(0, 200)}`);
+  }
   else { try { process.kill(-pid, 'SIGKILL'); } catch { try { process.kill(pid, 'SIGKILL'); } catch { /* gone */ } } }
 }
-function watch({ exe, args, cwd, env, ceilingMs, stallMs, progressDirs = [], logFile, pollMs = 5000, now = Date.now, kill = killTree }) {
+// A stop is asked again every killRetryMs until the child closes (Artoo on PR 1835: one failed taskkill must not leave
+// the job running); after killTries asks with no close it resolves with unkilled: true, and the caller keeps the slot and
+// GPU claim held and starts nothing more (the tree may still be running in the slot).
+function watch({ exe, args, cwd, env, ceilingMs, stallMs, progressDirs = [], logFile, pollMs = 5000, now = Date.now, kill = killTree,
+  killRetryMs = 30000, killTries = 5 }) {
   return new Promise(resolve => {
     const start = now();
     const log = fs.openSync(logFile, 'a');
     const say = s => { try { fs.writeSync(log, s); } catch { /* the log is best effort */ } };
     say(`[pc_daemon ${new Date(start).toISOString()}] start ${exe} ${args.join(' ')}\n`);
     let bytes = 0, lastProgress = start, lastTime = newestTime(progressDirs), reason = null, timer = null, finished = false;
-    let child;
-    const finish = (code, signal) => {
+    let child, kills = 0, lastKill = 0;
+    const finish = (code, signal, unkilled = false) => {
       if (finished) return;
       finished = true;
       clearInterval(timer);
       const ms = now() - start;
       say(`[pc_daemon ${new Date().toISOString()}] end: ${reason || 'exit'} code ${code} signal ${signal || '-'} after ${Math.round(ms / 1000)} s\n`);
       fs.closeSync(log);
-      resolve({ code, signal: signal || null, reason: reason || 'exit', ms, bytes });
+      resolve({ code, signal: signal || null, reason: reason || 'exit', ms, bytes, unkilled });
     };
     try {
       child = spawn(exe, args, { cwd, env, windowsHide: true, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'] });
@@ -189,14 +196,20 @@ function watch({ exe, args, cwd, env, ceilingMs, stallMs, progressDirs = [], log
     child.stderr.on('data', take);
     child.on('error', e => { reason = reason || 'start'; say(`could not start: ${e.code || e.message}\n`); finish(null, null); });
     child.on('close', (code, signal) => finish(code, signal));
+    const stop = t => {
+      if (kills >= killTries) { say(`[pc_daemon] the process tree did not end after ${kills} stop requests\n`); finish(null, null, true); return; }
+      kills++; lastKill = t;
+      say(`[pc_daemon] stopping the process tree (${reason}), request ${kills}\n`);
+      try { kill(child.pid); } catch (e) { say(`[pc_daemon] stop request failed: ${e.message}\n`); }
+    };
     timer = setInterval(() => {
-      if (reason) return;
       const t = now();
+      if (reason) { if (t - lastKill >= killRetryMs) stop(t); return; }
       const newest = newestTime(progressDirs);
       if (newest > lastTime) { lastTime = newest; lastProgress = t; }
       if (t - start >= ceilingMs) reason = 'ceiling';
       else if (t - lastProgress >= stallMs) reason = 'stall';
-      if (reason) { say(`[pc_daemon] stopping the process tree: ${reason}\n`); kill(child.pid); }
+      if (reason) stop(t);
     }, pollMs);
   });
 }
@@ -361,10 +374,51 @@ class Daemon {
     this.slots = path.join(vt, 'slots');
     this.ledgerFile = path.join(vt, 'pc_daemon', 'ran.txt');
     this.refused = new Set();
+    this.deliveryTries = new Map();
+    this.quarantined = null;
+    this.retryMs = 30 * 60000;
   }
-  ledger() {
-    try { return new Set(fs.readFileSync(this.ledgerFile, 'utf8').split(/\r?\n/).map(l => l.split(' ').slice(1, 3).join(' ')).filter(Boolean)); }
-    catch { return new Set(); }
+  // One live daemon per voidsworn_test (Artoo on PR 1835: a second one would sweep the first one's active profile).
+  // pc_daemon\daemon.lock names the holder's pid and a heartbeat it rewrites every 30 s; a lock counts while that pid
+  // lives and the beat is under 5 minutes old. The file is never deleted, only taken over when stale.
+  lease({ alive = pid => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } } } = {}) {
+    const file = path.join(this.vt, 'pc_daemon', 'daemon.lock');
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    const me = () => JSON.stringify({ pid: process.pid, beat: this.clock().getTime(), id: this.leaseId });
+    this.leaseId = crypto.randomUUID();
+    try {
+      const fd = fs.openSync(file, 'wx'); fs.writeSync(fd, me()); fs.closeSync(fd);
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw e;
+      let held = null; try { held = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { /* unreadable: stale */ }
+      if (held && alive(held.pid) && this.clock().getTime() - held.beat < 5 * 60000) throw new Error(`another PC daemon (pid ${held.pid}) holds ${file}`);
+      const tmpFile = `${file}.${process.pid}.tmp`;
+      fs.writeFileSync(tmpFile, me()); fs.renameSync(tmpFile, file);
+    }
+    if (JSON.parse(fs.readFileSync(file, 'utf8')).id !== this.leaseId) throw new Error('lost the daemon lock to another start');
+    this.beat = () => {
+      const now = JSON.parse(fs.readFileSync(file, 'utf8'));
+      if (now.id !== this.leaseId) throw new Error('the daemon lock was taken over; stopping');
+      const tmpFile = `${file}.${process.pid}.tmp`;
+      fs.writeFileSync(tmpFile, me()); fs.renameSync(tmpFile, file);
+    };
+    return file;
+  }
+  // ran.txt lines: "<time> <sha> <job> PR<n> <state> [attempt]", state start, PASS, FAILED or delivered (Artoo on PR 1835:
+  // launch, local result and verified delivery are kept apart). A start with no result (the daemon stopped mid-job)
+  // does not block a new go; a result does, and a result with no delivered line is relayed and reported again.
+  entries() {
+    try {
+      return fs.readFileSync(this.ledgerFile, 'utf8').split(/\r?\n/).filter(Boolean).map(l => {
+        const p = l.split(' ');
+        return { sha: p[1], job: p[2], pr: +String(p[3]).slice(2), state: p[4], attempt: p.slice(5).join(' ') };
+      });
+    } catch { return []; }
+  }
+  ledger() { return new Set(this.entries().filter(e => e.state !== 'start').map(e => e.sha + ' ' + e.job)); }
+  undelivered() {
+    const all = this.entries(), done = new Set(all.filter(e => e.state === 'delivered').map(e => e.sha + ' ' + e.job));
+    return all.filter(e => ['PASS', 'FAILED'].includes(e.state) && !done.has(e.sha + ' ' + e.job));
   }
   note(line) { fs.mkdirSync(path.dirname(this.ledgerFile), { recursive: true }); fs.appendFileSync(this.ledgerFile, line + '\r\n'); }
   paused() {
@@ -379,6 +433,8 @@ class Daemon {
   async tick() {
     const seen = [];
     if (this.paused()) { this.log('paused: gpu_go.txt holds the Board pause; nothing starts'); return seen; }
+    if (this.live) await this.redeliver();
+    if (this.quarantined) { this.log(`quarantined, nothing starts: ${this.quarantined}`); return seen; }
     const ledger = this.ledger();
     for (const n of this.gh.readyPulls()) {
       const pull = this.gh.pull(n);
@@ -404,7 +460,9 @@ class Daemon {
     return seen;
   }
   sweepProfiles() {
-    // Leftover throwaway profiles from a daemon that stopped mid-job (only this process makes them; one job at a time).
+    // Leftover throwaway profiles from a daemon that stopped mid-job. Only after lease(): no other daemon runs on this
+    // root, and this one has no job yet, so no profile here is in use.
+    if (!this.leaseId) throw new Error('sweepProfiles needs the daemon lock first');
     const dir = path.join(this.slots, 'profiles');
     if (this.paused() || !fs.existsSync(dir)) return;
     for (const n of fs.readdirSync(dir)) {
@@ -460,6 +518,13 @@ class Daemon {
       if (result.reason !== 'exit') throw new Error(result.reason === 'start' ? 'the program did not start' : `stopped at the ${result.reason === 'ceiling' ? 'hard ceiling' : 'stall limit'}`);
       if (result.code !== 0) throw new Error(`exit ${result.code}`);
     });
+    if (result?.unkilled) {
+      // the tree may still be running in the slot: keep the GPU claim, the profile and the slot lease held by this
+      // process, and start nothing more until the Board has looked (Artoo on PR 1835)
+      this.quarantined = `PR ${n} ${spec.job}: the process tree did not end; slot, GPU claim and profile kept. Attempt ${attempt}`;
+      say('QUARANTINE: ' + this.quarantined);
+      gpuToken = null; profile = null; slotTaken = false;
+    }
     if (gpuToken) { try { this.tools.gpuRelease(gpuToken); say('GPU claim released'); } catch (e) { say(`GPU release: ${e.message} (the claim ends with this process)`); } }
     if (profile) {
       if (this.paused()) say(`profile kept during the Board pause: ${profile}`);
@@ -477,23 +542,56 @@ class Daemon {
     const pass = failed.length === 0;
     fs.writeFileSync(path.join(attempt, 'done.txt'), pass ? 'done PASS\r\n' : `done FAILED: ${failed.join(', ')}\r\n`);
     say(pass ? 'done PASS' : `done FAILED: ${failed.join(', ')}`);
-    let links = { folder: '', pictures: [] }, relayNote = '';
-    try { links = relayLinks(this.tools.relay(spec.job, attempt, st)); } catch (e) { relayNote = `relay failed: ${e.message}`; say(relayNote); }
+    fs.writeFileSync(path.join(attempt, 'pc_daemon_result.json'), JSON.stringify({ pr: n, spec, pass, failed, result, quarantined: !!result?.unkilled }, null, 2));
     this.note(`${this.clock().toISOString()} ${sha} ${spec.job} PR${n} ${pass ? 'PASS' : 'FAILED'} ${attempt}`);
-    const body = [
-      `PC daemon (issue 1662): ${spec.job} ${pass ? 'PASS' : 'FAILED'} at ${sha.slice(0, 8)}`,
-      '',
-      pass ? '' : `- failed: ${failed.join(', ')}`,
-      result ? `- watchdog: ${result.reason}, exit ${result.code} after ${(result.ms / 60000).toFixed(1)} min (ceiling ${Math.round(spec.ceilingS / 60)} min, stall ${spec.stallMin} min)` : '- the job step did not start',
-      links.folder ? `- results: ${links.folder}` : `- results: not relayed (${relayNote || 'no folder link printed'}); on the PC at ${attempt}`,
-      ...links.pictures.map(p => `- picture: ${p}`),
-      `- reviewed before the run: ${spec.reviewed}`,
-      '',
-      DONE_MARK(sha, spec.job)
-    ].filter((l, i, a) => l !== '' || a[i - 1] !== '').join('\n');
-    this.report(n, () => this.gh.comment(n, body), 'post the result');
+    const links = this.deliver({ sha, job: spec.job, pr: n, attempt });
     this.report(n, () => this.gh.removeLabel(n, RUNNING), `remove ${RUNNING}`);
     return { pass, failed, attempt, result, links };
+  }
+  // Relay the attempt and post its result with the done marker; only both together write "delivered". A failed relay
+  // or comment leaves the attempt as it is for redeliver(), which never reruns the job (Artoo on PR 1835).
+  deliver(e) {
+    const st = path.join(e.attempt, 'status.txt');
+    const r = JSON.parse(fs.readFileSync(path.join(e.attempt, 'pc_daemon_result.json'), 'utf8'));
+    const { spec, pass, failed, result } = r;
+    (this.lastTry ||= new Map()).set(e.attempt, this.clock().getTime());
+    const tries = (this.deliveryTries.get(e.attempt) || 0) + 1;
+    this.deliveryTries.set(e.attempt, tries);
+    let links;
+    try { links = relayLinks(this.tools.relay(e.job, e.attempt, st)); if (!links.folder) throw new Error('no folder link printed'); }
+    catch (err) {
+      fs.appendFileSync(st, `${this.clock().toISOString()} relay failed (try ${tries}): ${err.message}\r\n`);
+      if (tries === 1) this.report(e.pr, () => this.gh.comment(e.pr, `PC daemon (issue 1662): ${e.job} ${pass ? 'PASS' : 'FAILED'} at ${e.sha.slice(0, 8)} on the PC, but the relay failed (${err.message}). The daemon retries the relay every ${Math.round(this.retryMs / 60000)} minutes without rerunning the job; results stay at ${e.attempt}.`), 'comment');
+      return null;
+    }
+    const body = [
+      `PC daemon (issue 1662): ${e.job} ${pass ? 'PASS' : 'FAILED'} at ${e.sha.slice(0, 8)}`,
+      '',
+      pass ? '' : `- failed: ${failed.join(', ')}`,
+      r.quarantined ? '- QUARANTINE: the process tree did not end; the daemon holds the slot and GPU and starts nothing until the Board looks' : '',
+      result ? `- watchdog: ${result.reason}, exit ${result.code} after ${(result.ms / 60000).toFixed(1)} min (ceiling ${Math.round(spec.ceilingS / 60)} min, stall ${spec.stallMin} min)` : '- the job step did not start',
+      `- results: ${links.folder}`,
+      ...links.pictures.map(p => `- picture: ${p}`),
+      tries > 1 ? `- relayed on try ${tries}` : '',
+      `- reviewed before the run: ${spec.reviewed}`,
+      '',
+      DONE_MARK(e.sha, e.job)
+    ].filter((l, i, a) => l !== '' || (i > 0 && a[i - 1] !== '')).join('\n');
+    try { this.gh.comment(e.pr, body); }
+    catch (err) { fs.appendFileSync(st, `${this.clock().toISOString()} result comment failed: ${err.message}\r\n`); return null; }
+    this.note(`${this.clock().toISOString()} ${e.sha} ${e.job} PR${e.pr} delivered ${e.attempt}`);
+    this.deliveryTries.delete(e.attempt); this.lastTry?.delete(e.attempt);
+    return links;
+  }
+  async redeliver() {
+    this.lastTry ||= new Map();
+    for (const e of this.undelivered()) {
+      const last = this.lastTry.get(e.attempt) || 0, t = this.clock().getTime();
+      if (last && t - last < this.retryMs) continue;
+      if (!fs.existsSync(path.join(e.attempt, 'pc_daemon_result.json'))) continue;
+      this.log(`redelivering ${e.job} at ${e.sha.slice(0, 8)} (PR ${e.pr})`);
+      this.deliver(e);
+    }
   }
 }
 function command(spec, repo, outDir) {
@@ -515,7 +613,11 @@ async function main(argv) {
   if (live && process.platform !== 'win32') throw new Error('--live runs on Ryan\'s PC only');
   const d = new Daemon({ vt, gh: new GhCli(), tools: new PcTools({ vt }), live });
   console.log(`PC daemon (issue 1662) ${live ? 'LIVE' : 'dry run: reads GitHub only, changes nothing'}; root ${vt}`);
-  if (live) d.sweepProfiles();
+  if (live) {
+    d.lease();
+    setInterval(() => { try { d.beat(); } catch (e) { console.error('PC daemon: ' + e.message); process.exit(3); } }, 30000).unref();
+    d.sweepProfiles();
+  }
   for (;;) {
     if (d.stopAsked()) { console.log('stop.txt found in pc_daemon; stopping'); return; }
     try { await d.tick(); } catch (e) { console.log(`look failed: ${e.message}`); }
