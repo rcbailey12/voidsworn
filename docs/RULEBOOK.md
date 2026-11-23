@@ -284,6 +284,16 @@ paid `[openai]` API PR audits (like #1647) whenever free Artoo (ChatGPT) or Clau
 cash OpenAI API credits only for tasks no subscription seat can do." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Issue 1647, OK'd before this ruling, finishes.
 Set: Ryan, Nov 22 (R406).
 
+2.19 **A paid API call never loses its work: no tight answer caps, and every call saves partial output as it streams.** Any
+script that calls a paid model API (Claude, OpenAI, Kimi, DeepSeek) sets the output limit to the model's ceiling, not a small
+guess, sets no advisory task budget, and streams the answer, the visible thinking summary and the raw event stream to files
+as they arrive, so a cut, a timeout or a max-tokens stop still leaves every event the provider returned, and marks the
+deliverable as complete, partial or missing in its result file. Hidden reasoning that the provider never returns cannot be
+saved, so long jobs ask for visible checkpoints. Spend limits Ryan approved (a credit cap on a key) are separate and stay. Why: on Nov 22 the Fable
+review of the Gate 2 sound plan (issue 1752) hit a 64,000-token cap entirely in unsaved thinking, cost about $3.83 and
+returned an empty review. "yes, stop randomly capping and make sure thatr work gets saved" (Ryan, Nov 22 2026, 20:53 UTC).
+Set: Ryan, Nov 22 (R418).
+
 ## 3. PC and tools
 
 3.1 **The product is the Godot 4 game on Ryan's Windows PC only, and Godot (`godot/`) is the only rules source.** The browser
@@ -293,10 +303,9 @@ touches and the game never reads. A rules or campaign change edits the Godot fil
 `godot --headless --path godot --script res://rules/tools/reseal_tables.gd`). CI compares every battle, the 30 seeded campaign
 runs and the Nemesis scenarios byte for byte with the reviewed saved Godot results in the repo, beside the cache on/off safety
 net; a pull request that changes them updates the saved results in the same pull request (`godot/rules/test/saved/README.md`,
-`node godot/campaign/test/node/saved_campaign.js update`) and says why each changed battle or run moved. One exception until
-issue 1667 moves the ship tools onto the Godot tables: a change to a ship's weapon list or hull entry also goes into data.js,
-because the ship pipeline still reads it (weapon definitions, kind and shots, are read from the Godot table already:
-`tools/recipe/gamedata.py` weapon_stats). The balance simulator (`node sim3d.js`) plays the frozen browser rules, so it measures
+`node godot/campaign/test/node/saved_campaign.js update`) and says why each changed battle or run moved. The ship pipeline reads
+weapon lists and hull entries from the Godot rules table (`tools/recipe/gamedata.py`, issue 1667, R422).
+The balance simulator (`node sim3d.js`) plays the frozen browser rules, so it measures
 nothing new until its Godot port (issue 1656) lands. Why: "RETIRE THE BROWSER JS TWIN (RULEBOOK 3.1): Approved. Land a clean
 retirement PR BEFORE coding starts on #1453 Build Variety parts (including #1652). Godot (`godot/`) is now the sole rules source
 of truth, backed by headless Godot tests." (Ryan, Nov 22 2026, 12:09 UTC, R405). It replaces Path D's keep-both rule (R312),
@@ -313,6 +322,7 @@ watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md,
 On Nov 19, about 350 GB disappeared overnight (392 GB free after the Nov 18 cleanup, 41 GB the next morning). The hand cleanup removed 173 folders and raised free space to 199 GB. It kept 42 checkout copies, 26 because generated campaign outputs, audio UIDs or onboarding output were outside the safe list.
 Set: Ryan, Nov 18 (R326) and Nov 19, 16:30 UTC (R336); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 Ryan's yes to a delete counts when he gives it in the Board thread himself, typed in his own words. The Board passes it to the PC session with his message id as the receipt and the PC acts on it; nobody asks him to repeat it or to go to the PC just to say yes. A note from the coordinator, a helper or another agent is still not his yes. Why: on Nov 21 he typed "Yes remove saved runs" three times from his phone and the PC refused each as a relay, so the cleanup nearly waited a night with C: under the job floor. Set: Ryan, Nov 22, 04:35 UTC, "Yes fix that" (R400).
+An install or refresh that deletes nothing is already approved: a tools_live install, a lane runner refresh, a watcher swap or a playtest promotion that keeps the old copy runs without asking Ryan again (`lane_tools_refresh.ps1 -NoRotate`; on the PC, `ALLOW_NODELETE_INSTALLS.bat` lets Claude run exactly that command without a prompt). Anything that deletes or rotates away a file still needs his own yes, as above. Why: on Nov 22 the PC refused two tools_live installs until he typed an OK himself, holding the Codex lane fix and the relay re-proof. Set: Ryan, Nov 22, 20:13 UTC, "alos yes any install that deletes nothing is approved" (R417).
 
 Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
 (including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
@@ -507,7 +517,12 @@ Set: Ryan, Nov 15; audit fixes approved Nov 17 (R309).
 3.12 **No GPU capture on a pull request before its checks are green and its diff has passed review.** `player_path`, `look_bench`
 and other heavy GPU captures are queued only after "All checks" is green and Artoo or the code review seat has passed the diff
 at that head commit; a later push needs both again. Overnight, when the PC is idle, gpu_go.txt is clear and main changed game
-files, `build\export` refreshes by itself (issue 1663). Why: "Never queue `player_path`, `look_bench`, or heavy GPU captures on
+files, `build\export` refreshes by itself (issue 1663): the root watcher runs `tools/pc/overnight_export.ps1` every 10
+minutes when idle, and it queues one `overnight_export_job.bat` only between 1 and 5 AM Central, with gpu_go.txt clear, 75 GB
+free on C:, no job, GPU claim or Voidsworn, Godot or Blender process running, and main's `godot/` tree changed since the
+last overnight export; one try a night. The job exports main through the existing g2_export check, smoke and promotion and
+never changes `build\godot`; g2_export refuses to replace `build\export` while Voidsworn is running, so the game Ryan
+launches is never swapped under him. R319 still holds for playtest captures (`g2_pt_*`): those wait for Ryan to ask. Why: "Never queue `player_path`, `look_bench`, or heavy GPU captures on
 a PR until `checks` is green and Artoo (or the code review seat) has passed the diff." and "Auto-refresh `build\export` overnight
 when idle (`gpu_go.txt` clear) and `main` changed game files." (Ryan, Nov 22 2026, 12:09 UTC, owner decisions of the studio ops upgrade plan, thread "Upgrade studio ops and PC harness"). Set: Ryan, Nov 22 (R407, R408).
 
@@ -517,6 +532,34 @@ alike, findings grouped Blocking, High / Medium, Ready, naming the commit read. 
 regressions on PR 1699 (shield-blocked brownouts, a miss streak divided by speed, two competing light-dim paths) that green
 checks missed; Ryan: "Instruct Opus, Codex, and Muse review runs to apply `independent-audit` before merging any Godot FX,
 rendering, ship import, audio, or battle-feel PR." (Ryan, Nov 22 2026, 16:48 UTC, Board thread). Set: Ryan, Nov 22 (R413).
+
+3.14 **One global look and sound standard; no subsystem is tuned alone.** Every ship exterior and interior, weapon effect,
+wound, death, hulk, debris piece, station, planet, rock, sky and sound follows the six laws of
+`contrib/opus/plans/global_cohesion_standard.md`: (1) one value ladder (deep space near black; ship interiors and wreck cavities
+darker than lit armor, walls at most 0.11 linear; full glow only on cores, weapons and small accent strips, non-core interior
+emission at most 0.25); (2) interior materials come from each faction's own role table, never from the `kit.py` diagram
+colours, with structure (bone, frame, truss) kept apart from wall and flesh finishes; (3) one identity per faction across
+hull, interior, weapons, wounds, deaths, hulks and sound; (4) the world and audio tracks (10.11, the sound plan using Godot
+4.7 native `AudioStreamSynchronized`/`AudioStreamInteractive` in Gate 3) obey the same ladder and palette; (5) the standard's
+automated anti-drift checks (export, Godot world, exterior and palette, sound pack) are added and kept green; (6) AAA ship
+exterior lighting, per-faction micro-detail, PBR separation and Godot 4.7 engine hygiene (#1777, #1778, #1779, #1780:
+default-on Space PBR reflection IBL and per-faction `ao_light_affect`, zoom-tracked crisp contact shadows without `LookRim`
+plastic glare, BC5 ship normal compression (already true BC5: S3TC with the normal source, as Godot 4.7 has no RGTC mode; guarded by `ship_look_v2_check`), native per-faction PBR channels and six faction tiling micro-detail
+normal/roughness maps, true paint-vs-metal separation, massive-scale cues, a hard export ban on lossy `.jpg` normal and ORM
+maps, battle 3D LUT + kill-cam DoF + selective SSR/CompositorEffect benchmark, plus cached `.gdshader` PSOs, BC7 world VRAM
+compression, FSR 2.2 AA option and empty volumetric fog gating). A fix for one faction is made at the shared root for all
+six. Why: silo patches kept drifting (chalk-white Directorate corridors, neon Chorus organs from diagram colours, clay-ish
+ship exteriors under black-space reflection defaults, purple and mustard leaks, unwired 8K planet maps, runtime shader
+stutters and raw RGBA8 VRAM bloat); Ryan: "We are moving from one-off visual tweaks to one global visual, material, world,
+and audio standard so subsystems stop drifting in silos." and "Yeah, A for all. Let's do everything and anything we can here."
+(Nov 22 2026, tracker #1774). Set: Ryan, Nov 22 (R420).
+R421 (Ryan, Nov 22 2026, on the Fable and Astra cohesion reviews): no Glasswright refraction (dark glass with clearcoat
+and fresnel instead); anisotropy stays at 0 until #1778 bakes flow maps; before Ship Look V2 goes default-on, the warm sun
+reflection lobe is desaturated to a neutral warm-white so Eclipse stays obsidian-violet in deep shadow. Interiors (#1763,
+#1755) merge only after the #1755 breach-material and strip-mask fixes and one joint intact, breached and broken sheet under
+the #1786 lighting. The world PRs fold in the audit cleanups before merge: an obsidian Eclipse hulk finish (#1772), a
+procedural planet fallback when the remix is off (#1776), crystal `_lo` LODs (#1782); the planet relief map's VRAM is
+budgeted in #1780.
 
 ## 4. Ships and concepts
 
@@ -582,6 +625,18 @@ tells (R174). Set: Ryan (R82, R216, R353).
 10.10 **The battle board is the dead star's gravity well.** Why: it is the game's identity, the Hollow Sun setting (R216).
 Set: Ryan, Oct 24 (R216).
 
+10.11 **The battle sky is Grounded Cinematic Space: mostly near-black, never wall-to-wall star snow.** About 400 star
+pinpoints in a 45-degree battle frame (about 96% fewer than the Nov 22 sky; Ryan picked 400 over 1,200, R421), faint stars gathered along a tilted galactic band,
+a steep brightness curve so only a few hero stars gleam, and opaque dark dust lanes (`star_floor = 0.0`; the `VS_STAR_FLOOR`
+override stays for tuning sheets) that black out the stars behind them. No mustard fog and no purple Eclipse nebula (10.9).
+Planets, rocks, crystal clusters, stations and hulks are lifted to one bar across every region: the 8K rocky planet maps (godot/world/rocks/r01) and all
+five foreground planet types on the high-relief planet pipeline, five asteroid biomes that read apart, faceted Blender crystal
+clusters, `station_T2` at every cluster size, and derelict hulks from all six factions. The track plan and its five
+silent-regression traps are `contrib/opus/plans/world_consistency_v2.md`; each track runs independent-audit (3.13) before its
+GPU captures (3.12). Why: the Nov 22 world audit found A-tier pieces beside D-tier outliers, and about 85,000 sky stars read
+as white static behind ships, hexes and arcs; Ryan approved Option A on all four areas (tracker #1764). Set: Ryan, Nov 22 2026
+(R419).
+
 ## 11. Story, names and the campaign
 
 11.1 **The lore is lore_bible_r8.md; display names follow it and rename_map_final.md; ids never change.** Why: saves, sims and
@@ -643,8 +698,8 @@ standing checks and skips the four Godot jobs; the "All checks" job gives every 
 main fails the run. Why: docs-only review pushes ran 45 runner-minutes of Godot work for nothing (audit GH-03, issue 1487).
 
 12.4 **A rules or data change is made in Godot only and passes the saved-results checks (3.1); a pull request that updates
-the saved results says why each changed battle or run moved.** The frozen browser files change only under 3.1's ship exception
-until issue 1667. Why: the oracle copies drifted (R155); the browser twin is retired (R405). Set: Board; Ryan, Nov 22 (R405).
+the saved results says why each changed battle or run moved.** Why: the oracle copies drifted (R155); the browser twin is
+retired (R405). Set: Board; Ryan, Nov 22 (R405).
 Id: R155b.
 
 12.5 **The look bench: bench a commit twice and keep the second run; a change differs where it is meant to and nowhere else;

@@ -10,7 +10,12 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from unittest.mock import patch
+# Issue 1739: a headless Godot opening a fresh temp project imports it first; on the PC beside other lanes that took over
+# 30 s, so every real Godot call here may take up to 2 minutes. A call that still runs then is stuck: its output so far
+# is printed before the failure.
+GODOT_TIMEOUT = 120
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[3]
@@ -185,6 +190,31 @@ if mode != 'missing' or 'credits' not in shot.name:
     print('PASS Windows playtest prepare and five capture exit checks, including missing and stale evidence')
 
 
+# The scene the native Godot check runs. Issue 1739: it called save_jpg(image, path) after issue 1567 made quality and stage
+# required, so Godot failed to parse it and sat idle until the timeout, and only on Windows, where the check runs. The
+# stage sweep below now reads this text too, on every host.
+NATIVE_TEST_GD = '''extends Node
+func _ready() -> void:
+    var out := OS.get_cmdline_user_args()[0]
+    var image := Image.create(1280, 720, false, Image.FORMAT_RGBA8)
+    image.fill(Color(0.1, 0.2, 0.3, 0.0))
+    image.fill_rect(Rect2i(300, 260, 660, 250), Color("#d38c45"))
+    var stamp := preload("res://tools/picture_provenance.gd")
+    # Artoo on PR 1757: a failed save ends Godot at once with its error, never an idle wait for the timeout
+    var err := stamp.save_png(image, out.path_join("NATIVE_889.png"), "paint proof")
+    if err != OK:
+        printerr("native fixture: save_png failed, error ", err)
+        get_tree().quit(1)
+        return
+    err = stamp.save_jpg(image, out.path_join("NATIVE_889.jpg"), 0.9, "paint proof")
+    if err != OK:
+        printerr("native fixture: save_jpg failed, error ", err)
+        get_tree().quit(1)
+        return
+    get_tree().quit(0)
+'''
+
+
 def native_outputs(folder, godot):
     build = folder / 'archive build'
     project = build / 'godot'
@@ -196,25 +226,18 @@ run/main_scene="res://test.tscn"
 renderer/rendering_method="gl_compatibility"
 ''')
     shutil.copyfile(ROOT / 'godot/tools/picture_provenance.gd', project / 'tools/picture_provenance.gd')
+    # Issue 1739: the stamp preloads every script it names (render/placeholder_guard.gd since PR 1600); copy them all,
+    # or the fixture fails to compile and Godot idles
+    for dep in re.findall(r'preload\("res://([^"]+\.gd)"\)', (ROOT / 'godot/tools/picture_provenance.gd').read_text(encoding='utf-8')):
+        (project / dep).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / 'godot' / dep, project / dep)
     shutil.copyfile(ROOT / 'godot/export_presets.cfg', project / 'export_presets.cfg')
     (project / 'test.tscn').write_text('''[gd_scene load_steps=2 format=3]
 [ext_resource type="Script" path="res://test.gd" id="1"]
 [node name="PictureStampTest" type="Node"]
 script = ExtResource("1")
 ''')
-    (project / 'test.gd').write_text('''extends Node
-func _ready() -> void:
-    var out := OS.get_cmdline_user_args()[0]
-    var image := Image.create(1280, 720, false, Image.FORMAT_RGBA8)
-    image.fill(Color(0.1, 0.2, 0.3, 0.0))
-    image.fill_rect(Rect2i(300, 260, 660, 250), Color("#d38c45"))
-    var stamp := preload("res://tools/picture_provenance.gd")
-    if stamp.save_png(image, out.path_join("NATIVE_889.png"), "paint proof") != OK:
-        return
-    if stamp.save_jpg(image, out.path_join("NATIVE_889.jpg")) != OK:
-        return
-    get_tree().quit(0)
-''')
+    (project / 'test.gd').write_text(NATIVE_TEST_GD)
     env = dict(os.environ)
     for key in ('PICTURE_SOURCE_REPO', 'PICTURE_STAMP_TOOL', 'PICTURE_PYTHON'):
         env.pop(key, None)
@@ -222,8 +245,16 @@ func _ready() -> void:
     def invoke(command, name, settings, expected=0):
         out = folder / name
         out.mkdir()
-        result = subprocess.run([*command, '--', str(out)], cwd=build, env=settings,
-                                capture_output=True, text=True, timeout=30)
+        try:
+            # --quit-after: a fixture that never reaches its own quit (a compile error) ends in seconds, not at the timeout
+            result = subprocess.run([*command, '--quit-after', '3000', '--', str(out)], cwd=build, env=settings,
+                                    capture_output=True, text=True, timeout=GODOT_TIMEOUT)
+        except subprocess.TimeoutExpired as stuck:
+            def text(v):
+                return v.decode('utf-8', 'replace') if isinstance(v, bytes) else (v or '')
+            print('Godot did not exit within %d s for %r; its output so far:\n%s%s' % (
+                GODOT_TIMEOUT, name, text(stuck.stdout), text(stuck.stderr)))
+            raise
         log = result.stdout + result.stderr
         assert result.returncode == expected and 'SCRIPT ERROR' not in log, log
         if expected:
@@ -267,6 +298,16 @@ func _ready() -> void:
             assert text_lines(record)[1] == 'built from ' + BUILD_COMMIT[:12] + ' | ' + record['sources'][0]['stage']
 
     check_build(invoke(editor, 'archive captures', dict(env, PICTURE_PYTHON='missing-python')))
+    # Artoo on PR 1757: a save that fails (the output folder is a file here) ends Godot at once and non-zero
+    blocked = folder / 'blocked output'
+    blocked.write_text('a file where the output folder should be')
+    started = time.monotonic()
+    result = subprocess.run([*editor, '--quit-after', '3000', '--', str(blocked)], cwd=build, env=dict(env, PICTURE_PYTHON='missing-python'),
+                            capture_output=True, text=True, timeout=GODOT_TIMEOUT)
+    log = result.stdout + result.stderr
+    assert result.returncode != 0 and ('native fixture: save_png failed' in log or 'Picture stamp FAILED' in log), log
+    assert time.monotonic() - started < 60, 'a failed save waited %.0f s' % (time.monotonic() - started)
+    print('PASS a failed native save exits non-zero at once')
     review = Review('paint proof')
     image = review.open(folder / 'archive captures/NATIVE_889.jpg')
     sheet = folder / 'BUILD_REVIEW.png'
@@ -280,7 +321,7 @@ func _ready() -> void:
     if os.name == 'nt' and template.is_file():
         exe = build / 'export' / 'StampFixture.exe'
         for args in (['--import'], ['--export-release', 'Windows Desktop', str(exe)]):
-            result = subprocess.run([*editor, *args], env=env, capture_output=True, text=True, timeout=60)
+            result = subprocess.run([*editor, *args], env=env, capture_output=True, text=True, timeout=GODOT_TIMEOUT)
             assert result.returncode == 0, result.stdout + result.stderr
         # Give the packed game a valid checkout override to prove it uses its baked-in commit.
         exported = [str(exe.with_suffix('.console.exe')), '--headless']
@@ -292,7 +333,7 @@ func _ready() -> void:
             if kind == 'unknown':
                 info.write_text(json.dumps(dict(BUILD_INFO, commit='unknown')))
             result = subprocess.run([*editor, '--export-pack', 'Windows Desktop', str(pack)],
-                                    env=env, capture_output=True, text=True, timeout=60)
+                                    env=env, capture_output=True, text=True, timeout=GODOT_TIMEOUT)
             assert result.returncode == 0, result.stdout + result.stderr
             invoke(exported, 'packed commit ' + kind, checkout_env, expected=1)
             pack.rename(exe.with_name(kind + '-commit.pck'))
@@ -418,13 +459,20 @@ def stage_unnamed_saves():
     for rel in files:
         if rel == 'godot/tools/picture_provenance.gd' or rel.startswith('docs/archive/'):
             continue
-        text = (ROOT / rel).read_text(encoding='utf-8-sig')
-        aliases = re.findall(r'(?:const|var)\s+([A-Za-z_]\w*)\s*:?=?\s*(?:pre)?load\("res://tools/picture_provenance\.gd"\)', text)
-        receiver = r'(?:(?:pre)?load\("res://tools/picture_provenance\.gd"\)' + ''.join('|' + re.escape(a) + r'\b' for a in aliases) + ')'
-        for m in re.finditer(receiver + r'\s*\.\s*save_(png|jpg)\s*\(', text):
-            if len(_call_args(text, m.end())) < (3 if m.group(1) == 'png' else 4):
-                missing.append(rel + ':' + str(text.count('\n', 0, m.start()) + 1))
+        missing += [rel + ':' + str(n) for n in unnamed_saves_in(ROOT.joinpath(rel).read_text(encoding='utf-8-sig'))]
+    missing += ['NATIVE_TEST_GD:' + str(n) for n in unnamed_saves_in(NATIVE_TEST_GD)]
     return missing
+
+
+def unnamed_saves_in(text):
+    # line numbers of shared writer calls in this GDScript text that do not pass every required argument
+    found = []
+    aliases = re.findall(r'(?:const|var)\s+([A-Za-z_]\w*)\s*:?=?\s*(?:pre)?load\("res://tools/picture_provenance\.gd"\)', text)
+    receiver = r'(?:(?:pre)?load\("res://tools/picture_provenance\.gd"\)' + ''.join('|' + re.escape(a) + r'\b' for a in aliases) + ')'
+    for m in re.finditer(receiver + r'\s*\.\s*save_(png|jpg)\s*\(', text):
+        if len(_call_args(text, m.end())) < (3 if m.group(1) == 'png' else 4):
+            found.append(text.count('\n', 0, m.start()) + 1)
+    return found
 
 
 def checks(folder):

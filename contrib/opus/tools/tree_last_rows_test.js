@@ -6,28 +6,26 @@
 // The few setup lines that are not game moves are marked "setup": ships placed in range of an enemy, a hull dented before a
 // regrowth, flak switched off so the full and half strikes roll the same dice.
 // Also checked: the parity fixtures carry the lineage the real functions build (tree_last_rows_fixtures.js), and every
-// fixture's row fires (or, for a "no" answer, stays quiet) in the golden run.
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const { spawnSync } = require('child_process');
-const ROOT = path.resolve(__dirname, '../../..');
+// fixture's row fires (or, for a "no" answer, stays quiet) in the saved Godot battle.
+const saved = require('../../../godot/rules/test/saved/records');
 const FIXT = require('./tree_last_rows_fixtures.js');
 
 let bad = 0;
 const ok = (name, cond, msg) => { if (cond) console.log('PASS ' + name + ': ' + msg); else { console.log('FAIL ' + name + ': ' + msg); bad++; } };
 
-// 1. fixtures: lineage from the real functions, and each row fires (or stays quiet) in the golden run
+// 1. fixtures: lineage from the campaign and fire counts from the saved Godot battles
 { const f = FIXT.check(); for (const x of f) ok('fixture', false, x); if (!f.length) ok('fixtures', true, Object.keys(FIXT.FIX).length + ' fixtures carry the lineage lineagePick and newRun build'); }
 {
-  const scen = JSON.parse(fs.readFileSync(path.join(ROOT, 'godot/rules/test/scenarios.json'), 'utf8'));
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 't529-'));
+  const scen = saved.json(saved.SCENARIOS);
+  const battles = saved.manifest().battles;
   for (const [name, f] of Object.entries(FIXT.FIX)) {
-    const out = path.join(tmp, name + '.jsonl');
-    const r = spawnSync(process.execPath, [path.join(ROOT, 'godot/rules/test/node/golden.js'), 'scenario', name, out], { cwd: ROOT, encoding: 'utf8' });
-    if (r.status !== 0 || !scen[name]) { ok(name, false, 'the golden run failed'); continue; }
-    const lines = fs.readFileSync(out, 'utf8').trim().split('\n');
-    const st = JSON.parse(JSON.parse(lines[lines.length - 1]).state).b.treeStats || {};
+    const entry = battles[name];
+    if (!scen[name] || !entry || entry.scenario_sha256 !== saved.sha(saved.stable(scen[name]))) {
+      ok(name, false, 'missing or stale saved Godot result');
+      continue;
+    }
+    const last = saved.records(saved.unpack(saved.HOME, entry)).at(-1);
+    const st = JSON.parse(last.state).b.treeStats || {};
     const fired = (st[f.key] || 0) >= 1;
     ok(name, f.fire === false ? !fired : fired, f.key + (f.fire === false ? ' stays quiet after a "no" answer' : ' fires ' + (st[f.key] || 0) + ' times'));
   }
