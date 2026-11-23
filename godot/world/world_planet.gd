@@ -533,8 +533,9 @@ float craters(vec3 d, float scale, float dens) {
 // Wave 0 (Fable and Astra, Nov 23): short crack arcs on the sphere, each a gently curved piece of a small circle with
 // faded ends, one per occupied cell of a 3D grid, so arcs cross at all angles and nothing loops back on itself (the
 // old stretched-noise lineae curled into scribbles). Returns the dark band (0 to 1); crest gets the pale ridge down the
-// middle of the wider ones. w is the half width in radians.
-float arcs(vec3 d, float scale, float dens, float w, float len, inout float crest) {
+// middle of the wider ones; halo gets a band halo_k times as wide on the same arcs (volcanic scorch, one pass for
+// both). w is the half width in radians.
+float arcs(vec3 d, float scale, float dens, float w, float len, float halo_k, inout float crest, inout float halo) {
 	vec3 p = d * scale;
 	// the 27 cells around this one: an arc reaches at most one cell from its centre, so none is cut off by the
 	// edge of the cells this looks through (the Wave 0 audit saw straight cut ends with the 8 nearest cells)
@@ -549,6 +550,7 @@ float arcs(vec3 d, float scale, float dens, float w, float len, inout float cres
 		float bend = (hh(c + 10.3) - 0.5) * 1.1 / scale;    // a small circle: curved, never a loop
 		float along = acos(clamp(dot(d, cp), -1.0, 1.0)) * scale;
 		float half_len = len * (0.55 + 0.45 * hh(c + 12.7));   // len is at most 1 cell
+		if (along >= half_len || dot(d, cp) <= 0.0) continue;   // past this arc's end: skip the noise below (load time)
 		float fade = (1.0 - smoothstep(half_len * 0.45, half_len, along)) * step(0.0, dot(d, cp));
 		// tapered toward the ends, and wandering a little along its length like a real fracture
 		float ww = w * (0.6 + 0.8 * hh(c + 11.9)) * mix(0.35, 1.0, fade);
@@ -556,6 +558,7 @@ float arcs(vec3 d, float scale, float dens, float w, float len, inout float cres
 		float dist = abs(dot(d, n) - bend * along * along / (scale * 2.0) + wander);
 		band = max(band, (1.0 - smoothstep(ww * 0.35, ww, dist)) * fade);
 		crest = max(crest, (1.0 - smoothstep(ww * 0.05, ww * 0.4, dist)) * fade * step(0.012, ww));   // wide enough not to alias
+		halo = max(halo, (1.0 - smoothstep(ww * halo_k * 0.35, ww * halo_k, dist)) * fade);
 	}
 	return band;
 }
@@ -676,8 +679,8 @@ void fragment() {
 		alb *= (0.85 + 0.25 * grit) * (1.0 - smoothstep(0.7, 0.95, fine) * 0.3);
 		float unused_crest = 0.0;
 		// few and restrained: a handful of long rifts, never a glowing web
-		float fis = arcs(d, 2.0, 0.3, 0.009, 1.0, unused_crest);
-		float scorch = arcs(d, 2.0, 0.3, 0.03, 1.0, unused_crest);
+		float scorch = 0.0;
+		float fis = arcs(d, 2.0, 0.3, 0.009, 1.0, 3.3, unused_crest, scorch);
 		alb *= 1.0 - scorch * 0.55;
 		relief = clamp(h * 0.6 + (1.0 - can) * 0.25 + fine * 0.15 - flow * 0.01 - fis * 0.08, 0.0, 1.0);
 		lava = max(fis * 0.6, smoothstep(0.86, 0.96, can) * (1.0 - smoothstep(0.38, 0.58, h)) * 0.5);
@@ -702,9 +705,10 @@ void fragment() {
 		// lineae (Wave 0, Nov 23): short crossing crack arcs at three scales (arcs() above), long ones sparse and wide
 		// with a pale crest, short ones dense and thin; frosted ground between them
 		float crest = 0.0;
-		float lin = arcs(d, 2.4, 0.4, 0.014, 1.0, crest);
-		lin = max(lin, arcs(d, 6.0, 0.28, 0.008, 0.8, crest) * 0.75);
-		lin = max(lin, arcs(d, 15.0, 0.22, 0.004, 0.7, crest) * 0.5);
+		float no_halo = 0.0;
+		float lin = arcs(d, 2.4, 0.4, 0.014, 1.0, 1.0, crest, no_halo);
+		lin = max(lin, arcs(d, 6.0, 0.28, 0.008, 0.8, 1.0, crest, no_halo) * 0.75);
+		lin = max(lin, arcs(d, 15.0, 0.22, 0.004, 0.7, 1.0, crest, no_halo) * 0.5);
 		alb *= 0.94 + 0.1 * fb(q * 26.0, 3);
 		alb = mix(alb, cb, lin * 0.55);
 		alb = mix(alb, ca * 1.06, crest * 0.7);
