@@ -2,7 +2,7 @@
  "batch": "elevenlabs_pilot_v2",
  "gate": 2,
  "made_for": "issue 1752 Gate 2 clean-slate sci-fi calibration pack (Ryan, Nov 22 2026; supersedes Gate 1 pilot1585). Fable, Artoo and Astra (issue 1754) review fixes applied",
- "note": "One clip per shot for every weapon family in godot/rules/data/tables.json (FAC_WNAMES checked), impacts for metal, glass, bio and obsidian targets plus energy hits and an ordinary shield block, shield collapses, R416 breach and capability-loss cues behind VS_WOUNDS_V2 (#1741), faction death beats plus the base break, mechanical acoustic UI cues, bridge ambience, and 3 music prototypes. Wave A ear-audit global upgrades (Ryan, Nov 22 2026): fixed Tabletop Foley Scale trap across Glasswright, Chorus, Eclipse, Directorate, beams, shields, and rewards; stripped pink-elephant negative leaks ('no explosion', 'no fire', 'under heavy fire') and monster/creature/flesh words; locked v2 strictly to fast kinetic ballistic shell guns (moving all impacts, deaths, Directorate energy, and Eclipse to v3); allowed controlled natural resonance on beams, shields, Glasswright, Eclipse, and UI rewards. Wave B stays held until Wave A2 (10 items / 20 takes) clears ear sign-off.",
+ "note": "One clip per shot for every weapon family in godot/rules/data/tables.json (FAC_WNAMES checked), impacts for metal, glass, bio and obsidian targets plus energy hits and an ordinary shield block, shield collapses, R416 breach and capability-loss cues behind VS_WOUNDS_V2 (#1741), faction death beats plus the base break, mechanical acoustic UI cues, bridge ambience, and 3 music prototypes. Wave A ear-audit global upgrades (Ryan, Nov 22 2026): fixed Tabletop Foley Scale trap across Glasswright, Chorus, Eclipse, Directorate, beams, shields, and rewards; stripped pink-elephant negative leaks ('no explosion', 'no fire', 'under heavy fire') and monster/creature/flesh words; locked v2 strictly to fast kinetic ballistic shell guns (moving all impacts, deaths, Directorate energy, and Eclipse to v3); allowed controlled natural resonance on beams, shields, Glasswright, Eclipse, and UI rewards. Wave B stays held until Wave A2 (10 items / 20 takes) clears ear sign-off. Wave A3 (Nov 23 2026, Fable audit of Antigravity's A2 ear audit, contrib/opus/reviews/sound_wavea3_fable_1752.md): 9 ids, 18 takes; six re-rolled prompts plus three twins (lance at influence 0.45, a plasma-wording Directorate recipe B, and an unchanged Eclipse control) so each test changes one thing. Wave B stays held until Wave A3 clears Ryan's ear check.",
  "sfx_model": "eleven_text_to_sound_v3",
  "music_model": "music_v2",
  "items": [
@@ -51,7 +51,18 @@
    "seconds": 1.8,
    "influence": 0.6,
    "takes": 2,
-   "prompt": "Focused sustained solar-thermal energy beam firing from a capital starship: an instant tight electromagnetic lock-on transient snapping into a continuous, unwavering high-energy beam roar over a steady deep reactor hum, held solid and flat for over a second, ending in a crisp clean power cutoff and brief thermal shimmer. Sustained directed-energy lance, even pressure from start to cutoff, smooth top end, controlled studio decay."
+   "prompt": "Capital starship solar-thermal lance firing a sustained beam: an immediate hard bright ignition crack, then a powerful steady pitched beam drone with a bright ringing molten-metal core over a deep reactor furnace hum, holding one strong clear note, then a fast falling power-down into silence. Hot, focused, tonal."
+  },
+  {
+   "id": "wep_sunward_lance_beam_inf45",
+   "kind": "sfx",
+   "cue": "lance (Sunward prow solar thermal lance) [Wave A3 twin of wep_sunward_lance_beam]",
+   "today": "lance",
+   "group": "weapon_sunward",
+   "seconds": 1.8,
+   "influence": 0.45,
+   "takes": 2,
+   "prompt": "Capital starship solar-thermal lance firing a sustained beam: an immediate hard bright ignition crack, then a powerful steady pitched beam drone with a bright ringing molten-metal core over a deep reactor furnace hum, holding one strong clear note, then a fast falling power-down into silence. Hot, focused, tonal."
   },
   {
    "id": "wep_sunward_torp_launch",
@@ -142,7 +153,18 @@
    "seconds": 0.7,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single heavy military high-voltage pulse discharge from a capital starship emitter: an instant solid electrical substation breaker slam fused with a tight dense high-current electric arc snap and a firm deep pressurized sub-bass thump, strictly flat steady pitch with an abrupt clean cutoff. Disciplined industrial power-grid strike, authoritative and controlled, smooth top end."
+   "prompt": "Single shot from a military starship high-voltage energy cannon: an immediate hard bright electric arc-flash crack, a dense capacitor-bank discharge with a tight buzzing electrical body and a short firm low punch, steady pitch, abrupt clean cutoff. Disciplined, cold, powerful, crisp bright attack."
+  },
+  {
+   "id": "wep_directorate_laser_b",
+   "kind": "sfx",
+   "cue": "gun_plasma light (Directorate laser, shown to the player as Plasma cannon: ONE shot) [Wave A3 twin of wep_directorate_laser]",
+   "today": "gun_las",
+   "group": "weapon_directorate",
+   "seconds": 0.7,
+   "influence": 0.65,
+   "takes": 2,
+   "prompt": "Single shot from a military starship plasma cannon: an immediate crisp superheated plasma-arc crack and a focused directed-energy discharge punch with a strong bright midrange snap and a tight firm low recoil, steady pitch, abrupt controlled cutoff. Cold, disciplined, authoritative capital-ship energy weapon."
   },
   {
    "id": "wep_directorate_turbo",
@@ -232,7 +254,7 @@
    "seconds": 0.8,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Colossal subterranean hydrostatic pressure cannon firing a massive dense petrified bone pillar: an instant deep booming low-end hydraulic pressure thump fused with the heavy dry brittle crack of massive thick calcified shell and petrified timber splitting under extreme force, followed by a brief dark sub-bass air displacement drop. Enormous monumental structural weight, deep and solid."
+   "prompt": "Massive calcified-bone starship launching one dense petrified spine at extreme velocity: an immediate hard dry crack of thick bone splitting, a tight forceful pressurized-gas launch burst and a fast rushing projectile pass, over a firm solid low-mid punch. Dry, brittle, hard, powerful, monumental scale."
   },
   {
    "id": "wep_chorus_bioplasma",
@@ -287,7 +309,7 @@
    "seconds": 0.8,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Hyper-velocity crystalline prism cannon discharging from a massive capital starship: an instant crisp high-energy crystal-crack transient fused simultaneously with a deep booming 150 Hz cathedral sub-harmonic punch and a tight luminous harmonic shimmer trailing smoothly off. Monumental capital-ship weapon velocity and weight, crystalline and lethal, smooth top end, controlled natural decay."
+   "prompt": "Crystalline prism cannon on a capital starship firing one hyper-velocity shard: an immediate hard bright crack like a vast sheet of thick ice splitting under tension, with a clear ringing glass-harmonic tone and a tight solid low-mid punch, then a short bright shimmering ring fading cleanly. Crystalline, fast, monumental scale."
   },
   {
    "id": "wep_ithar_needle",
@@ -348,6 +370,17 @@
    "id": "wep_eclipse_gauss_fire",
    "kind": "sfx",
    "cue": "gun_rail (Eclipse gauss, shown as Null cannon: ONE shot, no wake)",
+   "today": "gun_rail",
+   "group": "weapon_eclipse",
+   "seconds": 0.9,
+   "influence": 0.65,
+   "takes": 2,
+   "prompt": "Single devastating shot from an ancient alien monolith null cannon: an immediate crisp dark electrostatic void snap dropping hard into a crushing seismic-charge cinematic bass impact wave with a brief cold hollow bowed-obsidian resonance cutting abruptly into dead silence. Terrifying otherworldly gravity-weapon finality."
+  },
+  {
+   "id": "wep_eclipse_gauss_fire_ctl",
+   "kind": "sfx",
+   "cue": "gun_rail (Eclipse gauss, shown as Null cannon: ONE shot, no wake) [Wave A3 twin of wep_eclipse_gauss_fire]",
    "today": "gun_rail",
    "group": "weapon_eclipse",
    "seconds": 0.9,
@@ -541,7 +574,7 @@
    "seconds": 1.6,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Massive capital starship electromagnetic forcefield fracturing offline: an immediate crisp high-voltage electric-glass barrier crack, cascading into a steep descending resonant power-down pitch drop and wide shimmering electrostatic dissipation as the energy field collapses completely. Unmistakable high-tech energy barrier failure, deep sub-bass drop under clean electric crackle, smooth top end, natural controlled decay."
+   "prompt": "Capital starship energy forcefield collapsing, heard close: an immediate hard bright electrical arc crack and a short burst of crackling high-voltage discharge, straight into a strong descending power-down tone, a huge generator winding down fast through the midrange into a low hum, fading cleanly. Clear, forceful, electrical."
   },
   {
    "id": "shd_break_prismatic",
