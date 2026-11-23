@@ -594,7 +594,8 @@ A build brief, sheet or PR for any ship follows all four; a ship that cannot say
    `length_world`; no per-ship flag (issue 1680, RECIPE.md stage 7).
 2. **AO light and LODs.** Every hull's material gets a calibrated `ao_light_affect` from its faction's look.gd READ row
    (0.35 to 0.55, Glasswrights 0.2), never Godot's 0.0, and the importer generates Godot mesh LODs for far cameras
-   (issues 1678, 1679).
+   (issues 1678, 1679). Fleet lighting (that AO light plus the sky reflection gradient) is on by default for every ship
+   (R433, Ryan Nov 23); `VS_FLEET_LIGHTING=0` turns it off, only for before/after comparisons.
 3. **One authored look per faction.** When a faction is next baked or repainted, its stack writes `authored_look = 1`
    calibrated to the single battle light rig, and that faction's READ albedo lift stops applying to those hulls. Order as
    the work lands: Eclipse (1422), Navy flagship H4_11 (1681), Glasswright flagship I8_37 (1682), Chorus (1683),
