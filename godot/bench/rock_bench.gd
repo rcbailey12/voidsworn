@@ -10,7 +10,7 @@ extends "res://bench/look_bench.gd"
 # stamped by tools/picture_provenance.gd:
 #   rocks/RK_<kind>_c170.png and rocks/RK_<kind>_c26.png for stone, iron, carbon, ice, crystal (a rock blocker cluster and
 #   debris hexes around the camera focus, the region's sky behind)
-#   rocks/RK_crystal_cluster_c26.png (camera 26 tipped low onto a crystal blocker's clusters)
+#   rocks/RK_crystal_cluster_c26.png (camera 26 tipped low onto a crystal blocker: main's clusters before, none after)
 # and one frame-time row: rocks/frame_time.json (a full crystal belt, 37 rock hexes, at camera 170: mean and p95 GPU and
 # CPU milliseconds over --frames frames, measured by the rendering server). A missing still or row writes
 # ROCKS_FAILED.txt and exits 4; LOOK_BENCH_DONE prints only when everything is there. Before any picture the run proves
@@ -37,7 +37,7 @@ func _run() -> void:
 		_fail("VS_1361_OLD=1 without VS_1361_OLD_DIR: the before run would draw the new rock files")
 		return
 	# Artoo on PR 1782: prove which rock set this run draws before any picture (main's eight scans and three crystals for
-	# the before run, the branch's six and four for the after run), every mesh loaded from its file, never a fallback
+	# the before run, the branch's six and none for the after run), every mesh loaded from its file, never a fallback
 	var why := _preflight()
 	if why != "":
 		_fail(why)
@@ -92,7 +92,7 @@ func _preflight() -> String:
 	var scans: Array = WR.scan_names()
 	var crystals: Array = WR.lib().get("crystals", [])
 	var want_scans := 8 if old else WR.SCAN_COUNT
-	var want_crystals := 3 if old else 4
+	var want_crystals := 3 if old else 0   # Ryan scrapped the crystal clusters (Nov 22): main's three in the before run only
 	if scans.size() != want_scans:
 		return "%s run: %d scans in %s (want %d)" % ["before" if old else "after", scans.size(), WR.lib_dir, want_scans]
 	if old != scans.has("scan_07"):
@@ -104,8 +104,6 @@ func _preflight() -> String:
 			WR.mesh(str(nm) + suffix)
 	for nm in crystals:
 		WR.mesh(str(nm))
-		if not old:
-			WR.mesh(str(nm) + "_lo")
 	if not WR.fallbacks.is_empty():
 		return "rock files did not load from %s: %s" % [WR.lib_dir, ", ".join(WR.fallbacks)]
 	report["rock_dir"] = WR.lib_dir

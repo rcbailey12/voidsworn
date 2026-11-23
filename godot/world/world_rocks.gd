@@ -8,7 +8,8 @@ extends RefCounted
 #   iron    cool dark gunmetal slag crust, bright nickel-iron metal on the fresh ridges (issue 1361)
 #   carbon  deep charcoal C-type rock, matte, ash-grey ridge highlights, never tan (issue 1361)
 #   ice     dark comet crust with clean pale frost shelves on the fresh faces, faint cold glow in the cracks
-#   crystal dark slate host rock, thin glowing mineral veins seated in its crevices, plus clusters of crystal (see CRYSTAL)
+#   crystal dark slate host rock, thin glowing mineral veins seated in its crevices (Ryan scrapped the free crystal clusters
+#           on Nov 22; only the old look, VS_1361_OLD, still draws them, from world_rocks_v1.gd)
 # Issue 1361 (World V2, R419): each kind draws on its own subset of the scans (KIND_SCANS) and squeezes them its own way in
 # the vertex shader (shape_k: iron chunkier, ice longer and sharper), so the five belts differ in shape as well as colour.
 # The scans' COLOR_0.b (facet) is ridge convexity re-baked by world/tools/scan_facet.py, spanning 0 to 1 like rockgen's.
@@ -339,81 +340,6 @@ void fragment() {
 }
 """
 
-# Crystal clusters: dark glassy prisms lit from inside, brightest at the tips, split into colour at the edges.
-# Issue 1361: the clusters (world/tools/crystal_kit.py) grow out of a rough host collar; COLOR_0.r is 1 on crystal and 0 on
-# that rock, B a per-prism value for inner depth. The glow is restrained (a lit core and fresnel edges, no flat cyan).
-const CRYSTAL_SHADER := """
-shader_type spatial;
-render_mode cull_back;
-instance uniform float rock_radius = 1.0;
-global uniform float cam_near;
-global uniform vec4 cam_eye;
-global uniform vec3 cam_fwd;
-varying flat float camera_cover;
-uniform vec3 glow = vec3(0.3, 0.8, 1.0);
-uniform vec3 edge = vec3(0.7, 0.45, 1.0);
-// issue 1361: the collar is the crystal kind's own host rock (crystal_material sets it from KINDS), not a second copy
-uniform vec3 host_rock = vec3(0.046, 0.049, 0.058);
-uniform float tumble_k = 0.0;   // as ROCK_SHADER: turns at the stored rate unless VS_ROCK_TUMBLE=0 holds it
-uniform vec3 board_c = vec3(0.0);
-uniform vec2 haze_r = vec2(320.0, 2200.0);
-uniform vec3 haze_col = vec3(0.01);
-uniform float haze_max = 0.85;
-varying vec4 vC;
-varying vec3 vW;
-varying float vSeed;
-vec3 rot(vec3 v, vec3 ax, float a) { float c = cos(a); float s = sin(a); return v * c + cross(ax, v) * s + ax * dot(ax, v) * (1.0 - c); }
-void vertex() {
-	vC = COLOR;
-	float scale = max(length(MODEL_MATRIX[0].xyz), max(length(MODEL_MATRIX[1].xyz), length(MODEL_MATRIX[2].xyz)));
-	float radius = rock_radius * scale;
-	// Artoo, PR 1306: measure from the gameplay camera the rig publishes, not this pass's own camera, so a shadow pass
-	// (seen from the light) fades the rock exactly as the view does. Without a live rig, the pass's camera is used.
-	vec3 eye = cam_eye.w > 0.5 ? cam_eye.xyz : CAMERA_POSITION_WORLD;
-	vec3 fwd = cam_eye.w > 0.5 ? cam_fwd : -INV_VIEW_MATRIX[2].xyz;
-	float clearance = distance(eye, MODEL_MATRIX[3].xyz) - radius;
-	// Issue 1264: as ROCK_SHADER, fade before the live near plane cuts the surface.
-	float depth_clear = dot(MODEL_MATRIX[3].xyz - eye, fwd) - radius;
-	camera_cover = smoothstep(cam_near + 1.5, cam_near + 1.5 + max(1.0, radius * 0.25), min(clearance, depth_clear));
-	vec4 ic = INSTANCE_CUSTOM;
-	vSeed = ic.w;
-	float axis_length = length(ic.xyz);
-	if (axis_length > 1e-6) {
-		vec3 ax = ic.xyz / axis_length;
-		float a = ic.w * 6.2831 + TIME * axis_length * tumble_k; // Crystal clusters turn with their rocks under the same law.
-		VERTEX = rot(VERTEX, ax, a);
-		NORMAL = rot(NORMAL, ax, a);
-	}
-	vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-}
-void fragment() {
-	float screen_dither = fract(52.9829189 * fract(dot(FRAGCOORD.xy, vec2(0.06711056, 0.00583715))));
-	if (camera_cover <= screen_dither) { discard; }
-	float up = vC.g;
-	float glass = step(0.5, vC.r);
-	float f = pow(1.0 - clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0), 2.0);
-	float depth = mix(0.55, 1.15, vC.b);
-	// host collar: dark slate mineral rock, a little mottled
-	vec3 rock = host_rock * (0.75 + 0.5 * vC.b);
-	ALBEDO = mix(rock, vec3(0.02, 0.035, 0.05), glass);
-	ROUGHNESS = mix(0.9, 0.06, glass);
-	METALLIC = 0.0;
-	// a constant: a varying SPECULAR rendered the whole cluster near black in the GL Compatibility renderer (issue 1361)
-	SPECULAR = 0.6;
-	// as ROCK_SHADER (r8): the flat ambient cut, so the collar sits as dark as its host rock and the glass stays dark
-	AO = 0.4;
-	AO_LIGHT_AFFECT = 0.0;
-	float pulse = 0.88 + 0.12 * sin(TIME * 0.7 + vSeed * 17.0 + vC.b * 9.0);
-	// restrained: dark glass with a lit core rising to the tips and thin fresnel edges, never a flat glowing surface
-	vec3 core = glow * (0.01 + 0.35 * pow(up, 3.0)) * depth;
-	vec3 rimc = mix(glow, edge, f) * f * 0.2;
-	EMISSION = (core + rimc) * pulse * glass;
-	float dist = length(vW - board_c);
-	float below = -(vW.y - board_c.y);
-	FOG = vec4(haze_col, clamp(smoothstep(haze_r.x, haze_r.y, dist) * 0.55 + smoothstep(60.0, 700.0, below) * 0.4, 0.0, 1.0) * haze_max);
-}
-"""
-
 # per kind: base albedo (linear), fresh fracture colour, shader kind, shape (shape_k), tone jitter and second tint.
 # Issue 1361: iron is cool gunmetal with nickel ridges, carbon charcoal, each with its own tint range (no shared tan).
 const KINDS := {
@@ -583,16 +509,16 @@ static func material(kind: String, look: Dictionary) -> ShaderMaterial:
 	return m
 
 
+# Only the old look (VS_1361_OLD before-captures) draws crystal clusters; Ryan scrapped them on Nov 22.
 static func crystal_material(look: Dictionary) -> ShaderMaterial:
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	sh.code = _v1().CRYSTAL_SHADER if OLD else CRYSTAL_SHADER
+	sh.code = _v1().CRYSTAL_SHADER
 	m.shader = sh
 	m.set_shader_parameter("tumble_k", rock_tumble_k)
 	m.set_shader_parameter("board_c", look.get("board_c", Vector3.ZERO))
 	m.set_shader_parameter("haze_col", look.get("haze", Vector3(0.01, 0.012, 0.02)))
 	m.set_shader_parameter("haze_r", look.get("haze_r", Vector2(320, 2200)))
-	m.set_shader_parameter("host_rock", (_v1().KINDS if OLD else KINDS)["crystal"]["base"])
 	if look.has("glow"):
 		m.set_shader_parameter("glow", look["glow"])
 	return m

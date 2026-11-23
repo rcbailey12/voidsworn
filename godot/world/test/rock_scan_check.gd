@@ -5,7 +5,7 @@ extends SceneTree
 #   - a low-detail or flat outlier scan (scan_06 had 14,844 triangles, scan_07 was a flat boomerang 0.43 by 1.9);
 #   - a scan file that no longer matches its scans.json hash, or a manifest count the loader does not expect;
 #   - every kind drawing on the same scan list, or the warm tan cast back on iron and carbon;
-#   - crystal clusters back to a few hundred triangles, or without their rock collar (COLOR_0.r 0) and glass (1);
+#   - any crystal cluster back in the game (Ryan scrapped them, Nov 22);
 #   (Fable M5, H1 on PR 1782) a facet distribution the shader thresholds were not tuned on; a kind's squeeze drawing a
 #   rock flatter than DRAWN_ASPECT; a kind's base albedo outside R420 band 3 (0.04 to 0.30 linear luminance).
 
@@ -16,8 +16,6 @@ const MIN_FACET_RANGE := 0.45    # p98 minus p2 of COLOR_0.b
 const MIN_TRIS := 50000          # a full scan
 const MIN_TRIS_LO := 1500        # its far mesh
 const MIN_ASPECT := 0.3          # shortest over longest side of the box
-const CRYSTAL_TRIS := Vector2i(1500, 4000)
-const CRYSTAL_TRIS_LO := Vector2i(300, 1200)   # crystal_NN_lo, the edge field's far clusters (Ryan, Nov 22)
 
 var failures := 0
 
@@ -114,29 +112,10 @@ func _run() -> void:
 				var d := _drawn(exts[nm], k0 * jitter)
 				var a := minf(d.x, minf(d.y, d.z)) / maxf(d.x, maxf(d.y, d.z))
 				_check(a >= WR.DRAWN_ASPECT - 0.005, "%s draws %s at aspect %.2f (shape %.2f), flatter than %.2f" % [kind, nm, a, k0 * jitter, WR.DRAWN_ASPECT])
-	# crystal clusters
-	var crystals: Array = WR.lib().get("crystals", [])
-	_check(crystals.size() >= 3, "rocks.json lists %d crystal clusters" % crystals.size())
-	var names_lo: Array = []
-	for nm in crystals:
-		names_lo.append(str(nm))
-		names_lo.append(str(nm) + "_lo")
-	for nm in names_lo:
-		var lo_c := str(nm).ends_with("_lo")
-		var g := _glb(DIR + str(nm) + ".glb")
-		if g.is_empty():
-			_check(false, "%s does not read" % nm)
-			continue
-		var tris: int = g.tris
-		var want := CRYSTAL_TRIS_LO if lo_c else CRYSTAL_TRIS
-		_check(tris >= want.x and tris <= want.y, "%s has %d triangles (want %d to %d)" % [nm, tris, want.x, want.y])
-		var r: PackedFloat32Array = g.colour_r
-		var glass := 0
-		for v in r:
-			if v > 0.5: glass += 1
-		_check(glass > 0 and glass < r.size(), "%s needs both glass (COLOR_0.r 1) and its rock collar (0): %d of %d glass" % [nm, glass, r.size()])
-		_check(absf(g.lo_y) < 0.02 and absf(g.hi_y - 1.0) < 0.02, "%s leaves the base 0, tip 1 frame (%.2f to %.2f)" % [nm, g.lo_y, g.hi_y])
-		print("%s: %d triangles, %d of %d vertices glass" % [nm, tris, glass, r.size()])
+	# Ryan scrapped the free crystal clusters (Nov 22): the game ships none, so nothing can draw them by accident
+	_check(WR.lib().get("crystals", []).is_empty(), "rocks.json lists crystal clusters again (Ryan scrapped them, Nov 22)")
+	for f in DirAccess.get_files_at(DIR):
+		_check(not (f.begins_with("crystal_") and f.ends_with(".glb")), "%s is back in %s (Ryan scrapped the crystal clusters, Nov 22)" % [f, DIR])
 	print("rock_scan_check: %d failures" % failures)
 	quit(1 if failures > 0 else 0)
 

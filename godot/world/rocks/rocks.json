@@ -199,12 +199,7 @@
    ]
   }
  ],
- "crystals": [
-  "crystal_00",
-  "crystal_01",
-  "crystal_02",
-  "crystal_03"
- ],
+ "crystals": [],
  "kinds": {
   "stone": [
    "fragment",

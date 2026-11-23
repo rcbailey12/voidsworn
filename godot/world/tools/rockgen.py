@@ -7,8 +7,8 @@ Shapes follow real small bodies rather than lumpy potatoes:
   binary    contact binaries (Itokawa, Arrokoth, comet 67P): two lobes joined by a neck
   slab      flat broken plates
   shard     ice shards: long prisms with sharp cuts
-plus crystal clusters (hexagonal prisms with pointed tips) for crystal fields. Issue 1361: the shipped crystal_00..03 come
-from crystal_kit.py (Blender); a rerun of this script must not overwrite them or the rocks.json crystals list.
+Issue 1361: Ryan scrapped the free crystal clusters (Nov 22), so the game ships none and rocks.json lists none; a rerun
+keeps it that way unless --legacy-crystals asks for the old 216-tri clusters on purpose.
 
 Each body is a radial surface on a fine icosphere (10,242 points): an ellipsoid (or two lobes), large-scale warping,
 fracture planes (smooth-min cuts), ridges, a power-law crater population with bowls and raised rims, boulders, and fine
@@ -331,8 +331,8 @@ def main():
         man["rocks"].append({"name": name, "family": fam, "ext": [round(x, 3) for x in ext]})
         shapes.append((P, F, C))
         print(name, fam, "ext", np.round(ext, 2))
-    # Issue 1361 (Artoo on PR 1782): the shipped clusters are crystal_kit.py's. By default keep the crystals list of an
-    # existing rocks.json and write no crystal file; --legacy-crystals brings back the old 216-tri clusters on purpose.
+    # Issue 1361: by default keep the crystals list of an existing rocks.json (empty since Ryan scrapped the clusters) and
+    # write no crystal file; --legacy-crystals brings back the old 216-tri clusters on purpose.
     old_path = os.path.join(out, "rocks.json")
     if "--legacy-crystals" in sys.argv:
         for i in range(3):

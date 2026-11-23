@@ -909,7 +909,8 @@ func blocker(p: Vector3, kind: String) -> void:
 		_batch.add(sn + "_lo" if _rng.randf() < 0.5 else sn, mat, true,
 			Transform3D(_rand_basis(_rng).scaled(Vector3.ONE * _rng.randf_range(1.0, 2.2)), p + Vector3(cos(a) * rr, _rng.randf_range(-2.0, 4.0), sin(a) * rr)),
 			_rand_axis(_rng), _rng.randf_range(0.02, 0.09), _rng.randf())
-	if crystal:
+	# Ryan scrapped the crystal clusters (Nov 22, issue 1361); only the old look (VS_1361_OLD before-captures) draws them
+	if crystal and WR.OLD:
 		var names: Array = WR.lib().get("crystals", [])
 		if not names.is_empty():
 			for i in _rng.randi_range(1, 2):
@@ -1120,8 +1121,8 @@ func fields(mk: String, kind: String) -> void:
 		s = _backdrop_scale(nm, s, p)
 		_batch.add(nm, mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.0015, 0.006), r.randf())
 		mts += 1
-	# crystal fields: free crystal clusters drift among the edge rocks
-	if kind == "crystal":
+	# crystal fields: free crystal clusters drift among the edge rocks, in the old look only (Ryan scrapped them, Nov 22)
+	if kind == "crystal" and WR.OLD:
 		var names: Array = WR.lib().get("crystals", [])
 		for i in (12 if not names.is_empty() else 0):
 			var a := r.randf() * TAU
@@ -1130,9 +1131,7 @@ func fields(mk: String, kind: String) -> void:
 				continue
 			var nm: String = names[r.randi() % names.size()]
 			var s := _backdrop_scale(nm, r.randf_range(2.0, 6.0), p, 20.0)
-			# issue 1361 (Ryan, Nov 22): these drift past the board's edge, so they draw the far mesh (a quarter of the triangles);
-			# the old look's library (VS_1361_OLD) has no crystal far meshes (Artoo on PR 1782)
-			_batch.add(nm if WR.OLD else nm + "_lo", _crystal_mat(), false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.05), r.randf())
+			_batch.add(nm, _crystal_mat(), false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.05), r.randf())
 	notes.append("fields: %d edge rocks, %d deep, %d belt, %d mountains" % [placed, deep, belt, mts])
 
 
