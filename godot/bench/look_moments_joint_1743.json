@@ -1,0 +1,1463 @@
+{
+ "about": "R421 joint sheet: Interior Kit V2 (1743) painted exports, Wounds V2 (1741, PR 1755) and Ship Look V2 (1777, PR 1786) on one revision. One hull per faction (Chorus B21_11 painted, plus V16_37, H10_23, C19_51, I15_11, D21_23, all six from the 1743 export), each intact, breached (w2b: three hits, 50% hull) and broken (w2d death, 4 s and 6 s windows), at cameras 170 and 26. Run once with VS_WOUNDS_V2=1 and VS_SHIP_LOOK_V2=1. expect_code pins each hull. Intact, breached and broken keep one fixed camera; j_wound_ rows are labelled wound-aimed details only (focus \"wound\", 1755).",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "26": [
+   768,
+   432
+  ]
+ },
+ "rows": [
+  {
+   "id": "j_intact_V16_37",
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "label": "V16_37: intact, held",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "expect_code": "V16_37",
+   "do": "hold",
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_breached_V16_37",
+   "label": "V16_37: breached, three hits at 50% hull",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ],
+   "expect_code": "V16_37"
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "focus": "wound",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_wound_V16_37",
+   "label": "V16_37: breached, wound-aimed detail (camera 26 faces the biggest cutout; not a comparison shot)",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ],
+   "expect_code": "V16_37"
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_broken_V16_37",
+   "label": "V16_37: broken, death at 4 s and 6 s",
+   "do": "death",
+   "cause": "blast",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 20.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 12,
+      "max": 100
+     },
+     "mid": {
+      "hp": 10,
+      "max": 100
+     },
+     "prow": {
+      "hp": 15,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "expect_code": "V16_37"
+  },
+  {
+   "id": "j_intact_H10_23",
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "label": "H10_23: intact, held",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Battleship"
+   ],
+   "expect_code": "H10_23",
+   "do": "hold",
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Battleship"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_breached_H10_23",
+   "label": "H10_23: breached, three hits at 50% hull",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ],
+   "expect_code": "H10_23"
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Battleship"
+   ],
+   "focus": "wound",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_wound_H10_23",
+   "label": "H10_23: breached, wound-aimed detail (camera 26 faces the biggest cutout; not a comparison shot)",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ],
+   "expect_code": "H10_23"
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Battleship"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_broken_H10_23",
+   "label": "H10_23: broken, death at 4 s and 6 s",
+   "do": "death",
+   "cause": "blast",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 20.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 12,
+      "max": 100
+     },
+     "mid": {
+      "hp": 10,
+      "max": 100
+     },
+     "prow": {
+      "hp": 15,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "expect_code": "H10_23"
+  },
+  {
+   "id": "j_intact_C19_51",
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "label": "C19_51: intact, held",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Battle-barge"
+   ],
+   "expect_code": "C19_51",
+   "do": "hold",
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Battle-barge"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_breached_C19_51",
+   "label": "C19_51: breached, three hits at 50% hull",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ],
+   "expect_code": "C19_51"
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Battle-barge"
+   ],
+   "focus": "wound",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_wound_C19_51",
+   "label": "C19_51: breached, wound-aimed detail (camera 26 faces the biggest cutout; not a comparison shot)",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ],
+   "expect_code": "C19_51"
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Battle-barge"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_broken_C19_51",
+   "label": "C19_51: broken, death at 4 s and 6 s",
+   "do": "death",
+   "cause": "blast",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 20.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 12,
+      "max": 100
+     },
+     "mid": {
+      "hp": 10,
+      "max": 100
+     },
+     "prow": {
+      "hp": 15,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "expect_code": "C19_51"
+  },
+  {
+   "id": "j_intact_B21_11",
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "label": "B21_11: intact, held",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "expect_code": "B21_11",
+   "do": "hold",
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_breached_B21_11",
+   "label": "B21_11: breached, three hits at 50% hull",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ],
+   "expect_code": "B21_11"
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "focus": "wound",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_wound_B21_11",
+   "label": "B21_11: breached, wound-aimed detail (camera 26 faces the biggest cutout; not a comparison shot)",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ],
+   "expect_code": "B21_11"
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_broken_B21_11",
+   "label": "B21_11: broken, death at 4 s and 6 s",
+   "do": "death",
+   "cause": "blast",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 20.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 12,
+      "max": 100
+     },
+     "mid": {
+      "hp": 10,
+      "max": 100
+     },
+     "prow": {
+      "hp": 15,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "expect_code": "B21_11"
+  },
+  {
+   "id": "j_intact_I15_11",
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "label": "I15_11: intact, held",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "expect_code": "I15_11",
+   "do": "hold",
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_breached_I15_11",
+   "label": "I15_11: breached, three hits at 50% hull",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ],
+   "expect_code": "I15_11"
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "focus": "wound",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_wound_I15_11",
+   "label": "I15_11: breached, wound-aimed detail (camera 26 faces the biggest cutout; not a comparison shot)",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ],
+   "expect_code": "I15_11"
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_broken_I15_11",
+   "label": "I15_11: broken, death at 4 s and 6 s",
+   "do": "death",
+   "cause": "blast",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 20.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 12,
+      "max": 100
+     },
+     "mid": {
+      "hp": 10,
+      "max": 100
+     },
+     "prow": {
+      "hp": 15,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "expect_code": "I15_11"
+  },
+  {
+   "id": "j_intact_D21_23",
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "label": "D21_23: intact, held",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "expect_code": "D21_23",
+   "do": "hold",
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_breached_D21_23",
+   "label": "D21_23: breached, three hits at 50% hull",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ],
+   "expect_code": "D21_23"
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "focus": "wound",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_wound_D21_23",
+   "label": "D21_23: breached, wound-aimed detail (camera 26 faces the biggest cutout; not a comparison shot)",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ],
+   "expect_code": "D21_23"
+  },
+  {
+   "group": "Joint sheet (R421, issues 1743 + 1741 + 1777)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "focus": "target",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "j_broken_D21_23",
+   "label": "D21_23: broken, death at 4 s and 6 s",
+   "do": "death",
+   "cause": "blast",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 20.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 12,
+      "max": 100
+     },
+     "mid": {
+      "hp": 10,
+      "max": 100
+     },
+     "prow": {
+      "hp": 15,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "expect_code": "D21_23"
+  }
+ ]
+}
