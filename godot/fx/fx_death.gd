@@ -3892,6 +3892,16 @@ static func _pick_breakup(fx, s, cause: String, job: Dictionary) -> String:
 	if s.has_meta("breakup_force"): return str(s.get_meta("breakup_force"))   # breakup_check and the look bench only
 	if cause == "cut" or cause == "dark": return "two"   # a lance cuts clean; a burnt-out hull does not fly apart
 	if cause == "ram": return "three"
+	# Artoo on PR 1737: the cut is made ahead (on load, then at most every CUT_REFRESH seconds as the hull takes damage),
+	# so its first crack follows an earlier hit. When the killing hit is nearer the other cut joint, that joint must part
+	# at the death too: the hull breaks in three (no death-frame cut is ever added for it).
+	var last = s.get_meta("last_hit", [])
+	if last is Array and last.size() >= 1 and last[0] is Vector3:
+		var brs: Array = plan["breaks"]
+		var nb := 0
+		for bi in brs.size():
+			if absf((brs[bi]["at"] as Vector3).x - (last[0] as Vector3).x) < absf((brs[nb]["at"] as Vector3).x - (last[0] as Vector3).x): nb = bi
+		if nb != int(plan["bite_break"]): return "three"
 	return _pick_breakup_for(str(s.id), str(s.death_tier), s.get_meta("last_hit", []), cause)
 
 

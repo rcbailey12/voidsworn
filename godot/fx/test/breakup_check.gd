@@ -35,6 +35,7 @@ func _run() -> void:
 	for q in ["low", "high"]:
 		for kind in ["two", "three", "late"]:
 			await _breakup(q, kind)
+	await _warmed_late_hit()
 	_pick()
 	print("BREAKUP failures=%d" % failures)
 	quit(1 if failures else 0)
@@ -203,6 +204,35 @@ func _breakup(quality: String, kind: String) -> void:
 	check(worst <= OVERLAP_MAX, "%s: no piece runs into another (worst %.1f%% of an outline inside another)" % [tag, worst * 100.0])
 	check(turn_hi - turn_lo >= SPREAD_YAW, "%s: the pieces turn apart, some diagonal (%.2f rad)" % [tag, turn_hi - turn_lo])
 	check(far <= FAR_MAX, "%s: and stay close (farthest middle %.2f lengths out)" % [tag, far])
+	world.queue_free()
+	await process_frame
+
+
+# Artoo on PR 1737: the live path reuses a cut warmed before the killing hit. Cut after a hit at -6 (first crack -4), then
+# killed by a hit at +7: the +4 joint must part at the death as well, so the hull breaks in three with nothing glued.
+func _warmed_late_hit() -> void:
+	var world := Node3D.new()
+	root.add_child(world)
+	var fx = _fx(world, "low")
+	var s = _ship(fx, world, "w", [-4.0, 4.0])
+	s.set_meta("last_hit", [Vector3(-6.0, 1.5, 0.0), Vector3.DOWN, 0.0])
+	var job: Dictionary = await _wait_cut(fx, s)
+	var plan: Dictionary = job.get("plan", {})
+	var first: float = (plan["breaks"][int(plan["bite_break"])]["at"] as Vector3).x if not plan.is_empty() else INF
+	check(absf(first + 4.0) < 0.3, "warmed: the cut made after a hit at -6 cracks first at -4 (%.2f)" % first)
+	s.set_meta("last_hit", [Vector3(7.0, 1.5, 0.0), Vector3.DOWN, fx.now])
+	fx.death("w", "blast")
+	var glued := false
+	var n := 0
+	for i in 4 * 60:
+		fx.step(1.0 / 60.0)
+		await process_frame
+		for ww in fx.dstate.get("wrecks", []):
+			if ww["id"] != "w": continue
+			n = (ww["nodes"] as Array).size()
+			for nd in ww["nodes"]:
+				if is_instance_valid(nd) and (nd as Node).has_meta("glued"): glued = true
+	check(str(s.get_meta("death_breakup", "")) == "three" and not glued and n == 3, "warmed: killed by a hit at +7, the +4 joint parts at the death too (%s, glued %s, %d pieces)" % [str(s.get_meta("death_breakup", "")), glued, n])
 	world.queue_free()
 	await process_frame
 

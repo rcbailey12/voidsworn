@@ -163,7 +163,8 @@ ship broke at the same spot, and "we want variety". Since Nov 23:
 
 - Where it cracks: a strained big hull is cut on two authored joints. The first crack is the joint nearest where the
   hull was last hit (with no hit on record, a per-ship pick), never always the joint nearest the core. A lance cuts clean
-  on the joint nearest the beam, in two.
+  on the joint nearest the beam, in two. The cut is made ahead of the death (refreshed at most every few seconds as the hull is hit),
+  so when the killing hit lands nearer the other cut joint, that joint parts at the death too: it breaks in three.
 - How it breaks up, one of three per death, picked from the ship, the cause and where it was hit (a replay breaks the
   same way): **two** (the piece across the second joint stays on, a clean break in two), **three** (both joints part
   at the death), **late** (one crack, then the pair snaps about a second later with a spit of sparks in the faction's
