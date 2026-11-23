@@ -220,6 +220,14 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     fs.writeFileSync(path.join(vt, 'tools_live', 'current.txt'), 'v2\r\n');
     assert.equal(pinTools.pc(), pc, 'pinned for the attempt');
     pinTools.unpin(); assert.throws(() => pinTools.pc(), /no installed/);
+    // Artoo on PR 1835 (Astra run 6): the release carries the lease it was given; with none the head's own owner check rules
+    const relEnv = [];
+    const relTools = new d.PcTools({ vt, run: (exe, args, o) => { relEnv.push([args.slice(-2), o.env.OJ_SLOT_EXPECT]); return { status: 0, stdout: '', stderr: '' }; } });
+    relTools.pinTo(pc);
+    relTools.slotRelease('C:\\a1', { dir: 'C:\\vt\\slots\\slot_gpu_1', token: 'f'.repeat(32) });
+    relTools.slotRelease('C:\\a2', null);
+    assert.deepEqual(relEnv[0], [['slotrelease', 'C:\\a1'], 'C:\\vt\\slots\\slot_gpu_1|' + 'f'.repeat(32)]);
+    assert.equal(relEnv[1][1], process.env.OJ_SLOT_EXPECT, 'no lease: nothing is claimed for the release');
     fs.writeFileSync(path.join(vt, 'tools_live', 'current.txt'), 'v1\r\n');
     const bad = new d.PcTools({ vt, run: () => ({ status: 1, stdout: 'run_timeout.ps1 differs from hashes.txt', stderr: '' }) });
     assert.throws(() => bad.pin(), /differs/); assert.equal(bad.pinned, null, 'a failed bundle check pins nothing');
@@ -355,7 +363,7 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
   // ---------------------------------------------------------------------------------------------- the daemon
   function fakes({ comments = [owner(goText())], runs = green(), workflow = wf(), exit = 0, output = '', writeOutputs = true, optionsChange = false,
     failStep = null, ghFails = false, relayFails = 0, labelFails = false, game = false, onSlot = null, record = {} } = {}) {
-    const vt = tmp(), calls = [];
+    const vt = tmp(), calls = [], released = [];
     const gh = {
       writes: [], pullObj: pull(), runs, workflow,
       readyPulls: () => [7], pull() { return this.pullObj; },
@@ -392,12 +400,12 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
         if (writeOutputs && !(record && record.gated)) { fs.mkdirSync(path.join(o.outDir, 'shots')); fs.writeFileSync(path.join(o.outDir, 'shots', 'a.png'), 'png'); fs.writeFileSync(path.join(o.outDir, 'log.txt'), 'ok'); }
         return { code: exit, output, backstop: false, ms: 1000 };
       }),
-      slotRelease: step('slotRelease', () => {}),
+      slotRelease: step('slotRelease', (a, lease) => { released.push(lease); }),
       relay: step('relay', () => { if (relayFails-- > 0) throw new Error('relay offline'); return 'folder link: https://github.com/rcbailey12/voidsworn-relay/tree/pc-out-lb_1777/x\npicture link: https://example.invalid/a.png\n'; }),
       gameRunning: () => typeof game === 'function' ? game() : game
     };
     const daemon = new d.Daemon({ vt, gh, tools, live: true, leased: true, log: () => {}, clock: () => new Date('2026-11-23T14:00:00Z') });
-    return { vt, gh, calls, daemon, watchArgs: () => watchArgs };
+    return { vt, gh, calls, daemon, released, watchArgs: () => watchArgs };
   }
   const attemptOf = f => path.join(f.vt, 'lb_1777', fs.readdirSync(path.join(f.vt, 'lb_1777'))[0]);
   await t('daemon: a dry run reads and changes nothing', async () => {
@@ -425,6 +433,7 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     assert.equal(o.env.VS_OUT, path.join(attempt, 'out_lb_1777')); assert.equal(o.exe, 'C:\\godot.exe');
     assert.equal(o.scratch, path.join(f.vt, 'slots', 'slot_gpu_1', 'run_scratch'), 'profile and logs inside the held slot');
     assert.equal(o.record, path.join(attempt, 'watchdog_record.json'));
+    assert.deepEqual(f.released, [{ dir: path.join(f.vt, 'slots', 'slot_gpu_1'), token: 'e'.repeat(32) }], 'the release is bound to the lease the attempt was given');
     assert.equal(o.gateJs, require.resolve('./pc_daemon'));
     assert.equal(o.gateArg, [attempt, 'C:\\tools_live\\v1\\pc', path.join(f.vt, 'slots', 'slot_gpu_1'), 'e'.repeat(32)].join('|'), 'the gate is bound to the tools, slot and token');
     f.calls.length = 0; f.gh.writes.length = 0;
@@ -497,6 +506,7 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     const g4 = fakes({ failStep: 'slotLease' });
     await g4.daemon.tick();
     assert.ok(!g4.calls.includes('ships') && !g4.calls.includes('watchdog') && g4.calls.includes('slotRelease'), 'a lease that does not match stops the job');
+    assert.deepEqual(g4.released, [null], 'no proven lease: the head releases only a slot whose owner.txt names this attempt');
     const g5 = fakes({ failStep: 'pin' });
     await g5.daemon.tick();
     assert.ok(!g5.calls.includes('slot') && !g5.calls.includes('watchdog'), 'unverified tools start nothing');

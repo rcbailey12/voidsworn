@@ -364,7 +364,14 @@ class PcTools {
     this.head(['slot', attempt, name, pin], { env: { OJ_SLOT_KIND: kind }, log, timeoutMs: 7 * 3600000 });
     return fs.readFileSync(path.join(attempt, 'slot_repo.txt'), 'utf8').trim();
   }
-  slotRelease(attempt, log) { this.head(['slotrelease', attempt], { log, timeoutMs: 120000 }); }
+  // Artoo on PR 1835 (Astra run 6): the release is bound to the lease this attempt was given. The head lets the slot go
+  // only while slot.txt is exactly that lease and owner.txt names this attempt and token; otherwise it keeps the slot and
+  // fails. With no proven lease (the lease check itself failed) the head still requires owner.txt to name this attempt
+  // and the token in its receipt, and leaves any other owner alone.
+  slotRelease(attempt, lease, log) {
+    const env = lease ? { OJ_SLOT_EXPECT: `${lease.dir}|${lease.token}` } : {};
+    this.head(['slotrelease', attempt], { env, log, timeoutMs: 120000 });
+  }
   // The head's own lease record must agree with its receipt (Astra run 2, item 5): <attempt>\slot.txt names the slot
   // folder and token, the slot is of the kind asked for, its owner.txt names this attempt and token and is not
   // released, and its holder still answers for the token. Returns { dir, token }.
@@ -738,7 +745,7 @@ class Daemon {
       if (before !== after) { failed.push('options'); say("FAILED options: Ryan's real battle_opts.json or board_look.cfg changed during the job"); }
       else say("Ryan's real options unchanged");
     } catch (e) { if (!failed.includes('options before') && !failed.includes('tools')) { failed.push('options'); say(`FAILED options: ${e.message}`); } }
-    if (slotTaken) { try { this.tools.slotRelease(attempt, st); say('slot let go'); } catch (e) { say(`slot release: ${e.message}`); } }
+    if (slotTaken) { try { this.tools.slotRelease(attempt, lease, st); say('slot let go'); } catch (e) { say(`slot release: ${e.message}`); } }
     if (aborted && !failed.length) {
       say(`aborted before launch: ${aborted}`);
       fs.writeFileSync(path.join(attempt, 'done.txt'), `done ABORTED: ${aborted}\r\n`);

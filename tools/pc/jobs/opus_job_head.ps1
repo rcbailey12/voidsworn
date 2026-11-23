@@ -969,19 +969,29 @@ function Set-SlotHold($dir, $why, $u) {
   [IO.File]::WriteAllText((Join-Path $dir 'hold.txt'), "$why`r`nlast use: $($u.attempt) $($u.name)`r`nThe Board removes this file once it has looked.`r`n")
   throw "slot held: $why"
 }
-function Exit-Slot($attempt) {
+function Exit-Slot($attempt, $expect = $null) {
   $f = Join-Path $attempt 'slot.txt'
   if (-not (Test-Path -LiteralPath $f -PathType Leaf)) { Write-Output "no slot held by $attempt"; return }
-  $parts = [IO.File]::ReadAllText($f).Trim().Split('|')
+  $receipt = [IO.File]::ReadAllText($f).Trim()
+  $parts = $receipt.Split('|')
+  # Artoo on PR 1835 (Astra run 6): a release only ever touches the slot this attempt holds. The receipt must be one slot
+  # and one token, match the lease the caller was given (the PC daemon passes it), and owner.txt must name exactly this
+  # attempt and this token; anything else keeps the slot as it is and fails, so a stale or edited receipt can never
+  # release another job's slot.
+  if ($parts.Count -ne 2 -or $parts[1] -notmatch '\A[0-9a-f]{32}\z' -or -not [IO.Path]::IsPathRooted($parts[0])) { throw "slot kept: slot.txt not readable in $attempt" }
+  if ($expect -and $receipt -ne $expect) { throw "slot kept: slot.txt in $attempt no longer matches the lease it was given ($expect); nothing was released" }
   $ready = Join-Path $parts[0] "holder_$($parts[1]).txt"
   # Artoo on PR 1728: on the PC the recorded job process is the long-lived watcher shell, so a dead holder would keep the
   # slot busy until the watcher ends. The tail therefore marks its own token released itself, only while owner.txt still
-  # names that token (a later job's owner.txt is never touched); the holder, when alive, ends on the release file.
+  # names that attempt and token (a later job's owner.txt is never touched); the holder, when alive, ends on the release file.
   $ownerTxt = Join-Path $parts[0] 'owner.txt'
-  if (Test-Path -LiteralPath $ownerTxt -PathType Leaf) {
-    $txt = [IO.File]::ReadAllText($ownerTxt)
-    if ($txt -match ('(?m)^token ' + [regex]::Escape($parts[1]) + '\r?$') -and $txt -notmatch '(?m)^released') {
-      [IO.File]::AppendAllText($ownerTxt, "released $([DateTime]::UtcNow.ToString('o'))`r`n") } }
+  $txt = if (Test-Path -LiteralPath $ownerTxt -PathType Leaf) { [IO.File]::ReadAllText($ownerTxt) } else { '' }
+  $mine = ($txt -match ('(?m)^attempt ' + [regex]::Escape($attempt) + '\r?$')) -and ($txt -match ('(?m)^token ' + [regex]::Escape($parts[1]) + '\r?$'))
+  if (-not $mine) {
+    if ($expect) { throw "slot kept: owner.txt in $($parts[0]) does not name this attempt and token; nothing was released" }
+    Write-Output "slot $($parts[0]) already let go (owner.txt names another attempt or token; it was left alone)"; return
+  }
+  if ($txt -notmatch '(?m)^released') { [IO.File]::AppendAllText($ownerTxt, "released $([DateTime]::UtcNow.ToString('o'))`r`n") }
   if (-not (Test-Path -LiteralPath $ready)) { Write-Output "slot $($parts[0]) already let go"; return }
   [IO.File]::WriteAllText((Join-Path $parts[0] "release_$($parts[1])"), "release`r`n")
   $until = [DateTime]::UtcNow.AddSeconds(30)
@@ -1185,8 +1195,10 @@ switch ($Action) {
     }
   }
   'slotrelease' {
-    # The tail: lets this attempt's slot go (the holder ends) and waits up to 30 s for the lease to be free.
-    Exit-Slot ([IO.Path]::GetFullPath($A).TrimEnd('\', '/'))
+    # The tail: lets this attempt's slot go (the holder ends) and waits up to 30 s for the lease to be free. The PC daemon
+    # passes the lease it was given as OJ_SLOT_EXPECT (<slot>|<token>); a receipt that no longer matches keeps the slot.
+    $expect = $env:OJ_SLOT_EXPECT; $env:OJ_SLOT_EXPECT = $null
+    Exit-Slot ([IO.Path]::GetFullPath($A).TrimEnd('\', '/')) $expect
   }
   'slotcheck' {
     # Read only (issue 1662, the PC daemon): the live proof that this attempt still holds its slot (Test-SlotHeld: the

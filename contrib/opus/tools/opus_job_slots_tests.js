@@ -263,6 +263,33 @@ try {
   assert(r.status !== 0 && /no free gpu slot/.test(r.out), 'a marker being cleared holds the slot too: ' + r.out);
   assert.equal(fs.readFileSync(path.join(repo2, 'godot', 'survivor_output.bin'), 'utf8'), 'still being written\n');
 
+  // Artoo on PR 1835 (Astra run 6): a release (the PC daemon's cleanup after a refused launch) only lets go the slot this
+  // attempt holds. A stale or edited receipt, or a lease the caller no longer matches, keeps the other owner's slot.
+  fs.rmSync(path.join(slot('slot_gpu_2'), `hold.txt.${'f'.repeat(32)}.clearing`));
+  const aX = attempt('opus1835x', 18), aY = attempt('opus1835y', 19), ownerX = sleeper();
+  r = run({ PC_TEST_SLOT_OWNER_PID: String(ownerX) }, 'slot', aX, 'new', two);
+  assert(r.status === 0 && /taken/.test(r.out), r.out);
+  const receiptX = fs.readFileSync(path.join(aX, 'slot.txt'), 'utf8').trim(), [dirX, tokX] = receiptX.split('|');
+  const ownerTxtX = fs.readFileSync(path.join(dirX, 'owner.txt'), 'utf8');
+  const keptX = why => {
+    assert.equal(fs.readFileSync(path.join(dirX, 'owner.txt'), 'utf8'), ownerTxtX, why + ': owner.txt untouched');
+    assert(!fs.existsSync(path.join(dirX, `release_${tokX}`)) && fs.existsSync(path.join(dirX, `holder_${tokX}.txt`)), why + ': the holder keeps the lease');
+  };
+  fs.writeFileSync(path.join(aY, 'slot.txt'), receiptX + '\r\n');
+  r = run({ OJ_SLOT_EXPECT: receiptX }, 'slotrelease', aY);
+  assert(r.status !== 0 && /slot kept: owner\.txt .* does not name this attempt and token/.test(r.out.replace(/\s+/g, ' ')), 'a copied receipt is refused: ' + r.out);
+  keptX('copied receipt with a lease');
+  r = run({}, 'slotrelease', aY);
+  assert(r.status === 0 && /left alone/.test(r.out), 'the tail of another attempt leaves the slot alone: ' + r.out);
+  keptX('copied receipt, tail');
+  r = run({ OJ_SLOT_EXPECT: `${dirX}|${'0'.repeat(32)}` }, 'slotrelease', aX);
+  assert(r.status !== 0 && /slot kept: slot\.txt .* no longer matches the lease/.test(r.out.replace(/\s+/g, ' ')), 'a receipt that is not the given lease is refused: ' + r.out);
+  keptX('lease mismatch');
+  r = run({ OJ_SLOT_EXPECT: receiptX }, 'slotrelease', aX);
+  assert(r.status === 0 && /let go/.test(r.out), r.out);
+  assert(/^released /m.test(fs.readFileSync(path.join(dirX, 'owner.txt'), 'utf8')), 'the matching lease is let go');
+  process.kill(ownerX, 'SIGKILL');
+
   // a slot whose folder is a link is refused before anything is reset
   if (!windows) {
     fs.rmSync(slot('slot_cpu'), { recursive: true, force: true });
@@ -271,7 +298,7 @@ try {
     r = run({ OJ_SLOT_KIND: 'cpu' }, 'slot', a6, 'new', two);
     assert(r.status !== 0 && /not a plain folder/.test(r.out), 'a linked slot is refused: ' + r.out);
   }
-  console.log('PASS slots live: two gpu slots then none, leftovers saved before a reset, warm import cache, release by tail and by process end, held and linked slots refused, a hold set under the lease kept');
+  console.log('PASS slots live: two gpu slots then none, leftovers saved before a reset, warm import cache, release by tail and by process end, held and linked slots refused, a hold set under the lease kept, a release only for its own lease');
 } finally {
   spawnSync('sleep', ['1']);
   fs.rmSync(tmp, { recursive: true, force: true });
