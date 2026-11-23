@@ -11,6 +11,19 @@ const zlib = require('zlib');
 const { spawnSync, spawn } = require('child_process');
 const pc = path.resolve(__dirname, '../../../tools/pc');
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner846 proof '));
+// Lane B hit the old 240 s limit and the 1817 rerun was still cloning fixtures at 270 s.
+// Scale the old limit by PR 1813's measured 2.1x slowdown and round 504 s to 510 s.
+// The 600 s Windows standing row leaves room for the separate claim race.
+const probeTimeout = process.platform === 'win32' ? 510000 : 240000;
+// Scale the runner's 30 s issue-lock window by the same slowdown, rounded up.
+const claimTimeout = 65000;
+const fixtureEnv = {
+  ...process.env,
+  // Git maintenance and fsmonitor can leave processes in a tiny checkout after Git itself exits. Keep all fixture
+  // Git work synchronous so the rename exercises preservation of local files without a background Git holder.
+  GIT_CONFIG_COUNT: '2', GIT_CONFIG_KEY_0: 'maintenance.auto', GIT_CONFIG_VALUE_0: 'false',
+  GIT_CONFIG_KEY_1: 'core.fsmonitor', GIT_CONFIG_VALUE_1: 'false'
+};
 const gh = require('../../../tools/pc/runner_claim_fixture')(root);
 const write = (p, s) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, s); };
 const read = p => fs.readFileSync(p, 'utf8');
@@ -26,10 +39,13 @@ for (const name of ['codex_issue', 'work_issue']) {
   assert(bat.indexOf('%COMMON% announce ') < bat.indexOf('call "%T' + (name === 'codex_issue' ? 'P' : '') + '%tmo.bat"'));
   assert(prep.includes("'runner_common.ps1') base $repo $out $bodyFile"));
   assert(prep.includes('Do not run git merge'));
-  assert(bat.includes('/c:"Base already merged"'), 'base-only work must reach the publisher');
+  const compareHead = bat.indexOf(' head-changed ');
+  assert(compareHead >= 0 && compareHead < bat.indexOf('\n:haschange'), 'check for committed work before running checks');
 }
 const upstream = path.join(root, 'upstream.git');
-let r = spawnSync('git', ['init', '--bare', '-q', upstream], { encoding: 'utf8', windowsHide: true });
+let r = spawnSync('git', ['init', '--bare', '-q', upstream], {
+  env: fixtureEnv, encoding: 'utf8', windowsHide: true, timeout: claimTimeout
+});
 assert.equal(r.status, 0, r.stderr);
 function object(type, value) {
   const b = Buffer.isBuffer(value) ? value : Buffer.from(value);
@@ -538,7 +554,12 @@ Assert (-not (Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json).running) '
 Pass 'paginated board dry run uses the same validation, allows reruns and performs only GETs'
 Init 'base-clean'; Put (Join-Path $out 'resume.txt') 'Resumed by merging earlier partial.'
 Put (Join-Path $out 'base_commit.txt') '${main}'
+$publisher = Join-Path $pc 'work_issue.ps1'
+& $publisher head-changed $repo $out
+Assert ($LASTEXITCODE -eq 7) 'a resume note alone does not advance HEAD'
 Base "Owner: codex\r\n  Base: work/issue-800  \r\nDone when: works"
+& $publisher head-changed $repo $out
+Assert ($LASTEXITCODE -eq 0) 'a Base merge advances HEAD from the recorded base on a fresh branch'
 $parents = (& $script:git -C $repo rev-list --parents -n 1 HEAD) -split ' '
 Assert ($parents.Count -eq 3 -and $parents[1] -eq '${main}' -and $parents[2] -eq '${clean}') 'runner committed both merge parents'
 Assert ([IO.File]::ReadAllText((Join-Path $repo 'base.txt')) -eq "from base\n") 'base content merged'
@@ -735,9 +756,30 @@ Assert ($staged.Count -eq 2 -and $staged -contains $evidence -and $staged -conta
 Pass 'sparse runner stages new report evidence without materializing historical pictures'
 $slot = Join-Path $root 'slot_openai/repo'
 $log = Sparse-Start 'sparse-opt-in' $slot './docs/shots/shot.png' 'contrib\\muse\\design\\draft.md, rocks_hi/rock.glb'
-Assert ($log.Contains('sparse checkout profile differs')) 'profile changes preserve the old checkout'
+# Issue 1739: a profile change on a clean runner-managed checkout is applied in place, not kept as a ~28 GB copy.
+Assert ($log.Contains('sparse checkout profile changed in place') -and $log.Contains('earlier checkout reused in place')) "opt-in profile change reuses the checkout: $log"
 foreach ($i in 0,2,4) { Assert (Test-Path -LiteralPath (Join-Path $slot $paths[$i])) "missing requested path $($paths[$i])" }
 foreach ($i in 1,3) { Assert (-not (Test-Path -LiteralPath (Join-Path $slot $paths[$i]))) "unexpected path $($paths[$i])" }
+Assert (-not @(Get-ChildItem -LiteralPath (Split-Path -Parent $slot) -Directory | Where-Object { $_.Name -like 'repo-kept-*' }).Count) 'no kept copy for a safe profile change'
+# Back to the lean profile: the opted-in folders hold only tracked files, so they leave the work tree again.
+$log = Sparse-Start 'sparse-back-to-lean' $slot 'below' 'shared.txt'
+Assert ($log.Contains('sparse checkout profile changed in place') -and $log.Contains('earlier checkout reused in place')) "lean profile change reuses the checkout: $log"
+foreach ($name in $paths) { Assert (-not (Test-Path -LiteralPath (Join-Path $slot $name))) "lean profile still holds $name" }
+# An agent that turned sparse off (git sparse-checkout disable) leaves a full checkout; the next run makes it lean in place.
+& $script:git -C $slot sparse-checkout disable 2>&1 | Out-Null
+Assert ((Test-Path -LiteralPath (Join-Path $slot $paths[0])) -and $LASTEXITCODE -eq 0) 'fixture turned sparse off'
+$log = Sparse-Start 'sparse-full-to-lean' $slot 'below' 'shared.txt'
+Assert ($log.Contains('sparse checkout profile changed in place') -and $log.Contains('earlier checkout reused in place')) "full checkout made lean in place: $log"
+foreach ($name in $paths) { Assert (-not (Test-Path -LiteralPath (Join-Path $slot $name))) "full-to-lean still holds $name" }
+# An untracked file in a folder the new profile leaves out could be lost, so that checkout is still kept whole.
+$log = Sparse-Start 'sparse-opt-in-again' $slot './docs/shots/shot.png' 'contrib\\muse\\design\\draft.md, rocks_hi/rock.glb'
+Assert ($log.Contains('earlier checkout reused in place')) "opt-in again reuses: $log"
+Put (Join-Path $slot 'docs/shots/local_only.png') 'untracked picture'
+$log = Sparse-Start 'sparse-untracked-in-left-out' $slot 'below' 'shared.txt'
+Assert ($log.Contains('docs/shots/local_only.png is not tracked')) "untracked file in a newly left-out folder keeps the checkout: $log"
+$kept = @(Get-ChildItem -LiteralPath (Split-Path -Parent $slot) -Directory | Where-Object { $_.Name -like 'repo-kept-*' })
+Assert ($kept.Count -eq 1 -and [IO.File]::ReadAllText((Join-Path $kept[0].FullName 'docs/shots/local_only.png')) -eq 'untracked picture') 'the untracked picture survives in the kept copy'
+$log = Sparse-Start 'sparse-opt-in-after-keep' $slot './docs/shots/shot.png' 'contrib\\muse\\design\\draft.md, rocks_hi/rock.glb'
 $log = Sparse-Start 'sparse-opt-in-reuse' $slot 'docs/shots/shot.png' 'contrib/muse/design/draft.md, rocks_hi/rock.glb'
 Assert ($log.Contains('earlier checkout reused in place')) 'same opt-in profile can be reused'
 & $script:git -C $slot update-index --assume-unchanged shared.txt
@@ -748,21 +790,78 @@ Assert ($log.Contains('index may hide tracked edits')) 'included code with a hid
 $kept = Get-ChildItem -LiteralPath (Split-Path -Parent $slot) -Directory | Where-Object { $_.Name -like 'repo-kept-*' }
 Assert (@($kept | Where-Object { [IO.File]::ReadAllText((Join-Path $_.FullName 'shared.txt')) -eq 'hidden local work' }).Count -eq 1) 'hidden edit survives'
 Pass 'lanes C and D and Workhorse slots reuse sparse profiles, honor fixed fields, and preserve hidden edits'
+# Issue 1739 (1747 run 2): a rerun must start from the delivery branch's earlier tip, never from main alone, and a
+# commit that does not descend from that tip must stop before the push. work/issue-800 holds base.txt; main does not.
+$slot = Join-Path $root 'continue/repo'
+Init 'continue-tip' 'work/issue-800'
+Shared @('checkout',$slot,$out,'work/issue-800','')
+$log = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+Assert ($log.Contains('continuing work/issue-800 from its earlier tip ${clean}')) "rerun starts from the earlier tip: $log"
+Assert ([IO.File]::ReadAllText((Join-Path $out 'base_commit.txt')).Trim() -eq '${clean}') 'base commit is the earlier tip'
+Assert ([IO.File]::ReadAllText((Join-Path $slot 'base.txt')) -eq "from base\n") 'the earlier run''s file is in the checkout'
+$parents = (& $script:git -C $slot rev-list --parents -n 1 HEAD) -split ' '
+Assert ($parents.Count -eq 3 -and $parents[1] -eq '${clean}' -and $parents[2] -eq '${main}') 'main is merged on top of the earlier tip'
+$resume = [IO.File]::ReadAllText((Join-Path $out 'resume.txt'))
+Assert ($resume.Contains('Continued from the earlier tip of work/issue-800') -and $resume.Contains('merged origin/main')) "agent is told: $resume"
+Pass 'a rerun checks out the branch''s earlier tip and merges main on top'
+# The commit step needs Windows PowerShell by name; on Linux point that name at pwsh.
+if ($PSVersionTable.Platform -eq 'Unix') {
+  $shim = Join-Path $root 'shim'; $null = New-Item -ItemType Directory -Force -Path $shim
+  [IO.File]::WriteAllText((Join-Path $shim 'powershell'), '#!/bin/sh\nexec pwsh "$@"\n')
+  & chmod 755 (Join-Path $shim 'powershell')
+  $env:PATH = "$($shim):$($env:PATH)"
+}
+$work = Join-Path $pc 'work_issue.ps1'
+Put (Join-Path $slot 'run2.txt') "run 2 report\n"
+& $script:git -C $slot add run2.txt
+Push-Location $slot; & $work commit $slot $out 'work/issue-800' 'dry' | Out-Null; $code = $LASTEXITCODE; Pop-Location
+Assert ($code -eq 0) "a rerun from the earlier tip commits (exit $code)"
+$tree = @(& $script:git -C $slot ls-tree -r --name-only HEAD)
+Assert ($tree -contains 'base.txt' -and $tree -contains 'run2.txt') 'the rerun commit keeps run 1 and adds run 2'
+& $script:git -C $slot merge-base --is-ancestor '${clean}' HEAD
+Assert ($LASTEXITCODE -eq 0) 'the earlier tip is an ancestor of the push'
+Pass 'a rerun commit keeps the earlier runs'' files'
+# 1747 run 2's shape: the checkout is main alone, the branch already exists, the agent adds only its report.
+$repo = New-Repo 'tip-drop-repo'
+Init 'continue-drop' 'work/issue-800'
+& $script:git -C $repo checkout -q -B work/issue-800 '${main}'
+Put (Join-Path $out 'base_commit.txt') '${main}'
+Put (Join-Path $repo 'report.md') "only the report\n"
+& $script:git -C $repo add report.md
+Push-Location $repo; $said = (& $work commit $repo $out 'work/issue-800' 'dry') -join "\n"; $code = $LASTEXITCODE; Pop-Location
+Assert ($code -eq 15) "a run that does not descend from the earlier tip stops (exit $code): $said"
+$tipNote = [IO.File]::ReadAllText((Join-Path $out 'EARLIER_TIP.txt'))
+Assert ($tipNote.Contains('did not start from the earlier tip ${clean}') -and $tipNote.Contains('base.txt')) "the reason and the dropped file are named: $tipNote"
+Assert ((& $script:git -C $repo rev-parse HEAD) -eq '${main}') 'nothing was committed'
+Pass 'a commit that would drop the earlier tip''s files stops before the push and names them'
+# Artoo on PR 1804: a reused slot must not continue a branch GitHub deleted, even while its old tip stays reachable.
+$slot = Join-Path $root 'continue-reuse/repo'
+Init 'continue-reuse-first' 'fixture/continue-reuse'
+Shared @('checkout',$slot,$out,'fixture/continue-reuse','')
+Assert ((& $script:git -C $slot rev-parse -q --verify 'refs/remotes/origin/work/issue-800') -eq '${clean}') 'the slot first sees the delivery branch'
+& $script:git -C $upstream update-ref refs/heads/archive-800 '${clean}'
+& $script:git -C $upstream update-ref -d refs/heads/work/issue-800
+Init 'continue-reuse-deleted' 'work/issue-800'
+Shared @('checkout',$slot,$out,'work/issue-800','')
+$log = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+Assert ($log.Contains('earlier checkout reused in place') -and -not $log.Contains('continuing work/issue-800')) "a deleted branch is not continued: $log"
+Assert ((& $script:git -C $slot rev-parse HEAD) -eq '${main}') 'the reused slot starts from main'
+Pass 'a reused slot drops a deleted delivery branch and starts from main'
 Write-Output "PASS runner job checks ($script:passed groups)"
 `);
 // Allow the same PC proof to run with pwsh, the engine used by Linux CI.
 const ps = process.env.PC_TEST_POWERSHELL || (process.platform === 'win32' ? 'powershell.exe' : 'pwsh');
 const probeStarted = Date.now();
 r = spawnSync(ps, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(root, 'probes.ps1'), pc, root], {
-  cwd: root, encoding: 'utf8', windowsHide: true, timeout: 240000,
-  env: { ...process.env, PC_RUNNER_TEST: '1', PC_TEST_GH: gh.fake, PC_TEST_GH_FAIL: '',
+  cwd: path.dirname(root), encoding: 'utf8', windowsHide: true, timeout: probeTimeout,
+  env: { ...fixtureEnv, PC_RUNNER_TEST: '1', PC_TEST_GH: gh.fake, PC_TEST_GH_FAIL: '',
     // The Windows prep helper builds its Godot path from USERPROFILE, which Linux does not provide.
     USERPROFILE: root,
-    PC_TEST_GIT: '', PC_TEST_RETRY_SECONDS: '0',
+    PC_TEST_GIT: '', PC_TEST_RETRY_SECONDS: '0', PC_TEST_KEEP_SECONDS: String(claimTimeout / 1000),
     GIT_AUTHOR_NAME: 'Fixture', GIT_AUTHOR_EMAIL: 'fixture@example.invalid',
     GIT_COMMITTER_NAME: 'Fixture', GIT_COMMITTER_EMAIL: 'fixture@example.invalid' }
 });
-// Standing checks show only the first 15 lines on failure. Keep the actual exception ahead of earlier PASS output.
+// Keep the actual exception ahead of earlier PASS output.
 assert.equal(r.status, 0, (r.stderr || '') + String(r.error || '') + '\nEvidence: ' + root + '\n' + (r.stdout || ''));
 console.log(r.stdout.trim());
 console.log('PASS PowerShell probes elapsed: ' + ((Date.now() - probeStarted) / 1000).toFixed(1) + ' s');
@@ -771,26 +870,57 @@ console.log('PASS PowerShell probes elapsed: ' + ((Date.now() - probeStarted) / 
   const race = path.join(root, 'claim-race'); fs.mkdirSync(race);
   const database = path.join(race, 'gh-db.json'), trace = path.join(race, 'gh.jsonl');
   write(database, JSON.stringify(gh.database(846, main))); write(trace, '');
-  const env = { ...process.env, PC_RUNNER_TEST: '1', PC_TEST_GH: gh.fake, PC_TEST_GH_DB: database,
-    PC_TEST_GH_TRACE: trace, PC_TEST_GH_FAIL: '', PC_TEST_GH_HOLD: '1' };
+  const env = { ...fixtureEnv, PC_RUNNER_TEST: '1', PC_TEST_GH: gh.fake, PC_TEST_GH_DB: database,
+    PC_TEST_GH_TRACE: trace, PC_TEST_GH_FAIL: '', PC_RUNNER_LOCKED_ISSUE: '' };
   const common = path.join(pc, 'runner_common.ps1');
-  const args = words => ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', common, ...words];
+  const psFile = ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File'];
+  const syncOptions = { env, encoding: 'utf8', windowsHide: true, timeout: claimTimeout };
   const outs = ['lane-a', 'lane-b'].map(lane => {
     const out = path.join(race, lane); fs.mkdirSync(out);
-    const init = spawnSync(ps, args(['init', out, 'codex/issue-846']), { env, encoding: 'utf8', windowsHide: true });
-    assert.equal(init.status, 0, init.stderr); return out;
+    const init = spawnSync(ps, [...psFile, common, 'init', out, 'codex/issue-846'], syncOptions);
+    assert.equal(init.status, 0, init.error || init.stderr); return out;
   });
-  const results = await Promise.all(outs.map(out => new Promise((resolve, reject) => {
-    const child = spawn(ps, args(['announce', out, '846', 'codex', path.join(out, 'repo'), '21600', 'resume', 'real']), { env, windowsHide: true });
-    let output = ''; child.stdout.on('data', b => output += b); child.stderr.on('data', b => output += b);
-    child.on('error', reject); child.on('close', code => resolve({ code, output, out }));
-  })));
+  // Both PowerShell hosts must reach the start gate before either announces. A slow host cannot miss the race.
+  const gate = path.join(race, 'claim.ps1');
+  write(gate, `[Console]::WriteLine('READY to announce')
+if ([Console]::ReadLine() -ne 'start') { exit 1 }
+& $args[0] announce $args[1] 846 codex (Join-Path $args[1] 'repo') 21600 resume real
+exit $LASTEXITCODE
+`);
+  const children = [];
+  const ready = new Set();
+  let results;
+  try {
+    results = await Promise.all(outs.map(out => new Promise((resolve, reject) => {
+      const child = spawn(ps, [...psFile, gate, common, out], { env, windowsHide: true, timeout: claimTimeout });
+      children.push(child);
+      let stdout = '', stderr = '';
+      child.stdout.on('data', bytes => {
+        stdout += bytes;
+        if (ready.has(child) || !stdout.includes('READY to announce')) return;
+        ready.add(child);
+        if (ready.size === outs.length) {
+          for (const claimant of ready) claimant.stdin.end('start\n');
+        }
+      });
+      child.stderr.on('data', bytes => stderr += bytes);
+      child.stdin.on('error', reject);
+      child.on('error', reject);
+      child.on('close', (code, signal) => {
+        const output = stdout + stderr;
+        if (signal || !ready.has(child)) reject(new Error(`${out}: claim process exited (${signal || code})\n${output}`));
+        else resolve({ code, output, out });
+      });
+    })));
+  } finally {
+    for (const child of children) child.stdin.destroy();
+  }
   assert.deepEqual(results.map(r => r.code).sort((a, b) => a - b), [0, 14], JSON.stringify(results));
   assert(results.find(r => r.code === 14).output.includes('already carries running'), JSON.stringify(results));
   const calls = read(trace).trim().split(/\r?\n/).map(l => JSON.parse(l));
   assert.equal(calls.filter(c => c.method === 'POST' && /\/issues\/846\/labels$/.test(c.endpoint)).length, 1);
   assert.equal(JSON.parse(read(database)).comments.length, 1);
-  const finish = spawnSync(ps, args(['finish', results.find(r => r.code === 0).out, '8', '', 'real', '0']), { env, encoding: 'utf8', windowsHide: true });
-  assert.equal(finish.status, 0, finish.stderr); assert(!JSON.parse(read(database)).running);
+  const finish = spawnSync(ps, [...psFile, common, 'finish', results.find(r => r.code === 0).out, '8', '', 'real', '0'], syncOptions);
+  assert.equal(finish.status, 0, finish.error || finish.stderr); assert(!JSON.parse(read(database)).running);
   console.log('PASS simultaneous Codex starts on two lanes yield exactly one claim; losing run cannot clear it');
 })().catch(e => { console.error(e.stack); process.exitCode = 1; });

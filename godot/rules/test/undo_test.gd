@@ -116,7 +116,7 @@ func _init() -> void:
 
 	# 5: refusals
 	var seen := {}
-	for name in ["s1", "s3", "s6", "s8", "s9", "s4"]:
+	for name in ["s1", "s3", "s6", "s8", "s9", "s4", "s33"]:   # s33 added for the boarding refusal: R414 (option C) changed s9's enemy fleet, so its boarding chance went away
 		refusals(name, seen)
 	for k in ["fire", "attack_move", "ram", "board", "ability", "order", "command", "ended", "enemy phase", "other ship changed", "log line"]:
 		check(int(seen.get(k, 0)) > 0 and int(seen.get(k + " bad", 0)) == 0, "5. undo refused after %s (%d cases, %d wrongly allowed)" % [k, int(seen.get(k, 0)), int(seen.get(k + " bad", 0))])

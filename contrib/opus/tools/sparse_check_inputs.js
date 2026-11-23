@@ -13,6 +13,10 @@ module.exports = function checkInputs(root) {
   const sparse = git('config', '--bool', 'core.sparseCheckout').stdout?.trim() === 'true';
   function skipped(file) {
     if (!sparse) return [];
+    // A path outside the checkout (doc_check probes godot/<token>, and a token can start with ..)
+    // has no index entry; git would refuse it with 'outside repository'.
+    const rel = relative(file);
+    if (rel === '..' || rel.startsWith('../') || path.isAbsolute(rel)) return [];
     const result = git('--literal-pathspecs', 'ls-files', '-t', '-z', '--', relative(file) || '.');
     if (result.status !== 0) throw new Error(result.stderr || result.error);
     return result.stdout.split('\0').filter(line => line.startsWith('S ')).map(line => line.slice(2));

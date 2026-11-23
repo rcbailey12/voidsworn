@@ -52,6 +52,7 @@ var fleet_page := 0
 var _fleet_id := ""
 var _dirty := true
 var _hover := -1
+var _pressed := {}
 
 var f_name: Font
 var f_body: Font
@@ -177,9 +178,9 @@ func _silhouette(code: String, r: Rect2, col: Color, health: float) -> void:
 		marks.append({"k": "ship", "id": code, "r": r, "col": col, "health": health})
 
 
-func _hit(r: Rect2, name: String, arg: Variant = null, tip := "") -> void:
+func _hit(r: Rect2, name: String, arg: Variant = null, tip := "", primary := false) -> void:
 	if name != "" or tip != "":
-		hits.append({"r": r, "act": name, "arg": arg, "tip": tip})
+		hits.append({"r": r, "act": name, "arg": arg, "tip": tip, "primary": primary})
 
 
 func mine_turn() -> bool:
@@ -403,7 +404,7 @@ func _top_right(r: Rect2) -> void:
 		_right(xr - hw, y, _trim("%s, %d ship%s" % [faction, n, "" if n == 1 else "s"], f_med, 19, r.size.x - hw), f_med, 19, TEXT)
 		y += px(30)
 	if not nem.is_empty():
-		var dw := _right(xr, y, "Dossier", f_body, 17, TEXT3, "join") + px(13)
+		var dw := _right(xr, y, "Hover for details", f_body, 17, TEXT3, "join") + px(13)
 		var nw := _width("Nemesis", f_med, 19) + px(11)
 		var nm := str(nem.get("name", ""))
 		if str(nem.get("state", "")) != "":
@@ -558,7 +559,9 @@ func _guns(x: float, y: float, w: float) -> float:
 		var max_dist := int(gun.get("range", 1))
 		var active := bool(gun.get("armed", false))
 		var col := TEXT if hit_v >= 0 or (dist < 0 and bool(gun.get("ready", false))) else TEXT2
-		var result := "%d%%" % hit_v if hit_v >= 0 else ("Out" if dist > max_dist else ("Ready" if why in ["", "ready"] else ("CD %s" % why.get_slice(" ", 1) if why.begins_with("reloading ") else ("No shot" if dist >= 0 else why.capitalize()))))
+		# Council 7 (issue 1401): flak is point defense and never aims at a ship, so it never reads "Out" or "No shot"
+		var flak_idle: bool = str(gun.get("kind", "")) == "flak" and hit_v < 0 and bool(gun.get("ready", false))
+		var result := "%d%%" % hit_v if hit_v >= 0 else ("Defense" if flak_idle else ("Out" if dist > max_dist else ("Ready" if why in ["", "ready"] else ("CD %s" % why.get_slice(" ", 1) if why.begins_with("reloading ") else ("No shot" if dist >= 0 else why.capitalize())))))
 		var rw := maxf(_width(result, f_num, 17), px(46))
 		var band_w := clampf(w * 0.25, px(40), px(170))
 		var band_x := x + w - rw - band_w - px(19)
@@ -582,9 +585,14 @@ func _guns(x: float, y: float, w: float) -> float:
 		if str(gun.get("arc_tip", "")) != "":
 			tip += "\n" + str(gun.arc_tip)
 		var wi := int(gun.get("i", 0))
-		if mine:
+		# Artoo on PR 1873: flak never fires at a ship (rules canFire refuses it); it shoots down torpedoes and strike craft
+		# on its own, so its row offers no arm action
+		var is_flak: bool = str(gun.get("kind", "")) == "flak"
+		if is_flak:
+			tip += "\nPoint defense: it fires on its own at incoming torpedoes and strike craft in range. It never aims at a ship."
+		elif mine:
 			tip += "\nClick or press %d to fire this gun alone%s." % [wi + 1, " (armed now)" if active else ""]
-		_hit(Rect2(x, y, w, step), "arm" if mine else "", wi, tip)
+		_hit(Rect2(x, y, w, step), "arm" if mine and not is_flak else "", wi, tip)
 		y += step
 	return y
 
@@ -682,7 +690,7 @@ func _action_box(r: Rect2, a: Dictionary) -> void:
 	var start := roundf(r.get_center().x - (_width(lab, f_name, fs) + px(35)) * 0.5)
 	_glyph(str(a.glyph), Vector2(start, r.get_center().y - px(12)), 24, EMBER, true)
 	_text(start + px(35), roundf(r.get_center().y - _text_h(f_name, fs) * 0.5), lab, f_name, fs, EMBER, "action")
-	_hit(r, a.act, null, str(a.tip))
+	_hit(r, a.act, null, str(a.tip), true)
 
 
 func _orders(x: float, y: float, w: float, foot: float, primary: Dictionary, compact: bool) -> void:
@@ -702,6 +710,8 @@ func _orders(x: float, y: float, w: float, foot: float, primary: Dictionary, com
 			var key := str(o.get("ability", id))
 			if key == "focus":
 				label = "Focus fire"
+			elif key == "reload":
+				label = "Reload"   # Council 13 (issue 1401): "Reload torpedoes" was cut off in its order cell; the hover keeps the full name
 			orders.append({"act": id, "arg": o.get("arg"), "on": o.get("on", false), "label": label,
 				"tip": original + "\n" + str(o.get("tip", "")), "glyph": Icons.order(key),
 				"active": bool(o.get("active", false)), "cooldown": int(o.get("cooldown", 0))})
@@ -853,7 +863,7 @@ func _fleet_slot(r: Rect2, row: Dictionary) -> void:
 			tip += "\nArrived this round."
 	if bool(row.get("flag", false)):
 		tip += "\nYour flagship."
-	_hit(r, "pick", row.get("id"), tip + "\nClick to pick it.")
+	_hit(r, "" if st == "Lost" else "pick", row.get("id"), tip if st == "Lost" else tip + "\nClick to pick it.")
 
 
 func _fleet_bars(x: float, y: float, w: float, row: Dictionary, h: float, col: Color) -> void:
@@ -889,10 +899,21 @@ func _log(right: float, bottom: float, w: float) -> void:
 	blockers.append(log_r)
 
 
+func _hit_fill(hit: Dictionary) -> Color:
+	if hit.get("act", "") == "":
+		return Color.TRANSPARENT
+	var pressed: bool = _pressed.get("act") == hit.act and _pressed.get("arg") == hit.arg
+	if hit.primary:
+		return EMBER.lerp(TEXT, 0.18) if pressed else EMBER
+	return Color(TEXT, 0.20 if pressed else 0.10)
+
+
 func _draw() -> void:
 	ensure_layout()
 	var hovered := hits[_hover] if _hover >= 0 else {}
 	var hr := Rect2(hovered.get("r", Rect2()))
+	var fill := _hit_fill(hovered)
+	var primary: bool = hovered.get("primary", false)
 	for m in marks:
 		match m.k:
 			"veil": _paint_veil(m.r, m.a, m.f)
@@ -905,18 +926,20 @@ func _draw() -> void:
 			"arc": draw_arc(m.p, m.s, -PI / 2, PI / 4, 12, m.col, maxf(1, px(1.4)), true)
 			"glyph":
 				var tint: Color = m.col
-				if bool(m.action) and hr.encloses(m.r):
+				if bool(m.action) and primary and hr.encloses(m.r):
 					tint = GS.ON_EMBER
 				draw_texture_rect(Icons.glyph(m.id), m.r, false, tint)
 			"ship": _paint_silhouette(m)
 			"action":
-				if hr == m.r:
-					draw_rect(m.r, EMBER)
+				if primary and hr == m.r:
+					draw_rect(m.r, fill)
 				else:
 					draw_rect(Rect2(m.r).grow(-maxf(2.0, px(2)) * 0.5), EMBER, false, maxf(2.0, px(2)))
+	if not primary and fill.a > 0.0:
+		draw_rect(hr, fill)
 	for it in items:
 		var col: Color = it.col
-		if it.role == "action" and hr.encloses(item_rect(it)):
+		if it.role == "action" and primary and hr.encloses(item_rect(it)):
 			col = GS.ON_EMBER
 		var p := Vector2(it.x, it.y + it.asc)
 		if bool(it.edge):
@@ -977,7 +1000,7 @@ func _has_point(p: Vector2) -> bool:
 	ensure_layout()
 	# Only interactive areas, the shelf/log and the corner words take input (issue 1559 item 20: a click on "Round N", the
 	# objective or the foe's name planned a move on the board under it). The veils' soft edges past the words are cosmetic.
-	if sheet_r.has_point(p) or log_r.has_point(p) or hit_at(p) >= 0:
+	if (not playing and sheet_r.has_point(p)) or log_r.has_point(p) or hit_at(p) >= 0:
 		return true
 	for b in blockers:
 		if b.has_point(p):
@@ -995,6 +1018,8 @@ func hit_at(p: Vector2) -> int:
 func _gui_input(e: InputEvent) -> void:
 	ensure_layout()
 	if e is InputEventMouseMotion:
+		if (e.button_mask & MOUSE_BUTTON_MASK_LEFT) == 0:
+			_pressed = {}
 		_hover = hit_at(e.position)
 		var h := hits[_hover] if _hover >= 0 else {}
 		mouse_default_cursor_shape = CURSOR_POINTING_HAND if h.get("act", "") != "" else CURSOR_ARROW
@@ -1002,9 +1027,12 @@ func _gui_input(e: InputEvent) -> void:
 		queue_redraw()
 	elif e is InputEventMouseButton:
 		accept_event()
+		if e.button_index == MOUSE_BUTTON_LEFT:
+			_pressed = {}
+			queue_redraw()
 		if not e.pressed:
 			return
-		if e.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and e.position.y >= sheet_r.end.y - px(FLEET_H):
+		if not playing and e.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and e.position.y >= sheet_r.end.y - px(FLEET_H):
 			fleet_page += -1 if e.button_index == MOUSE_BUTTON_WHEEL_UP else 1
 			mark()
 			return
@@ -1013,8 +1041,11 @@ func _gui_input(e: InputEvent) -> void:
 			if i < 0:
 				return
 			var h := hits[i]
+			if h.act == "":
+				return
+			_pressed = h
 			if h.act == "fleet_page":
 				fleet_page += int(h.arg)
 				mark()
-			elif h.act != "":
+			else:
 				act.emit(h.act, h.arg)

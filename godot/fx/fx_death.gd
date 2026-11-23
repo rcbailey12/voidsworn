@@ -872,7 +872,7 @@ static func seeds_for(s, cause: String, r: RandomNumberGenerator) -> PackedVecto
 	var n = [1, 2, 3, 4, 5][clampi(s.weight, 0, 4)]
 	if cause == "rupture":
 		n = maxi(4, s.weight + 2)
-	if cause == "big" or cause == "flay":
+	if cause == "big" or cause == "ram" or cause == "flay":   # a ram kill is the rules' "big" (Fable audit of PR 1666)
 		n = mini(n + 1, 7)
 	if cause == "melt" or cause == "dark":
 		n = maxi(2, n - 1)
@@ -1345,10 +1345,10 @@ static func _lance_recut(fx, s) -> void:
 		# finish on its own and start the lance cut beside it. If the refresh had not finished, the ship breaks along the
 		# last finished cut (cut_prev) only if the lance cut is late; otherwise it waits for the lance cut.
 		var tid: int = s.get_meta("cut_task")
-		if not WorkerThreadPool.is_task_completed(tid):
+		if not finish_precompute(fx, s):
 			s.remove_meta("cut_job")  # the detached worker still owns this result
-		fx.collect_death_cut(tid)
-		s.remove_meta("cut_task")
+			fx.collect_death_cut(tid)
+			s.remove_meta("cut_task")
 	var h = s.hull
 	# with no recent hit on record, a per-ship point a little off the middle (an even split reads as sliced, Ryan, Nov 11)
 	var lp: Vector3 = h.c + Vector3(h.L * (0.12 if hash(str(s.id)) % 2 == 0 else -0.12), 0.0, 0.0)
@@ -1469,14 +1469,15 @@ static func finish_precompute(fx, s) -> bool:
 	fx.join_death_cut(tid)
 	s.remove_meta("cut_task")
 	var job: Dictionary = s.get_meta("cut_job", {})
-	job["meshes"] = []
-	fx.queue_death_pieces(s, job)
+	if not job.has("meshes"):
+		job["meshes"] = []
+		fx.queue_death_pieces(s, job)
 	return true
 
 
 # Issue 600 (R118): the pieces' materials and colliders are built a few at a time, PREBUILD_BUDGET of main-thread time a
-# frame, never all in one frame (on A16, 16 pieces cost 40 to 60 ms together). A break-up that comes first builds what
-# is missing on the spot, as it always could; job "built" says all are done.
+# frame, never all in one frame (on A16, 16 pieces cost 40 to 60 ms together). A cut is ready for the split only
+# once its meshes, materials and shapes are built.
 const PREBUILD_BUDGET := 4000   # microseconds a frame; a tuning value
 
 static func build_pieces(fx, s, job: Dictionary, deadline: int) -> bool:
@@ -2263,10 +2264,10 @@ static func _death_inner(fx, s, cause: String) -> float:
 	var T: float = fx.now
 	s.set_meta("death_wall_usec", Time.get_ticks_usec())   # issue 1232: the break's wait for a late cut is in real time
 	s.remove_collider()
-	if s.squadron:
-		return _wing_death(fx, s)
 	if cause == "melt" and s.faction != "chorus": s.set_meta("death_melt", true)
 	s.set_meta("death_cause", cause)   # issue 1586 (fx_death_beats.gd)
+	if s.squadron:
+		return _wing_death(fx, s)
 	# a metal acid kill's break and cook-off spark in its faction's colours (Neon on PR 1646); a Chorus acid kill stays green
 	var tint := dcol(s, "spark", Color(0.95, 0.34, 0.08)) if cause != "melt" else (boom_col(s, "spark", Color(0.95, 0.34, 0.08)) if melting(s) else Color(0.55, 0.65, 0.12))
 	_power_down(fx, s)
@@ -2374,7 +2375,8 @@ static func _wing_death(fx, s) -> float:
 static func _wing_spark(fx, s, p: Vector3, frame: Transform3D) -> void:
 	var soft: bool = fx.reduce_flashing or not fx.flash_at(p, fx.now, 28.0 * STAGING_UNITS_PER_PIXEL, 28.0, 1.0 / 60.0)
 	_pic(fx, s, p, "weapons/impact/flash_", 28.0, 0.20 if soft else 1.0 / 60.0, 3.2, 1.25 if soft else 5.2, soft, "flash", frame, Vector3.ZERO, {"seed": 0})
-	fx.later(fx.now + 1.0 / 60.0, _smoke_one.bind(fx, s, p, 24.0, 0.22, frame, Vector3.ZERO, {"seed": 0}))
+	if not melting(s):
+		fx.later(fx.now + 1.0 / 60.0, _smoke_one.bind(fx, s, p, 24.0, 0.22, frame, Vector3.ZERO, {"seed": 0}))
 
 
 # Samples leave the spinning hit point in world space. Each new normal turns with the hull, curling the trail.
@@ -2511,6 +2513,9 @@ static func _power_surface(fx, s, mi: MeshInstance3D, i: int, pose: Transform3D)
 	if source is ShaderMaterial and source.has_meta("fx_hull_source"):
 		mat = source.duplicate()
 		mat.shader = template.shader
+		# Fable audit Nov 22, finding 1: the live surface may hold a hit brownout or the wound flicker (fx_flick); the death
+		# copy starts at full light so the power-down beat, not a frozen dip, darkens the hull
+		mat.set_shader_parameter("fx_flick", 1.0)
 	else:
 		mat = template.duplicate()
 		HULL.set_damage_pose(mat, pose, {})
@@ -2618,8 +2623,8 @@ static func _update_dying(fx, s) -> void:
 		if is_instance_valid(pose["mi"]): (pose["mi"] as Node3D).global_transform = s.root.global_transform * motion * (pose["pose"] as Transform3D)
 
 
-# An unfinished worker never blocks the death frame, even past its nominal split time.
-# Use a previous cut immediately. With none, the hull holds its tell until its own cut is done: issue 1232, a capital
+# A worker or budgeted piece build never blocks the split frame. Use a built previous cut if the worker is still
+# running. With none, the hull holds its tell until its own cut is ready: issue 1232, a capital
 # killed before its first cut was ready (A16's cut ran 5.4 s on the PC against a 2.67 s death) popped with no pieces.
 # The wait is capped: a cut still running cold_cut_wall seconds of real time after the death ends in the no-pieces pop, so
 # the kill camera and the turn (both wait for the core flash) never hold longer than that (Board on PR 1240: well under the
@@ -2630,15 +2635,27 @@ static func _break_up_when_ready(fx, s, cause: String, tint: Color, deadline: fl
 	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s:
 		fx.resolve_death_core(s, false)
 		return
-	if s.has_meta("cut_task") and not s.has_meta("cut_prev") and not WorkerThreadPool.is_task_completed(int(s.get_meta("cut_task"))):
+	var worker_done := finish_precompute(fx, s)
+	var job: Dictionary = s.get_meta("cut_job", {})
+	var prev: Dictionary = s.get_meta("cut_prev", {})
+	if worker_done and job.get("built", false):
+		_break_up(fx, s, cause, tint, job)
+		return
+	if not worker_done and prev.get("built", false):
+		fx.discard_ship_cut(s)
+		_break_up(fx, s, cause, tint, prev)
+		return
+	if not job.is_empty():
 		var waited := float(Time.get_ticks_usec() - int(s.get_meta("death_wall_usec", Time.get_ticks_usec()))) / 1e6
 		if fx.now < deadline or waited < cold_cut_wall:
 			if fx.now >= deadline and not s.has_meta("death_cut_wait"):
 				s.set_meta("death_cut_wait", fx.now)
 				fx.notes.append("cut wait %s" % str(s.id))
-			fx.later(minf(fx.now + 0.05, deadline) if fx.now < deadline else fx.now + 0.05, func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
+			var step := 0.000001 if worker_done else 0.05
+			fx.later(minf(fx.now + step, deadline) if fx.now < deadline else fx.now + step, func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
 			return
-	_break_up(fx, s, cause, tint)
+	fx.discard_ship_cut(s)
+	_break_up(fx, s, cause, tint, prev if prev.get("built", false) else {})
 
 
 # ---------------------------------------------------------------- issue 462: the tell, chain blasts, the aftermath
@@ -3053,7 +3070,7 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 		var L: float = s.hull.L
 		for j in (22 if capital else 16):
 			var d: Vector3
-			if cause == "big":
+			if cause == "big" or cause == "ram":   # shrapnel in a cone away from the impact (deaths_and_hits.md)
 				d = fx.rcone(away, 0.55)
 			else:
 				d = fx.rdir()
@@ -3410,34 +3427,21 @@ static func _hulk(fx, s) -> void:
 	BEATS.on_hulk(fx, s, node, str(s.get_meta("death_cause", "dark")))
 
 
-static func _break_up(fx, s, cause: String, tint: Color) -> void:
+static func _break_up(fx, s, cause: String, tint: Color, job := {}) -> void:
 	var t0 := Time.get_ticks_usec()
-	_break_up_inner(fx, s, cause, tint)
+	_break_up_inner(fx, s, cause, tint, job)
 	fx.pend("break_up", t0)
 
 
-static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
+static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) -> void:
 	var T: float = fx.now
 	var h = s.hull
 	var w: int = s.weight
 	var k: float = s.scale_k()
 	var organic: bool = s.faction == "chorus"
 	var center: Vector3 = s.to_world(h.c)
-	var job: Dictionary
-	if s.has_meta("cut_task"):
-		var tid: int = int(s.get_meta("cut_task"))
-		if not WorkerThreadPool.is_task_completed(tid):
-			# Never read a live worker's result. Use the previous cut, or the pop fallback at the deadline.
-			job = s.get_meta("cut_prev", {})
-			s.remove_meta("cut_job")
-			fx.collect_death_cut(tid)
-		else:
-			fx.join_death_cut(tid)
-			job = s.get_meta("cut_job", {})
-		s.remove_meta("cut_task")
-	else:
-		job = s.get_meta("cut_job", {})
 	var pieces: Array = job.get("out", []) if job.get("out") != null else []
+	var meshes: Array = job.get("meshes", [])
 	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
 	var plan: Dictionary = job.get("plan", {})
 	var n_main: int = int(plan["n_main"]) if not plan.is_empty() else pieces.size()
@@ -3488,10 +3492,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		var pc: Dictionary = pieces[i]
 		if (pc["surfs"] as Array).is_empty():
 			continue
-		var pre: Array = job.get("meshes", [])
-		var geo: Array = job.get("geo", [])
-		pc["dstyle"] = dstyle(s)
-		var am: ArrayMesh = pre[i] if i < pre.size() else (_piece_materials(geo[i], pc, false, fx) if i < geo.size() else _piece_mesh(pc, false, fx))
+		var am: ArrayMesh = meshes[i]
 		var cen: Vector3 = pc["cen"] if pc.has("cen") else Vector3.ZERO
 		if not pc.has("cen"):
 			for p in (pc["pts"] as PackedVector3Array):
@@ -3683,13 +3684,11 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 # scorched plating). They ride with the wreck until the core flash, then fly out from the bite, tumbling fast. They
 # are kinematic (no physics bodies): the 20-death fleet probe keeps its collider count.
 static func _make_frags(fx, s, wreck: Dictionary, job: Dictionary, pieces: Array, n_main: int, xf: Transform3D, inherited: Vector3, T: float, hold_until: float) -> void:
-	var pre: Array = job.get("meshes", [])
-	var geo: Array = job.get("geo", [])
+	var meshes: Array = job["meshes"]
 	for i in range(n_main, pieces.size()):
 		var pc: Dictionary = pieces[i]
 		if (pc["surfs"] as Array).is_empty(): continue
-		pc["dstyle"] = dstyle(s)
-		var am: ArrayMesh = pre[i] if i < pre.size() else (_piece_materials(geo[i], pc, false, fx) if i < geo.size() else _piece_mesh(pc, false, fx))
+		var am: ArrayMesh = meshes[i]
 		var cen: Vector3 = pc["cen"] if pc.has("cen") else Vector3.ZERO
 		var node := Node3D.new()
 		node.name = "fx_wreck_frag_%s_%d" % [s.id, i]

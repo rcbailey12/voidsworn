@@ -72,6 +72,15 @@ func _ship(sid: String, faction: String, pos: Vector3):
 	return s
 
 
+# The lowest fx_flick on a ship's live damage surfaces (1.0 when it has none).
+func _live_flick(s) -> float:
+	var lo := 1.0
+	for key in s._damage_surfaces:
+		var fl = (s._damage_surfaces[key][1] as ShaderMaterial).get_shader_parameter("fx_flick")
+		if fl != null: lo = minf(lo, float(fl))
+	return lo
+
+
 func _state(eng: float, mid: float, prow: float) -> Dictionary:
 	return {"hp": (eng + mid + prow) / 3.0, "maxHp": 100.0, "sec": {"eng": {"hp": eng, "max": 100}, "mid": {"hp": mid, "max": 100}, "prow": {"hp": prow, "max": 100}}}
 
@@ -321,6 +330,34 @@ func _run() -> void:
 	quiet.sync(fx, _state(100, 10, 100))
 	settle(5.0)
 	check(quiet.wound_log.is_empty(), "the wound history stays off in play")
+	# Fable audit Nov 22, finding 1: a hull that dies during a hit brownout, or while a wounded hull flickers, starts its
+	# death at full light (the death copies its live material, fx_flick included)
+	for row in [["die_dipped", false], ["die_flicker", true]]:
+		var d = _ship(row[0], "hegemony", Vector3(180, 0, 80 + (60 if row[1] else 0)))
+		d.sync(fx, _state(100, 100, 100))
+		settle(0.5)
+		if row[1]:
+			d.sync(fx, _state(100, 25, 25))
+			flush(d)
+			var tries := 0
+			while _live_flick(d) > 0.8 and tries < 400:
+				fx.step(1.0 / 60.0)
+				tries += 1
+		else:
+			d.hit_power(fx, true, 0.70, 0.6)
+			fx.step(0.05)
+		var before := _live_flick(d)
+		var hull_mi: MeshInstance3D = d.meshes[0]
+		fx.death(row[0], "blast")
+		fx.step(0.05)
+		var lo := 1.0
+		var seen := 0
+		for i in hull_mi.mesh.get_surface_count():
+			var m = hull_mi.get_surface_override_material(i)
+			if m is ShaderMaterial and m.get_shader_parameter("fx_flick") != null:
+				seen += 1
+				lo = minf(lo, float(m.get_shader_parameter("fx_flick")))
+		check(before < 0.8 and seen > 0 and lo == 1.0, "%s: the death starts at full light (live fx_flick %.2f, death copies %d, lowest %.2f)" % [row[0], before, seen, lo])
 	check(WEAP.BREAK_HULL_BEAT == 0.08, "the shield-break beat is 0.08 s (brief section 3, already on main)")
 	print("live_wounds_1587_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)
 	quit(1 if failures > 0 else 0)

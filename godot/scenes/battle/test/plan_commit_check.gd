@@ -56,6 +56,91 @@ func _click_hex(q: int, r: int) -> void:
 	b._on_click()
 
 
+# Find a move that takes a selected gun off a target it can hit from the ship's real hex.
+func _click_then_enter(ship: String) -> void:
+	for tid in _enemies():
+		for gun in b._firing_set(tid):
+			for key in b.reach_map:
+				var st: Dictionary = b._hover_state(key)
+				if not b._unit_at(st.q, st.r).is_empty() or b.api.in_reach(ship, gun, tid, st):
+					continue
+				b._arm(gun)
+				_click_hex(st.q, st.r)
+				_click_unit(tid)
+				_check(b.plan_k == key and b.target == "" and b.aims.is_empty(), "the refused shot keeps the ghost on its planned hex")
+				b.hold = true
+				b._on_key(KEY_ENTER)
+				var events: Array = b.batches[0]["events"] if b.batches.size() == 1 else []
+				_check(events.any(func(e): return e.t == "move" and e.unit == ship)
+					and not events.any(func(e): return e.t == "fire"), "Enter commits the displayed move after the refused shot")
+				b.hold = false
+				await _wait_idle(30000)
+				return
+	_check(false, "fixture has a gun that loses its target on the planned hex")
+
+
+func _last_enemy(distance := 2) -> String:
+	b.start_default()
+	await _wait_idle(30000)
+	var rules = b.api.R
+	var ship = rules.caps("player")[0]
+	var foes: Array = rules.caps("enemy")
+	var last = foes[0]
+	for foe in foes.slice(1):
+		foe["dead"] = true
+	rules.B["terrain"].clear()
+	var dir: Array = rules.DIRS[int(ship.facing)]
+	last.q = ship.q + distance * dir[0]
+	last.r = ship.r + distance * dir[1]
+	last.hp = 1
+	last.shp = 0
+	rules.syncShields(last)
+	b.V = b.api.view()
+	b._index_view()
+	b.select(ship.id, "roster")
+	await _wait_idle(5000)
+	return last.id
+
+
+func _burn_hotkey() -> void:
+	# Six hexes ahead of the destroyer, its torpedo can fire from here and its battery needs to move.
+	var tid := await _last_enemy(6)
+	_check(b._firing_set(tid) == [0], "the torpedo alone can fire from the destroyer's hex")
+	b._on_key(KEY_2)
+	_click_unit(tid)
+	var planned: bool = b.atk != null and b.atk.weapons == [1] and b.target == tid and b.plan_steps.size() == 1
+	_check(planned, "the battery plans one Burn and fire step")
+	if not planned:
+		return
+	var attack: Dictionary = b.atk.duplicate(true)
+	b._on_key(KEY_1)
+	_check(b.atk == attack and b.target == tid and b.aims.is_empty() and b.plan_steps.size() == 1,
+		"a weapon hotkey preserves the Burn and fire stop, target and shot")
+	_check(b.armed == 0, "the pressed weapon stays armed during Burn and fire")
+	b._on_key(KEY_BACKSPACE)
+	_check(b.plan_steps.is_empty() and b.atk == null and b.target == "" and b.aims.is_empty() and b.armed == 1,
+		"one Backspace undoes only the Burn and fire step")
+
+
+func _winning_volley() -> void:
+	var last := await _last_enemy()
+	_click_unit(last)
+	b.hold = true
+	b._on_key(KEY_ENTER)
+	var events: Array = b.batches[0].events if b.batches.size() == 1 else []
+	_check(b.busy and b.api.phase == "over" and events.any(func(e): return e.t == "fire")
+		and events.any(func(e): return e.t == "end" and e.result == "win"), "the final volley won and is waiting for playback")
+	var ledger = b.hud.ledger
+	ledger.layout()
+	var hidden: bool = ledger.playing and not ledger.blockers.has(ledger.sheet_r)
+	b.hold = false
+	var started := Time.get_ticks_msec()
+	while b.busy and Time.get_ticks_msec() - started < 30000:
+		hidden = hidden and ledger.playing
+		await process_frame
+	_check(hidden and b.ended, "the ship sheet stays hidden and releases its click area through the winning volley")
+
+
 func _run() -> void:
 	b = BattleScene.instantiate()
 	b.tips_off = true
@@ -359,5 +444,9 @@ func _run() -> void:
 				print("  fan side %d hex %d: %.2f from the line (want about %.2f)" % [side, k, dist, HW * 0.5])
 	fan.free()
 	_check(fan_ok, "the drawn cone's sides run along the far edge of the hexes on the arc's line, not through them")
+	await _last_enemy()
+	await _click_then_enter(b.sel)
+	await _burn_hotkey()
+	await _winning_volley()
 	print("plan commit check: ", "PASS" if fails == 0 else "FAIL (%d)" % fails)
 	quit(0 if fails == 0 else 1)

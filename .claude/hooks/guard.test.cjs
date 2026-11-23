@@ -96,6 +96,14 @@ try {
   permit(pre('Read', { file_path: 'README.md' }, main));
   permit(shell('git commit -m "Move secrets note to the README"', main));
   permit(shell('grep -rn secrets .github/workflows', main));
+  // Fable's audit of PR 1706: code such as board.key( is not a key file; a path or an existing file still is
+  permit(shell('grep -n "board.key(" godot/battle.gd', main));
+  deny(shell('cat certs/server.key', main), /protected files/);
+  deny(shell('cat HEAD:server.pem', main), /protected files/);
+  write('server.key', 'not really\n');
+  deny(shell('cat server.key', main), /protected files/);
+  fs.rmSync(path.join(work, 'server.key'));
+  deny(shell('cat .env.key', main), /protected files/);
   console.log('PASS credential guard: blocked file, search, Bash, PowerShell and Git reads; plain word "secrets" allowed');
 
   // Must pass: main seats (no seat variable, or seat opus) work anywhere in the repo, as Opus helper threads do.
@@ -172,7 +180,7 @@ try {
   deny(shell('git status && git push origin main', main), /Bash call of its own/);
   deny(shell("git commit -qam 'x' && git push origin main 2>&1", main), /Bash call of its own/);
   deny(shell('git push origin main 2>&1', main), /Each commit/);
-  deny(shell('git -C ' + work + ' push origin main', main), /Each commit/);
+  deny(shell('git -C "' + work.split(path.sep).join('/') + '" push origin main', main), /Each commit/);
   git('revert', '--no-edit', 'HEAD');
   deny(shell('git push origin main', main), /Each commit/);
   console.log('PASS Board log push: LOOP.md and FINDINGS.md fast-forward to main allowed; any other change blocked even if reverted');
@@ -187,10 +195,18 @@ try {
   console.log('PASS punctuation hook: flagged the planted em dash and cleared after replacement');
 
   git('reset', '-q', '--hard', 'origin/main');
+  const loaderPath = 'godot/tools/ci/load_all.gd';
+  const loader = fs.readFileSync(path.join(work, loaderPath), 'utf8');
+  write(loaderPath, loader + '\n# Earlier edit\n');
+  write('godot/probe.gd', 'extends Node\nfunc unfinished(\n');
   permit(hook('UserPromptSubmit'));
+  write('README.md', 'docs only this turn\n');
   const clean = hook('Stop');
   permit(clean);
   assert.equal(clean.stdout, '');
+  write(loaderPath, loader + '\n# Further edit\n');
+  deny(hook('Stop'), /Godot parse check failed/);
+  write(loaderPath, loader + '\n# Earlier edit\n');
   write('godot/probe.gd', 'extends Node\nfunc broken(\n');
   deny(hook('Stop'), /Godot parse check failed[\s\S]*(?:Parse Error|load all: FAILED)/);
   git('add', 'godot/probe.gd');

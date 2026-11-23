@@ -128,12 +128,15 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	var boons := []
 	for x in S.get("boons", []): boons.append(x.duplicate())
 	var run := {"admiral": S.admiral, "fac": S.get("fac_player") if S.get("fac_player") != null else "voidsworn", "credits": 0, "cpCap": 40, "sector": int(S.sector), "relics": S.get("relics", []).duplicate(), "inventory": [], "fleet": [], "boons": boons, "patrons": [], "stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0}, "fallen": []}
+	if S.has("encounterCurve"): run["encounterCurve"] = S["encounterCurve"]
 	if R.jt(S.get("aspect")): run["aspect"] = S.aspect
 	if S.get("heat") != null: run["heat"] = S.heat.duplicate()
 	if S.get("class_track") != null: run["classTrack"] = S.class_track.duplicate()
 	if S.get("lineage") != null: run["lineage"] = S.lineage.duplicate(true)   # issue #305: the run snapshot of the flown admiral's tree
 	R.RUN = run
 	for t in S.fleet: run["fleet"].append(R.newShip(t, R.jt(S.get("vet"))))
+	if S.get("mods") is Array:   # issue 1653: refits per fleet ship, in fleet order
+		for i in range(min(S.mods.size(), run["fleet"].size())): run["fleet"][i]["mods"] = S.mods[i].duplicate()
 	run["flagUid"] = run["fleet"][0]["uid"]
 	var cfg := {"kind": S.kind, "fac": S.fac, "col": 3 if S.get("col") == null else S.col, "seed": seed, "obj": S.obj, "shape": S.shape, "map": S.map, "dep": S.dep}
 	if R.jt(S.get("arch")): cfg["arch"] = S.arch
@@ -256,7 +259,7 @@ func _i_view() -> Dictionary:
 			"regenLock": R.jt(u.get("regenLock")),
 			"sec": u.get("sec").duplicate(true) if u.get("sec") != null else null, "crew": u.get("crew"), "crewMax": u.get("crewMax"), "dead": R.jt(u.get("dead")), "fled": R.jt(u.get("fled")),
 			"activated": R.jt(u.get("activated")), "active": B.get("activeUnit") != null and is_same(B["activeUnit"], u), "braced": R.jt(u.get("braced")), "mp": u["mp"], "turnsLeft": u["turnsLeft"],
-			"ab": u.get("ab"), "abCd": u["abCd"], "abReady": R.canAbility(u) if not R.jt(u.get("dead")) else false, "burning": R.z0(u["st"].get("fire")) > 0, "flagship": R.jt(u.get("flagship")) or R.jt(u.get("boss")), "weapons": ws,
+			"ab": u.get("ab"), "abCd": u["abCd"], "abReady": R.canAbility(u) if not R.jt(u.get("dead")) else false, "burning": R.z0(u["st"].get("fire")) > 0, "engHit": R.z0(u["st"].get("engine")) > 0, "shieldOff": R.z0(u["st"].get("shieldOff")) > 0, "flagship": R.jt(u.get("flagship")) or R.jt(u.get("boss")), "weapons": ws,
 			"role": R.treeRole(u), "canRole": R.treeCanChangeRole(u), "moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": (u.get("stance") if R.jt(u.get("stance")) else "strike") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
 			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy"),
 			"undo": phase == "player" and u["side"] == "player" and R.canUndo(u)})   # issue 1450: this ship's last move or turn can be taken back
@@ -861,7 +864,7 @@ func _ai_activate(u) -> void:
 				if p["hp"] < p["maxHp"] * 0.5: hurt = true
 			var hpR = hp / mx; var id = c["id"]; var off = id in ["barrage", "hunt", "scramble", "surge"]
 			var cf = R.B.get("cfg"); var cr = cf.get("cmdRound") if cf is Dictionary else null
-			if (cr != null and R.B["round"] == cr) or (cr == null and ((off and (near >= 2 or R.B["round"] >= 4)) or (id == "restore" and hpR < 0.6) or (id == "iron" and (hurt or near >= 2)) or R.B["round"] >= 6)):
+			if (cr != null and (R.B["round"] == cr or (R.spareReady() and R.B["round"] == cr + 1))) or (cr == null and ((off and (near >= 2 or R.B["round"] >= 4)) or (id == "restore" and hpR < 0.6) or (id == "iron" and (hurt or near >= 2)) or R.B["round"] >= 6)):
 				command()
 	if gone.call(): return
 	if R.jt(u.get("ab")) and R.canAbility(u) and _can_use(u):
@@ -1199,7 +1202,7 @@ func entry_reason(id: String, q: int, r: int) -> String:
 	var why := ""
 	var u = unit(id)
 	if (R.SOLID != null and R.SOLID.has(R.hkey(q, r))) or R.blocks(R.terr(q, r)):
-		why = "Blocked by the %s at %d,%d." % [{"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(_blocker_kind(q, r), _blocker_kind(q, r)), q, r]
+		why = "Blocked by the %s on this hex." % [{"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(_blocker_kind(q, r), _blocker_kind(q, r))]   # Council 29 (issue 1401): no hex numbers on the board
 	elif not R.onBoard(q, r):
 		why = "Outside the playable area."
 	elif u != null:

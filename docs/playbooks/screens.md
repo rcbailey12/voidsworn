@@ -237,6 +237,28 @@ profile, campaign run and meta unchanged without writing a save. For GPU capture
 Capture the original 12-admiral reference, current roster, fourth row, long names, empty state, tabs and Close hover. Rules
 and save data are unchanged.
 
+### The campaign map: double-click a stop (R424, issues 1801 and 1802)
+
+Double-clicking a map stop flies the fleet there (Ryan, Nov 23 2026: "Yes double click a map stop should fly you there").
+This is PR 1810's behaviour; a single click still selects the stop and shows its briefing. Any change to map input, and any
+merge of main into a map branch, keeps the double-click fly.
+
+### Council picks: title, fonts, flagship pick, rival lines (R436, issues 1401 to 1407)
+
+Ryan picked these from the Council triage sheet on Nov 23 2026 (board/review_1123/council/PICKS.md).
+- **Fonts (C28).** Four faces, one job each: Big Shoulders Display for headers, Barlow for body text, Azeret Mono for
+  numbers, Michroma for the wordmark only. Oxanium, Chakra Petch and Barlow Semi Condensed leave the screens as each one is
+  next touched. "VICTORY" and every other card title use one face.
+- **Title (C4).** The title backdrop frames the Hollow Sun, not a ship. The gold wordmark stays (R327).
+- **Flagship pick (C37).** Three-quarter key light, a slow turn, the ship about twice today's size, engines lit, fins never
+  glowing (R347, R360), on a better background. Ryan picks that background from the C37 options sheet before it is built.
+- **Reward card (C12).** Rebuilt in the orders style (square near-black, Big Shoulders title, key after the words, a hull
+  picture per wreck). A mock-up goes to Ryan first (9.10).
+- **Game icon (C26).** A Hollow Sun mark. Ryan picks one of the themed variations (C26b sheet) before the exe icon and boot
+  splash change.
+- **Rival lines (C40).** R85 stays: each sector sends its own hunter. Rival memory lines are rewritten as first meetings,
+  not as returns.
+
 ## 3. Steps
 
 1. **Name the decision.** One sentence: what does the player decide on this screen? Everything is ranked by how much it

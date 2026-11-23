@@ -436,7 +436,21 @@ we don't run into the issues of before with just empty looking husks". What he w
 - Every hull has real thickness and those insides, sized to read at the battle camera when a piece breaks away: decks, frames,
   machinery shapes, lit or burning spaces; never flat caps or a hollow shell. Chorus: flesh, bone and organs. Glasswrights:
   layered glass and light.
-- Hits, wounds, breaks and deaths use the insides where they exist.
+- Hits, wounds, breaks and deaths use the insides where they exist (RULEBOOK 5.4, RULEBOOK 6.14, R416; `contrib/opus/plans/cohesive_damage_v2.md`).
+  To keep the whole chain from ship build through weapons, hit wounds, capability losses and destruction singular and cohesive:
+  (1) **Blender Interior Kit V2 (issue 1743, R416 Layer 3):** upgrade `tools/blender/build_sheets/kit.py` (`K.room`, `K.deck`,
+  `K.bulkhead`, `K.organ_room`, `K.hoop`, `K.septum`) and `tools/blender/kits/ithar/hull.py` (`insides`) from plain untextured
+  chamfered boxes and flat slabs to modeled machinery, girdered decks, framed arch bulkheads, sculpted organic sacs/bone ribs,
+  and collared crystal waveguides, UV-mapped onto one shared per-faction interior trim atlas (`albedo`, `normal`, `orm`,
+  optional `emission`, reusing `tools/recipe/export7.py` shared trim support), verified by a cutaway review view in
+  `tools/blender/build_sheets/layout.py` and `tools/recipe/check_export.py` while keeping `surface_check.py` at 0 outside room
+  pixels; (2) **Active rebake contrast and palette fixes:** raise `INSIDE_TINT` from 0.18 toward 0.55 across `voidsworn`,
+  `hegemony`, `hullbreakers` and `eclipse` (`#1422`, `#1681`, `#1684`) and flip Eclipse `CORE_RGB` to violet (`#1422`, zero
+  green inside); runtime Wounds V2 (`#1741` Layers 1 + 2) immediately upgrades all 45 already-installed ships with a faction
+  triplanar PBR interior shader and breach-mouth 3D dressing without waiting on rebakes; (3) **Exact hardpoint/slot tags:**
+  keep weapon hard points (`hp_w<slot>_*`), turning turret nodes (`turret_*`), engine nozzles (`hp_eng_*`) and bay doors
+  (`door_*`) accurately tagged by slot and section, because live capability-loss damage reads those exact nodes when weapons,
+  engines or shield generators go offline.
 
 ## 3. Steps
 
@@ -451,6 +465,8 @@ we don't run into the issues of before with just empty looking husks". What he w
 | G | The ship in the game on the look bench, battle camera first | tools/pc/jobs/look_bench.bat | Codex |
 | H | Ryan sees one image: the ship at the battle camera beside its concept | | Board |
 | I | Only after Ryan's yes: publish the checked build into build\godot (section 0, rule 15) | tools/pc/jobs/publish_ship.bat JOB_DIR CODE COMMIT GLB_SHA | Board queues it |
+
+Captures and benches use the new builds (R368, Ryan, Nov 20 2026: "we need to start using the actual new ships for references rather than the old builds"): `godot/render/hull_age.gd` labels each ship NEW or OLD from the tracked manifest, `HullAge.guard` refuses old hulls in a reference run unless ALLOW_OLD_HULLS=1, and O1_37 is the named teaching exception (issues 1767, 1791). NEW means the layout only, not the approved model (issue 1291).
 
 The seven recipe stages, each a double-click file that stops with FAILED and a non-zero exit when it should:
 1 concept in, 2 the AI shape reference (TRELLIS.2, a shape and grime source only, never shipped), 3 the traced hull and the
@@ -578,7 +594,8 @@ A build brief, sheet or PR for any ship follows all four; a ship that cannot say
    `length_world`; no per-ship flag (issue 1680, RECIPE.md stage 7).
 2. **AO light and LODs.** Every hull's material gets a calibrated `ao_light_affect` from its faction's look.gd READ row
    (0.35 to 0.55, Glasswrights 0.2), never Godot's 0.0, and the importer generates Godot mesh LODs for far cameras
-   (issues 1678, 1679).
+   (issues 1678, 1679). Fleet lighting (that AO light plus the sky reflection gradient) is on by default for every ship
+   (R433, Ryan Nov 23); `VS_FLEET_LIGHTING=0` turns it off, only for before/after comparisons.
 3. **One authored look per faction.** When a faction is next baked or repainted, its stack writes `authored_look = 1`
    calibrated to the single battle light rig, and that faction's READ albedo lift stops applying to those hulls. Order as
    the work lands: Eclipse (1422), Navy flagship H4_11 (1681), Glasswright flagship I8_37 (1682), Chorus (1683),

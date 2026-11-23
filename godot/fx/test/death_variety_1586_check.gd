@@ -9,9 +9,13 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # 3. small hulls: four seeded archetypes, the same pick for the same ship and death count, all four in use
 # 4. strike craft: the corkscrew; 5. the afterlife: 2 or 3 quiet pops on a big wreck within 10 s of the break
 # 6. the battle's view cause: "ram" and "board" only right after their event, the rules' cause otherwise
+# 7. (Fable audit of PRs 1631 and 1666) a ram kill cuts like the rules' "big"; loose debris and crush sparks take the
+#    faction's own matter: metal shards on metal hulls, glass on Glasswrights, bile flecks (no plate) on the Chorus, cold
+#    shards on Eclipse, no brass sparks on those three (R367, R402)
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BEATS := preload("res://fx/fx_death_beats.gd")
+const POOLS := preload("res://fx/fx_pool.gd")
 var failures := 0
 
 
@@ -133,7 +137,15 @@ func _run() -> void:
 	check(arch_seen.size() >= 2, "small hulls die more than one way (%s)" % str(arch_seen.keys()))
 	# 4. strike craft
 	var wg := await _kill("hegemony", "Squadron", 0.3, "blast", 1.0, true, Vector3.INF, "wing", true)
-	check(_has(wg["beats"], "corkscrew"), "strike craft: the smoky corkscrew")
+	check(_has(wg["beats"], "corkscrew") and wg.smoke > 0 and wg.puff, "strike craft: a blast leaves a corkscrew and a puff")
+	var acid := await _kill("hegemony", "Squadron", 0.3, "melt", 1.0, true, Vector3.INF, "wing", true)
+	check(acid.melting and acid.smoke == 0 and not acid.puff, "acid-killed metal wing: melt, %d smoke sprites, delayed puff %s" % [acid.smoke, acid.puff])
+	for fac in ["ithar", "chorus"]:
+		var wing := await _kill(fac, "Squadron", 0.3, "blast", 1.0, true, Vector3.INF, "wing", true)
+		if fac == "ithar":
+			check(wing.shard_tints == [2.0, 2.0], "Glasswright wing sheds two glass shards")
+		else:
+			check(wing.shard_tints.is_empty() and wing.bile_flecks == 2, "Chorus wing sheds two wet flecks in its damage colour")
 	# 6. the battle's view cause: _play_batch reads the marks with view_causes over the whole batch, so these batches are
 	# exactly what playback sees, the grouped volley path included (Artoo on PR 1666, recheck of 852fbd8a)
 	var B = load("res://scenes/battle/battle.gd")
@@ -173,8 +185,59 @@ func _run() -> void:
 	check(bt.view_cause("flay", "g") == "flay", "battle: a boarding mark only turns a dark kill into the boarding death")
 	check(bt.view_cause("flay", "x") == "flay", "battle: any other kill keeps the rules' cause")
 	bt.free()
+	await _debris_check()
 	print("DEATH_VARIETY failures=%d" % failures)
 	quit(1 if failures else 0)
+
+
+func _debris_check() -> void:
+	var world := Node3D.new()
+	root.add_child(world)
+	var cam := Camera3D.new()
+	world.add_child(cam)
+	var fx = FX.new()
+	world.add_child(fx)
+	fx.manual = true
+	fx.setup({"quality": "high", "camera": cam, "shake": 0.0})
+	fx.spr_kinds = {}
+	var brass := Color(1.0, 0.82, 0.55)
+	var want := {"voidsworn": [1, 0.0], "hegemony": [1, 0.0], "corsair": [1, 0.0], "ithar": [1, 2.0], "deathless": [1, 0.0], "chorus": [0, -1.0]}
+	for fac in want:
+		var holder := Node3D.new()
+		world.add_child(holder)
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(20, 4, 6)
+		mi.mesh = box
+		holder.add_child(mi)
+		fx.add_ship("db_" + fac, holder, {"faction": fac, "cls": "Cruiser", "size": 1.0})
+		var s = fx.ship("db_" + fac)
+		if fac == "voidsworn":
+			var r1 := RandomNumberGenerator.new(); r1.seed = 7
+			var r2 := RandomNumberGenerator.new(); r2.seed = 7
+			var nb: int = DEATH.seeds_for(s, "big", r1).size()
+			var nr: int = DEATH.seeds_for(s, "ram", r2).size()
+			check(nr == nb, "ram: cut into as many pieces as a big kill (%d, big %d)" % [nr, nb])
+		var pool = fx.pools["shd"]
+		var n0: int = int(pool.emitted)
+		var k0: int = int((fx.spr_kinds as Dictionary).get(20, 0))
+		BEATS.debris(fx, s, Vector3.ZERO, fx.now, 1.0, Vector3.UP, 0.1, 0.6)
+		var pend: PackedFloat32Array = pool.pending   # one row repeated per vertex: the last 20 floats are the new shard
+		var shards: int = int(pool.emitted) - n0
+		var w: Array = want[fac]
+		check(shards == int(w[0]), "%s: %d debris shard (want %d)" % [fac, shards, int(w[0])])
+		if shards == 1:
+			var tint: float = pend[pend.size() - 20 + 18]
+			var heat: float = pend[pend.size() - 20]
+			check(is_equal_approx(tint, float(w[1])), "%s: shard look %.1f (want %.1f)" % [fac, tint, float(w[1])])
+			check((heat == 0.0) == (fac == "deathless"), "%s: shard heat %.2f (Eclipse cold, the rest glow)" % [fac, heat])
+		else:
+			check(int((fx.spr_kinds as Dictionary).get(20, 0)) > k0, "%s: a wet fleck in place of the shard" % fac)
+		var sc: Color = BEATS.spark_col(s, brass)
+		var metal: bool = fac in ["voidsworn", "hegemony", "corsair"]
+		check(sc.is_equal_approx(brass) == metal, "%s: crush spark colour %s (brass on metal hulls only)" % [fac, str(sc)])
+	world.queue_free()
+	await process_frame
 
 
 class _Probe:
@@ -226,14 +289,34 @@ func _kill(fac: String, cls: String, size: float, cause: String, secs: float, sh
 	if shot:
 		s.set_meta("last_hit", [s.hull.c + Vector3(0, 0, s.hull.W * 0.5), Vector3(0, 0, -1), fx.now])
 	var rib0: int = fx.pools["rib"].emitted
+	var spr0 := _kinds(fx)
+	var shard_start: int = fx.pools["shd"].pending.size()
+	var smoke_start: int = fx.pools["smk"].pending.size()
 	fx.death(sid, cause)
 	var T: float = fx.now
 	var res := {"fac": fac, "dimmed": false, "lit_before": true, "dark_after": false, "strain_runs": false, "power_mats": 0, "smoke": 0, "corridor_sprites": 0, "trail_pts": 0}
-	var spr0 := _kinds(fx)
+	if wing:
+		res["melting"] = DEATH.melting(s)
+		res["puff"] = false
+		res["shard_tints"] = []
+		# Read one packed vertex per new particle. Shards carry the tint at 18, sprites carry the kind there and RGB at 12.
+		var shards: PackedFloat32Array = fx.pools["shd"].pending
+		for row in range(shard_start, shards.size(), fx.pools["shd"].vpp * POOLS.STRIDE):
+			res.shard_tints.append(shards[row + 18])
+		var smoke: PackedFloat32Array = fx.pools["smk"].pending
+		var bile: Color = s.fac.damage_glow * 0.6
+		res["bile_flecks"] = 0
+		for row in range(smoke_start, smoke.size(), fx.pools["smk"].vpp * POOLS.STRIDE):
+			if smoke[row + 18] == 20 and Vector3(smoke[row + 12], smoke[row + 13], smoke[row + 14]).is_equal_approx(Vector3(bile.r, bile.g, bile.b)):
+				res.bile_flecks += 1
 	var split_t := T + (float(s.get_meta("death_timeline").cut) if s.has_meta("death_timeline") else 0.72)
 	for i in int(secs * 60.0):
 		fx.step(1.0 / 60.0)
 		await process_frame
+		if wing and not res.puff:
+			for pic in world.find_children("fx_beat_impact*", "MeshInstance3D", true, false):
+				if pic.visible and pic.get_meta("fx_picture_kind", "") == "impact":
+					res.puff = true
 		if fx.get("_dim_t0") != null and float(fx.get("_dim_t0")) >= 0.0: res["dimmed"] = true
 		if s.has_meta("death_blackout_at"):
 			var at: float = s.get_meta("death_blackout_at")

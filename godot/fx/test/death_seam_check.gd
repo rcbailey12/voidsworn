@@ -101,7 +101,7 @@ func _load_ship() -> Node3D:
 	if path.ends_with(".gz"): bytes = bytes.decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP)
 	var doc := GLTFDocument.new()
 	var state := GLTFState.new()
-	if bytes.is_empty() or doc.append_from_buffer(bytes, path.get_base_dir(), state) != OK: return null
+	if bytes.is_empty() or doc.append_from_buffer(bytes, path.replace("\\", "/").get_base_dir(), state) != OK: return null
 	print("DEATH_SEAM ship ", path)
 	return doc.generate_scene(state)
 
