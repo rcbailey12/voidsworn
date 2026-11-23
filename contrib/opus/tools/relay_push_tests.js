@@ -76,6 +76,41 @@ try {
   assert.equal(r.status, 0, r.out);
   const many = git(['--git-dir', relaySource, '-c', 'core.quotepath=false', 'ls-tree', '-r', '--name-only', 'refs/heads/pc-out-opus1739']).split('\n').sort();
   assert.deepEqual(many, names.map(n => 'out_20261122_200000_6/' + n).sort(), 'every file lands, the first one too: ' + many.slice(0, 3).join(', '));
+  // Issue 1830: skip Godot cache folders before walking them, and still hash long paths outside them.
+  const at7 = path.join(vt, 'opus1830', 'out_20261123_125700_1');
+  const closeTest = path.join(at7, 'out_new', 'load10', 'close_test');
+  const longFile = dir => {
+    const file = path.join(dir, 'x'.repeat(330 - dir.length - 5) + '.bin');
+    assert.equal(file.length, 330);
+    return file;
+  };
+  const cached = longFile(path.join(closeTest, 'profile', 'x'.repeat(45), 'shader_cache'));
+  const result = longFile(path.join(closeTest, 'x'.repeat(45), 'shots'));
+  write(cached, 'profile cache');
+  write(result, 'long result');
+  write(path.join(closeTest, 'shader_cache', 'compiled.bin'), 'shader cache');
+  write(path.join(closeTest, '.godot', 'imported.bin'), 'import cache');
+  write(path.join(at7, 'Profile', 'settings.cfg'), 'top-level profile');
+  write(path.join(closeTest, 'profile.txt'), 'a normal file');
+  write(path.join(at7, 'status.txt'), 'PASS');
+  git(['--git-dir', path.join(vt, 'relay-mirror.git'), 'config', 'core.longpaths', 'false']);
+  r = run('opus1830', at7);
+  assert.equal(r.status, 0, r.out);
+  const longRef = 'refs/heads/pc-out-opus1830';
+  const closeKey = 'out_new/load10/close_test';
+  const resultKey = path.relative(at7, result).split(path.sep).join('/');
+  const leaf7 = path.basename(at7);
+  const manifest = 'relay_manifest/skipped_cache_folders.txt';
+  const tree = git(['--git-dir', relaySource, 'ls-tree', '-r', '--name-only', longRef]).split('\n').sort();
+  assert.deepEqual(tree, [resultKey, closeKey + '/profile.txt', manifest, 'status.txt'].map(n => leaf7 + '/' + n).sort());
+  assert.equal(git(['--git-dir', relaySource, 'show', `${longRef}:${leaf7}/${resultKey}`]), 'long result');
+  const cachePaths = ['Profile', closeKey + '/.godot', closeKey + '/profile', closeKey + '/shader_cache'];
+  const cacheList = git(['--git-dir', relaySource, 'show', `${longRef}:${leaf7}/${manifest}`]);
+  assert.deepEqual(cacheList.split(/\r?\n/).sort(), cachePaths.slice().sort(), 'one entry per skipped subtree');
+  assert.equal(fs.readFileSync(cached, 'utf8'), 'profile cache', 'the source cache stays in place');
+  r = run('opus1830', at7, 'dry');
+  assert.equal(r.status, 0, r.out);
+  for (const name of cachePaths) assert(r.out.includes('would list as skipped: ' + name), r.out);
   // refusals
   const outside = path.join(tmp, 'elsewhere', 'out_1'); write(path.join(outside, 'out_x', 'a.txt'), 'x');
   assert.notEqual(run('opus1657', outside).status, 0, 'a folder outside voidsworn_test is refused');
@@ -94,5 +129,5 @@ try {
   r = run('opus1657', path.join(vt, 'linkedjob', 'out_20261122_170000_4'));
   assert(r.status !== 0 && /a link on the way to the attempt:[\s\S]*linkedjob/.test(r.out), 'an attempt under a link is refused: ' + r.out);
   assert.equal(git(['--git-dir', relaySource, 'rev-parse', 'refs/heads/pc-out-opus1657']), before, 'a refusal sends nothing');
-  console.log('PASS: relay_push sends out_* and top text files to pc-out-<job>, lists files over 10 MB, resends replace, dry sends nothing, links refused, bounded batches');
+  console.log('PASS: relay_push sends out_* and top text files to pc-out-<job>, lists large files and Godot caches, handles long paths, resends replace, dry sends nothing, links refused, bounded batches');
 } finally { fs.rmSync(tmp, { recursive: true, force: true }); }

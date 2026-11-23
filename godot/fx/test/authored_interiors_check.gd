@@ -53,7 +53,7 @@ func _run() -> void:
 	if not args.is_empty():
 		var doc := GLTFDocument.new()
 		var state := GLTFState.new()
-		check(doc.append_from_file(args[0], state) == OK, "written GLB loads")
+		check(doc.append_from_file(args[0].replace("\\", "/"), state) == OK, "written GLB loads")
 		ship = doc.generate_scene(state)
 	else:
 		ship = Node3D.new()
