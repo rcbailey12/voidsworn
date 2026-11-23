@@ -5526,17 +5526,6 @@ func treeBattleStart() -> void:
 	if treeSkill("preyScent") != null:
 		var ePS = treeChoice("enemy"); B["tr"]["scent"] = ePS["id"] if ePS != null else null
 		if ePS != null: treeFx(treeFlagUnit() if treeFlagUnit() != null else ePS, "preyScent", "the pack names its prey")   # Hullbreakers shared B1a
-func eclipseFormationEvasion(u, destination) -> Variant:
-	var skill = treeSkill("eclFormation")
-	if skill == null or jt(u.get("treeEclForm")): return null
-	var adjacent := 0
-	for ally in alive("player"):
-		if ally["id"] == u["id"] or jt(ally.get("isSq")) or hdist(ally, destination) != 1: continue
-		adjacent += 1
-		if adjacent == 2:
-			return minf(float(TB.FX_CAPS.get("ev", 45)), z0(u.get("evBuff")) + float(skill["n"]))
-	return null
-
 func treeAfterMove(u) -> void:
 	if B == null or B.get("tree") == null or B["tree"].size() == 0 or u == null or jt(u.get("isSq")): return
 	if treeSkill("mirrorTurns") != null and cmdActive(u["side"], "surge") and not jt(u.get("treeMirrorUsed")):
@@ -5567,10 +5556,12 @@ func treeAfterMove(u) -> void:
 			for xF in alive("player"):
 				if not is_same(xF, u) and not jt(xF.get("isSq")) and hdist(xF, u) == 1: nearF += 1
 			if nearF >= 2: u["treeFormation"] = 1; treeFx(u, "formation", "the formation is filed")
-		var formation_evasion = eclipseFormationEvasion(u, u)
-		if formation_evasion != null:
-			u["treeEclForm"] = 1; u["evBuff"] = formation_evasion
-			treeFx(u, "eclFormation", "the formation holds")   # Eclipse shared B1a
+		var efE = treeSkill("eclFormation")
+		if efE != null and not jt(u.get("treeEclForm")):
+			var nearE = 0
+			for xE in alive("player"):
+				if not is_same(xE, u) and not jt(xE.get("isSq")) and hdist(xE, u) == 1: nearE += 1
+			if nearE >= 2: u["treeEclForm"] = 1; u["evBuff"] = min(float(TB.FX_CAPS.get("ev", 45)), z0(u.get("evBuff")) + float(efE["n"])); treeFx(u, "eclFormation", "the formation holds")   # Eclipse shared B1a
 		var spE = treeSkill("shadowPos")
 		if spE != null and cmdActive(u["side"], "hunt") and not jt(u.get("treeShadowPos")) and treeInEnemyRear(u): u["treeShadowPos"] = 1; treeFx(u, "shadowPos", "flank vector held")   # Ostrel T2a
 		if cmdActive(u["side"], "iron"):
