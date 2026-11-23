@@ -185,7 +185,7 @@ exit, whether the tree was seen empty, and the profile. The daemon reads the tre
 the job's output. Then the outputs and options are checked, the in-flight marker cleared (only while `slotcheck` still
 proves the lease live and the marker is exactly what the daemon wrote; it is renamed aside to `hold.txt.<token>.clearing`
 before the compare, and the head's slot allocator skips a slot with that file as with `hold.txt`; a changed marker is
-linked back, never over a newer `hold.txt`), `done.txt`, the slot let go (bound to the lease the attempt was given: the head releases only while `slot.txt` is exactly
+linked back, never over a newer `hold.txt`), `done.txt`, the slot let go (bound to the lease the attempt was given: the head releases only while `slot.txt` is there and exactly
 that lease and `owner.txt` names this attempt and token, and otherwise keeps the slot: a job that ran is then `FAILED: slot release` with its outputs kept and
 delivered, never PASS, and a job stopped before launch says the slot was not let go), the relay push, a result comment with the links, `running` off.
 

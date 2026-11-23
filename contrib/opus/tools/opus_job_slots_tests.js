@@ -285,6 +285,11 @@ try {
   r = run({ OJ_SLOT_EXPECT: `${dirX}|${'0'.repeat(32)}` }, 'slotrelease', aX);
   assert(r.status !== 0 && /slot kept: slot\.txt .* no longer matches the lease/.test(r.out.replace(/\s+/g, ' ')), 'a receipt that is not the given lease is refused: ' + r.out);
   keptX('lease mismatch');
+  fs.renameSync(path.join(aX, 'slot.txt'), path.join(aX, 'slot.txt.away'));
+  r = run({ OJ_SLOT_EXPECT: receiptX }, 'slotrelease', aX);
+  assert(r.status !== 0 && /slot kept: no slot\.txt/.test(r.out.replace(/\s+/g, ' ')), 'a missing receipt with a lease is refused: ' + r.out);
+  keptX('missing receipt');
+  fs.renameSync(path.join(aX, 'slot.txt.away'), path.join(aX, 'slot.txt'));
   r = run({ OJ_SLOT_EXPECT: receiptX }, 'slotrelease', aX);
   assert(r.status === 0 && /let go/.test(r.out), r.out);
   assert(/^released /m.test(fs.readFileSync(path.join(dirX, 'owner.txt'), 'utf8')), 'the matching lease is let go');

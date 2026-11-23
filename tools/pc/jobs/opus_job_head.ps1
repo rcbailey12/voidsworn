@@ -971,7 +971,11 @@ function Set-SlotHold($dir, $why, $u) {
 }
 function Exit-Slot($attempt, $expect = $null) {
   $f = Join-Path $attempt 'slot.txt'
-  if (-not (Test-Path -LiteralPath $f -PathType Leaf)) { Write-Output "no slot held by $attempt"; return }
+  if (-not (Test-Path -LiteralPath $f -PathType Leaf)) {
+    # a caller that was given a lease (the PC daemon) never takes a missing receipt as a release (Artoo on 7fd738f2)
+    if ($expect) { throw "slot kept: no slot.txt in $attempt for the lease it was given ($expect); nothing was released" }
+    Write-Output "no slot held by $attempt"; return
+  }
   $receipt = [IO.File]::ReadAllText($f).Trim()
   $parts = $receipt.Split('|')
   # Artoo on PR 1835 (Astra run 6): a release only ever touches the slot this attempt holds. The receipt must be one slot
