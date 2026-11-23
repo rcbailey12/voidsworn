@@ -18,6 +18,7 @@ headless|world/test/backdrop_clip_check.gd|-|-|issue 1264: ringed giant planets,
 headless|world/test/cloud_edge_check.gd|-|-|issue 1263: storm and nebula cloud footprints reach zero smoothly inside their texture on all four sides, so no cloud ends in a straight line
 headless|world/test/max_4k_cost_check.gd|-|-|issue 1262: Max skips SSIL, the zero underlay is not drawn, Max storm cards are bounded; VS_1262_OLD brings each back
 headless|world/test/bake_cache_cap_check.gd|-|-|issue 1265: the planet bake cache on disk keeps under its cap, least recently used first, never the running battle's maps or the map just saved; stale .tmp files go
+headless|world/test/rock_scan_check.gd|-|-|issue 1361 (R419, R420 section 6.2): every shipped rock scan keeps a usable COLOR_0.b facet range, a closed surface, its triangle and shape minimums and its scans.json hash; each kind draws on its own scans; no crystal cluster ships (Ryan scrapped them Nov 22; the kind is ice comets)
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/boon_fleet_test.gd|-|-|issues 1075 and 1147: protocol cards explain fleet fit, caps, refits and Brace eligibility without changing offers, RNG or saves
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
@@ -80,10 +81,12 @@ headless|rules/test/shield_pool_test.gd|-|res://rules/test/shield_pool_cases.jso
 headless|rules/test/ion_pulse_ai_test.gd|-|-|issue 1447: when the enemy AI fires the ion pulse (real pools, after moving, log count); twin of contrib/opus/tools/ion_pulse_ai_tests.js
 headless|rules/test/balance_sim_abilities_test.gd|-|-|issue 1705: campaign, campaignrewards and boss cells field the selected player fleet and count phase and frenzy uses on a fixed seed
 headless|rules/test/rules_1560_test.gd|-|-|issue 1560 and R396: battle rules audit fixes (no turn or ram after firing, hits never heal, fleeing escorts stay gone, AI and forecast fixes); twin of contrib/opus/tools/rules_1560_tests.js
+headless|rules/test/boss_1885_test.gd|-|-|issue 1885: half-hull escorts flee below the rout threshold and only the boss's death wins the fight
 headless|rules/test/rules_1650_test.gd|-|-|issue 1650: the three Mastery III signatures the bot battles rarely reach (stern torpedo, double kill chain, pack bite on the prey)
 headless|rules/test/rules_1481_test.gd|-|-|issue 1481: every shield drop sends the break (storm, flare, mid section, ram, ion pulse, nova), rams use the shared spend, counter-fire, ram shockwave and reactor hits send a hit, a bad blink or nova hex is refused before it counts; twin of contrib/opus/tools/rules_1481_tests.js
 headless|rules/test/rules_1479_test.gd|-|-|issue 1479: overrunning the Nemesis flagship, a hunt target or a convoy transport destroys it (R383), a captured carrier's wings lose their carrier, and an Eclipse wreck rising next round keeps the fight open (browser twin contrib/opus/tools/rules_1479_tests.js)
 headless|rules/test/rules_1653_test.gd|-|-|issue 1653: the twelve salvage relics and four refits each do what their card says, checked on rules.gd directly
+headless|rules/test/rules_1651_test.gd|-|-|issue 1651: the 24 Command riders each do what their line says, key coverage, and a swapped Command brings its own rider
 headless|rules/test/rules_1649_test.gd|-|-|issue 1649 follow-up: Fold skip and Blood frenzy end when the ship's next turn starts, and frenzy regrowth shares the Chorus feed cap
 headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|parity and saved Godot results share one batch; saved/check.js reports changed battles and whole-step time (issue 990)
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape

@@ -208,7 +208,7 @@
    "seconds": 0.5,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single rapid point-defense plasma tick from a military starship turret: one short bright crisp plasma-arc snap with a light clean energy edge, steady pitch, cutting off instantly. Fast, small, precise, disciplined, much lighter than a main cannon."
+   "prompt": "Single point-defense laser pulse from a military starship turret, heard close and centered: one crisp high-voltage electrical arc snap with a tight dry spark discharge and bright upper-midrange bite, steady pitch, cutting off instantly. Fast, precise, disciplined, light and sharp."
   },
   {
    "id": "wep_hullbreaker_scatter",
@@ -243,7 +243,7 @@
    "model": "eleven_text_to_sound_v2",
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single shot from a crude scrap-built starship turret: an immediate rough bright metallic crack with loose iron plates rattling in the housing, a clanking bolt, and a short gritty propellant report over a firm low punch. Crude, rattling, mechanical, improvised."
+   "prompt": "Single shot from a crude scrap-built starship turret, heard close and centered: an immediate rough gritty metallic crack with loose iron plates rattling in the housing, a clanking bolt, and a short dry propellant report over a firm punch, ending in a short dry rattle. Crude, rattling, mechanical."
   },
   {
    "id": "wep_chorus_spines",
@@ -353,7 +353,7 @@
    "seconds": 0.6,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single rapid shot from an ancient alien monolith point-defense emitter, heard close and centered: one tight cold electrostatic void snap with a compact hollow mid-low magnetic knock, cutting off dead. Cold, eerie, crisp, much lighter than a main null cannon."
+   "prompt": "Single shot from an ancient alien obsidian point-defense spire, heard close and centered: one loud crisp cold electrostatic crack of a dark crystal bolt with clear midrange presence and a short magnetic snap, cutting off dead. Cold, eerie, crisp, clean."
   },
   {
    "id": "wep_eclipse_gauss_charge",
@@ -508,7 +508,7 @@
    "seconds": 0.6,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Ordinary cannon shell striking armored starship steel plating: an immediate sharp bright metal clang with a hard ringing steel tone and a short rattle of fragments, over a firm mid punch, decaying quickly. Clear, hard, metallic."
+   "prompt": "Ordinary cannon shell striking armored starship steel plating, heard close and centered: an immediate hard bright steel clang with a short ringing plate tone over a firm mid punch, decaying quickly. Clear, hard, metallic, solid."
   },
   {
    "id": "imp_metal_heavy_v3ab",
@@ -530,7 +530,7 @@
    "seconds": 0.7,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Plasma bolt striking armored starship steel plating: an immediate hard metal clang under a bright fierce electric arc flash, then a hot scorching hiss of burning metal and a short crackle, over a firm mid punch. Clear steel hit, hot, bright."
+   "prompt": "Plasma bolt striking armored starship steel plating, heard close and centered: a heavy forged-steel armor clang first, then a short seared electric arc snap as the hot bolt scorches the plate, over a firm mid punch, decaying quickly. Clear steel hit, hot, solid."
   },
   {
    "id": "imp_las",
@@ -541,7 +541,7 @@
    "seconds": 0.55,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Focused energy beam striking armored starship steel: an immediate bright concentrated arc flash on hard metal with a clear ringing steel ping and a short hot burning hiss, decaying quickly. Clear steel contact, hot, compact."
+   "prompt": "Focused energy beam striking armored starship steel, heard close and centered: a solid armored-steel plate clang first, then a tight brief hot laser sear on the metal, decaying quickly. Clear steel contact, hot, compact, solid."
   },
   {
    "id": "imp_acid_on_metal",
@@ -615,10 +615,10 @@
    "cue": "new R416 cue: ONE generator crackle (fx_ship repeats it every 1.4 to 3.0 s)",
    "today": null,
    "group": "r416_damage",
-   "seconds": 0.6,
+   "seconds": 0.7,
    "influence": 0.6,
    "takes": 2,
-   "prompt": "Starship shield generator burning out, heard close and centered: one dry high-voltage arc snap across steel plating with a short midrange transformer buzz beneath that cuts out. Electrical, tight, crisp."
+   "prompt": "Starship shield generator burning out, heard close and centered: one immediate dry electrical short-circuit snap and a crisp metallic breaker spark at the start, over a tight midrange electrical buzz that decays fast. Electrical, tight, crisp, dry."
   },
   {
    "id": "dmg_breach_shear_metal",
@@ -706,7 +706,7 @@
    "seconds": 1.8,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Ancient obsidian alien starship splitting apart, heard close: hard brittle stone slabs grinding and shearing apart with crisp dry rock fracture grit, sharp cold electrostatic crackle, and a dark hollow low knock as the halves separate. Heavy, ancient, cold, stony."
+   "prompt": "Ancient dark alien starship hull splitting apart, heard close and centered: massive black alloy armor plates bending and shearing apart with heavy dark metallic stress, a cold electrostatic crackle, and a hollow metal knock as the halves separate. Dark, heavy, cold, metallic."
   },
   {
    "id": "death_metal_break",

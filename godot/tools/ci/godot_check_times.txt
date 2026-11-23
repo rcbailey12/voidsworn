@@ -161,8 +161,10 @@ volley_voice_check 5
 wing_cancel_test 1
 wreck_contact_check 22
 wreck_hex_check 24
+rules_1651_test 3
 rules_1653_test 3
 salvage_1653_test 3
 salvage_1653_shots 3
+rock_scan_check 3
 rules_1649_test 3
 prefetch_wait_check 5
