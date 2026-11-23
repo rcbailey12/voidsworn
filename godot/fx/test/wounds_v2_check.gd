@@ -495,5 +495,15 @@ func _review_fixes() -> void:
 			if eh.has_cut() and not eh.thin_shear:
 				opened += 1
 	print("  H5 midship: ", ", ".join(notes))
+	# V2B PC run: the warm-up's interior material is kept for the battle, so the first breach never compiles late
+	var tmpn := Node3D.new()
+	world.add_child(tmpn)
+	fx._warm_hull_meshes(tmpn, sf, {}, 0)
+	tmpn.free()
+	var kept := 0
+	for key in fx._damage_templates:
+		if str(key).begins_with("interior_v2_") and (fx._damage_templates[key] as ShaderMaterial).shader.code == SH.INTERIOR:
+			kept += 1
+	check(kept >= 1, "the warm-up keeps its interior material, so the interior shader is not made again late (%d kept)" % kept)
 	check(tried > 0 and opened == tried, "H5: midship cutouts on the real hull open into the ship, not chip (%d of %d)" % [opened, tried])
 	OS.unset_environment("VS_WOUNDS_V2")

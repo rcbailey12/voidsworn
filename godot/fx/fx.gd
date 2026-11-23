@@ -2282,6 +2282,9 @@ func _warm_hull_meshes(tmp: Node3D, sh: SHIP, seen: Dictionary, hk: int) -> int:
 			var im := MeshInstance3D.new()
 			im.mesh = smi.mesh
 			im.material_override = HULL.interior_material_v2(null, Transform3D.IDENTITY, {"count": -1}, BREACH.wound_of(sh.faction), sh.hull.L)
+			# kept for the battle (the shader cache is weak): freed with the stand-in, the shader was made again on the
+			# first breach and compiled late (V2B PC run, Nov 22: "late shader: interior v2")
+			_damage_templates["interior_v2_" + ikey] = im.material_override
 			im.scale = dm.scale
 			im.position = dm.position + Vector3.LEFT * unit
 			tmp.add_child(im)

@@ -37,6 +37,7 @@ extends Node
 
 const FX := preload("res://fx/fx.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const BREACH := preload("res://fx/fx_breach.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const SV := preload("res://render/ship_view.gd")
 const HT := preload("res://render/hull_table.gd")
@@ -636,6 +637,25 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.sync_ship("T", row["sync_t"])
 		for k in 30:
 			await _step()
+	# Issue 1741 (V2B PC run, Nov 22: most Wounds V2 cutouts fell outside the close frame or on the far side): "focus":
+	# "wound" turns a close camera (under 100) to face the target's biggest open cutout, centred on it; camera 170 keeps
+	# the battle angle on the ship's centre (RULEBOOK 6.1). A ship with no open cutout keeps the usual view.
+	if str(row.get("focus", "")) == "wound" and r < 100.0 and fx.ship("T") != null:
+		var st = fx.ship("T")
+		var best: Dictionary = {}
+		for mo in BREACH.open_mouths(st):
+			if best.is_empty() or float(mo["R"]) > float(best["R"]):
+				best = mo
+		if not best.is_empty():
+			var wc: Vector3 = st.to_world(best["c"])
+			var wn: Vector3 = (st.to_world(best["c"] + best["n"]) - wc).normalized()
+			cam.a = atan2(-wn.z, wn.x)
+			cam.b = clampf(acos(clampf(wn.y, -1.0, 1.0)), 0.35, 1.25)
+			cam.r = r
+			cam.t = wc
+			cam.snap()
+			for k in 6:
+				await _step()
 	fx.rng.seed = 11
 	seed(2070)
 	var t_ev: float = fx.now
