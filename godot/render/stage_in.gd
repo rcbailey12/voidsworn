@@ -66,8 +66,11 @@ func drain(tree: SceneTree) -> void:
 	if tree.node_added.is_connected(_added):
 		tree.node_added.disconnect(_added)
 	var t0 := Time.get_ticks_msec()
+	var drawn := DisplayServer.get_name() != "headless"
 	while not _queue.is_empty() and active and Time.get_ticks_msec() - t0 < 10000:
-		await RenderingServer.frame_post_draw
+		await tree.process_frame
+		if not drawn:
+			_on_post()   # a headless sliced check (--sliced-load) draws nothing: give back a step a frame all the same
 	stop()
 
 
