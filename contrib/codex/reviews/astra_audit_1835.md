@@ -302,3 +302,46 @@ The GitHub contents at the pin matched the Git blob IDs and the text used on Win
 **Board decision.** Return PR 1835 before its first live job. Recheck both hold names under the newly acquired lease. A Windows regression should show that a waiting claimant leaves an edited Board hold and the underlying checkout intact across cleanup and release.
 
 Not checked: an actual overlap of two claimants, a production slot reset or daemon, a damaged launch receipt, interactive play, GPU work, an installed-tools refresh or a real relay upload. The watchdog integration used stand-in gates. The full standing suite result came from GitHub.
+
+## Run 6 recheck
+
+**Return PR 1835 before its first live job.** GitHub reported head `01e984891b137e8d7840ad4f2a6c15fdae1fc4dd` at the start and end of this review. The Board hold survived the Windows regression, and the final gate refused every missing or mismatched receipt tested. One new blocker remains. After refusing launch, cleanup can release another job's lease.
+
+### Findings
+
+Paths beginning with `jobs/` or `mission/` are relative to `tools/pc/`.
+
+| # | Finding | Evidence | File:line | Exact quote | Why it matters and requested fix | Confidence |
+|---|---|---|---|---|---|---|
+| 1 | New, BLOCKING. Release after a refused launch | INFERRED | `mission/pc_daemon.js:713`, `:741`, `jobs/opus_job_head.ps1:975`, `:983`, `:986` | `this.tools.slotRelease(attempt, st)` | The refusal stops the worker, then cleanup rereads the rejected slot receipt. The helper checks the token in the selected slot's owner record, but never checks that the recorded attempt is the one being released. If the receipt names another active lease, cleanup can mark that job released and signal its holder to exit while the job still uses its checkout. Bind release to the original slot and token, and require the owner record to name the same attempt before either write. | High |
+| 2 | Run 5 item 5 cleanup, FIXED, NOTE | OBSERVED | `jobs/opus_job_head.ps1:925`, `:943`, `:944`, `:1008`, `:1009` | `(Test-SlotHeld $dir $token) -and (Test-SlotHold $dir)` | The claimant checks both hold names after its holder takes the lease. It checks them again under the reset lock before changing the checkout. On Windows it released the slot and preserved the hold, file and HEAD. | High |
+| 3 | Run 5 final gate receipts, FIXED, NOTE | OBSERVED | `mission/pc_daemon.js:709`, `:867`, `:869`, `:874`, `:880` | `gateBinding(attempt, this.tools.pinned, lease)` | The watchdog receives the original attempt, tools folder, slot and token before it waits. The gate reads receipts from that attempt, compares them to the bound values and passes the bound lease to the live check. All six negative Windows cases returned 3. Finding 1 concerns the later release. | High |
+| 4 | Run 5 recovery text, FIXED for a valid receipt, NOTE | OBSERVED | `mission/pc_daemon.js:422`, `:846`, `:847`, `docs/playbooks/pc.md:195` | `hold.txt.${token}.clearing` | The actual Windows clearance command named the same token-specific file as cleanup and told the Board to check any newer hold beside it. Both files kept their contents. | High |
+| 5 | New, SHOULD-FIX. Clearance with an incomplete receipt | OBSERVED | `mission/pc_daemon.js:842`, `:846`, `:847` | `d.note(e.sha, e.job, e.pr, 'cleared', e.attempt);` | With a slot path but no token, Windows recorded clearance, returned 0 and printed `hold.txt.undefined.clearing`. Validate the receipt before recording clearance or giving removal instructions. An attempt that never took a slot needs only the daemon-hold instructions. | High |
+| 6 | Run 5 watchdog documentation, FIXED, NOTE | OBSERVED | `docs/playbooks/pc.md:174`, `:175` | `its game wait now also counts compatibility play` | The playbook now tells the Board why an ordinary job can wait during compatibility play. | High |
+
+### Windows evidence
+
+- **Waiting claimant.** The stock slot suite passed its static check and explicitly skipped the live group on Windows at `contrib/opus/tools/opus_job_slots_tests.js:35`. In TEMP, I ran the new fixture's writes and assertions from lines 250 to 264 with Windows PowerShell, the pinned helper, and a native background launcher in place of the CI shell. The claimant held the lease and reset lock when the fixture wrote the edited Board hold and `survivor_output.bin`. It refused the reset and its holder exited. The two files matched byte for byte. HEAD stayed at `ba888a19` despite the request for `886a72c6`. With only the clearing file left, the next claim also failed.
+- **Daemon and runner.** `node tools/pc/mission/pc_daemon_selftest.js` passed 31/31 on Node 22.11.0, including the Windows group in addition to the author's 30. The real watchdog waited for the stand-in's descendant and returned 125 before worker start on gate refusal. `node tools/pc/runner_selftest.js` passed 141 checks using the standing suite's lane environment filter. Both commands exited 0.
+- **Receipts and clearance.** On the pinned `--recheck` command, missing, empty and mismatched tools receipts each returned 3. A missing slot receipt, a different slot and a different token each returned 3. In a disposable Windows profile, `--clear` with a valid receipt returned 0 once and 2 on repeat. A separate interrupted attempt with an incomplete receipt produced finding 5.
+- **CI.** GitHub reported success for the standing suite and the aggregate check at this SHA. [Standing checks](https://github.com/rcbailey12/voidsworn/actions/runs/45268300834/job/138021028909) and [All checks](https://github.com/rcbailey12/voidsworn/actions/runs/45268300834/job/138026154321).
+
+### Source record
+
+The raw file contents from GitHub at the pin matched the Windows test sources after line-ending normalization. The comparison starts at the run 5 head `38fc0e7a`. For the large files, the focused source reads covered daemon lines 270 to 430, 555 to 600, 671 to 748 and 831 to 903, slot helper lines 81 to 88, 855 to 1078, 1117 to 1201 and 1566 to 1570, and runner self-test lines 1 to 135 and 1489 to 1536.
+
+| File | Lines | First 40 characters of final line, or entire shorter line |
+|---|---:|---|
+| `tools/pc/mission/pc_daemon.js` | 903 | `  expectMissing, checkRoot, checkSlotRep` |
+| `tools/pc/mission/pc_daemon_selftest.js` | 737 | `})().catch(e => { console.error('FAIL: '` |
+| `tools/pc/jobs/opus_job_head.ps1` | 1570 | `}` |
+| `contrib/opus/tools/opus_job_slots_tests.js` | 278 | `}` |
+| `tools/pc/run_timeout.ps1` | 925 | `}` |
+| `tools/pc/runner_selftest.js` | 1536 | `} })();` |
+| `contrib/opus/tools/run_all_checks.js` | 355 | `module.exports = { rowEnv, classifyFindi` |
+| `docs/playbooks/pc.md` | 205 | `Node and retire its wrapper. The selftes` |
+
+**Board decision.** Send PR 1835 back for finding 1. Before merge, require a Windows regression showing that a refused launch leaves another active attempt's owner record and lease intact.
+
+Not checked: a production daemon, an actual cross-attempt release, or a live GPU or relay job. The Windows slot fixture introduced the hold during the reset wait. It did not schedule the daemon's rename and restore between two allocator probes. The watchdog integration used stand-in gates. The full standing suite result came from GitHub.
