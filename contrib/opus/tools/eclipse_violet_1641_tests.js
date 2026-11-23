@@ -21,6 +21,8 @@ const looks = JSON.parse(read('godot/fx/faction_looks.json'));
 const srgb = c => (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
 const want = '#' + looks.deathless.weapon.map(c => Math.round(srgb(c) * 255).toString(16).padStart(2, '0')).join('');
 const CALLOUTS = ['Reassembled', 'Rebuilding', 'Reassembling: rises next round', 'Phase shift'];
+// issue 1649: Godot replaced Phase shift with Fold skip; the frozen browser copy keeps Phase shift
+const GD_CALLOUTS = ['Reassembled', 'Rebuilding', 'Reassembling: rises next round', 'Fold skip'];
 
 check('ECL_VIOLET is faction_looks deathless.weapon in sRGB (' + want + ')', () => T.ECL_VIOLET === want);
 check('eclCol: Eclipse ships get violet', () => T.eclCol({ fac: 'deathless' }) === want);
@@ -32,6 +34,8 @@ for (const w of CALLOUTS) {
     const lines = JS.split('\n').filter(l => l.includes("'" + w + "'"));
     return lines.length > 0 && lines.every(l => /eclCol\(/.test(l) && !new RegExp("'" + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "','#7dff9b'").test(l));
   });
+}
+for (const w of GD_CALLOUTS) {
   check('Godot: "' + w.trim() + '" uses eclCol, never a fixed green', () => {
     const lines = GD.split('\n').filter(l => l.includes('"' + w + '"'));
     return lines.length > 0 && lines.every(l => /eclCol\(/.test(l));

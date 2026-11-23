@@ -147,6 +147,11 @@ func orbit(dx: float, dy: float) -> void:
 
 # returns true when the event was a drag the camera used (so a click is not fired at the end of it)
 func handle_input(e: InputEvent) -> bool:
+	if e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_RIGHT and not e.pressed:
+		if _drag == 2:
+			_drag = 0
+			_drag_moved = 0.0
+		return false
 	if not input_enabled:
 		return false
 	if e is InputEventMouseButton:
@@ -158,7 +163,7 @@ func handle_input(e: InputEvent) -> bool:
 			r = clampf(r * exp(120.0 * 0.0011), min_r, 900.0)
 			return true
 		if mb.button_index == MOUSE_BUTTON_RIGHT:
-			_drag = 2 if mb.pressed else 0
+			_drag = 2
 			_drag_moved = 0.0
 			return false
 		if mb.button_index == MOUSE_BUTTON_LEFT:

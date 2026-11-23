@@ -2,8 +2,10 @@
 // Standing check for the fleet list (issue 1421): every ship the game draws has a row, every approved concept file
 // exists, no old hull sits without a job, and docs/ship_pipeline/FLEET.md matches what the repo says today.
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const assert = require('assert');
+const { spawnSync } = require('child_process');
 const fleet = require('./fleet_list.js');
 const ROOT = path.resolve(__dirname, '../../..');
 
@@ -44,7 +46,7 @@ t('a new-format row with old armour reads as pending, not accepted', () => {
 
 // A broken copy must be caught: a slot with no row, a missing concept file, an old hull with no job.
 t('problems are found in a broken fleet', () => {
-  const tmp = fs.mkdtempSync(path.join(require('os').tmpdir(), 'fleet_'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fleet_'));
   const put = (p, s) => { fs.mkdirSync(path.dirname(path.join(tmp, p)), { recursive: true }); fs.writeFileSync(path.join(tmp, p), s); };
   put('godot/render/hull_table.gd', 'const AI_HULLS := {\n\t"a|Frigate": "A1", "a|Cruiser": "A2", "a|Carrier": "A3",\n}\n');
   put('godot/assets/ships/manifest.json', JSON.stringify({ ships: { A1: { files: { 'A1_damage.glb': {} } }, A2: { files: { 'A2_parts_base.jpg': {} } } } }));
@@ -56,6 +58,117 @@ t('problems are found in a broken fleet', () => {
   fs.rmSync(tmp, { recursive: true, force: true });
   for (const want of ['a|Carrier (A3) is in', 'a|Ghost is in', 'concept file is missing: gone.jpg', 'old hull A1 with no job', 'new build installed but no approved concept', 'no key, so --pick cannot find it'])
     assert.ok(got.includes(want), 'missing problem: ' + want + '\n' + got);
+});
+
+t('different factions merge cleanly and CI distinguishes branch staleness from merge drift', () => {
+  const tempRoot = fs.realpathSync.native(os.tmpdir());
+  const tmp = fs.mkdtempSync(path.join(tempRoot, 'fleet-merge-'));
+  const manifest = 'godot/assets/ships/manifest.json';
+  const hullTable = 'godot/render/hull_table.gd';
+  const generator = 'contrib/opus/tools/fleet_list.js';
+  const run = (command, args) => spawnSync(command, args, { cwd: tmp, encoding: 'utf8' });
+  const git = (...args) => {
+    const result = run('git', ['-c', 'core.autocrlf=false', ...args]);
+    assert.strictEqual(result.status, 0, result.error || result.stdout + result.stderr);
+    return result.stdout.trim();
+  };
+  const fleetCli = (option, status = 0) => {
+    const result = run(process.execPath, [generator, option]);
+    assert.strictEqual(result.status, status, result.error || result.stdout + result.stderr);
+    return result.stdout;
+  };
+  const regenerateAndDiff = expectedStatus => {
+    fleetCli('--write');
+    const pageInHead = run('git', ['cat-file', '-e', `HEAD:${fleet.PAGE}`]);
+    // git diff ignores untracked files, including a page restored only in the working tree.
+    const result = pageInHead.status === 0
+      ? run('git', ['-c', 'core.autocrlf=false', 'diff', '--exit-code', 'HEAD', '--', fleet.PAGE])
+      : pageInHead;
+    assert.strictEqual(result.status, expectedStatus, result.error || result.stdout + result.stderr);
+    return result.stdout;
+  };
+  const put = (file, content) => {
+    const target = path.join(tmp, file);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, content);
+  };
+  const save = (tree, ...parents) => git('-c', 'user.name=Fleet test', '-c', 'user.email=fleet@example.test',
+    'commit-tree', tree, ...parents.flatMap(parent => ['-p', parent]), '-m', 'Fleet test snapshot');
+  const snapshot = (...parents) => {
+    git('add', '--all');
+    return save(git('write-tree'), ...parents);
+  };
+  const table = hull => `const AI_HULLS := {\n  "voidsworn|Frigate": "${hull}",\n  "corsair|Frigate": "A1",\n}\n`;
+  const source = `{
+  "slots": {
+    "voidsworn|Frigate": {"ship": "Warden", "job": 1},
+
+    "corsair|Frigate": {"ship": "Raider", "job": 2}
+  }
+}\n`;
+  try {
+    git('init', '-q', '-b', 'main');
+    put(generator, fs.readFileSync(path.join(ROOT, generator)));
+    const sparseInputs = 'contrib/opus/tools/sparse_check_inputs.js';
+    put(sparseInputs, fs.readFileSync(path.join(ROOT, sparseInputs)));
+    put('concept.txt', 'Fixture concept\n');
+    put(hullTable, table('V1'));
+    put(manifest, '{"ships":{"V1":{},"V2":{},"A1":{}}}\n');
+    put(fleet.FLEET, source);
+    assert.match(fleetCli('--write'), /^Totals: 2 ship slots\./m);
+    assert.doesNotMatch(fs.readFileSync(path.join(tmp, fleet.PAGE), 'utf8'), /^\*\*Totals:\*\*/m);
+    const base = snapshot();
+
+    put(fleet.FLEET, source.replace('"job": 1', '"job": 1, "concept": "concept.txt"'));
+    assert.match(fleetCli('--check-page', 1), /FLEET\.md is stale/);
+    fleetCli('--write');
+    fleetCli('--check-page');
+    const sunward = snapshot(base);
+
+    git('read-tree', '--reset', '-u', base);
+    put(fleet.FLEET, source.replace('"job": 2', '"job": 2, "keep": "Kept by design"'));
+    fleetCli('--write');
+    fleetCli('--check-page');
+    git('update-ref', 'refs/heads/hullbreakers', snapshot(base));
+
+    // The first branch fast-forwards main. Git's three-way merge must then take the second branch cleanly.
+    git('update-ref', 'refs/heads/main', sunward);
+    const merged = git('merge-tree', '--write-tree', 'main', 'hullbreakers');
+    git('update-ref', 'refs/heads/main', save(merged, 'main', 'hullbreakers'));
+    git('read-tree', '--reset', '-u', 'main');
+    const combined = fs.readFileSync(path.join(tmp, fleet.PAGE), 'utf8');
+    assert.match(combined, /^\| Warden .*Concept picked, old hull in game/m);
+    assert.match(combined, /^\| Raider .*Old hull kept on purpose/m);
+    regenerateAndDiff(0);
+
+    // A branch switches to V2 while main installs V2. Both pages were current before Git combined their inputs.
+    const beforeDrift = git('rev-parse', 'main');
+    put(hullTable, table('V2'));
+    fleetCli('--write');
+    fleetCli('--check-page');
+    const switchHull = snapshot(beforeDrift);
+    git('read-tree', '--reset', '-u', beforeDrift);
+    put(manifest, '{"ships":{"V1":{},"V2":{"files":{"V2_parts_base.jpg":{}}},"A1":{}}}\n');
+    fleetCli('--check-page');
+    git('update-ref', 'refs/heads/main', snapshot(beforeDrift));
+    const drift = git('merge-tree', '--write-tree', switchHull, 'main');
+    git('update-ref', 'refs/heads/main', save(drift, switchHull, 'main'));
+    git('read-tree', '--reset', '-u', 'main');
+    assert.match(fleetCli('--check-page', 1), /FLEET\.md is stale/);
+    assert.match(regenerateAndDiff(1), /^\+\| Warden .*`V2` \| New-format build on main/m);
+    // A check of the rewritten copy alone now passes, even though HEAD still carries the stale page.
+    fleetCli('--check-page');
+    git('update-ref', 'refs/heads/main', snapshot('main'));
+    regenerateAndDiff(0);
+
+    git('rm', fleet.PAGE);
+    git('update-ref', 'refs/heads/main', snapshot('main'));
+    regenerateAndDiff(128);
+  } finally {
+    const resolved = fs.realpathSync.native(tmp);
+    assert.strictEqual(path.dirname(resolved), tempRoot);
+    fs.rmSync(resolved, { recursive: true, force: true });
+  }
 });
 
 // The real repo.
@@ -81,9 +194,8 @@ t('Bladeback reads as accepted after run D', () => {
   assert.ok(look.startsWith('Accepted:') && look.includes('R374'), look);
 });
 t('FLEET.md is current', () => {
-  const page = path.join(ROOT, fleet.PAGE);
-  const have = fs.existsSync(page) ? fs.readFileSync(page, 'utf8').replace(/\r\n/g, '\n') : '';
-  assert.ok(have === fleet.render(data), fleet.PAGE + ' is stale: run node contrib/opus/tools/fleet_list.js --write and commit it');
+  const problem = fleet.pageProblem(data);
+  assert.ok(!problem, problem);
 });
 
 if (bad) {

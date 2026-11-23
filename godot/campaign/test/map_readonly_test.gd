@@ -59,6 +59,81 @@ func all_nodes() -> Array:
 	return out
 
 
+func encounter_curve() -> void:
+	var api := BattleAPI.new()
+	var err := api.load_rules()
+	check(err.is_empty(), "encounter curve loads the battle rules")
+	if not err.is_empty(): return
+	var intel := Intel.new(C)
+	var version := BattleAPI.RulesScript.ENCOUNTER_CURVE_V1
+	C.battle_mode = "external"
+	C.battle_setup = func(run, cfg):
+		api.new_battle(run, cfg)
+		return api.R.B
+	api.set_ai_level("standard")
+	for fixed in [false, true]:
+		fresh(1)
+		check(C.RUN.get("encounterCurve") == version, "a new campaign pins the encounter curve")
+		if not fixed: C.RUN.erase("encounterCurve")
+		C.saveRun()
+		C.load_save_text(C.save_text())
+		C.act("continueRun")
+		check(C.RUN.has("encounterCurve") == fixed, "Continue preserves the saved curve without upgrading an old run")
+
+		var first = C.RUN["map"]["cols"][0][0]
+		C._enter_battle_node(first)
+		C.B = null
+		var fights := all_nodes().filter(func(n): return int(n["col"]) in [1, 2, 3] and n["type"] in ["battle", "elite"])
+		check(not fights.is_empty(), "the seeded map has a second fight")
+		if fights.is_empty(): return
+		var next: Dictionary = fights[0]
+		for sh in C.RUN["fleet"]: sh["hp"] = ceilf(float(C.derive(sh)["maxHp"]) * 0.30)
+		C.RUN["credits"] = 1000
+		var before := snap()
+		var damaged = intel.danger(next)
+		check(intel.danger(next) == damaged and snap() == before, "the map reads the same budget twice without touching the run, save or RNG")
+		C._enter_battle_node(next)
+		var cfg: Dictionary = api.R.B["cfg"]
+		var generated: float = api.R.enemy_budget(1, cfg["col"], cfg["kind"], cfg.get("mod"))
+		check(damaged["budget"] == generated, "map and battle use the same base command points")
+		var ships = api.R.B["units"].filter(func(u): return u["side"] == "enemy").map(func(u): return u["tpl"])
+		C.B = null
+		var yards := all_nodes().filter(func(n): return n["type"] == "shipyard")
+		check(not yards.is_empty(), "the seeded map has a repair yard")
+		if yards.is_empty(): return
+		C.shipyardScreen(yards[0])
+		C.ACT_repairAll()
+		var repaired = intel.danger(next)
+		check(repaired["power"] > damaged["power"], "the yard repair increases player power")
+		if fixed:
+			check(repaired["budget"] == damaged["budget"], "curve 1 keeps the next budget after a repair")
+		else:
+			check(repaired["budget"] > damaged["budget"], "a legacy run raises the next budget after a repair")
+		C.saveRun()
+		C.load_save_text(C.save_text())
+		C.act("continueRun")
+		check(intel.danger(next)["budget"] == repaired["budget"], "quit and Continue preserve the same pre-fight budget")
+		C._enter_battle_node(next)
+		var after: Dictionary = api.R.B["cfg"]
+		check(repaired["budget"] == api.R.enemy_budget(1, after["col"], after["kind"], after.get("mod")), "the repaired fleet's map budget matches battle setup")
+		if fixed:
+			var replay = api.R.B["units"].filter(func(u): return u["side"] == "enemy").map(func(u): return u["tpl"])
+			check(after["seed"] == cfg["seed"] and replay == ships, "a fixed-curve repair and reload preserve the seeded enemy roster")
+		intel.ai_level = "veteran"
+		check(intel.danger(next)["budget"] > repaired["budget"], "Veteran budgets remain higher")
+		intel.ai_level = "standard"
+	fresh(1)
+	C.set_teaching_tips(true)
+	var lesson: Dictionary = C.RUN["map"]["cols"][0][0]
+	var estimate: Dictionary = intel.danger(lesson)
+	C._enter_battle_node(lesson)
+	var cfg: Dictionary = api.R.B["cfg"]
+	check(cfg.get("teachingBattle") == 1 and estimate["budget"] == api.R.enemy_budget(1, cfg["col"], cfg["kind"], cfg.get("mod"), true), "the map and generator share the teaching budget")
+	C.set_teaching_tips(false)
+	C.battle_mode = "stub"
+	C.battle_setup = Callable()
+
+
 # every read the map screen makes through the view and the estimate
 func read_views() -> void:
 	View.header(C); View.sector_notes(C); View.purse(C); View.admiral(C); View.fleet_rows(C); View.hold_count(C)
@@ -274,6 +349,7 @@ func _run() -> void:
 		seen_regions[region] = true
 		if seen_regions.size() == C.REGIONS.size(): break
 	check(seen_regions.size() == 5 and C.REGIONS.keys().all(func(key): return ui.GS.REGION_EMBLEMS.has(key) and ui.map3d.System.REGION_SCENERY.has(key)), "every live region has scenery and an emblem")
+	encounter_curve()
 	for l in lines: print(l)
 	print("Map read-only: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails) + " (%d checks)" % lines.size())
 	ui.queue_free(); await process_frame

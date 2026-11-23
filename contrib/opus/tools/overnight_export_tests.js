@@ -28,7 +28,15 @@ assert(!/build\\godot\\[^\n]*(?:robocopy|del |rmdir|move )/i.test(job), 'build\\
 const promote = g2.slice(g2.indexOf('G2_PROMOTE_ONLY_IDLE'));
 assert(/tasklist [^\n]*findstr [^\n]*Voidsworn\.exe[^\n]*Voidsworn\.console\.exe/.test(promote) && promote.indexOf('tasklist') < promote.indexOf('[IO.Directory]::Move($live, $backup)'), 'the live export is not replaced while the game runs');
 assert(/-File "%G2_PROMOTE_CHECK%" -Check promote/.test(promote) && promote.indexOf('-Check promote') < promote.indexOf('[IO.Directory]::Move($live, $backup)') && /if errorlevel 3 \([^\n]*exit \/b 3\)/.test(promote), 'the gates are checked again just before promotion');
-assert(/if defined G2_ARG if "%G2_ARG:~1,1%"==":" set "PROJ=%~f1"/.test(g2), 'g2_export takes a full project path');
+assert(/^if "%G2_ARG:~1,1%"==":" set "PROJ=%~f1"\r?$/m.test(g2), 'g2_export takes a full project path');
+// Issue 1739: cmd cannot parse a substring of an undefined variable, so a line holding %G2_ARG:~ is reached only after
+// a goto has proved G2_ARG is set; on one shared line the whole job died at parse time when called with no argument.
+const g2Lines = g2.split(/\r?\n/);
+const g2Guard = g2Lines.indexOf('if not defined G2_ARG goto g2_arg_done');
+assert(g2Guard >= 0 && g2Lines.indexOf(':g2_arg_done') > g2Guard, 'g2_export skips its argument test when there is no argument');
+g2Lines.forEach((line, i) => {
+  if (line.includes('%G2_ARG:~')) assert(i > g2Guard && i < g2Lines.indexOf(':g2_arg_done') && !/\bif defined\b/.test(line), 'line ' + (i + 1) + ' substrings G2_ARG outside its guard');
+});
 console.log('PASS overnight export static: watcher hook every 10 minutes when idle, job through the head on the decided pin, no promotion while the game runs');
 
 const windows = process.platform === 'win32';

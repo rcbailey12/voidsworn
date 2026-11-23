@@ -1,0 +1,53 @@
+{
+ "name": "Picket, Astra build",
+ "faction": "hegemony",
+ "cls": "Frigate",
+ "band": "S",
+ "game_ship": "h_picket",
+ "length_world": 6.5,
+ "hardpoints": {
+  "gun": 5,
+  "engine": 2,
+  "breach": 2,
+  "core": 1,
+  "rcs": 2,
+  "board": 2
+ },
+ "breaches": 2,
+ "turrets": 1,
+ "files": {
+  "hegemony_H7A.glb": {
+   "bytes": 2158336,
+   "sha256": "43453225d9f4df0ae406e032f8e9fcb37a3f788ab3c86549c2f854123fc73842"
+  },
+  "hegemony_H7A_base.jpg": {
+   "bytes": 1268345,
+   "sha256": "1668713e473569109971c75161e27746e41e833a54ed91dcb320a817250e2dc2"
+  },
+  "hegemony_H7A_glow_emission.jpg": {
+   "bytes": 107546,
+   "sha256": "f2d003205d4d524c197de7478d94f433553d88db52d02bf98bfae59be9417f57"
+  },
+  "hegemony_H7A_normal.png": {
+   "bytes": 5461709,
+   "sha256": "65a31ce8278a5c6c6e19e2131535f56f4f9dcda86d5cee3869fd8db5ff1fa383"
+  },
+  "hegemony_H7A_orm.png": {
+   "bytes": 6085541,
+   "sha256": "6a994302a91f50ee7b00e90e9716360173f72904f78a1af24729fe54be0a0746"
+  },
+  "hegemony_H7A_parts_base.jpg": {
+   "bytes": 870568,
+   "sha256": "41e27eac28923d99d88b09310c4a4fe30f9022154055cdaebcb08f492fdc26e7"
+  },
+  "hegemony_H7A_parts_normal.png": {
+   "bytes": 4804301,
+   "sha256": "b59b75ca126cc8ad19a5bd8cec44650170966353f276203b62ddb35e1970169a"
+  },
+  "hegemony_H7A_parts_orm.png": {
+   "bytes": 4740291,
+   "sha256": "5bf307cbe2e6983112ec951912a2860942c807253542db0643fedd1f9aae6807"
+  }
+ },
+ "pc_path": "godot/assets/ships/hegemony_H7A/"
+}

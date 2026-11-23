@@ -167,6 +167,8 @@ func rock_cluster(p: Vector3, kind: String, rock_kind: String, mat: Material, rn
 		mi.name = mesh_name
 		var box := mesh.get_aabb()
 		mi.set_instance_shader_parameter("rock_radius", box.position.abs().max(box.end.abs()).length())
+		# issue 1361: the mesh box, so the kind's shape squeeze (ROCK_SHADER shape_k) reaches the board's own rocks too
+		mi.set_instance_shader_parameter("rock_ext", box.size)
 	return node
 
 

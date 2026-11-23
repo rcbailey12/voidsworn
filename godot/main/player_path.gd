@@ -2,6 +2,7 @@ extends Node
 # Drives the regular title, campaign controls and battle input handlers. The rules API is read-only here.
 const ShipView = preload("res://render/ship_view.gd")
 const PlaceholderGuard = preload("res://render/placeholder_guard.gd")
+const HullAge = preload("res://render/hull_age.gd")
 # Issue 1457: "stops" is each seed's planned route. When a planned stop is not an offered battle the recorder logs
 # "route_drift" with the whole offer and takes the best offered battle instead; --player-path-strict fails there.
 # Seed 10's 2-2 became an event stop on Nov 20 main, so seed 10 now drifts to 2-1 (a flagship battle against the Navy).
@@ -345,8 +346,10 @@ func _fleet() -> Array:
 		var sv = battle.views.get(u["id"])
 		if sv == null or u.get("squadron", false) or u.get("dead", false):
 			continue
+		var hull := HullAge.resolved(sv)   # issue 1410: the model ShipView drew, not the manifest's first listed entry
 		rows.append({"ship": u.get("name", ""), "class": u.get("cls", ""), "side": u.get("side", ""), "code": sv.code,
-			"asset": ShipView.manifest().get("ships", {}).get(sv.code, {}).get("res", ""), "parted_hull": sv.a4})
+			"asset": ShipView.manifest().get("ships", {}).get(sv.code, {}).get("res", ""), "parted_hull": sv.a4,
+			"layout": HullAge.layout(sv.code), "source": hull.get("source", ""), "res": hull.get("res", "")})
 	return rows
 
 
