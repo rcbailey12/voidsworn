@@ -2444,7 +2444,7 @@ void fragment() {
 	}
 	// an older surface never shows its diagram colour, even away from a mouth: it fades toward a darker faction tone
 	// (Antigravity audit on PR 1755, finding 1); a role-table surface keeps its own colour there
-	ALBEDO = mix(trusted ? baked : lit * 0.5, lit, open_f);
+	ALBEDO = mix(trusted ? baked : lit * 0.15, lit, open_f);
 	vec3 orm = has_orm ? texture(base_orm, UV).rgb : vec3(1.0, base_rough, base_metal);
 	float rough = clamp(v2_rough + r.w, 0.04, 1.0);
 	if (has_orm) { rough = mix(rough, orm.g, 0.5); }
