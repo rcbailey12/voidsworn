@@ -35,7 +35,9 @@ assert.match(script, /\[IO\.File\]::Replace\(\$temp, \$Pointer, \[NullString\]::
 assert.match(live, /\[IO\.Directory\]::Move\(\$target, \$aside\)/, 'an incomplete version is set aside, not deleted');
 assert.doesNotMatch(live.slice(0, live.indexOf('exit 0')), /Copy-Tools \$liveTools|Move\(\$liveTools/, 'tools_live never edits a version in place');
 assert.match(script, /fetch origin\/main[^\n]+--depth=1/, 'fetch main into a shallow source');
-assert.match(script, /\$state\.status -eq 'running'\) \{ throw "refused: job still running/, 'refuse a running job');
+assert.match(script, /\$state\.status -eq 'running'\) \{[\s\S]*?throw "refused: job still running/, 'refuse a running job');
+assert.match(script, /TotalHours -ge 24[\s\S]*?\$null -ne \$commands[\s\S]*?skipped stale record[\s\S]*?continue/, 'a running record over a day old with no live process is skipped, never edited');
+assert.doesNotMatch(script.match(/function Assert-IdleLane[\s\S]*?\n\}/)[0], /Set-Content|WriteAllText|Remove-Item|Move-Item/, 'Assert-IdleLane never changes a record');
 assert.match(script, /work217\b[\s\S]*?Join-Path \$run\.FullName 'out\\status\.json'/, 'check workhorse run status');
 assert.match(script, /runner_backups/);
 assert.match(script, /yyyyMMdd_HHmmss/);

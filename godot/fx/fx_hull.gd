@@ -1777,6 +1777,34 @@ func turret_section(k: int) -> int:
 	return section_of((turrets[k]["xf"] as Transform3D).origin.x)
 
 
+# Issue 1741 (R416): the turrets one weapon slot owns (its hp_w<slot>_* muzzles hang under them), in turret order. The slot
+# is the rules' weapon index (HARDPOINTS.md), so a knocked-out weapon jams its own guns, never a random one.
+func turrets_for_slot(slot: int) -> Array:
+	var out: Array = []
+	for pt in points.get("gun", []):
+		if int(pt.get("slot", -1)) == slot and pt.has("tur") and not out.has(int(pt["tur"])):
+			out.append(int(pt["tur"]))
+	out.sort()
+	return out
+
+
+# Issue 1741 (Artoo on PR 1749): true when some weapon slot's muzzle hangs under turret k.
+func turret_owned(k: int) -> bool:
+	for pt in points.get("gun", []):
+		if pt.has("tur") and int(pt["tur"]) == k:
+			return true
+	return false
+
+
+# Issue 1741: the fixed mounts (casemates, launchers, spinal muzzles: gun points under no turret) of one weapon slot.
+func mounts_for_slot(slot: int) -> Array:
+	var out: Array = []
+	for pt in points.get("gun", []):
+		if int(pt.get("slot", -1)) == slot and not pt.has("tur"):
+			out.append(pt)
+	return out
+
+
 # ---------------------------------------------------------------- doors (issue 1543)
 # Ryan (Nov 21 2026): a launch mouth has a flesh door "in sections with the opening spreading from the middle", closed between
 # launches, plain flesh. A door reaches the game as a node door_<n> (docs/ship_pipeline/HARDPOINTS.md "Doors"; extras: the bay

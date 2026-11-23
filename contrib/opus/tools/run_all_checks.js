@@ -190,9 +190,29 @@ function fastSelected(checks) {
 
 // ---------- running ----------
 
+// Issue 1739: a PC lane runs these checks inside its own runner, whose job variables (the issue it holds, its model,
+// its scratch, its watchdog settings) would leak into every fixture that starts a stand-in runner, job or
+// watchdog. runner_selftest's lane fixture passed alone on the PC and failed only inside lanes 1667 and 1693. Each row
+// gets the environment a person's own shell would give it. TEMP stays on the lane's private scratch and PC_GPU_*
+// stays, so a code-only lane still refuses GPU claims.
+const LANE_VARIABLES = /^(?:PC_RUN_TEMP|PC_RUN_SCRATCH|PC_RUNNER_LOCKED_ISSUE|PC_RUNNER_TEST|PC_WAIT_[A-Z_]+|PC_MIRROR_LOCK_WAIT_SECONDS|CODEX_[A-Z_]+|WORK_[A-Z_]+|TMO_[A-Z_]+|CHECKS_OK|NODE_EXIT|PARITY_EXIT)$/i;
+function rowEnv(env = process.env) {
+  const clean = {};
+  for (const [name, value] of Object.entries(env)) if (!LANE_VARIABLES.test(name)) clean[name] = value;
+  return clean;
+}
+
 function printRow(row) {
   console.log(row.result + ': ' + row.check + ' (' + row.seconds.toFixed(2) + ' s) | ' + row.detail);
-  if (row.result === 'FAIL') console.log('\nFAIL ' + row.check + ' (first 15 output lines):\n' + row.output.split(/\r?\n/).slice(0, 15).join('\n'));
+  if (row.result === 'FAIL') console.log('\nFAIL ' + row.check + ' output:\n' + failOutput(row.output));
+}
+
+// Issue 1739: a FAIL row keeps its whole output in the log (the first 15 lines hid every Windows-only cause). Only a
+// runaway output is cut, keeping its first and last 1000 lines.
+function failOutput(text) {
+  const lines = String(text || '').split(/\r?\n/);
+  if (lines.length <= 2000) return lines.join('\n');
+  return lines.slice(0, 1000).concat(['... ' + (lines.length - 2000) + ' lines cut ...'], lines.slice(-1000)).join('\n');
 }
 
 async function execute(c, baseline) {
@@ -217,7 +237,7 @@ async function execute(c, baseline) {
     }
     const run = await new Promise(resolve => {
       // Issue 1194: tmo.bat hands steps to the installed tools_live copy; a check tests this checkout's own watchdog.
-      const child = spawn(process.execPath, childArgs, { cwd: ROOT, env: { ...process.env, VS_ROOT: ROOT, TMO_OWN_COPY: '1' }, windowsHide: true });
+      const child = spawn(process.execPath, childArgs, { cwd: ROOT, env: { ...rowEnv(), VS_ROOT: ROOT, TMO_OWN_COPY: '1' }, windowsHide: true });
       let output = '', error, timedOut = false;
       const timer = setTimeout(() => {
         timedOut = true;
@@ -325,4 +345,4 @@ if (require.main === module) {
   main().catch(e => { console.error(ascii(e.stack)); process.exitCode = 1; });
 }
 
-module.exports = { classifyFindings, classifyPack, classifyDrift, classifyNaming, classifyGeneric, verdictLine, parseFindings, exitCodeFor, ROOT, buildChecks, fastSelected };
+module.exports = { rowEnv, classifyFindings, classifyPack, classifyDrift, classifyNaming, classifyGeneric, verdictLine, parseFindings, exitCodeFor, ROOT, buildChecks, fastSelected };
