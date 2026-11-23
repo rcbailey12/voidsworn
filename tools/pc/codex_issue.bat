@@ -91,6 +91,8 @@ if errorlevel 1 exit /b 14
 rem (722) Free-space floor, Board hashes and the resolved model stamp, as in work_issue.bat.
 set "SETF=%ROOT%\work217\runner_settings.txt"
 set "HASHF=%ROOT%\work217\runner_hashes.txt"
+rem (1739) lane_tools_refresh.ps1 writes each lane's own hashes beside its tools; the shared work217 file went stale.
+if exist "%ROOT%\%LANEDIR%\runner_hashes.txt" set "HASHF=%ROOT%\%LANEDIR%\runner_hashes.txt"
 %COMMON% space "%O%" "%SETF%" "%ROOT%" "%PUSHMODE%"
 if errorlevel 1 exit /b 14
 %COMMON% hashcheck "%O%" "%TPC%" "%HASHF%"

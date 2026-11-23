@@ -133,6 +133,9 @@ work_issue.ps1):
   process of that run has exited. A slot holding unpublished work is set aside as `repo-kept-*` beside it and reported;
   the janitor later prunes older kept copies under its usual checks. Slots leave out `docs/shots/`, the build sheets,
   `contrib/muse/design/`, `hulls_hi/` and `rocks_hi/` unless the issue's Brief or Deliver to line names a path there.
+  When the next issue wants a different set (or an agent turned sparse off), a clean checkout takes the new set in place
+  (issue 1739); it is kept whole only when a folder it would leave out holds an untracked or ignored file. The lean
+  checks read those left-out files from the git index (`contrib/opus/tools/sparse_check_inputs.js`).
   Every run ends with "disk: run folder" and "disk: shared checkout" sizes in result.txt. The old
   `remove_repo_copy_after_push` switch (WORKHORSE_CLEANUP.bat) is retired and changes nothing.
 
@@ -235,12 +238,14 @@ wait, the mirror fetch and any model call:
   min_free_gb free: one line in result.txt, status failed, exit 14. No mirror fetch, no model probe, no agent, and a
   chained child waiting on the run fails closed. min_free_gb is a tuning value in work217\runner_settings.txt;
   work_issue.bat seeds 60 when it creates the file, and a missing line or file keeps 60.
-- **Board hashes.** When the Board copies the runner files to a PC tools folder it writes work217\runner_hashes.txt:
+- **Board hashes.** `lane_tools_refresh.ps1` writes them for every lane it refreshes, from the copy it just installed:
+  `<lane folder>\runner_hashes.txt` (for example `build_e\runner_hashes.txt` for lane D; work217's stays
+  work217\runner_hashes.txt), and the Codex runner reads its lane's file before the shared one (issue 1739: the shared
+  file went stale on every lane refresh). By hand, after copying the runner files to a PC tools folder:
   `powershell -NoProfile -ExecutionPolicy Bypass -File runner_common.ps1 hashwrite <tools folder> <hash file>`. At
   start each runner compares the SHA-256 of its own folder's work_issue.bat, work_issue.ps1, codex_issue.bat,
   codex_issue.ps1, runner_common.ps1, review_evidence.ps1, run_timeout.ps1, tmo.bat and gpu_slots.js against that file. A mismatch, a missing file or an empty file is a warning
-  in result.txt, never a stop, so a run never dies because the Board has not hashed a fresh copy yet. Both lanes read
-  that one work217 file.
+  in result.txt, never a stop, so a run never dies because the Board has not hashed a fresh copy yet.
 
 Free proof: the same double-click selftest (`tools\pc\runner_selftest.bat`) covers all three in test mode: the stamp
 and its same-provider warning, the floor (direct and end to end, plus the tuning value and the 60 default), and

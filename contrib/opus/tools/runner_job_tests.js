@@ -735,9 +735,30 @@ Assert ($staged.Count -eq 2 -and $staged -contains $evidence -and $staged -conta
 Pass 'sparse runner stages new report evidence without materializing historical pictures'
 $slot = Join-Path $root 'slot_openai/repo'
 $log = Sparse-Start 'sparse-opt-in' $slot './docs/shots/shot.png' 'contrib\\muse\\design\\draft.md, rocks_hi/rock.glb'
-Assert ($log.Contains('sparse checkout profile differs')) 'profile changes preserve the old checkout'
+# Issue 1739: a profile change on a clean runner-managed checkout is applied in place, not kept as a ~28 GB copy.
+Assert ($log.Contains('sparse checkout profile changed in place') -and $log.Contains('earlier checkout reused in place')) "opt-in profile change reuses the checkout: $log"
 foreach ($i in 0,2,4) { Assert (Test-Path -LiteralPath (Join-Path $slot $paths[$i])) "missing requested path $($paths[$i])" }
 foreach ($i in 1,3) { Assert (-not (Test-Path -LiteralPath (Join-Path $slot $paths[$i]))) "unexpected path $($paths[$i])" }
+Assert (-not @(Get-ChildItem -LiteralPath (Split-Path -Parent $slot) -Directory | Where-Object { $_.Name -like 'repo-kept-*' }).Count) 'no kept copy for a safe profile change'
+# Back to the lean profile: the opted-in folders hold only tracked files, so they leave the work tree again.
+$log = Sparse-Start 'sparse-back-to-lean' $slot 'below' 'shared.txt'
+Assert ($log.Contains('sparse checkout profile changed in place') -and $log.Contains('earlier checkout reused in place')) "lean profile change reuses the checkout: $log"
+foreach ($name in $paths) { Assert (-not (Test-Path -LiteralPath (Join-Path $slot $name))) "lean profile still holds $name" }
+# An agent that turned sparse off (git sparse-checkout disable) leaves a full checkout; the next run makes it lean in place.
+& $script:git -C $slot sparse-checkout disable 2>&1 | Out-Null
+Assert ((Test-Path -LiteralPath (Join-Path $slot $paths[0])) -and $LASTEXITCODE -eq 0) 'fixture turned sparse off'
+$log = Sparse-Start 'sparse-full-to-lean' $slot 'below' 'shared.txt'
+Assert ($log.Contains('sparse checkout profile changed in place') -and $log.Contains('earlier checkout reused in place')) "full checkout made lean in place: $log"
+foreach ($name in $paths) { Assert (-not (Test-Path -LiteralPath (Join-Path $slot $name))) "full-to-lean still holds $name" }
+# An untracked file in a folder the new profile leaves out could be lost, so that checkout is still kept whole.
+$log = Sparse-Start 'sparse-opt-in-again' $slot './docs/shots/shot.png' 'contrib\\muse\\design\\draft.md, rocks_hi/rock.glb'
+Assert ($log.Contains('earlier checkout reused in place')) "opt-in again reuses: $log"
+Put (Join-Path $slot 'docs/shots/local_only.png') 'untracked picture'
+$log = Sparse-Start 'sparse-untracked-in-left-out' $slot 'below' 'shared.txt'
+Assert ($log.Contains('docs/shots/local_only.png is not tracked')) "untracked file in a newly left-out folder keeps the checkout: $log"
+$kept = @(Get-ChildItem -LiteralPath (Split-Path -Parent $slot) -Directory | Where-Object { $_.Name -like 'repo-kept-*' })
+Assert ($kept.Count -eq 1 -and [IO.File]::ReadAllText((Join-Path $kept[0].FullName 'docs/shots/local_only.png')) -eq 'untracked picture') 'the untracked picture survives in the kept copy'
+$log = Sparse-Start 'sparse-opt-in-after-keep' $slot './docs/shots/shot.png' 'contrib\\muse\\design\\draft.md, rocks_hi/rock.glb'
 $log = Sparse-Start 'sparse-opt-in-reuse' $slot 'docs/shots/shot.png' 'contrib/muse/design/draft.md, rocks_hi/rock.glb'
 Assert ($log.Contains('earlier checkout reused in place')) 'same opt-in profile can be reused'
 & $script:git -C $slot update-index --assume-unchanged shared.txt

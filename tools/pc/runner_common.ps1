@@ -422,6 +422,43 @@ function Assert-NoHiddenSparseEdits($repo, $excluded, $flags) {
     }
   }
 }
+function Assert-SparseProfileChangeSafe($repo, $excluded, $patterns) {
+  # The new profile must be one the runner writes: none, or '/*' then the left-out folders in the fixed order.
+  $wanted = @($codeCheckoutDirs | Where-Object { @($patterns) -ccontains "!/$_/" })
+  if ((@($patterns) -join "`n") -cne ((Code-CheckoutPatterns $wanted) -join "`n")) { throw 'sparse checkout profile differs and the new one is not runner-managed' }
+  foreach ($dir in @($wanted | Where-Object { @($excluded) -notcontains $_ })) {
+    $full = Join-Path $repo $dir
+    if (-not (Test-Path -LiteralPath $full)) { continue }
+    $item = Get-Item -LiteralPath $full -Force
+    if ($item -isnot [IO.DirectoryInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "sparse checkout profile differs and $dir is not a plain folder" }
+    $tracked = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+    foreach ($path in @(Read-CleanupGit @('-C',$repo,'-c','core.quotePath=false','ls-files','--',"$dir/"))) { $null = $tracked.Add($path) }
+    if ($gitExit -ne 0) { throw "sparse checkout profile differs and the tracked files in $dir were not verified" }
+    foreach ($entry in [IO.Directory]::EnumerateFileSystemEntries($full, '*', [IO.SearchOption]::AllDirectories)) {
+      $relative = $entry.Substring($repo.TrimEnd('\','/').Length + 1).Replace('\', '/')
+      $info = Get-Item -LiteralPath $entry -Force
+      if ($info.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "sparse checkout profile differs and $relative is a link" }
+      if ($info -is [IO.DirectoryInfo]) { continue }
+      if (-not $tracked.Contains($relative)) { throw "sparse checkout profile differs and $relative is not tracked, so leaving $dir out could lose it" }
+    }
+  }
+}
+function Set-RunnerSparseProfile($repo, $patterns) {
+  # Applies a profile Assert-SparseProfileChangeSafe accepted, then proves the checkout carries it.
+  if (-not @($patterns).Count) {
+    Must-Git @('-C',$repo,'sparse-checkout','disable')
+  } else {
+    # --worktree: git sparse-checkout disable (an agent can run it) writes these to config.worktree, which wins over
+    # .git/config; without that extension --worktree is plain --local.
+    Must-Git @('-C',$repo,'config','--worktree','core.sparseCheckout','true')
+    Must-Git @('-C',$repo,'config','--worktree','core.sparseCheckoutCone','false')
+    $null = [IO.Directory]::CreateDirectory((Join-Path $repo '.git/info'))
+    Put (Join-Path $repo '.git/info/sparse-checkout') ((@($patterns) -join "`n") + "`n")
+    Must-Git @('-C',$repo,'sparse-checkout','reapply')
+  }
+  $now = @(Get-ManagedSparseExclusions $repo)
+  if (((Code-CheckoutPatterns $now) -join "`n") -cne (@($patterns) -join "`n")) { throw 'sparse checkout profile change did not apply; checkout kept as is' }
+}
 function Get-RepoCleanupState($repo, $mirror, $patterns = @(), $allowWork = $false, $forRemoval = $false) {
   if ((Get-Item -LiteralPath $repo -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'checkout is a linked path' }
   $gitDir = Join-Path $repo '.git'
@@ -432,11 +469,16 @@ function Get-RepoCleanupState($repo, $mirror, $patterns = @(), $allowWork = $fal
   $top = @(Read-CleanupGit @('-C',$repo,'rev-parse','--show-toplevel'))
   if ($gitExit -ne 0) { throw "checkout root not verified (Git exit ${gitExit}: $($top[0]))" }
   if ([IO.Path]::GetFullPath($top[0]) -ne [IO.Path]::GetFullPath($repo)) { throw 'checkout root not verified' }
-  # Changing sparse patterns can discard ignored files, so reuse needs the same runner-managed profile (or none).
   # Removal accepts any runner-managed profile (issue 1186); any other sparse checkout is kept.
+  # Issue 1739: the profile is per issue (a Brief or Deliver to line can opt a folder back in), and an agent can turn
+  # sparse off, so refusing every change kept a ~28 GB copy per run on lane D. A runner-managed (or full) checkout now
+  # takes the new profile in place when that cannot lose a byte: a folder it newly leaves out must hold only tracked
+  # files (clean, checked by the status below), never an untracked or ignored one. Anything else is still kept.
   $excluded = @(Get-ManagedSparseExclusions $repo)
+  $profileChange = $false
   if (-not $forRemoval -and ((@($patterns) -join "`n") -cne ((Code-CheckoutPatterns $excluded) -join "`n"))) {
-    throw 'sparse checkout profile differs'
+    Assert-SparseProfileChangeSafe $repo $excluded $patterns
+    $profileChange = $true
   }
   $shallow = @(Read-CleanupGit @('-C',$repo,'rev-parse','--is-shallow-repository'))
   # Reuse needs full history. Removal only needs every local commit in the mirror, checked below, so a shallow helper
@@ -478,12 +520,15 @@ function Get-RepoCleanupState($repo, $mirror, $patterns = @(), $allowWork = $fal
     if (-not $allowWork) { throw "local history not in fetched mirror: $id" }
     $line
   }
-  return [pscustomobject]@{ Caches = $caches; Status = $status; Local = @($onlyLocal); MirrorCommits = $pushed; Superseded = $superseded }
+  return [pscustomobject]@{ Caches = $caches; Status = $status; Local = @($onlyLocal); MirrorCommits = $pushed; Superseded = $superseded; ProfileChange = $profileChange }
 }
 function Get-RebuildableRepoFiles($repo, $mirror, $patterns = @()) {
-  return (Get-RepoCleanupState $repo $mirror $patterns).Caches
+  $state = Get-RepoCleanupState $repo $mirror $patterns
+  $script:reuseProfileChange = [bool]$state.ProfileChange
+  return $state.Caches
 }
 function Can-ReuseRepo($repo, $mirror, $patterns) {
+  $script:reuseProfileChange = $false
   if (-not (Test-Path -LiteralPath $repo)) { return $false }
   try {
     $caches = @(Get-RebuildableRepoFiles $repo $mirror $patterns)
@@ -1242,6 +1287,12 @@ try {
       catch { throw "checkout changed while starting; kept as is: $($_.Exception.Message)" }
     }
     if ($switchExit -ne 0) { throw "git checkout failed (exit $switchExit); see git_log.txt" }
+    if ($reuse -and $script:reuseProfileChange) {
+      try { Set-RunnerSparseProfile $repo $patterns }
+      catch { throw "checkout profile change failed; kept as is: $($_.Exception.Message)" }
+      $shown = if (@($patterns).Count) { "leaves out $((@($codeCheckoutDirs | Where-Object { @($patterns) -ccontains "!/$_/" })) -join ', ')" } else { 'full checkout' }
+      Log "sparse checkout profile changed in place ($shown); no tracked edit or untracked file was in a folder it leaves out"
+    }
     if ($reuse) { Log 'earlier checkout reused in place; ignored files left in place' }
     $base = @(Git @('-C',$repo,'rev-parse','HEAD'))[0]
     Put (Join-Path $out 'base_commit.txt') $base
