@@ -2837,8 +2837,8 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 		elif flagDead and float(RUN["sector"]) >= 3:
 			N["dead"] = true; out.append(nemSay(nemFull() + " is dead. The feud is over.", N))
 			if not jt(beh.get("revive")): _speak(out, N, "fall")   # A1: the Eclipse commander's second, permanent death says nothing
-		elif flagDead:   # R49: before the last sector every rival, the Deathless one too, withdraws like this
-			nemScar(o.get("cause") if jt(o.get("cause")) else "big"); nemEscape(N, "flagship"); out.append(nemSay(nemFull() + "'s flagship breaks apart, but he escapes, scarred and furious. He will be back.", N))
+		elif flagDead:   # R49: before the last sector every rival, the Deathless one too, withdraws like this; issue 1505: a rival who never flees (noFlee, revive) withdraws, he does not escape
+			nemScar(o.get("cause") if jt(o.get("cause")) else "big"); nemEscape(N, "flagship"); out.append(nemSay(nemFull() + "'s flagship breaks apart, " + ("and he withdraws" if (jt(beh.get("noFlee")) or jt(beh.get("revive"))) else "but he escapes") + ", scarred and furious. He will be back.", N))
 			_speak(out, N, "fall")
 		else: out.append(nemSay(nemFull() + " withdraws to fight another day.", N))
 		# R49 fairness: what a Corsair raid took (credits and a towed ship) comes back when he dies

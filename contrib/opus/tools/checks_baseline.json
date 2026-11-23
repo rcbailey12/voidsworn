@@ -1,18 +1,14 @@
 {
  "recordedDate": "2026-11-01",
- "updatedDate": "2026-11-10",
+ "updatedDate": "2026-11-22",
  "namingHardHits": 0,
  "checksCeiling": 14,
  "driftDifferedCeiling": 12,
  "knownFindingsFailures": [
-  "EVT-1",
-  "KIT-1",
-  "MOD-2",
-  "NEM-6",
   "ROS-9",
   "UI-5"
  ],
- "knownFindingsNote": "Muse's findings suite asserts its own proposals. Sorted by the Board on Nov 10 2026 (issue 355) and trimmed by issue 358: the 26 opinion tests and the 5 stale tests are out of the gate, leaving the listed bug ids and the ruled-not-built ids as the only accepted failures. UI-5 is tagged stale-for-browser in issue 387: its findings test reads the frozen browser screen, and the product's Godot check is godot/scenes/battle/test/wing_cancel_test.gd. A listed id that passes, or no longer runs, fails the row until it is taken off this list. checksCeiling and driftDifferedCeiling may only go down; a count above either fails the row.",
+ "knownFindingsNote": "Muse's findings suite asserts its own proposals. Sorted by the Board on Nov 10 2026 (issue 355) and trimmed by issue 358: the 26 opinion tests and the 5 stale tests are out of the gate, leaving the listed bug ids and the ruled-not-built ids as the only accepted failures. Issue 1505 (Nov 22 2026) took EVT-1 and MOD-2 off the list (their tests now read today's data shapes and pass), retired KIT-1 and NEM-6 as stale, and left ROS-9 (waits on Ryan) and UI-5. UI-5 is tagged stale-for-browser in issue 387: its findings test reads the frozen browser screen, and the product's Godot check is godot/scenes/battle/test/wing_cancel_test.gd. A listed id that passes, or no longer runs, fails the row until it is taken off this list. checksCeiling and driftDifferedCeiling may only go down; a count above either fails the row.",
  "knownFindingsTriage": {
   "ADM-1": {
    "tag": "opinion",
@@ -102,13 +98,14 @@
    "issue": 385
   },
   "EVT-1": {
-   "tag": "bug",
-   "reason": "Issue 385 check: the game is already correct. eventFlags stores the chosen option key (campaign_run.js:247, campaign.gd:1840) and both gates name their choices: the saboteur gate has need.flagK ['question','enlist'] (data.js:408) and the Hegemony verb has freeK ['question','enlist'] (data.js:825), with flagIs reading them (campaign_run.js:245, campaign.gd:1837). The R1 fix landed in this shape. The findings test still calls needMet({flag:'defector'}) with no flagK, so it measures the pre-R1 shape and fails. Left listed until the Muse test is updated to read the real gate; no game change made here.",
+   "tag": "fixed-test",
+   "reason": "Issue 385: the game was already correct (eventFlags stores the chosen option key and both gates name their choices, flagK on the saboteur option and freeK on the Hegemony verb). Issue 1505 updated the Muse test to read those gates from the Godot campaign tables (godot/campaign/data/campaign_tables.json, R405), so it passes and the id is off the list.",
    "issue": 385
   },
   "KIT-1": {
-   "tag": "ruled-not-built",
-   "reason": "the approved Chorus shipyard repair prohibition is coded nowhere"
+   "tag": "stale",
+   "reason": "Issue 1505: the Oct 26 price ladder wanted no Chorus shipyard repair (coded nowhere). R382 (issue 1484, RULEBOOK 11.9, docs/playbooks/screens.md) has Chorus hull repairs paid in biomass, so the ban would contradict the game. Nothing in the game or the checks reads the row; retired out of the gate.",
+   "issue": 1505
   },
   "KIT-2": {
    "tag": "opinion",
@@ -119,8 +116,8 @@
    "reason": "lance in the name of a battery-kind weapon: naming"
   },
   "MOD-2": {
-   "tag": "bug",
-   "reason": "cogitator is a key in both MODULES and RELICS. Issue 385 checked every lookup: keep() validates relics against RELICS and inventory against MODULES, modName/relicName and all reward, shop and save paths pass the right id, so no lookup can return the wrong one. The collision is a naming hazard, not a live bug; the duplicate-perk half of the test is opinion. Left on the list because the test still fails on the duplicate-perk half, which this job does not change.",
+   "tag": "fixed-test",
+   "reason": "Issue 385: cogitator is a key in both MODULES and RELICS, a naming hazard only (every lookup passes the right id). Issue 1505 rewrote the test for today's shapes (module effect under fx, relic effect under run, different names) so it passes and the id is off the list; the duplicate-perk half was opinion and is no longer asserted.",
    "issue": 385
   },
   "MOD-4": {
@@ -143,9 +140,9 @@
    "issue": 384
   },
   "NEM-6": {
-   "tag": "bug",
-   "reason": "a no-retreat Nemesis flagship kill in sectors 1 and 2 never registers and the debrief says he escapes",
-   "issue": 384
+   "tag": "stale",
+   "reason": "Issue 1505: the test wanted a flagship kill to end a no-retreat rival in sectors 1 and 2, which R49 and R169 (7) rule out (every rival withdraws before sector 3). The one real defect it found, the \"he escapes\" wording for a rival who never flees, is fixed in godot/campaign/campaign.gd (the frozen campaign_run.js keeps the old line, R405) and pinned by NEM-6B, which reads campaign.gd and the Godot tables.",
+   "issue": 1505
   },
   "PP-2": {
    "tag": "bug",
@@ -212,5 +209,5 @@
    "reason": "a Rear arc name no weapon uses and an overwritten evMult: dead data, harmless"
   }
  },
- "knownFindingsTriageDate": "2026-11-10"
+ "knownFindingsTriageDate": "2026-11-22"
 }
