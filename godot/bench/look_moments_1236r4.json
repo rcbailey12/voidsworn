@@ -1,0 +1,518 @@
+{
+ "about": "Issue 1236 round 4 (Ryan, Nov 23: three pieces spread across the hex, the break spot varied, more than one death). Three big hulls, each killed three ways (two, three, late snap) after a hit at the stern, amidships or the bow, anchored to a hex (rest radius 8), to 8 s after the split at camera 170 and the close camera 26. Before is WRECK4's after (6ce553cb plus this rows file: the bench keys breakup and hit are ignored there); after is work/issue-1236-crumble plus the bench keys.",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   640,
+   480
+  ],
+  "26": [
+   1280,
+   960
+  ]
+ },
+ "rows": [
+  {
+   "id": "wk5_hege_super_two",
+   "group": "issue 1236 round 4 breakups",
+   "label": "Navy dreadnought, hit at the stern: one crack, the bigger half stays whole",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Super-dreadnought"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "breakup": "two",
+   "hit": [
+    -0.3,
+    0.0,
+    0.0
+   ],
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.6,
+     1
+    ],
+    [
+     "split",
+     1.2,
+     1
+    ],
+    [
+     "split",
+     2.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk5_hege_super_three",
+   "group": "issue 1236 round 4 breakups",
+   "label": "Navy dreadnought, hit amidships: breaks in three at once",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Super-dreadnought"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "breakup": "three",
+   "hit": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.6,
+     1
+    ],
+    [
+     "split",
+     1.2,
+     1
+    ],
+    [
+     "split",
+     2.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk5_hege_super_late",
+   "group": "issue 1236 round 4 breakups",
+   "label": "Navy dreadnought, hit at the bow: one crack, then the bigger half snaps a second later",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Super-dreadnought"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "breakup": "late",
+   "hit": [
+    0.3,
+    0.0,
+    0.0
+   ],
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.6,
+     1
+    ],
+    [
+     "split",
+     1.2,
+     1
+    ],
+    [
+     "split",
+     2.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk5_hege_cruiser_late",
+   "group": "issue 1236 round 4 breakups",
+   "label": "Navy cruiser, hit at the stern: one crack, then the bigger half snaps a second later",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "breakup": "late",
+   "hit": [
+    -0.3,
+    0.0,
+    0.0
+   ],
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.6,
+     1
+    ],
+    [
+     "split",
+     1.2,
+     1
+    ],
+    [
+     "split",
+     2.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk5_hege_cruiser_two",
+   "group": "issue 1236 round 4 breakups",
+   "label": "Navy cruiser, hit at the bow: one crack, the bigger half stays whole",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "breakup": "two",
+   "hit": [
+    0.3,
+    0.0,
+    0.0
+   ],
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.6,
+     1
+    ],
+    [
+     "split",
+     1.2,
+     1
+    ],
+    [
+     "split",
+     2.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk5_hege_cruiser_three",
+   "group": "issue 1236 round 4 breakups",
+   "label": "Navy cruiser, hit amidships: breaks in three at once",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "breakup": "three",
+   "hit": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.6,
+     1
+    ],
+    [
+     "split",
+     1.2,
+     1
+    ],
+    [
+     "split",
+     2.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk5_void_cruiser_three",
+   "group": "issue 1236 round 4 breakups",
+   "label": "Sunward cruiser, hit at the bow: breaks in three at once",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "breakup": "three",
+   "hit": [
+    0.3,
+    0.0,
+    0.0
+   ],
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.6,
+     1
+    ],
+    [
+     "split",
+     1.2,
+     1
+    ],
+    [
+     "split",
+     2.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk5_void_cruiser_late",
+   "group": "issue 1236 round 4 breakups",
+   "label": "Sunward cruiser, hit amidships: one crack, then the bigger half snaps a second later",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "breakup": "late",
+   "hit": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.6,
+     1
+    ],
+    [
+     "split",
+     1.2,
+     1
+    ],
+    [
+     "split",
+     2.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "wk5_void_cruiser_two",
+   "group": "issue 1236 round 4 breakups",
+   "label": "Sunward cruiser, hit at the stern: one crack, the bigger half stays whole",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "hex": 8.0,
+   "breakup": "two",
+   "hit": [
+    -0.3,
+    0.0,
+    0.0
+   ],
+   "windows": [
+    [
+     "split",
+     -0.03,
+     1
+    ],
+    [
+     "split",
+     0.6,
+     1
+    ],
+    [
+     "split",
+     1.2,
+     1
+    ],
+    [
+     "split",
+     2.0,
+     1
+    ],
+    [
+     "split",
+     3.5,
+     1
+    ],
+    [
+     "split",
+     8.0,
+     1
+    ]
+   ]
+  }
+ ]
+}
