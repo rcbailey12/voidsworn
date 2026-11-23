@@ -133,7 +133,7 @@ def build(K):
         # matches i8_37 too ... more detailed and wrapping"): the I8_37 shell from the kit, twelve fine pillowed ribbons that
         # spiral round each pod with crossing leaves over them; the stained glass shows only in their leaf seams. The flush
         # panels and silver hoops of round 2 are gone (I8_37 has neither).
-        hl.i8_shell(K, skin, f, XS + 0.15, XB - 0.30, tag, scale=R / 2.6, leaves=10, seed=3 if side > 0 else 7, width=1.35)
+        hl.i8_shell(K, skin, f, XS + 0.15, XB - 0.30, tag, scale=R / 2.6, leaves=12, seed=3 if side > 0 else 7, width=1.6)
         hl.lance(K, 'L%d' % (1 if side > 0 else 2), (XB - 0.22, side * YP, 0.0), 1.55, 0.36,
                  note='One pulsar lance per hull: a grown lens point at the bow on the hull\'s own axis; fixed forward, F arc.',
                  what='grown lens point at the %s bow / pulsar' % tag)

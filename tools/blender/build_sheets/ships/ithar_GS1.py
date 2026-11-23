@@ -121,7 +121,7 @@ def build(K):
     K.mass('Twisted mosaic core', core, 'opaque glowing stained-glass mosaic',
            note='Two lobes twisting round each other, fused at both ends; seafoam stored light in the cleft. Never see-through.')
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
-    hl.i8_shell(K, skin, f, XS + 0.08, XB - 0.10, 'gs1', scale=S, leaves=8, seed=4, width=1.0)
+    hl.i8_shell(K, skin, f, XS + 0.08, XB - 0.10, 'gs1', scale=S, leaves=8, seed=4, width=1.12)
     hl.shard_cluster(K, 'S1', (2.50, 0.0, 0.0), 0.75, 0.085, spread=0.075)
     hl.stern_drive(K, 'E1', (XS + 0.22, 0.0, 0.0), 0.27)
     breaks = (-0.95,)
