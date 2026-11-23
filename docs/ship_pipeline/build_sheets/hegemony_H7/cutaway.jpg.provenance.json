@@ -1,25 +1,25 @@
 {
-  "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+  "source_commit": "7a14cc819397524024852f833a15b663ce84598b",
   "source_dirty": true,
-  "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+  "source_diff_sha256": "8d26e2ccc1a09ac727d741da8c710292f796fc15c9bf281b16579421348733ee",
   "source_dirty_files": {
-    "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-    "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-    "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+    "tools/blender/build_sheets/ships/hegemony_H7.py": "ea654d3bc0b8c71ebb705f9967862c471ca59ec4",
+    "tools/blender/build_sheets/ships/hegemony_H7_camera.json": "944477b761978edffcc8e11808723f7379d9aadb",
+    "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4e493e17b1592ab41370a6f1b64d783f3bb632d7"
   },
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "cutaway.jpg",
-  "date": "2026-11-22T17:25:25Z",
+  "date": "2026-11-23T21:36:56Z",
   "sources": [
     {
-      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_commit": "7a14cc819397524024852f833a15b663ce84598b",
       "source_dirty": true,
-      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "source_diff_sha256": "8d26e2ccc1a09ac727d741da8c710292f796fc15c9bf281b16579421348733ee",
       "source_dirty_files": {
-        "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-        "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-        "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+        "tools/blender/build_sheets/ships/hegemony_H7.py": "ea654d3bc0b8c71ebb705f9967862c471ca59ec4",
+        "tools/blender/build_sheets/ships/hegemony_H7_camera.json": "944477b761978edffcc8e11808723f7379d9aadb",
+        "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4e493e17b1592ab41370a6f1b64d783f3bb632d7"
       },
       "stage": "sheet built"
     }
@@ -27,21 +27,21 @@
   "inputs": [
     {
       "picture_name": "cutaway.png",
-      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_commit": "7a14cc819397524024852f833a15b663ce84598b",
       "source_dirty": true,
-      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "source_diff_sha256": "8d26e2ccc1a09ac727d741da8c710292f796fc15c9bf281b16579421348733ee",
       "stage": "sheet built",
-      "date": "2026-11-22T17:25:22Z",
-      "image_sha256": "81b3efd26963ebc143331067a930b251c45500d622e1d5a8fd85de7f6ed073a4",
+      "date": "2026-11-23T21:36:47Z",
+      "image_sha256": "53d8ef0cc87bb6cc3c74c025468a56bec4301576a83e72f3c9988ebeb25e6b29",
       "sources": [
         {
-          "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+          "source_commit": "7a14cc819397524024852f833a15b663ce84598b",
           "source_dirty": true,
-          "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+          "source_diff_sha256": "8d26e2ccc1a09ac727d741da8c710292f796fc15c9bf281b16579421348733ee",
           "source_dirty_files": {
-            "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-            "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-            "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+            "tools/blender/build_sheets/ships/hegemony_H7.py": "ea654d3bc0b8c71ebb705f9967862c471ca59ec4",
+            "tools/blender/build_sheets/ships/hegemony_H7_camera.json": "944477b761978edffcc8e11808723f7379d9aadb",
+            "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4e493e17b1592ab41370a6f1b64d783f3bb632d7"
           },
           "stage": "sheet built"
         }
@@ -50,20 +50,20 @@
   ],
   "stamp_box": [
     0,
-    546,
+    523,
     282,
-    595
+    572
   ],
   "strip_size": [
     282,
     49
   ],
   "strip_sha256": [
-    "fa797d55c23e0e2552a10897b2e8fd8a1222ce0ce5e4fec276896758716f9f62"
+    "5c44ccad3d5d52872cb25a664f028213d9ae16885c400f657362b15561378e17"
   ],
-  "stamp_template_sha256": "5bf47aee9fd2527104f41bbb1b07b4fc08d0377fa80c299b53c6415fb8c0296e",
+  "stamp_template_sha256": "00f539f0280e6af1808b608c64ba50d4504aff79e2c3d339a522e3fd9c3054f4",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAACr0lEQVR4nO3aTUgUcRiA8ZnYHbNsZ9a0ENNLJH2QRCCSLmQGRUR0Sjr0cRCCIsLoUmGnSOgQdJA61TFIiqhLXZJISrIso0PbF2hq0+aqaB+MitlhYFrC3QV5d7f/zvM7vcu+A+/lOewyel1dRFNT/ZaaUyePunPnoyftV66l3q+sKL986bw7R999PHuuLbP3wX8W5fqAhXOmpry5wAim3TcM4++zzlSKTWBhVM4pIYnEVJIxEpJzHCcjN8HfFM7px89f3myaobT7Ycuc91lAisI52XZsbm7OnUtLlqfdL0nYse2vmToLPqZwTtPT099GRt3ZskJLCgtT75eVrfTmwaEvGbwMfqVwTpqm9Q98dgdd16uqVqdeXrd2TcKDQxk8C36ldk69va+9eVP1hhSbxcXhVeVl7tw/MBiPj2b2MviS2jn1vOjzfj41bK0LBALJNrdvi+i67s7Pel5m4zj4j9o5TU5+f9r93J1DoWV7du+Yd80yQ95XMzMzDzu7snQffEbtnDRNu3Hzzuzsb3fe37S3euP6fxYWFxS0nDhSVLTU/Xj/QWd8dCyrJ8I3lM/JtmMdt+66czAYbD3TcvhgU2VFuWEY4bAZqa+92NbqNTY8bHfcvpe7Y5HndHXf2Ut0/FhzY0N96p2JicnTrRdisZHsnAQfypOcdF3ftbPx0IF9yd42etX3pv3q9fHxiSwfBl/Jk5xclhmKRGprazavKC2xLNNxnLGx8ej7T4+7ut9GP+T6OuS/vMoJyC3l/4oA/h/kBIghJ0AMOQFiyAkQQ06AGHICxJATIIacADHkBIghJ0AMOQFiyAkQQ06AGHICxJATIIacADHkBIghJ0AMOQFiyAkQQ06AGHICxJATIIacADHkBIghJ0AMOQFiyAkQQ06AGHICxJATIIacADF/APT0lbCDqknaAAAAAElFTkSuQmCC"
   ],
-  "image_sha256": "0e4a9032b3e6217dd506d04912e548aca15f21fe7f044fd552b54a91d66f306a"
+  "image_sha256": "013435592704017dd9053b340fcb4dd166a991e901b1616c3470ab7982b7e296"
 }

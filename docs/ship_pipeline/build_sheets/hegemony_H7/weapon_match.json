@@ -10,7 +10,7 @@
    "shots": 2,
    "mounts": [
     {
-     "id": "L1",
+     "id": "bow",
      "type": "gun",
      "mount": "fixed",
      "barrels": 2,
@@ -25,7 +25,7 @@
    "shots": 3,
    "mounts": [
     {
-     "id": "F1",
+     "id": "dorsal",
      "type": "gun",
      "mount": "turret",
      "barrels": 3,

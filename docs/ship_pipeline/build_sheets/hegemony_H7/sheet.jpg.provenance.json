@@ -1,25 +1,25 @@
 {
-  "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+  "source_commit": "7a14cc819397524024852f833a15b663ce84598b",
   "source_dirty": true,
-  "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+  "source_diff_sha256": "8d26e2ccc1a09ac727d741da8c710292f796fc15c9bf281b16579421348733ee",
   "source_dirty_files": {
-    "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-    "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-    "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+    "tools/blender/build_sheets/ships/hegemony_H7.py": "ea654d3bc0b8c71ebb705f9967862c471ca59ec4",
+    "tools/blender/build_sheets/ships/hegemony_H7_camera.json": "944477b761978edffcc8e11808723f7379d9aadb",
+    "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4e493e17b1592ab41370a6f1b64d783f3bb632d7"
   },
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "sheet.jpg",
-  "date": "2026-11-22T17:25:27Z",
+  "date": "2026-11-23T21:37:00Z",
   "sources": [
     {
-      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_commit": "7a14cc819397524024852f833a15b663ce84598b",
       "source_dirty": true,
-      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "source_diff_sha256": "8d26e2ccc1a09ac727d741da8c710292f796fc15c9bf281b16579421348733ee",
       "source_dirty_files": {
-        "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-        "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-        "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+        "tools/blender/build_sheets/ships/hegemony_H7.py": "ea654d3bc0b8c71ebb705f9967862c471ca59ec4",
+        "tools/blender/build_sheets/ships/hegemony_H7_camera.json": "944477b761978edffcc8e11808723f7379d9aadb",
+        "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4e493e17b1592ab41370a6f1b64d783f3bb632d7"
       },
       "stage": "sheet built"
     }
@@ -27,21 +27,21 @@
   "inputs": [
     {
       "picture_name": "sheet.jpg",
-      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_commit": "7a14cc819397524024852f833a15b663ce84598b",
       "source_dirty": true,
-      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "source_diff_sha256": "8d26e2ccc1a09ac727d741da8c710292f796fc15c9bf281b16579421348733ee",
       "stage": "sheet built",
-      "date": "2026-11-22T17:25:24Z",
-      "image_sha256": "8a64d613c0153bdbfaaf390deb9e0379d10eac3a4c0ee5786ce0c707e5b074b2",
+      "date": "2026-11-23T21:36:51Z",
+      "image_sha256": "2aa1401deeeec2cf2af0a57baa4fc8d33754fa5b919b449844a63c3164dab76c",
       "sources": [
         {
-          "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+          "source_commit": "7a14cc819397524024852f833a15b663ce84598b",
           "source_dirty": true,
-          "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+          "source_diff_sha256": "8d26e2ccc1a09ac727d741da8c710292f796fc15c9bf281b16579421348733ee",
           "source_dirty_files": {
-            "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-            "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-            "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+            "tools/blender/build_sheets/ships/hegemony_H7.py": "ea654d3bc0b8c71ebb705f9967862c471ca59ec4",
+            "tools/blender/build_sheets/ships/hegemony_H7_camera.json": "944477b761978edffcc8e11808723f7379d9aadb",
+            "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4e493e17b1592ab41370a6f1b64d783f3bb632d7"
           },
           "stage": "sheet built"
         }
@@ -50,20 +50,20 @@
   ],
   "stamp_box": [
     0,
-    10307,
+    10206,
     564,
-    10405
+    10304
   ],
   "strip_size": [
     564,
     98
   ],
   "strip_sha256": [
-    "c61d163525807c5207d1b175bb090066e19ea8163f44859f3958b8191b6d2d42"
+    "873191e0425e9cd9b59c59d53ff561ab18f1fbb7ba5b845c8fd1a43b5b0aa09b"
   ],
-  "stamp_template_sha256": "659b2c6fab3fe7b5180a0ebba0a4ef8ddf722640292866a2853e38ce7e73bb86",
+  "stamp_template_sha256": "5fe88cb678b0fd7ebb67f000c119454843370e058a56f62122635c473050bae9",
   "covered_pixels": [
-    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABj0lEQVR4nO3VMQ0AIADAMEAPwb88fgywo1Wwb3PvMwCgZP0OAICXOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBEDOBQEuAUp54xaKAAAAAElFTkSuQmCC"
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABsUlEQVR4nO3ZsQnCYBRG0T/ZQ8wAwdUsbN3BOpC1Ao5j7wK5kHMm+LrL403r+hhwefv2We63McZxfJ+v99lz4OrmswcAwD9xAiBHnADImfycAKhxOQGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQI04A5IgTADniBECOOAGQ8wMfDgfP4uWy/gAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "87dbb20ec92b02b3961b3d28fdf2f7623d437168a42618e7b8b3845f77694ea3"
+  "image_sha256": "536de16c24768b2a4690c970f1fa38809bf6e64d87b62654260577c91ce23948"
 }

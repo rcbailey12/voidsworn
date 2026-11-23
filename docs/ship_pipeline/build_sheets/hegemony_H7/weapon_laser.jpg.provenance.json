@@ -1,25 +1,25 @@
 {
-  "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+  "source_commit": "7a14cc819397524024852f833a15b663ce84598b",
   "source_dirty": true,
-  "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+  "source_diff_sha256": "8d26e2ccc1a09ac727d741da8c710292f796fc15c9bf281b16579421348733ee",
   "source_dirty_files": {
-    "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-    "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-    "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+    "tools/blender/build_sheets/ships/hegemony_H7.py": "ea654d3bc0b8c71ebb705f9967862c471ca59ec4",
+    "tools/blender/build_sheets/ships/hegemony_H7_camera.json": "944477b761978edffcc8e11808723f7379d9aadb",
+    "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4e493e17b1592ab41370a6f1b64d783f3bb632d7"
   },
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "weapon_laser.jpg",
-  "date": "2026-11-22T17:25:28Z",
+  "date": "2026-11-23T21:37:05Z",
   "sources": [
     {
-      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_commit": "7a14cc819397524024852f833a15b663ce84598b",
       "source_dirty": true,
-      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "source_diff_sha256": "8d26e2ccc1a09ac727d741da8c710292f796fc15c9bf281b16579421348733ee",
       "source_dirty_files": {
-        "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-        "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-        "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+        "tools/blender/build_sheets/ships/hegemony_H7.py": "ea654d3bc0b8c71ebb705f9967862c471ca59ec4",
+        "tools/blender/build_sheets/ships/hegemony_H7_camera.json": "944477b761978edffcc8e11808723f7379d9aadb",
+        "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4e493e17b1592ab41370a6f1b64d783f3bb632d7"
       },
       "stage": "sheet built"
     }
@@ -27,21 +27,21 @@
   "inputs": [
     {
       "picture_name": "weapon_laser.png",
-      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_commit": "7a14cc819397524024852f833a15b663ce84598b",
       "source_dirty": true,
-      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "source_diff_sha256": "8d26e2ccc1a09ac727d741da8c710292f796fc15c9bf281b16579421348733ee",
       "stage": "sheet built",
-      "date": "2026-11-22T17:25:18Z",
-      "image_sha256": "f0ff876d7e11baa51d9afd96c24dd9130fe2f681cd185b7ef5f162a54bbb1abf",
+      "date": "2026-11-23T21:36:12Z",
+      "image_sha256": "8377d1f048fee583e88788339acda3426a00e93587debca707a064748898e457",
       "sources": [
         {
-          "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+          "source_commit": "7a14cc819397524024852f833a15b663ce84598b",
           "source_dirty": true,
-          "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+          "source_diff_sha256": "8d26e2ccc1a09ac727d741da8c710292f796fc15c9bf281b16579421348733ee",
           "source_dirty_files": {
-            "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-            "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-            "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+            "tools/blender/build_sheets/ships/hegemony_H7.py": "ea654d3bc0b8c71ebb705f9967862c471ca59ec4",
+            "tools/blender/build_sheets/ships/hegemony_H7_camera.json": "944477b761978edffcc8e11808723f7379d9aadb",
+            "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4e493e17b1592ab41370a6f1b64d783f3bb632d7"
           },
           "stage": "sheet built"
         }
@@ -59,11 +59,11 @@
     49
   ],
   "strip_sha256": [
-    "d9c35212faef43c314d0e6f1f8cfecb16f2caf75f236d180cfa807ec52056544"
+    "dc48f0ec34b45d8f593983d68565130744444c2c63a79d1144c12c703ef2095a"
   ],
-  "stamp_template_sha256": "9a669ad07dc599bee2a9455fa88199d80324169d1528862236c99d80b8f3bf1d",
+  "stamp_template_sha256": "e9420df0b1a4bbeccfb93facc83395869d3de2843f787df3066ea8b689979137",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
   ],
-  "image_sha256": "2333cb96d5797b8591e040946cf6641adb2e7db6596590fd037fddc4862ce0b4"
+  "image_sha256": "7aa2121c7a612ceb5a5db80e4bcd49b36b41bbe2f4ed5aa0be47c545da963a40"
 }
