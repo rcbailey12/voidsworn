@@ -1,0 +1,2 @@
+PASS: wave A2 finished, all 20 takes on disk, see wave_a2_finish.txt for credits
+listen page: out_new\listen\index.html; all takes and receipts copied to out_new\elevenlabs for the relay

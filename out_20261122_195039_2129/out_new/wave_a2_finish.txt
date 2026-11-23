@@ -1,0 +1,8 @@
+list elevenlabs_pilot_v2.json: 20 steps, 4 still to make, estimate 272 credits (stems priced at their song's cost; stop at 600 used; the key's own cap at elevenlabs.io is the real ceiling)
+account balance unreadable (HTTP 401, the key has no User: read permission): the stop uses the cost header where given, else the estimate
+made wep_sunward_lance_beam_t1.mp3
+made wep_sunward_lance_beam_t2.mp3
+made shd_break_energy_t1.mp3
+made shd_break_energy_t2.mp3
+made 4, failed 0, credits: 76 charged (cost header) + 0 estimated (no header, e.g. music) = about 76, 0 of 20 steps not done
+ELEVENLABS GEN PASS

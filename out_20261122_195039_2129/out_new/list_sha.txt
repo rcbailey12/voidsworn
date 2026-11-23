@@ -1,0 +1,3 @@
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opus1752wavea2d\out_20261122_195039_2129\new\contrib\opus\sound\elevenlabs_pilot_v2.json:
+97265918b421ee9bbdf8c79f984cc8564a9a928c8cea9a904e1db8edc8029887
+CertUtil: -hashfile command completed successfully.

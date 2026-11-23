@@ -1,0 +1,29 @@
+[Sun 11/22/2026 19:50:39.37] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\59d28c8af844\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-23T01:50:40Z
+found node: C:\Users\rcbai\Downloads\voidsworn_test\node\node.exe
+all tools found
+[Sun 11/22/2026 19:50:40.47] ready: GPU label 1752
+relay to: tools\pc\relay_push.bat opus1752wavea2d "C:\Users\rcbai\Downloads\voidsworn_test\opus1752wavea2d\out_20261122_195039_2129" (voidsworn-relay branch pc-out-opus1752wavea2d, folder out_20261122_195039_2129/), then dropcheckouts "C:\Users\rcbai\Downloads\voidsworn_test\opus1752wavea2d\out_20261122_195039_2129"
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\59d28c8af844\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\59d28c8af844\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\59d28c8af844\pc\run_timeout.ps1
+verified 1d13836cab395f2aad9cc1735fe325c54375399130e4af1865bf7d7236588770 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\59d28c8af844\pc\jobs\opus_job_head.bat
+verified ec1ff291e8cd922f7010384ba26ed6403be0b6e91ad78aec8626ee4044c383f5 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\59d28c8af844\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\59d28c8af844\pc\run_timeout.ps1 (tools_live version 59d28c8af844)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\59d28c8af844\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\59d28c8af844\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+fetching the shared mirror for 025ee1e4d9e2942d8ceec3946e16857186a6b783
+checkout new 025ee1e4d9e2942d8ceec3946e16857186a6b783 C:\Users\rcbai\Downloads\voidsworn_test\opus1752wavea2d\out_20261122_195039_2129\new
+[Sun 11/22/2026 19:50:57.63] step new selftest start
+[Sun 11/22/2026 19:51:04.23] step new selftest ok
+[Sun 11/22/2026 19:51:04.25] step new dry start
+[Sun 11/22/2026 19:51:05.46] step new dry ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Sun 11/22/2026 19:51:10.05
+checkouts kept: C:\Users\rcbai\Downloads\voidsworn_test\opus1752wavea2d\out_20261122_195039_2129 (results not relayed yet: relay/pc-out-opus1752wavea2d:out_20261122_195039_2129: branch relay/pc-out-opus1752wavea2d (from relay_branch.txt) is not on origin at the shared mirror's commit)
+disk: checkouts freed 0.0 GB in all, C: 251.8 GB free
+checkouts: a hidden waiter clears them once the relay is on origin; log in the job folder, dropwait_*.txt

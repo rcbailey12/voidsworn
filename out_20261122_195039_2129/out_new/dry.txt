@@ -1,0 +1,7 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\59d28c8af844\pc\run_timeout.ps1
+list elevenlabs_pilot_v2.json: 20 steps, 4 still to make, estimate 272 credits (stems priced at their song's cost; stop at 600 used; the key's own cap at elevenlabs.io is the real ceiling)
+  would make wep_sunward_lance_beam_t1.mp3 (sfx, est 72)
+  would make wep_sunward_lance_beam_t2.mp3 (sfx, est 72)
+  would make shd_break_energy_t1.mp3 (sfx, est 64)
+  would make shd_break_energy_t2.mp3 (sfx, est 64)
+DRY RUN: nothing sent
