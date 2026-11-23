@@ -745,16 +745,21 @@ class Daemon {
       if (before !== after) { failed.push('options'); say("FAILED options: Ryan's real battle_opts.json or board_look.cfg changed during the job"); }
       else say("Ryan's real options unchanged");
     } catch (e) { if (!failed.includes('options before') && !failed.includes('tools')) { failed.push('options'); say(`FAILED options: ${e.message}`); } }
-    if (slotTaken) { try { this.tools.slotRelease(attempt, lease, st); say('slot let go'); } catch (e) { say(`slot release: ${e.message}`); } }
+    // Artoo on PR 1835: a refused or failed release is never hidden. The slot stays as the head left it, the outputs
+    // are kept, and the result says the cleanup is incomplete (a job that ran is FAILED: slot release, never PASS).
+    let kept = null;
+    if (slotTaken) { try { this.tools.slotRelease(attempt, lease, st); say('slot let go'); } catch (e) { kept = e.message; say(`FAILED slot release (the slot is kept as it is): ${kept}`); } }
     if (aborted && !failed.length) {
+      const note = kept ? ` The slot was NOT let go (${kept}); the Board looks at it before it is used again.` : '';
       say(`aborted before launch: ${aborted}`);
-      fs.writeFileSync(path.join(attempt, 'done.txt'), `done ABORTED: ${aborted}\r\n`);
+      fs.writeFileSync(path.join(attempt, 'done.txt'), `done ABORTED: ${aborted}${kept ? `; slot release FAILED: ${kept}` : ''}\r\n`);
       this.note(sha, spec.job, n, 'aborted', attempt);
-      this.report(n, () => this.gh.comment(n, `PC daemon (issue 1662): ${spec.job} not started at ${sha.slice(0, 8)}: ${aborted}. Nothing ran. Put the ${READY} label back (with a new "PC go:" comment if the head moved) to try again.`), 'comment');
+      this.report(n, () => this.gh.comment(n, `PC daemon (issue 1662): ${spec.job} not started at ${sha.slice(0, 8)}: ${aborted}. Nothing ran.${note} Put the ${READY} label back (with a new "PC go:" comment if the head moved) to try again.`), 'comment');
       this.report(n, () => this.gh.removeLabel(n, RUNNING), `remove ${RUNNING}`);
       this.tools.unpin();
       return { pass: false, aborted, attempt };
     }
+    if (kept) failed.push('slot release');
     const pass = failed.length === 0;
     fs.writeFileSync(path.join(attempt, 'done.txt'), pass ? 'done PASS\r\n' : `done FAILED: ${failed.join(', ')}\r\n`);
     say(pass ? 'done PASS' : `done FAILED: ${failed.join(', ')}`);

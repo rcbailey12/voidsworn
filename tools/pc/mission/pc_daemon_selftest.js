@@ -507,6 +507,18 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     await g4.daemon.tick();
     assert.ok(!g4.calls.includes('ships') && !g4.calls.includes('watchdog') && g4.calls.includes('slotRelease'), 'a lease that does not match stops the job');
     assert.deepEqual(g4.released, [null], 'no proven lease: the head releases only a slot whose owner.txt names this attempt');
+    // Artoo on PR 1835: a refused release is visible: a job that ran is FAILED (slot release) with its outputs kept and
+    // delivered; a job stopped before launch says the slot was not let go
+    const g6 = fakes({ failStep: 'slotRelease' });
+    await g6.daemon.tick();
+    assert.ok(g6.calls.includes('watchdog') && g6.calls.includes('relay'), 'the outputs are still delivered');
+    const c6 = g6.gh.writes.find(w => w[0] === 'comment' && /FAILED/.test(w[2]));
+    assert.ok(c6 && /slot release/.test(c6[2]), 'the result names the refused release: ' + JSON.stringify(g6.gh.writes));
+    assert.ok(!g6.gh.writes.some(w => w[0] === 'comment' && /\bPASS\b/.test(w[2]) && !/FAILED/.test(w[2])), 'never an ordinary PASS');
+    const g7 = fakes({ failStep: 'slotRelease', exit: 125, record: { started: false, gated: 'not started: the Board pause began', profile: '' } });
+    await g7.daemon.tick();
+    const c7 = g7.gh.writes.find(w => w[0] === 'comment' && /not started/.test(w[2]));
+    assert.ok(c7 && /slot was NOT let go \(fake slotRelease failure\)/.test(c7[2]), 'a stopped job says the slot was kept: ' + (c7 && c7[2]));
     const g5 = fakes({ failStep: 'pin' });
     await g5.daemon.tick();
     assert.ok(!g5.calls.includes('slot') && !g5.calls.includes('watchdog'), 'unverified tools start nothing');
