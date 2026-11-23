@@ -109,6 +109,8 @@ var _ion_until := -1.0
 var _acid_active := false
 var _acid_mist: POOLS.Pool
 var _acid_next := 0.0
+const ACID_SIZZLE_GAINS := [0.25, 0.125]
+var _sizzle_count := 0
 var _sizzle_next := 0.0
 var _acid_spot_index := 0
 var _acid_fallback: Dictionary = {}
@@ -1075,6 +1077,8 @@ func _break_aim(quad: int, hit_lp: Vector3) -> Vector3:
 func shield_break(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	if _shield_mat == null:
 		return
+	# Playback can break the shield before the next rules view arrives.
+	_shield_fraction = 0.0
 	hit_power(fx, true)
 	if _fail_look == 1:
 		_break_shear(fx, quad, hit_lp)
@@ -1711,16 +1715,17 @@ func _status_step(fx) -> void:
 			_acid_mist = null
 			_acid_fallback.clear()
 			_acid_next = 0.0
+			_sizzle_count = 0
 			_sizzle_next = 0.0
 	elif fx.now >= _acid_next:
 		_acid_next = fx.now + 0.30
 		_emit_acid(fx)
-	if dead or not _ion_locked:
+	if dead or not _ion_locked or _shield_fraction <= 0.0 or fx.now < _brk_until:
 		if _ion_until >= 0.0:
 			_shield_mat.set_shader_parameter("ion_arc", Vector2(-100.0, 0.0))
 			_ion_until = -1.0
 			_ion_next = 0.0
-	elif fx.now >= _ion_next and fx.now >= _brk_until:
+	elif fx.now >= _ion_next:
 		# An upper flank facing the battle camera. The shader draws on the actual shield skin as the ship moves.
 		var angle: float = fx.rng.randf_range(-PI, PI)
 		if is_instance_valid(fx.camera):
@@ -1739,7 +1744,11 @@ func _emit_acid(fx) -> void:
 		if fx.now < busy_until: return  # an in-flight shot can still supply its actual contact
 		# A restored ship has its rules status but no FX hit history. Find real plating once.
 		if _acid_fallback.is_empty():
-			_acid_fallback = hull.surface_sample(-1, 0.5, "acid")
+			if is_instance_valid(fx.camera):
+				var eye: Vector3 = xf().affine_inverse() * fx.camera.global_position
+				_acid_fallback = hull.surface(hull.core, eye - hull.core)
+			if _acid_fallback.is_empty():
+				_acid_fallback = hull.surface_sample(-1, 0.5, "acid")
 		if _acid_fallback.is_empty(): return
 		p = _acid_fallback["p"]
 		n = _acid_fallback["n"]
@@ -1752,14 +1761,17 @@ func _emit_acid(fx) -> void:
 		var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 		_acid_mist = POOLS.Pool.new(8, material, _dmg_root, "fx_acid_mist", POOLS.quad_shape())
 	var col := _acid_colour()
-	var drift: Vector3 = (n + Vector3.UP * 0.45) * hull.L * 0.034
-	_acid_mist.emit(POOLS.pack(Vector4(p.x, p.y, p.z, fx.now), Vector4(drift.x, drift.y, drift.z, 1.9),
-		Vector4(col.r, col.g, col.b, 0.35), Vector4(hull.L * 0.025, hull.L * 0.10, 20, fx.rng.randf()), Vector4(0, 0, 0.3, 0.15)))
+	# Lift the expanding mist off the plating so the hull and soft depth fade leave it room to show.
+	var origin := p + n * maxf(0.65, hull.L * 0.02)
+	var drift: Vector3 = (n + Vector3.UP * 0.70) * hull.L * 0.065
+	_acid_mist.emit(POOLS.pack(Vector4(origin.x, origin.y, origin.z, fx.now), Vector4(drift.x, drift.y, drift.z, 1.9),
+		Vector4(col.r, col.g, col.b, 0.68), Vector4(hull.L * 0.08, hull.L * 0.23, 20, fx.rng.randf()), Vector4(0, 0, 0.3, 0.15)))
 	_acid_mist.flush()
-	if fx.now >= _sizzle_next:
+	if _sizzle_count < ACID_SIZZLE_GAINS.size() and fx.now >= _sizzle_next:
 		_sizzle_next = fx.now + fx.rng.randf_range(1.7, 2.8)
 		if fx.sound() != null:
-			fx.sound().play("acid_sizzle", {"pos": to_world(p)})
+			fx.sound().play("acid_sizzle", {"pos": to_world(p), "gain": ACID_SIZZLE_GAINS[_sizzle_count]})
+		_sizzle_count += 1
 
 
 func _acid_colour() -> Color:

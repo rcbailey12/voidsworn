@@ -8,7 +8,8 @@ const SHIP := preload("res://fx/fx_ship.gd")
 
 var failures := 0
 var fx: FX
-var sounds: Array = []
+var sounds: Array[String] = []
+var sizzles: Array[Dictionary] = []
 
 
 func _init() -> void:
@@ -32,13 +33,19 @@ func _run() -> void:
 	var attacker: Dictionary = api.R.alive("enemy")[0]
 	var world := Node3D.new()
 	root.add_child(world)
+	var camera := Camera3D.new()
+	world.add_child(camera)
+	camera.position = Vector3(0, 4, 18)
 	var sfx := SFX.new()
 	world.add_child(sfx)
-	sfx.cue_started.connect(func(cue: String, opts: Dictionary) -> void: sounds.append([cue, opts.get("pos")]))
+	sfx.cue_started.connect(func(cue: String, opts: Dictionary) -> void:
+		sounds.append(cue)
+		if cue == "acid_sizzle":
+			sizzles.append(opts))
 	fx = FX.new()
 	fx.manual = true
 	world.add_child(fx)
-	fx.setup({"quality": "low", "sfx": sfx, "shake": 0.0})
+	fx.setup({"quality": "low", "sfx": sfx, "camera": camera, "shake": 0.0})
 	var box := BoxMesh.new()
 	box.size = Vector3(18, 4, 7)
 	for unit in [target, attacker]:
@@ -53,30 +60,66 @@ func _run() -> void:
 	var s: SHIP = fx.ship(target.id)
 	target.st.acid = 2
 	target.regenLock = 1
+	target.shp = float(target.shMax) * 0.5
+	api.R.syncShields(target)
 	var u: Dictionary = api.view().units.filter(func(v): return v.id == target.id)[0]
+	var empty := u.duplicate()
+	empty["shp"] = 0.0
+	empty["sh"] = [0, 0, 0, 0]
 	# Start with a restored view, then let an actual bio hull hit supply a new local source.
 	fx.sync_ship(s.id, u)
 	fx.step(0.05)
 	check(s._acid_mist != null and s._acid_mist.emitted == 1 and not s._acid_fallback.is_empty(),
 		"an idle restored acid ship emits from real plating without a recorded impact")
+	check((s._acid_fallback.get("n", Vector3.ZERO) as Vector3).dot(Vector3.BACK) > 0.9,
+		"restored mist starts on the plating facing the camera")
+	check(sizzles.size() == 1 and float(sizzles[0].get("gain", 1.0)) <= 0.25, "the first acid sizzle is attenuated")
 	check(s._shield_mi.visible and (s._shield_mat.get_shader_parameter("ion_arc") as Vector2).x >= 0.0,
-		"the battle view starts a shield arc on the idle ion-locked ship")
+		"the battle view starts a shield arc on the idle ion-locked ship at half shields")
 	var pulse_end := s._ion_until
 	fx.sync_ship(s.id, u)
 	fx.step(pulse_end - fx.now + 0.01)
 	check(not s._shield_mi.visible, "the locked shield goes dark between flickers across repeated syncs")
 	fx.step(s._ion_next - fx.now + 0.01)
 	check(s._shield_mi.visible and s._ion_until > pulse_end, "the lock produces another idle arc")
+	fx.sync_ship(s.id, empty)
+	fx.step(0.05)
+	check(not s._shield_mi.visible and (s._shield_mat.get_shader_parameter("ion_arc") as Vector2).x < 0.0,
+		"draining a shield clears an arc already in progress")
+	for i in 8:
+		fx.sync_ship(s.id, empty)
+		fx.step(0.25)
+		if s._shield_mi.visible:
+			break
+	check(not s._shield_mi.visible, "the empty shield stays dark across repeated ion lock syncs")
+	fx.sync_ship(s.id, u)
+	fx.step(0.05)
+	check((s._shield_mat.get_shader_parameter("ion_arc") as Vector2).x >= 0.0, "an ion lock can flicker again once shields return")
+	s.shield_break(fx, 0)
+	fx.step(0.05)
+	check(s._shield_mi.visible and (s._shield_mat.get_shader_parameter("ion_arc") as Vector2).x < 0.0,
+		"a shield break clears the ion arc before the next sync while the collapse still plays")
 	fx.volley(attacker.id, "bio", s.id, {"weapon_id": "bioplasma", "shots": [true], "hits": [{"shield": 0, "hull": 2}]})
 	for i in 90: fx.step(0.05)
 	var spots: Array = s.get_meta("acid_spots", [])
 	check(not spots.is_empty(), "a bio volley supplies a recorded hull impact")
 	if not spots.is_empty():
 		s.root.position += Vector3(13, 0, 5)
-		# Start a fresh audio window. The mixer spaces cues on the wall clock while this test advances effect time.
+		# Start a fresh acid episode on the moved hull. The mixer spaces cues on the wall clock.
+		fx.sync_ship(s.id, empty.merged({"st": {"acid": 0}}, true))
+		fx.step(0.05)
+		sizzles.clear()
 		sfx.last.erase("acid_sizzle")
-		fx.step(maxf(0.0, s._sizzle_next - fx.now) + 0.31)
-		check(sounds.has(["acid_sizzle", s.to_world(spots.back()[0])]), "the sizzle follows the recorded spot on a moved hull")
+		fx.sync_ship(s.id, empty)
+		fx.step(0.05)
+		check(sizzles.size() == 1 and sizzles[0].get("pos") == s.to_world(spots.back()[0]),
+			"the sizzle rearms and follows the recorded spot on a moved hull")
+	for i in 40:
+		sfx.last.erase("acid_sizzle")
+		fx.sync_ship(s.id, empty)
+		fx.step(0.30)
+	check(sizzles.size() == 2 and float(sizzles[1].get("gain", 1.0)) < float(sizzles[0].get("gain", 1.0)),
+		"a long acid episode plays just two sizzles, with the second quieter")
 	check(s._acid_mist != null and s._acid_mist.emitted > 2 and s._acid_mist.mi.get_parent() == s._dmg_root,
 		"one hull-attached mist pool keeps emitting while idle")
 	fx.sync_ship(s.id, {"st": {"acid": 0}, "regenLock": false})
@@ -102,9 +145,9 @@ func _run() -> void:
 	for w in s._hitw:
 		if w.w > 0.0: strained += 1
 	check(strained == 1, "only the below-quarter hit books a strained ripple")
-	check(sounds.all(func(row): return row[0] != "shield_sputter"), "the sputter waits for the hit")
+	check(not sounds.has("shield_sputter"), "the sputter waits for the hit")
 	for i in 80: fx.step(0.05)
-	check(sounds.filter(func(row): return row[0] == "shield_sputter").size() == 1, "one sputter plays for the strained hit")
+	check(sounds.count("shield_sputter") == 1, "one sputter plays for the strained hit")
 	s.shield_hit(fx, Vector3.RIGHT, fx.now, 1.0, 5.0, 0.5, 0.0)
 	check(s._hitw[s._hit_i].w == 0.0, "an empty pool leaves the collapse unstrained")
 	world.free()
