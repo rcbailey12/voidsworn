@@ -1,0 +1,544 @@
+{
+ "about": "Recheck for issues 1692 and 1693 fix runs (PRs 1758 and 1784): heavy battery without its shock ring, las vs plasma cannon, the ion arc only on a live shield, the strain, and the bigger acid mist on metal and Eclipse. Cameras 170 and 26. Old pin: main 0fd3b286 plus the bench files; new pin: the same plus both fixed PR heads.",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "26": [
+   768,
+   432
+  ],
+  "170": [
+   384,
+   216
+  ]
+ },
+ "rows": [
+  {
+   "group": "recheck, issue 1692 wave 2A silhouettes",
+   "id": "w2a_battery_muzzle",
+   "label": "Sunward cruiser battery (medium) muzzles: the base to compare the heavy battery with",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "battery",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0,
+     10
+    ],
+    [
+     "fire",
+     0.45,
+     4
+    ]
+   ]
+  },
+  {
+   "group": "recheck, issue 1692 wave 2A silhouettes",
+   "id": "w2a_hbattery_muzzle",
+   "label": "Sunward battleship heavy battery muzzles: new shock ring, then hot gas bleeding from the barrels",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0,
+     10
+    ],
+    [
+     "fire",
+     0.45,
+     4
+    ]
+   ]
+  },
+  {
+   "group": "recheck, issue 1692 wave 2A silhouettes",
+   "id": "w2a_las_fire",
+   "label": "Sunward destroyer las turret: the shot in flight and landing (window fixed, it lands about 0.8 s after the call)",
+   "att": [
+    "voidsworn",
+    "Destroyer"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "turret",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0,
+     6
+    ],
+    [
+     "impact",
+     -0.2,
+     8
+    ]
+   ]
+  },
+  {
+   "group": "recheck, issue 1692 wave 2A silhouettes",
+   "id": "w2a_plasma_cannon_fire",
+   "label": "Navy frigate plasma cannon firing: new cyan-white pulse in a wider envelope",
+   "att": [
+    "hegemony",
+    "Frigate"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "laser",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0,
+     6
+    ],
+    [
+     "impact",
+     -0.2,
+     8
+    ]
+   ]
+  },
+  {
+   "group": "recheck, issue 1692 wave 2A silhouettes",
+   "id": "w2a_plasma_cannon_hit",
+   "label": "the same plasma cannon landing: lighter kick (0.7 to 0.28)",
+   "att": [
+    "hegemony",
+    "Frigate"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "laser",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ]
+  },
+  {
+   "group": "recheck, issue 1693 wave 2B status",
+   "id": "w2b_ion_locked_empty",
+   "label": "idle Navy cruiser, ion-locked, shield pool empty: watch item, do arcs make a dead shield read live?",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "focus": "target",
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "shp": 0,
+    "shMax": 100,
+    "regenLock": 1
+   },
+   "windows": [
+    [
+     "event",
+     0,
+     12
+    ],
+    [
+     "event",
+     1.2,
+     12
+    ],
+    [
+     "event",
+     2.4,
+     12
+    ]
+   ]
+  },
+  {
+   "group": "recheck, issue 1693 wave 2B status",
+   "id": "w2b_ion_locked_half",
+   "label": "idle Navy cruiser, ion-locked, half its shield pool left: the intended look",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "focus": "target",
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     12,
+     12,
+     12,
+     12
+    ],
+    "shp": 50,
+    "shMax": 100,
+    "regenLock": 1
+   },
+   "windows": [
+    [
+     "event",
+     0,
+     12
+    ],
+    [
+     "event",
+     1.2,
+     12
+    ],
+    [
+     "event",
+     2.4,
+     12
+    ]
+   ]
+  },
+  {
+   "group": "recheck, issue 1693 wave 2B status",
+   "id": "w2b_strain_low",
+   "label": "las turret on a Navy shield with 20 percent of the pool left: strained edge flicker",
+   "att": [
+    "voidsworn",
+    "Destroyer"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "turret",
+   "shots": 2,
+   "on": "shield",
+   "focus": "target",
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     5,
+     5,
+     5,
+     5
+    ],
+    "shp": 20,
+    "shMax": 100
+   },
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     16
+    ]
+   ]
+  },
+  {
+   "group": "recheck, issue 1693 wave 2B status",
+   "id": "w2b_strain_ref",
+   "label": "the same hit with half the pool left: no strain (the quiet ordinary block)",
+   "att": [
+    "voidsworn",
+    "Destroyer"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "turret",
+   "shots": 2,
+   "on": "shield",
+   "focus": "target",
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     12,
+     12,
+     12,
+     12
+    ],
+    "shp": 50,
+    "shMax": 100
+   },
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     16
+    ]
+   ]
+  },
+  {
+   "group": "recheck, issue 1693 wave 2B status",
+   "id": "w2b_acid_idle_metal",
+   "label": "idle Sunward cruiser with acid on it after a Chorus spine hit: green mist from the hit spot",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "focus": "target",
+   "pre": [
+    [
+     "bio",
+     "bioplasma",
+     "mid"
+    ]
+   ],
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "st": {
+     "acid": 2
+    }
+   },
+   "windows": [
+    [
+     "event",
+     0,
+     6
+    ],
+    [
+     "event",
+     1,
+     6
+    ],
+    [
+     "event",
+     2,
+     6
+    ],
+    [
+     "event",
+     3,
+     6
+    ]
+   ]
+  },
+  {
+   "group": "recheck, issue 1693 wave 2B status",
+   "id": "w2b_acid_idle_eclipse",
+   "label": "idle Eclipse cruiser with acid on it: the mist must be violet, never green",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "focus": "target",
+   "pre": [
+    [
+     "bio",
+     "bioplasma",
+     "mid"
+    ]
+   ],
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "st": {
+     "acid": 2
+    }
+   },
+   "windows": [
+    [
+     "event",
+     0,
+     6
+    ],
+    [
+     "event",
+     1,
+     6
+    ],
+    [
+     "event",
+     2,
+     6
+    ],
+    [
+     "event",
+     3,
+     6
+    ]
+   ]
+  }
+ ]
+}
