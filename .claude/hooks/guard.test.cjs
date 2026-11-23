@@ -180,7 +180,7 @@ try {
   deny(shell('git status && git push origin main', main), /Bash call of its own/);
   deny(shell("git commit -qam 'x' && git push origin main 2>&1", main), /Bash call of its own/);
   deny(shell('git push origin main 2>&1', main), /Each commit/);
-  deny(shell('git -C ' + work + ' push origin main', main), /Each commit/);
+  deny(shell('git -C "' + work.split(path.sep).join('/') + '" push origin main', main), /Each commit/);
   git('revert', '--no-edit', 'HEAD');
   deny(shell('git push origin main', main), /Each commit/);
   console.log('PASS Board log push: LOOP.md and FINDINGS.md fast-forward to main allowed; any other change blocked even if reverted');
@@ -195,10 +195,18 @@ try {
   console.log('PASS punctuation hook: flagged the planted em dash and cleared after replacement');
 
   git('reset', '-q', '--hard', 'origin/main');
+  const loaderPath = 'godot/tools/ci/load_all.gd';
+  const loader = fs.readFileSync(path.join(work, loaderPath), 'utf8');
+  write(loaderPath, loader + '\n# Earlier edit\n');
+  write('godot/probe.gd', 'extends Node\nfunc unfinished(\n');
   permit(hook('UserPromptSubmit'));
+  write('README.md', 'docs only this turn\n');
   const clean = hook('Stop');
   permit(clean);
   assert.equal(clean.stdout, '');
+  write(loaderPath, loader + '\n# Further edit\n');
+  deny(hook('Stop'), /Godot parse check failed/);
+  write(loaderPath, loader + '\n# Earlier edit\n');
   write('godot/probe.gd', 'extends Node\nfunc broken(\n');
   deny(hook('Stop'), /Godot parse check failed[\s\S]*(?:Parse Error|load all: FAILED)/);
   git('add', 'godot/probe.gd');

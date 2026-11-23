@@ -4457,8 +4457,6 @@ func _arm(i: int) -> void:
 	if u.is_empty() or i >= (u["weapons"] as Array).size():
 		return
 	armed = -1 if armed == i else i
-	if atk != null and target != "":
-		_update_target_plan(target)   # the Burn and fire stop depends on which guns go
 	sfx.play("ui_click")
 	_refresh_ui()
 
@@ -4856,18 +4854,19 @@ func _target(tid: String) -> void:
 		# Burn and fire, also over a planned move (Artoo on PR 1643): the ghost goes to the stop the rules pick for this
 		# target, as one more step that Backspace takes back
 		_plan_step()
-		var had = plan
-		var had_k := plan_k
+		var allow_stationary := plan == null
 		plan = null
 		plan_k = ""
-		_update_target_plan(tid)
+		_update_target_plan(tid, allow_stationary)
 		if target != "":
 			sfx.play("ui_confirm", {"gain": 0.707946})
 		else:
-			plan_steps.pop_back()
-			plan = had
-			plan_k = had_k
-			hud.toast(("No ready gun bears on %s from the planned hex, and no stop on the way reaches it." % _name(tid)) if had != null else _cant_fire_reason(tid))
+			var previous: Dictionary = plan_steps.pop_back()
+			plan = previous.plan
+			plan_k = previous.k
+			target = previous.target
+			atk = previous.atk
+			hud.toast(("No ready gun bears on %s from the planned hex." % _name(tid)) if plan != null else _cant_fire_reason(tid))
 	elif _firing_set(tid, false).is_empty():
 		hud.toast(("No ready gun bears on %s from the planned hex." % _name(tid)) if plan != null else _cant_fire_reason(tid))
 	else:
@@ -4941,10 +4940,14 @@ func _aims_check() -> void:
 		hud.toast("No gun bears on %s from here: that pick is dropped." % ", ".join(lost))
 
 
-func _update_target_plan(tid: String) -> void:
+func _update_target_plan(tid: String, allow_stationary: bool) -> void:
 	atk = null
-	if not _firing_set(tid).is_empty():
-		target = tid
+	var guns := _firing_set(tid)
+	if not guns.is_empty():
+		target = tid if allow_stationary else ""
+		if allow_stationary:
+			aims.append({"tid": tid, "guns": guns})
+			armed = -1
 		return
 	# Out of reach from here: show the stop and path only if the current guns can fire on the way.
 	atk = _attack_move(tid) if int(_sel_unit().get("moveLeft", 0)) > 0 else null
@@ -5894,7 +5897,7 @@ func _refresh_ui() -> void:
 	hud.set_target(_target_info())
 	# F1: the activation card (the ship that is up and how to finish it) and the phase strip
 	hud.set_card(_card_info() if mine and not busy and not bot and not showcase else {})
-	hud.set_playing(busy and not ended and api.phase != "over")   # issue 1708: the sheet steps aside while a scene plays
+	hud.set_playing(busy)   # The final volley keeps the sheet hidden until its batch finishes.
 	if showcase or bot or ended or api.phase == "over":
 		hud.set_phase("", "")
 	elif mine and not busy:
