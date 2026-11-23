@@ -179,7 +179,7 @@ func _resume(pics: String, commit: String) -> void:
 		if D.RUN == null: _bad(c + ": Continue left no run"); continue
 		var kind := str(D.page.get("kind"))
 		_line("%s: resumed on page %s%s" % [c, kind, (" with " + str(D.modal_d["kind"]) + " open") if D.modal_d != null else ""])
-		if c != "battle":
+		if true:   # the same run in every case, the battle too (Artoo on PR 1837): faction, sector, credits and every ship
 			if str(D.RUN["fac"]) != old["fac"] or int(D.RUN["sector"]) != int(old["sector"]) or float(D.RUN["credits"]) != float(old["credits"]):
 				_bad(c + ": a different run came back: %s sector %d credits %s (saved %s sector %d credits %s)" % [D.RUN["fac"], int(D.RUN["sector"]), str(D.RUN["credits"]), old["fac"], int(old["sector"]), str(old["credits"])])
 			var ships = D.RUN["fleet"].map(func(s): return str(s["uid"]) + " " + str(s["tpl"]) + " " + str(s["name"]))
@@ -200,14 +200,20 @@ func _resume(pics: String, commit: String) -> void:
 				else: _line("event: the card shows the new title \"%s\" (was \"%s\")" % [now.get("t"), old["title"]])
 			"yard":
 				if kind != "shipyard": _bad("yard: resumed on " + kind + ", not inside the shipyard")
+				else:   # the resumed page itself must carry the 1551 Chorus repair line (Artoo on PR 1837)
+					var line := _yard_line(D)
+					if not (line.contains("biomass") and line.contains("fresh spawn-mind")): _bad("yard: the resumed shipyard's repair line reads \"" + line + "\", not biomass and a fresh spawn-mind")
+					else: _line("yard: the resumed shipyard reads \"" + line + "\"")
 			"battle":
 				var set_aside: bool = toasts.any(func(t): return str(t).contains("The game was updated"))
-				if set_aside:
-					_line("battle: the round save was set aside because the rules changed (the game's own notice); the run went back to its checkpoint, page " + kind)
-					if D.RUN["fleet"].size() != old["ships"].size(): _bad("battle: the checkpoint fleet has %d ships, saved %d" % [D.RUN["fleet"].size(), old["ships"].size()])
-				if D.pending_battle != null and api != null:
+				if set_aside: _line("battle: the round save was set aside because the rules changed (the game's own notice); the run went back to its checkpoint, page " + kind)
+				# both arms must end in a live fight that plays on: the notice alone never passes (Artoo on PR 1837)
+				if D.pending_battle == null or api == null:
+					_bad("battle: no fight came back (%s, page %s)" % ["notice shown, but the checkpoint fight was not re-entered" if set_aside else "no round save and no notice", kind])
+				else:
 					var r := int(api.R.B["round"])
-					if set_aside: _line("battle: the fight starts again from its checkpoint at round %d" % r)
+					if set_aside and r != 1: _bad("battle: the checkpoint fight starts at round %d, not 1" % r)
+					elif set_aside: _line("battle: the fight starts again from its checkpoint at round 1")
 					elif r != 2: _bad("battle: the round save resumed at round %d, not 2" % r)
 					else: _line("battle: the round 2 save resumed at round 2")
 					var before: int = api.R.B.get("log", []).size()
@@ -219,11 +225,24 @@ func _resume(pics: String, commit: String) -> void:
 						for w in OLD_ARC:
 							if str(e.get("m", "")).contains(w): stale.append(str(e.get("m", "")))
 					if not stale.is_empty(): _bad("battle: new log lines use the old arc names: " + str(stale.slice(0, 3)))
+					if int(api.R.B["round"]) <= r and api.phase != "over": _bad("battle: the fight did not advance past round %d" % r)
 					_line("battle: played on to round %d, %d new log lines, none with the old arc names" % [int(api.R.B["round"]), newer.size()])
-				elif not set_aside:
-					_bad("battle: neither the round save nor the checkpoint came back (page " + kind + ")")
 		if pics != "" and not headless and c != "battle": await _picture(D, c, commit)
 	completed = true
+
+# the shipyard page the game builds for the resumed run: its "Repairs cost" line
+func _yard_line(D) -> String:
+	var ui = preload("res://ui/campaign/campaign_ui.gd").new()
+	root.add_child(ui); ui.C = D
+	ui.teaching = preload("res://ui/campaign/campaign_tips.gd").new(); ui.teaching.disabled = true; ui.add_child(ui.teaching)
+	ui.set_process(false); ui.use_3d_map = false
+	ui.map3d.intel = preload("res://ui/campaign/map_intel.gd").new(D)
+	var page: Control = ui._shipyard()
+	var found := ""
+	for l in page.find_children("*", "Label", true, false) + page.find_children("*", "RichTextLabel", true, false):
+		if str(l.text).begins_with("Repairs cost "): found = str(l.text); break
+	page.free(); ui.queue_free()
+	return found
 
 func _picture(D, c: String, commit: String) -> void:
 	var UI = preload("res://ui/campaign/campaign_ui.gd")
