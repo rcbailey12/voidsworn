@@ -1202,7 +1202,7 @@ func entry_reason(id: String, q: int, r: int) -> String:
 	var why := ""
 	var u = unit(id)
 	if (R.SOLID != null and R.SOLID.has(R.hkey(q, r))) or R.blocks(R.terr(q, r)):
-		why = "Blocked by the %s at %d,%d." % [{"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(_blocker_kind(q, r), _blocker_kind(q, r)), q, r]
+		why = "Blocked by the %s on this hex." % [{"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(_blocker_kind(q, r), _blocker_kind(q, r))]   # Council 29 (issue 1401): no hex numbers on the board
 	elif not R.onBoard(q, r):
 		why = "Outside the playable area."
 	elif u != null:
