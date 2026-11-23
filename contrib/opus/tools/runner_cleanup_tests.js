@@ -10,6 +10,11 @@ const common = path.resolve(__dirname, '../../../tools/pc/runner_common.ps1');
 const janitor = path.join(path.dirname(common), 'janitor.ps1');
 const ownerFile = '.voidsworn-run-owner';
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner-cleanup-proof-'));
+// PR 1813 measured a 2.1x slowdown with overlapping PC lanes. Allow 65 s instead of 30 s per child.
+const childTimeout = 65000;
+// The first full dry scan still had folders left after 65 s with lanes A, B and D checking.
+// Allow 140 s for a Windows janitor scan (65 s x 2.1, rounded up).
+const janitorTimeout = windows ? 140000 : childTimeout;
 const temp = path.join(root, 'temp'), board = path.join(root, 'board');
 const mirror = path.join(root, 'mirror.git'), repo = path.join(board, 'repo');
 const profile = path.join(root, 'profile'), flag = path.join(profile, 'Downloads', 'voidsworn_test', 'gpu_go.txt');
@@ -20,12 +25,14 @@ function write(file, value) {
   fs.writeFileSync(file, value);
 }
 function read(file) { return fs.readFileSync(file, 'utf8'); }
-function execute(exe, args, input, extra = {}) {
+function execute(exe, args, input, extra = {}, timeout = childTimeout) {
   const merged = { ...env, ...extra };
   for (const key of Object.keys(merged)) if (merged[key] === null) delete merged[key];
-  const r = spawnSync(exe, args, { input, cwd: root, env: merged, encoding: 'utf8', windowsHide: true, timeout: 30000 });
-  if (r.error) throw r.error;
-  assert.equal(r.status, 0, `${exe} ${args.join(' ')}: ${r.stdout}\n${r.stderr}`);
+  // Janitor can start another PowerShell. Its working directory must survive fixture cleanup if its parent times out.
+  const r = spawnSync(exe, args, {
+    input, cwd: path.dirname(root), env: merged, encoding: 'utf8', windowsHide: true, timeout
+  });
+  assert.equal(r.status, 0, `${exe} ${args.join(' ')}: ${r.error || ''}\n${r.stderr}\n${r.stdout}`);
   return r.stdout.trim();
 }
 const git = (args, input) => execute('git', args, input);
@@ -551,7 +558,7 @@ try {
       ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', command], undefined,
       { JANITOR_PROOF_SCRIPT: janitor, JANITOR_PROOF_LOCK: heldPath, PC_RUN_SCRATCH: '', PC_TEST_GH_DB: '',
         JANITOR_PROOF_ACTIVE: activeMarker, JANITOR_PROOF_HELPER: path.join(helperLeased, '.voidsworn-run-active'), PC_TEST_JANITOR_NOW: fixtureNow.toISOString(),
-        PC_TEST_COMMAND_LINES: `fixture.exe --work "${legacyProcess}${path.sep}nested"\nfixture.exe ${legacyNear}-other`, ...extra });
+        PC_TEST_COMMAND_LINES: `fixture.exe --work "${legacyProcess}${path.sep}nested"\nfixture.exe ${legacyNear}-other`, ...extra }, janitorTimeout);
   }
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
   const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, genNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
@@ -842,10 +849,15 @@ try {
   assert.match(runJanitor(), /janitor skipped during the PC pause/);
   assert(fs.existsSync(pausedTemp));
   console.log('PASS janitor: dry and live decisions, retained edits and history, issue locks, age, safe paths, and the automatic rate limit');
+} catch (error) {
+  // Print the check failure before teardown so a Windows sharing error cannot hide it.
+  console.error(error);
+  process.exitCode = 1;
 } finally {
   for (const dir of fs.readdirSync(path.join(root, 'temp'), { withFileTypes: true })) {
     const locked = path.join(root, 'temp', dir.name, 'nested', 'sandbox-owned');
     if (fs.existsSync(locked)) fs.chmodSync(locked, 0o755);
   }
-  fs.rmSync(root, { recursive: true, force: true, maxRetries: 3 });
+  // Lane A exhausted the old 600 ms retry window. Six 100 ms backoff steps allow up to 2.1 s on a busy path.
+  fs.rmSync(root, { recursive: true, force: true, maxRetries: 6, retryDelay: 100 });
 }
