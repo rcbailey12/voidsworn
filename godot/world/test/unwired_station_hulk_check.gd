@@ -6,7 +6,7 @@ extends SceneTree
 #   hulks: A4P.HULKS names a hull for every faction in the rules FACTIONS table, every named code is a manifest ship of
 #     that faction, and the real board's _hulk() draws all six factions over a field of hulk hexes;
 #   band and identity: every faction's derelict finish keeps base albedo in the dull part of band 3 (A4P.HULK_BAND,
-#     0.04 to 0.12 linear), Eclipse hulks carry no green, and no faction wears the old shared soot.
+#     0.04 to 0.07 linear), Eclipse hulks carry no green, and no faction wears the old shared soot.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const A4P := preload("res://assets/ships/a4_props.gd")

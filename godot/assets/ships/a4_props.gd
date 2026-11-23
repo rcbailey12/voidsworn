@@ -350,9 +350,17 @@ static func hulk(code: String) -> Node3D:
 
 
 # R420 Law 1 band 3 (contrib/opus/plans/global_cohesion_standard.md): a lit hulk is a dead hull, so its effective base
-# albedo (paint texture times tint) sits in the dull lower part of band 3: 0.04 to 0.12 linear luminance, so no faction's
-# derelict (the Glasswrights' pale glass above all: Fable on PR 1772, H9) is the brightest thing in a graveyard.
-const HULK_BAND := Vector2(0.04, 0.12)
+# albedo (paint texture times tint) sits in the dull bottom of band 3: 0.04 to 0.07 linear luminance, so no faction's
+# derelict (the Glasswrights' pale glass above all: Fable on PR 1772, H9) is the brightest thing in a graveyard. The
+# ceiling was 0.12 until the PROPS_E pictures (Nov 22 2026): at 0.12 the Navy and Hullbreaker hulks read as live ships
+# under the key light (Board look-tune inside R420's band).
+const HULK_BAND := Vector2(0.04, 0.07)
+# Visible burn: scorch patches multiplied over the hull's own UVs, their share of the hull growing with wreck_soot
+# (Hullbreakers most, Navy least); a faction with wreck_soot 0 (Chorus, Glasswrights) and Eclipse obsidian get none.
+const BURN_EDGE := Vector2(0.3, 0.3)   # ramp edge = x + y * wreck_soot: the burnt share of the noise
+const BURN_DARK := 2.5                 # the patch multiplier is the faction's scorch colour times this, capped at 1
+const BURN_FREQ := 0.012               # about three patches across the hull's UV square
+static var _burn_cache := {}
 const DEAD_DIM := 0.6   # a dead hull with no lights: its paint dimmed before any soot
 const OBSIDIAN := Color(0.22, 0.19, 0.28)   # an Eclipse hulk's effective albedo: violet-black obsidian (R420 Law 3)
 const OBSIDIAN_ROUGH := 0.3                 # obsidian keeps a glassy sheen
@@ -468,4 +476,34 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 	var burn := Color(DEAD_DIM, DEAD_DIM, DEAD_DIM).lerp(Color(float(sc[0]), float(sc[1]), float(sc[2])), soot)
 	b.albedo_color = into_band(Color(c.r * burn.r, c.g * burn.g, c.b * burn.b, c.a), mean)
 	b.roughness = minf(1.0, src.roughness * (1.0 + 0.35 * soot))   # soot dulls metal; glass and chitin keep their gloss
+	if soot > 0.0:
+		b.detail_enabled = true
+		b.detail_blend_mode = BaseMaterial3D.BLEND_MODE_MUL
+		b.detail_uv_layer = BaseMaterial3D.DETAIL_UV_1
+		b.detail_albedo = burn_texture(fac, soot, sc)
 	return b
+
+
+# one scorch-patch texture per faction (white = untouched paint, the scorch multiplier where burnt), built once
+static func burn_texture(fac: String, soot: float, sc: Array) -> Texture2D:
+	if _burn_cache.has(fac):
+		return _burn_cache[fac]
+	var dark := Color(minf(1.0, float(sc[0]) * BURN_DARK), minf(1.0, float(sc[1]) * BURN_DARK),
+		minf(1.0, float(sc[2]) * BURN_DARK))
+	var edge := clampf(BURN_EDGE.x + BURN_EDGE.y * soot, 0.05, 0.9)
+	var g := Gradient.new()
+	g.offsets = PackedFloat32Array([0.0, edge, minf(edge + 0.12, 1.0), 1.0])
+	g.colors = PackedColorArray([dark, dark, Color.WHITE, Color.WHITE])
+	var nz := FastNoiseLite.new()
+	nz.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	nz.frequency = BURN_FREQ
+	nz.fractal_octaves = 4
+	nz.seed = hash(fac) & 0xffff
+	var t := NoiseTexture2D.new()
+	t.width = 256
+	t.height = 256
+	t.seamless = true
+	t.noise = nz
+	t.color_ramp = g
+	_burn_cache[fac] = t
+	return t
