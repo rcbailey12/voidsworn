@@ -249,6 +249,13 @@ func _hulk_checks() -> void:
 	var sh1 := PROPS.derelict_shared(plain, "corsair")
 	_report(sh1 == PROPS.derelict_shared(plain, "corsair") and sh1 != PROPS.derelict_shared(plain, "voidsworn"),
 		"hulks of one hull share their burnt materials, per faction")
+	# a freed hull's entries go when the next one is made (Antigravity audit, Nov 23): no pile-up across battles
+	var gone := StandardMaterial3D.new()
+	PROPS.derelict_shared(gone, "corsair")
+	var before := PROPS._derelict_cache.size()
+	gone = null
+	PROPS.derelict_shared(StandardMaterial3D.new(), "hegemony")
+	_report(PROPS._derelict_cache.size() == before, "a freed hull's burnt copies are dropped (%d entries, was %d)" % [PROPS._derelict_cache.size(), before])
 
 
 func _board(terrain: Dictionary, holes: Array, units: Array, map: Dictionary, radius: int, seed := 7) -> Node3D:

@@ -350,12 +350,21 @@ static func hulk(code: String) -> Node3D:
 
 # PR 1772 LOAD probe (Board, Nov 22): a graveyard reuses one burnt copy per source material and faction, so 31 hulks of
 # 8 hulls make one material per hull surface, not one per hulk surface. Nothing changes a hulk's material afterwards.
-static var _derelict_cache := {}
+# Each entry keeps a weak reference to its source: when a battle ends and the hull scene is freed, the next new entry
+# drops the stale ones, so burnt copies (and the textures they hold) never pile up battle after battle (Antigravity
+# audit on PR 1772, Nov 23).
+static var _derelict_cache := {}   # key -> [weakref(source material), burnt copy]
 static func derelict_shared(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 	var key := "%d|%s|%s" % [src.get_instance_id(), fac, old_path()]
-	if not _derelict_cache.has(key):
-		_derelict_cache[key] = derelict(src, fac)
-	return _derelict_cache[key]
+	var hit = _derelict_cache.get(key)
+	if hit != null and (hit[0] as WeakRef).get_ref() == src:
+		return hit[1]
+	for k in _derelict_cache.keys():
+		if (_derelict_cache[k][0] as WeakRef).get_ref() == null:
+			_derelict_cache.erase(k)
+	var made := derelict(src, fac)
+	_derelict_cache[key] = [weakref(src), made]
+	return made
 
 
 
