@@ -587,8 +587,6 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				var tip := from.lerp(to, smoothstep(0.0, 1.0, u))
 				var drift: Vector3 = (Vector3.UP + fx.rdir()) * 2.0 * ka
 				fx.spr(tip, lerpf(tf, ti, u), 0.52, col, 0.48, 0.5 * ka, 2.0 * ka, 20, drift, 0.8, 0.0, 0.0, 14.0 * size)
-			if not bool(tg.get("miss", false)):
-				_beam_end(fx, to, ti, tend - ti, col, ka)
 		"gauss":
 			var heavy = w >= 3
 			var wind = 0.75 if heavy else 0.25
