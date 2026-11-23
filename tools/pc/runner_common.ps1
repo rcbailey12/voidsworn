@@ -1543,9 +1543,81 @@ try {
       }
       return ''
     }
+    # Issue 1352: run one probe with a 20 s cap so a hung tool cannot hang the job. ok = it exited 0 in time.
+    function Invoke-Probe($exe, $argText) {
+      $r = New-Object PSObject -Property @{ ok = $false; out = '' }
+      $ea = $ErrorActionPreference
+      $proc = $null
+      try {
+        $ErrorActionPreference = 'Continue'
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = $exe
+        $psi.Arguments = $argText
+        $psi.UseShellExecute = $false
+        $psi.CreateNoWindow = $true
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true
+        $proc = [System.Diagnostics.Process]::Start($psi)
+        $outTask = $proc.StandardOutput.ReadToEndAsync()
+        $errTask = $proc.StandardError.ReadToEndAsync()
+        if ($proc.WaitForExit(20000)) {
+          $proc.WaitForExit()
+          $r.out = [string]$outTask.Result
+          $r.ok = ($proc.ExitCode -eq 0)
+        } else {
+          try { $proc.Kill() } catch { }
+        }
+      } catch { } finally {
+        $ErrorActionPreference = $ea
+        if ($proc) { try { $proc.Dispose() } catch { } }
+      }
+      return $r
+    }
+    # Issue 1352: the Pythons a tool may live in, first hit first: PIL_PYTHON, ComfyUI's portable Python, the Python
+    # Launcher's list (py -0p, newest first), then python on PATH. The Windows Store stub under WindowsApps is skipped.
+    $script:pyList = $null
+    function Get-PythonCandidates {
+      if ($null -ne $script:pyList) { return $script:pyList }
+      $list = @()
+      $seen = @{}
+      $raw = @()
+      $raw += , @($env:PIL_PYTHON, 'PIL_PYTHON')
+      $raw += , @((Join-Path $env:USERPROFILE 'Downloads\ComfyUI_windows_portable\python_embeded\python.exe'), 'ComfyUI portable Python')
+      $launcher = Get-Command -Name 'py' -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+      if ($launcher) {
+        $listing = Invoke-Probe $launcher.Source '-0p'
+        $found = @()
+        foreach ($line in @(([string]$listing.out) -split "[\r\n]+")) {
+          $m = [regex]::Match($line, '^\s*-(?:V:|)(\S+)\s+\*?\s*(\S.*?)\s*$')
+          if (-not $m.Success) { continue }
+          $ver = [version]'0.0'
+          $vm = [regex]::Match($m.Groups[1].Value, '(\d+\.\d+)')
+          if ($vm.Success) { $ver = [version]$vm.Groups[1].Value }
+          $found += New-Object PSObject -Property @{ ver = $ver; path = $m.Groups[2].Value; order = $found.Count }
+        }
+        foreach ($f in @($found | Sort-Object -Property @{ Expression = { $_.ver }; Descending = $true }, @{ Expression = { $_.order }; Descending = $false })) {
+          $raw += , @($f.path, 'py launcher')
+        }
+      }
+      foreach ($cmd in @(Get-Command -Name 'python' -All -CommandType Application -ErrorAction SilentlyContinue)) {
+        $raw += , @($cmd.Source, 'python on PATH')
+      }
+      foreach ($pair in $raw) {
+        $py = $pair[0]
+        if (-not $py -or -not (Test-Path -LiteralPath $py -PathType Leaf)) { continue }
+        $full = (Get-Item -LiteralPath $py).FullName
+        if ($full -match '[\\/]Microsoft[\\/]WindowsApps[\\/]') { continue }
+        if ($seen.ContainsKey($full.ToLowerInvariant())) { continue }
+        $seen[$full.ToLowerInvariant()] = $true
+        $list += New-Object PSObject -Property @{ path = $full; source = $pair[1] }
+      }
+      $script:pyList = $list
+      return $script:pyList
+    }
     foreach ($tool in @(([string]$args[2]) -split '[\s,;]+' | Where-Object { $_ })) {
       $name = $tool.ToLowerInvariant()
       $path = ''
+      $source = ''
       switch ($name) {
         'godot' {
           $listed = ''
@@ -1554,25 +1626,61 @@ try {
           $path = Find-Exe @($env:GODOT_EXE, $listed, (Join-Path $vt 'godot\Godot_v4.7.2-stable_win64_console.exe')) ''
         }
         'blender' { $path = Find-Exe @($env:BLENDER_EXE, (Join-Path $vt 'blender\blender-4.5.14-windows-x64\blender.exe')) '' }
-        'ffmpeg' { $path = Find-Exe @($env:FFMPEG_EXE, (Join-Path $vt 'ffmpeg\bin\ffmpeg.exe')) 'ffmpeg' }
+        'ffmpeg' {
+          # Issue 1352: first hit wins; a candidate counts only if "<exe> -version" exits 0. Settings and the PC's usual
+          # place first, then PATH, then imageio_ffmpeg's own answer from each candidate Python, then its binaries folder.
+          $tries = @()
+          $tries += , @($env:FFMPEG_EXE, 'FFMPEG_EXE')
+          $tries += , @((Join-Path $vt 'ffmpeg\bin\ffmpeg.exe'), 'voidsworn_test\ffmpeg\bin')
+          foreach ($cmd in @(Get-Command -Name 'ffmpeg' -All -CommandType Application -ErrorAction SilentlyContinue)) { $tries += , @($cmd.Source, 'PATH') }
+          foreach ($pair in $tries) {
+            if (-not $pair[0] -or -not (Test-Path -LiteralPath $pair[0] -PathType Leaf)) { continue }
+            $full = (Get-Item -LiteralPath $pair[0]).FullName
+            if ((Invoke-Probe $full '-version').ok) { $path = $full; $source = $pair[1]; break }
+            $lines += "skipped ffmpeg: $full (-version did not exit 0)"
+          }
+          if (-not $path) {
+            foreach ($py in @(Get-PythonCandidates)) {
+              $ask = Invoke-Probe $py.path '-c "import imageio_ffmpeg,sys; print(imageio_ffmpeg.get_ffmpeg_exe())"'
+              if (-not $ask.ok) { continue }
+              $answer = ''
+              foreach ($l in @(([string]$ask.out) -split "[\r\n]+")) { if ($l.Trim()) { $answer = $l.Trim() } }
+              if (-not $answer -or -not (Test-Path -LiteralPath $answer -PathType Leaf)) { continue }
+              $full = (Get-Item -LiteralPath $answer).FullName
+              if ((Invoke-Probe $full '-version').ok) { $path = $full; $source = "imageio_ffmpeg via $($py.path)"; break }
+              $lines += "skipped ffmpeg: $full (-version did not exit 0)"
+            }
+          }
+          if (-not $path) {
+            $seenBins = @{}
+            foreach ($py in @(Get-PythonCandidates)) {
+              $dir = Split-Path -Parent $py.path
+              foreach ($root in @((Join-Path $dir 'Lib\site-packages'), (Join-Path (Split-Path -Parent $dir) 'Lib\site-packages'))) {
+                $binDir = Join-Path $root 'imageio_ffmpeg\binaries'
+                if ($seenBins.ContainsKey($binDir.ToLowerInvariant()) -or -not (Test-Path -LiteralPath $binDir -PathType Container)) { continue }
+                $seenBins[$binDir.ToLowerInvariant()] = $true
+                foreach ($file in @(Get-ChildItem -LiteralPath $binDir -Filter 'ffmpeg*.exe' -File -ErrorAction SilentlyContinue | Sort-Object -Property Name -Descending)) {
+                  if ((Invoke-Probe $file.FullName '-version').ok) { $path = $file.FullName; $source = "imageio_ffmpeg binaries via $($py.path)"; break }
+                  $lines += "skipped ffmpeg: $($file.FullName) (-version did not exit 0)"
+                }
+                if ($path) { break }
+              }
+              if ($path) { break }
+            }
+          }
+        }
         'node' { $path = Find-Exe @($env:NODE_EXE, (Join-Path $vt 'node\node.exe')) 'node' }
         'pil' {
-          # Python with Pillow: ComfyUI's portable Python has it on this PC.
-          $pythons = @($env:PIL_PYTHON, (Join-Path $env:USERPROFILE 'Downloads\ComfyUI_windows_portable\python_embeded\python.exe'))
-          foreach ($py in $pythons) {
-            if (-not $py -or -not (Test-Path -LiteralPath $py -PathType Leaf)) { continue }
-            $ea = $ErrorActionPreference
-            try {
-              $ErrorActionPreference = 'Continue'
-              $null = & $py -c 'import PIL' 2>&1
-              if ($LASTEXITCODE -eq 0) { $path = (Get-Item -LiteralPath $py).FullName; break }
-            } catch { } finally { $ErrorActionPreference = $ea }
+          # Python with Pillow. Issue 1352: PIL_PYTHON, ComfyUI's portable Python, the Python Launcher's list, python on
+          # PATH. A candidate counts only if "-c import PIL" exits 0 (each probe capped at 20 s).
+          foreach ($py in @(Get-PythonCandidates)) {
+            if ((Invoke-Probe $py.path '-c "import PIL"').ok) { $path = $py.path; $source = $py.source; break }
           }
         }
         default { $lines += "MISSING ${name}: unknown tool name (known: godot, blender, ffmpeg, node, pil)"; $missing += $name; continue }
       }
       if ($path) {
-        $lines += "found ${name}: $path"
+        if ($source) { $lines += "found ${name}: $path ($source)" } else { $lines += "found ${name}: $path" }
         $sets += ('set "JW_' + $name.ToUpperInvariant() + '=' + $path + '"')
       } elseif ($name -ne $null -and $missing -notcontains $name) {
         $lines += "MISSING ${name}: set " + @{ godot = 'GODOT_EXE'; blender = 'BLENDER_EXE'; ffmpeg = 'FFMPEG_EXE'; node = 'NODE_EXE'; pil = 'PIL_PYTHON' }[$name] + ' or install it'

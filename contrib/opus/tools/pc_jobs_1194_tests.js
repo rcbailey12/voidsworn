@@ -127,7 +127,7 @@ const common = read(path.join(PC, 'runner_common.ps1'));
 const pre = common.slice(common.indexOf("elseif ($mode -eq 'preflight-tools')"), common.indexOf("elseif ($mode -eq 'model')"));
 for (const tool of ['godot', 'blender', 'ffmpeg', 'node', 'pil']) assert(pre.includes(`'${tool}'`), 'preflight knows ' + tool);
 assert(/if \(\$missing\.Count\) \{ exit 2 \}/.test(pre), 'preflight exits 2 on a missing tool');
-assert(pre.includes("-c 'import PIL'"), 'pil means a Python that imports Pillow');
+assert(pre.includes('-c "import PIL"'), 'pil means a Python that imports Pillow');
 assert(pre.includes("'tools.cmd'") && pre.includes("'set \"JW_' + $name.ToUpperInvariant()"), 'preflight hands the found paths to the job');
 const hc = common.slice(common.indexOf("elseif ($mode -eq 'hashcheck')"), common.indexOf("elseif ($mode -eq 'preflight-tools')"));
 assert(hc.includes("$guarded = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js', 'job_wrap.bat')"));
@@ -150,6 +150,66 @@ const doctorBat = read(path.join(PC, 'PC_DOCTOR.bat'));
 assert(doctorBat.includes('pc_doctor.ps1" -SampleSeconds %SAMPLE%') && doctorBat.includes('if /i "%~1"=="strict" set "SAMPLE=300"'));
 pass('PC_DOCTOR.bat is read only and shows owner, child, age and health for every claim');
 
+// ---------------------------------------------------------------- issue 1352: where ffmpeg and Pillow are looked for
+// Fake tools: .cmd stubs on Windows, /bin/sh scripts elsewhere, so the same cases run under Windows PowerShell 5.1 and pwsh.
+// The caller's runner hides the real PATH (the PC has a real python and ffmpeg), so "nothing found" is honest.
+const isWin = process.platform === 'win32';
+function lookupCases(run, base, label) {
+  const dir = fs.mkdtempSync(path.join(base, 'tools-'));
+  const stub = (name, winLines, shLines) => {
+    const file = path.join(dir, isWin ? name + '.cmd' : name);
+    fs.writeFileSync(file, isWin ? ['@echo off', ...winLines, ''].join('\r\n') : ['#!/bin/sh', ...shLines, ''].join('\n'));
+    if (!isWin) fs.chmodSync(file, 0o755);
+    return file;
+  };
+  const ffmpeg = (name, good) => stub(name, good ? ['echo ffmpeg version fake', 'exit /b 0'] : ['exit /b 3'], good ? ['echo "ffmpeg version fake"', 'exit 0'] : ['exit 3']);
+  const IMAGEIO = 'import imageio_ffmpeg,sys; print(imageio_ffmpeg.get_ffmpeg_exe())';
+  // A fake python: `-c "import PIL"` exits pil (0 or 1); the imageio_ffmpeg line prints the given path, or fails when none.
+  const python = (name, answer, pil) => stub(name,
+    [`if "%~2"=="import PIL" exit /b ${pil}`, answer ? `if "%~2"=="${IMAGEIO}" echo ${answer}& exit /b 0` : 'rem no imageio_ffmpeg', 'exit /b 1'],
+    [`case "$2" in`, '  "import PIL") exit ' + pil + ' ;;', answer ? `  *imageio_ffmpeg*) echo "${answer}"; exit 0 ;;` : '  *imageio_ffmpeg*) exit 1 ;;', 'esac', 'exit 1']);
+  const good = ffmpeg('good_ffmpeg', true);
+  const bad = ffmpeg('bad_ffmpeg', false);
+  const pyGood = python('py_good', good, 0);
+  const pyBadFfmpeg = python('py_bad_ffmpeg', bad, 0);
+  const pyNoPil = python('py_no_pil', null, 1);
+  let n = 0;
+  const go = (tools, env) => {
+    const out = path.join(dir, 'out' + (++n));
+    const r = run([out, tools], env);
+    const txt = fs.existsSync(path.join(out, 'preflight.txt')) ? read(path.join(out, 'preflight.txt')) : '';
+    const cmd = fs.existsSync(path.join(out, 'tools.cmd')) ? read(path.join(out, 'tools.cmd')) : '';
+    return { code: r.status, txt, cmd, all: label + ' ' + r.stdout + r.stderr + txt };
+  };
+  // a fake python whose imageio_ffmpeg answer points at a fake ffmpeg is found and named
+  let r = go('ffmpeg pil', { PIL_PYTHON: pyGood });
+  assert.equal(r.code, 0, r.all);
+  assert(r.txt.includes(`found ffmpeg: ${good} (imageio_ffmpeg via ${pyGood})`), r.all);
+  assert(r.txt.includes(`found pil: ${pyGood} (PIL_PYTHON)`), r.all);
+  assert(r.cmd.includes(`set "JW_FFMPEG=${good}"`) && r.cmd.includes(`set "JW_PIL=${pyGood}"`), r.all);
+  // FFMPEG_EXE still wins first
+  r = go('ffmpeg', { FFMPEG_EXE: good, PIL_PYTHON: pyGood });
+  assert.equal(r.code, 0, r.all);
+  assert(r.txt.includes(`found ffmpeg: ${good} (FFMPEG_EXE)`), r.all);
+  // a fake ffmpeg whose -version fails is skipped, and the next source is used
+  r = go('ffmpeg', { FFMPEG_EXE: bad, PIL_PYTHON: pyGood });
+  assert.equal(r.code, 0, r.all);
+  assert(r.txt.includes(`skipped ffmpeg: ${bad}`) && r.txt.includes(`found ffmpeg: ${good} (imageio_ffmpeg via ${pyGood})`), r.all);
+  // a Python that names a broken ffmpeg gives nothing: skipped, then MISSING with exit 2
+  r = go('ffmpeg', { PIL_PYTHON: pyBadFfmpeg });
+  assert.equal(r.code, 2, r.all);
+  assert(r.txt.includes(`skipped ffmpeg: ${bad}`) && r.txt.includes('MISSING ffmpeg: set FFMPEG_EXE or install it'), r.all);
+  // a Python without Pillow does not count for pil
+  r = go('pil', { PIL_PYTHON: pyNoPil });
+  assert.equal(r.code, 2, r.all);
+  assert(r.txt.includes('MISSING pil: set PIL_PYTHON or install it') && !r.txt.includes('found pil'), r.all);
+  // nothing found: the old lines, exit 2
+  r = go('ffmpeg pil', {});
+  assert.equal(r.code, 2, r.all);
+  assert(r.txt.includes('MISSING ffmpeg: set FFMPEG_EXE or install it') && r.txt.includes('MISSING pil: set PIL_PYTHON or install it'), r.all);
+  assert(r.txt.includes('STOPPED: missing tools: ffmpeg, pil'), r.all);
+  pass(`${label}: preflight finds ffmpeg through a Python's imageio_ffmpeg and names the source, skips an ffmpeg whose -version fails, still says MISSING (exit 2)`);
+}
 // ---------------------------------------------------------------- PowerShell 7 (GitHub's Linux runners have pwsh)
 const hasPwsh = process.platform !== 'win32' && !spawnSync('pwsh', ['-v'], { encoding: 'utf8' }).error;
 if (hasPwsh) {
@@ -204,6 +264,15 @@ if (hasPwsh) {
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert(/gpu_slot_1: issue-1194 pwsh, shared weight 2, age 2\.0 h/.test(r.stdout) && /watchdog: PID 999999 GONE/.test(r.stdout), r.stdout);
   assert(/gpu_slot_2: CORRUPT/.test(r.stdout) && read(path.join(vt, 'gpu_slot_2')) === 'not json', r.stdout);
+  {
+    // pwsh found by absolute path through a PATH that holds only a link to it, so no host python or ffmpeg is seen
+    const which = spawnSync('sh', ['-c', 'command -v pwsh'], { encoding: 'utf8' });
+    const bin = path.join(temp, 'isolated_bin');
+    fs.mkdirSync(bin);
+    fs.symlinkSync(fs.realpathSync(which.stdout.trim()), path.join(bin, 'pwsh'));
+    lookupCases((tail, extra) => spawnSync(path.join(bin, 'pwsh'), ['-NoProfile', '-File', path.join(PC, 'runner_common.ps1'), 'preflight-tools', ...tail],
+      { encoding: 'utf8', env: { ...process.env, USERPROFILE: temp, PATH: bin, FFMPEG_EXE: '', PIL_PYTHON: '', ...extra } }), temp, 'pwsh');
+  }
   pass('pwsh: the scripts parse, the preflight finds and misses tools (exit 2), strict hashcheck stops (exit 14), the doctor reads claims');
 } else if (process.platform !== 'win32') console.log('SKIP pwsh runs: no PowerShell 7 on this machine');
 
@@ -244,6 +313,16 @@ function job(name, body, extra = {}) {
   const st = fs.existsSync(path.join(out, 'status.txt')) ? read(path.join(out, 'status.txt')) : '';
   const done = fs.existsSync(path.join(out, 'done.txt')) ? read(path.join(out, 'done.txt')).trim() : '';
   return { code: r.status, text: (r.stdout || '') + (r.stderr || ''), st, done, out };
+}
+
+{
+  // Windows PowerShell 5.1 by absolute path, with a PATH that holds nothing (no real python, py or ffmpeg is seen)
+  const psExe = path.join(process.env.SystemRoot || 'C:\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+  const isolated = fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()), 'pc1352-'));
+  const emptyBin = path.join(isolated, 'empty_bin');
+  fs.mkdirSync(emptyBin);
+  lookupCases((tail, extra) => spawnSync(psExe, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(PC, 'runner_common.ps1'), 'preflight-tools', ...tail],
+    { encoding: 'utf8', windowsHide: true, timeout: 240000, env: { ...process.env, USERPROFILE: path.join(isolated, 'profile'), PATH: emptyBin, FFMPEG_EXE: '', PIL_PYTHON: '', ...extra } }), isolated, 'Windows PowerShell 5.1');
 }
 
 const mixed = job('mixed', [
