@@ -15,6 +15,7 @@ const UI := preload("res://ui/campaign/campaign_ui.gd")
 const GS := preload("res://ui/theme/glass_shell.gd")
 const Choice := preload("res://ui/campaign/choice_button.gd")
 const MapChart := preload("res://ui/campaign/map3d.gd")
+const RowHover := preload("res://ui/campaign/row_hover.gd")
 var fails := 0
 
 
@@ -457,6 +458,7 @@ func campaign_checks(snd: FakeSound) -> void:
 	check(C.RUN != null and str(C.RUN.get("aspect")) == pick_id and str(C.page["kind"]) != "aspect", "Launch takes the picked aspect and starts the run (page %s)" % str(C.page["kind"]))
 	await reward_checks(C, ui)
 	await map_input_checks(C, ui, snd)
+	await row_hover_checks(C, ui)
 	await shipyard_and_prize_checks(C, ui)
 	ui.queue_free(); UiScale.set_player(1.0)
 	await frames()
@@ -545,9 +547,7 @@ func map_input_checks(C, ui, snd: FakeSound) -> void:
 	snd.heard.clear()
 	chart._gui_input(click)
 	check(ui.picked == chosen and chart.flown == "" and snd.heard == ["ui_click"], "single map click picks with the click cue")
-	click.double_click = true
-	chart._gui_input(click)
-	check(chart.flown == "", "map double click only picks")
+	# Issue 1801's map input check covers R424 double-click travel.
 	chart.pointed = first
 	chart._gui_input(InputEventMouseMotion.new())
 	for code in [KEY_ENTER, KEY_SPACE]:
@@ -576,6 +576,87 @@ func map_input_checks(C, ui, snd: FakeSound) -> void:
 	ui._acts = real_acts
 	ui.map3d = real_chart
 	chart.queue_free()
+	await frames()
+
+
+func hover_card(node: Node) -> Rect2:
+	for child in node.get_children(true):
+		if child is Control and child.name == "RowHoverCard" and child.is_visible_in_tree():
+			return (child as Control).get_global_rect()
+		if child is PopupPanel and child.visible:
+			return Rect2(child.position, child.size)
+		var nested := hover_card(child)
+		if nested.has_area(): return nested
+	return Rect2()
+
+
+func move_pointer(point: Vector2) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.position = point
+	root.push_input(motion)
+
+
+func check_row_hover(row: Control, column: Control, label: String) -> void:
+	move_pointer(row.get_global_rect().get_center())
+	var delay := float(ProjectSettings.get_setting("gui/timers/tooltip_delay_sec", 0.5))
+	await create_timer(delay + 0.1).timeout
+	await frames(2)
+	var card := hover_card(root)
+	check(card.has_area() and root.get_visible_rect().encloses(card), "%s hover card fits the viewport (%s)" % [label, card])
+	check(card.has_area() and not card.intersects(row.get_global_rect()) and not card.intersects(column.get_global_rect()),
+		"%s hover card clears the hovered row and its column" % label)
+	var bounds := root.get_visible_rect()
+	var leave_y := bounds.end.y - 2.0 if row.get_global_rect().get_center().y < bounds.get_center().y else 2.0
+	move_pointer(Vector2(2, leave_y))
+	await frames()
+	check(not hover_card(root).has_area(), "%s hover card clears when the pointer leaves" % label)
+
+
+func row_hover_checks(C, ui) -> void:
+	var route_index: int = ui._routes.find_custom(func(r): return r["id"] != ui.picked and not ui._detail_text(r).is_empty())
+	check(route_index >= 0, "M1 has an unselected route with hover details")
+	if route_index >= 0:
+		var picked: String = ui.picked
+		await check_row_hover(ui._rows[route_index]["btn"], ui.page_box.find_child("OrdersSheet", true, false), "M1 route")
+		check(ui.picked == picked, "M1 hovering a route keeps the selected stop")
+	C.act("fleetScreen"); await frames()
+	var manifest = ui.fleet_manifest
+	check(is_instance_valid(manifest) and manifest.rows.size() > 1, "F1 has adjacent fleet rows")
+	if is_instance_valid(manifest) and manifest.rows.size() > 1:
+		var selected: String = manifest.state["uid"]
+		var other: Dictionary = manifest.rows.filter(func(row): return row["ship"]["uid"] != selected)[0]
+		await check_row_hover(other["button"], manifest.manifest_scroll, "F1 ship")
+		check(manifest.state["uid"] == selected, "F1 hovering a ship keeps the selected ship")
+	var layer := CanvasLayer.new()
+	layer.layer = 50
+	root.add_child(layer)
+	var host := Control.new()
+	host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(host)
+	var row := Button.new()
+	host.add_child(row)
+	var hover := RowHover.new()
+	hover.column = row
+	host.add_child(hover)
+	row.tooltip_text = "Route or ship details\nA second line of text"
+	hover.watch(row)
+	var viewport := root.get_visible_rect().size
+	for edge in ["top", "right", "bottom", "left"]:
+		match edge:
+			"top":
+				row.position = Vector2.ZERO
+				row.size = Vector2(viewport.x, 50)
+			"right":
+				row.position = Vector2(viewport.x - 180, viewport.y / 2)
+				row.size = Vector2(180, 50)
+			"bottom":
+				row.position = Vector2(0, viewport.y - 50)
+				row.size = Vector2(viewport.x, 50)
+			"left":
+				row.position = Vector2(0, viewport.y / 2)
+				row.size = Vector2(180, 50)
+		await check_row_hover(row, row, "M1/F1 %s edge" % edge)
+	layer.queue_free()
 	await frames()
 
 

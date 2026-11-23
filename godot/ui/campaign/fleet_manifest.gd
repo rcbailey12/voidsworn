@@ -4,6 +4,7 @@ extends Control
 const GS = preload("res://ui/theme/glass_shell.gd")
 const View = preload("res://campaign/campaign_view.gd")
 const Portrait = preload("res://ui/campaign/fleet_portrait.gd")
+const RowHover = preload("res://ui/campaign/row_hover.gd")
 var ui
 var C
 var state: Dictionary
@@ -23,6 +24,7 @@ var workspace: Control
 var detail: Control
 var primary: Button
 var manifest_scroll: ScrollContainer
+var row_hover: RowHover
 
 func setup(host, data: Dictionary, local_state: Dictionary) -> void:
 	ui = host; C = ui.C; state = local_state; back = str(data.get("back", "")); k = ui.k
@@ -104,6 +106,9 @@ func build() -> void:
 	at(rule, Rect2(72, 184, width - 144, 1))
 	manifest_scroll = ScrollContainer.new(); manifest_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	at(manifest_scroll, Rect2(50, 210, manifest_w + 22, height - 314))
+	row_hover = RowHover.new()
+	row_hover.column = manifest_scroll
+	row_hover.gap = ui.px(12)
 	var list = VBoxContainer.new(); list.size_flags_horizontal = Control.SIZE_EXPAND_FILL; list.add_theme_constant_override("separation", 0)
 	manifest_scroll.add_child(list)
 	for group in [damaged, C.RUN["fleet"].filter(func(s): return not damaged.has(s))]:
@@ -135,6 +140,7 @@ func build() -> void:
 	GS.bind_sheet_label(primary, label, GS.TEXT)
 	GS.bind_sheet_label(primary, key, GS.TEXT2)
 	refresh()
+	add_child(row_hover)
 
 func row(ship: Dictionary, damaged: bool, parent: Control) -> void:
 	var hull = C.HULLS[ship["tpl"]]; var derived = C.derive(ship)
@@ -152,6 +158,7 @@ func row(ship: Dictionary, damaged: bool, parent: Control) -> void:
 			(func() -> void: if is_instance_valid(b) and b.has_focus(): b.release_focus()).call_deferred())
 	var ability = C.ABILITIES.get(hull.get("ab"), {})
 	b.tooltip_text = str(ship["name"]) + "\n" + str(hull["n"]) + " Mk " + C.roman(ship["mk"]) + "\nHull " + C.hull_text(ship["hp"]) + " / " + C.hull_text(derived["maxHp"]) + "\n" + str(ability.get("n", "")) + ": " + str(ability.get("d", ""))
+	row_hover.watch(b)
 	picture(ship, Rect2(22, 5, 150, 40), b)
 	head(ship["name"], Rect2(188, 0, available if wrap_class else name_w + 2, name_height), 28, b)
 	words(hull["n"], Rect2(188 if wrap_class else 206 + name_w, name_height - 4 if wrap_class else 9, available if wrap_class else cls_w + 3, 26), 17, GS.TEXT2, null, b)

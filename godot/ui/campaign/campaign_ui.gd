@@ -7,6 +7,7 @@ extends CanvasLayer
 # Colours and fonts match the battle HUD (godot/ui/battle/hud.gd). Sizes scale with the window height (designed at 1080).
 
 const CampaignTips = preload("res://ui/campaign/campaign_tips.gd")
+const RowHover = preload("res://ui/campaign/row_hover.gd")
 var teaching: Node
 const Map3D = preload("res://ui/campaign/map3d.gd")
 const ChoiceScript = preload("res://ui/campaign/choice_button.gd")
@@ -72,7 +73,8 @@ var _page_key: Array = []
 var _page_focus_key := ""
 var _page_focus_point := Vector2.INF
 var _dirty := false
-var _yard_bar: Button = null     # the shipyard's repair bar of the last render (the teaching card keeps off it)
+var _yard_bar: Button = null
+var _yard_tip_dock: HBoxContainer
 var _fs_name := ""
 
 func _ready() -> void:
@@ -285,7 +287,9 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 	# issue 1559 item 7: in a dialog its number key shows after the label, as on the choices and the finishing action (a
 	# boon's 4 and 5 ran Reroll and Decline with no cap shown, and Decline cannot be taken back)
 	var kk = _key_for(list, act, arg)
-	if kk != "":
+	if kk != "" and act in ["boonReroll", "boonDecline"]:
+		_boon_shortcut(b, kk)
+	elif kk != "":
 		var cap = keycap(kk); cap.mouse_filter = Control.MOUSE_FILTER_IGNORE; cap.name = "keycap"
 		cap.anchor_left = 1.0; cap.anchor_right = 1.0; cap.anchor_top = 0.5; cap.anchor_bottom = 0.5
 		cap.offset_left = -px(10); cap.offset_right = -px(10); cap.offset_top = 0; cap.offset_bottom = 0
@@ -300,6 +304,25 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 	b.pressed.connect(func(): _campaign_action(act, aa))
 	Kit.wire_sound(b, cue_role(act, "primary" if primary and not act in ["pickFaction", "pickAdmiral", "progTab"] else "quiet"))
 	return b
+
+func _boon_shortcut(b: Button, key: String) -> void:
+	var hint := lbl(key, 17, BONE2, font_num_b, false)
+	hint.name = "ShortcutHint"
+	hint.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	hint.offset_left = -px(10)
+	hint.offset_right = -px(10)
+	hint.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	hint.grow_vertical = Control.GROW_DIRECTION_BOTH
+	b.add_child(hint)
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.theme = theme_main
+	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+		if not b.has_theme_stylebox(state): continue
+		var box := b.get_theme_stylebox(state).duplicate() as StyleBox
+		box.set_content_margin(SIDE_RIGHT, maxf(box.get_margin(SIDE_RIGHT), hint.get_minimum_size().x + px(20)))
+		b.add_theme_stylebox_override(state, box)
+	GS.bind_sheet_label(b, hint, BONE2)
+
 # The screen's finishing action (Continue, Confirm, Plot a course, Done, Leave shipyard): the filled ember button, its label
 # in action caps, its key cap after the label in a dialog (ui_style.md 7). It sits at the bottom right of its screen or dialog.
 func fin(text: String, act: String, arg = "", list = null) -> Button:
@@ -444,6 +467,7 @@ func render() -> void:
 	if behind: bg.color = Color(INK, 0.86)
 	if map3d.visible: map3d.backdrop = behind; map3d.sync()
 	var body: Control = null
+	_yard_tip_dock = null
 	match pg["kind"]:
 		"title": body = _title()
 		"admiral": body = _desk()
@@ -488,10 +512,8 @@ func _teaching_screen() -> void:
 			"map": ids = ["c_map", "c_clock"]
 			"shipyard": ids = ["c_shipyard"]
 			"end": ids = [] # First-loss teaching is on The record R, beside the receipt.
-	# the first-visit card stays off the Map key and the Dossier (it waits while one is open) and off the shipyard's repair bar
-	var clear: Array = []
-	if kind == "shipyard" and modal == "" and _yard_bar != null and is_instance_valid(_yard_bar): clear.append(_yard_bar)
-	teaching.set_context(_overlay != "", clear)
+	# The map tip waits while a drawer is open. The shipyard tip has a row above the cards.
+	teaching.set_context(_overlay != "", _yard_tip_dock if modal == "" else null)
 	teaching.open_screen(kind + "|" + sector + "|" + pos + "|" + modal, ids)
 
 func _focus_first(keep_key := "", sc: ScrollContainer = null, point := Vector2.INF) -> void:
@@ -1340,7 +1362,18 @@ func _briefing_column() -> Control:
 	upper.minimum_size_changed.connect(func(): fit_fleet.call_deferred())
 	v.resized.connect(func(): fit_fleet.call_deferred())
 	fit_fleet.call_deferred()
-	return col
+	# A sibling of the sheet can draw beside it, outside the routes' scroll clipping.
+	var host := Control.new()
+	host.set_anchors_preset(Control.PRESET_FULL_RECT)
+	host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	host.add_child(col)
+	var hover := RowHover.new()
+	hover.column = col
+	hover.gap = px(12)
+	for row in _rows:
+		hover.watch(row["btn"])
+	host.add_child(hover)
+	return host
 
 func _objective_line(r: Dictionary) -> String:
 	var short = {"Engagement": "Break their fleet to make it flee.", "Ambush": "Break the fleets closing in from both sides.", "Hold the station": "Keep enemies off the station through round 6.", "Hunt": "Destroy their flagship before round 6 ends.", "Intercept": "Destroy the transports before they escape.", "Breakthrough": "Get your ships onto the far jump hexes.", "Relay": "Hold the relay, unopposed, for 3 rounds.", "Decapitation": "Destroy their flagship to scatter the fleet.", "Sector flagship": "Beat the command ship to end the sector."}
@@ -1820,8 +1853,13 @@ func _shipyard() -> Control:
 	v.add_child(lbl("Repairs cost %s per 2 hull, rounded up. A Mark upgrade adds 20%% hull and shields and 15%% damage. New hulls come with a fresh %s." % [(("1" if pm == 1.0 else C.numstr(snappedf(pm, 0.0001))) + (hw if hw != "" else (" credit" if pm == 1.0 else " credits"))), str(C.CAPTAINS.get(str(R["fac"]), C.CAPTAINS["voidsworn"])["ranks"][0]).to_lower()], 18, BONE2))
 	var allMiss = 0.0
 	for s in R["fleet"]: allMiss += float(C.derive(s)["maxHp"]) - float(s["hp"])
-	_yard_bar = abtn(("Repair entire fleet for " + C.numstr(ceil(allMiss / 2.0 * pm)) + hw) if allMiss > 0 else "Fleet fully repaired", "repairAll")   # the teaching card keeps off this bar
+	_yard_bar = abtn(("Repair entire fleet for " + C.numstr(ceil(allMiss / 2.0 * pm)) + hw) if allMiss > 0 else "Fleet fully repaired", "repairAll")
 	add(v, _yard_bar)
+	_yard_tip_dock = hbox(0)
+	_yard_tip_dock.alignment = BoxContainer.ALIGNMENT_END
+	_yard_tip_dock.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_yard_tip_dock.hide()
+	v.add_child(_yard_tip_dock)
 	var cores = C.or_(R.get("cores"), [])
 	if not cores.is_empty():   # issue 1178: Eclipse core recovery
 		v.add_child(sec_head("Recovered cores"))
