@@ -117,14 +117,17 @@ func _run() -> void:
 
 	# 2. near fade
 	var src: String = FileAccess.get_file_as_string("res://world/world_rocks.gd")
+	# every rock shader in the file (one since Ryan scrapped the crystal clusters, issue 1361)
+	var shaders := src.count("shader_type spatial")
+	_check(shaders >= 1, "world_rocks.gd holds no rock shader")
 	var fades := src.count("camera_cover = smoothstep(cam_near + 1.5, cam_near + 1.5 + max(1.0, radius * 0.25), min(clearance, depth_clear));")
-	_check(fades == 2, "both rock shaders must fade from the live near plane (found %d of 2)" % fades)
-	_check(src.count("global uniform float cam_near;") == 2, "both rock shaders must read the cam_near global")
+	_check(fades == shaders, "every rock shader must fade from the live near plane (found %d of %d)" % [fades, shaders])
+	_check(src.count("global uniform float cam_near;") == shaders, "every rock shader must read the cam_near global")
 	_check(ProjectSettings.has_setting("shader_globals/cam_near"), "project.godot must declare the cam_near shader global")
 	# Artoo on PR 1306: the fade must measure from the rig's published camera, never the pass's own VIEW_MATRIX, so a
 	# shadow pass (seen from the light) fades a rock the same way the view does.
-	_check(src.count("vec3 eye = cam_eye.w > 0.5 ? cam_eye.xyz : CAMERA_POSITION_WORLD;") == 2, "both rock fades must measure from the cam_eye global")
-	_check(src.count("float depth_clear = dot(MODEL_MATRIX[3].xyz - eye, fwd) - radius;") == 2, "both rock fades must take depth along cam_fwd")
+	_check(src.count("vec3 eye = cam_eye.w > 0.5 ? cam_eye.xyz : CAMERA_POSITION_WORLD;") == shaders, "every rock fade must measure from the cam_eye global")
+	_check(src.count("float depth_clear = dot(MODEL_MATRIX[3].xyz - eye, fwd) - radius;") == shaders, "every rock fade must take depth along cam_fwd")
 	_check(src.count("(VIEW_MATRIX * vec4(MODEL_MATRIX[3].xyz") == 0, "the rock fade must not use the pass's VIEW_MATRIX")
 	_check(ProjectSettings.has_setting("shader_globals/cam_eye") and ProjectSettings.has_setting("shader_globals/cam_fwd"), "project.godot must declare cam_eye and cam_fwd")
 	for radius in [26.0, 45.0, 100.0, 170.0]:

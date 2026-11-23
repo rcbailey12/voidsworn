@@ -1,8 +1,8 @@
 extends RefCounted
 # The game's name, its title-screen line and its type faces, in one place for every G2 screen (title, settings, battle
-# HUD, campaign fallback). Lore round 5 (hard sci-fi): the blackletter display face is retired. Headers use Michroma (wide
-# sci-fi display face) and small labels Oxanium small caps, the same faces G3's campaign map uses
-# (godot/ui/campaign/fonts, OFL); body text stays Barlow Semi Condensed.
+# HUD, campaign fallback). One font set (R436, issue 1406): Michroma is the title wordmark only; headers and small caps
+# labels use Big Shoulders Display, body text Barlow and figures Azeret Mono, the same faces as the orders kit
+# (godot/ui/theme/fonts, OFL). Oxanium, Chakra Petch and Barlow Semi Condensed are no longer used on screen.
 #
 # Renaming the game: change TITLE (and TAGLINE) here only. Both follow contrib/opus/compute/rename_map_final.md. The title screen fits any
 # length on one line; the window title follows TITLE.
@@ -10,9 +10,8 @@ extends RefCounted
 const TITLE := "Embers of the Hollow Sun"   # lore round 8, approved by Ryan Oct 27 (FINDINGS R59)
 const TAGLINE := "Command a fleet through three contested sectors to the Hollow Sun. Every hull you lose stays lost, and so does its captain."
 
-const DISPLAY_PATH := "res://ui/campaign/fonts/Michroma-Regular.ttf"
-const CAPS_PATH := "res://ui/campaign/fonts/Oxanium-Variable.ttf"
-const BODY_DIR := "res://ui/battle/fonts/"
+const WORDMARK_PATH := "res://ui/campaign/fonts/Michroma-Regular.ttf"   # R436 C28: Michroma is the wordmark only
+const BODY_DIR := "res://ui/theme/fonts/"
 const GS := preload("res://ui/theme/glass_shell.gd")
 
 # KEEL uses the same orders-sheet colours and faces as the other game screens.
@@ -46,34 +45,39 @@ static func load_font(p: String) -> Font:
 		ff.data = FileAccess.get_file_as_bytes(p)
 		f = ff
 	if f == null:
-		f = body_semi() if p != BODY_DIR + "BarlowSemiCondensed-SemiBold.ttf" else FontFile.new()
+		f = body_semi() if p != BODY_DIR + "Barlow-Medium.ttf" else FontFile.new()
 	_cache[p] = f
 	return f
 
 
-# headers: the title logo, "Round 1", banners, end card, menu and panel titles
+# the game's name on the title screen, and nothing else (R436 C28): Michroma
+static func wordmark() -> Font:
+	return load_font(WORDMARK_PATH)
+
+
+# headers: "Round 1", banners, end card, menu and panel titles (R436 C28): Big Shoulders Display, the orders sheet's head face
 static func display() -> Font:
-	return load_font(DISPLAY_PATH)
+	return GS.sheet_name()
 
 
-# small caps labels (section heads): Oxanium semi-bold, letter-spaced; pass the text upper-cased
+# small caps labels (section heads): Big Shoulders Display, letter-spaced; pass the text upper-cased
 static func caps() -> Font:
 	if _cache.has("caps"):
 		return _cache["caps"]
 	var v := FontVariation.new()
-	v.base_font = load_font(CAPS_PATH)
+	v.base_font = load_font("res://ui/theme/fonts/BigShouldersDisplay-VF.ttf")
 	v.spacing_glyph = 1
-	v.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): 600}
+	v.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): 700}
 	_cache["caps"] = v
 	return v
 
 
 static func body() -> Font:
-	return load_font(BODY_DIR + "BarlowSemiCondensed-Regular.ttf")
+	return load_font(BODY_DIR + "Barlow-Regular.ttf")
 
 
 static func body_semi() -> Font:
-	return load_font(BODY_DIR + "BarlowSemiCondensed-SemiBold.ttf")
+	return load_font(BODY_DIR + "Barlow-Medium.ttf")
 
 
 # the largest size up to max_size at which text fits in width pixels on one line

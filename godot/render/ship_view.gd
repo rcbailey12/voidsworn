@@ -32,6 +32,8 @@ var hull_base := Vector3.ZERO
 var hull_lift := 0.0         # fitted hull's height above its rules hex; movement still owns the root
 var hull_basis := Basis.IDENTITY # the hull's fitted basis (scale, mirror, yaw fix); bank and pitch are laid over it
 var a4 := false              # an A4 kit ship (not mirrored)
+var hull_source := ""        # issue 1410: which manifest section the drawn hull loaded from ("ships", "hi", "hulls"), "" before setup
+var hull_res := ""           # issue 1410: the resource path that loaded (read by render/hull_age.gd; "" for the placeholder block)
 
 static var _manifest = null
 # the cache manifest ShipView reads; a test points it at its own cache (render/test/install_refresh_check.gd, issue 592)
@@ -124,6 +126,8 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	hull = Node3D.new()
 	hull.name = "hull"
 	hull_pivot.add_child(hull)
+	hull_source = ""
+	hull_res = ""
 	var man := manifest()
 	var made := false
 	# A4's kit ship when it is built (true chirality: no mirror; keeps skin_<n> patches and hp_* hard points for fx)
@@ -134,12 +138,16 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 			hull.add_child(inst0)
 			made = true
 			a4 = true
+			hull_source = "ships"
+			hull_res = str(man["ships"][code]["res"])
 	if not made and use_hi and man.has("hi") and man["hi"].has(code):
 		var ps = load(man["hi"][code]["res"])
 		if ps is PackedScene:
 			var inst: Node3D = (ps as PackedScene).instantiate()
 			hull.add_child(inst)
 			made = true
+			hull_source = "hi"
+			hull_res = str(man["hi"][code]["res"])
 	if not made and man.has("hulls") and man["hulls"].has(code):
 		var mesh = load(man["hulls"][code]["res"])
 		if mesh is Mesh:
@@ -147,6 +155,8 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 			mi.mesh = mesh
 			hull.add_child(mi)
 			made = true
+			hull_source = "hulls"
+			hull_res = str(man["hulls"][code]["res"])
 	if not made:
 		# no built hull (a copy of the project without gen/): a plain block, as an ArrayMesh like every real hull, since
 		# G4's fx reads surface formats and arrays from the ship's meshes (primitive meshes have no surface_get_format)

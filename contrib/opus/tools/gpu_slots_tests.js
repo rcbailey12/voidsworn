@@ -442,11 +442,9 @@ async function windowsWatchdog() {
   put(path.join(home, 'gpu_go.txt'), 'GPU cleared');
   function fakeExecutable(source, name) {
     const target = path.join(home, name);
-    try { fs.linkSync(source, target); }
-    catch (e) {
-      if (e.code !== 'EPERM' && e.code !== 'EXDEV') throw e;
-      fs.copyFileSync(source, target);
-    }
+    // Always copy: hard links to node.exe and blender.exe left in kept TEMP scratch pushed node.exe to NTFS's
+    // 1023-link limit on the PC (issue 1854), and a running exe's links cannot be deleted.
+    fs.copyFileSync(source, target);
     return target;
   }
   const probe = path.join(home, 'probe.js');
