@@ -282,6 +282,9 @@ ZONE_ROLE = {
     'gland': 'gland', 'vat': 'gland',
     'bonefr': 'bone',
     'gw_in_frame': 'glass_strut', 'gw_in_amber': 'glass', 'gw_in_green': 'glass', 'gw_in_violet': 'glass',
+    # CD5 (I8_37) builds its insides in its own zones; same roles as the shared Glasswright ones
+    'cd5_frame': 'glass_strut', 'cd5_silver': 'glass_strut', 'cd5_amber': 'glass', 'cd5_violet': 'glass', 'cd5_green': 'glass',
+    'cd5_clear': 'glass',
 }
 
 
