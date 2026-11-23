@@ -36,7 +36,7 @@ func bind(campaign) -> void:
 
 func _ready() -> void:
 	k = load("res://ui/ui_scale.gd").k_for(get_viewport().get_visible_rect().size)   # the one shared law (ui_spec.md section 4)
-	font_goth = load("res://ui/battle/brand.gd").display()  # the sci-fi display face (lore round 5)
+	font_goth = load("res://ui/battle/brand.gd").display()  # the head face, Big Shoulders Display (R436 C28)
 	root = Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(root)

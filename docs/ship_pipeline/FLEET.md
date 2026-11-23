@@ -10,8 +10,6 @@ has the new recipe file layout. It does not prove the approved look is in those 
 column says what Ryan accepted and what is still pending, and issue 1410 checks the model the game renders. None
 of this is the playable exe (that is a separate snapshot).
 
-**Totals:** 36 ship slots. 27 new builds installed, 2 with a build sheet but the old hull in game, 0 with a picked concept only, 6 old with no pick yet, 1 kept on purpose.
-
 ## Sunward Crusade (`voidsworn`)
 
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |

@@ -1,5 +1,7 @@
 @echo off
 rem Run the Godot balance sim. Double-click for campaign, or pass mode, count, and nopause.
+rem Campaign and campaignrewards report all six factions by default. Set PFACTION to run one player faction.
+rem Set ONLY_BOSS=1 to select the boss cells and the elite comparison.
 setlocal enableextensions disabledelayedexpansion
 for %%D in ("%~dp0..\..") do set "BALANCE_REPO=%%~fD"
 set "BALANCE_GODOT=%GODOT_EXE%"

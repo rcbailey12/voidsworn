@@ -18,6 +18,7 @@ headless|world/test/backdrop_clip_check.gd|-|-|issue 1264: ringed giant planets,
 headless|world/test/cloud_edge_check.gd|-|-|issue 1263: storm and nebula cloud footprints reach zero smoothly inside their texture on all four sides, so no cloud ends in a straight line
 headless|world/test/max_4k_cost_check.gd|-|-|issue 1262: Max skips SSIL, the zero underlay is not drawn, Max storm cards are bounded; VS_1262_OLD brings each back
 headless|world/test/bake_cache_cap_check.gd|-|-|issue 1265: the planet bake cache on disk keeps under its cap, least recently used first, never the running battle's maps or the map just saved; stale .tmp files go
+headless|world/test/rock_scan_check.gd|-|-|issue 1361 (R419, R420 section 6.2): every shipped rock scan keeps a usable COLOR_0.b facet range, a closed surface, its triangle and shape minimums and its scans.json hash; each kind draws on its own scans; no crystal cluster ships (Ryan scrapped them Nov 22; the kind is ice comets)
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/boon_fleet_test.gd|-|-|issues 1075 and 1147: protocol cards explain fleet fit, caps, refits and Brace eligibility without changing offers, RNG or saves
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
@@ -78,7 +79,9 @@ headless|rules/test/effect_caps_test.gd|-|res://rules/test/effect_caps_cases.jso
 headless|rules/test/map_trial_test.gd|-|-|issues 1050 and 1160: compare every map-trial encounter with saved results and the approved fleet pin
 headless|rules/test/shield_pool_test.gd|-|res://rules/test/shield_pool_cases.json|R246 shield pool (issue 371): replay saved results for every shielded hull and for scripted hits and turns
 headless|rules/test/ion_pulse_ai_test.gd|-|-|issue 1447: when the enemy AI fires the ion pulse (real pools, after moving, log count); twin of contrib/opus/tools/ion_pulse_ai_tests.js
+headless|rules/test/balance_sim_abilities_test.gd|-|-|issue 1705: campaign, campaignrewards and boss cells field the selected player fleet and count phase and frenzy uses on a fixed seed
 headless|rules/test/rules_1560_test.gd|-|-|issue 1560 and R396: battle rules audit fixes (no turn or ram after firing, hits never heal, fleeing escorts stay gone, AI and forecast fixes); twin of contrib/opus/tools/rules_1560_tests.js
+headless|rules/test/boss_1885_test.gd|-|-|issue 1885: half-hull escorts flee below the rout threshold and only the boss's death wins the fight
 headless|rules/test/rules_1650_test.gd|-|-|issue 1650: the three Mastery III signatures the bot battles rarely reach (stern torpedo, double kill chain, pack bite on the prey)
 headless|rules/test/rules_1481_test.gd|-|-|issue 1481: every shield drop sends the break (storm, flare, mid section, ram, ion pulse, nova), rams use the shared spend, counter-fire, ram shockwave and reactor hits send a hit, a bad blink or nova hex is refused before it counts; twin of contrib/opus/tools/rules_1481_tests.js
 headless|rules/test/rules_1479_test.gd|-|-|issue 1479: overrunning the Nemesis flagship, a hunt target or a convoy transport destroys it (R383), a captured carrier's wings lose their carrier, and an Eclipse wreck rising next round keeps the fight open (browser twin contrib/opus/tools/rules_1479_tests.js)
@@ -191,6 +194,7 @@ headless|world/test/stop_sky_check.gd|-|-|issue 1272: 40 seeded campaigns throug
 headless|main/test/ai_level_fleet_check.gd|-|-|issue 1336: the campaign host rolls enemy fleets at the player's AI setting, and the map danger bands follow it with RAMP.vet on Veteran
 headless|scenes/battle/test/movement_flight_check.gd|-|-|issue 505 flown movement: ends on the rules hex and facing, no roll, no heading jump, slides hold heading, burn, coast and retro jets, turning jets start and stop turns, weight past battleship
 headless|ui/campaign/test/map_key_halo_test.gd|-|-|issue 678: the campaign map's Map key and Save and quit carry the dark halo, 4.5 to 1 over any backdrop at 1080 and 1440; the same buttons off the chart are unchanged
+headless|ui/campaign/test/map_input_check.gd|-|-|issue 1801: map hit areas, route picks, scroll and double-clicks, keyboard inspection, drag cancellation, and focus and input behind campaign drawers and dialogs
 headless|ui/battle/test/battle_log_cap_test.gd|-|-|issue 588: the battle log view keeps the newest 200 entries like the browser, the oldest leave the view only, and the rules log array is untouched
 headless|ui/battle/test/ledger_readability_test.gd|-|-|issue 1021: KEEL battle HUD at 1080, 1440 and narrow; text floor, contrast, input, ship clearance, real silhouettes and log settings
 headless|ui/career/test/career_readability_test.gd|-|-|issue 729: the Career screen's dim BONE3 labels are 4.5 to 1 or better on their card, the panels and the screen behind them at 1080 and 1440, measured like ledger_readability_test.gd
@@ -246,4 +250,5 @@ headless|ui/test/front_end_test.gd|-|-|issue 1217: orders kit wrap-safe labels a
 headless|ui/test/throwaway_profile_check.gd|-|-|issue 1369: front_end_shots and hit_timing_capture accept user:// only inside the watchdog throwaway profile (godot-profile- with the run owner token)
 gpu|ui/test/front_end_shots.gd|-|{out}|issue 1217: F1 pictures of Settings, the title and the setup page at Normal and Larger through the real main scene (cloud: xvfb-run with --rendering-driver opengl3)
 headless|main/test/player_path_map_ready_check.gd|-|-|issue 1448: the player-path recorder waits for the sector map loading cover before it jumps (a fresh Windows profile failed at "jump to 0-0 did not open")
+headless|rules/test/threat_preview_test.gd|-|-|issue 1859: the read-only enemy threat scorer ranks targets without changing the battle state
 headless|render/test/hull_age_check.gd|-|-|issue 1410: render/hull_age.gd reads the tracked ship manifest for the old Nov 1 layout (no _parts_ maps): V14_23 NEW, H7_23 OLD, unknown UNLISTED; the guard refuses old hulls except the O1_37 teaching exception unless ALLOW_OLD_HULLS=1; resolved() reports a placeholder for an unknown code
