@@ -409,6 +409,14 @@ func _run() -> void:
 # Fable's blind review of the cohesion package (Nov 22, board/1774/fable_cohesion_review.md): B2, B3, H5, M2
 func _review_fixes() -> void:
 	OS.set_environment("VS_WOUNDS_V2", "1")
+	# JOINT_C (Nov 23): Chorus gas takes its ochre wound accent with V2 on, never the bile lime of damage_glow
+	var cg = _ship("chorus", true)
+	var lime: Color = cg.fac.damage_glow
+	cg.wounds_v2 = true
+	var gas_on: Color = cg.chorus_gas(lime)
+	cg.wounds_v2 = false
+	check(gas_on.is_equal_approx(Color(0.6, 0.52, 0.14)) and cg.chorus_gas(lime) == lime and gas_on.g < lime.g * 0.6, "JOINT_C: Chorus gas is ochre with V2 on (%s), the old bile with it off" % str(gas_on))
+	fx.remove_ship(cg.id)
 	# B2: the pattern's line() is 1 on a seam and 0 across the panel (the shader's own text, mirrored here)
 	var code: String = SH.INTERIOR
 	check(code.contains("float line(float x, float w) { return smoothstep(0.0, w, abs(fract(x) - 0.5) * 2.0 - (1.0 - w * 2.0)); }"), "B2: the interior seam line is not inverted")

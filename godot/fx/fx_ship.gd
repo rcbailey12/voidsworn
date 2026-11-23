@@ -1031,6 +1031,16 @@ static func wounds_v2_setting() -> bool:
 	return WOUNDS.v2()
 
 
+# Issue 1741 (JOINT_C, Nov 23: a lime gas plume under the Chorus wound read as neon against R420): with Wounds V2 on,
+# the Chorus's smoke, fume and vent gas take its wound accent (ochre over dark olive) in place of the bile lime of
+# damage_glow, which stays for its lit glands and fire. Off, the old colour.
+func chorus_gas(glow: Color) -> Color:
+	if not wounds_v2:
+		return glow
+	var a = (fac.get("wound", {}) as Dictionary).get("interior_accent", [0.6, 0.52, 0.14]) if fac.get("wound") is Dictionary else [0.6, 0.52, 0.14]
+	return Color(float(a[0]), float(a[1]), float(a[2]))
+
+
 static func fail_look_setting() -> int:
 	var v := OS.get_environment("VS_SHIELD_FAILURE")
 	if v.is_empty():
@@ -2405,7 +2415,7 @@ func _build_damage_emitter(fx, e: Dictionary) -> void:
 		kind = 7; color = glow * 0.55
 		size0 = hull.L * 0.004; size1 = hull.L * 0.018
 		velocity = n * hull.L * 0.045
-	if faction == "chorus": color = glow * 0.45; kind = 20
+	if faction == "chorus": color = chorus_gas(glow) * 0.45; kind = 20
 	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.24
 	if e.kind == "fire":
 		kind = 25
@@ -2418,13 +2428,13 @@ func _build_damage_emitter(fx, e: Dictionary) -> void:
 		velocity = (n * 0.7 + Vector3.UP * 0.3) * hull.L * 0.06
 		if e.st == 4: p -= n * hull.L * 0.018
 		if faction == "deathless": kind = 26
-		if faction == "chorus": kind = 20; intensity = 0.35
+		if faction == "chorus": kind = 20; intensity = 0.35; color = chorus_gas(glow)
 		if faction == "ithar": kind = 7; intensity = 0.3
 	elif e.kind == "vent":
 		kind = 7; color = glow.lerp(Color.WHITE, 0.75); intensity = 0.22
 		count = 4; life = 0.8
 		velocity = n * hull.L * 0.13
-		if faction == "chorus": kind = 20; color = glow * 0.6
+		if faction == "chorus": kind = 20; color = chorus_gas(glow) * 0.6
 	var period := life if e.kind != "vent" else 3.2
 	for j in count:
 		var t: float = fx.now - life + float(j) / count * period
@@ -2510,7 +2520,7 @@ func _cough(fx) -> void:
 		if faction == "deathless":
 			col = Color(0.055, 0.025, 0.09); kind = 8
 		elif faction == "chorus":
-			col = glow * 0.45; kind = 20
+			col = chorus_gas(glow) * 0.45; kind = 20
 		for j in 4:
 			fx.spr(p + d * r * 0.5, fx.now + j * 0.06, 0.9 + 0.2 * fx.rng.randf(), col, 0.55, r * 1.1, r * 4.2, kind,
 				fx.rcone(d, 0.35) * r * (5.0 + 3.0 * fx.rng.randf()), 2.0)
@@ -2776,7 +2786,7 @@ func _build_wisp(fx, e: Dictionary) -> void:
 	var color := Color(0.15, 0.14, 0.13)
 	var intensity := 0.26
 	if faction == "deathless": color = Color(0.055, 0.025, 0.09); kind = 8
-	if faction == "chorus": color = glow * 0.45; kind = 20
+	if faction == "chorus": color = chorus_gas(glow) * 0.45; kind = 20
 	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.18
 	var life := 2.2
 	var count := 3
@@ -2872,7 +2882,7 @@ func _blowout(fx, i: int) -> void:
 	var col := glow.lerp(Color.WHITE, 0.75)
 	var kind := 7
 	if faction == "chorus":
-		col = glow * 0.6; kind = 20
+		col = chorus_gas(glow) * 0.6; kind = 20
 	var heavy := int(stage[i]) == 4
 	for j in 7:
 		var t: float = fx.now + j * 0.08

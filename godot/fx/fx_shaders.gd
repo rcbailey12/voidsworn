@@ -1682,6 +1682,14 @@ void fragment() {
 		if (dress > 0.9) { em_hdr += v2_interior_accent * (0.9 + 0.3 * flick(0.7 + n2 * 0.3, scene_t, seed)); base *= 0.5; }
 		if (dress > 0.7 && dress < 0.8) { em += v2_interior_accent * 0.22 * (0.6 + 0.4 * vC.g); }
 		if (wound_v2 == 3) { em += v2_interior_accent * 0.05 * pow(abs(sin(p.x * 22.0 + n1 * 5.0)), 8.0) * (0.8 + 0.2 * sin(scene_t * 2.3 + seed)); }
+		if (wound_v2 == 4 && part < 0.3) {
+			// JOINT_C (Nov 23): the Glasswright crater and lip read as a flat black disc round the cut. Its walls are
+			// stacked glass sheets: pale bands by depth with a faint stored-light seam between, clear and glossy
+			float sheet = pow(abs(sin(dot(centre - vL, axis) / R * 14.0 + n1 * 2.5)), 6.0);
+			base = v2_rim_metal * mix(0.1, 0.32, sheet) * (0.85 + 0.3 * n2);
+			rough = 0.06; metal = 0.15; ao = mix(ao, 1.0, 0.5);
+			em += v2_interior_accent * (0.04 + 0.16 * sheet) * (0.7 + 0.3 * fl);
+		}
 		if (style == 1) {
 			// a fresh lance burn-through: the ember ramp only on Sunward and Hullbreaker steel; Directorate burns
 			// blue-white, the other factions glow in their own accent (audit, PR 1755: no orange on them)
