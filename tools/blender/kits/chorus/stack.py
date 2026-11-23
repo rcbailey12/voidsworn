@@ -316,7 +316,35 @@ def glow_material(zone, hull=False):
     return material
 
 
-def inside_material(zone):
+# Interior Kit V2 (issue 1743, R416 Layer 3) under R420 (Ryan, Nov 22; contrib/opus/plans/global_cohesion_standard.md 3):
+# the tissue is deep wet dark crimson-umber (bruised mahogany), wet and never metal, never magenta, never neon lime; the bone
+# hoops and struts (bonefr) are dry weathered muted ochre-ivory bone with no glow, kept apart from the flesh trim; light only as
+# a few dim olive-amber pores deep in the glands and vats. The kit's organ colours (vat lime 2.0, gland yellow-green, brood
+# yellow) are role tags only. Ryan's tissue wording here (Nov 22) replaces factions.md's "never red flesh" for the insides only;
+# the hull keeps its olive-brown hide. The values match the 1741 breach interior (faction_looks.json wound).
+INSIDE_TRIM_OF = dict(organ='flesh', gland='gland', bone='bone')     # the trim set per role; colours, lights in faction_looks.json
+# the Chorus zone roles (no metal rooms) live in interior_trim.FACTION_ZONES['chorus']
+_FLESH = dict(style='flesh', seed=1747, cells=170, vein_w=7.0, warp=0.05, relief=5.0, rough=(0.24, 0.46), flesh_tone=(1.0, 0.92, 0.88),
+              vein_tone=(0.55, 0.3, 0.26))
+INSIDE_TRIMS = dict(flesh=_FLESH,
+                    gland=dict(_FLESH, seed=1749, glow=None),      # glow from faction_looks.json on first use
+                    bone=dict(style='bone', seed=1750, rough=(0.6, 0.72), relief=4.0, bone_tone=(1.0, 0.94, 0.8)))
+
+
+def inside_material(zone, trim=False):
+    """trim: the insides carry the Interior Kit V2 UVs, so the zone takes its role's colour and trim from INSIDE_ROLES (R420; the
+    kit's zone colour and light are never read)"""
+    if trim:
+        import os, sys
+        sh_ = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'shared')
+        if sh_ not in sys.path: sys.path.insert(0, sh_)
+        import interior_trim
+        if INSIDE_TRIMS['gland']['glow'] is None:
+            g = interior_trim.faction_interior('chorus')['glow']
+            INSIDE_TRIMS['gland']['glow'] = dict(rgb=tuple(g['rgb']), share=g['share'], strength=g['strength'], where='pores')
+        m = interior_trim.role_material(f'chorus_inside_{zone}', 'chorus', zone, interior_trim.roles_for('chorus', INSIDE_TRIM_OF), INSIDE_TRIMS)
+        m['authored_look'] = 1
+        return m
     material = bpy.data.materials[zone].copy()
     material.name = f'chorus_inside_{zone}'
     bsdf = material.node_tree.nodes.get('Principled BSDF')

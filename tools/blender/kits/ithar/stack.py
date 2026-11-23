@@ -569,10 +569,31 @@ def glow_material(zone, hull=False):
     return m
 
 
-def inside_material(zone):
-    """the interior, seen only in the break-up: layered glass and light, opaque"""
+# Interior Kit V2 (issue 1743, R416 Layer 3) under R420 (Ryan, Nov 22; contrib/opus/plans/global_cohesion_standard.md 3):
+# deep annealed seafoam crystal bulkheads and struts, the same glass as the hull: faceted panes and fine annealing lines with a
+# faint seafoam edge light (strength at most 0.6); zero metal, zero soot, zero grime. The amber, green and violet glass layers
+# keep only a small shift of their own (at most 15 percent). The values match the 1741 breach interior.
+# colours, layer tints and the glow strength live in godot/fx/faction_looks.json "interior" (one table for Blender and the game)
+INSIDE_TRIMS = dict(main=dict(style='glass', seed=1748, cells=60, facet=0.12, line_w=2.5, rough=(0.08, 0.28),
+                              glow=None))      # from faction_looks.json on first use
+
+
+def inside_material(zone, trim=False):
+    """the interior, seen only in the break-up: layered glass and light, opaque. trim: the insides carry the Interior Kit V2
+    UVs, so the zone takes its role's colour and trim from INSIDE_ROLES (R420; the kit's zone colour and light are never read)"""
     import bpy
     src = bpy.data.materials.get(zone)
+    if trim:
+        import os, sys
+        sh_ = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'shared')
+        if sh_ not in sys.path: sys.path.insert(0, sh_)
+        import interior_trim
+        if INSIDE_TRIMS['main']['glow'] is None:
+            g = interior_trim.faction_interior('ithar')['glow']
+            INSIDE_TRIMS['main']['glow'] = dict(rgb=tuple(g['rgb']), share=g['share'], strength=g['strength'])
+        m = interior_trim.role_material(f'ithar_inside_{zone}', 'ithar', zone, interior_trim.roles_for('ithar', {}), INSIDE_TRIMS)
+        m['authored_look'] = 1
+        return m
     m = src.copy() if src else bpy.data.materials.new(zone)
     m.name = f'ithar_inside_{zone}'; m.use_nodes = True
     b = m.node_tree.nodes.get('Principled BSDF')

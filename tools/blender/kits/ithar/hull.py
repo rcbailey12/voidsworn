@@ -667,6 +667,46 @@ def launch_tunnel(K, fid, c, R, facing=-1, s=1.0):
 
 
 # ------------------------------------------------------------------------------------------------------------ insides
+def prism_nodes(points, centre, size):
+    """faceted glass prisms (six-sided bipyramids) at points, each pointing from the frame in toward centre (issue 1743)"""
+    from mathutils import Vector
+    vv, ff = [], []
+    c = Vector(centre)
+    for p in points:
+        p = Vector(p); ax = (c - p); ax.x = 0.0
+        ax = ax.normalized() if ax.length > 1e-6 else Vector((0, 0, 1))
+        u = ax.cross(Vector((1, 0, 0))).normalized(); w = ax.cross(u)
+        o = len(vv)
+        vv.append(tuple(p - ax * size * 0.35)); vv.append(tuple(p + ax * size * 1.1))
+        for j in range(6):
+            a = j * TAU / 6
+            vv.append(tuple(p + ax * size * 0.25 + (u * math.cos(a) * 1.0 + w * math.sin(a) * 0.7) * size * 0.45))
+        for j in range(6):
+            a, b = o + 2 + j, o + 2 + (j + 1) % 6
+            ff += [(o, b, a), (o + 1, a, b)]
+    return vv, ff
+
+
+def lens_collars(points, r, every=4):
+    """collared lens rings round a light core: a square-section glass ring every few points along it (issue 1743)"""
+    from mathutils import Vector
+    vv, ff = [], []
+    points = [Vector(p) for p in points]
+    for i in range(every // 2, len(points) - 1, every):
+        p = points[i]; d = (points[i + 1] - points[i - 1 if i else 0]).normalized()
+        q = d.cross(Vector((0, 0, 1)))
+        q = (q if q.length > 0.1 else d.cross(Vector((0, 1, 0)))).normalized(); w = d.cross(q).normalized()
+        o = len(vv); n = 12
+        for s_ in (-0.9 * r, 0.9 * r):
+            for rr in (1.15 * r, 1.75 * r):
+                vv += [tuple(p + d * s_ + (q * math.cos(j * TAU / n) + w * math.sin(j * TAU / n)) * rr) for j in range(n)]
+        for j in range(n):
+            k = (j + 1) % n
+            ff += [(o + n + j, o + n + k, o + 3 * n + k, o + 3 * n + j), (o + k, o + j, o + 2 * n + j, o + 2 * n + k),
+                   (o + j, o + k, o + n + k, o + n + j), (o + 3 * n + j, o + 3 * n + k, o + 2 * n + k, o + 2 * n + j)]
+    return vv, ff
+
+
 def insides(K, half_w, half_h, x0, x1, breaks, breach_x, decks=(-0.3, 0.2), frames=8, cores=True, s=1.0, y0=0.0, tag=''):
     """layered glass and light through the whole hull (R209): shaped decks (one span per compartment, a gap at every break),
     open annealed frames (off every break and breach bite), three braided light cores. half_w(x), half_h(x) are the core's
@@ -696,6 +736,8 @@ def insides(K, half_w, half_h, x0, x1, breaks, breach_x, decks=(-0.3, 0.2), fram
             continue
         pts = [(x, y0 + 0.8 * half_w(x) * math.cos(a), 0.8 * half_h(x) * math.sin(a)) for a in [TAU * j / 48 for j in range(49)]]
         K._obj('in%s_frame_%02d' % (tag, i), *tube_mesh(pts, [0.012 * K.length] * len(pts), 8), 'gw_in_frame', inside=True)
+        # Interior Kit V2 (issue 1743): faceted prism nodes along the annealed frame, the same glass, pointing in toward the core
+        K._obj('in%s_frame_%02d_prisms' % (tag, i), *prism_nodes(pts[:-1:6], (x, y0, 0.0), 0.022 * K.length), 'gw_in_frame', inside=True)
         K.inside.append(dict(kind='bulkhead', name='%sannealed frame %02d' % (tag and tag + ' ', i), x=x, note='open structural glass frame'))
     if cores:
         for k, col in enumerate(('amber', 'violet', 'green')):
@@ -706,6 +748,10 @@ def insides(K, half_w, half_h, x0, x1, breaks, breach_x, decks=(-0.3, 0.2), fram
                         0.30 * half_h(p[0]) * math.sin(p[0] * 2.2 / K.length * 6 + k * 2.1)) for p in pts]
                 K._obj('in%s_light_core_%s_%d' % (tag, col, si), *tube_mesh(pts, [0.012 * K.length] * len(pts), 10), 'gw_in_' + col,
                        inside=True, smooth=True)
+                # Interior Kit V2 (issue 1743): collared lens rings along the waveguide, in the frame's glass
+                if len(pts) >= 5:
+                    K._obj('in%s_light_core_%s_%d_collars' % (tag, col, si), *lens_collars(pts, 0.012 * K.length, every=max(2, len(pts) // 5)),
+                           'gw_in_frame', inside=True, smooth=True)
         K.inside.append(dict(kind='space', name='%scontinuous light core' % (tag and tag + ' '), x=(x0, x1), y=(y0 - 0.3, y0 + 0.3),
                              z=(-0.3, 0.3), mat='layered glass and light', note='three braided waveguides of amber, violet and green light'))
     return spans

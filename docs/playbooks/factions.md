@@ -271,7 +271,8 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
 - **Guns sit:** in throats, spines and sacs: a weapon is an organ. Brood sacs along the flanks for the wings.
 - **Engines:** no nozzles. Pulsing vents or trailing membranes with a yellow-green glow.
 - **How it breaks:** it bursts and tears. Sacs rupture first, then the body tears open. Inside: flesh and bone (R98), wet and
-  lit from within. One more breach anchor than the base count on the big ones.
+  lit from within: deep wet crimson-umber tissue, dry weathered ochre-ivory bone with no glow, and only a few dim olive-amber
+  pores alight (R420, Ryan Nov 22; this holds for the insides only, the hide keeps its olive-brown and "never red" stands there). One more breach anchor than the base count on the big ones.
 - **Never:** grub or caterpillar segments, anything cute or round-cheeked, legs, eyes, a face, any metal (no masts, antennas,
   towers or plates), red or magenta flesh.
 
