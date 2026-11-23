@@ -13,6 +13,7 @@
 # Runner 2 (issue 377, Opus, Nov 12 2026); codex_issue.bat uses these three too:
 #   work_issue.ps1 guard   <n> <tag> <repo> <out>                 the refuse list and the Deliver to warning, on the staged change;
 #                                                                 its files go to <out>\runs\<date_time>\ (one folder per run)
+#   work_issue.ps1 head-changed <repo> <out>                    0 when HEAD moved since checkout, 7 when unchanged
 #   work_issue.ps1 commit  <repo> <out> <branch> <real|dry|test>  one commit that keeps the branch's earlier tip, checked before push
 #   work_issue.ps1 confirm <repo> <out> <branch> <real|dry|test>  after the push: GitHub's branch must carry exactly out\diffstat.txt
 #   work_issue.ps1 disk    <run folder> <repo>                 separately reports the run and reusable checkout sizes
@@ -96,6 +97,21 @@ function Profile-Root {
   if ($env:USERPROFILE) { return $env:USERPROFILE }
   if ($env:HOME) { return $env:HOME }
   return ''
+}
+# Issue 1490: a runner receipt must not print a full Windows user path. A path below the voidsworn_test folder is
+# shown from that folder down (for example work217\issue-1-deepseek\20261122_120000); anything else is left as is.
+function Relative-ToVoidswornTest([string]$path) {
+  if (-not $path) { return $path }
+  $parts = @(($path -replace '/', '\') -split '\\+')
+  for ($i = $parts.Count - 1; $i -ge 0; $i--) {
+    if ($parts[$i] -ieq 'voidsworn_test') {
+      $rest = @()
+      if ($i -lt $parts.Count - 1) { $rest = @($parts[($i + 1)..($parts.Count - 1)] | Where-Object { $_ -ne '' }) }
+      if ($rest.Count) { return ($rest -join '\') }
+      return '.'
+    }
+  }
+  return $path
 }
 function Rewrite-ReportPaths([string]$text, [string]$repo, [string]$branch, [string]$profileRoot) {
   if (-not $text) { return $text }
@@ -415,6 +431,14 @@ function Refs-Only([string]$text) { return [regex]::Replace($text, '(?i)\b(close
 # git's output as an array of lines; $script:gx holds its exit code. stderr is dropped (PowerShell 5.1 turns it into errors).
 function Git-Lines { $o = & git @args 2>$null; $script:gx = $LASTEXITCODE; if ($null -eq $o) { return @() }; return @($o | ForEach-Object { [string]$_ }) }
 function Git-One { $o = @(Git-Lines @args); if ($o.Count) { return $o[0].Trim() } else { return '' } }
+function Test-HeadChanged($out, $head) {
+  $tip = Read-Txt (Join-Path $out 'branch_tip.txt')
+  if (-not $tip) { $tip = Read-Txt (Join-Path $out 'base_commit.txt') }
+  if ($tip -cnotmatch '\A[0-9a-f]{40,64}\z' -or $head -cnotmatch '\A[0-9a-f]{40,64}\z') {
+    throw 'could not read HEAD or the recorded checkout tip'
+  }
+  return $head -cne $tip
+}
 function Write-Lines($path, $lines) { [IO.File]::WriteAllText($path, ((@($lines) -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false))) }
 function Read-Lines($path) { if (-not (Test-Path -LiteralPath $path)) { return @() }; return @([IO.File]::ReadAllLines($path) | Where-Object { $_ -ne '' }) }
 # Folders and files named on the issue's "Deliver to" line (anything with a slash, or a file name with an extension).
@@ -669,7 +693,7 @@ elseif ($mode -eq 'guard') {
   Write-Lines (Join-Path $gdir 'scope_warnings.txt') $warn
   $md = @()
   if ($refused.Count) {
-    Write-Host "REFUSED $($refused.Count) file(s): not committed, copies kept in $gdir\refused (never deleted):"
+    Write-Host "REFUSED $($refused.Count) file(s): not committed, copies kept in $(Relative-ToVoidswornTest ($gdir + '\refused')) (never deleted):"
     $rl | ForEach-Object { Write-Host "  $_" }
     $md += "Refused by the runner, not committed ($($refused.Count); copies kept on the PC in the run's out folder, $grel\refused):"
     $md += @($rl | Select-Object -First 30 | ForEach-Object { "- $_" })
@@ -690,6 +714,12 @@ elseif ($mode -eq 'guard') {
   Pop-Location
   if ($bad.Count) { Write-Host 'guard failed:'; $bad | ForEach-Object { Write-Host "  $_" }; exit 1 }
   exit 0
+}
+elseif ($mode -eq 'head-changed') {
+  try {
+    if (Test-HeadChanged $args[2] (Git-One -C $args[1] rev-parse HEAD)) { exit 0 }
+    exit 7
+  } catch { Write-Host "push stopped: $($_.Exception.Message)"; exit 14 }
 }
 elseif ($mode -eq 'commit') {
   . (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
@@ -715,12 +745,13 @@ elseif ($mode -eq 'commit') {
   [IO.File]::WriteAllText((Join-Path $out 'pre_commit.txt'), $pre, [Text.Encoding]::ASCII)
   & git diff --cached --quiet 2>$null
   if ($LASTEXITCODE -eq 0) {
-    $base = Read-Txt (Join-Path $out 'base_commit.txt')
-    $resumed = Read-Txt (Join-Path $out 'resume.txt')
-    & git diff --quiet $base HEAD 2>$null
     $partial = Read-Txt (Join-Path $out 'partial.txt')
-    if (-not $partial -and (-not $resumed -or $LASTEXITCODE -eq 0)) { Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7 }
-    Write-Host 'resumed work is already committed; carry it through the checked push'
+    try {
+      if (-not $partial -and -not (Test-HeadChanged $out $pre)) {
+        Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7
+      }
+    } catch { Write-Host "push stopped: $($_.Exception.Message)"; Pop-Location; exit 14 }
+    if (-not $partial) { Write-Host 'HEAD has new commits; carry them through the checked push' }
   }
   $num = @(Git-Lines -c core.quotepath=off diff --cached --numstat --no-renames)
   Write-Lines (Join-Path $out 'diff_numstat.txt') $num
@@ -850,8 +881,8 @@ elseif ($mode -eq 'disk') {
       if (Test-Path -LiteralPath $entry.path) {
         $bytes = (Get-ChildItem -LiteralPath $entry.path -Recurse -Force -File | Measure-Object -Property Length -Sum).Sum
       }
-      Write-Host ('disk: {0} {1} logical bytes ({2:N2} GiB) at {3}' -f $entry.label, [long]$bytes, ($bytes / 1GB), $entry.path)
-    } catch { Write-Host "disk: could not measure $($entry.label) at $($entry.path): $($_.Exception.Message)" }
+      Write-Host ('disk: {0} {1} logical bytes ({2:N2} GiB) at {3}' -f $entry.label, [long]$bytes, ($bytes / 1GB), (Relative-ToVoidswornTest $entry.path))
+    } catch { Write-Host "disk: could not measure $($entry.label) at $(Relative-ToVoidswornTest $entry.path): $($_.Exception.Message)" }
   }
   exit 0
 }

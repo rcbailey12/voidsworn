@@ -85,17 +85,12 @@ if (process.platform !== 'win32') {
   console.log('SKIP Windows fault matrix: run tools/pc/runner_selftest.bat on the PC');
   process.exit(0);
 }
-// Issue 1739: inside a Codex lane TEMP is the run's own scratch (Temp\voidsworn-run-<issue>-<32 hex>), about 50
-// characters deeper. The lane fixture then nests its own runner's scratch TEMP inside that one
-// (...\board_d\temp\voidsworn-run-687-<32 hex>), and PowerShell Add-Type could not compile its C# there: "Cannot
-// create temporary file '' -- The data area passed to a system call is too small", so the mock agent never reached
-// its checkout (CHECKS_DIAG_1739_E: no file path passed 243 characters; the limit is on the TEMP folder the compiler
-// writes into). The fixture root sits beside the lane scratch, in the same Temp folder a standalone run uses.
-function fixtureTemp(temp = os.tmpdir()) {
-  return /^voidsworn-run-(?:[1-9][0-9]*-)?[0-9a-f]{32}$/i.test(path.basename(temp)) ? path.dirname(temp) : temp;
-}
-const root = fs.mkdtempSync(path.join(fixtureTemp(), 'runner687 proof '));
+// The lane can write to its own TEMP. Keep the fixture path short for PowerShell's Add-Type compiler.
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'r-'));
 const concurrency = 10;
+// Issue 1822: under lane load, an accounting fault can take over 90 s to finish its partial push and report.
+// Keep a per-launch limit inside the standing check's 600 s limit, with room for the runner to return its exit code.
+const entryTimeout = 180000;
 const testChildren = [];
 const testPidFiles = [];
 const gh = require('./runner_claim_fixture')(root);
@@ -145,15 +140,17 @@ function launchEntryPoint(cmd, env) {
   const start = Date.now();
   return new Promise((resolve, reject) => {
     const child = spawn(process.env.COMSPEC, ['/d', '/s', '/c', cmd], {
-      cwd: root, env: { ...process.env, ...shell.env, ...env }, windowsHide: true, windowsVerbatimArguments: true, timeout: 90000
+      cwd: root, env: { ...process.env, ...shell.env, ...env }, windowsHide: true, windowsVerbatimArguments: true, timeout: entryTimeout
     });
     testChildren.push(child);
     let text = '', error;
     child.stdout.on('data', b => text += b); child.stderr.on('data', b => text += b);
     child.once('error', e => { error = e; });
-    child.once('close', code => {
+    child.once('close', (code, signal) => {
       recordTiming('runner entry point', start, code);
-      if (error) reject(error); else resolve({ code, text });
+      if (error) reject(error);
+      else if (signal) reject(new Error(`Runner entry point stopped by ${signal} after ${Date.now() - start} ms (${cmd})\n${text}`));
+      else resolve({ code, text });
     });
   });
 }
@@ -252,6 +249,10 @@ if (probe) {
     fs.appendFileSync('.git/info/exclude', '\\n/ignored-work.txt\\n');
     fs.writeFileSync('ignored-work.txt', 'only in the checkout');
   }
+  if (process.env.STUB_REFUSED_WORK === '1') {
+    fs.mkdirSync('godot/gen', { recursive: true });
+    fs.writeFileSync('godot/gen/refused.txt', 'built on the PC\\n');
+  }
   if (process.env.STUB_LOCAL_OBJECTS) {
     fs.cpSync(process.env.STUB_LOCAL_OBJECTS, '.git/objects', { recursive: true });
     fs.writeFileSync('.git/refs/remotes/origin/stale-local', process.env.STUB_LOCAL_TIP + '\\n');
@@ -316,7 +317,7 @@ const defaults = {
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
   STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '', STUB_CHECKOUT_EDIT: '', STUB_RECHECK_FAIL: '', STUB_CHECKOUT_MARKER: '',
   STUB_CHECKOUT_EDIT_PATH: '',
-  STUB_ACCOUNT_FAULT: '', STUB_EXPECT_FRESH: '', STUB_AGENT_HOLD: '', STUB_AGENT_EXIT: '', STUB_CHECKS_EXIT: '', STUB_IGNORED_WORK: '',
+  STUB_ACCOUNT_FAULT: '', STUB_EXPECT_FRESH: '', STUB_AGENT_HOLD: '', STUB_AGENT_EXIT: '', STUB_CHECKS_EXIT: '', STUB_IGNORED_WORK: '', STUB_REFUSED_WORK: '',
   // Issue 722: about 68 GB fake free space, above the 60 GB floor, so fixture runs pass the space check on any host;
   // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
   PC_TEST_SPACE_FREE_MB: '70000', PC_TEST_SETTINGS: '', PC_TEST_HASHES: '',
@@ -343,9 +344,10 @@ function fixtureTools(name, scenario = '') {
         body = body.replace(/(%PS% openai-(?:budget|spend)[^\r\n]*)"%DRY%"/g, '$1"0"')
           .replace('set "PUSHMODE=dry"', 'set "PUSHMODE=test"');
       }
-      if (scenario === 'delivery' && file === 'work_issue.bat') {
+      if (scenario === 'delivery') {
         // Keep dryrun's mock agent and fake GitHub. Exercise real delivery logic against a bare TEMP remote.
         body = body.replace('set "PUSHMODE=dry"', 'set "PUSHMODE=real"');
+        if (file === 'codex_issue.bat') body = body.replace('if "%PC_RUNNER_TEST%"=="1" goto :afterchecks\r\n', '');
       }
     }
     write(path.join(dir, file), body);
@@ -364,7 +366,8 @@ write(path.join(root, 'watchdog.js'), `
 const assert = require('assert');
 const { spawnSync } = require('child_process');
 const { COMSPEC, CODEX_TEST_AGENT, WORK_TEST_AGENT, STUB_WATCHDOG_ARGS } = process.env;
-const [, exe, args] = /^\\d+ "([^"]+)" (.*)$/.exec(STUB_WATCHDOG_ARGS);
+const [, quotedExe, bareExe, args] = /^\\d+ (?:"([^"]+)"|(\\S+)) (.*)$/.exec(STUB_WATCHDOG_ARGS);
+const exe = quotedExe || bareExe;
 if (args === 'contrib\\\\opus\\\\tools\\\\run_all_checks.js') process.exit(Number(process.env.STUB_CHECKS_EXIT || 0));
 if (args === '/c tools\\\\pc\\\\parity.bat nopause') process.exit(0);
 let cmd;
@@ -386,7 +389,8 @@ const deliveryTools = fixtureTools('delivery runner', 'delivery');
 async function job(arm, label, extra = {}) {
   const home = extra.CODEX_TEST_ROOT || path.join(root, arm + '-' + label);
   fs.mkdirSync(home, { recursive: true });
-  const temp = path.join(home, 'temp'); fs.mkdirSync(temp, { recursive: true });
+  // Use the short fixture root for TEMP. Each mock runner still makes its own GUID scratch beneath it.
+  const temp = root;
   const env = gitEnvironment({ ...defaults, TEMP: temp, TMP: temp, TMPDIR: temp, PC_TEST_MIRROR: path.join(home, 'mirror.git'), WORK_ROOT: home, CODEX_TEST_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt'), PC_TEST_COUNTER: path.join(home, 'tries'),
     PC_TEST_GH_DB: path.join(home, 'gh-db.json'), PC_TEST_GH_TRACE: path.join(home, 'gh.jsonl'), ...extra });
   testPidFiles.push(env.PC_TEST_TRACE + '.pid');
@@ -503,7 +507,7 @@ try {
       testChildren.push(child);
     }
     const r = await job('openai', 'account-' + fault, extra);
-    assert.equal(r.code, 14, r.text + r.result);
+    assert.strictEqual(r.code, 14, `OpenAI ${fault} accounting must exit 14, got ${r.code}\n${r.text}${r.result}`);
     assert.equal(r.state.status, 'partial', r.result);
     assert.equal(r.state.reason, 'spend accounting unknown');
     assert.equal(read(path.join(r.out, 'checks.txt')).trim(), 'runner checks skipped: partial run');
@@ -1012,18 +1016,21 @@ async function testDeliveryCleanup() {
     ['partial', 'partial', { STUB_AGENT_EXIT: '1' }],
     ['ignored-work', 'checked_push', { STUB_IGNORED_WORK: '1' }],
     ['local-history', 'checked_push', {}],
+    ['refused', 'checked_push', { STUB_REFUSED_WORK: '1' }],
     ['clean', 'checked_push', {}]
   ], async ([scenario, expected, extra]) => {
     const label = 'cleanup-' + scenario;
     const source = fixtureSource(label);
     const home = path.join(root, 'deepseek-' + label);
+    // Issue 1490: the receipt shows paths from the voidsworn_test folder down, so keep this fixture's slots below one.
+    const workRoot = path.join(home, 'voidsworn_test', 'work217');
     if (scenario === 'local-history') {
       const privateObjects = path.join(home, 'private objects');
       extra.STUB_LOCAL_TIP = fixtureCommit({ 'local.txt': 'private history\n' }, partial, '', privateObjects);
       extra.STUB_LOCAL_OBJECTS = path.join(privateObjects, 'objects');
     }
-    write(path.join(home, 'runner_settings.txt'), 'remove_repo_copy_after_push=yes\n');
-    const r = await job('deepseek', label, { ...extra, STUB_RUNNER_TOOLS: deliveryTools,
+    write(path.join(workRoot, 'runner_settings.txt'), 'remove_repo_copy_after_push=yes\n');
+    const r = await job('deepseek', label, { ...extra, STUB_RUNNER_TOOLS: deliveryTools, WORK_ROOT: workRoot,
       PC_TEST_STOP_BEFORE_PUBLISH: '0', WORK_SKIP_CHECKS: '0', PC_TEST_SOURCE: source });
     assert.equal(r.code, 0, r.text + r.result);
     const branch = 'work/issue-687-deepseek' + (scenario === 'partial' ? '-partial' : '');
@@ -1036,8 +1043,13 @@ async function testDeliveryCleanup() {
     assert(publicStatus.includes('Runner status: ' + labelShown), publicStatus);
     assert(fs.existsSync(r.repo), 'the slot stays available after every outcome, even with the old cleanup setting');
     assert(!fs.existsSync(path.join(path.dirname(r.out), 'repo')), 'the run folder holds no clone');
-    assert.match(r.result, /disk: run folder \d+ logical bytes/);
-    assert.match(r.result, /disk: shared checkout \d+ logical bytes/);
+    assert.match(r.result, /disk: run folder \d+ logical bytes \([\d.]+ GiB\) at work217\\dryrun-687-deepseek\\/);
+    assert.match(r.result, /disk: shared checkout \d+ logical bytes \([\d.]+ GiB\) at work217\\slot_deepseek\\repo/);
+    assert(!/disk: [^\r\n]*\bat (?:[A-Za-z]:[\\/]|[\\/])/i.test(r.result), 'the receipt must not write a full path on its disk lines: ' + r.result);
+    if (scenario === 'refused') {
+      assert.match(r.result, /REFUSED 1 file\(s\): not committed, copies kept in work217\\dryrun-687-deepseek\\/);
+      assert(!/REFUSED[^\r\n]*copies kept in (?:[A-Za-z]:[\\/]|[\\/])/i.test(r.result), 'the receipt must not write a full path on its refused line: ' + r.result);
+    }
     if (scenario === 'ignored-work') {
       assert.equal(read(path.join(r.repo, 'ignored-work.txt')), 'only in the checkout');
     }
@@ -1046,6 +1058,40 @@ async function testDeliveryCleanup() {
     }
     assert(fs.existsSync(path.join(r.out, 'result.txt')), 'run evidence stays after cleanup');
     pass('workhorse delivers and keeps the shared slot: ' + scenario);
+  });
+}
+async function testNoEditRerun() {
+  await parallel(['codex', 'deepseek'], async arm => {
+    const branch = arm === 'codex' ? 'codex/issue-687' : 'work/issue-687-deepseek';
+    const remote = fixtureSource('rerun-' + arm);
+    const earlier = fixtureCommit({ 'progress.txt': 'from partial\n', 'earlier.txt': 'delivered\n' }, base, '', remote);
+    write(path.join(remote, 'refs/heads', branch), earlier + '\n');
+    fs.unlinkSync(path.join(remote, 'refs/heads', branch + '-partial'));
+    // Workhorse also proves that a merge can advance HEAD while leaving its tree byte-identical.
+    const mainFiles = { 'progress.txt': 'base\n' };
+    if (arm === 'codex') mainFiles['main.txt'] = 'new on main\n';
+    const main = fixtureCommit(mainFiles, base, 'main advanced\n', remote);
+    write(path.join(remote, 'refs/heads/main'), main + '\n');
+    const options = { CODEX_TEST_ROOT: path.join(root, 'no-edit-' + arm), STUB_RUNNER_TOOLS: deliveryTools,
+      PC_TEST_STOP_BEFORE_PUBLISH: '0', WORK_SKIP_CHECKS: '0', STUB_AGENT_NO_CHANGE: '1',
+      STUB_EXPECT_FRESH: '1', PC_TEST_SOURCE: remote };
+    const delivered = await job(arm, 'same-seat', options);
+    assert.equal(delivered.code, 0, delivered.text + delivered.result);
+    assert.match(read(path.join(delivered.out, 'resume.txt')), /Continued from the earlier tip.*merged origin\/main/s);
+    assert.equal(delivered.state.status, 'checked_push', delivered.result);
+    assert.match(delivered.result, /checks: node exit 0, parity exit 0/);
+    assert.equal(read(path.join(delivered.out, 'diffstat.txt')).trim(), '', 'no agent edits were staged');
+    const pushed = run('git', ['--git-dir', remote, 'rev-parse', branch]).text.trim();
+    assert.equal(read(path.join(delivered.out, 'confirmed_commit.txt')).trim(), pushed);
+    assert.notEqual(pushed, earlier);
+    for (const parent of [main, earlier]) {
+      assert.equal(run('git', ['--git-dir', remote, 'merge-base', '--is-ancestor', parent, pushed]).code, 0);
+    }
+    if (arm === 'deepseek') assert.equal(run('git', ['--git-dir', remote, 'diff', '--quiet', earlier, pushed]).code, 0);
+    const unchanged = await job(arm, 'same-seat', options);
+    assert.equal(unchanged.code, 7, unchanged.text + unchanged.result);
+    assert.equal(run('git', ['--git-dir', remote, 'rev-parse', branch]).text.trim(), pushed);
+    pass(arm + ': no-edit rerun delivers the runner merge and runs both checks; another unchanged rerun exits 7');
   });
 }
 async function testWorkhorseSlots() {
@@ -1451,7 +1497,7 @@ async function testRunnerStartChecks() {
     testAccounting, testAccountingFaults, testOpenAIModels,
     testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testCampaignParityCleanup, testLateCheckoutEdits,
     testIncomingCheckoutCollisions, testKeptCheckoutHistory,
-    testClaimRules, testClaimFailures, testAssignedBranch, testDeliveryCleanup, testResumeAndFailures, testGitRetries,
+    testClaimRules, testClaimFailures, testAssignedBranch, testDeliveryCleanup, testNoEditRerun, testResumeAndFailures, testGitRetries,
     testHeldCheckout, testMergedPartial, testResumeConflict, testChainRelease, testProbeTimeout,
     testMirrorAndConfirmation, testRunnerStartChecks
   ], check => check());

@@ -154,7 +154,13 @@ function buildChecks() {
   // library entries and break-piece interiors held against its sheet; docs/ship_pipeline/build_sheets/manifest_schema.md)
   // and the report_paths_tests.js and check_em_dashes_tests.js publication and punctuation fixtures.
   // The glob below runs each one once; a second add() line would run it twice.
-  fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => add(OPUS + f, [], 'normal', 300, false, FAST_AUTO.has(path.basename(f, '.js'))));
+  // #1817: the Windows cleanup fixture took 307 s to set up under load, then starts six full janitor scans (up to
+  // 140 s each). Round 1147 s up to 1200 s for the short scans and teardown. Job probes get 510 s plus the claim race.
+  const windowsRunnerTimeouts = { 'runner_cleanup_tests.js': 1200, 'runner_job_tests.js': 600 };
+  fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => {
+    const timeout = process.platform === 'win32' ? windowsRunnerTimeouts[f] ?? 300 : 300;
+    add(OPUS + f, [], 'normal', timeout, false, FAST_AUTO.has(path.basename(f, '.js')));
+  });
   add(OPUS + 'progression_telemetry_test.js', [], 'normal', 300, false, true); // #27 step 11: per run XP by line and the F1 play log report
   add(OPUS + 'tree_effects_test.js'); // #305 jobs 1 to 4: every Glasswrights, Sunward, Eclipse and Chorus parity fixture actually fires its pick
   add(OPUS + 'tree_handoff_test.js', [], 'normal', 300, false, true); // #335: a tree pick made through the real campaign reaches the battle in both twins

@@ -237,6 +237,12 @@ profile, campaign run and meta unchanged without writing a save. For GPU capture
 Capture the original 12-admiral reference, current roster, fourth row, long names, empty state, tabs and Close hover. Rules
 and save data are unchanged.
 
+### The campaign map: double-click a stop (R424, issues 1801 and 1802)
+
+Double-clicking a map stop flies the fleet there (Ryan, Nov 23 2026: "Yes double click a map stop should fly you there").
+This is PR 1810's behaviour; a single click still selects the stop and shows its briefing. Any change to map input, and any
+merge of main into a map branch, keeps the double-click fly.
+
 ## 3. Steps
 
 1. **Name the decision.** One sentence: what does the player decide on this screen? Everything is ranked by how much it
