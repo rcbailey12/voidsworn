@@ -465,9 +465,17 @@ static func linear_luma(c: Color) -> float:
 	return 0.2126 * l.r + 0.7152 * l.g + 0.0722 * l.b
 
 
-# scale a tint (same hue and alpha) so the effective albedo `mean * tint` lies inside HULK_BAND
+# the luminance the shader actually lights: texture and tint each decoded to linear, then multiplied (Artoo on PR 1772 at
+# deddb79b: multiplying the encoded values first measured one space and corrected in another)
+static func effective_luma(mean: Color, tint: Color) -> float:
+	var m := mean.srgb_to_linear()
+	var t := tint.srgb_to_linear()
+	return 0.2126 * m.r * t.r + 0.7152 * m.g * t.g + 0.0722 * m.b * t.b
+
+
+# scale a tint (same hue and alpha) so the effective albedo, linear texture times linear tint, lies inside the band
 static func into_band(c: Color, mean := Color.WHITE, band := HULK_BAND) -> Color:
-	var y := linear_luma(Color(mean.r * c.r, mean.g * c.g, mean.b * c.b))
+	var y := effective_luma(mean, c)
 	if y <= 1e-5:
 		return c
 	var want := clampf(y, band.x, band.y)
@@ -498,7 +506,16 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 		# dimmed paint that reads brown; the tint is solved so paint times tint lands on OBSIDIAN, then held in the band
 		var t := Color(minf(1.0, OBSIDIAN.r / maxf(mean.r, 0.02)), minf(1.0, OBSIDIAN.g / maxf(mean.g, 0.02)),
 			minf(1.0, OBSIDIAN.b / maxf(mean.b, 0.02)), c.a)
-		b.albedo_color = into_band(t, mean, OBSIDIAN_BAND)
+		# held to the exact tint Ryan approved on PROPS_E (R421): its band step keeps the encoded-space measure it was
+		# approved with, so the linear-space fix below (Artoo at deddb79b) leaves the Eclipse look unchanged
+		var ye := linear_luma(Color(mean.r * t.r, mean.g * t.g, mean.b * t.b))
+		var we := clampf(ye, OBSIDIAN_BAND.x, OBSIDIAN_BAND.y)
+		if ye > 1e-5 and not is_equal_approx(we, ye):
+			var lt := t.srgb_to_linear()
+			var ke := we / ye
+			t = Color(minf(lt.r * ke, 1.0), minf(lt.g * ke, 1.0), minf(lt.b * ke, 1.0), 1.0).linear_to_srgb()
+			t.a = c.a
+		b.albedo_color = t
 		b.roughness = minf(src.roughness, OBSIDIAN_ROUGH)
 		return b
 	var burn := Color(DEAD_DIM, DEAD_DIM, DEAD_DIM).lerp(Color(float(sc[0]), float(sc[1]), float(sc[2])), soot)

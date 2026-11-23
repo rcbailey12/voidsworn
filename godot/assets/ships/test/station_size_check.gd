@@ -210,7 +210,7 @@ func _hulk_checks() -> void:
 	ecl_src.roughness = 0.7
 	var ecl := PROPS.derelict(ecl_src, "deathless")
 	var ee := PROPS.texture_mean(ecl_src) * ecl.albedo_color
-	var ey := PROPS.linear_luma(Color(ee.r, ee.g, ee.b))
+	var ey := PROPS.effective_luma(PROPS.texture_mean(ecl_src), ecl.albedo_color)
 	_report(ee.b > ee.r and ee.r > ee.g and ey <= PROPS.HULK_BAND.y + 1e-3 and ey >= PROPS.HULK_BAND.x - 1e-3
 		and ecl.roughness <= 0.3 + 1e-4 and not ecl.emission_enabled,
 		"an Eclipse hulk over warm paint lands on dark violet obsidian %s (%.3f linear), glossy" % [str(ee), ey])
@@ -221,7 +221,7 @@ func _hulk_checks() -> void:
 	pale.albedo_texture = ImageTexture.create_from_image(img)
 	var pg := PROPS.derelict(pale, "ithar")
 	var eff := PROPS.texture_mean(pale) * pg.albedo_color
-	var ye := PROPS.linear_luma(Color(eff.r, eff.g, eff.b))
+	var ye := PROPS.effective_luma(PROPS.texture_mean(pale), pg.albedo_color)
 	# the mean comes from a small mip, not the whole map (Artoo on PR 1772): a 1024 map of two-tone squares, mipmapped
 	var big := Image.create(1024, 1024, false, Image.FORMAT_RGBA8)
 	for y in 64:
@@ -279,6 +279,24 @@ func _hulk_checks() -> void:
 			if dead > maxf(live * PROPS.DEAD_DIM, PROPS.HULK_BAND.x) + 1e-3:
 				lifted.append("%s %s: %.4f live, %.4f dead" % [fac, str(col), live, dead])
 	_report(lifted.is_empty(), "no wreck is lighter than its dimmed live paint (R425): %s" % str(lifted))
+	# textured paint (Artoo at deddb79b): measured and corrected in one linear space, so a textured hulk lands under the
+	# ceiling exactly, and never above its dimmed live paint (Eclipse obsidian is checked on its own above)
+	var tex_off := []
+	for v in [0.5, 0.25, 0.9]:
+		var img2 := Image.create(8, 8, false, Image.FORMAT_RGBA8)
+		img2.fill(Color(v, v * 0.9, v * 0.8))
+		var tm := StandardMaterial3D.new()
+		tm.albedo_texture = ImageTexture.create_from_image(img2)
+		tm.albedo_color = Color(0.6, 0.6, 0.6)
+		for fac in ["hegemony", "corsair", "chorus", "ithar"]:
+			var dm2 := PROPS.derelict(tm, fac)
+			var mean2 := PROPS.texture_mean(tm)
+			var live2 := PROPS.effective_luma(mean2, tm.albedo_color)
+			var dead2 := PROPS.effective_luma(mean2, dm2.albedo_color)
+			var cap: float = (PROPS.CHORUS_HULK_BAND if fac == "chorus" else PROPS.HULK_BAND).y
+			if dead2 > cap + 1e-4 or dead2 > maxf(live2 * PROPS.DEAD_DIM, PROPS.HULK_BAND.x) + 1e-4:
+				tex_off.append("%s %.2f: live %.4f dead %.4f cap %.3f" % [fac, v, live2, dead2, cap])
+	_report(tex_off.is_empty(), "textured hulks land under the ceiling in linear space, never above dimmed paint: %s" % str(tex_off))
 
 
 func _board(terrain: Dictionary, holes: Array, units: Array, map: Dictionary, radius: int, seed := 7) -> Node3D:
