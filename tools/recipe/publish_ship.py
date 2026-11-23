@@ -24,6 +24,15 @@
       the two manifests (only CODE's row changed; every other ship's row stays as it is now) in BACKUP/undone_<n>/stage, and
       swaps them in, the published files moved to BACKUP/undone_<n>/published. Any failure there puts the published state
       back. Prints UNDO PASS, or UNDO FAILED with the reason and exit 1. Nothing is deleted.
+  publish_ship.py manifest-patch GAME CODE OUT.json
+      For the Board (issue 1357): reads CODE's row from GAME/assets/ships/manifest.json and writes {code, row, source} to
+      OUT.json so the repo manifest can follow the publish. Refuses when the row is missing, has no files table, or an entry
+      lacks bytes or a full sha256; also refuses when a listed file under GAME/assets/ships/CODE is missing or differs in
+      size or sha256.
+  publish_ship.py apply-patch PATCH.json MANIFEST.json
+      For the Board (issue 1357): puts the patch row for its code into MANIFEST.json, replacing or adding only ships[CODE]
+      and keeping every other key and ship row in order. Writes indent 1 and LF line ends, so applying the same patch twice
+      leaves the file byte for byte as it was.
 """
 import hashlib
 import json
@@ -65,6 +74,48 @@ def row(game, rel, code):
     if not p.is_file():
         return None
     return read_json(p).get('ships', {}).get(code)
+
+
+def manifest_patch(game, code, out):
+    """issue 1357: hands the Board the manifest row a publish just made live for CODE, checked against the installed files,
+    so git's manifest can follow the publish instead of drifting from the PC build"""
+    game = Path(game)
+    data = row(game, ASSET, code)
+    if data is None:
+        raise ValueError(f'{code} has no row in {game / ASSET}')
+    files = data.get('files') if isinstance(data, dict) else None
+    if not isinstance(files, dict) or not files:
+        raise ValueError(f'the {code} row in {game / ASSET} has no files table')
+    live = game / 'assets' / 'ships' / code
+    for name, entry in files.items():
+        digest = entry.get('sha256') if isinstance(entry, dict) else None
+        if (not isinstance(entry, dict) or 'bytes' not in entry
+                or not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest)):
+            raise ValueError(f'the {code} row lists {name} without bytes and a full sha256')
+        p = live / name
+        if not p.is_file():
+            raise ValueError(f'{name} is missing from {live}')
+        size = p.stat().st_size
+        if size != int(entry['bytes']):
+            raise ValueError(f'{name} is {size} bytes, not the {entry["bytes"]} its {code} row lists')
+        if sha256(p) != digest:
+            raise ValueError(f'{name} is not the sha256 its {code} row lists')
+    write_json(out, dict(code=code, row=data, source=f'{game}/assets/ships/manifest.json'))
+    print(f'[publish] manifest patch {code}: {len(files)} files')
+
+
+def apply_patch(patch, manifest):
+    """issue 1357: puts a manifest-patch row into a manifest, replacing or adding only ships[CODE] and leaving every other
+    key and row in order; the same patch applied twice leaves the file byte for byte as it was"""
+    patch = read_json(patch)
+    code, data = patch.get('code'), patch.get('row')
+    if not isinstance(code, str) or not isinstance(data, dict):
+        raise ValueError('the patch has no code and row')
+    target = Path(manifest)
+    whole = read_json(target)
+    whole.setdefault('ships', {})[code] = data
+    target.write_text(json.dumps(whole, indent=1) + '\n', encoding='utf-8', newline='\n')
+    print(f'[publish] applied {code} to {manifest}')
 
 
 def _listed(files, code):
@@ -332,7 +383,8 @@ def locked(game, *command):
 
 
 def main(cmd, *args):
-    fn = dict(receipt=receipt, backup=backup, seal=seal, undo=undo, restore=restore, locked=locked).get(cmd)
+    fn = dict(receipt=receipt, backup=backup, seal=seal, undo=undo, restore=restore, locked=locked,
+              **{'manifest-patch': manifest_patch, 'apply-patch': apply_patch}).get(cmd)
     if fn is None:
         raise ValueError(f'unknown command {cmd!r}')
     return fn(*args) or 0

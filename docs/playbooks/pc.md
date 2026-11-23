@@ -116,7 +116,9 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   installed files matching the collected export count as
   rebuildable, anything else is saved into `out\checkout_leftovers_repo` first). A ship build that is never published
   keeps its slimmer clone: the janitor never removes a ship clone (issue 1396); an abandoned one goes to the Board as a
-  one-off. A second publish from the same job folder needs a new ship run.
+  one-off. A second publish from the same job folder needs a new ship run; it also writes `manifest_patch_<CODE>.json`
+  in its publish folder, which the Board applies with `publish_ship.py apply-patch` and commits with the publish so
+  `godot/assets/ships/manifest.json` follows every publish (issue 1357).
 - `opus_job_head.ps1 survey` lists every job checkout and ship clone on the PC with its size and state, read only, for
   a Board one-off cleanup request to Ryan.
 
