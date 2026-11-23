@@ -172,6 +172,15 @@ type "%P%\log_seal.txt" >> "%RES%"
 if not "%EL%"=="0" set "FAILED=seal (log_seal.txt)"
 if defined FAILED goto finish
 
+rem 6b. the manifest row now live for CODE, for the Board to commit with the publish
+set "TMO_STEP=publish manifest patch %CODE%"
+call "%TMO%" 600 "%BPY%" -B "%PUB%" manifest-patch "%GAME%" %CODE% "%P%\manifest_patch_%CODE%.json" > "%P%\log_manifest_patch.txt" 2>&1
+set EL=%ERRORLEVEL%
+type "%P%\log_manifest_patch.txt" >> "%RES%"
+if not "%EL%"=="0" set "FAILED=manifest patch (log_manifest_patch.txt)"
+if defined FAILED goto finish
+echo manifest patch: %P%\manifest_patch_%CODE%.json >> "%RES%"
+
 rem 7. the in-game picture, from the published copy
 set "FACS="
 for /f "delims=_" %%F in ("%SHIP%") do set "FACS=%%F"
