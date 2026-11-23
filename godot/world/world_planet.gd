@@ -530,38 +530,6 @@ float craters(vec3 d, float scale, float dens) {
 	float unused = 0.0;
 	return craters_r(d, scale, dens, unused);
 }
-// Wave 0 (Fable and Astra, Nov 23): short crack arcs on the sphere, each a gently curved piece of a small circle with
-// faded ends, one per occupied cell of a 3D grid, so arcs cross at all angles and nothing loops back on itself (the
-// old stretched-noise lineae curled into scribbles). Returns the dark band (0 to 1); crest gets the pale ridge down the
-// middle of the wider ones; halo gets a band halo_k times as wide on the same arcs (volcanic scorch, one pass for
-// both). w is the half width in radians.
-float arcs(vec3 d, float scale, float dens, float w, float len, float halo_k, inout float crest, inout float halo) {
-	vec3 p = d * scale;
-	// the 27 cells around this one: an arc reaches at most one cell from its centre, so none is cut off by the
-	// edge of the cells this looks through (the Wave 0 audit saw straight cut ends with the 8 nearest cells)
-	vec3 b = floor(p) - 1.0;
-	float band = 0.0;
-	for (int i = 0; i < 27; i++) {
-		vec3 c = b + vec3(float(i % 3), float((i / 3) % 3), float(i / 9));
-		if (hh(c + seed + 0.5) > dens) continue;
-		vec3 cp = normalize(c + 0.25 + 0.5 * vec3(hh(c + 1.7), hh(c + 3.1), hh(c + 4.9)));
-		vec3 n = vec3(hh(c + 6.1), hh(c + 7.3), hh(c + 8.9)) - 0.5;
-		n = normalize(n - cp * dot(n, cp));
-		float bend = (hh(c + 10.3) - 0.5) * 1.1 / scale;    // a small circle: curved, never a loop
-		float along = acos(clamp(dot(d, cp), -1.0, 1.0)) * scale;
-		float half_len = len * (0.55 + 0.45 * hh(c + 12.7));   // len is at most 1 cell
-		if (along >= half_len || dot(d, cp) <= 0.0) continue;   // past this arc's end: skip the noise below (load time)
-		float fade = (1.0 - smoothstep(half_len * 0.45, half_len, along)) * step(0.0, dot(d, cp));
-		// tapered toward the ends, and wandering a little along its length like a real fracture
-		float ww = w * (0.6 + 0.8 * hh(c + 11.9)) * mix(0.35, 1.0, fade);
-		float wander = (wvn3(d * scale * 3.0 + c * 1.3) - 0.5) * 2.2 / scale * 0.06 + (wvn3(d * 140.0 + c) - 0.5) * ww * 0.6;
-		float dist = abs(dot(d, n) - bend * along * along / (scale * 2.0) + wander);
-		band = max(band, (1.0 - smoothstep(ww * 0.35, ww, dist)) * fade);
-		crest = max(crest, (1.0 - smoothstep(ww * 0.05, ww * 0.4, dist)) * fade * step(0.012, ww));   // wide enough not to alias
-		halo = max(halo, (1.0 - smoothstep(ww * halo_k * 0.35, ww * halo_k, dist)) * fade);
-	}
-	return band;
-}
 // turn v about the unit axis k by a (Rodrigues)
 vec3 about(vec3 v, vec3 k, float a) { return v * cos(a) + cross(k, v) * sin(a) + k * dot(k, v) * (1.0 - cos(a)); }
 
@@ -662,8 +630,8 @@ void fragment() {
 		cloud *= smoothstep(0.3, 0.55, fine + 0.12);
 		cloud = max(cloud, smoothstep(0.62, 0.8, fine) * 0.3 * smoothstep(0.36, 0.5, big));
 	} else if (kind == 3) {
-		// volcanic desert (issue 1765): rust plains, dark basalt flow lobes, canyon networks with fine ridged grit, and
-		// glowing fissures in the canyon floors and along the young flows
+		// volcanic desert (issue 1765): ash plains, dark basalt flow lobes, canyon networks with fine ridged grit, and
+		// lava lakes in the low basins
 		vec3 w = vec3(fb(q * 1.5, 4), fb(q * 1.5 + 5.0, 4), 0.0) - 0.5;
 		float h = fb(q * 2.0 + w, 7);
 		float can = rg(q * 4.0 + w * 2.0, 6);
@@ -671,19 +639,23 @@ void fragment() {
 		float grit = fb(q * 40.0, 3);
 		alb = mix(cb, ca, smoothstep(0.35, 0.65, h));
 		alb = mix(alb, cc, smoothstep(0.7, 0.9, fb(q * 6.0 + 2.0, 3)) * 0.5);
-		// Wave 0 (Nov 23): basalt flows with crisp edges (they blurred into a haze at the battle camera), and glowing
-		// fissures wide enough to read at camera 170, each inside a dark scorched halo
+		// Wave 0 (Nov 23): basalt flows with crisp edges (they blurred into a haze at the battle camera)
 		float flow = smoothstep(0.5, 0.515, fb(q * 3.5 + w * 1.5 + 40.0, 5));
 		alb = mix(alb, cb * 0.8, flow * 0.85);
 		alb *= mix(0.62, 1.0, (1.0 - smoothstep(0.6, 0.85, can)));
 		alb *= (0.85 + 0.25 * grit) * (1.0 - smoothstep(0.7, 0.95, fine) * 0.3);
-		float unused_crest = 0.0;
-		// few and restrained: a handful of long rifts, never a glowing web
-		float scorch = 0.0;
-		float fis = arcs(d, 2.0, 0.3, 0.009, 1.0, 3.3, unused_crest, scorch);
-		alb *= 1.0 - scorch * 0.55;
-		relief = clamp(h * 0.6 + (1.0 - can) * 0.25 + fine * 0.15 - flow * 0.01 - fis * 0.08, 0.0, 1.0);
-		lava = max(fis * 0.6, smoothstep(0.86, 0.96, can) * (1.0 - smoothstep(0.38, 0.58, h)) * 0.5);
+		// Ryan (Nov 23): no crack lines. The glow is shaped by the land: lava lakes in the lowest basins, short channels
+		// feeding them along the canyon floors just above, and dark cooled crust around both
+		float low = 1.0 - smoothstep(0.36, 0.46, h);
+		float lake = 1.0 - smoothstep(0.33, 0.38, h);
+		float chan = smoothstep(0.8, 0.93, can) * (1.0 - smoothstep(0.38, 0.48, h));
+		alb *= 1.0 - low * 0.45;
+		alb = mix(alb, cb * 0.4, lake * 0.85);
+		// a lake glows brightest at its deepest point, under a broken skin of cooling crust
+		float deep = 1.0 - smoothstep(0.26, 0.38, h);
+		float crust = smoothstep(0.42, 0.62, fb(q * 34.0 + 3.0, 4));
+		relief = clamp(h * 0.6 + (1.0 - can) * 0.25 + fine * 0.15 - flow * 0.01 - lake * 0.05, 0.0, 1.0);
+		lava = max(lake * deep * (1.0 - crust * 0.75), chan * 0.45);
 		cloud = smoothstep(0.7, 0.86, fb(q * 3.0 + 9.0 + w, 4)) * 0.15;
 	} else if (kind == 4) {
 		// barren cratered (issue 1765): highlands and dark maria, four sizes of crater with central peaks, bright young
@@ -696,22 +668,16 @@ void fragment() {
 		alb = mix(alb, cc * 1.05, clamp(ray, 0.0, 1.0) * 0.45);
 		relief = 0.5 + cr * 0.3 - m * 0.05;
 	} else {
-		// ice world (issue 1765): bright glacial plains cut by long dark rust lineae at three scales (each a pale crest
-		// between two dark bands), blue-grey chaos terrain of broken blocks, fine fractures, a few craters, and a glossy
+		// ice world (issue 1765): bright glacial plains with faint wide bands of older ice, blue-grey chaos terrain of broken blocks, fine fractures, a few craters, and a glossy
 		// sheen for the sun to catch
 		float base = fb(q * 3.0, 5);
 		alb = ca * (0.88 + 0.16 * base);
 		alb = mix(alb, mix(ca, cb, 0.3), smoothstep(0.42, 0.7, fb(q * 1.6 + 21.0, 4)) * 0.55);
-		// lineae (Wave 0, Nov 23): short crossing crack arcs at three scales (arcs() above), long ones sparse and wide
-		// with a pale crest, short ones dense and thin; frosted ground between them
-		float crest = 0.0;
-		float no_halo = 0.0;
-		float lin = arcs(d, 2.4, 0.4, 0.014, 1.0, 1.0, crest, no_halo);
-		lin = max(lin, arcs(d, 6.0, 0.28, 0.008, 0.8, 1.0, crest, no_halo) * 0.75);
-		lin = max(lin, arcs(d, 15.0, 0.22, 0.004, 0.7, 1.0, crest, no_halo) * 0.5);
+		// Ryan (Nov 23): no crack lines. Faint wide bands of bluer, older ice instead, soft edged and much broader
+		// than a line, over frosted ground
+		float band = smoothstep(0.6, 0.85, 1.0 - abs(fb(q * 0.9 + 13.0, 4) * 2.0 - 1.0));
 		alb *= 0.94 + 0.1 * fb(q * 26.0, 3);
-		alb = mix(alb, cb, lin * 0.55);
-		alb = mix(alb, ca * 1.06, crest * 0.7);
+		alb = mix(alb, mix(ca, cc, 0.4), band * 0.5);
 		float chaos = smoothstep(0.6, 0.7, fb(q * 2.2 + 31.0, 4));
 		float blocks = rg(q * 22.0, 3);
 		alb = mix(alb, mix(cc * 0.85, cb * 0.85, smoothstep(0.55, 0.85, blocks)), chaos * 0.7);
@@ -719,8 +685,8 @@ void fragment() {
 		alb = mix(alb, cc, smoothstep(0.86, 0.96, frac) * 0.45);
 		float cr = craters(d, 10.0, 0.25) * 0.3;
 		alb *= 1.0 + cr * 0.2;
-		relief = 0.5 + crest * 0.05 - lin * 0.08 + (base - 0.5) * 0.2 - chaos * 0.1 + blocks * chaos * 0.12 + cr * 0.2;
-		ocean = 0.55 * (1.0 - lin * 0.7) * (1.0 - chaos * 0.5);   // the glossy sheen on clean ice
+		relief = 0.5 - band * 0.03 + (base - 0.5) * 0.2 - chaos * 0.1 + blocks * chaos * 0.12 + cr * 0.2;
+		ocean = 0.55 * (1.0 - band * 0.3) * (1.0 - chaos * 0.5);   // the glossy sheen on clean ice
 	}
 	vec4 o;
 	if (pass_id == 2) {
