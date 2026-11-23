@@ -517,7 +517,7 @@ function Test-ReceiptTree($receipt, $want) {
     $at = $receipt.Path + '/' + $k
     if ($have[$at] -ne $want[$k]) { @{ Key = $k; Absent = -not $have.ContainsKey($at) } }
   })
-  return @{ Missing = $miss; Skipped = $skipped }
+  return @{ Missing = $miss; Skipped = $skipped; Tip = $sha }
 }
 function Test-RelaySkipped($skipped, $key, $file) {
   # The relay leaves out files over 10 MB and lists each in skipped_over_10MB.txt as "<path with \> <size> MB" (Artoo on
@@ -574,14 +574,14 @@ function Test-PlaceProof($place, $got) {
   $more = if ($bad.Count -gt 3) { "; and $($bad.Count - 3) more" } else { '' }
   return ((($bad | Select-Object -First 3) -join '; ') + $more)
 }
-function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
+function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '', $receipt = $null, [ref]$proof) {
   # Issue 1497 (Artoo on PR 1498): a checkout goes only once this folder's own results are relayed. $base names its
   # receipt (relay_receipt.txt: the branch and the tree folder that holds $base's results). Every file under each of
   # $dirs ($skip names leftovers folders this file writes after the relay) must be in that branch's tree at the
   # receipt's folder plus its path under $base, with the same bytes, or be a file over 10 MB the relay left out and
   # listed in that folder's skipped_over_10MB.txt (Test-RelaySkipped; it stays on the PC). No receipt, no branch or any
   # other difference: kept, and the reason names the first files.
-  $receipt = Get-RelayPlace $base $job $tree
+  if (-not $receipt) { $receipt = Get-RelayPlace $base $job $tree }
   if (-not $receipt) { throw "results not relayed yet: no relay branch named for $base" }
   $got = Get-ResultWant $base $dirs $skip
   $want = $got.Want; $files = $got.Files
@@ -603,10 +603,11 @@ function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
     $more = if ($bad.Count -gt 3) { "; and $($bad.Count - 3) more" } else { '' }
     throw ("results not relayed yet: {0}:{1}: {2}{3}" -f $receipt.Ref, $receipt.Path, (($bad | Select-Object -First 3) -join '; '), $more)
   }
+  if ($proof) { $proof.Value = @{ Place = $receipt; Tip = $r.Tip } }
   foreach ($k in $big) { Write-Output "result kept on the PC only: $k (the relay listed it in skipped_over_10MB.txt)" }
   Write-Output "results relayed: $($want.Count - $big.Count) of $($want.Count) result file(s) are on $($receipt.Ref) under $($receipt.Path), $($big.Count) over 10 MB listed as skipped"
 }
-function Drop-Attempt($attempt) {
+function Drop-Attempt($attempt, $place = $null) {
   # The listed pinned checkouts of one attempt folder, once the attempt passed and its results are relayed; adds the
   # bytes removed to $script:freed. Every refusal is logged, never thrown. A live run takes the mirror writers' lock
   # first and holds it through the relay proof, any earlier unfinished removal (review of PR 1644: a tomb is finished
@@ -624,14 +625,27 @@ function Drop-Attempt($attempt) {
     try { $script:mirrorLock = Lock-Mirror; $script:relayLock = Lock-RelayMirror }
     catch { if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null }; Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
   }
-  try { Drop-Proven $attempt $list $outs $pins } finally {
+  $followUp = $null
+  try { Drop-Proven $attempt $list $outs $pins $place ([ref]$followUp) } finally {
     if ($script:relayLock) { $script:relayLock.Dispose(); $script:relayLock = $null }
     if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
+  if ($followUp) {
+    $relayPush = Join-Path (Split-Path -Parent $PSScriptRoot) 'relay_push.ps1'
+    $shell = if ($unix) { 'pwsh' } else { 'powershell.exe' }
+    $argsForRelay = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $relayPush, $followUp.Place.Ref.Substring('relay/pc-out-'.Length),
+      $attempt, 'leftovers', '-TreePath', $followUp.Place.Path, '-ProvenTip', $followUp.Tip)
+    $ErrorActionPreference = 'Continue'
+    & $shell @argsForRelay 2>&1 | ForEach-Object { "$_" }
+    $sent = $LASTEXITCODE -eq 0
+    $ErrorActionPreference = 'Stop'
+    if (-not $sent) { Write-Output "checkout leftovers kept locally in $attempt. Retry with relay_push leftovers." }
+  }
 }
-function Drop-Proven($attempt, $list, $outs, $pins) {
+function Drop-Proven($attempt, $list, $outs, $pins, $place, [ref]$followUp) {
   # Drop-Attempt's proof and removals, under the held mirror lock on a live run.
   $present = @(foreach ($n in $pins.Keys) { if (Test-Path -LiteralPath (Join-Path $attempt $n)) { $n } })
-  try { Assert-Relayed $attempt $outs @('checkout_leftovers') (Split-Path -Leaf (Split-Path -Parent $attempt)) (Split-Path -Leaf $attempt) }
+  $proof = $null
+  try { Assert-Relayed $attempt $outs @('checkout_leftovers') (Split-Path -Leaf (Split-Path -Parent $attempt)) (Split-Path -Leaf $attempt) $place ([ref]$proof) }
   catch { Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
   if ($script:dropDry) {
     foreach ($n in $present) { Write-Output "checkout $n would be checked and removed after the relay: $(Join-Path $attempt $n)" }
@@ -665,6 +679,7 @@ function Drop-Proven($attempt, $list, $outs, $pins) {
         try { Write-Output (Save-Leftovers $repo $work $dest) }
         catch { throw ("it holds {0} path(s) that are not rebuildable leftovers and could not be saved ({1}), e.g. {2}" -f $work.Count, $_.Exception.Message, (($work | Select-Object -First 5) -join '; ')) }
       }
+      if ($work.Count -and $proof.Place.Ref -like 'relay/*') { $followUp.Value = $proof }
       $gone = Remove-Owned $repo -Commit $pin
       $script:freed += $gone
       Write-Output ("checkout {0} removed after the job ({1:N1} GB): {2}" -f $name, ($gone / 1GB), $repo)
@@ -1228,11 +1243,17 @@ switch ($Action) {
     $problem = Get-AttemptProblem $attempt
     if ($problem) { Write-Output "checkouts kept: $problem"; break }
     $script:freed = [long]0
-    if ($B) { try { Write-RelayReceipt $attempt $B $C } catch { Write-Output "checkouts kept: $($_.Exception.Message)"; break } }
+    $place = $null
+    if ($B -like 'relay/*') {
+      if ("$B $C" -notmatch ('\A' + $relayPattern + ' [A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\z') -or "$B $C".Contains('..')) {
+        Write-Output "checkouts kept: relay receipt not accepted: $B $C"; break
+      }
+      $place = @{ Ref = $B; Path = $C; From = 'the given relay place' }
+    } elseif ($B) { try { Write-RelayReceipt $attempt $B $C } catch { Write-Output "checkouts kept: $($_.Exception.Message)"; break } }
     # This attempt only (review of PR 1644): earlier attempts of the job are cleared by their own relay waiter or the
     # janitor's relay sweep, which hold the job lease, the issue lock and the keep-list and process checks; an unguarded
     # sibling sweep here could race them.
-    Drop-Attempt $attempt
+    Drop-Attempt $attempt $place
     Write-Free $script:freed
   }
   'dropwait' {
