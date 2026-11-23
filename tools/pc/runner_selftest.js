@@ -85,7 +85,14 @@ if (process.platform !== 'win32') {
   console.log('SKIP Windows fault matrix: run tools/pc/runner_selftest.bat on the PC');
   process.exit(0);
 }
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner687 proof '));
+// Issue 1739: inside a Codex lane TEMP is the run's own scratch (Temp\voidsworn-run-<issue>-<32 hex>), about 50
+// characters deeper. The lane fixture's nested profile, board and checkout paths then passed MAX_PATH (260) and the
+// mock agent never reached its checkout; it passed alone and on a retry with a shorter TEMP. The fixture root sits
+// beside that scratch, in the same Temp folder a standalone run uses.
+function fixtureTemp(temp = os.tmpdir()) {
+  return /^voidsworn-run-(?:[1-9][0-9]*-)?[0-9a-f]{32}$/i.test(path.basename(temp)) ? path.dirname(temp) : temp;
+}
+const root = fs.mkdtempSync(path.join(fixtureTemp(), 'runner687 proof '));
 const concurrency = 10;
 const testChildren = [];
 const testPidFiles = [];
