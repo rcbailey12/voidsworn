@@ -452,6 +452,7 @@ def build(K):
             ob = K._obj('in_deck_%s_%d' % (name, si), vv, ff, 'cd5_frame', inside=True)
             mod = ob.modifiers.new('shell', 'SOLIDIFY'); mod.thickness = 0.06
         K.inside.append(dict(kind='deck', name=name, z=z, x=(edges[0], edges[-1]), note='layered glass deck follows the leaf, one span per compartment'))
+    cd5_rings = []      # where the frames stand, so the rooms (below) sit in the bays between them
     for i in range(15):
         x = -11.6 + 1.35 * i
         # off every break (its jagged path) and out from under every breach bite (death seam check, r5b)
@@ -462,6 +463,7 @@ def build(K):
             x = near[0] + (0.65 if near[0] in BREAKS else 0.9) * (1 if x >= near[0] else -1) + (0.01 if x >= near[0] else -0.01)
         if x > 6.6 or any(abs(x - b) < 0.65 for b in BREAKS) or any(abs(x - b) < 0.9 for b in BREACH_X):
             continue    # the nose is too thin for a frame, or no clear room between a break and a breach
+        cd5_rings.append(x)
         pts = [skin(x, a * 2 * math.pi / 64, inset=1.0) for a in range(65)]
         K._obj('in_frame_%02d' % i, *tube_mesh(pts, [0.065] * len(pts), 8), 'cd5_frame', inside=True)
         K.inside.append(dict(kind='bulkhead', name='annealed frame %02d' % i, x=x, note='open structural glass frame'))
@@ -482,8 +484,9 @@ def build(K):
     # beside the light cores between the decks, the crystal heart and its racks under the lower deck; the light reservoirs keep
     # the space over the upper deck
     env = lambda x: max(0.0, math.sin(math.pi * (x + 12.75) / 23.0)) ** 0.45
-    gw_kit('rooms').rooms(K, lambda x: 0.75 * SLIM * width(x), lambda x: 0.75 * SLIM * (0.30 + 2.15 * env(x)), -11.3, 6.6,
-                          BREAKS, BREACH_X, y0=0.0, gap=GAP, deck_z=(-0.55 * SLIM, 0.20 * SLIM), bands=('mid', 'low'))
+    gw_kit('rooms').rooms(K, lambda x: 0.62 * SLIM * width(x), lambda x: 0.62 * SLIM * (0.30 + 2.15 * env(x)), -11.3, 6.6,
+                          BREAKS, BREACH_X, y0=0.0, gap=GAP, deck_z=(-0.55 * SLIM, 0.20 * SLIM), rings=cd5_rings,
+                          ring_r=0.065, bands=('mid', 'low'))
     K.inside.append(dict(kind='space', name='continuous light core and stern drive chamber', x=(-12, 9),
                          y=(-0.8, 0.8), z=(-0.6, 0.9), mat='layered glass and light', note='three braided waveguides throughout the hull'))
     K.armour('annealed outer glass', 0.065, 'actual shell thickness; layered blown glass, no armour plates')
