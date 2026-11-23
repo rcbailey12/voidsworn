@@ -140,10 +140,10 @@
    "today": "gun_las",
    "group": "weapon_directorate",
    "seconds": 0.6,
-   "model": "eleven_text_to_sound_v2",
-   "influence": 0.65,
+   "model": "eleven_text_to_sound_v3",
+   "influence": 0.75,
    "takes": 2,
-   "prompt": "Single shot from a military sci-fi starship plasma cannon, close and dry: an immediate tight capacitor-bank discharge thump with a short hot ionized energy crack and a clean regulated low-mid punch, fast clean cutoff. Precise and controlled, firm attack with a smooth top, no reverb."
+   "prompt": "Large warship plasma cannon firing one bolt: a bright sharp electric zap-crack of superheated plasma, a crackling buzz of energy that snaps off fast, and a tight capacitor thump under it. Blue-white energy weapon, clean and military, short, no metal, no reverb."
   },
   {
    "id": "wep_directorate_turbo",
@@ -233,9 +233,10 @@
    "today": "gun_spine",
    "group": "weapon_chorus",
    "seconds": 0.6,
-   "influence": 0.65,
+   "influence": 0.75,
    "takes": 2,
-   "prompt": "Single huge bone spine fired from a giant living alien starship creature, close and dry: an immediate deep muscular thud of release with a hard dense chitin crack and a short heavy tail, quick decay. Large predatory alien biology, heavy and solid, no metal, no reverb."
+   "prompt": "A giant living alien creature launching a bone spike from its own body: a thick wet gristle crunch and a sharp splintering bone crack as the spike wrenches free, with a short creak of straining sinew. Organic and visceral, monstrous scale, short, no metal, no reverb.",
+   "model": "eleven_text_to_sound_v3"
   },
   {
    "id": "wep_chorus_bioplasma",
@@ -355,10 +356,10 @@
    "today": "gun_rail",
    "group": "weapon_eclipse",
    "seconds": 0.7,
-   "model": "eleven_text_to_sound_v2",
-   "influence": 0.65,
+   "model": "eleven_text_to_sound_v3",
+   "influence": 0.75,
    "takes": 2,
-   "prompt": "Single shot from a huge ancient alien machine starship null cannon, close and dry: an immediate hard heavy magnetic slam with a crushing low-end punch and a short hollow cold tone that drops away fast into silence. Cold and lethal, deep and weighty with a firm clean attack, no fire, no reverb."
+   "prompt": "A huge ancient alien railgun firing one round: a sharp cold magnetic crack, like a giant steel cable snapping under tension, then a hollow ringing tone that drops in pitch and vanishes into silence. Dark, ancient and precise, no fire, no explosion, no reverb."
   },
   {
    "id": "wep_eclipse_nlance",
@@ -538,9 +539,10 @@
    "today": "hit_wet",
    "group": "impact",
    "seconds": 0.9,
-   "influence": 0.65,
+   "influence": 0.75,
    "takes": 2,
-   "prompt": "Heavy projectile striking the thick armored hide of a giant living alien starship creature, close and dry: an immediate deep dense thud into chitin plate and heavy muscle, a hard shell crack, and a short thick low burst of fluid pressure. Enormous creature scale, heavy and blunt, no metal, no reverb."
+   "prompt": "A heavy shell punching into the hide of a giant living creature: a deep meaty impact into thick flesh, a crunch of cracking chitin, and a short wet gristle splatter. Visceral organic hit, monstrous scale, short, no metal, no reverb.",
+   "model": "eleven_text_to_sound_v3"
   },
   {
    "id": "shd_break_energy",
@@ -660,9 +662,10 @@
    "today": "boom_l:chorus",
    "group": "death_beat",
    "seconds": 1.7,
-   "influence": 0.65,
+   "influence": 0.75,
    "takes": 2,
-   "prompt": "Colossal armored living alien starship creature splitting apart, close and dry: an immediate heavy cracking of thick rigid chitin armor plates, then a deep visceral low-end rupture of dense tissue and thick sinew cords parting under enormous pressure, settling into silence. Terrifying monster death, dense and heavy, no fire, no metal, no reverb."
+   "prompt": "A colossal living alien leviathan dying: its armored shell splits with deep groaning cracks, thick wet flesh and sinew give way in a heavy visceral rupture, and its huge body mass slumps and settles into silence. Monstrous and biological, no vocals, no fire, no metal, no reverb.",
+   "model": "eleven_text_to_sound_v3"
   },
   {
    "id": "death_ithar_shatter",
