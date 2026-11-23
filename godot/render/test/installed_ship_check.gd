@@ -44,7 +44,8 @@ func _run() -> void:
 		return
 	var e: Dictionary = man["ships"][code]
 	check(FileAccess.file_exists(str(e.get("res", ""))), "the cached scene %s is missing" % str(e.get("res", "")))
-	check(str(e.get("src", "")) == BA.source_stamp(ships, code), "the cache was built from other files than the installed ones (stamp %s, now %s)" % [str(e.get("src", "")), BA.source_stamp(ships, code)])
+	var stamp := BA.source_stamp(ships, code)
+	check(str(e.get("src", "")) == stamp, "the cache was built from other files than the installed ones (stamp %s, now %s)" % [str(e.get("src", "")), stamp])
 	for x in ["damage", "wreck"]:
 		var has_src := FileAccess.file_exists(ships.path_join(code).path_join("%s_%s.glb" % [code, x]))
 		check(has_src or not e.has(x), "the cache still names an old %s scene (%s) the ship folder no longer has" % [x, str(e.get(x, ""))])
