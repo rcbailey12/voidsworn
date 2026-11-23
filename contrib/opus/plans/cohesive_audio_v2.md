@@ -91,8 +91,8 @@ Audio reads the exact same runtime events and faction metadata (`godot/fx/factio
 - **Takes 2 versus 1:** 1 take on every SFX would be 5,113 by the generator's rates; the second take costs about 630 real credits. Keep 2: the scarce resource is Ryan's listening time, not credits.
 - **Run in waves:**
   - **Wave A (done, 298 real credits billed):** 14 items, 27 takes (`board/pc-out-wavea1752`). Exposed 3 systemic prompt traps; only 3 of 14 items cleared an AAA bar (see section 7).
-  - **Wave A2 (next, 10 items, 20 takes, 976 estimated / ~270 real credits):** `--only wep_directorate_laser,wep_eclipse_gauss_fire,wep_chorus_spines,imp_bio_flesh,death_chorus_rupture,wep_ithar_shard,wep_sunward_lance_beam,shd_break_energy,ui_reward_vault,imp_metal_heavy --max-credits 1200`.
-  - **Wave B:** the remaining items with `--max-credits 9600`, strictly held until Wave A2 passes ear verification. Any re-roll writes to a fresh, revision-named output folder and its dry run must show every take as still to make (the generator skips a file whose name and size match, whatever the prompt).
+  - **Wave A2 (historical, 10 items, 20 takes, 272 real credits billed):** the command and its manifest revision are recorded in section 7.
+  - **Wave B:** run the remaining items with `--max-credits 9600` after Wave A3 clears Ryan's ear check and the prompt updates in section 8 are applied. Any re-roll writes to a fresh, revision-named output folder and its dry run must show every take as still to make (the generator skips a file whose name and size match, whatever the prompt).
 - **Listening page:** each item's `today` field names its baseline cue exactly (`cue` or `cue:variant`, null for no clip today); `listen_page.js` reads it before the free-text `cue` label (Artoo, PR 1753 finding 1). The page should also stitch single shots at the `cues.json` gaps so Ryan hears what the engine will do with a volley.
 
 ---
@@ -124,7 +124,7 @@ Audio reads the exact same runtime events and faction metadata (`godot/fx/factio
 
 ---
 
-## 7. Wave A Ear-Audit Verdict & Global Prompt Upgrades (Wave A2 Before Wave B)
+## 7. Wave A Ear-Audit Verdict and Global Prompt Upgrades
 
 Wave A (`board/pc-out-wavea1752`, 27/27 takes generated, **298 real credits billed**, ~11 real credits/sec) succeeded as a calibration gate by exposing **3 systemic prompt traps** before spending Wave B (~111 files). Applying a strict AAA space-tactics bar across all 14 items / 27 takes showed **only 3 items currently clear the bar**:
 - **PASS (keep):** `wep_sunward_battery` (`v2`, `t1` & `t2`; plus `wep_sunward_battery_v3ab_t1` as a heavier flagship reference), `imp_metal_heavy_v3ab` (`v3`, `t1`, proving `v3` owns heavy armor hits), and `ui_click_switch` (`v3`, `t1` & `t2` only; drop `t3` double-bounce).
@@ -140,13 +140,13 @@ Wave A (`board/pc-out-wavea1752`, 27/27 takes generated, **298 real credits bill
 2. **Eliminate Pink-Elephant Negative Leaks & Lock Model Routing:** Strip `"no explosion"`, `"no fire"`, and `"under heavy fire"` (which leaked explosion tokens directly into `shd_break_energy`). Restrict `eleven_text_to_sound_v2` strictly to fast dry kinetic shell guns (`wep_sunward_*` shell guns, `wep_flak_airburst`, `wep_hullbreaker_scatter`, `wep_hullbreaker_junk_gun`, `wep_craft_guns`); move **all impacts, all deaths, Directorate energy, Eclipse, and sub-bass layers to `v3`**.
 3. **Stop Starving Beams, Shields, Cosmic Weapons, and Rewards with `"close and dry, no reverb"`:** Keep rapid shell guns and switch clicks dry; give sustained lances (`wep_sunward_lance_beam`), shield collapses (`shd_break_energy`), Glasswright crystal fire, Eclipse void drops, and UI rewards (`ui_reward_vault` blooming into warm low bronze + solemn cello/muted low-brass fifth) natural controlled acoustic decay.
 
-### Wave A2 Calibration Command (Run Before Unlocking Wave B)
+### Historical Wave A2 Calibration Command
 
-Run **10 items / 20 takes** into a fresh output folder (never overwrite Wave A's `out_new` folder) and push a listening branch for ear sign-off before running Wave B:
+Wave A2 used **10 items / 20 takes** and a fresh output folder. This historical recipe requires the Wave A2 manifest at commit `183cd881111114acd1c422b5c477b69f418b591d` (the last A2 prompt edits before A3). Section 8 gives the current Wave B gate.
 
 ```bash
 node contrib/opus/tools/sound/elevenlabs_gen.js \
-  --list contrib/opus/sound/elevenlabs_pilot_v2.json \
+  --list <wave_a2_manifest_from_pinned_commit> \
   --out <fresh_wavea2_out_folder> \
   --only wep_directorate_laser,wep_eclipse_gauss_fire,wep_chorus_spines,imp_bio_flesh,death_chorus_rupture,wep_ithar_shard,wep_sunward_lance_beam,shd_break_energy,ui_reward_vault,imp_metal_heavy \
   --max-credits 1200
@@ -154,7 +154,6 @@ node contrib/opus/tools/sound/elevenlabs_gen.js \
 
 - **Dry-run estimate:** ~976 credits (generator ceiling at 40/sec).
 - **Expected real billing:** **~270 real credits** at Wave A's observed ~11 real credits/sec (~0.22% of the 121,000 credit pool).
-- **Wave B gate:** Hold Wave B until Wave A2 clears ear verification across all 10 items.
 
 
 ## 8. Wave A2 Verdict and Wave A3 (Fable audit, Nov 23 2026)

@@ -409,8 +409,9 @@ if errorlevel 1 goto :guardfail
 git diff --cached --quiet
 if errorlevel 1 goto :haschange
 if defined PARTIAL goto :haschange
-findstr /c:"Resumed by merging" /c:"Base already merged" "%O%\resume.txt" >nul
-if errorlevel 1 goto :nochange
+%PS% head-changed "%R%" "%O%" >> "%O%\result.txt" 2>&1
+if "%ERRORLEVEL%"=="7" goto :nochange
+if errorlevel 1 goto :guardfail
 :haschange
 git diff --cached --stat > "%O%\diffstat.txt"
 if defined PARTIAL (> "%O%\checks.txt" echo runner checks skipped: partial run & goto :afterchecks)

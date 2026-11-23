@@ -716,15 +716,16 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
   $free = $bytes; $shared = 0L; $unchecked = 0L
   if ($tally) { $sum = Complete-FreeTally $tally; $free = $sum.Free; $shared = $sum.SharedOutside; $unchecked = $sum.Unchecked }
   return [pscustomobject]@{ Bytes = $bytes; Latest = $latest; FileLatest = $fileLatest; WorktreeLatest = $worktreeLatest
-    Links = $links; Unreadable = $unreadable; FreeBytes = $free; SharedBytes = $shared; UncheckedBytes = $unchecked }
+    Links = $links; Unreadable = $unreadable; FreeBytes = $free; SharedBytes = $shared; UncheckedBytes = $unchecked; FreeTally = $tally }
 }
 function Format-CleanupSize($stats) {
   if (Get-Command Format-FreeBytes -ErrorAction SilentlyContinue) { return (Format-FreeBytes $stats) }
   return "$($stats.Bytes) bytes"
 }
-function Add-WouldFree($stats, $path) {
-  # The janitor's closing line adds these up, so a dry run's total is what removal would really give back.
-  $script:wouldFreeBytes += [long]$stats.FreeBytes
+function Add-WouldFree($stats) {
+  # Only approved folders reach here. In a dry run, combine their links before deciding what would be freed.
+  if ($script:plannedFreeTally -and $stats.FreeTally) { Merge-FreeTally $script:plannedFreeTally $stats.FreeTally }
+  else { $script:wouldFreeBytes += [long]$stats.FreeBytes }
   $script:wouldFreeCount++
 }
 function Get-LinkTarget($link) {
@@ -879,13 +880,13 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
       $reason = if ($reason -eq 'rebuildable') { $archived } else { "$reason; $archived" }
       if (-not $dryRun) { Save-SupersededArchive $candidate $state.Superseded $archive }
     }
-    if ($dryRun) { Add-WouldFree $stats $candidate; Log "kept checkout would remove ($reason): $candidate ($size)"; return }
+    if ($dryRun) { Add-WouldFree $stats; Log "kept checkout would remove ($reason): $candidate ($size)"; return }
     $current = Measure-CleanupDirectory (Get-Item -LiteralPath $candidate -Force) -Checkout
     # Include Git metadata in the final check for changes made by another process.
     if ($current.Latest -ne $stats.Latest -or $current.WorktreeLatest -ne $stats.WorktreeLatest -or
         $current.Bytes -ne $stats.Bytes) { throw 'checkout changed during the scan' }
     Remove-CleanupDirectory $copy
-    Add-WouldFree $stats $candidate
+    Add-WouldFree $stats
     Log "kept checkout removed ($reason): $candidate ($size)"
   } catch { Log "kept checkout retained: $candidate ($size; $($_.Exception.Message))" }
   finally { if ($mirrorLock) { $mirrorLock.Dispose() } }
@@ -1344,9 +1345,9 @@ try {
     if ($reuse) { Log 'earlier checkout reused in place; ignored files left in place' }
     $base = @(Git @('-C',$repo,'rev-parse','HEAD'))[0]
     Put (Join-Path $out 'base_commit.txt') $base
+    Put (Join-Path $out 'branch_tip.txt') $(if ($continuing) { $earlier[0] })
     if ($continuing) {
       if ($base -ne $earlier[0]) { throw "checkout of the earlier tip of $br did not land on $($earlier[0]); no agent started" }
-      Put (Join-Path $out 'branch_tip.txt') $earlier[0]
       Log "continuing $br from its earlier tip $($earlier[0]), not from main alone (issue 1739)"
       $note = "Continued from the earlier tip of $br ($($earlier[0])): the earlier runs' work is already in this checkout. Keep it; do not restart from main."
       $null = Git @('-C',$repo,'merge-base','--is-ancestor','refs/remotes/origin/main','HEAD')

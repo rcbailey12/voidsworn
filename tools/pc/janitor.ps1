@@ -384,7 +384,7 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       } elseif ($helper) { Remove-HelperFolder $dir $helperLease; $helperLease = $null; $action = 'removed' }
       else { Remove-CleanupDirectory $dir; $action = 'removed' }
     }
-    Add-WouldFree $stats $dir.FullName
+    Add-WouldFree $stats
     Log "$action $($dir.FullName) ($size; $why, untouched for at least $hours hours)"
     if ($helper) { $script:helperGone = $true }
   } catch {
@@ -644,6 +644,7 @@ try {
   $mode = if ($dryRun) { 'dry run' } elseif ($automatic) { $trigger } else { 'manual' }
   Log "janitor $mode at $($now.ToString('o'))"
   $script:wouldFreeBytes = 0L; $script:wouldFreeCount = 0; $script:cannotRemoveCount = 0
+  $script:plannedFreeTally = if ($dryRun) { New-FreeTally }
   $script:clock = [Diagnostics.Stopwatch]::StartNew()
   # Dry runs only (Artoo on PR 1592): a live removal reads the mirror's history fresh for each checkout, as before.
   $script:cacheMirrorCommits = $dryRun
@@ -735,9 +736,9 @@ try {
   exit 1
 } finally {
   if ($drive) {
-    # Issue 1739: the honest total. Hard links shared outside a folder and folders another account owns are left out.
+    if ($script:plannedFreeTally) { $script:wouldFreeBytes += (Complete-FreeTally $script:plannedFreeTally).Free }
     $verb = if ($dryRun) { 'would be freed' } else { 'freed' }
-    Log ("space ${verb}: $($script:wouldFreeBytes) bytes ({0:N1} GB) by $($script:wouldFreeCount) removals; hard links shared outside a removed folder are not counted; $($script:cannotRemoveCount) folders another account owns cannot be removed and are not counted" -f ($script:wouldFreeBytes / 1GB))
+    Log ("space ${verb}: $($script:wouldFreeBytes) bytes ({0:N1} GB) by $($script:wouldFreeCount) removals; hard links shared outside the removal set are not counted; $($script:cannotRemoveCount) folders another account owns cannot be removed and are not counted" -f ($script:wouldFreeBytes / 1GB))
     Log "free space after: $($drive.AvailableFreeSpace) bytes"
     Log 'all done'
   }

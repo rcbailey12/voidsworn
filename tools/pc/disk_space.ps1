@@ -131,6 +131,19 @@ function Add-FreeTally($tally, $file, $identity = $null, [switch]$Known) {
   $entry.Seen++
 }
 
+function Merge-FreeTally($total, $folder) {
+  $total.Listed += $folder.Listed
+  $total.Free += $folder.Free
+  $total.Unchecked += $folder.Unchecked
+  foreach ($id in $folder.Shared.Keys) {
+    $entry = $folder.Shared[$id]
+    if ($total.Shared.ContainsKey($id)) {
+      $total.Shared[$id].Links = [Math]::Max($total.Shared[$id].Links, $entry.Links)
+      $total.Shared[$id].Seen += $entry.Seen
+    } else { $total.Shared[$id] = $entry.Clone() }
+  }
+}
+
 function Complete-FreeTally($tally) {
   # @{ Listed; Free; SharedOutside; Unchecked } in bytes. A shared file whose links are all in the set is freed once.
   $free = $tally.Free; $outside = 0L

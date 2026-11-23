@@ -39,7 +39,8 @@ for (const name of ['codex_issue', 'work_issue']) {
   assert(bat.indexOf('%COMMON% announce ') < bat.indexOf('call "%T' + (name === 'codex_issue' ? 'P' : '') + '%tmo.bat"'));
   assert(prep.includes("'runner_common.ps1') base $repo $out $bodyFile"));
   assert(prep.includes('Do not run git merge'));
-  assert(bat.includes('/c:"Base already merged"'), 'base-only work must reach the publisher');
+  const compareHead = bat.indexOf(' head-changed ');
+  assert(compareHead >= 0 && compareHead < bat.indexOf('\n:haschange'), 'check for committed work before running checks');
 }
 const upstream = path.join(root, 'upstream.git');
 let r = spawnSync('git', ['init', '--bare', '-q', upstream], {
@@ -553,7 +554,12 @@ Assert (-not (Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json).running) '
 Pass 'paginated board dry run uses the same validation, allows reruns and performs only GETs'
 Init 'base-clean'; Put (Join-Path $out 'resume.txt') 'Resumed by merging earlier partial.'
 Put (Join-Path $out 'base_commit.txt') '${main}'
+$publisher = Join-Path $pc 'work_issue.ps1'
+& $publisher head-changed $repo $out
+Assert ($LASTEXITCODE -eq 7) 'a resume note alone does not advance HEAD'
 Base "Owner: codex\r\n  Base: work/issue-800  \r\nDone when: works"
+& $publisher head-changed $repo $out
+Assert ($LASTEXITCODE -eq 0) 'a Base merge advances HEAD from the recorded base on a fresh branch'
 $parents = (& $script:git -C $repo rev-list --parents -n 1 HEAD) -split ' '
 Assert ($parents.Count -eq 3 -and $parents[1] -eq '${main}' -and $parents[2] -eq '${clean}') 'runner committed both merge parents'
 Assert ([IO.File]::ReadAllText((Join-Path $repo 'base.txt')) -eq "from base\n") 'base content merged'

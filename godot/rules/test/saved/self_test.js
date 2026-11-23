@@ -60,6 +60,22 @@ test('complete records cannot hide an unfinished batch', () => {
 test('Godot error cannot hide behind a successful exit', () => {
   fs.writeFileSync(log, goodLog + 'SCRIPT ERROR: planted\n'); assert.ok(check(root, opts).failures); fs.writeFileSync(log, goodLog);
 });
+test('only the exact offline Windows certificate-store error is allowed', () => {
+  const certificate = 'ERROR: Failed to read the root certificate store.';
+  try {
+    for (const ending of ['\n', '\r\n']) {
+      const offlineLog = certificate + ending + goodLog;
+      fs.writeFileSync(log, offlineLog);
+      assert.equal(check(root, opts).failures, 0);
+      fs.writeFileSync(log, offlineLog + 'ERROR: planted worker failure' + ending);
+      assert.ok(check(root, opts).failures);
+      fs.writeFileSync(log, certificate + ' Extra text.' + ending + goodLog);
+      assert.ok(check(root, opts).failures);
+    }
+  } finally {
+    fs.writeFileSync(log, goodLog);
+  }
+});
 test('changed input cannot reuse stale records', () => {
   fs.writeFileSync(part, JSON.stringify({ example: { seed: 8 } })); assert.ok(check(root, opts).failures); fs.writeFileSync(part, JSON.stringify(scenario));
 });

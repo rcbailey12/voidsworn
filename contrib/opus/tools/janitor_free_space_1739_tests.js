@@ -27,6 +27,9 @@ try {
   fs.writeFileSync(path.join(dir, 'pair1.bin'), Buffer.alloc(3000));
   fs.linkSync(path.join(dir, 'pair1.bin'), path.join(dir, 'pair2.bin'));
   fs.writeFileSync(path.join(dir, 'foreign', 'sandbox.bin'), Buffer.alloc(5000));
+  for (const name of ['candidate-a', 'candidate-b']) fs.mkdirSync(path.join(root, name));
+  fs.writeFileSync(path.join(root, 'candidate-a/file.bin'), Buffer.alloc(65536));
+  fs.linkSync(path.join(root, 'candidate-a/file.bin'), path.join(root, 'candidate-b/file.bin'));
   const script = path.join(root, 'probe.ps1');
   fs.writeFileSync(script, `
 $ErrorActionPreference = 'Stop'
@@ -44,6 +47,15 @@ Write-Output "unchecked $($s.UncheckedBytes)"
 Write-Output "cannot $(@($s.Unreadable | ForEach-Object { $_.Name }) -join ',')"
 Write-Output "size $(Format-CleanupSize $s)"
 try { $null = Measure-CleanupDirectory $d; Write-Output 'strict counted' } catch { Write-Output "strict $($_.Exception.Message)" }
+$script:wouldFreeBytes = 0L; $script:wouldFreeCount = 0
+$script:plannedFreeTally = New-FreeTally
+foreach ($name in @('candidate-a', 'candidate-b')) {
+  $candidate = Join-Path (Split-Path $env:FIX_DIR) $name
+  $row = Measure-CleanupDirectory (Get-Item -LiteralPath $candidate -Force)
+  Write-Output "$name $($row.FreeBytes)"
+  Add-WouldFree $row
+}
+Write-Output "union $($script:wouldFreeBytes + (Complete-FreeTally $script:plannedFreeTally).Free)"
 `);
   // As root (the cloud runner here) the folder really gets another owner, so the real owner check runs too.
   let mock = '1';
@@ -62,6 +74,9 @@ try { $null = Measure-CleanupDirectory $d; Write-Output 'strict counted' } catch
   assert.equal(got.cannot, 'foreign', 'the other account\'s folder is listed as cannot remove: ' + r.stdout);
   assert.equal(got.size, '4000 bytes would be freed, 9000 listed, 2000 in hard links shared outside it', r.stdout);
   assert.match(got.strict, /folder another account owns: .*foreign/, 'a checkout measure refuses it: ' + r.stdout);
+  assert.equal(got['candidate-a'], '0', r.stdout);
+  assert.equal(got['candidate-b'], '0', r.stdout);
+  assert.equal(got.union, '65536', 'the closing total counts the file once: ' + r.stdout);
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
 }

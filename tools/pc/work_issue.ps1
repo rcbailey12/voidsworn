@@ -13,6 +13,7 @@
 # Runner 2 (issue 377, Opus, Nov 12 2026); codex_issue.bat uses these three too:
 #   work_issue.ps1 guard   <n> <tag> <repo> <out>                 the refuse list and the Deliver to warning, on the staged change;
 #                                                                 its files go to <out>\runs\<date_time>\ (one folder per run)
+#   work_issue.ps1 head-changed <repo> <out>                    0 when HEAD moved since checkout, 7 when unchanged
 #   work_issue.ps1 commit  <repo> <out> <branch> <real|dry|test>  one commit that keeps the branch's earlier tip, checked before push
 #   work_issue.ps1 confirm <repo> <out> <branch> <real|dry|test>  after the push: GitHub's branch must carry exactly out\diffstat.txt
 #   work_issue.ps1 disk    <run folder> <repo>                 separately reports the run and reusable checkout sizes
@@ -430,6 +431,14 @@ function Refs-Only([string]$text) { return [regex]::Replace($text, '(?i)\b(close
 # git's output as an array of lines; $script:gx holds its exit code. stderr is dropped (PowerShell 5.1 turns it into errors).
 function Git-Lines { $o = & git @args 2>$null; $script:gx = $LASTEXITCODE; if ($null -eq $o) { return @() }; return @($o | ForEach-Object { [string]$_ }) }
 function Git-One { $o = @(Git-Lines @args); if ($o.Count) { return $o[0].Trim() } else { return '' } }
+function Test-HeadChanged($out, $head) {
+  $tip = Read-Txt (Join-Path $out 'branch_tip.txt')
+  if (-not $tip) { $tip = Read-Txt (Join-Path $out 'base_commit.txt') }
+  if ($tip -cnotmatch '\A[0-9a-f]{40,64}\z' -or $head -cnotmatch '\A[0-9a-f]{40,64}\z') {
+    throw 'could not read HEAD or the recorded checkout tip'
+  }
+  return $head -cne $tip
+}
 function Write-Lines($path, $lines) { [IO.File]::WriteAllText($path, ((@($lines) -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false))) }
 function Read-Lines($path) { if (-not (Test-Path -LiteralPath $path)) { return @() }; return @([IO.File]::ReadAllLines($path) | Where-Object { $_ -ne '' }) }
 # Folders and files named on the issue's "Deliver to" line (anything with a slash, or a file name with an extension).
@@ -706,6 +715,12 @@ elseif ($mode -eq 'guard') {
   if ($bad.Count) { Write-Host 'guard failed:'; $bad | ForEach-Object { Write-Host "  $_" }; exit 1 }
   exit 0
 }
+elseif ($mode -eq 'head-changed') {
+  try {
+    if (Test-HeadChanged $args[2] (Git-One -C $args[1] rev-parse HEAD)) { exit 0 }
+    exit 7
+  } catch { Write-Host "push stopped: $($_.Exception.Message)"; exit 14 }
+}
 elseif ($mode -eq 'commit') {
   . (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
   # One commit for the run, made with git's plumbing (no hooks, no editor, its exit code checked). Its parents are the
@@ -730,12 +745,13 @@ elseif ($mode -eq 'commit') {
   [IO.File]::WriteAllText((Join-Path $out 'pre_commit.txt'), $pre, [Text.Encoding]::ASCII)
   & git diff --cached --quiet 2>$null
   if ($LASTEXITCODE -eq 0) {
-    $base = Read-Txt (Join-Path $out 'base_commit.txt')
-    $resumed = Read-Txt (Join-Path $out 'resume.txt')
-    & git diff --quiet $base HEAD 2>$null
     $partial = Read-Txt (Join-Path $out 'partial.txt')
-    if (-not $partial -and (-not $resumed -or $LASTEXITCODE -eq 0)) { Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7 }
-    Write-Host 'resumed work is already committed; carry it through the checked push'
+    try {
+      if (-not $partial -and -not (Test-HeadChanged $out $pre)) {
+        Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7
+      }
+    } catch { Write-Host "push stopped: $($_.Exception.Message)"; Pop-Location; exit 14 }
+    if (-not $partial) { Write-Host 'HEAD has new commits; carry them through the checked push' }
   }
   $num = @(Git-Lines -c core.quotepath=off diff --cached --numstat --no-renames)
   Write-Lines (Join-Path $out 'diff_numstat.txt') $num
