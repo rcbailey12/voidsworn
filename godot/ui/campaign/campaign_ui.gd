@@ -387,6 +387,7 @@ func _toast(msg: String) -> void:   # a strip with a calm VERD bar (ui_style.md 
 	var tw = create_tween(); tw.tween_interval(clamp(msg.length() * 0.06, 2.2, 9.0)); tw.tween_property(p, "modulate:a", 0.0, 0.4); tw.tween_callback(p.queue_free)
 # ---------------- render ----------------
 func render() -> void:
+	_route_click_id = ""
 	_refocus_key = _focus_key(get_viewport().gui_get_focus_owner()) if desk_opts_open else ""
 	for ch in page_box.get_children(): ch.queue_free()
 	for ch in modal_box.get_children(): ch.queue_free()
@@ -442,21 +443,17 @@ func _teaching_screen() -> void:
 	teaching.open_screen(kind + "|" + sector + "|" + pos + "|" + modal, ids)
 
 func _focus_first() -> void:
+	if _live_count(modal_box) > 0 or _overlay != "": return   # ModalFocus owns the keyboard while a dialog or drawer is open.
 	if C.modal_d == null and C.page.get("kind") == "fleet":
 		get_viewport().gui_release_focus()
 		return
-	# the map page: the keys go to the chart (arrows, Enter, zoom), so no button wears a ring when the screen opens;
-	# with a slide-over open they go to its Close
-	# issue 1559 item 6: the last render's nodes are still children until the frame ends (queue_free), so count and
-	# search only the live ones; a dialog that just closed must not keep the map from taking the keys
-	if _live_count(modal_box) == 0 and C.page.get("kind") == "map" and use_3d_map and map3d != null and map3d.visible:
-		if _overlay == "": map3d.grab_focus()
-		else: get_viewport().gui_release_focus()   # a slide-over: Esc or Close shuts it, Tab walks its buttons
+	# The chart takes the keys again when the dialog or drawer closes (issue 1559 item 6).
+	if C.page.get("kind") == "map" and use_3d_map and map3d != null and map3d.visible:
+		map3d.grab_focus()
 		return
-	var host = modal_box if _live_count(modal_box) > 0 else page_box
 	# issue 1261: the Run options drawer holds keyboard and controller focus while it is open (the control that was
 	# focused before a re-render keeps it), and closing it gives focus back to Run options
-	if host == page_box and C.page.get("kind") == "admiral":
+	if C.page.get("kind") == "admiral":
 		var dr = _live_child("RunOptionsDrawer")
 		if dr != null and desk_opts_open:
 			_trap_focus(page_box, dr)
@@ -468,15 +465,15 @@ func _focus_first() -> void:
 			_focus_opener = false
 			var ro = _live_child("RunOptionsButton")
 			if ro != null: ro.grab_focus(); return
-	if C.page.get("kind") == "end" and host == page_box:
-		var exit = _end_primary(host)
+	if C.page.get("kind") == "end":
+		var exit = _end_primary(page_box)
 		if exit != null:
 			exit.grab_focus()
 			var sc = exit.get_parent()
 			while sc != null and not sc is ScrollContainer: sc = sc.get_parent()
 			if sc is ScrollContainer: sc.set_deferred("scroll_vertical", 0)
 			return
-	var b = _first_button(host)
+	var b = _first_button(page_box)
 	if b != null: b.grab_focus()
 # a node of the current page by name: the last render's nodes are still in page_box until the frame ends (queue_free)
 func _live_child(nm: String) -> Control:
@@ -1070,6 +1067,8 @@ var _jump_btn: Button = null
 var _jump_lbl: Label = null
 var _rail_host: Control
 var _rail_pending := false
+var _route_click_id := ""
+var _route_click_rect := Rect2()
 func caps(text: String, size: float = 17, col: Color = BONE3) -> Label: return lbl(text.to_upper(), size, col, font_caps, false)
 # a well holding a block of a dialog: [PanelContainer, VBoxContainer]; bar is the left bar's colour
 func blk(bar_col: Color = Color(0, 0, 0, 0), sep: float = 5, pad_x: float = 12, pad_y: float = 9) -> Array:
@@ -1225,7 +1224,8 @@ func _condition_line(S: Dictionary) -> String:
 func _briefing_column() -> Control:
 	var H = View.header(C); var S = View.sector_notes(C); var N = View.nemesis(C); var fleet = View.fleet_rows(C)
 	var cw = COL_W - COL_PAD * 2.0
-	var col = MarginContainer.new(); col.name = "OrdersSheet"; col.mouse_filter = Control.MOUSE_FILTER_PASS
+	var col = MarginContainer.new(); col.name = "OrdersSheet"; col.mouse_filter = Control.MOUSE_FILTER_STOP
+	col.mouse_force_pass_scroll_events = false
 	col.anchor_bottom = 1.0; col.offset_right = px(COL_W)
 	for side in ["left", "right"]: col.add_theme_constant_override("margin_" + side, px(COL_PAD))
 	col.add_theme_constant_override("margin_top", px(40)); col.add_theme_constant_override("margin_bottom", px(28))
@@ -1289,7 +1289,8 @@ func _objective_line(r: Dictionary) -> String:
 func _route_row(r: Dictionary) -> Control:
 	var cw = COL_W - COL_PAD * 2.0; var on = r["id"] == picked
 	var v = vbox(0); var b = Button.new(); b.name = "Route" + str(r["num"]); b.focus_mode = Control.FOCUS_ALL; b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	for st in ["normal", "hover", "pressed", "disabled", "focus"]: b.add_theme_stylebox_override(st, StyleBoxEmpty.new())
+	for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, StyleBoxEmpty.new())
+	b.add_theme_stylebox_override("focus", GS.focus_ring(k))
 	var h = row0(20); b.add_child(h); h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var numw = _baseline_row([[str(r["num"]), GS.sheet_name(), 132 if on else 36, GS.MAP_EMBER if on else GS.TEXT]], 132 if on else 36)
 	numw.custom_minimum_size.x = px(60 if on else 20); numw.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; h.add_child(numw)
@@ -1316,11 +1317,16 @@ func _route_row(r: Dictionary) -> Control:
 	# Children get their final widths before the minimum height is used, including a wrapped long name.
 	tv.minimum_size_changed.connect(func(): if is_instance_valid(b): b.custom_minimum_size.y = maxf(px(row_height), tv.get_combined_minimum_size().y))
 	var id = str(r["id"])
-	b.pressed.connect(func(): pick_route(id)); b.focus_entered.connect(func(): pick_route(id))
+	b.pressed.connect(func():
+		map3d.clear_keyboard_preview()
+		pick_route(id))
 	b.gui_input.connect(func(e: InputEvent):
-		var enter = e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_ENTER, KEY_KP_ENTER]
-		var dbl = e is InputEventMouseButton and e.pressed and e.double_click and e.button_index == MOUSE_BUTTON_LEFT
-		if enter or dbl: pick_route(id); b.accept_event(); _jump())
+		if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
+			_route_click_id = id
+			_route_click_rect = b.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, b.size)
+		elif e is InputEventKey and e.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
+			b.accept_event()
+			if e.pressed and not e.echo: _confirm_map_jump())
 	b.tooltip_text = _wrap_words(_detail_text(r)); v.add_child(b)
 	if on:
 		v.add_child(gap(8)); v.add_child(_sheet_words(_objective_line(r), 20)); v.add_child(gap(4))
@@ -1341,7 +1347,7 @@ func _detail_text(r: Dictionary) -> String:
 	if where.size() > 0: parts.append(", ".join(PackedStringArray(where)).substr(0, 1).to_upper() + ", ".join(PackedStringArray(where)).substr(1) + ".")
 	var dg: Dictionary = r.get("danger", {})
 	if r["fight"] and not dg.is_empty():
-		var t = "%s: their strength is about %d%% of your fleet's" % [dg["band"], int(round(dg["ratio"] * 100.0))]
+		var t = "%s (estimate), about %d%% of your fleet's strength" % [dg["band"], int(round(dg["ratio"] * 100.0))]
 		var wy: Array = dg.get("why", [])
 		if not wy.is_empty():
 			var ps: Array = []
@@ -1399,11 +1405,25 @@ func _rebuild_rail() -> void:
 	var focus = get_viewport().gui_get_focus_owner(); var restore = ""
 	for r in _rows:
 		if r["btn"] == focus: restore = r["id"]
+	var scrolls := {}
+	for scroll_name in ["OrdersScroll", "FleetScroll"]:
+		var sc := _rail_host.find_child(scroll_name, true, false) as ScrollContainer
+		if sc != null: scrolls[scroll_name] = sc.scroll_vertical
 	for child in _rail_host.get_children(): _rail_host.remove_child(child); child.queue_free()
-	_rail_host.add_child(_briefing_column())
+	var rail := _briefing_column()
+	_rail_host.add_child(rail)
 	if restore != "":
 		for r in _rows:
 			if r["id"] == restore: r["btn"].grab_focus()
+	# The scrollbars know their new limits after the containers have laid out.
+	get_tree().process_frame.connect(func():
+		if not is_instance_valid(rail) or rail.is_queued_for_deletion() or rail.get_parent() != _rail_host: return
+		for scroll_name in scrolls:
+			var sc := rail.find_child(scroll_name, true, false) as ScrollContainer
+			sc.scroll_vertical = scrolls[scroll_name], CONNECT_ONE_SHOT)
+func _confirm_map_jump() -> void:
+	if picked != "": Kit.play("ui_confirm")
+	_jump()
 func _jump() -> void:
 	if picked == "" or C.modal_d != null or _find(_acts, "enterNode", picked).is_empty(): return
 	if _overlay != "": _close_overlay()   # issue 1559 item 25: Jump on the rail works with a slide-over open
@@ -1458,8 +1478,9 @@ func _close_overlay() -> void:
 func _slide_over(body: Control, left_at: float) -> Control:
 	var host = Control.new(); host.set_anchors_preset(Control.PRESET_FULL_RECT); host.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var shade = ColorRect.new(); shade.color = GS.SHADE; shade.set_anchors_preset(Control.PRESET_FULL_RECT); shade.offset_left = px(COL_W); shade.mouse_filter = Control.MOUSE_FILTER_STOP
+	shade.mouse_force_pass_scroll_events = false
 	shade.gui_input.connect(func(e: InputEvent):
-		if e is InputEventMouseButton and e.pressed: _close_overlay())
+		if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT: _close_overlay())
 	host.add_child(shade)
 	var p = PanelContainer.new(); p.add_theme_stylebox_override("panel", GS.column(k, left_at >= 0.0)); p.mouse_filter = Control.MOUSE_FILTER_STOP
 	p.anchor_bottom = 1.0
@@ -1469,6 +1490,8 @@ func _slide_over(body: Control, left_at: float) -> Control:
 	for side in ["left", "right"]: m.add_theme_constant_override("margin_" + side, px(COL_PAD))
 	m.add_theme_constant_override("margin_top", px(40)); m.add_theme_constant_override("margin_bottom", px(32))
 	m.add_child(body); p.add_child(m); host.add_child(p)
+	p.mouse_force_pass_scroll_events = false
+	ModalFocus.attach(p)
 	return host
 func _over_head(kicker: String, kicker_col: Color, title: String) -> Control:
 	var v = VBoxContainer.new(); v.add_theme_constant_override("separation", 0)
@@ -2326,7 +2349,9 @@ func _modal(md: Dictionary) -> void:
 		scroll = _modal_scroll.scroll_vertical
 	_modal_kind = md["kind"]
 	var dim = ColorRect.new(); dim.color = GS.SHADE; dim.set_anchors_preset(Control.PRESET_FULL_RECT); modal_box.add_child(dim)
+	dim.mouse_force_pass_scroll_events = false
 	var cc = CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT); modal_box.add_child(cc)
+	cc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var box = shell_panel(20)   # a dialog: one matte panel (chamfers, scanline, bevel, brackets); its words sit on wells (_well_text)
 	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_modal_scroll = sc
@@ -2512,6 +2537,7 @@ func _modal(md: Dictionary) -> void:
 	sc.custom_minimum_size = Vector2(px(700), min(vh * 0.9 - px(48), v.get_combined_minimum_size().y + px(8)))
 	v.minimum_size_changed.connect(func(): sc.custom_minimum_size.y = min(vh * 0.9 - px(48), v.get_combined_minimum_size().y + px(8)))
 	if scroll > 0: sc.set_deferred("scroll_vertical", scroll)
+	ModalFocus.attach(box)
 
 func _salvage_choices(v: VBoxContainer, wrecks: Array, acts: Array) -> void:
 	v.add_child(lbl("Salvage one wreck", 20, BONE))
@@ -2566,6 +2592,16 @@ func esc_back() -> bool:
 		if not found.is_empty() and found[2] == 1:
 			Kit.play("ui_cancel"); _campaign_action(pair[0], pair[1]); return true
 	return false
+func _input(e: InputEvent) -> void:
+	if not (e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT): return
+	# A route expands after the first click. Its original hit area owns the second click of that pair.
+	var route := _route_click_id
+	_route_click_id = ""
+	if route == "" or route != picked or not e.double_click or not _route_click_rect.has_point(e.position): return
+	if C == null or C.page.get("kind") != "map" or C.modal_d != null or _overlay != "" or not root.visible or ModalFocus.covered(self) or map3d._flying: return
+	get_viewport().set_input_as_handled()
+	_confirm_map_jump()
+
 func _unhandled_input(e: InputEvent) -> void:
 	if C == null or not root.visible or not (e is InputEventKey) or not e.pressed or e.echo: return
 	if ModalFocus.covered(self): return   # issue 1559 item 5: Career (or another overlay) over the page has the keys
@@ -2580,10 +2616,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		if rn < 0 or rn >= 9: rn = e.keycode - KEY_KP_1
 		if rn >= 0 and rn < 9 and rn < _routes.size():
 			if str(_routes[rn]["id"]) != picked: Kit.play(Kit.HOVER_CUE)
+			map3d.clear_keyboard_preview()
 			pick_route(str(_routes[rn]["id"])); get_viewport().set_input_as_handled(); return
-		if e.keycode in [KEY_ENTER, KEY_KP_ENTER]:
-			if picked != "": Kit.play("ui_confirm")
-			_jump(); get_viewport().set_input_as_handled(); return
+		if e.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
+			_confirm_map_jump(); get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "end" and is_instance_valid(debrief):
 		if debrief.handle_key(e): _key_cue(e); get_viewport().set_input_as_handled(); return
 	if C.modal_d != null:
