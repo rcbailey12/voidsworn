@@ -321,6 +321,7 @@ func _boon_shortcut(b: Button, key: String) -> void:
 		var box := b.get_theme_stylebox(state).duplicate() as StyleBox
 		box.set_content_margin(SIDE_RIGHT, maxf(box.get_margin(SIDE_RIGHT), hint.get_minimum_size().x + px(20)))
 		b.add_theme_stylebox_override(state, box)
+	GS.bind_sheet_label(b, hint, BONE2)
 
 # The screen's finishing action (Continue, Confirm, Plot a course, Done, Leave shipyard): the filled ember button, its label
 # in action caps, its key cap after the label in a dialog (ui_style.md 7). It sits at the bottom right of its screen or dialog.
@@ -828,13 +829,15 @@ func _crest_tab(f: String, w: float) -> Button:
 		b.add_theme_stylebox_override("pressed", GS.pressed_box(hi))
 	var h = HBoxContainer.new(); h.set_anchors_preset(Control.PRESET_FULL_RECT); h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_theme_constant_override("separation", px(10)); h.alignment = BoxContainer.ALIGNMENT_CENTER
-	var cr = TextureRect.new(); cr.texture = load("res://portraits/portraits.gd").faction_crest(f) if ResourceLoader.exists("res://portraits/portraits.gd") else null
-	cr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; cr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	cr.custom_minimum_size = Vector2(px(34), px(34)); cr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	cr.modulate = Color(1, 1, 1, 1.0 if picked else 0.6)
 	var crest_on = w / k >= 170.0   # a narrow strip drops the crest so the name keeps its words whole
-	if crest_on: h.add_child(cr)
-	else: cr.free()   # issue 1457: an unparented crest was 6 leaked TextureRects and crests at exit on a narrow window
+	var cr: TextureRect = null
+	if crest_on:
+		cr = TextureRect.new()
+		cr.texture = load("res://portraits/portraits.gd").faction_crest(f) if ResourceLoader.exists("res://portraits/portraits.gd") else null
+		cr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; cr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		cr.custom_minimum_size = Vector2(px(34), px(34)); cr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cr.modulate = Color(1, 1, 1, 1.0 if picked else 0.6)
+		h.add_child(cr)
 	var name_w = w - (px(34) + px(10) if crest_on else 0) - px(20)
 	var nl = Kit.label(str(C.FACTIONS[f]["n"]), 18, k, GS.TEXT if picked else GS.TEXT2, Kit.medium_font(), true, name_w / k)
 	Kit.fit_words(nl, name_w, k)
@@ -843,7 +846,7 @@ func _crest_tab(f: String, w: float) -> Button:
 	b.draw.connect(func():
 		var active := GS.button_highlighted(b) or b.has_focus()
 		nl.add_theme_color_override("font_color", GS.TEXT3 if b.disabled else (GS.TEXT if active or picked else GS.TEXT2))
-		if crest_on: cr.modulate.a = 0.4 if b.disabled else (1.0 if active or picked else 0.6))
+		if cr != null: cr.modulate.a = 0.4 if b.disabled else (1.0 if active or picked else 0.6))
 	press_tag(b, "pickFaction", f)
 	b.pressed.connect(func(): _campaign_action("pickFaction", f))
 	Kit.wire_sound(b, "tab")
@@ -1030,6 +1033,7 @@ func _run_options() -> Control:
 		var cv4 = card(false, 380); cv4[0].modulate.a = 0.55; cv4[1].add_child(lbl("Threat", 20, BONE, font_semi))
 		cv4[1].add_child(lbl("Lose a run to unlock Threat: optional rules that make runs harder and pay more renown.", 18, BONE3)); cards.add_child(cv4[0])
 	v.add_child(cards)
+	v.add_child(gap(8))   # Keep space after the last choice when scrolling above the fixed Done button.
 	return v
 
 # ---------------- aspect ----------------

@@ -74,6 +74,8 @@ func _boon_footer_layout(ui: CampaignUI) -> void:
 		var fill := pressed.bg_color.srgb_to_linear().get_luminance()
 		_ok(button.get_draw_mode() == BaseButton.DRAW_PRESSED and (ink + 0.05) / (fill + 0.05) >= 4.5,
 			"B1 %s keeps the shortcut legible during a keyboard press" % act)
+		_ok(hint.get_theme_color("font_color") == button.get_theme_color("font_pressed_color"),
+			"B1 %s shortcut follows the button's pressed text colour" % act)
 		root.gui_release_focus()
 		accept.pressed = false
 		root.push_input(accept)

@@ -455,7 +455,9 @@ static func button_highlighted(b: Button) -> bool:
 # The sheet action's fill comes from the native draw mode, including keyboard activation.
 static func sheet_action_colour(b: Button, idle: Color, filled_on_focus := false) -> Color:
 	if b.disabled: return TEXT3
-	return ON_EMBER if button_highlighted(b) or (filled_on_focus and b.has_focus()) else idle
+	if not button_highlighted(b) and not (filled_on_focus and b.has_focus()): return idle
+	var hover := b.get_theme_stylebox("hover") as StyleBoxFlat
+	return ON_EMBER if hover != null and hover.bg_color.get_luminance() > 0.35 else TEXT
 
 
 static func bind_sheet_label(b: Button, label: Label, idle: Color, filled_on_focus := false) -> void:
