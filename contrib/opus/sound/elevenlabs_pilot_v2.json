@@ -2,7 +2,7 @@
  "batch": "elevenlabs_pilot_v2",
  "gate": 2,
  "made_for": "issue 1752 Gate 2 clean-slate sci-fi calibration pack (Ryan, Nov 22 2026; supersedes Gate 1 pilot1585). Fable, Artoo and Astra (issue 1754) review fixes applied",
- "note": "One clip per shot for every weapon family in godot/rules/data/tables.json (FAC_WNAMES checked), impacts for metal, glass, bio and obsidian targets plus energy hits and an ordinary shield block, shield collapses, R416 breach and capability-loss cues behind VS_WOUNDS_V2 (#1741), faction death beats plus the base break, mechanical acoustic UI cues, bridge ambience, and 3 music prototypes (showcase arc, stem-ready loop, reward theme). Space and sci-fi only, close and dry with a firm clean attack and no harsh words, no wind-up or impact inside a fire clip, no domestic foley words. Each item's today field names the baseline cue for the listening page. Stems stay off in Gate 2. Ryan's picks, locked Nov 22 2026 21:41 UTC, all A: Sunward Sear guns are shell guns; Eclipse primary is a heavy magnetic slam with a cold hollow decay; reward music keeps the Gate 1 reward_preview wording on 16 bars.",
+ "note": "One clip per shot for every weapon family in godot/rules/data/tables.json (FAC_WNAMES checked), impacts for metal, glass, bio and obsidian targets plus energy hits and an ordinary shield block, shield collapses, R416 breach and capability-loss cues behind VS_WOUNDS_V2 (#1741), faction death beats plus the base break, mechanical acoustic UI cues, bridge ambience, and 3 music prototypes. Wave A ear-audit global upgrades (Ryan, Nov 22 2026): fixed Tabletop Foley Scale trap across Glasswright, Chorus, Eclipse, Directorate, beams, shields, and rewards; stripped pink-elephant negative leaks ('no explosion', 'no fire', 'under heavy fire') and monster/creature/flesh words; locked v2 strictly to fast kinetic ballistic shell guns (moving all impacts, deaths, Directorate energy, and Eclipse to v3); allowed controlled natural resonance on beams, shields, Glasswright, Eclipse, and UI rewards. Wave B stays held until Wave A2 (10 items / 20 takes) clears ear sign-off.",
  "sfx_model": "eleven_text_to_sound_v3",
  "music_model": "music_v2",
  "items": [
@@ -51,7 +51,7 @@
    "seconds": 1.8,
    "influence": 0.6,
    "takes": 2,
-   "prompt": "Huge sci-fi starship heat lance firing, close and dry: an immediate searing beam ignition into a steady white-hot roar like a steel-mill arc furnace, with a deep reactor drone underneath, then a clean cutoff and a brief cooling shimmer. Heavy sustained energy beam, far larger than any gun, full strength from the first instant, no reverb."
+   "prompt": "Focused sustained solar-thermal energy beam firing from a capital starship: an instant tight electromagnetic lock-on transient snapping into a continuous, unwavering high-energy beam roar over a steady deep reactor hum, held solid and flat for over a second, ending in a crisp clean power cutoff and brief thermal shimmer. Sustained directed-energy lance, even pressure from start to cutoff, smooth top end, controlled studio decay."
   },
   {
    "id": "wep_sunward_torp_launch",
@@ -139,11 +139,10 @@
    "cue": "gun_plasma light (Directorate laser, shown to the player as Plasma cannon: ONE shot)",
    "today": "gun_las",
    "group": "weapon_directorate",
-   "seconds": 0.6,
-   "model": "eleven_text_to_sound_v2",
+   "seconds": 0.7,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single shot from a military sci-fi starship plasma cannon, close and dry: an immediate tight capacitor-bank discharge thump with a short hot ionized energy crack and a clean regulated low-mid punch, fast clean cutoff. Precise and controlled, firm attack with a smooth top, no reverb."
+   "prompt": "Single heavy military high-voltage pulse discharge from a capital starship emitter: an instant solid electrical substation breaker slam fused with a tight dense high-current electric arc snap and a firm deep pressurized sub-bass thump, strictly flat steady pitch with an abrupt clean cutoff. Disciplined industrial power-grid strike, authoritative and controlled, smooth top end."
   },
   {
    "id": "wep_directorate_turbo",
@@ -151,10 +150,10 @@
    "cue": "gun_plasma (Directorate turbo, shown as Plasma battery: ONE shot; Astra review 1754)",
    "today": "gun_plasma",
    "group": "weapon_directorate",
-   "seconds": 0.8,
+   "seconds": 0.85,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single shot from a military sci-fi starship plasma battery, close and dry: an immediate rounded capacitor-bank discharge with a dense ionized energy pulse and a firm regulated low-mid thump, clean fast cutoff. Fuller than a light plasma cannon, lighter than a heavy plasma battery, smooth top, no reverb."
+   "prompt": "Single medium-heavy military high-voltage capacitor battery discharge: an instant massive substation breaker slam and dense sustained high-current arc pulse over a deep weighty electromagnetic sub-bass thump, strictly flat steady pitch, ending in a crisp clean cutoff. Fuller and heavier than a light pulse emitter, authoritative industrial energy, smooth top end."
   },
   {
    "id": "wep_directorate_hturbo",
@@ -162,11 +161,10 @@
    "cue": "gun_plasma heavy (Directorate hturbo, shown as Heavy plasma battery: ONE shot; sfx.gd staggers the 3)",
    "today": "gun_plasma",
    "group": "weapon_directorate",
-   "seconds": 0.9,
-   "model": "eleven_text_to_sound_v2",
+   "seconds": 1.0,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single shot from a heavy military sci-fi starship plasma battery, close and dry: an immediate deep capacitor-bank discharge with a dense ionized energy blast and a heavy regulated low thump, ending in a brief clean power-supply wind-down. Clearly larger and deeper than a light plasma cannon, controlled, no reverb."
+   "prompt": "Single massive flagship high-voltage capacitor bank discharge: an instant crushing power-station circuit breaker slam fused with a thick booming high-current electrical arc blast and a deep resonant electromagnetic bass punch, strictly flat steady pitch, ending in a brief controlled transformer decay. Huge regulated energy strike, far heavier than a light pulse emitter, smooth top end."
   },
   {
    "id": "wep_directorate_ion_beam",
@@ -177,7 +175,7 @@
    "seconds": 1.8,
    "influence": 0.6,
    "takes": 2,
-   "prompt": "Heavy military sci-fi starship ion cannon firing, close and dry: an immediate firm high-voltage capacitor discharge snapping into a sustained crackling arc beam with an oscillating deep magnetic hum and dense electrical static surges, then a clean cutoff. Cold, controlled, overpowering, no fire, no explosion, no reverb."
+   "prompt": "Sustained capital-scale high-voltage ion disruption beam: an instant authoritative substation breaker slam locking directly into a continuous steady crackling high-voltage transformer arc stream with a deep unwavering oscillating electromagnetic hum held solid, ending in a crisp abrupt power cutoff. Cold, disciplined, overpowering industrial energy, smooth top end."
   },
   {
    "id": "wep_directorate_picket",
@@ -186,10 +184,9 @@
    "today": "gun_flak",
    "group": "weapon_directorate",
    "seconds": 0.5,
-   "model": "eleven_text_to_sound_v2",
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single pulse from a military sci-fi starship point-defense energy emitter, close and dry: an immediate very short tight energy snap with a small firm capacitor thump of low-mid body and an instant clean cutoff. Light, fast, precise, smooth-edged, no reverb."
+   "prompt": "Single rapid military point-defense high-voltage arc pulse: an instant short crisp high-current electrical relay snap with a compact solid low-mid electromagnetic thump and a clean immediate cutoff, strictly flat steady pitch. Fast, disciplined, industrial precision, clearly lighter than a main battery."
   },
   {
    "id": "wep_hullbreaker_scatter",
@@ -232,10 +229,10 @@
    "cue": "gun_spine (Chorus bioplasma, shown to the player as Spine volley: ONE spine)",
    "today": "gun_spine",
    "group": "weapon_chorus",
-   "seconds": 0.6,
+   "seconds": 0.8,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single huge bone spine fired from a giant living alien starship creature, close and dry: an immediate deep muscular thud of release with a hard dense chitin crack and a short heavy tail, quick decay. Large predatory alien biology, heavy and solid, no metal, no reverb."
+   "prompt": "Colossal subterranean hydrostatic pressure cannon firing a massive dense petrified bone pillar: an instant deep booming low-end hydraulic pressure thump fused with the heavy dry brittle crack of massive thick calcified shell and petrified timber splitting under extreme force, followed by a brief dark sub-bass air displacement drop. Enormous monumental structural weight, deep and solid."
   },
   {
    "id": "wep_chorus_bioplasma",
@@ -246,7 +243,7 @@
    "seconds": 0.9,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single dense glob of corrosive fluid launched from a giant living alien starship creature, close and dry: an immediate deep muscular pressure thump with a thick heavy viscous surge and a short rough chemical vent trailing off, abrupt end. Huge organic mass, heavy and menacing, no metal, no reverb."
+   "prompt": "Colossal pressurized industrial culvert launching a dense heavy slug of thick molten mineral slag: an instant deep booming sub-bass pneumatic pressure release with a thick dense low rumble and a brief heavy high-pressure vent cutoff. Monumental subterranean industrial scale, heavy and menacing."
   },
   {
    "id": "wep_chorus_tendril",
@@ -254,10 +251,10 @@
    "cue": "new cue: Chorus tendril lash, fire side only (the hit comes from imp_*)",
    "today": "board_grapple:chorus",
    "group": "weapon_chorus",
-   "seconds": 0.9,
+   "seconds": 1.0,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Giant armored alien tendril of bone and sinew lashing out from a living starship creature, close and dry: an immediate deep heavy muscular lunge, a thick low surge of great mass moving fast, and a taut fibrous strain creak at full stretch. Enormous creature scale, heavy low end, no metal, no reverb."
+   "prompt": "Massive ancient petrified-wood and calcified-bone structural beam swinging rapidly through dense air: an instant deep heavy low-end weight surge with booming low wind displacement and thick ancient timber-and-bone structural groaning under enormous tension at full extension. Monumental scale, heavy sub-bass."
   },
   {
    "id": "wep_chorus_spore_cloud",
@@ -265,10 +262,10 @@
    "cue": "gun_flak variant (Chorus spores, shown as Spore cloud, k is flak)",
    "today": "gun_flak",
    "group": "weapon_chorus",
-   "seconds": 0.8,
+   "seconds": 0.9,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Giant living alien starship creature venting a dense defensive cloud of spores, close and dry: an immediate short heavy pressurized gas burst carrying a thick grainy spray of particles that spreads outward and thins fast. Large creature scale, low and heavy, no metal, no reverb."
+   "prompt": "Colossal subterranean pressure-chamber relief valve blasting out a massive dense cloud of fine mineral dust and dry gravel: an instant deep pressurized gas blowout thump carrying a wide low-mid granular spray that spreads and fades quickly. Huge monumental industrial scale, deep and dense."
   },
   {
    "id": "wep_chorus_sporeb",
@@ -279,7 +276,7 @@
    "seconds": 0.6,
    "influence": 0.6,
    "takes": 2,
-   "prompt": "A small alien bio-craft releasing one acid sac at close range, dry: one immediate compact dense organic pressure thump with a short thick viscous burst, tight and quick. Strike-craft scale, clearly smaller than a capital creature's weapons but solid, no metal, no reverb."
+   "prompt": "Compact heavy pneumatic mortar discharging a dense calcified mineral pod: an immediate tight low-end air-pressure thump with a brief thick muffled dry crack and quick decay. Strike-craft scale, clearly lighter than a capital launcher."
   },
   {
    "id": "wep_ithar_shard",
@@ -287,10 +284,10 @@
    "cue": "gun_needle (Glasswright shard and Needle beam turret: ONE shot)",
    "today": "gun_needle",
    "group": "weapon_ithar",
-   "seconds": 0.6,
+   "seconds": 0.8,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single shot from a crystalline alien starship prism weapon, close and dry: an immediate bright clear crystal-tone strike, like a huge quartz block struck once, with a firm low-mid thump under it and a short pure ringing overtone that fades fast. Luminous and precise, solid and weighty, no metal, no reverb."
+   "prompt": "Hyper-velocity crystalline prism cannon discharging from a massive capital starship: an instant crisp high-energy crystal-crack transient fused simultaneously with a deep booming 150 Hz cathedral sub-harmonic punch and a tight luminous harmonic shimmer trailing smoothly off. Monumental capital-ship weapon velocity and weight, crystalline and lethal, smooth top end, controlled natural decay."
   },
   {
    "id": "wep_ithar_needle",
@@ -298,10 +295,10 @@
    "cue": "gun_needle variant (Glasswright turret, shown as Needle beam: ONE shot; Astra review 1754)",
    "today": "gun_needle",
    "group": "weapon_ithar",
-   "seconds": 0.6,
+   "seconds": 0.8,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single shot from a crystalline alien starship needle beam turret, close and dry: an immediate thin clear sustained crystal tone, like a long quartz column resonating, over a quiet low hum, ending in a clean square cutoff. Narrower and longer than a prism shard strike, solid and precise, no metal, no reverb."
+   "prompt": "Focused crystalline optical beam turret firing a single tight pulse from a starship: an instant clean high-energy prism snap locking briefly into a narrow luminous sustained harmonic tone over a deep solid low-end resonant hum, ending in a crisp square cutoff. Monumental optical precision, weighty and focused, smooth top end."
   },
   {
    "id": "wep_ithar_pulsar",
@@ -309,10 +306,10 @@
    "cue": "lance_choir (Glasswright pulsar harmonic choir-lance beam)",
    "today": "lance_choir",
    "group": "weapon_ithar",
-   "seconds": 1.5,
+   "seconds": 1.6,
    "influence": 0.6,
    "takes": 2,
-   "prompt": "Crystalline alien starship firing a focused prism light lance, close and dry: an immediate bright sustained beam tone built from pure quartz-bell overtones over a deep steady resonant hum, held even, then a clean cutoff with a short fading ring. Majestic and lethal, smooth and full, no vocals, no metal, no reverb."
+   "prompt": "Massive capital crystalline starship firing a sustained harmonic light lance: an instant authoritative prism ignition locking into a powerful unwavering cathedral-scale chordal crystal beam roar over a crushing deep sub-bass resonant drone, held solid then cutting cleanly off with a luminous fading shimmer. Majestic, monumental, overpowering optical beam, purely instrumental acoustics."
   },
   {
    "id": "wep_ithar_startorp",
@@ -323,7 +320,7 @@
    "seconds": 1.8,
    "influence": 0.6,
    "takes": 2,
-   "prompt": "Crystalline alien starship releasing a small captive star as a weapon, close and dry: an immediate single deep struck-crystal tone with a strong radiant energy hum that recedes into the distance on a smooth shimmering tail. Pure, luminous, massive energy, no vocals, no metal, no reverb."
+   "prompt": "Massive crystalline starship launching a radiant stellar-core ordnance pod: an instant deep booming sub-harmonic crystal impulse expanding into a powerful luminous radiant energy hum that accelerates and recedes smoothly into deep space. Monumental energy mass, warm low body with clean shimmering upper harmonics."
   },
   {
    "id": "wep_eclipse_gsentry",
@@ -331,11 +328,10 @@
    "cue": "gun_rail light (Eclipse gsentry Null spire and flak Null shredder: ONE shot)",
    "today": "gun_rail",
    "group": "weapon_eclipse",
-   "seconds": 0.5,
-   "model": "eleven_text_to_sound_v2",
+   "seconds": 0.6,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single shot from an ancient alien machine starship point-defense weapon, close and dry: an immediate short cold magnetic snap with a hollow dark low tone under it, like a struck stone column, and an abrupt dead cutoff. Cold and precise, hollow and heavy, no reverb."
+   "prompt": "Single rapid shot from an ancient alien monolith point-defense emitter: an instant cold tight electrostatic void snap paired with a compact deep hollow sub-bass drop cutting sharply into dead silence. Cold, eerie, crisp electrostatic gravity pulse, clearly faster and lighter than a main null cannon."
   },
   {
    "id": "wep_eclipse_gauss_charge",
@@ -346,7 +342,7 @@
    "seconds": 0.9,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Huge ancient alien machine weapon charging, close and dry: a deep ominous power-station transformer hum swelling under heavy magnetic coil strain, then stopping dead on one hard heavy relay clack. Cold, dread-filled, low and heavy, no reverb."
+   "prompt": "Massive ancient alien monolith weapon drawing power: a deep ominous dark sub-bass gravitational hum and cold high-voltage power-station coil tension swelling inward, then cutting suddenly to a brief tense beat of dead silence. Dread-filled, ancient, immense low-end tension."
   },
   {
    "id": "wep_eclipse_gauss_fire",
@@ -354,11 +350,10 @@
    "cue": "gun_rail (Eclipse gauss, shown as Null cannon: ONE shot, no wake)",
    "today": "gun_rail",
    "group": "weapon_eclipse",
-   "seconds": 0.7,
-   "model": "eleven_text_to_sound_v2",
+   "seconds": 0.9,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single shot from a huge ancient alien machine starship null cannon, close and dry: an immediate hard heavy magnetic slam with a crushing low-end punch and a short hollow cold tone that drops away fast into silence. Cold and lethal, deep and weighty with a firm clean attack, no fire, no reverb."
+   "prompt": "Single devastating shot from an ancient alien monolith null cannon: an instant tight dark electrostatic void snap immediately dropping into a crushing 40 Hz seismic-charge cinematic sub-bass impact wave with a brief cold hollow bowed-obsidian resonance that cuts abruptly into dead silence. Terrifying otherworldly gravity-weapon finality, monumental sub-bass weight, smooth top end."
   },
   {
    "id": "wep_eclipse_nlance",
@@ -366,10 +361,10 @@
    "cue": "lance_dark (Eclipse nlance: ONE pulse; sfx.lance already plays one per fire time)",
    "today": "lance_dark",
    "group": "weapon_eclipse",
-   "seconds": 0.8,
+   "seconds": 0.9,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single pulse from an ancient alien machine starship null lance, close and dry: an immediate cold dark energy cut, a short hollow shearing tone over a deep low hum, ending in a brief dry static crackle. Menacing, hollow, ancient, heavier than a gun shot, no fire, no reverb."
+   "prompt": "Single devastating dark-energy beam pulse from an ancient alien monolith: an instant cold shearing electrostatic void cut dropping into a deep hollow sub-bass gravitational drone and dark bowed-obsidian resonance, cutting abruptly off with faint cold static. Ancient, ominous, heavier than a null cannon."
   },
   {
    "id": "wep_eclipse_doom",
@@ -377,10 +372,10 @@
    "cue": "lance_dark heavy (Eclipse doom, shown as Corona arc: discharge at t=0; the pull-in is wep_eclipse_doom_charge)",
    "today": "lance_dark",
    "group": "weapon_eclipse",
-   "seconds": 1.8,
+   "seconds": 2.0,
    "influence": 0.6,
    "takes": 2,
-   "prompt": "Ancient alien flagship superweapon discharging, close and dry: an immediate monumental deep low-end slam, then a sustained hollow roaring arc of dark energy over a huge vibrating low drone, ending in a slow heavy decay. The single largest weapon in the fleet, world-ending dread, enormous low end, no fire, no reverb."
+   "prompt": "Colossal ancient alien flagship superweapon discharging a gravitational void arc: an instant monumental seismic-charge sub-bass pressure slam expanding into a terrifying sustained hollow dark-energy roar over a massive vibrating 35 Hz drone, decaying slowly into dead cold quiet. The single most terrifying weapon in space, world-ending dread, enormous cinematic sub-bass."
   },
   {
    "id": "wep_eclipse_doom_charge",
@@ -388,10 +383,10 @@
    "cue": "lance_charge variant (Eclipse doom pull-in; needs its own lead, CHARGE_LEAD is 0.26 s today)",
    "today": "lance_charge",
    "group": "weapon_eclipse",
-   "seconds": 0.6,
+   "seconds": 0.7,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Ancient alien flagship superweapon gathering power, close and dry: a fast deep inward-pulling pressure swell, as if all sound is being drawn into one point, cutting to dead silence at the end. Terrifying, dark, heavy, no reverb."
+   "prompt": "Colossal ancient alien flagship superweapon pulling ambient pressure inward: a fast deep reverse-suction sub-bass gravitational swell gathering immense dark tension into one point, then snapping abruptly into total dead silence. Terrifying, heavy, dark."
   },
   {
    "id": "wep_craft_guns",
@@ -412,10 +407,9 @@
    "today": "gun_sq",
    "group": "weapon_craft",
    "seconds": 0.6,
-   "model": "eleven_text_to_sound_v2",
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Sci-fi strike craft releasing one heavy bomb at close range, dry: an immediate solid magnetic rack release thunk with a short dense mechanical drop and a brief thruster kick as the bomb leaves. Compact, heavy for its size, no explosion, no reverb."
+   "prompt": "Sci-fi strike craft releasing one heavy bomb at close range: an immediate solid electromagnetic rack release thunk with a short dense mechanical drop and a brief thruster kick as the ordnance leaves. Compact, heavy for its size, clean tight decay."
   },
   {
    "id": "wep_mech_recoil_tail",
@@ -424,7 +418,6 @@
    "today": "salvo_tail",
    "group": "weapon_layer",
    "seconds": 0.7,
-   "model": "eleven_text_to_sound_v2",
    "influence": 0.65,
    "takes": 2,
    "prompt": "Heavy industrial machine mechanism cycling once, close and dry: a damped hydraulic piston returning, a dense steel block seating solidly into place, and a short pressurized coolant gas vent. Large heavy machinery, low and solid, no reverb."
@@ -436,7 +429,6 @@
    "today": null,
    "group": "weapon_layer",
    "seconds": 0.6,
-   "model": "eleven_text_to_sound_v2",
    "influence": 0.65,
    "takes": 2,
    "prompt": "One deep heavy low-end thump felt through a massive steel structure, close and dry: a single immediate sub-bass punch with a short dense hull-frame shudder and a soft rounded top. Pure low body, no reverb."
@@ -444,11 +436,10 @@
   {
    "id": "imp_metal_heavy",
    "kind": "sfx",
-   "cue": "hit_heavy (heavy kinetic impact on armored metal starship hull)",
+   "cue": "hit_heavy (heavy kinetic impact on armored metal starship hull; moved to v3 after Wave A A/B)",
    "today": "hit_heavy",
    "group": "impact",
    "seconds": 1.0,
-   "model": "eleven_text_to_sound_v2",
    "influence": 0.65,
    "takes": 2,
    "prompt": "Heavy armor-piercing shell slamming into thick starship armor plating, close and dry: an immediate crushing metallic crunch with a deep resonant hull-frame boom and a short spray of heavy steel fragments scattering. Massive armor impact, deep and weighty, no reverb."
@@ -459,10 +450,10 @@
    "cue": "hit_glass (heavy shot striking thick Glasswright crystal armor)",
    "today": "hit_glass",
    "group": "impact",
-   "seconds": 1.0,
+   "seconds": 1.1,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Heavy projectile striking a massive thick crystalline starship hull, close and dry: an immediate deep stone-like crystal impact boom with a low bell tone from the whole mass and a short run of heavy cracks spreading through thick quartz. Monumental scale, low-pitched and dense, a hard hit that the hull survives, no metal, no reverb."
+   "prompt": "Heavy artillery shell slamming into a ten-meter-thick monolithic glacier and dense crystalline armor slab: an instant crushing seismic ice-and-crystal impact boom with deep resonant glacier stress-groans and heavy thick fractures racing through massive translucent rock. Monumental geological impact scale, deep low end."
   },
   {
    "id": "imp_obsidian_eclipse",
@@ -473,7 +464,7 @@
    "seconds": 1.0,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "High-energy projectile striking thick obsidian armor on an ancient alien starship, close and dry: an immediate cold brittle crack of a massive basalt slab with a hollow low stone-and-metal resonance and a brief dry static crackle. Cold, ancient, dense and heavy, no fire, no reverb."
+   "prompt": "Heavy projectile slamming into thick monolithic obsidian and basalt armor on an ancient starship: an instant dense cold brittle crack of a massive basalt cliff face paired with a hollow dark stone-and-sub-bass resonance and faint cold electrostatic crackle. Ancient, heavy, dense geological impact."
   },
   {
    "id": "imp_metal_light",
@@ -482,7 +473,6 @@
    "today": "hit",
    "group": "impact",
    "seconds": 0.6,
-   "model": "eleven_text_to_sound_v2",
    "influence": 0.65,
    "takes": 2,
    "prompt": "Medium cannon shell striking thick starship armor plating, close and dry: an immediate hard dense metallic thud with a short dull plate ring and a small scatter of fragments, quick decay. Solid and contained, clearly smaller than a heavy armor breach, no reverb."
@@ -507,7 +497,7 @@
    "seconds": 0.7,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Hot energy bolt striking thick starship armor plating, close and dry: an immediate dense searing impact thump with a short flash-burn of metal and a brief fading heat crackle. Solid and hot, weighty with a smooth top, no explosion, no reverb."
+   "prompt": "High-energy plasma bolt contacting thick armored starship hull plating: an immediate dense pressurized heat-impact thump fused with a brief bright thermal weld-arc burn on thick steel and a quick fading electrical crackle. Solid, hot, weighty with a smooth top end."
   },
   {
    "id": "imp_las",
@@ -515,10 +505,10 @@
    "cue": "hit_las (laser and lance contact on metal; Astra review 1754)",
    "today": "hit_las",
    "group": "impact",
-   "seconds": 0.5,
+   "seconds": 0.55,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Focused energy beam striking thick starship armor plating, close and dry: an immediate narrow bright searing contact with a short tight burn into the metal and a fast clean decay. Smaller and sharper than a plasma bolt hit, smooth top, no explosion, no reverb."
+   "prompt": "Focused thermal energy beam contacting thick armored starship steel: an immediate tight concentrated weld-arc flash contact burning cleanly into dense armor with a fast crisp decay. Compact, hot, focused, smooth top end."
   },
   {
    "id": "imp_acid_on_metal",
@@ -529,7 +519,7 @@
    "seconds": 1.2,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Mass of alien acid striking thick starship armor plating, close and dry: an immediate dense heavy liquid impact, then a deep corrosive chemical roar, like an industrial acid vat eating steel, in a thick seething burn that fades. Heavy industrial scale, low-mid weight, no fire, no explosion, no reverb."
+   "prompt": "Heavy corrosive chemical payload impacting thick armored steel hull plating: an immediate blunt low-end impact thud transitioning straight into a deep industrial chemical-etching roar like an acid foundry tank dissolving thick steel, fading smoothly. Heavy industrial scale, strong low-mid weight."
   },
   {
    "id": "imp_bio_flesh",
@@ -537,10 +527,10 @@
    "cue": "hit_wet (any shot striking a Chorus hull: the bio target substance)",
    "today": "hit_wet",
    "group": "impact",
-   "seconds": 0.9,
+   "seconds": 1.0,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Heavy projectile striking the thick armored hide of a giant living alien starship creature, close and dry: an immediate deep dense thud into chitin plate and heavy muscle, a hard shell crack, and a short thick low burst of fluid pressure. Enormous creature scale, heavy and blunt, no metal, no reverb."
+   "prompt": "Heavy artillery shell slamming into a colossal ten-meter-thick petrified bone cliff and calcified carapace boulder: an instant deep hollow seismic structural thud fused with massive thick brittle bone-rock and calcified shell plates cracking apart and heavy dry mineral shards splintering outward. Monumental geological impact scale, booming sub-bass."
   },
   {
    "id": "shd_break_energy",
@@ -548,10 +538,10 @@
    "cue": "shield_break (veil, hex, and patchy energy shield collapse)",
    "today": "shield_break",
    "group": "shield",
-   "seconds": 1.5,
+   "seconds": 1.6,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Giant starship energy shield collapsing under heavy fire, close and dry: an immediate hard high-voltage snap, then the whole field giving way in a deep heavy low-end collapse with a wide dying electrical crackle spreading outward. Clearly a large power barrier failing, heavy and final, no explosion, no reverb."
+   "prompt": "Massive capital starship electromagnetic forcefield fracturing offline: an immediate crisp high-voltage electric-glass barrier crack, cascading into a steep descending resonant power-down pitch drop and wide shimmering electrostatic dissipation as the energy field collapses completely. Unmistakable high-tech energy barrier failure, deep sub-bass drop under clean electric crackle, smooth top end, natural controlled decay."
   },
   {
    "id": "shd_break_prismatic",
@@ -559,10 +549,10 @@
    "cue": "shield_break (ithar variant: prismatic optical barrier shatter)",
    "today": "shield_break",
    "group": "shield",
-   "seconds": 1.4,
+   "seconds": 1.6,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Crystalline alien starship light barrier breaking, close and dry: an immediate bright resonant crystal tone that fractures and collapses into a heavy run of thick splintering crystal tones over a deep low-end drop. Clearly a large crystalline energy barrier failing, heavy and dense, no metal, no explosion, no reverb."
+   "prompt": "Colossal crystalline optical energy barrier collapsing across a capital starship: an instant dramatic crystal-field fracture cascading into an avalanche of thick glacier-scale crystalline stress cracks paired with a steep resonant harmonic power-down drop and wide shimmering static dissipation. Monumental translucent barrier failure, deep low-end drop, natural controlled decay."
   },
   {
    "id": "shd_hit_absorb",
@@ -570,10 +560,10 @@
    "cue": "shield (ordinary shield block; R412 rule 4: a shield block is quiet)",
    "today": "shield",
    "group": "shield",
-   "seconds": 0.6,
+   "seconds": 0.65,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Weapon shot absorbed by a large starship energy shield, close and dry: an immediate soft deep energy thud with a short smooth resonant hum that spreads and fades quickly. Quiet, rounded, contained, a clean deflection, no explosion, no reverb."
+   "prompt": "Incoming shot deflected by a massive starship electromagnetic forcefield: an immediate soft deep pressurized energy thud paired with a brief clean resonant harmonic hum that ripples outward and fades gently. Quiet, rounded, controlled energy deflection, smooth top end."
   },
   {
    "id": "dmg_turret_knockout",
@@ -584,7 +574,7 @@
    "seconds": 0.8,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Armored starship gun turret seizing from battle damage, close and dry: an immediate heavy drive-gear grind into a hard mechanical jam, then two short high-voltage arc snaps. Short, heavy, industrial machinery scale, no explosion, no reverb."
+   "prompt": "Armored capital starship weapon turret drive seizing offline: an immediate heavy industrial drive-gear grind locking into a solid mechanical jam, followed by two crisp high-voltage electrical arc snaps. Heavy industrial machinery scale, controlled tight decay."
   },
   {
    "id": "dmg_shield_burnout",
@@ -595,7 +585,7 @@
    "seconds": 0.6,
    "influence": 0.6,
    "takes": 2,
-   "prompt": "Damaged starship shield emitter arcing once across hull plating, close and dry: one short burst of dry high-voltage arc crackle with a brief low electrical buzz under it, ending fast. Small, tense, contained, no explosion, no reverb."
+   "prompt": "Damaged starship shield emitter discharging one stray high-voltage electrical arc across steel plating: a single brief crisp electrical-transformer spark burst with a quiet low electrical buzz beneath, ending cleanly. Tense, contained, industrial."
   },
   {
    "id": "dmg_breach_shear_metal",
@@ -603,10 +593,10 @@
    "cue": "new R416 cue: breach opening, metal hulls only (glass, bio and obsidian reuse their imp_ cue)",
    "today": null,
    "group": "r416_damage",
-   "seconds": 0.8,
+   "seconds": 0.9,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Thick armored starship hull plating shearing open, close and dry: an immediate violent heavy steel-plate rupture with structural girders snapping and a deep wrenching metal strain. Massive, heavy, industrial, no explosion, no reverb."
+   "prompt": "Thick armored capital starship steel hull plating shearing open under heavy stress: an immediate heavy structural steel-girder rupture with thick bolted armor plates buckling and wrenching apart. Massive heavy industrial metal scale, deep low end."
   },
   {
    "id": "dmg_breach_vent",
@@ -617,7 +607,7 @@
    "seconds": 1.2,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Atmosphere blasting out of a breached starship compartment, close and dry: an immediate fierce roaring jet of escaping pressurized air, as strong as a burst industrial pressure line, thinning quickly to nothing. Large and violent, wide, deep and forceful, no explosion, no reverb."
+   "prompt": "Pressurized atmosphere blasting violently out of a breached starship hull compartment: an immediate forceful roaring jet of escaping high-pressure industrial air rushing outward and thinning rapidly to silence. Wide, deep, powerful industrial decompression."
   },
   {
    "id": "dmg_engine_fail",
@@ -628,7 +618,7 @@
    "seconds": 0.9,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Large starship main engine losing power, close and dry: an immediate deep thruster roar stumbling and choking off in two uneven low surges, then dropping to nothing. Heavy, low, mechanical, no explosion, no reverb."
+   "prompt": "Massive starship main fusion thruster losing power: an immediate deep turbine roar stumbling and choking off in two uneven low-end power surges, winding down into quiet. Heavy mechanical propulsion failure, deep low end."
   },
   {
    "id": "death_directorate_blackout",
@@ -636,10 +626,10 @@
    "cue": "death_powerdown (hegemony variant: modular grid blackout)",
    "today": "death_powerdown",
    "group": "death_beat",
-   "seconds": 1.3,
+   "seconds": 1.4,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Clinical military sci-fi starship suffering instantaneous total reactor grid blackout: authoritative massive main power-relay breaker slam followed by a clean steep descending turbine and reactor-bus power-down hum dropping smoothly into dead cold silence. No explosion."
+   "prompt": "Clinical military capital starship suffering instantaneous total reactor grid shutdown: an authoritative massive substation main power-breaker slam followed by a steep clean descending turbine and power-grid hum winding smoothly down into cold dead silence. Heavy industrial electrical blackout."
   },
   {
    "id": "death_hullbreaker_snap",
@@ -647,11 +637,10 @@
    "cue": "death_crack (corsair variant: welded-seam structural snap)",
    "today": "death_crack",
    "group": "death_beat",
-   "seconds": 1.0,
-   "model": "eleven_text_to_sound_v2",
+   "seconds": 1.1,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Huge welded scrap-metal starship hull breaking apart under strain, close and dry: a short deep steel-girder strain groan, then a hard heavy snap of giant steel structural cables parting, with a deep ringing iron shudder after. Massive industrial scale, heavy and blunt, no explosion, no reverb."
+   "prompt": "Massive welded industrial starship hull breaking apart under structural load: a brief deep steel-girder strain groan breaking into a heavy authoritative snap of giant thick steel suspension cables parting, followed by a deep ringing iron shudder. Colossal industrial machinery scale, heavy low end."
   },
   {
    "id": "death_chorus_rupture",
@@ -659,10 +648,10 @@
    "cue": "boom_l (chorus variant: colossal bio-leviathan carapace split)",
    "today": "boom_l:chorus",
    "group": "death_beat",
-   "seconds": 1.7,
+   "seconds": 1.8,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Colossal armored living alien starship creature splitting apart, close and dry: an immediate heavy cracking of thick rigid chitin armor plates, then a deep visceral low-end rupture of dense tissue and thick sinew cords parting under enormous pressure, settling into silence. Terrifying monster death, dense and heavy, no fire, no metal, no reverb."
+   "prompt": "Colossal ancient petrified-bone cathedral and giant hollow calcified-shell monolith collapsing under immense tectonic pressure: an immediate deep structural cracking of massive thick bone pillars and giant ancient oak beams snapping apart, followed by a booming pressurized gas blowout and a cavernous sub-bass tectonic collapse settling into dark quiet. Monumental structural destruction, strictly geological and timber-bone acoustics."
   },
   {
    "id": "death_ithar_shatter",
@@ -670,10 +659,10 @@
    "cue": "death_crack (ithar variant: crystalline hull stress fracture)",
    "today": "death_crack:ithar",
    "group": "death_beat",
-   "seconds": 1.4,
+   "seconds": 1.6,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Colossal crystalline alien starship fracturing under lethal structural strain: deep low resonant glacier-tone groan pierced by fast racing cascades of sharp thick crystal stress-cracks spreading across massive optical hull panes. Eerie, cold, monumental, no explosion."
+   "prompt": "Colossal crystalline starship monolith fracturing apart under lethal structural collapse: deep booming resonant glacier stress-groans joined by rapid racing cascades of massive thick crystal-slab fractures cracking across kilometer-scale optical panes, settling into dark resonant silence. Monumental geological fracture, eerie and massive."
   },
   {
    "id": "death_eclipse_shear",
@@ -681,10 +670,10 @@
    "cue": "death_crack (deathless variant: monolithic obsidian slab shear)",
    "today": "death_crack",
    "group": "death_beat",
-   "seconds": 1.3,
+   "seconds": 1.4,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Ancient colossal obsidian alien starship shedding heavy armored monolith slabs in space: deep cold sub-harmonic magnetic-lock disengagement boom followed by massive dry basalt-stone slabs grinding and shearing cleanly apart with faint cold electrostatic static. Monumental ancient machine, heavy cold stone-and-alloy monolithic shear, no fire."
+   "prompt": "Colossal ancient obsidian monolith starship shearing apart in deep space: an immediate deep sub-harmonic gravitational-lock disengagement boom followed by massive heavy basalt-stone slabs grinding and shearing cleanly apart into cold electrostatic static and dark quiet. Monumental ancient monolithic fracture."
   },
   {
    "id": "death_metal_break",
@@ -695,7 +684,7 @@
    "seconds": 2.2,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Large armored starship breaking apart, close and dry: an immediate enormous deep structural break, a heavy low-end blast with thick steel plating rupturing and large wreckage tumbling away, decaying into a long low rumble. The heaviest event in a space battle, deep and wide with a smooth top, no reverb."
+   "prompt": "Large armored capital starship breaking apart: an immediate enormous deep structural break, a heavy low-end blast with thick steel plating rupturing and massive wreckage tumbling away, decaying into a long dark low rumble. The heaviest event in a space battle, deep and wide with a smooth top end and natural deep decay."
   },
   {
    "id": "death_sunward_magazine",
@@ -703,11 +692,10 @@
    "cue": "new death cue: Sunward magazine flash, one per accepted flash (fx_death schedules them; Astra review 1754)",
    "today": "boom_m",
    "group": "death_beat",
-   "seconds": 0.8,
-   "model": "eleven_text_to_sound_v2",
+   "seconds": 0.9,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Ammunition magazine detonating deep inside an armored starship hull, close and dry: one immediate deep heavy internal blast with a hard hull-frame shock and a brief fiery crackle, short decay. Contained inside thick armor, heavy and solid, no reverb."
+   "prompt": "Ammunition magazine detonating deep inside an armored capital starship hull: one immediate deep heavy internal blast with a hard steel hull-frame shockwave and a brief muffled thermal rumble, contained inside thick armor, massive low end."
   },
   {
    "id": "ui_boss_arrival",
@@ -726,10 +714,10 @@
    "cue": "ui_reward (salvage, relic, or major reward claim)",
    "today": "ui_reward",
    "group": "ui_event",
-   "seconds": 1.4,
+   "seconds": 1.8,
    "influence": 0.6,
    "takes": 2,
-   "prompt": "Heavy precision vault mechanism releasing, close and dry: a damped solid machined-metal latch movement with a deep soft thud, then one warm low struck bronze bell tone that rings briefly and fades. A real recorded physical object, fully acoustic, dignified and restrained, no reverb."
+   "prompt": "Dignified dark sci-fi war-chest and relic claim sting: a brief soft damped precision mechanical unlatch at the start that immediately blooms into a warm, deep, resonant low bronze bell tone fused with a restrained solemn cello and muted low-brass open-fifth swell, decaying warmly and naturally. Mature, solemn, hard-won acoustic resonance, warm and dignified, natural hall decay."
   },
   {
    "id": "evt_fleet_warp_in",
@@ -737,10 +725,10 @@
    "cue": "arrive_jump (reinforcement starship dropping from transit)",
    "today": "arrive_jump",
    "group": "ui_event",
-   "seconds": 1.2,
+   "seconds": 1.3,
    "influence": 0.55,
    "takes": 2,
-   "prompt": "Heavy sci-fi starship arriving from a faster-than-light jump, close and dry: a very short tight inward pressure snap, then an immediate deep low-end displacement boom and a brief clean engine rumble that decays fast. Heavy, clean, contained, no explosion, no reverb."
+   "prompt": "Capital starship dropping out of faster-than-light transit into battle: a brief tight inward gravitational pressure snap immediately blooming into a monumental deep sub-bass spatial displacement boom and a brief low heavy thruster settle decaying smoothly. Massive, clean, authoritative arrival."
   },
   {
    "id": "ui_click_switch",
@@ -770,10 +758,10 @@
    "cue": "ui_your",
    "today": "ui_your",
    "group": "ui_event",
-   "seconds": 0.8,
+   "seconds": 1.0,
    "influence": 0.6,
    "takes": 2,
-   "prompt": "One soft low strike on a large bronze plate, close and dry, with a short warm fade. A real recorded physical object, fully acoustic, calm and grave, no reverb."
+   "prompt": "One soft low strike on a massive struck bronze plate with a warm dark resonant bloom and natural gentle fade. A real recorded physical acoustic instrument, calm, solemn, and grave."
   },
   {
    "id": "amb_bridge_bed",

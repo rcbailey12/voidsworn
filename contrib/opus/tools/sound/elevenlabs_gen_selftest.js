@@ -187,6 +187,17 @@ const l = dns.lookup; dns.lookup = function (h, ...a) { if (!ok(h)) throw block(
   ck(count('/v1/sound-generation') === sfxN + 2 && locked === 1 && passed === 1, 'two runs at once: one makes both takes, the other submits nothing');
   ck(!fs.existsSync(path.join(out, 'run.lock')), 'the lock is released when a run ends');
 
+  // Prompt length (Wave A2, Nov 23 2026): a sound-effect prompt over 450 characters fails the dry run, even outside --only.
+  const longList = path.join(dir, 'long.json');
+  fs.writeFileSync(longList, JSON.stringify({ gate: 2, items: [
+    { id: 'ok', kind: 'sfx', seconds: 1, takes: 1, prompt: 'x'.repeat(450) },
+    { id: 'long', kind: 'sfx', seconds: 1, takes: 1, prompt: 'x'.repeat(451) } ] }));
+  const lr = await new Promise(res => {
+    const c = spawn(process.execPath, ['-r', guard, gen, '--list', longList, '--out', path.join(dir, 'long_out'), '--dry', '--only', 'ok']);
+    let o = ''; c.stdout.on('data', d => o += d); c.stderr.on('data', d => o += d); c.on('close', code => res({ out: o, code }));
+  });
+  ck(lr.code === 2 && /long: prompt is 451 characters, ElevenLabs allows at most 450/.test(lr.out) && !/DRY RUN/.test(lr.out), 'a 451-character sound prompt fails the dry run: ' + lr.out);
+
   console.log(`offline proof: ${calls.length} calls, all to the loopback test server ${base}; guard blocks ElevenLabs; ` +
     '"account: MOCK-not-a-real-account" lines in generator runs come from this fake server');
   srv.closeAllConnections(); srv.close();

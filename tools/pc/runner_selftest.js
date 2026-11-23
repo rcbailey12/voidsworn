@@ -85,7 +85,16 @@ if (process.platform !== 'win32') {
   console.log('SKIP Windows fault matrix: run tools/pc/runner_selftest.bat on the PC');
   process.exit(0);
 }
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner687 proof '));
+// Issue 1739: inside a Codex lane TEMP is the run's own scratch (Temp\voidsworn-run-<issue>-<32 hex>), about 50
+// characters deeper. The lane fixture then nests its own runner's scratch TEMP inside that one
+// (...\board_d\temp\voidsworn-run-687-<32 hex>), and PowerShell Add-Type could not compile its C# there: "Cannot
+// create temporary file '' -- The data area passed to a system call is too small", so the mock agent never reached
+// its checkout (CHECKS_DIAG_1739_E: no file path passed 243 characters; the limit is on the TEMP folder the compiler
+// writes into). The fixture root sits beside the lane scratch, in the same Temp folder a standalone run uses.
+function fixtureTemp(temp = os.tmpdir()) {
+  return /^voidsworn-run-(?:[1-9][0-9]*-)?[0-9a-f]{32}$/i.test(path.basename(temp)) ? path.dirname(temp) : temp;
+}
+const root = fs.mkdtempSync(path.join(fixtureTemp(), 'runner687 proof '));
 const concurrency = 10;
 const testChildren = [];
 const testPidFiles = [];
