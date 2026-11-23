@@ -107,7 +107,7 @@ const notice = count => `(${count} check lines cut. Full log is in the head comm
 for (const action of ['create', 'edit']) {
   const long = messageWithChecks(70000);
   const footer = action === 'create'
-    ? `Opened automatically from branch ${branch}. The Board reviews and merges.\n\nCloses #1098\n`
+    ? `Opened automatically from branch ${branch}. The Board reviews and merges.\n`
     : `Refreshed from the latest push to branch ${branch}. The Board reviews and merges.\n`;
   assert.equal(send(action, long.message), `\n${report}\n\n${checks}` +
     [...long.log.slice(0, 40), notice(40), ...long.log.slice(-40)].join('\n') +
@@ -122,7 +122,7 @@ for (const action of ['create', 'edit']) {
   assert.ok(cut.includes(cutNotice));
   assert.ok(plain.slice(title.length + 1).startsWith(cut.split(cutNotice)[0]));
   assert.match(cut, /^Refs #1098$/m);
-  if (action === 'create') assert.match(cut, /^Closes #1098$/m);
+  assert.doesNotMatch(cut, /(close[sd]?|fix(e[sd])?|resolve[sd]?):?\s+#\d/i, action);
 
   const codexLog = ['checks_node.txt', ...long.log];
   const codex = `${title}\n\n${report}\n\nRunner checks:\n\n${codexLog.join('\n')}\n\nRefs #1098`;
@@ -142,24 +142,32 @@ for (const action of ['create', 'edit']) {
   const museBody = send(action, muse, 'muse/look-pass-726');
   assert.ok(museBody.includes('\n\n(Report cut to fit. Full text is in the head commit message.)\n\n'));
   assert.match(museBody, /^Refs #726$/m);
-  assert.match(museBody, /^Closes #727$/m);
+  assert.match(museBody, /^Refs #727$/m);
+  assert.doesNotMatch(museBody, /^Closes #727$/m);
   assert.doesNotMatch(museBody, /#\s*$/m);
   const museShort = `${museTitle}\n\n${report}\n\nRefs #726`;
   assert.match(send(action, museShort, 'muse/look-pass-726'), /^Refs #726$/m);
 }
 
-// Issue 1135: a refresh respects the Board's Refs decision for the branch issue.
+// Issue 1135, then the Board on Nov 23 (RULEBOOK 2.5, R288): every refresh says Refs, never a closing word.
 const refreshMessage = `${title}\n\n${report}`;
 const refreshFooter = `Refreshed from the latest push to branch ${branch}. The Board reviews and merges.`;
 const refreshed = `\n${report}\n\n${refreshFooter}\n\n`;
 assert.equal(send('edit', refreshMessage, branch, 'Older report\n\nRefs #1098\nCloses #727'),
-  refreshed + 'Refs #1098\n', 'keep the Board Refs directive for this issue');
+  refreshed + 'Refs #1098\n', 'keep Refs for this issue');
 assert.equal(send('edit', `${refreshMessage}\n\nFIXES: #1098\nCloses #727`, branch, 'Refs #1098'),
-  `\n${report}\n\nRefs #1098\nCloses #727\n\n${refreshFooter}\n`, 'replace a closing word for this issue only');
-assert.equal(send('edit', refreshMessage, branch, 'Closes #1098'), refreshed + 'Closes #1098\n');
-assert.equal(send('edit', refreshMessage, branch, 'Refs #1098\nFIXES: #1098'), refreshed + 'Closes #1098\n');
-assert.equal(send('edit', refreshMessage, branch, 'Older report'), refreshed + 'Closes #1098\n');
-assert.equal(send('edit', refreshMessage, branch, 'Older report\n\nRefs #10980'), refreshed + 'Closes #1098\n');
+  `\n${report}\n\nRefs #1098\nRefs #727\n\n${refreshFooter}\n`, 'every closing word in the report becomes Refs');
+for (const old of ['Closes #1098', 'Refs #1098\nFIXES: #1098', 'Older report', 'Older report\n\nRefs #10980']) {
+  assert.equal(send('edit', refreshMessage, branch, old), refreshed + 'Refs #1098\n', 'a refresh never adds a closing word: ' + old);
+}
+// The three Codex PRs the Board edited by hand (1758, 1759, 1784): a runner report ending "Closes #N" opens as Refs.
+for (const action of ['create', 'edit']) {
+  const codexClose = send(action, `${refreshMessage}\n\nCloses #1784\nresolves: #1500`, 'codex/issue-1784');
+  assert.match(codexClose, /^Refs #1784$/m, action);
+  assert.match(codexClose, /^Refs #1500$/m, action);
+  assert.doesNotMatch(codexClose, /(close[sd]?|fix(e[sd])?|resolve[sd]?):?\s+#\d/i, action);
+  assert.equal((codexClose.match(/^Refs #1784$/gm) || []).length, 1, action + ': one Refs line for the branch issue');
+}
 
 const standingBody = send('edit', `${refreshMessage}\n\nCloses #256`, 'codex/issue-256', 'Closes #256');
 assert.match(standingBody, /^Refs #256$/m);
@@ -190,4 +198,4 @@ const down = failedCreate('down');
 assert.notEqual(down.status, 0, 'create and lookup both failed: the run must fail, not report a race');
 assert.doesNotMatch(down.stdout, /was opened by another run/);
 
-console.log('PASS auto_pr_body_tests: create and edit bound long bodies and refreshes keep the Board Refs directive');
+console.log('PASS auto_pr_body_tests: create and edit bound long bodies, and no PR body carries a closing word (Refs only)');
