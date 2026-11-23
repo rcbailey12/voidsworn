@@ -1517,6 +1517,18 @@ static func _piece_geometry(pc: Dictionary) -> ArrayMesh:
 	return am
 
 
+# Neon's work audit (PR 1902, Fable M2): a piece mesh built ahead of the death carries a wreck interior stamped with the
+# time it was built, so its wreck look was fully settled on the first frame. At the break its interior surfaces take the
+# wreck interior of the death moment (fx.wreck_interior keys by it), so the look settles in over WRECK_SETTLE from then.
+static func _restamp_interiors(fx, am: ArrayMesh, pc: Dictionary) -> void:
+	if fx == null or not fx.death_story: return
+	var si := 0
+	for sd in pc["surfs"]:
+		if bool(sd.get("interior", false)) and si < am.get_surface_count():
+			am.surface_set_material(si, fx.wreck_interior(sd["mat"], String(pc.get("faction", "")), float(pc.get("L", 1.0))))
+		si += 1
+
+
 # The piece's materials, in surface order (main thread).
 static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, fx = null) -> ArrayMesh:
 	var si := 0
@@ -3505,6 +3517,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		var geo: Array = job.get("geo", [])
 		pc["dstyle"] = dstyle(s)
 		var am: ArrayMesh = pre[i] if i < pre.size() else (_piece_materials(geo[i], pc, false, fx) if i < geo.size() else _piece_mesh(pc, false, fx))
+		if i < pre.size(): _restamp_interiors(fx, am, pc)
 		var cen: Vector3 = pc["cen"] if pc.has("cen") else Vector3.ZERO
 		if not pc.has("cen"):
 			for p in (pc["pts"] as PackedVector3Array):
@@ -3703,6 +3716,7 @@ static func _make_frags(fx, s, wreck: Dictionary, job: Dictionary, pieces: Array
 		if (pc["surfs"] as Array).is_empty(): continue
 		pc["dstyle"] = dstyle(s)
 		var am: ArrayMesh = pre[i] if i < pre.size() else (_piece_materials(geo[i], pc, false, fx) if i < geo.size() else _piece_mesh(pc, false, fx))
+		if i < pre.size(): _restamp_interiors(fx, am, pc)
 		var cen: Vector3 = pc["cen"] if pc.has("cen") else Vector3.ZERO
 		var node := Node3D.new()
 		node.name = "fx_wreck_frag_%s_%d" % [s.id, i]

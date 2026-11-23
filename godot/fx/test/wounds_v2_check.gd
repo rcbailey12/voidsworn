@@ -391,6 +391,40 @@ func _run() -> void:
 		# weight and only steel keeps embers (no glitter of rim-coloured dots)
 		var kind: int = int(BREACH.wound_of(faction).get("kind", -9))
 		check(not plating.is_empty() and plating.all(func(v: int) -> bool: return v == kind), "%s: the wreck plating carries wound kind %d (%s)" % [faction, kind, str(plating.slice(0, 6))])
+	# 8a. Neon's work audit (PR 1902, Fable M2): a death whose piece meshes were built ahead still settles its wreck look in
+	# from the death, not from when the meshes were built
+	var sp = _ship("ithar", true)
+	sp.sync(fx, _state(20, 15, 20))
+	flush(sp)
+	var DEATH_S = preload("res://fx/fx_death.gd")
+	DEATH_S.precompute(fx, sp)   # the cut made ahead of the death, as the game warms it on load
+	for k in 1200:
+		fx.step(0.05)
+		OS.delay_msec(5)
+		# this check steps fx by hand, so it finishes the cut and builds the pieces as fx._process would
+		if sp.has_meta("cut_task"): DEATH_S.finish_precompute(fx, sp)
+		fx._build_death_pieces()
+		if (sp.get_meta("cut_job", {}) as Dictionary).get("built", false) and fx.now > 8.0: break
+	var pre_built: bool = not ((sp.get_meta("cut_job", {}) as Dictionary).get("meshes", []) as Array).is_empty()
+	for k in 60: fx.step(0.05)   # 3 s later, so a stamp from the build and one from the death differ
+	var t_death: float = fx.now
+	fx.death(sp.id, "blast")
+	var t0s: Array = []
+	for k in 600:
+		fx.step(0.05)
+		OS.delay_msec(10)
+		for w in fx.dstate.get("wrecks", []):
+			if w["id"] != sp.id: continue
+			for nd in w["nodes"]:
+				if not is_instance_valid(nd): continue
+				for mi in (nd as Node3D).find_children("*", "MeshInstance3D", true, false):
+					var m: Mesh = (mi as MeshInstance3D).mesh
+					for j in (m.get_surface_count() if m != null else 0):
+						var sm = m.surface_get_material(j)
+						if sm is ShaderMaterial and (sm as ShaderMaterial).shader.code == SH.INTERIOR and float(sm.get_shader_parameter("fx_wreck")) == 1.0:
+							t0s.append(float(sm.get_shader_parameter("fx_wreck_t0")))
+		if not t0s.is_empty(): break
+	check(pre_built and not t0s.is_empty() and t0s.all(func(v: float) -> bool: return v >= t_death - 0.11), "a death with meshes built ahead settles its wreck look from the death (built ahead %s, death %.2f, starts %s)" % [pre_built, t_death, str(t0s.slice(0, 4))])
 	# 8b. the cache helper alone
 	var src := StandardMaterial3D.new()
 	src.set_meta("fx_authored_interior", true)
