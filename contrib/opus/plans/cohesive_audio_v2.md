@@ -271,3 +271,37 @@ Wave B ran with 108 takes for 1,421 credits. Relay: voidsworn-relay `pc-out-opus
 - The bridge bed drops the words that leaked a voice ("no vocals", "command bridge") and moves to influence 0.50.
 
 The run needs Ryan's typed "go wave c".
+
+## 8.4 Wave C result, Ryan's picks, and Wave D
+
+Wave C ran with 49 takes for 716 credits (relay `pc-out-opus1752wavec`). Listening page: https://claude.ai/artifact/191G3WngtXJgaAeg45wXuv. Neon's notes are issue 1891 (PR 1894). Neon's numbers match Claude's.
+
+**Ryan's call (Nov 23, 3:46 PM CT):** "neon nailed this". He takes Neon's picks with two exceptions:
+- `death_eclipse_shear`: it should not sound like rock. It should be a metallic material, darker and deeper. The prompt now uses black alloy armor plates instead of obsidian stone.
+- `wep_hullbreaker_junk_gun`: t2 ends in a whine like a tinnitus effect. Claude measured a 12.5 kHz tone in its tail at 0.15 to 0.25 s. The prompt drops "bright" and ends on a short dry rattle.
+
+**Keeps (Neon's picks):**
+- turret t2 and hbattery t2 (t1 as an alternate).
+- torp_eject t1.
+- pass_by_slug t2.
+- spore_cloud t2.
+- sporeb t1.
+- doom t2, which can loop 0.15 to 0.85 s for long arcs.
+- doom_charge t1.
+- craft_bombs t2.
+- obsidian_eclipse t1.
+- acid_on_metal t1.
+- breach_shear_metal t1.
+- breach_vent t1.
+- ithar_shatter t2.
+- sunward_magazine t2.
+- fleet_warp_in t2.
+- amb_bridge_bed t1.
+
+Neon's mastering notes (40 Hz high-pass, head trims, level lifts) carry into mastering.
+
+**Wave D re-roll (8 ids, 16 takes, tool estimate 484, about 135 real credits):**
+- The two ids above.
+- Neon's six, with Neon's prompt fixes: `wep_directorate_picket`, `wep_eclipse_gsentry`, `imp_metal_light`, `imp_energy_sear`, `imp_las` and `dmg_shield_burnout` (lengthened to 0.7 s, because the Wave C t2 peaked at its last sample).
+
+All of these are close and centered, with no banned words. The run needs Ryan's typed "go wave d".
