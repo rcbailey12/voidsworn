@@ -76,6 +76,10 @@ LOOK = dict(
     mosaic=dict(emission=3.4, roughness=0.10, coat=0.35, cell_scale=4.2, lead=0.045, sparkle=0.006, facet_tilt=0.45,
                 body=0.08, cell_lo=0.55, cell_hi=1.2, lead_rgb=(0.035, 0.026, 0.018), transmission=0.0),
     gem=dict(emission=3.0, roughness=0.06, transmission=0.0),
+    # R421/R427 Wave 0 (issue 1743): the smoked inner lining. The back of every mosaic pane, seen only through a cut or a
+    # break, is dark smoked glass inside the R420 wall cap (0.11 linear), so the 1763 rooms read at the same exposure and
+    # the cut never shows the bright outside mosaic from behind. No glow, no metal; the outside paint is unchanged (R337).
+    smoke=dict(base=(0.040, 0.055, 0.060), roughness=0.24, ripple=0.25, transmission=0.0),
     tip=dict(base=(1.0, 0.33, 0.05), emission=9.0),
 )
 
@@ -382,6 +386,18 @@ def lance_pearl(name='gw_lance'):
     return m
 
 
+def smoke(name='gw_smoke'):
+    """the smoked inner lining of the mosaic panes (LOOK['smoke']): dark glass, no glow, no metal"""
+    L = LOOK['smoke']
+    m = _new(name)
+    b = _principled(m)
+    b.inputs['Base Color'].default_value = tuple(L['base']) + (1,)
+    b.inputs['Roughness'].default_value = L['roughness']
+    b.inputs['Metallic'].default_value = 0.0
+    m.diffuse_color = tuple(L['base']) + (1,)
+    return m
+
+
 def setup(kit):
     """register every Glasswright material with the sheet kit (kit.MATS / kit.mat) and build their node trees"""
     made = {
@@ -398,6 +414,7 @@ def setup(kit):
         'gw_light': gem('gw_light', LIGHT, 1.4),
         # the lance's beam core (faction sheet: the prism lance is stored light let out, a white core with a rainbow fringe)
         'gw_beam': gem('gw_beam', BEAM, 2.6),
+        'gw_smoke': smoke(),
     }
     for name, m in made.items():
         kit.MATS[name] = (tuple(m.diffuse_color[:3]), 0)
@@ -435,7 +452,7 @@ LAYERS = dict(ao_short=.009, ao_long=.026, edge_radius=.0004, edge_gain=14, bump
 # Surface relief heights (issue 1517, Nov 21: the PC's 1415E atlases measured normal relief 0.2 deg against the 3.5 floor)
 RELIEF = dict(pearl_scale=1.0, pearl_ripple=0.6, silver_line=0.3, tilt=0.6, came=1.0, hammer_scale=1.5, hammer=0.8, silver_scale=2.0, silver_twist=0.8,
               lead_rough=0.45, glass_rough=0.30, pearl_rough=0.50, silver_rough=0.50)
-ZONES = {z: {} for z in ('gw_pearl', 'gw_silver', 'gw_mosaic', 'gw_lance')}
+ZONES = {z: {} for z in ('gw_pearl', 'gw_silver', 'gw_mosaic', 'gw_lance', 'gw_smoke')}
 ZONES.update({z: {} for z in ('cd5_frame', 'cd5_amber', 'cd5_violet', 'cd5_green', 'cd5_clear', 'cd5_silver')})
 FALLBACK = 'gw_pearl'
 DECALS = ()
@@ -498,6 +515,12 @@ def surface_layers(c, zone, tiles):
         return (mixc(nt, L['base'], L['base'], 0.0), math_(nt, 'MULTIPLY', tw.outputs['Fac'], RELIEF['silver_twist']),
                 math_(nt, 'ADD', L['game_roughness'], math_(nt, 'MULTIPLY', _spread(nt, tw.outputs['Fac']), RELIEF['silver_rough'])),
                 L['metallic'])
+    if zone == 'gw_smoke':      # R421 smoked inner lining: dark glass with a faint poured ripple, no glow, no metal
+        L = LOOK['smoke']
+        rip = node(nt, 'ShaderNodeTexNoise'); rip.inputs['Scale'].default_value = cells_per_length() * 2.0
+        rip.inputs['Detail'].default_value = 3.0; nt.links.new(c.pos, rip.inputs['Vector'])
+        return (mixc(nt, L['base'], L['base'], 0.0), math_(nt, 'MULTIPLY', rip.outputs['Fac'], L['ripple']),
+                math_(nt, 'ADD', L['roughness'], math_(nt, 'MULTIPLY', _spread(nt, rip.outputs['Fac']), 0.1)), 0.0)
     if zone == 'gw_mosaic':
         L = LOOK['mosaic']
         tint = node(nt, 'ShaderNodeAttribute', attribute_name='gw_tint', attribute_type='GEOMETRY').outputs['Color']

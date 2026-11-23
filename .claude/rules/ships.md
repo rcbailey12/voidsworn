@@ -100,7 +100,8 @@ Interior Kit V2 (issue 1743, R416 Layer 3), new ship builds and rebakes replace 
 with modeled interior modules (ribbed decks, framed arch bulkheads, cylindrical reactors/turbines/racks, sculpted organic sacs
 and bone struts, collared crystal waveguides), UV-mapped to a shared per-faction interior trim atlas (`albedo`, `normal`, `orm`,
 optional `emission`, supported by `tools/recipe/export7.py`) and verified by a build-sheet cutaway render while staying 0 px
-clean on `surface_check.py`. Hulls built before this rule rely on the runtime Wounds V2 triplanar interior shader and breach-mouth
+clean on `surface_check.py`. Glasswright thick panes (`kits/ithar/hull.py` mosaic_core) carry the smoked lining
+(`gw_smoke`, walls at most 0.11) on their inner face, so a cut shows dark glass, not the bright mosaic (R427 Wave 0). Hulls built before this rule rely on the runtime Wounds V2 triplanar interior shader and breach-mouth
 3D dressing (issue 1741) or, for legacy hollow hulls, the game-side interior fallback (issue 167). Why: "the broken open pieces
 are visibly empty" (R98); "so we don't run into the issues of before with just empty looking husks" (R209); "I think it's
 better to be comprehensive with internal if we can without performance issues" (R215); auditing all 45 ships under R416 showed

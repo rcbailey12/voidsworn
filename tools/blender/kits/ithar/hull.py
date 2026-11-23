@@ -44,6 +44,12 @@ ZONES = {
 SEAFOAM = (0.35, 1.0, 0.64)
 
 
+def mat_of(name):
+    """a sheet material by name (kit.mat: the one registered by stack.setup, made once)"""
+    import kit
+    return kit.mat(name)
+
+
 def gw_kit(name):
     """load a Glasswright kit module by path under its own name (another kit's parts.py may already be imported as `parts`)"""
     import importlib.util
@@ -90,7 +96,7 @@ def tube_mesh(points, radii, n=10):
     return vv, ff
 
 
-def thick_shell(ob, t, centre):
+def thick_shell(ob, t, centre, back=None):
     """give an open surface real thickness t without a solidify modifier (CD5 r5c: a solidify is the contract's 'skin' and the
     export lines its back with a dark inside material that tears from its piece at every break). Back layer along the vertex
     normals (inward, or split either side when `centre`), walls on the open edges; point attributes copied to the back."""
@@ -136,6 +142,11 @@ def thick_shell(ob, t, centre):
         new.attributes[name].data.foreach_set('value' if kind == 'FLOAT' else 'color', vals + vals)
     for p in new.polygons:
         p.use_smooth = True
+    if back is not None:      # R421 smoked lining: the back layer (and nothing else) takes its own material
+        new.materials.append(back)
+        nf = len(me.polygons)
+        for p in new.polygons[nf:2 * nf]:
+            p.material_index = len(new.materials) - 1
     ob.data = new
     new.update()
 
@@ -218,7 +229,7 @@ def bow_gather(x0, x1, targets, strength=0.85):
 
 
 def mosaic_core(K, name, skin, x0, x1, gap_of, nu=200, nv=128, thick=0.04, seed=0, light=None, v0=0.0, v1=TAU, wrap=True,
-                grp=None, even=0.0, streak=False):
+                grp=None, even=0.0, streak=False, smoke_back=True):
     """the opaque glowing mosaic core. light(x, a) -> 0..1 blends the panel to seafoam stored light (a cleft, a bay floor).
     even (0..1) evens each panel's glow toward a steady middle tone, so a pane-heavy hull (the Prism) reads as rows of lit
     panes rather than lit spots; 0 is the CD5 panel (hot middle, dark border). streak=True is parts.mosaic_tint's streak style
@@ -248,7 +259,8 @@ def mosaic_core(K, name, skin, x0, x1, gap_of, nu=200, nv=128, thick=0.04, seed=
                 g = g + (1.0 - g) * w
         tint.data[i].color = tuple(rgb) + (1,)
         glow.data[i].value = g
-    thick_shell(hull, thick, centre=False)
+    # R421/R427 (issue 1743): the panes' back is the smoked inner lining, never the bright mosaic seen from behind
+    thick_shell(hull, thick, centre=False, back=mat_of('gw_smoke') if smoke_back else None)
     return hull
 
 
