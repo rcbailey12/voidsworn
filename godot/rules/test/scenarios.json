@@ -5060,7 +5060,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 33001,
+  "seed": 33002,
   "admiral": "grax",
   "fleet": [
    "c_marauder",
@@ -9699,7 +9699,7 @@
    "c_reaver",
    "c_raider"
   ],
-  "seed": 165314,
+  "seed": 165315,
   "note": "Issue 1653: Bleed-Off Capacitor (spill refit): a ship whose shields hit zero deals +30% on its next weapon attack."
  },
  "r1653_relay": {
@@ -11334,5 +11334,658 @@
    "mastery": 3
   },
   "note": "Hegemony Vorn One Order Every Gun: every ship fires one weapon again at half Issue 1650: the same battle at capstone Mastery III, so the signature fires."
+ },
+ "r1651_vex": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "admiral": "vex",
+  "cmdRound": 4,
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "seed": 165105000,
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: vex's Command rider (barrage): Flank guns in the free volley deal +10% damage."
+ },
+ "r1651_malek": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "malek",
+  "cmdRound": 2,
+  "fleet": [
+   "harrow",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "seed": 165100103,
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: malek's Command rider (hunt): Torpedoes fired this round ignore point defense."
+ },
+ "r1651_ashgrove": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "admiral": "ashgrove",
+  "cmdRound": 4,
+  "fleet": [
+   "reliquary",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "seed": 165105201,
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: ashgrove's Command rider (scramble): Launched wings start with +1 movement this round."
+ },
+ "r1651_thale": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "thale",
+  "cmdRound": 2,
+  "fleet": [
+   "penitent",
+   "warden",
+   "warden"
+  ],
+  "seed": 165100304,
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: thale's Command rider (iron): The wall also repairs 5% hull on every ship."
+ },
+ "r1651_kassar": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "admiral": "kassar",
+  "cmdRound": 4,
+  "fleet": [
+   "h_vanguard",
+   "h_picket"
+  ],
+  "seed": 165105400,
+  "fac": "voidsworn",
+  "enemies": [
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "note": "Issue 1651: kassar's Command rider (barrage): Battery shots in the free volley cannot miss."
+ },
+ "r1651_vorn": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "vorn",
+  "cmdRound": 2,
+  "fleet": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "seed": 165100500,
+  "fac": "voidsworn",
+  "enemies": [
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "note": "Issue 1651: vorn's Command rider (hunt): Each hit this round cuts target evasion by 5 until your next turn."
+ },
+ "r1651_reyes": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "reyes",
+  "cmdRound": 2,
+  "fleet": [
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "seed": 165100605,
+  "fac": "voidsworn",
+  "enemies": [
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "note": "Issue 1651: reyes's Command rider (scramble): Bonus wing attacks focus the lowest-hull enemy in reach first."
+ },
+ "r1651_maren": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "admiral": "maren",
+  "cmdRound": 4,
+  "fleet": [
+   "h_dominion",
+   "h_picket"
+  ],
+  "seed": 165105716,
+  "fac": "voidsworn",
+  "enemies": [
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "note": "Issue 1651: maren's Command rider (iron): Ships adjacent to the flagship take 10% less hull damage."
+ },
+ "r1651_grax": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "admiral": "grax",
+  "cmdRound": 4,
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "seed": 165105826,
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: grax's Command rider (surge): Ram recoil is cut in half this round."
+ },
+ "r1651_sable": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "sable",
+  "cmdRound": 2,
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider",
+   "c_raider"
+  ],
+  "seed": 165100900,
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: sable's Command rider (hunt): Ships that land a rear-arc hit this round gain +10 evasion."
+ },
+ "r1651_mott": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "admiral": "mott",
+  "cmdRound": 4,
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "seed": 165106001,
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: mott's Command rider (scramble): Extra wings gain +10% critical chance this round."
+ },
+ "r1651_vesh": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "admiral": "vesh",
+  "cmdRound": 4,
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "seed": 165106100,
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: vesh's Command rider (restore): Each ship's worst damaged section is patched in full."
+ },
+ "r1651_matriarch": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "matriarch",
+  "cmdRound": 2,
+  "fleet": [
+   "b_brood",
+   "b_drone",
+   "b_drone"
+  ],
+  "seed": 165101220,
+  "fac": "voidsworn",
+  "enemies": [
+   "penitent",
+   "warden",
+   "warden"
+  ],
+  "note": "Issue 1651: matriarch's Command rider (scramble): Swarm hits this round heal their parent brood 3% hull."
+ },
+ "r1651_razormaw": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "razormaw",
+  "cmdRound": 2,
+  "fleet": [
+   "b_razor",
+   "b_spitter",
+   "b_drone"
+  ],
+  "seed": 165101308,
+  "fac": "voidsworn",
+  "enemies": [
+   "penitent",
+   "warden",
+   "warden"
+  ],
+  "note": "Issue 1651: razormaw's Command rider (surge): Ships adjacent to a wounded enemy gain +1 movement."
+ },
+ "r1651_mending": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "mending",
+  "cmdRound": 2,
+  "fleet": [
+   "b_razor",
+   "b_drone"
+  ],
+  "seed": 165101401,
+  "fac": "voidsworn",
+  "enemies": [
+   "penitent",
+   "warden",
+   "warden"
+  ],
+  "note": "Issue 1651: mending's Command rider (restore): The ship that regrows the most hull gains +10% damage this round."
+ },
+ "r1651_voice": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "voice",
+  "cmdRound": 2,
+  "fleet": [
+   "b_razor",
+   "b_spitter",
+   "b_drone"
+  ],
+  "seed": 165101503,
+  "fac": "voidsworn",
+  "enemies": [
+   "penitent",
+   "warden",
+   "warden"
+  ],
+  "note": "Issue 1651: voice's Command rider (barrage): Volley hits strip 10% armor this round (once per target)."
+ },
+ "r1651_aelith": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "aelith",
+  "cmdRound": 2,
+  "fleet": [
+   "i_carrier",
+   "i_wisp"
+  ],
+  "seed": 165101600,
+  "fac": "corsair",
+  "enemies": [
+   "c_marauder",
+   "c_reaver",
+   "c_raider"
+  ],
+  "note": "Issue 1651: aelith's Command rider (scramble): Your wings ignore flak this round."
+ },
+ "r1651_vaelen": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "admiral": "vaelen",
+  "cmdRound": 4,
+  "fleet": [
+   "i_song",
+   "i_blade"
+  ],
+  "seed": 165106701,
+  "fac": "corsair",
+  "enemies": [
+   "c_marauder",
+   "c_reaver",
+   "c_raider"
+  ],
+  "note": "Issue 1651: vaelen's Command rider (barrage): Lances in the free volley strike each target's weakest section."
+ },
+ "r1651_thorne": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "admiral": "thorne",
+  "cmdRound": 4,
+  "fleet": [
+   "i_blade",
+   "i_blade",
+   "i_wisp",
+   "i_wisp"
+  ],
+  "seed": 165106802,
+  "fac": "corsair",
+  "enemies": [
+   "c_marauder",
+   "c_reaver",
+   "c_raider"
+  ],
+  "note": "Issue 1651: thorne's Command rider (surge): Each ship may turn to face any direction for free."
+ },
+ "r1651_mirelle": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "mirelle",
+  "cmdRound": 2,
+  "fleet": [
+   "i_song",
+   "i_wisp",
+   "i_wisp"
+  ],
+  "seed": 165101900,
+  "fac": "corsair",
+  "enemies": [
+   "c_marauder",
+   "c_reaver",
+   "c_raider"
+  ],
+  "note": "Issue 1651: mirelle's Command rider (iron): Warded ships gain +15% max shields for this round."
+ },
+ "r1651_nekhet": {
+  "sector": 1,
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "admiral": "nekhet",
+  "cmdRound": 4,
+  "fleet": [
+   "d_harvester",
+   "d_jackal"
+  ],
+  "seed": 165107000,
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: nekhet's Command rider (restore): Repaired ships gain +5% armor until your next turn."
+ },
+ "r1651_sekhmar": {
+  "sector": 1,
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "sekhmar",
+  "cmdRound": 2,
+  "fleet": [
+   "d_harvester",
+   "d_scythe",
+   "d_scythe"
+  ],
+  "seed": 165102102,
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: sekhmar's Command rider (barrage): Targets hit by the volley lose 10 aim for 2 rounds."
+ },
+ "r1651_anuket": {
+  "sector": 1,
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "anuket",
+  "cmdRound": 2,
+  "fleet": [
+   "d_jackal",
+   "d_jackal",
+   "d_scythe",
+   "d_scythe"
+  ],
+  "seed": 165102214,
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: anuket's Command rider (hunt): Ships that land a rear-arc hit this round gain +10% critical chance."
+ },
+ "r1651_khepra": {
+  "sector": 1,
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "admiral": "khepra",
+  "cmdRound": 4,
+  "fleet": [
+   "d_jackal",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "seed": 165107300,
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: khepra's Command rider (iron): Ships that hold still or brace repair 5% hull at round end."
+ },
+ "r1651_cmdoverride": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "admiral": "vex",
+  "cmdRound": 2,
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "seed": 165110003,
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "note": "Issue 1651: a run with RUN.cmdOverride set (Vex flying Thale's Iron wall, as Mastery III's altCommand gives): the rider that fires is the swapped Command's own (Thale: the wall repairs 5% hull).",
+  "cmdOverride": {
+   "id": "iron",
+   "n": "Iron wall",
+   "d": "All shields refill and your ships take 40% less hull damage this round."
+  }
  }
 }
