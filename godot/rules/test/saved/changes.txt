@@ -1,30 +1,22 @@
-Saved manifest before: 7a9861aa5952bdd8edae047dc62550386930fb013f82516c533c67ff9d96e377
-Saved manifest after: eb02d4de6da7aa50ca142156f4f844a925d61d8465ade69e491baf316fc726a1
+Saved manifest before: eb02d4de6da7aa50ca142156f4f844a925d61d8465ade69e491baf316fc726a1
+Saved manifest after: fdb13b7013b554be13e1bab017515e3c12a50b062a9d46bb354ac0d3d2bb86ec
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t_ecl_twicerestored
-  turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].facing: 5 -> 0
-  later changed records: 109; total records: 102 -> 110
 FAIL battle t_breathbite
   turn 0, round 1, after tick player; unit x06 (player b_razor)
-  state.units[0].name: "Shrieker" -> "Shrieking Coil"
-  later changed records: 138; total records: 139 -> 138
+  state.units[0].name: "Shrieking Coil" -> "Shrieker"
+  later changed records: 138; total records: 138 -> 139
+FAIL battle t7b_ecl_formation_b
+  turn 50, round 3, after fire x05; unit x05 (player d_harvester)
+  state.units[0].evBuff: 0 -> 10
+  later changed records: 38; total records: 89 -> 81
 FAIL battle t7b_ecl_archive
-  turn 44, round 3, after move x04; unit x06 (player d_scythe)
-  state.units[2].hp: 53 -> 22
-  later changed records: 33; total records: 78 -> 77
-FAIL battle t7b_ecl_triage
-  turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].name: "Cold Memory" -> "Noon Kept"
-  later changed records: 118; total records: 108 -> 119
-FAIL battle t7b_ecl_targetarchived
-  turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].facing: 4 -> 0
-  later changed records: 40; total records: 31 -> 41
+  turn 44, round 3, after command player; unit x06 (player d_scythe)
+  state.units[2].hp: 22 -> 53
+  later changed records: 33; total records: 77 -> 78
 FAIL battle t529_scent
   turn 0, round 1, after tick player; unit x04 (player b_razor)
-  state.units[0].name: "Sour Gut" -> "Tidehunger"
-  later changed records: 60; total records: 53 -> 61
-FAIL: saved Godot results; 354 battles checked, 6 changed, 0 other files changed, 6 failures; 17.720 s
+  state.units[0].name: "Tidehunger" -> "Sour Gut"
+  later changed records: 60; total records: 61 -> 53
+FAIL: saved Godot results; 354 battles checked, 4 changed, 0 other files changed, 4 failures; 19.779 s

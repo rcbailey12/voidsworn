@@ -4464,7 +4464,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 37135,
+  "seed": 37129,
   "admiral": "razormaw",
   "fleet": [
    "b_razor",
@@ -4478,7 +4478,7 @@
    "h_dominion",
    "h_picket"
   ],
-  "cmdRound": 4,
+  "cmdRound": 5,
   "lineage": {
    "id": "razormaw",
    "picks": [
@@ -8417,7 +8417,7 @@
    "h_picket",
    "h_picket"
   ],
-  "cmdRound": 4,
+  "cmdRound": 3,
   "rounds": 5,
   "seed": 38227,
   "lineage": {
@@ -8934,7 +8934,7 @@
   ],
   "rounds": 6,
   "cmdRound": 2,
-  "seed": 37107,
+  "seed": 37102,
   "note": "Issue 529: Razormaw Scent in the Dark (razormaw:A:1:1): after a kill in the frenzy the ship's next shot at a new target gains +10 aim",
   "lineage": {
    "id": "razormaw",

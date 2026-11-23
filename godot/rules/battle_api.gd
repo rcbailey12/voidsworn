@@ -889,9 +889,15 @@ func _ai_activate(u) -> void:
 	var foes = R.alive("enemy")
 	if foes.size() == 0: return
 	var states = R.computeReach(u).states; var best: Variant = null; var bs = -1e9
+	var can_form = not R.jt(u.get("isSq")) and R.treeHas("eclFormation") and not R.jt(u.get("treeEclForm"))
 	R.eval_begin()
 	for s in states:
-		var v = R.stateView(u, s); var off2 = R.evalOffense(v, R.readyList(u), foes); var th = R.evalThreat(v, foes)
+		var v = R.stateView(u, s); var off2 = R.evalOffense(v, R.readyList(u), foes)
+		# Project the protection at the destination. Keep it consistent per hex for the hit chance cache.
+		if can_form and (v["q"] != u["q"] or v["r"] != u["r"]):
+			var formation_evasion = R.eclipseFormationEvasion(u, v)
+			if formation_evasion != null: v["evBuff"] = formation_evasion
+		var th = R.evalThreat(v, foes)
 		var nd = R._mind(v, foes); var sc = off2 - th * 0.3 - (0.0 if off2 > 0 else nd * 3.0) - _botObj(v) - R.syncPull(u, v) * 1.5
 		if sc > bs:
 			bs = sc; best = s
