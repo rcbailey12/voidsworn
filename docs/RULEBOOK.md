@@ -561,7 +561,7 @@ reflection lobe is desaturated to a neutral warm-white so Eclipse stays obsidian
 the #1786 lighting. The world PRs fold in the audit cleanups before merge: an obsidian Eclipse hulk finish (#1772), a
 procedural planet fallback when the remix is off (#1776), crystal `_lo` LODs (#1782); the planet relief map's VRAM is
 budgeted in #1780.
-R422 (Ryan, Nov 23 2026, decision card on PR 1772's hulk pictures): hulks sit in band 3 at 0.04 to 0.045 linear base
+R423 (Ryan, Nov 23 2026, decision card on PR 1772's hulk pictures): hulks sit in band 3 at 0.04 to 0.045 linear base
 (burnt, dull, Eclipse obsidian at the floor), with one exception: Chorus hulks only go below the band 3 floor, to about
 0.025 (0.025 to 0.03, the low end of Eclipse's interior range), because at the floor the tan chitin wrecks were still the
 lightest shapes in a hulk field at camera 170. Eclipse hulks are unchanged. Code: `godot/assets/ships/a4_props.gd`

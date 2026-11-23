@@ -377,7 +377,7 @@ static func derelict_shared(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 # under the key light, then 0.07 until PROPS_G, where the Hullbreakers still read fairly live and the Chorus wrecks
 # popped (Board look-tune inside R420's band). Eclipse obsidian (about 0.039) is held at the 0.04 floor either way.
 const HULK_BAND := Vector2(0.04, 0.045)
-# R422 (Ryan, Nov 23 2026): Chorus hulks only go below the band 3 floor, down to about 0.025 (the low end of Eclipse's
+# R423 (Ryan, Nov 23 2026): Chorus hulks only go below the band 3 floor, down to about 0.025 (the low end of Eclipse's
 # range in the standard), because at the floor the tan chitin wrecks were still the lightest shapes in a field (PROPS_I).
 const CHORUS_HULK_BAND := Vector2(0.025, 0.03)
 # Visible burn: scorch patches multiplied over the hull's own UVs, their share of the hull growing with wreck_soot

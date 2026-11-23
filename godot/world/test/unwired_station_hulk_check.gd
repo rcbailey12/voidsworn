@@ -145,7 +145,7 @@ func _finishes() -> void:
 			src.metallic = 0.0
 			var d := A4P.derelict(src, fac)
 			var y := A4P.linear_luma(d.albedo_color)
-			var band: Vector2 = A4P.CHORUS_HULK_BAND if fac == "chorus" else A4P.HULK_BAND   # R422: Chorus only, lower
+			var band: Vector2 = A4P.CHORUS_HULK_BAND if fac == "chorus" else A4P.HULK_BAND   # R423: Chorus only, lower
 			if y < band.x - 1e-3 or y > band.y + 1e-3:
 				worst = "luma %.3f from %s" % [y, str(c)]
 			var g := d.albedo_color
