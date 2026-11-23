@@ -81,9 +81,9 @@ set "COMMON=powershell -NoProfile -ExecutionPolicy Bypass -File "%TP%runner_comm
 set "CHECKS_OK=0"
 rem The run's commit carries Ryan's git identity, as before.
 set "GIT_AUTHOR_NAME=Ryan Bailey"
-set "GIT_AUTHOR_EMAIL=rcbailey12@gmail.com"
+set "GIT_AUTHOR_EMAIL=rcbailey12@users.noreply.github.com"
 set "GIT_COMMITTER_NAME=Ryan Bailey"
-set "GIT_COMMITTER_EMAIL=rcbailey12@gmail.com"
+set "GIT_COMMITTER_EMAIL=rcbailey12@users.noreply.github.com"
 if not exist "%O%" mkdir "%O%"
 echo started %date% %time% > "%O%\result.txt"
 %COMMON% init "%O%" "%BR%"

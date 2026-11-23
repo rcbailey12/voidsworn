@@ -252,6 +252,10 @@ if (probe) {
     fs.appendFileSync('.git/info/exclude', '\\n/ignored-work.txt\\n');
     fs.writeFileSync('ignored-work.txt', 'only in the checkout');
   }
+  if (process.env.STUB_REFUSED_WORK === '1') {
+    fs.mkdirSync('godot/gen', { recursive: true });
+    fs.writeFileSync('godot/gen/refused.txt', 'built on the PC\\n');
+  }
   if (process.env.STUB_LOCAL_OBJECTS) {
     fs.cpSync(process.env.STUB_LOCAL_OBJECTS, '.git/objects', { recursive: true });
     fs.writeFileSync('.git/refs/remotes/origin/stale-local', process.env.STUB_LOCAL_TIP + '\\n');
@@ -316,7 +320,7 @@ const defaults = {
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
   STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '', STUB_CHECKOUT_EDIT: '', STUB_RECHECK_FAIL: '', STUB_CHECKOUT_MARKER: '',
   STUB_CHECKOUT_EDIT_PATH: '',
-  STUB_ACCOUNT_FAULT: '', STUB_EXPECT_FRESH: '', STUB_AGENT_HOLD: '', STUB_AGENT_EXIT: '', STUB_CHECKS_EXIT: '', STUB_IGNORED_WORK: '',
+  STUB_ACCOUNT_FAULT: '', STUB_EXPECT_FRESH: '', STUB_AGENT_HOLD: '', STUB_AGENT_EXIT: '', STUB_CHECKS_EXIT: '', STUB_IGNORED_WORK: '', STUB_REFUSED_WORK: '',
   // Issue 722: about 68 GB fake free space, above the 60 GB floor, so fixture runs pass the space check on any host;
   // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
   PC_TEST_SPACE_FREE_MB: '70000', PC_TEST_SETTINGS: '', PC_TEST_HASHES: '',
@@ -1012,18 +1016,21 @@ async function testDeliveryCleanup() {
     ['partial', 'partial', { STUB_AGENT_EXIT: '1' }],
     ['ignored-work', 'checked_push', { STUB_IGNORED_WORK: '1' }],
     ['local-history', 'checked_push', {}],
+    ['refused', 'checked_push', { STUB_REFUSED_WORK: '1' }],
     ['clean', 'checked_push', {}]
   ], async ([scenario, expected, extra]) => {
     const label = 'cleanup-' + scenario;
     const source = fixtureSource(label);
     const home = path.join(root, 'deepseek-' + label);
+    // Issue 1490: the receipt shows paths from the voidsworn_test folder down, so keep this fixture's slots below one.
+    const workRoot = path.join(home, 'voidsworn_test', 'work217');
     if (scenario === 'local-history') {
       const privateObjects = path.join(home, 'private objects');
       extra.STUB_LOCAL_TIP = fixtureCommit({ 'local.txt': 'private history\n' }, partial, '', privateObjects);
       extra.STUB_LOCAL_OBJECTS = path.join(privateObjects, 'objects');
     }
-    write(path.join(home, 'runner_settings.txt'), 'remove_repo_copy_after_push=yes\n');
-    const r = await job('deepseek', label, { ...extra, STUB_RUNNER_TOOLS: deliveryTools,
+    write(path.join(workRoot, 'runner_settings.txt'), 'remove_repo_copy_after_push=yes\n');
+    const r = await job('deepseek', label, { ...extra, STUB_RUNNER_TOOLS: deliveryTools, WORK_ROOT: workRoot,
       PC_TEST_STOP_BEFORE_PUBLISH: '0', WORK_SKIP_CHECKS: '0', PC_TEST_SOURCE: source });
     assert.equal(r.code, 0, r.text + r.result);
     const branch = 'work/issue-687-deepseek' + (scenario === 'partial' ? '-partial' : '');
@@ -1036,8 +1043,13 @@ async function testDeliveryCleanup() {
     assert(publicStatus.includes('Runner status: ' + labelShown), publicStatus);
     assert(fs.existsSync(r.repo), 'the slot stays available after every outcome, even with the old cleanup setting');
     assert(!fs.existsSync(path.join(path.dirname(r.out), 'repo')), 'the run folder holds no clone');
-    assert.match(r.result, /disk: run folder \d+ logical bytes/);
-    assert.match(r.result, /disk: shared checkout \d+ logical bytes/);
+    assert.match(r.result, /disk: run folder \d+ logical bytes \([\d.]+ GiB\) at work217\\dryrun-687-deepseek\\/);
+    assert.match(r.result, /disk: shared checkout \d+ logical bytes \([\d.]+ GiB\) at work217\\slot_deepseek\\repo/);
+    assert(!/disk: [^\r\n]*\bat (?:[A-Za-z]:[\\/]|[\\/])/i.test(r.result), 'the receipt must not write a full path on its disk lines: ' + r.result);
+    if (scenario === 'refused') {
+      assert.match(r.result, /REFUSED 1 file\(s\): not committed, copies kept in work217\\dryrun-687-deepseek\\/);
+      assert(!/REFUSED[^\r\n]*copies kept in (?:[A-Za-z]:[\\/]|[\\/])/i.test(r.result), 'the receipt must not write a full path on its refused line: ' + r.result);
+    }
     if (scenario === 'ignored-work') {
       assert.equal(read(path.join(r.repo, 'ignored-work.txt')), 'only in the checkout');
     }
