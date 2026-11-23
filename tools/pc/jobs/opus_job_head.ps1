@@ -33,7 +33,8 @@
 #                                              pinned checkouts of this attempt only (earlier attempts go through their
 #                                              own relay waiter or the janitor; review of PR 1644), only when its done.txt says
 #                                              PASS and a board/pc-out branch on origin (issue 1535: relay_receipt.txt,
-#                                              else the attempt's relay_branch.txt, else board/pc-out-<job>) whose tree holds
+#                                              else relay_found.txt, else the attempt's relay_branch.txt, else
+#                                              board/pc-out-<job>) whose tree holds
 #                                              every file of its out_* folders at <tree folder>/out_<name>/<path> with the
 #                                              same bytes (the mirror is fetched when it does not). A failed or
 #                                              unfinished attempt is never touched here (the janitor's rules cover it).
@@ -63,16 +64,20 @@
 #                                              godot\assets\ships\<code> that match the job's collected export count as
 #                                              rebuildable). The job's out\, the publish folder and build\godot stay.
 #   relayfind <attempt folder>|all [dry]       issue 1695: for a passed attempt that still lists checkouts and whose own
-#                                              relay place does not prove, with no relay_receipt.txt or relay_branch.txt,
+#                                              relay place does not prove, with no relay_receipt.txt or relay_found.txt,
 #                                              finds the board/pc-out-* folder in the shared mirror that holds all its
-#                                              result files byte for byte and writes it as a new relay_branch.txt. Writes
+#                                              result files byte for byte and writes it as a new relay_found.txt (issue
+#                                              1739: beside a relay_branch.txt the head wrote at init, never over it). Writes
 #                                              nothing else, removes nothing; dry writes and fetches nothing
 #   survey                                     read only: every job attempt and ship clone under voidsworn_test with its
 #                                              size and what the rules above would do with it. Deletes nothing.
 # Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
-param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'relayfind', 'dropcache', 'droprepo', 'survey')][string]$Action,
+param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'relayfind', 'dropcache', 'droprepo', 'survey', 'slot', 'slothold', 'slotrelease')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$Folder = '')
 $ErrorActionPreference = 'Stop'
+# Issue 1739: sizes say what removal really frees (a hard link shared outside a checkout frees nothing). Optional.
+$diskSpaceHelpers = Join-Path (Split-Path -Parent $PSScriptRoot) 'disk_space.ps1'
+if (Test-Path -LiteralPath $diskSpaceHelpers) { . $diskSpaceHelpers }
 $test = [bool]$env:PC_TEST_HELPER
 $unix = $PSVersionTable.Platform -eq 'Unix'
 $sep = [IO.Path]::DirectorySeparatorChar
@@ -291,7 +296,12 @@ function Remove-LinkSafeTree($root) {
       if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) {
         if ($entry -is [IO.DirectoryInfo]) { [IO.Directory]::Delete($entry.FullName, $false) } else { [IO.File]::Delete($entry.FullName) }
       } elseif ($entry -is [IO.DirectoryInfo]) { $pending.Push($entry) }
-      else { $f = $entry.FullName; $len = $entry.Length; Invoke-Retry { if ([IO.File]::Exists($f)) { [IO.File]::SetAttributes($f, [IO.FileAttributes]::Normal); [IO.File]::Delete($f) } } $f; $bytes += $len }
+      else {
+        $f = $entry.FullName; $len = $entry.Length
+        # Only the last link to a file frees its bytes (issue 1739: checkouts share files with the mirror).
+        if (Get-Command Get-FileIdentity -ErrorAction SilentlyContinue) { $id = Get-FileIdentity $f; if ($id -and $id.Links -gt 1) { $len = 0 } }
+        Invoke-Retry { if ([IO.File]::Exists($f)) { [IO.File]::SetAttributes($f, [IO.FileAttributes]::Normal); [IO.File]::Delete($f) } } $f; $bytes += $len
+      }
     }
   }
   for ($i = $dirs.Count - 1; $i -ge 0; $i--) { $d = $dirs[$i]; Invoke-Retry { $di = New-Object IO.DirectoryInfo $d; if ($di.Exists) { if ($di.Attributes -band [IO.FileAttributes]::ReadOnly) { $di.Attributes = $di.Attributes -bxor [IO.FileAttributes]::ReadOnly }; $di.Delete($false) } } $d }
@@ -457,6 +467,11 @@ function Get-RelayPlace($base, $job, $tree) {
   # else the relay_branch.txt the head wrote at init, else the job's own name (board/pc-out-<job>, the attempt at
   # <tree>). Only a place to look: the proof is origin's branch holding every result file's exact bytes there.
   $r = Read-RelayReceipt $base
+  if ($r) { return $r }
+  # Issue 1739 (Board, Nov 22): since PR 1672 the head writes relay_branch.txt (relay/pc-out-<job>) at init, so an attempt
+  # the Board relayed to a board/pc-out-* branch instead never proved. relayfind writes the place it proved byte for byte
+  # as relay_found.txt, which wins over the init guess; the drop and the janitor prove the bytes there again.
+  $r = Read-RelayReceipt $base 'relay_found.txt'
   if ($r) { return $r }
   $r = Read-RelayReceipt $base 'relay_branch.txt'
   if ($r) { return $r }
@@ -793,17 +808,250 @@ function Assert-Rebuildable($repo) {
   }
 }
 function Get-TreeBytes($path) {
-  # read only, links not followed
+  # read only, links not followed. Issue 1739: with disk_space.ps1, the bytes removal would really free (a hard link
+  # shared with a file outside the tree counts nothing).
+  $tally = $null; if (Get-Command New-FreeTally -ErrorAction SilentlyContinue) { $tally = New-FreeTally }
   $bytes = [long]0
   $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
   $pending.Push((Get-Item -LiteralPath $path -Force))
   while ($pending.Count) {
     foreach ($e in @($pending.Pop().EnumerateFileSystemInfos())) {
       if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { continue }
-      if ($e -is [IO.DirectoryInfo]) { $pending.Push($e) } else { $bytes += $e.Length }
+      if ($e -is [IO.DirectoryInfo]) { $pending.Push($e) } else { $bytes += $e.Length; if ($tally) { Add-FreeTally $tally $e } }
     }
   }
+  if ($tally) { return (Complete-FreeTally $tally).Free }
   return $bytes
+}
+function Invoke-WithPinnedMirror($pin, [scriptblock]$then) {
+  # Under the mirror writers' lock: make the shared mirror on first use, fetch it only when the pin is missing, then run
+  # $then (a clone or a slot fetch from the mirror) while the lock is still held.
+  $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
+  while (-not $lock) {
+    try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
+  }
+  try {
+    if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) { Run-Git init -q --bare $mirror | Out-Null; Run-Git --git-dir $mirror remote add --mirror=fetch origin $source | Out-Null }
+    if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }
+    $ErrorActionPreference = 'Continue'
+    & $gitExe --git-dir $mirror cat-file -e "$pin^{commit}" 2>$null
+    $have = $LASTEXITCODE -eq 0
+    $ErrorActionPreference = 'Stop'
+    if (-not $have) {
+      Write-Output "fetching the shared mirror for $pin"
+      Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+      Run-Git --git-dir $mirror symbolic-ref HEAD refs/heads/main | Out-Null
+    }
+    Run-Git --git-dir $mirror cat-file -e "$pin^{commit}" | Out-Null
+    & $then
+  } finally { $lock.Dispose() }
+}
+
+# ---------------------------------------------------------------------------------------------- warm slots (issue 1659)
+# Ryan, Nov 22 2026 (Wave 2.1): a job resets a warm slot to its pin instead of making a fresh checkout per attempt (about
+# 10 GB real each: the ships copy and the import cache). Three slots under voidsworn_test\slots: slot_gpu_1, slot_gpu_2
+# (OJ_SLOT_KIND=gpu, the default) and slot_cpu (cpu). Each holds one reused `clone --local` of repo-mirror.git in repo\,
+# so git objects stay hardlinked and the mirror's locking is unchanged. A slot's lease (.slot-lease) is held open by a
+# hidden holder process for the whole job; it lets go when the job's cmd exits or the tail asks (slotrelease). Before a
+# reset, anything the last job left in the slot that is not proven rebuildable is saved into that job's attempt
+# (Get-KeptWork and Save-Leftovers, as dropcheckouts does); when that cannot be done the slot is set aside with hold.txt
+# for the Board and another slot is used. The reset is a forced checkout of the pin and `git clean -ffdx` that keeps only
+# godot\.godot (the warm import cache) and *.import sidecars; it deletes only inside voidsworn_test\slots.
+$slotsRoot = Join-Path $vt 'slots'
+function Get-SlotNames($kind) {
+  if ($kind -eq 'gpu') { return @('slot_gpu_1', 'slot_gpu_2') }
+  if ($kind -eq 'cpu') { return @('slot_cpu') }
+  throw "OJ_SLOT_KIND must be gpu or cpu, got: $kind"
+}
+function Get-OwnerProcess {
+  # The cmd.exe running the job bat is this script's parent; its exit ends the lease.
+  if ($test -and $env:PC_TEST_SLOT_OWNER_PID) { return [int]$env:PC_TEST_SLOT_OWNER_PID }
+  if ($unix) { return (Get-Process -Id $PID).Parent.Id }
+  return [int](Get-CimInstance Win32_Process -Filter "ProcessId=$PID").ParentProcessId
+}
+function Get-ProcStart($id) {
+  # tests (Linux): a killed process nobody has reaped yet still lists; it has ended all the same
+  if ($unix -and (Test-Path -LiteralPath "/proc/$id/status") -and ([IO.File]::ReadAllText("/proc/$id/status") -match '(?m)^State:\s+Z')) { return [long]0 }
+  try { return (Get-Process -Id $id -ErrorAction Stop).StartTime.ToUniversalTime().Ticks } catch { return [long]0 }
+}
+function Test-SameProcess($id, $start) {
+  # still the job's own process, not a later one given the same id (Linux reads start times to about a second)
+  $now = Get-ProcStart $id
+  return $now -and [Math]::Abs($now - $start) -lt 20000000
+}
+function Assert-SlotDir($dir) {
+  # The slots folder and the slot itself are plain folders (a link would send the reset's deletes elsewhere).
+  foreach ($p in @($slotsRoot, $dir)) {
+    $i = Get-Item -LiteralPath $p -Force
+    if (-not ($i -is [IO.DirectoryInfo]) -or ($i.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "not a plain folder: $p" }
+  }
+}
+function Start-SlotHolder($dir, $owner, $ownerStart, $token, $attempt) {
+  $env:OJ_SLOT_DIR = $dir; $env:OJ_SLOT_OWNER = "$owner"; $env:OJ_SLOT_OWNER_START = "$ownerStart"; $env:OJ_SLOT_TOKEN = $token
+  $env:OJ_SLOT_ATTEMPT = $attempt
+  $exe = (Get-Process -Id $PID).Path
+  $argList = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath, 'slothold')
+  # tests (Linux): the holder must not keep the caller's output pipes open
+  if ($unix) { $null = Start-Process -FilePath $exe -ArgumentList $argList -RedirectStandardOutput '/dev/null' -RedirectStandardError (Join-Path $dir "holder_$token.err") }
+  else { $null = Start-Process -WindowStyle Hidden -FilePath $exe -ArgumentList ($argList | ForEach-Object { if ($_ -match '\s') { '"' + $_ + '"' } else { $_ } }) }
+}
+function Get-SlotWaitMinutes { if ($env:OJ_SLOT_WAIT_MINUTES -match '\A[0-9]{1,4}\z') { return [int]$env:OJ_SLOT_WAIT_MINUTES }; return 360 }
+function Enter-Slot($attempt) {
+  # Takes a free slot of OJ_SLOT_KIND for this attempt (waits up to OJ_SLOT_WAIT_MINUTES, 360) and records it in the
+  # attempt's slot.txt: "<slot folder>|<token>". Returns the slot folder.
+  $kind = if ($env:OJ_SLOT_KIND) { $env:OJ_SLOT_KIND } else { 'gpu' }
+  $names = Get-SlotNames $kind
+  if (-not (Test-Path -LiteralPath $slotsRoot)) { $null = New-Item -ItemType Directory -Path $slotsRoot }
+  $owner = Get-OwnerProcess; $ownerStart = Get-ProcStart $owner
+  if (-not $ownerStart) { throw "cannot read the job's own process ($owner)" }
+  $deadline = [DateTime]::UtcNow.AddMinutes((Get-SlotWaitMinutes)); $said = $false
+  while ($true) {
+    foreach ($n in $names) {
+      $dir = Join-Path $slotsRoot $n
+      if (-not (Test-Path -LiteralPath $dir)) { $null = New-Item -ItemType Directory -Path $dir }
+      Assert-SlotDir $dir
+      if (Test-Path -LiteralPath (Join-Path $dir 'hold.txt')) { continue }
+      try { ([IO.File]::Open((Join-Path $dir '.slot-lease'), 'OpenOrCreate', 'ReadWrite', 'None')).Dispose() } catch [IO.IOException] { continue }
+      $token = [guid]::NewGuid().ToString('N')
+      Start-SlotHolder $dir $owner $ownerStart $token $attempt
+      $ready = Join-Path $dir "holder_$token.txt"; $until = [DateTime]::UtcNow.AddSeconds(60); $got = ''
+      while ([DateTime]::UtcNow -lt $until) {
+        if (Test-Path -LiteralPath $ready) { $got = [IO.File]::ReadAllText($ready).Trim(); if ($got) { break } }
+        Start-Sleep -Milliseconds 200
+      }
+      if ($got -like 'held *' -and (Test-SlotHeld $dir $token)) {
+        [IO.File]::WriteAllText((Join-Path $attempt 'slot.txt'), "$dir|$token`r`n")
+        Write-Output "slot $n taken for $attempt (holder $($got.Substring(5)), job process $owner)"
+        return $dir
+      }
+      if (-not $got) { [IO.File]::WriteAllText((Join-Path $dir "release_$token"), 'no answer') }
+    }
+    if ([DateTime]::UtcNow -ge $deadline) { throw "no free $kind slot after $(Get-SlotWaitMinutes) minutes ($($names -join ', '))" }
+    if (-not $said) { Write-Output "waiting for a free $kind slot ($($names -join ', '))"; $said = $true }
+    Start-Sleep -Seconds $(if ($test) { 1 } else { 15 })
+  }
+}
+function Test-SlotHeld($dir, $token) {
+  # Artoo on PR 1728: a holder stopped abruptly leaves its marker behind, so the marker alone proves nothing. All three
+  # must hold: the marker names a holder process that still runs (same start time), owner.txt names this token (a later
+  # holder rewrites it), and the lease file is locked right now.
+  $ready = Join-Path $dir "holder_$token.txt"
+  if (-not (Test-Path -LiteralPath $ready -PathType Leaf)) { return $false }
+  if ([IO.File]::ReadAllText($ready).Trim() -notmatch '\Aheld ([0-9]+) ([0-9]+)\z') { return $false }
+  if (-not (Test-SameProcess ([int]$Matches[1]) ([long]$Matches[2]))) { return $false }
+  $own = Join-Path $dir 'owner.txt'
+  if (-not (Test-Path -LiteralPath $own -PathType Leaf) -or -not ([IO.File]::ReadAllText($own) -match "(?m)^token $token\r?$")) { return $false }
+  try { ([IO.File]::Open((Join-Path $dir '.slot-lease'), 'OpenOrCreate', 'ReadWrite', 'None')).Dispose(); return $false } catch [IO.IOException] { return $true }
+}
+function Get-HeldSlot($attempt) {
+  # The slot this attempt holds, checked: its holder still answers for the token in slot.txt.
+  $f = Join-Path $attempt 'slot.txt'
+  if (-not (Test-Path -LiteralPath $f -PathType Leaf)) { return $null }
+  $parts = [IO.File]::ReadAllText($f).Trim().Split('|')
+  if ($parts.Count -ne 2) { throw "slot.txt not readable in $attempt" }
+  if (-not (Test-SlotHeld $parts[0] $parts[1])) { throw "the lease on $($parts[0]) is no longer held for this attempt; nothing in it was touched" }
+  return @{ Dir = $parts[0]; Token = $parts[1] }
+}
+function Set-SlotHold($dir, $why, $u) {
+  # The slot is set aside for the Board (Enter-Slot skips it) and the caller moves on or fails; nothing in it is changed.
+  [IO.File]::WriteAllText((Join-Path $dir 'hold.txt'), "$why`r`nlast use: $($u.attempt) $($u.name)`r`nThe Board removes this file once it has looked.`r`n")
+  throw "slot held: $why"
+}
+function Exit-Slot($attempt) {
+  $f = Join-Path $attempt 'slot.txt'
+  if (-not (Test-Path -LiteralPath $f -PathType Leaf)) { Write-Output "no slot held by $attempt"; return }
+  $parts = [IO.File]::ReadAllText($f).Trim().Split('|')
+  $ready = Join-Path $parts[0] "holder_$($parts[1]).txt"
+  # Artoo on PR 1728: on the PC the recorded job process is the long-lived watcher shell, so a dead holder would keep the
+  # slot busy until the watcher ends. The tail therefore marks its own token released itself, only while owner.txt still
+  # names that token (a later job's owner.txt is never touched); the holder, when alive, ends on the release file.
+  $ownerTxt = Join-Path $parts[0] 'owner.txt'
+  if (Test-Path -LiteralPath $ownerTxt -PathType Leaf) {
+    $txt = [IO.File]::ReadAllText($ownerTxt)
+    if ($txt -match ('(?m)^token ' + [regex]::Escape($parts[1]) + '\r?$') -and $txt -notmatch '(?m)^released') {
+      [IO.File]::AppendAllText($ownerTxt, "released $([DateTime]::UtcNow.ToString('o'))`r`n") } }
+  if (-not (Test-Path -LiteralPath $ready)) { Write-Output "slot $($parts[0]) already let go"; return }
+  [IO.File]::WriteAllText((Join-Path $parts[0] "release_$($parts[1])"), "release`r`n")
+  $until = [DateTime]::UtcNow.AddSeconds(30)
+  while ((Test-Path -LiteralPath $ready) -and [DateTime]::UtcNow -lt $until) { Start-Sleep -Milliseconds 250 }
+  if (Test-Path -LiteralPath $ready) { Write-Output "slot $($parts[0]): the holder did not end within 30 s; it ends with the job's process" }
+  else { Write-Output "slot $($parts[0]) let go" }
+}
+function Reset-Slot($dir, $attempt, $name, $pin) {
+  # Artoo on PR 1728: the lease is held by the holder process, so a holder that dies mid-reset would free the slot while
+  # this process is still checking out and cleaning. Every reset therefore also holds the slot's own reset lock
+  # (.slot-reset) from before its first check to after its last write, and proves the lease is still this attempt's both
+  # after taking that lock and before letting it go. A claimant that got the lease in between waits on the reset lock;
+  # this reset then fails at its last check, and the claimant starts from the state this reset left.
+  $token = ([IO.File]::ReadAllText((Join-Path $attempt 'slot.txt')).Trim().Split('|'))[1]
+  $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
+  while (-not $lock) {
+    try { $lock = [IO.File]::Open((Join-Path $dir '.slot-reset'), 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw "the reset lock of $dir stayed held for 30 minutes" }; Start-Sleep -Milliseconds 500 }
+  }
+  try {
+    if (-not (Test-SlotHeld $dir $token)) { throw "the lease on $dir is no longer held for this attempt; nothing in it was touched" }
+    if ($test -and $env:PC_TEST_SLOT_RESET_DELAY) { [IO.File]::WriteAllText((Join-Path $dir 'test_reset_in_flight'), ''); Start-Sleep -Seconds ([int]$env:PC_TEST_SLOT_RESET_DELAY) }
+    Reset-SlotInner $dir $attempt $name $pin
+    if (-not (Test-SlotHeld $dir $token)) { throw "the lease on $dir was lost during the reset; this checkout is not used" }
+  } finally { $lock.Dispose() }
+}
+function Reset-SlotInner($dir, $attempt, $name, $pin) {
+  # The slot's repo at exactly $pin, the last job's own leftovers saved first, ready for the ships step.
+  Assert-SlotDir $dir
+  $repo = Join-Path $dir 'repo'
+  $last = Join-Path $dir 'last_use.txt'
+  if (Test-Path -LiteralPath $repo) {
+    $u = @{}
+    if (Test-Path -LiteralPath $last -PathType Leaf) { foreach ($l in [IO.File]::ReadAllLines($last)) { if ($l -match '\A(attempt|name|src) (.+)\z') { $u[$Matches[1]] = $Matches[2] } } }
+    $ri = Get-Item -LiteralPath $repo -Force
+    if (-not ($ri -is [IO.DirectoryInfo]) -or ($ri.Attributes -band [IO.FileAttributes]::ReparsePoint)) { Set-SlotHold $dir "the slot repo is not a plain folder: $repo" $u }
+    $origin = ''
+    try { $origin = (Run-Git -C $repo config --get remote.origin.url) | Select-Object -Last 1 } catch { $origin = '' }
+    if ($origin -ne $mirror) { Set-SlotHold $dir "the slot repo $repo does not come from the shared mirror" $u }
+    $nested = @(Get-ChildItem -LiteralPath $repo -Recurse -Force -Filter '.git' -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne (Join-Path $repo '.git') } | Select-Object -First 1)
+    if ($nested.Count) { Set-SlotHold $dir "a repo inside the slot repo: $($nested[0].FullName)" $u }
+    # the last job's leftovers go to its own attempt before anything is reset
+    $src = $null; $rec = @{}
+    if ($u.attempt -and $u.name) {
+      $rec = Read-ShipRecord (Join-Path $u.attempt "$($u.name)_ships_copied.txt")
+      $sf = Join-Path $u.attempt 'ships_source.txt'
+      if (Test-Path -LiteralPath $sf -PathType Leaf) { $src = ([IO.File]::ReadAllText($sf)).Trim() }
+    }
+    # a commit, branch or stash the last job made in the slot is never reset away: the slot is set aside instead
+    $own = @()
+    $heads = @(Run-Git -C $repo for-each-ref '--format=%(objectname) %(refname)' refs/heads refs/stash)
+    $headSha = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
+    foreach ($h in (@("$headSha HEAD") + $heads)) {
+      $parts = "$h".Split(' ')
+      if ($parts[1] -eq 'refs/stash') { $own += 'a stash'; continue }
+      if (-not (Test-InMirror $parts[0])) { $own += "$($parts[1]) at $($parts[0]), which no mirror branch holds" }
+    }
+    if ($own.Count) { Set-SlotHold $dir "the last job left $($own -join '; ') in $repo; the slot is kept as it is" $u }
+    $work = @(Get-KeptWork $repo $src $rec $null $null)
+    if ($work.Count) {
+      $dest = $null
+      if ($u.attempt -and (Test-Path -LiteralPath $u.attempt -PathType Container)) { $dest = Join-Path (Join-Path $u.attempt "out_$($u.name)") 'slot_leftovers' }
+      else { $dest = Join-Path $dir ('leftovers_' + [DateTime]::UtcNow.ToString('yyyyMMdd_HHmmss')) }
+      if (Test-Path -LiteralPath $dest) { $dest = $dest + '_' + [DateTime]::UtcNow.ToString('HHmmssfff') }
+      try { Write-Output (Save-Leftovers $repo $work $dest) }
+      catch { Set-SlotHold $dir "the last job's leftovers in $repo could not be saved ($($_.Exception.Message)); the slot is kept as it is" $u }
+    }
+    Invoke-WithPinnedMirror $pin { Run-Git -C $repo fetch -q --prune origin | Out-Null }
+  } else {
+    Invoke-WithPinnedMirror $pin { Run-Git -c core.autocrlf=false clone --local -q --no-checkout $mirror $repo | Out-Null }
+    Run-Git -C $repo config gc.auto 0 | Out-Null
+  }
+  Run-Git -C $repo cat-file -e "$pin^{commit}" | Out-Null
+  [IO.File]::WriteAllLines($last, [string[]]@("attempt $attempt", "name $name", "pin $pin", "at $([DateTime]::UtcNow.ToString('o'))"))
+  Run-Git -C $repo -c core.autocrlf=false -c advice.detachedHead=false checkout -q -f --detach $pin | Out-Null
+  Run-Git -C $repo clean -q -ffdx -e /godot/.godot/ -e '*.import' | Out-Null
+  $head = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
+  if ($head -ne $pin) { throw "slot repo $repo is at $head, not the pin $pin" }
+  $changed = @(Run-Git -C $repo status --porcelain --untracked-files=no | Where-Object { $_ })
+  if ($changed.Count) { throw "slot repo $repo still differs from the pin after the reset: $($changed[0])" }
+  return $repo
 }
 function Write-Free($freed) {
   $root = [IO.Path]::GetPathRoot($vt)
@@ -852,32 +1100,82 @@ switch ($Action) {
     if (-not $attempt.StartsWith($vt + $sep, [StringComparison]::OrdinalIgnoreCase)) { throw "attempt folder must be under $vt" }
     $repo = Join-Path $attempt $B
     if (Test-Path -LiteralPath $repo) { throw "checkout $repo already exists; every attempt gets a new folder" }
-    $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
-    while (-not $lock) {
-      try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
-      catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
-    }
-    try {
-      if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) { Run-Git init -q --bare $mirror | Out-Null; Run-Git --git-dir $mirror remote add --mirror=fetch origin $source | Out-Null }
-      if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }
-      $ErrorActionPreference = 'Continue'
-      & $gitExe --git-dir $mirror cat-file -e "$C^{commit}" 2>$null
-      $have = $LASTEXITCODE -eq 0
-      $ErrorActionPreference = 'Stop'
-      if (-not $have) {
-        Write-Output "fetching the shared mirror for $C"
-        Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
-        Run-Git --git-dir $mirror symbolic-ref HEAD refs/heads/main | Out-Null
-      }
-      Run-Git --git-dir $mirror cat-file -e "$C^{commit}" | Out-Null
-      Run-Git -c core.autocrlf=false clone --local -q --no-checkout $mirror $repo | Out-Null
-    } finally { $lock.Dispose() }
+    Invoke-WithPinnedMirror $C { Run-Git -c core.autocrlf=false clone --local -q --no-checkout $mirror $repo | Out-Null }
     Run-Git -C $repo -c core.autocrlf=false -c advice.detachedHead=false checkout -q --detach $C | Out-Null
     $head = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
     if ($head -ne $C) { throw "checkout $repo is at $head, not the pin $C" }
     [IO.File]::AppendAllText((Join-Path $attempt 'checkouts.txt'), "$B $C`r`n")
     Write-Output "checkout $B $C $repo"
   }
+  'slot' {
+    # Issue 1659: the warm-slot form of checkout (OJ_SLOTS=1 in the job bat). The first call of an attempt takes a slot;
+    # every call resets that slot's repo to the pin. Writes <attempt>\slot_repo.txt (the repo path, for the bat) and
+    # appends "<name> <pin> <repo>" to <attempt>\slots.txt. No checkouts.txt line: nothing per attempt to remove later.
+    if ($C -notmatch '\A[0-9a-f]{40}\z') { throw "a pin must be a full 40-character commit, got: $C" }
+    if ($B -notmatch '\A[A-Za-z0-9_-]{1,40}\z') { throw "checkout name not accepted: $B" }
+    $attempt = [IO.Path]::GetFullPath($A).TrimEnd('\', '/')
+    if (-not $attempt.StartsWith($vt + $sep, [StringComparison]::OrdinalIgnoreCase)) { throw "attempt folder must be under $vt" }
+    if (-not (Test-Path -LiteralPath $attempt -PathType Container)) { throw "no attempt folder $attempt" }
+    $held = Get-HeldSlot $attempt
+    if ($held) { Reset-Slot $held.Dir $attempt $B $C; $dir = $held.Dir }
+    else {
+      # A slot that turns out to need the Board's look (Reset-Slot sets hold.txt) is let go, and the next free one is
+      # taken (Artoo on PR 1728). The job's own second checkout never moves: its slot holds its first arm's state.
+      while ($true) {
+        Enter-Slot $attempt
+        $dir = (Get-HeldSlot $attempt).Dir
+        try { Reset-Slot $dir $attempt $B $C; break }
+        catch {
+          if ($_.Exception.Message -notlike 'slot held:*') { throw }
+          Write-Output $_.Exception.Message
+          Exit-Slot $attempt
+          [IO.File]::Delete((Join-Path $attempt 'slot.txt'))
+        }
+      }
+    }
+    $repo = Join-Path $dir 'repo'
+    [IO.File]::WriteAllText((Join-Path $attempt 'slot_repo.txt'), "$repo`r`n")
+    [IO.File]::AppendAllText((Join-Path $attempt 'slots.txt'), "$B $C $repo`r`n")
+    Write-Output "slot checkout $B $C $repo"
+  }
+  'slothold' {
+    # Internal (Start-SlotHolder): hold one slot's lease while the job's process lives, until slotrelease or 48 hours.
+    $dir = $env:OJ_SLOT_DIR; $token = $env:OJ_SLOT_TOKEN
+    $owner = [int]$env:OJ_SLOT_OWNER; $ownerStart = [long]$env:OJ_SLOT_OWNER_START
+    $ready = Join-Path $dir "holder_$token.txt"; $release = Join-Path $dir "release_$token"
+    $lease = $null
+    try { $lease = [IO.File]::Open((Join-Path $dir '.slot-lease'), 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch { [IO.File]::WriteAllText($ready, "busy`r`n"); exit 1 }
+    # Artoo on PR 1728: the lease alone is not the job. A holder can die while its job still copies ships or runs Godot in
+    # the slot, so the slot stays the last job's until that job's own process has ended or its tail let the slot go.
+    $prev = Join-Path $dir 'owner.txt'
+    if (Test-Path -LiteralPath $prev -PathType Leaf) {
+      $txt = [IO.File]::ReadAllText($prev)
+      if ($txt -notmatch '(?m)^released' -and $txt -match '(?m)^job process ([0-9]+) ([0-9]+)\r?$' -and (Test-SameProcess ([int]$Matches[1]) ([long]$Matches[2]))) {
+        $lease.Dispose(); [IO.File]::WriteAllText($ready, "busy: the last job's process $($Matches[1]) still runs`r`n"); exit 1
+      }
+    }
+    $released = $false
+    try {
+      # markers of earlier holders are stale now that this one holds the lease
+      foreach ($old in @(Get-ChildItem -LiteralPath $dir -Force -File | Where-Object { $_.Name -match '\A(holder|release)_[0-9a-f]{32}(\.txt|\.err)?\z' -and $_.Name -notlike "*$token*" })) { [IO.File]::Delete($old.FullName) }
+      [IO.File]::WriteAllText((Join-Path $dir 'owner.txt'), "attempt $env:OJ_SLOT_ATTEMPT`r`ntoken $token`r`njob process $owner $ownerStart`r`nholder $PID`r`nsince $([DateTime]::UtcNow.ToString('o'))`r`n")
+      [IO.File]::WriteAllText($ready, "held $PID $(Get-ProcStart $PID)`r`n")
+      $end = [DateTime]::UtcNow.AddHours(48)
+      while ([DateTime]::UtcNow -lt $end -and -not (Test-Path -LiteralPath $release) -and (Test-SameProcess $owner $ownerStart)) { Start-Sleep -Milliseconds 1000 }
+      $released = Test-Path -LiteralPath $release
+    } finally {
+      # the tail's release frees the slot even while the job's cmd still runs its last lines
+      if ($released -and [IO.File]::ReadAllText((Join-Path $dir 'owner.txt')) -notmatch '(?m)^released') { [IO.File]::AppendAllText((Join-Path $dir 'owner.txt'), "released $([DateTime]::UtcNow.ToString('o'))`r`n") }
+      foreach ($f in @($ready, $release, (Join-Path $dir "holder_$token.err"))) { if (Test-Path -LiteralPath $f) { [IO.File]::Delete($f) } }
+      $lease.Dispose()
+    }
+  }
+  'slotrelease' {
+    # The tail: lets this attempt's slot go (the holder ends) and waits up to 30 s for the lease to be free.
+    Exit-Slot ([IO.Path]::GetFullPath($A).TrimEnd('\', '/'))
+  }
+
   'tracked' {
     $changed = @(Run-Git -C $A status --porcelain --untracked-files=no | Where-Object { $_ })
     if ($changed.Count) { $changed | ForEach-Object { Write-Output "tracked change: $_" }; throw "$($changed.Count) tracked file(s) differ from the pin in $A" }
@@ -1056,8 +1354,8 @@ switch ($Action) {
     # a checkout and whose own place (Get-RelayPlace) does not prove, with no relay_receipt.txt or relay_branch.txt of its
     # own, this looks through every board/pc-out-* branch in the shared mirror for the folder holding one of its result
     # files, then runs the same byte check as the drop (Test-PlaceProof: every result file at that folder with the same
-    # blob, or a listed skipped file over 10 MB). Only a place that proves is written, as the attempt's relay_branch.txt
-    # (a new file, never over an existing one). It is only a place to look: the waiter and the janitor's relay sweep prove
+    # blob, or a listed skipped file over 10 MB). Only a place that proves is written, as the attempt's relay_found.txt
+    # (a new file, never over an existing one; issue 1739: a relay_branch.txt from init does not stop the search). It is only a place to look: the waiter and the janitor's relay sweep prove
     # the bytes again under the mirror lock before any removal. Writes nothing else and removes nothing. <attempt> or all
     # (every voidsworn_test\<job>\out_*); dry writes nothing and fetches nothing; live fetches the mirror once first.
     $live = $B -ne 'dry'
@@ -1084,7 +1382,7 @@ switch ($Action) {
       $place = Get-RelayPlace $att $job $leaf
       $why = if ($place) { Test-PlaceProof $place $got } else { 'no place named' }
       if (-not $why) { Write-Output "relay place already proven: $att ($($place.Ref) $($place.Path), from $($place.From))"; continue }
-      $own = @(foreach ($n in 'relay_receipt.txt', 'relay_branch.txt') { if (Test-Path -LiteralPath (Join-Path $att $n)) { $n } })
+      $own = @(foreach ($n in 'relay_receipt.txt', 'relay_found.txt') { if (Test-Path -LiteralPath (Join-Path $att $n)) { $n } })
       if ($own.Count) { Write-Output "relay place left alone: $att has its own $($own[0]), which does not prove ($why)"; continue }
       # One result file of 10 MB or less to search for (a larger one may be left off the relay).
       $anchor = @($got.Want.Keys | Sort-Object | Where-Object { (Get-Item -LiteralPath $got.Files[$_] -Force).Length -le 10000000 } | Select-Object -First 1)
@@ -1120,11 +1418,11 @@ switch ($Action) {
         Write-Output "relay place not found: $att (own place: $($t.Why); $near)"; continue
       }
       $line = "$($found.Ref) $($found.Path)"
-      if (-not $live) { Write-Output "relay place would be written: $(Join-Path $att 'relay_branch.txt') = $line ($($cands.Count) folder(s) hold $($t.Anchor))"; continue }
+      if (-not $live) { Write-Output "relay place would be written: $(Join-Path $att 'relay_found.txt') = $line ($($cands.Count) folder(s) hold $($t.Anchor))"; continue }
       try {
-        $fs = [IO.File]::Open((Join-Path $att 'relay_branch.txt'), 'CreateNew', 'Write', 'None')
+        $fs = [IO.File]::Open((Join-Path $att 'relay_found.txt'), 'CreateNew', 'Write', 'None')
         try { $bytes = [Text.Encoding]::ASCII.GetBytes("$line`r`n"); $fs.Write($bytes, 0, $bytes.Length) } finally { $fs.Dispose() }
-        Write-Output "relay place written: $(Join-Path $att 'relay_branch.txt') = $line"
+        Write-Output "relay place written: $(Join-Path $att 'relay_found.txt') = $line"
       } catch { Write-Output "relay place not written: $att ($($_.Exception.Message))" }
     }
   }
@@ -1204,7 +1502,7 @@ switch ($Action) {
         Write-Output ("ship clone {0:N1} GB (import cache {1:N1} GB) {2} {3}" -f $gb, $cgb, $state, $repo)
       }
     }
-    Write-Output ("survey: {0:N1} GB in job checkouts and ship clones (hard links to the mirror count in full); nothing was removed" -f ($total / 1GB))
+    Write-Output ("survey: {0:N1} GB in job checkouts and ship clones (what removal would free: hard links shared with the mirror or another checkout are not counted); nothing was removed" -f ($total / 1GB))
   }
   'shiprecord' {
     # sha256 of every untracked file the ships step put under godot\gen and godot\assets\ships, as copied

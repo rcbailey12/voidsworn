@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawn, spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process');
 const root = path.resolve(__dirname, '../../..');
 const jobs = path.join(root, 'tools/pc/jobs');
 const read = p => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
@@ -41,8 +41,8 @@ assert(/if not exist "%OJ_REPO%\\godot\\gen\\manifest\.json" \(call "%JW%" fail/
 assert.equal((ships.match(/if errorlevel 8 \(call "%JW%" fail/g) || []).length, 2, 'robocopy 8 or more fails the job');
 assert(ships.indexOf('tracked "%OJ_REPO%"') > ships.lastIndexOf('robocopy '), 'the tracked check runs after the copies');
 assert(ships.includes('> "%OJ_OUT%\\ships_source.txt" echo %LB_SHIPS%'), 'the ships step records its source for the tail\'s unchanged-copy proof');
-assert(ships.indexOf('shipcheck "%OJ_REPO%" "%OJ_REPO%_ships_identity.txt" "%OJ_NEED_HULLS%"') > ships.lastIndexOf('robocopy '), 'every copied ship is checked against its cache stamp after both copies');
-assert(/fc \/b "%OJ_OUT%\\ships_identity_first\.txt" "%OJ_REPO%_ships_identity\.txt"[^\n]*\nif errorlevel 1 \(call "%JW%" fail/.test(ships), 'every checkout must measure the same hulls as the first');
+assert(ships.indexOf('shipcheck "%OJ_REPO%" "%OJ_SIDE%_ships_identity.txt" "%OJ_NEED_HULLS%"') > ships.lastIndexOf('robocopy '), 'every copied ship is checked against its cache stamp after both copies');
+assert(/fc \/b "%OJ_OUT%\\ships_identity_first\.txt" "%OJ_SIDE%_ships_identity\.txt"[^\n]*\nif errorlevel 1 \(call "%JW%" fail/.test(ships), 'every checkout must measure the same hulls as the first');
 assert(/shipcheck[^\n]*\nif errorlevel 1 \(call "%JW%" fail/.test(ships), 'a ship that does not match its cache fails the job');
 assert(/:oj_checkout[\s\S]*checkout "%OJ_OUT%" "%~2" "%~3"[\s\S]*set "OJ_REPO=%OJ_OUT%\\%~2"/.test(headCode), 'checkout goes into the attempt folder');
 const tail = headCode.slice(headCode.indexOf(':oj_tail'));
@@ -54,7 +54,7 @@ for (const step of ['oj_checkout', 'oj_ships']) {
 assert(!/^\s*(del|erase|rd|rmdir)\b|\/MIR|\/PURGE|\/MOV/im.test(headCode), 'the head deletes nothing');
 assert(!/tmo\.bat"\s|%TMO%/.test(headCode), 'the head starts nothing outside job_wrap');
 assert(/fc \/b "%OJ_OUT%\\real_options_before\.txt"[\s\S]*:oj_tail_end\n[\s\S]*call "%JW%" end\nset "OJ_RC=%ERRORLEVEL%"\nif defined OJ_DROP powershell [^\n]*dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1\n(?:[^\n]*\n)*?exit \/b %OJ_RC%/.test(tail), 'the tail runs the checkout step after job_wrap end has written the result, and keeps its exit code');
-assert(/shiprecord "%OJ_REPO%" "%OJ_REPO%_ships_copied\.txt" "%LB_SHIPS%"/.test(ships) && ships.indexOf('shiprecord') > ships.indexOf('shipcheck "%OJ_REPO%"'), 'the ships step records what it copied, after the cache check (issue 1497)');
+assert(/shiprecord "%OJ_REPO%" "%OJ_SIDE%_ships_copied\.txt" "%LB_SHIPS%"/.test(ships) && ships.indexOf('shiprecord') > ships.indexOf('shipcheck "%OJ_REPO%"'), 'the ships step records what it copied, after the cache check (issue 1497)');
 assert(/if "%OJ_KEEP_CHECKOUTS%"=="1"/.test(tail), 'OJ_KEEP_CHECKOUTS=1 keeps them');
 // Issue 1396 (Board, Nov 22): the tail starts the relay waiter hidden, after the result, only with the drop step on.
 assert(/if defined OJ_DROP if not "%OJ_NO_DROPWAIT%"=="1" set "OJ_WAIT=1"\nset "OJ_DROPWAIT_ATTEMPT=%OJ_OUT%"\n[\s\S]*if defined OJ_WAIT powershell [^\n]*\$ErrorActionPreference = 'Stop'; Start-Process -WindowStyle Hidden [^\n]*dropwait' -f \$env:OJ_PS\)"/.test(tail) && tail.indexOf('dropwait') > tail.indexOf('dropcheckouts "%OJ_OUT%"'), 'the tail starts the relay waiter after its own drop step, the attempt in its environment, not on its command line');
@@ -637,26 +637,37 @@ assert(fs.existsSync(path.join(failedBefore, 'new')) && fs.existsSync(path.join(
   relay([[decoyDir, 'other/out_new']], 'board/pc-out-1695decoy');
   relay([[path.join(legacy, 'out_new'), 'opus1695a/out_1/out_new']], 'board/pc-out-1695old');
   for (const b of ['board/pc-out-1695decoy', 'board/pc-out-1695old']) git(['--git-dir', path.join(vt, 'repo-mirror.git'), 'fetch', '-q', 'origin', `+refs/heads/${b}:refs/heads/${b}`]);
-  const branchFile = path.join(legacy, 'relay_branch.txt');
+  const branchFile = path.join(legacy, 'relay_found.txt');
   r = run('relayfind', 'all', 'dry');
   assert.equal(r.status, 0, r.out);
   assert(r.out.includes(`relay place would be written: ${branchFile} = board/pc-out-1695old opus1695a/out_1`) && !fs.existsSync(branchFile) && fs.existsSync(path.join(legacy, 'new')), 'dry names the proving folder and writes nothing: ' + r.out);
   r = run('relayfind', legacy);
   assert.equal(r.status, 0, r.out);
-  assert(r.out.includes(`relay place written: ${branchFile} = board/pc-out-1695old opus1695a/out_1`) && fs.readFileSync(branchFile, 'utf8') === 'board/pc-out-1695old opus1695a/out_1\r\n' && fs.existsSync(path.join(legacy, 'new')), 'live writes only relay_branch.txt: ' + r.out);
+  assert(r.out.includes(`relay place written: ${branchFile} = board/pc-out-1695old opus1695a/out_1`) && fs.readFileSync(branchFile, 'utf8') === 'board/pc-out-1695old opus1695a/out_1\r\n' && fs.existsSync(path.join(legacy, 'new')), 'live writes only relay_found.txt: ' + r.out);
   r = run('relayfind', legacy);
-  assert(/relay place already proven: \S+ \(board\/pc-out-1695old opus1695a\/out_1, from relay_branch\.txt\)/.test(r.out), 'a second run finds it proven: ' + r.out);
+  assert(/relay place already proven: \S+ \(board\/pc-out-1695old opus1695a\/out_1, from relay_found\.txt\)/.test(r.out), 'a second run finds it proven: ' + r.out);
   r = run('dropcheckouts', legacy);
-  assert(!fs.existsSync(path.join(legacy, 'new')) && /from relay_branch\.txt|results relayed: 2 of 2 result file\(s\) are on board\/pc-out-1695old under opus1695a\/out_1/.test(r.out), 'the drop then proves it there itself: ' + r.out);
+  assert(!fs.existsSync(path.join(legacy, 'new')) && /from relay_found\.txt|results relayed: 2 of 2 result file\(s\) are on board\/pc-out-1695old under opus1695a\/out_1/.test(r.out), 'the drop then proves it there itself: ' + r.out);
   // a folder holding the searched file (log.txt, the first by name) but not the other proves nothing; nothing is written
   const decoyOnly = job1535('opus1695b');
   write(path.join(decoyOnly, 'out_new', 'log.txt'), 'another log\n');
   r = run('relayfind', decoyOnly);
-  assert(/relay place not found: \S+ \(own place: .*closest board\/pc-out-1695decoy other: out_new\/result\.txt differs on the relay/.test(r.out) && !fs.existsSync(path.join(decoyOnly, 'relay_branch.txt')), 'a folder missing one file is not written: ' + r.out);
-  // an attempt with its own relay_branch.txt that does not prove is left alone
-  write(path.join(decoyOnly, 'relay_branch.txt'), 'board/pc-out-opus1695b out_1\r\n');
+  assert(/relay place not found: \S+ \(own place: .*closest board\/pc-out-1695decoy other: out_new\/result\.txt differs on the relay/.test(r.out) && !fs.existsSync(path.join(decoyOnly, 'relay_found.txt')), 'a folder missing one file is not written: ' + r.out);
+  // an attempt with its own relay_receipt.txt that does not prove is left alone
+  write(path.join(decoyOnly, 'relay_receipt.txt'), 'board/pc-out-opus1695b out_1\r\n');
   r = run('relayfind', decoyOnly);
-  assert(/relay place left alone: \S+ has its own relay_branch\.txt, which does not prove/.test(r.out) && fs.readFileSync(path.join(decoyOnly, 'relay_branch.txt'), 'utf8') === 'board/pc-out-opus1695b out_1\r\n', 'its own file stays: ' + r.out);
+  assert(/relay place left alone: \S+ has its own relay_receipt\.txt, which does not prove/.test(r.out) && fs.readFileSync(path.join(decoyOnly, 'relay_receipt.txt'), 'utf8') === 'board/pc-out-opus1695b out_1\r\n' && !fs.existsSync(path.join(decoyOnly, 'relay_found.txt')), 'its own receipt stays: ' + r.out);
+  // Issue 1739 (Board, Nov 22): the head writes relay_branch.txt (relay/pc-out-<job>) at init; an attempt the Board relayed
+  // to a board/pc-out-* branch instead is still searched, its proven place goes to relay_found.txt beside the init file
+  // (never over it), and the drop proves it there and clears the checkout
+  const initOnly = job1535('opus1739r');
+  write(path.join(initOnly, 'relay_branch.txt'), 'relay/pc-out-opus1739r out_1\r\n');
+  relay([[path.join(initOnly, 'out_new'), 'out_20261122_190000_1/out_new']], 'board/pc-out-opus1739r');
+  git(['--git-dir', path.join(vt, 'repo-mirror.git'), 'fetch', '-q', 'origin', '+refs/heads/board/pc-out-opus1739r:refs/heads/board/pc-out-opus1739r']);
+  r = run('relayfind', initOnly);
+  assert(r.out.includes(`relay place written: ${path.join(initOnly, 'relay_found.txt')} = board/pc-out-opus1739r out_20261122_190000_1`) && fs.readFileSync(path.join(initOnly, 'relay_branch.txt'), 'utf8') === 'relay/pc-out-opus1739r out_1\r\n', 'found beside the init file, which stays: ' + r.out);
+  r = run('dropcheckouts', initOnly);
+  assert(!fs.existsSync(path.join(initOnly, 'new')) && fs.existsSync(path.join(initOnly, 'out_new', 'result.txt')), 'the drop proves relay_found.txt and clears the checkout: ' + r.out);
   assert.notEqual(run('relayfind', legacy, 'now').status, 0, 'relayfind takes only dry');
 }
 // A file locked for a moment (Board, AFTERRELAY2 on Nov 21: a pack .idx denied, free a minute later) is retried; one
@@ -670,13 +681,23 @@ if (process.getuid && process.getuid() !== 0) {
     write(path.join(at, 'done.txt'), 'PASS\r\n');
     return [at, relay([[path.join(at, 'out_new'), `${n}/out_new`]])];
   };
-  env.PC_TEST_RETRY_MS = '1000';
+  // Board, Nov 23 (PR 1772 at 494595a4): a 2 s timer raced the first retry, so a slow host could remove the checkout
+  // before any retry was logged. The lock now lifts only once the head has logged its first retry.
+  env.PC_TEST_RETRY_MS = '200';
   const [l1, l1relay] = lockAttempt('out_1');
   fs.chmodSync(path.join(l1, 'new', 'godot'), 0o555);
-  const unlock = spawn('sh', ['-c', `sleep 2; chmod 755 '${path.join(l1, 'new.removing', 'godot')}'`], { stdio: 'ignore' });
-  r = run('dropcheckouts', l1, l1relay, 'out_1');
+  const unlockOnRetry = `const { spawn } = require('child_process'), fs = require('fs');
+const [shell, script, lock, ...args] = process.argv.slice(1);
+const c = spawn(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, ...args], { env: process.env });
+let out = '', err = '', lifted = false;
+c.stdout.on('data', d => { out += d; });
+c.stderr.on('data', d => { err += d; if (!lifted && /still locked, trying again/.test(err)) { lifted = true; fs.chmodSync(lock, 0o755); } });
+c.on('close', code => { process.stdout.write(out + '\\n' + err + (lifted ? '' : '\\nlock never lifted')); process.exit(code === null ? 1 : code); });`;
+  const held = spawnSync(process.execPath, ['-e', unlockOnRetry, shell, path.join(jobs, 'opus_job_head.ps1'),
+    path.join(l1, 'new.removing', 'godot'), 'dropcheckouts', l1, l1relay, 'out_1'], { env, encoding: 'utf8', timeout: 60000 });
+  if (held.error) throw held.error;
+  r = { status: held.status, out: `${held.stdout}\n${held.stderr}` };
   assert(!fs.existsSync(path.join(l1, 'new')) && !fs.existsSync(path.join(l1, 'new.removing')) && /checkout new removed after the job/.test(r.out) && /still locked, trying again in \d+ ms/.test(r.out), 'a short lock is retried, logged, then the checkout goes: ' + r.out);
-  unlock.unref();
   env.PC_TEST_RETRY_MS = '50';
   const [l2, l2relay] = lockAttempt('out_2');
   fs.chmodSync(path.join(l2, 'new', 'godot'), 0o555);

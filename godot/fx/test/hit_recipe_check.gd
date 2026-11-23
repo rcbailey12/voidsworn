@@ -21,6 +21,8 @@ const FX := preload("res://fx/fx.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
+const FRAGMENTS := preload("res://fx/fx_fragments.gd")
+const POOLS := preload("res://fx/fx_pool.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 var failures := 0
 
@@ -133,7 +135,7 @@ func _run() -> void:
 		var x := -60.0
 		for lk in looks:
 			_ship(world, fx, "A" + str(lk[1]) + str(lk[2]), "Cruiser", 1.0, Vector3(x, 0, 30), str(lk[2]))
-			_ship(world, fx, "T" + str(lk[1]) + str(lk[2]), "Cruiser", 1.0, Vector3(x, 0, -30))
+			_ship(world, fx, "T" + str(lk[1]) + str(lk[2]), "Cruiser", 1.0, Vector3(x, 0, -30), "hegemony")
 			x += 15.0
 		await _advance(fx, 0.8)
 		for lk in looks:
@@ -166,6 +168,7 @@ func _run() -> void:
 		world.queue_free()
 		await process_frame
 	_recipes(seen)
+	await _substance_hits()
 	await _midflight_calm_check()
 	await _yield_check()
 	await _shield_torp_check()
@@ -176,6 +179,91 @@ func _run() -> void:
 	_check(BREACH.MARK_CAP >= 24 and BREACH.SEC_MARK_CAP >= 8, "wounds stay: %d marks a ship, %d a section" % [BREACH.MARK_CAP, BREACH.SEC_MARK_CAP])
 	print("HIT_RECIPE failures=%d" % failures)
 	quit(1 if failures > 0 else 0)
+
+
+# Run each contact recipe on the same box with four different hull materials.
+func _substance_hits() -> void:
+	for look in ["macro", "torp", "gauss", "lance", "plasma", "crit"]:
+		for faction in ["voidsworn", "ithar", "chorus", "deathless"]:
+			var wf := _world(false)
+			var world: Node3D = wf[0]
+			var fx: FX = wf[1]
+			_ship(world, fx, "impact_target", "Cruiser", 1.0, Vector3.ZERO, faction)
+			var target = fx.ship("impact_target")
+			var hit := {"shield": 0, "hull": 9, "section": "mid"}
+			var from := Vector3(0, 0, 50)
+			var tg := WEAP._target(fx, target, target.to_world(target.hull.c), from, true, hit, 1, 1.0)
+			var weapon_tint := Color(1.0, 0.35, 0.08)
+			fx.spr_kinds = {}
+			if look == "crit":
+				WEAP._crit(fx, target, tg, fx.now, 1.0, weapon_tint, 3)
+			else:
+				WEAP._impact(fx, look, 3, target, tg, fx.now, weapon_tint, Vector3.FORWARD, hit, 1.0, 0.4)
+			var label := "%s on %s" % [look, faction]
+			var plate: FRAGMENTS.Pool = fx.pools["plate"]
+			var kinds: Dictionary = fx.spr_kinds
+			var lamp: Color = fx._lev[-1][4] if not fx._lev.is_empty() else Color.BLACK
+			if faction == "ithar":
+				_check(lamp.r >= lamp.g and lamp.g > 0.9 and lamp.b > 0.7
+					and not kinds.has(27) and not kinds.has(19) and _glass_shards(plate),
+					label + ": white-gold light and unheated crystal shards")
+			elif faction == "chorus":
+				_check(plate.emitted == 0 and kinds.has(15) and kinds.has(20) and not kinds.has(27) and not kinds.has(19)
+					and lamp.g > lamp.r and lamp.r > lamp.b,
+					label + ": bile, mist and amber-green light")
+			elif faction == "deathless":
+				var glow: Color = target.fac.damage_glow
+				_check(lamp.is_equal_approx(glow) and not kinds.has(27) and _eclipse_ejecta(fx, glow),
+					label + ": impact sparks and embers take the Eclipse damage glow with no soot")
+			else:
+				_check(plate.emitted > 0 and (look == "crit" or (kinds.has(27) and kinds.has(19))),
+					label + ": metal keeps its plates, soot and embers")
+			# The fire body starts on the second beat. Inspect the live pooled pictures after it would arrive.
+			fx.now += 0.03
+			fx._run_later()
+			var flash := fx.get_node_or_null("fx_staged_flash") as MeshInstance3D
+			var body := fx.get_node_or_null("fx_staged_body") as MeshInstance3D
+			if faction == "ithar" or faction == "chorus" or faction == "deathless":
+				var mat := flash.material_override as ShaderMaterial if flash != null else null
+				var tint := Vector3(lamp.r, lamp.g, lamp.b)
+				var prism := 1.0 if faction == "ithar" else 0.0
+				_check(mat != null and mat.get_shader_parameter("impact_tinted") == 1.0 and mat.get_shader_parameter("impact_clean") == 1.0
+					and mat.get_shader_parameter("impact_prism") == prism
+					and (mat.get_shader_parameter("impact_tint") as Vector3).is_equal_approx(tint),
+					label + ": flash renders with the same material tint as its light")
+			var expect_body: bool = faction in ["voidsworn", "deathless"] and look in ["macro", "torp", "plasma"]
+			_check((body != null) == expect_body, label + ": correct staged fire body")
+			fx.release()
+			world.queue_free()
+			await process_frame
+
+
+func _glass_shards(plate: FRAGMENTS.Pool) -> bool:
+	if plate.emitted == 0:
+		return false
+	for j in plate.emitted:
+		var particle: PackedFloat32Array = plate.particles[j]
+		var key := int(particle[18])
+		var profile := -1 - key if key < 0 else key
+		if profile < FRAGMENTS.GLASS or particle[3] != 0.0:
+			return false
+	return true
+
+
+func _eclipse_ejecta(fx: FX, glow: Color) -> bool:
+	var streaks: POOLS.Pool = fx.pools["stk"]
+	var sprites: POOLS.Pool = fx.pools["spr"]
+	var expected := Vector3(glow.r, glow.g, glow.b)
+	if streaks.emitted == 0:
+		return false
+	for pool in [streaks, sprites]:
+		for i in range(0, pool.pending.size(), POOLS.STRIDE * pool.vpp):
+			if pool == sprites and int(pool.pending[i + 18]) != 19:
+				continue
+			var tint := Vector3(pool.pending[i + 12], pool.pending[i + 13], pool.pending[i + 14])
+			if not tint.is_equal_approx(expected) and not tint.is_equal_approx(expected * 0.35):
+				return false
+	return true
 
 
 # 1. the ladder, from the sizing rule itself

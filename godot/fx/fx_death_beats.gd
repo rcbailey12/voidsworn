@@ -166,7 +166,32 @@ static func _wisp(fx, s, p: Vector3, t: float, life: float, col: Color, i: float
 		fx.stk(p, t + k * 0.03, life * 0.5, Color(0.95, 0.98, 1.0), 2.0, 0.03, maxf(s1 * 0.05, 0.02), 1, vel + fx.rdir() * s1, drag)
 
 
-# a ram kill: the crush at the struck point throws metal sparks along the plating, and the pieces will spin off centre
+# R367 and R402 (Fable audit of PRs 1631 and 1666): loose hull debris is the faction's own matter, read from its wound_kind
+# (fx/faction_looks.json). Metal hulls throw dark hot metal shards; Glasswrights throw glass shards (shard tint 2) with
+# their cold light; the Chorus throws wet bile flecks, never plate; Eclipse throws its own dark machine shards, never
+# orange hot. tint is the metal look's shard tint, kept for metal hulls only.
+static func debris(fx, s, p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: float, spin := 4.0, drag := 0.3, tint := 0.0) -> void:
+	match int(s.fac.get("wound_kind", 0)):
+		1:
+			fx.spr(p, t, life * 0.5, (s.fac.damage_glow as Color) * 0.6, 0.3, size * 0.6, size * 2.0, 20, vel * 0.6, 1.2)
+		2:
+			fx.shd(p, t, life, vel, size, heat, spin, drag, 2.0)
+		3:
+			fx.shd(p, t, life, vel, size, 0.0, spin, drag, 0.0)
+		_:
+			fx.shd(p, t, life, vel, size, heat, spin, drag, tint)
+
+
+# the spark colour of a hull's crush or tear: hot brass on metal hulls, the faction's own death spark on Glasswright
+# and Eclipse hulls (white light, violet), bile on the Chorus (R367; never brass on those three)
+static func spark_col(s, metal: Color) -> Color:
+	match int(s.fac.get("wound_kind", 0)):
+		1: return s.fac.damage_glow as Color
+		2, 3: return _death().boom_col(s, "spark", s.fac.damage_glow as Color)
+	return metal
+
+
+# a ram kill: the crush at the struck point throws sparks along the plating, and the pieces will spin off centre
 static func _ram(fx, s, T: float) -> void:
 	note(s, "ram")
 	var sh := _shot(fx, s)
@@ -180,15 +205,20 @@ static func _ram(fx, s, T: float) -> void:
 	var dw: Vector3 = s.dir_world(sh[1])
 	var L: float = s.hull.L
 	s.set_meta("death_spin", 1.0 if posmod(hash(str(s.id)), 2) == 0 else -1.0)
-	var metal := Color(1.0, 0.82, 0.55)
+	var col := spark_col(s, Color(1.0, 0.82, 0.55))
+	var wet: bool = int(s.fac.get("wound_kind", 0)) == 1
 	for j in 26:
 		var d: Vector3 = fx.rdir()
 		d = (d - dw * d.dot(dw) * 0.8).normalized()
-		fx.stk(p, T + fx.rng.randf() * 0.12, 0.25 + fx.rng.randf() * 0.3, metal, 5.0, 0.06, maxf(L * 0.003, 0.03), 1,
+		if wet:   # the Chorus tears, it does not spark: wet flecks along the hide
+			if j % 2 == 0:
+				fx.spr(p, T + fx.rng.randf() * 0.12, 0.5, col * 0.7, 0.3, L * 0.004, L * 0.018, 20, d * L * fx.rng.randf_range(0.2, 0.5), 1.2)
+			continue
+		fx.stk(p, T + fx.rng.randf() * 0.12, 0.25 + fx.rng.randf() * 0.3, col, 5.0, 0.06, maxf(L * 0.003, 0.03), 1,
 			d * L * fx.rng.randf_range(0.4, 1.0), 1.5)
 	for j in 3:
-		fx.shd(p, T + j * 0.04, 1.8, fx.rcone(-dw, 0.7) * L * 0.12, L * 0.006, 0.6)
-	fx.light(p, T, 0.25, 2.5, metal, 1)
+		debris(fx, s, p, T + j * 0.04, 1.8, fx.rcone(-dw, 0.7) * L * 0.12, L * 0.006, 0.6)
+	fx.light(p, T, 0.25, 2.5, col, 1)
 
 
 # the Hollow Sun pulls: a white-gold flare on the hull's sunward edge and spall streaming toward the star
@@ -317,7 +347,7 @@ static func corkscrew(fx, s, p: Vector3, frame: Transform3D) -> void:
 			fx.spr(q, fx.now + u * 0.35, 0.6, Color(0.12, 0.11, 0.1), 0.4, L * 0.04, L * 0.14, 3, Vector3.ZERO, 0.5)
 	var tint: Color = s.fac.damage_glow
 	for j in 2:
-		fx.shd(p, fx.now, 1.2, (fwd + fx.rdir() * 0.6).normalized() * L * 0.8, L * 0.04, 0.4, 6.0, 0.3, 0.6)
+		debris(fx, s, p, fx.now, 1.2, (fwd + fx.rdir() * 0.6).normalized() * L * 0.8, L * 0.04, 0.4, 6.0, 0.3, 0.6)
 		fx.stk(p, fx.now, 0.35, tint, 2.0, 0.04, L * 0.02, 1, fx.rdir() * L * 0.7, 1.0)
 
 
@@ -371,7 +401,7 @@ static func spawn_shreds(fx, s, p: Vector3, vel: Vector3, n: int) -> void:
 	var L: float = s.hull.L
 	var base: Vector3 = vel + s.get_meta("death_velocity", Vector3.ZERO)
 	for j in n:
-		fx.shd(p, fx.now, 2.4, base + fx.rdir() * L * fx.rng.randf_range(0.25, 0.6), L * fx.rng.randf_range(0.015, 0.03), 0.5, 3.0, 0.25, 0.5)
+		debris(fx, s, p, fx.now, 2.4, base + fx.rdir() * L * fx.rng.randf_range(0.25, 0.6), L * fx.rng.randf_range(0.015, 0.03), 0.5, 3.0, 0.25, 0.5)
 	note(s, "shreds_%d" % n)
 
 

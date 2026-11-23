@@ -22,9 +22,10 @@ rem  (b) After git add -A the guard step (work_issue.ps1 guard) refuses files ov
 rem      under godot/gen, godot/.godot or godot/assets/ships/<hull>/ (previews and test stay allowed), new .uid files and new
 rem      or re-saved .import files. Refused files are unstaged, copied to out\runs\<date_time>\refused\ (never deleted) and listed in
 rem      result.txt and the PR text. Changed files outside the issue's Deliver to line are listed as a warning.
-rem  (c) No force push. The run's one commit is made with git's plumbing and checked; when the branch already exists its
-rem      earlier tip becomes the commit's second parent, so a rerun is a plain fast-forward push and the earlier run's
-rem      commit stays reachable. Commit text ends with "Run-Number: k".
+rem  (c) No force push. The run's one commit is made with git's plumbing and checked; when the branch already exists the
+rem      run starts from its earlier tip with main merged in (issue 1739), so a rerun is a plain fast-forward push that keeps
+rem      the earlier runs' files, and a run that does not descend from that tip stops with exit 15 before the push.
+rem      Commit text ends with "Run-Number: k".
 rem  (541) Before the push the commit must carry exactly the staged change (out\diffstat.txt); after the push GitHub's branch
 rem      must be that commit with that diff (out\pushed_diffstat.txt). Any difference stops the run loudly: DIFF MISMATCH
 rem      in result.txt, out\DIFF_MISMATCH.txt, exit code 10.
@@ -91,7 +92,8 @@ rem WORK_CAP: hard ceiling in seconds (default six hours). STALL_MIN defaults to
 if not defined WORK_CAP set "WORK_CAP=21600"
 rem CHECK_CAP and PARITY_CAP: each runner check gets its own time limit (#356). A check that hangs is killed and its
 rem timeout is written into the commit text instead of eating the run.
-if not defined CHECK_CAP set "CHECK_CAP=1800"
+rem Issue 1739: the node suite cap is 3600 s; a loaded PC ran it past 1800 s with no row hung (1801, 1803).
+if not defined CHECK_CAP set "CHECK_CAP=3600"
 if not defined PARITY_CAP set "PARITY_CAP=1500"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "SLOT_ROOT=%WORK_ROOT%"
@@ -145,9 +147,9 @@ set "PUSHMODE=test"
 :branchset
 rem The run's commit carries Ryan's git identity, as before.
 set "GIT_AUTHOR_NAME=Ryan Bailey"
-set "GIT_AUTHOR_EMAIL=rcbailey12@gmail.com"
+set "GIT_AUTHOR_EMAIL=rcbailey12@users.noreply.github.com"
 set "GIT_COMMITTER_NAME=Ryan Bailey"
-set "GIT_COMMITTER_EMAIL=rcbailey12@gmail.com"
+set "GIT_COMMITTER_EMAIL=rcbailey12@users.noreply.github.com"
 set "K=issue-%N%-%ARM%"
 if /i "%MODE%"=="dryrun" set "K=dryrun-%N%-%ARM%"
 :runfolder
@@ -407,8 +409,9 @@ if errorlevel 1 goto :guardfail
 git diff --cached --quiet
 if errorlevel 1 goto :haschange
 if defined PARTIAL goto :haschange
-findstr /c:"Resumed by merging" /c:"Base already merged" "%O%\resume.txt" >nul
-if errorlevel 1 goto :nochange
+%PS% head-changed "%R%" "%O%" >> "%O%\result.txt" 2>&1
+if "%ERRORLEVEL%"=="7" goto :nochange
+if errorlevel 1 goto :guardfail
 :haschange
 git diff --cached --stat > "%O%\diffstat.txt"
 if defined PARTIAL (> "%O%\checks.txt" echo runner checks skipped: partial run & goto :afterchecks)

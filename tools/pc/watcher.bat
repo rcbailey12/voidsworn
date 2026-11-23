@@ -15,6 +15,7 @@ if not exist queue\running mkdir queue\running
 set "JANITOR=%~dp0janitor.bat"
 if not exist "%JANITOR%" set "JANITOR=%~dp0build_b\tools\pc\janitor.bat"
 set "JANITOR_MINUTE="
+set "OX_MINUTE="
 echo Watching %cd% for run.request and queue\*.bat ... (close this window to stop)
 :loop
 cd /d "%~dp0"
@@ -54,5 +55,14 @@ echo [%date% %time%] finished, exit %JX% >> "queue\logs\%J%.log"
 if "%JX%"=="0" (move /y "queue\running\%J%" "queue\done\%J%" >nul) else (move /y "queue\running\%J%" "queue\failed\%J%" >nul)
 if "%JX%"=="0" (echo [%date% %time%] queue: %J% finished) else (echo [%date% %time%] queue: %J% FAILED, exit %JX%, moved to queue\failed)
 :idle
+rem (1663) Overnight, about every 10 minutes while the queue is idle, tools_live's overnight_export.ps1 decides whether to
+rem queue one build\export refresh (its gates: 1 to 5 AM Central, gpu_go clear, 75 GB free, nothing running, main changed
+rem game files). It only ever adds a queue job; it deletes nothing.
+if "%OX_MINUTE%"=="%time:~0,4%" goto idle_wait
+set "OX_MINUTE=%time:~0,4%"
+set "TLV="
+if exist "tools_live\current.txt" set /p TLV=<"tools_live\current.txt"
+if defined TLV if exist "tools_live\%TLV%\pc\overnight_export.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "tools_live\%TLV%\pc\overnight_export.ps1" >> "queue\logs\overnight_export.txt" 2>&1
+:idle_wait
 timeout /t 5 /nobreak >nul
 goto loop
