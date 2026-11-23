@@ -103,7 +103,7 @@ if ($mode -eq 'prep') {
 # Codex job: issue #$n, "$($i.title)"
 
 You are Codex, working one job from the Voidsworn job board (github.com/rcbailey12/voidsworn/issues/$n).
-This folder is a fresh checkout of main on the branch codex/issue-$n. Follow AGENTS.md and CLAUDE.md in this folder.
+This folder is a fresh checkout on the branch codex/issue-$($n): main, or the branch's earlier tip with main merged in when an earlier run pushed it (see below). Follow AGENTS.md and CLAUDE.md in this folder.
 $resume
 
 Rules:

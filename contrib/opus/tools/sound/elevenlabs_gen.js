@@ -31,6 +31,9 @@ const { execFileSync } = require('child_process');
 
 const LIVE_BASE = 'https://api.elevenlabs.io';
 const CREDITS_SFX_AUTO = 200;          // no duration set: flat per generation
+// ElevenLabs refuses a sound-effect prompt over 450 characters (HTTP 400 text_too_long, Wave A2, Nov 23 2026), so plan()
+// rejects one in every item of the list, dry runs included, before any paid call.
+const SFX_PROMPT_MAX = 450;
 const CREDITS_SFX_PER_S = 40;          // duration set
 const CREDITS_MUSIC_PER_MIN = 900;
 
@@ -76,6 +79,7 @@ function plan(list, only) {
     if (ids.has(it.id)) throw new Error('duplicate id ' + it.id);
     ids.add(it.id);
     if (it.stems && list.gate !== 3) throw new Error(it.id + ': stems only in a Gate 3 list (issue 1585)');
+    if (it.kind === 'sfx' && String(it.prompt || '').length > SFX_PROMPT_MAX) throw new Error(`${it.id}: prompt is ${String(it.prompt).length} characters, ElevenLabs allows at most ${SFX_PROMPT_MAX}`);
     if (only && !only.has(it.id)) continue;
     const n = it.takes || 1;
     for (let t = 1; t <= n; t++) {

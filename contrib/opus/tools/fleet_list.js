@@ -64,6 +64,9 @@ function stageOf(row) {
 
 function build(root = ROOT) {
   const read = p => fs.readFileSync(path.join(root, p), 'utf8');
+  // A lane checkout leaves docs/ship_pipeline/build_sheets and contrib/muse/design out of the work tree (issue 1739);
+  // a concept file that is in the git index but skipped there still counts as present.
+  const inputs = require('./sparse_check_inputs')(root);
   const fleet = JSON.parse(read(FLEET));
   const hulls = readHullTable(read(HULL_TABLE));
   const manifest = JSON.parse(read(MANIFEST)).ships || {};
@@ -83,7 +86,7 @@ function build(root = ROOT) {
       sheets: recipes[hull] || [], installed: isNewBuild(manifest[hull]), inManifest: !!manifest[hull] };
     row.stage = stageOf(row);
     if (!row.ship) problems.push(slot + ': the row has no ship name');
-    if (row.concept && !fs.existsSync(path.join(root, row.concept))) problems.push(slot + ': concept file is missing: ' + row.concept);
+    if (row.concept && !inputs.exists(path.join(root, row.concept))) problems.push(slot + ': concept file is missing: ' + row.concept);
     if (!row.inManifest) problems.push(slot + ': hull ' + hull + ' has no entry in ' + MANIFEST);
     // Nothing may sit untracked: an old hull with no installed build needs an open job or a stated reason to stay.
     if (!row.installed && !row.job && !row.keep) problems.push(slot + ' (' + row.ship + '): old hull ' + hull + ' with no job and no keep reason');
@@ -93,7 +96,7 @@ function build(root = ROOT) {
   }
   const other = (fleet.other || []).map((r, i) => {
     if (!r.ship) problems.push('other[' + i + ']: no ship name');
-    if (r.concept && !fs.existsSync(path.join(root, r.concept))) problems.push('other[' + i + '] (' + r.ship + '): concept file is missing: ' + r.concept);
+    if (r.concept && !inputs.exists(path.join(root, r.concept))) problems.push('other[' + i + '] (' + r.ship + '): concept file is missing: ' + r.concept);
     if (!r.job && !r.keep) problems.push('other[' + i + '] (' + r.ship + '): no job and no keep reason');
     if (!r.key) problems.push('other[' + i + '] (' + r.ship + '): no key, so --pick cannot find it');
     if (r.key && (r.key in fleet.slots)) problems.push('other[' + i + ']: key ' + r.key + ' is also a slot');

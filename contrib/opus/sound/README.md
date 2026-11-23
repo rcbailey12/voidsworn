@@ -31,7 +31,7 @@ Gate 2 production and Gate 3 stems. Nothing is wired into godot/ until Ryan pick
   manifest row is paid for again only if it has no receipt or the vendor refused it (not_charged); otherwise a rerun prints
   RECONCILE. After checking the account history, delete that take's receipt lines to allow one new try.
   A live run holds `run.lock` in its output folder for its whole run, so a second run on the same folder stops with
-  LOCKED and sends nothing; a lock left by a crash is deleted by hand once no run is going. Offline check: `node elevenlabs_gen_selftest.js`.
+  LOCKED and sends nothing; a lock left by a crash is deleted by hand once no run is going. Offline check: `node elevenlabs_gen_selftest.js`. A sound-effect prompt over 450 characters fails the whole list, dry runs included (ElevenLabs refuses it with HTTP 400 text_too_long; Wave A2, Nov 23 2026).
 - `generation_mode` ("loop", "ambience", "track") was asked for in issue 1585 but is not in the ElevenLabs API reference
   for POST /v1/music read on Nov 22 2026, so the generator sends it only when an item sets it, and the pilot does not.
 - Death sounds are atomic beat layers for godot/audio/death_audio.gd (powerdown, bed, vent, crack, boom at the split,

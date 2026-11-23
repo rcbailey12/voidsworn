@@ -86,9 +86,11 @@ if (process.platform !== 'win32') {
   process.exit(0);
 }
 // Issue 1739: inside a Codex lane TEMP is the run's own scratch (Temp\voidsworn-run-<issue>-<32 hex>), about 50
-// characters deeper. The lane fixture's nested profile, board and checkout paths then passed MAX_PATH (260) and the
-// mock agent never reached its checkout; it passed alone and on a retry with a shorter TEMP. The fixture root sits
-// beside that scratch, in the same Temp folder a standalone run uses.
+// characters deeper. The lane fixture then nests its own runner's scratch TEMP inside that one
+// (...\board_d\temp\voidsworn-run-687-<32 hex>), and PowerShell Add-Type could not compile its C# there: "Cannot
+// create temporary file '' -- The data area passed to a system call is too small", so the mock agent never reached
+// its checkout (CHECKS_DIAG_1739_E: no file path passed 243 characters; the limit is on the TEMP folder the compiler
+// writes into). The fixture root sits beside the lane scratch, in the same Temp folder a standalone run uses.
 function fixtureTemp(temp = os.tmpdir()) {
   return /^voidsworn-run-(?:[1-9][0-9]*-)?[0-9a-f]{32}$/i.test(path.basename(temp)) ? path.dirname(temp) : temp;
 }
