@@ -92,7 +92,8 @@ rem WORK_CAP: hard ceiling in seconds (default six hours). STALL_MIN defaults to
 if not defined WORK_CAP set "WORK_CAP=21600"
 rem CHECK_CAP and PARITY_CAP: each runner check gets its own time limit (#356). A check that hangs is killed and its
 rem timeout is written into the commit text instead of eating the run.
-if not defined CHECK_CAP set "CHECK_CAP=1800"
+rem Issue 1739: the node suite cap is 3600 s; a loaded PC ran it past 1800 s with no row hung (1801, 1803).
+if not defined CHECK_CAP set "CHECK_CAP=3600"
 if not defined PARITY_CAP set "PARITY_CAP=1500"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "SLOT_ROOT=%WORK_ROOT%"
