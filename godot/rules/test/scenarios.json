@@ -5040,7 +5040,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 33001,
+  "seed": 33002,
   "admiral": "grax",
   "fleet": [
    "c_marauder",

@@ -1109,11 +1109,11 @@
       "scenario_sha256": "769631f7120ad4e902aa81ae996f6849d8924b69a31ae262b2e68958c28c0017"
     },
     "t_hb_runbigger": {
-      "sha256": "6836128e14646a9c46d490ba3b01fbce4975370a74e3eebf3130e304d14876fe",
-      "bytes": 537396,
+      "sha256": "ddb0a631c21a22a7bb31a3072caf16710bca12357ee56220f8941ec7667e3655",
+      "bytes": 947834,
       "archive": "t_hb_runbigger.jsonl.br",
-      "records": 28,
-      "scenario_sha256": "0579054c7bd03906b89acf0bc564fd8f1c2db7699b64158acd9c3cca3273cf74"
+      "records": 47,
+      "scenario_sha256": "b7fc194951cdea4d634f765f70cc4a9fde1adbbbb95787b6f243c8f677dc74d5"
     },
     "t_hb_railboarding": {
       "sha256": "38690da148db84171f52b0471ba2b612574ffcfdcd6068021ac8615b0c4d7d78",
