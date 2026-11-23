@@ -341,6 +341,8 @@ func build(rules, slice := false) -> void:
 	t = _step("terrain", t)
 	if slice:
 		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
 		t = Time.get_ticks_usec()
 	blocker_visuals = BV.new()
 	props.add_child(blocker_visuals)
@@ -352,11 +354,15 @@ func build(rules, slice := false) -> void:
 	t = _step("blockers", t)
 	if slice:
 		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
 		t = Time.get_ticks_usec()
 	_terrain_edges()
 	t = _step("edges", t)
 	if slice:
 		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
 		t = Time.get_ticks_usec()
 	apply_look(false)
 	_step("look", t)

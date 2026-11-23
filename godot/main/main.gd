@@ -9,6 +9,7 @@ extends Node
 #                            --report <file> (JSON). --fast K speeds the clock K times (default 40).
 
 const BattleScene := preload("res://scenes/battle/battle.tscn")
+const BattleScript := preload("res://scenes/battle/battle.gd")   # issue 1518: its static sky and sound prefetch
 const Title := preload("res://main/title.gd")
 const Host := preload("res://main/campaign_host.gd")
 const OrdersKit := preload("res://ui/theme/orders_kit.gd")
@@ -117,6 +118,8 @@ func quit_clean(code := 0, route := "menu") -> void:
 		_retired.free()   # issue 1519: a battle left for the title and not yet freed goes before the statics are cleared
 	if music != null and is_instance_valid(music) and music.has_method("release"):
 		music.release()
+	BattleScript.drop_sky_pending()
+	BattleScript.Sfx.drop_pending()
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var t1 := Time.get_ticks_msec()
@@ -173,6 +176,11 @@ func _ready() -> void:
 	RenderingServer.frame_pre_draw.connect(_on_frame_pre_draw)   # issue 1434: the close's frame log splits the draw
 	RenderingServer.frame_post_draw.connect(_on_frame_post_draw)
 	_args()
+	if DisplayServer.get_name() != "headless":
+		# issue 1518: the battle's sky and sound clips start loading on worker threads now, so the frame that builds the
+		# first battle only collects them
+		BattleScript.prefetch_sky()
+		BattleScript.Sfx.prefetch()
 	if args.has("player-path"):
 		var recorder = load("res://main/player_path.gd")
 		var profile_error: String = recorder.prepare_profile()
@@ -399,10 +407,13 @@ func _on_battle_option(key: String, value) -> void:
 
 # ---------------------------------------------------------------- screens
 
-func show_title() -> void:
+func show_title(music_after_draw := false) -> void:
 	_clear()
 	if music != null:
-		music.play_title()
+		if music_after_draw and DisplayServer.window_can_draw():
+			_title_music_after_draw()   # issue 1519: the music starts after the title's first frame, not inside it
+		else:
+			music.play_title()
 	title = Title.new()
 	title.main = self
 	add_child(title)
@@ -411,6 +422,12 @@ func show_title() -> void:
 		get_tree().create_timer(0.5).timeout.connect(_start_showcase)
 	if args.has("career-shot"):
 		_career_shot.call_deferred(str(args["career-shot"]))
+
+
+func _title_music_after_draw() -> void:
+	await RenderingServer.frame_post_draw
+	if music != null and is_instance_valid(music) and not quitting and title != null and is_instance_valid(title):
+		music.play_title()   # still on the title (a click that left it at once has started its own music)
 
 
 # --career-shot <png>: open the Career screen from the title as its button does, save a shot, quit (screenshot jobs)
@@ -596,12 +613,14 @@ func quick_battle() -> void:
 		battle = null
 		_retire_battle(b, parts)
 		var t_q := Time.get_ticks_usec()
-		show_title()
+		show_title(true)
 		parts["title_build"] = Time.get_ticks_usec() - t_q
 		_time_title_return(t_leave, parts), CONNECT_ONE_SHOT)
 	# --title-after S (issue 1435 PC proof): leave the quick battle for the title after S seconds, as the menu's "to title"
 	if args.has("title-after"):
-		get_tree().create_timer(float(args["title-after"]), true, false, true).timeout.connect(func() -> void:
+		# counted from the game's start (LOAD25: a slow start began the battle late, so "5 s" came after the close)
+		var after := maxf(0.05, float(args["title-after"]) - Time.get_ticks_msec() / 1000.0)
+		get_tree().create_timer(after, true, false, true).timeout.connect(func() -> void:
 			if is_instance_valid(b) and battle == b:
 				print("[main] leaving the battle for the title at %d ms" % Time.get_ticks_msec())
 				b._on_action("to_title", null))

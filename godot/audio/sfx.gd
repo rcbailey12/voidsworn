@@ -106,7 +106,50 @@ func _ready() -> void:
 	set_volume(vol)
 
 
+# issue 1518 (LOAD25 cold: a close during the battle's first frame waited on its 0.3 s of clip loads): the game starts
+# reading the battle's clips on worker threads when it starts (main.gd), and a battle's sound only collects them.
+# Paths only (path -> true); the streams stay in the ResourceLoader.
+static var _pending := {}
+
+
+static func prefetch() -> void:
+	var paths: Array = []
+	var idx = JSON.parse_string(FileAccess.get_file_as_string("res://audio/clips/index.json")) if FileAccess.file_exists("res://audio/clips/index.json") else {}
+	if idx is Dictionary:
+		for k in idx:
+			for f in idx[k]:
+				paths.append("res://audio/clips/" + str(f))
+	var cue_d = JSON.parse_string(FileAccess.get_file_as_string("res://audio/cues.json")) if FileAccess.file_exists("res://audio/cues.json") else {}
+	if cue_d is Dictionary:
+		for k in cue_d:
+			if not (cue_d[k] is Dictionary):
+				continue
+			for f in cue_d[k].get("synth", []):
+				paths.append("res://audio/synth/" + str(f))
+			for variant in cue_d[k].get("variants", {}):
+				for f in cue_d[k]["variants"][variant].get("synth", []):
+					paths.append("res://audio/synth/" + str(f))
+	for p in paths:
+		if _pending.has(p) or ResourceLoader.has_cached(p) or not HUDRes.imported_ok(p):
+			continue
+		if ResourceLoader.load_threaded_request(p) == OK:
+			_pending[p] = true
+
+
+# the game is closing: whatever finished is collected, the rest is left to the loader (main.gd quit_clean)
+static func drop_pending() -> void:
+	for p in _pending.keys():
+		if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_LOADED:
+			ResourceLoader.load_threaded_get(p)
+	_pending.clear()
+
+
 func _load(p: String) -> AudioStream:
+	if _pending.has(p):
+		_pending.erase(p)
+		var got = ResourceLoader.load_threaded_get(p)   # waits only for what the worker has not read yet
+		if got is AudioStream:
+			return got
 	# the imported stream when the project has been imported or exported, else the raw Ogg file
 	if HUDRes.imported_ok(p):
 		var r = load(p)

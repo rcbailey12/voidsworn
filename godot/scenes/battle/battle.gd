@@ -324,6 +324,32 @@ func _args() -> void:
 
 # ---------------------------------------------------------------- setup
 
+# issue 1518 (LOAD25 cold: a close during the battle's first frame waited on its 0.7 s world setup, most of it the 8K
+# sky): the game starts reading the sky on a worker when it starts (main.gd), and the battle only collects it
+static var _sky_pending := ""
+
+
+static func prefetch_sky() -> void:
+	var sky_res := str(ShipView.manifest().get("sky", ""))
+	if sky_res == "" or _sky_pending != "" or ResourceLoader.has_cached(sky_res) or not ResourceLoader.exists(sky_res):
+		return
+	if ResourceLoader.load_threaded_request(sky_res) == OK:
+		_sky_pending = sky_res
+
+
+static func _sky_texture(p: String) -> Resource:
+	if _sky_pending == p:
+		_sky_pending = ""
+		return ResourceLoader.load_threaded_get(p)   # waits only for what the worker has not read yet
+	return load(p)
+
+
+static func drop_sky_pending() -> void:
+	if _sky_pending != "" and ResourceLoader.load_threaded_get_status(_sky_pending) == ResourceLoader.THREAD_LOAD_LOADED:
+		ResourceLoader.load_threaded_get(_sky_pending)
+	_sky_pending = ""
+
+
 func _build_world() -> void:
 	env = Environment.new()
 	var man := ShipView.manifest()
@@ -334,7 +360,7 @@ func _build_world() -> void:
 		sh.code = WORLD_SKY.PANORAMA_SKY
 		var pano := ShaderMaterial.new()
 		pano.shader = sh
-		pano.set_shader_parameter("pano", load(sky_res))
+		pano.set_shader_parameter("pano", _sky_texture(sky_res))
 		if LOOK.fleet_lighting_enabled():
 			pano.set_shader_parameter("sun_dir", -LOOK.KEY_DIR.normalized())
 			pano.set_shader_parameter("fleet_reflections", true)

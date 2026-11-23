@@ -230,7 +230,10 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	if env != null:
 		_make_sky(env)
 	load_step = "sky done"   # issue 1434: for the frame log before a close (main.gd)
-	if slice_yield: await get_tree().process_frame
+	if slice_yield:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	if deadstar:
 		var ds: Dictionary = map["deadstar"]
 		dead_star(hw.call(int(ds["q"]), int(ds["r"])) + Vector3(0, -10, 0), 1.0)
@@ -243,7 +246,10 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	if not deadstar:
 		system(mk != "planet")
 	load_step = "system done"   # issue 1434: for the frame log before a close (main.gd)
-	if slice_yield: await get_tree().process_frame
+	if slice_yield:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	_batch = WR.Batch.new()
 	var rock_kind := String(setting["rock"])
 	var counts := {"rock": 0, "debris": 0, "neb": 0, "storm": 0}
@@ -266,19 +272,31 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		if not (clouds[t] as Array).is_empty():
 			cloud_hexes(clouds[t], t, fac)
 	load_step = "terrain done"   # issue 1434: for the frame log before a close (main.gd)
-	if slice_yield: await get_tree().process_frame
+	if slice_yield:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	fields(mk, rock_kind)
 	load_step = "fields done"   # issue 1434: for the frame log before a close (main.gd)
-	if slice_yield: await get_tree().process_frame
+	if slice_yield:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	_report_backdrop_scale()
 	var n_rocks: int = _batch.build(self, Callable(WR, "mesh"))
 	load_step = "rocks done"   # issue 1434: for the frame log before a close (main.gd)
-	if slice_yield: await get_tree().process_frame
+	if slice_yield:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	dust(mk)
 	wisps()
 	underlay()
 	load_step = "dust done"   # issue 1434: for the frame log before a close (main.gd)
-	if slice_yield: await get_tree().process_frame
+	if slice_yield:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	notes.append("setting: %s region, %s map, %s rock, planet %d (%s), sky for %s" % [setting["region"], mk, rock_kind, int(setting["planet_i"]),
 		["gas giant", "ice giant", "terran", "volcanic", "barren", "ice world"][int(setting["planet"]["kind"])], str(setting["fac"])])
 	notes.append("rocks: %d in all (%d rock hexes, %d debris hexes); clouds on %d nebula and %d storm hexes; built in %.0f ms" % [n_rocks,

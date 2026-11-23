@@ -442,13 +442,28 @@ func build(world) -> void:
 			var broad := (patches[j] as Array).size() / 3 if j < patches.size() - 1 else broad_left
 			_gas(patches[j], kind == "storm", broad)
 			broad_left -= broad
-	if bool(W.get("slice_yield")): await get_tree().process_frame
+			# issue 1434 (LOAD25 warm title: every gas patch in one 650 ms frame, 463 ms of it before the draw): a sliced
+			# load builds one patch a frame
+			if bool(W.get("slice_yield")):
+				await get_tree().process_frame
+				if not is_inside_tree():
+					return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
+	if bool(W.get("slice_yield")):
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	if not (pts["storm"] as Array).is_empty():
 		_bolts(pts["storm"])
-	if bool(W.get("slice_yield")): await get_tree().process_frame
+	if bool(W.get("slice_yield")):
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	if not (pts["debris"] as Array).is_empty():
 		_debris(pts["debris"])
-	if bool(W.get("slice_yield")): await get_tree().process_frame
+	if bool(W.get("slice_yield")):
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	if W._well != Vector3.INF:
 		_well(W._well)
 
