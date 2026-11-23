@@ -58,6 +58,10 @@ function Public-RunnerText($status, $reason, $code, $folder) {
     }
   }
 }
+# Issue 1739: what a removal would really free (hard links, other accounts' folders). Optional, so a lone copy of this
+# file (a test fixture, hashwrite) still runs; without it sizes count every listed byte, as before.
+$diskSpaceHelpers = Join-Path $PSScriptRoot 'disk_space.ps1'
+if (Test-Path -LiteralPath $diskSpaceHelpers) { . $diskSpaceHelpers }
 if ($args[0] -eq 'publication-library') { return }
 $ErrorActionPreference = 'Stop'
 $mode = $args[0]
@@ -656,6 +660,13 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
   Assert-PlainDirectory $directory
   $bytes = 0L; $latest = $directory.LastWriteTimeUtc; $links = @(); $unreadable = @()
   $fileLatest = [DateTime]::MinValue; $worktreeLatest = [DateTime]::MinValue
+  # Issue 1739: FreeBytes is what removing the folder would give back. A hard link shared with a file outside it frees
+  # nothing, and a folder another account owns cannot be removed by this one, so neither counts.
+  $tally = $null
+  if (Get-Command New-FreeTally -ErrorAction SilentlyContinue) {
+    $tally = New-FreeTally
+    if (Test-OtherAccountFolder $directory) { throw "owned by another account: $($directory.FullName)" }
+  }
   $gitPrefix = (Join-Path $directory.FullName '.git') + [IO.Path]::DirectorySeparatorChar
   $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
   $pending.Push($directory)
@@ -668,6 +679,7 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
       if (-not $allowUnreadable -or $next.FullName -eq $directory.FullName) { throw }
       $unreadable += ,$next; continue
     }
+    $batch = New-Object 'Collections.Generic.List[object]'; $folders = New-Object 'Collections.Generic.List[object]'
     foreach ($item in $entries) {
       if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
         # Links are listed, never followed or counted (legacy selftest fixtures hold junctions to shared ships).
@@ -676,17 +688,45 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
         continue
       }
       if ($item.LastWriteTimeUtc -gt $latest) { $latest = $item.LastWriteTimeUtc }
-      if ($item -is [IO.DirectoryInfo]) { $pending.Push($item); continue }
+      if ($item -is [IO.DirectoryInfo]) {
+        if ($tally) { $folders.Add($item) } else { $pending.Push($item) }
+        continue
+      }
       $bytes += $item.Length
+      if ($tally) { $batch.Add($item) }
       if ($item.LastWriteTimeUtc -gt $fileLatest) { $fileLatest = $item.LastWriteTimeUtc }
       if ($checkout -and $item.LastWriteTimeUtc -gt $worktreeLatest -and
           -not $item.FullName.StartsWith($gitPrefix, [StringComparison]::OrdinalIgnoreCase)) {
         $worktreeLatest = $item.LastWriteTimeUtc
       }
     }
+    if ($tally -and $batch.Count) { Add-FreeTallyBatch $tally $batch.ToArray() }
+    if ($folders.Count) {
+      $foreign = @(Select-OtherAccountFolders $folders.ToArray())
+      foreach ($folder in $folders) {
+        if ($foreign -contains $folder) {
+          # Listed with the unreadable folders: left in place by a removal and never counted.
+          if (-not $allowUnreadable) { throw "folder another account owns: $($folder.FullName)" }
+          $unreadable += ,$folder; continue
+        }
+        $pending.Push($folder)
+      }
+    }
   }
+  $free = $bytes; $shared = 0L; $unchecked = 0L
+  if ($tally) { $sum = Complete-FreeTally $tally; $free = $sum.Free; $shared = $sum.SharedOutside; $unchecked = $sum.Unchecked }
   return [pscustomobject]@{ Bytes = $bytes; Latest = $latest; FileLatest = $fileLatest; WorktreeLatest = $worktreeLatest
-    Links = $links; Unreadable = $unreadable }
+    Links = $links; Unreadable = $unreadable; FreeBytes = $free; SharedBytes = $shared; UncheckedBytes = $unchecked; FreeTally = $tally }
+}
+function Format-CleanupSize($stats) {
+  if (Get-Command Format-FreeBytes -ErrorAction SilentlyContinue) { return (Format-FreeBytes $stats) }
+  return "$($stats.Bytes) bytes"
+}
+function Add-WouldFree($stats) {
+  # Only approved folders reach here. In a dry run, combine their links before deciding what would be freed.
+  if ($script:plannedFreeTally -and $stats.FreeTally) { Merge-FreeTally $script:plannedFreeTally $stats.FreeTally }
+  else { $script:wouldFreeBytes += [long]$stats.FreeBytes }
+  $script:wouldFreeCount++
 }
 function Get-LinkTarget($link) {
   # Where a link points, for the log only: it is never followed.
@@ -809,7 +849,7 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
   $size = 'size unavailable'; $mirrorLock = $null
   try {
     $stats = Measure-CleanupDirectory $copy -Checkout
-    $size = "$($stats.Bytes) bytes"
+    $size = Format-CleanupSize $stats
     $listed = Get-BoardKeepReason $candidate
     if ($listed) { throw $listed }
     if ($keepReason) { throw $keepReason }
@@ -840,12 +880,13 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
       $reason = if ($reason -eq 'rebuildable') { $archived } else { "$reason; $archived" }
       if (-not $dryRun) { Save-SupersededArchive $candidate $state.Superseded $archive }
     }
-    if ($dryRun) { Log "kept checkout would remove ($reason): $candidate ($size)"; return }
+    if ($dryRun) { Add-WouldFree $stats; Log "kept checkout would remove ($reason): $candidate ($size)"; return }
     $current = Measure-CleanupDirectory (Get-Item -LiteralPath $candidate -Force) -Checkout
     # Include Git metadata in the final check for changes made by another process.
     if ($current.Latest -ne $stats.Latest -or $current.WorktreeLatest -ne $stats.WorktreeLatest -or
         $current.Bytes -ne $stats.Bytes) { throw 'checkout changed during the scan' }
     Remove-CleanupDirectory $copy
+    Add-WouldFree $stats
     Log "kept checkout removed ($reason): $candidate ($size)"
   } catch { Log "kept checkout retained: $candidate ($size; $($_.Exception.Message))" }
   finally { if ($mirrorLock) { $mirrorLock.Dispose() } }
@@ -860,7 +901,7 @@ function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false, $now = [DateTi
     foreach ($copy in $copies) {
       if ($copy.Parent.FullName -ne $board) { Log "kept checkout retained: $($copy.FullName) (size unavailable; outside the board directory)"; continue }
       if ($copy -eq $copies[0]) {
-        try { $stats = Measure-CleanupDirectory $copy; Log "kept checkout retained (newest): $($copy.FullName) ($($stats.Bytes) bytes)" }
+        try { $stats = Measure-CleanupDirectory $copy; Log "kept checkout retained (newest): $($copy.FullName) ($(Format-CleanupSize $stats))" }
         catch { Log "kept checkout retained (newest): $($copy.FullName) (size unavailable; $($_.Exception.Message))" }
         continue
       }
@@ -1304,9 +1345,9 @@ try {
     if ($reuse) { Log 'earlier checkout reused in place; ignored files left in place' }
     $base = @(Git @('-C',$repo,'rev-parse','HEAD'))[0]
     Put (Join-Path $out 'base_commit.txt') $base
+    Put (Join-Path $out 'branch_tip.txt') $(if ($continuing) { $earlier[0] })
     if ($continuing) {
       if ($base -ne $earlier[0]) { throw "checkout of the earlier tip of $br did not land on $($earlier[0]); no agent started" }
-      Put (Join-Path $out 'branch_tip.txt') $earlier[0]
       Log "continuing $br from its earlier tip $($earlier[0]), not from main alone (issue 1739)"
       $note = "Continued from the earlier tip of $br ($($earlier[0])): the earlier runs' work is already in this checkout. Keep it; do not restart from main."
       $null = Git @('-C',$repo,'merge-base','--is-ancestor','refs/remotes/origin/main','HEAD')

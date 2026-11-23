@@ -99,6 +99,7 @@ headless|scenes/battle/test/shield_overlap_check.gd|-|-|issue 1211: two overlapp
 headless|scenes/battle/test/shield_handoff_check.gd|-|-|issue 1239: the clean collapse aims at the breaking shot, lays no extra ripple on its flash, finishes on a lethal volley, plays on a storm drop; every torpedo warhead lands; ripples keep their slots; fitted and egg
 headless|scenes/battle/test/battle_feedback_1481_check.gd|-|-|issue 1481: a shield drop with no volley zeroes every side of the readout, a ram updates the shield readout, quiet hits tick the plate with no second number, the end banner counts ships not wings, the report toast has no developer wording
 headless|scenes/battle/test/exit_timers_1482_check.gd|-|-|issue 1482: leaving a battle with the Command timer, a kill hold, an impact and the end card focus beat running logs no freed or null-tree errors; an end card closed inside its beat logs nothing
+headless|scenes/battle/test/opening_exit_1826_check.gd|-|-|issue 1826: freeing a battle during the opening hold and quitting as the hold expires both log no script errors
 headless|main/test/campaign_music_1482_check.gd|-|-|issue 1482: campaign music follows the sector (post-boss rewards resumed get the new sector map track) and comes back on a service stop after a Nemesis fight
 headless|scenes/battle/test/save_quit_handoff_check.gd|-|-|issue 1451 (Artoo, PR 1486): on the real battle scene, Save and quit is offered only for a round on disk, ends through _finish, settles nothing, and a cold Continue resumes that round; a failed write names the last checkpoint instead
 headless|scenes/battle/test/fan_range_test.gd|-|-|issue 1045: drawn firing arcs agree with rules at hex centres for ranges 1 to 6 and report range 7
@@ -176,7 +177,7 @@ headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle
 headless|scenes/battle/test/forecast_1444_test.gd|-|-|issue 1444: Ram arms on the first press and shows target, damage and a lethal-recoil warning; Board odds on hover and card; the Nova blast names friendly ships in red; Hollow Sun bands in the move tip; Brood flagships get wing stances
 headless|scenes/battle/test/targeted_ability_test.gd|-|-|issue 1124: marked Nova and Blink clicks reach the rules; unmarked clicks do not
 headless|scenes/battle/test/click_after_camera_move_test.gd|-|-|issue 1124: releases pick the current camera ray; HUD clicks and drags do not pick
-headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1124: switching guns clears an invalid burn-and-fire ghost, card and command
+headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1747: arming flak keeps the planned Burn and fire preview and Enter fires the planned gun
 headless|scenes/battle/test/volley_preview_test.gd|-|-|issue 1144: target preview against actual seeded volleys, including the planned hex, shared shield routing and low-odds landed-hit routing
 headless|scenes/battle/test/danger_revision_test.gd|-|-|issue 1124: knocking a gun out in place refreshes danger hatching, badges and the threat map
 headless|scenes/battle/test/hover_wait_check.gd|-|-|issue 1433: mouse handlers never wait on the threat worker after a move (under 50 ms); a click while it computes is queued once and played when the result lands; a retired battle publishes nothing

@@ -75,6 +75,9 @@
 param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'relayfind', 'dropcache', 'droprepo', 'survey', 'slot', 'slothold', 'slotrelease')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$Folder = '')
 $ErrorActionPreference = 'Stop'
+# Issue 1739: sizes say what removal really frees (a hard link shared outside a checkout frees nothing). Optional.
+$diskSpaceHelpers = Join-Path (Split-Path -Parent $PSScriptRoot) 'disk_space.ps1'
+if (Test-Path -LiteralPath $diskSpaceHelpers) { . $diskSpaceHelpers }
 $test = [bool]$env:PC_TEST_HELPER
 $unix = $PSVersionTable.Platform -eq 'Unix'
 $sep = [IO.Path]::DirectorySeparatorChar
@@ -293,7 +296,12 @@ function Remove-LinkSafeTree($root) {
       if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) {
         if ($entry -is [IO.DirectoryInfo]) { [IO.Directory]::Delete($entry.FullName, $false) } else { [IO.File]::Delete($entry.FullName) }
       } elseif ($entry -is [IO.DirectoryInfo]) { $pending.Push($entry) }
-      else { $f = $entry.FullName; $len = $entry.Length; Invoke-Retry { if ([IO.File]::Exists($f)) { [IO.File]::SetAttributes($f, [IO.FileAttributes]::Normal); [IO.File]::Delete($f) } } $f; $bytes += $len }
+      else {
+        $f = $entry.FullName; $len = $entry.Length
+        # Only the last link to a file frees its bytes (issue 1739: checkouts share files with the mirror).
+        if (Get-Command Get-FileIdentity -ErrorAction SilentlyContinue) { $id = Get-FileIdentity $f; if ($id -and $id.Links -gt 1) { $len = 0 } }
+        Invoke-Retry { if ([IO.File]::Exists($f)) { [IO.File]::SetAttributes($f, [IO.FileAttributes]::Normal); [IO.File]::Delete($f) } } $f; $bytes += $len
+      }
     }
   }
   for ($i = $dirs.Count - 1; $i -ge 0; $i--) { $d = $dirs[$i]; Invoke-Retry { $di = New-Object IO.DirectoryInfo $d; if ($di.Exists) { if ($di.Attributes -band [IO.FileAttributes]::ReadOnly) { $di.Attributes = $di.Attributes -bxor [IO.FileAttributes]::ReadOnly }; $di.Delete($false) } } $d }
@@ -800,16 +808,19 @@ function Assert-Rebuildable($repo) {
   }
 }
 function Get-TreeBytes($path) {
-  # read only, links not followed
+  # read only, links not followed. Issue 1739: with disk_space.ps1, the bytes removal would really free (a hard link
+  # shared with a file outside the tree counts nothing).
+  $tally = $null; if (Get-Command New-FreeTally -ErrorAction SilentlyContinue) { $tally = New-FreeTally }
   $bytes = [long]0
   $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
   $pending.Push((Get-Item -LiteralPath $path -Force))
   while ($pending.Count) {
     foreach ($e in @($pending.Pop().EnumerateFileSystemInfos())) {
       if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { continue }
-      if ($e -is [IO.DirectoryInfo]) { $pending.Push($e) } else { $bytes += $e.Length }
+      if ($e -is [IO.DirectoryInfo]) { $pending.Push($e) } else { $bytes += $e.Length; if ($tally) { Add-FreeTally $tally $e } }
     }
   }
+  if ($tally) { return (Complete-FreeTally $tally).Free }
   return $bytes
 }
 function Invoke-WithPinnedMirror($pin, [scriptblock]$then) {
@@ -1491,7 +1502,7 @@ switch ($Action) {
         Write-Output ("ship clone {0:N1} GB (import cache {1:N1} GB) {2} {3}" -f $gb, $cgb, $state, $repo)
       }
     }
-    Write-Output ("survey: {0:N1} GB in job checkouts and ship clones (hard links to the mirror count in full); nothing was removed" -f ($total / 1GB))
+    Write-Output ("survey: {0:N1} GB in job checkouts and ship clones (what removal would free: hard links shared with the mirror or another checkout are not counted); nothing was removed" -f ($total / 1GB))
   }
   'shiprecord' {
     # sha256 of every untracked file the ships step put under godot\gen and godot\assets\ships, as copied

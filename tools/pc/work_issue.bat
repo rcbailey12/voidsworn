@@ -92,7 +92,8 @@ rem WORK_CAP: hard ceiling in seconds (default six hours). STALL_MIN defaults to
 if not defined WORK_CAP set "WORK_CAP=21600"
 rem CHECK_CAP and PARITY_CAP: each runner check gets its own time limit (#356). A check that hangs is killed and its
 rem timeout is written into the commit text instead of eating the run.
-if not defined CHECK_CAP set "CHECK_CAP=1800"
+rem Issue 1739: the node suite cap is 3600 s; a loaded PC ran it past 1800 s with no row hung (1801, 1803).
+if not defined CHECK_CAP set "CHECK_CAP=3600"
 if not defined PARITY_CAP set "PARITY_CAP=1500"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "SLOT_ROOT=%WORK_ROOT%"
@@ -146,9 +147,9 @@ set "PUSHMODE=test"
 :branchset
 rem The run's commit carries Ryan's git identity, as before.
 set "GIT_AUTHOR_NAME=Ryan Bailey"
-set "GIT_AUTHOR_EMAIL=rcbailey12@gmail.com"
+set "GIT_AUTHOR_EMAIL=rcbailey12@users.noreply.github.com"
 set "GIT_COMMITTER_NAME=Ryan Bailey"
-set "GIT_COMMITTER_EMAIL=rcbailey12@gmail.com"
+set "GIT_COMMITTER_EMAIL=rcbailey12@users.noreply.github.com"
 set "K=issue-%N%-%ARM%"
 if /i "%MODE%"=="dryrun" set "K=dryrun-%N%-%ARM%"
 :runfolder
@@ -408,8 +409,9 @@ if errorlevel 1 goto :guardfail
 git diff --cached --quiet
 if errorlevel 1 goto :haschange
 if defined PARTIAL goto :haschange
-findstr /c:"Resumed by merging" /c:"Base already merged" "%O%\resume.txt" >nul
-if errorlevel 1 goto :nochange
+%PS% head-changed "%R%" "%O%" >> "%O%\result.txt" 2>&1
+if "%ERRORLEVEL%"=="7" goto :nochange
+if errorlevel 1 goto :guardfail
 :haschange
 git diff --cached --stat > "%O%\diffstat.txt"
 if defined PARTIAL (> "%O%\checks.txt" echo runner checks skipped: partial run & goto :afterchecks)
