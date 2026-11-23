@@ -1,0 +1,326 @@
+{
+ "ok": true,
+ "problems": [],
+ "notes": [
+  "authored interiors: 2936 triangles, 5 surfaces; authored seams: 2",
+  "16526 triangles (9270 on part surfaces), box x -0.502 to 0.498, y -0.065 to 0.101, z -0.184 to 0.184",
+  "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
+  "turrets: 1 written (turret_0 dorsal); marked by the kit: ['dorsal']"
+ ],
+ "cls": "Frigate",
+ "faction": "hegemony",
+ "expected_breach": 2,
+ "required": {
+  "weapon_slots": 2,
+  "core": 1,
+  "engine": 1,
+  "bay": 0,
+  "breach": 2,
+  "rcs": 2,
+  "board": 2
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "laser",
+   "arc": "F",
+   "hard_points": [
+    "hp_w0_laser_F_0",
+    "hp_w0_laser_F_1"
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "flak",
+   "arc": "T",
+   "hard_points": [
+    "hp_w1_flak_T_0",
+    "hp_w1_flak_T_1",
+    "hp_w1_flak_T_2"
+   ]
+  }
+ ],
+ "hardpoints": {
+  "board": 2,
+  "breach": 2,
+  "core": 1,
+  "engine": 2,
+  "rcs": 2,
+  "gun": 5
+ },
+ "maps": [
+  "hegemony_H7A_parts_normal.png",
+  "hegemony_H7A_parts_orm.png",
+  "hegemony_H7A_parts_base.jpg",
+  "hegemony_H7A_normal.png",
+  "hegemony_H7A_orm.png",
+  "hegemony_H7A_base.jpg",
+  "hegemony_H7A_glow_emission.jpg"
+ ],
+ "tolerance": 0.012000000715255737,
+ "tolerance_of_length": 0.012,
+ "ship_length": 1.0000000596046448,
+ "breach_clearance": 0.03,
+ "rows": [
+  {
+   "name": "hp_board_0",
+   "p": [
+    0.0031,
+    -0.0054,
+    0.1761
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_board_1",
+   "p": [
+    0.0031,
+    -0.0054,
+    -0.1761
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_breach_0",
+   "p": [
+    -0.2701,
+    -0.0077,
+    0.1752
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "clear": 0.1006
+  },
+  {
+   "name": "hp_breach_1",
+   "p": [
+    0.241,
+    -0.0077,
+    -0.1495
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "clear": 0.0834
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    -0.1919,
+    -0.0061,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.4988,
+    -0.0006,
+    -0.0744
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0256,
+   "bell": {
+    "radius": 0.0418,
+    "plane_tolerance": 0.010447,
+    "rim_sectors": 12,
+    "throat_vertices": 115,
+    "exhaust_vertices": 0,
+    "ok": true,
+    "why": ""
+   }
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.4988,
+    -0.0006,
+    0.0744
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0256,
+   "bell": {
+    "radius": 0.0418,
+    "plane_tolerance": 0.010447,
+    "rim_sectors": 12,
+    "throat_vertices": 115,
+    "exhaust_vertices": 0,
+    "ok": true,
+    "why": ""
+   }
+  },
+  {
+   "name": "hp_rcs_0",
+   "p": [
+    0.4942,
+    -0.0069,
+    0.0714
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_1",
+   "p": [
+    0.4942,
+    -0.0069,
+    -0.0714
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w0_laser_F_0",
+   "p": [
+    0.4981,
+    -0.0054,
+    0.0144
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0049
+  },
+  {
+   "name": "hp_w0_laser_F_1",
+   "p": [
+    0.4981,
+    -0.0054,
+    -0.0144
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0049
+  },
+  {
+   "name": "hp_w1_flak_T_0",
+   "p": [
+    -0.0525,
+    0.0886,
+    0.0161
+   ],
+   "fwd": [
+    0.996,
+    0.087,
+    -0.0
+   ],
+   "turret": "turret_0",
+   "off_mesh": 0.0023
+  },
+  {
+   "name": "hp_w1_flak_T_1",
+   "p": [
+    -0.0525,
+    0.0886,
+    -0.0
+   ],
+   "fwd": [
+    0.996,
+    0.087,
+    -0.0
+   ],
+   "turret": "turret_0",
+   "off_mesh": 0.0023
+  },
+  {
+   "name": "hp_w1_flak_T_2",
+   "p": [
+    -0.0525,
+    0.0886,
+    -0.0161
+   ],
+   "fwd": [
+    0.996,
+    0.087,
+    -0.0
+   ],
+   "turret": "turret_0",
+   "off_mesh": 0.0023
+  }
+ ],
+ "turrets": [
+  {
+   "name": "turret_0",
+   "id": "dorsal",
+   "socket": "dorsal",
+   "p": [
+    -0.1243,
+    0.0591,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "muzzles": [
+    "hp_w1_flak_T_0",
+    "hp_w1_flak_T_1",
+    "hp_w1_flak_T_2"
+   ],
+   "off_mesh": 0.0008
+  }
+ ]
+}
