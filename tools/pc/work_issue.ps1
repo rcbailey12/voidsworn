@@ -409,6 +409,9 @@ if ($mode -in @('openai-key','openai-budget','openai-spend')) {
 }
 
 # ---- Runner 2 helpers (issue 377) ----
+# Board, Nov 23 (RULEBOOK 2.5): a runner commit never carries a GitHub closing word. Agents' reports said "Closes #N"
+# (Codex PRs 1758, 1759, 1784); every closing word before an issue reference (#N, owner/repo#N or an issue link) becomes "Refs", any case, colon or not.
+function Refs-Only([string]$text) { return [regex]::Replace($text, '(?i)\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[ \t]+(https://github\.com/[^/\s]+/[^/\s]+/issues/[0-9]+|(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#[0-9]+)\b', 'Refs $3') }
 # git's output as an array of lines; $script:gx holds its exit code. stderr is dropped (PowerShell 5.1 turns it into errors).
 function Git-Lines { $o = & git @args 2>$null; $script:gx = $LASTEXITCODE; if ($null -eq $o) { return @() }; return @($o | ForEach-Object { [string]$_ }) }
 function Git-One { $o = @(Git-Lines @args); if ($o.Count) { return $o[0].Trim() } else { return '' } }
@@ -468,7 +471,7 @@ if ($mode -eq 'prep') {
 # Workhorse job: issue #$n, "$($i.title)"
 
 You are the coding seat on the Voidsworn job board (github.com/rcbailey12/voidsworn/issues/$n), doing the job Codex used to do.
-This folder is a fresh checkout of main on the branch work/issue-$n-$arm. Follow AGENTS.md and CLAUDE.md, except the
+This folder is a fresh checkout on the branch work/issue-$n-$arm (main, or its earlier tip with main merged in; see below). Follow AGENTS.md and CLAUDE.md, except the
 "work in your own folder" rule: you are the main coding seat for this job, so edit the game files the job names.
 Nobody is watching this run and nobody can answer questions. Make the sensible call, say what you chose in your report, and keep going.
 $resume
@@ -695,7 +698,7 @@ elseif ($mode -eq 'commit') {
   # fast-forward with no force and the earlier run stays reachable. Then the check the issue 541 trap needs: the commit
   # must carry exactly the staged change (out\diffstat.txt). The author is git's own identity, or GIT_AUTHOR_* and
   # GIT_COMMITTER_* when the calling .bat sets them. Exit 0 ready to push, 7 nothing to commit, 10 diff mismatch,
-  # 11 commit failed, 12 the branch's earlier tip could not be read.
+  # 11 commit failed, 12 the branch's earlier tip could not be read, 15 the run does not descend from that tip (issue 1739).
   $ErrorActionPreference = 'Continue'
   $repo = $args[1]; $out = $args[2]; $br = $args[3]; $push = $args[4]
   $fault = ''; if ($push -ne 'real' -and $env:WORK_TEST_FAULT) { $fault = $env:WORK_TEST_FAULT }
@@ -734,6 +737,24 @@ elseif ($mode -eq 'commit') {
     if (-not $old) { Write-Host "push stopped: could not fetch the earlier tip $want of $br, the check failed; change kept as out\change.patch"; Save-Patch $out $pre; Pop-Location; exit 12 }
   }
   [IO.File]::WriteAllText((Join-Path $out 'prev_tip.txt'), $old, [Text.Encoding]::ASCII)
+  # Issue 1739 (1747 run 2): a run that did not start from the branch's earlier tip would push a commit whose files are
+  # that run's alone, dropping the earlier runs' work. The checkout now starts from the tip; this stops any run that
+  # still does not descend from it (or a tip that moved during the run), naming the files it would drop.
+  if ($old) {
+    & git merge-base --is-ancestor $old $pre 2>$null
+    $ancestor = $LASTEXITCODE
+    if ($ancestor -ne 0) {
+      $oldFiles = @(Git-Lines -c core.quotepath=off ls-tree -r --name-only $old)
+      $nowFiles = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+      foreach ($f in @(Git-Lines -c core.quotepath=off ls-files)) { $null = $nowFiles.Add($f) }
+      $dropped = @($oldFiles | Where-Object { -not $nowFiles.Contains($_) })
+      $why = if ($ancestor -eq 1) { "this run did not start from the earlier tip $old of $br" } else { "could not check that this run descends from the earlier tip $old of $br" }
+      $v = @("EARLIER TIP CHECK FAILED (issue 1739): $why.", "agent HEAD $pre", "files the earlier tip has that this commit would drop: $($dropped.Count)") + @($dropped | Select-Object -First 200)
+      Write-Lines (Join-Path $out 'EARLIER_TIP.txt') $v
+      Write-Host "!!! push stopped: $why; the earlier runs' work would be lost ($($dropped.Count) of its files dropped, listed in out\EARLIER_TIP.txt). Nothing pushed; the change is kept as out\change.patch"
+      Save-Patch $out $pre; Pop-Location; exit 15
+    }
+  }
   $runNo = 1
   if ($old) {
     $runNo = 2
@@ -759,9 +780,9 @@ elseif ($mode -eq 'commit') {
     $ac = @(Git-Lines log --format='%H' "$base..$pre" | Where-Object { $_ -cmatch '\A[0-9a-f]{40,64}\z' })
     if ($ac.Count) { $block += "Earlier commits (runner Base and resume merges included), under this one:`n" + (($ac | ForEach-Object { "- $_" }) -join "`n") + "`n`n" }
   }
-  if ($old) { $block += "Earlier tip of $br kept: $old is this commit's second parent, so the earlier run stays reachable. This commit's files are this run's alone.`n" }
+  if ($old) { $block += "Earlier tip of $br kept: this run started from $old, so its files are the earlier runs' work plus this run's change.`n" }
   $block += "Run-Number: $runNo`n"
-  $final = $msg.TrimEnd() + "`n`n" + $block
+  $final = Refs-Only ($msg.TrimEnd() + "`n`n" + $block)
   [IO.File]::WriteAllText($cp, $final, $utf8)
   $new = $pre
   if ($fault -eq 'skipcommit') {
@@ -772,7 +793,6 @@ elseif ($mode -eq 'commit') {
     $pargs = @('-p', $pre)
     $mh = Git-One rev-parse -q --verify MERGE_HEAD
     if ($mh) { $pargs += @('-p', $mh) }
-    if ($old -and $old -ne $pre) { $pargs += @('-p', $old) }
     $new = Git-One commit-tree $tree @pargs -F $cp
     if ($gx -ne 0 -or -not $new) { Write-Host 'COMMIT FAILED: git commit-tree failed; nothing pushed, change kept as out\change.patch'; Save-Patch $out $pre; Pop-Location; exit 11 }
     & git update-ref -m 'runner commit (issue 377)' HEAD $new $pre 2>$null
@@ -791,7 +811,7 @@ elseif ($mode -eq 'commit') {
     Save-Patch $out $pre; Pop-Location; exit 10
   }
   $sh = $new.Substring(0, [Math]::Min(9, $new.Length))
-  if ($old) { Write-Host "commit $sh (run $runNo of $br) carries the staged change ($($num.Count) files); earlier tip $($old.Substring(0, 9)) kept as its parent, so the push needs no force" }
+  if ($old) { Write-Host "commit $sh (run $runNo of $br) carries the staged change ($($num.Count) files) on top of the earlier tip $($old.Substring(0, 9)), so the push needs no force" }
   else { Write-Host "commit $sh (run 1 of $br) carries the staged change ($($num.Count) files)" }
   Pop-Location; exit 0
 }

@@ -121,8 +121,10 @@ work_issue.ps1):
   run, so Codex reruns that share board\issue-N keep every earlier copy); the list goes to result.txt, that folder's
   refused.txt and the PR text. A changed file outside the issue's "Deliver to" line is a warning only.
 - **No force push** (`work_issue.ps1 commit`). The run's one commit is made with git plumbing and its exit code checked; when
-  the branch already exists on GitHub its tip becomes the commit's second parent, so a rerun is a plain fast-forward and the
-  earlier run's commit stays reachable. The commit text ends with "Run-Number: k".
+  the branch already exists on GitHub the checkout starts from its tip and merges main on top (issue 1739: 1747 run 2
+  started from main alone and its commit dropped run 1's fixes), so a rerun is a plain fast-forward that keeps the earlier
+  runs' files. A run that does not descend from that tip (or a tip that moved meanwhile) stops before the push with exit 15
+  and out\EARLIER_TIP.txt naming the files it would drop. The commit text ends with "Run-Number: k".
 - **The issue 541 check.** Before the push the commit must carry exactly the staged change (out\diffstat.txt); after it
   (`work_issue.ps1 confirm`) GitHub's branch must be that commit, with that diff (out\pushed_diffstat.txt). A difference
   stops the run: "DIFF MISMATCH" in result.txt, out\DIFF_MISMATCH.txt, exit code 10, nothing (more) pushed. On Nov 11 the
@@ -133,6 +135,9 @@ work_issue.ps1):
   process of that run has exited. A slot holding unpublished work is set aside as `repo-kept-*` beside it and reported;
   the janitor later prunes older kept copies under its usual checks. Slots leave out `docs/shots/`, the build sheets,
   `contrib/muse/design/`, `hulls_hi/` and `rocks_hi/` unless the issue's Brief or Deliver to line names a path there.
+  When the next issue wants a different set (or an agent turned sparse off), a clean checkout takes the new set in place
+  (issue 1739); it is kept whole only when a folder it would leave out holds an untracked or ignored file. The lean
+  checks read those left-out files from the git index (`contrib/opus/tools/sparse_check_inputs.js`).
   Every run ends with "disk: run folder" and "disk: shared checkout" sizes in result.txt. The old
   `remove_repo_copy_after_push` switch (WORKHORSE_CLEANUP.bat) is retired and changes nothing.
 
@@ -168,7 +173,7 @@ cost several runs. Both entry points, `work_issue.bat` and `codex_issue.bat`, us
   missing status and a changed predecessor run all stop it. Waiting is capped at 12 hours (PC_WAIT_SECONDS overrides it).
   PC_WAIT_RUN can pin the predecessor's run id. Point to the exact run, not a moving latest.txt. Replace older external
   waiters that search result.txt with this launcher; those unversioned PC files are not changed by this patch.
-- **Resume by default.** The fresh branch starts at current main and merges `<branch>-partial` before task generation.
+- **Resume by default.** The fresh branch starts at current main (or at the branch's earlier tip with main merged in) and merges `<branch>-partial` before task generation.
   Both task files name the partial branch and commit and tell the agent to finish that work. A merge conflict stops before
   preflight, preserving the checkout for the Board. Existing Codex checkouts are renamed and kept instead of reset or cleaned.
   Already committed resumed work can still reach a checked push when the agent needs no further edits.
@@ -235,12 +240,14 @@ wait, the mirror fetch and any model call:
   min_free_gb free: one line in result.txt, status failed, exit 14. No mirror fetch, no model probe, no agent, and a
   chained child waiting on the run fails closed. min_free_gb is a tuning value in work217\runner_settings.txt;
   work_issue.bat seeds 60 when it creates the file, and a missing line or file keeps 60.
-- **Board hashes.** When the Board copies the runner files to a PC tools folder it writes work217\runner_hashes.txt:
+- **Board hashes.** `lane_tools_refresh.ps1` writes them for every lane it refreshes, from the copy it just installed:
+  `<lane folder>\runner_hashes.txt` (for example `build_e\runner_hashes.txt` for lane D; work217's stays
+  work217\runner_hashes.txt), and the Codex runner reads its lane's file before the shared one (issue 1739: the shared
+  file went stale on every lane refresh). By hand, after copying the runner files to a PC tools folder:
   `powershell -NoProfile -ExecutionPolicy Bypass -File runner_common.ps1 hashwrite <tools folder> <hash file>`. At
   start each runner compares the SHA-256 of its own folder's work_issue.bat, work_issue.ps1, codex_issue.bat,
   codex_issue.ps1, runner_common.ps1, review_evidence.ps1, run_timeout.ps1, tmo.bat and gpu_slots.js against that file. A mismatch, a missing file or an empty file is a warning
-  in result.txt, never a stop, so a run never dies because the Board has not hashed a fresh copy yet. Both lanes read
-  that one work217 file.
+  in result.txt, never a stop, so a run never dies because the Board has not hashed a fresh copy yet.
 
 Free proof: the same double-click selftest (`tools\pc\runner_selftest.bat`) covers all three in test mode: the stamp
 and its same-provider warning, the floor (direct and end to end, plus the tuning value and the 60 default), and

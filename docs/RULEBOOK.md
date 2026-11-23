@@ -534,6 +534,34 @@ regressions on PR 1699 (shield-blocked brownouts, a miss streak divided by speed
 checks missed; Ryan: "Instruct Opus, Codex, and Muse review runs to apply `independent-audit` before merging any Godot FX,
 rendering, ship import, audio, or battle-feel PR." (Ryan, Nov 22 2026, 16:48 UTC, Board thread). Set: Ryan, Nov 22 (R413).
 
+3.14 **One global look and sound standard; no subsystem is tuned alone.** Every ship exterior and interior, weapon effect,
+wound, death, hulk, debris piece, station, planet, rock, sky and sound follows the six laws of
+`contrib/opus/plans/global_cohesion_standard.md`: (1) one value ladder (deep space near black; ship interiors and wreck cavities
+darker than lit armor, walls at most 0.11 linear; full glow only on cores, weapons and small accent strips, non-core interior
+emission at most 0.25); (2) interior materials come from each faction's own role table, never from the `kit.py` diagram
+colours, with structure (bone, frame, truss) kept apart from wall and flesh finishes; (3) one identity per faction across
+hull, interior, weapons, wounds, deaths, hulks and sound; (4) the world and audio tracks (10.11, the sound plan using Godot
+4.7 native `AudioStreamSynchronized`/`AudioStreamInteractive` in Gate 3) obey the same ladder and palette; (5) the standard's
+automated anti-drift checks (export, Godot world, exterior and palette, sound pack) are added and kept green; (6) AAA ship
+exterior lighting, per-faction micro-detail, PBR separation and Godot 4.7 engine hygiene (#1777, #1778, #1779, #1780:
+default-on Space PBR reflection IBL and per-faction `ao_light_affect`, zoom-tracked crisp contact shadows without `LookRim`
+plastic glare, BC5 ship normal compression (already true BC5: S3TC with the normal source, as Godot 4.7 has no RGTC mode; guarded by `ship_look_v2_check`), native per-faction PBR channels and six faction tiling micro-detail
+normal/roughness maps, true paint-vs-metal separation, massive-scale cues, a hard export ban on lossy `.jpg` normal and ORM
+maps, battle 3D LUT + kill-cam DoF + selective SSR/CompositorEffect benchmark, plus cached `.gdshader` PSOs, BC7 world VRAM
+compression, FSR 2.2 AA option and empty volumetric fog gating). A fix for one faction is made at the shared root for all
+six. Why: silo patches kept drifting (chalk-white Directorate corridors, neon Chorus organs from diagram colours, clay-ish
+ship exteriors under black-space reflection defaults, purple and mustard leaks, unwired 8K planet maps, runtime shader
+stutters and raw RGBA8 VRAM bloat); Ryan: "We are moving from one-off visual tweaks to one global visual, material, world,
+and audio standard so subsystems stop drifting in silos." and "Yeah, A for all. Let's do everything and anything we can here."
+(Nov 22 2026, tracker #1774). Set: Ryan, Nov 22 (R420).
+R421 (Ryan, Nov 22 2026, on the Fable and Astra cohesion reviews): no Glasswright refraction (dark glass with clearcoat
+and fresnel instead); anisotropy stays at 0 until #1778 bakes flow maps; before Ship Look V2 goes default-on, the warm sun
+reflection lobe is desaturated to a neutral warm-white so Eclipse stays obsidian-violet in deep shadow. Interiors (#1763,
+#1755) merge only after the #1755 breach-material and strip-mask fixes and one joint intact, breached and broken sheet under
+the #1786 lighting. The world PRs fold in the audit cleanups before merge: an obsidian Eclipse hulk finish (#1772), a
+procedural planet fallback when the remix is off (#1776), crystal `_lo` LODs (#1782); the planet relief map's VRAM is
+budgeted in #1780.
+
 ## 4. Ships and concepts
 
 See the [ship rules](../.claude/rules/ships.md) for concepts and faction shapes (4.1 to 4.11).
@@ -597,6 +625,18 @@ tells (R174). Set: Ryan (R82, R216, R353).
 
 10.10 **The battle board is the dead star's gravity well.** Why: it is the game's identity, the Hollow Sun setting (R216).
 Set: Ryan, Oct 24 (R216).
+
+10.11 **The battle sky is Grounded Cinematic Space: mostly near-black, never wall-to-wall star snow.** About 400 star
+pinpoints in a 45-degree battle frame (about 96% fewer than the Nov 22 sky; Ryan picked 400 over 1,200, R421), faint stars gathered along a tilted galactic band,
+a steep brightness curve so only a few hero stars gleam, and opaque dark dust lanes (`star_floor = 0.0`; the `VS_STAR_FLOOR`
+override stays for tuning sheets) that black out the stars behind them. No mustard fog and no purple Eclipse nebula (10.9).
+Planets, rocks, crystal clusters, stations and hulks are lifted to one bar across every region: the 8K rocky planet maps (godot/world/rocks/r01) and all
+five foreground planet types on the high-relief planet pipeline, five asteroid biomes that read apart, faceted Blender crystal
+clusters, `station_T2` at every cluster size, and derelict hulks from all six factions. The track plan and its five
+silent-regression traps are `contrib/opus/plans/world_consistency_v2.md`; each track runs independent-audit (3.13) before its
+GPU captures (3.12). Why: the Nov 22 world audit found A-tier pieces beside D-tier outliers, and about 85,000 sky stars read
+as white static behind ships, hexes and arcs; Ryan approved Option A on all four areas (tracker #1764). Set: Ryan, Nov 22 2026
+(R419).
 
 ## 11. Story, names and the campaign
 

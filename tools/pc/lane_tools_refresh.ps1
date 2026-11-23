@@ -66,7 +66,23 @@ function Assert-IdleLane {
     } catch {
       throw "refused: cannot verify runner status at $file"
     }
-    if ($state.status -eq 'running') { throw "refused: job still running at $file" }
+    if ($state.status -eq 'running') {
+      # A record that still says running but was last written over a day ago, with no live process naming its issue
+      # number, is a run that died without closing its record (board_c issue-1194 and board_d issue-1180, Nov 19).
+      # It is skipped and left as it is. Unknown process list or any doubt still refuses. The number must stand alone
+      # (not inside a hex hash or a longer word), or a random process path refuses the swap (build_e, Nov 22).
+      $age = [DateTime]::UtcNow - (Get-Item -LiteralPath $file).LastWriteTimeUtc
+      $issueNo = [regex]::Match($file, 'issue-(\d+)').Groups[1].Value
+      if ($age.TotalHours -ge 24 -and $issueNo) {
+        $commands = Get-RunningCommandLines
+        if ($null -ne $commands -and
+            -not @($commands | Where-Object { $_ -and $_ -match "(?<![0-9A-Za-z])$issueNo(?![0-9A-Za-z])" }).Count) {
+          Write-Step "skipped stale record (running, last written $([int]$age.TotalHours) h ago, no live process): $file"
+          continue
+        }
+      }
+      throw "refused: job still running at $file"
+    }
   }
 }
 
@@ -254,6 +270,21 @@ function Lock-WorkhorseSlots([string]$WorkRoot) {
   }
 }
 
+function Write-RunnerHashes {
+  # Issue 1739: a refreshed lane's runner checks itself against the hash file this writes, so the hashes always name the
+  # copy just installed. One shared work217 file served every lane before, and went stale on each refresh (lane D,
+  # Nov 23: codex_issue.bat and six others "differ from the Board-copied hashes" after the c9596825 refresh).
+  # runner_common.ps1 hashwrite owns the file list. A failure is logged and leaves the run's hashcheck to warn.
+  if ($seat -notlike 'board*' -and $seat -ne 'work217') { return }
+  $runnerDir = if ($Build -eq 'work217') { $liveTools } else { Join-Path $liveTools 'pc' }
+  $hashFile = Join-Path $root "$Build\runner_hashes.txt"
+  $shell = (Get-Process -Id $PID).Path
+  $ErrorActionPreference = 'Continue'
+  $output = & $shell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $runnerDir 'runner_common.ps1') hashwrite $runnerDir $hashFile 2>&1
+  if ($LASTEXITCODE -ne 0) { Write-Step "WARNING: runner hashes not written to ${hashFile}: $(@($output) -join ' ')"; return }
+  Write-Step "wrote runner hashes of the installed tools to $hashFile"
+}
+
 function Copy-Tools([string]$From, [string]$To, [string]$Step) {
   & robocopy.exe $From $To /E /COPY:DAT /DCOPY:DAT /IS /IT /R:1 /W:1 /XJ /NFL /NDL /NJH /NJS /NP | Out-Null
   if ($LASTEXITCODE -lt 0 -or $LASTEXITCODE -ge 8) { throw "$Step failed (robocopy exit $LASTEXITCODE)" }
@@ -362,6 +393,7 @@ try {
   if (Test-ToolsMatch $liveTools $snapshot $sourceFiles) {
     Assert-IdleLane
     Write-Step "tools already match origin/main $commit"
+    Write-RunnerHashes
     exit 0
   }
 
@@ -392,6 +424,7 @@ try {
     } catch { throw "restore failed, old tools kept at ${original}: $($_.Exception.Message)" }
     throw $installError
   }
+  Write-RunnerHashes
   if ($NoRotate) { Write-Step 'kept old backups: -NoRotate (R417)' }
   else { try { Remove-OldBackups } catch { Write-Step "kept old backups: $($_.Exception.Message)" } }
 } catch {

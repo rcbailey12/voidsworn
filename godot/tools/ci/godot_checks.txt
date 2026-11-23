@@ -6,7 +6,7 @@
 #   gpu       needs a window, the GPU or the built ship files (godot/gen): tools/pc/jobs/godot_gpu_checks.bat on Ryan's PC
 #   retired   kept in the repo but no longer a check (the reason says what replaced it)
 # setup (headless): - | fixture:<tool> (node contrib/opus/tools/<tool> writes the fixtures; {fixture} in args is that file)
-#   | userdir (user:// inside the checkout, the test refuses anything else) | step:<checks.yml step that already runs it>
+#   | userdir (isolated user:// inside the checkout) | step:<checks.yml step that already runs it>
 # setup (gpu): - | env:<NAME> (NAME is set to the output folder) | envpng:<NAME> (NAME is set to <output folder>\shot.png)
 #   | scene:<res path> (run that scene instead of --script) | compat (gl_compatibility renderer); several split by commas
 # args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
@@ -43,7 +43,7 @@ headless|campaign/test/nem_unknown_key_test.gd|-|-|issue 1182: an older save nam
 headless|campaign/test/nem_dodge_test.gd|-|-|issue 1175: 3,000 seeded sectors, an unmet Nemesis is never dodged, every column 4 stop is tagged and every boss stop carries its objective and board
 headless|campaign/test/nemesis_clash_test.gd|-|res://campaign/test/nemesis_clash_cases.json.gz|12482 Nemesis clash cases match the saved results
 headless|campaign/test/nemesis_teach_test.gd|-|res://campaign/test/nemesis_teach_cases.json|Nemesis teaching debrief and map line match the saved cases
-headless|campaign/test/onboarding_test.gd|userdir|-|onboarding cards, Battle 2 timing, shipyard gating, options and telemetry; requires a user folder inside the checkout
+headless|campaign/test/onboarding_test.gd|userdir|-|onboarding cards, Battle 2 timing, shipyard gating, options and telemetry; requires an isolated user folder
 headless|campaign/test/post_win_modal_count_test.gd|-|-|issue 1177: count victory and promotion cards on 30 seeds and check repair choices
 headless|campaign/test/late_run_shots.gd|-|-|issue 1178: the Sector 3 late market, the Chorus biomass shipyard, Eclipse recovered cores and the Glasswright cullet line build
 headless|campaign/test/late_fixes_1290.gd|-|-|issue 1290: no ledger, logbook or Scrap rig in the late market, a regrown Eclipse ship sells for 0 until it fights, Chorus decommission pays biomass
@@ -83,6 +83,7 @@ headless|rules/test/rules_1650_test.gd|-|-|issue 1650: the three Mastery III sig
 headless|rules/test/rules_1481_test.gd|-|-|issue 1481: every shield drop sends the break (storm, flare, mid section, ram, ion pulse, nova), rams use the shared spend, counter-fire, ram shockwave and reactor hits send a hit, a bad blink or nova hex is refused before it counts; twin of contrib/opus/tools/rules_1481_tests.js
 headless|rules/test/rules_1479_test.gd|-|-|issue 1479: overrunning the Nemesis flagship, a hunt target or a convoy transport destroys it (R383), a captured carrier's wings lose their carrier, and an Eclipse wreck rising next round keeps the fight open (browser twin contrib/opus/tools/rules_1479_tests.js)
 headless|rules/test/rules_1653_test.gd|-|-|issue 1653: the twelve salvage relics and four refits each do what their card says, checked on rules.gd directly
+headless|rules/test/rules_1649_test.gd|-|-|issue 1649 follow-up: Fold skip and Blood frenzy end when the ship's next turn starts, and frenzy regrowth shares the Chorus feed cap
 headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|parity and saved Godot results share one batch; saved/check.js reports changed battles and whole-step time (issue 990)
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
