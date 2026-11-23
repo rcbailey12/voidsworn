@@ -235,5 +235,45 @@ try {
   dateTree(path.dirname(newAttempt));
   assert.match(decision(dryJanitor(), newest), /would remove.*helper folder with its results relayed/);
   console.log('PASS: new checkout leftovers and receipt relayed, backfilled job saved by janitor dry run, unrelayed result kept');
+
+  // The checkout proof must leave a listed long-path cache on disk, without ignoring another profile folder.
+  const cacheJob = 'opus1839cache';
+  const cacheAttempt = attemptFor(cacheJob);
+  r = runScript('jobs/opus_job_head.ps1', 'checkout', cacheAttempt, 'new', pin);
+  assert.equal(r.status, 0, r.out);
+  const cacheKey = 'out_new/close_test_\u00e9/profile';
+  const longCache = longFile(path.join(cacheAttempt, cacheKey, 'x'.repeat(35), 'shader_cache'));
+  write(longCache, 'long cache stays local');
+  write(path.join(cacheAttempt, 'done.txt'), 'PASS\r\n');
+  write(path.join(cacheAttempt, 'relay_branch.txt'), `relay/pc-out-${cacheJob} ${attemptName}\r\n`);
+  write(path.join(cacheAttempt, 'out_new', 'result.txt'), 'result with a local cache');
+  r = run(cacheJob, cacheAttempt);
+  assert.equal(r.status, 0, r.out);
+  assert.equal(relayFile(cacheJob, manifest), cacheKey);
+  r = runScript('jobs/opus_job_head.ps1', 'dropjobs', path.dirname(cacheAttempt), 'dry');
+  assert.equal(r.status, 0, r.out);
+  assert.match(r.out, /checkout new would be checked and removed after the relay/);
+
+  const unlisted = path.join(cacheAttempt, 'out_new', 'other', 'profile', 'work.txt');
+  write(unlisted, 'unrelayed work under the same folder name');
+  r = runScript('jobs/opus_job_head.ps1', 'dropjobs', path.dirname(cacheAttempt), 'dry');
+  assert.equal(r.status, 0, r.out);
+  assert.match(r.out, /out_new\/other\/profile\/work\.txt is not on the relay/);
+  assert(fs.existsSync(path.join(cacheAttempt, 'new')));
+  fs.unlinkSync(unlisted);
+  const savedProfile = path.join(leftPath, 'files', 'profile', 'work.txt');
+  write(path.join(cacheAttempt, 'new', 'profile', 'work.txt'), 'unique checkout work');
+  r = runScript('jobs/opus_job_head.ps1', 'dropcheckouts', cacheAttempt);
+  assert.equal(r.status, 0, r.out);
+  assert(r.out.includes(`cache folder kept on the PC only: ${cacheKey}`), r.out);
+  assert(!fs.existsSync(path.join(cacheAttempt, 'new')), r.out);
+  assert.equal(fs.readFileSync(longCache, 'utf8'), 'long cache stays local');
+  assert.equal(relayFile(cacheJob, savedProfile), 'unique checkout work');
+  assert.equal(relayFile(cacheJob, manifest), cacheKey);
+  const cacheTip = relayTip(cacheJob);
+  r = run(cacheJob, cacheAttempt, 'leftovers');
+  assert.equal(r.status, 0, r.out);
+  assert.equal(relayTip(cacheJob), cacheTip, 'backfill accepts the listed cache and preserves the manifest');
+  console.log('PASS: listed 330-character cache stays local, unlisted profile blocks proof, and checkout work is relayed');
   console.log('PASS: relay_push sends out_* and top text files to pc-out-<job>, lists large files and Godot caches, handles long paths, resends replace, dry sends nothing, links refused, bounded batches');
 } finally { fs.rmSync(tmp, { recursive: true, force: true }); }

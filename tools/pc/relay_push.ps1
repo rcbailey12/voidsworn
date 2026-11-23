@@ -46,17 +46,39 @@ function Run-GitChunks($fixed, $items) {
   $out
 }
 function Assert-BackfillSource($parent) {
-  if (-not $originals.Count) { throw 'no original result files to prove the relay' }
   $have = [Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
-  foreach ($line in @(Run-Git --git-dir $relayMirror -c core.quotepath=false ls-tree -r $parent -- "$leaf/")) {
-    if ($line -match '\A100(?:644|755) blob ([0-9a-f]{40})\t(.+)\z') { $have[$Matches[2]] = $Matches[1] }
+  foreach ($line in @(Run-Git --git-dir $relayMirror -c core.quotepath=false ls-tree -r -t $parent -- "$leaf/")) {
+    if ($line -notmatch '\A(\d+) (?:blob|tree|commit) ([0-9a-f]{40})\t(.+)\z') { continue }
+    $have[$Matches[3]] = if ($Matches[1] -in @('100644', '100755')) { $Matches[2] } else { '' }
   }
-  $keys = @(foreach ($file in $originals) {
+  $verify = $originals.ToArray()
+  if ($skippedCaches.Count) {
+    $manifest = $have["$leaf/relay_manifest/skipped_cache_folders.txt"]
+    $listed = if ($manifest) { @(Run-Git --git-dir $relayMirror cat-file -p $manifest) }
+    $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+    foreach ($k in $skippedCaches) {
+      if ($listed -ccontains $k -and -not $have.ContainsKey("$leaf/$k")) { continue }
+      $pending.Push([IO.DirectoryInfo]::new((Join-Path $full $k)))
+    }
+    # An older relay may have sent these folders. Prove their files normally when the tip does not exclude them.
+    $extra = @(while ($pending.Count) {
+      $dir = $pending.Pop()
+      if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($dir.FullName)" }
+      if (Test-Path -LiteralPath (Join-Path $dir.FullName '.git') -PathType Container) { continue }
+      foreach ($e in $dir.EnumerateFileSystemInfos()) {
+        if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
+        if ($e -is [IO.DirectoryInfo]) { $pending.Push($e) } else { $e }
+      }
+    })
+    $verify += $extra
+  }
+  if (-not $verify.Count) { throw 'no original result files to prove the relay' }
+  $keys = @(foreach ($file in $verify) {
     $key = "$leaf/" + $file.FullName.Substring($full.Length + 1).Replace('\', '/')
     if ($file.Length -gt 100MB -or -not $have.ContainsKey($key)) { throw "original result missing or different on $branch`: $key" }
     $key
   })
-  $shas = @(Run-GitChunks @('--git-dir', $relayMirror, 'hash-object', '--no-filters', '--') @($originals | ForEach-Object { $_.FullName }))
+  $shas = @(Run-GitChunks @('--git-dir', $relayMirror, 'hash-object', '--no-filters', '--') @($verify | ForEach-Object { $_.FullName }))
   if ($shas.Count -ne $keys.Count) { throw 'original result hashes could not be read' }
   for ($i = 0; $i -lt $keys.Count; $i++) {
     if ($have[$keys[$i]] -ne $shas[$i]) { throw "original result missing or different on $branch`: $($keys[$i])" }
@@ -106,10 +128,16 @@ foreach ($e in @($at.EnumerateFiles())) {
     $originals.Add($e)
   } elseif ($e.Extension -in @('.txt', '.log', '.json', '.csv', '.md') -and -not ($e.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $files.Add($e) }
 }
-foreach ($d in @($at.EnumerateDirectories())) {
-  if ($d.Name -in $cacheNames) { $skippedCaches.Add($d.Name) }
+$roots = @($at.EnumerateDirectories('out_*'))
+if (-not $ProvenTip) {
+  $top = @($at.EnumerateDirectories())
+  foreach ($d in $top) {
+    if ($d.Name -notin $cacheNames) { continue }
+    if ($leftovers -and ($d.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "a link in the results: $($d.FullName)" }
+    $skippedCaches.Add($d.Name)
+  }
+  if ($leftovers) { $roots = @($top | Where-Object { $_.Name -notin $cacheNames }) }
 }
-$roots = if ($leftovers -and -not $ProvenTip) { @($at.EnumerateDirectories() | Where-Object { $_.Name -notin $cacheNames }) } else { @($at.EnumerateDirectories('out_*')) }
 foreach ($d in $roots) {
   # each out_* folder is checked before the walk enters it, like every folder below it
   if ($d.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($d.FullName)" }
@@ -123,13 +151,13 @@ foreach ($d in $roots) {
   while ($pending.Count) {
     $dir = $pending.Pop()
     $relDir = $dir.FullName.Substring($full.Length + 1).Replace('\', '/')
-    $savedFiles = $leftovers -and $relDir -match '\Aout_[^/]+/checkout_leftovers(?:/|\z)'
+    $savedFiles = $relDir -match '\Aout_[^/]+/checkout_leftovers(?:/|\z)'
     if ($leftovers -and -not $savedFiles -and (Test-Path -LiteralPath (Join-Path $dir.FullName '.git') -PathType Container)) { continue }
     foreach ($e in @($dir.EnumerateFileSystemInfos())) {
       if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
       if ($e -is [IO.DirectoryInfo]) {
         # Issue 1830: prune the subtree before enumeration. Profile shader cache paths can exceed MAX_PATH.
-        if ($e.Name -in $cacheNames) { $skippedCaches.Add($e.FullName.Substring($full.Length + 1).Replace('\', '/')) }
+        if (-not $savedFiles -and $e.Name -in $cacheNames) { $skippedCaches.Add($e.FullName.Substring($full.Length + 1).Replace('\', '/')) }
         else { $pending.Push($e) }
       }
       elseif (-not $leftovers -or $savedFiles) { $files.Add($e) }
@@ -230,7 +258,7 @@ try {
       $shas = @(Run-GitChunks @('--git-dir', $relayMirror, 'hash-object', '-w', '--no-filters', '--') @($part | ForEach-Object { $_.Path }))
       if ($shas.Count -ne $part.Count) { throw "hashed $($shas.Count) of $($part.Count) files" }
       $info = @(for ($i = 0; $i -lt $part.Count; $i++) { "100644,$($shas[$i]),$($part[$i].Key)" })
-      if ($last -and ($skipped.Count -or $skippedCaches.Count)) {
+      if ($last -and -not $leftovers -and ($skipped.Count -or $skippedCaches.Count)) {
         $tmpList = Join-Path ([IO.Path]::GetTempPath()) ("voidsworn-relay-skipped-" + [guid]::NewGuid().ToString('N') + '.txt')
         $manifests = @(
           @{ Key = 'skipped_over_10MB.txt'; Lines = $skipped }
