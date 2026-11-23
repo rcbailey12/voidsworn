@@ -25,6 +25,7 @@ const Campaign := preload("res://campaign/campaign.gd")
 const Board := preload("res://render/board.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const CamRig := preload("res://render/camera_rig.gd")
+const StageIn := preload("res://render/stage_in.gd")   # issue 1434 (LOAD22): new meshes' first draws spread over the load
 const HT := preload("res://render/hull_table.gd")
 const FLOOK := preload("res://fx/faction_look.gd")   # issue 1205: faction colours come from fx/faction_looks.json only
 const WEAPON_FX := preload("res://fx/fx_weapons.gd")
@@ -222,6 +223,8 @@ var chime_round := -1         # the round whose first hand-over played the "your
 
 func _ready() -> void:
 	_args()
+	if _sliced():
+		stage.start(self)   # issue 1434 (LOAD22): from the first mesh on, so the effect pools and the board are spread too
 	var t_ready := Time.get_ticks_usec()
 	if title_backdrop and str(args.get("quality", "max")) == "max":
 		args["quality"] = "high"   # issue 1434 (item 10): the title's backdrop is capped at High (its MSAA: SHOWCASE_MSAA)
@@ -247,7 +250,12 @@ func _ready() -> void:
 		movement = str(args["movement"])
 	if args.has("reduce-motion"):
 		reduce_motion = true
+	var rp := {"args": Time.get_ticks_usec() - t_ready}   # issue 1434 (LOAD22 warm: 1.8 to 2 s, not split): _ready's parts
+	var t_p := Time.get_ticks_usec()
 	_build_world()
+	StageIn.hide_layer_from(cam, [key_light])
+	rp["world"] = Time.get_ticks_usec() - t_p
+	t_p = Time.get_ticks_usec()
 	sfx = Sfx.new()
 	sfx.name = "Sfx"
 	sfx.silent = title_backdrop   # issue 1434 (W4): the backdrop loads no sound bank and never writes the shared sfx bus
@@ -256,8 +264,11 @@ func _ready() -> void:
 	death_audio = DeathAudio.new()
 	death_audio.sfx = sfx
 	add_child(death_audio)
+	rp["sound"] = Time.get_ticks_usec() - t_p
+	t_p = Time.get_ticks_usec()
 	hud = HUD.new()
 	add_child(hud)
+	rp["hud"] = Time.get_ticks_usec() - t_p
 	hud.action.connect(_on_action)
 	hud.rescaled.connect(_refresh_ui)   # UI pass: the HUD was rebuilt for a new window size
 	if showcase:
@@ -266,7 +277,7 @@ func _ready() -> void:
 		set_process_unhandled_input(false)
 		tips_off = true
 	if DisplayServer.get_name() != "headless":
-		print("[load] battle scene ready in %d ms%s" % [(Time.get_ticks_usec() - t_ready) / 1000, " (title backdrop)" if title_backdrop else ""])
+		print("[load] battle scene ready in %d ms%s (%s)" % [(Time.get_ticks_usec() - t_ready) / 1000, " (title backdrop)" if title_backdrop else "", _us_ms(rp)])
 	if not external:
 		start_default()
 	if args.has("breach-shots"):
@@ -433,6 +444,7 @@ var _build_gen := 0
 
 func stop_build() -> void:
 	_build_gen += 1
+	stage.stop()
 	if not _vp_saved.is_empty():
 		var vp := get_viewport()
 		if vp != null:
@@ -584,8 +596,9 @@ func _begin(a) -> void:
 	warming = true
 	add_to_group("battle_loading")   # issue 1434: world bakes keep their disk writes until no battle is loading
 	hud.loading(true)
-	# --sliced-load: the windowed path in a headless check (main/test/showcase_quiet_check.gd)
-	var sliced := DisplayServer.get_name() != "headless" or args.has("sliced-load")
+	var sliced := _sliced()
+	if sliced:
+		stage.start(self)   # a no-op when _ready already started it; a battle begun again on this node starts it here
 	var obj0 = api.view().get("obj")
 	if obj0 is Dictionary and str(obj0.get("type", "")) == "hold":
 		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
@@ -890,6 +903,12 @@ var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arri
 
 # issue 1434: what the load is doing now (bench/load_1434.gd names the phase of the worst frame under the cover)
 var load_phase := ""
+var stage := StageIn.new()   # issue 1434 (LOAD22): holds each new mesh's first draw until the load gives it back
+
+
+# --sliced-load: the windowed path in a headless check (main/test/showcase_quiet_check.gd)
+func _sliced() -> bool:
+	return DisplayServer.get_name() != "headless" or args.has("sliced-load")
 var begin_us := {}   # issue 1434 (LOAD9: start to board 1 to 3 s of process step): _begin's parts before the board's frame
 
 
@@ -906,6 +925,10 @@ func _warmup() -> void:
 	cam.snap()
 	for i in 3:
 		await get_tree().process_frame
+	# issue 1434 (LOAD22): with the whole board in view, the meshes held back since the load began get their first draw a
+	# few new materials a frame (render/stage_in.gd); the effect warm-up below spreads its own
+	load_phase = "stage_in"
+	await stage.drain(get_tree())
 	# issue 1434 (item 10): the title backdrop never fights, so it skips the death cuts, shield skins and effect warm-up
 	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless" and not title_backdrop:
 		# issue 1289: the reinforcement's hull is built, cut and drawn here with the others, then hidden until it arrives
@@ -1525,6 +1548,7 @@ static var last_exit_id := 0   # which battle the two above belong to (the bench
 
 func _exit_tree() -> void:
 	var t_exit := Time.get_ticks_usec()
+	stage.stop()
 	_build_gen += 1   # issue 1518: a build still awaiting stops at its next step (quit or leave mid-load)
 	last_exit_mid_build = not _inst_tasks.is_empty() or _preload.values().has(null)
 	_drop_preload(false)   # issue 1434: a build stopped part way hands its running loads and instances on, no wait

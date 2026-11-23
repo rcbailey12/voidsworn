@@ -1541,9 +1541,19 @@ func _build_death_pieces() -> void:
 	if _piece_builds.is_empty():
 		return
 	var deadline := Time.get_ticks_usec() + (LOAD_PIECE_BUDGET if defer_initial_cuts else DEATH.PREBUILD_BUDGET)
+	# issue 1434 (LOAD22 cold s25: 83 pipelines in one 6.9 s draw): each piece's new materials make its pipelines, so under
+	# the load cover a frame builds a few pieces (a call past its deadline builds one), not a time budget's worth
+	var calls := warmup_batch * 2 if defer_initial_cuts and warmup_batch > 0 else -1
 	while not _piece_builds.is_empty():
 		var entry: Array = _piece_builds[0]
+		if calls == 0:
+			return
+		if calls > 0:
+			calls -= 1
+			deadline = 0
 		if not DEATH.build_pieces(self, entry[0], entry[1], deadline):
+			if calls > 0:
+				continue
 			return
 		_piece_builds.pop_front()
 		count_install("death pieces")
@@ -1610,6 +1620,10 @@ func prepare_battle_hulls() -> void:
 			if DEATH.finish_precompute(self, active[i]):
 				active.remove_at(i)
 				count_install("cut finished")
+				# issue 1434 (LOAD22 cold s25: 83 pipelines and 6.9 s in one draw): under the load cover one finished cut
+				# installs its pieces per frame, the others wait for the next
+				if warmup_batch > 0:
+					break
 		_finish_shield_skins()
 		await get_tree().process_frame
 	prep_step = "shield skins and pieces"

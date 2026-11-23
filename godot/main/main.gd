@@ -113,6 +113,8 @@ func quit_clean(code := 0, route := "menu") -> void:
 			n.queue_free()
 	if campaign != null and is_instance_valid(campaign):
 		campaign.queue_free()
+	if _retired != null and is_instance_valid(_retired) and _retired.get_parent() == null:
+		_retired.free()   # issue 1519: a battle left for the title and not yet freed goes before the statics are cleared
 	if music != null and is_instance_valid(music) and music.has_method("release"):
 		music.release()
 	await get_tree().process_frame
@@ -217,7 +219,10 @@ func _ready() -> void:
 		_bot_runs.call_deferred()
 	elif args.has("battle") or args.has("scenario") or args.has("shots") or args.has("bot") or args.has("seed"):
 		# straight into a battle (test jobs, screenshot jobs): the battle reads the same arguments
-		quick_battle()
+		if DisplayServer.get_name() != "headless":
+			_quick_battle_after_first_frame()
+		else:
+			quick_battle()
 	else:
 		show_title()
 
@@ -562,6 +567,14 @@ static func campaign_has_save() -> bool:
 	return Host.has_save()
 
 
+# issue 1518 (LOAD22 warm: a close during the start hid after 2.7 s, before the game's first frame): the window draws
+# and answers its messages once before the battle is built, so a close that comes during that build is seen at once
+func _quick_battle_after_first_frame() -> void:
+	await RenderingServer.frame_post_draw
+	if not quitting:
+		quick_battle()
+
+
 func quick_battle() -> void:
 	_clear()
 	var b = BattleScene.instantiate()
@@ -613,11 +626,22 @@ func _retire_battle(b: Node, parts: Dictionary) -> void:
 	if not DisplayServer.window_can_draw():
 		b.queue_free()   # headless or minimised: no frame is drawn to wait for, so it goes at the end of this one as before
 		return
-	RenderingServer.frame_post_draw.connect(func() -> void:
-		if is_instance_valid(b):
-			var t1 := Time.get_ticks_usec()
-			b.free()
-			parts["battle_free"] = Time.get_ticks_usec() - t1, CONNECT_ONE_SHOT)
+	_retired = b
+	_free_after_draws(b, parts, 2)
+
+
+# issue 1519 (LOAD22 cold: first title frame 284 ms, 90 of it the free just after that frame's draw): the battle out of
+# the tree is freed after the title's second draw, so its free never shares the first title frame
+func _free_after_draws(b: Node, parts: Dictionary, draws: int) -> void:
+	for i in draws:
+		await RenderingServer.frame_post_draw
+	if is_instance_valid(b) and b.get_parent() == null:
+		var t1 := Time.get_ticks_usec()
+		b.free()
+		parts["battle_free"] = Time.get_ticks_usec() - t1
+
+
+var _retired: Node = null   # the battle out of the tree waiting for its free (quit_clean frees it if a close comes first)
 
 
 # Issue 1435: how long leaving a battle holds the player: the leave frame itself (the battle is freed at its end, which
