@@ -73,12 +73,15 @@ try { $null = Measure-CleanupDirectory $d; Write-Output 'strict counted' } catch
   assert(struct, 'disk_space.ps1 declares the Info struct');
   const probe = path.join(os.tmpdir(), 'free1739-layout-' + process.pid + '.ps1');
   fs.writeFileSync(probe, "Add-Type -TypeDefinition @'\nusing System.Runtime.InteropServices;\npublic static class LayoutProbe1739 {\n" + struct[0] +
-    "\n}\n'@\n$t = [LayoutProbe1739+Info]\n" +
+    "\n}\n'@ -WarningAction SilentlyContinue\n$t = [LayoutProbe1739+Info]\n" +
     "Write-Output \"$([Runtime.InteropServices.Marshal]::SizeOf((New-Object LayoutProbe1739+Info))) $([Runtime.InteropServices.Marshal]::OffsetOf($t, 'links')) $([Runtime.InteropServices.Marshal]::OffsetOf($t, 'volume'))\"\n");
   const l = spawnSync(ps, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', probe], { encoding: 'utf8', windowsHide: true, env: { ...process.env, POWERSHELL_TELEMETRY_OPTOUT: '1' } });
   fs.rmSync(probe, { force: true });
   assert.equal(l.status, 0, l.stdout + l.stderr);
-  assert.equal(l.stdout.trim(), '52 40 28', 'BY_HANDLE_FILE_INFORMATION is 52 bytes, volume at 28, links at 40: ' + l.stdout);
+  // Windows PowerShell 5.1 prints "The generated type defines no public methods or properties" for this struct-only
+  // probe class (FREESPACE_1812_PROOF, Nov 23); the warning is muted and only the last line is read.
+  const lastLine = l.stdout.trim().split(/\r?\n/).pop().trim();
+  assert.equal(lastLine, '52 40 28', 'BY_HANDLE_FILE_INFORMATION is 52 bytes, volume at 28, links at 40: ' + l.stdout);
 }
 // The janitor closes with the honest total, and the helper head's sizes use the same helpers.
 const janitor = fs.readFileSync(path.join(pc, 'janitor.ps1'), 'utf8');

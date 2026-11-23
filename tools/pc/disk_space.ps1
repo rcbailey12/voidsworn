@@ -37,7 +37,7 @@ public static class VoidswornFileIdentity {
     }
   }
 }
-'@
+'@ -WarningAction SilentlyContinue
     }
     $script:diskSpaceNative = $true
   } catch { $script:diskSpaceNative = $false }
