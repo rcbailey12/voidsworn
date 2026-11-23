@@ -442,11 +442,9 @@ async function windowsWatchdog() {
   put(path.join(home, 'gpu_go.txt'), 'GPU cleared');
   function fakeExecutable(source, name) {
     const target = path.join(home, name);
+    // Any link failure (EPERM, EXDEV, or NTFS's 1023-link limit, which Node reports as UNKNOWN) falls back to a copy.
     try { fs.linkSync(source, target); }
-    catch (e) {
-      if (e.code !== 'EPERM' && e.code !== 'EXDEV') throw e;
-      fs.copyFileSync(source, target);
-    }
+    catch (e) { fs.copyFileSync(source, target); }
     return target;
   }
   const probe = path.join(home, 'probe.js');

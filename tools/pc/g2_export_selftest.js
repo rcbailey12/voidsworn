@@ -116,8 +116,9 @@ fs.copyFileSync(path.join(__dirname, 'play_godot.bat'), play);
 put(path.join(build, 'godot/project.godot'), '; fake project');
 const live = path.join(build, 'export/Voidsworn.exe');
 fs.renameSync(live, live + '.fixture');
+// Any link failure (EXDEV, or NTFS's 1023-link limit on a busy node.exe, reported as UNKNOWN) falls back to a copy.
 try { fs.linkSync(process.execPath, live); }
-catch (e) { if (e.code !== 'EXDEV') throw e; fs.copyFileSync(process.execPath, live); }
+catch (e) { fs.copyFileSync(process.execPath, live); }
 const marker = path.join(root, 'played.txt');
 const launch = path.join(build, 'launch.js');
 put(launch, `require('fs').writeFileSync(${JSON.stringify(marker)}, process.execPath);`);
