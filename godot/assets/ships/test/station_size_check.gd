@@ -249,13 +249,13 @@ func _hulk_checks() -> void:
 	var sh1 := PROPS.derelict_shared(plain, "corsair")
 	_report(sh1 == PROPS.derelict_shared(plain, "corsair") and sh1 != PROPS.derelict_shared(plain, "voidsworn"),
 		"hulks of one hull share their burnt materials, per faction")
-	# a freed hull's entries go when the next one is made (Antigravity audit, Nov 23): no pile-up across battles
-	var gone := StandardMaterial3D.new()
-	PROPS.derelict_shared(gone, "corsair")
-	var before := PROPS._derelict_cache.size()
-	gone = null
-	PROPS.derelict_shared(StandardMaterial3D.new(), "hegemony")
-	_report(PROPS._derelict_cache.size() == before, "a freed hull's burnt copies are dropped (%d entries, was %d)" % [PROPS._derelict_cache.size(), before])
+	# the cache owns no burnt copy (Antigravity audit, Artoo on PR 1772): once the hulks wearing it are gone, so is the copy,
+	# with no later cache miss needed (a battle exit to the map makes none)
+	var src2 := StandardMaterial3D.new()
+	var worn := PROPS.derelict_shared(src2, "corsair")
+	var held := weakref(worn)
+	worn = null
+	_report(held.get_ref() == null, "a burnt copy is freed with the last hulk wearing it, not held by the cache")
 
 
 func _board(terrain: Dictionary, holes: Array, units: Array, map: Dictionary, radius: int, seed := 7) -> Node3D:
