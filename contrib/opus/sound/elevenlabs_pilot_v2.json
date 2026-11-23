@@ -51,7 +51,7 @@
    "seconds": 1.8,
    "influence": 0.6,
    "takes": 2,
-   "prompt": "Focused sustained solar-thermal energy beam firing from a capital starship: an instant tight electromagnetic lock-on transient snapping straight into a continuous, unwavering, high-energy beam roar with a steady deep reactor harmonic hum held solid and flat for over a second, ending in a crisp clean power cutoff and brief thermal shimmer. Sustained directed-energy lance, continuous even pressure from start to cutoff, smooth top end, controlled studio decay."
+   "prompt": "Focused sustained solar-thermal energy beam firing from a capital starship: an instant tight electromagnetic lock-on transient snapping into a continuous, unwavering high-energy beam roar over a steady deep reactor hum, held solid and flat for over a second, ending in a crisp clean power cutoff and brief thermal shimmer. Sustained directed-energy lance, even pressure from start to cutoff, smooth top end, controlled studio decay."
   },
   {
    "id": "wep_sunward_torp_launch",
@@ -541,7 +541,7 @@
    "seconds": 1.6,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Massive capital starship electromagnetic forcefield fracturing offline: an immediate crisp high-voltage electric-glass barrier crack right at the start, immediately cascading into a dramatic steep descending resonant power-down pitch drop and wide shimmering electrostatic dissipation as the protective energy field collapses completely. Unmistakable high-tech energy barrier failure, deep sub-bass drop underneath clean electric crackle, smooth top end, natural controlled decay."
+   "prompt": "Massive capital starship electromagnetic forcefield fracturing offline: an immediate crisp high-voltage electric-glass barrier crack, cascading into a steep descending resonant power-down pitch drop and wide shimmering electrostatic dissipation as the energy field collapses completely. Unmistakable high-tech energy barrier failure, deep sub-bass drop under clean electric crackle, smooth top end, natural controlled decay."
   },
   {
    "id": "shd_break_prismatic",
