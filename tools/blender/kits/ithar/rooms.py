@@ -70,9 +70,10 @@ def _most(f, a, b, n=7):
 
 
 def rooms(K, half_w, half_h, x0, x1, breaks, breach_x=(), decks=(-0.3, 0.2), frames=8, y0=0.0, tag='', heart=True, gap=None,
-          deck_z=None, rings=None, ring_r=None, bands=('mid', 'top', 'low')):
+          deck_z=None, deck_t=None, rings=None, ring_r=None, bands=('mid', 'top', 'low')):
     """the Glasswright rooms for one hull (a twin hull calls it once per pod, with its y0 and tag); returns the room count.
-    deck_z: the decks' own heights when a sheet builds them at fixed heights (CD5), instead of decks as fractions of half_h;
+    deck_z, deck_t: the decks' own heights and thickness when a sheet builds them itself (CD5), instead of decks as fractions
+    of half_h and hull.insides()' 0.015 of the length;
     rings / ring_r: the sheet's own frame positions and tube radius when it stands its own frames (CD5); gap: the sheet's own
     clearance either side of a break (CD5 0.22); bands: which bands to fill (CD5 leaves out 'top' for its light reservoirs)"""
     L = K.length
@@ -85,7 +86,7 @@ def rooms(K, half_w, half_h, x0, x1, breaks, breach_x=(), decks=(-0.3, 0.2), fra
         ring_r = 0.012 * L
     zb, zt = min(decks), max(decks)
     th = TH * L; minh = MINH * L
-    dk = 0.0075 * L                                         # half the deck glass (hull.insides(): a 0.015 of the length solidify)
+    dk = 0.0075 * L if deck_t is None else deck_t / 2      # half the deck glass (hull.insides(): a 0.015 of the length solidify)
     spans_b = [(a, b, _bays(K, a, b, rings, ring_r)) for a, b in spans]
     spans_b = [s for s in spans_b if s[2]]
     if not spans_b:

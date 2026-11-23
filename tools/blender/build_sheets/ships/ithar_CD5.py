@@ -485,7 +485,7 @@ def build(K):
     # the space over the upper deck
     env = lambda x: max(0.0, math.sin(math.pi * (x + 12.75) / 23.0)) ** 0.45
     gw_kit('rooms').rooms(K, lambda x: 0.62 * SLIM * width(x), lambda x: 0.62 * SLIM * (0.30 + 2.15 * env(x)), -11.3, 6.6,
-                          BREAKS, BREACH_X, y0=0.0, gap=GAP, deck_z=(-0.55 * SLIM, 0.20 * SLIM), rings=cd5_rings,
+                          BREAKS, BREACH_X, y0=0.0, gap=GAP, deck_z=(-0.55 * SLIM, 0.20 * SLIM), deck_t=0.06, rings=cd5_rings,
                           ring_r=0.065, bands=('mid', 'low'))
     K.inside.append(dict(kind='space', name='continuous light core and stern drive chamber', x=(-12, 9),
                          y=(-0.8, 0.8), z=(-0.6, 0.9), mat='layered glass and light', note='three braided waveguides throughout the hull'))
