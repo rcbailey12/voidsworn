@@ -815,7 +815,12 @@ void vertex() {
 			p += (n1 * j + n2 * j2) * pin * L * 0.06;
 		}
 		if (k == 9) {
-			p += (n1 * sin(s * 9.0 - scene_t * 8.0 + seed) + n2 * cos(s * 7.0 - scene_t * 6.0)) * sin(3.14159 * s) * 1.2;
+			// A broad bend runs out to the tip, snaps taut on contact, then curls back.
+			// Keep both ends on the firing line while the middle sweeps across it.
+			float slack = 1.0 - 0.8 * smoothstep(0.16, 0.25, age) * (1.0 - smoothstep(0.28, 0.57, age));
+			float bend = sin(3.14159265 * s) * min(L * 0.18, a3.x * 7.0) * slack;
+			float wave = s * 7.0 - age * 12.0 + seed * 6.2831853;
+			p += (n1 * sin(wave) + n2 * (0.5 * cos(wave * 0.75))) * bend;
 		}
 		float w = mix(a3.x, a3.y, s);
 		if (k == 2 || k == 5 || k == 8) { w *= 0.92 + 0.08 * sin(scene_t * 90.0 + s * 40.0); }
