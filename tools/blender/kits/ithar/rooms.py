@@ -16,11 +16,16 @@
 # where its decks and frames do; the rooms fill out to ENV of that envelope (inside the hull's inner glass, which the Interior
 # Kit and surface_check.py hold the furniture and the room boxes off).
 import math
+import os
+
+DEBUG = os.environ.get('GW_ROOMS_DEBUG') == '1'
 
 GAP = 0.04          # of the ship's length either side of a break: hull.insides() keeps its decks off the break by the same
 TH = 0.004          # of the ship's length: the clearance off the deck glass and the frame rings
-MINH = 0.010        # of the ship's length: the lowest or narrowest room worth placing (GP1's pods are 2.6 high on a 14.5 hull)
+MINH = 0.009        # of the ship's length: the lowest or narrowest room worth placing (GP1's pods are 2.6 high on a 14.5 hull)
 MINL = 0.03         # of the ship's length: the shortest bay worth a room
+LONG = 0.12         # of the ship's length: a bay with no ring in it is split into rooms about this long
+EDGE = 0.008        # of the ship's length: the wall gap between two rooms split from one bay
 ENV = 1.12          # the rooms' envelope, of hull.insides()'s half beam and height (its frame rings stand at 0.8 of them)
 
 
@@ -57,7 +62,10 @@ def _bays(K, a, b, rings, ring_r):
     for i in range(len(edges) - 1):
         lo = edges[i] + (c if i > 0 else TH * K.length); hi = edges[i + 1] - (c if i < len(edges) - 2 else TH * K.length)
         if hi - lo > MINL * K.length:
-            bays.append((lo, hi))
+            n = max(1, int((hi - lo) / (LONG * K.length) + 0.5))      # a long bay (no ring in it) becomes rooms of about LONG
+            e = EDGE * K.length
+            step = (hi - lo + e) / n
+            bays += [(lo + k * step, lo + (k + 1) * step - e) for k in range(n)]
     return bays
 
 
@@ -88,6 +96,8 @@ def rooms(K, half_w, half_h, x0, x1, breaks, breach_x=(), decks=(-0.3, 0.2), fra
     th = TH * L; minh = MINH * L
     dk = 0.0075 * L if deck_t is None else deck_t / 2      # half the deck glass (hull.insides(): a 0.015 of the length solidify)
     spans_b = [(a, b, _bays(K, a, b, rings, ring_r)) for a, b in spans]
+    if DEBUG:
+        print('[gw_rooms] L %.2f spans %s rings %s' % (L, [(round(a, 2), round(b, 2)) for a, b in spans], [round(r, 2) for r in rings]), flush=True)
     spans_b = [s for s in spans_b if s[2]]
     if not spans_b:
         return 0
@@ -104,6 +114,10 @@ def rooms(K, half_w, half_h, x0, x1, breaks, breach_x=(), decks=(-0.3, 0.2), fra
                 zlo = zlo_x = min(deck_z); zhi = zhi_x = max(deck_z)
             else:
                 zlo, zhi, zlo_x, zhi_x = zb * hh, zt * hh, zb * hx, zt * hx
+
+            if DEBUG:
+                print('[gw_rooms] bay %d.%d x %.2f..%.2f hw %.2f hh %.2f decks %.2f %.2f / %.2f %.2f dk %.3f th %.3f minh %.3f'
+                      % (si, ci, ra, rb, hw, hh, zlo, zhi, zlo_x, zhi_x, dk, th, minh), flush=True)
 
             def width_at(z, frac=0.92):
                 return ew * math.sqrt(max(0.0, 1 - (z / eh) ** 2)) * frac if abs(z) < eh else 0.0
