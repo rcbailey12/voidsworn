@@ -65,6 +65,21 @@ try { $null = Measure-CleanupDirectory $d; Write-Output 'strict counted' } catch
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
 }
+// Artoo on PR 1812: the Windows file record must match BY_HANDLE_FILE_INFORMATION (52 bytes, links at offset 40), or the
+// link count and file id are read from the wrong fields. The struct compiles on any .NET, so its layout is checked here.
+{
+  const disk = fs.readFileSync(path.join(pc, 'disk_space.ps1'), 'utf8');
+  const struct = /\[StructLayout\(LayoutKind\.Sequential\)\] public struct Info \{[\s\S]*?\n  \}/.exec(disk);
+  assert(struct, 'disk_space.ps1 declares the Info struct');
+  const probe = path.join(os.tmpdir(), 'free1739-layout-' + process.pid + '.ps1');
+  fs.writeFileSync(probe, "Add-Type -TypeDefinition @'\nusing System.Runtime.InteropServices;\npublic static class LayoutProbe1739 {\n" + struct[0] +
+    "\n}\n'@\n$t = [LayoutProbe1739+Info]\n" +
+    "Write-Output \"$([Runtime.InteropServices.Marshal]::SizeOf((New-Object LayoutProbe1739+Info))) $([Runtime.InteropServices.Marshal]::OffsetOf($t, 'links')) $([Runtime.InteropServices.Marshal]::OffsetOf($t, 'volume'))\"\n");
+  const l = spawnSync(ps, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', probe], { encoding: 'utf8', windowsHide: true, env: { ...process.env, POWERSHELL_TELEMETRY_OPTOUT: '1' } });
+  fs.rmSync(probe, { force: true });
+  assert.equal(l.status, 0, l.stdout + l.stderr);
+  assert.equal(l.stdout.trim(), '52 40 28', 'BY_HANDLE_FILE_INFORMATION is 52 bytes, volume at 28, links at 40: ' + l.stdout);
+}
 // The janitor closes with the honest total, and the helper head's sizes use the same helpers.
 const janitor = fs.readFileSync(path.join(pc, 'janitor.ps1'), 'utf8');
 assert.match(janitor, /Log \("space \$\{verb\}: \$\(\$script:wouldFreeBytes\) bytes/, 'janitor prints the would-free total');

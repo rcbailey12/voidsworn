@@ -15,8 +15,11 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 public static class VoidswornFileIdentity {
-  [StructLayout(LayoutKind.Sequential)] struct Info {
-    public uint attributes; public long created, accessed, written;
+  // BY_HANDLE_FILE_INFORMATION: 52 bytes, the link count at offset 40. Each FILETIME is two 32-bit halves; a long would
+  // be 8-byte aligned and shift every later field (Artoo on PR 1812).
+  [StructLayout(LayoutKind.Sequential)] public struct Info {
+    public uint attributes;
+    public uint createdLow, createdHigh, accessedLow, accessedHigh, writtenLow, writtenHigh;
     public uint volume, sizeHigh, sizeLow, links, indexHigh, indexLow;
   }
   [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
