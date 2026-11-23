@@ -776,7 +776,7 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 # A battle already set up by the campaign host (its rules API, built in battle_setup).
 func play_api(a, opts := {}) -> Dictionary:
 	if not await battle_parts_ready():
-		return {"result": "quit"}   # the game is closing
+		return {"result": "closing"}   # the game is closing before the battle began: not a result (campaign_host.gd)
 	var b = BattleScene.instantiate()
 	b.external = true
 	b.bot = bot_mode or bool(opts.get("bot", false))

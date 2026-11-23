@@ -9,11 +9,28 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #      waits for it a frame at a time before its board; a window close during that wait is seen at once and stops the
 #      build, which never goes on, even once the read is done;
 #   3. the campaign's way in (Main.play_api) while the effects script is still being read (held as reading) builds no
-#      battle until it is read; a window close during that wait ends it and play_api returns without a battle.
+#      battle until it is read; a window close during that wait ends it and play_api returns without a battle;
+#   4. the same through the campaign host's handoff (campaign_host.gd _play_battle): the close settles nothing, counts no
+#      battle and saves nothing, so the run stays at its checkpoint.
 const Main := preload("res://main/main.gd")
 const BattleScript := preload("res://scenes/battle/battle.gd")
 const Sfx := preload("res://audio/sfx.gd")
 const SV := preload("res://render/ship_view.gd")
+const HOST := preload("res://main/campaign_host.gd")
+
+class Camp extends RefCounted:
+	var finished := 0
+	var saved_leaves := 0
+	var saves := 0
+	func set_teaching_tips(_on) -> void: pass
+	func can_retreat() -> bool: return false
+	func finish_battle(_res, _b) -> void: finished += 1
+	func leave_battle_saved() -> void: saved_leaves += 1
+	func save_round(_x = null) -> void: saves += 1
+
+class Api extends RefCounted:
+	var round_saves := false
+	func battle_state() -> Dictionary: return {}
 
 class TestMain extends Main:
 	var closed_at := -1
@@ -116,7 +133,30 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	check(main.closed_at >= 0 and main.closed_at - t_c2 < 100, "the window close ran at once during that wait")
-	check(got[0] is Dictionary and str(got[0].get("result", "")) == "quit" and main.battle == null, "play_api ended without a battle")
+	check(got[0] is Dictionary and str(got[0].get("result", "")) == "closing" and main.battle == null, "play_api ended without a battle, as closing (not a result)")
+	# 4. through the campaign host
+	main.quitting = false
+	main.closed_at = -1
+	var h = HOST.new()
+	h.main = main
+	h.C = Camp.new()
+	h.api_now = Api.new()
+	main.add_child(h)
+	var battles0: int = h.battles
+	var done := [false]
+	var go2 := func() -> void:
+		await h._play_battle()
+		done[0] = true
+	go2.call()
+	for i in 5:
+		await process_frame
+	check(not done[0] and main.battle == null, "the host's battle waits, no battle built")
+	main._notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
+	await process_frame
+	await process_frame
+	check(done[0], "the host's handoff ended with the close")
+	check(h.C.finished == 0 and h.C.saved_leaves == 0 and h.C.saves == 0, "nothing settled or saved (finish %d, saved leave %d, saves %d)" % [h.C.finished, h.C.saved_leaves, h.C.saves])
+	check(h.battles == battles0 and h.errors.is_empty(), "no battle counted (%d) and no error" % h.battles)
 	main.hold_fx_read = false
 	if main._fx_reading:
 		ResourceLoader.load_threaded_get(Main.FX_SCRIPT)

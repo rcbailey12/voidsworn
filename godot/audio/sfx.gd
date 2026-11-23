@@ -115,7 +115,7 @@ func _ready() -> void:
 # issue 1518 (LOAD25 cold: a close during the battle's first frame waited on its 0.3 s of clip loads): the game starts
 # reading the battle's clips on worker threads when it starts (main.gd), and a battle's sound only collects them.
 # Paths only (path -> true); the streams stay in the ResourceLoader.
-static var _pending := {}
+static var _pending := {}   # not GPU: paths only (path -> true), the streams stay in the ResourceLoader
 
 
 static func prefetch() -> void:
