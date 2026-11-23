@@ -303,10 +303,9 @@ touches and the game never reads. A rules or campaign change edits the Godot fil
 `godot --headless --path godot --script res://rules/tools/reseal_tables.gd`). CI compares every battle, the 30 seeded campaign
 runs and the Nemesis scenarios byte for byte with the reviewed saved Godot results in the repo, beside the cache on/off safety
 net; a pull request that changes them updates the saved results in the same pull request (`godot/rules/test/saved/README.md`,
-`node godot/campaign/test/node/saved_campaign.js update`) and says why each changed battle or run moved. One exception until
-issue 1667 moves the ship tools onto the Godot tables: a change to a ship's weapon list or hull entry also goes into data.js,
-because the ship pipeline still reads it (weapon definitions, kind and shots, are read from the Godot table already:
-`tools/recipe/gamedata.py` weapon_stats). The balance simulator (`node sim3d.js`) plays the frozen browser rules, so it measures
+`node godot/campaign/test/node/saved_campaign.js update`) and says why each changed battle or run moved. The ship pipeline reads
+weapon lists and hull entries from the Godot rules table (`tools/recipe/gamedata.py`, issue 1667, R422).
+The balance simulator (`node sim3d.js`) plays the frozen browser rules, so it measures
 nothing new until its Godot port (issue 1656) lands. Why: "RETIRE THE BROWSER JS TWIN (RULEBOOK 3.1): Approved. Land a clean
 retirement PR BEFORE coding starts on #1453 Build Variety parts (including #1652). Godot (`godot/`) is now the sole rules source
 of truth, backed by headless Godot tests." (Ryan, Nov 22 2026, 12:09 UTC, R405). It replaces Path D's keep-both rule (R312),
@@ -561,7 +560,7 @@ reflection lobe is desaturated to a neutral warm-white so Eclipse stays obsidian
 the #1786 lighting. The world PRs fold in the audit cleanups before merge: an obsidian Eclipse hulk finish (#1772), a
 procedural planet fallback when the remix is off (#1776), crystal `_lo` LODs (#1782); the planet relief map's VRAM is
 budgeted in #1780.
-R422 (Ryan, Nov 23 2026 03:22 UTC, on the #1777 before and after sheets): Ship Look V2 is the default look for every
+R426 (Ryan, Nov 23 2026 03:22 UTC, on the #1777 before and after sheets): Ship Look V2 is the default look for every
 hull, the darker Hullbreaker red included; `VS_SHIP_LOOK_V2=0` keeps the old look for A/B captures only, and new ship
 work is judged under V2 (`look.gd` `ship_look_v2_enabled()`, guarded by `ship_look_v2_check`).
 
@@ -702,8 +701,8 @@ standing checks and skips the four Godot jobs; the "All checks" job gives every 
 main fails the run. Why: docs-only review pushes ran 45 runner-minutes of Godot work for nothing (audit GH-03, issue 1487).
 
 12.4 **A rules or data change is made in Godot only and passes the saved-results checks (3.1); a pull request that updates
-the saved results says why each changed battle or run moved.** The frozen browser files change only under 3.1's ship exception
-until issue 1667. Why: the oracle copies drifted (R155); the browser twin is retired (R405). Set: Board; Ryan, Nov 22 (R405).
+the saved results says why each changed battle or run moved.** Why: the oracle copies drifted (R155); the browser twin is
+retired (R405). Set: Board; Ryan, Nov 22 (R405).
 Id: R155b.
 
 12.5 **The look bench: bench a commit twice and keep the second run; a change differs where it is meant to and nowhere else;

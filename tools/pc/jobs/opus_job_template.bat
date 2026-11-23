@@ -14,10 +14,10 @@ set "TOOLS=godot"
 rem ---- FILL 4 and 5: exact 40-character commits; OLD may be left empty for a one-commit job
 set "PIN_NEW=0000000000000000000000000000000000000000"
 set "PIN_OLD="
-rem Issue 1659: OJ_SLOTS=1 resets a warm slot (voidsworn_test\slots) instead of a fresh clone per attempt. Off until the
-rem Board turns it on after the Windows proof (Artoo on PR 1728). OJ_SLOT_KIND is gpu (slot_gpu_1 or slot_gpu_2) for
+rem Issue 1659: OJ_SLOTS=1 resets a warm slot (voidsworn_test\slots) instead of a fresh clone per attempt. On since the
+rem Windows slot proofs A, B and C passed (Board, Nov 23 2026; relays pc-out-opus1659slota/b/c). Set 0 in one bat to opt out. OJ_SLOT_KIND is gpu (slot_gpu_1 or slot_gpu_2) for
 rem anything that renders, cpu (slot_cpu) for headless-only checks.
-set "OJ_SLOTS=0"
+set "OJ_SLOTS=1"
 set "OJ_SLOT_KIND=gpu"
 
 rem The head is the installed main copy in tools_live (fail closed). OPUS_JOB_HEAD may name another copy only for a

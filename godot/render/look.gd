@@ -90,7 +90,7 @@ static func fleet_lighting_enabled() -> bool:
 
 
 # Issue 1777 (Ship Exteriors V2, RULEBOOK 3.14 law 6): the one switch for the whole V2 ship look. On by default since Ryan
-# approved the before and after sheets (Nov 23 2026, R422); VS_SHIP_LOOK_V2=0 turns it off (the old look, for A/B
+# approved the before and after sheets (Nov 23 2026, R426); VS_SHIP_LOOK_V2=0 turns it off (the old look, for A/B
 # captures and a quick way back). The bench and the checks may set `v2_force`. Set before any hull materials are cached.
 static var v2_force := -1   # -1 follows the launch option, 0 off, 1 on (checks and bench only)
 static func ship_look_v2_enabled() -> bool:
