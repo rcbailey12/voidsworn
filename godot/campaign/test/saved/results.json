@@ -153,8 +153,8 @@
    "archive": "c30.jsonl.br"
   },
   "nem.txt": {
-   "sha256": "41556a047d0813ff7f9b76173b844315cc87181a9ed763e7a20dea9fdfd7181d",
-   "bytes": 102268,
+   "sha256": "fd2f7f11520844c1fa5d4d95947d93a4c45be05f4ed0e2368a566cfcdaff2f93",
+   "bytes": 102272,
    "archive": "nem.txt.br"
   }
  }
