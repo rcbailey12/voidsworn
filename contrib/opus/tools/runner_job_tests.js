@@ -735,9 +735,30 @@ Assert ($staged.Count -eq 2 -and $staged -contains $evidence -and $staged -conta
 Pass 'sparse runner stages new report evidence without materializing historical pictures'
 $slot = Join-Path $root 'slot_openai/repo'
 $log = Sparse-Start 'sparse-opt-in' $slot './docs/shots/shot.png' 'contrib\\muse\\design\\draft.md, rocks_hi/rock.glb'
-Assert ($log.Contains('sparse checkout profile differs')) 'profile changes preserve the old checkout'
+# Issue 1739: a profile change on a clean runner-managed checkout is applied in place, not kept as a ~28 GB copy.
+Assert ($log.Contains('sparse checkout profile changed in place') -and $log.Contains('earlier checkout reused in place')) "opt-in profile change reuses the checkout: $log"
 foreach ($i in 0,2,4) { Assert (Test-Path -LiteralPath (Join-Path $slot $paths[$i])) "missing requested path $($paths[$i])" }
 foreach ($i in 1,3) { Assert (-not (Test-Path -LiteralPath (Join-Path $slot $paths[$i]))) "unexpected path $($paths[$i])" }
+Assert (-not @(Get-ChildItem -LiteralPath (Split-Path -Parent $slot) -Directory | Where-Object { $_.Name -like 'repo-kept-*' }).Count) 'no kept copy for a safe profile change'
+# Back to the lean profile: the opted-in folders hold only tracked files, so they leave the work tree again.
+$log = Sparse-Start 'sparse-back-to-lean' $slot 'below' 'shared.txt'
+Assert ($log.Contains('sparse checkout profile changed in place') -and $log.Contains('earlier checkout reused in place')) "lean profile change reuses the checkout: $log"
+foreach ($name in $paths) { Assert (-not (Test-Path -LiteralPath (Join-Path $slot $name))) "lean profile still holds $name" }
+# An agent that turned sparse off (git sparse-checkout disable) leaves a full checkout; the next run makes it lean in place.
+& $script:git -C $slot sparse-checkout disable 2>&1 | Out-Null
+Assert ((Test-Path -LiteralPath (Join-Path $slot $paths[0])) -and $LASTEXITCODE -eq 0) 'fixture turned sparse off'
+$log = Sparse-Start 'sparse-full-to-lean' $slot 'below' 'shared.txt'
+Assert ($log.Contains('sparse checkout profile changed in place') -and $log.Contains('earlier checkout reused in place')) "full checkout made lean in place: $log"
+foreach ($name in $paths) { Assert (-not (Test-Path -LiteralPath (Join-Path $slot $name))) "full-to-lean still holds $name" }
+# An untracked file in a folder the new profile leaves out could be lost, so that checkout is still kept whole.
+$log = Sparse-Start 'sparse-opt-in-again' $slot './docs/shots/shot.png' 'contrib\\muse\\design\\draft.md, rocks_hi/rock.glb'
+Assert ($log.Contains('earlier checkout reused in place')) "opt-in again reuses: $log"
+Put (Join-Path $slot 'docs/shots/local_only.png') 'untracked picture'
+$log = Sparse-Start 'sparse-untracked-in-left-out' $slot 'below' 'shared.txt'
+Assert ($log.Contains('docs/shots/local_only.png is not tracked')) "untracked file in a newly left-out folder keeps the checkout: $log"
+$kept = @(Get-ChildItem -LiteralPath (Split-Path -Parent $slot) -Directory | Where-Object { $_.Name -like 'repo-kept-*' })
+Assert ($kept.Count -eq 1 -and [IO.File]::ReadAllText((Join-Path $kept[0].FullName 'docs/shots/local_only.png')) -eq 'untracked picture') 'the untracked picture survives in the kept copy'
+$log = Sparse-Start 'sparse-opt-in-after-keep' $slot './docs/shots/shot.png' 'contrib\\muse\\design\\draft.md, rocks_hi/rock.glb'
 $log = Sparse-Start 'sparse-opt-in-reuse' $slot 'docs/shots/shot.png' 'contrib/muse/design/draft.md, rocks_hi/rock.glb'
 Assert ($log.Contains('earlier checkout reused in place')) 'same opt-in profile can be reused'
 & $script:git -C $slot update-index --assume-unchanged shared.txt
@@ -748,6 +769,63 @@ Assert ($log.Contains('index may hide tracked edits')) 'included code with a hid
 $kept = Get-ChildItem -LiteralPath (Split-Path -Parent $slot) -Directory | Where-Object { $_.Name -like 'repo-kept-*' }
 Assert (@($kept | Where-Object { [IO.File]::ReadAllText((Join-Path $_.FullName 'shared.txt')) -eq 'hidden local work' }).Count -eq 1) 'hidden edit survives'
 Pass 'lanes C and D and Workhorse slots reuse sparse profiles, honor fixed fields, and preserve hidden edits'
+# Issue 1739 (1747 run 2): a rerun must start from the delivery branch's earlier tip, never from main alone, and a
+# commit that does not descend from that tip must stop before the push. work/issue-800 holds base.txt; main does not.
+$slot = Join-Path $root 'continue/repo'
+Init 'continue-tip' 'work/issue-800'
+Shared @('checkout',$slot,$out,'work/issue-800','')
+$log = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+Assert ($log.Contains('continuing work/issue-800 from its earlier tip ${clean}')) "rerun starts from the earlier tip: $log"
+Assert ([IO.File]::ReadAllText((Join-Path $out 'base_commit.txt')).Trim() -eq '${clean}') 'base commit is the earlier tip'
+Assert ([IO.File]::ReadAllText((Join-Path $slot 'base.txt')) -eq "from base\n") 'the earlier run''s file is in the checkout'
+$parents = (& $script:git -C $slot rev-list --parents -n 1 HEAD) -split ' '
+Assert ($parents.Count -eq 3 -and $parents[1] -eq '${clean}' -and $parents[2] -eq '${main}') 'main is merged on top of the earlier tip'
+$resume = [IO.File]::ReadAllText((Join-Path $out 'resume.txt'))
+Assert ($resume.Contains('Continued from the earlier tip of work/issue-800') -and $resume.Contains('merged origin/main')) "agent is told: $resume"
+Pass 'a rerun checks out the branch''s earlier tip and merges main on top'
+# The commit step needs Windows PowerShell by name; on Linux point that name at pwsh.
+if ($PSVersionTable.Platform -eq 'Unix') {
+  $shim = Join-Path $root 'shim'; $null = New-Item -ItemType Directory -Force -Path $shim
+  [IO.File]::WriteAllText((Join-Path $shim 'powershell'), '#!/bin/sh\nexec pwsh "$@"\n')
+  & chmod 755 (Join-Path $shim 'powershell')
+  $env:PATH = "$($shim):$($env:PATH)"
+}
+$work = Join-Path $pc 'work_issue.ps1'
+Put (Join-Path $slot 'run2.txt') "run 2 report\n"
+& $script:git -C $slot add run2.txt
+Push-Location $slot; & $work commit $slot $out 'work/issue-800' 'dry' | Out-Null; $code = $LASTEXITCODE; Pop-Location
+Assert ($code -eq 0) "a rerun from the earlier tip commits (exit $code)"
+$tree = @(& $script:git -C $slot ls-tree -r --name-only HEAD)
+Assert ($tree -contains 'base.txt' -and $tree -contains 'run2.txt') 'the rerun commit keeps run 1 and adds run 2'
+& $script:git -C $slot merge-base --is-ancestor '${clean}' HEAD
+Assert ($LASTEXITCODE -eq 0) 'the earlier tip is an ancestor of the push'
+Pass 'a rerun commit keeps the earlier runs'' files'
+# 1747 run 2's shape: the checkout is main alone, the branch already exists, the agent adds only its report.
+$repo = New-Repo 'tip-drop-repo'
+Init 'continue-drop' 'work/issue-800'
+& $script:git -C $repo checkout -q -B work/issue-800 '${main}'
+Put (Join-Path $out 'base_commit.txt') '${main}'
+Put (Join-Path $repo 'report.md') "only the report\n"
+& $script:git -C $repo add report.md
+Push-Location $repo; $said = (& $work commit $repo $out 'work/issue-800' 'dry') -join "\n"; $code = $LASTEXITCODE; Pop-Location
+Assert ($code -eq 15) "a run that does not descend from the earlier tip stops (exit $code): $said"
+$tipNote = [IO.File]::ReadAllText((Join-Path $out 'EARLIER_TIP.txt'))
+Assert ($tipNote.Contains('did not start from the earlier tip ${clean}') -and $tipNote.Contains('base.txt')) "the reason and the dropped file are named: $tipNote"
+Assert ((& $script:git -C $repo rev-parse HEAD) -eq '${main}') 'nothing was committed'
+Pass 'a commit that would drop the earlier tip''s files stops before the push and names them'
+# Artoo on PR 1804: a reused slot must not continue a branch GitHub deleted, even while its old tip stays reachable.
+$slot = Join-Path $root 'continue-reuse/repo'
+Init 'continue-reuse-first' 'fixture/continue-reuse'
+Shared @('checkout',$slot,$out,'fixture/continue-reuse','')
+Assert ((& $script:git -C $slot rev-parse -q --verify 'refs/remotes/origin/work/issue-800') -eq '${clean}') 'the slot first sees the delivery branch'
+& $script:git -C $upstream update-ref refs/heads/archive-800 '${clean}'
+& $script:git -C $upstream update-ref -d refs/heads/work/issue-800
+Init 'continue-reuse-deleted' 'work/issue-800'
+Shared @('checkout',$slot,$out,'work/issue-800','')
+$log = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+Assert ($log.Contains('earlier checkout reused in place') -and -not $log.Contains('continuing work/issue-800')) "a deleted branch is not continued: $log"
+Assert ((& $script:git -C $slot rev-parse HEAD) -eq '${main}') 'the reused slot starts from main'
+Pass 'a reused slot drops a deleted delivery branch and starts from main'
 Write-Output "PASS runner job checks ($script:passed groups)"
 `);
 // Allow the same PC proof to run with pwsh, the engine used by Linux CI.

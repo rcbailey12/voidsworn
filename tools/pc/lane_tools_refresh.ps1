@@ -270,6 +270,21 @@ function Lock-WorkhorseSlots([string]$WorkRoot) {
   }
 }
 
+function Write-RunnerHashes {
+  # Issue 1739: a refreshed lane's runner checks itself against the hash file this writes, so the hashes always name the
+  # copy just installed. One shared work217 file served every lane before, and went stale on each refresh (lane D,
+  # Nov 23: codex_issue.bat and six others "differ from the Board-copied hashes" after the c9596825 refresh).
+  # runner_common.ps1 hashwrite owns the file list. A failure is logged and leaves the run's hashcheck to warn.
+  if ($seat -notlike 'board*' -and $seat -ne 'work217') { return }
+  $runnerDir = if ($Build -eq 'work217') { $liveTools } else { Join-Path $liveTools 'pc' }
+  $hashFile = Join-Path $root "$Build\runner_hashes.txt"
+  $shell = (Get-Process -Id $PID).Path
+  $ErrorActionPreference = 'Continue'
+  $output = & $shell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $runnerDir 'runner_common.ps1') hashwrite $runnerDir $hashFile 2>&1
+  if ($LASTEXITCODE -ne 0) { Write-Step "WARNING: runner hashes not written to ${hashFile}: $(@($output) -join ' ')"; return }
+  Write-Step "wrote runner hashes of the installed tools to $hashFile"
+}
+
 function Copy-Tools([string]$From, [string]$To, [string]$Step) {
   & robocopy.exe $From $To /E /COPY:DAT /DCOPY:DAT /IS /IT /R:1 /W:1 /XJ /NFL /NDL /NJH /NJS /NP | Out-Null
   if ($LASTEXITCODE -lt 0 -or $LASTEXITCODE -ge 8) { throw "$Step failed (robocopy exit $LASTEXITCODE)" }
@@ -378,6 +393,7 @@ try {
   if (Test-ToolsMatch $liveTools $snapshot $sourceFiles) {
     Assert-IdleLane
     Write-Step "tools already match origin/main $commit"
+    Write-RunnerHashes
     exit 0
   }
 
@@ -408,6 +424,7 @@ try {
     } catch { throw "restore failed, old tools kept at ${original}: $($_.Exception.Message)" }
     throw $installError
   }
+  Write-RunnerHashes
   if ($NoRotate) { Write-Step 'kept old backups: -NoRotate (R417)' }
   else { try { Remove-OldBackups } catch { Write-Step "kept old backups: $($_.Exception.Message)" } }
 } catch {
