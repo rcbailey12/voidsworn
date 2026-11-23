@@ -76,7 +76,15 @@ var _digits := RegEx.create_from_string("[0-9@]+")
 func _on_node_added(n: Node) -> void:
 	if n is GeometryInstance3D:
 		var p := n.get_parent()
-		var key := "%s<%s" % [_digits.sub(str(n.name), "", true), _digits.sub(str(p.name), "", true) if p != null else "-"]
+		var g := p.get_parent() if p != null else null
+		# LOAD23 (cold s25: 7 meshes under an unnamed node in the cuts frame, 83 pipelines): the grandparent and the script
+		# line that added the mesh (a debug build's stack), so the row names who adds it
+		var key := "%s<%s<%s" % [_digits.sub(str(n.name), "", true), _digits.sub(str(p.name), "", true) if p != null else "-", _digits.sub(str(g.name), "", true) if g != null else "-"]
+		for fr in get_stack():
+			var src := str(fr.get("source", ""))
+			if src != "" and not src.ends_with("load_1434.gd"):
+				key += " @%s:%d" % [src.get_file(), int(fr.get("line", 0))]
+				break
 		_nodes_now[key] = int(_nodes_now.get(key, 0)) + 1
 
 

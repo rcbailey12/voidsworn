@@ -13,13 +13,15 @@ extends RefCounted
 const BIT := 1 << 19          # render layer 20: never drawn by the battle camera or its lights
 const META := &"stage_in_layers"
 const MAX_STEP := 16          # most new-material meshes given back in one frame
-const SLOW_MS := 250.0        # a draw slower than this halves the next frame's count
-const QUICK_MS := 100.0       # a draw quicker than this raises it by two
+const SLOW_MS := 200.0        # a draw that showed new meshes and took longer than this drops the count back to one
+const QUICK_MS := 60.0        # a draw that showed new meshes and took less than this raises it by one
 
 var root: Node = null
 var active := false
 var paused := false           # true while the effect warm-up runs (it spreads its own meshes)
-var step := 2                 # new-material meshes given back after the next draw
+var step := 1                 # new-material meshes given back after the next draw (LOAD23: starting at 2 and growing on
+                              # empty draws let all four effect pools out at once, 36 pipelines in a 1.3 s title frame)
+var _fresh_last := 0          # new-material meshes the last draw showed for the first time
 var given := 0                # meshes given back so far (the load bench reads it)
 var waiting_peak := 0
 var late := 0                 # meshes still waiting when the drain's 10 s ran out (0: it finished)
@@ -126,10 +128,12 @@ func _on_pre() -> void:
 func _on_post() -> void:
 	if _pre_us > 0:
 		_draw_ms = (Time.get_ticks_usec() - _pre_us) / 1000.0
-	if _draw_ms > SLOW_MS:
-		step = maxi(1, step / 2)
-	elif _draw_ms < QUICK_MS:
-		step = mini(MAX_STEP, step + 2)
+	# only a draw that showed new materials says what the next ones may cost
+	if _fresh_last > 0:
+		if _draw_ms > SLOW_MS:
+			step = 1
+		elif _draw_ms < QUICK_MS:
+			step = mini(MAX_STEP, step + 1)
 	var fresh := 0
 	var keep: Array = []
 	for id in _queue:
@@ -147,6 +151,7 @@ func _on_post() -> void:
 		else:
 			keep.append(id)
 	_queue = keep
+	_fresh_last = fresh
 	if _queue.is_empty() and late > 0:
 		stop()   # a drain that ran past its time has given the last ones back
 
