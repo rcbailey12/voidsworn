@@ -423,11 +423,22 @@ func _review_fixes() -> void:
 	# Wave 0 regression set: a shield-only hit leaves no hull mark; a ship removed and added again (revive) starts clean
 	var sq = _ship("hegemony", true, true)
 	sq.sync(fx, {"hp": 100, "maxHp": 100, "sh": [10, 10, 10, 10], "sec": {}})
+	var sa = _ship("voidsworn", false)
+	sa.root.position = sq.root.position + Vector3(0, 0, -30)   # a separate attacker, off the target's side
 	var marks0: int = sq._marks.size()
-	fx.volley(sq.id, "battery", sq.id, {"weapon_id": "battery", "shots": [true], "hits": [{"shield": 8, "hull": 0, "section": "mid", "crit": false}]})
+	var vs: Dictionary = fx.volley(sa.id, "battery", sq.id, {"weapon_id": "battery", "shots": [true], "hits": [{"shield": 8, "hull": 0, "section": "mid", "crit": false}]})
+	var hp_s: Array = vs.get("hit_pts", [])
+	var on_bubble: bool = int(vs.get("skipped", 0)) == 0 and (vs.get("impacts", []) as Array).size() == 1 and hp_s.size() == 1 and (hp_s[0] as Vector3).is_finite()
 	for k in 120:
 		fx.step(1.0 / 60.0)
+	check(on_bubble and float(sq._shield_until) > 0.0, "Wave 0: the shield-only shot meets the bubble (one impact, finite shield point, ripple played)")
 	check(sq._marks.size() == marks0, "Wave 0: a shield-only hit leaves no hull mark (%d marks)" % (sq._marks.size() - marks0))
+	# the companion hull hit on the same fixture does leave a mark, so the check above can fail
+	fx.volley(sa.id, "battery", sq.id, {"weapon_id": "battery", "shots": [true], "hits": [{"shield": 0, "hull": 9, "section": "mid", "crit": false}]})
+	for k in 120:
+		fx.step(1.0 / 60.0)
+	check(sq._marks.size() > marks0, "Wave 0: the companion hull hit on the same fixture leaves a mark (%d)" % (sq._marks.size() - marks0))
+	fx.remove_ship(sa.id)
 	var rid: String = sq.id
 	sq.sync(fx, _state(30, 25, 30))
 	flush(sq)
