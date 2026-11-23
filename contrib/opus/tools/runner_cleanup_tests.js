@@ -10,6 +10,11 @@ const common = path.resolve(__dirname, '../../../tools/pc/runner_common.ps1');
 const janitor = path.join(path.dirname(common), 'janitor.ps1');
 const ownerFile = '.voidsworn-run-owner';
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner-cleanup-proof-'));
+// PR 1813 measured a 2.1x slowdown with overlapping PC lanes. Allow 65 s instead of 30 s per child.
+const childTimeout = 65000;
+// The first full dry scan still had folders left after 65 s with lanes A, B and D checking.
+// Allow 140 s for a Windows janitor scan (65 s x 2.1, rounded up).
+const janitorTimeout = windows ? 140000 : childTimeout;
 const temp = path.join(root, 'temp'), board = path.join(root, 'board');
 const mirror = path.join(root, 'mirror.git'), repo = path.join(board, 'repo');
 const profile = path.join(root, 'profile'), flag = path.join(profile, 'Downloads', 'voidsworn_test', 'gpu_go.txt');
@@ -20,12 +25,14 @@ function write(file, value) {
   fs.writeFileSync(file, value);
 }
 function read(file) { return fs.readFileSync(file, 'utf8'); }
-function execute(exe, args, input, extra = {}) {
+function execute(exe, args, input, extra = {}, timeout = childTimeout) {
   const merged = { ...env, ...extra };
   for (const key of Object.keys(merged)) if (merged[key] === null) delete merged[key];
-  const r = spawnSync(exe, args, { input, cwd: root, env: merged, encoding: 'utf8', windowsHide: true, timeout: 30000 });
-  if (r.error) throw r.error;
-  assert.equal(r.status, 0, `${exe} ${args.join(' ')}: ${r.stdout}\n${r.stderr}`);
+  // Janitor can start another PowerShell. Its working directory must survive fixture cleanup if its parent times out.
+  const r = spawnSync(exe, args, {
+    input, cwd: path.dirname(root), env: merged, encoding: 'utf8', windowsHide: true, timeout
+  });
+  assert.equal(r.status, 0, `${exe} ${args.join(' ')}: ${r.error || ''}\n${r.stderr}\n${r.stdout}`);
   return r.stdout.trim();
 }
 const git = (args, input) => execute('git', args, input);
@@ -493,6 +500,12 @@ try {
   dateTree(ownedLinked, 26);
   // A process naming a longer folder name (this name plus "-other") does not keep this one.
   const legacyNear = scratch(temp, `voidsworn-run-${'b8'.repeat(16)}`, 30);
+  const sharedSize = 65536;
+  const sharedFile = path.join(legacyOld, 'shared.bin');
+  fs.writeFileSync(sharedFile, Buffer.alloc(sharedSize));
+  fs.linkSync(sharedFile, path.join(legacyNear, 'shared.bin'));
+  dateTree(legacyOld, 30);
+  dateTree(legacyNear, 30);
   // A folder another account owns (Codex sandbox scratch) is left in place; the rest goes (R8 dry run: 68 rows unsized).
   const legacyUnreadable = windows || process.getuid?.() === 0 ? '' : scratch(temp, `voidsworn-run-${'a7'.repeat(16)}`, 30);
   const lockedPart = legacyUnreadable && path.join(legacyUnreadable, 'nested', 'sandbox-owned');
@@ -551,7 +564,7 @@ try {
       ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', command], undefined,
       { JANITOR_PROOF_SCRIPT: janitor, JANITOR_PROOF_LOCK: heldPath, PC_RUN_SCRATCH: '', PC_TEST_GH_DB: '',
         JANITOR_PROOF_ACTIVE: activeMarker, JANITOR_PROOF_HELPER: path.join(helperLeased, '.voidsworn-run-active'), PC_TEST_JANITOR_NOW: fixtureNow.toISOString(),
-        PC_TEST_COMMAND_LINES: `fixture.exe --work "${legacyProcess}${path.sep}nested"\nfixture.exe ${legacyNear}-other`, ...extra });
+        PC_TEST_COMMAND_LINES: `fixture.exe --work "${legacyProcess}${path.sep}nested"\nfixture.exe ${legacyNear}-other`, ...extra }, janitorTimeout);
   }
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
   const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, genNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
@@ -653,8 +666,8 @@ try {
   assert(dry.includes(`link not followed: ${path.join(ownedLinked, 'nested', 'ships-link')} -> `), 'the link and its target are logged');
   decision(dry, legacyNear, 'would remove');
   if (legacyUnreadable) {
-    assert.match(decision(dry, legacyUnreadable, 'would remove'), /1 folders another account owns left in place; scratch named by our tools/);
-    assert(dry.includes(`folder not readable by this account, left in place: ${lockedPart}`), 'the unreadable folder is listed');
+    assert.match(decision(dry, legacyUnreadable, 'would remove'), /1 folders another account owns cannot be removed and are not counted; scratch named by our tools/);
+    assert(dry.includes(`cannot remove: ${lockedPart} (another account owns it or it cannot be read; left in place)`), 'the unreadable folder is listed');
   }
   if (!windows) {
     // With no process list (and no test list), older scratch is kept.
@@ -676,6 +689,15 @@ try {
   assert.match(dry, /helper scratch lock is held/);
   assert.match(dry, /shared generated copy could not be verified/);
   assert.match(dry, /free space before: [\d]+ bytes[\s\S]*free space after: [\d]+ bytes\r?\nall done$/);
+  // The individual rows exclude the cross-folder hard link; the closing total counts its file once.
+  for (const folder of [legacyOld, legacyNear]) {
+    assert.match(decision(dry, folder, 'would remove'), new RegExp(sharedSize + ' in hard links shared outside it'));
+  }
+  const total = /^space would be freed: (\d+) bytes \([\d.,]+ GB\) by (\d+) removals; hard links shared outside (?:the removal set|a removed folder) are not counted; \d+ folders another account owns cannot be removed and are not counted$/m.exec(dry);
+  assert(total, 'dry run total line: ' + dry.slice(-800));
+  const rows = [...dry.matchAll(/^(?:kept checkout )?would remove\b[^\n]*\((\d+) bytes would be freed/gm)].map(m => +m[1]);
+  assert.equal(rows.length, +total[2], 'one count per would-remove row: ' + rows.length + ' vs ' + total[2]);
+  assert.equal(+total[1] - rows.reduce((a, b) => a + b, 0), sharedSize, 'the total adds the cross-folder file once');
   assert.deepEqual(fs.readdirSync(salvageRoot), ['earlier']);
   // Issue 1396 (the first PC dry run ran 1 h 47 min unfinished): the time cap stops before the next folder and says where;
   // a dry run never writes janitor_resume.txt; a resume file makes the job folders start at its name and wrap around.
@@ -836,10 +858,15 @@ try {
   assert.match(runJanitor(), /janitor skipped during the PC pause/);
   assert(fs.existsSync(pausedTemp));
   console.log('PASS janitor: dry and live decisions, retained edits and history, issue locks, age, safe paths, and the automatic rate limit');
+} catch (error) {
+  // Print the check failure before teardown so a Windows sharing error cannot hide it.
+  console.error(error);
+  process.exitCode = 1;
 } finally {
   for (const dir of fs.readdirSync(path.join(root, 'temp'), { withFileTypes: true })) {
     const locked = path.join(root, 'temp', dir.name, 'nested', 'sandbox-owned');
     if (fs.existsSync(locked)) fs.chmodSync(locked, 0o755);
   }
-  fs.rmSync(root, { recursive: true, force: true, maxRetries: 3 });
+  // Lane A exhausted the old 600 ms retry window. Six 100 ms backoff steps allow up to 2.1 s on a busy path.
+  fs.rmSync(root, { recursive: true, force: true, maxRetries: 6, retryDelay: 100 });
 }

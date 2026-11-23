@@ -81,8 +81,41 @@ func _run() -> void:
 	HULL.reset_late()
 	check(HULL.late_shader_count() == 0 and HULL.late_shader_names().is_empty() and not HULL.late_watch,
 		"a reset starts a new run clean")
+	await _check_damage_warmup(fx, world)
 	print("LATE_SHADER failures=%d" % failures)
 	world.queue_free()
 	await process_frame
 	FX.clear_static()
 	quit(1 if failures else 0)
+
+
+func _check_damage_warmup(fx, world: Node3D) -> void:
+	var cam := Camera3D.new()
+	world.add_child(cam)
+	fx.manual = true
+	fx.setup({"camera": cam, "quality": "low"})
+	# Model the deferred fog policy changing a source after its template was cached.
+	var painted := StandardMaterial3D.new()
+	var before: ShaderMaterial = fx.hull_damage_template(painted, 10.0, false)
+	painted.disable_fog = true
+	var fogless: ShaderMaterial = fx.hull_damage_template(painted, 10.0, false)
+	check(before.shader != fogless.shader and fogless.shader.code.contains("fog_disabled"),
+		"changing the source's fog mode selects a different damage shader")
+	fogless = null
+	# Start from a fresh FX so the explicit warm list must supply the fogless
+	# variants, even when no ship has been added yet.
+	var warm := FX.new()
+	world.add_child(warm)
+	warm.manual = true
+	warm.setup({"camera": cam, "quality": "low"})
+	fx.release()
+	await warm.warmup(cam, 0)
+	check(HULL.late_watch, "the warm-up enables the late watch")
+	for alpha in [false, true]:
+		var source := StandardMaterial3D.new()
+		source.disable_fog = true
+		if alpha:
+			source.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		var power: ShaderMaterial = warm.hull_damage_template(source, 10.0, false, true)
+		check(power.shader.code.contains("fog_disabled"), "the power-down variant keeps the source fog mode")
+	check(HULL.late_shader_count() == 0, "opaque and alpha fogless damage and power shaders are still warm")

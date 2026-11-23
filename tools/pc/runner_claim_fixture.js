@@ -16,7 +16,6 @@ Add-Content -LiteralPath $env:PC_TEST_GH_TRACE -Value ($call | ConvertTo-Json -D
 if ($env:PC_TEST_GH_FAIL -eq '*' -or $env:PC_TEST_GH_FAIL -eq $method -or $env:PC_TEST_GH_FAIL -eq "$method $endpoint") { Write-Output 'fake gh failure'; exit 55 }
 $db = Get-Content -LiteralPath $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
 if ($endpoint -match '/issues/[0-9]+$' -and $method -eq 'GET') {
-  if ($env:PC_TEST_GH_HOLD -eq '1') { Start-Sleep -Milliseconds 600 }
   $db.issue.labels = if ($db.running) { @(@{ name = 'running' }) } else { @() }
   $db.issue | ConvertTo-Json -Depth 12 -Compress
 } elseif ($endpoint -match '/(pulls|branches|issues)\\?') {

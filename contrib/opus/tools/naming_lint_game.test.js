@@ -33,6 +33,10 @@ try {
   assert.deepStrictEqual(scan([negative], { hard: [], word: ['relic'] }), []);
   fs.writeFileSync(positive, '"The Hollow Sun warps this field; warped space"; "warp drive"; "the Warp"; "drop out of warp";');
   assert.strictEqual(scan([positive], { hard: [], word: ['warp'] }).length, 3);
+  fs.writeFileSync(positive, '"Turn of the Knife"; "Slade the Knife"');
+  const knife = { hard: ['the Knife'], word: [] };
+  assert.strictEqual(scan([positive], knife).length, 2);
+  assert.strictEqual(scan([positive], knife, { _phrases: { 'the Knife': ['Turn of the Knife'] } }).length, 1);
   console.log('naming_lint_game.test: pass');
 } finally {
   for (const name of fs.readdirSync(dir)) fs.unlinkSync(path.join(dir, name));

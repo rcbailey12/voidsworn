@@ -58,6 +58,10 @@ function Public-RunnerText($status, $reason, $code, $folder) {
     }
   }
 }
+# Issue 1739: what a removal would really free (hard links, other accounts' folders). Optional, so a lone copy of this
+# file (a test fixture, hashwrite) still runs; without it sizes count every listed byte, as before.
+$diskSpaceHelpers = Join-Path $PSScriptRoot 'disk_space.ps1'
+if (Test-Path -LiteralPath $diskSpaceHelpers) { . $diskSpaceHelpers }
 if ($args[0] -eq 'publication-library') { return }
 $ErrorActionPreference = 'Stop'
 $mode = $args[0]
@@ -422,6 +426,43 @@ function Assert-NoHiddenSparseEdits($repo, $excluded, $flags) {
     }
   }
 }
+function Assert-SparseProfileChangeSafe($repo, $excluded, $patterns) {
+  # The new profile must be one the runner writes: none, or '/*' then the left-out folders in the fixed order.
+  $wanted = @($codeCheckoutDirs | Where-Object { @($patterns) -ccontains "!/$_/" })
+  if ((@($patterns) -join "`n") -cne ((Code-CheckoutPatterns $wanted) -join "`n")) { throw 'sparse checkout profile differs and the new one is not runner-managed' }
+  foreach ($dir in @($wanted | Where-Object { @($excluded) -notcontains $_ })) {
+    $full = Join-Path $repo $dir
+    if (-not (Test-Path -LiteralPath $full)) { continue }
+    $item = Get-Item -LiteralPath $full -Force
+    if ($item -isnot [IO.DirectoryInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "sparse checkout profile differs and $dir is not a plain folder" }
+    $tracked = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+    foreach ($path in @(Read-CleanupGit @('-C',$repo,'-c','core.quotePath=false','ls-files','--',"$dir/"))) { $null = $tracked.Add($path) }
+    if ($gitExit -ne 0) { throw "sparse checkout profile differs and the tracked files in $dir were not verified" }
+    foreach ($entry in [IO.Directory]::EnumerateFileSystemEntries($full, '*', [IO.SearchOption]::AllDirectories)) {
+      $relative = $entry.Substring($repo.TrimEnd('\','/').Length + 1).Replace('\', '/')
+      $info = Get-Item -LiteralPath $entry -Force
+      if ($info.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "sparse checkout profile differs and $relative is a link" }
+      if ($info -is [IO.DirectoryInfo]) { continue }
+      if (-not $tracked.Contains($relative)) { throw "sparse checkout profile differs and $relative is not tracked, so leaving $dir out could lose it" }
+    }
+  }
+}
+function Set-RunnerSparseProfile($repo, $patterns) {
+  # Applies a profile Assert-SparseProfileChangeSafe accepted, then proves the checkout carries it.
+  if (-not @($patterns).Count) {
+    Must-Git @('-C',$repo,'sparse-checkout','disable')
+  } else {
+    # --worktree: git sparse-checkout disable (an agent can run it) writes these to config.worktree, which wins over
+    # .git/config; without that extension --worktree is plain --local.
+    Must-Git @('-C',$repo,'config','--worktree','core.sparseCheckout','true')
+    Must-Git @('-C',$repo,'config','--worktree','core.sparseCheckoutCone','false')
+    $null = [IO.Directory]::CreateDirectory((Join-Path $repo '.git/info'))
+    Put (Join-Path $repo '.git/info/sparse-checkout') ((@($patterns) -join "`n") + "`n")
+    Must-Git @('-C',$repo,'sparse-checkout','reapply')
+  }
+  $now = @(Get-ManagedSparseExclusions $repo)
+  if (((Code-CheckoutPatterns $now) -join "`n") -cne (@($patterns) -join "`n")) { throw 'sparse checkout profile change did not apply; checkout kept as is' }
+}
 function Get-RepoCleanupState($repo, $mirror, $patterns = @(), $allowWork = $false, $forRemoval = $false) {
   if ((Get-Item -LiteralPath $repo -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'checkout is a linked path' }
   $gitDir = Join-Path $repo '.git'
@@ -432,11 +473,16 @@ function Get-RepoCleanupState($repo, $mirror, $patterns = @(), $allowWork = $fal
   $top = @(Read-CleanupGit @('-C',$repo,'rev-parse','--show-toplevel'))
   if ($gitExit -ne 0) { throw "checkout root not verified (Git exit ${gitExit}: $($top[0]))" }
   if ([IO.Path]::GetFullPath($top[0]) -ne [IO.Path]::GetFullPath($repo)) { throw 'checkout root not verified' }
-  # Changing sparse patterns can discard ignored files, so reuse needs the same runner-managed profile (or none).
   # Removal accepts any runner-managed profile (issue 1186); any other sparse checkout is kept.
+  # Issue 1739: the profile is per issue (a Brief or Deliver to line can opt a folder back in), and an agent can turn
+  # sparse off, so refusing every change kept a ~28 GB copy per run on lane D. A runner-managed (or full) checkout now
+  # takes the new profile in place when that cannot lose a byte: a folder it newly leaves out must hold only tracked
+  # files (clean, checked by the status below), never an untracked or ignored one. Anything else is still kept.
   $excluded = @(Get-ManagedSparseExclusions $repo)
+  $profileChange = $false
   if (-not $forRemoval -and ((@($patterns) -join "`n") -cne ((Code-CheckoutPatterns $excluded) -join "`n"))) {
-    throw 'sparse checkout profile differs'
+    Assert-SparseProfileChangeSafe $repo $excluded $patterns
+    $profileChange = $true
   }
   $shallow = @(Read-CleanupGit @('-C',$repo,'rev-parse','--is-shallow-repository'))
   # Reuse needs full history. Removal only needs every local commit in the mirror, checked below, so a shallow helper
@@ -478,12 +524,15 @@ function Get-RepoCleanupState($repo, $mirror, $patterns = @(), $allowWork = $fal
     if (-not $allowWork) { throw "local history not in fetched mirror: $id" }
     $line
   }
-  return [pscustomobject]@{ Caches = $caches; Status = $status; Local = @($onlyLocal); MirrorCommits = $pushed; Superseded = $superseded }
+  return [pscustomobject]@{ Caches = $caches; Status = $status; Local = @($onlyLocal); MirrorCommits = $pushed; Superseded = $superseded; ProfileChange = $profileChange }
 }
 function Get-RebuildableRepoFiles($repo, $mirror, $patterns = @()) {
-  return (Get-RepoCleanupState $repo $mirror $patterns).Caches
+  $state = Get-RepoCleanupState $repo $mirror $patterns
+  $script:reuseProfileChange = [bool]$state.ProfileChange
+  return $state.Caches
 }
 function Can-ReuseRepo($repo, $mirror, $patterns) {
+  $script:reuseProfileChange = $false
   if (-not (Test-Path -LiteralPath $repo)) { return $false }
   try {
     $caches = @(Get-RebuildableRepoFiles $repo $mirror $patterns)
@@ -611,6 +660,13 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
   Assert-PlainDirectory $directory
   $bytes = 0L; $latest = $directory.LastWriteTimeUtc; $links = @(); $unreadable = @()
   $fileLatest = [DateTime]::MinValue; $worktreeLatest = [DateTime]::MinValue
+  # Issue 1739: FreeBytes is what removing the folder would give back. A hard link shared with a file outside it frees
+  # nothing, and a folder another account owns cannot be removed by this one, so neither counts.
+  $tally = $null
+  if (Get-Command New-FreeTally -ErrorAction SilentlyContinue) {
+    $tally = New-FreeTally
+    if (Test-OtherAccountFolder $directory) { throw "owned by another account: $($directory.FullName)" }
+  }
   $gitPrefix = (Join-Path $directory.FullName '.git') + [IO.Path]::DirectorySeparatorChar
   $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
   $pending.Push($directory)
@@ -623,6 +679,7 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
       if (-not $allowUnreadable -or $next.FullName -eq $directory.FullName) { throw }
       $unreadable += ,$next; continue
     }
+    $batch = New-Object 'Collections.Generic.List[object]'; $folders = New-Object 'Collections.Generic.List[object]'
     foreach ($item in $entries) {
       if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
         # Links are listed, never followed or counted (legacy selftest fixtures hold junctions to shared ships).
@@ -631,17 +688,45 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
         continue
       }
       if ($item.LastWriteTimeUtc -gt $latest) { $latest = $item.LastWriteTimeUtc }
-      if ($item -is [IO.DirectoryInfo]) { $pending.Push($item); continue }
+      if ($item -is [IO.DirectoryInfo]) {
+        if ($tally) { $folders.Add($item) } else { $pending.Push($item) }
+        continue
+      }
       $bytes += $item.Length
+      if ($tally) { $batch.Add($item) }
       if ($item.LastWriteTimeUtc -gt $fileLatest) { $fileLatest = $item.LastWriteTimeUtc }
       if ($checkout -and $item.LastWriteTimeUtc -gt $worktreeLatest -and
           -not $item.FullName.StartsWith($gitPrefix, [StringComparison]::OrdinalIgnoreCase)) {
         $worktreeLatest = $item.LastWriteTimeUtc
       }
     }
+    if ($tally -and $batch.Count) { Add-FreeTallyBatch $tally $batch.ToArray() }
+    if ($folders.Count) {
+      $foreign = @(Select-OtherAccountFolders $folders.ToArray())
+      foreach ($folder in $folders) {
+        if ($foreign -contains $folder) {
+          # Listed with the unreadable folders: left in place by a removal and never counted.
+          if (-not $allowUnreadable) { throw "folder another account owns: $($folder.FullName)" }
+          $unreadable += ,$folder; continue
+        }
+        $pending.Push($folder)
+      }
+    }
   }
+  $free = $bytes; $shared = 0L; $unchecked = 0L
+  if ($tally) { $sum = Complete-FreeTally $tally; $free = $sum.Free; $shared = $sum.SharedOutside; $unchecked = $sum.Unchecked }
   return [pscustomobject]@{ Bytes = $bytes; Latest = $latest; FileLatest = $fileLatest; WorktreeLatest = $worktreeLatest
-    Links = $links; Unreadable = $unreadable }
+    Links = $links; Unreadable = $unreadable; FreeBytes = $free; SharedBytes = $shared; UncheckedBytes = $unchecked; FreeTally = $tally }
+}
+function Format-CleanupSize($stats) {
+  if (Get-Command Format-FreeBytes -ErrorAction SilentlyContinue) { return (Format-FreeBytes $stats) }
+  return "$($stats.Bytes) bytes"
+}
+function Add-WouldFree($stats) {
+  # Only approved folders reach here. In a dry run, combine their links before deciding what would be freed.
+  if ($script:plannedFreeTally -and $stats.FreeTally) { Merge-FreeTally $script:plannedFreeTally $stats.FreeTally }
+  else { $script:wouldFreeBytes += [long]$stats.FreeBytes }
+  $script:wouldFreeCount++
 }
 function Get-LinkTarget($link) {
   # Where a link points, for the log only: it is never followed.
@@ -764,7 +849,7 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
   $size = 'size unavailable'; $mirrorLock = $null
   try {
     $stats = Measure-CleanupDirectory $copy -Checkout
-    $size = "$($stats.Bytes) bytes"
+    $size = Format-CleanupSize $stats
     $listed = Get-BoardKeepReason $candidate
     if ($listed) { throw $listed }
     if ($keepReason) { throw $keepReason }
@@ -795,12 +880,13 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
       $reason = if ($reason -eq 'rebuildable') { $archived } else { "$reason; $archived" }
       if (-not $dryRun) { Save-SupersededArchive $candidate $state.Superseded $archive }
     }
-    if ($dryRun) { Log "kept checkout would remove ($reason): $candidate ($size)"; return }
+    if ($dryRun) { Add-WouldFree $stats; Log "kept checkout would remove ($reason): $candidate ($size)"; return }
     $current = Measure-CleanupDirectory (Get-Item -LiteralPath $candidate -Force) -Checkout
     # Include Git metadata in the final check for changes made by another process.
     if ($current.Latest -ne $stats.Latest -or $current.WorktreeLatest -ne $stats.WorktreeLatest -or
         $current.Bytes -ne $stats.Bytes) { throw 'checkout changed during the scan' }
     Remove-CleanupDirectory $copy
+    Add-WouldFree $stats
     Log "kept checkout removed ($reason): $candidate ($size)"
   } catch { Log "kept checkout retained: $candidate ($size; $($_.Exception.Message))" }
   finally { if ($mirrorLock) { $mirrorLock.Dispose() } }
@@ -815,7 +901,7 @@ function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false, $now = [DateTi
     foreach ($copy in $copies) {
       if ($copy.Parent.FullName -ne $board) { Log "kept checkout retained: $($copy.FullName) (size unavailable; outside the board directory)"; continue }
       if ($copy -eq $copies[0]) {
-        try { $stats = Measure-CleanupDirectory $copy; Log "kept checkout retained (newest): $($copy.FullName) ($($stats.Bytes) bytes)" }
+        try { $stats = Measure-CleanupDirectory $copy; Log "kept checkout retained (newest): $($copy.FullName) ($(Format-CleanupSize $stats))" }
         catch { Log "kept checkout retained (newest): $($copy.FullName) (size unavailable; $($_.Exception.Message))" }
         continue
       }
@@ -1199,7 +1285,8 @@ try {
       Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main')
       $reuse = Can-ReuseRepo $repo $mirror $patterns
       if ($reuse) {
-        Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags',$mirror,'+refs/heads/*:refs/remotes/origin/*')
+        # --prune: a reused slot must drop a branch GitHub deleted, or a rerun would continue its stale tip (Artoo on PR 1804).
+        Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags','--prune',$mirror,'+refs/heads/*:refs/remotes/origin/*')
       }
     } finally { $lock.Dispose() }
     # A pinned lane must not hold the shared mirror lock for the ten-minute preservation wait.
@@ -1234,7 +1321,14 @@ try {
       $null = [IO.Directory]::CreateDirectory((Join-Path $repo '.git/info'))
       Put (Join-Path $repo '.git/info/sparse-checkout') (($patterns -join "`n") + "`n")
     }
-    $null = Git @('-C',$repo,'checkout','--no-overwrite-ignore','-q','-B',$br,'refs/remotes/origin/main')
+    # Issue 1739 (1747 run 2): a rerun started from main alone and its commit kept the earlier tip only as a second
+    # parent, so the branch lost run 1's fixes. When the delivery branch already exists, the run starts from its tip
+    # and main is merged on top; Base and -partial merges follow as before.
+    $start = 'refs/remotes/origin/main'
+    $earlier = @(Git @('-C',$repo,'rev-parse','--verify','--quiet',"refs/remotes/origin/$br^{commit}"))
+    $continuing = $gitExit -eq 0 -and $earlier.Count -and $earlier[0] -match '^[0-9a-f]{40,64}$'
+    if ($continuing) { $start = "refs/remotes/origin/$br" }
+    $null = Git @('-C',$repo,'checkout','--no-overwrite-ignore','-q','-B',$br,$start)
     $switchExit = $gitExit
     if ($reuse) {
       # A writer may have changed the checkout after eligibility. Stop without discarding its bytes.
@@ -1242,9 +1336,30 @@ try {
       catch { throw "checkout changed while starting; kept as is: $($_.Exception.Message)" }
     }
     if ($switchExit -ne 0) { throw "git checkout failed (exit $switchExit); see git_log.txt" }
+    if ($reuse -and $script:reuseProfileChange) {
+      try { Set-RunnerSparseProfile $repo $patterns }
+      catch { throw "checkout profile change failed; kept as is: $($_.Exception.Message)" }
+      $shown = if (@($patterns).Count) { "leaves out $((@($codeCheckoutDirs | Where-Object { @($patterns) -ccontains "!/$_/" })) -join ', ')" } else { 'full checkout' }
+      Log "sparse checkout profile changed in place ($shown); no tracked edit or untracked file was in a folder it leaves out"
+    }
     if ($reuse) { Log 'earlier checkout reused in place; ignored files left in place' }
     $base = @(Git @('-C',$repo,'rev-parse','HEAD'))[0]
     Put (Join-Path $out 'base_commit.txt') $base
+    Put (Join-Path $out 'branch_tip.txt') $(if ($continuing) { $earlier[0] })
+    if ($continuing) {
+      if ($base -ne $earlier[0]) { throw "checkout of the earlier tip of $br did not land on $($earlier[0]); no agent started" }
+      Log "continuing $br from its earlier tip $($earlier[0]), not from main alone (issue 1739)"
+      $note = "Continued from the earlier tip of $br ($($earlier[0])): the earlier runs' work is already in this checkout. Keep it; do not restart from main."
+      $null = Git @('-C',$repo,'merge-base','--is-ancestor','refs/remotes/origin/main','HEAD')
+      if ($gitExit -eq 1) {
+        $null = Git @('-C',$repo,'-c','commit.gpgsign=false','merge','--no-ff','--no-edit','--no-gpg-sign','-m',"Runner: origin/main into the earlier tip of $br",'refs/remotes/origin/main')
+        if ($gitExit -ne 0) { throw "main merge into the earlier tip of $br failed; checkout and conflict kept; no agent started (see git_log.txt)" }
+        $note += ' The runner merged origin/main on top and committed the merge.'
+      } elseif ($gitExit -ne 0) { throw "could not tell whether main is in the earlier tip of $br; no agent started" }
+      $resume = Read (Join-Path $out 'resume.txt')
+      Put (Join-Path $out 'resume.txt') ("$resume`n$note".Trim())
+      Log $note
+    }
     $partial = "refs/remotes/origin/$br-partial"
     $tip = @(Git @('-C',$repo,'rev-parse','--verify','--quiet',$partial))
     if ($gitExit -eq 0) {
@@ -1261,7 +1376,9 @@ try {
       $message = (Git @('-C',$repo,'log','-1','--format=%B',$partial)) -join "`n"
       $note = [regex]::Match($message, '(?ms)^## Runner resume note \(issue 818\)\r?\n.*?^## End runner resume note')
       if ($note.Success) { $resume += "`n`n" + $note.Value }
-      Put (Join-Path $out 'resume.txt') $resume
+      # Keep the continuation note written above (issue 1739).
+      $earlierNote = Read (Join-Path $out 'resume.txt')
+      Put (Join-Path $out 'resume.txt') ("$earlierNote`n$resume".Trim())
     }
   }
   elseif ($mode -eq 'base') {
@@ -1543,9 +1660,146 @@ try {
       }
       return ''
     }
+    # Issue 1352: stop a probe that missed its deadline, and every process it started. A wrapper that exits but leaves a
+    # child holding stdout open has no live parent to follow, so the children are found by their parent PID and start
+    # time (a child is never older than its parent). Cleanup is bounded: 5 s at most, then the probe is given up on.
+    function Stop-ProbeTree($proc, $rootStart) {
+      $kill = @{}
+      $windows = [Environment]::OSVersion.Platform -eq 'Win32NT'
+      $swept = $false
+      if ($windows -and $rootStart) {
+        try {
+          $table = @(Get-CimInstance -ClassName Win32_Process -ErrorAction Stop | ForEach-Object {
+            New-Object PSObject -Property @{ id = [int]$_.ProcessId; parent = [int]$_.ParentProcessId; born = $_.CreationDate } })
+          $swept = $true
+          $born = @{}
+          $born[$proc.Id] = $rootStart
+          $queue = New-Object 'System.Collections.Generic.Queue[int]'
+          $queue.Enqueue($proc.Id)
+          while ($queue.Count) {
+            $parentId = $queue.Dequeue()
+            foreach ($row in $table) {
+              if ($row.parent -ne $parentId -or $born.ContainsKey($row.id) -or -not $row.born) { continue }
+              if ($row.born -lt $born[$parentId].AddSeconds(-1)) { continue }
+              $born[$row.id] = $row.born
+              $queue.Enqueue($row.id)
+            }
+          }
+          foreach ($id in $born.Keys) { $kill[[int]$id] = $true }
+        } catch { }
+      }
+      $kill[[int]$proc.Id] = $true
+      $victims = @()
+      foreach ($id in $kill.Keys) {
+        try { $v = [System.Diagnostics.Process]::GetProcessById($id); $null = $v.Handle; $victims += $v } catch { }
+      }
+      if ($windows -and -not $swept) {
+        # No process table: taskkill can still walk the tree while the wrapper is alive.
+        try { $null = & taskkill.exe /PID $proc.Id /T /F 2>&1 } catch { }
+      }
+      foreach ($v in $victims) { try { $v.Kill() } catch { } }
+      $stop = [DateTime]::UtcNow.AddSeconds(5)
+      foreach ($v in $victims) {
+        $left = [int][Math]::Max(0, ($stop - [DateTime]::UtcNow).TotalMilliseconds)
+        try { $null = $v.WaitForExit($left) } catch { }
+        try { $v.Dispose() } catch { }
+      }
+    }
+    # Issue 1352: run one probe under ONE 20 s deadline that covers the process exit and both pipe reads. ok = it exited 0
+    # inside the deadline with its pipes closed. A probe that misses the deadline (a hung tool, or a wrapper that exits
+    # but leaves a child holding stdout) has its process tree stopped and counts as not ok (timedOut), so the caller
+    # moves to the next candidate. utf8Out: a Python probe, asked for UTF-8 so a path with accents arrives intact.
+    function Invoke-Probe($exe, $argText, $utf8Out) {
+      $r = New-Object PSObject -Property @{ ok = $false; out = ''; timedOut = $false }
+      $capMs = 20000
+      if ($test -and $env:PC_TEST_PROBE_MS -match '^[0-9]+$') { $capMs = [int]$env:PC_TEST_PROBE_MS }
+      $clock = [System.Diagnostics.Stopwatch]::StartNew()
+      $ea = $ErrorActionPreference
+      $proc = $null
+      $rootStart = $null
+      $finished = $false
+      try {
+        $ErrorActionPreference = 'Continue'
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = $exe
+        $psi.Arguments = $argText
+        $psi.UseShellExecute = $false
+        $psi.CreateNoWindow = $true
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true
+        if ($utf8Out) {
+          $psi.StandardOutputEncoding = New-Object System.Text.UTF8Encoding($false)
+          $psi.EnvironmentVariables['PYTHONUTF8'] = '1'
+          $psi.EnvironmentVariables['PYTHONIOENCODING'] = 'utf-8'
+        }
+        $proc = [System.Diagnostics.Process]::Start($psi)
+        try { $rootStart = $proc.StartTime } catch { }
+        $outTask = $proc.StandardOutput.ReadToEndAsync()
+        $errTask = $proc.StandardError.ReadToEndAsync()
+        $left = [int][Math]::Max(0, $capMs - $clock.ElapsedMilliseconds)
+        $finished = $proc.WaitForExit($left)
+        if ($finished) {
+          $left = [int][Math]::Max(0, $capMs - $clock.ElapsedMilliseconds)
+          $finished = [System.Threading.Tasks.Task]::WaitAll([System.Threading.Tasks.Task[]]@($outTask, $errTask), $left)
+        }
+        if ($finished) {
+          $r.out = [string]$outTask.Result
+          $r.ok = ($proc.ExitCode -eq 0)
+        } else {
+          $r.timedOut = $true
+          Stop-ProbeTree $proc $rootStart
+        }
+      } catch { } finally {
+        $ErrorActionPreference = $ea
+        if ($proc) { try { $proc.Dispose() } catch { } }
+      }
+      return $r
+    }
+    # Issue 1352: the Pythons a tool may live in, first hit first: PIL_PYTHON, ComfyUI's portable Python, the Python
+    # Launcher's list (py -0p, newest first), then python on PATH. The Windows Store stub under WindowsApps is skipped.
+    $script:pyList = $null
+    function Get-PythonCandidates {
+      if ($null -ne $script:pyList) { return $script:pyList }
+      $list = @()
+      $seen = @{}
+      $raw = @()
+      $raw += , @($env:PIL_PYTHON, 'PIL_PYTHON')
+      $raw += , @((Join-Path $env:USERPROFILE 'Downloads\ComfyUI_windows_portable\python_embeded\python.exe'), 'ComfyUI portable Python')
+      $launcher = Get-Command -Name 'py' -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+      if ($launcher) {
+        $listing = Invoke-Probe $launcher.Source '-0p'
+        $found = @()
+        foreach ($line in @(([string]$listing.out) -split "[\r\n]+")) {
+          $m = [regex]::Match($line, '^\s*-(?:V:|)(\S+)\s+\*?\s*(\S.*?)\s*$')
+          if (-not $m.Success) { continue }
+          $ver = [version]'0.0'
+          $vm = [regex]::Match($m.Groups[1].Value, '(\d+\.\d+)')
+          if ($vm.Success) { $ver = [version]$vm.Groups[1].Value }
+          $found += New-Object PSObject -Property @{ ver = $ver; path = $m.Groups[2].Value; order = $found.Count }
+        }
+        foreach ($f in @($found | Sort-Object -Property @{ Expression = { $_.ver }; Descending = $true }, @{ Expression = { $_.order }; Descending = $false })) {
+          $raw += , @($f.path, 'py launcher')
+        }
+      }
+      foreach ($cmd in @(Get-Command -Name 'python' -All -CommandType Application -ErrorAction SilentlyContinue)) {
+        $raw += , @($cmd.Source, 'python on PATH')
+      }
+      foreach ($pair in $raw) {
+        $py = $pair[0]
+        if (-not $py -or -not (Test-Path -LiteralPath $py -PathType Leaf)) { continue }
+        $full = (Get-Item -LiteralPath $py).FullName
+        if ($full -match '[\\/]Microsoft[\\/]WindowsApps[\\/]') { continue }
+        if ($seen.ContainsKey($full.ToLowerInvariant())) { continue }
+        $seen[$full.ToLowerInvariant()] = $true
+        $list += New-Object PSObject -Property @{ path = $full; source = $pair[1] }
+      }
+      $script:pyList = $list
+      return $script:pyList
+    }
     foreach ($tool in @(([string]$args[2]) -split '[\s,;]+' | Where-Object { $_ })) {
       $name = $tool.ToLowerInvariant()
       $path = ''
+      $source = ''
       switch ($name) {
         'godot' {
           $listed = ''
@@ -1554,25 +1808,67 @@ try {
           $path = Find-Exe @($env:GODOT_EXE, $listed, (Join-Path $vt 'godot\Godot_v4.7.2-stable_win64_console.exe')) ''
         }
         'blender' { $path = Find-Exe @($env:BLENDER_EXE, (Join-Path $vt 'blender\blender-4.5.14-windows-x64\blender.exe')) '' }
-        'ffmpeg' { $path = Find-Exe @($env:FFMPEG_EXE, (Join-Path $vt 'ffmpeg\bin\ffmpeg.exe')) 'ffmpeg' }
+        'ffmpeg' {
+          # Issue 1352: first hit wins; a candidate counts only if "<exe> -version" exits 0. Settings and the PC's usual
+          # place first, then PATH, then imageio_ffmpeg's own answer from each candidate Python, then its binaries folder.
+          $tries = @()
+          $tries += , @($env:FFMPEG_EXE, 'FFMPEG_EXE')
+          $tries += , @((Join-Path $vt 'ffmpeg\bin\ffmpeg.exe'), 'voidsworn_test\ffmpeg\bin')
+          foreach ($cmd in @(Get-Command -Name 'ffmpeg' -All -CommandType Application -ErrorAction SilentlyContinue)) { $tries += , @($cmd.Source, 'PATH') }
+          foreach ($pair in $tries) {
+            if (-not $pair[0] -or -not (Test-Path -LiteralPath $pair[0] -PathType Leaf)) { continue }
+            $full = (Get-Item -LiteralPath $pair[0]).FullName
+            $try = Invoke-Probe $full '-version'
+            if ($try.ok) { $path = $full; $source = $pair[1]; break }
+            if ($try.timedOut) { $lines += "skipped ffmpeg: $full (-version timed out)" } else { $lines += "skipped ffmpeg: $full (-version did not exit 0)" }
+          }
+          if (-not $path) {
+            foreach ($py in @(Get-PythonCandidates)) {
+              $ask = Invoke-Probe $py.path '-c "import imageio_ffmpeg,sys; print(imageio_ffmpeg.get_ffmpeg_exe())"' $true
+              if ($ask.timedOut) { $lines += "skipped imageio_ffmpeg question: $($py.path) (timed out)" }
+              if (-not $ask.ok) { continue }
+              $answer = ''
+              foreach ($l in @(([string]$ask.out) -split "[\r\n]+")) { if ($l.Trim()) { $answer = $l.Trim() } }
+              if (-not $answer -or -not (Test-Path -LiteralPath $answer -PathType Leaf)) { continue }
+              $full = (Get-Item -LiteralPath $answer).FullName
+              $try = Invoke-Probe $full '-version'
+              if ($try.ok) { $path = $full; $source = "imageio_ffmpeg via $($py.path)"; break }
+              if ($try.timedOut) { $lines += "skipped ffmpeg: $full (-version timed out)" } else { $lines += "skipped ffmpeg: $full (-version did not exit 0)" }
+            }
+          }
+          if (-not $path) {
+            $seenBins = @{}
+            foreach ($py in @(Get-PythonCandidates)) {
+              $dir = Split-Path -Parent $py.path
+              foreach ($root in @((Join-Path $dir 'Lib\site-packages'), (Join-Path (Split-Path -Parent $dir) 'Lib\site-packages'))) {
+                $binDir = Join-Path $root 'imageio_ffmpeg\binaries'
+                if ($seenBins.ContainsKey($binDir.ToLowerInvariant()) -or -not (Test-Path -LiteralPath $binDir -PathType Container)) { continue }
+                $seenBins[$binDir.ToLowerInvariant()] = $true
+                foreach ($file in @(Get-ChildItem -LiteralPath $binDir -Filter 'ffmpeg*.exe' -File -ErrorAction SilentlyContinue | Sort-Object -Property Name -Descending)) {
+                  $try = Invoke-Probe $file.FullName '-version'
+                  if ($try.ok) { $path = $file.FullName; $source = "imageio_ffmpeg binaries via $($py.path)"; break }
+                  if ($try.timedOut) { $lines += "skipped ffmpeg: $($file.FullName) (-version timed out)" } else { $lines += "skipped ffmpeg: $($file.FullName) (-version did not exit 0)" }
+                }
+                if ($path) { break }
+              }
+              if ($path) { break }
+            }
+          }
+        }
         'node' { $path = Find-Exe @($env:NODE_EXE, (Join-Path $vt 'node\node.exe')) 'node' }
         'pil' {
-          # Python with Pillow: ComfyUI's portable Python has it on this PC.
-          $pythons = @($env:PIL_PYTHON, (Join-Path $env:USERPROFILE 'Downloads\ComfyUI_windows_portable\python_embeded\python.exe'))
-          foreach ($py in $pythons) {
-            if (-not $py -or -not (Test-Path -LiteralPath $py -PathType Leaf)) { continue }
-            $ea = $ErrorActionPreference
-            try {
-              $ErrorActionPreference = 'Continue'
-              $null = & $py -c 'import PIL' 2>&1
-              if ($LASTEXITCODE -eq 0) { $path = (Get-Item -LiteralPath $py).FullName; break }
-            } catch { } finally { $ErrorActionPreference = $ea }
+          # Python with Pillow. Issue 1352: PIL_PYTHON, ComfyUI's portable Python, the Python Launcher's list, python on
+          # PATH. A candidate counts only if "-c import PIL" exits 0 (each probe capped at 20 s).
+          foreach ($py in @(Get-PythonCandidates)) {
+            $try = Invoke-Probe $py.path '-c "import PIL"'
+            if ($try.ok) { $path = $py.path; $source = $py.source; break }
+            if ($try.timedOut) { $lines += "skipped pil: $($py.path) (import PIL timed out)" }
           }
         }
         default { $lines += "MISSING ${name}: unknown tool name (known: godot, blender, ffmpeg, node, pil)"; $missing += $name; continue }
       }
       if ($path) {
-        $lines += "found ${name}: $path"
+        if ($source) { $lines += "found ${name}: $path ($source)" } else { $lines += "found ${name}: $path" }
         $sets += ('set "JW_' + $name.ToUpperInvariant() + '=' + $path + '"')
       } elseif ($name -ne $null -and $missing -notcontains $name) {
         $lines += "MISSING ${name}: set " + @{ godot = 'GODOT_EXE'; blender = 'BLENDER_EXE'; ffmpeg = 'FFMPEG_EXE'; node = 'NODE_EXE'; pil = 'PIL_PYTHON' }[$name] + ' or install it'
@@ -1581,7 +1877,21 @@ try {
     }
     if ($missing.Count) { $lines += "STOPPED: missing tools: $($missing -join ', ')" } else { $lines += 'all tools found' }
     [IO.File]::WriteAllText($report, (($lines -join "`r`n") + "`r`n"), $utf8)
-    [IO.File]::WriteAllText((Join-Path $script:out 'tools.cmd'), ((@('@echo off') + $sets) -join "`r`n") + "`r`n", (New-Object Text.ASCIIEncoding))
+    # Issue 1352 (Astra, PR 1806): the paths reach the job unchanged. A path with accents or other non-ASCII characters
+    # is written as UTF-8 (no BOM) between two chcp lines, so cmd reads the set lines as UTF-8 and the console code page
+    # is put back after; a plain ASCII path file is exactly what it was. A percent sign is doubled so cmd keeps it.
+    $cmdLines = @('@echo off')
+    $wide = @($sets | Where-Object { $_ -match '[^ -~]' }).Count -gt 0
+    if ($wide) {
+      $cmdLines += 'for /f "tokens=2 delims=:" %%a in (''chcp'') do set "JW_CP=%%a"'
+      $cmdLines += 'chcp 65001 >nul'
+    }
+    foreach ($set in $sets) { $cmdLines += $set.Replace('%', '%%') }
+    if ($wide) {
+      $cmdLines += 'if defined JW_CP chcp %JW_CP% >nul'
+      $cmdLines += 'set "JW_CP="'
+    }
+    [IO.File]::WriteAllText((Join-Path $script:out 'tools.cmd'), (($cmdLines -join "`r`n") + "`r`n"), $utf8)
     foreach ($l in $lines) { Write-Host $l }
     if ($missing.Count) { exit 2 }
     exit 0

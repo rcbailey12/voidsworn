@@ -30,8 +30,7 @@ if (process.env.CHECKS962_VERIFY_LIVE === '1') {
   const next = log.indexOf('Running ${nextName} ');
   assert(next >= 0);
   assert(/FAIL: ${failName} \\(\\d+\\.\\d{2} s\\) \\| FAIL: fixture reason/.test(log.slice(0, next)), log);
-  for (let n = 1; n <= 15; n++) assert(log.indexOf('fixture output ' + String(n).padStart(2, '0')) < next && log.includes('fixture output ' + String(n).padStart(2, '0')), log);
-  assert(!log.includes('fixture output 16'), log);
+  for (let n = 1; n <= 20; n++) assert(log.indexOf('fixture output ' + String(n).padStart(2, '0')) < next && log.includes('fixture output ' + String(n).padStart(2, '0')), log);
   assert(!log.includes('check | result | seconds | detail'), log);
 }
 console.log('PASS: next fixture saw the live failure');
@@ -73,8 +72,10 @@ for (const row of report) {
   assert(full.output.indexOf(live) < full.output.indexOf('check | result | seconds | detail'), live);
   assert(full.output.includes(`${row.check} | ${row.result} | ${row.seconds.toFixed(2)} | ${row.detail}`));
 }
-assert.equal((full.output.match(/first 15 output lines/g) || []).length, 1);
-assert(!full.output.includes('fixture output 16'));
+// Issue 1739: a FAIL row's whole output is in the log, not only its first 15 lines.
+assert.equal((full.output.match(new RegExp('FAIL ' + failName + ' output:', 'g')) || []).length, 1);
+assert(full.output.includes('fixture output 16'), full.output);
+assert(full.output.includes(lines[lines.length - 1]), full.output);
 const onlyFail = run(['--only', failName]);
 assert.equal(onlyFail.status, 1, onlyFail.output);
 assert(!onlyFail.output.includes('Running ' + nextName));
@@ -90,10 +91,15 @@ assert(fastReport.some(r => r.check === 'nem_assign_enum' && r.result === 'PASS'
 assert.equal(run(['--only', 'missing_fixture']).status, 1);
 const codex = fs.readFileSync(path.join(ROOT, 'tools/pc/codex_issue.bat'), 'utf8');
 const work = fs.readFileSync(path.join(ROOT, 'tools/pc/work_issue.bat'), 'utf8');
-assert(/call "%TP%tmo\.bat" 1800 node contrib\\opus\\tools\\run_all_checks\.js/.test(codex));
-assert(/if not defined CHECK_CAP set "CHECK_CAP=1800"/.test(work));
+assert(/call "%TP%tmo\.bat" 3600 node contrib\\opus\\tools\\run_all_checks\.js/.test(codex));
+assert(/if not defined CHECK_CAP set "CHECK_CAP=3600"/.test(work));
 assert(/call "%T%tmo\.bat" %CHECK_CAP% "%NODE%" contrib\\opus\\tools\\run_all_checks\.js/.test(work));
 assert(/call "%TP%tmo\.bat" 1500 "%COMSPEC%" \/c tools\\pc\\parity\.bat/.test(codex));
 assert(/if not defined PARITY_CAP set "PARITY_CAP=1500"/.test(work));
-console.log('PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s');
+// Issue 1739: rows never inherit the lane runner's job variables, but keep PATH, TEMP and the GPU lane.
+const { rowEnv } = require(path.join(__dirname, 'run_all_checks.js'));
+const leaked = rowEnv({ PATH: 'p', TEMP: 't', PC_GPU_LANE: 'C', PC_RUN_TEMP: 'x', PC_RUN_SCRATCH: 'x', PC_RUNNER_LOCKED_ISSUE: '1693',
+  CODEX_MODEL: 'gpt-6.2-astra', CODEX_LOCKED_REPO: 'r', WORK_LOCKED_REPO: 'r', TMO_REPO: 'r', CHECKS_OK: '0', PC_WAIT_FOR: 'w' });
+assert.deepEqual(leaked, { PATH: 'p', TEMP: 't', PC_GPU_LANE: 'C' });
+console.log('PASS: live failure detail and the whole FAIL output precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 3600 s and parity stays 1500 s');
 console.log('Evidence: ' + root);

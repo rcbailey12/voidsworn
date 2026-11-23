@@ -43,17 +43,21 @@ func copy(src: String, dst: String) -> void:
 	f.close()
 
 
-func builder() -> String:
+func builder(extra: Array = []) -> String:
 	var out := []
 	var code := OS.execute(OS.get_executable_path(), ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--script",
-		"res://render/build_assets.gd", "--", "--ships-only", "--ships", run.path_join("ships"), "--gen", run.path_join("gen")], out, true)
+		"res://render/build_assets.gd", "--", "--ships-only", "--ships", run.path_join("ships"), "--gen", run.path_join("gen")] + extra, out, true)
 	check(code == 0, "the asset builder ran (--ships-only), exit %d" % code)
 	return "\n".join(out)
 
 
-func entry() -> Dictionary:
+func cache_manifest() -> Dictionary:
 	var m = JSON.parse_string(FileAccess.get_file_as_string(run.path_join("gen/manifest.json")))
-	return (m["ships"].get(CODE, {}) as Dictionary) if m is Dictionary and m.has("ships") else {}
+	return m if m is Dictionary else {}
+
+
+func entry() -> Dictionary:
+	return cache_manifest().get("ships", {}).get(CODE, {})
 
 
 func new_hull(path: String) -> void:
@@ -210,7 +214,7 @@ func check_cached_paint(cached: String, expected: Color) -> void:
 	built.free()
 
 
-func set_paint_time(path: String) -> void:
+func set_fixture_time(path: String) -> void:
 	var absolute := ProjectSettings.globalize_path(path)
 	var result: int
 	if OS.get_name() == "Windows":
@@ -218,17 +222,17 @@ func set_paint_time(path: String) -> void:
 		result = OS.execute("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", command])
 	else:
 		result = OS.execute("touch", ["-t", "202001010000", absolute])
-	check(result == 0, "set the fixture map's modification time")
+	check(result == 0, "set the fixture file's modification time")
 
 
 func check_same_metadata_repaint(path: String, built_marker: String) -> void:
 	write_paint(path, Color.BLACK, 4096)
-	set_paint_time(path)
+	set_fixture_time(path)
 	builder()
 	var previous_bytes := FileAccess.get_file_as_bytes(path)
 	var previous_time := FileAccess.get_modified_time(path)
 	write_paint(path, Color.WHITE, 4096)
-	set_paint_time(path)
+	set_fixture_time(path)
 	var repainted_bytes := FileAccess.get_file_as_bytes(path)
 	check(previous_time > 0 and previous_time == FileAccess.get_modified_time(path)
 		and previous_bytes.size() == repainted_bytes.size() and previous_bytes != repainted_bytes,
@@ -236,6 +240,44 @@ func check_same_metadata_repaint(path: String, built_marker: String) -> void:
 	check(built_marker in builder(), "a same-size, same-time repaint rebuilds gen/ships")
 	var cached := str(entry().get("res", ""))
 	check_cached_paint(cached, Color.WHITE)
+
+
+func check_vertex_and_resume(path: String) -> void:
+	set_fixture_time(path)
+	builder()
+	var stamp: String = entry()["src"]
+	var modified := FileAccess.get_modified_time(path)
+	var glb := FileAccess.open(path, FileAccess.READ_WRITE)
+	var length := glb.get_length()
+	var doc := BUILD._glb_json(glb)
+	var pos: Dictionary = doc.accessors[doc.meshes[0].primitives[0].attributes.POSITION]
+	var view: Dictionary = doc.bufferViews[pos.bufferView]
+	glb.seek(glb.get_position() + 8 + int(view.get("byteOffset", 0)) + int(pos.get("byteOffset", 0)))
+	glb.store_float(0.125)   # Dent one box corner without changing its bounds.
+	glb.close()
+	set_fixture_time(path)
+	check(FileAccess.get_size(path) == length and FileAccess.get_modified_time(path) == modified, "the changed vertex kept the GLB size and timestamp")
+	check(BUILD.source_stamp(run.path_join("ships"), CODE) != stamp, "the install readback detects a changed vertex before rebuilding")
+	var late := run.path_join("ships/ZZ593")
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(late))
+	copy(path, late.path_join("ZZ593.glb"))
+	var budget := ["--max-seconds", "0.000001"]
+	var first := builder(budget)
+	check("[assets] A4 ship ZZ592" in first and not "[assets] A4 ship ZZ593" in first, "the first bounded refresh rebuilds the changed hull")
+	check(cache_manifest().get("next_ship") == "ZZ593", "the saved cursor names the first unexamined ship")
+	var second := builder(budget)
+	check("[assets] A4 ship ZZ593" in second, "the second bounded refresh reaches the next ship")
+	check(not cache_manifest().has("next_ship"), "the completed ship scan clears its resume point")
+	var packed := ResourceLoader.load(entry()["res"], "PackedScene", ResourceLoader.CACHE_MODE_IGNORE) as PackedScene
+	var scene := packed.instantiate()
+	var hull := scene.find_child("zz592_new_hull", true, false) as MeshInstance3D
+	var vertices: PackedVector3Array = hull.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	var dented := false
+	for v in vertices:
+		if is_equal_approx(absf(v.x), 0.125):
+			dented = true
+	check(dented, "the cached scene draws the changed vertex")
+	scene.free()
 
 
 func _run() -> void:
@@ -285,6 +327,7 @@ func _run() -> void:
 	var e2 := entry()
 	check(e2.has("res") and str(e2.get("src", "")) != str(e.get("src", "")), "the cache was rebuilt from the new hull (its source stamp changed)")
 	check(not e2.has("damage") and not e2.has("wreck"), "the cache dropped the old hull's damage and wreck scenes")
+	check_vertex_and_resume(hull)
 	# 3. the readback stage 7 runs, and ShipView itself
 	var out := []
 	var rc := OS.execute(OS.get_executable_path(), ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--script",

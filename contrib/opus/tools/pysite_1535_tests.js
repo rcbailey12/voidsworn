@@ -26,13 +26,12 @@ const self = read('contrib/opus/tools/picture_provenance_selftest.py');
 assert(!/tempfile\.mkdtemp\(/.test(self), 'picture_provenance_selftest.py no longer uses tempfile.mkdtemp');
 assert(/def run\(\):[\s\S]*checks\(folder\)[\s\S]*except BaseException:[\s\S]*kept for diagnosis[\s\S]*raise[\s\S]*remove_folder\(folder\)/.test(self), 'the selftest removes its folder only after its checks pass');
 // 3. The site module: mkdtemp makes a plain folder (no 0o700 mode), TemporaryDirectory still cleans up.
-let python = null;
-for (const py of process.env.PYTHON ? [process.env.PYTHON] : ['python3', 'python']) {
-  const r = spawnSync(py, ['-c', 'import sys; print(sys.version_info[0])'], { encoding: 'utf8' });
-  if (!r.error && r.status === 0 && r.stdout.trim() === '3') { python = py; break; }
-}
+const python = require('./find_python').findPython();
 if (!python) {
   console.log('SKIP pysite run: no Python 3 here');
+} else if (process.platform === 'win32') {
+  // Issue 1739: this part proves the folder modes through sh and umask, which Windows has neither of; Linux CI runs it
+  console.log('SKIP pysite run: folder modes are POSIX only (Linux CI runs this part)');
 } else {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pysite1535-'));
   const probe = [

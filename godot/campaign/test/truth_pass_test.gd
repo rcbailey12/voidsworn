@@ -68,7 +68,7 @@ func _mastery(c: Campaign, ui: UI) -> void:
 	c.META["lineage"] = {"vaelen": {"picks": ["A:0:0", "B:0:0", "C:0:0"], "capstone": 0, "respecs": 0}}
 	var panel := ui._capstone_mastery("vaelen")
 	var text := _text(panel)
-	_check("Placeholder:" not in text and "Mastery I (earned)" in text and "600 XP" in text,
+	_check("Placeholder:" not in text and "Mastery I: Proven Doctrine (earned)" in text and "600 XP" in text,
 		"mastery hides unfinished descriptions and keeps the earned tiers and XP")
 	panel.free()
 	var perk: Dictionary = c.CAPSTONE_MASTERY_PERKS[0]
