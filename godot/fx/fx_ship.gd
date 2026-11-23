@@ -169,6 +169,17 @@ func _attach(n: Node3D) -> void:
 		root.add_child(n)
 
 
+var shield_later := false   # issue 1434: the shield waits for fx.prepare_battle_hulls (see setup)
+
+
+func build_shield_later(fx) -> void:
+	if not shield_later:
+		return
+	shield_later = false
+	if shielded and is_instance_valid(root):
+		_build_shield(fx)
+
+
 func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	id = sid
 	root = r
@@ -230,7 +241,12 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 		_build_trails(fx)
 	t_a = fx.pend("add:engines", t_a)
 	if shielded:
-		_build_shield(fx)
+		if fx.defer_initial_cuts and fx.get("defer_shields"):
+			# issue 1434: under the load cover the shield is built by fx.prepare_battle_hulls, one ship per slice (a fitted
+			# skin's face scan and cache key cost up to about 500 ms in one ship's registration on the PC)
+			shield_later = true
+		else:
+			_build_shield(fx)
 	fx.pend("add:shield", t_a)
 	_last_pos = root.global_position
 
@@ -1954,7 +1970,7 @@ static func _heavy_mark(e) -> bool:
 
 # Rebuild the hull from its original arrays with every section's damage, on a worker thread; apply when done.
 func _dmg_request(fx) -> void:
-	if fx.get("closed") == true:   # issue 1435: a released fx takes no new jobs
+	if fx.get("closed") == true or fx.get("passive") == true:   # issue 1435: a released fx takes no new jobs; 1434: nor the backdrop's
 		return
 	if _dmg_task >= 0:
 		_dmg_dirty = true

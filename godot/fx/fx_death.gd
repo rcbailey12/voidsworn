@@ -10,6 +10,7 @@ extends RefCounted
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const SKEEP := preload("res://render/shader_keep.gd")   # issue 1434: one Shader per code for the session
 const BEATS := preload("res://fx/fx_death_beats.gd")   # issue 1586: cause, faction, archetype and afterlife beats
 
 const HULL_LAYER := 1
@@ -206,9 +207,10 @@ static func setup_physics(fx) -> void:
 	st["bounce"] = PhysicsMaterial.new()
 	(st["bounce"] as PhysicsMaterial).bounce = 0.4
 	(st["bounce"] as PhysicsMaterial).friction = 0.4
-	var sh = Shader.new()
-	sh.code = DEBRIS_BODY
-	HULL.note_late("death debris body")
+	# issue 1434 (LOAD17: made again at every title backdrop): one Shader for the session
+	var fresh: bool = not SKEEP.has(DEBRIS_BODY)
+	var sh: Shader = SKEEP.of(DEBRIS_BODY)
+	if fresh: HULL.note_late("death debris body")
 	var m = ShaderMaterial.new()
 	m.shader = sh
 	st["debris_mat"] = m
@@ -1372,6 +1374,8 @@ static func _lance_recut(fx, s) -> void:
 # Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
 static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 	if fx.get("closed") == true:   # issue 1435: a released fx takes no new cuts
+		return
+	if fx.get("passive") == true:   # issue 1434: the title backdrop never dies
 		return
 	if s.weight <= 0 or s.gone or s.has_meta("cut_task") or s.has_meta("cut_job"):
 		return

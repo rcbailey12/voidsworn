@@ -25,6 +25,7 @@ const Campaign := preload("res://campaign/campaign.gd")
 const Board := preload("res://render/board.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const CamRig := preload("res://render/camera_rig.gd")
+const StageIn := preload("res://render/stage_in.gd")   # issue 1434 (LOAD22): new meshes' first draws spread over the load
 const HT := preload("res://render/hull_table.gd")
 const FLOOK := preload("res://fx/faction_look.gd")   # issue 1205: faction colours come from fx/faction_looks.json only
 const WEAPON_FX := preload("res://fx/fx_weapons.gd")
@@ -189,6 +190,9 @@ var can_retreat := false   # campaign battles (not against a sector flagship): t
 var round_save_cb: Callable = Callable()   # issue 1451: campaign battles save each round start once it has settled (main.play_api)
 var round_saved := 0                       # the newest round handed to round_save_cb
 var round_on_disk := 0                     # the newest round round_save_cb reported written (0: only the pre-fight save)
+# Issue 1434: the title's own backdrop (main.gd sets it with showcase). Tests and benches set showcase alone for a battle
+# that takes no turns; only the title backdrop is capped at High, silent and skips the combat warm-up.
+var title_backdrop := false
 var showcase := false     # the title screen's decorative battle (campaign3d.js setupShowcase): no HUD, no turns, no input, slow orbit
 var music_hits := 0        # issue 1448: hits landed this round by either side, fed to the music as `shots`
 var boss_fight := false    # a sector flagship fight or the finale (battle kind "boss"): boss music and the champion fanfare
@@ -219,6 +223,11 @@ var chime_round := -1         # the round whose first hand-over played the "your
 
 func _ready() -> void:
 	_args()
+	if _sliced():
+		stage.start(self)   # issue 1434 (LOAD22): from the first mesh on, so the effect pools and the board are spread too
+	var t_ready := Time.get_ticks_usec()
+	if title_backdrop and str(args.get("quality", "max")) == "max":
+		args["quality"] = "high"   # issue 1434 (item 10): the title's backdrop is capped at High (its MSAA: SHOWCASE_MSAA)
 	t_start = Time.get_ticks_msec() / 1000.0
 	bot = bot or args.has("bot")
 	shots_dir = str(args.get("shots", ""))
@@ -241,16 +250,25 @@ func _ready() -> void:
 		movement = str(args["movement"])
 	if args.has("reduce-motion"):
 		reduce_motion = true
+	var rp := {"args": Time.get_ticks_usec() - t_ready}   # issue 1434 (LOAD22 warm: 1.8 to 2 s, not split): _ready's parts
+	var t_p := Time.get_ticks_usec()
 	_build_world()
+	StageIn.hide_layer_from(cam, [key_light])
+	rp["world"] = Time.get_ticks_usec() - t_p
+	t_p = Time.get_ticks_usec()
 	sfx = Sfx.new()
 	sfx.name = "Sfx"
+	sfx.silent = title_backdrop   # issue 1434 (W4): the backdrop loads no sound bank and never writes the shared sfx bus
 	add_child(sfx)
 	sfx.cam = cam
 	death_audio = DeathAudio.new()
 	death_audio.sfx = sfx
 	add_child(death_audio)
+	rp["sound"] = Time.get_ticks_usec() - t_p
+	t_p = Time.get_ticks_usec()
 	hud = HUD.new()
 	add_child(hud)
+	rp["hud"] = Time.get_ticks_usec() - t_p
 	hud.action.connect(_on_action)
 	hud.rescaled.connect(_refresh_ui)   # UI pass: the HUD was rebuilt for a new window size
 	if showcase:
@@ -258,6 +276,8 @@ func _ready() -> void:
 		cam.input_enabled = false
 		set_process_unhandled_input(false)
 		tips_off = true
+	if DisplayServer.get_name() != "headless":
+		print("[load] battle scene ready in %d ms%s (%s)" % [(Time.get_ticks_usec() - t_ready) / 1000, " (title backdrop)" if title_backdrop else "", _us_ms(rp)])
 	if not external:
 		start_default()
 	if args.has("breach-shots"):
@@ -320,9 +340,18 @@ func _build_world() -> void:
 		var sky := Sky.new()
 		sky.sky_material = pano
 		sky.radiance_size = Sky.RADIANCE_SIZE_256
-		env.background_mode = Environment.BG_SKY
 		env.sky = sky
-		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+		if ResourceLoader.exists("res://world/world.gd") and not args.has("noworld"):
+			# issue 1434 (LOAD17 and LOAD19: the title's first frame 720 to 800 ms in the draw, no pipelines): the world
+			# replaces this sky with its own a few frames later (world.gd _make_sky, which turns the sky background on),
+			# so this one is never drawn and its radiance never made; it only hands the world its panorama. The
+			# background reflection follows the world's sky once it is up.
+			env.background_mode = Environment.BG_COLOR
+			env.background_color = Color(0.01, 0.012, 0.02)
+			env.reflected_light_source = Environment.REFLECTION_SOURCE_BG
+		else:
+			env.background_mode = Environment.BG_SKY
+			env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	else:
 		env.background_mode = Environment.BG_COLOR
 		env.background_color = Color(0.01, 0.012, 0.02)
@@ -386,7 +415,13 @@ func _build_world() -> void:
 
 # the Graphics setting: max (everything but SSIL since issue 1262), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
 func _apply_quality(q: String) -> void:
-	apply_quality_to(get_viewport(), q, _jt(args.get("taa", false)))
+	var vp := get_viewport()
+	if title_backdrop and _vp_saved.is_empty():
+		# issue 1434 (item 10): the backdrop shares the root viewport with the menu; stop_build() puts these back
+		_vp_saved = {"msaa_3d": vp.msaa_3d, "screen_space_aa": vp.screen_space_aa, "use_taa": vp.use_taa}
+	apply_quality_to(vp, q, _jt(args.get("taa", false)))
+	if title_backdrop:
+		vp.msaa_3d = SHOWCASE_MSAA
 
 
 static func apply_quality_to(vp: Viewport, q: String, taa: bool) -> void:
@@ -397,6 +432,25 @@ static func apply_quality_to(vp: Viewport, q: String, taa: bool) -> void:
 	RenderingServer.directional_shadow_atlas_set_size(2048 if q == "low" else 4096, true)
 	# Temporal AA (settings, off by default as in the browser): Max and High only
 	vp.use_taa = taa and q != "low"
+
+
+# Issue 1434 (item 10): the title backdrop's own anti-aliasing, set apart from the Graphics setting it is capped by
+const SHOWCASE_MSAA := Viewport.MSAA_2X
+var _vp_saved := {}
+# Issue 1434: each _begin takes a build number; stop_build() (main.gd, leaving the title) moves it on, so a build still
+# under way stops at its next frame and does no more work.
+var _build_gen := 0
+
+
+func stop_build() -> void:
+	_build_gen += 1
+	stage.stop()
+	if not _vp_saved.is_empty():
+		var vp := get_viewport()
+		if vp != null:
+			for k in _vp_saved:
+				vp.set(k, _vp_saved[k])
+		_vp_saved.clear()
 
 
 func _post_quality(q: String) -> void:
@@ -537,17 +591,37 @@ func _begin(a) -> void:
 	_threat_version = -1
 	_threat_one_ver = -1
 	api = a
+	_build_gen += 1
+	var gen := _build_gen
+	load_phase = "start"
 	warming = true
+	add_to_group("battle_loading")   # issue 1434: world bakes keep their disk writes until no battle is loading
 	hud.loading(true)
+	var sliced := _sliced()
+	if sliced:
+		stage.start(self)   # a no-op when _ready already started it; a battle begun again on this node starts it here
 	var obj0 = api.view().get("obj")
 	if obj0 is Dictionary and str(obj0.get("type", "")) == "hold":
 		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
-	if DisplayServer.get_name() != "headless":
+		if "passive" in gfx:
+			gfx.passive = title_backdrop   # issue 1434: the backdrop takes no death cuts
+		if "defer_shields" in gfx:
+			gfx.defer_shields = gfx.defer_initial_cuts   # issue 1434: shields wait for prepare_battle_hulls, sliced
+		if "warmup_batch" in gfx:
+			gfx.warmup_batch = 2 if gfx.defer_initial_cuts else 0   # issue 1434: warm pipelines a few per frame (LOAD20: 4 cost up to 0.8 s)
+	if sliced:
+		# issue 1434: the hull files start loading on worker threads now, while the board and the world are built
+		_preload_hulls(a.view())
 		await get_tree().process_frame
 		await get_tree().process_frame
+		if gen != _build_gen:
+			return
+	var tb0 := Time.get_ticks_usec()
+	begin_us = {}
 	TBL = _api_tables()
+	begin_us["tables"] = Time.get_ticks_usec() - tb0
 	if ai_level != "":
 		_api_set_ai(ai_level)
 	PACE = TBL.get("PACE", {})
@@ -595,12 +669,29 @@ func _begin(a) -> void:
 	hud.hide_tipcard()
 	adaptation_heard = false
 	_ghost_clear()
+	begin_us["reset"] = Time.get_ticks_usec() - tb0 - int(begin_us["tables"])
+	var tb1 := Time.get_ticks_usec()
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
 	if key_light != null:
 		board.sun_dir = key_light.global_transform.basis.z   # a directional light shines along its -Z: the sun is +Z
-	board.build(api)
+	await board.build(api, sliced)   # issue 1434: sliced, the board's steps take a frame each
+	if gen != _build_gen:
+		return
 	cam.bounds = board.bounds()
+	begin_us["board"] = Time.get_ticks_usec() - tb1
+	for k in board.build_us:
+		begin_us["board:" + str(k)] = board.build_us[k]
+	if sliced:
+		load_phase = "board_build"
+		await get_tree().process_frame   # issue 1434 (LOAD6: start to board 1.4 to 1.6 s): the board, then the look
+		if gen != _build_gen:
+			return
 	_post_quality(str(args.get("quality", "max")))
+	if sliced:
+		load_phase = "board"
+		await get_tree().process_frame   # issue 1434: the board's frame, then the world's steps
+		if gen != _build_gen:
+			return
 	if world != null:
 		world.queue_free()
 		world = null
@@ -619,15 +710,32 @@ func _begin(a) -> void:
 			"nebula_wake": args.has("nebula-wake") or str(args.get("nebula_wake", "false")) == "true"}
 		if args.has("sector_setting"): world_opts["sector_setting"] = args["sector_setting"]
 		if args.get("stop") is Dictionary: world_opts["stop"] = args["stop"]   # issue 1272: the stop's sky mood
-		world.build(vb, world_opts)
+		if sliced:
+			# issue 1434 (LOAD5: one 1.5 to 2 s frame between the cover and the ships): the world builds over a few frames
+			load_phase = "world_build"
+			world.slice_yield = true
+			var wnode = world
+			await world.build(vb, world_opts)
+			if not is_instance_valid(wnode) or gen != _build_gen:
+				return
+			wnode.slice_yield = false
+		else:
+			world.build(vb, world_opts)
 		for c in backdrop.get_children():
 			c.queue_free()
 	else:
 		backdrop.build(cam.bounds, env)
 	V = api.view()
 	_index_view()
-	for u in V["units"]:
-		_make_view(u)
+	if sliced:
+		load_phase = "ships"
+		var built: bool = await _make_views_sliced(gen)
+		load_phase = "after_ships"
+		if not built:
+			return
+	else:
+		for u in V["units"]:
+			_make_view(u)
 	_sync(V)
 	if world != null: world.use_ship_debris(views.values())
 	# open on your fleet, looking toward the enemy (the browser game's camera starts over the player's side)
@@ -668,6 +776,8 @@ func _begin(a) -> void:
 		var A = TBL.get("ADMIRALS", {}).get(adm, {})
 		hud.set_crest(load("res://portraits/portraits.gd").crest(adm), str(A.get("n", adm)) if A is Dictionary else adm)
 	await _warmup()
+	if gen != _build_gen:
+		return
 	if music != null:
 		var pf := "voidsworn"
 		for u in V["units"]:
@@ -690,6 +800,7 @@ func _begin(a) -> void:
 				if n != null:
 					n.visible = false
 		showcase_ready = true
+		remove_from_group("battle_loading")
 		return
 	if not bot and not args.has("shots") and not args.has("breach-shots"):
 		_start_opening()
@@ -797,10 +908,23 @@ const A4P := preload("res://assets/ships/a4_props.gd")   # issue 1536: the Hold 
 var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arrive mid-battle (render/arrival_warm.gd)
 
 
+# issue 1434: what the load is doing now (bench/load_1434.gd names the phase of the worst frame under the cover)
+var load_phase := ""
+var stage := StageIn.new()   # issue 1434 (LOAD22): holds each new mesh's first draw until the load gives it back
+
+
+# --sliced-load: the windowed path in a headless check (main/test/showcase_quiet_check.gd)
+func _sliced() -> bool:
+	return DisplayServer.get_name() != "headless" or args.has("sliced-load")
+var begin_us := {}   # issue 1434 (LOAD9: start to board 1 to 3 s of process step): _begin's parts before the board's frame
+
+
 func _warmup() -> void:
 	warming = true
 	hud.loading(true)
+	load_phase = "world"
 	if world != null: await world.wait_ready()
+	load_phase = "pull_back"
 	var keep := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
 	cam.b = 0.6
 	cam.r = maxf(cam.bounds.x, cam.bounds.y) * 2.4
@@ -808,14 +932,22 @@ func _warmup() -> void:
 	cam.snap()
 	for i in 3:
 		await get_tree().process_frame
-	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless":
+	# issue 1434 (LOAD22): with the whole board in view, the meshes held back since the load began get their first draw a
+	# few new materials a frame (render/stage_in.gd); the effect warm-up below spreads its own
+	load_phase = "stage_in"
+	await stage.drain(get_tree())
+	# issue 1434 (item 10): the title backdrop never fights, so it skips the death cuts, shield skins and effect warm-up
+	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless" and not title_backdrop:
 		# issue 1289: the reinforcement's hull is built, cut and drawn here with the others, then hidden until it arrives
 		if api != null and api.has_method("arrival_previews"):
+			load_phase = "arrival_warm"
 			arrival_warm = ArrivalWarm.new()
 			arrival_warm.prepare(self, gfx, api.arrival_previews(), Vector3.ZERO)
 			for i in 2:
 				await get_tree().process_frame
+		load_phase = "prepare_hulls"
 		await gfx.prepare_battle_hulls()
+		load_phase = "fx_warmup"
 		# at most 20 s: a warm-up that never returns must never hold the battle (Opus review, Nov 3)
 		var done := [false]
 		var run := func() -> void:
@@ -827,6 +959,7 @@ func _warmup() -> void:
 			await get_tree().process_frame
 		if arrival_warm != null:
 			arrival_warm.park()
+	load_phase = "camera_back"
 	for i in 2:
 		await get_tree().process_frame
 	cam.a = keep["a"]
@@ -835,10 +968,13 @@ func _warmup() -> void:
 	cam.t = keep["t"]
 	cam.snap()
 	await get_tree().process_frame
+	load_phase = "settle"
 	await load("res://main/load_screen.gd").settle(get_tree())
+	load_phase = ""
 	pipe_base = _pipe_count()
 	hud.loading(false)
 	warming = false
+	remove_from_group("battle_loading")
 
 
 func _enemy_fac_of(v: Dictionary) -> String:
@@ -862,8 +998,15 @@ func _index_view() -> void:
 
 
 func _make_view(u: Dictionary) -> void:
+	var sv = _make_view_node(u)
+	if sv != null:
+		_register_fx_ship(u, sv)
+
+
+# the ship's node, hull and marker (no effects registration yet)
+func _make_view_node(u: Dictionary) -> ShipView:
 	if views.has(u["id"]):
-		return
+		return null
 	var sv = ShipView.new()
 	sv.name = "ship_" + str(u["id"])
 	add_child(sv)
@@ -872,12 +1015,236 @@ func _make_view(u: Dictionary) -> void:
 	views[u["id"]] = sv
 	sv.calm = reduce_motion   # issue 1581: Reduce motion per view (no drift, bob or nod; half the ignition beat)
 	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
-	_register_fx_ship(u, sv)
+	return sv
+
+
+# Issue 1434 (Astra item 2): a cold 24-ship load spent about 5 s building every ship in one main-thread call under the
+# cover (worst ship 679 ms). Now the hull files load on worker threads from the moment the roster is known
+# (_preload_hulls), and the ships are built here a few per frame: the cover draws between them with a count, and no
+# stretch runs past LOAD_SLICE_MS except one ship's own build. Scene attachment, the look overrides and the effects
+# registration stay on the main thread, in that order, as _make_view does them. The log line names the stage that costs
+# most, so the next slice goes where the time is.
+const LOAD_SLICE_MS := 40.0
+var load_stats := {}   # issue 1434: the last sliced build's timings (bench/load_1434.gd)
+var _preload := {}   # hull resource path -> the loaded resource (null while its threaded load runs)
+
+
+func _preload_hulls(v: Dictionary) -> void:
+	_drop_preload(false)
+	for u in v.get("units", []):
+		var p := ShipView.hull_res(u)
+		if p == "":
+			p = ShipView.wing_res(u)   # issue 1434: a strike craft wing's model scene loads on a worker too
+		if p == "" or _preload.has(p) or not ResourceLoader.exists(p):
+			continue
+		if ResourceLoader.load_threaded_request(p) == OK:
+			_preload[p] = null
+
+
+# every threaded request is collected once (an uncollected one keeps its resource alive to the end of the process), and
+# every worker instantiation is waited for; an instance never handed to a ship is freed. wait false (leaving the tree,
+# Artoo on PR 1445): what is still running is handed to ShipView.retire_build and collected over the next frames, so a
+# click that leaves the title never waits here for a hull load or a worker instance.
+func _drop_preload(wait := true) -> void:
+	var loads: Array = []
+	for p in _preload:
+		if _preload[p] == null:
+			if wait or ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+				ResourceLoader.load_threaded_get(p)
+			else:
+				loads.append(p)
+	_preload.clear()
+	var insts: Array = []
+	for k in _inst_tasks:
+		var e: Dictionary = _inst_tasks[k]
+		if wait or WorkerThreadPool.is_task_completed(int(e["tid"])):
+			WorkerThreadPool.wait_for_task_completion(int(e["tid"]))
+			var n = e["out"][0]
+			if n != null and is_instance_valid(n) and (n as Node).get_parent() == null:
+				(n as Node).free()
+		else:
+			insts.append(e)
+	_inst_tasks.clear()
+	if not loads.is_empty() or not insts.is_empty():
+		ShipView.retire_build(loads, insts)
+
+
+# Issue 1434, PC run 1 (OPUS1434_LOAD2): one ship's build still took up to 566 ms (V16_37 setup, about 520 ms in every
+# battle) and one effects registration up to 518 ms. So a kit hull is now instantiated on a worker thread (a node that is
+# not in the tree yet; it joins the tree on the main thread in setup_begin), a few ships ahead of the build; setup is
+# split in two (setup_begin: the hull node; setup_end: look, fit, engines, ring) with a frame between them when the
+# stretch is long; and the worst ship's stages and effects parts are logged.
+const INST_AHEAD := 3
+var _inst_tasks := {}   # unit index -> {"tid", "out": [instance]}
+var _ls := {}           # the sliced build's stats in progress
+var _ls_t := 0          # start of the current main-thread stretch
+
+
+func _start_inst(units: Array, from: int) -> void:
+	for j in range(from, mini(from + INST_AHEAD, units.size())):
+		if _inst_tasks.has(j):
+			continue
+		var p := ShipView.hull_res(units[j])
+		if not _preload.has(p) or not ShipView.is_kit_res(p):
+			continue
+		if _preload[p] == null:
+			if ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_LOADED:
+				continue
+			_preload[p] = ResourceLoader.load_threaded_get(p)
+		var ps = _preload[p]
+		if not (ps is PackedScene):
+			continue
+		var out := [null]
+		var tid := WorkerThreadPool.add_task(func() -> void: out[0] = (ps as PackedScene).instantiate())
+		_inst_tasks[j] = {"tid": tid, "out": out}
+
+
+# a frame for the cover when the current stretch has run past LOAD_SLICE_MS; false when the build was stopped
+func _ls_yield(gen: int, force := false) -> bool:
+	var now := Time.get_ticks_usec()
+	if not force and now - _ls_t <= LOAD_SLICE_MS * 1000.0:
+		return true
+	_ls["worst_stretch"] = maxi(_ls["worst_stretch"], now - _ls_t)
+	await get_tree().process_frame
+	_ls["frames"] += 1
+	_ls_t = Time.get_ticks_usec()
+	return gen == _build_gen
+
+
+func _make_views_sliced(gen: int) -> bool:
+	var units: Array = V["units"]
+	var total := units.size()
+	var t0 := Time.get_ticks_usec()
+	_ls_t = t0
+	_ls = {"worst_stretch": 0, "frames": 0, "wait": 0, "setup": 0, "fx": 0, "worst_setup": 0, "worst_fx": 0, "worst_code": "",
+		"worst_stages": {}, "worst_fx_code": "", "worst_fx_parts": {}, "worker_insts": 0}
+	var ok := true
+	hud.loading_count(0, total)
+	for i in total:
+		var u: Dictionary = units[i]
+		if views.has(u["id"]):
+			continue
+		_start_inst(units, i)
+		var p := ShipView.hull_res(u)
+		if p == "":
+			p = ShipView.wing_res(u)   # issue 1434: wait for a wing's model on the worker, never load it here
+		var tw := Time.get_ticks_usec()
+		# the hull file, then its worker instance (the cover keeps drawing while either is still running)
+		while (_preload.has(p) and _preload[p] == null and ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS) \
+				or (_inst_tasks.has(i) and not WorkerThreadPool.is_task_completed(int(_inst_tasks[i]["tid"]))):
+			ok = await _ls_yield(gen, true)
+			if not ok:
+				return false
+			_start_inst(units, i)
+		if _preload.has(p) and _preload[p] == null:
+			_preload[p] = ResourceLoader.load_threaded_get(p)   # held until the views are built, so setup's load() is a cache hit
+		var inst: Node3D = null
+		if _inst_tasks.has(i):
+			WorkerThreadPool.wait_for_task_completion(int(_inst_tasks[i]["tid"]))
+			inst = _inst_tasks[i]["out"][0]
+			_inst_tasks.erase(i)
+			if inst != null:
+				_ls["worker_insts"] += 1
+		_ls["wait"] += Time.get_ticks_usec() - tw
+		var ts := Time.get_ticks_usec()
+		var sv = ShipView.new()
+		sv.name = "ship_" + str(u["id"])
+		add_child(sv)
+		sv.pre_inst = inst
+		sv.setup_begin(u, board.hex_world(u["q"], u["r"]), true)
+		var used := Time.get_ticks_usec() - ts
+		ok = await _ls_yield(gen)
+		if not ok:
+			return false
+		# the look a few surfaces per frame (LOAD9: one hull's 17 took up to 840 ms in one go)
+		while true:
+			var tl := Time.get_ticks_usec()
+			var looked: bool = sv.setup_look(int(LOAD_SLICE_MS * 1000.0))
+			used += Time.get_ticks_usec() - tl
+			ok = await _ls_yield(gen, true)
+			if not ok:
+				return false
+			if looked:
+				break
+		var te := Time.get_ticks_usec()
+		sv.setup_end()
+		sv.set_marker(u["side"] == "player")
+		views[u["id"]] = sv
+		disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
+		used += Time.get_ticks_usec() - te
+		_ls["setup"] += used
+		if used > _ls["worst_setup"]:
+			_ls["worst_setup"] = used
+			_ls["worst_code"] = sv.code
+			_ls["worst_stages"] = sv.stage_us.duplicate()
+		# issue 1434 (LOAD5: a first hull's analyse took up to 450 ms): a new hull's triangles and hit BVH get their own
+		# frame. The view holds still until its effects are registered, so the pose (and the geometry key) is the same.
+		# the whole view (its hull node bobs on its own) holds still, so the geometry key matches at registration
+		var pm_was: Node.ProcessMode = sv.process_mode
+		sv.process_mode = Node.PROCESS_MODE_DISABLED
+		ok = await _ls_yield(gen)
+		if not ok:
+			return false
+		if gfx != null and "hull_shared" in gfx:
+			var tg := Time.get_ticks_usec()
+			var ms_list: Array = sv.meshes if not sv.a4 else load("res://fx/fx_ship.gd")._find_meshes(sv)
+			if load("res://fx/fx_hull.gd").prime(sv, ms_list, gfx.hull_shared):
+				var g_us := Time.get_ticks_usec() - tg
+				_ls["geo"] = int(_ls.get("geo", 0)) + g_us
+				if g_us > int(_ls.get("worst_geo", 0)):
+					_ls["worst_geo"] = g_us
+					_ls["worst_geo_code"] = sv.code
+				ok = await _ls_yield(gen, true)
+				if not ok:
+					return false
+		var prof0: Dictionary = (gfx.prof as Dictionary).duplicate() if gfx != null and "prof" in gfx else {}
+		var tr := Time.get_ticks_usec()
+		_register_fx_ship(u, sv)
+		sv.process_mode = pm_was
+		var fx_us := Time.get_ticks_usec() - tr
+		_ls["fx"] += fx_us
+		if fx_us > _ls["worst_fx"]:
+			_ls["worst_fx"] = fx_us
+			_ls["worst_fx_code"] = sv.code
+			var parts := {}
+			if gfx != null and "prof" in gfx:
+				for k in gfx.prof:
+					if str(k).begins_with("add:"):
+						var d := int(gfx.prof[k]) - int(prof0.get(k, 0))
+						if d > 0:
+							parts[k] = d
+			_ls["worst_fx_parts"] = parts
+		hud.loading_count(i + 1, total)
+		ok = await _ls_yield(gen)
+		if not ok:
+			return false
+	_ls["worst_stretch"] = maxi(_ls["worst_stretch"], Time.get_ticks_usec() - _ls_t)
+	_ls["ships"] = total
+	_ls["ms"] = (Time.get_ticks_usec() - t0) / 1000
+	load_stats = _ls   # read by bench/load_1434.gd (times in microseconds, ms in milliseconds)
+	_drop_preload()
+	hud.loading_count(0, 0)
+	print("[load] %d ships built in %d ms over %d frames%s: longest stretch %d ms; ship setup %d ms (worst %d ms, %s: %s), effects registration %d ms (worst %d ms, %s: %s), hull geometry %d ms (worst %d ms, %s), waiting on hull files and worker instances %d ms; %d hulls instanced on workers" % [
+		total, _ls["ms"], _ls["frames"], " (title backdrop)" if title_backdrop else "", _ls["worst_stretch"] / 1000,
+		_ls["setup"] / 1000, _ls["worst_setup"] / 1000, _ls["worst_code"], _us_ms(_ls["worst_stages"]),
+		_ls["fx"] / 1000, _ls["worst_fx"] / 1000, _ls["worst_fx_code"], _us_ms(_ls["worst_fx_parts"]),
+		int(_ls.get("geo", 0)) / 1000, int(_ls.get("worst_geo", 0)) / 1000, str(_ls.get("worst_geo_code", "-")), _ls["wait"] / 1000, _ls["worker_insts"]])
+	return true
+
+
+# {"inst": 412345, ...} in microseconds -> "inst 412, ..." in milliseconds (the load log)
+static func _us_ms(d: Dictionary) -> String:
+	var parts := PackedStringArray()
+	for k in d:
+		parts.append("%s %d" % [str(k).trim_prefix("add:"), int(d[k]) / 1000])
+	return ", ".join(parts) if not parts.is_empty() else "-"
 
 
 func _register_fx_ship(u: Dictionary, sv: ShipView) -> void:
 	if gfx != null and gfx.has_method("add_ship"):
 		var info := {"faction": str(u["fac"]), "cls": str(u["cls"]), "size": float(u["size"]), "squadron": bool(u["squadron"]), "flagship": bool(u["flagship"]), "code": sv.code}
+		if title_backdrop:
+			info["shielded"] = false   # issue 1434 (item 10): the backdrop never takes a hit, so it builds no shield skin
 		if not sv.a4:
 			info["meshes"] = sv.meshes   # A4 ships: fx finds the hull and its skin_<n> patches itself
 		gfx.add_ship(str(u["id"]), sv, info)
@@ -1180,7 +1547,18 @@ func _finish(r: Dictionary) -> void:
 	finished.emit(r)
 
 
+# issue 1434: how long the last battle's _exit_tree took on the main thread, and whether it left a build part way
+static var last_exit_us := 0
+static var last_exit_mid_build := false
+static var last_exit_id := 0   # which battle the two above belong to (the bench ties them to the backdrop it clicked away from)
+
+
 func _exit_tree() -> void:
+	var t_exit := Time.get_ticks_usec()
+	stage.stop()
+	_build_gen += 1   # issue 1518: a build still awaiting stops at its next step (quit or leave mid-load)
+	last_exit_mid_build = not _inst_tasks.is_empty() or _preload.values().has(null)
+	_drop_preload(false)   # issue 1434: a build stopped part way hands its running loads and instances on, no wait
 	# exit synchronisation stays: drain both tasks, then clear the flags they own
 	retiring = true
 	_gen += 1
@@ -1194,6 +1572,8 @@ func _exit_tree() -> void:
 	thinking = false
 	# issue 1204: the per-hull look copies are keyed by this battle's materials; drop them so a run does not grow them
 	ShipView.clear_look_cache()
+	last_exit_us = Time.get_ticks_usec() - t_exit
+	last_exit_id = get_instance_id()
 
 
 # Reduce flashing and Screen shake (settings, and the battle menu): reach G4's fx live

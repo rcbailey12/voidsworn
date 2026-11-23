@@ -1,4 +1,5 @@
 extends RefCounted
+const SKEEP := preload("res://render/shader_keep.gd")
 # Issue 1374 (Ryan, Nov 20 2026, R362; docs/playbooks/scale.md section 6): one line style for everything drawn as a line
 # on or over the battle board. This file owns the width (by camera distance), the glow and the fade; callers name only a
 # role, and the role's colour comes from ROLE below. Change a width or a glow here and every line follows.
@@ -151,8 +152,7 @@ const STRIP_IN := 4.4
 
 static func material(breath := false) -> ShaderMaterial:
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = SHADER
+	var sh: Shader = SKEEP.of(SHADER)   # issue 1434: one compiled shader per code
 	m.shader = sh
 	m.set_shader_parameter("breath", 1.0 if breath else 0.0)
 	return m

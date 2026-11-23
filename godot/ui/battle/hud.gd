@@ -1369,10 +1369,31 @@ func loading(on: bool) -> void:
 		l.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		l.grow_vertical = Control.GROW_DIRECTION_BOTH
 		load_cover.add_child(l)
+		# issue 1434: a count under the title while the ships are built a few per frame, so the cover visibly moves
+		load_count = _label("", 22, S_TEXT, font_name)
+		load_count.set_anchors_preset(Control.PRESET_CENTER)
+		load_count.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		load_count.grow_vertical = Control.GROW_DIRECTION_BOTH
+		load_count.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		load_count.offset_top = s(56)
+		load_count.offset_bottom = s(56)
+		load_count.modulate.a = 0.75
+		load_cover.add_child(load_count)
 		root.add_child(load_cover)
 	elif not on and load_cover != null:
 		load_cover.queue_free()
 		load_cover = null
+		load_count = null
+
+
+var load_count: Label
+
+
+# issue 1434: "SHIPS READY 7 / 24" on the cover; a total of 0 clears it (the warm-up after the ships are built)
+func loading_count(n: int, total: int) -> void:
+	if load_count == null or not is_instance_valid(load_count):
+		return
+	load_count.text = "SHIPS READY %d / %d" % [n, total] if total > 0 else ""
 
 
 # Issue 529 (PR 533): a tree prompt (a "you may" skill's yes or no, a Chorus role) takes the shot's place in the sheet,
