@@ -235,3 +235,39 @@ The manifest prompts are rewritten to Ryan's A3 picks:
 - The three music prototypes are not in Wave B; they move to Gate 3 with the Godot 4.7 music plan.
 
 **Gate:** Wave B runs only on Ryan's typed "go wave b". The runner copies the Wave A3B skeleton whole: a fresh folder, a list sha256 gate, a dry run requiring "108 steps, 108 still to make", and the wave and listening page outside the step wrapper.
+
+### 8.3 Wave B Ear Picks and Wave C (Ryan, Nov 23 2026, 12:41 PM CT)
+
+Wave B ran with 108 takes for 1,421 credits. Relay: voidsworn-relay `pc-out-opus1752waveb`. Listening page: https://claude.ai/artifact/MzdPpBUbFsJt1fNi5WgjHx. Neon's notes are PR 1865. Claude re-measured all 108 takes, and Neon's numbers match on 107. Ryan's picks decide.
+
+**Keeps, Ryan's calls:**
+- **Sunward:** autocannon t1 (the game already staggers 3 rounds), torp_launch t1.
+- **Directorate:** turbo t2 (t1 as a variant), hturbo t1, ion_beam t1.
+- **Glasswright:** needle t1, pulsar t2 (Ryan prefers it over Neon's t1 as more distinctive; needs cleanup), startorp t2.
+- **Eclipse:** gauss_charge t2, nlance t1.
+- **Chorus:** none. tendril t1 was dropped: Ryan scrapped the tendril weapon (R437, Nov 23), so wep_chorus_tendril is replaced pending issue 1877 and gets a new sound once the replacement weapon is picked. No re-roll.
+- **Hullbreakers:** scatter t2, rockets t2 (needs more ignition and trail: layer a torp ignition in Godot).
+- **Shared and craft:** flak_airburst t1, craft_guns t2, mech_recoil_tail t1, layer_body_heavy t1.
+- **Hits:** imp_glass_armor t1.
+- **Shields:** shd_break_prismatic t1 (close; check mono at mastering), shd_hit_absorb t1 (t2 is too high).
+- **Damage:** dmg_turret_knockout t2, dmg_engine_fail t2 (closer, but short).
+- **Deaths:** death_metal_break t1 (close, but does not sound like things breaking), death_hullbreaker_snap t2 (close, short), death_directorate_blackout as a t1 plus t2 mix.
+- **UI:** ui_boss_arrival t1, ui_confirm_latch t1, ui_turn_start t2.
+
+**Dropped:** `wep_sunward_hbattery_salvo` is one blast that rings out, not five shots. The game staggers five hbattery shots itself, so this reference is retired.
+
+**On hold:** `wep_chorus_bioplasma` waits for the projectile look.
+
+**"Too short" is a layering question, not a re-roll.** A ship death in game stacks the size boom (`boom_s/m/l`), the faction crack, and a `death_bed` loop of 3 to 16 s (`sfx.gd` `death_bed`). Before more death spend, Claude builds a full-moment preview that stacks the picked pieces the way the game does, so Ryan judges the whole moment.
+
+**Wave C re-roll (25 ids, 49 takes, about 707 real credits; tool estimate 2,572, cap 3,000).** Prompts rewritten to Ryan's notes and Neon's fixes:
+- The shell guns (turret, hbattery) ask for a bright breech crack and barrel ring.
+- All four metal hits (metal_light, energy_sear, las, acid) ask for a clear armored-steel clang first.
+- Eclipse doom is a crackling dark lightning arc, to match the Corona arc look.
+- The breach shear asks for buckling and ripping, and is lengthened to 1.4 s.
+- The spores and deaths are close and centered, with no "wide" or "outward" wording.
+- sporeb is reworded away from electrical static.
+- The craft bombs ask for a clamp release and thruster ignition.
+- The bridge bed drops the words that leaked a voice ("no vocals", "command bridge") and moves to influence 0.50.
+
+The run needs Ryan's typed "go wave c".
