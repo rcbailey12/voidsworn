@@ -111,11 +111,15 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	if OS.has_environment("VS_WORLD_PREVIEW"): size = Vector2i(1024, 512)
 	var code := bake_code()
 	# urgent: ahead of the far backdrop bakes, so a cold cache still makes the loading cover (PC proof, PR 1776)
-	var a: Image = await baker.bake(key + "|a", code, params, size, 32, false, true)
+	# all three are queued before any is awaited, so no backdrop runs between them (Artoo, PR 1776)
+	var ka: String = baker.request_bake(key + "|a", code, params, size, 32, false, true)
 	params["pass_id"] = 1
-	var b: Image = await baker.bake(key + "|b", code, params, size, 32, false, true)
+	var kb: String = baker.request_bake(key + "|b", code, params, size, 32, false, true)
 	params["pass_id"] = 2
-	var h: Image = await baker.bake(key + "|h", code, params, size, 32, true, true)   # one 32-bit float height channel
+	var kh: String = baker.request_bake(key + "|h", code, params, size, 32, true, true)
+	var a: Image = await baker.result(ka)
+	var b: Image = await baker.result(kb)
+	var h: Image = await baker.result(kh)   # one 32-bit float height channel
 	if not is_instance_valid(planet) or a == null or b == null or h == null: return
 	if planet.get_meta("planet_frozen", false): return   # the loading cover already lifted (board.gd wait_planet)
 	stand_in.set_shader_parameter("tex_a", baker.texture(a))
@@ -147,8 +151,10 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	var started := Time.get_ticks_msec()
 	var baker = preload("res://world/world_bake.gd").service(planet.get_tree())
 	var urgent := bool(opts.get("urgent", false))
-	var colour: Image = await baker.authored(R01_DIR + "colour.json", R01_SIZE, false, urgent)
-	var data: Image = await baker.authored(R01_DIR + "relief.json", R01_SIZE, true, urgent)
+	var kc: String = baker.request_authored(R01_DIR + "colour.json", R01_SIZE, false, urgent)
+	var kd: String = baker.request_authored(R01_DIR + "relief.json", R01_SIZE, true, urgent)
+	var colour: Image = await baker.result(kc)
+	var data: Image = await baker.result(kd)
 	if not is_instance_valid(planet) or colour == null or data == null: return
 	if planet.get_meta("planet_frozen", false): return   # the loading cover already lifted (board.gd wait_planet)
 	var light_dir := (sun_position - planet.global_position).normalized()

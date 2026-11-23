@@ -241,12 +241,40 @@ func _run() -> void:
 	for k in ["far1", "far2"]:
 		q._jobs[k] = {}
 		q._enqueue(k, false)
-	q._jobs["board"] = {}
-	q._enqueue("board", true)
-	_check(q._queue == ["board", "far1", "far2"], "an urgent board planet map does not jump the bake queue (%s)" % str(q._queue))
+	for k in ["board_a", "board_b", "board_h"]:
+		q._jobs[k] = {}
+		q._enqueue(k, true)
+	_check(q._queue == ["board_a", "board_b", "board_h", "far1", "far2"], "the board planet's map set does not jump the bake queue in order (%s)" % str(q._queue))
 	q._queue.pop_front()
-	q._enqueue("board", true)
-	_check(q._queue == ["far1", "far2"], "a bake the worker already took was queued again (%s)" % str(q._queue))
+	q._enqueue("board_a", true)
+	_check(q._queue == ["board_b", "board_h", "far1", "far2"], "a bake the worker already took was queued again (%s)" % str(q._queue))
+	q.free()
+	# Artoo (PR 1776): install_board queues its whole map set before awaiting any, so no backdrop can start between two
+	# of its maps. Watch the live service while a cold terran board installs behind two queued backdrop jobs.
+	var cache_dir := OS.get_user_data_dir().path_join("planet_v2_check_cache")
+	OS.set_environment("VS_WORLD_CACHE", cache_dir)
+	var svc = BAKER.service(self)
+	await process_frame
+	svc._jobs["far_x"] = {"path": "res://nope_x.json", "size": Vector2i(8, 8), "done": false, "image": null, "started": 0, "compute": false}
+	svc._jobs["far_y"] = {"path": "res://nope_y.json", "size": Vector2i(8, 8), "done": false, "image": null, "started": 0, "compute": false}
+	svc._enqueue("far_x", false)
+	svc._enqueue("far_y", false)
+	var tp := _planet()
+	var seen: Array = []
+	_done = false
+	_install(tp[0], tp[1], 1, 77, Vector3(0.4, 0.6, 0.7) * 100000.0)
+	while not _done:
+		if svc._active != "" and (seen.is_empty() or seen[-1] != svc._active): seen.append(svc._active)
+		await process_frame
+	# a backdrop already running may finish first; after the first board map, the other two follow with nothing between
+	var board_at: Array = []
+	for i in seen.size():
+		if not str(seen[i]).begins_with("far_"): board_at.append(i)
+	_check(board_at.size() == 3 and board_at[2] - board_at[0] == 2, "a backdrop bake ran between the board planet's maps (%s)" % str(seen))
+	OS.unset_environment("VS_WORLD_CACHE")
+	(tp[0] as Node).queue_free()
+	(tp[1] as Node).queue_free()
+	q = BAKER.new()
 	q.free()
 	# relief: one exact 32-bit float channel (Fable, PR 1776 M4)
 	var packed := Image.create(4, 2, false, Image.FORMAT_RGBA8)

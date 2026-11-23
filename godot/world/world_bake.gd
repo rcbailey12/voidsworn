@@ -83,14 +83,26 @@ static func clear_static() -> void:
 # Authored R01 maps use the same shared worker and texture cache as the GPU
 # bakes. Decode and mip generation never block the battle's main thread.
 func authored(path: String, size: Vector2i, float_mips := false, urgent := false) -> Image:
+	return await result(request_authored(path, size, float_mips, urgent))
+
+# Queues an authored map without waiting; returns its key for result(). A caller with several maps requests them all
+# first, so nothing else can slip in between them (Artoo, PR 1776).
+func request_authored(path: String, size: Vector2i, float_mips := false, urgent := false) -> String:
 	var owner := service(_tree())
 	var key := (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
-	if _cache.has(key): return _cache[key]
+	if _cache.has(key): return key
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"path": path, "size": size, "done": false,
 			"image": null, "started": Time.get_ticks_msec(), "compute": false, "float_mips": float_mips}
 	owner._enqueue(key, urgent)
-	var job: Dictionary = owner._jobs[key]
+	return key
+
+# Waits for a requested map. A job keeps its dictionary until it is done, and a done job's image is cached.
+func result(key: String) -> Image:
+	if _cache.has(key): return _cache[key]
+	var owner := service(_tree())
+	var job = owner._jobs.get(key)
+	if job == null: return _cache.get(key)
 	while not job.done: await _tree().process_frame
 	return job.image
 
@@ -104,24 +116,31 @@ func _enqueue(key: String, urgent: bool) -> void:
 	_jobs[key]["queued"] = true
 	if at >= 0 and (not urgent or at == 0): return
 	if at >= 0: _queue.remove_at(at)
-	if urgent: _queue.push_front(key)
+	if urgent:
+		# behind the urgent maps already waiting, ahead of everything else: a board map set runs in the order asked
+		var n := 0
+		while n < _queue.size() and _jobs.has(_queue[n]) and _jobs[_queue[n]].get("urgent", false): n += 1
+		_queue.insert(n, key)
+		_jobs[key]["urgent"] = true
 	else: _queue.append(key)
 
 # half_mips (issue 1765): the map holds a 16-bit height packed in R and G (the board planet's relief). It is decoded to
 # one 32-bit float channel before its mips are made: exact, half the memory of half floats in four channels (Fable,
 # PR 1776 M4), and averaging never rounds the high byte into false ridges.
 func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int, half_mips := false, urgent := false) -> Image:
+	return await result(request_bake(key, code, params, size, strips, half_mips, urgent))
+
+# Queues a bake without waiting; returns its key for result() (see request_authored).
+func request_bake(key: String, code: String, params: Dictionary, size: Vector2i, _strips: int, half_mips := false, urgent := false) -> String:
 	var owner := service(_tree())
 	key = cache_key(key, code, params, size)
-	if _cache.has(key): return _cache[key]
+	if _cache.has(key): return key
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"code": code, "params": params.duplicate(true), "size": size, "half_mips": half_mips,
 			"done": false, "image": null, "started": Time.get_ticks_msec(),
 			"compute": DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "gl_compatibility"}
 	owner._enqueue(key, urgent)
-	var job: Dictionary = owner._jobs[key]
-	while not job.done: await _tree().process_frame
-	return job.image
+	return key
 
 var _exiting := false   # issue 1482: set in _exit_tree; a raster that finishes after it starts no worker
 
