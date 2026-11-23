@@ -377,6 +377,9 @@ static func derelict_shared(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 # under the key light, then 0.07 until PROPS_G, where the Hullbreakers still read fairly live and the Chorus wrecks
 # popped (Board look-tune inside R420's band). Eclipse obsidian (about 0.039) is held at the 0.04 floor either way.
 const HULK_BAND := Vector2(0.04, 0.045)
+# R422 (Ryan, Nov 23 2026): Chorus hulks only go below the band 3 floor, down to about 0.025 (the low end of Eclipse's
+# range in the standard), because at the floor the tan chitin wrecks were still the lightest shapes in a field (PROPS_I).
+const CHORUS_HULK_BAND := Vector2(0.025, 0.03)
 # Visible burn: scorch patches multiplied over the hull's own UVs, their share of the hull growing with wreck_soot
 # (Hullbreakers most, Navy least); a faction with wreck_soot 0 (Chorus, Glasswrights) and Eclipse obsidian get none.
 const BURN_EDGE := Vector2(0.4, 0.35)  # ramp edge = x + y * wreck_soot: the burnt share of the noise (heavier after PROPS_G)
@@ -461,11 +464,11 @@ static func linear_luma(c: Color) -> float:
 
 
 # scale a tint (same hue and alpha) so the effective albedo `mean * tint` lies inside HULK_BAND
-static func into_band(c: Color, mean := Color.WHITE) -> Color:
+static func into_band(c: Color, mean := Color.WHITE, band := HULK_BAND) -> Color:
 	var y := linear_luma(Color(mean.r * c.r, mean.g * c.g, mean.b * c.b))
 	if y <= 1e-5:
 		return c
-	var want := clampf(y, HULK_BAND.x, HULK_BAND.y)
+	var want := clampf(y, band.x, band.y)
 	if is_equal_approx(want, y):
 		return c
 	var l := c.srgb_to_linear()
@@ -497,7 +500,8 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 		b.roughness = minf(src.roughness, OBSIDIAN_ROUGH)
 		return b
 	var burn := Color(DEAD_DIM, DEAD_DIM, DEAD_DIM).lerp(Color(float(sc[0]), float(sc[1]), float(sc[2])), soot)
-	b.albedo_color = into_band(Color(c.r * burn.r, c.g * burn.g, c.b * burn.b, c.a), mean)
+	b.albedo_color = into_band(Color(c.r * burn.r, c.g * burn.g, c.b * burn.b, c.a), mean,
+		CHORUS_HULK_BAND if fac == "chorus" else HULK_BAND)
 	b.roughness = minf(1.0, src.roughness * (1.0 + 0.35 * soot))   # soot dulls metal; glass and chitin keep their gloss
 	if fac == "chorus":
 		# dead chitin dries out (Board on PROPS_H, Nov 23: the Chorus wrecks still pop in the field). Its albedo already sits

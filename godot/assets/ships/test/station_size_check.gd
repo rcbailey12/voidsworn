@@ -260,6 +260,13 @@ func _hulk_checks() -> void:
 	wet.roughness = 0.2
 	_report(PROPS.derelict(wet, "chorus").roughness >= 0.85 - 1e-4 and PROPS.derelict(wet, "ithar").roughness <= 0.2 + 1e-4,
 		"a Chorus hulk is dry matte chitin; Glasswright glass keeps its gloss")
+	# R422 (Ryan, Nov 23): Chorus hulks alone sit below the band 3 floor, about 0.025; Eclipse obsidian stays as it was
+	var tan := StandardMaterial3D.new()
+	tan.albedo_color = Color(0.7, 0.55, 0.4)
+	var cy := PROPS.linear_luma(PROPS.derelict(tan, "chorus").albedo_color)
+	var my := PROPS.linear_luma(PROPS.derelict(tan, "corsair").albedo_color)
+	_report(cy >= 0.025 - 1e-3 and cy <= 0.03 + 1e-3 and my >= PROPS.HULK_BAND.x - 1e-3 and cy < my,
+		"Chorus hulks sit at %.3f linear, below the metal hulks' %.3f (R422)" % [cy, my])
 
 
 func _board(terrain: Dictionary, holes: Array, units: Array, map: Dictionary, radius: int, seed := 7) -> Node3D:
