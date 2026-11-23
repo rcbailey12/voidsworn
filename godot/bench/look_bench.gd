@@ -80,6 +80,7 @@ var wld = null
 var A = null
 var T = null
 var report := {"stills": [], "warnings": [], "parts": {}}
+var _wound := {}   # issue 1741 (Artoo on 6fbf60fe): a wound-aimed row's open cutouts and pose, for its still's report entry
 var cfg := {}
 var steps := 0
 var headless := false
@@ -647,6 +648,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 				if fx.now > float(ts.busy_until) + 0.1:
 					break
 				await _step()
+			if fx.now <= float(ts.busy_until) + 0.1:
+				_warn("%s at %d: the target was still waiting on a pre shot after 8 s" % [str(row.get("id", "")), int(r)])
 			for k in 3:
 				ts.flush_damage(fx)
 				await _step()
@@ -654,12 +657,19 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	# "wound" turns a close camera (under 100) to face the target's biggest open cutout, centred on it; camera 170 keeps
 	# the battle angle on the ship's centre (RULEBOOK 6.1). A ship with no open cutout keeps the usual view. The pose
 	# depends on the run's own cutouts, so it is logged and such a row is a detail, never a before/after pair (Artoo).
+	_wound = {}
 	if str(row.get("focus", "")) == "wound" and r < 100.0 and fx.ship("T") != null:
 		var st = fx.ship("T")
 		var best: Dictionary = {}
-		for mo in BREACH.open_mouths(st):
+		var mouths: Array = BREACH.open_mouths(st)
+		for mo in mouths:
 			if best.is_empty() or float(mo["R"]) > float(best["R"]):
 				best = mo
+		# a wound detail with no open cutout is not proof of anything: the still is kept, but its report entry says
+		# incomplete and the log carries one LOOK_BENCH WOUND MISSING line (a run with V2 off expects none)
+		_wound = {"mouths": mouths.size(), "v2": BREACH.v2_on(), "complete": not best.is_empty()}
+		if best.is_empty() and BREACH.v2_on():
+			_warn("LOOK_BENCH WOUND MISSING %s at %d: no open cutout, default camera kept" % [str(row.get("id", "")), int(r)])
 		if not best.is_empty():
 			var wc: Vector3 = st.to_world(best["c"])
 			var wn: Vector3 = (st.to_world(best["c"] + best["n"]) - wc).normalized()
@@ -668,6 +678,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			cam.r = r
 			cam.t = wc
 			cam.snap()
+			_wound["pose"] = [cam.a, cam.b, cam.r, wc.x, wc.y, wc.z]
 			_log("%s wound pose at %d: a %.4f b %.4f r %.1f t (%.2f, %.2f, %.2f)" % [str(row.get("id", "")), int(r), cam.a, cam.b, cam.r, wc.x, wc.y, wc.z])
 			for k in 6:
 				await _step()
@@ -786,5 +797,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts})
+	if not _wound.is_empty():
+		report["stills"][-1]["wound"] = _wound.duplicate()
 	_log("%s at %d: %d cells" % [id, int(r), ci])
 	return true
