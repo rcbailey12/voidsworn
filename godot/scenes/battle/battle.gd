@@ -532,6 +532,7 @@ func _begin(a) -> void:
 	_gen += 1   # issue 1433: work still awaiting from the last battle on this node is stale now
 	_api_join()
 	retiring = false
+	opening = false
 	_click_q = {}
 	_threat_version = -1
 	_threat_one_ver = -1
@@ -753,9 +754,12 @@ func _start_opening() -> void:
 		cam.snap()
 	opening_framed = _fits_open(pts)
 	opening = true
+	var g := _gen
 	var tm := get_tree().create_timer(OPEN_HOLD)
-	while opening and tm.time_left > 0.0 and is_inside_tree():
+	while opening and not quitting and tm.time_left > 0.0:
 		await get_tree().process_frame
+		if _stale(g):
+			return
 	_end_opening()
 
 
@@ -763,7 +767,10 @@ func _end_opening() -> void:
 	if not opening:
 		return
 	opening = false
-	if api != null and api.phase == "player" and sel != "" and views.has(sel):
+	# Standalone quit frees the camera and ships before the battle itself exits.
+	if quitting or retiring or is_queued_for_deletion() or not is_instance_valid(cam):
+		return
+	if api != null and api.phase == "player" and sel != "" and is_instance_valid(views.get(sel)):
 		cam.glide(_pos(sel), 1.4, cam.home_r)
 	else:
 		cam.glide(cam.home, 1.4, cam.home_r)
@@ -1379,8 +1386,9 @@ func _play_batch(bt: Dictionary) -> void:
 
 
 func _pos(id) -> Vector3:
-	if views.has(id):
-		return (views[id] as ShipView).visual_position()
+	var ship = views.get(id)
+	if is_instance_valid(ship):
+		return (ship as ShipView).visual_position()
 	return Vector3.ZERO
 
 
