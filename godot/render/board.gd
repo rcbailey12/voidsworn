@@ -251,6 +251,7 @@ func build(rules) -> void:
 	wrecks.clear()
 	wreck_hulls.clear()
 	built += 1
+	planet_pending = false   # issue 1765: a rebuild never inherits the last build's planet wait
 	WI = api.world_info() if api.has_method("world_info") else {}
 	for c in get_children():
 		c.queue_free()
@@ -1098,8 +1099,9 @@ func _planet() -> void:
 	planet_pending = true
 	planet_t0 = Time.get_ticks_msec()
 	mi.set_meta("planet_look", look_kind)
+	var gen := built
 	await PL.install_board(mi, shell, look_kind, seed_v, sun)
-	planet_pending = false
+	if built == gen: planet_pending = false   # an older build's install never clears a newer build's wait
 
 
 # Issue 1765: the battle's loading cover waits for the board planet's maps. The maps start loading when the board is

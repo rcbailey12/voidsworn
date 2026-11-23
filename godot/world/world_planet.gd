@@ -292,7 +292,8 @@ void fragment() {
 	float det = dot(dpdx,r1);
 	float radius = length(world_point-world_centre);
 	vec3 grad = sign(det)*(dFdx(h)*r1+dFdy(h)*r2);
-	vec3 bumped = normalize(abs(det)*n-grad*radius*0.028);
+	vec3 bv = abs(det)*n-grad*radius*0.028;
+	vec3 bumped = dot(bv, bv) > 1e-20 ? normalize(bv) : n;   // grazing limb: no NaN into the glow (audit, PR 1776)
 	float lambert = max(dot(bumped,l),0.0);
 	float day = smoothstep(-0.06,0.18,dot(n,l));
 	// The cloud sphere samples this same field, at this same angular rate.
@@ -435,7 +436,8 @@ void fragment() {
 	float det = dot(dpdx, r1);
 	float radius = length(world_point - world_centre);
 	vec3 grad = sign(det) * (dFdx(h) * r1 + dFdy(h) * r2);
-	vec3 nb = normalize(abs(det) * n - grad * radius * bump * (1.0 - ocean * 0.85));
+	vec3 bv = abs(det) * n - grad * radius * bump * (1.0 - ocean * 0.85);
+	vec3 nb = dot(bv, bv) > 1e-20 ? normalize(bv) : n;   // grazing limb: no NaN into the glow (audit, PR 1776)
 	float ndl = dot(n, l);
 	float lambert = max(dot(nb, l), 0.0);
 	float day = atmo_k > 0.0 ? smoothstep(-0.1, 0.22, ndl) : smoothstep(-0.04, 0.14, ndl);

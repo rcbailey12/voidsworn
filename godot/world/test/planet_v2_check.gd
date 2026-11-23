@@ -172,6 +172,27 @@ func _run() -> void:
 	_check(_code(late[0]) == PL.BOARD_SURFACE, "a frozen planet still swapped to R01 after the cover lifted")
 	(late[0] as Node).queue_free()
 	(late[1] as Node).queue_free()
+	# 2b2. a rebuild never inherits or loses a planet wait (audit, PR 1776): rebuilt onto a map with no planet, nothing
+	# waits; rebuilt twice onto planets, the first build's install finishing cannot clear the second's wait
+	var rb: Node3D = BOARD.new()
+	root.add_child(rb)
+	var with_planet := StubRules.new()
+	with_planet.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
+	with_planet.w = {"seed": 20}
+	var no_planet := StubRules.new()
+	no_planet.v = {"hexes": hexes, "terrain": {}}
+	rb.build(with_planet)
+	rb.build(no_planet)
+	_check(not rb.planet_pending, "a rebuild onto a map with no planet still waits for the old planet")
+	rb.build(with_planet)
+	var gen_before: int = rb.built
+	rb.build(with_planet)
+	_check(rb.planet_pending and rb.built == gen_before + 1, "a second planet build is not waiting")
+	await rb.wait_planet()
+	_check(not bool(rb.planet_node.get_meta("planet_frozen", false)) and _code(rb.planet_node) == PL.ROCKY_SURFACE,
+		"the newest build's planet did not finish after a rebuild")
+	rb.queue_free()
+	await process_frame
 	# 2c. VS_PLANET_REMIX=0 (R01 switched off, Astra via Ryan item 4): rocky and barren boards keep the procedural
 	# stand-in in their own palette, and the loading cover still lifts at once
 	OS.set_environment("VS_PLANET_REMIX", "0")
