@@ -91,7 +91,7 @@ Audio reads the exact same runtime events and faction metadata (`godot/fx/factio
 - **Takes 2 versus 1:** 1 take on every SFX would be 5,113 by the generator's rates; the second take costs about 630 real credits. Keep 2: the scarce resource is Ryan's listening time, not credits.
 - **Run in two waves:**
   - **Wave A** (14 items, 1,060 estimated): `--only wep_sunward_battery,wep_sunward_battery_v3ab,wep_directorate_laser,wep_chorus_spines,wep_ithar_shard,wep_eclipse_gauss_fire,wep_sunward_lance_beam,imp_metal_heavy,imp_metal_heavy_v3ab,imp_bio_flesh,shd_break_energy,death_chorus_rupture,ui_click_switch,ui_reward_vault --max-credits 1200`.
-  - **Wave B:** the rest with `--max-credits 9300`, only after Wave A is checked for onset, scale and v2 versus v3.
+  - **Wave B:** the rest with `--max-credits 9300`, only after Wave A is checked for onset, scale and v2 versus v3. **Not ready (Nov 23):** the remaining Directorate, Chorus and Eclipse rows still carry the old low-body wording (for example the heavy plasma battery on v2 at 0.65); rewrite them under the Wave A lesson and re-check the selected inputs before Wave B is queued. Any re-roll writes to a fresh, revision-named output folder and its dry run must show every take as still to make (the generator skips a file whose name and size match, whatever the prompt).
 - **Listening page:** each item's `today` field names its baseline cue exactly (`cue` or `cue:variant`, null for no clip today); `listen_page.js` reads it before the free-text `cue` label (Artoo, PR 1753 finding 1). The page should also stitch single shots at the `cues.json` gaps so Ryan hears what the engine will do with a volley.
 
 ---
