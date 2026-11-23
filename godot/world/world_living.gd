@@ -1422,6 +1422,12 @@ func use_ship_debris(ships: Array) -> void:
 	_chunk_task = WorkerThreadPool.add_task(func() -> void: job.chunks = HD.cut(job.sources))
 	_install_chunks()
 
+# issue 1434 (LOAD29 cold s25: the 7 chunk meshes landed in one prepare_hulls draw, 83 pipelines and 7 s): true while the
+# chunks are still being cut on the worker, so the battle's load waits and stages them in with the rest
+func debris_pending() -> bool:
+	return _chunk_task >= 0
+
+
 func _install_chunks() -> void:
 	while not WorkerThreadPool.is_task_completed(_chunk_task):
 		await get_tree().process_frame

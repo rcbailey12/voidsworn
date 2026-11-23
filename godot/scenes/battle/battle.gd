@@ -222,6 +222,11 @@ var tail_round := -1          # the round whose enemy tail (every one of your sh
 var chime_round := -1         # the round whose first hand-over played the "your turn" cue
 
 
+# issue 1434 (LOAD29 warm title: a 1043 ms main-thread step in the backdrop's start, nothing named): when this node was
+# made, so the ready line says how long instancing the scene and its children's _ready took
+var made_us := Time.get_ticks_usec()
+
+
 func _ready() -> void:
 	_args()
 	if _sliced():
@@ -284,7 +289,7 @@ func _ready() -> void:
 		set_process_unhandled_input(false)
 		tips_off = true
 	if DisplayServer.get_name() != "headless":
-		print("[load] battle scene ready in %d ms%s (%s)" % [(Time.get_ticks_usec() - t_ready) / 1000, " (title backdrop)" if title_backdrop else "", _us_ms(rp)])
+		print("[load] battle scene ready in %d ms%s (%s; made %d ms before its ready: the scene's instancing and its children's ready)" % [(Time.get_ticks_usec() - t_ready) / 1000, " (title backdrop)" if title_backdrop else "", _us_ms(rp), (t_ready - made_us) / 1000])
 	if not external:
 		start_default()
 	if args.has("breach-shots"):
@@ -708,17 +713,22 @@ func _begin(a) -> void:
 			gfx.defer_shields = gfx.defer_initial_cuts   # issue 1434: shields wait for prepare_battle_hulls, sliced
 		if "warmup_batch" in gfx:
 			gfx.warmup_batch = 2 if gfx.defer_initial_cuts else 0   # issue 1434: warm pipelines a few per frame (LOAD20: 4 cost up to 0.8 s)
+	var pre := {}   # issue 1434 (LOAD29): the start's own steps, kept in begin_us
 	if sliced:
 		# issue 1434: the hull files start loading on worker threads now, while the board and the world are built
+		var tp := Time.get_ticks_usec()
 		_preload_hulls(a.view())
+		pre["preload_hulls"] = Time.get_ticks_usec() - tp
 		await get_tree().process_frame
 		await get_tree().process_frame
 		if gen != _build_gen:
 			return
+	var ts := Time.get_ticks_usec()
 	if not await _sky_wait(gen):
 		return
+	pre["sky_wait"] = Time.get_ticks_usec() - ts
 	var tb0 := Time.get_ticks_usec()
-	begin_us = {}
+	begin_us = pre
 	TBL = _api_tables()
 	begin_us["tables"] = Time.get_ticks_usec() - tb0
 	if ai_level != "":
@@ -1032,10 +1042,21 @@ func _warmup() -> void:
 	cam.snap()
 	for i in 3:
 		await get_tree().process_frame
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	# issue 1434 (LOAD22): with the whole board in view, the meshes held back since the load began get their first draw a
 	# few new materials a frame (render/stage_in.gd); the effect warm-up below spreads its own
+	# issue 1434 (LOAD29 cold s25: 7 hull-debris chunks installed during prepare_hulls, after the drain stopped watching,
+	# drew 83 pipelines and 7 s in one frame): the chunks are cut on a worker, so wait for them here (at most 15 s) and the
+	# drain below stages them in with the rest
+	if world != null and world.has_method("ship_debris_pending") and world.ship_debris_pending():
+		load_phase = "hull_debris"
+		var td := Time.get_ticks_msec()
+		while world.ship_debris_pending() and Time.get_ticks_msec() - td < 15000:
+			await get_tree().process_frame
+			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	load_phase = "stage_in"
 	await stage.drain(get_tree())
+	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	# issue 1434 (item 10): the title backdrop never fights, so it skips the death cuts, shield skins and effect warm-up
 	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless" and not title_backdrop:
 		# issue 1289: the reinforcement's hull is built, cut and drawn here with the others, then hidden until it arrives
@@ -1045,8 +1066,10 @@ func _warmup() -> void:
 			arrival_warm.prepare(self, gfx, api.arrival_previews(), Vector3.ZERO)
 			for i in 2:
 				await get_tree().process_frame
+				if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 		load_phase = "prepare_hulls"
 		await gfx.prepare_battle_hulls()
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 		load_phase = "fx_warmup"
 		# at most 20 s: a warm-up that never returns must never hold the battle (Opus review, Nov 3)
 		var done := [false]
@@ -1057,19 +1080,23 @@ func _warmup() -> void:
 		var t0 := Time.get_ticks_msec()
 		while not done[0] and Time.get_ticks_msec() - t0 < 20000:
 			await get_tree().process_frame
+			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 		if arrival_warm != null:
 			arrival_warm.park()
 	load_phase = "camera_back"
 	for i in 2:
 		await get_tree().process_frame
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	cam.a = keep["a"]
 	cam.b = keep["b"]
 	cam.r = keep["r"]
 	cam.t = keep["t"]
 	cam.snap()
 	await get_tree().process_frame
+	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	load_phase = "settle"
 	await load("res://main/load_screen.gd").settle(get_tree())
+	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	load_phase = ""
 	pipe_base = _pipe_count()
 	hud.loading(false)

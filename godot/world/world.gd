@@ -1513,6 +1513,11 @@ func dust(mk: String) -> void:
 	add_child(mi)
 
 
+# issue 1434: true while the board's hull-debris chunks are still being cut (world_living.gd debris_pending)
+func ship_debris_pending() -> bool:
+	return _living != null and is_instance_valid(_living) and _living.debris_pending()
+
+
 # ShipView scenes are already loaded by the battle; no asset path or GLB import.
 func use_ship_debris(ships: Array) -> void:
 	_debris_ships = ships

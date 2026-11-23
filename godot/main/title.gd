@@ -1,7 +1,6 @@
 extends CanvasLayer
 # The title screen (campaign_meta.js titleScreen), Settings and Credits.
 
-const HUD := preload("res://ui/battle/hud.gd")
 const Brand := preload("res://ui/battle/brand.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
 const GS := preload("res://ui/theme/glass_shell.gd")
@@ -25,7 +24,7 @@ var _toast_t := 0.0
 func _font(n: String) -> FontFile:
 	# the imported font when the project has been imported or exported, else the raw file
 	var p := "res://ui/battle/fonts/" + n
-	if HUD.imported_ok(p):
+	if GS._imported_ok(p):   # issue 1518: not the battle HUD's copy, which loaded the HUD script with the title
 		var r = load(p)
 		if r is FontFile:
 			return r
@@ -535,14 +534,14 @@ func _focus_first(n: Node) -> void:
 
 
 func _toggle(t: String, key: String) -> Control:
-	if key == "tips": main.settings["tips"] = not preload("res://ui/campaign/campaign_tips.gd").is_off()
+	if key == "tips": main.settings["tips"] = not load("res://ui/campaign/campaign_tips.gd").is_off()
 	if not main.settings.has(key):
 		main.settings[key] = true
 	var b := _button("On" if main.settings[key] else "Off")
 	b.set_meta("setting_key", key)
 	b.pressed.connect(func() -> void:
 		main.settings[key] = not bool(main.settings[key])
-		if key == "tips": preload("res://ui/campaign/campaign_tips.gd").set_off(not main.settings[key])
+		if key == "tips": load("res://ui/campaign/campaign_tips.gd").set_off(not main.settings[key])
 		b.text = "On" if main.settings[key] else "Off"
 		main.save_settings()
 		if key == "taa" and main.has_method("restart_showcase"):

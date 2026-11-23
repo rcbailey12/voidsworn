@@ -8,10 +8,14 @@ extends Node
 #                            battles) with both sides on AI; prints one JSON line per run and a summary, and writes
 #                            --report <file> (JSON). --fast K speeds the clock K times (default 40).
 
-const BattleScene := preload("res://scenes/battle/battle.tscn")
-const BattleScript := preload("res://scenes/battle/battle.gd")   # issue 1518: its static sky and sound prefetch
+# issue 1518 (LOAD29 warm: a close 5 s after launch was seen only after 7.7 s, before the game's first frame): the
+# battle scene and the campaign host are not preloaded with this script, since compiling them held the window unanswered
+# at the start; the battle scene is read on a worker after launch (_battle_packed) and the host is loaded when needed
+const BATTLE_SCENE := "res://scenes/battle/battle.tscn"
+const BATTLE_SCRIPT := "res://scenes/battle/battle.gd"
+const HOST_SCRIPT := "res://main/campaign_host.gd"
+const Sfx := preload("res://audio/sfx.gd")   # light: its sound prefetch at launch
 const Title := preload("res://main/title.gd")
-const Host := preload("res://main/campaign_host.gd")
 const OrdersKit := preload("res://ui/theme/orders_kit.gd")
 const CAMPAIGN_SCRIPT := "res://campaign/campaign.gd"
 const SETTINGS_PATH := "user://settings.json"
@@ -118,11 +122,15 @@ func quit_clean(code := 0, route := "menu") -> void:
 		_retired.free()   # issue 1519: a battle left for the title and not yet freed goes before the statics are cleared
 	if music != null and is_instance_valid(music) and music.has_method("release"):
 		music.release()
-	BattleScript.drop_sky_pending()
+	if ResourceLoader.has_cached(BATTLE_SCRIPT):
+		load(BATTLE_SCRIPT).drop_sky_pending()   # a battle script never read has no sky read to drop
+	if _scene_reading and ResourceLoader.load_threaded_get_status(BATTLE_SCENE) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		ResourceLoader.load_threaded_get(BATTLE_SCENE)
+		_scene_reading = false
 	if _fx_reading and ResourceLoader.load_threaded_get_status(FX_SCRIPT) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 		ResourceLoader.load_threaded_get(FX_SCRIPT)
 		_fx_reading = false
-	BattleScript.Sfx.drop_pending()
+	Sfx.drop_pending()
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var t1 := Time.get_ticks_msec()
@@ -180,10 +188,12 @@ func _ready() -> void:
 	RenderingServer.frame_post_draw.connect(_on_frame_post_draw)
 	_args()
 	if DisplayServer.get_name() != "headless":
-		# issue 1518: the battle's sky and sound clips start loading on worker threads now, so the frame that builds the
+		print("[main] ready at %d ms after the engine started" % Time.get_ticks_msec())   # issue 1518 (LOAD29): the launch's own share
+		# issue 1518: the sound clips and the battle scene start loading on worker threads now, so the frame that builds the
 		# first battle only collects them
-		BattleScript.prefetch_sky()
-		BattleScript.Sfx.prefetch()
+		Sfx.prefetch()
+		if ResourceLoader.load_threaded_request(BATTLE_SCENE) == OK:
+			_scene_reading = true   # the sky read starts once the battle script is read (battle_parts_ready)
 		if ResourceLoader.load_threaded_request(FX_SCRIPT) == OK:
 			_fx_reading = true
 	if args.has("player-path"):
@@ -489,13 +499,13 @@ static func next_showcase_fac() -> String:
 func _start_showcase() -> void:
 	if quitting or title == null or not is_instance_valid(title) or showcase != null or not _showcase_wanted():
 		return
-	if _fx_reading:
+	if _fx_reading or _scene_reading:
 		var t_wait: Node = title
 		if not await battle_parts_ready():
 			return
 		if title != t_wait or showcase != null or title == null or not is_instance_valid(title):
 			return   # the title was left, or a backdrop started, meanwhile
-	showcase = BattleScene.instantiate()
+	showcase = _battle_packed().instantiate()
 	showcase.showcase = true
 	showcase.title_backdrop = true   # issue 1434: capped at High, silent, no combat warm-up
 	showcase.args["quality"] = str(settings["quality"])
@@ -579,7 +589,7 @@ func new_run(opts := {}) -> void:
 		return
 	_clear()
 	# campaign_host.gd runs G3's campaign (rules and screens as data) with real battles; README.md is the contract
-	campaign = Host.new()
+	campaign = load(HOST_SCRIPT).new()
 	add_child(campaign)
 	campaign.run_over.connect(func(_summary) -> void:
 		campaign.queue_free()
@@ -592,7 +602,7 @@ func new_run(opts := {}) -> void:
 
 
 static func campaign_has_save() -> bool:
-	return Host.has_save()
+	return load(HOST_SCRIPT).has_save()
 
 
 # issue 1518 (LOAD22 warm: a close during the start hid after 2.7 s, before the game's first frame): the window draws
@@ -614,19 +624,39 @@ var hold_fx_read := false         # prefetch_wait_check only: the read counts as
 
 
 func battle_parts_ready() -> bool:
-	while _fx_reading and not quitting and (hold_fx_read or ResourceLoader.load_threaded_get_status(FX_SCRIPT) == ResourceLoader.THREAD_LOAD_IN_PROGRESS):
+	while not quitting and ((_fx_reading and (hold_fx_read or ResourceLoader.load_threaded_get_status(FX_SCRIPT) == ResourceLoader.THREAD_LOAD_IN_PROGRESS))
+			or (_scene_reading and ResourceLoader.load_threaded_get_status(BATTLE_SCENE) == ResourceLoader.THREAD_LOAD_IN_PROGRESS)):
 		await get_tree().process_frame
 	if quitting:
 		return false
 	if _fx_reading:
 		_fx_reading = false
 		_fx_script = ResourceLoader.load_threaded_get(FX_SCRIPT)   # read by now: no wait
+	if _scene_reading:
+		_battle_packed()   # read by now: no wait
+		if DisplayServer.get_name() != "headless":
+			load(BATTLE_SCRIPT).prefetch_sky()   # issue 1518: the battle's sky starts reading on a worker now
 	return true
+
+
+# issue 1518: the battle scene, from the launch's worker read when it ran (it waits only for what is not read yet)
+var _scene_reading := false
+var _battle_scene: PackedScene = null
+
+
+func _battle_packed() -> PackedScene:
+	if _battle_scene == null:
+		if _scene_reading:
+			_scene_reading = false
+			_battle_scene = ResourceLoader.load_threaded_get(BATTLE_SCENE)
+		if _battle_scene == null:
+			_battle_scene = load(BATTLE_SCENE)
+	return _battle_scene
 
 
 func quick_battle() -> void:
 	_clear()
-	var b = BattleScene.instantiate()
+	var b = _battle_packed().instantiate()
 	b.external = true
 	b.args["quality"] = str(settings["quality"])
 	# Issue 1079: on by default (Ryan, Nov 20). A capture that needs the old look passes --nebula_wake false (Artoo, PR 1330).
@@ -749,7 +779,7 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 			elif c is CanvasLayer and (c as CanvasLayer).visible:
 				(c as CanvasLayer).visible = false
 				hidden.append(c)
-	var b = BattleScene.instantiate()
+	var b = _battle_packed().instantiate()
 	b.external = true
 	b.bot = bot_mode or bool(opts.get("bot", false))
 	b.in_campaign = campaign != null
@@ -777,7 +807,7 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 func play_api(a, opts := {}) -> Dictionary:
 	if not await battle_parts_ready():
 		return {"result": "closing"}   # the game is closing before the battle began: not a result (campaign_host.gd)
-	var b = BattleScene.instantiate()
+	var b = _battle_packed().instantiate()
 	b.external = true
 	b.bot = bot_mode or bool(opts.get("bot", false))
 	b.can_retreat = bool(opts.get("can_retreat", false))
@@ -896,7 +926,7 @@ func _hang_check(report: Dictionary) -> void:
 
 
 func _bot_battle(seed: int) -> Dictionary:
-	var b = BattleScene.instantiate()
+	var b = _battle_packed().instantiate()
 	b.external = true
 	b.bot = true
 	add_child(b)
@@ -913,7 +943,7 @@ func _bot_battle(seed: int) -> Dictionary:
 
 
 func _bot_campaign(seed: int) -> Dictionary:
-	campaign = Host.new()
+	campaign = load(HOST_SCRIPT).new()
 	add_child(campaign)
 	campaign.start(self, {"bot": true, "seed": seed, "policy": str(args.get("bot-policy", "smart"))})
 	var summary = await campaign.run_over

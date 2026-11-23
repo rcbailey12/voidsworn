@@ -1,6 +1,6 @@
 extends Node
 signal cue_started(name: String, options: Dictionary)
-const HUDRes := preload("res://ui/battle/hud.gd")
+const GSRes := preload("res://ui/theme/glass_shell.gd")   # issue 1518: _imported_ok from the light kit, not the battle HUD
 # The game's sound (sfx.js) in Godot: the same cue table (cues.json, rendered from sfx.js by build/render_synth.js), the
 # same recorded clips (clips/, converted from sfx_data.js) and the same synth takes (synth/, rendered offline from the
 # game's own synth code). A cue plays its recorded layers (round robin, pitch jitter, rate and delay per layer) plus its
@@ -136,7 +136,7 @@ static func prefetch() -> void:
 				for f in cue_d[k]["variants"][variant].get("synth", []):
 					paths.append("res://audio/synth/" + str(f))
 	for p in paths:
-		if _pending.has(p) or ResourceLoader.has_cached(p) or not HUDRes.imported_ok(p):
+		if _pending.has(p) or ResourceLoader.has_cached(p) or not GSRes._imported_ok(p):
 			continue
 		if ResourceLoader.load_threaded_request(p) == OK:
 			_pending[p] = true
@@ -194,7 +194,7 @@ func _load(p: String) -> AudioStream:
 		if got is AudioStream:
 			return got
 	# the imported stream when the project has been imported or exported, else the raw Ogg file
-	if HUDRes.imported_ok(p):
+	if GSRes._imported_ok(p):
 		var r = load(p)
 		if r is AudioStream:
 			return r
@@ -659,7 +659,7 @@ const HIT_BY_WEAPON := {
 	"rail": "hit_rail", "gauss": "hit_rail", "ion": "hit_ion",
 }
 const HIT_BY_TARGET := {"chorus": "hit_wet", "ithar": "hit_glass"}
-const CRIT_BEAT := preload("res://fx/fx_weapons.gd").CRIT_BEAT
+const CRIT_BEAT := 0.12   # fx_weapons.gd CRIT_BEAT, the same beat (issue 1518: not preloaded, so the title loads no effects script; prefetch_wait_check holds the two equal)
 
 
 func impact_cue(fam: String, target_fac: String, heavy := false) -> String:

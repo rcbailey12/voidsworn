@@ -392,6 +392,7 @@ func _title() -> void:
 	var w0 := Time.get_ticks_msec()
 	var click_ms := -1        # -1: never clicked while building; -2: clicked, drawer never opened
 	var click_t := -1
+	var begin_seen := {}
 	var link: Button = _find_button(m.title, "Settings")
 	while (m.showcase == null or not is_instance_valid(m.showcase) or not m.showcase.showcase_ready) and Time.get_ticks_msec() - w0 < 240000:
 		if click_t < 0 and link != null and m.showcase != null and is_instance_valid(m.showcase) and m.showcase.api != null and m.showcase.load_stats.is_empty():
@@ -406,6 +407,8 @@ func _title() -> void:
 		var now := Time.get_ticks_usec()
 		worst = maxi(worst, now - last)
 		var sc1 = m.showcase
+		if sc1 != null and is_instance_valid(sc1) and not (sc1.begin_us as Dictionary).is_empty():
+			begin_seen = (sc1.begin_us as Dictionary).duplicate()   # LOAD29: the backdrop may be gone by the report
 		var ph1: String = sc1.load_phase if sc1 != null and is_instance_valid(sc1) else "none"
 		var pipes := _pipes()
 		var bakes: int = int(sc1.world.pending_bakes) if sc1 != null and is_instance_valid(sc1) and sc1.world != null and is_instance_valid(sc1.world) else -1
@@ -453,8 +456,7 @@ func _title() -> void:
 	_say("[load1434] title: backdrop %s; longest build stretch %d ms; worst frame while it built %d ms; backdrop ready after %d ms; sfx bus %s before, %s" % [
 		"%d ships" % st["ships"] if not st.is_empty() else "never built", int(st.get("worst_stretch", 0)) / 1000,
 		worst / 1000, Time.get_ticks_msec() - w0, before, "never moved" if moved.is_empty() else "moved to %s" % [moved.slice(0, 3)]])
-	if m.showcase != null and is_instance_valid(m.showcase):
-		_say("[load1434] title start to board parts (us) %s" % str(m.showcase.begin_us))
+	_say("[load1434] title start to board parts (us) %s" % str(begin_seen))
 	m.queue_free()
 	for i in 10:
 		await process_frame

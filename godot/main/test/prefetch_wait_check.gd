@@ -64,6 +64,8 @@ func _run() -> void:
 		printerr("FAIL: refusing to write settings outside the game check sandbox")
 		quit(1)
 		return
+	# 0. issue 1518: sfx.gd keeps its own copy of the critical-hit beat (it no longer preloads the effects script)
+	check(is_equal_approx(Sfx.CRIT_BEAT, load("res://fx/fx_weapons.gd").CRIT_BEAT), "the sound's critical beat equals the effects' (%.2f s)" % Sfx.CRIT_BEAT)
 	# 1. sound made while its clips are being read
 	Sfx.prefetch()
 	var pending_at_start := Sfx._pending.size()
