@@ -1,14 +1,12 @@
 'use strict';
 // Issue #305 jobs 1 to 5 (tree skills in battle): every parity fixture must actually fire its pick.
-// Runs the pinned rules oracle through the golden harness and reads B.treeStats from the last record.
-// The rules parity job proves the Godot twin writes the same records; this check proves the skill fired on the JS side.
+// Read the saved Godot battle records. The rules check matches them against fresh runs.
+// The direct browser rules unit cases below remain as coverage of the frozen implementation.
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
-const { spawnSync } = require('child_process');
 const ROOT = process.env.VS_ROOT || path.resolve(__dirname, '../../..');
-const GOLDEN = path.join(ROOT, 'godot/rules/test/node/golden.js');
-const SCEN = path.join(ROOT, 'godot/rules/test/scenarios.json');
+const saved = require(path.join(ROOT, 'godot/rules/test/saved/records'));
+const tables = require(path.join(ROOT, 'godot/rules/data/tables.json')).tables;
 const WANT = {
   t_casttwice: 'aelith:A:0:1', t_flakskip: 'aelith:A:2:0', t_lensaloft: 'aelith:A:2:1',
   t_longfocus: 'vaelen:A:0:0', t_recordedangle: 'vaelen:A:1:1', t_burnflaw: 'vaelen:A:2:0',
@@ -88,23 +86,25 @@ const WANT = {
 const { WAITING } = require('./tree_table_walk_test.js');
 const INERT = Object.keys(WAITING);
 let bad = 0;
-const scen = JSON.parse(fs.readFileSync(SCEN, 'utf8'));
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'treefx-'));
-try {
+const scen = saved.json(saved.SCENARIOS);
+const battles = saved.manifest().battles;
+function recorded(name) {
+  const entry = battles[name];
+  if (!scen[name] || !entry || entry.scenario_sha256 !== saved.sha(saved.stable(scen[name]))) {
+    throw new Error(`missing or stale saved Godot result for ${name}`);
+  }
+  return saved.records(saved.unpack(saved.HOME, entry));
+}
+{
   for (const [name, key] of Object.entries(WANT)) {
     if (!scen[name]) { console.log('FAIL ' + name + ': missing scenario'); bad++; continue; }
     if (!scen[name].lineage) { console.log('FAIL ' + name + ': missing lineage'); bad++; continue; }
-    const out = path.join(tmp, name + '.jsonl');
-    const r = spawnSync(process.execPath, [GOLDEN, 'scenario', name, out], { cwd: ROOT, encoding: 'utf8' });
-    if (r.status !== 0) { console.log('FAIL ' + name + ': golden failed: ' + String(r.stderr || r.stdout).slice(0, 200)); bad++; continue; }
-    const lines = fs.readFileSync(out, 'utf8').trim().split('\n');
-    const last = JSON.parse(lines[lines.length - 1]);
+    const last = recorded(name).at(-1);
     const stats = JSON.parse(last.state).b.treeStats || {};
     if (!(stats[key] >= 1)) { console.log('FAIL ' + name + ': ' + key + ' did not fire (treeStats ' + JSON.stringify(stats) + ')'); bad++; }
   }
   // the Eclipse and Chorus x and c rows wait for job 7b: they must stay inert
-  const src = fs.readFileSync(path.join(ROOT, 'data.js'), 'utf8');
-  for (const key of INERT) if (src.includes('"' + key + '":')) { console.log('FAIL inert row has a TREE_FX entry: ' + key); bad++; }
+  for (const key of INERT) if (Object.hasOwn(tables.TREE_FX, key)) { console.log('FAIL inert row has a TREE_FX entry: ' + key); bad++; }
   // The three Hullbreakers rows run 2 corrected: prove the effect, not just the callout.
   // Nothing Stays Broken: once per battle for the whole fleet, so a second ship is not saved.
   // Second Knife: take 1 off cdLeft, never below 0.
@@ -147,9 +147,7 @@ try {
   }
   // Swarm Over the Scrap Field: the second launch is a pending entry, so no second wing exists at Command time.
   {
-    const out = path.join(tmp, 't_hb_swarmscrap.behaviour.jsonl');
-    const r = spawnSync(process.execPath, [GOLDEN, 'scenario', 't_hb_swarmscrap', out], { cwd: ROOT, encoding: 'utf8' });
-    const recs = r.status === 0 ? fs.readFileSync(out, 'utf8').trim().split('\n').map(l => JSON.parse(l)) : [];
+    const recs = recorded('t_hb_swarmscrap');
     let ci = -1; for (let i = 0; i < recs.length; i++) if (recs[i].actor === 'command player') { ci = i; break; }
     if (ci < 0) { console.log('FAIL Swarm Over the Scrap Field: no Command record'); bad++; }
     else {
@@ -169,7 +167,7 @@ try {
 
   // Hegemony Navy (issue #305 job 6): behaviour checks for counts, limits and timing.
   {
-    const R = name => { const out = path.join(tmp, 'beh_' + name + '.jsonl'); const rr = spawnSync(process.execPath, [GOLDEN, 'scenario', name, out], { cwd: ROOT, encoding: 'utf8' }); if (rr.status !== 0) return null; return fs.readFileSync(out, 'utf8').trim().split('\n').map(l => JSON.parse(l)); };
+    const R = recorded;
     const S = r => JSON.parse(r.state);
     const ok = (name, cond, msg) => { if (cond) console.log('PASS ' + name + ': ' + msg); else { console.log('FAIL ' + name + ': ' + msg); bad++; } };
     const keyStats = (rs, key) => { let p = 0, m = 0; for (const r of rs) { const v = (S(r).b.treeStats || {})[key] || 0; m = Math.max(m, v - p); p = v; } return { total: p, maxOneRound: m }; };
@@ -213,7 +211,7 @@ try {
     { const rs = R('t_heg_colddrill'); let cold = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['kassar:A:1:1']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && (u.hexMoved || 0) === 0)) { cold = true; break; } } ok('Cold Drill', cold, 'a synced ship that has not moved fires with the drill aim'); }
   }
   { // Job 7a: prove the counts, limits and timing the final texts promise.
-    const R = name => { const out = path.join(tmp, 'j7a_' + name + '.jsonl'); const rr = spawnSync(process.execPath, [GOLDEN, 'scenario', name, out], { cwd: ROOT, encoding: 'utf8' }); if (rr.status !== 0) return null; return fs.readFileSync(out, 'utf8').trim().split('\n').map(l => JSON.parse(l)); };
+    const R = recorded;
     const S = r => JSON.parse(r.state);
     const ok = (name, cond, msg) => { if (cond) console.log('PASS ' + name + ': ' + msg); else { console.log('FAIL ' + name + ': ' + msg); bad++; } };
     const keyStats = (rs, key) => { let p = 0, m = 0; for (const r of rs) { const v = (S(r).b.treeStats || {})[key] || 0; m = Math.max(m, v - p); p = v; } return { total: p, maxOneRound: m }; };
@@ -315,8 +313,6 @@ try {
     }
   }
   }
-} finally {
-  fs.rmSync(tmp, { recursive: true, force: true });
 }
 if (bad) { console.log('FAIL: ' + bad + ' tree effect check(s)'); process.exit(1); }
-console.log('PASS: ' + Object.keys(WANT).length + ' tree fixtures fired their pick; ' + INERT.length + ' waiting rows are inert; 3 corrected Hullbreakers rows behave as their text says');
+console.log('PASS: ' + Object.keys(WANT).length + ' saved Godot tree fixtures fired their pick; ' + INERT.length + ' waiting rows are inert; 3 corrected Hullbreakers rows behave as their text says');
