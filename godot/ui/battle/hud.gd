@@ -78,6 +78,7 @@ var plates_root: Control
 var plates := {}                    # unit id -> Control
 var tipcard: PanelContainer
 var endcard: PanelContainer
+var end_block: Control
 var _end_first: Button = null   # the end card's first button, for the keyboard trap (issue 1559 item 13)
 var _banner_t := 0.0
 var _banner_dur := 0.0
@@ -182,6 +183,7 @@ func _rebuild() -> void:
 	menu = null
 	menu_block = null
 	endcard = null
+	end_block = null
 	tipcard = null
 	bars = []
 	load_cover = null
@@ -191,16 +193,16 @@ func _rebuild() -> void:
 	_build_all()
 	ledger.fleet_page = fleet_page
 	ledger._fleet_id = fleet_id
-	for key in ["set_crest", "set_info", "set_command", "set_top", "set_roster", "set_nemesis", "set_panel", "set_target", "set_legend", "set_chip", "set_phase", "set_card", "set_retreat"]:
+	for key in ["set_crest", "set_info", "set_command", "set_top", "set_roster", "set_nemesis", "set_panel", "set_target", "set_legend", "set_chip", "set_phase", "set_card", "set_retreat", "set_playing"]:
 		if _last.has(key):
 			callv(key, _last[key])
 	if _last.has("show_tipcard"):
 		callv("show_tipcard", _last["show_tipcard"])
+	if _last.has("show_end"):
+		callv("show_end", _last["show_end"])
 	if _last.has("show_menu"):
 		var sm: Array = _last["show_menu"]
 		show_menu(sm[0], sm[1], keep_row, str(sm[2]) if sm.size() > 2 else "")
-	if _last.has("show_end"):
-		callv("show_end", _last["show_end"])
 	if _last.has("show_ask"):
 		var sa: Array = _last["show_ask"]
 		ask_panel = null   # the old sheet went with the old root
@@ -347,6 +349,7 @@ func _label(txt: String, size := 17, col := BONE, f: Font = null) -> Label:
 func _button(txt: String, act: String, arg: Variant = null, primary := false, keys := false) -> Button:
 	var b := Button.new()
 	b.text = txt
+	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	b.focus_mode = Control.FOCUS_ALL if keys else Control.FOCUS_NONE
 	if primary:
 		# the dialog's one action: the sheet's action box, a square ember outline that fills ember under the pointer
@@ -364,18 +367,6 @@ func _button(txt: String, act: String, arg: Variant = null, primary := false, ke
 
 
 # ---------------------------------------------------------------- the setters the battle calls (data goes to the sheet)
-
-var _grid_btn: Button
-
-
-# board look C's "Grid (Z)" toggle: the sheet has no top bar for it, so it is kept off the screen; the Z key and the
-# battle menu still work (the X and Z keys are unchanged in battle.gd).
-func adopt_grid(b: Button) -> void:
-	if b == null or not is_instance_valid(b):
-		return
-	_grid_btn = b
-	b.visible = false
-
 
 # the admiral's crest is not part of E1 LEDGER (the admiral's name is in the Command line); kept for the battle's call
 func set_crest(_tex: Texture2D, _tip: String) -> void:
@@ -574,7 +565,7 @@ func toggle_log() -> void:
 		# issue 1559 item 10: the open log draws over the terrain key, and _layout puts the tip card beside it, so its Close
 		# button is never under either
 		log_panel.move_to_front()
-		for c in [menu_block, menu, endcard]:   # the overlays stay on top of it
+		for c in [end_block, endcard, menu_block, menu]:   # the overlays stay on top of it
 			if c != null and is_instance_valid(c):
 				c.move_to_front()
 	_layout_log()
@@ -819,9 +810,13 @@ func _build_legend() -> void:
 	legend.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	legend.gui_input.connect(func(ev: InputEvent) -> void:
 		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
-			legend_open = not legend_open
-			_draw_legend()
+			toggle_legend()
 			legend.accept_event())
+
+
+func toggle_legend() -> void:
+	legend_open = not legend_open
+	_draw_legend()
 
 
 func set_legend(title: String, desc: String, rows: Array) -> void:
@@ -1200,7 +1195,7 @@ func hide_tipcard() -> void:
 # beat frees the button, and a lambda that captured it logs "Lambda capture at index 0 was freed" when it fires.
 func _grab_end_focus(first_ref: WeakRef) -> void:
 	var first = first_ref.get_ref()
-	if not is_inside_tree() or endcard == null or not is_instance_valid(endcard) or not is_instance_valid(first) \
+	if not is_inside_tree() or endcard == null or not is_instance_valid(endcard) or first != _end_first or not is_instance_valid(first) \
 		or not (first as Button).is_visible_in_tree():
 		return
 	if endcard.get_node_or_null("modal_focus") != null:
@@ -1225,9 +1220,15 @@ func _modal(pad_x: float, pad_y: float) -> Array:
 
 
 func show_end(title: String, body: String, win: bool, external := false) -> void:
+	hide_end()
 	_last["show_end"] = [title, body, win, external]
+	end_block = ModalFocus.blocker(root)
+	end_block.mouse_force_pass_scroll_events = false
 	var mw := _modal(40, 30)
 	endcard = mw[0]
+	for c in [menu_block, menu]:
+		if is_instance_valid(c):
+			c.move_to_front()
 	_sync_tipcard()
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", s(14))
@@ -1426,6 +1427,10 @@ func hide_end() -> void:
 	if endcard != null:
 		endcard.queue_free()
 		endcard = null
+	_end_first = null
+	if is_instance_valid(end_block):
+		end_block.queue_free()
+	end_block = null
 	_sync_tipcard()
 
 
@@ -1509,13 +1514,14 @@ func _layout() -> void:
 
 
 func over_ui(p: Vector2) -> bool:
+	if is_instance_valid(menu) or is_instance_valid(endcard):
+		return true
 	if ledger != null and ledger.is_visible_in_tree() and ledger.modulate.a > 0.5 and ledger._has_point(p):
 		return true
-	for c in [log_panel, tipcard, endcard, menu, legend]:
+	for c in [log_panel, tipcard, legend]:
 		if c != null and is_instance_valid(c) and c.is_visible_in_tree() and c.modulate.a > 0.5 and c.get_global_rect().has_point(p):
 			return true
-	# issue 1559 item 1: with the menu open, the whole screen is the menu's
-	return menu != null and is_instance_valid(menu)
+	return false
 
 
 # ---------------------------------------------------------------- the turn strip (the enemy's turn)
