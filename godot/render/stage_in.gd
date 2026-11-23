@@ -22,6 +22,7 @@ var paused := false           # true while the effect warm-up runs (it spreads i
 var step := 2                 # new-material meshes given back after the next draw
 var given := 0                # meshes given back so far (the load bench reads it)
 var waiting_peak := 0
+var late := 0                 # meshes still waiting when the drain's 10 s ran out (0: it finished)
 var _queue: Array = []        # instance ids, oldest first
 var _seen := {}               # material and format key -> true, already given back once
 var _pre_us := 0
@@ -61,7 +62,8 @@ func stop() -> void:
 	active = false
 
 
-# give the waiting meshes back over the next draws; returns once all are back, the load was stopped, or 10 s passed
+# give the waiting meshes back over the next draws; returns once all are back, the load was stopped, or 10 s passed (then
+# the rest keep coming back a step a draw, never all at once, and the load log says INCOMPLETE)
 func drain(tree: SceneTree) -> void:
 	if tree.node_added.is_connected(_added):
 		tree.node_added.disconnect(_added)
@@ -71,7 +73,18 @@ func drain(tree: SceneTree) -> void:
 		await tree.process_frame
 		if not drawn:
 			_on_post()   # a headless sliced check (--sliced-load) draws nothing: give back a step a frame all the same
-	stop()
+	if not active:
+		return
+	if _queue.is_empty():
+		print("[load] stage-in drained: %d meshes given back, at most %d waiting, in %d ms" % [given, waiting_peak, Time.get_ticks_msec() - t0])
+		stop()
+		return
+	# Artoo on PR 1445: a drain past 10 s never gives the rest back in one frame; they keep coming back a step a draw
+	# while the battle goes on, and the load line says so
+	late = _queue.size()
+	print("[load] stage-in INCOMPLETE after %d ms: %d meshes still waiting (given back %d, at most %d waiting); the rest follow a step a draw" % [Time.get_ticks_msec() - t0, late, given, waiting_peak])
+	if not drawn:
+		stop()
 
 
 func waiting() -> int:
@@ -134,6 +147,8 @@ func _on_post() -> void:
 		else:
 			keep.append(id)
 	_queue = keep
+	if _queue.is_empty() and late > 0:
+		stop()   # a drain that ran past its time has given the last ones back
 
 
 func _give(n) -> void:
