@@ -2078,11 +2078,10 @@ func _moveUnit_raw(u, state, opts = null) -> void:
 
 func freePivot(u) -> bool: return jt(moveRules(u).get("pivot")) and not jt(u.get("pivotUsed"))
 func canRotate(u) -> bool: return not jt(u.get("dead")) and not jt(u.get("isSq")) and not jt(u.get("noTurn")) and (u["turnsLeft"] > 0 or z0(u.get("treeFreeTurn")) > 0 or riderFace(u)) and (u["mp"] > 0 or freePivot(u) or z0(u.get("treeFreeTurn")) > 0 or riderFace(u)) and not jt(u.get("braced")) and (not jt(u.get("postFire")) or z0(u.get("treeFreeTurn")) > 0 or postFireMp(u) > 0)   # R396: firing ends a non-Glasswright ship's movement, turns in place included
-func rotateUnit(u, dir) -> void:
-	var um = undoMark(u); _rotateUnit_raw(u, dir); undoSeal(u, um)
-func _rotateUnit_raw(u, dir) -> void:
-	if not canRotate(u) or not inThisBattle(u): return
-	var live = liveFrom(u); var f = (int(u["facing"]) + int(dir) + 6) % 6
+# What one turn in place spends, in this order: the Thorne rider's free turn (issue 1651), a skill's free turn, a free pivot,
+# else one movement and one turn. The battle screen's turn planner (battle.gd _turns_ok) runs this same function on a copy,
+# so the preview can never charge differently from the real turn (Artoo on PR 1876). Returns true for a free turn.
+func spendTurn(u) -> bool:
 	var freeTurn = z0(u.get("treeFreeTurn")) > 0
 	if not freeTurn and riderFace(u): freeTurn = true   # issue 1651 Thorne rider: the turn costs nothing and keeps any tree free turn (not counted in B.rider.fired, so the turn can still be undone)
 	elif freeTurn: u["treeFreeTurn"] = 0
@@ -2090,8 +2089,14 @@ func _rotateUnit_raw(u, dir) -> void:
 	else:
 		u["mp"] = u["mp"] - 1
 		if jt(u.get("postFire")): u["postMp"] = max(0, z0(u.get("postMp")) - 1)
-	if not freeTurn: u["turnsLeft"] = u["turnsLeft"] - 1; u["moved"] = true
-	else: u["moved"] = true
+	if not freeTurn: u["turnsLeft"] = u["turnsLeft"] - 1
+	return freeTurn
+func rotateUnit(u, dir) -> void:
+	var um = undoMark(u); _rotateUnit_raw(u, dir); undoSeal(u, um)
+func _rotateUnit_raw(u, dir) -> void:
+	if not canRotate(u) or not inThisBattle(u): return
+	var live = liveFrom(u); var f = (int(u["facing"]) + int(dir) + 6) % 6
+	spendTurn(u); u["moved"] = true
 	emit({"t": "move", "unit": u["id"], "path": [{"q": int(u["q"]), "r": int(u["r"]), "f": f, "rot": true}], "late_fire": false}); hook("rotate", u)
 	if not live.call(): return
 	u["facing"] = f
