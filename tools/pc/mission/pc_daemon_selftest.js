@@ -518,6 +518,11 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     fs.writeFileSync(path.join(f.vt, 'gpu_go.txt'), 'GPU not cleared: paused by the Board at 14:00\r\n');
     assert.deepEqual(await f.daemon.tick(), []);
     assert.deepEqual(f.calls, []); assert.deepEqual(f.gh.writes, []);
+    // an unreadable pause file (here a folder in its place) holds too, at the look and at the last-moment recheck
+    const u = fakes();
+    fs.mkdirSync(path.join(u.vt, 'gpu_go.txt'));
+    assert.deepEqual(await u.daemon.tick(), []); assert.deepEqual(u.calls, []);
+    assert.match(u.daemon.recheck(7, d.parseGo(goText())), /Board pause/);
     for (const game of [true, null]) {
       const p = fakes({ game });
       await p.daemon.tick();

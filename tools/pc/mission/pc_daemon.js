@@ -512,7 +512,9 @@ class Daemon {
     fs.appendFileSync(this.ledgerFile, `${this.clock().toISOString()} ${sha} ${job} PR${n} ${state}${attempt ? ' ' + attempt : ''}\r\n`);
   }
   paused() {
-    try { return PAUSE_LINE.test(fs.readFileSync(path.join(this.vt, 'gpu_go.txt'), 'utf8').split(/\r?\n/)[0]); } catch { return false; }
+    // no gpu_go.txt means no pause; a file that cannot be read counts as paused (Artoo on ae304378)
+    try { return PAUSE_LINE.test(fs.readFileSync(path.join(this.vt, 'gpu_go.txt'), 'utf8').split(/\r?\n/)[0]); }
+    catch (e) { return e.code !== 'ENOENT'; }
   }
   held() { try { return fs.readFileSync(this.holdFile, 'utf8').split(/\r?\n/)[0] || 'hold.txt'; } catch (e) { return e.code === 'ENOENT' ? null : 'hold.txt unreadable'; } }
   stopAsked() { return fs.existsSync(path.join(this.dir, 'stop.txt')); }
