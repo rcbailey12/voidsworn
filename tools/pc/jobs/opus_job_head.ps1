@@ -33,7 +33,8 @@
 #                                              pinned checkouts of this attempt only (earlier attempts go through their
 #                                              own relay waiter or the janitor; review of PR 1644), only when its done.txt says
 #                                              PASS and a board/pc-out branch on origin (issue 1535: relay_receipt.txt,
-#                                              else the attempt's relay_branch.txt, else board/pc-out-<job>) whose tree holds
+#                                              else relay_found.txt, else the attempt's relay_branch.txt, else
+#                                              board/pc-out-<job>) whose tree holds
 #                                              every file of its out_* folders at <tree folder>/out_<name>/<path> with the
 #                                              same bytes (the mirror is fetched when it does not). A failed or
 #                                              unfinished attempt is never touched here (the janitor's rules cover it).
@@ -63,9 +64,10 @@
 #                                              godot\assets\ships\<code> that match the job's collected export count as
 #                                              rebuildable). The job's out\, the publish folder and build\godot stay.
 #   relayfind <attempt folder>|all [dry]       issue 1695: for a passed attempt that still lists checkouts and whose own
-#                                              relay place does not prove, with no relay_receipt.txt or relay_branch.txt,
+#                                              relay place does not prove, with no relay_receipt.txt or relay_found.txt,
 #                                              finds the board/pc-out-* folder in the shared mirror that holds all its
-#                                              result files byte for byte and writes it as a new relay_branch.txt. Writes
+#                                              result files byte for byte and writes it as a new relay_found.txt (issue
+#                                              1739: beside a relay_branch.txt the head wrote at init, never over it). Writes
 #                                              nothing else, removes nothing; dry writes and fetches nothing
 #   survey                                     read only: every job attempt and ship clone under voidsworn_test with its
 #                                              size and what the rules above would do with it. Deletes nothing.
@@ -457,6 +459,11 @@ function Get-RelayPlace($base, $job, $tree) {
   # else the relay_branch.txt the head wrote at init, else the job's own name (board/pc-out-<job>, the attempt at
   # <tree>). Only a place to look: the proof is origin's branch holding every result file's exact bytes there.
   $r = Read-RelayReceipt $base
+  if ($r) { return $r }
+  # Issue 1739 (Board, Nov 22): since PR 1672 the head writes relay_branch.txt (relay/pc-out-<job>) at init, so an attempt
+  # the Board relayed to a board/pc-out-* branch instead never proved. relayfind writes the place it proved byte for byte
+  # as relay_found.txt, which wins over the init guess; the drop and the janitor prove the bytes there again.
+  $r = Read-RelayReceipt $base 'relay_found.txt'
   if ($r) { return $r }
   $r = Read-RelayReceipt $base 'relay_branch.txt'
   if ($r) { return $r }
@@ -1336,8 +1343,8 @@ switch ($Action) {
     # a checkout and whose own place (Get-RelayPlace) does not prove, with no relay_receipt.txt or relay_branch.txt of its
     # own, this looks through every board/pc-out-* branch in the shared mirror for the folder holding one of its result
     # files, then runs the same byte check as the drop (Test-PlaceProof: every result file at that folder with the same
-    # blob, or a listed skipped file over 10 MB). Only a place that proves is written, as the attempt's relay_branch.txt
-    # (a new file, never over an existing one). It is only a place to look: the waiter and the janitor's relay sweep prove
+    # blob, or a listed skipped file over 10 MB). Only a place that proves is written, as the attempt's relay_found.txt
+    # (a new file, never over an existing one; issue 1739: a relay_branch.txt from init does not stop the search). It is only a place to look: the waiter and the janitor's relay sweep prove
     # the bytes again under the mirror lock before any removal. Writes nothing else and removes nothing. <attempt> or all
     # (every voidsworn_test\<job>\out_*); dry writes nothing and fetches nothing; live fetches the mirror once first.
     $live = $B -ne 'dry'
@@ -1364,7 +1371,7 @@ switch ($Action) {
       $place = Get-RelayPlace $att $job $leaf
       $why = if ($place) { Test-PlaceProof $place $got } else { 'no place named' }
       if (-not $why) { Write-Output "relay place already proven: $att ($($place.Ref) $($place.Path), from $($place.From))"; continue }
-      $own = @(foreach ($n in 'relay_receipt.txt', 'relay_branch.txt') { if (Test-Path -LiteralPath (Join-Path $att $n)) { $n } })
+      $own = @(foreach ($n in 'relay_receipt.txt', 'relay_found.txt') { if (Test-Path -LiteralPath (Join-Path $att $n)) { $n } })
       if ($own.Count) { Write-Output "relay place left alone: $att has its own $($own[0]), which does not prove ($why)"; continue }
       # One result file of 10 MB or less to search for (a larger one may be left off the relay).
       $anchor = @($got.Want.Keys | Sort-Object | Where-Object { (Get-Item -LiteralPath $got.Files[$_] -Force).Length -le 10000000 } | Select-Object -First 1)
@@ -1400,11 +1407,11 @@ switch ($Action) {
         Write-Output "relay place not found: $att (own place: $($t.Why); $near)"; continue
       }
       $line = "$($found.Ref) $($found.Path)"
-      if (-not $live) { Write-Output "relay place would be written: $(Join-Path $att 'relay_branch.txt') = $line ($($cands.Count) folder(s) hold $($t.Anchor))"; continue }
+      if (-not $live) { Write-Output "relay place would be written: $(Join-Path $att 'relay_found.txt') = $line ($($cands.Count) folder(s) hold $($t.Anchor))"; continue }
       try {
-        $fs = [IO.File]::Open((Join-Path $att 'relay_branch.txt'), 'CreateNew', 'Write', 'None')
+        $fs = [IO.File]::Open((Join-Path $att 'relay_found.txt'), 'CreateNew', 'Write', 'None')
         try { $bytes = [Text.Encoding]::ASCII.GetBytes("$line`r`n"); $fs.Write($bytes, 0, $bytes.Length) } finally { $fs.Dispose() }
-        Write-Output "relay place written: $(Join-Path $att 'relay_branch.txt') = $line"
+        Write-Output "relay place written: $(Join-Path $att 'relay_found.txt') = $line"
       } catch { Write-Output "relay place not written: $att ($($_.Exception.Message))" }
     }
   }

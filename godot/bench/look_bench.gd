@@ -381,11 +381,21 @@ func _settle() -> void:
 	for id in fx.ships:
 		var sh = fx.ships[id]
 		if int(sh._dmg_task) >= 0:
-			while not WorkerThreadPool.is_task_completed(int(sh._dmg_task)):
-				OS.delay_usec(300)
+			_wait_task(int(sh._dmg_task), "hull damage rebuild", id)
 		if sh.has_meta("cut_task"):
-			while not WorkerThreadPool.is_task_completed(int(sh.get_meta("cut_task"))):
-				OS.delay_usec(300)
+			_wait_task(int(sh.get_meta("cut_task")), "death cut", id)
+
+
+# issue 1236 (WRECK1 sat 25 minutes with no log): a worker job that keeps the clock waiting names its ship and kind, at
+# 5, 10, 20 s and so on; nothing is printed while jobs finish in time (Artoo on PR 1785: the damage wait logs too)
+func _wait_task(task: int, kind: String, id) -> void:
+	var t0 := Time.get_ticks_msec()
+	var told := 5000
+	while not WorkerThreadPool.is_task_completed(task):
+		OS.delay_usec(300)
+		if Time.get_ticks_msec() - t0 > told:
+			_log("settle: %s's %s still running after %d s" % [str(id), kind, told / 1000])
+			told *= 2
 
 
 func _clear() -> void:
@@ -665,6 +675,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		if row.has("well"):
 			var wv: Array = row["well"]
 			fx.well = T.global_position + Vector3(float(wv[0]), float(wv[1]), float(wv[2]))
+		_log("%s: death call at %.2f (step %d)" % [id, fx.now, steps])   # issue 1236: one line a death row
 		fx.death("T", str(row.get("cause", "blast")))
 		if row.has("well"):
 			fx.later(fx.now + 8.0, func l_well_off() -> void: fx.well = Vector3.INF)

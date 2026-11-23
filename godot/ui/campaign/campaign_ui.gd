@@ -1764,7 +1764,7 @@ func _shipyard() -> Control:
 		for o in C.lateShopOffers():
 			var lc = card(false, 300)
 			if o["kind"] == "relic":
-				lc[1].add_child(lbl(C.relicName(o["r"]), 20, BONE, font_semi)); lc[1].add_child(lbl(C.RELICS[o["r"]]["d"], 18, BONE2))
+				lc[1].add_child(lbl(C.relicName(o["r"]), 20, BONE, font_semi)); lc[1].add_child(lbl(C.relicText(o["r"]), 18, BONE2))
 			else:
 				lc[1].add_child(lbl("Command expansion", 20, BONE, font_semi)); lc[1].add_child(lbl("+1 command point for the rest of the run (at most " + C.numstr(C.TB["LATE_SHOP"]["cpMax"]) + " a run).", 18, BONE2))
 			if C.jt(o["done"]): lc[1].add_child(lbl("Bought", 18, VERD))
@@ -2307,8 +2307,10 @@ func _capstone_mastery(id) -> Control:
 	var row = flow(10)
 	for i in range(C.CAPSTONE_MASTERY_PERKS.size()):
 		var earned = l > i; var cv = card(earned, 300)
-		cv[1].add_child(lbl("Mastery " + C.roman(i + 1) + (" (earned)" if earned else ""), 18, BONE, font_semi))
+		cv[1].add_child(lbl("Mastery " + C.roman(i + 1) + ": " + str(C.CAPSTONE_MASTERY_PERKS[i].get("n", "")) + (" (earned)" if earned else ""), 18, BONE, font_semi))
 		var effect := _capstone_effect(i)
+		var sig = C.capstoneSignature(id) if i == 2 else null   # issue 1650: Mastery III names the chosen capstone's own signature
+		if sig is Dictionary: effect = str(sig["n"]) + ". " + str(sig["d"])
 		if not effect.is_empty(): cv[1].add_child(lbl(effect, 17, BONE2))
 		cv[1].add_child(lbl(C.numstr(C.CAPSTONE_MASTERY_XP[i]) + " XP", 17, BONE3))
 		if not earned: cv[0].modulate.a = 0.55
@@ -2389,7 +2391,7 @@ func _modal(md: Dictionary) -> void:
 			h2.call(d["ev"]["t"]); p.call("Which piece of salvage do you give up?")
 			for j in range(d["relics"].size()):
 				var rl = d["relics"][j]
-				add(v, choice(C.relicName(rl), str(C.RELICS[rl]["d"]), "eventChoice", str(d["i"]) + ":" + str(j), acts))
+				add(v, choice(C.relicName(rl), C.relicText(rl), "eventChoice", str(d["i"]) + ":" + str(j), acts))
 			v.add_child(foot([abtn("Back", "eventBack", "", false, false, acts)]))
 		"event_result":
 			h2.call(d["ev"]["t"])
@@ -2481,7 +2483,7 @@ func _modal(md: Dictionary) -> void:
 			v.add_child(foot([abtn("Refuse", "refuseCoreEat", "", false, false, acts)]))
 		"relic":
 			h2.call("The flagship’s vault" if d["boss"] else "Spoils of the elite"); p.call(str(C.REWARD_DEF["relic"]), BONE3); p.call("Choose one.")
-			for r in d["opts"]: add(v, choice(C.relicName(r), C.RELICS[r]["d"], "takeRelic", r, acts))
+			for r in d["opts"]: add(v, choice(C.relicName(r), C.relicText(r), "takeRelic", r, acts))
 		"promote":
 			var s = d["ship"]; h2.call("Promotion")
 			v.add_child(rich(esc(s["cap"]["name"]) + " of the [i]" + esc(s["name"]) + "[/i] is now " + esc(C.rankName(s["cap"])) + ". Choose one perk.", 17)); p.call(str(C.REWARD_DEF["promotion"]), BONE3)
