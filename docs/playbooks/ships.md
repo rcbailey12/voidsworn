@@ -466,6 +466,8 @@ we don't run into the issues of before with just empty looking husks". What he w
 | H | Ryan sees one image: the ship at the battle camera beside its concept | | Board |
 | I | Only after Ryan's yes: publish the checked build into build\godot (section 0, rule 15) | tools/pc/jobs/publish_ship.bat JOB_DIR CODE COMMIT GLB_SHA | Board queues it |
 
+Captures and benches use the new builds (R368, Ryan, Nov 20 2026: "we need to start using the actual new ships for references rather than the old builds"): `godot/render/hull_age.gd` labels each ship NEW or OLD from the tracked manifest, `HullAge.guard` refuses old hulls in a reference run unless ALLOW_OLD_HULLS=1, and O1_37 is the named teaching exception (issues 1767, 1791). NEW means the layout only, not the approved model (issue 1291).
+
 The seven recipe stages, each a double-click file that stops with FAILED and a non-zero exit when it should:
 1 concept in, 2 the AI shape reference (TRELLIS.2, a shape and grime source only, never shipped), 3 the traced hull and the
 outline overlap, 4 the faction parts kit and its audit, 5 the paint bake, 6 the LOD chain and its cost, 7 the game export with
