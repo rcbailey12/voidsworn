@@ -116,7 +116,7 @@ func _run() -> void:
 	var m0 := _hull("voidsworn")
 	check(not m0.detail_enabled and not m0.has_meta("look_detail"), "off: no detail layer")
 	check(is_equal_approx(m0.emission_energy_multiplier, 4.0 * float(LOOK.READ["voidsworn"]["emit"])), "off: glow unchanged")
-	check(OS.get_environment("VS_FLEET_LIGHTING") == "1" or not LOOK.fleet_lighting_enabled(), "off: fleet lighting follows its own option")
+	check(LOOK.fleet_lighting_enabled() == (OS.get_environment("VS_FLEET_LIGHTING") != "0"), "off: fleet lighting follows its own option (on by default, R433)")
 	(off[0] as Node).queue_free()
 
 	# 2. on: lights

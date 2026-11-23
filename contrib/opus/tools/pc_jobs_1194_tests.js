@@ -127,7 +127,7 @@ const common = read(path.join(PC, 'runner_common.ps1'));
 const pre = common.slice(common.indexOf("elseif ($mode -eq 'preflight-tools')"), common.indexOf("elseif ($mode -eq 'model')"));
 for (const tool of ['godot', 'blender', 'ffmpeg', 'node', 'pil']) assert(pre.includes(`'${tool}'`), 'preflight knows ' + tool);
 assert(/if \(\$missing\.Count\) \{ exit 2 \}/.test(pre), 'preflight exits 2 on a missing tool');
-assert(pre.includes("-c 'import PIL'"), 'pil means a Python that imports Pillow');
+assert(pre.includes('-c "import PIL"'), 'pil means a Python that imports Pillow');
 assert(pre.includes("'tools.cmd'") && pre.includes("'set \"JW_' + $name.ToUpperInvariant()"), 'preflight hands the found paths to the job');
 const hc = common.slice(common.indexOf("elseif ($mode -eq 'hashcheck')"), common.indexOf("elseif ($mode -eq 'preflight-tools')"));
 assert(hc.includes("$guarded = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js', 'job_wrap.bat')"));
@@ -150,6 +150,66 @@ const doctorBat = read(path.join(PC, 'PC_DOCTOR.bat'));
 assert(doctorBat.includes('pc_doctor.ps1" -SampleSeconds %SAMPLE%') && doctorBat.includes('if /i "%~1"=="strict" set "SAMPLE=300"'));
 pass('PC_DOCTOR.bat is read only and shows owner, child, age and health for every claim');
 
+// ---------------------------------------------------------------- issue 1352: where ffmpeg and Pillow are looked for
+// Fake tools: .cmd stubs on Windows, /bin/sh scripts elsewhere, so the same cases run under Windows PowerShell 5.1 and pwsh.
+// The caller's runner hides the real PATH (the PC has a real python and ffmpeg), so "nothing found" is honest.
+const isWin = process.platform === 'win32';
+function lookupCases(run, base, label) {
+  const dir = fs.mkdtempSync(path.join(base, 'tools-'));
+  const stub = (name, winLines, shLines) => {
+    const file = path.join(dir, isWin ? name + '.cmd' : name);
+    fs.writeFileSync(file, isWin ? ['@echo off', ...winLines, ''].join('\r\n') : ['#!/bin/sh', ...shLines, ''].join('\n'));
+    if (!isWin) fs.chmodSync(file, 0o755);
+    return file;
+  };
+  const ffmpeg = (name, good) => stub(name, good ? ['echo ffmpeg version fake', 'exit /b 0'] : ['exit /b 3'], good ? ['echo "ffmpeg version fake"', 'exit 0'] : ['exit 3']);
+  const IMAGEIO = 'import imageio_ffmpeg,sys; print(imageio_ffmpeg.get_ffmpeg_exe())';
+  // A fake python: `-c "import PIL"` exits pil (0 or 1); the imageio_ffmpeg line prints the given path, or fails when none.
+  const python = (name, answer, pil) => stub(name,
+    [`if "%~2"=="import PIL" exit /b ${pil}`, answer ? `if "%~2"=="${IMAGEIO}" echo ${answer}& exit /b 0` : 'rem no imageio_ffmpeg', 'exit /b 1'],
+    [`case "$2" in`, '  "import PIL") exit ' + pil + ' ;;', answer ? `  *imageio_ffmpeg*) echo "${answer}"; exit 0 ;;` : '  *imageio_ffmpeg*) exit 1 ;;', 'esac', 'exit 1']);
+  const good = ffmpeg('good_ffmpeg', true);
+  const bad = ffmpeg('bad_ffmpeg', false);
+  const pyGood = python('py_good', good, 0);
+  const pyBadFfmpeg = python('py_bad_ffmpeg', bad, 0);
+  const pyNoPil = python('py_no_pil', null, 1);
+  let n = 0;
+  const go = (tools, env) => {
+    const out = path.join(dir, 'out' + (++n));
+    const r = run([out, tools], env);
+    const txt = fs.existsSync(path.join(out, 'preflight.txt')) ? read(path.join(out, 'preflight.txt')) : '';
+    const cmd = fs.existsSync(path.join(out, 'tools.cmd')) ? read(path.join(out, 'tools.cmd')) : '';
+    return { code: r.status, txt, cmd, all: label + ' ' + r.stdout + r.stderr + txt };
+  };
+  // a fake python whose imageio_ffmpeg answer points at a fake ffmpeg is found and named
+  let r = go('ffmpeg pil', { PIL_PYTHON: pyGood });
+  assert.equal(r.code, 0, r.all);
+  assert(r.txt.includes(`found ffmpeg: ${good} (imageio_ffmpeg via ${pyGood})`), r.all);
+  assert(r.txt.includes(`found pil: ${pyGood} (PIL_PYTHON)`), r.all);
+  assert(r.cmd.includes(`set "JW_FFMPEG=${good}"`) && r.cmd.includes(`set "JW_PIL=${pyGood}"`), r.all);
+  // FFMPEG_EXE still wins first
+  r = go('ffmpeg', { FFMPEG_EXE: good, PIL_PYTHON: pyGood });
+  assert.equal(r.code, 0, r.all);
+  assert(r.txt.includes(`found ffmpeg: ${good} (FFMPEG_EXE)`), r.all);
+  // a fake ffmpeg whose -version fails is skipped, and the next source is used
+  r = go('ffmpeg', { FFMPEG_EXE: bad, PIL_PYTHON: pyGood });
+  assert.equal(r.code, 0, r.all);
+  assert(r.txt.includes(`skipped ffmpeg: ${bad}`) && r.txt.includes(`found ffmpeg: ${good} (imageio_ffmpeg via ${pyGood})`), r.all);
+  // a Python that names a broken ffmpeg gives nothing: skipped, then MISSING with exit 2
+  r = go('ffmpeg', { PIL_PYTHON: pyBadFfmpeg });
+  assert.equal(r.code, 2, r.all);
+  assert(r.txt.includes(`skipped ffmpeg: ${bad}`) && r.txt.includes('MISSING ffmpeg: set FFMPEG_EXE or install it'), r.all);
+  // a Python without Pillow does not count for pil
+  r = go('pil', { PIL_PYTHON: pyNoPil });
+  assert.equal(r.code, 2, r.all);
+  assert(r.txt.includes('MISSING pil: set PIL_PYTHON or install it') && !r.txt.includes('found pil'), r.all);
+  // nothing found: the old lines, exit 2
+  r = go('ffmpeg pil', {});
+  assert.equal(r.code, 2, r.all);
+  assert(r.txt.includes('MISSING ffmpeg: set FFMPEG_EXE or install it') && r.txt.includes('MISSING pil: set PIL_PYTHON or install it'), r.all);
+  assert(r.txt.includes('STOPPED: missing tools: ffmpeg, pil'), r.all);
+  pass(`${label}: preflight finds ffmpeg through a Python's imageio_ffmpeg and names the source, skips an ffmpeg whose -version fails, still says MISSING (exit 2)`);
+}
 // ---------------------------------------------------------------- PowerShell 7 (GitHub's Linux runners have pwsh)
 const hasPwsh = process.platform !== 'win32' && !spawnSync('pwsh', ['-v'], { encoding: 'utf8' }).error;
 if (hasPwsh) {
@@ -204,6 +264,15 @@ if (hasPwsh) {
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert(/gpu_slot_1: issue-1194 pwsh, shared weight 2, age 2\.0 h/.test(r.stdout) && /watchdog: PID 999999 GONE/.test(r.stdout), r.stdout);
   assert(/gpu_slot_2: CORRUPT/.test(r.stdout) && read(path.join(vt, 'gpu_slot_2')) === 'not json', r.stdout);
+  {
+    // pwsh found by absolute path through a PATH that holds only a link to it, so no host python or ffmpeg is seen
+    const which = spawnSync('sh', ['-c', 'command -v pwsh'], { encoding: 'utf8' });
+    const bin = path.join(temp, 'isolated_bin');
+    fs.mkdirSync(bin);
+    fs.symlinkSync(fs.realpathSync(which.stdout.trim()), path.join(bin, 'pwsh'));
+    lookupCases((tail, extra) => spawnSync(path.join(bin, 'pwsh'), ['-NoProfile', '-File', path.join(PC, 'runner_common.ps1'), 'preflight-tools', ...tail],
+      { encoding: 'utf8', env: { ...process.env, USERPROFILE: temp, PATH: bin, FFMPEG_EXE: '', PIL_PYTHON: '', ...extra } }), temp, 'pwsh');
+  }
   pass('pwsh: the scripts parse, the preflight finds and misses tools (exit 2), strict hashcheck stops (exit 14), the doctor reads claims');
 } else if (process.platform !== 'win32') console.log('SKIP pwsh runs: no PowerShell 7 on this machine');
 
@@ -244,6 +313,115 @@ function job(name, body, extra = {}) {
   const st = fs.existsSync(path.join(out, 'status.txt')) ? read(path.join(out, 'status.txt')) : '';
   const done = fs.existsSync(path.join(out, 'done.txt')) ? read(path.join(out, 'done.txt')).trim() : '';
   return { code: r.status, text: (r.stdout || '') + (r.stderr || ''), st, done, out };
+}
+
+{
+  // Windows PowerShell 5.1 by absolute path, with a PATH that holds nothing (no real python, py or ffmpeg is seen)
+  const psExe = path.join(process.env.SystemRoot || 'C:\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+  const isolated = fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()), 'pc1352-'));
+  const emptyBin = path.join(isolated, 'empty_bin');
+  fs.mkdirSync(emptyBin);
+  lookupCases((tail, extra) => spawnSync(psExe, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(PC, 'runner_common.ps1'), 'preflight-tools', ...tail],
+    { encoding: 'utf8', windowsHide: true, timeout: 240000, env: { ...process.env, USERPROFILE: path.join(isolated, 'profile'), PATH: emptyBin, FFMPEG_EXE: '', PIL_PYTHON: '', ...extra } }), isolated, 'Windows PowerShell 5.1');
+}
+
+// Issue 1352 (Astra pre-merge audit of PR 1806): one deadline for a probe, and paths that reach the job unchanged.
+{
+  const psExe = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+  const base = fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()), 'pc1352b-'));
+  const emptyBin = path.join(base, 'empty_bin');
+  fs.mkdirSync(emptyBin);
+  const runPre = (name, tools, extra, bin) => {
+    const out = path.join(base, name);
+    const started = Date.now();
+    const r = spawnSync(psExe, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(PC, 'runner_common.ps1'), 'preflight-tools', out, tools],
+      { encoding: 'utf8', windowsHide: true, timeout: 120000, env: { ...process.env, USERPROFILE: path.join(base, 'profile'), PATH: bin || emptyBin, FFMPEG_EXE: '', PIL_PYTHON: '', ...extra } });
+    const seconds = (Date.now() - started) / 1000;
+    const txt = fs.existsSync(path.join(out, 'preflight.txt')) ? read(path.join(out, 'preflight.txt')) : '';
+    return { code: r.status, seconds, txt, out, all: r.stdout + r.stderr + txt };
+  };
+  const stubDir = path.join(base, 'stubs');
+  fs.mkdirSync(stubDir);
+  const cmdFile = (dir, name, lines) => {
+    const p = path.join(dir, name + '.cmd');
+    fs.writeFileSync(p, ['@echo off', ...lines, ''].join('\r\n'));
+    return p;
+  };
+  const pingQuery = marker => `Get-CimInstance Win32_Process -Filter "Name='PING.EXE'" | Where-Object { $_.CommandLine -match ' -n ${marker} ' }`;
+  const pings = marker => parseInt(spawnSync(psExe, ['-NoProfile', '-Command', `@(${pingQuery(marker)}).Count`], { encoding: 'utf8', windowsHide: true }).stdout.trim(), 10);
+  const killPings = marker => spawnSync(psExe, ['-NoProfile', '-Command', `${pingQuery(marker)} | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }`], { windowsHide: true });
+  const goodFfmpeg = cmdFile(stubDir, 'good_ffmpeg', ['echo ffmpeg version fake', 'exit /b 0']);
+  // A wrapper that exits at once but leaves a child holding stdout open (the audit's 23.59 s stall). Without the shared
+  // deadline the read waits for the ping (47 s); with it the probe is cut at the deadline and the child is stopped.
+  const leaver = cmdFile(stubDir, 'leaver', ['start /b "" "%SystemRoot%\\System32\\ping.exe" -n 47 127.0.0.1', 'exit /b 0']);
+  // A wrapper that never exits.
+  const hanger = cmdFile(stubDir, 'hanger', ['"%SystemRoot%\\System32\\ping.exe" -n 49 127.0.0.1 > nul', 'exit /b 0']);
+  const knob = { PC_RUNNER_TEST: '1', PC_TEST_PROBE_MS: '2000' };
+  try {
+    let r = runPre('leaver_ffmpeg', 'ffmpeg', { ...knob, FFMPEG_EXE: leaver });
+    assert.equal(r.code, 2, r.all);
+    assert(r.seconds < 25, 'a wrapper that leaves a child holding stdout is cut at the deadline, took ' + r.seconds + ' s\n' + r.all);
+    assert(r.txt.includes(`skipped ffmpeg: ${leaver} (-version timed out)`) && r.txt.includes('MISSING ffmpeg: set FFMPEG_EXE or install it'), r.all);
+    assert.equal(pings(47), 0, "the probe's child was stopped");
+    r = runPre('hanger_ffmpeg', 'ffmpeg', { ...knob, FFMPEG_EXE: hanger });
+    assert.equal(r.code, 2, r.all);
+    assert(r.seconds < 25 && r.txt.includes(`skipped ffmpeg: ${hanger} (-version timed out)`), r.seconds + ' s\n' + r.all);
+    assert.equal(pings(49), 0, 'a hung probe and its child were stopped');
+    // a timed-out candidate moves on to the next one (ffmpeg on PATH)
+    const onPath = path.join(base, 'path_bin');
+    fs.mkdirSync(onPath);
+    cmdFile(onPath, 'ffmpeg', ['echo ffmpeg version fake', 'exit /b 0']);
+    r = runPre('leaver_then_path', 'ffmpeg', { ...knob, FFMPEG_EXE: leaver }, onPath);
+    assert.equal(r.code, 0, r.all);
+    assert(r.txt.includes('skipped ffmpeg:') && r.txt.includes(`found ffmpeg: ${path.join(onPath, 'ffmpeg.cmd')} (PATH)`), r.all);
+    assert.equal(pings(47), 0, 'the child was stopped before the next candidate');
+    // a Python that leaves a child holding stdout is skipped for pil and for the imageio_ffmpeg question
+    r = runPre('leaver_python', 'ffmpeg pil', { ...knob, PIL_PYTHON: leaver });
+    assert.equal(r.code, 2, r.all);
+    assert(r.seconds < 40 && r.txt.includes('MISSING pil: set PIL_PYTHON or install it') && r.txt.includes('MISSING ffmpeg: set FFMPEG_EXE or install it'), r.seconds + ' s\n' + r.all);
+    assert(r.txt.includes(`skipped pil: ${leaver} (import PIL timed out)`), r.all);
+    assert.equal(pings(47), 0, 'every python probe child was stopped');
+  } finally { killPings(47); killPings(49); }
+  pass('Windows PowerShell 5.1: a probe has one deadline for exit and pipe reads, its children are stopped, and the next candidate is tried');
+
+  // A valid path with accents (and characters outside any Western code page) reaches the job unchanged.
+  const wide = path.join(base, 'caf\u00e9 \u4e2d\u6587');
+  fs.mkdirSync(wide);
+  const wideFfmpeg = cmdFile(wide, 'ffmpeg_wide', ['echo ffmpeg version wide', 'exit /b 0']);
+  // What Python prints with PYTHONUTF8: UTF-8 bytes (type copies them untouched).
+  fs.writeFileSync(path.join(wide, 'answer.txt'), wideFfmpeg + '\r\n', 'utf8');
+  const widePy = cmdFile(wide, 'py_wide', ['if "%~2"=="import PIL" exit /b 0', 'if "%PYTHONUTF8%"=="1" type "%~dp0answer.txt"', 'exit /b 0']);
+  let r = runPre('wide', 'ffmpeg pil', { PIL_PYTHON: widePy });
+  assert.equal(r.code, 0, r.all);
+  assert(r.txt.includes(`found pil: ${widePy} (PIL_PYTHON)`) && r.txt.includes(`found ffmpeg: ${wideFfmpeg} (imageio_ffmpeg via ${widePy})`), r.all);
+  const toolsCmd = path.join(r.out, 'tools.cmd');
+  const bytes = fs.readFileSync(toolsCmd);
+  const cmdText = bytes.toString('utf8');
+  assert(!(bytes[0] === 0xEF && bytes[1] === 0xBB), 'tools.cmd has no BOM');
+  assert(cmdText.includes(`set "JW_FFMPEG=${wideFfmpeg}"`) && !cmdText.includes('?'), 'tools.cmd keeps every character: ' + cmdText);
+  // Run the handed-off path the way job_wrap does: call tools.cmd, then run what it set.
+  const handoff1352 = path.join(base, 'handoff.bat');
+  fs.writeFileSync(handoff1352, ['@echo off', 'for /f "tokens=2 delims=:" %%a in (\'chcp\') do set "CP_BEFORE=%%a"', `call "${toolsCmd}"`, 'if not defined JW_FFMPEG exit /b 9',
+    'call "%JW_FFMPEG%" -version', 'if errorlevel 1 exit /b 8', 'call "%JW_PIL%" -c "import PIL"', 'if errorlevel 1 exit /b 7',
+    'for /f "tokens=2 delims=:" %%a in (\'chcp\') do set "CP_AFTER=%%a"', 'if not "%CP_BEFORE%"=="%CP_AFTER%" exit /b 6', 'if defined JW_CP exit /b 5', 'exit /b 0', ''].join('\r\n'));
+  const h = spawnSync(process.env.ComSpec || 'cmd.exe', ['/d', '/c', handoff1352], { encoding: 'utf8', windowsHide: true, timeout: 60000 });
+  assert.equal(h.status, 0, 'the handed-off path runs: ' + h.stdout + h.stderr);
+  assert(h.stdout.includes('ffmpeg version wide'), h.stdout);
+  // a percent sign in a path survives cmd (set prints the variable without expanding it again)
+  const pct = path.join(base, 'p%q');
+  fs.mkdirSync(pct);
+  const pctFfmpeg = cmdFile(pct, 'ffmpeg_pct', ['echo ffmpeg version pct', 'exit /b 0']);
+  r = runPre('pct', 'ffmpeg', { FFMPEG_EXE: pctFfmpeg });
+  assert.equal(r.code, 0, r.all);
+  const pctBat = path.join(base, 'pct.bat');
+  fs.writeFileSync(pctBat, ['@echo off', `call "${path.join(r.out, 'tools.cmd')}"`, 'set JW_FFMPEG', ''].join('\r\n'));
+  const pctRun = spawnSync(process.env.ComSpec || 'cmd.exe', ['/d', '/c', pctBat], { encoding: 'utf8', windowsHide: true, timeout: 60000 });
+  assert(pctRun.stdout.includes('JW_FFMPEG=' + pctFfmpeg), 'a percent sign is kept: ' + pctRun.stdout + pctRun.stderr);
+  // an ASCII-only hand-off is exactly what it was: no code page lines
+  r = runPre('ascii', 'ffmpeg', { FFMPEG_EXE: goodFfmpeg });
+  assert.equal(r.code, 0, r.all);
+  assert.equal(fs.readFileSync(path.join(r.out, 'tools.cmd'), 'utf8'), `@echo off\r\nset "JW_FFMPEG=${goodFfmpeg}"\r\n`);
+  pass('Windows PowerShell 5.1: a path with accents and CJK characters reaches tools.cmd unchanged and the handed-off ffmpeg and Python run');
 }
 
 const mixed = job('mixed', [
