@@ -264,7 +264,11 @@ def write_glb(path, p, ii, cc, source):
 def rocks():
     from planet369_download import ROCKS
     manifest = {'rocks':[], 'source_receipt':'SOURCES_369.json', 'script':'tools/pc/jobs/planet369_remix.py'}
-    for i, source in enumerate(ROCKS):
+    # Issue 1361: only five crisp scans ship (scan_06 and scan_07 retired, and scan_00, an open-based rubble pile); after
+    # a rerun, re-bake the fresh-face channel with godot/world/tools/scan_facet.py and refresh the hashes in scans.json.
+    for i, source in enumerate(ROCKS[:6]):
+        if i == 0:
+            continue
         p, ii, cc = gltf_arrays(CACHE/source)
         name = 'scan_%02d' % i
         low = cluster(p, ii, cc, 13)
