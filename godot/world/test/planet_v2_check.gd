@@ -281,7 +281,7 @@ func _run() -> void:
 	# <key>.png, so a stale file under the old key is never read for the new recipe.
 	var code_now: String = PL.bake_code()
 	var bp := {"seed": 1.0, "kind": 5, "ca": Vector3.ONE, "cb": Vector3.ZERO, "cc": Vector3.ONE, "pass_id": 0}
-	var k_old: String = BAKER.cache_key("board_planet|3|1|a", code_now.replace("arcs(d, 2.4", "arcs(d, 2.5"), bp, Vector2i(8, 4))
+	var k_old: String = BAKER.cache_key("board_planet|3|1|a", code_now + "\n// an older recipe", bp, Vector2i(8, 4))
 	var k_new: String = BAKER.cache_key("board_planet|3|1|a", code_now, bp, Vector2i(8, 4))
 	_check(k_old != k_new, "a recipe change keeps the old bake cache key")
 	var cdir := OS.get_user_data_dir().path_join("planet_v2_cache_paths")
