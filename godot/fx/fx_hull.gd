@@ -448,9 +448,14 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 		METALLIC = mix(METALLIC, (fx_v2 <= 2 || fx_v2 == 5) ? 0.4 : 0.0, fx_near);   // mixed, so no ring at 3 R (M3)
 		SPECULAR = 0.4 * fx_near;
 		EMISSION = mix(EMISSION, fx_v2_lift * 0.03 + fx_v2_accent * (fx_v2 == 4 ? 0.05 : 0.01), fx_near);
+		CLEARCOAT *= 1.0 - fx_near; BACKLIGHT *= 1.0 - fx_near;   // R421 joint: no exterior coat or backlight inside a wound
+		//FX_V2_BACK_ANISO
 	}
 }
 """)
+	# R421 joint sheet (Antigravity audit): the V2 exterior's anisotropy is not reset by the back-face block above, so the
+	# inside plating seen through a cut fades it out the same way (only shaders that carry the V2 hull uniforms)
+	code = code.replace("//FX_V2_BACK_ANISO", "if (hull_aniso > 0.0) { ANISOTROPY = hull_aniso * (1.0 - fx_near); }" if code.contains("uniform float hull_aniso") else "")
 	if disable_fog and not code.contains("fog_disabled"):
 		code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
 	_dmg_code[key] = code

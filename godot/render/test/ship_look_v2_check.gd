@@ -107,6 +107,15 @@ func _run() -> void:
 	check(_compiles(SKY.PANORAMA_SKY), "the panorama sky shader compiles")
 	check(_compiles(HULL.EXTERIOR), "the hull exterior shader compiles")
 	check(_compiles(HULL.exterior_alpha_code()), "the see-through hull exterior shader compiles")
+	# R421 joint sheet (Antigravity audit): inside a Wounds V2 cut the back of the plating drops the exterior anisotropy,
+	# coat and backlight by (1 - fx_near), and the damage shader built from the V2 exterior still compiles
+	var dcode: String = HULL._damage_code(HULL.EXTERIOR)
+	var wound_back := dcode.substr(dcode.find("if (fx_v2 >= 0 && fx_near > 0.0) {"))
+	check(_compiles(dcode), "the damaged V2 hull exterior shader compiles")
+	check(wound_back.contains("ANISOTROPY = hull_aniso * (1.0 - fx_near);") and wound_back.contains("CLEARCOAT *= 1.0 - fx_near;")
+		and wound_back.contains("BACKLIGHT *= 1.0 - fx_near;"), "inside a wound the plating drops the exterior anisotropy, coat and backlight")
+	check(not HULL._damage_code("shader_type spatial;\nvoid vertex() {}\nvoid fragment() { ALBEDO = vec3(1.0); }\n").contains("hull_aniso"),
+		"a shader without the V2 hull uniforms gets no anisotropy line")
 	# 1. off
 	LOOK.v2_force = 0
 	var off := _lights()
