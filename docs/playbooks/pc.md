@@ -195,7 +195,8 @@ with its attempt; only a result blocks a new go for that commit and job. A start
 process means it stopped mid-job: the daemon records it as interrupted and sets `pc_daemon\hold.txt`. Once the Board has checked that attempt's
 process tree is gone, `node tools\pc\mission\pc_daemon.js --clear <attempt folder>` records that (only for an interruption a
 live daemon recorded), and the Board removes the two hold files (in the slot: `hold.txt`, or `hold.txt.<token>.clearing` if the daemon stopped
-while clearing it; `--clear` names the file, and a newer `hold.txt` beside it is checked first). A result whose tools failed their check is kept on the
+while clearing it; `--clear` names the file, and a newer `hold.txt` beside it is checked first; an unreadable `slot.txt` is refused with
+nothing recorded, and an attempt with no `slot.txt` took no slot, so only `pc_daemon\hold.txt` goes). A result whose tools failed their check is kept on the
 PC and relayed later, only from a verified tools version. One live daemon per PC (an exclusive localhost
 bind on port 47662 the system frees when the process ends), only on `%USERPROFILE%\Downloads\voidsworn_test` with no link
 anywhere on that path. A step the watchdog record does not prove gone (no record, survivors, or no end within the

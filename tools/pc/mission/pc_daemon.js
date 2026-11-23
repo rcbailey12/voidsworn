@@ -851,14 +851,22 @@ function clearMain(attemptArg) {
   // only an interruption a live daemon recorded (Astra run 4, item H): a running attempt's open start never qualifies
   const e = d.recordedInterruptions().find(x => path.resolve(x.attempt).toLowerCase() === attempt.toLowerCase());
   if (!e) { console.log(`not a recorded interruption in ${d.ledgerFile}: ${attempt}`); return 2; }
+  // name the slot files this attempt may have left (Astra run 5): its marker, or the marker caught mid-clear. The receipt
+  // is checked before anything is recorded (Astra run 6, item 5): an unreadable one records nothing; no receipt means
+  // no slot was taken, so only the daemon hold is named.
+  let slotNote = '';
+  const receipt = path.join(e.attempt, 'slot.txt');
+  if (fs.existsSync(receipt)) {
+    let parts = [];
+    try { parts = fs.readFileSync(receipt, 'utf8').trim().split('|'); } catch { /* checked below */ }
+    if (parts.length !== 2 || !path.isAbsolute(parts[0]) || !/^[0-9a-f]{32}$/.test(parts[1])) {
+      console.log(`not cleared: ${receipt} is not "<slot>|<token>". Nothing was recorded; check the slots by hand and fix or remove the receipt first.`);
+      return 3;
+    }
+    slotNote = ` and, in ${parts[0]}, hold.txt, or hold.txt.${parts[1]}.clearing if the daemon stopped while clearing it (check any newer hold.txt beside it first)`;
+  }
   d.note(e.sha, e.job, e.pr, 'cleared', e.attempt);
-  // name the slot files this attempt may have left (Astra run 5): its marker, or the marker caught mid-clear
-  let slotNote = "the slot's hold.txt";
-  try {
-    const [dir, token] = fs.readFileSync(path.join(e.attempt, 'slot.txt'), 'utf8').trim().split('|');
-    slotNote = `in ${dir}: hold.txt, or hold.txt.${token}.clearing if the daemon stopped while clearing it (check any newer hold.txt beside it first)`;
-  } catch { /* no slot was taken */ }
-  console.log(`cleared ${e.job} (PR ${e.pr}) ${e.attempt}. Once the slot is checked, remove pc_daemon\\hold.txt and ${slotNote}`);
+  console.log(`cleared ${e.job} (PR ${e.pr}) ${e.attempt}. Once ${slotNote ? 'the slot is' : 'the attempt is'} checked, remove pc_daemon\\hold.txt${slotNote}${slotNote ? '' : ' (this attempt took no slot)'}`);
   return 0;
 }
 // The watchdog's launch gate (PC_STEP_GATE_JS): node pc_daemon.js --recheck <attempt>. Exit 0 starts the step; any

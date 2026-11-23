@@ -610,11 +610,22 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
       try {
         assert.equal(d.clearMain(a2), 2, 'an open start nobody recorded as interrupted (it may still be running) is not cleared');
         fs.appendFileSync(path.join(c.vt, 'pc_daemon', 'ran.txt'), `t ${SHA} lb_1777 PR7 interrupted ${a2}\r\n`);
-        fs.mkdirSync(a2, { recursive: true }); fs.writeFileSync(path.join(a2, 'slot.txt'), `/vt/slots/slot_cpu|${'c'.repeat(32)}\r\n`);
+        fs.mkdirSync(a2, { recursive: true });
         let said = ''; console.log = m => { said += m; };
+        // Astra run 6, item 5: an incomplete receipt records nothing and names no made-up file
+        fs.writeFileSync(path.join(a2, 'slot.txt'), '/vt/slots/slot_cpu\r\n');
+        assert.equal(d.clearMain(a2), 3); assert.match(said, /not cleared: .*slot\.txt is not/); assert.ok(!/undefined/.test(said));
+        assert.equal(c.daemon.interrupted().length, 1, 'still interrupted: nothing recorded');
+        fs.writeFileSync(path.join(a2, 'slot.txt'), `/vt/slots/slot_cpu|${'c'.repeat(32)}\r\n`);
+        said = '';
         assert.equal(d.clearMain(a2), 0); assert.match(said, new RegExp(`hold\\.txt\\.${'c'.repeat(32)}\\.clearing`), 'names the clearing file');
         console.log = () => {};
         assert.equal(d.clearMain(a2), 2, 'once');
+        // an attempt that never took a slot gets only the daemon hold
+        const a3 = path.join(c.vt, 'lb_1777', 'out_10'); fs.mkdirSync(a3, { recursive: true });
+        fs.appendFileSync(path.join(c.vt, 'pc_daemon', 'ran.txt'), `t ${SHA} lb_1777 PR7 start ${a3}\r\nt ${SHA} lb_1777 PR7 interrupted ${a3}\r\n`);
+        said = ''; console.log = m => { said += m; };
+        assert.equal(d.clearMain(a3), 0); assert.match(said, /took no slot/); assert.ok(!/clearing/.test(said));
       } finally { console.log = log; }
       assert.deepEqual(c.daemon.interrupted(), []);
     }
