@@ -30,6 +30,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const WING := preload("res://render/squadron_wing.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
+const CLOSE := preload("res://fx/fx_chorus_close.gd")   # issue 1877: the tendril replacement options (test switch)
 
 const LOOK_BY_ID := {
 	"battery": "macro", "hbattery": "macro", "autocannon": "auto", "turret": "las", "laser": "plasma_cannon", "turbo": "plasma",
@@ -570,11 +571,20 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			fx.light(from + dir, tf, ft, 1.6, col, 1)
 			ti = tf + ft
 		"tendril":
-			tf = T0 + 0.2 + beat * 0.2
-			fx.rib(from, dir, dist, tf, 0.9, col, 1.4, 1.2 * ka, 0.5 * ka, 9)
-			_beam_ends(fx, from, to, tf, 0.9, col, ka)
-			ti = tf + 0.25
-			tend = tf + 0.9
+			var close_opt := CLOSE.option(fx)
+			if close_opt != "":
+				# issue 1877 (R437): one of Muse's four replacement looks, picked by a test switch until Ryan chooses
+				tg["mark_look"] = "spine"
+				var cr: Array = CLOSE.shot(fx, close_opt, from, mn, to, T0, beat, col, ka, A, tg)
+				tf = cr[0]
+				ti = cr[1]
+				tend = cr[2]
+			else:
+				tf = T0 + 0.2 + beat * 0.2
+				fx.rib(from, dir, dist, tf, 0.9, col, 1.4, 1.2 * ka, 0.5 * ka, 9)
+				_beam_ends(fx, from, to, tf, 0.9, col, ka)
+				ti = tf + 0.25
+				tend = tf + 0.9
 		"gauss":
 			var heavy = w >= 3
 			var wind = 0.75 if heavy else 0.25
@@ -1262,6 +1272,7 @@ static func _bez(a: Vector3, b: Vector3, c: Vector3, u: float) -> Vector3:
 
 static func update(fx, dt: float) -> void:
 	_craft_update(fx, dt)
+	CLOSE.update(fx, dt)
 	for ship in fx.ships.values():
 		if is_instance_valid(ship.root):
 			var squad = ship.root.get("squad_kind")

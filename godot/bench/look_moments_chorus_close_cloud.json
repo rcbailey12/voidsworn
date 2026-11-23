@@ -1,0 +1,175 @@
+{
+ "about": "Issue 1877 (R437): the four replacement looks for the Chorus close-in weapon (W.tendril: range 1, 2 shots, acid), from contrib/muse/reviews/chorus_tendril_replacement.md. Each row is the Spitter (the destroyer that carries the weapon) firing its two shots at a Directorate destroyer one hex away, as a clip (every frame saved, look_bench.gd 'clip'). fx.chorus_close picks the option. Run with --moments res://bench/look_moments_chorus_close.json. Cloud stand-in runs add --size 960x540 and a moments_cloud crop (whole frame at both cameras); the PC run uses the crops below at 1920x1080.",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  960,
+  540
+ ],
+ "crop": {
+  "170": [
+   960,
+   540
+  ],
+  "26": [
+   960,
+   540
+  ]
+ },
+ "rows": [
+  {
+   "id": "cc_sac",
+   "group": "chorus close weapon",
+   "label": "Option 1: acid sacs",
+   "att": [
+    "chorus",
+    "Destroyer"
+   ],
+   "tgt": [
+    "hegemony",
+    "Destroyer"
+   ],
+   "tgt_at": [
+    -16.7,
+    0
+   ],
+   "focus": "target",
+   "focus_off": [
+    -8.6,
+    0
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "tendril",
+   "on": "hull",
+   "fx": {
+    "chorus_close": "sac"
+   },
+   "clip": true,
+   "windows": [
+    [
+     "fire",
+     0.0,
+     100
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "cc_bolt",
+   "group": "chorus close weapon",
+   "label": "Option 2: bone bolts",
+   "att": [
+    "chorus",
+    "Destroyer"
+   ],
+   "tgt": [
+    "hegemony",
+    "Destroyer"
+   ],
+   "tgt_at": [
+    -16.7,
+    0
+   ],
+   "focus": "target",
+   "focus_off": [
+    -8.6,
+    0
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "tendril",
+   "on": "hull",
+   "fx": {
+    "chorus_close": "bolt"
+   },
+   "clip": true,
+   "windows": [
+    [
+     "fire",
+     0.0,
+     80
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "cc_torp",
+   "group": "chorus close weapon",
+   "label": "Option 3: gut torps",
+   "att": [
+    "chorus",
+    "Destroyer"
+   ],
+   "tgt": [
+    "hegemony",
+    "Destroyer"
+   ],
+   "tgt_at": [
+    -16.7,
+    0
+   ],
+   "focus": "target",
+   "focus_off": [
+    -8.6,
+    0
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "tendril",
+   "on": "hull",
+   "fx": {
+    "chorus_close": "torp"
+   },
+   "clip": true,
+   "windows": [
+    [
+     "fire",
+     0.0,
+     110
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "cc_mite",
+   "group": "chorus close weapon",
+   "label": "Option 4: burst mites",
+   "att": [
+    "chorus",
+    "Destroyer"
+   ],
+   "tgt": [
+    "hegemony",
+    "Destroyer"
+   ],
+   "tgt_at": [
+    -16.7,
+    0
+   ],
+   "focus": "target",
+   "focus_off": [
+    -8.6,
+    0
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "tendril",
+   "on": "hull",
+   "fx": {
+    "chorus_close": "mite"
+   },
+   "clip": true,
+   "windows": [
+    [
+     "fire",
+     0.0,
+     75
+    ]
+   ],
+   "key": 0
+  }
+ ]
+}
