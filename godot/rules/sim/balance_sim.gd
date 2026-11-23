@@ -14,6 +14,19 @@ const CAMPAIGN_FLEETS := {
 const CAMPAIGN_NODES := [["battle", 1], ["battle", 4], ["elite", 4], ["boss", 6]]
 const MODES := ["campaign", "campaignrewards", "fmatrix"]
 
+class TrialErrors extends Logger:
+	var first := ""
+	var mutex := Mutex.new()
+
+	func _log_error(_function: String, file: String, line: int, code: String, rationale: String,
+			_editor_notify: bool, error_type: int, _backtraces: Array[ScriptBacktrace]) -> void:
+		if error_type == Logger.ERROR_TYPE_WARNING:
+			return
+		mutex.lock()
+		if first.is_empty():
+			first = "%s (%s:%d)" % [rationale if not rationale.is_empty() else code, file, line]
+		mutex.unlock()
+
 var battle := SimBattle.new()
 var bot := Bot.new(battle)
 var campaign := Campaign.new()
@@ -184,15 +197,63 @@ func _campaign_cell(player_faction: String, cell: Array, count: int, carry_rewar
 	var totals := {"wins": 0, "rounds": 0, "hull": 0.0, "lost": 0, "timeouts": 0, "player": 0, "enemy": 0,
 		"fired": {}}
 	var carried := {"boons": 0, "relics": 0, "refits": 0, "marks": 0, "credits": 0.0, "top": {}}
+	var arm := OS.get_environment("SIM_ARM")
+	var trial_cell := {"mode": "campaignrewards" if carry_rewards else "campaign", "sector": cell[0],
+		"kind": cell[1], "column": cell[2]}
 	battle.reset_timing()
 	for trial in range(count):
 		_next_pair()
-		if not _campaign_trial(player_faction, cell, carry_rewards, totals, carried):
+		var seed := JSM.rng_u32()
+		var previous_battle: Variant = battle.B
+		var errors := TrialErrors.new()
+		OS.add_logger(errors)
+		var stats := _campaign_trial(player_faction, cell, carry_rewards)
+		OS.remove_logger(errors)
+		if failed:
 			return
+		var reason := _terminal_reason(errors.first, stats)
+		var has_usage: bool = battle.B is Dictionary and not is_same(previous_battle, battle.B) and battle.B.has("usage")
+		var fired := battle.player_abilities_fired() if has_usage else {}
+		var record := {"faction": player_faction, "difficulty": battle.AI_LEVEL, "cell": trial_cell,
+			"seed": seed, "arm": arm if not arm.is_empty() else "single", "terminal_reason": reason, "abilities_fired": fired}
+		for metric in ["rounds", "hull", "lost"]:
+			if stats.has(metric):
+				record[metric] = stats[metric]
+		_print_trial(record)
+		if reason == "engine_error":
+			var detail := errors.first if not errors.first.is_empty() else battle.not_ported
+			_fail("Trial failed: " + (detail if not detail.is_empty() else "missing stats or invalid battle outcome"))
+			return
+		for id in fired:
+			totals.fired[id] = totals.fired.get(id, 0) + fired[id]
+		for metric in ["player", "enemy", "rounds", "hull", "lost"]:
+			totals[metric] += stats[metric]
+		totals.wins += int(reason == "completed_win")
+		totals.timeouts += int(reason == "timeout")
+		if carry_rewards:
+			for metric in ["boons", "relics", "refits", "marks", "credits"]:
+				carried[metric] += stats.carried[metric]
+			for id in stats.carried.top:
+				carried.top[id] = carried.top.get(id, 0) + stats.carried.top[id]
 	_print_campaign(player_faction, cell, count, totals, carried if carry_rewards else {})
 
 
-func _campaign_trial(player_faction: String, cell: Array, carry_rewards: bool, totals: Dictionary, carried: Dictionary) -> bool:
+func _terminal_reason(error: String, stats: Dictionary) -> String:
+	if not error.is_empty() or not battle.not_ported.is_empty() or stats.is_empty():
+		return "engine_error"
+	match battle.B.over:
+		"win": return "completed_win"
+		"loss": return "completed_loss"
+		"bot_concession": return "bot_concession"
+		false: return "timeout"
+	return "engine_error"
+
+
+func _print_trial(record: Dictionary) -> void:
+	print("TRIAL " + JSON.stringify(record, "", true, true))
+
+
+func _campaign_trial(player_faction: String, cell: Array, carry_rewards: bool) -> Dictionary:
 	var sector: int = cell[0]
 	var kind: String = cell[1]
 	var column: int = cell[2]
@@ -205,23 +266,21 @@ func _campaign_trial(player_faction: String, cell: Array, carry_rewards: bool, t
 		run.flagUid = run.fleet[0].uid
 		rewards.carry_to(sector, column)
 	if not _apply_build():
-		return false
+		return {}
 	# A build fixture can target its own flagship. The plain reference campaign leaves it unset.
 	if build_enabled and not run.has("flagUid"):
 		run.flagUid = run.fleet[0].uid
+	var stats := {"player": 0, "enemy": 0, "lost": 0}
 	if carry_rewards:
-		_count_carry(carried, run)
+		stats.carried = _measure_carry(run)
 	var faction: String = battle.pick(campaign.SECTOR_POOL[sector - 1])
 	var objective: String = "rout" if kind == "boss" else battle.pick(["rout", "rout", "flagship", "hold"])
 	var deployment: String = "line" if kind == "boss" else battle.pick(["line", "line", "flank", "ambush"])
 	battle.startBattle({"kind": kind, "fac": faction, "col": column, "obj": objective, "dep": deployment})
 	for unit in battle.B.units:
 		if not unit.isSq:
-			totals[unit.side] += 1
+			stats[unit.side] += 1
 	battle.fight(bot, alternating)
-	var fired := battle.player_abilities_fired()
-	for id in fired:
-		totals.fired[id] = totals.fired.get(id, 0) + fired[id]
 	var hp := 0.0
 	var max_hp := 0.0
 	for unit in battle.B.units:
@@ -231,23 +290,21 @@ func _campaign_trial(player_faction: String, cell: Array, carry_rewards: bool, t
 			hp += 0.0 if unit.dead else maxf(0.0, unit.hp)
 			max_hp += unit.maxHp
 		if unit.dead or unit.side != "player":
-			totals.lost += 1
-	totals.hull += hp / maxf(1.0, max_hp)
-	totals.rounds += battle.B.round
-	totals.wins += int(battle.B.over == "win")
-	totals.timeouts += int(not battle.jt(battle.B.over))
-	return true
+			stats.lost += 1
+	stats.hull = hp / maxf(1.0, max_hp)
+	stats.rounds = battle.B.round
+	return stats
 
 
-func _count_carry(carried: Dictionary, run: Dictionary) -> void:
-	carried.boons += run.boons.size()
-	carried.relics += run.relics.size()
-	carried.credits += run.credits
+func _measure_carry(run: Dictionary) -> Dictionary:
+	var carried := {"boons": run.boons.size(), "relics": run.relics.size(), "credits": run.credits,
+		"refits": 0, "marks": 0, "top": {}}
 	for ship in run.fleet:
 		carried.refits += ship.mods.size()
 		carried.marks += ship.mk
 	for boon in run.boons:
 		carried.top[boon.id] = carried.top.get(boon.id, 0) + 1
+	return carried
 
 
 func _print_campaign(player_faction: String, cell: Array, count: float, totals: Dictionary, carried: Dictionary) -> void:

@@ -6,8 +6,10 @@ Use `campaign` or `campaignrewards` to measure a player ability. Set `PFACTION` 
 such as `deathless` for Eclipse or `chorus` for the Chorus. Leave it unset for a row per faction in each cell.
 Set `ONLY_BOSS=1` for the boss cells and the elite comparison.
 
-Use matching `PAIRSEED`, cell filters, and battles per cell for both arms. Report the ability id and its fired count
-with the result. A row supports a balance number for that ability only if the player fleet fired it at least once.
+Use matching `PAIRSEED`, difficulty, mode, cell filters, and battles per cell for both arms. Give each arm a distinct
+`SIM_ARM` label and save its output. Run `node godot/rules/sim/compare_trials.js <control-log> <treatment-log>` to
+check that the trial keys match and print paired deltas. Report the ability id, the seeds where it fired, and the
+counts from those `TRIAL` rows with the result. Use firing evidence from the arm that received the ability change.
 
 ## Faction balance after the torpedo change (R414, Ryan Nov 22 2026, option C)
 

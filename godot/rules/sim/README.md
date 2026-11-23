@@ -19,9 +19,21 @@ ability id, including automatic replacement launches. An omitted ability fired z
 matrix prints the `FM` and `FID` JSON lines for existing report consumers. The default activation
 schedule is alternating. Pass `--classic` after the count on the Godot command to exercise the classic bot.
 
+- Each campaign battle prints a `TRIAL` JSON line before its cell summary. The record carries the player faction,
+  difficulty, cell (mode, sector, encounter kind, and column), seed, arm, and player `abilities_fired` by id.
+  The `terminal_reason` field records `completed_win`, `completed_loss`, `bot_concession`, `timeout`, or `engine_error`.
+  The current bot plays to a rules outcome or the round cap. `bot_concession` is reserved for an explicit bot exit.
+  An engine error during a trial prints the row and stops the run with a failure exit.
 - Set `PAIRSEED` to an integer, and reuse the same filters and sample count in both arms. The simulator starts
   each trial at that seed plus its one-based index, before fleet or reward draws. Each player faction starts the
-  same sequence. `SEED` sets the initial stream when running without pairing.
+  same sequence. `SEED` sets the initial stream when running without pairing. The row records the actual unsigned
+  32-bit RNG state at trial entry in either case.
+- Set `SIM_ARM` to label the run. It defaults to `single`. For a paired comparison, give the control and treatment
+  distinct labels and save each successful run's output as a UTF-8 log. Run
+  `node godot/rules/sim/compare_trials.js <control-log> <treatment-log>` from the repo root. It checks that every
+  faction, difficulty, cell, and seed occurs exactly once in each log. Mismatches, duplicates, and engine-error
+  trials fail the comparison. Each `PAIRED` row gives the number of pairs and the mean treatment-minus-control
+  change in wins, timeouts, concessions, and hull left (percentage points), rounds, ships lost, and uses by ability id.
 - Set `PFACTION` to `voidsworn`, `corsair`, `ithar`, `deathless`, `chorus`, or `hegemony` to report just that
   player faction in `campaign` or `campaignrewards`. The sim uses the campaign's faction hull equivalents for
   the fixed sector fleets and keeps the reference admiral, Vex, unless `SIM_BUILD` sets an admiral.
@@ -36,5 +48,5 @@ schedule is alternating. Pass `--classic` after the count on the Godot command t
   run's `lineage` and `mastery` fields. The simulator applies the fixture after synthetic reward carry, before battle.
   Set `SIM_BUILD` in both arms so both have a designated flagship. Use `CAP=0` to hold enemy fleet power scaling fixed.
 
-Wait times are estimates from the legacy report model. For a balance decision, compare rounds, hull left, and ships lost
-on matching seeds and report the sample size. The Godot rules and campaign tables supply the battle and reward effects.
+Wait times are estimates from the legacy report model. Use the individual `TRIAL` rows to identify the seeds where a
+player ability fired. The Godot rules and campaign tables supply the battle and reward effects.
