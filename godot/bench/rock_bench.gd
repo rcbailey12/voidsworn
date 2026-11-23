@@ -5,18 +5,18 @@ extends "res://bench/look_bench.gd"
 #   godot --path godot --rendering-method forward_plus --fixed-fps 60 --disable-vsync --resolution 1920x1080 \
 #         res://bench/rock_bench.tscn -- --out DIR [--commit SHA] [--frames 300]
 #
-# Run it twice on one commit: VS_1361_OLD=1 with VS_1361_OLD_DIR=<old checkout>/godot/world/rocks (main's look, the
-# "before") and with neither set (the "after"). Stills, each 1280x720 at 1 to 1 (a centre crop of the 1920x1080 frame),
-# stamped by tools/picture_provenance.gd:
+# Stills, each 1280x720 at 1 to 1 (a centre crop of the 1920x1080 frame), stamped by tools/picture_provenance.gd. The
+# old-look switch (VS_1361_OLD) that drew main's rocks for the before/after captures was removed after Ryan's yes on the
+# ROCKS_J sheets (Nov 23); a before picture now comes from an older commit's own bench.
 #   rocks/RK_<kind>_c170.png and rocks/RK_<kind>_c26.png for stone, iron, carbon, ice, crystal (a rock blocker cluster and
 #   debris hexes around the camera focus, the region's sky behind)
 #   rocks/RK_crystal_comets_c420.png (aimed at the comets beyond the far edge and looking along their tails; the name is kept)
-#   rocks/RK_crystal_cluster_c26.png (camera 26 tipped low onto a crystal blocker: main's clusters before, the ice comet
-#   look after; the crystal kind is ice comets since Ryan scrapped the clusters, Nov 22)
+#   rocks/RK_crystal_cluster_c26.png (camera 26 tipped low onto a crystal blocker: the crystal kind is ice comets since
+#   Ryan scrapped the clusters, Nov 22)
 # and one frame-time row: rocks/frame_time.json (a full crystal belt, 37 rock hexes, at camera 170: mean and p95 GPU and
 # CPU milliseconds over --frames frames, measured by the rendering server). A missing still or row writes
 # ROCKS_FAILED.txt and exits 4; LOOK_BENCH_DONE prints only when everything is there. Before any picture the run proves
-# its rock set (scan and crystal counts, scan_07 only in the before run, every mesh from its file) and records the
+# its rock set (scan count, no crystal clusters, no retired scan, every mesh from its file) and records the
 # manifest hashes in bench.json; any fallback rock, there or later, fails the run.
 
 const WR := preload("res://world/world_rocks.gd")
@@ -32,14 +32,9 @@ func _run() -> void:
 	report["commit"] = str(args.get("commit", ""))
 	report["godot"] = Engine.get_version_info().get("string", "")
 	report["adapter"] = RenderingServer.get_video_adapter_name()
-	report["old_look"] = OS.get_environment("VS_1361_OLD") == "1"
-	report["old_dir"] = OS.get_environment("VS_1361_OLD_DIR")
 	headless = DisplayServer.get_name() == "headless"
-	if report["old_look"] and str(report["old_dir"]) == "":
-		_fail("VS_1361_OLD=1 without VS_1361_OLD_DIR: the before run would draw the new rock files")
-		return
-	# Artoo on PR 1782: prove which rock set this run draws before any picture (main's eight scans and three crystals for
-	# the before run, the branch's six and none for the after run), every mesh loaded from its file, never a fallback
+	# Artoo on PR 1782: prove which rock set this run draws before any picture, every mesh loaded from its file, never a
+	# fallback
 	var why := _preflight()
 	if why != "":
 		_fail(why)
@@ -62,7 +57,7 @@ func _run() -> void:
 			_save(d, "RK_crystal_cluster_c26.png", kind, 26.0)
 			# the comets and their tails sit beyond the board's far edge, seen zoomed out (Ryan, Nov 22). Wave 0 (Nov 23): the
 			# board-centred c420 frame cropped them off its top edge, so aim at the comets themselves and look lower, along
-			# the tails against the sky (the old look has no comets and keeps the board-centred frame)
+			# the tails against the sky
 			_cam(_hex(0, 0), 420.0)
 			if not wld.comet_spots.is_empty():
 				var mid := Vector3.ZERO
@@ -72,12 +67,11 @@ func _run() -> void:
 				cam.r = 520.0
 				cam.b = 0.45
 				cam.snap()
-			elif not report["old_look"]:
+			else:
 				_log("no comets were placed in the crystal field, so the wide comet frame has nothing to aim at")
 				missing.append("RK_crystal_comets_c420.png (no comets)")
 			await _hold(8)
-			# Artoo on PR 1782: report the live radius and which frame this is, so the aimed after shot never passes as a
-			# matched pair with the board-centred before shot
+			# Artoo on PR 1782: report the live radius and which frame this is (the file name keeps c420)
 			_save(d, "RK_crystal_comets_c420.png", kind, cam.r, "board" if wld.comet_spots.is_empty() else "aimed at comets")
 	# frame time: a full crystal belt at the battle camera
 	await _world({"rock": "crystal", "planet": 2}, _terrain(true), [])
@@ -91,8 +85,8 @@ func _run() -> void:
 		var f := FileAccess.open(d.path_join("frame_time.json"), FileAccess.WRITE)
 		f.store_string(JSON.stringify(row, " "))
 		f.close()
-		_log("frame time (%s): gpu mean %.3f p95 %.3f ms, cpu mean %.3f ms over %d frames" % [
-			"before" if report["old_look"] else "after", row.gpu_mean, row.gpu_p95, row.cpu_mean, row.frames])
+		_log("frame time: gpu mean %.3f p95 %.3f ms, cpu mean %.3f ms over %d frames" % [
+			row.gpu_mean, row.gpu_p95, row.cpu_mean, row.frames])
 	if not WR.fallbacks.is_empty():
 		missing.append("fallback rocks drawn: " + ", ".join(WR.fallbacks))
 	_save_report()
@@ -107,19 +101,15 @@ func _run() -> void:
 
 
 func _preflight() -> String:
-	var old: bool = report["old_look"]
-	if WR.OLD != old:
-		return "world_rocks.gd read VS_1361_OLD as %s, the bench as %s" % [WR.OLD, old]
 	var scans: Array = WR.scan_names()
 	var crystals: Array = WR.lib().get("crystals", [])
-	var want_scans := 8 if old else WR.SCAN_COUNT
-	var want_crystals := 3 if old else 0   # Ryan scrapped the crystal clusters (Nov 22): main's three in the before run only
-	if scans.size() != want_scans:
-		return "%s run: %d scans in %s (want %d)" % ["before" if old else "after", scans.size(), WR.lib_dir, want_scans]
-	if old != scans.has("scan_07"):
-		return "%s run: scan_07 %s in %s" % ["before" if old else "after", "missing" if old else "present", WR.lib_dir]
-	if crystals.size() != want_crystals:
-		return "%s run: %d crystal clusters in %s rocks.json (want %d)" % ["before" if old else "after", crystals.size(), WR.lib_dir, want_crystals]
+	if scans.size() != WR.SCAN_COUNT:
+		return "%d scans in %s (want %d)" % [scans.size(), WR.lib_dir, WR.SCAN_COUNT]
+	for retired in ["scan_00", "scan_06", "scan_07"]:
+		if scans.has(retired):
+			return "retired %s is in %s" % [retired, WR.lib_dir]
+	if not crystals.is_empty():   # Ryan scrapped the crystal clusters (Nov 22)
+		return "%d crystal clusters in %s rocks.json (want 0)" % [crystals.size(), WR.lib_dir]
 	for nm in scans:
 		for suffix in ["", "_lo"]:
 			WR.mesh(str(nm) + suffix)
@@ -170,7 +160,7 @@ func _save(d: String, name: String, kind: String, r: float, frame := "board") ->
 	if preload("res://tools/picture_provenance.gd").save_png(still, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 		missing.append(name)
 		return
-	report["stills"].append({"part": "rocks", "file": "rocks/" + name, "kind": kind, "cam": int(r), "frame": frame, "old_look": report["old_look"], "step": steps})
+	report["stills"].append({"part": "rocks", "file": "rocks/" + name, "kind": kind, "cam": int(r), "frame": frame, "step": steps})
 
 
 func _frame_time(frames: int) -> Dictionary:
@@ -195,7 +185,7 @@ func _frame_time(frames: int) -> Dictionary:
 	for v in gpu: gm += float(v)
 	for v in cpu: cm += float(v)
 	return {"frames": frames, "gpu_mean": gm / gpu.size(), "gpu_p95": float(gpu[int(gpu.size() * 0.95)]),
-		"cpu_mean": cm / cpu.size(), "old_look": report["old_look"], "belt_hexes": 37, "camera": 170,
+		"cpu_mean": cm / cpu.size(), "belt_hexes": 37, "camera": 170,
 		"adapter": report["adapter"], "commit": report["commit"]}
 
 

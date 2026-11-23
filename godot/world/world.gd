@@ -859,12 +859,6 @@ func _hero_mat(kind: String) -> ShaderMaterial:
 	return _mats[key]
 
 
-func _crystal_mat() -> ShaderMaterial:
-	if not _mats.has("_crystal"):
-		_mats["_crystal"] = WR.crystal_material(_look)
-	return _mats["_crystal"]
-
-
 func _pick(kind: String, r: RandomNumberGenerator) -> String:
 	var names: Array = WR.names_for(kind)
 	if names.is_empty():
@@ -910,15 +904,6 @@ func blocker(p: Vector3, kind: String) -> void:
 		_batch.add(sn + "_lo" if _rng.randf() < 0.5 else sn, mat, true,
 			Transform3D(_rand_basis(_rng).scaled(Vector3.ONE * _rng.randf_range(1.0, 2.2)), p + Vector3(cos(a) * rr, _rng.randf_range(-2.0, 4.0), sin(a) * rr)),
 			_rand_axis(_rng), _rng.randf_range(0.02, 0.09), _rng.randf())
-	# Ryan scrapped the crystal clusters (Nov 22, issue 1361); only the old look (VS_1361_OLD before-captures) draws them
-	if crystal and WR.OLD:
-		var names: Array = WR.lib().get("crystals", [])
-		if not names.is_empty():
-			for i in _rng.randi_range(1, 2):
-				var cb := Basis(Vector3.UP, _rng.randf() * TAU) * Basis(Vector3(1, 0, 0), _rng.randf_range(-0.4, 0.4))
-				var off := Vector3(_rng.randf_range(-3, 3), s * 0.35 + _rng.randf_range(0, 2), _rng.randf_range(-3, 3))
-				_batch.add(names[_rng.randi() % names.size()], _crystal_mat(), true, Transform3D(cb.scaled(Vector3.ONE * _rng.randf_range(3.5, 5.5)), p + off),
-					Vector3.UP, 0.0, _rng.randf())
 
 
 func debris_field(p: Vector3, kind: String) -> void:
@@ -1122,18 +1107,8 @@ func fields(mk: String, kind: String) -> void:
 		s = _backdrop_scale(nm, s, p)
 		_batch.add(nm, mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.0015, 0.006), r.randf())
 		mts += 1
-	# crystal fields: free crystal clusters drift among the edge rocks, in the old look only (Ryan scrapped them, Nov 22)
-	if kind == "crystal" and WR.OLD:
-		var names: Array = WR.lib().get("crystals", [])
-		for i in (12 if not names.is_empty() else 0):
-			var a := r.randf() * TAU
-			var p := _center + Vector3(cos(a) * (ext.x + 60.0) * r.randf_range(1.0, 1.8), r.randf_range(-40.0, 5.0), sin(a) * (ext.z + 60.0) * r.randf_range(1.0, 1.8))
-			if _over_board(p, 30.0):
-				continue
-			var nm: String = names[r.randi() % names.size()]
-			var s := _backdrop_scale(nm, r.randf_range(2.0, 6.0), p, 20.0)
-			_batch.add(nm, _crystal_mat(), false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.05), r.randf())
-	if kind == "crystal" and not WR.OLD:
+	# Ryan scrapped the crystal clusters (Nov 22, issue 1361): the crystal kind is ice comets, a few with tails
+	if kind == "crystal":
 		comets(r, ext)
 	notes.append("fields: %d edge rocks, %d deep, %d belt, %d mountains" % [placed, deep, belt, mts])
 

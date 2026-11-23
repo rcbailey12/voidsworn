@@ -7,10 +7,9 @@ extends RefCounted
 #   stone   warm ochre S-type silicate rock, dark dust pockets, lighter fresh fracture faces
 #   iron    cool dark gunmetal slag crust, bright nickel-iron metal on the fresh ridges (issue 1361)
 #   carbon  deep charcoal C-type rock, matte, ash-grey ridge highlights, never tan (issue 1361)
-#   ice     dark comet crust with clean pale frost shelves on the fresh faces, faint cold glow in the cracks
-#   crystal ice comets (Ryan, Nov 22: the crystals were scrapped): dusty crust broken by wide sheets of white ice, a faint
-#           cold glow only in a few deep vents, and on a few big ones a soft gas tail away from the sun (world.gd comets());
-#           only the old look, VS_1361_OLD, still draws main's crystal clusters, from world_rocks_v1.gd
+#   ice     pale: a matte frost coat over most of the rock, clean ice in the fresh breaks, no glow (Wave 0, Nov 23)
+#   crystal ice comets (Ryan, Nov 22: the crystals were scrapped): a dark dusty crust with a few dirty ice patches, a faint
+#           cold glow only in a few deep vents, and on a few big ones a soft gas tail away from the sun (world.gd comets())
 # Issue 1361 (World V2, R419): each kind draws on its own subset of the scans (KIND_SCANS) and squeezes them its own way in
 # the vertex shader (shape_k: iron chunkier, ice longer and sharper), so the five belts differ in shape as well as colour.
 # The scans' COLOR_0.b (facet) is ridge convexity re-baked by world/tools/scan_facet.py, spanning 0 to 1 like rockgen's.
@@ -18,22 +17,7 @@ extends RefCounted
 # on screen and the deep field reads as far away (and never as a hex obstacle).
 
 const LIB_DIR := "res://world/rocks/"
-# Issue 1361 before/after capture on one commit: VS_1361_OLD=1 draws main's old look (world_rocks_v1.gd shaders and
-# kinds, every scan for every kind) from the old rock files in VS_1361_OLD_DIR (the PC job's old checkout). Off in play.
-static var OLD := OS.get_environment("VS_1361_OLD") == "1"
-static var lib_dir := _lib_dir()
-
-
-static func _lib_dir() -> String:
-	var d := OS.get_environment("VS_1361_OLD_DIR").replace("\\", "/")
-	if OS.get_environment("VS_1361_OLD") != "1" or d == "":
-		return LIB_DIR
-	return d if d.ends_with("/") else d + "/"
-
-
-static func _v1():
-	return load("res://world/world_rocks_v1.gd")
-
+static var lib_dir := LIB_DIR
 static var _meshes := {}      # name -> Mesh
 static var _lib: Dictionary = {}   # not GPU: rocks.json
 static var _detail: Texture3D = null
@@ -62,7 +46,7 @@ static func scan_names() -> Array:
 		var path := lib_dir + "scans.json"
 		if not FileAccess.file_exists(path): return []
 		var manifest = JSON.parse_string(FileAccess.get_file_as_string(path))
-		if not manifest is Dictionary or manifest.get("rocks", []).size() != (8 if OLD else SCAN_COUNT):
+		if not manifest is Dictionary or manifest.get("rocks", []).size() != SCAN_COUNT:
 			push_error("R01 scan manifest is incomplete")
 			return []
 		for entry in manifest.rocks:
@@ -446,8 +430,6 @@ static func _find_mesh(n: Node) -> MeshInstance3D:
 # the names of the rocks a kind draws on (its families first)
 static func names_for(kind: String) -> Array:
 	var scans := scan_names()
-	if not scans.is_empty() and OLD:
-		return scans.duplicate()
 	if not scans.is_empty():
 		var out: Array = []
 		for nm in KIND_SCANS.get(kind, scans):
@@ -491,11 +473,10 @@ static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") ==
 
 # One material per kind and look (the far layers share it, with their haze)
 static func material(kind: String, look: Dictionary) -> ShaderMaterial:
-	var kinds: Dictionary = _v1().KINDS if OLD else KINDS
-	var K: Dictionary = kinds.get(kind, kinds["stone"])
+	var K: Dictionary = KINDS.get(kind, KINDS["stone"])
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	sh.code = _v1().ROCK_SHADER if OLD else ROCK_SHADER
+	sh.code = ROCK_SHADER
 	m.shader = sh
 	m.set_shader_parameter("kind", int(K["k"]))
 	m.set_shader_parameter("base", K["base"])
@@ -515,21 +496,6 @@ static func material(kind: String, look: Dictionary) -> ShaderMaterial:
 	if look.has("rim_pos"):
 		m.set_shader_parameter("rim_pos", look["rim_pos"])
 		m.set_shader_parameter("rim_k", 1.6)
-	return m
-
-
-# Only the old look (VS_1361_OLD before-captures) draws crystal clusters; Ryan scrapped them on Nov 22.
-static func crystal_material(look: Dictionary) -> ShaderMaterial:
-	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = _v1().CRYSTAL_SHADER
-	m.shader = sh
-	m.set_shader_parameter("tumble_k", rock_tumble_k)
-	m.set_shader_parameter("board_c", look.get("board_c", Vector3.ZERO))
-	m.set_shader_parameter("haze_col", look.get("haze", Vector3(0.01, 0.012, 0.02)))
-	m.set_shader_parameter("haze_r", look.get("haze_r", Vector2(320, 2200)))
-	if look.has("glow"):
-		m.set_shader_parameter("glow", look["glow"])
 	return m
 
 
