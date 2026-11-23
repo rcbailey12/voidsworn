@@ -7,9 +7,10 @@ such as `deathless` for Eclipse or `chorus` for the Chorus. Leave it unset for a
 Set `ONLY_BOSS=1` for the boss cells and the elite comparison.
 
 Use matching `PAIRSEED`, difficulty, mode, cell filters, and battles per cell for both arms. Give each arm a distinct
-`SIM_ARM` label and save its output. Run `node godot/rules/sim/compare_trials.js <control-log> <treatment-log>` to
-check that the trial keys match and print paired deltas. Report the ability id, the seeds where it fired, and the
-counts from those `TRIAL` rows with the result. Use firing evidence from the arm that received the ability change.
+`SIM_ARM` label and save its output through the `TRIALS_COMPLETE` line. Run
+`node godot/rules/sim/compare_trials.js <control-log> <treatment-log>` to check both trial counts and matching keys
+before printing paired deltas. Report the ability id, the seeds where it fired, and the counts from those `TRIAL`
+rows with the result. Use firing evidence from the arm that received the ability change.
 
 ## Faction balance after the torpedo change (R414, Ryan Nov 22 2026, option C)
 

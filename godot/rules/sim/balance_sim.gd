@@ -190,6 +190,8 @@ func _campaign(count: int, carry_rewards: bool) -> void:
 			_campaign_cell(faction, cell, count, carry_rewards)
 			if failed:
 				return
+	if not failed:
+		print("TRIALS_COMPLETE %d" % (factions.size() * cells.size() * count))
 
 
 func _campaign_cell(player_faction: String, cell: Array, count: int, carry_rewards: bool) -> void:

@@ -18,13 +18,22 @@ function cellKey({ faction, difficulty, cell }) {
 function readArm(path) {
   const rows = new Map();
   let arm;
+  let expectedTrials;
   const log = fs.readFileSync(path, 'utf8').replace(/^\uFEFF/, '');
   for (const [index, line] of log.split(/\r?\n/).entries()) {
     const prefix = `${path}:${index + 1}`;
+    if (line.startsWith('TRIALS_COMPLETE')) {
+      if (expectedTrials !== undefined) throw new Error(`${prefix} duplicate TRIALS_COMPLETE marker`);
+      const match = /^TRIALS_COMPLETE ([1-9]\d*)$/.exec(line);
+      expectedTrials = Number(match?.[1]);
+      if (!Number.isSafeInteger(expectedTrials)) throw new Error(`${prefix} invalid TRIALS_COMPLETE count`);
+      continue;
+    }
     if (!line.startsWith('TRIAL ')) {
       if (/^(SCRIPT ERROR:|Balance sim:)/.test(line)) throw new Error(`${prefix} ${line}`);
       continue;
     }
+    if (expectedTrials !== undefined) throw new Error(`${prefix} TRIAL after TRIALS_COMPLETE marker`);
     let row;
     try {
       row = JSON.parse(line.slice('TRIAL '.length));
@@ -48,7 +57,8 @@ function readArm(path) {
     if (rows.has(key)) throw new Error(`${prefix} duplicate trial key ${key}`);
     rows.set(key, row);
   }
-  if (!rows.size) throw new Error(`${path} contains no TRIAL records`);
+  if (expectedTrials === undefined) throw new Error(`${path} missing TRIALS_COMPLETE marker`);
+  if (rows.size !== expectedTrials) throw new Error(`${path} expected ${expectedTrials} TRIAL records, found ${rows.size}`);
   return { arm, rows };
 }
 

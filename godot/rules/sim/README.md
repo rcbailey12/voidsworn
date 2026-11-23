@@ -31,9 +31,11 @@ schedule is alternating. Pass `--classic` after the count on the Godot command t
 - Set `SIM_ARM` to label the run. It defaults to `single`. For a paired comparison, give the control and treatment
   distinct labels and save each successful run's output as a UTF-8 log. Run
   `node godot/rules/sim/compare_trials.js <control-log> <treatment-log>` from the repo root. It checks that every
-  faction, difficulty, cell, and seed occurs exactly once in each log. Mismatches, duplicates, and engine-error
-  trials fail the comparison. Each `PAIRED` row gives the number of pairs and the mean treatment-minus-control
-  change in wins, timeouts, concessions, and hull left (percentage points), rounds, ships lost, and uses by ability id.
+  faction, difficulty, cell, and seed occurs exactly once in each log. Each log needs one `TRIALS_COMPLETE <count>`
+  footer after the last trial, with the planned count (factions times cells times battles per cell). Missing or
+  extra trials, mismatched keys, duplicates, and engine-error trials fail the comparison. Each `PAIRED` row gives
+  the number of pairs and the mean treatment-minus-control change in wins, timeouts, concessions, and hull left
+  (percentage points), rounds, ships lost, and uses by ability id.
 - Set `PFACTION` to `voidsworn`, `corsair`, `ithar`, `deathless`, `chorus`, or `hegemony` to report just that
   player faction in `campaign` or `campaignrewards`. The sim uses the campaign's faction hull equivalents for
   the fixed sector fleets and keeps the reference admiral, Vex, unless `SIM_BUILD` sets an admiral.
