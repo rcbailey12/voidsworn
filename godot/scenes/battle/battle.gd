@@ -1622,7 +1622,6 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				d2["hp"] = float(d2["hp"]) - float(e["recoil"])
 			await wait(500.0)
 		"board":
-			sfx.play("board_grapple", {"pos": _pos(e["target"]), "variant": str(VU.get(e["unit"], {}).get("fac", ""))})
 			var res := str(e["result"])
 			var who := _who(e["unit"])
 			if res == "capture":
@@ -1645,6 +1644,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				bsv.elev_target = clampf(float(btv.hull_lift) + float(btv.band_y) - float(bsv.hull_lift) - float(bsv.band_y), -9.0, 9.0)
 				if absf(float(bsv.elev_target)) > 0.2:
 					await wait(450.0)
+			# the grapple sounds on the breach's frame, after any height trim (issue 1582: hulls now sit at their bands)
+			sfx.play("board_grapple", {"pos": _pos(e["target"]), "variant": str(VU.get(e["unit"], {}).get("fac", ""))})
 			if gfx != null and gfx.has_method("board"):
 				boarded = float(gfx.board(str(e["unit"]), str(e["target"]), res, speed))
 			if boarded <= 0.0:
