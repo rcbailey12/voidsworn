@@ -360,14 +360,15 @@ static func derelict_shared(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 
 
 # R420 Law 1 band 3 (contrib/opus/plans/global_cohesion_standard.md): a lit hulk is a dead hull, so its effective base
-# albedo (paint texture times tint) sits in the dull bottom of band 3: 0.04 to 0.07 linear luminance, so no faction's
+# albedo (paint texture times tint) sits in the dull bottom of band 3: 0.04 to 0.045 linear luminance, so no faction's
 # derelict (the Glasswrights' pale glass above all: Fable on PR 1772, H9) is the brightest thing in a graveyard. The
-# ceiling was 0.12 until the PROPS_E pictures (Nov 22 2026): at 0.12 the Navy and Hullbreaker hulks read as live ships
-# under the key light (Board look-tune inside R420's band).
-const HULK_BAND := Vector2(0.04, 0.07)
+# ceiling was 0.12 until the PROPS_E pictures (Nov 22 2026), where the Navy and Hullbreaker hulks read as live ships
+# under the key light, then 0.07 until PROPS_G, where the Hullbreakers still read fairly live and the Chorus wrecks
+# popped (Board look-tune inside R420's band). Eclipse obsidian (about 0.039) is held at the 0.04 floor either way.
+const HULK_BAND := Vector2(0.04, 0.045)
 # Visible burn: scorch patches multiplied over the hull's own UVs, their share of the hull growing with wreck_soot
 # (Hullbreakers most, Navy least); a faction with wreck_soot 0 (Chorus, Glasswrights) and Eclipse obsidian get none.
-const BURN_EDGE := Vector2(0.3, 0.3)   # ramp edge = x + y * wreck_soot: the burnt share of the noise
+const BURN_EDGE := Vector2(0.4, 0.35)  # ramp edge = x + y * wreck_soot: the burnt share of the noise (heavier after PROPS_G)
 const BURN_DARK := 2.5                 # the patch multiplier is the faction's scorch colour times this, capped at 1
 const BURN_FREQ := 0.012               # about three patches across the hull's UV square
 static var _burn_cache := {}

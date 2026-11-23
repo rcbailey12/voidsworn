@@ -235,7 +235,7 @@ func _hulk_checks() -> void:
 		"the texture mean reads a small mip: %s in %d us" % [str(mean), us])
 	_report(ye <= PROPS.HULK_BAND.y + 1e-3 and ye >= PROPS.HULK_BAND.x - 1e-3, "a textured pale Glasswright hulk lands at %.3f linear, inside the dull band" % ye)
 	# visible burn (Board look-tune on the PROPS_E pictures, Nov 22): metal hulks carry scorch patches, Hullbreakers the
-	# most; Chorus chitin, Glasswright glass and Eclipse obsidian carry none; the ceiling sits at 0.07
+	# most; Chorus chitin, Glasswright glass and Eclipse obsidian carry none; the ceiling sits at 0.045
 	var plain := StandardMaterial3D.new()
 	var burnt := {}
 	for fac in ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
@@ -244,7 +244,7 @@ func _hulk_checks() -> void:
 		burnt[fac] = bt.color_ramp.offsets[1] if dm.detail_enabled and bt != null else 0.0
 	_report(burnt["corsair"] > burnt["voidsworn"] and burnt["voidsworn"] > burnt["hegemony"] and burnt["hegemony"] > 0.0
 		and burnt["chorus"] == 0.0 and burnt["ithar"] == 0.0 and burnt["deathless"] == 0.0
-		and is_equal_approx(PROPS.HULK_BAND.y, 0.07), "burn patches by wreck_soot: %s" % str(burnt))
+		and is_equal_approx(PROPS.HULK_BAND.y, 0.045), "burn patches by wreck_soot: %s" % str(burnt))
 	# one burnt material per source material and faction, shared by every hulk of that hull (LOAD probe, Board Nov 22)
 	var sh1 := PROPS.derelict_shared(plain, "corsair")
 	_report(sh1 == PROPS.derelict_shared(plain, "corsair") and sh1 != PROPS.derelict_shared(plain, "voidsworn"),
