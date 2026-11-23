@@ -580,7 +580,9 @@ board/torpedo_rework/launch_1121/TL_*.jpg, "Yes much better"): it starts at its 
 its drive and baked nozzle glow dark (a torpedo for 0.7 s, rockets 0.14 s, the star 0.22 s), lights with a flash at the
 nozzle, then turns onto the target. It flies flat (issue 1713, Ryan Nov 22: "I'd think we'd keep it flat"): a deck
 tube's slide rises at most about 20 degrees, and from ignition the flight never climbs above the higher of its ignition
-point and the target (`torpedo_flat_flight_check`). Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
+point and the target (`torpedo_flat_flight_check`). Between altitude bands (issue 1582) it stays a straight line that
+slopes only to the target's height, with no cold-launch pop or arc (Ryan, Nov 23 2026, decision card in the stage 2
+thread: "Keep them flat", over the stage 2 brief's pop-and-arc; `movement_stage2_check`). Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
 rockets 0.7 of the old round, with trail and flashes to match; the slide distance does not shrink with it
 (fx_weapons.gd `_launch`, `_launch_step`, `_ignite`).
 

@@ -290,6 +290,7 @@ func build(rules) -> void:
 	blocker_visuals = BV.new()
 	props.add_child(blocker_visuals)
 	blocker_visuals.build(VW, hex_world)
+	_depth_fragments()
 	blocker_highlights = Node3D.new()
 	add_child(blocker_highlights)
 	_zones()
@@ -898,6 +899,53 @@ func _terrain() -> void:
 		var size := STATION_BIG_LEN if cl.size() >= STATION_BIG_HEXES else STATION_BASE_LEN + STATION_PER_HEX * cl.size()
 		var teaching: bool = cl.size() == 3 and VW.get("map", {}).get("stationR", 0) == 1
 		_station(cen, rng, size, teaching, clearance)
+
+
+# Issue 1582 item 4: a few small loose fragments ride above and below the plane round each rock and debris hex, so a
+# fleet threads through a field with depth. They never block (the rules' rock stays the hex's core on the plane), stay
+# inside their own hex's footprint so no hex beside them looks taken, and use their own seed so the board's other random
+# draws do not shift. A look only.
+const FRAG_Y := [4.0, 9.0]     # height off the plane, up or down (world units)
+const FRAG_S := [0.45, 1.25]   # fragment size
+var depth_frags: Node3D
+
+
+func _depth_fragments() -> void:
+	if depth_frags != null and is_instance_valid(depth_frags):
+		depth_frags.queue_free()
+	depth_frags = Node3D.new()
+	depth_frags.name = "fx_depth_fragments"
+	add_child(depth_frags)
+	var T: Dictionary = VW.get("terrain", {}) if VW.get("terrain") is Dictionary else {}
+	var biome = WI.get("biome")
+	var rock_kind := str(biome.get("rock", "stone")) if biome is Dictionary else "stone"
+	var names: Array = BV.WR.names_for(rock_kind)
+	if names.is_empty():
+		return
+	# the same procedural rocks and finish the world's blockers use (world/blocker_visuals.gd), so the chips match
+	var mat: ShaderMaterial = BV.WR.material(rock_kind, {"haze_max": 0.0})
+	mat.set_shader_parameter("lift", 1.2)
+	mat.set_shader_parameter("amb", 0.65)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("depth|%s" % str(WI.get("seed", 1)))
+	var keys: Array = T.keys()
+	keys.sort()
+	for k in keys:
+		var typ: String = T[k]
+		if typ != "rock" and typ != "debris":
+			continue
+		var qr: PackedStringArray = str(k).split(",")
+		var c := hex_world(int(qr[0]), int(qr[1]))
+		for i in (3 if typ == "rock" else 2):
+			var mesh_name := str(names[rng.randi() % names.size()])
+			var a := rng.randf() * TAU
+			var rad := rng.randf_range(1.5, HS * 0.55)
+			var y := rng.randf_range(FRAG_Y[0], FRAG_Y[1]) * (1.0 if rng.randf() < 0.55 else -0.8)
+			var mi := BV.cluster_piece(depth_frags, BV.WR.mesh(mesh_name), mat, c + Vector3(cos(a) * rad, y, sin(a) * rad), rng.randf_range(FRAG_S[0], FRAG_S[1]), rng)
+			mi.name = "frag_" + mesh_name
+			var box := (mi.mesh as Mesh).get_aabb()
+			mi.set_instance_shader_parameter("rock_radius", box.position.abs().max(box.end.abs()).length())
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
 func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float) -> void:

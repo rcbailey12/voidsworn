@@ -72,6 +72,7 @@ const MOVE_CRUISE := 0.8      # a hull cruises a hex in this share of its hex ti
 # firmer. Its hex time grows by up to 14 percent (a frigate's peak burn about 36 to 31 units a second) and its turn
 # weight by up to 30 percent (about 123 to 95 degrees a second), easing to nothing at battleship size, so nothing from a
 # battleship up changes. Cinematic flown moves only.
+const ALT_BAND := preload("res://render/altitude_band.gd")   # issue 1582
 const MOVE_ESCORT_PACE := 1.14
 const MOVE_ESCORT_TURN := 1.3
 const NO_READY_GUN_IN_RANGE := "No ready gun can reach it."
@@ -869,6 +870,7 @@ func _make_view(u: Dictionary) -> void:
 	add_child(sv)
 	sv.setup(u, board.hex_world(u["q"], u["r"]), true)
 	sv.set_marker(u["side"] == "player")
+	sv.set_band(ALT_BAND.height(u))   # issue 1582: class altitude band and drop-line (a look only; rules stay on the plane)
 	views[u["id"]] = sv
 	sv.calm = reduce_motion   # issue 1581: Reduce motion per view (no drift, bob or nod; half the ignition beat)
 	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
@@ -1640,7 +1642,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			var bsv = views.get(e["unit"])
 			var btv = views.get(e["target"])
 			if bsv != null and btv != null and not bsv.dead and not reduce_motion:
-				bsv.elev_target = clampf(float(btv.hull_lift) - float(bsv.hull_lift), -4.0, 4.0)
+				bsv.elev_target = clampf(float(btv.hull_lift) + float(btv.band_y) - float(bsv.hull_lift) - float(bsv.band_y), -9.0, 9.0)
 				if absf(float(bsv.elev_target)) > 0.2:
 					await wait(450.0)
 			if gfx != null and gfx.has_method("board"):
@@ -1892,7 +1894,7 @@ func _play_move(id, path: Array, charge: bool) -> void:
 			# G4 fx engine level: idle, 2 full burn)
 			# issue 1581: a cold drive (a slide, a back-off, braking) is fed below fx_ship's trail threshold, so no bright
 			# core or exhaust ribbon is laid while the thrusters do the work
-			gfx.set_engine(str(id), (ENGINE_COLD if bool(sv.drive_cold) else _drive_level(float(sv.thrust))) if cin else clampf(1.0 + float(sv.thrust), 0.5, 2.2))
+			gfx.set_engine(str(id), (ENGINE_COLD if bool(sv.drive_cold) else _drive_level(float(sv.thrust)) * float(sv.drive_swell())) if cin else clampf(1.0 + float(sv.thrust), 0.5, 2.2))
 		if args.has("speed-trace"):   # the hull's speed (hexes a second), spin (degrees a second), drive and jets
 			print("[speed] %s %.3f %.2f %.0f %.2f retro %.2f side %.2f aft %.2f turn %.2f" % [str(id), game_t - t_move, sv._vel.length() / board.HW, rad_to_deg(sv._yaw_v), float(sv.thrust), sv.jet_retro, sv.jet_side, sv.jet_aft, sv.jet_turn])
 		if move_frames != "":
@@ -4307,11 +4309,45 @@ func _ray_hex(p: Vector2) -> Vector2i:
 	var t := -o.y / d.y
 	if t < 0:
 		return Vector2i(99999, 99999)
+	# issue 1582: a hull lifted or lowered off the plane draws away from its hex; a pointer on the middle of that hull
+	# picks the hull's own hex, so clicking the ship you see never lands on the hex beside it
+	var lifted := _lifted_hull_hex(p)
+	if lifted.x != 99999:
+		return lifted
 	var h: Vector2i = board.world_hex(o + d * t)
 	return h if board.on_board(h.x, h.y) or (board.blocker_visuals != null and board.blocker_visuals.visuals.has(board.key(h.x, h.y))) else Vector2i(99999, 99999)
 
 
 var _hover_uid := ""
+
+
+# issue 1582: the hex of an off-plane hull whose middle is under the pointer (the nearest to the eye wins), else none.
+# Only the hull's middle counts (a third of its length across), so the hexes around it stay clickable.
+func _lifted_hull_hex(p: Vector2) -> Vector2i:
+	var best := Vector2i(99999, 99999)
+	var best_d := INF
+	if cam == null or not is_instance_valid(cam):
+		return best
+	for id in views:
+		var sv = views[id]
+		if not is_instance_valid(sv) or sv.dead or not sv.visible or absf(float(sv.band_y)) < ShipView.DROP_MIN:
+			continue
+		if not VU.has(id) or bool(VU[id].get("squadron", false)):
+			continue
+		var c: Vector3 = sv.visual_position()
+		if cam.is_position_behind(c):
+			continue
+		var sc: Vector2 = cam.unproject_position(c)
+		var edge: Vector2 = cam.unproject_position(c + cam.global_basis.x * float(sv.L) * 0.17)
+		var rad := sc.distance_to(edge)
+		var dd := sc.distance_to(p)
+		if dd > rad:
+			continue
+		var eye := cam.global_position.distance_to(c)
+		if eye < best_d:
+			best_d = eye
+			best = Vector2i(int(VU[id]["q"]), int(VU[id]["r"]))
+	return best
 
 
 func _on_hover(p: Vector2) -> void:
@@ -4327,6 +4363,11 @@ func _on_hover(p: Vector2) -> void:
 		var hu := _unit_at(h.x, h.y)
 		var hid := str(hu["id"]) if not hu.is_empty() else ""
 		if hid != _hover_uid:
+			# issue 1582: the hovered hull's drop-line brightens
+			if views.has(_hover_uid) and is_instance_valid(views[_hover_uid]):
+				views[_hover_uid].set_hot(false)
+			if views.has(hid) and is_instance_valid(views[hid]):
+				views[hid].set_hot(true)
 			_hover_uid = hid
 			if api != null and api.phase == "player" and not busy and target == "" and sel != "":
 				if _api_free():

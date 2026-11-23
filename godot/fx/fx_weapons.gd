@@ -1624,11 +1624,22 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 	var side = dir.cross(Vector3.UP).normalized()
 	var spd = 140.0 * fx.unit
 	var eng: Color = fac["engine"]
+	# issue 1582: wings patrol high above the ships; an attack pass dives steeply from patrol height onto the target's
+	# height, fires on the low pass and climbs back out to patrol height past it (a wing level with its target keeps the
+	# old shallow run: start 3 up, end 6 up)
 	var start = from - dir * 3.0 + side * (i - 1) * 2.0 + Vector3(0, 3.0, 0)
 	var end = to + dir * 25.0 + side * (i - 1) * 4.0 + Vector3(0, 6.0, 0)
-	var life = start.distance_to(end) / spd
-	var vel = (end - start) / life
-	var timp = t0 + (to.distance_to(start) - 6.0) / spd
+	var high: float = maxf(start.y, to.y + 3.0)
+	end.y = maxf(end.y, high)
+	var low_y: float = to.y + 1.6 * kt
+	var flat_d: float = Vector2(to.x - start.x, to.z - start.z).length()
+	var run_d: float = maxf(Vector2(end.x - start.x, end.z - start.z).length(), 1.0)
+	var pi_u := clampf((flat_d - 3.0) / run_d, 0.2, 0.8)
+	# level at patrol height until DIVE_RUN short of the target, then a steep dive; the pull-out climbs over CLIMB_RUN
+	var dive := {"ya": float(start.y), "yl": low_y, "yb": float(end.y), "pi": pi_u,
+		"pd": maxf(pi_u - DIVE_RUN / run_d, 0.0), "pc": minf(pi_u + CLIMB_RUN / run_d, 1.0)}
+	var life = _dive_len(start, end, dive) / spd
+	var timp = t0 + life * float(dive["pi"]) - 6.0 / spd
 	if rhythm == null:
 		rhythm = _volley_rng(fx)
 	var formation := _volley_pattern(rhythm, 3)
@@ -1636,13 +1647,13 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 		var delay: float = float(formation[c]["phase"]) * 0.04
 		var off = side * (c - 1) * 1.2 * spread + Vector3(0, (c % 2) * 0.6, 0)
 		var kind := "spore" if faction == "chorus" or lk == "sporeb" else ("bomber" if lk == "bombs" else "fighter")
-		_craft_run(fx, faction, kind, start + off, end + off, t0 + delay, life, 2.4)
+		_craft_run(fx, faction, kind, start + off, end + off, t0 + delay, life, 2.4, dive)
 		# craft fire: miniature tracers, bombs or spore sacs
 		var burst := _volley_pattern(rhythm, 3)
 		for s in 3:
 			var pulse: Dictionary = burst[s]
 			var tsh = timp - 0.35 + float(pulse["phase"]) * 0.08 + delay
-			var ps = start + off + vel * (tsh - t0 - delay)
+			var ps = _dive_pos(start + off, end + off, dive, clampf((tsh - t0 - delay) / life, 0.0, 1.0))
 			var dd = (to - ps).normalized()
 			match lk:
 				"bombs":
@@ -1658,7 +1669,46 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 
 # Launch and attack passes use the same faction geometry as the parked wing.
 # fx.now owns these runs, including accelerated playback and deterministic probes.
-static func _craft_run(fx, faction: String, kind: String, from: Vector3, to: Vector3, t0: float, life: float, size: float) -> void:
+# issue 1582: the attack pass's line. Across the ground it runs straight from a to b; in height it dives from patrol
+# height (ya) to the low pass (yl) at share pi of the run, steepest in the middle of the dive, then pulls out and climbs
+# back to yb. An empty dive is the old straight run.
+const DIVE_RUN := 14.0    # issue 1582: ground covered by the dive itself (world units): short, so the dive is steep
+const CLIMB_RUN := 24.0   # ground covered by the climb back out to patrol height
+
+
+static func _dive_pos(a: Vector3, b: Vector3, dive: Dictionary, u: float) -> Vector3:
+	var p := a.lerp(b, u)
+	if dive.is_empty():
+		return p
+	var off := a.y - float(dive["ya"])   # a carries its own formation offset; keep it through the dive
+	var pi_u := float(dive["pi"])
+	var pd := float(dive.get("pd", 0.0))
+	var pc := float(dive.get("pc", 1.0))
+	if u <= pd:
+		p.y = a.y
+	elif u <= pi_u:
+		var k := (1.0 - cos(PI * (u - pd) / maxf(pi_u - pd, 1e-3))) * 0.5
+		p.y = lerpf(a.y, float(dive["yl"]) + off, k)
+	elif u <= pc:
+		var k2 := (1.0 - cos(PI * (u - pi_u) / maxf(pc - pi_u, 1e-3))) * 0.5
+		p.y = lerpf(float(dive["yl"]) + off, float(dive["yb"]) + off, k2)
+	else:
+		p.y = float(dive["yb"]) + off
+	return p
+
+
+static func _dive_len(a: Vector3, b: Vector3, dive: Dictionary) -> float:
+	var n := 16
+	var d := 0.0
+	var prev := _dive_pos(a, b, dive, 0.0)
+	for k in range(1, n + 1):
+		var q := _dive_pos(a, b, dive, float(k) / n)
+		d += prev.distance_to(q)
+		prev = q
+	return d
+
+
+static func _craft_run(fx, faction: String, kind: String, from: Vector3, to: Vector3, t0: float, life: float, size: float, dive := {}) -> void:
 	var node := WING.new()
 	node.name = "fx_strike_craft"
 	fx.add_child(node)
@@ -1666,7 +1716,7 @@ static func _craft_run(fx, faction: String, kind: String, from: Vector3, to: Vec
 	node.set_process(false)
 	node.visible = false
 	var runs: Array = fx.dstate.get("craft_runs", [])
-	runs.append({"node": node, "a": from, "b": to, "t0": t0, "life": maxf(life, 0.05)})
+	runs.append({"node": node, "a": from, "b": to, "t0": t0, "life": maxf(life, 0.05), "dive": dive})
 	fx.dstate["craft_runs"] = runs
 
 static func _craft_update(fx, dt: float) -> void:
@@ -1681,12 +1731,30 @@ static func _craft_update(fx, dt: float) -> void:
 			continue
 		if age < 0.0: continue
 		var progress := clampf(age / float(r.life), 0.0, 1.0)
-		var dir: Vector3 = (r.b - r.a).normalized()
+		var dive: Dictionary = r.get("dive", {})
 		node.visible = true
 		node.active = age < float(r.life)
 		for c in node.craft: c.visible = node.active
-		node.position = (r.a as Vector3).lerp(r.b, progress)
-		node.rotation.y = atan2(-dir.z, dir.x)
+		node.position = _dive_pos(r.a, r.b, dive, progress)
+		# issue 1582: the craft's nose follows its flown line, so it pitches down into the dive and up out of it, and
+		# banks a little into the pull-out (strike craft only: warships never bank, RULEBOOK 7.5)
+		var ahead := _dive_pos(r.a, r.b, dive, minf(progress + 0.02, 1.0))
+		var behind := _dive_pos(r.a, r.b, dive, maxf(progress - 0.02, 0.0))
+		var fwd := ahead - behind
+		if fwd.length() < 1e-4:
+			fwd = (r.b - r.a)
+		fwd = fwd.normalized()
+		var flat := Vector3(fwd.x, 0.0, fwd.z)
+		if flat.length() < 1e-4:
+			flat = Vector3(1, 0, 0)
+		var yaw_b := Basis(Vector3.UP, atan2(-flat.z, flat.x))
+		var pitch := asin(clampf(fwd.y, -1.0, 1.0))
+		var bank := 0.0
+		if not dive.is_empty():
+			var pi_u := float(dive["pi"])
+			var pc := float(dive.get("pc", 1.0))
+			bank = 0.35 * sin(PI * clampf((progress - pi_u) / maxf(pc - pi_u, 1e-3), 0.0, 1.0))
+		node.basis = yaw_b * Basis(Vector3(0, 0, 1), pitch) * Basis(Vector3(1, 0, 0), bank)
 		node.step(dt)
 		_wing_trail_update(fx, node)
 
