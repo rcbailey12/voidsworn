@@ -144,6 +144,11 @@ class Dresser:
         self.K = K; self.fac = faction; self.L = K.length
         self.seg = SEG * K.length; self.margin = MARGIN * K.length
         self.kept = 0; self.dropped = 0; self.added = {}; self.why = {}; self.room_box = None
+        # the Glasswrights (Ryan, Nov 23): crystal machinery, hexagonal where the others are round, and lit crystals in the
+        # leaf colours (their gw_in_ glass zones) where the others have plain caps; rooms placed by kits/ithar/rooms.py
+        self.glass = faction == 'ithar'
+        self.nr = 6 if self.glass else 16
+        self.crys = None
         self.tree = self._outer_tree()
 
     def _outer_tree(self):
@@ -222,6 +227,25 @@ class Dresser:
         lo = lo + Vector((m, m, m)); hi = hi - Vector((m, m, m))
         frame_mat = 'frame' if self.fac != 'chorus' else 'bonefr'
         mach = Mesh(); furn = Mesh(); glow = Mesh()
+        self.crys = {c: Mesh() for c in ('amber', 'violet', 'green')} if self.glass else None
+        try:
+            self._furnish(ob, kind, lo, hi, frame_mat, mach, furn, glow)
+        finally:
+            if self.crys:
+                for c, m in self.crys.items():
+                    self.emit(ob, m, 'gw_in_' + c)
+            self.crys = None
+
+    def crystal(self, p, axis, r, h, k):
+        """a lit Glasswright crystal (a hexagonal prism with a pointed tip) in the k-th leaf colour; nothing for the others"""
+        if not self.crys:
+            return
+        p = Vector(p); e = Vector(axis).normalized()
+        col = ('amber', 'violet', 'green')[k % 3]
+        self.piece(self.crys[col], tube(p, p + e * (0.75 * h), r, 6, None, True), False)
+        self.piece(self.crys[col], tube(p + e * (0.75 * h), p + e * h, r, 6, None, True, 0.15 * r), False)
+
+    def _furnish(self, ob, kind, lo, hi, frame_mat, mach, furn, glow):
         if kind in ('core', 'ecore'):
             self.reactor(lo, hi, mach, glow)
             made = self.emit(ob, mach, 'machinery'); self.emit(ob, glow, kind)
@@ -250,13 +274,13 @@ class Dresser:
         a = c.copy(); a[ax] -= Lh; b = c.copy(); b[ax] += Lh
         e = Vector((0, 0, 0)); e[ax] = 1
         ia = a + e * (0.12 * Lh); ib = b - e * (0.12 * Lh)
-        self.piece(mach, tube(ia, ib, r, 16, self.seg), True)
-        self.piece(mach, tube(a, ia, 0.6 * r, 16, None, True, r), True)                # domed ends (frustums)
-        self.piece(mach, tube(ib, b, r, 16, None, True, 0.6 * r), True)
+        self.piece(mach, tube(ia, ib, r, self.nr, self.seg), not self.glass)
+        self.piece(mach, tube(a, ia, 0.6 * r, self.nr, None, True, r), not self.glass)    # domed ends (frustums)
+        self.piece(mach, tube(ib, b, r, self.nr, None, True, 0.6 * r), not self.glass)
         nr = 4
         for k in range(nr):
             p = ia + (ib - ia) * ((k + 0.5) / nr)
-            self.piece(mach, ring(p, e, r, 0.07 * Lh, 0.12 * r, 20))
+            self.piece(mach, ring(p, e, r, 0.07 * Lh, 0.12 * r, 6 if self.glass else 20))
         u = Vector((0, 0, 0)); u[o[0]] = 1; v = Vector((0, 0, 0)); v[o[1]] = 1
         for k in range(4):                                                              # cooling headers
             ang = math.pi / 4 + k * math.pi / 2; off = (u * math.cos(ang) + v * math.sin(ang)) * (1.28 * r)
@@ -279,10 +303,12 @@ class Dresser:
         x0 = lo.x + 0.08 * dims.x; x1 = hi.x - 0.18 * dims.x
         for y in ys:
             zc = lo.z + r * 1.05
-            self.piece(mach, tube((x0, y, zc), (x1, y, zc), r, 16, self.seg), True)
+            self.piece(mach, tube((x0, y, zc), (x1, y, zc), r, self.nr, self.seg), not self.glass)
             for k in range(5):
                 x = x0 + (x1 - x0) * (k + 0.5) / 5
-                self.piece(mach, ring((x, y, zc), (1, 0, 0), r, 0.04 * dims.x, 0.1 * r, 18))
+                self.piece(mach, ring((x, y, zc), (1, 0, 0), r, 0.04 * dims.x, 0.1 * r, 6 if self.glass else 18))
+                if k % 2 == 0:      # Glasswright drive resonators: a lit crystal standing on every other collar
+                    self.crystal((x, y, zc + 1.08 * r), (0, 0, 1), 0.18 * r, 0.5 * r, k // 2)
             for s in (-1, 1):                                                           # stern feed conduits to the aft wall
                 self.piece(furn, tube((x0, y + s * 0.45 * r, zc), (lo.x, y + s * 0.45 * r, zc), 0.12 * r, 8), True)
         zt = hi.z - 0.08 * dims.z                                                       # the overhead manifold
@@ -302,7 +328,8 @@ class Dresser:
         for i in range(ny):
             for j in range(nz):
                 y = lo.y + dims.y * (i + 0.5) / ny; z = lo.z + dims.z * (j + 0.5) / nz
-                self.piece(furn, tube((x0, y, z), (x1, y, z), r, 10, self.seg), True)
+                self.piece(furn, tube((x0, y, z), (x1, y, z), r, 6 if self.glass else 10, self.seg), not self.glass)
+                self.crystal((x1, y, z), (1, 0, 0), 0.6 * r, 0.06 * dims.x, i + j)    # the lens at each rack's fore end
         bar = 0.25 * r
         for k in range(3):                                                              # retaining frames
             x = x0 + (x1 - x0) * k / 2
@@ -326,6 +353,8 @@ class Dresser:
                 self.piece(furn, box(((xa + xb) / 2, yc, lo.z + h / 2), ((xb - xa) / 2 - gap, d / 2, h / 2)))
                 # the rack's face: a recessed panel band and a vent block on top
                 self.piece(furn, box(((xa + xb) / 2, yc, lo.z + h * 0.55), ((xb - xa) / 2 - 2 * gap, d / 2 + 0.02 * dims.y, 0.08 * h)))
+                # Glasswright stored-light racks: a lit crystal cap on each rack
+                self.crystal(((xa + xb) / 2, yc, lo.z + h), (0, 0, 1), min(0.2 * (xb - xa), 0.12 * d), 0.14 * dims.z, k)
             for k in range(n + 1):                                                      # conduit risers between racks
                 x = lo.x + dims.x * k / n
                 y = (ya + yb) / 2
@@ -378,6 +407,8 @@ class Dresser:
                     h = 0.32 * dims.z
                     self.piece(furn, box(((xa + xb) / 2, yc, lo.z + h / 2), ((xb - xa) / 2 - p, dd / 2, h / 2)))
                     self.piece(furn, box(((xa + xb) / 2, yc + s * dd * 0.2, lo.z + h + 0.08 * dims.z), ((xb - xa) / 2 - 1.5 * p, dd * 0.18, 0.08 * dims.z)))
+                    # Glasswright consoles: a lit crystal set in each desk
+                    self.crystal(((xa + xb) / 2, yc - s * dd * 0.15, lo.z + h), (0, 0, 1), 0.08 * dd + 0.2 * p, 0.12 * dims.z, k + (s > 0))
         elif kind == 'archive':
             # tall archive stacks in rows down the room, shelves across them
             rows = max(1, min(4, int(dims.y / (0.35 * dims.z))))
