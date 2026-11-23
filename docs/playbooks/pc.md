@@ -22,6 +22,7 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   (the tools_live watchdog with its strict hash check, the GPU label, the tool preflight); the path and sha256 of
   `tmo.bat` and `run_timeout.ps1` in `status.txt` (fail closed when either is missing); the watchdog's throwaway Godot
   profile kept on (issue 1228); Ryan's real `battle_opts.json` and `board_look.cfg` hashed.
+- Tool preflight lookup (issue 1352): `ffmpeg` is `FFMPEG_EXE`, `voidsworn_test\ffmpeg\bin`, PATH, then `imageio_ffmpeg` asked from each candidate Python, then `site-packages\imageio_ffmpeg\binaries`; `pil` is `PIL_PYTHON`, ComfyUI's Python, `py -0p` (newest first), then `python` on PATH, skipping the WindowsApps stub; each probe has one 20 s deadline covering its exit and its output pipes (a probe that misses it has its process tree stopped and the next candidate is tried), `preflight.txt` names the source that won, and `tools.cmd` keeps non-ASCII paths intact (UTF-8 between two `chcp` lines, only when a path needs it).
 - `checkout <name> <sha>`: a fresh checkout of that exact commit inside the attempt folder, from the shared
   `repo-mirror.git`; HEAD must equal the pin. With `OJ_SLOTS=1` (issue 1659, Ryan Nov 22; the template sets it to 1 since the Windows slot proofs passed, Board Nov 23; a bat sets 0 to opt out) it
   resets a warm slot instead: `voidsworn_test\slots\slot_gpu_1`, `slot_gpu_2` (`OJ_SLOT_KIND=gpu`) or `slot_cpu` (`cpu`),
