@@ -130,6 +130,9 @@ func quit_clean(code := 0, route := "menu") -> void:
 	if _fx_reading and ResourceLoader.load_threaded_get_status(FX_SCRIPT) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 		ResourceLoader.load_threaded_get(FX_SCRIPT)
 		_fx_reading = false
+	if _host_reading and ResourceLoader.load_threaded_get_status(HOST_SCRIPT) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		ResourceLoader.load_threaded_get(HOST_SCRIPT)
+		_host_reading = false
 	Sfx.drop_pending()
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -194,6 +197,8 @@ func _ready() -> void:
 		Sfx.prefetch()
 		if ResourceLoader.load_threaded_request(BATTLE_SCENE) == OK:
 			_scene_reading = true   # the sky read starts once the battle script is read (battle_parts_ready)
+		if not ResourceLoader.has_cached(HOST_SCRIPT) and ResourceLoader.load_threaded_request(HOST_SCRIPT) == OK:
+			_host_reading = true   # read on a worker; a load() of it meanwhile waits only for what is not read yet
 		if ResourceLoader.load_threaded_request(FX_SCRIPT) == OK:
 			_fx_reading = true
 	if args.has("player-path"):
@@ -641,6 +646,7 @@ func battle_parts_ready() -> bool:
 
 # issue 1518: the battle scene, from the launch's worker read when it ran (it waits only for what is not read yet)
 var _scene_reading := false
+var _host_reading := false
 var _battle_scene: PackedScene = null
 
 
