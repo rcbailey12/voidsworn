@@ -286,7 +286,6 @@ func set_hot(on: bool) -> void:
 	drop_hot_target = 1.0 if (_drop_hover or _drop_sel) else 0.0
 
 
-static var _drop_mat_cache: StandardMaterial3D = null
 
 
 func _make_drop() -> void:
