@@ -298,6 +298,7 @@ func _run() -> void:
 		_log_states(h, tag)
 		if sz.y == 1080:
 			_log_settings(h)
+			_interaction_states(h)
 		var bare := target()
 		bare.exp_shields = 0
 		bare.exp_hull = 16
@@ -344,6 +345,8 @@ func _run() -> void:
 		await process_frame
 		measure(h, tag + " you may prompt")
 		check(h.ask_panel != null and int(acts(h).get("ask", 0)) == 2 and not acts(h).has("confirm"), "%s: the prompt takes the shot's place with its two choices; FIRE waits" % tag)
+		if sz.y == 1080:
+			_check_hit_feedback(h.ledger, "ask")
 		h.hide_ask()
 		check(h.ask_panel == null, "%s: answering the prompt clears it" % tag)
 		# 4. the long cases: the longest names, six guns, every order, 20 ships
@@ -438,6 +441,53 @@ func _log_settings(h) -> void:
 	h.set_log_preferences(true, false)
 	battle.free()
 	main.free()
+
+
+func _interaction_states(h) -> void:
+	var roster := rows()
+	roster[1].status = "Lost"
+	roster[1].hp = 0
+	h.set_roster(roster)
+	h.set_retreat(true, false)
+	h.ledger.ensure_layout()
+	for act in ["confirm", "arm", "brace", "pick", "menu", "retreat", "log_collapse"]:
+		_check_hit_feedback(h.ledger, act)
+	var lost: Array = h.ledger.hits.filter(func(hit): return str(hit.arg) == "p1")
+	var picks := []
+	var on_action := func(act: String, arg: Variant) -> void:
+		if act == "pick":
+			picks.append(arg)
+	h.action.connect(on_action)
+	if lost.size() == 1:
+		h.ledger._gui_input(_click(Rect2(lost[0].r).get_center()))
+	check(lost.size() == 1 and lost[0].act == "" and "Lost" in lost[0].tip and "Click to pick" not in lost[0].tip and picks.is_empty(),
+		"D4: a Lost ship keeps its tooltip but cannot be picked")
+	h.action.disconnect(on_action)
+	check(h.ledger.items.any(func(it): return it.t == "Hover for details"), "D4: the Nemesis line advertises its hover details")
+	var button: Button = h._button("Close", "log")
+	check(button.mouse_default_cursor_shape == Control.CURSOR_POINTING_HAND, "D4: HUD buttons show the pointing hand")
+	button.free()
+	h.set_roster(rows())
+	h.set_retreat(false, false)
+
+
+func _check_hit_feedback(ledger, act: String) -> void:
+	var hits: Array = ledger.hits.filter(func(hit): return hit.act == act)
+	if hits.is_empty() or not ledger.has_method("_hit_fill"):
+		check(false, "D4: %s has a hover fill and a brighter pressed fill" % act)
+		return
+	var hit: Dictionary = hits[0]
+	var point := Rect2(hit.r).get_center()
+	ledger._gui_input(_motion(point))
+	var hover: Color = ledger._hit_fill(hit)
+	var press := _click(point)
+	ledger._gui_input(press)
+	var pressed: Color = ledger._hit_fill(hit)
+	press.pressed = false
+	ledger._gui_input(press)
+	check(hover.a > 0.0 and pressed.get_luminance() * pressed.a > hover.get_luminance() * hover.a
+		and ledger._hit_fill(hit) == hover and ledger.mouse_default_cursor_shape == Control.CURSOR_POINTING_HAND,
+		"D4: %s has a hover fill and a brighter pressed fill" % act)
 
 
 func _camera_clear(h, tag: String) -> void:

@@ -102,6 +102,18 @@ func _run() -> void:
 	check(sig[true] == sig[false], "the side by side cut gives the same pieces as the one-thread cut")
 	while not DEATH.finish_precompute(fx, s):
 		await process_frame
+	# The worker is finished, but manual FX has not spent any of its piece budget.
+	# A split reaching this gap must leave the pieces for the budgeted build.
+	fx.death("a16", "big")
+	DEATH._break_up_when_ready(fx, s, "big", Color.WHITE, fx.now + 1.0)
+	check(not s.has_meta("death_hidden") and (job["meshes"] as Array).is_empty(),
+		"a finished cut with no built pieces leaves the hull visible and does no split-frame build")
+	while not job.get("built", false) and not s.has_meta("death_hidden"):
+		fx.step(1.0 / 60.0)
+		await process_frame
+	fx.step(1.0 / 60.0)
+	check(s.has_meta("death_hidden") and fx.wreck_pieces("a16") > 0,
+		"the budget builds the pieces and the waiting split uses them")
 	fx.remove_ship("a16")
 	fx.queue_free()
 	ship.queue_free()

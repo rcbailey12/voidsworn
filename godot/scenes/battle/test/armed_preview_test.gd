@@ -3,10 +3,7 @@ extends SceneTree
 const Battle := preload("res://scenes/battle/battle.gd")
 const API := preload("res://rules/battle_api.gd")
 const Sfx := preload("res://audio/sfx.gd")
-
-class TestHud extends "res://ui/battle/hud.gd":
-	func toast(_text: String) -> void:
-		pass
+const Hud := preload("res://ui/battle/hud.gd")
 
 class TestBoard extends "res://render/board.gd":
 	func refresh() -> void:
@@ -46,7 +43,7 @@ func _run() -> void:
 	b._index_view()
 	b.sel = ship["id"]
 	b.danger_on = false
-	b.hud = TestHud.new()
+	b.hud = Hud.new()
 	b.sfx = Sfx.new()
 	b.board = TestBoard.new()
 	b.cam = Battle.CamRig.new()
@@ -54,7 +51,7 @@ func _run() -> void:
 	b.path_line = MeshInstance3D.new()
 	b.path_dots = MultiMeshInstance3D.new()
 	b.path_dots.multimesh = MultiMesh.new()
-	for node in [b.board, b.cam, b.arrow, b.path_line, b.path_dots]:
+	for node in [b.hud, b.board, b.cam, b.arrow, b.path_line, b.path_dots]:
 		b.add_child(node)
 	var view := Battle.ShipView.new()
 	b.views[b.sel] = view
@@ -65,20 +62,27 @@ func _run() -> void:
 	if not ok:
 		printerr("FAIL: fixture did not make a burn-and-fire preview (flak %d, plan %s)" % [flak, str(b.atk)])
 	else:
+		var planned: Dictionary = b.atk.duplicate(true)
+		var armed_before: int = b.armed
 		b._on_key(KEY_1 + flak)
-		ok = b.atk == null and not b.ghost.visible and not b.path_line.visible and not _offers_burn(b)
-		b._confirm()
-		ok = ok and b.commands == 0
-		if not ok: printerr("FAIL: arming flak left the old burn-and-fire ghost, card or command")
-		b._on_action("arm", flak)
-		b._target(foe["id"])
-		var restored := b.atk != null and b.ghost.visible and b.path_line.visible and _offers_burn(b)
-		if not restored: printerr("FAIL: re-targeting with the guns enabled did not restore the preview")
-		ok = ok and restored
-	b.hud.free()
+		# flak never arms (it cannot fire at a ship), so the key leaves the arm selection as it was (Artoo on PR 1873)
+		ok = b.armed == armed_before and b.armed != flak and b.atk == planned and b.ghost.visible and b.path_line.visible and _offers_burn(b)
+		if not ok:
+			printerr("FAIL: the flak key armed flak or changed the planned Burn and fire or its preview")
+		var toast: Label = b.hud.toast_lbl
+		var shown := toast.is_visible_in_tree() and toast.modulate.a > 0.0 \
+			and toast.text == "Planned shot keeps its guns. Cancel the plan to change weapons."
+		if not shown:
+			printerr("FAIL: weapon hotkey did not show the planned guns toast")
+		b._on_key(KEY_ENTER)
+		var shots := api.take_events().filter(func(event): return event.t == "fire" and event.unit == ship["id"])
+		var fired: bool = b.commands == 1 and shots.size() == 1 and shots[0].weapon == 0 and shots[0].target == foe["id"]
+		if not fired:
+			printerr("FAIL: Enter did not commit the planned shot from the main gun")
+		ok = ok and shown and fired
 	b.sfx.free()
 	b.free()
-	if ok: print("PASS: gun changes clear the stale burn-and-fire ghost, card and confirmation")
+	if ok: print("PASS: the flak key shows the planned guns toast, arms nothing, preserves the preview, and Enter fires the planned main gun")
 	quit(0 if ok else 1)
 
 
