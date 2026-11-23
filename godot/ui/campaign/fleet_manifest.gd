@@ -53,8 +53,10 @@ func head(t: String, rect: Rect2, fs := 28, parent: Control = self) -> Label:
 
 func style_link(b: Button) -> void:
 	GS.plain_button(b, k, 18, GS.sheet_body()); b.add_theme_stylebox_override("focus", GS.ledger_focus(k))
-	for st in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_disabled_color"]:
-		b.add_theme_color_override(st, GS.TEXT if st in ["font_hover_color", "font_pressed_color", "font_focus_color"] else GS.TEXT2)
+	b.add_theme_color_override("font_color", GS.TEXT2)
+	b.add_theme_color_override("font_disabled_color", GS.TEXT3)
+	for st in ["font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
+		b.add_theme_color_override(st, GS.TEXT)
 
 func link(t: String, rect: Rect2, cb: Callable, parent: Control = self, tip := "") -> Button:
 	var b = Button.new(); b.text = t; b.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -90,9 +92,14 @@ func build() -> void:
 		title.mouse_filter = MOUSE_FILTER_PASS; title.tooltip_text = fa["d"] + "\n" + fa["cost"]
 		var cost = str(fa["cost_short"]).replace("credits", "CR").replace("a refit from the hold", "1 refit").replace("experience from your flagship captain", "XP")
 		if cost.begins_with("Free"): cost = "Free"
-		var price = words(cost, Rect2(72 + manifest_w * 0.55, 148, manifest_w * 0.3, 28), 17, GS.TEXT2, GS.num())
+		var change_text := "Change  C"
+		var change_w := ceilf(GS.sheet_body().get_string_size(change_text, HORIZONTAL_ALIGNMENT_LEFT, -1, ui.px(18)).x / k) + 4
+		var price = words(cost, Rect2(72 + manifest_w * 0.55, 148, manifest_w * 0.45 - change_w - 12, 28), 17, GS.TEXT2, GS.num())
 		price.mouse_filter = MOUSE_FILTER_PASS; price.tooltip_text = fa["cost"]
-		link("Change  C", Rect2(72 + manifest_w * 0.87, 142, 130, 36), func(): mode("doctrine"))
+		var change := link(change_text, Rect2(72 + manifest_w - change_w, 142, change_w, 36), func(): mode("doctrine"))
+		change.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		change.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+		change.position.x = (72 + manifest_w) * k - change.size.x
 	var rule = ColorRect.new(); rule.color = GS.SHEET_HAIR; rule.mouse_filter = MOUSE_FILTER_IGNORE
 	at(rule, Rect2(72, 184, width - 144, 1))
 	manifest_scroll = ScrollContainer.new(); manifest_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -109,12 +116,24 @@ func build() -> void:
 	workspace = Control.new(); at(workspace, Rect2(middle_x, 216, middle_w, height - 330))
 	detail = Control.new(); at(detail, Rect2(sheet_x, 210, sheet_w, height - 330))
 	primary = link("", Rect2(sheet_x, height - 80, sheet_w, 56), done)
-	for style in GS.sheet_jump_boxes(k): primary.add_theme_stylebox_override(style, GS.sheet_jump_boxes(k)[style])
-	primary.add_theme_color_override("font_hover_color", GS.ON_EMBER); primary.add_theme_color_override("font_pressed_color", GS.ON_EMBER)
-	var label = head("Done", Rect2(24, 0, 130, 56), 28, primary); label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	var key = words("Enter", Rect2(sheet_w - 95, 0, 80, 56), 17, GS.TEXT2, GS.num(), primary); key.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	primary.mouse_entered.connect(func(): label.add_theme_color_override("font_color", GS.ON_EMBER); key.add_theme_color_override("font_color", GS.ON_EMBER))
-	primary.mouse_exited.connect(func(): label.add_theme_color_override("font_color", GS.TEXT); key.add_theme_color_override("font_color", GS.TEXT2))
+	var boxes := GS.sheet_jump_boxes(k)
+	for style in boxes: primary.add_theme_stylebox_override(style, boxes[style])
+	var footer := HBoxContainer.new()
+	footer.mouse_filter = MOUSE_FILTER_IGNORE
+	primary.add_child(footer)
+	footer.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	footer.offset_left = ui.px(24)
+	footer.offset_right = -ui.px(15)
+	var label := words("DONE", Rect2(), 28, GS.TEXT, GS.sheet_name(), footer)
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.size_flags_horizontal = SIZE_EXPAND_FILL
+	var key := words("Enter", Rect2(), 17, GS.TEXT2, GS.num(), footer)
+	key.autowrap_mode = TextServer.AUTOWRAP_OFF
+	key.custom_minimum_size.x = ui.px(80)
+	key.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	GS.bind_sheet_label(primary, label, GS.TEXT)
+	GS.bind_sheet_label(primary, key, GS.TEXT2)
 	refresh()
 
 func row(ship: Dictionary, damaged: bool, parent: Control) -> void:
@@ -150,19 +169,23 @@ func clear_region(region: Control) -> void:
 	ink = ink.filter(func(n): return is_instance_valid(n) and n.is_inside_tree())
 
 func mode(which: String) -> void:
-	state["mode"] = which; state["held"] = {}; refresh()
+	state["mode"] = which; state["held"] = {}; state.erase("move_error"); refresh()
 
 func select_ship(uid: String) -> void:
 	var held = state["held"]
+	state.erase("move_error")
 	if not held.is_empty() and held["uid"] != uid:
 		var source = C._ship(held["uid"]); var target = C._ship(uid)
-		if source != null and int(held["slot"]) < source["mods"].size():
+		if source != null and target != null and int(held["slot"]) < source["mods"].size():
 			var m = source["mods"][held["slot"]]
-			if C.canFitModule(target, m):
-				var inventory_index = C.RUN["inventory"].size()
-				C.act("unequip", held["uid"] + ":" + str(held["slot"]))
-				C.act("equip", str(inventory_index) + ":" + uid)
-				state["held"] = {}; state["mode"] = ""
+			if not C.canFitModule(target, m):
+				state["move_error"] = str(target["name"]) + " has no free compatible slot for this refit."
+				refresh()
+				return
+			var inventory_index = C.RUN["inventory"].size()
+			C.act("unequip", held["uid"] + ":" + str(held["slot"]))
+			C.act("equip", str(inventory_index) + ":" + uid)
+		state["held"] = {}
 	state["uid"] = uid
 	if state["held"].is_empty(): state["mode"] = ""
 	refresh()
@@ -179,6 +202,17 @@ func refresh() -> void:
 	sc.set_anchors_preset(PRESET_FULL_RECT); workspace.add_child(sc)
 	var v = VBoxContainer.new(); v.size_flags_horizontal = SIZE_EXPAND_FILL; v.add_theme_constant_override("separation", ui.px(8)); sc.add_child(v)
 	v.add_child(ui.gap(24))
+	if not state["held"].is_empty():
+		var source = C._ship(state["held"]["uid"])
+		if source != null and int(state["held"]["slot"]) < source["mods"].size():
+			v.add_child(body("Moving " + C.modName(source["mods"][state["held"]["slot"]]), 18, GS.MAP_EMBER))
+		v.add_child(body(state.get("move_error", "Choose a ship with a free compatible slot. Esc cancels."), 18, GS.TEXT))
+		var cancel := Button.new()
+		cancel.text = "Cancel move"
+		cancel.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		style_link(cancel)
+		cancel.pressed.connect(func(): mode(""))
+		v.add_child(cancel)
 	var art = Control.new(); art.custom_minimum_size.y = ui.px(middle_w * 0.54); v.add_child(art)
 	picture(ship, Rect2(0, 0, middle_w, middle_w * 0.54), art)
 	v.add_child(ui.gap(16))
@@ -192,15 +226,19 @@ func refresh() -> void:
 		var filled = i < ship["mods"].size() and C.jt(ship["mods"][i])
 		var t = C.modName(ship["mods"][i]) if filled else "Empty refit slot"
 		var slot = Button.new(); slot.text = t; style_link(slot); slot.alignment = HORIZONTAL_ALIGNMENT_LEFT; slot.size_flags_horizontal = SIZE_EXPAND_FILL
-		for st in ["normal", "hover", "pressed", "disabled"]:
-			var empty = StyleBoxEmpty.new(); empty.content_margin_left = ui.px(38); slot.add_theme_stylebox_override(st, empty)
+		for st in ["normal", "hover", "pressed", "disabled", "focus"]:
+			var box := slot.get_theme_stylebox(st).duplicate() as StyleBox
+			box.content_margin_left = ui.px(38)
+			slot.add_theme_stylebox_override(st, box)
 		var held_here = not state["held"].is_empty() and state["held"]["uid"] == ship["uid"] and state["held"]["slot"] == i
-		if held_here: slot.add_theme_color_override("font_color", GS.MAP_EMBER)
+		if held_here:
+			for st in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color", "font_disabled_color"]:
+				slot.add_theme_color_override(st, GS.MAP_EMBER)
 		slot.draw.connect(func(): slot.draw_rect(Rect2(Vector2(1, 4) * k, Vector2(24, 24) * k), GS.MAP_EMBER if held_here else GS.TEXT2, false, maxf(1, k)))
 		slot.set_meta("slot", i); slot.set_meta("uid", ship["uid"]); slot.custom_minimum_size.y = ui.px(32)
 		slot.tooltip_text = str(C.MODULES[ship["mods"][i]]["d"]) + "\nClick, then choose a ship to move this refit." if filled else "Choose a refit from the hold."
 		slot.pressed.connect(func():
-			if filled: state["held"] = {"uid": ship["uid"], "slot": i}; refresh()
+			if filled: state["held"] = {"uid": ship["uid"], "slot": i}; state.erase("move_error"); refresh()
 			else: mode("hold"))
 		line.add_child(slot)
 		if filled:
@@ -208,11 +246,6 @@ func refresh() -> void:
 			remove.set_meta("remove_slot", i); remove.pressed.connect(func(): state["held"] = {}; C.act("unequip", ship["uid"] + ":" + str(i))); line.add_child(remove)
 	if int(C.z0(hull.get("slots"))) == 0: v.add_child(body("This hull has no refit slots."))
 	v.add_child(body("Refits move between ships freely."))
-	if not state["held"].is_empty():
-		v.add_child(body("Choose a ship with a free compatible slot. Esc cancels.", 18, GS.TEXT))
-		var source = C._ship(state["held"]["uid"])
-		if source != null:
-			v.add_child(body("Moving " + C.modName(source["mods"][state["held"]["slot"]]), 18, GS.MAP_EMBER))
 	var hold_button = Button.new(); hold_button.text = "In the hold  " + str(C.RUN["inventory"].size()) + "   H"; style_link(hold_button); hold_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	hold_button.pressed.connect(func(): mode("hold")); v.add_child(hold_button)
 
@@ -305,7 +338,7 @@ func hold(ship: Dictionary) -> void:
 		var m = C.RUN["inventory"][i]
 		v.add_child(body(C.modName(m), 20, GS.TEXT, GS.sheet_medium())); v.add_child(body(C.MODULES[m]["d"]))
 		var b = Button.new(); b.text = "Fit refit" if C.canFitModule(ship, m) else "Needs a free compatible slot"
-		style_link(b); b.alignment = HORIZONTAL_ALIGNMENT_LEFT; b.disabled = not C.canFitModule(ship, m); b.set_meta("inventory_index", i)
+		b.disabled = not C.canFitModule(ship, m); style_link(b); b.alignment = HORIZONTAL_ALIGNMENT_LEFT; b.set_meta("inventory_index", i)
 		b.pressed.connect(func(): state["mode"] = ""; C.act("equip", str(i) + ":" + ship["uid"])); v.add_child(b)
 
 func doctrine() -> void:
@@ -315,7 +348,7 @@ func doctrine() -> void:
 	v.add_child(body(fa["cost"], 18, GS.TEXT))
 	if fa["armed"]: v.add_child(body("Armed for the next battle."))
 	var b = Button.new(); b.text = "Used this sector" if fa["used"] else "Use doctrine"
-	style_link(b); b.alignment = HORIZONTAL_ALIGNMENT_LEFT; b.disabled = not C.verbCanUse(); b.set_meta("faction_action", true)
+	b.disabled = not C.verbCanUse(); style_link(b); b.alignment = HORIZONTAL_ALIGNMENT_LEFT; b.set_meta("faction_action", true)
 	b.pressed.connect(func(): state["mode"] = ""; C.act("factionVerb", "")); v.add_child(b)
 
 func done() -> void:

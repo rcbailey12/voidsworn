@@ -165,6 +165,15 @@ func _run() -> void:
 	host.add_child(rn)
 	rn.open(FakeStory.new())
 	await _frames()
+	var rename: Button = rn.find_children("*", "Button", true, false).filter(func(b): return b.text == "Rename")[0]
+	var rename_ink := rename.get_theme_color("font_color")
+	var rename_states := ["font_focus_color", "font_pressed_color", "font_hover_pressed_color"]
+	_check(rename_states.all(func(state): return rename.get_theme_color(state) == rename_ink),
+		"rename: focus, press and hover-press keep dark text on gold")
+	var rename_pressed := rename.get_theme_stylebox("pressed") as StyleBoxFlat
+	var pressed_lum := rename_pressed.bg_color.srgb_to_linear().get_luminance()
+	var ink_lum := rename_ink.srgb_to_linear().get_luminance()
+	_check((pressed_lum + 0.05) / (ink_lum + 0.05) >= 4.5, "rename: pressed gold keeps at least 4.5:1 contrast")
 	rn.edit.text = "Half typed"
 	rn.edit.caret_column = 4
 	var rk0: float = rn.k

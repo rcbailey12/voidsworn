@@ -1108,13 +1108,15 @@ func _node_at(sp: Vector2) -> String:
 var _card_key := ""
 var _hot_by_key := false
 var _words: Array = []        # where the map's words were drawn last frame: the tip card keeps off them when it can
-# The tip card: the one box on the map. It shows for a stop that is not your stop or a next jump (the route list already says
-# everything about those), on hover or when the arrow keys reach it: the name, what it is and against whom, the danger as
+# The tip card previews an unpicked stop on hover, or a distant stop when the arrow keys reach it:
+# the name, what it is and against whom, the danger as
 # four pips and a word (or the stop's one-line note), a modifier or an unusual board, the reward, the Nemesis line in red
 # where true, and the safest and the richest way on from it to the flagship (the old hover card's route planner).
 func _update_card() -> void:
 	var C = _C()
-	if _hot == "" or _flying or not _nodes.has(_hot) or _avail().has(_hot) or C.RUN.get("pos") == _hot or C.modal_d != null:
+	if _hot == "" or _flying or not _nodes.has(_hot) or C.RUN.get("pos") == _hot or C.modal_d != null:
+		card.visible = false; return
+	if _avail().has(_hot) and (_hot_by_key or _hot == str(ui.picked)):
 		card.visible = false; return
 	var ck = _hot + "|" + str(_routes.size()) + "|" + str(_danger.get(_hot, {}).get("ratio", 0)) + "|" + str(ui.k)
 	if ck != _card_key:   # the words only change with the stop, its routes or its danger
@@ -1171,14 +1173,13 @@ func _fill_card(n: Dictionary) -> void:
 			add.call(t, GS.TEXT2)
 			if fc["hurt"] and not st["repair_before_boss"]: add.call("Your fleet is hurt and this way has no repair stop before the flagship.", GS.TEXT2)
 
-# ---------------- input: hover and click pick a route, a double click or Enter flies it; zoom and pan; keys ----------------
+# ---------------- input: hover previews a stop, click picks a route, and Enter or Space flies it ----------------
 func _set_hot(h: String) -> void:
 	if h == _hot: return
 	_hot = h
 	var next = h != "" and _avail().has(h)
 	_routes = intel.routes_through(h) if (h != "" and intel != null and not next) else []
 	_paint_lanes()
-	if next and ui != null and ui.has_method("pick_route"): ui.pick_route(h)   # pointing at a next jump picks its row
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if next else Control.CURSOR_ARROW
 const ZOOM_MIN := 0.38
 const ZOOM_MAX := 1.2
@@ -1217,12 +1218,10 @@ func _gui_input(e: InputEvent) -> void:
 			zoom_by(1.0 / 0.88, e.position); accept_event()
 		elif e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
 			var id = _node_at(e.position)
-			if id != "" and _avail().has(id):   # a click picks the route; a double click flies it (so does Enter or the lime button)
+			if id != "" and _avail().has(id):
 				accept_event()
-				if e.double_click: Kit.play("ui_confirm")
-				elif str(ui.get("picked")) != id: Kit.play(Kit.HOVER_CUE)
+				if not e.double_click: Kit.play("ui_click")
 				if ui.has_method("pick_route"): ui.pick_route(id)
-				if e.double_click: fly_to(id)
 			elif e.double_click: reset_view()
 	elif e is InputEventKey and e.pressed:
 		match e.keycode:
@@ -1238,9 +1237,9 @@ func _gui_input(e: InputEvent) -> void:
 				_kb = max(0, cur)
 			else: _kb = (cur + (1 if e.keycode in [KEY_RIGHT, KEY_DOWN] else -1) + _kb_order.size()) % _kb_order.size()
 			_hot_by_key = true; _set_hot(_kb_order[_kb]); accept_event()
+			if _avail().has(_hot) and ui.has_method("pick_route"): ui.pick_route(_hot)
 		elif e.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
-			var pk = str(ui.picked) if ui.get("picked") != null else ""
-			if not e.echo and pk != "": accept_event(); Kit.play("ui_confirm"); fly_to(pk)
+			if not e.echo: accept_event(); ui._jump_from_key()
 func _input(e: InputEvent) -> void:
 	# Consume the skip before a side-panel button can start another action.
 	if not _flying or not is_visible_in_tree(): return
