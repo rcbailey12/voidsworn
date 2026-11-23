@@ -706,7 +706,7 @@ class Daemon {
         launched = true;
         const r = await this.tools.watchdog({ exe, args, cwd, env, ceilingS: spec.ceilingS, stallMin: spec.stallMin, outDir,
           label: `pcd_${spec.job}`, gpu: spec.gpu, logFile: path.join(attempt, 'run_log.txt'), record, scratch: flight.scratch,
-          gateJs: __filename, gateArg: attempt });
+          gateJs: __filename, gateArg: gateBinding(attempt, this.tools.pinned, lease) });
         watch = readWatchdog(r, readRecord(record), flight.scratch);
         say(`watchdog: ${watch.why}`);
         if (watch.quarantine) quarantine = watch.why;
@@ -840,20 +840,44 @@ function clearMain(attemptArg) {
   const e = d.recordedInterruptions().find(x => path.resolve(x.attempt).toLowerCase() === attempt.toLowerCase());
   if (!e) { console.log(`not a recorded interruption in ${d.ledgerFile}: ${attempt}`); return 2; }
   d.note(e.sha, e.job, e.pr, 'cleared', e.attempt);
-  console.log(`cleared ${e.job} (PR ${e.pr}) ${e.attempt}; remove pc_daemon\\hold.txt and the slot's hold.txt once the slot is checked`);
+  // name the slot files this attempt may have left (Astra run 5): its marker, or the marker caught mid-clear
+  let slotNote = "the slot's hold.txt";
+  try {
+    const [dir, token] = fs.readFileSync(path.join(e.attempt, 'slot.txt'), 'utf8').trim().split('|');
+    slotNote = `in ${dir}: hold.txt, or hold.txt.${token}.clearing if the daemon stopped while clearing it (check any newer hold.txt beside it first)`;
+  } catch { /* no slot was taken */ }
+  console.log(`cleared ${e.job} (PR ${e.pr}) ${e.attempt}. Once the slot is checked, remove pc_daemon\\hold.txt and ${slotNote}`);
   return 0;
 }
 // The watchdog's launch gate (PC_STEP_GATE_JS): node pc_daemon.js --recheck <attempt>. Exit 0 starts the step; any
 // other exit, or a crash, keeps it from starting.
-function recheckMain(attemptArg) {
-  const attempt = path.resolve(String(attemptArg || ''));
-  const vt = checkRoot(path.dirname(path.dirname(attempt)), { live: process.platform === 'win32' });
-  const { pr, ...spec } = JSON.parse(fs.readFileSync(path.join(attempt, 'pc_daemon_spec.json'), 'utf8'));
+// The gate argument carries what was settled before the watchdog's waits: "<attempt>|<tools dir>|<slot dir>|<token>"
+// (Astra run 5): the gate trusts no receipt file alone; the files must still agree with it.
+function gateBinding(attempt, pc, lease) {
+  if (!pc || !lease) throw new Error('no verified tools or slot lease to bind the launch gate to');
+  return [attempt, pc, lease.dir, lease.token].join('|');
+}
+function readBinding(arg) {
+  const parts = String(arg || '').split('|');
+  if (parts.length !== 4 || parts.some(p => !p)) throw new Error('the launch gate argument is not "<attempt>|<tools>|<slot>|<token>"');
+  const [attempt, pc, dir, token] = parts;
+  if (![attempt, pc, dir].every(p => path.isAbsolute(p)) || !/^[0-9a-f]{32}$/.test(token)) throw new Error('the launch gate argument is not usable');
+  const same = (a, b) => path.resolve(a).toLowerCase() === path.resolve(b).toLowerCase();
+  const tools = fs.readFileSync(path.join(attempt, 'pc_daemon_tools.txt'), 'utf8').trim();
+  if (!tools || !same(tools, pc)) throw new Error(`the attempt's tools record (${tools || 'empty'}) is not the version the step was bound to (${pc})`);
+  const slot = fs.readFileSync(path.join(attempt, 'slot.txt'), 'utf8').trim().split('|');
+  if (slot.length !== 2 || !same(slot[0], dir) || slot[1] !== token) throw new Error(`the attempt's slot record (${slot.join('|')}) is not the lease the step was bound to`);
+  return { attempt: path.resolve(attempt), pc, lease: { dir, token } };
+}
+function recheckMain(arg) {
+  let b;
+  try { b = readBinding(arg); } catch (e) { console.log(`not started: ${e.message}`); return 3; }
+  const vt = checkRoot(path.dirname(path.dirname(b.attempt)), { live: process.platform === 'win32' });
+  const { pr, ...spec } = JSON.parse(fs.readFileSync(path.join(b.attempt, 'pc_daemon_spec.json'), 'utf8'));
   const tools = new PcTools({ vt });
-  tools.pinTo(fs.readFileSync(path.join(attempt, 'pc_daemon_tools.txt'), 'utf8').trim());
-  const [dir, token] = fs.readFileSync(path.join(attempt, 'slot.txt'), 'utf8').trim().split('|');
+  tools.pinTo(b.pc);
   const d = new Daemon({ vt, gh: new GhCli(), tools });
-  const why = d.recheck(pr, spec, { dir, token }, attempt);
+  const why = d.recheck(pr, spec, b.lease, b.attempt);
   console.log(why ? `not started: ${why}` : `go: ${spec.job} at ${spec.sha.slice(0, 8)} still approved`);
   return why ? 3 : 0;
 }
@@ -875,5 +899,5 @@ async function main(argv) {
   }
 }
 if (require.main === module) main(process.argv.slice(2)).then(() => process.exit(process.exitCode || 0), e => { console.error('PC daemon: ' + e.message); process.exit(1); });
-module.exports = { parseGo, gate, newestChecksRun, playing, clearMain, runLogged, readWatchdog, readRecord, winQuote, GhCli, PcTools, Daemon, command, describe, relayLinks,
+module.exports = { gateBinding, readBinding, parseGo, gate, newestChecksRun, playing, clearMain, runLogged, readWatchdog, readRecord, winQuote, GhCli, PcTools, Daemon, command, describe, relayLinks,
   expectMissing, checkRoot, checkSlotRepo, plainChain, takeLease, recheckMain, DONE_MARK, READY, RUNNING, CHECKS_WORKFLOW };

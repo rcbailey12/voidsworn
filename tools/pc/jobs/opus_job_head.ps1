@@ -911,9 +911,7 @@ function Enter-Slot($attempt) {
       $dir = Join-Path $slotsRoot $n
       if (-not (Test-Path -LiteralPath $dir)) { $null = New-Item -ItemType Directory -Path $dir }
       Assert-SlotDir $dir
-      if (Test-Path -LiteralPath (Join-Path $dir 'hold.txt')) { continue }
-      # the PC daemon's marker while it is being cleared (pc_daemon.js clearInFlight) holds the slot just the same
-      if (@(Get-ChildItem -LiteralPath $dir -Force -File -Filter 'hold.txt.*.clearing').Count) { continue }
+      if (Test-SlotHold $dir) { continue }
       try { ([IO.File]::Open((Join-Path $dir '.slot-lease'), 'OpenOrCreate', 'ReadWrite', 'None')).Dispose() } catch [IO.IOException] { continue }
       $token = [guid]::NewGuid().ToString('N')
       Start-SlotHolder $dir $owner $ownerStart $token $attempt
@@ -921,6 +919,11 @@ function Enter-Slot($attempt) {
       while ([DateTime]::UtcNow -lt $until) {
         if (Test-Path -LiteralPath $ready) { $got = [IO.File]::ReadAllText($ready).Trim(); if ($got) { break } }
         Start-Sleep -Milliseconds 200
+      }
+      # Holds are read again under the new lease (Astra run 5 on PR 1835): a hold the PC daemon restored while this
+      # claimant was between its two looks is seen here, and the slot is let go untouched.
+      if ($got -like 'held *' -and (Test-SlotHeld $dir $token) -and (Test-SlotHold $dir)) {
+        [IO.File]::WriteAllText((Join-Path $dir "release_$token"), 'held by hold.txt'); continue
       }
       if ($got -like 'held *' -and (Test-SlotHeld $dir $token)) {
         [IO.File]::WriteAllText((Join-Path $attempt 'slot.txt'), "$dir|$token`r`n")
@@ -933,6 +936,12 @@ function Enter-Slot($attempt) {
     if (-not $said) { Write-Output "waiting for a free $kind slot ($($names -join ', '))"; $said = $true }
     Start-Sleep -Seconds $(if ($test) { 1 } else { 15 })
   }
+}
+function Test-SlotHold($dir) {
+  # The slot is set aside for the Board: hold.txt, or the PC daemon's in-flight marker while it is being cleared
+  # (pc_daemon.js clearInFlight renames it to hold.txt.<token>.clearing for a moment).
+  if (Test-Path -LiteralPath (Join-Path $dir 'hold.txt')) { return $true }
+  return [bool]@(Get-ChildItem -LiteralPath $dir -Force -File -Filter 'hold.txt.*.clearing' -ErrorAction SilentlyContinue).Count
 }
 function Test-SlotHeld($dir, $token) {
   # Artoo on PR 1728: a holder stopped abruptly leaves its marker behind, so the marker alone proves nothing. All three
@@ -995,6 +1004,8 @@ function Reset-Slot($dir, $attempt, $name, $pin) {
   try {
     if (-not (Test-SlotHeld $dir $token)) { throw "the lease on $dir is no longer held for this attempt; nothing in it was touched" }
     if ($test -and $env:PC_TEST_SLOT_RESET_DELAY) { [IO.File]::WriteAllText((Join-Path $dir 'test_reset_in_flight'), ''); Start-Sleep -Seconds ([int]$env:PC_TEST_SLOT_RESET_DELAY) }
+    # and once more under the lease and the reset lock, right before anything in the slot is touched
+    if (Test-SlotHold $dir) { throw "slot held: $dir was set aside (hold.txt) after this attempt took it; nothing in it was touched" }
     Reset-SlotInner $dir $attempt $name $pin
     if (-not (Test-SlotHeld $dir $token)) { throw "the lease on $dir was lost during the reset; this checkout is not used" }
   } finally { $lock.Dispose() }

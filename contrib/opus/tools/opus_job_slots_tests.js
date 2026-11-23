@@ -240,6 +240,29 @@ try {
   run({}, 'slotrelease', aU);
   process.kill(watcher, 'SIGKILL');
 
+  // Astra run 5 on PR 1835: a hold that appears after a claimant took the lease (the PC daemon restoring an edited Board
+  // hold while the claimant was between its looks) is read again under the lease and the reset lock; the claimant lets
+  // the slot go and nothing in it is touched. The PC daemon's marker while it is cleared holds the slot as well.
+  const head2 = git(['rev-parse', 'HEAD'], repo2);
+  const aV = attempt('opus1835v', 16), rcV = path.join(tmp, 'v_rc.txt'), outV = path.join(tmp, 'v_out.txt');
+  fs.rmSync(path.join(slot('slot_gpu_2'), 'test_reset_in_flight'), { force: true });
+  spawnSync('sh', ['-c', `( PC_TEST_SLOT_RESET_DELAY=4 ${shell} -NoProfile -File ${quote(path.join(jobs, 'opus_job_head.ps1'))} slot ${quote(aV)} new ${two} > ${quote(outV)} 2>&1; echo $? > ${quote(rcV)} ) < /dev/null > /dev/null 2>&1 &`], { env, stdio: 'ignore' });
+  assert(waitFor(() => fs.existsSync(path.join(slot('slot_gpu_2'), 'test_reset_in_flight')), 20000), 'the claimant holds the lease and is about to reset');
+  const boardHold = 'pc_daemon in flight: attempt X token Y\r\nBoard: keep this slot, checking a survivor\r\n';
+  fs.writeFileSync(path.join(slot('slot_gpu_2'), 'hold.txt'), boardHold);
+  write(path.join(repo2, 'godot', 'survivor_output.bin'), 'still being written\n');
+  assert(waitFor(() => fs.existsSync(rcV), 30000), 'the claimant ends');
+  const outVText = fs.readFileSync(outV, 'utf8').replace(/\s+/g, ' ');
+  assert(fs.readFileSync(rcV, 'utf8').trim() !== '0' && /slot held: .*set aside \(hold\.txt\) after this attempt took it/.test(outVText) && /no free gpu slot/.test(outVText), 'the claimant lets the held slot go: ' + outVText);
+  assert.equal(fs.readFileSync(path.join(slot('slot_gpu_2'), 'hold.txt'), 'utf8'), boardHold, 'the Board hold is intact');
+  assert.equal(fs.readFileSync(path.join(repo2, 'godot', 'survivor_output.bin'), 'utf8'), 'still being written\n', 'the checkout is untouched');
+  assert.equal(git(['rev-parse', 'HEAD'], repo2), head2);
+  assert(waitFor(() => holders('slot_gpu_2').length === 0, 15000), 'its holder let the lease go');
+  fs.renameSync(path.join(slot('slot_gpu_2'), 'hold.txt'), path.join(slot('slot_gpu_2'), `hold.txt.${'f'.repeat(32)}.clearing`));
+  r = run({}, 'slot', attempt('opus1835w', 17), 'new', two);
+  assert(r.status !== 0 && /no free gpu slot/.test(r.out), 'a marker being cleared holds the slot too: ' + r.out);
+  assert.equal(fs.readFileSync(path.join(repo2, 'godot', 'survivor_output.bin'), 'utf8'), 'still being written\n');
+
   // a slot whose folder is a link is refused before anything is reset
   if (!windows) {
     fs.rmSync(slot('slot_cpu'), { recursive: true, force: true });
@@ -248,7 +271,7 @@ try {
     r = run({ OJ_SLOT_KIND: 'cpu' }, 'slot', a6, 'new', two);
     assert(r.status !== 0 && /not a plain folder/.test(r.out), 'a linked slot is refused: ' + r.out);
   }
-  console.log('PASS slots live: two gpu slots then none, leftovers saved before a reset, warm import cache, release by tail and by process end, held and linked slots refused');
+  console.log('PASS slots live: two gpu slots then none, leftovers saved before a reset, warm import cache, release by tail and by process end, held and linked slots refused, a hold set under the lease kept');
 } finally {
   spawnSync('sleep', ['1']);
   fs.rmSync(tmp, { recursive: true, force: true });

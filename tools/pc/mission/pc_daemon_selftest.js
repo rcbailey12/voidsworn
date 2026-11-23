@@ -282,6 +282,24 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     assert.throws(() => tools.inFlight({ dir: g3, token }, attempt), /plain folder/);
     assert.ok(!fs.existsSync(path.join(g3, 'hold.txt')), 'no marker stranded');
   });
+  await t('launch gate binding: the receipts must still match what the step was bound to', () => {
+    const vt = tmp(), attempt = path.join(vt, 'job', 'out_1'), pc = path.join(vt, 'tools_live', 'v1', 'pc'), dir = path.join(vt, 'slots', 'slot_cpu');
+    fs.mkdirSync(attempt, { recursive: true });
+    const tok = 'a'.repeat(32), arg = d.gateBinding(attempt, pc, { dir, token: tok });
+    fs.writeFileSync(path.join(attempt, 'pc_daemon_tools.txt'), pc + '\r\n');
+    fs.writeFileSync(path.join(attempt, 'slot.txt'), `${dir}|${tok}\r\n`);
+    assert.deepEqual(d.readBinding(arg).lease, { dir, token: tok });
+    assert.throws(() => d.gateBinding(attempt, null, { dir, token: tok }), /no verified tools/);
+    fs.writeFileSync(path.join(attempt, 'pc_daemon_tools.txt'), '');
+    assert.throws(() => d.readBinding(arg), /tools record \(empty\)/, 'an empty tools receipt never falls back to current');
+    fs.writeFileSync(path.join(attempt, 'pc_daemon_tools.txt'), pc + '\r\n');
+    fs.writeFileSync(path.join(attempt, 'slot.txt'), `${path.join(vt, 'slots', 'slot_gpu_1')}|${'b'.repeat(32)}\r\n`);
+    assert.throws(() => d.readBinding(arg), /slot record/, 'a replaced slot receipt naming another live lease is refused');
+    assert.throws(() => d.readBinding(attempt), /not "<attempt>/);
+    const log = console.log; let said = ''; console.log = m => { said += m; };
+    try { assert.equal(d.recheckMain(arg), 3); } finally { console.log = log; }
+    assert.match(said, /not started: .*slot record/);
+  });
   await t('play check: the watchdog\'s rule, read through one process query', () => {
     assert.equal(d.playing('Voidsworn.exe', '"C:\\Games\\Voidsworn.exe"'), true);
     assert.equal(d.playing('Godot_v4.7.exe', '"C:\\Godot\\Godot_v4.7.exe" --path "C:\\vs\\godot"'), true, 'a windowed Godot with only --path is play');
@@ -406,8 +424,9 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     assert.equal(o.gpu, 'auto'); assert.equal(o.stallMin, 30); assert.equal(o.ceilingS, 3600); assert.equal(o.label, 'pcd_lb_1777');
     assert.equal(o.env.VS_OUT, path.join(attempt, 'out_lb_1777')); assert.equal(o.exe, 'C:\\godot.exe');
     assert.equal(o.scratch, path.join(f.vt, 'slots', 'slot_gpu_1', 'run_scratch'), 'profile and logs inside the held slot');
-    assert.equal(o.record, path.join(attempt, 'watchdog_record.json')); assert.equal(o.gateArg, attempt);
+    assert.equal(o.record, path.join(attempt, 'watchdog_record.json'));
     assert.equal(o.gateJs, require.resolve('./pc_daemon'));
+    assert.equal(o.gateArg, [attempt, 'C:\\tools_live\\v1\\pc', path.join(f.vt, 'slots', 'slot_gpu_1'), 'e'.repeat(32)].join('|'), 'the gate is bound to the tools, slot and token');
     f.calls.length = 0; f.gh.writes.length = 0;
     const seen = await f.daemon.tick();
     assert.equal(seen[0].verdict, 'skip'); assert.deepEqual(f.calls, []); assert.deepEqual(f.gh.writes, []);
@@ -569,7 +588,11 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
       try {
         assert.equal(d.clearMain(a2), 2, 'an open start nobody recorded as interrupted (it may still be running) is not cleared');
         fs.appendFileSync(path.join(c.vt, 'pc_daemon', 'ran.txt'), `t ${SHA} lb_1777 PR7 interrupted ${a2}\r\n`);
-        assert.equal(d.clearMain(a2), 0); assert.equal(d.clearMain(a2), 2, 'once');
+        fs.mkdirSync(a2, { recursive: true }); fs.writeFileSync(path.join(a2, 'slot.txt'), `/vt/slots/slot_cpu|${'c'.repeat(32)}\r\n`);
+        let said = ''; console.log = m => { said += m; };
+        assert.equal(d.clearMain(a2), 0); assert.match(said, new RegExp(`hold\\.txt\\.${'c'.repeat(32)}\\.clearing`), 'names the clearing file');
+        console.log = () => {};
+        assert.equal(d.clearMain(a2), 2, 'once');
       } finally { console.log = log; }
       assert.deepEqual(c.daemon.interrupted(), []);
     }
