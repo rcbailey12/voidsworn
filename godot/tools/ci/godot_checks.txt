@@ -6,7 +6,7 @@
 #   gpu       needs a window, the GPU or the built ship files (godot/gen): tools/pc/jobs/godot_gpu_checks.bat on Ryan's PC
 #   retired   kept in the repo but no longer a check (the reason says what replaced it)
 # setup (headless): - | fixture:<tool> (node contrib/opus/tools/<tool> writes the fixtures; {fixture} in args is that file)
-#   | userdir (user:// inside the checkout, the test refuses anything else) | step:<checks.yml step that already runs it>
+#   | userdir (isolated user:// inside the checkout) | step:<checks.yml step that already runs it>
 # setup (gpu): - | env:<NAME> (NAME is set to the output folder) | envpng:<NAME> (NAME is set to <output folder>\shot.png)
 #   | scene:<res path> (run that scene instead of --script) | compat (gl_compatibility renderer); several split by commas
 # args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
@@ -43,7 +43,7 @@ headless|campaign/test/nem_unknown_key_test.gd|-|-|issue 1182: an older save nam
 headless|campaign/test/nem_dodge_test.gd|-|-|issue 1175: 3,000 seeded sectors, an unmet Nemesis is never dodged, every column 4 stop is tagged and every boss stop carries its objective and board
 headless|campaign/test/nemesis_clash_test.gd|-|res://campaign/test/nemesis_clash_cases.json.gz|12482 Nemesis clash cases match the saved results
 headless|campaign/test/nemesis_teach_test.gd|-|res://campaign/test/nemesis_teach_cases.json|Nemesis teaching debrief and map line match the saved cases
-headless|campaign/test/onboarding_test.gd|userdir|-|onboarding cards, Battle 2 timing, shipyard gating, options and telemetry; requires a user folder inside the checkout
+headless|campaign/test/onboarding_test.gd|userdir|-|onboarding cards, Battle 2 timing, shipyard gating, options and telemetry; requires an isolated user folder
 headless|campaign/test/post_win_modal_count_test.gd|-|-|issue 1177: count victory and promotion cards on 30 seeds and check repair choices
 headless|campaign/test/late_run_shots.gd|-|-|issue 1178: the Sector 3 late market, the Chorus biomass shipyard, Eclipse recovered cores and the Glasswright cullet line build
 headless|campaign/test/late_fixes_1290.gd|-|-|issue 1290: no ledger, logbook or Scrap rig in the late market, a regrown Eclipse ship sells for 0 until it fights, Chorus decommission pays biomass
@@ -83,6 +83,7 @@ headless|rules/test/rules_1650_test.gd|-|-|issue 1650: the three Mastery III sig
 headless|rules/test/rules_1481_test.gd|-|-|issue 1481: every shield drop sends the break (storm, flare, mid section, ram, ion pulse, nova), rams use the shared spend, counter-fire, ram shockwave and reactor hits send a hit, a bad blink or nova hex is refused before it counts; twin of contrib/opus/tools/rules_1481_tests.js
 headless|rules/test/rules_1479_test.gd|-|-|issue 1479: overrunning the Nemesis flagship, a hunt target or a convoy transport destroys it (R383), a captured carrier's wings lose their carrier, and an Eclipse wreck rising next round keeps the fight open (browser twin contrib/opus/tools/rules_1479_tests.js)
 headless|rules/test/rules_1653_test.gd|-|-|issue 1653: the twelve salvage relics and four refits each do what their card says, checked on rules.gd directly
+headless|rules/test/rules_1649_test.gd|-|-|issue 1649 follow-up: Fold skip and Blood frenzy end when the ship's next turn starts, and frenzy regrowth shares the Chorus feed cap
 headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|parity and saved Godot results share one batch; saved/check.js reports changed battles and whole-step time (issue 990)
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
@@ -98,6 +99,7 @@ headless|scenes/battle/test/shield_overlap_check.gd|-|-|issue 1211: two overlapp
 headless|scenes/battle/test/shield_handoff_check.gd|-|-|issue 1239: the clean collapse aims at the breaking shot, lays no extra ripple on its flash, finishes on a lethal volley, plays on a storm drop; every torpedo warhead lands; ripples keep their slots; fitted and egg
 headless|scenes/battle/test/battle_feedback_1481_check.gd|-|-|issue 1481: a shield drop with no volley zeroes every side of the readout, a ram updates the shield readout, quiet hits tick the plate with no second number, the end banner counts ships not wings, the report toast has no developer wording
 headless|scenes/battle/test/exit_timers_1482_check.gd|-|-|issue 1482: leaving a battle with the Command timer, a kill hold, an impact and the end card focus beat running logs no freed or null-tree errors; an end card closed inside its beat logs nothing
+headless|scenes/battle/test/opening_exit_1826_check.gd|-|-|issue 1826: freeing a battle during the opening hold and quitting as the hold expires both log no script errors
 headless|main/test/campaign_music_1482_check.gd|-|-|issue 1482: campaign music follows the sector (post-boss rewards resumed get the new sector map track) and comes back on a service stop after a Nemesis fight
 headless|scenes/battle/test/save_quit_handoff_check.gd|-|-|issue 1451 (Artoo, PR 1486): on the real battle scene, Save and quit is offered only for a round on disk, ends through _finish, settles nothing, and a cold Continue resumes that round; a failed write names the last checkpoint instead
 headless|scenes/battle/test/fan_range_test.gd|-|-|issue 1045: drawn firing arcs agree with rules at hex centres for ranges 1 to 6 and report range 7
@@ -175,7 +177,7 @@ headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle
 headless|scenes/battle/test/forecast_1444_test.gd|-|-|issue 1444: Ram arms on the first press and shows target, damage and a lethal-recoil warning; Board odds on hover and card; the Nova blast names friendly ships in red; Hollow Sun bands in the move tip; Brood flagships get wing stances
 headless|scenes/battle/test/targeted_ability_test.gd|-|-|issue 1124: marked Nova and Blink clicks reach the rules; unmarked clicks do not
 headless|scenes/battle/test/click_after_camera_move_test.gd|-|-|issue 1124: releases pick the current camera ray; HUD clicks and drags do not pick
-headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1124: switching guns clears an invalid burn-and-fire ghost, card and command
+headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1747: arming flak keeps the planned Burn and fire preview and Enter fires the planned gun
 headless|scenes/battle/test/volley_preview_test.gd|-|-|issue 1144: target preview against actual seeded volleys, including the planned hex, shared shield routing and low-odds landed-hit routing
 headless|scenes/battle/test/danger_revision_test.gd|-|-|issue 1124: knocking a gun out in place refreshes danger hatching, badges and the threat map
 headless|scenes/battle/test/hover_wait_check.gd|-|-|issue 1433: mouse handlers never wait on the threat worker after a move (under 50 ms); a click while it computes is queued once and played when the result lands; a retired battle publishes nothing

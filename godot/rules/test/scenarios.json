@@ -3952,7 +3952,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31822,
+  "seed": 31823,
   "admiral": "khepra",
   "fleet": [
    "d_harvester",
@@ -8252,7 +8252,7 @@
   ],
   "cmdRound": 2,
   "rounds": 4,
-  "seed": 37104,
+  "seed": 37105,
   "lineage": {
    "id": "sekhmar",
    "picks": [
@@ -8485,7 +8485,7 @@
   ],
   "cmdRound": 3,
   "rounds": 5,
-  "seed": 38212,
+  "seed": 38216,
   "lineage": {
    "id": "nekhet",
    "picks": [
@@ -8700,7 +8700,7 @@
   ],
   "cmdRound": 2,
   "rounds": 4,
-  "seed": 38201,
+  "seed": 38212,
   "lineage": {
    "id": "sekhmar",
    "picks": [
@@ -9730,7 +9730,7 @@
   "rounds": 12,
   "bot": "full",
   "map": "open",
-  "note": "Issue 1649 (R404): Eclipse Fold skip on both sides. Scythes and Jackals fold after moving when a foe with a ready gun can reach them (the next weapon attack on that ship misses outright, +1 movement, cooldown 4), or early under half hull",
+  "note": "Issue 1649 (R404): Eclipse Fold skip on both sides. Scythes and Jackals fold after moving when a foe with a ready gun can reach them (the next weapon attack on that ship before its next turn misses outright, +1 movement, cooldown 4), or early under half hull",
   "seed": 1649001,
   "sector": 2,
   "admiral": "anuket",
@@ -9757,7 +9757,7 @@
   "rounds": 12,
   "bot": "full",
   "map": "open",
-  "note": "Issue 1649 (R404): Chorus Blood frenzy on both sides. Razors use it at aim when a gun can fire: +20% damage, and the ship regrows 30% of the hull damage it deals, at most 20% of its max hull per turn",
+  "note": "Issue 1649 (R404): Chorus Blood frenzy on both sides. Razors use it at aim when a gun can fire: +20% damage, and the ship regrows 30% of the hull damage it deals, inside the shared Chorus feed cap",
   "seed": 1649002,
   "sector": 2,
   "admiral": "razormaw",

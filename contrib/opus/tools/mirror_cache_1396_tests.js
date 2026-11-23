@@ -77,7 +77,7 @@ assert.match(out, /^first ok$/m, out);
 assert.match(out, /^same-refs ok$/m, out);
 assert.match(out, new RegExp(`^after-prune refused: local history not in fetched mirror: ${sideCommit}`, 'm'), 'a pruned ref ends the reuse: ' + out);
 assert.match(out, new RegExp(`^uncached refused: local history not in fetched mirror: ${sideCommit}`, 'm'), 'the uncached path agrees: ' + out);
-assert.match(out, /^log: kept checkout retained: .*clean \(\d+ bytes; shared repo copy stayed locked for 1 s/m, 'a held mirror lock keeps the checkout: ' + out);
+assert.match(out, /^log: kept checkout retained: .*clean \(\d+ bytes[^;]*; shared repo copy stayed locked for 1 s/m, 'a held mirror lock keeps the checkout: ' + out);
 assert.match(out, /^locked-exists True$/m, out);
 assert.match(out, /^log: kept checkout removed \(rebuildable\): .*clean /m, 'a free lock lets the proven checkout go: ' + out);
 assert.match(out, /^free-exists False$/m, out);
