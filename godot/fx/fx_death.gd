@@ -2363,6 +2363,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 	# issue 1236 round 4 (Ryan, Nov 23: "we want variety"): a big strained hull breaks in two, in three, or in two and
 	# then again a beat later. Only the joints that part at the death strain and tear.
 	s.remove_meta("death_crack")
+	s.remove_meta("death_glued_break")   # Neon's audit (PR 1902): set only by this death's layout, never carried over
 	var breakup := _pick_breakup(fx, s, cause, job)
 	s.set_meta("death_breakup", breakup)
 	var lines := _break_lines(job, _first_crack(s, job.get("plan", {})))
@@ -3803,6 +3804,8 @@ static func _hold_chip(fx, wreck: Dictionary, nd: Node3D) -> void:
 	wreck["frags"].erase(nd)
 	nd.reparent(best, true)
 	nd.set_meta("glued", true)
+	if not wreck.has("held_chips"): wreck["held_chips"] = []
+	wreck["held_chips"].append(nd)
 
 
 static func _throw_frags(fx, s, wreck: Dictionary, plan: Dictionary, lip_ref: WeakRef, tl: DeathTimeline) -> void:
@@ -4068,6 +4071,21 @@ static func _snap(fx, s, wreck: Dictionary, child, bu: Dictionary) -> void:
 	var ang := Vector3(0.0, float(bu["snap_yaw"]) * BREAKUP_K_ANG, 0.0)
 	_set_rest(child, bu["snap_disp"], float(bu["snap_yaw"]))
 	_release_section(fx, wreck, child, vel, ang, bu.get("child_mats", []), L, true, int(bu["child"]), s)
+	# Neon's audit (PR 1902, item 12): the chips held in the joint's notch let go with it, thrown slow and settling round
+	# the snap like the death's own chips (the leash keeps them in the hex), instead of riding a piece for good
+	var site: Vector3 = child.to_global(child.get_meta("snap_site", child.get_meta("tear_site", Vector3.ZERO)))
+	for nd in wreck.get("held_chips", []):
+		if not is_instance_valid(nd) or nd.is_queued_for_deletion(): continue
+		nd.reparent(fx.phys_root, true)
+		nd.remove_meta("glued")
+		var dw: Vector3 = (nd.global_position - site)
+		dw.y = 0.0
+		dw = (dw.normalized() if dw.length() > 0.01 else fx.rdir()) * 0.6 + vel.normalized() * 0.4
+		dw.y *= 0.25
+		wreck["frags"].append(nd)
+		wreck["fires"].append({"node": nd, "vel": dw.normalized() * L * fx.rng.randf_range(0.06, 0.12), "ang": fx.rdir() * fx.rng.randf_range(0.8, 1.8),
+			"until": fx.now + 8.0, "frag": true, "damp": STORY_FRAG_DAMP, "adamp": 0.35})
+	wreck["held_chips"] = []
 	# the joint lets go: a spit of sparks in the faction's colour and a short warm light at the torn face, no smoke
 	var p: Vector3 = child.to_global(child.get_meta("snap_site", child.get_meta("tear_site", Vector3.ZERO)))
 	if fx.quality != "low":

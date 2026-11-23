@@ -294,6 +294,7 @@ func _middle_glued() -> void:
 		var child: Node3D = null
 		var snap_x := INF
 		var held_chips := 0
+		var held_peak := 0
 		for i in 3 * 60:
 			fx.step(1.0 / 60.0)
 			await process_frame
@@ -309,6 +310,7 @@ func _middle_glued() -> void:
 				if not is_instance_valid(nd): continue
 				for c in nd.get_children():
 					if c is Node3D and c.has_meta("chip_break"): held_chips += 1
+			held_peak = maxi(held_peak, held_chips)
 		var tag := "middle glued %s" % kind
 		var mid_ok: bool = child != null and int(child.get_meta("piece_i", -1)) == 1
 		check(mid_ok, "%s: the middle piece is the one glued" % tag)
@@ -317,7 +319,14 @@ func _middle_glued() -> void:
 		for m in w.get("mats", []):
 			if (w["heat_births"] as Dictionary).has(m): warm += 1
 		check(warm == (w.get("mats", []) as Array).size(), "%s: every torn face has heated (%d of %d)" % [tag, warm, (w.get("mats", []) as Array).size()])
-		check(held_chips > 0, "%s: the chips on the joint that held stay in place (%d)" % [tag, held_chips])
+		if kind == "two":
+			check(held_chips > 0, "%s: the chips on the joint that held stay in place (%d)" % [tag, held_chips])
+		else:
+			# Neon's audit (PR 1902, item 12): they stay while the joint holds, then let go with the snap
+			var loose := 0
+			for nd in w.get("frags", []):
+				if is_instance_valid(nd) and (nd as Node).has_meta("chip_break") and not (nd as Node).has_meta("glued") and (nd as Node).get_parent() == fx.phys_root: loose += 1
+			check(held_peak > 0 and held_chips == 0 and loose >= held_peak, "%s: the chips on the joint stay until the snap, then let go with it (held %d, still held %d, loose %d)" % [tag, held_peak, held_chips, loose])
 		world.queue_free()
 		await process_frame
 
