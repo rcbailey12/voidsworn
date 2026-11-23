@@ -264,9 +264,21 @@ func _hulk_checks() -> void:
 	var tan := StandardMaterial3D.new()
 	tan.albedo_color = Color(0.7, 0.55, 0.4)
 	var cy := PROPS.linear_luma(PROPS.derelict(tan, "chorus").albedo_color)
-	var my := PROPS.linear_luma(PROPS.derelict(tan, "corsair").albedo_color)
-	_report(cy >= 0.025 - 1e-3 and cy <= 0.03 + 1e-3 and my >= PROPS.HULK_BAND.x - 1e-3 and cy < my,
+	var my := PROPS.linear_luma(PROPS.derelict(tan, "hegemony").albedo_color)
+	_report(cy <= 0.03 + 1e-3 and cy >= PROPS.CHORUS_HULK_BAND.x - 1e-3 and cy < my,
 		"Chorus hulks sit at %.3f linear, below the metal hulks' %.3f (R423)" % [cy, my])
+	# R425 (Ryan, Nov 23): a wreck is never lighter than its dimmed live paint, for any faction (the 0.04 floor had lifted the
+	# Hullbreaker hull from 0.027 live to 0.040 dead, and left the dark Chorus body undimmed)
+	var lifted := []
+	for fac in ["voidsworn", "hegemony", "corsair", "chorus", "ithar"]:
+		for col in [Color(0.21, 0.17, 0.15), Color(0.18, 0.15, 0.11), Color(0.05, 0.05, 0.06)]:
+			var dk := StandardMaterial3D.new()
+			dk.albedo_color = col
+			var live := PROPS.linear_luma(col)
+			var dead := PROPS.linear_luma(PROPS.derelict(dk, fac).albedo_color)
+			if dead > maxf(live * PROPS.DEAD_DIM, PROPS.HULK_BAND.x) + 1e-3:
+				lifted.append("%s %s: %.4f live, %.4f dead" % [fac, str(col), live, dead])
+	_report(lifted.is_empty(), "no wreck is lighter than its dimmed live paint (R425): %s" % str(lifted))
 
 
 func _board(terrain: Dictionary, holes: Array, units: Array, map: Dictionary, radius: int, seed := 7) -> Node3D:

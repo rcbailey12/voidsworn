@@ -566,6 +566,10 @@ R423 (Ryan, Nov 23 2026, decision card on PR 1772's hulk pictures): hulks sit in
 0.025 (0.025 to 0.03, the low end of Eclipse's interior range), because at the floor the tan chitin wrecks were still the
 lightest shapes in a hulk field at camera 170. Eclipse hulks are unchanged. Code: `godot/assets/ships/a4_props.gd`
 HULK_BAND and CHORUS_HULK_BAND, checked by station_size_check and unwired_station_hulk_check.
+R425 (Ryan, Nov 23 2026, on the Chorus material probe for PR 1772): a wreck is never lighter than its own live paint
+dimmed to 60 percent; the hulk floor only stops pure black (0.005 linear). The 0.04 floor (R420) and R423's 0.025 for
+Chorus had lifted dark paint back up: the Chorus body (about 0.021 live) rendered undimmed and the Hullbreaker hull went
+from 0.027 live to 0.040 dead. Ceilings stay (0.045, Chorus 0.03); Eclipse obsidian keeps its 0.04 floor (R421).
 
 ## 4. Ships and concepts
 

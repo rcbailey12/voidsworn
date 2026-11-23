@@ -371,15 +371,17 @@ static func derelict_shared(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 
 
 # R420 Law 1 band 3 (contrib/opus/plans/global_cohesion_standard.md): a lit hulk is a dead hull, so its effective base
-# albedo (paint texture times tint) sits in the dull bottom of band 3: 0.04 to 0.045 linear luminance, so no faction's
-# derelict (the Glasswrights' pale glass above all: Fable on PR 1772, H9) is the brightest thing in a graveyard. The
-# ceiling was 0.12 until the PROPS_E pictures (Nov 22 2026), where the Navy and Hullbreaker hulks read as live ships
-# under the key light, then 0.07 until PROPS_G, where the Hullbreakers still read fairly live and the Chorus wrecks
-# popped (Board look-tune inside R420's band). Eclipse obsidian (about 0.039) is held at the 0.04 floor either way.
-const HULK_BAND := Vector2(0.04, 0.045)
-# R423 (Ryan, Nov 23 2026): Chorus hulks only go below the band 3 floor, down to about 0.025 (the low end of Eclipse's
-# range in the standard), because at the floor the tan chitin wrecks were still the lightest shapes in a field (PROPS_I).
-const CHORUS_HULK_BAND := Vector2(0.025, 0.03)
+# albedo (paint texture times tint) is its own paint dimmed (DEAD_DIM, then the faction's burn) and held under a dull
+# ceiling, 0.045 linear, so no faction's derelict (the Glasswrights' pale glass above all: Fable on PR 1772, H9) is the
+# brightest thing in a graveyard. The ceiling was 0.12 until the PROPS_E pictures (Nov 22 2026), then 0.07 until PROPS_G.
+# R425 (Ryan, Nov 23 2026): a wreck is never lighter than its dimmed live paint; the floor only stops pure black. The
+# 0.04 floor (and R423's 0.025 for Chorus) had lifted dark paint back up: the Chorus body (about 0.021 live) rendered
+# undimmed and the Hullbreaker hull went from 0.027 live to 0.040 dead (CHORUSMAT probe, PR 1772).
+const HULK_BAND := Vector2(0.005, 0.045)
+# R423 (Ryan, Nov 23 2026): Chorus hulks sit lower still, the tan chitin wrecks under a 0.03 ceiling (PROPS_I).
+const CHORUS_HULK_BAND := Vector2(0.005, 0.03)
+# Eclipse obsidian keeps the floor it was approved on (R421, unchanged by R425): about 0.04
+const OBSIDIAN_BAND := Vector2(0.04, 0.045)
 # Visible burn: scorch patches multiplied over the hull's own UVs, their share of the hull growing with wreck_soot
 # (Hullbreakers most, Navy least); a faction with wreck_soot 0 (Chorus, Glasswrights) and Eclipse obsidian get none.
 const BURN_EDGE := Vector2(0.4, 0.35)  # ramp edge = x + y * wreck_soot: the burnt share of the noise (heavier after PROPS_G)
@@ -496,7 +498,7 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 		# dimmed paint that reads brown; the tint is solved so paint times tint lands on OBSIDIAN, then held in the band
 		var t := Color(minf(1.0, OBSIDIAN.r / maxf(mean.r, 0.02)), minf(1.0, OBSIDIAN.g / maxf(mean.g, 0.02)),
 			minf(1.0, OBSIDIAN.b / maxf(mean.b, 0.02)), c.a)
-		b.albedo_color = into_band(t, mean)
+		b.albedo_color = into_band(t, mean, OBSIDIAN_BAND)
 		b.roughness = minf(src.roughness, OBSIDIAN_ROUGH)
 		return b
 	var burn := Color(DEAD_DIM, DEAD_DIM, DEAD_DIM).lerp(Color(float(sc[0]), float(sc[1]), float(sc[2])), soot)
