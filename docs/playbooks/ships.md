@@ -492,6 +492,8 @@ we don't run into the issues of before with just empty looking husks". What he w
 | H | Ryan sees one image: the ship at the battle camera beside its concept | | Board |
 | I | Only after Ryan's yes: publish the checked build into build\godot (section 0, rule 15) | tools/pc/jobs/publish_ship.bat JOB_DIR CODE COMMIT GLB_SHA | Board queues it |
 
+Captures and benches use the new builds (R368, Ryan, Nov 20 2026: "we need to start using the actual new ships for references rather than the old builds"): `godot/render/hull_age.gd` labels each ship NEW or OLD from the tracked manifest, `HullAge.guard` refuses old hulls in a reference run unless ALLOW_OLD_HULLS=1, and O1_37 is the named teaching exception (issues 1767, 1791). NEW means the layout only, not the approved model (issue 1291).
+
 The seven recipe stages, each a double-click file that stops with FAILED and a non-zero exit when it should:
 1 concept in, 2 the AI shape reference (TRELLIS.2, a shape and grime source only, never shipped), 3 the traced hull and the
 outline overlap, 4 the faction parts kit and its audit, 5 the paint bake, 6 the LOD chain and its cost, 7 the game export with
@@ -618,7 +620,8 @@ A build brief, sheet or PR for any ship follows all four; a ship that cannot say
    `length_world`; no per-ship flag (issue 1680, RECIPE.md stage 7).
 2. **AO light and LODs.** Every hull's material gets a calibrated `ao_light_affect` from its faction's look.gd READ row
    (0.35 to 0.55, Glasswrights 0.2), never Godot's 0.0, and the importer generates Godot mesh LODs for far cameras
-   (issues 1678, 1679).
+   (issues 1678, 1679). Fleet lighting (that AO light plus the sky reflection gradient) is on by default for every ship
+   (R433, Ryan Nov 23); `VS_FLEET_LIGHTING=0` turns it off, only for before/after comparisons.
 3. **One authored look per faction.** When a faction is next baked or repainted, its stack writes `authored_look = 1`
    calibrated to the single battle light rig, and that faction's READ albedo lift stops applying to those hulls. Order as
    the work lands: Eclipse (1422), Navy flagship H4_11 (1681), Glasswright flagship I8_37 (1682), Chorus (1683),
