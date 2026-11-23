@@ -15,6 +15,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BEATS := preload("res://fx/fx_death_beats.gd")
+const POOLS := preload("res://fx/fx_pool.gd")
 var failures := 0
 
 
@@ -136,7 +137,15 @@ func _run() -> void:
 	check(arch_seen.size() >= 2, "small hulls die more than one way (%s)" % str(arch_seen.keys()))
 	# 4. strike craft
 	var wg := await _kill("hegemony", "Squadron", 0.3, "blast", 1.0, true, Vector3.INF, "wing", true)
-	check(_has(wg["beats"], "corkscrew"), "strike craft: the smoky corkscrew")
+	check(_has(wg["beats"], "corkscrew") and wg.smoke > 0 and wg.puff, "strike craft: a blast leaves a corkscrew and a puff")
+	var acid := await _kill("hegemony", "Squadron", 0.3, "melt", 1.0, true, Vector3.INF, "wing", true)
+	check(acid.melting and acid.smoke == 0 and not acid.puff, "acid-killed metal wing: melt, %d smoke sprites, delayed puff %s" % [acid.smoke, acid.puff])
+	for fac in ["ithar", "chorus"]:
+		var wing := await _kill(fac, "Squadron", 0.3, "blast", 1.0, true, Vector3.INF, "wing", true)
+		if fac == "ithar":
+			check(wing.shard_tints == [2.0, 2.0], "Glasswright wing sheds two glass shards")
+		else:
+			check(wing.shard_tints.is_empty() and wing.bile_flecks == 2, "Chorus wing sheds two wet flecks in its damage colour")
 	# 6. the battle's view cause: _play_batch reads the marks with view_causes over the whole batch, so these batches are
 	# exactly what playback sees, the grouped volley path included (Artoo on PR 1666, recheck of 852fbd8a)
 	var B = load("res://scenes/battle/battle.gd")
@@ -280,14 +289,34 @@ func _kill(fac: String, cls: String, size: float, cause: String, secs: float, sh
 	if shot:
 		s.set_meta("last_hit", [s.hull.c + Vector3(0, 0, s.hull.W * 0.5), Vector3(0, 0, -1), fx.now])
 	var rib0: int = fx.pools["rib"].emitted
+	var spr0 := _kinds(fx)
+	var shard_start: int = fx.pools["shd"].pending.size()
+	var smoke_start: int = fx.pools["smk"].pending.size()
 	fx.death(sid, cause)
 	var T: float = fx.now
 	var res := {"fac": fac, "dimmed": false, "lit_before": true, "dark_after": false, "strain_runs": false, "power_mats": 0, "smoke": 0, "corridor_sprites": 0, "trail_pts": 0}
-	var spr0 := _kinds(fx)
+	if wing:
+		res["melting"] = DEATH.melting(s)
+		res["puff"] = false
+		res["shard_tints"] = []
+		# Read one packed vertex per new particle. Shards carry the tint at 18, sprites carry the kind there and RGB at 12.
+		var shards: PackedFloat32Array = fx.pools["shd"].pending
+		for row in range(shard_start, shards.size(), fx.pools["shd"].vpp * POOLS.STRIDE):
+			res.shard_tints.append(shards[row + 18])
+		var smoke: PackedFloat32Array = fx.pools["smk"].pending
+		var bile: Color = s.fac.damage_glow * 0.6
+		res["bile_flecks"] = 0
+		for row in range(smoke_start, smoke.size(), fx.pools["smk"].vpp * POOLS.STRIDE):
+			if smoke[row + 18] == 20 and Vector3(smoke[row + 12], smoke[row + 13], smoke[row + 14]).is_equal_approx(Vector3(bile.r, bile.g, bile.b)):
+				res.bile_flecks += 1
 	var split_t := T + (float(s.get_meta("death_timeline").cut) if s.has_meta("death_timeline") else 0.72)
 	for i in int(secs * 60.0):
 		fx.step(1.0 / 60.0)
 		await process_frame
+		if wing and not res.puff:
+			for pic in world.find_children("fx_beat_impact*", "MeshInstance3D", true, false):
+				if pic.visible and pic.get_meta("fx_picture_kind", "") == "impact":
+					res.puff = true
 		if fx.get("_dim_t0") != null and float(fx.get("_dim_t0")) >= 0.0: res["dimmed"] = true
 		if s.has_meta("death_blackout_at"):
 			var at: float = s.get_meta("death_blackout_at")

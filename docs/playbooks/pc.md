@@ -22,8 +22,9 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   (the tools_live watchdog with its strict hash check, the GPU label, the tool preflight); the path and sha256 of
   `tmo.bat` and `run_timeout.ps1` in `status.txt` (fail closed when either is missing); the watchdog's throwaway Godot
   profile kept on (issue 1228); Ryan's real `battle_opts.json` and `board_look.cfg` hashed.
+- Tool preflight lookup (issue 1352): `ffmpeg` is `FFMPEG_EXE`, `voidsworn_test\ffmpeg\bin`, PATH, then `imageio_ffmpeg` asked from each candidate Python, then `site-packages\imageio_ffmpeg\binaries`; `pil` is `PIL_PYTHON`, ComfyUI's Python, `py -0p` (newest first), then `python` on PATH, skipping the WindowsApps stub; each probe has one 20 s deadline covering its exit and its output pipes (a probe that misses it has its process tree stopped and the next candidate is tried), `preflight.txt` names the source that won, and `tools.cmd` keeps non-ASCII paths intact (UTF-8 between two `chcp` lines, only when a path needs it).
 - `checkout <name> <sha>`: a fresh checkout of that exact commit inside the attempt folder, from the shared
-  `repo-mirror.git`; HEAD must equal the pin. With `OJ_SLOTS=1` (issue 1659, Ryan Nov 22; the template keeps it at 0 until the Board turns it on after the Windows proof) it
+  `repo-mirror.git`; HEAD must equal the pin. With `OJ_SLOTS=1` (issue 1659, Ryan Nov 22; the template sets it to 1 since the Windows slot proofs passed, Board Nov 23; a bat sets 0 to opt out) it
   resets a warm slot instead: `voidsworn_test\slots\slot_gpu_1`, `slot_gpu_2` (`OJ_SLOT_KIND=gpu`) or `slot_cpu` (`cpu`),
   each one reused `clone --local` of the mirror. The first checkout takes a free slot (waits up to `OJ_SLOT_WAIT_MINUTES`,
   360) and a hidden holder keeps its lease until the tail lets it go or the job's cmd ends. Every later checkout of the job
@@ -116,11 +117,14 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   installed files matching the collected export count as
   rebuildable, anything else is saved into `out\checkout_leftovers_repo` first). A ship build that is never published
   keeps its slimmer clone: the janitor never removes a ship clone (issue 1396); an abandoned one goes to the Board as a
-  one-off. A second publish from the same job folder needs a new ship run.
+  one-off. A second publish from the same job folder needs a new ship run; it also writes `manifest_patch_<CODE>.json`
+  in its publish folder, which the Board applies with `publish_ship.py apply-patch` and commits with the publish so
+  `godot/assets/ships/manifest.json` follows every publish (issue 1357).
 - `opus_job_head.ps1 survey` lists every job checkout and ship clone on the PC with its size and state, read only, for
   a Board one-off cleanup request to Ryan.
 
 Each janitor run has a 45 minute budget checked between items, not a hard timeout: the board lanes and the Workhorse runs (one lane at a time) until a quarter of it, the TEMP folders until half, the job folders until the end. A lane or folder already started runs to its end. Past a stop point the run starts no new item of that kind, says where it stopped, and a live run writes that name to `janitor_resume.txt` (replaced whole, never through a link), so the next run starts there and wraps around; it never removes more for stopping early. Folders that take 10 s or more get a `folder time` line (issue 1396: the first full dry run ran 1 h 47 min unfinished).
+Janitor sizes say what removal would really free (issue 1739: the Nov 23 dry run said 49.9 GB, about 4.6 GB came back). A file counts once, and only when every hard link to it is inside the folder, so a checkout's links shared with the mirror count nothing. A folder another account owns (the Codex sandbox scratch) is logged as `cannot remove` and never counted. Each row reads `<N> bytes would be freed, <M> listed, ...`, and the run closes with `space would be freed: <total>`, the sum of its would-remove rows (`tools/pc/disk_space.ps1`).
 Nothing else is deleted (RULEBOOK 3.3, R326). The after-job janitor stays off unless `OPUS_JOB_JANITOR=1`, which needs Ryan's approval.
 
 ## What the Board checks

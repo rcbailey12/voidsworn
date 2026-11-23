@@ -64,16 +64,12 @@ func foldMiss(t, shots: Array) -> bool:
 	for i in range(shots.size()): shots[i] = false
 	flt(t, "Folded", ECL_VIOLET, -30); logm(String(t["name"]) + " folds out of the way; the attack misses.", pp(t))
 	return true
-# issue 1649 (R404): Blood frenzy regrowth: 30% of hull damage dealt, at most 20% of max hull per turn, its own cap
+# issue 1649 (R404): Blood frenzy regrowth: 30% of hull damage dealt, inside the shared Chorus feed cap (chorusRegrow), so frenzy
+# and ordinary feeding never heal past FEED_CAP together in a round (Board, Nov 22: no separate frenzy cap)
 const FRENZY_REGROW := 0.3
-const FRENZY_CAP := 0.2
 func frenzyRegrow(u, hull) -> float:
 	if u == null or not jt(u.get("frenzy")) or jt(u.get("dead")) or jt(u.get("pyre")) or jt(u.get("isSq")) or hull <= 0: return 0.0
-	var room = max(0, JSM.jsround(u["maxHp"] * FRENZY_CAP) - z0(u.get("frenzyHealed"))); var h = min(room, min(u["maxHp"] - u["hp"], JSM.jsround(hull * FRENZY_REGROW)))
-	if h <= 0: return 0.0
-	u["hp"] = u["hp"] + h; u["frenzyHealed"] = z0(u.get("frenzyHealed")) + h; fstat("chorus", "frenzy", h)
-	flt(u, "Blood frenzy +" + ns(h), "#d6d24a", -26)
-	return h
+	return chorusRegrow(u, JSM.jsround(hull * FRENZY_REGROW), "Blood frenzy", "frenzy")
 # issue 1649: a foe ship with a ready gun that can reach this hex this round (gun range plus its speed)
 func foldThreat(u, foes) -> bool:
 	for f in foes:
@@ -1359,7 +1355,7 @@ func makeUnit(side, tpl, opts: Dictionary = {}) -> Dictionary:
 	u["ripped"] = jt(ship.get("ripped")) if jt(ship) else false   # R78 Q9: a captured hull kept through the Cinder Line yards, links ripped out
 	u["ship"] = ship if jt(ship) else null; u["parent"] = opts["parent"] if jt(opts.get("parent")) else null; u["sqPct"] = z0(opts.get("sqPct"))
 	u["mp"] = 0; u["turnsLeft"] = 0; u["order"] = null; u["braced"] = false; u["lockOn"] = false; u["focus"] = false; u["fullAhead"] = false; u["noTurn"] = false; u["evBuff"] = 0
-	for k in ["fold", "frenzy", "frenzyHealed"]: u.erase(k)   # issue 1649: set only when used, so battles without Fold skip or Blood frenzy keep their saved states
+	for k in ["fold", "frenzy"]: u.erase(k)   # issue 1649: set only when used, so battles without Fold skip or Blood frenzy keep their saved states
 	u["pflag"] = jt(ship) and RUN != null and jt(RUN.get("flagUid")) and ship["uid"] == RUN["flagUid"]
 	u["intercepts"] = 0; u["dealt"] = 0; u["kills"] = 0; u["dead"] = false; u["st"] = {"fire": 0, "shieldOff": 0, "engine": 0}; u["usedLastStand"] = false; u["elite"] = jt(opts.get("elite"))
 	syncShields(u)
@@ -1762,6 +1758,7 @@ func startSideTurn(side) -> int:
 		u["lockOn"] = false; u["focus"] = false; u["fullAhead"] = false; u["noTurn"] = false; u["evBuff"] = 0; u["order"] = null; u["ramBoost"] = 0
 		u["mp"] = max(1, u["speed"] - u["st"]["engine"]); u["turnsLeft"] = u["turns"]
 		for k in ["relayBy", "afterburnOn"]: u.erase(k)   # issue 1653: set only when used, so battles without them keep their saved states
+		for k in ["fold", "frenzy"]: u.erase(k)   # issue 1649: an unspent Fold and Blood frenzy's bonus end when the ship's next turn starts
 		if side == "player" and B["round"] == 1 and not jt(u.get("isSq")) and rfx("beacon") > 0:   # issue 1653 Jump-Slip Beacon
 			u["mp"] = u["mp"] + int(rfx("beacon")); u["turnsLeft"] = u["turnsLeft"] + 1; flt(u, "Jump slip", "#9fe3ff", -24)
 		if side == "player" and B["round"] == 1 and not jt(u.get("isSq")) and rfx("quiet") > 0: flt(u, "Shrouded", "#9fe3ff", -40)   # issue 1653 Cold-Hull Dampener
@@ -2257,7 +2254,7 @@ func chorusFeed(t, by) -> void:
 		var share = TB.FEED_KILL if (killer != null and is_same(u, killer)) else (TB.FEED_NEAR if hdist(u, t) <= TB.FEED_R else 0.0)
 		if not jt(share): continue
 		chorusRegrow(u, JSM.jsround(u["maxHp"] * share), "Feeds")
-func chorusRegrow(u, amt, label) -> float:
+func chorusRegrow(u, amt, label, stat := "feed") -> float:
 	if u == null or jt(u.get("dead")) or jt(u.get("pyre")) or amt <= 0: return 0.0
 	var mmC = treeRoleMul(u)
 	if mmC != 1.0: amt = JSM.jsround(amt * mmC); treeFx(u, "roles", "mend: the regrowth is 10% stronger")
@@ -2265,7 +2262,7 @@ func chorusRegrow(u, amt, label) -> float:
 		u["fedR"] = B["round"]; u["fed"] = 0
 	var room = max(0, JSM.jsround(u["maxHp"] * TB.FEED_CAP) - u["fed"]); var h = min(room, min(u["maxHp"] - u["hp"], amt))
 	if h <= 0: return 0.0
-	u["hp"] = u["hp"] + h; u["fed"] = u["fed"] + h; fstat("chorus", "feed", h)
+	u["hp"] = u["hp"] + h; u["fed"] = u["fed"] + h; fstat("chorus", stat, h)
 	flt(u, (label if jt(label) else "Feeds") + " +" + ns(h), "#d6d24a", -26)
 	return h
 func chorusBiteEst(u, t, hull) -> float:
@@ -6895,7 +6892,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 	if a == "focus":
 		u["focus"] = true; flt(u, "Focus fire", "#f0b35a", -24)
 	if a == "phase":
-		u["fold"] = true; u["mp"] = u["mp"] + 1; flt(u, "Fold skip", eclCol(u), -24)   # issue 1649 (R404): the next weapon attack on it this round misses (foldMiss)
+		u["fold"] = true; u["mp"] = u["mp"] + 1; flt(u, "Fold skip", eclCol(u), -24)   # issue 1649 (R404): the next weapon attack on it before its next turn misses (foldMiss)
 	if a == "frenzy":
 		u["frenzy"] = true; flt(u, "Blood frenzy", "#ff8fe0", -24)   # issue 1649 (R404): +20% damage, regrows from hull damage dealt (frenzyRegrow)
 	if a == "overburn":

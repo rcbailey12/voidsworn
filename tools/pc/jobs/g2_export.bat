@@ -12,8 +12,12 @@ set "LOG=%ROOT%..\shots\g2_export_log.txt"
 set "PROJ=%ROOT%godot"
 if not "%~1"=="" set "PROJ=%ROOT%%~1"
 rem Issue 1663: the overnight export passes its checkout's full path (C:\...).
+rem Issue 1739: the substring test sits on its own line after a goto. With no argument, cmd reads a substring of an
+rem undefined variable as text and the line no longer parses, which ended the whole job before its first log line.
 set "G2_ARG=%~1"
-if defined G2_ARG if "%G2_ARG:~1,1%"==":" set "PROJ=%~f1"
+if not defined G2_ARG goto g2_arg_done
+if "%G2_ARG:~1,1%"==":" set "PROJ=%~f1"
+:g2_arg_done
 set "TPL=%APPDATA%\Godot\export_templates\4.7.2.stable"
 echo export %date% %time% from %PROJ% > "%LOG%"
 if not exist "%TPL%\windows_release_x86_64.exe" (

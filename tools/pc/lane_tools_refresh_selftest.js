@@ -35,7 +35,9 @@ assert.match(script, /\[IO\.File\]::Replace\(\$temp, \$Pointer, \[NullString\]::
 assert.match(live, /\[IO\.Directory\]::Move\(\$target, \$aside\)/, 'an incomplete version is set aside, not deleted');
 assert.doesNotMatch(live.slice(0, live.indexOf('exit 0')), /Copy-Tools \$liveTools|Move\(\$liveTools/, 'tools_live never edits a version in place');
 assert.match(script, /fetch origin\/main[^\n]+--depth=1/, 'fetch main into a shallow source');
-assert.match(script, /\$state\.status -eq 'running'\) \{ throw "refused: job still running/, 'refuse a running job');
+assert.match(script, /\$state\.status -eq 'running'\) \{[\s\S]*?throw "refused: job still running/, 'refuse a running job');
+assert.match(script, /TotalHours -ge 24[\s\S]*?\$null -ne \$commands[\s\S]*?skipped stale record[\s\S]*?continue/, 'a running record over a day old with no live process is skipped, never edited');
+assert.doesNotMatch(script.match(/function Assert-IdleLane[\s\S]*?\n\}/)[0], /Set-Content|WriteAllText|Remove-Item|Move-Item/, 'Assert-IdleLane never changes a record');
 assert.match(script, /work217\b[\s\S]*?Join-Path \$run\.FullName 'out\\status\.json'/, 'check workhorse run status');
 assert.match(script, /runner_backups/);
 assert.match(script, /yyyyMMdd_HHmmss/);
@@ -134,6 +136,60 @@ assert.match(script, /if \(\$seat -eq 'work217'\) \{ \$checkoutLock = @\(Lock-Wo
       if (refresh) refresh.kill();
       fs.rmSync(dir, { recursive: true, force: true });
     }
+  }
+}
+
+// Issue 1739: a lane refresh writes that lane's own runner hashes from the copy it just installed (and when the tools
+// already match), through runner_common.ps1 hashwrite, and the Codex runner reads the lane's file before the shared one.
+{
+  const fnText = script.slice(script.indexOf('function Write-RunnerHashes'), script.indexOf('function Copy-Tools'));
+  assert.match(fnText, /if \(\$seat -notlike 'board\*' -and \$seat -ne 'work217'\) \{ return \}/, 'only runner lanes get runner hashes');
+  assert.match(fnText, /runner_common\.ps1'\) hashwrite \$runnerDir \$hashFile/, 'hashwrite owns the file list');
+  assert.match(fnText, /Join-Path \$root "\$Build\\runner_hashes\.txt"/, 'one hash file per lane folder');
+  assert.match(script, /Write-Step "tools already match origin\/main \$commit"\n\s+Write-RunnerHashes\n\s+exit 0/, 'matching tools still get fresh hashes');
+  const install = script.indexOf('    Write-Step "installed origin/main $commit"');
+  const after = script.indexOf('  Write-RunnerHashes\n  if ($NoRotate)');
+  assert.ok(install > 0 && after > install, 'hashes are written after the install');
+  const bat = fs.readFileSync(path.join(__dirname, 'codex_issue.bat'), 'utf8').replace(/\r\n/g, '\n');
+  assert.match(bat, /set "HASHF=%ROOT%\\work217\\runner_hashes\.txt"\n(?:rem [^\n]*\n)?if exist "%ROOT%\\%LANEDIR%\\runner_hashes\.txt" set "HASHF=%ROOT%\\%LANEDIR%\\runner_hashes\.txt"\n/, 'the Codex lane reads its own hashes');
+  assert.ok(bat.indexOf('if exist "%ROOT%\\%LANEDIR%\\runner_hashes.txt"') < bat.indexOf('%COMMON% hashcheck "%O%" "%TPC%" "%HASHF%"'), 'lane hashes are chosen before the check');
+}
+
+{
+  // Live: the function writes hashes that hashcheck then accepts for the installed copy, for lane D.
+  const os = require('node:os');
+  const { spawnSync } = require('node:child_process');
+  const shell = process.platform === 'win32' ? 'powershell.exe' : 'pwsh';
+  if (spawnSync(shell, ['-NoProfile', '-Command', 'exit 0']).error) {
+    if (process.env.CI) throw new Error(`${shell} is required in CI for the runner hash fixture`);
+    console.log(`SKIP runner hash fixture: no ${shell} here (CI runs it)`);
+  } else {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lane-hashes-'));
+    try {
+      const pcDir = path.join(dir, 'build_e', 'tools', 'pc');
+      fs.mkdirSync(pcDir, { recursive: true });
+      for (const name of fs.readdirSync(__dirname)) {
+        const from = path.join(__dirname, name);
+        if (fs.statSync(from).isFile()) fs.copyFileSync(from, path.join(pcDir, name));
+      }
+      const fnText = /^function Write-RunnerHashes[\s\S]*?^\}$/m.exec(script)[0];
+      const out = path.join(dir, 'out');
+      fs.mkdirSync(out);
+      const r = spawnSync(shell, ['-NoProfile', '-Command', `function Write-Step($m) { Write-Host $m }\n$seat = 'board_d'; $Build = 'build_e'\n` +
+        `$root = $env:FIX_ROOT; $liveTools = Join-Path $root 'build_e/tools'\n${fnText}\nWrite-RunnerHashes\n` +
+        `& (Get-Process -Id $PID).Path -NoProfile -File (Join-Path $liveTools 'pc/runner_common.ps1') hashcheck $env:FIX_OUT (Join-Path $liveTools 'pc') (Join-Path $root 'build_e/runner_hashes.txt')`],
+        { encoding: 'utf8', env: { ...process.env, FIX_ROOT: dir, FIX_OUT: out, POWERSHELL_TELEMETRY_OPTOUT: '1' } });
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.match(r.stdout, /wrote runner hashes of the installed tools to /, r.stdout + r.stderr);
+      const hashes = fs.readFileSync(path.join(dir, 'build_e', 'runner_hashes.txt'), 'utf8');
+      assert.match(hashes, /^[0-9a-f]{64}  codex_issue\.bat$/m, 'the lane hash file names codex_issue.bat');
+      const result = fs.existsSync(path.join(out, 'result.txt')) ? fs.readFileSync(path.join(out, 'result.txt'), 'utf8') : '';
+      assert.doesNotMatch(result, /differ|WARNING/, 'hashcheck accepts the freshly hashed copy: ' + result);
+      fs.appendFileSync(path.join(pcDir, 'codex_issue.bat'), 'rem drift\r\n');
+      const drift = spawnSync(shell, ['-NoProfile', '-File', path.join(pcDir, 'runner_common.ps1'), 'hashcheck', out, pcDir, path.join(dir, 'build_e', 'runner_hashes.txt')],
+        { encoding: 'utf8', env: { ...process.env, POWERSHELL_TELEMETRY_OPTOUT: '1' } });
+      assert.match(fs.readFileSync(path.join(out, 'result.txt'), 'utf8'), /codex_issue\.bat/, 'a later edit is still reported: ' + drift.stdout);
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   }
 }
 
