@@ -229,7 +229,7 @@ func _run() -> void:
 				_check(not _purple(P[key]), "planet %d %s %s leans indigo to purple" % [i, key, str(P[key])])
 	for k in PL.BOARD_LOOKS:
 		var L: Dictionary = PL.BOARD_LOOKS[k]
-		for key in ["flat", "a", "b", "c", "atmo"]:
+		for key in ["flat", "a", "b", "c", "atmo", "stand_b"]:
 			if L.has(key):
 				_check(not _purple(L[key]), "board look %d %s leans indigo to purple" % [k, key])
 	for i in WORLD.MOON_LOOKS.size():
@@ -276,6 +276,29 @@ func _run() -> void:
 	(tp[1] as Node).queue_free()
 	q = BAKER.new()
 	q.free()
+	# Wave 0 (Fable): a changed recipe must never draw old maps from a PC's disk cache. The key holds the whole shader
+	# text, and both save paths (the GPU compute bake in _work, the raster bake in _finish_image) and the load path use
+	# <key>.png, so a stale file under the old key is never read for the new recipe.
+	var code_now: String = PL.bake_code()
+	var bp := {"seed": 1.0, "kind": 5, "ca": Vector3.ONE, "cb": Vector3.ZERO, "cc": Vector3.ONE, "pass_id": 0}
+	var k_old: String = BAKER.cache_key("board_planet|3|1|a", code_now.replace("arcs(d, 2.4", "arcs(d, 2.5"), bp, Vector2i(8, 4))
+	var k_new: String = BAKER.cache_key("board_planet|3|1|a", code_now, bp, Vector2i(8, 4))
+	_check(k_old != k_new, "a recipe change keeps the old bake cache key")
+	var cdir := OS.get_user_data_dir().path_join("planet_v2_cache_paths")
+	DirAccess.make_dir_recursive_absolute(cdir)
+	OS.set_environment("VS_WORLD_CACHE", cdir)
+	var stale := Image.create(8, 4, false, Image.FORMAT_RGBA8)
+	stale.fill(Color(1, 0, 0))
+	var saved: Dictionary = BAKER._finish_image(k_old, stale.duplicate())   # the raster path saves <key>.png
+	_check(saved.get("image") != null and FileAccess.file_exists(cdir.path_join(k_old + ".png")), "the raster bake path did not save under its cache key")
+	var hit: Dictionary = BAKER._work(k_old, {"size": Vector2i(8, 4), "compute": false})
+	_check(hit.get("source", "") == "loaded", "the load path did not read a map saved under its own key")
+	var miss: Dictionary = BAKER._work(k_new, {"size": Vector2i(8, 4), "compute": false})
+	_check(miss.get("image") == null, "a changed recipe loaded the old recipe's map from disk")
+	_check(hit.get("image") != null and (hit.get("image") as Image).get_pixel(0, 0).r > 0.9, "the load path did not return the saved map")
+	_check(FileAccess.get_file_as_string("res://world/world_bake.gd").contains('var path := folder.path_join(key + ".png")'), "the compute bake path no longer saves under <key>.png")
+	DirAccess.remove_absolute(cdir.path_join(k_old + ".png"))
+	OS.unset_environment("VS_WORLD_CACHE")
 	# relief: one exact 32-bit float channel (Fable, PR 1776 M4)
 	var packed := Image.create(4, 2, false, Image.FORMAT_RGBA8)
 	packed.set_pixel(1, 0, Color8(0x9c, 0x41, 0, 255))

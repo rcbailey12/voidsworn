@@ -4,6 +4,7 @@ extends SceneTree
 #     battle camera's radius and angle (camera 170, b 0.98), the planet at the board's size (map R 3, radius 50).
 #   board_<look>_close: the same planet from 70 units, low over its lit limb.
 #   backdrop_<i>: the eight backdrop planets (world_sky.gd PLANETS) as world.gd draws them, side lit.
+#   backdrop_alt_<i>: the same for their remixes (PLANETS_ALT); --only board|standin|backdrop|alt|moons picks one set.
 #   moon_<i>: the moon looks as world.gd draws them.
 # Every frame prints its body's day-side mean (linear, a geometric sphere mask, dark pixels included); an after run fails
 # if any leaves R420's band 2, 0.03 to 0.25, or the mask catches under 200 samples.
@@ -178,6 +179,10 @@ func _run() -> void:
 	if only == "" or only == "backdrop":
 		for i in SKY.PLANETS.size():
 			await _backdrop("backdrop_%d" % i, SKY.PLANETS[i], 4100 + i, BAKER.PLANET_SIZE, 1.0)
+	# the eight remixed backdrop planets (PLANETS_ALT) answer to band 2 too: the alt volcanic sat at 0.017 in Wave 0
+	if only == "" or only == "alt":
+		for i in SKY.PLANETS_ALT.size():
+			await _backdrop("backdrop_alt_%d" % i, SKY.PLANETS_ALT[i], 4100 + i, BAKER.PLANET_SIZE, 1.0)
 	if only == "" or only == "moons":
 		var W = load("res://world/world.gd")
 		var moons: Array = W.MOON_LOOKS if "MOON_LOOKS" in W.get_script_constant_map() else OLD_MOONS
@@ -346,6 +351,9 @@ func _backdrop(name: String, P: Dictionary, bake_seed: int, size: Vector2i, spin
 	else:
 		printerr("planet v2 shots: bake failed for ", name)
 	var far := 3.4 if bool(P.get("rings", false)) else 2.7
-	cam.position = Vector3(0, 0.25, far)
+	if name.begins_with("moon_"):
+		# Wave 0 (Nov 23): a moon is framed whole and centred, with its dark limb in view, so its outline reads round
+		far = 3.3
+	cam.position = Vector3(0, 0.25 if not name.begins_with("moon_") else 0.0, far)
 	cam.look_at(Vector3.ZERO, Vector3.UP)
 	await _save(name)

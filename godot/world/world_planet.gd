@@ -27,8 +27,8 @@ static func rocky_available() -> bool:
 const BOARD_LOOKS := {
 	0: {"bake": -1, "flat": Vector3(0.42, 0.33, 0.25), "clouds": true, "atmo": Vector3(0.72, 0.39, 0.19), "atmo_k": 0.32, "tints": [Vector3(1.0, 0.97, 0.93), Vector3(1.06, 0.95, 0.84), Vector3(0.96, 0.96, 0.98)], "gain": 1.5, "stand_gain": 0.3, "stand_clouds": 0.25},
 	1: {"bake": 2, "flat": Vector3(0.12, 0.2, 0.22), "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.03, 0.09, 0.18), "c": Vector3(0.66, 0.58, 0.44), "atmo": Vector3(0.38, 0.62, 1.0), "atmo_k": 0.55, "bump": 0.03, "glint": 1.0, "stand_gain": 0.65},
-	3: {"bake": 5, "flat": Vector3(0.52, 0.54, 0.56), "a": Vector3(0.6, 0.63, 0.66), "b": Vector3(0.46, 0.27, 0.16), "c": Vector3(0.42, 0.6, 0.8), "atmo": Vector3(0.6, 0.8, 1.0), "atmo_k": 0.22, "bump": 0.034, "glint": 0.5, "stand_gain": 0.68, "stand_clouds": 0.2},
-	4: {"bake": 3, "flat": Vector3(0.36, 0.23, 0.15), "a": Vector3(0.68, 0.42, 0.25), "b": Vector3(0.18, 0.145, 0.125), "c": Vector3(0.88, 0.66, 0.46), "atmo": Vector3(1.0, 0.45, 0.2), "atmo_k": 0.3, "bump": 0.05, "glint": 0.0, "cloud_col": Vector3(0.5, 0.43, 0.37), "stand_gain": 0.3, "stand_clouds": 0.25},
+	3: {"bake": 5, "flat": Vector3(0.52, 0.54, 0.56), "a": Vector3(0.6, 0.63, 0.66), "b": Vector3(0.46, 0.27, 0.16), "c": Vector3(0.42, 0.6, 0.8), "atmo": Vector3(0.6, 0.8, 1.0), "atmo_k": 0.22, "bump": 0.034, "glint": 0.5, "stand_gain": 0.58, "stand_clouds": 0.2, "stand_b": Vector3(0.4, 0.47, 0.54)},
+	4: {"bake": 3, "flat": Vector3(0.3, 0.26, 0.23), "a": Vector3(0.56, 0.47, 0.4), "b": Vector3(0.15, 0.135, 0.125), "c": Vector3(0.8, 0.66, 0.42), "atmo": Vector3(1.0, 0.45, 0.2), "atmo_k": 0.3, "bump": 0.05, "glint": 0.0, "cloud_col": Vector3(0.5, 0.43, 0.37), "stand_gain": 0.3, "stand_clouds": 0.25},
 	5: {"bake": -1, "flat": Vector3(0.36, 0.35, 0.34), "clouds": false, "desat": 0.65, "atmo": Vector3(0.6, 0.62, 0.7), "atmo_k": 0.0, "tints": [Vector3(0.9, 0.9, 0.92), Vector3(0.98, 0.9, 0.82), Vector3(0.82, 0.84, 0.88)], "gain": 1.35, "stand_gain": 0.33},
 }
 const BOARD_SIZE := Vector2i(4096, 2048)
@@ -69,7 +69,8 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	# its gain holds the stand-in near the finished look's band 2 brightness (planet_v2_shots.gd --only standin)
 	var g := float(L.get("stand_gain", 1.0))
 	stand_in.set_shader_parameter("col_a", L.get("a", flat * 1.3) * g)
-	stand_in.set_shader_parameter("col_b", L.get("b", flat * 0.5) * g)
+	# stand_b: a stand-in's own low colour where the bake's (ice's rust lineae) would smear into rusty mud (Wave 0)
+	stand_in.set_shader_parameter("col_b", L.get("stand_b", L.get("b", flat * 0.5)) * g)
 	stand_in.set_shader_parameter("col_c", L.get("c", flat * 1.6) * g)
 	stand_in.set_shader_parameter("stand_sea", 1.0 if int(L["bake"]) == 2 else 0.0)
 	stand_in.set_shader_parameter("stand_clouds", 0.0 if not bool(L.get("clouds", true)) or float(L["atmo_k"]) <= 0.0 else float(L.get("stand_clouds", 0.4)))
@@ -529,6 +530,33 @@ float craters(vec3 d, float scale, float dens) {
 	float unused = 0.0;
 	return craters_r(d, scale, dens, unused);
 }
+// Wave 0 (Fable and Astra, Nov 23): short crack arcs on the sphere, each a gently curved piece of a small circle with
+// faded ends, one per occupied cell of a 3D grid, so arcs cross at all angles and nothing loops back on itself (the
+// old stretched-noise lineae curled into scribbles). Returns the dark band (0 to 1); crest gets the pale ridge down the
+// middle of the wider ones. w is the half width in radians.
+float arcs(vec3 d, float scale, float dens, float w, float len, inout float crest) {
+	vec3 p = d * scale;
+	vec3 b = floor(p - 0.5);
+	float band = 0.0;
+	for (int i = 0; i < 8; i++) {
+		vec3 c = b + vec3(float(i & 1), float((i >> 1) & 1), float((i >> 2) & 1));
+		if (hh(c + seed + 0.5) > dens) continue;
+		vec3 cp = normalize(c + 0.25 + 0.5 * vec3(hh(c + 1.7), hh(c + 3.1), hh(c + 4.9)));
+		vec3 n = vec3(hh(c + 6.1), hh(c + 7.3), hh(c + 8.9)) - 0.5;
+		n = normalize(n - cp * dot(n, cp));
+		float bend = (hh(c + 10.3) - 0.5) * 1.1 / scale;    // a small circle: curved, never a loop
+		float along = acos(clamp(dot(d, cp), -1.0, 1.0)) * scale;
+		float half_len = len * (0.5 + hh(c + 12.7));
+		float fade = smoothstep(half_len, half_len * 0.45, along) * step(0.0, dot(d, cp));
+		// tapered toward the ends, and wandering a little along its length like a real fracture
+		float ww = w * (0.6 + 0.8 * hh(c + 11.9)) * mix(0.35, 1.0, fade);
+		float wander = (wvn3(d * scale * 3.0 + c * 1.3) - 0.5) * 2.2 / scale * 0.06 + (wvn3(d * 140.0 + c) - 0.5) * ww * 0.6;
+		float dist = abs(dot(d, n) - bend * along * along / (scale * 2.0) + wander);
+		band = max(band, smoothstep(ww, ww * 0.35, dist) * fade);
+		crest = max(crest, smoothstep(ww * 0.22, 0.0, dist) * fade * step(0.012, ww));
+	}
+	return band;
+}
 // turn v about the unit axis k by a (Rodrigues)
 vec3 about(vec3 v, vec3 k, float a) { return v * cos(a) + cross(k, v) * sin(a) + k * dot(k, v) * (1.0 - cos(a)); }
 
@@ -638,12 +666,19 @@ void fragment() {
 		float grit = fb(q * 40.0, 3);
 		alb = mix(cb, ca, smoothstep(0.35, 0.65, h));
 		alb = mix(alb, cc, smoothstep(0.7, 0.9, fb(q * 6.0 + 2.0, 3)) * 0.5);
-		float flow = smoothstep(0.55, 0.6, fb(q * 3.5 + w * 1.5 + 40.0, 5));
-		alb = mix(alb, cb * 0.85, flow * 0.65);
+		// Wave 0 (Nov 23): basalt flows with crisp edges (they blurred into a haze at the battle camera), and glowing
+		// fissures wide enough to read at camera 170, each inside a dark scorched halo
+		float flow = smoothstep(0.5, 0.515, fb(q * 3.5 + w * 1.5 + 40.0, 5));
+		alb = mix(alb, cb * 0.8, flow * 0.85);
 		alb *= mix(0.62, 1.0, smoothstep(0.85, 0.6, can));
 		alb *= (0.85 + 0.25 * grit) * (1.0 - smoothstep(0.7, 0.95, fine) * 0.3);
-		relief = clamp(h * 0.6 + (1.0 - can) * 0.25 + fine * 0.15 - flow * 0.05, 0.0, 1.0);
-		lava = smoothstep(0.86, 0.96, can) * smoothstep(0.58, 0.38, h) + flow * smoothstep(0.82, 0.95, fine) * 0.6;
+		float unused_crest = 0.0;
+		// few and restrained: a handful of long rifts, never a glowing web
+		float fis = arcs(d, 2.6, 0.22, 0.009, 0.9, unused_crest);
+		float scorch = arcs(d, 2.6, 0.22, 0.03, 0.9, unused_crest);
+		alb *= 1.0 - scorch * 0.55;
+		relief = clamp(h * 0.6 + (1.0 - can) * 0.25 + fine * 0.15 - flow * 0.05 + flow * 0.04 - fis * 0.08, 0.0, 1.0);
+		lava = max(fis * 0.6, smoothstep(0.86, 0.96, can) * smoothstep(0.58, 0.38, h) * 0.5);
 		cloud = smoothstep(0.7, 0.86, fb(q * 3.0 + 9.0 + w, 4)) * 0.15;
 	} else if (kind == 4) {
 		// barren cratered (issue 1765): highlands and dark maria, four sizes of crater with central peaks, bright young
@@ -662,22 +697,14 @@ void fragment() {
 		float base = fb(q * 3.0, 5);
 		alb = ca * (0.88 + 0.16 * base);
 		alb = mix(alb, mix(ca, cb, 0.3), smoothstep(0.42, 0.7, fb(q * 1.6 + 21.0, 4)) * 0.55);
-		// lineae: contours of noise stretched along one axis per set, so each set runs in long arcs and the sets cross;
-		// thin, broken along their length, one pale crest down the middle of the widest
-		float lin = 0.0;
+		// lineae (Wave 0, Nov 23): short crossing crack arcs at three scales (arcs() above), long ones sparse and wide
+		// with a pale crest, short ones dense and thin; frosted ground between them
 		float crest = 0.0;
-		for (int i = 0; i < 4; i++) {
-			float fi = float(i);
-			vec3 ax = normalize(vec3(hh(vec3(fi, seed, 21.0)) - 0.5, hh(vec3(fi, seed, 22.0)) - 0.5, hh(vec3(fi, seed, 23.0)) - 0.5));
-			float sc = 4.2 * pow(1.9, fi);
-			vec3 p = q * sc * 0.3 + ax * dot(q, ax) * sc * 1.7 + (vec3(fb(q * 1.4 + fi * 3.1, 3)) - 0.5) * 0.6 + fi * 7.3;
-			float rr = 1.0 - abs(wvn3(p) * 2.0 - 1.0);
-			float wid = mix(0.04, 0.07, fi / 3.0);
-			float amp = (0.9 - fi * 0.15) * smoothstep(0.3, 0.55, wvn3(p * 0.3 + 11.0 + fi));
-			lin = max(lin, smoothstep(1.0 - wid, 1.0 - wid * 0.35, rr) * amp);
-			crest = max(crest, smoothstep(1.0 - wid * 0.12, 1.0, rr) * amp * step(fi, 1.5));
-		}
-		alb = mix(alb, cb, lin * 0.72);
+		float lin = arcs(d, 2.4, 0.4, 0.014, 1.0, crest);
+		lin = max(lin, arcs(d, 6.0, 0.28, 0.008, 0.8, crest) * 0.75);
+		lin = max(lin, arcs(d, 15.0, 0.22, 0.004, 0.7, crest) * 0.5);
+		alb *= 0.94 + 0.1 * fb(q * 26.0, 3);
+		alb = mix(alb, cb, lin * 0.55);
 		alb = mix(alb, ca * 1.06, crest * 0.7);
 		float chaos = smoothstep(0.6, 0.7, fb(q * 2.2 + 31.0, 4));
 		float blocks = rg(q * 22.0, 3);

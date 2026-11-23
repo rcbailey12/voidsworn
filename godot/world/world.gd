@@ -596,7 +596,8 @@ func system(with_planet: bool) -> void:
 const MOON_LOOKS := [
 	{"kind": 4, "a": Vector3(0.56, 0.54, 0.5), "b": Vector3(0.17, 0.16, 0.15), "c": Vector3(0.8, 0.78, 0.74)},
 	{"kind": 4, "a": Vector3(0.64, 0.45, 0.32), "b": Vector3(0.26, 0.16, 0.11), "c": Vector3(0.84, 0.66, 0.5)},
-	{"kind": 4, "a": Vector3(0.46, 0.45, 0.43), "b": Vector3(0.16, 0.155, 0.15), "c": Vector3(0.74, 0.72, 0.69)},
+	# Wave 0 (Nov 23): the basalt moon read as a second grey highland moon; it is now a cool dark slate with bright rays
+	{"kind": 4, "a": Vector3(0.42, 0.45, 0.48), "b": Vector3(0.11, 0.125, 0.14), "c": Vector3(0.8, 0.82, 0.84)},
 	{"kind": 5, "a": Vector3(0.84, 0.87, 0.9), "b": Vector3(0.44, 0.3, 0.2), "c": Vector3(0.5, 0.64, 0.8)},
 ]
 
