@@ -218,6 +218,8 @@ func _run() -> void:
 	var none := _hull("not_a_faction")
 	check(not none.detail_enabled, "unknown faction: no layer, no error")
 	LOOK.v2_force = -1
+	check(LOOK.ship_look_v2_enabled() == (OS.get_environment("VS_SHIP_LOOK_V2") != "0"),
+		"V2 is the default look (Ryan, Nov 23 2026, R422); only VS_SHIP_LOOK_V2=0 turns it off")
 	check(_shader_errors.count == 0, "no shader compile error anywhere in the run (damage and death shaders included): %d" % _shader_errors.count)
 
 	if fails.is_empty():

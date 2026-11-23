@@ -561,6 +561,9 @@ reflection lobe is desaturated to a neutral warm-white so Eclipse stays obsidian
 the #1786 lighting. The world PRs fold in the audit cleanups before merge: an obsidian Eclipse hulk finish (#1772), a
 procedural planet fallback when the remix is off (#1776), crystal `_lo` LODs (#1782); the planet relief map's VRAM is
 budgeted in #1780.
+R422 (Ryan, Nov 23 2026 03:22 UTC, on the #1777 before and after sheets): Ship Look V2 is the default look for every
+hull, the darker Hullbreaker red included; `VS_SHIP_LOOK_V2=0` keeps the old look for A/B captures only, and new ship
+work is judged under V2 (`look.gd` `ship_look_v2_enabled()`, guarded by `ship_look_v2_check`).
 
 ## 4. Ships and concepts
 
