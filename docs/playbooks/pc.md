@@ -151,25 +151,40 @@ expect: <paths under the results folder that must exist and not be empty>
 
 Optional lines: `slot: gpu|cpu`, `gpu: auto|solo|none` (auto: the watchdog's classifier picks; none is for Blender only),
 `ships: yes|no`, `hulls: <codes>`, `headless: yes|no`, `timeout: <seconds, at most 21600>`, `stall: <minutes with no
-output, 5 to 360>`. A cpu slot job does no GPU work: a headless Godot, or a Blender with `gpu: none`. A push after the go
-comment refuses the run (the label comes off with a note); a new go comment and the label start it again.
+output, 5 to 360>`. A cpu slot job does no GPU work: a headless Godot, or a Blender that says `gpu: none` itself (no
+Blender job defaults to no claim). A push after the go comment refuses the run (the label comes off with a note); a new
+go comment and the label start it again. The checks that count are the newest `checks.yml` run at the head commit (its
+newest attempt) and that run's own "All checks"; an older green run never stands in for a newer one still going.
 
 Per job: `pc-ready` must come off (else nothing starts), `running` on, a new attempt `voidsworn_test\<job>\out_<stamp>_<n>`
-with results in `out_<job>` (the job reads it as `VS_OUT`), the tool preflight, Ryan's options hashed, a warm slot reset to
-the head commit and the built ships copied in (the head's `slot`, `tracked`, `shipcheck`, `shiprecord`, as above). Right
-before launch the daemon reads the pull request, the go comment, the checks, the Board pause and the game again; any
-change aborts the job (nothing ran, the run key stays free, the slot is let go). The step itself runs through the
-installed watchdog `run_timeout.ps1` in step mode (RULEBOOK 3.5: hard ceiling, idle stop, Job Object kill with proof,
-GPU admission by its classifier, the game-open wait, its own throwaway profile). Then the outputs and options are checked,
-`done.txt`, the slot let go, the relay push, a result comment with the links, `running` off.
+with results in `out_<job>` (the job reads it as `VS_OUT`), the attempt's tools version checked against its own
+`hashes.txt` (the head's `bundle` check) and used for the whole attempt, the tool preflight, Ryan's options hashed, a warm
+slot reset to the head commit (its receipt must match the head's own lease record: `slot.txt`, `owner.txt`, the live
+holder and the slot kind) and the built ships copied in. Then the daemon reads the pull request, the whole go comment, the
+checks, the pause, the holds and the game again; any change, or a GitHub it cannot read, aborts the job (nothing ran, the
+run key stays free, the slot is let go). Before the step it writes the slot's `hold.txt` as an in-flight marker, so a
+daemon that stops mid-step leaves the slot set aside instead of free.
+
+The step runs through the installed watchdog `run_timeout.ps1` in step mode (RULEBOOK 3.5: hard ceiling, idle stop, Job
+Object kill with proof, GPU admission by its classifier, the game-open wait) with five settings only the daemon sets
+(`PC_STEP_*`; unset, the watchdog behaves as before): after its game wait and GPU admission it calls the daemon's
+`--recheck` once more and starts nothing unless that says go (an unreadable process list counts as playing); the step
+ends only when its whole Job Object is empty, so a child that outlives the job is still timed and killed; every program,
+Blender included, gets a throwaway profile (APPDATA, LOCALAPPDATA and Blender's user folders) inside the slot's
+`run_scratch` folder, with the child logs, and the watchdog removes both; and it writes `watchdog_record.json` with the
+exit, whether the tree was seen empty, and the profile. The daemon reads the tree state from that record only, never from
+the job's output. Then the outputs and options are checked, the in-flight marker cleared (only while it is exactly what
+the daemon wrote), `done.txt`, the slot let go, the relay push, a result comment with the links, `running` off.
 
 The done marker goes on only with the relay links: a failed relay is retried every 30 minutes from the kept attempt,
-never a rerun. Its ledger `voidsworn_test\pc_daemon\ran.txt` keeps start, aborted, the result and delivered apart; only a
-result blocks a new go for that commit and job. One live daemon per PC (an exclusive localhost bind on port 47662 the
-system frees when the process ends), only on `%USERPROFILE%\Downloads\voidsworn_test` with no link anywhere on that path.
-A process tree the watchdog cannot prove gone (KILL FAILED, an orphaned GPU claim, or no end within the ceiling plus the
-waits) is a quarantine: the slot gets `hold.txt`, the daemon writes `pc_daemon\hold.txt` and starts nothing, even after a
-restart, until the Board has looked and removed both. Nothing starts during the Board pause or while Voidsworn runs (or
-when the process list cannot be read). The daemon deletes nothing of its own on the PC. Stop it between jobs with
-`voidsworn_test\pc_daemon\stop.txt`. Run 1 still calls the tools_live PowerShell for the slot lease, the ships checks, the
-preflight, the watchdog and the relay; later runs move each one into Node and retire its wrapper.
+never a rerun. Its ledger `voidsworn_test\pc_daemon\ran.txt` keeps start, aborted, the result and delivered apart, each
+with its attempt; only a result blocks a new go for that commit and job. A start with no end line from an earlier daemon
+process means it stopped mid-job: the daemon sets `pc_daemon\hold.txt`. One live daemon per PC (an exclusive localhost
+bind on port 47662 the system frees when the process ends), only on `%USERPROFILE%\Downloads\voidsworn_test` with no link
+anywhere on that path. A step the watchdog record does not prove gone (no record, survivors, or no end within the
+ceiling plus the waits) is a quarantine: the slot's in-flight `hold.txt` stays with the reason, the slot is not let go,
+the daemon writes `pc_daemon\hold.txt` and starts nothing, even after a restart, until the Board has looked and removed
+both. Nothing starts during the Board pause or while Voidsworn runs. The only file the daemon removes on the PC is its
+own in-flight marker. Stop it between jobs with `voidsworn_test\pc_daemon\stop.txt`. Run 1 still calls the tools_live
+PowerShell for the slot lease, the ships checks, the preflight, the watchdog and the relay; later runs move each one into
+Node and retire its wrapper. The selftest's Windows group runs the real watchdog with a Node stand-in.

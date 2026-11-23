@@ -413,12 +413,14 @@ function Stop-StepTree($Job, $Log, $Step) {
     $usage = $Job.ReadUsage()
     if (-not $usage.Active) {
       Write-KillLog $Log "$Step kill verified: all $($usage.Total) processes gone (root PID $($Job.Pid))"
+      $script:rec.treeEmpty = $true
       return
     }
     if ($simulateFailedKill) { break }
     Start-Sleep -Milliseconds 50
   } while ($clock.Elapsed.TotalSeconds -lt 15)
   $survivors = ($Job.ActivePids() | Sort-Object) -join ', '
+  $script:rec.treeEmpty = $false
   throw "KILL FAILED: surviving PIDs $survivors for $Step"
 }
 function Protect-GpuStepClaim($Job, $Log) {
@@ -426,7 +428,7 @@ function Protect-GpuStepClaim($Job, $Log) {
   while ($true) {
     $processes = @()
     try {
-      if (-not $Job.ReadUsage().Active) { return }
+      if (-not $Job.ReadUsage().Active) { $script:rec.treeEmpty = $true; return }
       foreach ($id in $Job.ActivePids()) {
         try { $child = [Diagnostics.Process]::GetProcessById([int]$id) }
         catch [ArgumentException] { continue }
@@ -434,6 +436,7 @@ function Protect-GpuStepClaim($Job, $Log) {
       }
       $survivors = @($processes | Where-Object { -not $_.HasExited -and $Job.IsMember($_.Handle) })
       if ($survivors.Count) {
+        $script:rec.treeEmpty = $false
         Update-GpuClaim orphan $survivors
         Write-KillLog $Log "GPU: retaining claim $gpuToken as orphaned_child for PIDs $($survivors.Id -join ', ')"
         return
@@ -448,7 +451,8 @@ function Protect-GpuStepClaim($Job, $Log) {
 }
 function New-GodotProfile($Target, $Arguments) {
   if ($env:PC_REAL_PROFILE -ceq '1') { return }
-  if ([IO.Path]::GetFileName($Target) -notmatch '^(Godot|Voidsworn)(.*\.exe)?$') {
+  # PC_STEP_PROFILE_ANY=1 (the PC daemon, issue 1662): every target gets the throwaway profile, Blender too.
+  if (-not $script:profileAny -and [IO.Path]::GetFileName($Target) -notmatch '^(Godot|Voidsworn)(.*\.exe)?$') {
     # A caller can override the engine path and rename the Windows executable.
     $app = Get-Command -Name $Target -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $app -or $app.FileVersionInfo.FileDescription -notlike 'Godot Engine*') { return }
@@ -461,7 +465,7 @@ function New-GodotProfile($Target, $Arguments) {
     }
   } else {
     # Standalone queue jobs use the same owned scratch format as the agent runners.
-    $scratch = Join-Path ([IO.Path]::GetTempPath()) ("voidsworn-run-" + [Guid]::NewGuid().ToString('N'))
+    $scratch = Join-Path (Get-ScratchParent) ("voidsworn-run-" + [Guid]::NewGuid().ToString('N'))
     $null = New-Item -ItemType Directory -Path $scratch
     [IO.File]::WriteAllText((Join-Path $scratch '.voidsworn-run-owner'), [Guid]::NewGuid().ToString('N'))
     $script:createdScratch = $scratch
@@ -469,6 +473,7 @@ function New-GodotProfile($Target, $Arguments) {
   $profile = Join-Path $scratch ("godot-profile-" + [Guid]::NewGuid().ToString('N'))
   $null = New-Item -ItemType Directory -Path $profile
   $script:createdProfile = $profile
+  $script:rec.profile = $profile
   if ($env:PC_GODOT_EXPORT_TEMPLATES -and $Arguments -match '(?:^|\s)--export-release\s') {
     # Exporting needs these shared tools, but does not need the player's user data.
     $templates = $env:PC_GODOT_EXPORT_TEMPLATES
@@ -479,6 +484,16 @@ function New-GodotProfile($Target, $Arguments) {
     }
   }
   return $profile
+}
+function Get-ScratchParent {
+  # PC_STEP_SCRATCH_PARENT (the PC daemon, issue 1662): the profile and child logs live in a plain folder the caller
+  # owns inside its held slot, never in TEMP. It must already exist.
+  if (-not $script:scratchParent) { return [IO.Path]::GetTempPath() }
+  $item = Get-Item -LiteralPath $script:scratchParent -Force -ErrorAction SilentlyContinue
+  if (-not ($item -is [IO.DirectoryInfo]) -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    throw "PC_STEP_SCRATCH_PARENT is not a plain folder: $($script:scratchParent)"
+  }
+  return $item.FullName
 }
 function Remove-LinkSafeTree($dir) {
   # Delete a folder this launch made without ever following a link: links go as links, then files, then folders.
@@ -519,24 +534,51 @@ function Remove-CreatedProfile {
       [IO.File]::Delete((Join-Path $script:createdScratch '.voidsworn-run-owner'))
       [IO.Directory]::Delete($script:createdScratch, $false)
     }
+    $script:rec.profileRemoved = $true
     Write-Output "run_timeout: Godot profile removed: $($script:createdProfile)"
   } catch { Write-Output "run_timeout: Godot profile kept for the janitor ($($script:createdProfile)): $($_.Exception.Message)" }
   $script:createdProfile = $null; $script:createdScratch = $null
 }
 function Start-WithGodotProfile($Profile, [scriptblock]$Start) {
   if (-not $Profile) { return (& $Start) }
-  $appData = $env:APPDATA
-  $localAppData = $env:LOCALAPPDATA
+  $set = @{ APPDATA = $Profile; LOCALAPPDATA = $Profile }
+  if ($script:profileAny) {
+    # Blender reads these before APPDATA; all of them point into the throwaway profile (issue 1662, Astra finding A).
+    foreach ($n in @('RESOURCES', 'CONFIG', 'SCRIPTS', 'DATAFILES', 'EXTENSIONS')) {
+      $set["BLENDER_USER_$n"] = Join-Path $Profile ('blender\' + $n.ToLowerInvariant())
+    }
+  }
+  $saved = @{}
+  foreach ($k in $set.Keys) { $saved[$k] = [Environment]::GetEnvironmentVariable($k) }
   try {
-    $env:APPDATA = $Profile
-    $env:LOCALAPPDATA = $Profile
+    foreach ($k in $set.Keys) { [Environment]::SetEnvironmentVariable($k, $set[$k]) }
     & $Start
   } finally {
-    $env:APPDATA = $appData
-    $env:LOCALAPPDATA = $localAppData
+    foreach ($k in $saved.Keys) { [Environment]::SetEnvironmentVariable($k, $saved[$k]) }
   }
 }
+function Write-StepRecord {
+  # PC_STEP_RECORD (the PC daemon, issue 1662): the watchdog's own account of the step, separate from the child's
+  # output, so a log line that quotes an old failure can never set a quarantine (Astra finding F). treeEmpty is true
+  # only when the Job Object was seen empty (or the step never started); anything else means the tree is unproven.
+  if (-not $script:rec.started -and $null -eq $script:rec.treeEmpty) { $script:rec.treeEmpty = $true }
+  $tmp = $script:stepRecord + '.tmp'
+  [IO.File]::WriteAllText($tmp, ($script:rec | ConvertTo-Json -Compress))
+  if (Test-Path -LiteralPath $script:stepRecord) { [IO.File]::Replace($tmp, $script:stepRecord, $null) }
+  else { [IO.File]::Move($tmp, $script:stepRecord) }
+}
+$script:rec = [ordered]@{ version = 1; exit = $null; reason = ''; started = $false; treeEmpty = $null; gated = ''; profile = ''; profileRemoved = $false }
 if ($LibraryOnly) { return }
+# Opt-in step settings of the PC daemon (issue 1662). Read once here and cleared before the child starts, so a nested
+# tmo.bat inside the job never inherits them. Unset, the watchdog behaves exactly as before.
+$script:stepRecord = $env:PC_STEP_RECORD
+$waitTree = $env:PC_STEP_WAIT_TREE -ceq '1'
+$script:scratchParent = $env:PC_STEP_SCRATCH_PARENT
+$script:profileAny = $env:PC_STEP_PROFILE_ANY -ceq '1'
+$gateJs = $env:PC_STEP_GATE_JS; $gateArg = $env:PC_STEP_GATE_ARG
+foreach ($n in @('PC_STEP_RECORD', 'PC_STEP_WAIT_TREE', 'PC_STEP_SCRATCH_PARENT', 'PC_STEP_PROFILE_ANY', 'PC_STEP_GATE_JS', 'PC_STEP_GATE_ARG')) {
+  [Environment]::SetEnvironmentVariable($n, $null)
+}
 $raw = $env:TMO_ARGS
 if (-not $raw) { Write-Output 'usage: tmo.bat <seconds> <exe> [args ...]'; exit 125 }
 $m = [regex]::Match($raw, '^\s*(\d+)\s+("([^"]+)"|(\S+))\s*(.*)$')
@@ -625,6 +667,7 @@ if ($gpuMode -eq 'solo' -and $env:PC_GPU_SOLO_MAX_S) {
 if ($gpuMode) {
   if (-not $gpuClass.label) {
     Write-Output 'GPU: set PC_GPU_ISSUE or JOB_DIR, or pass the script name for admission'
+    $script:rec.exit = 126; $script:rec.reason = 'GPU admission: no label'
     exit 126
   }
   Write-Output "GPU: waiting for $gpuMode claim, weight $($gpuClass.weight) ($($gpuClass.label))"
@@ -646,9 +689,30 @@ if ($gpuMode) {
   } finally { $ErrorActionPreference = $ea }
   if ($admissionExit -ne 0 -or -not $gpuToken) {
     Write-Output 'GPU: admission failed; command was not started'
+    $script:rec.exit = 126; $script:rec.reason = 'GPU admission failed'
     exit 126
   }
   Write-Output "GPU: acquired $gpuMode claim $gpuToken"
+}
+# PC_STEP_GATE_JS (the PC daemon, issue 1662, Astra findings 1 and 6): after the game-open wait and GPU admission, right
+# before the start, the caller reads its approval, pause, hold and the game again. Anything but exit 0 means no start;
+# the claim is released below like any other unstarted step.
+if (-not $watch -and $gateJs) {
+  $ea = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    $gateText = (& $gpuNode $gateJs --recheck $gateArg 2>&1 | ForEach-Object { [string]$_ }) -join ' '
+    $gateExit = $LASTEXITCODE
+  } catch { $gateText = $_.Exception.Message; $gateExit = -1 }
+  finally { $ErrorActionPreference = $ea }
+  if ($gateExit -ne 0) {
+    if (-not $gateText) { $gateText = "launch gate exit $gateExit" }
+    $script:rec.gated = $gateText; $script:rec.exit = 125; $script:rec.reason = 'launch gate said no'
+    Write-Output "run_timeout: launch gate said no (exit $gateExit): $gateText"
+    Write-KillLog $log "GATED $stepName ($Exe): $gateText"
+    exit 125
+  }
+  Write-Output "run_timeout: launch gate passed: $gateText"
 }
 # A forced claim applies to this command only, never a nested watchdog.
 $env:PC_GPU_MODE = ''
@@ -659,7 +723,7 @@ $env:TMO_FATAL_PATTERN = ''
 # Child commands may use tmo.bat too. Their own timeout must never overwrite this agent's resume note.
 $env:TMO_REPO = ''; $env:TMO_OUT = ''; $env:TMO_LOG = ''; $env:TMO_ERR_LOG = ''
 if (-not $watch) {
-  $spool = Join-Path ([IO.Path]::GetTempPath()) ("runner-step-" + [Guid]::NewGuid().ToString('N'))
+  $spool = Join-Path (Get-ScratchParent) ("runner-step-" + [Guid]::NewGuid().ToString('N'))
   $outPath = Join-Path $spool 'stdout.log'
   $errPath = Join-Path $spool 'stderr.log'
   $job = $p = $files = $stdout = $stderr = $null
@@ -689,9 +753,11 @@ if (-not $watch) {
       }
       $timer = [Diagnostics.Stopwatch]::StartNew()
       $mayBeRunning = $true
+      $script:rec.started = $true
       $job.Resume()
     } catch {
       Write-KillLog $log "START FAILED $stepName ($Exe): $($_.Exception.Message)"
+      $script:rec.exit = 125; $script:rec.reason = "START FAILED: $($_.Exception.Message)"
       exit 125
     }
     $lastProgress = 0.0
@@ -714,11 +780,15 @@ if (-not $watch) {
       $pendingOutput = $stdout.Pending -or $stderr.Pending
       if ($fatal) { $reason = "FATAL $fatal"; break }
       if ($soloMax -and $claimTimer.Elapsed.TotalSeconds -ge $soloMax) { $reason = "SOLO CAP after $soloMax s"; break }
-      if ($rootExited -and (-not $gpuToken -or -not $usage.Active) -and -not $pendingOutput) {
+      # PC_STEP_WAIT_TREE=1 (the PC daemon, Astra finding 3): like a GPU step, the step ends only with an empty Job
+      # Object; descendants that outlive the root stay under the idle stop and the ceiling.
+      if ($rootExited -and (-not ($gpuToken -or $waitTree) -or -not $usage.Active) -and -not $pendingOutput) {
         $finished = $true
         $retainGpuClaim = $false # GPU steps reach this branch only with an empty job.
         $keepSpool = [bool]$usage.Active
+        $script:rec.treeEmpty = -not $keepSpool
         if ($keepSpool) { Write-Output "run_timeout: background output continues in $spool" }
+        $script:rec.exit = $p.ExitCode; $script:rec.reason = 'exited'
         exit $p.ExitCode
       }
       if ($elapsed -ge $Seconds) { $reason = 'CEILING'; break }
@@ -747,6 +817,7 @@ if (-not $watch) {
       Write-KillLog $log $_.Exception.Message
     }
     Write-KillLog $log "TIMEOUT $stepName ($Exe): $reason at $stoppedAfter s (ceiling $Seconds s). Child logs: $spool"
+    $script:rec.exit = 124; $script:rec.reason = "TIMEOUT $reason at $stoppedAfter s"
     exit 124
   } finally {
     try {
@@ -839,5 +910,8 @@ exit 124
     & $gpuNode $gpuHelper release $gpuRoot $gpuToken
     if ($LASTEXITCODE -ne 0) { Write-Output "GPU: release failed. Claim $gpuToken will be checked at next admission" }
     else { Write-Output "GPU: released $gpuMode claim $gpuToken" }
+  }
+  if ($script:stepRecord -and -not $watch) {
+    try { Write-StepRecord } catch { Write-Output "run_timeout: step record not written: $($_.Exception.Message)" }
   }
 }
