@@ -1722,10 +1722,15 @@ void fragment() {
 			vec3 gq = gw_cells(vec2(atan(pq.y, pq.x) * 1.9, length(pq) / R * 2.2) + vec2(seed * 7.0, seed * 3.0));
 			float seam = 1.0 - smoothstep(0.0, 0.035, gq.x);
 			bool popped = gq.y > 0.8 && part < 0.3;
-			base = mix(v2_rim_metal * 0.12, v2_rim_metal * 0.34, gq.z) * (popped ? 0.25 : 1.0);
-			base = mix(base, v2_rim_metal * 0.6, seam * 0.5);
-			rough = popped ? 0.3 : 0.04; metal = 0.1; ao = mix(ao, 1.0, 0.6);
-			em += mix(v2_interior_accent, gc, 0.5) * seam * 0.2 + gc * (popped ? 0.2 : 0.0);
+			// R431 (Nov 23, the I8_37 family): pale pearl panes; coloured glass shows only in the seams, and only near
+			// the opening (a spectral hue round the cut), with the deep glow below; never rainbow tiles across the crater
+			vec3 pearl = v2_rim_metal * vec3(1.0, 0.97, 0.93);
+			base = mix(pearl * 0.16, pearl * 0.36, gq.z) * (popped ? 0.25 : 1.0);
+			base = mix(base, pearl * 0.55, seam * 0.4);
+			rough = popped ? 0.3 : 0.06; metal = 0.1; ao = mix(ao, 1.0, 0.6);
+			float near_cut = 1.0 - smoothstep(1.0, 1.9, length(pq) / R);
+			vec3 hue = 0.5 + 0.5 * cos(6.2832 * (atan(pq.y, pq.x) / 6.2832 + gq.y * 0.35 + vec3(0.0, 0.33, 0.67)));
+			em += mix(mix(v2_interior_accent, gc, 0.5) * 0.12, hue * 0.25, near_cut) * seam + gc * (popped ? 0.2 : 0.0);
 			em_hdr += gc * 0.45 * smoothstep(0.7, 1.3, deep) * (0.85 + 0.15 * fl);
 			vec3 tilt = (t1 * (gq.y - 0.5) + t2 * (gq.z - 0.5)) * 0.9;
 			NORMAL = snorm(NORMAL + mat3(VIEW_MATRIX) * (mat3(MODEL_MATRIX) * tilt));
