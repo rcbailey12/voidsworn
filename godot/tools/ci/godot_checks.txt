@@ -177,7 +177,7 @@ headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle
 headless|scenes/battle/test/forecast_1444_test.gd|-|-|issue 1444: Ram arms on the first press and shows target, damage and a lethal-recoil warning; Board odds on hover and card; the Nova blast names friendly ships in red; Hollow Sun bands in the move tip; Brood flagships get wing stances
 headless|scenes/battle/test/targeted_ability_test.gd|-|-|issue 1124: marked Nova and Blink clicks reach the rules; unmarked clicks do not
 headless|scenes/battle/test/click_after_camera_move_test.gd|-|-|issue 1124: releases pick the current camera ray; HUD clicks and drags do not pick
-headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1124: switching guns clears an invalid burn-and-fire ghost, card and command
+headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1747: arming flak keeps the planned Burn and fire preview and Enter fires the planned gun
 headless|scenes/battle/test/volley_preview_test.gd|-|-|issue 1144: target preview against actual seeded volleys, including the planned hex, shared shield routing and low-odds landed-hit routing
 headless|scenes/battle/test/danger_revision_test.gd|-|-|issue 1124: knocking a gun out in place refreshes danger hatching, badges and the threat map
 headless|scenes/battle/test/hover_wait_check.gd|-|-|issue 1433: mouse handlers never wait on the threat worker after a move (under 50 ms); a click while it computes is queued once and played when the result lands; a retired battle publishes nothing
