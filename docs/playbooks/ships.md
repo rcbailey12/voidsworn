@@ -15,6 +15,27 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    (item 5) is not traced again: the sheet is its hull, the recipe builds the sheet through one build contract and reads every
    fact from it (RECIPE.md "Ships built from a build sheet", issue 592); stage 2's reference still comes from the accepted
    concept, for the outline score and the grime.
+
+   **Opt-in hull methods from the Astra Picket (R443, issue 1888).** Import these inside a sheet's `build(K)` from
+   `tools/recipe/hull_methods.py`. They use the geometry in `tools/blender/kits/shared/hull_details.py` and run through the
+   usual sheet recipe. Use the faction sheet's shapes, spacing and materials.
+
+   - Use `FlatSoleLoft` and `loft_module` for a faceted hull with a level maintenance floor. Start with transverse stations
+     for the bow, shoulders, belly and drive block. The Picket used nine. Set the taper, deck height, widths and sole from
+     this ship's sheet. End each module at its authored break. The same rings can locate fittings and plates.
+   - Use `plate_region` where an armoured surface needs shadow in the joins. Leave the pressure hull as the darker backing
+     and tune the plate depth and open gap at the review view. Pass the intended facets and reserve land for fittings,
+     doors and module bands. Lay the plates after mounts so their keep-outs apply. Follow the faction's panel order.
+   - Use `slatted_cassette` and `mount_service_part` for cooler banks and radiator grilles that need a visible dark recess
+     and real gaps between slats. Use `belly_cover` along a service trunk, with each lid a separate mesh that can be removed
+     in Blender. Seat the frames on the real hull, leave land between banks, and end each fitting before a break line.
+   - Use `broken_stripe` where a door interrupts a hull light or trim race. Enter the door's X span on that flank and its
+     edge clearance. Sample the hull at each station so the race and inlay follow it and both stop at the same cut.
+
+   The geometry fixtures run with `python tools/recipe/test/hull_details_selftest.py`. The Astra Picket comparison is
+   `tools/recipe/test/picket_kit_review.py`. Run it in cloud Blender in background mode for matching before and after views
+   of the deck, stripe and belly. It uses Cycles CPU and labels the pictures `cloud direction check`.
+
 2. **Paint.** Procedural materials driven by masks baked from the ship's own geometry (curvature, ambient occlusion, edge
    wear), plus trim sheets and decals; colours may be sampled from the concept; the concept picture is never projected onto
    the ship (R96 Q1). Local AI texturing only after a one-hull proof of unlit PBR output (R96 Q1). A ship built from a build
