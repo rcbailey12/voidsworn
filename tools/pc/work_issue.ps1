@@ -410,8 +410,8 @@ if ($mode -in @('openai-key','openai-budget','openai-spend')) {
 
 # ---- Runner 2 helpers (issue 377) ----
 # Board, Nov 23 (RULEBOOK 2.5): a runner commit never carries a GitHub closing word. Agents' reports said "Closes #N"
-# (Codex PRs 1758, 1759, 1784); every closing word before an issue number becomes "Refs #N", any case, colon or not.
-function Refs-Only([string]$text) { return [regex]::Replace($text, '(?i)\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[ \t]+#([0-9]+)\b', 'Refs #$3') }
+# (Codex PRs 1758, 1759, 1784); every closing word before an issue reference (#N, owner/repo#N or an issue link) becomes "Refs", any case, colon or not.
+function Refs-Only([string]$text) { return [regex]::Replace($text, '(?i)\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[ \t]+(https://github\.com/[^/\s]+/[^/\s]+/issues/[0-9]+|(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#[0-9]+)\b', 'Refs $3') }
 # git's output as an array of lines; $script:gx holds its exit code. stderr is dropped (PowerShell 5.1 turns it into errors).
 function Git-Lines { $o = & git @args 2>$null; $script:gx = $LASTEXITCODE; if ($null -eq $o) { return @() }; return @($o | ForEach-Object { [string]$_ }) }
 function Git-One { $o = @(Git-Lines @args); if ($o.Count) { return $o[0].Trim() } else { return '' } }

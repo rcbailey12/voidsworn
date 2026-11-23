@@ -61,7 +61,8 @@ jobs:
           # once its scope is done. Every closing word before any issue number becomes "Refs", any case, with or without
           # a colon, and the branch's own issue gets one "Refs #N" line.
           refs_only() {
-            sed -i -E 's/\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+#([0-9]+)\b/Refs #\3/Ig' body.md
+            # bare #N, owner/repo#N and full issue links: GitHub reads all three as closing references (Artoo on PR 1800)
+            sed -i -E 's~\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+(https://github\.com/[^/[:space:]]+/[^/[:space:]]+/issues/[0-9]+|([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#[0-9]+)\b~Refs \3~Ig' body.md
             if [ -n "$n" ]; then grep -q "Refs #$n\b" body.md || printf '\nRefs #%s\n' "$n" >> body.md; fi
           }
           shorten_checks() {

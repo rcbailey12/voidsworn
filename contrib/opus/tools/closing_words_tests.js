@@ -13,8 +13,11 @@ assert.ok(fn, 'work_issue.ps1 defines Refs-Only');
 assert.match(script, /\$final = Refs-Only \(\$msg\.TrimEnd\(\) \+ "`n`n" \+ \$block\)/, 'the commit step passes the whole message through Refs-Only');
 const ps = process.env.PC_TEST_POWERSHELL || (process.platform === 'win32' ? 'powershell.exe' : 'pwsh');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'closing words '));
-const input = 'Fix the export\n\nCloses #1784\nFIXES: #1500\nresolved #12 and fixed  #7\nCloses issue 9\nRefs #42\nSee #300\nprefix#5\n';
-const expected = 'Fix the export\n\nRefs #1784\nRefs #1500\nRefs #12 and Refs #7\nCloses issue 9\nRefs #42\nSee #300\nprefix#5\n';
+// Artoo on PR 1800: GitHub also closes on owner/repo#N and on a full issue link, so both are covered.
+const input = 'Fix the export\n\nCloses #1784\nFIXES: #1500\nresolved #12 and fixed  #7\nCloses issue 9\nRefs #42\nSee #300\nprefix#5\n' +
+  'Fixes octo-org/octo-repo#100\ncloses: rcbailey12/voidsworn#1739\nResolves https://github.com/rcbailey12/voidsworn/issues/1135\n';
+const expected = 'Fix the export\n\nRefs #1784\nRefs #1500\nRefs #12 and Refs #7\nCloses issue 9\nRefs #42\nSee #300\nprefix#5\n' +
+  'Refs octo-org/octo-repo#100\nRefs rcbailey12/voidsworn#1739\nRefs https://github.com/rcbailey12/voidsworn/issues/1135\n';
 fs.writeFileSync(path.join(tmp, 'in.txt'), input);
 fs.writeFileSync(path.join(tmp, 'run.ps1'), fn + '\n[Console]::Out.Write((Refs-Only ([IO.File]::ReadAllText($args[0]))))\n');
 const r = spawnSync(ps, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(tmp, 'run.ps1'), path.join(tmp, 'in.txt')],

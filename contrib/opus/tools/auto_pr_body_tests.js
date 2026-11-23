@@ -162,10 +162,14 @@ for (const old of ['Closes #1098', 'Refs #1098\nFIXES: #1098', 'Older report', '
 }
 // The three Codex PRs the Board edited by hand (1758, 1759, 1784): a runner report ending "Closes #N" opens as Refs.
 for (const action of ['create', 'edit']) {
-  const codexClose = send(action, `${refreshMessage}\n\nCloses #1784\nresolves: #1500`, 'codex/issue-1784');
+  const codexClose = send(action, `${refreshMessage}\n\nCloses #1784\nresolves: #1500\nFixes octo-org/octo-repo#100\n` +
+    'Closes https://github.com/example/voidsworn/issues/1700', 'codex/issue-1784');
+  // Artoo on PR 1800: owner/repo#N and a full issue link close issues too
+  assert.match(codexClose, /^Refs octo-org\/octo-repo#100$/m, action);
+  assert.match(codexClose, /^Refs https:\/\/github\.com\/example\/voidsworn\/issues\/1700$/m, action);
   assert.match(codexClose, /^Refs #1784$/m, action);
   assert.match(codexClose, /^Refs #1500$/m, action);
-  assert.doesNotMatch(codexClose, /(close[sd]?|fix(e[sd])?|resolve[sd]?):?\s+#\d/i, action);
+  assert.doesNotMatch(codexClose, /\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?\s+\S*(#\d|\/issues\/\d)/i, action);
   assert.equal((codexClose.match(/^Refs #1784$/gm) || []).length, 1, action + ': one Refs line for the branch issue');
 }
 
