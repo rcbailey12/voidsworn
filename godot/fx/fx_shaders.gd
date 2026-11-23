@@ -2103,6 +2103,9 @@ void fragment() {
 # R398 (issue 1394, Ryan Nov 21: "The whole hull shouldn't glow green either. Just specific affected areas"): an acid
 # kill's tell. Up to six spots in the ship's frame (xyz, radius), each a sick green patch with a ragged, eaten edge that
 # spreads from a third of its radius to all of it between rise.x and rise.y (scene_t). No line, no white.
+# Wave 0 (Fable and Astra, Nov 23): the old patch faded out over two thirds of its radius and read as the banned soft
+# green bloom. Now it is etched into the plating: a hard eaten edge about a pixel wide at any camera, a thin bright
+# rim where the acid is still eating, and a dim pitted floor inside. Nothing glows past the edge.
 const MELT_GLOW := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_back, shadows_disabled, fog_disabled;
@@ -2119,18 +2122,29 @@ void vertex() {
 }
 void fragment() {
 	float u = clamp((scene_t - rise.x) / max(rise.y - rise.x, 0.0001), 0.0, 1.0);
-	float g = 0.0;
+	float rim = 0.0;
+	float floor_g = 0.0;
 	for (int i = 0; i < 6; i++) {
 		if (i >= n_spots) { break; }
 		float rad = max(spots[i].w, 0.001);
 		float r = rad * (0.35 + 0.65 * u);
 		vec3 q = (hp - spots[i].xyz) / rad;
-		float eaten = (vnoise(q.xy * 3.1 + q.z * 1.7 + float(i) * 4.3) - 0.5) * 0.55;
+		// two octaves: big bites and small teeth, so the edge is eaten, not a round blob
+		float eaten = (vnoise(q.xy * 3.1 + q.z * 1.7 + float(i) * 4.3) - 0.5) * 0.45
+			+ (vnoise(q.xy * 11.0 - q.z * 6.0 + float(i) * 9.1) - 0.5) * 0.18;
 		float d = distance(hp, spots[i].xyz) / r + eaten;
-		g = max(g, 1.0 - smoothstep(0.35, 1.0, d));
+		float aa = max(fwidth(d), 0.002);
+		float inside = 1.0 - smoothstep(1.0 - aa, 1.0 + aa, d);
+		// the rim: a thin band just inside the edge, about two pixels or 6% of the radius, whichever is wider
+		float band = max(0.06, aa * 2.0);
+		rim = max(rim, inside * smoothstep(1.0 - band * 2.0, 1.0 - band * 0.5, d));
+		// the floor: pitted plating, dim, specks of live acid in the pits
+		float pit = smoothstep(0.58, 0.72, vnoise(hp.xy * 2.3 / rad * 4.0 + hp.z * 3.0 + float(i) * 2.0));
+		floor_g = max(floor_g, inside * (0.30 + 0.55 * pit));
 	}
-	float pulse = 0.88 + 0.12 * sin(scene_t * 4.5 + hp.x * 0.7);
-	ALBEDO = clamp(mix(deep, hot, g * g) * g * u * pulse * 1.5 * fx_gain, 0.0, 8.0);
+	float pulse = 0.90 + 0.10 * sin(scene_t * 4.5 + hp.x * 0.7);
+	vec3 col = deep * floor_g + hot * rim * 1.3;
+	ALBEDO = clamp(col * u * pulse * 1.5 * fx_gain, 0.0, 8.0);
 }
 """
 

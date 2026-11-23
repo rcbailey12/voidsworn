@@ -79,7 +79,7 @@ func _run() -> void:
 		if not hulls.has(id):
 			_fail("no hull " + id)
 			continue
-		for r in ([0] if burst else ([-1] if drift else [170, 0])):
+		for r in ([0] if burst else ([-1] if drift else [170, 0, -2])):
 			await _clip(id, r)
 	_write(tag + "_capture.json", info, out)
 	bench._clear()
@@ -102,7 +102,9 @@ func _fail(message: String) -> void:
 	push_error("CAPTURE1394 " + message)
 
 
-# radius 0: the close camera, 0.62 of the ship's length (A16's 26 in issue 1077)
+# radius 0: the close camera, 0.62 of the ship's length (A16's 26 in issue 1077). Radius -2 (Wave 0, Fable and Astra Nov 23):
+# a grazing camera, 0.9 of the length away and about 10 degrees above the top plating, a few frames through the tell, so
+# the acid patch is seen etched into the armour and moving with it, not floating over it.
 func _clip(id: String, radius: int) -> void:
 	bench._clear()
 	bench._make_fx()
@@ -116,9 +118,14 @@ func _clip(id: String, radius: int) -> void:
 		return
 	var s = bench.fx.ship("T")
 	var L: float = s.hull.L
-	var r: float = float(radius) if radius > 0 else (maxf(L * 4.0, 24.0) if radius < 0 else maxf(L * 0.62, 6.0))
+	var grazing := radius == -2
+	var r: float = float(radius) if radius > 0 else (maxf(L * 0.9, 8.0) if grazing else (maxf(L * 4.0, 24.0) if radius < 0 else maxf(L * 0.62, 6.0)))
 	bench._cam(Vector3.ZERO, r)
-	var folder := out.path_join("%s_%s_c%d" % [tag, id, int(round(r))])
+	if grazing:
+		bench.cam.b = 0.18
+		bench.cam.snap()
+	var view := "%s_%s_%s%d" % [tag, id, "g" if grazing else "c", int(round(r))]
+	var folder := out.path_join(view)
 	DirAccess.make_dir_recursive_absolute(folder)
 	await bench.fx.warmup(bench.cam)
 	bench.fx.sync_ship("T", bench._unit(0.199, 0))
@@ -142,6 +149,9 @@ func _clip(id: String, radius: int) -> void:
 	var core: float = bench.fx.death_core_at("T") if bench.fx.has_method("death_core_at") else split
 	var marks := {"tell": lerpf(start, split, 0.6), "split": split + 0.05, "core": maxf(core, split) + 0.08,
 		"wreck": split + 1.5, "settled": split + 4.0}
+	if grazing:
+		marks = {"tell1": lerpf(start, split, 0.2), "tell2": lerpf(start, split, 0.45), "tell3": lerpf(start, split, 0.7),
+			"tell4": lerpf(start, split, 0.95), "split": split + 0.3, "settled": split + 1.5}
 	if burst:
 		marks = {}
 		var k := 0
@@ -173,7 +183,7 @@ func _clip(id: String, radius: int) -> void:
 					_fail("could not save %s %s sheet" % [id, key])
 					continue
 				row.stills[key] = bench.fx.now - start
-	info.targets["%s_c%d" % [id, int(round(r))]] = row
+	info.targets[view.trim_prefix(tag + "_")] = row
 	print("CAPTURE1394 ", id, " ", spec.fac, " ", spec.cls, " code=", v.code, " r=", r, " split=%.2f" % (split - start))
 
 
