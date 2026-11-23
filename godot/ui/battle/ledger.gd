@@ -559,7 +559,9 @@ func _guns(x: float, y: float, w: float) -> float:
 		var max_dist := int(gun.get("range", 1))
 		var active := bool(gun.get("armed", false))
 		var col := TEXT if hit_v >= 0 or (dist < 0 and bool(gun.get("ready", false))) else TEXT2
-		var result := "%d%%" % hit_v if hit_v >= 0 else ("Out" if dist > max_dist else ("Ready" if why in ["", "ready"] else ("CD %s" % why.get_slice(" ", 1) if why.begins_with("reloading ") else ("No shot" if dist >= 0 else why.capitalize()))))
+		# Council 7 (issue 1401): flak is point defense and never aims at a ship, so it never reads "Out" or "No shot"
+		var flak_idle: bool = str(gun.get("kind", "")) == "flak" and hit_v < 0 and bool(gun.get("ready", false))
+		var result := "%d%%" % hit_v if hit_v >= 0 else ("Defense" if flak_idle else ("Out" if dist > max_dist else ("Ready" if why in ["", "ready"] else ("CD %s" % why.get_slice(" ", 1) if why.begins_with("reloading ") else ("No shot" if dist >= 0 else why.capitalize())))))
 		var rw := maxf(_width(result, f_num, 17), px(46))
 		var band_w := clampf(w * 0.25, px(40), px(170))
 		var band_x := x + w - rw - band_w - px(19)
@@ -583,9 +585,14 @@ func _guns(x: float, y: float, w: float) -> float:
 		if str(gun.get("arc_tip", "")) != "":
 			tip += "\n" + str(gun.arc_tip)
 		var wi := int(gun.get("i", 0))
-		if mine:
+		# Artoo on PR 1873: flak never fires at a ship (rules canFire refuses it); it shoots down torpedoes and strike craft
+		# on its own, so its row offers no arm action
+		var is_flak: bool = str(gun.get("kind", "")) == "flak"
+		if is_flak:
+			tip += "\nPoint defense: it fires on its own at incoming torpedoes and strike craft in range. It never aims at a ship."
+		elif mine:
 			tip += "\nClick or press %d to fire this gun alone%s." % [wi + 1, " (armed now)" if active else ""]
-		_hit(Rect2(x, y, w, step), "arm" if mine else "", wi, tip)
+		_hit(Rect2(x, y, w, step), "arm" if mine and not is_flak else "", wi, tip)
 		y += step
 	return y
 
@@ -703,6 +710,8 @@ func _orders(x: float, y: float, w: float, foot: float, primary: Dictionary, com
 			var key := str(o.get("ability", id))
 			if key == "focus":
 				label = "Focus fire"
+			elif key == "reload":
+				label = "Reload"   # Council 13 (issue 1401): "Reload torpedoes" was cut off in its order cell; the hover keeps the full name
 			orders.append({"act": id, "arg": o.get("arg"), "on": o.get("on", false), "label": label,
 				"tip": original + "\n" + str(o.get("tip", "")), "glyph": Icons.order(key),
 				"active": bool(o.get("active", false)), "cooldown": int(o.get("cooldown", 0))})
