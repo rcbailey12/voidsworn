@@ -1,5 +1,5 @@
 """Issue 1679 (fleet lighting, R411): the Pick Sheet pictures from two look bench fleet runs of one commit, one with
-VS_FLEET_LIGHTING unset (today's look) and one with VS_FLEET_LIGHTING=1 (the new AO light and reflection gradient).
+VS_FLEET_LIGHTING=0 (the old look; before R433 an unset flag meant off) and one with VS_FLEET_LIGHTING=1 (AO light and reflection gradient).
 
 usage: python fl1679_sheet.py --off RUN_OFF --on RUN_ON --out DIR [--cams 170,110] [--chorus-cams 170,60]
   RUN_*   look bench run folders (bench.json and fleet/<sky>/ inside), made with --part fleet --fleet-cams 170,110,60
@@ -79,7 +79,7 @@ def pick_sheet(off, on, sky, cam, title, commit):
     sheet = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(sheet)
     d.text((10, 6), title, font=FB, fill=FG)
-    d.text((10, 28), "left of each pair: today (VS_FLEET_LIGHTING off)   right: issue 1679 option (on)   commit %s, sky %s" % (commit, sky), font=F, fill=DIM)
+    d.text((10, 28), "left of each pair: fleet lighting off (VS_FLEET_LIGHTING=0)   right: fleet lighting on (VS_FLEET_LIGHTING=1)   commit %s, sky %s" % (commit, sky), font=F, fill=DIM)
     for i, (name, code, a, b) in enumerate(pairs):
         x = (i % cols) * (2 * cw + 2 * gap)
         y = head + (i // cols) * (lab + ch + gap)
