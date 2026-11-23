@@ -58,6 +58,8 @@ static func clear_static() -> void:
 # issue 1204: battle.gd drops the per-hull look copies when a battle leaves the tree (keys are that battle's materials)
 static func clear_look_cache() -> void:
 	_look_cache.clear()
+	if ResourceLoader.exists("res://render/look.gd"):
+		load("res://render/look.gd").clear_fit_cache()   # issue 1777: the per-fit-scale copies of those materials
 
 
 func _exit_tree() -> void:
@@ -196,6 +198,23 @@ func _look() -> void:
 		load("res://render/mesh_watch.gd").touch(self)
 
 
+# Issue 1777: the V2 micro-detail grain keeps one size in game units on every hull (look.gd detail_fit). Off: nothing to do.
+func _detail_fit(k: float) -> void:
+	if not ResourceLoader.exists("res://render/look.gd"):
+		return
+	var LOOK = load("res://render/look.gd")
+	if not LOOK.ship_look_v2_enabled():
+		return
+	for m in meshes:
+		var mi := m as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for i in mi.get_surface_override_material_count():
+			var mat := mi.get_surface_override_material(i)
+			if mat != null:
+				mi.set_surface_override_material(i, LOOK.fitted(mat, k))   # its own copy per fitted scale (Board audit, PR 1786)
+
+
 func _collect(n: Node) -> void:
 	for c in n.get_children():
 		if String(c.name).begins_with("fx_"):
@@ -222,6 +241,7 @@ func _fit() -> void:
 	var c := box.get_center()
 	hull.transform = Transform3D(Basis(Vector3.UP, yaw_fix).scaled(Vector3(k, k, k if a4 else -k)), Vector3.ZERO)
 	hull.position = -(hull.transform.basis * c)
+	_detail_fit(k)
 	var variant_lift := 0.0
 	if code == str(u.get("tpl", "")):
 		variant_lift = float(HT.HULL_LIFT.get(HT.code_for(fac, str(u.get("cls", ""))), 0.0))
