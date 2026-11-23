@@ -295,8 +295,8 @@ def i8_shell(K, skin, field, x0, x1, tag, scale=1.0, leaves=8, seed=0, clamp=Non
     for k in range(leaves):
         h = math.sin(k * 12.9898 + seed * 78.233) * 43758.5453
         h -= math.floor(h)
-        j = (k * field.n) // leaves + (k % 2)        # spread round the hull, each on its own long ribbon
-        j %= field.n
+        # spread evenly round the hull, never two on one ribbon (Neon and Artoo, Nov 23: the old + (k % 2) doubled them up)
+        j = (k * field.n) // leaves % field.n
         a0 = x0 + L * (0.10 + 0.25 * h)
         a1 = min(x1 - 0.08 * L, a0 + L * (0.40 + 0.20 * ((h * 7.3) % 1.0)))
         grow = 1.6 + 0.3 * ((h * 3.7) % 1.0)          # how much chunkier than the ribbon at its widest
