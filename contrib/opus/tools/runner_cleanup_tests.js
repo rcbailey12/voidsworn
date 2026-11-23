@@ -653,8 +653,8 @@ try {
   assert(dry.includes(`link not followed: ${path.join(ownedLinked, 'nested', 'ships-link')} -> `), 'the link and its target are logged');
   decision(dry, legacyNear, 'would remove');
   if (legacyUnreadable) {
-    assert.match(decision(dry, legacyUnreadable, 'would remove'), /1 folders another account owns left in place; scratch named by our tools/);
-    assert(dry.includes(`folder not readable by this account, left in place: ${lockedPart}`), 'the unreadable folder is listed');
+    assert.match(decision(dry, legacyUnreadable, 'would remove'), /1 folders another account owns cannot be removed and are not counted; scratch named by our tools/);
+    assert(dry.includes(`cannot remove: ${lockedPart} (another account owns it or it cannot be read; left in place)`), 'the unreadable folder is listed');
   }
   if (!windows) {
     // With no process list (and no test list), older scratch is kept.
@@ -676,6 +676,12 @@ try {
   assert.match(dry, /helper scratch lock is held/);
   assert.match(dry, /shared generated copy could not be verified/);
   assert.match(dry, /free space before: [\d]+ bytes[\s\S]*free space after: [\d]+ bytes\r?\nall done$/);
+  // Issue 1739: the dry run closes with the space removal would really free, and that total adds up its would-remove rows.
+  const total = /^space would be freed: (\d+) bytes \([\d.,]+ GB\) by (\d+) removals; hard links shared outside a removed folder are not counted; \d+ folders another account owns cannot be removed and are not counted$/m.exec(dry);
+  assert(total, 'dry run total line: ' + dry.slice(-800));
+  const rows = [...dry.matchAll(/^(?:kept checkout )?would remove\b[^\n]*\((\d+) bytes would be freed/gm)].map(m => +m[1]);
+  assert.equal(rows.length, +total[2], 'one count per would-remove row: ' + rows.length + ' vs ' + total[2]);
+  assert.equal(rows.reduce((a, b) => a + b, 0), +total[1], 'the total is the sum of the would-remove rows');
   assert.deepEqual(fs.readdirSync(salvageRoot), ['earlier']);
   // Issue 1396 (the first PC dry run ran 1 h 47 min unfinished): the time cap stops before the next folder and says where;
   // a dry run never writes janitor_resume.txt; a resume file makes the job folders start at its name and wrap around.
