@@ -67,9 +67,12 @@ LOOK = dict(
     # silver line between strands, and a facing colour shift (the iridescence) that the review shows and the game's rim
     # approximates. Tones sampled from the concept's pearl clusters.
     # Warming round (issue 1282): champagne like the concept, not lilac grey. Warm strand tones, a gold-to-rose shift.
-    pearl=dict(base=lin((240, 216, 170)), tones=(lin((246, 226, 182)), lin((232, 198, 142)), lin((242, 216, 168)),
-                                                 lin((226, 200, 160))),
-               iris=(lin((255, 204, 120)), lin((246, 172, 112)), lin((236, 162, 168)), lin((205, 180, 230))),
+    # R431 (Ryan Nov 23 2026: "ensure that white material also matches i8_37"): the champagne had drifted gold (the Prism's
+    # shell read sRGB 169,156,140 at camera 26, saturation 0.21, against I8_37's 176,162,159 at 0.11). Blue lifted and the
+    # iridescence moved off gold, so the pearl reads as I8_37's warm white with a rose and lilac sheen.
+    pearl=dict(base=lin((240, 224, 214)), tones=(lin((246, 232, 224)), lin((232, 212, 204)), lin((242, 226, 218)),
+                                                 lin((226, 210, 206))),
+               iris=(lin((255, 220, 196)), lin((246, 200, 196)), lin((236, 186, 206)), lin((205, 192, 236))),
                iris_weight=0.45, strands=7.0, line=0.07, metallic=0.65, roughness=0.08, game_roughness=0.18, coat=1.0, coat_roughness=0.04,
                thin_film_nm=520.0, transmission=0.0, wear=0.0),
     silver=dict(base=(0.92, 0.91, 0.90), metallic=1.0, roughness=0.10, game_roughness=0.20, transmission=0.0),
@@ -235,7 +238,9 @@ def silver(name='gw_silver'):
 # Ryan Nov 21: the colours intermixed, "either as the individual tiles or more as streaks among others". The core's
 # marbled colour field (parts.MIX 'marble') gives the veins; on top, about a third of the tiles take another palette
 # colour of their own, so neighbouring tiles mix inside every vein (as the Nov 16 picks' stained glass does).
-TILE_SWAP = 0.26
+# R431 (Ryan Nov 23): I8_37's leaves are one colour each, so no tile swaps outside the old marble mix.
+import os as _os
+TILE_SWAP = 0.26 if _os.environ.get('GW_MIX', 'blocks') == 'marble' else 0.0
 
 
 def tile_swap(nt, tint, cell_colour, glow):

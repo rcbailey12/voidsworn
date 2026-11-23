@@ -65,12 +65,12 @@ def pod(side):
     return skin
 
 
-TWIST = lambda x: 0.035 * x + 0.10 * math.sin(0.30 * x)
 
 
 def field(side):
     hl = hk('hull')
-    return hl.RibbonField(8, lambda x: side * TWIST(x), sway=0.10, leaf_f=1.1, start=0.15)   # R431: sway opens leaf seams
+    # R431 round 3 (Ryan Nov 23: the white "more detailed and wrapping", like I8_37): the Ark's own spiralling field
+    return hl.i8_field(XB - XS, sign=side, start=0.15)
 
 
 def light(side):
@@ -129,23 +129,11 @@ def build(K):
                               seed=5 if side > 0 else 8, light=light(side))
         K.mass('%s pane hull' % tag.capitalize(), core, 'opaque glowing stained-glass panes',
                note='One of the two parallel hulls; flush pearl panels over thick amber, violet and green panes that show in the seams.')
-        # Round 2 (Ryan Nov 21, "agree with the prism pods"): no raised ribbons (they read as corn-cob lobes).
-        # R431 (Ryan Nov 23, "the top is how we want it to look across the board"): the I8_37 treatment. Eight broad flush
-        # pearl panels lie along each pod, so the pod reads as a pearl shell and the stained glass shows only in the narrow
-        # leaf-shaped seams between them (kit rule MOSAIC_MAX); still flush, so no corn cob, and the silver rings stay.
-        ribbons = []
-        for k in range(f.n):
-            ribbons.append(gw.Ribbon(
-                XS + 0.15, XB - 0.30, f.centre(k),
-                lambda t, k=k: (0.30 + 0.02 * math.sin(1.7 * k)) * gw.leaf(0.10, 0.10, 0.5, tip=0.35)(t),
-                lambda t, v: S * (0.020 + 0.006 * (1 - v * v) ** 0.5),   # nearly flat: no corn-cob crown
-                name='%s_panel_%d' % (tag, k)))
-        hl.lay_ribbons(K, ribbons, skin, 0.025 * S, 0.018 * S, nu=160, nv=12)
-        for j, xr in enumerate([XS + 0.9 + 1.2 * i for i in range(11)]):
-            if xr > XB - 0.6:
-                break
-            ring = [skin(xr, hl.TAU * i / 72, -0.045 * S) for i in range(73)]   # R431: rides over the pearl panels
-            K._obj('%s_%s_ring_%d' % (CODE, tag, j), *hl.tube_mesh(ring, [0.035 * S] * 73, 6), 'gw_silver', smooth=True)
+        # R431 (Ryan Nov 23, "the top is how we want it to look across the board"; then "ensure that white material also
+        # matches i8_37 too ... more detailed and wrapping"): the I8_37 shell from the kit, twelve fine pillowed ribbons that
+        # spiral round each pod with crossing leaves over them; the stained glass shows only in their leaf seams. The flush
+        # panels and silver hoops of round 2 are gone (I8_37 has neither).
+        hl.i8_shell(K, skin, f, XS + 0.15, XB - 0.30, tag, scale=R / 2.6, leaves=10, seed=3 if side > 0 else 7, width=1.35)
         hl.lance(K, 'L%d' % (1 if side > 0 else 2), (XB - 0.22, side * YP, 0.0), 1.55, 0.36,
                  note='One pulsar lance per hull: a grown lens point at the bow on the hull\'s own axis; fixed forward, F arc.',
                  what='grown lens point at the %s bow / pulsar' % tag)

@@ -78,9 +78,9 @@ def lowest_z(x):
     """the lobes' lowest line at station x"""
     t = (x - F.X0) / (F.X1 - F.X0)
     return belly_z(x, F.HW * C_LOBE / (C_LOBE + R_LOBE) * env(t) ** 0.5)
-F.NRIB = 10
-F.HALF = 0.22    # R431 (Ryan Nov 23, I8_37 look everywhere): broad pearl bands, the stained panes show in the seams between them
-F.TWIST = lambda x: -0.4                   # straight meridian veins bow to stern; -0.4 sets them at 0, 36, 72.. degrees so the grooves (90, 270) stay open
+F.NRIB = 12
+F.HALF = 0.19    # R431 (Ryan Nov 23, I8_37 look everywhere): broad pearl bands, the stained panes show in the seams between them
+F.TWIST = lambda x: -0.4 + 1.6 * (x - F.X0) / (F.X1 - F.X0)   # R431 round 3 (Ryan Nov 23, "wrapping" like I8_37): the ribbons spiral a quarter turn bow to stern
 # F.MOSAIC_WEIGHTS: the kit's four-colour weights (issue 1415, Ryan Nov 21 1:45 PM CT: less red and amber, more blue, green and
 # purple); the Nov 20 three-colour override would have dropped blue from the marble.
 F.MOSAIC_KW = dict(streak=True)   # Ryan, Nov 20 7:07 PM CT: "random lights rather than integrated"; evenly lit panes with a thin dark rim (kit, issue 1415)

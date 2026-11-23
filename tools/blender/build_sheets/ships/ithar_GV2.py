@@ -60,8 +60,8 @@ def core(x, a, inset=0.0):
 
 
 F.core = core
-F.NRIB = 4
-F.HALF = 0.52    # R431: pearl shell, glass in the seams (kit MOSAIC_MAX)
+F.NRIB = 10      # R431 round 3 (Ryan Nov 23, the white like I8_37, "more detailed and wrapping"): ten fine ribbons, not four bands
+F.HALF = 0.17    # R431: pearl shell, glass in the seams (kit MOSAIC_MAX)
 F.TWIST = lambda x: 2.6 * (x - F.X0) / LENGTH * TAU / 2.0   # two ribbons wound tightly, about one and a half turns nose to stern
 F.MOSAIC_GRID = (110, 64)    # four gaps of four thin streaks each (kit MIX 'streaks', Ryan Nov 20 7:48 PM CT)
 F.CORE_NOTE = 'a small double-lobed dart: a rear lobe, a pinched waist, a big fore lobe and a needle nose (V2d)'
