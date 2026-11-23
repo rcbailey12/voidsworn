@@ -639,7 +639,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			await _step()
 	# Issue 1741 (V2B PC run, Nov 22: most Wounds V2 cutouts fell outside the close frame or on the far side): "focus":
 	# "wound" turns a close camera (under 100) to face the target's biggest open cutout, centred on it; camera 170 keeps
-	# the battle angle on the ship's centre (RULEBOOK 6.1). A ship with no open cutout keeps the usual view.
+	# the battle angle on the ship's centre (RULEBOOK 6.1). A ship with no open cutout keeps the usual view. The pose
+	# depends on the run's own cutouts, so it is logged and such a row is a detail, never a before/after pair (Artoo).
 	if str(row.get("focus", "")) == "wound" and r < 100.0 and fx.ship("T") != null:
 		var st = fx.ship("T")
 		var best: Dictionary = {}
@@ -654,6 +655,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			cam.r = r
 			cam.t = wc
 			cam.snap()
+			_log("%s wound pose at %d: a %.4f b %.4f r %.1f t (%.2f, %.2f, %.2f)" % [str(row.get("id", "")), int(r), cam.a, cam.b, cam.r, wc.x, wc.y, wc.z])
 			for k in 6:
 				await _step()
 	fx.rng.seed = 11

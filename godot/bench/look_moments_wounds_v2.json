@@ -1,5 +1,5 @@
 {
- "about": "R416 (issue 1741) Wounds V2 sign-off rows: the six reference ships at one heavy hit, 50% hull, 50% hull with lost capabilities (w2e_: weapon slot 0 off beside a healthy slot 1, engine hit, shield generator out; Milestone 3 on the combined head), 20% hull and death, at camera 170 and camera 26. Run once with VS_WOUNDS_V2=0 (before) and once with VS_WOUNDS_V2=1 (after) on the same commit. Target 30 units toward -z so the hits face the camera. Rows w2b, w2c and w2e use focus \"wound\": camera 26 turns to face the biggest open cutout (camera 170 keeps the battle angle). w2d adds a 6 s window: the wreck interiors settle into their wreck look over 4 s.",
+ "about": "R416 (issue 1741) Wounds V2 sign-off rows: the six reference ships at one heavy hit, 50% hull, 50% hull with lost capabilities (w2e_: weapon slot 0 off beside a healthy slot 1, engine hit, shield generator out; Milestone 3 on the combined head), 20% hull and death, at camera 170 and camera 26. Run once with VS_WOUNDS_V2=0 (before) and once with VS_WOUNDS_V2=1 (after) on the same commit. Target 30 units toward -z so the hits face the camera. The w2a to w2e pairs keep one fixed camera in both runs. w2w_ rows are wound details only: focus \"wound\" turns camera 26 to face the biggest open cutout (camera 170 keeps the battle angle), so their pose differs between runs and the log records it; judge them on the after run alone. w2d adds a 6 s window: the wreck interiors settle into their wreck look over 4 s.",
  "cameras": [
   170,
   26
@@ -62,7 +62,7 @@
     "voidsworn",
     "Cruiser"
    ],
-   "focus": "wound",
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -131,6 +131,74 @@
     "Cruiser"
    ],
    "focus": "wound",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "w2w_V16_37",
+   "label": "V16_37 Sunward Vigil: three hits, hull at 50% (wound detail: camera 26 aimed at the biggest open cutout; not a before/after pair, the pose differs between runs)",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Wounds V2 (R416, issue 1741)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -214,7 +282,7 @@
     "voidsworn",
     "Cruiser"
    ],
-   "focus": "wound",
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -394,7 +462,7 @@
     "hegemony",
     "Battleship"
    ],
-   "focus": "wound",
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -463,6 +531,74 @@
     "Battleship"
    ],
    "focus": "wound",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "w2w_H10_23",
+   "label": "H10_23 Directorate Dominion: three hits, hull at 50% (wound detail: camera 26 aimed at the biggest open cutout; not a before/after pair, the pose differs between runs)",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Wounds V2 (R416, issue 1741)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Battleship"
+   ],
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -546,7 +682,7 @@
     "hegemony",
     "Battleship"
    ],
-   "focus": "wound",
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -726,7 +862,7 @@
     "corsair",
     "Cruiser"
    ],
-   "focus": "wound",
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -795,6 +931,74 @@
     "Cruiser"
    ],
    "focus": "wound",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "w2w_C15s_23",
+   "label": "C15s_23 Hullbreaker Wrecker: three hits, hull at 50% (wound detail: camera 26 aimed at the biggest open cutout; not a before/after pair, the pose differs between runs)",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Wounds V2 (R416, issue 1741)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -878,7 +1082,7 @@
     "corsair",
     "Cruiser"
    ],
-   "focus": "wound",
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -1058,7 +1262,7 @@
     "chorus",
     "Cruiser"
    ],
-   "focus": "wound",
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -1127,6 +1331,74 @@
     "Cruiser"
    ],
    "focus": "wound",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "w2w_B21_11",
+   "label": "B21_11 Chorus Bladeback: three hits, hull at 50% (wound detail: camera 26 aimed at the biggest open cutout; not a before/after pair, the pose differs between runs)",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Wounds V2 (R416, issue 1741)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -1210,7 +1482,7 @@
     "chorus",
     "Cruiser"
    ],
-   "focus": "wound",
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -1390,7 +1662,7 @@
     "ithar",
     "Cruiser"
    ],
-   "focus": "wound",
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -1459,6 +1731,74 @@
     "Cruiser"
    ],
    "focus": "wound",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "w2w_I15_11",
+   "label": "I15_11 Glasswright Prism: three hits, hull at 50% (wound detail: camera 26 aimed at the biggest open cutout; not a before/after pair, the pose differs between runs)",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Wounds V2 (R416, issue 1741)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -1542,7 +1882,7 @@
     "ithar",
     "Cruiser"
    ],
-   "focus": "wound",
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -1722,7 +2062,7 @@
     "deathless",
     "Cruiser"
    ],
-   "focus": "wound",
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -1791,6 +2131,74 @@
     "Cruiser"
    ],
    "focus": "wound",
+   "tgt_at": [
+    34,
+    -30
+   ],
+   "id": "w2w_D21_23",
+   "label": "D21_23 Eclipse Zenith: three hits, hull at 50% (wound detail: camera 26 aimed at the biggest open cutout; not a before/after pair, the pose differs between runs)",
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ]
+   ],
+   "sync_t": {
+    "hp": 50.0,
+    "maxHp": 100.0,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 35,
+      "max": 100
+     },
+     "prow": {
+      "hp": 55,
+      "max": 100
+     }
+    }
+   },
+   "windows": [
+    [
+     "event",
+     4.0,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "Wounds V2 (R416, issue 1741)",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "focus": "target",
    "tgt_at": [
     34,
     -30
@@ -1874,7 +2282,7 @@
     "deathless",
     "Cruiser"
    ],
-   "focus": "wound",
+   "focus": "target",
    "tgt_at": [
     34,
     -30
