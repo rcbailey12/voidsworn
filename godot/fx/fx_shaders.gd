@@ -2133,7 +2133,7 @@ void fragment() {
 		float eaten = (vnoise(q.xy * 3.1 + q.z * 1.7 + float(i) * 4.3) - 0.5) * 0.45
 			+ (vnoise(q.xy * 11.0 - q.z * 6.0 + float(i) * 9.1) - 0.5) * 0.18;
 		float d = distance(hp, spots[i].xyz) / r + eaten;
-		float aa = max(fwidth(d), 0.002);
+		float aa = clamp(fwidth(d), 0.002, 0.15);   // capped: edge-on faces and silhouettes must not smear the edge (audit)
 		float inside = 1.0 - smoothstep(1.0 - aa, 1.0 + aa, d);
 		// the rim: a thin band just inside the edge, about two pixels or 6% of the radius, whichever is wider
 		float band = max(0.06, aa * 2.0);
@@ -2143,7 +2143,8 @@ void fragment() {
 		floor_g = max(floor_g, inside * (0.30 + 0.55 * pit));
 	}
 	float pulse = 0.90 + 0.10 * sin(scene_t * 4.5 + hp.x * 0.7);
-	vec3 col = deep * floor_g + hot * rim * 1.3;
+	// kept under the cine look's glow threshold (0.8, look.gd) even over lit plating, so the rim never blooms (audit)
+	vec3 col = max(deep * floor_g, hot * rim * 0.62);
 	ALBEDO = clamp(col * u * pulse * 1.5 * fx_gain, 0.0, 8.0);
 }
 """

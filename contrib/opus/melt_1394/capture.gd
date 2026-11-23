@@ -122,7 +122,7 @@ func _clip(id: String, radius: int) -> void:
 	var r: float = float(radius) if radius > 0 else (maxf(L * 0.9, 8.0) if grazing else (maxf(L * 4.0, 24.0) if radius < 0 else maxf(L * 0.62, 6.0)))
 	bench._cam(Vector3.ZERO, r)
 	if grazing:
-		bench.cam.b = 0.18
+		bench.cam.b = PI / 2.0 - 0.18   # camera_rig b is measured down from straight up: this is about 10 degrees over the plating
 		bench.cam.snap()
 	var view := "%s_%s_%s%d" % [tag, id, "g" if grazing else "c", int(round(r))]
 	var folder := out.path_join(view)

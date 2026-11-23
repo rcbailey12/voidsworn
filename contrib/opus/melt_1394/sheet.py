@@ -2,7 +2,8 @@
 below, columns in the order they were actually sampled, each labelled with its real time after the kill (from
 <tag>_capture.json), and the pin of each row stamped on it. Runs in the cloud on a relay folder:
     python3 sheet.py <relay out folder> <dest folder> <code, e.g. AD1394J>
-The relay folder holds out_old/ and out_new/ (each with scratch/), and checkouts.txt naming the two pins."""
+The relay folder holds out_old/ and out_new/ (each with scratch/, as the OPUS1394 melt bench bats write it; not the
+slot layout of kill_frame_1829.bat), and checkouts.txt naming the two pins."""
 import json, os, sys
 from PIL import Image, ImageDraw, ImageFont
 
@@ -19,21 +20,26 @@ caps = {}
 for side, tag in (("old", "old"), ("new", "new")):
     p = os.path.join(src, "out_" + side, "scratch", tag + "_capture.json")
     caps[side] = json.load(open(p))["targets"]
-for view in sorted(caps["new"]):
+for view in sorted(set(caps["new"]) | set(caps["old"])):
     rows = []
     for side in ("old", "new"):
         row = caps[side].get(view)
-        if not row: continue
-        stills = sorted(row["stills"].items(), key=lambda kv: kv[1])
-        rows.append((side, row, stills))
+        if not row or not row.get("stills"):
+            print("note: %s has no %s row" % (view, side))
+            continue
+        folder = os.path.join(src, "out_" + side, "scratch", "%s_%s" % (side, view))
+        stills = [(k, t) for k, t in sorted(row["stills"].items(), key=lambda kv: kv[1])
+                  if os.path.exists(os.path.join(folder, k + "_sheet.jpg"))]
+        if len(stills) < len(row["stills"]): print("note: %s %s is missing %d still(s)" % (view, side, len(row["stills"]) - len(stills)))
+        if stills: rows.append((side, row, stills, folder))
     if not rows: continue
     n = max(len(r[2]) for r in rows)
     sheet = Image.new("RGB", (W * n, 34 + H * len(rows)), (12, 14, 20))
     d = ImageDraw.Draw(sheet)
     r0 = rows[-1][1]
-    d.text((8, 6), "%s %s %s, acid kill, %s. Top: before. Bottom: after. Times are seconds after the kill." % (code, r0["fac"], r0["cls"], view.split("_")[-1]), font=FS, fill="white")
-    for ri, (side, row, stills) in enumerate(rows):
-        folder = os.path.join(src, "out_" + side, "scratch", "%s_%s" % (side, view))
+    which = "Top: before. Bottom: after." if len(rows) == 2 else ("Before only." if rows[0][0] == "old" else "After only.")
+    d.text((8, 6), "%s %s %s, acid kill, %s. %s Times are seconds after the kill." % (code, r0["fac"], r0["cls"], view.split("_")[-1], which), font=FS, fill="white")
+    for ri, (side, row, stills, folder) in enumerate(rows):
         for ci, (key, t) in enumerate(stills):
             im = Image.open(os.path.join(folder, key + "_sheet.jpg")).convert("RGB").resize((W, H))
             sheet.paste(im, (ci * W, 34 + ri * H))
