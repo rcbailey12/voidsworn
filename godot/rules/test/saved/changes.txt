@@ -1,10 +1,76 @@
-Saved manifest before: 8605aedc1d28ca7b7911643dfbf3dc404e24f2cf72f7af94c234d5ac0895151e
-Saved manifest after: 0fdd2ab1b3ba9985053b61c6ffc11c0cdb193c3f623ac212285156714fe41207
+Saved manifest before: 0fdd2ab1b3ba9985053b61c6ffc11c0cdb193c3f623ac212285156714fe41207
+Saved manifest after: 223f45f2acb6ea21cd3cf95481d80646b4fd99bb98b4d6aa8dd2a203dd40e81b
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t_hb_runbigger
-  turn 0, round 1, after tick player; unit x04 (player c_marauder)
-  state.units[0].name: "Long Howl" -> "Scrapjaw"
-  later changed records: 46; total records: 28 -> 47
-FAIL: saved Godot results; 379 battles checked, 1 changed, 0 other files changed, 1 failures; 16.566 s
+FAIL battle s7
+  turn 0, round 1, after tick player; unit x06 (player reliquary)
+  state.units[1].q: -1 -> 2
+  later changed records: 369; total records: 370 -> 356
+FAIL battle s9
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 5 -> 6
+  later changed records: 347; total records: 348 -> 339
+FAIL battle s10
+  turn 0, round 1, after tick player; unit x013 (enemy b_drone)
+  state.units[8].facing: 0 -> 5
+  later changed records: 346; total records: 268 -> 347
+FAIL battle s20
+  turn 0, round 1, after tick player; unit x08 (enemy h_picket)
+  state.units[4].q: 17 -> 21
+  later changed records: 139; total records: 63 -> 140
+FAIL battle s24
+  turn 0, round 1, after tick player; unit x015 (enemy h_picket)
+  state.units[8].q: 16 -> 19
+  later changed records: 609; total records: 610 -> 498
+FAIL battle s25
+  scenario changed but result is identical; update its saved input hash
+FAIL battle s33
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 2 -> 1
+  later changed records: 243; total records: 180 -> 244
+FAIL battle s34
+  turn 0, round 1, after tick player; unit x010 (enemy b_spitter)
+  state.units[5].armor: 0.05 [d:3fa999999999999a] -> 0.1 [d:3fb999999999999a]
+  later changed records: 253; total records: 254 -> 179
+FAIL battle s35
+  scenario changed but result is identical; update its saved input hash
+FAIL battle s36
+  scenario changed but result is identical; update its saved input hash
+FAIL battle s37
+  turn 0, round 1, after tick player; unit x09 (enemy penitent)
+  state.units[4].ab: "reload" -> "focus"
+  later changed records: 297; total records: 291 -> 298
+FAIL battle s38
+  turn 0, round 1, after tick player; unit x07 (player penitent)
+  state.units[1].q: 6 -> 10
+  later changed records: 272; total records: 273 -> 151
+FAIL battle s39
+  scenario changed but result is identical; update its saved input hash
+FAIL battle s40
+  scenario changed but result is identical; update its saved input hash
+FAIL battle s41
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 7 -> 6
+  later changed records: 333; total records: 255 -> 334
+FAIL battle s42
+  turn 0, round 1, after tick player; unit x010 (enemy c_raider)
+  state.units[5].q: 7 -> 8
+  later changed records: 173; total records: 174 -> 141
+FAIL battle s43
+  turn 0, round 1, after tick player; unit x05 (player b_drone)
+  state.units[1].q: 2 -> 3
+  later changed records: 161; total records: 162 -> 148
+FAIL battle s47
+  turn 0, round 1, after tick player; unit x04 (player warden)
+  state.units[1].q: 0 -> 3
+  later changed records: 51; total records: 51 -> 52
+FAIL battle s49
+  scenario changed but result is identical; update its saved input hash
+FAIL battle s50
+  scenario changed but result is identical; update its saved input hash
+FAIL battle s1480
+  turn 0, round 1, after tick player; unit x07 (player penitent)
+  state.units[1].q: 1 -> 0
+  later changed records: 217; total records: 215 -> 218
+FAIL: saved Godot results; 379 battles checked, 14 changed, 0 other files changed, 21 failures; 19.445 s
