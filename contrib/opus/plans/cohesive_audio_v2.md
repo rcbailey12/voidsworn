@@ -203,3 +203,16 @@ Neon's full notes are in `contrib/neon/reviews/sound_wavea3_ear_1752.md` (PR 185
   - Wave B Eclipse prompts drop "crushing seismic-charge cinematic bass" for midrange-anchored wording ("hard cold electrostatic snap", "hollow bowed-obsidian mid-low knock").
   - This adds to Fable's bass-trap phrase swaps.
 - **Still open from section 8:** almost every keeper sits mostly below 500 Hz (the Directorate B lead take is 79%). Mastering (high-pass, presence lift, loudness match, mono fold) is required before any of them go in game, and the in-engine check against the battle music still decides.
+
+**Ryan's Wave A3 ear picks (Nov 23 2026, 11:23 AM CT, on headphones). These decide; Neon's notes above are input.**
+
+- **Sunward lance:** `wep_sunward_lance_beam` t1, not Neon's t2. That keeps influence 0.60 for beams.
+- **Directorate:** recipe B t1. `wep_directorate_laser_b` t2 is not a variant: Ryan hears it as much lighter. Variation comes from small random pitch and volume on t1 in Godot, or from a later re-roll. Wave B Directorate prompts use recipe B wording.
+- **Shield break:** `shd_break_energy` t1.
+- **Glasswright:** `wep_ithar_shard` t1.
+- **Chorus:** `wep_chorus_spines` t2.
+- **Eclipse:** `wep_eclipse_gauss_fire_ctl` t2 (the old A2 wording), not Neon's new-wording t2.
+  - This is the opposite of Neon's call.
+  - On one speaker this take loses about 3 to 4 dB of its mids and highs and is 94% below 500 Hz.
+  - A one-speaker check of this pick and the lance pick is on the listening page, because the game plays mono.
+  - If Ryan still prefers it in mono, it stands. Mastering then adds a presence lift, and the Wave B Eclipse wording question is reopened with Ryan before Wave B.
