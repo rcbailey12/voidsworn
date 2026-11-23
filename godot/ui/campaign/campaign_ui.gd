@@ -1341,7 +1341,7 @@ func _detail_text(r: Dictionary) -> String:
 	if where.size() > 0: parts.append(", ".join(PackedStringArray(where)).substr(0, 1).to_upper() + ", ".join(PackedStringArray(where)).substr(1) + ".")
 	var dg: Dictionary = r.get("danger", {})
 	if r["fight"] and not dg.is_empty():
-		var t = "%s: their strength is about %d%% of your fleet's" % [dg["band"], int(round(dg["ratio"] * 100.0))]
+		var t = "%s (estimate), about %d%% of your fleet's strength" % [dg["band"], int(round(dg["ratio"] * 100.0))]
 		var wy: Array = dg.get("why", [])
 		if not wy.is_empty():
 			var ps: Array = []

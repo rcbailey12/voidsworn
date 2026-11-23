@@ -128,6 +128,7 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	var boons := []
 	for x in S.get("boons", []): boons.append(x.duplicate())
 	var run := {"admiral": S.admiral, "fac": S.get("fac_player") if S.get("fac_player") != null else "voidsworn", "credits": 0, "cpCap": 40, "sector": int(S.sector), "relics": S.get("relics", []).duplicate(), "inventory": [], "fleet": [], "boons": boons, "patrons": [], "stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0}, "fallen": []}
+	if S.has("encounterCurve"): run["encounterCurve"] = S["encounterCurve"]
 	if R.jt(S.get("aspect")): run["aspect"] = S.aspect
 	if S.get("heat") != null: run["heat"] = S.heat.duplicate()
 	if S.get("class_track") != null: run["classTrack"] = S.class_track.duplicate()
