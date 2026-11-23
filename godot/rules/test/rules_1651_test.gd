@@ -86,7 +86,7 @@ func c_keys() -> Array:
 		if not T.has(k): return [false, "no rider row for " + k]
 		if T[k]["cmd"] != R.ADMIRALS[k]["cmd"]["id"]: return [false, k + " row is under " + str(T[k]["cmd"])]
 		var line := str(T[k]["line"])
-		if line.length() == 0 or line.length() > 70 or line.contains("—"): return [false, k + " line: " + line]
+		if line.length() == 0 or line.length() > 70 or line.contains(char(0x2014)): return [false, k + " line: " + line]
 		if not (src.contains('riderOn("%s")' % k) or src.contains('riderVolley("%s"' % k) or src.contains('"k") == "%s"' % k)): return [false, "no handler for " + k]
 	for k in T.keys():
 		if not R.ADMIRALS.has(k): return [false, "extra rider row " + k]
