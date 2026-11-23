@@ -37,6 +37,7 @@ func _run() -> void:
 			await _breakup(q, kind)
 	await _warmed_late_hit()
 	await _middle_glued()
+	await _kinked_seam()
 	await _one_crack_hulls()
 	_pick()
 	print("BREAKUP failures=%d" % failures)
@@ -56,7 +57,7 @@ func _ship(fx, world: Node3D, id: String, joints: Array) -> Variant:
 	mi.set_surface_override_material(0, StandardMaterial3D.new())
 	holder.add_child(mi)
 	var seams: Array = []
-	for x in joints: seams.append({"p": [x, 0.0, 0.0], "n": [1.0, 0.0, 0.0]})
+	for x in joints: seams.append(x if x is Dictionary else {"p": [x, 0.0, 0.0], "n": [1.0, 0.0, 0.0]})
 	holder.set_meta("voidsworn_destruct", {"version": 1, "seams": seams, "interior_materials": [], "machines": []})
 	fx.add_ship(id, holder, {"faction": "corsair", "cls": "Cruiser", "size": 1.0})
 	return fx.ship(id)
@@ -244,6 +245,36 @@ func _warmed_late_hit() -> void:
 	check(str(s.get_meta("death_breakup", "")) == "two" and glued and n == 3 and absf(held_x + 4.0) < 0.3, "warmed: and a two breakup still happens, held at the -4 joint (%s, glued %s, %d pieces, held at %.2f)" % [str(s.get_meta("death_breakup", "")), glued, n, held_x])
 	world.queue_free()
 	await process_frame
+
+
+# Artoo on fbceb98a: a joint that kinks round a machine is measured at the hit's own z, not at the centre line. Joint A
+# is straight at -1; joint B runs at +4 for most of the beam, then kinks to +0.5 on the +z side. A side hit at x 1.2,
+# z 2.0 is nearest B there (0.7) but nearest A at the centre line (2.2 against 2.8).
+func _kinked_seam() -> void:
+	var kink := {"p": [4.0, 0.0, 0.0], "n": [1.0, 0.0, 0.0], "path": [[4.0, -2.5], [4.0, 0.5], [0.5, 1.0], [0.5, 2.5]]}
+	var side_hit := Vector3(1.2, 1.5, 2.0)
+	for warmed in [false, true]:
+		var world := Node3D.new()
+		root.add_child(world)
+		var fx = _fx(world, "low")
+		var s = _ship(fx, world, "k", [-1.0, kink])
+		s.set_meta("last_hit", [Vector3(-3.0, 1.5, 0.0) if warmed else side_hit, Vector3.DOWN, 0.0])
+		var job: Dictionary = await _wait_cut(fx, s)
+		var plan: Dictionary = job.get("plan", {})
+		if plan.is_empty() or (plan["breaks"] as Array).size() != 2:
+			check(false, "kinked: the cut keeps both joints (%d)" % (0 if plan.is_empty() else (plan["breaks"] as Array).size()))
+		elif not warmed:
+			var bx: float = (plan["breaks"][int(plan["bite_break"])]["at"] as Vector3).x
+			check(bx > 2.0, "kinked: a side hit by the kink cracks the kinked joint first (bite at %.2f)" % bx)
+		else:
+			s.set_meta("last_hit", [side_hit, Vector3.DOWN, fx.now])
+			s.set_meta("breakup_force", "two")
+			fx.death("k", "blast")
+			var c: int = int(s.get_meta("death_crack", -1))
+			var cx: float = (plan["breaks"][c]["at"] as Vector3).x if c >= 0 else INF
+			check(cx > 2.0 and cx < 6.0, "kinked: a later side hit by the kink moves the first crack to the kinked joint (%.2f)" % cx)
+		world.queue_free()
+		await process_frame
 
 
 # Audit on 8a2edbce: with joints at -2 and +3 and the first crack at -2, the glued piece is the middle one. Its torn face

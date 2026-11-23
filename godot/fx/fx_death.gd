@@ -1122,10 +1122,10 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 		# being thrown away). Issue 1236 round 4 (Ryan, Nov 23: "every ship is breaking at the same spot"): otherwise the
 		# joint nearest where the hull was last hit, or a per-ship pick when it has not been hit, no longer always the
 		# joint nearest the core.
-		var near_x: float = (lance[0] as Vector3).x if lance_on else _crack_near_x(s, x0, L, r)
+		var near: Vector3 = lance[0] if lance_on else _crack_near(s, x0, L, r, h.c.z)
 		var keep = transverse[0]
 		for t in transverse:
-			if absf(float(t["at"].x) - near_x) < absf(float(keep["at"].x) - near_x): keep = t
+			if _joint_gap(t, near) < _joint_gap(keep, near): keep = t
 		# and a second joint, so the wreck can break in three (Ryan's "break up a bit more into 3 pieces"): the one that
 		# leaves the smallest of the three pieces biggest, never a sliver under BREAKUP_MIN of the length. Whether it parts
 		# at the death, a beat later or never is the death's breakup (_pick_breakup); a lance kill cuts clean in two.
@@ -1356,11 +1356,18 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 
 # Issue 1236 round 4: where a strained hull's first crack runs. The joint nearest the hull's last hit (hull space, as
 # fracture_plan reads it), or with no hit on record a per-ship point along the middle of the hull.
-static func _crack_near_x(s, x0: float, L: float, r: RandomNumberGenerator) -> float:
+static func _crack_near(s, x0: float, L: float, r: RandomNumberGenerator, cz: float) -> Vector3:
 	var last = s.get_meta("last_hit", [])
 	if last is Array and last.size() >= 1 and last[0] is Vector3:
-		return (last[0] as Vector3).x
-	return x0 + L * r.randf_range(0.25, 0.75)
+		return last[0]
+	return Vector3(x0 + L * r.randf_range(0.25, 0.75), 0.0, cz)
+
+
+# How far a hull-space point is from a joint along the length, measured on the struck side: a seam that kinks round a
+# machine is read at the point's own z (Artoo on fbceb98a: at the centre line a side hit near a kink could pick the
+# other joint).
+static func _joint_gap(b: Dictionary, p: Vector3) -> float:
+	return absf(_break_x(b, p.z) - p.x)
 
 
 # Issue 461 (carried from 484: "the cut is prepared before the killing weapon is known"). A lance kill re-cuts the hull on
@@ -3935,7 +3942,7 @@ static func _pick_breakup(fx, s, cause: String, job: Dictionary) -> String:
 		var brs: Array = plan["breaks"]
 		var nb := 0
 		for bi in brs.size():
-			if absf((brs[bi]["at"] as Vector3).x - (last[0] as Vector3).x) < absf((brs[nb]["at"] as Vector3).x - (last[0] as Vector3).x): nb = bi
+			if _joint_gap(brs[bi], last[0]) < _joint_gap(brs[nb], last[0]): nb = bi
 		if nb != int(plan["bite_break"]): s.set_meta("death_crack", nb)
 	if s.has_meta("breakup_force"): return str(s.get_meta("breakup_force"))   # breakup_check and the look bench only
 	if cause == "cut" or cause == "dark": return "two"   # a lance cuts clean; a burnt-out hull does not fly apart

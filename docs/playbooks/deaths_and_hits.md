@@ -162,7 +162,8 @@ saw the halves stay where they broke and asked for more: up close the broken sec
 ship broke at the same spot, and "we want variety". Since Nov 23:
 
 - Where it cracks: a strained big hull is cut on two authored joints. The first crack is the joint nearest where the
-  hull was last hit (with no hit on record, a per-ship pick), never always the joint nearest the core. A lance cuts clean
+  hull was last hit, measured on the struck side where a joint kinks round a machine (with no hit on record, a per-ship
+  pick), never always the joint nearest the core. A lance cuts clean
   on the joint nearest the beam, in two. The cut is made ahead of the death (refreshed at most every few seconds as the hull is hit),
   so when the killing hit lands nearer the other cut joint, that joint cracks first and the earlier one holds; the
   breakup is still rolled as usual (forcing three there made three the most common breakup in a real fight).
