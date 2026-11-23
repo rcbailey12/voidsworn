@@ -245,6 +245,10 @@ func _hulk_checks() -> void:
 	_report(burnt["corsair"] > burnt["voidsworn"] and burnt["voidsworn"] > burnt["hegemony"] and burnt["hegemony"] > 0.0
 		and burnt["chorus"] == 0.0 and burnt["ithar"] == 0.0 and burnt["deathless"] == 0.0
 		and is_equal_approx(PROPS.HULK_BAND.y, 0.07), "burn patches by wreck_soot: %s" % str(burnt))
+	# one burnt material per source material and faction, shared by every hulk of that hull (LOAD probe, Board Nov 22)
+	var sh1 := PROPS.derelict_shared(plain, "corsair")
+	_report(sh1 == PROPS.derelict_shared(plain, "corsair") and sh1 != PROPS.derelict_shared(plain, "voidsworn"),
+		"hulks of one hull share their burnt materials, per faction")
 
 
 func _board(terrain: Dictionary, holes: Array, units: Array, map: Dictionary, radius: int, seed := 7) -> Node3D:

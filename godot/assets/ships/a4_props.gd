@@ -344,8 +344,18 @@ static func hulk(code: String) -> Node3D:
 			var src := m.get_active_material(i) as BaseMaterial3D
 			if src == null:
 				continue
-			m.set_surface_override_material(i, derelict(src, fac))
+			m.set_surface_override_material(i, derelict_shared(src, fac))
 	return n
+
+
+# PR 1772 LOAD probe (Board, Nov 22): a graveyard reuses one burnt copy per source material and faction, so 31 hulks of
+# 8 hulls make one material per hull surface, not one per hulk surface. Nothing changes a hulk's material afterwards.
+static var _derelict_cache := {}
+static func derelict_shared(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
+	var key := "%d|%s|%s" % [src.get_instance_id(), fac, old_path()]
+	if not _derelict_cache.has(key):
+		_derelict_cache[key] = derelict(src, fac)
+	return _derelict_cache[key]
 
 
 
@@ -488,6 +498,7 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 # PR 1772 at 2449bcb0)
 static func clear_static() -> void:
 	_burn_cache.clear()
+	_derelict_cache.clear()
 
 
 # one scorch-patch texture per faction (white = untouched paint, the scorch multiplier where burnt), built once
