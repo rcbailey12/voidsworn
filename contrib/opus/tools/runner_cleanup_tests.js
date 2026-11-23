@@ -653,8 +653,8 @@ try {
   assert(dry.includes(`link not followed: ${path.join(ownedLinked, 'nested', 'ships-link')} -> `), 'the link and its target are logged');
   decision(dry, legacyNear, 'would remove');
   if (legacyUnreadable) {
-    assert.match(decision(dry, legacyUnreadable, 'would remove'), /1 folders another account owns left in place; scratch named by our tools/);
-    assert(dry.includes(`folder not readable by this account, left in place: ${lockedPart}`), 'the unreadable folder is listed');
+    assert.match(decision(dry, legacyUnreadable, 'would remove'), /1 folders another account owns cannot be removed and are not counted; scratch named by our tools/);
+    assert(dry.includes(`cannot remove: ${lockedPart} (another account owns it or it cannot be read; left in place)`), 'the unreadable folder is listed');
   }
   if (!windows) {
     // With no process list (and no test list), older scratch is kept.
