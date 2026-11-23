@@ -1152,6 +1152,7 @@ uniform vec3 tail_col = vec3(0.55, 0.7, 0.9);
 uniform float gain = 0.22;
 varying vec2 vQ;
 varying float vSeed;
+varying float vFade;
 void vertex() {
 	// INSTANCE_CUSTOM: x tail length, y width at the root, z width at the end, w seed. The instance's Y axis is the tail.
 	vec3 head = MODEL_MATRIX[3].xyz;
@@ -1160,7 +1161,12 @@ void vertex() {
 	float t = 1.0 - UV.y;
 	vec3 along = head + axis * t * INSTANCE_CUSTOM.x;
 	vec3 eye = INV_VIEW_MATRIX[3].xyz;
-	vec3 side = normalize(cross(axis, along - eye));
+	// Artoo on PR 1782: seen straight down the tail the cross product is zero; fall back to a fixed side (the card is
+	// faded out there anyway, below) so the corners never get an undefined direction
+	vec3 c = cross(axis, along - eye);
+	vec3 side = dot(c, c) > 1e-8 ? normalize(c) : normalize(cross(axis, abs(axis.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
+	vec3 to_head = head - eye;
+	vFade = 1.0 - smoothstep(0.82, 0.97, abs(dot(axis, to_head)) / max(length(to_head), 1e-3));
 	VERTEX = along + side * (UV.x - 0.5) * mix(INSTANCE_CUSTOM.y, INSTANCE_CUSTOM.z, sqrt(t));
 	vQ = vec2(UV.x * 2.0 - 1.0, t);
 	vSeed = INSTANCE_CUSTOM.w;
@@ -1175,7 +1181,7 @@ void fragment() {
 	float streak = 0.55 + 0.75 * smoothstep(0.35, 0.8, n * 0.6 + m * 0.4);
 	float across = 1.0 - smoothstep(0.15, 1.0, u);
 	float along = smoothstep(0.0, 0.04, t) * exp(-t * 2.6) * (1.0 + 0.6 * exp(-t * 18.0));
-	ALBEDO = tail_col * across * along * streak * gain;
+	ALBEDO = tail_col * across * along * streak * gain * vFade;
 }
 """
 
