@@ -136,6 +136,15 @@ static func prefetch() -> void:
 			_pending[p] = true
 
 
+# true once every prefetched clip is read: main.gd waits for this, a frame at a time, before it builds a battle, so _load
+# never waits on a worker (Artoo on PR 1445)
+static func prefetch_ready() -> bool:
+	for p in _pending:
+		if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			return false
+	return true
+
+
 # the game is closing: whatever finished is collected, the rest is left to the loader (main.gd quit_clean)
 static func drop_pending() -> void:
 	for p in _pending.keys():

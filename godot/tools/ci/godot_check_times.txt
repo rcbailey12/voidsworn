@@ -165,3 +165,4 @@ rules_1653_test 3
 salvage_1653_test 3
 salvage_1653_shots 3
 rules_1649_test 3
+prefetch_wait_check 5

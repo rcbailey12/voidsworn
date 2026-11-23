@@ -484,6 +484,11 @@ static func next_showcase_fac() -> String:
 func _start_showcase() -> void:
 	if quitting or title == null or not is_instance_valid(title) or showcase != null or not _showcase_wanted():
 		return
+	var t_wait: Node = title
+	if not await prefetch_wait(false):   # the silent backdrop needs only the sky
+		return
+	if title != t_wait or showcase != null or not is_instance_valid(title):
+		return   # the title was left or a backdrop started meanwhile
 	showcase = BattleScene.instantiate()
 	showcase.showcase = true
 	showcase.title_backdrop = true   # issue 1434: capped at High, silent, no combat warm-up
@@ -588,8 +593,25 @@ static func campaign_has_save() -> bool:
 # and answers its messages once before the battle is built, so a close that comes during that build is seen at once
 func _quick_battle_after_first_frame() -> void:
 	await RenderingServer.frame_post_draw
-	if not quitting:
+	if await prefetch_wait(true):
 		quick_battle()
+
+
+# Artoo on PR 1445: a battle built while its sky (or, with sound, its clips) is still loading on a worker would wait for
+# it inside one frame, where a close is not seen. The battle waits here, a frame at a time, until they are read; false
+# when the game is closing meanwhile (the caller builds nothing). At most 20 s, then the battle goes ahead and the
+# collectors wait for the rest as before. Returns at once when nothing is pending (the usual case).
+var prefetch_waited_ms := -1   # the last wait (the prefetch check reads it); -1: none yet
+func prefetch_wait(with_sound: bool) -> bool:
+	var t0 := Time.get_ticks_msec()
+	while not quitting and Time.get_ticks_msec() - t0 < 20000 and not _prefetch_ready(with_sound):
+		await get_tree().process_frame
+	prefetch_waited_ms = Time.get_ticks_msec() - t0
+	return not quitting
+
+
+func _prefetch_ready(with_sound: bool) -> bool:
+	return BattleScript.sky_ready() and (not with_sound or BattleScript.Sfx.prefetch_ready())
 
 
 func quick_battle() -> void:

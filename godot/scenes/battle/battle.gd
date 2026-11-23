@@ -337,6 +337,12 @@ static func prefetch_sky() -> void:
 		_sky_pending = sky_res
 
 
+# true once the prefetched sky is read (or none was asked for): main.gd waits for this, a frame at a time, before it builds
+# a battle, so _sky_texture never waits on the worker (Artoo on PR 1445)
+static func sky_ready() -> bool:
+	return _sky_pending == "" or ResourceLoader.load_threaded_get_status(_sky_pending) != ResourceLoader.THREAD_LOAD_IN_PROGRESS
+
+
 static func _sky_texture(p: String) -> Resource:
 	if _sky_pending == p:
 		_sky_pending = ""
