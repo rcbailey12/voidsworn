@@ -82,22 +82,35 @@ static func clear_static() -> void:
 
 # Authored R01 maps use the same shared worker and texture cache as the GPU
 # bakes. Decode and mip generation never block the battle's main thread.
-func authored(path: String, size: Vector2i, float_mips := false) -> Image:
+func authored(path: String, size: Vector2i, float_mips := false, urgent := false) -> Image:
 	var owner := service(_tree())
 	var key := (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
 	if _cache.has(key): return _cache[key]
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"path": path, "size": size, "done": false,
 			"image": null, "started": Time.get_ticks_msec(), "compute": false, "float_mips": float_mips}
-		owner._queue.append(key)
+	owner._enqueue(key, urgent)
 	var job: Dictionary = owner._jobs[key]
 	while not job.done: await _tree().process_frame
 	return job.image
 
+# Issue 1765 (PC proof OPUS1765_PC_C): the board planet fills half the frame and holds the loading cover, but its maps
+# queued behind every far backdrop bake, so a cold cache missed the 20 s cover. An urgent job goes to the front of the
+# queue (behind only the job already running); a queued job asked for urgently moves up.
+func _enqueue(key: String, urgent: bool) -> void:
+	if not _jobs.has(key) or _active == key: return
+	var at := _queue.find(key)
+	if at < 0 and _jobs[key].get("queued", false): return   # already taken by the worker: never run twice
+	_jobs[key]["queued"] = true
+	if at >= 0 and (not urgent or at == 0): return
+	if at >= 0: _queue.remove_at(at)
+	if urgent: _queue.push_front(key)
+	else: _queue.append(key)
+
 # half_mips (issue 1765): the map holds a 16-bit height packed in R and G (the board planet's relief). It is decoded to
 # one 32-bit float channel before its mips are made: exact, half the memory of half floats in four channels (Fable,
 # PR 1776 M4), and averaging never rounds the high byte into false ridges.
-func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int, half_mips := false) -> Image:
+func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int, half_mips := false, urgent := false) -> Image:
 	var owner := service(_tree())
 	key = cache_key(key, code, params, size)
 	if _cache.has(key): return _cache[key]
@@ -105,7 +118,7 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 		owner._jobs[key] = {"code": code, "params": params.duplicate(true), "size": size, "half_mips": half_mips,
 			"done": false, "image": null, "started": Time.get_ticks_msec(),
 			"compute": DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "gl_compatibility"}
-		owner._queue.append(key)
+	owner._enqueue(key, urgent)
 	var job: Dictionary = owner._jobs[key]
 	while not job.done: await _tree().process_frame
 	return job.image

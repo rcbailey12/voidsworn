@@ -97,7 +97,7 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 		var u := r.randf_range(float(windows[0]), float(windows[1]))
 		var opts := {"turn": TAU * (1.0 - u), "tilt": PI * 0.5 + r.randf_range(-0.25, 0.25), "tint": tints[r.randi() % tints.size()],
 			"clouds": bool(L["clouds"]), "atmo": L["atmo"], "atmo_k": float(L["atmo_k"]), "seed": r.randf() * 50.0,
-			"desat": float(L.get("desat", 0.0)), "gain": float(L.get("gain", 1.0))}
+			"desat": float(L.get("desat", 0.0)), "gain": float(L.get("gain", 1.0)), "urgent": true}
 		# Fable (PR 1776 H11) asked for more clean windows. Tried in cloud renders (issue 1765): turning the strip end
 		# over end, or mirroring it, carries the swirled longitudes beside the window onto the close-up limb, so neither
 		# ships. More ground needs a cleaner remix of the data itself (a follow-up job).
@@ -110,11 +110,12 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	var size := BOARD_SIZE
 	if OS.has_environment("VS_WORLD_PREVIEW"): size = Vector2i(1024, 512)
 	var code := bake_code()
-	var a: Image = await baker.bake(key + "|a", code, params, size, 32)
+	# urgent: ahead of the far backdrop bakes, so a cold cache still makes the loading cover (PC proof, PR 1776)
+	var a: Image = await baker.bake(key + "|a", code, params, size, 32, false, true)
 	params["pass_id"] = 1
-	var b: Image = await baker.bake(key + "|b", code, params, size, 32)
+	var b: Image = await baker.bake(key + "|b", code, params, size, 32, false, true)
 	params["pass_id"] = 2
-	var h: Image = await baker.bake(key + "|h", code, params, size, 32, true)   # one 32-bit float height channel
+	var h: Image = await baker.bake(key + "|h", code, params, size, 32, true, true)   # one 32-bit float height channel
 	if not is_instance_valid(planet) or a == null or b == null or h == null: return
 	if planet.get_meta("planet_frozen", false): return   # the loading cover already lifted (board.gd wait_planet)
 	stand_in.set_shader_parameter("tex_a", baker.texture(a))
@@ -145,8 +146,9 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	if not rocky_available(): return
 	var started := Time.get_ticks_msec()
 	var baker = preload("res://world/world_bake.gd").service(planet.get_tree())
-	var colour: Image = await baker.authored(R01_DIR + "colour.json", R01_SIZE)
-	var data: Image = await baker.authored(R01_DIR + "relief.json", R01_SIZE, true)
+	var urgent := bool(opts.get("urgent", false))
+	var colour: Image = await baker.authored(R01_DIR + "colour.json", R01_SIZE, false, urgent)
+	var data: Image = await baker.authored(R01_DIR + "relief.json", R01_SIZE, true, urgent)
 	if not is_instance_valid(planet) or colour == null or data == null: return
 	if planet.get_meta("planet_frozen", false): return   # the loading cover already lifted (board.gd wait_planet)
 	var light_dir := (sun_position - planet.global_position).normalized()

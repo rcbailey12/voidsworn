@@ -235,6 +235,19 @@ func _run() -> void:
 	for i in WORLD.MOON_LOOKS.size():
 		for key in ["a", "b", "c"]:
 			_check(not _purple(WORLD.MOON_LOOKS[i][key]), "moon look %d %s leans indigo to purple" % [i, key])
+	# the board planet's maps jump the bake queue (PC proof OPUS1765_PC_C: behind the backdrops a cold cache missed the
+	# 20 s cover); a job the worker already took is never queued twice
+	var q = BAKER.new()
+	for k in ["far1", "far2"]:
+		q._jobs[k] = {}
+		q._enqueue(k, false)
+	q._jobs["board"] = {}
+	q._enqueue("board", true)
+	_check(q._queue == ["board", "far1", "far2"], "an urgent board planet map does not jump the bake queue (%s)" % str(q._queue))
+	q._queue.pop_front()
+	q._enqueue("board", true)
+	_check(q._queue == ["far1", "far2"], "a bake the worker already took was queued again (%s)" % str(q._queue))
+	q.free()
 	# relief: one exact 32-bit float channel (Fable, PR 1776 M4)
 	var packed := Image.create(4, 2, false, Image.FORMAT_RGBA8)
 	packed.set_pixel(1, 0, Color8(0x9c, 0x41, 0, 255))
