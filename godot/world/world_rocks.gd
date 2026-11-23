@@ -265,25 +265,28 @@ void fragment() {
 		a = mix(a, fresh, smoothstep(0.6, 0.98, fr) * 0.55);
 		rough = 0.94;
 	} else if (kind == 3) {
-		// r2: dark dusty crust, clean ice only in the fresh breaks and a few patches, frosty rather than glossy (r1's ice
-		// covered most faces at roughness 0.2 and read as pale blue plastic)
+		// Wave 0 (Board, Nov 23): the ice belt reads pale overall. A matte frost coat over most of the rock (dark only in
+		// the deep hollows and crater floors), clean ice a little brighter in the fresh breaks, and no glow at all. The
+		// r2 dark crust with a few white shelves read grey at c170, the same as the comets
+		float frost = clamp(smoothstep(0.06, 0.3, facet) * (0.7 + 0.3 * n1) - crat * 0.35, 0.0, 1.0);
+		a = mix(a, fresh * (0.6 + 0.2 * n2), frost * 0.85);
 		float ice = clamp(smoothstep(0.5, 0.95, fr) + smoothstep(0.7, 0.82, n1) * 0.3 - crat * 0.4, 0.0, 1.0);
 		ice *= ice;
-		a = mix(a, fresh * (0.8 + 0.3 * n2), ice);
-		rough = mix(0.88, 0.42, ice);
-		float crack = smoothstep(0.93, 0.985, 1.0 - abs(n2 * 2.0 - 1.0));
-		em = glow_col * crack * ice * 0.05;
-	} else {
-		// Issue 1361 (Ryan, Nov 22): the "crystal" kind is now ice comets. A dark dusty crust broken by wide sheets of clean
-		// white ice (more, and whiter, than the ice belt's frost shelves), a light frost dust over the crust, and a faint
-		// cold glow only deep in a few vents ("be careful with the glowing core": small, dim, never the whole surface)
-		float ice = clamp(smoothstep(0.42, 0.9, fr) + smoothstep(0.62, 0.8, n1) * 0.35 - crat * 0.3, 0.0, 1.0);
 		a = mix(a, fresh * (0.85 + 0.25 * n2), ice);
-		cracks *= 0.35 * (1.0 - ice * 0.7);   // the hairline crack net reads as black scribbles on comet ice and its pale dust
-		a = mix(a, fresh * 0.3, smoothstep(0.65, 0.9, n3) * 0.12 * (1.0 - ice));
-		rough = mix(0.86, 0.5, ice);
+		cracks *= 0.5;
+		rough = mix(0.8, 0.45, ice);
+	} else {
+		// Issue 1361 (Ryan, Nov 22): the "crystal" kind is now ice comets: a dark dusty crust, darker than the pale ice belt,
+		// with a few soft patches of dirty ice on the faces and a faint cold glow only deep in a few vents ("be careful with
+		// the glowing core": small, dim, never the whole surface). Wave 0 (Nov 23): the ice follows broad noise on the faces,
+		// not the ridges, so it reads as patches rather than white outlines round every face
+		float ice = smoothstep(0.56, 0.78, n1) * smoothstep(0.12, 0.45, facet) * (1.0 - crat * 0.6);
+		a *= 0.62;   // a comet's crust is among the darkest things in space; the shared lift had it mid grey
+		a = mix(a, fresh * (0.55 + 0.2 * n2), ice * 0.8);
+		cracks *= 0.35;   // the hairline crack net reads as black scribbles on comet ice
+		rough = mix(0.88, 0.55, ice);
 		float vent = (1.0 - smoothstep(0.02, 0.1, facet)) * smoothstep(0.75, 0.9, n2);
-		em = glow_col * vent * 0.06;
+		em = glow_col * vent * 0.05;
 	}
 	a *= 1.0 - cracks * 0.6;
 	// r8: fresh, lighter rock on crater rims, a little dust darkening their floors

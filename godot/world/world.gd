@@ -33,6 +33,7 @@ const DAWN_COL := Color(1.0, 0.76, 0.46)
 
 var quality := "max"
 var notes: PackedStringArray = []
+var comet_spots: Array = []   # each comet's nucleus moved a third of the way down its tail (the bench aims its wide comet frame here)
 var setting := {}
 var nebula_wake := false   # issue 1079 prototype, off by default (world_living.gd, nebula_wake.gd)
 var _spin: Array = []        # [node, axis, rate]
@@ -1219,6 +1220,7 @@ func comets(r: RandomNumberGenerator, ext: Vector3) -> void:
 		var b := Basis(away.cross(Vector3.FORWARD).normalized(), away, away.cross(away.cross(Vector3.FORWARD)).normalized())
 		mm.set_instance_transform(i, Transform3D(b, p))
 		mm.set_instance_custom_data(i, Color(length, s * 2.2, s * 9.0, r.randf()))
+		comet_spots.append(p + away * length / 3.0)
 		i += 1
 	mm.visible_instance_count = i
 	if i == 0:

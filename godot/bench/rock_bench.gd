@@ -10,7 +10,7 @@ extends "res://bench/look_bench.gd"
 # stamped by tools/picture_provenance.gd:
 #   rocks/RK_<kind>_c170.png and rocks/RK_<kind>_c26.png for stone, iron, carbon, ice, crystal (a rock blocker cluster and
 #   debris hexes around the camera focus, the region's sky behind)
-#   rocks/RK_crystal_comets_c420.png (zoomed out to the far edge, where the comets and their tails are)
+#   rocks/RK_crystal_comets_c420.png (aimed at the comets beyond the far edge and looking along their tails; the name is kept)
 #   rocks/RK_crystal_cluster_c26.png (camera 26 tipped low onto a crystal blocker: main's clusters before, the ice comet
 #   look after; the crystal kind is ice comets since Ryan scrapped the clusters, Nov 22)
 # and one frame-time row: rocks/frame_time.json (a full crystal belt, 37 rock hexes, at camera 170: mean and p95 GPU and
@@ -60,8 +60,21 @@ func _run() -> void:
 			cam.snap()
 			await _hold(8)
 			_save(d, "RK_crystal_cluster_c26.png", kind, 26.0)
-			# the comets and their tails sit beyond the board's far edge, seen zoomed out (Ryan, Nov 22)
+			# the comets and their tails sit beyond the board's far edge, seen zoomed out (Ryan, Nov 22). Wave 0 (Nov 23): the
+			# board-centred c420 frame cropped them off its top edge, so aim at the comets themselves and look lower, along
+			# the tails against the sky (the old look has no comets and keeps the board-centred frame)
 			_cam(_hex(0, 0), 420.0)
+			if not wld.comet_spots.is_empty():
+				var mid := Vector3.ZERO
+				for p in wld.comet_spots:
+					mid += p
+				cam.t = mid / float(wld.comet_spots.size())
+				cam.r = 520.0
+				cam.b = 0.45
+				cam.snap()
+			elif not report["old_look"]:
+				_log("no comets were placed in the crystal field, so the wide comet frame has nothing to aim at")
+				missing.append("RK_crystal_comets_c420.png (no comets)")
 			await _hold(8)
 			_save(d, "RK_crystal_comets_c420.png", kind, 420.0)
 	# frame time: a full crystal belt at the battle camera
