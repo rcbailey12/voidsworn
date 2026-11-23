@@ -994,12 +994,10 @@ func equivHull(tpl, fac) -> Variant:
 	return a
 func nodeFaction(n) -> String:
 	var main = RUN["map"]["fac"]
-	if RUN.get("teachingGate") == true and float(RUN["sector"]) == 1.0 and n["type"] in ["battle", "elite"]:
-		var seen = RUN.get("teachingBattles", [])
-		var old = seen.find(numstr(RUN["sector"]) + ":" + str(n["id"]))
-		var base = RUN.get("teachingBattleBase", z0(RUN.get("stats", {}).get("battles")))
-		var i = float(base) + (seen.size() if old < 0 else old)
-		if i < 2: return "hegemony" if i == 0 else "corsair"
+	if n["type"] in ["battle", "elite"]:
+		var lesson := node_teaching_battle(n, n["type"])
+		if lesson == 1: return "hegemony"
+		if lesson == 2: return "corsair"
 	if not jt(RUN.get("foes")) or n["type"] != "battle": return main
 	var h = 0
 	for ch in (String(n["id"]) + numstr(RUN["sector"])): h = (h * 31 + ch.unicode_at(0)) & 0xFFFFFFFF
@@ -1387,6 +1385,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	var foes = shuffle(RUN_FACTIONS.filter(func(f): return f != fac))
 	RUN = {"fac": fac, "foes": foes, "admiral": admiralId, "credits": 120, "cpCap": 10, "sector": 1, "relics": [], "inventory": [], "fleet": [], "pos": null,
 		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": now_ms(), "fallen": [], "ambush": false, "over": false, "boons": [], "eatenCore": null, "eatCoreSeen": false}
+	RUN["encounterCurve"] = BattleAPI.RulesScript.ENCOUNTER_CURVE_V1
 	# Missing means off, so old saves and default runs keep their existing save format.
 	if opt.get("mapTrial") == true: RUN["mapTrial"] = true
 	RUN["patrons"] = shuffle(PATRONS.keys()).slice(0, 4); RUN["aspect"] = null; RUN["flagUid"] = null; RUN["nem"] = null
@@ -1937,17 +1936,24 @@ func _open_stop(n: Dictionary) -> void:
 	elif n["type"] == "shipyard": shipyardScreen(n)
 	elif n["type"] in ["drydock", "field"]: repairStopScreen(n)
 
+func battle_node_kind(n: Dictionary, nem: bool) -> String:
+	var kind: String = n["type"]
+	if kind == "boss": return kind
+	if nem or (kind == "battle" and jt(RUN.get("ambush"))): return "elite"
+	return kind
+
 func _enter_battle_node(n: Dictionary) -> void:
-	var kind = n["type"]; var fac = nodeFaction(n)
-	if kind == "boss" and nemNodeIs(n):   # issue 1480 (R384): he joins the boss fight
+	var nem = nemNodeIs(n)
+	var kind = battle_node_kind(n, nem); var fac = nodeFaction(n)
+	if kind == "boss" and nem:   # issue 1480 (R384): he joins the boss fight
 		battleScreen({"kind": "boss", "fac": fac, "col": n["col"], "node": n["id"], "nemesis": nemBattleCfg()}); return
-	if nemNodeIs(n):   # B4: the Nemesis fight (marked on the map beforehand)
+	if nem:   # B4: the Nemesis fight (marked on the map beforehand)
 		var nem0 = nemActive(); var fa = nemBeh().get("fleet")
-		var nc = {"kind": "elite", "fac": nem0["fac"], "col": n["col"], "node": n["id"], "nemesis": nemBattleCfg()}
+		var nc = {"kind": kind, "fac": nem0["fac"], "col": n["col"], "node": n["id"], "nemesis": nemBattleCfg()}
 		if fa != null and ARCHETYPES.has(fa): nc["arch"] = fa
 		battleScreen(nc); return
-	if jt(RUN.get("ambush")) and kind == "battle":
-		kind = "elite"; fac = RUN["map"]["fac"] if RUN["fac"] == "hegemony" else "hegemony"; RUN["ambush"] = false
+	if n["type"] == "battle" and kind == "elite":
+		fac = RUN["map"]["fac"] if RUN["fac"] == "hegemony" else "hegemony"; RUN["ambush"] = false
 		toast("The Directorate escort you robbed has found you.")
 	battleScreen({"kind": kind, "fac": fac, "col": n["col"], "node": n["id"]})
 
@@ -2837,8 +2843,8 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 		elif flagDead and float(RUN["sector"]) >= 3:
 			N["dead"] = true; out.append(nemSay(nemFull() + " is dead. The feud is over.", N))
 			if not jt(beh.get("revive")): _speak(out, N, "fall")   # A1: the Eclipse commander's second, permanent death says nothing
-		elif flagDead:   # R49: before the last sector every rival, the Deathless one too, withdraws like this
-			nemScar(o.get("cause") if jt(o.get("cause")) else "big"); nemEscape(N, "flagship"); out.append(nemSay(nemFull() + "'s flagship breaks apart, but he escapes, scarred and furious. He will be back.", N))
+		elif flagDead:   # R49: before the last sector every rival, the Deathless one too, withdraws like this; issue 1505: a rival who never flees (noFlee, revive) withdraws, he does not escape
+			nemScar(o.get("cause") if jt(o.get("cause")) else "big"); nemEscape(N, "flagship"); out.append(nemSay(nemFull() + "'s flagship breaks apart, " + ("and he withdraws" if (jt(beh.get("noFlee")) or jt(beh.get("revive"))) else "but he escapes") + ", scarred and furious. He will be back.", N))
 			_speak(out, N, "fall")
 		else: out.append(nemSay(nemFull() + " withdraws to fight another day.", N))
 		# R49 fairness: what a Corsair raid took (credits and a towed ship) comes back when he dies
@@ -3795,17 +3801,25 @@ func set_teaching_tips(on: bool) -> void:
 			first["shape"] = "open"
 		elif first.has("teachingShape"):
 			first["shape"] = first["teachingShape"]; first.erase("teachingShape")
+func _teaching_battle_base() -> int:
+	var won = RUN.get("stats", {}).get("battles", 0)
+	return max(0, int(won)) if (won is int or won is float) and is_finite(float(won)) else 0
+func _teaching_battle_number(key: String) -> int:
+	var seen: Array = RUN["teachingBattles"] if RUN.get("teachingBattles") is Array else []
+	var base = RUN.get("teachingBattleBase")
+	var index := seen.find(key)
+	return (int(base) if base != null else _teaching_battle_base()) + (seen.size() if index < 0 else index) + 1
+func node_teaching_battle(node: Dictionary, kind: String) -> int:
+	if RUN.get("teachingGate") != true or int(RUN["sector"]) != 1 or kind == "boss": return 0
+	return _teaching_battle_number(numstr(RUN["sector"]) + ":" + str(node["id"]))
 func teachingBattle(cfg: Dictionary) -> Dictionary:
 	if RUN == null or RUN.get("teachingGate") != true: return cfg
 	var key = numstr(RUN["sector"]) + ":" + str(or_(cfg.get("node"), "event")) + (":event" if jt(cfg.get("eventRelic")) else "")
 	if not (RUN.get("teachingBattles") is Array): RUN["teachingBattles"] = []
-	if RUN.get("teachingBattleBase") == null:
-		var won = RUN.get("stats", {}).get("battles", 0)
-		RUN["teachingBattleBase"] = max(0, int(won)) if (won is int or won is float) and is_finite(float(won)) else 0
+	if RUN.get("teachingBattleBase") == null: RUN["teachingBattleBase"] = _teaching_battle_base()
 	var seen = RUN["teachingBattles"]
-	var i = seen.find(key)
-	if i < 0: i = seen.size(); seen.append(key)
-	var n = int(RUN["teachingBattleBase"]) + i + 1
+	var n := _teaching_battle_number(key)
+	if not seen.has(key): seen.append(key)
 	cfg = cfg.duplicate(); cfg["runBattle"] = n; cfg["teachingGate"] = true
 	if float(RUN["sector"]) != 1.0 or n > 2 or cfg.get("kind") == "boss": return cfg
 	cfg["teachingBattle"] = n; cfg["fac"] = "hegemony" if n == 1 else "corsair"

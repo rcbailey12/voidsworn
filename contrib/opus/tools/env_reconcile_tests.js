@@ -60,7 +60,7 @@ check(/const TUMBLE_K := 0\.10\b/.test(liv) && has(liv, 'return TUMBLE_K / maxf(
 check(has(liv, 'uniform float tumble_k = 0.10;') && has(liv, 'min(rate, tumble_k / max(1.0, scale_v))'), 'the wreck shader caps tumble with the same figure');
 check(!/0\.10 \/ max\(1\.0, scale_v\)/.test(liv), 'no second hard-coded 0.10 tumble cap in world_living.gd');
 check(has(liv, 'OS.get_environment("VS_TUMBLE") == "periods" else "cap"'), 'the terrain-periods tumble is a capture variant, off by default');
-check((rocks.match(/uniform float tumble_k = 0\.0;/g) || []).length === 2 && has(rocks, 'static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") == "0" else 1.0'), 'rocks turn at the slow law by default (rock and crystal shaders; VS_ROCK_TUMBLE=0 holds the pose)');
+check((rocks.match(/uniform float tumble_k = 0\.0;/g) || []).length === 1 && has(rocks, 'static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") == "0" else 1.0'), 'rocks turn at the slow law by default (the rock shader; the crystal shader went with the clusters, issue 1361; VS_ROCK_TUMBLE=0 holds the pose)');
 check(has(rec, '0.10 / max(1, scale)'), 'environment_reconciliation.md states the figure of record');
 // 3b. The documents of record state the values the code side pins (contrib/muse/reviews/opus_check_286.md conditions 1 and 3)
 for (const row of [

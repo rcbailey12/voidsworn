@@ -38,6 +38,8 @@ func _run() -> void:
 			var from := Vector3(0, 2, 0)
 			fx.dstate["proj"] = []
 			FXW._launch(fx, c[0], from, c[1], to, 1.0, 3.0, Color.WHITE, fac, 1.0, 0, false, null, null, 1.0, "hegemony")
+			var expected := 4 if c[0] == "rockets" else 1
+			check(fx.dstate["proj"].size() == expected, "%s to %s launched %d rounds (want %d)" % [c[2], to, fx.dstate["proj"].size(), expected])
 			for p in fx.dstate["proj"]:
 				var a: Vector3 = p["a"]
 				var ed: Vector3 = p["ed"]
@@ -50,7 +52,6 @@ func _run() -> void:
 				checked += 1
 				if is_instance_valid(p["mesh"]):
 					(p["mesh"] as Node).queue_free()
-	check(checked >= 18, "every case launched a round (%d)" % checked)
 	fx.dstate["proj"] = []
 	print("TORPEDO_FLAT_FLIGHT failures=%d rounds=%d" % [failures, checked])
 	fx.queue_free()

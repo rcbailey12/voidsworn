@@ -1426,7 +1426,8 @@ func _end_dim() -> void:
 func hull_damage_template(source: Material, length: float, organic: bool, power := false) -> ShaderMaterial:
 	if source != null and source.has_meta("fx_hull_source"):
 		source = source.get_meta("fx_hull_source")
-	var key := [source, maxf(length * 0.05, 0.001), organic]
+	# The deferred nebula policy can set disable_fog after this material was first seen.
+	var key := [source, maxf(length * 0.05, 0.001), organic, source is BaseMaterial3D and source.disable_fog]
 	if not _damage_templates.has(key):
 		_damage_templates[key] = HULL.damage_material(source, Transform3D.IDENTITY, {}, length, organic)
 	if not power:
@@ -1474,7 +1475,10 @@ func wreck_interior(source: Material, faction := "", L := 1.0) -> Material:
 
 
 func queue_death_pieces(ship: SHIP, job: Dictionary) -> void:
-	_piece_builds.append([ship, job])
+	if ship.dead:
+		_piece_builds.push_front([ship, job])
+	else:
+		_piece_builds.append([ship, job])
 
 
 func queue_shield_skin(ship: SHIP, key: String, box: AABB, faces: PackedVector3Array, bob: Vector3) -> void:
@@ -2062,6 +2066,11 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# Issue 376: rebuilds under the load cover are expected. Start the late watch
 	# once the warm objects have drawn.
 	HULL.pause_late_watch()
+	# ShipView sets its paint just after adding the meshes. Let the deferred mesh
+	# watcher apply the nebula's fog policy before deriving shaders from that paint.
+	await get_tree().process_frame
+	if closed or not is_instance_valid(cam):
+		return
 	_warm_hull_adapters()
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
@@ -2085,14 +2094,19 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var box = BoxMesh.new()
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
-		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(DEATH.SLAG, 0),
-		HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)]
-	# Issue 569: a Glasswright sail is alpha blend, so its damage material is a different shader.
-	# Warm it too, or the first hurt sail compiles its pipeline in a fight.
-	var sail_src := StandardMaterial3D.new()
-	sail_src.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	sail_src.albedo_color = Color(1, 1, 1, 0.55)
-	mats.append(HULL.damage_material(sail_src, Transform3D.IDENTITY, {}, 1.0))
+		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(DEATH.SLAG, 0)]
+	# Warm the PBR fallbacks for late arrivals and generated pieces as well as the
+	# actual hull formats below. Glasswright sails blend, and nebula hulls ignore fog.
+	for fog_disabled in [false, true]:
+		for alpha in [false, true]:
+			var source := StandardMaterial3D.new()
+			source.disable_fog = fog_disabled
+			if alpha:
+				source.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+				source.albedo_color = Color(1, 1, 1, 0.55)
+			var damage := HULL.damage_material(source, Transform3D.IDENTITY, {}, 1.0)
+			mats.append(damage)
+			mats.append(DEATH.power_material(damage.duplicate(), death_story))
 	if not compat:
 		mats.append(mat(SH.SPRITE, 1, "#define SOFT\n"))
 	for band in ["small", "cruiser", "capital"]:
@@ -2101,7 +2115,6 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			baked.set_shader_parameter("born", now)
 			baked.set_shader_parameter("intensity", 0.01)
 			mats.append(baked)
-	mats.append(DEATH.power_material(HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)))
 	mats.append(mat(SH.TEAR, 1))   # issue 462: the dying hull's tear overlay
 	# issue 220: the torpedo and rocket bodies (drive glow, star torpedo body, exhaust plume) and the weapon bursts' atlas
 	# shader: their first launch or hit compiled them mid-fight (a 53 ms frame with 3 surface pipelines at the gate scene)

@@ -26,7 +26,7 @@ assert(!ships.includes('%OJ_REPO%_ships') && (ships.match(/%OJ_SIDE%_ships_/g) |
 const tail = head.slice(head.indexOf('\n:oj_tail\n'));
 assert(/if "%OJ_SLOTS%"=="1" set "OJ_DROP="\ncall "%JW%" end\n/.test(tail), 'a slot job drops no checkout of its own');
 assert(tail.indexOf('slotrelease "%OJ_OUT%"') > tail.indexOf('call "%JW%" end'), 'the slot is let go after the result is written');
-assert(/\nset "OJ_SLOTS=0"\n/.test(tpl) && /\nset "OJ_SLOT_KIND=gpu"\n/.test(tpl), 'the template names the slot switch, off until the Windows proof (Artoo on PR 1728)');
+assert(/\nset "OJ_SLOTS=1"\n/.test(tpl) && /\nset "OJ_SLOT_KIND=gpu"\n/.test(tpl), 'the template turns the slot switch on since the Windows slot proofs passed (Board, Nov 23)');
 console.log('PASS slots static: checkout goes through a slot with OJ_SLOTS=1, side files in the attempt, release after the result');
 
 // ---------------------------------------------------------------- live fixtures (pwsh)

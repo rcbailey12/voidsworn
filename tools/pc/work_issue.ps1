@@ -13,6 +13,7 @@
 # Runner 2 (issue 377, Opus, Nov 12 2026); codex_issue.bat uses these three too:
 #   work_issue.ps1 guard   <n> <tag> <repo> <out>                 the refuse list and the Deliver to warning, on the staged change;
 #                                                                 its files go to <out>\runs\<date_time>\ (one folder per run)
+#   work_issue.ps1 head-changed <repo> <out>                    0 when HEAD moved since checkout, 7 when unchanged
 #   work_issue.ps1 commit  <repo> <out> <branch> <real|dry|test>  one commit that keeps the branch's earlier tip, checked before push
 #   work_issue.ps1 confirm <repo> <out> <branch> <real|dry|test>  after the push: GitHub's branch must carry exactly out\diffstat.txt
 #   work_issue.ps1 disk    <run folder> <repo>                 separately reports the run and reusable checkout sizes
@@ -96,6 +97,21 @@ function Profile-Root {
   if ($env:USERPROFILE) { return $env:USERPROFILE }
   if ($env:HOME) { return $env:HOME }
   return ''
+}
+# Issue 1490: a runner receipt must not print a full Windows user path. A path below the voidsworn_test folder is
+# shown from that folder down (for example work217\issue-1-deepseek\20261122_120000); anything else is left as is.
+function Relative-ToVoidswornTest([string]$path) {
+  if (-not $path) { return $path }
+  $parts = @(($path -replace '/', '\') -split '\\+')
+  for ($i = $parts.Count - 1; $i -ge 0; $i--) {
+    if ($parts[$i] -ieq 'voidsworn_test') {
+      $rest = @()
+      if ($i -lt $parts.Count - 1) { $rest = @($parts[($i + 1)..($parts.Count - 1)] | Where-Object { $_ -ne '' }) }
+      if ($rest.Count) { return ($rest -join '\') }
+      return '.'
+    }
+  }
+  return $path
 }
 function Rewrite-ReportPaths([string]$text, [string]$repo, [string]$branch, [string]$profileRoot) {
   if (-not $text) { return $text }
@@ -409,9 +425,20 @@ if ($mode -in @('openai-key','openai-budget','openai-spend')) {
 }
 
 # ---- Runner 2 helpers (issue 377) ----
+# Board, Nov 23 (RULEBOOK 2.5): a runner commit never carries a GitHub closing word. Agents' reports said "Closes #N"
+# (Codex PRs 1758, 1759, 1784); every closing word before an issue reference (#N, owner/repo#N or an issue link) becomes "Refs", any case, colon or not.
+function Refs-Only([string]$text) { return [regex]::Replace($text, '(?i)\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[ \t]+(https://github\.com/[^/\s]+/[^/\s]+/issues/[0-9]+|(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#[0-9]+)\b', 'Refs $3') }
 # git's output as an array of lines; $script:gx holds its exit code. stderr is dropped (PowerShell 5.1 turns it into errors).
 function Git-Lines { $o = & git @args 2>$null; $script:gx = $LASTEXITCODE; if ($null -eq $o) { return @() }; return @($o | ForEach-Object { [string]$_ }) }
 function Git-One { $o = @(Git-Lines @args); if ($o.Count) { return $o[0].Trim() } else { return '' } }
+function Test-HeadChanged($out, $head) {
+  $tip = Read-Txt (Join-Path $out 'branch_tip.txt')
+  if (-not $tip) { $tip = Read-Txt (Join-Path $out 'base_commit.txt') }
+  if ($tip -cnotmatch '\A[0-9a-f]{40,64}\z' -or $head -cnotmatch '\A[0-9a-f]{40,64}\z') {
+    throw 'could not read HEAD or the recorded checkout tip'
+  }
+  return $head -cne $tip
+}
 function Write-Lines($path, $lines) { [IO.File]::WriteAllText($path, ((@($lines) -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false))) }
 function Read-Lines($path) { if (-not (Test-Path -LiteralPath $path)) { return @() }; return @([IO.File]::ReadAllLines($path) | Where-Object { $_ -ne '' }) }
 # Folders and files named on the issue's "Deliver to" line (anything with a slash, or a file name with an extension).
@@ -468,7 +495,7 @@ if ($mode -eq 'prep') {
 # Workhorse job: issue #$n, "$($i.title)"
 
 You are the coding seat on the Voidsworn job board (github.com/rcbailey12/voidsworn/issues/$n), doing the job Codex used to do.
-This folder is a fresh checkout of main on the branch work/issue-$n-$arm. Follow AGENTS.md and CLAUDE.md, except the
+This folder is a fresh checkout on the branch work/issue-$n-$arm (main, or its earlier tip with main merged in; see below). Follow AGENTS.md and CLAUDE.md, except the
 "work in your own folder" rule: you are the main coding seat for this job, so edit the game files the job names.
 Nobody is watching this run and nobody can answer questions. Make the sensible call, say what you chose in your report, and keep going.
 $resume
@@ -666,7 +693,7 @@ elseif ($mode -eq 'guard') {
   Write-Lines (Join-Path $gdir 'scope_warnings.txt') $warn
   $md = @()
   if ($refused.Count) {
-    Write-Host "REFUSED $($refused.Count) file(s): not committed, copies kept in $gdir\refused (never deleted):"
+    Write-Host "REFUSED $($refused.Count) file(s): not committed, copies kept in $(Relative-ToVoidswornTest ($gdir + '\refused')) (never deleted):"
     $rl | ForEach-Object { Write-Host "  $_" }
     $md += "Refused by the runner, not committed ($($refused.Count); copies kept on the PC in the run's out folder, $grel\refused):"
     $md += @($rl | Select-Object -First 30 | ForEach-Object { "- $_" })
@@ -688,6 +715,12 @@ elseif ($mode -eq 'guard') {
   if ($bad.Count) { Write-Host 'guard failed:'; $bad | ForEach-Object { Write-Host "  $_" }; exit 1 }
   exit 0
 }
+elseif ($mode -eq 'head-changed') {
+  try {
+    if (Test-HeadChanged $args[2] (Git-One -C $args[1] rev-parse HEAD)) { exit 0 }
+    exit 7
+  } catch { Write-Host "push stopped: $($_.Exception.Message)"; exit 14 }
+}
 elseif ($mode -eq 'commit') {
   . (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
   # One commit for the run, made with git's plumbing (no hooks, no editor, its exit code checked). Its parents are the
@@ -695,7 +728,7 @@ elseif ($mode -eq 'commit') {
   # fast-forward with no force and the earlier run stays reachable. Then the check the issue 541 trap needs: the commit
   # must carry exactly the staged change (out\diffstat.txt). The author is git's own identity, or GIT_AUTHOR_* and
   # GIT_COMMITTER_* when the calling .bat sets them. Exit 0 ready to push, 7 nothing to commit, 10 diff mismatch,
-  # 11 commit failed, 12 the branch's earlier tip could not be read.
+  # 11 commit failed, 12 the branch's earlier tip could not be read, 15 the run does not descend from that tip (issue 1739).
   $ErrorActionPreference = 'Continue'
   $repo = $args[1]; $out = $args[2]; $br = $args[3]; $push = $args[4]
   $fault = ''; if ($push -ne 'real' -and $env:WORK_TEST_FAULT) { $fault = $env:WORK_TEST_FAULT }
@@ -712,12 +745,13 @@ elseif ($mode -eq 'commit') {
   [IO.File]::WriteAllText((Join-Path $out 'pre_commit.txt'), $pre, [Text.Encoding]::ASCII)
   & git diff --cached --quiet 2>$null
   if ($LASTEXITCODE -eq 0) {
-    $base = Read-Txt (Join-Path $out 'base_commit.txt')
-    $resumed = Read-Txt (Join-Path $out 'resume.txt')
-    & git diff --quiet $base HEAD 2>$null
     $partial = Read-Txt (Join-Path $out 'partial.txt')
-    if (-not $partial -and (-not $resumed -or $LASTEXITCODE -eq 0)) { Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7 }
-    Write-Host 'resumed work is already committed; carry it through the checked push'
+    try {
+      if (-not $partial -and -not (Test-HeadChanged $out $pre)) {
+        Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7
+      }
+    } catch { Write-Host "push stopped: $($_.Exception.Message)"; Pop-Location; exit 14 }
+    if (-not $partial) { Write-Host 'HEAD has new commits; carry them through the checked push' }
   }
   $num = @(Git-Lines -c core.quotepath=off diff --cached --numstat --no-renames)
   Write-Lines (Join-Path $out 'diff_numstat.txt') $num
@@ -734,6 +768,24 @@ elseif ($mode -eq 'commit') {
     if (-not $old) { Write-Host "push stopped: could not fetch the earlier tip $want of $br, the check failed; change kept as out\change.patch"; Save-Patch $out $pre; Pop-Location; exit 12 }
   }
   [IO.File]::WriteAllText((Join-Path $out 'prev_tip.txt'), $old, [Text.Encoding]::ASCII)
+  # Issue 1739 (1747 run 2): a run that did not start from the branch's earlier tip would push a commit whose files are
+  # that run's alone, dropping the earlier runs' work. The checkout now starts from the tip; this stops any run that
+  # still does not descend from it (or a tip that moved during the run), naming the files it would drop.
+  if ($old) {
+    & git merge-base --is-ancestor $old $pre 2>$null
+    $ancestor = $LASTEXITCODE
+    if ($ancestor -ne 0) {
+      $oldFiles = @(Git-Lines -c core.quotepath=off ls-tree -r --name-only $old)
+      $nowFiles = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+      foreach ($f in @(Git-Lines -c core.quotepath=off ls-files)) { $null = $nowFiles.Add($f) }
+      $dropped = @($oldFiles | Where-Object { -not $nowFiles.Contains($_) })
+      $why = if ($ancestor -eq 1) { "this run did not start from the earlier tip $old of $br" } else { "could not check that this run descends from the earlier tip $old of $br" }
+      $v = @("EARLIER TIP CHECK FAILED (issue 1739): $why.", "agent HEAD $pre", "files the earlier tip has that this commit would drop: $($dropped.Count)") + @($dropped | Select-Object -First 200)
+      Write-Lines (Join-Path $out 'EARLIER_TIP.txt') $v
+      Write-Host "!!! push stopped: $why; the earlier runs' work would be lost ($($dropped.Count) of its files dropped, listed in out\EARLIER_TIP.txt). Nothing pushed; the change is kept as out\change.patch"
+      Save-Patch $out $pre; Pop-Location; exit 15
+    }
+  }
   $runNo = 1
   if ($old) {
     $runNo = 2
@@ -759,9 +811,9 @@ elseif ($mode -eq 'commit') {
     $ac = @(Git-Lines log --format='%H' "$base..$pre" | Where-Object { $_ -cmatch '\A[0-9a-f]{40,64}\z' })
     if ($ac.Count) { $block += "Earlier commits (runner Base and resume merges included), under this one:`n" + (($ac | ForEach-Object { "- $_" }) -join "`n") + "`n`n" }
   }
-  if ($old) { $block += "Earlier tip of $br kept: $old is this commit's second parent, so the earlier run stays reachable. This commit's files are this run's alone.`n" }
+  if ($old) { $block += "Earlier tip of $br kept: this run started from $old, so its files are the earlier runs' work plus this run's change.`n" }
   $block += "Run-Number: $runNo`n"
-  $final = $msg.TrimEnd() + "`n`n" + $block
+  $final = Refs-Only ($msg.TrimEnd() + "`n`n" + $block)
   [IO.File]::WriteAllText($cp, $final, $utf8)
   $new = $pre
   if ($fault -eq 'skipcommit') {
@@ -772,7 +824,6 @@ elseif ($mode -eq 'commit') {
     $pargs = @('-p', $pre)
     $mh = Git-One rev-parse -q --verify MERGE_HEAD
     if ($mh) { $pargs += @('-p', $mh) }
-    if ($old -and $old -ne $pre) { $pargs += @('-p', $old) }
     $new = Git-One commit-tree $tree @pargs -F $cp
     if ($gx -ne 0 -or -not $new) { Write-Host 'COMMIT FAILED: git commit-tree failed; nothing pushed, change kept as out\change.patch'; Save-Patch $out $pre; Pop-Location; exit 11 }
     & git update-ref -m 'runner commit (issue 377)' HEAD $new $pre 2>$null
@@ -791,7 +842,7 @@ elseif ($mode -eq 'commit') {
     Save-Patch $out $pre; Pop-Location; exit 10
   }
   $sh = $new.Substring(0, [Math]::Min(9, $new.Length))
-  if ($old) { Write-Host "commit $sh (run $runNo of $br) carries the staged change ($($num.Count) files); earlier tip $($old.Substring(0, 9)) kept as its parent, so the push needs no force" }
+  if ($old) { Write-Host "commit $sh (run $runNo of $br) carries the staged change ($($num.Count) files) on top of the earlier tip $($old.Substring(0, 9)), so the push needs no force" }
   else { Write-Host "commit $sh (run 1 of $br) carries the staged change ($($num.Count) files)" }
   Pop-Location; exit 0
 }
@@ -830,8 +881,8 @@ elseif ($mode -eq 'disk') {
       if (Test-Path -LiteralPath $entry.path) {
         $bytes = (Get-ChildItem -LiteralPath $entry.path -Recurse -Force -File | Measure-Object -Property Length -Sum).Sum
       }
-      Write-Host ('disk: {0} {1} logical bytes ({2:N2} GiB) at {3}' -f $entry.label, [long]$bytes, ($bytes / 1GB), $entry.path)
-    } catch { Write-Host "disk: could not measure $($entry.label) at $($entry.path): $($_.Exception.Message)" }
+      Write-Host ('disk: {0} {1} logical bytes ({2:N2} GiB) at {3}' -f $entry.label, [long]$bytes, ($bytes / 1GB), (Relative-ToVoidswornTest $entry.path))
+    } catch { Write-Host "disk: could not measure $($entry.label) at $(Relative-ToVoidswornTest $entry.path): $($_.Exception.Message)" }
   }
   exit 0
 }

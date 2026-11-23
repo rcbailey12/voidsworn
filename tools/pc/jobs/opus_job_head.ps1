@@ -75,6 +75,11 @@
 param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'relayfind', 'dropcache', 'droprepo', 'survey', 'slot', 'slothold', 'slotrelease')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$Folder = '')
 $ErrorActionPreference = 'Stop'
+# Git emits the relay tree paths and manifest as UTF-8, even under Windows PowerShell 5.1.
+try { [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false) } catch { }
+# Issue 1739: sizes say what removal really frees (a hard link shared outside a checkout frees nothing). Optional.
+$diskSpaceHelpers = Join-Path (Split-Path -Parent $PSScriptRoot) 'disk_space.ps1'
+if (Test-Path -LiteralPath $diskSpaceHelpers) { . $diskSpaceHelpers }
 $test = [bool]$env:PC_TEST_HELPER
 $unix = $PSVersionTable.Platform -eq 'Unix'
 $sep = [IO.Path]::DirectorySeparatorChar
@@ -293,7 +298,12 @@ function Remove-LinkSafeTree($root) {
       if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) {
         if ($entry -is [IO.DirectoryInfo]) { [IO.Directory]::Delete($entry.FullName, $false) } else { [IO.File]::Delete($entry.FullName) }
       } elseif ($entry -is [IO.DirectoryInfo]) { $pending.Push($entry) }
-      else { $f = $entry.FullName; $len = $entry.Length; Invoke-Retry { if ([IO.File]::Exists($f)) { [IO.File]::SetAttributes($f, [IO.FileAttributes]::Normal); [IO.File]::Delete($f) } } $f; $bytes += $len }
+      else {
+        $f = $entry.FullName; $len = $entry.Length
+        # Only the last link to a file frees its bytes (issue 1739: checkouts share files with the mirror).
+        if (Get-Command Get-FileIdentity -ErrorAction SilentlyContinue) { $id = Get-FileIdentity $f; if ($id -and $id.Links -gt 1) { $len = 0 } }
+        Invoke-Retry { if ([IO.File]::Exists($f)) { [IO.File]::SetAttributes($f, [IO.FileAttributes]::Normal); [IO.File]::Delete($f) } } $f; $bytes += $len
+      }
     }
   }
   for ($i = $dirs.Count - 1; $i -ge 0; $i--) { $d = $dirs[$i]; Invoke-Retry { $di = New-Object IO.DirectoryInfo $d; if ($di.Exists) { if ($di.Attributes -band [IO.FileAttributes]::ReadOnly) { $di.Attributes = $di.Attributes -bxor [IO.FileAttributes]::ReadOnly }; $di.Delete($false) } } $d }
@@ -483,10 +493,9 @@ function Write-RelayReceipt($folder, $ref, $path) {
   [IO.File]::WriteAllText((Join-Path $folder 'relay_receipt.txt'), "$ref $path`r`n")
   Write-Output "relay receipt written: $ref $path"
 }
-function Test-ReceiptTree($receipt, $want) {
-  # The wanted paths (relative to the receipt's folder) the receipt's branch tree does not hold with exactly that blob,
-  # each as @{ Key; Absent } (Absent: no such path in the tree at all), plus the relay's own skipped_over_10MB.txt lines
-  # in that folder. $null when the branch is not in the mirror.
+function Test-ReceiptTree($receipt, $base, [string[]]$dirs, $skip, $got = $null) {
+  # Read the relay's exclusions at the verified tip before walking local results. Descending into a listed cache
+  # can fail at MAX_PATH even before we can compare its files. $null when the branch is not in the mirror.
   $repo = Get-RelayRepo $receipt.Ref
   if (-not $repo.Source -or -not (Test-Path -LiteralPath (Join-Path $repo.Mirror 'HEAD'))) { return $null }
   $ErrorActionPreference = 'Continue'
@@ -497,19 +506,31 @@ function Test-ReceiptTree($receipt, $want) {
   # last fetch proves nothing; a different commit refetches once (issue 1535). A failed ls-remote throws: kept.
   $remote = @(Run-Git ls-remote $repo.Source "refs/heads/$($repo.Ref)") | Where-Object { "$_" -match '\A[0-9a-f]{40}\t' } | Select-Object -First 1
   if (-not $remote -or "$remote".Substring(0, 40) -ne $sha) { return $null }
-  $have = @{}
-  foreach ($l in (Run-Git --git-dir $repo.Mirror -c core.quotepath=false ls-tree -r $sha $receipt.Path)) {
-    if ("$l" -match '\A\d+ blob ([0-9a-f]{40})\t(.+)\z') { $have[$Matches[2]] = $Matches[1] }
+  $have = [Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
+  $cacheManifest = $null
+  $cacheManifestPath = $receipt.Path + '/relay_manifest/skipped_cache_folders.txt'
+  foreach ($l in (Run-Git --git-dir $repo.Mirror -c core.quotepath=false ls-tree -r -t $sha -- "$($receipt.Path)/")) {
+    if ("$l" -notmatch '\A(\d+) (blob|tree|commit) ([0-9a-f]{40})\t(.+)\z') { continue }
+    $have[$Matches[4]] = if ($Matches[2] -eq 'blob') { $Matches[3] } else { '' }
+    if ($Matches[4] -ceq $cacheManifestPath -and $Matches[1] -in @('100644', '100755')) { $cacheManifest = $Matches[3] }
   }
+  $cacheFolders = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+  if ($cacheManifest) {
+    foreach ($k in (Run-Git --git-dir $repo.Mirror cat-file -p $cacheManifest)) {
+      if (-not $have.ContainsKey($receipt.Path + '/' + $k)) { $null = $cacheFolders.Add($k) }
+    }
+  }
+  if (-not $got -or $cacheFolders.Count) { $got = Get-ResultWant $base $dirs $skip $cacheFolders }
   $skipped = @()
-  if ($have.ContainsKey($receipt.Path + '/skipped_over_10MB.txt')) {
-    $skipped = @(Run-Git --git-dir $repo.Mirror cat-file -p ($have[$receipt.Path + '/skipped_over_10MB.txt']))
+  $bigManifest = $have[$receipt.Path + '/skipped_over_10MB.txt']
+  if ($bigManifest) {
+    $skipped = @(Run-Git --git-dir $repo.Mirror cat-file -p $bigManifest)
   }
-  $miss = @(foreach ($k in $want.Keys) {
+  $miss = @(foreach ($k in $got.Want.Keys) {
     $at = $receipt.Path + '/' + $k
-    if ($have[$at] -ne $want[$k]) { @{ Key = $k; Absent = -not $have.ContainsKey($at) } }
+    if ($have[$at] -ne $got.Want[$k]) { @{ Key = $k; Absent = -not $have.ContainsKey($at) } }
   })
-  return @{ Missing = $miss; Skipped = $skipped }
+  return @{ Missing = $miss; Skipped = $skipped; Tip = $sha; Got = $got }
 }
 function Test-RelaySkipped($skipped, $key, $file) {
   # The relay leaves out files over 10 MB and lists each in skipped_over_10MB.txt as "<path with \> <size> MB" (Artoo on
@@ -527,12 +548,13 @@ function Test-RelaySkipped($skipped, $key, $file) {
   }
   return $false
 }
-function Get-ResultWant($base, [string[]]$dirs, $skip) {
-  # Every result file under $dirs (each a plain folder: $base itself or one inside it), keyed by its path under $base
-  # with /, as Want (git blob id) and Files (full path). $skip names leftovers folders; relay_receipt.txt is not a result.
+function Get-ResultWant($base, [string[]]$dirs, $skip, $cacheFolders = $null) {
+  # Key files by their paths under $base with /. Keep the paths of any listed cache folders we leave on the PC.
   $baseFull = [IO.Path]::GetFullPath($base).TrimEnd('\', '/')
   $receiptFile = Join-Path $baseFull 'relay_receipt.txt'
-  $want = @{}; $files = @{}
+  $want = [Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
+  $files = [Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
+  $caches = @()
   foreach ($d in $dirs) {
     # Each result root must be a plain folder: $base itself (a ship job's out) or one inside it, never a link to another
     # folder's bytes (review of PR 1644).
@@ -544,48 +566,51 @@ function Get-ResultWant($base, [string[]]$dirs, $skip) {
     while ($pending.Count) {
       foreach ($e in @($pending.Pop().EnumerateFileSystemInfos())) {
         if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
-        if ($e -is [IO.DirectoryInfo]) { if ($skip -notcontains $e.Name) { $pending.Push($e) }; continue }
-        if ($e.FullName -eq $receiptFile) { continue }
         $k = $e.FullName.Substring($baseFull.Length + 1).Replace('\', '/')
+        if ($e -is [IO.DirectoryInfo]) {
+          if ($skip -contains $e.Name) { continue }
+          if ($cacheFolders -and $cacheFolders.Contains($k)) { $caches += $k } else { $pending.Push($e) }
+          continue
+        }
+        if ($e.FullName -eq $receiptFile) { continue }
         $want[$k] = Get-BlobSha $e.FullName; $files[$k] = $e.FullName
       }
     }
   }
-  return @{ Want = $want; Files = $files }
+  return @{ Want = $want; Files = $files; Caches = $caches }
 }
-function Test-PlaceProof($place, $got) {
-  # '' when $place (@{ Ref; Path }) proves every result in $got (Get-ResultWant) the way Assert-Relayed does, without a
-  # fetch; else the first reasons it does not (issue 1695).
-  try { $r = Test-ReceiptTree $place $got.Want } catch { return "origin could not be asked: $($_.Exception.Message)" }
+function Test-PlaceProof($place, $base, [string[]]$dirs, $skip, $got = $null) {
+  # The same proof as Assert-Relayed without a fetch, for the relay search (issue 1695).
+  try { $r = Test-ReceiptTree $place $base $dirs $skip $got } catch { return "relay proof failed: $($_.Exception.Message)" }
   if ($null -eq $r) { return "branch $($place.Ref) is not on origin at the shared mirror's commit" }
+  if (-not $r.Got.Want.Count) { return "no result files under $base to prove the relay" }
   $bad = @(foreach ($m in $r.Missing) {
-    if ($m.Absent -and (Test-RelaySkipped $r.Skipped $m.Key $got.Files[$m.Key])) { continue }
+    if ($m.Absent -and (Test-RelaySkipped $r.Skipped $m.Key $r.Got.Files[$m.Key])) { continue }
     if ($m.Absent) { "$($m.Key) is not on the relay" } else { "$($m.Key) differs on the relay" }
   })
   if (-not $bad.Count) { return '' }
   $more = if ($bad.Count -gt 3) { "; and $($bad.Count - 3) more" } else { '' }
   return ((($bad | Select-Object -First 3) -join '; ') + $more)
 }
-function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
+function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '', $receipt = $null, [ref]$proof) {
   # Issue 1497 (Artoo on PR 1498): a checkout goes only once this folder's own results are relayed. $base names its
   # receipt (relay_receipt.txt: the branch and the tree folder that holds $base's results). Every file under each of
   # $dirs ($skip names leftovers folders this file writes after the relay) must be in that branch's tree at the
   # receipt's folder plus its path under $base, with the same bytes, or be a file over 10 MB the relay left out and
-  # listed in that folder's skipped_over_10MB.txt (Test-RelaySkipped; it stays on the PC). No receipt, no branch or any
-  # other difference: kept, and the reason names the first files.
-  $receipt = Get-RelayPlace $base $job $tree
+  # listed in skipped_over_10MB.txt. Cache folders listed in relay_manifest/skipped_cache_folders.txt also stay on the
+  # PC when absent from the relay tree. No receipt, no branch or any other difference keeps the checkout.
+  if (-not $receipt) { $receipt = Get-RelayPlace $base $job $tree }
   if (-not $receipt) { throw "results not relayed yet: no relay branch named for $base" }
-  $got = Get-ResultWant $base $dirs $skip
-  $want = $got.Want; $files = $got.Files
-  if (-not $want.Count) { throw "no result files under $base to prove the relay" }
   $bad = $null; $big = @()
   for ($try = 0; $try -lt 2; $try++) {
     if ($try) { if ($script:dropDry) { break }; if ($receipt.Ref -like 'relay/*') { Update-RelayMirror } else { Update-Mirror } }
-    $r = Test-ReceiptTree $receipt $want
+    $r = Test-ReceiptTree $receipt $base $dirs $skip
     if ($null -eq $r) { $bad = @("branch $($receipt.Ref) (from $($receipt.From)) is not on origin at the shared mirror's commit"); continue }
+    $want = $r.Got.Want
+    if (-not $want.Count) { throw "no result files under $base to prove the relay" }
     $big = @(); $bad = @()
     foreach ($m in $r.Missing) {
-      if ($m.Absent -and (Test-RelaySkipped $r.Skipped $m.Key $files[$m.Key])) { $big += $m.Key }
+      if ($m.Absent -and (Test-RelaySkipped $r.Skipped $m.Key $r.Got.Files[$m.Key])) { $big += $m.Key }
       elseif ($m.Absent) { $bad += "$($m.Key) is not on the relay" }
       else { $bad += "$($m.Key) differs on the relay" }
     }
@@ -595,10 +620,12 @@ function Assert-Relayed($base, [string[]]$dirs, $skip, $job = '', $tree = '') {
     $more = if ($bad.Count -gt 3) { "; and $($bad.Count - 3) more" } else { '' }
     throw ("results not relayed yet: {0}:{1}: {2}{3}" -f $receipt.Ref, $receipt.Path, (($bad | Select-Object -First 3) -join '; '), $more)
   }
+  if ($proof) { $proof.Value = @{ Place = $receipt; Tip = $r.Tip } }
   foreach ($k in $big) { Write-Output "result kept on the PC only: $k (the relay listed it in skipped_over_10MB.txt)" }
+  foreach ($k in $r.Got.Caches) { Write-Output "cache folder kept on the PC only: $k (the relay listed it in relay_manifest/skipped_cache_folders.txt)" }
   Write-Output "results relayed: $($want.Count - $big.Count) of $($want.Count) result file(s) are on $($receipt.Ref) under $($receipt.Path), $($big.Count) over 10 MB listed as skipped"
 }
-function Drop-Attempt($attempt) {
+function Drop-Attempt($attempt, $place = $null) {
   # The listed pinned checkouts of one attempt folder, once the attempt passed and its results are relayed; adds the
   # bytes removed to $script:freed. Every refusal is logged, never thrown. A live run takes the mirror writers' lock
   # first and holds it through the relay proof, any earlier unfinished removal (review of PR 1644: a tomb is finished
@@ -616,14 +643,27 @@ function Drop-Attempt($attempt) {
     try { $script:mirrorLock = Lock-Mirror; $script:relayLock = Lock-RelayMirror }
     catch { if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null }; Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
   }
-  try { Drop-Proven $attempt $list $outs $pins } finally {
+  $followUp = $null
+  try { Drop-Proven $attempt $list $outs $pins $place ([ref]$followUp) } finally {
     if ($script:relayLock) { $script:relayLock.Dispose(); $script:relayLock = $null }
     if ($script:mirrorLock) { $script:mirrorLock.Dispose(); $script:mirrorLock = $null } }
+  if ($followUp) {
+    $relayPush = Join-Path (Split-Path -Parent $PSScriptRoot) 'relay_push.ps1'
+    $shell = if ($unix) { 'pwsh' } else { 'powershell.exe' }
+    $argsForRelay = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $relayPush, $followUp.Place.Ref.Substring('relay/pc-out-'.Length),
+      $attempt, 'leftovers', '-TreePath', $followUp.Place.Path, '-ProvenTip', $followUp.Tip)
+    $ErrorActionPreference = 'Continue'
+    & $shell @argsForRelay 2>&1 | ForEach-Object { "$_" }
+    $sent = $LASTEXITCODE -eq 0
+    $ErrorActionPreference = 'Stop'
+    if (-not $sent) { Write-Output "checkout leftovers kept locally in $attempt. Retry with relay_push leftovers." }
+  }
 }
-function Drop-Proven($attempt, $list, $outs, $pins) {
+function Drop-Proven($attempt, $list, $outs, $pins, $place, [ref]$followUp) {
   # Drop-Attempt's proof and removals, under the held mirror lock on a live run.
   $present = @(foreach ($n in $pins.Keys) { if (Test-Path -LiteralPath (Join-Path $attempt $n)) { $n } })
-  try { Assert-Relayed $attempt $outs @('checkout_leftovers') (Split-Path -Leaf (Split-Path -Parent $attempt)) (Split-Path -Leaf $attempt) }
+  $proof = $null
+  try { Assert-Relayed $attempt $outs @('checkout_leftovers') (Split-Path -Leaf (Split-Path -Parent $attempt)) (Split-Path -Leaf $attempt) $place ([ref]$proof) }
   catch { Write-Output "checkouts kept: $attempt ($($_.Exception.Message))"; return }
   if ($script:dropDry) {
     foreach ($n in $present) { Write-Output "checkout $n would be checked and removed after the relay: $(Join-Path $attempt $n)" }
@@ -657,6 +697,7 @@ function Drop-Proven($attempt, $list, $outs, $pins) {
         try { Write-Output (Save-Leftovers $repo $work $dest) }
         catch { throw ("it holds {0} path(s) that are not rebuildable leftovers and could not be saved ({1}), e.g. {2}" -f $work.Count, $_.Exception.Message, (($work | Select-Object -First 5) -join '; ')) }
       }
+      if ($work.Count -and $proof.Place.Ref -like 'relay/*') { $followUp.Value = $proof }
       $gone = Remove-Owned $repo -Commit $pin
       $script:freed += $gone
       Write-Output ("checkout {0} removed after the job ({1:N1} GB): {2}" -f $name, ($gone / 1GB), $repo)
@@ -800,16 +841,19 @@ function Assert-Rebuildable($repo) {
   }
 }
 function Get-TreeBytes($path) {
-  # read only, links not followed
+  # read only, links not followed. Issue 1739: with disk_space.ps1, the bytes removal would really free (a hard link
+  # shared with a file outside the tree counts nothing).
+  $tally = $null; if (Get-Command New-FreeTally -ErrorAction SilentlyContinue) { $tally = New-FreeTally }
   $bytes = [long]0
   $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
   $pending.Push((Get-Item -LiteralPath $path -Force))
   while ($pending.Count) {
     foreach ($e in @($pending.Pop().EnumerateFileSystemInfos())) {
       if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { continue }
-      if ($e -is [IO.DirectoryInfo]) { $pending.Push($e) } else { $bytes += $e.Length }
+      if ($e -is [IO.DirectoryInfo]) { $pending.Push($e) } else { $bytes += $e.Length; if ($tally) { Add-FreeTally $tally $e } }
     }
   }
+  if ($tally) { return (Complete-FreeTally $tally).Free }
   return $bytes
 }
 function Invoke-WithPinnedMirror($pin, [scriptblock]$then) {
@@ -1217,11 +1261,17 @@ switch ($Action) {
     $problem = Get-AttemptProblem $attempt
     if ($problem) { Write-Output "checkouts kept: $problem"; break }
     $script:freed = [long]0
-    if ($B) { try { Write-RelayReceipt $attempt $B $C } catch { Write-Output "checkouts kept: $($_.Exception.Message)"; break } }
+    $place = $null
+    if ($B -like 'relay/*') {
+      if ("$B $C" -notmatch ('\A' + $relayPattern + ' [A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\z') -or "$B $C".Contains('..')) {
+        Write-Output "checkouts kept: relay receipt not accepted: $B $C"; break
+      }
+      $place = @{ Ref = $B; Path = $C; From = 'the given relay place' }
+    } elseif ($B) { try { Write-RelayReceipt $attempt $B $C } catch { Write-Output "checkouts kept: $($_.Exception.Message)"; break } }
     # This attempt only (review of PR 1644): earlier attempts of the job are cleared by their own relay waiter or the
     # janitor's relay sweep, which hold the job lease, the issue lock and the keep-list and process checks; an unguarded
     # sibling sweep here could race them.
-    Drop-Attempt $attempt
+    Drop-Attempt $attempt $place
     Write-Free $script:freed
   }
   'dropwait' {
@@ -1343,7 +1393,7 @@ switch ($Action) {
     # a checkout and whose own place (Get-RelayPlace) does not prove, with no relay_receipt.txt or relay_branch.txt of its
     # own, this looks through every board/pc-out-* branch in the shared mirror for the folder holding one of its result
     # files, then runs the same byte check as the drop (Test-PlaceProof: every result file at that folder with the same
-    # blob, or a listed skipped file over 10 MB). Only a place that proves is written, as the attempt's relay_found.txt
+    # blob, or a listed skip). Only a place that proves is written, as the attempt's relay_found.txt
     # (a new file, never over an existing one; issue 1739: a relay_branch.txt from init does not stop the search). It is only a place to look: the waiter and the janitor's relay sweep prove
     # the bytes again under the mirror lock before any removal. Writes nothing else and removes nothing. <attempt> or all
     # (every voidsworn_test\<job>\out_*); dry writes nothing and fetches nothing; live fetches the mirror once first.
@@ -1366,17 +1416,17 @@ switch ($Action) {
       }
       $job = Split-Path -Leaf (Split-Path -Parent $att); $leaf = Split-Path -Leaf $att
       $outs = @((Get-Item -LiteralPath $att -Force).EnumerateDirectories('out_*') | ForEach-Object { $_.FullName })
-      try { $got = Get-ResultWant $att $outs @('checkout_leftovers') } catch { Write-Output "relay place not looked for: $att ($($_.Exception.Message))"; continue }
-      if (-not $got.Want.Count) { Write-Output "relay place not looked for: no result files under $att"; continue }
       $place = Get-RelayPlace $att $job $leaf
-      $why = if ($place) { Test-PlaceProof $place $got } else { 'no place named' }
+      $why = if ($place) { Test-PlaceProof $place $att $outs @('checkout_leftovers') } else { 'no place named' }
       if (-not $why) { Write-Output "relay place already proven: $att ($($place.Ref) $($place.Path), from $($place.From))"; continue }
       $own = @(foreach ($n in 'relay_receipt.txt', 'relay_found.txt') { if (Test-Path -LiteralPath (Join-Path $att $n)) { $n } })
       if ($own.Count) { Write-Output "relay place left alone: $att has its own $($own[0]), which does not prove ($why)"; continue }
+      try { $got = Get-ResultWant $att $outs @('checkout_leftovers') } catch { Write-Output "relay place not looked for: $att ($($_.Exception.Message))"; continue }
+      if (-not $got.Want.Count) { Write-Output "relay place not looked for: no result files under $att"; continue }
       # One result file of 10 MB or less to search for (a larger one may be left off the relay).
       $anchor = @($got.Want.Keys | Sort-Object | Where-Object { (Get-Item -LiteralPath $got.Files[$_] -Force).Length -le 10000000 } | Select-Object -First 1)
       if (-not $anchor.Count) { Write-Output "relay place not looked for: every result file under $att is over 10 MB"; continue }
-      $todo += @{ Attempt = $att; Got = $got; Anchor = $anchor[0]; Blob = $got.Want[$anchor[0]]; Why = $why }
+      $todo += @{ Attempt = $att; Outs = $outs; Got = $got; Anchor = $anchor[0]; Blob = $got.Want[$anchor[0]]; Why = $why }
     }
     if (-not $todo.Count) { Write-Output 'relay places to look for: none'; break }
     # One pass over the relay branches in the shared mirror: every path that holds one of the searched blobs.
@@ -1398,7 +1448,7 @@ switch ($Action) {
       })
       $found = $null; $near = ''
       foreach ($cand in $cands) {
-        $w = Test-PlaceProof $cand $t.Got
+        $w = Test-PlaceProof $cand $att $t.Outs @('checkout_leftovers') $t.Got
         if (-not $w) { $found = $cand; break }
         if (-not $near) { $near = "closest $($cand.Ref) $($cand.Path): $w" }
       }
@@ -1491,7 +1541,7 @@ switch ($Action) {
         Write-Output ("ship clone {0:N1} GB (import cache {1:N1} GB) {2} {3}" -f $gb, $cgb, $state, $repo)
       }
     }
-    Write-Output ("survey: {0:N1} GB in job checkouts and ship clones (hard links to the mirror count in full); nothing was removed" -f ($total / 1GB))
+    Write-Output ("survey: {0:N1} GB in job checkouts and ship clones (what removal would free: hard links shared with the mirror or another checkout are not counted); nothing was removed" -f ($total / 1GB))
   }
   'shiprecord' {
     # sha256 of every untracked file the ships step put under godot\gen and godot\assets\ships, as copied
