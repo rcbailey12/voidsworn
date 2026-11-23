@@ -9678,7 +9678,7 @@
    "c_reaver",
    "c_raider"
   ],
-  "seed": 165314,
+  "seed": 165315,
   "note": "Issue 1653: Bleed-Off Capacitor (spill refit): a ship whose shields hit zero deals +30% on its next weapon attack."
  },
  "r1653_relay": {
