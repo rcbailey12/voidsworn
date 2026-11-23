@@ -164,29 +164,32 @@ with results in `out_<job>` (the job reads it as `VS_OUT`), the attempt's tools 
 slot reset to the head commit (its receipt must match the head's own lease record, `slot.txt`, `owner.txt` and the slot
 kind, and the head's `slotcheck` must prove the lease live: holder process, owner token, lease file locked) and the built ships copied in. Then the daemon reads the pull request, the whole go comment, the
 checks, the pause, the holds and the game again; any change, or a GitHub it cannot read, aborts the job (nothing ran, the
-run key stays free, the slot is let go). Before the step it makes the slot's `run_scratch` folder, then writes the slot's
-`hold.txt` as an in-flight marker, so a daemon that stops mid-step leaves the slot set aside instead of free.
+run key stays free, the slot is let go). Before the step it makes the slot's `run_scratch` folder, proves the lease live again, then writes the
+slot's `hold.txt` as an in-flight marker, so a daemon that stops mid-step leaves the slot set aside instead of free.
 
 The step runs through the installed watchdog `run_timeout.ps1` in step mode (RULEBOOK 3.5: hard ceiling, idle stop, Job
 Object kill with proof, GPU admission by its classifier, the game-open wait) with five settings only the daemon sets
 (`PC_STEP_*`; unset, the watchdog behaves as before): after its game wait and GPU admission it calls the daemon's
 `--recheck` once more and starts nothing unless that says go (the GitHub reads first, then the pause, an unreadable `gpu_go.txt` counting as
-paused, the holds, and the game read as the watchdog reads it: any Voidsworn, or a windowed Godot with no job arguments;
+paused, the holds, and the game read as the watchdog reads it: any Voidsworn, or a windowed Godot with no job arguments, a renderer choice such as
+`play_godot_safe.bat`'s `--rendering-method gl_compatibility` still counting as play; the slot lease still proven live;
 an unreadable process list counts as playing); the step
 ends only when its whole Job Object is empty, so a child that outlives the job is still timed and killed; every program,
 Blender included, gets a throwaway profile (APPDATA, LOCALAPPDATA and Blender's user folders) inside the slot's
 `run_scratch` folder, with the child logs, and the watchdog removes both; and it writes `watchdog_record.json` with the
 exit, whether the tree was seen empty, and the profile. The daemon reads the tree state from that record only, never from
 the job's output. Then the outputs and options are checked, the in-flight marker cleared (only while `slotcheck` still
-proves the lease live and the marker is exactly what the daemon wrote; it is renamed aside before the compare, and put
-back if it changed), `done.txt`, the slot let go, the relay push, a result comment with the links, `running` off.
+proves the lease live and the marker is exactly what the daemon wrote; it is renamed aside to `hold.txt.<token>.clearing`
+before the compare, and the head's slot allocator skips a slot with that file as with `hold.txt`; a changed marker is
+linked back, never over a newer `hold.txt`), `done.txt`, the slot let go, the relay push, a result comment with the links, `running` off.
 
 The done marker goes on only with the relay links: a failed relay is retried every 30 minutes from the kept attempt,
 never a rerun. Its ledger `voidsworn_test\pc_daemon\ran.txt` keeps start, aborted, the result and delivered apart, each
 with its attempt; only a result blocks a new go for that commit and job. A start with no end line from an earlier daemon
-process means it stopped mid-job: the daemon sets `pc_daemon\hold.txt`. Once the Board has checked that attempt's
-process tree is gone, `node tools\pc\mission\pc_daemon.js --clear <attempt folder>` records that, and the Board removes
-the two hold files. One live daemon per PC (an exclusive localhost
+process means it stopped mid-job: the daemon records it as interrupted and sets `pc_daemon\hold.txt`. Once the Board has checked that attempt's
+process tree is gone, `node tools\pc\mission\pc_daemon.js --clear <attempt folder>` records that (only for an interruption a
+live daemon recorded), and the Board removes the two hold files. A result whose tools failed their check is kept on the
+PC and relayed later, only from a verified tools version. One live daemon per PC (an exclusive localhost
 bind on port 47662 the system frees when the process ends), only on `%USERPROFILE%\Downloads\voidsworn_test` with no link
 anywhere on that path. A step the watchdog record does not prove gone (no record, survivors, or no end within the
 ceiling plus the waits) is a quarantine: the slot's in-flight `hold.txt` stays with the reason, the slot is not let go,

@@ -346,6 +346,8 @@ class PcTools {
     this.pinned = pc;
     return pc;
   }
+  // the gate process (--recheck) uses the attempt's verified version too
+  pinTo(pc) { this.pinned = pc; }
   unpin() { this.pinned = null; }
   preflight(attempt, tools, log) {
     this.ps(path.join(this.pc(), 'runner_common.ps1'), ['preflight-tools', attempt, tools.join(' ')], { log, timeoutMs: 300000 });
@@ -399,6 +401,8 @@ class PcTools {
     const scratch = path.join(lease.dir, 'run_scratch');
     fs.mkdirSync(scratch, { recursive: true });
     plainChain(scratch);
+    // the lease is proven live again right before the marker goes on: ships and the recheck take time (Astra run 4)
+    this.slotCheck(attempt, lease);
     const marker = path.join(lease.dir, 'hold.txt');
     const text = `pc_daemon in flight: attempt ${attempt} token ${lease.token}\r\n` +
       `set by pc_daemon.js ${new Date().toISOString()}. If no daemon is running this attempt, its step may still be running here.\r\n` +
@@ -410,11 +414,16 @@ class PcTools {
     // Only while the slot helper still proves this attempt holds the slot, and only the exact marker this attempt
     // wrote: it is first renamed aside (one atomic step), so an edit by the Board or a quarantine line can never be
     // lost between the compare and the delete; a marker that differs is put back.
+    // While it is aside, hold.txt.<token>.clearing holds the slot as hold.txt does (the head's Enter-Slot skips a slot
+    // with either), so a daemon that stops here leaves the slot set aside, never free (Astra run 4, item 5). A marker
+    // that changed is linked back to hold.txt, never over a newer hold.txt; if that fails the aside file stays, still
+    // holding the slot, for the Board.
     this.slotCheck(f.attempt, f.lease);
     const aside = `${f.marker}.${f.lease.token}.clearing`;
     fs.renameSync(f.marker, aside);
     if (fs.readFileSync(aside, 'utf8') !== f.text) {
-      fs.renameSync(aside, f.marker);
+      try { fs.linkSync(aside, f.marker); fs.unlinkSync(aside); }
+      catch (e) { throw new Error(`${f.marker} changed since the daemon wrote it; it is kept as ${aside} (${e.code || e.message})`); }
       throw new Error(`${f.marker} changed since the daemon wrote it; kept`);
     }
     fs.unlinkSync(aside);
@@ -474,7 +483,10 @@ class PcTools {
 
 function playing(name, commandLine) {
   if (/_console\.exe$/i.test(String(name || ''))) return false;
-  const rest = String(commandLine || '').replace(/^\s*("[^"]*"|\S+)/, '').replace(/--path\s+("[^"]*"|\S+)/, '');
+  // as run_timeout.ps1 Test-RyanPlaying: the program, its --path and a renderer choice (play_godot_safe.bat's
+  // --rendering-method gl_compatibility) are play; any other flag is a job (Astra run 4, item 6)
+  const rest = String(commandLine || '').replace(/^\s*("[^"]*"|\S+)/, '').replace(/--path\s+("[^"]*"|\S+)/, '')
+    .replace(/--rendering-(?:method|driver)\s+("[^"]*"|\S+)/, '');
   return !/--?\w/.test(rest);
 }
 
@@ -540,8 +552,13 @@ class Daemon {
     } catch { return []; }
   }
   interrupted() {
-    const all = this.entries(), ended = new Set(all.filter(e => e.state !== 'start').map(e => e.attempt));
+    const all = this.entries(), ended = new Set(all.filter(e => !['start', 'interrupted'].includes(e.state)).map(e => e.attempt));
     return all.filter(e => e.state === 'start' && e.attempt && !ended.has(e.attempt) && !this.mine.has(e.attempt));
+  }
+  // attempts a live daemon recorded as interrupted and the Board has not cleared yet
+  recordedInterruptions() {
+    const all = this.entries(), cleared = new Set(all.filter(e => e.state === 'cleared').map(e => e.attempt));
+    return all.filter(e => e.state === 'interrupted' && !cleared.has(e.attempt));
   }
   ledger() { return new Set(this.entries().filter(e => ['PASS', 'FAILED', 'delivered'].includes(e.state)).map(e => e.sha + ' ' + e.job)); }
   undelivered() {
@@ -567,7 +584,7 @@ class Daemon {
   // Artoo on a33b94f4). Returns null to go on, or why not. Never throws: a GitHub that cannot be read is a reason not
   // to start, and the job stays eligible (Astra run 2, item C). The watchdog calls it again through --recheck after
   // its game-open wait and GPU admission, right before the start.
-  recheck(n, spec) {
+  recheck(n, spec, lease = null, attempt = null) {
     let g;
     try { ({ g } = this.look(n, { claimed: true })); } catch (e) { return `GitHub could not be read for the recheck (${e.message})`; }
     if (g.verdict !== 'run') return `the approval changed while waiting (${g.why})`;
@@ -578,6 +595,8 @@ class Daemon {
     if (this.held()) return 'a daemon hold was set';
     const game = this.tools.gameRunning();
     if (game !== false) return game === null ? 'the process list could not be read, so the game check failed' : 'the game is open (Voidsworn, or a windowed Godot started with no job arguments)';
+    // and the slot is still this attempt's, proven live by the head (Astra run 4, item 5)
+    if (lease) { try { this.tools.slotCheck(attempt, lease); } catch (e) { return `the slot lease is no longer proven held (${e.message})`; } }
     return null;
   }
   look(n, { claimed = false } = {}) {
@@ -593,6 +612,8 @@ class Daemon {
     const seen = [];
     if (this.live && !this.leased) throw new Error('a live daemon must hold the lease first');
     const lost = this.live ? this.interrupted() : [];
+    const recorded = new Set(this.entries().filter(e => e.state === 'interrupted').map(e => e.attempt));
+    for (const e of lost) if (!recorded.has(e.attempt)) this.note(e.sha, e.job, e.pr, 'interrupted', e.attempt);
     if (lost.length && !this.held()) {
       this.setHold(`the daemon stopped in the middle of ${lost.map(e => `${e.job} (PR ${e.pr})`).join(', ')}; its step may still run in its slot`, lost.map(e => e.attempt).join(', '));
     }
@@ -659,7 +680,11 @@ class Daemon {
     let exe = null, repo = null;
     try {
       // the verified tools version stays pinned through the options check, the slot release and the first relay
-      await step('tools', () => say(`tools ${this.tools.pin(st)} (hashes verified)`));
+      await step('tools', () => {
+        const pc = this.tools.pin(st);
+        fs.writeFileSync(path.join(attempt, 'pc_daemon_tools.txt'), pc + '\r\n');
+        say(`tools ${pc} (hashes verified)`);
+      });
       await step('preflight', () => { exe = this.tools.preflight(attempt, [spec.flow], st)[spec.flow]; });
       await step('options before', () => this.tools.hashes(path.join(attempt, 'real_options_before.txt'), st));
       await step('slot', () => {
@@ -671,7 +696,7 @@ class Daemon {
       if (spec.ships) await step('ships', () => this.tools.ships(attempt, repo, `pr${n}`, spec.hulls, st));
       // the slot wait and the ships copy can take hours: everything is read again before the in-flight marker, and the
       // watchdog reads it once more after its own waits
-      await step('recheck', () => { aborted = this.recheck(n, spec); });
+      await step('recheck', () => { aborted = this.recheck(n, spec, lease, attempt); });
       await step('in flight', () => { flight = this.tools.inFlight(lease, attempt); say(`slot set aside while the step runs: ${flight.marker}`); });
       await step('run', async () => {
         const { args, cwd } = command(spec, repo, outDir);
@@ -753,13 +778,18 @@ class Daemon {
     const { spec, pass, failed, watch, quarantine } = r;
     const tries = (this.deliveryTries.get(e.attempt) || 0) + 1;
     this.deliveryTries.set(e.attempt, tries);
-    let links;
-    try { links = relayLinks(this.tools.relay(e.job, e.attempt, st)); if (!links.folder) throw new Error('no folder link printed'); }
+    let links, pinnedHere = false;
+    try {
+      // the relay runs only from a verified tools version: the attempt's own pin, or a fresh one (Astra run 4, item D)
+      if (!this.tools.pinned) { this.tools.pin(st); pinnedHere = true; }
+      links = relayLinks(this.tools.relay(e.job, e.attempt, st));
+      if (!links.folder) throw new Error('no folder link printed');
+    }
     catch (err) {
       try { fs.appendFileSync(st, `${this.clock().toISOString()} relay failed (try ${tries}): ${err.message}\r\n`); } catch { /* attempt folder gone */ }
       if (tries === 1) this.report(e.pr, () => this.gh.comment(e.pr, `PC daemon (issue 1662): ${e.job} ${pass ? 'PASS' : 'FAILED'} at ${e.sha.slice(0, 8)} on the PC, but the relay failed (${err.message}). The daemon retries the relay every ${Math.round(this.retryMs / 60000)} minutes without rerunning the job; results stay at ${e.attempt}.`), 'comment');
       return null;
-    }
+    } finally { if (pinnedHere) this.tools.unpin(); }
     const body = [
       `PC daemon (issue 1662): ${e.job} ${pass ? 'PASS' : 'FAILED'} at ${e.sha.slice(0, 8)}`,
       '',
@@ -806,8 +836,9 @@ function clearMain(attemptArg) {
   const attempt = path.resolve(String(attemptArg || ''));
   const vt = checkRoot(path.dirname(path.dirname(attempt)), { live: process.platform === 'win32' });
   const d = new Daemon({ vt, gh: null, tools: null });
-  const e = d.interrupted().find(x => path.resolve(x.attempt).toLowerCase() === attempt.toLowerCase());
-  if (!e) { console.log(`not an interrupted attempt in ${d.ledgerFile}: ${attempt}`); return 2; }
+  // only an interruption a live daemon recorded (Astra run 4, item H): a running attempt's open start never qualifies
+  const e = d.recordedInterruptions().find(x => path.resolve(x.attempt).toLowerCase() === attempt.toLowerCase());
+  if (!e) { console.log(`not a recorded interruption in ${d.ledgerFile}: ${attempt}`); return 2; }
   d.note(e.sha, e.job, e.pr, 'cleared', e.attempt);
   console.log(`cleared ${e.job} (PR ${e.pr}) ${e.attempt}; remove pc_daemon\\hold.txt and the slot's hold.txt once the slot is checked`);
   return 0;
@@ -818,8 +849,11 @@ function recheckMain(attemptArg) {
   const attempt = path.resolve(String(attemptArg || ''));
   const vt = checkRoot(path.dirname(path.dirname(attempt)), { live: process.platform === 'win32' });
   const { pr, ...spec } = JSON.parse(fs.readFileSync(path.join(attempt, 'pc_daemon_spec.json'), 'utf8'));
-  const d = new Daemon({ vt, gh: new GhCli(), tools: new PcTools({ vt }) });
-  const why = d.recheck(pr, spec);
+  const tools = new PcTools({ vt });
+  tools.pinTo(fs.readFileSync(path.join(attempt, 'pc_daemon_tools.txt'), 'utf8').trim());
+  const [dir, token] = fs.readFileSync(path.join(attempt, 'slot.txt'), 'utf8').trim().split('|');
+  const d = new Daemon({ vt, gh: new GhCli(), tools });
+  const why = d.recheck(pr, spec, { dir, token }, attempt);
   console.log(why ? `not started: ${why}` : `go: ${spec.job} at ${spec.sha.slice(0, 8)} still approved`);
   return why ? 3 : 0;
 }

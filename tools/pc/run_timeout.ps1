@@ -634,6 +634,8 @@ function Test-RyanPlaying {
     $cl = [string]$q.CommandLine
     $rest = [regex]::Replace($cl, '^\s*("[^"]*"|\S+)', '')
     $rest = [regex]::Replace($rest, '--path\s+("[^"]*"|\S+)', '')
+    # play_godot_safe.bat plays with a renderer choice; that is still play (Astra run 4, item 6)
+    $rest = [regex]::Replace($rest, '--rendering-(?:method|driver)\s+("[^"]*"|\S+)', '')
     if ($rest -notmatch '--?\w') { return $true }
   }
   return $false

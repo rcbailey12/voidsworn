@@ -257,12 +257,25 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     live = false;
     assert.throws(() => tools.clearInFlight(f), /does not prove/); assert.ok(fs.existsSync(f.marker), 'no live lease, no removal');
     live = true;
-    tools.clearInFlight(f); assert.ok(!fs.existsSync(f.marker)); assert.deepEqual(checks, [g2, g2]);
+    tools.clearInFlight(f); assert.ok(!fs.existsSync(f.marker)); assert.ok(checks.length >= 3 && checks.every(c => c === g2));
+    // no live lease at publication, no marker (Astra run 4, item 5)
+    live = false;
+    assert.throws(() => tools.inFlight({ dir: g2, token }, attempt), /does not prove/); assert.ok(!fs.existsSync(f.marker));
+    live = true;
     const f2 = tools.inFlight({ dir: g2, token }, attempt);
     tools.holdInFlight(f2, 'survivors');
     assert.throws(() => tools.clearInFlight(f2), /changed/); assert.match(fs.readFileSync(f2.marker, 'utf8'), /QUARANTINE: survivors/);
     assert.deepEqual(fs.readdirSync(g2).filter(n => /clearing/.test(n)), [], 'a changed marker is put back whole');
     fs.unlinkSync(f2.marker);
+    // a changed marker never overwrites a newer hold.txt: the aside file stays and still holds the slot
+    const f4 = tools.inFlight({ dir: g2, token }, attempt);
+    fs.appendFileSync(f4.marker, 'Board note\r\n');
+    const realRead = fs.readFileSync;
+    fs.readFileSync = (file, ...a) => { const t = realRead(file, ...a); if (String(file).endsWith('.clearing')) fs.writeFileSync(f4.marker, 'newer Board hold\r\n'); fs.readFileSync = realRead; return t; };
+    try { assert.throws(() => tools.clearInFlight(f4), /kept as .*clearing/); } finally { fs.readFileSync = realRead; }
+    assert.equal(fs.readFileSync(f4.marker, 'utf8'), 'newer Board hold\r\n', 'the newer hold is untouched');
+    assert.match(fs.readFileSync(`${f4.marker}.${token}.clearing`, 'utf8'), /Board note/, 'the edited marker survives aside');
+    fs.unlinkSync(f4.marker); fs.unlinkSync(`${f4.marker}.${token}.clearing`);
     // the scratch folder is checked before the marker exists (Astra run 3, item I)
     const g3 = path.join(vt, 'slots', 'slot_cpu'); fs.mkdirSync(g3, { recursive: true });
     fs.symlinkSync(tmp(), path.join(g3, 'run_scratch'), process.platform === 'win32' ? 'junction' : 'dir');
@@ -274,6 +287,11 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     assert.equal(d.playing('Godot_v4.7.exe', '"C:\\Godot\\Godot_v4.7.exe" --path "C:\\vs\\godot"'), true, 'a windowed Godot with only --path is play');
     assert.equal(d.playing('Godot_v4.7.exe', 'Godot_v4.7.exe --path C:\\slot\\godot --headless --script x.gd'), false, 'a job');
     assert.equal(d.playing('Godot_v4.7_console.exe', 'Godot_v4.7_console.exe'), false);
+    // the shipped launchers' real command lines (play_godot.bat and play_godot_safe.bat; Astra run 4, item 6)
+    assert.equal(d.playing('Voidsworn.exe', '"C:\\U\\voidsworn_test\\build\\export\\Voidsworn.exe" --rendering-method gl_compatibility'), true);
+    assert.equal(d.playing('Godot_v4.7-stable_win64.exe', '"C:\\Godot\\Godot_v4.7-stable_win64.exe" --path "C:\\U\\voidsworn_test\\build\\godot" --rendering-method gl_compatibility'), true);
+    assert.equal(d.playing('Godot_v4.7-stable_win64.exe', '"C:\\Godot\\Godot_v4.7-stable_win64.exe" --path "C:\\U\\voidsworn_test\\build\\godot"'), true);
+    assert.equal(d.playing('Godot.exe', 'Godot.exe --path x --rendering-method gl_compatibility --script res://t.gd'), false, 'a job still is a job');
     assert.equal(d.playing('Voidsworn.exe', ''), true, 'an unreadable command line counts as play');
     const answer = out => new d.PcTools({ vt: tmp(), run: () => out });
     assert.equal(answer({ status: 0, stdout: '' }).gameRunning(), false);
@@ -339,10 +357,12 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
       hashes: step('hashes', f => { const t2 = optionsChange && opt++ ? 'changed' : 'same'; fs.writeFileSync(f, t2); return t2; }),
       slot: step('slot', (attempt, name, pin, kind) => { assert.equal(pin, SHA); const r = path.join(vt, 'slots', kind === 'cpu' ? 'slot_cpu' : 'slot_gpu_1', 'repo'); fs.mkdirSync(r, { recursive: true }); if (onSlot) onSlot(gh, vt); return r; }),
       ships: step('ships', () => {}),
-      pin: step('pin', () => 'C:\\tools_live\\v1\\pc'),
-      unpin: () => {},
+      pinned: null,
+      pin: step('pin', () => { tools.pinned = 'C:\\tools_live\\v1\\pc'; return tools.pinned; }),
+      unpin() { this.pinned = null; },
       slotLease: step('slotLease', (attempt, repo) => ({ dir: path.dirname(repo), token: 'e'.repeat(32) })),
-      inFlight: step('inFlight', (lease, attempt) => d.PcTools.prototype.inFlight(lease, attempt)),
+      inFlight: step('inFlight', (lease, attempt) => d.PcTools.prototype.inFlight.call({ slotCheck: () => {} }, lease, attempt)),
+      slotCheck: () => {},
       clearInFlight: step('clearInFlight', f => d.PcTools.prototype.clearInFlight.call({ slotCheck: () => {} }, f)),
       holdInFlight: step('holdInFlight', (f, why) => d.PcTools.prototype.holdInFlight(f, why)),
       watchdog: step('watchdog', async o => {
@@ -432,6 +452,9 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     // the gate itself: the daemon's recheck, as the watchdog calls it
     const r = fakes();
     assert.equal(r.daemon.recheck(7, d.parseGo(goText())), null);
+    r.daemon.tools.slotCheck = () => { throw new Error('released'); };
+    assert.match(r.daemon.recheck(7, d.parseGo(goText()), { dir: 'S', token: 'e'.repeat(32) }, 'A'), /no longer proven held/, 'a lease lost before launch stops it');
+    r.daemon.tools.slotCheck = () => {};
     r.gh.commentList = [...r.gh.commentList, owner(goText().replace('expect: shots/a.png log.txt', 'expect: other.png'))];
     assert.match(r.daemon.recheck(7, d.parseGo(goText())), /replaced this job spec/);
     const q = fakes({ game: null });
@@ -458,7 +481,10 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     const g5 = fakes({ failStep: 'pin' });
     await g5.daemon.tick();
     assert.ok(!g5.calls.includes('slot') && !g5.calls.includes('watchdog'), 'unverified tools start nothing');
-    assert.match(g5.gh.writes.find(w => w[0] === 'comment' && /FAILED/.test(w[2]))[2], /failed: tools/);
+    assert.ok(!g5.calls.includes('relay') && !g5.calls.includes('hashes'), 'no options hash and no relay without verified tools');
+    assert.match(g5.gh.writes.find(w => w[0] === 'comment' && /FAILED/.test(w[2]))[2], /relay failed \(fake pin failure\)/);
+    assert.equal(fs.readFileSync(path.join(attemptOf(g5), 'done.txt'), 'utf8').trim(), 'done FAILED: tools');
+    assert.equal(g5.daemon.undelivered().length, 1, 'kept on the PC until verified tools can relay it (Astra run 4, item D)');
   });
   await t('daemon: missing outputs and changed options fail the job', async () => {
     const f = fakes({ writeOutputs: false });
@@ -500,7 +526,7 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     assert.deepEqual(f.calls, [], 'inside the retry wait nothing runs or relays');
     f.daemon.retryMs = 0;
     await f.daemon.tick();
-    assert.deepEqual(f.calls, ['relay'], 'only the relay runs again');
+    assert.deepEqual(f.calls, ['pin', 'relay'], 'only the relay runs again, from verified tools');
     const result = f.gh.writes.find(w => w[0] === 'comment')[2];
     assert.match(result, /PASS/); assert.match(result, /relayed on try 2/); assert.ok(result.includes(d.DONE_MARK(SHA, 'lb_1777')));
     assert.deepEqual(f.daemon.undelivered(), []);
@@ -524,6 +550,8 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     fs.writeFileSync(path.join(f.vt, 'pc_daemon', 'ran.txt'), `2026-11-23T13:00:00Z ${SHA} lb_1777 PR7 start C:\\vt\\lb_1777\\out_1\r\n`);
     assert.deepEqual(await f.daemon.tick(), []); assert.deepEqual(f.calls, []);
     assert.match(fs.readFileSync(path.join(f.vt, 'pc_daemon', 'hold.txt'), 'utf8'), /stopped in the middle of lb_1777 \(PR 7\)/);
+    assert.deepEqual(f.daemon.recordedInterruptions().map(e => e.state), ['interrupted'], 'the interruption is recorded once');
+    await f.daemon.tick(); assert.equal(f.daemon.recordedInterruptions().length, 1);
     // a start followed by its own end line is not interrupted, and the dry run never sets a hold
     const ok = fakes();
     fs.mkdirSync(path.join(ok.vt, 'pc_daemon'));
@@ -538,7 +566,11 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
       fs.mkdirSync(path.join(c.vt, 'pc_daemon'));
       fs.writeFileSync(path.join(c.vt, 'pc_daemon', 'ran.txt'), `t ${SHA} lb_1777 PR7 start ${a2}\r\n`);
       const log = console.log; console.log = () => {};
-      try { assert.equal(d.clearMain(a2), 0); assert.equal(d.clearMain(a2), 2, 'only an interrupted attempt'); } finally { console.log = log; }
+      try {
+        assert.equal(d.clearMain(a2), 2, 'an open start nobody recorded as interrupted (it may still be running) is not cleared');
+        fs.appendFileSync(path.join(c.vt, 'pc_daemon', 'ran.txt'), `t ${SHA} lb_1777 PR7 interrupted ${a2}\r\n`);
+        assert.equal(d.clearMain(a2), 0); assert.equal(d.clearMain(a2), 2, 'once');
+      } finally { console.log = log; }
       assert.deepEqual(c.daemon.interrupted(), []);
     }
     const dry = fakes(); dry.daemon.live = false;

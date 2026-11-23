@@ -912,6 +912,8 @@ function Enter-Slot($attempt) {
       if (-not (Test-Path -LiteralPath $dir)) { $null = New-Item -ItemType Directory -Path $dir }
       Assert-SlotDir $dir
       if (Test-Path -LiteralPath (Join-Path $dir 'hold.txt')) { continue }
+      # the PC daemon's marker while it is being cleared (pc_daemon.js clearInFlight) holds the slot just the same
+      if (@(Get-ChildItem -LiteralPath $dir -Force -File -Filter 'hold.txt.*.clearing').Count) { continue }
       try { ([IO.File]::Open((Join-Path $dir '.slot-lease'), 'OpenOrCreate', 'ReadWrite', 'None')).Dispose() } catch [IO.IOException] { continue }
       $token = [guid]::NewGuid().ToString('N')
       Start-SlotHolder $dir $owner $ownerStart $token $attempt
