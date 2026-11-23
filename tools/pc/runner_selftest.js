@@ -88,6 +88,9 @@ if (process.platform !== 'win32') {
 // The lane can write to its own TEMP. Keep the fixture path short for PowerShell's Add-Type compiler.
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'r-'));
 const concurrency = 10;
+// Issue 1822: under lane load, an accounting fault can take over 90 s to finish its partial push and report.
+// Keep a per-launch limit inside the standing check's 600 s limit, with room for the runner to return its exit code.
+const entryTimeout = 180000;
 const testChildren = [];
 const testPidFiles = [];
 const gh = require('./runner_claim_fixture')(root);
@@ -137,15 +140,17 @@ function launchEntryPoint(cmd, env) {
   const start = Date.now();
   return new Promise((resolve, reject) => {
     const child = spawn(process.env.COMSPEC, ['/d', '/s', '/c', cmd], {
-      cwd: root, env: { ...process.env, ...shell.env, ...env }, windowsHide: true, windowsVerbatimArguments: true, timeout: 90000
+      cwd: root, env: { ...process.env, ...shell.env, ...env }, windowsHide: true, windowsVerbatimArguments: true, timeout: entryTimeout
     });
     testChildren.push(child);
     let text = '', error;
     child.stdout.on('data', b => text += b); child.stderr.on('data', b => text += b);
     child.once('error', e => { error = e; });
-    child.once('close', code => {
+    child.once('close', (code, signal) => {
       recordTiming('runner entry point', start, code);
-      if (error) reject(error); else resolve({ code, text });
+      if (error) reject(error);
+      else if (signal) reject(new Error(`Runner entry point stopped by ${signal} after ${Date.now() - start} ms (${cmd})\n${text}`));
+      else resolve({ code, text });
     });
   });
 }
@@ -502,7 +507,7 @@ try {
       testChildren.push(child);
     }
     const r = await job('openai', 'account-' + fault, extra);
-    assert.equal(r.code, 14, r.text + r.result);
+    assert.strictEqual(r.code, 14, `OpenAI ${fault} accounting must exit 14, got ${r.code}\n${r.text}${r.result}`);
     assert.equal(r.state.status, 'partial', r.result);
     assert.equal(r.state.reason, 'spend accounting unknown');
     assert.equal(read(path.join(r.out, 'checks.txt')).trim(), 'runner checks skipped: partial run');
