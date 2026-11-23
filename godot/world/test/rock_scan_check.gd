@@ -54,6 +54,11 @@ func _run() -> void:
 				continue
 			_check(FileAccess.get_sha256(path) == str(f.sha256), "%s does not match its scans.json hash" % f.file)
 			var tris: int = g.tris
+			if not lo:
+				# a full scan must be closed: scan_00, a rubble pile scanned from above with an open base, turned over and
+				# drew as a torn see-through shell at camera 26 (PC capture ROCKS_H, Nov 23)
+				var open := _open_edges(path)
+				_check(open == 0, "%s has %d open edges: a hole that shows the sky through the rock when it turns" % [f.file, open])
 			_check(tris >= (MIN_TRIS_LO if lo else MIN_TRIS), "%s has %d triangles (minimum %d)" % [f.file, tris, MIN_TRIS_LO if lo else MIN_TRIS])
 			var ext: Vector3 = g.ext
 			var aspect := minf(ext.x, minf(ext.y, ext.z)) / maxf(ext.x, maxf(ext.y, ext.z))
@@ -174,6 +179,49 @@ func _glb(path: String) -> Dictionary:
 	out.colour_r = r
 	out.colour_b = b
 	return out
+
+
+# Edges used by only one triangle, after welding vertices that share a position (scans split vertices along seams).
+func _open_edges(path: String) -> int:
+	var bytes := FileAccess.get_file_as_bytes(path)
+	var jlen := bytes.decode_u32(12)
+	var doc = JSON.parse_string(bytes.slice(20, 20 + jlen).get_string_from_utf8())
+	var bin_at := 20 + jlen + 8
+	var prim: Dictionary = doc.meshes[0].primitives[0]
+	var pa: Dictionary = doc.accessors[int(prim.attributes.POSITION)]
+	var pv: Dictionary = doc.bufferViews[int(pa.bufferView)]
+	var ps := bin_at + int(pv.get("byteOffset", 0)) + int(pa.get("byteOffset", 0))
+	var pstride := int(pv.get("byteStride", 12))
+	var weld := PackedInt32Array()
+	weld.resize(int(pa.count))
+	var ids := {}
+	for i in int(pa.count):
+		var at := ps + i * pstride
+		var key := Vector3(bytes.decode_float(at), bytes.decode_float(at + 4), bytes.decode_float(at + 8))
+		if not ids.has(key):
+			ids[key] = ids.size()
+		weld[i] = ids[key]
+	var ia: Dictionary = doc.accessors[int(prim.indices)]
+	var iv: Dictionary = doc.bufferViews[int(ia.bufferView)]
+	var is_at := bin_at + int(iv.get("byteOffset", 0)) + int(ia.get("byteOffset", 0))
+	var wide := int(ia.componentType) == 5125
+	var n := int(ia.count)
+	var edges := {}
+	for t in range(0, n, 3):
+		var v := PackedInt32Array()
+		for k in 3:
+			var at := is_at + (t + k) * (4 if wide else 2)
+			v.append(weld[bytes.decode_u32(at) if wide else bytes.decode_u16(at)])
+		for k in 3:
+			var a := v[k]
+			var b := v[(k + 1) % 3]
+			var e := Vector2i(mini(a, b), maxi(a, b))
+			edges[e] = int(edges.get(e, 0)) + 1
+	var open := 0
+	for e in edges:
+		if int(edges[e]) == 1:
+			open += 1
+	return open
 
 
 func _comp(bytes: PackedByteArray, at: int, ctype: int) -> float:

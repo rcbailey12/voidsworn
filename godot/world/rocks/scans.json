@@ -1,30 +1,6 @@
 {
   "rocks": [
     {
-      "name": "scan_00",
-      "source": "namaqualand_boulder_02",
-      "family": "scan",
-      "ext": [
-        1.859254002571106,
-        0.6480867266654968,
-        0.9062714576721191
-      ],
-      "files": [
-        {
-          "file": "scan_00.glb",
-          "triangles": 97964,
-          "vertices": 53437,
-          "sha256": "5bc300e8901d6e0e6ccb296236d7c9d3856c0e2a63cdcf400cdf5a91be4266e9"
-        },
-        {
-          "file": "scan_00_lo.glb",
-          "triangles": 2081,
-          "vertices": 898,
-          "sha256": "268a9e0d7cc13aea4a1bf4a0d940199f3975360b34597694d4602cf1ad323353"
-        }
-      ]
-    },
-    {
       "name": "scan_01",
       "source": "namaqualand_boulder_03",
       "family": "scan",
@@ -157,6 +133,11 @@
       "name": "scan_07",
       "source": "rock_09",
       "why": "issue 1361 (R419): 6x to 9x fewer triangles than scan_00..05; scan_07 a flat boomerang. Files removed."
+    },
+    {
+      "name": "scan_00",
+      "source": "namaqualand_boulder_02",
+      "why": "issue 1361: a rubble pile scanned from above with an open base (396 open edges); turned over it drew as a torn see-through shell at camera 26 (PC capture ROCKS_H, Nov 23). Files removed."
     }
   ],
   "facet": "COLOR_0.b re-baked as ranked ridge convexity by godot/world/tools/scan_facet.py (issue 1361)"

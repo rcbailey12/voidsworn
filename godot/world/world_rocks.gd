@@ -49,8 +49,9 @@ static func clear_static() -> void:
 
 # The CC0 scans and their explicit far meshes are one package. A partial
 # copy must not make some of the seeded choices turn into fallback spheres.
-# Issue 1361: six scans (scan_06 and the flat boomerang scan_07 were retired; scans.json "retired").
-const SCAN_COUNT := 6
+# Issue 1361: five scans (scan_06 and the flat boomerang scan_07 were retired; scan_00, a rubble pile scanned from above
+# with an open base, drew as a torn see-through shell from below in the PC capture ROCKS_H; scans.json "retired").
+const SCAN_COUNT := 5
 # Issue 1361: the flattest a rock may be drawn after its kind's squeeze (shortest over longest side), as ROCK_SHADER
 # enforces it (0.32) and world/test/rock_scan_check.gd checks it with the same formula (Fable M5 on PR 1782).
 const DRAWN_ASPECT := 0.32
@@ -358,11 +359,11 @@ const KINDS := {
 # Issue 1361: which scans each kind draws on, its most typical first (world.gd _pick weights the first ones double).
 # By the scans' own boxes (scans.json ext): 02 is chunky and round, 05 and 01 thick, 04 long, 00 and 03 flat slabs.
 const KIND_SCANS := {
-	"stone": ["scan_02", "scan_00", "scan_01", "scan_03", "scan_04", "scan_05"],
+	"stone": ["scan_02", "scan_01", "scan_03", "scan_04", "scan_05"],
 	"iron": ["scan_02", "scan_05", "scan_01", "scan_04"],
-	"carbon": ["scan_00", "scan_03", "scan_05", "scan_02"],
-	"ice": ["scan_04", "scan_03", "scan_00", "scan_01"],
-	"crystal": ["scan_01", "scan_05", "scan_02", "scan_04"],
+	"carbon": ["scan_03", "scan_05", "scan_02", "scan_01"],
+	"ice": ["scan_04", "scan_03", "scan_01", "scan_05"],
+	"crystal": ["scan_04", "scan_01", "scan_03", "scan_02"],
 }
 
 
