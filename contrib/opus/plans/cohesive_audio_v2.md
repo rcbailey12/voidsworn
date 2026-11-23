@@ -181,3 +181,25 @@ Wave A2 (20 takes, 272 real credits) was ear-audited by Antigravity, and Fable a
   - A beam may work better as ignition, a looped body and a release assembled in Godot, so it fits any beam length.
   - Shield break may be better layered (a new crackle over today's body) than one prompt.
   - Both are tried with the A3 takes before more spend.
+
+### 8.1 Wave A3 Results and Neon's Ear Notes (Nov 23 2026, input until Ryan's own picks)
+
+Wave A3 ran Nov 23 (`OPUS1752_WAVEA3B.bat`): all 18 takes, 224 credits. Relay: voidsworn-relay `pc-out-opus1752wavea3b`, folder `out_20261122_222753_165`. Listening page: https://claude.ai/artifact/FK5VJ8DZgzA3nuAAzWL6Am.
+
+Neon's full notes are in `contrib/neon/reviews/sound_wavea3_ear_1752.md` (PR 1856). Claude re-checked Neon's stereo correlation, below-500 Hz share and loudness on all 18 takes with its own script, and they match to the decimal. These are Neon's calls. **Ryan's ear picks decide**, and Wave B stays held until he gives them.
+
+- **Neon's keeps (7 of 18):**
+  - `shd_break_energy` t1
+  - `wep_directorate_laser_b` t1 and t2
+  - `wep_ithar_shard` t1
+  - `wep_sunward_lance_beam` t2
+  - `wep_chorus_spines` t2 and `wep_eclipse_gauss_fire` t2 (dark-leaning: loudness match and a small-speaker check)
+- **Neon's rejects:** everything else. `wep_ithar_shard` t2 is out of phase between left and right (correlation -0.29) and falls apart in mono.
+- **Directorate: recipe B (plasma cannon wording) wins.** Recipe A came out small and quiet, like a relay spark. If Ryan agrees, the Wave B Directorate prompts (turbo, hturbo, picket, and the ignition of ion_beam) are rewritten on recipe B wording, not on Fable's recipe A block in section 3 of the Fable review.
+- **Beams: influence 0.60 beats 0.45.** At 0.45 the takes went thin and hissy and lost 2 to 3 dB in mono.
+  - Every lance take spends 95% of its energy by 0.3 to 0.5 s. The "fast falling power-down into silence" clause makes the model rush to the end.
+  - For any Wave B beam that must sustain (ion_beam, pulsar, doom), drop that clause and build ignition, a looped body and a release in Godot, as section 8 already proposes.
+- **Eclipse control: the new wording fixed mono, not the bass.** New t1 is 97% below 500 Hz.
+  - Wave B Eclipse prompts drop "crushing seismic-charge cinematic bass" for midrange-anchored wording ("hard cold electrostatic snap", "hollow bowed-obsidian mid-low knock").
+  - This adds to Fable's bass-trap phrase swaps.
+- **Still open from section 8:** almost every keeper sits mostly below 500 Hz (the Directorate B lead take is 79%). Mastering (high-pass, presence lift, loudness match, mono fold) is required before any of them go in game, and the in-engine check against the battle music still decides.
