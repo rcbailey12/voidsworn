@@ -10,7 +10,8 @@ extends "res://bench/look_bench.gd"
 # stamped by tools/picture_provenance.gd:
 #   rocks/RK_<kind>_c170.png and rocks/RK_<kind>_c26.png for stone, iron, carbon, ice, crystal (a rock blocker cluster and
 #   debris hexes around the camera focus, the region's sky behind)
-#   rocks/RK_crystal_cluster_c26.png (camera 26 tipped low onto a crystal blocker: main's clusters before, none after)
+#   rocks/RK_crystal_cluster_c26.png (camera 26 tipped low onto a crystal blocker: main's clusters before, the ice comet
+#   look after; the crystal kind is ice comets since Ryan scrapped the clusters, Nov 22)
 # and one frame-time row: rocks/frame_time.json (a full crystal belt, 37 rock hexes, at camera 170: mean and p95 GPU and
 # CPU milliseconds over --frames frames, measured by the rendering server). A missing still or row writes
 # ROCKS_FAILED.txt and exits 4; LOOK_BENCH_DONE prints only when everything is there. Before any picture the run proves

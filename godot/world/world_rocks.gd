@@ -8,8 +8,9 @@ extends RefCounted
 #   iron    cool dark gunmetal slag crust, bright nickel-iron metal on the fresh ridges (issue 1361)
 #   carbon  deep charcoal C-type rock, matte, ash-grey ridge highlights, never tan (issue 1361)
 #   ice     dark comet crust with clean pale frost shelves on the fresh faces, faint cold glow in the cracks
-#   crystal dark slate host rock, thin glowing mineral veins seated in its crevices (Ryan scrapped the free crystal clusters
-#           on Nov 22; only the old look, VS_1361_OLD, still draws them, from world_rocks_v1.gd)
+#   crystal ice comets (Ryan, Nov 22: the crystals were scrapped): dusty crust broken by wide sheets of white ice, a faint
+#           cold glow only in a few deep vents, and on a few big ones a soft gas tail away from the sun (world.gd comets());
+#           only the old look, VS_1361_OLD, still draws main's crystal clusters, from world_rocks_v1.gd
 # Issue 1361 (World V2, R419): each kind draws on its own subset of the scans (KIND_SCANS) and squeezes them its own way in
 # the vertex shader (shape_k: iron chunkier, ice longer and sharper), so the five belts differ in shape as well as colour.
 # The scans' COLOR_0.b (facet) is ridge convexity re-baked by world/tools/scan_facet.py, spanning 0 to 1 like rockgen's.
@@ -272,13 +273,16 @@ void fragment() {
 		float crack = smoothstep(0.93, 0.985, 1.0 - abs(n2 * 2.0 - 1.0));
 		em = glow_col * crack * ice * 0.05;
 	} else {
-		a = mix(a, fresh, smoothstep(0.4, 0.95, fr) * 0.5);
-		// Issue 1361: thin veins seated in the crevices (the scan's low facet values), calibrated to the re-baked facet
-		// spread so a rock carries a few lines, never a net over the whole surface
-		float vein = smoothstep(0.972, 0.995, 1.0 - abs(n1 * 2.0 - 1.0)) * (1.0 - smoothstep(0.04, 0.16, facet));
-		a = mix(a, glow_col * 0.08, vein * 0.6);
-		em = glow_col * vein * 0.32;
-		rough = mix(0.85, 0.45, fr);
+		// Issue 1361 (Ryan, Nov 22): the "crystal" kind is now ice comets. A dark dusty crust broken by wide sheets of clean
+		// white ice (more, and whiter, than the ice belt's frost shelves), a light frost dust over the crust, and a faint
+		// cold glow only deep in a few vents ("be careful with the glowing core": small, dim, never the whole surface)
+		float ice = clamp(smoothstep(0.42, 0.9, fr) + smoothstep(0.62, 0.8, n1) * 0.35 - crat * 0.3, 0.0, 1.0);
+		a = mix(a, fresh * (0.85 + 0.25 * n2), ice);
+		cracks *= 0.35 * (1.0 - ice * 0.7);   // the hairline crack net reads as black scribbles on comet ice and its pale dust
+		a = mix(a, fresh * 0.3, smoothstep(0.65, 0.9, n3) * 0.12 * (1.0 - ice));
+		rough = mix(0.86, 0.5, ice);
+		float vent = (1.0 - smoothstep(0.02, 0.1, facet)) * smoothstep(0.75, 0.9, n2);
+		em = glow_col * vent * 0.06;
 	}
 	a *= 1.0 - cracks * 0.6;
 	// r8: fresh, lighter rock on crater rims, a little dust darkening their floors
@@ -296,7 +300,7 @@ void fragment() {
 	METALLIC = metal;
 	// r2: a dull dielectric sheen (the default 0.5 caught the cold fill light and turned brown rock grey-blue)
 	// r11: less for plain rock (its dull sheen picked up the blue of the sky and the fill light and read as frost)
-	SPECULAR = kind == 3 ? 0.5 : (kind == 1 ? 0.45 : (kind == 2 ? 0.08 : 0.12));
+	SPECULAR = kind == 3 || kind == 4 ? 0.5 : (kind == 1 ? 0.45 : (kind == 2 ? 0.08 : 0.12));
 	if (debris_glint > 0.0) {
 		vec3 sun = normalize((VIEW_MATRIX * vec4(sun_v, 0.0)).xyz);
 		vec3 half_v = normalize(sun + VIEW);
@@ -347,7 +351,8 @@ const KINDS := {
 	"iron": {"base": Vector3(0.058, 0.061, 0.067), "fresh": Vector3(0.4, 0.395, 0.385), "k": 1, "shape": -0.35, "tone": 0.16, "tint": Vector3(0.94, 0.98, 1.06)},
 	"carbon": {"base": Vector3(0.042, 0.041, 0.04), "fresh": Vector3(0.1, 0.1, 0.104), "k": 2, "shape": -0.12, "tone": 0.22, "tint": Vector3(0.94, 0.96, 1.02)},
 	"ice": {"base": Vector3(0.07, 0.074, 0.084), "fresh": Vector3(0.6, 0.7, 0.8), "k": 3, "shape": 0.55, "tone": 0.16, "tint": Vector3(0.92, 1.0, 1.08)},
-	"crystal": {"base": Vector3(0.046, 0.049, 0.058), "fresh": Vector3(0.13, 0.135, 0.15), "k": 4, "shape": 0.0, "tone": 0.15, "tint": Vector3(0.95, 0.98, 1.06)},
+	# the id stays "crystal" (rules and biomes use it); the look is ice comets since Ryan scrapped the crystals (Nov 22)
+	"crystal": {"base": Vector3(0.06, 0.062, 0.068), "fresh": Vector3(0.68, 0.72, 0.77), "k": 4, "shape": 0.3, "tone": 0.14, "tint": Vector3(0.94, 0.99, 1.06)},
 }
 
 # Issue 1361: which scans each kind draws on, its most typical first (world.gd _pick weights the first ones double).
