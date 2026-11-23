@@ -12,6 +12,7 @@
 //
 //   node contrib/opus/tools/fleet_list.js            print the problems, exit 1 on any
 //   node contrib/opus/tools/fleet_list.js --write    also rewrite docs/ship_pipeline/FLEET.md
+//   node contrib/opus/tools/fleet_list.js --check-page   fail if the saved page is stale
 //   node contrib/opus/tools/fleet_list.js --pick "ithar|Cruiser"   print the Approved pick line for a brief
 const fs = require('fs');
 const path = require('path');
@@ -126,7 +127,6 @@ function cell(s) { return String(s || '').replace(/\|/g, '/').replace(/\r?\n/g, 
 
 function render(data) {
   const { rows, other } = data;
-  const count = s => rows.filter(r => r.stage === s).length;
   const out = [];
   out.push('# The fleet list');
   out.push('');
@@ -139,11 +139,6 @@ function render(data) {
   out.push('has the new recipe file layout. It does not prove the approved look is in those files: the "Approved look in game"');
   out.push('column says what Ryan accepted and what is still pending, and issue 1410 checks the model the game renders. None');
   out.push('of this is the playable exe (that is a separate snapshot).');
-  out.push('');
-  out.push('**Totals:** ' + rows.length + ' ship slots. ' + count('New-format build on main') + ' new builds installed, '
-    + count('Build sheet made, old hull in game') + ' with a build sheet but the old hull in game, '
-    + count('Concept picked, old hull in game') + ' with a picked concept only, '
-    + count('Old hull, no pick yet') + ' old with no pick yet, ' + count('Old hull kept on purpose') + ' kept on purpose.');
   let fac = '';
   for (const r of rows) {
     if (r.faction !== fac) {
@@ -171,6 +166,13 @@ function render(data) {
   return out.join('\n');
 }
 
+function pageProblem(data, root = ROOT) {
+  const file = path.join(root, PAGE);
+  const page = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  if (page.replace(/\r\n/g, '\n') === render(data)) return '';
+  return PAGE + ' is stale: run node contrib/opus/tools/fleet_list.js --write and include the page in the branch';
+}
+
 function main() {
   const args = process.argv.slice(2);
   const data = build();
@@ -181,15 +183,23 @@ function main() {
     console.log(pickLine(row));
     return;
   }
-  if (args.includes('--write')) {
+  if (args.includes('--check-page')) {
+    const problem = pageProblem(data);
+    if (problem) data.problems.push(problem);
+  } else if (args.includes('--write')) {
     fs.writeFileSync(path.join(ROOT, PAGE), render(data));
     console.log('wrote ' + PAGE);
   }
   for (const p of data.problems) console.log('PROBLEM: ' + p);
   if (data.problems.length) { console.log('FAIL: ' + data.problems.length + ' fleet list problem(s)'); process.exit(1); }
   console.log('PASS: ' + data.rows.length + ' ship slots listed, ' + data.rows.filter(r => r.installed).length + ' in the new build format');
+  const count = stage => data.rows.filter(row => row.stage === stage).length;
+  console.log('Totals: ' + data.rows.length + ' ship slots. ' + count('New-format build on main') + ' new builds installed, '
+    + count('Build sheet made, old hull in game') + ' with a build sheet but the old hull in game, '
+    + count('Concept picked, old hull in game') + ' with a picked concept only, '
+    + count('Old hull, no pick yet') + ' old with no pick yet, ' + count('Old hull kept on purpose') + ' kept on purpose.');
 }
 
 if (require.main === module) main();
 
-module.exports = { build, render, pickLine, findPick, lookOf, readHullTable, isNewBuild, stageOf, FLEET, PAGE };
+module.exports = { build, render, pageProblem, pickLine, findPick, lookOf, readHullTable, isNewBuild, stageOf, FLEET, PAGE };

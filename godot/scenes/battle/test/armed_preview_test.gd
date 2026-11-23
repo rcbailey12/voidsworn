@@ -3,10 +3,7 @@ extends SceneTree
 const Battle := preload("res://scenes/battle/battle.gd")
 const API := preload("res://rules/battle_api.gd")
 const Sfx := preload("res://audio/sfx.gd")
-
-class TestHud extends "res://ui/battle/hud.gd":
-	func toast(_text: String) -> void:
-		pass
+const Hud := preload("res://ui/battle/hud.gd")
 
 class TestBoard extends "res://render/board.gd":
 	func refresh() -> void:
@@ -46,7 +43,7 @@ func _run() -> void:
 	b._index_view()
 	b.sel = ship["id"]
 	b.danger_on = false
-	b.hud = TestHud.new()
+	b.hud = Hud.new()
 	b.sfx = Sfx.new()
 	b.board = TestBoard.new()
 	b.cam = Battle.CamRig.new()
@@ -54,7 +51,7 @@ func _run() -> void:
 	b.path_line = MeshInstance3D.new()
 	b.path_dots = MultiMeshInstance3D.new()
 	b.path_dots.multimesh = MultiMesh.new()
-	for node in [b.board, b.cam, b.arrow, b.path_line, b.path_dots]:
+	for node in [b.hud, b.board, b.cam, b.arrow, b.path_line, b.path_dots]:
 		b.add_child(node)
 	var view := Battle.ShipView.new()
 	b.views[b.sel] = view
@@ -70,16 +67,20 @@ func _run() -> void:
 		ok = b.armed == flak and b.atk == planned and b.ghost.visible and b.path_line.visible and _offers_burn(b)
 		if not ok:
 			printerr("FAIL: arming flak changed the planned Burn and fire or its preview")
+		var toast: Label = b.hud.toast_lbl
+		var shown := toast.is_visible_in_tree() and toast.modulate.a > 0.0 \
+			and toast.text == "Planned shot keeps its guns. Cancel the plan to change weapons."
+		if not shown:
+			printerr("FAIL: weapon hotkey did not show the planned guns toast")
 		b._on_key(KEY_ENTER)
 		var shots := api.take_events().filter(func(event): return event.t == "fire" and event.unit == ship["id"])
 		var fired: bool = b.commands == 1 and shots.size() == 1 and shots[0].weapon == 0 and shots[0].target == foe["id"]
 		if not fired:
 			printerr("FAIL: Enter did not commit the planned shot from the main gun")
-		ok = ok and fired
-	b.hud.free()
+		ok = ok and shown and fired
 	b.sfx.free()
 	b.free()
-	if ok: print("PASS: arming flak preserves the Burn and fire preview and Enter fires the planned main gun")
+	if ok: print("PASS: arming flak shows the planned guns toast, preserves the preview, and Enter fires the planned main gun")
 	quit(0 if ok else 1)
 
 

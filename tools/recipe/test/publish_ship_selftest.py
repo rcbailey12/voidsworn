@@ -8,7 +8,11 @@ file the export does not hold. Undo: publish A, publish B, undo A puts back only
 leaves B as published; an undo after A's live files changed refuses and touches nothing; a corrupt or missing kept copy
 is refused before anything live moves (UNDO FAILED, exit 1, never UNDO PASS); a failure forced in the middle of the live
 steps puts the published files, scenes and both manifest rows back, and a clean undo still passes afterwards. Restore after
-a failed install puts back the damage and wreck scenes the cache refresh rewrote, and refuses a corrupt kept copy. Prints PASS lines and exits 0, or stops at the first failure.
+a failed install puts back the damage and wreck scenes the cache refresh rewrote, and refuses a corrupt kept copy. Manifest
+patch (issue 1357) round trips a good row from an older row through apply-patch without touching another ship, refuses a
+tampered file or a row with no sha256, leaves the manifest byte for byte as it was when the same patch is applied twice,
+and refuses a receipt overtaken by a later publish of the same hull, leaving that later row in place (Astra, PR 1805).
+Prints PASS lines and exits 0, or stops at the first failure.
 """
 import hashlib
 import json
@@ -330,6 +334,87 @@ def check_restore(root):
     ok('locked runs a command under the install lock and returns its exit code')
 
 
+def check_patch(root):
+    """issue 1357: the publish hands the Board the manifest row it just made live for CODE, and the Board applies it to the
+    repo manifest without touching any other ship. A good patch round trips from an older row (the row changes on the first
+    apply, the second leaves the file byte for byte); a tampered file or a row with no sha256 is refused; and a receipt
+    overtaken by a later publish of the same hull is refused, leaving the later row in place (Astra, PR 1805)."""
+    game = fake_game(root)
+    mpath = game / 'assets' / 'ships' / 'manifest.json'
+    old_rows = json.loads(mpath.read_text(encoding='utf-8'))['ships']
+    stand_in_install(game, 'A1_11', 'A')
+    live = game / 'assets' / 'ships' / 'A1_11'
+    rows = json.loads(mpath.read_text(encoding='utf-8'))['ships']
+    listed = {p.name: dict(bytes=p.stat().st_size, sha256=sha(p.read_bytes()))
+              for p in sorted(live.iterdir()) if p.is_file()}
+    rows['A1_11']['files'] = listed
+    mpath.write_text(json.dumps(dict(note='n', ships=rows), indent=1) + '\n', encoding='utf-8')
+    patch = root / 'manifest_patch_A1_11.json'
+    rc, out = run('manifest-patch', game, 'A1_11', patch)
+    assert rc == 0 and 'manifest patch A1_11: 2 files' in out, out
+    patched = json.loads(patch.read_text(encoding='utf-8'))
+    assert patched['code'] == 'A1_11' and patched['row']['files'] == listed, patched
+    assert patched['source'].endswith('assets/ships/manifest.json'), patched['source']
+    ok('manifest-patch writes the live row for A1_11 after checking both files by size and sha256')
+
+    two = root / 'two.json'
+    keep = {k: old_rows[k] for k in ('A1_11', 'B2_22')}
+    two.write_text(json.dumps(dict(note='two', ships=keep), indent=1) + '\n', encoding='utf-8')
+    before = two.read_bytes()
+    rc, out = run('apply-patch', patch, two)
+    assert rc == 0 and 'applied A1_11 to' in out, out
+    once = two.read_bytes()
+    assert once != before, 'the first apply left the older A1_11 row unchanged (a no-op passed)'
+    got = json.loads(once.decode('utf-8'))
+    assert list(got) == ['note', 'ships'] and list(got['ships']) == ['A1_11', 'B2_22'], got
+    assert got['ships']['A1_11'] == patched['row'], 'the patch row was not applied'
+    assert got['ships']['B2_22'] == keep['B2_22'], 'another ship row changed'
+    ok('a good patch round trips from an older row: apply-patch changes only that ship row in a two-ship manifest')
+    rc, out = run('apply-patch', patch, two)
+    assert rc == 0, out
+    assert two.read_bytes() == once, 'applying the same patch twice changed the file'
+    assert json.loads(two.read_text(encoding='utf-8'))['ships']['B2_22'] == keep['B2_22'], \
+        'the other ship row changed on the second apply'
+    ok('applying the same patch twice leaves the manifest byte for byte identical, the other ship row too')
+
+    # Astra, PR 1805: B publishes after A's receipt was made, so A's receipt is stale; B must be refused, A kept as it was
+    stand_in_install(game, 'A1_11', 'B')
+    rows = json.loads(mpath.read_text(encoding='utf-8'))['ships']
+    listed_b = {p.name: dict(bytes=p.stat().st_size, sha256=sha(p.read_bytes()))
+                for p in sorted(live.iterdir()) if p.is_file()}
+    rows['A1_11']['files'] = listed_b
+    mpath.write_text(json.dumps(dict(note='n', ships=rows), indent=1) + '\n', encoding='utf-8')
+    patch_b = root / 'manifest_patch_A1_11_b.json'
+    rc, out = run('manifest-patch', game, 'A1_11', patch_b)
+    assert rc == 0, out
+    patch_b_row = json.loads(patch_b.read_text(encoding='utf-8'))['row']
+    rc, out = run('apply-patch', patch_b, two)
+    assert rc == 0, out
+    after_b = two.read_bytes()
+    assert json.loads(after_b.decode('utf-8'))['ships']['A1_11'] == patch_b_row, 'B was not applied'
+    rc, out = run('apply-patch', patch, two)
+    assert rc == 1 and 'stale' in out and 'applied A1_11' not in out, out
+    assert two.read_bytes() == after_b, 'a stale receipt A changed the target that holds B'
+    ok('a receipt overtaken by a later publish (B then stale A) is refused and B stays in the target')
+
+    glb = live / 'A1_11.glb'
+    original = glb.read_bytes()
+    glb.write_bytes(bytes([original[0] ^ 0xff]) + original[1:])
+    rc, out = run('manifest-patch', game, 'A1_11', root / 'bad.json')
+    assert rc == 1 and 'FAILED' in out and 'manifest patch A1_11:' not in out, out
+    glb.write_bytes(original)
+    ok('a tampered file (one byte changed) is refused')
+
+    good = mpath.read_bytes()
+    bad = json.loads(mpath.read_text(encoding='utf-8'))
+    bad['ships']['A1_11']['files']['A1_11.glb'] = dict(bytes=len(original))
+    mpath.write_text(json.dumps(bad, indent=1) + '\n', encoding='utf-8')
+    rc, out = run('manifest-patch', game, 'A1_11', root / 'bad.json')
+    assert rc == 1 and 'sha256' in out and 'manifest patch A1_11:' not in out, out
+    mpath.write_bytes(good)
+    ok('a row with no sha256 is refused')
+
+
 def main():
     with tempfile.TemporaryDirectory() as t:
         check_receipts(Path(t))
@@ -337,6 +422,8 @@ def main():
         check_undo(Path(t))
     with tempfile.TemporaryDirectory() as t:
         check_restore(Path(t))
+    with tempfile.TemporaryDirectory() as t:
+        check_patch(Path(t))
     print(f'publish_ship_selftest: {passed} passed')
     return 0
 

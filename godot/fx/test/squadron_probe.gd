@@ -3,6 +3,8 @@ extends SceneTree
 const SV := preload("res://render/ship_view.gd")
 const FX := preload("res://fx/fx.gd")
 const PG := preload("res://render/placeholder_guard.gd")
+const HullAge := preload("res://render/hull_age.gd")
+const HT := preload("res://render/hull_table.gd")
 const WING := preload("res://render/squadron_wing.gd")
 const CASES := [["voidsworn", "Sunward Crusade", "bomber", "Carrier"], ["hegemony", "Hegemony Navy", "fighter", "Battleship"], ["corsair", "Ashfall Hullbreakers", "bomber", "Carrier"], ["chorus", "The Chorus", "spore", "Carrier"], ["ithar", "The Glasswrights", "fighter", "Carrier"], ["deathless", "Eclipse", "", "Tomb-ark"]]
 var vp: SubViewport
@@ -28,6 +30,16 @@ func _run() -> void:
 		var kv := pair.split("=")
 		if kv.size() == 2: expect[kv[0].strip_edges()] = kv[1].strip_edges()
 	_add_trial_entries()
+	# Issue 1410 (R368): the carriers drawn beside the wings must be new builds (ALLOW_OLD_HULLS=1 draws old ones on purpose);
+	# the wings themselves are code-built or kit craft, not manifest hulls, so they are not listed
+	var drawn: Array = []
+	for c in CASES:
+		drawn.append(HT.code_for(c[0], c[3]))
+	var old_hull := HullAge.guard(drawn)
+	if old_hull != "":
+		print("SQUADRON_OLD_HULL " + old_hull)
+		quit(1)
+		return
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	vp = SubViewport.new()
 	vp.size = Vector2i(2560, 1440)
