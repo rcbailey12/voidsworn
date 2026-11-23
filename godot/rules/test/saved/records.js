@@ -62,7 +62,7 @@ function evidence(root, names, scenarios) {
     const part = json(w.file);
     const ok = w.godot?.code === 0 && !w.godot.timeout && !w.godot.error && !w.godot.signal &&
       log.split('\n').includes(`batch ${w.names.length} battles -> ${path.join(root, 'out')}`) &&
-      !/SCRIPT ERROR|Parse Error|NOT PORTED:|^ERROR:/m.test(log);
+      !/SCRIPT ERROR|Parse Error|NOT PORTED:|^ERROR:(?! Failed to read the root certificate store\.\r?$)/m.test(log);
     if (stable(Object.keys(part).sort()) !== stable([...w.names].sort())) throw Error('worker partition differs from its manifest');
     for (const name of w.names) {
       if (!names.includes(name) || seen.has(name)) throw Error('unknown or duplicate battle in workers: ' + name);

@@ -347,7 +347,7 @@ static func corkscrew(fx, s, p: Vector3, frame: Transform3D) -> void:
 			fx.spr(q, fx.now + u * 0.35, 0.6, Color(0.12, 0.11, 0.1), 0.4, L * 0.04, L * 0.14, 3, Vector3.ZERO, 0.5)
 	var tint: Color = s.fac.damage_glow
 	for j in 2:
-		fx.shd(p, fx.now, 1.2, (fwd + fx.rdir() * 0.6).normalized() * L * 0.8, L * 0.04, 0.4, 6.0, 0.3, 0.6)
+		debris(fx, s, p, fx.now, 1.2, (fwd + fx.rdir() * 0.6).normalized() * L * 0.8, L * 0.04, 0.4, 6.0, 0.3, 0.6)
 		fx.stk(p, fx.now, 0.35, tint, 2.0, 0.04, L * 0.02, 1, fx.rdir() * L * 0.7, 1.0)
 
 
