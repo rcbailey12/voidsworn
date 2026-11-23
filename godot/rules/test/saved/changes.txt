@@ -1,12 +1,12 @@
-Saved manifest before: 0bebbb7b8c8a4b60336a771963d7c245921687c3747f2ff4188825828f2d968d
-Saved manifest after: 0d9420f884f9ead96d7da348c273a0b1398db9689d89d182a58a694adf5be82c
+Saved manifest before: 0fdd2ab1b3ba9985053b61c6ffc11c0cdb193c3f623ac212285156714fe41207
+Saved manifest after: 223f45f2acb6ea21cd3cf95481d80646b4fd99bb98b4d6aa8dd2a203dd40e81b
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
 FAIL battle s7
   turn 0, round 1, after tick player; unit x06 (player reliquary)
   state.units[1].q: -1 -> 2
-  later changed records: 431; total records: 370 -> 432
+  later changed records: 369; total records: 370 -> 356
 FAIL battle s9
   turn 0, round 1, after tick player; unit x06 (player penitent)
   state.units[1].q: 5 -> 6
@@ -22,7 +22,7 @@ FAIL battle s20
 FAIL battle s24
   turn 0, round 1, after tick player; unit x015 (enemy h_picket)
   state.units[8].q: 16 -> 19
-  later changed records: 567; total records: 551 -> 568
+  later changed records: 609; total records: 610 -> 498
 FAIL battle s25
   scenario changed but result is identical; update its saved input hash
 FAIL battle s33
@@ -73,4 +73,4 @@ FAIL battle s1480
   turn 0, round 1, after tick player; unit x07 (player penitent)
   state.units[1].q: 1 -> 0
   later changed records: 217; total records: 215 -> 218
-FAIL: saved Godot results; 354 battles checked, 14 changed, 0 other files changed, 21 failures; 32.795 s
+FAIL: saved Godot results; 379 battles checked, 14 changed, 0 other files changed, 21 failures; 19.445 s

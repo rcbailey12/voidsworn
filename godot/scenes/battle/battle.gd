@@ -4159,8 +4159,8 @@ func _rotate(d: int) -> void:
 
 
 # Issue 1589: can the ship that is up turn in place by rot steps now (sign = way)? Read on a copy of the rules' own unit with
-# canRotate, spending what _rotateUnit_raw spends for each turn (a skill's free turn, then a free pivot, then movement and a
-# turn charge). Each step is its own rotate at the commit, and the rules end the activation after a step that leaves the
+# canRotate, spending what _rotateUnit_raw spends for each turn through the rules' own spendTurn (Thorne's rider turn, a
+# skill's free turn, a free pivot, else movement and a turn charge). Each step is its own rotate at the commit, and the rules end the activation after a step that leaves the
 # ship with no movement and no gun on an enemy (battle_api _done_raw), so a middle heading like that cannot be planned
 # through (Codex on PR 1643, run 2). Read only: the copy is thrown away.
 func _turns_ok(rot: int) -> bool:
@@ -4175,16 +4175,7 @@ func _turns_ok(rot: int) -> bool:
 	for k in n:
 		if not R.canRotate(v):
 			return false
-		if float(_z0(v.get("treeFreeTurn"))) > 0.0:
-			v["treeFreeTurn"] = 0   # a skill's free turn: no movement, no turn charge (Artoo on PR 1643: still checked below)
-		else:
-			if R.freePivot(v):
-				v["pivotUsed"] = true
-			else:
-				v["mp"] = v["mp"] - 1
-				if R.jt(v.get("postFire")):
-					v["postMp"] = maxi(0, int(_z0(v.get("postMp"))) - 1)
-			v["turnsLeft"] = v["turnsLeft"] - 1
+		R.spendTurn(v)   # the rules' own charge for one turn: Thorne's rider turn, a skill's free turn, a free pivot, else movement and a turn (Artoo on PR 1876)
 		v["facing"] = posmod(int(v["facing"]) + signi(rot), 6)
 		if k < n - 1 and v["mp"] <= 0 and not _any_shot(v):
 			return false
@@ -5792,6 +5783,7 @@ static func _command_tip(command: Dictionary) -> String:
 	if command["used"]: return "Already used this battle."
 	var power := int(command["power"])
 	var tip := "Power %d of 3: %s" % [power, command["effect"]]
+	if str(command.get("rider", "")) != "": tip += "\nRider: " + str(command["rider"])   # issue 1651
 	if command["next"] != "": return tip + "\nWait one round for power %d: %s" % [power + 1, command["next"]]
 	return tip + ("\nAlready at full power." if power == 3 else "\nOne more round does not raise the power.")
 
