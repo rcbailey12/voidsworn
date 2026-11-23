@@ -11,6 +11,19 @@ const zlib = require('zlib');
 const { spawnSync, spawn } = require('child_process');
 const pc = path.resolve(__dirname, '../../../tools/pc');
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner846 proof '));
+// Lane B hit the old 240 s limit and the 1817 rerun was still cloning fixtures at 270 s.
+// Scale the old limit by PR 1813's measured 2.1x slowdown and round 504 s to 510 s.
+// The 600 s Windows standing row leaves room for the separate claim race.
+const probeTimeout = process.platform === 'win32' ? 510000 : 240000;
+// Scale the runner's 30 s issue-lock window by the same slowdown, rounded up.
+const claimTimeout = 65000;
+const fixtureEnv = {
+  ...process.env,
+  // Git maintenance and fsmonitor can leave processes in a tiny checkout after Git itself exits. Keep all fixture
+  // Git work synchronous so the rename exercises preservation of local files without a background Git holder.
+  GIT_CONFIG_COUNT: '2', GIT_CONFIG_KEY_0: 'maintenance.auto', GIT_CONFIG_VALUE_0: 'false',
+  GIT_CONFIG_KEY_1: 'core.fsmonitor', GIT_CONFIG_VALUE_1: 'false'
+};
 const gh = require('../../../tools/pc/runner_claim_fixture')(root);
 const write = (p, s) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, s); };
 const read = p => fs.readFileSync(p, 'utf8');
@@ -29,7 +42,9 @@ for (const name of ['codex_issue', 'work_issue']) {
   assert(bat.includes('/c:"Base already merged"'), 'base-only work must reach the publisher');
 }
 const upstream = path.join(root, 'upstream.git');
-let r = spawnSync('git', ['init', '--bare', '-q', upstream], { encoding: 'utf8', windowsHide: true });
+let r = spawnSync('git', ['init', '--bare', '-q', upstream], {
+  env: fixtureEnv, encoding: 'utf8', windowsHide: true, timeout: claimTimeout
+});
 assert.equal(r.status, 0, r.stderr);
 function object(type, value) {
   const b = Buffer.isBuffer(value) ? value : Buffer.from(value);
@@ -832,15 +847,15 @@ Write-Output "PASS runner job checks ($script:passed groups)"
 const ps = process.env.PC_TEST_POWERSHELL || (process.platform === 'win32' ? 'powershell.exe' : 'pwsh');
 const probeStarted = Date.now();
 r = spawnSync(ps, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(root, 'probes.ps1'), pc, root], {
-  cwd: root, encoding: 'utf8', windowsHide: true, timeout: 240000,
-  env: { ...process.env, PC_RUNNER_TEST: '1', PC_TEST_GH: gh.fake, PC_TEST_GH_FAIL: '',
+  cwd: path.dirname(root), encoding: 'utf8', windowsHide: true, timeout: probeTimeout,
+  env: { ...fixtureEnv, PC_RUNNER_TEST: '1', PC_TEST_GH: gh.fake, PC_TEST_GH_FAIL: '',
     // The Windows prep helper builds its Godot path from USERPROFILE, which Linux does not provide.
     USERPROFILE: root,
-    PC_TEST_GIT: '', PC_TEST_RETRY_SECONDS: '0',
+    PC_TEST_GIT: '', PC_TEST_RETRY_SECONDS: '0', PC_TEST_KEEP_SECONDS: String(claimTimeout / 1000),
     GIT_AUTHOR_NAME: 'Fixture', GIT_AUTHOR_EMAIL: 'fixture@example.invalid',
     GIT_COMMITTER_NAME: 'Fixture', GIT_COMMITTER_EMAIL: 'fixture@example.invalid' }
 });
-// Standing checks show only the first 15 lines on failure. Keep the actual exception ahead of earlier PASS output.
+// Keep the actual exception ahead of earlier PASS output.
 assert.equal(r.status, 0, (r.stderr || '') + String(r.error || '') + '\nEvidence: ' + root + '\n' + (r.stdout || ''));
 console.log(r.stdout.trim());
 console.log('PASS PowerShell probes elapsed: ' + ((Date.now() - probeStarted) / 1000).toFixed(1) + ' s');
@@ -849,26 +864,57 @@ console.log('PASS PowerShell probes elapsed: ' + ((Date.now() - probeStarted) / 
   const race = path.join(root, 'claim-race'); fs.mkdirSync(race);
   const database = path.join(race, 'gh-db.json'), trace = path.join(race, 'gh.jsonl');
   write(database, JSON.stringify(gh.database(846, main))); write(trace, '');
-  const env = { ...process.env, PC_RUNNER_TEST: '1', PC_TEST_GH: gh.fake, PC_TEST_GH_DB: database,
-    PC_TEST_GH_TRACE: trace, PC_TEST_GH_FAIL: '', PC_TEST_GH_HOLD: '1' };
+  const env = { ...fixtureEnv, PC_RUNNER_TEST: '1', PC_TEST_GH: gh.fake, PC_TEST_GH_DB: database,
+    PC_TEST_GH_TRACE: trace, PC_TEST_GH_FAIL: '', PC_RUNNER_LOCKED_ISSUE: '' };
   const common = path.join(pc, 'runner_common.ps1');
-  const args = words => ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', common, ...words];
+  const psFile = ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File'];
+  const syncOptions = { env, encoding: 'utf8', windowsHide: true, timeout: claimTimeout };
   const outs = ['lane-a', 'lane-b'].map(lane => {
     const out = path.join(race, lane); fs.mkdirSync(out);
-    const init = spawnSync(ps, args(['init', out, 'codex/issue-846']), { env, encoding: 'utf8', windowsHide: true });
-    assert.equal(init.status, 0, init.stderr); return out;
+    const init = spawnSync(ps, [...psFile, common, 'init', out, 'codex/issue-846'], syncOptions);
+    assert.equal(init.status, 0, init.error || init.stderr); return out;
   });
-  const results = await Promise.all(outs.map(out => new Promise((resolve, reject) => {
-    const child = spawn(ps, args(['announce', out, '846', 'codex', path.join(out, 'repo'), '21600', 'resume', 'real']), { env, windowsHide: true });
-    let output = ''; child.stdout.on('data', b => output += b); child.stderr.on('data', b => output += b);
-    child.on('error', reject); child.on('close', code => resolve({ code, output, out }));
-  })));
+  // Both PowerShell hosts must reach the start gate before either announces. A slow host cannot miss the race.
+  const gate = path.join(race, 'claim.ps1');
+  write(gate, `[Console]::WriteLine('READY to announce')
+if ([Console]::ReadLine() -ne 'start') { exit 1 }
+& $args[0] announce $args[1] 846 codex (Join-Path $args[1] 'repo') 21600 resume real
+exit $LASTEXITCODE
+`);
+  const children = [];
+  const ready = new Set();
+  let results;
+  try {
+    results = await Promise.all(outs.map(out => new Promise((resolve, reject) => {
+      const child = spawn(ps, [...psFile, gate, common, out], { env, windowsHide: true, timeout: claimTimeout });
+      children.push(child);
+      let stdout = '', stderr = '';
+      child.stdout.on('data', bytes => {
+        stdout += bytes;
+        if (ready.has(child) || !stdout.includes('READY to announce')) return;
+        ready.add(child);
+        if (ready.size === outs.length) {
+          for (const claimant of ready) claimant.stdin.end('start\n');
+        }
+      });
+      child.stderr.on('data', bytes => stderr += bytes);
+      child.stdin.on('error', reject);
+      child.on('error', reject);
+      child.on('close', (code, signal) => {
+        const output = stdout + stderr;
+        if (signal || !ready.has(child)) reject(new Error(`${out}: claim process exited (${signal || code})\n${output}`));
+        else resolve({ code, output, out });
+      });
+    })));
+  } finally {
+    for (const child of children) child.stdin.destroy();
+  }
   assert.deepEqual(results.map(r => r.code).sort((a, b) => a - b), [0, 14], JSON.stringify(results));
   assert(results.find(r => r.code === 14).output.includes('already carries running'), JSON.stringify(results));
   const calls = read(trace).trim().split(/\r?\n/).map(l => JSON.parse(l));
   assert.equal(calls.filter(c => c.method === 'POST' && /\/issues\/846\/labels$/.test(c.endpoint)).length, 1);
   assert.equal(JSON.parse(read(database)).comments.length, 1);
-  const finish = spawnSync(ps, args(['finish', results.find(r => r.code === 0).out, '8', '', 'real', '0']), { env, encoding: 'utf8', windowsHide: true });
-  assert.equal(finish.status, 0, finish.stderr); assert(!JSON.parse(read(database)).running);
+  const finish = spawnSync(ps, [...psFile, common, 'finish', results.find(r => r.code === 0).out, '8', '', 'real', '0'], syncOptions);
+  assert.equal(finish.status, 0, finish.error || finish.stderr); assert(!JSON.parse(read(database)).running);
   console.log('PASS simultaneous Codex starts on two lanes yield exactly one claim; losing run cannot clear it');
 })().catch(e => { console.error(e.stack); process.exitCode = 1; });
