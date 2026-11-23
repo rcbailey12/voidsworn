@@ -245,15 +245,19 @@ def panels(K, plate_jobs):
             return True
         return any((p - c).length < r + radius*.3 for c, r in K.opus_keep)
     # Astra's single call over all her faces, so the plate layout is hers
-    laid_total = 0
+    kw = dict(pv=.29, gap=.009, unit=.31, t_big=.015, t_small=.011, keep=reserved)
+    surfaces = (('deck_panels', (0,)), ('flank_panels', (1, 3, 4, 6, 7, 9)), ('belly_panels', (5,)))
+    laid_by = {inv: 0 for inv, _ in surfaces}
     for label, rings in plate_jobs:
-        acc, laid = HP.module_panels(rings, (0, 1, 3, 4, 5, 6, 7, 9), pv=.29, gap=.009, unit=.31, t_big=.015, t_small=.011, keep=reserved)
-        laid_total += laid
+        acc, _ = HP.module_panels(rings, (0, 1, 3, 4, 5, 6, 7, 9), **kw)
         for material, (verts, faces_) in acc.items():
             if faces_:
                 K._obj(label+'_panels_'+material, verts, faces_, material)
-    for inv in ('deck_panels', 'flank_panels', 'belly_panels'):
-        K.built.append(dict(id='H7_'+inv, kind='plate', type='plate', inv=[inv], shaped=True, detailed=laid_total > 0, subs=['panel', 'seam', 'module']))
+        # count each surface on its own (geometry discarded), so a surface with no plates fails its inventory row
+        for inv, faces in surfaces:
+            laid_by[inv] += HP.module_panels(rings, faces, **kw)[1]
+    for inv, _ in surfaces:
+        K.built.append(dict(id='H7_'+inv, kind='plate', type='plate', inv=[inv], shaped=True, detailed=laid_by[inv] > 0, subs=['panel', 'seam', 'module']))
 
 
 def build(K):
