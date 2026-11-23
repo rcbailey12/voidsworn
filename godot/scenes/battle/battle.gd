@@ -2895,7 +2895,8 @@ func _end_sound(win: bool) -> String:
 
 func _end_flow() -> void:
 	ended = true
-	board.set_process_unhandled_input(false)
+	if board != null:
+		board.set_process_unhandled_input(false)
 	# issue 1559 item 8: Fight again (the menu) during the victory beat starts a new battle while this one still waits; its
 	# end card must not land in the new fight
 	var g := _gen
@@ -3943,7 +3944,7 @@ func _input(e: InputEvent) -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
-	if api == null or (e is InputEventMouse and hud.endcard != null):
+	if api == null or (e is InputEventMouse and hud.get("endcard") != null):
 		return
 	if opening and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed) or (e is InputEventKey and (e as InputEventKey).pressed)):
 		_end_opening()
@@ -3981,13 +3982,13 @@ func _on_key(k: int) -> void:
 		if k == KEY_ESCAPE:
 			hud.hide_menu()
 		return
-	if ended or hud.endcard != null:
+	if ended or hud.get("endcard") != null:
 		return
 	if k == KEY_ESCAPE:
-		if hud.log_open:
+		if hud.get("log_open") == true:
 			hud.toggle_log()
 			return
-		if hud.legend_open:
+		if hud.get("legend_open") == true:
 			hud.toggle_legend()
 			return
 	if hud.ask_panel != null and is_instance_valid(hud.ask_panel):
@@ -6155,7 +6156,7 @@ func _process(dt: float) -> void:
 	game_t += dt
 	if not torp_ft.is_empty():
 		_torp_ft_step(dt)
-	cam.keyboard_enabled = not warming and not ended and (hud == null or (hud.menu == null and hud.endcard == null))
+	cam.keyboard_enabled = not warming and not ended and (hud == null or (hud.menu == null and hud.get("endcard") == null))
 	if showcase_ready:
 		cam.a += dt * 0.035
 	if world != null and world.has_method("step"):
