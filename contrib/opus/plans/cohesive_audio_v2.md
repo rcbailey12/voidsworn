@@ -245,7 +245,7 @@ Wave B ran with 108 takes for 1,421 credits. Relay: voidsworn-relay `pc-out-opus
 - **Directorate:** turbo t2 (t1 as a variant), hturbo t1, ion_beam t1.
 - **Glasswright:** needle t1, pulsar t2 (Ryan prefers it over Neon's t1 as more distinctive; needs cleanup), startorp t2.
 - **Eclipse:** gauss_charge t2, nlance t1.
-- **Chorus:** tendril t1.
+- **Chorus:** none. tendril t1 was dropped: Ryan scrapped the tendril weapon (R437, Nov 23), so wep_chorus_tendril is replaced pending issue 1877 and gets a new sound once the replacement weapon is picked. No re-roll.
 - **Hullbreakers:** scatter t2, rockets t2 (needs more ignition and trail: layer a torp ignition in Godot).
 - **Shared and craft:** flak_airburst t1, craft_guns t2, mech_recoil_tail t1, layer_body_heavy t1.
 - **Hits:** imp_glass_armor t1.
