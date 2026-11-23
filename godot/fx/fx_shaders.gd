@@ -2442,7 +2442,9 @@ void fragment() {
 		float lm = (lit.r + lit.g + lit.b) / 3.0;
 		lit *= lm > 0.11 ? 0.11 / lm : 1.0;
 	}
-	ALBEDO = mix(baked, lit, open_f);
+	// an older surface never shows its diagram colour, even away from a mouth: it fades toward a darker faction tone
+	// (Antigravity audit on PR 1755, finding 1); a role-table surface keeps its own colour there
+	ALBEDO = mix(trusted ? baked : lit * 0.5, lit, open_f);
 	vec3 orm = has_orm ? texture(base_orm, UV).rgb : vec3(1.0, base_rough, base_metal);
 	float rough = clamp(v2_rough + r.w, 0.04, 1.0);
 	if (has_orm) { rough = mix(rough, orm.g, 0.5); }
@@ -2464,7 +2466,9 @@ void fragment() {
 	vec3 r2 = cross(NORMAL, sx);
 	float det = dot(sx, r1);
 	vec3 grad = sign(det) * (dFdx(hgt) * r1 + dFdy(hgt) * r2);
-	NORMAL = normalize(mix(NORMAL, normalize(abs(det) * NORMAL - grad * 1.5), open_f * (trusted ? 0.4 : 0.8)));
+	vec3 bn = abs(det) * NORMAL - grad * 1.5;
+	bn = dot(bn, bn) > 1e-12 ? normalize(bn) : NORMAL;   // a grazing face (det 0) keeps its normal, never NaN (audit finding 2)
+	NORMAL = normalize(mix(NORMAL, bn, open_f * (trusted ? 0.4 : 0.8)));
 	float pulse = 0.75 + 0.25 * sin(scene_t * (wound_v2 == 3 ? 2.3 : 1.1) + vP.x * 0.4);
 	float fade = wound_v2 == 4 ? mix(1.0, 0.25, wr) : (1.0 - wr * 0.85);
 	float pw = clamp(fx_power, 0.0, 1.0);

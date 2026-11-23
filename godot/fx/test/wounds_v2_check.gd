@@ -450,6 +450,7 @@ func _review_fixes() -> void:
 	check(int(im.get_shader_parameter("role")) == 2 and not bool(im.get_shader_parameter("trusted")), "B3: the shader gets the surface role")
 	check(code.contains("vec3 lit = surf * mix(1.0, r.x * ao") and not code.contains("lit = min(lit, vec3(0.11))"), "B3 and H2: the pattern multiplies over the surface; the wall ceiling scales, never clips per channel")
 	check(code.contains("v2_interior_accent / max(am, 1e-3) * bl"), "H3: an older surface's own light is recoloured to the faction accent")
+	check(code.contains("ALBEDO = mix(trusted ? baked : lit * 0.5, lit, open_f);") and code.contains("bn = dot(bn, bn) > 1e-12 ? normalize(bn) : NORMAL;"), "audit 1755: no diagram colour away from a mouth, no NaN normal on a grazing face")
 	var hole: String = SH.HOLE
 	check(hole.contains("em_hdr") and not hole.contains("vec3(wound_v2 >= 0 ? 0.25 : 0.35)"), "H2: the breach glow scales to 0.25 and rim heat, bus tips and burns pass")
 	# M2: the oldest open holes keep their place; a newer one past the cap seals
