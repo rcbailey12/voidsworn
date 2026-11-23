@@ -756,7 +756,7 @@ func _start_opening() -> void:
 	opening = true
 	var g := _gen
 	var tm := get_tree().create_timer(OPEN_HOLD)
-	while opening and not quitting and tm.time_left > 0.0:
+	while opening and not quitting and is_inside_tree() and tm.time_left > 0.0:
 		await get_tree().process_frame
 		if _stale(g):
 			return
@@ -768,7 +768,7 @@ func _end_opening() -> void:
 		return
 	opening = false
 	# Standalone quit frees the camera and ships before the battle itself exits.
-	if quitting or retiring or is_queued_for_deletion() or not is_instance_valid(cam):
+	if quitting or retiring or not is_inside_tree() or is_queued_for_deletion() or not is_instance_valid(cam):
 		return
 	if api != null and api.phase == "player" and sel != "" and is_instance_valid(views.get(sel)):
 		cam.glide(_pos(sel), 1.4, cam.home_r)

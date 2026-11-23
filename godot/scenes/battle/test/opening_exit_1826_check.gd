@@ -41,9 +41,24 @@ func _run() -> void:
 		return
 	print("PASS: freed a battle during the opening and waited past the hold")
 
+	battle = await _battle(7)
+	if battle == null or not battle.opening or battle.quitting:
+		printerr("FAIL: the battle did not reach the opening before removal")
+		quit(1)
+		return
+	root.remove_child(battle)
+	await create_timer(hold_time + 0.1).timeout
+	var detached: bool = not battle.is_inside_tree() and not battle.quitting
+	battle.free()
+	if not detached:
+		printerr("FAIL: the battle did not stay detached without quitting")
+		quit(1)
+		return
+	print("PASS: detached a battle during the opening without quitting and waited past the hold")
+
 	battle = await _battle(8)
 	if battle == null or not battle.opening:
-		printerr("FAIL: the second battle did not start its opening")
+		printerr("FAIL: the battle did not start its opening before quitting")
 		quit(1)
 		return
 	# Start the standalone quit on the timer tick that expires the opening hold.
