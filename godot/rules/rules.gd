@@ -1730,7 +1730,6 @@ func escortsBreak() -> void:
 	boss["regen"] = 0; boss["hullRegen"] = 0; boss["reanimate"] = false
 	boss["shp"] = JSM.jsround(float(z0(boss.get("shp"))) * 0.5); syncShields(boss); boss["burning"] = true
 	logm(String(boss["name"]) + " is burning. " + ("Its escorts break off and flee. " if esc.size() > 0 else "") + "Its shields falter and it can no longer repair itself.", "s")
-	if esc.size() > 0: checkEnd()   # issue 1560: the rout line is checked at once
 # issue 1560: escorts that break and flee take their wrecks with them, so a Deathless escort killed earlier no longer reassembles
 func fleeRisers(keep) -> void:
 	for u in B["units"]:
@@ -4504,9 +4503,17 @@ func _has_reserve(side) -> bool:
 	return false
 func checkEndRules() -> void:
 	if jt(B.get("over")): return
-	if caps("enemy").size() == 0 and risers("enemy") == 0:   # issue 1479: an Eclipse wreck rising next round is still in the fight
+	# Issue 1885: the boss must die, even when its escorts put the fleet below the rout line by fleeing.
+	var bossBattle: bool = jt(B.get("cfg")) and B["cfg"].get("kind") == "boss"
+	var bossDown := false
+	if bossBattle:
+		for u in B["units"]:
+			if u["side"] != "enemy" or not jt(u.get("boss")): continue
+			bossDown = jt(u.get("dead"))
+			if not bossDown: break
+	if (not bossBattle or bossDown) and caps("enemy").size() == 0 and risers("enemy") == 0:   # issue 1479: an Eclipse wreck rising next round is still in the fight
 		B["over"] = "win"; return
-	var o = B.get("obj")
+	var o = null if bossBattle else B.get("obj")
 	if o != null and o.type == "break":
 		var out = 0
 		for u in B["units"]:
@@ -4518,6 +4525,10 @@ func checkEndRules() -> void:
 			B["over"] = "loss"; B["withdraw"] = true; logm("Too few ships can still get through. The survivors jump clear.", "e"); return
 	if caps("player").size() == 0 and risers("player") == 0 and not _has_reserve("player"):
 		B["over"] = "loss"; return
+	if bossBattle:
+		if bossDown:
+			B["over"] = "win"; B["routed"] = true; logm("The flagship is gone. Its escorts break and flee.", "s")
+		return
 	if o != null and o.type == "intercept":
 		var kill = 0; var esc = 0
 		for u in B["units"]:
@@ -4558,13 +4569,8 @@ func checkEndRules() -> void:
 		if B["obj"]["escore"] >= 3:
 			B["over"] = "loss"; B["withdraw"] = true; logm("The enemy secures the relay. Your fleet is forced to withdraw.", "e"); return
 	if not jt(B.get("cp0")) or (o != null and (o.type == "intercept" or o.type == "hunt")): return
-	var bossDown = false
-	if jt(B.get("cfg")) and B["cfg"].get("kind") == "boss":
-		bossDown = true
-		for u in B["units"]:
-			if jt(u.get("boss")) and u["side"] == "enemy" and not jt(u.get("dead")): bossDown = false
-	if bossDown or (sideCP("enemy") + riserCP("enemy") <= B["cp0"]["enemy"] * 0.35 and not jt(B.get("nemNoRout"))):   # issue 1479: a wreck rising next round still counts toward the rout line   # R42: a Voidsworn or Deathless Nemesis fights to the last hull
-		B["over"] = "win"; B["routed"] = true; logm("The flagship is gone. Its escorts break and flee." if bossDown else "The enemy fleet breaks and flees.", "s")
+	if sideCP("enemy") + riserCP("enemy") <= B["cp0"]["enemy"] * 0.35 and not jt(B.get("nemNoRout")):   # issue 1479: a wreck rising next round still counts toward the rout line   # R42: a Voidsworn or Deathless Nemesis fights to the last hull
+		B["over"] = "win"; B["routed"] = true; logm("The enemy fleet breaks and flees.", "s")
 
 # ======================= orders, commands, abilities =======================
 func canOrder(u, o) -> bool:
