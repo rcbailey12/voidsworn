@@ -61,7 +61,7 @@ func _hull_of(faces: PackedVector3Array, L: float):
 
 
 # A box ship; authored: a second, inner surface flagged as built interior, and the hull marked authored.
-func _ship(faction: String, authored: bool):
+func _ship(faction: String, authored: bool, shielded := false):
 	nship += 1
 	var body := Node3D.new()
 	world.add_child(body)
@@ -88,7 +88,7 @@ func _ship(faction: String, authored: bool):
 	mi.mesh = am
 	body.add_child(mi)
 	var sid := "v2_%s_%d" % [faction, nship]
-	fx.add_ship(sid, body, {"faction": faction, "cls": "Cruiser", "size": 0.8, "meshes": [mi], "shielded": false})
+	fx.add_ship(sid, body, {"faction": faction, "cls": "Cruiser", "size": 0.8, "meshes": [mi], "shielded": shielded})
 	fx._later.clear()
 	var s = fx.ship(sid)
 	s.hull.authored = authored
@@ -417,6 +417,28 @@ func _review_fixes() -> void:
 	cg.wounds_v2 = false
 	check(gas_on.is_equal_approx(Color(0.6, 0.52, 0.14)) and cg.chorus_gas(lime) == lime and gas_on.g < lime.g * 0.6, "JOINT_C: Chorus gas is ochre with V2 on (%s), the old bile with it off" % str(gas_on))
 	fx.remove_ship(cg.id)
+	# JOINT_D (Wave 0, Nov 23): a Glasswright cut is glass panes (straight-edged cells, popped panes, stored light from
+	# inside), never the old charcoal disc or grey bands
+	check(SH.HOLE.contains("vec3 gw_cells(vec2 p)") and SH.HOLE.contains("if (wound_v2 == 4 && part < 0.95") and SH.HOLE.contains("bool popped = gq.y > 0.8") and not SH.HOLE.contains("float sheet = pow("), "JOINT_D: the Glasswright cut is straight-edged glass panes with popped panes and inner light")
+	# Wave 0 regression set: a shield-only hit leaves no hull mark; a ship removed and added again (revive) starts clean
+	var sq = _ship("hegemony", true, true)
+	sq.sync(fx, {"hp": 100, "maxHp": 100, "sh": [10, 10, 10, 10], "sec": {}})
+	var marks0: int = sq._marks.size()
+	fx.volley(sq.id, "battery", sq.id, {"weapon_id": "battery", "shots": [true], "hits": [{"shield": 8, "hull": 0, "section": "mid", "crit": false}]})
+	for k in 120:
+		fx.step(1.0 / 60.0)
+	check(sq._marks.size() == marks0, "Wave 0: a shield-only hit leaves no hull mark (%d marks)" % (sq._marks.size() - marks0))
+	var rid: String = sq.id
+	sq.sync(fx, _state(30, 25, 30))
+	flush(sq)
+	sq.add_mark(fx, "torp", 3, Vector3(0, 2.5, 0), Vector3.UP, Vector3.DOWN)
+	var had: int = BREACH.open_mouths(sq).size() + sq._marks.size()
+	var body: Node3D = sq.root
+	fx.remove_ship(rid)
+	fx.add_ship(rid, body, {"faction": "hegemony", "cls": "Cruiser", "size": 0.8, "meshes": sq.meshes, "shielded": false})
+	var rv = fx.ship(rid)
+	check(had > 0 and rv != null and rv._marks.is_empty() and BREACH.open_mouths(rv).is_empty(), "Wave 0: a revived ship (removed and added again) starts with no marks or open cutouts (had %d)" % had)
+	fx.remove_ship(rid)
 	# B2: the pattern's line() is 1 on a seam and 0 across the panel (the shader's own text, mirrored here)
 	var code: String = SH.INTERIOR
 	check(code.contains("float line(float x, float w) { return smoothstep(0.0, w, abs(fract(x) - 0.5) * 2.0 - (1.0 - w * 2.0)); }"), "B2: the interior seam line is not inverted")

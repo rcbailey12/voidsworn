@@ -1580,6 +1580,32 @@ uniform vec3 v2_interior_accent = vec3(1.0, 0.5, 0.15);
 uniform float v2_rough = 0.6;
 uniform float v2_soot = 1.0;
 uniform float v2_wreck_soot = 0.3;
+// JOINT_D (Nov 23): straight-edged cells for the Glasswright fracture facets: x the distance to the nearest cell edge
+// in cells, y and z the cell's own random values
+vec3 gw_cells(vec2 p) {
+	vec2 ip = floor(p);
+	vec2 fp = fract(p);
+	vec2 mb = vec2(0.0);
+	vec2 mr = vec2(0.0);
+	float md = 8.0;
+	for (int j = -1; j <= 1; j++) {
+		for (int k = -1; k <= 1; k++) {
+			vec2 g = vec2(float(k), float(j));
+			vec2 r = g + vec2(h21(ip + g), h21(ip + g + 17.3)) - fp;
+			float d = dot(r, r);
+			if (d < md) { md = d; mr = r; mb = g; }
+		}
+	}
+	md = 8.0;
+	for (int j = -2; j <= 2; j++) {
+		for (int k = -2; k <= 2; k++) {
+			vec2 g = mb + vec2(float(k), float(j));
+			vec2 r = g + vec2(h21(ip + g), h21(ip + g + 17.3)) - fp;
+			if (dot(mr - r, mr - r) > 1e-5) { md = min(md, dot(0.5 * (mr + r), normalize(r - mr))); }
+		}
+	}
+	return vec3(md, h21(ip + mb + 3.1), h21(ip + mb + 9.7));
+}
 varying vec3 vL;
 varying vec3 vNl;
 varying vec4 vC;
@@ -1682,13 +1708,27 @@ void fragment() {
 		if (dress > 0.9) { em_hdr += v2_interior_accent * (0.9 + 0.3 * flick(0.7 + n2 * 0.3, scene_t, seed)); base *= 0.5; }
 		if (dress > 0.7 && dress < 0.8) { em += v2_interior_accent * 0.22 * (0.6 + 0.4 * vC.g); }
 		if (wound_v2 == 3) { em += v2_interior_accent * 0.05 * pow(abs(sin(p.x * 22.0 + n1 * 5.0)), 8.0) * (0.8 + 0.2 * sin(scene_t * 2.3 + seed)); }
-		if (wound_v2 == 4 && part < 0.3) {
-			// JOINT_C (Nov 23): the Glasswright crater and lip read as a flat black disc round the cut. Its walls are
-			// stacked glass sheets: pale bands by depth with a faint stored-light seam between, clear and glossy
-			float sheet = pow(abs(sin(dot(centre - vL, axis) / R * 14.0 + n1 * 2.5)), 6.0);
-			base = v2_rim_metal * mix(0.1, 0.32, sheet) * (0.85 + 0.3 * n2);
-			rough = 0.06; metal = 0.15; ao = mix(ao, 1.0, 0.5);
-			em += v2_interior_accent * (0.04 + 0.16 * sheet) * (0.7 + 0.3 * fl);
+		if (wound_v2 == 4 && part < 0.95 && !(dress > 0.7 && dress < 0.8)) {
+			// JOINT_C and D (Nov 23; deaths_and_hits.md 1: "straight-edged crystalline fracture facets and popped mosaic
+			// panes over braided light cores"): the crater and walls of a Glasswright cut are glass panes, each its own
+			// pale tone and tilt with a lit seam between; a few panes are popped (dark, the stored light behind them);
+			// the faction's stored light (glow) rises from deep inside. Never a charcoal disc, no soot
+			vec3 ax = snorm(axis);
+			vec3 t1 = snorm(cross(ax, abs(ax.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
+			vec3 t2 = cross(ax, t1);
+			vec3 dl = vL - centre;
+			// wedge-shaped panes: cells in angle and distance round the cut, so the cracks run out from it like a star
+			vec2 pq = vec2(dot(dl, t1), dot(dl, t2));
+			vec3 gq = gw_cells(vec2(atan(pq.y, pq.x) * 1.9, length(pq) / R * 2.2) + vec2(seed * 7.0, seed * 3.0));
+			float seam = 1.0 - smoothstep(0.0, 0.035, gq.x);
+			bool popped = gq.y > 0.8 && part < 0.3;
+			base = mix(v2_rim_metal * 0.12, v2_rim_metal * 0.34, gq.z) * (popped ? 0.25 : 1.0);
+			base = mix(base, v2_rim_metal * 0.6, seam * 0.5);
+			rough = popped ? 0.3 : 0.04; metal = 0.1; ao = mix(ao, 1.0, 0.6);
+			em += mix(v2_interior_accent, gc, 0.5) * seam * 0.2 + gc * (popped ? 0.2 : 0.0);
+			em_hdr += gc * 0.45 * smoothstep(0.7, 1.3, deep) * (0.85 + 0.15 * fl);
+			vec3 tilt = (t1 * (gq.y - 0.5) + t2 * (gq.z - 0.5)) * 0.9;
+			NORMAL = snorm(NORMAL + mat3(VIEW_MATRIX) * (mat3(MODEL_MATRIX) * tilt));
 		}
 		if (style == 1) {
 			// a fresh lance burn-through: the ember ramp only on Sunward and Hullbreaker steel; Directorate burns
