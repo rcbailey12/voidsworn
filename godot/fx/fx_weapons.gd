@@ -409,8 +409,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			tf = T0 + 0.2 + beat * float(fx.timing.get("ripple", 0.08))
 			_muzzle_blast(fx, from, dir, tf, col, ka * (1.25 if w >= 3 else 1.0), (MUZ_PX[clampi(w, 1, 3)] + 4.0) * size, w, A)
 			if w >= 3:
-				fx.ring(from, dir, tf, 0.24, col, 1.4, 0.5 * ka, 4.5 * ka, 1, 5.0 * ka, 1.5, 38.0 * size)
-				# The pressure front clears first. Hot gas then bleeds from the barrel mouth.
+				# Hot gas bleeds from the barrel mouth after the muzzle flash.
 				_weapon_gas(fx, from, dir, tf + 0.19, 2.2 * ka, "muzzle", 0.36, col, 0.85,
 					dir * 1.4 * ka, 0.5, 1.0, 14.0 * size, A)
 			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * fx.unit
@@ -588,6 +587,8 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				var tip := from.lerp(to, smoothstep(0.0, 1.0, u))
 				var drift: Vector3 = (Vector3.UP + fx.rdir()) * 2.0 * ka
 				fx.spr(tip, lerpf(tf, ti, u), 0.52, col, 0.48, 0.5 * ka, 2.0 * ka, 20, drift, 0.8, 0.0, 0.0, 14.0 * size)
+			if not bool(tg.get("miss", false)):
+				_beam_end(fx, to, ti, tend - ti, col, ka)
 		"gauss":
 			var heavy = w >= 3
 			var wind = 0.75 if heavy else 0.25
@@ -659,8 +660,12 @@ static func _beam_ends(fx, from: Vector3, to: Vector3, t: float, life: float, co
 			fx.spr(p, t + life - 0.05, 0.45, col, 1.5, 2.0 * k, 0.4 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 		return
 	for p in [from, to]:
-		fx.spr(p, t, life, col, 2.8, 1.2 * k, 1.5 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
-		fx.spr(p, t + life - 0.05, 0.30, col, 1.4, 1.8 * k, 0.4 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
+		_beam_end(fx, p, t, life, col, k)
+
+
+static func _beam_end(fx, p: Vector3, t: float, life: float, col: Color, k: float) -> void:
+	fx.spr(p, t, life, col, 2.8, 1.2 * k, 1.5 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
+	fx.spr(p, t + life - 0.05, 0.30, col, 1.4, 1.8 * k, 0.4 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
 
 
 # Weapon bursts use leap 1's atlas, flow interpolation, thickness lighting and

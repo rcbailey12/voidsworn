@@ -3,6 +3,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # Count actual player starts, not requests or pending timers. Keep all existing caps.
 const Sfx := preload("res://audio/sfx.gd")
 const FX := preload("res://fx/fx.gd")
+const POOLS := preload("res://fx/fx_pool.gd")
 const VIEW := preload("res://render/ship_view.gd")
 const RULES := preload("res://rules/rules.gd")
 const BEARING := {"F": Vector3.RIGHT, "P": Vector3.FORWARD, "S": Vector3.BACK,
@@ -59,6 +60,25 @@ func _slab(parent: Node, length: float) -> MeshInstance3D:
 	parent.add_child(hull)
 	return hull
 
+func _tendril_contact(fx: FX, sprites: POOLS.Pool, result: Dictionary, label: String) -> void:
+	var mixed: bool = result.hit_pts.size() == 1 and result.points.size() > 1
+	_ok(mixed, label + " includes a hit and a miss")
+	if not mixed:
+		return
+	var hit: Vector3 = result.points[0]
+	var arrival: float = fx.now + result.impacts[0]
+	var flares := 0
+	var contacts := 0
+	for i in range(0, sprites.pending.size(), sprites.vpp * POOLS.STRIDE):
+		if int(sprites.pending[i + 18]) != 13:
+			continue
+		flares += 1
+		var p := Vector3(sprites.pending[i + 4], sprites.pending[i + 5], sprites.pending[i + 6])
+		if p.is_equal_approx(hit) and is_equal_approx(sprites.pending[i + 7], arrival):
+			contacts += 1
+	_ok(contacts == 1, label + " flares at the hit point when the lash arrives")
+	_ok(flares == contacts, label + " has no flare on the firer or the miss")
+
 func _hull_volleys() -> void:
 	var rules := RULES.new()
 	var error := rules.load_tables("res://rules/data/tables.json")
@@ -67,6 +87,7 @@ func _hull_volleys() -> void:
 		return
 	var installed := VIEW.manifest()
 	var volleys := 0
+	var tendril_volleys := 0
 	var skipped_shots := 0
 	var fixtures := 0
 	for id in rules.HULLS:
@@ -107,12 +128,21 @@ func _hull_volleys() -> void:
 			var shots: Array = []
 			shots.resize(int(weapon.shots))
 			shots.fill(false)
+			if shots.size() > 1:
+				shots[0] = true
 			var bearing: Vector3 = BEARING[mount[1]]
 			target.position = bearing.normalized() * 75.0
+			var sprites: POOLS.Pool = fx.pools["spr"]
+			if wid == "tendril":
+				sprites.flush() # Isolate this volley's sprites from the preceding slots.
 			var result := fx.volley(id, weapon.k, "target", {"slot": slot, "weapon_id": wid, "shots": shots})
 			var lost := int(result.get("skipped", 0))
-			_ok(lost == 0 and result.fires.size() == shots.size(),
-				"%s slot %d (%s): %d skipped, %d/%d fired" % [id, slot, wid, lost, result.fires.size(), shots.size()])
+			var label := "%s slot %d (%s)" % [id, slot, wid]
+			var fired: bool = lost == 0 and result.fires.size() == shots.size()
+			_ok(fired, "%s: %d skipped, %d/%d fired" % [label, lost, result.fires.size(), shots.size()])
+			if fired and wid == "tendril":
+				_tendril_contact(fx, sprites, result, label)
+				tendril_volleys += 1
 			skipped_shots += lost
 			volleys += 1
 		fx.release()
@@ -120,7 +150,9 @@ func _hull_volleys() -> void:
 		VIEW.clear_look_cache()
 		await process_frame
 	_ok(volleys > 0, "hull walk exercised weapon slots")
+	_ok(tendril_volleys > 0, "hull walk exercised tendril contact")
 	print("  %d hull templates, %d volleys, %d skipped shots (%d stand-in hulls)" % [rules.HULLS.size(), volleys, skipped_shots, fixtures])
+	print("  %d mixed tendril volleys checked for contact flares" % tendril_volleys)
 
 func _run() -> void:
 	s = Sfx.new()
