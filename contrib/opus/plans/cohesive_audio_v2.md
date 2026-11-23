@@ -215,4 +215,5 @@ Neon's full notes are in `contrib/neon/reviews/sound_wavea3_ear_1752.md` (PR 185
   - This is the opposite of Neon's call.
   - On one speaker this take loses about 3 to 4 dB of its mids and highs and is 94% below 500 Hz.
   - A one-speaker check of this pick and the lance pick is on the listening page, because the game plays mono.
+  - Mono or stereo (checked in `godot/audio/sfx.gd`, Nov 23): every battle sound with a position already plays through an `AudioStreamPlayer3D` with `panning_strength` 0.72. So players hear direction, left or right, from where the shot is on screen. Battle sounds stay mono files, and the game supplies the stereo placement. Music and big one-off moments without a position (`AudioStreamPlayer`) can stay stereo. The same file also has per-layer pitch jitter (`pj`), which is how the Directorate t1 variation gets made.
   - If Ryan still prefers it in mono, it stands. Mastering then adds a presence lift, and the Wave B Eclipse wording question is reopened with Ryan before Wave B.
