@@ -183,8 +183,9 @@ if errorlevel 1 goto :guardfail
 git diff --cached --quiet
 if errorlevel 1 goto :haschange
 if defined PARTIAL goto :haschange
-findstr /c:"Resumed by merging" /c:"Base already merged" "%O%\resume.txt" >nul
-if errorlevel 1 goto :nochange
+%PSW% head-changed "%R%" "%O%" >> "%O%\result.txt" 2>&1
+if "%ERRORLEVEL%"=="7" goto :nochange
+if errorlevel 1 goto :guardfail
 :haschange
 rem A chain needs green runner checks as well as a confirmed non-partial push.
 if defined PARTIAL goto :afterchecks

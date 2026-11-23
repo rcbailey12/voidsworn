@@ -85,16 +85,8 @@ if (process.platform !== 'win32') {
   console.log('SKIP Windows fault matrix: run tools/pc/runner_selftest.bat on the PC');
   process.exit(0);
 }
-// Issue 1739: inside a Codex lane TEMP is the run's own scratch (Temp\voidsworn-run-<issue>-<32 hex>), about 50
-// characters deeper. The lane fixture then nests its own runner's scratch TEMP inside that one
-// (...\board_d\temp\voidsworn-run-687-<32 hex>), and PowerShell Add-Type could not compile its C# there: "Cannot
-// create temporary file '' -- The data area passed to a system call is too small", so the mock agent never reached
-// its checkout (CHECKS_DIAG_1739_E: no file path passed 243 characters; the limit is on the TEMP folder the compiler
-// writes into). The fixture root sits beside the lane scratch, in the same Temp folder a standalone run uses.
-function fixtureTemp(temp = os.tmpdir()) {
-  return /^voidsworn-run-(?:[1-9][0-9]*-)?[0-9a-f]{32}$/i.test(path.basename(temp)) ? path.dirname(temp) : temp;
-}
-const root = fs.mkdtempSync(path.join(fixtureTemp(), 'runner687 proof '));
+// The lane can write to its own TEMP. Keep the fixture path short for PowerShell's Add-Type compiler.
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'r-'));
 const concurrency = 10;
 const testChildren = [];
 const testPidFiles = [];
@@ -343,9 +335,10 @@ function fixtureTools(name, scenario = '') {
         body = body.replace(/(%PS% openai-(?:budget|spend)[^\r\n]*)"%DRY%"/g, '$1"0"')
           .replace('set "PUSHMODE=dry"', 'set "PUSHMODE=test"');
       }
-      if (scenario === 'delivery' && file === 'work_issue.bat') {
+      if (scenario === 'delivery') {
         // Keep dryrun's mock agent and fake GitHub. Exercise real delivery logic against a bare TEMP remote.
         body = body.replace('set "PUSHMODE=dry"', 'set "PUSHMODE=real"');
+        if (file === 'codex_issue.bat') body = body.replace('if "%PC_RUNNER_TEST%"=="1" goto :afterchecks\r\n', '');
       }
     }
     write(path.join(dir, file), body);
@@ -364,7 +357,8 @@ write(path.join(root, 'watchdog.js'), `
 const assert = require('assert');
 const { spawnSync } = require('child_process');
 const { COMSPEC, CODEX_TEST_AGENT, WORK_TEST_AGENT, STUB_WATCHDOG_ARGS } = process.env;
-const [, exe, args] = /^\\d+ "([^"]+)" (.*)$/.exec(STUB_WATCHDOG_ARGS);
+const [, quotedExe, bareExe, args] = /^\\d+ (?:"([^"]+)"|(\\S+)) (.*)$/.exec(STUB_WATCHDOG_ARGS);
+const exe = quotedExe || bareExe;
 if (args === 'contrib\\\\opus\\\\tools\\\\run_all_checks.js') process.exit(Number(process.env.STUB_CHECKS_EXIT || 0));
 if (args === '/c tools\\\\pc\\\\parity.bat nopause') process.exit(0);
 let cmd;
@@ -386,7 +380,8 @@ const deliveryTools = fixtureTools('delivery runner', 'delivery');
 async function job(arm, label, extra = {}) {
   const home = extra.CODEX_TEST_ROOT || path.join(root, arm + '-' + label);
   fs.mkdirSync(home, { recursive: true });
-  const temp = path.join(home, 'temp'); fs.mkdirSync(temp, { recursive: true });
+  // Use the short fixture root for TEMP. Each mock runner still makes its own GUID scratch beneath it.
+  const temp = root;
   const env = gitEnvironment({ ...defaults, TEMP: temp, TMP: temp, TMPDIR: temp, PC_TEST_MIRROR: path.join(home, 'mirror.git'), WORK_ROOT: home, CODEX_TEST_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt'), PC_TEST_COUNTER: path.join(home, 'tries'),
     PC_TEST_GH_DB: path.join(home, 'gh-db.json'), PC_TEST_GH_TRACE: path.join(home, 'gh.jsonl'), ...extra });
   testPidFiles.push(env.PC_TEST_TRACE + '.pid');
@@ -1048,6 +1043,40 @@ async function testDeliveryCleanup() {
     pass('workhorse delivers and keeps the shared slot: ' + scenario);
   });
 }
+async function testNoEditRerun() {
+  await parallel(['codex', 'deepseek'], async arm => {
+    const branch = arm === 'codex' ? 'codex/issue-687' : 'work/issue-687-deepseek';
+    const remote = fixtureSource('rerun-' + arm);
+    const earlier = fixtureCommit({ 'progress.txt': 'from partial\n', 'earlier.txt': 'delivered\n' }, base, '', remote);
+    write(path.join(remote, 'refs/heads', branch), earlier + '\n');
+    fs.unlinkSync(path.join(remote, 'refs/heads', branch + '-partial'));
+    // Workhorse also proves that a merge can advance HEAD while leaving its tree byte-identical.
+    const mainFiles = { 'progress.txt': 'base\n' };
+    if (arm === 'codex') mainFiles['main.txt'] = 'new on main\n';
+    const main = fixtureCommit(mainFiles, base, 'main advanced\n', remote);
+    write(path.join(remote, 'refs/heads/main'), main + '\n');
+    const options = { CODEX_TEST_ROOT: path.join(root, 'no-edit-' + arm), STUB_RUNNER_TOOLS: deliveryTools,
+      PC_TEST_STOP_BEFORE_PUBLISH: '0', WORK_SKIP_CHECKS: '0', STUB_AGENT_NO_CHANGE: '1',
+      STUB_EXPECT_FRESH: '1', PC_TEST_SOURCE: remote };
+    const delivered = await job(arm, 'same-seat', options);
+    assert.equal(delivered.code, 0, delivered.text + delivered.result);
+    assert.match(read(path.join(delivered.out, 'resume.txt')), /Continued from the earlier tip.*merged origin\/main/s);
+    assert.equal(delivered.state.status, 'checked_push', delivered.result);
+    assert.match(delivered.result, /checks: node exit 0, parity exit 0/);
+    assert.equal(read(path.join(delivered.out, 'diffstat.txt')).trim(), '', 'no agent edits were staged');
+    const pushed = run('git', ['--git-dir', remote, 'rev-parse', branch]).text.trim();
+    assert.equal(read(path.join(delivered.out, 'confirmed_commit.txt')).trim(), pushed);
+    assert.notEqual(pushed, earlier);
+    for (const parent of [main, earlier]) {
+      assert.equal(run('git', ['--git-dir', remote, 'merge-base', '--is-ancestor', parent, pushed]).code, 0);
+    }
+    if (arm === 'deepseek') assert.equal(run('git', ['--git-dir', remote, 'diff', '--quiet', earlier, pushed]).code, 0);
+    const unchanged = await job(arm, 'same-seat', options);
+    assert.equal(unchanged.code, 7, unchanged.text + unchanged.result);
+    assert.equal(run('git', ['--git-dir', remote, 'rev-parse', branch]).text.trim(), pushed);
+    pass(arm + ': no-edit rerun delivers the runner merge and runs both checks; another unchanged rerun exits 7');
+  });
+}
 async function testWorkhorseSlots() {
   const workRoot = path.join(root, 'workhorse slots');
   const hold = path.join(root, 'workhorse-agent-hold');
@@ -1451,7 +1480,7 @@ async function testRunnerStartChecks() {
     testAccounting, testAccountingFaults, testOpenAIModels,
     testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testCampaignParityCleanup, testLateCheckoutEdits,
     testIncomingCheckoutCollisions, testKeptCheckoutHistory,
-    testClaimRules, testClaimFailures, testAssignedBranch, testDeliveryCleanup, testResumeAndFailures, testGitRetries,
+    testClaimRules, testClaimFailures, testAssignedBranch, testDeliveryCleanup, testNoEditRerun, testResumeAndFailures, testGitRetries,
     testHeldCheckout, testMergedPartial, testResumeConflict, testChainRelease, testProbeTimeout,
     testMirrorAndConfirmation, testRunnerStartChecks
   ], check => check());
