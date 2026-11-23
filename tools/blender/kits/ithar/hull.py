@@ -750,7 +750,9 @@ def mosaic_share(objs, res=160):
                 mi = ev.polygons[idx].material_index if idx < len(ev.polygons) else 0
                 if mi < len(mats) and mats[mi] and mats[mi].name == 'gw_mosaic':
                     glass += 1
-        out[name] = round(glass / max(1, hits), 3)
+        if hits < res * res // 20:   # the hull must fill a fair part of the frame; a near-empty view is a broken measure, not a pass
+            raise ValueError('mosaic_share: only %d of %d rays hit the hull from the %s view' % (hits, res * res // 2, name))
+        out[name] = round(glass / hits, 3)
     return out
 
 
