@@ -261,8 +261,16 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 	return mat
 
 
-# Issue 1235: a live ship's wear on its damage surface (fx_ship._set_wear): mottled darker plating, dimmer lights and soot
-# patches (centre, reach) where it was hit. Heat stays 0: no embers, so no faction gets an orange glow from wear.
+# The same hull substance drives contact effects and live wear (R402).
+static func target_substance(faction: String) -> String:
+	match faction:
+		"ithar": return "glass"
+		"chorus": return "bio"
+		"deathless": return "obsidian"
+	return "metal"
+
+
+# Every hull's lights dim as it wears. Metal surfaces also darken and collect soot at their hits.
 const WEAR_WEATHER := 0.45   # fx_weather at full wear
 const WEAR_POWER := 0.65     # the share of the hull's light lost at full wear
 # fx_power is the wear's steady value (and the death fade's); a hit's brownout rides on fx_flick (fx_ship hit_power).
@@ -271,7 +279,7 @@ static func set_power(mat: ShaderMaterial, wear: float) -> void:
 
 
 static func set_wear(mat: ShaderMaterial, wear: float, patches: Array) -> void:
-	mat.set_shader_parameter("fx_weather", wear * WEAR_WEATHER)
+	mat.set_shader_parameter("fx_weather", wear * WEAR_WEATHER if mat.get_meta("fx_metal_wear", true) else 0.0)
 	set_power(mat, wear)
 	var n := mini(patches.size(), 8)
 	mat.set_shader_parameter("fx_scorch_count", n)
@@ -1767,6 +1775,34 @@ func turret_jammed(k: int) -> bool:
 # Which section a turret sits in (SEC_ENG, SEC_MID or SEC_PROW), from its pivot.
 func turret_section(k: int) -> int:
 	return section_of((turrets[k]["xf"] as Transform3D).origin.x)
+
+
+# Issue 1741 (R416): the turrets one weapon slot owns (its hp_w<slot>_* muzzles hang under them), in turret order. The slot
+# is the rules' weapon index (HARDPOINTS.md), so a knocked-out weapon jams its own guns, never a random one.
+func turrets_for_slot(slot: int) -> Array:
+	var out: Array = []
+	for pt in points.get("gun", []):
+		if int(pt.get("slot", -1)) == slot and pt.has("tur") and not out.has(int(pt["tur"])):
+			out.append(int(pt["tur"]))
+	out.sort()
+	return out
+
+
+# Issue 1741 (Artoo on PR 1749): true when some weapon slot's muzzle hangs under turret k.
+func turret_owned(k: int) -> bool:
+	for pt in points.get("gun", []):
+		if pt.has("tur") and int(pt["tur"]) == k:
+			return true
+	return false
+
+
+# Issue 1741: the fixed mounts (casemates, launchers, spinal muzzles: gun points under no turret) of one weapon slot.
+func mounts_for_slot(slot: int) -> Array:
+	var out: Array = []
+	for pt in points.get("gun", []):
+		if int(pt.get("slot", -1)) == slot and not pt.has("tur"):
+			out.append(pt)
+	return out
 
 
 # ---------------------------------------------------------------- doors (issue 1543)

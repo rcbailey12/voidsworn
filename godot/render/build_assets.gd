@@ -95,10 +95,13 @@ func _init() -> void:
 	quit(0)
 
 
-# an item is current when it was built by this generator version and its file is there; past the time budget nothing new
-# is started (it counts as current for now, and the version marker is not written, so the next run carries on)
+func _cached(table: Dictionary, code: String, out: String) -> bool:
+	return not force and table.has(code) and FileAccess.file_exists(out) and int(table[code].get("v", 0)) >= GEN_VERSION
+
+
+# Defer uncached items past the deadline and leave the version marker unset for the next run.
 func _current(table: Dictionary, code: String, out: String) -> bool:
-	if not force and table.has(code) and FileAccess.file_exists(out) and int(table[code].get("v", 0)) >= GEN_VERSION:
+	if _cached(table, code, out):
 		return true
 	if max_s > 0.0 and (Time.get_ticks_msec() - t_start) / 1000.0 > max_s:
 		out_of_time = true
@@ -337,23 +340,30 @@ func _build_a4_ships() -> void:
 	var da := DirAccess.open(base)
 	if da == null:
 		return
-	for code in da.get_directories():
+	var codes := da.get_directories()
+	codes.sort()
+	var start := codes.bsearch(str(manifest.get("next_ship", ""))) if max_s > 0.0 else 0
+	var examined := false
+	for i in range(start, codes.size()):
+		var code := codes[i]
 		var src := base.path_join(code).path_join(code + ".glb")
 		if not FileAccess.file_exists(src):
 			continue
 		var out := gen_root.path_join("ships/%s.scn" % code)
-		# Artoo on PR 1714: hashing every map is slow on a whole fleet, so a time-limited run checks its budget before
-		# fingerprinting the next ship; the version marker stays unset and the next run carries on from here.
-		if max_s > 0.0 and (Time.get_ticks_msec() - t_start) / 1000.0 > max_s:
+		# A ships-only slice examines at least one hull. A full build shares its deadline with the earlier stages.
+		# Once admitted, finish the ship even if hashing it uses the remaining time.
+		if (examined or not ships_only) and max_s > 0.0 and (Time.get_ticks_msec() - t_start) / 1000.0 > max_s:
+			manifest["next_ship"] = code
 			out_of_time = true
-			break
+			return
+		examined = true
 		# A4 re-exports ships under the same names. Check geometry and paint even when the generator version is current.
 		var stamp := source_stamp(base, code)
 		if manifest["ships"].has(code):
 			var me: Dictionary = manifest["ships"][code]
 			if str(me.get("src", "")) != stamp:
 				me["v"] = 0
-		if _current(manifest["ships"], code, out):
+		if _cached(manifest["ships"], code, out):
 			continue
 		var e := {"v": GEN_VERSION, "res": out, "mirror": false, "src": stamp}
 		if _glb_to_scene(src, out, code):
@@ -362,7 +372,9 @@ func _build_a4_ships() -> void:
 				if FileAccess.file_exists(sp) and _glb_to_scene(sp, extra[1] % code, code + extra[0]):
 					e[extra[0].substr(1)] = extra[1] % code
 			manifest["ships"][code] = e
+			_save_manifest()
 			print("[assets] A4 ship %s%s" % [code, " (+ breach parts)" if e.has("damage") else ""])
+	manifest.erase("next_ship")
 	_check_a4_ships()
 
 
@@ -376,7 +388,7 @@ static func source_stamp(base: String, code: String) -> String:
 		var file := FileAccess.open(glb, FileAccess.READ)
 		if file == null:
 			continue
-		sources[file_name] = [FileAccess.get_modified_time(glb), file.get_length()]
+		sources[file_name] = [FileAccess.get_modified_time(glb), file.get_length(), FileAccess.get_sha256(glb)]
 		for image: Dictionary in _glb_json(file).get("images", []):
 			var uri := ShipSourceImages.external_image_path(image)
 			if uri.is_empty() or sources.has(uri):

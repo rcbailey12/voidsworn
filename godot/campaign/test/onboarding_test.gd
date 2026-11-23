@@ -40,8 +40,18 @@ func _init() -> void:
 func _run() -> void:
 	# This test must never touch the player's profile.
 	var data := ProjectSettings.globalize_path("user://").replace("\\", "/")
-	if not data.begins_with(ProjectSettings.globalize_path("res://..").simplify_path().replace("\\", "/").trim_suffix("/") + "/.onboarding_checks/"):
-		printerr("Refusing to test outside the workspace: " + data); quit(2); return
+	var workspace := ProjectSettings.globalize_path("res://..").simplify_path().replace("\\", "/").trim_suffix("/")
+	var safe := data.begins_with(workspace + "/.onboarding_checks/")
+	var args := OS.get_cmdline_user_args()
+	if args.size() == 1:
+		# The Node runner makes <temp>/voidsworn-onboarding-<id>/profile for each run.
+		var profile := args[0].replace("\\", "/").simplify_path().trim_suffix("/")
+		var run_dir := profile.get_base_dir()
+		var temp := OS.get_temp_dir().replace("\\", "/").simplify_path().trim_suffix("/")
+		safe = run_dir.get_base_dir() == temp and run_dir.get_file().begins_with("voidsworn-onboarding-") \
+			and profile.get_file() == "profile" and data.begins_with(profile + "/")
+	if not safe:
+		printerr("Refusing to test outside an isolated onboarding profile: " + data); quit(2); return
 	Teaching.save_opts({"speed": 0.45, "tipsOff": false, "extra": "preserved", "tips": {"threat": true}})
 	Teaching.set_off(true)
 	var o := Teaching.load_opts()

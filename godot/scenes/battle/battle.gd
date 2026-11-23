@@ -532,6 +532,7 @@ func _begin(a) -> void:
 	_gen += 1   # issue 1433: work still awaiting from the last battle on this node is stale now
 	_api_join()
 	retiring = false
+	opening = false
 	_click_q = {}
 	_threat_version = -1
 	_threat_one_ver = -1
@@ -753,9 +754,12 @@ func _start_opening() -> void:
 		cam.snap()
 	opening_framed = _fits_open(pts)
 	opening = true
+	var g := _gen
 	var tm := get_tree().create_timer(OPEN_HOLD)
-	while opening and tm.time_left > 0.0 and is_inside_tree():
+	while opening and not quitting and is_inside_tree() and tm.time_left > 0.0:
 		await get_tree().process_frame
+		if _stale(g):
+			return
 	_end_opening()
 
 
@@ -763,7 +767,10 @@ func _end_opening() -> void:
 	if not opening:
 		return
 	opening = false
-	if api != null and api.phase == "player" and sel != "" and views.has(sel):
+	# Standalone quit frees the camera and ships before the battle itself exits.
+	if quitting or retiring or not is_inside_tree() or is_queued_for_deletion() or not is_instance_valid(cam):
+		return
+	if api != null and api.phase == "player" and sel != "" and is_instance_valid(views.get(sel)):
 		cam.glide(_pos(sel), 1.4, cam.home_r)
 	else:
 		cam.glide(cam.home, 1.4, cam.home_r)
@@ -1379,8 +1386,9 @@ func _play_batch(bt: Dictionary) -> void:
 
 
 func _pos(id) -> Vector3:
-	if views.has(id):
-		return (views[id] as ShipView).visual_position()
+	var ship = views.get(id)
+	if is_instance_valid(ship):
+		return (ship as ShipView).visual_position()
 	return Vector3.ZERO
 
 
@@ -1564,6 +1572,9 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				gfx.ability(str(e["unit"]), ab)
 			else:
 				_flash(_pos(e["unit"]) + Vector3(0, 2, 0), 18.0, c, 0.5)
+			if ab == "phase":   # issue 1649: Fold skip leaves a violet after-image where the ship stood (Eclipse violet, never green)
+				_flash(_pos(e["unit"]) + Vector3(0, 2, 0), 22.0, Color("#ddc4ff"), 0.9)
+				sfx.play("phase", {"pos": _pos(e["unit"])})
 			if ab == "blink" and e.get("hex") != null:
 				sfx.play("phase", {"pos": _pos(e["unit"])})
 				var sv = views.get(e["unit"])
@@ -4066,8 +4077,6 @@ func _arm(i: int) -> void:
 	if u.is_empty() or i >= (u["weapons"] as Array).size():
 		return
 	armed = -1 if armed == i else i
-	if atk != null and target != "":
-		_update_target_plan(target)   # the Burn and fire stop depends on which guns go
 	sfx.play("ui_click")
 	_refresh_ui()
 
@@ -4465,18 +4474,19 @@ func _target(tid: String) -> void:
 		# Burn and fire, also over a planned move (Artoo on PR 1643): the ghost goes to the stop the rules pick for this
 		# target, as one more step that Backspace takes back
 		_plan_step()
-		var had = plan
-		var had_k := plan_k
+		var allow_stationary := plan == null
 		plan = null
 		plan_k = ""
-		_update_target_plan(tid)
+		_update_target_plan(tid, allow_stationary)
 		if target != "":
 			sfx.play("ui_confirm", {"gain": 0.707946})
 		else:
-			plan_steps.pop_back()
-			plan = had
-			plan_k = had_k
-			hud.toast(("No ready gun bears on %s from the planned hex, and no stop on the way reaches it." % _name(tid)) if had != null else _cant_fire_reason(tid))
+			var previous: Dictionary = plan_steps.pop_back()
+			plan = previous.plan
+			plan_k = previous.k
+			target = previous.target
+			atk = previous.atk
+			hud.toast(("No ready gun bears on %s from the planned hex." % _name(tid)) if plan != null else _cant_fire_reason(tid))
 	elif _firing_set(tid, false).is_empty():
 		hud.toast(("No ready gun bears on %s from the planned hex." % _name(tid)) if plan != null else _cant_fire_reason(tid))
 	else:
@@ -4550,10 +4560,14 @@ func _aims_check() -> void:
 		hud.toast("No gun bears on %s from here: that pick is dropped." % ", ".join(lost))
 
 
-func _update_target_plan(tid: String) -> void:
+func _update_target_plan(tid: String, allow_stationary: bool) -> void:
 	atk = null
-	if not _firing_set(tid).is_empty():
-		target = tid
+	var guns := _firing_set(tid)
+	if not guns.is_empty():
+		target = tid if allow_stationary else ""
+		if allow_stationary:
+			aims.append({"tid": tid, "guns": guns})
+			armed = -1
 		return
 	# Out of reach from here: show the stop and path only if the current guns can fire on the way.
 	atk = _attack_move(tid) if int(_sel_unit().get("moveLeft", 0)) > 0 else null
@@ -5503,7 +5517,7 @@ func _refresh_ui() -> void:
 	hud.set_target(_target_info())
 	# F1: the activation card (the ship that is up and how to finish it) and the phase strip
 	hud.set_card(_card_info() if mine and not busy and not bot and not showcase else {})
-	hud.set_playing(busy and not ended and api.phase != "over")   # issue 1708: the sheet steps aside while a scene plays
+	hud.set_playing(busy)   # The final volley keeps the sheet hidden until its batch finishes.
 	if showcase or bot or ended or api.phase == "over":
 		hud.set_phase("", "")
 	elif mine and not busy:
