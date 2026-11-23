@@ -10,6 +10,8 @@ extends RefCounted
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
+const FLOOK_W := preload("res://fx/faction_look.gd")
 const BEATS := preload("res://fx/fx_death_beats.gd")   # issue 1586: cause, faction, archetype and afterlife beats
 
 const HULL_LAYER := 1
@@ -1536,6 +1538,12 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, 
 		hull_mat.set_shader_parameter("fx_weather", 0.8 if weathered else 0.0)
 		var rim = (pc.get("dstyle", {}) as Dictionary).get("rim")
 		if rim is Color: hull_mat.set_shader_parameter("fx_scorch_col", rim)
+		# Issue 1741 (JOINT_B, Nov 23: every wreck's scorched plating glittered with dots in the faction rim colour at 6 s):
+		# with Wounds V2 on, a wreck piece's plating carries its faction's wound profile, so the scorch keeps the
+		# faction's soot weight and only steel (Sunward, Hullbreakers) keeps a few cooling embers (fx_hull.gd EXTERIOR)
+		if WOUNDS.v2():
+			var wv = FLOOK_W.of(String(pc.get("faction", ""))).get("wound", {})
+			HULL.set_v2(hull_mat, wv if wv is Dictionary else {})
 		# issue 484: blackened, heat-stained plating round the wound (fx_hull.gd DAMAGE_UNIFORMS, fx_scorch)
 		var scorch: Array = pc.get("scorch", [])
 		if not scorch.is_empty():

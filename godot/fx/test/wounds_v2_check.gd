@@ -298,6 +298,7 @@ func _run() -> void:
 	for u in dm.shader.get_shader_uniform_list():
 		dn.append(u["name"])
 	check(dn.has("fx_v2") and dn.has("fx_v2_soot"), "the hull damage shader parses with its V2 uniforms")
+	check(dm.shader.code.contains("(fx_v2 == 0 || fx_v2 == 2) ? smoothstep(0.65, 1.0, fx_sc) * step(0.95,") and dm.shader.code.contains("float fx_sw = fx_v2 >= 0 ? clamp(fx_v2_soot, 0.0, 1.0) : 1.0;"), "JOINT_B: with V2 the scorch keeps the faction soot weight and only steel keeps sparse embers")
 	var want_b := {0: 0.25, 1: 0.25, 2: 0.25, 3: 0.5, 4: 0.75, 5: 1.0}
 	for faction in ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
 		var eh = BREACH.place_hole(slab, Vector3(0, 3, 0), Vector3.UP, 1.0, 2.0, faction)
@@ -367,6 +368,7 @@ func _run() -> void:
 		flush(sd)
 		fx.death(sd.id, "blast")
 		var found := 0
+		var plating: Array = []
 		for k in 600:
 			fx.step(0.05)
 			OS.delay_msec(10)   # the death cut runs on a worker thread: give it wall time, not only game time
@@ -380,9 +382,15 @@ func _run() -> void:
 							var sm = m.surface_get_material(j)
 							if sm is ShaderMaterial and (sm as ShaderMaterial).shader.code == SH.INTERIOR and float(sm.get_shader_parameter("fx_wreck")) == 1.0:
 								found += 1
+							elif sm is ShaderMaterial and (sm as ShaderMaterial).shader.code.contains("uniform int fx_v2"):
+								plating.append(int(sm.get_shader_parameter("fx_v2")))
 			if found > 0:
 				break
 		check(found > 0, "%s: the wreck pieces from a real death carry the faction interior shader (%d surfaces)" % [faction, found])
+		# JOINT_B (Nov 23): the wreck plating carries the faction's wound kind, so its scorch keeps the faction soot
+		# weight and only steel keeps embers (no glitter of rim-coloured dots)
+		var kind: int = int(BREACH.wound_of(faction).get("kind", -9))
+		check(not plating.is_empty() and plating.all(func(v: int) -> bool: return v == kind), "%s: the wreck plating carries wound kind %d (%s)" % [faction, kind, str(plating.slice(0, 6))])
 	# 8b. the cache helper alone
 	var src := StandardMaterial3D.new()
 	src.set_meta("fx_authored_interior", true)

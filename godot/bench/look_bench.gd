@@ -637,6 +637,19 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.sync_ship("T", row["sync_t"])
 		for k in 30:
 			await _step()
+		# Issue 1741 (JOINT_B, Nov 23: the breached rows showed no cutout and logged no wound pose): a ship still taking
+		# a pre shot (a torpedo in flight) holds its new hull stages until that impact lands (fx_ship.sync, busy_until),
+		# so wait for it (at most 8 s), then finish the hull rebuild, so the still and the wound camera see the stages
+		# the row sets
+		var ts = fx.ship("T")
+		if ts != null:
+			for k in 480:
+				if fx.now > float(ts.busy_until) + 0.1:
+					break
+				await _step()
+			for k in 3:
+				ts.flush_damage(fx)
+				await _step()
 	# Issue 1741 (V2B PC run, Nov 22: most Wounds V2 cutouts fell outside the close frame or on the far side): "focus":
 	# "wound" turns a close camera (under 100) to face the target's biggest open cutout, centred on it; camera 170 keeps
 	# the battle angle on the ship's centre (RULEBOOK 6.1). A ship with no open cutout keeps the usual view. The pose
