@@ -460,7 +460,7 @@ void fragment() {
 	float sp = max(dot(mix(n, nb, 0.35), hv), 0.0);
 	col += vec3(1.0, 0.95, 0.86) * glint * ocean * (1.0 - cloud) * (pow(sp, 260.0) * 1.1 + pow(sp, 60.0) * 0.05) * day;
 	// night side: city lights and lava
-	float night = smoothstep(0.06, -0.2, ndl);
+	float night = (1.0 - smoothstep(-0.2, 0.06, ndl));
 	col += city * b.g * night * 0.85 * (1.0 - cloud * 0.7);
 	col += lava_col * b.a * (0.45 + night * 1.2) * (1.0 - cloud * 0.5);
 	// the lit limb glows with the atmosphere
@@ -536,24 +536,26 @@ float craters(vec3 d, float scale, float dens) {
 // middle of the wider ones. w is the half width in radians.
 float arcs(vec3 d, float scale, float dens, float w, float len, inout float crest) {
 	vec3 p = d * scale;
-	vec3 b = floor(p - 0.5);
+	// the 27 cells around this one: an arc reaches at most one cell from its centre, so none is cut off by the
+	// edge of the cells this looks through (the Wave 0 audit saw straight cut ends with the 8 nearest cells)
+	vec3 b = floor(p) - 1.0;
 	float band = 0.0;
-	for (int i = 0; i < 8; i++) {
-		vec3 c = b + vec3(float(i & 1), float((i >> 1) & 1), float((i >> 2) & 1));
+	for (int i = 0; i < 27; i++) {
+		vec3 c = b + vec3(float(i % 3), float((i / 3) % 3), float(i / 9));
 		if (hh(c + seed + 0.5) > dens) continue;
 		vec3 cp = normalize(c + 0.25 + 0.5 * vec3(hh(c + 1.7), hh(c + 3.1), hh(c + 4.9)));
 		vec3 n = vec3(hh(c + 6.1), hh(c + 7.3), hh(c + 8.9)) - 0.5;
 		n = normalize(n - cp * dot(n, cp));
 		float bend = (hh(c + 10.3) - 0.5) * 1.1 / scale;    // a small circle: curved, never a loop
 		float along = acos(clamp(dot(d, cp), -1.0, 1.0)) * scale;
-		float half_len = len * (0.5 + hh(c + 12.7));
-		float fade = smoothstep(half_len, half_len * 0.45, along) * step(0.0, dot(d, cp));
+		float half_len = len * (0.55 + 0.45 * hh(c + 12.7));   // len is at most 1 cell
+		float fade = (1.0 - smoothstep(half_len * 0.45, half_len, along)) * step(0.0, dot(d, cp));
 		// tapered toward the ends, and wandering a little along its length like a real fracture
 		float ww = w * (0.6 + 0.8 * hh(c + 11.9)) * mix(0.35, 1.0, fade);
 		float wander = (wvn3(d * scale * 3.0 + c * 1.3) - 0.5) * 2.2 / scale * 0.06 + (wvn3(d * 140.0 + c) - 0.5) * ww * 0.6;
 		float dist = abs(dot(d, n) - bend * along * along / (scale * 2.0) + wander);
-		band = max(band, smoothstep(ww, ww * 0.35, dist) * fade);
-		crest = max(crest, smoothstep(ww * 0.22, 0.0, dist) * fade * step(0.012, ww));
+		band = max(band, (1.0 - smoothstep(ww * 0.35, ww, dist)) * fade);
+		crest = max(crest, (1.0 - smoothstep(ww * 0.05, ww * 0.4, dist)) * fade * step(0.012, ww));   // wide enough not to alias
 	}
 	return band;
 }
@@ -594,9 +596,9 @@ void fragment() {
 				float sw = atan(sq.y, sq.x) + sd * 2.5;
 				float curl = fb(vec3(cos(sw) * sd, sin(sw) * sd, float(i)) * 3.0, 4);
 				vec3 scol = i == 0 ? mix(cb * 1.3, vec3(0.78, 0.38, 0.22), 0.6) : mix(cc, vec3(0.86, 0.88, 0.90), 0.5);
-				float inside = smoothstep(1.15, 0.75, sd);
+				float inside = (1.0 - smoothstep(0.75, 1.15, sd));
 				alb = mix(alb, min(scol * (0.8 + 0.2 * curl), vec3(0.90)), inside * (kind == 0 ? 0.9 : 0.55));
-				alb = mix(alb, mix(cb, ca, 0.35), smoothstep(1.6, 1.1, sd) * (1.0 - inside) * 0.35 * curl);
+				alb = mix(alb, mix(cb, ca, 0.35), (1.0 - smoothstep(1.1, 1.6, sd)) * (1.0 - inside) * 0.35 * curl);
 			}
 		}
 		relief = 0.5 + (stream - 0.5) * 0.4;
@@ -630,12 +632,12 @@ void fragment() {
 			alb *= 1.0 - ridge * 0.28;
 			alb = mix(alb, vec3(0.86, 0.87, 0.88), smoothstep(0.62, 0.85, e * 0.55 + ridge * 0.6) * 0.85);
 			// a pale rim of beach and shallows along every coast
-			alb = mix(alb, cc * 1.05, smoothstep(0.012, 0.0, h - sea) * 0.5);
+			alb = mix(alb, cc * 1.05, (1.0 - smoothstep(0.0, 0.012, h - sea)) * 0.5);
 			relief = 0.45 + e * 0.3 + ridge * 0.25;
 			// cities: hive sprawl along coasts and in clusters (a contested, crowded world)
-			float coast = smoothstep(0.08, 0.0, h - sea);
+			float coast = (1.0 - smoothstep(0.0, 0.08, h - sea));
 			float cl = smoothstep(0.55, 0.8, fb(q * 18.0 + 2.0, 4)) * (0.4 + coast);
-			lights = clamp(cl * smoothstep(0.75, 0.6, lat) * (0.6 + 0.6 * hh(floor(d * 900.0))), 0.0, 1.0);
+			lights = clamp(cl * (1.0 - smoothstep(0.6, 0.75, lat)) * (0.6 + 0.6 * hh(floor(d * 900.0))), 0.0, 1.0);
 		}
 		// Latitude in radians keeps the cap's edge soft instead of pinching at the poles.
 		float ice = smoothstep(1.05, 1.40, asin(clamp(lat, 0.0, 1.0)) + (fb(q * 6.0, 3) - 0.5) * 0.1);
@@ -670,15 +672,15 @@ void fragment() {
 		// fissures wide enough to read at camera 170, each inside a dark scorched halo
 		float flow = smoothstep(0.5, 0.515, fb(q * 3.5 + w * 1.5 + 40.0, 5));
 		alb = mix(alb, cb * 0.8, flow * 0.85);
-		alb *= mix(0.62, 1.0, smoothstep(0.85, 0.6, can));
+		alb *= mix(0.62, 1.0, (1.0 - smoothstep(0.6, 0.85, can)));
 		alb *= (0.85 + 0.25 * grit) * (1.0 - smoothstep(0.7, 0.95, fine) * 0.3);
 		float unused_crest = 0.0;
 		// few and restrained: a handful of long rifts, never a glowing web
-		float fis = arcs(d, 2.6, 0.22, 0.009, 0.9, unused_crest);
-		float scorch = arcs(d, 2.6, 0.22, 0.03, 0.9, unused_crest);
+		float fis = arcs(d, 2.0, 0.3, 0.009, 1.0, unused_crest);
+		float scorch = arcs(d, 2.0, 0.3, 0.03, 1.0, unused_crest);
 		alb *= 1.0 - scorch * 0.55;
-		relief = clamp(h * 0.6 + (1.0 - can) * 0.25 + fine * 0.15 - flow * 0.05 + flow * 0.04 - fis * 0.08, 0.0, 1.0);
-		lava = max(fis * 0.6, smoothstep(0.86, 0.96, can) * smoothstep(0.58, 0.38, h) * 0.5);
+		relief = clamp(h * 0.6 + (1.0 - can) * 0.25 + fine * 0.15 - flow * 0.01 - fis * 0.08, 0.0, 1.0);
+		lava = max(fis * 0.6, smoothstep(0.86, 0.96, can) * (1.0 - smoothstep(0.38, 0.58, h)) * 0.5);
 		cloud = smoothstep(0.7, 0.86, fb(q * 3.0 + 9.0 + w, 4)) * 0.15;
 	} else if (kind == 4) {
 		// barren cratered (issue 1765): highlands and dark maria, four sizes of crater with central peaks, bright young
@@ -713,7 +715,7 @@ void fragment() {
 		alb = mix(alb, cc, smoothstep(0.86, 0.96, frac) * 0.45);
 		float cr = craters(d, 10.0, 0.25) * 0.3;
 		alb *= 1.0 + cr * 0.2;
-		relief = 0.5 + crest * 0.22 - lin * 0.08 + (base - 0.5) * 0.2 - chaos * 0.1 + blocks * chaos * 0.12 + cr * 0.2;
+		relief = 0.5 + crest * 0.05 - lin * 0.08 + (base - 0.5) * 0.2 - chaos * 0.1 + blocks * chaos * 0.12 + cr * 0.2;
 		ocean = 0.55 * (1.0 - lin * 0.7) * (1.0 - chaos * 0.5);   // the glossy sheen on clean ice
 	}
 	vec4 o;
@@ -828,13 +830,13 @@ void fragment() {
 			float t = dot(vC - vW, rn) / den;
 			if (t > 0.0) {
 				float rr = length(vW + L * t - vC) / vR;
-				float band = smoothstep(ring_r.x, ring_r.x + 0.08, rr) * smoothstep(ring_r.y, ring_r.y - 0.15, rr);
+				float band = smoothstep(ring_r.x, ring_r.x + 0.08, rr) * (1.0 - smoothstep(ring_r.y - 0.15, ring_r.y, rr));
 				col *= 1.0 - band * 0.6;
 			}
 		}
 	}
 	// night side: city lights and lava
-	float night = smoothstep(0.08, -0.18, ndl);
+	float night = (1.0 - smoothstep(-0.18, 0.08, ndl));
 	col += city * b.g * night * 0.9 * (1.0 - b.r * 0.7);
 	col += lava_col * b.a * (0.25 + night * 1.2);
 	// the lit limb glows with the atmosphere
@@ -866,7 +868,7 @@ void fragment() {
 	float tc = -dot(ro, rd);
 	float dmin = length(ro + rd * tc) / R;
 	float inner = 1.0 / shell;
-	float a = smoothstep(1.0, inner, dmin);
+	float a = (1.0 - smoothstep(inner, 1.0, dmin));
 	a = a * a * smoothstep(inner * 0.985, inner + 0.004, dmin);
 	vec3 P = normalize(ro + rd * tc);
 	float lit = smoothstep(-0.35, 0.5, dot(P, normalize(sun)));
@@ -904,7 +906,7 @@ void fragment() {
 	float f = 4.0;
 	for (int k = 0; k < 5; k++) { dens += n1(u * f + float(k) * 3.1) * a; a *= 0.55; f *= 2.3; }
 	dens = clamp(dens / 1.9, 0.0, 1.0);
-	dens *= smoothstep(0.0, 0.04, u) * smoothstep(1.0, 0.94, u);
+	dens *= smoothstep(0.0, 0.04, u) * (1.0 - smoothstep(0.94, 1.0, u));
 	// a dark gap two thirds of the way out (Cassini-like) and a thin faint inner ring
 	dens *= 1.0 - 0.9 * exp(-pow((u - 0.66) / 0.018, 2.0));
 	dens *= mix(0.35, 1.0, smoothstep(0.08, 0.2, u));

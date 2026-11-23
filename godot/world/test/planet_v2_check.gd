@@ -306,5 +306,10 @@ func _run() -> void:
 	_check(hf.get_format() == Image.FORMAT_RF, "the relief is not one 32-bit float channel (format %d)" % hf.get_format())
 	_check(absf(hf.get_pixel(1, 0).r - float(0x9c41) / 65535.0) < 1e-6, "the relief float is not the exact 16-bit height")
 	_check(BAKER.MOON_SIZE.x >= 2048, "moons bake below 2K (%s)" % str(BAKER.MOON_SIZE))
+	# GLSL leaves smoothstep undefined when edge0 >= edge1 (Artoo, PR 1776): no literal pair in the planet shaders runs
+	# high edge first; a falling edge is written 1.0 - smoothstep(lo, hi, x)
+	var rx := RegEx.create_from_string("smoothstep\\(\\s*(-?[0-9.]+)\\s*,\\s*(-?[0-9.]+)\\s*,")
+	for m in rx.search_all(FileAccess.get_file_as_string("res://world/world_planet.gd")):
+		_check(float(m.get_string(1)) < float(m.get_string(2)), "world_planet.gd has a smoothstep with its edges reversed: " + m.get_string(0))
 	print("planet_v2_check: %s (%d failures)" % ["PASS" if failures == 0 else "FAIL", failures])
 	quit(0 if failures == 0 else 1)
