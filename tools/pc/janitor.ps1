@@ -328,13 +328,14 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
         catch { $leaseBusy = $true }
       }
     }
-    $size = "$($stats.Bytes) bytes"
+    $size = Format-CleanupSize $stats
     if ($stats.Links.Count) { $size += ", $($stats.Links.Count) links not followed" }
-    if ($stats.Unreadable.Count) { $size += ", $($stats.Unreadable.Count) folders another account owns left in place" }
+    if ($stats.Unreadable.Count) { $size += ", $($stats.Unreadable.Count) folders another account owns cannot be removed and are not counted" }
     $listed = Get-BoardKeepReason $dir.FullName
     if ($listed) { throw $listed }
     foreach ($link in ($stats.Links | Select-Object -First 5)) { Log "link not followed: $($link.FullName) -> $(Get-LinkTarget $link)" }
-    foreach ($u in ($stats.Unreadable | Select-Object -First 5)) { Log "folder not readable by this account, left in place: $($u.FullName)" }
+    foreach ($u in ($stats.Unreadable | Select-Object -First 5)) { Log "cannot remove: $($u.FullName) (another account owns it or it cannot be read; left in place)" }
+    $script:cannotRemoveCount += $stats.Unreadable.Count
     if ($leaseBusy) { throw 'a helper run holds this folder''s lease' }
     if ($dir.FullName -eq $env:PC_RUN_SCRATCH) { throw 'current runner scratch' }
     if ($busy) { throw $busy }
@@ -383,6 +384,7 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       } elseif ($helper) { Remove-HelperFolder $dir $helperLease; $helperLease = $null; $action = 'removed' }
       else { Remove-CleanupDirectory $dir; $action = 'removed' }
     }
+    Add-WouldFree $stats $dir.FullName
     Log "$action $($dir.FullName) ($size; $why, untouched for at least $hours hours)"
     if ($helper) { $script:helperGone = $true }
   } catch {
@@ -641,6 +643,7 @@ try {
   $drive = New-Object IO.DriveInfo([IO.Path]::GetPathRoot($root))
   $mode = if ($dryRun) { 'dry run' } elseif ($automatic) { $trigger } else { 'manual' }
   Log "janitor $mode at $($now.ToString('o'))"
+  $script:wouldFreeBytes = 0L; $script:wouldFreeCount = 0; $script:cannotRemoveCount = 0
   $script:clock = [Diagnostics.Stopwatch]::StartNew()
   # Dry runs only (Artoo on PR 1592): a live removal reads the mirror's history fresh for each checkout, as before.
   $script:cacheMirrorCommits = $dryRun
@@ -732,6 +735,9 @@ try {
   exit 1
 } finally {
   if ($drive) {
+    # Issue 1739: the honest total. Hard links shared outside a folder and folders another account owns are left out.
+    $verb = if ($dryRun) { 'would be freed' } else { 'freed' }
+    Log ("space ${verb}: $($script:wouldFreeBytes) bytes ({0:N1} GB) by $($script:wouldFreeCount) removals; hard links shared outside a removed folder are not counted; $($script:cannotRemoveCount) folders another account owns cannot be removed and are not counted" -f ($script:wouldFreeBytes / 1GB))
     Log "free space after: $($drive.AvailableFreeSpace) bytes"
     Log 'all done'
   }
