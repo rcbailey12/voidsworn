@@ -17,6 +17,7 @@ var matrix_stats := {"rounds": 0, "n": 0, "timeout": 0, "rams": {"player": 0, "e
 var hulls := {}
 var weapons := {}
 var abilities := {}
+var _player_launches := 0
 var _identity := {}
 var _speed := 1.0
 var _enemy_animation := false
@@ -27,6 +28,25 @@ func reset_timing() -> void:
 	clock = {"old": 0.0, "neu": 0.0, "real": 0.0, "rounds": 0, "max_round": 0.0}
 	tempo = {"player": 0, "enemy": 0, "fire": 0, "first_loss": 0, "first_count": 0}
 	categories = {}
+
+
+func startBattle(cfg: Dictionary) -> void:
+	_player_launches = 0
+	super.startBattle(cfg)
+
+
+func launchWing(u, h, kind) -> void:
+	super.launchWing(u, h, kind)
+	# Replacement wings use this path without calling useAbility. Initial wings use makeWing.
+	if u.side == "player":
+		_player_launches += 1
+
+
+func player_abilities_fired() -> Dictionary:
+	var fired: Dictionary = B.usage.ab.duplicate()
+	if _player_launches > 0:
+		fired["launch"] = _player_launches
+	return fired
 
 
 func fight(bot: Bot, alternating: bool) -> void:

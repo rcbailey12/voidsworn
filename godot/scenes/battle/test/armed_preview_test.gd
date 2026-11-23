@@ -63,10 +63,12 @@ func _run() -> void:
 		printerr("FAIL: fixture did not make a burn-and-fire preview (flak %d, plan %s)" % [flak, str(b.atk)])
 	else:
 		var planned: Dictionary = b.atk.duplicate(true)
+		var armed_before: int = b.armed
 		b._on_key(KEY_1 + flak)
-		ok = b.armed == flak and b.atk == planned and b.ghost.visible and b.path_line.visible and _offers_burn(b)
+		# flak never arms (it cannot fire at a ship), so the key leaves the arm selection as it was (Artoo on PR 1873)
+		ok = b.armed == armed_before and b.armed != flak and b.atk == planned and b.ghost.visible and b.path_line.visible and _offers_burn(b)
 		if not ok:
-			printerr("FAIL: arming flak changed the planned Burn and fire or its preview")
+			printerr("FAIL: the flak key armed flak or changed the planned Burn and fire or its preview")
 		var toast: Label = b.hud.toast_lbl
 		var shown := toast.is_visible_in_tree() and toast.modulate.a > 0.0 \
 			and toast.text == "Planned shot keeps its guns. Cancel the plan to change weapons."
@@ -80,7 +82,7 @@ func _run() -> void:
 		ok = ok and shown and fired
 	b.sfx.free()
 	b.free()
-	if ok: print("PASS: arming flak shows the planned guns toast, preserves the preview, and Enter fires the planned main gun")
+	if ok: print("PASS: the flak key shows the planned guns toast, arms nothing, preserves the preview, and Enter fires the planned main gun")
 	quit(0 if ok else 1)
 
 

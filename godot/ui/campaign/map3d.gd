@@ -1182,7 +1182,7 @@ func _fill_card(n: Dictionary) -> void:
 	var dg: Dictionary = _danger.get(str(n["id"]), {})
 	if S["fight"] and not done and not dg.is_empty():
 		var h = HBoxContainer.new(); h.add_theme_constant_override("separation", ui.px(8)); h.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		h.add_child(GS.pips(ui.k, float(dg["level"]))); h.add_child(ui.tl(str(dg["band"]), 17, 24, GS.TEXT)); card_box.add_child(h)
+		h.add_child(GS.pips(ui.k, float(dg["level"]))); h.add_child(ui.tl("%s (estimate)" % dg["band"], 17, 24, GS.TEXT)); card_box.add_child(h)
 	var extra: Array = []
 	if S["mod"] != "": extra.append(S["mod"])
 	if S["shape"] != "": extra.append(S["shape"] + " board")

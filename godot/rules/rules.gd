@@ -1370,16 +1370,31 @@ func makeUnit(side, tpl, opts: Dictionary = {}) -> Dictionary:
 	if B != null and B.get("mapTrialReady") == true: _map_trial_scale_unit(u)
 	return u
 func fleetPower() -> float:
-	if RUN == null or RUN.get("fleet") == null: return 99.0
+	return fleet_power_for(RUN, HULLS, RARITY, derive)
+
+static func fleet_power_for(run, hulls: Dictionary, rarities: Array, derive_ship: Callable) -> float:
+	if run == null or run.get("fleet") == null: return 99.0
 	var p = 0.0
-	for sh in RUN["fleet"]:
+	for sh in run["fleet"]:
 		if sh["hp"] <= 0: continue
-		var d = derive(sh); var hp: float = min(1.0, float(sh["hp"]) / (d["maxHp"] if jt(d["maxHp"]) else 1.0)); var cp = HULLS[sh["tpl"]]["cp"] if jt(HULLS[sh["tpl"]].get("cp")) else 1
-		p += cp * (0.4 + 0.6 * hp) * (1.0 + 0.12 * ((sh["mk"] if jt(sh.get("mk")) else 1) - 1) + 0.03 * (sh["mods"] if sh.get("mods") != null else []).size() + 0.04 * (z0(g(sh.get("cap"), "rank")))) + z0(d.get("hangar")) * 0.45 * (0.5 + 0.5 * hp)
+		var d: Dictionary = derive_ship.call(sh)
+		var hp: float = min(1.0, float(sh["hp"]) / (d["maxHp"] if jt(d["maxHp"]) else 1.0))
+		var cp = hulls[sh["tpl"]].get("cp")
+		var cap = sh.get("cap")
+		var rank = cap.get("rank") if cap is Dictionary else null
+		var mods: int = sh["mods"].size() if sh.get("mods") != null else 0
+		var mk = sh["mk"] if jt(sh.get("mk")) else 1
+		var hangar = d.get("hangar")
+		var hull_power = (cp if jt(cp) else 1) * (0.4 + 0.6 * hp) * (1.0 + 0.12 * (mk - 1) + 0.03 * mods + 0.04 * (rank if jt(rank) else 0))
+		var wing_power = (hangar if jt(hangar) else 0) * 0.45 * (0.5 + 0.5 * hp)
+		p += hull_power + wing_power
 	var boons = 0.0
-	for b in (RUN["boons"] if RUN.get("boons") != null else []):
-		var rr = at(RARITY, z0(b.get("r"))); boons += (rr if rr != null else RARITY[0])["m"]
-	return p * (1.0 + 0.035 * boons + 0.025 * (RUN["relics"] if RUN.get("relics") != null else []).size())
+	for b in (run["boons"] if run.get("boons") != null else []):
+		var rarity = b.get("r")
+		var i := int(rarity) if jt(rarity) else 0
+		var rr = rarities[i] if i >= 0 and i < rarities.size() else null
+		boons += (rr if rr != null else rarities[0])["m"]
+	return p * (1.0 + 0.035 * boons + 0.025 * (run["relics"] if run.get("relics") != null else []).size())
 func playerStrength() -> float: return fleetPower()
 
 func startBattle(cfg: Dictionary) -> void:
@@ -1456,7 +1471,7 @@ func startBattle(cfg: Dictionary) -> void:
 	for ship in RUN["fleet"]:
 		if ship["hp"] <= 0: continue
 		B["units"].append(makeUnit("player", ship["tpl"], {"ship": ship}))
-	var eList = cfg["enemies"] if jt(cfg.get("enemies")) else genEnemyFleet(cfg["fac"], s, cfg["col"], cfg.get("kind"), cfg.get("arch"), cfg.get("mod"))
+	var eList = cfg["enemies"] if jt(cfg.get("enemies")) else genEnemyFleet(cfg["fac"], s, cfg["col"], cfg.get("kind"), cfg.get("arch"), cfg.get("mod"), is_teaching_encounter(cfg.get("teachingBattle")))
 	var sc = 1.0 + 0.12 * (s - 1); var dm = 1.0 + 0.08 * (s - 1)
 	var bf = at([0, 6, 9, 12], s); var bossFit: float = max(0.55, min(1.0, playerStrength() / (bf if jt(bf) else 12)))
 	var eliteIdx: Variant = null
@@ -1628,20 +1643,50 @@ func effArch(arch, fac):
 				if HULLS.has(id) and HULLS[id].get("ab") == "launch": any = true
 		if not any: return "heavy"
 	return arch if jt(arch) else null
-func genEnemyFleet(fac, s, col, kind, arch, mod) -> Array:
+const ENCOUNTER_CURVE_V1 := 1
+const TEACHING_ENCOUNTER_FACTOR_V1 := 0.75   # the legacy starter factor in the two teaching fixtures
+# R430: mean legacy fleet-power factor at fight entry, using the 30 campaign parity seeds.
+# Interpolate sparse columns in CP and pool S3 columns 3 and 4 to keep the base rising.
+const ENCOUNTER_FACTORS_V1 := [
+	[],
+	[0.996, 0.994, 0.975, 1.000, 1.036, 1.064, 1.086],
+	[0.980, 0.980, 1.016, 1.022, 1.001, 1.019, 1.035],
+	[0.919, 0.919, 0.908, 0.940, 0.884, 0.910, 0.934],
+]
+
+static func is_teaching_encounter(number) -> bool:
+	return js_eq(number, 1) or js_eq(number, 2)
+
+# Command points for the generated roster, before ship picks, count limits or unit scaling.
+static func encounter_budget(ramp: Dictionary, run, s: int, col: float, kind, ai_level: String, power: Callable, mod, teaching: bool = false, why = null) -> float:
+	var budget = ([0.0, 4.2, 9.5, 14.0][s] + col * (0.9 if s == 1 else (1.0 if s == 2 else 1.1))) * ramp.grow[s]
+	if kind == "elite": budget *= 1.05
+	if kind == "boss": budget *= ramp.boss[s]
+	if run != null and js_eq(run.get("encounterCurve"), ENCOUNTER_CURVE_V1):
+		budget *= TEACHING_ENCOUNTER_FACTOR_V1 if teaching else ENCOUNTER_FACTORS_V1[s][clampi(int(col), 0, 6)]
+	elif run != null and run.get("fleet") != null:
+		budget *= max(ramp.pwMin, min(ramp.pwMax, JSM.pow(max(0.5, power.call()) / ramp.refP[s], ramp.pw)))
+	var multipliers := []
+	if ai_level == "standard": multipliers.append(["Standard AI", ramp.std])
+	if s == 3 and ramp.get("late") is Dictionary:
+		var late := float(ramp.late.get("veteran" if ai_level == "veteran" else "standard", 1.0))
+		if late != 1.0: multipliers.append(["Sector 3 fleets", late])
+	if ai_level == "veteran": multipliers.append(["Veteran AI", ramp.vet])
+	if run != null and run.get("heat") != null and run["heat"].has("h_hunted"): multipliers.append(["Threat: Hunted", 1.15])
+	if mod == "bounty": multipliers.append(["bounty", 1.1])
+	for m in multipliers: budget *= m[1]
+	if why != null: why.append_array(multipliers)
+	return budget
+
+func enemy_budget(s: int, col: float, kind, mod, teaching: bool = false) -> float:
+	return encounter_budget(RAMP, RUN, s, col, kind, AI_LEVEL, fleetPower, mod, teaching)
+
+func genEnemyFleet(fac, s, col, kind, arch, mod, teaching: bool = false) -> Array:
 	arch = effArch(arch, fac)
 	var F = FACTIONS[fac]; s = int(s)
-	var budget = ([0.0, 4.2, 9.5, 14.0][s] + col * (0.9 if s == 1 else (1.0 if s == 2 else 1.1))) * RAMP.grow[s]
-	if kind == "elite": budget *= 1.05
+	var budget = enemy_budget(s, col, kind, mod, teaching)
 	var list = []
-	if kind == "boss":
-		list.append({"tpl": F["boss"]}); budget *= RAMP.boss[s]
-	if RUN != null and RUN.get("fleet") != null: budget *= max(RAMP.pwMin, min(RAMP.pwMax, JSM.pow(max(0.5, fleetPower()) / RAMP.refP[s], RAMP.pw)))
-	if AI_LEVEL == "standard": budget *= RAMP.std
-	if s == 3 and RAMP.get("late") is Dictionary: budget *= float(RAMP.late.get("veteran" if AI_LEVEL == "veteran" else "standard", 1.0))   # issue 1178: Sector 3 bites at each level
-	if AI_LEVEL == "veteran": budget *= RAMP.vet   # issue 1160: Veteran's fleet budget edge (shared table entry)
-	if heatOn("h_hunted"): budget *= 1.15
-	if mod == "bounty": budget *= 1.1
+	if kind == "boss": list.append({"tpl": F["boss"]})
 	var roster = []
 	for id in F["roster"]: roster.append({"id": id, "cp": HULLS[id]["cp"], "car": HULLS[id].get("ab") == "launch"})
 	if arch == "swarm":
@@ -1730,7 +1775,6 @@ func escortsBreak() -> void:
 	boss["regen"] = 0; boss["hullRegen"] = 0; boss["reanimate"] = false
 	boss["shp"] = JSM.jsround(float(z0(boss.get("shp"))) * 0.5); syncShields(boss); boss["burning"] = true
 	logm(String(boss["name"]) + " is burning. " + ("Its escorts break off and flee. " if esc.size() > 0 else "") + "Its shields falter and it can no longer repair itself.", "s")
-	if esc.size() > 0: checkEnd()   # issue 1560: the rout line is checked at once
 # issue 1560: escorts that break and flee take their wrecks with them, so a Deathless escort killed earlier no longer reassembles
 func fleeRisers(keep) -> void:
 	for u in B["units"]:
@@ -4504,9 +4548,17 @@ func _has_reserve(side) -> bool:
 	return false
 func checkEndRules() -> void:
 	if jt(B.get("over")): return
-	if caps("enemy").size() == 0 and risers("enemy") == 0:   # issue 1479: an Eclipse wreck rising next round is still in the fight
+	# Issue 1885: the boss must die, even when its escorts put the fleet below the rout line by fleeing.
+	var bossBattle: bool = jt(B.get("cfg")) and B["cfg"].get("kind") == "boss"
+	var bossDown := false
+	if bossBattle:
+		for u in B["units"]:
+			if u["side"] != "enemy" or not jt(u.get("boss")): continue
+			bossDown = jt(u.get("dead"))
+			if not bossDown: break
+	if (not bossBattle or bossDown) and caps("enemy").size() == 0 and risers("enemy") == 0:   # issue 1479: an Eclipse wreck rising next round is still in the fight
 		B["over"] = "win"; return
-	var o = B.get("obj")
+	var o = null if bossBattle else B.get("obj")
 	if o != null and o.type == "break":
 		var out = 0
 		for u in B["units"]:
@@ -4518,6 +4570,10 @@ func checkEndRules() -> void:
 			B["over"] = "loss"; B["withdraw"] = true; logm("Too few ships can still get through. The survivors jump clear.", "e"); return
 	if caps("player").size() == 0 and risers("player") == 0 and not _has_reserve("player"):
 		B["over"] = "loss"; return
+	if bossBattle:
+		if bossDown:
+			B["over"] = "win"; B["routed"] = true; logm("The flagship is gone. Its escorts break and flee.", "s")
+		return
 	if o != null and o.type == "intercept":
 		var kill = 0; var esc = 0
 		for u in B["units"]:
@@ -4558,13 +4614,8 @@ func checkEndRules() -> void:
 		if B["obj"]["escore"] >= 3:
 			B["over"] = "loss"; B["withdraw"] = true; logm("The enemy secures the relay. Your fleet is forced to withdraw.", "e"); return
 	if not jt(B.get("cp0")) or (o != null and (o.type == "intercept" or o.type == "hunt")): return
-	var bossDown = false
-	if jt(B.get("cfg")) and B["cfg"].get("kind") == "boss":
-		bossDown = true
-		for u in B["units"]:
-			if jt(u.get("boss")) and u["side"] == "enemy" and not jt(u.get("dead")): bossDown = false
-	if bossDown or (sideCP("enemy") + riserCP("enemy") <= B["cp0"]["enemy"] * 0.35 and not jt(B.get("nemNoRout"))):   # issue 1479: a wreck rising next round still counts toward the rout line   # R42: a Voidsworn or Deathless Nemesis fights to the last hull
-		B["over"] = "win"; B["routed"] = true; logm("The flagship is gone. Its escorts break and flee." if bossDown else "The enemy fleet breaks and flees.", "s")
+	if sideCP("enemy") + riserCP("enemy") <= B["cp0"]["enemy"] * 0.35 and not jt(B.get("nemNoRout")):   # issue 1479: a wreck rising next round still counts toward the rout line   # R42: a Voidsworn or Deathless Nemesis fights to the last hull
+		B["over"] = "win"; B["routed"] = true; logm("The enemy fleet breaks and flees.", "s")
 
 # ======================= orders, commands, abilities =======================
 func canOrder(u, o) -> bool:

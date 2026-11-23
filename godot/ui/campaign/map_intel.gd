@@ -2,68 +2,49 @@ extends RefCounted
 # Map intel for the 3D sector map (G3, R38): the numbers behind the route planner and the danger bands. Presentation only:
 # it reads the campaign state and never draws from the rules' random numbers.
 #
-# Danger: an estimate of how hard a fight is for the fleet you have now, from the same numbers the game uses to build the
-# enemy fleet (battle.js genEnemyFleet: the column budget, RAMP.grow, the elite and boss factors, your fleet power against
-# the sector's reference fleet, Standard AI, Heat, bounty) and to scale it (startBattle: sector hull and damage scale,
-# RAMP.thin, boss scale), set against your fleet power (battle.js fleetPower). The fleet itself is rolled at the fight, so
-# this is the expected strength, not the exact one.
+# Danger estimates the strength of the enemy fleet against yours. The rules supply the command-point budget.
+# The map accounts for unit scaling and the Nemesis without rolling a roster.
 
 const View = preload("res://campaign/campaign_view.gd")   # the Nemesis is read through the view (C.nemRead): an estimate never resolves or creates him
+const BattleAPI = preload("res://rules/battle_api.gd")
 # The bands are words, shown with one to four pips (the Briefing build, FINDINGS R165): two channels, neither of them a colour
 # (ui_spec.md 5.2). The band colours left with the tags that wore them. The cut points are unchanged (U-D re-rules them).
 const BANDS := [[0.8, "Easy"], [1.05, "Even"], [1.4, "Hard"], [99.0, "Deadly"]]
 
 var C
-var ai_level := "standard"     # the battle setting (godot/main settings "ai"); Standard meets 10% less
+var ai_level := "standard"     # the battle setting (godot/main settings "ai")
 
 func _init(campaign) -> void: C = campaign
 
-func fleet_power() -> float:   # battle.js fleetPower
-	if C.RUN == null: return 99.0
-	var p = 0.0
-	for sh in C.RUN["fleet"]:
-		if float(sh["hp"]) <= 0: continue
-		var d = C.derive(sh); var hp = min(1.0, float(sh["hp"]) / max(1.0, float(d["maxHp"]))); var cp = float(C.or_(C.HULLS[sh["tpl"]].get("cp"), 1))
-		p += cp * (0.4 + 0.6 * hp) * (1.0 + 0.12 * (float(C.or_(sh.get("mk"), 1)) - 1.0) + 0.03 * sh["mods"].size() + 0.04 * float(C.z0(sh["cap"].get("rank")))) + float(C.z0(d["hangar"])) * 0.45 * (0.5 + 0.5 * hp)
-	var boons = 0.0
-	for b in C.or_(C.RUN.get("boons"), []): boons += float(C.RARITY[int(C.z0(b.get("r")))]["m"])
-	return p * (1.0 + 0.035 * boons + 0.025 * C.RUN["relics"].size())
+func fleet_power() -> float:
+	return BattleAPI.RulesScript.fleet_power_for(C.RUN, C.HULLS, C.RARITY, C.derive)
 
 func danger(n: Dictionary) -> Dictionary:
 	var t = n["type"]
 	var nem = not C.jt(n.get("done")) and View.nem_node_is(C, n)   # B4: the Nemesis fight is an elite fight, stronger for each scar and adaptation
 	if not (t in ["battle", "elite", "boss"]) and not nem: return {}   # issue 1175: he can hold a rest or event stop in column 4
-	var R = C.TB["RAMP"]; var s = int(C.RUN["sector"]); var col = float(n["col"]); var kind = t
-	if nem: kind = "elite"
-	var budget = ([0.0, 4.2, 9.5, 14.0][s] + col * (0.9 if s == 1 else (1.0 if s == 2 else 1.1))) * float(R["grow"][s])
-	if kind == "elite": budget *= 1.05
+	var R = C.TB["RAMP"]; var s = int(C.RUN["sector"]); var kind = C.battle_node_kind(n, nem)
 	var P = fleet_power()
+	var mod = n.get("mod") if kind != "boss" else null
+	var teaching := BattleAPI.RulesScript.is_teaching_encounter(C.node_teaching_battle(n, kind))
+	var why := []   # what moved the number, for the hover card: [label, factor]
+	var budget := BattleAPI.RulesScript.encounter_budget(R, C.RUN, s, float(n["col"]), kind, ai_level, func(): return P, mod, teaching, why)
 	var boss_part = 0.0
 	if kind == "boss":
-		budget *= float(R["boss"][s])
 		var fac = C.RUN["map"]["fac"]; var btpl = C.FACTIONS[fac].get("boss")
 		var bcp = float(C.or_(C.HULLS[btpl].get("cp"), 6)) if btpl != null and C.HULLS.has(btpl) else 6.0
 		var fit = max(0.55, min(1.0, P / [0.0, 6.0, 9.0, 12.0][s]))
 		boss_part = bcp * float(C.TB["BOSS_SCALE"][s]) * fit * float(C.TB["BOSS_FAC"].get(fac, 1.0)) * float(C.TB["BOSS_DMG"][s]) * (1.2 if C.heatOn("h_flag") else 1.0) * 1.6
-	budget *= max(float(R["pwMin"]), min(float(R["pwMax"]), pow(max(0.5, P) / float(R["refP"][s]), float(R["pw"]))))
-	var why = []   # what moved the number, for the hover card: [label, factor]
-	if ai_level == "standard": budget *= float(R["std"]); why.append(["Standard AI", float(R["std"])])
-	if s == 3 and R.get("late") is Dictionary:   # issue 1178: Sector 3's extra fleet budget at this AI level (battle.js genEnemyFleet)
-		var lm = float(R["late"].get("veteran" if ai_level == "veteran" else "standard", 1.0))
-		if lm != 1.0: budget *= lm; why.append(["Sector 3 fleets", lm])
-	if ai_level == "veteran": budget *= float(R.get("vet", 1.0)); why.append(["Veteran AI", float(R.get("vet", 1.0))])   # issue 1160: RAMP.vet, as battle.js genEnemyFleet
-	if C.heatOn("h_hunted"): budget *= 1.15; why.append(["Threat: Hunted", 1.15])
-	if n.get("mod") == "bounty": budget *= 1.1; why.append(["bounty", 1.1])
 	var tough = (1.0 + 0.12 * (s - 1)) * (1.0 + 0.08 * (s - 1)) * float(R["thin"][s]) * (float(R["escort"]) if kind == "boss" else 1.0)
 	var threat = budget * tough + boss_part
 	if kind == "elite": threat *= 1.25            # the bigger half of an elite fleet are elites
-	if n.get("mod") == "veteran": threat *= 1.08; why.append(["veteran crews", 1.08])
+	if mod == "veteran": threat *= 1.08; why.append(["veteran crews", 1.08])
 	if C.heatOn("h_elite"): threat *= 1.08; why.append(["Threat: Veteran escorts", 1.08])
 	if nem: threat = _nem_threat(threat, tough, why)
 	var ratio = threat / max(0.5, P)
 	for i in BANDS.size():
 		var b = BANDS[i]
-		if ratio < b[0]: return {"ratio": ratio, "band": b[1], "level": i + 1, "threat": threat, "power": P, "why": why}
+		if ratio < b[0]: return {"ratio": ratio, "band": b[1], "level": i + 1, "budget": budget, "threat": threat, "power": P, "why": why}
 	return {}
 # The Nemesis's own growth (battle.js applyNemesis): damage per scar, each adaptation, his strength traits, the Chorus feeding on your
 # losses (hull), Corsair riches (one cheap hull each) and the Ithar duel fleet (fewer ships, all elite: about even).

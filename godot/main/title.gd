@@ -42,7 +42,7 @@ func s(v: float) -> int:
 func _ready() -> void:
 	font = Kit.body_font()        # the kit's one font set (issue 1217); the wordmark keeps its own display face
 	font_semi = Kit.medium_font()
-	font_goth = Brand.display()  # the sci-fi display face (lore round 5); the blackletter is retired
+	font_goth = Brand.wordmark()  # the wordmark face, Michroma (R436 C28: Michroma is the wordmark only)
 	_build()
 	_report.call_deferred()
 	# screenshot jobs: --title-open credits opens the Credits screen (main.gd opens Settings for --title-open settings)

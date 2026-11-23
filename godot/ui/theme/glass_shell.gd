@@ -222,46 +222,57 @@ static func _variant(key: String, base: Font, spacing_px: int, wght := 0) -> Fon
 	return v
 
 
-# body text: Chakra Petch Regular
+# R436 C28 (Ryan, Nov 23 2026): four faces, one job each. Big Shoulders Display heads, Barlow body text, Azeret Mono
+# numbers, Michroma for the wordmark only (docs/playbooks/screens.md, "Council picks"). The old Chakra Petch faces of
+# this shell now resolve to that set, so every screen still built on them follows.
+# body text: Barlow Regular
 static func body() -> Font:
-	return _font_file("ChakraPetch-Regular.ttf")
+	return _font_file("Barlow-Regular.ttf")
 
 
 static func medium() -> Font:
-	return _font_file("ChakraPetch-Medium.ttf")
+	return _font_file("Barlow-Medium.ttf")
 
 
-# names, buttons, numbers in prose: Chakra Petch SemiBold
+# names, buttons, numbers in prose: Barlow Medium (the heaviest Barlow the game ships)
 static func semi() -> Font:
-	return _font_file("ChakraPetch-SemiBold.ttf")
+	return _font_file("Barlow-Medium.ttf")
 
 
+# heads in caps (section heads, banners, the end card, the finish button, the ship that is up): Big Shoulders Display
 static func bold() -> Font:
-	return _font_file("ChakraPetch-Bold.ttf")
+	return _heavy("bold800", 0)
 
 
-# section heads and tags ("1 MOVE", "FLEET", "UP", "NEMESIS"): Chakra Petch Bold in caps, tracked 0.18 em at 13
+# Big Shoulders Display at weight 800 with letter spacing. A FontVariation over another FontVariation drops the inner
+# weight (the face fell back to its thin default and small caps turned to scratches), so every tracked head starts from
+# the font file itself.
+static func _heavy(key: String, spacing_px: int) -> Font:
+	return _variant(key, _font_file("BigShouldersDisplay-VF.ttf"), spacing_px, 800)
+
+
+# section heads and tags ("1 MOVE", "FLEET", "UP", "NEMESIS"): Big Shoulders Display in caps, tracked 0.18 em at 13
 static func caps(k: float) -> Font:
 	var sp := maxi(1, int(round(13.0 * 0.18 * k)))
-	return _variant("caps%d" % sp, bold(), sp)
+	return _heavy("caps%d" % sp, sp)
 
 
-# display (the round title, the banner, the end card, menu titles): Chakra Petch Bold in caps, tracked 0.14 em at 19
+# display (the round title, the banner, the end card, menu titles): Big Shoulders Display in caps, tracked 0.14 em at 19
 static func display(k: float) -> Font:
 	var sp := maxi(1, int(round(19.0 * 0.14 * k)))
-	return _variant("disp%d" % sp, bold(), sp)
+	return _heavy("disp%d" % sp, sp)
 
 
-# the finish button's label ("END SHIP"): Chakra Petch Bold in caps, tracked 0.12 em at 17
+# the finish button's label ("END SHIP"): Big Shoulders Display in caps, tracked 0.12 em at 17
 static func action_font(k: float) -> Font:
 	var sp := maxi(1, int(round(17.0 * 0.12 * k)))
-	return _variant("act%d" % sp, bold(), sp)
+	return _heavy("act%d" % sp, sp)
 
 
-# the name of the ship that is up (star, "LONG WATCH"): Chakra Petch Bold in caps, tracked 0.06 em at 20
+# the name of the ship that is up (star, "LONG WATCH"): Big Shoulders Display in caps, tracked 0.06 em at 20
 static func ship_name(k: float) -> Font:
 	var sp := maxi(1, int(round(20.0 * 0.06 * k)))
-	return _variant("name%d" % sp, bold(), sp)
+	return _heavy("name%d" % sp, sp)
 
 
 # numbers that decide something (odds, damage, hull, Heat, key caps): Azeret Mono, medium and bold

@@ -346,9 +346,10 @@ func _fleet() -> Array:
 		var sv = battle.views.get(u["id"])
 		if sv == null or u.get("squadron", false) or u.get("dead", false):
 			continue
+		var hull := HullAge.resolved(sv)   # issue 1410: the model ShipView drew, not the manifest's first listed entry
 		rows.append({"ship": u.get("name", ""), "class": u.get("cls", ""), "side": u.get("side", ""), "code": sv.code,
 			"asset": ShipView.manifest().get("ships", {}).get(sv.code, {}).get("res", ""), "parted_hull": sv.a4,
-			"layout": HullAge.layout(sv.code), "source": HullAge.resolved(sv).get("source", "")})
+			"layout": HullAge.layout(sv.code), "source": hull.get("source", ""), "res": hull.get("res", "")})
 	return rows
 
 
