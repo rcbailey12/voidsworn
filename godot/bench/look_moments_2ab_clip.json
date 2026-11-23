@@ -1,0 +1,100 @@
+{
+ "about": "Issue 1693: the acid sizzle clip with sound (--sound and --write-movie), camera 170 only.",
+ "cameras": [
+  170
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "26": [
+   768,
+   432
+  ],
+  "170": [
+   384,
+   216
+  ]
+ },
+ "rows": [
+  {
+   "group": "issue 1693 wave 2B status",
+   "id": "w2b_acid_sizzle_clip",
+   "label": "idle acid with the game's sound on, about 8 s: the sizzle cadence (one every 1.7 to 2.8 s)",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "focus": "target",
+   "pre": [
+    [
+     "bio",
+     "bioplasma",
+     "mid"
+    ]
+   ],
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "st": {
+     "acid": 2
+    }
+   },
+   "windows": [
+    [
+     "event",
+     0,
+     4
+    ],
+    [
+     "event",
+     2,
+     4
+    ],
+    [
+     "event",
+     4,
+     4
+    ],
+    [
+     "event",
+     6,
+     4
+    ],
+    [
+     "event",
+     8,
+     2
+    ]
+   ]
+  }
+ ]
+}

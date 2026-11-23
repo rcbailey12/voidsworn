@@ -310,7 +310,12 @@ func _make_fx() -> void:
 	# Issue 376: a fresh effects system builds the warm-up's own pool and death materials again. That is this bench
 	# warming a new moment, not a shader first built mid-battle, so the late log stays off until the moment's warm-up.
 	HULL.pause_late_watch()
-	fx.setup({"camera": cam, "quality": "max", "reduce_flashing": false, "shake": 0.0, "unit": 1.0, "seed": 20261026})
+	var fx_opts := {"camera": cam, "quality": "max", "reduce_flashing": false, "shake": 0.0, "unit": 1.0, "seed": 20261026}
+	# Issue 1693: with --sound the effects play their own cues (status sizzles, hit cues) through the same player, as the
+	# battle wires them. Without --sound there is no player and nothing changes.
+	if sfx != null:
+		fx_opts["sfx"] = sfx
+	fx.setup(fx_opts)
 	if death_audio != null:
 		death_audio.fx = fx
 		death_audio.deaths.clear()
