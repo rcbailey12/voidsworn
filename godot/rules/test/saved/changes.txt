@@ -1,22 +1,10 @@
-Saved manifest before: 7a9861aa5952bdd8edae047dc62550386930fb013f82516c533c67ff9d96e377
-Saved manifest after: 0bebbb7b8c8a4b60336a771963d7c245921687c3747f2ff4188825828f2d968d
+Saved manifest before: 0bebbb7b8c8a4b60336a771963d7c245921687c3747f2ff4188825828f2d968d
+Saved manifest after: 949f76920673fa7e1e5a2f8e201f0206c014899873915cc45e4eb04b416cc578
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t_ecl_twicerestored
-  turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].facing: 5 -> 0
-  later changed records: 109; total records: 102 -> 110
-FAIL battle t7b_ecl_formation_b
+FAIL battle t_ecl_iterationswap
   turn 0, round 1, after tick player; unit x05 (player d_harvester)
-  state.units[0].facing: 0 -> 4
-  later changed records: 88; total records: 89 -> 82
-FAIL battle t7b_ecl_triage
-  turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].name: "Cold Memory" -> "Noon Kept"
-  later changed records: 118; total records: 108 -> 119
-FAIL battle t7b_ecl_targetarchived
-  turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].facing: 4 -> 0
-  later changed records: 49; total records: 31 -> 50
-FAIL: saved Godot results; 354 battles checked, 4 changed, 0 other files changed, 4 failures; 17.403 s
+  state.units[0].q: 2 -> 1
+  later changed records: 49; total records: 49 -> 50
+FAIL: saved Godot results; 354 battles checked, 1 changed, 0 other files changed, 1 failures; 37.599 s

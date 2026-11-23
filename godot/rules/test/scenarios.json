@@ -4170,7 +4170,11 @@
    ],
    "capstone": null
   },
-  "note": "Eclipse: shared Iteration Swap (nekhet:B:0:1) swaps two ships at battle start"
+  "skill_target_slots": [
+   1,
+   2
+  ],
+  "note": "Eclipse: shared Iteration Swap (nekhet:B:0:1) swaps the two chosen ships at battle start"
  },
  "t_ecl_flagshipindex": {
   "sector": 1,

@@ -465,6 +465,7 @@ func start_default() -> void:
 		var e: String = a.load_rules()
 		if e != "":
 			push_error(e)
+		a.interactive_deployment = not bot and not showcase
 		a.new_battle_scenario(str(args["scenario"]), seed if args.has("seed") else -1)
 		a.set_undo(true)   # issue 1450: a test battle played in the scene can take moves back like any other
 		_begin(a)
@@ -509,6 +510,7 @@ func start_scenario(sc: Dictionary) -> void:
 	var e: String = a.load_rules()
 	if e != "":
 		push_error(e)
+	a.interactive_deployment = not bot and not showcase
 	a.new_battle_scenario(sc, int(sc.get("seed", 1)))
 	battle_cfg = sc
 	_begin(a)
@@ -520,6 +522,7 @@ func start_battle(run: Dictionary, cfg: Dictionary) -> void:
 	var e: String = a.load_rules()
 	if e != "":
 		push_error(e)
+	a.interactive_deployment = not bot and not showcase
 	a.new_battle(run, cfg)
 	battle_cfg = cfg
 	_begin(a)
@@ -601,6 +604,26 @@ func _begin(a) -> void:
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
 	if key_light != null:
 		board.sun_dir = key_light.global_transform.basis.z   # a directional light shines along its -Z: the sun is +Z
+	if api.phase == "deployment":
+		board.build(api)
+		cam.bounds = board.bounds()
+		_draw_starting_fleet()
+		warming = false
+		hud.loading(false)
+		_refresh_ui()
+		return
+	await _start_battle_view()
+
+
+func _start_battle_view() -> void:
+	# The objective and starting wings are set only after the deployment choice.
+	if V.get("phase") == "deployment":
+		warming = true
+		hud.loading(true)
+		hud.hide_ask()
+		var obj = api.view().get("obj")
+		if obj is Dictionary and obj.get("type") == "hold":
+			A4P.prefetch_beacon()
 	board.build(api)
 	cam.bounds = board.bounds()
 	_post_quality(str(args.get("quality", "max")))
@@ -627,19 +650,8 @@ func _begin(a) -> void:
 			c.queue_free()
 	else:
 		backdrop.build(cam.bounds, env)
-	V = api.view()
-	_index_view()
-	for u in V["units"]:
-		_make_view(u)
-	_sync(V)
+	_draw_starting_fleet()
 	if world != null: world.use_ship_debris(views.values())
-	# open on your fleet, looking toward the enemy (the browser game's camera starts over the player's side)
-	var hv: Dictionary = board.home_view(V["units"])   # shared with the Hold relay beacon's placement (issue 1536)
-	cam.home = hv["target"]
-	cam.reset_view()
-	cam.home_r = hv["r"]
-	cam.r = cam.home_r
-	cam.snap()
 	hud.log_text.clear()
 	var F = {}
 	var ne := 0
@@ -700,6 +712,21 @@ func _begin(a) -> void:
 	if not story_lines.is_empty(): hud.toast(" ".join(PackedStringArray(story_lines)))
 	if not busy:
 		_runner()
+
+
+func _draw_starting_fleet() -> void:
+	V = api.view()
+	_index_view()
+	for u in V["units"]:
+		_make_view(u)
+	_sync(V)
+	# Open on your fleet, looking toward the enemy.
+	var hv: Dictionary = board.home_view(V["units"])   # shared with the Hold relay beacon's placement (issue 1536)
+	cam.home = hv["target"]
+	cam.reset_view()
+	cam.home_r = hv["r"]
+	cam.r = cam.home_r
+	cam.snap()
 
 
 # F1 (R62, battles start zoomed out): the opening beat. After the warm-up the camera frames both fleets and the objective
@@ -3332,6 +3359,9 @@ func _clear_overlay() -> void:
 func _overlay() -> void:
 	if quitting or board == null or not is_instance_valid(board):
 		return
+	if V.get("phase") == "deployment":
+		_skill_target_overlay()
+		return
 	if _threat_wanted() and _threat_idle() and not _threat_busy:
 		# Start after this UI pass, so its own rule reads do not immediately join the worker.
 		_threat_request.call_deferred()
@@ -3943,6 +3973,10 @@ var _board_release := false
 func _input(e: InputEvent) -> void:
 	if not e is InputEventMouseButton or cam == null:
 		return
+	if e.button_index == MOUSE_BUTTON_RIGHT and e.pressed and _skill_picker_ready() and not is_instance_valid(hud.menu):
+		get_viewport().set_input_as_handled()
+		_pick_skill_target("")
+		return
 	# End camera gestures before the GUI can consume their releases. Only an unhandled press can start one.
 	if e.button_index == MOUSE_BUTTON_RIGHT and not e.pressed:
 		cam.handle_input(e)
@@ -3991,6 +4025,12 @@ func _on_key(k: int) -> void:
 			hud.hide_menu()
 		return
 	if hud.get("endcard") != null:
+		return
+	if _skill_picker_ready():
+		match k:
+			KEY_ESCAPE, KEY_1, KEY_KP_1: _pick_skill_target("")
+			KEY_T: cam.toggle_top()
+			KEY_HOME: cam.reset_view()
 		return
 	if k == KEY_ESCAPE:
 		if hud.get("log_open") == true:
@@ -4341,7 +4381,8 @@ func _on_hover(p: Vector2) -> void:
 	var h := _ray_hex(p)
 	if h != hover:
 		hover = h
-		board.set_hover(h.x, h.y)
+		if V.get("phase") != "deployment":
+			board.set_hover(h.x, h.y)
 		_overlay()
 		# #271: an enemy under the pointer fills the Target block and the Fire odds (they read the hovered enemy)
 		var hu := _unit_at(h.x, h.y)
@@ -4359,6 +4400,11 @@ func _on_hover(p: Vector2) -> void:
 
 
 func _on_click() -> void:
+	if _skill_picker_ready():
+		var candidate := _hovered_skill_target()
+		if not candidate.is_empty():
+			_pick_skill_target(str(candidate["id"]))
+		return
 	if hud.ask_panel != null and is_instance_valid(hud.ask_panel):
 		return   # issue 529: a tree prompt is open; answer it first
 	if _threat_busy and not busy and not warming and not ended and not retiring and api != null and api.phase == "player" \
@@ -4918,6 +4964,8 @@ func _blocker_text(t: Dictionary) -> String:
 
 
 func _tip() -> String:
+	if _skill_picker_ready():
+		return str(_hovered_skill_target().get("name", ""))
 	if hover.x == 99999 or busy or not _api_join() or api.phase != "player":
 		return ""
 	var u := _unit_at(hover.x, hover.y)
@@ -5105,6 +5153,13 @@ func _attack_tip(t_id: String) -> String:
 
 
 func _on_action(name: String, arg) -> void:
+	if _skill_picker_ready():
+		if name == "pick":
+			_pick_skill_target(str(arg))
+			return
+		if name == "ask" and arg == "skip_skill_target":
+			_pick_skill_target("")
+			return
 	sfx.play("ui_click")
 	match name:
 		"end":
@@ -5269,7 +5324,52 @@ func _on_action(name: String, arg) -> void:
 var roles_opened := false
 
 
+func _skill_picker_ready() -> bool:
+	return not warming and not ended and not retiring and api != null and V.get("phase") == "deployment"
+
+
+func _hovered_skill_target() -> Dictionary:
+	for candidate in V.get("skill_target", {}).get("targets", []):
+		if Vector2i(int(candidate["q"]), int(candidate["r"])) == hover:
+			return candidate
+	return {}
+
+
+func _skill_target_overlay() -> void:
+	var picker: Dictionary = V["skill_target"]
+	var hot := _hovered_skill_target()
+	var fills := {}
+	var rings := {}
+	for candidate in picker["targets"]:
+		var key: String = board.key(candidate["q"], candidate["r"])
+		rings[key] = Board.LS.ROLE["ability"]
+		fills[key] = Color(0.92, 0.92, 1.0, 0.26)
+	var first: Dictionary = picker["picked"]
+	if not first.is_empty():
+		rings[board.key(first["q"], first["r"])] = Board.LS.ROLE["target_on"]
+	if not hot.is_empty():
+		fills[board.key(hot["q"], hot["r"])] = Board.LS.ROLE["ram_fill"]
+	board.set_hover(int(hot.get("q", 99999)), int(hot.get("r", 99999)))
+	board.set_overlay(fills, rings)
+
+
+func _pick_skill_target(id: String) -> void:
+	if not _skill_picker_ready() or not api.pick_skill_target(id):
+		return
+	sfx.play("ui_cancel" if id == "" else "ui_click")
+	if api.phase == "deployment":
+		V = api.view()
+		_refresh_ui()
+	else:
+		_start_battle_view()
+
+
 func _sync_ask() -> void:
+	if _skill_picker_ready():
+		var picker: Dictionary = V["skill_target"]
+		hud.show_ask({"kind": "skill_target", "key": picker["key"], "id": picker["picked"].get("id", ""), "n": picker["n"],
+			"q": picker["q"] + " Esc or right-click to skip.", "opts": [{"id": "skip_skill_target", "n": "Skip"}]})
+		return
 	var a = V.get("ask")
 	if a is Dictionary and not ended:
 		hud.show_ask(a)
@@ -5380,10 +5480,10 @@ func _open_menu(row := -1) -> void:
 	items.append(["Controls", "keys"])
 	if external and not in_campaign:
 		items.append(["Quit to title", "to_title"])
-	elif in_campaign and round_save_cb.is_valid() and round_saved > 0:
+	elif in_campaign and round_save_cb.is_valid() and (round_saved > 0 or _skill_picker_ready()):
 		# issue 1451: back here at the start of this round. Artoo on PR 1486: when this round's save did not reach the disk, say
 		# what Continue will really load instead of promising this round
-		if round_on_disk == round_saved:
+		if round_saved > 0 and round_on_disk == round_saved:
 			items.append(["Save and quit to title", "save_quit"])
 		else:
 			items.append(["Quit to title (Continue starts %s)" % (("at round %d" % round_on_disk) if round_on_disk > 0 else "from the last checkpoint"), "save_quit_older"])
@@ -5512,13 +5612,16 @@ func _refresh_ui() -> void:
 	if _classic():
 		end_text = "End turn"
 		turn = "Battle over" if ended or api.phase == "over" else ("Your turn" if mine else "Enemy turn")
+	if V.get("phase") == "deployment":
+		turn = "Deployment"
+		hud.set_phase("", "")
 	var command_ready: bool = api.has_method("can_command") and mine and not busy and api.can_command()
 	var command: Dictionary = api.command_info() if mine and api.has_method("command_info") else {}
 	hud.set_command(str(command.get("label", "Command")), command_ready, mine and _api_admiral() != "",
 		command_ready and Time.get_ticks_msec() / 1000.0 - cmd_armed_t <= 3.0, _command_tip(command))
 	_sync_arrival()
 	hud.set_info(_battle_info())
-	hud.set_top(int(V["round"]), turn, _objective(), end_text, mine and not busy, user_speed < 1.0, threat_on)
+	hud.set_top(int(V["round"]), turn, _objective() if V.get("phase") != "deployment" else "", end_text, mine and not busy, user_speed < 1.0, threat_on)
 	hud.set_nemesis(_nem_info())
 	hud.set_retreat(can_retreat and not ended, not (mine and not busy))
 	var rows: Array = []
