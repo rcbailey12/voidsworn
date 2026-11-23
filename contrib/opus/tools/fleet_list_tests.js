@@ -77,6 +77,16 @@ t('different factions merge cleanly and CI distinguishes branch staleness from m
     assert.strictEqual(result.status, status, result.error || result.stdout + result.stderr);
     return result.stdout;
   };
+  const regenerateAndDiff = expectedStatus => {
+    fleetCli('--write');
+    const pageInHead = run('git', ['cat-file', '-e', `HEAD:${fleet.PAGE}`]);
+    // git diff ignores untracked files, including a page restored only in the working tree.
+    const result = pageInHead.status === 0
+      ? run('git', ['-c', 'core.autocrlf=false', 'diff', '--exit-code', 'HEAD', '--', fleet.PAGE])
+      : pageInHead;
+    assert.strictEqual(result.status, expectedStatus, result.error || result.stdout + result.stderr);
+    return result.stdout;
+  };
   const put = (file, content) => {
     const target = path.join(tmp, file);
     fs.mkdirSync(path.dirname(target), { recursive: true });
@@ -99,6 +109,8 @@ t('different factions merge cleanly and CI distinguishes branch staleness from m
   try {
     git('init', '-q', '-b', 'main');
     put(generator, fs.readFileSync(path.join(ROOT, generator)));
+    const sparseInputs = 'contrib/opus/tools/sparse_check_inputs.js';
+    put(sparseInputs, fs.readFileSync(path.join(ROOT, sparseInputs)));
     put('concept.txt', 'Fixture concept\n');
     put(hullTable, table('V1'));
     put(manifest, '{"ships":{"V1":{},"V2":{},"A1":{}}}\n');
@@ -127,7 +139,7 @@ t('different factions merge cleanly and CI distinguishes branch staleness from m
     const combined = fs.readFileSync(path.join(tmp, fleet.PAGE), 'utf8');
     assert.match(combined, /^\| Warden .*Concept picked, old hull in game/m);
     assert.match(combined, /^\| Raider .*Old hull kept on purpose/m);
-    fleetCli('--check-page');
+    regenerateAndDiff(0);
 
     // A branch switches to V2 while main installs V2. Both pages were current before Git combined their inputs.
     const beforeDrift = git('rev-parse', 'main');
@@ -139,11 +151,19 @@ t('different factions merge cleanly and CI distinguishes branch staleness from m
     put(manifest, '{"ships":{"V1":{},"V2":{"files":{"V2_parts_base.jpg":{}}},"A1":{}}}\n');
     fleetCli('--check-page');
     git('update-ref', 'refs/heads/main', snapshot(beforeDrift));
-    git('read-tree', '--reset', '-u', git('merge-tree', '--write-tree', switchHull, 'main'));
+    const drift = git('merge-tree', '--write-tree', switchHull, 'main');
+    git('update-ref', 'refs/heads/main', save(drift, switchHull, 'main'));
+    git('read-tree', '--reset', '-u', 'main');
     assert.match(fleetCli('--check-page', 1), /FLEET\.md is stale/);
-    fleetCli('--write');
+    assert.match(regenerateAndDiff(1), /^\+\| Warden .*`V2` \| New-format build on main/m);
+    // A check of the rewritten copy alone now passes, even though HEAD still carries the stale page.
     fleetCli('--check-page');
-    assert.match(fs.readFileSync(path.join(tmp, fleet.PAGE), 'utf8'), /^\| Warden .*`V2` \| New-format build on main/m);
+    git('update-ref', 'refs/heads/main', snapshot('main'));
+    regenerateAndDiff(0);
+
+    git('rm', fleet.PAGE);
+    git('update-ref', 'refs/heads/main', snapshot('main'));
+    regenerateAndDiff(128);
   } finally {
     const resolved = fs.realpathSync.native(tmp);
     assert.strictEqual(path.dirname(resolved), tempRoot);
