@@ -4076,7 +4076,9 @@ func _arm(i: int, from_hotkey := false) -> void:
 	var u := _sel_unit()
 	if u.is_empty() or i >= (u["weapons"] as Array).size():
 		return
-	if str(u["weapons"][i].get("kind", "")) == "flak":   # Artoo on PR 1873: flak never fires at a ship (rules canFire), so it is never armed
+	# Artoo on PR 1873: flak never fires at a ship (rules canFire), so it is never armed. With a shot already planned the
+	# hotkey keeps its old meaning (the plan keeps its guns, armed_preview_test), so the refusal is for an open hand only.
+	if str(u["weapons"][i].get("kind", "")) == "flak" and not (from_hotkey and atk != null):
 		hud.toast("Point defense fires on its own at incoming torpedoes and strike craft.")
 		return
 	armed = -1 if armed == i else i
