@@ -3982,7 +3982,7 @@ func _on_key(k: int) -> void:
 		if k == KEY_ESCAPE:
 			hud.hide_menu()
 		return
-	if ended or hud.get("endcard") != null:
+	if hud.get("endcard") != null:
 		return
 	if k == KEY_ESCAPE:
 		if hud.get("log_open") == true:
@@ -3991,6 +3991,11 @@ func _on_key(k: int) -> void:
 		if hud.get("legend_open") == true:
 			hud.toggle_legend()
 			return
+	if ended:
+		# During the victory beat, Esc can still open the menu after closing the overlays.
+		if k == KEY_ESCAPE:
+			_open_menu()
+		return
 	if hud.ask_panel != null and is_instance_valid(hud.ask_panel):
 		# issue 529: a tree prompt is open; 1 to 3 answer it, nothing else acts until it is answered
 		var a: Dictionary = V.get("ask") if V.get("ask") is Dictionary else {}
@@ -4000,7 +4005,7 @@ func _on_key(k: int) -> void:
 		if i >= 0 and i < opts.size():
 			_on_action("ask", str(opts[i].get("id", "")))
 		return
-	if k in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE] and (busy or api.phase == "enemy") and not ended:
+	if k in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE] and (busy or api.phase == "enemy"):
 		# B2: Enter or Space hurries the rest of the enemy's turn (presentation only)
 		skip = true
 		speed = minf(speed, float(PACE["skip"]))
