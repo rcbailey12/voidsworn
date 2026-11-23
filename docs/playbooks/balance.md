@@ -2,6 +2,16 @@
 
 Run [the headless Godot balance simulator](../../godot/rules/sim/README.md) for campaign, campaign with rewards, and faction matrix measurements.
 
+Use `campaign` or `campaignrewards` to measure a player ability. Set `PFACTION` to the faction id you want to field,
+such as `deathless` for Eclipse or `chorus` for the Chorus. Leave it unset for a row per faction in each cell.
+Set `ONLY_BOSS=1` for the boss cells and the elite comparison.
+
+Use matching `PAIRSEED`, difficulty, mode, cell filters, and battles per cell for both arms. Give each arm a distinct
+`SIM_ARM` label and save its output through the `TRIALS_COMPLETE` line. Run
+`node godot/rules/sim/compare_trials.js <control-log> <treatment-log>` to check both trial counts and matching keys
+before printing paired deltas. Report the ability id, the seeds where it fired, and the counts from those `TRIAL`
+rows with the result. Use firing evidence from the arm that received the ability change.
+
 ## Faction balance after the torpedo change (R414, Ryan Nov 22 2026, option C)
 
 The issue 1379 torpedo merge (Nov 20) raised Veteran full-run win rates by 13 to 15 points for four of the six factions.

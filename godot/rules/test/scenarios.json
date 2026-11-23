@@ -175,6 +175,7 @@
   "campaign": true
  },
  "s7": {
+  "encounterCurve": 1,
   "obj": "rout",
   "shape": "open",
   "dep": "flank",
@@ -289,6 +290,7 @@
   ]
  },
  "s9": {
+  "encounterCurve": 1,
   "obj": "rout",
   "shape": "open",
   "dep": "line",
@@ -376,6 +378,7 @@
   ]
  },
  "s10": {
+  "encounterCurve": 1,
   "obj": "rout",
   "shape": "open",
   "dep": "line",
@@ -694,6 +697,7 @@
   ]
  },
  "s20": {
+  "encounterCurve": 1,
   "shape": "open",
   "dep": "line",
   "kind": "battle",
@@ -807,6 +811,7 @@
   "timing": true
  },
  "s24": {
+  "encounterCurve": 1,
   "note": "B-20 coverage: Ashgrove with three carriers against a generated Hegemony flagship fleet (point-defence refits that lack fired, cdLeft, off and their name; the flagship's Barrage Command resets and restores them; criticals can knock a refit out and bring it into the flak gauntlet); a campaign battle in a sector at war",
   "seed": 24024,
   "sector": 3,
@@ -831,6 +836,7 @@
   "event_war": true
  },
  "s25": {
+  "encounterCurve": 1,
   "note": "B-20 coverage, second fleet: Corsair player carriers and the hive aspect against a generated Hegemony carrier fleet (refits on most escorts, fighter screen), sector at war, Classic mode, faction ship names (FNAMES)",
   "seed": 25025,
   "sector": 2,
@@ -1152,6 +1158,7 @@
   ]
  },
  "s33": {
+  "encounterCurve": 1,
   "note": "Rift board (X20 verifier): a jagged chasm splits the field, crossed by two or three bridges (VOID.rift, riftCells as board cut-outs); Ithar in an asteroid belt, the full bot",
   "shape": "rift",
   "dep": "line",
@@ -1172,6 +1179,7 @@
   ]
  },
  "s34": {
+  "encounterCurve": 1,
   "note": "Shoals board (X20 verifier): holes torn out of the middle of the field (cut and inner cells, noise-edged); Chorus on an open field, the full bot",
   "shape": "shoals",
   "dep": "line",
@@ -1192,6 +1200,7 @@
   ]
  },
  "s35": {
+  "encounterCurve": 1,
   "note": "Nemesis R42/R49, Corsair (stream B step 4): raid faction riches (two escapes plus the riches special bring extra ships at the edge), greedy persona (+25 on your flagship), boarders and rockets traits, the 'remember' memory line; he withdraws when his flagship drops under 35% hull (nemFleeCheck, flee_battle signature); flank and brawl weaknesses found by triggering them",
   "obj": "rout",
   "shape": "open",
@@ -1236,6 +1245,7 @@
   }
  },
  "s36": {
+  "encounterCurve": 1,
   "note": "Nemesis R42/R49, Ithar: the duel fleet (four hulls at most, all elite), honed 2 (aim +6, shields x1.2), riches ignored for a non-raid faction, shielded and artillery traits, veil special, faction AI (keep range 3, pick off the weakest), duel signature; withdraws once every flagship shield is down and hull under 60%; ion and torp weaknesses found",
   "obj": "rout",
   "shape": "open",
@@ -1280,6 +1290,7 @@
   }
  },
  "s37": {
+  "encounterCurve": 1,
   "note": "Nemesis R42/R49, Voidsworn: the challenge (nemDuelTarget: your flagship, then your biggest ship once it falls, logged), +20% damage both ways in the duel, his flagship hunts it (+30 target bonus) and charges (tw x.7), zeal trait (+12% at 1 hex) and zeal special, veterans, never routs; slow weakness found at round 2",
   "obj": "rout",
   "shape": "open",
@@ -1322,6 +1333,7 @@
   }
  },
  "s38": {
+  "encounterCurve": 1,
   "note": "Nemesis R42/R49, Hegemony: artillery line (escorts' guns opt +1, syncPull x2), formation special (enemy sync radius 4), artillery and gunnery traits, the gloat line, campaign reinforcements (reinforce signature), line signature; anchor and flank weaknesses found",
   "obj": "rout",
   "shape": "open",
@@ -1366,6 +1378,7 @@
   }
  },
  "s39": {
+  "encounterCurve": 1,
   "note": "Nemesis R42/R49, Deathless: undying trait and legion special (two more returns), regrowth trait, never routs (revive faction), cruel persona (finishes crippled ships), the 'again' line when his adaptation counters what beat him (lance and shields; here armor and legion, so 'remember'); slow weakness found",
   "obj": "rout",
   "shape": "open",
@@ -1410,6 +1423,7 @@
   }
  },
  "s40": {
+  "encounterCurve": 1,
   "note": "Nemesis R42/R49, Chorus: fed 3 (hull x1.12 incl. sections), hunger special (+3 regen), brood (one more wing and spare) and swift traits, ravenous persona, 'It' pronoun in the log; board weakness found",
   "obj": "rout",
   "shape": "open",
@@ -1451,6 +1465,7 @@
   }
  },
  "s41": {
+  "encounterCurve": 1,
   "note": "Config type safety on the dead-star board (takeover queue item 3): cfg.alt arrives as a Dictionary (a settings blob) instead of a bool. The game reads cfg.alt!==false, so anything but false means alternating activations; battle_api.gd once compared it with == false, which stops the call in GDScript (the same bug stopped battle.gd:438 on the dead-star board). Generated sector 2 Hegemony fleet, full bot, an ion storm field, gravity well pulls and tidal damage",
   "obj": "rout",
   "shape": "deadstar",
@@ -1476,6 +1491,7 @@
   }
  },
  "s42": {
+  "encounterCurve": 1,
   "note": "Stream B step 5 admiral band: Fleet Marshal Reyes (squadrons +10% now, was +25%; +1 wing, squadron hull +25%) with his Hegemony strike group start fleet plus a dominion, against a generated Corsair swarm; his Launch the strike group Command",
   "obj": "rout",
   "shape": "open",
@@ -1498,6 +1514,7 @@
   "fac": "corsair"
  },
  "s43": {
+  "encounterCurve": 1,
   "note": "Stream B step 5 admiral band: the Matriarch of Nine Throats with her new start fleet (brood and two drones), Chorus spore swarms and the Spawning surge Command, against Ithar; the Mending Choir and Nekhet 4% regrowth is covered by s15 and s28",
   "obj": "rout",
   "shape": "open",
@@ -1593,6 +1610,7 @@
   ]
  },
  "s47": {
+  "encounterCurve": 1,
   "note": "B0small (found Oct 27 by a coverage pass: s20 has three ships, so no golden took this branch): a two-ship fleet on an open rout fights on the compact field instead; generated sector 1 Hegemony fleet, column 0",
   "shape": "open",
   "dep": "line",
@@ -1640,6 +1658,7 @@
   ]
  },
  "s49": {
+  "encounterCurve": 1,
   "note": "First teaching fight: generated Hegemony fleet, open edge feature even with two ships, no arrival even at war.",
   "shape": "open",
   "dep": "line",
@@ -1665,6 +1684,7 @@
   "event_war": true
  },
  "s50": {
+  "encounterCurve": 1,
   "note": "Second teaching fight: generated Hullbreakers and a guaranteed enemy arrival even when a flare is requested.",
   "shape": "open",
   "dep": "line",
@@ -9201,6 +9221,7 @@
   "bot": "full"
  },
  "s1480": {
+  "encounterCurve": 1,
   "note": "Issue 1480 (R384): the revived Eclipse rival joins the Sector 3 boss battle. A generated Hegemony flagship fleet plus his own flagship, the Eclipse faction's biggest hull, which carries his Nemesis flag; the boss stays the boss",
   "seed": 1480148,
   "sector": 3,

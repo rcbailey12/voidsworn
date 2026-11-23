@@ -2,13 +2,16 @@
 # branch pc-out-<job>, with the attempt folder at <attempt folder name>/ in its tree, instead of a board/pc-out branch of
 # the main repo (22.66 GB with 316 such branches on Nov 22). The layout is the one opus_job_head.ps1 proves before it
 # removes a checkout (relay_branch.txt "relay/pc-out-<job> <attempt folder name>").
-#   relay_push.bat <job> <attempt folder> [dry]
+#   relay_push.bat <job> <attempt folder> [dry | leftovers]
+# leftovers adds only checkout_leftovers to an existing private relay. It checks that all other
+# attempt results are already there. For a custom location, pass the branch suffix as <job> and -TreePath to the ps1.
 # Sends the attempt's out_* folders and the small text files at its top (status, done, logs). Never a checkout or any
 # other folder. A file over 10 MB stays on the PC and is listed in <attempt folder name>/skipped_over_10MB.txt as
 # "<path with \> <size> MB", the form the proof reads. Godot cache folders stay on the PC and are listed by their
 # attempt-relative paths in relay_manifest/skipped_cache_folders.txt. dry lists what would go and changes nothing. It deletes nothing,
 # on the PC or on GitHub. Prints the branch link and the picture and video links for the PR comment.
-param([Parameter(Mandatory)][string]$Job, [Parameter(Mandatory)][string]$Attempt, [string]$Mode = '')
+param([Parameter(Mandatory)][string]$Job, [Parameter(Mandatory)][string]$Attempt, [string]$Mode = '',
+      [string]$TreePath = '', [string]$ProvenTip = '')
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
 $unix = $PSVersionTable.Platform -eq 'Unix'
@@ -42,9 +45,51 @@ function Run-GitChunks($fixed, $items) {
   if ($chunk.Count) { $out += @(Run-Git @fixed @chunk) }
   $out
 }
+function Assert-BackfillSource($parent) {
+  $have = [Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
+  foreach ($line in @(Run-Git --git-dir $relayMirror -c core.quotepath=false ls-tree -r -t $parent -- "$leaf/")) {
+    if ($line -notmatch '\A(\d+) (?:blob|tree|commit) ([0-9a-f]{40})\t(.+)\z') { continue }
+    $have[$Matches[3]] = if ($Matches[1] -in @('100644', '100755')) { $Matches[2] } else { '' }
+  }
+  $verify = $originals.ToArray()
+  if ($skippedCaches.Count) {
+    $manifest = $have["$leaf/relay_manifest/skipped_cache_folders.txt"]
+    $listed = if ($manifest) { @(Run-Git --git-dir $relayMirror cat-file -p $manifest) }
+    $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+    foreach ($k in $skippedCaches) {
+      if ($listed -ccontains $k -and -not $have.ContainsKey("$leaf/$k")) { continue }
+      $pending.Push([IO.DirectoryInfo]::new((Join-Path $full $k)))
+    }
+    # An older relay may have sent these folders. Prove their files normally when the tip does not exclude them.
+    $extra = @(while ($pending.Count) {
+      $dir = $pending.Pop()
+      if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($dir.FullName)" }
+      if (Test-Path -LiteralPath (Join-Path $dir.FullName '.git') -PathType Container) { continue }
+      foreach ($e in $dir.EnumerateFileSystemInfos()) {
+        if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
+        if ($e -is [IO.DirectoryInfo]) { $pending.Push($e) } else { $e }
+      }
+    })
+    $verify += $extra
+  }
+  if (-not $verify.Count) { throw 'no original result files to prove the relay' }
+  $keys = @(foreach ($file in $verify) {
+    $key = "$leaf/" + $file.FullName.Substring($full.Length + 1).Replace('\', '/')
+    if ($file.Length -gt 100MB -or -not $have.ContainsKey($key)) { throw "original result missing or different on $branch`: $key" }
+    $key
+  })
+  $shas = @(Run-GitChunks @('--git-dir', $relayMirror, 'hash-object', '--no-filters', '--') @($verify | ForEach-Object { $_.FullName }))
+  if ($shas.Count -ne $keys.Count) { throw 'original result hashes could not be read' }
+  for ($i = 0; $i -lt $keys.Count; $i++) {
+    if ($have[$keys[$i]] -ne $shas[$i]) { throw "original result missing or different on $branch`: $($keys[$i])" }
+  }
+}
 
-if ($Mode -and $Mode -ne 'dry') { throw "the third argument may only be dry, got: $Mode" }
+if ($Mode -and $Mode -notin @('dry', 'leftovers')) { throw "the third argument may only be dry or leftovers, got: $Mode" }
 $dry = $Mode -eq 'dry'
+$leftovers = $Mode -eq 'leftovers'
+if (($TreePath -or $ProvenTip) -and -not $leftovers) { throw 'TreePath and ProvenTip require leftovers mode' }
+if ($ProvenTip -and $ProvenTip -cnotmatch '\A[0-9a-f]{40}\z') { throw 'invalid proven relay tip' }
 if ($Job -notmatch '\A[A-Za-z0-9._-]{1,80}\z' -or $Job.Contains('..')) { throw "not a job name: $Job" }
 $at = Get-Item -LiteralPath $Attempt -Force
 if (-not $at.PSIsContainer -or ($at.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "not a plain folder: $Attempt" }
@@ -60,40 +105,72 @@ while ($walk -and $walk.FullName.TrimEnd('\', '/').Length -gt $vt.Length) {
 if ((Get-Item -LiteralPath $vt -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "voidsworn_test itself is a link: $vt" }
 $leaf = $at.Name
 if ($leaf -notmatch '\A[A-Za-z0-9._-]+\z' -or $leaf -eq '..') { throw "not an attempt folder name: $leaf" }
+if ($TreePath) {
+  if ($TreePath -notmatch '\A[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\z' -or $TreePath.Contains('..')) { throw "invalid relay tree folder: $TreePath" }
+  $leaf = $TreePath
+}
 $branch = "pc-out-$Job"
 # one push stays well under GitHub's 2 GiB push limit (Artoo on PR 1672); tests set a tiny limit
 $batchBytes = 512MB
 if ($test -and $env:PC_TEST_RELAY_BATCH_BYTES) { $batchBytes = [long]$env:PC_TEST_RELAY_BATCH_BYTES }
 
-# What goes: top-level text files and every file under out_* folders (links refused, not followed).
+# For backfill, check the attempt files the janitor can count as results, skipping Git checkouts.
+# The job head already proved its out files before cleanup and supplies the exact tip it saw.
 $files = New-Object 'Collections.Generic.List[object]'
+$originals = New-Object 'Collections.Generic.List[object]'
+$receipt = Join-Path $full 'relay_receipt.txt'
 $cacheNames = @('profile', 'shader_cache', '.godot')
 $skippedCaches = New-Object 'Collections.Generic.List[string]'
 foreach ($e in @($at.EnumerateFiles())) {
-  if ($e.Extension -in @('.txt', '.log', '.json', '.csv', '.md') -and -not ($e.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $files.Add($e) }
+  if ($leftovers) {
+    if ($ProvenTip) { continue }
+    if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
+    $originals.Add($e)
+  } elseif ($e.Extension -in @('.txt', '.log', '.json', '.csv', '.md') -and -not ($e.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $files.Add($e) }
 }
-foreach ($d in @($at.EnumerateDirectories())) {
-  if ($d.Name -in $cacheNames) { $skippedCaches.Add($d.Name) }
+$roots = @($at.EnumerateDirectories('out_*'))
+if (-not $ProvenTip) {
+  $top = @($at.EnumerateDirectories())
+  foreach ($d in $top) {
+    if ($d.Name -notin $cacheNames) { continue }
+    if ($leftovers -and ($d.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "a link in the results: $($d.FullName)" }
+    $skippedCaches.Add($d.Name)
+  }
+  if ($leftovers) { $roots = @($top | Where-Object { $_.Name -notin $cacheNames }) }
 }
-foreach ($d in @($at.EnumerateDirectories('out_*'))) {
+foreach ($d in $roots) {
   # each out_* folder is checked before the walk enters it, like every folder below it
   if ($d.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($d.FullName)" }
-  $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'; $pending.Push($d)
+  $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+  if ($ProvenTip) {
+    $saved = Get-Item -LiteralPath (Join-Path $d.FullName 'checkout_leftovers') -Force -ErrorAction SilentlyContinue
+    if (-not $saved) { continue }
+    if ($saved -isnot [IO.DirectoryInfo] -or ($saved.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "not a plain leftovers folder: $($saved.FullName)" }
+    $pending.Push($saved)
+  } else { $pending.Push($d) }
   while ($pending.Count) {
-    foreach ($e in @($pending.Pop().EnumerateFileSystemInfos())) {
+    $dir = $pending.Pop()
+    $relDir = $dir.FullName.Substring($full.Length + 1).Replace('\', '/')
+    $savedFiles = $relDir -match '\Aout_[^/]+/checkout_leftovers(?:/|\z)'
+    if ($leftovers -and -not $savedFiles -and (Test-Path -LiteralPath (Join-Path $dir.FullName '.git') -PathType Container)) { continue }
+    foreach ($e in @($dir.EnumerateFileSystemInfos())) {
       if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
       if ($e -is [IO.DirectoryInfo]) {
         # Issue 1830: prune the subtree before enumeration. Profile shader cache paths can exceed MAX_PATH.
-        if ($e.Name -in $cacheNames) { $skippedCaches.Add($e.FullName.Substring($full.Length + 1).Replace('\', '/')) }
+        if (-not $savedFiles -and $e.Name -in $cacheNames) { $skippedCaches.Add($e.FullName.Substring($full.Length + 1).Replace('\', '/')) }
         else { $pending.Push($e) }
-      } else { $files.Add($e) }
+      }
+      elseif (-not $leftovers -or $savedFiles) { $files.Add($e) }
+      else { $originals.Add($e) }
     }
   }
 }
+if ($leftovers -and -not $files.Count) { Write-Output "no checkout leftovers in $full"; exit 0 }
 if (-not $files.Count -and -not $skippedCaches.Count) { throw "nothing to relay in $full (no out_* files)" }
 $send = @(); $skipped = @()
 foreach ($f in $files) {
   $rel = $f.FullName.Substring($full.Length + 1)
+  if ($leftovers -and $f.Length -gt 10MB) { throw "checkout leftovers exceed the relay's 10 MB file limit: $rel" }
   if ($f.Length -gt 10MB) { $skipped += ('{0} {1} MB' -f $rel.Replace('/', '\'), ($f.Length / 1MB).ToString('0.0', [Globalization.CultureInfo]::InvariantCulture)); continue }
   $send += @{ Path = $f.FullName; Key = "$leaf/" + $rel.Replace('\', '/') }
 }
@@ -116,6 +193,8 @@ while (-not $lock) {
   catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'relay repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
 }
 $index = Join-Path ([IO.Path]::GetTempPath()) ("voidsworn-relay-index-" + [guid]::NewGuid().ToString('N'))
+$receiptDraft = $null
+$receiptLine = "relay/$branch $leaf"
 try {
   if (-not (Test-Path -LiteralPath (Join-Path $relayMirror 'HEAD'))) {
     Run-Git init -q --bare $relayMirror | Out-Null
@@ -125,6 +204,20 @@ try {
   $env:GIT_INDEX_FILE = $index
   $env:GIT_AUTHOR_NAME = 'voidsworn PC relay'; $env:GIT_AUTHOR_EMAIL = 'relay@voidsworn.invalid'
   $env:GIT_COMMITTER_NAME = $env:GIT_AUTHOR_NAME; $env:GIT_COMMITTER_EMAIL = $env:GIT_AUTHOR_EMAIL
+  if ($ProvenTip) {
+    $existing = Get-Item -LiteralPath $receipt -Force -ErrorAction SilentlyContinue
+    if ($existing) {
+      if ($existing -isnot [IO.FileInfo] -or ($existing.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+          [IO.File]::ReadAllText($receipt).TrimEnd() -cne $receiptLine) { throw "existing receipt names a different relay or is not a plain file: $receipt" }
+      $receiptBlob = $receipt
+    } else {
+      $receiptDraft = $index + '.receipt'
+      [IO.File]::WriteAllText($receiptDraft, "$receiptLine`r`n")
+      $receiptBlob = $receiptDraft
+    }
+    # The janitor counts the local receipt too. Put those exact bytes on the branch before creating it locally.
+    $send += @{ Path = $receiptBlob; Key = "$leaf/relay_receipt.txt" }
+  }
   # Artoo on PR 1672: GitHub refuses a push over 2 GiB, so the files go in batches of at most $batchBytes, one commit and one
   # push each, each built on the branch tip the last one left. The proof (opus_job_head.ps1) needs every file in the final
   # tree, so a relay stopped between batches proves nothing and frees nothing; running it again resends the attempt whole.
@@ -142,11 +235,16 @@ try {
       $ErrorActionPreference = 'Continue'
       $parent = (& $gitExe @gitLongPaths --git-dir $relayMirror rev-parse --verify -q "refs/heads/$branch^{commit}" 2>$null) | Select-Object -Last 1
       $ErrorActionPreference = 'Stop'
+      if ($leftovers) {
+        if (-not $parent) { throw "no existing relay branch: $branch" }
+        if ($ProvenTip -and $parent -ne $ProvenTip) { throw "relay branch $branch moved after proof. Run the leftovers backfill." }
+        if (-not $ProvenTip -and $parent -ne $commit) { Assert-BackfillSource $parent }
+      }
       if (Test-Path -LiteralPath $index) { Remove-Item -LiteralPath $index -Force }
       if ($parent) {
         Run-Git --git-dir $relayMirror read-tree $parent | Out-Null
         # the first batch of a resend replaces the attempt's folder whole; later batches add to what the earlier ones sent
-        if ($b -eq 0) {
+        if ($b -eq 0 -and -not $leftovers) {
           $old = @(Run-Git --git-dir $relayMirror -c core.quotepath=false ls-files -- "$leaf/")
           if ($old.Count) {
             # --force-remove wants a work tree; an empty one of our own, so nothing outside the index is ever read
@@ -160,7 +258,7 @@ try {
       $shas = @(Run-GitChunks @('--git-dir', $relayMirror, 'hash-object', '-w', '--no-filters', '--') @($part | ForEach-Object { $_.Path }))
       if ($shas.Count -ne $part.Count) { throw "hashed $($shas.Count) of $($part.Count) files" }
       $info = @(for ($i = 0; $i -lt $part.Count; $i++) { "100644,$($shas[$i]),$($part[$i].Key)" })
-      if ($last -and ($skipped.Count -or $skippedCaches.Count)) {
+      if ($last -and -not $leftovers -and ($skipped.Count -or $skippedCaches.Count)) {
         $tmpList = Join-Path ([IO.Path]::GetTempPath()) ("voidsworn-relay-skipped-" + [guid]::NewGuid().ToString('N') + '.txt')
         $manifests = @(
           @{ Key = 'skipped_over_10MB.txt'; Lines = $skipped }
@@ -183,24 +281,35 @@ try {
       $inTree = @{}; foreach ($n in @(Run-Git --git-dir $relayMirror -c core.quotepath=false ls-tree -r --name-only $tree)) { $inTree["$n"] = $true }
       $lost = @($part | Where-Object { -not $inTree.ContainsKey($_.Key) })
       if ($lost.Count) { throw "the relay tree is missing $($lost.Count) of $($part.Count) files, first $($lost[0].Key); nothing pushed" }
+      if ($leftovers -and $tree -eq (Run-Git --git-dir $relayMirror rev-parse "${parent}^{tree}")) { $commit = $parent; break }
       $msg = "relay $Job $leaf (part $($b + 1) of $($batches.Count), $($part.Count) files)"
       if ($parent) { $commit = (Run-Git --git-dir $relayMirror commit-tree $tree -p $parent -m $msg) | Select-Object -Last 1 }
       else { $commit = (Run-Git --git-dir $relayMirror commit-tree $tree -m $msg) | Select-Object -Last 1 }
+      # The leftovers commit is a child of the proved tip. Require that exact tip so a concurrent deletion cannot recreate it.
+      $lease = @()
+      if ($leftovers) { $lease = @("--force-with-lease=refs/heads/${branch}:$parent") }
       $ErrorActionPreference = 'Continue'
-      $pushOut = & $gitExe @gitLongPaths --git-dir $relayMirror push -q origin "${commit}:refs/heads/$branch" 2>&1 | ForEach-Object { "$_" }
+      $pushOut = & $gitExe @gitLongPaths --git-dir $relayMirror push -q @lease origin "${commit}:refs/heads/$branch" 2>&1 | ForEach-Object { "$_" }
       $pushed = $LASTEXITCODE -eq 0; $ErrorActionPreference = 'Stop'
       if ($pushed) { break }
       if ($try) { throw "push of part $($b + 1) of $($batches.Count) to $branch refused: $($pushOut -join ' '). Nothing is proven until every part is sent; run the relay again." }
       Write-Output "push of part $($b + 1) refused once (another relay moved $branch); fetching and trying again"
     }
+    if ($ProvenTip) { $ProvenTip = $commit }
     if ($batches.Count -gt 1) { Write-Output "sent part $($b + 1) of $($batches.Count) ($($part.Count) files)" }
   }
   Run-Git --git-dir $relayMirror update-ref "refs/heads/$branch" $commit | Out-Null
   $remote = @(Run-Git ls-remote $relaySource "refs/heads/$branch") | Select-Object -First 1
   if (-not $remote -or "$remote".Substring(0, 40) -ne $commit) { throw "the relay repo does not show $branch at $commit after the push" }
+  if ($receiptDraft) {
+    $localReceipt = [IO.File]::Open($receipt, 'CreateNew', 'Write', 'None')
+    try { $bytes = [IO.File]::ReadAllBytes($receiptDraft); $localReceipt.Write($bytes, 0, $bytes.Length) } finally { $localReceipt.Dispose() }
+    Write-Output "relay receipt written: $receiptLine"
+  }
 } finally {
   Remove-Item Env:\GIT_INDEX_FILE -ErrorAction SilentlyContinue
   if (Test-Path -LiteralPath $index) { Remove-Item -LiteralPath $index -Force }
+  if ($receiptDraft -and (Test-Path -LiteralPath $receiptDraft)) { Remove-Item -LiteralPath $receiptDraft -Force }
   $lock.Dispose()
 }
 Write-Output "relayed: $($send.Count) file(s) on $branch at $commit; $($skipped.Count) over 10 MB listed as skipped"
