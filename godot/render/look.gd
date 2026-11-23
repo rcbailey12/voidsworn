@@ -46,7 +46,7 @@ const FLOOK := preload("res://fx/faction_look.gd")
 #   rim       Godot's material rim and rim tint (it scales with the albedo, so it only helps the mid and pale hulls)
 #   emit      multiplies the hull's own baked glow (the glTF emissive strength, 4.0 on every A4 hull)
 #   metal     multiplies the metallic map; spec is Godot's specular (0.5 is the default)
-#   ao_light  how much baked AO affects direct light in the #1679 fleet lighting option
+#   ao_light  how much baked AO affects direct light under fleet lighting (#1679, on by default since R433)
 #   rim_light 0 keeps the faction's hulls off the rim light pair below (issue 1315, Glasswrights; leave it out for 1)
 # Damaged hulls keep all of these: fx/fx_hull.gd _exterior copies albedo, rim, metallic, specular and emission energy.
 # The dark factions (Sunward black iron, Hullbreaker rust, Eclipse violet-black) sit near the band's low end and the pale
@@ -83,9 +83,10 @@ const RIM_SCRIPT := "res://render/look_rim.gd"
 static var tune := {}   # not GPU: look numbers read from json
 
 
-# Issue 1679: one launch option for the SG comparison. Set before any hull materials are cached.
+# Issue 1679 (R433, Ryan Nov 23): fleet lighting (AO light on every hull, sky reflection gradient) is on by default.
+# VS_FLEET_LIGHTING=0 turns it off, only for before/after comparisons. Set before any hull materials are cached.
 static func fleet_lighting_enabled() -> bool:
-	return OS.get_environment("VS_FLEET_LIGHTING") == "1"
+	return OS.get_environment("VS_FLEET_LIGHTING") != "0"
 
 
 static func read_of(faction: String) -> Dictionary:
