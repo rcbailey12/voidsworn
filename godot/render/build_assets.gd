@@ -355,6 +355,7 @@ func _build_a4_ships() -> void:
 		if (examined or not ships_only) and max_s > 0.0 and (Time.get_ticks_msec() - t_start) / 1000.0 > max_s:
 			manifest["next_ship"] = code
 			out_of_time = true
+			# Defer _check_a4_ships() until a later slice resumes at next_ship and finishes the build.
 			return
 		examined = true
 		# A4 re-exports ships under the same names. Check geometry and paint even when the generator version is current.

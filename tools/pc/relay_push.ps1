@@ -7,7 +7,8 @@
 # attempt results are already there. For a custom location, pass the branch suffix as <job> and -TreePath to the ps1.
 # Sends the attempt's out_* folders and the small text files at its top (status, done, logs). Never a checkout or any
 # other folder. A file over 10 MB stays on the PC and is listed in <attempt folder name>/skipped_over_10MB.txt as
-# "<path with \> <size> MB", the form the proof reads. dry lists what would go and changes nothing. It deletes nothing,
+# "<path with \> <size> MB", the form the proof reads. Godot cache folders stay on the PC and are listed by their
+# attempt-relative paths in relay_manifest/skipped_cache_folders.txt. dry lists what would go and changes nothing. It deletes nothing,
 # on the PC or on GitHub. Prints the branch link and the picture and video links for the PR comment.
 param([Parameter(Mandatory)][string]$Job, [Parameter(Mandatory)][string]$Attempt, [string]$Mode = '',
       [string]$TreePath = '', [string]$ProvenTip = '')
@@ -24,10 +25,11 @@ $web = 'https://github.com/rcbailey12/voidsworn-relay'
 # OEM code page, so a non-ASCII name would never match in the tree check. A process with no console may refuse the change.
 try { [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false) } catch { }
 $gitExe = 'git.exe'; if ($unix) { $gitExe = @(Get-Command git -CommandType Application)[0].Source }
+$gitLongPaths = @('-c', 'core.longpaths=true')
 $OutputEncoding = New-Object System.Text.UTF8Encoding $false
 function Run-Git {
   $ErrorActionPreference = 'Continue'
-  $out = & $gitExe @args 2>&1 | ForEach-Object { "$_" }
+  $out = & $gitExe @gitLongPaths @args 2>&1 | ForEach-Object { "$_" }
   if ($LASTEXITCODE -ne 0) { throw ('git failed: ' + ($args -join ' ') + ': ' + ($out -join ' ')) }; $out }
 function Run-GitChunks($fixed, $items) {
   # Issue 1739: no stdin into git at all. Windows PowerShell 5.1 changed what reached git's stdin twice over (CRLF lines,
@@ -95,6 +97,8 @@ if ($test -and $env:PC_TEST_RELAY_BATCH_BYTES) { $batchBytes = [long]$env:PC_TES
 $files = New-Object 'Collections.Generic.List[object]'
 $originals = New-Object 'Collections.Generic.List[object]'
 $receipt = Join-Path $full 'relay_receipt.txt'
+$cacheNames = @('profile', 'shader_cache', '.godot')
+$skippedCaches = New-Object 'Collections.Generic.List[string]'
 foreach ($e in @($at.EnumerateFiles())) {
   if ($leftovers) {
     if ($ProvenTip) { continue }
@@ -102,7 +106,10 @@ foreach ($e in @($at.EnumerateFiles())) {
     $originals.Add($e)
   } elseif ($e.Extension -in @('.txt', '.log', '.json', '.csv', '.md') -and -not ($e.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $files.Add($e) }
 }
-$roots = if ($leftovers -and -not $ProvenTip) { $at.EnumerateDirectories() } else { $at.EnumerateDirectories('out_*') }
+foreach ($d in @($at.EnumerateDirectories())) {
+  if ($d.Name -in $cacheNames) { $skippedCaches.Add($d.Name) }
+}
+$roots = if ($leftovers -and -not $ProvenTip) { @($at.EnumerateDirectories() | Where-Object { $_.Name -notin $cacheNames }) } else { @($at.EnumerateDirectories('out_*')) }
 foreach ($d in $roots) {
   # each out_* folder is checked before the walk enters it, like every folder below it
   if ($d.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($d.FullName)" }
@@ -120,14 +127,18 @@ foreach ($d in $roots) {
     if ($leftovers -and -not $savedFiles -and (Test-Path -LiteralPath (Join-Path $dir.FullName '.git') -PathType Container)) { continue }
     foreach ($e in @($dir.EnumerateFileSystemInfos())) {
       if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
-      if ($e -is [IO.DirectoryInfo]) { $pending.Push($e) }
+      if ($e -is [IO.DirectoryInfo]) {
+        # Issue 1830: prune the subtree before enumeration. Profile shader cache paths can exceed MAX_PATH.
+        if ($e.Name -in $cacheNames) { $skippedCaches.Add($e.FullName.Substring($full.Length + 1).Replace('\', '/')) }
+        else { $pending.Push($e) }
+      }
       elseif (-not $leftovers -or $savedFiles) { $files.Add($e) }
       else { $originals.Add($e) }
     }
   }
 }
 if ($leftovers -and -not $files.Count) { Write-Output "no checkout leftovers in $full"; exit 0 }
-if (-not $files.Count) { throw "nothing to relay in $full (no out_* files)" }
+if (-not $files.Count -and -not $skippedCaches.Count) { throw "nothing to relay in $full (no out_* files)" }
 $send = @(); $skipped = @()
 foreach ($f in $files) {
   $rel = $f.FullName.Substring($full.Length + 1)
@@ -142,6 +153,7 @@ Write-Output ("relay: {0} file(s) to {1} branch {2} under {3}/ ({4:N1} MB in all
 if ($dry) {
   foreach ($s in ($send | Select-Object -First 40)) { Write-Output "  would send $($s.Key)" }
   foreach ($k in $skipped) { Write-Output "  would list as skipped: $k" }
+  foreach ($k in ($skippedCaches | Sort-Object -CaseSensitive)) { Write-Output "  would list as skipped: $k (Godot cache folder)" }
   Write-Output 'dry run: nothing sent'
   exit 0
 }
@@ -193,7 +205,7 @@ try {
     for ($try = 0; $try -lt 2; $try++) {
       Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
       $ErrorActionPreference = 'Continue'
-      $parent = (& $gitExe --git-dir $relayMirror rev-parse --verify -q "refs/heads/$branch^{commit}" 2>$null) | Select-Object -Last 1
+      $parent = (& $gitExe @gitLongPaths --git-dir $relayMirror rev-parse --verify -q "refs/heads/$branch^{commit}" 2>$null) | Select-Object -Last 1
       $ErrorActionPreference = 'Stop'
       if ($leftovers) {
         if (-not $parent) { throw "no existing relay branch: $branch" }
@@ -217,13 +229,23 @@ try {
       } else { Run-Git --git-dir $relayMirror read-tree --empty | Out-Null }
       $shas = @(Run-GitChunks @('--git-dir', $relayMirror, 'hash-object', '-w', '--no-filters', '--') @($part | ForEach-Object { $_.Path }))
       if ($shas.Count -ne $part.Count) { throw "hashed $($shas.Count) of $($part.Count) files" }
-      $info = for ($i = 0; $i -lt $part.Count; $i++) { "100644,$($shas[$i]),$($part[$i].Key)" }
-      if ($last -and $skipped.Count) {
+      $info = @(for ($i = 0; $i -lt $part.Count; $i++) { "100644,$($shas[$i]),$($part[$i].Key)" })
+      if ($last -and ($skipped.Count -or $skippedCaches.Count)) {
         $tmpList = Join-Path ([IO.Path]::GetTempPath()) ("voidsworn-relay-skipped-" + [guid]::NewGuid().ToString('N') + '.txt')
-        [IO.File]::WriteAllText($tmpList, (($skipped -join "`r`n") + "`r`n"))
-        $ls = (Run-Git --git-dir $relayMirror hash-object -w --no-filters -- $tmpList) | Select-Object -Last 1
-        Remove-Item -LiteralPath $tmpList -Force
-        $info = @($info) + "100644,$ls,$leaf/skipped_over_10MB.txt"
+        $manifests = @(
+          @{ Key = 'skipped_over_10MB.txt'; Lines = $skipped }
+          @{ Key = 'relay_manifest/skipped_cache_folders.txt'; Lines = @($skippedCaches | Sort-Object -CaseSensitive) }
+        )
+        try {
+          foreach ($manifest in $manifests) {
+            if (-not $manifest.Lines.Count) { continue }
+            [IO.File]::WriteAllText($tmpList, (($manifest.Lines -join "`r`n") + "`r`n"))
+            $ls = (Run-Git --git-dir $relayMirror hash-object -w --no-filters -- $tmpList) | Select-Object -Last 1
+            $info += "100644,$ls,$leaf/$($manifest.Key)"
+          }
+        } finally {
+          if (Test-Path -LiteralPath $tmpList) { Remove-Item -LiteralPath $tmpList -Force }
+        }
       }
       Run-GitChunks @('--git-dir', $relayMirror, 'update-index', '--add') @($info | ForEach-Object { ,@('--cacheinfo', $_) }) | Out-Null
       $tree = (Run-Git --git-dir $relayMirror write-tree) | Select-Object -Last 1
@@ -239,7 +261,7 @@ try {
       $lease = @()
       if ($leftovers) { $lease = @("--force-with-lease=refs/heads/${branch}:$parent") }
       $ErrorActionPreference = 'Continue'
-      $pushOut = & $gitExe --git-dir $relayMirror push -q @lease origin "${commit}:refs/heads/$branch" 2>&1 | ForEach-Object { "$_" }
+      $pushOut = & $gitExe @gitLongPaths --git-dir $relayMirror push -q @lease origin "${commit}:refs/heads/$branch" 2>&1 | ForEach-Object { "$_" }
       $pushed = $LASTEXITCODE -eq 0; $ErrorActionPreference = 'Stop'
       if ($pushed) { break }
       if ($try) { throw "push of part $($b + 1) of $($batches.Count) to $branch refused: $($pushOut -join ' '). Nothing is proven until every part is sent; run the relay again." }
