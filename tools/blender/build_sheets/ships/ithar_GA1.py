@@ -141,7 +141,7 @@ def build(K):
            note='The CD5 leaf at carrier size; two shallow hangar wells floored with stored light; never see-through.')
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
     # R431 round 3: the I8_37 shell from the kit; the leaves follow the field's gather, so they also slide off the hangar lens
-    hl.i8_shell(K, skin, f, XS + 0.25, XB - 0.15, 'ga1', scale=S, leaves=10, seed=2, clamp=clamp, width=1.2)
+    hl.i8_shell(K, skin, f, XS + 0.25, XB - 0.15, 'ga1', scale=S, leaves=10, seed=2, clamp=clamp, width=1.3)
     hl.lance(K, 'L1', (LANCE_X, 0.0, 0.0), 2.05, 0.48,
              note='The bow lance: a drawn-glass waveguide grown from the bow optic on the centreline; fixed forward, F arc.',
              what='drawn-glass bow lance on the centreline / pulsar', collar=0.62)

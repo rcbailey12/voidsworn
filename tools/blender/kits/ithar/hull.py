@@ -275,8 +275,8 @@ def i8_field(length=25.0, n=12, sign=1, start=0.2, gather=None):
 
 def i8_shell(K, skin, field, x0, x1, tag, scale=1.0, leaves=8, seed=0, clamp=None, grp=None, nu=160, width=1.0):
     """R431: the I8_37 pearl shell on any Glasswright body, from the CD5 Ark's own numbers. The field's long ribbons are fine
-    and pillowed (a rounded fold, not a strap); `leaves` shorter, wider ribbons lie over them along the same spiral and
-    curl their trailing edge up along the spine, so the shell is layered and wraps the hull like I8_37. `scale` is the body's
+    and pillowed (a rounded fold, not a strap); `leaves` swells ride on top of chosen long ribbons,
+    growing out of their width to a chunkier middle, so the shell is layered and wraps the hull like I8_37. `scale` is the body's
     radius against the Ark's (about 2.6), so lifts and silver lines keep the Ark's proportion. `width` widens every ribbon
     for a rounder body than the Ark's, where the same angles leave more glass showing (the kit gate, MOSAIC_MAX, decides).
     Returns the pearl ribbons."""
@@ -290,22 +290,37 @@ def i8_shell(K, skin, field, x0, x1, tag, scale=1.0, leaves=8, seed=0, clamp=Non
             lambda t, k=k: width * (0.135 + 0.025 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.40, 0.40 + 0.05 * math.sin(k), tip=0.0)(t),
             lambda t, v: scale * (0.05 + 0.14 * (1 - v * v) ** 0.5 * (0.5 + 0.5 * math.sin(math.pi * t) ** 0.5)),
             name='%s_ribbon_%d' % (tag, k), clamp=clamp))
+    # Ryan Nov 23 4:32 PM CT: "integrate the top ribbons into the existing lines and ribbons underneath so it's cohesive?
+    # Fine to make them chunkier". Each leaf is now a swell of one long ribbon: it rides that ribbon's own centre line, grows
+    # out of its width at both ends to a chunkier middle, and rises just above it, so it reads as the ribbon thickening and
+    # doubling, never as a separate strap laid across the shell.
+    def long_half(j, x):
+        r = rib[j]
+        t = min(1.0, max(0.0, (x - r.x0) / (r.x1 - r.x0)))
+        return r.half(t)
+
+    def long_lift(j, x):
+        r = rib[j]
+        t = min(1.0, max(0.0, (x - r.x0) / (r.x1 - r.x0)))
+        return r.lift(t, 0.0)
+
     for k in range(leaves):
         h = math.sin(k * 12.9898 + seed * 78.233) * 43758.5453
         h -= math.floor(h)
-        a0 = x0 + L * (0.05 + 0.30 * h)
-        a1 = min(x1 - 0.04 * L, a0 + L * (0.45 + 0.20 * ((h * 7.3) % 1.0)))
-        base = field.start + (k + 0.5) * TAU / leaves + 0.35 * math.sin(3.1 * k + seed)
-        wd = width * (0.12 + 0.05 * ((h * 3.7) % 1.0))
-        top = max(0.0, math.sin(base)) ** 2
-        rib.append(gw.Ribbon(
-            # Ryan Nov 23 on the Prism ("3 random lines that don't fit"): each leaf runs with the long ribbons' own spiral,
-            # never at its own angle across them
-            a0, a1, lambda x, base=base: field.gather(x, base + field.twist(x) + 0.08 * math.sin(field.leaf_f * x + base)),
-            lambda t, wd=wd: wd * gw.leaf(0.7, 0.0, 0.38)(t),
-            lambda t, v, top=top: scale * (0.22 + 0.14 * (1 - v * v) ** 0.5
-                                            + 0.75 * top * ((v + 1) / 2) ** 2 * math.sin(math.pi * t) ** 1.5),
-            name='%s_leaf_%d' % (tag, k), clamp=clamp))
+        j = (k * field.n) // leaves + (k % 2)        # spread round the hull, each on its own long ribbon
+        j %= field.n
+        a0 = x0 + L * (0.10 + 0.25 * h)
+        a1 = min(x1 - 0.08 * L, a0 + L * (0.40 + 0.20 * ((h * 7.3) % 1.0)))
+        grow = 1.6 + 0.3 * ((h * 3.7) % 1.0)          # how much chunkier than the ribbon at its widest
+        def half(t, j=j, a0=a0, a1=a1, grow=grow):
+            x = a0 + (a1 - a0) * t
+            return long_half(j, x) * (1.0 + (grow - 1.0) * math.sin(math.pi * t) ** 1.2)
+
+        def lift(t, v, j=j, a0=a0, a1=a1):
+            x = a0 + (a1 - a0) * t
+            return long_lift(j, x) * (1 - 0.3 * v * v) + scale * 0.07 * math.sin(math.pi * t) ** 0.8 * (1 - v * v) ** 0.5
+
+        rib.append(gw.Ribbon(a0, a1, field.centre(j), half, lift, name='%s_leaf_%d' % (tag, k), clamp=clamp))
     return lay_ribbons(K, rib, skin, 0.035 * scale, 0.028 * scale, nu=nu, nv=12, grp=grp)
 
 

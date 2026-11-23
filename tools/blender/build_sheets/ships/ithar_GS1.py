@@ -117,11 +117,11 @@ def build(K):
     gw = hk('parts')
     hl.material_setup(CODE, LENGTH)
     f = field()
-    core = hl.mosaic_core(K, CODE + '_mosaic_core', skin, XS, XB, f.gap_of, nu=160, nv=128, thick=0.02, seed=3, light=light)
+    core = hl.mosaic_core(K, CODE + '_mosaic_core', skin, XS, XB, f.gap_of, nu=160, nv=128, thick=0.02, seed=3)   # R431: no seafoam wash in the cleft, the glass is the same colours all round
     K.mass('Twisted mosaic core', core, 'opaque glowing stained-glass mosaic',
-           note='Two lobes twisting round each other, fused at both ends; seafoam stored light in the cleft. Never see-through.')
+           note='Two lobes twisting round each other, fused at both ends; the cleft shows the same coloured glass (R431). Never see-through.')
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
-    hl.i8_shell(K, skin, f, XS + 0.08, XB - 0.10, 'gs1', scale=S, leaves=8, seed=4, width=1.0)
+    hl.i8_shell(K, skin, f, XS + 0.08, XB - 0.10, 'gs1', scale=S, leaves=8, seed=4, width=1.12)
     hl.shard_cluster(K, 'S1', (2.50, 0.0, 0.0), 0.75, 0.085, spread=0.075)
     hl.stern_drive(K, 'E1', (XS + 0.22, 0.0, 0.0), 0.27)
     breaks = (-0.95,)
@@ -137,7 +137,6 @@ def build(K):
         K.point('board', 'hp_board_%d' % i, skin(x - 0.3, a), side=side)
     K.colour('opaque pearl ribbons, silver edges', XB, XS, 'eight long ribbons over the twisted core, two bracketing each lobe\'s crest')
     K.colour('amber, violet, green mosaic panels', XB, XS, 'the core between the ribbons; glows from within')
-    K.colour('seafoam stored light', CLEFT[1], CLEFT[0], 'the cleft amidships and the grooves')
     K.colour('soft white bloom', XS + 0.2, XS - 0.2, 'stern drive optic, no flame')
     K.change('Opaque pearl ribbons over a glowing mosaic core instead of the sketch\'s clear glass',
              'R337 (Ryan, Nov 19): the Glasswright finish is opaque reflective pearl with glowing stained-glass panels; nothing see-through.')

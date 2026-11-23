@@ -126,14 +126,14 @@ def build(K):
         skin = pod(side)
         f = field(side)
         core = hl.mosaic_core(K, '%s_%s_pane_hull' % (CODE, tag), skin, XS, XB, f.gap_of, nu=180, nv=120, thick=0.04,
-                              seed=5 if side > 0 else 8, light=light(side))
+                              seed=5 if side > 0 else 8)   # R431: no seafoam wash on the inner flank (Ryan Nov 23: it read washed-out white)
         K.mass('%s pane hull' % tag.capitalize(), core, 'opaque glowing stained-glass panes',
                note='One of the two parallel hulls; flush pearl panels over thick amber, violet and green panes that show in the seams.')
         # R431 (Ryan Nov 23, "the top is how we want it to look across the board"; then "ensure that white material also
         # matches i8_37 too ... more detailed and wrapping"): the I8_37 shell from the kit, twelve fine pillowed ribbons that
         # spiral round each pod with crossing leaves over them; the stained glass shows only in their leaf seams. The flush
         # panels and silver hoops of round 2 are gone (I8_37 has neither).
-        hl.i8_shell(K, skin, f, XS + 0.15, XB - 0.30, tag, scale=R / 2.6, leaves=10, seed=3 if side > 0 else 7, width=1.35)
+        hl.i8_shell(K, skin, f, XS + 0.15, XB - 0.30, tag, scale=R / 2.6, leaves=12, seed=3 if side > 0 else 7, width=1.6)
         hl.lance(K, 'L%d' % (1 if side > 0 else 2), (XB - 0.22, side * YP, 0.0), 1.55, 0.36,
                  note='One pulsar lance per hull: a grown lens point at the bow on the hull\'s own axis; fixed forward, F arc.',
                  what='grown lens point at the %s bow / pulsar' % tag)
@@ -165,7 +165,7 @@ def build(K):
         K.point('board', 'hp_board_%d' % i, pod(side)(x - 1.0, a), side='port' if side > 0 else 'stbd')
     K.colour('amber, violet, green panes', XB, XS, 'the leaf-shaped seams between the pearl panels; glows from within (R431)')
     K.colour('opaque pearl panels, silver edges', XB, XS, 'eight broad flush panels on each hull (the shell), the bridges')
-    K.colour('seafoam stored light', BRIDGES[1] + 1.2, BRIDGES[0] - 1.2, 'the inner flanks facing the cleft and under each bridge')
+    K.colour('seafoam stored light', BRIDGES[1] + 0.6, BRIDGES[0] - 0.6, 'a thin row under each bridge only (R431: the inner flanks carry the same coloured glass as the outside)')
     K.colour('soft white bloom', XS + 0.4, XS - 0.4, 'one stern drive optic per hull, no flame')
     K.change('Opaque panes and pearl instead of the sketch\'s clear glass', 'R337 (Ryan, Nov 19): nothing see-through.')
     K.change('Two arched bridges, the turret blister on the crown of the forward one',

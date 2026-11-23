@@ -74,7 +74,7 @@ def skin(x, a, inset=0.0):
     return (x, w * math.cos(a) * flow, h * math.sin(a) * flow * belly)
 
 
-W8 = 1.0   # R431 round 3: i8_shell ribbon width, set by the kit gate (MOSAIC_MAX)
+W8 = 1.12   # R431 round 3: i8_shell ribbon width, set by the kit gate (MOSAIC_MAX)
 
 
 def field():
