@@ -1279,7 +1279,14 @@ try {
       $null = [IO.Directory]::CreateDirectory((Join-Path $repo '.git/info'))
       Put (Join-Path $repo '.git/info/sparse-checkout') (($patterns -join "`n") + "`n")
     }
-    $null = Git @('-C',$repo,'checkout','--no-overwrite-ignore','-q','-B',$br,'refs/remotes/origin/main')
+    # Issue 1739 (1747 run 2): a rerun started from main alone and its commit kept the earlier tip only as a second
+    # parent, so the branch lost run 1's fixes. When the delivery branch already exists, the run starts from its tip
+    # and main is merged on top; Base and -partial merges follow as before.
+    $start = 'refs/remotes/origin/main'
+    $earlier = @(Git @('-C',$repo,'rev-parse','--verify','--quiet',"refs/remotes/origin/$br^{commit}"))
+    $continuing = $gitExit -eq 0 -and $earlier.Count -and $earlier[0] -match '^[0-9a-f]{40,64}$'
+    if ($continuing) { $start = "refs/remotes/origin/$br" }
+    $null = Git @('-C',$repo,'checkout','--no-overwrite-ignore','-q','-B',$br,$start)
     $switchExit = $gitExit
     if ($reuse) {
       # A writer may have changed the checkout after eligibility. Stop without discarding its bytes.
@@ -1296,6 +1303,21 @@ try {
     if ($reuse) { Log 'earlier checkout reused in place; ignored files left in place' }
     $base = @(Git @('-C',$repo,'rev-parse','HEAD'))[0]
     Put (Join-Path $out 'base_commit.txt') $base
+    if ($continuing) {
+      if ($base -ne $earlier[0]) { throw "checkout of the earlier tip of $br did not land on $($earlier[0]); no agent started" }
+      Put (Join-Path $out 'branch_tip.txt') $earlier[0]
+      Log "continuing $br from its earlier tip $($earlier[0]), not from main alone (issue 1739)"
+      $note = "Continued from the earlier tip of $br ($($earlier[0])): the earlier runs' work is already in this checkout. Keep it; do not restart from main."
+      $null = Git @('-C',$repo,'merge-base','--is-ancestor','refs/remotes/origin/main','HEAD')
+      if ($gitExit -eq 1) {
+        $null = Git @('-C',$repo,'-c','commit.gpgsign=false','merge','--no-ff','--no-edit','--no-gpg-sign','-m',"Runner: origin/main into the earlier tip of $br",'refs/remotes/origin/main')
+        if ($gitExit -ne 0) { throw "main merge into the earlier tip of $br failed; checkout and conflict kept; no agent started (see git_log.txt)" }
+        $note += ' The runner merged origin/main on top and committed the merge.'
+      } elseif ($gitExit -ne 0) { throw "could not tell whether main is in the earlier tip of $br; no agent started" }
+      $resume = Read (Join-Path $out 'resume.txt')
+      Put (Join-Path $out 'resume.txt') ("$resume`n$note".Trim())
+      Log $note
+    }
     $partial = "refs/remotes/origin/$br-partial"
     $tip = @(Git @('-C',$repo,'rev-parse','--verify','--quiet',$partial))
     if ($gitExit -eq 0) {
@@ -1312,7 +1334,9 @@ try {
       $message = (Git @('-C',$repo,'log','-1','--format=%B',$partial)) -join "`n"
       $note = [regex]::Match($message, '(?ms)^## Runner resume note \(issue 818\)\r?\n.*?^## End runner resume note')
       if ($note.Success) { $resume += "`n`n" + $note.Value }
-      Put (Join-Path $out 'resume.txt') $resume
+      # Keep the continuation note written above (issue 1739).
+      $earlierNote = Read (Join-Path $out 'resume.txt')
+      Put (Join-Path $out 'resume.txt') ("$earlierNote`n$resume".Trim())
     }
   }
   elseif ($mode -eq 'base') {

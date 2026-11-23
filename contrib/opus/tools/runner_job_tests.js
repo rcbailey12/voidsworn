@@ -769,6 +769,50 @@ Assert ($log.Contains('index may hide tracked edits')) 'included code with a hid
 $kept = Get-ChildItem -LiteralPath (Split-Path -Parent $slot) -Directory | Where-Object { $_.Name -like 'repo-kept-*' }
 Assert (@($kept | Where-Object { [IO.File]::ReadAllText((Join-Path $_.FullName 'shared.txt')) -eq 'hidden local work' }).Count -eq 1) 'hidden edit survives'
 Pass 'lanes C and D and Workhorse slots reuse sparse profiles, honor fixed fields, and preserve hidden edits'
+# Issue 1739 (1747 run 2): a rerun must start from the delivery branch's earlier tip, never from main alone, and a
+# commit that does not descend from that tip must stop before the push. work/issue-800 holds base.txt; main does not.
+$slot = Join-Path $root 'continue/repo'
+Init 'continue-tip' 'work/issue-800'
+Shared @('checkout',$slot,$out,'work/issue-800','')
+$log = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+Assert ($log.Contains('continuing work/issue-800 from its earlier tip ${clean}')) "rerun starts from the earlier tip: $log"
+Assert ([IO.File]::ReadAllText((Join-Path $out 'base_commit.txt')).Trim() -eq '${clean}') 'base commit is the earlier tip'
+Assert ([IO.File]::ReadAllText((Join-Path $slot 'base.txt')) -eq "from base\n") 'the earlier run''s file is in the checkout'
+$parents = (& $script:git -C $slot rev-list --parents -n 1 HEAD) -split ' '
+Assert ($parents.Count -eq 3 -and $parents[1] -eq '${clean}' -and $parents[2] -eq '${main}') 'main is merged on top of the earlier tip'
+$resume = [IO.File]::ReadAllText((Join-Path $out 'resume.txt'))
+Assert ($resume.Contains('Continued from the earlier tip of work/issue-800') -and $resume.Contains('merged origin/main')) "agent is told: $resume"
+Pass 'a rerun checks out the branch''s earlier tip and merges main on top'
+# The commit step needs Windows PowerShell by name; on Linux point that name at pwsh.
+if ($PSVersionTable.Platform -eq 'Unix') {
+  $shim = Join-Path $root 'shim'; $null = New-Item -ItemType Directory -Force -Path $shim
+  [IO.File]::WriteAllText((Join-Path $shim 'powershell'), '#!/bin/sh\nexec pwsh "$@"\n')
+  & chmod 755 (Join-Path $shim 'powershell')
+  $env:PATH = "$($shim):$($env:PATH)"
+}
+$work = Join-Path $pc 'work_issue.ps1'
+Put (Join-Path $slot 'run2.txt') "run 2 report\n"
+& $script:git -C $slot add run2.txt
+Push-Location $slot; & $work commit $slot $out 'work/issue-800' 'dry' | Out-Null; $code = $LASTEXITCODE; Pop-Location
+Assert ($code -eq 0) "a rerun from the earlier tip commits (exit $code)"
+$tree = @(& $script:git -C $slot ls-tree -r --name-only HEAD)
+Assert ($tree -contains 'base.txt' -and $tree -contains 'run2.txt') 'the rerun commit keeps run 1 and adds run 2'
+& $script:git -C $slot merge-base --is-ancestor '${clean}' HEAD
+Assert ($LASTEXITCODE -eq 0) 'the earlier tip is an ancestor of the push'
+Pass 'a rerun commit keeps the earlier runs'' files'
+# 1747 run 2's shape: the checkout is main alone, the branch already exists, the agent adds only its report.
+$repo = New-Repo 'tip-drop-repo'
+Init 'continue-drop' 'work/issue-800'
+& $script:git -C $repo checkout -q -B work/issue-800 '${main}'
+Put (Join-Path $out 'base_commit.txt') '${main}'
+Put (Join-Path $repo 'report.md') "only the report\n"
+& $script:git -C $repo add report.md
+Push-Location $repo; $said = (& $work commit $repo $out 'work/issue-800' 'dry') -join "\n"; $code = $LASTEXITCODE; Pop-Location
+Assert ($code -eq 15) "a run that does not descend from the earlier tip stops (exit $code): $said"
+$tipNote = [IO.File]::ReadAllText((Join-Path $out 'EARLIER_TIP.txt'))
+Assert ($tipNote.Contains('did not start from the earlier tip ${clean}') -and $tipNote.Contains('base.txt')) "the reason and the dropped file are named: $tipNote"
+Assert ((& $script:git -C $repo rev-parse HEAD) -eq '${main}') 'nothing was committed'
+Pass 'a commit that would drop the earlier tip''s files stops before the push and names them'
 Write-Output "PASS runner job checks ($script:passed groups)"
 `);
 // Allow the same PC proof to run with pwsh, the engine used by Linux CI.

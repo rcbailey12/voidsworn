@@ -121,8 +121,10 @@ work_issue.ps1):
   run, so Codex reruns that share board\issue-N keep every earlier copy); the list goes to result.txt, that folder's
   refused.txt and the PR text. A changed file outside the issue's "Deliver to" line is a warning only.
 - **No force push** (`work_issue.ps1 commit`). The run's one commit is made with git plumbing and its exit code checked; when
-  the branch already exists on GitHub its tip becomes the commit's second parent, so a rerun is a plain fast-forward and the
-  earlier run's commit stays reachable. The commit text ends with "Run-Number: k".
+  the branch already exists on GitHub the checkout starts from its tip and merges main on top (issue 1739: 1747 run 2
+  started from main alone and its commit dropped run 1's fixes), so a rerun is a plain fast-forward that keeps the earlier
+  runs' files. A run that does not descend from that tip (or a tip that moved meanwhile) stops before the push with exit 15
+  and out\EARLIER_TIP.txt naming the files it would drop. The commit text ends with "Run-Number: k".
 - **The issue 541 check.** Before the push the commit must carry exactly the staged change (out\diffstat.txt); after it
   (`work_issue.ps1 confirm`) GitHub's branch must be that commit, with that diff (out\pushed_diffstat.txt). A difference
   stops the run: "DIFF MISMATCH" in result.txt, out\DIFF_MISMATCH.txt, exit code 10, nothing (more) pushed. On Nov 11 the
@@ -171,7 +173,7 @@ cost several runs. Both entry points, `work_issue.bat` and `codex_issue.bat`, us
   missing status and a changed predecessor run all stop it. Waiting is capped at 12 hours (PC_WAIT_SECONDS overrides it).
   PC_WAIT_RUN can pin the predecessor's run id. Point to the exact run, not a moving latest.txt. Replace older external
   waiters that search result.txt with this launcher; those unversioned PC files are not changed by this patch.
-- **Resume by default.** The fresh branch starts at current main and merges `<branch>-partial` before task generation.
+- **Resume by default.** The fresh branch starts at current main (or at the branch's earlier tip with main merged in) and merges `<branch>-partial` before task generation.
   Both task files name the partial branch and commit and tell the agent to finish that work. A merge conflict stops before
   preflight, preserving the checkout for the Board. Existing Codex checkouts are renamed and kept instead of reset or cleaned.
   Already committed resumed work can still reach a checked push when the agent needs no further edits.
