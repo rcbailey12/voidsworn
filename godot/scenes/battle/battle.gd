@@ -5759,6 +5759,7 @@ static func _command_tip(command: Dictionary) -> String:
 	if command["used"]: return "Already used this battle."
 	var power := int(command["power"])
 	var tip := "Power %d of 3: %s" % [power, command["effect"]]
+	if str(command.get("rider", "")) != "": tip += "\nRider: " + str(command["rider"])   # issue 1651
 	if command["next"] != "": return tip + "\nWait one round for power %d: %s" % [power + 1, command["next"]]
 	return tip + ("\nAlready at full power." if power == 3 else "\nOne more round does not raise the power.")
 
