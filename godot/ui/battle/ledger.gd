@@ -584,9 +584,14 @@ func _guns(x: float, y: float, w: float) -> float:
 		if str(gun.get("arc_tip", "")) != "":
 			tip += "\n" + str(gun.arc_tip)
 		var wi := int(gun.get("i", 0))
-		if mine:
+		# Artoo on PR 1873: flak never fires at a ship (rules canFire refuses it); it shoots down torpedoes and strike craft
+		# on its own, so its row offers no arm action
+		var is_flak: bool = str(gun.get("kind", "")) == "flak"
+		if is_flak:
+			tip += "\nPoint defense: it fires on its own at incoming torpedoes and strike craft in range. It never aims at a ship."
+		elif mine:
 			tip += "\nClick or press %d to fire this gun alone%s." % [wi + 1, " (armed now)" if active else ""]
-		_hit(Rect2(x, y, w, step), "arm" if mine else "", wi, tip)
+		_hit(Rect2(x, y, w, step), "arm" if mine and not is_flak else "", wi, tip)
 		y += step
 	return y
 
