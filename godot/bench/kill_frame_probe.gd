@@ -1,6 +1,6 @@
 extends SceneTree
 ## Replays the Corsair seed 7 battle with the torpedo timing tags and no image readbacks.
-## Run through contrib/codex/pc/kill_frame_1829.bat on the Board's GPU queue.
+## Run through the kill_frame_1829 or round_2_compile_1843 PC job on the Board's GPU queue.
 
 
 class TimedBattle extends "res://scenes/battle/battle.gd":
@@ -13,6 +13,9 @@ class TimedBattle extends "res://scenes/battle/battle.gd":
 	var _last_tag := ""
 	var _events: Array[Dictionary] = []
 	var _spikes: Array[Dictionary] = []
+	var _round_2_compile_frames: Array[Dictionary] = []
+	var _round_2_frames := 0
+	var _draw_round := 0
 	var _known_stage := {}
 	var _tag_max := {}
 
@@ -22,6 +25,10 @@ class TimedBattle extends "res://scenes/battle/battle.gd":
 		# the original torpedo windows run with the screenshot directory empty.
 		args["torp-shots"] = true
 		args["torp-ft"] = true
+		RenderingServer.frame_pre_draw.connect(_mark_draw_round)
+
+	func _mark_draw_round() -> void:
+		_draw_round = int(V.get("round", 0))
 
 	func _process(dt: float) -> void:
 		var stamp := Time.get_ticks_usec()
@@ -57,6 +64,12 @@ class TimedBattle extends "res://scenes/battle/battle.gd":
 			return ok)
 
 	func _sample(wall_ms: float, dt: float, profile: Dictionary, pipes: int) -> void:
+		var round_no := int(V.get("round", 0))
+		# The sample reads the previous draw. The rules view can advance between that draw and this process step.
+		var drawn_round := _draw_round if _draw_round > 0 else round_no
+		var round_2_compile := drawn_round == 2 and pipes > 0
+		if drawn_round == 2:
+			_round_2_frames += 1
 		var tag := str(torp_ft.get("tag", ""))
 		var frame_tag := tag if tag != "" else _last_tag
 		_last_tag = tag
@@ -73,9 +86,9 @@ class TimedBattle extends "res://scenes/battle/battle.gd":
 			_known_stage[ship.id] = stage
 			events.append({"ship": ship.id, "hull": ship.hull.code, "stage": stage,
 				"cause": ship.get_meta("death_cause", ""), "cut_built": ship.get_meta("cut_job", {}).get("built", false)})
-		if wall_ms < 1000.0 / 60.0 and events.is_empty():
+		if wall_ms < 1000.0 / 60.0 and events.is_empty() and not round_2_compile:
 			return
-		var row := {"frame": Engine.get_process_frames(), "round": V.get("round", 0), "salvo": frame_tag,
+		var row := {"frame": Engine.get_process_frames(), "round": round_no, "draw_round": drawn_round, "salvo": frame_tag,
 			"wall_ms": wall_ms, "process_delta_ms": dt * 1000.0, "draw_and_specialization_pipelines": pipes,
 			"battle_process_usec": _last_battle_usec, "bot_step_usec": _last_bot_usec, "bot_rules_usec": _last_bot_rules_usec,
 			"engine_process_ms": Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0,
@@ -85,11 +98,13 @@ class TimedBattle extends "res://scenes/battle/battle.gd":
 			_events.append(row)
 		if wall_ms >= 1000.0 / 60.0:
 			_spikes.append(row)
+		if round_2_compile:
+			_round_2_compile_frames.append(row)
 
 	func _quit_report() -> void:
 		var output := FileAccess.open(str(args.get("kill-frame-report", "")), FileAccess.WRITE)
 		var x09 := _tag_max.keys().any(func(tag: String) -> bool: return tag.ends_with("_x09"))
-		if output == null or result.is_empty() or _events.is_empty() or _tag_max.is_empty() or not errors.is_empty():
+		if output == null or result.is_empty() or _events.is_empty() or _tag_max.is_empty() or _round_2_frames == 0 or not errors.is_empty():
 			push_error("KILL_FRAME incomplete replay, missing timings or deaths, or battle errors")
 			_quit(1)
 			return
@@ -97,10 +112,22 @@ class TimedBattle extends "res://scenes/battle/battle.gd":
 			"renderer": RenderingServer.get_current_rendering_method(), "godot": Engine.get_version_info().string,
 			"resolution": DisplayServer.window_get_size(), "vsync": DisplayServer.window_get_vsync_mode(),
 			"fps_cap": Engine.max_fps, "x09_present": x09, "max_ms_by_salvo": _tag_max, "death_frames": _events,
-			"frames_over_16_7_ms": _spikes, "late_shaders": gfx.late_shader_names()}
+			"frames_over_16_7_ms": _spikes, "round_2_frames": _round_2_frames,
+			"round_2_compile_frames": _round_2_compile_frames,
+			"late_shaders": gfx.late_shader_names()}
 		output.store_string(JSON.stringify(report, "  ") + "\n")
 		output.close()
 		print("KILL_FRAME deaths=%d long_frames=%d" % [_events.size(), _spikes.size()])
+		print("KILL_FRAME round_2_frames=%d compile_frames=%d" % [_round_2_frames, _round_2_compile_frames.size()])
+		if args.has("require-no-round-2-compiles"):
+			if DisplayServer.get_name() == "headless" or report["renderer"] != "forward_plus":
+				push_error("KILL_FRAME round 2 check needs a windowed Forward+ replay")
+				_quit(1)
+				return
+			if not _round_2_compile_frames.is_empty():
+				push_error("KILL_FRAME round 2 compiled pipelines after the load cover")
+				_quit(1)
+				return
 		super._quit_report()
 
 

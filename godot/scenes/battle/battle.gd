@@ -959,9 +959,16 @@ func _warmup() -> void:
 			await get_tree().process_frame
 		if arrival_warm != null:
 			arrival_warm.park()
+	# The firing-arc outline first drew at the round 2 handoff in KILLFT (issue 1843).
+	# Use the camera's two held frames under the cover to draw its exact material and mesh format.
+	var warm_arc: MeshInstance3D
+	if not title_backdrop:
+		warm_arc = _add_warm_fan_edge()
 	load_phase = "camera_back"
 	for i in 2:
 		await get_tree().process_frame
+	if is_instance_valid(warm_arc):
+		warm_arc.queue_free()
 	cam.a = keep["a"]
 	cam.b = keep["b"]
 	cam.r = keep["r"]
@@ -3493,7 +3500,19 @@ func _attack_move(t_id: String):
 var fan_root: Node3D
 var fan_for := ""
 var fan_key := ""
+var _fan_edge_mat: StandardMaterial3D   # vertex colours vary by arc, and the material keeps the warm pipeline alive
 const ARC_SPAN := {"F": [-60.5, 60.5], "R": [119.5, 240.5], "S": [29.5, 150.5], "P": [-150.5, -29.5]}
+
+
+func _add_warm_fan_edge() -> MeshInstance3D:
+	var radius: float = board.HW * 4.0 + 0.5
+	var span: Array = ARC_SPAN["F"]
+	var edge := _fan_edge(span[0], span[1], radius, Color.WHITE)
+	edge.name = "WarmFiringArc"
+	edge.scale = Vector3.ONE / radius
+	edge.position = to_local(cam.to_global(Vector3(0.0, 0.0, -30.0)))
+	add_child(edge)
+	return edge
 
 
 func _fans(id: String, host: Node3D = null) -> void:
@@ -3680,13 +3699,14 @@ func _fan_edge(a0: float, a1: float, rad: float, col: Color, w := 0.55, alpha :=
 				st.add_vertex(v[0])
 	var mi := MeshInstance3D.new()
 	mi.mesh = st.commit()
-	var m := StandardMaterial3D.new()
-	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.vertex_color_use_as_albedo = true
-	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	m.cull_mode = BaseMaterial3D.CULL_DISABLED
-	mi.material_override = m
+	if _fan_edge_mat == null:
+		_fan_edge_mat = StandardMaterial3D.new()
+		_fan_edge_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_fan_edge_mat.vertex_color_use_as_albedo = true
+		_fan_edge_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_fan_edge_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		_fan_edge_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mi.material_override = _fan_edge_mat
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return mi
 
