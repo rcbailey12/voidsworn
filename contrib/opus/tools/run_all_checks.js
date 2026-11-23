@@ -171,6 +171,7 @@ function buildChecks() {
   add('contrib/deepseek/chorus_biomass_1118/spiral_test.js', [], 'normal', 300, false, true); // #1085: the loss spiral prices a 25 percent repair of the worst ship, capped at what it is missing
   add('contrib/deepseek/ge_economy_1118/commission_test.js', [], 'normal', 300, false, true); // #1086: one shipyard visit queues at most one Glasswright commission, even with two affordable offers
   add('tools/pc/runner_selftest.js', [], 'normal', 600); // #687: free PC runner fault tests; static contract check on other hosts
+  add('tools/pc/mission/pc_daemon_selftest.js', [], 'normal', 300, false, true); // #1662: the PC daemon's gate, watchdog, profile removal and job order on fakes
   add('tools/pc/g2_export_selftest.js'); // #1100: a stand-in exporter proves only checked builds become live on Windows
   add('tools/pc/pause_all_selftest.js'); // #944: pause waits for runners and verifies each saved commit on GitHub
   add('tools/pc/lane_tools_refresh_selftest.js'); // #1018: lane tools refresh safety checks
