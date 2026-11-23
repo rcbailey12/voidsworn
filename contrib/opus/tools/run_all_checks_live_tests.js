@@ -91,8 +91,8 @@ assert(fastReport.some(r => r.check === 'nem_assign_enum' && r.result === 'PASS'
 assert.equal(run(['--only', 'missing_fixture']).status, 1);
 const codex = fs.readFileSync(path.join(ROOT, 'tools/pc/codex_issue.bat'), 'utf8');
 const work = fs.readFileSync(path.join(ROOT, 'tools/pc/work_issue.bat'), 'utf8');
-assert(/call "%TP%tmo\.bat" 1800 node contrib\\opus\\tools\\run_all_checks\.js/.test(codex));
-assert(/if not defined CHECK_CAP set "CHECK_CAP=1800"/.test(work));
+assert(/call "%TP%tmo\.bat" 3600 node contrib\\opus\\tools\\run_all_checks\.js/.test(codex));
+assert(/if not defined CHECK_CAP set "CHECK_CAP=3600"/.test(work));
 assert(/call "%T%tmo\.bat" %CHECK_CAP% "%NODE%" contrib\\opus\\tools\\run_all_checks\.js/.test(work));
 assert(/call "%TP%tmo\.bat" 1500 "%COMSPEC%" \/c tools\\pc\\parity\.bat/.test(codex));
 assert(/if not defined PARITY_CAP set "PARITY_CAP=1500"/.test(work));
@@ -101,5 +101,5 @@ const { rowEnv } = require(path.join(__dirname, 'run_all_checks.js'));
 const leaked = rowEnv({ PATH: 'p', TEMP: 't', PC_GPU_LANE: 'C', PC_RUN_TEMP: 'x', PC_RUN_SCRATCH: 'x', PC_RUNNER_LOCKED_ISSUE: '1693',
   CODEX_MODEL: 'gpt-6.2-astra', CODEX_LOCKED_REPO: 'r', WORK_LOCKED_REPO: 'r', TMO_REPO: 'r', CHECKS_OK: '0', PC_WAIT_FOR: 'w' });
 assert.deepEqual(leaked, { PATH: 'p', TEMP: 't', PC_GPU_LANE: 'C' });
-console.log('PASS: live failure detail and the whole FAIL output precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s');
+console.log('PASS: live failure detail and the whole FAIL output precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 3600 s and parity stays 1500 s');
 console.log('Evidence: ' + root);

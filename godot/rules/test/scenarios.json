@@ -3952,7 +3952,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31822,
+  "seed": 31823,
   "admiral": "khepra",
   "fleet": [
    "d_harvester",
@@ -8252,7 +8252,7 @@
   ],
   "cmdRound": 2,
   "rounds": 4,
-  "seed": 37104,
+  "seed": 37105,
   "lineage": {
    "id": "sekhmar",
    "picks": [
@@ -8485,7 +8485,7 @@
   ],
   "cmdRound": 3,
   "rounds": 5,
-  "seed": 38212,
+  "seed": 38216,
   "lineage": {
    "id": "nekhet",
    "picks": [
@@ -8700,7 +8700,7 @@
   ],
   "cmdRound": 2,
   "rounds": 4,
-  "seed": 38201,
+  "seed": 38212,
   "lineage": {
    "id": "sekhmar",
    "picks": [

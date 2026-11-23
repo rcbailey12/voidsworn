@@ -156,3 +156,29 @@ node contrib/opus/tools/sound/elevenlabs_gen.js \
 - **Expected real billing:** **~270 real credits** at Wave A's observed ~11 real credits/sec (~0.22% of the 121,000 credit pool).
 - **Wave B gate:** Hold Wave B until Wave A2 clears ear verification across all 10 items.
 
+
+## 8. Wave A2 Verdict and Wave A3 (Fable audit, Nov 23 2026)
+
+Wave A2 (20 takes, 272 real credits) was ear-audited by Antigravity, and Fable audited that audit against the real files (`contrib/opus/reviews/sound_wavea3_fable_1752.md`).
+
+- **Keepers:** `imp_metal_heavy` t1 and t2, `death_chorus_rupture` t2 (t1 only as an alternate with a presence lift), `ui_reward_vault` t1 and t2, `imp_bio_flesh` t1 and t2 (mastering below), `wep_eclipse_gauss_fire` t1. Re-check `ui_reward_vault` and the Eclipse take on small speakers: both are almost all below 500 Hz.
+- **Measurement settled.** Claude re-measured all 20 takes per channel and mono-summed. Every channel agrees with Claude's table, not with Antigravity's (for example, the Directorate laser is 2% above 1 kHz on both channels). The takes are stereo and the game files are mono. Mono fold-down barely dulls most takes; the exceptions are very wide takes (Eclipse t1, shield t1, lance t1), so fold to mono before judging those. Several takes carry 4% to 14% of their energy below 20 Hz: high-pass the battle SFX bus.
+- **Shared game files are real.** In the current game, `lance` and `gun_las` play the same file, and `imp_metal_heavy`, the Chorus death and the Eclipse gun share one 2 s rumble. That is the old game's file reuse, not a listening-page mistake.
+- **Traps.** Bass-word stacking ("sub-bass", "sub-harmonic", literal Hz, and size words like colossal and monumental pulling low) is confirmed. "Smooth top end" is not the cause (the brightest takes carried it), but removing it is harmless. The beam and breaker wording traps are plausible, from one prompt each.
+- **Influence.** Unchanged in Wave A3 except one lance twin, so each test changes one thing.
+- **Wave A3:** 9 ids, 18 takes, about 223 real credits (tool estimate 800, cap 900). The six re-rolled prompts are `wep_sunward_lance_beam`, `shd_break_energy`, `wep_directorate_laser`, `wep_ithar_shard`, `wep_chorus_spines` and `wep_eclipse_gauss_fire`. There are three twins:
+  - `wep_sunward_lance_beam_inf45`: same text at influence 0.45.
+  - `wep_directorate_laser_b`: plasma-cannon wording, recipe B.
+  - `wep_eclipse_gauss_fire_ctl`: the A2 prompt unchanged, as a control for the keeper.
+- **Mastering for every keeper, before it goes in game:**
+  - Trim the 10 to 32 ms of dead head.
+  - Fold to mono.
+  - High-pass at 30 to 40 Hz (60 to 70 Hz for `imp_bio_flesh`, about -6 dB below 200 Hz, about +6 dB above 1.5 kHz).
+  - Match loudness per category rather than peak-normalising.
+  - Fade every tail by 10 to 20 ms.
+  - Tune the reward bell to D (it measures about 50 cents sharp of D3).
+- **Wave B stays held** until Wave A3 clears Ryan's ear check. Fable's Wave B pre-flight rewrites (17 prompts plus 5 missed bass-trap items, section 3 of the review) are applied only after A3 shows which Directorate recipe, beam recipe and influence won. The ban-list question (relax "sharp" and "loud", keep the literal-foley bans) is decided at the same time.
+- **Not generated:**
+  - A beam may work better as ignition, a looped body and a release assembled in Godot, so it fits any beam length.
+  - Shield break may be better layered (a new crackle over today's body) than one prompt.
+  - Both are tried with the A3 takes before more spend.
