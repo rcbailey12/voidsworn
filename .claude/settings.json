@@ -1,0 +1,124 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(//**/.env)",
+      "Read(//**/.env*)",
+      "Read(//**/secrets)",
+      "Read(//**/secret)",
+      "Read(//**/secrets/**)",
+      "Read(//**/secret/**)",
+      "Read(//**/.secrets/**)",
+      "Read(//**/secrets.json)",
+      "Read(//**/secrets.yml)",
+      "Read(//**/secrets.yaml)",
+      "Read(//**/secrets.toml)",
+      "Read(//**/secrets.txt)",
+      "Read(//**/.ssh/**)",
+      "Read(//**/.aws/**)",
+      "Read(//**/.netrc)",
+      "Read(//**/.npmrc)",
+      "Read(//**/.git-credentials)",
+      "Read(//**/hosts.yml)",
+      "Read(//**/credentials.json)",
+      "Read(//**/*.pem)",
+      "Read(//**/*.key)",
+      "Read(//**/*.p12)",
+      "Read(//**/*.pfx)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Grep|Glob|LS|Write|Edit|MultiEdit|NotebookEdit|Bash|PowerShell|Monitor|mcp__.*__(?:push_files|create_or_update_file|create_file|update_file|delete_file|create_branch|create_ref|update_ref|delete_ref)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.cjs",
+              "pre"
+            ],
+            "timeout": 50,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.cjs",
+              "em-dash"
+            ],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.cjs",
+              "godot"
+            ],
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.cjs",
+              "godot"
+            ],
+            "timeout": 110
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.cjs",
+              "godot"
+            ],
+            "timeout": 110
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.cjs",
+              "godot"
+            ],
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

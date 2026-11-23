@@ -8,7 +8,8 @@ Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Meridia
 
 **Read first.**
 1. `docs/RULEBOOK.md`: every rule in force, each with its reason. **It wins** over this file and every older doc (its section 0.3
-   says which document wins after it).
+   says which document wins after it). Sections 3.5 to 9 live in four files under `.claude/rules/` (pc-harness, ships,
+   godot-battle, godot-ui); they are plain Markdown and part of the rulebook for every seat, not only Claude (issue 1660).
 2. HANDOFF.md section 0 and contrib/opus/LOOP.md ("The seats", the LATEST lines): what is running now. They win for status only.
 3. The playbook for your area: `docs/playbooks/` (PROGRAM.md first).
 4. contrib/opus/FINDINGS.md is the dated history of rulings, not the live source. Anything under `docs/archive/` is history:

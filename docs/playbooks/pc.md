@@ -23,7 +23,22 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   `tmo.bat` and `run_timeout.ps1` in `status.txt` (fail closed when either is missing); the watchdog's throwaway Godot
   profile kept on (issue 1228); Ryan's real `battle_opts.json` and `board_look.cfg` hashed.
 - `checkout <name> <sha>`: a fresh checkout of that exact commit inside the attempt folder, from the shared
-  `repo-mirror.git`; HEAD must equal the pin.
+  `repo-mirror.git`; HEAD must equal the pin. With `OJ_SLOTS=1` (issue 1659, Ryan Nov 22; the template sets it to 1 since the Windows slot proofs passed, Board Nov 23; a bat sets 0 to opt out) it
+  resets a warm slot instead: `voidsworn_test\slots\slot_gpu_1`, `slot_gpu_2` (`OJ_SLOT_KIND=gpu`) or `slot_cpu` (`cpu`),
+  each one reused `clone --local` of the mirror. The first checkout takes a free slot (waits up to `OJ_SLOT_WAIT_MINUTES`,
+  360) and a hidden holder keeps its lease until the tail lets it go or the job's cmd ends. Every later checkout of the job
+  proves its holder still runs, owner.txt names its token and the lease is locked, or fails without touching the slot.
+  Each reset also holds the slot's own `.slot-reset` lock and proves the lease again before letting go, so a claimant that
+  gets the lease from a holder that died mid-reset waits for that reset, which then fails. A new holder also refuses a slot
+  while owner.txt's job process still runs and its tail has not released it, so a dead holder never frees a busy slot.
+  The tail writes that released line itself for its own token, so a dead holder under the long-lived watcher shell still
+  frees the slot when the job ends; a job that dies before its tail keeps its slot until the watcher exits. Before each reset, anything
+  the last job left there that is not proven rebuildable is saved into that job's `out_<name>\slot_leftovers`; when it
+  cannot be (over 200 MB, a staged change, a nested repo) the slot gets `hold.txt` and is skipped until the Board has
+  looked and removed it, and a job that just took it moves on to the next free slot. The reset is a forced checkout of the pin and `git clean -ffdx` that keeps only `godot\.godot`
+  and `*.import` sidecars warm; it deletes only inside `slots`. The ships step then copies into the slot as below (its
+  side files go to `<attempt>\<name>_ships_*.txt`), so a publish during a job changes nothing under it. A slot job has no
+  checkout of its own for the tail to remove. Codex lanes move onto the slots later, after a Windows log of two slot jobs.
 - `ships`: built hulls from `build\godot`: `gen` whole with plain `/E`, no skip flags, so the source wins (its
   `manifest.json` is how the game finds the hulls, and the job fails without it), `assets\ships` with `/E /XC /XN /XO /XF
   manifest.json README.md a4_props.gd *.uid /XD test previews`; robocopy 8 or more fails; then any tracked file that
@@ -84,7 +99,9 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
 - Attempts relayed before that under another branch name or folder (board/pc-out-1547c and so on) name no place the
   proof finds. `opus_job_head.ps1 relayfind <attempt>|all [dry]` looks through every `board/pc-out-*` branch in the
   shared mirror for the folder that holds all of a passed attempt's result files byte for byte, and writes only that,
-  as a new `relay_branch.txt` in the attempt (never over its own receipt or branch file). It removes nothing: the waiter
+  as a new `relay_found.txt` in the attempt (never over a file it already has; issue 1739: the `relay_branch.txt` the head
+  writes at init no longer stops the search, so a job the Board relayed to `board/pc-out-*` instead clears too, and
+  `relay_found.txt` wins over that init guess). It removes nothing: the waiter
   and the janitor's relay sweep still prove the bytes under the mirror lock before any drop. dry writes and fetches
   nothing (issue 1695). A job that was never relayed is not found and keeps its checkouts.
 - Every live removal that rests on the shared mirror (the job head's relay sweep and `droprepo`, the janitor's helper
@@ -104,6 +121,7 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   a Board one-off cleanup request to Ryan.
 
 Each janitor run has a 45 minute budget checked between items, not a hard timeout: the board lanes and the Workhorse runs (one lane at a time) until a quarter of it, the TEMP folders until half, the job folders until the end. A lane or folder already started runs to its end. Past a stop point the run starts no new item of that kind, says where it stopped, and a live run writes that name to `janitor_resume.txt` (replaced whole, never through a link), so the next run starts there and wraps around; it never removes more for stopping early. Folders that take 10 s or more get a `folder time` line (issue 1396: the first full dry run ran 1 h 47 min unfinished).
+Janitor sizes say what removal would really free (issue 1739: the Nov 23 dry run said 49.9 GB, about 4.6 GB came back). A file counts once, and only when every hard link to it is inside the folder, so a checkout's links shared with the mirror count nothing. A folder another account owns (the Codex sandbox scratch) is logged as `cannot remove` and never counted. Each row reads `<N> bytes would be freed, <M> listed, ...`, and the run closes with `space would be freed: <total>`, the sum of its would-remove rows (`tools/pc/disk_space.ps1`).
 Nothing else is deleted (RULEBOOK 3.3, R326). The after-job janitor stays off unless `OPUS_JOB_JANITOR=1`, which needs Ryan's approval.
 
 ## What the Board checks

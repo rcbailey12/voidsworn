@@ -116,6 +116,9 @@ The ship's turn is a plan on screen until the player commits it. Code: `battle.g
 - While a plan is open the card's status line says what the plan does, ahead of the ship's flags (they move to its tip),
   and its keys ("Enter plays · Backspace undoes · Esc clears") get their own row under the action button, so no odds
   height pushes them off the sheet (Artoo on PR 1643): Ryan wants every action clearly understood (Nov 22). Enemies a click would aim at wear the red ring; the target block shows each gun's hit chance from the ghost.
+- While any event plays (a commit, an enemy turn) the whole bottom sheet steps aside: ship, guns, odds, orders and the
+  fleet strip (`hud.set_playing(busy)`, ledger `playing`); the log stays. It pops back when the event ends (issue 1708,
+  Ryan Nov 22: "hide the card during the scene and then pop it back up").
 - The card leaves as soon as any command starts playing (`_cmd` refreshes the UI once the runner is busy) and comes back
   when the ship is up again (Ryan, Nov 22).
 - The drawn firing cone: a ship whose hex sits on an arc's line is in that arc (rules `inArc`, 60.5 degrees for the
@@ -233,6 +236,12 @@ record, checks the fourth row and the full roster, measures bounds at 1080, 1440
 profile, campaign run and meta unchanged without writing a save. For GPU captures, omit --headless and add -- --shots DIR.
 Capture the original 12-admiral reference, current roster, fourth row, long names, empty state, tabs and Close hover. Rules
 and save data are unchanged.
+
+### The campaign map: double-click a stop (R424, issues 1801 and 1802)
+
+Double-clicking a map stop flies the fleet there (Ryan, Nov 23 2026: "Yes double click a map stop should fly you there").
+This is PR 1810's behaviour; a single click still selects the stop and shows its briefing. Any change to map input, and any
+merge of main into a map branch, keeps the double-click fly.
 
 ## 3. Steps
 

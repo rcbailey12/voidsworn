@@ -20,7 +20,7 @@ const TABLES_PATH := "res://campaign/data/campaign_tables.json"
 # ---------------- tables ----------------
 var TB: Dictionary = {}
 var W_; var HULLS; var FACTIONS; var MODULES; var PERKS; var RELICS; var ADMIRALS; var RANKS; var RANK_XP; var PATRONS; var BOONS
-var BOON_FX; var BOON_D; var BOON_NEED; var RARITY; var ASPECTS; var HEAT; var HULL_VARIANTS; var MASTERY_XP; var MASTERY_PERKS; var LINEAGE_XP; var LINEAGE_TREES; var TREE_FX; var CAPSTONE_MASTERY_XP; var CAPSTONE_MASTERY_PERKS
+var BOON_FX; var BOON_D; var BOON_NEED; var RARITY; var ASPECTS; var HEAT; var HULL_VARIANTS; var MASTERY_XP; var MASTERY_PERKS; var LINEAGE_XP; var LINEAGE_TREES; var TREE_FX; var CAPSTONE_MASTERY_XP; var CAPSTONE_MASTERY_PERKS; var CAPSTONE_MASTERY_FX; var MASTERY_I_FX
 var FAVOUR_TIERS; var SECTOR_CONDS; var SECTOR_POOL; var EVENTS; var CAPTAINS; var SHIP_NAMES; var MORE_SHIP_NAMES; var FNAMES
 var MOD_NEED; var MOD_NAMES; var RELIC_NAMES; var RUN_WORD; var ENCOUNTERS; var ENC_POOL; var ENC_SPECIAL; var REGIONS; var FAC_REGION
 var REGION_BIOME; var ROCK_KINDS; var DEEP_MAPS; var FAC_MAP; var BEVENTS; var KILL_CAUSES; var FAC_WNAMES; var FAC_WTRAIT; var WTRAITS
@@ -72,7 +72,7 @@ var tel_log: Array = []     # a slim run log (events only), kept with the save; 
 # ======================= setup =======================
 # Every table the campaign reads. load_tables refuses to start when one is missing, and export_campaign.js fails when the oracle
 # lacks one (it also scans the campaign scripts for every TB table they read, so a new table cannot slip past this list).
-const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CINDER_FIRST_RUN", "CINDER_PRIZES", "CLASS_TRACK_MAX", "CMD_TEXT", "CORE_EAT_HULL", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_VOICE", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "TREE_FX", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS", "LATE_SHOP", "CULLET", "BIO_KILL"]
+const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CINDER_FIRST_RUN", "CINDER_PRIZES", "CLASS_TRACK_MAX", "CMD_TEXT", "CORE_EAT_HULL", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "CAPSTONE_MASTERY_FX", "MASTERY_I_FX", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_VOICE", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "TREE_FX", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS", "LATE_SHOP", "CULLET", "BIO_KILL"]
 func load_tables(path: String = TABLES_PATH) -> String:
 	var txt = FileAccess.get_file_as_string(path)
 	var j = JSON.parse_string(txt)
@@ -88,7 +88,7 @@ func load_tables(path: String = TABLES_PATH) -> String:
 	W_ = TB.W; HULLS = TB.HULLS; FACTIONS = TB.FACTIONS; MODULES = TB.MODULES; PERKS = TB.PERKS; RELICS = TB.RELICS; ADMIRALS = TB.ADMIRALS
 	RANKS = TB.RANKS; RANK_XP = TB.RANK_XP; PATRONS = TB.PATRONS; BOONS = TB.BOONS; BOON_FX = TB.BOON_FX; BOON_D = TB.BOON_D; BOON_NEED = TB.BOON_NEED
 	RARITY = TB.RARITY; ASPECTS = TB.ASPECTS; HEAT = TB.HEAT; HULL_VARIANTS = TB.HULL_VARIANTS; MASTERY_XP = TB.MASTERY_XP; MASTERY_PERKS = TB.MASTERY_PERKS; LINEAGE_XP = TB.LINEAGE_XP; LINEAGE_TREES = TB.LINEAGE_TREES; TREE_FX = TB.TREE_FX
-	CAPSTONE_MASTERY_XP = TB.CAPSTONE_MASTERY_XP; CAPSTONE_MASTERY_PERKS = TB.CAPSTONE_MASTERY_PERKS
+	CAPSTONE_MASTERY_XP = TB.CAPSTONE_MASTERY_XP; CAPSTONE_MASTERY_PERKS = TB.CAPSTONE_MASTERY_PERKS; CAPSTONE_MASTERY_FX = TB.CAPSTONE_MASTERY_FX; MASTERY_I_FX = TB.MASTERY_I_FX
 	FAVOUR_TIERS = TB.FAVOUR_TIERS; SECTOR_CONDS = TB.SECTOR_CONDS; SECTOR_POOL = TB.SECTOR_POOL; EVENTS = TB.EVENTS; CAPTAINS = TB.CAPTAINS
 	SHIP_NAMES = TB.SHIP_NAMES; MORE_SHIP_NAMES = TB.MORE_SHIP_NAMES; FNAMES = TB.FNAMES; MOD_NEED = TB.MOD_NEED; MOD_NAMES = TB.MOD_NAMES
 	RELIC_NAMES = TB.RELIC_NAMES; RUN_WORD = TB.RUN_WORD; ENCOUNTERS = TB.ENCOUNTERS; ENC_POOL = TB.ENC_POOL; ENC_SPECIAL = TB.ENC_SPECIAL
@@ -586,10 +586,17 @@ func fleetFxList() -> Array:
 	if RUN != null:
 		for r in RUN["relics"]:
 			if RELICS.has(r) and jt(RELICS[r].get("fx")): l.append(RELICS[r]["fx"])
-		if ADMIRALS.has(RUN["admiral"]): l.append(ADMIRALS[RUN["admiral"]].get("fx"))
+		if ADMIRALS.has(RUN["admiral"]): l.append(admiralFx(RUN["admiral"]))
 		for b in or_(RUN.get("boons"), []):
 			if BOONS.has(b["id"]): l.append(BOON_FX[b["id"]][int(z0(b.get("r")))])
 	return l
+# Issue 1650 (R404) Mastery I: from capstone mastery I the admiral's doctrine bonus is the authored row in MASTERY_I_FX
+func runCapMastery() -> int:
+	var L = RUN.get("lineage") if RUN != null else null
+	return int(z0(L.get("mastery"))) if L is Dictionary and L.get("capstone") != null else 0
+func admiralFx(id) -> Variant:
+	if runCapMastery() >= 1 and RUN["admiral"] == id and MASTERY_I_FX.has(id): return MASTERY_I_FX[id]
+	return ADMIRALS[id].get("fx")
 func ensurePatrons() -> void:
 	if RUN == null: return
 	if not jt(RUN.get("patrons")) or RUN["patrons"].size() == 0: RUN["patrons"] = shuffle(PATRONS.keys()).slice(0, 4)
@@ -810,6 +817,8 @@ func mkWeapon(id, arc, fx) -> Dictionary:
 	if b.get("k") == "lance" and jt(fx.get("lanceRange")):   # Long Silence, Epic
 		w["r"] = w["r"] + fx["lanceRange"]; w["opt"] = w["opt"] + fx["lanceRange"]
 	return w
+# issue 1653 Heavy Breach Lockers: -1 speed, never below 2 (a ship already at 2 or less keeps its speed)
+func lockerSpeed(sp: float, fx) -> float: return (sp - 1.0 if sp - 1.0 >= 2.0 else min(sp, max(sp, 2.0))) if jt(fx.get("lockerSlow")) else sp
 func derive(ship: Dictionary) -> Dictionary:
 	var t: Dictionary = HULLS[ship["tpl"]]
 	var asp = []
@@ -830,7 +839,7 @@ func derive(ship: Dictionary) -> Dictionary:
 	return {
 		"maxHp": maxHp, "shMax": jsround(float(t["sh"]) * mm * (1.0 + float(z0(fx.get("shPct")))) * float(TB.SHIELD_POOL_MULT) * (float(TB.SHIELD_POOL_FAC[t["fac"]]) if (t.get("fac") != null and TB.SHIELD_POOL_FAC.has(t["fac"])) else 1.0)),   # core.js (SHIELD_POOL_FAC[t.fac]||1)
 		"regen": jsround(float(t["rg"]) * mm * (1.0 + float(z0(fx.get("regenPct")))) * float(TB.SHIELD_REGEN_MULT)),
-		"armor": min(0.6, float(t["ar"]) + float(z0(fx.get("armor")))), "speed": float(t["sp"]) + float(z0(fx.get("speed"))), "turns": float(t["tn"]) + float(z0(fx.get("turns"))), "ev": float(t["ev"]) + float(z0(fx.get("ev"))),
+		"armor": min(0.6, float(t["ar"]) + float(z0(fx.get("armor")))), "speed": lockerSpeed(float(t["sp"]) + float(z0(fx.get("speed"))), fx), "turns": float(t["tn"]) + float(z0(fx.get("turns"))), "ev": float(t["ev"]) + float(z0(fx.get("ev"))),
 		"aim": z0(fx.get("aim")), "crit": z0(fx.get("crit")), "dmg": 1.0 + 0.15 * (mk - 1.0) + float(z0(fx.get("dmgPct"))) + 0.06 * tr, "fx": fx,
 		"hangar": (float(t["hangar"]) + float(z0(fx.get("hangar"))) + float(z0(fx.get("hive")))) if jt(t.get("hangar")) else z0(fx.get("hive")),
 		"hullRegen": float(z0(fx.get("hullRegen"))) + jsround(float(z0(fx.get("hullRegenPct"))) * maxHp) + jsround(float(z0(t.get("regen"))) * mm),
@@ -916,6 +925,8 @@ func modName(m) -> String:
 	var f = RUN["fac"] if RUN != null and jt(RUN.get("fac")) else "voidsworn"
 	if MOD_NAMES.has(f) and jt(MOD_NAMES[f].get(m)): return MOD_NAMES[f][m]
 	return MODULES[m]["n"]
+# issue 1653: the effect line, then the flavour line when the salvage has one (the card footer)
+func relicText(r) -> String: return str(RELICS[r]["d"]) + (("\n" + str(RELICS[r]["fl"])) if jt(RELICS[r].get("fl")) else "")
 func relicName(r) -> String:
 	var f = RUN["fac"] if RUN != null and jt(RUN.get("fac")) else "voidsworn"
 	if RELIC_NAMES.has(f) and jt(RELIC_NAMES[f].get(r)): return RELIC_NAMES[f][r]
@@ -931,6 +942,11 @@ func relicUseful(r) -> bool:
 	if r == "coils": return F.any(func(s): return HULLS.has(s["tpl"]) and jt(HULLS[s["tpl"]].get("ab")))
 	if r == "logbook": return F.any(func(s): return s.get("cap") is Dictionary and float(z0(s["cap"].get("rank"))) < RANKS.size() - 1)
 	if r == "martyr": return F.size() > 1
+	# issue 1653 offer gates for the new salvage: each needs the fleet shape it works with
+	if r == "spotter": return F.any(func(s): return HULLS.has(s["tpl"]) and HULLS[s["tpl"]].get("ab") == "launch")
+	if r == "lastlight": return F.size() > 1
+	if r == "coolant": return F.any(func(s): return HULLS.has(s["tpl"]) and jt(HULLS[s["tpl"]].get("ab")) and HULLS[s["tpl"]].get("ab") != "launch")
+	if r == "ram": return RUN != null and (jt(TB["RAM_FAC"].get(RUN.get("fac"))) or F.any(func(s): return HULLS.has(s["tpl"]) and HULLS[s["tpl"]].get("ab") == "overburn"))
 	return true
 # R1 (MOD-3, Codex PR #1): a refit fits only where it can do something: a free slot, the hull type it is for, the weapon or system it improves
 func canFitModule(sh, m) -> bool:
@@ -942,6 +958,12 @@ func canFitModule(sh, m) -> bool:
 	var need = MOD_NEED.get(m)
 	if need == "shields": return float(z0(t.get("sh"))) > 0.0
 	if need == "carrier": return t.get("ab") == "launch" and float(z0(t.get("hangar"))) > 0.0
+	if need == "board": return true   # issue 1653: every ship has a crew that can board
+	if need == "brace": return not (FAC_GATES.has(t.get("fac")) and jt(FAC_GATES[t["fac"]].get("noBrace")))   # issue 1653: never on hulls that cannot brace
+	if need == "chaser":   # issue 1653: a non-turret fore or flank weapon to swivel
+		for pair in t.get("w", []):
+			if W_.has(pair[0]) and W_[pair[0]].get("k") != "turret" and (pair[1] == "F" or pair[1] == "S" or pair[1] == "P"): return true
+		return false
 	var kind = {"batt": "battery", "lance": "lance", "torp": "torp", "flak": "flak"}.get(need)
 	if kind != null:
 		for pair in t.get("w", []):
@@ -1197,6 +1219,11 @@ func capstoneMasteryLevel(id) -> int:
 	return l
 func capstoneMasteryPerk(level) -> Variant:
 	return CAPSTONE_MASTERY_PERKS[level - 1] if level >= 1 and level <= CAPSTONE_MASTERY_PERKS.size() else null
+# issue 1650: the Mastery III signature (name and line) of the admiral's chosen capstone, or null before one is chosen
+func capstoneSignature(id) -> Variant:
+	if not LINEAGE_TREES.has(id): return null
+	var c = lineageBuild(id)["capstone"]
+	return null if c == null else CAPSTONE_MASTERY_FX.get("%s:cap:%d" % [id, int(c)])
 func capstoneMasteryNext(id) -> Variant:
 	var l = capstoneMasteryLevel(id)
 	return null if l >= CAPSTONE_MASTERY_XP.size() else CAPSTONE_MASTERY_XP[l]
@@ -1373,7 +1400,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	if jt(META["unlocked"].get("cmd2")): RUN["cpCap"] += 2
 	if jt(META["unlocked"].get("founder")):
 		var r = randomRelic()
-		if r != null: RUN["relics"].append(r)
+		if r != null: addRelic(r)
 	RUN["heat"] = or_(opt.get("heat"), []).filter(func(k): return HEAT.has(k)); RUN["mastery"] = masteryLevel(admiralId)
 	var plan = altFleetPlan(admiralId, fac) if (jt(opt.get("alt")) and RUN["mastery"] >= 1) else null
 	var start = []
@@ -1399,6 +1426,8 @@ func newRun(admiralId, fac, opt = {}) -> void:
 			f["hp"] = derive(f)["maxHp"]
 	var lb = lineageBuild(admiralId)   # issue #305: a run snapshots the flown admiral's tree, because picks can only change between runs
 	RUN["lineage"] = {"id": admiralId, "picks": lb["picks"].duplicate(), "capstone": lb["capstone"]}
+	var cmL = capstoneMasteryLevel(admiralId) if lb["capstone"] != null else 0
+	if cmL > 0: RUN["lineage"]["mastery"] = cmL   # issue 1650: capstone mastery steps earned when the run starts (set only when earned, so older saves keep their shape)
 	var dev = null
 	for p in RUN["patrons"]:
 		if favourTier(p) >= 2: dev = p; break
@@ -2121,7 +2150,7 @@ func ACT_lateBuy(id: String) -> void:
 	if o == null or not o["ok"]: return
 	var st = yard_node["stock"]["late"]; shopPay(o["cost"])
 	if o["kind"] == "relic":
-		st["bought"].append(o["r"]); changeFleet(func(): RUN["relics"].append(o["r"]))
+		st["bought"].append(o["r"]); changeFleet(func(): addRelic(o["r"]))
 		toast(relicName(o["r"]) + " is yours. " + str(RELICS[o["r"]]["d"]))
 	else:
 		st["cp"] = true; RUN["lateCp"] = float(z0(RUN.get("lateCp"))) + 1; RUN["cpCap"] = float(RUN["cpCap"]) + 1
@@ -2808,8 +2837,8 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 		elif flagDead and float(RUN["sector"]) >= 3:
 			N["dead"] = true; out.append(nemSay(nemFull() + " is dead. The feud is over.", N))
 			if not jt(beh.get("revive")): _speak(out, N, "fall")   # A1: the Eclipse commander's second, permanent death says nothing
-		elif flagDead:   # R49: before the last sector every rival, the Deathless one too, withdraws like this
-			nemScar(o.get("cause") if jt(o.get("cause")) else "big"); nemEscape(N, "flagship"); out.append(nemSay(nemFull() + "'s flagship breaks apart, but he escapes, scarred and furious. He will be back.", N))
+		elif flagDead:   # R49: before the last sector every rival, the Deathless one too, withdraws like this; issue 1505: a rival who never flees (noFlee, revive) withdraws, he does not escape
+			nemScar(o.get("cause") if jt(o.get("cause")) else "big"); nemEscape(N, "flagship"); out.append(nemSay(nemFull() + "'s flagship breaks apart, " + ("and he withdraws" if (jt(beh.get("noFlee")) or jt(beh.get("revive"))) else "but he escapes") + ", scarred and furious. He will be back.", N))
 			_speak(out, N, "fall")
 		else: out.append(nemSay(nemFull() + " withdraws to fight another day.", N))
 		# R49 fairness: what a Corsair raid took (credits and a towed ship) comes back when he dies
@@ -3116,7 +3145,7 @@ func applyOutcome(r) -> Array:
 	if jt(r.get("relic")):
 		var rl = randomRelic()
 		if rl != null:
-			RUN["relics"].append(rl); changeFleet(_noop); out.append("Salvage gained: " + relicName(rl) + ". " + str(RELICS[rl]["d"]))
+			addRelic(rl); changeFleet(_noop); out.append("Salvage gained: " + relicName(rl) + ". " + str(RELICS[rl]["d"]))
 		else:
 			RUN["credits"] = float(RUN["credits"]) + 80; out.append("No salvage left to find. +80 credits instead.")
 	if jt(r.get("dmgOne")):
@@ -3367,7 +3396,9 @@ func factionWinEcon(credits: float, summary: Dictionary) -> Dictionary:
 	var lost = or_(summary.get("lost"), []).filter(func(l): return l is Dictionary and HULLS.has(l.get("tpl")))
 	var out = {}
 	if RUN["fac"] == "chorus":
-		out["bio"] = credits + min(float(TB["BIO_KILL"]["cap"]), float(TB["BIO_KILL"]["per"]) * float(z0(summary.get("kills")))); RUN["bio"] = float(z0(RUN.get("bio"))) + out["bio"]
+		var killBio = min(float(TB["BIO_KILL"]["cap"]), float(TB["BIO_KILL"]["per"]) * float(z0(summary.get("kills"))))
+		if RUN["relics"].has("ledger2"): killBio = jsround(killBio * (1.0 + float(z0(RELICS["ledger2"]["run"].get("credPct")))))   # issue 1653: the Ledger's 10% also cuts kill biomass
+		out["bio"] = credits + killBio; RUN["bio"] = float(z0(RUN.get("bio"))) + out["bio"]
 	else: RUN["credits"] = float(RUN["credits"]) + credits
 	if RUN["fac"] == "ithar" and lost.size() > 0:
 		var CU = TB["CULLET"]; var sum = 0.0
@@ -3664,7 +3695,11 @@ func relicStep() -> void:
 		for r in rc: A(acts, "takeRelic", r)
 		show_modal("relic", {"boss": or_(W.get("rewardCfg"), {}).get("kind") == "boss", "opts": rc}, acts); return
 	promotionsStep()
-func _add_relic(r) -> void: RUN["relics"].append(r)
+func _add_relic(r) -> void: addRelic(r)
+# issue 1653: every way a relic joins the run goes through here, so Black Fleet Ledger's command point is never missed
+func addRelic(r) -> void:
+	RUN["relics"].append(r)
+	if r == "ledger2": RUN["cpCap"] = float(RUN["cpCap"]) + 1
 func ACT_takeRelic(r: String) -> void:
 	if not or_(W.get("relicChoice"), []).has(r): return
 	changeFleet(_add_relic.bind(r))

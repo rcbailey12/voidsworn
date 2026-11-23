@@ -1,7 +1,7 @@
 @echo off
 rem Issue 1303: the template for a helper (Opus) PC proof bat. Copy it to /mnt/project-files/board/<issue>/pc/<NAME>.bat,
 rem fill the five lines marked FILL, write the steps, and send it to the Board. The Board checks only that the bat
-rem calls the head (opus_job_head.bat: tools_live watchdog, exact pins, fresh checkout per attempt, safe ships copy with
+rem calls the head (opus_job_head.bat: tools_live watchdog, exact pins, a fresh checkout or warm slot per attempt, safe ships copy with
 rem the tracked-file check, throwaway Godot profiles, Ryan's options hashed before and after). Once queued, a bat is
 rem never edited: a change ships under a new name.
 setlocal EnableExtensions
@@ -14,6 +14,11 @@ set "TOOLS=godot"
 rem ---- FILL 4 and 5: exact 40-character commits; OLD may be left empty for a one-commit job
 set "PIN_NEW=0000000000000000000000000000000000000000"
 set "PIN_OLD="
+rem Issue 1659: OJ_SLOTS=1 resets a warm slot (voidsworn_test\slots) instead of a fresh clone per attempt. On since the
+rem Windows slot proofs A, B and C passed (Board, Nov 23 2026; relays pc-out-opus1659slota/b/c). Set 0 in one bat to opt out. OJ_SLOT_KIND is gpu (slot_gpu_1 or slot_gpu_2) for
+rem anything that renders, cpu (slot_cpu) for headless-only checks.
+set "OJ_SLOTS=1"
+set "OJ_SLOT_KIND=gpu"
 
 rem The head is the installed main copy in tools_live (fail closed). OPUS_JOB_HEAD may name another copy only for a
 rem pre-merge smoke, together with OPUS_JOB_HEAD_PREMERGE=1; the head logs that.

@@ -436,7 +436,21 @@ we don't run into the issues of before with just empty looking husks". What he w
 - Every hull has real thickness and those insides, sized to read at the battle camera when a piece breaks away: decks, frames,
   machinery shapes, lit or burning spaces; never flat caps or a hollow shell. Chorus: flesh, bone and organs. Glasswrights:
   layered glass and light.
-- Hits, wounds, breaks and deaths use the insides where they exist.
+- Hits, wounds, breaks and deaths use the insides where they exist (RULEBOOK 5.4, RULEBOOK 6.14, R416; `contrib/opus/plans/cohesive_damage_v2.md`).
+  To keep the whole chain from ship build through weapons, hit wounds, capability losses and destruction singular and cohesive:
+  (1) **Blender Interior Kit V2 (issue 1743, R416 Layer 3):** upgrade `tools/blender/build_sheets/kit.py` (`K.room`, `K.deck`,
+  `K.bulkhead`, `K.organ_room`, `K.hoop`, `K.septum`) and `tools/blender/kits/ithar/hull.py` (`insides`) from plain untextured
+  chamfered boxes and flat slabs to modeled machinery, girdered decks, framed arch bulkheads, sculpted organic sacs/bone ribs,
+  and collared crystal waveguides, UV-mapped onto one shared per-faction interior trim atlas (`albedo`, `normal`, `orm`,
+  optional `emission`, reusing `tools/recipe/export7.py` shared trim support), verified by a cutaway review view in
+  `tools/blender/build_sheets/layout.py` and `tools/recipe/check_export.py` while keeping `surface_check.py` at 0 outside room
+  pixels; (2) **Active rebake contrast and palette fixes:** raise `INSIDE_TINT` from 0.18 toward 0.55 across `voidsworn`,
+  `hegemony`, `hullbreakers` and `eclipse` (`#1422`, `#1681`, `#1684`) and flip Eclipse `CORE_RGB` to violet (`#1422`, zero
+  green inside); runtime Wounds V2 (`#1741` Layers 1 + 2) immediately upgrades all 45 already-installed ships with a faction
+  triplanar PBR interior shader and breach-mouth 3D dressing without waiting on rebakes; (3) **Exact hardpoint/slot tags:**
+  keep weapon hard points (`hp_w<slot>_*`), turning turret nodes (`turret_*`), engine nozzles (`hp_eng_*`) and bay doors
+  (`door_*`) accurately tagged by slot and section, because live capability-loss damage reads those exact nodes when weapons,
+  engines or shield generators go offline.
 
 ## 3. Steps
 
@@ -562,7 +576,9 @@ an orange fireball belong only to a round that reaches the hull.
 A munition leaves its own ship (Ryan, Nov 21: the torpedo "appears out of thin air" and "shoots straight up"; picks from
 board/torpedo_rework/launch_1121/TL_*.jpg, "Yes much better"): it starts at its mount, slides clear along the tube with
 its drive and baked nozzle glow dark (a torpedo for 0.7 s, rockets 0.14 s, the star 0.22 s), lights with a flash at the
-nozzle, then turns onto the target with only a low lift. Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
+nozzle, then turns onto the target. It flies flat (issue 1713, Ryan Nov 22: "I'd think we'd keep it flat"): a deck
+tube's slide rises at most about 20 degrees, and from ignition the flight never climbs above the higher of its ignition
+point and the target (`torpedo_flat_flight_check`). Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
 rockets 0.7 of the old round, with trail and flashes to match; the slide distance does not shrink with it
 (fx_weapons.gd `_launch`, `_launch_step`, `_ignite`).
 

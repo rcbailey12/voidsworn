@@ -11,7 +11,7 @@
 #   3. its newest commit is under 3 days old;
 #   4. an open pull request uses it;
 #   5. board/pc-out-<job> while voidsworn_test\<job> still holds a checkout (repo folder, or a checkouts.txt entry that
-#      still exists) or an attempt there names the branch in relay_branch.txt or relay_receipt.txt with a checkout left,
+#      still exists) or an attempt there names the branch in relay_branch.txt, relay_receipt.txt or relay_found.txt with a checkout left,
 #      because the job's cleanup proves its relay from that branch before it frees the disk.
 # It deletes branches on GitHub only, never a file on this PC. Every run is logged in voidsworn_test\prune\.
 param([string]$Mode = '')
@@ -97,7 +97,7 @@ function Get-Decision {
     foreach ($a in @(Get-ChildItem -LiteralPath $job.FullName -Directory -ErrorAction SilentlyContinue)) {
       if (-not (Test-HasCheckout $a.FullName)) { continue }
       $held = $true
-      foreach ($n in @('relay_branch.txt', 'relay_receipt.txt')) {
+      foreach ($n in @('relay_branch.txt', 'relay_receipt.txt', 'relay_found.txt')) {
         $f = Join-Path $a.FullName $n
         if ((Test-Path -LiteralPath $f -PathType Leaf) -and ([string](Get-Content -LiteralPath $f -TotalCount 1)) -match '\A(board/pc-out-[A-Za-z0-9._-]+) ') { $busy[$Matches[1]] = "attempt $($a.FullName) still holds a checkout" }
       }
