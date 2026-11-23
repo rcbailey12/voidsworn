@@ -36,6 +36,8 @@ func _run() -> void:
 		for kind in ["two", "three", "late"]:
 			await _breakup(q, kind)
 	await _warmed_late_hit()
+	await _middle_glued()
+	await _one_crack_hulls()
 	_pick()
 	print("BREAKUP failures=%d" % failures)
 	quit(1 if failures else 0)
@@ -235,6 +237,74 @@ func _warmed_late_hit() -> void:
 	check(str(s.get_meta("death_breakup", "")) == "three" and not glued and n == 3, "warmed: killed by a hit at +7, the +4 joint parts at the death too (%s, glued %s, %d pieces)" % [str(s.get_meta("death_breakup", "")), glued, n])
 	world.queue_free()
 	await process_frame
+
+
+# Audit on 8a2edbce: with joints at -2 and +3 and the first crack at -2, the glued piece is the middle one. Its torn face
+# on the open crack heats with the rest, the snap's sparks come from the joint that held (+3), and the chips on that
+# joint stay in place instead of flying.
+func _middle_glued() -> void:
+	for kind in ["two", "late"]:
+		var world := Node3D.new()
+		root.add_child(world)
+		var fx = _fx(world, "high")
+		var s = _ship(fx, world, "m", [-2.0, 3.0])
+		s.set_meta("last_hit", [Vector3(-3.0, 1.5, 0.0), Vector3.DOWN, 0.0])
+		s.set_meta("breakup_force", kind)
+		await _wait_cut(fx, s)
+		fx.death("m", "blast")
+		var w: Dictionary = {}
+		var child: Node3D = null
+		var snap_x := INF
+		var held_chips := 0
+		for i in 3 * 60:
+			fx.step(1.0 / 60.0)
+			await process_frame
+			for ww in fx.dstate.get("wrecks", []):
+				if ww["id"] == "m": w = ww
+			if w.is_empty(): continue
+			for nd in w["nodes"]:
+				if is_instance_valid(nd) and nd.has_meta("glued"):
+					child = nd
+					snap_x = (nd.get_meta("piece_cen", Vector3.ZERO) as Vector3).x + (nd.get_meta("snap_site", Vector3.ZERO) as Vector3).x
+			held_chips = 0
+			for nd in w["nodes"]:
+				if not is_instance_valid(nd): continue
+				for c in nd.get_children():
+					if c is Node3D and c.has_meta("chip_break"): held_chips += 1
+		var tag := "middle glued %s" % kind
+		var mid_ok: bool = child != null and int(child.get_meta("piece_i", -1)) == 1
+		check(mid_ok, "%s: the middle piece is the one glued" % tag)
+		check(absf(snap_x - 3.0) < 0.6, "%s: its snap site is the joint that held, +3 (%.2f)" % [tag, snap_x])
+		var warm := 0
+		for m in w.get("mats", []):
+			if (w["heat_births"] as Dictionary).has(m): warm += 1
+		check(warm == (w.get("mats", []) as Array).size(), "%s: every torn face has heated (%d of %d)" % [tag, warm, (w.get("mats", []) as Array).size()])
+		check(held_chips > 0, "%s: the chips on the joint that held stay in place (%d)" % [tag, held_chips])
+		world.queue_free()
+		await process_frame
+
+
+# Audit B1: a small hull and a Chorus hull with two authored joints still break once (their own pop and rupture)
+func _one_crack_hulls() -> void:
+	for spec in [["Frigate", "corsair"], ["Destroyer", "hegemony"], ["Cruiser", "chorus"]]:
+		var world := Node3D.new()
+		root.add_child(world)
+		var fx = _fx(world, "low")
+		var holder := Node3D.new()
+		world.add_child(holder)
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(20, 3, 5)
+		mi.mesh = box
+		holder.add_child(mi)
+		holder.set_meta("voidsworn_destruct", {"version": 1, "seams": [{"p": [-4.0, 0.0, 0.0], "n": [1.0, 0.0, 0.0]}, {"p": [4.0, 0.0, 0.0], "n": [1.0, 0.0, 0.0]}], "interior_materials": [], "machines": []})
+		fx.add_ship("o", holder, {"faction": spec[1], "cls": spec[0], "size": 1.0})
+		var r := RandomNumberGenerator.new()
+		r.seed = 5
+		var plan: Dictionary = DEATH.fracture_plan(fx, fx.ship("o"), r)
+		check(int(plan.get("n_main", 0)) == 2, "%s %s: one crack, two pieces (%d)" % [spec[1], spec[0], int(plan.get("n_main", 0))])
+		world.queue_free()
+		await process_frame
 
 
 func _pick() -> void:
