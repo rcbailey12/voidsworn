@@ -127,7 +127,7 @@ def build(K):
     breaks = (-0.95,)
     breach_x = (0.35,)
     hl.insides(K, half_w, half_h, XS + 0.45, XB - 0.55, breaks, breach_x, decks=(-0.35, 0.3), frames=6)
-    hk('rooms').rooms(K, half_w, half_h, XS + 0.45, XB - 0.55, breaks, breach_x, decks=(-0.35, 0.3))   # rooms (Ryan, Nov 23)
+    hk('rooms').rooms(K, half_w, half_h, XS + 0.45, XB - 0.55, breaks, breach_x, decks=(-0.35, 0.3), frames=6)   # rooms (Ryan, Nov 23)
     K.armour('annealed outer glass', 0.02, 'actual shell thickness; layered blown glass, no armour plates')
     hl.ragged_break(K, 'B1', breaks[0], 1.6, 'ragged shatter path aft of the cleft; the shard needles and the stern optic stay whole')
     K.point('core', 'hp_core', (-0.3, 0, 0.0))
