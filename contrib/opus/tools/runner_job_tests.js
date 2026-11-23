@@ -813,6 +813,19 @@ $tipNote = [IO.File]::ReadAllText((Join-Path $out 'EARLIER_TIP.txt'))
 Assert ($tipNote.Contains('did not start from the earlier tip ${clean}') -and $tipNote.Contains('base.txt')) "the reason and the dropped file are named: $tipNote"
 Assert ((& $script:git -C $repo rev-parse HEAD) -eq '${main}') 'nothing was committed'
 Pass 'a commit that would drop the earlier tip''s files stops before the push and names them'
+# Artoo on PR 1804: a reused slot must not continue a branch GitHub deleted, even while its old tip stays reachable.
+$slot = Join-Path $root 'continue-reuse/repo'
+Init 'continue-reuse-first' 'fixture/continue-reuse'
+Shared @('checkout',$slot,$out,'fixture/continue-reuse','')
+Assert ((& $script:git -C $slot rev-parse -q --verify 'refs/remotes/origin/work/issue-800') -eq '${clean}') 'the slot first sees the delivery branch'
+& $script:git -C $upstream update-ref refs/heads/archive-800 '${clean}'
+& $script:git -C $upstream update-ref -d refs/heads/work/issue-800
+Init 'continue-reuse-deleted' 'work/issue-800'
+Shared @('checkout',$slot,$out,'work/issue-800','')
+$log = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+Assert ($log.Contains('earlier checkout reused in place') -and -not $log.Contains('continuing work/issue-800')) "a deleted branch is not continued: $log"
+Assert ((& $script:git -C $slot rev-parse HEAD) -eq '${main}') 'the reused slot starts from main'
+Pass 'a reused slot drops a deleted delivery branch and starts from main'
 Write-Output "PASS runner job checks ($script:passed groups)"
 `);
 // Allow the same PC proof to run with pwsh, the engine used by Linux CI.

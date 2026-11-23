@@ -1244,7 +1244,8 @@ try {
       Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main')
       $reuse = Can-ReuseRepo $repo $mirror $patterns
       if ($reuse) {
-        Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags',$mirror,'+refs/heads/*:refs/remotes/origin/*')
+        # --prune: a reused slot must drop a branch GitHub deleted, or a rerun would continue its stale tip (Artoo on PR 1804).
+        Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags','--prune',$mirror,'+refs/heads/*:refs/remotes/origin/*')
       }
     } finally { $lock.Dispose() }
     # A pinned lane must not hold the shared mirror lock for the ten-minute preservation wait.
