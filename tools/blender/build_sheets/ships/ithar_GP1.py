@@ -138,7 +138,7 @@ def build(K):
             ribbons.append(gw.Ribbon(
                 XS + 0.15, XB - 0.30, f.centre(k),
                 lambda t, k=k: (0.30 + 0.02 * math.sin(1.7 * k)) * gw.leaf(0.10, 0.10, 0.5, tip=0.35)(t),
-                lambda t, v: S * (0.014 + 0.018 * (1 - v * v) ** 0.5),
+                lambda t, v: S * (0.020 + 0.006 * (1 - v * v) ** 0.5),   # nearly flat: no corn-cob crown
                 name='%s_panel_%d' % (tag, k)))
         hl.lay_ribbons(K, ribbons, skin, 0.025 * S, 0.018 * S, nu=160, nv=12)
         for j, xr in enumerate([XS + 0.9 + 1.2 * i for i in range(11)]):
@@ -173,8 +173,8 @@ def build(K):
         a = 0.0 if side > 0 else math.pi
         K.point('rcs', 'hp_rcs_%d' % i, pod(side)(x, a), side='port' if side > 0 else 'stbd')
         K.point('board', 'hp_board_%d' % i, pod(side)(x - 1.0, a), side='port' if side > 0 else 'stbd')
-    K.colour('amber, violet, green panes', XB, XS, 'most of each hull; glows from within')
-    K.colour('opaque pearl ribbons, silver edges', XB, XS, 'nine narrow ribbons on each hull, the bridges')
+    K.colour('amber, violet, green panes', XB, XS, 'the leaf-shaped seams between the pearl panels; glows from within (R431)')
+    K.colour('opaque pearl panels, silver edges', XB, XS, 'eight broad flush panels on each hull (the shell), the bridges')
     K.colour('seafoam stored light', BRIDGES[1] + 1.2, BRIDGES[0] - 1.2, 'the inner flanks facing the cleft and under each bridge')
     K.colour('soft white bloom', XS + 0.4, XS - 0.4, 'one stern drive optic per hull, no flame')
     K.change('Opaque panes and pearl instead of the sketch\'s clear glass', 'R337 (Ryan, Nov 19): nothing see-through.')

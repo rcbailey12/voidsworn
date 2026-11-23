@@ -747,13 +747,25 @@ def mosaic_share(objs, res=160):
                 hits += 1
                 mats = ob.data.materials
                 ev = ob.evaluated_get(dg).data
-                mi = ev.polygons[idx].material_index if idx < len(ev.polygons) else 0
+                mi = ev.polygons[idx].material_index if 0 <= idx < len(ev.polygons) else 0
                 if mi < len(mats) and mats[mi] and mats[mi].name == 'gw_mosaic':
                     glass += 1
         if hits < res * res // 20:   # the hull must fill a fair part of the frame; a near-empty view is a broken measure, not a pass
             raise ValueError('mosaic_share: only %d of %d rays hit the hull from the %s view' % (hits, res * res // 2, name))
         out[name] = round(glass / hits, 3)
     return out
+
+
+def mosaic_gate(K, code):
+    """R431: measure the bare-glass share and stop the build above stack.MOSAIC_MAX (the review and the recipe's stage 4 build,
+    tools/blender/r209/sheet_hull.py, both call this, so no Glasswright hull exports over it)"""
+    share = mosaic_share(list(K.coll.objects))
+    cap = gw_kit('stack').MOSAIC_MAX
+    print('MOSAIC SHARE', code, share, 'max', cap)
+    if max(share['top'], share['battle']) > cap:
+        raise ValueError('R431: %s shows %s bare stained glass from above or the battle camera (max %.2f); widen the pearl '
+                         'so the glass shows only in the seams (kit README)' % (code, share, cap))
+    return share
 
 
 def review(mod, out):
@@ -775,12 +787,7 @@ def review(mod, out):
     (out / 'fit.json').write_text(json.dumps(fit, indent=2))
     if any(fit['counts'].values()):
         raise ValueError('Fit failed: ' + str(fit['counts']))
-    share = mosaic_share(list(K.coll.objects))   # R431: pearl shell, glass only in the seams
-    cap = gw_kit('stack').MOSAIC_MAX
-    print('MOSAIC SHARE', mod.CODE, share, 'max', cap)
-    if max(share['top'], share['battle']) > cap:
-        raise ValueError('R431: %s shows %s bare stained glass from above or the battle camera (max %.2f); widen the pearl '
-                         'so the glass shows only in the seams (kit README)' % (mod.CODE, share, cap))
+    share = mosaic_gate(K, mod.CODE)   # R431: pearl shell, glass only in the seams
     dg = bpy.context.evaluated_depsgraph_get()
 
     def cost(coll):
