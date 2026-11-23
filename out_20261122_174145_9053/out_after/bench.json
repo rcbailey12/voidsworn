@@ -1,0 +1,184 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "bench_sha256": "fb13fbe1e0744016e89bd859f051b6a8f127d5fa50ea12ca43f98bb7f495e3cb",
+ "commit": "f3e406bb2174d56573c2d948fc92757790cc7014",
+ "fixed_fps": 60,
+ "godot": "4.7.2-stable (official)",
+ "late_shader_names": [],
+ "late_shaders_after_warmup": 0,
+ "moments_sha256": "91ebddedadadebb54f62f47104e94af0e76377ca12e7780fc6be2c465b2a9fa8",
+ "parts": {
+  "0": {
+   "start_frame": 9000
+  },
+  "props": {
+   "failures": [],
+   "hulk_factions": [
+    "hegemony",
+    "ithar",
+    "deathless",
+    "chorus",
+    "corsair",
+    "voidsworn"
+   ],
+   "path": "new",
+   "region": "frontier"
+  }
+ },
+ "pipelines_compiled": 104,
+ "stills": [
+  {
+   "cam": 170,
+   "file": "props/ST1_teaching_3hex_new__c170.png",
+   "id": "ST1_teaching_3hex_new",
+   "old_path": false,
+   "part": "props",
+   "step": 8
+  },
+  {
+   "cam": 26,
+   "file": "props/ST1_teaching_3hex_new__c26.png",
+   "id": "ST1_teaching_3hex_new",
+   "old_path": false,
+   "part": "props",
+   "step": 16
+  },
+  {
+   "cam": 170,
+   "file": "props/ST2_big_19hex_new__c170.png",
+   "id": "ST2_big_19hex_new",
+   "old_path": false,
+   "part": "props",
+   "step": 24
+  },
+  {
+   "cam": 26,
+   "file": "props/ST2_big_19hex_new__c26.png",
+   "id": "ST2_big_19hex_new",
+   "old_path": false,
+   "part": "props",
+   "step": 32
+  },
+  {
+   "cam": 170,
+   "file": "props/ST3_hole_1hex_new__c170.png",
+   "id": "ST3_hole_1hex_new",
+   "old_path": false,
+   "part": "props",
+   "step": 40
+  },
+  {
+   "cam": 26,
+   "file": "props/ST3_hole_1hex_new__c26.png",
+   "id": "ST3_hole_1hex_new",
+   "old_path": false,
+   "part": "props",
+   "step": 48
+  },
+  {
+   "cam": 170,
+   "file": "props/HK0_graveyard_new__c170.png",
+   "id": "HK0_graveyard_new",
+   "old_path": false,
+   "part": "props",
+   "step": 56
+  },
+  {
+   "cam": 170,
+   "file": "props/HK_hegemony_new__c170.png",
+   "id": "HK_hegemony_new",
+   "old_path": false,
+   "part": "props",
+   "step": 64
+  },
+  {
+   "cam": 26,
+   "file": "props/HK_hegemony_new__c26.png",
+   "id": "HK_hegemony_new",
+   "old_path": false,
+   "part": "props",
+   "step": 72
+  },
+  {
+   "cam": 170,
+   "file": "props/HK_ithar_new__c170.png",
+   "id": "HK_ithar_new",
+   "old_path": false,
+   "part": "props",
+   "step": 80
+  },
+  {
+   "cam": 26,
+   "file": "props/HK_ithar_new__c26.png",
+   "id": "HK_ithar_new",
+   "old_path": false,
+   "part": "props",
+   "step": 88
+  },
+  {
+   "cam": 170,
+   "file": "props/HK_deathless_new__c170.png",
+   "id": "HK_deathless_new",
+   "old_path": false,
+   "part": "props",
+   "step": 96
+  },
+  {
+   "cam": 26,
+   "file": "props/HK_deathless_new__c26.png",
+   "id": "HK_deathless_new",
+   "old_path": false,
+   "part": "props",
+   "step": 104
+  },
+  {
+   "cam": 170,
+   "file": "props/HK_chorus_new__c170.png",
+   "id": "HK_chorus_new",
+   "old_path": false,
+   "part": "props",
+   "step": 112
+  },
+  {
+   "cam": 26,
+   "file": "props/HK_chorus_new__c26.png",
+   "id": "HK_chorus_new",
+   "old_path": false,
+   "part": "props",
+   "step": 120
+  },
+  {
+   "cam": 170,
+   "file": "props/HK_corsair_new__c170.png",
+   "id": "HK_corsair_new",
+   "old_path": false,
+   "part": "props",
+   "step": 128
+  },
+  {
+   "cam": 26,
+   "file": "props/HK_corsair_new__c26.png",
+   "id": "HK_corsair_new",
+   "old_path": false,
+   "part": "props",
+   "step": 136
+  },
+  {
+   "cam": 170,
+   "file": "props/HK_voidsworn_new__c170.png",
+   "id": "HK_voidsworn_new",
+   "old_path": false,
+   "part": "props",
+   "step": 144
+  },
+  {
+   "cam": 26,
+   "file": "props/HK_voidsworn_new__c26.png",
+   "id": "HK_voidsworn_new",
+   "old_path": false,
+   "part": "props",
+   "step": 152
+  }
+ ],
+ "warnings": []
+}

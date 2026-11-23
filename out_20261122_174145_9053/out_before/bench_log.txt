@@ -1,0 +1,23 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d61d1c1c4263\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1767)
+GPU: acquired shared claim 0d56c52d-d34a-47a1-947d-e0272b3d0db3
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4b43a62d604046b3a8334dafcfa3a42c\godot-profile-6417e23ca0b242948173fd331fadeecf
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[world] baked 33550d59fe13150cc3c09ae057ed88cf32821da6ee502918d827d332e136c6a6 4096x2048 in 4462 ms (worker)
+[world] baked d977c560622cbb65c56991c476ee0afd823593cb59c58e5c7e9a862bb3b44f51 4096x2048 in 7477 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 7860 ms (worker)
+[world] baked 623fe6f152ddefc618bbcf04375f17ce9d26489bc4ff8761be15f359bce2d669 1024x512 in 8282 ms (worker)
+[world] baked 4ab040e4c9922df89beb0008556aaa3616b6bf2c8054d35740bdbf96492a1c2b 4096x2048 in 2321 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 2347 ms (worker)
+[world] baked 3f6b3e30cc235a5c473de1a3811f95eb59b6652665a6af303abb89b063615103 1024x512 in 2274 ms (worker)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[look_bench] world: frontier
+[look_bench] props old: hulk factions ["hegemony", "voidsworn", "corsair", "deathless"]
+[look_bench] late shaders after warm-up (issue 376): 0; pipelines compiled in this run: 80
+[look_bench] stills: 15, warnings: 0
+LOOK_BENCH_DONE
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-4b43a62d604046b3a8334dafcfa3a42c\godot-profile-6417e23ca0b242948173fd331fadeecf
+GPU: released shared claim 0d56c52d-d34a-47a1-947d-e0272b3d0db3
