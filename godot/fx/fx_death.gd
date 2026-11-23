@@ -2353,11 +2353,12 @@ static func _death_inner(fx, s, cause: String) -> float:
 	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
 	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else s.hull.core   # issue 370: the core, never the box centre
 	var axis: Vector3 = (seeds[1] - seeds[0]).normalized() if seeds.size() >= 2 else Vector3.RIGHT
-	var lines := _break_lines(job)
 	# issue 1236 round 4 (Ryan, Nov 23: "we want variety"): a big strained hull breaks in two, in three, or in two and
 	# then again a beat later. Only the joints that part at the death strain and tear.
+	s.remove_meta("death_crack")
 	var breakup := _pick_breakup(fx, s, cause, job)
 	s.set_meta("death_breakup", breakup)
+	var lines := _break_lines(job, _first_crack(s, job.get("plan", {})))
 	if breakup in ["two", "late"]: lines = lines.slice(0, 1)
 	if not lines.is_empty():
 		at = lines[0][0]
@@ -2774,12 +2775,12 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 
 
 # The fracture plan's breaks as [at, normal] lines, the bite's break first; empty for the old seed cut.
-static func _break_lines(job: Dictionary) -> Array:
+static func _break_lines(job: Dictionary, first := -1) -> Array:
 	var plan: Dictionary = job.get("plan", {})
 	if plan.is_empty(): return []
 	var brs: Array = plan["breaks"]
 	var out: Array = []
-	var first := int(plan["bite_break"])
+	if first < 0: first = int(plan["bite_break"])
 	if first < brs.size(): out.append([brs[first]["at"], brs[first]["n"]])
 	for i in brs.size():
 		if i != first: out.append([brs[i]["at"], brs[i]["n"]])
@@ -3588,7 +3589,8 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		if not plan.is_empty() and not (plan["breaks"] as Array).is_empty():
 			# issue 484: the seam this piece's torn face belongs to (the bite's break where it has one)
 			var brs: Array = plan["breaks"]
-			var seam_b: int = clampi(int(plan["bite_break"]) if i in [int(plan["bite_break"]), int(plan["bite_break"]) + 1] else mini(i, brs.size() - 1), 0, brs.size() - 1)
+			var fc := _first_crack(s, plan)
+			var seam_b: int = clampi(fc if i in [fc, fc + 1] else mini(i, brs.size() - 1), 0, brs.size() - 1)
 			pc["split_at"] = brs[seam_b]["at"]
 			pc["split_axis"] = brs[seam_b]["n"]
 			pc["split_width"] = h.L * 0.12
@@ -3681,7 +3683,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 	if not bu.is_empty() and bu.has("child_node"):
 		_glue(fx, s, wreck, bu)
 	if story:
-		_gap_lights(fx, s, wreck, plan, xf, -1 if bu.is_empty() or bu["kind"] == "three" else int(plan["bite_break"]))
+		_gap_lights(fx, s, wreck, plan, xf, -1 if bu.is_empty() or bu["kind"] == "three" else _first_crack(s, plan))
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
 	BEATS.on_break(fx, s, wreck, cause, center, xf)
@@ -3924,20 +3926,29 @@ static func _pick_breakup(fx, s, cause: String, job: Dictionary) -> String:
 	var plan: Dictionary = job.get("plan", {})
 	if not (fx.death_story and s.death_big and s.faction != "chorus") or plan.is_empty(): return ""
 	if int(plan.get("n_main", 0)) != 3 or not bool(plan.get("authored", false)): return ""
-	if s.has_meta("breakup_force"): return str(s.get_meta("breakup_force"))   # breakup_check and the look bench only
-	if cause == "cut" or cause == "dark": return "two"   # a lance cuts clean; a burnt-out hull does not fly apart
-	if cause == "ram": return "three"
 	# Artoo on PR 1737: the cut is made ahead (on load, then at most every CUT_REFRESH seconds as the hull takes damage),
-	# so its first crack follows an earlier hit. When the killing hit is nearer the other cut joint, that joint must part
-	# at the death too: the hull breaks in three (no death-frame cut is ever added for it).
+	# so its bite follows an earlier hit. When the killing hit is nearer the other cut joint, that joint cracks first
+	# (death_crack) and the bite's joint is the one that holds; no death-frame cut is ever added for it. The Board on
+	# e26dab6c: forcing three there would have made three the most common breakup in a real fight.
 	var last = s.get_meta("last_hit", [])
 	if last is Array and last.size() >= 1 and last[0] is Vector3:
 		var brs: Array = plan["breaks"]
 		var nb := 0
 		for bi in brs.size():
 			if absf((brs[bi]["at"] as Vector3).x - (last[0] as Vector3).x) < absf((brs[nb]["at"] as Vector3).x - (last[0] as Vector3).x): nb = bi
-		if nb != int(plan["bite_break"]): return "three"
+		if nb != int(plan["bite_break"]): s.set_meta("death_crack", nb)
+	if s.has_meta("breakup_force"): return str(s.get_meta("breakup_force"))   # breakup_check and the look bench only
+	if cause == "cut" or cause == "dark": return "two"   # a lance cuts clean; a burnt-out hull does not fly apart
+	if cause == "ram": return "three"
 	return _pick_breakup_for(str(s.id), str(s.death_tier), s.get_meta("last_hit", []), cause)
+
+
+# The joint that cracks first: the bite's, or the joint nearest a killing hit that came after the cut (death_crack).
+static func _first_crack(s, plan: Dictionary) -> int:
+	if plan.is_empty(): return 0
+	var c := int(s.get_meta("death_crack", -1))
+	if c >= 0 and c < (plan["breaks"] as Array).size() and int(plan.get("n_main", 0)) == 3: return c
+	return int(plan["bite_break"])
 
 
 # the seeded pick itself: the ship, the cause and where it was last hit (a quarter-unit grid), so a replay matches
@@ -3973,7 +3984,7 @@ static func _breakup_layout(fx, s, plan: Dictionary, pieces: Array, n_main: int,
 	var d_lat := L * r.randf_range(0.07, 0.11)
 	var disp: Array = [Vector3.ZERO, Vector3.ZERO, Vector3.ZERO]
 	var yaw: Array = [0.0, 0.0, 0.0]
-	var p := int(plan["bite_break"])              # the first crack: between pieces p and p + 1
+	var p := _first_crack(s, plan)                # the first crack: between pieces p and p + 1
 	var lone := 0 if p == 0 else 2                # the piece the first crack frees
 	var pair: Array = [1, 2] if p == 0 else [0, 1]
 	var sizes: Array = plan["sizes"]

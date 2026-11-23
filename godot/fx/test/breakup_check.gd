@@ -223,6 +223,7 @@ func _warmed_late_hit() -> void:
 	var first: float = (plan["breaks"][int(plan["bite_break"])]["at"] as Vector3).x if not plan.is_empty() else INF
 	check(absf(first + 4.0) < 0.3, "warmed: the cut made after a hit at -6 cracks first at -4 (%.2f)" % first)
 	s.set_meta("last_hit", [Vector3(7.0, 1.5, 0.0), Vector3.DOWN, fx.now])
+	s.set_meta("breakup_force", "two")
 	fx.death("w", "blast")
 	var glued := false
 	var n := 0
@@ -234,7 +235,13 @@ func _warmed_late_hit() -> void:
 			n = (ww["nodes"] as Array).size()
 			for nd in ww["nodes"]:
 				if is_instance_valid(nd) and (nd as Node).has_meta("glued"): glued = true
-	check(str(s.get_meta("death_breakup", "")) == "three" and not glued and n == 3, "warmed: killed by a hit at +7, the +4 joint parts at the death too (%s, glued %s, %d pieces)" % [str(s.get_meta("death_breakup", "")), glued, n])
+	# the Board on e26dab6c: the late hit moves the first crack instead of forcing three, so two and late stay common
+	var crack: int = int(s.get_meta("death_crack", -1))
+	var crack_x: float = (plan["breaks"][crack]["at"] as Vector3).x if crack >= 0 and not plan.is_empty() else INF
+	var held: int = int(s.get_meta("death_glued_break", -1))
+	var held_x: float = (plan["breaks"][held]["at"] as Vector3).x if held >= 0 and not plan.is_empty() else INF
+	check(absf(crack_x - 4.0) < 0.3, "warmed: killed by a hit at +7, the first crack moves to the +4 joint (%.2f)" % crack_x)
+	check(str(s.get_meta("death_breakup", "")) == "two" and glued and n == 3 and absf(held_x + 4.0) < 0.3, "warmed: and a two breakup still happens, held at the -4 joint (%s, glued %s, %d pieces, held at %.2f)" % [str(s.get_meta("death_breakup", "")), glued, n, held_x])
 	world.queue_free()
 	await process_frame
 
