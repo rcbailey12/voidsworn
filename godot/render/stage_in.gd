@@ -21,6 +21,8 @@ var active := false
 var paused := false           # true while the effect warm-up runs (it spreads its own meshes)
 var step := 1                 # new-material meshes given back after the next draw (LOAD23: starting at 2 and growing on
                               # empty draws let all four effect pools out at once, 36 pipelines in a 1.3 s title frame)
+var cam: Camera3D = null      # Artoo on PR 1445: a new material comes back only on a mesh the camera sees, so it is drawn
+var draining := false         # in the drain (camera pulled back over the board) every waiting mesh may come back
 var _fresh_last := 0          # new-material meshes the last draw showed for the first time
 var given := 0                # meshes given back so far (the load bench reads it)
 var waiting_peak := 0
@@ -71,6 +73,7 @@ func drain(tree: SceneTree) -> void:
 		tree.node_added.disconnect(_added)
 	var t0 := Time.get_ticks_msec()
 	var drawn := DisplayServer.get_name() != "headless"
+	draining = true
 	while not _queue.is_empty() and active and Time.get_ticks_msec() - t0 < 10000:
 		await tree.process_frame
 		if not drawn:
@@ -144,7 +147,7 @@ func _on_post() -> void:
 		var key := _key(g)
 		if _seen.has(key):
 			_give(g)
-		elif fresh < step:
+		elif fresh < step and (draining or _in_view(g)):
 			fresh += 1
 			_seen[key] = true
 			_give(g)
@@ -202,3 +205,17 @@ static func _mat_key(m: Material) -> String:
 	if m.next_pass != null:
 		k += "+" + _mat_key(m.next_pass)
 	return k
+
+
+# a mesh with a material not yet drawn comes back only where the camera will draw it, so the next draw makes its
+# pipelines and the same-material meshes after it really find them made (Artoo on PR 1445); without a camera, always
+func _in_view(g: GeometryInstance3D) -> bool:
+	if cam == null or not is_instance_valid(cam) or not cam.is_inside_tree() or not g.is_inside_tree():
+		return true
+	var box := g.global_transform * g.get_aabb()
+	if box.has_point(cam.global_position):
+		return true
+	for i in 8:
+		if cam.is_position_in_frustum(box.get_endpoint(i)):
+			return true
+	return cam.is_position_in_frustum(box.get_center())

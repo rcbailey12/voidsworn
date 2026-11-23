@@ -254,6 +254,7 @@ func _ready() -> void:
 	var t_p := Time.get_ticks_usec()
 	_build_world()
 	StageIn.hide_layer_from(cam, [key_light])
+	stage.cam = cam
 	rp["world"] = Time.get_ticks_usec() - t_p
 	t_p = Time.get_ticks_usec()
 	sfx = Sfx.new()
