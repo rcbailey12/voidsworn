@@ -440,6 +440,12 @@ CRAFT_CELLS_PER_LENGTH = 45.0
 # range, so the stone colours get a gentle push (once, in the shared mosaic).
 SATURATION = 1.25
 
+# R431 (Ryan, Nov 23 2026, on I8_37 against I15_11: "the top is how we want it to look across the board"): every Glasswright
+# hull is a pearl shell with the stained glass only in the seams and openings. MOSAIC_MAX is the most bare gw_mosaic the outside
+# may show from above or from the battle camera (hull.mosaic_share; the reference I8_37 / CD5 shows about 0.35). The review
+# fails a hull over it.
+MOSAIC_MAX = 0.42
+
 
 def cells_per_length():
     try:

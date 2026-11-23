@@ -172,14 +172,14 @@
       "obj": "ithar_GP1_port_pane_hull",
       "role": "opaque glowing stained-glass panes",
       "src": "picture",
-      "note": "One of the two parallel hulls; thick amber, violet and green panes under narrow pearl ribbons."
+      "note": "One of the two parallel hulls; flush pearl panels over thick amber, violet and green panes that show in the seams."
     },
     {
       "name": "Stbd pane hull",
       "obj": "ithar_GP1_stbd_pane_hull",
       "role": "opaque glowing stained-glass panes",
       "src": "picture",
-      "note": "One of the two parallel hulls; thick amber, violet and green panes under narrow pearl ribbons."
+      "note": "One of the two parallel hulls; flush pearl panels over thick amber, violet and green panes that show in the seams."
     },
     {
       "name": "Arched bridge aft",
@@ -444,17 +444,17 @@
         6.15,
         -6.55
       ],
-      "where": "most of each hull; glows from within",
+      "where": "the leaf-shaped seams between the pearl panels; glows from within (R431)",
       "note": ""
     },
     {
       "kind": "colour",
-      "name": "opaque pearl ribbons, silver edges",
+      "name": "opaque pearl panels, silver edges",
       "x": [
         6.15,
         -6.55
       ],
-      "where": "nine narrow ribbons on each hull, the bridges",
+      "where": "eight broad flush panels on each hull (the shell), the bridges",
       "note": ""
     },
     {
@@ -604,7 +604,7 @@
   ],
   "budget": {
     "outside": {
-      "triangles": 383514,
+      "triangles": 465946,
       "unjoined_surfaces": 130,
       "material_surfaces": 13,
       "materials": [
@@ -700,11 +700,16 @@
       "O1_mount_gw_silver"
     ]
   },
+  "mosaic_share": {
+    "top": 0.284,
+    "side": 0.219,
+    "battle": 0.341
+  },
   "dimensions": [
     14.46274995803833,
-    6.093663215637207,
-    2.7569061517715454
+    6.133465766906738,
+    2.77402126789093
   ],
-  "design_sha256": "9c1ff5aaf65b61c0467f804c651ef0815f33fd599b72146dce40863c47ff1738",
-  "kit_sha256": "8112e03470e6c76ef0098ec39d3917b4b2eebd7a825f74eca8c289747d13470b"
+  "design_sha256": "347a5653b7186b64ca83f140194d5d1bb3c8770168e4708accae1e9666a57a01",
+  "kit_sha256": "17e83198aec65cf23fbdf1a9d9f7c82b11936d52d9e652f1c091b9868c28b3f0"
 }

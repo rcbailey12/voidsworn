@@ -76,7 +76,11 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    issue 1183), set in `tools/blender/kits/ithar/` for every Glasswright sheet ship, never on one ship (R333): opaque,
    reflective champagne pearl ribbons (warm, never lilac grey: issue 1282), many and fine, each a bundle of strands with silver
    lines and a colour shift, over a core of emissive amber, violet and emerald stained-glass mosaic panels lit from behind (hot
-   in the middle, dark at the lead edge); ribbons cover under half the hull; a slender spindle, about 4 to 1; stones are cut and
+   in the middle, dark at the lead edge); the pearl is the shell and the glass shows only in the seams and openings between
+   ribbons, as on I8_37: at most `stack.MOSAIC_MAX` (0.42) of the outside is bare glass from above or from the battle camera,
+   measured and enforced by the kit review (`hull.mosaic_share`; R431, Ryan Nov 23 2026: "the top is how we want it to look
+   ascross the board", after the Prism I15_11 showed about 0.77 glass; the old "ribbons cover under half" wording let it
+   through); a slender spindle, about 4 to 1; stones are cut and
    glowing, and optics are small glints, never domes (round 5 outside read, Nov 19). Judge each round at camera 170 beside the
    concept first. Never see-through: every intact-hull surface has transmission 0 and the interior shows only in the break-up.
    No wear. The bake marks it authored_look so the game keeps its values (R329). The game's rim back light skips Glasswright

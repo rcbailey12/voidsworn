@@ -98,7 +98,7 @@ S = (LENGTH / 26.0) ** 0.7     # ribbon and line scale against CD5
 # Each lobe is one of the pick's two ribbons: a mosaic stripe along its crest (as the sketch's coloured band along each
 # ribbon), bracketed by pearl ribbons; the grooves between the lobes hold seafoam stored light, opened wide in the cleft.
 # (offset from the lobe direction, half width in radians)
-RIBS = [(0.85, 0.26), (-0.85, 0.26), (1.33, 0.20), (-1.33, 0.20)]
+RIBS = [(0.85, 0.31), (-0.85, 0.31), (1.33, 0.24), (-1.33, 0.24)]   # R431: wider pearl, glass in the seams (kit MOSAIC_MAX)
 BAY = 1.15                    # length of one mosaic panel along a crest stripe
 
 

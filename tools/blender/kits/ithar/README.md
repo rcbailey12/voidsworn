@@ -2,7 +2,7 @@
 
 Issue 1183, R337 (Ryan, Nov 19 2026: restart CD5 from its concept) and R333 (shared, so every Glasswright gets it).
 The look: opaque, reflective pearl ribbons (many and fine, each a bundle of strands with silver lines and a colour shift), sweeping and overlapping stern to bow, over a core of
-glowing amber, violet and emerald stained-glass mosaic, each panel lit from behind (hot middle, dark edge). Ribbons cover under half. Nothing is see-through on an intact hull;
+glowing amber, violet and emerald stained-glass mosaic, each panel lit from behind (hot middle, dark edge). The pearl is the shell: the glass shows only in the seams and openings between ribbons, at most `stack.MOSAIC_MAX` (0.42) bare glass from above or the battle camera, checked by `hull.mosaic_share` in every review (R431, Ryan Nov 23 2026: I8_37 is the look for every Glasswright). Nothing is see-through on an intact hull;
 the interior shows only in the break-up. No wear.
 
 | File | What it holds |

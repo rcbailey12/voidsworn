@@ -269,6 +269,14 @@ def body(K):
              'docs/playbooks/scale.md, Squadron rows, binding; Glasswrights are a small elite fleet, so the craft is slim and sleek (Ryan, Nov 20)')
     K.change('Three cut violet drive stones on the blunt stern face, no flame or nozzle', 'the CD5 concept\'s stern stones in small')
     K.open_item('Colours and the ribbons\' sheen come from the shared Glasswright kit (tools/blender/kits/ithar/stack.py); PR 1283\'s warmer look reaches this craft when it merges')
+    # R431 (Ryan Nov 23): the craft read as I8_37 too, a pearl shell with the glass only in the seams (kit MOSAIC_MAX)
+    import bpy
+    bpy.context.view_layer.update()
+    share = gw_kit('hull').mosaic_share(list(K.coll.objects))
+    print('MOSAIC SHARE', CODE, share, 'max', gw_kit('stack').MOSAIC_MAX)
+    if max(share['top'], share['battle']) > gw_kit('stack').MOSAIC_MAX:
+        raise ValueError('R431: %s shows %s bare stained glass (max %.2f); widen the pearl ribbons (F.HALF)'
+                         % (CODE, share, gw_kit('stack').MOSAIC_MAX))
 
 
 def gun_optic(K):
