@@ -614,7 +614,10 @@ def inside_material(zone, trim=False):
         if INSIDE_TRIMS['main']['glow'] is None:
             g = interior_trim.faction_interior('ithar')['glow']
             INSIDE_TRIMS['main']['glow'] = dict(rgb=tuple(g['rgb']), share=g['share'], strength=g['strength'])
-        m = interior_trim.role_material(f'ithar_inside_{zone}', 'ithar', zone, interior_trim.roles_for('ithar', {}), INSIDE_TRIMS)
+        t = interior_trim.faction_interior('ithar')
+        core = (tuple(t['core_rgb']), t['core_strength']) if 'core_rgb' in t else None   # the rooms' crystal heart (Ryan, Nov 23)
+        m = interior_trim.role_material(f'ithar_inside_{zone}', 'ithar', zone, interior_trim.roles_for('ithar', {}), INSIDE_TRIMS,
+                                        core=core)
         m['authored_look'] = 1
         return m
     m = src.copy() if src else bpy.data.materials.new(zone)
