@@ -88,9 +88,9 @@ func _build(name_text: String) -> void:
 	k = load("res://ui/ui_scale.gd").k_for(get_viewport_rect().size)   # the one shared law (ui_spec.md section 4); its ceiling was 2.0 here
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var regular := _font("res://ui/battle/fonts/BarlowSemiCondensed-Regular.ttf")
-	var semi := _font("res://ui/battle/fonts/BarlowSemiCondensed-SemiBold.ttf")
-	var goth: Font = load("res://ui/battle/brand.gd").display()  # Michroma (lore round 5; the blackletter is retired)
+	var regular := _font("res://ui/theme/fonts/Barlow-Regular.ttf")
+	var semi := _font("res://ui/theme/fonts/Barlow-Medium.ttf")
+	var goth: Font = load("res://ui/battle/brand.gd").display()  # Big Shoulders Display (R436 C28)
 	var dimr := ColorRect.new()
 	dimr.color = Color(0.024, 0.035, 0.063, 0.7)
 	dimr.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

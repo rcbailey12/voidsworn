@@ -78,6 +78,7 @@ headless|rules/test/effect_caps_test.gd|-|res://rules/test/effect_caps_cases.jso
 headless|rules/test/map_trial_test.gd|-|-|issues 1050 and 1160: compare every map-trial encounter with saved results and the approved fleet pin
 headless|rules/test/shield_pool_test.gd|-|res://rules/test/shield_pool_cases.json|R246 shield pool (issue 371): replay saved results for every shielded hull and for scripted hits and turns
 headless|rules/test/ion_pulse_ai_test.gd|-|-|issue 1447: when the enemy AI fires the ion pulse (real pools, after moving, log count); twin of contrib/opus/tools/ion_pulse_ai_tests.js
+headless|rules/test/balance_sim_abilities_test.gd|-|-|issue 1705: campaign, campaignrewards and boss cells field the selected player fleet and count phase and frenzy uses on a fixed seed
 headless|rules/test/rules_1560_test.gd|-|-|issue 1560 and R396: battle rules audit fixes (no turn or ram after firing, hits never heal, fleeing escorts stay gone, AI and forecast fixes); twin of contrib/opus/tools/rules_1560_tests.js
 headless|rules/test/rules_1650_test.gd|-|-|issue 1650: the three Mastery III signatures the bot battles rarely reach (stern torpedo, double kill chain, pack bite on the prey)
 headless|rules/test/rules_1481_test.gd|-|-|issue 1481: every shield drop sends the break (storm, flare, mid section, ram, ion pulse, nova), rams use the shared spend, counter-fire, ram shockwave and reactor hits send a hit, a bad blink or nova hex is refused before it counts; twin of contrib/opus/tools/rules_1481_tests.js
@@ -247,4 +248,5 @@ headless|ui/test/front_end_test.gd|-|-|issue 1217: orders kit wrap-safe labels a
 headless|ui/test/throwaway_profile_check.gd|-|-|issue 1369: front_end_shots and hit_timing_capture accept user:// only inside the watchdog throwaway profile (godot-profile- with the run owner token)
 gpu|ui/test/front_end_shots.gd|-|{out}|issue 1217: F1 pictures of Settings, the title and the setup page at Normal and Larger through the real main scene (cloud: xvfb-run with --rendering-driver opengl3)
 headless|main/test/player_path_map_ready_check.gd|-|-|issue 1448: the player-path recorder waits for the sector map loading cover before it jumps (a fresh Windows profile failed at "jump to 0-0 did not open")
+headless|rules/test/threat_preview_test.gd|-|-|issue 1859: the read-only enemy threat scorer ranks targets without changing the battle state
 headless|render/test/hull_age_check.gd|-|-|issue 1410: render/hull_age.gd reads the tracked ship manifest for the old Nov 1 layout (no _parts_ maps): V14_23 NEW, H7_23 OLD, unknown UNLISTED; the guard refuses old hulls except the O1_37 teaching exception unless ALLOW_OLD_HULLS=1; resolved() reports a placeholder for an unknown code
