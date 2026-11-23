@@ -188,3 +188,61 @@ GitHub's file contents matched the local Git blobs byte for byte at the review p
 **Board decision.** Send PR 1835 back for the watchdog compatibility check, live slot proof and complete play check. Recheck those fixes on Windows before the first live job.
 
 Not checked: a live daemon or leased production slot, execution of the installed bundle, an actual play session, Blender or Godot, GPU contention, a relay upload, GitHub writes, or the full standing suite. The two requested suites used local fixtures. The lane verification issue tracked in #1854 is separate from PR 1835.
+
+## Run 4 recheck
+
+**Send PR 1835 back before its first live job.** GitHub reported head `2e000b614b25e87c4e9faf80f8610ce00952bf80`. All 30 daemon groups and all 141 shared runner checks passed on Windows. Two run 3 items still block a live job. Item 5 leaves gaps when publishing or clearing a slot hold. Item 6 misses Ryan's compatibility play launcher.
+
+The comparison starts at the run 3 head `ae304378` and includes `ddf4b937` and `2e000b61`. Paths in the verdict tables are relative to `tools/pc/`.
+
+### Blocking
+
+| Item | Verdict | Evidence | File:line | Exact quote | Consequence and requested fix | Confidence |
+|---|---|---|---|---|---|---|
+| 6 | PARTLY, BLOCKING | OBSERVED | `mission/pc_daemon.js:478` | `return !/--?\w/.test(rest);` | The final check now runs after the GitHub reads, detects ordinary windowed play and holds on a failed query. The shipped compatibility launcher passes a renderer flag at `play_godot_safe.bat:3`. A Windows call to the classifier returned false for both resulting play commands, the export and windowed Godot. The watchdog uses the same flag rule at `run_timeout.ps1:637`. Recognize both play launchers in both checks and add their actual arguments to the fixture. | High |
+| 5, cleanup | PARTLY, BLOCKING | INFERRED | `mission/pc_daemon.js:415` | `fs.renameSync(f.marker, aside);` | The lease is checked at line 413. Cleanup then moves even a Board-edited hold out of `hold.txt` before reading it. If the read or restoration fails, line 703 logs that the marker stays and line 716 releases the slot. A crash in that window also leaves only the renamed file. The allocator at `jobs/opus_job_head.ps1:914` checks only `hold.txt`. Keep the slot unavailable while either file awaits resolution, and preserve any newer Board hold during restoration. | High |
+| 5, creation | PARTLY, BLOCKING | OBSERVED | `mission/pc_daemon.js:406` | `fs.writeFileSync(marker, text, { flag: 'wx' });` | The daemon proves the lease at line 668. Ship copying and the GitHub recheck run before it publishes the marker at line 675. Publication and the watchdog's final gate accept the earlier proof even if the lease was released in between. The helper also protects a living, unreleased owner at `jobs/opus_job_head.ps1:1154`. Require the same live slot and token at publication and before launch. Cover a release before publication as well as the existing release before removal. | High |
+
+### High / Medium
+
+| Item | Verdict | Evidence | File:line | Exact quote | Consequence and requested fix | Confidence |
+|---|---|---|---|---|---|---|
+| D | PARTLY, SHOULD-FIX, High | OBSERVED | `mission/pc_daemon.js:757` | `this.tools.relay(e.job, e.attempt, st)` | A successful pin now lasts through the options check, slot release and first relay. A failed pin skips the options hash at line 710 but still reaches delivery at line 732. With no pin, the relay resolves the current tools directory again. Keep the failed result locally until a verified tools version is available for delivery. | High |
+| H | PARTLY, SHOULD-FIX, Medium | INFERRED | `mission/pc_daemon.js:808` | `const d = new Daemon({ vt, gh: null, tools: null });` | Board clearance now persists for the selected attempt. The clearance command also treats an active attempt's unmatched start as interrupted, because this new process has an empty set of attempts it owns. A mistaken clearance can suppress recovery if the real daemon later stops. Require a recorded interruption for that attempt before accepting clearance. | High |
+
+### Ready / Verified
+
+| Item | Verdict | Evidence | File:line | Exact quote | What passed | Confidence |
+|---|---|---|---|---|---|---|
+| G | FIXED, NOTE | OBSERVED | `mission/pc_daemon.js:343` | `/^# pc-step-settings: 1\r?$/m.test` | After the bundle hash check, the pin requires the watchdog's version marker. The old-watchdog fixture refused to pin. The matching watchdog at line 575 carries the marker and ran in the Windows group. | High |
+| 8 | FIXED, NOTE | OBSERVED | `mission/pc_daemon.js:166` | `j.run_id === wr.id` | The daemon fetches jobs for the chosen run and attempt, then checks the aggregate name, run ID, attempt, SHA, status and conclusion. The same-run fixture rejected attempt 1's green job for attempt 2. The live jobs endpoint for run 45243420809 returned the expected ID, attempt and SHA fields. | High |
+| 10 | FIXED, NOTE | OBSERVED | `mission/pc_daemon_selftest.js:666` | `tools.clearInFlight(flight);` | A real PowerShell holder locked the temporary CPU slot. The watchdog waited for the stand-in's descendant, removed its profile and scratch contents, then the helper proved the lease still live and cleared the marker. After the holder exited, a second removal was refused and its marker survived. | High |
+| I | FIXED, NOTE | OBSERVED | `mission/pc_daemon.js:401` | `plainChain(scratch);` | Scratch setup and validation finish before the hold is written. The Windows junction fixture failed the path check and left no hold. | High |
+| J | FIXED, NOTE | OBSERVED | `run_timeout.ps1:574` | `if ($LibraryOnly) { return }` | Library mode returns before record initialization at line 577. Dot-sourcing main and the PR with all six daemon settings unset preserved both caller variables, `$rec` and `$pcStepRec`. | High |
+| gpu_go.txt | FIXED, NOTE | OBSERVED | `mission/pc_daemon.js:558` | `return e.code !== 'ENOENT';` | Only a missing file clears a read error. A directory in place of the pause file stopped discovery and the final recheck. The fixture made no worker calls. | High |
+
+### Windows checks and source record
+
+- `node tools/pc/mission/pc_daemon_selftest.js` passed **30/30** at the PR head with Node 22.11.0. The Windows group used a real slot holder and Job Object, a Node worker and two stand-in launch gates. The accepting gate ran the worker. The refusing gate returned 125 before it started.
+- `node tools/pc/runner_selftest.js` passed **141 checks**, exit 0, from the same pin with the standing suite's lane environment filter. It used local fixture repositories. The standing-checks job on GitHub also reported success for this head.
+- The shared watchdog diff against main `9afbc41d` adds 91 lines and removes 11. The adapter supplies six daemon settings at `mission/pc_daemon.js:451` and line 452. The watchdog reads and clears them at lines 580 to 587. Normal runs now keep an in-memory step record and use .NET to set and restore profile variables. With all six settings unset, the same CPU child on main and the PR received its inherited profile paths, printed the same output and returned exit 17. The final daemon gate, extended tree wait, slot scratch and on-disk record remain opt-in.
+- In a disposable Windows profile, the actual `--clear` command accepted the recorded interrupted attempt once (exit 0), declined a repeat (exit 2), and left the hold for the Board. The cleared attempt dropped out of the interruption list.
+
+GitHub's pinned file contents matched the local Git blobs. The last column records up to 40 characters from the final line. For the two files over 60 KB, the slot helper reads covered lines 851 to 1058, 1061 to 1090, 1097 to 1184 and 1554 to 1557. The runner suite reads covered lines 1 to 142 and 1476 to 1536, plus its complete execution.
+
+| File | Lines | Final line begins |
+|---|---:|---|
+| `tools/pc/mission/pc_daemon.js` | 845 | `  expectMissing, checkRoot, checkSlotRep` |
+| `tools/pc/mission/pc_daemon_selftest.js` | 682 | `})().catch(e => { console.error('FAIL: '` |
+| `tools/pc/jobs/opus_job_head.ps1` | 1557 | `}` |
+| `tools/pc/run_timeout.ps1` | 923 | `}` |
+| `tools/pc/mission/PC_DAEMON.bat` | 13 | `exit /b %RESULT%` |
+| `docs/playbooks/pc.md` | 197 | `Node and retire its wrapper. The selftes` |
+| `contrib/opus/tools/run_all_checks.js` | 355 | `module.exports = { rowEnv, classifyFindi` |
+| `tools/pc/runner_selftest.js` | 1536 | `} })();` |
+| `tools/pc/play_godot_safe.bat` | 3 | `call "%~dp0play_godot.bat" --rendering-m` |
+| `tools/pc/play_godot.bat` | 45 | `exit /b 0` |
+
+**Board decision.** Return PR 1835 for items 5 and 6. Recheck hold recovery, loss of a lease before launch, and both compatibility play commands before the first live job.
+
+Not checked: a production daemon, slot reset, Board hold edit during cleanup, interactive play session, GPU work, installed tool refresh or real relay delivery. The local run covered the two requested Windows suites and focused comparisons. The full standing suite result came from GitHub.
