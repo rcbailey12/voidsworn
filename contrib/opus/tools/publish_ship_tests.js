@@ -94,6 +94,12 @@ assert(iStamp >= 0 && iStamp < iShots && main.some(l => /^set "PICTURE_PYTHON=%B
 pass('the shots step uses tools_live\'s stamp tool and the Blender python');
 pass('Ryan\'s real options are hashed before and after into result.txt, every step runs in a throwaway profile, and the undo-bat check can fail');
 
+// Issue 1357: after the second seal the publish hands the Board the manifest row it made live, before the shots step
+const iSeal2 = main.findIndex(l => /log_seal\.txt/.test(l.s));
+const iPatch = main.findIndex(l => /manifest-patch "%GAME%" %CODE%/.test(l.s));
+assert(iSeal2 >= 0 && iPatch > iSeal2 && iShots > iPatch, 'the manifest patch runs after the second seal and before the shots step');
+pass('the manifest patch runs after the second seal and before the shots step');
+
 // Issue 1739: a real Python 3, never the Windows Store alias that answers to python3 on the Codex lanes
 const pyCmd = require('./find_python').findPython();
 assert(pyCmd, 'no Python 3 to run publish_ship_selftest.py');

@@ -4476,16 +4476,18 @@ func _on_key(k: int) -> void:
 				mode = "" if mode == "board" else "board"
 				_refresh_ui()
 		KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6:
-			_arm(k - KEY_1)
+			_arm(k - KEY_1, true)
 
 
-func _arm(i: int) -> void:
+func _arm(i: int, from_hotkey := false) -> void:
 	var u := _sel_unit()
 	if u.is_empty() or i >= (u["weapons"] as Array).size():
 		return
 	armed = -1 if armed == i else i
 	sfx.play("ui_click")
 	_refresh_ui()
+	if from_hotkey and atk != null:
+		hud.toast("Planned shot keeps its guns. Cancel the plan to change weapons.")
 
 
 func _rotate(d: int) -> void:
