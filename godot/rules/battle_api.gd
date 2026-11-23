@@ -135,6 +135,7 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	if S.get("heat") != null: run["heat"] = S.heat.duplicate()
 	if S.get("class_track") != null: run["classTrack"] = S.class_track.duplicate()
 	if S.get("lineage") != null: run["lineage"] = S.lineage.duplicate(true)   # issue #305: the run snapshot of the flown admiral's tree
+	if S.get("cmdOverride") != null: run["cmdOverride"] = S.cmdOverride.duplicate(true)   # issue 1651: a Command swapped in by Mastery III (its own rider follows it)
 	R.RUN = run
 	for t in S.fleet: run["fleet"].append(R.newShip(t, R.jt(S.get("vet"))))
 	if S.get("mods") is Array:   # issue 1653: refits per fleet ship, in fleet order
@@ -544,7 +545,7 @@ func command_info() -> Dictionary:
 			var tier: int = int(R.cmdTier())
 			var next: int = int(R.cmdTier(1))
 			info = {"label": str(cmd["n"]), "power": tier + 1, "effect": R.cmdDesc(cmd, tier, fac),
-				"next": R.cmdDesc(cmd, next, fac) if next > tier else "", "used": R.jt(R.B.get("cmdUsed"))}
+				"next": R.cmdDesc(cmd, next, fac) if next > tier else "", "used": R.jt(R.B.get("cmdUsed")), "rider": R.riderLine(cmd)}   # issue 1651: the Command's rider line
 	_leave(false)
 	return info
 func command() -> bool:

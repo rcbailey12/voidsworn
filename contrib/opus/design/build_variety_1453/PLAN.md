@@ -237,6 +237,37 @@ Checked against today's Command text: Sunward and Eclipse hunt already reload to
 refill shields, so no rider repeats those. (N) Neon's check against the live trees found seven more overlaps or overreaches,
 now replaced above.
 
+**Built (issue 1651, Godot only).** The rows and their numbers live in `CMD_RIDERS` (godot/rules/data/tables.json: Command,
+line, number); the effects are in godot/rules/rules.gd (search "issue 1651"). The line shows in the Command tooltip as
+"Rider: ..." and in the battle log when the Command is given. The button itself keeps the Command name only: the order
+cell is about 150 px wide at 1080 and already trims long Command names, so a 70-character line cannot sit under it at the
+17 px floor (a look question for Ryan, options first). How the open wording was read, so a later change knows what to touch:
+
+- "This round" and "until your next turn" both end when the next round starts (the player's next turn).
+- Barrage riders ride every volley the Command fires, including one a tree skill holds for a later round (Vex T3b).
+- Voice: armour is stripped after the first volley hit lands, so it helps the volley's later hits on that target.
+- Vaelen: the weakest section is the unbroken one with the lowest share of its hull left; a called shot wins.
+- Vorn: the cut stacks per hit up to 15 evasion and cannot take evasion below 0 (Neon's text had no cap; 15 is a draft).
+- Sable and Anuket: the bonus starts after the rear hit lands and lasts the round; a torpedo's rear hit counts for its ship.
+- Malek: torpedoes skip point defense and the escort wing screen.
+- Ashgrove: only the wings this Command launches get the move. Mott: the Command's extra wings (the "extra" mark).
+- Reyes: among the targets a bonus attack can reach, the one with the least hull left; a tree skill that names the wings'
+  target (One Target, Full Group) wins.
+- Matriarch: the brood's heal goes through the shared Chorus feed cap (12% a round), as Blood frenzy does.
+- Aelith: enemy flak never intercepts the wings that round.
+- Thale: repairs at the moment of the Command. Maren: the flagship itself is not covered. Mirelle: +15% shields over the top
+  (the shield cap of 125% holds; the next regen trims it). Khepra: checked as the next round starts, on ships that did not
+  change hex or that braced.
+- Vesh: a broken section counts as the worst. Mending: ties go to the first ship in fleet order. Nekhet: +5% armour on
+  every ship the Command repaired.
+- Razormaw: checked once, when the Command is given. Thorne: every turn in place that round is free, but not after firing
+  (R396 holds; only tree free turns are exceptions, R397); turns made while moving still cost turns.
+- A boss's Command never carries a rider. `B.rider.fired` counts how often the rider acted (for the balance sims).
+
+Measured: not yet. The balance pass for every rider waits on issue 1705 (Godot sim fields each faction's own fleet), per
+section 13 and the standing rule. Seed hunting for the r1651_* battles already shows which riders the bot rarely uses (see
+the PR).
+
 ## 8. Part E: Fold skip and Blood frenzy (OPEN: option 1 for both)
 
 | Ability | Today | New (draft) | AI rule (draft) | On screen |
