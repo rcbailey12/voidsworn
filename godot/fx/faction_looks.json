@@ -72,7 +72,7 @@
     "shield_edge": null
   },
   "ithar": {
-    "interior": {"roles": {"glass": [0.06, 0.08, 0.075], "glass_strut": [0.07, 0.09, 0.085], "wall": [0.085, 0.088, 0.095], "deck": [0.07, 0.078, 0.08], "frame": [0.065, 0.08, 0.076], "machinery": [0.08, 0.085, 0.09], "core": [0.06, 0.075, 0.07]}, "unlit": ["frame"], "core_rgb": [0.35, 1.0, 0.64], "core_strength": 3.0, "zone_tint": {"gw_in_amber": [1.12, 1.0, 0.88], "gw_in_green": [0.92, 1.1, 0.98], "gw_in_violet": [1.06, 0.9, 1.12]}, "glow": {"rgb": [0.35, 1.0, 0.64], "strength": 0.6, "share": 0.35}, "light_area_max": 0.25},
+    "interior": {"roles": {"glass": [0.06, 0.08, 0.075], "glass_strut": [0.07, 0.09, 0.085], "wall": [0.085, 0.088, 0.095], "deck": [0.07, 0.078, 0.08], "frame": [0.065, 0.08, 0.076], "machinery": [0.08, 0.085, 0.09], "core": [0.06, 0.075, 0.07]}, "unlit": ["frame"], "core_rgb": [0.35, 1.0, 0.64], "core_strength": 3.0, "zone_tint": {"gw_in_amber": [1.12, 1.0, 0.88], "gw_in_green": [0.92, 1.1, 0.98], "gw_in_violet": [1.06, 0.9, 1.12], "cd5_amber": [1.12, 1.0, 0.88], "cd5_green": [0.92, 1.1, 0.98], "cd5_violet": [1.06, 0.9, 1.12]}, "glow": {"rgb": [0.35, 1.0, 0.64], "strength": 0.6, "share": 0.35}, "light_area_max": 0.25},
     "fragment_paint": [0.53, 0.61, 0.66],
     "wound_kind": 2,
     "weapon": [0.92, 0.96, 1.0],
