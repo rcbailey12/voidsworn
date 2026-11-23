@@ -43,14 +43,26 @@ func _hex(target: Dictionary) -> Vector2i:
 	return Vector2i(int(target["q"]), int(target["r"]))
 
 
-func _pointer(b: Battle, target: Dictionary) -> void:
-	b._on_hover(b.cam.unproject_position(b.board.hex_world(target["q"], target["r"])))
+func _click_hud(b: Battle, action: String, arg: String) -> bool:
+	var ledger = b.hud.ledger
+	ledger.ensure_layout()
+	for hit in ledger.hits:
+		if hit["act"] != action or hit["arg"] != arg:
+			continue
+		var click := InputEventMouseButton.new()
+		click.button_index = MOUSE_BUTTON_LEFT
+		click.position = ledger.get_global_transform_with_canvas() * Rect2(hit["r"]).get_center()
+		click.pressed = true
+		root.push_input(click)
+		return true
+	return false
 
 
 func _run() -> void:
 	root.size = Vector2i(1920, 1080)
 	var api = _api(true)
 	var b := _battle(api)
+	await process_frame
 	var initial: Dictionary = api.view()
 	var targets: Array = initial["skill_target"].get("targets", [])
 	if targets.size() != 4:
@@ -62,17 +74,16 @@ func _run() -> void:
 	var second: Dictionary = targets[1]
 	var other: Dictionary = targets[0]
 	_check(api.phase == "deployment" and b.hud.ask_panel != null and api.take_round_snapshot().is_empty(), "prompt opens before round one is saved")
-	_check(b.board.overlay.size() == targets.size(), "only eligible ally hexes are marked")
-	_pointer(b, enemy)
-	b._on_click()
-	_check(b.board.hover_key == "" and api.view()["skill_target"]["picked"].is_empty(), "hover and click ignore an enemy")
-	_pointer(b, first)
-	_check(b.board.hover_key == b.board.key(first["q"], first["r"]), "a legal hover highlights its hex")
-	b._on_click()
-	b._on_click()
+	_check(b.board.built == 0 and b.views.is_empty(), "the picker opens before battle view creation")
+	_check(b.hud.ledger.rows.size() == targets.size() and not _click_hud(b, "pick", enemy["id"]), "only eligible allies appear in the picker")
+	b._on_action("pick", enemy["id"])
+	_check(api.view()["skill_target"]["picked"].is_empty(), "the rules reject an enemy ID")
+	_check(_click_hud(b, "pick", first["id"]), "clicking a fleet row picks the first ship")
+	_check(not _click_hud(b, "pick", first["id"]), "the first ship is no longer a clickable choice")
+	b._on_action("pick", first["id"])
 	_check(api.view()["skill_target"]["picked"]["id"] == first["id"] and _hex(api.unit(first["id"])) == _hex(first), "the first click records the ship and a repeated click cannot resolve the swap")
-	_pointer(b, second)
-	b._on_click()
+	_check(b.board.built == 0 and b.views.is_empty(), "the first pick does not start building the battle")
+	_check(_click_hud(b, "pick", second["id"]), "clicking a second fleet row completes the swap")
 	var expected := _hex(api.unit(first["id"])) == _hex(second) and _hex(api.unit(second["id"])) == _hex(first)
 	_check(expected and _hex(api.unit(other["id"])) == _hex(other) and _hex(api.unit(enemy["id"])) == _hex(enemy), "only the two chosen ships exchange hexes")
 	_check(api.phase == "player" and api.view()["skill_target"].is_empty() and not api.pick_skill_target(other["id"]), "the swap ends deployment and cannot be spent twice")
@@ -84,13 +95,17 @@ func _run() -> void:
 	while b.warming or b.busy or b._threat_busy:
 		await process_frame
 	_check(b.hud.ask_panel == null and b._can_act(), "battle accepts normal orders after the swap")
+	_check(b.board.built == 1 and b.views.size() == api.view()["units"].size(), "the battle builds once after the swap")
 	b.free()
 
-	for right_click in [false, true]:
+	for skip in ["button", "Escape", "right-click"]:
 		api = _api(true)
 		b = _battle(api)
-		b._on_action("pick", first["id"])
-		if right_click:
+		await process_frame
+		_check(_click_hud(b, "pick", first["id"]), "the first pick is ready before %s" % skip)
+		if skip == "button":
+			_check(_click_hud(b, "ask", "skip_skill_target"), "the prompt offers a Skip button")
+		elif skip == "right-click":
 			var click := InputEventMouseButton.new()
 			click.button_index = MOUSE_BUTTON_RIGHT
 			click.pressed = true
@@ -100,9 +115,10 @@ func _run() -> void:
 			esc.keycode = KEY_ESCAPE
 			esc.pressed = true
 			root.push_input(esc)
-		_check(api.phase == "player" and _hex(api.unit(first["id"])) == _hex(first) and _hex(api.unit(second["id"])) == _hex(second), "cancel with %s keeps the original deployment" % ("right-click" if right_click else "Escape"))
+		_check(api.phase == "player" and _hex(api.unit(first["id"])) == _hex(first) and _hex(api.unit(second["id"])) == _hex(second), "skip with %s keeps the original deployment" % skip)
 		while b.warming or b.busy or b._threat_busy:
 			await process_frame
+		_check(b.board.built == 1, "the battle builds once after skipping")
 		b.free()
 
 	var automatic = _api(false)
