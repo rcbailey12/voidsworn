@@ -154,7 +154,7 @@ Optional lines: `slot: gpu|cpu`, `gpu: shared|solo|none`, `weight: 1-8`, `ships:
 and job twice once it has a result (its ledger `voidsworn_test\pc_daemon\ran.txt` and its own done marker on the PR); a
 job cut off before its result does not block a new go. The done marker goes on only with the relay links: a failed relay
 is retried every 30 minutes from the kept attempt without rerunning the job. One live daemon per PC
-(`pc_daemon\daemon.lock`, a pid and a heartbeat). A process tree that will not end after five stop requests puts the
+(`pc_daemon\daemon.lock`: a lock whose pid still runs is never taken over). A process tree that will not end after five stop requests puts the
 daemon in quarantine: it keeps that slot, GPU claim and profile held and starts nothing until the Board has looked.
 
 Per job: `pc-ready` off and `running` on, a new attempt `voidsworn_test\<job>\out_<stamp>_<n>` with results in

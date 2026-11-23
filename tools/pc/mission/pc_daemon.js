@@ -379,8 +379,10 @@ class Daemon {
     this.retryMs = 30 * 60000;
   }
   // One live daemon per voidsworn_test (Artoo on PR 1835: a second one would sweep the first one's active profile).
-  // pc_daemon\daemon.lock names the holder's pid and a heartbeat it rewrites every 30 s; a lock counts while that pid
-  // lives and the beat is under 5 minutes old. The file is never deleted, only taken over when stale.
+  // pc_daemon\daemon.lock names the holder's pid and a heartbeat it rewrites every 30 s. A lock whose pid still runs is
+  // never taken over, however old its beat: the slot wait and the relay are synchronous and can hold the beat for hours
+  // (Artoo on PR 1835, second pass). The beat age is only reported. A lock whose pid is gone is taken over. The file is
+  // never deleted; if Windows has given that pid to an unrelated program, the refusal says so and the Board clears it.
   lease({ alive = pid => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } } } = {}) {
     const file = path.join(this.vt, 'pc_daemon', 'daemon.lock');
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -391,7 +393,10 @@ class Daemon {
     } catch (e) {
       if (e.code !== 'EEXIST') throw e;
       let held = null; try { held = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { /* unreadable: stale */ }
-      if (held && alive(held.pid) && this.clock().getTime() - held.beat < 5 * 60000) throw new Error(`another PC daemon (pid ${held.pid}) holds ${file}`);
+      if (held && alive(held.pid)) {
+        const age = Math.round((this.clock().getTime() - held.beat) / 60000);
+        throw new Error(`another PC daemon (pid ${held.pid}, last beat ${age} min ago) holds ${file}; if that pid is not a PC daemon (node pc_daemon.js), the Board removes the file`);
+      }
       const tmpFile = `${file}.${process.pid}.tmp`;
       fs.writeFileSync(tmpFile, me()); fs.renameSync(tmpFile, file);
     }

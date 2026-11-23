@@ -304,7 +304,7 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     fs.appendFileSync(path.join(f.vt, 'pc_daemon', 'ran.txt'), ''); // a fresh go would still not start
     assert.deepEqual(await f.daemon.tick(), []); assert.deepEqual(f.calls, []);
   });
-  await t('daemon lock: one live daemon per root, a stale lock is taken over, no sweep without it', async () => {
+  await t('daemon lock: one live daemon per root, only the lock of a dead holder is taken over, no sweep without it', async () => {
     const vt = tmp(), mk = () => new d.Daemon({ vt, gh: {}, tools: {}, live: true, log: () => {} });
     const a = mk(); a.lease();
     assert.throws(() => mk().lease(), /another PC daemon/);
@@ -313,8 +313,10 @@ async function t(name, fn) { await fn(); passed++; console.log('ok ' + name); }
     const b = mk(); b.lease({ alive: () => false });
     assert.equal(JSON.parse(fs.readFileSync(lock, 'utf8')).id, b.leaseId);
     assert.throws(() => a.beat(), /taken over/, 'the old holder notices and stops');
-    fs.writeFileSync(lock, JSON.stringify({ pid: process.pid, beat: Date.now() - 6 * 60000, id: 'quiet' }));
-    mk().lease();
+    // a live holder with an old beat (a long synchronous slot wait or relay) is never taken over
+    fs.writeFileSync(lock, JSON.stringify({ pid: process.pid, beat: Date.now() - 6 * 3600000, id: 'busy' }));
+    assert.throws(() => mk().lease(), /last beat 360 min ago/);
+    assert.equal(JSON.parse(fs.readFileSync(lock, 'utf8')).id, 'busy');
     assert.throws(() => mk().sweepProfiles(), /lock first/);
   });
   await t('commands: godot and blender lines, placeholders filled, no shell', () => {
