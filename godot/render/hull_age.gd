@@ -7,9 +7,7 @@ extends RefCounted
 # texture maps in assets/ships/manifest.json). It is not proof the model is the approved one (Artoo, Nov 20: B21_11 has
 # parts maps but still waits on issue 1291). Hash-checking against the approved publish is a later job.
 #
-# Static functions only, no node. Read only: nothing here changes ship_view.gd or any asset.
-
-const ShipView = preload("res://render/ship_view.gd")
+# Static functions only, no node. Read only: nothing here changes any asset (ShipView records hull_source and hull_res itself).
 
 const MANIFEST := "res://assets/ships/manifest.json"
 
@@ -45,16 +43,16 @@ static func layout(code: String) -> String:
 	return "OLD"
 
 
-# For a built ShipView: {code, source, res}. source is "ships", "hi", "hulls" or "placeholder", found in the order
-# ShipView.setup uses (render/ship_view.gd: the "ships" kit hull, then "hi", then "hulls", else the plain block).
+# For a built ShipView: {code, source, res}, the hull ShipView actually drew. ShipView.setup records the manifest section
+# ("ships", "hi" or "hulls") and resource path of the hull it loaded successfully (hull_source, hull_res); an entry that
+# is listed but fails to load (a mesh where a scene is required) is skipped there and so is never reported here (Astra
+# audit of PR 1814, issue 1832). source is "placeholder" when nothing loaded (the plain block, e.g. a copy without gen/).
 static func resolved(sv) -> Dictionary:
 	var code := str(sv.code)
-	var man: Dictionary = ShipView.manifest()
-	for source in ["ships", "hi", "hulls"]:
-		var section = man.get(source, {})
-		if section is Dictionary and section.has(code):
-			return {"code": code, "source": source, "res": str(section[code].get("res", ""))}
-	return {"code": code, "source": "placeholder", "res": ""}
+	var source := str(sv.hull_source)
+	if source == "":
+		return {"code": code, "source": "placeholder", "res": ""}
+	return {"code": code, "source": source, "res": str(sv.hull_res)}
 
 
 static func label(code: String) -> String:
