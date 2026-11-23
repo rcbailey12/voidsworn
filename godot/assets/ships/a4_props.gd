@@ -484,6 +484,12 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 	return b
 
 
+# Issue 1204: drop the burn textures before the engine shuts down (render/static_caches.gd calls it at quit; Artoo on
+# PR 1772 at 2449bcb0)
+static func clear_static() -> void:
+	_burn_cache.clear()
+
+
 # one scorch-patch texture per faction (white = untouched paint, the scorch multiplier where burnt), built once
 static func burn_texture(fac: String, soot: float, sc: Array) -> Texture2D:
 	if _burn_cache.has(fac):
