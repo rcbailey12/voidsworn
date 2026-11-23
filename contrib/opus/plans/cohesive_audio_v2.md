@@ -219,3 +219,19 @@ Neon's full notes are in `contrib/neon/reviews/sound_wavea3_ear_1752.md` (PR 185
   - If Ryan still prefers it in mono, it stands. Mastering then adds a presence lift, and the Wave B Eclipse wording question is reopened with Ryan before Wave B.
 - **Stereo or mono (Ryan, Nov 23 11:28 AM CT): B.** He heard a 6 s offline battle mix of his picks two ways: stereo files as made, and folded to mono then panned by position the way `sfx.gd` does. He chose B. Battle sounds ship as mono files placed by the game. Music and unpositioned moments may stay stereo. His lance t1 and Eclipse ctl t2 picks were in that mono mix and stand.
 - **Eclipse wording for Wave B follows Ryan's pick, not Neon's swap.** Ryan preferred the old big seismic wording. So the Eclipse prompts keep that character, still without literal Hz numbers, and mastering adds the presence lift.
+
+### 8.2 Wave B Pre-Flight (Nov 23 2026)
+
+The manifest prompts are rewritten to Ryan's A3 picks:
+- **Directorate:** turbo, hturbo, picket and ion_beam use the recipe B plasma-cannon wording.
+- **Sustained beams:** ion_beam, pulsar and doom hold evenly to the end with no power-down clause. Their body is looped in Godot, with ignition and release as separate pieces.
+- **Eclipse:** keeps the big deep character Ryan chose. Only the literal "35 Hz" and the beam power-down wording go.
+- **Fable's fixes:** the banned-word and bass-trap fixes (review section 3) are applied to the other items. "Groan" is removed from the Glasswright and Hullbreaker deaths.
+- **Held:** `wep_chorus_bioplasma` stays as written until its projectile look is confirmed.
+
+**Size:**
+- Wave B is the 55 sound effects not yet made: 108 takes, about 128 s of audio.
+- Expected cost is about 1,410 real credits at 11 per second. The tool estimates 5,112, so the cap is 6,000.
+- The three music prototypes are not in Wave B; they move to Gate 3 with the Godot 4.7 music plan.
+
+**Gate:** Wave B runs only on Ryan's typed "go wave b". The runner copies the Wave A3B skeleton whole: a fresh folder, a list sha256 gate, a dry run requiring "108 steps, 108 still to make", and the wave and listening page outside the step wrapper.
