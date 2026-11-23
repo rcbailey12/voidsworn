@@ -489,8 +489,12 @@ uniform vec3 ca = vec3(0.7, 0.6, 0.4);
 uniform vec3 cb = vec3(0.4, 0.3, 0.2);
 uniform vec3 cc = vec3(0.9, 0.85, 0.7);
 
-float fb(vec3 p, int oct) { float a = 0.5; float s = 0.0; for (int k = 0; k < 8; k++) { if (k >= oct) break; s += a * wvn3(p); p = p * 2.03 + 1.7; a *= 0.5; } return s; }
-float rg(vec3 p, int oct) { float a = 0.5; float s = 0.0; for (int k = 0; k < 6; k++) { if (k >= oct) break; float v = 1.0 - abs(wvn3(p) * 2.0 - 1.0); s += a * v * v; p = p * 2.1 + 3.3; a *= 0.5; } return s; }
+// Ryan (Nov 23): coastlines and flow edges ran in straight lines. The lattice noise lines up with the grid axes, and
+// every octave used to share those axes; each finer octave is now turned (OCT_ROT, a fixed rotation), so edges break
+// up at every scale. The first octave stays put, so the big shapes keep their places.
+const mat3 OCT_ROT = mat3(vec3(0.00, 0.80, 0.60), vec3(-0.80, 0.36, -0.48), vec3(-0.60, -0.48, 0.64));
+float fb(vec3 p, int oct) { float a = 0.5; float s = 0.0; for (int k = 0; k < 8; k++) { if (k >= oct) break; s += a * wvn3(p); p = OCT_ROT * p * 2.03 + 1.7; a *= 0.5; } return s; }
+float rg(vec3 p, int oct) { float a = 0.5; float s = 0.0; for (int k = 0; k < 6; k++) { if (k >= oct) break; float v = 1.0 - abs(wvn3(p) * 2.0 - 1.0); s += a * v * v; p = OCT_ROT * p * 2.1 + 3.3; a *= 0.5; } return s; }
 float hh(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
 
 vec3 dir_of(vec2 uv) {
@@ -579,6 +583,7 @@ void fragment() {
 		// cyclones with fine wisps at their edges
 		vec3 w = vec3(fb(q * 1.2, 4), fb(q * 1.2 + 5.0, 4), fb(q * 1.2 + 9.0, 4)) - 0.5;
 		float h = fb(q * 1.5 + w * 1.4, 7) + rg(q * 3.0 + w, 4) * 0.12 - 0.06;
+		h += (fb(q * 22.0 + w * 4.0, 4) - 0.5) * 0.035;   // fine bays, capes and islands along every coast
 		float sea = 0.5;
 		float lat = abs(d.y);
 		if (h < sea) {
@@ -640,19 +645,19 @@ void fragment() {
 		alb = mix(cb, ca, smoothstep(0.35, 0.65, h));
 		alb = mix(alb, cc, smoothstep(0.7, 0.9, fb(q * 6.0 + 2.0, 3)) * 0.5);
 		// Wave 0 (Nov 23): basalt flows with crisp edges (they blurred into a haze at the battle camera)
-		float flow = smoothstep(0.5, 0.515, fb(q * 3.5 + w * 1.5 + 40.0, 5));
+		float flow = smoothstep(0.535, 0.55, fb(q * 3.5 + w * 1.5 + 40.0, 7) + (fb(q * 30.0, 3) - 0.5) * 0.04);   // ragged lobe edges
 		alb = mix(alb, cb * 0.8, flow * 0.85);
 		alb *= mix(0.62, 1.0, (1.0 - smoothstep(0.6, 0.85, can)));
 		alb *= (0.85 + 0.25 * grit) * (1.0 - smoothstep(0.7, 0.95, fine) * 0.3);
 		// Ryan (Nov 23): no crack lines. The glow is shaped by the land: lava lakes in the lowest basins, short channels
 		// feeding them along the canyon floors just above, and dark cooled crust around both
-		float low = 1.0 - smoothstep(0.36, 0.46, h);
-		float lake = 1.0 - smoothstep(0.33, 0.38, h);
-		float chan = smoothstep(0.8, 0.93, can) * (1.0 - smoothstep(0.38, 0.48, h));
+		float low = 1.0 - smoothstep(0.31, 0.41, h);
+		float lake = 1.0 - smoothstep(0.27, 0.32, h);
+		float chan = smoothstep(0.8, 0.93, can) * (1.0 - smoothstep(0.33, 0.43, h));
 		alb *= 1.0 - low * 0.45;
 		alb = mix(alb, cb * 0.4, lake * 0.85);
 		// a lake glows brightest at its deepest point, under a broken skin of cooling crust
-		float deep = 1.0 - smoothstep(0.26, 0.38, h);
+		float deep = 1.0 - smoothstep(0.2, 0.32, h);
 		float crust = smoothstep(0.42, 0.62, fb(q * 34.0 + 3.0, 4));
 		relief = clamp(h * 0.6 + (1.0 - can) * 0.25 + fine * 0.15 - flow * 0.01 - lake * 0.05, 0.0, 1.0);
 		lava = max(lake * deep * (1.0 - crust * 0.75), chan * 0.45);

@@ -594,7 +594,8 @@ func system(with_planet: bool) -> void:
 # Issue 1765: the moons' minerals (world_planet.gd recipe kind 4 cratered, 5 ice). No two moons of one sky share a look
 # unless the sky has more moons than looks.
 const MOON_LOOKS := [
-	{"kind": 4, "a": Vector3(0.56, 0.54, 0.5), "b": Vector3(0.17, 0.16, 0.15), "c": Vector3(0.8, 0.78, 0.74)},
+	# Nov 23: lifted back into band 2 after the land noise's finer layers were turned (it fell to 0.026)
+	{"kind": 4, "a": Vector3(0.6, 0.58, 0.54), "b": Vector3(0.25, 0.235, 0.22), "c": Vector3(0.8, 0.78, 0.74)},
 	{"kind": 4, "a": Vector3(0.64, 0.45, 0.32), "b": Vector3(0.26, 0.16, 0.11), "c": Vector3(0.84, 0.66, 0.5)},
 	# Wave 0 (Nov 23): the basalt moon read as a second grey highland moon; it is now a cool dark slate with bright rays
 	{"kind": 4, "a": Vector3(0.42, 0.45, 0.48), "b": Vector3(0.11, 0.125, 0.14), "c": Vector3(0.8, 0.82, 0.84)},
