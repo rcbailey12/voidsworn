@@ -180,7 +180,9 @@ ships catch, store and release light.
   colour only at its ends, as on I8_37 (R431, Ryan Nov 23 2026: "the top is how we want it to look across the board";
   tools/blender/kits/ithar/parts.py MIX 'blocks', stack.py TILE_SWAP 0). This reverses the Nov 21 marbled veins and tile
   swaps (look test D, issue 1415, "rectangle after rectangle of same color"), which read in game as pastel confetti;
-  GW_MIX=marble brings them back for a comparison only. Ryan Nov 21 1:45 PM CT on the in-game sheets: "tone down
+  GW_MIX=marble brings them back for a comparison only. The pearl is I8_37's too (Ryan Nov 23: "ensure that white material
+  also matches i8_37 ... more detailed and wrapping"): warm white with a rose and lilac sheen, never gold, laid as the Ark's
+  fine spiralling ribbons with crossing leaves on every hull (kit hull.i8_field, hull.i8_shell). Ryan Nov 21 1:45 PM CT on the in-game sheets: "tone down
   red and amber with a bit more blue and green and purple": amber is about a third of the panels and golden, not red;
   violet and green rise, and a sapphire blue joins the palette (stack.py PALETTE, WEIGHTS 32/26/22/20, TONES). Ryan Nov 21 on the
   strike craft, then 8:29 PM CT for the big ships too: the stones are 25% more saturated on every Glasswright hull ("a little,
