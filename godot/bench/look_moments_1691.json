@@ -1,0 +1,961 @@
+{
+ "about": "Issue 1691 (Wave 1B, PR 1736, R412 with R402): target-material impacts and the metal-only wear gate. A heavy battery shell, torpedo, gauss slug, lance and a critical hit on a Sunward (metal reference), Glasswright, Chorus and Eclipse cruiser, then a worn Sunward, Glasswright and Chorus hull. Cameras 170 and 26. Run with --moments res://bench/look_moments_1691.json on the main commit just before the 1736 merge (2fc06136) and on the merge itself (54936d6d), each plus only this rows file.",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "26": [
+   768,
+   432
+  ],
+  "170": [
+   384,
+   216
+  ]
+ },
+ "rows": [
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_macro_voidsworn",
+   "label": "heavy battery shell (shell hit and big hit) on a Sunward (metal, the reference) cruiser",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ],
+   "shots": 1
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_torp_voidsworn",
+   "label": "torpedo (big hit) on a Sunward (metal, the reference) cruiser",
+   "att": [
+    "voidsworn",
+    "Destroyer"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_gauss_voidsworn",
+   "label": "gauss slug (gauss punch) on a Sunward (metal, the reference) cruiser",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "gauss",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ],
+   "shots": 1
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_lance_voidsworn",
+   "label": "lance beam (beam burn) on a Sunward (metal, the reference) cruiser",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "lance",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_crit_voidsworn",
+   "label": "critical heavy battery hit (crit debris) on a Sunward (metal, the reference) cruiser",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ],
+   "shots": 1,
+   "crit": true
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_macro_ithar",
+   "label": "heavy battery shell (shell hit and big hit) on a Glasswright (glass) cruiser",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ],
+   "shots": 1
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_torp_ithar",
+   "label": "torpedo (big hit) on a Glasswright (glass) cruiser",
+   "att": [
+    "voidsworn",
+    "Destroyer"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_gauss_ithar",
+   "label": "gauss slug (gauss punch) on a Glasswright (glass) cruiser",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "gauss",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ],
+   "shots": 1
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_lance_ithar",
+   "label": "lance beam (beam burn) on a Glasswright (glass) cruiser",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "lance",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_crit_ithar",
+   "label": "critical heavy battery hit (crit debris) on a Glasswright (glass) cruiser",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ],
+   "shots": 1,
+   "crit": true
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_macro_chorus",
+   "label": "heavy battery shell (shell hit and big hit) on a Chorus (flesh) cruiser",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ],
+   "shots": 1
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_torp_chorus",
+   "label": "torpedo (big hit) on a Chorus (flesh) cruiser",
+   "att": [
+    "voidsworn",
+    "Destroyer"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_gauss_chorus",
+   "label": "gauss slug (gauss punch) on a Chorus (flesh) cruiser",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "gauss",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ],
+   "shots": 1
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_lance_chorus",
+   "label": "lance beam (beam burn) on a Chorus (flesh) cruiser",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "lance",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_crit_chorus",
+   "label": "critical heavy battery hit (crit debris) on a Chorus (flesh) cruiser",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ],
+   "shots": 1,
+   "crit": true
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_macro_deathless",
+   "label": "heavy battery shell (shell hit and big hit) on a Eclipse (obsidian) cruiser",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ],
+   "shots": 1
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_torp_deathless",
+   "label": "torpedo (big hit) on a Eclipse (obsidian) cruiser",
+   "att": [
+    "voidsworn",
+    "Destroyer"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_gauss_deathless",
+   "label": "gauss slug (gauss punch) on a Eclipse (obsidian) cruiser",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "gauss",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ],
+   "shots": 1
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_lance_deathless",
+   "label": "lance beam (beam burn) on a Eclipse (obsidian) cruiser",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "lance",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1691 wave 1B impacts",
+   "id": "w1b_crit_deathless",
+   "label": "critical heavy battery hit (crit debris) on a Eclipse (obsidian) cruiser",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     10
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     2,
+     1
+    ]
+   ],
+   "shots": 1,
+   "crit": true
+  },
+  {
+   "group": "issue 1691 wave 1B wear",
+   "id": "w1b_worn_voidsworn",
+   "label": "Sunward (metal, the reference) cruiser at 30% hull after four hits: soot and wear patches on metal only",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ],
+    [
+     "battery",
+     "battery",
+     "mid"
+    ]
+   ],
+   "sync_t": {
+    "hp": 30,
+    "maxHp": 100,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 20,
+      "max": 100
+     },
+     "prow": {
+      "hp": 35,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1691 wave 1B wear",
+   "id": "w1b_worn_ithar",
+   "label": "Glasswright (glass) cruiser at 30% hull after four hits: soot and wear patches on metal only",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ],
+    [
+     "battery",
+     "battery",
+     "mid"
+    ]
+   ],
+   "sync_t": {
+    "hp": 30,
+    "maxHp": 100,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 20,
+      "max": 100
+     },
+     "prow": {
+      "hp": 35,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1691 wave 1B wear",
+   "id": "w1b_worn_chorus",
+   "label": "Chorus (flesh) cruiser at 30% hull after four hits: soot and wear patches on metal only",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "pre": [
+    [
+     "torp",
+     "torp",
+     "mid"
+    ],
+    [
+     "battery",
+     "battery",
+     "prow"
+    ],
+    [
+     "torp",
+     "torp",
+     "eng"
+    ],
+    [
+     "battery",
+     "battery",
+     "mid"
+    ]
+   ],
+   "sync_t": {
+    "hp": 30,
+    "maxHp": 100,
+    "burning": false,
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "sec": {
+     "eng": {
+      "hp": 45,
+      "max": 100
+     },
+     "mid": {
+      "hp": 20,
+      "max": 100
+     },
+     "prow": {
+      "hp": 35,
+      "max": 100
+     }
+    }
+   },
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     4,
+     1
+    ]
+   ]
+  }
+ ]
+}
