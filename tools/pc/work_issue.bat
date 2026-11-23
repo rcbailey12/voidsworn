@@ -22,9 +22,10 @@ rem  (b) After git add -A the guard step (work_issue.ps1 guard) refuses files ov
 rem      under godot/gen, godot/.godot or godot/assets/ships/<hull>/ (previews and test stay allowed), new .uid files and new
 rem      or re-saved .import files. Refused files are unstaged, copied to out\runs\<date_time>\refused\ (never deleted) and listed in
 rem      result.txt and the PR text. Changed files outside the issue's Deliver to line are listed as a warning.
-rem  (c) No force push. The run's one commit is made with git's plumbing and checked; when the branch already exists its
-rem      earlier tip becomes the commit's second parent, so a rerun is a plain fast-forward push and the earlier run's
-rem      commit stays reachable. Commit text ends with "Run-Number: k".
+rem  (c) No force push. The run's one commit is made with git's plumbing and checked; when the branch already exists the
+rem      run starts from its earlier tip with main merged in (issue 1739), so a rerun is a plain fast-forward push that keeps
+rem      the earlier runs' files, and a run that does not descend from that tip stops with exit 15 before the push.
+rem      Commit text ends with "Run-Number: k".
 rem  (541) Before the push the commit must carry exactly the staged change (out\diffstat.txt); after the push GitHub's branch
 rem      must be that commit with that diff (out\pushed_diffstat.txt). Any difference stops the run loudly: DIFF MISMATCH
 rem      in result.txt, out\DIFF_MISMATCH.txt, exit code 10.

@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawn, spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process');
 const root = path.resolve(__dirname, '../../..');
 const jobs = path.join(root, 'tools/pc/jobs');
 const read = p => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
@@ -681,13 +681,23 @@ if (process.getuid && process.getuid() !== 0) {
     write(path.join(at, 'done.txt'), 'PASS\r\n');
     return [at, relay([[path.join(at, 'out_new'), `${n}/out_new`]])];
   };
-  env.PC_TEST_RETRY_MS = '1000';
+  // Board, Nov 23 (PR 1772 at 494595a4): a 2 s timer raced the first retry, so a slow host could remove the checkout
+  // before any retry was logged. The lock now lifts only once the head has logged its first retry.
+  env.PC_TEST_RETRY_MS = '200';
   const [l1, l1relay] = lockAttempt('out_1');
   fs.chmodSync(path.join(l1, 'new', 'godot'), 0o555);
-  const unlock = spawn('sh', ['-c', `sleep 2; chmod 755 '${path.join(l1, 'new.removing', 'godot')}'`], { stdio: 'ignore' });
-  r = run('dropcheckouts', l1, l1relay, 'out_1');
+  const unlockOnRetry = `const { spawn } = require('child_process'), fs = require('fs');
+const [shell, script, lock, ...args] = process.argv.slice(1);
+const c = spawn(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, ...args], { env: process.env });
+let out = '', err = '', lifted = false;
+c.stdout.on('data', d => { out += d; });
+c.stderr.on('data', d => { err += d; if (!lifted && /still locked, trying again/.test(err)) { lifted = true; fs.chmodSync(lock, 0o755); } });
+c.on('close', code => { process.stdout.write(out + '\\n' + err + (lifted ? '' : '\\nlock never lifted')); process.exit(code === null ? 1 : code); });`;
+  const held = spawnSync(process.execPath, ['-e', unlockOnRetry, shell, path.join(jobs, 'opus_job_head.ps1'),
+    path.join(l1, 'new.removing', 'godot'), 'dropcheckouts', l1, l1relay, 'out_1'], { env, encoding: 'utf8', timeout: 60000 });
+  if (held.error) throw held.error;
+  r = { status: held.status, out: `${held.stdout}\n${held.stderr}` };
   assert(!fs.existsSync(path.join(l1, 'new')) && !fs.existsSync(path.join(l1, 'new.removing')) && /checkout new removed after the job/.test(r.out) && /still locked, trying again in \d+ ms/.test(r.out), 'a short lock is retried, logged, then the checkout goes: ' + r.out);
-  unlock.unref();
   env.PC_TEST_RETRY_MS = '50';
   const [l2, l2relay] = lockAttempt('out_2');
   fs.chmodSync(path.join(l2, 'new', 'godot'), 0o555);
