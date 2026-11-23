@@ -50,6 +50,17 @@ const PASS_BY_CUE := {
 	"salvo": null, "duck": 0.0, "spj": 0.08, "synth": [],
 	"layers": [{"s": "whoosh", "d": 0.0, "g": 1.0, "r": 1.0, "pj": null}],
 }
+const ACID_SIZZLE := {
+	"g": 0.14, "pri": 0, "max": 2, "gap": 0.45, "defer": 0.0, "bus": "impacts",
+	"salvo": null, "duck": 0.0, "spj": 0.08, "synth": [],
+	"layers": [{"s": "lasSear", "d": 0.0, "g": 0.55, "r": 0.84, "pj": 0.08}],
+}
+const SHIELD_SPUTTER := {
+	"g": 0.21, "pri": 1, "max": 2, "gap": 0.12, "defer": 0.0, "bus": "impacts",
+	"salvo": null, "duck": 0.0, "spj": 0.07, "synth": [],
+	"layers": [{"s": "arc", "d": 0.0, "g": 0.35, "r": 1.2, "pj": 0.07},
+		{"s": "patterShield", "d": 0.085, "g": 0.5, "r": 0.78, "pj": 0.05}],
+}
 const LEGACY_TAIL_CUES := ["hit_heavy", "shield_break"]
 const LEGACY_PITCH_CUES := ["death_powerdown", "death_vent", "death_crack", "death_run", "chunk_cool", "hulk_vent"]
 
@@ -60,6 +71,8 @@ func _ready() -> void:
 	if FileAccess.file_exists("res://audio/cues.json"):
 		cues = JSON.parse_string(FileAccess.get_file_as_string("res://audio/cues.json"))
 	cues["shot_pass_by"] = PASS_BY_CUE
+	cues["acid_sizzle"] = ACID_SIZZLE
+	cues["shield_sputter"] = SHIELD_SPUTTER
 	var want := {}
 	if only != "":
 		for k in cues.keys():

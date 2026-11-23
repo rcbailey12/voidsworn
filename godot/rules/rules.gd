@@ -3410,6 +3410,9 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 		B["mirrorQ"].append({"t": t, "att": att, "hull": hull})
 		if _volleyDepth == 0: settleMirror()
 	var hit_event := {"t": "hit", "unit": _uid(att), "target": t["id"], "quad": quad, "section": t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], "shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit}
+	if absorbed > 0 and t["shMax"] > 0:
+		# Presentation reads this shot's remaining pool, including routing losses and any immediate refill.
+		hit_event["shieldFraction"] = float(t["shp"]) / float(t["shMax"])
 	if locks_regen:
 		hit_event["regenLock"] = true
 	emit(hit_event)
