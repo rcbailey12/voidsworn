@@ -175,6 +175,12 @@ static func clear_static() -> void:
 	_fit_cache.clear()
 
 
+# The fitted copies are keyed by one battle's look materials; ShipView.clear_look_cache drops them with its own cache at
+# the end of each battle, so a run does not pin old battles' materials (Antigravity audit, PR 1786).
+static func clear_fit_cache() -> void:
+	_fit_cache.clear()
+
+
 static func v2_of(key: String):
 	var t: Dictionary = tune.get("v2", {})
 	return t.get(key, V2[key])

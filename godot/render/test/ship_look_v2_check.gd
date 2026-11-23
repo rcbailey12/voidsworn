@@ -211,6 +211,8 @@ func _run() -> void:
 	check(f1.uv2_scale.is_equal_approx(Vector3.ONE * float(LOOK.V2["tiles"]) * 1.5) and f2.uv2_scale.is_equal_approx(Vector3.ONE * float(LOOK.V2["tiles"]) * 3.0),
 		"each copy keeps its own grain scale")
 	check(f1.get_meta("look_hull", "") == "corsair" and f1.has_meta("look_detail"), "copies keep the hull marks (rim light, detail)")
+	load("res://render/ship_view.gd").clear_look_cache()
+	check(LOOK.fitted(shared, 1.5) != f1, "the end of a battle drops the fitted copies with the look cache")
 	var plain := StandardMaterial3D.new()
 	check(LOOK.fitted(plain, 2.0) == plain, "a material with no detail layer is left as it is")
 	var none := _hull("not_a_faction")

@@ -58,6 +58,8 @@ static func clear_static() -> void:
 # issue 1204: battle.gd drops the per-hull look copies when a battle leaves the tree (keys are that battle's materials)
 static func clear_look_cache() -> void:
 	_look_cache.clear()
+	if ResourceLoader.exists("res://render/look.gd"):
+		load("res://render/look.gd").clear_fit_cache()   # issue 1777: the per-fit-scale copies of those materials
 
 
 func _exit_tree() -> void:
