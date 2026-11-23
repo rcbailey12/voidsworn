@@ -275,7 +275,7 @@ def i8_field(length=25.0, n=12, sign=1, start=0.2, gather=None):
 
 def i8_shell(K, skin, field, x0, x1, tag, scale=1.0, leaves=8, seed=0, clamp=None, grp=None, nu=160, width=1.0):
     """R431: the I8_37 pearl shell on any Glasswright body, from the CD5 Ark's own numbers. The field's long ribbons are fine
-    and pillowed (a rounded fold, not a strap); `leaves` shorter, wider ribbons cross over them with a counter twist and
+    and pillowed (a rounded fold, not a strap); `leaves` shorter, wider ribbons lie over them along the same spiral and
     curl their trailing edge up along the spine, so the shell is layered and wraps the hull like I8_37. `scale` is the body's
     radius against the Ark's (about 2.6), so lifts and silver lines keep the Ark's proportion. `width` widens every ribbon
     for a rounder body than the Ark's, where the same angles leave more glass showing (the kit gate, MOSAIC_MAX, decides).
@@ -290,8 +290,6 @@ def i8_shell(K, skin, field, x0, x1, tag, scale=1.0, leaves=8, seed=0, clamp=Non
             lambda t, k=k: width * (0.135 + 0.025 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.40, 0.40 + 0.05 * math.sin(k), tip=0.0)(t),
             lambda t, v: scale * (0.05 + 0.14 * (1 - v * v) ** 0.5 * (0.5 + 0.5 * math.sin(math.pi * t) ** 0.5)),
             name='%s_ribbon_%d' % (tag, k), clamp=clamp))
-    sgn = 1 if field.twist(1.0) >= field.twist(0.0) else -1
-    kx = 25.0 / L
     for k in range(leaves):
         h = math.sin(k * 12.9898 + seed * 78.233) * 43758.5453
         h -= math.floor(h)
@@ -301,7 +299,9 @@ def i8_shell(K, skin, field, x0, x1, tag, scale=1.0, leaves=8, seed=0, clamp=Non
         wd = width * (0.12 + 0.05 * ((h * 3.7) % 1.0))
         top = max(0.0, math.sin(base)) ** 2
         rib.append(gw.Ribbon(
-            a0, a1, lambda x, base=base: field.gather(x, base + sgn * (0.05 * kx * x + 0.22 * math.sin(0.24 * kx * x + 1.1))),
+            # Ryan Nov 23 on the Prism ("3 random lines that don't fit"): each leaf runs with the long ribbons' own spiral,
+            # never at its own angle across them
+            a0, a1, lambda x, base=base: field.gather(x, base + field.twist(x) + 0.08 * math.sin(field.leaf_f * x + base)),
             lambda t, wd=wd: wd * gw.leaf(0.7, 0.0, 0.38)(t),
             lambda t, v, top=top: scale * (0.22 + 0.14 * (1 - v * v) ** 0.5
                                             + 0.75 * top * ((v + 1) / 2) ** 2 * math.sin(math.pi * t) ** 1.5),
@@ -348,18 +348,16 @@ def turret_optic(K, fid, pos, weapon, colour, s=1.0, slot='T', note=''):
     # The seat's top sits 0.08 under the pivot, clear of the barrel (as CD5, issue 1282): at -0.20 it met the barrel and the
     # game's clearance test locked GA1's O1 at rest (PC run, pin-1415b, Nov 20).
     p.add('integral_root', 'mount', 'gw_pearl', ellipsoid((0, 0, -0.28 * s), (0.42 * s, 0.42 * s, 0.20 * s), 48, 16))
-    # round 2 (Ryan Nov 21): a lens you can see, as the picks' domes: a tall cut dome, a stored-light halo and a silver ring
-    gv, gf = gw_kit('parts').cut_lens((0, 0, -0.02 * s), (0, 0, 1), 0.34 * s, 0.24 * s, 12)
+    # R431 (Ryan Nov 23 on the Prism: "i also don't know what the random purple thing" is): the I8_37 optic again, a small
+    # cut stone on the flush pearl seat, a glint among the ribbons; the Nov 21 tall dome, halo and silver ring are gone.
+    gv, gf = gw_kit('parts').cut_lens((0, 0, -0.02 * s), (0, 0, 1), 0.26 * s, 0.12 * s, 10)
     p.add('lens', 'turn', 'gw_gem_' + colour, (gv, gf))
-    p.add('stored_light', 'turn', 'gw_gem_' + colour, ellipsoid((0, 0, -0.03 * s), (0.28 * s, 0.28 * s, 0.06 * s), 32, 12))
-    halo = [(0.47 * s * math.cos(a), 0.47 * s * math.sin(a), -0.11 * s) for a in [TAU * i / 48 for i in range(49)]]
-    p.add('halo', 'mount', 'gw_light', tube_mesh(halo, [0.05 * s] * 49, 10))
-    p.add('halo_silver', 'mount', 'gw_silver', tube_mesh([(q[0] * 1.13, q[1] * 1.13, q[2] - 0.01 * s) for q in halo], [0.022 * s] * 49, 6))
+    p.add('stored_light', 'turn', 'gw_gem_' + colour, ellipsoid((0, 0, -0.03 * s), (0.20 * s, 0.20 * s, 0.05 * s), 32, 12))
     p.fit = dict(pivot=('p', (0, 0, 0)), reach=0.26 * s, radius=0.28 * s, muzzles=[('p', (0.26 * s, 0, 0))], aim=('d', (1, 0, 0)))
     K.gun(fid, pos, 0, cal=0.09 * s, blen=0.26 * s, slot=slot, weapon=weapon, part=p, inv=['optics'],
           band=(0, 5, 10, 15, 20, 30), note=note or 'Grown %s optic; the cut stone turns on a seat sunk in the ribbons, 360 degrees.' % colour)
     K.features[-1]['what'] = '%s grown optic / %s' % (colour, weapon)
-    K.built[-1].update(detailed=True, subs=['grown root', 'cut dome', 'stored light', 'halo ring'])
+    K.built[-1].update(detailed=True, subs=['grown root', 'cut stone', 'stored light'])
     smooth_group(K, fid)
 
 
