@@ -497,7 +497,9 @@ def main():
         if not u or not os.path.exists(os.path.join(out, u)): probs.append(f'map {u} is named by the glb but is not in the folder')
     # Artoo on PR 1724: the hull and parts maps are measured as written, against the R411 band target (stage 7's own report
     # target when it ran with maps=); a smaller older bake is never upscaled, so it fails here until stage 5 rebakes it
-    if not unb and not wing:
+    # Board audit on PR 1724: strike craft are checked too (their band is 1024, the point of R411 for craft), and both sides of
+    # every map count: a 4096 x 2048 map is under a 4096 target, and anything over the target was not resized
+    if not unb:
         rep = os.path.join(out, code + '_export.json')
         target = json.load(open(rep)).get('maps_target') if os.path.exists(rep) else None
         target = target or HP_CONTRACT.map_size(cls, ship.get('length_world'))
@@ -505,10 +507,12 @@ def main():
         for u in imgs:
             if u and os.path.exists(os.path.join(out, u)) and re.fullmatch(re.escape(code) + r'(_parts)?_(base|orm|normal|emission)\.\w+', u):
                 wh = image_size(os.path.join(out, u))
-                if wh: sizes[u] = max(wh)
-        under = sorted(u for u, v in sizes.items() if v < target)
-        notes.append(f'maps measured: {", ".join(f"{u} {v}" for u, v in sorted(sizes.items())) or "none"} (target {target})')
-        if under: probs.append(f'maps under the {target} target (a smaller source bake; rebake at stage 5): ' + ', '.join(f'{u} {sizes[u]}' for u in under))
+                if wh: sizes[u] = tuple(wh)
+        under = sorted(u for u, v in sizes.items() if min(v) < target)
+        over = sorted(u for u, v in sizes.items() if max(v) > target)
+        notes.append(f'maps measured: {", ".join(f"{u} {v[0]}x{v[1]}" for u, v in sorted(sizes.items())) or "none"} (target {target})')
+        if under: probs.append(f'maps under the {target} target on a side (a smaller source bake; rebake at stage 5): ' + ', '.join(f'{u} {sizes[u][0]}x{sizes[u][1]}' for u in under))
+        if over: probs.append(f'maps over the {target} target (stage 7 did not resize them): ' + ', '.join(f'{u} {sizes[u][0]}x{sizes[u][1]}' for u in over))
     mp = os.path.join(out, 'manifest_entry.json')
     if not os.path.exists(mp):
         probs.append('no manifest_entry.json: the export must write the point counts into the ship\'s manifest entry')

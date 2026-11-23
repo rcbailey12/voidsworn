@@ -40,6 +40,8 @@
 #   interior_role_contract the contract's interior_roles taken off (PR 1755 reads it)  must FAIL (the game would not see the roles)
 #   maps_undersized (a painted export, Artoo on PR 1724) stage 7's report asks for     must FAIL (maps under the target)
 #                   twice the size its maps were written at
+#   maps_oversized  (a painted export, strike craft too)   the report asks for half    must FAIL (maps over the target)
+#                   the smallest side its maps were written at
 # A case whose points the export does not carry is skipped and named (issue 1413: an objective has no guns, and the Relay beacon
 # has no engines, braking or boarding points and no breach anchors). The 'pass' case still proves the check accepts that export,
 # so a point the game requires and the export lacks fails there, not here.
@@ -335,8 +337,15 @@ def maps_undersized(d):
     r['maps_target'] = 2 * max(CE.image_size(os.path.join(d, f)) and max(CE.image_size(os.path.join(d, f))) or 0
                                for f in os.listdir(d) if re.fullmatch(re.escape(code) + r'_(base|orm|normal)\.\w+', f))
     json.dump(r, open(rp, 'w'), indent=1)
-if 'unbaked=1' not in sys.argv[3:] and not wing and os.path.exists(os.path.join(src, code + '_export.json')):
-    CASES += (('maps_undersized', None, 1, 'maps under the'),); POST['maps_undersized'] = maps_undersized
+def maps_oversized(d):
+    rp = os.path.join(d, code + '_export.json'); r = json.load(open(rp))
+    r['maps_target'] = min(min(CE.image_size(os.path.join(d, f)) or (2, 2)) for f in os.listdir(d)
+                           if re.fullmatch(re.escape(code) + r'_(base|orm|normal)\.\w+', f)) // 2
+    json.dump(r, open(rp, 'w'), indent=1)
+# strike craft too (Board audit on PR 1724): their maps are checked against the 1024 band like every other ship
+if 'unbaked=1' not in sys.argv[3:] and os.path.exists(os.path.join(src, code + '_export.json')):
+    CASES += (('maps_undersized', None, 1, 'maps under the'), ('maps_oversized', None, 1, 'maps over the'))
+    POST['maps_undersized'] = maps_undersized; POST['maps_oversized'] = maps_oversized
 if SKIPPED: print('skip', ', '.join(SKIPPED) + ': the export carries none of their points (the pass case proves the check accepts that)')
 bad = 0; base = os.path.join(src, '_selftest')
 for name, fn, want, why_must in CASES:
