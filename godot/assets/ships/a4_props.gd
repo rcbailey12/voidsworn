@@ -168,6 +168,39 @@ static func fit_scale(points: PackedVector2Array, cells: Array, hex_r: float, be
 	return k * 0.98   # a hair inside the edge
 
 
+# The turn, from `bearing` plus a multiple of TAU / FIT_TURNS, whose fit_scale is largest, as Vector2(bearing, scale). The
+# outline points are binned once by angle at the rays' own resolution, keeping each bin's farthest point; a turn by a whole
+# number of bins moves every point by whole rays, so each candidate's scale is the same as fit_scale's (no second pass).
+# Ties keep the drawn bearing first.
+const FIT_TURNS := 24
+static func best_bearing(points: PackedVector2Array, cells: Array, hex_r: float, bearing: float) -> Vector2:
+	var rays := footprint_rays(cells, hex_r)
+	var far := PackedFloat32Array()
+	far.resize(FIT_ANGLES)
+	var basis := Basis.from_euler(Vector3(0, bearing, 0))
+	for p in points:
+		var v := basis * Vector3(p.x, 0, p.y)
+		var q := Vector2(v.x, v.z)
+		var r := q.length()
+		if r < 1e-4:
+			continue
+		var i0 := int(floor(fposmod(q.angle() / TAU, 1.0) * FIT_ANGLES)) % FIT_ANGLES
+		far[i0] = maxf(far[i0], r)
+	var step := FIT_ANGLES / FIT_TURNS
+	var best := Vector2(bearing, -1.0)
+	for j in FIT_TURNS:
+		var k := 1.0
+		for i in FIT_ANGLES:
+			if far[i] <= 0.0:
+				continue
+			# a turn of j * TAU / FIT_TURNS more lowers every point's angle by j * step rays
+			var a := posmod(i - j * step, FIT_ANGLES)
+			k = minf(k, minf(rays[a], rays[(a + 1) % FIT_ANGLES]) / far[i])
+		if k * 0.98 > best.y + 1e-6:
+			best = Vector2(bearing + TAU * float(j) / float(FIT_TURNS), k * 0.98)
+	return best
+
+
 # The painted station across a cluster of station hexes. `kind` is the biome's station kind, `with_debris` false for a lone
 # blocker hex (its torn pieces would drift over open hexes). `cells` are the cluster's hex centres relative to the station
 # centre (x, z), `hex_r` their corner radius and `bearing` the turn the caller will give it: when `cells` is set and the
@@ -197,11 +230,17 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 		var fit := cells.size() < BIG_FOOTPRINT_CELLS if not cells.is_empty() else size < LARGE_STATION_SIZE
 		if fit:
 			if not cells.is_empty() and not (_outline[path] as PackedVector2Array).is_empty():
-				k = minf(1.0, fit_scale(_outline[path], cells, hex_r, bearing))
+				# Wave 0 on Sheet M (Fable, Astra, Neon, Nov 23): a fitted T2 read small and left the teaching cluster's
+				# outer hexes empty, so it is turned to the best of FIT_TURNS bearings from the drawn one (the largest
+				# exact fit); the caller turns it by the "station_bearing" this records
+				var best := best_bearing(_outline[path], cells, hex_r, bearing)
+				bearing = best.x
+				k = minf(1.0, best.y)
 			else:
 				k = clampf(size / LARGE_STATION_SIZE, 0.05, 1.0)
 		t2.scale = Vector3.ONE * k
 		t2.set_meta("station_scale", k)
+		t2.set_meta("station_bearing", bearing)
 		# Refs #863. Separate kit/cache leaves PR 977's painted station intact. The field lives in T2's own (scaled) frame,
 		# so the clearance it keeps out of is divided by the same scale.
 		if with_debris and path == T2_PATH and ResourceLoader.exists(T2_DEBRIS_PATH):
@@ -391,7 +430,11 @@ static var _burn_cache := {}
 const DEAD_DIM := 0.6   # a dead hull with no lights: its paint dimmed before any soot
 const OBSIDIAN := Color(0.22, 0.19, 0.28)   # an Eclipse hulk's effective albedo: violet-black obsidian (R420 Law 3)
 const OBSIDIAN_ROUGH := 0.3                 # obsidian keeps a glassy sheen
-const CHITIN_DRY_ROUGH := 0.85              # a dead Chorus hull is dry, matte chitin
+const CHITIN_DRY_ROUGH := 0.85
+const DEAD_METAL_DIM := 0.4    # dead metal (wreck_soot above 0) keeps at most this share of its paint before the band
+const DEAD_METAL_KEEP := 0.5   # and this share of its metalness
+const DEAD_SPECULAR := 0.2     # and at most this dielectric sheen (Godot's default is 0.5)
+const DEAD_GLASS_SPEC := 0.6   # Glasswright dead glass: its sheen times this, gloss kept              # a dead Chorus hull is dry, matte chitin
 # The burn comes from the faction's own wound profile (fx/faction_looks.json "wound": scorch_col, wreck_soot; PR 1755,
 # issue 1741), the one home for how a faction's hull scorches. Until that block is on main these are its values.
 const WOUND_FALLBACK := {
@@ -519,6 +562,12 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 		b.roughness = minf(src.roughness, OBSIDIAN_ROUGH)
 		return b
 	var burn := Color(DEAD_DIM, DEAD_DIM, DEAD_DIM).lerp(Color(float(sc[0]), float(sc[1]), float(sc[2])), soot)
+	if soot > 0.0:
+		# dead metal keeps at most DEAD_METAL_DIM of its paint's light (Wave 0 on Sheet M, Nov 23: Fable, Astra and Neon saw
+		# the Directorate wrecks read silver-white at c170; their pale blue-grey scorch at the lightest soot left them at
+		# about half their paint). Darker only, so it stays inside R425 (never lighter than 60% of live paint; the floor
+		# only stops pure black); Hullbreakers and Sunward already sit under it.
+		burn = Color(minf(burn.r, DEAD_METAL_DIM), minf(burn.g, DEAD_METAL_DIM), minf(burn.b, DEAD_METAL_DIM))
 	b.albedo_color = into_band(Color(c.r * burn.r, c.g * burn.g, c.b * burn.b, c.a), mean,
 		CHORUS_HULK_BAND if fac == "chorus" else HULK_BAND)
 	b.roughness = minf(1.0, src.roughness * (1.0 + 0.35 * soot))   # soot dulls metal; glass and chitin keep their gloss
@@ -526,6 +575,14 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 		# dead chitin dries out (Board on PROPS_H, Nov 23: the Chorus wrecks still pop in the field). Its albedo already sits
 		# on the band 3 floor (R420: 0.04 linear is the floor for hulks), so the wet sheen goes instead of more darkening.
 		b.roughness = maxf(b.roughness, CHITIN_DRY_ROUGH)
+	if soot > 0.0:
+		# a dead metal hull loses its polish: half its metal and a dull dielectric sheen, so the sky no longer paints a
+		# silver gleam on it at the battle camera (the same Wave 0 finding; its roughness map is kept)
+		b.metallic = src.metallic * DEAD_METAL_KEEP
+		b.metallic_specular = minf(src.metallic_specular, DEAD_SPECULAR)
+	elif fac == "ithar":
+		# dead glass keeps its clarity and gloss (roughness untouched) but its lights are out, so its glints soften
+		b.metallic_specular = src.metallic_specular * DEAD_GLASS_SPEC
 	if soot > 0.0:
 		b.detail_enabled = true
 		b.detail_blend_mode = BaseMaterial3D.BLEND_MODE_MUL

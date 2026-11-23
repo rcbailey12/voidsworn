@@ -128,7 +128,8 @@ func _props_checks() -> void:
 		var k: float = small.scale.x
 		k_min = minf(k_min, k)
 		k_max = maxf(k_max, k)
-		small.transform = Transform3D(Basis.from_euler(Vector3(0, bearing, 0)).scaled(Vector3.ONE * k), Vector3.ZERO)
+		var turn := float(small.get_meta("station_bearing", bearing))
+		small.transform = Transform3D(Basis.from_euler(Vector3(0, turn, 0)).scaled(Vector3.ONE * k), Vector3.ZERO)
 		root.add_child(small)
 		worst = maxi(worst, _outside(small, rel, HS))
 		if i == 0:
@@ -138,9 +139,27 @@ func _props_checks() -> void:
 				"the biome kind rig is recorded and lights one faint unshadowed amber lamp")
 		small.free()
 	_report(worst == 0 and k_min > 0.05, "a 3-hex cluster's T2 projects inside its three hexes at 12 bearings (scale %.3f to %.3f, %d points outside)" % [k_min, k_max, worst])
+	# Wave 0 on Sheet M (Nov 23): a fitted T2 turns to its best of FIT_TURNS bearings, never smaller than the drawn
+	# bearing's fit, and the best turn's scale is fit_scale's own at that turn
+	var pts: PackedVector2Array = PROPS._outline[PROPS.T2_PATH]
+	var gain_ok := true
+	var gained := false
+	var exact := true
+	for i in 12:
+		var b0 := float(i) * 0.5
+		var drawn := PROPS.fit_scale(pts, rel, HS, b0)
+		var best := PROPS.best_bearing(pts, rel, HS, b0)
+		gain_ok = gain_ok and best.y >= drawn - 1e-5
+		gained = gained or best.y > drawn * 1.02
+		exact = exact and absf(PROPS.fit_scale(pts, rel, HS, best.x) - best.y) < 1e-3
+	var one_drawn := PROPS.fit_scale(pts, [Vector2.ZERO], HS, 0.0)
+	var one_best := PROPS.best_bearing(pts, [Vector2.ZERO], HS, 0.0)
+	_report(gain_ok and gained and exact and one_best.y >= one_drawn - 1e-5,
+		"a fitted T2 turns to its best fit: never smaller than the drawn turn, larger on the 3-hex cluster, exact (1 hex %.3f to %.3f)" % [one_drawn, one_best.y])
 	var hole := PROPS.station(14.0, HS, "spire", false, [Vector2.ZERO], HS, 0.0)
 	var out_hole := 99999
 	if hole != null:
+		hole.rotation.y = float(hole.get_meta("station_bearing", 0.0))
 		root.add_child(hole)
 		out_hole = _outside(hole, [Vector2.ZERO], HS)
 	_report(hole != null and hole.has_meta("station_T2") and out_hole == 0 and hole.find_child("station_T2_debris", true, false) == null,
@@ -166,6 +185,26 @@ func _hulk_checks() -> void:
 			local += 1
 	# 70 percent local plus their share (4 of 8 hulls) of the 30 percent ambient draw: about 85 percent
 	_report(local > n * 0.75 and local < n * 0.95, "a Chorus and Glasswright battle draws their hulks %d of %d times" % [local, n])
+	# Wave 0 on Sheet M (Nov 23): dead metal loses its polish and keeps at most DEAD_METAL_DIM of its paint (darker only,
+	# inside R425); dead glass keeps its gloss with a softer glint; Eclipse obsidian and Chorus chitin are untouched by it
+	var metal := StandardMaterial3D.new()
+	metal.albedo_color = Color(0.8, 0.8, 0.82)
+	metal.metallic = 0.8
+	metal.roughness = 0.4
+	var dull := true
+	for fac in ["hegemony", "voidsworn", "corsair"]:
+		var d := PROPS.derelict(metal, fac)
+		dull = dull and d.metallic <= 0.4 + 1e-5 and d.metallic_specular <= PROPS.DEAD_SPECULAR + 1e-5
+		dull = dull and PROPS.effective_luma(Color.WHITE, d.albedo_color) <= PROPS.effective_luma(Color.WHITE, metal.albedo_color * PROPS.DEAD_METAL_DIM) + 1e-5
+	var gl := StandardMaterial3D.new()
+	gl.albedo_color = Color(0.5, 0.8, 0.9)
+	gl.roughness = 0.1
+	var dg := PROPS.derelict(gl, "ithar")
+	var de := PROPS.derelict(metal, "deathless")
+	var dc := PROPS.derelict(metal, "chorus")
+	_report(dull and is_equal_approx(dg.roughness, 0.1) and dg.metallic_specular < gl.metallic_specular
+		and is_equal_approx(de.metallic, metal.metallic) and is_equal_approx(dc.metallic_specular, metal.metallic_specular),
+		"dead metal hulks are dull and at most %.0f%% of their paint; dead glass keeps its gloss, softer glint" % (PROPS.DEAD_METAL_DIM * 100.0))
 	var glass := StandardMaterial3D.new()
 	glass.albedo_color = Color(0.5, 0.8, 0.9, 0.6)
 	glass.roughness = 0.1

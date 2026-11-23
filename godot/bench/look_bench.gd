@@ -873,6 +873,7 @@ func _props_part() -> void:
 		for n in board.find_children("*", "Node3D", true, false):
 			if n.has_meta("station_T2"):
 				t2n += 1
+				report["parts"]["props"]["%s_scale" % st[0]] = snappedf(float(n.get_meta("station_scale", n.scale.x)), 0.001)
 			elif n.has_meta("station_kind"):
 				o1n += 1
 		var big := str(st[0]).begins_with("ST2")

@@ -970,6 +970,7 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 	var a4 := A4P.station(size, clearance, station_kind(), true, cells, HS, bearing)
 	if a4 != null:
 		var t2 := a4.has_meta("station_T2")
+		bearing = float(a4.get_meta("station_bearing", bearing))   # a fitted T2's best turn (A4P.best_bearing)
 		var attitude := Vector3(0, bearing, 0) if t2 else Vector3(0.06, bearing, 0.04)
 		var k: float = a4.scale.x
 		var offset := Vector3(0, 3, 0) * k
