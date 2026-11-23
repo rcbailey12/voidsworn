@@ -139,6 +139,38 @@ func _drop(world: Node3D) -> void:
 	check(battle._lifted_hull_hex(p + Vector2(400, 0)).x == 99999, "a pointer away from it picks nothing special")
 	var cp: Vector2 = cam.unproject_position(cap.visual_position())
 	check(battle._lifted_hull_hex(cp).x == 99999, "a hull on the plane is left to the plane pick")
+	# Artoo on PR 1874: a low orbit where a lower escort sits right behind a foreground capital on screen
+	var oc := Vector3(0, 0, -200)
+	cam.global_position = oc + Vector3(0, 14, 120)
+	cam.look_at(oc)
+	cap.position = oc
+	var ray: Vector3 = (oc - cam.global_position).normalized()
+	var t_lo := (cam.global_position.y + 2.4) / -ray.y   # where the view ray through the capital's middle is 2.4 below
+	var behind := _view(world, "Frigate", -2.4, Vector3.ZERO)
+	var bp: Vector3 = cam.global_position + ray * t_lo
+	behind.position = Vector3(bp.x, 0, bp.z)
+	var front := _view(world, "Frigate", 3.6, Vector3.ZERO)
+	var t_hi := (cam.global_position.y - 3.6) / -ray.y   # in front of the capital, 3.6 up, on the same ray
+	var fp: Vector3 = cam.global_position + ray * t_hi
+	front.position = Vector3(fp.x, 0, fp.z)
+	front.visible = false
+	battle.views = {"cap": cap, "behind": behind, "front": front}
+	battle.VU = {"cap": {"id": "cap", "q": 0, "r": 0, "squadron": false}, "behind": {"id": "behind", "q": 5, "r": 1, "squadron": false},
+		"front": {"id": "front", "q": 2, "r": 2, "squadron": false}}
+	var op: Vector2 = cam.unproject_position(oc)
+	check(cam.unproject_position(behind.visual_position()).distance_to(op) < 2.0, "the escort projects onto the capital's middle")
+	check(battle._lifted_hull_hex(op).x == 99999, "a lower escort behind a foreground capital does not steal its click")
+	front.visible = true
+	check(battle._lifted_hull_hex(op) == Vector2i(2, 2), "a raised escort in front of the capital takes the click")
+	front.visible = false
+	# the band is set in the shared registration every view path calls (opening roster, reinforcement, revive)
+	var fresh := SV.new()
+	world.add_child(fresh)
+	fresh.setup({"id": "fresh", "fac": "hegemony", "cls": "Cruiser", "code": "H9_23", "facing": 0}, Vector3(60, 0, 0))
+	battle._register_fx_ship({"id": "fresh", "fac": "hegemony", "cls": "Cruiser", "size": 2, "squadron": false, "flagship": false}, fresh)
+	check(is_equal_approx(fresh.band_y, ALT.height({"id": "fresh", "cls": "Cruiser"})) and absf(fresh.band_y) > 0.5, "shared registration sets the band (%.2f)" % fresh.band_y)
+	battle._register_fx_ship({"id": "fresh", "fac": "hegemony", "cls": "Cruiser", "size": 2, "squadron": false, "flagship": false}, fresh)
+	check(is_equal_approx(fresh.hull.position.y - fresh.hull_lift, fresh.band_y) or absf(fresh.hull_base.y - fresh.band_y) < 0.01, "registering twice keeps the same height")
 	battle.free()
 	fx.remove_ship("hi")
 	fx.remove_ship("lo")

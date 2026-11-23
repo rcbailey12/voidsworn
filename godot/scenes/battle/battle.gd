@@ -870,7 +870,6 @@ func _make_view(u: Dictionary) -> void:
 	add_child(sv)
 	sv.setup(u, board.hex_world(u["q"], u["r"]), true)
 	sv.set_marker(u["side"] == "player")
-	sv.set_band(ALT_BAND.height(u))   # issue 1582: class altitude band and drop-line (a look only; rules stay on the plane)
 	views[u["id"]] = sv
 	sv.calm = reduce_motion   # issue 1581: Reduce motion per view (no drift, bob or nod; half the ignition beat)
 	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
@@ -878,6 +877,9 @@ func _make_view(u: Dictionary) -> void:
 
 
 func _register_fx_ship(u: Dictionary, sv: ShipView) -> void:
+	# issue 1582: the class altitude band and drop-line, set here so every way a view is built (the opening roster,
+	# reinforcements, a revived or captured hull) gets it before its effects are registered. Same height every call.
+	sv.set_band(ALT_BAND.height(u))
 	if gfx != null and gfx.has_method("add_ship"):
 		var info := {"faction": str(u["fac"]), "cls": str(u["cls"]), "size": float(u["size"]), "squadron": bool(u["squadron"]), "flagship": bool(u["flagship"]), "code": sv.code}
 		if not sv.a4:
@@ -4322,16 +4324,24 @@ func _ray_hex(p: Vector2) -> Vector2i:
 var _hover_uid := ""
 
 
-# issue 1582: the hex of an off-plane hull whose middle is under the pointer (the nearest to the eye wins), else none.
-# Only the hull's middle counts (a third of its length across), so the hexes around it stay clickable.
+# issue 1582: the hex of an off-plane hull whose middle is under the pointer, else none. Every drawn ship, raised or on
+# the plane, takes part by camera depth: the hull nearest the eye whose body covers the pointer wins, so a lower escort
+# behind a foreground capital never steals its click (Artoo on PR 1874). Only a raised winner's middle (a third of its
+# length across) overrides the plane pick; an on-plane winner, or a pointer off the middle, keeps the plane pick.
+const PICK_MID := 0.17    # half the picked middle, in hull lengths
+const PICK_BODY := 0.3    # half the body that hides what is behind it, in hull lengths
+
+
 func _lifted_hull_hex(p: Vector2) -> Vector2i:
-	var best := Vector2i(99999, 99999)
-	var best_d := INF
+	var none := Vector2i(99999, 99999)
 	if cam == null or not is_instance_valid(cam):
-		return best
+		return none
+	var best_id = null
+	var best_d := INF
+	var best_mid := false
 	for id in views:
 		var sv = views[id]
-		if not is_instance_valid(sv) or sv.dead or not sv.visible or absf(float(sv.band_y)) < ShipView.DROP_MIN:
+		if not is_instance_valid(sv) or sv.dead or not sv.visible:
 			continue
 		if not VU.has(id) or bool(VU[id].get("squadron", false)):
 			continue
@@ -4339,16 +4349,18 @@ func _lifted_hull_hex(p: Vector2) -> Vector2i:
 		if cam.is_position_behind(c):
 			continue
 		var sc: Vector2 = cam.unproject_position(c)
-		var edge: Vector2 = cam.unproject_position(c + cam.global_basis.x * float(sv.L) * 0.17)
-		var rad := sc.distance_to(edge)
+		var unit: float = sc.distance_to(cam.unproject_position(c + cam.global_basis.x * float(sv.L)))
 		var dd := sc.distance_to(p)
-		if dd > rad:
+		if dd > unit * PICK_BODY:
 			continue
 		var eye := cam.global_position.distance_to(c)
 		if eye < best_d:
 			best_d = eye
-			best = Vector2i(int(VU[id]["q"]), int(VU[id]["r"]))
-	return best
+			best_id = id
+			best_mid = dd <= unit * PICK_MID and absf(float(sv.band_y)) >= ShipView.DROP_MIN
+	if best_id == null or not best_mid:
+		return none
+	return Vector2i(int(VU[best_id]["q"]), int(VU[best_id]["r"]))
 
 
 func _on_hover(p: Vector2) -> void:
