@@ -83,12 +83,12 @@ foreach ($pass in @('cold', 'warm')) {
 }
 
 # ---- 3: the close cases (close1435_timing5.ps1's method), cold set then warm set
-$shell = New-Object -ComObject WScript.Shell
 Add-Type -Namespace V1434L -Name User32 -MemberDefinition @'
 [DllImport("user32.dll")] public static extern System.IntPtr GetForegroundWindow();
 [DllImport("user32.dll")] public static extern bool IsIconic(System.IntPtr hWnd);
 [DllImport("user32.dll")] public static extern bool IsWindowVisible(System.IntPtr hWnd);
 [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetClassName(System.IntPtr hWnd, System.Text.StringBuilder buf, int max);
+[DllImport("user32.dll")] public static extern bool PostMessage(System.IntPtr hWnd, uint msg, System.IntPtr wParam, System.IntPtr lParam);
 '@
 function Get-WindowClass($h) { $b = New-Object Text.StringBuilder 256; [void][V1434L.User32]::GetClassName($h, $b, 256); $b.ToString() }
 function Find-Game($p, $seconds) {
@@ -144,14 +144,16 @@ foreach ($set in @('cold', 'warm')) {
       $row.sent = 'x'
       if ($c.how -eq 'x') { [void]$g.CloseMainWindow() }
       else {
-        # Alt-F4 only when the game's own window is verified in front; otherwise its own window is closed directly
+        # Alt-F4 is the system menu's Close: WM_SYSCOMMAND SC_CLOSE, posted straight to the game's window (Board, Nov 23:
+        # AppActivate and SendKeys need the focus, which Windows refuses for 200 s after Ryan touches the PC, so the old
+        # key press came back UNVERIFIED or never arrived). The same message the key makes, no focus needed.
         $g.Refresh()
-        $activated = $shell.AppActivate($g.Id)
-        Start-Sleep -Milliseconds 150
-        $g.Refresh()
-        $front = [V1434L.User32]::GetForegroundWindow()
-        if ($activated -and $g.MainWindowHandle -ne [IntPtr]::Zero -and $front -eq $g.MainWindowHandle) { $sw.Restart(); $shell.SendKeys('%{F4}'); $row.sent = 'altf4' }
-        else { $row.skip = 'Alt-F4 UNVERIFIED: game not in front, closed with the title bar close'; $sw.Restart(); [void]$g.CloseMainWindow() }
+        if ($g.MainWindowHandle -ne [IntPtr]::Zero) {
+          $sw.Restart()
+          if ([V1434L.User32]::PostMessage($g.MainWindowHandle, 0x0112, [IntPtr]0xF060, [IntPtr]::Zero)) { $row.sent = 'altf4' }
+          else { $row.skip = 'Alt-F4 UNVERIFIED: the system close could not be posted, closed with the title bar close'; [void]$g.CloseMainWindow() }
+        }
+        else { $row.skip = 'Alt-F4 UNVERIFIED: no game window handle, closed with the title bar close'; $sw.Restart(); [void]$g.CloseMainWindow() }
       }
       $hwnd = $g.MainWindowHandle
       $row.hidden_ms = $null
