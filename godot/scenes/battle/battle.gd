@@ -256,6 +256,11 @@ func _ready() -> void:
 	StageIn.hide_layer_from(cam, [key_light])
 	stage.cam = cam
 	rp["world"] = Time.get_ticks_usec() - t_p
+	var bw_sum := 0
+	for k in _bw_us:
+		rp["world:" + str(k)] = _bw_us[k]
+		bw_sum += int(_bw_us[k])
+	rp["world:other"] = int(rp["world"]) - bw_sum
 	t_p = Time.get_ticks_usec()
 	sfx = Sfx.new()
 	sfx.name = "Sfx"
@@ -337,10 +342,43 @@ static func prefetch_sky() -> void:
 		_sky_pending = sky_res
 
 
-# true once the prefetched sky is read (or none was asked for): main.gd waits for this, a frame at a time, before it builds
-# a battle, so _sky_texture never waits on the worker (Artoo on PR 1445)
+# true once the prefetched sky is read (or none was asked for)
 static func sky_ready() -> bool:
-	return _sky_pending == "" or ResourceLoader.load_threaded_get_status(_sky_pending) != ResourceLoader.THREAD_LOAD_IN_PROGRESS
+	return _sky_pending == "" or not _still_reading(_sky_pending)
+
+
+static var hold_sky := false   # prefetch_wait_check only: the sky read counts as still running
+
+
+static func _still_reading(p: String) -> bool:
+	return hold_sky or ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS
+
+
+var _sky_late: Array = []   # [sky material, path] while the prefetched sky is still being read (Artoo on PR 1445)
+
+
+# the sky now if it can be had without waiting on a worker; null while the prefetch still reads it
+static func _sky_texture_now(p: String) -> Resource:
+	if _sky_pending == p and _still_reading(p):
+		return null
+	return _sky_texture(p)
+
+
+# the battle's start waits here, a frame at a time, for a sky still being read; false when the build was stopped
+func _sky_wait(gen: int) -> bool:
+	while not _sky_late.is_empty():
+		var p: String = _sky_late[1]
+		if _sky_pending == p and _still_reading(p):
+			if not _sliced() and not hold_sky:
+				pass   # a headless run has no frames to spare the wait for: it collects (waits) below
+			else:
+				await get_tree().process_frame
+				if gen != _build_gen or not is_inside_tree():
+					return false
+				continue
+		(_sky_late[0] as ShaderMaterial).set_shader_parameter("pano", _sky_texture(p))
+		_sky_late = []
+	return true
 
 
 static func _sky_texture(p: String) -> Resource:
@@ -356,7 +394,11 @@ static func drop_sky_pending() -> void:
 	_sky_pending = ""
 
 
+var _bw_us := {}   # issue 1518: _build_world's parts (the [load] battle scene ready line)
+
+
 func _build_world() -> void:
+	var tw := Time.get_ticks_usec()
 	env = Environment.new()
 	var man := ShipView.manifest()
 	var sky_res := str(man.get("sky", ""))
@@ -366,7 +408,14 @@ func _build_world() -> void:
 		sh.code = WORLD_SKY.PANORAMA_SKY
 		var pano := ShaderMaterial.new()
 		pano.shader = sh
-		pano.set_shader_parameter("pano", _sky_texture(sky_res))
+		_bw_us["sky shader"] = Time.get_ticks_usec() - tw
+		tw = Time.get_ticks_usec()
+		var sky_tex = _sky_texture_now(sky_res)
+		_bw_us["sky read"] = Time.get_ticks_usec() - tw
+		tw = Time.get_ticks_usec()
+		pano.set_shader_parameter("pano", sky_tex)
+		if sky_tex == null and _sky_pending == sky_res:
+			_sky_late = [pano, sky_res]   # still being read: _begin waits for it a frame at a time, under the cover
 		if LOOK.fleet_lighting_enabled():
 			pano.set_shader_parameter("sun_dir", -LOOK.KEY_DIR.normalized())
 			pano.set_shader_parameter("fleet_reflections", true)
@@ -402,6 +451,8 @@ func _build_world() -> void:
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
+	_bw_us["environment"] = Time.get_ticks_usec() - tw
+	tw = Time.get_ticks_usec()
 	var key := DirectionalLight3D.new()
 	key_light = key
 	key.transform = Transform3D(Basis.looking_at(KEY_DIR.normalized(), Vector3.UP), Vector3.ZERO)
@@ -417,9 +468,15 @@ func _build_world() -> void:
 	fill.light_color = FILL_COL
 	fill.light_energy = 0.5
 	add_child(fill)
+	_bw_us["lights"] = Time.get_ticks_usec() - tw
+	tw = Time.get_ticks_usec()
 	_apply_quality(str(args.get("quality", "max")))
+	_bw_us["quality"] = Time.get_ticks_usec() - tw
+	tw = Time.get_ticks_usec()
 	LOOK.apply(env, key, fill, {"quality": str(args.get("quality", "max"))})
 	key.directional_shadow_max_distance = 600.0
+	_bw_us["look"] = Time.get_ticks_usec() - tw
+	tw = Time.get_ticks_usec()
 	board = Board.new()
 	board.name = "Board"
 	add_child(board)
@@ -432,6 +489,8 @@ func _build_world() -> void:
 	fx = Fx.new()
 	fx.name = "Fx"
 	add_child(fx)
+	_bw_us["board"] = Time.get_ticks_usec() - tw
+	tw = Time.get_ticks_usec()
 	# the G4 effects system (godot/fx/API.md) when it is in the build; the placeholder stays for anything it lacks
 	if ResourceLoader.exists("res://fx/fx.gd") and not args.has("nofx"):
 		gfx = load("res://fx/fx.gd").new()
@@ -443,7 +502,10 @@ func _build_world() -> void:
 	cam.current = true
 	if gfx != null and gfx.has_method("setup"):
 		gfx.setup({"camera": cam, "quality": str(args.get("quality", "max")), "reduce_flashing": reduce_flashing, "shake": shake_scale, "unit": 1.0})
+	_bw_us["effects and camera"] = Time.get_ticks_usec() - tw
+	tw = Time.get_ticks_usec()
 	_build_arrow()
+	_bw_us["arrow"] = Time.get_ticks_usec() - tw
 
 
 # the Graphics setting: max (everything but SSIL since issue 1262), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
@@ -651,6 +713,8 @@ func _begin(a) -> void:
 		await get_tree().process_frame
 		if gen != _build_gen:
 			return
+	if not await _sky_wait(gen):
+		return
 	var tb0 := Time.get_ticks_usec()
 	begin_us = {}
 	TBL = _api_tables()

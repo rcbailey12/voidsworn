@@ -83,6 +83,8 @@ func _ready() -> void:
 			continue
 		var a: Array = []
 		for f in idx[k]:
+			if _late_read("res://audio/clips/" + f, "clips", k):
+				continue
 			var s := _load("res://audio/clips/" + f)
 			if s != null:
 				a.append(s)
@@ -91,6 +93,8 @@ func _ready() -> void:
 	for k in cues:
 		var a: Array = []
 		for f in cues[k]["synth"]:
+			if _late_read("res://audio/synth/" + f, "synth", k):
+				continue
 			var s := _load("res://audio/synth/" + f)
 			if s != null:
 				a.append(s)
@@ -98,6 +102,8 @@ func _ready() -> void:
 		for variant in cues[k].get("variants", {}):
 			var va: Array = []
 			for f in cues[k]["variants"][variant].get("synth", []):
+				if _late_read("res://audio/synth/" + f, "synth", k + ":" + variant):
+					continue
 				var vs := _load("res://audio/synth/" + f)
 				if vs != null:
 					va.append(vs)
@@ -136,13 +142,41 @@ static func prefetch() -> void:
 			_pending[p] = true
 
 
-# true once every prefetched clip is read: main.gd waits for this, a frame at a time, before it builds a battle, so _load
-# never waits on a worker (Artoo on PR 1445)
+# true once every prefetched clip is read
 static func prefetch_ready() -> bool:
 	for p in _pending:
 		if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 			return false
 	return true
+
+
+# Artoo on PR 1445: a clip still being read on a worker when this sound starts is never waited for. It joins its set
+# once the read is done (_process looks each frame); until then that set plays the takes it has, or stays quiet.
+var _late: Array = []   # [path, "clips" or "synth", key]
+
+
+func _late_read(p: String, into: String, key: String) -> bool:
+	if not _pending.has(p) or ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		return false
+	_late.append([p, into, key])
+	return true
+
+
+func _collect_late() -> void:
+	var keep: Array = []
+	for e in _late:
+		var p: String = e[0]
+		if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			keep.append(e)
+			continue
+		var s := _load(p)   # read by now: collected at once
+		if s == null:
+			continue
+		var d: Dictionary = clips if e[1] == "clips" else synth
+		if not d.has(e[2]):
+			d[e[2]] = []
+		(d[e[2]] as Array).append(s)
+	_late = keep
 
 
 # the game is closing: whatever finished is collected, the rest is left to the loader (main.gd quit_clean)
@@ -468,6 +502,8 @@ func _play_pending(player: WeakRef, voice: Dictionary) -> void:
 
 
 func _process(_delta: float) -> void:
+	if not _late.is_empty():
+		_collect_late()
 	_reap(_now())
 	_apply_mix()
 	if _now() >= _ambient_duck_until:

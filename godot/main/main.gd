@@ -119,6 +119,9 @@ func quit_clean(code := 0, route := "menu") -> void:
 	if music != null and is_instance_valid(music) and music.has_method("release"):
 		music.release()
 	BattleScript.drop_sky_pending()
+	if _fx_reading and ResourceLoader.load_threaded_get_status(FX_SCRIPT) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		ResourceLoader.load_threaded_get(FX_SCRIPT)
+		_fx_reading = false
 	BattleScript.Sfx.drop_pending()
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -181,6 +184,8 @@ func _ready() -> void:
 		# first battle only collects them
 		BattleScript.prefetch_sky()
 		BattleScript.Sfx.prefetch()
+		if ResourceLoader.load_threaded_request(FX_SCRIPT) == OK:
+			_fx_reading = true
 	if args.has("player-path"):
 		var recorder = load("res://main/player_path.gd")
 		var profile_error: String = recorder.prepare_profile()
@@ -484,11 +489,12 @@ static func next_showcase_fac() -> String:
 func _start_showcase() -> void:
 	if quitting or title == null or not is_instance_valid(title) or showcase != null or not _showcase_wanted():
 		return
-	var t_wait: Node = title
-	if not await prefetch_wait(false):   # the silent backdrop needs only the sky
-		return
-	if title != t_wait or showcase != null or not is_instance_valid(title):
-		return   # the title was left or a backdrop started meanwhile
+	if _fx_reading:
+		var t_wait: Node = title
+		if not await battle_parts_ready():
+			return
+		if title != t_wait or showcase != null or title == null or not is_instance_valid(title):
+			return   # the title was left, or a backdrop started, meanwhile
 	showcase = BattleScene.instantiate()
 	showcase.showcase = true
 	showcase.title_backdrop = true   # issue 1434: capped at High, silent, no combat warm-up
@@ -593,25 +599,29 @@ static func campaign_has_save() -> bool:
 # and answers its messages once before the battle is built, so a close that comes during that build is seen at once
 func _quick_battle_after_first_frame() -> void:
 	await RenderingServer.frame_post_draw
-	if await prefetch_wait(true):
+	if await battle_parts_ready():
 		quick_battle()
 
 
-# Artoo on PR 1445: a battle built while its sky (or, with sound, its clips) is still loading on a worker would wait for
-# it inside one frame, where a close is not seen. The battle waits here, a frame at a time, until they are read; false
-# when the game is closing meanwhile (the caller builds nothing). At most 20 s, then the battle goes ahead and the
-# collectors wait for the rest as before. Returns at once when nothing is pending (the usual case).
-var prefetch_waited_ms := -1   # the last wait (the prefetch check reads it); -1: none yet
-func prefetch_wait(with_sound: bool) -> bool:
-	var t0 := Time.get_ticks_msec()
-	while not quitting and Time.get_ticks_msec() - t0 < 20000 and not _prefetch_ready(with_sound):
+# issue 1518 (cloud trace: a battle's first setup spent 0.4 s compiling the effects script, inside one frame): the game
+# starts reading res://fx/fx.gd on a worker when it starts, and every way into a battle (the test battle, the title's
+# backdrop, play_api for the campaign) waits here, a frame at a time, until it is read, so no battle's setup compiles it
+# in a frame. A close meanwhile ends the wait (false: the caller builds nothing). No time limit: the read ends.
+const FX_SCRIPT := "res://fx/fx.gd"
+var _fx_reading := false
+var _fx_script: Resource = null   # held, so the battles' load() finds it cached
+var hold_fx_read := false         # prefetch_wait_check only: the read counts as still running
+
+
+func battle_parts_ready() -> bool:
+	while _fx_reading and not quitting and (hold_fx_read or ResourceLoader.load_threaded_get_status(FX_SCRIPT) == ResourceLoader.THREAD_LOAD_IN_PROGRESS):
 		await get_tree().process_frame
-	prefetch_waited_ms = Time.get_ticks_msec() - t0
-	return not quitting
-
-
-func _prefetch_ready(with_sound: bool) -> bool:
-	return BattleScript.sky_ready() and (not with_sound or BattleScript.Sfx.prefetch_ready())
+	if quitting:
+		return false
+	if _fx_reading:
+		_fx_reading = false
+		_fx_script = ResourceLoader.load_threaded_get(FX_SCRIPT)   # read by now: no wait
+	return true
 
 
 func quick_battle() -> void:
@@ -765,6 +775,8 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 
 # A battle already set up by the campaign host (its rules API, built in battle_setup).
 func play_api(a, opts := {}) -> Dictionary:
+	if not await battle_parts_ready():
+		return {"result": "quit"}   # the game is closing
 	var b = BattleScene.instantiate()
 	b.external = true
 	b.bot = bot_mode or bool(opts.get("bot", false))
