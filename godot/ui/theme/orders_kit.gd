@@ -190,7 +190,7 @@ static func button_boxes(k: float, role := "quiet") -> Dictionary:
 	var d := n.duplicate() as StyleBoxFlat
 	d.bg_color = Color(GS.CAREER_INK, 0.8)
 	d.border_color = GS.LINE
-	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
+	return {"normal": n, "hover": h, "pressed": GS.pressed_box(h), "disabled": d}
 
 
 static func button(text: String, k: float, role := "quiet", cb := Callable(), size := 18.0) -> Button:
@@ -208,7 +208,7 @@ static func style_button(b: Button, k: float, role := "quiet", size := 18.0) -> 
 		b.add_theme_stylebox_override(st, bx[st])
 	b.add_theme_stylebox_override("focus", GS.focus_ring(k))
 	b.focus_mode = Control.FOCUS_ALL
-	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	GS.button_pointer(b)
 	b.add_theme_font_size_override("font_size", px(maxf(size, UiScale.MIN_TEXT), k))
 	if role == "primary":
 		b.add_theme_font_override("font", GS.action_font(k))
@@ -394,8 +394,11 @@ static func tab_button(text: String, k: float, picked: bool, accent: Color, cb :
 		pb.bg_color = Color(GS.CAREER_PICTURE, 0.97)
 		pb.border_color = accent
 		pb.border_width_bottom = maxi(3, px(3, k))
-		for st in ["normal", "hover", "pressed"]:
-			b.add_theme_stylebox_override(st, pb)
+		var hover := pb.duplicate() as StyleBoxFlat
+		hover.bg_color = pb.bg_color.lerp(GS.TEXT, 0.08)
+		b.add_theme_stylebox_override("normal", pb)
+		b.add_theme_stylebox_override("hover", hover)
+		b.add_theme_stylebox_override("pressed", GS.pressed_box(hover))
 		b.add_theme_color_override("font_color", GS.TEXT)
 	return b
 

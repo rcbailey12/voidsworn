@@ -38,10 +38,45 @@ func _caps_for(n: Node, act: String, arg: String, out: Array) -> void:
 func _labels(n: Node) -> Array:
 	var r := []
 	for ch in n.get_children(true):
-		if ch is Label and (ch as Label).has_theme_stylebox_override("normal"):
+		if ch is Label and ((ch as Label).has_theme_stylebox_override("normal") or ch.name == "ShortcutHint"):
 			r.append(ch)
 		r.append_array(_labels(ch))
 	return r
+
+
+func _boon_footer_layout(ui: CampaignUI) -> void:
+	for node in ui.modal_box.find_children("*", "Button", true, false):
+		var button := node as Button
+		var act := str(button.get_meta("press_act", ""))
+		if act not in ["boonReroll", "boonDecline"]: continue
+		var hints := _labels(button)
+		_ok(hints.size() == 1, "B1 %s has one shortcut hint" % act)
+		if hints.size() != 1: continue
+		var hint := hints[0] as Label
+		var button_rect := button.get_global_rect()
+		var hint_rect := hint.get_global_rect()
+		var text_width := button.get_theme_font("font").get_string_size(button.text, HORIZONTAL_ALIGNMENT_LEFT,
+			-1, button.get_theme_font_size("font_size")).x
+		var style := button.get_theme_stylebox("normal")
+		var text_end := button_rect.position.x + style.get_margin(SIDE_LEFT) + text_width
+		var text_area_end := button_rect.end.x - style.get_margin(SIDE_RIGHT)
+		_ok(text_end <= text_area_end and text_area_end < hint_rect.position.x and button_rect.encloses(hint_rect),
+			"B1 %s text fits in its reserved area (%.1f to %.1f); hint starts at %.1f" % [act, text_end, text_area_end, hint_rect.position.x])
+		_ok(not hint.has_theme_stylebox_override("normal"), "B1 %s uses plain shortcut text" % act)
+		button.grab_focus()
+		var accept := InputEventAction.new()
+		accept.action = "ui_accept"
+		accept.pressed = true
+		root.push_input(accept)
+		await process_frame
+		var pressed := button.get_theme_stylebox("pressed") as StyleBoxFlat
+		var ink := hint.get_theme_color("font_color").srgb_to_linear().get_luminance()
+		var fill := pressed.bg_color.srgb_to_linear().get_luminance()
+		_ok(button.get_draw_mode() == BaseButton.DRAW_PRESSED and (ink + 0.05) / (fill + 0.05) >= 4.5,
+			"B1 %s keeps the shortcut legible during a keyboard press" % act)
+		root.gui_release_focus()
+		accept.pressed = false
+		root.push_input(accept)
 
 
 func _key(code: int) -> void:
@@ -94,6 +129,7 @@ func _run() -> void:
 		var shot_err: int = preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), args[args.find("--shots") + 1].path_join("I1559_boon_keycaps.png"), "cloud direction check")
 		_ok(shot_err == OK, "shot I1559_boon_keycaps saved with its stamp (error %d; the stage arrives with #1606)" % shot_err)
 	var on: Array = c.modal_d["acts"].filter(func(a): return a[2] == 1)
+	await _boon_footer_layout(ui)
 	var reroll_key := -1
 	for i in range(mini(9, on.size())):
 		var caps := []

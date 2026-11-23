@@ -108,7 +108,9 @@ static func sheet_jump_boxes(k: float) -> Dictionary:
 	n.border_color = MAP_EMBER; n.set_border_width_all(maxi(2, px(2, k)))
 	var h := flat(MAP_EMBER, 16.0, 0.0, k)
 	h.border_color = MAP_EMBER; h.set_border_width_all(maxi(2, px(2, k)))
-	return {"normal": n, "hover": h, "pressed": h, "disabled": n}
+	var d := n.duplicate() as StyleBoxFlat
+	d.border_color = SHEET_HAIR
+	return {"normal": n, "hover": h, "pressed": pressed_box(h), "disabled": d}
 
 static func sheet_theme(k: float) -> Theme:
 	var th := make_theme(k, sheet_body(), sheet_medium(), 17)
@@ -133,6 +135,16 @@ static func ledger_card(k: float, picked: bool) -> StyleBoxFlat:
 	if picked:
 		s.border_color = SHEET_HAIR; s.set_border_width_all(maxi(1, px(1, k)))
 	return s
+
+static func ledger_card_boxes(k: float, picked: bool) -> Dictionary:
+	var boxes := row_boxes(k, picked, 0, 0, false)
+	var normal := ledger_card(k, picked)
+	boxes["normal"] = normal
+	boxes["disabled"] = normal
+	for state in ["hover", "pressed"]:
+		boxes[state].border_color = normal.border_color
+		boxes[state].set_border_width_all(normal.border_width_left)
+	return boxes
 
 static func ledger_focus(k: float) -> StyleBoxFlat:
 	var s := flat(Color.TRANSPARENT, 0, 0, k)
@@ -367,12 +379,12 @@ static func button_boxes(k: float, primary := false) -> Dictionary:
 	n.content_margin_top = px(5, k)
 	n.content_margin_bottom = px(5, k)
 	var h := n.duplicate() as StyleBoxFlat
-	h.bg_color = MAP_EMBER if primary else Color(CAREER_PICTURE, 0.97)
+	h.bg_color = MAP_EMBER.lerp(TEXT, 0.1) if primary else Color(CAREER_PICTURE, 0.97)
 	h.border_color = TEXT if primary else TEXT3
 	var d := n.duplicate() as StyleBoxFlat
 	d.bg_color = Color(CAREER_INK, 0.9)
 	d.border_color = LINE
-	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
+	return {"normal": n, "hover": h, "pressed": pressed_box(h), "disabled": d}
 
 
 # The campaign's finishing action: ember and dark caps in the existing button shape.
@@ -391,11 +403,12 @@ static func finish_boxes(k: float) -> Dictionary:
 	for side in [SIDE_TOP, SIDE_BOTTOM]:
 		n.set_content_margin(side, px(6, k))
 	var h := n.duplicate() as StyleBoxFlat
+	h.bg_color = MAP_EMBER.lerp(TEXT, 0.1)
 	h.border_color = TEXT
 	var d := n.duplicate() as StyleBoxFlat
 	d.bg_color = CAREER_PICTURE
 	d.border_color = SHEET_HAIR
-	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
+	return {"normal": n, "hover": h, "pressed": pressed_box(h), "disabled": d}
 
 
 # An outlined action or a neutral selected button, using the normal button's metrics.
@@ -405,8 +418,42 @@ static func lit_boxes(k: float, accent: Color) -> Dictionary:
 	n.bg_color = Color(CAREER_PICTURE, 0.97)
 	n.border_color = accent
 	var h := n.duplicate() as StyleBoxFlat
-	h.bg_color = CAREER_INK
-	return {"normal": n, "hover": h, "pressed": h, "disabled": bb["disabled"]}
+	h.bg_color = n.bg_color.lerp(TEXT, 0.08)
+	return {"normal": n, "hover": h, "pressed": pressed_box(h), "disabled": bb["disabled"]}
+
+
+static func pressed_box(hover: StyleBoxFlat) -> StyleBoxFlat:
+	var down := hover.duplicate() as StyleBoxFlat
+	var filled := hover.bg_color.get_luminance() > 0.35
+	down.bg_color = hover.bg_color.lerp(ON_EMBER if filled else TEXT, 0.22 if filled else 0.12)
+	down.bg_color.a = hover.bg_color.a
+	return down
+
+
+static func button_pointer(b: Button) -> void:
+	var update := func():
+		b.mouse_default_cursor_shape = Control.CURSOR_ARROW if b.disabled else Control.CURSOR_POINTING_HAND
+	update.call()
+	b.draw.connect(update)
+
+
+static func button_highlighted(b: Button) -> bool:
+	return not b.disabled and b.get_draw_mode() in [BaseButton.DRAW_HOVER, BaseButton.DRAW_PRESSED, BaseButton.DRAW_HOVER_PRESSED]
+
+
+# The sheet action's fill comes from the native draw mode, including keyboard activation.
+static func sheet_action_colour(b: Button, idle: Color, filled_on_focus := false) -> Color:
+	if b.disabled: return TEXT3
+	return ON_EMBER if button_highlighted(b) or (filled_on_focus and b.has_focus()) else idle
+
+
+static func bind_sheet_label(b: Button, label: Label, idle: Color, filled_on_focus := false) -> void:
+	var paint := func():
+		var ink := sheet_action_colour(b, idle, filled_on_focus)
+		if label.get_theme_color("font_color") != ink:
+			label.add_theme_color_override("font_color", ink)
+	paint.call()
+	b.draw.connect(paint)
 
 
 # The finish button's highlight: a thin light line along its top edge. Off while disabled.
@@ -608,18 +655,22 @@ static func rule(k: float) -> ColorRect:
 
 
 # a route row: transparent, a slightly lighter fill when it is the picked one, a hint under the pointer
-static func row_boxes(k: float, picked: bool, pad_x := 40.0, pad_y := 14.0) -> Dictionary:
-	var n := flat(ROW_LIT if picked else Color(0, 0, 0, 0), pad_x, pad_y, k)
-	var h := flat(ROW_LIT if picked else ROW_HOVER, pad_x, pad_y, k)
-	return {"normal": n, "hover": h, "pressed": h, "disabled": n}
+static func row_boxes(k: float, picked: bool, pad_x := 40.0, pad_y := 14.0, fill_picked := true) -> Dictionary:
+	var filled := picked and fill_picked
+	var n := flat(ROW_LIT if filled else Color.TRANSPARENT, pad_x, pad_y, k)
+	var h := flat(ROW_LIT.lerp(TEXT, 0.07) if filled else Color(TEXT, 0.09 if picked else 0.06), pad_x, pad_y, k)
+	var p := pressed_box(h)
+	# A translucent row brightens the backing underneath it.
+	if not filled: p.bg_color = Color(TEXT, 0.16 if picked else 0.12)
+	return {"normal": n, "hover": h, "pressed": p, "disabled": n}
 
 
-# a plain text button ("Map key", "Dossier", "Fleet and refits"): words only, secondary sage, primary sage under the pointer.
+# A plain text button ("Map key", "Dossier", "Fleet and refits"): words only at rest, with the shared row highlight.
 # It keeps the shared focus ring from make_theme.
 static func plain_button(b: Button, k: float, size := 17.0, f: Font = null) -> void:
-	var e := StyleBoxEmpty.new()
+	var boxes := row_boxes(k, false, 0, 0)
 	for st in ["normal", "hover", "pressed", "disabled"]:
-		b.add_theme_stylebox_override(st, e)
+		b.add_theme_stylebox_override(st, boxes[st])
 	b.add_theme_color_override("font_color", BONE2)
 	b.add_theme_color_override("font_hover_color", BONE)
 	b.add_theme_color_override("font_pressed_color", BONE)
@@ -628,15 +679,15 @@ static func plain_button(b: Button, k: float, size := 17.0, f: Font = null) -> v
 	b.add_theme_font_size_override("font_size", px(size, k))
 	b.add_theme_font_override("font", f if f != null else body())
 	b.focus_mode = Control.FOCUS_ALL
-	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	button_pointer(b)
 
 
 # The filled variant of the Briefing jump button.
 static func jump_boxes(k: float) -> Dictionary:
 	var n := flat(MAP_EMBER, 20.0, 0.0, k)
-	var h := flat(MAP_EMBER, 20.0, 0.0, k)
+	var h := flat(MAP_EMBER.lerp(TEXT, 0.15), 20.0, 0.0, k)
 	var d := flat(CAREER_PICTURE, 20.0, 0.0, k)
-	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
+	return {"normal": n, "hover": h, "pressed": pressed_box(h), "disabled": d}
 
 
 # The key cap on the filled button: a dark wash, no edge.
