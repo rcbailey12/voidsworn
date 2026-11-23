@@ -1,0 +1,694 @@
+{
+ "about": "Issues 1692 and 1693 (Waves 2A and 2B, R412), one sheet for PRs 1758 and 1784. 2A: battery vs heavy battery muzzles, las vs plasma cannon, the tendril at the firer and at contact, plus the prism, star and nlance hull marks (unchanged here, item d moved to 1741). 2B: an idle ion-locked shield empty and half full, a shield hit at 20 vs 50 percent pool, idle acid on metal and on Eclipse. Cameras 170 and 26. Run with --moments res://bench/look_moments_2ab.json on both pins (old: main plus these rows; new: the same plus PRs 1758 and 1784).",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "26": [
+   768,
+   432
+  ],
+  "170": [
+   384,
+   216
+  ]
+ },
+ "rows": [
+  {
+   "group": "issue 1692 wave 2A silhouettes",
+   "id": "w2a_battery_muzzle",
+   "label": "Sunward cruiser battery (medium) muzzles: the base to compare the heavy battery with",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "battery",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0,
+     10
+    ],
+    [
+     "fire",
+     0.45,
+     4
+    ]
+   ]
+  },
+  {
+   "group": "issue 1692 wave 2A silhouettes",
+   "id": "w2a_hbattery_muzzle",
+   "label": "Sunward battleship heavy battery muzzles: new shock ring, then hot gas bleeding from the barrels",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0,
+     10
+    ],
+    [
+     "fire",
+     0.45,
+     4
+    ]
+   ]
+  },
+  {
+   "group": "issue 1692 wave 2A silhouettes",
+   "id": "w2a_las_fire",
+   "label": "Sunward destroyer las turret firing: the hard-cored laser bolt the plasma cannon must not look like",
+   "att": [
+    "voidsworn",
+    "Destroyer"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "turret",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0,
+     12
+    ]
+   ]
+  },
+  {
+   "group": "issue 1692 wave 2A silhouettes",
+   "id": "w2a_plasma_cannon_fire",
+   "label": "Navy frigate plasma cannon firing: new cyan-white pulse in a wider envelope",
+   "att": [
+    "hegemony",
+    "Frigate"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "laser",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0,
+     12
+    ]
+   ]
+  },
+  {
+   "group": "issue 1692 wave 2A silhouettes",
+   "id": "w2a_plasma_cannon_hit",
+   "label": "the same plasma cannon landing: lighter kick (0.7 to 0.28)",
+   "att": [
+    "hegemony",
+    "Frigate"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "laser",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ]
+  },
+  {
+   "group": "issue 1692 wave 2A silhouettes",
+   "id": "w2a_tendril_firer",
+   "label": "Chorus cruiser tendril seen at the firer: watch item, the old launch flare is gone",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "tendril",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0,
+     8
+    ],
+    [
+     "fire",
+     0.4,
+     4
+    ],
+    [
+     "fire",
+     0.8,
+     3
+    ]
+   ]
+  },
+  {
+   "group": "issue 1692 wave 2A silhouettes",
+   "id": "w2a_tendril_contact",
+   "label": "the same tendril at the target: whips out, snaps taut on contact, sheds spores",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "tendril",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.25,
+     8
+    ],
+    [
+     "impact",
+     0.1,
+     6
+    ],
+    [
+     "impact",
+     0.6,
+     4
+    ]
+   ]
+  },
+  {
+   "group": "hull marks (unchanged here; item d moved to 1741)",
+   "id": "w2a_mark_prism",
+   "label": "Glasswright shard (prism) mark on a Navy hull, 2.5 s after: still the old shared mark",
+   "att": [
+    "ithar",
+    "Frigate"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "shard",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0.6,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "hull marks (unchanged here; item d moved to 1741)",
+   "id": "w2a_mark_star",
+   "label": "Glasswright star torpedo mark on a Navy hull, 2.5 s after",
+   "att": [
+    "ithar",
+    "Destroyer"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "startorp",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0.6,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "hull marks (unchanged here; item d moved to 1741)",
+   "id": "w2a_mark_nlance",
+   "label": "Eclipse needle lance mark on a Navy hull, 2.5 s after",
+   "att": [
+    "deathless",
+    "Destroyer"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "nlance",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0.6,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ]
+   ]
+  },
+  {
+   "group": "issue 1693 wave 2B status",
+   "id": "w2b_ion_locked_empty",
+   "label": "idle Navy cruiser, ion-locked, shield pool empty: watch item, do arcs make a dead shield read live?",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "focus": "target",
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "shp": 0,
+    "shMax": 100,
+    "regenLock": 1
+   },
+   "windows": [
+    [
+     "event",
+     0,
+     12
+    ],
+    [
+     "event",
+     1.2,
+     12
+    ],
+    [
+     "event",
+     2.4,
+     12
+    ]
+   ]
+  },
+  {
+   "group": "issue 1693 wave 2B status",
+   "id": "w2b_ion_locked_half",
+   "label": "idle Navy cruiser, ion-locked, half its shield pool left: the intended look",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "focus": "target",
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     12,
+     12,
+     12,
+     12
+    ],
+    "shp": 50,
+    "shMax": 100,
+    "regenLock": 1
+   },
+   "windows": [
+    [
+     "event",
+     0,
+     12
+    ],
+    [
+     "event",
+     1.2,
+     12
+    ],
+    [
+     "event",
+     2.4,
+     12
+    ]
+   ]
+  },
+  {
+   "group": "issue 1693 wave 2B status",
+   "id": "w2b_strain_low",
+   "label": "las turret on a Navy shield with 20 percent of the pool left: strained edge flicker",
+   "att": [
+    "voidsworn",
+    "Destroyer"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "turret",
+   "shots": 2,
+   "on": "shield",
+   "focus": "target",
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     5,
+     5,
+     5,
+     5
+    ],
+    "shp": 20,
+    "shMax": 100
+   },
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     16
+    ]
+   ]
+  },
+  {
+   "group": "issue 1693 wave 2B status",
+   "id": "w2b_strain_ref",
+   "label": "the same hit with half the pool left: no strain (the quiet ordinary block)",
+   "att": [
+    "voidsworn",
+    "Destroyer"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "turret",
+   "shots": 2,
+   "on": "shield",
+   "focus": "target",
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     12,
+     12,
+     12,
+     12
+    ],
+    "shp": 50,
+    "shMax": 100
+   },
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     16
+    ]
+   ]
+  },
+  {
+   "group": "issue 1693 wave 2B status",
+   "id": "w2b_acid_idle_metal",
+   "label": "idle Sunward cruiser with acid on it after a Chorus spine hit: green mist from the hit spot",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "focus": "target",
+   "pre": [
+    [
+     "bio",
+     "bioplasma",
+     "mid"
+    ]
+   ],
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "st": {
+     "acid": 2
+    }
+   },
+   "windows": [
+    [
+     "event",
+     0,
+     6
+    ],
+    [
+     "event",
+     1,
+     6
+    ],
+    [
+     "event",
+     2,
+     6
+    ],
+    [
+     "event",
+     3,
+     6
+    ]
+   ]
+  },
+  {
+   "group": "issue 1693 wave 2B status",
+   "id": "w2b_acid_idle_eclipse",
+   "label": "idle Eclipse cruiser with acid on it: the mist must be violet, never green",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "hold",
+   "focus": "target",
+   "pre": [
+    [
+     "bio",
+     "bioplasma",
+     "mid"
+    ]
+   ],
+   "sync_t": {
+    "hp": 100,
+    "maxHp": 100,
+    "burning": false,
+    "sec": {
+     "prow": {
+      "hp": 30,
+      "max": 30
+     },
+     "mid": {
+      "hp": 40,
+      "max": 40
+     },
+     "eng": {
+      "hp": 30,
+      "max": 30,
+      "broken": false
+     }
+    },
+    "sh": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "st": {
+     "acid": 2
+    }
+   },
+   "windows": [
+    [
+     "event",
+     0,
+     6
+    ],
+    [
+     "event",
+     1,
+     6
+    ],
+    [
+     "event",
+     2,
+     6
+    ],
+    [
+     "event",
+     3,
+     6
+    ]
+   ]
+  }
+ ]
+}
