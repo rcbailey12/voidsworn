@@ -4069,8 +4069,6 @@ func _arm(i: int) -> void:
 	if u.is_empty() or i >= (u["weapons"] as Array).size():
 		return
 	armed = -1 if armed == i else i
-	if atk != null and target != "":
-		_update_target_plan(target)   # the Burn and fire stop depends on which guns go
 	sfx.play("ui_click")
 	_refresh_ui()
 
@@ -4554,7 +4552,7 @@ func _aims_check() -> void:
 		hud.toast("No gun bears on %s from here: that pick is dropped." % ", ".join(lost))
 
 
-func _update_target_plan(tid: String, allow_stationary := true) -> void:
+func _update_target_plan(tid: String, allow_stationary: bool) -> void:
 	atk = null
 	var guns := _firing_set(tid)
 	if not guns.is_empty():

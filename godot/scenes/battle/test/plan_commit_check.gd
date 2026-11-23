@@ -79,7 +79,7 @@ func _click_then_enter(ship: String) -> void:
 	_check(false, "fixture has a gun that loses its target on the planned hex")
 
 
-func _last_enemy() -> String:
+func _last_enemy(distance := 2) -> String:
 	b.start_default()
 	await _wait_idle(30000)
 	var rules = b.api.R
@@ -90,8 +90,8 @@ func _last_enemy() -> String:
 		foe["dead"] = true
 	rules.B["terrain"].clear()
 	var dir: Array = rules.DIRS[int(ship.facing)]
-	last.q = ship.q + 2 * dir[0]
-	last.r = ship.r + 2 * dir[1]
+	last.q = ship.q + distance * dir[0]
+	last.r = ship.r + distance * dir[1]
 	last.hp = 1
 	last.shp = 0
 	rules.syncShields(last)
@@ -100,6 +100,26 @@ func _last_enemy() -> String:
 	b.select(ship.id, "roster")
 	await _wait_idle(5000)
 	return last.id
+
+
+func _burn_hotkey() -> void:
+	# Six hexes ahead of the destroyer, its torpedo can fire from here and its battery needs to move.
+	var tid := await _last_enemy(6)
+	_check(b._firing_set(tid) == [0], "the torpedo alone can fire from the destroyer's hex")
+	b._on_key(KEY_2)
+	_click_unit(tid)
+	var planned: bool = b.atk != null and b.atk.weapons == [1] and b.target == tid and b.plan_steps.size() == 1
+	_check(planned, "the battery plans one Burn and fire step")
+	if not planned:
+		return
+	var attack: Dictionary = b.atk.duplicate(true)
+	b._on_key(KEY_1)
+	_check(b.atk == attack and b.target == tid and b.aims.is_empty() and b.plan_steps.size() == 1,
+		"a weapon hotkey preserves the Burn and fire stop, target and shot")
+	_check(b.armed == 0, "the pressed weapon stays armed during Burn and fire")
+	b._on_key(KEY_BACKSPACE)
+	_check(b.plan_steps.is_empty() and b.atk == null and b.target == "" and b.aims.is_empty() and b.armed == 1,
+		"one Backspace undoes only the Burn and fire step")
 
 
 func _winning_volley() -> void:
@@ -426,6 +446,7 @@ func _run() -> void:
 	_check(fan_ok, "the drawn cone's sides run along the far edge of the hexes on the arc's line, not through them")
 	await _last_enemy()
 	await _click_then_enter(b.sel)
+	await _burn_hotkey()
 	await _winning_volley()
 	print("plan commit check: ", "PASS" if fails == 0 else "FAIL (%d)" % fails)
 	quit(0 if fails == 0 else 1)

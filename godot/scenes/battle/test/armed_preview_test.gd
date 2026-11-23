@@ -65,20 +65,21 @@ func _run() -> void:
 	if not ok:
 		printerr("FAIL: fixture did not make a burn-and-fire preview (flak %d, plan %s)" % [flak, str(b.atk)])
 	else:
+		var planned: Dictionary = b.atk.duplicate(true)
 		b._on_key(KEY_1 + flak)
-		ok = b.atk == null and not b.ghost.visible and not b.path_line.visible and not _offers_burn(b)
-		b._confirm()
-		ok = ok and b.commands == 0
-		if not ok: printerr("FAIL: arming flak left the old burn-and-fire ghost, card or command")
-		b._on_action("arm", flak)
-		b._target(foe["id"])
-		var restored := b.atk != null and b.ghost.visible and b.path_line.visible and _offers_burn(b)
-		if not restored: printerr("FAIL: re-targeting with the guns enabled did not restore the preview")
-		ok = ok and restored
+		ok = b.armed == flak and b.atk == planned and b.ghost.visible and b.path_line.visible and _offers_burn(b)
+		if not ok:
+			printerr("FAIL: arming flak changed the planned Burn and fire or its preview")
+		b._on_key(KEY_ENTER)
+		var shots := api.take_events().filter(func(event): return event.t == "fire" and event.unit == ship["id"])
+		var fired: bool = b.commands == 1 and shots.size() == 1 and shots[0].weapon == 0 and shots[0].target == foe["id"]
+		if not fired:
+			printerr("FAIL: Enter did not commit the planned shot from the main gun")
+		ok = ok and fired
 	b.hud.free()
 	b.sfx.free()
 	b.free()
-	if ok: print("PASS: gun changes clear the stale burn-and-fire ghost, card and confirmation")
+	if ok: print("PASS: arming flak preserves the Burn and fire preview and Enter fires the planned main gun")
 	quit(0 if ok else 1)
 
 

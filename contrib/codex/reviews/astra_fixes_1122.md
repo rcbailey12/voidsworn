@@ -58,3 +58,35 @@ FAIL: 31 of 10 fleet list checks failed
 ```
 
 The A16 fixture check printed `FAIL fixture record is stale or the compressed GLB changed. Rebuild with --bake.` on both revisions. The separate A16 CI job handles a stale record with a fresh bake. This re-verification used headless game checks, with no Blender bake or GPU capture.
+
+## Run 3 fixes
+
+`battle.gd` now keeps the Burn and fire plan intact when a weapon is armed. `plan_commit_check.gd` plans a battery shot that needs a Burn, then presses 1 to arm a torpedo that could fire from the current hex. Before the fix, the hotkey replaced the plan with a stationary shot and cleared the armed weapon. After the fix, the battery's planned shot, stop and target stay intact, the torpedo stays armed, and one Backspace restores the state before planning the battery shot.
+
+The older `armed_preview_test.gd` expected arming flak to clear a Burn and fire plan. Its updated check covers the ghost, path and card, and verifies that Enter still fires the planned main gun. `godot_checks.txt` describes the new expectation.
+
+The timed ship refresh cursor was already restored in `9c5427b48`. To verify the original failure, I forced the scan to start at the first ship in a scratch copy of `build_assets.gd`. `install_refresh_check.gd` then reported `FAIL the second bounded refresh reaches the next ship` and `FAIL the completed ship scan clears its resume point`. The branch's unmodified builder passed both assertions and rebuilt the hull with the changed vertex.
+
+## Run 3 verification
+
+- Godot 4.7.2 parsed the three edited scripts and loaded 379 scripts and 15 scenes with zero failures. The hook regression suite passed. The bot battle passed at seed 361.
+- All 184 listed game checks passed across the three shards and a focused rerun of two checks. The shard 2 timing check first reported `a stuck cut holds the battle 5.67 s, no longer than the 5.0 s cap`. It passed on retry at 5.05 s. The updated flak preview check also passed on the shard 2 retry. The local Windows run used precreated temp folders, isolated Godot profiles and a longer shard budget.
+- All 354 generated battle records matched the saved records byte for byte. All 30 seeded campaign records and the Nemesis records matched. The table checksum, tree hand-off, Nemesis read and 119 map read-only assertions passed. The branch changes zero saved results compared with `origin/main`.
+- Cache-on and cache-off records matched byte for byte for all 354 battles. All 15 ruled numbers passed. The cache harness still flagged the worker logs.
+- The Windows engine printed `ERROR: Failed to read the root certificate store.` on this branch and untouched main `de943c787`. I reproduced the saved-results failure on main with `s1` and the cache failure with `s1` and the ruled numbers. The saved-results harness reports `original Godot batch failed or did not finish`, and the cache harness reports `Godot error in worker log`. The campaign harness printed `FAIL: 2 campaign check(s) differ (0 changed)` on both revisions for the same error.
+- The A16 fixture record is stale on both revisions. The headless seam check on the committed fixture reported `DEATH_SEAM failures=1` for the stale record. The fresh Blender bake and GPU captures were outside this run.
+
+`node contrib/opus/tools/run_all_checks.js` ran 117 rows. The first run recorded 111 passes, two known baseline results and four failures. `lane_tools_refresh_selftest` passed on retry after its first run printed `Error: kill EPERM`. `g2_export_selftest` passed on retry with Node copied to the run's writable temp folder. Its original run and untouched main both printed `Error: EPERM: operation not permitted, link` while hard-linking the installed `node.exe` to `Voidsworn.exe`.
+
+The two remaining standing failures reproduced on untouched main `de943c787`.
+
+```text
+godot_shard_tests
+FAIL: the shard plan is broken; no check was run.
+mkdir: cannot create directory ?C:\\Users/rcbai?: Permission denied
+
+runner_selftest
+Error: EPERM: operation not permitted, mkdtemp 'C:\Users\rcbai\AppData\Local\Temp\runner687 proof XXXXXX'
+```
+
+Hosted All checks remains unverified. The run 3 changes are uncommitted.
