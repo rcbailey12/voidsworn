@@ -123,11 +123,11 @@ Bulkhead and frame stations: .
 
 | Break line | Station % | What it opens |
 |---|---|---|
+| ring0 | 76.9 (seam wanders 76.3 to 77.2) | Navy module joint at an open transverse frame. |
+| ring1 | 25.8 (seam wanders 25.3 to 26.2) | Navy module joint at an open transverse frame. |
 
 Insides through the hull, hidden until a piece breaks: feed racks and capacitor banks forward, sensors, control and the reactor midships, the drive racks aft, a deck through each module, open frames, blue emergency strips on the racks. The Navy breaks in modules at its joints (factions.md).
 
-| ring0 | 76.9 (seam wanders 76.3 to 77.2) | Navy module joint at an open transverse frame. |
-| ring1 | 25.8 (seam wanders 25.3 to 26.2) | Navy module joint at an open transverse frame. |
 
 ## Hard points (the contract of PR 530, tools/blender/kits/shared/hardpoints.py)
 

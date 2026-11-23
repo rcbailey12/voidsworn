@@ -219,13 +219,14 @@ def interior(K):
                 u = x-.15+k*.09
                 K.box('in_'+room+'_blade%d_%d' % (s, k), u, u+.037, y-.082, y+.082, .062, .15, 'hcorr', inside=True)
             K.box('in_'+room+'_light'+str(s), x-.16, x+.16, y-.016, y+.016, .145, .158, 'hemerg', inside=True)
-    K.inside.append(dict(kind='note', name='insides', note='Insides through the hull, hidden until a piece breaks: feed racks and capacitor banks forward, sensors, control and the reactor midships, the drive racks aft, a deck through each module, open frames, blue emergency strips on the racks. The Navy breaks in modules at its joints (factions.md).'))
     K.armour('belly', SHELL, 'Flat sole, chamfered bilges and replaceable cooler cassettes.')
     for n, (x, side, section) in enumerate(zip(SEAMS, (-1, 1), ('eng', 'prow'))):
         w = station(x)[0]
         K.break_line('ring'+str(n), x, 'Navy module joint at an open transverse frame.',
                      path=[(x, -w), (x+.035, -w*.4), (x-.024, w*.4), (x, w)])
         K.point('breach', 'hp_breach_'+str(n), (x, side*w, -.05), side='P' if side > 0 else 'S', section=section)
+    # the note goes after the break lines, so the sheet's break line table stays one table
+    K.inside.append(dict(kind='note', name='insides', note='Insides through the hull, hidden until a piece breaks: feed racks and capacitor banks forward, sensors, control and the reactor midships, the drive racks aft, a deck through each module, open frames, blue emergency strips on the racks. The Navy breaks in modules at its joints (factions.md).'))
     for n, side in enumerate((-1, 1)):
         tag = 'P' if side > 0 else 'S'
         K.point('rcs', 'hp_rcs_'+str(n), (FACE+.05, side*.395, -.035), side=tag)
