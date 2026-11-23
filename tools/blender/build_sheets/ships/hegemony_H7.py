@@ -8,8 +8,10 @@
 # ship for plates are much better". So the base is Astra's blind build (contrib/codex/picket_astra_1122/hegemony_H7A.py,
 # PR 1745): its nine lofted cross-sections, the deep plate-line cuts, the paired nozzle pods, the slatted belly coolers with
 # the removable centreline covers, the segmented light races broken at the boarding doors, its joints and insides (R443).
-# On top sit the Opus H7 fittings (PR 1716): the bow face armour plates, retro and attitude thrusters, flush drone doors with
-# guide lamps, window slits, module latch rows, deck hatches, capacitor louvres and the raised flak barbette plinth.
+# On top sit the Opus H7 fittings (PR 1716): the bow face armour plates, retro and attitude thrusters, module latch rows
+# against the joint collars, deck hatches on the centreline and the raised flak barbette plinth.
+# Version 3 (Ryan, Nov 23 2026: the Opus fittings "seem like a different color or like they're patched on randomly"): the
+# bright-framed window slits, the drone doors and the dark capacitor louvres are cut; what stays sits on Astra's structure.
 # +X bow, +Y port, +Z up. Bow face x = +3.22, nozzle exits x = -3.25.
 
 CODE = 'hegemony_H7'
@@ -24,7 +26,7 @@ CONCEPT_SHEET = 'docs/ship_pipeline/build_sheets/hegemony_H7/concept_sheet.jpg'
 CONCEPT_VIEWS = dict(top=dict(box=(1290, 45, 1700, 1180), largest=True, flip=False, rot=90), side=dict(box=(80, 735, 1100, 950), largest=True, flip=False))
 CROPS = [('bow (the blunt face and the casemate)', (380, 620, 1000, 950)), ('midships (the receiver and the barbette)', (650, 380, 1300, 850)),
          ('stern (the taper and the nozzle pods)', (1100, 280, 1600, 700))]
-SHEET = dict(version=2, round='merged build (R442)', date='2026-11-23', blend='opus1412m',
+SHEET = dict(version=3, round='merged build, fittings on the structure (R442)', date='2026-11-23', blend='opus1412m',
              blend_where='rendered in the issue 1412 cloud copy (Blender 4.5 as the bpy module, Cycles CPU); `build.py hegemony_H7 <out> render` rebuilds it from this file',
              before='Astra hull, Opus fittings', before_note='Astra\'s blind Picket hull with the Opus fittings laid on it, run through the fit check before any fix.',
              during='The table above is every finding, in the order the check made them.')
@@ -141,6 +143,7 @@ def shell(K, plate_jobs):
 
 
 def machinery(K):
+    K.opus_keep = []
     import math
     from kit import HP
     K.gun('bow', (2.94, 0, -.035), 0, 0, slot='F', weapon='laser', barrels=2, cal=.052, fixed=True, inv='casemate',
@@ -172,7 +175,8 @@ def machinery(K):
         for j, x in enumerate((-2.22, -1.17, .02, 1.10, 2.12)):
             K.vent('cooler%d_%d' % (i, j), (x, side*station(x)[0]*.49, SOLE-.015), (0, 0, -1), .19, .32, slats=5, inv='coolers',
                    note='slatted cooler cassette on the belly')
-        # ---- Opus fittings ----
+        # ---- Opus fittings: only their footprints keep Astra's plates clear (her own fittings sit on her plates) ----
+        n0 = len(K.keepouts)
         K.thruster('Q1'+sn, (FACE+.004, side*.395, -.035), (1, 0, 0), inv='thrusters', r=.05,
                    note='retro thruster on the bow face beside the casemate (lore 3.4; the evasive burn)')
         K.features[-1]['what'] = 'retro thruster, two rectangular nozzles'
@@ -180,21 +184,18 @@ def machinery(K):
             p, nrm = facet(x, side, .5)
             K.thruster(q+sn, tuple(p + nrm*.004), tuple(nrm), inv='thrusters', r=.08, note='attitude thruster on the upper facet')
             K.features[-1]['what'] = 'attitude thruster, two rectangular nozzles'
-        p, nrm = facet(-1.2, side, .5)
-        K._surface_part('D1'+sn, HP.bay(.14, .4), tuple(p + nrm*.025), tuple(nrm), (1, 0, 0), 'drone_doors', 'flush drone doors 0.4 x 0.14', 'bay', 'picture',
-                        'the faction\'s small drone bay: flush armoured doors on the upper facet; no hangar in the rules, so no craft fly', aperture=.6)
-        for k, x in enumerate((.6, .88, -.48, 1.82)):
-            p, nrm = facet(x, side, .78)
-            K.slit('W%d%s' % (k+1, sn), tuple(p + nrm*.014), tuple(nrm), .14, .04, inv='windows', note='blue-white crew deck window above the light race')
-        K.vent('V1'+sn, (2.12, side*.24, deck_z(2.12)+.004), (0, 0, 1), .14, .3, slats=5, inv='vents', note='heat louvre over the cannon\'s capacitors')
+        # the latch rows sit against each joint collar and run along it, so they read as part of the joint, not scattered
         for k, xs in enumerate(SEAMS):
-            for d in (.2, -.2):
+            for d in (.12, -.12):
                 x = xs + d
                 K.organ('LW%d%s%s' % (k, sn, 'f' if d > 0 else 'a'), HP.latch(n=3, pitch=.12, w=.07), (x, side*.42, deck_z(x)+.004), (0, 0, 1),
                         fwd=(1, 0, 0), inv='latches', what='module latch row (3 clamps)', kind='latch', note='locks two hull modules together across the joint')
+        K.opus_keep += K.keepouts[n0:]
+    n0 = len(K.keepouts)
     K.hatch('H1', (2.45, 0, deck_z(2.45)+.004), (0, 0, 1), .26, .2, inv='hatches', note='deck hatch over the cannon room')
     K.hatch('H2', (.3, 0, deck_z(.3)+.004), (0, 0, 1), .26, .2, inv='hatches', note='deck hatch to the control deck')
     K.hatch('H3', (-2.55, 0, deck_z(-2.55)+.004), (0, 0, 1), .26, .2, inv='hatches', note='deck hatch to the drive room')
+    K.opus_keep += K.keepouts[n0:]
     # A flat, bolted race cover between the paired heat exchangers (Astra).
     for j, (a, b) in enumerate(((-2.65, -1.80), (-1.72, -.61), (-.57, .53), (.57, 1.53), (1.61, 2.48))):
         K.box('belly_spine_'+str(j), a, b, -.115, .115, SOLE-.032, SOLE+.01, 'htrim', ch=.022)
@@ -241,17 +242,17 @@ def panels(K, plate_jobs):
                 or p.z > .14 and abs(p.y) < .10+radius and abs(p.x-1.10) < .22+radius
                 or p.z > .14 and abs(p.y) < BARB[2]+.04 and abs(p.x-BARB[0]) < BARB[2]+.04):
             return True
-        return any((p - c).length < r + radius*.6 for c, r in K.keepouts)
-    laid_all = {'deck_panels': 0, 'flank_panels': 0, 'belly_panels': 0}
+        return any((p - c).length < r + radius*.3 for c, r in K.opus_keep)
+    # Astra's single call over all her faces, so the plate layout is hers
+    laid_total = 0
     for label, rings in plate_jobs:
-        for inv, faces in (('deck_panels', (0,)), ('flank_panels', (1, 3, 4, 6, 7, 9)), ('belly_panels', (5,))):
-            acc, laid = HP.module_panels(rings, faces, pv=.29, gap=.009, unit=.31, t_big=.015, t_small=.011, keep=reserved)
-            laid_all[inv] += laid
-            for material, (verts, faces_) in acc.items():
-                if faces_:
-                    K._obj('%s_%s_%s' % (label, inv, material), verts, faces_, material)
-    for inv, laid in laid_all.items():
-        K.built.append(dict(id='H7_'+inv, kind='plate', type='plate', inv=[inv], shaped=True, detailed=laid > 0, subs=['panel', 'seam', 'module']))
+        acc, laid = HP.module_panels(rings, (0, 1, 3, 4, 5, 6, 7, 9), pv=.29, gap=.009, unit=.31, t_big=.015, t_small=.011, keep=reserved)
+        laid_total += laid
+        for material, (verts, faces_) in acc.items():
+            if faces_:
+                K._obj(label+'_panels_'+material, verts, faces_, material)
+    for inv in ('deck_panels', 'flank_panels', 'belly_panels'):
+        K.built.append(dict(id='H7_'+inv, kind='plate', type='plate', inv=[inv], shaped=True, detailed=laid_total > 0, subs=['panel', 'seam', 'module']))
 
 
 def build(K):
@@ -264,15 +265,16 @@ def build(K):
     interior(K)
     panels(K, plate_jobs)
     K.colour('Navy grey and steel-blue trim', -3.25, 3.25, 'outer armour and panel edges')
-    K.colour('Implant blue', -2.89, 3.22, 'segmented flank race, drone door lamps, windows')
+    K.colour('Implant blue', -2.89, 3.22, 'segmented flank race')
     K.colour('no rust, no warm light, no asymmetry', -3.25, 3.25, 'factions.md Never')
     K.change('The hull, its plate-line cuts, the nozzle pods, the belly coolers and covers, the light races and the joints are Astra\'s blind build (hegemony_H7A, PR 1745)',
              'Ryan, Nov 23 2026 (R442): Astra\'s shape, engines, radiator grills and deep plate-line cutouts are better; R443 adopts the method')
-    K.change('The Opus fittings sit on that hull: bow face plates, retro and attitude thrusters, flush drone doors with guide lamps, window slits, latch rows at the joints, deck hatches, capacitor louvres and a raised barbette plinth',
+    K.change('The Opus fittings sit on that hull, placed on its structure: bow face plates round the mouth, retro thrusters at the face corners, attitude thrusters on the bevels, latch rows against the joint collars, deck hatches on the centreline and a raised barbette plinth',
              'Ryan, Nov 23 2026 (R442): he likes the extra plates, bumps, lights and accessories of the Opus build; every part has a job (R221)')
     K.change('Flat belly through all three modules', 'Ryan, Nov 22 2026: flatten the speedboat keel into a space hull (rule 4.1)')
     K.change('Three visible flak emitters on a low eight-sided plinth', 'designs.md: three emitters; the plinth lifts their firing plane over the receiver (R240)')
-    K.change('Flush drone doors on the upper facets, kept with no craft', 'designs.md: flush flank doors only; the rules give the Picket no hangar')
+    K.change('No drone doors, window slits or deck louvres over the capacitors: Astra\'s light races and boarding doors carry the lights and the access',
+             'Ryan, Nov 23 2026: the added Opus fittings read as a different colour and patched on at random; fewer, placed with intent (R442 follow-up)')
     K.open_item('Stencil marks and the steel-blue trim tone are paint (the Hegemony stack), not modelled')
 
 

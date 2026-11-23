@@ -1,6 +1,6 @@
 {
  "code": "hegemony_H7",
- "sheet_version": 2,
+ "sheet_version": 3,
  "routes_note": "kit = the Hegemony parts kit (tools/blender/kits/hegemony/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
  "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
  "parts": [
@@ -161,72 +161,6 @@
    "source": "designed",
    "inventory": [
     "thrusters"
-   ]
-  },
-  {
-   "id": "D1s",
-   "kind": "bay",
-   "what": "flush drone doors 0.4 x 0.14",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "drone_doors"
-   ]
-  },
-  {
-   "id": "W1s",
-   "kind": "slit",
-   "what": "vision slit 0.1 x 0.04",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "windows"
-   ]
-  },
-  {
-   "id": "W2s",
-   "kind": "slit",
-   "what": "vision slit 0.1 x 0.04",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "windows"
-   ]
-  },
-  {
-   "id": "W3s",
-   "kind": "slit",
-   "what": "vision slit 0.1 x 0.04",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "windows"
-   ]
-  },
-  {
-   "id": "W4s",
-   "kind": "slit",
-   "what": "vision slit 0.1 x 0.04",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "windows"
-   ]
-  },
-  {
-   "id": "V1s",
-   "kind": "vent",
-   "what": "louvre panel 0.1 x 0.3",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "vents"
    ]
   },
   {
@@ -392,72 +326,6 @@
    "source": "designed",
    "inventory": [
     "thrusters"
-   ]
-  },
-  {
-   "id": "D1p",
-   "kind": "bay",
-   "what": "flush drone doors 0.4 x 0.14",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "drone_doors"
-   ]
-  },
-  {
-   "id": "W1p",
-   "kind": "slit",
-   "what": "vision slit 0.1 x 0.04",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "windows"
-   ]
-  },
-  {
-   "id": "W2p",
-   "kind": "slit",
-   "what": "vision slit 0.1 x 0.04",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "windows"
-   ]
-  },
-  {
-   "id": "W3p",
-   "kind": "slit",
-   "what": "vision slit 0.1 x 0.04",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "windows"
-   ]
-  },
-  {
-   "id": "W4p",
-   "kind": "slit",
-   "what": "vision slit 0.1 x 0.04",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "windows"
-   ]
-  },
-  {
-   "id": "V1p",
-   "kind": "vent",
-   "what": "louvre panel 0.1 x 0.3",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "vents"
    ]
   },
   {

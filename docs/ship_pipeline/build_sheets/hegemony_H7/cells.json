@@ -66,8 +66,8 @@
   {
    "cell": "bow/top",
    "id": "vents",
-   "built": 4,
-   "listed": 4,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -154,15 +154,6 @@
    "detailed": true
   },
   {
-   "cell": "bow/side",
-   "id": "windows",
-   "built": 8,
-   "listed": 8,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
    "cell": "mid/top",
    "id": "dart",
    "built": 1,
@@ -210,8 +201,8 @@
   {
    "cell": "mid/top",
    "id": "vents",
-   "built": 4,
-   "listed": 4,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -290,15 +281,6 @@
   },
   {
    "cell": "mid/side",
-   "id": "windows",
-   "built": 8,
-   "listed": 8,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
    "id": "hatches",
    "built": 5,
    "listed": 5,
@@ -354,8 +336,8 @@
   {
    "cell": "stern/top",
    "id": "vents",
-   "built": 4,
-   "listed": 4,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -419,15 +401,6 @@
    "id": "thrusters",
    "built": 6,
    "listed": 6,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/side",
-   "id": "drone_doors",
-   "built": 2,
-   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true

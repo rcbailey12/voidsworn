@@ -21,36 +21,33 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | engines | the main drives: two rectangular blue-white nozzles in one flat row (designs.md) | engine | two nozzle pods seated in the stern | 2 | stern/top, stern/side | a thick lip, inner walls tapering to a blue-white throat, guide vanes, a sleeve with trim bands (R244: an opening with depth) | picture |
 | coolers | heat rejection for the reactor and the drives (Astra: the radiator grills Ryan picked, R442) | vent | slatted cooler cassettes on the belly, five a side | 10 | mid/side | a machined frame, straight slats over a dark recess | designed |
 | thrusters | retro thrusters on the bow face (lore 3.4: backing off is cheap; ability evasive) and attitude thrusters on the bevels | thruster | rectangular nozzle blocks | 6 | bow/side, stern/side | a block, rectangular nozzles with depth | designed |
-| drone_doors | the faction's small drone bays (designs.md: flush flank doors only; no hangar in the rules, so no craft fly) | bay | flush armoured doors on each upper bevel aft | 2 | stern/side | a trim frame, two door leaves with ribs, the centre seam, blue guide lamps | picture |
-| latches | lock the hull modules together across each joint | latch | rows of clamp heads beside the joints | 8 | bow/top, mid/top, stern/top | a base plate, machined clamps | designed |
-| vents | heat louvres over the drive feeds and the cannon's capacitors | vent | louvres on the deck | 4 | bow/top, mid/top, stern/top | a machined frame, straight slats over a dark recess | picture |
-| windows | blue-white windows of the crew decks (lore 3.3) | slit | window slits low on the upper bevels | 8 | bow/side, mid/side | a trim frame round a recessed pane | designed |
+| latches | lock the hull modules together across each joint | latch | rows of clamp heads against the joint collars, running along them | 8 | bow/top, mid/top, stern/top | a base plate, machined clamps | designed |
+| vents | heat louvres over the drive feeds | vent | louvres on the aft deck | 2 | bow/top, mid/top, stern/top | a machined frame, straight slats over a dark recess | picture |
 | hatches | crew access: deck hatches and the boarding doors at the waist | hatch | flush rectangular armoured hatches | 5 | bow/top, mid/top, stern/top, mid/side | a trim rim, a flush door, a seam, a recessed grip | picture |
 
 Kit sub-parts per type (what DETAILED checks):
 
 - antenna: root, fin, window, lens
 - band: band, seam, strip
-- bay: frame, door, seam
 - engine: housing, lip, lining, throat, vane, band
 - gun: ring, housing, mantlet, barrel, coil, muzzle, bore
 - hatch: rim, door, seam, grip
 - hull: facet, step, chamfer
 - latch: base, clamp
 - plate: panel, seam, module
-- slit: frame, glass
 - thruster: block, nozzle
 - vent: frame, slat
 
 Left as surface, and why:
 
 - The flank band carries only the light race, the boarding doors and the breach anchors.
+- No drone doors, window slits or capacitor louvres (Ryan, Nov 23 2026: the added fittings read as patched on); the light races and the boarding doors do those jobs.
 - The concept's scattered surface greebles are not built one for one: the deep-cut module plates and the fittings with a job stand in for them (R221).
 - Stencil marks are paint, not modelled (the Hegemony stack).
 
 ## Every built part has a job (R221)
 
-Built kit parts: 57; parts whose inventory id names no line with a job: 0.
+Built kit parts: 45; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, hegemony_H7_model.json)
 
@@ -66,8 +63,8 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | deck_panels | deck plates in two module sizes | 1 / 1 | Y | Y | Y |
 | casemate | a fixed casemate inside the bow face, two short bores side by side, re | 1 / 1 | Y | Y | Y |
 | sensor_fin | a low swept receiver on the centreline, ahead of the barbette | 1 / 1 | Y | Y | Y |
-| latches | rows of clamp heads beside the joints | 8 / 8 | Y | Y | Y |
-| vents | louvres on the deck | 4 / 4 | Y | Y | Y |
+| latches | rows of clamp heads against the joint collars, running along them | 8 / 8 | Y | Y | Y |
+| vents | louvres on the aft deck | 2 / 2 | Y | Y | Y |
 | hatches | flush rectangular armoured hatches | 5 / 5 | Y | Y | Y |
 
 ### bow/side
@@ -82,7 +79,6 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | casemate | a fixed casemate inside the bow face, two short bores side by side, re | 1 / 1 | Y | Y | Y |
 | sensor_fin | a low swept receiver on the centreline, ahead of the barbette | 1 / 1 | Y | Y | Y |
 | thrusters | rectangular nozzle blocks | 6 / 6 | Y | Y | Y |
-| windows | window slits low on the upper bevels | 8 / 8 | Y | Y | Y |
 
 ### bow/below
 
@@ -98,8 +94,8 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | module_bands | two collars, each a pair of trim rings round a dark seam, at 27 and 74 | 1 / 1 | Y | Y | Y |
 | deck_panels | deck plates in two module sizes | 1 / 1 | Y | Y | Y |
 | barbette | one low dorsal turret on an eight-sided plinth, three short emitters | 2 / 1 | Y | Y | Y |
-| latches | rows of clamp heads beside the joints | 8 / 8 | Y | Y | Y |
-| vents | louvres on the deck | 4 / 4 | Y | Y | Y |
+| latches | rows of clamp heads against the joint collars, running along them | 8 / 8 | Y | Y | Y |
+| vents | louvres on the aft deck | 2 / 2 | Y | Y | Y |
 | hatches | flush rectangular armoured hatches | 5 / 5 | Y | Y | Y |
 
 ### mid/side
@@ -113,7 +109,6 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | flank_panels | plates on the upper and lower bevels and the chines | 1 / 1 | Y | Y | Y |
 | belly_panels | plates on the flat sole either side of the service trunk | 1 / 1 | Y | Y | Y |
 | coolers | slatted cooler cassettes on the belly, five a side | 10 / 10 | Y | Y | Y |
-| windows | window slits low on the upper bevels | 8 / 8 | Y | Y | Y |
 | hatches | flush rectangular armoured hatches | 5 / 5 | Y | Y | Y |
 
 ### mid/below
@@ -130,8 +125,8 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | module_bands | two collars, each a pair of trim rings round a dark seam, at 27 and 74 | 1 / 1 | Y | Y | Y |
 | deck_panels | deck plates in two module sizes | 1 / 1 | Y | Y | Y |
 | engines | two nozzle pods seated in the stern | 2 / 2 | Y | Y | Y |
-| latches | rows of clamp heads beside the joints | 8 / 8 | Y | Y | Y |
-| vents | louvres on the deck | 4 / 4 | Y | Y | Y |
+| latches | rows of clamp heads against the joint collars, running along them | 8 / 8 | Y | Y | Y |
+| vents | louvres on the aft deck | 2 / 2 | Y | Y | Y |
 | hatches | flush rectangular armoured hatches | 5 / 5 | Y | Y | Y |
 
 ### stern/side
@@ -144,7 +139,6 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | flank_panels | plates on the upper and lower bevels and the chines | 1 / 1 | Y | Y | Y |
 | engines | two nozzle pods seated in the stern | 2 / 2 | Y | Y | Y |
 | thrusters | rectangular nozzle blocks | 6 / 6 | Y | Y | Y |
-| drone_doors | flush armoured doors on each upper bevel aft | 2 / 2 | Y | Y | Y |
 
 ### stern/below
 

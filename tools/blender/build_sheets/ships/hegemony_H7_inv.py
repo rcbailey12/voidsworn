@@ -41,20 +41,16 @@ INVENTORY = [
          what='slatted cooler cassettes on the belly, five a side', count=10, cells=['mid/side'], reads='a machined frame, straight slats over a dark recess', src='designed'),
     dict(id='thrusters', job='retro thrusters on the bow face (lore 3.4: backing off is cheap; ability evasive) and attitude thrusters on the bevels', type='thruster',
          what='rectangular nozzle blocks', count=6, cells=['bow/side', 'stern/side'], reads='a block, rectangular nozzles with depth', src='designed'),
-    dict(id='drone_doors', job='the faction\'s small drone bays (designs.md: flush flank doors only; no hangar in the rules, so no craft fly)', type='bay',
-         what='flush armoured doors on each upper bevel aft', count=2, cells=['stern/side'], reads='a trim frame, two door leaves with ribs, the centre seam, blue guide lamps', src='picture'),
-    # ---------------- fittings ----------------
-    dict(id='latches', job='lock the hull modules together across each joint', type='latch', what='rows of clamp heads beside the joints',
+    dict(id='latches', job='lock the hull modules together across each joint', type='latch', what='rows of clamp heads against the joint collars, running along them',
          count=8, cells=ALL_TOP, reads='a base plate, machined clamps', src='designed'),
-    dict(id='vents', job='heat louvres over the drive feeds and the cannon\'s capacitors', type='vent',
-         what='louvres on the deck', count=4, cells=ALL_TOP, reads='a machined frame, straight slats over a dark recess', src='picture'),
-    dict(id='windows', job='blue-white windows of the crew decks (lore 3.3)', type='slit', what='window slits low on the upper bevels', count=8,
-         cells=['bow/side', 'mid/side'], reads='a trim frame round a recessed pane', src='designed'),
+    dict(id='vents', job='heat louvres over the drive feeds', type='vent',
+         what='louvres on the aft deck', count=2, cells=ALL_TOP, reads='a machined frame, straight slats over a dark recess', src='picture'),
     dict(id='hatches', job='crew access: deck hatches and the boarding doors at the waist', type='hatch', what='flush rectangular armoured hatches', count=5,
          cells=['bow/top', 'mid/top', 'stern/top', 'mid/side'], reads='a trim rim, a flush door, a seam, a recessed grip', src='picture'),
 ]
 LEFT_PLAIN = [
     'The flank band carries only the light race, the boarding doors and the breach anchors.',
+    'No drone doors, window slits or capacitor louvres (Ryan, Nov 23 2026: the added fittings read as patched on); the light races and the boarding doors do those jobs.',
     'The concept\'s scattered surface greebles are not built one for one: the deep-cut module plates and the fittings with a job stand in for them (R221).',
     'Stencil marks are paint, not modelled (the Hegemony stack).',
 ]

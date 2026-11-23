@@ -1,6 +1,6 @@
 # hegemony_H7: Picket frigate (Meridian Directorate Navy escort), build sheet
 
-Meridian Directorate (hegemony) | class Frigate | version 2 (merged build (R442)), 2026-11-23 | blockout: rendered in the issue 1412 cloud copy (Blender 4.5 as the bpy module, Cycles CPU); `build.py hegemony_H7 <out> render` rebuilds it from this file
+Meridian Directorate (hegemony) | class Frigate | version 3 (merged build, fittings on the structure (R442)), 2026-11-23 | blockout: rendered in the issue 1412 cloud copy (Blender 4.5 as the bpy module, Cycles CPU); `build.py hegemony_H7 <out> render` rebuilds it from this file
 
 **Length 6.5 world units** (data.js h_picket (cls 'Frigate', 'Directorate picket'; the Godot rules table godot/rules/data/tables.json carries it); length from godot/render/hull_table.gd CLS_LEN['Frigate'] = 6.5; game folder H7_23 (AI_HULLS hegemony|Frigate)). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -52,16 +52,10 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | Q1s | retro thruster, two rectangular nozzles | 1 | 0.5 | -0.40 | -0.04 | - | - | designed | retro thruster on the bow face beside the casemate (lore 3.4; the evasive burn) |
 | Q2s | attitude thruster, two rectangular nozzles | 1 | 14.6 | -0.70 | 0.13 | - | - | designed | attitude thruster on the upper facet |
 | Q3s | attitude thruster, two rectangular nozzles | 1 | 89.7 | -0.90 | 0.19 | - | - | designed | attitude thruster on the upper facet |
-| D1s | flush drone doors 0.4 x 0.14 | 1 | 68.3 | -1.07 | 0.22 | - | - | picture | the faction's small drone bay: flush armoured doors on the upper facet; no hangar in the rules, so no craft fly |
-| W1s | vision slit 0.1 x 0.04 | 1 | 40.7 | -1.09 | 0.11 | - | - | picture | blue-white crew deck window above the light race |
-| W2s | vision slit 0.1 x 0.04 | 1 | 36.4 | -1.06 | 0.11 | - | - | picture | blue-white crew deck window above the light race |
-| W3s | vision slit 0.1 x 0.04 | 1 | 57.2 | -1.12 | 0.12 | - | - | picture | blue-white crew deck window above the light race |
-| W4s | vision slit 0.1 x 0.04 | 1 | 22.0 | -0.88 | 0.10 | - | - | picture | blue-white crew deck window above the light race |
-| V1s | louvre panel 0.1 x 0.3 | 1 | 17.4 | -0.24 | 0.25 | - | - | picture | heat louvre over the cannon's capacitors |
-| LW0sf | module latch row (3 clamps) | 1 | 73.8 | -0.42 | 0.38 | - | - | picture | locks two hull modules together across the joint |
-| LW0sa | module latch row (3 clamps) | 1 | 79.9 | -0.42 | 0.37 | - | - | picture | locks two hull modules together across the joint |
-| LW1sf | module latch row (3 clamps) | 1 | 22.7 | -0.42 | 0.28 | - | - | picture | locks two hull modules together across the joint |
-| LW1sa | module latch row (3 clamps) | 1 | 28.9 | -0.42 | 0.30 | - | - | picture | locks two hull modules together across the joint |
+| LW0sf | module latch row (3 clamps) | 1 | 75.0 | -0.42 | 0.38 | - | - | picture | locks two hull modules together across the joint |
+| LW0sa | module latch row (3 clamps) | 1 | 78.7 | -0.42 | 0.38 | - | - | picture | locks two hull modules together across the joint |
+| LW1sf | module latch row (3 clamps) | 1 | 24.0 | -0.42 | 0.28 | - | - | picture | locks two hull modules together across the joint |
+| LW1sa | module latch row (3 clamps) | 1 | 27.7 | -0.42 | 0.30 | - | - | picture | locks two hull modules together across the joint |
 | drive1 | engine, rectangular nozzle 0.50 x 0.49 | 1 | 99.7 | 0.48 | -0.00 | exhaust aft | - | picture | rectangular nozzle pod seated in the stern |
 | intake1 | louvre panel 0.3 x 0.5 | 1 | 85.9 | 0.48 | 0.37 | - | - | picture | drive feed louvre |
 | transfer1 | square hatch 0.2 | 1 | 49.6 | 1.15 | -0.04 | - | - | picture | boarding door: the waist light breaks round it |
@@ -73,16 +67,10 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | Q1p | retro thruster, two rectangular nozzles | 1 | 0.5 | 0.40 | -0.04 | - | - | designed | retro thruster on the bow face beside the casemate (lore 3.4; the evasive burn) |
 | Q2p | attitude thruster, two rectangular nozzles | 1 | 14.6 | 0.70 | 0.13 | - | - | designed | attitude thruster on the upper facet |
 | Q3p | attitude thruster, two rectangular nozzles | 1 | 89.7 | 0.90 | 0.19 | - | - | designed | attitude thruster on the upper facet |
-| D1p | flush drone doors 0.4 x 0.14 | 1 | 68.3 | 1.07 | 0.22 | - | - | picture | the faction's small drone bay: flush armoured doors on the upper facet; no hangar in the rules, so no craft fly |
-| W1p | vision slit 0.1 x 0.04 | 1 | 40.7 | 1.09 | 0.11 | - | - | picture | blue-white crew deck window above the light race |
-| W2p | vision slit 0.1 x 0.04 | 1 | 36.4 | 1.06 | 0.11 | - | - | picture | blue-white crew deck window above the light race |
-| W3p | vision slit 0.1 x 0.04 | 1 | 57.2 | 1.12 | 0.12 | - | - | picture | blue-white crew deck window above the light race |
-| W4p | vision slit 0.1 x 0.04 | 1 | 22.0 | 0.88 | 0.10 | - | - | picture | blue-white crew deck window above the light race |
-| V1p | louvre panel 0.1 x 0.3 | 1 | 17.4 | 0.24 | 0.25 | - | - | picture | heat louvre over the cannon's capacitors |
-| LW0pf | module latch row (3 clamps) | 1 | 73.8 | 0.42 | 0.38 | - | - | picture | locks two hull modules together across the joint |
-| LW0pa | module latch row (3 clamps) | 1 | 79.9 | 0.42 | 0.37 | - | - | picture | locks two hull modules together across the joint |
-| LW1pf | module latch row (3 clamps) | 1 | 22.7 | 0.42 | 0.28 | - | - | picture | locks two hull modules together across the joint |
-| LW1pa | module latch row (3 clamps) | 1 | 28.9 | 0.42 | 0.30 | - | - | picture | locks two hull modules together across the joint |
+| LW0pf | module latch row (3 clamps) | 1 | 75.0 | 0.42 | 0.38 | - | - | picture | locks two hull modules together across the joint |
+| LW0pa | module latch row (3 clamps) | 1 | 78.7 | 0.42 | 0.38 | - | - | picture | locks two hull modules together across the joint |
+| LW1pf | module latch row (3 clamps) | 1 | 24.0 | 0.42 | 0.28 | - | - | picture | locks two hull modules together across the joint |
+| LW1pa | module latch row (3 clamps) | 1 | 27.7 | 0.42 | 0.30 | - | - | picture | locks two hull modules together across the joint |
 | H1 | square hatch 0.3 | 1 | 12.3 | 0.00 | 0.22 | - | - | picture | deck hatch over the cannon room |
 | H2 | square hatch 0.3 | 1 | 45.3 | 0.00 | 0.37 | - | - | picture | deck hatch to the control deck |
 | H3 | square hatch 0.3 | 1 | 89.0 | 0.00 | 0.34 | - | - | picture | deck hatch to the drive room |
@@ -95,7 +83,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Zone | From % | To % | Where | Note |
 |---|---:|---:|---|---|
 | Navy grey and steel-blue trim | 99.7 | 0.1 | outer armour and panel edges |  |
-| Implant blue | 94.2 | 0.5 | segmented flank race, drone door lamps, windows |  |
+| Implant blue | 94.2 | 0.5 | segmented flank race |  |
 | no rust, no warm light, no asymmetry | 99.7 | 0.1 | factions.md Never |  |
 
 ## Major masses
@@ -155,7 +143,7 @@ Insides through the hull, hidden until a piece breaks: feed racks and capacitor 
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 230 objects, 48 parts, 301 close pairs, 231 rays, 2 guns, 12 sensor pairs, 1 turrets swept, 8 cones, 29 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 191 objects, 36 parts, 235 close pairs, 219 rays, 2 guns, 12 sensor pairs, 1 turrets swept, 8 cones, 17 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -164,10 +152,10 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 ## Changed from the picture (R207)
 
 - **The hull, its plate-line cuts, the nozzle pods, the belly coolers and covers, the light races and the joints are Astra's blind build (hegemony_H7A, PR 1745).** Ryan, Nov 23 2026 (R442): Astra's shape, engines, radiator grills and deep plate-line cutouts are better; R443 adopts the method.
-- **The Opus fittings sit on that hull: bow face plates, retro and attitude thrusters, flush drone doors with guide lamps, window slits, latch rows at the joints, deck hatches, capacitor louvres and a raised barbette plinth.** Ryan, Nov 23 2026 (R442): he likes the extra plates, bumps, lights and accessories of the Opus build; every part has a job (R221).
+- **The Opus fittings sit on that hull, placed on its structure: bow face plates round the mouth, retro thrusters at the face corners, attitude thrusters on the bevels, latch rows against the joint collars, deck hatches on the centreline and a raised barbette plinth.** Ryan, Nov 23 2026 (R442): he likes the extra plates, bumps, lights and accessories of the Opus build; every part has a job (R221).
 - **Flat belly through all three modules.** Ryan, Nov 22 2026: flatten the speedboat keel into a space hull (rule 4.1).
 - **Three visible flak emitters on a low eight-sided plinth.** designs.md: three emitters; the plinth lifts their firing plane over the receiver (R240).
-- **Flush drone doors on the upper facets, kept with no craft.** designs.md: flush flank doors only; the rules give the Picket no hangar.
+- **No drone doors, window slits or deck louvres over the capacitors: Astra's light races and boarding doors carry the lights and the access.** Ryan, Nov 23 2026: the added Opus fittings read as a different colour and patched on at random; fewer, placed with intent (R442 follow-up).
 
 ## Designed here, not shown in the picture
 

@@ -1,4 +1,4 @@
-# hegemony_H7 fit report (merged build (R442); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# hegemony_H7 fit report (merged build, fittings on the structure (R442); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -29,7 +29,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 (`turret=0`, `gun_fixed=1`).
 
 
-## How merged build (R442) fixed them
+## How merged build, fittings on the structure (R442) fixed them
 
 | Clash (before) | Fix |
 |---|---|
@@ -38,7 +38,7 @@ The table above is every finding, in the order the check made them.
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 230 objects, 48 parts, 301 close pairs, 231 rays, 2 guns, 12 sensor pairs, 1 turrets swept, 8 cones, 29 apertures, 0 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 191 objects, 36 parts, 235 close pairs, 219 rays, 2 guns, 12 sensor pairs, 1 turrets swept, 8 cones, 17 apertures, 0 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
