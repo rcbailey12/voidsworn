@@ -76,7 +76,9 @@ func _run() -> void:
 				_log("no comets were placed in the crystal field, so the wide comet frame has nothing to aim at")
 				missing.append("RK_crystal_comets_c420.png (no comets)")
 			await _hold(8)
-			_save(d, "RK_crystal_comets_c420.png", kind, 420.0)
+			# Artoo on PR 1782: report the live radius and which frame this is, so the aimed after shot never passes as a
+			# matched pair with the board-centred before shot
+			_save(d, "RK_crystal_comets_c420.png", kind, cam.r, "board" if wld.comet_spots.is_empty() else "aimed at comets")
 	# frame time: a full crystal belt at the battle camera
 	await _world({"rock": "crystal", "planet": 2}, _terrain(true), [])
 	_cam(_hex(0, 0), 170.0)
@@ -156,7 +158,7 @@ func _hold(n: int) -> void:
 		await _step()
 
 
-func _save(d: String, name: String, kind: String, r: float) -> void:
+func _save(d: String, name: String, kind: String, r: float, frame := "board") -> void:
 	expected.append(name)
 	if headless:
 		return
@@ -168,7 +170,7 @@ func _save(d: String, name: String, kind: String, r: float) -> void:
 	if preload("res://tools/picture_provenance.gd").save_png(still, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage()) != OK:
 		missing.append(name)
 		return
-	report["stills"].append({"part": "rocks", "file": "rocks/" + name, "kind": kind, "cam": int(r), "old_look": report["old_look"], "step": steps})
+	report["stills"].append({"part": "rocks", "file": "rocks/" + name, "kind": kind, "cam": int(r), "frame": frame, "old_look": report["old_look"], "step": steps})
 
 
 func _frame_time(frames: int) -> Dictionary:
