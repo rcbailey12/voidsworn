@@ -86,12 +86,18 @@ def skin(x, a, inset=0.0):
     return (x, r * math.cos(a), r * math.sin(a))
 
 
+# the insides' envelope (decks, frames, light cores, rooms): Ryan Nov 24, "make sure the frigate has something to show
+# inside material and not just empty". The old 0.62 x 0.30 of the beam was a slim spine in a hollow twice its size; it now
+# fills the twin lobes' hollow, inside their inner glass (the rooms reach 1.12 of it, the frame rings 0.8)
 def half_w(x):
-    return 0.62 * W * env(x)
+    return IN_W * W * env(x)
 
 
 def half_h(x):
-    return 0.30 * W * env(x)
+    return IN_H * W * env(x)
+
+
+IN_W, IN_H = 0.80, 0.56
 
 
 S = (LENGTH / 26.0) ** 0.7     # ribbon and line scale against CD5
