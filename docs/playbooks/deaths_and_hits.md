@@ -161,7 +161,11 @@ piece drawn to the centre over the other half, which then crumbled away) and cal
 saw the halves stay where they broke and asked for more: up close the broken section melded into the hull piece, every
 ship broke at the same spot, and "we want variety". Since Nov 23:
 
-- Where it cracks: a strained big hull is cut on two authored joints. The first crack is the joint nearest where the
+- Where it cracks: a strained big metal hull is cut on two joints, leaving no piece under 0.15 of the length. Its
+  authored joints come first; where they cannot (none, or too near an end: WRECK5c on Nov 24 showed most real hulls in
+  two) a plain joint turned a little is added, never through a machine and never beside an authored joint. On a hull longer than its hex, the pieces part less
+  and turn less, all by the same share (no less than 0.6), so no middle rests beyond 1.75 rest radii and none swings into
+  another. The first crack is the joint nearest where the
   hull was last hit, measured on the struck side where a joint kinks round a machine (with no hit on record, a per-ship
   pick), never always the joint nearest the core. A lance cuts clean
   on the joint nearest the beam, in two. The cut is made ahead of the death (refreshed at most every few seconds as the hull is hit),

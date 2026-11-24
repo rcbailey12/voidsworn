@@ -1132,32 +1132,29 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	var lance = s.get_meta("lance_line", [])
 	var lance_on: bool = lance is Array and lance.size() >= 2
 	var primary_b := 0
-	if story and transverse.size() > 1:
+	var breakup_ok := false
+	# only a big metal hull breaks up (audit: a small hull's pop and a Chorus rupture keep one crack); a lance cuts in two
+	var big_metal: bool = story and not lance_on and s.death_big and s.faction != "chorus"
+	if story and (transverse.size() > 1 or big_metal):
 		# one crack: on a lance kill, the joint nearest the beam (issue 1385: the recut then picks the crack, rather than
 		# being thrown away). Issue 1236 round 4 (Ryan, Nov 23: "every ship is breaking at the same spot"): otherwise the
 		# joint nearest where the hull was last hit, or a per-ship pick when it has not been hit, no longer always the
 		# joint nearest the core.
 		var near: Vector3 = lance[0] if lance_on else _crack_near(s, x0, L, r, h.c.z)
-		var keep = transverse[0]
-		for t in transverse:
-			if _joint_gap(t, near) < _joint_gap(keep, near): keep = t
-		# and a second joint, so the wreck can break in three (Ryan's "break up a bit more into 3 pieces"): the one that
-		# leaves the smallest of the three pieces biggest, never a sliver under BREAKUP_MIN of the length. Whether it parts
-		# at the death, a beat later or never is the death's breakup (_pick_breakup); a lance kill cuts clean in two.
-		var second = null
-		var best_small := BREAKUP_MIN * L
-		# only a big metal hull breaks up (audit: a small hull's pop and a Chorus rupture keep one crack)
-		if not lance_on and s.death_big and s.faction != "chorus":
+		if big_metal:
+			# and a second joint, so the wreck can break in three (Ryan's "break up a bit more into 3 pieces"). Whether it
+			# parts at the death, a beat later or never is the death's breakup (_pick_breakup).
+			var pick: Array = _breakup_joints(s, transverse, near, x0, L)
+			if not pick.is_empty():
+				transverse = [pick[0], pick[1]]
+				primary_b = transverse.find(pick[2])
+				breakup_ok = true
+		if not breakup_ok and transverse.size() > 1:
+			var keep = transverse[0]
 			for t in transverse:
-				if t == keep: continue
-				var xs: Array = [float(keep["at"].x), float(t["at"].x)]
-				xs.sort()
-				var small: float = minf(minf(xs[0] - x0, xs[1] - xs[0]), x0 + L - xs[1])
-				if small > best_small:
-					best_small = small
-					second = t
-		transverse = [keep] if second == null else ([keep, second] if float(keep["at"].x) < float(second["at"].x) else [second, keep])
-		primary_b = transverse.find(keep)
+				if _joint_gap(t, near) < _joint_gap(keep, near): keep = t
+			transverse = [keep]
+			primary_b = 0
 	if not transverse.is_empty():
 		sizes.clear()
 		var prev := x0
@@ -1234,7 +1231,8 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 		breaks.append({"at": Vector3(x0 + u * L - mean_off, h.c.y, h.c.z), "n": n, "side": side,
 			"zk": zk, "k": k, "waves": _waves(r, L, amp, 3)})
 		if not transverse.is_empty():
-			# Authored joints are weaknesses, with an irregular tear close to the authored plane.
+			# Authored joints are weaknesses, with an irregular tear close to the authored plane. An added joint
+			# (_breakup_joints) is a plain plane turned a little, kept clear of the machines by its own margin.
 			breaks[-1]["at"] = transverse[i]["at"]
 			breaks[-1]["n"] = transverse[i]["n"]
 			breaks[-1]["k"] = k * 0.25
@@ -1278,7 +1276,9 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 			"waves": _waves(r, L, L * 0.008, 3), "parent": parent, "piece": piece})
 	# 3. the bite: on the core's break (a capital: the break beside its biggest piece), on the side that was hit
 	var bi := 0
-	if breaks.size() > 1 and authored.is_empty():
+	if breakup_ok:
+		bi = mini(primary_b, breaks.size() - 1)   # issue 1236 round 4: the core goes off on the first crack
+	elif breaks.size() > 1 and authored.is_empty():
 		bi = 0 if float(sizes[0]) + float(sizes[1]) >= float(sizes[1]) + float(sizes[2]) else 1
 	elif story and not authored.is_empty():
 		bi = mini(primary_b, breaks.size() - 1)   # issue 1236 round 4: the core goes off on the first crack
@@ -1339,7 +1339,8 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 		chips = {}
 		n_frag = 0
 	var plan := {"L": L, "seeds": seeds, "sizes": sizes, "breaks": breaks, "bite": bite, "chips": chips, "n_main": n_main,
-		"n_frag": n_frag, "bite_break": bi, "scorch": scorch, "authored": not authored.is_empty()}
+		"n_frag": n_frag, "bite_break": bi, "scorch": scorch, "authored": not authored.is_empty(),
+		"breakup": breakup_ok}
 	# 6. issue 600 (R226, RULEBOOK 5.17): the machines ride whole, each with the main piece its box centre lies in. Their boxes
 	# come from the export (fx_hull machines); bins along the length keep the lookup short.
 	var mlist: Array = h.get("machines") if h.get("machines") is Array else []
@@ -1371,6 +1372,78 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 
 # Issue 1236 round 4: where a strained hull's first crack runs. The joint nearest the hull's last hit (hull space, as
 # fracture_plan reads it), or with no hit on record a per-ship point along the middle of the hull.
+# Issue 1236 round 4 (WRECK5c, Nov 24: most real hulls kept two pieces; SEAMS1 read their joints): the two joints a big
+# metal hull breaks on, and which of them cracks first (the one nearest the hit), as [low x, high x, first]; [] for none.
+# Authored joints first, any pair leaving every piece at least BREAKUP_MIN of the length, preferring a pair with the
+# joint nearest the hit. Where the authored joints cannot (too few, or too near an end: H4_11 0.13, V16_37 0.08, V15_37
+# 0.83) an added plain joint stands in, never through a machine (RULEBOOK 5.17) nor beside an authored one; a hull
+# with no joints at all (H9_23, V17_37, V18_51) gets two.
+static func _breakup_joints(s, transverse: Array, near: Vector3, x0: float, L: float) -> Array:
+	var h = s.hull
+	var lo := x0 + L * BREAKUP_MIN
+	var hi := x0 + L * (1.0 - BREAKUP_MIN)
+	var auth: Array = transverse.filter(func(t): return float(t["at"].x) >= lo and float(t["at"].x) <= hi)
+	var nearest = null
+	for t in auth:
+		if nearest == null or _joint_gap(t, near) < _joint_gap(nearest, near): nearest = t
+	var best: Array = []
+	var best_score := -INF
+	for i in auth.size():
+		for j in range(i + 1, auth.size()):
+			var sc := _pair_score(auth[i], auth[j], nearest, near, x0, L)
+			if sc > best_score:
+				best_score = sc
+				best = [auth[i], auth[j]]
+	if best.is_empty():
+		# a plain joint between the authored ones: off every machine, a tenth of the length clear of an authored joint,
+		# jittered per ship so a fleet of one class does not all break alike
+		var jit := (float(posmod(hash(str(s.id)), 1000)) / 1000.0 - 0.5) * 0.06
+		var cands: Array = []
+		var f := BREAKUP_MIN
+		while f <= 1.0 - BREAKUP_MIN + 1e-4:
+			var x := x0 + L * clampf(f + jit, BREAKUP_MIN, 1.0 - BREAKUP_MIN)
+			var ok := true
+			var clear: float = tan(deg_to_rad(SYNTH_YAW)) * maxf(h.W, L * 0.06) * 0.5 + L * 0.03
+			for m in h.machines:
+				var bb: AABB = m["box"]
+				if x > bb.position.x - clear and x < bb.end.x + clear: ok = false
+			for t in transverse:
+				if absf(float(t["at"].x) - x) < L * 0.1: ok = false
+			if ok:
+				var yw := deg_to_rad(SYNTH_YAW) * (1.0 if posmod(hash(str(s.id)) + int(f * 40.0), 2) == 0 else -1.0)
+				cands.append({"at": Vector3(x, h.c.y, h.c.z), "n": Vector3(cos(yw), 0.0, sin(yw)), "synthetic": true})
+			f += 0.025
+		var pool: Array = auth + cands
+		for i in pool.size():
+			for j in range(i + 1, pool.size()):
+				if bool(pool[i].get("synthetic", false)) and bool(pool[j].get("synthetic", false)) and not auth.is_empty(): continue
+				var sc := _pair_score(pool[i], pool[j], nearest, near, x0, L)
+				if sc > best_score:
+					best_score = sc
+					best = [pool[i], pool[j]]
+	if best.is_empty(): return []
+	if float(best[0]["at"].x) > float(best[1]["at"].x): best = [best[1], best[0]]
+	var first = best[0] if _joint_gap(best[0], near) <= _joint_gap(best[1], near) else best[1]
+	return [best[0], best[1], first]
+
+
+# a pair's worth: -INF when a piece would be under BREAKUP_MIN; otherwise the smallest piece, plus a bonus for holding
+# the authored joint nearest the hit, less how far its own nearer joint is from the hit
+static func _pair_score(a: Dictionary, b: Dictionary, nearest, near: Vector3, x0: float, L: float) -> float:
+	var xa := float(a["at"].x)
+	var xb := float(b["at"].x)
+	if xa > xb:
+		var t := xa
+		xa = xb
+		xb = t
+	var small: float = minf(minf(xa - x0, xb - xa), x0 + L - xb)
+	if small < BREAKUP_MIN * L - 1e-4: return -INF
+	var sc: float = small / L
+	if nearest != null and (a == nearest or b == nearest): sc += 1.0
+	sc -= 0.5 * minf(_joint_gap(a, near), _joint_gap(b, near)) / L
+	return sc
+
+
 static func _crack_near(s, x0: float, L: float, r: RandomNumberGenerator, cz: float) -> Vector3:
 	var last = s.get_meta("last_hit", [])
 	if last is Array and last.size() >= 1 and last[0] is Vector3:
@@ -3686,10 +3759,11 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 			# the length, so a ship killed mid-move still settles in its hex)
 			var drift: Vector3 = inherited / BREAKUP_K_LIN
 			drift.y = 0.0
-			drift = drift.limit_length(s.hull.L * 0.1)
+			drift = drift.limit_length(s.hull.L * 0.05)
 			var disp_i: Vector3 = (bu["disp"][i] as Vector3) + drift
 			vel = disp_i * BREAKUP_K_LIN
-			ang = Vector3(fx.rng.randf_range(-0.02, 0.02), float(bu["yaw"][i]) * BREAKUP_K_ANG, fx.rng.randf_range(-0.02, 0.02))
+			# a pure turn on the board plane: any roll or pitch would lift a glued piece's end off the wreck's altitude
+			ang = Vector3(0.0, float(bu["yaw"][i]) * BREAKUP_K_ANG, 0.0)
 			release_delay = 0.0
 			if i != int(bu["child"]): _set_rest(node, disp_i, float(bu["yaw"][i]))
 			if i == int(bu["child"]):
@@ -3955,7 +4029,10 @@ static func _core_flash_inner(fx, p: Vector3, R: float, px: float, tint: Color, 
 # Each released piece is sent so that the brakes (story damping plus MAIN_BRAKE) stop it on a planned rest spot: the end
 # pieces out along the hull's line and to one side, the middle one sideways, each turned to its own angle, so the wreck
 # fills the hex instead of sitting in one line, and the gaps open before the turns can swing a corner into a neighbour.
-const BREAKUP_MIN := 0.2        # of the length: the smallest piece a second joint may leave
+const BREAKUP_MIN_PART := 0.6   # the least share of its parting a planned piece keeps in a tight hex
+const BREAKUP_HEX_REACH := 1.75  # rest radii: the farthest a planned piece's middle rests from its anchored hex
+const SYNTH_YAW := 12.0         # degrees: how far an added breakup joint is turned off square
+const BREAKUP_MIN := 0.15       # of the length: the smallest piece a breakup may leave (0.2 left most real hulls in two)
 const BREAKUP_SNAP_S := 0.95    # seconds after the split: a late snap
 const BREAKUP_K_LIN := STORY_DAMP + MAIN_BRAKE          # per second, how fast a planned piece's drift dies away
 const BREAKUP_K_ANG := (STORY_DAMP + MAIN_BRAKE) * 0.5  # ... and its turn
@@ -3965,7 +4042,7 @@ const BREAKUP_WEIGHTS := {"cruiser": [0.35, 0.30, 0.35], "capital": [0.20, 0.40,
 static func _pick_breakup(fx, s, cause: String, job: Dictionary) -> String:
 	var plan: Dictionary = job.get("plan", {})
 	if not (fx.death_story and s.death_big and s.faction != "chorus") or plan.is_empty(): return ""
-	if int(plan.get("n_main", 0)) != 3 or not bool(plan.get("authored", false)): return ""
+	if int(plan.get("n_main", 0)) != 3 or not bool(plan.get("breakup", false)): return ""
 	# Artoo on PR 1737: the cut is made ahead (on load, then at most every CUT_REFRESH seconds as the hull takes damage),
 	# so its bite follows an earlier hit. When the killing hit is nearer the other cut joint, that joint cracks first
 	# (death_crack) and the bite's joint is the one that holds; no death-frame cut is ever added for it. The Board on
@@ -4011,7 +4088,7 @@ static func _pick_breakup_for(id: String, tier: String, last, cause: String) -> 
 # The rest spots, as displacements on the board plane from where each piece broke, and the turn about the vertical each
 # piece makes on the way. disp and yaw are per main piece (x order); child is the piece glued across the unbroken joint.
 static func _breakup_layout(fx, s, plan: Dictionary, pieces: Array, n_main: int, xf: Transform3D, cause := "blast") -> Dictionary:
-	if n_main != 3 or plan.is_empty() or not bool(plan.get("authored", false)): return {}
+	if n_main != 3 or plan.is_empty() or not bool(plan.get("breakup", false)): return {}
 	# a ram's hard spin and the dead star's pull keep their own motion (audit: the plan overwrote them); three pieces part
 	if s.has_meta("death_spin") or cause == "tidal": return {}
 	var kind := str(s.get_meta("death_breakup", ""))
@@ -4061,7 +4138,51 @@ static func _breakup_layout(fx, s, plan: Dictionary, pieces: Array, n_main: int,
 		# the snapped piece leaves the pair away from its parent, along the line
 		var away := ax if child > parent else -ax
 		out["snap_disp"] = away * d_ax * 1.1 + lat * d_lat * 0.7 * -side
+	# a long hull's end pieces already start far out of an anchored hex: their parting is shortened so no piece's middle
+	# rests more than BREAKUP_HEX_REACH rest radii from the hex (wreck_hex_check, a dreadnought in a real battle)
+	var an = (fx.dstate.get("anchors", {}) as Dictionary).get(s.id)
+	if an != null:
+		var reach: float = float(an["r"]) * BREAKUP_HEX_REACH
+		var c0: Vector3 = an["c"]
+		# one shrink for every piece, turns included: shortening one piece's parting while it still turns in full swung
+		# it into its neighbour (breakup_check, tight hex)
+		var k := 1.0
+		for i in n_main:
+			var base: Vector3 = xf * _piece_cen(pieces[i]) - c0
+			k = minf(k, _within_k(base, disp[i], reach))
+		if kind == "late" and child >= 0:
+			var cb: Vector3 = xf * _piece_cen(pieces[child]) + (disp[parent] as Vector3) * k - c0
+			k = minf(k, _within_k(cb, out["snap_disp"], reach))
+		if k < 1.0:
+			for i in n_main:
+				disp[i] = (disp[i] as Vector3) * k
+				yaw[i] = float(yaw[i]) * k
+			out["snap_disp"] = (out["snap_disp"] as Vector3) * k
+			out["snap_yaw"] = float(out["snap_yaw"]) * k * k   # the snapped piece swings past its parent's torn face: it turns least
 	return out
+
+
+static func _piece_cen(pc: Dictionary) -> Vector3:
+	if pc.has("cen"): return pc["cen"]
+	var c := Vector3.ZERO
+	var pts: PackedVector3Array = pc.get("pts", PackedVector3Array())
+	for p in pts: c += p
+	return c / maxf(pts.size(), 1)
+
+
+# the share of the displacement d from base (BREAKUP_MIN_PART at least, so the pieces still clear each other) that keeps base + d within reach on the board plane
+static func _within_k(base: Vector3, d: Vector3, reach: float) -> float:
+	var b2 := Vector2(base.x, base.z)
+	var d2 := Vector2(d.x, d.z)
+	if (b2 + d2).length() <= reach: return 1.0
+	var lo := BREAKUP_MIN_PART
+	var hi := 1.0
+	if (b2 + d2 * lo).length() > reach: return lo
+	for k in 12:
+		var m := (lo + hi) * 0.5
+		if (b2 + d2 * m).length() <= reach: lo = m
+		else: hi = m
+	return lo
 
 
 # A planned piece's rest spot (board plane) and heading. _leash steers it there every frame: it moves at BREAKUP_K_LIN

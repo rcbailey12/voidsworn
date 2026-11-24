@@ -37,16 +37,20 @@ func _run() -> void:
 			await _breakup(q, kind)
 	# Fable on 33561155: a late snap whose glued piece is the middle one (snaps toward the lone piece) keeps clear too
 	await _breakup("high", "late", [-2.0, 3.0], -3.0, " (middle glued)")
+	# WRECK5d: in a tight hex (a long hull) the end pieces' parting is shortened; they still never run together
+	await _breakup("high", "three", [-4.0, 4.0], INF, " (tight hex)", 4.0)
+	await _breakup("high", "late", [-4.0, 4.0], INF, " (tight hex)", 4.0)
 	await _warmed_late_hit()
 	await _middle_glued()
 	await _kinked_seam()
 	await _one_crack_hulls()
+	await _real_layouts()
 	_pick()
 	print("BREAKUP failures=%d" % failures)
 	quit(1 if failures else 0)
 
 
-func _ship(fx, world: Node3D, id: String, joints: Array) -> Variant:
+func _ship(fx, world: Node3D, id: String, joints: Array, machines := []) -> Variant:
 	var holder := Node3D.new()
 	world.add_child(holder)
 	var mi := MeshInstance3D.new()
@@ -60,7 +64,7 @@ func _ship(fx, world: Node3D, id: String, joints: Array) -> Variant:
 	holder.add_child(mi)
 	var seams: Array = []
 	for x in joints: seams.append(x if x is Dictionary else {"p": [x, 0.0, 0.0], "n": [1.0, 0.0, 0.0]})
-	holder.set_meta("voidsworn_destruct", {"version": 1, "seams": seams, "interior_materials": [], "machines": []})
+	holder.set_meta("voidsworn_destruct", {"version": 1, "seams": seams, "interior_materials": [], "machines": machines})
 	fx.add_ship(id, holder, {"faction": "corsair", "cls": "Cruiser", "size": 1.0})
 	return fx.ship(id)
 
@@ -139,7 +143,7 @@ func _yaw(nd: Node3D) -> float:
 	return atan2(-x.z, x.x)
 
 
-func _breakup(quality: String, kind: String, joints := [-4.0, 4.0], hit_x := INF, tag_extra := "") -> void:
+func _breakup(quality: String, kind: String, joints := [-4.0, 4.0], hit_x := INF, tag_extra := "", hex_r := 0.0) -> void:
 	var world := Node3D.new()
 	root.add_child(world)
 	var fx = _fx(world, quality)
@@ -149,6 +153,7 @@ func _breakup(quality: String, kind: String, joints := [-4.0, 4.0], hit_x := INF
 	var job: Dictionary = await _wait_cut(fx, s)
 	var tag := "%s %s%s" % [quality, kind, tag_extra]
 	check(int((job.get("plan", {}) as Dictionary).get("n_main", 0)) == 3, "%s: three main pieces cut" % tag)
+	if hex_r > 0.0: fx.anchor_wreck("k", Vector3.ZERO, hex_r)
 	fx.death("k", "blast")
 	# Fable on 33561155: the tear draws its second line (open_b) only when that joint parts at the death
 	var open_b := Vector2(-1.0, 1.0)
@@ -390,3 +395,42 @@ func _pick() -> void:
 		seen[a] = true
 	check(same, "the pick is the same for the same ship, cause and hit (a replay breaks the same way)")
 	check(seen.has("two") and seen.has("three") and seen.has("late"), "different ships and hits give all three breakups (%s)" % str(seen.keys()))
+
+
+# WRECK5c (Nov 24): on the real hulls most deaths kept two pieces, because their joints sit near an end or there are
+# none (SEAMS1 read them on the PC). The joint layouts of H4_11, V16_37 and H9_23 (no joints) on the 20-long box, as
+# fractions of the length, each hit at the stern, amidships and the bow: three pieces every time, none under 0.15 L,
+# the first crack the chosen joint nearest the hit; on V16_37 a machine across 0.28 to 0.36 keeps the added joint off it.
+func _real_layouts() -> void:
+	var cases := [["H4_11", [0.132, 0.292, 0.535, 0.824], []], ["V16_37", [0.081, 0.703], []],
+		["V16_37 machine", [0.081, 0.703], [{"name": "m", "kind": "gun", "lo": [-4.4, -1.0, -1.0], "hi": [-2.8, 1.0, 1.0]}]],
+		["H9_23", [], []]]
+	for c in cases:
+		for hf in [0.2, 0.5, 0.8]:
+			var world := Node3D.new()
+			root.add_child(world)
+			var fx = _fx(world, "low")
+			var joints: Array = (c[1] as Array).map(func(f): return -10.0 + 20.0 * float(f))
+			var s = _ship(fx, world, "r", joints, c[2])
+			var hx: float = -10.0 + 20.0 * float(hf)
+			s.set_meta("last_hit", [Vector3(hx, 1.5, 0.0), Vector3.DOWN, 0.0])
+			var job: Dictionary = await _wait_cut(fx, s)
+			var plan: Dictionary = job.get("plan", {})
+			var tag := "%s hit at %.1f" % [c[0], hf]
+			if plan.is_empty():
+				check(false, "%s: a cut" % tag)
+			else:
+				var brs: Array = plan["breaks"]
+				var xs: Array = brs.map(func(b): return float((b["at"] as Vector3).x))
+				var sizes: Array = plan["sizes"]
+				var smallest: float = (sizes as Array).reduce(func(a, b): return minf(a, b), 1.0)
+				var first: float = xs[int(plan["bite_break"])] if not xs.is_empty() else INF
+				var other: float = xs[1 - int(plan["bite_break"])] if xs.size() == 2 else INF
+				var off_machine := true
+				for m in c[2]:
+					for x in xs:
+						if x > float(m["lo"][0]) - 0.2 and x < float(m["hi"][0]) + 0.2: off_machine = false
+				check(int(plan["n_main"]) == 3 and bool(plan.get("breakup", false)) and smallest >= 0.15 - 1e-3 and absf(first - hx) <= absf(other - hx) + 1e-3 and off_machine,
+					"%s: three pieces, none under 0.15 L, first crack the nearer joint, off any machine (joints %s, smallest %.2f)" % [tag, str(xs.map(func(x): return snappedf((x + 10.0) / 20.0, 0.01))), smallest])
+			world.queue_free()
+			await process_frame
