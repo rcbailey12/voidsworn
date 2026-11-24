@@ -153,6 +153,41 @@ A single-frame spark and a puff, under 40 px, no wreck. Twenty of them dying mus
 | Burn-out (dark) | Lights and engines die; one vent of gas. | No break: a whole cold hulk drifts. No fire at all. |
 | The dead star (tidal) | The hull stretches toward the well. | Pieces stream toward the star in a curve. |
 
+### A wreck that blocks its hex (issue 1236; Ryan, Nov 22)
+
+A dead cruiser or capital leaves a rules wreck that blocks its hex. Nothing ever shrinks and nothing vanishes: Ryan saw
+the old fit (the whole wreck scaled down 1.5 s after the break) and called it bad, then saw the next try (the biggest
+piece drawn to the centre over the other half, which then crumbled away) and called it "cheesy and broken". On Nov 23 he
+saw the halves stay where they broke and asked for more: up close the broken section melded into the hull piece, every
+ship broke at the same spot, and "we want variety". Since Nov 23:
+
+- Where it cracks: a strained big metal hull is cut on two joints, leaving no piece under 0.15 of the length. Its
+  authored joints come first; where they cannot (none, or too near an end: WRECK5c on Nov 24 showed most real hulls in
+  two) a plain joint turned a little is added, never through a machine and never beside an authored joint. On a hull longer than its hex, the pieces part less
+  and turn less, all by the same share (no less than 0.6), and if a middle would still rest beyond 1.75 rest radii (the
+  dying hull's drift counted, and a late snap from where its parent will rest) the whole wreck's rest spots move in
+  together, so no gap between pieces closes; a wreck too long to fit at all ends centred on its hex. The first crack is the joint nearest where the
+  hull was last hit, measured on the struck side where a joint kinks round a machine (with no hit on record, a per-ship
+  pick), never always the joint nearest the core. A lance cuts clean
+  on the joint nearest the beam, in two. The cut is made ahead of the death (refreshed at most every few seconds as the hull is hit),
+  so when the killing hit lands nearer the other cut joint, that joint cracks first. The earlier joint carries the
+  cut's bite (its flash and thrown debris), so it gives way too: such a death breaks late or in three, never in two
+  (forcing three every time made three the most common breakup in a real fight).
+- How it breaks up, one of three per death, picked from the ship, the cause and where it was hit (a replay breaks the
+  same way): **two** (the piece across the second joint stays on, a clean break in two), **three** (both joints part
+  at the death), **late** (one crack, then the pair snaps about a second later with a spit of sparks in the faction's
+  colour and no smoke). Only the joints that part at the death tear and take chain blasts. A ram and the dead star's
+  pull always break in three; a burn-out never flies apart. A cruiser is about one in three of
+  each; a capital breaks in three or late more often.
+- Where the pieces rest: each piece eases out to a planned spot, the end pieces out along the hull's line and to one
+  side, a middle piece sideways, each turned to its own angle so some lie diagonal, all at real size. The wreck fills its
+  hex and pokes into the neighbours on a cruiser or dreadnought; the rules wreck still blocks only its own hex. The gaps
+  open before the turns, so no piece passes through another.
+- Small fragments and loose plates still settle inside the hex or where they were born, whichever is farther out.
+- Code: fx_death.gd `_pick_breakup`, `_breakup_layout`, `_glue`, `_snap`, `_steer` (in `_leash`). Checks:
+  breakup_check.gd, wreck_hex_check.gd and wreck_contact_check.gd ("brake"). A "cooks off before it breaks" variant is
+  not built (its own job).
+
 ## How each faction dies
 
 The flash core stays white or near white for everyone, so a death always reads as a death. The faction colours the rim, the

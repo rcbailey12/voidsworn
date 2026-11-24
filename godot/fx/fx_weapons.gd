@@ -8,7 +8,7 @@ extends RefCounted
 #   battery: macro (battery, hbattery: ripple broadside, muzzle blast, smoke ring, white-core shell tracer)
 #            auto (autocannon: rapid small tracers), junk (Corsair turret: slow, irregular shell kicks)
 #            las (Voidsworn las-turret and las-repeater: short hard-cored laser bolts)
-#            plasma_cannon (fast, slim bolts), plasma (turbo and heavy turbo: slow, churning bolts and slag)
+#            plasma_cannon (fast cyan-white pulses), plasma (turbo and heavy turbo: slow, churning bolts and slag)
 #            scatter (Corsair scrap scatter gun: a spray of junk tracers)   prism (Ithar shard: glassy prismatic needles)
 #            needle (Ithar needle beam turret: a thin prismatic beam)
 #   lance:   lance (Voidsworn penance lance)   ion (Hegemony: beam with crawling arcs, blue static wash)
@@ -55,7 +55,7 @@ const PLASMA_COL := Color(0.52, 0.82, 1.0)
 const REACT_IMPULSE := {"torp": 6.0, "star": 6.5, "ram": 8.0, "rockets": 2.0, "macro": 1.0, "plasma": 0.7, "gauss": 1.6,
 	"auto": 0.3, "scatter": 0.35, "guns": 0.25, "las": 0.08, "prism": 0.12, "flak": 0.2, "pflak": 0.2, "mflak": 0.2,
 	"gflak": 0.25, "spores": 0.1, "spine": 0.45, "tendril": 0.7, "sporeb": 0.2, "bombs": 0.8, "lance": 0.08, "needle": 0.05,
-	"pulsar": 0.05, "ion": 0.03, "doom": 0.1, "nlance": 0.12, "gsentry": 0.25, "junk": 0.45, "plasma_cannon": 0.7}
+	"pulsar": 0.05, "ion": 0.03, "doom": 0.1, "nlance": 0.12, "gsentry": 0.25, "junk": 0.45, "plasma_cannon": 0.28}
 const SHOOTER_RECOIL := {"macro": 0.22, "gauss": 0.20, "torp": 0.25, "rockets": 0.18, "star": 0.25}
 const ABSORBED_IMPULSE := 0.12
 const PLASMA_HOT := Color(0.86, 0.95, 1.0)
@@ -146,7 +146,7 @@ static func look_of(kind: String, wid: String, faction: String) -> String:
 
 
 static func default_shots(lk: String) -> int:
-	return {"macro": 4, "auto": 3, "las": 2, "plasma": 2, "scatter": 5, "prism": 3, "needle": 2, "lance": 1, "ion": 1,
+	return {"macro": 4, "auto": 3, "las": 2, "plasma_cannon": 2, "plasma": 2, "scatter": 5, "prism": 3, "needle": 2, "lance": 1, "ion": 1,
 		"pulsar": 2, "doom": 1, "torp": 1, "rockets": 2, "star": 1, "spine": 2, "tendril": 2, "gauss": 3, "guns": 3,
 		"bombs": 2, "sporeb": 2, "nlance": 3, "junk": 3, "flak": 3, "ram": 1}.get(lk, 2)
 
@@ -432,6 +432,10 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"macro":
 			tf = T0 + 0.2 + beat * float(fx.timing.get("ripple", 0.08))
 			_muzzle_blast(fx, from, dir, tf, col, ka * (1.25 if w >= 3 else 1.0), (MUZ_PX[clampi(w, 1, 3)] + 4.0) * size, w, A)
+			if w >= 3:
+				# Hot gas bleeds from the barrel mouth after the muzzle flash.
+				_weapon_gas(fx, from, dir, tf + 0.19, 2.2 * ka, "muzzle", 0.36, col, 0.85,
+					dir * 1.4 * ka, 0.5, 1.0, 14.0 * size, A)
 			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * fx.unit
 			ti = tf + dist / spd
 			fx.stk(from, tf, dist / spd, col.lerp(Color.WHITE, 0.3), 8.0 * power, 3.2 * ka, 0.60 * ka * (1.2 if w >= 3 else 1.0), 0, dir * spd, 0.0, 0.0, (4.0 if w >= 3 else 3.4) * size, 26.0 * size)
@@ -470,8 +474,11 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"plasma_cannon":
 			tf = T0 + 0.06 + beat * 0.085
 			var spd: float = 230.0 * fx.unit
-			_muzzle(fx, from, dir, mn, tf, col, ka, 19.0 * size, 0, 5.5, 0.14, w, A)
-			fx.stk(from, tf, dist / spd, col, 11.0, 5.4 * ka, 0.52 * ka, 4, dir * spd, 0.0, 0.0, 4.2 * size, 25.0 * size)
+			var ionized := Color(col.r * 0.55, col.g, col.b)
+			_muzzle(fx, from, dir, mn, tf, ionized, ka, 19.0 * size, 0, 5.5, 0.14, w, A)
+			# A short white centre travels inside a wider, turbulent cyan envelope.
+			fx.spr(from, tf, dist / spd, ionized, 1.8, 1.6 * ka, 1.6 * ka, 14, dir * spd, 0.0, 0.0, 0.0, 16.0 * size)
+			fx.spr(from, tf, dist / spd, PLASMA_HOT, 2.0, 0.65 * ka, 0.65 * ka, 4, dir * spd, 0.0, 0.0, 0.0, 7.0 * size)
 			ti = tf + dist / spd
 		"plasma":
 			tf = T0 + 0.12 + beat * 0.24
@@ -595,10 +602,15 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			ti = tf + ft
 		"tendril":
 			tf = T0 + 0.2 + beat * 0.2
-			fx.rib(from, dir, dist, tf, 0.9, col, 1.4, 1.2 * ka, 0.5 * ka, 9)
-			_beam_ends(fx, from, to, tf, 0.9, col, ka)
 			ti = tf + 0.25
 			tend = tf + 0.9
+			fx.rib(from, dir, dist, tf, tend - tf, col, 1.4, 1.6 * ka, 0.35 * ka, 9)
+			# The advancing tip sheds spores. Use the ribbon's eased reach so haze never leads it.
+			for j in 5:
+				var u: float = (float(j) + fx.rng.randf_range(0.2, 0.8)) / 5.0
+				var tip := from.lerp(to, smoothstep(0.0, 1.0, u))
+				var drift: Vector3 = (Vector3.UP + fx.rdir()) * 2.0 * ka
+				fx.spr(tip, lerpf(tf, ti, u), 0.52, col, 0.48, 0.5 * ka, 2.0 * ka, 20, drift, 0.8, 0.0, 0.0, 14.0 * size)
 		"gauss":
 			var heavy = w >= 3
 			var wind = 0.75 if heavy else 0.25
@@ -617,7 +629,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			ti = tf + dist / (650.0 * fx.unit)
 		"guns", "bombs", "sporeb":
 			tf = T0 + beat * 0.15
-			ti = _strafe(fx, lk, from, to, tf, col, fac, ka, kt, i, faction, rhythm, spread)
+			ti = _strafe(fx, lk, from, to, tf, col, fac, ka, kt, i, faction, rhythm, spread, tg.get("pass", null))
 		_:
 			tf = T0 + 0.3
 			ti = T0 + 0.3
@@ -670,8 +682,12 @@ static func _beam_ends(fx, from: Vector3, to: Vector3, t: float, life: float, co
 			fx.spr(p, t + life - 0.05, 0.45, col, 1.5, 2.0 * k, 0.4 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 		return
 	for p in [from, to]:
-		fx.spr(p, t, life, col, 2.8, 1.2 * k, 1.5 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
-		fx.spr(p, t + life - 0.05, 0.30, col, 1.4, 1.8 * k, 0.4 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
+		_beam_end(fx, p, t, life, col, k)
+
+
+static func _beam_end(fx, p: Vector3, t: float, life: float, col: Color, k: float) -> void:
+	fx.spr(p, t, life, col, 2.8, 1.2 * k, 1.5 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
+	fx.spr(p, t + life - 0.05, 0.30, col, 1.4, 1.8 * k, 0.4 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
 
 
 # Weapon bursts use leap 1's atlas, flow interpolation, thickness lighting and
@@ -1646,18 +1662,38 @@ static func _flak(fx, lk: String, from: Vector3, dir: Vector3, dist: float, to: 
 
 
 # Strike craft: a loose formation flies a strafing run past the target, firing as it goes.
-static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: Color, fac: Dictionary, ka: float, kt: float, i: int, faction := "voidsworn", rhythm: RandomNumberGenerator = null, spread := 1.0) -> float:
+# fly_to: where the run flies over (a miss passes beside the hull, tg["pass"]); to: where the craft aim. A miss's
+# aim point runs on past the hull and, from wing height, ends below the plane, so the dive never bottoms out on it
+# (Fable review of PR 1874, finding 1).
+static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: Color, fac: Dictionary, ka: float, kt: float, i: int, faction := "voidsworn", rhythm: RandomNumberGenerator = null, spread := 1.0, fly_to: Variant = null) -> float:
+	var aim: Vector3 = to
+	if fly_to is Vector3:
+		to = fly_to
 	var d = (to - from)
 	var dist = maxf(d.length(), 1.0)
 	var dir = d / dist
 	var side = dir.cross(Vector3.UP).normalized()
 	var spd = 140.0 * fx.unit
 	var eng: Color = fac["engine"]
+	# issue 1582: wings patrol high above the ships; an attack pass dives steeply from patrol height onto the target's
+	# height, fires on the low pass and climbs back out to patrol height past it (a wing level with its target keeps the
+	# old shallow run: start 3 up, end 6 up)
 	var start = from - dir * 3.0 + side * (i - 1) * 2.0 + Vector3(0, 3.0, 0)
 	var end = to + dir * 25.0 + side * (i - 1) * 4.0 + Vector3(0, 6.0, 0)
-	var life = start.distance_to(end) / spd
-	var vel = (end - start) / life
-	var timp = t0 + (to.distance_to(start) - 6.0) / spd
+	var high: float = maxf(start.y, to.y + 3.0)
+	end.y = maxf(end.y, high)
+	var low_y: float = to.y + 1.6 * kt
+	var flat_d: float = Vector2(to.x - start.x, to.z - start.z).length()
+	var run_d: float = maxf(Vector2(end.x - start.x, end.z - start.z).length(), 1.0)
+	var pi_u := clampf((flat_d - 3.0) / run_d, 0.2, 0.8)
+	# level at patrol height until DIVE_RUN short of the target, then a steep dive; the pull-out climbs over CLIMB_RUN
+	# Reduce motion: the dive and climb stretch over three times the ground (a gentle slope) and the craft never bank
+	var calm := bool(fx.get("reduce_motion")) if "reduce_motion" in fx else false
+	var dk := 3.0 if calm else 1.0
+	var dive := {"ya": float(start.y), "yl": low_y, "yb": float(end.y), "pi": pi_u, "calm": calm,
+		"pd": maxf(pi_u - DIVE_RUN * dk / run_d, 0.0), "pc": minf(pi_u + CLIMB_RUN * dk / run_d, 1.0)}
+	var life = _dive_len(start, end, dive) / spd
+	var timp = t0 + life * float(dive["pi"]) - 6.0 / spd
 	if rhythm == null:
 		rhythm = _volley_rng(fx)
 	var formation := _volley_pattern(rhythm, 3)
@@ -1665,29 +1701,68 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 		var delay: float = float(formation[c]["phase"]) * 0.04
 		var off = side * (c - 1) * 1.2 * spread + Vector3(0, (c % 2) * 0.6, 0)
 		var kind := "spore" if faction == "chorus" or lk == "sporeb" else ("bomber" if lk == "bombs" else "fighter")
-		_craft_run(fx, faction, kind, start + off, end + off, t0 + delay, life, 2.4)
+		_craft_run(fx, faction, kind, start + off, end + off, t0 + delay, life, 2.4, dive)
 		# craft fire: miniature tracers, bombs or spore sacs
 		var burst := _volley_pattern(rhythm, 3)
 		for s in 3:
 			var pulse: Dictionary = burst[s]
 			var tsh = timp - 0.35 + float(pulse["phase"]) * 0.08 + delay
-			var ps = start + off + vel * (tsh - t0 - delay)
-			var dd = (to - ps).normalized()
+			var ps = _dive_pos(start + off, end + off, dive, clampf((tsh - t0 - delay) / life, 0.0, 1.0))
+			var dd = (aim - ps).normalized()
 			match lk:
 				"bombs":
 					if s == 0:
-						fx.spr(ps, tsh, (to - ps).length() / 50.0, Color(0.15, 0.14, 0.13), 1.0, 0.5, 0.5, 23, dd * 50.0)
+						fx.spr(ps, tsh, (aim - ps).length() / 50.0, Color(0.15, 0.14, 0.13), 1.0, 0.5, 0.5, 23, dd * 50.0)
 				"sporeb":
 					if s == 0:
-						fx.spr(ps, tsh, (to - ps).length() / 45.0, col, 1.4, 0.7, 0.7, 15, dd * 45.0)
+						fx.spr(ps, tsh, (aim - ps).length() / 45.0, col, 1.4, 0.7, 0.7, 15, dd * 45.0)
 				_:
-					fx.stk(ps, tsh, (to - ps).length() / 260.0, col.lerp(Color.WHITE, 0.3), 10.0 * float(pulse["power"]), 3.5 * ka, 0.35 * ka * float(pulse["size"]), 0, dd * 260.0)
+					fx.stk(ps, tsh, (aim - ps).length() / 260.0, col.lerp(Color.WHITE, 0.3), 10.0 * float(pulse["power"]), 3.5 * ka, 0.35 * ka * float(pulse["size"]), 0, dd * 260.0)
 	return timp + (0.3 if lk == "bombs" else 0.1)
 
 
 # Launch and attack passes use the same faction geometry as the parked wing.
 # fx.now owns these runs, including accelerated playback and deterministic probes.
-static func _craft_run(fx, faction: String, kind: String, from: Vector3, to: Vector3, t0: float, life: float, size: float) -> void:
+# issue 1582: the attack pass's line. Across the ground it runs straight from a to b; in height it dives from patrol
+# height (ya) to the low pass (yl) at share pi of the run, steepest in the middle of the dive, then pulls out and climbs
+# back to yb. An empty dive is the old straight run.
+const DIVE_RUN := 14.0    # issue 1582: ground covered by the dive itself (world units): short, so the dive is steep
+const CLIMB_RUN := 24.0   # ground covered by the climb back out to patrol height
+
+
+static func _dive_pos(a: Vector3, b: Vector3, dive: Dictionary, u: float) -> Vector3:
+	var p := a.lerp(b, u)
+	if dive.is_empty():
+		return p
+	var off := a.y - float(dive["ya"])   # a carries its own formation offset; keep it through the dive
+	var pi_u := float(dive["pi"])
+	var pd := float(dive.get("pd", 0.0))
+	var pc := float(dive.get("pc", 1.0))
+	if u <= pd:
+		p.y = a.y
+	elif u <= pi_u:
+		var k := (1.0 - cos(PI * (u - pd) / maxf(pi_u - pd, 1e-3))) * 0.5
+		p.y = lerpf(a.y, float(dive["yl"]) + off, k)
+	elif u <= pc:
+		var k2 := (1.0 - cos(PI * (u - pi_u) / maxf(pc - pi_u, 1e-3))) * 0.5
+		p.y = lerpf(float(dive["yl"]) + off, float(dive["yb"]) + off, k2)
+	else:
+		p.y = float(dive["yb"]) + off
+	return p
+
+
+static func _dive_len(a: Vector3, b: Vector3, dive: Dictionary) -> float:
+	var n := 16
+	var d := 0.0
+	var prev := _dive_pos(a, b, dive, 0.0)
+	for k in range(1, n + 1):
+		var q := _dive_pos(a, b, dive, float(k) / n)
+		d += prev.distance_to(q)
+		prev = q
+	return d
+
+
+static func _craft_run(fx, faction: String, kind: String, from: Vector3, to: Vector3, t0: float, life: float, size: float, dive := {}) -> void:
 	var node := WING.new()
 	node.name = "fx_strike_craft"
 	fx.add_child(node)
@@ -1695,7 +1770,7 @@ static func _craft_run(fx, faction: String, kind: String, from: Vector3, to: Vec
 	node.set_process(false)
 	node.visible = false
 	var runs: Array = fx.dstate.get("craft_runs", [])
-	runs.append({"node": node, "a": from, "b": to, "t0": t0, "life": maxf(life, 0.05)})
+	runs.append({"node": node, "a": from, "b": to, "t0": t0, "life": maxf(life, 0.05), "dive": dive})
 	fx.dstate["craft_runs"] = runs
 
 static func _craft_update(fx, dt: float) -> void:
@@ -1710,12 +1785,30 @@ static func _craft_update(fx, dt: float) -> void:
 			continue
 		if age < 0.0: continue
 		var progress := clampf(age / float(r.life), 0.0, 1.0)
-		var dir: Vector3 = (r.b - r.a).normalized()
+		var dive: Dictionary = r.get("dive", {})
 		node.visible = true
 		node.active = age < float(r.life)
 		for c in node.craft: c.visible = node.active
-		node.position = (r.a as Vector3).lerp(r.b, progress)
-		node.rotation.y = atan2(-dir.z, dir.x)
+		node.position = _dive_pos(r.a, r.b, dive, progress)
+		# issue 1582: the craft's nose follows its flown line, so it pitches down into the dive and up out of it, and
+		# banks a little into the pull-out (strike craft only: warships never bank, RULEBOOK 7.5)
+		var ahead := _dive_pos(r.a, r.b, dive, minf(progress + 0.02, 1.0))
+		var behind := _dive_pos(r.a, r.b, dive, maxf(progress - 0.02, 0.0))
+		var fwd := ahead - behind
+		if fwd.length() < 1e-4:
+			fwd = (r.b - r.a)
+		fwd = fwd.normalized()
+		var flat := Vector3(fwd.x, 0.0, fwd.z)
+		if flat.length() < 1e-4:
+			flat = Vector3(1, 0, 0)
+		var yaw_b := Basis(Vector3.UP, atan2(-flat.z, flat.x))
+		var pitch := asin(clampf(fwd.y, -1.0, 1.0))
+		var bank := 0.0
+		if not dive.is_empty() and not bool(dive.get("calm", false)):
+			var pi_u := float(dive["pi"])
+			var pc := float(dive.get("pc", 1.0))
+			bank = 0.35 * sin(PI * clampf((progress - pi_u) / maxf(pc - pi_u, 1e-3), 0.0, 1.0))
+		node.basis = yaw_b * Basis(Vector3(0, 0, 1), pitch) * Basis(Vector3(1, 0, 0), bank)
 		node.step(dt)
 		_wing_trail_update(fx, node)
 
@@ -2104,20 +2197,22 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 			Tg.hit_power(fx, felt and (hull_damage or breaking or crit or ion), dip, duration))
 		if bio and not shield_only:
 			# R398 (issue 1394): where acid ate into the hull, so an acid kill glows green only there
+			var normal: Vector3 = tg.get("ln", Vector3.UP)
 			fx.later(T, func l_acid_spot() -> void:
 				var sp: Array = Tg.get_meta("acid_spots", [])
-				sp.append([lhp, fx.now])
+				sp.append([lhp, fx.now, normal])
 				while sp.size() > MELT_SPOTS: sp.pop_front()
 				Tg.set_meta("acid_spots", sp))
+	var fraction := 0.0 if breaking else float(hd.get("shieldFraction", -1.0))
 	if shield_only:
-		_shield_impact(fx, lk, w, Tg, tg, T, dir, k, sustain, torp, beam, bio, light, col)
+		_shield_impact(fx, lk, w, Tg, tg, T, dir, k, sustain, torp, beam, bio, light, col, fraction)
 		return
 	if tg.has("through") and Tg != null and not breaking:
 		var th: Dictionary = tg["through"]
 		if lk == "ion":
-			_shield_impact(fx, lk, w, Tg, th, T - 0.02, dir, k, sustain, false, true, false, false, col)
+			_shield_impact(fx, lk, w, Tg, th, T - 0.02, dir, k, sustain, false, true, false, false, col, fraction)
 		else:
-			Tg.shield_hit(fx, th["local"], T - 0.02, 0.5, 8.0 * k, 0.4)
+			Tg.shield_hit(fx, th["local"], T - 0.02, 0.5, 8.0 * k, 0.4, fraction)
 	# every weapon leaves its own mark in the hull itself (R43; fx_breach.marks_for): burn-throughs, craters, punctures,
 	# blast holes, pockmarks, acid pits, electrical burns
 	if Tg != null and tg.has("lp"):
@@ -2237,7 +2332,7 @@ static func _afterglow(fx, p: Vector3, T: float, col: Color, sz: float, light: b
 	fx.spr(p,T,0.7 if light else 1.0,col,1.0,sz*0.18,sz*0.13,21)
 
 
-static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, dir: Vector3, k: float, sustain: float, torp: bool, beam: bool, bio: bool, light: bool, col := Color.WHITE) -> void:
+static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, dir: Vector3, k: float, sustain: float, torp: bool, beam: bool, bio: bool, light: bool, col := Color.WHITE, fraction := -1.0) -> void:
 	var p: Vector3 = tg["p"]
 	var n: Vector3 = tg["n"]
 	var sc: Color = Tg.fac["shield"] if Tg != null else FLOOK.shield("hegemony")
@@ -2265,12 +2360,12 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 		life = 0.3
 	strength *= 1.3
 	if Tg != null:
-		Tg.shield_hit(fx, tg["local"], T, strength, spread, life)
+		Tg.shield_hit(fx, tg["local"], T, strength, spread, life, fraction)
 		if beam and sustain > 0.3:
 			# slow rings while the beam holds (one per 0.35 s), not counted flashes
 			var t = T + 0.35
 			while t < T + sustain:
-				Tg.shield_hit(fx, tg["local"], t, 0.6, spread * 0.8, 0.6)
+				Tg.shield_hit(fx, tg["local"], t, 0.6, spread * 0.8, 0.6, 0.0)
 				t += 0.35
 	# F3 round 2: the bubble flashes in its faction's colour where it was struck: a ripple ring racing out along the
 	# bubble's surface and a soft coloured glow, each with its own size on screen, so a shield hit reads from the
@@ -2661,9 +2756,12 @@ static func _miss_fade(fx, lk: String, Tg, tg: Dictionary, from: Vector3, fire_a
 		return T
 	var speed := from.distance_to(exit) / flight
 	var life := clampf(14.0 * k / maxf(speed, 1.0), 0.08, 0.18)
+	if lk == "plasma_cannon":
+		fx.spr(exit, T, life, col, 1.6, 1.4 * k, 0.2 * k, 18, dir * speed, 0.0, 0.0, 0.0, 13.0)
+		return T + life
 	# a world-length streak (Neon on PR 1699: the length was divided by the speed, so every miss drew the same pixel-floor
 	# stub) in the firing weapon's own streak kind (4 for the laser family, 0 for shells and bolts)
-	var skind := 4 if lk in ["las", "plasma_cannon", "prism"] else 0
+	var skind := 4 if lk in ["las", "prism"] else 0
 	fx.stk(exit, T, life, col.lerp(Color.WHITE, 0.25), 5.0, 4.0 * k,
 		0.32 * k, skind, dir * speed, 0.0, 0.0, 3.0, 19.0)
 	return T + life
