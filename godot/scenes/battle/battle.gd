@@ -164,9 +164,15 @@ var bot_cmd_used := false
 var wing_sel := ""          # one of your squadrons picked for a standing order
 var cmd_armed_t := -9.0
 var cine := "key"          # cut-ins: "key" moments, "all" attacks, "off" (settings)
+var brisk_camera := false
 var cine_saved := {}
 var follow := true          # follow enemy activations with the camera (settings)
 var cam_saved := {}
+const ROUTINE_CAMERA_NAMES := {"lance": "Lance cut-ins", "torp": "Torpedo cut-ins", "volley": "Volley cut-ins", "follow": "Enemy camera follow"}
+var _skipped_camera_kinds := {}
+var _routine_shot_cut := ""
+var _routine_follow := false
+var _shot_cut_timer: SceneTreeTimer
 var shots_dir := ""
 var torp_snapped := 0      # issue 1531: torpedo salvos captured so far (--torp-max)
 var torp_ft := {}          # issue 1379: frame times through one torpedo salvo (--torp-shots DIR --torp-ft)
@@ -535,6 +541,10 @@ func _begin(a) -> void:
 	_api_join()
 	retiring = false
 	opening = false
+	_skipped_camera_kinds.clear()
+	_shot_cut_timer = null
+	_cine_release()
+	_end_enemy_follow()
 	_click_q = {}
 	_threat_version = -1
 	_threat_one_ver = -1
@@ -1371,9 +1381,7 @@ func _play_batch(bt: Dictionary) -> void:
 		var ta := game_t
 		await wait(float(PACE["aiEnd"]))
 		pace_kind["aiEnd"] = float(pace_kind.get("aiEnd", 0.0)) + game_t - ta
-		if not cam_saved.is_empty():
-			cam.t = cam_saved["t"]
-			cam_saved = {}
+		_end_enemy_follow()
 		hud.set_chip("")
 		if skip:
 			plog.hurries += 1
@@ -1512,11 +1520,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 					for sv in views.values():
 						sv.set_selected(false)
 					views[e["unit"]].set_selected(true, Color(0.79, 0.64, 1.0))
-					# follow activations (the browser's G.follow): ease the camera toward the acting enemy, back after
-					if follow and not bot:
-						if cam_saved.is_empty():
-							cam_saved = {"t": cam.t, "r": cam.r}
-						cam.t = cam.t.lerp(_pos(e["unit"]), 0.6)
+					_follow_enemy_activation(e["unit"])
 				await wait(float(PACE["aiGap"]))
 		"move":
 			await _play_move(e["unit"], e["path"], false)
@@ -2190,6 +2194,8 @@ func _wfam(u: Dictionary, w: Dictionary) -> String:
 func _cine_wants(kind: String, a_id, t_id) -> bool:
 	if cine == "off" or bot or (shots_dir != "" and not args.has("torp-cine")):   # --torp-cine: captures keep the cut-in (issue 1379)
 		return false
+	if kind != "kill" and (brisk_camera or _skipped_camera_kinds.has(kind)) and not _flagship_camera(a_id, t_id):
+		return false
 	if cine == "all":
 		return true
 	var a: Dictionary = VU.get(a_id, {})
@@ -2204,6 +2210,53 @@ func _cine_wants(kind: String, a_id, t_id) -> bool:
 		"volley":
 			return float(a.get("size", 0)) >= 0.7 and (big or low)
 	return false
+
+
+func _flagship_camera(a_id, t_id) -> bool:
+	return bool(VU.get(a_id, {}).get("flagship", false)) or bool(VU.get(t_id, {}).get("flagship", false))
+
+
+func _follow_enemy_activation(id) -> void:
+	var routine := not _flagship_camera(null, id)
+	if not follow or bot:
+		return
+	if routine and (brisk_camera or _skipped_camera_kinds.has("follow")):
+		_end_enemy_follow()
+		return
+	if cam_saved.is_empty():
+		cam_saved = {"t": cam.t, "r": cam.r}
+	cam.t = cam.t.lerp(_pos(id), 0.6)
+	_routine_follow = routine
+
+
+func _end_enemy_follow() -> void:
+	if not cam_saved.is_empty():
+		cam.t = cam_saved["t"]
+		cam_saved = {}
+	_routine_follow = false
+
+
+func _skip_current_camera_kind() -> void:
+	var kind := _routine_shot_cut
+	if kind != "":
+		_cine_release()
+		if _shot_cut_timer != null:
+			_shot_cut_timer.time_left = 0.0
+	elif cine_saved.is_empty() and _routine_follow:
+		kind = "follow"
+		_end_enemy_follow()
+	else:
+		return
+	_skipped_camera_kinds[kind] = true
+	hud.toast("%s skipped for this battle." % ROUTINE_CAMERA_NAMES[kind])
+
+
+func _wait_shot_cut(ms: float) -> void:
+	var timer := get_tree().create_timer(ms / 1000.0 * speed)
+	_shot_cut_timer = timer
+	await timer.timeout
+	if _shot_cut_timer == timer:
+		_shot_cut_timer = null
 
 
 func _cine_frame(a_id, t_id) -> void:
@@ -2230,6 +2283,7 @@ func _cine_frame(a_id, t_id) -> void:
 func _cine_release() -> void:
 	if cine_saved.is_empty():
 		return
+	_routine_shot_cut = ""
 	cam.a = cine_saved["a"]
 	cam.b = cine_saved["b"]
 	cam.r = cine_saved["r"]
@@ -2240,14 +2294,18 @@ func _cine_release() -> void:
 
 
 func _play_fire(e: Dictionary, grp: Array) -> void:
+	var gen := _gen
 	var a_id = e["unit"]
 	var t_id = e["target"]
 	var ckind := "lance" if str(e["kind"]) == "lance" else "torp" if str(e["kind"]) == "torp" else "volley"
 	var cined := _cine_wants(ckind, a_id, t_id)
 	if cined:
 		_cine_frame(a_id, t_id)
+		_routine_shot_cut = "" if _flagship_camera(a_id, t_id) else ckind
 		recording_cue.emit("cut_start", "%s: %s to %s" % [ckind, _name(a_id), _name(t_id)])
-		await wait(320.0)
+		await _wait_shot_cut(320.0)
+		if _stale(gen):
+			return
 	var u: Dictionary = VU.get(a_id, {})
 	var fac := str(u.get("fac", "hegemony"))
 	var fam := _wfam(u, e)
@@ -2427,8 +2485,10 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			var sec := str(g["section"])
 			_log("%s: %s destroyed. %s" % [_name(g["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Flank guns and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(g["unit"]) == "player" else "p")
 	await wait(80.0)
-	if cined:
-		await wait(900.0)
+	if cined and not _stale(gen) and not cine_saved.is_empty():
+		await _wait_shot_cut(900.0)
+		if _stale(gen):
+			return
 		_cine_release()
 	# the marker stays until the volley is over and its last hit has landed (a paced volley lets go before its tail)
 	land["ended"] = true
@@ -3958,6 +4018,8 @@ func _unhandled_input(e: InputEvent) -> void:
 		_end_opening()
 	if kill_hold_until > 0.0 and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed and (e as InputEventMouseButton).button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]) or (e is InputEventKey and (e as InputEventKey).pressed and not (e as InputEventKey).echo)):
 		_kill_skip()
+		if e is InputEventKey and e.keycode == KEY_K:
+			return
 	if e is InputEventMouseButton:
 		if e.button_index == MOUSE_BUTTON_LEFT and not e.pressed:
 			if _board_release and not hud.over_ui(e.position):
@@ -4021,6 +4083,8 @@ func _on_key(k: int) -> void:
 			gfx.hurry_death()
 		return
 	match k:
+		KEY_K:
+			_skip_current_camera_kind()
 		KEY_ESCAPE:
 			# F1: Esc drops the newest thing first (an ability or boarding pick, a wing pick, the plan or target, the armed
 			# weapon, the ship you were looking at); the ship that is up stays up. With nothing to drop it opens the menu.
@@ -5372,6 +5436,7 @@ func _open_menu(row := -1) -> void:
 	items.append(["Movement: %s" % movement, "opt", "movement"])
 	items.append(["Follow enemy activations: %s" % ("on" if follow else "off"), "opt", "follow"])
 	items.append(["Cut-ins: %s" % {"key": "key moments", "all": "every attack", "off": "off"}.get(cine, cine), "opt", "cine"])
+	items.append(["Brisk camera: %s" % ("on" if brisk_camera else "off"), "opt", "brisk_camera"])
 	items.append(["Teaching tips: %s" % ("off" if tips_off else "on"), "opt", "tips"])
 	items.append(["Reduce flashing: %s" % ("on" if reduce_flashing else "off"), "opt", "flash"])
 	items.append(["Reduce motion: %s" % ("on" if reduce_motion else "off"), "opt", "motion"])
@@ -5434,6 +5499,9 @@ func _toggle_opt(k: String) -> void:
 		"cine":
 			cine = {"key": "all", "all": "off", "off": "key"}.get(cine, "key")
 			option_changed.emit("cine", cine)
+		"brisk_camera":
+			brisk_camera = not brisk_camera
+			option_changed.emit("brisk_camera", brisk_camera)
 		"tips":
 			tips_off = not tips_off
 			if tips_off: _tip_dismiss("off")
