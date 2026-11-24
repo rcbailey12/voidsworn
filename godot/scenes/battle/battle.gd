@@ -235,7 +235,10 @@ var made_us := Time.get_ticks_usec()
 
 
 func _ready() -> void:
-	_args()
+	# The title backdrop has its own args from Main. A finished quick battle can open the title in the same process.
+	# Reading the process args again there would run its capture a second time on the title viewport.
+	if not showcase:
+		_args()
 	if _sliced():
 		stage.start(self)   # issue 1434 (LOAD22): from the first mesh on, so the effect pools and the board are spread too
 	var t_ready := Time.get_ticks_usec()
@@ -3696,7 +3699,7 @@ func _end_flow() -> void:
 		# --pace-report (with --bot): the battle's report with the enemy's time per round by event kind, then quit
 		_quit_report()
 		return
-	if bot or args.has("bot-runs"):
+	if (bot and not _taking_shots) or args.has("bot-runs"):
 		_finish(result)
 		return
 	var cause := _end_cause_line()
@@ -7521,6 +7524,7 @@ func _alive_active(id: String) -> bool:
 
 var shot_n := 0
 var fire_shots := 0
+var _taking_shots := false
 
 
 func _snap(name: String) -> void:
@@ -7557,6 +7561,7 @@ func _hover_unit(id: String) -> void:
 func _shots() -> void:
 	# fixed moments for the screenshot-verdict skill: the opening board, a selected ship with its move range, the move
 	# preview, the attack tip on an enemy, the threat map, top-down, mid-battle fire, and the end card
+	_taking_shots = true
 	while busy or warming or api == null:
 		await get_tree().process_frame
 	await get_tree().create_timer(2.5).timeout
@@ -7600,7 +7605,8 @@ func _shots() -> void:
 	_refresh_ui()
 	await get_tree().create_timer(1.0).timeout
 	bot = true
-	while not ended:
+	# _end_flow sets ended before the final banner. Wait for the settled result and end card before the last still.
+	while result.is_empty():
 		await get_tree().process_frame
 	await get_tree().create_timer(2.0).timeout
 	await _snap("end")
