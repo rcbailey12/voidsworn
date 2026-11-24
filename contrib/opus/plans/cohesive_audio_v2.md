@@ -324,3 +324,21 @@ Wave D ran with 16 takes for about 138 credits (relay `pc-out-opus1752waved`). L
 - `death_eclipse_shear`: the metal was right but sat below 100 Hz. The prompt now asks for grinding, scraping and strain in the midrange, and drops deep, massive and heavy, since boom_l and death_bed already own the sub-bass.
 
 If Wave E still misses, the fallbacks are: today's gun_flak for picket, and a single channel of Wave D t1 or t2 for metal_light and gsentry. The run needs Ryan's typed "go wave e".
+
+## 8.6 Wave E result: every Gate 2 sound has a keeper
+
+Wave E ran with 8 takes for about 80 credits (relay `pc-out-opus1752wavee`). Listening page: https://claude.ai/artifact/U1dLvaKMJuQXnN9JGWwaEA. Neon's notes are in issue 1918 (PR 1919). Ryan agreed with all of Neon's final picks at 8:36 PM CT on Nov 23.
+
+**Final picks for the last four:**
+- `wep_directorate_picket`: Wave E t1. Fold to mono, trim the 24 ms lead-in, and high-pass at 40 Hz.
+- `wep_eclipse_gsentry`: Wave D t2, left channel only. Do not fold, because (L+R)/2 cancels the midrange. High-pass at 40 Hz.
+- `imp_metal_light`: Wave D t1, left channel only. Do not fold, for the same reason. High-pass at 40 Hz.
+- `death_eclipse_shear`: Wave E t2. Fold to mono, lift 3 dB, trim 9 ms, and high-pass at 40 Hz.
+
+**Mastering source rule:** each keeper's mastering note in 8.3 to 8.6 says either "fold" or "one channel". A wide take (correlation under about 0.3) uses one channel unless a note says otherwise.
+
+**Scope of Gate 2:**
+- Gate 2 is closed for these sounds.
+- Bioplasma stays on hold until the projectile look is set.
+- The tendril sound waits for issue 1877.
+- Next is mastering the keepers to mono game files, then the Gate 3 music plan.
