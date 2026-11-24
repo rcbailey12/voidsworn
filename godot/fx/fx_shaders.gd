@@ -797,6 +797,10 @@ uniform float gate = 1.0;
 uniform sampler2D kit_flow : filter_linear, repeat_enable;
 varying float vPixels;
 uniform float lenk = 1.0;
+uniform vec3 plume_core = vec3(0.0);
+uniform vec3 plume_wash = vec3(0.0);
+uniform float plume_style = 0.0;
+uniform float throttle_k = 1.0;
 varying vec4 vCol;
 varying vec3 vInfo;
 varying vec2 vInfo2;
@@ -889,12 +893,39 @@ void fragment() {
 	float motion = 0.75 + 0.5 * fast;
 	float fork_hot = 0.0; float fork_glow = 0.0;
 	if (k == 0 || k == 3) {
-		float turbulence = fbm(vec2(s * 9.0 - age * 8.0, vSide * 3.0 + seed));
-		float shape = spow(1.0 - s, 1.25) * smoothstep(0.22, 0.65, turbulence + 0.2);
-		core *= shape * (0.8 + 0.3 * sin(s * 29.0 - age * 9.0));
-		sheath *= shape;
-		if (k == 3) { motion *= mix(cough(scene_t - s * 0.2, seed), 0.8, fx_calm); }
-		ends = 1.0 - smoothstep(0.72, 1.0, s);
+		// Issue 2042 item 3: layered main engine plume (bright core + Mach shimmer + turbulent mid + soft outer wash)
+		// with smooth nozzle-bell entry (no flat square edge at c60/c26) and faction palettes from faction_looks.json.
+		int pstyle = int(plume_style + 0.5);
+		float tk = clamp(throttle_k, 0.15, 1.5);
+		float bell_in = smoothstep(0.0, 0.06 + x * 0.16, s);
+		float turbulence = fbm(vec2(s * 9.0 - scene_t * 9.5, vSide * 3.0 + seed));
+		float flow_fast = texture(kit_flow, vec2(fract(s * 3.0 - scene_t * 2.8 + seed), vSide * 0.5 + 0.5)).g;
+		float flow_slow = texture(kit_flow, vec2(fract(s * 2.0 - scene_t * 1.1 + seed), vSide * 0.5 + 0.5)).b;
+		float core_taper = mix(0.34, 0.07, spow(s, 0.72));
+		float xc = x / max(core_taper, 0.05);
+		float mach = pstyle == 3
+			? (0.85 + 0.25 * sin(s * 14.0 - scene_t * 7.0 + seed * 5.0))
+			: (0.78 + 0.44 * spow(0.5 + 0.5 * sin(s * 26.0 - scene_t * 14.0 + seed * 4.0), 3.0) * (1.0 - s));
+		float inner_core = exp(-xc * xc * 2.4) * spow(1.0 - s, 1.45) * bell_in * mix(1.0, mach, 1.0 - fx_calm * 0.7) * (0.72 + 0.55 * tk);
+		float mid_taper = mix(0.58, 0.16, spow(s, 0.85));
+		float xm = x / max(mid_taper, 0.08);
+		float mid_stream = exp(-xm * xm * 2.3) * spow(1.0 - s, 1.2) * smoothstep(0.18, 0.68, turbulence + 0.22) * bell_in;
+		float wash_taper = mix(0.95, 0.42, spow(s, 0.9));
+		float xw = x / max(wash_taper, 0.15);
+		float outer_wash = exp(-xw * xw * 2.5) * spow(1.0 - s, 1.35) * (0.45 + 0.55 * flow_fast) * bell_in * (0.38 + 0.24 * tk);
+		vec3 core_col = length(plume_core) > 0.001 ? plume_core : hot;
+		vec3 wash_col = length(plume_wash) > 0.001 ? plume_wash : tint;
+		if (pstyle == 4) {
+			vec3 prism = clamp(abs(fract(vSide * 0.35 + s * 0.5 - scene_t * 0.4 + seed + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+			wash_col = mix(wash_col, prism, smoothstep(0.25, 0.85, x) * 0.28);
+		} else if (pstyle == 3) {
+			outer_wash *= 0.8 + 0.35 * flow_slow;
+		}
+		float sputter = k == 3 ? mix(cough(scene_t - s * 0.2, seed), 0.8, fx_calm) : 1.0;
+		float plume_end = 1.0 - smoothstep(0.72, 1.0, s);
+		vec3 plume_rgb = core_col * inner_core * 1.65 + tint * mid_stream * (0.75 + 0.45 * flow_fast) + wash_col * outer_wash * 0.95;
+		ALBEDO = clamp(plume_rgb * vCol.a * sputter * plume_end * fx_gain, 0.0, 512.0);
+		return;
 	} else if (k == 1) {
 		float fade = spow(1.0 - s, 1.5);
 		core *= fade * 0.4;
