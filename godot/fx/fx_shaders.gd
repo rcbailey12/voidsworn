@@ -850,11 +850,16 @@ void fragment() {
 	float s = vInfo.x; int k = int(vInfo.y + 0.5); float seed = vInfo.z;
 	float life = max(vAge.y, 0.001); float age = vAge.x;
 	float x = abs(vSide);
-	float px = x * vPixels * 0.5;
-	// issue 1211: the crackle's fixed core and sheath are 1080-line pixels, so the arc keeps its shape at 4K
+	// Fixed beam details use 1080-line pixels (issue 1211).
 	float fr = max(VIEWPORT_SIZE.y / 1080.0, 0.0001);
-	float hot_width = k == 6 ? 3.0 * fr : max(k == 8 ? 2.0 : 3.0, vPixels * 0.17);
-	float glow_width = k == 6 ? 11.0 * fr : max(7.0, vPixels * 0.48);
+	float beam_pixels = vPixels;
+	if (k == 5 || k == 8 || k == 11) {
+		beam_pixels /= fr;
+	}
+	float px = x * beam_pixels * 0.5;
+	float hot_floor = k == 8 ? 2.0 : 3.0;
+	float hot_width = k == 6 ? 3.0 * fr : max(hot_floor, beam_pixels * 0.17);
+	float glow_width = k == 6 ? 11.0 * fr : max(7.0, beam_pixels * 0.48);
 	float core = exp(-2.772589 * px * px / (hot_width * hot_width));
 	float sheath = exp(-2.772589 * px * px / (glow_width * glow_width));
 	float fast = texture(kit_flow, vec2(fract(s * 3.0 - age * 2.4 + seed), vSide * 0.5 + 0.5)).g;
@@ -895,7 +900,7 @@ void fragment() {
 	} else if (k == 5) {
 		// Broken crawling filaments, replacing the regular diagonal bands.
 		float arc = sin(s * 27.0 - age * 17.0 + seed) * 0.55;
-		float d = (vSide - arc) * vPixels * 0.5;
+		float d = (vSide - arc) * beam_pixels * 0.5;
 		fork_hot = exp(-2.772589 * d*d / 4.0) * smoothstep(0.45, 0.7, fast);
 	} else if (k == 7) {
 		float pulse = spow(0.5 + 0.5 * sin(s * 30.0 - age * 25.0), 3.0);
@@ -947,7 +952,8 @@ void vertex() {
 	vec3 side = snorm(cross(wd, CAMERA_POSITION_WORLD - wp));
 	float seed = CUSTOM1.z;
 	float du = frame_world(1.0, max(-(VIEW_MATRIX * vec4(wp, 1.0)).z, 0.01), PROJECTION_MATRIX, VIEWPORT_SIZE.y);
-	w = max(w, du * 10.0);
+	float trail_floor = du * 10.0 * (VIEWPORT_SIZE.y / 1080.0);
+	w = max(w, trail_floor);
 	wp += side * UV.y * w;
 	VERTEX = (VIEW_MATRIX * vec4(wp, 1.0)).xyz;
 	vCol = CUSTOM0;
@@ -993,7 +999,7 @@ static func kit_trail_code(points: int) -> String:
 	vec3 wd = snorm(pts[min(k + 1, n - 1)].xyz - pts[max(k - 1, 0)].xyz);
 	float s = clamp((scene_t - pts[k].w) / max(life, 0.001), 0.0, 1.0);
 	float w = i < n ? mix(widths.x, widths.y, s) : 0.0;""")
-	c = c.replace("w = max(w, du * 10.0);", "w = i < n ? max(w, du * 10.0) : 0.0;")
+	c = c.replace("w = max(w, trail_floor);", "w = i < n ? max(w, trail_floor) : 0.0;")
 	c = c.replace("float seed = CUSTOM1.z;", "float seed = widths.z;")
 	c = c.replace("vCol = CUSTOM0;", "vCol = eng;")
 	assert(c.contains("uniform vec4 pts[") and c.contains("vCol = eng;") and c.contains("float seed = widths.z;") and c.contains("i < n ? max(w"))

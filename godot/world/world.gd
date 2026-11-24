@@ -39,6 +39,7 @@ var setting := {}
 var nebula_wake := false   # issue 1079 prototype, off by default (world_living.gd, nebula_wake.gd)
 var _spin: Array = []        # [node, axis, rate]
 var _well := Vector3.INF
+var _well_radius := 0.0
 var _rng := RandomNumberGenerator.new()
 var _planet_dir := Vector3.ZERO
 var _planet_ang := 0.0
@@ -55,6 +56,7 @@ var _sky_mat: ShaderMaterial = null
 var _look := {}
 var _mats := {}
 var _batch = null
+var _scorched_rocks_left := 0
 var _center := Vector3.ZERO
 var _lo := Vector3.ZERO
 var _hi := Vector3.ZERO
@@ -159,7 +161,13 @@ func well_position() -> Vector3:
 	return _well
 
 
+func well_radius() -> float:
+	return _well_radius
+
+
 func step(dt: float) -> void:
+	if _batch != null:
+		_batch.step(dt)
 	for s in _spin:
 		var n: Node3D = s[0]
 		if is_instance_valid(n):
@@ -253,6 +261,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		if not is_inside_tree():
 			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	_batch = WR.Batch.new()
+	_scorched_rocks_left = 8 if LOOK.post_fx_enabled("DECALS") else 0
 	var rock_kind := String(setting["rock"])
 	var counts := {"rock": 0, "debris": 0, "neb": 0, "storm": 0}
 	var clouds := {"neb": [], "storm": []}
@@ -523,10 +532,6 @@ func _make_sky(env: Environment) -> void:
 		if _pano != null:
 			m.set_shader_parameter("has_pano", 1.0)
 			m.set_shader_parameter("neb_gain", 0.55)
-	var h := float(ProjectSettings.get_setting("display/window/size/viewport_height", 1080))
-	if is_inside_tree():
-		h = maxf(h, float(get_viewport().get_visible_rect().size.y))
-	m.set_shader_parameter("px", deg_to_rad(45.0) / h)
 	var s := Sky.new()
 	s.sky_material = m
 	s.radiance_size = Sky.RADIANCE_SIZE_256
@@ -759,6 +764,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	root.position = c
 	add_child(root)
 	var Rsh := 15.0 * s
+	_well_radius = Rsh
 	# the black core (writes depth: ships behind it are hidden, as they would be)
 	var core := MeshInstance3D.new()
 	var sm := SphereMesh.new()
@@ -940,8 +946,11 @@ func blocker(p: Vector3, kind: String) -> void:
 	var s := _rng.randf_range(BLOCKER_SCALE_MIN, BLOCKER_SCALE_MAX)
 	var b := _rand_basis(_rng)
 	var crystal := kind == "crystal"
+	var scorch := _scorched_rocks_left > 0
+	if scorch:
+		_scorched_rocks_left -= 1
 	_batch.add(name, mat, true, Transform3D(b.scaled(Vector3.ONE * s), p + Vector3(0, _rng.randf_range(0.5, 2.5), 0)),
-		_rand_axis(_rng), 0.0 if crystal else _rng.randf_range(0.004, 0.012), _rng.randf())
+		_rand_axis(_rng), 0.0 if crystal else _rng.randf_range(0.004, 0.012), _rng.randf(), scorch)
 	for i in _rng.randi_range(2, 4):
 		var a := _rng.randf() * TAU
 		var rr := _rng.randf_range(4.5, 6.2)
@@ -1504,14 +1513,16 @@ const DUST_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 uniform vec3 col = vec3(0.6, 0.58, 0.55);
-uniform float px = 0.0008;
+const float px_1080 = """ + SKY.ANGULAR_PIXEL_1080 + """;
 varying float vA;
 varying vec2 vQ;
 void vertex() {
 	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
 	float size = INSTANCE_CUSTOM.x;
 	float depth = max(-c.z, 1.0);
-	float mins = depth * px * 1.6;
+	float fr = VIEWPORT_SIZE.y / 1080.0;
+	float px = px_1080 / fr;
+	float mins = depth * (px * fr) * 1.6;
 	float s = max(size, mins);
 	float k = clamp(size / mins, 0.0, 1.0);
 	vA = k * k * INSTANCE_CUSTOM.y * smoothstep(1600.0, 600.0, depth);
@@ -1599,10 +1610,6 @@ func dust(mk: String) -> void:
 	var sh: Shader = SKEEP.of(DUST_SHADER)   # issue 1434: one compiled shader per code
 	m.shader = sh
 	m.set_shader_parameter("col", Vector3(0.55, 0.52, 0.48).lerp(setting.get("c1", Vector3(0.5, 0.5, 0.5)), 0.25) * 0.9)
-	var h := float(ProjectSettings.get_setting("display/window/size/viewport_height", 1080))
-	if is_inside_tree():
-		h = maxf(h, float(get_viewport().get_visible_rect().size.y))
-	m.set_shader_parameter("px", deg_to_rad(45.0) / h)
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.extra_cull_margin = 100.0

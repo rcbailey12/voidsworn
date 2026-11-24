@@ -71,7 +71,8 @@ check(/th\.set_stylebox\("focus", "Button", focus_ring\(k\)\)/.test(gsh) && /GS\
 check(!/set_stylebox\("focus"/.test(hud), 'hud.gd sets no focus stylebox of its own (one source for the ring)');
 check(/func _button\([^)]*keys := false\)/.test(hud) && /Control\.FOCUS_ALL if keys else Control\.FOCUS_NONE/.test(hud), 'battle buttons take focus only when asked (keys)');
 check(/_button\(str\(it\[0\]\), str\(it\[1\]\), it\[2\] if it\.size\(\) > 2 else null, it == items\[0\], true\)/.test(hud), 'battle menu buttons take keyboard focus');
-check(/_button\("Continue", "continue", null, true, true\)/.test(hud) && /_button\("Fight again", "restart", null, true, true\)/.test(hud), 'end card buttons take keyboard focus');
+// The Continue caption names its destination. Check focus by action so the copy can vary.
+check(/_button\([^,\n]+, "continue", null, true, true\)/.test(hud) && /_button\("Fight again", "restart", null, true, true\)/.test(hud), 'end card buttons take keyboard focus');
 const t = read('godot/main/title.gd');
 const okit = read('godot/ui/theme/orders_kit.gd');
 check(/Kit\.button\(/.test(t) && /add_theme_stylebox_override\("focus", GS\.focus_ring\(k\)\)/.test(okit), 'title buttons use the shared focus ring (through the orders kit, issue 1217)');
