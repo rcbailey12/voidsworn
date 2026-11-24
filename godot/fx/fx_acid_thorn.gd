@@ -20,14 +20,16 @@ extends RefCounted
 
 const BONE := Color(0.66, 0.55, 0.38)       # pale bone chips
 const HORN := Color(0.22, 0.16, 0.10)       # dark horn chips (the splints)
-const SPEED := 40.0      # world units a second, times fx.unit (slower than a gun round, so the thorn reads in flight at camera 170)
+const SPEED := 52.0      # world units a second, times fx.unit
 const WIND := 0.30       # the gland's swell before the shot
 const GAP := 0.35        # spacing of the two shots, times the volley beat
-const SCALE := 2.1       # the body against the munition frame (2.3 long): Ryan's pick "bigger, so it reads at camera 170" (1.6 read as a few pixels in the cloud clip)
+const SCALE := 0.75      # the body against the munition frame (2.3 long). Ryan, Nov 24: "The scale is wrong, similar to past
+#                          torpedoes. It looks gigantic": a thorn is smaller than a torpedo (torpedoes draw at 1.0 of the frame)
 const STICK := 1.15      # seconds the thorn stays stuck in the plating before it crumbles
 const CRUMBLE := 0.7     # seconds the crumble takes
 const TIP := 1.15        # the point's distance from the body's origin, in the munition frame
-const BITE := 0.45       # how deep the point sinks into the plate, in the same frame
+const BITE := 0.75       # how deep the point drives into the plate, in the same frame (most of the head)
+const SLAM := 0.05       # seconds the point takes to drive in once it strikes: a hard stop, never a slow push
 
 
 static func _body(fx, k: float) -> Node3D:
@@ -106,6 +108,12 @@ static func _hit_matter(fx, tg: Dictionary, T: float, col: Color, k: float) -> v
 	var n: Vector3 = tg["n"]
 	var t1 := n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
 	var t2 := n.cross(t1).normalized()
+	# the strike: a hard white-hot crack where bone meets plate, a fast fan of sparks off the steel and a ring of bone dust
+	var FXW = load("res://fx/fx_weapons.gd")
+	fx.spr(p + n * 0.15 * k, T, 0.08, Color(1.0, 0.95, 0.82), 6.0, 0.5 * k, 1.4 * k, 0)
+	FXW._throw_sparks(fx, p, n, n, T, k, Color(1.0, 0.78, 0.45), 14, 18.0, 0.45, "shell")
+	fx.ring(p + n * 0.1 * k, n, T, 0.4, Color(0.62, 0.55, 0.42), 0.9, 0.3 * k, 2.2 * k, 3, 0.0, 0.0, 18.0)
+	fx.shake(T, 0.06, p)
 	for j in 10:
 		var v: Vector3 = (n * 0.8 + fx.rdir() * 0.9).normalized() * fx.rng.randf_range(5.0, 11.0) * k
 		fx.stk(p + n * 0.2 * k, T, fx.rng.randf_range(0.5, 1.0), BONE, 1.3, 0.25, 0.13 * k, 1, v, 1.2)
@@ -171,7 +179,7 @@ static func update(fx, _dt: float) -> void:
 		if now < t1:
 			# point first, a slow roll (it flies straight: the tail never tumbles)
 			var u := clampf((now - float(p["t0"])) / maxf(t1 - float(p["t0"]), 0.001), 0.0, 1.0)
-			pos = (p["a"] as Vector3).lerp(p["b"], u)
+			pos = (p["a"] as Vector3).lerp((p["b"] as Vector3) - d * TIP * s, u)
 			roll = (now - float(p["t0"])) * 6.0 + float(p["seed"])
 		elif bool(p["miss"]):
 			# flies on past and fades
@@ -196,7 +204,15 @@ static func update(fx, _dt: float) -> void:
 				var w := Transform3D((along * Basis(Vector3.RIGHT, roll)).scaled(Vector3.ONE * s), at)
 				p["local"] = (ship.xf().affine_inverse() * w) if ship != null else w
 			var wx: Transform3D = (ship.xf() * (p["local"] as Transform3D)) if ship != null else (p["local"] as Transform3D)
-			wx.origin += wx.basis.y * sin(age * 40.0) * 0.02 * exp(-age * 6.0)
+			# the slam: the point drives the last of the way in at once, then the shaft quivers (a hard, decaying wobble
+			# about the buried point), so the strike reads as a blow, not a push
+			var fwd: Vector3 = wx.basis.x.normalized()
+			wx.origin -= fwd * BITE * s * (1.0 - smoothstep(0.0, SLAM, age))
+			var q := 0.16 * sin(age * 62.0) * exp(-age * 7.0)
+			var tip_at: Vector3 = wx.origin + fwd * TIP * s
+			var side: Vector3 = wx.basis.z.normalized()
+			wx.basis = Basis(side, q) * wx.basis
+			wx.origin = tip_at - (Basis(side, q) * fwd) * TIP * s
 			_crumble(n3, clampf((age - STICK) / CRUMBLE, 0.0, 1.0))
 			n3.global_transform = wx
 			n3.visible = true
