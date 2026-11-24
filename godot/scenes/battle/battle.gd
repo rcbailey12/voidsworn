@@ -240,7 +240,7 @@ func _ready() -> void:
 		stage.start(self)   # issue 1434 (LOAD22): from the first mesh on, so the effect pools and the board are spread too
 	var t_ready := Time.get_ticks_usec()
 	if title_backdrop and str(args.get("quality", "max")) == "max":
-		args["quality"] = "high"   # issue 1434 (item 10): the title's backdrop is capped at High (its MSAA: SHOWCASE_MSAA)
+		args["quality"] = "high"   # issue 1434 (item 10): the title's backdrop is capped at High (its MSAA stays the menu's, LOAD34b)
 	t_start = Time.get_ticks_msec() / 1000.0
 	bot = bot or args.has("bot")
 	shots_dir = str(args.get("shots", ""))
@@ -541,9 +541,13 @@ func _apply_quality(q: String) -> void:
 		# issue 1434 (item 10): the backdrop shares the root viewport with the menu; stop_build() puts these back
 		_vp_saved = {"msaa_3d": vp.msaa_3d, "screen_space_aa": vp.screen_space_aa, "use_taa": vp.use_taa}
 	var aa_was := [vp.msaa_3d, vp.screen_space_aa, vp.use_taa]
-	# Artoo on b21535a6: the title's MSAA is chosen before the write, so the viewport takes one MSAA value, never a
-	# Max value and then the backdrop's (a reallocation the AA trace could not see)
-	apply_quality_to(vp, q, _jt(args.get("taa", false)), SHOWCASE_MSAA if title_backdrop else -1)
+	# LOAD34b: the backdrop's own 2X (from the menu's 4X) cost the next title draw 847 ms warm (render cpu 846 ms, no
+	# pipelines: the render buffers and their passes made again), so the backdrop leaves the viewport's AA as the menu
+	# had it (no write at all; Artoo on b21535a6), and stop_build still puts the saved state back
+	if title_backdrop:
+		RenderingServer.directional_shadow_atlas_set_size(2048 if q == "low" else 4096, true)   # the rest of apply_quality_to
+	else:
+		apply_quality_to(vp, q, _jt(args.get("taa", false)))
 	if aa_was != [vp.msaa_3d, vp.screen_space_aa, vp.use_taa]:
 		SKEEP.event("viewport AA changed %s to %s" % [str(aa_was), str([vp.msaa_3d, vp.screen_space_aa, vp.use_taa])])
 
@@ -558,8 +562,8 @@ static func apply_quality_to(vp: Viewport, q: String, taa: bool, msaa := -1) -> 
 	vp.use_taa = taa and q != "low"
 
 
-# Issue 1434 (item 10): the title backdrop's own anti-aliasing, set apart from the Graphics setting it is capped by
-const SHOWCASE_MSAA := Viewport.MSAA_2X
+# Issue 1434: the title backdrop no longer sets its own anti-aliasing (item 10's 2X switch cost a whole title draw,
+# LOAD34b); it draws with the viewport's AA as the menu had it.
 var _vp_saved := {}
 # Issue 1434: each _begin takes a build number; stop_build() (main.gd, leaving the title) moves it on, so a build still
 # under way stops at its next frame and does no more work.

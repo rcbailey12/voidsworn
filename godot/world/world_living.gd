@@ -1435,7 +1435,9 @@ func _install_chunks() -> void:
 		if not is_inside_tree() or _chunk_task < 0: return
 	WorkerThreadPool.wait_for_task_completion(_chunk_task)
 	_chunk_task = -1
+	var t_meshes := Time.get_ticks_usec()
 	var meshes := HD.meshes(_chunk_job.chunks)
+	SKEEP.event("debris meshes made (%d, %d ms)" % [meshes.size(), (Time.get_ticks_usec() - t_meshes) / 1000])
 	# These are old, weathered board wrecks, not fresh deaths. Keep their cut caps
 	# cold; only the kit's three bounded torn-edge points carry residual heat.
 	for chunk in _chunk_job.chunks:
@@ -1476,6 +1478,7 @@ func _install_chunks() -> void:
 		mi.scale = Vector3.ONE * scale_v
 		mi.position = -box.get_center() * scale_v
 		pivot.add_child(mi)
+		SKEEP.event("debris chunk joined")
 		var id: int = slot.mmi.get_instance_id()
 		if not replaced.has(id): replaced[id] = {"mmi": slot.mmi, "indices": []}
 		replaced[id].indices.append(int(slot.index))
@@ -1535,6 +1538,7 @@ func _warm_surfaces(holder: Node3D, mesh: Mesh, at: Vector3) -> bool:
 		for s in mesh.get_surface_count():
 			mi.set_surface_override_material(s, null if s == k else plain)
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if st[1] else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		SKEEP.event("debris warm surface %d of %d%s" % [k, mesh.get_surface_count(), " with shadows" if st[1] else ""])
 	await get_tree().process_frame
 	_installing = false
 	if not is_inside_tree() or not is_instance_valid(mi): return false

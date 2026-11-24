@@ -47,6 +47,7 @@ func _run() -> void:
 		sc.args["quality"] = "max"
 		sc.args["noworld"] = true
 		var seen: Array = [before]
+		var aa_before := root.get_viewport().msaa_3d
 		root.add_child(sc)
 		seen.append(_bus())
 		for i in 4:
@@ -55,7 +56,7 @@ func _run() -> void:
 		_check(sc.sfx != null and sc.sfx.silent and sc.sfx.cues.is_empty() and sc.sfx.clips.is_empty(),
 			"backdrop sound node is silent and loaded no cues (%d cues)" % [sc.sfx.cues.size() if sc.sfx != null else -1])
 		_check(str(sc.args.get("quality")) == "high", "backdrop quality capped at High from Max (%s)" % [sc.args.get("quality")])
-		_check(root.get_viewport().msaa_3d == sc.SHOWCASE_MSAA, "backdrop sets its own MSAA")
+		_check(root.get_viewport().msaa_3d == aa_before, "backdrop keeps the viewport's MSAA (LOAD34b: a change cost a whole title draw)")
 		sc.stop_build()
 		sc.queue_free()
 		for i in 3:
@@ -74,7 +75,7 @@ func _run() -> void:
 	sc2.args["noworld"] = true
 	root.add_child(sc2)
 	await process_frame
-	_check(vp.msaa_3d == sc2.SHOWCASE_MSAA, "backdrop MSAA in force while it shows")
+	_check(vp.msaa_3d == Viewport.MSAA_8X, "backdrop leaves the menu's MSAA alone while it shows (%d)" % vp.msaa_3d)
 	sc2.stop_build()
 	_check(vp.msaa_3d == Viewport.MSAA_8X, "stop_build restored the menu's MSAA (%d)" % vp.msaa_3d)
 	sc2.queue_free()
