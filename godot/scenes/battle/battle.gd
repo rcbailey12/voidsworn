@@ -532,7 +532,9 @@ func start_battle(run: Dictionary, cfg: Dictionary) -> void:
 func begin_with(a) -> void:
 	if a.phase == "deployment":
 		_deployment_api = a
+		cam.keyboard_enabled = false
 		hud.hide_end()
+		hud.hide_menu()
 		if hud.log_open:
 			hud.toggle_log()
 		hud.hide_tipcard()
@@ -3954,12 +3956,23 @@ var _board_release := false
 
 
 func _input(e: InputEvent) -> void:
-	if not e is InputEventMouseButton or cam == null:
-		return
 	if _deployment_api != null:
-		if e.button_index == MOUSE_BUTTON_RIGHT and e.pressed:
+		# Keep keys away from focused controls and board shortcuts before Godot dispatches them.
+		var skip_key: bool = e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_ESCAPE, KEY_1, KEY_KP_1]
+		var skip_click: bool = e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_RIGHT and e.pressed
+		if skip_key or skip_click:
 			get_viewport().set_input_as_handled()
 			_pick_skill_target("")
+		elif e is InputEventMouseButton and e.pressed:
+			# Leave the picker rows, Skip and fleet paging to the ledger's normal GUI handler.
+			var ledger: Control = hud.ledger
+			var local_position: Vector2 = ledger.get_global_transform_with_canvas().affine_inverse() * e.position
+			if not ledger._has_point(local_position):
+				get_viewport().set_input_as_handled()
+		elif not e is InputEventMouse:
+			get_viewport().set_input_as_handled()
+		return
+	if not e is InputEventMouseButton or cam == null:
 		return
 	# End camera gestures before the GUI can consume their releases. Only an unhandled press can start one.
 	if e.button_index == MOUSE_BUTTON_RIGHT and not e.pressed:
@@ -3970,12 +3983,7 @@ func _input(e: InputEvent) -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
-	if _deployment_api != null:
-		if e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_ESCAPE, KEY_1, KEY_KP_1]:
-			get_viewport().set_input_as_handled()
-			_pick_skill_target("")
-		return
-	if api == null or (e is InputEventMouse and hud.get("endcard") != null):
+	if _deployment_api != null or api == null or (e is InputEventMouse and hud.get("endcard") != null):
 		return
 	if opening and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed) or (e is InputEventKey and (e as InputEventKey).pressed)):
 		_end_opening()
@@ -5559,7 +5567,7 @@ func _sync_arrival() -> void:
 
 
 func _refresh_ui() -> void:
-	if api == null or V.is_empty() or quitting or not is_instance_valid(hud):
+	if _deployment_api != null or api == null or V.is_empty() or quitting or not is_instance_valid(hud):
 		return
 	if _worker_owns_rules():
 		return   # issue 1433: every read below locks the rules; the publish runs this pass (_threat_done)
@@ -6244,7 +6252,6 @@ var showcase_ready := false
 
 func _process(dt: float) -> void:
 	if _deployment_api != null:
-		cam.keyboard_enabled = false
 		return
 	game_t += dt
 	if not torp_ft.is_empty():

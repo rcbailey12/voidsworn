@@ -43,17 +43,30 @@ func _hex(target: Dictionary) -> Vector2i:
 	return Vector2i(int(target["q"]), int(target["r"]))
 
 
+func _click_at(position: Vector2) -> void:
+	for pressed in [true, false]:
+		var click := InputEventMouseButton.new()
+		click.button_index = MOUSE_BUTTON_LEFT
+		click.position = position
+		click.pressed = pressed
+		root.push_input(click)
+
+
+func _tap_key(key: Key) -> void:
+	for pressed in [true, false]:
+		var event := InputEventKey.new()
+		event.keycode = key
+		event.pressed = pressed
+		root.push_input(event)
+
+
 func _click_hud(b: Battle, action: String, arg: String) -> bool:
 	var ledger = b.hud.ledger
 	ledger.ensure_layout()
 	for hit in ledger.hits:
 		if hit["act"] != action or hit["arg"] != arg:
 			continue
-		var click := InputEventMouseButton.new()
-		click.button_index = MOUSE_BUTTON_LEFT
-		click.position = ledger.get_global_transform_with_canvas() * Rect2(hit["r"]).get_center()
-		click.pressed = true
-		root.push_input(click)
+		_click_at(ledger.get_global_transform_with_canvas() * Rect2(hit["r"]).get_center())
 		return true
 	return false
 
@@ -75,6 +88,19 @@ func _run() -> void:
 	var other: Dictionary = targets[0]
 	_check(api.phase == "deployment" and b.hud.ask_panel != null and api.take_round_snapshot().is_empty(), "prompt opens before round one is saved")
 	_check(b.board.built == 0 and b.views.is_empty(), "the picker opens before battle view creation")
+	# The picker replaces the usual sheet. Put a real battle button underneath its empty middle.
+	var top_button: Button = b.hud._button("Top-down view", "top", null, false, true)
+	b.hud.root.add_child(top_button)
+	top_button.position = root.get_visible_rect().get_center() - top_button.size * 0.5
+	var presses := [0]
+	top_button.pressed.connect(func() -> void: presses[0] += 1)
+	top_button.grab_focus()
+	_click_at(top_button.get_global_rect().get_center())
+	_check(presses[0] == 0, "clicking another battle button does nothing while the picker is open")
+	presses[0] = 0
+	_tap_key(KEY_ENTER)
+	_check(presses[0] == 0, "Enter cannot press a focused battle button while the picker is open")
+	presses[0] = 0
 	_check(b.hud.ledger.rows.size() == targets.size() and not _click_hud(b, "pick", enemy["id"]), "only eligible allies appear in the picker")
 	b._on_action("pick", enemy["id"])
 	_check(api.view()["skill_target"]["picked"].is_empty(), "the rules reject an enemy ID")
@@ -96,9 +122,11 @@ func _run() -> void:
 		await process_frame
 	_check(b.hud.ask_panel == null and b._can_act(), "battle accepts normal orders after the swap")
 	_check(b.board.built == 1 and b.views.size() == api.view()["units"].size(), "the battle builds once after the swap")
+	_click_at(top_button.get_global_rect().get_center())
+	_check(presses[0] == 1, "the battle button works after the picker closes")
 	b.free()
 
-	for skip in ["button", "Escape", "right-click"]:
+	for skip in ["button", "Escape", "1", "right-click"]:
 		api = _api(true)
 		b = _battle(api)
 		await process_frame
@@ -111,10 +139,7 @@ func _run() -> void:
 			click.pressed = true
 			root.push_input(click)
 		else:
-			var esc := InputEventKey.new()
-			esc.keycode = KEY_ESCAPE
-			esc.pressed = true
-			root.push_input(esc)
+			_tap_key(KEY_ESCAPE if skip == "Escape" else KEY_1)
 		_check(api.phase == "player" and _hex(api.unit(first["id"])) == _hex(first) and _hex(api.unit(second["id"])) == _hex(second), "skip with %s keeps the original deployment" % skip)
 		while b.warming or b.busy or b._threat_busy:
 			await process_frame
