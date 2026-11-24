@@ -492,6 +492,8 @@ def checks(folder):
                     continue  # Numeric silhouette mask, never a review picture.
                 if path.relative_to(ROOT).as_posix() == 'godot/ui/battle/icons/make_silhouettes.gd' and '.save_png(OUTPUT.path_join(code + ".png"))' in line:
                     continue  # The in-game alpha mask. The labelled review sheet is stamped below it.
+                if path.relative_to(ROOT).as_posix() == 'godot/world/test/planet_v2_check.gd' and '.save_png(fdir.path_join(fk + ".png"))' in line:
+                    continue  # Flat dummy maps seeded into a test bake cache (issue 1765), never a review picture.
                 unstamped_saves.append(str(path.relative_to(ROOT)) + ':' + str(number))
     assert not unstamped_saves, 'capture saves bypass the shared stamp: ' + ', '.join(unstamped_saves)
     print('PASS capture save sweep: game, probes, recipe previews and tool captures use the shared writer')

@@ -580,16 +580,29 @@ func system(with_planet: bool) -> void:
 		if _through_board(_center + mdir * dist, 40.0 + dist * sin(mang)):
 			continue
 		placed.append([mdir, mang])
-		var mkind := 4 if r.randf() < 0.65 else 5
-		var tints := [Vector3(1.0, 0.95, 0.88), Vector3(0.85, 0.82, 0.8), Vector3(1.0, 0.86, 0.7), Vector3(0.9, 0.95, 1.05)]
-		var MP := {"kind": mkind, "a": Vector3(0.5, 0.48, 0.45) if mkind == 4 else Vector3(0.8, 0.84, 0.88), "b": Vector3(0.22, 0.21, 0.2) if mkind == 4 else Vector3(0.5, 0.4, 0.32),
-			"c": Vector3(0.65, 0.62, 0.58) if mkind == 4 else Vector3(0.6, 0.75, 0.9), "atmo": Vector3.ZERO, "rings": false}
+		# issue 1765: each moon its own mineral (grey highland, rust regolith, dark basalt, pale ice), high contrast
+		var ML: Dictionary = MOON_LOOKS[posmod(int(setting["seed"]) * 7 + placed.size(), MOON_LOOKS.size())]
+		var mkind := int(ML["kind"])
+		var tints := [Vector3(1.0, 0.97, 0.93), Vector3(0.94, 0.93, 0.92), Vector3(1.0, 0.92, 0.84), Vector3(0.95, 0.97, 1.02)]
+		var MP := {"kind": mkind, "a": ML["a"], "b": ML["b"], "c": ML["c"], "atmo": Vector3.ZERO, "rings": false}
 		var mq := BAKER.MOON_SIZE
 		if OS.has_environment("VS_WORLD_PREVIEW"):
 			mq = Vector2i(256, 128)
 		_sphere(_center + mdir * dist, dist * sin(mang), Basis(Vector3(r.randfn(), r.randfn(), r.randfn()).normalized(), r.randf() * TAU), MP,
 			mkind * 1000 + int(setting["seed"]) % 7 + placed.size() * 101, mq, r.randf_range(0.0, 0.004), tints[placed.size() % tints.size()] * r.randf_range(0.8, 1.1), false)
 	notes.append("system: %s, %d moons" % [("planet %d" % int(setting["planet_i"])) if with_planet else "no backdrop planet (the board has one)", placed.size()])
+
+
+# Issue 1765: the moons' minerals (world_planet.gd recipe kind 4 cratered, 5 ice). No two moons of one sky share a look
+# unless the sky has more moons than looks.
+const MOON_LOOKS := [
+	# Nov 23: lifted back into band 2 after the land noise's finer layers were turned (it fell to 0.026)
+	{"kind": 4, "a": Vector3(0.6, 0.58, 0.54), "b": Vector3(0.25, 0.235, 0.22), "c": Vector3(0.8, 0.78, 0.74)},
+	{"kind": 4, "a": Vector3(0.64, 0.45, 0.32), "b": Vector3(0.26, 0.16, 0.11), "c": Vector3(0.84, 0.66, 0.5)},
+	# Wave 0 (Nov 23): the basalt moon read as a second grey highland moon; it is now a cool dark slate with bright rays
+	{"kind": 4, "a": Vector3(0.42, 0.45, 0.48), "b": Vector3(0.11, 0.125, 0.14), "c": Vector3(0.8, 0.82, 0.84)},
+	{"kind": 5, "a": Vector3(0.84, 0.87, 0.9), "b": Vector3(0.44, 0.3, 0.2), "c": Vector3(0.5, 0.64, 0.8)},
+]
 
 
 # r9: the light on a planet or moon. The battle's key light comes from behind the default camera, which lit every planet

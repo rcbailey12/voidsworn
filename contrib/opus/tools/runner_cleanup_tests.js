@@ -812,38 +812,76 @@ try {
   assert.equal(runJanitor('--low-space'), '');
   assert(fs.existsSync(nightly));
   const nightTemp = path.join(root, 'night-temp');
+  const nightVt = path.join(root, 'night-profile', 'Downloads', 'voidsworn_test');
   fs.mkdirSync(nightTemp);
   const nightRun = now => runJanitor('--nightly', lockPath, {
     PC_TEST_JANITOR_NOW: now, PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
   });
-  fs.mkdirSync(path.join(root, 'night-profile', 'Downloads', 'voidsworn_test'), { recursive: true });
+  fs.mkdirSync(nightVt, { recursive: true });
   assert.equal(nightRun('2026-11-19T08:59:59Z'), '');
   assert.equal(nightRun('2026-11-19T12:00:00Z'), '');
   assert.equal(nightRun('2026-07-19T19:00:00Z'), '');
   assert.match(nightRun('2026-11-19T09:00:00Z'), /janitor --nightly/);
   assert.match(nightRun('2026-07-19T10:59:59Z'), /janitor --nightly/);
   assert.equal(nightRun('2026-07-19T10:59:59Z'), '');
-  // Issue 1180: --after-job skips silently while any GPU claim is held, and shares the hourly allowance with --low-space.
-  const nightVt = path.join(root, 'night-profile', 'Downloads', 'voidsworn_test');
-  const afterJob = (now, extra = {}) => runJanitor('--after-job', lockPath, {
-    PC_TEST_JANITOR_NOW: now, PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile'), ...extra
+  // Issue 1907: a solo timing leaves the nightly date and the hourly allowance available for a retry.
+  const nightLock = path.join(nightVt, 'janitor.lock');
+  const previousAdmission = read(nightLock);
+  const soloPath = path.join(nightVt, 'gpu_solo');
+  const soloClaim = '{"token":"t","issue":"bench","pid":1,"mode":"solo"}\n';
+  const slotPath = path.join(nightVt, 'gpu_slot_2');
+  const sharedClaim = '{"token":"u","issue":"render","pid":2,"mode":"shared"}\n';
+  const deferral = 'deferred nightly: a GPU solo claim is active';
+  write(soloPath, soloClaim);
+  assert.equal(nightRun('2026-11-20T09:30:00Z'), deferral);
+  const janitorLogLines = () => fs.readdirSync(nightVt).filter(name => /^janitor_\d{8}-\d{4}\.txt$/.test(name))
+    .flatMap(name => read(path.join(nightVt, name)).split(/\r?\n/));
+  assert.equal(janitorLogLines().filter(line => line === deferral).length, 1, 'the nightly deferral is saved once');
+  assert.match(runJanitor('--low-space', lockPath, {
+    PC_TEST_JANITOR_NOW: '2026-11-20T09:30:00Z', PC_RUN_TEMP: nightTemp,
+    JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
+  }), /deferred low-space disk scans: a GPU solo claim is active$/);
+  assert.equal(read(nightLock), previousAdmission, 'the solo claim spends neither allowance');
+  write(soloPath, '');
+  write(slotPath, sharedClaim);
+  assert.match(nightRun('2026-11-20T09:45:00Z'), /all done$/, 'a shared claim allows the same-night retry');
+  assert.match(read(nightLock), / 20261120$/);
+  assert.equal(nightRun('2026-11-20T10:00:00Z'), '');
+  write(slotPath, '');
+  // --after-job logs GPU deferrals and still checks TEMP during shared GPU work.
+  const afterTime = seconds => new Date(fixtureNow.getTime() + seconds * 1000).toISOString();
+  const afterJob = seconds => runJanitor('--after-job', lockPath, {
+    PC_TEST_JANITOR_NOW: afterTime(seconds), PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
   });
-  write(path.join(nightVt, 'gpu_solo'), '{"token":"t","issue":"bench","pid":1,"mode":"solo"}\n');
+  write(soloPath, soloClaim);
   write(path.join(nightVt, 'gpu_slot_1'), '');
-  assert.equal(afterJob('2026-11-20T15:00:00Z'), '', 'a held solo claim stops the after-job cleanup');
-  write(path.join(nightVt, 'gpu_solo'), '');
-  write(path.join(nightVt, 'gpu_slot_2'), '{"token":"u","issue":"render","pid":2,"mode":"shared"}\n');
-  assert.equal(afterJob('2026-11-20T15:00:00Z'), '', 'a held shared claim stops it too');
-  write(path.join(nightVt, 'gpu_slot_2'), '');
-  assert.match(afterJob('2026-11-20T15:00:00Z'), /janitor --after-job/, 'empty claim files: it runs, the GPU checks spent no allowance');
-  assert.equal(afterJob('2026-11-20T15:30:00Z'), '', 'once an hour');
+  const sharedScratch = scratch(nightTemp, 'issue-311-gpu-shared', 4);
+  markOwned(sharedScratch, 4);
+  assert.match(afterJob(0), /deferred after-job disk scans: a GPU solo claim is active/);
+  assert(fs.existsSync(sharedScratch), 'solo timing defers TEMP cleanup too');
+  write(soloPath, '');
+  write(slotPath, sharedClaim);
+  const legacyJob = path.join(nightVt, 'opus311legacy');
+  const legacyRepos = [path.join(legacyJob, 'repo'), path.join(legacyJob, 'out', 'run_old', 'repo')];
+  for (const repo of legacyRepos) fs.mkdirSync(repo, { recursive: true });
+  const inventory = runJanitor('--dry-run', lockPath, {
+    PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
+  });
+  for (const repo of legacyRepos) assert(inventory.includes(`legacy job repo (inventory only): ${repo}`), inventory);
+  const sharedRun = afterJob(1);
+  assert.match(sharedRun, /deferred after-job job-folder pass: a GPU claim is active/);
+  assert(!sharedRun.includes(legacyJob), 'shared GPU work defers the job-folder pass');
+  assert(!fs.existsSync(sharedScratch), 'shared GPU work allows TEMP cleanup');
+  assert(janitorLogLines().includes('deferred after-job job-folder pass: a GPU claim is active'), 'the deferral is saved to the janitor log');
+  write(slotPath, '');
+  assert.equal(afterJob(1800), '', 'once an hour');
   assert.equal(runJanitor('--low-space', lockPath, {
-    PC_TEST_JANITOR_NOW: '2026-11-20T15:40:00Z', PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
+    PC_TEST_JANITOR_NOW: afterTime(2400), PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
   }), '', 'the low-space trigger shares the hour');
-  assert.match(afterJob('2026-11-20T16:00:01Z'), /janitor --after-job/);
+  assert.match(afterJob(3602), /time: job folders done/, 'empty claim files: the next admitted run checks job folders');
   const heldLock = path.join(nightVt, 'janitor.lock');
   assert.equal(runJanitor('--after-job', heldLock, {
-    PC_TEST_JANITOR_NOW: '2026-11-20T18:00:00Z', PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
+    PC_TEST_JANITOR_NOW: afterTime(10800), PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
   }), '', 'a busy janitor lock: skipped without a word');
   if (windows) {
     const inUse = scratch(temp, 'issue-309-in-use', 4);
