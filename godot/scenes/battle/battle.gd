@@ -23,6 +23,7 @@ const API := preload("res://rules/battle_api.gd")
 const JSM := preload("res://rules/jsm.gd")
 const Campaign := preload("res://campaign/campaign.gd")
 const Board := preload("res://render/board.gd")
+const BL := preload("res://world/board_look.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const CamRig := preload("res://render/camera_rig.gd")
 const HT := preload("res://render/hull_table.gd")
@@ -360,6 +361,7 @@ func _build_world() -> void:
 	key.directional_shadow_max_distance = 600.0
 	board = Board.new()
 	board.name = "Board"
+	board.grid_button_enabled = false   # KEEL exposes the grid in the menu and on Z
 	add_child(board)
 	backdrop = Backdrop.new()
 	backdrop.name = "Backdrop"
@@ -463,9 +465,10 @@ func start_default() -> void:
 		var e: String = a.load_rules()
 		if e != "":
 			push_error(e)
+		a.interactive_deployment = not bot and not showcase
 		a.new_battle_scenario(str(args["scenario"]), seed if args.has("seed") else -1)
 		a.set_undo(true)   # issue 1450: a test battle played in the scene can take moves back like any other
-		_begin(a)
+		begin_with(a)
 		return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
@@ -507,9 +510,10 @@ func start_scenario(sc: Dictionary) -> void:
 	var e: String = a.load_rules()
 	if e != "":
 		push_error(e)
+	a.interactive_deployment = not bot and not showcase
 	a.new_battle_scenario(sc, int(sc.get("seed", 1)))
 	battle_cfg = sc
-	_begin(a)
+	begin_with(a)
 
 
 # From the campaign: run = the campaign run dictionary, cfg = the battle config (API.md new_battle).
@@ -518,14 +522,24 @@ func start_battle(run: Dictionary, cfg: Dictionary) -> void:
 	var e: String = a.load_rules()
 	if e != "":
 		push_error(e)
+	a.interactive_deployment = not bot and not showcase
 	a.new_battle(run, cfg)
 	battle_cfg = cfg
-	_begin(a)
+	begin_with(a)
 
 
-# a battle the campaign has already set up (main.play_api)
+# A battle with its rules initialized, including one handed over by the campaign.
 func begin_with(a) -> void:
-	_begin(a)
+	if a.phase == "deployment":
+		_deployment_api = a
+		hud.hide_end()
+		if hud.log_open:
+			hud.toggle_log()
+		hud.hide_tipcard()
+		hud.set_playing(false)
+		_show_skill_picker()
+	else:
+		_begin(a)
 
 
 func _begin(a) -> void:
@@ -554,6 +568,7 @@ func _begin(a) -> void:
 	boss_fight = _api_battle_kind() == "boss"
 	finale_fight = _api_battle_finale()
 	ended = false
+	board.set_process_unhandled_input(true)
 	result = {}
 	errors.clear()
 	bot_ab.clear()
@@ -1171,6 +1186,7 @@ func _stale(g: int) -> bool:
 # mark the battle retired before finished goes out: post-await work from it is rejected from here on
 func _retire() -> void:
 	retiring = true
+	_deployment_api = null
 	_gen += 1
 	_click_q = {}
 
@@ -2909,6 +2925,8 @@ func _end_sound(win: bool) -> String:
 
 func _end_flow() -> void:
 	ended = true
+	if board != null:
+		board.set_process_unhandled_input(false)
 	# issue 1559 item 8: Fight again (the menu) during the victory beat starts a new battle while this one still waits; its
 	# end card must not land in the new fight
 	var g := _gen
@@ -3945,14 +3963,28 @@ var _board_release := false
 
 
 func _input(e: InputEvent) -> void:
-	if e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT:
-		# End the camera gesture even if the GUI consumes this release. Only an unhandled press can start one.
+	if not e is InputEventMouseButton or cam == null:
+		return
+	if _deployment_api != null:
+		if e.button_index == MOUSE_BUTTON_RIGHT and e.pressed:
+			get_viewport().set_input_as_handled()
+			_pick_skill_target("")
+		return
+	# End camera gestures before the GUI can consume their releases. Only an unhandled press can start one.
+	if e.button_index == MOUSE_BUTTON_RIGHT and not e.pressed:
+		cam.handle_input(e)
+	elif e.button_index == MOUSE_BUTTON_LEFT:
 		_board_release = not e.pressed and _board_press and not cam.handle_input(e)
 		_board_press = false
 
 
 func _unhandled_input(e: InputEvent) -> void:
-	if api == null:
+	if _deployment_api != null:
+		if e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_ESCAPE, KEY_1, KEY_KP_1]:
+			get_viewport().set_input_as_handled()
+			_pick_skill_target("")
+		return
+	if api == null or (e is InputEventMouse and hud.get("endcard") != null):
 		return
 	if opening and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed) or (e is InputEventKey and (e as InputEventKey).pressed)):
 		_end_opening()
@@ -3990,6 +4022,20 @@ func _on_key(k: int) -> void:
 		if k == KEY_ESCAPE:
 			hud.hide_menu()
 		return
+	if hud.get("endcard") != null:
+		return
+	if k == KEY_ESCAPE:
+		if hud.get("log_open") == true:
+			hud.toggle_log()
+			return
+		if hud.get("legend_open") == true:
+			hud.toggle_legend()
+			return
+	if ended:
+		# During the victory beat, Esc can still open the menu after closing the overlays.
+		if k == KEY_ESCAPE:
+			_open_menu()
+		return
 	if hud.ask_panel != null and is_instance_valid(hud.ask_panel):
 		# issue 529: a tree prompt is open; 1 to 3 answer it, nothing else acts until it is answered
 		var a: Dictionary = V.get("ask") if V.get("ask") is Dictionary else {}
@@ -3999,7 +4045,7 @@ func _on_key(k: int) -> void:
 		if i >= 0 and i < opts.size():
 			_on_action("ask", str(opts[i].get("id", "")))
 		return
-	if k in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE] and (busy or api.phase == "enemy") and not ended:
+	if k in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE] and (busy or api.phase == "enemy"):
 		# B2: Enter or Space hurries the rest of the enemy's turn (presentation only)
 		skip = true
 		speed = minf(speed, float(PACE["skip"]))
@@ -4008,9 +4054,6 @@ func _on_key(k: int) -> void:
 		return
 	match k:
 		KEY_ESCAPE:
-			if hud.menu != null:
-				hud.hide_menu()
-				return
 			# F1: Esc drops the newest thing first (an ability or boarding pick, a wing pick, the plan or target, the armed
 			# weapon, the ship you were looking at); the ship that is up stays up. With nothing to drop it opens the menu.
 			if mode != "":
@@ -4085,6 +4128,13 @@ func _arm(i: int, from_hotkey := false) -> void:
 	var u := _sel_unit()
 	if u.is_empty() or i >= (u["weapons"] as Array).size():
 		return
+	# Artoo on PR 1873: flak never fires at a ship (rules canFire), so it is never armed, not even under a planned shot
+	# (an armed flak would outlive the plan when Esc cancels it). With a shot planned the key still says the plan keeps
+	# its guns (armed_preview_test).
+	if str(u["weapons"][i].get("kind", "")) == "flak":
+		hud.toast("Planned shot keeps its guns. Cancel the plan to change weapons." if from_hotkey and atk != null \
+			else "Point defense fires on its own at incoming torpedoes and strike craft.")
+		return
 	armed = -1 if armed == i else i
 	sfx.play("ui_click")
 	_refresh_ui()
@@ -4140,8 +4190,8 @@ func _rotate(d: int) -> void:
 
 
 # Issue 1589: can the ship that is up turn in place by rot steps now (sign = way)? Read on a copy of the rules' own unit with
-# canRotate, spending what _rotateUnit_raw spends for each turn (a skill's free turn, then a free pivot, then movement and a
-# turn charge). Each step is its own rotate at the commit, and the rules end the activation after a step that leaves the
+# canRotate, spending what _rotateUnit_raw spends for each turn through the rules' own spendTurn (Thorne's rider turn, a
+# skill's free turn, a free pivot, else movement and a turn charge). Each step is its own rotate at the commit, and the rules end the activation after a step that leaves the
 # ship with no movement and no gun on an enemy (battle_api _done_raw), so a middle heading like that cannot be planned
 # through (Codex on PR 1643, run 2). Read only: the copy is thrown away.
 func _turns_ok(rot: int) -> bool:
@@ -4156,16 +4206,7 @@ func _turns_ok(rot: int) -> bool:
 	for k in n:
 		if not R.canRotate(v):
 			return false
-		if float(_z0(v.get("treeFreeTurn"))) > 0.0:
-			v["treeFreeTurn"] = 0   # a skill's free turn: no movement, no turn charge (Artoo on PR 1643: still checked below)
-		else:
-			if R.freePivot(v):
-				v["pivotUsed"] = true
-			else:
-				v["mp"] = v["mp"] - 1
-				if R.jt(v.get("postFire")):
-					v["postMp"] = maxi(0, int(_z0(v.get("postMp"))) - 1)
-			v["turnsLeft"] = v["turnsLeft"] - 1
+		R.spendTurn(v)   # the rules' own charge for one turn: Thorne's rider turn, a skill's free turn, a free pivot, else movement and a turn (Artoo on PR 1876)
 		v["facing"] = posmod(int(v["facing"]) + signi(rot), 6)
 		if k < n - 1 and v["mp"] <= 0 and not _any_shot(v):
 			return false
@@ -4899,11 +4940,20 @@ func _shot_blockers(t: Dictionary) -> Array:
 	return api.line_blockers(u, t)
 
 func _blocker_text(t: Dictionary) -> String:
-	var names := PackedStringArray()
+	# Council 29 (issue 1401): the board shows no hex numbers, so name the outlined blockers by kind and count, not "at 9,10"
+	var counts := {}
+	var order: Array = []
 	for h in _shot_blockers(t):
 		var label: String = {"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(h.kind, h.kind)
-		names.append("the %s at %d,%d" % [label, h.q, h.r])
-	return "Blocked by %s." % ", ".join(names) if not names.is_empty() else "Line of sight is blocked."
+		if not counts.has(label):
+			counts[label] = 0
+			order.append(label)
+		counts[label] = int(counts[label]) + 1
+	var names := PackedStringArray()
+	for label in order:
+		var n := int(counts[label])
+		names.append(("the marked %s" % label) if n == 1 else ("%d marked %ss" % [n, label]))
+	return "Blocked by %s." % " and ".join(names) if not names.is_empty() else "Line of sight is blocked."
 
 
 func _tip() -> String:
@@ -4933,7 +4983,7 @@ func _tip() -> String:
 			var nh := int(_danger.get(hk, 0))
 			var nn := int(_danger.get(board.key(int(s["q"]), int(s["r"])), 0))
 			if nh > 0 or nn > 0:
-				t += "\n[color=#c4a4ff]%d enem%s can reach this hex[/color] [color=#7c8674]now %d[/color]" % [nh, "y" if nh == 1 else "ies", nn]
+				t += "\n[color=#c4a4ff]%d enem%s can reach this hex[/color] [color=#7c8674](%d where you are)[/color]" % [nh, "y" if nh == 1 else "ies", nn]   # Council 7 (issue 1401)
 		var wl := _well_line(hover.x, hover.y)
 		if wl != "":
 			t += "\n" + wl
@@ -5094,6 +5144,12 @@ func _attack_tip(t_id: String) -> String:
 
 
 func _on_action(name: String, arg) -> void:
+	if _deployment_api != null:
+		if name == "pick":
+			_pick_skill_target(str(arg))
+		elif name == "ask" and arg == "skip_skill_target":
+			_pick_skill_target("")
+		return
 	sfx.play("ui_click")
 	match name:
 		"end":
@@ -5108,7 +5164,7 @@ func _on_action(name: String, arg) -> void:
 			_cancel("button")
 		"pick":
 			var u: Dictionary = VU.get(arg, {})
-			if not u.is_empty():
+			if not u.is_empty() and not u["dead"]:
 				var act := _active_id()
 				if act != "" and act != str(arg):
 					inspect = str(arg)
@@ -5201,9 +5257,7 @@ func _on_action(name: String, arg) -> void:
 			hud.set_log_preferences(hud.log_enabled, not hud.log_collapsed)
 			option_changed.emit("battle_log_collapsed", hud.log_collapsed)
 		"grid":
-			var gb = board.get("_look_btn") if board != null else null
-			if gb is Button and (gb as Button).visible:
-				(gb as Button).button_pressed = not (gb as Button).button_pressed
+			board.toggle_tactical_grid()
 			_open_menu()
 		"log":
 			hud.toggle_log()
@@ -5258,6 +5312,41 @@ func _on_action(name: String, arg) -> void:
 # ---------------------------------------------------------------- issue 529: the tree prompts
 
 var roles_opened := false
+var _deployment_api: API
+
+
+# Deployment uses the fleet list before the board, ship views or effects are built.
+func _show_skill_picker() -> void:
+	var v: Dictionary = _deployment_api.view()
+	var picker: Dictionary = v["skill_target"]
+	var first := str(picker["picked"].get("id", ""))
+	var candidates := {}
+	for t in picker["targets"]:
+		candidates[t["id"]] = true
+	var rows: Array = []
+	for u in v["units"]:
+		var picked: bool = u["id"] == first
+		if picked or candidates.has(u["id"]):
+			rows.append({"id": u["id"], "name": u["name"], "cls": u["cls"], "hp": u["hp"], "maxHp": u["maxHp"],
+				"shp": _z0(u.get("shp")), "shMax": u["shMax"], "flag": u["flagship"], "sel": picked, "done": picked,
+				"status": "Selected" if picked else "Ready"})
+	hud.set_roster(rows)
+	hud.show_ask({"kind": "skill_target", "key": picker["key"], "id": first, "n": picker["n"],
+		"q": picker["q"] + " Choose from your fleet below.",
+		"opts": [{"id": "skip_skill_target", "n": "Skip", "d": "Skip this skill with Esc or right-click."}]})
+
+
+func _pick_skill_target(id: String) -> void:
+	if quitting or _deployment_api == null or not _deployment_api.pick_skill_target(id):
+		return
+	sfx.play("ui_cancel" if id == "" else "ui_click")
+	if _deployment_api.phase == "deployment":
+		_show_skill_picker()
+	else:
+		var a := _deployment_api
+		_deployment_api = null
+		hud.hide_ask()
+		_begin(a)
 
 
 func _sync_ask() -> void:
@@ -5366,8 +5455,8 @@ func _open_menu(row := -1) -> void:
 	items.append(["Firing arcs: %s" % ("on" if arcs_on else "off"), "opt", "arcs"])
 	# issue 271 (E1): the view keys that left the screen are listed here (they still work: T, Z, R, Esc)
 	items.append(["Top-down view (T)", "top"])
-	if board != null and board.get("_look_btn") != null and (board.get("_look_btn") as Button).visible:
-		items.append(["Tactical grid: %s (Z)" % ("on" if (board.get("_look_btn") as Button).button_pressed else "off"), "grid"])
+	if board != null and BL.current() == "cine":
+		items.append(["Tactical grid: %s (Z)" % ("on" if BL.tactical else "off"), "grid"])
 	items.append(["Controls", "keys"])
 	if external and not in_campaign:
 		items.append(["Quit to title", "to_title"])
@@ -5507,8 +5596,6 @@ func _refresh_ui() -> void:
 	var command: Dictionary = api.command_info() if mine and api.has_method("command_info") else {}
 	hud.set_command(str(command.get("label", "Command")), command_ready, mine and _api_admiral() != "",
 		command_ready and Time.get_ticks_msec() / 1000.0 - cmd_armed_t <= 3.0, _command_tip(command))
-	if board != null and board.get("_look_btn") != null:
-		hud.adopt_grid(board.get("_look_btn"))   # UI pass: board look C's Grid (Z) button goes in the top bar
 	_sync_arrival()
 	hud.set_info(_battle_info())
 	hud.set_top(int(V["round"]), turn, _objective(), end_text, mine and not busy, user_speed < 1.0, threat_on)
@@ -5768,6 +5855,7 @@ static func _command_tip(command: Dictionary) -> String:
 	if command["used"]: return "Already used this battle."
 	var power := int(command["power"])
 	var tip := "Power %d of 3: %s" % [power, command["effect"]]
+	if str(command.get("rider", "")) != "": tip += "\nRider: " + str(command["rider"])   # issue 1651
 	if command["next"] != "": return tip + "\nWait one round for power %d: %s" % [power + 1, command["next"]]
 	return tip + ("\nAlready at full power." if power == 3 else "\nOne more round does not raise the power.")
 
@@ -6164,10 +6252,13 @@ var showcase_ready := false
 
 
 func _process(dt: float) -> void:
+	if _deployment_api != null:
+		cam.keyboard_enabled = false
+		return
 	game_t += dt
 	if not torp_ft.is_empty():
 		_torp_ft_step(dt)
-	cam.keyboard_enabled = not warming and (hud == null or hud.menu == null)
+	cam.keyboard_enabled = not warming and not ended and (hud == null or (hud.menu == null and hud.get("endcard") == null))
 	if showcase_ready:
 		cam.a += dt * 0.035
 	if world != null and world.has_method("step"):

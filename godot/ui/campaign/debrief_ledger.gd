@@ -55,7 +55,10 @@ func heading(t: String, rect: Rect2, size_px := 30) -> Label:
 func link(t: String, rect: Rect2, cb: Callable, tip := "", parent: Control = self) -> Button:
 	var b = Button.new(); b.text = t; b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	GS.plain_button(b, k, 18, GS.sheet_body())
-	for state in ["font_color", "font_hover_color", "font_focus_color", "font_pressed_color", "font_disabled_color"]: b.add_theme_color_override(state, GS.TEXT2 if state != "font_hover_color" else GS.TEXT)
+	b.add_theme_color_override("font_color", GS.TEXT2)
+	b.add_theme_color_override("font_disabled_color", GS.TEXT3)
+	for state in ["font_hover_color", "font_pressed_color", "font_hover_pressed_color", "font_focus_color"]:
+		b.add_theme_color_override(state, GS.TEXT)
 	b.add_theme_stylebox_override("focus", GS.ledger_focus(k)); b.tooltip_text = tip
 	b.pressed.connect(cb); _at(b, rect, parent)
 	var parts = t.rsplit(" ", true, 1)
@@ -71,7 +74,7 @@ func hover(node: Control, text: String) -> void:
 	node.mouse_filter = MOUSE_FILTER_PASS; node.tooltip_text = text
 
 func meter(rect: Rect2, value: float, total: float, ticks: Array = []) -> Control:
-	var track = Control.new(); track.mouse_filter = MOUSE_FILTER_PASS
+	var track = Control.new(); track.mouse_filter = MOUSE_FILTER_IGNORE
 	track.set_meta("value", value); track.set_meta("total", total); track.set_meta("ticks", ticks)
 	track.draw.connect(func():
 		track.draw_rect(Rect2(Vector2.ZERO, track.size), GS.SHEET_HAIR)
@@ -215,13 +218,13 @@ func _build_heirs(x: float, w: float) -> void:
 	heading("Priority training", Rect2(x, 507, w, 41))
 	var ids = C.shadowAdmirals(R["fac"], R["admiral"])
 	var current = str(C.META["heirs"].get(R["fac"], "")); var cw = (w - 32) / maxf(1, ids.size())
-	var group = ButtonGroup.new()
 	for i in ids.size():
 		var id = str(ids[i]); var cx = x + i * (cw + 16)
-		var card = Button.new(); card.toggle_mode = true; card.button_group = group; card.button_pressed = ui._end_heir_pick == id; card.disabled = ui._end_confirmed
+		var card = Button.new(); card.disabled = ui._end_confirmed
+		GS.button_pointer(card)
 		card.name = "Heir_" + id; card.set_meta("id", id)
-		for state in ["normal", "hover", "pressed", "disabled"]: card.add_theme_stylebox_override(state, GS.ledger_card(k, ui._end_heir_pick == id))
-		card.add_theme_stylebox_override("focus", GS.ledger_focus(k))
+		_heir_style(card, ui._end_heir_pick == id)
+		card.add_theme_stylebox_override("focus", GS.focus_ring(k))
 		_at(card, Rect2(cx, 548, cw, 272)); cards.append(card)
 		card.pressed.connect(func(): choose_heir(id))
 		var crest = TextureRect.new(); crest.texture = Portraits.crest(id); crest.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; crest.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED; crest.mouse_filter = MOUSE_FILTER_IGNORE
@@ -246,24 +249,28 @@ func _build_heirs(x: float, w: float) -> void:
 	if current == "" and not ui._end_confirmed: note = "No priority admiral set. Confirm selection to continue."
 	words(note, Rect2(x, 823, w, 26), 17)
 	primary = Button.new(); primary.name = "ConfirmHeir"; primary.set_meta("end_primary", true)
-	for state in ["normal", "hover", "pressed", "disabled"]: primary.add_theme_stylebox_override(state, GS.sheet_jump_boxes(k)[state])
+	var boxes := GS.sheet_jump_boxes(k)
+	for state in boxes: primary.add_theme_stylebox_override(state, boxes[state])
 	primary.add_theme_stylebox_override("focus", GS.ledger_focus(k))
-	primary.add_theme_color_override("font_color", GS.TEXT); primary.add_theme_color_override("font_hover_color", GS.ON_EMBER)
+	GS.button_pointer(primary)
 	_at(primary, Rect2(x, 851, w, 56))
 	var label = "CONFIRM PRIORITY" if not ui._end_confirmed else ("PLAY AS " + str(C.FACTIONS[d["next"]]["n"]).to_upper() if d["next"] != null else "PICK THE NEXT FACTION")
 	var action_words = words(label, Rect2(22, 0, w - 130, 56), 20, GS.TEXT, GS.sheet_medium(), primary)
 	var key_words = words("Enter", Rect2(w - 90, 0, 74, 56), 17, GS.TEXT2, GS.num(), primary)
 	action_words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER; key_words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	primary.mouse_entered.connect(func(): action_words.add_theme_color_override("font_color", GS.ON_EMBER); key_words.add_theme_color_override("font_color", GS.ON_EMBER))
-	primary.mouse_exited.connect(func(): action_words.add_theme_color_override("font_color", GS.TEXT); key_words.add_theme_color_override("font_color", GS.TEXT2))
+	GS.bind_sheet_label(primary, action_words, GS.TEXT)
+	GS.bind_sheet_label(primary, key_words, GS.TEXT2)
 	primary.pressed.connect(advance)
 
 func choose_heir(id: String) -> void:
 	if ui._end_confirmed: return
 	ui._end_heir_pick = id
 	for card in cards:
-		var selected = card.get_meta("id") == id; card.button_pressed = selected
-		for state in ["normal", "hover", "pressed", "disabled"]: card.add_theme_stylebox_override(state, GS.ledger_card(k, selected))
+		_heir_style(card, card.get_meta("id") == id)
+
+func _heir_style(card: Button, selected: bool) -> void:
+	var boxes := GS.ledger_card_boxes(k, selected)
+	for state in boxes: card.add_theme_stylebox_override(state, boxes[state])
 
 func advance() -> void:
 	if not ui._end_confirmed: ui._end_confirm(); return
@@ -344,7 +351,8 @@ func close_detail() -> void:
 
 func handle_key(e: InputEventKey) -> bool:
 	if is_instance_valid(overlay):
-		if e.keycode == KEY_ESCAPE: close_detail()
+		if e.keycode != KEY_ESCAPE: return false
+		close_detail()
 		return true
 	if KEYS.has(e.keycode): open_detail(KEYS[e.keycode]); return true
 	if e.keycode >= KEY_1 and e.keycode <= KEY_3:

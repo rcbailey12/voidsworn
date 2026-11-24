@@ -101,6 +101,6 @@ happens", "Which lines up with undo"; picks 1a, 2a, 3b, 4b, 5a ("Maybe we test 1
 menu; the snapshot clears when the battle ends. Why: a crash or a real-life interruption sent a 20 minute boss fight back to
 round 1 (Neon player audit, Nov 21). Set: Ryan (R378, issue 1451).
 
-9.19 **New boss and build-variety content is options first** (9.10): bosses get a second phase at half health from an
-options sheet Ryan picks (issue 1452); capstone perks, relics, admiral command twists and own Glasswright and Chorus abilities
-come as a design pack first (issue 1453). Set: Ryan (R377, R379).
+9.19 **New boss and build-variety content is options first** (9.10): bosses are one difficult single-phase fight with no
+second phase, and only the boss's death wins a boss fight (R440, issue 1885); capstone perks, relics, admiral command twists and own Glasswright and Chorus abilities
+come as a design pack first (issue 1453). Set: Ryan (R377, R379, R440).
