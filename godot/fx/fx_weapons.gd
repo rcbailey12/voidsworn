@@ -8,7 +8,7 @@ extends RefCounted
 #   battery: macro (battery, hbattery: ripple broadside, muzzle blast, smoke ring, white-core shell tracer)
 #            auto (autocannon: rapid small tracers), junk (Corsair turret: slow, irregular shell kicks)
 #            las (Voidsworn las-turret and las-repeater: short hard-cored laser bolts)
-#            plasma_cannon (fast, slim bolts), plasma (turbo and heavy turbo: slow, churning bolts and slag)
+#            plasma_cannon (fast cyan-white pulses), plasma (turbo and heavy turbo: slow, churning bolts and slag)
 #            scatter (Corsair scrap scatter gun: a spray of junk tracers)   prism (Ithar shard: glassy prismatic needles)
 #            needle (Ithar needle beam turret: a thin prismatic beam)
 #   lance:   lance (Voidsworn penance lance)   ion (Hegemony: beam with crawling arcs, blue static wash)
@@ -54,7 +54,7 @@ const PLASMA_COL := Color(0.52, 0.82, 1.0)
 const REACT_IMPULSE := {"torp": 6.0, "star": 6.5, "ram": 8.0, "rockets": 2.0, "macro": 1.0, "plasma": 0.7, "gauss": 1.6,
 	"auto": 0.3, "scatter": 0.35, "guns": 0.25, "las": 0.08, "prism": 0.12, "flak": 0.2, "pflak": 0.2, "mflak": 0.2,
 	"gflak": 0.25, "spores": 0.1, "spine": 0.45, "tendril": 0.7, "sporeb": 0.2, "bombs": 0.8, "lance": 0.08, "needle": 0.05,
-	"pulsar": 0.05, "ion": 0.03, "doom": 0.1, "nlance": 0.12, "gsentry": 0.25, "junk": 0.45, "plasma_cannon": 0.7}
+	"pulsar": 0.05, "ion": 0.03, "doom": 0.1, "nlance": 0.12, "gsentry": 0.25, "junk": 0.45, "plasma_cannon": 0.28}
 const SHOOTER_RECOIL := {"macro": 0.22, "gauss": 0.20, "torp": 0.25, "rockets": 0.18, "star": 0.25}
 const ABSORBED_IMPULSE := 0.12
 const PLASMA_HOT := Color(0.86, 0.95, 1.0)
@@ -145,7 +145,7 @@ static func look_of(kind: String, wid: String, faction: String) -> String:
 
 
 static func default_shots(lk: String) -> int:
-	return {"macro": 4, "auto": 3, "las": 2, "plasma": 2, "scatter": 5, "prism": 3, "needle": 2, "lance": 1, "ion": 1,
+	return {"macro": 4, "auto": 3, "las": 2, "plasma_cannon": 2, "plasma": 2, "scatter": 5, "prism": 3, "needle": 2, "lance": 1, "ion": 1,
 		"pulsar": 2, "doom": 1, "torp": 1, "rockets": 2, "star": 1, "spine": 2, "tendril": 2, "gauss": 3, "guns": 3,
 		"bombs": 2, "sporeb": 2, "nlance": 3, "junk": 3, "flak": 3, "ram": 1}.get(lk, 2)
 
@@ -431,6 +431,10 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"macro":
 			tf = T0 + 0.2 + beat * float(fx.timing.get("ripple", 0.08))
 			_muzzle_blast(fx, from, dir, tf, col, ka * (1.25 if w >= 3 else 1.0), (MUZ_PX[clampi(w, 1, 3)] + 4.0) * size, w, A)
+			if w >= 3:
+				# Hot gas bleeds from the barrel mouth after the muzzle flash.
+				_weapon_gas(fx, from, dir, tf + 0.19, 2.2 * ka, "muzzle", 0.36, col, 0.85,
+					dir * 1.4 * ka, 0.5, 1.0, 14.0 * size, A)
 			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * fx.unit
 			ti = tf + dist / spd
 			fx.stk(from, tf, dist / spd, col.lerp(Color.WHITE, 0.3), 8.0 * power, 3.2 * ka, 0.60 * ka * (1.2 if w >= 3 else 1.0), 0, dir * spd, 0.0, 0.0, (4.0 if w >= 3 else 3.4) * size, 26.0 * size)
@@ -469,8 +473,11 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"plasma_cannon":
 			tf = T0 + 0.06 + beat * 0.085
 			var spd: float = 230.0 * fx.unit
-			_muzzle(fx, from, dir, mn, tf, col, ka, 19.0 * size, 0, 5.5, 0.14, w, A)
-			fx.stk(from, tf, dist / spd, col, 11.0, 5.4 * ka, 0.52 * ka, 4, dir * spd, 0.0, 0.0, 4.2 * size, 25.0 * size)
+			var ionized := Color(col.r * 0.55, col.g, col.b)
+			_muzzle(fx, from, dir, mn, tf, ionized, ka, 19.0 * size, 0, 5.5, 0.14, w, A)
+			# A short white centre travels inside a wider, turbulent cyan envelope.
+			fx.spr(from, tf, dist / spd, ionized, 1.8, 1.6 * ka, 1.6 * ka, 14, dir * spd, 0.0, 0.0, 0.0, 16.0 * size)
+			fx.spr(from, tf, dist / spd, PLASMA_HOT, 2.0, 0.65 * ka, 0.65 * ka, 4, dir * spd, 0.0, 0.0, 0.0, 7.0 * size)
 			ti = tf + dist / spd
 		"plasma":
 			tf = T0 + 0.12 + beat * 0.24
@@ -594,10 +601,15 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			ti = tf + ft
 		"tendril":
 			tf = T0 + 0.2 + beat * 0.2
-			fx.rib(from, dir, dist, tf, 0.9, col, 1.4, 1.2 * ka, 0.5 * ka, 9)
-			_beam_ends(fx, from, to, tf, 0.9, col, ka)
 			ti = tf + 0.25
 			tend = tf + 0.9
+			fx.rib(from, dir, dist, tf, tend - tf, col, 1.4, 1.6 * ka, 0.35 * ka, 9)
+			# The advancing tip sheds spores. Use the ribbon's eased reach so haze never leads it.
+			for j in 5:
+				var u: float = (float(j) + fx.rng.randf_range(0.2, 0.8)) / 5.0
+				var tip := from.lerp(to, smoothstep(0.0, 1.0, u))
+				var drift: Vector3 = (Vector3.UP + fx.rdir()) * 2.0 * ka
+				fx.spr(tip, lerpf(tf, ti, u), 0.52, col, 0.48, 0.5 * ka, 2.0 * ka, 20, drift, 0.8, 0.0, 0.0, 14.0 * size)
 		"gauss":
 			var heavy = w >= 3
 			var wind = 0.75 if heavy else 0.25
@@ -669,8 +681,12 @@ static func _beam_ends(fx, from: Vector3, to: Vector3, t: float, life: float, co
 			fx.spr(p, t + life - 0.05, 0.45, col, 1.5, 2.0 * k, 0.4 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 		return
 	for p in [from, to]:
-		fx.spr(p, t, life, col, 2.8, 1.2 * k, 1.5 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
-		fx.spr(p, t + life - 0.05, 0.30, col, 1.4, 1.8 * k, 0.4 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
+		_beam_end(fx, p, t, life, col, k)
+
+
+static func _beam_end(fx, p: Vector3, t: float, life: float, col: Color, k: float) -> void:
+	fx.spr(p, t, life, col, 2.8, 1.2 * k, 1.5 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
+	fx.spr(p, t + life - 0.05, 0.30, col, 1.4, 1.8 * k, 0.4 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
 
 
 # Weapon bursts use leap 1's atlas, flow interpolation, thickness lighting and
@@ -2658,9 +2674,12 @@ static func _miss_fade(fx, lk: String, Tg, tg: Dictionary, from: Vector3, fire_a
 		return T
 	var speed := from.distance_to(exit) / flight
 	var life := clampf(14.0 * k / maxf(speed, 1.0), 0.08, 0.18)
+	if lk == "plasma_cannon":
+		fx.spr(exit, T, life, col, 1.6, 1.4 * k, 0.2 * k, 18, dir * speed, 0.0, 0.0, 0.0, 13.0)
+		return T + life
 	# a world-length streak (Neon on PR 1699: the length was divided by the speed, so every miss drew the same pixel-floor
 	# stub) in the firing weapon's own streak kind (4 for the laser family, 0 for shells and bolts)
-	var skind := 4 if lk in ["las", "plasma_cannon", "prism"] else 0
+	var skind := 4 if lk in ["las", "prism"] else 0
 	fx.stk(exit, T, life, col.lerp(Color.WHITE, 0.25), 5.0, 4.0 * k,
 		0.32 * k, skind, dir * speed, 0.0, 0.0, 3.0, 19.0)
 	return T + life
