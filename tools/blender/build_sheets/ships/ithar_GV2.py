@@ -60,9 +60,9 @@ def core(x, a, inset=0.0):
 
 
 F.core = core
-F.NRIB = 10      # R431 round 3 (Ryan Nov 23, the white like I8_37, "more detailed and wrapping"): ten fine ribbons, not four bands
-F.HALF = 0.17    # R431: pearl shell, glass in the seams (kit MOSAIC_MAX)
-F.TWIST = lambda x: 2.6 * (x - F.X0) / LENGTH * TAU / 2.0   # two ribbons wound tightly, about one and a half turns nose to stern
+# R431 (Ryan Nov 24: the craft should use "the same approach as the big ships"): the big ships' I8_37 shell from the kit
+# (hull.i8_field, hull.i8_shell), fine long ribbons spiralling with chunkier swells riding them; width set by the kit gate
+F.I8 = dict(leaves=6, width=1.3, seed=5)
 F.MOSAIC_GRID = (110, 64)    # four gaps of four thin streaks each (kit MIX 'streaks', Ryan Nov 20 7:48 PM CT)
 F.CORE_NOTE = 'a small double-lobed dart: a rear lobe, a pinched waist, a big fore lobe and a needle nose (V2d)'
 F.STONES = [(0.0, 'c')]

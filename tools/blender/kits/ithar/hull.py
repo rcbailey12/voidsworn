@@ -261,7 +261,7 @@ def i8_field(length=25.0, n=12, sign=1, start=0.2, gather=None):
                        start=start, gather=gather)
 
 
-def i8_shell(K, skin, field, x0, x1, tag, scale=1.0, leaves=8, seed=0, clamp=None, grp=None, nu=160, width=1.0):
+def i8_shell(K, skin, field, x0, x1, tag, scale=1.0, leaves=8, seed=0, clamp=None, grp=None, nu=160, width=1.0, raise_=0.012):
     """R431: the I8_37 pearl shell on any Glasswright body, from the CD5 Ark's own numbers. The field's long ribbons are fine
     and pillowed (a rounded fold, not a strap); `leaves` swells ride on top of chosen long ribbons,
     growing out of their width to a chunkier middle, so the shell is layered and wraps the hull like I8_37. `scale` is the body's
@@ -309,11 +309,12 @@ def i8_shell(K, skin, field, x0, x1, tag, scale=1.0, leaves=8, seed=0, clamp=Non
             return long_lift(j, x) * (1 - 0.3 * v * v) + scale * 0.07 * math.sin(math.pi * t) ** 0.8 * (1 - v * v) ** 0.5
 
         rib.append(gw.Ribbon(a0, a1, field.centre(j), half, lift, name='%s_leaf_%d' % (tag, k), clamp=clamp))
-    return lay_ribbons(K, rib, skin, 0.035 * scale, 0.028 * scale, nu=nu, nv=12, grp=grp)
+    return lay_ribbons(K, rib, skin, 0.035 * scale, 0.028 * scale, nu=nu, nv=12, grp=grp, raise_=raise_)
 
 
-def lay_ribbons(K, ribbons, skin, thick, silver_r, nu=160, nv=8, grp=None):
-    """pearl ribbons with real thickness and a silver line along each edge"""
+def lay_ribbons(K, ribbons, skin, thick, silver_r, nu=160, nv=8, grp=None, raise_=0.012):
+    """pearl ribbons with real thickness and a silver line along each edge (raise_: the line's height over the edge; a strike
+    craft passes its own, the 0.012 default would float the line off a body a few tenths across)"""
     obs = []
     for r in ribbons:
         vv, ff, attrs = r.mesh(skin, nu, nv)
@@ -326,7 +327,7 @@ def lay_ribbons(K, ribbons, skin, thick, silver_r, nu=160, nv=8, grp=None):
         ob['zone'] = 'pearl ribbon'
         obs.append(ob)
         for side in (-1, 1):
-            pts = r.edge(skin, side, nu)
+            pts = r.edge(skin, side, nu, raise_)
             radii = [silver_r * (0.35 + 0.65 * math.sin(math.pi * i / nu) ** 0.4) for i in range(nu + 1)]
             K._obj(r.name + ('_silver_p' if side > 0 else '_silver_s'), *tube_mesh(pts, radii, 6), 'gw_silver', smooth=True,
                    grp=grp)
@@ -539,7 +540,7 @@ def _swept_fin(x0, x1, r_root, span, sweep, a, th, n=16):
     return (vv, ff), edge
 
 
-def star_torpedo(K, fid, pos, length, r0, cradle_up, note=''):
+def star_torpedo(K, fid, pos, length, r0, cradle_up, note='', dorsal=False):
     """a star torpedo carried on the keel in a grown pearl cradle (startorp F). The cradle's two arms rise into the hull
     (cradle_up: how far above the torpedo axis the hull's underside sits), so it reads carried, not docked.
 
@@ -627,11 +628,19 @@ def star_torpedo(K, fid, pos, length, r0, cradle_up, note=''):
         p.add('cradle_hoop_%s' % ('aft' if xs < 0 else 'fwd'), 'mount', 'gw_pearl', tube_mesh(hoop, [r0 * 0.15] * 25, 10))
         p.add('cradle_hoop_%s_silver' % ('aft' if xs < 0 else 'fwd'), 'mount', 'gw_silver',
               tube_mesh([(q[0] + r0 * 0.15, q[1], q[2]) for q in hoop], [r0 * 0.03] * 25, 6))
+    if dorsal:
+        # Ryan Nov 24 2026 (I11_37: "I can't really see the torpedo on the destroyer"): carried on the spine, where the
+        # battle camera sees it. The same torpedo and cradle mirrored top to bottom: the arms reach down into the hull's
+        # crown and the keel fin stands up off the torpedo.
+        for c in p.comps:
+            for v in c['verts']:
+                v.z = -v.z
+            c['faces'] = [tuple(reversed(f)) for f in c['faces']]
     nose = (0.61 * L, 0, 0)
     p.fit = dict(pivot=('p', nose), reach=0.05, radius=r0 * 1.2, muzzles=[('p', nose)], aim=('d', (1, 0, 0)))
     K.gun(fid, pos, 0, cal=0.08, blen=L, fixed=True, slot='F', weapon='startorp', part=p, inv=['star_torpedo'], band=(0, 5),
-          note=note or 'One star torpedo on the keel in a grown pearl cradle; fixed forward, F arc.')
-    K.features[-1]['what'] = 'star torpedo carried in a grown keel cradle / startorp'
+          note=note or ('One star torpedo on the %s in a grown pearl cradle; fixed forward, F arc.' % ('spine' if dorsal else 'keel')))
+    K.features[-1]['what'] = 'star torpedo carried in a grown %s cradle / startorp' % ('spine' if dorsal else 'keel')
     K.built[-1].update(detailed=True, subs=['stored-light capsule with silver bands', 'pointed pearl sheath with a window down each flank',
                                             'silver filigree on the lips and crown', 'glowing needle nose in a silver collar',
                                             'two swept canards', 'three swept leaf fins', 'rose-cut tail drive', 'two cradle hoops and four arms'])
