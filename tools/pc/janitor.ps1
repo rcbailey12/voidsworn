@@ -20,25 +20,30 @@ function Install-JanitorTask([bool]$preview) {
     & $janitor --nightly
     exit $LASTEXITCODE
   }
-  $action = New-ScheduledTaskAction -Execute (Join-Path $PSHOME 'powershell.exe') `
-    -Argument ('-NoProfile -NonInteractive -WindowStyle Hidden -Command ' + $launch.ToString().Trim())
+  $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($launch.ToString().Trim()))
+  $execute = Join-Path $PSHOME 'powershell.exe'
+  $arguments = "-NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand $encoded"
   $at = [DateTime]::Today.AddHours(3).AddMinutes(30)
-  $daily = New-ScheduledTaskTrigger -Daily -At $at
   # A boundary without a UTC offset tracks Central clock time across daylight saving changes.
-  $daily.StartBoundary = $at.ToString("yyyy-MM-dd'T'HH:mm:ss", [Globalization.CultureInfo]::InvariantCulture)
-  # Retry inside the nightly window if the PC was paused or another cleanup owned the lock at 3:30.
-  $retry = New-ScheduledTaskTrigger -Once -At $at -RepetitionInterval (New-TimeSpan -Minutes 15) -RepetitionDuration (New-TimeSpan -Hours 2)
-  $daily.Repetition = $retry.Repetition
+  $boundary = $at.ToString("yyyy-MM-dd'T'HH:mm:ss", [Globalization.CultureInfo]::InvariantCulture)
+  $interval = New-TimeSpan -Minutes 15
+  $duration = New-TimeSpan -Hours 2
   $user = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+  if ($preview) {
+    Write-Host "Task dry run: $name, $boundary, daily, retries $([Xml.XmlConvert]::ToString($interval)) for $([Xml.XmlConvert]::ToString($duration))"
+    Write-Host "Account: $user (Interactive, Limited)"
+    Write-Host "Action: $execute $arguments"
+    return
+  }
+  $action = New-ScheduledTaskAction -Execute $execute -Argument $arguments
+  $daily = New-ScheduledTaskTrigger -Daily -At $at
+  $daily.StartBoundary = $boundary
+  # Retry inside the nightly window after a GPU solo claim, a pause or another cleanup at 3:30.
+  $retry = New-ScheduledTaskTrigger -Once -At $at -RepetitionInterval $interval -RepetitionDuration $duration
+  $daily.Repetition = $retry.Repetition
   # Use Ryan's signed-in session so Git can use its existing credentials for private relay checks.
   $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
   $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -WakeToRun -MultipleInstances IgnoreNew
-  if ($preview) {
-    Write-Host "Task dry run: $name, $($daily.StartBoundary), daily, retries $($daily.Repetition.Interval) for $($daily.Repetition.Duration)"
-    Write-Host "Account: $user ($($principal.LogonType), $($principal.RunLevel))"
-    Write-Host "Action: $($action.Execute) $($action.Arguments)"
-    return
-  }
   Register-ScheduledTask -TaskName $name -Action $action -Trigger $daily -Principal $principal -Settings $settings -Force | Out-Null
   Write-Host "Installed $name for 3:30 AM Central each day. Keep this Windows account signed in overnight."
 }
@@ -130,7 +135,7 @@ function Clear-WorkRunRepos($runs, $mirror, $dryRun, $now, $temp, $salvageRoot, 
   }
 }
 function Reserve-AutomaticRun($lock, $trigger, $now, $night) {
-  # Both triggers serialize across lanes. Record admission before cleaning so a killed run cannot be retried in a loop.
+  # Automatic runs serialize across lanes. Record admission before cleaning so a killed run cannot be retried in a loop.
   $reader = New-Object IO.StreamReader($lock, $utf8, $false, 1024, $true)
   try { $line = $reader.ReadLine() } finally { $reader.Dispose() }
   $last = 0L; $lastNight = ''
@@ -147,11 +152,11 @@ function Reserve-AutomaticRun($lock, $trigger, $now, $night) {
   $lock.Flush()
   return $true
 }
-function Test-AfterJobGpuClaim([switch]$SoloOnly) {
-  if ($trigger -ne '--after-job') { return $false }
+function Test-JanitorGpuClaim([switch]$SoloOnly) {
+  if (-not $automatic) { return $false }
   # gpu_slots.js empties claims on release. An unreadable claim is treated as active.
   try {
-    $names = if ($SoloOnly) { '^gpu_solo$' } else { '^(gpu_slot_[1-9][0-9]*|gpu_solo)$' }
+    $names = if ($SoloOnly -or $trigger -ne '--after-job') { '^gpu_solo$' } else { '^(gpu_slot_[1-9][0-9]*|gpu_solo)$' }
     foreach ($file in (Get-Item -LiteralPath $root -Force).EnumerateFiles('gpu_*')) {
       if ($file.Name -notmatch $names) { continue }
       if ([IO.File]::ReadAllText($file.FullName).Trim()) { return $true }
@@ -160,7 +165,7 @@ function Test-AfterJobGpuClaim([switch]$SoloOnly) {
   } catch { return $true }
 }
 function Assert-GpuQuiet([switch]$SoloOnly) {
-  if (Test-AfterJobGpuClaim -SoloOnly:$SoloOnly) { throw 'a GPU claim started; deferred the remaining after-job cleanup in this pass' }
+  if (Test-JanitorGpuClaim -SoloOnly:$SoloOnly) { throw "a GPU claim started; deferred the remaining $($trigger.Substring(2)) cleanup in this pass" }
 }
 function Open-JanitorLock($path, $wait) {
   $deadline = [DateTime]::UtcNow.AddMinutes(10)
@@ -695,8 +700,8 @@ try {
       if ($trigger -ne '--after-job') { Write-Host "janitor lock in use or unavailable: $($_.Exception.Message)" }
       exit 0
     }
-    $soloClaim = Test-AfterJobGpuClaim -SoloOnly
-    # A solo deferral does no cleanup, so the next job can still use the hourly allowance.
+    $soloClaim = Test-JanitorGpuClaim -SoloOnly
+    # A solo deferral leaves the nightly date or hourly allowance available for a later run.
     if ($automatic -and -not $soloClaim -and -not (Reserve-AutomaticRun $lock $trigger $now $night)) { exit 0 }
     $logPath = Join-Path $root "janitor_$((Get-Date).ToString('yyyyMMdd-HHmm')).txt"
     $logItem = Get-Item -LiteralPath $logPath -Force -ErrorAction SilentlyContinue
@@ -706,13 +711,17 @@ try {
     $script:log = New-Object IO.StreamWriter($logPath, $true, $utf8)
     $script:log.AutoFlush = $true
   }
+  if ($soloClaim -and $trigger -eq '--nightly') {
+    Log 'deferred nightly: a GPU solo claim is active'
+    exit 0
+  }
   $mode = if ($dryRun) { 'dry run' } elseif ($automatic) { $trigger } else { 'manual' }
   Log "janitor $mode at $($now.ToString('o'))"
   if ($soloClaim) {
-    Log 'deferred after-job disk scans: a GPU solo claim is active'
+    Log "deferred $($trigger.Substring(2)) disk scans: a GPU solo claim is active"
     exit 0
   }
-  $deferJobs = Test-AfterJobGpuClaim
+  $deferJobs = $trigger -eq '--after-job' -and (Test-JanitorGpuClaim)
   if ($deferJobs) { Log 'deferred after-job job-folder pass: a GPU claim is active' }
   $drive = New-Object IO.DriveInfo([IO.Path]::GetPathRoot($root))
   $script:wouldFreeBytes = 0L; $script:wouldFreeCount = 0; $script:cannotRemoveCount = 0
@@ -791,8 +800,8 @@ try {
     if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { Log "$(if ($dryRun) { 'would keep' } else { 'kept' }) $($dir.FullName) (a linked job folder is never entered)"; continue }
     if (Test-JanitorCap 'root' $dir.Name $capSeconds) { break }
     $since = $script:clock.Elapsed.TotalSeconds
-    if (Test-AfterJobGpuClaim) {
-      Log 'deferred after-job job-folder pass: a GPU claim is active'
+    if (Test-JanitorGpuClaim) {
+      Log "deferred $($trigger.Substring(2)) job-folder pass: a GPU claim is active"
       $deferJobs = $true
       $script:resume.root = $dir.Name
       break

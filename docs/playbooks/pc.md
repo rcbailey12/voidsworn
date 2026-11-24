@@ -127,18 +127,22 @@ Ryan double-clicks `janitor_task.bat` once from the current `tools_live\<version
 (read `tools_live\current.txt` for the version). It installs or updates the **Voidsworn Janitor** task for his signed-in
 Windows account with limited privileges. Windows starts `janitor.bat --nightly` at 3:30 AM Central each day, using the
 tools version current at launch. The task can wake the PC and retries every 15 minutes for two hours if a pause or another
-cleanup delays it. Leave the Windows account signed in overnight so the task can use its Git credentials. The nightly date
-and lock prevent a second cleanup if the old watcher is running too. `janitor_task.bat --dry-run` previews the task.
+cleanup delays it. A GPU solo claim also defers the nightly run without spending the date. Shared GPU claims allow the
+nightly run. Leave the Windows account signed in overnight so the task can use its Git credentials. The nightly date
+and lock prevent a second cleanup if the old watcher is running too. `janitor_task.bat --dry-run` previews the task and
+prints the exact action Windows will run.
 `janitor.bat --dry-run` previews cleanup.
 
 Low space triggers `--low-space` from the runner, and enabled job tails trigger `--after-job`. They share one run per hour.
 Helper jobs enable their after-job trigger with Ryan's approval via `OPUS_JOB_JANITOR=1`. An admitted after-job run logs
 a deferral and skips the job-folder pass while shared GPU claims are active. It can still check lane and TEMP leftovers.
-A solo GPU claim defers after-job disk scans and leaves the hourly run available, since disk reads can skew frame-time measurements.
+A solo GPU claim defers after-job and low-space disk scans and leaves the hourly run available, since disk reads can skew
+frame-time measurements.
 
 Each janitor run has a 45 minute budget checked between items, not a hard timeout: the board lanes and the Workhorse runs (one lane at a time) until a quarter of it, the TEMP folders until half, the job folders until the end. A lane or folder already started runs to its end. Past a stop point the run starts no new item of that kind, says where it stopped, and a live run writes that name to `janitor_resume.txt` (replaced whole, never through a link), so the next run starts there and wraps around; it never removes more for stopping early. Folders that take 10 s or more get a `folder time` line (issue 1396: the first full dry run ran 1 h 47 min unfinished).
 Janitor sizes say what removal would really free (issue 1739: the Nov 23 dry run said 49.9 GB, about 4.6 GB came back). A file counts once, and only when every hard link to it is inside the folder, so a checkout's links shared with the mirror count nothing. A folder another account owns (the Codex sandbox scratch) is logged as `cannot remove` and never counted. Each row reads `<N> bytes would be freed, <M> listed, ...`, and the run closes with `space would be freed: <total>`, the sum of its would-remove rows (`tools/pc/disk_space.ps1`).
 Dry runs also print `legacy job repo (inventory only)` for the older `<job>\repo` and `<job>\out\run_*\repo` layouts in helper and playtest jobs. Any new removal for these layouts needs Ryan's yes (RULEBOOK 3.3).
+Nothing else is deleted (RULEBOOK 3.3, R326).
 
 ## What the Board checks
 
