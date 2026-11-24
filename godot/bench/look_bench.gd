@@ -731,8 +731,12 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	# since a long strip passes Godot's 16384-pixel image limit; the strip is then not made
 	var clip := bool(row.get("clip", false))
 	var clip_dir := d.path_join("%s__c%d" % [id, int(r)])
+	var clip_bad: Array = []   # frames that failed to save (a clip row with any missing frame fails, Artoo on PR 1904)
 	if clip and keep:
-		DirAccess.make_dir_recursive_absolute(clip_dir)
+		var mk := DirAccess.make_dir_recursive_absolute(clip_dir)
+		if mk != OK or not DirAccess.dir_exists_absolute(clip_dir):
+			_warn("%s at %d: LOOK_BENCH clip folder %s could not be made (error %d)" % [id, int(r), clip_dir, mk])
+			return false
 	var strip := Image.create_empty(1 if clip else cell.x * total, cell.y, false, Image.FORMAT_RGB8)
 	var ci := 0
 	var cells: Array = []
@@ -760,9 +764,16 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			take = steps >= int(w["next"])
 		if take:
 			var img := _grab()
-			if img != null and clip:
+			if clip:
 				if keep:
-					_crop(img, crop, cell).save_png(clip_dir.path_join("f%03d.png" % ci))
+					var fp := clip_dir.path_join("f%03d.png" % ci)
+					if img == null:
+						clip_bad.append("f%03d.png (no frame grabbed)" % ci)
+					else:
+						var se: Error = preload("res://tools/picture_provenance.gd").save_png(_crop(img, crop, cell), fp,
+							preload("res://tools/picture_provenance.gd").capture_stage())
+						if se != OK:
+							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
 			elif img != null:
 				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
@@ -780,6 +791,14 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		return true
 	var name := "%s__c%d.png" % [id, int(r)]
 	if clip:
+		# every numbered frame 0 .. total-1 must be on disk, or the row fails (and with it the run: no LOOK_BENCH_DONE)
+		for fi in total:
+			var fn := "f%03d.png" % fi
+			if not FileAccess.file_exists(clip_dir.path_join(fn)) and not clip_bad.any(func(b): return str(b).begins_with(fn)):
+				clip_bad.append(fn + " (missing)")
+		if ci != total or not clip_bad.is_empty():
+			_warn("%s at %d: LOOK_BENCH clip row failed: %d of %d frames taken; bad: %s" % [id, int(r), ci, total, ", ".join(clip_bad)])
+			return false
 		report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/%s__c%d/" % [id, int(r)],
 			"cells": cells, "impacts": impacts, "clip": true})
 		_log("%s at %d: %d clip frames" % [id, int(r), ci])
