@@ -217,6 +217,9 @@ var atk = null                # a rehearsed attack-move on that target: {st, n, 
 # planned volleys from the ghost ({tid, guns}); plan_steps holds what the plan looked like before each step, so Backspace
 # takes one step back. Nothing here reaches the rules until the commit.
 var aims: Array = []
+# Issue 2033 (AAA item 7): each pick may call a priority section ({tid, guns, sec}; sec "" = none, else "prow", "mid", "eng").
+# The target bar offers it once the enemy is aimed; the rules apply it at the commit (rules.gd calledAim, TB.CALLED_SHOT).
+const CALLED_NAME := {"prow": "Weapons", "mid": "Midship", "eng": "Engines"}
 var plan_steps: Array = []
 var up_idx := -1              # fleet-list index of the last ship handed over (the next hand-over goes on from there)
 var handed_t := -9.0          # real time of the last hand-over: Space cannot end a ship in its first half second
@@ -5443,6 +5446,38 @@ func _aimed(tid: String) -> bool:
 	return false
 
 
+# Issue 2033: the priority section of the pick on tid ("" when none is called or tid is not aimed)
+func _aim_sec(tid: String) -> String:
+	for a in aims:
+		if str(a["tid"]) == tid:
+			return str(a.get("sec", ""))
+	return ""
+
+
+# Issue 2033: the target bar's priority pick. A click on the called section again (or on "Any") clears it. It changes only
+# the plan (one step Backspace takes back); the rules see it at the commit.
+func _call_section(sec: String) -> void:
+	if target == "" or not _aimed(target) or not _can_act():
+		return
+	if sec != "" and not _section_ok(target, sec):
+		hud.toast("That section is already destroyed.")
+		return
+	var now := _aim_sec(target)
+	var want := "" if sec == now else sec
+	if want == now:
+		return
+	_plan_step()
+	for a in aims:
+		if str(a["tid"]) == target:
+			a["sec"] = want
+	plog.note("calls " + (want if want != "" else "none"))
+	_refresh_ui()
+
+
+func _section_ok(tid: String, sec: String) -> bool:
+	return _api_join() and api.R.calledOk(api.unit(tid), sec)
+
+
 # what the plan looked like before this step (Backspace goes back to it)
 func _plan_step() -> void:
 	plan_steps.append({"plan": plan, "k": plan_k, "target": target, "atk": atk, "aims": aims.duplicate(true), "armed": armed})
@@ -5487,7 +5522,7 @@ func _aims_check() -> void:
 		if ok.is_empty():
 			lost.append(_name(str(a["tid"])))
 		else:
-			keep.append({"tid": a["tid"], "guns": ok})
+			keep.append({"tid": a["tid"], "guns": ok, "sec": str(a.get("sec", ""))})
 	aims = keep
 	if not _aimed(target):
 		target = "" if aims.is_empty() else str(aims[-1]["tid"])
@@ -5558,7 +5593,7 @@ func _confirm() -> void:
 	if rot != 0:
 		plog.act("rotate", {"d": rot})
 	for pk in picks:
-		plog.act("fire", {"guns": (pk["guns"] as Array).size(), "target": str(VU.get(str(pk["tid"]), {}).get("cls", "")), "tid": str(pk["tid"]), "planned": st != null})
+		plog.act("fire", {"guns": (pk["guns"] as Array).size(), "target": str(VU.get(str(pk["tid"]), {}).get("cls", "")), "tid": str(pk["tid"]), "planned": st != null, "sec": str(pk.get("sec", ""))})
 	sfx.play("ui_confirm", {"gain": 0.707946} if picks.is_empty() else {})
 	var dropped: Array = []   # an Array, not a packed one: the lambda below must add to this same list
 	var moved_ok := [true]
@@ -5576,6 +5611,7 @@ func _confirm() -> void:
 			any = true
 		for pk in picks:
 			var t_id := str(pk["tid"])
+			var sec = str(pk.get("sec", "")) if str(pk.get("sec", "")) != "" else null   # issue 2033: the called section, or none
 			var shot := false
 			var lost := false
 			for i in pk["guns"]:
@@ -5586,7 +5622,7 @@ func _confirm() -> void:
 					break
 				if tu == null or _jt(tu.get("dead")):
 					break
-				if api.can_fire(id, int(i), t_id) and api.fire(id, int(i), t_id):
+				if api.can_fire(id, int(i), t_id) and api.fire(id, int(i), t_id, sec):
 					shot = true
 					any = true
 				else:
@@ -5961,7 +5997,7 @@ func _attack_tip(t_id: String) -> String:
 	var n := 0
 	# The same weapon set as the activation card: from the ghost when a move is planned (issue 1589).
 	var firing := _shown_set(t_id)
-	var volley := _volley_preview(sel, firing, t_id, plan)
+	var volley := _volley_preview(sel, firing, t_id, plan, _aim_sec(t_id))
 	var idx: Array = [armed] if armed >= 0 else range(su["weapons"].size())
 	for i in idx:
 		var vw: Dictionary = su["weapons"][i]
@@ -6062,6 +6098,8 @@ func _on_action(name: String, arg) -> void:
 				cam.glide(_pos(arg), 0.8)
 		"arm":
 			_arm(int(arg))
+		"called":
+			_call_section(str(arg))
 		"brace":
 			_order("brace")
 		"ability":
@@ -6547,14 +6585,15 @@ func _plan_text(id: String) -> Dictionary:
 	for a in aims:
 		var set: Array = a["guns"]
 		guns += set.size()
-		var volley := _volley_preview(id, set, str(a["tid"]), plan)
+		var volley := _volley_preview(id, set, str(a["tid"]), plan, str(a.get("sec", "")))
 		var sh := 0.0
 		var hl := 0.0
 		for i in set:
 			sh += float((volley.get(i, {}) as Dictionary).get("shield", 0))
 			hl += float((volley.get(i, {}) as Dictionary).get("hull", 0))
-		rows.append("[color=#ff8a6a]%d gun%s at %s:[/color] about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage." % [set.size(), "" if set.size() == 1 else "s", _name(str(a["tid"])), int(round(sh)), int(round(hl))])
-		says.append("%d gun%s at %s." % [set.size(), "" if set.size() == 1 else "s", _name(str(a["tid"]))])
+		var at_sec := (" (%s)" % CALLED_NAME[str(a["sec"])]) if CALLED_NAME.has(str(a.get("sec", ""))) else ""   # issue 2033
+		rows.append("[color=#ff8a6a]%d gun%s at %s%s:[/color] about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage." % [set.size(), "" if set.size() == 1 else "s", _name(str(a["tid"])), at_sec, int(round(sh)), int(round(hl))])
+		says.append("%d gun%s at %s%s." % [set.size(), "" if set.size() == 1 else "s", _name(str(a["tid"])), at_sec])
 	var free := 0
 	var seen := {}
 	for e in V["units"]:
@@ -7306,11 +7345,11 @@ func _float_at(pos: Vector3, text: String, col: Color, dy := 0.0) -> void:
 
 
 # Presentation queries after _api_join. Each gun tooltip estimates that gun alone.
-func _volley_preview(id: String, guns: Array, tid: String, st = null) -> Dictionary:
+func _volley_preview(id: String, guns: Array, tid: String, st = null, sec := "") -> Dictionary:
 	if guns.is_empty(): return {}
 	var u = api.unit(id)
 	var source = u if st == null else api.R.stateView(u, st)
-	return api.R.previewVolley(source, guns, api.unit(tid))
+	return api.R.previewVolley(source, guns, api.unit(tid), sec if sec != "" else null)   # issue 2033: a called section costs aim
 
 
 func _fire_preview(id: String, wi: int, tid: String) -> Dictionary:
@@ -7324,7 +7363,8 @@ func _fire_preview_at(id: String, wi: int, tid: String, st: Dictionary) -> Dicti
 	if u == null or t == null or wi < 0 or wi >= u["weapons"].size(): return {}
 	var source = api.R.stateView(u, st)
 	if not api.R.canFire(source, u["weapons"][wi], t): return {}
-	var preview: Dictionary = api.R.previewVolley(source, [wi], t)[wi]
+	var sec := _aim_sec(tid)
+	var preview: Dictionary = api.R.previewVolley(source, [wi], t, sec if sec != "" else null)[wi]   # issue 2033
 	preview["bears"] = true
 	return preview
 
@@ -7443,7 +7483,7 @@ func _target_info() -> Dictionary:
 	var d: Dictionary = disp.get(tid, {"hp": tu["hp"], "sh": tu["sh"]})
 	# with a move planned, the odds are read as the ship would stand at the planned hex (the Fire block does the same)
 	var set: Array = _shown_set(tid)
-	var volley := _volley_preview(sel, set, tid, plan)
+	var volley := _volley_preview(sel, set, tid, plan, _aim_sec(tid))
 	var es := 0.0
 	var eh := 0.0
 	var best := -1
@@ -7478,7 +7518,21 @@ func _target_info() -> Dictionary:
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]), "shp": float(_z0(tu.get("shp"))),
 		"defenses": _target_defenses(foe), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind,
-		"quad": quad, "routed": routed, "struck_routed": quad >= 0 and quad in routed}
+		"quad": quad, "routed": routed, "struck_routed": quad >= 0 and quad in routed, "called": _called_info(tid)}
+
+
+# Issue 2033: what the target bar's priority pick shows: the pick, each section and whether it can still be called, and the
+# aim cost and crit bonus from the rules' table. Empty when the target is not aimed or has no sections (strike craft).
+func _called_info(tid: String) -> Dictionary:
+	if not _aimed(tid) or not _api_join():
+		return {}
+	var foe = api.unit(tid)
+	if foe == null or _jt(foe.get("isSq")) or not (foe.get("sec") is Dictionary):
+		return {}
+	var secs: Array = []
+	for k in api.R.CALLED_SECS:
+		secs.append({"id": k, "name": CALLED_NAME[k], "ok": api.R.calledOk(foe, k)})
+	return {"sec": _aim_sec(tid), "secs": secs, "aim": int(api.R.calledAim()), "crit": api.R.calledCrit()}
 
 
 func _float_hit(id, sh: float, hull: float, crit) -> void:

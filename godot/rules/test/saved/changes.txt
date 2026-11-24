@@ -1,10 +1,1112 @@
-Saved manifest before: 0d9420f884f9ead96d7da348c273a0b1398db9689d89d182a58a694adf5be82c
-Saved manifest after: 16675d25392c1d73e07c43ffa8297d2bb13a1d50151f3521f7e160916daa2129
+Saved manifest before: 4fcf972525e3d7fd79e6e2bdd39d7bfcf2d0afaf4d7dc0635fe40d69685d089c
+Saved manifest after: 0ed790958abf2d267a392017a143879c29f12747492f2ee60f72fec37aa84eff
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t_ecl_iterationswap
-  turn 0, round 1, after tick player; unit x05 (player d_harvester)
-  state.units[0].q: 2 -> 1
-  later changed records: 49; total records: 49 -> 50
-FAIL: saved Godot results; 354 battles checked, 1 changed, 0 other files changed, 1 failures; 27.201 s
+FAIL battle s1
+  turn 28, round 2, after activation x08; unit x04 (player harrow)
+  state.units[0].sec.mid.hp: 34 -> 38
+  later changed records: 141; total records: 170 -> 158
+FAIL battle s2
+  turn 33, round 2, after fire x010; unit x05 (player penitent)
+  state.units[0].sec.mid.hp: 56 -> 61
+  later changed records: 137; total records: 159 -> 171
+FAIL battle s3
+  turn 24, round 2, after fire x07; unit x04 (player penitent)
+  state.units[0].sec.mid.hp: 57 -> 61
+  later changed records: 105; total records: 118 -> 130
+FAIL battle s4
+  turn 34, round 1, after fire x025; unit x011 (player cathedral)
+  state.units[0].sec.mid.hp: 81 -> 99
+  later changed records: 247; total records: 272 -> 282
+FAIL battle s5
+  turn 99, round 2, after fire x026; unit x011 (player cathedral)
+  state.units[0].intercepts: 1 -> 2
+  later changed records: 277; total records: 323 -> 377
+FAIL battle s6
+  turn 160, round 4, after fire x011; unit x07 (player penitent)
+  state.units[1].sec.mid.hp: 6 -> 18
+  later changed records: 43; total records: 198 -> 204
+FAIL battle s7
+  turn 104, round 2, after activation x013; unit x07 (player harrow)
+  state.units[2].crew: 42 -> 43
+  later changed records: 316; total records: 356 -> 421
+FAIL battle s8
+  turn 12, round 1, after activation x010; unit x05 (player cathedral)
+  state.units[0].crew: 59 -> 60
+  later changed records: 129; total records: 129 -> 142
+FAIL battle s10
+  turn 94, round 2, after activation x015; unit x06 (player penitent)
+  state.units[1].crew: 50 -> 51
+  later changed records: 252; total records: 347 -> 288
+FAIL battle s11
+  turn 125, round 4, after activation x012; unit x05 (player penitent)
+  state.units[0].st.engine: 1 -> 0
+  later changed records: 5; total records: 131 -> 131
+FAIL battle s12
+  turn 41, round 1, after activation x012; unit x05 (player penitent)
+  state.units[0].crew: 49 -> 50
+  later changed records: 146; total records: 168 -> 188
+FAIL battle s13
+  turn 175, round 5, after fire x012; unit x06 (player harrow)
+  state.units[1].crew: 42 -> 43
+  later changed records: 71; total records: 247 -> 236
+FAIL battle s14
+  turn 9, round 1, after fire x09; unit x05 (player penitent)
+  state.units[0].route[3]: 1 -> 0
+  later changed records: 129; total records: 134 -> 139
+FAIL battle s16
+  turn 90, round 3, after activation x09; unit x05 (player cathedral)
+  state.units[0].sh[0]: 3 -> 5
+  later changed records: 233; total records: 324 -> 323
+FAIL battle s17
+  turn 9, round 1, after fire x07; unit x04 (player harrow)
+  state.units[0].sh[0]: 8 -> 14
+  later changed records: 99; total records: 98 -> 109
+FAIL battle s18
+  turn 36, round 2, after fire x010; unit x05 (player penitent)
+  state.units[0].sec.mid.hp: 66 -> 67
+  later changed records: 243; total records: 274 -> 280
+FAIL battle s19
+  turn 42, round 2, after activation x010; unit x05 (player cathedral)
+  state.units[0].crew: 57 -> 58
+  later changed records: 155; total records: 179 -> 198
+FAIL battle s20
+  turn 36, round 2, after activation x07; unit x04 (player harrow)
+  state.units[0].hp: 83 -> 85
+  later changed records: 107; total records: 140 -> 144
+FAIL battle s21
+  turn 95, round 4, after tick player; unit x06 (player penitent)
+  state.units[1].hp: 117 -> 113
+  later changed records: 141; total records: 199 -> 237
+FAIL battle s23
+  turn 480, round 6, after activation x028; unit x014 (player cathedral)
+  state.units[3].sec.mid.hp: 95 -> 99
+  later changed records: 177; total records: 654 -> 658
+FAIL battle s24
+  turn 204, round 3, after activation x013; unit x010 (player penitent)
+  state.units[3].crew: 49 -> 48
+  later changed records: 314; total records: 498 -> 519
+FAIL battle s25
+  turn 56, round 1, after fire x017; unit x08 (player c_marauder)
+  state.units[2].hp: 117 -> 120
+  later changed records: 277; total records: 334 -> 330
+FAIL battle s26
+  turn 21, round 1, after activation x013; unit x06 (player h_vanguard)
+  state.units[0].hp: 136 -> 138
+  later changed records: 208; total records: 230 -> 203
+FAIL battle s27
+  turn 112, round 3, after activation x012; unit x07 (player i_song)
+  state.units[1].hp: 96 -> 93
+  later changed records: 127; total records: 240 -> 206
+FAIL battle s28
+  turn 52, round 2, after activation x015; unit x07 (player d_harvester)
+  state.units[0].sec.mid.hp: 51 -> 65
+  later changed records: 328; total records: 341 -> 381
+FAIL battle s29
+  turn 136, round 5, after fire x011; unit x06 (player cathedral)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 26; total records: 163 -> 163
+FAIL battle s30
+  turn 160, round 3, after activation x013; unit x08 (player penitent)
+  state.units[2].sec.mid.hp: 51 -> 61
+  later changed records: 159; total records: 320 -> 318
+FAIL battle s31
+  turn 139, round 6, after move x013; unit x06 (player penitent)
+  state.units[0].sec.eng.hp: 28 -> 34
+  later changed records: 25; total records: 165 -> 165
+FAIL battle s32
+  turn 84, round 5, after activation x09; unit x06 (player penitent)
+  state.units[2].sec.eng.hp: 30 -> 34
+  later changed records: 33; total records: 116 -> 118
+FAIL battle s33
+  turn 91, round 2, after activation x015; unit x05 (player cathedral)
+  state.units[0].sec.eng.hp: 54 -> 55
+  later changed records: 157; total records: 244 -> 249
+FAIL battle s34
+  turn 50, round 2, after fire x010; unit x05 (player cathedral)
+  state.units[0].hp: 219 -> 220
+  later changed records: 165; total records: 179 -> 216
+FAIL battle s35
+  turn 60, round 1, after activation x018; unit x06 (player cathedral)
+  state.units[0].sh[0]: 36 -> 41
+  later changed records: 206; total records: 215 -> 267
+FAIL battle s36
+  turn 53, round 2, after fire x020; unit x07 (player cathedral)
+  state.units[0].crew: 59 -> 58
+  later changed records: 219; total records: 273 -> 243
+FAIL battle s37
+  turn 106, round 3, after fire x013; unit x05 (player cathedral)
+  state.units[0].sh[0]: 20 -> 29
+  later changed records: 191; total records: 298 -> 265
+FAIL battle s39
+  turn 234, round 4, after fire x023; unit x07 (player cathedral)
+  state.units[0].hp: 211 -> 207
+  later changed records: 180; total records: 366 -> 415
+FAIL battle s40
+  turn 54, round 2, after fire x012; unit x05 (player cathedral)
+  state.units[0].sec.mid.hp: 98 -> 99
+  later changed records: 247; total records: 271 -> 302
+FAIL battle s41
+  turn 141, round 4, after activation x09; unit x05 (player cathedral)
+  state.units[0].sec.mid.hp: 97 -> 99
+  later changed records: 202; total records: 334 -> 344
+FAIL battle s43
+  turn 51, round 2, after fire x08; unit x05 (player b_drone)
+  state.units[1].ev: 0 -> 15
+  later changed records: 99; total records: 148 -> 151
+FAIL battle s44
+  turn 11, round 1, after activation x07; unit x04 (player c_marauder_g)
+  state.units[0].crew: 50 -> 51
+  later changed records: 154; total records: 123 -> 166
+FAIL battle s46
+  turn 81, round 4, after activation x07; unit x05 (player cathedral)
+  state.units[1].sec.eng.hp: 53 -> 55
+  later changed records: 127; total records: 209 -> 198
+FAIL battle s47
+  turn 34, round 2, after activation x06; unit x03 (player harrow)
+  state.units[0].sec.eng.hp: 19 -> 21
+  later changed records: 17; total records: 52 -> 52
+FAIL battle s48
+  turn 85, round 3, after fire x011; unit x05 (player c_reaver)
+  state.units[0].crew: 41 -> 40
+  later changed records: 65; total records: 144 -> 151
+FAIL battle s50
+  turn 7, round 1, after activation x05; unit x03 (player harrow)
+  state.units[0].crew: 41 -> 42
+  later changed records: 93; total records: 101 -> 79
+FAIL battle s51
+  turn 93, round 5, after activation x08; unit x05 (player warden)
+  state.units[1].shp: 6.398036322575063 [d:40199796d57051ec] -> 6.529862008169294 [d:401a1e942571eb86]
+  later changed records: 56; total records: 138 -> 150
+FAIL battle s53
+  turn 36, round 2, after activation x09; unit x04 (player b_razor)
+  state.units[0].hp: 114 -> 110
+  later changed records: 63; total records: 87 -> 100
+FAIL battle s54
+  turn 7, round 1, after activation x09; unit x04 (player b_razor)
+  state.units[0].hp: 129 -> 127
+  later changed records: 55; total records: 56 -> 63
+FAIL battle s56
+  turn 197, round 8, after tick player; unit x05 (player i_song)
+  state.units[1].sec.mid.hp: 47 -> 49
+  later changed records: 7; total records: 205 -> 205
+FAIL battle s57
+  turn 62, round 3, after move x09; unit x05 (player penitent)
+  state.units[0].sec.eng.hp: 20 -> 34
+  later changed records: 9; total records: 72 -> 72
+FAIL battle t_casttwice
+  turn 30, round 2, after fire x05; unit x03 (player i_carrier)
+  state.units[0].hp: 152 -> 155
+  later changed records: 59; total records: 90 -> 83
+FAIL battle t_flakskip
+  turn 31, round 2, after activation x05; unit x03 (player i_carrier)
+  state.units[0].hp: 157 -> 160
+  later changed records: 80; total records: 106 -> 112
+FAIL battle t_lensaloft
+  turn 38, round 2, after activation x05; unit x03 (player i_carrier)
+  state.units[0].hp: 165 -> 168
+  later changed records: 12; total records: 51 -> 51
+FAIL battle t_longfocus
+  turn 10, round 1, after activation x07; unit x04 (player i_song)
+  state.units[0].hp: 104 -> 108
+  later changed records: 29; total records: 40 -> 40
+FAIL battle t_recordedangle
+  turn 35, round 2, after fire x07; unit x04 (player i_song)
+  state.units[0].crew: 31 -> 33
+  later changed records: 18; total records: 54 -> 54
+FAIL battle t_flawforever
+  turn 29, round 2, after activation x07; unit x04 (player i_song)
+  state.units[0].crew: 30 -> 31
+  later changed records: 21; total records: 50 -> 51
+FAIL battle t_twoimages
+  turn 26, round 2, after activation x05; unit x03 (player i_song)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 43; total records: 70 -> 70
+FAIL battle t_mirrorturns
+  turn 10, round 1, after activation x05; unit x03 (player i_wisp)
+  state.units[0].sec.mid.hp: 12 -> 16
+  later changed records: 46; total records: 57 -> 57
+FAIL battle t_falsehulls
+  turn 56, round 4, after activation x05; unit x03 (player i_song)
+  state.units[0].crew: 33 -> 32
+  later changed records: 19; total records: 72 -> 76
+FAIL battle t_rechargelit
+  turn 26, round 2, after activation x05; unit x03 (player i_song)
+  state.units[0].hp: 102 -> 106
+  later changed records: 12; total records: 39 -> 38
+FAIL battle t_glasscorrected
+  turn 28, round 2, after fire x05; unit x04 (player i_wisp)
+  state.units[1].hp: 33 -> 31
+  later changed records: 83; total records: 112 -> 106
+FAIL battle t_hardlight
+  turn 26, round 2, after activation x05; unit x03 (player i_song)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 59; total records: 71 -> 86
+FAIL battle t_wardglass
+  turn 24, round 2, after fire x05; unit x03 (player i_song)
+  state.units[0].sec.eng.hp: 25 -> 27
+  later changed records: 46; total records: 71 -> 71
+FAIL battle t_heldaccount
+  turn 27, round 2, after activation x05; unit x03 (player penitent)
+  state.units[0].hp: 132 -> 131
+  later changed records: 37; total records: 42 -> 65
+FAIL battle t_namedledger
+  turn 48, round 4, after activation x05; unit x03 (player penitent)
+  state.units[0].sec.mid.hp: 57 -> 61
+  later changed records: 9; total records: 58 -> 58
+FAIL battle t_inheritedaim
+  turn 31, round 3, after activation x03; unit x02 (player penitent)
+  state.units[0].hp: 133 -> 132
+  later changed records: 53; total records: 85 -> 81
+FAIL battle t_everygun
+  turn 27, round 2, after fire x05; unit x03 (player penitent)
+  state.units[0].sec.mid.hp: 58 -> 61
+  later changed records: 53; total records: 81 -> 80
+FAIL battle t_sworndeploy
+  turn 20, round 2, after activation x05; unit x03 (player penitent)
+  state.units[0].hp: 130 -> 132
+  later changed records: 21; total records: 40 -> 42
+FAIL battle t_debtsreserve
+  turn 16, round 2, after activation x05; unit x03 (player penitent)
+  state.units[0].sec.mid.hp: 57 -> 61
+  later changed records: 11; total records: 28 -> 28
+FAIL battle t_standardreroll
+  turn 23, round 2, after activation x03; unit x02 (player penitent)
+  state.units[0].hp: 130 -> 135
+  later changed records: 30; total records: 53 -> 54
+FAIL battle t_preyname
+  turn 22, round 2, after fire x05; unit x03 (player harrow)
+  state.units[0].hp: 68 -> 60
+  later changed records: 41; total records: 55 -> 64
+FAIL battle t_debthunts
+  turn 22, round 2, after activation x04; unit x02 (player penitent)
+  state.units[0].hp: 132 -> 131
+  later changed records: 30; total records: 53 -> 53
+FAIL battle t_twosalvos
+  turn 33, round 3, after fire x05; unit x03 (player harrow)
+  state.units[0].crew: 43 -> 42
+  later changed records: 29; total records: 63 -> 61
+FAIL battle t_namedprey
+  turn 34, round 3, after fire x05; unit x03 (player harrow)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 27; total records: 62 -> 62
+FAIL battle t_wingreserve
+  turn 46, round 3, after fire x05; unit x04 (player penitent)
+  state.units[1].crew: 49 -> 50
+  later changed records: 13; total records: 60 -> 60
+FAIL battle t_oathstillness
+  turn 22, round 2, after activation x05; unit x03 (player cathedral)
+  state.units[0].hp: 235 -> 233
+  later changed records: 18; total records: 41 -> 41
+FAIL battle t_unpaid
+  turn 110, round 5, after fire x08; unit x05 (player warden)
+  state.units[1].sec.mid.hp: 23 -> 25
+  later changed records: 12; total records: 123 -> 123
+FAIL battle t_wallanswers
+  turn 29, round 2, after fire x05; unit x03 (player warden)
+  state.units[0].crew: 37 -> 38
+  later changed records: 55; total records: 85 -> 81
+FAIL battle t_irontestament
+  turn 33, round 3, after activation x05; unit x03 (player cathedral)
+  state.units[0].sec.mid.hp: 107 -> 109
+  later changed records: 11; total records: 45 -> 45
+FAIL battle t_ecl_restoreninth
+  turn 7, round 1, after fire x07; unit x04 (player d_harvester)
+  state.units[0].hp: 138 -> 134
+  later changed records: 74; total records: 82 -> 67
+FAIL battle t_ecl_restoredbeyond
+  turn 42, round 2, after fire x07; unit x04 (player d_harvester)
+  state.units[0].hp: 132 -> 129
+  later changed records: 91; total records: 134 -> 116
+FAIL battle t_ecl_copiescontribute
+  turn 52, round 3, after fire x09; unit x05 (player d_harvester)
+  state.units[0].sec.mid.hp: 58 -> 65
+  later changed records: 17; total records: 70 -> 70
+FAIL battle t_ecl_tenthframe
+  turn 19, round 1, after activation x07; unit x04 (player d_harvester)
+  state.units[0].st.fire: 2 -> 0
+  later changed records: 97; total records: 116 -> 117
+FAIL battle t_ecl_earliercopy
+  turn 69, round 4, after activation x07; unit x04 (player d_harvester)
+  state.units[0].hp: 138 -> 134
+  later changed records: 11; total records: 81 -> 81
+FAIL battle t_ecl_arcswarm
+  turn 62, round 2, after activation x011; unit x05 (player d_harvester)
+  state.units[0].crew: 44 -> 43
+  later changed records: 11; total records: 74 -> 74
+FAIL battle t_ecl_copyfires
+  turn 33, round 2, after fire x011; unit x05 (player d_harvester)
+  state.units[0].hp: 137 -> 133
+  later changed records: 42; total records: 57 -> 76
+FAIL battle t_ecl_everyframe
+  turn 37, round 2, after activation x08; unit x04 (player d_harvester)
+  state.units[0].hp: 140 -> 138
+  later changed records: 36; total records: 74 -> 74
+FAIL battle t_ecl_onesuncopy
+  turn 28, round 2, after activation x09; unit x04 (player d_harvester)
+  state.units[0].sec.mid.hp: 59 -> 65
+  later changed records: 34; total records: 63 -> 63
+FAIL battle t_ecl_copiedbehind
+  turn 97, round 5, after activation x07; unit x04 (player d_harvester)
+  state.units[0].crew: 43 -> 44
+  later changed records: 26; total records: 124 -> 116
+FAIL battle t_ecl_unseenarchive
+  turn 35, round 2, after fire x07; unit x04 (player d_harvester)
+  state.units[0].crew: 40 -> 41
+  later changed records: 24; total records: 60 -> 58
+FAIL battle t_ecl_uncopiedtarget
+  turn 49, round 3, after activation x07; unit x04 (player d_harvester)
+  state.units[0].sec.eng.hp: 27 -> 36
+  later changed records: 30; total records: 80 -> 80
+FAIL battle t_ecl_iterationkill
+  turn 82, round 4, after activation x09; unit x04 (player d_harvester)
+  state.units[0].hp: 139 -> 135
+  later changed records: 18; total records: 95 -> 101
+FAIL battle t_ecl_silentarchive
+  turn 31, round 2, after activation x07; unit x04 (player d_harvester)
+  state.units[0].crew: 44 -> 45
+  later changed records: 62; total records: 94 -> 86
+FAIL battle t_ecl_outshadow
+  turn 7, round 1, after fire x07; unit x04 (player d_harvester)
+  state.units[0].sec.mid.hp: 59 -> 65
+  later changed records: 66; total records: 74 -> 74
+FAIL battle t_ecl_platesshadow
+  turn 50, round 3, after fire x07; unit x04 (player d_harvester)
+  state.units[0].sec.mid.hp: 70 -> 78
+  later changed records: 33; total records: 84 -> 84
+FAIL battle t_ecl_twicerestored
+  turn 36, round 2, after fire x07; unit x04 (player d_harvester)
+  state.units[0].st.engine: 1 -> 0
+  later changed records: 75; total records: 110 -> 112
+FAIL battle t_ecl_nolayer
+  turn 38, round 2, after activation x07; unit x04 (player d_harvester)
+  state.units[0].hp: 170 -> 169
+  later changed records: 67; total records: 106 -> 104
+FAIL battle t_ecl_stillness
+  turn 46, round 2, after fire x09; unit x05 (player d_harvester)
+  state.units[0].sec.mid.hp: 74 -> 78
+  later changed records: 87; total records: 133 -> 134
+FAIL battle t_ecl_tenthousand
+  turn 87, round 3, after fire x09; unit x05 (player d_harvester)
+  state.units[0].hp: 160 -> 157
+  later changed records: 83; total records: 169 -> 171
+FAIL battle t_ecl_restoredfleet
+  turn 32, round 2, after fire x08; unit x04 (player d_harvester)
+  state.units[0].crew: 44 -> 45
+  later changed records: 83; total records: 108 -> 116
+FAIL battle t_ecl_flagshipindex
+  turn 15, round 1, after activation x08; unit x04 (player d_harvester)
+  state.units[0].hp: 124 -> 121
+  later changed records: 49; total records: 65 -> 65
+FAIL battle t_ecl_framezero
+  turn 34, round 2, after fire x07; unit x05 (player d_jackal)
+  state.units[1].hp: 84 -> 88
+  later changed records: 77; total records: 61 -> 112
+FAIL battle t_choosebrood
+  turn 35, round 2, after activation x05; unit x04 (player b_drone)
+  state.units[1].crew: 28 -> 26
+  later changed records: 19; total records: 53 -> 55
+FAIL battle t_secondthroat
+  turn 84, round 4, after fire x05; unit x04 (player b_drone)
+  state.units[1].crew: 24 -> 23
+  later changed records: 29; total records: 101 -> 114
+FAIL battle t_rundown
+  turn 27, round 2, after activation x05; unit x03 (player b_razor)
+  state.units[0].crew: 45 -> 46
+  later changed records: 56; total records: 78 -> 84
+FAIL battle t_razorprey
+  turn 12, round 1, after fire x05; unit x03 (player b_razor)
+  state.units[0].crew: 46 -> 45
+  later changed records: 81; total records: 94 -> 89
+FAIL battle t_frenzyfeeds
+  turn 30, round 2, after activation x07; unit x04 (player b_razor)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 94; total records: 125 -> 106
+FAIL battle t_throatred
+  turn 28, round 2, after activation x08; unit x04 (player b_razor)
+  state.units[0].sec.eng.hp: 23 -> 34
+  later changed records: 49; total records: 67 -> 78
+FAIL battle t_preyeverymouth
+  turn 31, round 2, after fire x07; unit x04 (player b_razor)
+  state.units[0].crew: 43 -> 44
+  later changed records: 76; total records: 108 -> 103
+FAIL battle t_growhurts
+  turn 73, round 5, after fire x05; unit x03 (player b_razor)
+  state.units[0].crew: 40 -> 39
+  later changed records: 30; total records: 104 -> 99
+FAIL battle t_skinthick
+  turn 46, round 4, after fire x05; unit x03 (player b_razor)
+  state.units[0].crew: 44 -> 46
+  later changed records: 21; total records: 68 -> 68
+FAIL battle t_fleshknit
+  turn 18, round 2, after fire x05; unit x03 (player b_razor)
+  state.units[0].crew: 45 -> 47
+  later changed records: 35; total records: 54 -> 48
+FAIL battle t_refuseholes
+  turn 25, round 2, after fire x07; unit x04 (player b_drone)
+  state.units[0].crew: 31 -> 29
+  later changed records: 101; total records: 93 -> 127
+FAIL battle t_tideend
+  turn 18, round 2, after fire x05; unit x03 (player b_razor)
+  state.units[0].crew: 46 -> 47
+  later changed records: 24; total records: 43 -> 43
+FAIL battle t_tornback
+  turn 106, round 6, after fire x07; unit x04 (player b_drone)
+  state.units[0].crew: 26 -> 25
+  later changed records: 27; total records: 134 -> 131
+FAIL battle t_throatspits
+  turn 43, round 3, after activation x03; unit x02 (player b_brood)
+  state.units[0].crew: 51 -> 52
+  later changed records: 109; total records: 141 -> 153
+FAIL battle t_burnstays
+  turn 75, round 5, after fire x05; unit x03 (player b_spitter)
+  state.units[0].crew: 36 -> 38
+  later changed records: 9; total records: 85 -> 85
+FAIL battle t_manymouths
+  turn 10, round 1, after fire x09; unit x05 (player b_spitter)
+  state.units[0].crew: 36 -> 38
+  later changed records: 55; total records: 66 -> 64
+FAIL battle t_volleygrows
+  turn 31, round 2, after fire x05; unit x03 (player b_spitter)
+  state.units[0].crew: 35 -> 34
+  later changed records: 57; total records: 89 -> 87
+FAIL battle t_mouthdeep
+  turn 60, round 4, after fire x05; unit x03 (player b_spitter)
+  state.units[0].crew: 33 -> 35
+  later changed records: 25; total records: 86 -> 86
+FAIL battle t_broodreserve
+  turn 7, round 1, after fire x05; unit x04 (player b_drone)
+  state.units[1].crew: 28 -> 31
+  later changed records: 41; total records: 41 -> 49
+FAIL battle t_firstthroat
+  turn 22, round 2, after activation x06; unit x03 (player b_razor)
+  state.units[0].sec.mid.hp: 47 -> 61
+  later changed records: 38; total records: 61 -> 56
+FAIL battle t_throatdeep
+  turn 19, round 2, after activation x05; unit x03 (player b_razor)
+  state.units[0].crew: 46 -> 47
+  later changed records: 18; total records: 32 -> 38
+FAIL battle t_hb_railboarding
+  turn 71, round 4, after activation x07; unit x06 (player c_reaver)
+  state.units[2].sec.mid.hp: 22 -> 31
+  later changed records: 10; total records: 82 -> 82
+FAIL battle t_hb_packcloses
+  turn 9, round 1, after activation x07; unit x04 (player c_marauder)
+  state.units[0].hp: 118 -> 117
+  later changed records: 42; total records: 46 -> 52
+FAIL battle t_hb_rushrail
+  turn 51, round 3, after activation x07; unit x06 (player c_marauder)
+  state.units[2].crew: 51 -> 52
+  later changed records: 21; total records: 73 -> 73
+FAIL battle t_hb_allscars
+  turn 26, round 2, after fire x07; unit x04 (player c_marauder)
+  state.units[0].sec.eng.hp: 23 -> 30
+  later changed records: 42; total records: 62 -> 69
+FAIL battle t_hb_mawopens
+  turn 8, round 1, after activation x07; unit x04 (player c_marauder)
+  state.units[0].hp: 116 -> 115
+  later changed records: 45; total records: 54 -> 48
+FAIL battle t_hb_burncarry
+  turn 28, round 2, after fire x07; unit x04 (player c_marauder)
+  state.units[0].hp: 104 -> 99
+  later changed records: 50; total records: 72 -> 79
+FAIL battle t_hb_warlordrun
+  turn 29, round 2, after fire x07; unit x04 (player c_marauder)
+  state.units[0].crew: 51 -> 52
+  later changed records: 26; total records: 56 -> 49
+FAIL battle t_hb_darktorps
+  turn 26, round 2, after fire x07; unit x04 (player c_reaver)
+  state.units[0].sec.mid.hp: 25 -> 31
+  later changed records: 41; total records: 68 -> 67
+FAIL battle t_hb_secondknife
+  turn 65, round 4, after fire x07; unit x04 (player c_reaver)
+  state.units[0].sec.eng.hp: 8 -> 17
+  later changed records: 9; total records: 75 -> 75
+FAIL battle t_hb_smilecut
+  turn 9, round 1, after fire x07; unit x04 (player c_marauder)
+  state.units[0].hp: 115 -> 113
+  later changed records: 27; total records: 37 -> 37
+FAIL battle t_hb_everyknife
+  turn 33, round 2, after activation x09; unit x05 (player c_raider)
+  state.units[0].crew: 32 -> 34
+  later changed records: 21; total records: 44 -> 55
+FAIL battle t_hb_darkknives
+  turn 27, round 2, after activation x07; unit x04 (player c_reaver)
+  state.units[0].sec.mid.hp: 29 -> 31
+  later changed records: 39; total records: 67 -> 67
+FAIL battle t_hb_cutfeeds
+  turn 26, round 2, after fire x07; unit x04 (player c_reaver)
+  state.units[0].sec.mid.hp: 24 -> 31
+  later changed records: 48; total records: 75 -> 67
+FAIL battle t_hb_patchedwing
+  turn 29, round 2, after activation x05; unit x04 (player c_reaver)
+  state.units[1].crew: 42 -> 44
+  later changed records: 27; total records: 57 -> 46
+FAIL battle t_hb_retasked
+  turn 73, round 4, after fire x05; unit x04 (player c_reaver)
+  state.units[1].crew: 42 -> 41
+  later changed records: 13; total records: 87 -> 87
+FAIL battle t_hb_wholeyard
+  turn 30, round 2, after activation x05; unit x04 (player c_reaver)
+  state.units[1].crew: 43 -> 42
+  later changed records: 50; total records: 58 -> 81
+FAIL battle t_hb_screaming
+  turn 56, round 3, after fire x05; unit x04 (player c_reaver)
+  state.units[1].sec.mid.hp: 23 -> 31
+  later changed records: 63; total records: 115 -> 120
+FAIL battle t_hb_swarmscrap
+  turn 27, round 2, after fire x05; unit x04 (player c_reaver)
+  state.units[1].crew: 44 -> 45
+  later changed records: 39; total records: 66 -> 67
+FAIL battle t_hb_weldmatters
+  turn 24, round 2, after activation x05; unit x04 (player c_reaver)
+  state.units[1].crew: 41 -> 43
+  later changed records: 102; total records: 109 -> 127
+FAIL battle t_hb_patchguns
+  turn 47, round 3, after activation x07; unit x04 (player c_reaver)
+  state.units[0].sec.mid.hp: 24 -> 31
+  later changed records: 107; total records: 155 -> 129
+FAIL battle t_hb_scrapfront
+  turn 41, round 3, after activation x05; unit x04 (player c_reaver)
+  state.units[1].hp: 64 -> 66
+  later changed records: 102; total records: 144 -> 134
+FAIL battle t_hb_weldedfight
+  turn 69, round 4, after fire x05; unit x04 (player c_reaver)
+  state.units[1].crew: 37 -> 35
+  later changed records: 50; total records: 106 -> 120
+FAIL battle t_hb_doublebolted
+  turn 45, round 3, after activation x05; unit x04 (player c_reaver)
+  state.units[1].crew: 38 -> 43
+  later changed records: 110; total records: 148 -> 156
+FAIL battle t_hb_packbites
+  turn 20, round 2, after activation x05; unit x03 (player c_reaver)
+  state.units[0].crew: 43 -> 44
+  later changed records: 118; total records: 135 -> 139
+FAIL battle t_hb_weldedwhole
+  turn 20, round 2, after fire x05; unit x03 (player c_reaver)
+  state.units[0].crew: 43 -> 45
+  later changed records: 91; total records: 106 -> 112
+FAIL battle t_hb_nothingbroken
+  turn 65, round 5, after activation x05; unit x03 (player c_raider)
+  state.units[0].crew: 31 -> 35
+  later changed records: 43; total records: 92 -> 109
+FAIL battle t_hb_preyscent
+  turn 25, round 2, after fire x07; unit x04 (player c_marauder)
+  state.units[0].crew: 51 -> 52
+  later changed records: 29; total records: 55 -> 46
+FAIL battle t_hb_loosepack
+  turn 9, round 1, after fire x03; unit x02 (player c_raider)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 20; total records: 30 -> 30
+FAIL battle t_heg_irontempo
+  turn 98, round 4, after fire x08; unit x05 (player h_dominion)
+  state.units[1].sec.mid.hp: 102 -> 104
+  later changed records: 94; total records: 193 -> 193
+FAIL battle t_heg_onevoice
+  turn 14, round 1, after activation x09; unit x05 (player h_dominion)
+  state.units[0].sh[0]: 49 -> 56
+  later changed records: 55; total records: 70 -> 61
+FAIL battle t_heg_formation
+  turn 15, round 1, after activation x09; unit x05 (player h_dominion)
+  state.units[0].sh[0]: 39 -> 45
+  later changed records: 42; total records: 58 -> 49
+FAIL battle t_heg_filedtriplicate
+  turn 24, round 1, after activation x010; unit x05 (player h_dominion)
+  state.units[0].route[0]: 1 -> 0
+  later changed records: 31; total records: 56 -> 56
+FAIL battle t_heg_strikebook
+  turn 50, round 2, after fire x011; unit x05 (player h_dominion)
+  state.units[0].intercepts: 1 -> 2
+  later changed records: 32; total records: 83 -> 83
+FAIL battle t_heg_filedbefore
+  turn 35, round 2, after activation x09; unit x05 (player h_dominion)
+  state.units[0].hp: 228 -> 227
+  later changed records: 86; total records: 122 -> 122
+FAIL battle t_heg_permanentfile
+  turn 49, round 2, after fire x011; unit x05 (player h_dominion)
+  state.units[0].sh[0]: 43 -> 50
+  later changed records: 18; total records: 68 -> 60
+FAIL battle t_heg_fullgroup
+  turn 87, round 6, after fire x03; unit x02 (player h_dominion)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 31; total records: 119 -> 119
+FAIL battle t_heg_columnstraight
+  turn 102, round 4, after activation x010; unit x05 (player h_dominion)
+  state.units[0].hp: 261 -> 260
+  later changed records: 22; total records: 125 -> 125
+FAIL battle t_heg_overflow
+  turn 124, round 5, after activation x010; unit x05 (player h_dominion)
+  state.units[0].sec.eng.hp: 64 -> 66
+  later changed records: 5; total records: 130 -> 130
+FAIL battle t_heg_bell
+  turn 119, round 4, after activation x011; unit x05 (player h_dominion)
+  state.units[0].sec.eng.hp: 61 -> 66
+  later changed records: 14; total records: 134 -> 134
+FAIL battle t_heg_rotation
+  turn 117, round 4, after activation x011; unit x06 (player h_dominion)
+  state.units[0].hp: 263 -> 261
+  later changed records: 27; total records: 145 -> 145
+FAIL battle t_heg_filedarmor
+  turn 79, round 3, after fire x010; unit x05 (player h_dominion)
+  state.units[0].sec.mid.hp: 105 -> 119
+  later changed records: 56; total records: 136 -> 133
+FAIL battle t_heg_standardcovers
+  turn 55, round 2, after fire x010; unit x05 (player h_dominion)
+  state.units[0].sec.mid.hp: 117 -> 119
+  later changed records: 69; total records: 125 -> 121
+FAIL battle t7a_flightpaths
+  turn 75, round 4, after activation x05; unit x03 (player i_carrier)
+  state.units[0].hp: 154 -> 157
+  later changed records: 14; total records: 89 -> 90
+FAIL battle t7a_starlings
+  turn 98, round 5, after fire x05; unit x03 (player i_carrier)
+  state.units[0].hp: 149 -> 152
+  later changed records: 5; total records: 104 -> 104
+FAIL battle t7a_flightcast
+  turn 75, round 4, after fire x05; unit x03 (player i_carrier)
+  state.units[0].sec.mid.hp: 70 -> 76
+  later changed records: 19; total records: 95 -> 95
+FAIL battle t7a_lighttogether
+  turn 8, round 1, after fire x07; unit x04 (player i_song)
+  state.units[0].crew: 30 -> 33
+  later changed records: 22; total records: 31 -> 30
+FAIL battle t7a_sunlens
+  turn 11, round 1, after fire x07; unit x04 (player i_song)
+  state.units[0].crew: 33 -> 32
+  later changed records: 29; total records: 41 -> 41
+FAIL battle t7a_splitthree
+  turn 41, round 3, after activation x05; unit x03 (player i_song)
+  state.units[0].sec.mid.hp: 43 -> 49
+  later changed records: 27; total records: 64 -> 69
+FAIL battle t7a_fleetelsewhere
+  turn 42, round 3, after activation x05; unit x03 (player i_song)
+  state.units[0].crew: 33 -> 32
+  later changed records: 29; total records: 72 -> 70
+FAIL battle t7a_weakside
+  turn 25, round 2, after activation x05; unit x03 (player i_song)
+  state.units[0].sec.eng.hp: 23 -> 27
+  later changed records: 13; total records: 39 -> 39
+FAIL battle t7a_prismsface
+  turn 10, round 1, after activation x05; unit x03 (player i_song)
+  state.units[0].hp: 104 -> 106
+  later changed records: 28; total records: 39 -> 38
+FAIL battle t7a_lensrotates
+  turn 25, round 2, after activation x05; unit x03 (player i_song)
+  state.units[0].sec.mid.hp: 45 -> 49
+  later changed records: 12; total records: 38 -> 38
+FAIL battle t7a_facetlit
+  turn 26, round 2, after activation x05; unit x03 (player i_song)
+  state.units[0].sec.eng.hp: 20 -> 27
+  later changed records: 8; total records: 35 -> 35
+FAIL battle t7a_ledgerarcs
+  turn 20, round 2, after activation x05; unit x03 (player penitent)
+  state.units[0].sec.mid.hp: 57 -> 61
+  later changed records: 13; total records: 34 -> 34
+FAIL battle t7a_grandledger
+  turn 21, round 2, after activation x05; unit x03 (player penitent)
+  state.units[0].sec.mid.hp: 58 -> 61
+  later changed records: 35; total records: 57 -> 57
+FAIL battle t7a_lastaccount
+  turn 22, round 2, after activation x06; unit x03 (player penitent)
+  state.units[0].hp: 132 -> 131
+  later changed records: 22; total records: 45 -> 45
+FAIL battle t7a_rearreckoning
+  turn 21, round 2, after fire x05; unit x03 (player harrow)
+  state.units[0].crew: 41 -> 42
+  later changed records: 21; total records: 36 -> 43
+FAIL battle t7a_salvoend
+  turn 27, round 2, after activation x05; unit x03 (player harrow)
+  state.units[0].hp: 79 -> 81
+  later changed records: 50; total records: 77 -> 78
+FAIL battle t7a_wallearly
+  turn 35, round 3, after fire x05; unit x03 (player cathedral)
+  state.units[0].sec.eng.hp: 40 -> 61
+  later changed records: 5; total records: 41 -> 41
+FAIL battle t7a_wallmoves
+  turn 19, round 2, after activation x05; unit x03 (player cathedral)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 27; total records: 47 -> 46
+FAIL battle t7b_ecl_formation_d
+  turn 38, round 2, after fire x09; unit x05 (player d_harvester)
+  state.units[0].hp: 168 -> 171
+  later changed records: 21; total records: 60 -> 60
+FAIL battle t7b_ecl_shadow
+  turn 25, round 2, after fire x07; unit x04 (player d_harvester)
+  state.units[0].crew: 43 -> 44
+  later changed records: 39; total records: 53 -> 65
+FAIL battle t7b_ecl_wall
+  turn 9, round 1, after fire x08; unit x04 (player d_harvester)
+  state.units[0].crew: 44 -> 45
+  later changed records: 102; total records: 112 -> 110
+FAIL battle t7b_ecl_archive
+  turn 53, round 3, after activation x07; unit x04 (player d_harvester)
+  state.units[0].crew: 43 -> 44
+  later changed records: 24; total records: 78 -> 77
+FAIL battle t7b_ecl_iterfire
+  turn 50, round 3, after fire x07; unit x04 (player d_harvester)
+  state.units[0].sec.mid.hp: 57 -> 65
+  later changed records: 57; total records: 108 -> 108
+FAIL battle t7b_ecl_triage
+  turn 24, round 2, after fire x09; unit x04 (player d_harvester)
+  state.units[0].hp: 130 -> 126
+  later changed records: 94; total records: 119 -> 118
+FAIL battle t7b_ch_nine
+  turn 43, round 2, after activation x06; unit x04 (player b_drone)
+  state.units[1].crew: 30 -> 29
+  later changed records: 15; total records: 59 -> 59
+FAIL battle t7b_ch_teeth
+  turn 25, round 2, after fire x05; unit x03 (player b_razor)
+  state.units[0].sec.eng.hp: 19 -> 28
+  later changed records: 78; total records: 97 -> 104
+FAIL battle t7b_ch_tideearly
+  turn 44, round 2, after fire x08; unit x04 (player b_drone)
+  state.units[0].ev: 0 -> 15
+  later changed records: 54; total records: 99 -> 95
+FAIL battle t7b_ch_growth
+  turn 40, round 3, after fire x05; unit x03 (player b_razor)
+  state.units[0].hp: 115 -> 112
+  later changed records: 68; total records: 109 -> 101
+FAIL battle t7b_ch_spat
+  turn 28, round 2, after fire x06; unit x03 (player b_spitter)
+  state.units[0].crew: 37 -> 36
+  later changed records: 56; total records: 84 -> 85
+FAIL battle t7b_ecl_targetarchived
+  turn 45, round 3, after activation x07; unit x04 (player d_harvester)
+  state.units[0].sec.eng.hp: 19 -> 36
+  later changed records: 4; total records: 50 -> 50
+FAIL battle t529_roles_screen
+  turn 35, round 2, after activation x06; unit x03 (player b_razor)
+  state.units[0].sec.mid.hp: 54 -> 61
+  later changed records: 43; total records: 76 -> 79
+FAIL battle t529_roles_mend
+  turn 74, round 5, after activation x05; unit x03 (player b_razor)
+  state.units[0].crew: 42 -> 43
+  later changed records: 6; total records: 81 -> 81
+FAIL battle t529_roles_change
+  turn 34, round 2, after fire x07; unit x04 (player b_razor)
+  state.units[0].hp: 115 -> 111
+  later changed records: 54; total records: 89 -> 86
+FAIL battle t529_scent
+  turn 28, round 2, after activation x07; unit x04 (player b_razor)
+  state.units[0].sec.eng.hp: 27 -> 34
+  later changed records: 24; total records: 53 -> 53
+FAIL battle t529_may_grow_no
+  turn 22, round 2, after fire x05; unit x03 (player b_razor)
+  state.units[0].crew: 45 -> 47
+  later changed records: 79; total records: 99 -> 102
+FAIL battle s983_station_defend
+  turn 81, round 3, after fire x010; unit x05 (player penitent)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 42; total records: 124 -> 121
+FAIL battle s983_station_plain
+  turn 39, round 2, after activation x08; unit x04 (player penitent)
+  state.units[0].crew: 51 -> 50
+  later changed records: 54; total records: 87 -> 94
+FAIL battle s983_teaching_station_defend
+  turn 37, round 2, after activation x07; unit x04 (player harrow)
+  state.units[0].hp: 81 -> 80
+  later changed records: 94; total records: 67 -> 132
+FAIL battle s1450_undo
+  turn 46, round 2, after activation x08; unit x04 (player harrow)
+  state.units[0].sec.mid.hp: 34 -> 38
+  later changed records: 231; total records: 278 -> 231
+FAIL battle s1450_undo_chorus
+  turn 61, round 2, after activation x09; unit x04 (player b_razor)
+  state.units[0].hp: 114 -> 110
+  later changed records: 113; total records: 157 -> 175
+FAIL battle s1450_undo_classic
+  turn 131, round 3, after fire x09; unit x06 (player penitent)
+  state.units[1].crew: 49 -> 50
+  later changed records: 289; total records: 349 -> 421
+FAIL battle s1447_ion_pulse
+  turn 8, round 1, after activation x09; unit x05 (player penitent)
+  state.units[0].hp: 134 -> 135
+  later changed records: 148; total records: 157 -> 99
+FAIL battle s1480
+  turn 68, round 2, after activation x018; unit x06 (player cathedral)
+  state.units[0].hp: 203 -> 207
+  later changed records: 151; total records: 218 -> 220
+FAIL battle r1653_gunnery
+  turn 34, round 2, after activation x010; unit x05 (player penitent)
+  state.units[0].sec.mid.hp: 58 -> 61
+  later changed records: 159; total records: 194 -> 176
+FAIL battle r1653_afterburn
+  turn 53, round 2, after fire x010; unit x05 (player penitent)
+  state.units[0].sec.mid.hp: 50 -> 61
+  later changed records: 149; total records: 203 -> 117
+FAIL battle r1653_flankmark
+  turn 10, round 1, after activation x09; unit x05 (player c_marauder)
+  state.units[0].hp: 116 -> 117
+  later changed records: 159; total records: 135 -> 170
+FAIL battle r1653_lastlight
+  turn 10, round 1, after activation x011; unit x05 (player penitent)
+  state.units[0].sec.mid.hp: 58 -> 61
+  later changed records: 183; total records: 194 -> 193
+FAIL battle r1653_coolant
+  turn 32, round 2, after fire x08; unit x04 (player b_razor)
+  state.units[0].sec.mid.hp: 50 -> 57
+  later changed records: 142; total records: 171 -> 175
+FAIL battle r1653_spare
+  turn 70, round 3, after fire x010; unit x05 (player penitent)
+  state.units[0].crew: 48 -> 47
+  later changed records: 131; total records: 200 -> 202
+FAIL battle r1653_ram
+  turn 14, round 1, after activation x08; unit x04 (player c_marauder)
+  state.units[0].crew: 50 -> 51
+  later changed records: 152; total records: 167 -> 140
+FAIL battle r1653_mirror
+  turn 94, round 4, after fire x09; unit x05 (player penitent)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 58; total records: 153 -> 143
+FAIL battle r1653_beacon
+  turn 21, round 1, after activation x09; unit x05 (player penitent)
+  state.units[0].crew: 48 -> 47
+  later changed records: 188; total records: 144 -> 210
+FAIL battle r1653_quiet
+  turn 89, round 3, after activation x012; unit x05 (player penitent)
+  state.units[0].hp: 127 -> 129
+  later changed records: 101; total records: 191 -> 162
+FAIL battle r1653_locker
+  turn 20, round 1, after fire x08; unit x05 (player c_marauder)
+  state.units[1].sec.mid.hp: 52 -> 54
+  later changed records: 139; total records: 160 -> 147
+FAIL battle r1653_chaser
+  turn 74, round 3, after fire x010; unit x05 (player penitent)
+  state.units[0].crew: 50 -> 51
+  later changed records: 109; total records: 184 -> 163
+FAIL battle r1653_spill
+  turn 33, round 2, after fire x08; unit x04 (player h_vanguard)
+  state.units[0].sh[0]: 12 -> 26
+  later changed records: 91; total records: 125 -> 109
+FAIL battle r1653_relay
+  turn 35, round 2, after fire x011; unit x05 (player penitent)
+  state.units[0].sec.eng.hp: 30 -> 34
+  later changed records: 166; total records: 202 -> 187
+FAIL battle s1649_fold
+  turn 70, round 3, after activation x09; unit x08 (player d_jackal)
+  state.units[3].sec.mid.hp: 33 -> 45
+  later changed records: 74; total records: 109 -> 145
+FAIL battle s1649_frenzy
+  turn 67, round 3, after fire x07; unit x06 (player b_razor_s)
+  state.units[2].crew: 45 -> 46
+  later changed records: 51; total records: 119 -> 97
+FAIL battle t7a_flightcast_m3
+  turn 52, round 3, after activation x05; unit x03 (player i_carrier)
+  state.units[0].shp: 23.223384974892063 [d:4037392fc1f99446] -> 22.735348063776826 [d:4036bc3fc54d1930]
+  later changed records: 44; total records: 97 -> 89
+FAIL battle t_ecl_outshadow_m3
+  turn 7, round 1, after fire x07; unit x04 (player d_harvester)
+  state.units[0].sec.mid.hp: 59 -> 65
+  later changed records: 66; total records: 74 -> 74
+FAIL battle t_hb_warlordrun_m3
+  turn 9, round 1, after activation x07; unit x04 (player c_marauder)
+  state.units[0].hp: 116 -> 115
+  later changed records: 69; total records: 69 -> 79
+FAIL battle t_heg_onevoice_m3
+  turn 14, round 1, after activation x09; unit x05 (player h_dominion)
+  state.units[0].sh[0]: 49 -> 56
+  later changed records: 53; total records: 68 -> 66
+FAIL battle t_ecl_tenthousand_m3
+  turn 91, round 3, after fire x011; unit x05 (player d_harvester)
+  state.units[0].hp: 168 -> 165
+  later changed records: 76; total records: 167 -> 168
+FAIL battle t_ecl_restoredfleet_m3
+  turn 32, round 2, after fire x08; unit x04 (player d_harvester)
+  state.units[0].crew: 44 -> 45
+  later changed records: 83; total records: 107 -> 116
+FAIL battle t7a_salvoend_m3
+  turn 39, round 2, after fire x05; unit x03 (player harrow)
+  state.units[0].hp: 53 -> 49
+  later changed records: 95; total records: 99 -> 135
+FAIL battle t_namedprey_m3
+  turn 35, round 3, after fire x05; unit x03 (player harrow)
+  state.units[0].crew: 41 -> 42
+  later changed records: 28; total records: 62 -> 64
+FAIL battle t_heg_standardcovers_m3
+  turn 56, round 2, after fire x010; unit x05 (player h_dominion)
+  state.units[0].sec.mid.hp: 122 -> 123
+  later changed records: 62; total records: 119 -> 109
+FAIL battle t7b_ch_nine_m3
+  turn 40, round 2, after activation x06; unit x04 (player b_drone)
+  state.units[1].crew: 32 -> 34
+  later changed records: 65; total records: 106 -> 88
+FAIL battle t_tideend_m3
+  turn 9, round 1, after activation x05; unit x03 (player b_razor)
+  state.units[0].crew: 46 -> 45
+  later changed records: 16; total records: 26 -> 26
+FAIL battle t_tornback_m3
+  turn 106, round 6, after fire x07; unit x04 (player b_drone)
+  state.units[0].crew: 26 -> 25
+  later changed records: 27; total records: 134 -> 131
+FAIL battle t_wardglass_m3
+  turn 24, round 2, after fire x05; unit x03 (player i_song)
+  state.units[0].sec.eng.hp: 25 -> 27
+  later changed records: 46; total records: 71 -> 71
+FAIL battle t7a_facetlit_m3
+  turn 26, round 2, after activation x05; unit x03 (player i_song)
+  state.units[0].sec.eng.hp: 22 -> 27
+  later changed records: 8; total records: 35 -> 35
+FAIL battle t_hb_swarmscrap_m3
+  turn 28, round 2, after fire x05; unit x04 (player c_reaver)
+  state.units[1].crew: 44 -> 45
+  later changed records: 40; total records: 68 -> 69
+FAIL battle t_ecl_tenthframe_m3
+  turn 19, round 1, after activation x07; unit x04 (player d_harvester)
+  state.units[0].st.fire: 2 -> 0
+  later changed records: 97; total records: 116 -> 117
+FAIL battle t_ecl_earliercopy_m3
+  turn 70, round 4, after activation x07; unit x04 (player d_harvester)
+  state.units[0].hp: 138 -> 134
+  later changed records: 11; total records: 82 -> 82
+FAIL battle t_throatred_m3
+  turn 28, round 2, after activation x08; unit x04 (player b_razor)
+  state.units[0].sec.eng.hp: 24 -> 34
+  later changed records: 38; total records: 56 -> 67
+FAIL battle t_preyeverymouth_m3
+  turn 28, round 1, after activation x013; unit x06 (player b_razor)
+  state.units[0].crew: 44 -> 45
+  later changed records: 72; total records: 100 -> 101
+FAIL battle t_hb_darkknives_m3
+  turn 27, round 2, after activation x07; unit x04 (player c_reaver)
+  state.units[0].sec.mid.hp: 29 -> 31
+  later changed records: 31; total records: 59 -> 59
+FAIL battle t_hb_cutfeeds_m3
+  turn 27, round 2, after activation x07; unit x04 (player c_reaver)
+  state.units[0].crew: 44 -> 45
+  later changed records: 37; total records: 65 -> 57
+FAIL battle t_ecl_onesuncopy_m3
+  turn 59, round 3, after activation x07; unit x04 (player d_harvester)
+  state.units[0].sec.eng.hp: 25 -> 36
+  later changed records: 7; total records: 67 -> 67
+FAIL battle t_irontestament_m3
+  turn 33, round 3, after activation x05; unit x03 (player cathedral)
+  state.units[0].sec.mid.hp: 110 -> 112
+  later changed records: 11; total records: 45 -> 45
+FAIL battle t7a_wallmoves_m3
+  turn 19, round 2, after activation x05; unit x03 (player cathedral)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 27; total records: 47 -> 46
+FAIL battle t7a_fleetelsewhere_m3
+  turn 42, round 3, after activation x05; unit x03 (player i_song)
+  state.units[0].crew: 33 -> 32
+  later changed records: 29; total records: 72 -> 71
+FAIL battle t7a_sunlens_m3
+  turn 11, round 1, after activation x08; unit x04 (player i_song)
+  state.units[0].crew: 33 -> 32
+  later changed records: 29; total records: 41 -> 40
+FAIL battle t_flawforever_m3
+  turn 29, round 2, after activation x07; unit x04 (player i_song)
+  state.units[0].crew: 30 -> 31
+  later changed records: 20; total records: 50 -> 50
+FAIL battle t_hb_weldedwhole_m3
+  turn 20, round 2, after fire x05; unit x03 (player c_reaver)
+  state.units[0].crew: 43 -> 45
+  later changed records: 95; total records: 116 -> 112
+FAIL battle t_hb_nothingbroken_m3
+  turn 65, round 5, after activation x05; unit x03 (player c_raider)
+  state.units[0].crew: 32 -> 36
+  later changed records: 43; total records: 92 -> 109
+FAIL battle t7a_grandledger_m3
+  turn 21, round 2, after activation x05; unit x03 (player penitent)
+  state.units[0].sec.mid.hp: 58 -> 61
+  later changed records: 35; total records: 57 -> 57
+FAIL battle t7a_lastaccount_m3
+  turn 34, round 2, after activation x05; unit x03 (player penitent)
+  state.units[0].sec.mid.hp: 58 -> 61
+  later changed records: 82; total records: 80 -> 117
+FAIL battle t_volleygrows_m3
+  turn 47, round 3, after fire x05; unit x04 (player b_spitter)
+  state.units[1].sec.mid.hp: 5 -> 37
+  later changed records: 39; total records: 87 -> 84
+FAIL battle t_mouthdeep_m3
+  turn 60, round 4, after fire x05; unit x03 (player b_spitter)
+  state.units[0].crew: 33 -> 35
+  later changed records: 25; total records: 86 -> 86
+FAIL battle t_heg_permanentfile_m3
+  turn 18, round 1, after activation x012; unit x05 (player h_dominion)
+  state.units[0].sh[0]: 42 -> 49
+  later changed records: 161; total records: 132 -> 180
+FAIL battle t_heg_oneorder_m3
+  turn 20, round 1, after activation x012; unit x05 (player h_dominion)
+  state.units[0].route[0]: 1 -> 0
+  later changed records: 161; total records: 182 -> 163
+FAIL battle r1651_vex
+  turn 32, round 2, after activation x08; unit x04 (player penitent)
+  state.units[0].hp: 133 -> 132
+  later changed records: 92; total records: 125 -> 82
+FAIL battle r1651_malek
+  turn 32, round 2, after activation x09; unit x05 (player harrow)
+  state.units[0].sec.mid.hp: 35 -> 38
+  later changed records: 77; total records: 110 -> 62
+FAIL battle r1651_thale
+  turn 17, round 1, after activation x08; unit x04 (player penitent)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 75; total records: 79 -> 93
+FAIL battle r1651_kassar
+  turn 56, round 3, after activation x06; unit x03 (player h_vanguard)
+  state.units[0].crew: 42 -> 43
+  later changed records: 63; total records: 120 -> 111
+FAIL battle r1651_vorn
+  turn 8, round 1, after activation x09; unit x05 (player h_interdictor)
+  state.units[0].crew: 34 -> 36
+  later changed records: 104; total records: 113 -> 97
+FAIL battle r1651_reyes
+  turn 9, round 1, after fire x08; unit x04 (player h_vanguard)
+  state.units[0].sec.mid.hp: 52 -> 63
+  later changed records: 92; total records: 102 -> 94
+FAIL battle r1651_maren
+  turn 71, round 4, after fire x05; unit x03 (player h_dominion)
+  state.units[0].sh[0]: 26 -> 37
+  later changed records: 63; total records: 135 -> 133
+FAIL battle r1651_grax
+  turn 13, round 1, after activation x08; unit x04 (player c_marauder)
+  state.units[0].st.shieldOff: 2 -> 0
+  later changed records: 104; total records: 118 -> 113
+FAIL battle r1651_sable
+  turn 35, round 2, after fire x09; unit x05 (player c_reaver)
+  state.units[0].hp: 60 -> 58
+  later changed records: 81; total records: 97 -> 117
+FAIL battle r1651_vesh
+  turn 89, round 4, after fire x05; unit x04 (player c_reaver)
+  state.units[1].crew: 32 -> 33
+  later changed records: 44; total records: 134 -> 111
+FAIL battle r1651_razormaw
+  turn 11, round 1, after activation x07; unit x04 (player b_razor)
+  state.units[0].crew: 43 -> 45
+  later changed records: 95; total records: 107 -> 78
+FAIL battle r1651_mending
+  turn 9, round 1, after activation x05; unit x03 (player b_razor)
+  state.units[0].crew: 45 -> 43
+  later changed records: 77; total records: 87 -> 76
+FAIL battle r1651_voice
+  turn 9, round 1, after activation x07; unit x04 (player b_razor)
+  state.units[0].crew: 44 -> 47
+  later changed records: 72; total records: 66 -> 82
+FAIL battle r1651_vaelen
+  turn 18, round 1, after fire x05; unit x03 (player i_song)
+  state.units[0].route[0]: 1 -> 0
+  later changed records: 48; total records: 66 -> 67
+FAIL battle r1651_thorne
+  turn 20, round 1, after fire x09; unit x05 (player i_blade)
+  state.units[0].sh[0]: 1 -> 9
+  later changed records: 135; total records: 156 -> 115
+FAIL battle r1651_sekhmar
+  turn 7, round 1, after fire x07; unit x04 (player d_harvester)
+  state.units[0].crew: 43 -> 44
+  later changed records: 105; total records: 40 -> 113
+FAIL battle r1651_anuket
+  turn 58, round 3, after activation x09; unit x05 (player d_jackal)
+  state.units[0].sec.mid.hp: 37 -> 45
+  later changed records: 4; total records: 63 -> 63
+FAIL battle r1651_khepra
+  turn 45, round 3, after fire x07; unit x04 (player d_jackal)
+  state.units[0].sec.mid.hp: 47 -> 54
+  later changed records: 53; total records: 92 -> 99
+FAIL battle r1651_cmdoverride
+  turn 8, round 1, after fire x07; unit x04 (player penitent)
+  state.units[0].sec.mid.hp: 60 -> 61
+  later changed records: 80; total records: 88 -> 89
+FAIL file threat_s4.json
+  map.3.-1,10: "405e28f5c28f5c28" -> "4065e51eb851eb85"
+FAIL: saved Godot results; 379 battles checked, 276 changed, 1 other files changed, 277 failures; 43.370 s

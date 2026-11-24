@@ -2811,7 +2811,7 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 	if t == null or jt(t.get("dead")): return false
 	var quad = shieldQuad(t, gh); var shBefore = float(z0(t.get("shp")))   # pool before the volley (R246)
 	var res = {"shield": 0, "hull": 0, "crits": 0, "hits": 0, "misses": 0, "sys": null}
-	var hc = clamp_(hitChance(gh, w, t) + (10 if jt(S.get("first")) else 0) + (15 if (jt(t.get("nem")) and nemWeak("torp")) else 0), 5, 95); var shots = []
+	var hc = clamp_(hitChance(gh, w, t) + (10 if jt(S.get("first")) else 0) + (15 if (jt(t.get("nem")) and nemWeak("torp")) else 0) - (calledAim() if jt(S.get("called")) else 0.0), 5, 95); var shots = []   # issue 2033: a called shot's aim cost
 	for i in range(int(w["shots"])): shots.append(rnd() * 100.0 < hc)
 	var im = 0.5 if jt(S.get("dark")) else 1.0   # Sable T1b: torpedoes fired in the dark are intercepted at half the usual chance
 	if S["side"] == "player" and riderOn("malek"): riderFxOnce(t, "Point defense blind")   # issue 1651 Malek rider: no point defense or screening wings this round
@@ -3254,9 +3254,10 @@ func _expected_hull(raw: float, absorbed: float, armor: float, rear: bool, brace
 # average damage roll and hit chance. This is an estimate, not a simulated attack.
 # Shield routing only follows a landed hit, as it does in combat, so every shot
 # branches into a hit and a miss and both branches carry their own pool.
-func previewVolley(u: Dictionary, guns: Array, t: Dictionary) -> Dictionary:
+func previewVolley(u: Dictionary, guns: Array, t: Dictionary, called = null) -> Dictionary:   # issue 2033: called is a priority section ("prow", "mid", "eng") or null
 	var out := {}
 	if guns.is_empty(): return out
+	var callAim: float = calledAim() if (jt(called) and not jt(t.get("isSq"))) else 0.0
 	var source := u.duplicate()
 	var target := t.duplicate()
 	var route = t.get("route")
@@ -3279,11 +3280,12 @@ func previewVolley(u: Dictionary, guns: Array, t: Dictionary) -> Dictionary:
 		var torp := torpSalvo(w, u)
 		var scale := 1.0
 		if torp:   # issue 1560: the same torpedo aim and warhead bonuses as torpSalvoOf and torpImpact
-			var extra := (10.0 if torp_true else 0.0) + (15.0 if (jt(t.get("nem")) and nemWeak("torp")) else 0.0)
-			if extra > 0.0: shot["hit"] = clampf(float(shot["hit"]) + extra, 5.0, 95.0)
+			var extra := (10.0 if torp_true else 0.0) + (15.0 if (jt(t.get("nem")) and nemWeak("torp")) else 0.0) - callAim
+			if extra != 0.0: shot["hit"] = clampf(float(shot["hit"]) + extra, 5.0, 95.0)
 			scale = float(TB.TORP_WARHEAD)
 			if prey_bonus > 0.0: scale *= 1.0 + prey_bonus
 			if torp_carry > 0.0: scale *= 1.0 + torp_carry; torp_carry = 0.0
+		elif callAim > 0.0: shot["hit"] = max(5.0, float(shot["hit"]) - callAim)   # as fireWeapon: the aim cost after the other modifiers
 		states = _estimate_gun(u, w, target, shot, brace, guard, scale, states)
 	return out
 # A state key is (the shield pool left after some landed hits, 1 once a hit has routed this facing); its value is the chance of
@@ -3724,6 +3726,8 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 	if not jt(opts.get("intercept")) and not jt(u.get("isSq")):
 		fstat(u["fac"], "shots")
 		if syncOn(u, t): fstat(u["fac"], "syncShots")
+	if called != null and jt(t.get("isSq")): called = null   # issue 2033: an escort wing took the hit, so nothing is called
+	if called != null: hc = max(5.0, hc - calledAim())   # issue 2033: a called shot trades aim for the chosen section
 	var shots = []
 	for i in range(int(w["shots"])): shots.append(rnd() * 100.0 < hc)
 	if capM3("flightCast") and not jt(opts.get("intercept")) and u["side"] == "player" and jt(u.get("isSq")) and t["side"] == "enemy" and not jt(m3S().get("flight")):
@@ -3835,7 +3839,7 @@ func _landVolley_raw(u, w, t, o) -> bool: # the shots of one weapon land (direct
 	var quad = o["quad"]; var shots = o["shots"]; var called = o["called"]; var res = o["res"]; var shBefore = o["shBefore"]
 	var evMark := events.size()   # issue 1481: a mid-section loss inside this volley already sends its own break
 	if called != null:
-		u["crit"] = u["crit"] + 15; t["_calledSec"] = called
+		u["crit"] = u["crit"] + calledCrit(); t["_calledSec"] = called   # issue 2033: the called-shot crit bonus lives in TB.CALLED_SHOT
 	var hiL = 0
 	for h in shots:
 		var shotIdx = hiL; hiL += 1
@@ -4067,7 +4071,7 @@ func _landVolley_raw(u, w, t, o) -> bool: # the shots of one weapon land (direct
 		if not arr.has(u["id"]): arr.append(u["id"])
 		B["tr"]["volleyShips"][t["id"]] = arr   # Voice T3b counter
 	if called != null:
-		u["crit"] = u["crit"] - 15; t["_calledSec"] = null
+		u["crit"] = u["crit"] - calledCrit(); t["_calledSec"] = null
 	if res.hits > 0 and t["side"] != u["side"] and not jt(o.get("intercept")) and B.get("rider") is Dictionary:   # issue 1651
 		if riderVolley("sekhmar", u) and not jt(t.get("dead")) and not jt(t.get("isSq")): t["riderAimDown"] = B["round"] + 1; riderFxOnce(t, "Dazzled")   # Sekhmar: -10 aim for 2 rounds
 		if jt(u.get("isSq")) and u["side"] == "player" and riderOn("matriarch"):   # Matriarch: the swarm feeds its brood (the shared Chorus feed cap holds)
@@ -7258,6 +7262,36 @@ func evalOffense(a, ready: Array, targets: Array) -> float:
 		tot += best
 	return tot
 func aiVet() -> bool: return AI_LEVEL == "veteran"
+# Issue 2033 (AAA item 7, R450): called shots. A volley may name one section of a capital ship (prow = its weapons, mid =
+# midship, eng = engines): every hit lands on that section, crits gain TB.CALLED_SHOT.crit and always knock out that
+# section's system, and the volley pays TB.CALLED_SHOT.aim to hit. Sections only: shields stay one pool.
+const CALLED_SECS = ["prow", "mid", "eng"]
+func calledAim() -> float: return float(TB.CALLED_SHOT["aim"])
+func calledCrit() -> int: return int(TB.CALLED_SHOT["crit"])
+func calledOk(t, sec) -> bool:   # a section a volley can call: a live section of a capital ship
+	if t == null or jt(t.get("isSq")) or jt(t.get("dead")) or not CALLED_SECS.has(sec) or not (t.get("sec") is Dictionary): return false
+	var s = t["sec"].get(sec)
+	return s is Dictionary and float(z0(s.get("hp"))) > 0.0 and not jt(s.get("broken"))
+func aiRunning(t) -> bool:   # a player ship running for it: the Breakthrough fleet heading for the far edge, or a ship under Full Ahead
+	if t["side"] != "player" or jt(t.get("isSq")): return false
+	return jt(t.get("fullAhead")) or (jt(B.get("obj")) and B["obj"].type == "break")
+func aiTopThreat() -> Variant:   # the player capital ship with the most firepower still working (ties: the first in the battle's order)
+	var best: Variant = null; var bv = 0.0
+	for p in alive("player"):
+		if jt(p.get("isSq")): continue
+		var v = 0.0
+		for w in p["weapons"]:
+			if w["k"] == "flak" or gt(w.get("off"), 1): continue
+			v += float(w["dmg"]) * float(w["shots"])
+		if v > bv: bv = v; best = p
+	return best
+func aiCalledSec(u, w, t) -> Variant:   # Veteran only: engines on a runner, weapons on the top threat; never on a shot that should kill
+	if not aiVet() or t == null or t["side"] != "player" or jt(t.get("isSq")): return null
+	if expectedVs(u, w, t).hull >= t["hp"]: return null
+	var sec = null
+	if aiRunning(t): sec = "eng"
+	elif is_same(t, aiTopThreat()): sec = "prow"
+	return sec if (sec != null and calledOk(t, sec)) else null
 class AiThreatGun:
 	var weapon: Dictionary
 	var ion: float
@@ -7647,7 +7681,7 @@ func aiVolley(u, live: Callable) -> Variant:
 				if not jt(t.get("isSq")): v *= 1.1
 				if v > bv: bv = v; bt = t
 		if bt != null and bv > 0.5:
-			fireWeapon(u, wi, bt, {"called": null}); fired = true
+			fireWeapon(u, wi, bt, {"called": aiCalledSec(u, w, bt)}); fired = true   # issue 2033: Veteran calls a section; Standard never does
 			if not live.call(): return null
 	return fired
 func pathField(targets: Array) -> Dictionary:
