@@ -13,7 +13,7 @@ const CampaignScript := preload("res://campaign/campaign.gd")
 const SEED := 1
 
 class Playback extends "res://scenes/battle/battle.gd":
-	func wait(_ms: float) -> void:
+	func wait(_ms: float, _skippable_cut := false) -> void:
 		pass
 
 var failures := 0
