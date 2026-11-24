@@ -2638,6 +2638,8 @@ func ensureNemesis() -> Variant: return nemActive()   # B4 saves get an R42 iden
 func nemGender(fac, name: String) -> String:
 	var F = NEM_FAC.get(fac, {}) if fac != null else {}
 	if jt(F.get("g")): return str(F["g"])
+	# Saves from before the name pool changed may still need a pronoun for Maren.
+	if fac == "hegemony" and name.get_slice(" ", 0) == "Maren": return "f"
 	for p in or_(F.get("fem"), []):
 		if name.begins_with(str(p)): return "f"
 	return "m"

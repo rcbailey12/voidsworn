@@ -11,6 +11,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
 const SHIELD_CACHE := preload("res://fx/fx_shield_cache.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
+const IDLE := preload("res://fx/fx_idle.gd")
 const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
@@ -93,6 +94,7 @@ var _shield_pose := Transform3D.IDENTITY
 # Keep enough recent hulls for a fleet without retaining every asset or pose used in a run.
 const SHIELD_SKIN_CACHE_LIMIT := 48
 static var _shield_skin_arrays: Dictionary = {}   # not GPU: mesh arrays on the CPU, size capped
+static var _warned_shield_factions := {}   # not GPU: faction ids already reported
 var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
@@ -131,6 +133,7 @@ var _dmg_task = -1
 var _dmg_dirty = false
 var _dmg_job: Dictionary = {}
 var _damage_surfaces := {}  # mutable breach coordinates are private to each surface
+var _damage_surfaces_assigned := false
 var _hole_nodes: Array = []
 var _hole_lights: Array = []
 var _marks: Array = []     # weapon marks on the hull (fx_breach.Ent), oldest first, at most BREACH.MARK_CAP
@@ -156,6 +159,11 @@ var _dip_start := 0.0
 var _dip_duration := 0.0
 var _ref_mi: MeshInstance3D = null
 var _ref0 := Transform3D.IDENTITY
+# Issue 1685 (R411): the faction's one idle motion (fx_idle.gd), behind VS_IDLE_MOTION or rendering/effects/idle_motion,
+# default off. Read once per ship, like wounds_v2. _idle is {} while off, or {node, mat, rows, motion} once built.
+var idle_on := IDLE.enabled()
+var _idle: Dictionary = {}
+var _idle_key := -1      # Reduce flashing (1) and Reduce motion (2) as the batch was built; a change rebuilds it
 
 
 # How the hull has moved under the root since the ship was added (ShipView's bob and bank), in the root's frame.
@@ -238,6 +246,37 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 		_build_shield(fx)
 	fx.pend("add:shield", t_a)
 	_last_pos = root.global_position
+	if idle_on:
+		_idle_refresh(fx)
+
+
+# Issue 1685: build (or rebuild) the faction's idle motion batch. Squadrons have none (a wing is craft, not a hull). Reduce
+# flashing and Reduce motion change what is built (fx_idle.gd), so a change of either rebuilds the one batch.
+func _idle_refresh(fx) -> void:
+	if is_instance_valid(_idle.get("node")):
+		var old := _idle["node"] as Node
+		if old.get_parent() != null:
+			old.get_parent().remove_child(old)   # out of the tree now, so the new holder does not get a renamed name
+		old.queue_free()
+	_idle = {}
+	_idle_key = (1 if fx.reduce_flashing else 0) + (2 if _reduce_motion() else 0)
+	if squadron or hull == null or not is_instance_valid(_dmg_root):
+		return
+	_idle = IDLE.build(fx, _dmg_root, hull, faction, fac, _seed, fx.reduce_flashing, _reduce_motion())
+
+
+func _reduce_motion() -> bool:
+	return is_instance_valid(root) and bool(root.get("calm"))   # ShipView.calm, set per view from the Reduce motion setting
+
+
+func _idle_step(fx) -> void:
+	if squadron:
+		return
+	var key := (1 if fx.reduce_flashing else 0) + (2 if _reduce_motion() else 0)
+	if key != _idle_key and not dead and not gone:
+		_idle_refresh(fx)
+	if not _idle.is_empty() and is_instance_valid(_idle.get("node")):
+		(_idle["node"] as Node3D).visible = not dead and not gone
 
 
 # ShipView's placeholder engine glows (render/ship_view.gd sv.engines) sit at fixed spots behind the stern, not at the
@@ -444,6 +483,8 @@ func update(fx, dt: float) -> void:
 	if not hull.doors.is_empty():
 		hull.door_step(fx.now)      # issue 1543: each launch mouth's door lobes at their pose for the effect clock
 	_update_damage_emitters(fx)
+	if idle_on:
+		_idle_step(fx)
 	_list_step(dt)
 	_react_step(fx, dt)
 	_power_step(fx)
@@ -594,6 +635,14 @@ func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 # ---------------------------------------------------------------- shields
 
 func _build_shield(fx) -> void:
+	var colour = fac.get("shield")
+	if not (colour is Color):
+		if not _warned_shield_factions.has(faction):
+			_warned_shield_factions[faction] = true
+			push_warning("FX shield requested for faction '%s' without a shield colour" % faction)
+		shielded = false
+		return
+	var sc: Color = colour
 	var sph = SphereMesh.new()
 	sph.radius = 1.0
 	sph.height = 2.0
@@ -609,7 +658,6 @@ func _build_shield(fx) -> void:
 		skin = sph
 	_shield_mat = fx.mat(SH.SHIELD, 2)
 	_shield_mat.set_shader_parameter("fitted_shape", _shield_tm != null)
-	var sc: Color = fac["shield"]
 	_shield_mat.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
 	_shield_mat.set_shader_parameter("rad", hull.shield_radii())
 	_shield_mat.set_shader_parameter("style", int(fac["shield_style"]))
@@ -1553,7 +1601,7 @@ func _set_wear(fx, hpf: float) -> void:
 # to build. A fresh or lightly hit hull gets them here once, with no mouths (no holes): the same materials a first breach
 # makes, so the brownout and the wear show before any section is cut.
 func ensure_damage_surfaces(fx) -> void:
-	if not _damage_surfaces.is_empty() or dead or gone or squadron or hull == null or fx == null or fx.compat:
+	if _damage_surfaces_assigned or dead or gone or squadron or hull == null or fx == null or fx.compat:
 		return
 	BREACH._inside_overlay(fx, self, meshes, [], fac.get("damage_glow", Color(1.0, 0.45, 0.12)))
 	_power_shown = -1.0
@@ -2216,6 +2264,8 @@ func damage_caps(k := 1.0) -> Vector2i:
 func damage_counts() -> Dictionary:
 	var counts := {"fire": 0, "smoke": 0, "vent": 0, "particles": 0}
 	for e in _damage_emitters + _fading_emitters:
+		if not is_instance_valid(e.get("node")):
+			continue
 		counts[e.kind] += 1
 		counts.particles += e.particles
 	return counts
@@ -2225,7 +2275,9 @@ func _refresh_damage_emitters(fx) -> void:
 	var key := str(stage) + str(_burning) + str(fx.compat) + str(_jammed.keys()) + str(_mount_dead.keys()) + str(dead_nozzles)
 	if key == _emitter_key: return
 	_emitter_key = key
-	for e in _fading_emitters: e.node.queue_free()
+	for e in _fading_emitters:
+		if is_instance_valid(e.get("node")):
+			e.node.queue_free()
 	_fading_emitters.clear()
 	var desired: Array = []
 	var caps := damage_caps(fx.cap_k)
@@ -2266,6 +2318,8 @@ func _refresh_damage_emitters(fx) -> void:
 				smoke += 1
 	var keep: Array = []
 	for e in _damage_emitters:
+		if not is_instance_valid(e.get("node")):
+			continue
 		var match_i := -1
 		for j in desired.size():
 			if desired[j].id == e.id and desired[j].st == e.st: match_i = j; break
@@ -2280,17 +2334,17 @@ func _refresh_damage_emitters(fx) -> void:
 				_fading_emitters.append(e)
 			else: e.node.queue_free()
 	for e in desired:
-		_build_damage_emitter(fx, e)
-		keep.append(e)
+		if _build_damage_emitter(fx, e):
+			keep.append(e)
 	_damage_emitters = keep
 
 
-func _build_damage_emitter(fx, e: Dictionary) -> void:
+func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	if e.has("tur") or e.has("mp"):
 		_build_wisp(fx, e)
-		return
+		return true
 	var a := _anchor(e.sec, "a")
-	if a.is_empty(): return
+	if a.is_empty(): return false
 	var p: Vector3 = a.p
 	var n: Vector3 = a.n
 	var glow: Color = fac.damage_glow
@@ -2344,15 +2398,20 @@ func _build_damage_emitter(fx, e: Dictionary) -> void:
 	e["particles"] = b.particle_count
 	e["sprite_kind"] = kind
 	e["source"] = p
+	return true
 
 
 func _update_damage_emitters(fx) -> void:
 	if dead or gone:
-		for e in _damage_emitters: e.node.visible = false
-		for e in _fading_emitters: e.node.visible = false
+		for e in _damage_emitters + _fading_emitters:
+			if is_instance_valid(e.get("node")):
+				e.node.visible = false
 		return
 	for j in range(_fading_emitters.size() - 1, -1, -1):
 		var e: Dictionary = _fading_emitters[j]
+		if not is_instance_valid(e.get("node")):
+			_fading_emitters.remove_at(j)
+			continue
 		var gate: float = clampf((e.until - fx.now) / 0.8, 0.0, 1.0)
 		e.mat.set_shader_parameter("gate", gate)
 		if gate <= 0.0:

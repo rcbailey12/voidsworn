@@ -3,6 +3,7 @@ extends Node3D
 # Each ribbon samples its own craft's stern in world space, including turns.
 const CRAFT := preload("res://render/squadron_craft.gd")
 const LOOK := preload("res://fx/faction_look.gd")
+const SHADER_CACHE := preload("res://render/shader_cache.gd")
 static var ship_manifest_path := "res://assets/ships/manifest.json"
 static var ship_cache_dir := "res://gen/ships"
 static var _model_codes: Dictionary = {}   # not GPU: model code strings
@@ -80,9 +81,7 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	length = size
 	phase = seed_value
 	trail_mat = ShaderMaterial.new()
-	var shader := Shader.new()
-	shader.code = TRAIL
-	trail_mat.shader = shader
+	trail_mat.shader = SHADER_CACHE.for_code(TRAIL)
 	trail_mat.set_shader_parameter("trail_len", size)
 	# Ryan (Nov 20 2026, issue 1373): the long wide Chorus wake made each spore read as a tadpole ("comes off looking like
 	# sperm"); a spore now leaves only a short faint shimmer that is gone within a craft length or two
