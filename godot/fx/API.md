@@ -286,7 +286,7 @@ the built interior takes the shared `fx_shaders.INTERIOR` shader (`fx_hull.inter
 That shader multiplies the faction pattern over the surface: a surface whose glTF material extras name an
 `interior_role` (Interior Kit V2) keeps its own colour and trim maps; an older one keeps only its texture's light and dark
 in the faction's `interior_lift`, and its own glow keeps only its brightness, in `interior_accent`
-(`fx_hull.interior_role`: wall, bone, core, glass, organ). Walls are held to 0.11 and non-core glow to 0.25 by scaling
+(`fx_hull.interior_role`: wall, bone, core, glass, organ). Walls are held to the faction ceiling (`wound_of(...).wall_max`: 0.11, the Glasswrights their `interior.wall_max`, 0.45, pale pearl glass) and non-core glow to 0.25 by scaling
 the colour, never per channel; cores, rim heat, bus tips and fresh burns pass. `fx.wreck_interior(source, faction)`
 hands the same shader to the wreck pieces, settling into the wreck look over 4 s from the death. Over the caps the
 oldest cutouts stay open (`cap_holes`). `fx_breach.open_mouths(s)` lists a ship's open mouths ({c, n, R}, hull

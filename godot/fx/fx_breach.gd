@@ -2018,7 +2018,17 @@ static func v2_on() -> bool:
 # The faction's V2 wound profile (faction_looks.json "wound"); {} for an unknown faction.
 static func wound_of(faction: String) -> Dictionary:
 	var w = FL.of(faction).get("wound", {})
-	return w if w is Dictionary else {}
+	if not w is Dictionary:
+		return {}
+	# Ryan's Glasswright interiors pick (Nov 24: "it's just....dark grey? it will look extremely odd as wreckage"): a
+	# faction's interior wall ceiling is its interior.wall_max (Glasswrights 0.45, pale pearl glass); every other faction
+	# keeps the R420 0.11. The wound profile carries it, so the interior shader and its checks read one value
+	var iv = FL.of(faction).get("interior", {})
+	var wm: float = float(iv.get("wall_max", 0.11)) if iv is Dictionary else 0.11
+	if not (w as Dictionary).has("wall_max") or float(w["wall_max"]) != wm:
+		w = (w as Dictionary).duplicate()
+		w["wall_max"] = wm
+	return w
 
 
 static func wound_col(w: Dictionary, key: String, fb: Color) -> Color:

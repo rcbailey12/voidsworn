@@ -320,8 +320,15 @@ func _run() -> void:
 	for faction in ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
 		var lift: Array = FL.of(faction)["wound"]["interior_lift"]
 		var mean := (float(lift[0]) + float(lift[1]) + float(lift[2])) / 3.0
-		check(float(lift.max()) <= 0.11 and mean >= 0.025 and mean <= 0.10, "%s: wound interior lift within the R420 ceiling (mean %.3f)" % [faction, mean])
-	check(SH.INTERIOR.contains("lit *= lm > 0.11 ? 0.11 / lm : 1.0;") and SH.INTERIOR.contains("soft *= pk > 0.25 ? 0.25 / pk : 1.0;"), "R420: the interior shader holds walls to 0.11 and non-core glow to 0.25 by scaling the colour")
+		# Ryan Nov 24 (Glasswright interiors pick): Glasswright insides are pale pearl glass, ceiling 0.45; the rest 0.11
+		var ceil_w: float = 0.45 if faction == "ithar" else 0.11
+		var floor_w: float = 0.2 if faction == "ithar" else 0.025
+		check(float(lift.max()) <= ceil_w and mean >= floor_w and mean <= ceil_w - 0.01, "%s: wound interior lift within its ceiling %.2f (mean %.3f)" % [faction, ceil_w, mean])
+		var wm: float = float(BREACH.wound_of(faction).get("wall_max", -1.0))
+		var iv = FL.of(faction).get("interior", {})
+		check(wm == (float(iv.get("wall_max", 0.11)) if iv is Dictionary else 0.11) and (faction == "ithar" or wm == 0.11), "%s: the interior wall ceiling reaches the wound profile (%.2f)" % [faction, wm])
+	check(SH.INTERIOR.contains("lit *= lm > v2_wall_max ? v2_wall_max / lm : 1.0;") and SH.INTERIOR.contains("uniform float v2_wall_max = 0.11;") and SH.INTERIOR.contains("soft *= pk > 0.25 ? 0.25 / pk : 1.0;"), "R420: the interior shader holds walls to the faction ceiling (0.11 default) and non-core glow to 0.25 by scaling the colour")
+	check(not SH.INTERIOR.contains("vec3(0.09, 0.1, 0.1) * r.x"), "Ryan Nov 24: a Glasswright wreck's inside goes to pale frosted pearl, never dark grey")
 	var ch: Dictionary = FL.of("chorus")["wound"]
 	var mag := false
 	for key in ["scorch_col", "rim_metal", "interior_lift", "interior_accent"]:
