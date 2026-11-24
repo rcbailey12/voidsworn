@@ -7,6 +7,8 @@ const HT := preload("res://render/hull_table.gd")
 const BL := preload("res://world/board_look.gd")   # the board look trial (today, A holo, B living, C cinematic + tactical)
 const ModalFocus := preload("res://ui/theme/modal_focus.gd")
 const A4P := preload("res://assets/ships/a4_props.gd")  # A4's painted station and derelicts (null when not built)
+const TerrainScorch := preload("res://fx/terrain_scorch.gd")
+const BattleLook := preload("res://render/look.gd")
 const BV := preload("res://world/blocker_visuals.gd")
 const PL := preload("res://world/world_planet.gd")   # issue 1765: the board planet's surfaces
 const LS := preload("res://render/line_style.gd")   # issue 1374 (R362): the one line style (width, glow, fade, role colours)
@@ -963,6 +965,8 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 			offset = Vector3(2.0, 13.0, 1.5)
 		a4.transform = Transform3D(Basis.from_euler(attitude), c + offset)
 		props.add_child(a4)
+		if a4.has_meta("station_T2") and BattleLook.post_fx_enabled("DECALS"):
+			TerrainScorch.station(a4)
 		return
 	var p := "res://gen/hulls/O1_37.res"
 	if not ResourceLoader.exists(p):

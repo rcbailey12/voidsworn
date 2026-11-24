@@ -38,6 +38,7 @@ var setting := {}
 var nebula_wake := false   # issue 1079 prototype, off by default (world_living.gd, nebula_wake.gd)
 var _spin: Array = []        # [node, axis, rate]
 var _well := Vector3.INF
+var _well_radius := 0.0
 var _rng := RandomNumberGenerator.new()
 var _planet_dir := Vector3.ZERO
 var _planet_ang := 0.0
@@ -54,6 +55,7 @@ var _sky_mat: ShaderMaterial = null
 var _look := {}
 var _mats := {}
 var _batch = null
+var _scorched_rocks_left := 0
 var _center := Vector3.ZERO
 var _lo := Vector3.ZERO
 var _hi := Vector3.ZERO
@@ -155,7 +157,13 @@ func well_position() -> Vector3:
 	return _well
 
 
+func well_radius() -> float:
+	return _well_radius
+
+
 func step(dt: float) -> void:
+	if _batch != null:
+		_batch.step(dt)
 	for s in _spin:
 		var n: Node3D = s[0]
 		if is_instance_valid(n):
@@ -236,6 +244,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	if not deadstar:
 		system(mk != "planet")
 	_batch = WR.Batch.new()
+	_scorched_rocks_left = 8 if LOOK.post_fx_enabled("DECALS") else 0
 	var rock_kind := String(setting["rock"])
 	var counts := {"rock": 0, "debris": 0, "neb": 0, "storm": 0}
 	var clouds := {"neb": [], "storm": []}
@@ -723,6 +732,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	root.position = c
 	add_child(root)
 	var Rsh := 15.0 * s
+	_well_radius = Rsh
 	# the black core (writes depth: ships behind it are hidden, as they would be)
 	var core := MeshInstance3D.new()
 	var sm := SphereMesh.new()
@@ -908,8 +918,11 @@ func blocker(p: Vector3, kind: String) -> void:
 	var s := _rng.randf_range(BLOCKER_SCALE_MIN, BLOCKER_SCALE_MAX)
 	var b := _rand_basis(_rng)
 	var crystal := kind == "crystal"
+	var scorch := _scorched_rocks_left > 0
+	if scorch:
+		_scorched_rocks_left -= 1
 	_batch.add(name, mat, true, Transform3D(b.scaled(Vector3.ONE * s), p + Vector3(0, _rng.randf_range(0.5, 2.5), 0)),
-		_rand_axis(_rng), 0.0 if crystal else _rng.randf_range(0.004, 0.012), _rng.randf())
+		_rand_axis(_rng), 0.0 if crystal else _rng.randf_range(0.004, 0.012), _rng.randf(), scorch)
 	for i in _rng.randi_range(2, 4):
 		var a := _rng.randf() * TAU
 		var rr := _rng.randf_range(4.5, 6.2)

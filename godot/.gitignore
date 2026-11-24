@@ -1,6 +1,8 @@
 .godot/
 gen/
 *.import
+# LUTs require the Texture3D importer and explicit slice layout on a fresh checkout.
+!assets/luts/*.png.import
 # Per-hull ship assets are built on the PC and copied in for captures; only the manifest, README, scripts and previews are tracked.
 assets/ships/*/
 !assets/ships/previews/
