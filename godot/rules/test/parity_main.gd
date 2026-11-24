@@ -190,7 +190,17 @@ func scenario(name: String, out: String, seed_override: int = -1, file: String =
 			var t0 := Time.get_ticks_usec()
 			rec.append(snap(turn[0], kind + (" " + String(u["id"]) if u != null else ""))); turn[0] += 1
 			snap_us += Time.get_ticks_usec() - t0
+	var skill_targets: Array = S.get("skill_target_slots", [])
+	api.interactive_deployment = not skill_targets.is_empty()
 	api.new_battle_scenario(S, -1)
+	if api.interactive_deployment:
+		var targets: Array = api.view()["skill_target"].get("targets", [])
+		for value in skill_targets:
+			var slot := int(value)
+			if slot < 0 or slot >= targets.size() or not api.pick_skill_target(targets[slot]["id"]):
+				printerr("invalid skill target slot ", value, " in ", name); return 1
+		if api.phase != "player":
+			printerr("skill targets did not finish deployment in ", name); return 1
 	UNDO_FIX = S.get("undo") == true
 	var g := 0
 	var full: bool = S.get("bot") == "full"
