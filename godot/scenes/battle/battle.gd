@@ -191,6 +191,7 @@ var round_save_cb: Callable = Callable()   # issue 1451: campaign battles save e
 var round_saved := 0                       # the newest round handed to round_save_cb
 var round_on_disk := 0                     # the newest round round_save_cb reported written (0: only the pre-fight save)
 var showcase := false     # the title screen's decorative battle (campaign3d.js setupShowcase): no HUD, no turns, no input, slow orbit
+var _title_showcase := false   # the title owns audio and stays interactive while the backdrop builds
 var music_hits := 0        # issue 1448: hits landed this round by either side, fed to the music as `shots`
 var boss_fight := false    # a sector flagship fight or the finale (battle kind "boss"): boss music and the champion fanfare
 var finale_fight := false  # R78 Q18: the run's final battle lights the new sun over the board, sector by sector
@@ -218,6 +219,11 @@ var tail_round := -1          # the round whose enemy tail (every one of your sh
 var chime_round := -1         # the round whose first hand-over played the "your turn" cue
 
 
+func use_as_title_showcase() -> void:
+	showcase = true
+	_title_showcase = true
+
+
 func _ready() -> void:
 	_args()
 	t_start = Time.get_ticks_msec() / 1000.0
@@ -243,13 +249,15 @@ func _ready() -> void:
 	if args.has("reduce-motion"):
 		reduce_motion = true
 	_build_world()
-	sfx = Sfx.new()
-	sfx.name = "Sfx"
-	add_child(sfx)
-	sfx.cam = cam
-	death_audio = DeathAudio.new()
-	death_audio.sfx = sfx
-	add_child(death_audio)
+	# The showcase holds its fleets still and the title owns the audio.
+	if not _title_showcase:
+		sfx = Sfx.new()
+		sfx.name = "Sfx"
+		add_child(sfx)
+		sfx.cam = cam
+		death_audio = DeathAudio.new()
+		death_audio.sfx = sfx
+		add_child(death_audio)
 	hud = HUD.new()
 	add_child(hud)
 	hud.action.connect(_on_action)
@@ -546,6 +554,7 @@ func begin_with(a) -> void:
 
 func _begin(a) -> void:
 	_gen += 1   # issue 1433: work still awaiting from the last battle on this node is stale now
+	var gen := _gen
 	_api_join()
 	retiring = false
 	opening = false
@@ -559,10 +568,12 @@ func _begin(a) -> void:
 	if obj0 is Dictionary and str(obj0.get("type", "")) == "hold":
 		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
 	if gfx != null:
-		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
-	if DisplayServer.get_name() != "headless":
-		await get_tree().process_frame
-		await get_tree().process_frame
+		gfx.defer_initial_cuts = _title_showcase or DisplayServer.get_name() != "headless"
+	if _title_showcase or DisplayServer.get_name() != "headless":
+		for i in 2:
+			await get_tree().process_frame
+			if quitting or _stale(gen):
+				return
 	TBL = _api_tables()
 	if ai_level != "":
 		_api_set_ai(ai_level)
@@ -641,10 +652,19 @@ func _begin(a) -> void:
 			c.queue_free()
 	else:
 		backdrop.build(cam.bounds, env)
+	# The title is already usable. Give it a frame between the board build and each hull setup.
+	if _title_showcase:
+		await get_tree().process_frame
+		if quitting or _stale(gen):
+			return
 	V = api.view()
 	_index_view()
 	for u in V["units"]:
 		_make_view(u)
+		if _title_showcase:
+			await get_tree().process_frame
+			if quitting or _stale(gen):
+				return
 	_sync(V)
 	if world != null: world.use_ship_debris(views.values())
 	# open on your fleet, looking toward the enemy (the browser game's camera starts over the player's side)
@@ -684,7 +704,9 @@ func _begin(a) -> void:
 	if ResourceLoader.exists("res://portraits/portraits.gd") and adm != "":
 		var A = TBL.get("ADMIRALS", {}).get(adm, {})
 		hud.set_crest(load("res://portraits/portraits.gd").crest(adm), str(A.get("n", adm)) if A is Dictionary else adm)
-	await _warmup()
+	await _warmup(gen)
+	if quitting or _stale(gen):
+		return
 	if music != null:
 		var pf := "voidsworn"
 		for u in V["units"]:
@@ -814,10 +836,12 @@ const A4P := preload("res://assets/ships/a4_props.gd")   # issue 1536: the Hold 
 var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arrive mid-battle (render/arrival_warm.gd)
 
 
-func _warmup() -> void:
+func _warmup(gen: int) -> void:
 	warming = true
 	hud.loading(true)
 	if world != null: await world.wait_ready()
+	if quitting or _stale(gen):
+		return
 	var keep := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
 	cam.b = 0.6
 	cam.r = maxf(cam.bounds.x, cam.bounds.y) * 2.4
@@ -825,14 +849,21 @@ func _warmup() -> void:
 	cam.snap()
 	for i in 3:
 		await get_tree().process_frame
-	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless":
+		if quitting or _stale(gen):
+			return
+	# Title ships hold formation. They never need damage cuts, arrivals or combat effect warm-up.
+	if not _title_showcase and gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless":
 		# issue 1289: the reinforcement's hull is built, cut and drawn here with the others, then hidden until it arrives
 		if api != null and api.has_method("arrival_previews"):
 			arrival_warm = ArrivalWarm.new()
 			arrival_warm.prepare(self, gfx, api.arrival_previews(), Vector3.ZERO)
 			for i in 2:
 				await get_tree().process_frame
+				if quitting or _stale(gen):
+					return
 		await gfx.prepare_battle_hulls()
+		if quitting or _stale(gen):
+			return
 		# at most 20 s: a warm-up that never returns must never hold the battle (Opus review, Nov 3)
 		var done := [false]
 		var run := func() -> void:
@@ -842,17 +873,25 @@ func _warmup() -> void:
 		var t0 := Time.get_ticks_msec()
 		while not done[0] and Time.get_ticks_msec() - t0 < 20000:
 			await get_tree().process_frame
+			if quitting or _stale(gen):
+				return
 		if arrival_warm != null:
 			arrival_warm.park()
 	for i in 2:
 		await get_tree().process_frame
+		if quitting or _stale(gen):
+			return
 	cam.a = keep["a"]
 	cam.b = keep["b"]
 	cam.r = keep["r"]
 	cam.t = keep["t"]
 	cam.snap()
 	await get_tree().process_frame
+	if quitting or _stale(gen):
+		return
 	await load("res://main/load_screen.gd").settle(get_tree())
+	if quitting or _stale(gen):
+		return
 	pipe_base = _pipe_count()
 	hud.loading(false)
 	warming = false
@@ -895,6 +934,8 @@ func _make_view(u: Dictionary) -> void:
 func _register_fx_ship(u: Dictionary, sv: ShipView) -> void:
 	if gfx != null and gfx.has_method("add_ship"):
 		var info := {"faction": str(u["fac"]), "cls": str(u["cls"]), "size": float(u["size"]), "squadron": bool(u["squadron"]), "flagship": bool(u["flagship"]), "code": sv.code}
+		if _title_showcase:
+			info["shielded"] = false   # the idle ships never show a shield cue or route power
 		if not sv.a4:
 			info["meshes"] = sv.meshes   # A4 ships: fx finds the hull and its skin_<n> patches itself
 		gfx.add_ship(str(u["id"]), sv, info)

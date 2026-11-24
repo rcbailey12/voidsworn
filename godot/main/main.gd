@@ -332,6 +332,7 @@ func _on_battle_option(key: String, value) -> void:
 # ---------------------------------------------------------------- screens
 
 func show_title() -> void:
+	var t_build := Time.get_ticks_usec()
 	_clear()
 	if music != null:
 		music.play_title()
@@ -339,8 +340,12 @@ func show_title() -> void:
 	title.main = self
 	add_child(title)
 	# the decorative battle behind the menu, built once the title has painted, then faded in over the sky picture
-	if _showcase_wanted():
-		get_tree().create_timer(0.5).timeout.connect(_start_showcase)
+	if _retire_hold > 0 and not _retired.is_empty():
+		_title_return_us = _retire_since_us
+		_title_draw_pending = true
+		_time_title_return(title, Time.get_ticks_usec() - t_build)
+	elif _showcase_wanted():
+		get_tree().create_timer(0.5).timeout.connect(_rebuild_due.bind(_showcase_gen))
 	if args.has("career-shot"):
 		_career_shot.call_deferred(str(args["career-shot"]))
 
@@ -399,18 +404,28 @@ static func next_showcase_fac() -> String:
 func _start_showcase() -> void:
 	if quitting or title == null or not is_instance_valid(title) or showcase != null or not _showcase_wanted():
 		return
+	var shown_title := title
+	var t_leave := _title_return_us
+	var t_build := Time.get_ticks_usec()
 	showcase = BattleScene.instantiate()
-	showcase.showcase = true
+	var building := showcase
+	showcase.use_as_title_showcase()
 	showcase.args["quality"] = str(settings["quality"])
 	showcase.args["taa"] = bool(settings.get("taa", false))
 	showcase.args["fac"] = next_showcase_fac()
 	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
 	add_child(showcase)
 	move_child(showcase, 0)
-	while is_instance_valid(showcase) and not showcase.showcase_ready:
+	var t_attached := Time.get_ticks_usec()
+	while not quitting and is_instance_valid(building) and showcase == building and not building.showcase_ready:
 		await get_tree().process_frame
-	if is_instance_valid(showcase) and title != null and is_instance_valid(title) and title.has_method("reveal_showcase"):
-		title.reveal_showcase()
+	if quitting or not is_instance_valid(building) or showcase != building or not is_instance_valid(shown_title) or title != shown_title:
+		return
+	if t_leave > 0:
+		var t_ready := Time.get_ticks_usec()
+		print("[main] battle to title: showcase attach %.1f ms, build after attach %.1f ms, ready %.1f ms after the leave" % [
+			(t_attached - t_build) / 1000.0, (t_ready - t_attached) / 1000.0, (t_ready - t_leave) / 1000.0])
+	title.reveal_showcase()
 	if args.has("title-shot"):
 		# --title-shot <png>: the title with its showcase faded in (screenshot jobs), then quit; --title-open settings opens
 		# the Settings panel first
@@ -446,8 +461,12 @@ func _arm_rebuild(gen: int) -> void:
 
 # a quicker press (say on to Low) since this was asked for wins: only the newest request, still wanted, builds
 func _rebuild_due(gen: int) -> void:
-	if gen == _showcase_gen and _showcase_wanted():
-		_start_showcase()
+	while gen == _showcase_gen and not quitting and title != null and _showcase_wanted():
+		# Keep the new backdrop's build off the first title frame and out of the old battle's freeing slices.
+		if not _title_draw_pending and (_title_return_us == 0 or _retired.is_empty()):
+			_start_showcase()
+			return
+		await get_tree().process_frame
 
 
 # the title's battle backdrop: not in bot or headless runs, never on Low (Low has none), not with --no-showcase
@@ -456,6 +475,9 @@ func _showcase_wanted() -> bool:
 
 
 func _clear() -> void:
+	_showcase_gen += 1
+	_title_draw_pending = false
+	_title_return_us = 0
 	if title != null and is_instance_valid(title):
 		title.queue_free()
 	title = null
@@ -506,11 +528,9 @@ func quick_battle() -> void:
 	battle = b
 	b.start_default()
 	b.finished.connect(func(_r) -> void:
-		var t_leave := Time.get_ticks_usec()
 		battle = null
 		retire_scene(b)
-		show_title()
-		_time_title_return(t_leave), CONNECT_ONE_SHOT)
+		show_title(), CONNECT_ONE_SHOT)
 	# --title-after S (issue 1435 PC proof): leave the quick battle for the title after S seconds, as the menu's "to title"
 	if args.has("title-after"):
 		get_tree().create_timer(float(args["title-after"]), true, false, true).timeout.connect(func() -> void:
@@ -519,16 +539,22 @@ func quick_battle() -> void:
 				b._on_action("to_title", null))
 
 
-# Issue 1519: a finished battle used to be freed whole at the end of the leave frame, 0.4 to 0.8 s of node and
-# resource frees before the title could draw (1435 CLOSE5: first title frame 551 and 591 ms). Now it is switched off and
-# hidden at once, and its nodes are freed deepest first, a few milliseconds a frame, behind the screen that replaces it
+# Issue 1519: a finished battle used to be freed whole at the end of the leave frame, before the title could draw
+# (1435 CLOSE5: first title frame 551 and 591 ms). Switch it off and hide it at once, then free its nodes
+# deepest first, a few milliseconds a frame, behind the screen that replaces it
 # (the battle node itself last, so its _exit_tree still drains its worker tasks). Bot runs free at once, as before.
 # quit_clean frees whatever is still waiting.
 const RETIRE_BUDGET_US := 6000
 var _retired: Array = []      # nodes still to free, children before parents
 var _retire_free_n := 0
 var _retire_worst_us := 0    # the longest single freeing slice, for the [main] line
+var _retire_free_us := 0
+var _retire_frames := 0
+var _retire_since_us := 0
+var _retire_park_us := 0
 var _retire_hold := 0        # frames to wait before the first slice
+var _title_return_us := 0
+var _title_draw_pending := false
 
 
 func retire_scene(n: Node) -> void:
@@ -537,11 +563,19 @@ func retire_scene(n: Node) -> void:
 	if bot_mode or quitting:
 		n.queue_free()
 		return
+	var t_park := Time.get_ticks_usec()
+	_retire_since_us = t_park
+	_retire_free_n = 0
+	_retire_worst_us = 0
+	_retire_free_us = 0
+	_retire_frames = 0
 	# It stays in the tree (its awaiting work still has a tree to wake in, and bails on quitting/retiring), but it stops
 	# processing, draws nothing and no longer owns the camera or the environment.
 	if "quitting" in n:
 		n.quitting = true
 	n.process_mode = Node.PROCESS_MODE_DISABLED
+	if "sfx" in n and is_instance_valid(n.sfx):
+		n.sfx.stop_all()   # cancel delayed cues as well as stopping the players below
 	var order: Array = [n]
 	var i := 0
 	while i < order.size():
@@ -554,11 +588,12 @@ func retire_scene(n: Node) -> void:
 			(c as CanvasLayer).visible = false
 		elif c is CanvasItem or c is Node3D:
 			c.set("visible", false)
-		if c is AudioStreamPlayer or c is AudioStreamPlayer3D:
+		if c is AudioStreamPlayer or c is AudioStreamPlayer2D or c is AudioStreamPlayer3D:
 			c.call("stop")
 		order.append_array(c.get_children(true))
 		i += 1
 	_retired.append_array(order)   # parents before children: freeing from the back takes children first
+	_retire_park_us = Time.get_ticks_usec() - t_park
 	_retire_hold = 2   # the screen that replaces it draws first: a single GPU-heavy free (a mesh) can take tens of ms
 	set_process(true)
 
@@ -571,15 +606,21 @@ func _process(_delta: float) -> void:
 	if _retired.is_empty():
 		set_process(false)
 		return
+	if _title_draw_pending:
+		return
 	if _retire_hold > 0:
 		_retire_hold -= 1
 		return
 	_free_retired(RETIRE_BUDGET_US)
+	if _retired.is_empty() and _retire_since_us == _title_return_us:
+		print("[main] battle to title: old battle freed over %d frames, %d nodes, freeing %.1f ms total, longest freeing slice %.1f ms, done %.1f ms after the leave" % [
+			_retire_frames, _retire_free_n, _retire_free_us / 1000.0, _retire_worst_us / 1000.0,
+			(Time.get_ticks_usec() - _retire_since_us) / 1000.0])
 
 
 func _free_retired(budget_us: int) -> void:
 	var t0 := Time.get_ticks_usec()
-	while not _retired.is_empty() and Time.get_ticks_usec() - t0 < budget_us:
+	while not _retired.is_empty():
 		var n = _retired.pop_back()
 		if is_instance_valid(n):
 			var t1 := Time.get_ticks_usec()
@@ -588,30 +629,41 @@ func _free_retired(budget_us: int) -> void:
 			_retire_free_n += 1
 			if Time.get_ticks_usec() - t1 > 20000:
 				print("[main] slow free: %s %.1f ms" % [label, (Time.get_ticks_usec() - t1) / 1000.0])
-	_retire_worst_us = maxi(_retire_worst_us, Time.get_ticks_usec() - t0)
+		# A single free cannot be split. Stop as soon as that work spends the frame's budget.
+		if Time.get_ticks_usec() - t0 >= budget_us:
+			break
+	var elapsed := Time.get_ticks_usec() - t0
+	_retire_frames += 1
+	_retire_free_us += elapsed
+	_retire_worst_us = maxi(_retire_worst_us, elapsed)
 
 
-# Issue 1435: how long leaving a battle holds the player: the leave frame itself (the battle is freed at its end, which
-# retires any running cut) and the first title frame after it.
-func _time_title_return(t_leave: int) -> void:
-	await get_tree().process_frame
-	var t_free := Time.get_ticks_usec()
-	await get_tree().process_frame
-	var t_title := Time.get_ticks_usec()
-	print("[main] battle to title: leave frame %.1f ms, first title frame %.1f ms after the leave" % [
-		float(t_free - t_leave) / 1000.0, float(t_title - t_leave) / 1000.0])
-	# issue 1519: the old battle's nodes are freed in slices behind the title; say how long that took and the worst frame
-	var frames := 0
-	var worst := 0.0
-	var t_prev := t_title
-	while retire_pending() > 0 and frames < 2000:
+# Wait for a draw on the PC. Headless runs have only a scene-tree frame to test the ordering.
+func _time_title_return(shown_title: CanvasLayer, build_us: int) -> void:
+	var t_leave := _title_return_us
+	var headless := DisplayServer.get_name() == "headless"
+	if headless:
 		await get_tree().process_frame
-		var t_now := Time.get_ticks_usec()
-		worst = maxf(worst, float(t_now - t_prev) / 1000.0)
-		t_prev = t_now
-		frames += 1
-	print("[main] battle to title: old battle freed over %d frames, %d nodes, done %.1f ms after the leave, longest freeing slice %.1f ms, slowest frame %.1f ms" % [
-		frames, _retire_free_n, float(Time.get_ticks_usec() - t_leave) / 1000.0, float(_retire_worst_us) / 1000.0, worst])
+	else:
+		await RenderingServer.frame_post_draw
+	if quitting or not is_instance_valid(shown_title) or title != shown_title:
+		return
+	var t_first := Time.get_ticks_usec()
+	var park_us := _retire_park_us
+	_title_draw_pending = false
+	var with_showcase := _showcase_wanted()
+	if with_showcase:
+		get_tree().create_timer(0.5).timeout.connect(_rebuild_due.bind(_showcase_gen))
+	# Keep the CLOSE5 log format. The leave frame ends at the next process step, which can follow the draw.
+	var t_next := t_first
+	if not headless:
+		await get_tree().process_frame
+		t_next = Time.get_ticks_usec()
+	print("[main] battle to title: leave frame %.1f ms, first title %s %.1f ms after the leave (park battle %.1f ms, title build %.1f ms)" % [
+		(t_next - t_leave) / 1000.0, "process frame (headless)" if headless else "frame", (t_first - t_leave) / 1000.0,
+		park_us / 1000.0, build_us / 1000.0])
+	if not with_showcase:
+		print("[main] battle to title: showcase disabled")
 
 
 # The campaign hands a battle over and gets the result back (README.md). run = the campaign run dictionary, cfg = the

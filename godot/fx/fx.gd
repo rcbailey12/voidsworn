@@ -1542,6 +1542,8 @@ func prepare_battle_hulls() -> void:
 		pending.append(ship)
 		if Time.get_ticks_usec() >= deadline:
 			await get_tree().process_frame
+			if closed or not can_process():
+				return
 			deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	# Limit simultaneous cuts so the hull workers and renderer can make progress
 	# together while the loading cover is up.
@@ -1557,9 +1559,13 @@ func prepare_battle_hulls() -> void:
 				active.remove_at(i)
 		_finish_shield_skins()
 		await get_tree().process_frame
+		if closed or not can_process():
+			return
 	while not _piece_builds.is_empty() or not _shield_jobs.is_empty():
 		_finish_shield_skins()
 		await get_tree().process_frame
+		if closed or not can_process():
+			return
 	defer_initial_cuts = false
 
 
@@ -2055,7 +2061,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# ShipView sets its paint just after adding the meshes. Let the deferred mesh
 	# watcher apply the nebula's fog policy before deriving shaders from that paint.
 	await get_tree().process_frame
-	if closed or not is_instance_valid(cam):
+	if closed or not can_process() or not is_instance_valid(cam):
 		return
 	_warm_hull_adapters()
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
