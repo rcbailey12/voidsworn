@@ -22,8 +22,10 @@ if "%BEFORE%"=="" set "BEFORE=origin/main"
 set "PC_GPU_ISSUE=2042"
 set "LB_HOME=%VT%\look_bench_2042"
 set "LB_TOOL_REF=%AFTER%"
-rem Pass both LB_MOMENTS (#2007+ launcher) and LB_ARGS (current main launcher) so either installed launcher captures only the 19 Build A rows.
-set "LB_MOMENTS=res://bench/look_moments_2042.json"
+rem Pass both a real Windows path in LB_MOMENTS (#2007+ launcher checks `if not exist`) and legacy LB_ARGS (current main launcher).
+set "LB_MOMENTS="
+for %%I in ("%~dp0..\..\..\godot\bench\look_moments_2042.json") do if exist "%%~fI" set "LB_MOMENTS=%%~fI"
+if not defined LB_MOMENTS if exist "%LB_HOME%\tool\godot\bench\look_moments_2042.json" set "LB_MOMENTS=%LB_HOME%\tool\godot\bench\look_moments_2042.json"
 set "LB_ARGS=--part moments --moments res://bench/look_moments_2042.json"
 
 set "LB_BAT="
@@ -49,6 +51,6 @@ echo   output:  %LB_HOME%\sheets\
 call "%LB_BAT%" "%AFTER%" "%BEFORE%" "%GOWAIT%"
 set "LB_RC=%ERRORLEVEL%"
 if not "%LB_RC%"=="0" exit /b %LB_RC%
-rem Verify that every run folder captured all 19 Build A row IDs at both cameras 170 and 26 (fail loudly if wrong rows ran).
-powershell -NoProfile -Command "$ErrorActionPreference='Stop'; $want=@('b2042_rcs_voidsworn','b2042_rcs_hegemony','b2042_rcs_corsair','b2042_rcs_ithar','b2042_rcs_chorus','b2042_rcs_deathless','b2042_trail_hegemony','b2042_trail_corsair','b2042_trail_chorus','b2042_trail_deathless','b2042_plume_voidsworn','b2042_plume_hegemony','b2042_plume_corsair','b2042_plume_ithar','b2042_plume_chorus','b2042_plume_deathless','b2042_craft_hegemony','b2042_craft_ithar','b2042_craft_chorus'); $runs=Get-ChildItem -LiteralPath (Join-Path $env:LB_HOME 'runs') -Directory; if($runs.Count -lt 2){ throw ('Expected 2 run folders (before/after), found ' + $runs.Count) }; foreach($d in $runs){ $bj=Join-Path $d.FullName 'bench.json'; if(-not (Test-Path -LiteralPath $bj)){ throw ('Missing ' + $bj) }; $rep=Get-Content -LiteralPath $bj -Raw | ConvertFrom-Json; $got=@{}; foreach($s in $rep.stills){ if($s.part -eq 'moments'){ $got[($s.id + ':' + $s.cam)]=$true } }; foreach($id in $want){ foreach($cam in @(170,26)){ if(-not $got.ContainsKey($id + ':' + $cam)){ throw ('Run ' + $d.Name + ' missing still ' + $id + ' at cam ' + $cam) } } }; Write-Host ('VERIFIED ' + $d.Name + ': all 19 Build A rows at cams 170 and 26') }"
+rem Verify only the exact AFTER and BEFORE run folders for this invocation (all 19 Build A rows at cams 170 and 26, commit matched).
+powershell -NoProfile -Command "$ErrorActionPreference='Stop'; $want=@('b2042_rcs_voidsworn','b2042_rcs_hegemony','b2042_rcs_corsair','b2042_rcs_ithar','b2042_rcs_chorus','b2042_rcs_deathless','b2042_trail_hegemony','b2042_trail_corsair','b2042_trail_chorus','b2042_trail_deathless','b2042_plume_voidsworn','b2042_plume_hegemony','b2042_plume_corsair','b2042_plume_ithar','b2042_plume_chorus','b2042_plume_deathless','b2042_craft_hegemony','b2042_craft_ithar','b2042_craft_chorus'); $repo=Join-Path $env:LB_HOME 'repo'; $refs=@($env:AFTER); if($env:BEFORE -and $env:BEFORE -ne 'none'){ $refs+=@($env:BEFORE) }; foreach($ref in $refs){ $sha=(& git -C $repo rev-parse --short=8 $ref).Trim(); if(-not $sha){ throw ('Cannot resolve ref ' + $ref) }; $bj=Join-Path (Join-Path (Join-Path $env:LB_HOME 'runs') $sha) 'bench.json'; if(-not (Test-Path -LiteralPath $bj)){ throw ('Missing receipt ' + $bj + ' for ' + $ref) }; $rep=Get-Content -LiteralPath $bj -Raw | ConvertFrom-Json; if(-not ($rep.commit -and $rep.commit.StartsWith($sha))){ throw ('Commit mismatch in ' + $bj + ': got ' + $rep.commit + ', expected ' + $sha) }; $got=@{}; foreach($s in $rep.stills){ if($s.part -eq 'moments'){ $got[($s.id + ':' + $s.cam)]=$true } }; foreach($id in $want){ foreach($cam in @(170,26)){ if(-not $got.ContainsKey($id + ':' + $cam)){ throw ('Run ' + $sha + ' (' + $ref + ') missing still ' + $id + ' at cam ' + $cam) } } }; Write-Host ('VERIFIED ' + $sha + ' (' + $ref + '): all 19 Build A rows at cams 170 and 26') }"
 exit /b %ERRORLEVEL%
