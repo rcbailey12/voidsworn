@@ -162,6 +162,7 @@ func _setup_battle(run: Dictionary, cfg: Dictionary) -> Dictionary:
 		errors.append("rules: " + e)
 	api_now.set_ai_level(ai_level())   # issue 1336: before new_battle, which rolls the enemy fleet at the level
 	api_now.round_saves = round_saves_on()   # issue 1451: pack the rules state at each round start (round 1 included)
+	api_now.interactive_deployment = not bot
 	api_now.new_battle(run, cfg)
 	cfg_now = cfg
 	if bot:

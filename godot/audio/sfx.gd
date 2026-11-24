@@ -53,7 +53,8 @@ var _quiet_until := 0.0
 const PASS_BY_CUE := {
 	"g": 0.17, "pri": 0, "max": 2, "gap": 0.12, "defer": 0.0, "bus": "weapons",
 	"salvo": null, "duck": 0.0, "spj": 0.08, "synth": [],
-	"layers": [{"s": "whoosh", "d": 0.0, "g": 1.0, "r": 1.0, "pj": null}],
+	# Issue 1752 Gate 2: the mastered pass-by (evt_pass_by_slug), level-matched to the old whoosh
+	"layers": [{"s": "evt_pass_by_slug", "d": 0.0, "g": 1.322, "r": 1.0, "pj": null}],
 }
 const LEGACY_TAIL_CUES := ["hit_heavy", "shield_break"]
 const LEGACY_PITCH_CUES := ["death_powerdown", "death_vent", "death_crack", "death_run", "chunk_cool", "hulk_vent"]
@@ -576,19 +577,31 @@ func stop_all() -> void:
 
 # ---- the game's cue helpers (sfx.js) ----
 
-func gun(k: String, sq: bool, style, pos = null, delay := 0.0) -> void:
+# Issue 1752 Gate 2: a weapon's own recorded sound is a variant of the cue its family plays, named "faction.weapon_id"
+# (or the bare weapon_id for strike craft any faction flies). No such variant: the cue's base sound, as before.
+func weapon_variant(name: String, fac: String, wid: String) -> String:
+	var vs: Dictionary = cues.get(name, {}).get("variants", {})
+	if vs.has(fac + "." + wid):
+		return fac + "." + wid
+	if wid != "" and vs.has(wid):
+		return wid
+	return ""
+
+
+func gun(k: String, sq: bool, style, pos = null, delay := 0.0, fac := "", wid := "") -> void:
 	if sq:
-		play("gun_sq", {"pos": pos, "delay": delay})
+		play("gun_sq", {"pos": pos, "delay": delay, "variant": weapon_variant("gun_sq", fac, wid)})
 		return
 	if k == "flak":
-		play("gun_flak", {"pos": pos, "delay": delay})
+		play("gun_flak", {"pos": pos, "delay": delay, "variant": weapon_variant("gun_flak", fac, wid)})
 		return
 	if style == "twin":
 		play("gun_shell", {"pos": pos, "gain": 0.8, "delay": delay})
 		play("gun_shell", {"pos": pos, "gain": 0.6, "delay": delay + 0.05})
 		return
 	var n := "gun_" + (str(style) if style != null else "shell")
-	play(n if cues.has(n) else "gun_shell", {"pos": pos, "delay": delay})
+	n = n if cues.has(n) else "gun_shell"
+	play(n, {"pos": pos, "delay": delay, "variant": weapon_variant(n, fac, wid)})
 
 
 # Issue 771: the lance and the torpedo charge briefly before the shot. Guns stay dry.
@@ -598,43 +611,53 @@ const CHARGE_LEAD := {"lance_charge": 0.26, "torp_charge": 0.30}
 # Issue 1211: with `sched` (a Callable(seconds, Callable), the battle's effect-clock scheduler) the shot cue lands on the
 # effect's own fire time fire_at and the charge leads it by its usual lead (from now at the earliest), both on that clock,
 # so hit pause and the kill beat delay them with the picture. Without it: the charge now, the shot after the fixed lead.
-func _charged(shot: String, charge: String, pos, fire_at := -1.0, sched := Callable()) -> void:
+# Issue 1752: fac and wid pick the weapon's own variant of the shot and the charge; a charge variant may set its own
+# "lead" in cues.json (a longer pull-in starts earlier so it still ends on the shot).
+func _charge_lead(charge: String, cv: String) -> float:
+	return float(cues.get(charge, {}).get("variants", {}).get(cv, {}).get("lead", CHARGE_LEAD.get(charge, 0.0)))
+
+
+func _charged(shot: String, charge: String, pos, fire_at := -1.0, sched := Callable(), fac := "", wid := "") -> void:
 	var has_charge := not legacy and cues.has(charge)
+	var sv := weapon_variant(shot, fac, wid)
+	var cv := weapon_variant(charge, fac, wid)
+	var lead := _charge_lead(charge, cv)
 	if fire_at >= 0.0 and sched.is_valid():
-		var lead := float(CHARGE_LEAD.get(charge, 0.0))
 		if has_charge:
-			sched.call(maxf(fire_at - lead, 0.0), func() -> void: play(charge, {"pos": pos}))
-		sched.call(fire_at, func() -> void: play(shot, {"pos": pos}))
+			sched.call(maxf(fire_at - lead, 0.0), func() -> void: play(charge, {"pos": pos, "variant": cv}))
+		sched.call(fire_at, func() -> void: play(shot, {"pos": pos, "variant": sv}))
 		return
 	if not has_charge:
-		play(shot, {"pos": pos})
+		play(shot, {"pos": pos, "variant": sv})
 		return
-	play(charge, {"pos": pos})
-	play(shot, {"pos": pos, "delay": float(CHARGE_LEAD[charge])})
+	play(charge, {"pos": pos, "variant": cv})
+	play(shot, {"pos": pos, "delay": lead, "variant": sv})
 
 
-func lance(ion: bool, fac: String, pos = null, fire_at := -1.0, sched := Callable(), fires := []) -> void:
+func lance(ion: bool, fac: String, pos = null, fire_at := -1.0, sched := Callable(), fires := [], wid := "") -> void:
 	var shot := "lance_dark" if fac == "deathless" else "lance_choir" if fac == "ithar" else "lance_ion" if ion else "lance"
 	if fires.is_empty():
-		_charged(shot, "lance_charge", pos, fire_at, sched)
+		_charged(shot, "lance_charge", pos, fire_at, sched, fac, wid)
 		return
 	# one shot cue per fire time (the null lance), the charge leading the first; on the effect clock when sched is given
-	var lead := float(CHARGE_LEAD["lance_charge"])
+	var sv := weapon_variant(shot, fac, wid)
+	var cv := weapon_variant("lance_charge", fac, wid)
+	var lead := _charge_lead("lance_charge", cv)
 	if sched.is_valid():
 		if not legacy:
-			sched.call(maxf(float(fires.min()) - lead, 0.0), func() -> void: play("lance_charge", {"pos": pos}))
+			sched.call(maxf(float(fires.min()) - lead, 0.0), func() -> void: play("lance_charge", {"pos": pos, "variant": cv}))
 		for t in fires:
-			sched.call(float(t), func() -> void: play(shot, {"pos": pos}))
+			sched.call(float(t), func() -> void: play(shot, {"pos": pos, "variant": sv}))
 		return
 	if not legacy:
-		play("lance_charge", {"pos": pos, "delay": maxf(float(fires.min()) - lead, 0.0)})
+		play("lance_charge", {"pos": pos, "delay": maxf(float(fires.min()) - lead, 0.0), "variant": cv})
 	for t in fires:
-		play(shot, {"pos": pos, "delay": float(t)})
+		play(shot, {"pos": pos, "delay": float(t), "variant": sv})
 
 
-func torp(fac: String, pos = null, fire_at := -1.0, sched := Callable()) -> void:
+func torp(fac: String, pos = null, fire_at := -1.0, sched := Callable(), wid := "") -> void:
 	var m := {"corsair": "torp_rocket", "chorus": "torp_sac", "ithar": "torp_star", "voidsworn": "torp_heavy"}
-	_charged(m.get(fac, "torp"), "torp_charge", pos, fire_at, sched)
+	_charged(m.get(fac, "torp"), "torp_charge", pos, fire_at, sched, fac, wid if wid != "" else "torp")
 
 
 # The death bed: a looped low rumble held for the whole death picture. Its length comes from the death beats.
@@ -658,7 +681,7 @@ const HIT_BY_WEAPON := {
 	"las": "hit_las", "lance": "hit_las", "plasma": "hit_plasma",
 	"rail": "hit_rail", "gauss": "hit_rail", "ion": "hit_ion",
 }
-const HIT_BY_TARGET := {"chorus": "hit_wet", "ithar": "hit_glass"}
+const HIT_BY_TARGET := {"chorus": "hit_wet", "ithar": "hit_glass", "deathless": "hit_obsidian"}
 const CRIT_BEAT := 0.12   # fx_weapons.gd CRIT_BEAT, the same beat (issue 1518: not preloaded, so the title loads no effects script; prefetch_wait_check holds the two equal)
 
 
@@ -677,8 +700,9 @@ func impact(fam: String, target_fac: String, pos, heavy: bool, sched: Callable) 
 		sched.call(CRIT_BEAT, func() -> void: play("hit_heavy", {"pos": pos, "gain": 0.55, "variant": target_fac}))
 
 
-func shield(pos = null, big := false) -> void:
-	play("shield_break" if big else "shield", {"pos": pos})
+# Issue 1752: fac is the shielded ship's faction (the Glasswright prismatic barrier has its own break).
+func shield(pos = null, big := false, fac := "") -> void:
+	play("shield_break" if big else "shield", {"pos": pos, "variant": fac})
 
 
 func boom(s := 1.0, pos = null) -> void:
@@ -732,4 +756,5 @@ func ambient_start() -> void:
 	add_child(_amb)
 	_amb.volume_db = -60.0
 	_amb.play(randf() * st.get_length() * 0.5)
-	create_tween().tween_property(_amb, "volume_db", linear_to_db(0.032), 5.0)  # the browser's room tone level over the bed
+	# Issue 1752: the bridge bed (amb_bridge_bed) replaces the room tone; 0.113 matches the old 0.032 tone's level
+	create_tween().tween_property(_amb, "volume_db", linear_to_db(0.113), 5.0)

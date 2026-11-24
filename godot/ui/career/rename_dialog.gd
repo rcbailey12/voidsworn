@@ -163,9 +163,12 @@ func _btn(txt: String, cb: Callable, f: Font, primary: bool) -> Button:
 	b.add_theme_font_size_override("font_size", px(18))
 	b.add_theme_color_override("font_color", INK if primary else BONE)
 	b.add_theme_color_override("font_hover_color", INK if primary else GILT)
+	b.add_theme_color_override("font_focus_color", INK if primary else BONE)
+	b.add_theme_color_override("font_pressed_color", INK if primary else GILT)
+	b.add_theme_color_override("font_hover_pressed_color", INK if primary else GILT)
 	b.add_theme_stylebox_override("normal", _sb(GILT if primary else IRON, GILT2 if primary else IRON3, 1, 4, 10))
 	b.add_theme_stylebox_override("hover", _sb(Color("#e0b85c") if primary else IRON, GILT, 1, 4, 10))
-	b.add_theme_stylebox_override("pressed", _sb(GILT2 if primary else INK, GILT, 1, 4, 10))
+	b.add_theme_stylebox_override("pressed", _sb(GILT.lerp(GILT2, 0.45) if primary else INK, GILT, 1, 4, 10))
 	b.add_theme_stylebox_override("focus", _sb(Color(0, 0, 0, 0), GILT, 1, 4, 10))
 	b.pressed.connect(cb)
 	return b

@@ -49,10 +49,12 @@ func play(seed: int, mode: String) -> Dictionary:
 		var own: bool = C.cur_event is Dictionary and C.jt(C.cur_event.get("arc")) and str(C.cur_event.get("id", "")).begins_with("arc_%s_" % C.RUN["fac"]) if C.RUN != null else false
 		if C.modal_d != null and C.modal_d["kind"] == "event" and own:
 			var cr0 = float(C.RUN["credits"]); var node0 = C.RUN.get("curNode"); var nd0 = C.findNode(node0) if node0 != null else null; var done0 = C.jt(nd0.get("done")) if nd0 != null else false
+			var event_id: String = C.cur_event["id"]
 			check(C.screen_acts()[1][2] == 0, "an arc option the player cannot afford is disabled")
 			C.act("eventChoice", "0")
 			check(float(C.RUN["credits"]) == cr0 + 25, "the arc choice pays its credits")
-			check(C.RUN["flags"].get(C.cur_event["id"]) == "take", "the arc choice writes its flag")
+			check(C.RUN["flags"].get(event_id) == "take", "the arc choice writes its flag")
+			check(C.cur_event == null, "the arc choice clears the consumed event")
 			check(float(C.RUN["flags"].get("mercy", 0)) >= 1, "the arc choice adds its counters")
 			check(C.RUN.get("curNode") == node0 and (nd0 == null or C.jt(nd0.get("done")) == done0), "an arc card completes no map node")
 			check(C.modal_d != null and C.modal_d["kind"] == "event_result" and C.modal_d["data"]["lines"][0] == "You took it.", "the result opens with the card's outcome line")
