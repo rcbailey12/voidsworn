@@ -2,7 +2,7 @@
   "code": "ithar_GS1",
   "sheet_version": 1,
   "design": "tools/blender/build_sheets/ships/ithar_GS1.py",
-  "design_sha256": "6ac656ef50db0b6e6fe7e1b1f2e25cf0c12ddc7aac8e5d02d3c6a832e12fba60",
+  "design_sha256": "2b3ec690dc3924679b0240ff1dcccde82b898a5970bc0fc44dbc6174e9222cde",
   "kit": "tools/blender/kits/ithar/hull.py",
   "game_ship": "i_wisp",
   "cls": "Frigate",

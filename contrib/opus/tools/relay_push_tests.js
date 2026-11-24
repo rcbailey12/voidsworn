@@ -1,6 +1,6 @@
 'use strict';
 // Issue 1657: tools/pc/relay_push.ps1 sends one attempt's results to the relay repo (a local bare stand-in here) on branch
-// pc-out-<job> under <attempt folder name>/: out_* files and top text files only, files over 10 MB listed in
+// pc-out-<job> under <attempt folder name>/: result folders and top text files, files over 10 MB listed in
 // skipped_over_10MB.txt in the form opus_job_head.ps1 proves, a resend replaces the folder, dry sends nothing, and a folder
 // outside voidsworn_test is refused. Uses Windows PowerShell 5.1 locally and pwsh in Linux CI.
 const assert = require('assert');
@@ -51,6 +51,44 @@ try {
   assert.equal(run('opus1657', at).status, 0);
   const ls2 = git(['--git-dir', relaySource, 'ls-tree', '-r', '--name-only', 'refs/heads/pc-out-opus1657']);
   assert(ls2.includes('out_20261122_150000_2/out_new/shot.png') && !ls2.includes('deep/clip.mp4'), 'resend replaces, other attempts stay: ' + ls2);
+
+  // Issue 1977: ship_job has a child named out, and a result folder can itself be the attempt.
+  for (const [job, attemptName, resultFolder] of [
+    ['ship1977', 'ship1977', 'out'],
+    ['helper1977', 'out_run5', ''],
+    ['direct1977', 'out', ''],
+  ]) {
+    const attempt = path.join(vt, job, attemptName);
+    const results = path.join(attempt, resultFolder);
+    const prefix = resultFolder ? `${attemptName}/${resultFolder}` : attemptName;
+    write(path.join(attempt, 'status.txt'), 'PASS');
+    write(path.join(results, 'shots', 'shot.png'), 'png bytes');
+    write(path.join(results, 'recipe', 'step.json'), 'recipe result');
+    if (resultFolder) {
+      // A checkout, a linked worktree, a Godot project, and saved checkout work all stay local.
+      write(path.join(results, 'repo', '.git', 'HEAD'), 'ref: refs/heads/main\n');
+      write(path.join(results, 'repo', 'local.txt'), 'private checkout file');
+      write(path.join(results, 'worktree', '.git'), 'gitdir: elsewhere\n');
+      write(path.join(results, 'worktree', 'local.txt'), 'private worktree file');
+      write(path.join(results, 'game', 'project.godot'), 'Godot project');
+      write(path.join(results, 'game', 'local.txt'), 'private project file');
+      write(path.join(results, 'checkout_leftovers', 'local.txt'), 'saved checkout work');
+      const refs = git(['--git-dir', relaySource, 'for-each-ref']);
+      r = run(job, attempt, 'dry');
+      assert.equal(r.status, 0, r.out);
+      assert(r.out.includes(`would send ${prefix}/shots/shot.png`), r.out);
+      assert(!r.out.includes('local.txt'), r.out);
+      assert.equal(git(['--git-dir', relaySource, 'for-each-ref']), refs, 'dry sends nothing');
+    }
+    r = run(job, attempt);
+    assert.equal(r.status, 0, r.out);
+    const ref = `refs/heads/pc-out-${job}`;
+    const paths = git(['--git-dir', relaySource, 'ls-tree', '-r', '--name-only', ref]).split('\n').sort();
+    assert.deepEqual(paths, [`${attemptName}/status.txt`, `${prefix}/shots/shot.png`, `${prefix}/recipe/step.json`].sort(), r.out);
+    assert.equal(git(['--git-dir', relaySource, 'show', `${ref}:${prefix}/shots/shot.png`]), 'png bytes');
+  }
+  console.log('PASS: child out and direct out/out_* attempts relay pictures, checkout files stay local');
+
   // Artoo on PR 1672: pushes go in bounded batches (here 20 bytes, so one file each); a batch refused midway leaves an
   // incomplete tree that proves nothing, and a rerun sends the attempt whole
   const at5 = path.join(vt, 'opus1657b', 'out_20261122_180000_5');
@@ -275,5 +313,5 @@ try {
   assert.equal(r.status, 0, r.out);
   assert.equal(relayTip(cacheJob), cacheTip, 'backfill accepts the listed cache and preserves the manifest');
   console.log('PASS: listed 330-character cache stays local, unlisted profile blocks proof, and checkout work is relayed');
-  console.log('PASS: relay_push sends out_* and top text files to pc-out-<job>, lists large files and Godot caches, handles long paths, resends replace, dry sends nothing, links refused, bounded batches');
+  console.log('PASS: relay_push sends result folders and top text files to pc-out-<job>, lists large files and Godot caches, handles long paths, resends replace, dry sends nothing, links refused, bounded batches');
 } finally { fs.rmSync(tmp, { recursive: true, force: true }); }

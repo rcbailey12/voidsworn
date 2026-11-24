@@ -7,6 +7,8 @@ const HT := preload("res://render/hull_table.gd")
 const BL := preload("res://world/board_look.gd")   # the board look trial (today, A holo, B living, C cinematic + tactical)
 const ModalFocus := preload("res://ui/theme/modal_focus.gd")
 const A4P := preload("res://assets/ships/a4_props.gd")  # A4's painted station and derelicts (null when not built)
+const TerrainScorch := preload("res://fx/terrain_scorch.gd")
+const BattleLook := preload("res://render/look.gd")
 const BV := preload("res://world/blocker_visuals.gd")
 const PL := preload("res://world/world_planet.gd")   # issue 1765: the board planet's surfaces
 const LS := preload("res://render/line_style.gd")   # issue 1374 (R362): the one line style (width, glow, fade, role colours)
@@ -290,6 +292,7 @@ func build(rules) -> void:
 	blocker_visuals = BV.new()
 	props.add_child(blocker_visuals)
 	blocker_visuals.build(VW, hex_world)
+	_depth_fragments()
 	blocker_highlights = Node3D.new()
 	add_child(blocker_highlights)
 	_zones()
@@ -904,6 +907,55 @@ func _terrain() -> void:
 		_station(cen, rng, size, teaching, clearance)
 
 
+# Issue 1582 item 4: a few small loose fragments hang below the plane round each rock and debris hex, so a field has
+# depth. They sit under the lowest ship band (render/altitude_band.gd: no ship goes lower than ESCORT[1] * BELOW_K, about
+# 3.4) and far under the wings' passes, so no hull or craft shares their air (Fable on PR 1874, item 3); they keep close to
+# their hex's middle because a point under the plane draws a little toward the camera. They never block (the rules' rock
+# stays the hex's core on the plane) and use their own seed so the board's other random draws do not shift. A look only.
+const FRAG_Y := [4.6, 6.5]     # depth under the plane (world units)
+const FRAG_S := [0.45, 1.25]   # fragment size
+const FRAG_R := [1.2, 3.5]     # distance from the hex middle
+var depth_frags: Node3D
+
+
+func _depth_fragments() -> void:
+	if depth_frags != null and is_instance_valid(depth_frags):
+		depth_frags.queue_free()
+	depth_frags = Node3D.new()
+	depth_frags.name = "fx_depth_fragments"
+	add_child(depth_frags)
+	var T: Dictionary = VW.get("terrain", {}) if VW.get("terrain") is Dictionary else {}
+	var biome = WI.get("biome")
+	var rock_kind := str(biome.get("rock", "stone")) if biome is Dictionary else "stone"
+	var names: Array = BV.WR.names_for(rock_kind)
+	if names.is_empty():
+		return
+	# the same procedural rocks and finish the world's blockers use (world/blocker_visuals.gd), so the chips match
+	var mat: ShaderMaterial = BV.WR.material(rock_kind, {"haze_max": 0.0})
+	mat.set_shader_parameter("lift", 1.2)
+	mat.set_shader_parameter("amb", 0.65)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("depth|%s" % str(WI.get("seed", 1)))
+	var keys: Array = T.keys()
+	keys.sort()
+	for k in keys:
+		var typ: String = T[k]
+		if typ != "rock" and typ != "debris":
+			continue
+		var qr: PackedStringArray = str(k).split(",")
+		var c := hex_world(int(qr[0]), int(qr[1]))
+		for i in (3 if typ == "rock" else 2):
+			var mesh_name := str(names[rng.randi() % names.size()])
+			var a := rng.randf() * TAU
+			var rad := rng.randf_range(FRAG_R[0], FRAG_R[1])
+			var y := -rng.randf_range(FRAG_Y[0], FRAG_Y[1])
+			var mi := BV.cluster_piece(depth_frags, BV.WR.mesh(mesh_name), mat, c + Vector3(cos(a) * rad, y, sin(a) * rad), rng.randf_range(FRAG_S[0], FRAG_S[1]), rng)
+			mi.name = "frag_" + mesh_name
+			var box := (mi.mesh as Mesh).get_aabb()
+			mi.set_instance_shader_parameter("rock_radius", box.position.abs().max(box.end.abs()).length())
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+
 func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float) -> void:
 	if rock_meshes.is_empty():
 		var mi := MeshInstance3D.new()
@@ -960,6 +1012,8 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 			offset = Vector3(2.0, 13.0, 1.5)
 		a4.transform = Transform3D(Basis.from_euler(attitude), c + offset)
 		props.add_child(a4)
+		if a4.has_meta("station_T2") and BattleLook.post_fx_enabled("DECALS"):
+			TerrainScorch.station(a4)
 		return
 	var p := "res://gen/hulls/O1_37.res"
 	if not ResourceLoader.exists(p):
