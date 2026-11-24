@@ -54,9 +54,6 @@ extends Node
 #   res_1440     3D at 2560x1440 (scaling_3d_scale 1.333)
 #   res_2160     3D at 3840x2160 (scaling_3d_scale 2.0)
 # Issue 1463 (look options, render/look.gd look_option): opt_<CODE>_<a|b|c> builds the battle with that option on.
-#   opt_SG_*     base with the hull sun glint option
-#   opt_PL_*     a: the board planet without R01 (VS_PLANET_REMIX=0), b: with it (run with --map planet --seed 4205,
-#                a rocky board world)
 #   opt_AB_*     base plus a ship ability every 0.4 s (focus, surge, ionpulse, phase), in that ability look
 #   opt_ER_*     base plus one Eclipse revive a quarter into the measured frames (the cruiser killed before the
 #                warm-up); the row adds win_gpu_mean and win_frame_mean over the 1.2 s after the revive
@@ -708,8 +705,6 @@ func _set_option(mode: String) -> void:
 	if parts.size() != 3 or parts[0] != "opt":
 		return
 	LOOK.opt_force = {parts[1]: parts[2]}
-	if parts[1] == "PL":
-		OS.set_environment("VS_PLANET_REMIX", "0" if parts[2] == "a" else "1")
 
 
 # the scene's ships for the AB sheet's four abilities: [[id, ability]]

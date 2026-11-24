@@ -5,24 +5,26 @@ extends "res://bench/scene_gate.gd"
 # render/look.gd look_option (forced here through LOOK.opt_force, never saved).
 #
 #   godot --path godot --rendering-method forward_plus --resolution 1920x1080 res://bench/looks_1463_shot.tscn --
-#         --sheet SG|PL|ER|AB --out DIR [--opts a,b,c or a+b+c]
+#         --sheet ER|AB --out DIR [--opts a,b,c or a+b+c]
 #
-#   SG  sun glints on hulls: a Sunward, an Eclipse and a Glasswright hull at camera 170 and 26, options a b c
-#   PL  the board planet: a (R01 off, the stand-in), b (R01 on a rocky board world, main today), c (R01 on a barren one)
-#   ER  Eclipse revive: the Eclipse cruiser dies, its wreck settles, it rises; frames at 0.2, 0.5 and 0.8 s at camera
-#       170, and 0.5 s close (camera 60); options a b
+#   ER  Eclipse revive: the Eclipse cruiser dies, its wreck settles, it rises; frames at 0.2, 0.5, 0.8 and 1.4 s at
+#       camera 170, and 0.5 s close (camera 60); options a b
 #   AB  ability looks: focus, surge, ionpulse and phase at camera 170 and close (camera 60), options a b c
+# (Run 2, Nov 24 2026: the SG and PL sheets were dropped, main already has both looks.)
 
-const SHEET_OPTS := {"SG": ["a", "b", "c"], "PL": ["a", "b", "c"], "ER": ["a", "b"], "AB": ["a", "b", "c"]}
-const SG_SHIPS := [["sunward", "voidsworn", "Cruiser"], ["eclipse", "deathless", "Cruiser"], ["glasswright", "ithar", "Destroyer"]]
-var sheet := "SG"
+const SHEET_OPTS := {"ER": ["a", "b"], "AB": ["a", "b", "c"]}
+var sheet := "ER"
 var stamp: Label
 var stamp_layer: CanvasLayer
 var saved: Array = []
 
 
 func _run() -> void:
-	sheet = str(args.get("sheet", "SG")).to_upper()
+	sheet = str(args.get("sheet", "ER")).to_upper()
+	if not SHEET_OPTS.has(sheet):
+		print("[looks1463] FAIL unknown sheet " + sheet)
+		PG.finish(1)
+		return
 	# "+" also separates (a .bat argument splits at commas)
 	var opts: Array = Array(str(args.get("opts", ",".join(SHEET_OPTS.get(sheet, ["a"])))).replace("+", ",").split(",", false))
 	build_wait_usec = int(float(args.get("build-wait-s", 120)) * 1000000.0)
@@ -38,13 +40,8 @@ func _run() -> void:
 	stamp_layer.add_child(stamp)
 	for o in opts:
 		var opt := str(o)
-		var seed := 4207
 		var mode := "opt_%s_%s" % [sheet, opt]
-		if sheet == "PL":
-			args["map"] = "planet"
-			seed = 4209 if opt == "c" else 4205   # board look kind: seed % 5 (render/board.gd PLANET_LOOKS): 0 rocky, 4 barren
-			mode = "opt_PL_%s" % ("a" if opt == "a" else "b")
-		if not await _build(mode, seed) or PG.stop_if_any():
+		if not await _build(mode, 4207) or PG.stop_if_any():
 			PG.finish(1)
 			return
 		_apply("base")
@@ -52,8 +49,6 @@ func _run() -> void:
 		for k in 60:
 			await get_tree().process_frame
 		match sheet:
-			"SG": await _sg(opt)
-			"PL": await _pl(opt)
 			"ER": await _er(opt)
 			"AB": await _ab(opt)
 		b.queue_free()
@@ -92,16 +87,6 @@ func _pic(code: String) -> void:
 	print("[looks1463] saved " + code)
 
 
-func _unit(fac: String, cls: String) -> Dictionary:
-	for u in b.V.get("units", []):
-		if str(u.get("fac", "")) == fac and str(u.get("cls", "")) == cls:
-			return u
-	for u in b.V.get("units", []):
-		if str(u.get("fac", "")) == fac:
-			return u
-	return {}
-
-
 func _pos(id: String) -> Vector3:
 	var sv = b.views.get(id)
 	return sv.global_position if sv != null and is_instance_valid(sv) else Vector3.ZERO
@@ -109,34 +94,6 @@ func _pos(id: String) -> Vector3:
 
 func _sec(s: float) -> void:
 	await get_tree().create_timer(s).timeout
-
-
-func _sg(opt: String) -> void:
-	for row in SG_SHIPS:
-		var u := _unit(row[1], row[2])
-		if u.is_empty():
-			print("[looks1463] no %s ship" % row[0])
-			continue
-		for r in [170.0, 26.0]:
-			_aim(_pos(str(u["id"])), r)
-			await _sec(0.5)
-			await _pic("SG-%s_%s_c%d" % [opt.to_upper(), row[0], int(r)])
-
-
-func _pl(opt: String) -> void:
-	var pn = b.board.planet_node
-	if pn == null or not is_instance_valid(pn):
-		print("[looks1463] FAIL no board planet")
-		return
-	print("[looks1463] planet %s look %s" % [str(pn.get_meta("planet_code", "stand-in")), str(pn.get_meta("planet_look", "?"))])
-	var sp: SphereMesh = pn.mesh
-	var p: Vector3 = pn.global_position
-	_aim(p + Vector3(sp.radius * 0.6, 0, sp.radius * 0.6), 170.0)
-	await _sec(0.6)
-	await _pic("PL-%s_c170" % opt.to_upper())
-	_aim(p + Vector3(sp.radius * 0.5, 0, sp.radius * 0.5), 70.0)
-	await _sec(0.6)
-	await _pic("PL-%s_close" % opt.to_upper())
 
 
 func _er(opt: String) -> void:

@@ -329,7 +329,6 @@ func _build_world() -> void:
 			pano.set_shader_parameter("sun_dir", -LOOK.KEY_DIR.normalized())
 			pano.set_shader_parameter("fleet_reflections", true)
 			pano.set_shader_parameter("fleet_reflections_v2", LOOK.ship_look_v2_enabled())   # issue 1777
-			pano.set_shader_parameter("sun_glint", LOOK.sun_glint())   # issue 1463 SG option (0 today)
 		var sky := Sky.new()
 		sky.sky_material = pano
 		sky.radiance_size = Sky.RADIANCE_SIZE_256
@@ -1891,7 +1890,7 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 		if not is_instance_valid(sv):
 			return
 		sv.visible = true
-	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, col, 0.8)
+	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, FLOOK.engine(str(ru.get("fac", "deathless"))), 0.8)
 
 
 # the battle log: the rules' own log lines (G1 log events, word for word as the game); the scene's own lines are kept

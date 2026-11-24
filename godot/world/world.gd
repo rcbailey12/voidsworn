@@ -483,7 +483,6 @@ func _make_sky(env: Environment) -> void:
 	if LOOK.fleet_lighting_enabled():
 		m.set_shader_parameter("fleet_reflections", true)
 		m.set_shader_parameter("fleet_reflections_v2", LOOK.ship_look_v2_enabled())   # issue 1777: the extra lobes
-		m.set_shader_parameter("sun_glint", LOOK.sun_glint())   # issue 1463 SG option (0 today)
 		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	m.set_shader_parameter("turn", Basis(Vector3.UP, -_yaw))
 	# the panorama always rides on the sky material (shown only on the dead-star board): the battle keeps one Environment
