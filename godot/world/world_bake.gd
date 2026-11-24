@@ -92,14 +92,18 @@ static func texture(img: Image) -> Texture2D:
 
 static func remember(key: String, img: Image) -> void:
 	if _cache.has(key): return
-	if _cache.size() >= CACHE_MAX:
-		# the oldest map nobody is still waiting to collect (item 2); with every slot pinned the cache grows by one
-		for oldest in _cache.keys():
-			if _pins.has(oldest): continue
-			_textures.erase(_cache[oldest].get_instance_id())
-			_cache.erase(oldest)
-			break
+	_trim(CACHE_MAX - 1)
 	_cache[key] = img
+
+# Drops the oldest maps nobody is still waiting to collect (item 2) until at most `cap` remain. With every slot pinned
+# the cache runs over CACHE_MAX for a while; each later add and each released pin trims it back (Artoo, PR 1776).
+static func _trim(cap: int) -> void:
+	if _cache.size() <= cap: return
+	for oldest in _cache.keys():
+		if _cache.size() <= cap: return
+		if _pins.has(oldest): continue
+		_textures.erase(_cache[oldest].get_instance_id())
+		_cache.erase(oldest)
 
 static func _pin(key: String) -> void:
 	_pins[key] = int(_pins.get(key, 0)) + 1
@@ -112,7 +116,9 @@ static func _pin(key: String) -> void:
 static func _unpin(key: String) -> void:
 	var n := int(_pins.get(key, 0)) - 1
 	if n > 0: _pins[key] = n
-	else: _pins.erase(key)
+	else:
+		_pins.erase(key)
+		_trim(CACHE_MAX)
 
 static func clear_static() -> void:
 	_old_swept = false

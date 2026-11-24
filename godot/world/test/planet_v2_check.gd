@@ -361,6 +361,16 @@ func _run() -> void:
 		BAKER.remember("evict_probe_%d" % e, Image.create(2, 2, false, Image.FORMAT_RGBA8))
 	_check(BAKER._cache.has("pin_probe"), "a map waiting to be collected was evicted from the cache")
 	_check(await svc.result("pin_probe") == pin_img and not BAKER._pins.has("pin_probe"), "result() did not return and release a pinned map")
+	# item 2 follow-on (Artoo): with every slot pinned the cache may run over CACHE_MAX, and comes back once pins go
+	BAKER._cache.clear()
+	for e in BAKER.CACHE_MAX + 3:
+		BAKER.remember("full_pin_%d" % e, Image.create(2, 2, false, Image.FORMAT_RGBA8))
+		BAKER._pin("full_pin_%d" % e)
+	_check(BAKER._cache.size() == BAKER.CACHE_MAX + 3, "a pinned map was evicted while every slot was in use")
+	for e in BAKER.CACHE_MAX + 3:
+		BAKER._unpin("full_pin_%d" % e)
+	_check(BAKER._cache.size() <= BAKER.CACHE_MAX and BAKER._pins.is_empty(), "the cache stayed over its cap after every pin was released (%d)" % BAKER._cache.size())
+	BAKER._cache.clear()
 	# item 1: a new battle drops the maps a freed showcase or earlier battle left waiting
 	svc._jobs["stale_a"] = {"path": "res://nope_a.json", "size": Vector2i(8, 8), "done": false, "image": null, "started": 0, "compute": false}
 	svc._jobs["stale_b"] = {"path": "res://nope_b.json", "size": Vector2i(8, 8), "done": false, "image": null, "started": 0, "compute": false}
