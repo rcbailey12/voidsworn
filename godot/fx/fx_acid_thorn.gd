@@ -93,7 +93,7 @@ static func shot(fx, from: Vector3, mn: Vector3, to: Vector3, T0: float, beat: f
 	if shield:
 		_shatter(fx, to, -dir, ti, bk, 10)
 	elif stuck:
-		_hit_matter(fx, tg, ti, col, ka)
+		_hit_matter(fx, tg, ti, col, ka, Tg)
 		# the crumble's dust and chips start where the thorn is then (it rides the ship it is stuck in)
 		fx.later(ti + STICK, func l_crumble() -> void:
 			if is_instance_valid(node) and node.visible:
@@ -103,15 +103,20 @@ static func shot(fx, from: Vector3, mn: Vector3, to: Vector3, T0: float, beat: f
 
 # What the thorn leaves on the plating, on top of the shared bio splat (fx_weapons._bio_splat): a spray of bone chips as the
 # point bites, then acid sheeting down the plate from the wound and pooling.
-static func _hit_matter(fx, tg: Dictionary, T: float, col: Color, k: float) -> void:
+static func _hit_matter(fx, tg: Dictionary, T: float, col: Color, k: float, Tg = null) -> void:
 	var p: Vector3 = tg["p"]
 	var n: Vector3 = tg["n"]
 	var t1 := n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
 	var t2 := n.cross(t1).normalized()
 	# the strike: a hard white-hot crack where bone meets plate, a fast fan of sparks off the steel and a ring of bone dust
+	# The flash and sparks take the struck hull's own hit palette (fx_weapons._impact_response and _impact_color, the
+	# same path as the gauss punch), so no warm metal sparks fly off a hull that never throws them (Artoo on PR 1904,
+	# issue 1991).
 	var FXW = load("res://fx/fx_weapons.gd")
-	fx.spr(p + n * 0.15 * k, T, 0.08, Color(1.0, 0.95, 0.82), 6.0, 0.5 * k, 1.4 * k, 0)
-	FXW._throw_sparks(fx, p, n, n, T, k, Color(1.0, 0.78, 0.45), 14, 18.0, 0.45, "shell")
+	var response = FXW._impact_response(Tg)
+	fx.spr(p + n * 0.15 * k, T, 0.08, FXW._impact_color(response, Tg, Color(1.0, 0.95, 0.82)), 6.0, 0.5 * k, 1.4 * k, 0)
+	if response.debris != "drop":
+		FXW._throw_sparks(fx, p, n, n, T, k, FXW._impact_color(response, Tg, Color(1.0, 0.78, 0.45)), 14, 18.0, 0.45, "shell")
 	fx.ring(p + n * 0.1 * k, n, T, 0.4, Color(0.62, 0.55, 0.42), 0.9, 0.3 * k, 2.2 * k, 3, 0.0, 0.0, 18.0)
 	fx.shake(T, 0.06, p)
 	for j in 10:
@@ -183,7 +188,7 @@ static func update(fx, _dt: float) -> void:
 			roll = (now - float(p["t0"])) * 6.0 + float(p["seed"])
 		elif bool(p["miss"]):
 			# flies on past and fades
-			pos = (p["b"] as Vector3) + d * float(p["spd"]) * (now - t1)
+			pos = (p["b"] as Vector3) - d * TIP * s + d * float(p["spd"]) * (now - t1)   # on from where the flight ended
 			roll = (now - float(p["t0"])) * 6.0 + float(p["seed"])
 			s *= 1.0 - smoothstep(0.0, 0.6, now - t1)
 		elif not bool(p["stuck"]):

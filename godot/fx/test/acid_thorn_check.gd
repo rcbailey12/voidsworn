@@ -81,9 +81,19 @@ func _run() -> void:
 	if drift > 0.15:
 		fails.append("the stuck thorn left the moving hull by %.2f" % drift)
 	# the missed thorn flew on past its aim point
+	# no jump where the flight ends and the pass-through begins (Artoo on PR 1904): one frame either side of t1
+	var mn := miss["node"] as Node3D
+	while fx.now + 1.0 / 60.0 < float(miss["t1"]):
+		fx.step(1.0 / 60.0)
+	var before := mn.global_position
+	fx.step(1.0 / 60.0)
+	fx.step(1.0 / 60.0)
+	var step_len := mn.global_position.distance_to(before)
+	var expect: float = float(miss["spd"]) * 2.0 / 60.0
+	if step_len > expect * 1.6:
+		fails.append("the missed thorn jumped %.2f across its aim point (two frames of flight are %.2f)" % [step_len, expect])
 	while fx.now < float(miss["t1"]) + 0.2:
 		fx.step(1.0 / 60.0)
-	var mn := miss["node"] as Node3D
 	if not mn.visible:
 		fails.append("the missed thorn vanished at its aim point")
 	else:
