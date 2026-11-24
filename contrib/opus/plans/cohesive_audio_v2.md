@@ -344,3 +344,37 @@ Wave E ran with 8 takes for about 80 credits (relay `pc-out-opus1752wavee`). Lis
 - Bioplasma stays on hold until the projectile look is set.
 - The tendril sound waits for issue 1877.
 - Next is mastering the keepers to mono game files, then the Gate 3 music plan.
+
+## 9. Gate 3 waves F and M (Ryan, Nov 24 2026)
+
+Ryan, 11:02 PM CT Nov 23: "More music, more variety, whatever we got with the sound credits." About 8,000 of the 121,000 credits were spent through Gate 2, which leaves about 113,000 (Ryan's ElevenLabs page is the real count). The job list is `contrib/opus/sound/elevenlabs_gate3.json` (gate 3). Its `waves` key holds the ids for each wave.
+
+**Wave F, sounds (63 ids, 128 takes; the tool estimates 5,916; at about 11 per second the real cost is near 1,600; cap 7,000):**
+- 34 sounds that still play old placeholder clips:
+  - Glasswright flak.
+  - Gauss and ion hits, plus the hull and shield patter.
+  - Metal pops and small and medium blasts.
+  - Engine loop, strike craft launch, phase jump, engine cough, thruster puff and charge-up.
+  - Nine metal death beats.
+  - Brace, adapt and the base boarding sound.
+  - Seven UI cues: cancel, select, panel, alert, round, enemy turn, plus click from Wave A. UI cues stay acoustic and mechanical.
+- Four Gate 3 re-rolls:
+  - Pulsar as one even beam.
+  - Hullbreaker rocket as one launch.
+  - Boss cue at 3.5 s.
+  - Engine fail at 1.5 s.
+- Variety: two more takes of each of the 27 most-heard keepers. Each uses the keeper's own list prompt, so the round robin has four takes (RULEBOOK 8.4).
+- Free, already made: Wave A's `wep_sunward_battery` t1 and t2 and `ui_click_switch` t1 and t2 passed in section 7 but never reached the keeper list. They join the Wave F listening page from relay `pc-out-opus1752wavea`.
+
+**Wave M, music (30 ids, 32 steps; the tool estimates 40,950 at 900 per minute; cap 45,000):**
+- Six factions, each with a calm and an intense battle layer. A pair shares tempo and key so the two can crossfade, and each loop is built so every part plays in every bar (row 6).
+- One title theme (2 takes).
+- Six map tracks, two per sector.
+- Two boss tracks.
+- Three reward themes. `mus_reward_1` is the reward wording Ryan liked.
+- Five stings.
+- One stem split test on `mus_battle_sunward_stemloop`.
+
+After both waves, at least 65,000 credits stay in reserve for Gate 3 second takes, stems on the songs Ryan picks, and the tendril once issue 1877 lands.
+
+**Run and review:** the PC jobs are `OPUS1752_WAVEF.bat` and `OPUS1752_WAVEM.bat`, built on the Wave E skeleton and pinned to this list's merge. Each needs Ryan's own typed "go wave f" or "go wave m" in the Board thread. Neon reviews each listening page before Ryan does. Mastering and wiring follow the Gate 2 path in sections 8.6 and 8.7. Music wiring uses the Godot 4.7 AudioStreamInteractive plan in row 6.
