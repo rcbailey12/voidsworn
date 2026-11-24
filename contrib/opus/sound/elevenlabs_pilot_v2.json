@@ -208,7 +208,7 @@
    "seconds": 0.5,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single point-defense laser pulse from a military starship turret, heard close and centered: one crisp high-voltage electrical arc snap with a tight dry spark discharge and bright upper-midrange bite, steady pitch, cutting off instantly. Fast, precise, disciplined, light and sharp."
+   "prompt": "Single small laser bolt from a compact point-defense gun, heard close and centered as one dry point source: a short bright snappy electric crack with a crisp crackling spark, thin and high, cutting off instantly. Light, quick, sharp, dry."
   },
   {
    "id": "wep_hullbreaker_scatter",
@@ -353,7 +353,7 @@
    "seconds": 0.6,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Single shot from an ancient alien obsidian point-defense spire, heard close and centered: one loud crisp cold electrostatic crack of a dark crystal bolt with clear midrange presence and a short magnetic snap, cutting off dead. Cold, eerie, crisp, clean."
+   "prompt": "Single shot from an ancient alien obsidian point-defense spire, heard close and centered as one dry point source: one loud crisp cold electrostatic crack of a dark crystal bolt with clear midrange presence and a short magnetic snap, cutting off dead. Cold, eerie, crisp."
   },
   {
    "id": "wep_eclipse_gauss_charge",
@@ -508,7 +508,7 @@
    "seconds": 0.6,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Ordinary cannon shell striking armored starship steel plating, heard close and centered: an immediate hard bright steel clang with a short ringing plate tone over a firm mid punch, decaying quickly. Clear, hard, metallic, solid."
+   "prompt": "Ordinary cannon shell striking armored starship steel plating, heard close and centered as one dry point source: an immediate hard bright steel clang with a short solid plate knock over a firm mid punch, decaying quickly. Clear, hard, metallic, dry."
   },
   {
    "id": "imp_metal_heavy_v3ab",
@@ -706,7 +706,7 @@
    "seconds": 1.8,
    "influence": 0.65,
    "takes": 2,
-   "prompt": "Ancient dark alien starship hull splitting apart, heard close and centered: massive black alloy armor plates bending and shearing apart with heavy dark metallic stress, a cold electrostatic crackle, and a hollow metal knock as the halves separate. Dark, heavy, cold, metallic."
+   "prompt": "Dark alien starship hull splitting apart, heard close and centered: black alloy armor plates bending and shearing apart with a harsh grinding metal scrape and creaking strain in the midrange, a cold electrostatic crackle, and a hollow metal knock as the halves separate. Dark, harsh, metallic."
   },
   {
    "id": "death_metal_break",

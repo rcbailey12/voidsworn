@@ -45,6 +45,7 @@ func _run() -> void:
 		for i in range(f["picks"].size()):
 			var o = f["picks"][i]; var b = c.BOONS[o["id"]]; var p = b.get("p", b.get("duo", [""])[0])
 			c.RUN["reward"] = {"kind": "story", "rw": {"k": "boon", "p": p}, "stage": "pick"}; c.W["boonOffer"] = [o]
+			c.show_modal("boon", {}, [])
 			c.ACT_takeBoon("0")
 			for msg in c.toasts:
 				if msg.begins_with("Core sync: "): notices.append(msg)

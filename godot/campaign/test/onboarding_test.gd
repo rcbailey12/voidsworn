@@ -187,7 +187,8 @@ func _run() -> void:
 	var f2 := FileAccess.open(Teaching.OPTS, FileAccess.WRITE)
 	f2.store_string('{"tipsOff":false,"tips":{"c_map":true,"c_clock":true,"c_tree":true}}'); f2.close()
 	c.META = c.defaultMeta(); c.newRun("vex", "voidsworn")
-	var ui := CampaignUI.new(); root.add_child(ui); ui.bind(c); ui.set_process(false)
+	root.size = Vector2i(1920, 1080)
+	var ui := CampaignUI.new(); root.add_child(ui); ui.bind(c); ui.set_process(false); ui.use_3d_map = false
 	var node: Dictionary = c.RUN.map.cols[0][0]
 	c.RUN.pos = node.id; node.type = "drydock"
 	c.repairStopScreen(node); ui._teaching_screen()
@@ -199,6 +200,28 @@ func _run() -> void:
 	c.shipyardScreen(node); ui._teaching_screen()
 	check(ui.teaching.current == "c_shipyard" and Teaching.load_opts().tips.has("c_tree"),
 		"a real shipyard shows its card and an old retired card entry is safe to keep")
+	var ship_names := ["Long Watch", "Cold Fury", "Bright Censure", "Iron Dusk", "Edge of Winter"]
+	c.RUN["fleet"] = []
+	for ship_name in ship_names:
+		var ship: Dictionary = c.newShip("penitent")
+		ship["name"] = ship_name
+		c.RUN["fleet"].append(ship)
+	c.ensureFlagship()
+	ui.render()
+	for i in 5: await process_frame
+	var tip := ui.teaching.hud.tipcard as Control
+	var tip_rect := tip.get_global_rect()
+	var card_names := 0
+	var overlaps := []
+	for node_label in ui.page_box.find_children("*", "Label", true, false):
+		var card_name := node_label as Label
+		if card_name.text not in ship_names: continue
+		card_names += 1
+		if tip_rect.intersects(card_name.get_global_rect()): overlaps.append(card_name.text)
+	check(tip.is_visible_in_tree() and card_names == ship_names.size() and overlaps.is_empty(),
+		"Y1 the visible repair tip clears all %d ship names (overlap %s)" % [card_names, str(overlaps)])
+	var card_grid := ui.page_box.find_children("*", "HFlowContainer", true, false)[0] as Control
+	check(not tip_rect.intersects(card_grid.get_global_rect()), "Y1 the repair tip docks outside the card grid")
 	ui.queue_free(); await process_frame
 	print("ONBOARDING " + ("PASS" if fails == 0 else "FAIL: %d" % fails))
 	quit(0 if fails == 0 else 1)

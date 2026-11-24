@@ -1397,7 +1397,7 @@ static func fleet_power_for(run, hulls: Dictionary, rarities: Array, derive_ship
 	return p * (1.0 + 0.035 * boons + 0.025 * (run["relics"] if run.get("relics") != null else []).size())
 func playerStrength() -> float: return fleetPower()
 
-func startBattle(cfg: Dictionary) -> void:
+func startBattle(cfg: Dictionary, pick_skills := false) -> void:
 	_runfx = null
 	var seed = (int(cfg["seed"]) & 0xFFFFFFFF) if cfg.get("seed") != null else int(floor(rnd() * 4294967296.0))
 	JSM.rnd_seed(seed)
@@ -1596,7 +1596,14 @@ func startBattle(cfg: Dictionary) -> void:
 	if map_trial and enc == "ambush": _map_trial_ambush(caps("player"), caps("enemy"))
 	if map_trial and enc == "rout" and cfg.get("kind") == "boss": _map_trial_screen_boss(caps("player"), caps("enemy"))
 	clearSpawns()
-	treeBattleStart()
+	treeBattleStart(pick_skills)
+	if B.has("skillTarget"):
+		B["skillTarget"]["enemyCount"] = eList.size()
+	else:
+		_finishBattleSetup(eList.size())
+
+func _finishBattleSetup(enemy_count: int) -> void:
+	var cfg: Dictionary = B["cfg"]
 	deployWings()
 	B["cp0"] = {"player": sideCP("player"), "enemy": sideCP("enemy")}
 	B["usage"] = {"fire": {}, "aim": 0, "ab": {}, "ord": {}, "cmd": 0, "moves": 0, "cant": {}}
@@ -1608,13 +1615,13 @@ func startBattle(cfg: Dictionary) -> void:
 		emit({"t": "adaptation", "source": "carrier_report"})
 		var ad = B.get("adapt"); var aw = B.get("adaptWings")
 		logm("Scouts report your carriers. The enemy " + (("bolted extra point defense onto " + (ns(ad) + " ships" if ad > 1 else "one ship")) if jt(ad) else "") + (" and " if (jt(ad) and jt(aw)) else "") + (("launched " + ("two fighter wings" if aw > 1 else "a fighter wing") + " to hunt your craft") if jt(aw) else "") + ".", "ember")
-	if map_trial:
+	if RUN.get("mapTrial") == true:
 		for u in B["units"]: _map_trial_scale_unit(u)
 		B["mapTrialReady"] = true
 	startSideTurn("player")
 	for u in alive("enemy"): u["intercepts"] = max(0, 2 - z0(u.get("treeFlakDown"))) if _has_flak(u) else 0
 	var F = FACTIONS[cfg["fac"]]
-	logm("Contact: " + String(F["n"]) + ". " + ns(eList.size()) + " ship" + ("s" if eList.size() > 1 else "") + " on the scanners.", "s")
+	logm("Contact: " + String(F["n"]) + ". " + ns(enemy_count) + " ship" + ("s" if enemy_count > 1 else "") + " on the scanners.", "s")
 	if jt(B.get("well")): logm("The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "ember")
 	if cfg.get("kind") == "elite": logm("Elite captains command this fleet.", "e")
 	if cfg.get("kind") == "boss": logm(String(HULLS[F["boss"]]["n"]) + " is here. Everything else is escort.", "e")
@@ -5606,7 +5613,7 @@ func treeDeployMove(kind, txt) -> void:
 		if d > 0 and d < bd: bd = d; best = h
 	if best != null:
 		who["q"] = best["q"]; who["r"] = best["r"]; treeFx(who, kind, txt)
-func treeBattleStart() -> void:
+func treeBattleStart(pick_skills := false) -> void:
 	if B == null or B.get("tree") == null or B["tree"].size() == 0: return
 	treeDeployMove("deployRead", "redeployed from the shards")
 	treeDeployMove("swornDeploy", "sworn into place")
@@ -5618,12 +5625,12 @@ func treeBattleStart() -> void:
 			var a = l[0]; var b2 = l[1]; var q = a["q"]; var r = a["r"]
 			a["q"] = b2["q"]; a["r"] = b2["r"]; b2["q"] = q; b2["r"] = r; treeFx(a, "castCorrected", "the cast is corrected")
 	if treeSkill("iterationSwap") != null:
-		var lS = []
-		for x in alive("player"):
-			if not jt(x.get("isSq")): lS.append(x)
-		if lS.size() >= 2:
-			var aS = lS[0]; var bS = lS[1]; var qS = aS["q"]; var rS = aS["r"]
-			aS["q"] = bS["q"]; aS["r"] = bS["r"]; bS["q"] = qS; bS["r"] = rS; treeFx(aS, "iterationSwap", "the copy is swapped")
+		var ships := caps("player")
+		if ships.size() >= 2:
+			if pick_skills:
+				B["skillTarget"] = {"first": ""}
+			else:
+				_iterationSwap(ships[0], ships[1])
 	if treeSkill("debtsReserve") != null:
 		var who = treeChoice("reserve")
 		if who != null:
@@ -5645,6 +5652,50 @@ func treeBattleStart() -> void:
 	if treeSkill("preyScent") != null:
 		var ePS = treeChoice("enemy"); B["tr"]["scent"] = ePS["id"] if ePS != null else null
 		if ePS != null: treeFx(treeFlagUnit() if treeFlagUnit() != null else ePS, "preyScent", "the pack names its prey")   # Hullbreakers shared B1a
+
+func _iterationSwap(first: Dictionary, second: Dictionary) -> void:
+	var q = first["q"]
+	var r = first["r"]
+	first["q"] = second["q"]
+	first["r"] = second["r"]
+	second["q"] = q
+	second["r"] = r
+	treeFx(first, "iterationSwap", "the copy is swapped")
+
+func skillTargetView() -> Dictionary:
+	var pending = B.get("skillTarget")
+	if pending == null: return {}
+	var first: String = pending["first"]
+	var targets: Array = []
+	var picked: Dictionary = {}
+	for ship in caps("player"):
+		var target := {"id": ship["id"], "q": ship["q"], "r": ship["r"], "name": ship["name"]}
+		if ship["id"] == first:
+			picked = target
+		else:
+			targets.append(target)
+	var key: String = treeSkill("iterationSwap")["key"]
+	var prompt := "Pick the first ship to swap." if picked.is_empty() else "Pick a second ship to swap with %s." % picked["name"]
+	return {"key": key, "n": treeName(key), "q": prompt, "targets": targets, "picked": picked}
+
+func pickSkillTarget(id: String) -> bool:
+	var pending = B.get("skillTarget")
+	if pending == null: return false
+	if id != "":
+		var first: Dictionary = {}
+		var second: Dictionary = {}
+		for ship in caps("player"):
+			if ship["id"] == pending["first"]: first = ship
+			if ship["id"] == id: second = ship
+		if second.is_empty() or id == pending["first"]: return false
+		if pending["first"] == "":
+			pending["first"] = id
+			return true
+		if first.is_empty(): return false
+		_iterationSwap(first, second)
+	B.erase("skillTarget")
+	_finishBattleSetup(int(pending["enemyCount"]))
+	return true
 func treeAfterMove(u) -> void:
 	if B == null or B.get("tree") == null or B["tree"].size() == 0 or u == null or jt(u.get("isSq")): return
 	if treeSkill("mirrorTurns") != null and cmdActive(u["side"], "surge") and not jt(u.get("treeMirrorUsed")):

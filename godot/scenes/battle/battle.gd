@@ -466,9 +466,10 @@ func start_default() -> void:
 		var e: String = a.load_rules()
 		if e != "":
 			push_error(e)
+		a.interactive_deployment = not bot and not showcase
 		a.new_battle_scenario(str(args["scenario"]), seed if args.has("seed") else -1)
 		a.set_undo(true)   # issue 1450: a test battle played in the scene can take moves back like any other
-		_begin(a)
+		begin_with(a)
 		return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
@@ -510,9 +511,10 @@ func start_scenario(sc: Dictionary) -> void:
 	var e: String = a.load_rules()
 	if e != "":
 		push_error(e)
+	a.interactive_deployment = not bot and not showcase
 	a.new_battle_scenario(sc, int(sc.get("seed", 1)))
 	battle_cfg = sc
-	_begin(a)
+	begin_with(a)
 
 
 # From the campaign: run = the campaign run dictionary, cfg = the battle config (API.md new_battle).
@@ -521,14 +523,26 @@ func start_battle(run: Dictionary, cfg: Dictionary) -> void:
 	var e: String = a.load_rules()
 	if e != "":
 		push_error(e)
+	a.interactive_deployment = not bot and not showcase
 	a.new_battle(run, cfg)
 	battle_cfg = cfg
-	_begin(a)
+	begin_with(a)
 
 
-# a battle the campaign has already set up (main.play_api)
+# A battle with its rules initialized, including one handed over by the campaign.
 func begin_with(a) -> void:
-	_begin(a)
+	if a.phase == "deployment":
+		_deployment_api = a
+		cam.keyboard_enabled = false
+		hud.hide_end()
+		hud.hide_menu()
+		if hud.log_open:
+			hud.toggle_log()
+		hud.hide_tipcard()
+		hud.set_playing(false)
+		_show_skill_picker()
+	else:
+		_begin(a)
 
 
 func _begin(a) -> void:
@@ -1175,6 +1189,7 @@ func _stale(g: int) -> bool:
 # mark the battle retired before finished goes out: post-await work from it is rejected from here on
 func _retire() -> void:
 	retiring = true
+	_deployment_api = null
 	_gen += 1
 	_click_q = {}
 
@@ -3942,6 +3957,22 @@ var _board_release := false
 
 
 func _input(e: InputEvent) -> void:
+	if _deployment_api != null:
+		# Keep keys away from focused controls and board shortcuts before Godot dispatches them.
+		var skip_key: bool = e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_ESCAPE, KEY_1, KEY_KP_1]
+		var skip_click: bool = e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_RIGHT and e.pressed
+		if skip_key or skip_click:
+			get_viewport().set_input_as_handled()
+			_pick_skill_target("")
+		elif e is InputEventMouseButton and e.pressed:
+			# Leave the picker rows, Skip and fleet paging to the ledger's normal GUI handler.
+			var ledger: Control = hud.ledger
+			var local_position: Vector2 = ledger.get_global_transform_with_canvas().affine_inverse() * e.position
+			if not ledger._has_point(local_position):
+				get_viewport().set_input_as_handled()
+		elif not e is InputEventMouse:
+			get_viewport().set_input_as_handled()
+		return
 	if not e is InputEventMouseButton or cam == null:
 		return
 	# End camera gestures before the GUI can consume their releases. Only an unhandled press can start one.
@@ -3953,7 +3984,7 @@ func _input(e: InputEvent) -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
-	if api == null or (e is InputEventMouse and hud.get("endcard") != null):
+	if _deployment_api != null or api == null or (e is InputEventMouse and hud.get("endcard") != null):
 		return
 	if opening and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed) or (e is InputEventKey and (e as InputEventKey).pressed)):
 		_end_opening()
@@ -5113,6 +5144,12 @@ func _attack_tip(t_id: String) -> String:
 
 
 func _on_action(name: String, arg) -> void:
+	if _deployment_api != null:
+		if name == "pick":
+			_pick_skill_target(str(arg))
+		elif name == "ask" and arg == "skip_skill_target":
+			_pick_skill_target("")
+		return
 	sfx.play("ui_click")
 	match name:
 		"end":
@@ -5275,6 +5312,41 @@ func _on_action(name: String, arg) -> void:
 # ---------------------------------------------------------------- issue 529: the tree prompts
 
 var roles_opened := false
+var _deployment_api: API
+
+
+# Deployment uses the fleet list before the board, ship views or effects are built.
+func _show_skill_picker() -> void:
+	var v: Dictionary = _deployment_api.view()
+	var picker: Dictionary = v["skill_target"]
+	var first := str(picker["picked"].get("id", ""))
+	var candidates := {}
+	for t in picker["targets"]:
+		candidates[t["id"]] = true
+	var rows: Array = []
+	for u in v["units"]:
+		var picked: bool = u["id"] == first
+		if picked or candidates.has(u["id"]):
+			rows.append({"id": u["id"], "name": u["name"], "cls": u["cls"], "hp": u["hp"], "maxHp": u["maxHp"],
+				"shp": _z0(u.get("shp")), "shMax": u["shMax"], "flag": u["flagship"], "sel": picked, "done": picked,
+				"status": "Selected" if picked else "Ready"})
+	hud.set_roster(rows)
+	hud.show_ask({"kind": "skill_target", "key": picker["key"], "id": first, "n": picker["n"],
+		"q": picker["q"] + " Choose from your fleet below.",
+		"opts": [{"id": "skip_skill_target", "n": "Skip", "d": "Skip this skill with Esc or right-click."}]})
+
+
+func _pick_skill_target(id: String) -> void:
+	if quitting or _deployment_api == null or not _deployment_api.pick_skill_target(id):
+		return
+	sfx.play("ui_cancel" if id == "" else "ui_click")
+	if _deployment_api.phase == "deployment":
+		_show_skill_picker()
+	else:
+		var a := _deployment_api
+		_deployment_api = null
+		hud.hide_ask()
+		_begin(a)
 
 
 func _sync_ask() -> void:
@@ -5496,7 +5568,7 @@ func _sync_arrival() -> void:
 
 
 func _refresh_ui() -> void:
-	if api == null or V.is_empty() or quitting or not is_instance_valid(hud):
+	if _deployment_api != null or api == null or V.is_empty() or quitting or not is_instance_valid(hud):
 		return
 	if _worker_owns_rules():
 		return   # issue 1433: every read below locks the rules; the publish runs this pass (_threat_done)
@@ -6195,6 +6267,8 @@ func _board_far(p: Vector3) -> float:
 
 
 func _process(dt: float) -> void:
+	if _deployment_api != null:
+		return
 	game_t += dt
 	if not torp_ft.is_empty():
 		_torp_ft_step(dt)
