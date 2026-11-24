@@ -159,6 +159,28 @@ func _run() -> void:
 	check(done[0], "the host's handoff ended with the close")
 	check(h.C.finished == 0 and h.C.saved_leaves == 0 and h.C.saves == 0, "nothing settled or saved (finish %d, saved leave %d, saves %d)" % [h.C.finished, h.C.saved_leaves, h.C.saves])
 	check(h.battles == battles0 and h.errors.is_empty(), "no battle counted (%d) and no error" % h.battles)
+	# 5. the title waits for the launch's campaign host read a frame at a time, and a close meanwhile shows nothing
+	main.quitting = false
+	main.closed_at = -1
+	main._host_reading = true
+	main.hold_host_read = true
+	main.show_title()
+	for i in 5:
+		await process_frame
+	check(main.title == null, "no title while the campaign host is being read")
+	var t_c3 := Time.get_ticks_msec()
+	main._notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
+	check(main.closed_at >= 0 and main.closed_at - t_c3 < 100, "the window close ran at once during the title's wait")
+	main.hold_host_read = false
+	for i in 3:
+		await process_frame
+	check(main.title == null, "the closed game never built the title")
+	main.quitting = false
+	main._host_reading = true
+	main.show_title()
+	await process_frame
+	await process_frame
+	check(main.title != null and is_instance_valid(main.title), "once read, the title is built")
 	main.hold_fx_read = false
 	if main._fx_reading:
 		ResourceLoader.load_threaded_get(Main.FX_SCRIPT)

@@ -369,6 +369,9 @@ func _title() -> void:
 	root.add_child(m)
 	for i in 5:
 		await process_frame
+	var tw := Time.get_ticks_msec()
+	while m.title == null and Time.get_ticks_msec() - tw < 20000:
+		await process_frame   # issue 1518: the title waits, a frame at a time, for the launch's campaign host read
 	m.settings["sound"] = true
 	m.settings["volume"] = 0.25
 	m._settings_to_ui_sound()

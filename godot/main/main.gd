@@ -428,6 +428,20 @@ func _on_battle_option(key: String, value) -> void:
 # ---------------------------------------------------------------- screens
 
 func show_title(music_after_draw := false) -> void:
+	# issue 1518 (Artoo on PR 1445, cc4a63ce): the title asks the campaign host whether a run is saved (Continue or New
+	# run), so while the launch's worker still reads the host the title waits for it a frame at a time, the window
+	# drawing and answering a close meanwhile, instead of compiling the host inside the first frame
+	if _host_reading and _host_still_reading():
+		_title_wait += 1
+		var wait := _title_wait
+		while not quitting and wait == _title_wait and _host_still_reading():
+			await get_tree().process_frame
+		if quitting or wait != _title_wait:
+			return   # closed, or another screen was asked for meanwhile
+	if _host_reading:
+		_host_reading = false
+		if ResourceLoader.load_threaded_get_status(HOST_SCRIPT) != ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+			ResourceLoader.load_threaded_get(HOST_SCRIPT)   # read by now: no wait
 	_clear()
 	if music != null:
 		if music_after_draw and DisplayServer.window_can_draw():
@@ -573,7 +587,12 @@ func _showcase_wanted() -> bool:
 	return not bot_mode and DisplayServer.get_name() != "headless" and str(settings.get("quality", "max")) != "low" and not args.has("no-showcase")
 
 
+func _host_still_reading() -> bool:
+	return hold_host_read or ResourceLoader.load_threaded_get_status(HOST_SCRIPT) == ResourceLoader.THREAD_LOAD_IN_PROGRESS
+
+
 func _clear() -> void:
+	_title_wait += 1   # a title still waiting on the host read is not shown over the new screen
 	if title != null and is_instance_valid(title):
 		title.queue_free()
 	title = null
@@ -647,6 +666,8 @@ func battle_parts_ready() -> bool:
 # issue 1518: the battle scene, from the launch's worker read when it ran (it waits only for what is not read yet)
 var _scene_reading := false
 var _host_reading := false
+var hold_host_read := false   # prefetch_wait_check only: the host read counts as still running
+var _title_wait := 0   # bumped by each show_title that waits on the host read, and by _clear, so only the newest goes on
 var _battle_scene: PackedScene = null
 
 
