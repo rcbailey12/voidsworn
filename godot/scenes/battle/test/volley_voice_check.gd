@@ -9,7 +9,7 @@ const VOICE := preload("res://story/battle_voice.gd")
 const SEED := 1551
 
 class Playback extends "res://scenes/battle/battle.gd":
-	func wait(_ms: float) -> void:
+	func wait(_ms: float, _skippable_cut := false) -> void:
 		pass
 
 # Records every event the scene hands to voice, then passes it on to the real battle voice.
