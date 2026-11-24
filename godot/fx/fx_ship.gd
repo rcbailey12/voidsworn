@@ -173,11 +173,11 @@ func hull_motion() -> Transform3D:
 	return (root.global_transform.affine_inverse() * _ref_mi.global_transform) * _ref0.affine_inverse()
 
 
-# Hang a node in the hull's frame of add_ship time so it moves with the hull mesh (r18; see setup).
-func _attach(n: Node3D) -> void:
+# Hang a node at its pose in the hull's add_ship frame (r18; see setup).
+func _attach(n: Node3D, pose := Transform3D.IDENTITY) -> void:
+	n.transform = _ref0.affine_inverse() * pose
 	if _ref_mi != null and is_instance_valid(_ref_mi):
 		_ref_mi.add_child(n)
-		n.transform = _ref0.affine_inverse()
 	else:
 		root.add_child(n)
 
@@ -225,8 +225,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	# whenever the hull moved between fx steps (the stills: overlays sank into the bobbing hull at random, which is
 	# why marks came and went between runs)
 	for m in meshes:
-		# (issue 560: never a turret's turning mesh, which turns under the hull and would carry the damage round with it)
-		if m is MeshInstance3D and hull._turret_above(m, root) < 0 and hull._door_above(m, root) < 0:
+		if m is MeshInstance3D and not BREACH.is_moving_damage_mesh(self, m):
 			_ref_mi = m
 			break
 	if _ref_mi != null:
@@ -325,6 +324,11 @@ func _hide_meshes() -> void:
 
 
 func hide_live_hull() -> void:
+	# The shield collapse can outlast the hull's last visible frame (issue 1239).
+	if is_instance_valid(_shield_mi):
+		var parent := hull_pivot if is_instance_valid(hull_pivot) else root
+		if _shield_mi.get_parent() != parent:
+			_shield_mi.reparent(parent)
 	_hide_meshes()
 	_hide_attachments()
 
@@ -489,8 +493,6 @@ func update(fx, dt: float) -> void:
 	_react_step(fx, dt)
 	_power_step(fx)
 	_hide_placeholder_engines()
-	if _shield_mi != null and _shield_mi.visible:
-		_shield_mi.transform = hull_motion() * _shield_pose
 	var pos := root.global_position
 	if hull_pivot == null:
 		var parent := root.get_parent_node_3d()
@@ -689,7 +691,7 @@ func _build_shield(fx) -> void:
 	_shield_pose = _shield_mi.transform
 	_shield_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_shield_mi.visible = false
-	root.add_child(_shield_mi)
+	_attach(_shield_mi, _shield_pose)
 
 
 func _shield_skin(fx = null) -> ArrayMesh:
@@ -787,8 +789,9 @@ func install_shield_skin(arrays: Array, bob: Vector3, fx = null, key := "") -> v
 		return
 	_shield_mi.mesh = _posed_skin(fx, key, arrays, bob) if key != "" else _pose_shield_skin(arrays, bob)
 	_shield_mat.set_shader_parameter("fitted_shape", true)
+	var frame := _shield_mi.transform * _shield_pose.affine_inverse()
 	_shield_pose = Transform3D(Basis.IDENTITY, hull.shield_centre())
-	_shield_mi.transform = _shield_pose
+	_shield_mi.transform = frame * _shield_pose
 
 
 func _pose_shield_skin(arrays: Array, bob: Vector3) -> ArrayMesh:
@@ -1603,7 +1606,11 @@ func _set_wear(fx, hpf: float) -> void:
 func ensure_damage_surfaces(fx) -> void:
 	if _damage_surfaces_assigned or dead or gone or squadron or hull == null or fx == null or fx.compat:
 		return
-	BREACH._inside_overlay(fx, self, meshes, [], fac.get("damage_glow", Color(1.0, 0.45, 0.12)))
+	var static_meshes: Array = []
+	for mi in meshes:
+		if is_instance_valid(mi) and not BREACH.is_moving_damage_mesh(self, mi):
+			static_meshes.append(mi)
+	BREACH._inside_overlay(fx, self, static_meshes, [], fac.get("damage_glow", Color(1.0, 0.45, 0.12)))
 	_power_shown = -1.0
 	_wear_shown = -1.0
 
