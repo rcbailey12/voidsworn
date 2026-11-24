@@ -26,7 +26,7 @@ static func rocky_available() -> bool:
 # world is held down from snow white to stay inside it). "bump" scales the relief shading; "glint" the sun's sheen on water or ice.
 const BOARD_LOOKS := {
 	0: {"bake": -1, "flat": Vector3(0.42, 0.33, 0.25), "clouds": true, "atmo": Vector3(0.72, 0.39, 0.19), "atmo_k": 0.32, "tints": [Vector3(1.0, 0.97, 0.93), Vector3(1.06, 0.95, 0.84), Vector3(0.96, 0.96, 0.98)], "gain": 1.5, "stand_gain": 0.3, "stand_clouds": 0.25},
-	1: {"bake": 2, "flat": Vector3(0.12, 0.2, 0.22), "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.03, 0.09, 0.18), "c": Vector3(0.66, 0.58, 0.44), "atmo": Vector3(0.38, 0.62, 1.0), "atmo_k": 0.55, "bump": 0.075, "glint": 1.0, "stand_gain": 0.65, "detail": 0.08, "detail_grain": 0.35, "cloud_detail": 0.85},
+	1: {"bake": 2, "flat": Vector3(0.12, 0.2, 0.22), "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.03, 0.09, 0.18), "c": Vector3(0.66, 0.58, 0.44), "atmo": Vector3(0.38, 0.62, 1.0), "atmo_k": 0.55, "bump": 0.095, "glint": 1.0, "stand_gain": 0.65, "detail": 0.08, "detail_grain": 0.35, "cloud_detail": 0.85},
 	3: {"bake": 5, "flat": Vector3(0.52, 0.54, 0.56), "a": Vector3(0.6, 0.63, 0.66), "b": Vector3(0.46, 0.27, 0.16), "c": Vector3(0.42, 0.6, 0.8), "atmo": Vector3(0.6, 0.8, 1.0), "atmo_k": 0.22, "bump": 0.034, "glint": 0.5, "detail": 0.04, "detail_grain": 0.15, "stand_gain": 0.58, "stand_clouds": 0.2, "stand_b": Vector3(0.4, 0.47, 0.54)},
 	4: {"bake": 3, "flat": Vector3(0.3, 0.26, 0.23), "a": Vector3(0.56, 0.47, 0.4), "b": Vector3(0.15, 0.135, 0.125), "c": Vector3(0.8, 0.66, 0.42), "atmo": Vector3(1.0, 0.45, 0.2), "atmo_k": 0.3, "bump": 0.07, "glint": 0.0, "detail": 0.1, "detail_grain": 0.4, "cloud_col": Vector3(0.5, 0.43, 0.37), "stand_gain": 0.3, "stand_clouds": 0.25},
 	5: {"bake": -1, "flat": Vector3(0.36, 0.35, 0.34), "clouds": false, "desat": 0.65, "atmo": Vector3(0.6, 0.62, 0.7), "atmo_k": 0.0, "tints": [Vector3(0.9, 0.9, 0.92), Vector3(0.98, 0.9, 0.82), Vector3(0.82, 0.84, 0.88)], "gain": 1.35, "stand_gain": 0.33},
@@ -520,7 +520,7 @@ void fragment() {
 	float ndl = dot(n, l);
 	float lambert = max(dot(nb, l), 0.0);
 	float day = atmo_k > 0.0 ? smoothstep(-0.1, 0.22, ndl) : smoothstep(-0.04, 0.14, ndl);
-	vec3 ground = alb * (1.0 - shadow * 0.5);
+	vec3 ground = alb * (1.0 - shadow * (cloud_detail > 0.0 ? 0.62 : 0.5));
 	vec3 col = ground * (0.02 + lambert * 0.92 * day);
 	// clouds: lit tops over the ground, a cool grey toward the terminator
 	vec3 ctone = mix(vec3(0.6, 0.63, 0.67), vec3(0.93, 0.94, 0.95), smoothstep(-0.05, 0.4, ndl));
@@ -658,7 +658,7 @@ void fragment() {
 		vec3 w = vec3(fb(q * 1.2, 4), fb(q * 1.2 + 5.0, 4), fb(q * 1.2 + 9.0, 4)) - 0.5;
 		float h = fb(q * 1.5 + w * 1.4, 7) + rg(q * 3.0 + w, 4) * 0.12 - 0.06;
 		h += (fb(q * 22.0 + w * 4.0, 4) - 0.5) * 0.035;   // fine bays, capes and islands along every coast
-		float sea = 0.5;
+		float sea = 0.48;   // a little more land in view (Ryan, Nov 24: terran needs more work)
 		float lat = abs(d.y);
 		if (h < sea) {
 			float dep = clamp((sea - h) * 5.0, 0.0, 1.0);
@@ -721,6 +721,9 @@ void fragment() {
 		cloud = smoothstep(0.5, 0.72, big + (fine - 0.5) * 0.6) * 0.85;
 		cloud *= smoothstep(0.3, 0.55, fine + 0.12);
 		cloud = max(cloud, smoothstep(0.62, 0.8, fine) * 0.3 * smoothstep(0.36, 0.5, big));
+		// fields of small fair-weather cumulus between the big decks, so open sky is not empty (Nov 24)
+		float cum = smoothstep(0.56, 0.74, fb(vec3(dc.x * 90.0, dc.y * 90.0, dc.z * 90.0) + cw * 3.0 + 37.0, 4));
+		cloud = max(cloud, cum * 0.45 * smoothstep(0.5, 0.62, fb(q * 4.0 + 43.0, 4)) * smoothstep(0.2, 0.45, big) * (1.0 - smoothstep(0.62, 0.8, lat)));
 		// Ryan (Nov 24): more cloud detail. Puffy cells break up the inside of every cloud deck
 		float puff = fb(vec3(dc.x * 30.0, dc.y * 60.0, dc.z * 30.0) + cw * 5.0 + 29.0, 5);
 		cloud *= 0.72 + 0.4 * smoothstep(0.3, 0.7, puff);
