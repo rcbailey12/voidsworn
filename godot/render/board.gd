@@ -10,6 +10,7 @@ const A4P := preload("res://assets/ships/a4_props.gd")  # A4's painted station a
 const BV := preload("res://world/blocker_visuals.gd")
 const PL := preload("res://world/world_planet.gd")   # issue 1765: the board planet's surfaces
 const LS := preload("res://render/line_style.gd")   # issue 1374 (R362): the one line style (width, glow, fade, role colours)
+const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const HS := 10.0
 var HW := HS * sqrt(3.0)
 # The one scale table's board-side sizes (issue 710, R247; docs/playbooks/scale.md). All in world units, HEX_S = 10.
@@ -277,9 +278,7 @@ func build(rules) -> void:
 	outline = MeshInstance3D.new()
 	outline.name = "ReachOutline"
 	var om := ShaderMaterial.new()
-	var osh := Shader.new()
-	osh.code = OUTLINE_SHADER
-	om.shader = osh
+	om.shader = SHADER_CACHE.for_code(OUTLINE_SHADER)
 	outline.material_override = om
 	outline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(outline)
@@ -318,10 +317,8 @@ func _mm(mesh: Mesh, code: String) -> MultiMeshInstance3D:
 		mm.set_instance_transform(i, Transform3D(Basis(), hex_world(cells[i].q, cells[i].r, -0.4)))
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
-	var sh := Shader.new()
-	sh.code = code
 	var m := ShaderMaterial.new()
-	m.shader = sh
+	m.shader = SHADER_CACHE.for_code(code)
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mi)
