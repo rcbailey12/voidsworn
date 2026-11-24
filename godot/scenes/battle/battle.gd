@@ -38,6 +38,7 @@ const Backdrop := preload("res://render/backdrop.gd")
 const PG := preload("res://render/placeholder_guard.gd")
 const LOOK := preload("res://render/look.gd")
 const WORLD_SKY := preload("res://world/world_sky.gd")
+const BattleLens := preload("res://fx/battle_lens.gd")
 const LIVING := preload("res://world/world_living.gd")
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
@@ -324,6 +325,7 @@ func _build_world() -> void:
 		if LOOK.fleet_lighting_enabled():
 			pano.set_shader_parameter("sun_dir", -LOOK.KEY_DIR.normalized())
 			pano.set_shader_parameter("fleet_reflections", true)
+			pano.set_shader_parameter("fleet_reflections_v2", LOOK.ship_look_v2_enabled())   # issue 1777
 		var sky := Sky.new()
 		sky.sky_material = pano
 		sky.radiance_size = Sky.RADIANCE_SIZE_256
@@ -346,6 +348,15 @@ func _build_world() -> void:
 		env.set_glow_level(lv, [0.0, 0.6, 1.0, 0.5, 0.0, 0.0, 0.0][lv])
 	var we := WorldEnvironment.new()
 	we.environment = env
+	_death_dof = LOOK.post_fx_enabled("DOF")
+	_lens_well = LOOK.post_fx_enabled("LENSING")
+	_lens_shock = LOOK.post_fx_enabled("SHOCKWAVE")
+	if _lens_well or _lens_shock:
+		_battle_lens = BattleLens.new()
+		_battle_lens.warm()
+		var compositor := Compositor.new()
+		compositor.compositor_effects = [_battle_lens]
+		we.compositor = compositor
 	add_child(we)
 	var key := DirectionalLight3D.new()
 	key_light = key
@@ -387,6 +398,8 @@ func _build_world() -> void:
 	cam.name = "Camera"
 	add_child(cam)
 	cam.current = true
+	if _battle_lens != null:
+		cam.pose_applied.connect(_step_battle_lens)
 	if gfx != null and gfx.has_method("setup"):
 		gfx.setup({"camera": cam, "quality": str(args.get("quality", "max")), "reduce_flashing": reduce_flashing, "shake": shake_scale, "unit": 1.0})
 	_build_arrow()
@@ -571,6 +584,7 @@ func _begin(a) -> void:
 	_skipped_camera_kinds.clear()
 	_shot_cut_timer = null
 	_cine_release()
+	_reset_battle_lens()
 	_end_enemy_follow()
 	_click_q = {}
 	_threat_version = -1
@@ -672,6 +686,10 @@ func _begin(a) -> void:
 			c.queue_free()
 	else:
 		backdrop.build(cam.bounds, env)
+	var grade_region := "frontier"
+	if world != null:
+		grade_region = "deadstar" if world.setting["deadstar"] else str(world.setting["region"])
+	LOOK.battle_grade(env, grade_region)
 	V = api.view()
 	_index_view()
 	for u in V["units"]:
@@ -694,7 +712,7 @@ func _begin(a) -> void:
 	_log("Contact: %s. %d ship%s on the scanners." % [str(F.get("n", _enemy_fac())), ne, "s" if ne > 1 else ""], "s")
 	var well = api.world_info().get("well")
 	if well is Dictionary or (well is bool and well):
-		_log("The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "s")
+		_log("The %s warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim." % api.R.dead_star_name(api.R.RUN, true), "s")
 	batches.append({"events": api.take_events(), "view": api.view()})
 	if not showcase:
 		sfx.ambient_start()
@@ -976,6 +994,7 @@ static func hex_distance(a: Dictionary, b: Dictionary) -> int:
 
 
 func _sync(v: Dictionary) -> void:
+	LOOK.battle_ssr(env, str(args.get("quality", "max")), v.get("units", []))
 	V = v
 	_index_view()
 	_music_feed()
@@ -1222,6 +1241,9 @@ func _stale(g: int) -> bool:
 # mark the battle retired before finished goes out: post-await work from it is rejected from here on
 func _retire() -> void:
 	retiring = true
+	_reset_battle_lens()
+	if _death_dof and cam != null:
+		cam.set_close_dof(false)
 	_deployment_api = null
 	_gen += 1
 	_click_q = {}
@@ -2365,6 +2387,8 @@ func _cine_frame(a_id, t_id) -> void:
 
 
 func _cine_release() -> void:
+	if _death_dof and cam != null:
+		cam.set_close_dof(false)
 	if cine_saved.is_empty():
 		return
 	_routine_shot_cut = ""
@@ -2820,6 +2844,53 @@ var shot_at := {}             # issue 1581: unit id -> effect-clock time of its 
 var reduce_motion := false    # settings key reduce_motion (ui_spec.md 7.6; the switch sits in Settings and this menu)
 var kill_hold_until := -1.0   # game_t when the kill cut-in lets go; -1 when none holds
 var _kill_hold_n := 0
+var _death_dof := false
+var _battle_lens: CompositorEffect
+var _lens_well := false
+var _lens_shock := false
+var _shock_deaths := {}
+const SHOCKWAVE_S := 0.62
+
+
+func _reset_battle_lens() -> void:
+	_shock_deaths.clear()
+	if _battle_lens != null:
+		_battle_lens.set_lenses(Vector4.ZERO, 0.0, Vector4.ZERO)
+
+
+func _track_capital_shockwave(id: String, center: Vector3, length: float) -> void:
+	if not _lens_shock or reduce_motion or reduce_flashing:
+		return
+	var ship = gfx.ship(id)
+	if ship != null and (ship.death_core_pending or gfx.death_core_at(id) >= 0.0):
+		_shock_deaths[id] = [center, length]
+
+
+func _step_battle_lens() -> void:
+	if retiring or warming:
+		return
+	var well := Vector4.ZERO
+	var well_depth := 0.0
+	if _lens_well and is_instance_valid(world) and world.well_position() != Vector3.INF:
+		var center: Vector3 = world.well_position()
+		well = BattleLens.project_lens(cam, center, 2.0 * world.well_radius(), -1.0)
+		var depth: float = -(cam.get_camera_transform().affine_inverse() * center).z
+		well_depth = clampf(cam.near * (cam.far - depth) / (maxf(depth, cam.near) * (cam.far - cam.near)), 0.0, 1.0)
+	var shock := Vector4.ZERO
+	var newest := -INF
+	for id in _shock_deaths.keys():
+		var ship = gfx.ship(id)
+		if ship != null and ship.death_core_pending:
+			continue
+		var core: float = gfx.death_core_at(id)
+		var age: float = (gfx.now - core) / SHOCKWAVE_S
+		if core < 0.0 or age >= 1.0 or reduce_motion or reduce_flashing:
+			_shock_deaths.erase(id)
+		elif age >= 0.0 and core >= newest:
+			newest = core
+			var source: Array = _shock_deaths[id]
+			shock = BattleLens.project_lens(cam, source[0], float(source[1]) * lerpf(0.3, 1.6, age), age)
+	_battle_lens.set_lenses(well, well_depth, shock)
 
 
 # Issue 521 (Board review of PR 525): while a kill cut-in holds, the camera frames the DYING ship, not the attacker and
@@ -2869,6 +2940,8 @@ func _kill_frame(id) -> void:
 	cam.r = rr
 	cam.t = tp
 	cam.slow_until = cam._clock + 1.2
+	if _death_dof and not reduce_motion and rr < CamRig.DOF_CLOSE_LIMIT:
+		cam.set_close_dof(true, float(sv.L))
 	hud.letterbox(true)
 
 
@@ -2982,6 +3055,9 @@ func _play_death(e: Dictionary) -> void:
 		if "kill_slowmo" in gfx:
 			gfx.kill_slowmo = not reduce_motion
 		var t: float = float(gfx.death(str(id), cause))
+		var unit: Dictionary = VU.get(id, {})
+		if not skip and (float(unit.get("size", 0.0)) > 0.8 or bool(unit.get("flagship", false))) and cause not in ["dark", "hulk", "board"]:
+			_track_capital_shockwave(str(id), p, L)
 		if skip and gfx.has_method("hurry_death"):
 			gfx.hurry_death()
 		if cined:
@@ -3048,8 +3124,42 @@ func _end_sound(win: bool) -> String:
 	return "sting"
 
 
+func _end_cause_line() -> String:
+	match V.get("endCause", ""):
+		"enemy_gone": return "No enemy ships remain in the fight."
+		"rout": return "Their fleet broke and fled."
+		"boss", "flagship": return "The enemy flagship is out of the fight."
+		"flagship_escaped": return "The flagship escaped, and its escorts withdrew."
+		"convoy_broken": return "You stopped enough transports to break the convoy."
+		"convoy_escaped": return "Too many transports escaped. The escorts broke off."
+		"breakthrough": return "Enough of your ships broke through and jumped clear."
+		"breakthrough_short": return "Too few of your ships could still break through."
+		"station_held": return "You held the station until the enemy withdrew."
+		"station_lost": return "The enemy destroyed the station."
+		"relay_held": return "You held the relay for three rounds."
+		"relay_lost": return "The enemy secured the relay."
+		"fleet_lost":
+			var objective = V.get("obj")
+			if objective is Dictionary and objective.get("type") == "hold":
+				return "Your last ship was destroyed with the relay at %d/3." % int(objective["score"])
+			return "Your last ship was destroyed."
+	return ""
+
+
+func _continue_label(outcome: String) -> String:
+	if not in_campaign:
+		return "Continue to title"
+	match outcome:
+		"win": return "Continue to battle rewards"
+		"retreat": return "Return to campaign map"
+		_: return "Continue to run debrief"
+
+
 func _end_flow() -> void:
 	ended = true
+	inspect = ""
+	hud.set_panel({})
+	hud.set_target({})
 	if board != null:
 		board.set_process_unhandled_input(false)
 	# issue 1559 item 8: Fight again (the menu) during the victory beat starts a new battle while this one still waits; its
@@ -3082,12 +3192,15 @@ func _end_flow() -> void:
 	if bot or args.has("bot-runs"):
 		_finish(result)
 		return
+	var cause := _end_cause_line()
+	if cause != "":
+		body = cause + "\n" + body
 	if voice != null and not withdrawal:   # story hook: your admiral's last word (or the Nemesis's gloat) on the end card
 		var vl: String = voice.closing(win)
 		if vl != "":
 			body += "\n\n" + vl
 			recording_cue.emit("voice", vl)
-	hud.show_end(heading, body, win, external)
+	hud.show_end(heading, body, win, external, _continue_label(outcome))
 
 
 # ---------------------------------------------------------------- selection, overlays, tips
@@ -4058,19 +4171,20 @@ func _nova_tip(q: int, r: int) -> String:
 	return t
 
 
-# the Hollow Sun's pull on a hex, as one line for the move tip ("" away from it or on a board without it)
+# the dead star's pull on a hex, as one line for the move tip ("" away from it or on a board without it)
 func _well_line(q: int, r: int) -> String:
 	var W = api.world_info().get("well") if api != null else null
 	if not W is Dictionary:
 		return ""
 	var R = api.R
 	var d := _hex_d(q, r, int(W["q"]), int(W["r"]))
+	var star: String = R.dead_star_name(R.RUN)
 	if d <= int(R.WELL_RIM):
-		return "[color=#ff8a72]Hollow Sun rim: %d hull damage to a ship here at each round start (it still gets +1 movement).[/color]" % int(R.WELL_DMG)
+		return "[color=#ff8a72]%s rim: %d hull damage to a ship here at each round start (it still gets +1 movement).[/color]" % [star, int(R.WELL_DMG)]
 	if d <= int(R.WELL_PULL):
-		return "[color=#c79bff]Hollow Sun pull: a ship here is dragged 1 hex inward at each round start, with +1 movement.[/color]"
+		return "[color=#c79bff]%s pull: a ship here is dragged 1 hex inward at each round start, with +1 movement.[/color]" % star
 	if d <= int(R.WELL_ASSIST):
-		return "[color=#9fd4ff]Hollow Sun slingshot: +1 movement at each round start, no pull.[/color]"
+		return "[color=#9fd4ff]%s slingshot: +1 movement at each round start, no pull.[/color]" % star
 	return ""
 
 
@@ -5079,7 +5193,7 @@ func _blocker_text(t: Dictionary) -> String:
 	var counts := {}
 	var order: Array = []
 	for h in _shot_blockers(t):
-		var label: String = {"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(h.kind, h.kind)
+		var label: String = {"rock": "asteroid", "hulk": "wreck", "deadstar": api.R.dead_star_name(api.R.RUN, true)}.get(h.kind, h.kind)
 		if not counts.has(label):
 			counts[label] = 0
 			order.append(label)
@@ -5175,7 +5289,8 @@ func _legend() -> void:
 	var desc := str(E.get("d", "")) if E is Dictionary else ""
 	var shape = api.world_info().get("shape")
 	if shape != null and str(shape) != "open" and TBL.get("SHAPES", {}).has(str(shape)):
-		desc += " Board: %s." % str(TBL["SHAPES"][str(shape)]).to_lower()
+		var board_name: String = api.R.dead_star_name(api.R.RUN) if shape == "deadstar" else str(TBL["SHAPES"][str(shape)]).to_lower()
+		desc += " Board: %s." % board_name
 	var mods: Array = api.R.storyModifierLines()
 	if not mods.is_empty(): desc += "\n" + " ".join(PackedStringArray(mods))
 	hud.set_legend(title, desc.strip_edges(), rows)
@@ -6037,6 +6152,8 @@ func _objective() -> String:
 
 
 func _panel_info() -> Dictionary:
+	if ended:
+		return {}
 	var id := sel if sel != "" else inspect
 	if id == "" or not VU.has(id):
 		return {}
@@ -6390,6 +6507,21 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 var showcase_ready := false
 
 
+# Issue 1777: how far the farthest board hex lies from a point (the shadow reach must cover the whole board at any zoom)
+var _board_cells_xz := PackedVector2Array()
+func _board_far(p: Vector3) -> float:
+	if _board_cells_xz.size() != board.cells.size():
+		_board_cells_xz.clear()
+		for c in board.cells:
+			var w: Vector3 = board.hex_world(float(c["q"]), float(c["r"]))
+			_board_cells_xz.append(Vector2(w.x, w.z))
+	var far := 0.0
+	var p2 := Vector2(p.x, p.z)
+	for c in _board_cells_xz:
+		far = maxf(far, p2.distance_squared_to(c))
+	return sqrt(far)
+
+
 func _process(dt: float) -> void:
 	if _deployment_api != null:
 		return
@@ -6399,6 +6531,10 @@ func _process(dt: float) -> void:
 	cam.keyboard_enabled = not warming and not ended and (hud == null or (hud.menu == null and hud.get("endcard") == null))
 	if showcase_ready:
 		cam.a += dt * 0.035
+	# issue 1777 (Ship Look V2): the key light's shadow reach follows the zoom, so its cascades spend their texels on the
+	# ships in view (the fixed 600 spread them over empty space: soft, blocky hull shadows)
+	if key_light != null and board != null and LOOK.ship_look_v2_enabled():
+		key_light.directional_shadow_max_distance = LOOK.shadow_reach(float(cam.r), _board_far(cam.t))
 	if world != null and world.has_method("step"):
 		world.step(dt)
 	if api == null:
@@ -7231,12 +7367,17 @@ func _closeups(id: String, tag: String) -> void:
 	var yaw: float = sv.rotation.y
 	var rr := clampf(float(sv.L) * 1.5, cam.min_r, 140.0)
 	var nm := "%s_%s_%s" % [tag, str(VU.get(id, {}).get("cls", "ship")).replace(" ", ""), id]
+	var use_dof := _death_dof and not reduce_motion and rr < CamRig.DOF_CLOSE_LIMIT
+	if use_dof:
+		cam.set_close_dof(true, float(sv.L))
 	for v in [[yaw + PI / 2.0, 0.35, "port"], [yaw - PI / 2.0, 0.35, "starboard"], [yaw + PI * 0.75, 0.9, "above"]]:
 		cam.a = float(v[0]); cam.b = float(v[1]); cam.r = rr; cam.t = sv.visual_position()
 		cam.snap()
 		await get_tree().create_timer(0.5).timeout
 		await _snap(nm + "_" + str(v[2]))
 	cam.a = save[0]; cam.b = save[1]; cam.r = save[2]; cam.t = save[3]
+	if use_dof:
+		cam.set_close_dof(false)
 	cam.snap()
 
 

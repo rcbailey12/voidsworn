@@ -76,7 +76,7 @@
       ],
       "deathless": [
         "Eclipse hulls! Self-healing alloy and null coils worth a fortune, just keep smashing the wrecks!",
-        "Silver ghosts drifting in our lane! Break them twice if they try to stand back up!"
+        "Violet-black ghosts drifting in our lane! Break them twice if they try to stand back up!"
       ]
     },
     "chorus": {
@@ -101,7 +101,7 @@
         "Glasswright mirrors ahead. Old breeding reflex wakes in our nerves; close fast before their beams cut us."
       ],
       "deathless": [
-        "Silver husks we were built to crack a thousand years ago. Every spore wakes at their cold signal.",
+        "Violet-black husks we were built to crack a thousand years ago. Every spore wakes at their cold signal.",
         "Eclipse frames on the scopes. Ancient war-code surges through the brood; tear their repair swarms apart!"
       ]
     },
@@ -123,7 +123,7 @@
         "Chorus bio-hulls drifting across the lane. Never let them touch crystal plating; focus beams at range."
       ],
       "ithar": [
-        "A splinter House breaking the Lock covenant. Measure their arcs with care; they know every prism trick we do.",
+        "Rival Glasswrights reaching for cores we agreed to seal. Watch their arcs. They know our prism tricks.",
         "Kindred mirrors turned against us. Keep your angles tighter than theirs and end this cleanly."
       ],
       "deathless": [
@@ -146,7 +146,7 @@
       ],
       "chorus": [
         "The Fleshwrights' old war-beasts still prowling the rim. Keep repair swarms clear of their acid and burn them.",
-        "Chorus tissue detected ahead. Our ancestors fought these organisms before Ardent fell; purge the cluster."
+        "Chorus tissue detected. The Fleshwrights grew them to destroy us after Ardent fell. Purge the cluster."
       ],
       "ithar": [
         "Our Glasswright siblings, still guarding ashes instead of building dawn. Break their mirror line and press on.",
@@ -392,7 +392,7 @@
       ],
       "win_last_stand": [
         "Only one ship left kicking, and we still took the field! Try laughing at us back in Rattlehold now!",
-        "Everyone else is drifting, our hull's held together by prayers and rivets, and we STILL won!"
+        "Everyone else is drifting, our hull's held together by grit and rivets, and we STILL won!"
       ]
     },
     "chorus": {
@@ -486,7 +486,7 @@
       ],
       "deadstar": [
         "Watch that dead star's gravity well! Ride the outer slingshot, and don't drift onto the rim!",
-        "The Hollow Sun's pulling hard on our thrusters. Use the gravity assist and keep clear of the tear zone!"
+        "The dead star's pulling hard on our thrusters. Use the gravity assist and keep clear of the tear zone!"
       ]
     },
     "hegemony": {
@@ -537,7 +537,7 @@
         "Smashed clean through their hull! Scrap teams'll be picking bolts out of our prow for weeks!"
       ],
       "enemy_risen": [
-        "Hey, that dead silver wreck just lit back up! Smash it harder so it stays junk!",
+        "Hey, that dead violet-black wreck just lit back up! Smash it harder so it stays junk!",
         "Damn Eclipse ghosts won't stay broken! Dump another volley into that rising hull!"
       ],
       "enemy_cmd_warn": [
@@ -562,7 +562,7 @@
       ],
       "deadstar": [
         "That dead star's tugging hard! Ride its rim for extra speed, just don't get sucked into the grinder!",
-        "Careful around the Hollow Sun's well, crews! Great slingshot if you don't let it peel your hull!"
+        "Careful around the dead star's well, crews! Great slingshot if you don't let it peel your hull!"
       ]
     },
     "chorus": {
@@ -575,7 +575,7 @@
         "Crushed their shell on impact. Taste the venting heat and push into the gap!"
       ],
       "enemy_risen": [
-        "Dead silver metal is knitting itself back together! Swarm it again and choke its repair dust!",
+        "Dead violet-black metal is knitting itself back together! Swarm it again and choke its repair dust!",
         "That Eclipse husk stands again. Crack its core deeper this time so it stays cold."
       ],
       "enemy_cmd_warn": [

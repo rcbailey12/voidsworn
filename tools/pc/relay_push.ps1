@@ -5,8 +5,9 @@
 #   relay_push.bat <job> <attempt folder> [dry | leftovers]
 # leftovers adds only checkout_leftovers to an existing private relay. It checks that all other
 # attempt results are already there. For a custom location, pass the branch suffix as <job> and -TreePath to the ps1.
-# Sends the attempt's out_* folders and the small text files at its top (status, done, logs). Never a checkout or any
-# other folder. A file over 10 MB stays on the PC and is listed in <attempt folder name>/skipped_over_10MB.txt as
+# Sends out and out_* folders and the small text files at the attempt's top (status, done, logs). When the attempt is
+# itself out or out_*, sends its result subfolders. Never sends a checkout. A file over 10 MB stays on the PC and is
+# listed in <attempt folder name>/skipped_over_10MB.txt as
 # "<path with \> <size> MB", the form the proof reads. Godot cache folders stay on the PC and are listed by their
 # attempt-relative paths in relay_manifest/skipped_cache_folders.txt. dry lists what would go and changes nothing. It deletes nothing,
 # on the PC or on GitHub. Prints the branch link and the picture and video links for the PR comment.
@@ -44,6 +45,16 @@ function Run-GitChunks($fixed, $items) {
   }
   if ($chunk.Count) { $out += @(Run-Git @fixed @chunk) }
   $out
+}
+function Test-CheckoutRoot($dir) {
+  # A worktree's .git is a file. A Voidsworn checkout can also have its project one level down in godot/.
+  if ((Test-Path -LiteralPath (Join-Path $dir.FullName '.git')) -or
+      (Test-Path -LiteralPath (Join-Path $dir.FullName 'project.godot') -PathType Leaf)) { return $true }
+  $godot = Get-Item -LiteralPath (Join-Path $dir.FullName 'godot') -Force -ErrorAction Ignore
+  if ($godot -is [IO.DirectoryInfo] -and -not ($godot.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    return (Test-Path -LiteralPath (Join-Path $godot.FullName 'project.godot') -PathType Leaf)
+  }
+  return $false
 }
 function Assert-BackfillSource($parent) {
   $have = [Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
@@ -120,7 +131,11 @@ $files = New-Object 'Collections.Generic.List[object]'
 $originals = New-Object 'Collections.Generic.List[object]'
 $receipt = Join-Path $full 'relay_receipt.txt'
 $cacheNames = @('profile', 'shader_cache', '.godot')
+$leftoverNames = @('checkout_leftovers', 'checkout_leftovers_repo')
 $skippedCaches = New-Object 'Collections.Generic.List[string]'
+if (-not $leftovers -and ($at.Name -in $leftoverNames -or (Test-CheckoutRoot $at))) {
+  throw "not a results folder: $full"
+}
 foreach ($e in @($at.EnumerateFiles())) {
   if ($leftovers) {
     if ($ProvenTip) { continue }
@@ -128,18 +143,20 @@ foreach ($e in @($at.EnumerateFiles())) {
     $originals.Add($e)
   } elseif ($e.Extension -in @('.txt', '.log', '.json', '.csv', '.md') -and -not ($e.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $files.Add($e) }
 }
-$roots = @($at.EnumerateDirectories('out_*'))
-if (-not $ProvenTip) {
+if ($ProvenTip) { $roots = @($at.EnumerateDirectories('out_*')) }
+else {
   $top = @($at.EnumerateDirectories())
   foreach ($d in $top) {
     if ($d.Name -notin $cacheNames) { continue }
     if ($leftovers -and ($d.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "a link in the results: $($d.FullName)" }
     $skippedCaches.Add($d.Name)
   }
-  if ($leftovers) { $roots = @($top | Where-Object { $_.Name -notin $cacheNames }) }
+  $useSubfolders = $leftovers -or $at.Name -eq 'out' -or $at.Name -like 'out_*'
+  $roots = @($top | Where-Object { $_.Name -notin $cacheNames -and
+    ($useSubfolders -or $_.Name -eq 'out' -or $_.Name -like 'out_*') })
 }
 foreach ($d in $roots) {
-  # each out_* folder is checked before the walk enters it, like every folder below it
+  # Each result folder is checked before the walk enters it, like every folder below it.
   if ($d.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($d.FullName)" }
   $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
   if ($ProvenTip) {
@@ -150,6 +167,7 @@ foreach ($d in $roots) {
   } else { $pending.Push($d) }
   while ($pending.Count) {
     $dir = $pending.Pop()
+    if (-not $leftovers -and ($dir.Name -in $leftoverNames -or (Test-CheckoutRoot $dir))) { continue }
     $relDir = $dir.FullName.Substring($full.Length + 1).Replace('\', '/')
     $savedFiles = $relDir -match '\Aout_[^/]+/checkout_leftovers(?:/|\z)'
     if ($leftovers -and -not $savedFiles -and (Test-Path -LiteralPath (Join-Path $dir.FullName '.git') -PathType Container)) { continue }
@@ -166,7 +184,7 @@ foreach ($d in $roots) {
   }
 }
 if ($leftovers -and -not $files.Count) { Write-Output "no checkout leftovers in $full"; exit 0 }
-if (-not $files.Count -and -not $skippedCaches.Count) { throw "nothing to relay in $full (no out_* files)" }
+if (-not $files.Count -and -not $skippedCaches.Count) { throw "nothing to relay in $full (no result files)" }
 $send = @(); $skipped = @()
 foreach ($f in $files) {
   $rel = $f.FullName.Substring($full.Length + 1)

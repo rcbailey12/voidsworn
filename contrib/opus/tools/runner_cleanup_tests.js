@@ -12,9 +12,8 @@ const ownerFile = '.voidsworn-run-owner';
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner-cleanup-proof-'));
 // PR 1813 measured a 2.1x slowdown with overlapping PC lanes. Allow 65 s instead of 30 s per child.
 const childTimeout = 65000;
-// The first full dry scan still had folders left after 65 s with lanes A, B and D checking.
-// Allow 140 s for a Windows janitor scan (65 s x 2.1, rounded up).
-const janitorTimeout = windows ? 140000 : childTimeout;
+// Issue 1739: with overlapping lanes the dry scan was still checking kept folders at 140 s.
+const janitorTimeout = windows ? 240000 : childTimeout;
 const temp = path.join(root, 'temp'), board = path.join(root, 'board');
 const mirror = path.join(root, 'mirror.git'), repo = path.join(board, 'repo');
 const profile = path.join(root, 'profile'), flag = path.join(profile, 'Downloads', 'voidsworn_test', 'gpu_go.txt');
@@ -36,10 +35,10 @@ function execute(exe, args, input, extra = {}, timeout = childTimeout) {
   return r.stdout.trim();
 }
 const git = (args, input) => execute('git', args, input);
-function shared(args, scratch = '', issue = '') {
+function shared(args, scratch = '', issue = '', extra = {}) {
   const scratchEnv = scratch ? { TEMP: scratch, TMP: scratch, TMPDIR: scratch } : {};
   execute(windows ? 'powershell.exe' : 'pwsh', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', common, ...args], undefined,
-    { ...scratchEnv, PC_RUN_SCRATCH: scratch, PC_RUNNER_LOCKED_ISSUE: issue });
+    { ...scratchEnv, PC_RUN_SCRATCH: scratch, PC_RUNNER_LOCKED_ISSUE: issue, ...extra });
 }
 function start(name, issue = '') {
   const out = path.join(root, name);
@@ -90,6 +89,65 @@ function scratch(parent, name, hours) {
   dateTree(dir, hours);
   return dir;
 }
+function checkProfileCache() {
+  const slot = path.join(root, 'work217', 'slot_sonnet', 'repo');
+  const out = path.join(root, 'profile-cache-checkout');
+  fs.mkdirSync(out);
+  const branch = 'fixture/profile-cache';
+  shared(['init', out, branch]);
+  write(path.join(out, 'validated_issue.json'), JSON.stringify({ body: 'Owner: sonnet\nBrief: below\nDeliver to: tools/pc\n' }));
+  const checkout = () => shared(['checkout', slot, out, branch], '', '', {
+    PC_TEST_SOURCE: mirror, PC_TEST_MIRROR: path.join(root, 'profile-cache-mirror.git')
+  });
+  const exclude = path.join(slot, '.git', 'info', 'exclude');
+  checkout();
+  assert.match(read(exclude), /^\/Microsoft\/\r?$/m);
+  const existing = '# keep this comment\r\n/my-local-pattern/';
+  write(exclude, existing);
+  checkout();
+  assert.match(read(path.join(out, 'result.txt')), /earlier checkout reused in place/);
+  assert.equal(read(exclude), `${existing}\r\n/Microsoft/\r\n`);
+  checkout();
+  assert.equal(read(exclude), `${existing}\r\n/Microsoft/\r\n`, 'reused slot appends the pattern only once');
+
+  const cache = 'Microsoft/Windows/PowerShell/ModuleAnalysisCache';
+  write(path.join(slot, cache), 'fixture cache');
+  write(path.join(slot, 'nested', cache), 'ordinary work');
+  git(['-C', slot, 'add', '-A']);
+  assert.equal(git(['-C', slot, 'diff', '--cached', '--name-only']), `nested/${cache}`);
+  assert.equal(read(path.join(slot, cache)), 'fixture cache');
+
+  const outside = `${slot}-sibling`;
+  const inClone = path.join(slot, 'profile');
+  const cases = [
+    ['empty', null, null, ['LOCALAPPDATA', 'PSModuleAnalysisCachePath']],
+    ['inside', windows ? inClone.toUpperCase() : inClone, `./unused/../${cache}`, ['LOCALAPPDATA', 'PSModuleAnalysisCachePath']],
+    ['only-local', slot, path.join(outside, 'cache'), ['LOCALAPPDATA']],
+    ['only-cache', outside, path.join(slot, cache), ['PSModuleAnalysisCachePath']],
+    ['outside', outside, path.join(outside, 'cache'), []]
+  ];
+  const seenScratch = new Set();
+  for (const [name, local, moduleCache, redirected] of cases) {
+    const run = path.join(root, 'profile-' + name);
+    fs.mkdirSync(run);
+    shared(['init', run, branch]);
+    shared(['scratch', run, slot], '', '', { LOCALAPPDATA: local, PSModuleAnalysisCachePath: moduleCache });
+    const scratchPath = read(path.join(run, 'scratch_path.txt')).trim();
+    assert.equal(path.dirname(scratchPath), temp);
+    assert(!seenScratch.has(scratchPath));
+    seenScratch.add(scratchPath);
+    const values = {
+      LOCALAPPDATA: path.join(scratchPath, 'LocalAppData'),
+      PSModuleAnalysisCachePath: path.join(scratchPath, 'ModuleAnalysisCache')
+    };
+    const settings = redirected.map(key => `${key}=${values[key]}`);
+    assert.deepEqual(read(path.join(run, 'profile_env.txt')).split(/\r?\n/).filter(Boolean), settings, name);
+    const log = read(path.join(run, 'result.txt')).split(/\r?\n/).filter(line => line.startsWith('run profile cache: '));
+    assert.deepEqual(log, ['run profile cache: ' + (settings.join(', ') || 'kept inherited paths')]);
+    if (redirected.includes('LOCALAPPDATA')) assert(fs.statSync(values.LOCALAPPDATA).isDirectory());
+  }
+  console.log('PASS runner profile caches: per-run redirects and append-only slot excludes on clone and reuse');
+}
 try {
   fs.mkdirSync(temp);
   const other = path.join(temp, 'voidsworn-run-other');
@@ -126,6 +184,7 @@ try {
   const main = commit(mirror, 'shared history');
   git(['--git-dir', mirror, 'update-ref', 'refs/heads/main', main]);
   git(['--git-dir', mirror, 'symbolic-ref', 'HEAD', 'refs/heads/main']);
+  checkProfileCache();
   makeCopy('repo', 1);
   const rebuildable = makeCopy('repo-kept-caches', 1);
   write(path.join(rebuildable, '.git', 'info', 'exclude'), '/godot/.godot/\n');

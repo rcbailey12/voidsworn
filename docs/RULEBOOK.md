@@ -571,6 +571,9 @@ Chorus had lifted dark paint back up: the Chorus body (about 0.021 live) rendere
 from 0.027 live to 0.040 dead. Ceilings stay (0.045, Chorus 0.03); Eclipse obsidian keeps its 0.04 floor (R421). The
 60 percent (and the 40 percent cap on dead metal, Wave 0 on Sheet M) scale the encoded paint tint, so in linear light a
 wreck keeps about a third (dead metal about a seventh) of its paint; the band and ceilings are measured in linear light.
+R426 (Ryan, Nov 23 2026 03:22 UTC, on the #1777 before and after sheets): Ship Look V2 is the default look for every
+hull, the darker Hullbreaker red included; `VS_SHIP_LOOK_V2=0` keeps the old look for A/B captures only, and new ship
+work is judged under V2 (`look.gd` `ship_look_v2_enabled()`, guarded by `ship_look_v2_check`).
 
 ## 4. Ships and concepts
 

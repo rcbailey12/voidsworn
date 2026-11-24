@@ -230,14 +230,25 @@ func _battle_line(fac: String, ships: Array) -> void:
 
 # issue 601: one ship alone at the battle camera's home angle, at camera 170 (the battle camera's distance) and camera 60 (the
 # look bench's middle distance), true game pixels, never scaled: the paint as the player sees it. Writes <code>_cam170.jpg and
-# <code>_cam60.jpg (set cams)
+# <code>_cam60.jpg (set cams; VS_A4_RADII picks other distances)
 func _cams(code: String, fac: String, cls: String) -> void:
 	var sv := _spawn(code, fac, cls, Vector3.ZERO, 0)
 	rig.current = true
 	rig.a = -PI / 2.0
 	rig.b = 0.98
 	rig.t = Vector3.ZERO
-	for r in [170.0, 60.0]:
+	# VS_A4_RADII (R431, Nov 23 2026): another list of camera distances, e.g. "170,26" for the look bench's close camera
+	var radii := [170.0, 60.0]
+	var env_r := OS.get_environment("VS_A4_RADII")
+	if env_r != "":
+		radii = []
+		for part in env_r.split(","):
+			if part.strip_edges().is_valid_float():
+				radii.append(float(part))
+		if radii.is_empty():
+			push_error("[a4shots] VS_A4_RADII=%s has no distance; using 170 and 60" % env_r)
+			radii = [170.0, 60.0]
+	for r in radii:
 		rig.r = r
 		rig.snap()
 		await _settle()

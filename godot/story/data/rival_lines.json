@@ -34,16 +34,16 @@
       "Thought you shook us back there? Vesper crews don't quit just because a hull takes fire!"
     ],
     "final": [
-      "Right behind me sits the siphon killing Vesper's stars. I don't care who you fly for, you're not stopping us from burning it out!",
+      "Vesper is freezing while you sit in our firing lane. Clear our sights or burn with the siphon!",
       "We dragged half-frozen ships across three sectors to reach this dead sun. Nobody's turning us back at the rim!",
       "End of the line, {you}. Either we break that siphon today or Vesper freezes in the dark.",
       "Forty worlds are watching this sky go cold. Stand down, or we climb right over your wreckage to reach the cores!"
     ],
     "beaten": [
       "Hull's buckling, pull back! Don't celebrate yet, we're patching up and coming right back for you!",
-      "Emergency jump! Remember my hull code, because you haven't seen the last of us!",
+      "Flagship's breaking up! Get the escorts clear and keep the oath, whatever happens to us!",
       "We're venting air on four decks, break off! Enjoy your breath while it lasts, {you}!",
-      "Not dying in this dust cloud! Spool the jump drive, we'll settle this next sector!"
+      "Drive's gone! Escorts, jump clear while my guns can still cover you!"
     ],
     "death": [
       "Bulkheads are gone... someone tell Vesper we made it to the rim...",
@@ -72,7 +72,7 @@
     "scar": [
       "You put scorch marks across my command hull {scars}, and I left every weld unpainted so my gunners wouldn't forget.",
       "You scarred my flagship {scars}, {you}. My crews welded extra iron over every hit and swore to return the favor.",
-      "Still carrying the burns you gave me {scars} before. Let's see how you handle the return volley.",
+      "You burned through my plating {scars}, and I still carry the marks. Let's see how you handle the return volley.",
       "Took hits from your fleet {scars} on the way in, and my reactor's still hotter than yours!"
     ],
     "memory": {
@@ -87,7 +87,7 @@
     "personality": {
       "zealous": {
         "hail": "Every jump you delay us costs another harvest back in Vesper! Engines full, burn straight into them!",
-        "beaten": "We're taking heavy hits, jump clear and regroup! The oath doesn't stop for one broken ship!"
+        "beaten": "We're taking heavy hits. Escorts, fall back and regroup! The oath doesn't stop for one broken ship!"
       },
       "proud": {
         "hail": "I've led the dawn watch out of Vesper for twelve years, and I'm not yielding a single hex to you!",
@@ -110,7 +110,7 @@
     },
     "final_by": {
       "sun": "Right behind me sits the siphon killing Vesper's stars. Clear out or we burn straight through your hulls!",
-      "remembers": "You scarred my flagship {scars} on the way here, and I dragged her all the way to the Hollow Sun just to pay you back.",
+      "remembers": "You bloodied us on the way here. I dragged my flagship all the way to the Hollow Sun to pay you back.",
       "mercy": "Heard you wasted fuel pulling stragglers out of the dark. Nice gesture, won't keep your bulkheads intact here.",
       "ruthless": "You looted and burned your way across three sectors just like the raiders we fight. Good, makes shooting you easier."
     }
@@ -139,7 +139,7 @@
       "Contact re-established with a flagged hostile. Updated counter-doctrine is now active across every ship in my line."
     ],
     "final": [
-      "Registry Order 41 assigns sole orbital control of the Hollow Sun to the Meridian Directorate. Withdraw immediately.",
+      "This perimeter is under Meridian fire control. Power down or be logged as a hostile contact.",
       "Final formal warning: vacate the Hollow Sun perimeter or be removed from active tactical projections.",
       "No unlinked fleet will be permitted near the remaining Lattice cores. Engage on my mark.",
       "Meridian claims sole custody of all stellar hardware in this system. Clear the orbit or be dismantled."
@@ -177,8 +177,8 @@
     "scar": [
       "You forced structural refits on my command hull {scars}. Each time, Meridian authorized heavier plating and cleaner optics.",
       "You damaged my flagship {scars}, and every breach is cataloged in my service dossier with a corresponding refit.",
-      "After {scars} costly clashes with your fleet, Meridian assigned my column priority ammunition and fresh armor.",
-      "My hull bears refit seams from {scars} engagements with you. Today we balance the discrepancy."
+      "Your fleet cost me a refit {scars}. Meridian assigned my column priority ammunition and fresh armor.",
+      "My hull needed structural work {scars} after facing your fleet. Today we balance the discrepancy."
     ],
     "memory": {
       "lance": "Your lance fire stressed my deflectors previously. Meridian issued reinforced capacitors for this deployment.",
@@ -234,7 +234,7 @@
       "corsair": "Another Ashfall pack trying to poach my belt? Wait till I bolt your flagship's prow onto mine, {you}!",
       "chorus": "Ugh, Chorus meat-hulls! Hardly any clean steel on you, just acid and spines. Guess we blast you for sport!",
       "ithar": "Glasswright mirrors out in the open! Do you know how many ships one intact prism buys back at Rattlehold?",
-      "deathless": "Silver Eclipse hulls! Best self-healing alloy in known space, just have to smash you twice so you stay dead!"
+      "deathless": "Violet-black Eclipse hulls! Best self-healing alloy in known space, just have to smash you twice so you stay dead!"
     },
     "again": [
       "Well, well, still flying the same leaky ships? Good, I've been waiting to take the rest of your plating!",
@@ -244,7 +244,7 @@
       "Missed me? I bolted on heavier plates and bigger claws just for our reunion!"
     ],
     "final": [
-      "Every warlord in the Ashfall belt wants a piece of the Hollow Sun, and you showed up right on time! Let's settle who leaves with the wrecks!",
+      "Look at all that good plate drifting behind you. My pack called first cut, so swing your guns or get out!",
       "I chased your ion wake across three sectors just to meet you at the biggest scrap-field in known space! Come on!",
       "All of us here at the dead star, nowhere left to run! Whoever walks away keeps every hull drifting in this orbit!",
       "Starwright cores, ancient alloy, and your flagship right in the middle of it! Best payday in the galaxy!"
@@ -282,7 +282,7 @@
     "scar": [
       "You gouged my flagship {scars}, and every rival in Rattlehold saw the weld seams. I'm taking my pride back out of your hull!",
       "You put scorched dents across my bow {scars}, and I bolted them right on front so I'd remember who owes me a brawl!",
-      "Took scars off your guns {scars} before, {you}. Each weld made my prow twice as mean!",
+      "Your guns cut my hull {scars}, {you}. Each weld made my prow twice as mean!",
       "Marked me {scars} across these lanes, and I'm still standing! Let's see how your armor looks after today!"
     ],
     "memory": {
@@ -339,7 +339,7 @@
       "corsair": "Noisy scrap-builders welded from stolen metal. Rush close with your iron claws and feed our acid.",
       "chorus": "Rival tissue trespassing in our thermal lane! Only one brood feeds here; we will absorb your spores!",
       "ithar": "Cousins of our dead Fleshwright makers, hidden behind thin crystal. Memory recalls your old lights; Hunger cracks glass easily.",
-      "deathless": "Silver Eclipse shells! Our oldest breeding code wakes at your cold frequency; tear their frames down to dust!"
+      "deathless": "Violet-black Eclipse shells! Our oldest breeding code wakes at your cold frequency; tear their frames down to dust!"
     },
     "again": [
       "We know the chemical signature of your hull metal now, and our newest brood grew shells to match your guns.",
@@ -349,7 +349,7 @@
       "You thought burning one cluster would clear this corridor. Everything you spared grew back hungry."
     ],
     "final": [
-      "Five Lattice cores pulse right behind your ships, pouring heat into the dark. Move aside or be digested with them.",
+      "Heat behind your ships. Hunger in front of them. We will eat through the wall you make.",
       "Memory recognizes Ardent's broken circle behind you, and Hunger has crossed twenty light-years just to drink its cores dry.",
       "Those cores fed our makers' vats before we ate our makers. You cannot hold them against the swarm.",
       "So much heat gathered around one dead star. We will crack your hulls and drink the cores dry together!"
@@ -386,9 +386,9 @@
     ],
     "scar": [
       "You carved deep burns across our hide {scars}, and every scar calcified into thicker bone-plate.",
-      "Our cells remembered the frequency of your fire from {scars} before. Try cutting through the new growth.",
+      "Your fire burned us {scars}. Our cells remember its frequency. Try cutting through the new growth.",
       "Wounded by your fleet {scars}, yet every healed ridge grew denser than the tissue you burned.",
-      "We carry {scars} deep cuts from your weapons, and every one taught the swarm how to answer."
+      "Your weapons cut us deep {scars}, and each wound taught the swarm how to answer."
     ],
     "memory": {
       "lance": "Your focused beams seared our outer sacs before. We grew layered reflective chitin in the dark between jumps.",
@@ -424,7 +424,7 @@
       "patient": "{He} waited silently in the orbital shadow until the supply convoy finished unloading, then consumed only the loaded hulls."
     },
     "final_by": {
-      "sun": "Five Lattice cores pulse behind your ships, pouring heat into the dark. Move aside or be digested with them.",
+      "sun": "The other five Lattice cores pulse behind your ships, pouring heat into the dark. Move aside or be digested with them.",
       "remembers": "Our newest tissue was grown from the burns you gave us before. Let us see whether your guns still cut.",
       "mercy": "You left wounded hulls drifting instead of consuming them. Waste like that does not survive the deep void.",
       "ruthless": "You stripped and burned everything along your path just to reach the cores. Hunger recognizes a fellow predator."
@@ -443,7 +443,7 @@
       "hegemony": "Meridian clerks waving seizure orders over Starwright hardware. Your statutes mean nothing out here.",
       "corsair": "Ashfall scavengers who would shatter three-century lenses for scrap iron. You will not pass this lane.",
       "chorus": "Our dead cousins' war-beasts still crawling through the dark. Every mirror in my line is tuned to purge you.",
-      "ithar": "A kindred House breaking the Lock covenant? Lower your mirrors before we spill more ancient glass across the void.",
+      "ithar": "Another Glasswright line reaching for the cores we agreed to seal? Lower your mirrors before we spill more ancient glass across the void.",
       "deathless": "Estranged siblings who traded living worlds for cold metal and still refuse to let Ardent rest. We stop you here."
     },
     "again": [
@@ -454,7 +454,7 @@
       "You slipped past our first guard line. We won't give your escorts the same angle twice."
     ],
     "final": [
-      "Our grandmothers ground the mirrors of the Lattice and watched Eclipse kill our sun with them. Neither they nor you will ignite another.",
+      "Our scopes can read every fracture in the Lattice from here. I will add your fleet to that record if you press on.",
       "Every surviving Glasswright family carries the guilt of what sits behind me. We came to shut the remaining cores down for good.",
       "The Lattice broke here a thousand years ago, and we will not let another impatient species pry its power loose.",
       "No more stolen stars, no more burning skies. End your approach here or shatter against our mirrors."
@@ -468,7 +468,7 @@
     "death": [
       "Primary lens shattering... dim the inlays... turn the fragments toward Ardent...",
       "Another century of craft gone dark... let the escorts jump clear...",
-      "Mirrors cooling... tell the House we held the rim as long as we could..."
+      "Mirrors cooling... tell the Lens-keepers we held the rim as long as we could..."
     ],
     "gloat": [
       "Your ships are dark, and the lanes are quieter for it. Remember who warned you to turn around.",
@@ -493,7 +493,7 @@
       "You fractured my primary hull {scars}, the first real combat scars this vessel has carried in three centuries.",
       "You chipped my mirrors {scars}, leaving seams that still split light at an ugly angle. Today we settle that flaw.",
       "No commander had marred this frame in three hundred years until you cut me {scars}. I have been studying your angles since.",
-      "I left the repairs from our {scars} clashes visible on the bow so my crews never underestimate short-lived fleets again."
+      "You damaged my bow {scars}. I left the seams visible so my crews never underestimate short-lived fleets again."
     ],
     "memory": {
       "lance": "Your crude beams found our shield harmonics previously. We have re-tuned every prism matrix to disperse them.",
@@ -559,7 +559,7 @@
       "A brief interruption back there, nothing more. Fresh plates, full swarms, same destination."
     ],
     "final": [
-      "Behind me hangs the stellar frame that will give Ardent back its noon. It requires every surviving core, and you won't keep a single one.",
+      "Ignition checks are complete. Your fleet remains the only obstruction on the alignment plot.",
       "Ten centuries of cold construction built the new stellar frame behind me. Every core goes in; clear the ignition corridor!",
       "A thousand years of cold ends at this rim today. Nothing in your fleet is worth another century of night.",
       "Every key is aligned, every core within reach. Stand aside or burn in the light we waited ten centuries to build!"
@@ -597,8 +597,8 @@
     "scar": [
       "You broke my frame {scars}, and each restoration left me remembering your tactics more vividly than my own childhood.",
       "My repair swarms rebuilt the hull after you crippled it {scars}, though I kept the telemetry from every hit you landed.",
-      "You forced {scars} emergency restorations along this crossing. Every fresh chassis came out harder than the last.",
-      "I carry memory stamps from {scars} defeats at your hands, {you}. Today we close that series."
+      "You forced me to restore my frame {scars} along this crossing. Every fresh chassis came out harder than the last.",
+      "You defeated me {scars}, {you}. I archived each engagement. Today we close that series."
     ],
     "memory": {
       "lance": "Your heavy beams cut my older plates cleanly. This chassis carries denser sunshade alloys.",

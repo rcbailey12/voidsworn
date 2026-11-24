@@ -571,6 +571,21 @@ function Write-StepRecord {
   if (Test-Path -LiteralPath $script:stepRecord) { [IO.File]::Replace($tmp, $script:stepRecord, $null) }
   else { [IO.File]::Move($tmp, $script:stepRecord) }
 }
+# Nov 1: a test job ran during Ryan's first Godot playtest and overwrote the game's log.
+function Test-RyanPlaying {
+  try { $ps = Get-CimInstance Win32_Process -Filter "Name LIKE 'Voidsworn%.exe' OR Name LIKE 'Godot%.exe'" } catch { return $false }
+  foreach ($q in $ps) {
+    # Windows can retain an exited child as a process record with no threads and no command line.
+    if ($q.ThreadCount -eq 0 -or $q.Name -like '*_console.exe') { continue }
+    $cl = [string]$q.CommandLine
+    $rest = [regex]::Replace($cl, '^\s*("[^"]*"|\S+)', '')
+    $rest = [regex]::Replace($rest, '--path\s+("[^"]*"|\S+)', '')
+    # play_godot_safe.bat plays with a renderer choice; that is still play (Astra run 4, item 6)
+    $rest = [regex]::Replace($rest, '--rendering-(?:method|driver)\s+("[^"]*"|\S+)', '')
+    if ($rest -notmatch '--?\w') { return $true }
+  }
+  return $false
+}
 if ($LibraryOnly) { return }
 # pc-step-settings: 1
 # (the PC daemon checks for the line above before it launches anything: a watchdog without these settings is refused)
@@ -624,22 +639,8 @@ if ($watch) {
       [TimeSpan]::FromMilliseconds(250))
   }
 }
-# Nov 1: a test job ran all through Ryan's first Godot playtest, slowing the PC and overwriting the game's log.
 # Wait while Ryan is playing: the game is Voidsworn.exe or a windowed Godot started with no job arguments
 # (play_godot.bat passes none; every job passes --headless, --script, --bot or similar). Waiting is not timed.
-function Test-RyanPlaying {
-  try { $ps = Get-CimInstance Win32_Process -Filter "Name LIKE 'Voidsworn%.exe' OR Name LIKE 'Godot%.exe'" } catch { return $false }
-  foreach ($q in $ps) {
-    if ($q.Name -like '*_console.exe') { continue }
-    $cl = [string]$q.CommandLine
-    $rest = [regex]::Replace($cl, '^\s*("[^"]*"|\S+)', '')
-    $rest = [regex]::Replace($rest, '--path\s+("[^"]*"|\S+)', '')
-    # play_godot_safe.bat plays with a renderer choice; that is still play (Astra run 4, item 6)
-    $rest = [regex]::Replace($rest, '--rendering-(?:method|driver)\s+("[^"]*"|\S+)', '')
-    if ($rest -notmatch '--?\w') { return $true }
-  }
-  return $false
-}
 $w0 = Get-Date; $said = $false
 # Codex jobs are light (one model session, small node scripts) and do not touch the game's log: they run during play.
 $noWait = ($Exe -match 'codex(\.cmd|\.exe)?$') -or ($env:PC_RUNNER_TEST -eq '1')
