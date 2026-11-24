@@ -691,9 +691,11 @@ func _begin(a) -> void:
 			voice.setup_from_api(api, V)
 		else:
 			voice.setup_from_rules(api.R, V)  # until the story layer reads battle_api.gd (setup_from_api)
-		for l in voice.opening():
-			hud.add_log(l["text"], l["kind"])
-			recording_cue.emit("voice", l["text"])
+		var opening_lines: Array = voice.opening()
+		if not _merge_nemesis_opening(opening_lines):
+			for l in opening_lines:
+				hud.add_log(l["text"], l["kind"])
+				recording_cue.emit("voice", l["text"])
 	var adm := _api_admiral()
 	if ResourceLoader.exists("res://portraits/portraits.gd") and adm != "":
 		var A = TBL.get("ADMIRALS", {}).get(adm, {})
@@ -1473,6 +1475,39 @@ func _voice_event(e: Dictionary) -> void:
 		recording_cue.emit("voice", l["text"])
 
 
+# C27 (issue 1911, Board pick Option A): one Nemesis opening hail. The story voice (rival_lines.json) owns it, so its lines
+# take the rules hail's place in the opening batch: "<Nemesis> commands this fleet", the story hail, the admiral's reply,
+# then the contact lines. The rules hail stays in B.log (the saved hashes hold) and is only kept off the screen. With no
+# story hail the rules hail still shows and the voice lines follow it. False when the opening batch has no Nemesis lines.
+func _merge_nemesis_opening(lines: Array) -> bool:
+	if lines.is_empty() or batches.is_empty():
+		return false
+	var evs: Array = batches[0].get("events", [])
+	var intro := -1
+	var hail := -1
+	for i in evs.size():
+		var e = evs[i]
+		if e is Dictionary and e.get("t") == "log":
+			if e.get("nem") == "intro" and intro < 0:
+				intro = i
+			elif e.get("nem") == "hail" and hail < 0:
+				hail = i
+	if intro < 0 and hail < 0:
+		return false
+	var story_hail := lines.any(func(l): return str(l.get("moment", "")) == "nem_hail")
+	var at := intro + 1
+	if hail >= 0:
+		if story_hail:
+			evs.remove_at(hail)
+			at = hail
+		else:
+			at = hail + 1
+	for l in lines:
+		evs.insert(at, {"t": "log", "text": str(l["text"]), "kind": str(l["kind"]), "voice": true})
+		at += 1
+	return true
+
+
 func _play_event(e: Dictionary, batch_view := {}) -> void:
 	_voice_event(e)
 	match e["t"]:
@@ -1498,6 +1533,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				regen_unlocks[e["unit"]] = int(regen_unlocks.get(e["unit"], 0)) + 1
 		"log":
 			hud.add_log(str(e.get("text", "")), str(e.get("kind", "")) if e.get("kind") != null else "")
+			if e.get("voice", false):
+				recording_cue.emit("voice", str(e.get("text", "")))   # a story opening line merged into the opening batch (C27)
 		"float":
 			# rules.gd flt(): the boon and lineage callout over a ship (issue #305)
 			var dyv = e.get("dy")
