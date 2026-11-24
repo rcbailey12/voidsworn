@@ -166,6 +166,7 @@ var _dark_interiors := {}
 var _wreck_interiors := {}
 const WRECK_SOOT := 0.33   # issue 1077: a strained wreck's insides, a third as bright
 var defer_initial_cuts := false
+var cut_abort := DEATH.CutAbort.new()
 # issue 1434 (LOAD13: the title backdrop built hull damage and death piece shaders in one 7.7 s frame): the title backdrop
 # never fights, so a passive fx cuts no hull for a death and builds no damage surfaces
 var passive := false
@@ -193,6 +194,8 @@ func _ready() -> void:
 
 
 func _enter_tree() -> void:
+	if closed:
+		cut_abort = DEATH.CutAbort.new()
 	closed = false
 
 
@@ -237,6 +240,7 @@ static var _exit_hooked := false
 func release(wait := true) -> void:
 	var t_rel := Time.get_ticks_usec()
 	closed = true
+	cut_abort.cancel()
 	attach_report(true)
 	_end_dim()
 	var tids: Array = []
@@ -268,6 +272,7 @@ func release(wait := true) -> void:
 		if s.has_meta("cut_prev"):
 			keep.append(s.get_meta("cut_prev"))
 		s.remove_meta("cut_task")
+		s.remove_meta("cut_work")
 		s.remove_meta("cut_job")
 		s.remove_meta("cut_prev")
 	if not tids.is_empty():
@@ -1631,11 +1636,12 @@ func prepare_battle_hulls() -> void:
 	# together while the loading cover is up.
 	var cut_limit := clampi(OS.get_processor_count() / 2, 1, LOAD_CUT_LIMIT)
 	var active: Array[SHIP] = []
+	var shared_cuts := {}
 	prep_step = "cuts"
 	while not pending.is_empty() or not active.is_empty():
 		while active.size() < cut_limit and not pending.is_empty():
 			var ship: SHIP = pending.pop_front()
-			DEATH.precompute(self, ship, "blast", true)
+			DEATH.precompute(self, ship, "blast", true, shared_cuts)
 			active.append(ship)
 		for i in range(active.size() - 1, -1, -1):
 			if DEATH.finish_precompute(self, active[i]):
@@ -1649,6 +1655,7 @@ func prepare_battle_hulls() -> void:
 		await get_tree().process_frame
 		if closed or not is_inside_tree():
 			return
+	shared_cuts.clear()
 	prep_step = "shield skins and pieces"
 	while not _piece_builds.is_empty() or not _shield_jobs.is_empty():
 		_finish_shield_skins()
@@ -1679,6 +1686,16 @@ func join_death_cut(tid: int) -> void:
 		_death_cut_tasks.erase(tid)
 
 
+func finish_death_cut(tid: int) -> bool:
+	# A ship that shares the cut may already have joined it.
+	if not _death_cut_tasks.has(tid):
+		return true
+	if not WorkerThreadPool.is_task_completed(tid):
+		return false
+	join_death_cut(tid)
+	return true
+
+
 func collect_death_cut(tid: int) -> void:
 	if not _death_cut_tasks.has(tid):
 		return
@@ -1693,6 +1710,7 @@ func discard_ship_cut(s: SHIP) -> void:
 		var tid := int(s.get_meta("cut_task"))
 		s.remove_meta("cut_task")
 		collect_death_cut(tid)
+	s.remove_meta("cut_work")
 	s.remove_meta("cut_job")
 	s.remove_meta("cut_prev")
 
@@ -1702,6 +1720,7 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 		remove_ship(id)
 	var s = SHIP.new()
 	s.setup(self, id, root, info)
+	s.set_meta("cut_class", String(info.get("cls", "")))
 	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
 	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
