@@ -1,0 +1,21 @@
+{
+ "az": 92.96145830492436,
+ "el": 38.84307667648264,
+ "roll": -31.90473566890501,
+ "dist": 53.693026648493316,
+ "mm": 294.28202453900013,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": -0.031141548673485956,
+ "sy": -0.0610987318034373,
+ "res": [
+  1024,
+  1024
+ ],
+ "iou": 0.8421,
+ "body_iou": 0.8603,
+ "note": "Warden beauty (issue 1889, Opus blind leg): view angles from contrib/opus/tools/issue738/grid.py over the build outline, then fit.py refined all seven camera numbers (never the ship); concept mask: contrib/opus/tools/issue738/mask.py (default threshold)"
+}
