@@ -1,6 +1,6 @@
 extends Node
 signal cue_started(name: String, options: Dictionary)
-const HUDRes := preload("res://ui/battle/hud.gd")
+const GSRes := preload("res://ui/theme/glass_shell.gd")   # issue 1518: _imported_ok from the light kit, not the battle HUD
 # The game's sound (sfx.js) in Godot: the same cue table (cues.json, rendered from sfx.js by build/render_synth.js), the
 # same recorded clips (clips/, converted from sfx_data.js) and the same synth takes (synth/, rendered offline from the
 # game's own synth code). A cue plays its recorded layers (round robin, pitch jitter, rate and delay per layer) plus its
@@ -38,6 +38,11 @@ var legacy := false
 # Issue 1217: main.gd's front-end sound node loads only the cues whose names start with this ("ui_"), and only their
 # clips, so the title and setup screens get their sounds without loading the battle's.
 var only := ""
+# Issue 1434 (W4): the title's decorative battle sets this before the node enters the tree. A silent node loads no cues,
+# clips or synth takes, never creates or writes an AudioServer bus (the shared sfx bus belongs to the title's UI sound and
+# the real battle), and plays nothing. Before this the showcase loaded the whole bank (about 435 ms) and pushed the
+# shared bus from -21.42 to -5.25 dB at a 0.25 volume setting for a frame.
+var silent := false
 var _base_sfx_db := 0.0
 var _duck_db := 0.0
 var _duck_until := 0.0
@@ -67,6 +72,9 @@ const LEGACY_PITCH_CUES := ["death_powerdown", "death_vent", "death_crack", "dea
 
 
 func _ready() -> void:
+	if silent:
+		set_process(false)
+		return
 	_buses()
 	var t0 := Time.get_ticks_msec()
 	if FileAccess.file_exists("res://audio/cues.json"):
@@ -89,6 +97,8 @@ func _ready() -> void:
 			continue
 		var a: Array = []
 		for f in idx[k]:
+			if _late_read("res://audio/clips/" + f, "clips", k):
+				continue
 			var s := _load("res://audio/clips/" + f)
 			if s != null:
 				a.append(s)
@@ -97,6 +107,8 @@ func _ready() -> void:
 	for k in cues:
 		var a: Array = []
 		for f in cues[k]["synth"]:
+			if _late_read("res://audio/synth/" + f, "synth", k):
+				continue
 			var s := _load("res://audio/synth/" + f)
 			if s != null:
 				a.append(s)
@@ -104,6 +116,8 @@ func _ready() -> void:
 		for variant in cues[k].get("variants", {}):
 			var va: Array = []
 			for f in cues[k]["variants"][variant].get("synth", []):
+				if _late_read("res://audio/synth/" + f, "synth", k + ":" + variant):
+					continue
 				var vs := _load("res://audio/synth/" + f)
 				if vs != null:
 					va.append(vs)
@@ -112,9 +126,89 @@ func _ready() -> void:
 	set_volume(vol)
 
 
+# issue 1518 (LOAD25 cold: a close during the battle's first frame waited on its 0.3 s of clip loads): the game starts
+# reading the battle's clips on worker threads when it starts (main.gd), and a battle's sound only collects them.
+# Paths only (path -> true); the streams stay in the ResourceLoader.
+static var _pending := {}   # not GPU: paths only (path -> true), the streams stay in the ResourceLoader
+
+
+static func prefetch() -> void:
+	var paths: Array = []
+	var idx = JSON.parse_string(FileAccess.get_file_as_string("res://audio/clips/index.json")) if FileAccess.file_exists("res://audio/clips/index.json") else {}
+	if idx is Dictionary:
+		for k in idx:
+			for f in idx[k]:
+				paths.append("res://audio/clips/" + str(f))
+	var cue_d = JSON.parse_string(FileAccess.get_file_as_string("res://audio/cues.json")) if FileAccess.file_exists("res://audio/cues.json") else {}
+	if cue_d is Dictionary:
+		for k in cue_d:
+			if not (cue_d[k] is Dictionary):
+				continue
+			for f in cue_d[k].get("synth", []):
+				paths.append("res://audio/synth/" + str(f))
+			for variant in cue_d[k].get("variants", {}):
+				for f in cue_d[k]["variants"][variant].get("synth", []):
+					paths.append("res://audio/synth/" + str(f))
+	for p in paths:
+		if _pending.has(p) or ResourceLoader.has_cached(p) or not GSRes._imported_ok(p):
+			continue
+		if ResourceLoader.load_threaded_request(p) == OK:
+			_pending[p] = true
+
+
+# true once every prefetched clip is read
+static func prefetch_ready() -> bool:
+	for p in _pending:
+		if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			return false
+	return true
+
+
+# Artoo on PR 1445: a clip still being read on a worker when this sound starts is never waited for. It joins its set
+# once the read is done (_process looks each frame); until then that set plays the takes it has, or stays quiet.
+var _late: Array = []   # [path, "clips" or "synth", key]
+
+
+func _late_read(p: String, into: String, key: String) -> bool:
+	if not _pending.has(p) or ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		return false
+	_late.append([p, into, key])
+	return true
+
+
+func _collect_late() -> void:
+	var keep: Array = []
+	for e in _late:
+		var p: String = e[0]
+		if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			keep.append(e)
+			continue
+		var s := _load(p)   # read by now: collected at once
+		if s == null:
+			continue
+		var d: Dictionary = clips if e[1] == "clips" else synth
+		if not d.has(e[2]):
+			d[e[2]] = []
+		(d[e[2]] as Array).append(s)
+	_late = keep
+
+
+# the game is closing: whatever finished is collected, the rest is left to the loader (main.gd quit_clean)
+static func drop_pending() -> void:
+	for p in _pending.keys():
+		if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_LOADED:
+			ResourceLoader.load_threaded_get(p)
+	_pending.clear()
+
+
 func _load(p: String) -> AudioStream:
+	if _pending.has(p):
+		_pending.erase(p)
+		var got = ResourceLoader.load_threaded_get(p)   # waits only for what the worker has not read yet
+		if got is AudioStream:
+			return got
 	# the imported stream when the project has been imported or exported, else the raw Ogg file
-	if HUDRes.imported_ok(p):
+	if GSRes._imported_ok(p):
 		var r = load(p)
 		if r is AudioStream:
 			return r
@@ -170,6 +264,8 @@ func set_volume(v: float) -> void:
 	if not is_finite(v):
 		return
 	vol = clampf(v, 0.0, 1.0)
+	if silent:
+		return
 	var g := 0.62 * pow(vol, 1.6) if on else 0.0
 	_base_sfx_db = linear_to_db(maxf(g, 1e-5)) + 2.0
 	var i := AudioServer.get_bus_index("sfx")
@@ -187,6 +283,8 @@ func set_on(v: bool) -> void:
 # lowest one wins. The death bus stays out of the beat and the core duck; the near-silence rides the parent
 # sfx bus so it takes the death too. All values are dB; zero means no duck.
 func _apply_mix() -> void:
+	if silent:
+		return
 	var now := _now()
 	if now >= _duck_until:
 		_duck_db = 0.0
@@ -418,6 +516,8 @@ func _play_pending(player: WeakRef, voice: Dictionary) -> void:
 
 
 func _process(_delta: float) -> void:
+	if not _late.is_empty():
+		_collect_late()
 	_reap(_now())
 	_apply_mix()
 	if _now() >= _ambient_duck_until:
@@ -429,6 +529,8 @@ func _process(_delta: float) -> void:
 
 # R73 hook. The picture owns its clock; audio remains at normal pitch/speed.
 func death_beat(enabled: bool) -> void:
+	if silent:
+		return
 	_beat = enabled
 	_apply_mix()
 	# Music can be created after SFX, so connect its send when the beat is sampled.
@@ -605,7 +707,7 @@ const HIT_BY_WEAPON := {
 	"rail": "hit_rail", "gauss": "hit_rail", "ion": "hit_ion",
 }
 const HIT_BY_TARGET := {"chorus": "hit_wet", "ithar": "hit_glass", "deathless": "hit_obsidian"}
-const CRIT_BEAT := preload("res://fx/fx_weapons.gd").CRIT_BEAT
+const CRIT_BEAT := 0.12   # fx_weapons.gd CRIT_BEAT, the same beat (issue 1518: not preloaded, so the title loads no effects script; prefetch_wait_check holds the two equal)
 
 
 # Issue 1752: shooter is the firing ship's faction. A Chorus shot on a metal hull (no target material cue) is acid.
@@ -655,6 +757,8 @@ func sting(win: bool) -> void:
 # drones and a fifth, a breath of air, rendered offline into a seamless 120 s loop) with the recorded room tone over it;
 # both fade in over a few seconds and sit on the ambient bus, which explosions duck
 func ambient_start() -> void:
+	if silent:
+		return
 	if _bed == null:
 		var bs := _load("res://audio/synth/ambient_bed.ogg")
 		if bs is AudioStreamOggVorbis:
