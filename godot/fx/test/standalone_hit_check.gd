@@ -110,6 +110,30 @@ func _check_faction(faction: String) -> void:
 		var actual: Vector3 = mat.get_shader_parameter("impact_tint")
 		_check(actual.is_equal_approx(Vector3(tint.r, tint.g, tint.b)), faction + " hull flash carries its own tint")
 	_check(battle.disp["target"]["hp"] == 35.0 and battle.music_hits == 3, faction + " hull damage and hit count still apply")
+
+	var marks_before: int = ship._marks.size()
+	var notes_before := reactions.size()
+	var stutter_before: float = ship._stutter_until
+	var dip_before: float = ship._dip_start
+	var no_damage := {"t": "hit", "unit": null, "target": "target", "quad": 1, "section": "mid",
+		"shield": 0.0, "hull": 0.0, "crit": true, "float": false}
+	await battle._play_batch({"events": [no_damage], "view": {}})
+	fx.step(0.02)
+	_check(ship._marks.size() == marks_before, faction + " zero-damage crit leaves no hull mark")
+	_check(reactions.size() == notes_before and ship._stutter_until == stutter_before and ship._dip_start == dip_before,
+		faction + " zero-damage crit makes no impact reaction")
+
+	no_damage["crit"] = false
+	no_damage["regenLock"] = true
+	notes_before = reactions.size()
+	await battle._play_batch({"events": [no_damage], "view": {}})
+	fx.step(0.02)
+	_check(ship._marks.size() == marks_before, faction + " zero-damage ion hit leaves no hull mark")
+	var ion_reactions := reactions.slice(notes_before)
+	_check(ion_reactions.size() == 1 and ion_reactions[0].what == "flash" and ion_reactions[0].fam == "lance",
+		faction + " zero-damage ion hit makes only its flash")
+	_check(ship._stutter_until == stutter_before and ship._dip_start == dip_before,
+		faction + " zero-damage ion hit leaves drive and power alone")
 	fx.release()
 	battle.queue_free()
 	await process_frame

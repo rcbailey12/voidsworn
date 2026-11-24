@@ -2170,7 +2170,7 @@ static func standalone_hit(fx, target, hit: Dictionary, from: Vector3, breaking:
 	var hull_damage := float(hit["hull"]) > 0.0
 	var shield_contact := not hull_damage and (float(hit["shield"]) > 0.0 or breaking)
 	var ion := bool(hit.get("regenLock", false))
-	if not hull_damage and not shield_contact and not ion and not bool(hit["crit"]):
+	if not hull_damage and not shield_contact and not ion:
 		return
 	var quad := int(hit.get("quad", 0))
 	var center: Vector3 = target.to_world(target.hull.c)
@@ -2182,6 +2182,16 @@ static func standalone_hit(fx, target, hit: Dictionary, from: Vector3, breaking:
 	var contact := _target(fx, target, center, from, true, hit, quad, scale, {}, null, {}, shield_contact)
 	contact["breaking"] = breaking
 	contact["tk"] = TARGET_K.get(DEATH.atlas_band(float(target.hull.L)), 1.0)
+	if not hull_damage and not shield_contact:
+		# An ion lock without damage gets a contact flash, not a hull reaction or a scar.
+		var response := _impact_response(target)
+		var tint := _impact_color(response, target, target.fac.damage_glow)
+		var px := ladder_px(look, 1, contact)
+		var size := scale * sqrt(float(contact.get("gk", 1.0)))
+		_impact_flash(fx, target, contact["p"], contact["n"], fx.now, size, 4.0 * size, 0.16,
+			tint, px * BURST_PX_K, response, 0.3 * size, 4.2)
+		_note(fx, "flash", family_of(look), Vector3.ZERO, contact["n"], 0.16, px)
+		return
 	var dir := (Vector3(contact["p"]) - from).normalized()
 	_impact(fx, look, 1, target, contact, fx.now, target.fac.damage_glow, dir, hit, scale, 0.0)
 
