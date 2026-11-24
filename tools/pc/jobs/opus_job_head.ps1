@@ -1266,6 +1266,10 @@ switch ($Action) {
       $resFile = ''
       if ($res.StartsWith('res://')) { $resFile = Join-Path $godot $res.Substring(6).Replace('/', $sep) }
       $hasRes = $resFile -and (Test-Path -LiteralPath $resFile -PathType Leaf)
+      if ((Test-Path -LiteralPath $dir -PathType Container) -and -not (Test-Path -LiteralPath (Join-Path $dir "$code.glb") -PathType Leaf)) {
+        # a copied ship folder without its main glb is a broken copy, never an older cache entry (Artoo on PR 2009)
+        $bad += "$code ship folder was copied but $code.glb is missing"; $lines += "$code no-glb-in-folder $res"; continue
+      }
       if (-not (Test-Path -LiteralPath (Join-Path $dir "$code.glb") -PathType Leaf)) {
         # an older cache entry with no ship folder: not checked, but listed, so two checkouts must still agree on it
         $noGlb++; $lines += "$code no-glb $res scene=$([int][bool]$hasRes)"; continue
@@ -1278,8 +1282,38 @@ switch ($Action) {
           $stamp += '{0}:{1};' -f ([DateTimeOffset]$i.LastWriteTimeUtc).ToUnixTimeSeconds(), $i.Length
         }
       }
+      $srcText = [string]$e.src
+      $srcOk = ($srcText -eq $stamp)
+      if (-not $srcOk -and $srcText.StartsWith('{')) {
+        # Since issue 1678 the game stamps each source file as [mtime, size, sha256] in JSON (build_assets.gd source_stamp),
+        # glbs and their external maps. Check size and hash of every listed file, and that no glb is missing from the list.
+        $why = ''
+        try { $sj = $srcText | ConvertFrom-Json } catch { $sj = $null; $why = 'unreadable stamp' }
+        if ($sj) {
+          $names = @($sj.PSObject.Properties | ForEach-Object { $_.Name })
+          foreach ($suf in '', '_damage', '_wreck') {
+            $gn = "$code$suf.glb"
+            if ((Test-Path -LiteralPath (Join-Path $dir $gn) -PathType Leaf) -and ($names -notcontains $gn)) { $why = "$gn not in the stamp" }
+          }
+          foreach ($sp in $sj.PSObject.Properties) {
+            if ($why) { break }
+            $sf = Join-Path $dir ($sp.Name.Replace('/', $sep)); $want = @($sp.Value)
+            $there = Test-Path -LiteralPath $sf -PathType Leaf
+            # [] = missing when cached; [mtime, size] (older stamps, glbs) = time and size as before; [mtime, size, sha256] adds the hash
+            if ($want.Count -eq 0) { if ($there) { $why = "$($sp.Name) exists but was missing when cached" }; continue }
+            if (-not $there) { $why = "$($sp.Name) missing"; continue }
+            $fi = Get-Item -LiteralPath $sf
+            if ($fi.Length -ne [long]$want[1]) { $why = "$($sp.Name) size differs"; continue }
+            if ($want.Count -ge 3) {
+              if ((Get-FileHash -LiteralPath $sf -Algorithm SHA256).Hash -ne [string]$want[2]) { $why = "$($sp.Name) hash differs" }
+            } elseif (([DateTimeOffset]$fi.LastWriteTimeUtc).ToUnixTimeSeconds() -ne [long]$want[0]) { $why = "$($sp.Name) time differs" }
+          }
+        }
+        if (-not $why) { $srcOk = $true; $stamp = 'json:' + (@($sj.PSObject.Properties | ForEach-Object { '{0}={1}' -f $_.Name, (@($_.Value) -join ',') }) -join ';') }
+        else { $stamp = "json mismatch: $why" }
+      }
       if (-not $hasRes) { $bad += "$code cached scene missing: $res" }
-      elseif ([string]$e.src -ne $stamp) { $bad += "$code cache was built from other files (stamp $($e.src), copied files $stamp)" }
+      elseif (-not $srcOk) { $bad += "$code cache was built from other files (stamp $srcText, copied files $stamp)" }
       else { $matched[$code] = $true }
       $lines += "$code $stamp $res"
     }
