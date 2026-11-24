@@ -1,0 +1,125 @@
+param([string]$Shots)
+
+$ErrorActionPreference = 'Stop'
+$pc = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test'
+$repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
+if ($repo -match '[\\/]board_[cd][\\/]') { throw 'Use a GPU lane checkout for the comparison.' }
+if ((Get-Content -LiteralPath (Join-Path $pc 'gpu_go.txt') -TotalCount 1) -notmatch '^GPU cleared(?:\s*:.*)?$') {
+    throw 'gpu_go.txt must say GPU cleared.'
+}
+$godot = $env:GODOT_EXE
+if (-not $godot) { $godot = Join-Path $pc 'godot\Godot_v4.7.2-stable_win64_console.exe' }
+if (-not (Test-Path -LiteralPath $godot -PathType Leaf)) { throw "Godot not found at $godot" }
+$project = Join-Path $repo 'godot'
+$tmo = Join-Path $repo 'tools\pc\tmo.bat'
+if (-not $Shots) { $Shots = Join-Path $pc 'board_c\issue-2001\shots' }
+$Shots = [IO.Path]::GetFullPath($Shots)
+$work = Join-Path $env:TEMP ('mm-2001-capture-' + [Guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $work | Out-Null
+Write-Host "Capture logs are in $work"
+Add-Type -AssemblyName System.Drawing
+
+function Get-CleanCommit {
+    $revision = & git -C $repo rev-parse --verify HEAD
+    if ($LASTEXITCODE -ne 0) { throw 'Could not read the capture checkout commit.' }
+    $status = & git -C $repo status --porcelain
+    if ($LASTEXITCODE -ne 0 -or $status) { throw 'Use a clean checkout of the reviewed commit with the PC-built hulls installed.' }
+    return $revision
+}
+
+function Invoke-GodotStep($name, $seconds, [string[]]$options, $marker) {
+    $log = Join-Path $work "$name.log"
+    $env:TMO_STEP = "issue 2001 $name"
+    # Windows PowerShell treats native stderr redirected to a file as an error record.
+    $ErrorActionPreference = 'Continue'
+    & $tmo $seconds $godot --path $project @options *> $log
+    $code = $LASTEXITCODE
+    $ErrorActionPreference = 'Stop'
+    $output = Get-Content -LiteralPath $log -Raw
+    if ($code -ne 0 -or $output -notmatch $marker -or
+            $output -match 'SCRIPT ERROR|SHADER ERROR|LOOK_BENCH placeholder hull|LOOK_BENCH CODE MISMATCH|Error importing') {
+        throw "$name failed. See $log"
+    }
+}
+
+function Confirm-Picture($path) {
+    $sidecar = Get-Content -LiteralPath "$path.provenance.json" -Raw | ConvertFrom-Json
+    if ($sidecar.picture_name -cne (Split-Path $path -Leaf) -or $sidecar.source_commit -ne $commit -or
+            $sidecar.source_dirty -or $sidecar.stage -notin @('installed in game', 'pre-merge capture') -or
+            $sidecar.image_sha256 -ine (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash) {
+        throw "Capture provenance failed for $path"
+    }
+    $img = [System.Drawing.Image]::FromFile($path)
+    try {
+        if ($img.Width -ne 1280 -or $img.Height -gt 720) { throw "Unexpected capture size at $path" }
+    } finally {
+        $img.Dispose()
+    }
+}
+
+$commit = Get-CleanCommit
+$env:PC_GPU_ISSUE = '2001'
+$env:PC_GPU_MODE = 'shared'
+$env:PC_REAL_PROFILE = $null
+$env:PICTURE_SOURCE_REPO = $repo
+$env:VS_SHIP_LOOK_V2 = '1'
+$env:VS_FLEET_LIGHTING = '1'
+$env:VS_WORLD_PREVIEW = $null
+$env:VS_WORLD_CACHE = Join-Path $work 'world-cache'
+$env:VS_MM_TRIAL = $null
+Invoke-GodotStep 'import' 1800 @('--headless', '--import') 'Godot Engine'
+
+$pictures = @()
+foreach ($side in 'before', 'after') {
+    if ($side -eq 'after') { $env:VS_MM_TRIAL = '1' }
+    $dir = Join-Path $work $side
+    New-Item -ItemType Directory -Path $dir | Out-Null
+    $rows = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'look_moments.json') -Raw | ConvertFrom-Json
+    foreach ($row in $rows.rows) { $row.id = "$($row.expect_code)_$side" }
+    $rowFile = Join-Path $dir 'rows.json'
+    $rows | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $rowFile -Encoding Ascii
+    if ((Get-CleanCommit) -ne $commit) { throw 'The checkout changed during the comparison.' }
+    Invoke-GodotStep "ships-$side" 1800 @(
+        '--rendering-method', 'forward_plus', '--fixed-fps', '60', '--disable-vsync', '--windowed',
+        '--resolution', '1920x1080', 'res://bench/look_bench.tscn', '--', '--out', $dir,
+        '--moments', $rowFile, '--part', 'moments', '--commit', $commit
+    ) 'LOOK_BENCH_DONE'
+    $bench = Get-Content -LiteralPath (Join-Path $dir 'bench.json') -Raw | ConvertFrom-Json
+    if ($bench.commit -ne $commit -or $bench.stills.Count -ne ($rows.rows.Count * $rows.cameras.Count)) {
+        throw "Incomplete ship comparison in $dir"
+    }
+    foreach ($row in $rows.rows) {
+        foreach ($camera in $rows.cameras) {
+            $match = @($bench.stills | Where-Object { $_.id -ceq $row.id -and $_.cam -eq $camera })
+            if ($match.Count -ne 1 -or $match[0].code -cne $row.expect_code) {
+                throw "Missing installed hull $($row.expect_code) at camera $camera"
+            }
+            $pictures += Join-Path $dir "moments\$($row.id)__c$camera.png"
+        }
+    }
+
+    Invoke-GodotStep "planets-$side" 1200 @(
+        '--rendering-method', 'forward_plus', '--fixed-fps', '60', '--disable-vsync', '--windowed',
+        '--resolution', '1280x720', '--script', 'res://world/planet_v2_shots.gd', '--',
+        '--out', $dir, '--only', 'board', '--mm-trial', '--tag', $side
+    ) 'planet v2 shots: band 2 PASS'
+    foreach ($planet in 'terran', 'volcanic') {
+        foreach ($camera in 'c170', 'c26') {
+            $pictures += Join-Path $dir ('{0}_{1}_{2}.png' -f $planet, $camera, $side)
+        }
+    }
+}
+
+if ((Get-CleanCommit) -ne $commit) { throw 'The checkout changed during the comparison.' }
+foreach ($picture in $pictures) {
+    Confirm-Picture $picture
+    $destination = Join-Path $Shots (Split-Path $picture -Leaf)
+    if ((Test-Path -LiteralPath $destination) -or (Test-Path -LiteralPath "$destination.provenance.json")) {
+        throw "Review files already exist in $Shots. Pass a fresh output directory to capture.bat."
+    }
+}
+New-Item -ItemType Directory -Path $Shots -Force | Out-Null
+foreach ($picture in $pictures) {
+    Copy-Item -LiteralPath $picture,"$picture.provenance.json" -Destination $Shots
+}
+Write-Host "PASS: $($pictures.Count) stamped comparisons in $Shots"
