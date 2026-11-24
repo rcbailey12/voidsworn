@@ -51,6 +51,18 @@ func _run() -> void:
 		node.free()
 		scene.take_over_path(A4P.T2_PATH)
 		_keep.append(scene)
+	# Fable on PR 1772 (item 1): with a built cache (the PC), every hulk code must resolve through the game's own manifest
+	# before the stubs stand in, or a missing Chorus or Glasswright hull would fall back silently
+	A4P._man = null
+	if FileAccess.file_exists("res://gen/manifest.json"):
+		var unresolved: Array = []
+		for fac in A4P.HULKS:
+			for code in A4P.HULKS[fac]:
+				if A4P._res(code) == "":
+					unresolved.append(code)
+		_report(unresolved.is_empty(), "with the built cache, every hulk code resolves through gen/manifest.json: missing %s" % str(unresolved))
+	else:
+		print("  no built cache (gen/manifest.json): hulk codes are checked against the stubs only")
 	var ships := {"O1_37": {"res": STUB}}
 	for fac in A4P.HULKS:
 		for code in A4P.HULKS[fac]:

@@ -544,6 +544,19 @@ func begin_with(a) -> void:
 		_begin(a)
 
 
+# true when a battle view has station terrain or a station hole (the board then draws station_T2)
+static func _has_station(v: Dictionary) -> bool:
+	var t = v.get("terrain", {})
+	if t is Dictionary and "station" in (t as Dictionary).values():
+		return true
+	var m = v.get("map", {})
+	if m is Dictionary:
+		for h in m.get("holes", []):
+			if h is Dictionary and str(h.get("kind", "")) == "station":
+				return true
+	return false
+
+
 func _begin(a) -> void:
 	_gen += 1   # issue 1433: work still awaiting from the last battle on this node is stale now
 	_api_join()
@@ -555,9 +568,13 @@ func _begin(a) -> void:
 	api = a
 	warming = true
 	hud.loading(true)
-	var obj0 = api.view().get("obj")
+	var v0 = api.view()
+	var obj0 = v0.get("obj") if v0 is Dictionary else null
 	if obj0 is Dictionary and str(obj0.get("type", "")) == "hold":
 		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
+	# PR 1772 (Fable, item 2): station_T2 reads on a worker too when the board has station hexes or a station hole
+	if v0 is Dictionary and _has_station(v0):
+		A4P.prefetch_station()
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
 	if DisplayServer.get_name() != "headless":

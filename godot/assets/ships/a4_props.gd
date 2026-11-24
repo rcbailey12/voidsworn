@@ -50,6 +50,20 @@ static func _scene(code: String) -> Node3D:
 static var _pending := {}   # not GPU: paths only (path -> true), the loaded scene stays in the ResourceLoader
 
 
+# Fable on PR 1772 (7c734f53, item 2): station_T2 is large too, so a battle with station hexes or holes starts reading it
+# (and its debris) on a worker thread as the battle begins; station() collects it.
+static func prefetch_station() -> void:
+	for p in [T2_PATH, T2_DEBRIS_PATH]:
+		if old_path() or _pending.has(p) or not ResourceLoader.exists(p) or ResourceLoader.has_cached(p):
+			continue
+		if ResourceLoader.load_threaded_request(p) == OK:
+			_pending[p] = true
+
+
+static func _scene_at(p: String) -> PackedScene:
+	return (_collect(p) if _pending.has(p) else load(p)) as PackedScene
+
+
 static func prefetch_beacon() -> void:
 	var p := _res(BEACON_CODE)
 	if p == "" or _pending.has(p) or ResourceLoader.has_cached(p):
@@ -92,6 +106,8 @@ static func old_path() -> bool:
 	return OS.get_environment("VS_1767_OLD") == "1"
 static var _reach := {}    # not GPU: scene path -> measured horizontal reach at unit scale
 static var _outline := {}  # not GPU: scene path -> PackedVector2Array, its mesh boxes' corners and edge points (x, z)
+static var _fit_cache := {}  # not GPU: path|cells|hex_r|bearing -> Vector2(best bearing, scale)
+static var _painted_cache := {}  # source material id -> [weakref(source), weakref(painted copy)], owns nothing
 
 
 # true when board point `p` (x, z) lies in a pointy-top hex of corner radius `hex_r` centred on any of `cells`
@@ -215,7 +231,7 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 	if info.has("scene") and ResourceLoader.exists(str(info["scene"])):
 		path = str(info["scene"])
 	if ResourceLoader.exists(path):
-		var t2 := (load(path) as PackedScene).instantiate() as Node3D
+		var t2 := _scene_at(path).instantiate() as Node3D
 		t2.set_meta("station_T2", true)
 		t2.set_meta("station_kind", kind)
 		if not _reach.has(path):
@@ -233,9 +249,16 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 				# Wave 0 on Sheet M (Fable, Astra, Neon, Nov 23): a fitted T2 read small and left the teaching cluster's
 				# outer hexes empty, so it is turned to the best of FIT_TURNS bearings from the drawn one (the largest
 				# exact fit); the caller turns it by the "station_bearing" this records
-				var best := best_bearing(_outline[path], cells, hex_r, bearing)
+				# one fit per path, cells, hex size and drawn bearing (every station hole asks the same: Fable, item 3)
+				var fk := "%s|%s|%s|%s" % [path, str(cells), str(hex_r), str(bearing)]
+				if not _fit_cache.has(fk):
+					_fit_cache[fk] = best_bearing(_outline[path], cells, hex_r, bearing)
+				var best: Vector2 = _fit_cache[fk]
 				bearing = best.x
-				k = minf(1.0, best.y)
+				# never a zero-size station (a cluster whose centre lies outside its own hexes: Fable, item 9)
+				if best.y < 0.05:
+					push_warning("a4_props: station fit %.3f below 0.05 for %d cells, held at 0.05" % [best.y, cells.size()])
+				k = clampf(best.y, 0.05, 1.0)
 			else:
 				k = clampf(size / LARGE_STATION_SIZE, 0.05, 1.0)
 		t2.scale = Vector3.ONE * k
@@ -244,7 +267,7 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 		# Refs #863. Separate kit/cache leaves PR 977's painted station intact. The field lives in T2's own (scaled) frame,
 		# so the clearance it keeps out of is divided by the same scale.
 		if with_debris and path == T2_PATH and ResourceLoader.exists(T2_DEBRIS_PATH):
-			var debris := (load(T2_DEBRIS_PATH) as PackedScene).instantiate() as Node3D
+			var debris := _scene_at(T2_DEBRIS_PATH).instantiate() as Node3D
 			debris.name = "station_T2_debris"
 			debris.set_script(load("res://render/station_debris.gd"))
 			t2.add_child(debris)
@@ -255,7 +278,7 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 			for i in child.mesh.get_surface_count():
 				var source: Material = child.get_active_material(i)
 				if not painted.has(source):
-					painted[source] = look.hull(source, "hegemony", true)
+					painted[source] = _painted_shared(look, source)
 				child.set_surface_override_material(i, painted[source])
 		for player in t2.find_children("*", "AnimationPlayer", true, false):
 			var names: PackedStringArray = player.get_animation_list()
@@ -277,6 +300,25 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 			t2.add_child(lamp)
 		return t2
 	return _o1(size, kind)
+
+
+# T2's Directorate finish, one copy per source material shared by every station on the board (Fable on PR 1772, item 3),
+# held weakly like the derelict copies so the cache keeps nothing alive
+static func _painted_shared(look, source: Material) -> Material:
+	if source == null:
+		return null
+	var key := source.get_instance_id()
+	var hit = _painted_cache.get(key)
+	if hit != null and (hit[0] as WeakRef).get_ref() == source:
+		var live = (hit[1] as WeakRef).get_ref()
+		if live != null:
+			return live
+	for k in _painted_cache.keys():
+		if (_painted_cache[k][0] as WeakRef).get_ref() == null or (_painted_cache[k][1] as WeakRef).get_ref() == null:
+			_painted_cache.erase(k)
+	var made: Material = look.hull(source, "hegemony", true)
+	_painted_cache[key] = [weakref(source), weakref(made)]
+	return made
 
 
 # the old normalized O1_37 at `size` (the fallback when T2 is not built)
@@ -352,10 +394,14 @@ static func hulk_faction(code: String) -> String:
 
 # one hulk code from one random draw `v` (so the board keeps its old number of draws): HULK_LOCAL_PCT of the time a hull of
 # a faction in `local` (the battle's factions), else any faction's
-static func pick_hulk(v: int, local: Array = []) -> String:
+static func pick_hulk(v: int, local: Array = [], own := "") -> String:
 	v = absi(v)
 	if old_path():
 		return OLD_HULKS[v % OLD_HULKS.size()]
+	# a ship that dies in battle leaves its own faction's hulk (Fable on PR 1772, item 8), from the same one draw
+	if HULKS.has(own):
+		var mine: Array = HULKS[own]
+		return str(mine[(v / 100) % mine.size()])
 	# the faction first, then one of its hulls, so a faction with two hulls is drawn no more often (Fable on PR 1772, L2)
 	var every: Array = HULKS.keys()
 	var near: Array = every.filter(func(f): return f in local)
@@ -572,8 +618,8 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 		CHORUS_HULK_BAND if fac == "chorus" else HULK_BAND)
 	b.roughness = minf(1.0, src.roughness * (1.0 + 0.35 * soot))   # soot dulls metal; glass and chitin keep their gloss
 	if fac == "chorus":
-		# dead chitin dries out (Board on PROPS_H, Nov 23: the Chorus wrecks still pop in the field). Its albedo already sits
-		# on the band 3 floor (R420: 0.04 linear is the floor for hulks), so the wet sheen goes instead of more darkening.
+		# dead chitin dries out (Board on PROPS_H, Nov 23: the Chorus wrecks still pop in the field); with R425 it is darkened
+		# too (CHORUS_HULK_BAND), and the wet sheen goes as well.
 		b.roughness = maxf(b.roughness, CHITIN_DRY_ROUGH)
 	if soot > 0.0:
 		# a dead metal hull loses its polish: half its metal and a dull dielectric sheen, so the sky no longer paints a
@@ -588,6 +634,10 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 		b.detail_blend_mode = BaseMaterial3D.BLEND_MODE_MUL
 		b.detail_uv_layer = BaseMaterial3D.DETAIL_UV_1
 		b.detail_albedo = burn_texture(fac, soot, sc)
+		# the detail layer mixes its own normal in where it lays scorch, and with none it would flatten the hull's relief
+		# (Fable on PR 1772, item 5): it gets the hull's own normal map on the same UVs, so the relief is unchanged
+		if src.normal_enabled and src.normal_texture != null:
+			b.detail_normal = src.normal_texture
 	return b
 
 
@@ -596,6 +646,7 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 static func clear_static() -> void:
 	_burn_cache.clear()
 	_derelict_cache.clear()
+	_painted_cache.clear()
 
 
 # one scorch-patch texture per faction (white = untouched paint, the scorch multiplier where burnt), built once

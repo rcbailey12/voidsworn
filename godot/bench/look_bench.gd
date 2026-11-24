@@ -888,6 +888,9 @@ func _props_part() -> void:
 			if n.has_meta("station_T2"):
 				t2n += 1
 				report["parts"]["props"]["%s_scale" % st[0]] = snappedf(float(n.get_meta("station_scale", n.scale.x)), 0.001)
+			elif n.name.begins_with("StationDock"):
+				# Fable on PR 1772 (item 7): a station hex no mesh covers gets a grey dock drum; count them per item
+				report["parts"]["props"]["%s_docks" % st[0]] = int(report["parts"]["props"].get("%s_docks" % st[0], 0)) + 1
 			elif n.has_meta("station_kind"):
 				o1n += 1
 		var big := str(st[0]).begins_with("ST2")

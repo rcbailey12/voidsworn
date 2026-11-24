@@ -205,6 +205,17 @@ func _hulk_checks() -> void:
 	_report(dull and is_equal_approx(dg.roughness, 0.1) and dg.metallic_specular < gl.metallic_specular
 		and is_equal_approx(de.metallic, metal.metallic) and is_equal_approx(dc.metallic_specular, metal.metallic_specular),
 		"dead metal hulks are dull and at most %.0f%% of their paint; dead glass keeps its gloss, softer glint" % (PROPS.DEAD_METAL_DIM * 100.0))
+	# Fable on PR 1772 (7c734f53): a ship that dies leaves its own faction's hulk; the scorch layer keeps the hull's relief
+	var own_ok := true
+	for fac in PROPS.HULKS:
+		for v in 50:
+			own_ok = own_ok and PROPS.hulk_faction(PROPS.pick_hulk(v * 7919, ["corsair"], fac)) == fac
+	var bumpy := StandardMaterial3D.new()
+	bumpy.normal_enabled = true
+	bumpy.normal_texture = NoiseTexture2D.new()
+	var db := PROPS.derelict(bumpy, "corsair")
+	_report(own_ok and db.detail_enabled and db.detail_normal == bumpy.normal_texture,
+		"a dying ship leaves its own faction's hulk; a burnt hulk's scorch keeps the hull's own normal map")
 	var glass := StandardMaterial3D.new()
 	glass.albedo_color = Color(0.5, 0.8, 0.9, 0.6)
 	glass.roughness = 0.1

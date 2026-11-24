@@ -12,7 +12,7 @@ const LS := preload("res://render/line_style.gd")   # issue 1374 (R362): the one
 const HS := 10.0
 var HW := HS * sqrt(3.0)
 # The one scale table's board-side sizes (issue 710, R247; docs/playbooks/scale.md). All in world units, HEX_S = 10.
-const STATION_BASE_LEN := 22.0     # a small station cluster: 22, then 4 more per hex
+const STATION_BASE_LEN := 22.0     # a small station cluster: 22, then 4 more per hex (the O1_37 fallback only; T2 is fitted to its hexes)
 const STATION_PER_HEX := 4.0
 const STATION_BIG_LEN := A4P.LARGE_STATION_SIZE  # a cluster of 5 or more station hexes
 const STATION_BIG_HEXES := 5
@@ -927,10 +927,10 @@ func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float
 		props.add_child(mi)
 
 
-func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
+func _hulk(c: Vector3, rng: RandomNumberGenerator, own := "") -> void:
 	# issue 1767 (R419): all six factions' derelicts, mostly the factions in this battle, so a Chorus or Glasswright
 	# graveyard shows their own dead. One draw, as before, so the rest of the board's props do not shift.
-	var code := A4P.pick_hulk(rng.randi(), _battle_factions())
+	var code := A4P.pick_hulk(rng.randi(), _battle_factions(), own)
 	# A4's painted hull, burnt (same random draws as the old path, so the rest of the board does not shift)
 	var a4 := A4P.hulk(code)
 	if a4 != null:
@@ -952,6 +952,14 @@ func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 	mi.transform = Transform3D(Basis.from_euler(Vector3(rng.randf_range(-0.5, 0.5), rng.randf() * TAU, rng.randf_range(-0.6, 0.6))).scaled(Vector3(HULK_SCALE, HULK_SCALE, -HULK_SCALE)), c)
 	props.add_child(mi)
 	BV.fit_hulk(mi, c)
+
+
+# the faction of unit `id` ("" when the view has no such unit), so a ship that dies leaves its own faction's hulk
+func _unit_faction(id: String) -> String:
+	for u in VW.get("units", []):
+		if u is Dictionary and str(u.get("id", "")) == id and u.get("fac") != null:
+			return str(u["fac"])
+	return ""
 
 
 # the factions with ships in this battle (both sides), for the hulk draw
@@ -1177,7 +1185,7 @@ func add_wreck(id: String, q: int, r: int, hull := false) -> void:
 		_rocks(c, rng, 2, 1.5, 3.0)
 	if hull and not wreck_hulls.has(id):
 		wreck_hulls[id] = true
-		_hulk(c, rng)
+		_hulk(c, rng, _unit_faction(id))
 	if fresh:
 		_rebuild_edges()
 
