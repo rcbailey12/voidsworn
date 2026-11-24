@@ -95,6 +95,8 @@ def moment_cells(run, rows_by_id, cell):
     for st in rep.get("stills", []):
         if st.get("part") != "moments":
             continue
+        if st.get("clip"):
+            continue  # issue 1877: a clip row is a folder of frames for a video, not a strip; no strip page for it
         p = os.path.join(run_dir[id(run)], st["file"])
         if not os.path.exists(p):
             continue
