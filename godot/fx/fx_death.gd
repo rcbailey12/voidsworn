@@ -3524,6 +3524,12 @@ static func _secondary_on(fx, s, node_ref: WeakRef, ship_p: Vector3) -> void:
 
 
 static func _hide_ship(s) -> void:
+	# The tear and melt overlays belong to the live hull, not its wreck. Detach them while
+	# the meshes still exist so the renderer doesn't query a freed overlay material on removal.
+	if s.has_meta("death_grow") or s.has_meta("death_melt_spots"):
+		for mesh in s.meshes:
+			if is_instance_valid(mesh):
+				(mesh as MeshInstance3D).material_overlay = null
 	s.set_meta("death_hidden", true)
 	s.remove_meta("death_power")
 	s.remove_meta("death_poses")

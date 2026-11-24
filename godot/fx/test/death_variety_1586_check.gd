@@ -11,7 +11,8 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # 6. the battle's view cause: "ram" and "board" only right after their event, the rules' cause otherwise
 # 7. (Fable audit of PRs 1631 and 1666) a ram kill cuts like the rules' "big"; loose debris and crush sparks take the
 #    faction's own matter: metal shards on metal hulls, glass on Glasswrights, bile flecks (no plate) on the Chorus, cold
-#    shards on Eclipse, no brass sparks on those three (R367, R402)
+#    shards on Eclipse, no brass sparks on those three (R367, R402); Directorate shards are cold and its sparks use
+#    the blue-white damage glow (issue 1991)
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BEATS := preload("res://fx/fx_death_beats.gd")
@@ -55,6 +56,7 @@ func _run() -> void:
 	check(_count(res["corsair"]["beats"], "cookoff") == 2, "corsair: two late cook-offs (%d)" % _count(res["corsair"]["beats"], "cookoff"))
 	check(res["hegemony"]["strain_runs"], "hegemony: the plating strain keeps its clock through the blackout tell (Neon on PR 1666)")
 	check(_has(res["ithar"]["beats"], "web") and _has(res["ithar"]["beats"], "shafts"), "ithar: fracture web in the tell and light shafts at the split")
+	check(res["ithar"]["overlay_on"] and res["ithar"]["overlay_off"], "ithar: tear overlays attach to both hull meshes, then detach at the split")
 	# Codex on PR 1666: the ribbons themselves, not only the markers: the white web lines before the split, the prism
 	# shafts just after it
 	check(int(res["ithar"]["web_ribs"]) >= 5, "ithar: %d white fracture lines drawn before the split" % int(res["ithar"]["web_ribs"]))
@@ -103,6 +105,7 @@ func _run() -> void:
 		var ml := await _kill(fac, "Cruiser", 1.0, "melt", 12.0)
 		check(ml["beats"] == ["melt"], "melt %s: only the melt's own look (%s)" % [fac, str(ml["beats"])])
 		check(int(ml["smoke"]) == 0, "melt %s: no smoke or vapour sprites from the beats (%d)" % [fac, int(ml["smoke"])])
+		check(ml["overlay_on"] and ml["overlay_off"], "melt %s: acid overlays attach to both hull meshes, then detach at the split" % fac)
 	var ms := await _kill("corsair", "Destroyer", 0.6, "melt", 2.0, false, Vector3.INF, "m1")
 	check(ms["beats"] == ["melt"], "melt small: no archetype (%s)" % str(ms["beats"]))
 	# Reduced Flashing: a burnout's corridor lights hold and fade once, no stutter
@@ -221,7 +224,8 @@ func _debris_check() -> void:
 		var pool = fx.pools["shd"]
 		var n0: int = int(pool.emitted)
 		var k0: int = int((fx.spr_kinds as Dictionary).get(20, 0))
-		BEATS.debris(fx, s, Vector3.ZERO, fx.now, 1.0, Vector3.UP, 0.1, 0.6)
+		var launch_heat := 0.6
+		BEATS.debris(fx, s, Vector3.ZERO, fx.now, 1.0, Vector3.UP, 0.1, launch_heat)
 		var pend: PackedFloat32Array = pool.pending   # one row repeated per vertex: the last 20 floats are the new shard
 		var shards: int = int(pool.emitted) - n0
 		var w: Array = want[fac]
@@ -230,12 +234,16 @@ func _debris_check() -> void:
 			var tint: float = pend[pend.size() - 20 + 18]
 			var heat: float = pend[pend.size() - 20]
 			check(is_equal_approx(tint, float(w[1])), "%s: shard look %.1f (want %.1f)" % [fac, tint, float(w[1])])
-			check((heat == 0.0) == (fac == "deathless"), "%s: shard heat %.2f (Eclipse cold, the rest glow)" % [fac, heat])
+			var want_heat := 0.0 if fac in ["deathless", "hegemony"] else launch_heat
+			check(is_equal_approx(heat, want_heat), "%s: shard heat %.2f (want %.2f)" % [fac, heat, want_heat])
 		else:
 			check(int((fx.spr_kinds as Dictionary).get(20, 0)) > k0, "%s: a wet fleck in place of the shard" % fac)
 		var sc: Color = BEATS.spark_col(s, brass)
-		var metal: bool = fac in ["voidsworn", "hegemony", "corsair"]
-		check(sc.is_equal_approx(brass) == metal, "%s: crush spark colour %s (brass on metal hulls only)" % [fac, str(sc)])
+		if fac == "hegemony":
+			check(sc.is_equal_approx(s.fac.damage_glow) and not sc.is_equal_approx(brass), "hegemony: crush spark uses blue-white damage glow, not brass (%s)" % str(sc))
+		else:
+			var brass_sparks: bool = fac in ["voidsworn", "corsair"]
+			check(sc.is_equal_approx(brass) == brass_sparks, "%s: crush spark colour %s (brass on Sunward and Hullbreakers only)" % [fac, str(sc)])
 	world.queue_free()
 	await process_frame
 
@@ -295,6 +303,7 @@ func _kill(fac: String, cls: String, size: float, cause: String, secs: float, sh
 	fx.death(sid, cause)
 	var T: float = fx.now
 	var res := {"fac": fac, "dimmed": false, "lit_before": true, "dark_after": false, "strain_runs": false, "power_mats": 0, "smoke": 0, "corridor_sprites": 0, "trail_pts": 0}
+	res["overlay_on"] = mi.material_overlay != null and mi2.material_overlay != null
 	if wing:
 		res["melting"] = DEATH.melting(s)
 		res["puff"] = false
@@ -340,6 +349,7 @@ func _kill(fac: String, cls: String, size: float, cause: String, secs: float, sh
 					if float(hp[1]) > T + float(s._trail_extra) + 0.01: fresh += 1
 				res["trail_pts"] = maxi(int(res["trail_pts"]), fresh)
 	res["beats"] = BEATS.beats(s)
+	res["overlay_off"] = mi.material_overlay == null and mi2.material_overlay == null
 	var web_c := Color(0.95, 0.97, 1.0)
 	var shaft_c := [Color(1.0, 0.75, 0.8), Color(0.75, 1.0, 0.85), Color(0.75, 0.82, 1.0), Color(1.0, 0.95, 0.75)]
 	res["web_ribs"] = 0

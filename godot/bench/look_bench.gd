@@ -728,6 +728,13 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	elif what == "jets":
 		# every movement jet ShipView fires, at once; the bench keeps ShipView's processing off, so each puff stays where
 		# it started (that start is what this row shows)
+		# Issue 1991: the optional pale swatch changes only this bench ship's copy of the thrust profile.
+		if row.get("jet_tint", "") == "damage_glow":
+			var profile = A.get("tp")
+			if profile is Dictionary:
+				profile["tint"] = fx.faction_info(str(att[0])).damage_glow
+			else:
+				_warn("%s: this revision has no thrust profile to tint" % id)
 		A._retro_puffs(1.0)
 		A._aft_puffs(1.0)
 		A._side_puffs(1.0, 1.0)

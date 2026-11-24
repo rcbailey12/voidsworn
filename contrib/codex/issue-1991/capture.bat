@@ -2,8 +2,8 @@
 setlocal
 rem Queue this from the reviewed branch checkout after All checks is green.
 rem Optional first argument: the exact reviewed after commit.
-rem The before pin is the main revision named in the issue 1991 brief.
-set "LB_BEFORE=5524078e201c3b30a2d7e77fdf5927b60cc34b36"
+rem The before pin is the main revision merged for run 2, with the same thrust profiles as the branch.
+set "LB_BEFORE=3d7ecab76a2fe72df169ac1198602431f54d599c"
 set "LB_AFTER=%~1"
 if not defined LB_AFTER set "LB_AFTER=origin/codex/issue-1991"
 set "LB_ROOT=%USERPROFILE%\Downloads\voidsworn_test\board\issue-1991"
