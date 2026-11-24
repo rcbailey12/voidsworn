@@ -123,19 +123,15 @@ static func _hit_matter(fx, tg: Dictionary, T: float, col: Color, k: float, Tg =
 	fx.ring(p + n * 0.1 * k, n, T, 0.4, Color(0.62, 0.55, 0.42), 0.9, 0.3 * k, 2.2 * k, 3, 0.0, 0.0, 18.0)
 	fx.spr(p + n * 0.3 * k, T, 1.1, Color(0.5, 0.44, 0.34), 0.5, 0.4 * k, 1.6 * k, 20, n * 1.2 * k, 0.6)
 	fx.shake(T, 0.06, p)
-	var down := (Vector3.DOWN - n * Vector3.DOWN.dot(n))
-	down = down.normalized() if down.length_squared() > 0.01 else t1
-	for j in 10:
-		var off: Vector3 = (t1 * fx.rng.randf_range(-0.6, 0.6)) * k
-		fx.spr(p + off + n * 0.1 * k, T + 0.05 + j * 0.08, 1.8, ACID, 0.6, 0.22 * k, 0.12 * k, 15, down * fx.rng.randf_range(1.0, 2.2) * k, 0.4)
-	_pool(fx, p, n, t1, t2, T + 0.2, col, k, 1.1, 7)
+	# no glowing acid sheet or pool sprites on the plate: lying on the hull they cut off at the plate edges into a flat
+	# yellow slab (cloud close-up at 08582261). The acid shows as the dark etched mark itself, a few bubbles and a fume.
+	_pool(fx, p, n, t1, t2, T + 0.2, col, k, 1.1, 5)
 
 
 # The crumble: a puff of bone dust and a few chips, horn and bone, as the built pieces break apart (update() moves them).
-static func _crumble_matter(fx, p: Vector3, n: Vector3, T: float, col: Color, k: float) -> void:
+static func _crumble_matter(fx, p: Vector3, n: Vector3, T: float, _col: Color, k: float) -> void:
 	fx.spr(p, T, 1.4, Color(0.48, 0.42, 0.32), 0.45, 0.6 * k, 2.4 * k, 20, n * 0.8 * k, 0.5)
 	_shatter(fx, p, n, T, k, 8)
-	fx.spr(p, T + 0.05, 0.8, ACID, 0.6, 0.3 * k, 0.9 * k, 15)
 
 
 # Bone and horn grit: soft dust puffs that drift and settle, no spark lines (Ryan, Nov 24). The real breaking pieces are
@@ -147,16 +143,15 @@ static func _shatter(fx, p: Vector3, n: Vector3, T: float, k: float, count: int)
 		fx.spr(p, T + j * 0.03, fx.rng.randf_range(0.9, 1.4), c, 0.45, 0.25 * k, 0.9 * k, 20, v, 0.7)
 
 
-# The acid pool: soft bile glow lying on the plate and small bubbles popping in it for a while, with thin fumes. Sprites
-# only; the shared acid pit mark stays on the hull after it.
+# The acid at work: small bubbles popping on the etched mark for a while, with thin grey fumes. The shared acid mark
+# (fx_breach S_ACID, a dark etched burn) is the acid itself.
 static func _pool(fx, p: Vector3, n: Vector3, t1: Vector3, t2: Vector3, T: float, col: Color, k: float, size: float, bubbles: int) -> void:
-	fx.spr(p + n * 0.12 * k, T, 2.2, ACID, 0.35, size * 0.7 * k, size * 1.1 * k, 18)
 	for j in bubbles:
 		var off: Vector3 = (t1 * fx.rng.randf_range(-1.0, 1.0) + t2 * fx.rng.randf_range(-1.0, 1.0)) * size * 0.6 * k
 		var at: float = T + fx.rng.randf_range(0.1, 2.6)
-		fx.spr(p + off + n * 0.15 * k, at, 0.35, ACID.lerp(col, 0.4), 0.8, 0.08 * k, 0.28 * k, 15, n * 0.6 * k, 0.5)
+		fx.spr(p + off + n * 0.15 * k, at, 0.35, ACID.lerp(col, 0.3), 0.6, 0.06 * k, 0.2 * k, 15, n * 0.6 * k, 0.5)
 	for j in 3:
-		fx.spr(p + n * 0.5 * k, T + 0.3 + j * 0.7, 2.0, Color(0.42, 0.42, 0.24), 0.5, 0.6 * k, 2.2 * k, 20, n * 1.2 * k, 0.4)
+		fx.spr(p + n * 0.5 * k, T + 0.3 + j * 0.7, 1.6, Color(0.34, 0.33, 0.3), 0.35, 0.4 * k, 1.4 * k, 20, n * 1.2 * k, 0.4)
 
 
 static func update(fx, _dt: float) -> void:
