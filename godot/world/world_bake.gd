@@ -59,7 +59,7 @@ static func service(tree: SceneTree) -> Node:
 	return node
 
 static func _attach(node) -> void:
-	if not is_instance_valid(node) or node.is_inside_tree(): return
+	if not is_instance_valid(node) or node.is_inside_tree() or node._exiting: return
 	var tree := Engine.get_main_loop() as SceneTree
 	if tree == null or tree.root.get_node_or_null("WorldBakes") != null: return
 	tree.root.add_child(node)
@@ -132,12 +132,12 @@ static func _unpin(key: String) -> void:
 
 static func clear_static() -> void:
 	_old_swept = false
-	_textures.clear()
-	_cache.clear()
 	# issue 1434 (Artoo on PR 1445): quit_clean clears statics before the tree quits, while the root service's worker can
 	# still be inside a bake. Stop the worker here first (a compute bake leaves at its next strip and frees its own
 	# device), then forget the pins and free a service whose deferred add never landed (issue 1765).
 	_stop_worker()
+	_textures.clear()
+	_cache.clear()
 	_pins.clear()
 	# Issue 1765 (Artoo, PR 1776): a service whose deferred add never landed (its tree quit first) belongs to nobody
 	# else, so it is freed here; one already in a tree is owned by that tree's root and only forgotten. Its queued add
@@ -150,11 +150,28 @@ static func clear_static() -> void:
 static var _abort := false   # set while shutting down: a running compute bake stops at its next strip
 
 
+static func begin_shutdown(tree: SceneTree) -> void:
+	var node := tree.root.get_node_or_null("WorldBakes")
+	if node == null and is_instance_valid(_pending):
+		node = _pending
+	if node == null:
+		return
+	# Stop submitting work as soon as the window closes, before scene disposal and the join.
+	# In particular, a cut-short battle must not start a deferred 4K PNG write during those frames.
+	node._exiting = true
+	_abort = node._thread != null
+	drop_waiting(tree)
+	node._unsaved.clear()
+
+
 static func _stop_worker() -> void:
 	var tree := Engine.get_main_loop() as SceneTree
 	var node: Node = tree.root.get_node_or_null("WorldBakes") if tree != null and tree.root != null else null
 	if node == null or node.get("_thread") == null:
 		return
+	var t0 := Time.get_ticks_usec()
+	var stage := work_stage
+	var active: String = node._active
 	_abort = true
 	var th: Thread = node._thread
 	if th.is_started():
@@ -167,6 +184,8 @@ static func _stop_worker() -> void:
 		node._jobs[act].done = true
 		node._jobs.erase(act)
 	node._active = ""
+	print("[world] quit bake join %.1f ms (job %s, worker stage %d)" % [
+		(Time.get_ticks_usec() - t0) / 1000.0, active.left(12), stage])
 
 # Authored R01 maps use the same shared worker and texture cache as the GPU
 # bakes. Decode and mip generation never block the battle's main thread.
@@ -279,6 +298,8 @@ func _enter_tree() -> void:
 	_exiting = false
 
 func _process(_dt: float) -> void:
+	if _exiting:
+		return
 	if _thread != null:
 		if _thread.is_alive(): return
 		var result: Dictionary = _thread.wait_to_finish()
@@ -341,7 +362,11 @@ func _process(_dt: float) -> void:
 func _exit_tree() -> void:
 	# Deleting a world does not cancel its shared job. Only shutdown joins it.
 	_exiting = true
-	if _thread != null: _thread.wait_to_finish()
+	if _thread != null:
+		_abort = true
+		_thread.wait_to_finish()
+		_thread = null
+		_abort = false
 	for job in _jobs.values(): job.done = true
 	_jobs.clear()
 	_queue.clear()
