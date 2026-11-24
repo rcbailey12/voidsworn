@@ -5,7 +5,7 @@ and intense mix (the song), on the same trim points.
   python3 stem_loop_check.py <song.mp3> <stems.zip> [--xfade <seconds>] [--out <folder>]
 
 Prints, for each mix: length, the stems' offset against the song, the loop seam (level and sample jump at the wrap), and the
-calm mix's level under the intense one. --xfade folds that many seconds of each mix's tail into its head (the loop
+calm mix's level under the intense one, and a real 2 s calm-to-intense switch (and back) at four points of the loop. --xfade folds that many seconds of each mix's tail into its head (the loop
 crossfade mastering applies), on the same samples for both mixes, before the seams are measured. With --out it writes calm.wav and intense.wav cut to the same samples.
 Needs ffmpeg and numpy. Exit 0 and STEM LOOP CHECK PASS when every check passes."""
 import subprocess, sys, zipfile, tempfile, os
@@ -72,7 +72,25 @@ def main():
     if not (1.0 <= gap <= 12): fails.append('calm level')
     seam(intense, 'intense (song)', fails)
     seam(calm, 'calm (no drums)', fails)
-    # a switch at each bar quarter: level step when calm hands to intense with a 2 s ramp should be smooth (no jump)
+    # A real calm-to-intense switch (2 s ramp) at each quarter of the loop, and back. Pass: no dip under the softer of the
+    # two mixes around the switch (more than 1.5 dB, 50 ms windows) and no step between neighbouring windows larger than the
+    # largest step either mix has on its own.
+    w = SR // 20
+    def env(x):
+        m = x.mean(1); n = len(m) // w
+        return 10 * np.log10((m[:n * w].reshape(n, w).astype(np.float64) ** 2).mean(1) + 1e-12)
+    ec, ei = env(calm), env(intense)
+    own = max(np.abs(np.diff(ec)).max(), np.abs(np.diff(ei)).max())
+    k = 2 * SR; r = np.linspace(0, 1, k, dtype=np.float32)[:, None]
+    for q in (0.125, 0.375, 0.625, 0.875):
+        for a, b, label in ((calm, intense, 'calm to intense'), (intense, calm, 'intense to calm')):
+            at = int(q * len(intense)); s0, s1 = at - SR, at + k + SR
+            seg = np.concatenate([a[s0:at], a[at:at + k] * (1 - r) + b[at:at + k] * r, b[at + k:s1]])
+            e = env(seg); floor = np.minimum(env(a[s0:s1]), env(b[s0:s1]))
+            n = min(len(e), len(floor)); dip = float((floor[:n] - e[:n]).max()); step = float(np.abs(np.diff(e)).max())
+            ok = dip <= 1.5 and step <= own + 1.0
+            print(f'  switch {label} at {at / SR:5.1f} s: deepest dip {dip:.2f} dB, largest step {step:.1f} dB (the mixes alone: {own:.1f})', '' if ok else '  FAIL')
+            if not ok: fails.append(f'switch at {at / SR:.1f} s')
     if out:
         os.makedirs(out, exist_ok=True)
         for name, x in (('calm', calm), ('intense', intense)):

@@ -423,7 +423,9 @@ So M2 makes each faction's battle music as stem-split loops: the intense layer i
 - **Seams without a crossfade.** The intense seam passes. The calm seam fails: its last half second is 4.9 dB under its first (limit 3 dB).
 - **Seams with mastering's loop crossfade.** With 0.5 s, the calm seam is 2.6 dB and the intense 0.3 dB; with 1.0 s, 2.5 dB and 0.8 dB. Both pass with wrap jumps under 0.03.
 
-So mastering folds a 0.5 s loop crossfade into both mixes on the same samples. Ryan picked "One song split into parts" for the battle music (decision card, Nov 23 11:51 PM CT).
+- **Switches (Artoo, second pass).** The tool also plays a real 2 s switch from calm to intense, and back, at four points in the loop. With the 0.5 s crossfade, the deepest dip under the softer mix is 0.14 dB (limit 1.5 dB). The largest step between neighbouring 50 ms windows is 9.4 dB, under the 10.5 dB the drums make on their own. All eight switches pass.
+
+So mastering folds a 0.5 s loop crossfade into both mixes on the same samples. An in-game listen to the switch still comes before wiring. Ryan picked "One song split into parts" for the battle music (decision card, Nov 23 11:51 PM CT).
 
 After all the waves, about 55,000 credits stay in reserve for second takes, stems on the songs Ryan picks, and the tendril once issue 1877 lands.
 
