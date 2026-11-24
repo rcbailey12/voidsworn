@@ -101,7 +101,11 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    issue 1183), set in `tools/blender/kits/ithar/` for every Glasswright sheet ship, never on one ship (R333): opaque,
    reflective champagne pearl ribbons (warm, never lilac grey: issue 1282), many and fine, each a bundle of strands with silver
    lines and a colour shift, over a core of emissive amber, violet and emerald stained-glass mosaic panels lit from behind (hot
-   in the middle, dark at the lead edge); ribbons cover under half the hull; a slender spindle, about 4 to 1; stones are cut and
+   in the middle, dark at the lead edge), one colour per leaf as on I8_37 (`parts.MIX` 'blocks', R431; the Nov 21 marble read as pastel confetti in game); the pearl is the shell, built on every hull, strike craft included (Ryan Nov 24), with the kit's `hull.i8_field` and `hull.i8_shell` (the CD5 Ark's twelve fine pillowed ribbons spiralling round the body with crossing leaves that curl up, scaled to the hull; Ryan Nov 23: the white "more detailed and wrapping" like I8_37), in I8_37's warm white, not gold (`stack.LOOK` pearl) and the glass shows only in the seams and openings between
+   ribbons, as on I8_37: at most `stack.MOSAIC_MAX` (0.42) of the outside is bare glass from above or from the battle camera,
+   measured and enforced by the kit review (`hull.mosaic_share`; R431, Ryan Nov 23 2026: "the top is how we want it to look
+   ascross the board", after the Prism I15_11 showed about 0.77 glass; the old "ribbons cover under half" wording let it
+   through); a slender spindle, about 4 to 1; stones are cut and
    glowing, and optics are small glints, never domes (round 5 outside read, Nov 19). Judge each round at camera 170 beside the
    concept first. Never see-through: every intact-hull surface has transmission 0 and the interior shows only in the break-up.
    No wear. The bake marks it authored_look so the game keeps its values (R329). The game's rim back light skips Glasswright
@@ -605,7 +609,9 @@ board/torpedo_rework/launch_1121/TL_*.jpg, "Yes much better"): it starts at its 
 its drive and baked nozzle glow dark (a torpedo for 0.7 s, rockets 0.14 s, the star 0.22 s), lights with a flash at the
 nozzle, then turns onto the target. It flies flat (issue 1713, Ryan Nov 22: "I'd think we'd keep it flat"): a deck
 tube's slide rises at most about 20 degrees, and from ignition the flight never climbs above the higher of its ignition
-point and the target (`torpedo_flat_flight_check`). Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
+point and the target (`torpedo_flat_flight_check`). Between altitude bands (issue 1582) it stays a straight line that
+slopes only to the target's height, with no cold-launch pop or arc (Ryan, Nov 23 2026, decision card in the stage 2
+thread: "Keep them flat", over the stage 2 brief's pop-and-arc; `movement_stage2_check`). Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
 rockets 0.7 of the old round, with trail and flashes to match; the slide distance does not shrink with it
 (fx_weapons.gd `_launch`, `_launch_step`, `_ignite`).
 

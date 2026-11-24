@@ -95,35 +95,12 @@ def half_h(x):
 
 
 S = (LENGTH / 26.0) ** 0.7     # ribbon and line scale against CD5
-# Each lobe is one of the pick's two ribbons: a mosaic stripe along its crest (as the sketch's coloured band along each
-# ribbon), bracketed by pearl ribbons; the grooves between the lobes hold seafoam stored light, opened wide in the cleft.
-# (offset from the lobe direction, half width in radians)
-RIBS = [(0.85, 0.26), (-0.85, 0.26), (1.33, 0.20), (-1.33, 0.20)]
-BAY = 1.15                    # length of one mosaic panel along a crest stripe
-
-
-def rib_centre(base, off):
+# R431 round 3 (Ryan Nov 23 2026: every Glasswright reads as I8_37, the white "more detailed and wrapping"): the two
+# twisting lobes stay in the body; the shell over them is the kit's I8_37 one, the Ark's spiralling ribbons with crossing
+# leaves, and the glass shows only in their leaf seams. The old crest stripes (RIBS, gap_of) are gone.
+def field():
     hl = hk('hull')
-    g = hl.bow_gather(2.2, 2.85, (0.0, math.pi), 0.9)
-    sgn = 1 if off > 0 else -1
-    return lambda x: g(x, theta(x) + base + off - sgn * (0.45 * cleft(x) if abs(off) > 1 else 0.12 * cleft(x))
-                       + 0.06 * math.sin(2.6 * x + base))
-
-
-def gap_of(x, a):
-    """crest stripe A (g 0), crest stripe B (g 1), the two grooves (g 2, 3); across 0..1 over the open stripe"""
-    u = math.atan2(math.sin(a - theta(x)), math.cos(a - theta(x)))
-    if abs(u) <= math.pi / 2:
-        g, v = (0, u) if abs(u) < 1.0 else (2 if u > 0 else 3, (abs(u) - math.pi / 2))
-    else:
-        w = math.atan2(math.sin(u - math.pi), math.cos(u - math.pi))
-        g, v = (1, w) if abs(w) < 1.0 else (2 if w < 0 else 3, (abs(w) - math.pi / 2))
-    if g < 2:
-        across = 0.5 + v / 1.18
-    else:
-        across = 0.5 + v / 0.30
-    along = x / BAY + 0.37 * g
-    return g, along, max(0.0, min(1.0, across))
+    return hl.i8_field(XB - XS, start=0.2, gather=hl.bow_gather(2.2, 2.85, (0.0, math.pi), 0.9))
 
 
 def light(x, a):
@@ -139,19 +116,12 @@ def build(K):
     hl = hk('hull')
     gw = hk('parts')
     hl.material_setup(CODE, LENGTH)
-    core = hl.mosaic_core(K, CODE + '_mosaic_core', skin, XS, XB, gap_of, nu=160, nv=128, thick=0.02, seed=3, light=light)
+    f = field()
+    core = hl.mosaic_core(K, CODE + '_mosaic_core', skin, XS, XB, f.gap_of, nu=160, nv=128, thick=0.02, seed=3)   # R431: no seafoam wash in the cleft, the glass is the same colours all round
     K.mass('Twisted mosaic core', core, 'opaque glowing stained-glass mosaic',
-           note='Two lobes twisting round each other, fused at both ends; seafoam stored light in the cleft. Never see-through.')
+           note='Two lobes twisting round each other, fused at both ends; the cleft shows the same coloured glass (R431). Never see-through.')
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
-    ribbons = []
-    for li, base in enumerate((0.0, math.pi)):
-        for k, (off, hw) in enumerate(RIBS):
-            ribbons.append(gw.Ribbon(
-                XS + 0.08 + 0.04 * k, XB - 0.10 - 0.04 * k, rib_centre(base, off),
-                lambda t, hw=hw, k=k: hw * gw.leaf(0.45, 0.35, 0.48 + 0.04 * k, tip=0.15)(t),
-                lambda t, v: S * (0.035 + 0.10 * (1 - v * v) ** 0.5 * (0.5 + 0.5 * math.sin(math.pi * t) ** 0.5)),
-                name='ribbon_%d_%d' % (li, k)))
-    hl.lay_ribbons(K, ribbons, skin, 0.035 * S, 0.024 * S, nu=140, nv=8)
+    hl.i8_shell(K, skin, f, XS + 0.08, XB - 0.10, 'gs1', scale=S, leaves=8, seed=4, width=1.12)
     hl.shard_cluster(K, 'S1', (2.50, 0.0, 0.0), 0.75, 0.085, spread=0.075)
     hl.stern_drive(K, 'E1', (XS + 0.22, 0.0, 0.0), 0.27)
     breaks = (-0.95,)
@@ -166,7 +136,6 @@ def build(K):
         K.point('board', 'hp_board_%d' % i, skin(x - 0.3, a), side=side)
     K.colour('opaque pearl ribbons, silver edges', XB, XS, 'eight long ribbons over the twisted core, two bracketing each lobe\'s crest')
     K.colour('amber, violet, green mosaic panels', XB, XS, 'the core between the ribbons; glows from within')
-    K.colour('seafoam stored light', CLEFT[1], CLEFT[0], 'the cleft amidships and the grooves')
     K.colour('soft white bloom', XS + 0.2, XS - 0.2, 'stern drive optic, no flame')
     K.change('Opaque pearl ribbons over a glowing mosaic core instead of the sketch\'s clear glass',
              'R337 (Ryan, Nov 19): the Glasswright finish is opaque reflective pearl with glowing stained-glass panels; nothing see-through.')

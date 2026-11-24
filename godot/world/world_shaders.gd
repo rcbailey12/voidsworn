@@ -8,7 +8,8 @@ const NOISE_HASH := """
 float wh21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 float wvn(vec2 p) {
 	vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(wh21(i), wh21(i + vec2(1.0, 0.0)), f.x), mix(wh21(i + vec2(0.0, 1.0)), wh21(i + vec2(1.0, 1.0)), f.x), f.y);
+	ivec2 ic = ivec2(i);   // whole-number corners, as wvn3 below (issue 1939)
+	return mix(mix(wh21(vec2(ic)), wh21(vec2(ic + ivec2(1, 0))), f.x), mix(wh21(vec2(ic + ivec2(0, 1))), wh21(vec2(ic + ivec2(1, 1))), f.x), f.y);
 }
 float wfbm(vec2 p) { float a = 0.5; float s = 0.0; for (int k = 0; k < 5; k++) { s += a * wvn(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return s; }
 // r6: Hoskins' hash13 (the old product hash drew diagonal lattice lines once a shader amplified the noise)
@@ -22,9 +23,15 @@ const NOISE_CELL := """
 float wvn3(vec3 x) {
 	vec3 i = floor(x); vec3 f = fract(x); f = f * f * (3.0 - 2.0 * f);
 """
+# Issue 1939 (Neon, PR 1979 review): on the RTX 5080 the compiler folded "i + offset" into the hash's multiply (one fused
+# multiply-add), so a lattice corner hashed from the cell on one side came out a hair different from the same corner
+# hashed from the other side; the hash amplifies that ten thousand times and wrapped it, cutting straight seams and
+# triangles through clouds, coasts and ash. Each corner is now added up in whole numbers and only then turned into a
+# float, so both sides hash exactly the same value. The noise itself is unchanged.
 const NOISE_INTERPOLATE := """
-	return mix(mix(mix(wh31(i), wh31(i + vec3(1.0, 0.0, 0.0)), f.x), mix(wh31(i + vec3(0.0, 1.0, 0.0)), wh31(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
-		mix(mix(wh31(i + vec3(0.0, 0.0, 1.0)), wh31(i + vec3(1.0, 0.0, 1.0)), f.x), mix(wh31(i + vec3(0.0, 1.0, 1.0)), wh31(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
+	ivec3 ic = ivec3(i);
+	return mix(mix(mix(wh31(vec3(ic)), wh31(vec3(ic + ivec3(1, 0, 0))), f.x), mix(wh31(vec3(ic + ivec3(0, 1, 0))), wh31(vec3(ic + ivec3(1, 1, 0))), f.x), f.y),
+		mix(mix(wh31(vec3(ic + ivec3(0, 0, 1))), wh31(vec3(ic + ivec3(1, 0, 1))), f.x), mix(wh31(vec3(ic + ivec3(0, 1, 1))), wh31(vec3(ic + ivec3(1, 1, 1))), f.x), f.y), f.z);
 }
 float wfbm3(vec3 p) { float a = 0.5; float s = 0.0; for (int k = 0; k < 5; k++) { s += a * wvn3(p); p = p * 2.03 + 3.1; a *= 0.5; } return s; }
 """

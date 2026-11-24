@@ -1219,9 +1219,9 @@ func _modal(pad_x: float, pad_y: float) -> Array:
 	return [p, p]
 
 
-func show_end(title: String, body: String, win: bool, external := false) -> void:
+func show_end(title: String, body: String, win: bool, external := false, continue_label := "Continue") -> void:
 	hide_end()
-	_last["show_end"] = [title, body, win, external]
+	_last["show_end"] = [title, body, win, external, continue_label]
 	end_block = ModalFocus.blocker(root)
 	end_block.mouse_force_pass_scroll_events = false
 	var mw := _modal(40, 30)
@@ -1245,7 +1245,7 @@ func show_end(title: String, body: String, win: bool, external := false) -> void
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", s(14))
 	if external:
-		row.add_child(_button("Continue", "continue", null, true, true))
+		row.add_child(_button(continue_label, "continue", null, true, true))
 	else:
 		row.add_child(_button("Fight again", "restart", null, true, true))
 		row.add_child(_button("Quit", "quit", null, false, true))

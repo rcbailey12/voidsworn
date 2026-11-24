@@ -97,9 +97,6 @@ def skin(x, a, inset=0.0):
     return (x, y, p[2] * flow)
 
 
-TWIST_A = lambda x: 0.11 * x + 0.30 * math.sin(0.33 * x)
-TWIST_B = lambda x: 0.08 * x + 0.22 * math.sin(0.38 * x + 1.1)
-LEAVES = [(-7.0, 1.2, 1.30, 0.17), (-5.2, 5.6, 2.25, 0.16), (-3.2, 5.8, 0.75, 0.16)]
 
 
 def bay_clear(x, a):
@@ -121,7 +118,8 @@ def bay_clear(x, a):
 def field():
     hl = hk('hull')
     g = hl.bow_gather(1.5, 7.0, (0.55, math.pi - 0.55, -math.pi / 2), 0.85)
-    return hl.RibbonField(13, TWIST_A, sway=0.12, leaf_f=1.25, start=0.2, gather=lambda x, a: bay_clear(x, g(x, a)))
+    # R431 round 3 (Ryan Nov 23, the white "more detailed and wrapping" like I8_37): the Ark's spiralling field from the kit
+    return hl.i8_field(XB - XS, start=0.2, gather=lambda x, a: bay_clear(x, g(x, a)))
 
 
 def light(x, a):
@@ -142,21 +140,8 @@ def build(K):
     K.mass('Mosaic leaf core', core, 'opaque glowing stained-glass mosaic',
            note='The CD5 leaf at carrier size; two shallow hangar wells floored with stored light; never see-through.')
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
-    ribbons = []
-    for k in range(f.n):
-        ribbons.append(gw.Ribbon(
-            XS + 0.25 + 0.15 * math.sin(2.3 * k), XB - 0.15 - 0.25 * (k % 3), f.centre(k),
-            lambda t, k=k: (0.135 + 0.025 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.40, 0.40 + 0.05 * math.sin(k), tip=0.0)(t),
-            lambda t, v: S * (0.05 + 0.14 * (1 - v * v) ** 0.5 * (0.5 + 0.5 * math.sin(math.pi * t) ** 0.5)),
-            name='long_ribbon_%d' % k, clamp=clamp))
-    for k, (x0, x1, base, wd) in enumerate(LEAVES):
-        top = max(0.0, math.sin(base)) ** 2
-        ribbons.append(gw.Ribbon(
-            x0, x1, lambda x, base=base: bay_clear(x, base + TWIST_B(x)),
-            lambda t, wd=wd: wd * gw.leaf(0.7, 0.0, 0.38)(t),
-            lambda t, v, top=top: S * (0.22 + 0.14 * (1 - v * v) ** 0.5 + 0.75 * top * ((v + 1) / 2) ** 2 * math.sin(math.pi * t) ** 1.5),
-            name='leaf_ribbon_%d' % k, clamp=clamp))
-    hl.lay_ribbons(K, ribbons, skin, 0.035 * S, 0.024 * S, nu=170, nv=8)
+    # R431 round 3: the I8_37 shell from the kit; the leaves follow the field's gather, so they also slide off the hangar lens
+    hl.i8_shell(K, skin, f, XS + 0.25, XB - 0.15, 'ga1', scale=S, leaves=10, seed=2, clamp=clamp, width=1.3)
     hl.lance(K, 'L1', (LANCE_X, 0.0, 0.0), 2.05, 0.48,
              note='The bow lance: a drawn-glass waveguide grown from the bow optic on the centreline; fixed forward, F arc.',
              what='drawn-glass bow lance on the centreline / pulsar', collar=0.62)
@@ -191,7 +176,7 @@ def build(K):
     K.point('core', 'hp_core', (0.6, 0, 0.0))
     for i, (x, side, sec) in enumerate(((breach_x[0], 1, 'prow'), (breach_x[1], -1, 'prow'), (breach_x[2], 1, 'mid'),
                                         (breach_x[3], -1, 'mid'), (breach_x[4], 1, 'eng'))):
-        K.point('breach', 'hp_breach_%d' % i, skin(x, 0.95 if side > 0 else math.pi - 0.95), side='port' if side > 0 else 'stbd', section=sec)
+        K.point('breach', 'hp_breach_%d' % i, skin(x, 0.55 if side > 0 else math.pi - 0.55), side='port' if side > 0 else 'stbd', section=sec)
     for i, (x, side) in enumerate(((-5.0, 1), (4.0, -1))):
         a = 0.0 if side > 0 else math.pi
         K.point('rcs', 'hp_rcs_%d' % i, skin(x, a), side='port' if side > 0 else 'stbd')
