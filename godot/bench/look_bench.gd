@@ -419,15 +419,19 @@ func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code
 	sv.name = "ship_" + id
 	world.add_child(sv)
 	var u := {"id": id, "fac": fac, "cls": cls, "facing": facing, "hp": 100, "maxHp": 100, "size": 1.0}
+	if cls == "Squadron":
+		u["tpl"] = "spore" if fac == "chorus" else "fighter"
 	if code != "":
 		u["code"] = code
 		u["L"] = float(OBJ_LEN.get(code, 10.0))
 	sv.setup(u, pos, true)
 	sv.set_process(false)   # its bob and idle jets run on the wall clock (see the header)
-	if _is_block(sv) and not args.has("allow-blocks"):
+	if not sv.squad_kind.is_empty() and sv.hull != null:
+		sv.hull.set_process(false)
+	if sv.squad_kind.is_empty() and _is_block(sv) and not args.has("allow-blocks"):
 		_placeholder("%s %s drew a block (code %s)" % [fac, cls, str(sv.code)])
 		return null
-	var info := {"faction": fac, "cls": cls, "size": 1.0, "squadron": false, "flagship": false, "code": sv.code}
+	var info := {"faction": fac, "cls": cls, "size": 1.0, "squadron": cls == "Squadron", "flagship": false, "code": sv.code}
 	if not sv.a4:
 		info["meshes"] = sv.meshes
 	fx.add_ship(id, sv, info)
@@ -701,11 +705,26 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.launch("A", "T")
 	elif what == "jets":
 		# every movement jet ShipView fires, at once; the bench keeps ShipView's processing off, so each puff stays where
-		# it started (that start is what this row shows)
+		# it started unless step_jets is set (issue 2042: steps puffs and fires repeat bursts so motion strings show)
 		A._retro_puffs(1.0)
 		A._aft_puffs(1.0)
 		A._side_puffs(1.0, 1.0)
 		A._couple_puffs(1.0, 1.0)
+	elif what == "move":
+		# issue 2042: drive A forward along +X so moving nozzle trails build and taper cleanly behind the stern
+		fx.set_engine("A", float(row.get("engine", 1.6)))
+	elif what == "wing":
+		# issue 2042: step a live patrol SquadronWing so its craft weave and draw trails on the shared kit
+		if A.hull != null and A.hull.has_method("step"):
+			A.hull.patrol_limit = 7.5
+			A.hull.patrol_target = 1.0
+			A.hull.fit_formation()
+			A.hull.step(0.0)
+			for wk in 24:
+				A.hull.step(STEP)
+				if fx.has_method("step"):
+					await _step()
+			t_ev = fx.now
 	elif what == "sync":
 		# issue 1587: the event is a hull state change ("sync_ev", a unit view as the game's sync sends), for a section
 		# crossing into stage 3 or 4 (the one-shot blowout); a commit without this key shows the ship unchanged
@@ -728,8 +747,38 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var cells: Array = []
 	var guard := 0
 	var wi := 0
+	var step_jets := what == "jets" and bool(row.get("step_jets", false))
+	var jet_burst_t := 0.0
+	var move_speed := float(row.get("move_speed", 22.0))
+	var move_dur := float(row.get("move_dur", 0.75))
+	var brake_at := float(row.get("brake_at", 0.55))
+	var focus_mode := str(row.get("focus", "target"))
 	while wi < wins.size() and guard < 900:
 		var w: Dictionary = wins[wi]
+		if step_jets and is_instance_valid(A):
+			A._puffs_step(STEP)
+			jet_burst_t += STEP
+			if jet_burst_t >= 0.075:
+				jet_burst_t = 0.0
+				A._retro_puffs(1.0)
+				A._couple_puffs(1.0, 1.0)
+		elif what == "move" and is_instance_valid(A):
+			var elapsed: float = float(fx.now) - t_ev
+			if elapsed <= move_dur:
+				A.position.x += move_speed * STEP
+			if elapsed >= brake_at:
+				fx.set_engine("A", 0.0)
+			var track_p: Vector3 = A.global_position
+			if focus_mode == "attacker_engines" and fx.ship("A") != null:
+				var sa2 = fx.ship("A")
+				if sa2.hull.nozzles.size() > 0:
+					var sum2 := Vector3.ZERO
+					for nz in sa2.hull.nozzles:
+						sum2 += sa2.to_world(nz["p"])
+					track_p = sum2 / float(sa2.hull.nozzles.size())
+			_cam(track_p + Vector3(float(fo[0]), 0.0, float(fo[1])), r)
+		elif what == "wing" and is_instance_valid(A) and A.hull != null and A.hull.has_method("step"):
+			A.hull.step(STEP)
 		if w["anchor"] == "split":
 			var sh = fx.ships.get("T")
 			var split_t: float = float(sh.get_meta("death_split", t_ev + 1.0)) if sh != null else t_ev + 1.0
