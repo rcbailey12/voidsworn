@@ -23,7 +23,7 @@ BUILD_COMMIT = '1234567890abcdef1234567890abcdef12345678'
 GIT_COMMIT_DATE = '2026-11-17T22:22:04-06:00'
 BUILD_INFO = {'commit': BUILD_COMMIT, 'commit_date': '2026-11-18T04:22:04Z'}
 sys.path.insert(0, str(ROOT / 'tools'))
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFont
 from picture_provenance import (Review, check_body, digest, git, open_picture,
                                 publish_report, revision, save_picture, sidecar, stamp_file,
                                 text_lines, verify)
@@ -195,11 +195,19 @@ if mode != 'missing' or 'credits' not in shot.name:
 # stage sweep below now reads this text too, on every host.
 NATIVE_TEST_GD = '''extends Node
 func _ready() -> void:
-    var out := OS.get_cmdline_user_args()[0]
+    var args := OS.get_cmdline_user_args()
+    var out := args[0]
+    var stamp := preload("res://tools/picture_provenance.gd")
+    if args.size() > 1 and args[1] == "moments":
+        var strip := Image.create(1920, 216, false, Image.FORMAT_RGB8)
+        strip.fill(Color("#203044"))
+        strip.fill_rect(Rect2i(0, 150, 384, 66), Color("#d38c45"))
+        var err := stamp.save_png(strip, out.path_join("MOMENT_1849__c170.png"), stamp.capture_stage(), true)
+        get_tree().quit(0 if err == OK else 1)
+        return
     var image := Image.create(1280, 720, false, Image.FORMAT_RGBA8)
     image.fill(Color(0.1, 0.2, 0.3, 0.0))
     image.fill_rect(Rect2i(300, 260, 660, 250), Color("#d38c45"))
-    var stamp := preload("res://tools/picture_provenance.gd")
     # Artoo on PR 1757: a failed save ends Godot at once with its error, never an idle wait for the timeout
     var err := stamp.save_png(image, out.path_join("NATIVE_889.png"), "paint proof")
     if err != OK:
@@ -242,12 +250,13 @@ script = ExtResource("1")
     for key in ('PICTURE_SOURCE_REPO', 'PICTURE_STAMP_TOOL', 'PICTURE_PYTHON'):
         env.pop(key, None)
 
-    def invoke(command, name, settings, expected=0):
+    def invoke(command, name, settings, expected=0, moments=False):
         out = folder / name
         out.mkdir()
         try:
             # --quit-after: a fixture that never reaches its own quit (a compile error) ends in seconds, not at the timeout
-            result = subprocess.run([*command, '--quit-after', '3000', '--', str(out)], cwd=build, env=settings,
+            args = ['moments'] if moments else []
+            result = subprocess.run([*command, '--quit-after', '3000', '--', str(out), *args], cwd=build, env=settings,
                                     capture_output=True, text=True, timeout=GODOT_TIMEOUT)
         except subprocess.TimeoutExpired as stuck:
             def text(v):
@@ -261,6 +270,8 @@ script = ExtResource("1")
             assert 'Picture provenance unavailable: no Git checkout context or valid res://build_info.json' in log, log
             assert not list(out.iterdir())
             return
+        if moments:
+            return out / 'MOMENT_1849__c170.png'
         records = [verify(out / ('NATIVE_889.' + ext)) for ext in ('png', 'jpg')]
         assert open_picture(out / 'NATIVE_889.png').getpixel((0, 719))[3] == 0
         return records
@@ -283,12 +294,42 @@ script = ExtResource("1")
 
     checkout_env = dict(env, PICTURE_PYTHON=sys.executable, PICTURE_SOURCE_REPO=str(ROOT),
                         PICTURE_STAMP_TOOL=str(ROOT / 'tools/picture_provenance.py'))
-    for record in invoke(editor, 'checkout captures', checkout_env):
+    checkout_records = invoke(editor, 'checkout captures', checkout_env)
+    for record in checkout_records:
         assert {key: record[key] for key in revision(str(ROOT))} == revision(str(ROOT))
         assert 'source_commit_date' not in record['sources'][0]
         assert text_lines(record)[1].startswith(record['source_commit'][:12] +
                                                 (' + working ' if record['source_dirty'] else ' | '))
     print('PASS checkout stamp keeps its Git revision, working tree state and shared font')
+
+    # Reuse existing commits in an isolated, sparse checkout. The job checkout and its refs stay untouched.
+    bench = folder / 'bench checkout'
+    git(ROOT, 'clone', '--shared', '--no-checkout', '--quiet', str(ROOT), str(bench))
+    git(bench, 'sparse-checkout', 'set', '--no-cone', '/__no_picture_fixture_files__')
+    git(bench, 'checkout', '--quiet', '--detach', 'HEAD')
+    head = git(bench, 'rev-parse', 'HEAD').decode().strip()
+    main_ref = 'refs/remotes/origin/main'
+    git(bench, 'update-ref', '-d', main_ref)
+    parent = subprocess.run(['git', '-C', str(bench), 'rev-parse', '--verify', 'HEAD^'], capture_output=True, text=True)
+    if parent.returncode == 0:
+        git(bench, 'update-ref', main_ref, parent.stdout.strip())
+    # A shallow fixture exercises the missing-main fallback instead.
+    bench_env = dict(checkout_env, PICTURE_SOURCE_REPO=str(bench))
+    expected_pixels = Image.new('RGB', (1920, 216), '#203044')
+    expected_pixels.paste('#d38c45', (0, 150, 384, 216))
+    for label, stage in (('pre-merge', 'pre-merge capture'), ('on main', 'installed in game')):
+        if label == 'on main':
+            git(bench, 'update-ref', main_ref, head)
+        path = invoke(editor, 'moments ' + label, bench_env, moments=True)
+        record = verify(path)
+        assert record.keys() == checkout_records[0].keys(), record.keys()
+        assert record['stage'] == record['sources'][0]['stage'] == stage, record['stage']
+        assert record['source_commit'] == head, record['source_commit']
+        assert record['stamp_box'][1] == 216, record['stamp_box']
+        with Image.open(path) as stamped:
+            assert stamped.size == (1920, record['stamp_box'][3]) and stamped.height > 216, stamped.size
+            assert ImageChops.difference(stamped.crop((0, 0, 1920, 216)).convert('RGB'), expected_pixels).getbbox() is None
+    print('PASS headless moments stamp distinguishes pre-merge and main, preserves all cell pixels, and keeps schema 1')
 
     def check_build(records):
         for record in records:
@@ -546,7 +587,8 @@ def checks(folder):
         source = run_dir / 'moments' / 'PROVENANCE_889__c170.png'
         frame = Image.new('RGB', (400, 240), '#203044')
         source_record = dict(record, **old, sources=[dict(old, stage='installed in game')]) if before else None
-        save_picture(frame, source, 'installed in game', sources=[source_record] if before else None, repo=ROOT)
+        stage = 'installed in game' if before else 'pre-merge capture'
+        save_picture(frame, source, stage, sources=[source_record] if before else None, repo=ROOT)
         (run_dir / 'bench.json').write_text(json.dumps({'commit': 'a' * 40 if before else record['source_commit'],
             'stills': [{'part': 'moments', 'id': 'PROVENANCE_889', 'cam': 170,
                         'file': 'moments/PROVENANCE_889__c170.png', 'cells': [{'t': 0}]}]}))
@@ -560,7 +602,7 @@ def checks(folder):
             name = identity + '.png'
             source_revision = dict(source_commit=digit * 40, source_dirty=False, source_diff_sha256='')
             with patch('picture_provenance.revision', return_value=source_revision):
-                save_picture(frame, run_dir / name, 'installed in game')
+                save_picture(frame, run_dir / name, stage if identity == 'storm' else 'installed in game')
             still = dict(part=part, id=identity, cam=170, file=name, cells=[{'t': 0}])
             if part == 'fleet':
                 still.update(sky=identity, code='PROVENANCE_889')
@@ -576,6 +618,7 @@ def checks(folder):
     assert result.returncode == 0, result.stdout + result.stderr
     assert json.loads((sheets / 'diffs.json').read_text())['stills'][0]['diff'] == 0
     assert len(verify(sheets / 'moments/PROVENANCE_889.jpg')['sources']) == 2
+    pre_merge_sheets = {'moments/PROVENANCE_889.jpg', 'moments_overview_provenance.jpg', 'fleet_storm.jpg'}
     for name, inputs, commits in (
             ('moments/PROVENANCE_889.jpg', {'PROVENANCE_889__c170.png'}, {'a' * 40, record['source_commit']}),
             ('moments_overview_provenance.jpg', {'PROVENANCE_889__c170.png'}, {'a' * 40, record['source_commit']}),
@@ -586,6 +629,8 @@ def checks(folder):
         output = verify(sheets / name)
         assert {s['picture_name'] for s in output['inputs']} == inputs, (name, output['inputs'])
         assert {s['source_commit'] for s in output['sources']} == commits, (name, output['sources'])
+        expected_stage = 'pre-merge capture' if name in pre_merge_sheets else 'installed in game'
+        assert output['stage'] == expected_stage, (name, output['stage'])
     print('PASS real look-bench moments, overviews and fleet skies isolate inputs while retaining reused captures')
     print('PASS real look-bench sheets retain both revisions and compare original pixels with zero label noise')
 
