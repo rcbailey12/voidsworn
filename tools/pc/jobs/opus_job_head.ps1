@@ -1278,8 +1278,34 @@ switch ($Action) {
           $stamp += '{0}:{1};' -f ([DateTimeOffset]$i.LastWriteTimeUtc).ToUnixTimeSeconds(), $i.Length
         }
       }
+      $srcText = [string]$e.src
+      $srcOk = ($srcText -eq $stamp)
+      if (-not $srcOk -and $srcText.StartsWith('{')) {
+        # Since issue 1678 the game stamps each source file as [mtime, size, sha256] in JSON (build_assets.gd source_stamp),
+        # glbs and their external maps. Check size and hash of every listed file, and that no glb is missing from the list.
+        $why = ''
+        try { $sj = $srcText | ConvertFrom-Json } catch { $sj = $null; $why = 'unreadable stamp' }
+        if ($sj) {
+          $names = @($sj.PSObject.Properties | ForEach-Object { $_.Name })
+          foreach ($suf in '', '_damage', '_wreck') {
+            $gn = "$code$suf.glb"
+            if ((Test-Path -LiteralPath (Join-Path $dir $gn) -PathType Leaf) -and ($names -notcontains $gn)) { $why = "$gn not in the stamp" }
+          }
+          foreach ($sp in $sj.PSObject.Properties) {
+            if ($why) { break }
+            $sf = Join-Path $dir ($sp.Name.Replace('/', $sep)); $want = @($sp.Value)
+            $there = Test-Path -LiteralPath $sf -PathType Leaf
+            if ($want.Count -lt 3) { if ($there) { $why = "$($sp.Name) exists but was missing when cached" }; continue }
+            if (-not $there) { $why = "$($sp.Name) missing"; continue }
+            if ((Get-Item -LiteralPath $sf).Length -ne [long]$want[1]) { $why = "$($sp.Name) size differs"; continue }
+            if ((Get-FileHash -LiteralPath $sf -Algorithm SHA256).Hash -ne [string]$want[2]) { $why = "$($sp.Name) hash differs" }
+          }
+        }
+        if (-not $why) { $srcOk = $true; $stamp = 'json:' + (@($sj.PSObject.Properties | ForEach-Object { '{0}={1}' -f $_.Name, (@($_.Value) -join ',') }) -join ';') }
+        else { $stamp = "json mismatch: $why" }
+      }
       if (-not $hasRes) { $bad += "$code cached scene missing: $res" }
-      elseif ([string]$e.src -ne $stamp) { $bad += "$code cache was built from other files (stamp $($e.src), copied files $stamp)" }
+      elseif (-not $srcOk) { $bad += "$code cache was built from other files (stamp $srcText, copied files $stamp)" }
       else { $matched[$code] = $true }
       $lines += "$code $stamp $res"
     }
