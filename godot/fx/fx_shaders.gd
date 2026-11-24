@@ -1207,6 +1207,8 @@ uniform float newest_birth = 0.0;
 uniform float trail_len = 1.0;
 uniform float width_k = 0.026;
 uniform float alpha_k = 0.56;
+uniform float life = 0.65;
+uniform float trail_style = 0.0;
 uniform float anchor_ready = 0.0;
 uniform vec3 head_world = vec3(0.0);
 varying vec2 vFromHead;
@@ -1233,13 +1235,22 @@ void vertex() {
 }
 void fragment() {
 	float distance_px = length(vFromHead);
-	if (anchor_ready < 0.5 || distance_px >= 24.0 || vAge >= 0.65) { discard; }
-	float fade = spow(1.0 - distance_px / 24.0, 1.35) * (1.0 - vAge / 0.65);
+	float max_life = max(life, 0.05);
+	if (anchor_ready < 0.5 || distance_px >= 24.0 || vAge >= max_life) { discard; }
+	float fade = spow(1.0 - distance_px / 24.0, 1.35) * (1.0 - vAge / max_life);
 	float flow = texture(kit_flow, vec2(fract(distance_px / 18.0 - clock_now * 1.4), vSide * 0.5 + 0.5)).g;
 	float core = exp(-vSide * vSide * 16.0);
 	float sheath = exp(-vSide * vSide * 2.4);
-	vec3 hot = mix(vTint, vec3(1.0, 0.96, 0.86), 0.65);
-	ALBEDO = (hot * core * 1.4 + vTint * sheath * (0.6 + flow)) * fade * alpha_k * 2.0 * fx_gain;
+	int st = int(trail_style + 0.5);
+	float bead = st == 1 ? 0.0 : exp(-distance_px * distance_px * 0.14) * exp(-vSide * vSide * 6.5);
+	vec3 sheath_col = vTint;
+	if (st == 2) {
+		vec3 prism = clamp(abs(fract(vSide * 0.4 + distance_px * 0.05 - clock_now * 0.5 + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+		sheath_col = mix(vTint, prism, smoothstep(0.2, 0.85, abs(vSide)) * 0.35);
+	}
+	vec3 hot = mix(vTint, vec3(1.0, 0.96, 0.88), st == 1 ? 0.25 : 0.68);
+	float core_k = st == 1 ? 0.55 : 1.45;
+	ALBEDO = clamp((hot * (core * core_k + bead * 1.15) + sheath_col * sheath * (0.6 + flow)) * fade * alpha_k * 2.0 * fx_gain, 0.0, 512.0);
 }
 """
 
