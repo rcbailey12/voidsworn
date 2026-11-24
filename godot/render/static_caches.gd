@@ -9,6 +9,7 @@ const SCRIPTS := [
 	"res://render/ship_view.gd",
 	"res://render/shader_keep.gd",
 	"res://render/board.gd",
+	"res://render/look.gd",
 	"res://render/shader_cache.gd",
 	"res://scenes/battle/fx_stub.gd",
 	"res://fx/fx.gd",

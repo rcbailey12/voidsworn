@@ -461,5 +461,17 @@ func _run() -> void:
 	var rx := RegEx.create_from_string("smoothstep\\(\\s*(-?[0-9.]+)\\s*,\\s*(-?[0-9.]+)\\s*,")
 	for m in rx.search_all(FileAccess.get_file_as_string("res://world/world_planet.gd")):
 		_check(float(m.get_string(1)) < float(m.get_string(2)), "world_planet.gd has a smoothstep with its edges reversed: " + m.get_string(0))
+	# Issue 1939 (Neon): the noise hashes each lattice corner from a whole-number sum, so the GPU cannot fuse the corner's
+	# offset into the hash's multiply and cut straight seams; no corner is hashed from "i + vec3(...)" any more
+	var noise_src: String = preload("res://world/world_shaders.gd").NOISE
+	_check(noise_src.contains("ivec3 ic = ivec3(i);") and not noise_src.contains("wh31(i + vec3("), "wvn3 hashes a corner from a float sum again (the RTX 5080 seam)")
+	_check(not noise_src.contains("wh21(i + vec2("), "wvn hashes a corner from a float sum again (the RTX 5080 seam)")
+	_check(not PL.BAKE_BODY.contains("vec3 c = b + vec3("), "craters_r hashes a corner from a float sum again")
+	# the baked board planets lean their equator toward the camera, as the R01 worlds do (terran's ice cap sat mid-disc)
+	_check(PL.BOARD_SURFACE.contains("bp_spin(bp_tilt(normalize(local_direction)), turn)"), "the baked board surface no longer tilts its equator toward the camera")
+	# the cloud's lit side compares the map's own thickness with the sunward sample, both on the same scale (Artoo, PR 1983)
+	_check(PL.BOARD_SURFACE.contains("(c_raw - c_sun)") and not PL.BOARD_SURFACE.contains("(cloud - c_sun)"), "cloud self-shading compares a reshaped cloud with a raw sunward sample")
+	for lk in [1, 3, 4]:
+		_check(float(PL.BOARD_LOOKS[lk].get("detail", 0.0)) > 0.0, "baked look %d draws no live fine detail" % lk)
 	print("planet_v2_check: %s (%d failures)" % ["PASS" if failures == 0 else "FAIL", failures])
 	quit(0 if failures == 0 else 1)

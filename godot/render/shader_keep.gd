@@ -13,6 +13,14 @@ static var made: Array = []
 static var seen := {}   # issue 1434 (LOAD19): every code hash made this launch -> where, for the bench's launch-to-launch check
 
 
+# issue 1434 (LOAD33c: 919 ms cold and 713 ms warm title frames in "start", no pipelines, render cpu 450 to 1090 ms):
+# render-side changes a frame made (a new sky, a nebula map, a viewport AA change), named on the bench's row for that
+# draw beside the new shaders. Only while the bench watches.
+static func event(what: String) -> void:
+	if watch:
+		made.append("(event) " + what)
+
+
 static func of(code: String) -> Shader:
 	var s: Shader = _keep.get(code)
 	if s == null:

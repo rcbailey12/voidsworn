@@ -374,7 +374,8 @@ void fragment() {
 	float an = 0.06 * w + 0.04 * w * sin(TIME * 0.20943951); // 30 s slow twist
 	mat2 R = mat2(vec2(cos(an), sin(an)), vec2(-sin(an), cos(an)));
 	vec2 suv = clamp(cs + R * dv * (1.0 - s), vec2(0.001), vec2(0.999));
-	vec2 shift = normalize(dv + vec2(0.000001)) / vec2(textureSize(screen_tex, 0)) * chroma_px * rim;
+	float fr = VIEWPORT_SIZE.y / 1080.0;
+	vec2 shift = normalize(dv + vec2(0.000001)) / vec2(textureSize(screen_tex, 0)) * chroma_px * rim * fr;
 	vec2 red_uv = clamp(suv + shift, vec2(0.001), vec2(0.999));
 	vec2 blue_uv = clamp(suv - shift, vec2(0.001), vec2(0.999));
 	if (foreground(suv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX) || foreground(red_uv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX) || foreground(blue_uv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX)) {
@@ -1434,7 +1435,9 @@ func _install_chunks() -> void:
 		if not is_inside_tree() or _chunk_task < 0: return
 	WorkerThreadPool.wait_for_task_completion(_chunk_task)
 	_chunk_task = -1
+	var t_meshes := Time.get_ticks_usec()
 	var meshes := HD.meshes(_chunk_job.chunks)
+	SKEEP.event("debris meshes made (%d, %d ms)" % [meshes.size(), (Time.get_ticks_usec() - t_meshes) / 1000])
 	# These are old, weathered board wrecks, not fresh deaths. Keep their cut caps
 	# cold; only the kit's three bounded torn-edge points carry residual heat.
 	for chunk in _chunk_job.chunks:
@@ -1475,6 +1478,7 @@ func _install_chunks() -> void:
 		mi.scale = Vector3.ONE * scale_v
 		mi.position = -box.get_center() * scale_v
 		pivot.add_child(mi)
+		SKEEP.event("debris chunk joined")
 		var id: int = slot.mmi.get_instance_id()
 		if not replaced.has(id): replaced[id] = {"mmi": slot.mmi, "indices": []}
 		replaced[id].indices.append(int(slot.index))
@@ -1506,25 +1510,35 @@ func _install_chunks() -> void:
 	W.notes.append("painted hull debris: %d cached chunks, %d instances" % [meshes.size(), index])
 
 # Joins `mesh` once per surface at `at`, a speck the size of a dust grain, the other surfaces on one plain material,
-# a frame apart; false when the world left the tree meanwhile.
+# a frame apart; false when the world left the tree meanwhile. LOAD33c: one surface alone still made 73 pipelines in a
+# 5.7 s cold frame, so each surface first joins without shadows (its colour passes) and casts them a frame later (its
+# shadow passes).
 func _warm_surfaces(holder: Node3D, mesh: Mesh, at: Vector3) -> bool:
 	var plain := StandardMaterial3D.new()
 	var mi := MeshInstance3D.new()
 	mi.name = "SurfaceWarm"
 	mi.mesh = mesh
 	mi.scale = Vector3.ONE * 0.001
-	mi.position = at   # it casts shadows as the real chunks do, so their shadow pipelines come early too
+	mi.position = at
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	for s in mesh.get_surface_count():
 		mi.set_surface_override_material(s, plain)
 	holder.add_child(mi)
 	_installing = true
+	var steps: Array = [[-1, true]]   # the plain material's shadow pass first
 	for k in mesh.get_surface_count():
+		steps.append([k, false])
+		steps.append([k, true])
+	for st in steps:
 		await get_tree().process_frame
 		if not is_inside_tree() or not is_instance_valid(mi):
 			_installing = false
 			return false
-		if k > 0: mi.set_surface_override_material(k - 1, plain)
-		mi.set_surface_override_material(k, null)
+		var k: int = st[0]
+		for s in mesh.get_surface_count():
+			mi.set_surface_override_material(s, null if s == k else plain)
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if st[1] else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		SKEEP.event("debris warm surface %d of %d%s" % [k, mesh.get_surface_count(), " with shadows" if st[1] else ""])
 	await get_tree().process_frame
 	_installing = false
 	if not is_inside_tree() or not is_instance_valid(mi): return false

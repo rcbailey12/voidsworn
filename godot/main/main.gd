@@ -732,7 +732,15 @@ func quick_battle() -> void:
 	_settings_to_battle(b)
 	battle = b
 	b.start_default()
-	b.finished.connect(func(_r) -> void:
+	b.finished.connect(func(r: Dictionary) -> void:
+		# The screenshot sequence saves its last frame and quits itself. A finish signal here means it was interrupted.
+		if args.has("shots"):
+			push_error("Battle screenshot run ended before capture completed: %s" % r.get("result", "unknown"))
+			quit_clean(1)
+			return
+		if args.has("bot") and OS.has_feature("movie"):
+			quit_clean(1 if r.get("result") == "softlock" else 0)
+			return
 		var t_leave := Time.get_ticks_usec()
 		var parts := {}
 		battle = null

@@ -1,0 +1,129 @@
+{
+  "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+  "source_dirty": true,
+  "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+  "source_dirty_files": {
+    "contrib/opus/concepts/craft_1124/compose_sheets.py": "fe6249a343a64dfba317dfa7473d3010c14d1919",
+    "contrib/opus/concepts/craft_1124/torpedo_sheets.py": "2cb7291575676e7a0b820f5845eb205940678196"
+  },
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "status_1943_items1to4_strike_craft.png",
+  "date": "2026-11-24T10:08:54Z",
+  "sources": [
+    {
+      "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+      "source_dirty": true,
+      "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+      "source_dirty_files": {
+        "contrib/opus/concepts/craft_1124/compose_sheets.py": "fe6249a343a64dfba317dfa7473d3010c14d1919",
+        "contrib/opus/concepts/craft_1124/torpedo_sheets.py": "2cb7291575676e7a0b820f5845eb205940678196"
+      },
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "status_voidsworn_SF3.png",
+      "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+      "source_dirty": true,
+      "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+      "stage": "sheet built",
+      "date": "2026-11-24T10:08:54Z",
+      "image_sha256": "8f31b2c566f54da4ef12e08b9131446b7d17636599ba1a6aad61d0974f42b378",
+      "sources": [
+        {
+          "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+          "source_dirty": true,
+          "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+          "source_dirty_files": {
+            "contrib/opus/concepts/craft_1124/compose_sheets.py": "fe6249a343a64dfba317dfa7473d3010c14d1919",
+            "contrib/opus/concepts/craft_1124/torpedo_sheets.py": "2cb7291575676e7a0b820f5845eb205940678196"
+          },
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "status_voidsworn_SB4.png",
+      "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+      "source_dirty": true,
+      "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+      "stage": "sheet built",
+      "date": "2026-11-24T10:08:54Z",
+      "image_sha256": "9064227850b5536304d6e6164e2a70e08c621fc21ced280c54ce31d8f342985a",
+      "sources": [
+        {
+          "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+          "source_dirty": true,
+          "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+          "source_dirty_files": {
+            "contrib/opus/concepts/craft_1124/compose_sheets.py": "fe6249a343a64dfba317dfa7473d3010c14d1919",
+            "contrib/opus/concepts/craft_1124/torpedo_sheets.py": "2cb7291575676e7a0b820f5845eb205940678196"
+          },
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "status_hegemony_HF1D.png",
+      "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+      "source_dirty": true,
+      "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+      "stage": "sheet built",
+      "date": "2026-11-24T10:08:54Z",
+      "image_sha256": "024f72c5428c7908a88e1bd8e6e1494aab7c6bf5a6cd74f7306edcdeecd8881f",
+      "sources": [
+        {
+          "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+          "source_dirty": true,
+          "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+          "source_dirty_files": {
+            "contrib/opus/concepts/craft_1124/compose_sheets.py": "fe6249a343a64dfba317dfa7473d3010c14d1919",
+            "contrib/opus/concepts/craft_1124/torpedo_sheets.py": "2cb7291575676e7a0b820f5845eb205940678196"
+          },
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "status_corsair_KB1CC.png",
+      "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+      "source_dirty": true,
+      "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+      "stage": "sheet built",
+      "date": "2026-11-24T10:08:54Z",
+      "image_sha256": "847f6e138b844ce7a2541c1a1d81cdab350967e110c9ed755bd67e14cc4651c0",
+      "sources": [
+        {
+          "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+          "source_dirty": true,
+          "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+          "source_dirty_files": {
+            "contrib/opus/concepts/craft_1124/compose_sheets.py": "fe6249a343a64dfba317dfa7473d3010c14d1919",
+            "contrib/opus/concepts/craft_1124/torpedo_sheets.py": "2cb7291575676e7a0b820f5845eb205940678196"
+          },
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    345,
+    564,
+    443
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "0b4ec791c6280a3beaed386954d87979c7ce849244cfab7f238af1d58e9387d7"
+  ],
+  "stamp_template_sha256": "0b4ec791c6280a3beaed386954d87979c7ce849244cfab7f238af1d58e9387d7",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VIQEAIQDAQPgUCCT9M76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAGDU/hfkBHJHLUksAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "6f1f835204636d6385d237dd7baa6a211fad632df7d7278e0c0b0964e0cce09d"
+}

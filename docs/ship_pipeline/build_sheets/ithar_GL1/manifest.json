@@ -2,7 +2,7 @@
   "code": "ithar_GL1",
   "sheet_version": 1,
   "design": "tools/blender/build_sheets/ships/ithar_GL1.py",
-  "design_sha256": "40823d55e8adbd51e7049c90ee690d9df34e4124f2598166b3a7561491bba4d6",
+  "design_sha256": "c20f49797af3adad241f7dff7de76b1bf048f4f70ffed76508aed4139a787030",
   "kit": "tools/blender/kits/ithar/hull.py",
   "game_ship": "i_blade",
   "cls": "Destroyer",
