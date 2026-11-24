@@ -17,24 +17,28 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    concept, for the outline score and the grime.
 
    **Opt-in hull methods from the Astra Picket (R443, issue 1888).** Import these inside a sheet's `build(K)` from
-   `tools/recipe/hull_methods.py`. They use the geometry in `tools/blender/kits/shared/hull_details.py` and run through the
-   usual sheet recipe. Use the faction sheet's shapes, spacing and materials.
+   `tools/recipe/hull_methods.py`. They run through the usual sheet recipe. Use the faction sheet's shapes, spacing and
+   materials.
 
    - Use `FlatSoleLoft` and `loft_module` for a faceted hull with a level maintenance floor. Start with transverse stations
      for the bow, shoulders, belly and drive block. The Picket used nine. Set the taper, deck height, widths and sole from
      this ship's sheet. End each module at its authored break. The same rings can locate fittings and plates.
-   - Use `plate_region` where an armoured surface needs shadow in the joins. Leave the pressure hull as the darker backing
-     and tune the plate depth and open gap at the review view. Pass the intended facets and reserve land for fittings,
-     doors and module bands. Lay the plates after mounts so their keep-outs apply. Follow the faction's panel order.
+   - Use `plate_region` where the Navy's ordered two-size panel grid suits the hull. Pass the intended facets and module
+     rings. `pv` sets the crosswise pitch, `gap` opens the joins to the dark pressure hull, `unit` scales the seat and
+     minimum panel size, and `t_big` and `t_small` set the two plate heights. Seat cassettes, covers and vents on the
+     plates by default. For a mount that needs bare land, pass its centre and reach in `keepouts`. The allowance adds
+     30 percent of the panel radius to that reach. Use `keep` for shaped reserves such as a door or module band.
    - Use `slatted_cassette` and `mount_service_part` for cooler banks and radiator grilles that need a visible dark recess
      and real gaps between slats. Use `belly_cover` along a service trunk, with each lid a separate mesh that can be removed
      in Blender. Seat the frames on the real hull, leave land between banks, and end each fitting before a break line.
    - Use `broken_stripe` where a door interrupts a hull light or trim race. Enter the door's X span on that flank and its
      edge clearance. Sample the hull at each station so the race and inlay follow it and both stop at the same cut.
 
-   The geometry fixtures run with `python tools/recipe/test/hull_details_selftest.py`. The Astra Picket comparison is
-   `tools/recipe/test/picket_kit_review.py`. Run it in cloud Blender in background mode for matching before and after views
-   of the deck, stripe and belly. It uses Cycles CPU and labels the pictures `cloud direction check`.
+   The standing checks run `tools/recipe/test/hull_details_selftest.py`. Run `tools/recipe/test/picket_kit_review.py` in
+   cloud Blender in background mode for matching before and after views of the deck, stripe and belly. The Blender test
+   fails if plate coverage on any facet differs from Astra's by more than 5 percent of that facet's original coverage.
+   Pass `--selftest` after Blender's `--` to run the geometry check alone. The renders use Cycles CPU and carry the
+   `cloud direction check` label.
 
 2. **Paint.** Procedural materials driven by masks baked from the ship's own geometry (curvature, ambient occlusion, edge
    wear), plus trim sheets and decals; colours may be sampled from the concept; the concept picture is never projected onto

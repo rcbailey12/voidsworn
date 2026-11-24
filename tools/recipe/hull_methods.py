@@ -5,9 +5,11 @@ import sys
 
 from mathutils import Vector
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'blender' / 'kits' / 'shared'))
+KITS = Path(__file__).resolve().parents[1] / 'blender' / 'kits'
+sys.path[:0] = [str(KITS / 'shared'), str(KITS)]
 from geom import Part
-from hull_details import FlatSoleLoft, belly_cover, recessed_plates, slatted_cassette, stripe_runs
+from hegemony.parts import module_panels
+from hull_details import FlatSoleLoft, belly_cover, in_plate_keepout, slatted_cassette, stripe_runs
 
 
 def loft_module(kit, name, profile, material, *, thickness, start=None, end=None, cap=True):
@@ -22,16 +24,27 @@ def loft_module(kit, name, profile, material, *, thickness, start=None, end=None
     return obj
 
 
-def plate_region(kit, name, rings, facets, material, *, pitch, gap, depth, seat, bevel, keep=None, inv=None):
-    """Lay plate cuts after mounts are in place, including any sheet-specific reserves."""
-    def reserved(centre, radius):
-        point = Vector(centre)
-        return (keep is not None and keep(point, radius)) or any(
-            (point - origin).length < reach + radius for origin, reach in kit.keepouts)
+def plate_region(kit, name, rings, facets, *, pv, gap, unit, t_big, t_small,
+                 mats=('hgrey', 'hpanel'), keep=None, keepouts=(), inv=None):
+    """Place the Navy's two-size grid and return the objects grouped by material.
 
-    mesh = recessed_plates(rings, facets, pitch=pitch, gap=gap, depth=depth,
-                           seat=seat, bevel=bevel, keep=reserved)
-    return kit.hull_detail(name, mesh, material, inv=inv, kind='plate', subs=['panel', 'seam', 'module'])
+    keep is the sheet's land predicate. keepouts is an explicit list of
+    (centre, reach) pairs for fittings that need bare land.
+    """
+    keepouts = tuple(keepouts)
+
+    def reserved(centre, radius):
+        return (keep is not None and keep(centre, radius)) or in_plate_keepout(centre, radius, keepouts)
+
+    panels, _ = module_panels(rings, facets, pv=pv, gap=gap, unit=unit, t_big=t_big, t_small=t_small,
+                              mats=mats, keep=reserved)
+    objects = []
+    for material, mesh in panels.items():
+        obj = kit.hull_detail(f'{name}_{material}', mesh, material, inv=None if objects else inv,
+                              kind='plate', subs=['panel', 'seam', 'module'])
+        if obj is not None:
+            objects.append(obj)
+    return objects
 
 
 def mount_service_part(kit, name, components, *, kind, pos, normal, forward=(1, 0, 0), inv=(), note=''):

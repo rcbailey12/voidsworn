@@ -1,7 +1,7 @@
 """Opt-in hull methods from Astra's Picket. Distances are in the sheet's units."""
 
 from bisect import bisect_right
-from math import dist, hypot, isfinite
+from math import dist, isfinite
 
 
 def _lerp(a, b, t):
@@ -58,72 +58,13 @@ class FlatSoleLoft:
         return [self.ring(x) for x in (start, *(x for x in self.xs if start < x < end), end)]
 
 
-def _plate_normal(a, b, c, centre):
-    u = [q - p for p, q in zip(a, b)]
-    v = [q - p for p, q in zip(a, c)]
-    x, y, z = u
-    i, j, k = v
-    normal = (y * k - z * j, z * i - x * k, x * j - y * i)
-    length = hypot(*normal)
-    if not length:
-        return None
-    outward = sum(n * (p - q) for n, p, q in zip(normal, a, centre)) > 0
-    return tuple(n / length if outward else -n / length for n in normal)
+def in_plate_keepout(centre, radius, keepouts):
+    """Test selected mount footprints with 30 percent of the panel radius as clearance."""
+    return any(dist(centre, origin) < reach + radius * .3 for origin, reach in keepouts)
 
 
 _BOX_FACES = ((3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4),
               (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7))
-
-
-def recessed_plates(rings, facets, *, pitch, gap, depth, seat, bevel, keep=None):
-    """Return the mesh for plates whose gaps expose the original dark backing.
-
-    Adjacent rings define each longitudinal row and pitch sets the crosswise grid.
-    Gap is the full channel width on a straight face. Depth is measured from the
-    backing to the plate face, seat sinks the base into the backing, and bevel is
-    the inset of the plate lip. keep(centre, radius) reserves a fitting's land.
-    Pass closed hull rings in either winding, with corresponding vertices.
-    """
-    if not (0 < gap < pitch and depth > 0 and seat > 0 and bevel >= 0):
-        raise ValueError('plate pitch, gap, depth, seat or bevel is out of range')
-    count = len(rings[0]) if rings else 0
-    facets = tuple(facets)
-    if (len(rings) < 2 or count < 3 or any(len(r) != count for r in rings)
-            or any(not 0 <= j < count for j in facets)):
-        raise ValueError('plates need matching hull rings and valid facet indices')
-    verts, faces = [], []
-    for first, second in zip(rings, rings[1:]):
-        centre = tuple(sum(axis) / (2 * count) for axis in zip(*first, *second))
-        for j in facets:
-            k = (j + 1) % count
-            a, b, c, d = first[j], first[k], second[k], second[j]
-            span = (dist(a, d) + dist(b, c)) / 2
-            width = (dist(a, b) + dist(d, c)) / 2
-            columns = max(1, round(width / pitch))
-            if span <= gap + 2 * bevel or width / columns <= gap + 2 * bevel:
-                continue
-            normal = _plate_normal(a, b, d, centre)
-            if normal is None:
-                continue
-
-            def point(u, v):
-                return _lerp(_lerp(a, d, u), _lerp(b, c, u), v)
-
-            for column in range(columns):
-                left, right = column / columns, (column + 1) / columns
-                if keep and keep(point(.5, (left + right) / 2), hypot(span, width / columns) / 2):
-                    continue
-                offset = len(verts)
-                for inset, height in ((gap / 2, -seat), (gap / 2, 0), (gap / 2 + bevel, depth)):
-                    u, v = inset / span, inset / width
-                    for p in (point(u, left + v), point(1 - u, left + v),
-                              point(1 - u, right - v), point(u, right - v)):
-                        verts.append(tuple(value + n * height for value, n in zip(p, normal)))
-                faces.append(tuple(offset + j for j in _BOX_FACES[0]))
-                for level in (offset, offset + 4):
-                    faces.extend(tuple(level + j for j in face) for face in _BOX_FACES[2:])
-                faces.append((offset + 8, offset + 9, offset + 10, offset + 11))
-    return verts, faces
 
 
 def _box(name, role, material, x, y, z):

@@ -1,6 +1,5 @@
 """Blender-free fixtures for the four opt-in hull methods."""
 
-from collections import Counter
 from math import isclose
 from pathlib import Path
 import sys
@@ -9,7 +8,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'tools/blender/kits/shared'))
 sys.path.insert(0, str(ROOT / 'contrib/codex/picket_astra_1122'))
-from hull_details import FlatSoleLoft, belly_cover, recessed_plates, slatted_cassette, stripe_runs
+from hull_details import FlatSoleLoft, belly_cover, in_plate_keepout, slatted_cassette, stripe_runs
 import hegemony_H7A as astra
 
 
@@ -35,23 +34,11 @@ class HullDetailsTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             other.rings(-1, 2)
 
-    def test_plate_cuts_are_backed_and_leave_real_clearance(self):
-        rings = [[(x, y, z) for y, z in ((-1, 0), (1, 0), (1, -1), (-1, -1))] for x in (0, 1, 2)]
-        options = dict(pitch=1, gap=.1, depth=.2, seat=.02, bevel=.02)
-        for ordered in (rings, rings[::-1]):
-            verts, faces = recessed_plates(ordered, [0], **options)
-            self.assertEqual((len(verts), len(faces)), (48, 40))
-            channels = Counter(tuple(sorted((a, b))) for face in faces
-                               for a, b in zip(face, face[1:] + face[:1]))
-            self.assertEqual(set(channels.values()), {2})
-            self.assertEqual({p[2] for p in verts}, {-.02, 0, .2})
-            self.assertTrue(all(abs(p[1]) >= .05 for p in verts))
-            self.assertTrue(all(abs(p[0] - 1) >= .05 - 1e-9 for p in verts))
-        verts, _ = recessed_plates(rings, [2], **options)
-        self.assertAlmostEqual(min(p[2] for p in verts), -1.2)
-        verts, _ = recessed_plates(rings, [0], keep=lambda p, r: p[0] > 1, **options)
-        self.assertEqual(len(verts), 24)
-        self.assertEqual(recessed_plates(rings, [0], **(options | {'bevel': .5})), ([], []))
+    def test_plate_keepouts_use_only_selected_land_with_reduced_clearance(self):
+        selected = [((0, 0, 0), .2)]
+        self.assertFalse(in_plate_keepout((0, 0, 0), .1, []))
+        self.assertTrue(in_plate_keepout((.229, 0, 0), .1, selected))
+        self.assertFalse(in_plate_keepout((.231, 0, 0), .1, selected))
 
     def test_cassette_slats_and_cover_are_separate_and_seated(self):
         cassette = slatted_cassette(length=2, width=1, depth=.3, rim=.1, seat=.05,
