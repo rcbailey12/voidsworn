@@ -151,7 +151,9 @@ Ryan, Nov 20 01:11 UTC ("Picks ok", Board thread), on the backdrop audit check
 
 Every line drawn on or over the battle board shares one style: one helper owns width by camera distance, glow and fade,
 and callers pass only a role (grid, move, terrain or hazard edge, torpedo lane, target marker); the role sets the colour
-from one table. Storm lightning follows the same family until its baked bolts land (issue 1360). The picks above still
+from one table. Storm lightning plays baked bolt flipbooks (issue 1360: `tools/blender/vfx/bake_storm_bolts.py`, atlases
+in `godot/fx/atlases/storm/`) and keeps only its colours from this table (`bolt_core`, `bolt_skirt`, `bolt_corona`);
+`VS_STORM_BOLTS=ribbon` brings back the old ribbon for before shots. The picks above still
 hold (faint grid near ships, hazard outline in cine, debris rims on hover). Why: the grid, terrain edges, torpedo lanes
 and lightning each chose their own width, glow and colour, so the board read as four different games. Job: issue 1374.
 
