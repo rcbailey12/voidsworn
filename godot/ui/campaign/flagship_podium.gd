@@ -7,6 +7,8 @@ const Ship = preload("res://render/ship_view.gd")
 const HT = preload("res://render/hull_table.gd")
 const Kit = preload("res://ui/theme/orders_kit.gd")
 const GS = preload("res://ui/theme/glass_shell.gd")
+const Look := preload("res://render/look.gd")
+const CameraRig := preload("res://render/camera_rig.gd")
 const TURN_DEG_PER_S := 5.0
 const START_YAW := -35.0
 var code := ""
@@ -61,7 +63,32 @@ func setup(C, ship: Dictionary, accent: Color, still := false) -> void:
 	var camera = Camera3D.new(); world.add_child(camera)
 	camera.fov = 30.0; camera.keep_aspect = Camera3D.KEEP_HEIGHT
 	camera.look_at_from_position(Vector3(0, L * 0.55, L * 1.9), Vector3(0, -L * 0.04, 0)); camera.current = true
+	if Look.post_fx_enabled("DOF"):
+		_podium_lens(camera, L, accent, still)
 	set_process(spin)
+
+
+func _podium_lens(camera: Camera3D, length: float, accent: Color, still: bool) -> void:
+	var lens := CameraRig.far_dof(camera.position.length(), length * 1.15)
+	lens.dof_blur_far_enabled = true
+	camera.attributes = lens
+	# The podium is transparent over a 2D glow. Small distant lights give its own 3D lens something to blur.
+	var lamp := SphereMesh.new()
+	lamp.radius = length * 0.019
+	lamp.height = lamp.radius * 2.0
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.albedo_color = Color(0.23, 0.25, 0.28).lerp(accent, 0.22)
+	for offset in [Vector2(-0.21, 0.07), Vector2(-0.17, 0.10), Vector2(0.15, -0.10), Vector2(0.20, -0.08)]:
+		var point := MeshInstance3D.new()
+		point.mesh = lamp
+		point.material_override = material
+		point.position = 6.0 * length * Vector3(offset.x, offset.y, -1.0)
+		camera.add_child(point)
+	if still:
+		lens.dof_blur_amount = CameraRig.DOF_AMOUNT
+	else:
+		create_tween().tween_property(lens, "dof_blur_amount", CameraRig.DOF_AMOUNT, CameraRig.DOF_ENTER_S)
 
 
 func _process(dt: float) -> void:

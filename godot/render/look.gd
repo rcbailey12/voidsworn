@@ -121,6 +121,53 @@ static func msaa_for_quality(quality: String) -> Viewport.MSAA:
 		_: return Viewport.MSAA_4X
 
 
+static func post_fx_enabled(flag: String) -> bool:
+	return OS.get_environment("VS_BATTLE_" + flag) == "1" \
+		and DisplayServer.get_name() != "headless" \
+		and RenderingServer.get_current_rendering_method() == "forward_plus"
+
+
+const BATTLE_LUTS := {
+	"frontier": "res://assets/luts/frontier.png",
+	"nebula": "res://assets/luts/nebula.png",
+	"world": "res://assets/luts/world.png",
+	"boneyard": "res://assets/luts/boneyard.png",
+	"deep": "res://assets/luts/deep.png",
+	"deadstar": "res://assets/luts/deadstar.png",
+}
+const SSR_HULLS := ["ithar", "deathless", "chorus"]
+const MAX_SSR_STEPS := 32
+
+
+static func battle_lut(region: String) -> Texture3D:
+	return load(BATTLE_LUTS.get(region, BATTLE_LUTS["frontier"])) as Texture3D
+
+
+static func battle_grade(env: Environment, region: String) -> void:
+	env.adjustment_color_correction = battle_lut(region) if post_fx_enabled("LUT") else null
+	env.adjustment_enabled = env.adjustment_color_correction != null
+
+
+static func battle_ssr(env: Environment, quality: String, units: Array) -> void:
+	if env == null:
+		return
+	var use_ssr: bool = post_fx_enabled("SSR") and ssr_candidate(quality, units) \
+		and ProjectSettings.get_setting("rendering/environment/screen_space_reflection/half_size", true)
+	if use_ssr != env.ssr_enabled:
+		env.ssr_enabled = use_ssr
+	if use_ssr and env.ssr_max_steps != MAX_SSR_STEPS:
+		env.ssr_max_steps = MAX_SSR_STEPS
+
+
+static func ssr_candidate(quality: String, units: Array) -> bool:
+	if quality != "max":
+		return false
+	for unit in units:
+		if unit.get("fac") in SSR_HULLS and not (unit.get("squadron", false) or unit.get("dead", false) or unit.get("fled", false)):
+			return true
+	return false
+
+
 static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLight3D, opts := {}) -> void:
 	var tm := String(opts.get("tonemap", TONEMAP))
 	var q := String(opts.get("quality", "max"))
@@ -150,13 +197,13 @@ static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLi
 	# out gets a soft halo a few pixels wider than itself and reads; the tight levels 1 and 2 still carry the shape
 	for lv in 7:
 		env.set_glow_level(lv, [0.0, 0.6, 1.0, 0.6, 0.25, 0.0, 0.0][lv])
+	env.ssao_enabled = q == "max"
+	# Issue 1262: SSIL (screen-space bounce light) is a second full-screen pass over a frame that is mostly empty
+	# space, and the hulls carry baked AO; Max now matches High here. SSAO stays (already half size by default).
+	env.ssil_enabled = q == "max" and perf_old("ssil")
 	if q == "max":
-		env.ssao_enabled = true
 		env.ssao_radius = 1.2
 		env.ssao_intensity = 1.6
-		# Issue 1262: SSIL (screen-space bounce light) is a second full-screen pass over a frame that is mostly empty
-		# space, and the hulls carry baked AO; Max now matches High here. SSAO stays (already half size by default).
-		env.ssil_enabled = perf_old("ssil")
 		env.ssr_enabled = false
 		env.sdfgi_enabled = false
 	if key != null:

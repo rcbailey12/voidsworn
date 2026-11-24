@@ -173,11 +173,11 @@ func hull_motion() -> Transform3D:
 	return (root.global_transform.affine_inverse() * _ref_mi.global_transform) * _ref0.affine_inverse()
 
 
-# Hang a node in the hull's frame of add_ship time so it moves with the hull mesh (r18; see setup).
-func _attach(n: Node3D) -> void:
+# Hang a node at its pose in the hull's add_ship frame (r18; see setup).
+func _attach(n: Node3D, pose := Transform3D.IDENTITY) -> void:
+	n.transform = _ref0.affine_inverse() * pose
 	if _ref_mi != null and is_instance_valid(_ref_mi):
 		_ref_mi.add_child(n)
-		n.transform = _ref0.affine_inverse()
 	else:
 		root.add_child(n)
 
@@ -225,8 +225,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	# whenever the hull moved between fx steps (the stills: overlays sank into the bobbing hull at random, which is
 	# why marks came and went between runs)
 	for m in meshes:
-		# (issue 560: never a turret's turning mesh, which turns under the hull and would carry the damage round with it)
-		if m is MeshInstance3D and hull._turret_above(m, root) < 0 and hull._door_above(m, root) < 0:
+		if m is MeshInstance3D and not BREACH.is_moving_damage_mesh(self, m):
 			_ref_mi = m
 			break
 	if _ref_mi != null:
@@ -325,6 +324,11 @@ func _hide_meshes() -> void:
 
 
 func hide_live_hull() -> void:
+	# The shield collapse can outlast the hull's last visible frame (issue 1239).
+	if is_instance_valid(_shield_mi):
+		var parent := hull_pivot if is_instance_valid(hull_pivot) else root
+		if _shield_mi.get_parent() != parent:
+			_shield_mi.reparent(parent)
 	_hide_meshes()
 	_hide_attachments()
 
@@ -489,8 +493,6 @@ func update(fx, dt: float) -> void:
 	_react_step(fx, dt)
 	_power_step(fx)
 	_hide_placeholder_engines()
-	if _shield_mi != null and _shield_mi.visible:
-		_shield_mi.transform = hull_motion() * _shield_pose
 	var pos := root.global_position
 	if hull_pivot == null:
 		var parent := root.get_parent_node_3d()
@@ -689,7 +691,7 @@ func _build_shield(fx) -> void:
 	_shield_pose = _shield_mi.transform
 	_shield_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_shield_mi.visible = false
-	root.add_child(_shield_mi)
+	_attach(_shield_mi, _shield_pose)
 
 
 func _shield_skin(fx = null) -> ArrayMesh:
@@ -787,8 +789,9 @@ func install_shield_skin(arrays: Array, bob: Vector3, fx = null, key := "") -> v
 		return
 	_shield_mi.mesh = _posed_skin(fx, key, arrays, bob) if key != "" else _pose_shield_skin(arrays, bob)
 	_shield_mat.set_shader_parameter("fitted_shape", true)
+	var frame := _shield_mi.transform * _shield_pose.affine_inverse()
 	_shield_pose = Transform3D(Basis.IDENTITY, hull.shield_centre())
-	_shield_mi.transform = _shield_pose
+	_shield_mi.transform = frame * _shield_pose
 
 
 func _pose_shield_skin(arrays: Array, bob: Vector3) -> ArrayMesh:
@@ -1603,7 +1606,11 @@ func _set_wear(fx, hpf: float) -> void:
 func ensure_damage_surfaces(fx) -> void:
 	if _damage_surfaces_assigned or dead or gone or squadron or hull == null or fx == null or fx.compat:
 		return
-	BREACH._inside_overlay(fx, self, meshes, [], fac.get("damage_glow", Color(1.0, 0.45, 0.12)))
+	var static_meshes: Array = []
+	for mi in meshes:
+		if is_instance_valid(mi) and not BREACH.is_moving_damage_mesh(self, mi):
+			static_meshes.append(mi)
+	BREACH._inside_overlay(fx, self, static_meshes, [], fac.get("damage_glow", Color(1.0, 0.45, 0.12)))
 	_power_shown = -1.0
 	_wear_shown = -1.0
 
@@ -2264,6 +2271,8 @@ func damage_caps(k := 1.0) -> Vector2i:
 func damage_counts() -> Dictionary:
 	var counts := {"fire": 0, "smoke": 0, "vent": 0, "particles": 0}
 	for e in _damage_emitters + _fading_emitters:
+		if not is_instance_valid(e.get("node")):
+			continue
 		counts[e.kind] += 1
 		counts.particles += e.particles
 	return counts
@@ -2273,7 +2282,9 @@ func _refresh_damage_emitters(fx) -> void:
 	var key := str(stage) + str(_burning) + str(fx.compat) + str(_jammed.keys()) + str(_mount_dead.keys()) + str(dead_nozzles)
 	if key == _emitter_key: return
 	_emitter_key = key
-	for e in _fading_emitters: e.node.queue_free()
+	for e in _fading_emitters:
+		if is_instance_valid(e.get("node")):
+			e.node.queue_free()
 	_fading_emitters.clear()
 	var desired: Array = []
 	var caps := damage_caps(fx.cap_k)
@@ -2314,6 +2325,8 @@ func _refresh_damage_emitters(fx) -> void:
 				smoke += 1
 	var keep: Array = []
 	for e in _damage_emitters:
+		if not is_instance_valid(e.get("node")):
+			continue
 		var match_i := -1
 		for j in desired.size():
 			if desired[j].id == e.id and desired[j].st == e.st: match_i = j; break
@@ -2328,17 +2341,17 @@ func _refresh_damage_emitters(fx) -> void:
 				_fading_emitters.append(e)
 			else: e.node.queue_free()
 	for e in desired:
-		_build_damage_emitter(fx, e)
-		keep.append(e)
+		if _build_damage_emitter(fx, e):
+			keep.append(e)
 	_damage_emitters = keep
 
 
-func _build_damage_emitter(fx, e: Dictionary) -> void:
+func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	if e.has("tur") or e.has("mp"):
 		_build_wisp(fx, e)
-		return
+		return true
 	var a := _anchor(e.sec, "a")
-	if a.is_empty(): return
+	if a.is_empty(): return false
 	var p: Vector3 = a.p
 	var n: Vector3 = a.n
 	var glow: Color = fac.damage_glow
@@ -2392,15 +2405,20 @@ func _build_damage_emitter(fx, e: Dictionary) -> void:
 	e["particles"] = b.particle_count
 	e["sprite_kind"] = kind
 	e["source"] = p
+	return true
 
 
 func _update_damage_emitters(fx) -> void:
 	if dead or gone:
-		for e in _damage_emitters: e.node.visible = false
-		for e in _fading_emitters: e.node.visible = false
+		for e in _damage_emitters + _fading_emitters:
+			if is_instance_valid(e.get("node")):
+				e.node.visible = false
 		return
 	for j in range(_fading_emitters.size() - 1, -1, -1):
 		var e: Dictionary = _fading_emitters[j]
+		if not is_instance_valid(e.get("node")):
+			_fading_emitters.remove_at(j)
+			continue
 		var gate: float = clampf((e.until - fx.now) / 0.8, 0.0, 1.0)
 		e.mat.set_shader_parameter("gate", gate)
 		if gate <= 0.0:

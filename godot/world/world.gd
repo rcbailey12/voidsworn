@@ -38,6 +38,7 @@ var setting := {}
 var nebula_wake := false   # issue 1079 prototype, off by default (world_living.gd, nebula_wake.gd)
 var _spin: Array = []        # [node, axis, rate]
 var _well := Vector3.INF
+var _well_radius := 0.0
 var _rng := RandomNumberGenerator.new()
 var _planet_dir := Vector3.ZERO
 var _planet_ang := 0.0
@@ -54,6 +55,7 @@ var _sky_mat: ShaderMaterial = null
 var _look := {}
 var _mats := {}
 var _batch = null
+var _scorched_rocks_left := 0
 var _center := Vector3.ZERO
 var _lo := Vector3.ZERO
 var _hi := Vector3.ZERO
@@ -140,7 +142,8 @@ func _planet_size() -> Vector2i:
 func wait_ready() -> void:
 	# Hard cap (Opus review, Nov 3): a bake that never finishes must never hold the loading cover.
 	var t0 := Time.get_ticks_msec()
-	while pending_bakes > 0 and Time.get_ticks_msec() - t0 < 20000: await get_tree().process_frame
+	while is_inside_tree() and pending_bakes > 0 and Time.get_ticks_msec() - t0 < 20000:
+		await get_tree().process_frame
 
 
 func _sky_into(m: ShaderMaterial) -> void:
@@ -155,7 +158,13 @@ func well_position() -> Vector3:
 	return _well
 
 
+func well_radius() -> float:
+	return _well_radius
+
+
 func step(dt: float) -> void:
+	if _batch != null:
+		_batch.step(dt)
 	for s in _spin:
 		var n: Node3D = s[0]
 		if is_instance_valid(n):
@@ -236,6 +245,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	if not deadstar:
 		system(mk != "planet")
 	_batch = WR.Batch.new()
+	_scorched_rocks_left = 8 if LOOK.post_fx_enabled("DECALS") else 0
 	var rock_kind := String(setting["rock"])
 	var counts := {"rock": 0, "debris": 0, "neb": 0, "storm": 0}
 	var clouds := {"neb": [], "storm": []}
@@ -512,11 +522,12 @@ func _load_sky(lamps: Array) -> void:
 		"band_n": bs["band_n"], "feature": bs["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
 		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(bs))}
 	var code := SKY.bake_code()
+	var mat := _sky_mat
 	var img: Image = await _baker.bake(key, code, params, size, 32)
-	if img == null or _sky_mat == null: return
+	if not is_inside_tree() or img == null or not is_instance_valid(mat) or mat != _sky_mat: return
 	var tex := BAKER.texture(img)
-	_sky_mat.set_shader_parameter("neb_tex", tex)
-	_sky_mat.set_shader_parameter("has_neb", 1.0)
+	mat.set_shader_parameter("neb_tex", tex)
+	mat.set_shader_parameter("has_neb", 1.0)
 	_sky_tex = tex
 	for k in _mats: _sky_into(_mats[k])
 
@@ -681,10 +692,10 @@ func _load_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int,
 	var params := {"seed": float(bake_seed % 997) * 0.71, "kind": int(P["kind"]), "ca": P["a"], "cb": P["b"], "cc": P["c"], "pass_id": 0}
 	var code := PL.bake_code()
 	var a: Image = await _baker.bake(key + "|a", code, params, size, 16)
-	if a == null: return
+	if not is_inside_tree() or a == null or not is_instance_valid(m) or not is_instance_valid(_baker): return
 	params["pass_id"] = 1
 	var b: Image = await _baker.bake(key + "|b", code, params, size, 16)
-	if b == null: return
+	if not is_inside_tree() or b == null or not is_instance_valid(m): return
 	m.set_shader_parameter("tex_a", BAKER.texture(a))
 	m.set_shader_parameter("tex_b", BAKER.texture(b))
 	m.set_shader_parameter("has_tex", 1.0)
@@ -719,6 +730,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	root.position = c
 	add_child(root)
 	var Rsh := 15.0 * s
+	_well_radius = Rsh
 	# the black core (writes depth: ships behind it are hidden, as they would be)
 	var core := MeshInstance3D.new()
 	var sm := SphereMesh.new()
@@ -904,8 +916,11 @@ func blocker(p: Vector3, kind: String) -> void:
 	var s := _rng.randf_range(BLOCKER_SCALE_MIN, BLOCKER_SCALE_MAX)
 	var b := _rand_basis(_rng)
 	var crystal := kind == "crystal"
+	var scorch := _scorched_rocks_left > 0
+	if scorch:
+		_scorched_rocks_left -= 1
 	_batch.add(name, mat, true, Transform3D(b.scaled(Vector3.ONE * s), p + Vector3(0, _rng.randf_range(0.5, 2.5), 0)),
-		_rand_axis(_rng), 0.0 if crystal else _rng.randf_range(0.004, 0.012), _rng.randf())
+		_rand_axis(_rng), 0.0 if crystal else _rng.randf_range(0.004, 0.012), _rng.randf(), scorch)
 	for i in _rng.randi_range(2, 4):
 		var a := _rng.randf() * TAU
 		var rr := _rng.randf_range(4.5, 6.2)

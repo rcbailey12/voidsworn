@@ -21,6 +21,7 @@ const NEBULA_HULLS := preload("res://world/nebula_hulls.gd")
 const WAKE := preload("res://world/nebula_wake.gd")
 const LS := preload("res://render/line_style.gd")   # issue 1374: the one line style (storm bolt colours)
 const LOOK := preload("res://render/look.gd")
+const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const STORM_TICK_LIFE := 0.45
 
 const HD := preload("res://world/hull_debris.gd")
@@ -545,7 +546,6 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	mi.name = "Storm" if storm else "Nebula"
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
 	# Issue 1262: Max uses the same bounded cards and baked lattice as High (1070's masking saved 2.2 ms on Max in its
 	# run 1); VS_1262_OLD=cards restores Max's unbounded cards for the before and after timing.
 	var high: bool = expanded and (W.quality == "high" or (W.quality == "max" and not LOOK.perf_old("cards")))
@@ -554,11 +554,11 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 		_gas_lattice = source.texture()
 		_gas_lattice_origin = source.origin
 	var cached_noise := high and _gas_lattice != null
-	sh.code = _gas_card_shader(storm, high, cached_noise)
+	var code := _gas_card_shader(storm, high, cached_noise)
 	if _wake != null and not storm:
-		sh.code = WAKE.into_cards(sh.code, _wake.points)
+		code = WAKE.into_cards(code, _wake.points)
 		_wake_mats.append(m)
-	m.shader = sh
+	m.shader = SHADER_CACHE.for_code(code)
 	if cached_noise:
 		m.set_shader_parameter("gas_hash_lattice", _gas_lattice)
 		m.set_shader_parameter("gas_hash_origin", _gas_lattice_origin)
@@ -611,12 +611,11 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 	volume.size = Vector3(hi.x - lo.x + GAS_FEATHER_REACH * 2.0, 38.5, hi.z - lo.z + GAS_FEATHER_REACH * 2.0)
 	volume.position = Vector3((hi.x + lo.x) * 0.5, 12.25, (hi.z + lo.z) * 0.5)
 	var mat := ShaderMaterial.new()
-	var shader := Shader.new()
-	shader.code = ION.FOG if storm else FOG_SHADER
+	var code: String = ION.FOG if storm else FOG_SHADER
 	if _wake != null and not storm:
-		shader.code = WAKE.into_fog(shader.code, _wake.points)
+		code = WAKE.into_fog(code, _wake.points)
 		_wake_mats.append(mat)
-	mat.shader = shader
+	mat.shader = SHADER_CACHE.for_code(code)
 	if _fog_noise == null:
 		_fog_noise = load(NOISE_PATH).texture()
 	mat.set_shader_parameter("noise_tex", _fog_noise)
@@ -743,9 +742,7 @@ func _set_flashes(fs: Array) -> void:
 # Reuse the accepted cloud and scene bloom. Geometry lives inside the gas.
 func _bolts(ps: Array) -> void:
 	var bm := ShaderMaterial.new()
-	var bsh := Shader.new()
-	bsh.code = BOLT_SHADER
-	bm.shader = bsh
+	bm.shader = SHADER_CACHE.for_code(BOLT_SHADER)
 	var lit := 0
 	for patch in _patches(ps):
 		var center := Vector3.ZERO
@@ -1027,12 +1024,10 @@ func _debris(ps: Array) -> void:
 	var batch = WR.Batch.new()
 	var low: bool = W.quality == "low"
 	var shard_meshes := _shard_meshes()
-	var wsh := Shader.new()
-	wsh.code = WRECK_SHADER.replace("%NOISE%", WS.NOISE)
 	var metal := ShaderMaterial.new()
-	metal.shader = wsh
+	metal.shader = SHADER_CACHE.for_code(WRECK_SHADER.replace("%NOISE%", WS.NOISE))
 	var hot := ShaderMaterial.new()
-	hot.shader = wsh
+	hot.shader = metal.shader
 	hot.set_shader_parameter("hot", 1.0)
 	for wm in [metal, hot]:
 		(wm as ShaderMaterial).set_shader_parameter("tumble_k", TUMBLE_K if tumble_mode == "cap" else 1000.0)
@@ -1145,9 +1140,7 @@ func _debris(ps: Array) -> void:
 		mi.name = "DebrisDust"
 		mi.multimesh = mm
 		var m := ShaderMaterial.new()
-		var sh := Shader.new()
-		sh.code = DUST_SHADER
-		m.shader = sh
+		m.shader = SHADER_CACHE.for_code(DUST_SHADER)
 		mi.material_override = m
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		mi.extra_cull_margin = 10.0
@@ -1365,9 +1358,7 @@ func _well(c: Vector3) -> void:
 	pm.size = Vector2(250, 250)
 	mi.mesh = pm
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = WELL_SHADER
-	m.shader = sh
+	m.shader = SHADER_CACHE.for_code(WELL_SHADER)
 	m.set_shader_parameter("well", c)
 	# the pull reaches five hexes (about 87 units); the dead star's own lens and disc fill the middle
 	m.set_shader_parameter("r_in", 58.0)
@@ -1388,9 +1379,7 @@ func _well(c: Vector3) -> void:
 	dust.name = "WellInfall"
 	dust.multimesh = mm
 	var dm := ShaderMaterial.new()
-	var ds := Shader.new()
-	ds.code = INFALL_SHADER
-	dm.shader = ds
+	dm.shader = SHADER_CACHE.for_code(INFALL_SHADER)
 	dm.set_shader_parameter("well", c)
 	dm.render_priority = -24
 	dust.material_override = dm

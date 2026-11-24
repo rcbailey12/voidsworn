@@ -244,6 +244,8 @@ func _run() -> void:
 	_check(b.hud.endcard == null and not b.ended, "item 8: Fight again during the victory beat leaves no old end card in the new fight")
 	await _end_modal()
 	b.hud.hide_end()
+	await _hold_end_cards()
+	b.hud.hide_end()
 	b.queue_free()
 	await _frames(3)
 	print("MENU_MODAL fails=%d" % fails)
@@ -309,6 +311,7 @@ func _end_modal() -> void:
 	_check(b.hud.endcard != null, "D5: the end card appeared")
 	if b.hud.endcard == null:
 		return
+	_check(b.hud._end_first.text == "Continue to title", "C2: a quick battle names the title as its destination")
 	var point := Vector2(90, 580)
 	var view := [b.cam.topdown, b.cam.r, b.cam.a, b.cam.t, b.threat_on, b.arcs_on, BL.tactical]
 	var menu_point := Vector2.ZERO
@@ -327,3 +330,37 @@ func _end_modal() -> void:
 		await _frames(3)
 	await _click(menu_point)
 	_check(menu_point != Vector2.ZERO and b.hud.menu == null, "D5: clicks cannot reach Menu behind the end card")
+
+
+func _hold_end_cards() -> void:
+	var rules = b.api.R
+	rules.setupObjective("hold")
+	var enemy: Dictionary = rules.caps("enemy")[0]
+	b.in_campaign = true
+	for row in [
+		[2, "Their fleet broke and fled.", "Continue to battle rewards"],
+		[3, "You held the relay for three rounds.", "Continue to battle rewards"],
+		[2, "Your last ship was destroyed with the relay at 2/3.", "Continue to run debrief"],
+	]:
+		rules.B["over"] = false
+		rules.B["obj"]["score"] = row[0]
+		b.ended = false
+		b.sel = ""
+		b.inspect = enemy["id"]
+		b.hud.set_panel(b._panel_info())
+		_check(not b.hud.ledger.ship.is_empty(), "C2: an enemy was on the shelf before the end")
+		# Keep opponents in the fight. The same hold mission can end by rout, relay score or fleet loss.
+		rules.B["cp0"] = {"enemy": rules.sideCP("enemy") * 3.0}
+		if row[2] == "Continue to run debrief":
+			for ship in rules.caps("player"):
+				ship["hp"] = 0
+				ship["dead"] = true
+		rules.checkEnd()
+		b.V = b.api.view()
+		await b._end_flow()
+		var labels: Array[Node] = b.hud.endcard.find_children("*", "Label", true, false)
+		_check(labels.any(func(label): return label.text.begins_with(row[1])), "C2: hold card starts with " + row[1])
+		_check(b.hud._end_first.text == row[2], "C2: end card offers " + row[2])
+		_check(b.inspect == "" and b.hud.ledger.ship.is_empty() and b._panel_info().is_empty(), "C2: the end card clears the inspected enemy from the shelf")
+		b.hud.hide_end()
+		await _frames(2)
