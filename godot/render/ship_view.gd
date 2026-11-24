@@ -470,7 +470,7 @@ func revive() -> void:
 		m.transparency = 0.0
 		m.visible = true
 	for e in engines:
-		(e as Sprite3D).visible = true
+		(e as Sprite3D).visible = not fx_engines
 	if marker != null:
 		marker.visible = true
 
@@ -1711,6 +1711,7 @@ static func _puff_mat() -> StandardMaterial3D:
 		return _pm
 	_pm = StandardMaterial3D.new()
 	_pm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_pm.disable_fog = true
 	_pm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_pm.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 	_pm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED

@@ -324,13 +324,13 @@ static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLi
 	# out gets a soft halo a few pixels wider than itself and reads; the tight levels 1 and 2 still carry the shape
 	for lv in 7:
 		env.set_glow_level(lv, [0.0, 0.6, 1.0, 0.6, 0.25, 0.0, 0.0][lv])
+	env.ssao_enabled = q == "max"
+	# Issue 1262: SSIL (screen-space bounce light) is a second full-screen pass over a frame that is mostly empty
+	# space, and the hulls carry baked AO; Max now matches High here. SSAO stays (already half size by default).
+	env.ssil_enabled = q == "max" and perf_old("ssil")
 	if q == "max":
-		env.ssao_enabled = true
 		env.ssao_radius = 1.2
 		env.ssao_intensity = 1.6
-		# Issue 1262: SSIL (screen-space bounce light) is a second full-screen pass over a frame that is mostly empty
-		# space, and the hulls carry baked AO; Max now matches High here. SSAO stays (already half size by default).
-		env.ssil_enabled = perf_old("ssil")
 		env.ssr_enabled = false
 		env.sdfgi_enabled = false
 	if key != null:

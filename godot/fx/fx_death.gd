@@ -2406,7 +2406,7 @@ static func _small_trail(fx, s, age: float, motion: Transform3D) -> void:
 # capital deck by deck from the top), death_steps holds (bands, delay per band, fade).
 static func power_material(mat: ShaderMaterial, strain := false) -> ShaderMaterial:
 	var code: String = mat.shader.code
-	code = code.replace("uniform float fx_power = 1.0;", "uniform float fx_power = 1.0;\nuniform float death_age = 0.0;\nuniform float death_start = 0.0;\nuniform vec2 death_span = vec2(0.0, 1.0);\nuniform vec3 death_axis = vec3(1.0, 0.0, 0.0);\nuniform vec3 death_steps = vec3(3.0, 0.055, 0.18);\nuniform float death_hold = 0.0;" + (SH.STRAIN_FN if strain else ""))
+	code = SH.patch(code, "uniform float fx_power = 1.0;", "uniform float fx_power = 1.0;\nuniform float death_age = 0.0;\nuniform float death_start = 0.0;\nuniform vec2 death_span = vec2(0.0, 1.0);\nuniform vec3 death_axis = vec3(1.0, 0.0, 0.0);\nuniform vec3 death_steps = vec3(3.0, 0.055, 0.18);\nuniform float death_hold = 0.0;" + (SH.STRAIN_FN if strain else ""))
 	if strain:
 		# Issue 1077 (prototype): the plating along the break lines bulges as the hull strains (death_age is the shader's
 		# clock here, the same instant as the tear overlay's scene_t); fx_hull_p stays the unmoved point for the wounds.
@@ -2414,7 +2414,7 @@ static func power_material(mat: ShaderMaterial, strain := false) -> ShaderMateri
 	var band := "floor(clamp((dot(fx_hull_p, death_axis) - death_span.x) / death_span.y, 0.0, 0.999) * death_steps.x) * death_steps.y"
 	# issue 1586 (Neon on PR 1666): death_hold hands the lights to fx_power (the Navy blackout) while death_age keeps
 	# running the plating strain
-	code = code.replace("clamp(fx_power, 0.0, 1.0)", "mix(1.0 - smoothstep(" + band + ", " + band + " + death_steps.z, death_age), clamp(fx_power, 0.0, 1.0), death_hold)")
+	code = SH.patch(code, "clamp(fx_power, 0.0, 1.0)", "mix(1.0 - smoothstep(" + band + ", " + band + " + death_steps.z, death_age), clamp(fx_power, 0.0, 1.0), death_hold)")
 	mat.shader = HULL.shared_shader(code, "death power down " + str(code.hash()))
 	return mat
 
@@ -4127,10 +4127,12 @@ static func _leash(fx, dt: float) -> void:
 		for nd in pieces:
 			if not is_instance_valid(nd): continue
 			if nd is RigidBody3D and not (nd as RigidBody3D).freeze:
-				(nd as RigidBody3D).linear_velocity = _leash_vel(nd, (nd as RigidBody3D).linear_velocity, an, dt, drawing)
+				var body := nd as RigidBody3D
+				if body.sleeping: continue
+				body.linear_velocity = _leash_vel(body, body.linear_velocity, an, dt, drawing)
 			_leash_clamp(nd, an, _rest_limit(nd, an, true) if settled else -1.0)
 	for b in fx.dstate.get("debris", []):
-		if not is_instance_valid(b) or not b.visible: continue
+		if not is_instance_valid(b) or not b.visible or b.sleeping: continue
 		var an = anchors.get(str(b.get_meta("leash_id", "")))
 		if an == null: continue
 		b.linear_velocity = _leash_vel(b, b.linear_velocity, an, dt)

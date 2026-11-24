@@ -11,10 +11,9 @@ const zlib = require('zlib');
 const { spawnSync, spawn } = require('child_process');
 const pc = path.resolve(__dirname, '../../../tools/pc');
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner846 proof '));
-// Lane B hit the old 240 s limit and the 1817 rerun was still cloning fixtures at 270 s.
-// Scale the old limit by PR 1813's measured 2.1x slowdown and round 504 s to 510 s.
-// The 600 s Windows standing row leaves room for the separate claim race.
-const probeTimeout = process.platform === 'win32' ? 510000 : 240000;
+// Issue 1739: a loaded lane reached 510 s while the probes were still running.
+// The Windows standing row also leaves room for the separate claim race.
+const probeTimeout = process.platform === 'win32' ? 750000 : 240000;
 // Scale the runner's 30 s issue-lock window by the same slowdown, rounded up.
 const claimTimeout = 65000;
 const fixtureEnv = {

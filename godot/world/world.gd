@@ -140,7 +140,8 @@ func _planet_size() -> Vector2i:
 func wait_ready() -> void:
 	# Hard cap (Opus review, Nov 3): a bake that never finishes must never hold the loading cover.
 	var t0 := Time.get_ticks_msec()
-	while pending_bakes > 0 and Time.get_ticks_msec() - t0 < 20000: await get_tree().process_frame
+	while is_inside_tree() and pending_bakes > 0 and Time.get_ticks_msec() - t0 < 20000:
+		await get_tree().process_frame
 
 
 func _sky_into(m: ShaderMaterial) -> void:
@@ -517,11 +518,12 @@ func _load_sky(lamps: Array) -> void:
 		"band_n": bs["band_n"], "feature": bs["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
 		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(bs))}
 	var code := SKY.bake_code()
+	var mat := _sky_mat
 	var img: Image = await _baker.bake(key, code, params, size, 32)
-	if img == null or _sky_mat == null: return
+	if not is_inside_tree() or img == null or not is_instance_valid(mat) or mat != _sky_mat: return
 	var tex := BAKER.texture(img)
-	_sky_mat.set_shader_parameter("neb_tex", tex)
-	_sky_mat.set_shader_parameter("has_neb", 1.0)
+	mat.set_shader_parameter("neb_tex", tex)
+	mat.set_shader_parameter("has_neb", 1.0)
 	_sky_tex = tex
 	for k in _mats: _sky_into(_mats[k])
 
@@ -686,10 +688,10 @@ func _load_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int,
 	var params := {"seed": float(bake_seed % 997) * 0.71, "kind": int(P["kind"]), "ca": P["a"], "cb": P["b"], "cc": P["c"], "pass_id": 0}
 	var code := PL.bake_code()
 	var a: Image = await _baker.bake(key + "|a", code, params, size, 16)
-	if a == null: return
+	if not is_inside_tree() or a == null or not is_instance_valid(m) or not is_instance_valid(_baker): return
 	params["pass_id"] = 1
 	var b: Image = await _baker.bake(key + "|b", code, params, size, 16)
-	if b == null: return
+	if not is_inside_tree() or b == null or not is_instance_valid(m): return
 	m.set_shader_parameter("tex_a", BAKER.texture(a))
 	m.set_shader_parameter("tex_b", BAKER.texture(b))
 	m.set_shader_parameter("has_tex", 1.0)
