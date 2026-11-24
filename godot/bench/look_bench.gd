@@ -83,6 +83,7 @@ var report := {"stills": [], "warnings": [], "parts": {}}
 var cfg := {}
 var steps := 0
 var headless := false
+var failed := ""   # issue 1877 (Artoo on PR 1904): a failed clip row fails the whole run (no LOOK_BENCH_DONE, exit 4)
 var sfx: Node = null          # --sound only
 var death_audio: Node = null
 
@@ -183,9 +184,20 @@ func _run() -> void:
 	_log("late shaders after warm-up (issue 376): %d; pipelines compiled in this run: %d" % [HULL.late_shader_count(), _pipelines()])
 	for line in HULL.late_shader_names():
 		_log("  late shader " + str(line))
+	if failed != "":
+		# the report stays for diagnosis; no DONE line, so look_bench.bat reports the run as failed
+		report["failed"] = failed
+		_save_report()
+		print("LOOK_BENCH_FAILED " + failed)
+		await _shutdown(4)
+		return
 	_save_report()
 	_log("stills: %d, warnings: %d" % [report["stills"].size(), report["warnings"].size()])
 	print("LOOK_BENCH_DONE")
+	await _shutdown(0)
+
+
+func _shutdown(code: int) -> void:
 	# a clean exit: drop the static caches and the effects' GPU resources while the rendering server is alive (the
 	# first PC run ended with an access violation after its last line)
 	_clear()
@@ -195,7 +207,7 @@ func _run() -> void:
 	FX.clear_static()
 	SV.clear_static()
 	await get_tree().process_frame
-	get_tree().quit(0)
+	get_tree().quit(code)
 
 
 func _pipelines() -> int:
@@ -735,7 +747,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if clip and keep:
 		var mk := DirAccess.make_dir_recursive_absolute(clip_dir)
 		if mk != OK or not DirAccess.dir_exists_absolute(clip_dir):
-			_warn("%s at %d: LOOK_BENCH clip folder %s could not be made (error %d)" % [id, int(r), clip_dir, mk])
+			failed = "%s at %d: clip folder %s could not be made (error %d)" % [id, int(r), clip_dir, mk]
+			_warn("LOOK_BENCH " + failed)
 			return false
 	var strip := Image.create_empty(1 if clip else cell.x * total, cell.y, false, Image.FORMAT_RGB8)
 	var ci := 0
@@ -797,7 +810,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			if not FileAccess.file_exists(clip_dir.path_join(fn)) and not clip_bad.any(func(b): return str(b).begins_with(fn)):
 				clip_bad.append(fn + " (missing)")
 		if ci != total or not clip_bad.is_empty():
-			_warn("%s at %d: LOOK_BENCH clip row failed: %d of %d frames taken; bad: %s" % [id, int(r), ci, total, ", ".join(clip_bad)])
+			failed = "%s at %d: clip row failed: %d of %d frames taken; bad: %s" % [id, int(r), ci, total, ", ".join(clip_bad)]
+			_warn("LOOK_BENCH " + failed)
 			return false
 		report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/%s__c%d/" % [id, int(r)],
 			"cells": cells, "impacts": impacts, "clip": true})
