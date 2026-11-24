@@ -107,6 +107,7 @@ var wrecked := {}
 # both ships survived must not turn a later torpedo kill into a ram death). The marks are read once from the whole batch
 # when it starts (view_causes), so no playback branch (the grouped volley path skips _play_event) can miss an action.
 var _view_cause := {}      # dying unit id -> "ram" | "board", for the batch being played
+var _flag_hull_warned := false
 const VIEW_CAUSE_ACTIONS := ["fire", "move", "ram", "board", "ability", "blink", "activation", "command", "order", "tick", "round", "wing", "pulled", "burning"]
 var board: Node3D
 var cam: Camera3D
@@ -714,6 +715,7 @@ func start_battle(run: Dictionary, cfg: Dictionary) -> void:
 
 # A battle with its rules initialized, including one handed over by the campaign.
 func begin_with(a) -> void:
+	_flag_hull_warned = false
 	if a.phase == "deployment":
 		_deployment_api = a
 		cam.keyboard_enabled = false
@@ -927,6 +929,11 @@ func _begin(a) -> void:
 	batches.append({"events": api.take_events(), "view": api.view()})
 	if not showcase:
 		sfx.ambient_start()
+		if well is Dictionary or (well is bool and well):
+			sfx.terrain_bed("evt_gravity_well")
+		var terrain: Dictionary = V.get("terrain", {})
+		if "neb" in terrain.values() or "storm" in terrain.values():
+			sfx.terrain_bed("evt_nebula_bed")
 	_refresh_ui()
 	_legend()
 	# story hook (story stream, godot/story/README.md): admiral, enemy flagship and Nemesis lines in the battle log
@@ -1990,6 +1997,8 @@ func _play_batch(bt: Dictionary) -> void:
 		i += 1
 	if not arrivals.is_empty():
 		await _arrive(arrivals)
+	if not bot and not showcase and not _flag_hull_warned:
+		_flag_hull_warned = _flagship_hull_alarm(bt["view"])
 	if enemy:
 		tip_enemy_done = true
 		var ta := game_t
@@ -2039,6 +2048,22 @@ func _command_ship(e: Dictionary) -> String:
 		if spare == "" and bool(u.get("flagship", false)):
 			spare = str(id)
 	return spare
+
+
+# Warn once per battle, when the presented flagship first survives below a quarter hull.
+func _flagship_hull_alarm(view: Dictionary) -> bool:
+	if api == null or not api.has_method("unit"):
+		return false
+	for u in view.get("units", []):
+		if u["side"] != "player" or u.get("dead", false):
+			continue
+		var raw = api.unit(str(u["id"]))
+		if raw is Dictionary and _jt(raw.get("pflag")):
+			var hp := float(u.get("hp", 0.0))
+			if hp > 0.0 and hp <= 0.25 * float(u.get("maxHp", 0.0)):
+				sfx.play("evt_hull_alarm")
+				return true
+	return false
 
 
 func _side(id) -> String:
@@ -2255,7 +2280,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			await wait(200.0)
 		"ram":
 			await _play_move(e["unit"], e["path"], true)
-			sfx.boom(0.8, _pos(e["target"]))
+			sfx.play("evt_ram_impact", {"pos": _pos(e["target"]), "gain": 0.8})
 			# issue 1524 (fx/API.md 11): the approved ram look: the crumple on the target's struck section, a smaller one on
 			# the rammer's bow, the biggest shove and the zoom punch. The generic pop stays only when the fx layer drew nothing.
 			var rammed := false
@@ -2316,6 +2341,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			await wait(float(PACE["banner"]) + 140.0)
 		"command":
 			var C = _command(str(e["id"]))
+			if e["side"] == "player":
+				sfx.play("ui_command_issue")
 			_log("%s: %s!" % [_name(e["unit"]), str(C.get("n", e["id"]))], "e" if e["side"] == "enemy" else "p")
 			hud.banner(str(C.get("n", e["id"])), Color("#ff8a6a") if e["side"] == "enemy" else Color("#ff8a3a"))
 			# issue 1524 (fx/API.md 11): the flagship's command pulse under the banner
@@ -2521,7 +2548,8 @@ func _play_move(id, path: Array, charge: bool) -> void:
 			n_rot += 1 if _jt(st.get("rot")) else 0
 		print("[move] %s %s %s size %.2f hexes %d turns %d dur %.2f s, %.0f ms a hex, speed %.2f" % [str(id), _side(id), str(u.get("cls", "")), size, path.size() - n_rot, n_rot, dur * mv_speed, per * mv_speed, mv_speed])
 	if size > 0.3:
-		sfx.play("engine", {"pos": sv.visual_position(), "gain": minf(1.0, 0.55 + size * 0.6)})
+		sfx.play("engine", {"pos": sv.visual_position(), "gain": minf(1.0, 0.55 + size * 0.6),
+			"duration": dur, "tag": "engine_%s" % str(id)})
 	var eng_on: bool = gfx != null and gfx.has_method("set_engine")
 	# issue 1581 item 5: Burn and fire. The guns that will fire when the hull settles start turning toward the target
 	# while it brakes, so the opening volley leaves on the beat the hull stops (the fire still follows the move: RULEBOOK
@@ -2564,6 +2592,7 @@ func _play_move(id, path: Array, charge: bool) -> void:
 			await get_tree().process_frame
 	if not is_instance_valid(sv):
 		return   # a new battle owns the board and the counters now
+	sfx.stop_tag("engine_%s" % str(id), false)
 	if eng_on:
 		gfx.set_engine(str(id), ENGINE_IDLE if cin else 1.0)
 	burns_live -= 1

@@ -17,6 +17,7 @@ extends Node
 signal sting_finished(kind: String)
 
 const MANIFEST := "res://music/music.json"
+const STEM_MANIFEST := "res://music/stem_pairs.json"
 const BUS := "music"
 const SMOOTH := 1.6          # seconds, time constant of the intensity follower
 const FADE_IN := 2.5
@@ -47,6 +48,8 @@ var _calm_db := 0.0
 var _hot_db := 0.0
 var _after_sting := ""
 var _boss := false
+var _stem_pair := false
+var _stem_pairs := {}
 var _rng := RandomNumberGenerator.new()
 
 
@@ -59,6 +62,13 @@ func _ready() -> void:
 		var m = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST))
 		if m is Dictionary:
 			man = m
+	if FileAccess.file_exists(STEM_MANIFEST):
+		var stems = JSON.parse_string(FileAccess.get_file_as_string(STEM_MANIFEST))
+		if stems is Dictionary:
+			_stem_pairs = stems.get("pairs", {})
+			var tracks: Dictionary = man.get("tracks", {})
+			tracks.merge(stems.get("tracks", {}))
+			man["tracks"] = tracks
 	_calm = _player()
 	_hot = _player()
 	_bed = _player()
@@ -241,8 +251,10 @@ func play_battle(player_fac := "", enemy_fac := "", boss := false) -> void:
 	intensity = 0.0
 	_ival = 0.0
 	# faction flavour: the enemy's colour wins (you hear who you are fighting); your own faction is the fallback
+	var fac := enemy_fac
 	var fl := _flavour(enemy_fac)
 	if fl.is_empty():
+		fac = player_fac
 		fl = _flavour(player_fac)
 	var calm_id := _pick(fl.get("calm")) if fl.has("calm") else ""
 	if calm_id == "":
@@ -252,6 +264,12 @@ func play_battle(player_fac := "", enemy_fac := "", boss := false) -> void:
 		hot_id = _slot(["battle", "intense"])
 	if boss and _slot(["battle", "boss"]) != "":
 		hot_id = _slot(["battle", "boss"])      # sector flagship and finale fights: the boss theme is the intense layer
+	_stem_pair = false
+	var pair: Array = _stem_pairs.get(fac, [])
+	if not boss and pair.size() == 2 and _stream(pair[0], true) != null and _stream(pair[1], true) != null:
+		calm_id = pair[0]
+		hot_id = pair[1]
+		_stem_pair = true
 	_boss = boss
 	var bed_id := _pick(fl.get("bed")) if fl.has("bed") else ""
 	_bed_db = float(fl.get("bed_db", -14.0))
@@ -378,7 +396,8 @@ func _process(dt: float) -> void:
 	_ival += (intensity - _ival) * clampf(k, 0.0, 1.0)
 	_battle_gain = _approach(_battle_gain, _battle_target, dt / FADE_IN)
 	var hot := smoothstep(LO, HI, _ival)
-	var calm := 1.0 - 0.85 * hot                       # the calm layer never drops fully: it keeps the pulse under the brass
+	# Paired mixes carry the same music. At full intensity, only the full mix should be audible.
+	var calm := 1.0 - hot if _stem_pair else 1.0 - 0.85 * hot
 	_calm.volume_db = _db(calm * _battle_gain) + _calm_db
 	_hot.volume_db = _db(hot * _battle_gain) + _hot_db
 	_bed.volume_db = _db(_battle_gain * (1.0 - 0.4 * hot)) + _bed_db

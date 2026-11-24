@@ -1,0 +1,717 @@
+{
+ "note": "Wave F plus Wave A extras, from Neon issue 1947. Hold means catalogued but no game event yet.",
+ "wires": [
+  {
+   "id": "wep_ithar_flak",
+   "group": "Placeholder",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "A bright crystal spray. The second take snaps a little tighter.",
+   "today": "gun_flak",
+   "cue": "gun_flak",
+   "variants": [
+    "ithar.flak"
+   ],
+   "category": "weapon"
+  },
+  {
+   "id": "imp_gauss_slug",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A cold magnetic crack with a hollow ring and a solid armor hit.",
+   "today": "hit_rail",
+   "cue": "hit_rail",
+   "category": "impact"
+  },
+  {
+   "id": "imp_ion_disrupt",
+   "group": "Placeholder",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "A breaker slam and electric surge. The second take is tighter and cracklier.",
+   "today": "hit_ion",
+   "cue": "hit_ion",
+   "category": "impact"
+  },
+  {
+   "id": "imp_patter_hull",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t2",
+   "note": "Crisp shrapnel ticking across steel instead of the old tiny patter.",
+   "today": "patter_hull",
+   "cue": "patter_hull"
+  },
+  {
+   "id": "imp_patter_shield",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "channel L of t1",
+   "note": "Bright electric shrapnel ticks. The left channel keeps them clear.",
+   "today": "patter_shield",
+   "cue": "patter_shield"
+  },
+  {
+   "id": "boom_pop_metal",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A compact strike-craft blast with a quick metallic crunch.",
+   "today": "pop",
+   "cue": "pop"
+  },
+  {
+   "id": "boom_small_metal",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t1",
+   "note": "Buckling steel and a clean, fast decay.",
+   "today": "boom_s",
+   "cue": "boom_s"
+  },
+  {
+   "id": "boom_medium_metal",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "channel L of t2",
+   "note": "A hull-section blowout with grinding steel and debris. The left channel keeps the crunch.",
+   "today": "boom_m",
+   "cue": "boom_m"
+  },
+  {
+   "id": "ship_engine_loop",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "channel R of t2",
+   "note": "A smooth fusion drive hum with a clean wrap. The right channel keeps its body.",
+   "today": "engine",
+   "cue": "engine"
+  },
+  {
+   "id": "ship_craft_launch",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A heavy catapult clunk, then a fighter streaking away.",
+   "today": "launch",
+   "cue": "launch"
+  },
+  {
+   "id": "ship_phase_jump",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "channel L of t2",
+   "note": "A pull, a solid displacement thump, and a quick collapse. The left channel keeps it crisp.",
+   "today": "phase",
+   "cue": "phase"
+  },
+  {
+   "id": "ship_engine_cough",
+   "group": "Placeholder",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "Two choking misfire bursts. The second take has more punch.",
+   "today": "cough",
+   "cue": "cough"
+  },
+  {
+   "id": "ship_power_charge",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A rising capacitor hum that ends in a physical lock.",
+   "today": "charge",
+   "cue": "charge"
+  },
+  {
+   "id": "death_metal_powerdown",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A sinking reactor hum and relays clunking off.",
+   "today": "death_powerdown",
+   "cue": "death_powerdown"
+  },
+  {
+   "id": "death_metal_vent",
+   "group": "Placeholder",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "A forceful hull vent. The second take is a little warmer.",
+   "today": "death_vent",
+   "cue": "death_vent"
+  },
+  {
+   "id": "death_metal_crack",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t2",
+   "note": "Snapping girders and rivets, with a clear steel split.",
+   "today": "death_crack",
+   "cue": "death_crack"
+  },
+  {
+   "id": "death_debris_cool",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "channel R of t1",
+   "note": "Sparse ticks and creaks from cooling steel. The right channel keeps the detail.",
+   "today": "chunk_cool",
+   "cue": "chunk_cool"
+  },
+  {
+   "id": "death_hulk_vent",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A quiet gas leak with soft metal groans.",
+   "today": "hulk_vent",
+   "cue": "hulk_vent"
+  },
+  {
+   "id": "death_metal_tail",
+   "group": "Placeholder",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "Tumbling steel fragments that settle naturally to silence.",
+   "today": "death_tail",
+   "cue": "death_tail"
+  },
+  {
+   "id": "death_bass_drop",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t1",
+   "note": "One deep, immediate impact with none of the old sliding synth pitch.",
+   "today": "bass_drop",
+   "cue": "bass_drop"
+  },
+  {
+   "id": "ord_brace_lock",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t2",
+   "note": "Decisive bulkhead slams and magnetic anchor clunks.",
+   "today": "brace_lock",
+   "cue": "brace_lock"
+  },
+  {
+   "id": "ord_adapt_shift",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "channel L of t1",
+   "note": "Relays, turning gears, and a pneumatic settle. The left channel keeps it crisp.",
+   "today": "adapt_shift",
+   "cue": "adapt_shift"
+  },
+  {
+   "id": "ord_board_grapple",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t2",
+   "note": "A heavy harpoon bite, taut cable snap, and grinding drill lock.",
+   "today": "board_grapple",
+   "cue": "board_grapple"
+  },
+  {
+   "id": "ui_cancel_switch",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t3",
+   "note": "A low, dry console switch with no electronic tone.",
+   "today": "ui_cancel",
+   "cue": "ui_cancel"
+  },
+  {
+   "id": "ui_select_detent",
+   "group": "Placeholder",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "Two clean mechanical detent snaps.",
+   "today": "ui_select",
+   "cue": "ui_select"
+  },
+  {
+   "id": "ui_hover_tick",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A small, muted key tick that is gentler than the old hover sound.",
+   "today": "ui_click",
+   "cue": "ui_hover",
+   "template": "ui_select"
+  },
+  {
+   "id": "ui_panel_slide",
+   "group": "Placeholder",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "A metal panel slides along its rail and latches shut.",
+   "today": "ui_panel",
+   "cue": "ui_panel"
+  },
+  {
+   "id": "ui_alert_bell",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t2",
+   "note": "An urgent double-strike steel bell that never gets shrill.",
+   "today": "ui_alert",
+   "cue": "ui_alert"
+  },
+  {
+   "id": "ui_round_bell",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t1",
+   "note": "One large, warm bronze watch bell.",
+   "today": "ui_round",
+   "cue": "ui_round"
+  },
+  {
+   "id": "ui_enemy_turn",
+   "group": "Placeholder",
+   "takes": 1,
+   "pick": "t2",
+   "note": "Restrained war drum and dark low brass, in place of the old synth pad.",
+   "today": "ui_enemy",
+   "cue": "ui_enemy"
+  },
+  {
+   "id": "wep_hullbreaker_rockets_b",
+   "group": "Polish",
+   "takes": 1,
+   "pick": "t2",
+   "note": "One crude launch with a rattling rail and a gritty motor.",
+   "today": "torp_rocket",
+   "cue": "torp_rocket",
+   "variants": [
+    "corsair.torp",
+    "corsair.htorp"
+   ]
+  },
+  {
+   "id": "ui_boss_arrival_long",
+   "group": "Polish",
+   "takes": 1,
+   "pick": "t2",
+   "note": "Fuller bass drum and dark brass that hold longer than the old boss cue.",
+   "today": "ui_boss",
+   "cue": "ui_boss"
+  },
+  {
+   "id": "dmg_engine_fail_long",
+   "group": "Polish",
+   "takes": 1,
+   "pick": "channel R of t2",
+   "note": "A full sputtering engine wind-down. The right channel keeps the turbine whine.",
+   "today": "dmg_engine_fail",
+   "cue": "dmg_engine_fail"
+  },
+  {
+   "id": "evt_ram_impact",
+   "group": "New moment",
+   "takes": 1,
+   "pick": "t1",
+   "note": "An immediate armored prow collision with buckling plates and a heavy crunch.",
+   "today": "boom_m",
+   "cue": "evt_ram_impact",
+   "template": "boom_m"
+  },
+  {
+   "id": "shd_raise",
+   "group": "New moment",
+   "takes": 1,
+   "pick": "channel L of t2",
+   "note": "A smooth rising shield hum. The left channel keeps the glow.",
+   "today": "shield",
+   "cue": "shd_raise",
+   "template": "shield",
+   "hold": "No single shield-up beat is exposed. Decide whether normal round recharge or only a full shield recovery should play.",
+   "reference": true
+  },
+  {
+   "id": "evt_gravity_well",
+   "group": "New moment",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A slow, ominous pulse with faint metal strain and a clean wrap.",
+   "today": "",
+   "cue": "evt_gravity_well",
+   "template": "patter_hull",
+   "bed": true
+  },
+  {
+   "id": "evt_nebula_bed",
+   "group": "New moment",
+   "takes": 1,
+   "pick": "t1",
+   "note": "An airy wash with soft static crackle and a clean wrap.",
+   "today": "",
+   "cue": "evt_nebula_bed",
+   "template": "patter_hull",
+   "bed": true
+  },
+  {
+   "id": "evt_asteroid_scrape",
+   "group": "New moment",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "A heavy rock-on-steel grind with loose stone knocks.",
+   "today": "",
+   "cue": "evt_asteroid_scrape",
+   "template": "hit",
+   "hold": "The move path marks a safe overflight, not contact. Decide whether a near miss should sound like a scrape."
+  },
+  {
+   "id": "evt_hull_alarm",
+   "group": "New moment",
+   "takes": 1,
+   "pick": "t1",
+   "note": "An urgent two-tone damage klaxon without a shrill top.",
+   "today": "ui_alert",
+   "cue": "evt_hull_alarm",
+   "template": "ui_alert",
+   "reference": true
+  },
+  {
+   "id": "ui_command_issue",
+   "group": "New moment",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "A decisive bridge lever thrown home. The second take slams a little faster.",
+   "today": "ui_confirm",
+   "cue": "ui_command_issue",
+   "template": "ui_confirm",
+   "reference": true
+  },
+  {
+   "id": "map_fleet_jump",
+   "group": "New moment",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A swelling engine pull and deep launch thump.",
+   "today": "arrive_jump",
+   "cue": "ui_map_fleet_jump",
+   "template": "arrive_jump",
+   "reference": true
+  },
+  {
+   "id": "map_fleet_arrive",
+   "group": "New moment",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A rushing arrival boom that settles into an engine thrum.",
+   "today": "arrive_jump",
+   "cue": "ui_map_fleet_arrive",
+   "template": "arrive_jump",
+   "reference": true
+  },
+  {
+   "id": "ui_purchase",
+   "group": "New moment",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "A heavy supply crate opens. The second take adds a weighty ingot clunk.",
+   "today": "ui_reward",
+   "cue": "ui_purchase",
+   "template": "ui_reward"
+  },
+  {
+   "id": "ui_module_install",
+   "group": "New moment",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A hydraulic slide, a hard mechanical clamp, and bolts driven home.",
+   "today": "ui_reward",
+   "cue": "ui_module_install",
+   "template": "ui_reward"
+  },
+  {
+   "id": "ui_relic_socket",
+   "group": "New moment",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "A stone seat and a warm bronze ring as the relic locks in.",
+   "today": "ui_reward",
+   "cue": "ui_relic_socket",
+   "template": "ui_reward"
+  },
+  {
+   "id": "ui_rank_up",
+   "group": "New moment",
+   "takes": 1,
+   "pick": "t2",
+   "note": "A crisp case snap followed by a dignified brass and timpani flourish.",
+   "today": "ui_reward",
+   "cue": "ui_rank_up",
+   "template": "ui_reward",
+   "reference": true
+  },
+  {
+   "id": "ui_event_comm",
+   "group": "New moment",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "A comms switch, brief radio crackle, and a warm signal tone.",
+   "today": "ui_panel",
+   "cue": "ui_event_comm",
+   "template": "ui_panel",
+   "reference": true
+  },
+  {
+   "id": "ui_ship_lost",
+   "group": "New moment",
+   "takes": 1,
+   "pick": "t2",
+   "note": "One grave, low memorial bell with a long decay.",
+   "today": "sting_loss",
+   "cue": "ui_ship_lost",
+   "template": "sting_loss",
+   "reference": true
+  },
+  {
+   "id": "imp_metal_light_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "channel R of t2",
+   "note": "A bright steel clang that matches the old hit. The right channel keeps its bite.",
+   "today": "hit",
+   "cue": "hit",
+   "append": "imp_metal_light"
+  },
+  {
+   "id": "imp_metal_heavy_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "t2",
+   "note": "A close match to the old heavy armor hit and its decay.",
+   "today": "hit_heavy",
+   "cue": "hit_heavy",
+   "append": "imp_metal_heavy"
+  },
+  {
+   "id": "imp_las_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "channel L of t2",
+   "note": "A steel hit followed by a hot sear. The left channel keeps the sear.",
+   "today": "hit_las",
+   "cue": "hit_las",
+   "append": "imp_las"
+  },
+  {
+   "id": "imp_bio_flesh_more",
+   "group": "Variety",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "Two close bone-impact matches, one punchier and tighter.",
+   "today": "hit_wet",
+   "cue": "hit_wet",
+   "append": "imp_bio_flesh"
+  },
+  {
+   "id": "imp_glass_armor_more",
+   "group": "Variety",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "Two close glacier-crystal impact matches with a clear crack.",
+   "today": "hit_glass",
+   "cue": "hit_glass",
+   "append": "imp_glass_armor"
+  },
+  {
+   "id": "imp_obsidian_eclipse_more",
+   "group": "Variety",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "Two cold, brittle obsidian cracks that match the old hit.",
+   "today": "hit_rail",
+   "cue": "hit_rail",
+   "append": "imp_obsidian_eclipse"
+  },
+  {
+   "id": "shd_hit_absorb_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A soft tonal deflection, a little fuller and longer than the old one.",
+   "today": "shield",
+   "cue": "shield",
+   "append": "shd_hit_absorb"
+  },
+  {
+   "id": "wep_sunward_hbattery_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "t2",
+   "note": "A close match to the old heavy battery blast with a slightly shorter decay.",
+   "today": "gun_shell",
+   "cue": "gun_shell",
+   "append": "wep_sunward_hbattery"
+  },
+  {
+   "id": "wep_flak_airburst_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A tight, sharp flak crack that fits the existing set.",
+   "today": "gun_flak",
+   "cue": "gun_flak",
+   "append": "wep_flak_airburst"
+  },
+  {
+   "id": "wep_directorate_laser_b_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "t2",
+   "note": "A close match to the plasma cannon once the level is brought up.",
+   "today": "gun_las",
+   "cue": "gun_las",
+   "append": "wep_directorate_laser"
+  },
+  {
+   "id": "wep_directorate_turbo_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "channel L of t2",
+   "note": "A close plasma match. The left channel keeps the attack intact.",
+   "today": "gun_plasma",
+   "cue": "gun_plasma",
+   "append": "wep_directorate_turbo"
+  },
+  {
+   "id": "wep_directorate_hturbo_more",
+   "group": "Variety",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "Two close heavy plasma blasts, each with a slightly fuller tail.",
+   "today": "gun_plasma",
+   "cue": "gun_plasma",
+   "append": "wep_directorate_hturbo"
+  },
+  {
+   "id": "wep_directorate_picket_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A crisp point-defense laser crack that matches the existing one.",
+   "today": "gun_flak",
+   "cue": "gun_flak",
+   "append": "wep_directorate_picket"
+  },
+  {
+   "id": "wep_hullbreaker_scatter_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A dirty scrap cannon blast and loose iron rattle.",
+   "today": "gun_shell",
+   "cue": "gun_shell",
+   "append": "wep_hullbreaker_scatter"
+  },
+  {
+   "id": "wep_hullbreaker_junk_gun_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A rough clanking scrap turret with no high whine.",
+   "today": "gun_shell",
+   "cue": "gun_shell",
+   "append": "wep_hullbreaker_junk_gun"
+  },
+  {
+   "id": "wep_chorus_spines_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "t2",
+   "note": "A hard bone crack followed by a pressurized rush.",
+   "today": "gun_spine",
+   "cue": "gun_spine",
+   "append": "wep_chorus_spines"
+  },
+  {
+   "id": "wep_chorus_spore_cloud_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "channel R of t1",
+   "note": "A natural woody pod pop and seed-husk puff. The right channel keeps the body.",
+   "today": "gun_flak",
+   "cue": "gun_flak",
+   "append": "wep_chorus_spore_cloud"
+  },
+  {
+   "id": "wep_chorus_sporeb_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "t2",
+   "note": "A hollow bone-pod pop with a slightly longer woody rattle.",
+   "today": "gun_sq",
+   "cue": "gun_sq",
+   "append": "wep_chorus_sporeb"
+  },
+  {
+   "id": "wep_ithar_shard_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "t2",
+   "note": "A close crystal shard match with a solid middle.",
+   "today": "gun_needle",
+   "cue": "gun_needle",
+   "append": "wep_ithar_shard"
+  },
+  {
+   "id": "wep_ithar_needle_more",
+   "group": "Variety",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "Two thin prism snaps with clean, luminous glass notes.",
+   "today": "gun_needle",
+   "cue": "gun_needle",
+   "append": "wep_ithar_needle"
+  },
+  {
+   "id": "wep_eclipse_gauss_fire_ctl_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "channel R of t2",
+   "note": "A matching seismic cannon crack. The right channel keeps the midrange.",
+   "today": "gun_rail",
+   "cue": "gun_rail",
+   "append": "wep_eclipse_gauss_fire"
+  },
+  {
+   "id": "ui_confirm_latch_more",
+   "group": "Variety",
+   "takes": 1,
+   "pick": "t2",
+   "note": "A close mechanical latch match for the confirm sound.",
+   "today": "ui_confirm",
+   "cue": "ui_confirm",
+   "append": "ui_confirm_latch"
+  },
+  {
+   "id": "wep_sunward_battery",
+   "group": "Wave A extra",
+   "takes": 1,
+   "pick": "t2",
+   "note": "A massive forged-iron battery blast that holds up in mono.",
+   "today": "gun_shell",
+   "cue": "gun_shell",
+   "variants": [
+    "voidsworn.battery"
+   ],
+   "category": "weapon"
+  },
+  {
+   "id": "ui_click_switch",
+   "group": "Wave A extra",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A weighty acoustic toggle instead of the old bright ping.",
+   "today": "ui_click",
+   "cue": "ui_click"
+  }
+ ]
+}

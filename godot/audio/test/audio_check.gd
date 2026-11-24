@@ -22,13 +22,16 @@ const CUE_FAMILIES := {
 	"torpedoes": ["torp", "torp_rocket", "torp_sac", "torp_star", "torp_heavy"],
 	"charges": ["lance_charge", "torp_charge", "gauss_charge"],
 	"hits": ["hit", "hit_heavy", "hit_las", "hit_plasma", "hit_rail", "hit_wet", "hit_glass", "hit_ion", "hit_obsidian", "hit_acid"],
-	"shields": ["shield", "shield_break", "shield_sputter"],
+	"shields": ["shield", "shield_break", "shield_sputter", "shd_raise"],
 	"patterns": ["patter_hull", "patter_shield"],
 	"explosions": ["pop", "boom_s", "boom_m", "boom_l"],
 	"ship": ["phase", "launch", "engine", "cough", "puff", "charge", "acid_sizzle"],
-	"ui": ["ui_click", "ui_confirm", "ui_cancel", "ui_round", "ui_your", "ui_enemy", "ui_select", "ui_panel", "ui_reward", "ui_alert", "ui_boss"],
+	"ui": ["ui_click", "ui_confirm", "ui_cancel", "ui_round", "ui_your", "ui_enemy", "ui_select", "ui_panel", "ui_reward", "ui_alert", "ui_boss",
+		"ui_hover", "ui_command_issue", "ui_purchase", "ui_module_install", "ui_relic_socket", "ui_rank_up", "ui_event_comm", "ui_ship_lost", "evt_hull_alarm"],
 	"stings": ["sting_win", "sting_loss"],
-	"fleet": ["arrive_jump"],
+	"fleet": ["arrive_jump", "ui_map_fleet_jump", "ui_map_fleet_arrive"],
+	"terrain": ["evt_gravity_well", "evt_nebula_bed", "evt_asteroid_scrape"],
+	"collision": ["evt_ram_impact"],
 	"death": ["death_powerdown", "death_vent", "death_crack", "death_run", "chunk_cool", "hulk_vent", "bass_drop", "wreck", "death_bed", "death_tail", "death_magazine"],
 	"damage": ["dmg_breach_vent", "dmg_breach_shear", "dmg_turret_knockout", "dmg_engine_fail", "dmg_shield_burnout"],
 	"orders": ["board_grapple", "brace_lock", "adapt_shift"],
@@ -158,7 +161,8 @@ func _wired_1752(s) -> void:
 		_ok(float(vd.get("duration", 9.0)) <= lead + 0.06, "lance_charge:%s fades out by its beam" % v)
 	_ok(wired >= 30, "issue 1752: the recorded weapon sounds are wired (%d)" % wired)
 	_ok(s.weapon_variant("gun_sq", "hegemony", "guns") == "guns", "any faction's interceptor guns use the craft sound")
-	_ok(s.weapon_variant("gun_shell", "voidsworn", "battery") == "", "a weapon with no recorded sound keeps the base cue")
+	_ok(s.weapon_variant("gun_shell", "voidsworn", "battery") == "voidsworn.battery", "the Wave A battery uses its own variant")
+	_ok(s.weapon_variant("gun_shell", "voidsworn", "unrecorded") == "", "a weapon with no recorded sound keeps the base cue")
 
 
 func _run() -> void:
@@ -409,7 +413,7 @@ func _issue_1448(sfx_node: Node, real_music: Node) -> void:
 	root.add_child(outside)
 	ear.heard.clear()
 	_press(plain); plain.mouse_entered.emit(); _press(well); _press(ruled); _press(quiet); _press(outside)
-	_ok(ear.heard == ["ui_click", "ui_select", "ui_click", "ui_reward"], "1448 the shared hook: a plain button clicks and hovers, a choice well clicks, a reward confirm chimes, opted-out and outside buttons stay silent (%s)" % str(ear.heard))
+	_ok(ear.heard == ["ui_click", "ui_hover", "ui_click", "ui_reward"], "the shared hook: a plain button clicks and hovers, a choice well clicks, a reward confirm chimes, opted-out and outside buttons stay silent (%s)" % str(ear.heard))
 	host.free(); outside.free()
 	# 2. the real campaign screens: every button and choice is wired, and a press plays its cue
 	root.size = Vector2i(1920, 1080)
@@ -447,10 +451,10 @@ func _issue_1448(sfx_node: Node, real_music: Node) -> void:
 		C.RUN["credits"] = 5000
 		C.shipyardScreen(yard); await _frames(4)
 		screens["shipyard"] = [_pressables(ui).size(), _unwired(ui)]
-		var buys: Array = _pressables(ui).filter(func(n): return str(n.get_meta("kit_sound", "")) == "reward" and not bool(n.get("disabled")))
+		var buys: Array = _pressables(ui).filter(func(n): return str(n.get_meta("kit_sound", "")) == "purchase" and not bool(n.get("disabled")))
 		ear.heard.clear()
 		if not buys.is_empty(): _press(buys[0])
-		_ok(not buys.is_empty() and ear.heard.has("ui_reward") and not ear.heard.has("ui_confirm"), "1448 shipyard: buying a hull chimes ui_reward, not the plain confirm (%d buy buttons, %s)" % [buys.size(), str(ear.heard)])
+		_ok(not buys.is_empty() and ear.heard.has("ui_purchase") and not ear.heard.has("ui_confirm"), "a shipyard purchase plays its own cue, not the plain confirm (%d buy buttons, %s)" % [buys.size(), str(ear.heard)])
 	else:
 		_ok(false, "1448 a shipyard stop exists on the first map")
 	C.mapScreen(); await _frames(2)

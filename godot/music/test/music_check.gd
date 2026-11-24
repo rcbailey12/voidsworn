@@ -68,6 +68,16 @@ func _run() -> void:
 		var b: Dictionary = m.call("state")
 		_ok(float(b["hot_db"]) > -12.0, "intense layer up under heavy fire (%s): %.1f dB" % [fac, b["hot_db"]])
 		_ok(float(b["calm_db"]) < float(a["calm_db"]), "calm layer down under heavy fire (%s)" % fac)
+		if fac in ["", "voidsworn"]:
+			var calm: AudioStreamPlayer = m.get("_calm")
+			var full: AudioStreamPlayer = m.get("_hot")
+			_ok(calm.stream == m.call("_stream", "sunward_stemloop_calm", true) and
+				full.stream == m.call("_stream", "sunward_stemloop_full", true), "Sunward battle uses the matched M1 pair")
+			_ok(calm.stream != null and full.stream != null and is_equal_approx(calm.stream.get_length(), 40.0) and
+				is_equal_approx(full.stream.get_length(), 40.0), "both Sunward mixes wrap on the same 40 s bar grid")
+			_ok(float(b["calm_db"]) <= -79.0, "matched calm is fully out at full intensity")
+		else:
+			_ok(not bool(m.get("_stem_pair")), "other factions keep their original mix")
 		m.call("set_intensity", 0.0)
 		_step(m, 25.0)
 		var c: Dictionary = m.call("state")
@@ -77,11 +87,12 @@ func _run() -> void:
 	_ok(String(m.call("state")["mode"]) == "sting", "victory sting")
 	# boss fight: the boss theme is the intense layer, and a boss win plays the champion sting
 	var boss_id := String(man.get("battle", {}).get("boss", ""))
-	m.call("play_battle", "voidsworn", "hegemony", true)
+	m.call("play_battle", "voidsworn", "voidsworn", true)
 	_step(m, 3.0)
 	if boss_id != "":
 		var hot: AudioStreamPlayer = m.get("_hot")
 		_ok(hot.stream == m.call("_stream", boss_id, true), "boss battle uses the boss theme as the intense layer")
+	_ok(not bool(m.get("_stem_pair")), "boss battle never layers the M1 pair underneath")
 	m.call("feed", {"close": 6, "shots": 14, "hull": 0.5, "flagship": 0.4, "mine": 5, "enemy": 6, "boss": true})
 	_step(m, 8.0)
 	_ok(float(m.call("state")["hot_db"]) > -12.0, "boss intense layer up under heavy fire")

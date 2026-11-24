@@ -2,13 +2,13 @@
 """Issue 1752 Gate 3 (Artoo on PR 1948): check that a stem-split music loop gives a usable calm mix (all stems but drums)
 and intense mix (the song), on the same trim points.
 
-  python3 stem_loop_check.py <song.mp3> <stems.zip> [--xfade <seconds>] [--out <folder>]
+  python3 stem_loop_check.py <song.mp3> <stems.zip> --bpm 96 --bars 16 [--guard-ms 25] [--out <folder>]
 
 Prints, for each mix: length, the stems' offset against the song, the loop seam (level and sample jump at the wrap), and the
-calm mix's level under the intense one, and a real 2 s calm-to-intense switch (and back) at four points of the loop. --xfade folds that many seconds of each mix's tail into its head (the loop
-crossfade mastering applies), on the same samples for both mixes, before the seams are measured. With --out it writes calm.wav and intense.wav cut to the same samples.
+calm mix's level under the intense one, and a real 2 s calm-to-intense switch (and back) at four points of the loop.
+Cut to the bar grid and apply a short click guard without deleting a beat. With --out write matched calm and intense WAVs.
 Needs ffmpeg and numpy. Exit 0 and STEM LOOP CHECK PASS when every check passes."""
-import subprocess, sys, zipfile, tempfile, os
+import argparse, subprocess, sys, zipfile, tempfile, os
 import numpy as np
 SR = 48000
 
@@ -27,21 +27,47 @@ def offset(a, b, maxlag=4800):
     cc = np.concatenate([cc[-maxlag:], cc[:maxlag + 1]])
     return int(np.argmax(cc)) - maxlag
 
+def click_guard(x, ms):
+    y = x.copy()
+    k = round(SR * ms / 1000)
+    ramp = (0.5 - 0.5 * np.cos(np.linspace(0, np.pi, k)))[:, None]
+    y[:k] *= ramp
+    y[-k:] *= ramp[::-1]
+    return y
+
+
 def seam(x, name, fails):
     head, tail = x[:SR // 2], x[-SR // 2:]
     jump = float(np.abs(x[-1] - x[0]).max())
     lh, lt = db(head), db(tail)
-    ok = abs(lh - lt) <= 3.0 and jump <= 0.1
+    # A loud first downbeat is not a click. The bar grid is checked separately.
+    ok = jump <= 0.001
     print(f'  {name}: {len(x) / SR:.3f} s, first 0.5 s {lh:.1f} dB, last 0.5 s {lt:.1f} dB, wrap jump {jump:.3f}', '' if ok else '  FAIL')
     if not ok: fails.append(name + ' seam')
 
 def main():
-    song, zp = sys.argv[1], sys.argv[2]
-    out = sys.argv[sys.argv.index('--out') + 1] if '--out' in sys.argv else None
+    parser = argparse.ArgumentParser()
+    parser.add_argument('song')
+    parser.add_argument('stems')
+    parser.add_argument('--bpm', required=True, type=float)
+    parser.add_argument('--bars', required=True, type=int)
+    parser.add_argument('--beats-per-bar', default=4, type=int)
+    parser.add_argument('--guard-ms', default=25, type=int, choices=range(20, 31))
+    parser.add_argument('--out')
+    args = parser.parse_args()
+    if min(args.bpm, args.bars, args.beats_per_bar) <= 0:
+        parser.error('bar grid values must be positive')
+    n_grid = round(SR * 60 * args.bars * args.beats_per_bar / args.bpm)
     fails = []
-    mix = load(song)
+    mix = load(args.song)
+    # Allow 1 ms of API duration rounding and up to 50 ms of MP3 padding.
+    # A take that misses the grid by more than that needs a fresh listen.
+    if not n_grid - round(SR * 0.001) <= len(mix) <= n_grid + round(SR * 0.05):
+        print(f'STEM LOOP CHECK FAIL: source has {len(mix)} samples, expected {n_grid} (-1 ms to +50 ms)')
+        return 1
     with tempfile.TemporaryDirectory() as td:
-        zipfile.ZipFile(zp).extractall(td)
+        with zipfile.ZipFile(args.stems) as archive:
+            archive.extractall(td)
         stems = {os.path.splitext(f)[0]: load(os.path.join(td, f)) for f in sorted(os.listdir(td)) if f.endswith(('.mp3', '.wav'))}
     live = {k: v for k, v in stems.items() if db(v) > -60}
     print('stems with sound:', ', '.join(f'{k} {db(v):.1f} dB' for k, v in live.items()), '| silent:', ', '.join(k for k in stems if k not in live))
@@ -59,14 +85,12 @@ def main():
     resid = db(align(total) - mix) - db(mix)
     print(f'stems sum minus song after alignment: {resid:.1f} dB under the song', '' if resid <= -15 else '  FAIL')
     if resid > -15: fails.append('stems do not rebuild the song')
-    intense = mix
-    xf = float(sys.argv[sys.argv.index('--xfade') + 1]) if '--xfade' in sys.argv else 0.0
-    if xf > 0:
-        k = int(xf * SR); r = np.linspace(0, 1, k, dtype=np.float32)[:, None]
-        def fold(x):
-            y = x[:-k].copy(); y[:k] = x[:k] * r + x[-k:] * (1 - r); return y
-        calm, intense = fold(calm), fold(intense)
-        print(f'loop crossfade {xf} s applied to both mixes (same samples)')
+    def on_grid(x):
+        if len(x) < n_grid:
+            x = np.pad(x, ((0, n_grid - len(x)), (0, 0)))
+        return click_guard(x[:n_grid], args.guard_ms)
+    calm, intense = on_grid(calm), on_grid(mix)
+    print(f'bar grid: {args.bars} bars at {args.bpm:g} BPM, {n_grid} samples, {args.guard_ms} ms click guard')
     gap = db(intense) - db(calm)
     print(f'calm mix is {gap:.1f} dB under the intense mix', '' if 1.0 <= gap <= 12 else '  FAIL')
     if not (1.0 <= gap <= 12): fails.append('calm level')
@@ -91,10 +115,10 @@ def main():
             ok = dip <= 1.5 and step <= own + 1.0
             print(f'  switch {label} at {at / SR:5.1f} s: deepest dip {dip:.2f} dB, largest step {step:.1f} dB (the mixes alone: {own:.1f})', '' if ok else '  FAIL')
             if not ok: fails.append(f'switch at {at / SR:.1f} s')
-    if out:
-        os.makedirs(out, exist_ok=True)
+    if args.out and not fails:
+        os.makedirs(args.out, exist_ok=True)
         for name, x in (('calm', calm), ('intense', intense)):
-            subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ac', '2', '-ar', str(SR), '-i', '-', os.path.join(out, name + '.wav')],
+            subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ac', '2', '-ar', str(SR), '-i', '-', os.path.join(args.out, name + '.wav')],
                            input=np.ascontiguousarray(x, dtype=np.float32).tobytes(), check=True)
     print('STEM LOOP CHECK PASS' if not fails else 'STEM LOOP CHECK FAIL: ' + ', '.join(fails))
     return 0 if not fails else 1

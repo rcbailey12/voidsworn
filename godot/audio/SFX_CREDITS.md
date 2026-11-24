@@ -106,3 +106,6 @@ The Gate 2 clip sets named after their sound ids (`wep_*`, `imp_*`, `shd_*`, `de
 were generated for this game with ElevenLabs sound effects on the owner's paid account, then mastered in
 `contrib/opus/tools/sound/master_keepers.py`. They are not from a public library, so they carry no attribution line.
 Prompts: `contrib/opus/sound/elevenlabs_pilot_v2.json`; picks: `contrib/opus/plans/cohesive_audio_v2.md` sections 8.3 to 8.6.
+
+Gate 3 (Nov 24 2026) uses the same paid-account commercial SFX terms. The Wave F takes and two Wave A extras are listed
+in `contrib/opus/sound/keepers_gate3.json`. The routing and any moments held for review are in `wiring_gate3.json` there.

@@ -1,0 +1,856 @@
+{
+ "note": "Neon Wave F and Wave A extras. Each approved take is a separate round-robin clip.",
+ "targets_db": {
+  "weapon": -12,
+  "impact": -14,
+  "shield": -14,
+  "damage": -14,
+  "death": -11,
+  "event": -14,
+  "ui": -16,
+  "amb": -26
+ },
+ "keepers": [
+  {
+   "id": "wep_ithar_flak",
+   "wave": "F",
+   "take": "t1",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_ithar_flak_0",
+   "hp": 40
+  },
+  {
+   "id": "wep_ithar_flak",
+   "wave": "F",
+   "take": "t2",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_ithar_flak_1",
+   "hp": 40
+  },
+  {
+   "id": "imp_gauss_slug",
+   "wave": "F",
+   "take": "t1",
+   "cat": "impact",
+   "src": "fold",
+   "out": "imp_gauss_slug_0",
+   "hp": 40,
+   "trim_ms": 28
+  },
+  {
+   "id": "imp_ion_disrupt",
+   "wave": "F",
+   "take": "t1",
+   "cat": "impact",
+   "src": "fold",
+   "out": "imp_ion_disrupt_0",
+   "hp": 40
+  },
+  {
+   "id": "imp_ion_disrupt",
+   "wave": "F",
+   "take": "t2",
+   "cat": "impact",
+   "src": "fold",
+   "out": "imp_ion_disrupt_1",
+   "hp": 40
+  },
+  {
+   "id": "imp_patter_hull",
+   "wave": "F",
+   "take": "t2",
+   "cat": "impact",
+   "src": "fold",
+   "out": "imp_patter_hull_0",
+   "hp": 40,
+   "tail_ms": 30
+  },
+  {
+   "id": "imp_patter_shield",
+   "wave": "F",
+   "take": "t1",
+   "cat": "impact",
+   "src": "L",
+   "out": "imp_patter_shield_0",
+   "hp": 40,
+   "gain_db": 6
+  },
+  {
+   "id": "boom_pop_metal",
+   "wave": "F",
+   "take": "t1",
+   "cat": "death",
+   "src": "fold",
+   "out": "boom_pop_metal_0",
+   "hp": 40
+  },
+  {
+   "id": "boom_small_metal",
+   "wave": "F",
+   "take": "t1",
+   "cat": "death",
+   "src": "fold",
+   "out": "boom_small_metal_0",
+   "hp": 40
+  },
+  {
+   "id": "boom_medium_metal",
+   "wave": "F",
+   "take": "t2",
+   "cat": "death",
+   "src": "L",
+   "out": "boom_medium_metal_0",
+   "hp": 40
+  },
+  {
+   "id": "ship_engine_loop",
+   "wave": "F",
+   "take": "t2",
+   "cat": "amb",
+   "src": "R",
+   "out": "ship_engine_loop_0",
+   "hp": 40,
+   "notrim": true
+  },
+  {
+   "id": "ship_craft_launch",
+   "wave": "F",
+   "take": "t1",
+   "cat": "event",
+   "src": "fold",
+   "out": "ship_craft_launch_0",
+   "hp": 40
+  },
+  {
+   "id": "ship_phase_jump",
+   "wave": "F",
+   "take": "t2",
+   "cat": "event",
+   "src": "L",
+   "out": "ship_phase_jump_0",
+   "hp": 40
+  },
+  {
+   "id": "ship_engine_cough",
+   "wave": "F",
+   "take": "t1",
+   "cat": "event",
+   "src": "fold",
+   "out": "ship_engine_cough_0",
+   "hp": 40
+  },
+  {
+   "id": "ship_engine_cough",
+   "wave": "F",
+   "take": "t2",
+   "cat": "event",
+   "src": "fold",
+   "out": "ship_engine_cough_1",
+   "hp": 40
+  },
+  {
+   "id": "ship_power_charge",
+   "wave": "F",
+   "take": "t1",
+   "cat": "event",
+   "src": "fold",
+   "out": "ship_power_charge_0",
+   "hp": 40
+  },
+  {
+   "id": "death_metal_powerdown",
+   "wave": "F",
+   "take": "t1",
+   "cat": "death",
+   "src": "fold",
+   "out": "death_metal_powerdown_0",
+   "hp": 40
+  },
+  {
+   "id": "death_metal_vent",
+   "wave": "F",
+   "take": "t1",
+   "cat": "death",
+   "src": "fold",
+   "out": "death_metal_vent_0",
+   "hp": 40
+  },
+  {
+   "id": "death_metal_vent",
+   "wave": "F",
+   "take": "t2",
+   "cat": "death",
+   "src": "fold",
+   "out": "death_metal_vent_1",
+   "hp": 40
+  },
+  {
+   "id": "death_metal_crack",
+   "wave": "F",
+   "take": "t2",
+   "cat": "death",
+   "src": "fold",
+   "out": "death_metal_crack_0",
+   "hp": 40
+  },
+  {
+   "id": "death_debris_cool",
+   "wave": "F",
+   "take": "t1",
+   "cat": "death",
+   "src": "R",
+   "out": "death_debris_cool_0",
+   "hp": 60
+  },
+  {
+   "id": "death_hulk_vent",
+   "wave": "F",
+   "take": "t1",
+   "cat": "death",
+   "src": "fold",
+   "out": "death_hulk_vent_0",
+   "hp": 40,
+   "gain_db": 10
+  },
+  {
+   "id": "death_metal_tail",
+   "wave": "F",
+   "take": "t1",
+   "cat": "death",
+   "src": "fold",
+   "out": "death_metal_tail_0",
+   "hp": 40
+  },
+  {
+   "id": "death_metal_tail",
+   "wave": "F",
+   "take": "t2",
+   "cat": "death",
+   "src": "fold",
+   "out": "death_metal_tail_1",
+   "hp": 40
+  },
+  {
+   "id": "death_bass_drop",
+   "wave": "F",
+   "take": "t1",
+   "cat": "death",
+   "src": "fold",
+   "out": "death_bass_drop_0",
+   "hp": 25
+  },
+  {
+   "id": "ord_brace_lock",
+   "wave": "F",
+   "take": "t2",
+   "cat": "event",
+   "src": "fold",
+   "out": "ord_brace_lock_0",
+   "hp": 40
+  },
+  {
+   "id": "ord_adapt_shift",
+   "wave": "F",
+   "take": "t1",
+   "cat": "event",
+   "src": "L",
+   "out": "ord_adapt_shift_0",
+   "hp": 40
+  },
+  {
+   "id": "ord_board_grapple",
+   "wave": "F",
+   "take": "t2",
+   "cat": "event",
+   "src": "fold",
+   "out": "ord_board_grapple_0",
+   "hp": 40
+  },
+  {
+   "id": "ui_cancel_switch",
+   "wave": "F",
+   "take": "t3",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_cancel_switch_0",
+   "hp": 40
+  },
+  {
+   "id": "ui_select_detent",
+   "wave": "F",
+   "take": "t1",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_select_detent_0",
+   "hp": 40,
+   "trim_ms": 58
+  },
+  {
+   "id": "ui_select_detent",
+   "wave": "F",
+   "take": "t2",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_select_detent_1",
+   "hp": 40,
+   "trim_ms": 132
+  },
+  {
+   "id": "ui_hover_tick",
+   "wave": "F",
+   "take": "t1",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_hover_tick_0",
+   "hp": 40,
+   "trim_ms": 90
+  },
+  {
+   "id": "ui_panel_slide",
+   "wave": "F",
+   "take": "t1",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_panel_slide_0",
+   "hp": 40,
+   "trim_ms": 95
+  },
+  {
+   "id": "ui_panel_slide",
+   "wave": "F",
+   "take": "t2",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_panel_slide_1",
+   "hp": 40,
+   "trim_ms": 115
+  },
+  {
+   "id": "ui_alert_bell",
+   "wave": "F",
+   "take": "t2",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_alert_bell_0",
+   "hp": 40,
+   "gain_db": 5
+  },
+  {
+   "id": "ui_round_bell",
+   "wave": "F",
+   "take": "t1",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_round_bell_0",
+   "hp": 40,
+   "trim_ms": 40,
+   "gain_db": 8
+  },
+  {
+   "id": "ui_enemy_turn",
+   "wave": "F",
+   "take": "t2",
+   "cat": "ui",
+   "src": "stereo",
+   "out": "ui_enemy_turn_0",
+   "hp": 35
+  },
+  {
+   "id": "wep_hullbreaker_rockets_b",
+   "wave": "F",
+   "take": "t2",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_hullbreaker_rockets_b_0",
+   "hp": 40
+  },
+  {
+   "id": "ui_boss_arrival_long",
+   "wave": "F",
+   "take": "t2",
+   "cat": "ui",
+   "src": "stereo",
+   "out": "ui_boss_arrival_long_0",
+   "hp": 30
+  },
+  {
+   "id": "dmg_engine_fail_long",
+   "wave": "F",
+   "take": "t2",
+   "cat": "damage",
+   "src": "R",
+   "out": "dmg_engine_fail_long_0",
+   "hp": 40
+  },
+  {
+   "id": "evt_ram_impact",
+   "wave": "F",
+   "take": "t1",
+   "cat": "event",
+   "src": "fold",
+   "out": "evt_ram_impact_0",
+   "hp": 40
+  },
+  {
+   "id": "shd_raise",
+   "wave": "F",
+   "take": "t2",
+   "cat": "shield",
+   "src": "L",
+   "out": "shd_raise_0",
+   "hp": 40,
+   "trim_ms": 30,
+   "eq": "shield_presence"
+  },
+  {
+   "id": "evt_gravity_well",
+   "wave": "F",
+   "take": "t1",
+   "cat": "amb",
+   "src": "stereo",
+   "out": "evt_gravity_well_0",
+   "hp": 35,
+   "notrim": true,
+   "gain_db": 8
+  },
+  {
+   "id": "evt_nebula_bed",
+   "wave": "F",
+   "take": "t1",
+   "cat": "amb",
+   "src": "stereo",
+   "out": "evt_nebula_bed_0",
+   "hp": 40,
+   "notrim": true,
+   "gain_db": 23
+  },
+  {
+   "id": "evt_asteroid_scrape",
+   "wave": "F",
+   "take": "t1",
+   "cat": "event",
+   "src": "fold",
+   "out": "evt_asteroid_scrape_0",
+   "hp": 40
+  },
+  {
+   "id": "evt_asteroid_scrape",
+   "wave": "F",
+   "take": "t2",
+   "cat": "event",
+   "src": "fold",
+   "out": "evt_asteroid_scrape_1",
+   "hp": 40
+  },
+  {
+   "id": "evt_hull_alarm",
+   "wave": "F",
+   "take": "t1",
+   "cat": "event",
+   "src": "fold",
+   "out": "evt_hull_alarm_0",
+   "hp": 40
+  },
+  {
+   "id": "ui_command_issue",
+   "wave": "F",
+   "take": "t1",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_command_issue_0",
+   "hp": 40
+  },
+  {
+   "id": "ui_command_issue",
+   "wave": "F",
+   "take": "t2",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_command_issue_1",
+   "hp": 40
+  },
+  {
+   "id": "map_fleet_jump",
+   "wave": "F",
+   "take": "t1",
+   "cat": "event",
+   "src": "stereo",
+   "out": "map_fleet_jump_0",
+   "hp": 35,
+   "trim_ms": 40
+  },
+  {
+   "id": "map_fleet_arrive",
+   "wave": "F",
+   "take": "t1",
+   "cat": "event",
+   "src": "fold",
+   "out": "map_fleet_arrive_0",
+   "hp": 40,
+   "trim_ms": 65
+  },
+  {
+   "id": "ui_purchase",
+   "wave": "F",
+   "take": "t1",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_purchase_0",
+   "hp": 40
+  },
+  {
+   "id": "ui_purchase",
+   "wave": "F",
+   "take": "t2",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_purchase_1",
+   "hp": 40
+  },
+  {
+   "id": "ui_module_install",
+   "wave": "F",
+   "take": "t1",
+   "cat": "ui",
+   "src": "stereo",
+   "out": "ui_module_install_0",
+   "hp": 40
+  },
+  {
+   "id": "ui_relic_socket",
+   "wave": "F",
+   "take": "t1",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_relic_socket_0",
+   "hp": 40,
+   "trim_ms": 150
+  },
+  {
+   "id": "ui_relic_socket",
+   "wave": "F",
+   "take": "t2",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_relic_socket_1",
+   "hp": 40,
+   "trim_ms": 90
+  },
+  {
+   "id": "ui_rank_up",
+   "wave": "F",
+   "take": "t2",
+   "cat": "ui",
+   "src": "stereo",
+   "out": "ui_rank_up_0",
+   "hp": 40,
+   "trim_ms": 50
+  },
+  {
+   "id": "ui_event_comm",
+   "wave": "F",
+   "take": "t1",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_event_comm_0",
+   "hp": 40
+  },
+  {
+   "id": "ui_event_comm",
+   "wave": "F",
+   "take": "t2",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_event_comm_1",
+   "hp": 40
+  },
+  {
+   "id": "ui_ship_lost",
+   "wave": "F",
+   "take": "t2",
+   "cat": "ui",
+   "src": "fold",
+   "out": "ui_ship_lost_0",
+   "hp": 40,
+   "trim_ms": 30
+  },
+  {
+   "id": "imp_metal_light_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "impact",
+   "src": "R",
+   "out": "imp_metal_light_more_0",
+   "hp": 40
+  },
+  {
+   "id": "imp_metal_heavy_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "impact",
+   "src": "fold",
+   "out": "imp_metal_heavy_more_0",
+   "hp": 40
+  },
+  {
+   "id": "imp_las_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "impact",
+   "src": "L",
+   "out": "imp_las_more_0",
+   "hp": 40
+  },
+  {
+   "id": "imp_bio_flesh_more",
+   "wave": "F",
+   "take": "t1",
+   "cat": "impact",
+   "src": "fold",
+   "out": "imp_bio_flesh_more_0",
+   "hp": 65,
+   "eq": "bio"
+  },
+  {
+   "id": "imp_bio_flesh_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "impact",
+   "src": "fold",
+   "out": "imp_bio_flesh_more_1",
+   "hp": 65,
+   "eq": "bio"
+  },
+  {
+   "id": "imp_glass_armor_more",
+   "wave": "F",
+   "take": "t1",
+   "cat": "impact",
+   "src": "fold",
+   "out": "imp_glass_armor_more_0",
+   "hp": 40,
+   "eq": "presence"
+  },
+  {
+   "id": "imp_glass_armor_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "impact",
+   "src": "fold",
+   "out": "imp_glass_armor_more_1",
+   "hp": 40,
+   "eq": "presence"
+  },
+  {
+   "id": "imp_obsidian_eclipse_more",
+   "wave": "F",
+   "take": "t1",
+   "cat": "impact",
+   "src": "fold",
+   "out": "imp_obsidian_eclipse_more_0",
+   "hp": 40,
+   "trim_ms": 27
+  },
+  {
+   "id": "imp_obsidian_eclipse_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "impact",
+   "src": "fold",
+   "out": "imp_obsidian_eclipse_more_1",
+   "hp": 40,
+   "trim_ms": 0
+  },
+  {
+   "id": "shd_hit_absorb_more",
+   "wave": "F",
+   "take": "t1",
+   "cat": "shield",
+   "src": "fold",
+   "out": "shd_hit_absorb_more_0",
+   "hp": 40,
+   "trim_ms": 20
+  },
+  {
+   "id": "wep_sunward_hbattery_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_sunward_hbattery_more_0",
+   "hp": 40
+  },
+  {
+   "id": "wep_flak_airburst_more",
+   "wave": "F",
+   "take": "t1",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_flak_airburst_more_0",
+   "hp": 40
+  },
+  {
+   "id": "wep_directorate_laser_b_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_directorate_laser_b_more_0",
+   "hp": 40,
+   "gain_db": 5
+  },
+  {
+   "id": "wep_directorate_turbo_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "weapon",
+   "src": "L",
+   "out": "wep_directorate_turbo_more_0",
+   "hp": 40
+  },
+  {
+   "id": "wep_directorate_hturbo_more",
+   "wave": "F",
+   "take": "t1",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_directorate_hturbo_more_0",
+   "hp": 40,
+   "eq": "presence"
+  },
+  {
+   "id": "wep_directorate_hturbo_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_directorate_hturbo_more_1",
+   "hp": 40,
+   "eq": "presence"
+  },
+  {
+   "id": "wep_directorate_picket_more",
+   "wave": "F",
+   "take": "t1",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_directorate_picket_more_0",
+   "hp": 40
+  },
+  {
+   "id": "wep_hullbreaker_scatter_more",
+   "wave": "F",
+   "take": "t1",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_hullbreaker_scatter_more_0",
+   "hp": 40
+  },
+  {
+   "id": "wep_hullbreaker_junk_gun_more",
+   "wave": "F",
+   "take": "t1",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_hullbreaker_junk_gun_more_0",
+   "hp": 40
+  },
+  {
+   "id": "wep_chorus_spines_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_chorus_spines_more_0",
+   "hp": 40
+  },
+  {
+   "id": "wep_chorus_spore_cloud_more",
+   "wave": "F",
+   "take": "t1",
+   "cat": "weapon",
+   "src": "R",
+   "out": "wep_chorus_spore_cloud_more_0",
+   "hp": 40
+  },
+  {
+   "id": "wep_chorus_sporeb_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_chorus_sporeb_more_0",
+   "hp": 40
+  },
+  {
+   "id": "wep_ithar_shard_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_ithar_shard_more_0",
+   "hp": 40
+  },
+  {
+   "id": "wep_ithar_needle_more",
+   "wave": "F",
+   "take": "t1",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_ithar_needle_more_0",
+   "hp": 50,
+   "eq": "presence"
+  },
+  {
+   "id": "wep_ithar_needle_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_ithar_needle_more_1",
+   "hp": 50,
+   "eq": "presence"
+  },
+  {
+   "id": "wep_eclipse_gauss_fire_ctl_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "weapon",
+   "src": "R",
+   "out": "wep_eclipse_gauss_fire_ctl_more_0",
+   "hp": 40,
+   "eq": "presence"
+  },
+  {
+   "id": "ui_confirm_latch_more",
+   "wave": "F",
+   "take": "t2",
+   "cat": "ui",
+   "src": "stereo",
+   "out": "ui_confirm_latch_more_0",
+   "hp": 40,
+   "trim_ms": 11
+  },
+  {
+   "id": "wep_sunward_battery",
+   "wave": "A",
+   "take": "t2",
+   "cat": "weapon",
+   "src": "fold",
+   "out": "wep_sunward_battery_0",
+   "hp": 40
+  },
+  {
+   "id": "ui_click_switch",
+   "wave": "A",
+   "take": "t1",
+   "cat": "ui",
+   "src": "stereo",
+   "out": "ui_click_switch_0",
+   "hp": 40,
+   "trim_ms": 24
+  }
+ ]
+}

@@ -2,7 +2,7 @@
  "batch": "elevenlabs_gate3",
  "gate": 3,
  "made_for": "issue 1752 Gate 3 (Ryan, Nov 23 2026 11:02 PM and 11:09 PM CT: more music, more variety, use the credits, prompts shaped by past waves, music on theme for each faction, new sound effects)",
- "note": "Wave F: every sound still on an old placeholder, the Gate 3 re-rolls, 16 new moments the game has no sound for yet, and 2 more takes of 27 most-heard keepers re-made from each keeper's exact recorded parameters (relay manifests) for the round robin. Wave M (run as M1, one calm and intense pair plus the stem test, measured for beat and loop alignment before M2, Artoo on PR 1942): a full soundtrack (calm and intense battle layers per faction from the sound playbook's faction voices, title, 6 map, 2 boss, nemesis, shop, 3 reward, 7 stings) plus one stem split test. Prompts follow plan sections 2 to 8 (identity first, one size word, banned-word list, no negative nouns, deaths centered and midrange, UI acoustic and mechanical).",
+ "note": "Wave F: every sound still on an old placeholder, the Gate 3 re-rolls, 16 new moments the game has no sound for yet, and 2 more takes of 27 most-heard keepers re-made from each keeper's exact recorded parameters (relay manifests) for the round robin. Wave M (run as M1, one calm and intense pair plus the stem test, measured for beat and loop alignment before M2, Artoo on PR 1942): a full soundtrack (calm and intense battle layers per faction from the sound playbook's faction voices, title, 6 map, 2 boss, nemesis, shop, 3 reward, 7 stings) plus one stem split test. Prompts follow plan sections 2 to 8 (identity first, one size word, banned-word list, no negative nouns, deaths centered and midrange, UI acoustic and mechanical). F2 and M2 are staged only. Run M2_test first and review the stem split before selecting the remaining M2 ids. No live run without Ryan typing go.",
  "sfx_model": "eleven_text_to_sound_v3",
  "music_model": "music_v2",
  "waves": {
@@ -88,10 +88,25 @@
    "wep_craft_guns_more",
    "ui_confirm_latch_more"
   ],
+  "F2": [
+   "ship_thruster_puff_f2",
+   "death_metal_run_f2",
+   "wep_ithar_pulsar_b_f2",
+   "evt_torp_intercept_f2",
+   "imp_energy_sear_more_f2",
+   "wep_sunward_autocannon_more_f2",
+   "wep_sunward_turret_more_f2",
+   "wep_eclipse_gsentry_more_f2",
+   "wep_craft_guns_more_f2"
+  ],
   "M1": [
    "mus_voidsworn_calm",
    "mus_voidsworn_hot",
    "mus_battle_sunward_stemloop"
+  ],
+  "M2_test": [
+   "mus_ithar_loop_a",
+   "mus_chorus_loop_a"
   ],
   "M2": [
    "mus_voidsworn_loop_b",
@@ -99,9 +114,7 @@
    "mus_hegemony_loop_b",
    "mus_corsair_loop_a",
    "mus_corsair_loop_b",
-   "mus_chorus_loop_a",
    "mus_chorus_loop_b",
-   "mus_ithar_loop_a",
    "mus_ithar_loop_b",
    "mus_deathless_loop_a",
    "mus_deathless_loop_b",
@@ -1165,10 +1178,16 @@
    "cue": "battle music loop b for voidsworn fights, with stems: calm layer = all but drums, intense = full mix",
    "today": null,
    "group": "music",
-   "seconds": 60,
+   "seconds": 60.0,
    "takes": 1,
    "prompt": "Space fleet battle music for the Sunward Crusade, a zealous iron fleet that burns with the fire of a dying sun. Instrumental, 96 BPM, 4/4, D minor, 24 bars. Weathered low brass, solemn cellos and double basses, deep war drums, a grave cathedral pipe organ and struck anvil and forge-iron percussion. Mood: solemn and vigilant yet driving. Built as one continuous loop with four parts that all play in every bar from the first to the last: deep measured war drums and struck anvils; a driving low ostinato; a lead line carrying a grave four-note motif, the notes D, A, F, E, varied every four bars; and a sustained harmonic pad. Even energy and density from start to finish, interest from a chord progression that moves every two bars; starts at full texture and the final bar leads straight back into the first. Cinematic and heavy. Real acoustic orchestra, instrumental, no vocals, no choir.",
-   "stems": true
+   "stems": true,
+   "loop_grid": {
+    "bpm": 96,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_hegemony_loop_a",
@@ -1176,10 +1195,16 @@
    "cue": "battle music loop a for hegemony fights, with stems: calm layer = all but drums, intense = full mix",
    "today": null,
    "group": "music",
-   "seconds": 60,
+   "seconds": 60.0,
    "takes": 1,
    "prompt": "Space fleet battle music for the Meridian Directorate, a pale disciplined machine of order. Instrumental, 96 BPM, 4/4, C minor, 24 bars. A precise military brass section, crisp marching snare and field drums, tight staccato strings and timpani, over a cold steady sustained string tone. Mood: relentless and disciplined, a perfectly drilled advance. Built as one continuous loop with four parts that all play in every bar from the first to the last: crisp marching snare and field drums; a driving low ostinato; a lead line carrying a clipped rising five-note march motif, varied every four bars; and a sustained harmonic pad. Even energy and density from start to finish, interest from a chord progression that moves every two bars; starts at full texture and the final bar leads straight back into the first. Cinematic and heavy. Real acoustic orchestra, instrumental, no vocals, no choir.",
-   "stems": true
+   "stems": true,
+   "loop_grid": {
+    "bpm": 96,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_hegemony_loop_b",
@@ -1187,10 +1212,16 @@
    "cue": "battle music loop b for hegemony fights, with stems: calm layer = all but drums, intense = full mix",
    "today": null,
    "group": "music",
-   "seconds": 56,
+   "seconds": 56.470588,
    "takes": 1,
    "prompt": "Space fleet battle music for the Meridian Directorate, a pale disciplined machine of order. Instrumental, 102 BPM, 4/4, C minor, 24 bars. A precise military brass section, crisp marching snare and field drums, tight staccato strings and timpani, over a cold steady sustained string tone. Mood: cold yet driving. Built as one continuous loop with four parts that all play in every bar from the first to the last: crisp marching snare and field drums; a driving low ostinato; a lead line carrying a clipped rising five-note march motif, varied every four bars; and a sustained harmonic pad. Even energy and density from start to finish, interest from a chord progression that moves every two bars; starts at full texture and the final bar leads straight back into the first. Cinematic and heavy. Real acoustic orchestra, instrumental, no vocals, no choir.",
-   "stems": true
+   "stems": true,
+   "loop_grid": {
+    "bpm": 102,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_corsair_loop_a",
@@ -1198,10 +1229,16 @@
    "cue": "battle music loop a for corsair fights, with stems: calm layer = all but drums, intense = full mix",
    "today": null,
    "group": "music",
-   "seconds": 55,
+   "seconds": 55.384615,
    "takes": 1,
    "prompt": "Space fleet battle music for the Ashfall Hullbreakers, rusted scavenger raiders in junk-built ships. Instrumental, 104 BPM, 4/4, E minor, 24 bars. Pounding war drums, clattering struck scrap-metal and chain percussion, rough driving low strings and blaring detuned low brass. Mood: savage, rowdy and reckless, a raid in full swing. Built as one continuous loop with four parts that all play in every bar from the first to the last: pounding war drums and clattering scrap-metal percussion; a driving low ostinato; a lead line carrying a brutal stomping three-note riff, varied every four bars; and a sustained harmonic pad. Even energy and density from start to finish, interest from a chord progression that moves every two bars; starts at full texture and the final bar leads straight back into the first. Cinematic and heavy. Real acoustic orchestra, instrumental, no vocals, no choir.",
-   "stems": true
+   "stems": true,
+   "loop_grid": {
+    "bpm": 104,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_corsair_loop_b",
@@ -1209,10 +1246,16 @@
    "cue": "battle music loop b for corsair fights, with stems: calm layer = all but drums, intense = full mix",
    "today": null,
    "group": "music",
-   "seconds": 52,
+   "seconds": 52.363636,
    "takes": 1,
    "prompt": "Space fleet battle music for the Ashfall Hullbreakers, rusted scavenger raiders in junk-built ships. Instrumental, 110 BPM, 4/4, E minor, 24 bars. Pounding war drums, clattering struck scrap-metal and chain percussion, rough driving low strings and blaring detuned low brass. Mood: prowling and restless yet driving. Built as one continuous loop with four parts that all play in every bar from the first to the last: pounding war drums and clattering scrap-metal percussion; a driving low ostinato; a lead line carrying a brutal stomping three-note riff, varied every four bars; and a sustained harmonic pad. Even energy and density from start to finish, interest from a chord progression that moves every two bars; starts at full texture and the final bar leads straight back into the first. Cinematic and heavy. Real acoustic orchestra, instrumental, no vocals, no choir.",
-   "stems": true
+   "stems": true,
+   "loop_grid": {
+    "bpm": 110,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_chorus_loop_a",
@@ -1220,10 +1263,16 @@
    "cue": "battle music loop a for chorus fights, with stems: calm layer = all but drums, intense = full mix",
    "today": null,
    "group": "music",
-   "seconds": 76,
+   "seconds": 75.789474,
    "takes": 1,
-   "prompt": "Space fleet battle music for the Chorus, vast eyeless living ships grown as weapons. Instrumental, 76 BPM, 4/4, B minor, 24 bars. Slow breathing bowed double basses, eerie bowed metal and glass textures, deep frame drums beating like a vast heartbeat and col legno strings like creaking growth. Mood: overwhelming and alien, a vast living tide rising. Built as one continuous loop with four parts that all play in every bar from the first to the last: deep frame drums beating like a vast heartbeat; a driving low ostinato; a lead line carrying a slow creeping half-step motif, varied every four bars; and a sustained harmonic pad. Even energy and density from start to finish, interest from a chord progression that moves every two bars; starts at full texture and the final bar leads straight back into the first. Cinematic and heavy. Real acoustic orchestra, instrumental, no vocals, no choir.",
-   "stems": true
+   "prompt": "Space fleet battle music for the Chorus, vast eyeless living ships grown as weapons. Instrumental, 76 BPM, 4/4, B minor, 24 bars. Slow breathing double basses and low contrabassoon reeds pulse beneath bone-like string harmonics, with deep frame drums playing a distinct heartbeat. A creeping half-step figure answers the reeds in a steady breathing pattern. Alien, organic, and unnerving. Continuous loop with even energy from the first beat to the last. Start at full texture. End exactly before the first downbeat repeats. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "stems": true,
+   "loop_grid": {
+    "bpm": 76,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_chorus_loop_b",
@@ -1231,10 +1280,16 @@
    "cue": "battle music loop b for chorus fights, with stems: calm layer = all but drums, intense = full mix",
    "today": null,
    "group": "music",
-   "seconds": 70,
+   "seconds": 70.243902,
    "takes": 1,
-   "prompt": "Space fleet battle music for the Chorus, vast eyeless living ships grown as weapons. Instrumental, 82 BPM, 4/4, B minor, 24 bars. Slow breathing bowed double basses, eerie bowed metal and glass textures, deep frame drums beating like a vast heartbeat and col legno strings like creaking growth. Mood: alien yet driving. Built as one continuous loop with four parts that all play in every bar from the first to the last: deep frame drums beating like a vast heartbeat; a driving low ostinato; a lead line carrying a slow creeping half-step motif, varied every four bars; and a sustained harmonic pad. Even energy and density from start to finish, interest from a chord progression that moves every two bars; starts at full texture and the final bar leads straight back into the first. Cinematic and heavy. Real acoustic orchestra, instrumental, no vocals, no choir.",
-   "stems": true
+   "prompt": "Space fleet battle music for the Chorus, vast eyeless living ships grown as weapons. Instrumental, 82 BPM, 4/4, B minor, 24 bars. A dark contrabassoon call returns over bowed bass and a steady organic sub pulse. Dry col legno taps answer the widely spaced frame-drum heartbeat while bone-like harmonics hang in the gaps. Unsettling and patient. Continuous loop with even energy from the first beat to the last. Start at full texture. End exactly before the first downbeat repeats. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "stems": true,
+   "loop_grid": {
+    "bpm": 82,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_ithar_loop_a",
@@ -1242,10 +1297,16 @@
    "cue": "battle music loop a for ithar fights, with stems: calm layer = all but drums, intense = full mix",
    "today": null,
    "group": "music",
-   "seconds": 65,
+   "seconds": 65.454545,
    "takes": 1,
-   "prompt": "Space fleet battle music for the Glasswrights, elite optical engineers whose ships catch and release light. Instrumental, 88 BPM, 4/4, F sharp minor, 24 bars. Glass harmonica, celesta, harp and crystalline tuned percussion over shimmering high strings and warm low cellos. Mood: brilliant and exacting, elite precision at full power. Built as one continuous loop with four parts that all play in every bar from the first to the last: precise tuned crystalline percussion and light timpani; a driving low ostinato; a lead line carrying an elegant precise rising arpeggio motif, varied every four bars; and a sustained harmonic pad. Even energy and density from start to finish, interest from a chord progression that moves every two bars; starts at full texture and the final bar leads straight back into the first. Cinematic and heavy. Real acoustic orchestra, instrumental, no vocals, no choir.",
-   "stems": true
+   "prompt": "Space fleet battle music for the Glasswrights, elite optical engineers whose ships catch and release light. Instrumental, 88 BPM, 4/4, F sharp minor, 24 bars. Luminous glass harmonica, high harp and poised celesta arpeggios. Light timpani mark a clear pulse apart from precise tuned crystalline percussion. A small motif refracts through shimmering voicings. Airy, measured, and bright. Continuous loop with even energy from the first beat to the last. Start at full texture. End exactly before the first downbeat repeats. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "stems": true,
+   "loop_grid": {
+    "bpm": 88,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_ithar_loop_b",
@@ -1253,10 +1314,16 @@
    "cue": "battle music loop b for ithar fights, with stems: calm layer = all but drums, intense = full mix",
    "today": null,
    "group": "music",
-   "seconds": 61,
+   "seconds": 61.276596,
    "takes": 1,
-   "prompt": "Space fleet battle music for the Glasswrights, elite optical engineers whose ships catch and release light. Instrumental, 94 BPM, 4/4, F sharp minor, 24 bars. Glass harmonica, celesta, harp and crystalline tuned percussion over shimmering high strings and warm low cellos. Mood: luminous yet driving. Built as one continuous loop with four parts that all play in every bar from the first to the last: precise tuned crystalline percussion and light timpani; a driving low ostinato; a lead line carrying an elegant precise rising arpeggio motif, varied every four bars; and a sustained harmonic pad. Even energy and density from start to finish, interest from a chord progression that moves every two bars; starts at full texture and the final bar leads straight back into the first. Cinematic and heavy. Real acoustic orchestra, instrumental, no vocals, no choir.",
-   "stems": true
+   "prompt": "Space fleet battle music for the Glasswrights, elite optical engineers whose ships catch and release light. Instrumental, 94 BPM, 4/4, F sharp minor, 24 bars. A poised high celesta figure passes to glass harmonica over gently shifting harp arpeggios. Delicate but distinct timpani keep a clean light pulse. Crystalline, precise, and translucent. Continuous loop with even energy from the first beat to the last. Start at full texture. End exactly before the first downbeat repeats. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "stems": true,
+   "loop_grid": {
+    "bpm": 94,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_deathless_loop_a",
@@ -1264,10 +1331,16 @@
    "cue": "battle music loop a for deathless fights, with stems: calm layer = all but drums, intense = full mix",
    "today": null,
    "group": "music",
-   "seconds": 69,
+   "seconds": 68.571429,
    "takes": 1,
-   "prompt": "Space fleet battle music for Eclipse, cold obsidian monoliths that eat light. Instrumental, 84 BPM, 4/4, C sharp minor, 24 bars. One low held pedal note sustained under everything, massive deep taiko, a relentless low string ostinato, dark low brass clusters and heavy anvil strikes like a machine. Mood: crushing and mechanical, an eclipse swallowing the sun. Built as one continuous loop with four parts that all play in every bar from the first to the last: massive deep taiko and heavy anvil strikes; a driving low ostinato; a lead line carrying a cold repeating four-note pulse, varied every four bars; and a sustained harmonic pad. Even energy and density from start to finish, interest from a chord progression that moves every two bars; starts at full texture and the final bar leads straight back into the first. Cinematic and heavy. Real acoustic orchestra, instrumental, no vocals, no choir.",
-   "stems": true
+   "prompt": "Space fleet battle music for Eclipse, cold obsidian monoliths that eat light. Instrumental, 84 BPM, 4/4, C sharp minor, 24 bars. Glacial hollow sub-brass and a low sustained pedal. Sparse resonant obsidian chimes answer measured deep taiko hits, with wide dark spaces between accents. A cold four-note pulse surfaces and recedes without changing overall density. Continuous loop with even energy from the first beat to the last. Start at full texture. End exactly before the first downbeat repeats. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "stems": true,
+   "loop_grid": {
+    "bpm": 84,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_deathless_loop_b",
@@ -1275,10 +1348,16 @@
    "cue": "battle music loop b for deathless fights, with stems: calm layer = all but drums, intense = full mix",
    "today": null,
    "group": "music",
-   "seconds": 64,
+   "seconds": 64.0,
    "takes": 1,
-   "prompt": "Space fleet battle music for Eclipse, cold obsidian monoliths that eat light. Instrumental, 90 BPM, 4/4, C sharp minor, 24 bars. One low held pedal note sustained under everything, massive deep taiko, a relentless low string ostinato, dark low brass clusters and heavy anvil strikes like a machine. Mood: cold yet driving. Built as one continuous loop with four parts that all play in every bar from the first to the last: massive deep taiko and heavy anvil strikes; a driving low ostinato; a lead line carrying a cold repeating four-note pulse, varied every four bars; and a sustained harmonic pad. Even energy and density from start to finish, interest from a chord progression that moves every two bars; starts at full texture and the final bar leads straight back into the first. Cinematic and heavy. Real acoustic orchestra, instrumental, no vocals, no choir.",
-   "stems": true
+   "prompt": "Space fleet battle music for Eclipse, cold obsidian monoliths that eat light. Instrumental, 90 BPM, 4/4, C sharp minor, 24 bars. A low held pedal and hollow brass clusters set the ground. Deep taiko plays widely spaced hits while sparse obsidian chimes mark a four-note signal. Sparse, glacial, and patient. Continuous loop with even energy from the first beat to the last. Start at full texture. End exactly before the first downbeat repeats. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "stems": true,
+   "loop_grid": {
+    "bpm": 90,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_title",
@@ -1296,9 +1375,15 @@
    "cue": "campaign map music, sector 1 (option 1)",
    "today": "map_sector",
    "group": "music",
-   "seconds": 120,
+   "seconds": 72.727273,
    "takes": 1,
-   "prompt": "Atmospheric campaign map music for a space fleet strategy game: the inner worlds near the dying sun, warm embers and old glory fading. 66 BPM, 4/4, 33 bars. Slow low string pads, a distant solo French horn, soft timpani rolls and a quiet warm harp, with a faint echo of a grave four-note motif, the notes D, A, F, E. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Quiet and spacious, never busy, sits under menus. Real acoustic orchestra, instrumental, no vocals, no choir."
+   "prompt": "Atmospheric campaign map music for a space fleet strategy game: the inner worlds near the dying sun, warm embers and old glory fading. 66 BPM, 4/4, 20 bars. Slow low string pads, a distant solo French horn, soft timpani rolls and a quiet warm harp, with a faint echo of a grave four-note motif, the notes D, A, F, E. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Quiet and spacious, never busy, sits under menus. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "loop_grid": {
+    "bpm": 66,
+    "beats_per_bar": 4,
+    "bars": 20,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_map_s1_2",
@@ -1306,9 +1391,15 @@
    "cue": "campaign map music, sector 1 (option 2)",
    "today": "map_sector",
    "group": "music",
-   "seconds": 120,
+   "seconds": 72.0,
    "takes": 1,
-   "prompt": "Atmospheric campaign map music for a space fleet strategy game: the inner worlds near the dying sun, warm embers and old glory fading. 60 BPM, 4/4, 30 bars. Slow low string pads, a distant solo French horn, soft timpani rolls and a quiet warm harp, with a faint echo of a grave four-note motif, the notes D, A, F, E. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Quiet and spacious, never busy, sits under menus. Real acoustic orchestra, instrumental, no vocals, no choir."
+   "prompt": "Atmospheric campaign map music for a space fleet strategy game: the inner worlds near the dying sun, warm embers and old glory fading. 60 BPM, 4/4, 18 bars. Slow low string pads, a distant solo French horn, soft timpani rolls and a quiet warm harp, with a faint echo of a grave four-note motif, the notes D, A, F, E. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Quiet and spacious, never busy, sits under menus. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "loop_grid": {
+    "bpm": 60,
+    "beats_per_bar": 4,
+    "bars": 18,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_map_s2_1",
@@ -1316,9 +1407,15 @@
    "cue": "campaign map music, sector 2 (option 1)",
    "today": "map_drone",
    "group": "music",
-   "seconds": 120,
+   "seconds": 72.727273,
    "takes": 1,
-   "prompt": "Atmospheric campaign map music for a space fleet strategy game: the contested middle reaches, uneasy and searching. 66 BPM, 4/4, 33 bars. Sparse low pizzicato strings, a soft muted trumpet line, quiet bowed metal and a slow ticking woodblock, with a faint echo of a grave four-note motif, the notes D, A, F, E. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Quiet and spacious, never busy, sits under menus. Real acoustic orchestra, instrumental, no vocals, no choir."
+   "prompt": "Atmospheric campaign map music for a space fleet strategy game: the contested middle reaches, uneasy and searching. 66 BPM, 4/4, 20 bars. Sparse low pizzicato strings, a soft muted trumpet line, quiet bowed metal and a slow ticking woodblock, with a faint echo of a grave four-note motif, the notes D, A, F, E. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Quiet and spacious, never busy, sits under menus. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "loop_grid": {
+    "bpm": 66,
+    "beats_per_bar": 4,
+    "bars": 20,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_map_s2_2",
@@ -1326,9 +1423,15 @@
    "cue": "campaign map music, sector 2 (option 2)",
    "today": "map_drone",
    "group": "music",
-   "seconds": 120,
+   "seconds": 72.0,
    "takes": 1,
-   "prompt": "Atmospheric campaign map music for a space fleet strategy game: the contested middle reaches, uneasy and searching. 60 BPM, 4/4, 30 bars. Sparse low pizzicato strings, a soft muted trumpet line, quiet bowed metal and a slow ticking woodblock, with a faint echo of a grave four-note motif, the notes D, A, F, E. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Quiet and spacious, never busy, sits under menus. Real acoustic orchestra, instrumental, no vocals, no choir."
+   "prompt": "Atmospheric campaign map music for a space fleet strategy game: the contested middle reaches, uneasy and searching. 60 BPM, 4/4, 18 bars. Sparse low pizzicato strings, a soft muted trumpet line, quiet bowed metal and a slow ticking woodblock, with a faint echo of a grave four-note motif, the notes D, A, F, E. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Quiet and spacious, never busy, sits under menus. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "loop_grid": {
+    "bpm": 60,
+    "beats_per_bar": 4,
+    "bars": 18,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_map_s3_1",
@@ -1336,9 +1439,15 @@
    "cue": "campaign map music, sector 3 (option 1)",
    "today": "map_signal",
    "group": "music",
-   "seconds": 120,
+   "seconds": 72.727273,
    "takes": 1,
-   "prompt": "Atmospheric campaign map music for a space fleet strategy game: the cold dark outer edge where the light fails, deep and ominous. 66 BPM, 4/4, 33 bars. Sustained double basses, low clarinets, a slow distant war drum and faint bowed glass, with a faint echo of a grave four-note motif, the notes D, A, F, E. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Quiet and spacious, never busy, sits under menus. Real acoustic orchestra, instrumental, no vocals, no choir."
+   "prompt": "Atmospheric campaign map music for a space fleet strategy game: the cold dark outer edge where the light fails, deep and ominous. 66 BPM, 4/4, 20 bars. Sustained double basses, low clarinets, a slow distant war drum and faint bowed glass, with a faint echo of a grave four-note motif, the notes D, A, F, E. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Quiet and spacious, never busy, sits under menus. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "loop_grid": {
+    "bpm": 66,
+    "beats_per_bar": 4,
+    "bars": 20,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_map_s3_2",
@@ -1346,9 +1455,15 @@
    "cue": "campaign map music, sector 3 (option 2)",
    "today": "map_signal",
    "group": "music",
-   "seconds": 120,
+   "seconds": 72.0,
    "takes": 1,
-   "prompt": "Atmospheric campaign map music for a space fleet strategy game: the cold dark outer edge where the light fails, deep and ominous. 60 BPM, 4/4, 30 bars. Sustained double basses, low clarinets, a slow distant war drum and faint bowed glass, with a faint echo of a grave four-note motif, the notes D, A, F, E. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Quiet and spacious, never busy, sits under menus. Real acoustic orchestra, instrumental, no vocals, no choir."
+   "prompt": "Atmospheric campaign map music for a space fleet strategy game: the cold dark outer edge where the light fails, deep and ominous. 60 BPM, 4/4, 18 bars. Sustained double basses, low clarinets, a slow distant war drum and faint bowed glass, with a faint echo of a grave four-note motif, the notes D, A, F, E. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Quiet and spacious, never busy, sits under menus. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "loop_grid": {
+    "bpm": 60,
+    "beats_per_bar": 4,
+    "bars": 18,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_boss_1",
@@ -1356,9 +1471,17 @@
    "cue": "boss battle intense layer",
    "today": "boss_final",
    "group": "music",
-   "seconds": 120,
+   "seconds": 67.2,
    "takes": 1,
-   "prompt": "Overwhelming dark orchestral boss battle music for a space fleet game set around a dying sun. 100 BPM, 4/4, D minor, 50 bars. Massive low brass, thundering war drums and taiko, fierce driving strings and a dark cathedral pipe organ. A grave four-note motif, the notes D, A, F, E, twisted into a menacing heavier form. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Dread, scale and fury. Real acoustic orchestra, instrumental, no vocals, no choir."
+   "prompt": "Overwhelming dark orchestral boss battle music for a space fleet game set around a dying sun. 100 BPM, 4/4, D minor, 28 bars. Massive low brass, thundering war drums and taiko, fierce driving strings and a dark cathedral pipe organ. A grave four-note motif, the notes D, A, F, E, twisted into a menacing heavier form. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Dread, scale and fury. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "stems": true,
+   "playback": "own_stems",
+   "loop_grid": {
+    "bpm": 100,
+    "beats_per_bar": 4,
+    "bars": 28,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_boss_2",
@@ -1366,9 +1489,17 @@
    "cue": "boss battle intense layer (second option)",
    "today": "boss_final",
    "group": "music",
-   "seconds": 120,
+   "seconds": 71.111111,
    "takes": 1,
-   "prompt": "Relentless epic boss battle music for a space fleet game. 108 BPM, 4/4, C minor, 54 bars. Pounding taiko and anvil strikes, savage staccato strings, huge low brass clusters and blaring trumpets. A short brutal motif repeated and escalated. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Terrifying, enormous, unstoppable. Real acoustic orchestra, instrumental, no vocals, no choir."
+   "prompt": "Relentless epic boss battle music for a space fleet game. 108 BPM, 4/4, C minor, 32 bars. Pounding taiko and anvil strikes, savage staccato strings, huge low brass clusters and blaring trumpets. A short brutal motif repeated with even force. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Terrifying, enormous, unstoppable. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "stems": true,
+   "playback": "own_stems",
+   "loop_grid": {
+    "bpm": 108,
+    "beats_per_bar": 4,
+    "bars": 32,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_nemesis",
@@ -1376,9 +1507,17 @@
    "cue": "nemesis encounter music (new: a Nemesis fight, NEM_*)",
    "today": null,
    "group": "music",
-   "seconds": 120,
+   "seconds": 73.043478,
    "takes": 1,
-   "prompt": "Menacing rival-commander battle music for a space fleet game, a personal duel with a hated nemesis. 92 BPM, 4/4, G minor, 46 bars. Dark low strings in a stalking ostinato, snarling muted brass, a solo violin carrying a bitter taunting motif, heavy war drums. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Personal, venomous and tense. Real acoustic orchestra, instrumental, no vocals, no choir."
+   "prompt": "Menacing rival-commander battle music for a space fleet game, a personal duel with a hated nemesis. 92 BPM, 4/4, G minor, 28 bars. Dark low strings in a stalking ostinato, snarling muted brass, a solo violin carrying a bitter taunting motif, heavy war drums. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Personal, venomous and tense. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "stems": true,
+   "playback": "own_stems",
+   "loop_grid": {
+    "bpm": 92,
+    "beats_per_bar": 4,
+    "bars": 28,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_reward_1",
@@ -1386,9 +1525,15 @@
    "cue": "reward screen music (the wording of the reward theme Ryan liked)",
    "today": null,
    "group": "music",
-   "seconds": 48,
+   "seconds": 48.0,
    "takes": 1,
-   "prompt": "Quietly triumphant instrumental reward-screen theme for a dark space strategy game, 80 BPM, 4/4, D Dorian, 16 bars. Warm brass and strings, calm and dignified, not cheesy. A solo cello states a warm four-note motif, the notes D, A, F, E; muted French horns and full low strings answer and swell to hard-won relief, then settle on a held open fifth that can lead back to the start. Real acoustic orchestra, mature and restrained, no vocals, no choir."
+   "prompt": "Quietly triumphant instrumental reward-screen theme for a dark space strategy game, 80 BPM, 4/4, D Dorian, 16 bars. Warm brass and strings, calm and dignified, not cheesy. A solo cello states a warm four-note motif, the notes D, A, F, E; muted French horns and full low strings answer and swell to hard-won relief, then settle on a held open fifth that can lead back to the start. Real acoustic orchestra, mature and restrained, no vocals, no choir.",
+   "loop_grid": {
+    "bpm": 80,
+    "beats_per_bar": 4,
+    "bars": 16,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_reward_2",
@@ -1396,9 +1541,15 @@
    "cue": "reward screen music (variation)",
    "today": null,
    "group": "music",
-   "seconds": 51,
+   "seconds": 50.526316,
    "takes": 1,
-   "prompt": "Quietly triumphant instrumental reward-screen theme for a dark space strategy game, 76 BPM, 4/4, F major, 16 bars. Warm brass and strings, calm and dignified, not cheesy. Muted French horns state a warm hopeful melody over soft harp and full low strings, swelling to a hard-won glow and settling on a held chord that leads back to the start. Real acoustic orchestra, mature and restrained, no vocals, no choir."
+   "prompt": "Quietly triumphant instrumental reward-screen theme for a dark space strategy game, 76 BPM, 4/4, F major, 16 bars. Warm brass and strings, calm and dignified, not cheesy. Muted French horns state a warm hopeful melody over soft harp and full low strings, swelling to a hard-won glow and settling on a held chord that leads back to the start. Real acoustic orchestra, mature and restrained, no vocals, no choir.",
+   "loop_grid": {
+    "bpm": 76,
+    "beats_per_bar": 4,
+    "bars": 16,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_reward_3",
@@ -1406,9 +1557,15 @@
    "cue": "reward screen music (variation, darker)",
    "today": null,
    "group": "music",
-   "seconds": 53,
+   "seconds": 53.333333,
    "takes": 1,
-   "prompt": "Solemn hard-won reward-screen theme for a dark space strategy game, 72 BPM, 4/4, D minor turning to D major, 16 bars. A solo cello and a soft low French horn over warm sustained strings, a quiet bronze bell on the first beat, lifting gently to relief and resting on an open fifth that leads back to the start. Real acoustic orchestra, mature and restrained, no vocals, no choir."
+   "prompt": "Solemn hard-won reward-screen theme for a dark space strategy game, 72 BPM, 4/4, D minor turning to D major, 16 bars. A solo cello and a soft low French horn over warm sustained strings, a quiet bronze bell on the first beat, lifting gently to relief and resting on an open fifth that leads back to the start. Real acoustic orchestra, mature and restrained, no vocals, no choir.",
+   "loop_grid": {
+    "bpm": 72,
+    "beats_per_bar": 4,
+    "bars": 16,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_shop",
@@ -1416,9 +1573,15 @@
    "cue": "shipyard and shop music (new screen music)",
    "today": null,
    "group": "music",
-   "seconds": 96,
+   "seconds": 72.0,
    "takes": 1,
-   "prompt": "Calm working-dock music for a starship shipyard screen in a dark space strategy game. 80 BPM, 4/4, D Dorian, 32 bars. Gentle low strings, a warm solo cello melody, soft harp and quiet rhythmic anvil taps like distant work. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Warm, steady and unhurried. Real acoustic orchestra, instrumental, no vocals, no choir."
+   "prompt": "Calm orbital refit bay music for a starship shipyard screen in a dark space strategy game. 80 BPM, 4/4, D Dorian, 24 bars. Gentle low strings, a warm solo cello melody, soft harp and quiet rhythmic anvil taps like distant work. Built as one continuous loop: every part plays in every bar from the first to the last at even energy and density, interest comes from a chord progression that moves every two bars and from variations of the motif; it starts at full texture and the final bar leads straight back into the first. Warm, steady and unhurried. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "loop_grid": {
+    "bpm": 80,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   }
   },
   {
    "id": "mus_sting_victory_1",
@@ -1500,6 +1663,129 @@
    "takes": 1,
    "prompt": "Dark orchestral space fleet battle score built as one continuous loop, instrumental, 96 BPM, 4/4, D minor, 16 bars. Four parts that all play in every bar from the first to the last: deep measured war drums; cellos and double basses on a driving low ostinato; low brass carrying a grave four-note motif, the notes D, A, F, E, varied every four bars; a sustained pad of strings and forge-metal resonance. Even energy and density from start to finish; the interest comes from a chord progression that moves every two bars and from the motif's variations. Starts at full texture and the final bar leads straight back into the first. No vocals, no choir.",
    "stems": true
+  },
+  {
+   "id": "ship_thruster_puff_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: puff (a maneuvering thruster firing)",
+   "today": "puff",
+   "group": "ship",
+   "seconds": 0.7,
+   "influence": 0.6,
+   "takes": 2,
+   "prompt": "One brief maneuvering thruster nozzle puff from a starship: a compact dry hiss and tight metallic kick, then a quick decay into clean silence well before the file ends. Close focused source.",
+   "reroll_of": "ship_thruster_puff"
+  },
+  {
+   "id": "death_metal_run_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: death_run base (blasts running along the hull)",
+   "today": "death_run",
+   "group": "death",
+   "seconds": 1.8,
+   "influence": 0.6,
+   "takes": 2,
+   "prompt": "Five distinct sharp midrange metallic blast cracks spaced evenly across 1.8 seconds, rolling from bow to stern inside a breaking steel starship. Each crack throws a short burst of steel shrapnel. Strong metallic bite above 250 Hz, centered and close.",
+   "reroll_of": "death_metal_run"
+  },
+  {
+   "id": "wep_ithar_pulsar_b_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: lance_choir (Glasswright pulsar, re-roll: one even beam)",
+   "today": "lance_choir",
+   "group": "weapon_ithar",
+   "seconds": 1.6,
+   "influence": 0.6,
+   "takes": 2,
+   "prompt": "One sustained Glasswright pulsar beam: a steady midrange crystal chord with bright high crystal shimmer and a low cathedral hum underneath. Flat volume, fixed pitch, even texture throughout. The final sample returns directly to the first for continuous looping.",
+   "loop": true,
+   "reroll_of": "wep_ithar_pulsar_b"
+  },
+  {
+   "id": "evt_torp_intercept_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: new: point defense shooting down a torpedo",
+   "today": "pop",
+   "group": "new_moment",
+   "seconds": 1.1,
+   "influence": 0.6,
+   "takes": 2,
+   "prompt": "A torpedo destroyed in flight by point-defense fire: a quick rattle of small rounds striking it and one sharp clean detonation of its warhead. Light scale, close and dry, one point source, firm clean attack, no reverb.",
+   "reroll_of": "evt_torp_intercept"
+  },
+  {
+   "id": "imp_energy_sear_more_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: variety: 2 more takes of keeper imp_energy_sear (D t1, its exact prompt) for the round robin",
+   "today": "hit_plasma",
+   "group": "impact",
+   "seconds": 0.7,
+   "influence": 0.75,
+   "takes": 2,
+   "prompt": "Plasma bolt striking armored starship steel plating, heard close and centered: a heavy forged-steel armor clang first, then a short bright crackling arc as the hot bolt scorches the plate, over a firm mid punch, decaying quickly. Clear steel hit, hot, solid.",
+   "model": "eleven_text_to_sound_v3",
+   "reroll_of": "imp_energy_sear_more"
+  },
+  {
+   "id": "wep_sunward_autocannon_more_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: variety: 2 more takes of keeper wep_sunward_autocannon (B t1, its exact prompt) for the round robin",
+   "today": "gun_tracer",
+   "group": "weapon_sunward",
+   "seconds": 0.5,
+   "influence": 0.75,
+   "takes": 2,
+   "prompt": "One starship autocannon round, close and dry: immediate tight mechanical cannon punch with a hard compact report and a brief steel action cycle. Firm midrange body and quick clean decay.",
+   "model": "eleven_text_to_sound_v2",
+   "reroll_of": "wep_sunward_autocannon_more"
+  },
+  {
+   "id": "wep_sunward_turret_more_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: variety: 2 more takes of keeper wep_sunward_turret (C t2, its exact prompt) for the round robin",
+   "today": "gun_shell",
+   "group": "weapon_sunward",
+   "seconds": 0.6,
+   "influence": 0.65,
+   "takes": 2,
+   "prompt": "One starship deck gun shot: a bright forged-steel breech crack with a sharp midrange propellant bark and a brief iron barrel ring. Fast and mechanical with a short dry decay.",
+   "model": "eleven_text_to_sound_v3",
+   "reroll_of": "wep_sunward_turret_more"
+  },
+  {
+   "id": "wep_eclipse_gsentry_more_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: variety: 2 more takes of keeper wep_eclipse_gsentry (D t2, its exact prompt) for the round robin",
+   "today": "gun_rail",
+   "group": "weapon_eclipse",
+   "seconds": 0.6,
+   "influence": 0.65,
+   "takes": 2,
+   "prompt": "A loud crisp high-voltage snap from a single Eclipse gauss sentry shot, with sharp electric bite and a compact cold metallic crack. Light point-defense scale, centered and dry, short clean decay.",
+   "model": "eleven_text_to_sound_v3",
+   "reroll_of": "wep_eclipse_gsentry_more"
+  },
+  {
+   "id": "wep_craft_guns_more_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: variety: 2 more takes of keeper wep_craft_guns (B t2, its exact prompt) for the round robin",
+   "today": "gun_sq",
+   "group": "weapon_craft",
+   "seconds": 0.6,
+   "influence": 0.65,
+   "takes": 2,
+   "prompt": "A tight three-round rapid fighter cannon burst lasting about 200 ms. Three close distinct mechanical reports in quick succession with sharp midrange cracks, a dry firing action, and a short clean decay.",
+   "model": "eleven_text_to_sound_v2",
+   "reroll_of": "wep_craft_guns_more"
   }
- ]
+ ],
+ "M2_mastering": {
+  "run_order": [
+   "M2_test",
+   "M2"
+  ],
+  "review_gate": "Review both test stems by ear. The calm mix must stand on its own, with at least 1 dB of contrast and no missing tonal parts. If a split fails, revise percussion or choose an in-game calm treatment before the remainder.",
+  "loop": "Trim MP3 padding to the exact bar grid in samples. Apply a 20 to 30 ms click guard without removing samples. Never fold 0.5 s into an exact-bar loop. Check sample joins and listen across the downbeat.",
+  "boss_nemesis": "Use their own aligned calm and intense stems. Never layer either over another faction calm track."
+ }
 }
