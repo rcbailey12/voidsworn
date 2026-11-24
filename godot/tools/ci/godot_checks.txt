@@ -83,6 +83,7 @@ headless|rules/test/shield_pool_test.gd|-|res://rules/test/shield_pool_cases.jso
 headless|rules/test/ion_pulse_ai_test.gd|-|-|issue 1447: when the enemy AI fires the ion pulse (real pools, after moving, log count); twin of contrib/opus/tools/ion_pulse_ai_tests.js
 headless|rules/test/balance_sim_abilities_test.gd|-|-|issue 1705: campaign, campaignrewards and boss cells field the selected player fleet and count phase and frenzy uses on a fixed seed
 headless|rules/test/balance_sim_run_test.gd|-|run 2|issue 1705: two seeded full runs report completion, shop purchases and boss fights
+headless|rules/test/balance_sim_refit_test.gd|-|-|issue 1992: the Chorus sim buys and fits a refit using biomass and keeps its shop reserve
 headless|rules/test/rules_1560_test.gd|-|-|issue 1560 and R396: battle rules audit fixes (no turn or ram after firing, hits never heal, fleeing escorts stay gone, AI and forecast fixes); twin of contrib/opus/tools/rules_1560_tests.js
 headless|rules/test/boss_1885_test.gd|-|-|issue 1885: half-hull escorts flee below the rout threshold and only the boss's death wins the fight
 headless|rules/test/rules_1650_test.gd|-|-|issue 1650: the three Mastery III signatures the bot battles rarely reach (stern torpedo, double kill chain, pack bite on the prey)
