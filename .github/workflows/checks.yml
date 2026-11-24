@@ -92,10 +92,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           filter: blob:none
-      - uses: ./.github/actions/merge-main
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # Issue 1488: the fleet page must be current on the branch as pushed and again after main is merged in. A stale
+      # combined page fails here: merge main into the branch, run fleet_list.js --write, and commit docs/ship_pipeline/FLEET.md.
+      - name: Fleet page current on the branch
+        run: node contrib/opus/tools/fleet_list.js --check-page
+      - uses: ./.github/actions/merge-main
+      - name: Fleet page current after merging main
+        run: node contrib/opus/tools/fleet_list.js --check-page
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

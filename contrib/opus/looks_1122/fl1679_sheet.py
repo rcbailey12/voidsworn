@@ -11,9 +11,9 @@ Writes into DIR, each picture no taller than 720 px, revision and stage stamped 
   summary.txt          which skies were darkest and brightest (corner brightness, as look_bench_sheets.py measures)
 Refuses, writing nothing, unless (Artoo on PR 1717): RUN_OFF's bench.json says fleet_lighting false and RUN_ON's true;
 both name the same non-empty commit and every input still's provenance names one source commit; every input carries
-the same stage, and that stage is "installed in game" (a cloud smoke passes --allow-stage "cloud direction check" and its
-sheets keep that stage); every expected still exists (six ships at each camera on the darkest and brightest sky, five
-Chorus hulls at each Chorus camera); and DIR is new or empty.
+the same stage, and that stage is "installed in game" or "pre-merge capture" (a cloud smoke passes
+--allow-stage "cloud direction check" and its sheets keep that stage); every expected still exists (six ships at each
+camera on the darkest and brightest sky, five Chorus hulls at each Chorus camera); and DIR is new or empty.
 """
 import argparse
 import json
@@ -23,7 +23,7 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(next(p for p in Path(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
-from picture_provenance import Review, open_picture, verify  # noqa: E402
+from picture_provenance import PRE_MERGE_STAGE, Review, open_picture, verify  # noqa: E402
 from PIL import Image, ImageDraw, ImageFont, ImageStat  # noqa: E402
 
 PICTURES = None   # set in main from the inputs' own stage (Artoo on PR 1717)
@@ -105,7 +105,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--cams", default="170,110")
     ap.add_argument("--chorus-cams", default="170,60")
-    ap.add_argument("--allow-stage", default="installed in game")
+    ap.add_argument("--allow-stage")
     a = ap.parse_args()
     rep_off, off = stills(a.off)
     rep_on, on = stills(a.on)
@@ -139,11 +139,13 @@ def main():
             refuse("input provenance does not verify: %s (%s)" % (p, e))
         stages.add(r["stage"])
         srcs.add(r["source_commit"])
-    if len(stages) != 1 or stages != {a.allow_stage}:
-        refuse("inputs carry stage %s, want only %r" % (sorted(stages), a.allow_stage))
+    allowed_stages = {a.allow_stage} if a.allow_stage is not None else {"installed in game", PRE_MERGE_STAGE}
+    if len(stages) != 1 or not stages <= allowed_stages:
+        refuse("inputs carry stages %s, want one of %s" % (sorted(stages), sorted(allowed_stages)))
     if len(srcs) != 1 or len(commit) < 7 or not next(iter(srcs)).startswith(commit):
         refuse("input stills come from source commits %s, want one matching %s" % (sorted(srcs), commit))
-    PICTURES = Review(a.allow_stage)
+    stage = next(iter(stages))
+    PICTURES = Review(stage)
     os.makedirs(a.out, exist_ok=True)
     made = []
     for cam in cams:
@@ -155,7 +157,7 @@ def main():
     p = os.path.join(a.out, "FL1679_brightest_c170.jpg")
     PICTURES.save(sh, p, quality=92)
     made.append(p)
-    # the "before" for issue 1683: each Chorus hull as installed today, darkest sky, flag off
+    # the "before" for issue 1683: each Chorus hull on the darkest sky, flag off
     for code in CHORUS:
         ims = [PICTURES.open(off[(dark, code, c)]).convert("RGB") for c in ccams]
         lab = 22
@@ -163,7 +165,7 @@ def main():
         H = lab + max(i.height for i in ims)
         sheet = Image.new("RGB", (W, H), BG)
         d = ImageDraw.Draw(sheet)
-        d.text((4, 3), "CH1683 BEFORE %s as installed today (build\\godot), cameras %s, sky %s, commit %s" % (code, "/".join(map(str, ccams)), dark, commit), font=F, fill=FG)
+        d.text((4, 3), "CH1683 BEFORE %s | %s | cameras %s, sky %s, commit %s" % (code, stage, "/".join(map(str, ccams)), dark, commit), font=F, fill=FG)
         x = 0
         for i in ims:
             sheet.paste(i, (x, lab))

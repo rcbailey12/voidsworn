@@ -76,6 +76,11 @@ var _want_eng_hit := false
 var _want_gen := false
 var gen_down := false           # the shield generator is out and crackles (shielded ships only)
 var _gen_next := 0.0
+# Issue 1752 (plan row 4b): capability and breach sounds fire on transitions only. The first capability snapshot is the
+# ship as it arrives (a rebuilt view) and is seeded quietly; repairs, death and teardown never sound.
+var _cap_seeded := false     # _cap_seen as this sync began (the engine tier step runs after the capability step)
+var _cap_seen := false       # the capability step has run once (its first run seeds quietly)
+var _gen_loud_at := -99.0    # when the generator's loud first crackle played
 var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t, level], seed, r}
 var _trail_extra := 0.0    # issue 1581: extra age the trails carry (they age faster while the drive is cold under way)
 static var _trail_indices: Dictionary = {}   # not GPU: index arrays (PackedInt32Array)
@@ -1710,15 +1715,23 @@ func _apply_stages(fx, want: Array) -> void:
 			# update, which is its state as it arrives: a view rebuilt with the damage already there)
 			if up and _stages_seen and ((was < 3 and stage[i] >= 3) or (was < 4 and stage[i] == 4)):
 				_blowout(fx, i)
+			# issue 1752: a section that newly reaches stage 4 opens its real cutout (_plan), so the breach sounds once, at it
+			if up and _stages_seen and was < 4 and stage[i] == 4 and wounds_v2:
+				_breach_sound(fx, i)
 	_stages_seen = true
 
 	_refresh_wounds(fx)
+	_cap_seeded = _cap_seen   # false on this ship's first capability snapshot: its engine tier is seeded quietly too
 	if wounds_v2:
 		_refresh_capability(fx)
+		_cap_seen = true
 	_refresh_damage_emitters(fx)
 	if wounds_v2:
 		var tier := engine_tier_for(int(stage[0]), _want_eng_hit) if not squadron else 0
 		if tier != eng_tier:
+			# issue 1752: a drive that loses a tier (never a repair, never the arriving state, never the Chorus) fails audibly
+			if tier > eng_tier and _cap_seeded and not dead and faction != "chorus":
+				_cue(fx, "dmg_engine_fail", root.global_position if is_instance_valid(root) else Vector3.ZERO)
 			eng_tier = tier
 			_eng_sputter = tier >= 1
 			_build_engines(fx)
@@ -2470,6 +2483,7 @@ func _refresh_capability(fx) -> void:
 	if hull == null or squadron:
 		return
 	var want: Dictionary = _want_off if _exact_slots else {}
+	var knocked := []   # issue 1752: the slots newly off this sync (one knockout sound per ship per sync)
 	for slot in _slot_off.keys():
 		if want.has(slot):
 			continue
@@ -2527,8 +2541,17 @@ func _refresh_capability(fx) -> void:
 			_mount_dead[slot] = {"p": mp, "n": pt.get("n", Vector3.UP), "sec": hull.section_of(mp.x),
 				"next": fx.now + 0.6 + fx.rng.randf() * 1.5}
 		_wlog(["slot_off", slot, fx.now])
+		knocked.append(slot)
+	# issue 1752: metal hulls only (the Chorus throw no sparks, glass and obsidian are not plated guns); once per sync
+	if not knocked.is_empty() and _cap_seen and not dead and HULL.target_substance(faction) == "metal":
+		var md = _mount_dead.get(knocked[0])
+		_cue(fx, "dmg_turret_knockout", to_world(md["p"]) if md is Dictionary else root.global_position)
 	var g: bool = _want_gen and not dead
 	if g != gen_down:
+		# issue 1752: the generator's false-to-true edge crackles at full level once; its repeats are quiet
+		if g and _cap_seen:
+			_cue(fx, "dmg_shield_burnout", root.global_position)
+			_gen_loud_at = fx.now
 		gen_down = g
 		_gen_next = fx.now + 0.15   # the generator's first crackle comes right as it goes
 		_wlog(["gen", 1 if g else 0, fx.now])
@@ -2554,6 +2577,9 @@ func _capability_step(fx) -> void:
 		var k: float = 2.0 if fx.reduce_flashing else 1.0
 		_gen_next = fx.now + (GEN_GAP.x + fx.rng.randf() * (GEN_GAP.y - GEN_GAP.x)) * k
 		_gen_crackle(fx)
+		# the quiet repeats (the visual's first crackle, 0.15 s after the edge, is covered by the loud one)
+		if faction != "chorus" and fx.now - _gen_loud_at > 0.6:
+			_cue(fx, "dmg_shield_burnout", root.global_position, 0.35)
 
 
 # A failed shield emitter arcs on the midship plating: a short jagged run of small sparks in the shield's own colour (a dim
@@ -2613,6 +2639,28 @@ func capability_state() -> Dictionary:
 	md.sort()
 	return {"off": off, "turrets": tur, "mounts": md, "eng_tier": eng_tier, "sick": sick_nozzle,
 		"dead_nozzles": dead_nozzles.duplicate(), "gen": gen_down}
+
+
+# Issue 1752: a damage sound through the battle's sound node (fx.sound(), as the missed-shot pass-by), if there is one.
+func _cue(fx, name: String, p: Vector3, gain := 1.0) -> void:
+	_wlog(["sound", name, fx.now])
+	var sx = fx.sound() if fx.has_method("sound") else null
+	if sx != null:
+		sx.play(name, {"pos": p, "gain": gain})
+
+
+# Issue 1752 (plan row 3): the stage 4 cutout opening. Every hull vents; metal hulls also shear (glass, bio and obsidian
+# opening sounds come from their own impact cue, so no metal sound on a Chorus or Glasswright breach).
+func _breach_sound(fx, i: int) -> void:
+	if squadron or weight <= 0 or hull == null or fx.compat or dead:
+		return
+	var a := _anchor(i, "a")
+	if a.is_empty():
+		return
+	var p := to_world(a.p)
+	_cue(fx, "dmg_breach_vent", p)
+	if HULL.target_substance(faction) == "metal":
+		_cue(fx, "dmg_breach_shear", p)
 
 
 func _wlog(e: Array) -> void:

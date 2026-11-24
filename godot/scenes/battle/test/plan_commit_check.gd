@@ -263,6 +263,24 @@ func _run() -> void:
 	var one: bool = b._turns_ok(1)
 	var two: bool = b._turns_ok(2)
 	_check(one and not two, "a free first turn is allowed, a second step through a dead middle heading is refused (%s, %s)" % [one, two])
+	# issue 1651 (Artoo on PR 1876): Thorne's rider makes every turn in place free this round, so a two-step Q/E plan at one
+	# movement point with no shot at the middle heading is allowed; the same plan without the rider is refused
+	ru["treeFreeTurn"] = 0
+	ru["fac"] = keep["fac"] if keep["fac"] != "chorus" else "voidsworn"
+	ru["mp"] = 1
+	ru["turnsLeft"] = 1
+	var rf_keep = ru.get("riderFace")
+	ru.erase("riderFace")
+	var plain_two: bool = b._turns_ok(2)
+	ru["riderFace"] = b.api.R.B["round"]
+	var thorne_two: bool = b._turns_ok(2)
+	var mp_after: int = int(ru["mp"])
+	_check(not plain_two and thorne_two and mp_after == 1,
+		"Thorne's rider: a two-step turn at one movement point is planned free, the same plan without the rider is refused (%s, %s)" % [plain_two, thorne_two])
+	if rf_keep == null:
+		ru.erase("riderFace")
+	else:
+		ru["riderFace"] = rf_keep
 	for i in ru["weapons"].size():
 		ru["weapons"][i]["fired"] = fired_keep[i]
 	ru["mp"] = keep["mp"]

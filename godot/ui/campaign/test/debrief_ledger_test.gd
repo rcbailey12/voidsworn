@@ -199,10 +199,32 @@ func run() -> void:
 	for action in ["title", "newRunScreen", "nextFac"]:
 		ui._campaign_action(action, "corsair"); check(C.page["kind"] == "end", "unconfirmed exit blocked: " + action)
 	check(ui.debrief.exits.all(func(b): return b.disabled), "both exit words inert")
+	var dim_exits: bool = ui.debrief.exits.all(func(b):
+		return b.get_theme_color("font_disabled_color") == GS.TEXT3 and b.mouse_default_cursor_shape == Control.CURSOR_ARROW)
+	check(dim_exits, "disabled exits show dim ink and an arrow")
 	var original = C.META["heirs"]["voidsworn"]
 	var ids = C.shadowAdmirals("voidsworn", "vex"); var chosen = str(ids[-1])
-	ui.debrief.choose_heir(chosen); check(C.META["heirs"]["voidsworn"] == original, "selection alone does not name heir")
-	key(KEY_ENTER); await frames()
+	var last_card: Button = ui.debrief.cards[-1]
+	var xp_point := last_card.get_global_rect().position + Vector2(last_card.size.x * 0.5, 235 * ui.k)
+	for down in [true, false]:
+		var click := InputEventMouseButton.new(); click.button_index = MOUSE_BUTTON_LEFT; click.position = xp_point; click.pressed = down
+		root.push_input(click)
+	check(ui._end_heir_pick == chosen and C.META["heirs"]["voidsworn"] == original, "clicking the Heir XP strip selects without confirming")
+	check(last_card.get_theme_stylebox("hover").bg_color != last_card.get_theme_stylebox("normal").bg_color
+		and last_card.mouse_default_cursor_shape == Control.CURSOR_POINTING_HAND, "heir card highlights on hover")
+	ui.debrief.choose_heir(chosen)
+	ui.debrief.open_detail("record"); await frames()
+	var ignored := InputEventKey.new(); ignored.keycode = KEY_X; ignored.pressed = true
+	check(not ui.debrief.handle_key(ignored) and is_instance_valid(ui.debrief.overlay), "detail ignores unrelated keys")
+	ui.debrief.close_detail(); await frames()
+	var enter := InputEventAction.new(); enter.action = "ui_accept"; enter.pressed = true
+	ui.debrief.primary.grab_focus()
+	root.push_input(enter); await frames()
+	var action_words: Label = ui.debrief.primary.find_children("*", "Label", true, false)[0]
+	check(action_words.get_theme_color("font_color") == GS.ON_EMBER, "debrief action uses dark text while pressed by keyboard (mode %s, colour %s)" % [
+		ui.debrief.primary.get_draw_mode(), action_words.get_theme_color("font_color")])
+	enter.pressed = false
+	root.push_input(enter); await frames()
 	check(ui._end_confirmed and C.META["heirs"]["voidsworn"] == chosen, "Enter confirms selected heir")
 	check(ui.debrief.exits.all(func(b): return not b.disabled), "exits enabled after confirmation")
 	await capture("confirmed")

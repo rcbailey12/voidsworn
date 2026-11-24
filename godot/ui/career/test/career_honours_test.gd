@@ -185,6 +185,7 @@ func _run() -> void:
 					scr._unhandled_input(key)
 					await settle()
 					check(scr.tab == scr.TABS[i][0], tag + ": tab key " + str(i + 1))
+					check(root.gui_get_focus_owner() == scr.tab_row.get_node(NodePath(scr.TABS[i][0])), tag + ": chosen Career tab keeps keyboard focus")
 					if scenario == "three" and scr.tab == "chronicle":
 						check(descendants(scr.body, "Label").any(func(l): return "Holder of the Anchorage" in l.text)
 							and not descendants(scr.body, "Button").any(func(b): return b.text in ["Flying it", "Not flying it"]),

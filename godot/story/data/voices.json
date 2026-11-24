@@ -20,7 +20,7 @@
       ],
       "nemesis": [
         "There you are, {rival}. Chalked your hull code on my bulkhead back home; today I scrub it off.",
-        "{rival} again. Every gunner in this fleet knows your ship's profile by heart now."
+        "So that's {rival}. Every gunner in this fleet has your ship's profile pinned up by now."
       ],
       "kill_flag": [
         "Their flagship's breaking up! Log the kill time and sweep the escorts before they jump.",
@@ -124,7 +124,7 @@
       ],
       "nemesis": [
         "Heads up on flight channel, {rival} just jumped in. Every pilot here's been waiting for this.",
-        "There's {rival}'s flagship! Stay nimble, kids, they've drilled against our wings before."
+        "There's {rival}'s flagship! Stay nimble, kids, the briefing says they hunt wings first."
       ],
       "kill_flag": [
         "Bombers confirm the flagship's cracked open! Good flying, kids, bring it back to the rails.",
@@ -175,8 +175,8 @@
         "Big command ship dead ahead. Lean on its shields until something cracks."
       ],
       "nemesis": [
-        "Still chasing us, {rival}? Dump your magazines into our screens; let's see what's left after.",
-        "You again, {rival}. Hope you brought heavier guns than last time."
+        "So you're the one hunting us, {rival}? Dump your magazines into our screens; let's see what's left after.",
+        "First look at you, {rival}. Hope you brought heavier guns than the rumors say."
       ],
       "kill_flag": [
         "Their big ship finally gave out. Always takes longer than the young ones expect, doesn't it?",
@@ -228,7 +228,7 @@
       ],
       "nemesis": [
         "Priority contact confirmed as {rival}. Update the Registry dossier and establish a clean firing arc.",
-        "{rival} has entered range. Apply the tactical revisions from our previous briefing."
+        "{rival} has entered range. Apply the tactical revisions from this morning's dossier."
       ],
       "kill_flag": [
         "Opposing command vessel neutralized. Note the volley count for the efficiency review.",
@@ -280,7 +280,7 @@
       ],
       "nemesis": [
         "{rival} favors predictable approach curves under stress. Pre-calculate the turn and fire ahead.",
-        "Telemetry matches {rival}'s previous profile. They have not corrected their flank drift."
+        "Telemetry matches the dossier on {rival}. Their flank drift is exactly as reported."
       ],
       "kill_flag": [
         "Command hull destroyed. The intercept solution held within two percent.",
@@ -331,7 +331,7 @@
         "Heavy flagship on scopes. Strike group, strip its flanks before it settles into formation."
       ],
       "nemesis": [
-        "{rival} again. My wing leaders reviewed last battle's footage and requested a second pass.",
+        "{rival} at last. My wing leaders studied every report on them and want the first pass.",
         "{rival} is on the plot. Keep wings dispersed until we read their flak coverage."
       ],
       "kill_flag": [
@@ -384,7 +384,7 @@
       ],
       "nemesis": [
         "{rival} wants to test our armor thickness. Let them empty their magazines trying.",
-        "{rival} has returned. Keep the heavy bows pointed directly at their command ship."
+        "{rival} is here. Keep the heavy bows pointed directly at their command ship."
       ],
       "kill_flag": [
         "Their command vessel is broken. Maintain pace and clear the remaining hulls.",
@@ -436,7 +436,7 @@
       ],
       "nemesis": [
         "Hey, {rival}! Tracked your sloppy ion wake two jumps out! Hold still for a hull breach!",
-        "Back for another beating, {rival}? Good, I needed fresh alloy for my bow!"
+        "So you're the famous {rival}? Good, I needed fresh alloy for my bow!"
       ],
       "kill_flag": [
         "Cracked their big one wide open! Get cutters out there before the good alloys slag!",
@@ -540,7 +540,7 @@
       ],
       "nemesis": [
         "Oh, it's {rival}. Killed the last fool who chased me, and you're even noisier on comms.",
-        "Still sore from last time, {rival}? Wait till you see the fresh junk I bolted on."
+        "Heard you've been asking after me, {rival}. Wait till you see the fresh junk I bolted on."
       ],
       "kill_flag": [
         "There goes their crown jewel! Hands off the dorsal cannons till I pick what I want!",
@@ -591,8 +591,8 @@
         "Oh, that's a gorgeous command hull. Disable it gently if you value your shares!"
       ],
       "nemesis": [
-        "{rival}, you're still flying that lovely bow plate. Cleared a weld bay for it already.",
-        "Back again, {rival}? Good, I spotted two more emitters on your hull I want."
+        "{rival}, that's a lovely bow plate you're flying. Cleared a weld bay for it already.",
+        "So you're {rival}? Good, I can see two emitters on your hull I want."
       ],
       "kill_flag": [
         "Flagship's dead! Bit scorched around the middle, honestly, you lot are clumsy, still usable.",
@@ -643,8 +643,8 @@
         "A vast core sealed behind heavy bulkheads. Swarm its seams until the armor parts."
       ],
       "nemesis": [
-        "We remember your drive-burn, {rival}. You scorched our last brood-field; now you feed the next.",
-        "Your thermal spike returns, {rival}, and our chambers have hatched thicker shells for your guns."
+        "Your drive-burn reaches our pits, {rival}. You scorched brood-fields on your way here; now you feed the next.",
+        "Your thermal spike arrives, {rival}, and our chambers have hatched thicker shells for your guns."
       ],
       "kill_flag": [
         "The great shell splits open. Swarm into the warm hull and waste nothing.",
@@ -696,7 +696,7 @@
       ],
       "nemesis": [
         "Your heat spike just hit our pits, {rival}. We're already cutting off your escape vector.",
-        "We remember how fast you ran last hunt, {rival}. Won't outrun us this time."
+        "We've tracked how fast you run, {rival}. Won't outrun us this time."
       ],
       "kill_flag": [
         "Their big shell broke apart. Strip the hot wreckage and chase the runners.",
@@ -747,8 +747,8 @@
         "A vast dead shell held together by welds. Wear it down while we keep knitting."
       ],
       "nemesis": [
-        "You keep cutting us apart, {rival}, and we keep growing back shaped around your guns.",
-        "Still bringing the same sharp metal, {rival}? Our scars already remember how to seal it."
+        "You cut through our cousins to reach us, {rival}, and we grew back shaped around your guns.",
+        "Bringing the same sharp metal you used on our cousins, {rival}? Our scars already know how to seal it."
       ],
       "kill_flag": [
         "Their flagship splits along its bulkheads. Send tendrils into the breach and graft what holds.",
@@ -851,8 +851,8 @@
         "Heavy command hull, sluggish turrets. Swarm its flanks before it settles its arc."
       ],
       "nemesis": [
-        "Outer mirror-buoys flashed your jump signature an hour ago, {rival}. My wings remember you.",
-        "{rival} again. Keep our flight lanes high and deny them a clean flak lock."
+        "Outer mirror-buoys flashed your jump signature an hour ago, {rival}. My wings are ready for you.",
+        "{rival} at last. Keep our flight lanes high and deny them a clean flak lock."
       ],
       "kill_flag": [
         "Their command vessel is gone, and its crew with it. Recall starlings before debris cools.",
@@ -903,7 +903,7 @@
         "Thick command hull ahead. Patient, concentrated beams will shear straight to its reactor."
       ],
       "nemesis": [
-        "You cracked an ancestral lens last time, {rival}. Hold still while we measure the return cut.",
+        "Your guns cracked Glasswright lenses on the way here, {rival}. Hold still while we measure the return cut.",
         "{rival} enters focal range. Every mirror in this fleet is tuned for your hull."
       ],
       "kill_flag": [
@@ -955,8 +955,8 @@
         "Massive guns pointing straight at empty light. Slip past its nose and cut its tail."
       ],
       "nemesis": [
-        "Still hunting mirror-flashes across three sectors, {rival}? Look behind your escorts.",
-        "Careful which silhouette you lock onto this time, {rival}."
+        "Chasing mirror-flashes across the sector, {rival}? Look behind your escorts.",
+        "Careful which silhouette you lock onto, {rival}."
       ],
       "kill_flag": [
         "Their command ship went down without ever landing a clean lock on us.",
@@ -1008,7 +1008,7 @@
       ],
       "nemesis": [
         "You've taken enough lives in these lanes, {rival}. You won't touch a single ship here.",
-        "{rival} again. Every shield emitter in my line is ready for you."
+        "{rival} at last. Every shield emitter in my line is ready for you."
       ],
       "kill_flag": [
         "Their flagship's broken, and my formation's still breathing. Sweep the field carefully.",
@@ -1112,7 +1112,7 @@
       ],
       "nemesis": [
         "Still trying to shut down the siphons, {rival}? Your worlds can't outlast our arcs.",
-        "{rival} enters range. My third frame remembers exactly how you fought last time."
+        "{rival} enters range. My third frame has studied every report of how you fight."
       ],
       "kill_flag": [
         "Command hull severed cleanly. Let the capacitors cycle down.",
@@ -1216,7 +1216,7 @@
       ],
       "nemesis": [
         "Your civilization is younger than my second restoration, {rival}. You can't outlast us.",
-        "Back again, {rival}? Our bow plates are thicker than last time."
+        "So you're {rival}? Our bow plates were thickened for ships like yours."
       ],
       "kill_flag": [
         "Their flagship is slag, and our bows still hold. Advance.",

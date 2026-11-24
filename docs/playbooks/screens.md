@@ -89,6 +89,7 @@ What moved behind a hover or a key (all still reachable):
 | the step hints (Move, Fire, End) | one short sentence; the full hint on the action's hover |
 | Cancel button | Esc |
 | speed, threat map, top-down, grid buttons | Esc menu (and R, T, Z keys) |
+| Brisk camera (Off by default) | skips routine lance, torpedo and volley cut-ins. Press K during a routine cut-in or enemy camera follow to skip that kind for the rest of the battle. |
 | the key line along the bottom | Menu > Controls, and the ship name's hover |
 | nameplates with bars on every ship | hover a ship |
 | the old log | three lines or a one-line ticker above the shelf; L opens the full history |
@@ -190,6 +191,11 @@ The victory card lists the wrecks and lets the player work one directly. If ther
 of prizes before selecting a wreck so prize decisions get first claim on command points. Put all captains with a pending
 perk on one promotions card and keep it open until their picks are made. A reload restores the current reward stage.
 
+The wreck card names the cause and shows each available Strip wreck payout or tow before you choose. A hull broken up by
+a heavy impact, null fire, corrosive damage or tidal stress yields credits at the existing 30% bonus, with no module or
+tow. Won and bought refit cards offer Fit onto a ship with a free compatible slot or Keep in hold. Escape on a purchase
+keeps that refit in the hold. Continuing a saved run reopens an unfinished fit card with the same refit.
+
 Drydock and field repair cards show the fleet hull and credit gain for both choices before applying either. The full
 service keeps the previous free repair rate. The lighter service adds a credit stipend. If the Nemesis holds a shipyard,
 drydock, field repair or event, the route says “You fight him here, then use the stop.” Winning opens that stop after the
@@ -242,6 +248,22 @@ and save data are unchanged.
 Double-clicking a map stop flies the fleet there (Ryan, Nov 23 2026: "Yes double click a map stop should fly you there").
 This is PR 1810's behaviour; a single click still selects the stop and shows its briefing. Any change to map input, and any
 merge of main into a map branch, keeps the double-click fly.
+
+### Council picks: title, fonts, flagship pick, rival lines (R436, issues 1401 to 1407)
+
+Ryan picked these from the Council triage sheet on Nov 23 2026 (board/review_1123/council/PICKS.md).
+- **Fonts (C28).** Four faces, one job each: Big Shoulders Display for headers, Barlow for body text, Azeret Mono for
+  numbers, Michroma for the wordmark only. Oxanium, Chakra Petch and Barlow Semi Condensed leave the screens as each one is
+  next touched. "VICTORY" and every other card title use one face.
+- **Title (C4).** The title backdrop frames the Hollow Sun, not a ship. The gold wordmark stays (R327).
+- **Flagship pick (C37).** Three-quarter key light, a slow turn, the ship about twice today's size, engines lit, fins never
+  glowing (R347, R360), on a better background. Ryan picks that background from the C37 options sheet before it is built.
+- **Reward card (C12).** Rebuilt in the orders style (square near-black, Big Shoulders title, key after the words, a hull
+  picture per wreck). A mock-up goes to Ryan first (9.10).
+- **Game icon (C26).** A Hollow Sun mark. Ryan picks one of the themed variations (C26b sheet) before the exe icon and boot
+  splash change.
+- **Rival lines (C40).** R85 stays: each sector sends its own hunter. Rival memory lines are rewritten as first meetings,
+  not as returns.
 
 ## 3. Steps
 

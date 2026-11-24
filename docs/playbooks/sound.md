@@ -52,6 +52,15 @@ What that means for every sound:
   one sound, the music fanfare, with the synth sting only when music cannot play (battle.gd `_end_sound`); the battle music
   hears hits this round (`shots`) and counts enemies within 3 true hex steps as close. Check: audio_check.gd, the 1448 lines.
 
+- Gate 2 recorded sounds (issue 1752, Nov 24 2026): the 65 mastered keepers (`contrib/opus/sound/keepers_gate2.json`,
+  `contrib/opus/tools/sound/master_keepers.py`) are wired by `contrib/opus/tools/sound/wire_gate2.py` from
+  `contrib/opus/sound/wiring_gate2.json`. A weapon's own sound is a `"faction.weapon_id"` variant on the cue the battle
+  plays for it (bare `weapon_id` for strike craft); `sfx.gd` `weapon_variant` picks it, and a weapon without one keeps the
+  base cue. Levels match today's mix: a group's energy mean for guns and hits, the cue's own level for charges, shields,
+  deaths and menus. Re-running `godot/audio/build/render_synth.js` rebuilds the base layers of browser cues, so run
+  `wire_gate2.py` again after it. Sounds still waiting on a new game hook are listed under `next_hooks` in the wiring file.
+  Check: audio_check.gd (every wired variant sits on the cue its weapon really plays).
+
 ## 2a. The first two jobs (as first planned)
 
 1. Muse: a sourcing and palette study. Where each family of sound can come from at no cost and with a licence that allows
