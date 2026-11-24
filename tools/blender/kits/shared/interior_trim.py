@@ -193,6 +193,8 @@ def maps(spec, n=SIZE):
         metal = np.zeros((n, n))
         if spec.get('glow'):
             g = spec['glow']; em = np.array(g['rgb'], float)[None, None] * (line[..., None] ** 2) * g.get('share', 0.4)
+            if g.get('fill'):      # lit crystal (Glasswright pearl insides, Ryan Nov 24): the faces glow too, brightest on the lines
+                em = em + np.array(g['rgb'], float)[None, None] * (g['fill'] * (0.4 + 0.6 * pr))[..., None]
     alb = np.clip(alb, 0, None); alb = alb / (alb.reshape(-1, 3).mean(0) + 1e-6) * 0.5     # the detail averages 0.5 per channel
     alb = np.clip(alb, 0, 1)
     srgb = lambda c: np.where(c <= 0.0031308, 12.92 * c, 1.055 * np.clip(c, 0, None) ** (1 / 2.4) - 0.055)
@@ -294,6 +296,15 @@ LOOKS_KEY = dict(voidsworn='voidsworn', hegemony='hegemony', hullbreakers='corsa
 _LOOKS = None
 
 
+def wall_max_of(fac):
+    """the wall ceiling for one faction: WALL_MAX, or the faction table's own wall_max (the Glasswrights' pearl glass, Ryan
+    Nov 24 2026: dark grey insides "will look extremely odd as wreckage" on a pearl ship)"""
+    try:
+        return float(faction_interior(fac).get('wall_max', WALL_MAX))
+    except KeyError:
+        return WALL_MAX
+
+
 def faction_interior(fac):
     """the faction's interior block from faction_looks.json (roles, unlit, strip, core, glow, zone_tint, light_area_max)"""
     global _LOOKS
@@ -353,12 +364,12 @@ def role_material(name, fac, zone, roles, trims, core=None, zones=None):
     role = role_of(zone, zones or FACTION_ZONES.get(fac))
     if role not in roles:
         raise KeyError(f'{fac}: interior role {role!r} (zone {zone!r}) has no entry in the stack\'s INSIDE_ROLES')
-    r = roles[role]; j = _jitter(zone)
+    r = roles[role]; j = _jitter(zone); wall_max = wall_max_of(fac)
     tint = r.get('tint', {}).get(zone, (1.0, 1.0, 1.0))
     rgb = tuple(c * j * t for c, t in zip(r['rgb'], tint))
-    if role not in EXEMPT and sum(rgb) / 3 > WALL_MAX:
-        raise ValueError(f'{fac}: interior role {role} ({zone}) albedo {sum(rgb) / 3:.3f} is over the {WALL_MAX} wall ceiling')
-    spec = trims[r.get('trim', 'main')]
+    if role not in EXEMPT and sum(rgb) / 3 > wall_max:
+        raise ValueError(f'{fac}: interior role {role} ({zone}) albedo {sum(rgb) / 3:.3f} is over the {wall_max} wall ceiling')
+    spec = trims.get(zone) or trims[r.get('trim', 'main')]      # a zone may carry its own trim (the Glasswrights' lit crystals)
     emission = strength = None; light = bool(r.get('light', True))
     if role == 'core':
         if core is None: raise ValueError(f'{fac}: the core zone {zone!r} needs the faction core light')

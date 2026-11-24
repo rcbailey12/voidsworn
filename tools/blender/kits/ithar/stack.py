@@ -625,6 +625,10 @@ def inside_material(zone, trim=False):
         if INSIDE_TRIMS['main']['glow'] is None:
             g = interior_trim.faction_interior('ithar')['glow']
             INSIDE_TRIMS['main']['glow'] = dict(rgb=tuple(g['rgb']), share=g['share'], strength=g['strength'])
+            # Ryan, Nov 24 (pearl glass with glowing colour): the light cores and the rooms' crystals glow in their leaf colour,
+            # inside the faction's area light budget (role_material caps the strength)
+            for z, c in interior_trim.faction_interior('ithar').get('crystal_glow', {}).items():
+                INSIDE_TRIMS[z] = dict(INSIDE_TRIMS['main'], glow=dict(rgb=tuple(c), share=g['share'], fill=0.8, strength=1.0))
         t = interior_trim.faction_interior('ithar')
         core = (tuple(t['core_rgb']), t['core_strength']) if 'core_rgb' in t else None   # the rooms' crystal heart (Ryan, Nov 23)
         m = interior_trim.role_material(f'ithar_inside_{zone}', 'ithar', zone, interior_trim.roles_for('ithar', {}), INSIDE_TRIMS,
