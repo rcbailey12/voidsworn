@@ -2,7 +2,7 @@
   "code": "ithar_GP1",
   "sheet_version": 1,
   "design": "tools/blender/build_sheets/ships/ithar_GP1.py",
-  "design_sha256": "9c1ff5aaf65b61c0467f804c651ef0815f33fd599b72146dce40863c47ff1738",
+  "design_sha256": "347a5653b7186b64ca83f140194d5d1bb3c8770168e4708accae1e9666a57a01",
   "kit": "tools/blender/kits/ithar/hull.py",
   "game_ship": "i_song",
   "cls": "Cruiser",
@@ -299,7 +299,7 @@
   "insides": "Each hull: two shaped glass decks, open annealed frames and three braided light cores, cut at both break lines.",
   "budget": {
     "outside": {
-      "triangles": 383514,
+      "triangles": 465946,
       "unjoined_surfaces": 130,
       "material_surfaces": 13,
       "materials": [

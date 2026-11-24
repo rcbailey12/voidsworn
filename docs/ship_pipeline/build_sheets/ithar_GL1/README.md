@@ -1,6 +1,6 @@
 # GL1 Lancet: Glasswright lancet GL1
 
-Issue 1415 (R368). Stage: **sheet built** (Blender review renders, not in the game), revision **r1**, design 40823d55e8ad.
+Issue 1415 (R368). Stage: **sheet built** (Blender review renders, not in the game), revision **r1**, design c20f49797af3.
 Built from Ryan's Nov 16 pick Step 1 (contrib/muse/design/glasswright_family_2026_11/, PR 942) in the R337 finish on the
 shared Glasswright kit: opaque pearl ribbons with silver edges over glowing amber, violet and green mosaic; nothing see-through.
 

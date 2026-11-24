@@ -13,7 +13,7 @@ contrib/muse/design/glasswright_family_2026_11/) build through this file:
   bow_optic       the ringed optic a lance or the shards come out of (three stepped pearl rings, silver lines, stored light)
   lance           the prism lance: a white core with a rainbow fringe out of a bow optic, fixed forward (pulsar F)
   shard_cluster   three short drawn needles gathered at the bow (shard F, the Prism shards)
-  star_torpedo    a star torpedo: glowing capsule in a pointed pearl sheath with swept fins, on a keel cradle (startorp F)
+  star_torpedo    a star torpedo: glowing capsule in a pointed pearl sheath with swept fins, on a keel or (dorsal=True) spine cradle (startorp F)
   stern_drive     a grown stern optic: deep lens, white bloom, rose-cut face; no flame
   lens_bay        a hangar lens grown into a flank with parked Starlings on a glowing floor (data.js hangar)
   launch_tunnel   a ringed launch tunnel at the forward end of a bay, a Starling nosing out
@@ -252,8 +252,69 @@ def mosaic_core(K, name, skin, x0, x1, gap_of, nu=200, nv=128, thick=0.04, seed=
     return hull
 
 
-def lay_ribbons(K, ribbons, skin, thick, silver_r, nu=160, nv=8, grp=None):
-    """pearl ribbons with real thickness and a silver line along each edge"""
+def i8_field(length=25.0, n=12, sign=1, start=0.2, gather=None):
+    """R431 (Ryan Nov 23 2026: every Glasswright looks like I8_37, "more detailed and wrapping"): the CD5 Ark's long-ribbon
+    field. Twelve ribbons spiral round the body (a twist that keeps turning along the length, sign picks the hand), and
+    neighbours sway apart so the seams open into leaf windows. Use its gap_of for the mosaic core under i8_shell."""
+    k = 25.0 / length        # the Ark's ribbon body is about 25 long: a shorter hull gets the same turns and leaves
+    return RibbonField(n, lambda x: sign * (0.07 * k * x + 0.30 * math.sin(0.21 * k * x)), sway=0.22, leaf_f=0.80 * k,
+                       start=start, gather=gather)
+
+
+def i8_shell(K, skin, field, x0, x1, tag, scale=1.0, leaves=8, seed=0, clamp=None, grp=None, nu=160, width=1.0, raise_=0.012):
+    """R431: the I8_37 pearl shell on any Glasswright body, from the CD5 Ark's own numbers. The field's long ribbons are fine
+    and pillowed (a rounded fold, not a strap); `leaves` swells ride on top of chosen long ribbons,
+    growing out of their width to a chunkier middle, so the shell is layered and wraps the hull like I8_37. `scale` is the body's
+    radius against the Ark's (about 2.6), so lifts and silver lines keep the Ark's proportion. `width` widens every ribbon
+    for a rounder body than the Ark's, where the same angles leave more glass showing (the kit gate, MOSAIC_MAX, decides).
+    Returns the pearl ribbons."""
+    gw = gw_kit('parts')
+    L = x1 - x0
+    rib = []
+    for k in range(field.n):
+        rib.append(gw.Ribbon(
+            x0 + 0.012 * L * (1 + math.sin(2.3 * k)), x1 - 0.012 * L * (k % 3),
+            field.centre(k),
+            lambda t, k=k: width * (0.135 + 0.025 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.40, 0.40 + 0.05 * math.sin(k), tip=0.0)(t),
+            lambda t, v: scale * (0.05 + 0.14 * (1 - v * v) ** 0.5 * (0.5 + 0.5 * math.sin(math.pi * t) ** 0.5)),
+            name='%s_ribbon_%d' % (tag, k), clamp=clamp))
+    # Ryan Nov 23 4:32 PM CT: "integrate the top ribbons into the existing lines and ribbons underneath so it's cohesive?
+    # Fine to make them chunkier". Each leaf is now a swell of one long ribbon: it rides that ribbon's own centre line, grows
+    # out of its width at both ends to a chunkier middle, and rises just above it, so it reads as the ribbon thickening and
+    # doubling, never as a separate strap laid across the shell.
+    def long_half(j, x):
+        r = rib[j]
+        t = min(1.0, max(0.0, (x - r.x0) / (r.x1 - r.x0)))
+        return r.half(t)
+
+    def long_lift(j, x):
+        r = rib[j]
+        t = min(1.0, max(0.0, (x - r.x0) / (r.x1 - r.x0)))
+        return r.lift(t, 0.0)
+
+    for k in range(leaves):
+        h = math.sin(k * 12.9898 + seed * 78.233) * 43758.5453
+        h -= math.floor(h)
+        # spread evenly round the hull, never two on one ribbon (Neon and Artoo, Nov 23: the old + (k % 2) doubled them up)
+        j = (k * field.n) // leaves % field.n
+        a0 = x0 + L * (0.10 + 0.25 * h)
+        a1 = min(x1 - 0.08 * L, a0 + L * (0.40 + 0.20 * ((h * 7.3) % 1.0)))
+        grow = 1.6 + 0.3 * ((h * 3.7) % 1.0)          # how much chunkier than the ribbon at its widest
+        def half(t, j=j, a0=a0, a1=a1, grow=grow):
+            x = a0 + (a1 - a0) * t
+            return long_half(j, x) * (1.0 + (grow - 1.0) * math.sin(math.pi * t) ** 1.2)
+
+        def lift(t, v, j=j, a0=a0, a1=a1):
+            x = a0 + (a1 - a0) * t
+            return long_lift(j, x) * (1 - 0.3 * v * v) + scale * 0.07 * math.sin(math.pi * t) ** 0.8 * (1 - v * v) ** 0.5
+
+        rib.append(gw.Ribbon(a0, a1, field.centre(j), half, lift, name='%s_leaf_%d' % (tag, k), clamp=clamp))
+    return lay_ribbons(K, rib, skin, 0.035 * scale, 0.028 * scale, nu=nu, nv=12, grp=grp, raise_=raise_)
+
+
+def lay_ribbons(K, ribbons, skin, thick, silver_r, nu=160, nv=8, grp=None, raise_=0.012):
+    """pearl ribbons with real thickness and a silver line along each edge (raise_: the line's height over the edge; a strike
+    craft passes its own, the 0.012 default would float the line off a body a few tenths across)"""
     obs = []
     for r in ribbons:
         vv, ff, attrs = r.mesh(skin, nu, nv)
@@ -266,7 +327,7 @@ def lay_ribbons(K, ribbons, skin, thick, silver_r, nu=160, nv=8, grp=None):
         ob['zone'] = 'pearl ribbon'
         obs.append(ob)
         for side in (-1, 1):
-            pts = r.edge(skin, side, nu)
+            pts = r.edge(skin, side, nu, raise_)
             radii = [silver_r * (0.35 + 0.65 * math.sin(math.pi * i / nu) ** 0.4) for i in range(nu + 1)]
             K._obj(r.name + ('_silver_p' if side > 0 else '_silver_s'), *tube_mesh(pts, radii, 6), 'gw_silver', smooth=True,
                    grp=grp)
@@ -291,18 +352,16 @@ def turret_optic(K, fid, pos, weapon, colour, s=1.0, slot='T', note=''):
     # The seat's top sits 0.08 under the pivot, clear of the barrel (as CD5, issue 1282): at -0.20 it met the barrel and the
     # game's clearance test locked GA1's O1 at rest (PC run, pin-1415b, Nov 20).
     p.add('integral_root', 'mount', 'gw_pearl', ellipsoid((0, 0, -0.28 * s), (0.42 * s, 0.42 * s, 0.20 * s), 48, 16))
-    # round 2 (Ryan Nov 21): a lens you can see, as the picks' domes: a tall cut dome, a stored-light halo and a silver ring
-    gv, gf = gw_kit('parts').cut_lens((0, 0, -0.02 * s), (0, 0, 1), 0.34 * s, 0.24 * s, 12)
+    # R431 (Ryan Nov 23 on the Prism: "i also don't know what the random purple thing" is): the I8_37 optic again, a small
+    # cut stone on the flush pearl seat, a glint among the ribbons; the Nov 21 tall dome, halo and silver ring are gone.
+    gv, gf = gw_kit('parts').cut_lens((0, 0, -0.02 * s), (0, 0, 1), 0.26 * s, 0.12 * s, 10)
     p.add('lens', 'turn', 'gw_gem_' + colour, (gv, gf))
-    p.add('stored_light', 'turn', 'gw_gem_' + colour, ellipsoid((0, 0, -0.03 * s), (0.28 * s, 0.28 * s, 0.06 * s), 32, 12))
-    halo = [(0.47 * s * math.cos(a), 0.47 * s * math.sin(a), -0.11 * s) for a in [TAU * i / 48 for i in range(49)]]
-    p.add('halo', 'mount', 'gw_light', tube_mesh(halo, [0.05 * s] * 49, 10))
-    p.add('halo_silver', 'mount', 'gw_silver', tube_mesh([(q[0] * 1.13, q[1] * 1.13, q[2] - 0.01 * s) for q in halo], [0.022 * s] * 49, 6))
+    p.add('stored_light', 'turn', 'gw_gem_' + colour, ellipsoid((0, 0, -0.03 * s), (0.20 * s, 0.20 * s, 0.05 * s), 32, 12))
     p.fit = dict(pivot=('p', (0, 0, 0)), reach=0.26 * s, radius=0.28 * s, muzzles=[('p', (0.26 * s, 0, 0))], aim=('d', (1, 0, 0)))
     K.gun(fid, pos, 0, cal=0.09 * s, blen=0.26 * s, slot=slot, weapon=weapon, part=p, inv=['optics'],
           band=(0, 5, 10, 15, 20, 30), note=note or 'Grown %s optic; the cut stone turns on a seat sunk in the ribbons, 360 degrees.' % colour)
     K.features[-1]['what'] = '%s grown optic / %s' % (colour, weapon)
-    K.built[-1].update(detailed=True, subs=['grown root', 'cut dome', 'stored light', 'halo ring'])
+    K.built[-1].update(detailed=True, subs=['grown root', 'cut stone', 'stored light'])
     smooth_group(K, fid)
 
 
@@ -481,7 +540,7 @@ def _swept_fin(x0, x1, r_root, span, sweep, a, th, n=16):
     return (vv, ff), edge
 
 
-def star_torpedo(K, fid, pos, length, r0, cradle_up, note=''):
+def star_torpedo(K, fid, pos, length, r0, cradle_up, note='', dorsal=False):
     """a star torpedo carried on the keel in a grown pearl cradle (startorp F). The cradle's two arms rise into the hull
     (cradle_up: how far above the torpedo axis the hull's underside sits), so it reads carried, not docked.
 
@@ -569,11 +628,19 @@ def star_torpedo(K, fid, pos, length, r0, cradle_up, note=''):
         p.add('cradle_hoop_%s' % ('aft' if xs < 0 else 'fwd'), 'mount', 'gw_pearl', tube_mesh(hoop, [r0 * 0.15] * 25, 10))
         p.add('cradle_hoop_%s_silver' % ('aft' if xs < 0 else 'fwd'), 'mount', 'gw_silver',
               tube_mesh([(q[0] + r0 * 0.15, q[1], q[2]) for q in hoop], [r0 * 0.03] * 25, 6))
+    if dorsal:
+        # Ryan Nov 24 2026 (I11_37: "I can't really see the torpedo on the destroyer"): carried on the spine, where the
+        # battle camera sees it. The same torpedo and cradle mirrored top to bottom: the arms reach down into the hull's
+        # crown and the keel fin stands up off the torpedo.
+        for c in p.comps:
+            for v in c['verts']:
+                v.z = -v.z
+            c['faces'] = [tuple(reversed(f)) for f in c['faces']]
     nose = (0.61 * L, 0, 0)
     p.fit = dict(pivot=('p', nose), reach=0.05, radius=r0 * 1.2, muzzles=[('p', nose)], aim=('d', (1, 0, 0)))
     K.gun(fid, pos, 0, cal=0.08, blen=L, fixed=True, slot='F', weapon='startorp', part=p, inv=['star_torpedo'], band=(0, 5),
-          note=note or 'One star torpedo on the keel in a grown pearl cradle; fixed forward, F arc.')
-    K.features[-1]['what'] = 'star torpedo carried in a grown keel cradle / startorp'
+          note=note or ('One star torpedo on the %s in a grown pearl cradle; fixed forward, F arc.' % ('spine' if dorsal else 'keel')))
+    K.features[-1]['what'] = 'star torpedo carried in a grown %s cradle / startorp' % ('spine' if dorsal else 'keel')
     K.built[-1].update(detailed=True, subs=['stored-light capsule with silver bands', 'pointed pearl sheath with a window down each flank',
                                             'silver filigree on the lips and crown', 'glowing needle nose in a silver collar',
                                             'two swept canards', 'three swept leaf fins', 'rose-cut tail drive', 'two cradle hoops and four arms'])
@@ -718,6 +785,56 @@ def ragged_break(K, name, x, width, note, jitter=None):
 
 
 # ------------------------------------------------------------------------------------------------------------ review renders
+def mosaic_share(objs, res=160):
+    """R431 (Ryan Nov 23 2026): the share of the visible outside that is bare stained glass (gw_mosaic), by rays from the top,
+    the side and the battle camera's tilt (34 degrees up), over the hull's bounding box. Every Glasswright hull reads as I8_37:
+    a pearl shell with the coloured glass only in the seams and openings, so this stays at or under stack.MOSAIC_MAX."""
+    import bpy
+    from mathutils import Vector
+    objs = [o for o in objs if o.type == 'MESH']
+    names = {o.name for o in objs}
+    lo = Vector([min((o.matrix_world @ Vector(c))[i] for o in objs for c in o.bound_box) for i in range(3)])
+    hi = Vector([max((o.matrix_world @ Vector(c))[i] for o in objs for c in o.bound_box) for i in range(3)])
+    ctr, size = (lo + hi) / 2, max(hi - lo)
+    dg = bpy.context.evaluated_depsgraph_get()
+    sc = bpy.context.scene
+    out = {}
+    for name, az, el in (('top', 270, 90), ('side', 270, 0), ('battle', 250, 34)):
+        a, e = math.radians(az), math.radians(el)
+        d = Vector((math.cos(e) * math.cos(a), math.cos(e) * math.sin(a), math.sin(e)))
+        u = Vector((0, 0, 1)).cross(d) if abs(d.z) < 0.99 else Vector((1, 0, 0))
+        u.normalize(); v = d.cross(u); v.normalize()
+        hits = glass = 0
+        for i in range(res):
+            for j in range(res // 2):
+                p = ctr + d * size * 2 + u * size * 0.6 * (2 * i / res - 1) + v * size * 0.3 * (4 * j / res - 1)
+                ok, _, _, idx, ob, _ = sc.ray_cast(dg, p, -d)
+                if not ok or ob.name not in names:
+                    continue
+                hits += 1
+                mats = ob.data.materials
+                ev = ob.evaluated_get(dg).data
+                mi = ev.polygons[idx].material_index if 0 <= idx < len(ev.polygons) else 0
+                if mi < len(mats) and mats[mi] and mats[mi].name == 'gw_mosaic':
+                    glass += 1
+        if hits < res * res // 20:   # the hull must fill a fair part of the frame; a near-empty view is a broken measure, not a pass
+            raise ValueError('mosaic_share: only %d of %d rays hit the hull from the %s view' % (hits, res * res // 2, name))
+        out[name] = round(glass / hits, 3)
+    return out
+
+
+def mosaic_gate(K, code):
+    """R431: measure the bare-glass share and stop the build above stack.MOSAIC_MAX (the review and the recipe's stage 4 build,
+    tools/blender/r209/sheet_hull.py, both call this, so no Glasswright hull exports over it)"""
+    share = mosaic_share(list(K.coll.objects))
+    cap = gw_kit('stack').MOSAIC_MAX
+    print('MOSAIC SHARE', code, share, 'max', cap)
+    if max(share['top'], share['battle']) > cap:
+        raise ValueError('R431: %s shows %s bare stained glass from above or the battle camera (max %.2f); widen the pearl '
+                         'so the glass shows only in the seams (kit README)' % (code, share, cap))
+    return share
+
+
 def review(mod, out):
     import bpy
     from mathutils import Vector
@@ -737,6 +854,7 @@ def review(mod, out):
     (out / 'fit.json').write_text(json.dumps(fit, indent=2))
     if any(fit['counts'].values()):
         raise ValueError('Fit failed: ' + str(fit['counts']))
+    share = mosaic_gate(K, mod.CODE)   # R431: pearl shell, glass only in the seams
     dg = bpy.context.evaluated_depsgraph_get()
 
     def cost(coll):
@@ -760,7 +878,7 @@ def review(mod, out):
         raise ValueError('A recorded part has no actual meshes: %s' % [k for k, v in groups.items() if not v])
     model = dict(code=mod.CODE, name=mod.NAME, game_ship=gs, cls=mod.CLASS, length=mod.LENGTH, camera=mod.CAMERA,
                  features=K.features, masses=K.masses, inside=K.inside, points=K.points, changes=K.changes, budget=budget,
-                 mesh_groups=groups, dimensions=[float(hi[i] - lo[i]) for i in range(3)],
+                 mesh_groups=groups, mosaic_share=share, dimensions=[float(hi[i] - lo[i]) for i in range(3)],
                  design_sha256=hashlib.sha256(Path(mod.__file__).read_bytes()).hexdigest(),
                  kit_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
     (out / 'model.json').write_text(json.dumps(model, indent=2))
