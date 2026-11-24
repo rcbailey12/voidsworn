@@ -378,6 +378,9 @@ uniform bool fleet_reflections = false;
 // a tight warm sun lobe for a real specular highlight on metal plates, a cool bounce band low on the far side (the
 // nebula and planet light), and dark-space troughs straight up and straight down so curved armor keeps deep contrast.
 uniform bool fleet_reflections_v2 = false;
+// Issue 1463 SG option B/C (render/look.gd SG): a broad warm-white sun lobe, so plates turned between the camera and the
+// sun catch a soft glint at camera 170. 0 (the default) adds nothing.
+uniform float sun_glint = 0.0;
 
 vec3 fleet_reflection_gradient(vec3 direction, vec3 sun_direction) {
 	float sun_side = dot(direction, sun_direction);
@@ -390,6 +393,11 @@ vec3 fleet_reflection_gradient(vec3 direction, vec3 sun_direction) {
 		float fr_band = exp(-fr_bd * fr_bd) * (1.0 - smoothstep(-0.6, 0.2, sun_side));   // and smoothstep edges in order
 		float fr_trough = smoothstep(0.55, 0.95, abs(direction.y));
 		c = c * (1.0 - 0.75 * fr_trough) + vec3(0.86, 0.83, 0.78) * fr_lobe + vec3(0.045, 0.07, 0.11) * fr_band;
+	}
+	if (sun_glint > 0.0) {
+		float sg_side = max(sun_side, 0.0);
+		float sg_sq = sg_side * sg_side;
+		c += vec3(1.0, 0.95, 0.86) * (sg_sq * sg_sq) * sun_glint;   // pow(x, 4) by hand, x >= 0
 	}
 	return c;
 }

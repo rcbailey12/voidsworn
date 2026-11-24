@@ -53,6 +53,14 @@ extends Node
 # Ryan's real screens shows whatever monitor the window sits on (the HUD stays at 1080p):
 #   res_1440     3D at 2560x1440 (scaling_3d_scale 1.333)
 #   res_2160     3D at 3840x2160 (scaling_3d_scale 2.0)
+# Issue 1463 (look options, render/look.gd look_option): opt_<CODE>_<a|b|c> builds the battle with that option on.
+#   opt_SG_*     base with the hull sun glint option
+#   opt_PL_*     a: the board planet without R01 (VS_PLANET_REMIX=0), b: with it (run with --map planet --seed 4205,
+#                a rocky board world)
+#   opt_AB_*     base plus a ship ability every 0.4 s (focus, surge, ionpulse, phase), in that ability look
+#   opt_ER_*     base plus one Eclipse revive a quarter into the measured frames (the cruiser killed before the
+#                warm-up); the row adds win_gpu_mean and win_frame_mean over the 1.2 s after the revive
+# --seed N: the battle seed (default 4207).
 
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const API := preload("res://rules/battle_api.gd")
@@ -60,6 +68,7 @@ const BL := preload("res://world/board_look.gd")
 const PG := preload("res://render/placeholder_guard.gd")
 const SV := preload("res://render/ship_view.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const LOOK := preload("res://render/look.gd")
 
 const RES := Vector2i(1920, 1080)
 const MODES := ["base", "shadows_off", "msaa_2x", "msaa_off", "fx_off", "post_off", "hud_off", "world_off", "ships_off",
@@ -600,6 +609,7 @@ func _save() -> void:
 
 
 func _build(mode: String, seed: int) -> bool:
+	_set_option(mode)
 	HULL.reset_late()   # issue 376: count only the shaders this battle first builds after its warm-up
 	b = BattleScene.instantiate()
 	b.external = true
@@ -691,6 +701,44 @@ func _configure_battle(_api) -> void:
 	pass
 
 
+# issue 1463: one look option on for this build (opt_<CODE>_<letter>), none for every other mode
+func _set_option(mode: String) -> void:
+	LOOK.opt_force = {}
+	var parts := mode.split("_")
+	if parts.size() != 3 or parts[0] != "opt":
+		return
+	LOOK.opt_force = {parts[1]: parts[2]}
+	if parts[1] == "PL":
+		OS.set_environment("VS_PLANET_REMIX", "0" if parts[2] == "a" else "1")
+
+
+# the scene's ships for the AB sheet's four abilities: [[id, ability]]
+func _ability_ships() -> Array:
+	var want := {"focus": true, "surge": true, "ionpulse": true, "phase": true}
+	var outl: Array = []
+	for u in b.V.get("units", []):
+		var ab := str(b.api.unit(str(u["id"])).get("ab", ""))
+		if want.has(ab):
+			outl.append([str(u["id"]), ab])
+			want.erase(ab)
+	return outl
+
+
+func _eclipse_cruiser() -> String:
+	for u in b.V.get("units", []):
+		if str(u.get("fac", "")) == "deathless" and str(u.get("cls", "")) == "Cruiser":
+			return str(u["id"])
+	return ""
+
+
+# the battle's own revive (battle.gd _reassemble), as the rules' risen event plays it
+func _revive(id: String) -> void:
+	var u: Dictionary = b.VU.get(id, {})
+	if u.is_empty():
+		return
+	b._reassemble({"unit": id, "q": int(u["q"]), "r": int(u["r"])}, {})
+
+
 func _views() -> Array:
 	var vs: Array = []
 	for id in b.views:
@@ -766,9 +814,14 @@ func _mode(mode: String, s: int) -> Dictionary:
 	rng.seed = 2070 + s
 	volleys_on = false
 	volley_t = 0.0
-	if not await _build(mode, 4207) or PG.stop_if_any():
+	if not await _build(mode, int(args.get("seed", 4207))) or PG.stop_if_any():
 		return {}
 	_apply(mode)
+	var er_id := ""
+	if mode.begins_with("opt_ER"):
+		er_id = _eclipse_cruiser()
+		if er_id != "" and b.gfx != null:
+			b.gfx.death(er_id, "big")
 	if mode == "caps":
 		_apply_damage_stress()
 	volleys_on = mode != "floor" and mode != "fx_off"
@@ -819,7 +872,18 @@ func _mode(mode: String, s: int) -> Dictionary:
 	if prof:
 		print("[scene_gate] PROFILE BEGIN %d %s frames %d" % [s + 1, mode, n])
 		EngineDebugger.profiler_enable("scripts", true)
+	var ab_ids: Array = _ability_ships() if mode.begins_with("opt_AB") else []
+	var ab_next := 0
+	var ev_ms := -1
+	var win := {"gpu": [], "frame": []}
 	for i in n:
+		if not ab_ids.is_empty() and b.gfx != null and Time.get_ticks_msec() >= ab_next:
+			ab_next = Time.get_ticks_msec() + 400
+			var pick: Array = ab_ids[(i / 7) % ab_ids.size()]
+			b.gfx.ability(str(pick[0]), str(pick[1]))
+		if er_id != "" and i == n / 4:
+			ev_ms = Time.get_ticks_msec()
+			_revive(er_id)
 		if mode == "deaths" and b.gfx != null:
 			for d in deaths.size():
 				if i == int(n * (0.2 + 0.25 * d)) and b.gfx.ships.has(deaths[d]):
@@ -840,6 +904,9 @@ func _mode(mode: String, s: int) -> Dictionary:
 		cols["obj_vis"].append(RenderingServer.viewport_get_render_info(vrid, 0, 0))
 		cols["obj_sh"].append(RenderingServer.viewport_get_render_info(vrid, 1, 0))
 		cols["proc"].append(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0)
+		if ev_ms >= 0 and Time.get_ticks_msec() - ev_ms < 1200:
+			win["gpu"].append(cols["gpu"][-1])
+			win["frame"].append(cols["frame"][-1])
 		if trace:
 			var pf := {}
 			if b.gfx != null:
@@ -921,6 +988,17 @@ func _mode(mode: String, s: int) -> Dictionary:
 		report["scene"] = _scene_stats()
 	if s == 0 and mode in ["fleet_x2", "fx_off", "shadows_off"]:
 		await _shot("scene_%s.png" % mode)
+	for k in win:
+		if not (win[k] as Array).is_empty():
+			var sw := 0.0
+			for v in win[k]:
+				sw += float(v)
+			row["win_" + k + "_mean"] = sw / float((win[k] as Array).size())
+			row["win_frames"] = (win[k] as Array).size()
+	if mode.begins_with("opt_"):
+		row["option"] = LOOK.opt_force.duplicate()
+		if s == 0:
+			await _shot("scene_%s.png" % mode)
 	row["build_ms"] = build_ms
 	if trace:
 		row["trace"] = _trace_summary(tr)

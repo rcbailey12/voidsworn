@@ -3966,6 +3966,82 @@ static func clear_wreck(fx, id: String) -> void:
 	fx.dstate["wrecks"] = keep
 
 
+# Issue 1463 ER option B (render/look.gd look_option "ER", off by default): on an Eclipse revive the wreck's own pieces
+# lift and pull back along arcs into the risen hull over `dur` seconds, lit in the faction colour (Eclipse violet, R372),
+# then go; the battle shows the hull as they arrive. The pieces leave the wreck list first, so nothing else moves or frees
+# them meanwhile. A death that left no pieces gets violet motes drawn in from a ring instead. Returns the pieces pulled.
+static func pull_back(fx, id: String, target: Vector3, dur: float, col: Color) -> int:
+	fx.dstate.get("anchors", {}).erase(id)
+	var pieces: Array = []
+	var keep: Array = []
+	for w in fx.dstate.get("wrecks", []):
+		if w["id"] != id:
+			keep.append(w)
+			continue
+		for l in w["lights"]:
+			l["on"] = false
+		for n in w["nodes"] + w.get("frags", []):
+			if is_instance_valid(n) and n is Node3D and not (n as Node).is_queued_for_deletion():
+				pieces.append(n)
+			elif is_instance_valid(n):
+				(n as Node).queue_free()
+	if fx.dstate.has("wrecks"):
+		fx.dstate["wrecks"] = keep
+	var T: float = fx.now
+	if pieces.is_empty():
+		for k in 10:
+			var a := TAU * float(k) / 10.0
+			var from := target + Vector3(cos(a), 0.3, sin(a)) * 14.0
+			fx.stk(from, T + 0.03 * k, dur * 0.8, col, 2.0, 4.0, 0.4, 1, (target - from) / (dur * 0.8))
+		fx.light(target, T + dur * 0.7, 0.6, 2.5, col, 1)
+		return 0
+	var glow := StandardMaterial3D.new()
+	glow.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	glow.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glow.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	glow.albedo_color = Color(col.r, col.g, col.b, 0.0)
+	var starts: Array = []
+	var mids: Array = []
+	for n in pieces:
+		var nd: Node3D = n
+		if nd is RigidBody3D:
+			(nd as RigidBody3D).freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
+			(nd as RigidBody3D).freeze = true
+		var s := nd.global_position
+		var flat := Vector3(s.x - target.x, 0.0, s.z - target.z)
+		var swirl := flat.cross(Vector3.UP).normalized() * flat.length() * 0.35
+		starts.append(s)
+		mids.append(s.lerp(target, 0.5) + Vector3(0.0, 4.0 + flat.length() * 0.4, 0.0) + swirl)
+		for g in [nd] + nd.find_children("*", "GeometryInstance3D", true, false):
+			if g is GeometryInstance3D:
+				(g as GeometryInstance3D).material_overlay = glow
+		# a violet trail along the same arc, booked now on the pooled sprites (no per-frame cost)
+		for k in 5:
+			var t := float(k + 1) / 6.0
+			fx.spr(_arc(s, mids[-1], target, _ease(t)), T + dur * t, 0.35, col, 1.2, 0.8, 2.0, 18)
+	var tw: Tween = (fx as Node).create_tween()
+	tw.tween_method(func pull(t: float) -> void:
+		var e := _ease(t)
+		glow.albedo_color.a = 0.25 + 0.55 * t
+		for i in pieces.size():
+			if is_instance_valid(pieces[i]):
+				(pieces[i] as Node3D).global_position = _arc(starts[i], mids[i], target, e), 0.0, 1.0, maxf(dur, 0.05))
+	tw.tween_callback(func gone() -> void:
+		for n in pieces:
+			if is_instance_valid(n):
+				(n as Node).queue_free())
+	fx.light(target, T + dur * 0.85, 0.6, 2.5, col, 1)
+	return pieces.size()
+
+
+static func _ease(t: float) -> float:
+	return t * t * (3.0 - 2.0 * t)
+
+
+static func _arc(a: Vector3, m: Vector3, b: Vector3, t: float) -> Vector3:
+	return a.lerp(m, t).lerp(m.lerp(b, t), t)
+
+
 static func update(fx, dt: float) -> void:
 	if not fx.dstate.has("wrecks"):
 		return

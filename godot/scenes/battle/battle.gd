@@ -326,6 +326,7 @@ func _build_world() -> void:
 			pano.set_shader_parameter("sun_dir", -LOOK.KEY_DIR.normalized())
 			pano.set_shader_parameter("fleet_reflections", true)
 			pano.set_shader_parameter("fleet_reflections_v2", LOOK.ship_look_v2_enabled())   # issue 1777
+			pano.set_shader_parameter("sun_glint", LOOK.sun_glint())   # issue 1463 SG option (0 today)
 		var sky := Sky.new()
 		sky.sky_material = pano
 		sky.radiance_size = Sky.RADIANCE_SIZE_256
@@ -1576,6 +1577,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			await wait(220.0)
 		"risen":
 			_reassemble(e, batch_view)
+			if LOOK.look_option("ER") == "b":
+				await wait(ER_PULL_S * 1000.0)   # issue 1463 ER option B: the pieces arrive before the Risen line
 			_float(e["unit"], "Risen", Color("#ddc4ff"), -30)   # only Eclipse ships rise (legionCan); Eclipse violet, never green (issue 1641)
 			await wait(600.0)
 		"stance":
@@ -1815,6 +1818,9 @@ func _lay_wreck(unit) -> void:
 		board.add_wreck(id, at.x, at.y, true))
 
 
+const ER_PULL_S := 0.9   # issue 1463 ER option B: seconds the wreck takes to pull back together
+
+
 func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 	var id: String = str(e["unit"])
 	var sv: ShipView = views.get(id)
@@ -1827,13 +1833,20 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 		if unit["id"] == id:
 			ru = unit
 			break
+	# issue 1463 ER option B (off by default): the wreck's pieces pull back along violet arcs before the hull shows
+	var er_b: bool = LOOK.look_option("ER") == "b" and gfx != null and gfx.has_method("pull_back")
+	var col: Color = FLOOK.engine(str(ru.get("fac", "deathless")))
 	if gfx != null and gfx.has_method("remove_ship"):
+		if er_b:
+			gfx.pull_back(id, board.hex_world(int(e["q"]), int(e["r"]), 2.0), ER_PULL_S * speed, col)
 		gfx.clear_wreck(id)
 		gfx.remove_ship(id)
 	wrecked.erase(id)
 	sv.revive()
 	var yaw := ShipView.yaw_of(ru["facing"]) if ru.has("facing") else sv.cur_yaw
 	sv.snap_to(board.hex_world(int(e["q"]), int(e["r"])), yaw)
+	if er_b:
+		sv.visible = false
 	if not ru.is_empty():
 		_register_fx_ship(ru, sv)
 		# The rise restores hull and sections and clears fire. It leaves shields as they were;
@@ -1851,7 +1864,12 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 			gfx.sync_ship(id, {"hp": hp, "maxHp": ru["maxHp"], "sec": sec, "sh": sh, "burning": false})
 	# issue 1460: the revival flash is the faction's own colour from fx/faction_looks.json (Eclipse is all violet, R372),
 	# not the old lime green
-	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, FLOOK.engine(str(ru.get("fac", "deathless"))), 0.8)
+	if er_b:
+		await wait(ER_PULL_S * 1000.0)
+		if not is_instance_valid(sv):
+			return
+		sv.visible = true
+	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, col, 0.8)
 
 
 # the battle log: the rules' own log lines (G1 log events, word for word as the game); the scene's own lines are kept

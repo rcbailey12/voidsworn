@@ -18,6 +18,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 # Faction colours and styles come from data (fx/faction_looks.json via fx/faction_look.gd; API.md 15), so a faction's
 # palette can change without touching code. Styles are Claude's calls (vetoable).
 const FLOOK := preload("res://fx/faction_look.gd")
+const LOOK := preload("res://render/look.gd")   # issue 1463: the look options (look_option)
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const LIGHT_K := 0.9
 const LIGHT_REACH := 30.0   # an event light's standing reach in world units (hexes are 17.3 across)
@@ -1852,14 +1853,21 @@ func wreck_pieces(id: String) -> int:
 	return DEATH.wreck_pieces(self, id)
 
 
+# issue 1463 ER option B: the wreck's pieces pull back into the risen hull (fx_death.gd pull_back)
+func pull_back(id: String, target: Vector3, dur: float, col: Color) -> int:
+	return DEATH.pull_back(self, id, target, dur, col)
+
+
 func jump_out(id: String) -> void:
 	if ships.has(id):
 		(ships[id] as SHIP).jump_out(self)
 
 
-func ability(id: String, _ab := "") -> void:
+func ability(id: String, ab := "") -> void:
 	if ships.has(id):
-		(ships[id] as SHIP).pulse(self, 1.0)
+		# issue 1463 AB options (render/look.gd look_option, off by default): a look per ability, else today's pulse
+		if not (ships[id] as SHIP).ability_look(self, ab, LOOK.look_option("AB")):
+			(ships[id] as SHIP).pulse(self, 1.0)
 
 
 # A weapon mark on a ship's hull without a volley (API.md 14): look as in volley's looks plus "board" (a blown boarding

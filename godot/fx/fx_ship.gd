@@ -2902,6 +2902,82 @@ func pulse(fx, strength: float) -> void:
 	fx.light(p, fx.now, 0.7, 3.0 * strength, c, 1)
 
 
+# Issue 1463 AB sheet (options first, RULEBOOK 9.10): a look per ability for four abilities, two looks each, in the
+# faction's own colours (fx/faction_looks.json). opt "b" is the contained look (on the hull), "c" the bigger one (reads
+# farther out at camera 170). Any other ability, or opt "a", keeps today's pulse. Returns false when it drew nothing new.
+const AB_LOOKS := ["focus", "surge", "ionpulse", "phase"]
+func ability_look(fx, ab: String, opt: String) -> bool:
+	if opt == "a" or not AB_LOOKS.has(ab):
+		return false
+	var cp: Dictionary = hull.core_point()
+	if cp.is_empty():
+		return false
+	var T: float = fx.now
+	var p: Vector3 = to_world(cp["p"])
+	var up := dir_world(Vector3.UP)
+	var bow_d := dir_world(Vector3(1, 0, 0))
+	var side := dir_world(Vector3(0, 0, 1))
+	var L: float = hull.L
+	var big := opt == "c"
+	match ab:
+		"focus":
+			# Concentrated fire: weapon-colour light runs along both flanks to the bow and gathers there
+			var c: Color = fac["weapon"]
+			var tip: Vector3 = to_world(hull.bow) if hull.bow != Vector3.ZERO else p + bow_d * L * 0.5
+			for k in 6:
+				var sgn := 1.0 if k % 2 == 0 else -1.0
+				var from: Vector3 = p - bow_d * L * (0.15 + 0.07 * k) + side * sgn * hull.W * 0.45
+				fx.stk(from, T + 0.04 * k, 0.45, c.lerp(Color.WHITE, 0.3), 3.0, L * 0.18, 0.5, 1, (tip - from) / 0.45)
+			fx.spr(tip, T + 0.35, 0.7, c, 2.6, L * 0.08, L * 0.22, 18)
+			fx.light(tip, T + 0.3, 0.6, 2.5, c, 1)
+			if big:
+				# and three aim lines lance ahead of the bow, the way the guns will fire
+				for k in 3:
+					var fan := side * (float(k) - 1.0) * 0.12
+					fx.stk(tip, T + 0.45 + 0.05 * k, 0.5, c, 2.4, L * 0.9, 0.35, 1, (bow_d + fan).normalized() * L * 3.0)
+				fx.ring(tip, bow_d, T + 0.4, 0.7, c, 1.4, L * 0.05, L * 0.35, 3)
+		"surge":
+			# Shield surge: the whole shield lights from several points at once, in the shield colour
+			var c: Color = fac.get("shield") if fac.get("shield") is Color else (fac["engine"] as Color)
+			if _shield_mat != null:
+				for k in (6 if big else 4):
+					var a := TAU * float(k) / (6.0 if big else 4.0)
+					var aim := p + (bow_d * cos(a) + side * sin(a)) * L * 2.0 + up * L * 0.3
+					shield_hit(fx, shield_point(aim)["local"], T + 0.05 * k, 1.0, 16.0, 0.9)
+			fx.spr(p, T, 0.9, c, 1.2, L * 0.5, L * 0.9, 18)
+			fx.light(p, T, 0.9, 2.5, c, 1)
+			if big:
+				fx.ring(p, up, T, 1.0, c, 1.6, L * 0.4, L * 1.3, 2)
+				for k in 10:
+					var o: Vector3 = (bow_d * fx.rng.randf_range(-0.5, 0.5) + side * fx.rng.randf_range(-0.3, 0.3)) * L
+					fx.spr(p + o, T + 0.06 * k, 0.9, c.lerp(Color.WHITE, 0.4), 1.6, 0.6, 1.4, 1, up * L * 0.5, 0.5)
+		"ionpulse":
+			# Ion pulse (every enemy within 4 hexes): a flat blue-white wave rolls out over the board
+			var c: Color = (fac["engine"] as Color).lerp(Color(0.75, 0.9, 1.0), 0.5)
+			var reach := 4.0 * 17.32   # four hexes (HEX_S 10 pointy-top: 17.3 between hex centres)
+			fx.ring(p, up, T, 1.1, c, 1.8, L * 0.3, reach, 1)
+			fx.spr(p, T, 0.6, c, 2.2, L * 0.2, L * 0.6, 18)
+			fx.light(p, T, 0.8, 3.0, c, 1)
+			for k in (12 if big else 6):
+				var a: float = TAU * float(k) / (12.0 if big else 6.0) + fx.rng.randf() * 0.3
+				var d := bow_d * cos(a) + side * sin(a)
+				fx.stk(p + d * L * 0.3, T + 0.02 * k, 0.8, c, 2.0, L * 0.5, 0.35, 1, d * reach / 0.9, 0.3)
+			if big:
+				fx.ring(p, up, T + 0.25, 1.0, c.lerp(Color.WHITE, 0.4), 1.2, L * 0.2, reach * 0.8, 3)
+		"phase":
+			# Fold skip: the hull shimmers out of phase; afterimages slip off astern in the faction's violet
+			var c: Color = fac["engine"]
+			for k in (7 if big else 4):
+				var o := bow_d * L * (0.4 - 0.13 * k)
+				fx.spr(p + o, T + 0.03 * k, 0.9, c, 1.4, L * 0.2, L * 0.35, 18, -bow_d * L * 0.6, 0.8)
+			fx.light(p, T, 0.8, 2.0, c, 1)
+			if big:
+				# a ring folds in on the hull, then a soft afterglow
+				fx.ring(p, up, T, 0.6, c, 1.6, L * 1.2, L * 0.2, 2)
+				fx.spr(p, T + 0.5, 0.8, c.lerp(Color.WHITE, 0.3), 1.8, L * 0.3, L * 0.7, 18)
+	return true
+
+
 func tick_flare(fx, kind: String) -> void:
 	var h: Dictionary = hull.surface_sample(-1, 0.5, "flare")   # issue 370: a seen point on the plating, or none
 	if h.is_empty():

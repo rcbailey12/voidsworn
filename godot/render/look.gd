@@ -100,6 +100,24 @@ static func ship_look_v2_enabled() -> bool:
 	return OS.get_environment("VS_SHIP_LOOK_V2") != "0"
 
 
+# Issue 1463 (RULEBOOK 9.10, options first): picture options for Ryan's pick, one launch option per look code:
+# VS_LOOK_SG (sun glints on hulls), VS_LOOK_ER (Eclipse revive), VS_LOOK_AB (ability effects), each "a" (today), "b" or
+# "c". Unset or anything else keeps today's look, so the default game never changes until Ryan picks. The bench may set
+# `opt_force` (code -> letter). Never saved, never set in play.
+static var opt_force := {}
+static func look_option(code: String) -> String:
+	var v := str(opt_force.get(code, OS.get_environment("VS_LOOK_" + code))).to_lower()
+	return v if v in ["b", "c"] else "a"
+
+
+# SG options: B adds a broad warm-white sun lobe to the reflection cubemap (world_sky.gd sun_glint), so every metal plate
+# that faces between the camera and the sun catches a soft glint; C is B plus a share of sky light in the ambient (the
+# flat colour ambient keeps the rest). Tuning values judged by eye on the SG sheet (RULEBOOK 0.4).
+const SG := {"glint": 0.65, "sky_ambient": 0.45}
+static func sun_glint() -> float:
+	return float(SG["glint"]) if look_option("SG") != "a" else 0.0
+
+
 # What V2 changes, in one place (tuning values judged by eye on the six-faction sheets, RULEBOOK 0.4):
 #   ambient       flat ambient share of the key (was 0.25: 0.50 at key 2.0); the space reflections (world.gd, the #1679 sky
 #                 lobes) now carry the shadow sides' readability, so the flat fill can drop and shadows deepen
@@ -360,6 +378,10 @@ static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLi
 	# r10 lighting pass: a slightly cool ambient against the warm key, so shadow sides read as depth, not flat grey
 	env.ambient_light_color = Color(0.86, 0.9, 1.0)
 	env.ambient_light_energy = (float(v2_of("ambient")) if ship_look_v2_enabled() else 0.25) * key_e
+	if look_option("SG") == "c":
+		# issue 1463 SG option C: part of the ambient comes from the sky (its cubemap, sun lobe included)
+		env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+		env.ambient_light_sky_contribution = float(SG["sky_ambient"])
 	env.glow_enabled = true
 	env.glow_hdr_threshold = 0.8
 	env.glow_hdr_scale = 2.0
