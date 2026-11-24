@@ -10,7 +10,9 @@ the energy mean of today's cues in that group (so the group stays as even as the
 cue's own level today (charges, shields, deaths and menus keep their place in the mix).
 
 Run it once on a clean checkout (it measures today's cues before editing them):
-  python3 contrib/opus/tools/sound/wire_gate2.py --mastered <folder> [--dry]
+  python3 contrib/opus/tools/sound/wire_gate2.py --mastered <folder> [--dry] [--section wires|hooks]
+The hooks section adds new cues only (no cue it touches exists before), so it runs on top of the wires section.
+Levels: "cue:<name>" matches today's level of another cue.
 Needs numpy and ffmpeg. Prints WIRE GATE2 PASS and the level of every wire.
 """
 import argparse, json, os, shutil, subprocess, sys
@@ -78,6 +80,7 @@ def main():
     ap.add_argument("--mastered", required=True)
     ap.add_argument("--wiring", default=os.path.join(ROOT, "contrib", "opus", "sound", "wiring_gate2.json"))
     ap.add_argument("--dry", action="store_true")
+    ap.add_argument("--section", default="wires", help="wires (PR 1932) or hooks (the new game moments, PR 2)")
     a = ap.parse_args()
     wiring = json.load(open(a.wiring))
     cues = json.load(open(os.path.join(G, "cues.json")))
@@ -90,9 +93,11 @@ def main():
         print(f"category {cat}: today {min(lv):.1f} to {max(lv):.1f} dB, energy mean {cat_target[cat]:.1f}")
     cat_of = {n: cat for cat, names in wiring["categories"].items() for n in names}
     plans = []
-    for w in wiring["wires"]:
+    for w in wiring[a.section]:
         tmpl = w.get("new_from", w["cue"])
-        if w["level"] == "category":
+        if w["level"].startswith("cue:"):
+            target = render(cues, idx, w["level"].split(":", 1)[1])
+        elif w["level"] == "category":
             target = cat_target[cat_of.get(w["cue"], cat_of.get(tmpl))]
         elif w["level"].startswith("category:"):
             target = cat_target[w["level"].split(":", 1)[1]]
@@ -120,6 +125,8 @@ def main():
         cg = float(cues[w["cue"]]["g"])
         g = round(float(10 ** ((target - new - 20 * np.log10(cg)) / 20)), 3)
         layer = {"s": sets, "g": g, "r": 1, "d": 0, "pj": None}
+        for k, v in w.get("set", {}).items():
+            cues[w["cue"]][k] = v
         if w.get("base") or "new_from" in w:
             c = cues[w["cue"]]
             # keep_tail: the cue's late layers (delay over 20 ms) stay under the new clip (RULEBOOK 8.2: shield breaks and
@@ -140,7 +147,7 @@ def main():
         report.append((where, sets, target, g))
         print(f"  {where:32s} {sets:30s} target {target:6.1f} dB  layer g {g}")
     # the ambient room tone and the missed-shot pass-by are code-side clip sets
-    for cid, key in (("amb_bridge_bed", "ambient"), ("evt_pass_by_slug", "evt_pass_by_slug")):
+    for cid, key in ((("amb_bridge_bed", "ambient"), ("evt_pass_by_slug", "evt_pass_by_slug")) if a.section == "wires" else ()):
         src = os.path.join(a.mastered, cid + ".ogg")
         old = os.path.join(G, "clips", idx[key][0]) if key in idx else None
         fn = f"{cid}_0.ogg"

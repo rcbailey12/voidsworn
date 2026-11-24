@@ -655,6 +655,18 @@ func lance(ion: bool, fac: String, pos = null, fire_at := -1.0, sched := Callabl
 		play(shot, {"pos": pos, "delay": float(t), "variant": sv})
 
 
+# Issue 1752: the Eclipse null cannon's capacitor charge, once per volley, ending on its first shot (its cue's "lead"
+# fits the picture's capacitor wind-up in fx_weapons.gd "gauss").
+func gauss_charge(pos, fire_at: float, sched := Callable()) -> void:
+	if legacy or not cues.has("gauss_charge"):
+		return
+	var lead := float(cues["gauss_charge"].get("lead", 0.25))
+	if sched.is_valid():
+		sched.call(maxf(fire_at - lead, 0.0), func() -> void: play("gauss_charge", {"pos": pos}))
+	else:
+		play("gauss_charge", {"pos": pos, "delay": maxf(fire_at - lead, 0.0)})
+
+
 func torp(fac: String, pos = null, fire_at := -1.0, sched := Callable(), wid := "") -> void:
 	var m := {"corsair": "torp_rocket", "chorus": "torp_sac", "ithar": "torp_star", "voidsworn": "torp_heavy"}
 	_charged(m.get(fac, "torp"), "torp_charge", pos, fire_at, sched, fac, wid if wid != "" else "torp")
@@ -685,16 +697,20 @@ const HIT_BY_TARGET := {"chorus": "hit_wet", "ithar": "hit_glass", "deathless": 
 const CRIT_BEAT := 0.12   # fx_weapons.gd CRIT_BEAT, the same beat (issue 1518: not preloaded, so the title loads no effects script; prefetch_wait_check holds the two equal)
 
 
-func impact_cue(fam: String, target_fac: String, heavy := false) -> String:
+# Issue 1752: shooter is the firing ship's faction. A Chorus shot on a metal hull (no target material cue) is acid.
+func impact_cue(fam: String, target_fac: String, heavy := false, shooter := "") -> String:
 	if HIT_BY_TARGET.has(target_fac):
 		return str(HIT_BY_TARGET[target_fac])
 	if heavy:
 		return "hit_heavy"
+	# Issue 1752: a Chorus shot on a metal hull eats in (a critical keeps hit_heavy)
+	if shooter == "chorus" and cues.has("hit_acid"):
+		return "hit_acid"
 	return str(HIT_BY_WEAPON.get(fam, "hit"))
 
 
-func impact(fam: String, target_fac: String, pos, heavy: bool, sched: Callable) -> void:
-	play(impact_cue(fam, target_fac, heavy), {"pos": pos})
+func impact(fam: String, target_fac: String, pos, heavy: bool, sched: Callable, shooter := "") -> void:
+	play(impact_cue(fam, target_fac, heavy, shooter), {"pos": pos})
 	if heavy and HIT_BY_TARGET.has(target_fac):
 		# Issue 1238 (F5.4): the heavy tail under a Chorus or Glasswright hit keeps the target's material (its variant)
 		sched.call(CRIT_BEAT, func() -> void: play("hit_heavy", {"pos": pos, "gain": 0.55, "variant": target_fac}))

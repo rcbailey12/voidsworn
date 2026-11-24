@@ -727,6 +727,10 @@ func _begin(a) -> void:
 			gfx.defer_shields = gfx.defer_initial_cuts   # issue 1434: shields wait for prepare_battle_hulls, sliced
 		if "warmup_batch" in gfx:
 			gfx.warmup_batch = 2 if gfx.defer_initial_cuts else 0   # issue 1434: warm pipelines a few per frame (LOAD20: 4 cost up to 0.8 s)
+	# Neon (PR 1776 review, item 1): maps a freed title showcase, sector map or earlier battle left waiting would run
+	# ahead of this battle's board planet; drop them before the frames below let the bake worker take one
+	if ResourceLoader.exists("res://world/world_bake.gd"):
+		load("res://world/world_bake.gd").drop_waiting(get_tree())
 	var pre := {}   # issue 1434 (LOAD29): the start's own steps, kept in begin_us
 	if sliced:
 		# issue 1434: the hull files start loading on worker threads now, while the board and the world are built
@@ -1048,6 +1052,9 @@ func _warmup() -> void:
 	hud.loading(true)
 	load_phase = "world"
 	if world != null: await world.wait_ready()
+	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	load_phase = "planet"
+	await board.wait_planet()   # issue 1765: the board planet's maps load or bake behind the cover
 	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	load_phase = "pull_back"
 	var keep := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
@@ -2852,6 +2859,8 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		else:
 			# issue 506: one gun cue per shot, on the fire times the fx layer used for its muzzle effects
 			var style = null if fam == "sq" else fam if fam in ["spine", "glob", "plasma", "las", "tracer", "needle", "rail"] else "shell"
+			if wid == "gauss" and fire0 >= 0.0:
+				sfx.gauss_charge(from, fire0, _at_fx)   # issue 1752: once per volley, ending on the first shot
 			for i in mini(fires.size(), n):
 				sfx.gun(str(e["kind"]), fam == "sq", style, from, float(fires[i]), fac, wid)
 		var imp: Array = r.get("impacts", [])
@@ -2868,7 +2877,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 				if float(h["shield"]) > 0 and float(h["hull"]) <= 0:
 					sfx.shield(_pos(t_id), false, tfac)
 				else:
-					sfx.impact(fam, tfac, _pos(t_id), bool(h["crit"]), _at_fx))
+					sfx.impact(fam, tfac, _pos(t_id), bool(h["crit"]), _at_fx, fac))
 		total = _fx_wait(float(r.get("done", 0.6)), imp, sp, dying.has(str(t_id)), btot)
 	elif fam in ["lance", "ion"]:
 		sfx.lance(fam == "ion", fac, from, -1.0, Callable(), [], wid)
@@ -2879,7 +2888,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			var end := to if hit else to + (to - from).normalized() * 30.0 + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6))
 			fx.beam(from, end, col, 0.22 * sp, dl, 1.0 if fam == "lance" else 1.3)
 			if hit and hi < hits.size():
-				_schedule_impact(t_id, hits[hi], dl + 0.05 * sp, L, shield_col, fam, hi, land)
+				_schedule_impact(t_id, hits[hi], dl + 0.05 * sp, L, shield_col, fam, hi, land, fac)
 				hi += 1
 	elif fam == "torp":
 		sfx.torp(fac, from, -1.0, Callable(), wid)
@@ -2888,7 +2897,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			var dl := (0.32 + i * 0.12) * sp
 			fx.bolt(from, to, col, 0.8 * sp, dl, 2.2, not shots[i])
 			if shots[i] and hi < hits.size():
-				_schedule_impact(t_id, hits[hi], dl + 0.8 * sp, L, shield_col, fam, hi, land)
+				_schedule_impact(t_id, hits[hi], dl + 0.8 * sp, L, shield_col, fam, hi, land, fac)
 				hi += 1
 	else:
 		total = n * 0.07 + 0.49
@@ -2899,7 +2908,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			fx.bolt(from + off, to, col, 0.24 * sp, dl, 1.1 if fam != "rail" else 1.5, not shots[i])
 			sfx.gun(str(e["kind"]), fam == "sq", style, from, dl, fac, wid)
 			if shots[i] and hi < hits.size():
-				_schedule_impact(t_id, hits[hi], dl + 0.24 * sp, L, shield_col, fam, hi, land)
+				_schedule_impact(t_id, hits[hi], dl + 0.24 * sp, L, shield_col, fam, hi, land, fac)
 				hi += 1
 	if shots_dir != "" and fire_shots < 4 and bot:
 		fire_shots += 1
@@ -3140,7 +3149,7 @@ func _aim_off(land: Dictionary) -> void:
 
 
 
-func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: Color, fam: String, k := -1, land := {}) -> void:
+func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: Color, fam: String, k := -1, land := {}, afac := "") -> void:
 	var tfac := str(VU.get(t_id, {}).get("fac", ""))
 	get_tree().create_timer(maxf(delay, 0.001)).timeout.connect(func() -> void:
 		if land.is_empty():
@@ -3160,7 +3169,7 @@ func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: C
 			if fam == "torp":
 				sfx.boom(0.8, p)
 			else:
-				sfx.impact(fam, tfac, p, bool(h["crit"]), _at_fx))
+				sfx.impact(fam, tfac, p, bool(h["crit"]), _at_fx, afac))
 
 
 func _apply_hit(h: Dictionary, show_regen_lock := true) -> void:

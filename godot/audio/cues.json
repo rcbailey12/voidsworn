@@ -3076,5 +3076,191 @@
    }
   ],
   "synth": []
+ },
+ "dmg_breach_vent": {
+  "bus": "impacts",
+  "g": 0.5,
+  "max": 2,
+  "gap": 0.15,
+  "defer": 0.12,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "dmg_breach_vent",
+    "g": 0.927,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "dmg_breach_shear": {
+  "bus": "impacts",
+  "g": 0.5,
+  "max": 2,
+  "gap": 0.15,
+  "defer": 0.12,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "dmg_breach_shear_metal",
+    "g": 0.911,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "dmg_turret_knockout": {
+  "bus": "impacts",
+  "g": 0.5,
+  "max": 2,
+  "gap": 0.2,
+  "defer": 0.12,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "dmg_turret_knockout",
+    "g": 0.798,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "dmg_engine_fail": {
+  "bus": "impacts",
+  "g": 0.5,
+  "max": 2,
+  "gap": 0.2,
+  "defer": 0.12,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "dmg_engine_fail",
+    "g": 0.806,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "dmg_shield_burnout": {
+  "bus": "impacts",
+  "g": 0.5,
+  "max": 1,
+  "gap": 0.3,
+  "defer": 0.12,
+  "pri": 0,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "dmg_shield_burnout",
+    "g": 0.721,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "hit_acid": {
+  "bus": "impacts",
+  "g": 0.4,
+  "max": 4,
+  "gap": 0.05,
+  "defer": 0.1,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "imp_acid_on_metal",
+    "g": 1.436,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "death_magazine": {
+  "bus": "explosions",
+  "g": 0.42,
+  "max": 3,
+  "gap": 0.06,
+  "defer": 0.12,
+  "pri": 2,
+  "pj": 0.06,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "death_sunward_magazine",
+    "g": 0.668,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "gauss_charge": {
+  "bus": "weapons",
+  "g": 0.3,
+  "max": 2,
+  "gap": 0.08,
+  "defer": 0.15,
+  "pri": 1,
+  "pj": 0.02,
+  "spj": 0.02,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "wep_eclipse_gauss_charge",
+    "g": 0.781,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": [],
+  "duration": 0.3,
+  "lead": 0.25
  }
 }
