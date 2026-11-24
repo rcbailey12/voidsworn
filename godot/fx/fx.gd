@@ -232,6 +232,7 @@ func release(wait := true) -> void:
 	_shield_jobs.clear()
 	for id in ships:
 		var s = ships[id]
+		_clear_thrust_spark_sink(s.root)
 		s.end_brownout()
 		if not wait and s._dmg_task >= 0 and not WorkerThreadPool.is_task_completed(s._dmg_task):
 			tids.append(s._dmg_task)
@@ -754,11 +755,61 @@ func sprx(px: float, p: Vector3, t: float, life: float, col: Color, i: float, s0
 
 
 # `wpx`, `lpx` (F3 round 2): this streak's own minimum width and length on screen (pixels at 1080 lines; 0: the kind's).
-func stk(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
+func flight_streak(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
 		drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
+	assert(kind in [0, 3, 4, 5, 6], "Sparks must use fx.spark")
 	var pool: POOLS.Pool = pools["null"] if kind == 5 else pools["stk"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
 		Vector4(col.r, col.g, col.b, i), Vector4(length, w * unit, drag, kind), Vector4(0.0, acc, wpx, lpx)))
+
+
+# All thrown sparks use the analytic streak, including crystal glints. This enum selects the
+# colour source within the faction palette, not a different renderer.
+enum SparkRole { HULL, DEATH, SHIELD, ENGINE, WEAPON }
+
+const SPARK_KIND := 8
+
+
+static func spark_colour(faction: String, role := SparkRole.HULL) -> Color:
+	var look := FLOOK.of(faction)
+	match int(look.get("wound_kind", 0)):
+		1: return Color.TRANSPARENT # Living tissue throws droplets and spores, never sparks.
+		3: return look["damage_glow"]
+		2: return FLOOK.death_spark(faction)
+	match role:
+		SparkRole.DEATH: return FLOOK.death_spark(faction)
+		SparkRole.SHIELD: return FLOOK.shield(faction)
+		SparkRole.ENGINE: return FLOOK.engine(faction)
+		SparkRole.WEAPON: return FLOOK.weapon(faction)
+	return look["damage_glow"]
+
+
+# Shutter is a length of motion history in effect seconds. Velocity is in world units/s.
+# Pixel floors describe the whole soft mask, not the hot core.
+func spark(p: Vector3, t: float, life: float, faction: String, intensity: float, shutter: float, width: float,
+		vel: Vector3, drag := 0.0, wpx := 0.0, lpx := 0.0, role := SparkRole.HULL) -> void:
+	if closed or not p.is_finite() or not vel.is_finite() or life <= 0.0 or intensity <= 0.0:
+		return
+	var data := spark_particle(p, t, life, faction, intensity, shutter, width * unit, vel, drag, wpx, lpx, role)
+	if not data.is_empty():
+		(pools["stk"] as POOLS.Pool).emit(data)
+
+
+# The idle drive uses these same attributes in a looping hull-local batch.
+static func spark_particle(p: Vector3, t: float, life: float, faction: String, intensity: float, shutter: float,
+		width: float, vel: Vector3, drag: float, wpx: float, lpx: float, role: int, period := 0.0) -> PackedFloat32Array:
+	var col := spark_colour(faction, role)
+	if col.a <= 0.0:
+		return PackedFloat32Array()
+	var glass := 1.0 if int(FLOOK.of(faction).get("wound_kind", 0)) == 2 else 0.0
+	return POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
+		Vector4(col.r, col.g, col.b, intensity), Vector4(clampf(shutter, 0.015, 0.20), width, maxf(drag, 0.0), SPARK_KIND),
+		Vector4(period, glass, wpx, lpx))
+
+
+# ShipView supplies the existing movement scatter, on this same battle clock and pool.
+func _thrust_spark(p: Vector3, life: float, faction: String, width: float, vel: Vector3) -> void:
+	spark(p, now, life, faction, 2.0, 0.045, width, vel, 2.0, 0.0, 0.0, SparkRole.ENGINE)
 
 
 func shot_pass_by(at: float, p: Vector3) -> void:
@@ -1626,6 +1677,8 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 		remove_ship(id)
 	var s = SHIP.new()
 	s.setup(self, id, root, info)
+	if root.has_method("set_thrust_spark_sink"):
+		root.set_thrust_spark_sink(_thrust_spark)
 	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
 	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
@@ -1715,8 +1768,14 @@ func remove_ship(id: String) -> void:
 	if not ships.has(id):
 		return
 	attach_report(true, id)
+	_clear_thrust_spark_sink(ships[id].root)
 	(ships[id] as SHIP).teardown(self)
 	ships.erase(id)
+
+
+func _clear_thrust_spark_sink(ship_root) -> void:
+	if is_instance_valid(ship_root) and ship_root.has_method("set_thrust_spark_sink"):
+		ship_root.set_thrust_spark_sink(Callable())
 
 
 func set_engine(id: String, level: float) -> void:
@@ -1952,8 +2011,8 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 		spr(wp + wn * 0.2 * k * vk, T + 0.15 + j * 0.2, 1.4, Color(0.62, 0.66, 0.74), 0.25 * sqrt(vk), 0.3 * k * vk, 2.2 * k * vk, 7,
 			(wn + rdir() * 0.25).normalized() * 4.0 * k * vk, 0.8, 0.0, 0.0, float(bl["vent_px"]))
 	for j in int(18 * sqrt(bk)):
-		stk(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05 * bk, 0.08 * k * bk, 1,
-			(wn + rdir() * 0.6).normalized() * (5 + rng.randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
+		spark(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, s.faction, 4.0, 0.05 * bk, 0.08 * k * bk,
+			(wn + rdir() * 0.6).normalized() * (5 + rng.randf() * 8) * k * bk, 2.0, float(bl["spark_px"]))
 	# a soft pop ring on the plating round the hatch, sized to hold at camera 170 (issue 1547)
 	ring(wp + wn * 0.05 * k, wn, T, 0.7, Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
 	# the inside light in the boarding amber (render/line_style.gd "board"), not explosion orange (Muse council)
@@ -2110,8 +2169,10 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var c = Color(1, 0.6, 0.3)
 	for k in [0, 1, 2, 3, 4, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]:
 		spr(at + rdir(), T, 0.5, c, 0.02, 0.5, 0.5, k)
-	for k in [0, 1, 3, 4, 5, 6, 7]:
-		stk(at, T, 0.5, c, 0.02, 1.0, 0.1, k, Vector3(1, 0, 0))
+	for k in [0, 3, 4, 5, 6]:
+		flight_streak(at, T, 0.5, c, 0.02, 1.0, 0.1, k, Vector3(1, 0, 0))
+	spark(at, T, 0.5, "voidsworn", 0.02, 0.06, 0.1, Vector3.RIGHT)
+	spark(at, T, 0.5, "ithar", 0.02, 0.06, 0.1, Vector3.RIGHT)
 	for k in [0, 1, 2, 3, 4]:
 		ring(at, Vector3.UP, T, 0.5, c, 0.02, 0.5, 1.0, k)
 	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]:

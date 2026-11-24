@@ -726,6 +726,7 @@ var _puff_cd := {}
 var _idle_time := 0.0
 var _bob_time := 0.0
 var puffs: Array = []
+var _thrust_spark_sink := Callable()
 
 
 # segments: [{"kind": "turn", "a0", "a1", "w"} | {"kind": "run", "pts": [Vector3 incl. height], "yaw", "w"}]; dur is the
@@ -1786,6 +1787,10 @@ func jet_point(aim: Vector3, out: Vector3) -> Vector3:
 	return hull_pivot.transform * p if hull_pivot != null else p
 
 
+func set_thrust_spark_sink(sink: Callable) -> void:
+	_thrust_spark_sink = sink
+
+
 func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 	var style := str(tp.get("style", "gas"))
 	if fac == "chorus" and style == "gas":
@@ -1852,20 +1857,10 @@ func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 	# the Hullbreakers' overburn throws a little bright grit with each rough blast
 	var n_sp := 0 if calm else int(tp.get("sparks", 0))   # Reduce motion: no thrown grit
 	for i in n_sp:
-		var g := Sprite3D.new()
-		g.texture = _glow_tex()
-		g.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		g.shaded = false
-		g.transparent = true
-		g.material_override = _puff_mat()
-		g.modulate = Color(1.0, 0.72, 0.35, 0.95)
-		g.pixel_size = sp.pixel_size * 0.16
-		g.top_level = true
-		add_child(g)
-		g.global_position = sp.global_position
 		var gv := (vw + Vector3(_jet_rng.randf() - 0.5, _jet_rng.randf() - 0.5, _jet_rng.randf() - 0.5) * 0.9).normalized() * maxf(L, 6.0) * (1.6 + _jet_rng.randf())
-		puffs.append({"n": g, "t": 0.0, "v": gv + _vel * 0.6, "s": g.pixel_size, "a": 0.95, "life": 0.3 + _jet_rng.randf() * 0.2,
-			"spread": 0.0, "style": "spark"})
+		var spark_life := 0.3 + _jet_rng.randf() * 0.2
+		if _thrust_spark_sink.is_valid():
+			_thrust_spark_sink.call(sp.global_position, spark_life, fac, sp.pixel_size * 64.0 * 0.16, gv + _vel * 0.6)
 
 
 static var _rt: Texture2D = null

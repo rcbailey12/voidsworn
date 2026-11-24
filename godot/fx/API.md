@@ -153,7 +153,7 @@ Torpedoes and rams shove, shells and gauss slugs kick, and lances and ions carry
 
 ShipView owns board position and heading. FX moves `hull_pivot`, keeping the hex marker and selection ring on the board. The pivot's translation follows the ShipView heading while the hull yaws under it. ShipView takes idle bob time from the effect clock so it follows hit pause.
 
-Missed projectiles pass the target plane and leave a fading trail. Close misses can spark at the shield edge, and the positional pass-by cue plays on the effect clock. `fx/test/wave_1a_check.gd` covers the hit, recoil and miss behavior.
+Missed projectiles pass the target plane and leave a fading trail. Close misses can throw one shared glint at the shield edge, and the positional pass-by cue plays on the effect clock. `fx/test/wave_1a_check.gd` covers the hit, recoil and miss behavior.
 
 ## 8. Accessibility
 
@@ -341,7 +341,7 @@ Ryan's first playtest: "effects looked very weak, especially at a distance and f
 
 ### Round 2 (Nov 1, after Opus's read of round 1 and Ryan's 16:12 note on hollow wrecks)
 
-- **Per-effect sizes on screen.** `fx.spr(..., px)`, `fx.sprx(px, ...)`, `fx.stk(..., wpx, lpx)` and `fx.ring(..., px)` give one effect its own minimum size in pixels (1080 lines), on top of its kind's floor; a sprite or line grown to its own floor dims less (f^-0.5 and f^-0.3), so the moments that must land read as big bright bursts, not big faint ones. A ring's px is its final size: the floor grows with the ring, so a far shock ring still expands. (Sprites carry it in the seed's whole part, streaks in a4.zw, rings in a4.w.)
+- **Per-effect sizes on screen.** `fx.spr(..., px)`, `fx.sprx(px, ...)`, `fx.flight_streak(..., wpx, lpx)` and `fx.ring(..., px)` give one effect its own minimum size in pixels (1080 lines), on top of its kind's floor; a sprite or line grown to its own floor dims less (f^-0.5 and f^-0.3), so the moments that must land read as big bright bursts, not big faint ones. A ring's px is its final size: the floor grows with the ring, so a far shock ring still expands. (Sprites carry it in the seed's whole part, streaks in a4.zw, rings in a4.w.)
 - **Pops and the flash budget.** `fx.pop` (and every bright sprite) books a counted flash only when it is drawn at 6% of the screen height or more (`_flash_sized` now counts the pixel floor). Before, every pop booked one, so in a busy fight most hits, and a dying ship's cook-off, used up the 3 a second and drew as faint lifts, and the kill's own blast was refused. WCAG 2.3.1 counts flashes by area; the cap is unchanged for big ones and reduce flashing still turns every bright pop into a soft lift.
 - **Impacts by weight** (`HIT_PX` in fx_weapons.gd: 34, 46, 56 px for light, medium, heavy; plasma +6, at most 62): the hit flash, a hot core, longer sparks with their own length, glowing debris embers, the afterglow and hot spot at a size you can see, and a hull light at 7.9 (just under the 8 that counts) held 0.42 s, placed further off the plate so it lights a patch of the target's hull. Laser and prism hits flash in their own colour; prism hits throw spectral glints.
 - **Muzzles** (`MUZ_PX` 20, 26, 32 px; `_muzzle`): every gun shows a flash and a short light on the firing ship. Autocannon: a four-shot brass stutter with fat short tracers; laser turret: long hard faction-coloured bolts with a white core (4.6 by 30 px); flak: airbursts round the target with a pale burst ring; gauss: a white discharge, a fat shock ring and an instant bright wake, then a punch ring at the hit; prism: needles riding spectral glints.
@@ -403,24 +403,40 @@ core/sheath flow mask, and a filled faceted chip. There are no downloaded sprite
 packs. Materials share the imported textures through `_mat`, including the
 attached engine batches; they do not allocate textures per shot.
 
-Streaks retain their existing pool and API. The mask has a bright compact head,
-a short irregular tail, and a soft halo. Spark heads follow drag and a gentle
-curved drift; the cooling history bends inside the quad. After the usual length
-floor, the shader measures the projected head-to-tail distance and shortens it
-with perspective-correct interpolation. The caps are **actual render-target
-pixels**, at cameras 170, 60 and 26, at 1080p or 4K, including `min_px = 0`:
+### Shared sparks (issue 2018)
 
-| Streak kind | Maximum projected head-to-tail length | Default quad width floor at 1080 |
+Use `fx.spark(p, t, life, faction, intensity, shutter, width, velocity, drag, wpx, lpx, role)` for thrown
+sparks. `t` and `life` are effect seconds. `shutter` is how many seconds of motion the tapered tail can
+show, shortened as the spark cools. `p` and `velocity` are world-space. `width` uses the same `fx.unit`
+convention as the other primitives. `drag` defaults to zero and is in inverse seconds. Optional pixel
+floors describe the whole mask at 1080 lines, not the hot core.
+
+The shared shader draws one camera-facing HDR streak with a small hot head, fading to the faction
+tint. Its tail samples the same gravity-free, drag-only path as the head. There is no floor or bounce.
+Pixel floors and a projected length cap keep it legible at camera 170 without bloating close views.
+The per-hit recipe still sets the spawn point, cone and delay, and scales spark count, heft and life
+with hit size. Looping Eclipse drive sparks use the same packed attributes with a period and the
+existing nozzle power gates. They keep the original hull-local motion.
+
+The faction producing the spark owns its colour. For a hull hit pass the struck faction, and for a
+muzzle or airburst pass the firing faction. `SparkRole` defaults to `HULL` (`damage_glow`). The other
+roles use the matching death, shield, engine or weapon tint in `faction_looks.json`. Eclipse always
+uses `damage_glow`. The Glasswrights always use their stored-light tint and a compact, faceted glint.
+The Chorus throws no sparks. A shield that holds still gives its ripple and local arcs, with no
+thrown spark spray. Shield breaks can throw sparks. No spark books a flash or spawns a light.
+
+Use `fx.flight_streak` for shot tracers and the separate organic droplet trail. Those still use their
+own baked mask and timing:
+
+| Streak kind | Default maximum projected length at 1080 | Default quad width floor at 1080 |
 |---|---|---|
-| Spark, bio drop, molten drip, flame tongue | 16 px | 6 px |
+| Bio drop, flame tongue | 16 px | 6 px |
 | Shell and tracer | 22 px | 8 px |
 | Gauss and gauss flak | 26 px | 22 px (issue 800) |
 | Las and prism dart | 32 px | 7 px |
 
-These are geometry caps before post-process bloom. They do not cap a halo's
-threshold-dependent lit extent. Width floors are the whole textured quad,
-not a claim that every pixel of it is bright. The absolute length cap is
-independent of `fx_px`; widths still grow with the render scale and world size.
+The geometry caps apply before bloom. `fx/test/shared_spark_check.gd` checks the live pool's faction
+colours, shield behaviour, and the absence of legacy flat spark calls.
 
 Both gauss emitters use `_gauss_wake`. Its tracer lasts `(2 - 0.001) / 60`
 seconds: two drawn samples on the 60 Hz clock, with the small epsilon preventing
@@ -597,8 +613,8 @@ the tracer's length follows the shot, with no short screen-space length cap.
 
 Stopped shield hits never call a gas atlas, vent or gas-cloud emitter, including
 the former baked flash body. They use faction-coloured energy light, brief
-electrical branches and spark scatter. The existing ripple, shield pattern and
-break look remain owned by issue 372. Hull hits retain their smoke. Flash-area
+electrical branches. Issue 2018 limits thrown sparks to shield breaks. The existing ripple,
+shield pattern and break look remain owned by issue 372. Hull hits retain their smoke. Flash-area
 booking and the reduce-flashing fallback are preserved by `_shield_crackle`.
 
 Proof tools live in docs/shots/look_bench/kit: capture_round3.py renders all 46

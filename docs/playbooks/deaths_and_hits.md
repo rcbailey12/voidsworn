@@ -371,8 +371,8 @@ not comfort limits. Flame still snuffs out within 0.70 s, and every bright flash
 
 Hit debris now uses more, larger plates with a readable metal surface, slower cooling and less drag. An 8 px nominal
 size floor keeps cooled hit shards visible at camera 170; their irregular mesh and tumble determine the actual outline.
-Death shards keep their existing size and cooling. Sparks have
-larger points and trails; cooling embers have larger points without a higher peak. Smoke is a ragged sheet stretched
+Death shards keep their existing size and cooling. Thrown sparks use the shared tapered streak below.
+Cooling embers have larger points without a higher peak. Smoke is a ragged sheet stretched
 along its outward velocity, with a tapered, broken edge and slow thinning, not a round expanding puff. Shell smoke
 follows the reflected shot; beam vapour follows the contact sweep. Bio fume uses the same directional shape in its
 own colour. Las and prism still leave no smoke; ion still throws no molten metal. Existing hull scars and faint
@@ -406,6 +406,25 @@ ahead or astern, the side the camera sees), with a hatch mark four times the fir
 floors that hold at camera 170, a vent, an amber inside light, and three amber boarding lines in the shared line style (role
 `board`) from the attacker's hatch, fanned along the target's flank, held for the battle's 1.6 s boarding pause (paced with
 battle speed) so the player sees it before the next event. godot/fx/test/close_action_fx_check.gd. Set: Ryan, Nov 22 (R401).
+
+## Shared battle sparks (issue 2018)
+
+All thrown sparks use the same kit streak. Give the eye a fine bright head and a softer tail that
+follows its actual departure from the plate, vent or nozzle. The head cools into the faction tint,
+and the streak slows by drag without falling or bouncing. Bigger hits throw more, wider and somewhat
+longer-lived sparks. Tune on the 170 battle camera first, then check that the mask is still thin and
+tapered at camera 26.
+
+Use the struck hull's look for hull damage and the shooter's look for discharge or flak. Sunward,
+the Directorate and the Hullbreakers keep their own colours. Eclipse sparks in its damage violet.
+Glasswrights throw compact cool glints, never orange sparks or red embers. Chorus wounds and
+weapons keep their wet flecks and spores. A shield that holds keeps the ripple and local electrical
+response, with no thrown spark spray. This does not change the flash budget, weapon tracers,
+hull fragments or lingering coals.
+
+The Board's `contrib/codex/issue-2018/capture.bat` compares a hit, a crit, a death and a weapon impact
+for each faction at 170 and 26. Run it after green checks and review. Use the same look moments for
+both revisions and judge the match at 170 before looking at the close view.
 
 ## Weapon firing and hit reactions (R412, Nov 22)
 

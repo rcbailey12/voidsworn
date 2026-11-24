@@ -424,57 +424,68 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 	return mi
 
 
-# Two bounded GPU emitters. Each particle is born in world space, with zero drag,
-# zero acceleration and a cone centred on the sampled thermal-tear normal.
+# The thermal tear throws shared sparks off its normal. The GPU emitter below is only gas.
 static func tear_particles(fx, p: Vector3, n: Vector3, L: float, inherited: Vector3, sparks_only := false, src = null) -> void:
-	if fx.quality == "low" or DisplayServer.get_name() == "headless": return
-	for sparks in ([true] if sparks_only else [false, true]):
-		var emitter := GPUParticles3D.new()
-		emitter.name = "fx_tear_sparks" if sparks else "fx_vent_cone"
-		emitter.amount = 32 if sparks else 12
-		emitter.lifetime = 0.65 if sparks else 0.45
-		emitter.one_shot = true
-		emitter.explosiveness = 0.95
-		emitter.local_coords = false
-		emitter.visibility_aabb = AABB(Vector3.ONE * -L, Vector3.ONE * L * 2.0)
-		var proc: ShaderMaterial = fx.mat(SH.DEATH_PARTICLES)
-		proc.set_shader_parameter("axis", n)
-		proc.set_shader_parameter("seed_value", fx.rng.randf() * 100.0)
-		proc.set_shader_parameter("inherited", inherited)
-		proc.set_shader_parameter("spread", 0.38 if sparks else 0.20)
-		proc.set_shader_parameter("speed", L * (0.6 if sparks else 0.25))
-		proc.set_shader_parameter("size", L * (0.003 if sparks else 0.009))
-		var spk := dcol(src, "spark", Color(0.93, 0.63, 0.26))
-		proc.set_shader_parameter("tint", Color(spk.r, spk.g, spk.b, 0.9) if sparks else Color(0.53, 0.46, 0.64, 0.2 * clampf(dsmoke(src), 0.0, 1.0)))
-		emitter.process_material = proc
-		# R367: a styled faction's sparks draw on a neutral quad, so its own colour is not warmed by today's albedo
-		var styled := not dstyle(src).is_empty()
-		var mesh_key: String = ("death_spark_mesh" if sparks else "death_cone_mesh") + ("_styled" if styled else "")
-		if not fx.dstate.has(mesh_key):
-			var mesh := QuadMesh.new(); mesh.size = Vector2(0.28, 1.2) if sparks else Vector2.ONE
-			var mat := StandardMaterial3D.new()
-			mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-			mat.disable_fog = true   # issue 1558 item 3: a nebula never dulls a blast (effects.md section 1)
-			mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-			mat.vertex_color_use_as_albedo = true
-			mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
-			if not fx.dstate.has("tear_falloff"):
-				var gradient := Gradient.new()
-				gradient.set_color(0, Color(0.95, 0.95, 0.95, 0.95))
-				gradient.set_color(1, Color(0.95, 0.95, 0.95, 0.0))
-				var texture := GradientTexture2D.new()
-				texture.gradient = gradient
-				texture.fill = GradientTexture2D.FILL_RADIAL
-				texture.fill_from = Vector2(0.5, 0.5)
-				texture.fill_to = Vector2(0.5, 1.0)
-				fx.dstate["tear_falloff"] = texture
-			mat.albedo_texture = fx.dstate["tear_falloff"]
-			mat.albedo_color = Color(0.9, 0.9, 0.9) if styled and sparks else Color(0.45, 0.45, 0.45, 0.3) if styled else Color(0.9, 0.75, 0.48) if sparks else Color(0.4, 0.34, 0.5, 0.3)
-			mesh.material = mat
-			fx.dstate[mesh_key] = mesh
-		emitter.draw_pass_1 = fx.dstate[mesh_key]
-		fx.add_child(emitter); emitter.global_position = p
-		fx.later(fx.now + 0.9, fx.free_effect.bind(weakref(emitter)))
+	if fx.quality == "low":
+		return
+	var faction: String = src.faction if src != null else "voidsworn"
+	# Separate seeded stream, so the visual scatter does not move subsequent death beats.
+	var r := RandomNumberGenerator.new()
+	r.seed = hash(Vector4(p.x, p.y, p.z, fx.now))
+	var tangent := n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
+	var bitangent := n.cross(tangent)
+	for j in (32 if fx.quality == "max" else 16):
+		var ang := r.randf() * TAU
+		var spread := r.randf_range(0.0, 0.38)
+		var d := (n + (tangent * cos(ang) + bitangent * sin(ang)) * spread).normalized()
+		fx.spark(p, fx.now + r.randf_range(0.0, 0.04), r.randf_range(0.36, 0.65), faction, 2.6, 0.045,
+			L * 0.003, inherited + d * L * r.randf_range(0.36, 0.60), 0.6, 0.0, 0.0, fx.SparkRole.DEATH)
+	if sparks_only or DisplayServer.get_name() == "headless":
+		return
+	var emitter := GPUParticles3D.new()
+	emitter.name = "fx_vent_cone"
+	emitter.amount = 12
+	emitter.lifetime = 0.45
+	emitter.one_shot = true
+	emitter.explosiveness = 0.95
+	emitter.local_coords = false
+	emitter.visibility_aabb = AABB(Vector3.ONE * -L, Vector3.ONE * L * 2.0)
+	var proc: ShaderMaterial = fx.mat(SH.DEATH_PARTICLES)
+	proc.set_shader_parameter("axis", n)
+	proc.set_shader_parameter("seed_value", fx.rng.randf() * 100.0)
+	proc.set_shader_parameter("inherited", inherited)
+	proc.set_shader_parameter("spread", 0.20)
+	proc.set_shader_parameter("speed", L * 0.25)
+	proc.set_shader_parameter("size", L * 0.009)
+	proc.set_shader_parameter("tint", Color(0.53, 0.46, 0.64, 0.2 * clampf(dsmoke(src), 0.0, 1.0)))
+	emitter.process_material = proc
+	var styled := not dstyle(src).is_empty()
+	var mesh_key: String = "death_cone_mesh" + ("_styled" if styled else "")
+	if not fx.dstate.has(mesh_key):
+		var mesh := QuadMesh.new(); mesh.size = Vector2.ONE
+		var mat := StandardMaterial3D.new()
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		mat.disable_fog = true   # issue 1558 item 3: a nebula never dulls a blast (effects.md section 1)
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.vertex_color_use_as_albedo = true
+		mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+		if not fx.dstate.has("tear_falloff"):
+			var gradient := Gradient.new()
+			gradient.set_color(0, Color(0.95, 0.95, 0.95, 0.95))
+			gradient.set_color(1, Color(0.95, 0.95, 0.95, 0.0))
+			var texture := GradientTexture2D.new()
+			texture.gradient = gradient
+			texture.fill = GradientTexture2D.FILL_RADIAL
+			texture.fill_from = Vector2(0.5, 0.5)
+			texture.fill_to = Vector2(0.5, 1.0)
+			fx.dstate["tear_falloff"] = texture
+		mat.albedo_texture = fx.dstate["tear_falloff"]
+		mat.albedo_color = Color(0.45, 0.45, 0.45, 0.3) if styled else Color(0.4, 0.34, 0.5, 0.3)
+		mesh.material = mat
+		fx.dstate[mesh_key] = mesh
+	emitter.draw_pass_1 = fx.dstate[mesh_key]
+	fx.add_child(emitter); emitter.global_position = p
+	fx.later(fx.now + 0.9, fx.free_effect.bind(weakref(emitter)))
 
 
 # ---------------------------------------------------------------- debris bodies (Jolt)
@@ -2500,13 +2511,13 @@ static func _wing_death(fx, s) -> float:
 	if not hit.is_empty():
 		var p: Vector3 = s.to_world(hit["p"])
 		# Birth on the next FX step: a one-frame picture born between steps could expire before its first draw.
-		fx.later(fx.now + 0.000001, _wing_spark.bind(fx, s, p, s.xf()))
+		fx.later(fx.now + 0.000001, _wing_flash.bind(fx, s, p, s.xf()))
 		BEATS.corkscrew(fx, s, p, s.xf())   # issue 1586
 	_hide_ship(s)
 	return 1.0 / 60.0
 
 
-static func _wing_spark(fx, s, p: Vector3, frame: Transform3D) -> void:
+static func _wing_flash(fx, s, p: Vector3, frame: Transform3D) -> void:
 	var soft: bool = fx.reduce_flashing or not fx.flash_at(p, fx.now, 28.0 * STAGING_UNITS_PER_PIXEL, 28.0, 1.0 / 60.0)
 	_pic(fx, s, p, "weapons/impact/flash_", 28.0, 0.20 if soft else 1.0 / 60.0, 3.2, 1.25 if soft else 5.2, soft, "flash", frame, Vector3.ZERO, {"seed": 0})
 	if not melting(s):
@@ -3001,7 +3012,7 @@ static func _groan(fx, s, i: int) -> void:
 	if fx.quality != "low":
 		for k in 5:
 			var d: Vector3 = (nw + fx.rdir() * 0.6).normalized()
-			fx.stk(p, fx.now, 0.32 + 0.1 * fx.rng.randf(), dcol(s, "spark", Color(1.0, 0.66, 0.32)), 2.6, L * 0.018, 0.035, 1, inherited + d * L * fx.rng.randf_range(0.25, 0.45), 1.6, 0.0, 1.5, 6.0)
+			fx.spark(p, fx.now, 0.32 + 0.1 * fx.rng.randf(), s.faction, 2.6, L * 0.018, 0.035, inherited + d * L * fx.rng.randf_range(0.25, 0.45), 1.6, 1.5, 6.0, fx.SparkRole.DEATH)
 		# (Ryan on pass 4B, "way too much smoke": the groans keep their sparks, the breath of gas is gone)
 	if i % 2 == 1:
 		_spawn_ship_debris(fx, s, p + nw * L * 0.015, inherited + nw * L * 0.05, 1, L * 0.008, 0.9)
@@ -3111,7 +3122,7 @@ static func _blast_inner(fx, src, p: Vector3, n: Vector3, px: float, tint: Color
 	if fx.quality != "low":
 		var k: float = px * STAGING_UNITS_PER_PIXEL / 10.0
 		for j in 5:
-			fx.stk(p + n * 0.1, fx.now, 0.35 + fx.rng.randf() * 0.25, tint.lerp(Color(1, 0.9, 0.6), 0.4), 5.0, 0.05, 0.10, 1, fx.rcone(n, 0.7) * (8.0 + fx.rng.randf() * 10.0) * k, 2.0)
+			fx.spark(p + n * 0.1, fx.now, 0.35 + fx.rng.randf() * 0.25, src.faction, 5.0, 0.05, 0.10, fx.rcone(n, 0.7) * (8.0 + fx.rng.randf() * 10.0) * k, 2.0, 0.0, 0.0, fx.SparkRole.DEATH)
 
 
 # Issue 484 (owner, Nov 11, on the secondaries: "the secondary explosion smoke looks a little too even and weird"). One
@@ -3213,7 +3224,7 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 			else:
 				d = fx.rdir()
 				d = (d - axis_w * d.dot(axis_w)).normalized()
-			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.6 + fx.rng.randf() * 0.5, boom_col(s, "spark", Color(1.0, 0.62, 0.3)), 6.0, 0.06, maxf(L * 0.004, 0.05), 1, d * L * fx.rng.randf_range(0.6, 1.3), 0.8, 0.0, 2.0, 10.0)
+			fx.spark(p, fx.now + fx.rng.randf() * 0.05, 0.6 + fx.rng.randf() * 0.5, s.faction, 6.0, 0.06, maxf(L * 0.004, 0.05), d * L * fx.rng.randf_range(0.6, 1.3), 0.8, 2.0, 10.0, fx.SparkRole.DEATH)
 	# R367 (issue 1399): a Glasswright's stored light spills as glittering dust; Eclipse's core gutters out and the scene
 	# dims for an instant on every big Eclipse death (Eclipse only, R389: no other faction dims the scene)
 	var style := str(dstyle(s).get("style", ""))
@@ -3225,13 +3236,12 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 # (deaths_and_hits.md, "How each faction dies": no fire and no smoke, glittering dust).
 static func _glitter(fx, s, p: Vector3, L: float) -> void:
 	if fx.quality == "low": return
-	var col := dcol(s, "spark", Color(0.86, 0.93, 1.0))
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	for j in 36:
 		var d: Vector3 = fx.rdir()
 		d.y *= 0.4
-		fx.stk(p + d * L * 0.04, fx.now + fx.rng.randf() * 0.35, 1.4 + fx.rng.randf() * 1.6, col, 4.0, 0.02, maxf(L * 0.002, 0.03), 1,
-			inherited + d.normalized() * L * fx.rng.randf_range(0.04, 0.22), 0.7, 0.0, 1.5, 3.0)
+		fx.spark(p + d * L * 0.04, fx.now + fx.rng.randf() * 0.35, 1.4 + fx.rng.randf() * 1.6, s.faction, 4.0, 0.02, maxf(L * 0.002, 0.03),
+			inherited + d.normalized() * L * fx.rng.randf_range(0.04, 0.22), 0.7, 1.5, 3.0, fx.SparkRole.DEATH)
 
 
 # R367 (issue 1399, Ryan's look pass): a styled faction's small hull has no smoke body, so its pop needs its own light: a
@@ -3291,12 +3301,11 @@ static func _fac_pop_inner(fx, s, p: Vector3, L: float) -> void:
 		life = 0.96
 	fx._emit_spr(p, fx.now, life, dcol(s, "light", Color(0.9, 0.9, 1.0)), i, L * 0.25, L * 1.1, kind, inherited, 0.0, 0.0, 0.0, 64.0)
 	if fx.quality == "low": return
-	var col := dcol(s, "spark", Color(0.86, 0.93, 1.0))
 	for j in 18:
 		var d: Vector3 = fx.rdir()
 		d.y *= 0.5
-		fx.stk(p, fx.now + fx.rng.randf() * 0.04, 0.45 + fx.rng.randf() * 0.35, col, 5.0, 0.03, maxf(L * 0.004, 0.04), 1,
-			inherited + d.normalized() * L * fx.rng.randf_range(0.5, 1.1), 0.9, 0.0, 1.5, 5.0)
+		fx.spark(p, fx.now + fx.rng.randf() * 0.04, 0.45 + fx.rng.randf() * 0.35, s.faction, 5.0, 0.03, maxf(L * 0.004, 0.04),
+			inherited + d.normalized() * L * fx.rng.randf_range(0.5, 1.1), 0.9, 1.5, 5.0, fx.SparkRole.DEATH)
 
 
 # R367 round 2 (issue 1399): the Sunward Crusade's magazines go off as an even row down the broadside during the tell, a
@@ -3326,9 +3335,8 @@ static func _drum_pop(fx, s, b: int, n: int, side: float) -> void:
 	if sx != null:
 		sx.play("death_magazine", {"pos": pw, "death": true})
 	fx.spr(pw + nw * h.L * 0.015, fx.now, 0.3, dcol(s, "light", Color(1.0, 0.78, 0.5)), 3.6, h.L * 0.04, h.L * 0.13, 0, inherited, 0.0, 0.0, 0.0, 24.0)
-	var col := dcol(s, "spark", Color(1.0, 0.62, 0.3))
 	for j in 8:
-		fx.stk(pw, fx.now, 0.5, col, 4.0, 0.05, maxf(h.L * 0.004, 0.04), 1, inherited + (nw + fx.rdir() * 0.6).normalized() * h.L * 0.3, 0.8, 0.0, 1.5, 6.0)
+		fx.spark(pw, fx.now, 0.5, s.faction, 4.0, 0.05, maxf(h.L * 0.004, 0.04), inherited + (nw + fx.rdir() * 0.6).normalized() * h.L * 0.3, 0.8, 1.5, 6.0, fx.SparkRole.DEATH)
 
 
 # R367 round 2: the Hullbreakers' patch plates tear loose during the tell, four to six of them spinning off from scattered
@@ -3351,7 +3359,7 @@ static func _patch_plate(fx, s) -> void:
 	var nw: Vector3 = (s.xf().basis * (hit.get("n", Vector3.UP) as Vector3)).normalized()
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	_spawn_ship_debris(fx, s, pw + nw * h.L * 0.01, inherited + (nw + fx.rdir() * 0.4).normalized() * h.L * 0.09, 1, h.L * 0.035, STORY_DEBRIS_DAMP)
-	fx.stk(pw, fx.now, 0.35, dcol(s, "spark", Color(1.0, 0.5, 0.2)), 3.0, 0.04, maxf(h.L * 0.003, 0.03), 1, nw * h.L * 0.15, 0.8, 0.0, 1.5, 5.0)
+	fx.spark(pw, fx.now, 0.35, s.faction, 3.0, 0.04, maxf(h.L * 0.003, 0.03), nw * h.L * 0.15, 0.8, 1.5, 5.0, fx.SparkRole.DEATH)
 
 
 # R367 round 2: the Hegemony Navy breaks with no fire in the gap: blue-white arcs jump it for a third of a second as the
@@ -3423,7 +3431,7 @@ static func _peel_band(fx, s, b: int, bands: int) -> void:
 		var pw: Vector3 = s.to_world(hit["p"])
 		var nw: Vector3 = (s.xf().basis * (hit.get("n", Vector3.UP) as Vector3)).normalized()
 		_spawn_ship_debris(fx, s, pw + nw * h.L * 0.01, inherited + nw * h.L * 0.06, 1, h.L * 0.03, STORY_DEBRIS_DAMP)
-		fx.stk(pw, fx.now, 0.35, dcol(s, "spark", Color(1.0, 0.62, 0.3)), 3.0, 0.04, maxf(h.L * 0.003, 0.03), 1, nw * h.L * 0.15, 0.8, 0.0, 1.5, 5.0)
+		fx.spark(pw, fx.now, 0.35, s.faction, 3.0, 0.04, maxf(h.L * 0.003, 0.03), nw * h.L * 0.15, 0.8, 1.5, 5.0, fx.SparkRole.DEATH)
 
 
 # Beat 3: secondaries on each piece, each lighting its own piece. They go off in groups, one per piece, 0.05 s apart,
@@ -4322,7 +4330,7 @@ static func _snap(fx, s, wreck: Dictionary, child, bu: Dictionary) -> void:
 	var p: Vector3 = child.to_global(child.get_meta("snap_site", child.get_meta("tear_site", Vector3.ZERO)))
 	if fx.quality != "low":
 		for j in 10:
-			fx.stk(p, fx.now + fx.rng.randf() * 0.06, 0.5 + fx.rng.randf() * 0.4, boom_col(s, "spark", Color(1.0, 0.62, 0.3)), 5.0, 0.05, maxf(L * 0.004, 0.05), 1, fx.rdir() * L * fx.rng.randf_range(0.3, 0.8), 0.8, 0.0, 2.0, 10.0)
+			fx.spark(p, fx.now + fx.rng.randf() * 0.06, 0.5 + fx.rng.randf() * 0.4, s.faction, 5.0, 0.05, maxf(L * 0.004, 0.05), fx.rdir() * L * fx.rng.randf_range(0.3, 0.8), 0.8, 2.0, 10.0, fx.SparkRole.DEATH)
 	wreck["lights"].append(fx.light_source(child, child.get_meta("snap_site", child.get_meta("tear_site", Vector3.ZERO)), boom_col(s, "rim", Color(1.0, 0.52, 0.22)), 0.6, 0.3))   # one lookup with the sparks (Fable)
 	fx.shake(fx.now, 0.12, p)
 
@@ -4348,7 +4356,7 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * (0.35 if big else 0.5), "cool", 1.1, vel * 0.65, 0.4 if big else 0.7, atlas_band(L), src)
 	if not big and src != null and fx.quality != "low":
 		var p: Vector3 = node.to_global(node.get_meta("tear_site", Vector3.ZERO))
-		fx.stk(p, fx.now, 0.65, boom_col(src, "spark", Color(1.0, 0.62, 0.30)), 4.0, 0.05, 0.08, 1, vel + fx.rdir() * L * 0.55, 0.8, 0.0, 2.0, 8.0)
+		fx.spark(p, fx.now, 0.65, src.faction, 4.0, 0.05, 0.08, vel + fx.rdir() * L * 0.55, 0.8, 2.0, 8.0, fx.SparkRole.DEATH)
 	# Big hulls' secondaries are scheduled once per kill (_schedule_secondaries), never a per-piece fire loop.
 
 

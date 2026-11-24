@@ -1,7 +1,7 @@
 extends RefCounted
 # Issue 1586 (Neon's Nov 21-22 death and hull FX audit): more death variety without per-ship bakes. A death is now
 # faction tell x kill cause x hull tier archetype x what stays after. fx_death.gd keeps the break itself; this file adds the
-# one-shot beats on top, all from the shared pools (fx.spr, fx.stk, fx.rib, fx.shd, fx.light), so no
+# one-shot beats on top, all from the shared pools (fx.spr, fx.spark, fx.rib, fx.shd, fx.light), so no
 # death adds a node, a material or a per-frame mesh. View only: the rules never see any of it.
 #
 #   kill cause (on the death frame, fx_death._death_inner and _hulk):
@@ -148,11 +148,10 @@ static func _jet(fx, s, lp: Vector3, dw: Vector3, glow: Color, entry: bool) -> v
 	var vap := glow.lerp(Color.WHITE, 0.6)
 	for j in 5:
 		_wisp(fx, s, p, fx.now + j * 0.03, 0.55, vap, 0.5, L * 0.006, L * 0.045, fx.rcone(dw, 0.12) * L * (0.9 - j * 0.1), 2.2)
-	var spark: Color = _col(s, "spark", Color(1.0, 0.7, 0.4))
 	var away: Vector3 = -dw if entry else dw
 	for j in 8:
-		fx.stk(p, fx.now + fx.rng.randf() * 0.04, 0.3 + fx.rng.randf() * 0.2, spark, 4.0, 0.05, maxf(L * 0.003, 0.03), 1,
-			fx.rcone(away, 0.5) * L * fx.rng.randf_range(0.5, 1.0), 1.2)
+		fx.spark(p, fx.now + fx.rng.randf() * 0.04, 0.3 + fx.rng.randf() * 0.2, s.faction, 4.0, 0.05, maxf(L * 0.003, 0.03),
+			fx.rcone(away, 0.5) * L * fx.rng.randf_range(0.5, 1.0), 1.2, 0.0, 0.0, fx.SparkRole.DEATH)
 
 
 # A vapour wisp (the smoke pool's kind 7), or on a Glasswright hull, which never smokes (clean collapse, Codex review of
@@ -163,7 +162,7 @@ static func _wisp(fx, s, p: Vector3, t: float, life: float, col: Color, i: float
 		return
 	fx.spr(p, t, life * 0.6, Color(0.92, 0.96, 1.0), i * 0.8, s0, s1 * 0.5, 18, vel * 0.5, drag)
 	for k in 2:
-		fx.stk(p, t + k * 0.03, life * 0.5, Color(0.95, 0.98, 1.0), 2.0, 0.03, maxf(s1 * 0.05, 0.02), 1, vel + fx.rdir() * s1, drag)
+		fx.spark(p, t + k * 0.03, life * 0.5, s.faction, 2.0, 0.03, maxf(s1 * 0.05, 0.02), vel + fx.rdir() * s1, drag, 0.0, 0.0, fx.SparkRole.DEATH)
 
 
 # R367 and R402 (Fable audit of PRs 1631 and 1666): loose hull debris is the faction's own matter, read from its wound_kind
@@ -182,15 +181,6 @@ static func debris(fx, s, p: Vector3, t: float, life: float, vel: Vector3, size:
 			fx.shd(p, t, life, vel, size, heat, spin, drag, tint)
 
 
-# the spark colour of a hull's crush or tear: hot brass on metal hulls, the faction's own death spark on Glasswright
-# and Eclipse hulls (white light, violet), bile on the Chorus (R367; never brass on those three)
-static func spark_col(s, metal: Color) -> Color:
-	match int(s.fac.get("wound_kind", 0)):
-		1: return s.fac.damage_glow as Color
-		2, 3: return _death().boom_col(s, "spark", s.fac.damage_glow as Color)
-	return metal
-
-
 # a ram kill: the crush at the struck point throws sparks along the plating, and the pieces will spin off centre
 static func _ram(fx, s, T: float) -> void:
 	note(s, "ram")
@@ -205,8 +195,8 @@ static func _ram(fx, s, T: float) -> void:
 	var dw: Vector3 = s.dir_world(sh[1])
 	var L: float = s.hull.L
 	s.set_meta("death_spin", 1.0 if posmod(hash(str(s.id)), 2) == 0 else -1.0)
-	var col := spark_col(s, Color(1.0, 0.82, 0.55))
 	var wet: bool = int(s.fac.get("wound_kind", 0)) == 1
+	var col: Color = s.fac.damage_glow if wet else fx.spark_colour(s.faction, fx.SparkRole.DEATH)
 	for j in 26:
 		var d: Vector3 = fx.rdir()
 		d = (d - dw * d.dot(dw) * 0.8).normalized()
@@ -214,8 +204,8 @@ static func _ram(fx, s, T: float) -> void:
 			if j % 2 == 0:
 				fx.spr(p, T + fx.rng.randf() * 0.12, 0.5, col * 0.7, 0.3, L * 0.004, L * 0.018, 20, d * L * fx.rng.randf_range(0.2, 0.5), 1.2)
 			continue
-		fx.stk(p, T + fx.rng.randf() * 0.12, 0.25 + fx.rng.randf() * 0.3, col, 5.0, 0.06, maxf(L * 0.003, 0.03), 1,
-			d * L * fx.rng.randf_range(0.4, 1.0), 1.5)
+		fx.spark(p, T + fx.rng.randf() * 0.12, 0.25 + fx.rng.randf() * 0.3, s.faction, 5.0, 0.06, maxf(L * 0.003, 0.03),
+			d * L * fx.rng.randf_range(0.4, 1.0), 1.5, 0.0, 0.0, fx.SparkRole.DEATH)
 	for j in 3:
 		debris(fx, s, p, T + j * 0.04, 1.8, fx.rcone(-dw, 0.7) * L * 0.12, L * 0.006, 0.6)
 	fx.light(p, T, 0.25, 2.5, col, 1)
@@ -236,8 +226,8 @@ static func _tidal(fx, s, T: float, cut_at: float) -> void:
 	fx.light(p, T + 0.1, maxf(cut_at, 0.6), 3.0, gold, 1)
 	fx.spr(p, T + 0.1, maxf(cut_at, 0.6), gold, 1.2, L * 0.05, L * 0.12, 18)
 	for j in 14:
-		fx.stk(p, T + 0.1 + j * maxf(cut_at, 0.6) / 14.0, 0.6, gold.lerp(Color.WHITE, 0.3), 3.0, 0.08, maxf(L * 0.003, 0.03), 1,
-			fx.rcone(to_sun, 0.35) * L * 0.6, 0.2)
+		fx.spark(p, T + 0.1 + j * maxf(cut_at, 0.6) / 14.0, 0.6, s.faction, 3.0, 0.08, maxf(L * 0.003, 0.03),
+			fx.rcone(to_sun, 0.35) * L * 0.6, 0.2, 0.0, 0.0, fx.SparkRole.DEATH)
 
 
 # A small hull rolling over vents hard from one flank.
@@ -345,10 +335,9 @@ static func corkscrew(fx, s, p: Vector3, frame: Transform3D) -> void:
 		var q: Vector3 = p + fwd * L * 0.6 * u - up * L * 0.5 * u * u + (side * cos(a) + up * sin(a)) * L * 0.12
 		if s.faction != "ithar":   # a Glasswright craft never smokes: the flecks alone
 			fx.spr(q, fx.now + u * 0.35, 0.6, Color(0.12, 0.11, 0.1), 0.4, L * 0.04, L * 0.14, 3, Vector3.ZERO, 0.5)
-	var tint: Color = s.fac.damage_glow
 	for j in 2:
 		debris(fx, s, p, fx.now, 1.2, (fwd + fx.rdir() * 0.6).normalized() * L * 0.8, L * 0.04, 0.4, 6.0, 0.3, 0.6)
-		fx.stk(p, fx.now, 0.35, tint, 2.0, 0.04, L * 0.02, 1, fx.rdir() * L * 0.7, 1.0)
+		fx.spark(p, fx.now, 0.35, s.faction, 2.0, 0.04, L * 0.02, fx.rdir() * L * 0.7, 1.0, 0.0, 0.0, fx.SparkRole.DEATH)
 
 
 # ---------------------------------------------------------------- the break
@@ -387,7 +376,7 @@ static func roll_end(fx, s, p: Vector3, inherited: Vector3) -> void:
 	var L: float = s.hull.L
 	var col: Color = _col(s, "spark", Color(1.0, 0.75, 0.4))
 	for k in 10:
-		fx.stk(p, fx.now, 0.4, col, 3.0, 0.04, maxf(L * 0.004, 0.03), 1, inherited * 0.5 + fx.rdir() * L * 0.6, 1.2)
+		fx.spark(p, fx.now, 0.4, s.faction, 3.0, 0.04, maxf(L * 0.004, 0.03), inherited * 0.5 + fx.rdir() * L * 0.6, 1.2, 0.0, 0.0, fx.SparkRole.DEATH)
 	# a short counted flash (the staging rule's core beat, small), refused in calm mode like every other
 	if fx.flash_at(p, fx.now, L * 0.45, 40.0, 0.10):
 		fx.light(p, fx.now, 0.10, 2.5, col, 1)
@@ -408,7 +397,6 @@ static func spawn_shreds(fx, s, p: Vector3, vel: Vector3, n: int) -> void:
 # Sunward: the hot iron seams tick and spit embers for 4 to 6 s after the split.
 static func _embers(fx, s, nodes: Array, T: float) -> void:
 	note(s, "embers")
-	var col: Color = _col(s, "spark", Color(1.0, 0.72, 0.36))
 	var n := 6
 	for j in n:
 		if nodes.is_empty():
@@ -419,8 +407,7 @@ static func _embers(fx, s, nodes: Array, T: float) -> void:
 			if not is_instance_valid(nd): return
 			var p: Vector3 = nd.to_global(nd.get_meta("tear_site", Vector3.ZERO))
 			for k in 3:
-				fx.stk(p, fx.now + k * 0.03, 0.4, col, 3.0, 0.03, maxf(s.hull.L * 0.002, 0.02), 1, fx.rdir() * s.hull.L * 0.12, 1.5)
-			fx.spr(p, fx.now, 0.3, col, 0.8, s.hull.L * 0.006, s.hull.L * 0.012, 19))
+				fx.spark(p, fx.now + k * 0.03, 0.4, s.faction, 3.0, 0.03, maxf(s.hull.L * 0.002, 0.02), fx.rdir() * s.hull.L * 0.12, 1.5, 0.0, 0.0, fx.SparkRole.DEATH))
 
 
 # Navy: every window and light stays on through the tell, then all die on one frame as the hull breaks, like a tripped breaker
@@ -471,7 +458,7 @@ static func _cables(fx, s, wreck: Dictionary, ra: WeakRef, rb: WeakRef, col: Col
 		if snap:
 			var mid: Vector3 = pa + d * 0.5
 			for k in 8:
-				fx.stk(mid, fx.now, 0.3, col.lerp(Color.WHITE, 0.4), 4.0, 0.05, maxf(L * 0.003, 0.03), 1, fx.rdir() * L * 0.5, 1.5)
+				fx.spark(mid, fx.now, 0.3, s.faction, 4.0, 0.05, maxf(L * 0.003, 0.03), fx.rdir() * L * 0.5, 1.5, 0.0, 0.0, fx.SparkRole.DEATH)
 		else:
 			fx.rib(pa, d.normalized(), d.length(), fx.now, 0.07, col, 1.2, L * 0.002 / maxf(fx.unit, 1e-4), L * 0.002 / maxf(fx.unit, 1e-4), 0)
 	if snap:
@@ -551,7 +538,7 @@ static func _twitch(fx, s, nodes: Array, T: float) -> void:
 static func _afterlife(fx, s, nodes: Array, T: float) -> void:
 	var n := 2 + posmod(hash(str(s.id)) >> 3, 2)
 	var glow: Color = s.fac.damage_glow
-	var ember: bool = s.faction != "ithar"
+	var ember: bool = s.faction not in ["ithar", "chorus"]
 	for j in n:
 		if nodes.is_empty():
 			break
@@ -564,7 +551,7 @@ static func _afterlife(fx, s, nodes: Array, T: float) -> void:
 			var L: float = s.hull.L
 			if ember and j % 2 == 0:
 				for k in 3:
-					fx.stk(p, fx.now + k * 0.04, 0.35, glow, 2.0, 0.02, maxf(L * 0.002, 0.02), 1, fx.rdir() * L * 0.06, 1.5)
+					fx.spark(p, fx.now + k * 0.04, 0.35, s.faction, 2.0, 0.02, maxf(L * 0.002, 0.02), fx.rdir() * L * 0.06, 1.5, 0.0, 0.0, fx.SparkRole.DEATH)
 			else:
 				_wisp(fx, s, p, fx.now, 0.9, glow.lerp(Color.WHITE, 0.6), 0.22, L * 0.004, L * 0.025, Vector3.UP * L * 0.04, 1.0)
 			note(s, "after"))
@@ -581,11 +568,12 @@ static func _mini_pop(fx, s, p: Vector3, T: float) -> void:
 				fx.rib(p, fx.rdir(), L * 0.4, T + j * 0.06, 0.18, Color(0.62, 0.8, 1.0), 1.4, L * 0.004 / maxf(fx.unit, 1e-4), L * 0.0015 / maxf(fx.unit, 1e-4), 6)
 		"ithar":
 			for j in 10:
-				fx.stk(p, T, 0.5, Color(0.9, 0.95, 1.0), 4.0, 0.04, maxf(L * 0.004, 0.03), 1, fx.rdir() * L * 0.8, 1.0)
+				fx.spark(p, T, 0.5, s.faction, 4.0, 0.04, maxf(L * 0.004, 0.03), fx.rdir() * L * 0.8, 1.0, 0.0, 0.0, fx.SparkRole.DEATH)
 		"chorus":
 			fx.spr(p, T, 0.9, s.fac.damage_glow * 0.6, 0.6, L * 0.08, L * 0.3, 20, Vector3.ZERO, 0.5)
 		"voidsworn":
-			fx.spr(p, T, 0.4, _col(s, "spark", Color(1.0, 0.72, 0.36)), 1.3, L * 0.06, L * 0.2, 19)
+			fx.spark(p, T, 0.4, s.faction, 1.3, 0.055, L * 0.006, Vector3.UP * L * 0.15,
+				1.0, 0.0, 0.0, fx.SparkRole.DEATH)
 		"corsair":
 			spawn_shreds(fx, s, p, Vector3.ZERO, 1)
 		"deathless":
