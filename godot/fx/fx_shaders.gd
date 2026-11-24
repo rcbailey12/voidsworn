@@ -892,9 +892,12 @@ void fragment() {
 	vec3 tint = vCol.rgb;
 	float motion = 0.75 + 0.5 * fast;
 	float fork_hot = 0.0; float fork_glow = 0.0;
+	vec3 colour = vec3(0.0);
+	bool custom_plume = false;
 	if (k == 0 || k == 3) {
 		// Issue 2042 item 3: layered main engine plume (bright core + Mach shimmer + turbulent mid + soft outer wash)
 		// with smooth nozzle-bell entry (no flat square edge at c60/c26) and faction palettes from faction_looks.json.
+		custom_plume = true;
 		int pstyle = int(plume_style + 0.5);
 		float tk = clamp(throttle_k, 0.15, 1.5);
 		float bell_in = smoothstep(0.0, 0.06 + x * 0.16, s);
@@ -923,9 +926,7 @@ void fragment() {
 		}
 		float sputter = k == 3 ? mix(cough(scene_t - s * 0.2, seed), 0.8, fx_calm) : 1.0;
 		float plume_end = 1.0 - smoothstep(0.72, 1.0, s);
-		vec3 plume_rgb = core_col * inner_core * 1.65 + tint * mid_stream * (0.75 + 0.45 * flow_fast) + wash_col * outer_wash * 0.95;
-		ALBEDO = clamp(plume_rgb * vCol.a * sputter * plume_end * fx_gain, 0.0, 512.0);
-		return;
+		colour = (core_col * inner_core * 1.65 + tint * mid_stream * (0.75 + 0.45 * flow_fast) + wash_col * outer_wash * 0.95) * sputter * plume_end;
 	} else if (k == 1) {
 		float fade = spow(1.0 - s, 1.5);
 		core *= fade * 0.4;
@@ -976,8 +977,12 @@ void fragment() {
 		sheath = sheath * 0.30 + rails * 1.35;
 		motion = 1.0;
 	}
-	vec3 colour = hot * (core * 1.35 + fork_hot) + tint * (sheath * (0.55 + slow * 0.7) + fork_glow * 0.5);
-	ALBEDO = clamp(colour * vCol.a * motion * env * ends * fx_gain, 0.0, 512.0);
+	if (custom_plume) {
+		ALBEDO = clamp(colour * vCol.a * fx_gain, 0.0, 512.0);
+	} else {
+		colour = hot * (core * 1.35 + fork_hot) + tint * (sheath * (0.55 + slow * 0.7) + fork_glow * 0.5);
+		ALBEDO = clamp(colour * vCol.a * motion * env * ends * fx_gain, 0.0, 512.0);
+	}
 }
 """
 
