@@ -108,6 +108,7 @@ var apply_shake = true
 
 # --- clock
 var now = 0.0
+var dt := 0.0          # effect seconds advanced by the most recent step
 var _speed = 1.0
 var _pause_until = -1.0   # effect time; checks hold a pause open with it
 var _pause_left = 0.0      # issue 1558 item 4: the hit pause in real seconds, so it lasts the same at any frame rate
@@ -525,7 +526,6 @@ func step(delta: float) -> void:
 	var hold: bool = now < _pause_until
 	var crawl: float = 0.0 if hold else minf(real, float(_pause_left))
 	_pause_left = maxf(0.0, _pause_left - real)
-	var dt: float
 	if hold or (crawl > 1e-6 and crawl >= real - 1e-9):
 		_speed = crawl_spd
 		dt = real * _speed
@@ -544,7 +544,7 @@ func step(delta: float) -> void:
 	_build_death_pieces()
 	_gate_physics()
 	t0 = pend("later", t0)
-	_update_feel(delta)
+	_update_feel()
 	_update_dim()
 	for id in ships:
 		(ships[id] as SHIP).update(self, dt)
@@ -1349,7 +1349,7 @@ func punch_now() -> float:
 	return _kick
 
 
-func _update_feel(delta: float) -> void:
+func _update_feel() -> void:
 	var cp = camera.global_position if camera != null else Vector3.ZERO
 	var keep: Array = []
 	for s in _shakes:
@@ -1370,9 +1370,9 @@ func _update_feel(delta: float) -> void:
 	_pauses = keep
 	_update_punch()
 	# trauma decays in about 0.3 s from a normal hit, about 0.45 s from the heaviest (A5 ranges)
-	_trauma = maxf(0.0, _trauma - delta * 2.4)
+	_trauma = maxf(0.0, _trauma - dt * 2.4)
 	var k = _trauma * _trauma * shake_scale * (0.5 if reduce_flashing else 1.0)
-	var T = Time.get_ticks_msec() / 1000.0 if not manual else now
+	var T = now
 	var amp = 0.06 * k
 	_shake_off = Vector2(amp * (sin(T * 37.0) * 0.6 + sin(T * 61.0 + 1.0) * 0.4), amp * (sin(T * 43.0 + 2.0) * 0.6 + sin(T * 71.0) * 0.4))
 	if apply_shake and camera != null and is_instance_valid(camera):
@@ -1928,6 +1928,12 @@ func anchor_wreck(id: String, centre: Vector3, radius: float) -> void:
 
 func wreck_pieces(id: String) -> int:
 	return DEATH.wreck_pieces(self, id)
+
+
+# A late cut keeps the live hull visible until the split, hulk copy or no-pieces pop has run.
+func wreck_settled(id: String) -> bool:
+	var s: SHIP = ships.get(id)
+	return s == null or s.has_meta("death_hidden") or not is_instance_valid(s.root)
 
 
 func jump_out(id: String) -> void:

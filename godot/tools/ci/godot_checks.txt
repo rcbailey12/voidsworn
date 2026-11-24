@@ -127,6 +127,7 @@ headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanu
 headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battle.gd marks a ship dead; box ships
 headless|fx/test/destruction_staging_check.gd|-|-|staged deaths, class gating, flash limits and the hurry key
 headless|fx/test/kill_slowmo_check.gd|-|-|issue 521: the kill slow-motion beat starts at the core flash of cruiser and capital kills, never for small hulls or under reduce motion, and a key or click ends it
+headless|fx/test/effect_clock_1970_check.gd|-|-|issue 1970: hit pause and kill slow-mo keep the volley wait, late wreck check and camera shake on the effect clock
 headless|fx/test/multi_death_check.gd|-|-|issue 1237: three capitals dying together draw pooled pictures (a second wave builds almost none), every debris plate rests within 8 s, wreck sections leave Jolt after their window, and the power-down budget is shared by the frame
 headless|fx/test/multi_kill_pace_check.gd|-|-|issue 1238: three Chorus Bio-Titans killed in one volley overlap their death waits (each kill but the last waits its 0.8 s floor) instead of stacking
 headless|fx/test/late_shader_check.gd|-|-|issue 376: after warm-up, any shader or material first built mid-battle logs its name and the frame time and is counted
