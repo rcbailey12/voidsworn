@@ -108,6 +108,7 @@ var apply_shake = true
 
 # --- clock
 var now = 0.0
+var dt := 0.0          # effect seconds advanced by the most recent step
 var _speed = 1.0
 var _pause_until = -1.0   # effect time; checks hold a pause open with it
 var _pause_left = 0.0      # issue 1558 item 4: the hit pause in real seconds, so it lasts the same at any frame rate
@@ -165,6 +166,7 @@ var _dark_interiors := {}
 var _wreck_interiors := {}
 const WRECK_SOOT := 0.33   # issue 1077: a strained wreck's insides, a third as bright
 var defer_initial_cuts := false
+var cut_abort := DEATH.CutAbort.new()
 # issue 1434 (LOAD13: the title backdrop built hull damage and death piece shaders in one 7.7 s frame): the title backdrop
 # never fights, so a passive fx cuts no hull for a death and builds no damage surfaces
 var passive := false
@@ -192,6 +194,8 @@ func _ready() -> void:
 
 
 func _enter_tree() -> void:
+	if closed:
+		cut_abort = DEATH.CutAbort.new()
 	closed = false
 
 
@@ -236,6 +240,7 @@ static var _exit_hooked := false
 func release(wait := true) -> void:
 	var t_rel := Time.get_ticks_usec()
 	closed = true
+	cut_abort.cancel()
 	attach_report(true)
 	_end_dim()
 	var tids: Array = []
@@ -267,6 +272,7 @@ func release(wait := true) -> void:
 		if s.has_meta("cut_prev"):
 			keep.append(s.get_meta("cut_prev"))
 		s.remove_meta("cut_task")
+		s.remove_meta("cut_work")
 		s.remove_meta("cut_job")
 		s.remove_meta("cut_prev")
 	if not tids.is_empty():
@@ -525,7 +531,6 @@ func step(delta: float) -> void:
 	var hold: bool = now < _pause_until
 	var crawl: float = 0.0 if hold else minf(real, float(_pause_left))
 	_pause_left = maxf(0.0, _pause_left - real)
-	var dt: float
 	if hold or (crawl > 1e-6 and crawl >= real - 1e-9):
 		_speed = crawl_spd
 		dt = real * _speed
@@ -544,7 +549,7 @@ func step(delta: float) -> void:
 	_build_death_pieces()
 	_gate_physics()
 	t0 = pend("later", t0)
-	_update_feel(delta)
+	_update_feel()
 	_update_dim()
 	for id in ships:
 		(ships[id] as SHIP).update(self, dt)
@@ -1350,7 +1355,7 @@ func punch_now() -> float:
 	return _kick
 
 
-func _update_feel(delta: float) -> void:
+func _update_feel() -> void:
 	var cp = camera.global_position if camera != null else Vector3.ZERO
 	var keep: Array = []
 	for s in _shakes:
@@ -1371,9 +1376,9 @@ func _update_feel(delta: float) -> void:
 	_pauses = keep
 	_update_punch()
 	# trauma decays in about 0.3 s from a normal hit, about 0.45 s from the heaviest (A5 ranges)
-	_trauma = maxf(0.0, _trauma - delta * 2.4)
+	_trauma = maxf(0.0, _trauma - dt * 2.4)
 	var k = _trauma * _trauma * shake_scale * (0.5 if reduce_flashing else 1.0)
-	var T = Time.get_ticks_msec() / 1000.0 if not manual else now
+	var T = now
 	var amp = 0.06 * k
 	_shake_off = Vector2(amp * (sin(T * 37.0) * 0.6 + sin(T * 61.0 + 1.0) * 0.4), amp * (sin(T * 43.0 + 2.0) * 0.6 + sin(T * 71.0) * 0.4))
 	if apply_shake and camera != null and is_instance_valid(camera):
@@ -1645,11 +1650,12 @@ func prepare_battle_hulls() -> void:
 	# together while the loading cover is up.
 	var cut_limit := clampi(OS.get_processor_count() / 2, 1, LOAD_CUT_LIMIT)
 	var active: Array[SHIP] = []
+	var shared_cuts := {}
 	prep_step = "cuts"
 	while not pending.is_empty() or not active.is_empty():
 		while active.size() < cut_limit and not pending.is_empty():
 			var ship: SHIP = pending.pop_front()
-			DEATH.precompute(self, ship, "blast", true)
+			DEATH.precompute(self, ship, "blast", true, shared_cuts)
 			active.append(ship)
 		for i in range(active.size() - 1, -1, -1):
 			if DEATH.finish_precompute(self, active[i]):
@@ -1663,6 +1669,7 @@ func prepare_battle_hulls() -> void:
 		await get_tree().process_frame
 		if closed or not is_inside_tree():
 			return
+	shared_cuts.clear()
 	prep_step = "shield skins and pieces"
 	while not _piece_builds.is_empty() or not _shield_jobs.is_empty():
 		_finish_shield_skins()
@@ -1693,6 +1700,16 @@ func join_death_cut(tid: int) -> void:
 		_death_cut_tasks.erase(tid)
 
 
+func finish_death_cut(tid: int) -> bool:
+	# A ship that shares the cut may already have joined it.
+	if not _death_cut_tasks.has(tid):
+		return true
+	if not WorkerThreadPool.is_task_completed(tid):
+		return false
+	join_death_cut(tid)
+	return true
+
+
 func collect_death_cut(tid: int) -> void:
 	if not _death_cut_tasks.has(tid):
 		return
@@ -1707,6 +1724,7 @@ func discard_ship_cut(s: SHIP) -> void:
 		var tid := int(s.get_meta("cut_task"))
 		s.remove_meta("cut_task")
 		collect_death_cut(tid)
+	s.remove_meta("cut_work")
 	s.remove_meta("cut_job")
 	s.remove_meta("cut_prev")
 
@@ -1716,6 +1734,7 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 		remove_ship(id)
 	var s = SHIP.new()
 	s.setup(self, id, root, info)
+	s.set_meta("cut_class", String(info.get("cls", "")))
 	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
 	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
@@ -1942,6 +1961,12 @@ func anchor_wreck(id: String, centre: Vector3, radius: float) -> void:
 
 func wreck_pieces(id: String) -> int:
 	return DEATH.wreck_pieces(self, id)
+
+
+# A late cut keeps the live hull visible until the split, hulk copy or no-pieces pop has run.
+func wreck_settled(id: String) -> bool:
+	var s: SHIP = ships.get(id)
+	return s == null or s.has_meta("death_hidden") or not is_instance_valid(s.root)
 
 
 func jump_out(id: String) -> void:
