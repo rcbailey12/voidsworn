@@ -1506,25 +1506,34 @@ func _install_chunks() -> void:
 	W.notes.append("painted hull debris: %d cached chunks, %d instances" % [meshes.size(), index])
 
 # Joins `mesh` once per surface at `at`, a speck the size of a dust grain, the other surfaces on one plain material,
-# a frame apart; false when the world left the tree meanwhile.
+# a frame apart; false when the world left the tree meanwhile. LOAD33c: one surface alone still made 73 pipelines in a
+# 5.7 s cold frame, so each surface first joins without shadows (its colour passes) and casts them a frame later (its
+# shadow passes).
 func _warm_surfaces(holder: Node3D, mesh: Mesh, at: Vector3) -> bool:
 	var plain := StandardMaterial3D.new()
 	var mi := MeshInstance3D.new()
 	mi.name = "SurfaceWarm"
 	mi.mesh = mesh
 	mi.scale = Vector3.ONE * 0.001
-	mi.position = at   # it casts shadows as the real chunks do, so their shadow pipelines come early too
+	mi.position = at
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	for s in mesh.get_surface_count():
 		mi.set_surface_override_material(s, plain)
 	holder.add_child(mi)
 	_installing = true
+	var steps: Array = [[-1, true]]   # the plain material's shadow pass first
 	for k in mesh.get_surface_count():
+		steps.append([k, false])
+		steps.append([k, true])
+	for st in steps:
 		await get_tree().process_frame
 		if not is_inside_tree() or not is_instance_valid(mi):
 			_installing = false
 			return false
-		if k > 0: mi.set_surface_override_material(k - 1, plain)
-		mi.set_surface_override_material(k, null)
+		var k: int = st[0]
+		for s in mesh.get_surface_count():
+			mi.set_surface_override_material(s, null if s == k else plain)
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if st[1] else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	await get_tree().process_frame
 	_installing = false
 	if not is_inside_tree() or not is_instance_valid(mi): return false

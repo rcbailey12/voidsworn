@@ -527,9 +527,12 @@ func _apply_quality(q: String) -> void:
 	if title_backdrop and _vp_saved.is_empty():
 		# issue 1434 (item 10): the backdrop shares the root viewport with the menu; stop_build() puts these back
 		_vp_saved = {"msaa_3d": vp.msaa_3d, "screen_space_aa": vp.screen_space_aa, "use_taa": vp.use_taa}
+	var aa_was := [vp.msaa_3d, vp.screen_space_aa, vp.use_taa]
 	apply_quality_to(vp, q, _jt(args.get("taa", false)))
 	if title_backdrop:
 		vp.msaa_3d = SHOWCASE_MSAA
+	if aa_was != [vp.msaa_3d, vp.screen_space_aa, vp.use_taa]:
+		SKEEP.event("viewport AA changed %s to %s" % [str(aa_was), str([vp.msaa_3d, vp.screen_space_aa, vp.use_taa])])
 
 
 static func apply_quality_to(vp: Viewport, q: String, taa: bool) -> void:
@@ -1045,6 +1048,7 @@ func _pipe_count() -> int:
 
 var warming := false
 const ArrivalWarm := preload("res://render/arrival_warm.gd")
+const SKEEP := preload("res://render/shader_keep.gd")   # issue 1434: render events for the load bench
 const A4P := preload("res://assets/ships/a4_props.gd")   # issue 1536: the Hold relay beacon prefetch
 var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arrive mid-battle (render/arrival_warm.gd)
 

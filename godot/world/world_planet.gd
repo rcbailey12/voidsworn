@@ -138,6 +138,7 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	stand_in.set_shader_parameter("tex_h", baker.texture(h))
 	stand_in.set_shader_parameter("map_scale", float(size.x) / TAU)
 	stand_in.set_shader_parameter("has_tex", 1.0)
+	SKEEP.event("board planet maps set")
 
 
 # The board planet's bake request for a baked look (terran, ice, volcanic): one place for install_board and the check
@@ -189,6 +190,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	if not clouds: ground.set_shader_parameter("shadow_strength", 0.0)
 	planet.material_override = ground
 	planet.set_meta("planet_code", "R01")
+	SKEEP.event("board planet R01 maps set")
 	var atmo_k := float(opts.get("atmo_k", 0.32))
 	if is_instance_valid(air):
 		if atmo_k <= 0.0:
