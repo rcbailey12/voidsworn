@@ -44,13 +44,16 @@ func _run() -> void:
 		_check(LS.ROLE.has(same[name][1]), "%s: no role %s in the table" % [name, same[name][1]])
 		_check(same[name][0] == LS.col(same[name][1]), "%s is not the role table's %s" % [name, same[name][1]])
 	# shaders: the shared code in each
-	var shaders := {"board FILL (move hex rims)": BOARD.FILL_SHADER, "board RING (grid)": BOARD.RING_SHADER,
-		"board EDGE (terrain and hazard edges)": BOARD.EDGE_SHADER, "shared line (path)": LS.SHADER, "storm bolts": LIVING.BOLT_SHADER}
+	var shaders := {"board FILL (move hex rims)": BOARD.FILL_SHADER.code, "board RING (grid)": BOARD.RING_SHADER.code,
+		"board EDGE (terrain and hazard edges)": BOARD.EDGE_SHADER.code, "shared line (path)": LS.SHADER.code, "storm bolts": LIVING.BOLT_SHADER.code}
 	for name in shaders:
-		_check(str(shaders[name]).contains("const float LS_CORE_PX"), "%s does not carry the shared line code" % name)
-	_check(BOARD.FILL_SHADER.contains("ls_line("), "the move hex rim does not draw through ls_line")
-	_check(BOARD.RING_SHADER.contains("ls_core_w(") and BOARD.RING_SHADER.contains("ls_dim("), "the grid does not use the shared width and fade")
-	_check(LIVING.BOLT_SHADER.contains("LS_BOLT_CORE") and LIVING.BOLT_SHADER.contains("LS_BOLT_CORONA"), "the storm bolts keep their own colours")
+		_check(str(shaders[name]).contains('#include "res://shaders/line_style.gdshaderinc"'), "%s does not use the shared line include" % name)
+	var shared := FileAccess.get_file_as_string("res://shaders/line_style.gdshaderinc")
+	_check(shared.contains("const float LS_CORE_W = %s;" % LS.CORE_W) and shared.contains("const float LS_GLOW_W = %s;" % LS.GLOW_W),
+		"the strip mesh and shader use the same world widths")
+	_check(BOARD.FILL_SHADER.code.contains("ls_line("), "the move hex rim does not draw through ls_line")
+	_check(BOARD.RING_SHADER.code.contains("ls_core_w(") and BOARD.RING_SHADER.code.contains("ls_dim("), "the grid does not use the shared width and fade")
+	_check(LIVING.BOLT_SHADER.code.contains("LS_BOLT_CORE") and LIVING.BOLT_SHADER.code.contains("LS_BOLT_CORONA"), "the storm bolts keep their own colours")
 	var src := FileAccess.get_file_as_string("res://scenes/battle/battle.gd")
 	_check(src.contains("path_line.material_override = Board.LS.material()"), "the path line does not use the shared line material")
 	# strips

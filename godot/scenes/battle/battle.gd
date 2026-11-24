@@ -38,7 +38,6 @@ const Backdrop := preload("res://render/backdrop.gd")
 const PG := preload("res://render/placeholder_guard.gd")
 const LOOK := preload("res://render/look.gd")
 const WORLD_SKY := preload("res://world/world_sky.gd")
-const LIVING := preload("res://world/world_living.gd")
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const KEY_COL := Color(1.0, 0.96, 0.90)
@@ -315,11 +314,9 @@ func _build_world() -> void:
 	var man := ShipView.manifest()
 	var sky_res := str(man.get("sky", ""))
 	if sky_res != "" and ResourceLoader.exists(sky_res):
-		var sh := Shader.new()
 		# the dead-star sky (A3), mipmapped so the 8K star field does not alias into speckle, and kept dim and subtle
-		sh.code = WORLD_SKY.PANORAMA_SKY
 		var pano := ShaderMaterial.new()
-		pano.shader = sh
+		pano.shader = WORLD_SKY.PANORAMA_SKY
 		pano.set_shader_parameter("pano", load(sky_res))
 		if LOOK.fleet_lighting_enabled():
 			pano.set_shader_parameter("sun_dir", -LOOK.KEY_DIR.normalized())
@@ -394,21 +391,25 @@ func _build_world() -> void:
 
 # the Graphics setting: max (everything but SSIL since issue 1262), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
 func _apply_quality(q: String) -> void:
-	apply_quality_to(get_viewport(), q, _jt(args.get("taa", false)))
+	apply_quality_to(get_viewport(), q, _jt(args.get("taa", false)), str(args.get("battle_aa", "default")),
+		float(args.get("render_scale", get_viewport().scaling_3d_scale)))
 
 
-static func apply_quality_to(vp: Viewport, q: String, taa: bool) -> void:
-	vp.msaa_3d = LOOK.msaa_for_quality(q)
-	# issue 1437 (item 8): the whole AA state every time (the viewport is the game's own, shared by every later screen
-	# and battle), so Low then Max no longer leaves FXAA on
-	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if q == "low" else Viewport.SCREEN_SPACE_AA_DISABLED
+static func apply_quality_to(vp: Viewport, q: String, taa: bool, aa := "default", render_scale := 1.0) -> void:
+	var fsr2 := RenderingServer.get_current_rendering_method() == "forward_plus" and aa in ["fsr2_native", "fsr2_quality"]
+	vp.msaa_3d = Viewport.MSAA_DISABLED if fsr2 else LOOK.msaa_for_quality(q)
+	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if q == "low" and not fsr2 else Viewport.SCREEN_SPACE_AA_DISABLED
 	RenderingServer.directional_shadow_atlas_set_size(2048 if q == "low" else 4096, true)
-	# Temporal AA (settings, off by default as in the browser): Max and High only
-	vp.use_taa = taa and q != "low"
+	vp.use_taa = taa and q != "low" and not fsr2
+	if fsr2:
+		vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR2
+		vp.scaling_3d_scale = 0.8 if aa == "fsr2_quality" else 1.0
+	else:
+		vp.scaling_3d_scale = render_scale
+		vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR if render_scale >= 1.0 else Viewport.SCALING_3D_MODE_FSR
 
 
 func _post_quality(q: String) -> void:
-	LIVING.apply_fog(self, env, cam.r, q)
 	if q == "low":
 		env.ssao_enabled = false
 		env.ssil_enabled = false
@@ -654,7 +655,8 @@ func _begin(a) -> void:
 		for c in backdrop.get_children():
 			c.queue_free()
 	else:
-		backdrop.build(cam.bounds, env)
+		env.volumetric_fog_enabled = false
+		backdrop.build(cam.bounds)
 	V = api.view()
 	_index_view()
 	for u in V["units"]:

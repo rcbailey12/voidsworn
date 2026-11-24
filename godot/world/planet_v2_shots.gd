@@ -238,7 +238,7 @@ func _board(k: int, new_board: bool) -> void:
 		var look: Array = OLD_LOOKS[k]
 		var pm := ShaderMaterial.new()
 		var sh := Shader.new()
-		sh.code = MS.PLANET
+		sh.code = MS.PLANET.code
 		pm.shader = sh
 		pm.set_shader_parameter("kind", float(k))
 		pm.set_shader_parameter("a", look[0])
@@ -250,7 +250,7 @@ func _board(k: int, new_board: bool) -> void:
 		mi.material_override = pm
 		var am := ShaderMaterial.new()
 		var ash := Shader.new()
-		ash.code = MS.ATMO
+		ash.code = MS.ATMO.code
 		am.shader = ash
 		am.set_shader_parameter("atmo", look[2])
 		am.set_shader_parameter("sun_pos", sun)
@@ -282,7 +282,7 @@ func _backdrop(name: String, P: Dictionary, bake_seed: int, size: Vector2i, spin
 	mi.mesh = sm
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	sh.code = PL.SPHERE
+	sh.code = PL.SPHERE.code
 	m.shader = sh
 	var sun := Vector3(0.88, 0.33, 0.34).normalized()
 	body_c = Vector3.ZERO
@@ -312,7 +312,7 @@ func _backdrop(name: String, P: Dictionary, bake_seed: int, size: Vector2i, spin
 		sh2.mesh = sm2
 		var am := ShaderMaterial.new()
 		var ash := Shader.new()
-		ash.code = PL.ATMO
+		ash.code = PL.ATMO.code
 		am.shader = ash
 		am.set_shader_parameter("atmo", atmo)
 		am.set_shader_parameter("sun", sun)
@@ -327,7 +327,7 @@ func _backdrop(name: String, P: Dictionary, bake_seed: int, size: Vector2i, spin
 		ring.mesh = pm
 		var rm := ShaderMaterial.new()
 		var rsh := Shader.new()
-		rsh.code = PL.RING
+		rsh.code = PL.RING.code
 		rm.shader = rsh
 		rm.set_shader_parameter("sun", sun)
 		rm.set_shader_parameter("col_a", (P["c"] as Vector3) * 0.9)

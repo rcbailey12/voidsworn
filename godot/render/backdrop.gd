@@ -7,7 +7,7 @@ var rocks: Array = []
 var _t := 0.0
 
 
-func build(board_bounds: Vector2, env: Environment) -> void:
+func build(board_bounds: Vector2) -> void:
 	for c in get_children():
 		c.queue_free()
 	rocks.clear()
@@ -46,15 +46,6 @@ func build(board_bounds: Vector2, env: Environment) -> void:
 		e["node"] = mi
 		rocks.append(e)
 	_update()
-	if RenderingServer.get_current_rendering_method() != "gl_compatibility":
-		env.volumetric_fog_enabled = true
-		env.volumetric_fog_density = 0.0001
-		env.volumetric_fog_albedo = Color(0.42, 0.44, 0.5)
-		env.volumetric_fog_length = 400.0
-		if OS.get_environment("VS_NEBULA_ROUTE") != "today":
-			env.volumetric_fog_length = 250.0
-		env.volumetric_fog_anisotropy = 0.6
-		env.volumetric_fog_sky_affect = 0.15
 
 
 func _update() -> void:

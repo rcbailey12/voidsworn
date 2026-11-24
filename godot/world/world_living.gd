@@ -51,8 +51,8 @@ static func selected_route() -> String:
 	return "today" if route == "today" else "fog"
 
 
-static func apply_fog(parent: Node, env: Environment, camera_radius: float, quality: String) -> void:
-	env.volumetric_fog_enabled = quality == "max" and selected_route() == "fog"
+static func apply_fog(parent: Node, env: Environment, camera_radius: float, has_volumes: bool) -> void:
+	env.volumetric_fog_enabled = has_volumes
 	if not env.volumetric_fog_enabled:
 		return
 	RenderingServer.environment_set_volumetric_fog_volume_size(128, 128)
@@ -66,6 +66,15 @@ static func apply_fog(parent: Node, env: Environment, camera_radius: float, qual
 		parent.add_child(policy)
 
 var fog_mats: Array[ShaderMaterial] = []
+
+
+func has_visible_fog() -> bool:
+	if not is_visible_in_tree(): return false
+	for child in get_children():
+		if child is FogVolume and child.visible and not child.is_queued_for_deletion(): return true
+	return false
+
+
 var _fog_noise: ImageTexture3D = null
 const GAS_LATTICE_PATH := "res://world/gas_hash_lattice.res"
 var _gas_lattice: ImageTexture3D
@@ -270,152 +279,13 @@ void fragment() {
 }
 """
 
-const BOLT_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-instance uniform float flash = 0.0;
-instance uniform float branch_flash = 0.0;
-""" + LS.GLSL + """
-varying vec4 vc;
-void vertex() { vc = COLOR; }
-void fragment() {
-	// Red marks branches, green the hot tube, blue the outer corona.
-	// Issue 1269 (Ryan's pick 4, Nov 20): the corona is cool cyan-white, not violet,
-	// so storm lightning (danger) never shares the nebula's violet (cover).
-	// Keep the halo blue-led before the existing weapon bloom integrates it.
-	if (vc.g > 0.5 && !FRONT_FACING) { discard; }
-	float pulse = mix(flash, branch_flash, vc.r);
-	// Issue 1374 (R362): the colours come from the one line style's role table (render/line_style.gd bolt_*)
-	vec3 halo = mix(LS_BOLT_SKIRT, LS_BOLT_CORONA, vc.b);
-	vec3 radiance = mix(halo, LS_BOLT_CORE, vc.g);
-	// The cyan-white corona peaks outside the cyan skirt, never on the hot tube.
-	// Stacking it on the core at the center turned the bloom pale white.
-	float weight = vc.a;
-	if (vc.b > 0.5) { weight = sin(clamp(vc.a / 0.16, 0.0, 1.0) * 3.14159265) * 0.22; }
-	ALBEDO = radiance * weight * pulse;
-}
-"""
+const BOLT_SHADER := preload("res://shaders/storm_bolt.gdshader")
 
-const DUST_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-// Linear #d4bf86, with actual alpha rather than the old grey additive specks.
-uniform vec3 col = vec3(0.658, 0.521, 0.238);
-varying vec2 vQ;
-varying vec3 vW;
-varying flat vec2 vHex;
-varying flat float vA;
-void vertex() {
-	vHex = INSTANCE_CUSTOM.zw;
-	vec3 origin = MODEL_MATRIX[3].xyz;
-	// 20 percent of the recorded gas drift (0.193 u/s). Wrap only behind a faded footprint edge.
-	origin.xz = vHex + mod(origin.xz - vHex + vec2(0.032, 0.018667) * TIME + 10.0, 20.0) - 10.0;
-	origin.y = mod(origin.y + 0.010667 * TIME + 5.0, 7.0) - 5.0;
-	vec4 c = VIEW_MATRIX * vec4(origin, 1.0);
-	vA = INSTANCE_CUSTOM.y;
-	vQ = VERTEX.xy * 2.0;
-	c.xy += VERTEX.xy * INSTANCE_CUSTOM.x;
-	vW = (INV_VIEW_MATRIX * c).xyz;
-	POSITION = PROJECTION_MATRIX * c;
-}
-void fragment() {
-	float r = length(vQ);
-	if (r > 1.0) { discard; }
-	vec2 p = abs(vW.xz - vHex);
-	float edge = 8.660254 - max(p.x, p.x * 0.5 + p.y * 0.8660254);
-	if (edge <= 0.0) { discard; }
-	float high = smoothstep(-4.0, 2.0, vW.y);
-	ALBEDO = col * mix(0.38, 0.85, high);
-	ALPHA = vA * exp(-r * r * 4.0) * smoothstep(0.0, 0.9, edge) * mix(1.0, 0.25, high);
-}
-"""
+const DUST_SHADER := preload("res://shaders/debris_dust.gdshader")
 
-const WELL_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap, repeat_disable;
-uniform sampler2D depth_tex : hint_depth_texture, filter_nearest;
-uniform vec3 well = vec3(0.0);
-uniform float r_in = 60.0;
-uniform float r_out = 120.0;
-uniform float k = 1.0;
-uniform float chroma_px = 1.5;
-varying vec3 vW;
-varying vec4 vWell;
-void vertex() {
-	vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	vWell = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(well, 1.0));
-}
-// Test the destination AND all three source samples. A ship must neither bend nor be copied into the background.
-bool foreground(vec2 uv, mat4 inv_projection, mat4 inv_view) {
-	float depth = texture(depth_tex, uv).r;
-	vec4 v = inv_projection * vec4(uv * 2.0 - 1.0, depth, 1.0);
-	vec3 world = (inv_view * vec4(v.xyz / v.w, 1.0)).xyz;
-	return depth > 0.000001 && world.y > -20.0;
-}
-void fragment() {
-	float d = distance(vW.xz, well.xz);
-	float w = smoothstep(r_in, r_in + 22.0, d) * (1.0 - smoothstep(r_out - 34.0, r_out, d));
-	float rim = 1.0 - smoothstep(0.25, 0.65, abs(d - r_in - 2.0));
-	float age = mod(TIME, 3.5);
-	float travel = clamp(age / 2.0, 0.0, 1.0);
-	float ripple = (1.0 - smoothstep(0.4, 1.15, abs(d - mix(r_out, r_in, travel)))) * (1.0 - travel);
-	vec2 radial = vW.xz - well.xz;
-	float angle = atan(radial.y, radial.x) - TIME * 0.13962634; // 45 s per turn
-	float acc = smoothstep(22.0, 28.0, d) * (1.0 - smoothstep(54.0, r_in, d));
-	acc *= 0.55 + 0.45 * sin(angle * 3.0 + d * 0.16);
-	if (max(w, max(rim, max(ripple, acc))) <= 0.001 || foreground(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX)) { discard; }
-	vec2 cs = vWell.xy / vWell.w * 0.5 + 0.5;
-	vec2 dv = SCREEN_UV - cs;
-	// pushed outward like a lens, and dragged slowly round
-	float s = 0.075 * w * (r_in + 22.0) / max(d, 1.0);
-	float an = 0.06 * w + 0.04 * w * sin(TIME * 0.20943951); // 30 s slow twist
-	mat2 R = mat2(vec2(cos(an), sin(an)), vec2(-sin(an), cos(an)));
-	vec2 suv = clamp(cs + R * dv * (1.0 - s), vec2(0.001), vec2(0.999));
-	vec2 shift = normalize(dv + vec2(0.000001)) / vec2(textureSize(screen_tex, 0)) * chroma_px * rim;
-	vec2 red_uv = clamp(suv + shift, vec2(0.001), vec2(0.999));
-	vec2 blue_uv = clamp(suv - shift, vec2(0.001), vec2(0.999));
-	if (foreground(suv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX) || foreground(red_uv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX) || foreground(blue_uv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX)) {
-		suv = SCREEN_UV; red_uv = SCREEN_UV; blue_uv = SCREEN_UV;
-	}
-	vec3 c = vec3(textureLod(screen_tex, red_uv, 0.0).r, textureLod(screen_tex, suv, 0.0).g, textureLod(screen_tex, blue_uv, 0.0).b);
-	vec3 warm = mix(vec3(0.15, 0.012, 0.005), vec3(0.55, 0.25, 0.10), 1.0 - smoothstep(24.0, r_in, d));
-	c += warm * acc * 0.15;
-	c += vec3(0.18, 0.085, 0.045) * ripple * 0.12;
-	c += vec3(0.32, 0.40, 0.48) * rim;
-	ALBEDO = c;
-	ALPHA = max(w, max(rim * 0.35, max(ripple * 0.12, acc * 0.15))) * k;
-}
-"""
+const WELL_SHADER := preload("res://shaders/gravity_well.gdshader")
 
-const INFALL_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform vec3 well = vec3(0.0);
-uniform float r_out = 87.0;
-varying vec2 vQ;
-varying float fade;
-void vertex() {
-	float inner = 20.0;
-	float cycle = r_out * 0.5 * log((3.0 * r_out - 2.0 * inner) / r_out);
-	float phase = fract(TIME / cycle + INSTANCE_CUSTOM.y);
-	float radius = r_out * 1.5 - r_out * 0.5 * exp(2.0 * phase * cycle / r_out);
-	// dr/dt = -(3 - 2r/R); the tangential speed is one fifth of the inward speed.
-	float angle = INSTANCE_CUSTOM.z * 6.2831853 + 0.2 * log(r_out / radius);
-	vec3 p = well + vec3(cos(angle) * radius, 9.0 + INSTANCE_CUSTOM.w * 3.0, sin(angle) * radius);
-	vec4 c = VIEW_MATRIX * vec4(p, 1.0);
-	vQ = VERTEX.xy * 2.0;
-	c.xy += VERTEX.xy * INSTANCE_CUSTOM.x;
-	POSITION = PROJECTION_MATRIX * c;
-	fade = smoothstep(0.0, 0.08, phase) * (1.0 - smoothstep(0.85, 1.0, phase));
-}
-void fragment() {
-	float r = length(vQ);
-	if (r > 1.0) { discard; }
-	ALBEDO = vec3(0.32, 0.17, 0.12);
-	ALPHA = 0.15 * fade * exp(-r * r * 4.0);
-}
-"""
+const INFALL_SHADER := preload("res://shaders/gravity_infall.gdshader")
 
 
 func build(world) -> void:
@@ -432,7 +302,7 @@ func build(world) -> void:
 	for child in W.get_children():
 		if child is MultiMeshInstance3D and child.material_override is ShaderMaterial:
 			var mat: ShaderMaterial = child.material_override
-			if mat.shader.code == W.DUST_SHADER:
+			if mat.shader == W.DUST_SHADER:
 				mat.render_priority = -6
 	for kind in ["neb", "storm"]:
 		var patches := _patches(pts[kind])
@@ -494,6 +364,19 @@ static func _gas_card_shader(storm: bool, high: bool, cached_noise: bool) -> Str
 	return code.replace("%CARD_SUPPORT%", GAS_CARD_SUPPORT).replace("%NOISE%", noise)
 
 
+# Card and fog code depends on the quality tier, lattice, storm and wake size.
+# All patches and battles reuse the same resource for each generated variant.
+static var _gas_shaders: Dictionary[String, Shader] = {}
+
+
+static func _shared_gas_shader(code: String) -> Shader:
+	if not _gas_shaders.has(code):
+		var shader := Shader.new()
+		shader.code = code
+		_gas_shaders[code] = shader
+	return _gas_shaders[code]
+
+
 func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	var low: bool = W.quality == "low"
 	var expanded := gas_route != "today"
@@ -544,7 +427,6 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	mi.name = "Storm" if storm else "Nebula"
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
 	# Issue 1262: Max uses the same bounded cards and baked lattice as High (1070's masking saved 2.2 ms on Max in its
 	# run 1); VS_1262_OLD=cards restores Max's unbounded cards for the before and after timing.
 	var high: bool = expanded and (W.quality == "high" or (W.quality == "max" and not LOOK.perf_old("cards")))
@@ -553,11 +435,11 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 		_gas_lattice = source.texture()
 		_gas_lattice_origin = source.origin
 	var cached_noise := high and _gas_lattice != null
-	sh.code = _gas_card_shader(storm, high, cached_noise)
+	var code := _gas_card_shader(storm, high, cached_noise)
 	if _wake != null and not storm:
-		sh.code = WAKE.into_cards(sh.code, _wake.points)
+		code = WAKE.into_cards(code, _wake.points)
 		_wake_mats.append(m)
-	m.shader = sh
+	m.shader = _shared_gas_shader(code)
 	if cached_noise:
 		m.set_shader_parameter("gas_hash_lattice", _gas_lattice)
 		m.set_shader_parameter("gas_hash_origin", _gas_lattice_origin)
@@ -610,12 +492,11 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 	volume.size = Vector3(hi.x - lo.x + GAS_FEATHER_REACH * 2.0, 38.5, hi.z - lo.z + GAS_FEATHER_REACH * 2.0)
 	volume.position = Vector3((hi.x + lo.x) * 0.5, 12.25, (hi.z + lo.z) * 0.5)
 	var mat := ShaderMaterial.new()
-	var shader := Shader.new()
-	shader.code = ION.FOG if storm else FOG_SHADER
+	var code: String = ION.FOG if storm else FOG_SHADER
 	if _wake != null and not storm:
-		shader.code = WAKE.into_fog(shader.code, _wake.points)
+		code = WAKE.into_fog(code, _wake.points)
 		_wake_mats.append(mat)
-	mat.shader = shader
+	mat.shader = _shared_gas_shader(code)
 	if _fog_noise == null:
 		_fog_noise = load(NOISE_PATH).texture()
 	mat.set_shader_parameter("noise_tex", _fog_noise)
@@ -742,9 +623,7 @@ func _set_flashes(fs: Array) -> void:
 # Reuse the accepted cloud and scene bloom. Geometry lives inside the gas.
 func _bolts(ps: Array) -> void:
 	var bm := ShaderMaterial.new()
-	var bsh := Shader.new()
-	bsh.code = BOLT_SHADER
-	bm.shader = bsh
+	bm.shader = BOLT_SHADER
 	var lit := 0
 	for patch in _patches(ps):
 		var center := Vector3.ZERO
@@ -1026,12 +905,10 @@ func _debris(ps: Array) -> void:
 	var batch = WR.Batch.new()
 	var low: bool = W.quality == "low"
 	var shard_meshes := _shard_meshes()
-	var wsh := Shader.new()
-	wsh.code = WRECK_SHADER.replace("%NOISE%", WS.NOISE)
 	var metal := ShaderMaterial.new()
-	metal.shader = wsh
+	metal.shader = WRECK_SHADER
 	var hot := ShaderMaterial.new()
-	hot.shader = wsh
+	hot.shader = WRECK_SHADER
 	hot.set_shader_parameter("hot", 1.0)
 	for wm in [metal, hot]:
 		(wm as ShaderMaterial).set_shader_parameter("tumble_k", TUMBLE_K if tumble_mode == "cap" else 1000.0)
@@ -1144,9 +1021,7 @@ func _debris(ps: Array) -> void:
 		mi.name = "DebrisDust"
 		mi.multimesh = mm
 		var m := ShaderMaterial.new()
-		var sh := Shader.new()
-		sh.code = DUST_SHADER
-		m.shader = sh
+		m.shader = DUST_SHADER
 		mi.material_override = m
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		mi.extra_cull_margin = 10.0
@@ -1191,68 +1066,7 @@ static func _hot_points(mesh: Mesh) -> Array[Vector3]:
 
 
 # Six Blender ship-kit pieces. RGB stores paint; alpha marks hot torn edges.
-const WRECK_SHADER := """
-shader_type spatial;
-render_mode cull_disabled;
-""" + "%NOISE%" + """
-uniform float hot = 0.0;
-uniform vec3 hot_col = vec3(1.0, 0.42, 0.12);
-uniform float tumble_k = 0.10;   // TUMBLE_K, the #230 figure of record; the periods capture variant lifts it
-uniform vec3 sun_v = vec3(0.45, 0.70, 0.55);
-uniform float detail_k = 1.0;
-uniform vec3 hot_p0 = vec3(100.0);
-uniform vec3 hot_p1 = vec3(100.0);
-uniform vec3 hot_p2 = vec3(100.0);
-varying vec3 lp;
-
-void vertex() {
-	// a slow tumble, each piece its own axis and speed, about the piece's own middle
-	float h = INSTANCE_CUSTOM.w;
-	float rate = length(INSTANCE_CUSTOM.xyz);
-	vec3 ax = INSTANCE_CUSTOM.xyz / max(rate, 0.000001);
-	float scale_v = length(MODEL_MATRIX[0].xyz);
-	float an = TIME * min(rate, tumble_k / max(1.0, scale_v)) + h * 6.2831;
-	float c = cos(an);
-	float s = sin(an);
-	mat3 R = mat3(vec3(c + ax.x * ax.x * (1.0 - c), ax.y * ax.x * (1.0 - c) + ax.z * s, ax.z * ax.x * (1.0 - c) - ax.y * s),
-		vec3(ax.x * ax.y * (1.0 - c) - ax.z * s, c + ax.y * ax.y * (1.0 - c), ax.z * ax.y * (1.0 - c) + ax.x * s),
-		vec3(ax.x * ax.z * (1.0 - c) + ax.y * s, ax.y * ax.z * (1.0 - c) - ax.x * s, c + ax.z * ax.z * (1.0 - c)));
-	lp = VERTEX;
-	VERTEX = R * VERTEX;
-	NORMAL = R * NORMAL;
-}
-void fragment() {
-	if (!FRONT_FACING) { NORMAL = -NORMAL; }
-	float g = wfbm3(lp * 2.3);
-	float dirt = wfbm3(lp * 19.0 + 7.1);
-	float pits = detail_k > 0.5 ? wfbm3(lp * 83.0) : 0.5;
-	// panel seams on the plates, and grime and wear
-	vec3 q = abs(fract(lp * vec3(1.6, 1.25, 1.6)) - 0.5);
-	float seam = 1.0 - 0.38 * (1.0 - smoothstep(0.0, 0.035, 0.5 - max(max(q.x, q.y), q.z)));
-	ALBEDO = COLOR.rgb * mix(0.38, 1.05, g) * mix(0.65, 1.15, dirt) * seam;
-	// Local pitting stays attached to the metal during tumble. Fade the finest
-	// layer below a pixel rather than letting it shimmer at battle distance.
-	float fine_k = 1.0 - smoothstep(0.3, 1.2, length(fwidth(lp * 83.0)));
-	float height = dirt * 0.006 + pits * 0.002 * fine_k;
-	vec3 dx = dFdx(VERTEX);
-	vec3 dy = dFdy(VERTEX);
-	vec3 rx = cross(dy, NORMAL);
-	vec3 ry = cross(NORMAL, dx);
-	float det = dot(dx, rx);
-	vec3 bumped = abs(det) * NORMAL - sign(det) * (dFdx(height) * rx + dFdy(height) * ry);
-	if (dot(bumped, bumped) > 0.000000000001) { NORMAL = normalize(bumped); }
-	METALLIC = 0.6;
-	float worn = smoothstep(0.52, 0.78, dirt);
-	ROUGHNESS = mix(0.68, 0.24, worn);
-	float hot_radius = min(0.12, min(distance(hot_p0, hot_p1), min(distance(hot_p1, hot_p2), distance(hot_p2, hot_p0))) * 0.3);
-	float near_hot = min(distance(lp, hot_p0), min(distance(lp, hot_p1), distance(lp, hot_p2)));
-	float points = 1.0 - smoothstep(hot_radius * 0.4, max(hot_radius, 0.0001), near_hot);
-	vec3 sun = normalize((VIEW_MATRIX * vec4(sun_v, 0.0)).xyz);
-	float glint = pow(max(dot(NORMAL, normalize(sun + VIEW)), 0.0), 96.0) * max(dot(NORMAL, sun), 0.0);
-	EMISSION = hot_col * COLOR.a * hot * points * (0.5 + 0.9 * g) * 2.2;
-	EMISSION += vec3(0.65, 0.52, 0.35) * glint * worn;
-}
-"""
+const WRECK_SHADER := preload("res://shaders/debris_wreck.gdshader")
 
 const WRECK_NAMES := ["hull_fragment", "broken_frame", "truss", "hull_section", "engine_bell", "weapon_sponson"]
 const WRECK_DIR := "res://world/wreckage/"
@@ -1261,6 +1075,7 @@ static var _wreck_mesh_cache: Array = []
 
 # Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
 static func clear_static() -> void:
+	_gas_shaders.clear()
 	_wreck_mesh_cache = []
 	_piece_radii.clear()   # keyed by those meshes' instance ids
 
@@ -1364,9 +1179,7 @@ func _well(c: Vector3) -> void:
 	pm.size = Vector2(250, 250)
 	mi.mesh = pm
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = WELL_SHADER
-	m.shader = sh
+	m.shader = WELL_SHADER
 	m.set_shader_parameter("well", c)
 	# the pull reaches five hexes (about 87 units); the dead star's own lens and disc fill the middle
 	m.set_shader_parameter("r_in", 58.0)
@@ -1387,9 +1200,7 @@ func _well(c: Vector3) -> void:
 	dust.name = "WellInfall"
 	dust.multimesh = mm
 	var dm := ShaderMaterial.new()
-	var ds := Shader.new()
-	ds.code = INFALL_SHADER
-	dm.shader = ds
+	dm.shader = INFALL_SHADER
 	dm.set_shader_parameter("well", c)
 	dm.render_priority = -24
 	dust.material_override = dm

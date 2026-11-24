@@ -4,7 +4,6 @@ extends Node3D
 const WR := preload("res://world/world_rocks.gd")
 const A4P := preload("res://assets/ships/a4_props.gd")
 const LIVING := preload("res://world/world_living.gd")
-const WS := preload("res://world/world_shaders.gd")
 static var _wreck_mat: ShaderMaterial
 var visuals := {}   # hex key -> actual solid node, used by the coverage check
 
@@ -189,11 +188,9 @@ static func hulk_fallback(parent: Node3D, p: Vector3, rng: RandomNumberGenerator
 	# surrounding debris field's torn plates, ribs, trusses and deck sections.
 	var wreck_meshes := LIVING._shard_meshes()
 	if _wreck_mat == null:
-		var sh := Shader.new()
 		# Solid blockers keep a fixed pose, including their shader geometry.
-		sh.code = LIVING.WRECK_SHADER.replace("%NOISE%", WS.NOISE).replace("TIME *", "0.0 *")
 		_wreck_mat = ShaderMaterial.new()
-		_wreck_mat.shader = sh
+		_wreck_mat.shader = preload("res://shaders/blocker_wreck.gdshader")
 	var n := Node3D.new()
 	n.name = "SolidDerelict"
 	parent.add_child(n)

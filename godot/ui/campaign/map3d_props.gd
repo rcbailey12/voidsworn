@@ -287,7 +287,7 @@ func mining_rig(parent: Node3D, scale_value: float) -> Node3D:
 
 func hollow_asteroid(parent: Node3D) -> void:
 	# An open crater cut all the way through, with an irregular stone lip and dark tunnel wall.
-	var shader = Shader.new(); shader.code = preload("res://ui/campaign/map3d_shaders.gd").hollow_rock()
+	var shader: Shader = preload("res://ui/campaign/map3d_shaders.gd").HOLLOW_ROCK
 	var material = ShaderMaterial.new(); material.shader = shader
 	var rock = part(parent, rock_meshes(true)[2], material); rock.scale = Vector3(12, 9, 10)
 	var wall = TorusMesh.new(); wall.inner_radius = 3.2; wall.outer_radius = 5.0; wall.rings = 64; wall.ring_segments = 20

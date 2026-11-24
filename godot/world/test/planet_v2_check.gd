@@ -74,7 +74,31 @@ func _code(mi: MeshInstance3D) -> String:
 	return m.shader.code if m != null and m.shader != null else ""
 
 
+func _check_bc7() -> void:
+	var size := Vector2i(32, 16)
+	var image := Image.create_empty(size.x, size.y, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0.15, 0.5, 0.85, 0.35))
+	image.generate_mipmaps()
+	var raw_bytes := image.get_data().size()
+	var key := "issue_1780_bc7_test".sha256_text()
+	var path := "user://bc7_%d" % OS.get_process_id()
+	path = path.path_join(key + ".bc7")
+	BAKER._save_bc7(image, path, {}, key)
+	_check(image.get_format() == Image.FORMAT_BPTC_RGBA and image.has_mipmaps(), "BC7 albedo keeps its mip chain")
+	var cached := BAKER._load_bc7(path, size)
+	_check(cached != null and cached.get_data() == image.get_data(), "BC7 disk cache round-trips every mip")
+	if cached != null:
+		_check(float(cached.get_data().size()) / raw_bytes < 0.3, "BC7 uses under 30 percent of the RGBA8 payload")
+		_check(cached.decompress() == OK and absf(cached.get_pixel(0, 0).a - 0.35) < 0.02, "BC7 keeps color-map alpha")
+	var hdr := Image.create_empty(size.x, size.y, false, Image.FORMAT_RGBAH)
+	hdr.generate_mipmaps()
+	BAKER._save_bc7(hdr, path + ".hdr", {}, key)
+	_check(hdr.get_format() == Image.FORMAT_RGBAH and not FileAccess.file_exists(path + ".hdr"), "half-float sky bypasses BC7")
+	_check(BAKER._load_bc7(path, size * 2) == null, "a BC7 payload with the wrong size is a cache miss")
+
+
 func _run() -> void:
+	_check_bc7()
 	# 1. wiring, through the real board
 	var hexes: Array = []
 	for r in range(-3, 4):
@@ -99,21 +123,21 @@ func _run() -> void:
 		# the stand-in first; or, now that the maps are queued without a frame wait, the final R01 surface at once when
 		# its authored maps are already in memory (an earlier look loaded them)
 		# never on the first look (i 0): R01 is not in memory yet, so a final surface there would be a main-thread load
-		var at_once: bool = i > 0 and (want == 0 or want == 5) and first == PL.ROCKY_SURFACE and not board.planet_pending
+		var at_once: bool = i > 0 and (want == 0 or want == 5) and first == PL.ROCKY_SURFACE.code and not board.planet_pending
 		if at_once:
-			_check((mi.material_override as ShaderMaterial).shader == PL.shader(PL.ROCKY_SURFACE), "board look %d: the at-once surface compiled its own shader" % want)
-		_check(first == PL.BOARD_SURFACE or at_once, "board look %d: the first material is not world_planet.gd's stand-in" % want)
+			_check((mi.material_override as ShaderMaterial).shader == PL.ROCKY_SURFACE, "board look %d: the at-once surface compiled its own shader" % want)
+		_check(first == PL.BOARD_SURFACE.code or at_once, "board look %d: the first material is not world_planet.gd's stand-in" % want)
 		var stand := mi.material_override as ShaderMaterial
 		if stand != null and not at_once:
 			var ca: Vector3 = stand.get_shader_parameter("col_a")
 			var cb: Vector3 = stand.get_shader_parameter("col_b")
 			_check(ca.distance_to(cb) > 0.05, "board look %d: the stand-in has one flat colour" % want)
-			_check(stand.shader == PL.shader(PL.BOARD_SURFACE), "board look %d: the stand-in compiled its own shader" % want)
+			_check(stand.shader == PL.BOARD_SURFACE, "board look %d: the stand-in compiled its own shader" % want)
 		_check(board.planet_pending or at_once, "board look %d: the board does not hold the loading cover for its planet" % want)
 		await board.wait_planet()
 		_check(not board.planet_pending, "board look %d: wait_planet returned with the maps still pending" % want)
 		var code := _code(mi)
-		_check(code == (PL.ROCKY_SURFACE if want == 0 or want == 5 else PL.BOARD_SURFACE), "board look %d: wrong surface after the cover" % want)
+		_check(code == (PL.ROCKY_SURFACE.code if want == 0 or want == 5 else PL.BOARD_SURFACE.code), "board look %d: wrong surface after the cover" % want)
 		_check(not code.contains("map3d") and not first.contains("map3d"), "board look %d: the campaign map's icon shader" % want)
 		_check(not bool(mi.get_meta("planet_frozen", false)), "board look %d: frozen although its maps arrived in time" % want)
 		board.queue_free()
@@ -134,7 +158,7 @@ func _run() -> void:
 		await process_frame
 	_check(BAKER._cache.size() >= 2, "the late planet's R01 maps never arrived, so the freeze guard was not reached")
 	var has_tex = (sb.planet_node.material_override as ShaderMaterial).get_shader_parameter("has_tex")
-	_check(_code(sb.planet_node) == PL.BOARD_SURFACE and (has_tex == null or float(has_tex) < 0.5),
+	_check(_code(sb.planet_node) == PL.BOARD_SURFACE.code and (has_tex == null or float(has_tex) < 0.5),
 		"a frozen board planet still swapped its maps in (%s)" % str(sb.planet_node.get_meta("planet_code", "")))
 	sb.queue_free()
 	await process_frame
@@ -189,12 +213,12 @@ func _run() -> void:
 			_check(_code(mi) != "", "look %d: no surface material before its maps arrive" % k)
 			# rocky and barren show their final surface at once when the R01 maps are already in memory (no frame wait)
 			var sh: Shader = mi.material_override.shader
-			_check(sh == PL.shader(PL.BOARD_SURFACE) or ((k == 0 or k == 5) and sh == PL.shader(PL.ROCKY_SURFACE)), "look %d: a new stand-in shader per planet" % k)
+			_check(sh == PL.BOARD_SURFACE or ((k == 0 or k == 5) and sh == PL.ROCKY_SURFACE), "look %d: a new stand-in shader per planet" % k)
 			while not _done:
 				await process_frame
 			var code := _code(mi)
 			if k == 0 or k == 5:
-				_check(code == PL.ROCKY_SURFACE, "look %d does not draw the R01 surface" % k)
+				_check(code == PL.ROCKY_SURFACE.code, "look %d does not draw the R01 surface" % k)
 				_check(str(mi.get_meta("planet_code", "")) == "R01", "look %d: planet_code is not R01" % k)
 				var clouds := mi.get_node_or_null("R01Clouds")
 				_check((clouds != null) == (k == 0), "look %d: R01 cloud layer %s" % [k, "missing" if k == 0 else "on an airless world"])
@@ -203,7 +227,7 @@ func _run() -> void:
 				if m != null:
 					turns["%d|%d" % [k, seed_v]] = float(m.get_shader_parameter("remix_turn"))
 			else:
-				_check(code == PL.BOARD_SURFACE, "look %d does not draw the baked board surface" % k)
+				_check(code == PL.BOARD_SURFACE.code, "look %d does not draw the baked board surface" % k)
 				_check(str(mi.get_meta("planet_code", "")).begins_with("BAKE"), "look %d: planet_code is not a board bake" % k)
 			mi.queue_free()
 			shell.queue_free()
@@ -215,7 +239,7 @@ func _run() -> void:
 	_install(late[0], late[1], 0, 5, Vector3(0.4, 0.6, 0.7) * 100000.0)
 	while not _done:
 		await process_frame
-	_check(_code(late[0]) == PL.BOARD_SURFACE, "a frozen planet still swapped to R01 after the cover lifted")
+	_check(_code(late[0]) == PL.BOARD_SURFACE.code, "a frozen planet still swapped to R01 after the cover lifted")
 	(late[0] as Node).queue_free()
 	(late[1] as Node).queue_free()
 	# 2b2. a rebuild never inherits or loses a planet wait (audit, PR 1776): rebuilt onto a map with no planet, nothing
@@ -270,7 +294,7 @@ func _run() -> void:
 		await ob.wait_planet()
 		var om: MeshInstance3D = ob.planet_node
 		var mat := om.material_override as ShaderMaterial
-		_check(_code(om) == PL.BOARD_SURFACE, "VS_PLANET_REMIX=0 seed %d: no procedural fallback surface" % sv)
+		_check(_code(om) == PL.BOARD_SURFACE.code, "VS_PLANET_REMIX=0 seed %d: no procedural fallback surface" % sv)
 		_check(mat != null and (mat.get_shader_parameter("col_a") as Vector3).distance_to(mat.get_shader_parameter("col_b")) > 0.02,
 			"VS_PLANET_REMIX=0 seed %d: the fallback is one flat colour" % sv)
 		_check(not bool(om.get_meta("planet_frozen", false)) and Time.get_ticks_msec() - t0 < 5000,

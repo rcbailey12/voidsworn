@@ -3,6 +3,7 @@ extends Node
 # including ships added after battle warmup. No assets or saved resources are rewritten.
 const RIM := preload("res://render/look_rim.gd")
 const MESH_WATCH := preload("res://render/mesh_watch.gd")
+const HULL := preload("res://fx/fx_hull.gd")
 
 
 func _ready() -> void:
@@ -32,6 +33,7 @@ func _material(mat: Material) -> void:
 		# Fallback for custom hulls and overlays. Generated damage shaders take
 		# the mode from the source material when they are constructed.
 		var code: String = mat.shader.code
-		if not code.contains("fog_disabled"):
-			mat.shader.code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
+		if code.contains("shader_type spatial;") and not code.contains("fog_disabled"):
+			var variant := code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
+			mat.shader = HULL.shared_shader(variant, "fog-safe hull " + str(code.hash()))
 	if mat.next_pass != null: _material(mat.next_pass)

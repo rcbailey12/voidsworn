@@ -67,6 +67,8 @@ var _rock_kind := "stone"
 var _fac := "voidsworn"
 var _debris_ships: Array = []
 var _living = null              # world_living.gd: B's gas, storm, debris and well (built the first time a look needs it)
+var _terrain_env: Environment
+var _terrain_camera: Camera3D
 var _pano: Texture2D = null     # the battle's painted panorama (battle.gd passes it; the dead-star board shows it, R2)
 # the run 5 finale (R78 Q18): real sunlight sweeps the board, and the sky and the Hollow Sun
 # disc brighten. Built only when opts["finale"] is true; finale_stage() moves it through FINALE_STAGES.
@@ -120,9 +122,7 @@ func prepare_sector(env: Environment, run: Dictionary, q: String) -> void:
 func surface_material(sun: Vector3) -> ShaderMaterial:
 	var P: Dictionary = setting["planet"]
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = PL.SPHERE
-	m.shader = sh
+	m.shader = PL.SPHERE
 	m.set_shader_parameter("sun", sun)
 	m.set_shader_parameter("atmo", P["atmo"])
 	m.set_shader_parameter("flat_col", P["a"])
@@ -218,6 +218,8 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	_yaw = float(setting["yaw"])
 	_baker = BAKER.service(get_tree())
 	var env: Environment = opts.get("environment", null)
+	_terrain_env = env
+	_terrain_camera = opts.get("camera")
 	if opts.get("pano") is Texture2D:
 		_pano = opts["pano"]
 	elif env != null and env.sky != null and env.sky.sky_material is ShaderMaterial and (env.sky.sky_material as ShaderMaterial).get_shader_parameter("pano") is Texture2D:
@@ -297,6 +299,11 @@ func set_look() -> void:
 	if _living != null:
 		_living.visible = bool(sp["living"])
 		_living.set_gas_k(float(sp["gas_k"]))
+	if _terrain_env != null:
+		var radius := 170.0
+		if is_instance_valid(_terrain_camera) and "r" in _terrain_camera:
+			radius = float(_terrain_camera.get("r"))
+		LIV.apply_fog(get_parent(), _terrain_env, radius, _living != null and _living.has_visible_fog())
 
 
 # ---------------------------------------------------------------- the run 5 finale (R78 Q18)
@@ -448,9 +455,7 @@ func build_gallery(env: Environment, cam: Camera3D, opts: Dictionary) -> void:
 
 func _make_sky(env: Environment) -> void:
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = SKY.SKY
-	m.shader = sh
+	m.shader = SKY.SKY
 	var lamps: Array = SKY.lamps(SKY.bake_view(setting))   # issue 1272: bake inputs stay the sector's own
 	var lc: Array = []
 	var lr := RandomNumberGenerator.new()
@@ -516,7 +521,7 @@ func _load_sky(lamps: Array) -> void:
 		"band_n": bs["band_n"], "feature": bs["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
 		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(bs))}
 	var code := SKY.bake_code()
-	var img: Image = await _baker.bake(key, code, params, size, 32)
+	var img: Image = await _baker.bake(key, code, params, size, 32, false, false, true)
 	if img == null or _sky_mat == null: return
 	var tex := BAKER.texture(img)
 	_sky_mat.set_shader_parameter("neb_tex", tex)
@@ -627,9 +632,7 @@ func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int
 	sm.rings = 64 if main else 24
 	mi.mesh = sm
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = PL.SPHERE
-	m.shader = sh
+	m.shader = PL.SPHERE
 	m.set_shader_parameter("flat_col", (P["a"] as Vector3) * 0.6)
 	m.set_shader_parameter("sun", _body_sun(pos))
 	var atmo: Vector3 = P.get("atmo", Vector3.ZERO)
@@ -656,9 +659,7 @@ func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int
 		sm2.rings = 48
 		sh2.mesh = sm2
 		var am := ShaderMaterial.new()
-		var ash := Shader.new()
-		ash.code = PL.ATMO
-		am.shader = ash
+		am.shader = PL.ATMO
 		am.set_shader_parameter("atmo", atmo)
 		am.set_shader_parameter("sun", _body_sun(pos))
 		am.set_shader_parameter("shell", 1.035)
@@ -684,7 +685,7 @@ func _bake_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int,
 func _load_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int, size: Vector2i) -> void:
 	var params := {"seed": float(bake_seed % 997) * 0.71, "kind": int(P["kind"]), "ca": P["a"], "cb": P["b"], "cc": P["c"], "pass_id": 0}
 	var code := PL.bake_code()
-	var a: Image = await _baker.bake(key + "|a", code, params, size, 16)
+	var a: Image = await _baker.bake(key + "|a", code, params, size, 16, false, false, true)
 	if a == null: return
 	params["pass_id"] = 1
 	var b: Image = await _baker.bake(key + "|b", code, params, size, 16)
@@ -698,9 +699,7 @@ func _rings(pos: Vector3, R: float, basis: Basis, P: Dictionary, r: RandomNumber
 	var mi := MeshInstance3D.new()
 	mi.mesh = _annulus(1.3, 2.3, 256, 1)
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = PL.RING
-	m.shader = sh
+	m.shader = PL.RING
 	m.set_shader_parameter("sun", _body_sun(pos))
 	m.set_shader_parameter("col_a", (P["c"] as Vector3) * 0.9)
 	m.set_shader_parameter("col_b", (P["b"] as Vector3) * 1.2)
@@ -742,9 +741,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	var disc := MeshInstance3D.new()
 	disc.mesh = _annulus(Rsh * 1.2, Rsh * 3.8, 192, 16)
 	var dm := ShaderMaterial.new()
-	var dsh := Shader.new()
-	dsh.code = WS.DISC
-	dm.shader = dsh
+	dm.shader = WS.DISC
 	dm.set_shader_parameter("r_in", Rsh * 1.2)
 	dm.set_shader_parameter("r_out", Rsh * 3.8)
 	dm.set_shader_parameter("spin", 0.35)
@@ -758,9 +755,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	var disc2 := MeshInstance3D.new()
 	disc2.mesh = disc.mesh
 	var dm2 := ShaderMaterial.new()
-	var dsh2 := Shader.new()
-	dsh2.code = WS.disc_soft()
-	dm2.shader = dsh2
+	dm2.shader = WS.DISC_SOFT
 	for pn in ["r_in", "r_out", "spin", "gain"]:
 		dm2.set_shader_parameter(pn, dm.get_shader_parameter(pn))
 	_disc_mats.append({"mat": dm2, "key": "gain", "gain": 0.62})
@@ -770,13 +765,11 @@ func dead_star(c: Vector3, s: float) -> void:
 	tilt.add_child(disc2)
 	# r18: thin glowing haze just above and below the disc, so it has thickness up close (Muse audit B4.5)
 	if quality != "low":
-		var hsh := Shader.new()
-		hsh.code = WS.DISC_HAZE
 		for k in 2:
 			var hz := MeshInstance3D.new()
 			hz.mesh = _annulus(Rsh * 1.15, Rsh * 4.2, 128, 10)
 			var hm := ShaderMaterial.new()
-			hm.shader = hsh
+			hm.shader = WS.DISC_HAZE
 			hm.set_shader_parameter("r_in", Rsh * 1.15)
 			hm.set_shader_parameter("r_out", Rsh * 4.2)
 			hm.set_shader_parameter("spin", 0.35)
@@ -792,9 +785,7 @@ func dead_star(c: Vector3, s: float) -> void:
 		qm.size = Vector2(1, 1)
 		lens.mesh = qm
 		var lm := ShaderMaterial.new()
-		var lsh := Shader.new()
-		lsh.code = WS.LENS
-		lm.shader = lsh
+		lm.shader = WS.LENS
 		var half := Rsh * 5.0
 		lm.set_shader_parameter("r_shadow", Rsh * 1.0 / half)
 		lm.set_shader_parameter("r_einstein", Rsh * 1.6 / half)
@@ -1034,6 +1025,7 @@ func fields(mk: String, kind: String) -> void:
 	var N := {"belt": [80, 260, 420, 7], "open": [20, 110, 0, 3], "station": [34, 150, 0, 4], "planet": [26, 120, 0, 3],
 		"storm": [30, 150, 0, 4], "graveyard": [44, 190, 0, 4]}.get(mk, [24, 120, 0, 3])
 	var lowq := quality == "low"
+	var fade_belt := mk == "belt" and RenderingServer.get_current_rendering_method() == "forward_plus"
 	var mat := _mat(kind)
 	var ext := (_hi - _lo) * 0.5
 	# 1. the edge scatter. r2: beyond the far edge the rocks may ride at the board's height (they stand against the sky
@@ -1099,7 +1091,8 @@ func fields(mk: String, kind: String) -> void:
 			var nm := _pick(kind, r)
 			nm = nm if s > 22.0 else nm + "_lo"
 			s = _backdrop_scale(nm, s, p, 30.0)
-			_batch.add(nm, mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.004, 0.03), r.randf())
+			_batch.add(nm, mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r),
+				r.randf_range(0.004, 0.03), r.randf(), fade_belt and s <= 22.0 and p.distance_squared_to(_center) > 1500.0 * 1500.0)
 			belt += 1
 	# 4. mountains: a few huge rocks far out, below the horizon, clear of the planet and of the board's footprint
 	var mts := 0
@@ -1133,46 +1126,7 @@ func fields(mk: String, kind: String) -> void:
 # tail is the gas wisps' style (the same noise texture, additive, unshaded, faint), stretched along the anti-sun line and
 # fading out along its length; the nucleus is an ordinary rock of the kind (world_rocks.gd's comet ice). There is no
 # separate glowing coma: the tail is only a little brighter at its root.
-const TAIL_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled, world_vertex_coords;
-uniform sampler2D noise : filter_linear_mipmap, repeat_enable;
-uniform vec3 tail_col = vec3(0.55, 0.7, 0.9);
-uniform float gain = 0.22;
-varying vec2 vQ;
-varying float vSeed;
-varying float vFade;
-void vertex() {
-	// INSTANCE_CUSTOM: x tail length, y width at the root, z width at the end, w seed. The instance's Y axis is the tail.
-	vec3 head = MODEL_MATRIX[3].xyz;
-	vec3 axis = normalize(MODEL_MATRIX[1].xyz);
-	// world_vertex_coords: VERTEX arrives already in world space, so the quad's own corners come from its UV
-	float t = 1.0 - UV.y;
-	vec3 along = head + axis * t * INSTANCE_CUSTOM.x;
-	vec3 eye = INV_VIEW_MATRIX[3].xyz;
-	// Artoo on PR 1782: seen straight down the tail the cross product is zero; fall back to a fixed side (the card is
-	// faded out there anyway, below) so the corners never get an undefined direction
-	vec3 c = cross(axis, along - eye);
-	vec3 side = dot(c, c) > 1e-8 ? normalize(c) : normalize(cross(axis, abs(axis.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
-	vec3 to_head = head - eye;
-	vFade = 1.0 - smoothstep(0.82, 0.97, abs(dot(axis, to_head)) / max(length(to_head), 1e-3));
-	VERTEX = along + side * (UV.x - 0.5) * mix(INSTANCE_CUSTOM.y, INSTANCE_CUSTOM.z, sqrt(t));
-	vQ = vec2(UV.x * 2.0 - 1.0, t);
-	vSeed = INSTANCE_CUSTOM.w;
-}
-void fragment() {
-	float u = abs(vQ.x);
-	float t = vQ.y;
-	// streamers along the tail: noise stretched along its length, drifting slowly outward
-	vec2 uv = vec2(vQ.x * 0.9 + vSeed * 5.0, t * 0.18 - TIME * 0.002 + vSeed * 3.0);
-	float n = texture(noise, uv).r;
-	float m = texture(noise, uv * vec2(2.7, 1.3) + n * 0.2 + 0.4).r;
-	float streak = 0.55 + 0.75 * smoothstep(0.35, 0.8, n * 0.6 + m * 0.4);
-	float across = 1.0 - smoothstep(0.15, 1.0, u);
-	float along = smoothstep(0.0, 0.04, t) * exp(-t * 2.6) * (1.0 + 0.6 * exp(-t * 18.0));
-	ALBEDO = tail_col * across * along * streak * gain * vFade;
-}
-"""
+const TAIL_SHADER := preload("res://shaders/comet_tail.gdshader")
 
 
 func comets(r: RandomNumberGenerator, ext: Vector3) -> void:
@@ -1216,9 +1170,7 @@ func comets(r: RandomNumberGenerator, ext: Vector3) -> void:
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = TAIL_SHADER
-	m.shader = sh
+	m.shader = TAIL_SHADER
 	m.set_shader_parameter("noise", _wisp_noise())
 	m.render_priority = -24
 	mi.material_override = m
@@ -1234,34 +1186,7 @@ func comets(r: RandomNumberGenerator, ext: Vector3) -> void:
 # setting's gas at middle distance (round and below the board, never behind its hexes) slide past each other and past
 # the sky whenever the camera turns or zooms, which gives the space its depth. Noise comes from one small pre-made
 # texture (two reads per pixel), so the overdraw stays cheap.
-const WISP_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform sampler2D noise : filter_linear_mipmap, repeat_enable;
-uniform vec3 c_a = vec3(0.4, 0.2, 0.1);
-uniform vec3 c_b = vec3(0.1, 0.15, 0.3);
-uniform float gain = 0.06;
-varying vec4 vI;
-varying vec2 vQ;
-void vertex() {
-	vI = INSTANCE_CUSTOM;
-	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
-	float a = vI.y * 6.2831;
-	vec2 q = mat2(vec2(cos(a), sin(a)), vec2(-sin(a), cos(a))) * VERTEX.xy;
-	vQ = VERTEX.xy * 2.0;
-	c.xy += q * vI.x;
-	POSITION = PROJECTION_MATRIX * c;
-}
-void fragment() {
-	float r = length(vQ);
-	if (r > 1.0) { discard; }
-	vec2 uv = vQ * 0.35 + vI.zw * 7.0 + vec2(TIME * 0.0015, 0.0);
-	float n = texture(noise, uv).r;
-	float m = texture(noise, uv * 2.3 + n * 0.25 + 0.5).r;
-	float d = smoothstep(0.42, 0.85, n * 0.65 + m * 0.35) * smoothstep(1.0, 0.25, r);
-	ALBEDO = mix(c_b, c_a, smoothstep(0.3, 0.7, m)) * d * gain;
-}
-"""
+const WISP_SHADER := preload("res://shaders/world_wisps.gdshader")
 
 
 func wisps() -> void:
@@ -1288,9 +1213,7 @@ func wisps() -> void:
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = WISP_SHADER
-	m.shader = sh
+	m.shader = WISP_SHADER
 	m.set_shader_parameter("noise", _wisp_noise())
 	m.set_shader_parameter("c_a", setting["c1"])
 	m.set_shader_parameter("c_b", setting["c2"])
@@ -1339,55 +1262,7 @@ static func _wisp_noise() -> Texture2D:
 # (Ryan, Nov 1: "Hard to tell what's movement squares versus other map hexes"). A dark, smoked layer a little under the
 # board calms the space behind the play area, fading out softly past its edges so the sky round the board stays rich.
 # On the dead-star board it opens round the well, so the hole, its disc and its lensing are never dimmed.
-const UNDERLAY_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform vec2 half_ext = vec2(150.0, 100.0);
-uniform vec3 centre = vec3(0.0);
-uniform float fade = 90.0;
-uniform float k = 0.76;
-uniform vec3 col = vec3(0.008, 0.011, 0.018);
-uniform vec3 well = vec3(0.0);
-uniform float well_r = 0.0;
-uniform vec4 planet = vec4(0.0);    // xyz centre, w radius (0: none)
-uniform vec3 ring_n = vec3(0.0);
-uniform float vis = 1.0;    // the board look trial: 0 hides the floor (looks A, B, C), a part of it in C's tactical grid
-varying vec3 vW;
-void vertex() { vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
-void fragment() {
-	vec2 q = abs(vW.xz - centre.xz) - half_ext;
-	float sd = length(max(q, vec2(0.0))) + min(max(q.x, q.y), 0.0);
-	// thicker at grazing angles, like smoked glass seen edge on: when the camera tips low, the far half of the board
-	// would otherwise show the planet and far rocks below the horizon right through the hexes
-	float graze = 1.0 - abs(dot(normalize(CAMERA_POSITION_WORLD - vW), vec3(0.0, 1.0, 0.0)));
-	float a = mix(k, 0.94, graze * graze);
-	// where the view ray goes on to the system's planet or its rings, the board is all but opaque: the planet shows past
-	// the board's edges, never through the hexes (it lies below the board's plane, beyond its far side)
-	if (planet.w > 0.0) {
-		vec3 ro = CAMERA_POSITION_WORLD;
-		vec3 rd = normalize(vW - ro);
-		vec3 oc = planet.xyz - ro;
-		float tc = dot(oc, rd);
-		float dperp = length(oc - rd * tc) / planet.w;
-		float hit = (tc > 0.0) ? smoothstep(1.12, 0.98, dperp) : 0.0;
-		if (dot(ring_n, ring_n) > 0.5) {
-			float den = dot(rd, ring_n);
-			if (abs(den) > 1e-4) {
-				float t = dot(oc, ring_n) / den;
-				float rr = length(ro + rd * t - planet.xyz) / planet.w;
-				hit = max(hit, (t > 0.0 ? smoothstep(1.2, 1.32, rr) * smoothstep(2.42, 2.28, rr) : 0.0));
-			}
-		}
-		a = mix(a, 0.97, hit);
-	}
-	a *= 1.0 - smoothstep(-fade * 0.25, fade, sd);
-	if (well_r > 0.0) {
-		a *= smoothstep(well_r, well_r * 1.5, length(vW.xz - well.xz));
-	}
-	ALBEDO = col;
-	ALPHA = a * vis;
-}
-"""
+const UNDERLAY_SHADER := preload("res://shaders/board_underlay.gdshader")
 
 
 func underlay() -> void:
@@ -1397,9 +1272,7 @@ func underlay() -> void:
 	pm.size = Vector2(ext.x * 2.0 + 260.0, ext.z * 2.0 + 260.0)
 	mi.mesh = pm
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = UNDERLAY_SHADER
-	m.shader = sh
+	m.shader = UNDERLAY_SHADER
 	m.set_shader_parameter("half_ext", Vector2(ext.x + 10.0, ext.z + 10.0))
 	m.set_shader_parameter("centre", _center)
 	# a hint of the setting's own colour, so it reads as deep space and not a black sheet
@@ -1423,77 +1296,9 @@ func underlay() -> void:
 
 # ---------------------------------------------------------------- clouds and dust
 
-const CLOUD_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + "%NOISE%" + """
-uniform vec3 c_dark = vec3(0.006, 0.002, 0.014);
-uniform vec3 c_shadow = vec3(0.055, 0.012, 0.14);
-uniform vec3 c_lit = vec3(0.43, 0.20, 0.80);
-uniform vec3 c_glow = vec3(0.88, 0.72, 1.0);
-uniform float gain = 0.3;
-uniform float storm = 0.0;
-uniform vec3 bolt = vec3(1.0, 0.82, 0.27);
-varying vec4 vI;
-varying vec2 vQ;
-void vertex() {
-	vI = INSTANCE_CUSTOM;
-	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
-	float a = vI.y * 6.2831;
-	vec2 q = mat2(vec2(cos(a), sin(a)), vec2(-sin(a), cos(a))) * VERTEX.xy;
-	vQ = VERTEX.xy * 2.0;
-	c.xy += q * vI.x;
-	POSITION = PROJECTION_MATRIX * c;
-}
-void fragment() {
-	float r = length(vQ);
-	if (r > 1.0) { discard; }
-	vec2 p = vQ * 1.6 + vI.y * 37.0 + vec2(TIME * 0.015, TIME * 0.008);
-	float n = wfbm(p * 1.3 + wfbm(p * 0.8 + 3.0) * 1.5);
-	float a = smoothstep(1.0, 0.15, r) * smoothstep(0.3, 0.75, n) * vI.z;
-	float density = clamp((n - 0.18) / 0.72, 0.0, 1.0);
-	vec3 c = mix(c_dark, c_shadow, smoothstep(0.0, 0.3, density));
-	c = mix(c, c_lit, smoothstep(0.3, 0.6, density));
-	c = mix(c, c_glow, smoothstep(0.6, 0.9, density));
-	c += c_glow * smoothstep(0.67, 0.85, n) * 0.22;
-	vec3 col = c * a * gain;
-	if (storm > 0.5) {
-		// ion storm: now and then a cloud lights from inside, a branching flash
-		float ph = fract(TIME * (0.11 + vI.w * 0.07) + vI.w * 13.0);
-		float fl = smoothstep(0.0, 0.01, ph) * smoothstep(0.08, 0.02, ph) * (0.6 + 0.4 * sin(TIME * 41.0 + vI.w * 9.0));
-		// r2: the cloud lights from inside as one soft glow, with only faint brighter folds where it is densest (r1's
-		// sharp veins drew white wire scribbles over the hexes)
-		float vein = smoothstep(0.8, 0.97, 1.0 - abs(wfbm(p * 1.6 + vI.w * 5.0) * 2.0 - 1.0));
-		col += bolt * a * (1.1 + vein * 0.5) * fl * smoothstep(1.0, 0.2, r);
-	}
-	ALBEDO = col;
-}
-"""
+const CLOUD_SHADER := preload("res://shaders/world_cloud.gdshader")
 
-const DUST_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform vec3 col = vec3(0.6, 0.58, 0.55);
-uniform float px = 0.0008;
-varying float vA;
-varying vec2 vQ;
-void vertex() {
-	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
-	float size = INSTANCE_CUSTOM.x;
-	float depth = max(-c.z, 1.0);
-	float mins = depth * px * 1.6;
-	float s = max(size, mins);
-	float k = clamp(size / mins, 0.0, 1.0);
-	vA = k * k * INSTANCE_CUSTOM.y * smoothstep(1600.0, 600.0, depth);
-	vQ = VERTEX.xy * 2.0;
-	c.xy += VERTEX.xy * s;
-	POSITION = PROJECTION_MATRIX * c;
-}
-void fragment() {
-	float r = length(vQ);
-	ALBEDO = col * exp(-r * r * 4.0) * vA;
-}
-"""
+const DUST_SHADER := preload("res://shaders/world_dust.gdshader")
 
 
 func _quad_mm(n: int) -> MultiMesh:
@@ -1522,9 +1327,7 @@ func cloud_hexes(ps: Array, t: String, fac: String) -> void:
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = CLOUD_SHADER.replace("%NOISE%", WS.NOISE)
-	m.shader = sh
+	m.shader = CLOUD_SHADER
 	var b: Array = FLOOK.of(fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
 	if t == "storm":
 		m.set_shader_parameter("c_dark", Vector3(0.008, 0.004, 0.018))
@@ -1567,9 +1370,7 @@ func dust(mk: String) -> void:
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = DUST_SHADER
-	m.shader = sh
+	m.shader = DUST_SHADER
 	m.set_shader_parameter("col", Vector3(0.55, 0.52, 0.48).lerp(setting.get("c1", Vector3(0.5, 0.5, 0.5)), 0.25) * 0.9)
 	var h := float(ProjectSettings.get_setting("display/window/size/viewport_height", 1080))
 	if is_inside_tree():

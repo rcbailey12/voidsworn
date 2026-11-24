@@ -98,7 +98,7 @@ func _run() -> void:
 			_check(names.has(nm), "%s draws on %s, which is not in scans.json" % [kind, nm])
 		pools[str(pool)] = true
 	_check(pools.size() >= 4, "only %d different scan pools across the five kinds" % pools.size())
-	var src := FileAccess.get_file_as_string("res://world/world_rocks.gd")
+	var src: String = WR.ROCK_SHADER.code
 	_check(src.count("vec3(1.12, 1.0, 0.84)") == 1 and src.contains("if (kind == 0) { a *= vec3(1.12, 1.0, 0.84); }"), "the warm tan cast must stay on stone only (kind == 0)")
 	_check(src.contains("sq = min(max(sq, vec3(%.2f * max(d.x, max(d.y, d.z))) / e), vec3(1.0));" % WR.DRAWN_ASPECT), "ROCK_SHADER lost its drawn-aspect floor (%.2f)" % WR.DRAWN_ASPECT)
 	# every kind's squeeze, at both ends of its seeded range, on every scan it draws: the drawn box stays rounder than

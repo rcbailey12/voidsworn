@@ -1,7 +1,7 @@
 extends RefCounted
 # Issue 1374 (Ryan, Nov 20 2026, R362; docs/playbooks/scale.md section 6): one line style for everything drawn as a line
-# on or over the battle board. This file owns the width (by camera distance), the glow and the fade; callers name only a
-# role, and the role's colour comes from ROLE below. Change a width or a glow here and every line follows.
+# on or over the battle board. Callers name a role, and its colour comes from ROLE below. The line_style shader include
+# owns the shared width, glow and fade. The strip mesh uses the matching world widths below.
 #
 # The rule, in plain words:
 # - width: a line is CORE_W world units wide up close, and never thinner than CORE_PX screen pixels further out;
@@ -11,11 +11,7 @@ extends RefCounted
 # - breath: terrain and hazard edges shimmer slowly (BREATH deep), everything the player acts on stays steady.
 
 const CORE_W := 0.32
-const CORE_PX := 1.4
 const GLOW_W := 1.9
-const GLOW_K := 0.3
-const WIDEN_DIM := 0.6
-const BREATH := 0.18
 
 # the colour list (rgb) and each role's strength (a). Picks kept as they were made: the neutral grid (F1), the move blue
 # (F1: no terrain uses it), the hovered hex ember (issue 271, R191), bone for threat (R174), the hazard and terrain edge
@@ -87,61 +83,10 @@ static func glow(role: String) -> float:
 	return 0.0 if NO_GLOW.has(role) else 1.0
 
 
-# the shared shader code. d: distance into the line from its outer edge (world units); fw: how far d moves per screen
-# pixel (fwidth(d)), so the pixel floor holds at any zoom; g: 1 for a glow band, 0 for core only
-const GLSL := """
-// render/line_style.gd (issue 1374, R362): one width, glow and fade for every board line
-const float LS_CORE_W = %s;
-const float LS_CORE_PX = %s;
-const float LS_GLOW_W = %s;
-const float LS_GLOW_K = %s;
-const float LS_WIDEN_DIM = %s;
-const float LS_BREATH = %s;
-float ls_core_w(float fw) { return max(LS_CORE_W, LS_CORE_PX * fw); }
-float ls_dim(float w) { return mix(1.0, LS_CORE_W / w, LS_WIDEN_DIM); }
-float ls_line(float d, float fw, float g) {
-	float w = ls_core_w(fw);
-	float core = smoothstep(-fw, 0.0, d) * (1.0 - smoothstep(w - 0.5 * fw, w + 0.5 * fw, d));
-	float gl = g * LS_GLOW_K * clamp(1.0 - (d - w) / LS_GLOW_W, 0.0, 1.0) * step(w, d);
-	return max(core, gl) * ls_dim(w);
-}
-float ls_breath(vec3 wp, float t) { return 1.0 - LS_BREATH + LS_BREATH * sin(t * 1.3 + wp.x * 0.05 + wp.z * 0.04); }
-const vec3 LS_MOVE_RIM = vec3(%s, %s, %s);
-const vec3 LS_MOVE_RIM_HOT = vec3(%s, %s, %s);
-const vec3 LS_THREAT = vec3(%s, %s, %s);
-const vec3 LS_BOLT_CORE = vec3(%s, %s, %s);
-const vec3 LS_BOLT_SKIRT = vec3(%s, %s, %s);
-const vec3 LS_BOLT_CORONA = vec3(%s, %s, %s);
-""" % [CORE_W, CORE_PX, GLOW_W, GLOW_K, WIDEN_DIM, BREATH,
-	ROLE["move_rim"].r, ROLE["move_rim"].g, ROLE["move_rim"].b,
-	ROLE["move_rim_hot"].r, ROLE["move_rim_hot"].g, ROLE["move_rim_hot"].b,
-	ROLE["threat"].r, ROLE["threat"].g, ROLE["threat"].b,
-	ROLE["bolt_core"].r, ROLE["bolt_core"].g, ROLE["bolt_core"].b,
-	ROLE["bolt_skirt"].r, ROLE["bolt_skirt"].g, ROLE["bolt_skirt"].b,
-	ROLE["bolt_corona"].r, ROLE["bolt_corona"].g, ROLE["bolt_corona"].b]
-
 # the shared line material for strips built by strip_into(): COLOR is the role's colour and strength, UV.x the distance
 # into the line, UV.y 1 for a glow band (plus 2 for one half of a centred line, which starts at the line's middle); gain is how strong the whole mesh shows (the board look's edge gains), breath 1
 # for the slow shimmer of terrain and hazard edges
-const SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform float gain = 1.0;
-uniform float breath = 0.0;
-""" + GLSL + """
-varying vec4 vcol;
-varying vec3 wp;
-varying float vg;
-varying float vc;
-void vertex() { vcol = COLOR; vc = step(1.5, UV.y); vg = UV.y - 2.0 * vc; wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
-void fragment() {
-	float fw = max(fwidth(UV.x), 0.0001);
-	float d = UV.x + vc * 0.5 * ls_core_w(fw);
-	float l = ls_line(d, fw, vg);
-	float sh = mix(1.0, ls_breath(wp, TIME), breath);
-	ALBEDO = vcol.rgb * vcol.a * gain * sh * l;
-}
-"""
+const SHADER := preload("res://shaders/board_line.gdshader")
 
 # how far past the outer edge a strip starts (room for the anti-aliased edge) and how deep it runs (the widest core the
 # pixel floor gives when zoomed far out, plus the glow band)
@@ -151,9 +96,7 @@ const STRIP_IN := 4.4
 
 static func material(breath := false) -> ShaderMaterial:
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = SHADER
-	m.shader = sh
+	m.shader = SHADER
 	m.set_shader_parameter("breath", 1.0 if breath else 0.0)
 	return m
 

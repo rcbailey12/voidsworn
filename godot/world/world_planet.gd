@@ -36,21 +36,6 @@ const BOARD_SIZE := Vector2i(4096, 2048)
 const R01_CLEAN := [[0.05, 0.28]]
 
 
-# Issue 1765 (Fable, PR 1776 M4): one compiled shader per source text for the whole run, not a new one per battle.
-static var _shaders := {}
-
-static func clear_static() -> void:
-	_shaders.clear()
-
-static func shader(code: String) -> Shader:
-	var sh: Shader = _shaders.get(code)
-	if sh == null:
-		sh = Shader.new()
-		sh.code = code
-		_shaders[code] = sh
-	return sh
-
-
 # Dresses the board's planet sphere and its air shell for one battle. Waits for the maps (the battle's loading cover is
 # still up, board.gd wait_planet); until then, and wherever maps cannot be made or miss the cover, the sphere draws a
 # procedural stand-in in the look's own palette (noise land, seas on a terran world, weather), never a plain ball.
@@ -63,7 +48,7 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	_board_air(air, L, light_dir)
 	# the lit stand-in, until the maps arrive (or for good, where they cannot be made)
 	var stand_in := ShaderMaterial.new()
-	stand_in.shader = shader(BOARD_SURFACE)
+	stand_in.shader = BOARD_SURFACE
 	var flat: Vector3 = L["flat"]
 	stand_in.set_shader_parameter("flat_col", flat)
 	# its gain holds the stand-in near the finished look's band 2 brightness (planet_v2_shots.gd --only standin)
@@ -113,7 +98,7 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	var code: String = job.code
 	# urgent: ahead of the far backdrop bakes, so a cold cache still makes the loading cover (PC proof, PR 1776)
 	# all three are queued before any is awaited, so no backdrop runs between them (Artoo, PR 1776)
-	var ka: String = baker.request_bake(key + "|a", code, params, size, 32, false, true)
+	var ka: String = baker.request_bake(key + "|a", code, params, size, 32, false, true, true)
 	params["pass_id"] = 1
 	var kb: String = baker.request_bake(key + "|b", code, params, size, 32, false, true)
 	params["pass_id"] = 2
@@ -146,7 +131,7 @@ static func _board_air(air: MeshInstance3D, L: Dictionary, light_dir: Vector3) -
 		air.visible = false
 		return
 	var atmosphere := ShaderMaterial.new()
-	atmosphere.shader = shader(ATMO)
+	atmosphere.shader = ATMO
 	atmosphere.set_shader_parameter("atmo", L["atmo"])
 	atmosphere.set_shader_parameter("sun", light_dir)
 	atmosphere.set_shader_parameter("shell", 1.03)
@@ -162,7 +147,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	var started := Time.get_ticks_msec()
 	var baker = preload("res://world/world_bake.gd").service(planet.get_tree())
 	var urgent := bool(opts.get("urgent", false))
-	var kc: String = baker.request_authored(R01_DIR + "colour.json", R01_SIZE, false, urgent)
+	var kc: String = baker.request_authored(R01_DIR + "colour.json", R01_SIZE, false, urgent, true)
 	var kd: String = baker.request_authored(R01_DIR + "relief.json", R01_SIZE, true, urgent)
 	var colour: Image = await baker.result(kc)
 	var data: Image = await baker.result(kd)
@@ -171,7 +156,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	var light_dir := (sun_position - planet.global_position).normalized()
 	var clouds := bool(opts.get("clouds", true))
 	var ground := ShaderMaterial.new()
-	ground.shader = shader(ROCKY_SURFACE)
+	ground.shader = ROCKY_SURFACE
 	ground.set_shader_parameter("colour_map", baker.texture(colour))
 	ground.set_shader_parameter("surface_data", baker.texture(data))
 	ground.set_shader_parameter("sun", light_dir)
@@ -185,7 +170,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 			air.visible = false
 		else:
 			var atmosphere := ShaderMaterial.new()
-			atmosphere.shader = shader(ATMO)
+			atmosphere.shader = ATMO
 			atmosphere.set_shader_parameter("atmo", opts.get("atmo", Vector3(0.72, 0.39, 0.19)))
 			atmosphere.set_shader_parameter("sun", light_dir)
 			atmosphere.set_shader_parameter("shell", 1.03)
@@ -201,7 +186,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	cloud_mesh.height *= 1.012
 	cloud.mesh = cloud_mesh
 	var cloud_material := ShaderMaterial.new()
-	cloud_material.shader = shader(ROCKY_CLOUDS)
+	cloud_material.shader = ROCKY_CLOUDS
 	cloud_material.set_shader_parameter("surface_data", baker.texture(data))
 	cloud_material.set_shader_parameter("sun", light_dir)
 	_remix(cloud_material, opts)
@@ -222,263 +207,15 @@ static func _remix(m: ShaderMaterial, opts: Dictionary) -> void:
 
 # Shared by the R01 and the baked board surfaces: the remix turn, explicit mip levels from the direction's own footprint
 # (UV derivatives jump at the longitude wrap and at the poles; this never does), and the 16-bit height.
-const ROCKY_FUNCTIONS := """
-uniform float remix_turn = 0.0;
-uniform float remix_tilt = 0.0;
-uniform vec3 remix_tint = vec3(1.0);
-uniform float remix_seed = 0.0;
-uniform float remix_desat = 0.0;   // an airless barren world drains the data's iron red toward grey rock
-uniform float remix_gain = 1.0;    // the look's lift into band 2 (RULEBOOK 3.14) on every face and tint
-vec2 r01_uv(vec3 d) {
-	return vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359);
-}
-vec3 r01_spin(vec3 d, float a) {
-	return vec3(cos(a)*d.x + sin(a)*d.z, d.y, -sin(a)*d.x + cos(a)*d.z);
-}
-// the battle's face of the data: tipped about X, then turned about the pole
-vec3 r01_remix(vec3 d) {
-	float c = cos(remix_tilt);
-	float s = sin(remix_tilt);
-	return r01_spin(vec3(d.x, c*d.y - s*d.z, s*d.y + c*d.z), remix_turn);
-}
-vec4 r01_sample(sampler2D map, vec3 d, float lod) {
-	vec2 uv = r01_uv(d);
-	// Longitude wraps. Latitude must never blend the opposite hemisphere.
-	float pole_pad = exp2(lod) / 8192.0;
-	uv.y = clamp(uv.y, pole_pad, 1.0-pole_pad);
-	return textureLod(map, uv, lod);
-}
-float r01_height(vec3 d, sampler2D data_map, float lod) {
-	vec2 h = r01_sample(data_map, d, lod).rg;
-	return dot(h, vec2(65280.0, 255.0)) / 65535.0;
-}
-""" + NOISE.NOISE + """
-// Issue 1765: the R01 cloud field broken into fine wisps. The authored coverage says where weather is; flow-warped noise,
-// stretched along the latitude, carves it into thin cyclonic streaks with clear gaps, fading out where the planet is too
-// small on screen for the detail to hold still.
-float r01_cloud(sampler2D data_map, vec3 s, float lod) {
-	float base = r01_sample(data_map, s, lod).a;
-	vec3 q = s * 3.1 + remix_seed;
-	vec3 w = vec3(wvn3(q), wvn3(q + 5.2), wvn3(q + 9.1)) - 0.5;
-	float ang = (w.x + w.y) * 2.4;
-	vec3 sw = r01_spin(s, ang * 0.35);
-	vec3 p = vec3(sw.x * 11.0, sw.y * 34.0, sw.z * 11.0) + w * 3.0 + remix_seed;
-	float f = 0.0;
-	float a = 0.5;
-	for (int k = 0; k < 4; k++) { f += a * wvn3(p); p = p * 2.07 + 1.3; a *= 0.5; }
-	float detail = 1.0 - smoothstep(2.5, 6.0, lod);
-	float c = mix(base, smoothstep(0.3, 0.72, base + (f - 0.47) * 1.15), detail);
-	return c * smoothstep(0.03, 0.22, base);
-}
-"""
 
-const ROCKY_SURFACE := """
-shader_type spatial;
-render_mode unshaded, cull_back, shadows_disabled, fog_disabled;
-uniform sampler2D colour_map : source_color, filter_linear_mipmap, repeat_enable;
-// Linear data: RG = 16-bit height, B = roughness, A = cloud coverage.
-uniform sampler2D surface_data : filter_linear_mipmap, repeat_enable;
-uniform vec3 sun = vec3(0.45, 0.7, 0.55);
-uniform float cloud_rate = 0.009;
-uniform float shadow_strength = 0.64;
-varying vec3 local_direction;
-varying vec3 world_point;
-varying vec3 world_centre;
-varying vec3 local_light;
-""" + ROCKY_FUNCTIONS + """
-void vertex() {
-	local_direction = normalize(VERTEX);
-	world_point = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	world_centre = MODEL_MATRIX[3].xyz;
-	local_light = normalize((inverse(MODEL_MATRIX) * vec4(sun, 0.0)).xyz);
-}
-void fragment() {
-	vec3 d = r01_remix(normalize(local_direction));
-	// Angular footprint stays finite at poles and the longitude seam. UV
-	// derivatives there chose coarse levels in radial bands across the terrain.
-	float lod = clamp(log2(max(length(dFdx(d)),length(dFdy(d)))*1303.7973),0.0,11.0);
-	vec4 data = r01_sample(surface_data, d, lod);
-	vec3 n = normalize(world_point-world_centre);
-	vec3 v = normalize(CAMERA_POSITION_WORLD-world_point);
-	vec3 l = normalize(sun);
-	// Use surface derivatives for relief. This remains stable at the poles and
-	// after a board transform, unlike a fixed world-X normal offset.
-	float h = r01_height(d, surface_data, lod);
-	vec3 dpdx = dFdx(world_point);
-	vec3 dpdy = dFdy(world_point);
-	vec3 r1 = cross(dpdy,n);
-	vec3 r2 = cross(n,dpdx);
-	float det = dot(dpdx,r1);
-	float radius = length(world_point-world_centre);
-	vec3 grad = sign(det)*(dFdx(h)*r1+dFdy(h)*r2);
-	vec3 bv = abs(det)*n-grad*radius*0.028;
-	vec3 bumped = dot(bv, bv) > 1e-20 ? normalize(bv) : n;   // grazing limb: no NaN into the glow (audit, PR 1776)
-	float lambert = max(dot(bumped,l),0.0);
-	float day = smoothstep(-0.06,0.18,dot(n,l));
-	// The cloud sphere samples this same field, at this same angular rate.
-	// A ray from the ground toward the sun reaches the higher cloud layer
-	// ahead of the surface sample, separating shadows from the cloud itself.
-	vec3 toward_light = r01_remix(normalize(normalize(local_direction) + normalize(local_light)*0.012));
-	float shadow = shadow_strength > 0.0 ? r01_cloud(surface_data,r01_spin(toward_light,TIME*cloud_rate),lod) : 0.0;
-	vec3 albedo = r01_sample(colour_map,d,lod).rgb;
-	albedo = mix(albedo, vec3(dot(albedo, vec3(0.3, 0.55, 0.15))) * 1.5, remix_desat);
-	// mineral provinces: broad patches of the battle's tint, so a turned face also reads as a new world
-	float prov = smoothstep(0.35, 0.75, wvn3(d * 2.3 + remix_seed));
-	albedo *= mix(vec3(1.0), remix_tint, 0.55 + 0.45 * prov) * remix_gain;
-	vec3 colour = albedo*(0.022 + lambert*0.88*day)*(1.0-shadow*shadow_strength);
-	float spec_power = mix(90.0,7.0,data.b);
-	float sheen = pow(max(dot(bumped,normalize(l+v)),0.0),spec_power)*(1.0-data.b)*0.055*day;
-	colour += vec3(1.0,0.87,0.72)*sheen;
-	float rim = pow(1.0-max(dot(n,v),0.0),4.0)*day;
-	colour += vec3(0.32,0.13,0.045)*rim*0.16*step(0.001, shadow_strength);
-	ALBEDO = colour;
-}
-"""
+const ROCKY_SURFACE := preload("res://shaders/planet_rocky_surface.gdshader")
 
-const ROCKY_CLOUDS := """
-shader_type spatial;
-render_mode unshaded, blend_mix, depth_draw_never, cull_back, shadows_disabled, fog_disabled;
-uniform sampler2D surface_data : filter_linear_mipmap, repeat_enable;
-uniform vec3 sun = vec3(0.45,0.7,0.55);
-varying vec3 local_direction;
-varying vec3 world_point;
-varying vec3 world_centre;
-""" + ROCKY_FUNCTIONS + """
-void vertex() {
-	local_direction = normalize(VERTEX);
-	world_point = (MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;
-	world_centre = MODEL_MATRIX[3].xyz;
-}
-void fragment() {
-	vec3 n = normalize(world_point-world_centre);
-	vec3 d = r01_remix(normalize(local_direction));
-	float lod = clamp(log2(max(length(dFdx(d)),length(dFdy(d)))*1303.7973),0.0,11.0);
-	float coverage = r01_cloud(surface_data,r01_spin(d,TIME*0.009),lod);
-	float day = smoothstep(-0.12,0.3,dot(n,normalize(sun)));
-	// thick cores whiter, thin wisps take the dust colour
-	vec3 tone = mix(vec3(0.5,0.43,0.33), vec3(0.66,0.6,0.5), smoothstep(0.4, 0.9, coverage));
-	ALBEDO = tone*(0.045+day*0.72);
-	ALPHA = coverage*0.78;
-}
-"""
+const ROCKY_CLOUDS := preload("res://shaders/planet_rocky_clouds.gdshader")
 
 # Issue 1765: the baked board planet (terran, ice, volcanic). The surface comes from this file's recipes at 4K, with a
 # 16-bit height map for the relief; light, mips and the longitude wrap work as the R01 surface does. Clouds drift over
 # the ground and cast shadows toward the night side; water and ice catch the sun; cities and lava glow on the night side.
-const BOARD_SURFACE := """
-shader_type spatial;
-render_mode unshaded, cull_back, shadows_disabled, fog_disabled;
-uniform sampler2D tex_a : source_color, filter_linear_mipmap, repeat_enable;   // albedo, ocean or ice sheen (a)
-uniform sampler2D tex_b : filter_linear_mipmap, repeat_enable;                 // clouds, city lights, relief, lava
-uniform sampler2D tex_h : filter_linear_mipmap, repeat_enable;                 // relief, one 32-bit float channel
-uniform float has_tex = 0.0;
-uniform vec3 flat_col = vec3(0.3);
-uniform vec3 sun = vec3(0.45, 0.7, 0.55);
-uniform vec3 atmo = vec3(0.4, 0.6, 1.0);
-uniform float atmo_k = 0.5;
-uniform float bump = 0.03;
-uniform float glint = 1.0;
-uniform float map_scale = 651.8986;   // map width / TAU
-uniform float cloud_rate = 0.006;
-uniform float turn = 0.0;
-uniform vec3 cloud_col = vec3(1.0);   // ash on a volcanic world, white weather elsewhere
-uniform vec3 city = vec3(1.0, 0.72, 0.38);
-uniform vec3 lava_col = vec3(1.0, 0.36, 0.08);
-// the procedural stand-in (cold cache, a bake that missed the loading cover, no bake possible): the look's own palette
-uniform vec3 col_a = vec3(0.4);
-uniform vec3 col_b = vec3(0.15);
-uniform vec3 col_c = vec3(0.6);
-uniform float stand_sea = 0.0;
-uniform float stand_clouds = 0.0;
-uniform float stand_seed = 0.0;
-varying vec3 local_direction;
-varying vec3 world_point;
-varying vec3 world_centre;
-varying vec3 local_light;
-""" + NOISE.NOISE + """
-vec2 bp_uv(vec3 d) { return vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359); }
-vec3 bp_spin(vec3 d, float a) { return vec3(cos(a)*d.x + sin(a)*d.z, d.y, -sin(a)*d.x + cos(a)*d.z); }
-vec4 bp_sample(sampler2D map, vec3 d, float lod) {
-	vec2 uv = bp_uv(d);
-	float pole_pad = exp2(lod) / (map_scale * 6.28318530718);
-	uv.y = clamp(uv.y, pole_pad, 1.0 - pole_pad);
-	return textureLod(map, uv, lod);
-}
-void vertex() {
-	local_direction = normalize(VERTEX);
-	world_point = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	world_centre = MODEL_MATRIX[3].xyz;
-	local_light = normalize((inverse(MODEL_MATRIX) * vec4(sun, 0.0)).xyz);
-}
-void fragment() {
-	vec3 d = bp_spin(normalize(local_direction), turn);
-	float lod = clamp(log2(max(length(dFdx(d)), length(dFdy(d))) * map_scale), 0.0, 10.0);
-	vec3 n = normalize(world_point - world_centre);
-	vec3 v = normalize(CAMERA_POSITION_WORLD - world_point);
-	vec3 l = normalize(sun);
-	vec3 alb = flat_col;
-	float ocean = 0.0;
-	vec4 b = vec4(0.0, 0.0, 0.5, 0.0);
-	float h = 0.5;
-	float cloud = 0.0;
-	float shadow = 0.0;
-	if (has_tex > 0.5) {
-		vec4 a = bp_sample(tex_a, d, lod);
-		alb = a.rgb;
-		ocean = a.a;
-		b = bp_sample(tex_b, d, lod);
-		h = bp_sample(tex_h, d, lod).r;
-		cloud = bp_sample(tex_b, bp_spin(d, TIME * cloud_rate), lod).r;
-		vec3 toward_light = bp_spin(normalize(normalize(local_direction) + normalize(local_light) * 0.012), turn);
-		shadow = bp_sample(tex_b, bp_spin(toward_light, TIME * cloud_rate), lod).r;
-	} else {
-		// warped noise continents, a second field for highlands or ice, detail fading where the sphere is small on screen
-		vec3 p = d * 2.2 + stand_seed;
-		vec3 w = vec3(wfbm3(p), wfbm3(p + 4.7), wfbm3(p + 9.3)) - 0.5;
-		float fine = 1.0 - smoothstep(1.5, 5.0, lod);
-		float t = wfbm3(p * 1.6 + w * 1.8) + (wfbm3(d * 26.0 + stand_seed) - 0.5) * 0.25 * fine;
-		float t2 = wfbm3(d * 5.3 + w * 1.2 + stand_seed + 17.0);
-		float land = smoothstep(0.44, 0.52, t);
-		alb = mix(col_b, col_a, mix(smoothstep(0.3, 0.7, t), land, stand_sea));
-		alb = mix(alb, col_c, smoothstep(0.55, 0.72, t2) * (stand_sea > 0.5 ? land : 1.0) * 0.8);
-		ocean = stand_sea * (1.0 - land);
-		h = mix(t, max(t, 0.48), stand_sea);
-		vec3 q = bp_spin(d, TIME * cloud_rate);
-		float cf = wfbm3(vec3(q.x * 4.0, q.y * 11.0, q.z * 4.0) + w * 2.5 + stand_seed + 31.0);
-		cloud = smoothstep(0.52, 0.72, cf) * stand_clouds;
-	}
-	// relief from the surface derivatives (stable at the poles and across the wrap); seas stay flat
-	vec3 dpdx = dFdx(world_point);
-	vec3 dpdy = dFdy(world_point);
-	vec3 r1 = cross(dpdy, n);
-	vec3 r2 = cross(n, dpdx);
-	float det = dot(dpdx, r1);
-	float radius = length(world_point - world_centre);
-	vec3 grad = sign(det) * (dFdx(h) * r1 + dFdy(h) * r2);
-	vec3 bv = abs(det) * n - grad * radius * bump * (1.0 - ocean * 0.85);
-	vec3 nb = dot(bv, bv) > 1e-20 ? normalize(bv) : n;   // grazing limb: no NaN into the glow (audit, PR 1776)
-	float ndl = dot(n, l);
-	float lambert = max(dot(nb, l), 0.0);
-	float day = atmo_k > 0.0 ? smoothstep(-0.1, 0.22, ndl) : smoothstep(-0.04, 0.14, ndl);
-	vec3 ground = alb * (1.0 - shadow * 0.5);
-	vec3 col = ground * (0.02 + lambert * 0.92 * day);
-	// clouds: lit tops over the ground, a cool grey toward the terminator
-	vec3 ctone = mix(vec3(0.6, 0.63, 0.67), vec3(0.93, 0.94, 0.95), smoothstep(-0.05, 0.4, ndl));
-	col = mix(col, ctone * cloud_col * (0.03 + max(ndl, 0.0) * 0.95) * day, cloud * 0.92);
-	// the sun on water or ice: a tight glint with a soft halo
-	vec3 hv = normalize(l + v);
-	float sp = max(dot(mix(n, nb, 0.35), hv), 0.0);
-	col += vec3(1.0, 0.95, 0.86) * glint * ocean * (1.0 - cloud) * (pow(sp, 260.0) * 1.1 + pow(sp, 60.0) * 0.05) * day;
-	// night side: city lights and lava
-	float night = (1.0 - smoothstep(-0.2, 0.06, ndl));
-	col += city * b.g * night * 0.85 * (1.0 - cloud * 0.7);
-	col += lava_col * b.a * (0.45 + night * 1.2) * (1.0 - cloud * 0.5);
-	// the lit limb glows with the atmosphere
-	float rim = pow(1.0 - clamp(dot(n, v), 0.0, 1.0), 3.0);
-	col += atmo * atmo_k * rim * smoothstep(-0.25, 0.4, ndl) * 0.8;
-	ALBEDO = col;
-}
-"""
+const BOARD_SURFACE := preload("res://shaders/planet_board_surface.gdshader")
 
 static func bake_code() -> String:
 	return BAKE_HEAD + NOISE.NOISE + BAKE_BODY
@@ -724,193 +461,9 @@ void fragment() {
 
 # The planet sphere, unshaded with its own lighting from the key light, so it sits in the scene's light without the
 # scene's shadows or fog. Drawn far beyond the board.
-const SPHERE := """
-shader_type spatial;
-render_mode unshaded, cull_back, shadows_disabled, fog_disabled;
-uniform sampler2D tex_a : source_color, filter_linear, repeat_enable;
-// Packed masks and relief are linear data, including the ocean mask in tex_a.a.
-uniform sampler2D tex_b : filter_linear, repeat_enable;
-uniform float has_tex = 0.0;
-uniform vec3 flat_col = vec3(0.3);
-uniform vec3 sun = vec3(0.45, 0.7, 0.55);     // toward the sun, world space
-uniform vec3 sun_col = vec3(1.0, 0.95, 0.88);
-uniform float light = 1.0;
-uniform vec3 atmo = vec3(0.4, 0.6, 1.0);
-uniform float atmo_k = 1.0;
-uniform float spin = 0.004;
-uniform vec3 tint = vec3(1.0);
-uniform vec3 city = vec3(1.0, 0.72, 0.38);
-uniform vec3 lava_col = vec3(1.0, 0.36, 0.08);
-uniform vec4 ring = vec4(0.0);           // xyz ring normal (world), w on
-uniform vec2 ring_r = vec2(1.3, 2.3);    // in planet radii
-uniform float rough = 1.0;
-varying vec3 vObj;
-varying vec3 vW;
-varying vec3 vC;
-varying float vR;
-void vertex() {
-	vObj = VERTEX;
-	vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	vC = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-	vR = length(MODEL_MATRIX[0].xyz);
-}
-vec2 uv_of(vec3 d) { return vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359); }
-vec3 spun(vec3 d, float a) { float c = cos(a); float s = sin(a); return vec3(c * d.x + s * d.z, d.y, -s * d.x + c * d.z); }
-void fragment() {
-	vec3 n0 = normalize(vObj);
-	vec3 N = normalize(vW - vC);
-	vec3 L = normalize(sun);
-	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
-	vec3 ds = spun(n0, TIME * spin);
-	vec3 alb = flat_col;
-	vec4 b = vec4(0.0, 0.0, 0.5, 0.0);
-	float ocean = 0.0;
-	if (has_tex > 0.5) {
-		vec4 a = texture(tex_a, uv_of(ds));
-		alb = a.rgb;
-		ocean = a.a;
-		b = texture(tex_b, uv_of(ds));
-	}
-	alb *= tint;
-	float ndl = dot(N, L);
-	// relief: a cheap bump from the baked height, along the surface. The two height samples step along the local
-	// tangent and bitangent (object space, before the texture spin), and the bumped normal tilts along the same two
-	// directions taken to world space, so ridges light from the sun's side all round the planet (issue 1468; fixed
-	// object X and Y steps flipped on the far half and vanished at the X poles)
-	vec3 up_o = abs(n0.y) > 0.99 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-	vec3 t_o = normalize(cross(up_o, n0));
-	vec3 b_o = cross(n0, t_o);
-	vec3 dsx = spun(normalize(n0 + t_o * 0.003), TIME * spin);
-	vec3 dsy = spun(normalize(n0 + b_o * 0.003), TIME * spin);
-	float hx = has_tex > 0.5 ? texture(tex_b, uv_of(dsx)).b - b.b : 0.0;
-	float hy = has_tex > 0.5 ? texture(tex_b, uv_of(dsy)).b - b.b : 0.0;
-	mat3 m3 = mat3(MODEL_MATRIX[0].xyz, MODEL_MATRIX[1].xyz, MODEL_MATRIX[2].xyz);
-	vec3 tx = normalize(m3 * t_o);
-	tx = normalize(tx - N * dot(tx, N));
-	vec3 ty = normalize(m3 * b_o);
-	ty = normalize(ty - N * dot(ty, N) - tx * dot(ty, tx));
-	vec3 Nb = normalize(N - (tx * hx + ty * hy) * 2.5 * rough * (1.0 - b.r));
-	float lam = max(dot(Nb, L), 0.0);
-	// the terminator softened by the atmosphere
-	float wrap = atmo_k > 0.0 ? smoothstep(-0.12, 0.3, ndl) : smoothstep(-0.02, 0.12, ndl);
-	float diff = mix(lam, wrap * lam + wrap * 0.04, 0.5);
-	// cloud shadows on the ground: the clouds a little toward the sun
-	float cs = 0.0;
-	if (has_tex > 0.5 && b.r > 0.0) {
-		vec3 dl = spun(normalize(n0 + (transpose(mat3(MODEL_MATRIX[0].xyz, MODEL_MATRIX[1].xyz, MODEL_MATRIX[2].xyz)) * L) / vR * 0.012), TIME * spin);
-		cs = texture(tex_b, uv_of(dl)).r;
-	}
-	vec3 ground = alb * (1.0 - cs * 0.55);
-	vec3 col = mix(ground, vec3(0.82, 0.85, 0.88), b.r) * diff * sun_col;
-	// the sun's glint on water
-	vec3 H = normalize(L + V);
-	// issue 1765: a tight glint with a faint halo (the broad lobe read as a white blob on the sea)
-	float gl = max(dot(N, H), 0.0);
-	col += sun_col * ocean * (1.0 - b.r) * (pow(gl, 260.0) * 1.3 + pow(gl, 50.0) * 0.06) * smoothstep(0.0, 0.1, ndl);
-	// ring shadow on the planet
-	if (ring.w > 0.5) {
-		vec3 rn = normalize(ring.xyz);
-		float den = dot(L, rn);
-		if (abs(den) > 1e-3) {
-			float t = dot(vC - vW, rn) / den;
-			if (t > 0.0) {
-				float rr = length(vW + L * t - vC) / vR;
-				float band = smoothstep(ring_r.x, ring_r.x + 0.08, rr) * (1.0 - smoothstep(ring_r.y - 0.15, ring_r.y, rr));
-				col *= 1.0 - band * 0.6;
-			}
-		}
-	}
-	// night side: city lights and lava
-	float night = (1.0 - smoothstep(-0.18, 0.08, ndl));
-	col += city * b.g * night * 0.9 * (1.0 - b.r * 0.7);
-	col += lava_col * b.a * (0.25 + night * 1.2);
-	// the lit limb glows with the atmosphere
-	float rim = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.0);
-	col += atmo * atmo_k * rim * smoothstep(-0.25, 0.4, ndl) * 0.9;
-	col = mix(col, atmo * diff * 0.6, atmo_k * rim * 0.35);
-	ALBEDO = col * light;
-}
-"""
+const SPHERE := preload("res://shaders/planet_sphere.gdshader")
 
 # The atmosphere's outer glow: a slightly larger shell, added, brightest just outside the limb on the lit side.
-const ATMO := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_front, shadows_disabled, fog_disabled;
-uniform vec3 atmo = vec3(0.4, 0.6, 1.0);
-uniform vec3 sun = vec3(0.45, 0.7, 0.55);
-uniform float k = 1.0;
-uniform float shell = 1.04;
-varying vec3 vW;
-varying vec3 vC;
-void vertex() { vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; vC = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz; }
-void fragment() {
-	vec3 N = normalize(vW - vC);
-	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
-	// back faces of the shell: the ray's closest approach to the centre, in shell radii, says how much air it crossed
-	vec3 ro = CAMERA_POSITION_WORLD - vC;
-	vec3 rd = -V;
-	float R = length(vW - vC);
-	float tc = -dot(ro, rd);
-	float dmin = length(ro + rd * tc) / R;
-	float inner = 1.0 / shell;
-	float a = (1.0 - smoothstep(inner, 1.0, dmin));
-	a = a * a * smoothstep(inner * 0.985, inner + 0.004, dmin);
-	vec3 P = normalize(ro + rd * tc);
-	float lit = smoothstep(-0.35, 0.5, dot(P, normalize(sun)));
-	ALBEDO = atmo * a * lit * k * 1.4;
-}
-"""
+const ATMO := preload("res://shaders/planet_atmo.gdshader")
 
-const RING := """
-shader_type spatial;
-render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform vec3 sun = vec3(0.45, 0.7, 0.55);
-uniform vec3 col_a = vec3(0.85, 0.78, 0.66);
-uniform vec3 col_b = vec3(0.5, 0.42, 0.34);
-uniform vec2 ring_r = vec2(1.3, 2.3);
-uniform float seed = 0.0;
-uniform float light = 1.0;
-varying vec3 vL;
-varying vec3 vW;
-varying vec3 vC;
-varying float vR;
-void vertex() {
-	vL = VERTEX;
-	vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	vC = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-	vR = length(MODEL_MATRIX[0].xyz);
-}
-float h1(float x) { return fract(sin(x * 127.1 + seed) * 43758.5453); }
-float n1(float x) { float i = floor(x); float f = fract(x); f = f * f * (3.0 - 2.0 * f); return mix(h1(i), h1(i + 1.0), f); }
-void fragment() {
-	float r = length(vL.xz);
-	float u = (r - ring_r.x) / (ring_r.y - ring_r.x);
-	if (u < 0.0 || u > 1.0) { discard; }
-	float dens = 0.0;
-	float a = 1.0;
-	float f = 4.0;
-	for (int k = 0; k < 5; k++) { dens += n1(u * f + float(k) * 3.1) * a; a *= 0.55; f *= 2.3; }
-	dens = clamp(dens / 1.9, 0.0, 1.0);
-	dens *= smoothstep(0.0, 0.04, u) * (1.0 - smoothstep(0.94, 1.0, u));
-	// a dark gap two thirds of the way out (Cassini-like) and a thin faint inner ring
-	dens *= 1.0 - 0.9 * exp(-pow((u - 0.66) / 0.018, 2.0));
-	dens *= mix(0.35, 1.0, smoothstep(0.08, 0.2, u));
-	vec3 L = normalize(sun);
-	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
-	// Closest point on the ray toward the sun, in planet radii. On the lit
-	// side the closest point is the ring itself, already outside the sphere.
-	vec3 rel = vW - vC;
-	float t = max(dot(-rel, L), 0.0);
-	float dperp = length(rel + L * t) / vR;
-	// Widen the penumbra downsun and keep some light in the umbra so the
-	// shadow reads across the bands without looking like a cut in the ring.
-	float penumbra = mix(0.23, 0.48, smoothstep(0.0, 2.0, t / vR));
-	float sh = mix(0.38, 1.0, smoothstep(1.0 - penumbra, 1.0 + penumbra, dperp));
-	vec3 c = mix(col_b, col_a, n1(u * 23.0 + 5.0));
-	// lit from either side; brighter seen against the light (forward scattering)
-	float fwd = pow(max(dot(-V, L), 0.0), 6.0);
-	vec3 lit = c * (0.55 + 0.6 * fwd) * sh;
-	ALBEDO = lit * light;
-	ALPHA = dens * 0.85;
-}
-"""
+const RING := preload("res://shaders/planet_ring.gdshader")

@@ -14,6 +14,8 @@ const has = (t, s) => t.includes(s);
 const liv = read('godot/world/world_living.gd');
 const ion = read('godot/world/ion_storm.gd');
 const rocks = read('godot/world/world_rocks.gd');
+const rockShader = read('godot/shaders/asteroid.gdshader');
+const wreckShader = read('godot/shaders/terrain_wreck.gdshaderinc');
 const world = read('godot/world/world.gd');
 const board = read('godot/render/board.gd');
 const spec = read('contrib/opus/briefs/nebula_motion_spec.md');
@@ -57,10 +59,10 @@ const spread = spreads[0];
 check(has(spec, 'exp(-d^2 / ' + spread + ')') && has(spec, Math.sqrt(spread).toFixed(1) + ' u') && has(spec, Math.sqrt(spread * Math.log(10)).toFixed(1) + ' u'), 'storm flash distances are derived from the live Gaussian, not a retired shader');
 // 3. AS14: one tumble figure of record (environment_reconciliation.md section 1)
 check(/const TUMBLE_K := 0\.10\b/.test(liv) && has(liv, 'return TUMBLE_K / maxf(1.0, scale_v)'), 'TUMBLE_K is 0.10 and tumble_rate uses it (reconciliation section 1)');
-check(has(liv, 'uniform float tumble_k = 0.10;') && has(liv, 'min(rate, tumble_k / max(1.0, scale_v))'), 'the wreck shader caps tumble with the same figure');
-check(!/0\.10 \/ max\(1\.0, scale_v\)/.test(liv), 'no second hard-coded 0.10 tumble cap in world_living.gd');
+check(has(wreckShader, 'uniform float tumble_k = 0.10;') && has(wreckShader, 'min(rate, tumble_k / max(1.0, scale_v))'), 'the wreck shader caps tumble with the same figure');
+check(!/0\.10 \/ max\(1\.0, scale_v\)/.test(wreckShader), 'no second hard-coded 0.10 tumble cap in the wreck shader');
 check(has(liv, 'OS.get_environment("VS_TUMBLE") == "periods" else "cap"'), 'the terrain-periods tumble is a capture variant, off by default');
-check((rocks.match(/uniform float tumble_k = 0\.0;/g) || []).length === 1 && has(rocks, 'static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") == "0" else 1.0'), 'rocks turn at the slow law by default (the rock shader; the crystal shader went with the clusters, issue 1361; VS_ROCK_TUMBLE=0 holds the pose)');
+check((rockShader.match(/uniform float tumble_k = 0\.0;/g) || []).length === 1 && has(rocks, 'static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") == "0" else 1.0'), 'rocks turn at the slow law by default (the rock shader; the crystal shader went with the clusters, issue 1361; VS_ROCK_TUMBLE=0 holds the pose)');
 check(has(rec, '0.10 / max(1, scale)'), 'environment_reconciliation.md states the figure of record');
 // 3b. The documents of record state the values the code side pins (contrib/muse/reviews/opus_check_286.md conditions 1 and 3)
 for (const row of [

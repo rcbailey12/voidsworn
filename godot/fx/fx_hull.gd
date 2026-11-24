@@ -168,7 +168,8 @@ float fx_mouth_edge(int i, vec3 p) {
 # A surface overlay cannot discard the opaque skin underneath it.
 # Weak cache: identical generated PBR shaders reuse the pipelines warmed by fx.
 # Materials keep their own textures/uniforms. No static GPU resource survives shutdown.
-static var _shader_refs := {}   # not GPU: weak refs only, nothing is kept alive
+# Runtime hull wrappers depend on the source hull's shader. Keep one variant per source for the session.
+static var _shared_shaders: Dictionary[String, Shader] = {}
 
 # Issue 569: a see-through hull surface (the Glasswright sail membranes, GLB alpha blend, which
 # Godot imports as TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) carries its alpha through the damage path
@@ -223,17 +224,17 @@ static func note_late(name: String) -> void:
 
 
 static func shared_shader(code: String, label := "") -> Shader:
-	var shader: Shader = _shader_refs[code].get_ref() if _shader_refs.has(code) else null
+	var shader: Shader = _shared_shaders.get(code)
 	if shader == null:
 		shader = Shader.new()
 		shader.code = code
-		_shader_refs[code] = weakref(shader)
+		_shared_shaders[code] = shader
 		note_late(label if label != "" else "hull shader " + str(code.hash()))
 	return shader
 
 
-static func clear_shader_cache() -> void:
-	_shader_refs.clear()
+static func clear_static() -> void:
+	_shared_shaders.clear()
 	_dmg_code.clear()
 	_uniform_names.clear()
 	_ext_codes.clear()

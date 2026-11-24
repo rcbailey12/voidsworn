@@ -23,6 +23,7 @@ var _jobs := {}
 var _queue: Array = []
 var _active := ""
 var _thread: Thread
+var _raster_shaders := {}
 
 # Issue 1765: a battle opened as the main scene builds its world and board inside its own _ready, while the root is
 # still adding children; add_child is refused there ("Parent node is busy") and every bake request then failed on a
@@ -139,14 +140,16 @@ func authored(path: String, size: Vector2i, float_mips := false, urgent := false
 
 # Queues an authored map without waiting; returns its key for result(). A caller with several maps requests them all
 # first, so nothing else can slip in between them (Artoo, PR 1776).
-func request_authored(path: String, size: Vector2i, float_mips := false, urgent := false) -> String:
+func request_authored(path: String, size: Vector2i, float_mips := false, urgent := false, color := false) -> String:
 	var owner := service(_tree())
 	var key := (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
+	var bc7 := color and not float_mips and _supports_bc7()
+	if bc7: key = (key + "|bc7").sha256_text()
 	_pin(key)
 	if _cache.has(key): return key
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"path": path, "size": size, "done": false,
-			"image": null, "started": Time.get_ticks_msec(), "compute": false, "float_mips": float_mips}
+			"image": null, "started": Time.get_ticks_msec(), "compute": false, "float_mips": float_mips, "bc7": bc7}
 	owner._enqueue(key, urgent)
 	return key
 
@@ -190,17 +193,20 @@ func _enqueue(key: String, urgent: bool) -> void:
 # half_mips (issue 1765): the map holds a 16-bit height packed in R and G (the board planet's relief). It is decoded to
 # one 32-bit float channel before its mips are made: exact, half the memory of half floats in four channels (Fable,
 # PR 1776 M4), and averaging never rounds the high byte into false ridges.
-func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int, half_mips := false, urgent := false) -> Image:
-	return await result(request_bake(key, code, params, size, strips, half_mips, urgent))
+func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int, half_mips := false, urgent := false, color := false) -> Image:
+	return await result(request_bake(key, code, params, size, strips, half_mips, urgent, color))
 
 # Queues a bake without waiting; returns its key for result() (see request_authored).
-func request_bake(key: String, code: String, params: Dictionary, size: Vector2i, _strips: int, half_mips := false, urgent := false) -> String:
+func request_bake(key: String, code: String, params: Dictionary, size: Vector2i, _strips: int, half_mips := false, urgent := false, color := false) -> String:
 	var owner := service(_tree())
-	key = cache_key(key, code, params, size)
+	var png_key := cache_key(key, code, params, size)
+	var bc7 := color and not half_mips and _supports_bc7()
+	key = (png_key + "|bc7").sha256_text() if bc7 else png_key
 	_pin(key)
 	if _cache.has(key): return key
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"code": code, "params": params.duplicate(true), "size": size, "half_mips": half_mips,
+			"bc7": bc7, "png_key": png_key,
 			"done": false, "image": null, "started": Time.get_ticks_msec(),
 			"compute": DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "gl_compatibility"}
 	owner._enqueue(key, urgent)
@@ -267,7 +273,55 @@ func _keep_keys() -> Dictionary:
 static func _folder() -> String:
 	return OS.get_environment("VS_WORLD_CACHE") if OS.has_environment("VS_WORLD_CACHE") else CACHE_DIR
 
+static func _supports_bc7() -> bool:
+	var rd := RenderingServer.get_rendering_device()
+	if rd == null: return false
+	return rd.texture_is_format_supported_for_usage(RenderingDevice.DATA_FORMAT_BC7_UNORM_BLOCK, RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT) \
+		and rd.texture_is_format_supported_for_usage(RenderingDevice.DATA_FORMAT_BC7_SRGB_BLOCK, RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT)
+
+
+static func _load_bc7(path: String, size: Vector2i) -> Image:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null: return null
+	var w := size.x
+	var h := size.y
+	var expected := 0
+	while true:
+		expected += ceili(w / 4.0) * ceili(h / 4.0) * 16
+		if w == 1 and h == 1: break
+		w = maxi(1, w >> 1)
+		h = maxi(1, h >> 1)
+	if file.get_length() != expected: return null
+	var bytes := file.get_buffer(expected)
+	if bytes.size() != expected: return null
+	return Image.create_from_data(size.x, size.y, true, Image.FORMAT_BPTC_RGBA, bytes)
+
+
+static func _save_bc7(img: Image, path: String, keep: Dictionary, key: String) -> void:
+	# The sky's alpha is transmittance, and planet albedo alpha is ocean/ice sheen. BC7 keeps both.
+	# Only 8-bit color goes through this path. Packed relief and the half-float sky planned in #1502 keep their format.
+	if img.get_format() != Image.FORMAT_RGBA8 and img.get_format() != Image.FORMAT_RGB8: return
+	if img.compress(Image.COMPRESS_BPTC, Image.COMPRESS_SOURCE_GENERIC) != OK: return
+	var folder := path.get_base_dir()
+	if DirAccess.make_dir_recursive_absolute(folder) != OK: return
+	var tmp := path + ".tmp"
+	var file := FileAccess.open(tmp, FileAccess.WRITE)
+	if file == null: return
+	var wrote := file.store_buffer(img.get_data())
+	file.close()
+	if wrote and DirAccess.rename_absolute(tmp, path) == OK:
+		prune(folder, CACHE_CAP_BYTES, keep, key)
+
+
 static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictionary:
+	var folder := _folder()
+	var bc7 := bool(job.get("bc7", false))
+	var bc7_path := folder.path_join(key + ".bc7")
+	if bc7:
+		var hit := _load_bc7(bc7_path, job.size)
+		if hit != null:
+			touch(folder, key)
+			return {"image": hit, "source": "loaded BC7"}
 	if job.has("path"):
 		var authored_image: Image = null
 		if str(job.path).ends_with(".json"):
@@ -281,9 +335,10 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 		# channels preserve the linear packed value through filtering and mips.
 		if job.get("float_mips", false): authored_image.convert(Image.FORMAT_RGBAF)
 		authored_image.generate_mipmaps()
+		if bc7: _save_bc7(authored_image, bc7_path, keep, key)
 		return {"image": authored_image, "source": "authored"}
-	var folder := _folder()
-	var path := folder.path_join(key + ".png")
+	var png_key: String = job.get("png_key", key)
+	var path := folder.path_join(png_key + ".png")
 	var img: Image = null
 	if FileAccess.file_exists(path): img = Image.load_from_file(path)
 	var source := "loaded"
@@ -298,11 +353,12 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 			if img != null and DirAccess.make_dir_recursive_absolute(folder) == OK:
 				var tmp := path + ".tmp"
 				if img.save_png(tmp) == OK and DirAccess.rename_absolute(tmp, path) == OK:
-					prune(folder, CACHE_CAP_BYTES, keep, key)
+					prune(folder, CACHE_CAP_BYTES, keep, png_key)
 	elif source == "loaded":
-		touch(folder, key)
+		touch(folder, png_key)
 	if img != null and job.get("half_mips", false): img = height_float(img)
 	if img != null and not img.has_mipmaps(): img.generate_mipmaps()
+	if img != null and bc7: _save_bc7(img, bc7_path, keep, key)
 	return {"image": img, "source": source, "error": error}
 
 
@@ -388,7 +444,7 @@ static func touch(folder: String, key: String, now: float = -1.0) -> void:
 	_write_used(folder, used)
 
 # Removes stale .tmp files, then least recently used maps until the folder is under cap. Only names the game writes
-# (<64 hex>.png, its .tmp, used.json's .tmp) are ever removed. `keep` (keys the running game holds) and `fresh` (the
+# (64 hex digits with .png or .bc7, their .tmp files, used.json's .tmp) are removed. `keep` and `fresh` (the
 # map just saved) are never removed. Returns what it did, for logs and the check.
 static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now: float = -1.0) -> Dictionary:
 	if now < 0.0: now = Time.get_unix_time_from_system()
@@ -404,11 +460,11 @@ static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now
 			if now - FileAccess.get_modified_time(path) > TMP_MAX_AGE and DirAccess.remove_absolute(path) == OK:
 				removed.append(name)
 			continue
-		if not name.ends_with(".png"): continue
+		if not (name.ends_with(".png") or name.ends_with(".bc7")): continue
 		var key := name.get_basename()
 		var size := FileAccess.get_size(path)
 		var stamp: float = float(used.get(key, maxi(FileAccess.get_modified_time(path), FileAccess.get_access_time(path))))
-		maps.append({"key": key, "path": path, "size": size, "stamp": stamp})
+		maps.append({"key": key, "name": name, "path": path, "size": size, "stamp": stamp})
 		total += size
 	var before := total
 	if total > cap:
@@ -418,7 +474,7 @@ static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now
 			if keep.has(m.key) or m.key == fresh: continue
 			if DirAccess.remove_absolute(m.path) == OK:
 				total -= int(m.size)
-				removed.append(m.key + ".png")
+				removed.append(m.name)
 	removed.append_array(_sweep_old_versions(folder, folder == CACHE_DIR))
 	var live := {}
 	for m in maps:
@@ -430,14 +486,16 @@ static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now
 
 # Issue 1265 (Board, Nov 20: the PC held 0.15 GB of v2 never read again): bake folders of older cache versions under
 # the game's own cache root (user://world_bakes/v1 .. v<N-1>) are cleared once per run. Never for a VS_WORLD_CACHE
-# override (Artoo on PR 1295: its neighbours are not the game's). Only names the game writes go: <64 hex>.png, that
-# plus .tmp, and used.json; then the folder if it is empty. Anything else stays.
+# override (Artoo on PR 1295: its neighbours are not the game's). Only names recognized by _bake_name go,
+# then the folder if it is empty.
 static var _old_swept := false
 
 static func _bake_name(f: String) -> bool:
 	if f == USED_INDEX or f == USED_INDEX + ".tmp": return true
-	var key := f.trim_suffix(".tmp").trim_suffix(".png")
-	if key.length() != 64 or not (f.ends_with(".png") or f.ends_with(".png.tmp")): return false
+	var name := f.trim_suffix(".tmp")
+	if not (name.ends_with(".png") or name.ends_with(".bc7")): return false
+	var key := name.get_basename()
+	if key.length() != 64: return false
 	for c in key:
 		if not c in "0123456789abcdef": return false
 	return true
@@ -556,10 +614,12 @@ static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictio
 # loading cover; mipmaps and PNG work still go through the worker.
 func _canvas(code: String, params: Dictionary, size: Vector2i) -> Image:
 	var strips := maxi(2, ceili(size.y / 32.0))
-	var sh := Shader.new()
-	sh.code = code
+	if not _raster_shaders.has(code):
+		var shader := Shader.new()
+		shader.code = code
+		_raster_shaders[code] = shader
 	var mat := ShaderMaterial.new()
-	mat.shader = sh
+	mat.shader = _raster_shaders[code]
 	for k in params:
 		mat.set_shader_parameter(k, params[k])
 	var sh_h := int(ceil(float(size.y) / strips))
