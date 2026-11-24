@@ -43,7 +43,7 @@ func _run() -> void:
 		before.show_tipcard(old[0], old[1], old[2])
 		await _shot("before_select_1080")
 		before.queue_free(); await process_frame
-	var hud = Teaching.HUD.new(); root.add_child(hud)
+	var hud = load(Teaching.HUD_SCRIPT).new(); root.add_child(hud)
 	for card in Battle.TIPS:
 		hud.show_tipcard(card[0], card[1], card[2])
 		await _shot("battle_" + card[0] + "_1080")

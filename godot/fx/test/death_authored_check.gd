@@ -94,11 +94,16 @@ func _no_lost_triangles(cls: String, fac: String, throws: bool) -> void:
 	var pieces: Array = job.get("out", []) if job.get("out") != null else []
 	# Artoo on PR 1388: an empty plan would make every piece "main" and pass the count below, so the plan must be the
 	# authored one, broken on the joint, and each half must hold its own side of the hull
-	check(bool(plan.get("authored", false)) and (plan.get("breaks", []) as Array).size() == 1, "%s: the cut used the authored plan with one break" % tag)
+	# issue 1236 round 4 (WRECK5c): a big metal hull breaks on two joints, adding a plain one where its authored joints
+	# cannot leave three pieces of 0.15 L; a hull that never throws keeps its one authored break
+	var want_breaks := 2 if throws else 1
+	check(bool(plan.get("authored", false)) and (plan.get("breaks", []) as Array).size() == want_breaks, "%s: the cut used the authored plan with %d break(s)" % [tag, want_breaks])
 	var brs: Array = plan.get("breaks", [])
-	check(not brs.is_empty() and absf((brs[0]["at"] as Vector3).x - 1.5) < 0.05, "%s: the break sits on the authored joint at x 1.5" % tag)
+	var xs: Array = brs.map(func(b): return float((b["at"] as Vector3).x))
+	check(xs.any(func(x): return absf(x - 1.5) < 0.05), "%s: a break sits on the authored joint at x 1.5 (%s)" % [tag, str(xs)])
 	var n_main: int = int(plan.get("n_main", -1))
-	check(n_main == 2 and pieces.size() >= 2, "%s: two main pieces (n_main %d, pieces %d)" % [tag, n_main, pieces.size()])
+	check(n_main == want_breaks + 1 and pieces.size() >= n_main, "%s: %d main pieces (n_main %d, pieces %d)" % [tag, want_breaks + 1, n_main, pieces.size()])
+	xs.sort()
 	for i in mini(maxi(n_main, 0), pieces.size()):
 		var lo := INF
 		var hi := -INF
@@ -106,8 +111,13 @@ func _no_lost_triangles(cls: String, fac: String, throws: bool) -> void:
 			for v in (sd["arrays"][Mesh.ARRAY_VERTEX] as PackedVector3Array):
 				lo = minf(lo, v.x)
 				hi = maxf(hi, v.x)
-		var ok: bool = _tris(pieces[i]) > 0 and (hi <= 1.5 + 1.0 if i == 0 else lo >= 1.5 - 1.0)
-		check(ok, "%s: main piece %d holds its own side of the joint (x %.2f to %.2f)" % [tag, i, lo, hi])
+		var a: float = xs[i - 1] if i > 0 and i - 1 < xs.size() else -INF
+		var b: float = xs[i] if i < xs.size() else INF
+		# an added joint is turned up to 12 degrees across the 5-wide beam and torn, so it reaches a little further
+		var ta: float = 1.0 if absf(a - 1.5) < 0.05 else 1.5
+		var tb: float = 1.0 if absf(b - 1.5) < 0.05 else 1.5
+		var ok: bool = _tris(pieces[i]) > 0 and hi <= b + tb and lo >= a - ta
+		check(ok, "%s: main piece %d holds its own stretch of the hull (x %.2f to %.2f)" % [tag, i, lo, hi])
 	if n_main < 0: n_main = pieces.size()
 	var on_main := 0
 	var on_frags := 0
