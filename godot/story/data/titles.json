@@ -35,7 +35,7 @@
       "rule": "2 or more enemy ships captured by boarding in the run.",
       "n": {
         "voidsworn": "the Reclaimer",
-        "hegemony": "the Prize Master",
+        "hegemony": "the Seizure Specialist",
         "corsair": "the Prize-Taker",
         "chorus": "the Assimilator",
         "ithar": "the Gatherer",
@@ -49,7 +49,7 @@
       "rule": "Lances and null guns make up 35% or more of shots fired.",
       "n": {
         "voidsworn": "the Sun-Lance",
-        "hegemony": "the Marksman",
+        "hegemony": "the Beam Officer",
         "corsair": "the Long Shot",
         "chorus": "the Far-Spore",
         "ithar": "the Clear Focus",
@@ -91,7 +91,7 @@
       "rule": "Port and starboard flank weapons make up 55% or more of shots fired.",
       "n": {
         "voidsworn": "the Flank-Breaker",
-        "hegemony": "the Line Admiral",
+        "hegemony": "the Flank Commander",
         "corsair": "the Side-Ripper",
         "chorus": "the Flanking Tide",
         "ithar": "the Turning Vane",

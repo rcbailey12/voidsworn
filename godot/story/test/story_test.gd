@@ -1,7 +1,7 @@
 # Story stream checks, headless (no window):
 #   godot --headless --path godot --script res://story/test/story_test.gd [-- runs]
 # 1. data: every admiral in the campaign tables has every moment; every title names all six factions; no em or en
-#    dashes and no empty lines in any story text.
+#    dashes or empty lines in story text. Faction hull descriptions and retired terms stay current.
 # 2. titles: hand-made run records earn the expected title.
 # 3. career: battles and run ends update records and medals; the profile survives a save and load round trip.
 # 4. battle voice: a real rules battle (scenario s1, both sides on the game's AI) played event by event through the voice.
@@ -138,7 +138,36 @@ func t_data() -> void:
 	for s in strs:
 		longest = maxi(longest, s.split(" ", false).size())
 	ok(longest <= 22, "data: admiral lines are short (longest %d words)" % longest)
+	t_lore_text(SIT, RL, facs)
 	S.free()
+
+
+func t_lore_text(situations: Dictionary, rivals: Dictionary, factions: Array) -> void:
+	var eclipse_hulls: Array = situations["events"]["corsair"]["enemy_risen"] + situations["events"]["chorus"]["enemy_risen"]
+	for fac in factions:
+		eclipse_hulls.append_array(situations["by_enemy"][fac]["deathless"])
+		eclipse_hulls.append(rivals[fac]["vs_faction"]["deathless"])
+	var silver := RegEx.create_from_string("(?i)\\bsilver\\b")
+	var miscolored := eclipse_hulls.filter(func(line): return silver.search(line) != null)
+	ok(miscolored.is_empty(), "lore: Eclipse hull descriptions avoid silver %s" % str(miscolored))
+
+	var retired := RegEx.create_from_string("\\b(?i:lifeboats?|prayers?|burning glass protocol|lock covenant)\\b|\\bHouse\\b")
+	var files := ["res://story/data/arcs.json", "res://story/data/medals.json", "res://story/data/rival_lines.json",
+		"res://story/data/situations.json", "res://story/data/titles.json", "res://story/data/voices.json",
+		"res://campaign/data/campaign_tables.json", "res://rules/data/tables.json"]
+	for path in files:
+		var raw := _read(path)
+		var match_term := retired.search(raw)
+		ok(not raw.is_empty() and match_term == null,
+			"lore: %s has no retired terms%s" % [path.get_file(), " (%s)" % match_term.get_string() if match_term else ""])
+	for path in files.slice(-2):
+		var tables: Dictionary = JSON.parse_string(_read(path))["tables"]
+		var hulls: String = tables["FACTIONS"]["ithar"]["blurb"].to_lower()
+		ok(hulls.contains("pearl") and hulls.contains("glass") and not hulls.contains("faceted crystal"),
+			"lore: %s describes Glasswright hulls as pearl and glass" % path.get_file())
+		var names: Dictionary = tables["NEM_FAC"]["hegemony"]
+		var retired_name: bool = (names["pre"] + names["post"] + names["fem"]).has("Maren")
+		ok(not retired_name, "lore: %s leaves Maren out of the Directorate Nemesis pool" % path.get_file())
 
 
 # ---------------------------------------------------------------- 2. titles
