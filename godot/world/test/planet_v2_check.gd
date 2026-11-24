@@ -96,14 +96,17 @@ func _run() -> void:
 			continue
 		_check(int(mi.get_meta("planet_look", -1)) == want, "board seed %d: look %s, want %d" % [20 + i, str(mi.get_meta("planet_look", -1)), want])
 		var first := _code(mi)
-		_check(first == PL.BOARD_SURFACE, "board look %d: the first material is not world_planet.gd's stand-in" % want)
+		# the stand-in first; or, now that the maps are queued without a frame wait, the final R01 surface at once when
+		# its authored maps are already in memory (an earlier look loaded them)
+		var at_once: bool = (want == 0 or want == 5) and first == PL.ROCKY_SURFACE and not board.planet_pending
+		_check(first == PL.BOARD_SURFACE or at_once, "board look %d: the first material is not world_planet.gd's stand-in" % want)
 		var stand := mi.material_override as ShaderMaterial
-		if stand != null:
+		if stand != null and not at_once:
 			var ca: Vector3 = stand.get_shader_parameter("col_a")
 			var cb: Vector3 = stand.get_shader_parameter("col_b")
 			_check(ca.distance_to(cb) > 0.05, "board look %d: the stand-in has one flat colour" % want)
 			_check(stand.shader == PL.shader(PL.BOARD_SURFACE), "board look %d: the stand-in compiled its own shader" % want)
-		_check(board.planet_pending, "board look %d: the board does not hold the loading cover for its planet" % want)
+		_check(board.planet_pending or at_once, "board look %d: the board does not hold the loading cover for its planet" % want)
 		await board.wait_planet()
 		_check(not board.planet_pending, "board look %d: wait_planet returned with the maps still pending" % want)
 		var code := _code(mi)
@@ -115,7 +118,7 @@ func _run() -> void:
 	# a board whose maps miss the 20 s deadline freezes on the stand-in (counted from the planet's own start)
 	var slow := StubRules.new()
 	slow.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
-	slow.w = {"seed": 20}   # rocky: R01 is already in memory, so only the freeze keeps it out
+	slow.w = {"seed": 27}   # ice, a map set no earlier step baked: the bake is still running when the deadline passes
 	var sb: Node3D = BOARD.new()
 	root.add_child(sb)
 	sb.build(slow)
@@ -143,7 +146,9 @@ func _run() -> void:
 			_done = false
 			_install(mi, shell, k, seed_v, sun)
 			_check(_code(mi) != "", "look %d: no surface material before its maps arrive" % k)
-			_check(mi.material_override.shader == PL.shader(PL.BOARD_SURFACE), "look %d: a new stand-in shader per planet" % k)
+			# rocky and barren show their final surface at once when the R01 maps are already in memory (no frame wait)
+			var sh: Shader = mi.material_override.shader
+			_check(sh == PL.shader(PL.BOARD_SURFACE) or ((k == 0 or k == 5) and sh == PL.shader(PL.ROCKY_SURFACE)), "look %d: a new stand-in shader per planet" % k)
 			while not _done:
 				await process_frame
 			var code := _code(mi)
@@ -178,7 +183,7 @@ func _run() -> void:
 	root.add_child(rb)
 	var with_planet := StubRules.new()
 	with_planet.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
-	with_planet.w = {"seed": 20}
+	with_planet.w = {"seed": 26}   # terran, a map set no earlier step baked, so the build has to wait
 	var no_planet := StubRules.new()
 	no_planet.v = {"hexes": hexes, "terrain": {}}
 	rb.build(with_planet)
@@ -189,7 +194,7 @@ func _run() -> void:
 	rb.build(with_planet)
 	_check(rb.planet_pending and rb.built == gen_before + 1, "a second planet build is not waiting")
 	await rb.wait_planet()
-	_check(not bool(rb.planet_node.get_meta("planet_frozen", false)) and _code(rb.planet_node) == PL.ROCKY_SURFACE,
+	_check(not bool(rb.planet_node.get_meta("planet_frozen", false)) and str(rb.planet_node.get_meta("planet_code", "")) == "BAKE2",
 		"the newest build's planet did not finish after a rebuild")
 	rb.queue_free()
 	await process_frame
