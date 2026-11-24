@@ -94,6 +94,54 @@ func victory(wreck: Dictionary, offer: Dictionary) -> void:
 	C.RUN["curNode"] = node["id"]
 	C.rewardFlow({"cfg": {"kind": "battle", "node": node["id"]}, "kills": 1, "rounds": 3, "lost": [], "xp": [], "wrecks": [wreck]})
 
+func captain_loss_check() -> void:
+	fixture()
+	for row in [["Cold Reckoning", "Lucan Ivers"], ["Iron Wake", "Octavia Vale"]]:
+		var ship: Dictionary = C.newShip("penitent")
+		ship["name"] = row[0]
+		ship["cap"]["name"] = row[1]
+		C.RUN["fleet"].append(ship)
+	var node: Dictionary = C.RUN["map"]["cols"][0][0]
+	C.RUN["pos"] = node["id"]
+	C.RUN["curNode"] = node["id"]
+	C.stub_start({"kind": "battle", "node": node["id"], "fac": "hegemony", "seed": 1402})
+	for unit in C.B["units"].slice(1, 3):
+		unit["dead"] = true
+		unit["hp"] = 0
+	Campaign.JSM.rnd_seed(8)   # the first captain escapes and the second falls
+	C.finishBattle("win")
+	await frames()
+	var losses: String = "Lost: the Cold Reckoning, the Iron Wake and Octavia Vale."
+	var escape_line: String = "Captain Lucan Ivers escaped, wounded."
+	check(words().contains(losses) and words().contains(escape_line), "C19: victory lists the lost hulls and fallen captain, then the escaped captain")
+	await reload()
+	check(words().contains(losses) and words().contains(escape_line), "C19: the same captain fates appear after a cold Continue")
+	for loss in C.RUN["reward"]["victory"]["summary"]["lost"]:
+		loss.erase("escaped")   # the victory data shape before C19
+	C.saveRun()
+	await reload()
+	check(words().contains(losses) and words().contains(escape_line), "C19: a legacy reward save recovers the escaped captain from the reserve")
+	C.RUN["fleet"].append(C.newShip("penitent"))
+	C.saveRun()
+	await reload()
+	check(words().contains(losses) and words().contains(escape_line), "C19: a legacy reward still shows the escape after the captain takes a new hull")
+
+func promotion_words_check() -> void:
+	fixture()
+	var ship: Dictionary = C.RUN["fleet"][0]
+	ship["cap"]["pending"] = 1
+	ship["cap"]["offer"] = ["steady", "helm"]
+	var steady := "Distance starts reducing this ship's accuracy 2 hexes later."
+	var helm := "This ship gains 1 movement point."
+	C.promotionsStep()
+	await frames()
+	check(kind() == "promotions" and words().contains(steady) and words().contains(helm), "C39: the battle promotion card says what each perk does for the ship")
+	C.promoteModal(ship["uid"], func(): pass)
+	await frames()
+	check(kind() == "promote" and words().contains(steady) and words().contains(helm), "C39: the single-captain card uses the same copy")
+	var rules = preload("res://rules/rules.gd").new()
+	check(rules.load_tables("res://rules/data/tables.json") == "" and rules.PERKS == C.PERKS, "C39: both Godot perk tables agree")
+
 func wreck_checks() -> void:
 	var ship := {"name": "Broken Crown", "killedBy": "Quiet Resolve"}
 	var ram: String = C._heavy_wreck_cause(ship, [{"m": "Quiet Resolve rams Broken Crown at full speed: 30 to its prow, 10 back to the ram."}])
@@ -281,7 +329,9 @@ func run() -> void:
 	await wreck_refit_check()
 	await full_reward_check()
 	await bought_checks()
+	await captain_loss_check()
+	await promotion_words_check()
 	ui.queue_free()
 	await frames()
-	if failures == 0: print("PASS: wreck payouts, reward quick-fit, paid refits, full slots, cancel and Continue")
+	if failures == 0: print("PASS: wreck payouts, reward quick-fit, paid refits, full slots, Continue, captain fates and promotion wording")
 	quit(0 if failures == 0 else 1)

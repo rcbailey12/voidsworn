@@ -3657,6 +3657,18 @@ func victoryCard() -> void:
 	var data: Dictionary = stored.duplicate() if stored is Dictionary else {}
 	data.merge({"wrecks": ws, "rw": W["rw"], "kind": RUN["reward"]["kind"]}, true)
 	show_modal("victory", data, acts)
+
+func loss_captain_escaped(loss: Dictionary) -> bool:
+	if loss.has("escaped"): return jt(loss["escaped"])
+	# Legacy reward saves have the names and the roster, but a prize may already have used the reserve captain.
+	for entry in or_(RUN.get("reserve"), []):
+		if entry.get("from") == loss.get("ship") and entry["cap"].get("name") == loss.get("cap"):
+			return true
+	for entry in or_(RUN.get("fallen"), []):
+		if entry.get("ship") == loss.get("ship") and entry.get("name") == loss.get("cap"):
+			return false
+	return true
+
 func wreck_tow_over_cap(w: Dictionary) -> bool:
 	var hull = HULLS.get(w.get("tpl"))
 	return hull != null and fleetCP() + float(or_(hull.get("cp"), 1)) > float(RUN["cpCap"])
@@ -4098,9 +4110,11 @@ func finishBattle(result: String) -> void:
 			if ship.get("car") == null: ship["car"] = {"dealt": 0, "kills": 0, "battles": 0}
 			var c = ship["car"]; c["dealt"] = float(c["dealt"]) + jsround(float(z0(u.get("dealt")))); c["kills"] = float(c["kills"]) + float(z0(u.get("kills"))); c["battles"] = float(c["battles"]) + 1
 		if jt(u.get("dead")) and not jt(u.get("exited")):
-			summary["lost"].append({"ship": ship["name"], "cap": ship["cap"]["name"], "tpl": ship["tpl"]}); RUN["stats"]["lost"] = float(z0(RUN["stats"].get("lost"))) + 1
+			var loss := {"ship": ship["name"], "cap": ship["cap"]["name"], "tpl": ship["tpl"], "escaped": false}
+			summary["lost"].append(loss); RUN["stats"]["lost"] = float(z0(RUN["stats"].get("lost"))) + 1
 			RUN["fleet"] = RUN["fleet"].filter(func(x): return not is_same(x, ship))
 			if rnd() < 0.6:
+				loss["escaped"] = true
 				RUN["reserve"] = or_(RUN.get("reserve"), []); RUN["reserve"].append({"cap": ship["cap"], "from": ship["name"]})
 				summary["escaped"] = or_(summary.get("escaped"), []); summary["escaped"].append(ship["cap"]["name"])
 			else: RUN["fallen"].append({"name": ship["cap"]["name"], "rank": ship["cap"]["rank"], "fac": ship["cap"]["fac"], "ship": ship["name"], "sector": RUN["sector"]})

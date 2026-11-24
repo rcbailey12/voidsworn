@@ -2560,9 +2560,21 @@ func _modal(md: Dictionary) -> void:
 			if str(d.get("beat3Debrief", "")) != "": p.call(d["beat3Debrief"], VERD)
 			if not sm.is_empty(): v.add_child(rich(C.numstr(sm["kills"]) + " enemy ship" + ("" if int(sm["kills"]) == 1 else "s") + " destroyed in " + C.numstr(sm["rounds"]) + " round" + ("" if float(sm["rounds"]) == 1 else "s") + ". " + c("+", VERD) + n_(C.numstr(d["econ"]["bio"] if d.get("econ") is Dictionary and d["econ"].has("bio") else d["credits"]), VERD) + c(" biomass." if d.get("econ") is Dictionary and d["econ"].has("bio") else " credits.", VERD), 17))
 			if not sm.get("lost", []).is_empty():
-				var ls = []
-				for l in sm["lost"]: ls.append(C.ship_with_article(str(l["ship"])) + " and " + str(l["cap"]))
-				p.call("Lost: " + ", ".join(PackedStringArray(ls)) + ".", BLOOD)
+				var lost := PackedStringArray()
+				var survivors := PackedStringArray()
+				var escape_line: String = {
+					"chorus": "Captain %s survived in a detached spore-node.",
+					"deathless": "Captain %s streamed their backup clear before hull loss."
+				}.get(str(R["fac"]), "Captain %s escaped, wounded.")
+				for loss in sm["lost"]:
+					var ship_name: String = C.ship_with_article(str(loss["ship"]))
+					if C.loss_captain_escaped(loss):
+						lost.append(ship_name)
+						survivors.append(escape_line % str(loss["cap"]))
+					else:
+						lost.append(ship_name + " and " + str(loss["cap"]))
+				p.call("Lost: " + ", ".join(lost) + ".", BLOOD)
+				for line in survivors: p.call(line, BONE2)
 			var econ: Dictionary = d["econ"] if d.get("econ") is Dictionary else {}   # issue 1178: faction economies on the victory card
 			if econ.has("cullet"): p.call("Cullet from the lost glass: +" + C.numstr(econ["cullet"]) + " credits.", VERD)
 			if econ.has("core"): p.call("Core recovered: the " + str(C.HULLS[econ["core"]]["n"]) + " can be regrown at a shipyard.", VERD)
