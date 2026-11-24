@@ -528,15 +528,15 @@ func _apply_quality(q: String) -> void:
 		# issue 1434 (item 10): the backdrop shares the root viewport with the menu; stop_build() puts these back
 		_vp_saved = {"msaa_3d": vp.msaa_3d, "screen_space_aa": vp.screen_space_aa, "use_taa": vp.use_taa}
 	var aa_was := [vp.msaa_3d, vp.screen_space_aa, vp.use_taa]
-	apply_quality_to(vp, q, _jt(args.get("taa", false)))
-	if title_backdrop:
-		vp.msaa_3d = SHOWCASE_MSAA
+	# Artoo on b21535a6: the title's MSAA is chosen before the write, so the viewport takes one MSAA value, never a
+	# Max value and then the backdrop's (a reallocation the AA trace could not see)
+	apply_quality_to(vp, q, _jt(args.get("taa", false)), SHOWCASE_MSAA if title_backdrop else -1)
 	if aa_was != [vp.msaa_3d, vp.screen_space_aa, vp.use_taa]:
 		SKEEP.event("viewport AA changed %s to %s" % [str(aa_was), str([vp.msaa_3d, vp.screen_space_aa, vp.use_taa])])
 
 
-static func apply_quality_to(vp: Viewport, q: String, taa: bool) -> void:
-	vp.msaa_3d = LOOK.msaa_for_quality(q)
+static func apply_quality_to(vp: Viewport, q: String, taa: bool, msaa := -1) -> void:
+	vp.msaa_3d = LOOK.msaa_for_quality(q) if msaa < 0 else msaa as Viewport.MSAA
 	# issue 1437 (item 8): the whole AA state every time (the viewport is the game's own, shared by every later screen
 	# and battle), so Low then Max no longer leaves FXAA on
 	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if q == "low" else Viewport.SCREEN_SPACE_AA_DISABLED
