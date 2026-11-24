@@ -1533,7 +1533,7 @@ static func _shot_down(fx, p: Dictionary) -> void:
 	_impact_sparks(fx, pp, -d, now, k * 0.7, PD_TRACER, 5)
 	for j in 5:
 		var off: Vector3 = fx.rdir() * (0.9 + fx.rng.randf() * 0.9) * k
-		var tj := now - 0.18 + j * 0.06
+		var tj := now + j * 0.045
 		_burst(fx, pp + off, Vector3.UP, tj, 0.35 * k, "flash", 0.06, Color(1.0, 0.85, 0.6), 2.0, 4.0)
 		_burst(fx, pp + off, Vector3.UP, tj + 0.02, 1.1 * k, "cool", 0.9, Color(0.16, 0.15, 0.14), 0.5, 0.0, Vector3.ZERO, 0.6)
 	# the round goes dead. Drive out, it tumbles on along its path, slowing, trailing grey smoke

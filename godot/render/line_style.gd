@@ -11,6 +11,7 @@ const SKEEP := preload("res://render/shader_keep.gd")
 #   the grid and the target rings are core only (no glow), so the board stays quiet (RULEBOOK 10.1);
 # - breath: terrain and hazard edges shimmer slowly (BREATH deep), everything the player acts on stays steady.
 
+const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const CORE_W := 0.32
 const CORE_PX := 1.4
 const GLOW_W := 1.9
@@ -152,8 +153,7 @@ const STRIP_IN := 4.4
 
 static func material(breath := false) -> ShaderMaterial:
 	var m := ShaderMaterial.new()
-	var sh: Shader = SKEEP.of(SHADER)   # issue 1434: one compiled shader per code
-	m.shader = sh
+	m.shader = SHADER_CACHE.for_code(SHADER)
 	m.set_shader_parameter("breath", 1.0 if breath else 0.0)
 	return m
 

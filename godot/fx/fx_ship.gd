@@ -2280,6 +2280,8 @@ func damage_caps(k := 1.0) -> Vector2i:
 func damage_counts() -> Dictionary:
 	var counts := {"fire": 0, "smoke": 0, "vent": 0, "particles": 0}
 	for e in _damage_emitters + _fading_emitters:
+		if not is_instance_valid(e.get("node")):
+			continue
 		counts[e.kind] += 1
 		counts.particles += e.particles
 	return counts
@@ -2289,7 +2291,9 @@ func _refresh_damage_emitters(fx) -> void:
 	var key := str(stage) + str(_burning) + str(fx.compat) + str(_jammed.keys()) + str(_mount_dead.keys()) + str(dead_nozzles)
 	if key == _emitter_key: return
 	_emitter_key = key
-	for e in _fading_emitters: e.node.queue_free()
+	for e in _fading_emitters:
+		if is_instance_valid(e.get("node")):
+			e.node.queue_free()
 	_fading_emitters.clear()
 	var desired: Array = []
 	var caps := damage_caps(fx.cap_k)
@@ -2330,6 +2334,8 @@ func _refresh_damage_emitters(fx) -> void:
 				smoke += 1
 	var keep: Array = []
 	for e in _damage_emitters:
+		if not is_instance_valid(e.get("node")):
+			continue
 		var match_i := -1
 		for j in desired.size():
 			if desired[j].id == e.id and desired[j].st == e.st: match_i = j; break
@@ -2344,17 +2350,17 @@ func _refresh_damage_emitters(fx) -> void:
 				_fading_emitters.append(e)
 			else: e.node.queue_free()
 	for e in desired:
-		_build_damage_emitter(fx, e)
-		keep.append(e)
+		if _build_damage_emitter(fx, e):
+			keep.append(e)
 	_damage_emitters = keep
 
 
-func _build_damage_emitter(fx, e: Dictionary) -> void:
+func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	if e.has("tur") or e.has("mp"):
 		_build_wisp(fx, e)
-		return
+		return true
 	var a := _anchor(e.sec, "a")
-	if a.is_empty(): return
+	if a.is_empty(): return false
 	var p: Vector3 = a.p
 	var n: Vector3 = a.n
 	var glow: Color = fac.damage_glow
@@ -2408,15 +2414,20 @@ func _build_damage_emitter(fx, e: Dictionary) -> void:
 	e["particles"] = b.particle_count
 	e["sprite_kind"] = kind
 	e["source"] = p
+	return true
 
 
 func _update_damage_emitters(fx) -> void:
 	if dead or gone:
-		for e in _damage_emitters: e.node.visible = false
-		for e in _fading_emitters: e.node.visible = false
+		for e in _damage_emitters + _fading_emitters:
+			if is_instance_valid(e.get("node")):
+				e.node.visible = false
 		return
 	for j in range(_fading_emitters.size() - 1, -1, -1):
 		var e: Dictionary = _fading_emitters[j]
+		if not is_instance_valid(e.get("node")):
+			_fading_emitters.remove_at(j)
+			continue
 		var gate: float = clampf((e.until - fx.now) / 0.8, 0.0, 1.0)
 		e.mat.set_shader_parameter("gate", gate)
 		if gate <= 0.0:

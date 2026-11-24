@@ -1580,6 +1580,8 @@ var prep_step := ""
 
 
 func prepare_battle_hulls() -> void:
+	if closed or not is_inside_tree():
+		return
 	HULL.pause_late_watch()
 	_warm_hull_adapters()
 	var pending: Array[SHIP] = []
@@ -1620,7 +1622,8 @@ func prepare_battle_hulls() -> void:
 		pending.append(ship)
 		if Time.get_ticks_usec() >= deadline:
 			await get_tree().process_frame
-			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+			if closed or not is_inside_tree():
+				return
 			deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	# Limit simultaneous cuts so the hull workers and renderer can make progress
 	# together while the loading cover is up.
@@ -1642,12 +1645,14 @@ func prepare_battle_hulls() -> void:
 					break
 		_finish_shield_skins()
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if closed or not is_inside_tree():
+			return
 	prep_step = "shield skins and pieces"
 	while not _piece_builds.is_empty() or not _shield_jobs.is_empty():
 		_finish_shield_skins()
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if closed or not is_inside_tree():
+			return
 	defer_initial_cuts = false
 	prep_step = ""
 
@@ -1729,7 +1734,7 @@ var _arrival_cuts := 0
 
 
 func warm_arrival(s: SHIP) -> void:
-	if s == null or s.gone or s.dead:
+	if closed or s == null or s.gone or s.dead:
 		return
 	var fresh := false
 	for m in s.meshes:
@@ -1752,8 +1757,12 @@ func warm_arrival(s: SHIP) -> void:
 	pend("warm_arrival", t0)
 	for i in 2:
 		await RenderingServer.frame_post_draw
-	tmp.queue_free()
-	if paused: HULL.start_late_watch()
+		if closed or not is_inside_tree() or not is_instance_valid(tmp):
+			break
+	if is_instance_valid(tmp):
+		tmp.queue_free()
+	if paused and not closed and is_inside_tree():
+		HULL.start_late_watch()
 
 
 # Issue 370: what the attach point service answered for each ship this battle (per point type: authored "hp", surface
@@ -2159,7 +2168,7 @@ func _warm_fragment_finish(at: Vector3, t: float, color: Color) -> void:
 
 # Draw the effect materials under the loading cover so their pipelines are ready for battle.
 func warmup(cam: Camera3D, frames := 4) -> void:
-	if cam == null:
+	if closed or not is_inside_tree() or not is_instance_valid(cam) or not cam.is_inside_tree():
 		return
 	# Issue 376: rebuilds under the load cover are expected. Start the late watch
 	# once the warm objects have drawn.
@@ -2167,8 +2176,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# ShipView sets its paint just after adding the meshes. Let the deferred mesh
 	# watcher apply the nebula's fog policy before deriving shaders from that paint.
 	await get_tree().process_frame
-	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
-	if closed or not is_instance_valid(cam):
+	if closed or not is_inside_tree() or not is_instance_valid(cam) or not cam.is_inside_tree():
 		return
 	_warm_hull_adapters()
 	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
@@ -2352,16 +2360,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		rb.global_position = deep
 		rb.linear_velocity = Vector3(0.1, 0, 0)
 		DEATH.spawn_debris(self, deep + Vector3(10, 0, 0), Vector3.ZERO, 3, 0.2 * unit)
-		var rb_ref := weakref(rb)   # issue 1482: the lambda holds a weak reference, never the body (a freed capture errors)
-		get_tree().create_timer(0.5).timeout.connect(func() -> void:
-			free_effect(rb_ref)
-			# issue 1279: the warm debris would drift far below the board for the whole battle and keep Jolt stepping;
-			# stopped, they sleep (the space with them) until a death reuses them from the pool
-			for b in dstate["debris"]:
-				if is_instance_valid(b) and (b as RigidBody3D).global_position.y < deep.y * 0.5:
-					(b as RigidBody3D).linear_velocity = Vector3.ZERO
-					(b as RigidBody3D).angular_velocity = Vector3.ZERO
-					(b as RigidBody3D).sleeping = true)
+		get_tree().create_timer(0.5).timeout.connect(_settle_warm_debris.bind(weakref(rb), deep.y * 0.5))
 	if warmup_batch <= 0:
 		WEAP.warm_craft_trail(self, tmp)
 		dstate["warm_munitions"] = WEAP.warm_munitions(self, tmp)   # issue 1528: the first salvo's body, materials and trail
@@ -2398,14 +2397,37 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 				(parked[i][1] as Node).add_child(parked[i][0])
 			if (i + 1) % warmup_batch == 0:
 				await RenderingServer.frame_post_draw
-				if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+				if closed or not is_inside_tree():   # issue 1434: a left battle waits two draws out of the tree before its free
+					_free_warm_parked()
+					if is_instance_valid(tmp):
+						tmp.queue_free()
+					return
 		_free_warm_parked()   # a parent gone meanwhile left its mesh out of the tree: free it here
 	for i in frames:
 		await RenderingServer.frame_post_draw
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if closed or not is_inside_tree():
+			if is_instance_valid(tmp):
+				tmp.queue_free()
+			return
+	if not is_instance_valid(tmp):
+		HULL.start_late_watch()
+		return
 	warmed = true
 	tmp.queue_free()
 	HULL.start_late_watch()
+
+
+func _settle_warm_debris(rb_ref: WeakRef, below: float) -> void:
+	free_effect(rb_ref)
+	if closed or not is_inside_tree():
+		return
+	# Issue 1279: stop the warm debris below the board so Jolt can sleep until a death reuses it.
+	for body in dstate.get("debris", []):
+		if not is_instance_valid(body) or not body.is_inside_tree() or body.global_position.y >= below:
+			continue
+		body.linear_velocity = Vector3.ZERO
+		body.angular_velocity = Vector3.ZERO
+		body.sleeping = true
 
 
 # Every hull as it is drawn, with the death overlays on top, and its cuttable PBR surface (from warmup, shared with the
