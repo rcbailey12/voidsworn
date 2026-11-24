@@ -170,16 +170,55 @@ static func rows(h, faction: String, fac: Dictionary, seed_v: int, softened: boo
 	return out
 
 
-# What the comfort check measures from rows: the most pulses one ship starts in a second, the brightest and the shortest.
+# What the comfort check measures from rows: the most pulses one ship starts inside any one-second window, the brightest and the shortest.
+# Issue 2025 (Artoo 7125579753): this is the worst case of simultaneous starts, not the average rate (the sum of 1 / period),
+# which hides sprites that start together. A window is worst when it opens on a start, so each start is tried as the opening.
+# Every row of a ship shares one period, so a horizon of the longest period sees the whole pattern; rows with different periods
+# are scanned for WORST_WINDOW_HORIZON seconds.
+const WORST_WINDOW_HORIZON := 120.0
+const WINDOW_EPS := 1e-9
+
+static func _starts_in_window(r: Array, open: float) -> int:
+	# starts t + k * period, for every whole k, that fall in [open, open + 1)
+	var n := 0
+	for row in r:
+		var period := float(row["period"])
+		var t := float(row["t"])
+		n += int(ceil((open + 1.0 - t) / period - WINDOW_EPS)) - int(ceil((open - t) / period - WINDOW_EPS))
+	return n
+
+
+static func worst_starts_per_s(r: Array) -> int:
+	var longest := 0.0
+	for row in r:
+		longest = maxf(longest, float(row["period"]))
+	if longest <= 0.0:
+		return 0
+	var horizon := longest if _same_period(r) else WORST_WINDOW_HORIZON
+	var worst := 0
+	for row in r:
+		var period := float(row["period"])
+		var k := 0
+		while float(row["t"]) + float(k) * period < horizon:
+			worst = maxi(worst, _starts_in_window(r, float(row["t"]) + float(k) * period))
+			k += 1
+	return worst
+
+
+static func _same_period(r: Array) -> bool:
+	for row in r:
+		if not is_equal_approx(float(row["period"]), float(r[0]["period"])):
+			return false
+	return true
+
+
 static func stats(r: Array) -> Dictionary:
-	var starts := 0.0
 	var max_i := 0.0
 	var min_life := INF
 	for row in r:
-		starts += 1.0 / float(row["period"])
 		max_i = maxf(max_i, float(row["i"]))
 		min_life = minf(min_life, float(row["life"]))
-	return {"sprites": r.size(), "starts_per_s": starts, "max_i": max_i, "min_life": min_life}
+	return {"sprites": r.size(), "starts_per_s": float(worst_starts_per_s(r)), "max_i": max_i, "min_life": min_life}
 
 
 # Build the ship's batch under `parent` (its damage root). Returns {} (nothing built) when the ship has no motion;
