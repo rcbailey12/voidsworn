@@ -99,6 +99,8 @@ func wreck_checks() -> void:
 	var ram: String = C._heavy_wreck_cause(ship, [{"m": "Quiet Resolve rams Broken Crown at full speed: 30 to its prow, 10 back to the ram."}])
 	var torpedo: String = C._heavy_wreck_cause(ship, [{"m": "Torpedoes from Quiet Resolve reach Broken Crown: 36 hull."}])
 	check(ram == "Rammed" and torpedo == "Torpedo strike", "the shared big kill class is distinguished by the battle log")
+	var stray: String = C._heavy_wreck_cause(ship, [{"m": "Torpedoes from Quiet Resolve reach Broken Crown (a stray hit in the lane): 36 hull."}])
+	check(stray == "Torpedo strike", "a stray torpedo uses the same wreck wording")
 	for row in [
 		["big", ram, "Rammed"],
 		["big", torpedo, "Torpedo strike"],
@@ -158,16 +160,41 @@ func won_checks() -> void:
 	await frames()
 	check(kind() == "mod" and C.RUN["inventory"].is_empty(), "the won offer opens without a grant")
 	check(control("fitRewardRefit", "hangar:" + uid) == null, "incompatible hulls are excluded even with a free slot")
+	C.W["relicChoice"] = ["compass"]
+	C.RUN["reward"]["relics"] = ["compass"]
+	C.saveRun()
 	await reload()
 	check(kind() == "mod" and C.modal_d["data"]["opts"] == [REFIT, "hangar"], "cold Continue reopens the same won offer")
 	var fit := control("fitRewardRefit", REFIT + ":" + uid) as Button
 	check(fit != null and fit.text == "Fit onto Quiet Resolve", "the real reward card names the compatible ship")
-	click("fitRewardRefit", REFIT + ":" + uid)
-	C.act("fitRewardRefit", REFIT + ":" + uid)
+	if fit == null: return
+	fit.pressed.emit()
+	check(kind() == "relic" and C.RUN["reward"].get("modOffer") == null, "quick-fit clears the saved offer before the next reward")
 	await reload()
 	ship = C.RUN["fleet"][0]
 	check(ship["mods"] == [REFIT] and ship["hp"] == manifest_hull and C.RUN["inventory"].is_empty(), "quick-fit grants once and matches the manifest hull result")
-	check(kind() != "mod", "a resolved offer stays resolved on Continue")
+	check(kind() == "relic", "Continue after quick-fit reopens the next reward")
+	C.act("fitRewardRefit", REFIT + ":" + uid)
+	C.act("takeMod", REFIT)
+	check(ship["mods"] == [REFIT] and C.RUN["inventory"].is_empty(), "neither claim action can grant it again after Continue")
+
+func double_click_reward_check() -> void:
+	fixture()
+	var ship = C.RUN["fleet"][0]
+	var uid: String = ship["uid"]
+	victory({"name": "Broken Crown", "tpl": "penitent", "cp": 2, "cause": "blast"}, {"k": "mod"})
+	C.RUN["reward"]["modOffer"] = [REFIT]
+	C.act("takeSalvage", "0:cred")
+	await frames()
+	var fit := control("fitRewardRefit", REFIT + ":" + uid) as Button
+	check(fit != null, "quick-fit button is present for the double click")
+	if fit == null: return
+	var first_event: int = C.tel_log.size()
+	fit.pressed.emit()
+	fit.pressed.emit()
+	C.act("takeMod", REFIT)
+	var claims: Array = C.tel_log.slice(first_event).filter(func(entry): return entry["ev"] == "reward_pick" and entry.get("k") == "mod")
+	check(claims.size() == 1 and ship["mods"] == [REFIT] and C.RUN["inventory"].is_empty(), "two presses of the same quick-fit button and a stale keep action claim exactly once")
 
 func wreck_refit_check() -> void:
 	fixture()
@@ -194,8 +221,12 @@ func full_reward_check() -> void:
 	await frames()
 	check(control("fitRewardRefit", REFIT + ":" + uid) == null and words().contains("No free compatible slot."), "a full fleet sees why it cannot fit a won refit")
 	C.act("fitRewardRefit", REFIT + ":" + uid)
-	check(kind() == "mod" and C.RUN["inventory"].is_empty(), "a rejected fit leaves the offer available")
+	check(kind() == "mod" and C.W["modOffer"] == [REFIT] and C.RUN["inventory"].is_empty(), "a rejected fit leaves the offer available")
+	await reload()
+	check(kind() == "mod" and C.W["modOffer"] == [REFIT], "a rejected fit leaves the same offer available on Continue")
 	click("takeMod", REFIT)
+	C.act("takeMod", REFIT)
+	C.act("fitRewardRefit", REFIT + ":" + uid)
 	await reload()
 	check(C.RUN["fleet"][0]["mods"].size() == slot_count and C.RUN["inventory"] == [REFIT], "keeping a won refit grants exactly one to the hold")
 
@@ -246,6 +277,7 @@ func run() -> void:
 	await wreck_checks()
 	await blocked_tow_check()
 	await won_checks()
+	await double_click_reward_check()
 	await wreck_refit_check()
 	await full_reward_check()
 	await bought_checks()
