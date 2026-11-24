@@ -454,24 +454,38 @@ void fragment() {
 		float cells = max(length(dFdx(d)), length(dFdy(d))) * map_scale;
 		if (cloud_detail > 0.0) {
 			vec3 cq = bp_spin(d, TIME * cloud_rate) * map_scale;
-			float c1 = (wvn3(cq * 0.9 + 31.0) - 0.5) * (1.0 - smoothstep(0.25, 0.5, cells * 0.9));
-			float c2 = (wvn3(cq * 2.3 + 47.0) - 0.5) * (1.0 - smoothstep(0.25, 0.5, cells * 2.3));
-			float c3 = (wvn3(cq * 5.7 + 59.0) - 0.5) * (1.0 - smoothstep(0.25, 0.5, cells * 5.7));
+			float c_raw = cloud;   // the map's own thickness, compared with the sunward sample on the same scale (Artoo)
+			float c1 = 0.0;
+			float c2 = 0.0;
+			float c3 = 0.0;
+			// an octave that has faded out is not computed at all (Artoo, PR 1983); no derivative is taken in here
+			float wc1 = 1.0 - smoothstep(0.25, 0.5, cells * 0.9);
+			float wc2 = 1.0 - smoothstep(0.25, 0.5, cells * 2.3);
+			float wc3 = 1.0 - smoothstep(0.25, 0.5, cells * 5.7);
+			if (wc1 > 0.0) c1 = (wvn3(cq * 0.9 + 31.0) - 0.5) * wc1;
+			if (wc2 > 0.0) c2 = (wvn3(cq * 2.3 + 47.0) - 0.5) * wc2;
+			if (wc3 > 0.0) c3 = (wvn3(cq * 5.7 + 59.0) - 0.5) * wc3;
 			float thin = 1.0 - smoothstep(0.4, 0.9, cloud);
 			cloud = clamp(cloud + (c1 * 0.5 + c2 * 0.3 + c3 * 0.2) * cloud_detail * (0.35 + thin), 0.0, 1.0);
 			cloud = smoothstep(0.08, 0.9, cloud);
 			// thickness just sunward of this point: thinner there means this side faces the sun
 			vec3 sunward = bp_spin(bp_tilt(normalize(normalize(local_direction) + normalize(local_light) * 0.004)), turn);
 			float c_sun = bp_sample(tex_b, bp_spin(sunward, TIME * cloud_rate), lod).r;
-			cloud_lit = clamp(0.5 + (cloud - c_sun) * 5.0, 0.0, 1.0);
+			cloud_lit = clamp(0.5 + (c_raw - c_sun) * 5.0, 0.0, 1.0);
 			// billows: the same fine noise lights and shades the cloud's own top
 			cloud_lit = clamp(cloud_lit + (c1 * 0.6 + c2 * 0.4) * 0.9, 0.0, 1.0);
 		}
 		if (detail > 0.0) {
 			vec3 dp = d * map_scale;
-			float n1 = (wvn3(dp * 1.3 + 5.1) - 0.5) * (1.0 - smoothstep(0.25, 0.5, cells * 1.3));
-			float n2 = (wvn3(dp * 3.4 + 11.7) - 0.5) * (1.0 - smoothstep(0.25, 0.5, cells * 3.4));
-			float n3 = (wvn3(dp * 8.9 + 23.3) - 0.5) * (1.0 - smoothstep(0.25, 0.5, cells * 8.9));
+			float n1 = 0.0;
+			float n2 = 0.0;
+			float n3 = 0.0;
+			float w1 = 1.0 - smoothstep(0.25, 0.5, cells * 1.3);
+			float w2 = 1.0 - smoothstep(0.25, 0.5, cells * 3.4);
+			float w3 = 1.0 - smoothstep(0.25, 0.5, cells * 8.9);
+			if (w1 > 0.0) n1 = (wvn3(dp * 1.3 + 5.1) - 0.5) * w1;
+			if (w2 > 0.0) n2 = (wvn3(dp * 3.4 + 11.7) - 0.5) * w2;
+			if (w3 > 0.0) n3 = (wvn3(dp * 8.9 + 23.3) - 0.5) * w3;
 			float land = 1.0 - ocean;
 			float dh = n1 * 0.55 + n2 * 0.3 + n3 * 0.15;
 			h += dh * detail * land;

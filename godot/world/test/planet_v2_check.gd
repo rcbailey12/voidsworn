@@ -427,6 +427,8 @@ func _run() -> void:
 	_check(not PL.BAKE_BODY.contains("vec3 c = b + vec3("), "craters_r hashes a corner from a float sum again")
 	# the baked board planets lean their equator toward the camera, as the R01 worlds do (terran's ice cap sat mid-disc)
 	_check(PL.BOARD_SURFACE.contains("bp_spin(bp_tilt(normalize(local_direction)), turn)"), "the baked board surface no longer tilts its equator toward the camera")
+	# the cloud's lit side compares the map's own thickness with the sunward sample, both on the same scale (Artoo, PR 1983)
+	_check(PL.BOARD_SURFACE.contains("(c_raw - c_sun)") and not PL.BOARD_SURFACE.contains("(cloud - c_sun)"), "cloud self-shading compares a reshaped cloud with a raw sunward sample")
 	for lk in [1, 3, 4]:
 		_check(float(PL.BOARD_LOOKS[lk].get("detail", 0.0)) > 0.0, "baked look %d draws no live fine detail" % lk)
 	print("planet_v2_check: %s (%d failures)" % ["PASS" if failures == 0 else "FAIL", failures])
