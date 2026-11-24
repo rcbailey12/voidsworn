@@ -465,8 +465,15 @@ function Refuse-Reason($st, $p, $repo, $maxMb) {
   if ($lp.StartsWith('godot/.godot/')) { return "under godot/.godot (Godot's import cache)" }
   if ($p -match '^godot/assets/ships/([^/]+)/' -and $Matches[1] -notin @('previews', 'test')) { return "ship files under godot/assets/ships/$($Matches[1])/ (PC-built, never committed)" }
   if ($lp.EndsWith('.uid') -and $st -eq 'A') { return 'a new .uid file (Godot makes these)' }
-  if ($lp.EndsWith('.import') -and $st -eq 'M') { return 'a re-saved .import file (Godot rewrites these on import)' }
-  if ($lp.EndsWith('.import') -and $st -eq 'A') { return 'a new .import file (Godot makes these)' }
+  if ($lp.EndsWith('.import') -and ($st -eq 'A' -or $st -eq 'M')) {
+    # A .gitignore "!" line that un-ignores this file means its import settings are tracked on purpose (LUTs, linear fx atlases):
+    # keep it. Ship folders stay refused above. Exit code 1 from check-ignore means not ignored (Neon audit 1994 item 3; PRs 1961 and 1986).
+    & git -C $repo check-ignore -q --no-index -- $p 2>$null
+    if ($LASTEXITCODE -ne 1) {
+      if ($st -eq 'M') { return 'a re-saved .import file (Godot rewrites these on import)' }
+      return 'a new .import file (Godot makes these)'
+    }
+  }
   if ($st -eq 'A' -or $st -eq 'M') {
     $f = Join-Path $repo ($p -replace '/', '\')
     if (Test-Path -LiteralPath $f) {
