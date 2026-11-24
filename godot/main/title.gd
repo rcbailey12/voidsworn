@@ -303,7 +303,7 @@ func _dialog_box() -> StyleBoxFlat:
 const SETTINGS_LAYOUT := [   # [section, column, rows]
 	["Sound and music", 0, [["toggle", "Sound", "sound"], ["slider", "Volume", "volume"], ["toggle", "Music", "music"], ["slider", "Music volume", "music_volume"]]],
 	["Display", 0, [["choice", "UI scale", "ui_scale"], ["toggle", "Full screen", "fullscreen"], ["choice", "Graphics", "quality"], ["toggle", "Temporal AA (smoother edges, softer motion)", "taa"], ["toggle", "Nebula wakes (ships stir the clouds)", "nebula_wake_on"], ["choice", "Render scale", "render_scale"], ["choice", "Frame cap", "fps_cap"], ["toggle", "V-Sync", "vsync"]]],
-	["Battle", 1, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Teaching tips", "tips"]]],
+	["Battle", 1, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Brisk camera", "brisk_camera"], ["toggle", "Teaching tips", "tips"]]],
 	["Comfort", 1, [["toggle", "Reduce motion", "reduce_motion"], ["toggle", "Reduce flashing", "reduce_flashing"], ["choice", "Screen shake", "shake"]]],
 ]
 const SETTINGS_CHOICES := {
@@ -546,7 +546,7 @@ func _focus_first(n: Node) -> void:
 func _toggle(t: String, key: String) -> Control:
 	if key == "tips": main.settings["tips"] = not load("res://ui/campaign/campaign_tips.gd").is_off()
 	if not main.settings.has(key):
-		main.settings[key] = true
+		main.settings[key] = key != "brisk_camera"
 	var b := _button("On" if main.settings[key] else "Off")
 	b.set_meta("setting_key", key)
 	b.pressed.connect(func() -> void:

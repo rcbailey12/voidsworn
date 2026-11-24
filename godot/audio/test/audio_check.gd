@@ -39,7 +39,7 @@ var heard: Array = []
 class QuietBattle extends "res://scenes/battle/battle.gd":
 	func _ready() -> void:
 		pass
-	func wait(_ms: float) -> void:
+	func wait(_ms: float, _skippable_cut := false) -> void:
 		pass
 	func _flash(_p: Vector3, _size: float, _col: Color, _dur := 0.35, _delay := 0.0, _light := true) -> void:
 		pass

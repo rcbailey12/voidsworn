@@ -24,7 +24,7 @@ const WORLD_BAKE := preload("res://world/world_bake.gd")   # issue 1434: bakes h
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true, "render_scale": 1.0, "fps_cap": 0.0, "vsync": true}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "brisk_camera": false, "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true, "render_scale": 1.0, "fps_cap": 0.0, "vsync": true}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -414,6 +414,7 @@ func _settings_to_battle(b: Node) -> void:
 	b.ai_level = str(settings["ai"])
 	b.follow = bool(settings.get("follow", true))
 	b.cine = str(settings.get("cine", "key"))
+	b.brisk_camera = bool(settings.get("brisk_camera", false))
 	b._sync_teaching_switch()
 	b.set_fx_opts(bool(settings["reduce_flashing"]), float(settings["shake"]))
 	b.reduce_motion = bool(settings.get("reduce_motion", false))   # issue 521: no key in old settings reads off
