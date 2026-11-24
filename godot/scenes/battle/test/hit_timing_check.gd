@@ -3,6 +3,7 @@ extends SceneTree
 #  A. [miss, miss, hit] under a deep hit pause: the HP drop, the sound and the number land when the hitting shot arrives
 #     on the effect clock (the target's busy_until is that shot's planned impact), not at the first miss's time and not
 #     on the wall clock; the enemy's target is ringed and named while the volley plays, and the ring clears after.
+#     The round budget shortens the volley wait so the last hit is still in flight after release.
 #  B. [hit, hit, hit] where the second hit empties the shield: the shield break and "Shields down" fire once, on that
 #     hit, before the third hit lands (they used to wait for the whole volley).
 #  D. a lance volley under the same quarter-speed clock: the charge and the shot cue run on the effect clock, so the
@@ -141,7 +142,7 @@ func _fire(b: Probe, a: String, t: String, shots: Array, hits: Array, grp_extra:
 	var ended := float(b.gfx.now)
 	var lands_at_end := b.lands.size()
 	var aim_after: Dictionary = b.aim.duplicate()   # (A: the slowed hit has not landed yet, so the marker still holds)
-	# hits on a slowed clock can land after the volley lets go; wait (bounded) for them
+	# A paced volley can let go while hits are still in flight; wait (bounded) for them.
 	for i in 600:
 		if b.lands.size() >= hits.size():
 			break
@@ -167,11 +168,14 @@ func _run() -> void:
 		quit(1)
 		return
 
-	# A: [miss, miss, hit] with the effect clock at a quarter speed for the whole volley
+	# A: [miss, miss, hit] at quarter-speed FX with the round budget fully applied.
+	var speed_before := b.speed
+	b.speed *= Battle._round_budget_k(Battle.BUDGET_FULL)
 	b.gfx._pause_depth = 0.25
 	b.gfx._pause_until = float(b.gfx.now) + 1000.0
 	var hp0 := float(b.disp[t]["hp"])
 	var r := await _fire(b, a, t, [false, false, true], [[0, 7]], [])
+	b.speed = speed_before
 	b.gfx._pause_until = -1.0
 	b.gfx._pause_depth = 1.0
 	_check(r["has_tg"], "A: the target is a G4 ship (busy_until carries the hit's planned impact)")
