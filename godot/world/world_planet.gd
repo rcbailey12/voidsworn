@@ -33,6 +33,7 @@ const BOARD_LOOKS := {
 }
 const BOARD_SIZE := Vector2i(4096, 2048)
 const MM_DETAIL_TILES := {1: "terran", 4: "volcanic"}
+const MM_TRIAL := preload("res://render/mm_trial.gd")
 # R01 longitudes (u) whose equator band is clean of remix swirls, judged on the colour map (issue 1765)
 const R01_CLEAN := [[0.05, 0.28]]
 
@@ -133,14 +134,18 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	stand_in.set_shader_parameter("tex_b", baker.texture(b))
 	stand_in.set_shader_parameter("tex_h", baker.texture(h))
 	stand_in.set_shader_parameter("map_scale", float(size.x) / TAU)
-	if OS.get_environment("VS_MM_TRIAL") == "1" and MM_DETAIL_TILES.has(look_kind):
-		var tile_path := "res://world/detail/mm_trial/%s.png" % MM_DETAIL_TILES[look_kind]
-		if ResourceLoader.exists(tile_path):
-			var tile := load(tile_path) as Texture2D
-			if tile != null:
-				stand_in.set_shader_parameter("mm_detail_tile", tile)
-				stand_in.set_shader_parameter("mm_detail", true)
+	var tile := trial_detail_tile(look_kind)
+	if tile != null:
+		stand_in.set_shader_parameter("mm_detail_tile", tile)
+		stand_in.set_shader_parameter("mm_detail", true)
 	stand_in.set_shader_parameter("has_tex", 1.0)
+
+
+static func trial_detail_tile(look_kind: int) -> Texture2D:
+	if not MM_TRIAL.enabled() or not MM_DETAIL_TILES.has(look_kind):
+		return null
+	var code: String = MM_DETAIL_TILES[look_kind]
+	return MM_TRIAL.load_tile(code, "res://world/detail/mm_trial/%s.png" % code)
 
 
 # The board planet's bake request for a baked look (terran, ice, volcanic): one place for install_board and the check

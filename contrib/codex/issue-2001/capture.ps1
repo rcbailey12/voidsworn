@@ -27,7 +27,7 @@ function Get-CleanCommit {
     return $revision
 }
 
-function Invoke-GodotStep($name, $seconds, [string[]]$options, $marker) {
+function Invoke-GodotStep($name, $seconds, [string[]]$options, $marker, [string[]]$trialLoads = @()) {
     $log = Join-Path $work "$name.log"
     $env:TMO_STEP = "issue 2001 $name"
     # Windows PowerShell treats native stderr redirected to a file as an error record.
@@ -37,8 +37,15 @@ function Invoke-GodotStep($name, $seconds, [string[]]$options, $marker) {
     $ErrorActionPreference = 'Stop'
     $output = Get-Content -LiteralPath $log -Raw
     if ($code -ne 0 -or $output -notmatch $marker -or
-            $output -match 'SCRIPT ERROR|SHADER ERROR|LOOK_BENCH placeholder hull|LOOK_BENCH CODE MISMATCH|Error importing') {
+            $output -match 'SCRIPT ERROR|SHADER ERROR|LOOK_BENCH placeholder hull|LOOK_BENCH CODE MISMATCH|Error importing|MM_TRIAL MISSING') {
         throw "$name failed. See $log"
+    }
+    if ($env:VS_MM_TRIAL -eq '1') {
+        foreach ($load in $trialLoads) {
+            if ($output -cnotmatch ('(?m)^' + [regex]::Escape("MM_TRIAL LOADED $load") + '\r?$')) {
+                throw "$name did not report MM_TRIAL LOADED $load. See $log"
+            }
+        }
     }
 }
 
@@ -69,6 +76,13 @@ $env:VS_WORLD_CACHE = Join-Path $work 'world-cache'
 $env:VS_MM_TRIAL = $null
 Invoke-GodotStep 'import' 1800 @('--headless', '--import') 'Godot Engine'
 
+$shipTrialLoads = foreach ($faction in 'voidsworn', 'hegemony', 'corsair', 'chorus', 'ithar', 'deathless') {
+    "$faction res://assets/ships/detail/mm_trial/${faction}_grain.png"
+    "$faction res://assets/ships/detail/mm_trial/${faction}_n.png"
+}
+$planets = 'terran', 'volcanic'
+$planetTrialLoads = foreach ($planet in $planets) { "$planet res://world/detail/mm_trial/$planet.png" }
+
 $pictures = @()
 foreach ($side in 'before', 'after') {
     if ($side -eq 'after') { $env:VS_MM_TRIAL = '1' }
@@ -83,7 +97,7 @@ foreach ($side in 'before', 'after') {
         '--rendering-method', 'forward_plus', '--fixed-fps', '60', '--disable-vsync', '--windowed',
         '--resolution', '1920x1080', 'res://bench/look_bench.tscn', '--', '--out', $dir,
         '--moments', $rowFile, '--part', 'moments', '--commit', $commit
-    ) 'LOOK_BENCH_DONE'
+    ) 'LOOK_BENCH_DONE' $shipTrialLoads
     $bench = Get-Content -LiteralPath (Join-Path $dir 'bench.json') -Raw | ConvertFrom-Json
     if ($bench.commit -ne $commit -or $bench.stills.Count -ne ($rows.rows.Count * $rows.cameras.Count)) {
         throw "Incomplete ship comparison in $dir"
@@ -102,8 +116,8 @@ foreach ($side in 'before', 'after') {
         '--rendering-method', 'forward_plus', '--fixed-fps', '60', '--disable-vsync', '--windowed',
         '--resolution', '1280x720', '--script', 'res://world/planet_v2_shots.gd', '--',
         '--out', $dir, '--only', 'board', '--mm-trial', '--tag', $side
-    ) 'planet v2 shots: band 2 PASS'
-    foreach ($planet in 'terran', 'volcanic') {
+    ) 'planet v2 shots: band 2 PASS' $planetTrialLoads
+    foreach ($planet in $planets) {
         foreach ($camera in 'c170', 'c26') {
             $pictures += Join-Path $dir ('{0}_{1}_{2}.png' -f $planet, $camera, $side)
         }

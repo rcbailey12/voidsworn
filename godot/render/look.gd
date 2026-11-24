@@ -167,6 +167,7 @@ static func _pbr_channels(m: BaseMaterial3D, faction: String) -> void:
 const DETAIL_DIR := "res://assets/ships/detail/"
 const MM_DETAIL_DIR := DETAIL_DIR + "mm_trial/"
 const DETAIL_FACTIONS := ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]
+const MM_TRIAL := preload("res://render/mm_trial.gd")
 static var _detail := {}   # grain path -> [grain texture, normal texture, detail share]
 
 
@@ -192,20 +193,23 @@ static func v2_of(key: String):
 static func detail_maps(faction: String) -> Array:
 	if not faction in DETAIL_FACTIONS:
 		return []
-	var prefix := DETAIL_DIR + faction
-	if OS.get_environment("VS_MM_TRIAL") == "1":
-		var trial := _load_detail_pair(MM_DETAIL_DIR + faction)
-		if not trial.is_empty():
-			return trial
-	return _load_detail_pair(prefix)
+	if MM_TRIAL.enabled():
+		return _load_detail_pair(MM_DETAIL_DIR + faction, faction)
+	return _load_detail_pair(DETAIL_DIR + faction)
 
 
-static func _load_detail_pair(prefix: String) -> Array:
+static func _load_detail_pair(prefix: String, trial_faction := "") -> Array:
 	if not _detail.has(prefix):
 		var g := prefix + "_grain.png"
 		var n := prefix + "_n.png"
-		var grain := load(g) as Texture2D if ResourceLoader.exists(g) else null
-		var normal := load(n) as Texture2D if ResourceLoader.exists(n) else null
+		var grain: Texture2D
+		var normal: Texture2D
+		if trial_faction.is_empty():
+			grain = load(g) as Texture2D if ResourceLoader.exists(g) else null
+			normal = load(n) as Texture2D if ResourceLoader.exists(n) else null
+		else:
+			grain = MM_TRIAL.load_tile(trial_faction, g)
+			normal = MM_TRIAL.load_tile(trial_faction, n)
 		_detail[prefix] = [grain, normal, _alpha_of(grain)] if grain != null and normal != null else []
 	return _detail[prefix]
 
