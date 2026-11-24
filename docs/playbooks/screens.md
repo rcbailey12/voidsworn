@@ -89,6 +89,7 @@ What moved behind a hover or a key (all still reachable):
 | the step hints (Move, Fire, End) | one short sentence; the full hint on the action's hover |
 | Cancel button | Esc |
 | speed, threat map, top-down, grid buttons | Esc menu (and R, T, Z keys) |
+| Brisk camera (Off by default) | skips routine lance, torpedo and volley cut-ins. Press K during a routine cut-in or enemy camera follow to skip that kind for the rest of the battle. |
 | the key line along the bottom | Menu > Controls, and the ship name's hover |
 | nameplates with bars on every ship | hover a ship |
 | the old log | three lines or a one-line ticker above the shelf; L opens the full history |

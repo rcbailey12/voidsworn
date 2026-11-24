@@ -40,7 +40,7 @@ class FakeMusic extends Node:
 
 
 class FakeMain extends Node:
-	var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false}
+	var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "brisk_camera": false, "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false}
 	var args := {}
 	var saves := 0
 	func has_campaign() -> bool: return false
@@ -178,6 +178,7 @@ func scrolled(sc: ScrollContainer, saved: int) -> bool:
 func title_checks(snd: FakeSound) -> void:
 	var m := FakeMain.new(); root.add_child(m)
 	m.settings["ui_scale"] = 1.3; UiScale.set_player(1.3)
+	m.settings.erase("brisk_camera")
 	var t := Title.new(); t.main = m; root.add_child(t)
 	await frames()
 	var vs := Vector2(root.size)
@@ -196,15 +197,22 @@ func title_checks(snd: FakeSound) -> void:
 			rows += 1
 			var lb: Label = r.get_child(0)
 			if lb.autowrap_mode == TextServer.AUTOWRAP_OFF or lb.get_global_rect().end.x > r.get_child(1).get_global_rect().position.x: unwrapped += 1
-	check(rows == 21 and unwrapped == 0, "all 21 settings names (issue 1437 added Render scale, Frame cap and V-Sync) wrap and stay clear of their control (%d rows, %d bad)" % [rows, unwrapped])
+	check(rows == 22 and unwrapped == 0, "all 22 settings names wrap and stay clear of their control (%d rows, %d bad)" % [rows, unwrapped])
 	var xs := {}
 	for c in t.settings_panel.find_children("*", "Control", true, false):
 		if c.has_meta("setting_key"): xs[int(round(c.size.x))] = true
 	check(xs.size() == 1, "every settings control is one width (%s)" % str(xs.keys()))
 	# the UI scale row keeps focus through the rebuild
 	var us: Button = null
+	var brisk: Button = null
 	for c in t.settings_panel.find_children("*", "Button", true, false):
 		if c.get_meta("setting_key", "") == "ui_scale": us = c
+		if c.get_meta("setting_key", "") == "brisk_camera": brisk = c
+	check(brisk != null and brisk.text == "Off", "Title Settings shows Brisk camera Off when the saved key is missing")
+	if brisk != null:
+		var before := m.saves
+		brisk.pressed.emit()
+		check(brisk.text == "On" and m.settings["brisk_camera"] and m.saves == before + 1, "the Brisk camera row saves its new setting")
 	us.grab_focus(); us.pressed.emit(); await frames(6)
 	var fo := root.gui_get_focus_owner()
 	check(fo != null and fo.get_meta("setting_key", "") == "ui_scale" and t.settings_panel != null, "changing the UI scale keeps focus on the UI scale row")
