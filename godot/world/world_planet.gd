@@ -1,4 +1,5 @@
 extends RefCounted
+const SKEEP := preload("res://render/shader_keep.gd")
 # F4 planets: the system's planet (gas giant, ice giant, terran, volcanic, barren or ice world, from the sector's biome),
 # its rings and its moons, far beyond the board.
 #
@@ -42,11 +43,20 @@ static var _shaders := {}
 static func clear_static() -> void:
 	_shaders.clear()
 
+# Issue 1434 (LOAD32, Artoo on 002e143f): true while both R01 textures are still made and held by the bake cache, so the
+# title backdrop may draw a rocky or barren look without a fresh 853 MB upload (board.gd _planet); a trim that evicted
+# either one makes it false again. Asks the cache only: no request, no pin.
+static func r01_uploaded() -> bool:
+	var BK := preload("res://world/world_bake.gd")
+	return BK.authored_texture_resident(R01_DIR + "colour.json", R01_SIZE, false) and BK.authored_texture_resident(R01_DIR + "relief.json", R01_SIZE, true)
+
+static func uses_r01(look_kind: int) -> bool:
+	return int(BOARD_LOOKS.get(look_kind, BOARD_LOOKS[0])["bake"]) < 0 and rocky_available()
+
 static func shader(code: String) -> Shader:
 	var sh: Shader = _shaders.get(code)
 	if sh == null:
-		sh = Shader.new()
-		sh.code = code
+		sh = SKEEP.of(code)   # issue 1434: the run-wide shader keep, so the load bench names a new planet shader
 		_shaders[code] = sh
 	return sh
 
