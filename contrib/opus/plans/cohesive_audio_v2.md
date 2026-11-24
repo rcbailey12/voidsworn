@@ -335,6 +335,8 @@ Wave E ran with 8 takes for about 80 credits (relay `pc-out-opus1752wavee`). Lis
 - `imp_metal_light`: Wave D t1, left channel only. Do not fold, for the same reason. High-pass at 40 Hz.
 - `death_eclipse_shear`: Wave E t2. Fold to mono, lift 3 dB, trim 9 ms, and high-pass at 40 Hz.
 
+**How the mastering script reads these notes (PR 1923, Artoo review):** the fixed trims are `trim_ms` in `contrib/opus/sound/keepers_gate2.json` (picket 24 ms, shear 9 ms) and the report logs every trim. The shear's "lift 3 dB" is met by the death loudness target, which already adds 3.2 dB; no extra gain goes on after the peak cap.
+
 **Mastering source rule:** each keeper's mastering note in 8.3 to 8.6 says either "fold" or "one channel". A wide take (correlation under about 0.3) uses one channel unless a note says otherwise.
 
 **Scope of Gate 2:**
