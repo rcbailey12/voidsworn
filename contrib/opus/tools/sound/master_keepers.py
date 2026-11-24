@@ -109,9 +109,11 @@ def master(k, srcdirs, targets):
         gain -= 20 * np.log10(peak / 10 ** (-1 / 20))
         limited = True
     x = x * 10 ** (gain / 20)
-    fi, fo = int(0.001 * SR), int(0.015 * SR)
-    x[:fi] *= np.linspace(0, 1, fi)[:, None]
-    x[-fo:] *= np.linspace(1, 0, fo)[:, None]
+    # Looping ambience keeps its edges: a fade to zero would dip at every loop seam.
+    if k["cat"] != "amb":
+        fi, fo = int(0.001 * SR), int(0.015 * SR)
+        x[:fi] *= np.linspace(0, 1, fi)[:, None]
+        x[-fo:] *= np.linspace(1, 0, fo)[:, None]
     return x, {"corr": round(c, 2), "src": used, "gain_db": round(float(gain), 1), "limited": limited,
                "trim_ms": round(cut / SR * 1000, 1), "seconds": round(len(x) / SR, 2), "loud_db": round(float(loud_db(x)), 1)}
 
