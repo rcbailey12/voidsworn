@@ -42,6 +42,17 @@ static var _shaders := {}
 
 static func clear_static() -> void:
 	_shaders.clear()
+	_r01_on_screen = false
+
+# Issue 1434 (LOAD32): true once this run has put the R01 maps on a planet (their textures stay cached for the run), so
+# the title backdrop may draw a rocky or barren look again without a fresh 853 MB upload (board.gd _planet).
+static var _r01_on_screen := false
+
+static func r01_uploaded() -> bool:
+	return _r01_on_screen
+
+static func uses_r01(look_kind: int) -> bool:
+	return int(BOARD_LOOKS.get(look_kind, BOARD_LOOKS[0])["bake"]) < 0 and rocky_available()
 
 static func shader(code: String) -> Shader:
 	var sh: Shader = _shaders.get(code)
@@ -179,6 +190,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	if not clouds: ground.set_shader_parameter("shadow_strength", 0.0)
 	planet.material_override = ground
 	planet.set_meta("planet_code", "R01")
+	_r01_on_screen = true
 	var atmo_k := float(opts.get("atmo_k", 0.32))
 	if is_instance_valid(air):
 		if atmo_k <= 0.0:

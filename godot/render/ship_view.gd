@@ -464,6 +464,10 @@ func _look_some(budget_us: int) -> bool:
 			stage_us["look_new_mats"] = int(stage_us.get("look_new_mats", 0)) + t1 - t0
 			stage_us["look_assign"] = int(stage_us.get("look_assign", 0)) + t2 - t1
 			stage_us["look_worst_assign"] = maxi(int(stage_us.get("look_worst_assign", 0)), t2 - t1)
+			# issue 1434 (LOAD32): a repeat build of C16s_23 spent 864 ms assigning, its first build 111 ms; split the
+			# assign time by a material made now or reused from an earlier hull, and by the hull being in the tree or not
+			if not made: stage_us["look_assign_reused"] = int(stage_us.get("look_assign_reused", 0)) + t2 - t1
+			if mi.is_inside_tree(): stage_us["look_assign_in_tree"] = int(stage_us.get("look_assign_in_tree", 0)) + t2 - t1
 			stage_us["look_counts"] = int(stage_us.get("look_counts", 0)) + (1001 if made else 1)   # new * 1000 + surfaces
 	# issue 1204: a hull already in the scene gets its rim and fog guard from the shared watcher this frame (a mesh
 	# just added is queued once already; touch does not queue it twice)

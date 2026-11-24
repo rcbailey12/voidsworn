@@ -810,6 +810,7 @@ func _begin(a) -> void:
 	begin_us["reset"] = Time.get_ticks_usec() - tb0 - int(begin_us["tables"])
 	var tb1 := Time.get_ticks_usec()
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
+	board.title_backdrop = title_backdrop   # issue 1434 (LOAD32): no 8K planet upload behind the title menu
 	if key_light != null:
 		board.sun_dir = key_light.global_transform.basis.z   # a directional light shines along its -Z: the sun is +Z
 	await board.build(api, sliced)   # issue 1434: sliced, the board's steps take a frame each

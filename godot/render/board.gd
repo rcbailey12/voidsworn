@@ -54,6 +54,7 @@ var wrecks := {}             # issue 1236: unit id -> "q,r" of each wreck the ru
 var wreck_hulls := {}        # issue 1236: unit id -> true where the board laid the burnt hulk (the death left no pieces)
 var built := 0               # how many times build() ran (a late wreck check knows its battle is gone)
 var props_world := false     # G4 world draws the rocks, debris and nebula; the board keeps hulks, stations and the planet
+var title_backdrop := false   # issue 1434: set by the battle for the title menu's backdrop (see _planet)
 
 # The board plane passes through the lower half of tall hulls. Depth-test alone
 # cannot protect those pixels, so mask opaque ship/terrain surfaces near the board.
@@ -1233,6 +1234,16 @@ func _planet() -> void:
 	# relief map. The campaign map's icon shader is no longer used here.
 	var seed_v := int(WI.get("seed", 1)) if WI.get("seed") != null else 1
 	var look_kind: int = PLANET_LOOKS[posmod(seed_v, PLANET_LOOKS.size())]
+	# Issue 1434 (LOAD32): the rocky and barren looks draw the two 8K R01 maps, 853 MB with mips, uploaded in one frame
+	# whatever thread asks (682 ms of a 910 ms cold title frame, 914 ms warm). Under the title menu there is no loading
+	# cover to hide that, so the title's board takes the next baked look (4K maps) unless this run already holds R01.
+	if title_backdrop and not PL.r01_uploaded():
+		var at := posmod(seed_v, PLANET_LOOKS.size())
+		for i in PLANET_LOOKS.size():
+			var k: int = PLANET_LOOKS[(at + i) % PLANET_LOOKS.size()]
+			if PL.uses_r01(k): continue
+			look_kind = k
+			break
 	var sun := mi.position + sun_dir.normalized() * 100000.0
 	var shell := MeshInstance3D.new()
 	var ss := SphereMesh.new()

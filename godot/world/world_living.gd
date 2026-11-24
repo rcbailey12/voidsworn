@@ -1451,6 +1451,12 @@ func _install_chunks() -> void:
 	var holder := Node3D.new()
 	holder.name = "HullDebris"
 	add_child(holder)
+	# issue 1434 (LOAD32): one chunk alone still made 59 surface pipelines in a 5.9 s frame (cold and warm), all of its
+	# materials' shaders at once. While a battle loads, its first mesh joins once per surface, the other surfaces on a
+	# plain material, so each shader's pipelines land in a frame of their own.
+	if not _wreck_slots.is_empty() and not get_tree().get_nodes_in_group("battle_loading").is_empty():
+		if not await _warm_surfaces(holder, meshes[0], (_wreck_slots[0].xf as Transform3D).origin):
+			return
 	var index := 0
 	var replaced := {}
 	var radii := {}
@@ -1504,6 +1510,32 @@ func _install_chunks() -> void:
 		group.mmi.multimesh = mm
 	_wreck_slots.clear()
 	W.notes.append("painted hull debris: %d cached chunks, %d instances" % [meshes.size(), index])
+
+# Joins `mesh` once per surface at `at`, a speck the size of a dust grain, the other surfaces on one plain material,
+# a frame apart; false when the world left the tree meanwhile.
+func _warm_surfaces(holder: Node3D, mesh: Mesh, at: Vector3) -> bool:
+	var plain := StandardMaterial3D.new()
+	var mi := MeshInstance3D.new()
+	mi.name = "SurfaceWarm"
+	mi.mesh = mesh
+	mi.scale = Vector3.ONE * 0.001
+	mi.position = at   # it casts shadows as the real chunks do, so their shadow pipelines come early too
+	for s in mesh.get_surface_count():
+		mi.set_surface_override_material(s, plain)
+	holder.add_child(mi)
+	_installing = true
+	for k in mesh.get_surface_count():
+		await get_tree().process_frame
+		if not is_inside_tree() or not is_instance_valid(mi):
+			_installing = false
+			return false
+		if k > 0: mi.set_surface_override_material(k - 1, plain)
+		mi.set_surface_override_material(k, null)
+	await get_tree().process_frame
+	_installing = false
+	if not is_inside_tree() or not is_instance_valid(mi): return false
+	mi.queue_free()
+	return true
 
 func _exit_tree() -> void:
 	for mat in _legacy_debris_mats:
