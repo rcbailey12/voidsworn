@@ -400,6 +400,11 @@ Each faction gets a calm and an intense battle layer. A pair shares tempo and ke
 - Seven stings, including run won and run lost.
 - One stem split test.
 
-After both waves, about 65,000 credits stay in reserve for second takes, stems on the songs Ryan picks, and the tendril once issue 1877 lands.
+**Wave M runs in two steps (Artoo on PR 1942).** Each track is a separate request, so a shared tempo and key in the prompt does not prove that a calm and intense pair line up. Today's `music_player.gd` crossfades independent loops by volume, so a pair that drifts still plays. A beat-synced switch, the Gate 3 plan, needs the pair to line up.
+- Wave M1 (4 steps; the tool estimates 4,230; cap 5,000) makes the Sunward calm and intense pair plus the stem split test.
+- Claude decodes the pair and measures its tempo, its loop points, and a switch at several bars.
+- Wave M2 (32 steps; the tool estimates 40,770; cap 45,000) runs only after that. If the pair drifts, the M2 layers are first re-planned as stems of one song or as an aligned transition.
 
-**Run and review:** the PC jobs are `OPUS1752_WAVEF.bat` and `OPUS1752_WAVEM.bat`, built on the Wave E skeleton and pinned to this list's merge. Each needs Ryan's own typed "go wave f" or "go wave m" in the Board thread. Neon reviews each listening page before Ryan does. Mastering and wiring follow sections 8.6 and 8.7. New moments get their hooks the way PR 1937 did. Music uses the Godot 4.7 AudioStreamInteractive plan in row 6.
+After all the waves, about 65,000 credits stay in reserve for second takes, stems on the songs Ryan picks, and the tendril once issue 1877 lands.
+
+**Run and review:** the PC jobs are `OPUS1752_WAVEF.bat`, `OPUS1752_WAVEM1.bat` and `OPUS1752_WAVEM2.bat`, built on the Wave E skeleton and pinned to this list's merge. Each needs Ryan's own typed "go wave f", "go wave m1" or "go wave m2" in the Board thread. Neon reviews each listening page before Ryan does. Mastering and wiring follow sections 8.6 and 8.7. New moments get their hooks the way PR 1937 did. Music uses the Godot 4.7 AudioStreamInteractive plan in row 6.
