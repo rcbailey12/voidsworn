@@ -229,8 +229,8 @@ def interior_palette(g, out, contract, fac, mats, notes):
         orm = _map_mean(g, out, contract, pbr.get('metallicRoughnessTexture'))
         metal = float(pbr.get('metallicFactor', 1.0)) * (orm[2] if orm is not None else 1.0)
         rows.append(f'{name} {role} albedo {alb.mean():.3f} light {light.mean():.3f}')
-        if role not in IT.EXEMPT and alb.mean() > IT.WALL_MAX + .005:
-            probs.append(f'interior palette: {name} ({role}) albedo {alb.mean():.3f} is over the {IT.WALL_MAX} wall ceiling')
+        if role not in IT.EXEMPT and alb.mean() > table.get('wall_max', IT.WALL_MAX) + .005:
+            probs.append(f'interior palette: {name} ({role}) albedo {alb.mean():.3f} is over the {table.get("wall_max", IT.WALL_MAX)} wall ceiling')
         if role not in table['roles']:
             probs.append(f'interior palette: {name} role {role} is not in this faction\'s interior table')
         else:      # the albedo is the table's colour for that role and zone, within the zone shift (and the map's rounding)
