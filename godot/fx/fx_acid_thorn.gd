@@ -1,0 +1,210 @@
+extends RefCounted
+# Acid Thorns (issue 1877, R437): the Chorus close-in weapon (rules id `tendril`: range 1, 2 shots, acid) is one heavy bone
+# thorn grown in a gland and snapped out at the target. Ryan, Nov 24 2026: "Yes bone bolts but we should make sure we actually
+# build those not with code and improve the quality" and the name "Acid Thorns". It replaced the old tendril lash (R437:
+# "scrap tendrils, that doesn't make sense as a space weapon") and Muse's three other options.
+#
+# The thorn is a built body, never a code shape: tools/blender/build_sheets/munitions/munitions.py chorus_bolt builds it from
+# the Chorus part kit and bakes it with the Chorus paint stack into fx/munition_bodies/chorus_bolt.glb (a pale ridged bone
+# point, barbs, dark horn splints round a bile core that shows only in the cracks, sinew wraps, a knuckled butt). The game
+# loads it like the torpedoes (fx_weapons._kit_body) with the hull finish (R362).
+#
+# The shot: the gland swells and glows from inside, the thorn snaps out point first with a slow roll, bile drips off it in
+# flight; it drives into the plating and sticks (the barbs hold it), acid sheets down the hull and pools; then the thorn
+# crumbles, its own built pieces breaking apart and drifting off. A miss flies on past and fades; a shield hit shatters it at
+# the shield. The hull mark, the acid spot (R398) and the shared bio splat still come from fx_weapons._impact (R362: one hit
+# language).
+#
+# Palette (factions.md, The Chorus): bone to horn, olive-brown tissue, the faction's bile light from inside only; no lime
+# surfaces, no eyes, no metal.
+
+const BONE := Color(0.66, 0.55, 0.38)       # pale bone chips
+const HORN := Color(0.22, 0.16, 0.10)       # dark horn chips (the splints)
+const SPEED := 52.0      # world units a second, times fx.unit
+const WIND := 0.30       # the gland's swell before the shot
+const GAP := 0.35        # spacing of the two shots, times the volley beat
+const SCALE := 1.6       # the body against the munition frame (2.3 long): Ryan's pick "bigger, so it reads at camera 170"
+const STICK := 1.15      # seconds the thorn stays stuck in the plating before it crumbles
+const CRUMBLE := 0.7     # seconds the crumble takes
+const TIP := 1.15        # the point's distance from the body's origin, in the munition frame
+const BITE := 0.45       # how deep the point sinks into the plate, in the same frame
+
+
+static func _body(fx, k: float) -> Node3D:
+	var FXW = load("res://fx/fx_weapons.gd")
+	var node := Node3D.new()
+	node.name = "fx_acid_thorn"
+	var kit: Node3D = FXW._kit_body(fx, "bolt", "chorus")
+	if kit != null:
+		node.add_child(kit)
+		# each built piece gets its own drift for the crumble (the pieces are the glb's own parts: head, splints, core,
+		# sinew, barbs, butt)
+		for c in kit.get_children():
+			if c is Node3D:
+				var p := c as Node3D
+				p.set_meta("home", p.transform)
+				p.set_meta("drift", (fx.rdir() + Vector3(0.0, 0.3, 0.0)).normalized() * fx.rng.randf_range(0.6, 1.6))
+				p.set_meta("spin", fx.rdir())
+	node.scale = Vector3.ONE * k * SCALE * fx.unit
+	node.visible = false
+	fx.add_child(node)
+	return node
+
+
+# One shot. Returns [fire time, impact time, end time] like fx_weapons._shot's arms.
+static func shot(fx, from: Vector3, mn: Vector3, to: Vector3, T0: float, beat: float, col: Color, ka: float, A,
+		tg: Dictionary) -> Array:
+	var dv := to - from
+	var dist := maxf(dv.length(), 0.01)
+	var dir := dv / dist
+	var tf: float = T0 + WIND + beat * GAP
+	var bk: float = ka * 1.1
+	var ft: float = dist / (SPEED * fx.unit)
+	var ti: float = tf + ft
+	var out: Vector3 = (mn if mn.length_squared() > 0.01 else dir).normalized()
+	# the gland swells and glows from inside, then a ring of wet tissue snaps open as the thorn leaves (nothing burns)
+	fx.spr(from, tf - WIND, WIND, col, 0.9, 0.4 * bk, 1.0 * bk, 15)
+	fx.ring(from + dir * 0.4 * bk, dir, tf, 0.35, BONE.lerp(col, 0.3), 1.2, 0.4 * bk, 2.6 * bk, 3, 0.0, 0.0, 22.0)
+	for s in 6:
+		fx.stk(from, tf, 0.5, col, 1.6, 0.06, 0.1 * bk, 6, (dir + fx.rdir() * 0.5).normalized() * 6.0 * bk, 1.5)
+	fx.light(from + out * 1.2 * bk, tf - WIND * 0.5, WIND * 0.5 + 0.25, 3.5, col, 1)
+	if A != null and A.hull_pivot != null:
+		# the ship shudders once with the effort (a muscle squeeze, not a gun's recoil)
+		var inv: Transform3D = A.xf().affine_inverse()
+		var lp: Vector3 = inv * from
+		var back: Vector3 = (inv.basis * (-dir)).normalized()
+		fx.later(tf, func l_squeeze() -> void: A.hit_react(fx, 0.3, lp, back, "recoil"))
+	var miss := bool(tg.get("miss", false))
+	var shield := bool(tg.get("shield", false))
+	var stuck := not miss and not shield
+	var end: float = ti + (STICK + CRUMBLE if stuck else (0.6 if miss else 0.0))
+	var node := _body(fx, bk)
+	var list: Array = fx.dstate.get("thorn_proj", [])
+	list.append({"node": node, "t0": tf, "t1": ti, "a": from + out * 0.3 * bk, "b": to, "dir": dir, "seed": fx.rng.randf() * TAU,
+		"k": bk, "end": end, "stuck": stuck, "miss": miss, "spd": dist / maxf(ft, 0.001)})
+	fx.dstate["thorn_proj"] = list
+	# a faint bile light rides with the thorn, so it reads at the battle camera as well as close up; bile drips off it
+	fx.light(from + dir * dist * 0.5, tf, ft, 1.4, col, 1)
+	for s in 7:
+		var u := (s + 0.5) / 7.0
+		fx.stk(from + dir * dist * u, tf + ft * u, 0.7, col, 1.5, 0.06, 0.09 * bk, 6, Vector3(0, -2.0, 0) + fx.rdir() * 1.0, 1.0)
+	if shield:
+		_shatter(fx, to, -dir, ti, bk, 10)
+	elif stuck:
+		_hit_matter(fx, tg, ti, col, ka)
+		_crumble_matter(fx, to - dir * (TIP - BITE) * bk * SCALE * fx.unit, -dir, ti + STICK, col, bk)
+	return [tf, ti, ti + 0.4]
+
+
+# What the thorn leaves on the plating, on top of the shared bio splat (fx_weapons._bio_splat): a spray of bone chips as the
+# point bites, then acid sheeting down the plate from the wound and pooling.
+static func _hit_matter(fx, tg: Dictionary, T: float, col: Color, k: float) -> void:
+	var p: Vector3 = tg["p"]
+	var n: Vector3 = tg["n"]
+	var t1 := n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
+	var t2 := n.cross(t1).normalized()
+	for j in 10:
+		var v: Vector3 = (n * 0.8 + fx.rdir() * 0.9).normalized() * fx.rng.randf_range(5.0, 11.0) * k
+		fx.stk(p + n * 0.2 * k, T, fx.rng.randf_range(0.5, 1.0), BONE, 1.3, 0.25, 0.13 * k, 1, v, 1.2)
+	var down := (Vector3.DOWN - n * Vector3.DOWN.dot(n))
+	down = down.normalized() if down.length_squared() > 0.01 else t1
+	for j in 10:
+		var off: Vector3 = (t1 * fx.rng.randf_range(-0.6, 0.6)) * k
+		fx.spr(p + off + n * 0.1 * k, T + 0.05 + j * 0.08, 1.8, col, 0.9, 0.22 * k, 0.12 * k, 15, down * fx.rng.randf_range(1.0, 2.2) * k, 0.4)
+	_pool(fx, p, n, t1, t2, T + 0.2, col, k, 1.1, 7)
+
+
+# The crumble: a puff of bone dust and a few chips, horn and bone, as the built pieces break apart (update() moves them).
+static func _crumble_matter(fx, p: Vector3, n: Vector3, T: float, col: Color, k: float) -> void:
+	fx.spr(p, T, 1.4, Color(0.48, 0.42, 0.32), 0.45, 0.6 * k, 2.4 * k, 20, n * 0.8 * k, 0.5)
+	_shatter(fx, p, n, T, k, 8)
+	fx.spr(p, T + 0.05, 0.8, col, 0.8, 0.3 * k, 0.9 * k, 15)
+
+
+static func _shatter(fx, p: Vector3, n: Vector3, T: float, k: float, count: int) -> void:
+	for j in count:
+		var v: Vector3 = (n * 0.5 + fx.rdir()).normalized() * fx.rng.randf_range(2.0, 6.0) * k
+		var c: Color = BONE if j % 2 == 0 else HORN
+		fx.stk(p, T, fx.rng.randf_range(0.7, 1.3), c, 1.1, 0.2, 0.12 * k, 1, v, 1.4)
+
+
+# The acid pool: soft bile glow lying on the plate and small bubbles popping in it for a while, with thin fumes. Sprites
+# only; the shared acid pit mark stays on the hull after it.
+static func _pool(fx, p: Vector3, n: Vector3, t1: Vector3, t2: Vector3, T: float, col: Color, k: float, size: float, bubbles: int) -> void:
+	fx.spr(p + n * 0.12 * k, T, 3.2, col * 0.8, 0.55, size * 0.9 * k, size * 1.5 * k, 18)
+	for j in bubbles:
+		var off: Vector3 = (t1 * fx.rng.randf_range(-1.0, 1.0) + t2 * fx.rng.randf_range(-1.0, 1.0)) * size * 0.6 * k
+		var at: float = T + fx.rng.randf_range(0.1, 2.6)
+		fx.spr(p + off + n * 0.15 * k, at, 0.35, col, 1.3, 0.08 * k, 0.32 * k, 15, n * 0.6 * k, 0.5)
+	for j in 3:
+		fx.spr(p + n * 0.5 * k, T + 0.3 + j * 0.7, 2.0, Color(0.42, 0.42, 0.24), 0.5, 0.6 * k, 2.2 * k, 20, n * 1.2 * k, 0.4)
+
+
+static func update(fx, _dt: float) -> void:
+	var list: Array = fx.dstate.get("thorn_proj", [])
+	if list.is_empty():
+		return
+	var keep: Array = []
+	for p in list:
+		var node = p["node"]
+		if not is_instance_valid(node):
+			continue
+		var n3 := node as Node3D
+		var now: float = fx.now
+		if now < float(p["t0"]):
+			keep.append(p)
+			continue
+		if now >= float(p["end"]):
+			n3.queue_free()
+			continue
+		keep.append(p)
+		var t1: float = p["t1"]
+		var d: Vector3 = p["dir"]
+		var z := d.cross(Vector3.UP if absf(d.y) < 0.95 else Vector3.FORWARD).normalized()
+		var along := Basis(d, z.cross(d).normalized(), z)
+		var s: float = float(p["k"]) * SCALE * fx.unit
+		var pos: Vector3
+		var roll: float
+		if now < t1:
+			# point first, a slow roll (it flies straight: the tail never tumbles)
+			var u := clampf((now - float(p["t0"])) / maxf(t1 - float(p["t0"]), 0.001), 0.0, 1.0)
+			pos = (p["a"] as Vector3).lerp(p["b"], u)
+			roll = (now - float(p["t0"])) * 6.0 + float(p["seed"])
+		elif bool(p["miss"]):
+			# flies on past and fades
+			pos = (p["b"] as Vector3) + d * float(p["spd"]) * (now - t1)
+			roll = (now - float(p["t0"])) * 6.0 + float(p["seed"])
+			s *= 1.0 - smoothstep(0.0, 0.6, now - t1)
+		elif not bool(p["stuck"]):
+			n3.visible = false
+			continue
+		else:
+			# stuck: the point sunk into the plate, the body at the angle it struck, a small shiver as it bites
+			var age := now - t1
+			pos = (p["b"] as Vector3) - d * (TIP - BITE) * s
+			pos += along.y * sin(age * 40.0) * 0.02 * s * exp(-age * 6.0)
+			roll = (t1 - float(p["t0"])) * 6.0 + float(p["seed"])
+			_crumble(n3, clampf((age - STICK) / CRUMBLE, 0.0, 1.0))
+		n3.global_transform = Transform3D((along * Basis(Vector3.RIGHT, roll)).scaled(Vector3.ONE * s), pos)
+		n3.visible = true
+	fx.dstate["thorn_proj"] = keep
+
+
+# The built pieces break apart: each drifts off its own way, turns and shrinks to dust.
+static func _crumble(n3: Node3D, c: float) -> void:
+	var kit := n3.get_node_or_null("kit_body") as Node3D
+	if kit == null:
+		return
+	for child in kit.get_children():
+		var piece := child as Node3D
+		if piece == null or not piece.has_meta("home"):
+			continue
+		var home: Transform3D = piece.get_meta("home")
+		if c <= 0.0:
+			piece.transform = home
+			continue
+		var e := c * c
+		var drift: Vector3 = piece.get_meta("drift")
+		var spin: Vector3 = piece.get_meta("spin")
+		var b := home.basis.rotated(spin, e * 2.2).scaled(Vector3.ONE * maxf(1.0 - c, 0.02))
+		piece.transform = Transform3D(b, home.origin + drift * e)

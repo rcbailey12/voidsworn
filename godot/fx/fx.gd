@@ -90,8 +90,6 @@ var timing := {"ripple": 0.08, "shell_speed": 160.0, "lance": 0.7, "charge": 0.2
 # Issue 281 vent gas: the shipped look is Cone B, a tight forward cone of gas and sparks along the barrel. "today" draws
 # the pre-Cone-B baked gas cell and is only set by the review capture to shoot the before stills; the game leaves it "".
 var vent_look := ""
-# issue 1877: the Chorus close-in weapon look under test (fx_chorus_close.gd OPTIONS; "" draws the old tendril)
-var chorus_close := ""
 # Optional comparison folder (VS_FX_ATLAS). The production macro, torpedo and death cores load the picked B atlases
 # directly from fx/atlases/rebake; they require no environment switch.
 var fx_atlas := ""
