@@ -710,6 +710,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 					if TS.has_meta("cut_job") and not TS.has_meta("cut_task"): break
 					await _step()
 				_log("%s: recut after the hit at %.2f L (step %d)" % [id, float(hv[0]), steps])
+		# and a killing hit after that cut ("kill_hit", same form, no recut), as in a real fight (Fable on 33561155)
+		if row.has("kill_hit") and TS != null and TS.hull != null:
+			var kv: Array = row["kill_hit"]
+			TS.set_meta("last_hit", [Vector3(float(kv[0]) * float(TS.hull.L), float(kv[1]), float(kv[2])), Vector3.DOWN, fx.now])
 		# issue 1236: a row may anchor the wreck to a hex as the battle does on a rules wreck ("hex": the rest radius in
 		# world units; the game's is the hex radius 10 times 0.8)
 		if row.has("hex") and fx.has_method("anchor_wreck"):
