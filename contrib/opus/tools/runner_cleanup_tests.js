@@ -12,9 +12,8 @@ const ownerFile = '.voidsworn-run-owner';
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner-cleanup-proof-'));
 // PR 1813 measured a 2.1x slowdown with overlapping PC lanes. Allow 65 s instead of 30 s per child.
 const childTimeout = 65000;
-// The first full dry scan still had folders left after 65 s with lanes A, B and D checking.
-// Allow 140 s for a Windows janitor scan (65 s x 2.1, rounded up).
-const janitorTimeout = windows ? 140000 : childTimeout;
+// Issue 1739: with overlapping lanes the dry scan was still checking kept folders at 140 s.
+const janitorTimeout = windows ? 240000 : childTimeout;
 const temp = path.join(root, 'temp'), board = path.join(root, 'board');
 const mirror = path.join(root, 'mirror.git'), repo = path.join(board, 'repo');
 const profile = path.join(root, 'profile'), flag = path.join(profile, 'Downloads', 'voidsworn_test', 'gpu_go.txt');
