@@ -71,7 +71,7 @@ Skim: A hospital ship is stranded on the shoals. The Registry says proceed. Over
 
 The perimeter buoys at the Hollow Sun still broadcast the original survey: drift, gravity, capacity nine fleets. {rival} has switched every buoy to a new message, about you. It repeats every eleven seconds. Your communications officer has stopped translating it; the crews have not stopped listening. {rival_line} [If you broke them out: {rival} has read your reprimand, and sent you a copy, annotated.] [If you did not: {rival}'s buoys read the casualty list between the gravity soundings.] Authorisation arrives eleven days late. [If you broke them out: the rescued ship's escort holds station off your bow and has not asked for orders.] [If you left them: the list has new names on it. Your flag captain added them, in the correct format.] [If you filed the exception: the list is shorter.] The guns are synchronised. The column forms on your flagship. Your flag captain waits. There is one tradition the Registry never logs: before a decisive engagement a commander switches off the link for one minute and speaks to the line, unrecorded.
 
-- Options and endings as A.
+- Options and endings as A. If you recovered the Tally's record, its list takes the place of M-14's.
 
 Skim: {rival} holds the perimeter, the buoys broadcasting a message about you. One unrecorded minute before the fight. Read the names, order the crews to be correct, or give the lieutenant the minute.
 
@@ -83,31 +83,31 @@ Prior win (beat 1 nod): *[Order 41 has a previous holder. Their report is attach
 
 ### Beat 1B (sector I): The Wake-Log
 
-Old Mott has stopped drinking, which is how you know it is serious. He has a wake-log: a scrap of listening-array record, a slow tick of engine noise from the wreck fields round the Hollow Sun, where no engine is. Rook, he says. He killed the captain who recorded it, which is how he got it. Half the dens have a copy now, because Mott cannot keep anything when he drinks, which is always. {rival} has a copy too, and wants yours to be the last. {rival_deed} The pack wants to send an answer with a charge in it. The others want a feast, because if everyone dies tomorrow they might as well be full tonight. Both are old ways.
+Your lead howler has stopped drinking, which is how you know it is serious. A wake-log turns up: a scrap of listening-array record, a slow tick of engine noise from the wreck fields round the Hollow Sun, where no engine is. Rook, the howler says. Your howler killed the captain who recorded the wake. Half the dens have a copy now, because your howler never keeps a secret over a drink, which is always. {rival} has a copy too, and wants yours to be the last. {rival_deed} The pack wants to send an answer with a charge in it. The others want a feast, because if everyone dies tomorrow they might as well be full tonight. Both are old ways.
 
 - **Send an answer, rigged** (as A: +40 credits, clock +1, `cs_rigged`). *The answer goes out. The dens bet against you, then hedge.*
-- **Feast and howl** (as A: 15 experience each, `cs_party`). *Mott plays the wake-log for everyone, then tells them about the broker at Rattlehold, then sleeps.*
+- **Feast and howl** (as A: 15 experience each, `cs_party`). *Your howler plays the wake-log for everyone, then tells them about the broker at Rattlehold, then sleeps.*
 
-Skim: Mott's wake-log of Rook is in every den, and {rival} wants yours to be the last copy. Send a rigged answer, or feast and howl.
+Skim: Your howler's wake-log of Rook is in every den, and {rival} wants yours to be the last copy. Send a rigged answer, or feast and howl.
 
 ### Beat 2B (sector II): The Pit at Rattlehold
 
-The full wake-log of Rook's drift is the prize in the fighting pit at Rattlehold, the den where packs settle things the old way. Every crew with a grudge has put up a fighter. {rival} has not. {His} pack waits off the rock, listening for who walks out with the log. {rival_line} The pit-master takes a cut and fixes the bouts for the house. Your quartermaster bets against the house, badly. The knife crews say wreck the pit and run dark under the noise. The quartermaster says pay the full stake and fight it straight. [If you feasted: Mott knows the pit-master from his own stories, and his hackles rise.] [If you rigged your answer: {rival} heard about it too, and keeps {his} distance.] The first bout ends. Your turn.
+The full wake-log of Rook's drift is the prize in the fighting pit at Rattlehold, the den where packs settle things the old way. Every crew with a grudge has put up a fighter. {rival} has not. {His} pack waits off the rock, listening for who walks out with the log. {rival_line} The pit-master takes a cut and fixes the bouts for the house. Your quartermaster bets against the house, badly. The knife crews say wreck the pit and run dark under the noise. The quartermaster says pay the full stake and fight it straight. [If you feasted: your howler knows the pit-master from old hunts, and the old grudge shows.] [If you rigged your answer: {rival} heard about it too, and keeps {his} distance.] The first bout ends. Your turn.
 
 - **Wreck the pit** (as A, take it: salvage, next fight an ambush, `cs_stole`). *The fight spreads to three decks. You leave with the log and somebody's harness.*
 - **Pay the full stake (80 credits)** (as A: a raider crew joins, `cs_paid`). *Your fighter loses the bout and wins the room. A raider asks to run with you.*
-- Blue, needs the feast: **Let Mott fight** (as A). *The pit-master hunted with him once. They circle in silence for a long time. Mott wins.*
+- Blue, needs the feast: **Let your howler fight** (as A). *The two once hunted together. They circle in silence for a long time. Your howler wins.*
 - Blue, needs the rigged answer: **Mention your answer** (as A). *The other packs withdraw their fighters, all of them, at once.*
 
 Skim: The wake-log is the prize in Rattlehold's fighting pit. {rival} waits outside. Wreck the pit and run, or pay the stake and fight it straight.
 
 ### Beat 3B (sector III): The Frozen Field
 
-Rook is real, and frozen in. The core hangs in a field of ice and dead hulls at the Hollow Sun, ticking under the frost, hot enough to steam where the light touches it. Old Mott cannot stop growling, which is worse than the silence. {rival} has bolted {his} ships into the ice around the core, so every shot at {him} cracks the field. {rival_line} [If {rival} lost face at Rattlehold: the dens know it, and {he} knows they know.] [If {he} let you buy the log: {he} wanted you to bring it here.] [If you wrecked Rattlehold: your crews still smell of its smoke.] [Prior loss: in the ice, a familiar hull. The plate reads {prior_flagship}.] The crews are already arguing over first pick, which is bad luck. Tonight you tell them what kind of pack they are. Mott stops growling and waits.
+Rook is real, and frozen in. The core hangs in a field of ice and dead hulls at the Hollow Sun, ticking under the frost, hot enough to steam where the light touches it. Your howler cannot stop growling, which is worse than the silence. {rival} has bolted {his} ships into the ice around the core, so every shot at {him} cracks the field. {rival_line} [If {rival} lost face at Rattlehold: the dens know it, and {he} knows they know.] [If {he} let you buy the log: {he} wanted you to bring it here.] [If you wrecked Rattlehold: your crews still smell of its smoke.] [Prior loss: in the ice, a familiar hull. The plate reads {prior_flagship}.] The crews are already arguing over first pick, which is bad luck. Tonight you tell them what kind of pack they are. Your howler stops growling and waits.
 
 - Options and endings as A.
 
-Skim: Rook is frozen into the ice at the Hollow Sun, {rival} bolted in around it. First pick for every claw, shoot through the field, or let Mott speak.
+Skim: Rook is frozen into the ice at the Hollow Sun, {rival} bolted in around it. First pick for every claw, shoot through the field, or let your howler speak.
 
 Prior win (beat 1 nod): *[The dens still tell the story of your last hunt. Two of the packs in it are drinking at the next table.]*
 
@@ -117,7 +117,7 @@ Prior win (beat 1 nod): *[The dens still tell the story of your last hunt. Two o
 
 ### Beat 1B (sector I): The Empty Feeding Ground
 
-We wake hungry. Every throat, one want. Far off, the Hollow Sun. Dead outside. Warm inside. Keys, humming. We go. The first feeding ground. A moon of soft things. It should be full. It is empty. Picked clean. Not eaten. Taken. Packed. Carried off. {rival} did this. {rival_deed} We taste the empty burrows. Cold. Clean. Wrong. Hunger says: eat what is left. The roots. The dirt. Anything. Grow. Memory says: eat nothing. Remember empty. Then we know what {he} takes. Then we know where {he} goes. Two throats pull at the swarm. The swarm turns to you. Choose.
+We wake hungry. Calyx feeds us. Every throat, one want. Far off, the Hollow Sun. Dead outside. Warm inside. Keys, humming. We go. The first feeding ground. A moon of soft things. It should be full. It is empty. Picked clean. Not eaten. Taken. Packed. Carried off. {rival} did this. {rival_deed} We taste the empty burrows. Cold. Clean. Wrong. Hunger says: eat what is left. The roots. The dirt. Anything. Grow. Memory says: eat nothing. Remember empty. Then we know what {he} takes. Then we know where {he} goes. Two throats pull at the swarm. The swarm turns to you. Choose.
 
 - **Eat what is left** (as A: regrow 30%, `ch_ate`). *We eat roots and dirt. It is not enough. It is something.*
 - **Remember empty** (as A: clock back one, `ch_smell`). *We eat nothing. We hold the empty in every throat. Memory is pleased.*
@@ -137,11 +137,11 @@ Skim: A drowned Fleshwright vat full of our old eggs, wired to burn by {rival}. 
 
 ### Beat 3B (sector III): The Warm Ring
 
-Closer now. Five keys hum round the dead star. Warm. Wet. Old. {rival} walls the way with ships. Many ships. {rival_line} [If we hunted {him}: {he} limps. {He} remembers our teeth.] [If we did not: {he} is fat. {He} ate the eggs we left.] Behind the wall, the keys. We smell them. We have smelled nothing else for days. We came so far. We are thin. We are many. Memory says the star's old name. Ardent. It means nothing to Hunger. [If Hunger leads: only Hunger speaks now. Memory is a scar.] [If we fed the spawn: the small ones swim at our flanks, furious.] Hunger says: through the wall. Every mouth. Now. Memory says: taste the wall first. Find the weak ship. Then through. The keys glow. The wall waits. Nine mouths. One answer.
+Closer now. Five other keys hum round the dead star. Warm. Wet. Old. {rival} walls the way with ships. Many ships. {rival_line} [If we hunted {him}: {he} limps. {He} remembers our teeth.] [If we did not: {he} is fat. {He} ate the eggs we left.] Behind the wall, the keys. We smell them. We have smelled nothing else for days. We came so far. We are thin. We are many. Memory says the star's old name. Ardent. It means nothing to Hunger. [If Hunger leads: only Hunger speaks now. Memory is a scar.] [If we fed the spawn: the small ones swim at our flanks, furious.] Hunger says: through the wall. Every mouth. Now. Memory says: taste the wall first. Find the weak ship. Then through. The keys glow. The wall waits. Nine mouths. One answer.
 
 - Options and endings as A.
 
-Skim: Five warm keys circle the dead star. {rival} walls the way. Open every mouth, taste first, or send the small ones.
+Skim: Five other warm keys circle the dead star. {rival} walls the way. Open every mouth, taste first, or send the small ones.
 
 Prior win (beat 1 nod): *[We remember warm. We remember full. We want it again.]*
 
@@ -185,7 +185,7 @@ Prior win (beat 1 nod): *[The lens you brought home last time has been realigned
 
 ### Beat 1B (sector I): The Missed Backup
 
-We wake by schedule, frame by frame, as we have every century for a thousand years. The Archive lists what remains: four keys scattered, one new sun unlit, the Homecoming to begin again. One mind failed to report for the waking backup: the keeper of a siphon array at the edge of the first sector. Its last copy is nine years old. On inspection, the keeper's frame has been dismantled with care and its key codes taken. {rival} did this. {rival_deed} Your Shades ask leave to pursue. Your Umbras recommend patience. The Archive permits either. It forgets neither. Nine years of a mind are gone, and somebody must enter what is done about it.
+We wake by schedule, frame by frame, as we have every century for a thousand years. The Archive tracks six keys: Kovar in our keeping, Calyx with the Chorus, four scattered. One new sun unlit, the Homecoming to begin again. One mind failed to report for the waking backup: the keeper of a siphon array at the edge of the first sector. Its last copy is nine years old. On inspection, the keeper's frame has been dismantled with care and its key codes taken. {rival} did this. {rival_deed} Your Shades ask leave to pursue. Your Umbras recommend patience. The Archive permits either. It forgets neither. Nine years of a mind are gone, and somebody must enter what is done about it.
 
 - **Pursue at once** (as A: 20 experience each, clock +1, `dd_writ`). *The order names the hour to the second. Every frame copies it.*
 - **Be patient** (as A: rebuild 15%, `dd_patient`). *The Umbras begin reading the keeper's frame. They are thorough. They have time.*
@@ -224,7 +224,7 @@ Prior win (beat 1 nod): *[The Archive notes a previous Homecoming under your com
 - Directorate 3A: The perimeter, and one unrecorded minute. Read the names, order the crews to be correct, or give the lieutenant the minute.
 - Hullbreakers 1A: {rival} hit your forward camp. Send a rigged answer, or feast and howl.
 - Hullbreakers 2A: Rook's wake-log is at Rattlehold and {rival} is listening outside. Take it, or pay full price.
-- Hullbreakers 3A: Rook among the wrecks, {rival} chained around it. First pick for every claw, shoot through, or Mott's speech.
+- Hullbreakers 3A: Rook among the wrecks, {rival} chained around it. First pick for every claw, shoot through, or hear your howler.
 - Chorus 1A: A node split open and left by {rival}. Eat the dead, or keep the smell.
 - Chorus 2A: Warm shallows full of spawn, mined by {rival}. Dive and eat, or feed the spawn our flesh.
 - Chorus 3A: The warm keys and {rival} in front of them. Open every mouth, taste first, or send the small ones.

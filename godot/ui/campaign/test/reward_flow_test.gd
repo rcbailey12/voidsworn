@@ -155,7 +155,7 @@ func wreck_checks() -> void:
 		["big", "", "Blown apart"],
 		["flay", "", "Unmade by null fire"],
 		["melt", "", "Dissolved"],
-		["tidal", "", "Torn apart by the Hollow Sun"],
+		["tidal", "", "Torn apart by the dead star"],
 	]:
 		fixture()
 		var w := {"name": ship["name"], "tpl": "penitent", "cp": 2, "cause": row[0], "wk": ["battery"]}

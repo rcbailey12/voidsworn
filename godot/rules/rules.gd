@@ -46,14 +46,27 @@ func _uid(u): return u["id"] if u is Dictionary and u.get("id") != null else nul
 # The battle log (battle.js log(m, c)): B.log gets {m, c} exactly as the game writes it (hashed by the parity test), and a log event.
 # nem tags the log event only (never B.log, so the saved hashes hold): "intro" or "hail" for the Nemesis opening lines,
 # so the battle screen can show one opening hail when the story voice gives its own (C27, issue 1911).
-func logm(m: String, c = null, nem = null) -> void:
+func logm(m: String, c = null, nem = null, display_text := "") -> void:
 	if B == null or B.get("log") == null: return
 	var e = {"m": m}
 	if c != null: e["c"] = c
 	B["log"].append(e)
-	var ev = {"t": "log", "text": m, "kind": c}
+	var ev = {"t": "log", "text": m if display_text.is_empty() else display_text, "kind": c}
 	if nem != null: ev["nem"] = nem
 	emit(ev)
+
+
+static func dead_star_name(run, in_sentence := false) -> String:
+	if run is Dictionary and int(run.get("sector", 0)) == 3:
+		return "Hollow Sun"
+	return "dead star" if in_sentence else "Dead star"
+
+
+func log_well(prefix: String, suffix: String, color: String) -> void:
+	# Keep the recorded log stable for saved battles and show the sector's name in the event.
+	logm(prefix + "Hollow Sun" + suffix, color, null, prefix + dead_star_name(RUN, true) + suffix)
+
+
 func ns(x) -> String: return JSM.numstr(x)   # a number as JS prints it in a template string
 func tv(x) -> String: return "undefined" if x == null else (ns(x) if (x is float or x is int) else String(x))   # any value in a template string
 func pe(u) -> String: return "e" if u["side"] == "player" else "p"   # log colour for a loss on u's side
@@ -1273,7 +1286,7 @@ func wellTick(u, dq) -> Variant:
 	if d <= WELL_RIM:
 		u["hp"] = u["hp"] - WELL_DMG; emit({"t": "tick", "unit": u["id"], "kind": "tidal", "hull": WELL_DMG}); flt(u, "Tidal stress −" + ns(WELL_DMG), "#c79bff")
 		if u["hp"] <= 0:
-			u["hp"] = 0; logm(String(u["name"]) + " is torn apart by the Hollow Sun's gravity.", pe(u)); u["killCause"] = "tidal"; queueDeath(u, dq); return "dead"
+			u["hp"] = 0; log_well(String(u["name"]) + " is torn apart by the ", "'s gravity.", pe(u)); u["killCause"] = "tidal"; queueDeath(u, dq); return "dead"
 	elif d <= WELL_PULL:
 		var occ = occMap(); var best: Variant = null
 		for dd in DIRS:
@@ -1628,7 +1641,7 @@ func _finishBattleSetup(enemy_count: int) -> void:
 	for u in alive("enemy"): u["intercepts"] = max(0, 2 - z0(u.get("treeFlakDown"))) if _has_flak(u) else 0
 	var F = FACTIONS[cfg["fac"]]
 	logm("Contact: " + String(F["n"]) + ". " + ns(enemy_count) + " ship" + ("s" if enemy_count > 1 else "") + " on the scanners.", "s")
-	if jt(B.get("well")): logm("The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "ember")
+	if jt(B.get("well")): log_well("The ", " warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "ember")
 	if cfg.get("kind") == "elite": logm("Elite captains command this fleet.", "e")
 	if cfg.get("kind") == "boss": logm(String(HULLS[F["boss"]]["n"]) + " is here. Everything else is escort.", "e")
 	for line in storyModifierLines(): logm(line, "ember")
