@@ -1265,8 +1265,13 @@ func _error(m: String) -> void:
 	push_warning(m)
 
 
-func wait(ms: float) -> void:
-	await get_tree().create_timer(maxf(ms, 1.0) / 1000.0 * speed).timeout
+func wait(ms: float, skippable_cut := false) -> void:
+	var timer := get_tree().create_timer(maxf(ms, 1.0) / 1000.0 * speed)
+	if skippable_cut:
+		_shot_cut_timer = timer
+	await timer.timeout
+	if _shot_cut_timer == timer:
+		_shot_cut_timer = null
 
 
 # The round budget (presentation only, outcomes unchanged): past 5 s of a round's enemy time the rest of its turn speeds
@@ -2207,21 +2212,20 @@ func _wfam(u: Dictionary, w: Dictionary) -> String:
 func _cine_wants(kind: String, a_id, t_id) -> bool:
 	if cine == "off" or bot or (shots_dir != "" and not args.has("torp-cine")):   # --torp-cine: captures keep the cut-in (issue 1379)
 		return false
-	if kind != "kill" and (brisk_camera or _skipped_camera_kinds.has(kind)) and not _flagship_camera(a_id, t_id):
+	if (brisk_camera or _skipped_camera_kinds.has(kind)) and _routine_shot_camera(kind, a_id, t_id):
 		return false
 	if cine == "all":
 		return true
 	var a: Dictionary = VU.get(a_id, {})
 	var t: Dictionary = VU.get(t_id, {})
-	var big: bool = bool(a.get("flagship", false)) or bool(t.get("flagship", false))
-	var low: bool = not t.is_empty() and float(disp.get(t_id, {}).get("hp", t.get("hp", 1))) <= float(t.get("maxHp", 1)) * 0.35
+	var big := _flagship_camera(a_id, t_id)
 	match kind:
 		"kill":
 			return not t.is_empty() and not t.get("squadron", false) and (float(t.get("size", 0)) >= 0.6 or big)
 		"lance", "torp", "nova":
 			return true
 		"volley":
-			return float(a.get("size", 0)) >= 0.7 and (big or low)
+			return (big and float(a.get("size", 0)) >= 0.7) or _capital_volley_at_low_hull(a_id, t_id)
 	return false
 
 
@@ -2229,11 +2233,22 @@ func _flagship_camera(a_id, t_id) -> bool:
 	return bool(VU.get(a_id, {}).get("flagship", false)) or bool(VU.get(t_id, {}).get("flagship", false))
 
 
+func _capital_volley_at_low_hull(a_id, t_id) -> bool:
+	var t: Dictionary = VU.get(t_id, {})
+	return float(VU.get(a_id, {}).get("size", 0)) >= 0.7 and not t.is_empty() \
+		and float(disp.get(t_id, {}).get("hp", t.get("hp", 1))) <= float(t.get("maxHp", 1)) * 0.35
+
+
+func _routine_shot_camera(kind: String, a_id, t_id) -> bool:
+	return kind in ["lance", "torp", "volley"] and not _flagship_camera(a_id, t_id) \
+		and (kind != "volley" or not _capital_volley_at_low_hull(a_id, t_id))
+
+
 func _follow_enemy_activation(id) -> void:
 	var routine := not _flagship_camera(null, id)
 	if not follow or bot:
 		return
-	if routine and (brisk_camera or _skipped_camera_kinds.has("follow")):
+	if routine and _skipped_camera_kinds.has("follow"):
 		_end_enemy_follow()
 		return
 	if cam_saved.is_empty():
@@ -2262,14 +2277,6 @@ func _skip_current_camera_kind() -> void:
 		return
 	_skipped_camera_kinds[kind] = true
 	hud.toast("%s skipped for this battle." % ROUTINE_CAMERA_NAMES[kind])
-
-
-func _wait_shot_cut(ms: float) -> void:
-	var timer := get_tree().create_timer(ms / 1000.0 * speed)
-	_shot_cut_timer = timer
-	await timer.timeout
-	if _shot_cut_timer == timer:
-		_shot_cut_timer = null
 
 
 func _cine_frame(a_id, t_id) -> void:
@@ -2314,9 +2321,9 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var cined := _cine_wants(ckind, a_id, t_id)
 	if cined:
 		_cine_frame(a_id, t_id)
-		_routine_shot_cut = "" if _flagship_camera(a_id, t_id) else ckind
+		_routine_shot_cut = ckind if _routine_shot_camera(ckind, a_id, t_id) else ""
 		recording_cue.emit("cut_start", "%s: %s to %s" % [ckind, _name(a_id), _name(t_id)])
-		await _wait_shot_cut(320.0)
+		await wait(320.0, _routine_shot_cut != "")
 		if _stale(gen):
 			return
 	var u: Dictionary = VU.get(a_id, {})
@@ -2498,8 +2505,8 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			var sec := str(g["section"])
 			_log("%s: %s destroyed. %s" % [_name(g["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Flank guns and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(g["unit"]) == "player" else "p")
 	await wait(80.0)
-	if cined and not _stale(gen) and not cine_saved.is_empty():
-		await _wait_shot_cut(900.0)
+	if cined and not _stale(gen):
+		await wait(900.0, _routine_shot_cut != "")
 		if _stale(gen):
 			return
 		_cine_release()

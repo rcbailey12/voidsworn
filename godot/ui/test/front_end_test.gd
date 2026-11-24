@@ -178,6 +178,7 @@ func scrolled(sc: ScrollContainer, saved: int) -> bool:
 func title_checks(snd: FakeSound) -> void:
 	var m := FakeMain.new(); root.add_child(m)
 	m.settings["ui_scale"] = 1.3; UiScale.set_player(1.3)
+	m.settings.erase("brisk_camera")
 	var t := Title.new(); t.main = m; root.add_child(t)
 	await frames()
 	var vs := Vector2(root.size)
@@ -207,7 +208,7 @@ func title_checks(snd: FakeSound) -> void:
 	for c in t.settings_panel.find_children("*", "Button", true, false):
 		if c.get_meta("setting_key", "") == "ui_scale": us = c
 		if c.get_meta("setting_key", "") == "brisk_camera": brisk = c
-	check(brisk != null and brisk.text == "Off", "Brisk camera is off in title Settings")
+	check(brisk != null and brisk.text == "Off", "Title Settings shows Brisk camera Off when the saved key is missing")
 	if brisk != null:
 		var before := m.saves
 		brisk.pressed.emit()

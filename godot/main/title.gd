@@ -545,7 +545,7 @@ func _focus_first(n: Node) -> void:
 func _toggle(t: String, key: String) -> Control:
 	if key == "tips": main.settings["tips"] = not preload("res://ui/campaign/campaign_tips.gd").is_off()
 	if not main.settings.has(key):
-		main.settings[key] = true
+		main.settings[key] = key != "brisk_camera"
 	var b := _button("On" if main.settings[key] else "Off")
 	b.set_meta("setting_key", key)
 	b.pressed.connect(func() -> void:
