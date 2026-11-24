@@ -191,6 +191,11 @@ The victory card lists the wrecks and lets the player work one directly. If ther
 of prizes before selecting a wreck so prize decisions get first claim on command points. Put all captains with a pending
 perk on one promotions card and keep it open until their picks are made. A reload restores the current reward stage.
 
+The wreck card names the cause and shows each available Strip wreck payout or tow before you choose. A hull broken up by
+a heavy impact, null fire, corrosive damage or tidal stress yields credits at the existing 30% bonus, with no module or
+tow. Won and bought refit cards offer Fit onto a ship with a free compatible slot or Keep in hold. Escape on a purchase
+keeps that refit in the hold. Continuing a saved run reopens an unfinished fit card with the same refit.
+
 Drydock and field repair cards show the fleet hull and credit gain for both choices before applying either. The full
 service keeps the previous free repair rate. The lighter service adds a credit stipend. If the Nemesis holds a shipyard,
 drydock, field repair or event, the route says “You fight him here, then use the stop.” Winning opens that stop after the
