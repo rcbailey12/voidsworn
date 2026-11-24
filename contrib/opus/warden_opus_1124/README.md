@@ -1,7 +1,7 @@
 # Warden, Opus blind leg (issue 1889, voidsworn_S9O)
 
 Blind builder pair 2: the Sunward Warden frigate rebuilt from its accepted concept alone, beside Astra's S9A. Never merged
-unless Ryan picks it. Pictures here are rev 1, stage "paint proof" (cloud CPU bake, not the PC run, not in the game).
+unless Ryan picks it. Pictures here are rev 2, stage "paint proof" (cloud CPU bake, not the PC run, not in the game).
 
 ## What was read
 
@@ -41,20 +41,22 @@ unless Ryan picks it. Pictures here are rev 1, stage "paint proof" (cloud CPU ba
 ## Design calls (the table wins over the pictures)
 
 - Repeater casemate at station 14 percent (the concept draws it near 25), three barrels in one rotary cluster, all firing.
+  Rev 2 (Ryan, Nov 24: the rev 1 gun "looks comically large and out of place"): the casemate is built at kit scale 0.3
+  instead of 0.5, about 40 percent smaller every way, on a smaller seat.
 - One spark flak pair at 60 percent (the beauty draws four tubs), on strakes at the deck edges.
 - Three spires at 68 / 76 / 84 percent (the beauty draws four), tallest 0.64, about 70 percent of the table's 0.9 (R331).
 - Beam 1.5 at 72 percent (the concept reads nearer 1.1 wide).
 - Command slits: two, either side of the feed trunk, in the spine block's face at 58 percent.
 - Breaks: spearhead root (B-1), drive section (B-2), lengthwise along the lower band facet (B-3), the spire line as one piece (B-4).
 
-## Evidence (cloud, Nov 24 2026)
+## Evidence (cloud, Nov 24 2026, rev 2)
 
 - Fit check: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0.
 - Weapon match: PASS (0 problems).
 - Inventory: 0 failing.
-- contrib/opus/tools/issue1414/cloud_ship_check.sh: stage 4 audit, outline steps, sheet contract, unbaked export,
+- contrib/opus/tools/issue1414/cloud_ship_check.sh: stage 4 audit, outline steps (overlap 79.9 percent), sheet contract, unbaked export,
   check_export and its self-test, the V14_23 game export points and the death seam all PASS.
 - Stage 5 paint (tools/blender/r209/bake_sheet.py, 1024, 8 samples, CPU): the Sunward stack, 6 decals placed.
-- Budget (stage 4 build): 39,172 triangles outside, 4,124 inside, 280 outside objects, 21 inside.
+- Budget (stage 4 build): 40,100 triangles outside, 4,124 inside, 280 outside objects, 21 inside.
 - Not run here: the PC's seven stages (OPUS1889_S9O_SHIPJOB.bat on opus/pin-1889-s9o; the Board queues it), GPU renders,
   in-game shots.

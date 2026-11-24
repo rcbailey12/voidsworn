@@ -186,22 +186,22 @@ def build(K):
 
     # ---------------- the bow: the Sear repeater in its forged casemate at the spearhead root ----------------
     # its seat: a forged plinth that levels the narrow ridge under the casemate (the concept's casemate sits on a flat)
-    seat_top = deck_z(CAS_X - 0.3) + 0.012
+    GS = 0.3                              # rev 2 (Ryan, Nov 24: the rev 1 casemate at 0.5 read comically large): frigate size
+    seat_top = deck_z(CAS_X - 0.18) + 0.01
     sr = []
-    for x in [CAS_X + 0.36, CAS_X + 0.3] + [CAS_X + 0.3 - 0.75 * i / 5 for i in range(1, 6)] + [CAS_X - 0.5]:
-        hb = min(0.2, ring(x)[2][1] * 0.82)
-        top = seat_top if CAS_X - 0.45 <= x <= CAS_X + 0.3 else deck_z(x) + 0.004
-        sr.append([(x, hb + 0.03, deck_z(x) - 0.06), (x, hb, top), (x, -hb, top), (x, -hb - 0.03, deck_z(x) - 0.06)])
+    for x in [CAS_X + 0.22, CAS_X + 0.18] + [CAS_X + 0.18 - 0.45 * i / 5 for i in range(1, 6)] + [CAS_X - 0.32]:
+        hb = min(0.13, ring(x)[2][1] * 0.8)
+        top = seat_top if CAS_X - 0.27 <= x <= CAS_X + 0.18 else deck_z(x) + 0.004
+        sr.append([(x, hb + 0.025, deck_z(x) - 0.05), (x, hb, top), (x, -hb, top), (x, -hb - 0.025, deck_z(x) - 0.05)])
     seat = K.loft_rings('S9O_casemate_seat', sr, 'siron2')
     K.mass('Casemate seat', seat, 'darker iron', note='a forged plinth over the spearhead root: the repeater casemate stands on it')
-    GS = 0.5
     _casemate(K, HP, Vector((CAS_X, 0.0, seat_top)), GS)
 
     # the worked-iron spike along the spearhead's ridge (the concept's bright blade line), broken round the casemate
     def ridge(x):
         return (x, 0.0, deck_z(x) + 0.002), (0.0, 0.0, 1.0)
     sx = [TIP - 0.3 - (TIP - 0.3 - (B1 + 0.08)) * i / 14 for i in range(15)][::-1]
-    broken_stripe(K, 'S9O_spike', sx, [(CAS_X - 0.5, CAS_X + 0.36)], ridge, clearance=0.03,
+    broken_stripe(K, 'S9O_spike', sx, [(CAS_X - 0.32, CAS_X + 0.22)], ridge, clearance=0.03,
                   race=(0.07, 0.012, 'siron2'), stripe=(0.026, 0.008, 'sworn'))
     K.built.append(dict(id='S9O_spike', kind='belt', type='belt', inv=['spike'], shaped=True, detailed=True, subs=['band', 'plate']))
 
@@ -523,7 +523,7 @@ def _changes(K):
     K.change('The bow is one spearhead point at mid height, diamond in section at the tip, closing from the loft\'s own ten-point section',
              'family law (designs.md "Never change": one point at mid height, diamond section); the loft keeps one section language from point to transom')
     K.change('The Sear repeater sits in a forged casemate on a raised seat at station 14 percent, three barrels in one rotary cluster, all firing each volley',
-             'designs.md table (autocannon F, 3 shots, station 14 percent); the concept draws the casemate further aft (about 25 percent) and the table wins; the seat levels the narrow ridge so the casemate sits on structure, not on the facets')
+             'designs.md table (autocannon F, 3 shots, station 14 percent); the concept draws the casemate further aft (about 25 percent) and the table wins; the seat levels the narrow ridge so the casemate sits on structure, not on the facets; rev 2 builds the casemate at kit scale 0.3 (rev 1: 0.5), Ryan Nov 24: the rev 1 gun read comically large')
     K.change('One spark flak pair on forged strakes at the deck edges at station 60 percent, not the beauty\'s four small tubs',
              'designs.md "Picture slips": the table\'s one flak pair governs; 3 shots over the pair\'s 4 barrels, both fire every volley (weapon_match SPLIT, S8\'s convention)')
     K.change('Three radiator spires at 68 / 76 / 84 percent on the spine block, tallest 0.64 in the middle, not the beauty\'s four',
