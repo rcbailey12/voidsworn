@@ -1853,6 +1853,23 @@ func wait(ms: float, skippable_cut := false) -> void:
 		_shot_cut_timer = null
 
 
+# Leave room for hit pauses, kill slow-mo and a late death cut, even if FX stops stepping.
+const FX_WAIT_GRACE_S := 6.0
+
+
+func _await_fx(at: float, settled := Callable()) -> bool:
+	var effects = gfx
+	var gen := _gen
+	var deadline := Time.get_ticks_msec() + ceili((maxf(at - float(effects.now), 0.0) + FX_WAIT_GRACE_S) * 1000.0)
+	while not _stale(gen) and is_instance_valid(effects) and gfx == effects:
+		if float(effects.now) >= at and (not settled.is_valid() or bool(settled.call())):
+			return true
+		if Time.get_ticks_msec() >= deadline:
+			break
+		await get_tree().process_frame
+	return false
+
+
 # The round budget (presentation only, outcomes unchanged): past 5 s of a round's enemy time the rest of its turn speeds
 # up smoothly, to 0.3 of the pace by 9 s. Stream B (806233f): the sector 3 excess is the enemy phase of 12 to 14 ships,
 # so the 20-ship sector 3 fight's worst round comes down toward 12 s (was 8 s to 0.35 by 13 s: 14.3 s worst).
@@ -2347,22 +2364,28 @@ func _play_event(e: Dictionary, batch_view := {}, breaking_hit := false) -> void
 
 
 const WRECK_LEASH_K := 0.8      # issue 1236: a blocking wreck's pieces rest within this share of the hex radius
-const WRECK_CHECK_S := 4.0      # seconds after a wreck's death plays: no pieces on the board by then lays the burnt hulk
+const WRECK_CHECK_S := 4.0      # effect seconds before the board checks a new wreck for missing pieces
 
 
 # issue 1236: the board marks a wreck's hex, and lays the burnt hulk there if the death left nothing to see
 func _lay_wreck(unit) -> void:
 	var at: Vector2i = wrecked[unit]
 	var id := str(unit)
-	var fx_pieces: bool = gfx != null and gfx.has_method("wreck_pieces")
+	var effects = gfx
+	var first: bool = not board.wrecks.has(id)
 	board.add_wreck(id, at.x, at.y)
-	if not fx_pieces:
+	if not is_instance_valid(effects) or not effects.has_method("wreck_settled"):
 		return   # no effects: the ship view keeps its own darkened hull in place (ShipView.die)
-	var gen: int = board.built
-	get_tree().create_timer(WRECK_CHECK_S).timeout.connect(func() -> void:
-		if not is_instance_valid(board) or board.built != gen or board.wrecks.get(id, "") != board.key(at.x, at.y): return
-		if gfx == null or int(gfx.wreck_pieces(id)) > 0: return
-		board.add_wreck(id, at.x, at.y, true))
+	var built: int = board.built
+	var ship = effects.ship(id)
+	# A recheck of an established wreck can run immediately if its death has already settled.
+	var check_at: float = float(effects.now) + (WRECK_CHECK_S if first or not effects.wreck_settled(id) else 0.0)
+	if not await _await_fx(check_at, effects.wreck_settled.bind(id)):
+		return
+	if not is_instance_valid(board) or board.built != built or not wrecked.has(unit) or wrecked[unit] != at:
+		return
+	if board.wrecks.get(id, "") == board.key(at.x, at.y) and effects.ship(id) == ship and int(effects.wreck_pieces(id)) == 0:
+		board.add_wreck(id, at.x, at.y, true)
 
 
 func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
@@ -2970,6 +2993,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var L: float = tsv.L if tsv != null else 10.0
 	var shield_col: Color = FLOOK.shield(str(VU.get(t_id, {}).get("fac", "hegemony")))
 	var total := 0.0
+	var fx_start := -1.0
 	var hi := 0
 	# the browser's own length for this volley (fx3d.js timing), the cap for a paced wait
 	var btot := (0.32 + n * 0.25 + 0.15) if fam in ["lance", "ion"] else ((0.32 + n * 0.12 + 0.84) if fam == "torp" else (n * 0.07 + 0.49))
@@ -3006,6 +3030,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 					var at := 0.5 + fi * 0.2
 					_at_fx(at, func() -> void: _snap("tp_%s_%02d" % [tag, fi]))
 	if gfx != null and gfx.has_method("volley"):
+		fx_start = float(gfx.now)
 		var hl: Array = []
 		for h in hits:
 			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"],
@@ -3080,13 +3105,21 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			if shots[i] and hi < hits.size():
 				_schedule_impact(t_id, hits[hi], dl + 0.24 * sp, L, shield_col, fam, hi, land, fac)
 				hi += 1
+	var hold := total * sp
+	var capture_at := 0.0
+	var reached_capture := true
 	if shots_dir != "" and fire_shots < 4 and bot:
 		fire_shots += 1
-		await get_tree().create_timer(total * sp * 0.55).timeout
-		_snap("fire_%d" % fire_shots)
-		await get_tree().create_timer(total * sp * 0.45).timeout
-	else:
-		await get_tree().create_timer(total * sp).timeout
+		capture_at = hold * 0.55
+		reached_capture = await _wait_volley(fx_start, capture_at)
+		if _stale(gen):
+			return
+		if reached_capture:
+			_snap("fire_%d" % fire_shots)
+	if reached_capture:
+		await _wait_volley(fx_start, hold, capture_at)
+	if _stale(gen):
+		return
 	# the log line and the floating numbers (battle.js fireWeapon)
 	var sh_sum := 0.0
 	var hull_sum := 0.0
@@ -3136,6 +3169,15 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	land["ended"] = true
 	if int(land["left"]) <= 0:
 		_aim_off(land)
+
+
+func _wait_volley(start: float, target: float, elapsed := 0.0) -> bool:
+	if start >= 0.0:
+		if not is_instance_valid(gfx):
+			return false
+		return await _await_fx(start + target)
+	await get_tree().create_timer(target - elapsed).timeout
+	return true
 
 
 # Issue 1211: the arrival time of each hit. The fx returns one time per shot, misses included; the k-th hit rides the
