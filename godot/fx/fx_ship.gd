@@ -552,8 +552,6 @@ func update(fx, dt: float) -> void:
 	_update_trails(fx, moved > 1e-4)
 	if _shield_mi != null:
 		_shield_mi.visible = fx.now < _shield_until or fx.now < _ion_until or (_route_on != Vector4.ZERO and not dead and not gone)
-		if _shield_mi.visible:
-			_shield_mi.transform = hull_motion() * _shield_pose
 
 
 func _update_trails(fx, _moved: bool) -> void:
