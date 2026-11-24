@@ -451,6 +451,9 @@ func show_title(music_after_draw := false) -> void:
 	title = Title.new()
 	title.main = self
 	add_child(title)
+	if not _title_painted_said and DisplayServer.window_can_draw():
+		_title_painted_said = true
+		_say_title_painted(title)
 	# the decorative battle behind the menu, built once the title has painted, then faded in over the sky picture
 	if _showcase_wanted():
 		get_tree().create_timer(0.5).timeout.connect(_start_showcase)
@@ -667,6 +670,16 @@ func battle_parts_ready() -> bool:
 var _scene_reading := false
 var _host_reading := false
 var hold_host_read := false   # prefetch_wait_check only: the host read counts as still running
+var _title_painted_said := false
+
+
+# issue 1518 (Artoo on PR 1445, 6784b6b1): the launch to the first painted title menu, on a line of its own, once per run
+func _say_title_painted(t: Node) -> void:
+	await RenderingServer.frame_post_draw
+	if is_instance_valid(t) and t == title:
+		print("[main] title menu painted at %d ms after the engine started (first button: %s)" % [Time.get_ticks_msec(), str(t.get("first_label"))])
+
+
 var _title_wait := 0   # bumped by each show_title that waits on the host read, and by _clear, so only the newest goes on
 var _battle_scene: PackedScene = null
 

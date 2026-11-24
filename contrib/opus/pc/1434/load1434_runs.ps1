@@ -213,6 +213,56 @@ foreach ($set in @('cold', 'warm')) {
 Say-Cache 'the cold then warm close launches' $cw0 (Get-CacheStat $warmProfile)
 $rows | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $Out 'close_timing.json') -Encoding Ascii
 
+# ---- 4: the title from launch (issue 1518, Artoo on PR 1445, 6784b6b1): the title waits a frame at a time for the
+# launch's campaign host read, so launch to the first painted menu is measured on its own, cold without a save and cold
+# with a valid saved run (its first button "Continue run"), each on a fresh profile; no menu in 20 s fails plainly.
+# The game prints "[main] title menu painted at N ms after the engine started (first button: ...)"; the case closes the
+# window after 20 s and reads that line after the exit.
+$launch = [ordered]@{}
+foreach ($lc in @(@{name = 'title_launch_nosave'; save = $false; want = 'New run'}, @{name = 'title_launch_save'; save = $true; want = 'Continue run'})) {
+  $dir = Join-Path $Out "close_cold\$($lc.name)"
+  New-Item -ItemType Directory -Force -Path $dir | Out-Null
+  $prof = Join-Path $dir 'profile'
+  New-Item -ItemType Directory -Force -Path $prof | Out-Null
+  $log = Join-Path $dir 'game.log'; $err = Join-Path $dir 'game_err.log'; $flog = Join-Path $dir 'godot_file.log'
+  $note = ''
+  if ($lc.save) {
+    $sp = Start-Game $prof @('--headless', '--path', "`"$Project`"", '-s', 'res://bench/write_save_1434.gd') (Join-Path $dir 'save.log') (Join-Path $dir 'save_err.log')
+    if (-not $sp.WaitForExit(120000)) { Kill-Tree $sp }
+    $st = Get-Content -LiteralPath (Join-Path $dir 'save.log') -Raw -ErrorAction SilentlyContinue
+    if ($st -notmatch '\[save1434\] PASS') { $note = 'no saved run was written (see save.log)' }
+  }
+  $p = Start-Game $prof @('--path', "`"$Project`"", '--windowed', '--resolution', '1920x1080', '--log-file', "`"$flog`"", '--', '--quit-after', '240') $log $err
+  $found = Find-Game $p 60
+  $res = 'FAIL'; $why = @()
+  if ($note) { $why += $note }
+  if (-not $found) { $why += 'no game window'; if (-not $p.HasExited) { Kill-Tree $p } }
+  else {
+    Start-Sleep -Seconds 20
+    $g = $found.proc
+    [void]$g.CloseMainWindow()
+    if (-not $g.WaitForExit(15000)) { $why += 'still running 15 s after the close'; Kill-Tree $p } else { [void]$p.WaitForExit(5000) }
+    Start-Sleep -Milliseconds 300
+    $text = (Get-Content -LiteralPath $flog -Raw -ErrorAction SilentlyContinue) + "`n" + (Get-Content -LiteralPath $log -Raw -ErrorAction SilentlyContinue) + "`n" + (Get-Content -LiteralPath $err -Raw -ErrorAction SilentlyContinue)
+    $mr = [regex]::Match($text, '\[main\] ready at ([0-9]+) ms')
+    $mm = [regex]::Match($text, '\[main\] title menu painted at ([0-9]+) ms after the engine started \(first button: ([^)]*)\)')
+    $ready = if ($mr.Success) { $mr.Groups[1].Value } else { '-' }
+    if (-not $mm.Success) { $why += 'no menu painted within the 20 s' }
+    else {
+      $painted = [int]$mm.Groups[1].Value
+      if ($painted -gt 20000) { $why += "menu painted only at $painted ms" }
+      if ($mm.Groups[2].Value -ne $lc.want) { $why += "first button '$($mm.Groups[2].Value)', expected '$($lc.want)'" }
+    }
+    if ($text -match 'CrashHandlerException|Program crashed|access violation|RenderingServer is null|SCRIPT ERROR') { $why += 'crash or script error' }
+    if ($why.Count -eq 0) { $res = 'PASS' }
+    Say ("title launch cold {0}: {1} main ready at {2} ms, menu painted at {3} ms (first button: {4}){5}" -f $lc.name, $res, $ready,
+      $(if ($mm.Success) { $mm.Groups[1].Value } else { '-' }), $(if ($mm.Success) { $mm.Groups[2].Value } else { '-' }), $(if ($why.Count) { ' | ' + ($why -join '; ') } else { '' }))
+  }
+  if (-not $found) { Say ("title launch cold {0}: FAIL | {1}" -f $lc.name, ($why -join '; ')) }
+  $launch[$lc.name] = $res
+  Start-Sleep -Seconds 2
+}
+
 # Separate results (Artoo on PR 1445): the Board's warm grading covers the issue 1434 load items only; issues 1518 and
 # 1519 keep their own limits on BOTH profiles, and every close must be clean on both.
 function Set-Grade($set, $key) {
@@ -234,6 +284,7 @@ foreach ($set in @('cold', 'warm')) {
   $grades["1519 first title frame within 200 ms, $set"] = Set-Grade $set 'g1519'
   $grades["every close clean, $set"] = Set-Grade $set 'clean'
 }
+$grades['title launch to first painted menu within 20 s, cold, no save and with a saved run'] = if (@($launch.Values | Where-Object { $_ -ne 'PASS' }).Count -eq 0 -and $launch.Count -eq 2) { 'PASS' } else { 'FAIL' }
 foreach ($k in $grades.Keys) { Say "[load10] $k`: $($grades[$k])" }
 $ok = @($grades.Values | Where-Object { $_ -ne 'PASS' }).Count -eq 0
 Say ("[load10] RESULT {0} (every line above must PASS; an Alt-F4 case that could not send its keys is UNVERIFIED, never PASS)" -f $(if ($ok) { 'PASS' } else { 'FAIL' }))

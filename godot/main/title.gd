@@ -16,6 +16,7 @@ var font: FontFile
 var font_semi: FontFile
 var font_goth: Font
 var settings_panel: PanelContainer
+var first_label := ""   # the menu's first button, "Continue run" or "New run" (issue 1518: the launch line reads it)
 var settings_dim: ColorRect
 var toast_lbl: Label
 var _toast_t := 0.0
@@ -142,6 +143,7 @@ func _build() -> void:
 		first = _button("Continue run", func() -> void: main.new_run({"continue": true}), true)
 	else:
 		first = _button("New run", func() -> void: main.new_run({}), true)
+	first_label = first.text   # issue 1518: the launch line names which first button the saved run gave
 	first.custom_minimum_size = Vector2(s(340), s(56))
 	first.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	menu.add_child(first)

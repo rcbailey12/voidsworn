@@ -366,12 +366,24 @@ func _cover_note(tag: String, gaps: int, stalls: int, worst_ms: int) -> void:
 
 func _title() -> void:
 	var m = MainScript.new()
+	var tw := Time.get_ticks_msec()
 	root.add_child(m)
+	# issue 1518 (Artoo on PR 1445, 6784b6b1): the title waits a frame at a time for the launch's campaign host read, so
+	# the time from the new Main to its first painted menu is its own line, and no menu in 20 s fails the title plainly
+	while (m.title == null or not is_instance_valid(m.title)) and Time.get_ticks_msec() - tw < 20000:
+		await process_frame
+	if m.title == null or not is_instance_valid(m.title):
+		pass_all = false
+		_say("[load1434] title FAIL (no menu painted 20 s after the new Main)")
+		m.queue_free()
+		for i in 10:
+			await process_frame
+		finished.append("title")
+		return
+	await RenderingServer.frame_post_draw
+	_say("[load1434] title launch to first painted menu: %d ms (first button: %s)" % [Time.get_ticks_msec() - tw, str(m.title.get("first_label"))])
 	for i in 5:
 		await process_frame
-	var tw := Time.get_ticks_msec()
-	while m.title == null and Time.get_ticks_msec() - tw < 20000:
-		await process_frame   # issue 1518: the title waits, a frame at a time, for the launch's campaign host read
 	m.settings["sound"] = true
 	m.settings["volume"] = 0.25
 	m._settings_to_ui_sound()
