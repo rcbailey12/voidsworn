@@ -82,6 +82,20 @@ func t_data() -> void:
 		for k in ["boss_hail", "boss_down"]:
 			fac_ok = fac_ok and str(V["factions"].get(f, {}).get(k, "")) != ""
 	ok(fac_ok, "data: every faction has flagship lines")
+	# issue 1990: three or four hails per sector flagship, each naming that ship as the tables name it
+	var TT: Dictionary = JSON.parse_string(_read("res://rules/data/tables.json"))["tables"]
+	var hail_bad: Array = []
+	for f in facs:
+		var fd: Dictionary = V["factions"].get(f, {})
+		var ship := str(fd.get("boss_ship", ""))
+		var hull := str(TT["HULLS"].get(str(TT["FACTIONS"][f].get("boss", "")), {}).get("n", ""))
+		var pool: Array = fd.get("boss_hail_pool", [])
+		if ship == "" or not hull.contains(ship) or pool.size() < 3 or pool.size() > 4:
+			hail_bad.append("%s: %s / %s, %d hails" % [f, ship, hull, pool.size()])
+		for line in pool:
+			if not str(line).contains(ship) or str(line).split(" ", false).size() > 22 or str(line).contains("\u2014") or str(line).contains("\u2013"):
+				hail_bad.append("%s: %s" % [f, line])
+	ok(hail_bad.is_empty(), "data: every sector flagship has three or four short hails naming it %s" % str(hail_bad.slice(0, 4)))
 	var RL = JSON.parse_string(_read("res://story/data/rival_lines.json"))
 	var rl_missing: Array = []
 	var n_lines := 0

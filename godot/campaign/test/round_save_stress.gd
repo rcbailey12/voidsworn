@@ -96,7 +96,7 @@ func _start_text(s: int) -> Dictionary:
 		var beat = C.TB.STORY_BEAT3[fac]
 		C.RUN["flags"][beat["id"]] = "0"
 		if s % 2 == 0:
-			C.RUN["storyNext"] = C._story_modifiers(beat["o"][0]["r"], {}); story = "buff unspent"
+			C.RUN["storyNext"] = C._story_modifiers(beat.get("legacy_o", beat["o"])[0]["r"], {}); story = "buff unspent"   # a run saved before issue 1990
 		else:
 			C.RUN["storyNext"] = null; story = "buff spent"
 	if s % 7 == 3:   # an event fight (the event stop resumes as its fight, campaign.gd _resume_node)

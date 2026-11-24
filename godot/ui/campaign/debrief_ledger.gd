@@ -99,6 +99,10 @@ func _build() -> void:
 	var story = str(C.ADMIRALS[R["admiral"]]["n"]) + " brings the " + str(C.FACTIONS[R["fac"]]["n"]).trim_prefix("The ") + " home."
 	if d["victory"]: story = C.numstr(R["stats"]["bosses"]) + (" flagship broken across " if int(R["stats"]["bosses"]) == 1 else " flagships broken across ") + C.numstr(R["sector"]) + " sectors. " + story
 	else: story = "The fleet stands down. Its deeds are recorded." if d["abandoned"] else "The last hull goes dark in sector " + C.roman(R["sector"]) + (". The next fleet inherits what this run bought." if first else ". The survivors will tell it differently.")
+	# issue 1990: under the title, what became of the faction's goal (two sentences, RUN_ENDING), after the run's one-line count
+	var ending: String = C.runEnding(R, bool(d["victory"]), bool(d["abandoned"]))
+	if ending != "":
+		story = (C.numstr(R["stats"]["bosses"]) + (" flagship broken across " if int(R["stats"]["bosses"]) == 1 else " flagships broken across ") + C.numstr(R["sector"]) + " sectors. " if d["victory"] else "The last hull goes dark in sector " + C.roman(R["sector"]) + ". ") + ending
 	words(story, Rect2(72, 169, w, 58), 23)
 	var s = R["stats"]
 	var figures = [[C.numstr(s["battles"]), "BATTLES WON"], [C.numstr(s["bosses"]), "FLAGSHIPS DESTROYED"], [C.numstr(s["kills"]), "ENEMY SHIPS DESTROYED"], [C.numstr(s.get("lost", 0)), "SHIPS LOST"]]

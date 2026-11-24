@@ -2391,12 +2391,14 @@ func needMet(nd) -> bool:
 	if jt(nd.get("cred")) and float(RUN["credits"]) < float(nd["cred"]): return false
 	if jt(nd.get("vet")) and not RUN["fleet"].any(func(s): return float(z0(s["cap"].get("rank"))) >= float(nd["vet"])): return false
 	if jt(nd.get("flag")) and not flagIs(nd["flag"], nd.get("flagK")): return false
+	if jt(nd.get("lock")): return false   # issue 1990: a beat 3 choice an earlier story choice closed
 	if jt(nd.get("intel")):
 		var nem0 = nemActive(); var rv = nem0["revealed"] if (nem0 is Dictionary and nem0.get("revealed") is Array) else []
 		if rv.size() < float(nd["intel"]): return false
 	return true
 func needText(nd) -> String:
 	if not jt(nd): return ""
+	if nd.get("say") is String and nd["say"] != "": return "Needs " + nd["say"]   # issue 1990: a beat 3 choice names the earlier choice it needs
 	var p = []
 	if jt(nd.get("fac")):
 		var fs = nd["fac"] if nd["fac"] is Array else [nd["fac"]]; var nm = []
@@ -3321,8 +3323,9 @@ func _restore_legacy_story_modifier() -> void:
 	# The old mid-battle checkpoint erased the modifier but retained the story choice.
 	var beat = TB.STORY_BEAT3[RUN["fac"]]
 	var choice = str(RUN["flags"].get(beat["id"], ""))
-	if not choice.is_valid_int() or int(choice) < 0 or int(choice) >= beat["o"].size(): return
-	var mods = _story_modifiers(beat["o"][int(choice)]["r"], {})
+	var old_o = beat.get("legacy_o", beat["o"])   # issue 1990: a numbered choice names one of the options that played before
+	if not choice.is_valid_int() or int(choice) < 0 or int(choice) >= old_o.size(): return
+	var mods = _story_modifiers(old_o[int(choice)]["r"], {})
 	if not mods.is_empty(): RUN["storyNext"] = mods
 # Story arcs: after the sector intro (beat 1) and each sector change (beats 2 and 3), the arc card opens as an event.
 func _arc_after(md) -> bool:
@@ -3389,28 +3392,68 @@ func _event_battle_cfg(n: Dictionary, outcome: Dictionary) -> Dictionary:
 # Approved beat 3 content shares the browser table and existing event screens.
 func beat3Text(t: String) -> String:
 	return t.replace("{rival}", nemFull() if nemFull() != "" else "the enemy commander")
+# Issue 1990: the outlines.md beat 3 choices read the beat 1 and 2 story flags (RUN.flags, written by the arc cards).
+# A condition uses the arc.gd syntax: terms joined by "&" must all hold, a term lists alternatives with "|", "!" negates;
+# the only atom is flag:<name>. An option whose "if" fails is not offered; a callback line whose "if" fails is not shown.
+# Until beats 1 and 2 play (arcs_on), no story flag is set, so each card offers only its plain choices (the fallback).
+func beat3Cond(c, run = null) -> bool:
+	var src = run if run != null else RUN
+	var flags = src.get("flags") if src is Dictionary else null
+	if not (flags is Dictionary): flags = {}
+	if not (c is String) or c == "": return true
+	for term: String in c.split("&"):
+		var any := false
+		for alt: String in term.split("|"):
+			var a: String = alt.strip_edges(); var neg: bool = a.begins_with("!")
+			if neg: a = a.substr(1).strip_edges()
+			var v: bool = a.begins_with("flag:") and flags.get(a.substr(5)) != null
+			if v != neg:
+				any = true; break
+		if not any: return false
+	return true
+const BEAT3_CALLBACKS := 2   # at most two earlier choices are read back on one card (outlines.md, How an arc works)
 func beat3Card() -> Dictionary:
 	if RUN == null or float(RUN["sector"]) != 3: return {}
 	var row: Dictionary = TB.STORY_BEAT3[RUN["fac"]]
 	if RUN.get("flags", {}).has(row["id"]): return {}
 	var ev = row.duplicate(true)
+	ev.erase("legacy_o"); ev.erase("callbacks")
 	ev["arc"] = true; ev["beat"] = 3
-	var text = row["lines"].duplicate()
+	var text = []
+	for cb in row.get("callbacks", []):
+		if text.size() < BEAT3_CALLBACKS and beat3Cond(cb.get("if")): text.append(cb["t"])
+	text.append_array(row["lines"])
 	text.append(row["spotlights"].get(RUN["admiral"], ""))
-	ev["b"] = "\n\n".join(PackedStringArray(text.map(func(t): return beat3Text(t))))
-	ev["outs"] = {}; ev["labels"] = {}
-	for i in range(ev["o"].size()):
-		var o = ev["o"][i]; o["k"] = str(i); o["l"] = o["t"]; o["s"] = ""
-		ev["outs"][str(i)] = beat3Text(o["tx"]); ev["labels"][str(i)] = o["l"]
+	ev["b"] = "\n\n".join(PackedStringArray(text.filter(func(t): return str(t) != "").map(func(t): return beat3Text(t))))
+	ev["o"] = []; ev["outs"] = {}; ev["labels"] = {}
+	for i in range(row["o"].size()):
+		var o: Dictionary = row["o"][i].duplicate(true)
+		if not beat3Cond(o.get("if")): continue
+		if o.get("alt") is Dictionary and beat3Cond(o["alt"].get("if")):
+			for key in ["t", "s", "tx"]:
+				if o["alt"].has(key): o[key] = o["alt"][key]
+		o.erase("alt")
+		if o.get("lock") is Dictionary and beat3Cond(o["lock"].get("if")):   # shown blue and closed, with the earlier choice that closed it
+			o["need"] = {"lock": true, "say": str(o["lock"].get("need", "an earlier choice"))}
+		o.erase("lock")
+		var k := str(o["k"]) if jt(o.get("k")) else str(i)
+		o["k"] = k; o["l"] = beat3Text(str(o["t"])); o["s"] = beat3Text(str(or_(o.get("s"), "")))
+		ev["o"].append(o)
+		ev["outs"][k] = beat3Text(o["tx"]); ev["labels"][k] = o["l"]
 	return ev
 func showBeat3() -> bool:
 	var ev = beat3Card()
 	if ev.is_empty(): return false
 	cur_event = ev
 	var acts = []
-	for i in range(ev["o"].size()): A(acts, "eventChoice", i)
+	for i in range(ev["o"].size()): A(acts, "eventChoice", i, eventOptOk(ev["o"][i]))
 	show_modal("event", {"ev": ev}, acts)
 	return true
+# Issue 1990: the two-sentence ending for the run's faction goal, shown on the end-of-run page beside WIN_TITLE ("" when abandoned).
+func runEnding(run, won: bool, abandoned := false) -> String:
+	if abandoned or not (run is Dictionary): return ""
+	var row = TB.get("RUN_ENDING", {}).get(run.get("fac"), {})
+	return str(row.get("win" if won else "loss", "")) if row is Dictionary else ""
 # R78 Q15 (issue 42): the Chorus run's one core-eating choice, offered before the first node of sector 3.
 func showCoreEatOffer() -> bool:
 	if not coreEatDue(): return false
