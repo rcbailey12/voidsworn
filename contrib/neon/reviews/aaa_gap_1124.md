@@ -89,3 +89,329 @@ Benchmarks: BattleTech, Sins of a Solar Empire II, Battlefleet Gothic: Armada, E
 - **Fix:** Pool `AudioStreamPlayer` and `AudioStreamPlayer3D` voices in `sfx.gd`, couple a subtle bus EQ/presence curve and distance falloff to camera zoom radius `cam._cr`, and add 3 low-level biome ambient beds (Hollow Sun gravity rumble, ion storm crackle, nebula hum) that duck cleanly under combat peaks.
 - **Size:** M (2 to 4 runs: voice pooling and zoom-reactive spatial mix in `sfx.gd`, 3 biome ambient beds, audio soak test)
 - **Confidence:** OBSERVED and INFERRED (`navy-b1-p01.mp4`, `godot/audio/sfx.gd:152-167, 336-400`)
+
+---
+
+## 2. Per-Area Further Gaps (Beyond the Top 10)
+
+### 2.1 Graphics (Art Director)
+
+#### G1. Sparse 3D Campaign Star-System Scene
+- **Area:** Graphics
+- **What a player sees today:** In `docs/shots/ui_redesign/briefing/rail_r2_1080/sector_3.png` and `docs/shots/ui_redesign/briefing/1080/01_map_jump0.jpg`, the Hollow Sun black hole anchors the right side well, but the rest of the 3D campaign space is tiny ship clusters floating in empty pitch-black space along thin curves. There are no orbital dust belts, glowing jump-gate beacons, faction-held station rings, or subtle distant star-system parallax.
+- **What the benchmark game does:** **Sins of a Solar Empire II** makes every star system feel alive with orbital asteroid belts, glowing phase-lane anchors, planet gravity wells, and ambient trade/patrol traffic around landmarks.
+- **Fix:** Enrich `godot/ui/campaign/map3d_props.gd` and `map3d_system.gd` with faint orbital dust arcs, glowing jump-node beacons at service/boss stops, and faction-tinted territory light rings around key landmarks while keeping the orders-sheet rail uncluttered.
+- **Size:** M (2 to 4 runs: 3D system props and orbital dust shaders in `map3d_*`, sector 1 to 3 comparison captures)
+- **Confidence:** OBSERVED (`sector_3.png`, `01_map_jump0.jpg`, `02_map_three_routes.jpg`)
+
+#### G2. Zero Moving Mechanical or Organic Hull Sub-Parts Across the Fleet
+- **Area:** Graphics
+- **What a player sees today:** In `docs/shots/battle_baseline_1118/BATTLE1076_A16_c26_standard.jpg`, `BATTLE1076_IM5_c170_standard.jpg`, and `godot/fx/fx_idle.gd:38-59`, capital ships sit as rigid static statues between moves. Planned `#1685` (currently off by default) adds only tiny soft pulsing sprites (`radar_sweep`, vent dots) rather than real moving geometry, and only Chorus C14 has hinged bay doors.
+- **What the benchmark game does:** **EVE Online** and **Sins of a Solar Empire II** sell colossal living vessels with slowly rotating radar dishes, spinning station habitat rings, pulsing radiator shutters, and animated hangar/bay doors.
+- **Fix:** Add 1 to 2 lightweight vertex-animated or node-rotated sub-parts per faction kit (rotating Directorate radar arrays, Sunward radiator shutters, Hullbreaker wobbling scoop dishes, Eclipse floating orbit rings, Chorus breathing pore rims) driven cheaply on the GPU.
+- **Size:** L (5 or more runs: shared kit sub-part convention, per-faction animated parts, export verification)
+- **Confidence:** OBSERVED (`BATTLE1076_A16_c26_standard.jpg`, `BATTLE1076_IM5_c170_standard.jpg`, `godot/fx/fx_idle.gd:38-59`)
+
+#### G3. Flat Nebula and Ion-Storm Patches Lack True 3D Depth and Weapon-Light Reaction
+- **Area:** Graphics
+- **What a player sees today:** In `docs/shots/1359/pc/boneyard_graveyard_1359_1_cine_no_hover_c170.jpg` and `docs/shots/battle_baseline_1118/BATTLE1076_storm_01.jpg`, rose nebulae and teal ion storms read as flat painted smudges pinned near the hex plane with faint diagonal hatching lines over them, never catching the glow of passing lances or explosions.
+- **What the benchmark game does:** **Battlefleet Gothic: Armada** and **EVE Online** build gas clouds as multi-layered parallax wisps that softly catch nearby weapon flashes and capital explosions while keeping ships inside readable (matching RULEBOOK 10.4).
+- **Fix:** Layer 2 to 3 offset parallax gas strata in `godot/world/world_living.gd` with subtle dynamic light-scatter from nearby weapon and death flashes while preserving crisp ship silhouettes inside the cloud.
+- **Size:** M (2 to 4 runs: layered cloud shader and point-light scatter hook in `world_living.gd`, frame-time gate check)
+- **Confidence:** OBSERVED (`boneyard_graveyard_1359_1_cine_no_hover_c170.jpg`, `BATTLE1076_storm_01.jpg`)
+
+#### G4. Bare Backdrop Planets Without Orbital Scale Anchors or Night-Side Detail
+- **Area:** Graphics
+- **What a player sees today:** In `docs/shots/issue-1765/PV2_board_c170.jpg`, `docs/shots/player_path_1119/navy-b1.jpg`, and `docs/shots/1361/AC1361_comets_wide.jpg`, the new V2 planet surfaces look much sharper, but planets still hang as solitary spheres with no orbital defense rings, distant station silhouettes, terminator atmospheric scattering rim, or subtle night-side settlement/volcanic glow.
+- **What the benchmark game does:** **Sins of a Solar Empire II** and **EVE Online** anchor planetary scale with glowing atmospheric terminators, subtle night-side city or magma pinpoints, and thin orbital structures catching the starlight.
+- **Fix:** Add an optional terminator atmospheric-scatter Fresnel rim and biome-specific night-side detail mask (subdued volcanic fissures, Directorate orbital grid lights, or dead-star eclipse glint) inside `godot/world/world_planet.gd`.
+- **Size:** S to M (1 to 2 runs: planet shader update in `world_planet.gd`, 5-biome capture check)
+- **Confidence:** OBSERVED (`PV2_board_c170.jpg`, `navy-b1.jpg`, `AC1361_comets_wide.jpg`)
+
+---
+
+### 2.2 Effects (VFX Lead)
+
+#### E1. No Faction-Distinct Warp-In or Reinforcement Arrival Visuals
+- **Area:** Effects
+- **What a player sees today:** In `docs/shots/player_path_1119/hullbreakers-b2.jpg` (01:03.6) and `docs/shots/player_path_1119/navy-b2.jpg` (01:03.6), enemy reinforcements simply pop onto the board beside a tiny plain text word `Arrived`. The game already wired a warp-in sound cue (`godot/audio/clips/evt_fleet_warp_in_0.ogg`), yet visually ships appear without a jump flash or deceleration streak.
+- **What the benchmark game does:** **Sins of a Solar Empire II** and **Battlefleet Gothic: Armada** turn every fleet arrival into a dramatic event with directional phase-jump flashes, stretched light streaks, and faction-colored entry wakes.
+- **Fix:** Add a 0.8 s faction-colored jump-in effect (directional light tear, brief stretched hull slide-in, and fading wake ring) triggered on reinforcement spawns and battle start, synced to `evt_fleet_warp_in_0.ogg`.
+- **Size:** M (2 to 4 runs: warp-in FX shader/helper in `godot/fx/`, reinforcement hook in `battle.gd`, look-bench clip)
+- **Confidence:** OBSERVED (`hullbreakers-b2.jpg`, `navy-b2.jpg`, `godot/audio/clips/evt_fleet_warp_in_0.ogg`)
+
+#### E2. Plain, Undersized Floating Combat Numbers With No Hit-Quality Hierarchy
+- **Area:** Effects / UI/UX
+- **What a player sees today:** In `docs/shots/player_path_1119/navy-b1-p01.mp4` (00:37), impacts spawn tiny plain white text (`-2 hull`, `-10 shield`) that barely stands out against beams and hex lines, with no visual distinction between a glancing hit, a heavy armor penetration, a critical hit, or a silenced weapon.
+- **What the benchmark game does:** **BattleTech** pops crisp color-coded floating combat callouts (`ARMOR`, `STRUCTURE`, `CRIT`, `DESTROYED`, `EVADED`) scaled to impact weight so players read every volley without touching the combat log.
+- **Fix:** Style floating combat callouts in `battle.gd`/`hud.gd` using the orders-sheet palette (Glacier for shield absorb, Ember for hull/crit, bone for miss/evade, red badge for section/weapon knockout) with subtle pop-and-drift motion scaled by damage tier.
+- **Size:** S (1 run: floating combat text hierarchy in `hud.gd`/`battle.gd`, player-path verification)
+- **Confidence:** OBSERVED (`navy-b1-p01.mp4` at 00:37)
+
+#### E3. No Barrel Recoil, Weapon Heat Flare, or Dense Point-Defense Flak Curtains
+- **Area:** Effects
+- **What a player sees today:** In `docs/shots/battle_baseline_1118/BATTLE1076_A16_c26_standard.jpg`, `docs/shots/hit_fragments/hull_fragments_c170.png`, and `godot/fx/fx_weapons.gd:58`, firing rocks the ship slightly (`SHOOTER_RECOIL`), but turret barrels never physically kick back into their housings, heavy lance or radiator vents never brighten briefly from firing heat, and flak interception reads as sparse isolated bursts rather than a tight defensive curtain.
+- **What the benchmark game does:** **Sins of a Solar Empire II** and **EVE Online** animate physical barrel recoil, brief thermal barrel/vent glow after capital volleys, and crisp point-defense tracer curtains intercepting incoming ordnance.
+- **Fix:** Add a brief local-Z recoil kick on fired turret barrel nodes in `fx_weapons.gd`/`fx_hull.gd`, pulse a short post-shot emissive heat decay on heavy weapon muzzles, and tighten point-defense tracer streams toward intercepted torpedoes and wings.
+- **Size:** M (2 to 4 runs: turret barrel recoil + muzzle heat pulse + flak tracer pass, look-bench close-up capture)
+- **Confidence:** OBSERVED and INFERRED (`BATTLE1076_A16_c26_standard.jpg`, `godot/fx/fx_weapons.gd:58, 245-282`)
+
+#### E4. Capital Ship Explosions Do Not Disturb Nearby Nebula Gas or Loose Debris
+- **Area:** Effects / Physics and Motion
+- **What a player sees today:** In `docs/shots/battle_baseline_1118/BATTLE1076_IM5_c170_standard.jpg`, `godot/fx/fx_death.gd`, and `godot/world/nebula_wake.gd`, ship movement already parts nebula clouds (`nebula_wake.gd`), yet a massive battleship or flagship detonation emits no expanding pressure wave into the nebula wake field or nearby floating debris.
+- **What the benchmark game does:** **EVE Online** and **Sins of a Solar Empire II** sell capital destruction with an expanding shockwave ring that briefly pushes nearby space dust, gas clouds, and small debris outward.
+- **Fix:** Feed capital death blasts into `nebula_wake.gd` as a radial impulse ring and apply a gentle damped radial nudge to nearby sleeping debris plates in `fx_death.gd` (staying inside RULEBOOK 6.2 flash comfort limits).
+- **Size:** S to M (1 to 2 runs: shockwave impulse hook between `fx_death.gd` and `nebula_wake.gd`, look-bench clip)
+- **Confidence:** INFERRED (`godot/fx/fx_death.gd`, `godot/world/nebula_wake.gd`)
+
+---
+
+### 2.3 Physics and Motion (Technical Animator and Physics)
+
+#### P1. Turrets Only Slew at Commit Instead of Tracking Hovered and Planned Targets Live
+- **Area:** Physics and Motion
+- **What a player sees today:** In `docs/shots/player_path_1119/navy-b1-p01.mp4` and `godot/fx/fx_weapons.gd:246`, articulated turrets wait until a committed move finishes braking (`#1581`) before turning toward a target, leaving guns pointing straight ahead while the player aims and hovers enemies on the board.
+- **What the benchmark game does:** **Sins of a Solar Empire II** and **EVE Online** visibly slew turrets toward locked targets before firing, giving immediate tactile confirmation that guns are bearing on the enemy.
+- **Fix:** Feed the currently hovered or planned target position into `ship_view.gd` so eligible turrets smoothly slew within their firing arcs while planning, and smoothly return to neutral rest when planning clears.
+- **Size:** S (1 run: live aim-preview hook from `battle.gd` into `fx_hull.gd` turret traverse, turret check update)
+- **Confidence:** OBSERVED and INFERRED (`navy-b1-p01.mp4`, `godot/fx/fx_weapons.gd:246`, `godot/render/ship_view.gd`)
+
+#### P2. Camera Lacks Zoom-Linked Pitch Tilt, Smooth Follow-Cam Toggle, and Dynamic Fleet Framing
+- **Area:** Physics and Motion / Camera
+- **What a player sees today:** In `godot/render/camera_rig.gd:166-275`, zooming in or out moves strictly along a fixed straight ray at the current pitch angle `b`, forcing players to manually right-drag tilt every time they zoom close to inspect a hull; there is also no optional follow-cam toggle for watching a flagship move and no smooth pullback when large 20-ship Sector 3 engagements spread wide.
+- **What the benchmark game does:** **Sins of a Solar Empire II** and **EVE Online** subtly ease camera pitch lower when zooming in close to ships (and higher toward tactical overview when zooming out) plus offer a single-key ship-follow lock.
+- **Fix:** Add an opt-in gentle zoom-pitch curve (flatter tactical view when zoomed out, hero three-quarter angle when zoomed in under radius 70) and a `Follow Ship` lock toggle in `camera_rig.gd` without overriding manual right-drag orbit.
+- **Size:** S to M (1 to 2 runs: zoom-pitch easing and follow lock in `camera_rig.gd`, camera regression test)
+- **Confidence:** INFERRED (`godot/render/camera_rig.gd:166-275`)
+
+#### P3. Uniform Strike-Craft Attack Choreography Lacks Dogfight Weaving and Formation Attrition
+- **Area:** Physics and Motion
+- **What a player sees today:** In `docs/shots/issue-1021-openai/keel_target_1080.png` and `godot/render/squadron_wing.gd`, strike craft fly in tight uniform patrols and use one shared dive-and-climb pass (`#1874`) whether fighters are intercepting enemy wings or bombers are making an anti-capital run, and damaged wings lack broken-formation straggling or trailing smoke ribbons on individual craft.
+- **What the benchmark game does:** **Sins of a Solar Empire II** differentiates darting fighter dogfight weaves from low hull-skimming bomber runs, with damaged craft breaking formation and trailing smoke.
+- **Fix:** Split `squadron_wing.gd` attack paths into two distinct motion profiles (weaving high-angle fighter dogfight passes vs low belly/flank bomber torpedo runs) and drop individual craft visibly out of formation as wing HP falls (respecting Reduce Motion).
+- **Size:** M (2 to 4 runs: dual attack-run splines and per-craft HP loss cues in `squadron_wing.gd`, clip capture)
+- **Confidence:** OBSERVED and INFERRED (`keel_target_1080.png`, `godot/render/squadron_wing.gd`)
+
+#### P4. Broken Wreck Halves Drop Out of Physics Early and Never React to Passing Hulls or Blasts
+- **Area:** Physics and Motion
+- **What a player sees today:** In `godot/fx/fx_death.gd:19-26`, wreck pieces leave Jolt physics after `WRECK_PHYS_S` and debris plates permanently sleep after `DEBRIS_REST_S`, so later broadsides, rams, or passing capitals clip or ignore nearby floating scrap completely.
+- **What the benchmark game does:** **Battlefleet Gothic: Armada** and **EVE Online** keep battlefield wreckage feeling physically present, with small scrap nudged aside by passing ships and secondary blasts without hurting frame rate.
+- **Fix:** Keep sleeping debris plates wakeable on close hull proximity or nearby explosion impulses (with a tight per-frame wake budget and quick re-damping per R393) so flying through a fresh kill field gently parts the floating scrap.
+- **Size:** S to M (1 to 2 runs: proximity wake budget in `fx_death.gd`, 20-ship frame-time check)
+- **Confidence:** INFERRED (`godot/fx/fx_death.gd:19-26, 480-545`)
+
+---
+
+### 2.4 UI/UX (UX Lead)
+
+#### U1. Modal Teaching-Card Spam Interrupts the First Minute of Play
+- **Area:** UI/UX
+- **What a player sees today:** In `docs/shots/player_path_1119/navy-b1-p01.mp4` (00:08, 00:19, 00:38, 00:45), four separate tall teaching boxes (`MOVING AND FACING`, `SHIELDS AND HULL`, `FIRING`, `THREAT MAP`) pop up in the first 45 seconds of Battle 1, covering the upper-right battlefield while a second black hover tooltip sits over the ships. Planned `#1403` adjusts Battle 1 spacing and relay labels, but keeps the modal card pattern.
+- **What the benchmark game does:** **BattleTech** teaches first-mission controls with lightweight anchored callout highlights tied to the exact button or hex the player needs next, never stacking multi-paragraph modal boxes over live combat.
+- **Fix:** Replace the 4 early-battle paragraph boxes with short 1-to-2-line anchored callouts pointing at the live control (move hex, target ring, threat toggle) that dismiss automatically when the player performs the action.
+- **Size:** M (2 to 4 runs: contextual callout controller in `hud.gd`, player-path Battles 1 to 3 recapture)
+- **Confidence:** OBSERVED (`navy-b1-p01.mp4` at 00:08, 00:19, 00:38, 00:45; `navy-b1.jpg`)
+
+#### U2. Shield Power Routing Is Buried in Prose With No Interactive Facing Readout
+- **Area:** UI/UX
+- **What a player sees today:** In `godot/scenes/battle/battle.gd:3479-3498` and `godot/ui/battle/ledger.gd`, the lossy shield-routing mechanic (`+20%` facing coverage at `+30%` pool drain after taking a hit on a side) exists only as a hidden tooltip paragraph; nothing on the ship's KEEL card or board ring visually distinguishes a routed high-drain facing from a standard facing.
+- **What the benchmark game does:** **Battlefleet Gothic: Armada** and **EVE Online** make shield stress and power routing unmistakable at a glance with pulsing arc highlights and clear efficiency callouts.
+- **Fix:** Highlight routed shield arcs in bright Glacier pulse on the new KEEL schematic (Top 10 #1) and on the hovered 3D shield rim, with a crisp 1-line icon badge (`PROW ROUTED +20% COV / +30% DRAIN`).
+- **Size:** S (1 run: routed-side highlight in `ledger.gd` and `ship_view.gd`, readability check)
+- **Confidence:** INFERRED (`godot/scenes/battle/battle.gd:3479-3498`, `godot/ui/battle/ledger.gd`)
+
+#### U3. Non-Interactive Combat Log Truncates Mid-Sentence and Hides Damage Math
+- **Area:** UI/UX
+- **What a player sees today:** In `docs/shots/issue-1021-openai/keel_target_1080.png` and `docs/shots/player_path_1119/navy-b1-p01.mp4`, the bottom-right log clips lines with ellipses (`...has been planne...`), cannot be clicked to jump the camera to the ship or hit, and gives no expandable hit-chance or damage breakdown after a surprising miss or massive crit. (`#1401` wraps only the single newest line.)
+- **What the benchmark game does:** **EVE Online** and **BattleTech** let players inspect exact combat rolls (base hit, range, evasion, nebula, armor, shield absorb) and click log events to locate units on the field.
+- **Fix:** Make combat log entries clickable to focus the camera on the acting ship/target, and add a hover breakdown on any fired volley entry showing the exact hit-chance and shield/armor/hull math.
+- **Size:** S to M (1 to 2 runs: structured log entries and click-focus hook in `hud.gd`/`battle.gd`, UI check)
+- **Confidence:** OBSERVED (`keel_target_1080.png`, `navy-b1-p01.mp4`)
+
+#### U4. Bare Text-Only Event Cards With Zero Scene Art or Risk/Reward Clarity
+- **Area:** UI/UX / Presentation
+- **What a player sees today:** In `docs/shots/issue-1084-openai/EVENT.png` and `docs/shots/issue-1084-openai/SECTOR_BRIEF.png`, narrative events and sector briefings render as plain black text boxes with zero scene art, no speaker portrait, and uneven risk previews (`Offer aid` gives vague prose while `Seize the cargo` gives exact numbers).
+- **What the benchmark game does:** **BattleTech** pairs every Argo event with atmospheric header art, crew portraits, and clean tags showing cost/risk categories before you commit.
+- **Fix:** Add a framed atmospheric header banner (reusing faction/biome artwork or the `#1897` admiral/Nemesis portraits) and consistent icon tags (Credits, Hull, Nemesis Clock, Ambush Risk, Unlock Requirement) to campaign event cards in `campaign_ui.gd`.
+- **Size:** M (2 to 4 runs: event card art header and outcome-tag pass in `campaign_ui.gd`, UI checks)
+- **Confidence:** OBSERVED (`EVENT.png`, `SECTOR_BRIEF.png`)
+
+#### U5. Essential PC Graphics and Comfort Controls Exist in Code but Are Missing From Settings
+- **Area:** UI/UX / Loading and Performance
+- **What a player sees today:** In `docs/shots/settings/settings_ui_scale_reduce_motion.png` and `godot/main/main.gd:21, 279-296`, `main.gd` already supports `render_scale`, `fps_cap`, `vsync`, and `#1779` adds opt-in LUT/DoF/SSR toggles, yet the Settings screen hides all of them behind one coarse `Graphics` (`Max`/`Low`) switch and a `Temporal AA` button, with no resolution selector, window mode (`Borderless`/`Windowed`/`Fullscreen`), camera pan speed, or separate UI/SFX/Ambience audio sliders.
+- **What the benchmark game does:** **Sins of a Solar Empire II** and **BattleTech** give PC players clean Display, Graphics, Audio (Master/SFX/Music/Ambience/UI), and Camera Speed controls right in Settings.
+- **Fix:** Expand the `orders_kit.gd` Settings menu into clean tabs (Display & Graphics, Audio, Controls & Camera, Comfort) exposing `render_scale`, `fps_cap`, `vsync`, borderless/windowed modes, post-FX toggles, camera speed, and separate Ambience/UI volume sliders.
+- **Size:** M (2 to 4 runs: tabbed Settings layout in `campaign_ui.gd`/`main.gd`, persistence tests, 1080p/4K UI shots)
+- **Confidence:** OBSERVED (`settings_ui_scale_reduce_motion.png`, `godot/main/main.gd:21, 279-296`)
+
+---
+
+### 2.5 Loading and Performance (Performance Engineer)
+
+#### L1. Stark Five-Second Black Load Screen With Frozen `SHIPS READY 0/0` Counter
+- **Area:** Loading and Performance / UI/UX
+- **What a player sees today:** In `docs/shots/player_path_1119/navy-b1-p01.mp4` (00:00 to 00:05), entering a battle sits on a solid black screen reading `PREPARING THE BATTLE` (`SHIPS READY 0/0`, which vanishes to blank black for 4 seconds). While `#1434`/`#1995` cut total load time and `#1405` item 9 notes a future load cover, no issue builds a responsive, informative pre-battle tactical brief screen with live progress ticks.
+- **What the benchmark game does:** **BattleTech** and **Sins of a Solar Empire II** mask loading behind a rich mission briefing screen showing enemy faction intel, objective summary, and a smooth progress bar.
+- **Fix:** Replace the blank black load veil with an orders-sheet Battle Briefing cover showing the sector backdrop, enemy fleet intel, objective reminder, and a real per-stage progress bar driven by the `#1434` sliced loader.
+- **Size:** S to M (1 to 2 runs: briefing load overlay wired to `#1434` progress ticks, load-capture check)
+- **Confidence:** OBSERVED (`navy-b1-p01.mp4` 00:00 to 00:05)
+
+#### L2. Per-Shot `AudioStreamPlayer3D` and Tween Allocation Churn in Heavy Battles
+- **Area:** Loading and Performance / Sound and Music
+- **What a player sees today:** In `godot/audio/sfx.gd:368-401`, every individual layer of every weapon shot, hit, and explosion calls `AudioStreamPlayer3D.new()`, adds it to the scene tree, spawns up to two `Tween` objects, and frees them afterward. In 20-ship Sector 3 fights with multi-gun broadsides and flak, this creates hundreds of node add/remove cycles per minute. Neither `#1780` nor `#1995` pools audio nodes.
+- **What the benchmark game does:** **Sins of a Solar Empire II** and **EVE Online** pre-allocate fixed audio voice pools so massive fleet salvos produce zero allocation spikes or GC hitches.
+- **Fix:** Replace dynamic node creation in `sfx.gd` with a pre-allocated pool of `AudioStreamPlayer3D` and `AudioStreamPlayer` nodes (matching `max_voices`) and manual envelope stepping in `_process()`.
+- **Size:** S (1 run: voice pool refactor in `godot/audio/sfx.gd`, `audio_check.gd` and stress check)
+- **Confidence:** INFERRED (`godot/audio/sfx.gd:368-401`)
+
+#### L3. No Runtime VRAM Residency Budget or Texture Mip-Bias Scaling for Mid-Range GPUs
+- **Area:** Loading and Performance
+- **What a player sees today:** Under RULEBOOK 5.18 (`#1908`), flagships and battleships ship 4096 PBR texture sets and planets use 8K maps. While `#1780` adds BC7 world compression and `#1439` measures peak VRAM on Ryan's 16 GB RTX 5080, there is no automatic texture-quality tier (`High`/`Medium` mip bias or ship-cache LRU eviction between campaign battles) to prevent VRAM paging stutters on 8 GB to 12 GB Steam PCs.
+- **What the benchmark game does:** **Sins of a Solar Empire II** and **EVE Online** expose a Texture Detail setting and evict unused faction textures between scenes to stay smoothly inside 8 GB VRAM cards.
+- **Fix:** Add a Texture Detail setting (`4K`/`2K`/`1K` max ship/planet mip cap) and evict non-present faction hull caches between sectors so VRAM stays predictable across multi-sector runs on 8 GB to 16 GB cards.
+- **Size:** M (2 to 4 runs: texture mip cap and between-sector cache eviction in `ship_loader.gd`/`world_planet.gd`, memory sampler check)
+- **Confidence:** INFERRED (`docs/RULEBOOK.md` 5.18, `godot/render/ship_loader.gd`)
+
+#### L4. No Lightweight Performance HUD or Hardware Preset Auto-Check
+- **Area:** Loading and Performance / UI/UX
+- **What a player sees today:** `godot/main/main.gd` has internal timing prints for PC test harnesses, but a real player has no opt-in FPS/frame-time corner readout or automatic first-launch graphics check to match their monitor (1080p vs 1440p vs 4K) to the 60 fps target (RULEBOOK 3.9).
+- **What the benchmark game does:** **Sins of a Solar Empire II** and **Battlefleet Gothic: Armada** provide a clean opt-in FPS readout and first-launch hardware preset selection.
+- **Fix:** Add an opt-in minimal FPS / GPU frame-time toggle in Settings (rendered in Azeret Mono) plus a quick first-launch GPU tier check that picks a sensible default preset and render scale.
+- **Size:** S (1 run: lightweight FPS readout and first-launch preset probe in `main.gd`/`hud.gd`)
+- **Confidence:** INFERRED (`godot/main/main.gd`, `docs/shots/settings/settings_ui_scale_reduce_motion.png`)
+
+---
+
+### 2.6 Sound and Music (Audio Director)
+
+#### A1. Live Battle Soundtrack Clashes With the Dark Sci-Fi Setting and Lacks Per-Faction Musical Identity
+- **Area:** Sound and Music
+- **What a player sees today:** Heard directly in `docs/shots/player_path_1119/navy-b1-p01.mp4` (00:08 to 00:47) and verified in `godot/music/music.json`, the live CC0 battle music (`fac_hegemony` / `hot_pursuit`) sounds like a bright, cheerful adventure brass march rather than grim hollow-star warfare, and `fac_corsair.ogg` loops every `14.5 s`. Planned `#1752` Gate 3 replaces battle music with one 4-stem adaptive loop (`M2`), but does not yet cover cohesive per-faction musical leitmotifs or a signature flagship/boss theme at that same quality bar.
+- **What the benchmark game does:** **BattleTech** pairs dark brooding cello and tactical percussion with memorable tension escalation; **Sins of a Solar Empire II** and **Battlefleet Gothic: Armada** give every faction its own unmistakable musical signature (cathedral brass, cold machine pulses, alien bio-drones).
+- **Fix:** After `#1752` Gate 3 proves the 4-stem `AudioStreamInteractive` battle system, produce 1 signature faction stem overlay per faction (6 short bar-locked stems) plus a dedicated Sector 3 Boss / Hollow Sun finale theme so battles sound unmistakably tied to who you are fighting.
+- **Size:** M (2 to 4 runs: 6 bar-locked faction stems + boss theme generation and wiring in `music_player.gd`)
+- **Confidence:** OBSERVED (`navy-b1-p01.mp4` audio track, `godot/music/music.json`, `godot/music/music_player.gd`)
+
+#### A2. Single-Take Repetition on Newly Wired Gate 2 Faction Weapons and Impacts
+- **Area:** Sound and Music
+- **What a player sees today:** In `godot/audio/clips/` and `godot/audio/cues.json`, most newly wired Gate 2 weapon and impact keepers (`wep_sunward_lance_beam_0.ogg`, `wep_directorate_ion_beam_0.ogg`, `wep_hullbreaker_junk_gun_0.ogg`, `wep_ithar_pulsar_0.ogg`, `imp_metal_light_0.ogg`, `shd_hit_absorb_0.ogg`) have only 1 audio file (`_0.ogg`). Even with pitch jitter, firing 4 identical batteries in a round sounds noticeably repetitive against RULEBOOK 8.4's 4-take target. Wave F (`#1752`) adds takes to a subset of core SFX, not all 26 faction weapons and material impacts.
+- **What the benchmark game does:** **BattleTech** and **Battlefleet Gothic: Armada** round-robin 3 to 5 distinct takes per frequent weapon and impact with subtle transient layering so long multi-ship battles never sound robotic.
+- **Fix:** Expand every frequent weapon fire, shield absorb, and hull impact cue to at least 3 distinct round-robin takes (building on Wave F) and verify zero back-to-back repeats in `audio_check.gd`.
+- **Size:** M (2 to 4 runs: targeted multi-take ElevenLabs generation + mastering + wiring)
+- **Confidence:** OBSERVED (`godot/audio/clips/` file listing, `godot/audio/cues.json`, `wep_sunward_lance_beam_0.ogg`)
+
+#### A3. Missing Micro-Tactile Planning, Targeting, and Warning Audio on the Battle Board
+- **Area:** Sound and Music / UI/UX
+- **What a player sees today:** In `docs/shots/player_path_1119/navy-b1-p01.mp4` and `godot/audio/cues.json`, moving the ghost across hexes, rotating facing with `Q`/`E`, locking weapons onto an enemy, stepping into an ion storm, or pressing Backspace to undo a planned step produces almost no tactile audio feedback compared to standard menu clicks.
+- **What the benchmark game does:** **EVE Online** and **BattleTech** give players unmistakable micro-audio cues: crisp target-lock chirps, soft rangefinder ticks when sweeping hexes, muted mechanical unwind on undo, and subtle hazard hums when hovering dangerous terrain.
+- **Fix:** Wire 5 subtle, dry tactical UI cues in `battle.gd` (hex-step tick, `Q`/`E` pivot click, enemy target-lock chime when guns bear, Backspace undo unwind, and ion-storm/gravity-well hover warning) kept soft and non-fatiguing per RULEBOOK 8.1.
+- **Size:** S (1 run: 5 clean tactical UI cues + wiring in `battle.gd` and `cues.json`)
+- **Confidence:** OBSERVED (`navy-b1-p01.mp4`, `godot/audio/cues.json`)
+
+#### A4. No Dynamic Priority Sidechaining During Overlapping Multi-Ship Volleys
+- **Area:** Sound and Music
+- **What a player sees today:** In `godot/audio/sfx.gd:126-226`, dynamic ducking (`mix_duck`, `death_beat`) fires only on capital death beats, leaving dense 10-to-20-ship broadside exchanges, flak storms, and shield breaks competing evenly against the single master compressor.
+- **What the benchmark game does:** **Battlefleet Gothic: Armada** and **Sins of a Solar Empire II** carve brief micro-ducking pockets around hero weapons (lances, torpedoes, shield collapses) so critical hits punch cleanly through dense combat noise.
+- **Fix:** Trigger short priority micro-ducks (-2 to -4 dB for 0.25 s on lower-priority weapon/ambient buses) when a capital lance, torpedo hit, or shield break lands in `sfx.gd`.
+- **Size:** S (1 run: priority transient ducking in `godot/audio/sfx.gd`, `sound_weight_check.gd` update)
+- **Confidence:** INFERRED (`godot/audio/sfx.gd:126-226`)
+
+---
+
+### 2.7 Progression and Campaign (Game Designer: Campaign and Progression)
+
+#### C1. Non-Flagship Ships Have Only One Refit Slot and Zero Swappable Weapon Pods
+- **Area:** Progression and Campaign
+- **What a player sees today:** In `godot/rules/data/tables.json` (`FIT_SLOTS`) and `docs/shots/late_run_1178/L1178_late_market.png`, only the flagship gets a swappable weapon pod, module, and section trim; every other frigate, destroyer, cruiser, and battleship has 1 refit slot and fixed weapons for the whole run.
+- **What the benchmark game does:** **BattleTech** and **EVE Online** let players refit every unit in the roster with distinct weapon and utility loadouts (turning a standard cruiser into a flak escort, sniper, or close-range brawler).
+- **Fix:** Give cruisers and capitals a second refit slot (or one swappable secondary weapon pod) at Sector 2 to 3 shipyards so players can specialize their entire line, not only the flagship.
+- **Size:** M (2 to 4 runs: rules slot expansion, Shipyard fitting UX, Godot balance sim recheck)
+- **Confidence:** OBSERVED and INFERRED (`L1178_late_market.png`, `godot/rules/data/tables.json` `FIT_SLOTS`)
+
+#### C2. Static Linear 7-Jump Sector Graph Lacks Living Strategic Pressure
+- **Area:** Progression and Campaign
+- **What a player sees today:** In `docs/shots/issue-1176-codex/route-1176-01.png` and `docs/shots/ui_redesign/briefing/rail_r2_1080/sector_3.png`, each sector is a static 7-column left-to-right funnel where stops sit frozen until clicked and the only strategic clock is the 4-pip Nemesis bar.
+- **What the benchmark game does:** **BattleTech** (time, finances, shifting faction reputation, timed contracts) and **Sins of a Solar Empire II** (shifting front lines and enemy fleet movements) make every jump on the map feel like a strategic race against a living enemy.
+- **Fix:** Add 1 to 2 lightweight dynamic map elements per sector (such as a timed distress convoy that disappears after 2 jumps, or a roaming enemy hunter fleet that shifts one stop per jump) so route planning responds to a living sector.
+- **Size:** M (2 to 4 runs: dynamic map state in `campaign.gd`, 3D indicator in `map3d.gd`, campaign parity update)
+- **Confidence:** OBSERVED (`route-1176-01.png`, `sector_3.png`)
+
+#### C3. Flat-Stat Captain Perks Without Crew Personalities or Memorable Ship Service Histories
+- **Area:** Progression and Campaign
+- **What a player sees today:** In `docs/shots/late_run_1178/L1178_late_market.png` and `godot/rules/data/tables.json` (`PERKS` = 14), ship captains are a random name plus 1 to 2 flat stat bumps (`+aim`, `+armor`, `+evasion`) with no callsign, service medals, or personality quirks; losing a veteran ship stings mathematically, not personally.
+- **What the benchmark game does:** **BattleTech** turns pilots into memorable veterans with callsigns, personal traits, injuries, kill tallies, and ship-level service ribbons that make permadeath unforgettable.
+- **Fix:** Give surviving captains earned combat epithets/callsigns (tied to kills, survived breaches, or flagship assists), a visible kill-mark strip on the ship card, and 6 to 8 high-identity specialization perks (such as "Point-Blank Gunnery" or "Damage Control Ace") instead of purely flat stats.
+- **Size:** M (2 to 4 runs: captain traits/service record in `campaign.gd`/`rules.gd`, Fleet Manifest and Shipyard display)
+- **Confidence:** OBSERVED and INFERRED (`L1178_late_market.png`, `FL5_1080.jpg`, `godot/rules/data/tables.json` `PERKS`)
+
+#### C4. Protocol Offer Cards Lack Synergy Tags and Build-Direction Feedback
+- **Area:** Progression and Campaign / UI/UX
+- **What a player sees today:** In `docs/shots/issue-1084-openai/REWARD_OFFER.png`, Core Protocol offers show 3 plain text blocks with rarity words (`COMMON`, `EPIC`) and no visual cue showing which protocols actually trigger on your current fleet's weapons, wings, or faction mechanics, or how close you are to the next Core Sync tier.
+- **What the benchmark game does:** **Sins of a Solar Empire II** (research tree clarity) and top tactical roguelites highlight exact build synergies, affected ship counts (`Applies to 3 of 4 ships`), and sync-tier progress right on the reward choice.
+- **Fix:** Add compact affected-ship counts (`3 ships have lances`) and a mini Core Sync progress pip bar directly on the `REWARD_OFFER` protocol cards so players can make fast, informed build choices.
+- **Size:** S (1 run: fleet-applicability check and sync pip bar in `campaign_ui.gd`, UI checks)
+- **Confidence:** OBSERVED (`REWARD_OFFER.png`)
+
+---
+
+### 2.8 Tactical Depth and AI (Game Designer: Combat and AI)
+
+#### T1. Only One Universal Ship Order (`Brace`) Limits Commander Decision Depth
+- **Area:** Tactical Depth and AI
+- **What a player sees today:** In `godot/rules/data/tables.json` (`ORDERS`) and `docs/shots/issue-1021-openai/keel_target_1080.png`, every ship shares only one universal tactical order (`Brace for impact`: -40% hull damage instead of firing). Every other ship turn reduces to "move, fire, or brace" unless a cooldown ability happens to be ready.
+- **What the benchmark game does:** **Battlefleet Gothic: Armada** gives every vessel a crisp suite of universal fleet orders (Lock On for accuracy/crit at reduced evasion, All Ahead Full for burst speed with no weapons, Brace for Impact, Reload Ordnance) that turn every activation into a real trade-off.
+- **Fix:** Add 2 clean universal orders beside `Brace` (for example, `Lock On`: +15 aim/+10 crit this turn while losing evasion/movement; and `Emergency Burn`: +2 movement with weapons offline) with full Veteran AI usage and balance-sim verification.
+- **Size:** M (2 to 4 runs: 2 new orders in `rules.gd` and `tables.json`, KEEL order shelf buttons, AI logic, Godot balance sim)
+- **Confidence:** OBSERVED and INFERRED (`keel_target_1080.png`, `godot/rules/data/tables.json` `ORDERS`)
+
+#### T2. Under-Exploited Tactical Terrain and Hollow Sun Gravity-Well Mechanics
+- **Area:** Tactical Depth and AI
+- **What a player sees today:** In `godot/rules/data/tables.json` (`TERRAIN_INFO`, `BEVENTS`) and `docs/shots/1359/pc/boneyard_graveyard_1359_1_cine_no_hover_c170.jpg`, battle terrain is limited to solid LOS blockers plus 3 flat stat modifiers (`neb` -15 hit, `debris` -10 hit, `storm` -10 shield/turn). The Hollow Sun's gravity well pulls ships inward (`WELL_PULL`), yet there are no true stealth gas clouds, destructible unstable wrecks/fuel depots, or gravity-slingshot movement lanes.
+- **What the benchmark game does:** **Battlefleet Gothic: Armada** uses gas clouds to break target locks and ambush fleets; **BattleTech** rewards players for detonating environmental hazards and managing heat/cover terrain dynamically.
+- **Fix:** Deepen 2 existing terrain types without cluttering rules: let dense Nebulae block long-range locks beyond 5 hexes (turning gas into true ambush cover) and add 1 interactive hazard tile per biome (such as an unstable ammo hulk that can be detonated or a gravity-well slingshot rim giving +1 free move along the orbit).
+- **Size:** M (2 to 4 runs: rules + visual tells + Veteran AI awareness + saved-results update)
+- **Confidence:** OBSERVED and INFERRED (`boneyard_graveyard_1359_1_cine_no_hover_c170.jpg`, `godot/rules/data/tables.json`)
+
+#### T3. Single-Ship Greedy AI Lacks Multi-Ship Fleet Coordination and Shield-Screening Discipline
+- **Area:** Tactical Depth and AI
+- **What a player sees today:** In `godot/rules/rules.gd:7451-7935`, Veteran AI scores each ship well individually (`aiRefreshFocus`, `aiRearScore`, `aiStormCost`, `evalThreatVet`), but each activation decides in isolation (`aiUnit`). Enemy fleets do not intentionally sequence an ion-stripping ship before a lance sniper on the same focus target, screen fragile carriers behind fresh brawlers, or rotate a fresh shield arc forward when holding a choke point.
+- **What the benchmark game does:** **BattleTech** and **Sins of a Solar Empire II** coordinate fleet roles: shield-strippers and flankers open lanes before heavy finishers fire, and escorts screen high-value capitals.
+- **Fix:** Upgrade `aiPickActivation` and `aiUnit` on Veteran AI to (1) activate shield-stripping ion/anti-shield ships before high-hull lance finishers when both can reach `aiFocus`, (2) give escorts a light bodyguard bonus for positioning between player brawlers and friendly carriers, and (3) factor shield-facing freshness into ending-facing selection.
+- **Size:** M (2 to 4 runs: Veteran AI activation ordering and facing/screening weights in `rules.gd`, balance sim & saved-results check)
+- **Confidence:** INFERRED (`godot/rules/rules.gd:7545-7935`)
+
+#### T4. Narrow Encounter Objective Variety Across Three Sectors
+- **Area:** Tactical Depth and AI / Progression
+- **What a player sees today:** In `godot/rules/data/tables.json` (`ENCOUNTERS` = 8), only 8 encounter types span all 3 sectors, and most early/mid battles resolve as standard fleet-break fights (`rout`) or simple 3-round relay holds (`hold`).
+- **What the benchmark game does:** **BattleTech** and **Battlefleet Gothic: Armada** vary tactical pacing with distinct objective structures: escorting a damaged friendly ship across a contested zone, destroying multiple orbital relay pylons under reinforcement pressure, or disabling and boarding a fleeing courier.
+- **Fix:** Add 2 to 3 fresh high-drama encounter templates (Friendly Escort through an asteroid gauntlet, Multi-Pylon Destruction before a reinforcement wave, and Data-Vault Boarding Raid) wired into Sector 2 and 3 pools.
+- **Size:** M (2 to 4 runs: encounter rules in `rules.gd`/`campaign.gd`, objective HUD/board markers, balance sim check)
+- **Confidence:** INFERRED (`godot/rules/data/tables.json` `ENCOUNTERS`)
+
+---
+
+### 2.9 Skirmish, Replayability, and Presentation Polish (Added Area)
+
+#### X1. No Custom Skirmish or Fleet Builder Mode
+- **Area:** Replayability / UI/UX
+- **What a player sees today:** In `godot/main/main.gd:500-515` and `docs/shots/frontend_1217_p2/F2_title_normal.png`, clicking `Quick battle` launches one hardcoded `start_default()` battle with zero option to choose factions, point budgets, ships, admirals, AI level, or arena biome.
+- **What the benchmark game does:** **BattleTech**, **Sins of a Solar Empire II**, and **Battlefleet Gothic: Armada** all offer a clean Skirmish lobby so players can build custom fleets, stage dream faction matchups, or practice counter-tactics outside the roguelite campaign.
+- **Fix:** Turn `Quick battle` into a compact orders-sheet Skirmish Setup screen (Pick Player Faction & Fleet Points, Enemy Faction & AI Level, Arena & Biome, plus a "Random Clash" instant-start button).
+- **Size:** M (2 to 4 runs: Skirmish setup screen in `campaign_ui.gd` using `orders_kit.gd`, custom battle launcher in `main.gd`, UI checks)
+- **Confidence:** OBSERVED and INFERRED (`F2_title_normal.png`, `godot/main/main.gd:500-515`)
+
+#### X2. No Photo Mode / Hide-HUD Toggle or End-of-Battle Kill Replay
+- **Area:** Presentation Polish / Camera
+- **What a player sees today:** Despite huge visual investment in 4K ship hulls, modeled interiors, wounds, and multi-beat deaths, `godot/scenes/battle/battle.gd` offers no `Hide HUD` photo-mode key during pause or slow-mo kills and no option to replay a flagship kill or favorite turn from a free close-up camera.
+- **What the benchmark game does:** **EVE Online** (`Ctrl+F9` clean cinematic view) and **Sins of a Solar Empire II** / **Battlefleet Gothic: Armada** let players hide all UI cleanly to watch or screenshot fleet clashes, and review decisive battle moments.
+- **Fix:** Add a one-key `Hide HUD / Photo Mode` toggle (`H`) that hides tactical grids, rings, and KEEL cleanly while allowing free camera orbit during battle pause or slow-mo kills, and consider a lightweight battle-replay seed playback option later.
+- **Size:** S (1 run for `Hide HUD / Photo Mode`; M for full battle replay playback)
+- **Confidence:** INFERRED (`godot/scenes/battle/battle.gd`, `godot/render/camera_rig.gd`)
+
+#### X3. Leftover Lore Name Drift (`Hegemony Navy`) and Flat Ship Previews on Start Screens
+- **Area:** Presentation Polish / UI/UX
+- **What a player sees today:** In `docs/shots/frontend_1217_p3/F3_setup_normal.png`, `docs/shots/issue-1021-openai/keel_target_1080.png`, and `docs/shots/player_path_1119/navy-b1.jpg`, the display name `Hegemony Navy` still appears across the faction select tab, top-right battle HUD, and combat log even though the approved display name in `AGENTS.md` and `rename_map_final.md` is `Meridian Directorate` (`hegemony` is the internal ID only). On `F3_setup_normal.png`, starting-fleet silhouettes also give no hover stat breakdown, and on `F4_flagship_voidsworn.png` the flagship renders as a flat backlit silhouette (C37 `#1406` / R436 partially addresses C37 lighting, not the faction rename sweep or fleet-preview hovers).
+- **What the benchmark game does:** **BattleTech** and **Sins of a Solar Empire II** keep faction naming 100% consistent across every menu and battle header and let players inspect every starting unit before clicking Launch.
+- **Fix:** Sweep remaining user-facing `Hegemony Navy` strings to `Meridian Directorate` (keeping internal ID `hegemony` unchanged per RULEBOOK 11.1) and add compact ship-stat hover cards to the starting fleet silhouettes on the faction/admiral desk.
+- **Size:** S (1 run: display-string sweep + starting-fleet hover tips in `campaign_ui.gd`, UI checks)
+- **Confidence:** OBSERVED (`F3_setup_normal.png`, `F4_flagship_voidsworn.png`, `keel_target_1080.png`, `navy-b1.jpg`)
