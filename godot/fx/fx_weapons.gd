@@ -602,7 +602,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			ti = tf + ft
 		"tendril":
 			# Acid Thorns (issue 1877, R437): one built bone thorn a shot (fx_acid_thorn.gd); the old tendril lash is gone
-			tg["mark_look"] = "spine"
+			tg["mark_look"] = "thorn"  # the etched burn, no drawn spines: the built thorn is the spine (issue 1877)
 			var cr: Array = THORN.shot(fx, from, mn, to, T0, beat, col, ka, A, tg, Tg)
 			tf = cr[0]
 			ti = cr[1]

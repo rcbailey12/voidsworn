@@ -897,7 +897,7 @@ static func compute(job: Dictionary) -> Dictionary:
 		var ends: Array = []
 		if E.kind == K_HOLE and E.style != S_BREACH and E.conduits and not job.get("organic", false):
 			ends = conduits(hull, parts[i], E, ents, r)
-		elif E.kind == K_CLUSTER and E.style == S_ACID:
+		elif E.kind == K_CLUSTER and E.style == S_ACID and E.look != "thorn":
 			spines(hull, parts[i], E, E.dir, r)
 		ends_by.append([ends, r.state])
 	var t_parts := Time.get_ticks_msec() - t_ms
@@ -1866,7 +1866,7 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 		"flak", "pflak", "mflak", "gflak":
 			# a stippled patch that grows in area, never in depth, and never exposes structure
 			out.append(cluster(p, n, L * 0.04 * wk * g, 10, L * 0.0045, 0.0, seed_v, S_FLAK))
-		"spine", "tendril", "sporeb", "spores":
+		"spine", "tendril", "sporeb", "spores", "thorn":
 			var e := cluster(p, n, L * 0.03 * wk * g, 7, L * 0.006, 0.0, seed_v, S_ACID)
 			e.dir = -dir if look in ["spine", "tendril"] else Vector3.ZERO
 			out.append(e)
