@@ -35,6 +35,8 @@ func _run() -> void:
 	for q in ["low", "high"]:
 		for kind in ["two", "three", "late"]:
 			await _breakup(q, kind)
+	# Fable on 33561155: a late snap whose glued piece is the middle one (snaps toward the lone piece) keeps clear too
+	await _breakup("high", "late", [-2.0, 3.0], -3.0, " (middle glued)")
 	await _warmed_late_hit()
 	await _middle_glued()
 	await _kinked_seam()
@@ -137,16 +139,26 @@ func _yaw(nd: Node3D) -> float:
 	return atan2(-x.z, x.x)
 
 
-func _breakup(quality: String, kind: String) -> void:
+func _breakup(quality: String, kind: String, joints := [-4.0, 4.0], hit_x := INF, tag_extra := "") -> void:
 	var world := Node3D.new()
 	root.add_child(world)
 	var fx = _fx(world, quality)
-	var s = _ship(fx, world, "k", [-4.0, 4.0])
+	var s = _ship(fx, world, "k", joints)
 	s.set_meta("breakup_force", kind)
+	if hit_x != INF: s.set_meta("last_hit", [Vector3(hit_x, 1.5, 0.0), Vector3.DOWN, 0.0])
 	var job: Dictionary = await _wait_cut(fx, s)
-	var tag := "%s %s" % [quality, kind]
+	var tag := "%s %s%s" % [quality, kind, tag_extra]
 	check(int((job.get("plan", {}) as Dictionary).get("n_main", 0)) == 3, "%s: three main pieces cut" % tag)
 	fx.death("k", "blast")
+	# Fable on 33561155: the tear draws its second line (open_b) only when that joint parts at the death
+	var open_b := Vector2(-1.0, 1.0)
+	for mm in s.meshes:
+		if is_instance_valid(mm) and (mm as MeshInstance3D).material_overlay is ShaderMaterial:
+			var ob = ((mm as MeshInstance3D).material_overlay as ShaderMaterial).get_shader_parameter("open_b")
+			if ob is Vector2: open_b = ob
+			break
+	var two_lines: bool = open_b.x >= 0.0
+	check(two_lines == (kind == "three") and s.has_meta("death_line_b") == (kind == "three"), "%s: the tear draws a second line only when both joints part (second line %s)" % [tag, two_lines])
 	var split := -1.0
 	var worst := 0.0
 	var worst_at := ""
@@ -212,7 +224,7 @@ func _breakup(quality: String, kind: String) -> void:
 
 
 # Artoo on PR 1737: the live path reuses a cut warmed before the killing hit. Cut after a hit at -6 (first crack -4), then
-# killed by a hit at +7: the +4 joint must part at the death as well, so the hull breaks in three with nothing glued.
+# killed by a hit at +7: the +4 joint cracks first instead, and the -4 joint (the bite's) is the one that holds.
 func _warmed_late_hit() -> void:
 	var world := Node3D.new()
 	root.add_child(world)
@@ -223,6 +235,19 @@ func _warmed_late_hit() -> void:
 	var plan: Dictionary = job.get("plan", {})
 	var first: float = (plan["breaks"][int(plan["bite_break"])]["at"] as Vector3).x if not plan.is_empty() else INF
 	check(absf(first + 4.0) < 0.3, "warmed: the cut made after a hit at -6 cracks first at -4 (%.2f)" % first)
+	# Fable on 33561155: a moved crack never rolls two (the bite is on the joint that holds), and a tidal kill parts
+	# all three at once; over many hit spots near +7
+	var rolled := {}
+	var tidal_ok := true
+	for k in 40:
+		s.set_meta("last_hit", [Vector3(6.0 + 0.1 * k, 0.25 * (k % 7), 0.25 * (k % 5)), Vector3.DOWN, fx.now])
+		s.remove_meta("death_crack")
+		rolled[DEATH._pick_breakup(fx, s, "blast", job)] = true
+		s.remove_meta("death_crack")
+		tidal_ok = tidal_ok and DEATH._pick_breakup(fx, s, "tidal", job) == "three"
+	s.remove_meta("death_crack")
+	check(not rolled.has("two") and rolled.size() >= 1, "warmed: a moved crack breaks late or in three, never in two (%s)" % str(rolled.keys()))
+	check(tidal_ok, "a tidal kill always breaks in three")
 	s.set_meta("last_hit", [Vector3(7.0, 1.5, 0.0), Vector3.DOWN, fx.now])
 	s.set_meta("breakup_force", "two")
 	fx.death("w", "blast")

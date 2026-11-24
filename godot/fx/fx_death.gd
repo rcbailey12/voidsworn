@@ -2364,6 +2364,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 	# then again a beat later. Only the joints that part at the death strain and tear.
 	s.remove_meta("death_crack")
 	s.remove_meta("death_glued_break")   # Neon's audit (PR 1902): set only by this death's layout, never carried over
+	s.remove_meta("death_gap")           # Fable on 33561155: likewise
 	var breakup := _pick_breakup(fx, s, cause, job)
 	s.set_meta("death_breakup", breakup)
 	var lines := _break_lines(job, _first_crack(s, job.get("plan", {})))
@@ -2742,7 +2743,10 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 	m.set_shader_parameter("open_a", Vector2(T + tl.tear_open, T + tl.tear_full))
 	m.set_shader_parameter("cut_at", at)
 	m.set_shader_parameter("cut_axis", axis)
-	if seeds.size() >= 3:
+	s.remove_meta("death_line_b")
+	# Fable on 33561155: a two or late breakup tears only its first joint, so the second line (and the chain blasts sent
+	# to it) is drawn only when that joint parts at the death too, or on an old seed cut with no plan lines
+	if seeds.size() >= 3 and (lines.is_empty() or lines.size() >= 2):
 		# the second line of a capital opens a little later and finishes with the first
 		var at_b: Vector3 = (seeds[1] + seeds[2]) * 0.5
 		var axis_b: Vector3 = (seeds[2] - seeds[1]).normalized()
@@ -3658,10 +3662,16 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		if not bu.is_empty():
 			# issue 1236 round 4: each piece is sent just hard enough that the brakes stop it on its planned rest spot,
 			# turned to its planned angle (some lie diagonal), so the pieces spread across the hex and never run together
-			vel = (bu["disp"][i] as Vector3) * BREAKUP_K_LIN
+			# Fable on 33561155: the dying hull's own drift carries on and dies away with the rest (capped at a tenth of
+			# the length, so a ship killed mid-move still settles in its hex)
+			var drift: Vector3 = inherited / BREAKUP_K_LIN
+			drift.y = 0.0
+			drift = drift.limit_length(s.hull.L * 0.1)
+			var disp_i: Vector3 = (bu["disp"][i] as Vector3) + drift
+			vel = disp_i * BREAKUP_K_LIN
 			ang = Vector3(fx.rng.randf_range(-0.02, 0.02), float(bu["yaw"][i]) * BREAKUP_K_ANG, fx.rng.randf_range(-0.02, 0.02))
 			release_delay = 0.0
-			if i != int(bu["child"]): _set_rest(node, bu["disp"][i], float(bu["yaw"][i]))
+			if i != int(bu["child"]): _set_rest(node, disp_i, float(bu["yaw"][i]))
 			if i == int(bu["child"]):
 				# glued to its neighbour across the joint that has not broken: it rides on that piece (two) until it
 				# snaps (late); nothing is released for it here
@@ -3948,9 +3958,14 @@ static func _pick_breakup(fx, s, cause: String, job: Dictionary) -> String:
 			if _joint_gap(brs[bi], last[0]) < _joint_gap(brs[nb], last[0]): nb = bi
 		if nb != int(plan["bite_break"]): s.set_meta("death_crack", nb)
 	if s.has_meta("breakup_force"): return str(s.get_meta("breakup_force"))   # breakup_check and the look bench only
-	if cause == "cut" or cause == "dark": return "two"   # a lance cuts clean; a burnt-out hull does not fly apart
-	if cause == "ram": return "three"
-	return _pick_breakup_for(str(s.id), str(s.death_tier), s.get_meta("last_hit", []), cause)
+	# a ram's spin and the dead star's pull part all three at once (Fable on 33561155: the layout bails for both, so a
+	# rolled two would strain one joint and part at both); a lance recut and a burnt-out hulk never get here
+	if cause == "ram" or cause == "tidal": return "three"
+	var kind := _pick_breakup_for(str(s.id), str(s.death_tier), s.get_meta("last_hit", []), cause)
+	# Fable on 33561155: when the crack moved off the bite, the bite (its core flash, thrown fragments and plates) is on
+	# the joint that holds, so that joint must give way too: a moved crack breaks late or in three, never in two
+	if kind == "two" and s.has_meta("death_crack"): kind = "late"
+	return kind
 
 
 # The joint that cracks first: the bite's, or the joint nearest a killing hit that came after the cut (death_crack).
@@ -4091,7 +4106,7 @@ static func _snap(fx, s, wreck: Dictionary, child, bu: Dictionary) -> void:
 	if fx.quality != "low":
 		for j in 10:
 			fx.stk(p, fx.now + fx.rng.randf() * 0.06, 0.5 + fx.rng.randf() * 0.4, boom_col(s, "spark", Color(1.0, 0.62, 0.3)), 5.0, 0.05, maxf(L * 0.004, 0.05), 1, fx.rdir() * L * fx.rng.randf_range(0.3, 0.8), 0.8, 0.0, 2.0, 10.0)
-	wreck["lights"].append(fx.light_source(child, child.get_meta("snap_site", child.get_meta("tear_site", Vector3.ZERO)), dcol(s, "rim", Color(1.0, 0.52, 0.22)), 0.6, 0.3))
+	wreck["lights"].append(fx.light_source(child, child.get_meta("snap_site", child.get_meta("tear_site", Vector3.ZERO)), boom_col(s, "rim", Color(1.0, 0.52, 0.22)), 0.6, 0.3))   # one lookup with the sparks (Fable)
 	fx.shake(fx.now, 0.12, p)
 
 
@@ -4304,7 +4319,7 @@ const LEASH_BRAKE := 4.0       # per second, the brake at the rest limit (it ram
 const LEASH_PULL := 1.5        # per second: a piece past its rest limit comes back in at this share of the gap
 const LEASH_SHRINK_FROM := 1.5 # seconds after the break: the fragments start to draw in
 const MAIN_BRAKE := 1.2        # per second: the hull's main pieces slow to rest where they parted (a part speed of v stops in about v / 1.2)
-const LEASH_SETTLED := 5.5     # seconds after the break: each main piece is held hard inside the rest radius
+const LEASH_SETTLED := 5.5     # seconds after the break: each fragment is held hard inside the rest radius
 
 
 # The battle calls this on the rules "wreck" event, before the death plays. radius: the hex's rest radius in world units.

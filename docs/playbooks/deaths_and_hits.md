@@ -165,12 +165,14 @@ ship broke at the same spot, and "we want variety". Since Nov 23:
   hull was last hit, measured on the struck side where a joint kinks round a machine (with no hit on record, a per-ship
   pick), never always the joint nearest the core. A lance cuts clean
   on the joint nearest the beam, in two. The cut is made ahead of the death (refreshed at most every few seconds as the hull is hit),
-  so when the killing hit lands nearer the other cut joint, that joint cracks first and the earlier one holds; the
-  breakup is still rolled as usual (forcing three there made three the most common breakup in a real fight).
+  so when the killing hit lands nearer the other cut joint, that joint cracks first. The earlier joint carries the
+  cut's bite (its flash and thrown debris), so it gives way too: such a death breaks late or in three, never in two
+  (forcing three every time made three the most common breakup in a real fight).
 - How it breaks up, one of three per death, picked from the ship, the cause and where it was hit (a replay breaks the
   same way): **two** (the piece across the second joint stays on, a clean break in two), **three** (both joints part
   at the death), **late** (one crack, then the pair snaps about a second later with a spit of sparks in the faction's
-  colour and no smoke). A ram always breaks in three; a burn-out never flies apart. A cruiser is about one in three of
+  colour and no smoke). Only the joints that part at the death tear and take chain blasts. A ram and the dead star's
+  pull always break in three; a burn-out never flies apart. A cruiser is about one in three of
   each; a capital breaks in three or late more often.
 - Where the pieces rest: each piece eases out to a planned spot, the end pieces out along the hull's line and to one
   side, a middle piece sideways, each turned to its own angle so some lie diagonal, all at real size. The wreck fills its
