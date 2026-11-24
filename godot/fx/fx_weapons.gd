@@ -2195,7 +2195,7 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 			Tg.hit_react(fx, imp, lhp, ldr, "shield" if absorbed and not breaking else "hull")
 			Tg.hit_power(fx, felt and (hull_damage or breaking or crit or ion), dip, duration))
 		if bio and not shield_only:
-			# R398 (issue 1394): where acid ate into the hull, so an acid kill glows green only there
+			# R398 (issue 1394): remember where acid ate into the hull so an acid kill glows only there.
 			var normal: Vector3 = tg.get("ln", Vector3.UP)
 			fx.later(T, func l_acid_spot() -> void:
 				var sp: Array = Tg.get_meta("acid_spots", [])
@@ -2516,6 +2516,11 @@ static func _ion_crawl(fx, Tg, p: Vector3, n: Vector3, T: float, col: Color, k: 
 # the wound for a few seconds while the acid keeps eating (fx_breach style 8).
 static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, lash: bool, w := 2) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
+	var eclipse: bool = Tg != null and Tg.faction == "deathless"
+	if eclipse:
+		col = Tg.acid_colour()
+	var drop_kind := SH.BIO_CONTACT_GLOB if eclipse else 15
+	var fume := col * 0.65 if eclipse else col.lerp(Color(0.3, 0.32, 0.18), 0.5)
 	var px: float = 28.0 * float(tg.get("gk", 1.0)) * float(tg.get("tk", 1.0))
 	_burst(fx,p+n*0.3*k,n,T,4.5*k,"flash",0.35,col,1.4,px)
 	_vent(fx,p+n*0.4*k,n,T,5.0*k,0.65,col,0.8,n*3.0*k,0.65,1.0,w,Tg)
@@ -2523,10 +2528,10 @@ static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, l
 		var d := _outward(n, fx.rcone(n,0.9), 0.2)
 		var v: Vector3 = d*fx.rng.randf_range(3.0,7.0)*k
 		var life: float = fx.rng.randf_range(1.8, 3.6)
-		fx.spr(p,T+j*0.015,life,col,1.2,0.42*k,0.22*k,15,v,0.35)
+		fx.spr(p,T+j*0.015,life,col,1.2,0.42*k,0.22*k,drop_kind,v,0.35)
 		_note(fx, "drop", "bio", v, n, life)
 	_burst(fx,p+n*k,n,T+0.12,4.5*k,"cool",0.8,col,0.5,0.0,n*k,0.45)
-	_gas_cloud(fx, p + n * 0.4 * k, n, T + 0.1, k, col.lerp(Color(0.3, 0.32, 0.18), 0.5), 2, 2.4, "bio", 0.30, 20)
+	_gas_cloud(fx, p + n * 0.4 * k, n, T + 0.1, k, fume, 2, 2.4, "bio", 0.30, 20)
 	_heat_spot(fx, p + n * 0.1 * k, T, k, 0.7, "bio", 5.0, 0.6, Tg)
 	fx.light(p+n*2.0*k,T,0.55,3.0,col,1)
 	fx.shake(T,0.1 if lash else 0.05,p)

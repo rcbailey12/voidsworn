@@ -5,6 +5,8 @@ const FX := preload("res://fx/fx.gd")
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const SFX := preload("res://audio/sfx.gd")
 const SHIP := preload("res://fx/fx_ship.gd")
+const POOLS := preload("res://fx/fx_pool.gd")
+const SH := preload("res://fx/fx_shaders.gd")
 
 var failures := 0
 var fx: FX
@@ -125,8 +127,6 @@ func _run() -> void:
 	fx.sync_ship(s.id, {"st": {"acid": 0}, "regenLock": false})
 	fx.step(0.05)
 	check(s._acid_mist == null and not s._shield_mi.visible, "both effects stop when their status expires")
-	var eclipse: SHIP = fx.ship(attacker.id)
-	check(eclipse._acid_colour() == eclipse.fac.damage_glow and eclipse._acid_colour().b > eclipse._acid_colour().g, "Eclipse acid uses its violet damage glow")
 
 	# Each impact sees its actual remaining pool, even when routing and a later shot change it again.
 	target.shp = 30.0
@@ -150,6 +150,66 @@ func _run() -> void:
 	check(sounds.count("shield_sputter") == 1, "one sputter plays for the strained hit")
 	s.shield_hit(fx, Vector3.RIGHT, fx.now, 1.0, 5.0, 0.5, 0.0)
 	check(s._hitw[s._hit_i].w == 0.0, "an empty pool leaves the collapse unstrained")
+	_check_eclipse_acid(fx.ship(attacker.id), s, world, box)
 	world.free()
 	print("status_fx_check: %d failures" % failures)
 	quit(1 if failures else 0)
+
+
+func _check_eclipse_acid(eclipse: SHIP, control: SHIP, world: Node3D, box: BoxMesh) -> void:
+	var chorus := Node3D.new()
+	world.add_child(chorus)
+	chorus.position = Vector3(-70, 4, 1)
+	var mesh := MeshInstance3D.new()
+	mesh.mesh = box
+	chorus.add_child(mesh)
+	fx.add_ship("chorus", chorus, {"faction": "chorus", "meshes": [mesh]})
+	fx.quality = "max" # Low skips the impact fume.
+	var violet: Color = eclipse.fac.damage_glow
+	var green: Color = fx.faction_info("chorus").weapon
+	check(eclipse.acid_colour() == violet and violet.b > maxf(violet.r, violet.g), "Eclipse idle and tick acid use its violet damage glow")
+	for ship in [eclipse, control]:
+		var expected := violet if ship == eclipse else green
+		var smoke: POOLS.Pool = fx.pools["smk"]
+		smoke.flush()
+		var volley := fx.volley("chorus", "bio", ship.id, {"weapon_id": "bioplasma", "shots": [true], "hits": [{"shield": 0, "hull": 2}]})
+		if volley.impacts.size() != 1:
+			check(false, "Chorus volley hits " + ship.faction)
+			continue
+		var impact_at: float = fx.now + float(volley.impacts[0])
+		var contact := Vector3(expected.r, expected.g, expected.b)
+		var drops := 0
+		var fumes := 0
+		var glob_ok := false
+		var colours_ok := true
+		for offset in range(0, smoke.pending.size(), POOLS.STRIDE * smoke.vpp):
+			# Read the submitted vertices, one per sprite. The flight glob precedes the impact.
+			var rgb := Vector3(smoke.pending[offset + 12], smoke.pending[offset + 13], smoke.pending[offset + 14])
+			var kind := int(smoke.pending[offset + 18])
+			if smoke.pending[offset + 7] < impact_at - 0.0001:
+				if kind == 15:
+					glob_ok = _same_hue(rgb, Vector3(green.r, green.g, green.b))
+				continue
+			if kind == 20:
+				fumes += 1
+			elif kind == (SH.BIO_CONTACT_GLOB if ship == eclipse else 15):
+				drops += 1
+				colours_ok = colours_ok and _same_hue(rgb, contact)
+			colours_ok = colours_ok and (rgb.z > maxf(rgb.x, rgb.y) if ship == eclipse else rgb.y > maxf(rgb.x, rgb.z))
+		check(glob_ok, "Chorus retains its green flight glob toward " + ship.faction)
+		check(drops == 8 and fumes > 0 and colours_ok, "bioplasma droplets and fume use the contact palette on " + ship.faction)
+		var light: Color = fx._lev.back()[4]
+		check(_same_hue(Vector3(light.r, light.g, light.b), contact), "bioplasma impact light uses the contact palette on " + ship.faction)
+		fx.step(float(volley.impacts[0]) + 0.15)
+		ship.flush_damage(fx)
+		var splash := fx.get_node_or_null("fx_weapon_flash") as MeshInstance3D
+		check(splash != null and _same_hue(splash.material_override.get_shader_parameter("weapon_tint"), contact),
+			"bioplasma splash uses the contact palette on " + ship.faction)
+		if ship == eclipse:
+			check(not eclipse._marks.is_empty() and eclipse._marks.back().wound_kind == 3,
+				"the lingering bioplasma scar uses the Eclipse wound kind")
+
+
+func _same_hue(rgb: Vector3, expected: Vector3) -> bool:
+	# Volley power can scale all three channels together.
+	return rgb.normalized().is_equal_approx(expected.normalized())

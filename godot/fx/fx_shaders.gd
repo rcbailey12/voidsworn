@@ -242,6 +242,8 @@ void process() {
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
+#  28 bio contact glob with its body tinted to match the impact
+const BIO_CONTACT_GLOB := 28
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
 
@@ -275,6 +277,7 @@ void vertex() {
 	} else {
 		float t = age / life;
 		int k = int(a3.z + 0.5);
+		if (k == 28) { k = 15; } // same motion and pixel floor as the bio glob
 		float g = t;
 		if (k == 1 || k == 20 || k == 25 || k == 26) { g = 1.0 - spow(1.0 - t, 2.2); }
 		else if (k == 2 || k == 5 || k == 18) { g = sqrt(t); }
@@ -431,14 +434,14 @@ void fragment() {
 		float corona = exp(-r * r * 2.2) * (0.55 + 0.6 * n2) * smoothstep(1.0, 0.6, r + (n2 - 0.5) * 0.4);
 		vec3 hot = mix(vCol.rgb, vec3(0.88, 0.96, 1.0), core * core * 0.6);
 		add = (hot * core * 1.8 + vCol.rgb * corona * 1.1) * I;
-	} else if (k == 15) {
+	} else if (k == 15 || k == 28) {
 		// bio glob: a wet, dark-skinned body with a bioluminescent heart and a wobbling rim
 		float n = fbm(p * 2.0 + vec2(seed * 5.0, age * 2.0));
 		float body = smoothstep(0.85, 0.55, r + (n - 0.5) * 0.45);
 		float heart = exp(-r * r * 6.0) * (0.6 + 0.4 * sin(age * 11.0 + seed * 9.0));
 		float rim = smoothstep(0.45, 0.8, r + (n - 0.5) * 0.3) * body;
 		alpha = body * I * 0.9;
-		base = vec3(0.05, 0.06, 0.03) * (0.6 + n);
+		base = (k == 28 ? vCol.rgb * 0.06 : vec3(0.05, 0.06, 0.03)) * (0.6 + n);
 		add = vCol.rgb * (heart * 1.8 + rim * 0.6) * I;
 	} else if (k == 16) {
 		// A filled tumbling chip, with broad facets rather than thin cross arms.

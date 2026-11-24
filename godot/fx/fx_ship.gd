@@ -1820,7 +1820,7 @@ func _emit_acid(fx) -> void:
 	if _acid_mist == null:
 		var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 		_acid_mist = POOLS.Pool.new(8, material, _dmg_root, "fx_acid_mist", POOLS.quad_shape())
-	var col := _acid_colour()
+	var col := acid_colour()
 	# Lift the expanding mist off the plating so the hull and soft depth fade leave it room to show.
 	var origin := p + n * maxf(0.65, hull.L * 0.02)
 	var drift: Vector3 = (n + Vector3.UP * 0.70) * hull.L * 0.065
@@ -1834,7 +1834,7 @@ func _emit_acid(fx) -> void:
 		_sizzle_count += 1
 
 
-func _acid_colour() -> Color:
+func acid_colour() -> Color:
 	return fac["damage_glow"] if faction == "deathless" else Color(0.5, 0.9, 0.2)
 
 
@@ -3016,7 +3016,7 @@ func tick_flare(fx, kind: String) -> void:
 	match kind:
 		"acid":
 			for i in 6:
-				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, _acid_colour(), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
+				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, acid_colour(), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
 		"tidal":
 			for i in 20:
 				fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
