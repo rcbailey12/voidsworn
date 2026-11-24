@@ -695,10 +695,11 @@ def _gw_zones():
 
 
 def faction_of(K, kit_name):
-    import bpy
-    # the whole ship, not only its insides: a Glasswright strike craft builds its insides from the base kit's zones (GV2, GW4),
-    # and was dressed as Hullbreaker machinery when only the insides were read
-    mats = {s.material.name for ob in bpy.context.scene.objects for s in getattr(ob, 'material_slots', ()) if s.material}
+    # this hull's own outside and inside collections, not only its insides: a Glasswright strike craft builds its insides from
+    # the base kit's zones (GV2, GW4) and was dressed as Hullbreaker machinery when only the insides were read; never the whole
+    # scene, where another hull or a comparison prop could carry gw_ materials (Artoo on PR 1763)
+    obs = [ob for c in (K.coll, K.cin) for ob in c.all_objects]
+    mats = {s.material.name for ob in obs for s in getattr(ob, 'material_slots', ()) if s.material}
     if any(m.startswith('gw_') for m in mats):
         return 'ithar'
     return kit_name
