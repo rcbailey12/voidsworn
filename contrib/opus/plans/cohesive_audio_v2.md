@@ -345,36 +345,61 @@ Wave E ran with 8 takes for about 80 credits (relay `pc-out-opus1752wavee`). Lis
 - The tendril sound waits for issue 1877.
 - Next is mastering the keepers to mono game files, then the Gate 3 music plan.
 
-## 9. Gate 3 waves F and M (Ryan, Nov 24 2026)
+## 9. Gate 3 waves F and M (Ryan, Nov 23 2026, 11:02 and 11:09 PM CT)
 
-Ryan, 11:02 PM CT Nov 23: "More music, more variety, whatever we got with the sound credits." About 8,000 of the 121,000 credits were spent through Gate 2, which leaves about 113,000 (Ryan's ElevenLabs page is the real count). The job list is `contrib/opus/sound/elevenlabs_gate3.json` (gate 3). Its `waves` key holds the ids for each wave.
+Ryan: "More music, more variety, whatever we got with the sound credits", then "Yeah, do everything. Let's use those credits. Use the learnings from the past waves to shape the prompts and outputs. Let's ensure the music fits the theme and factions. If possible, let's find other sound effects we might want to incorporate."
 
-**Wave F, sounds (63 ids, 128 takes; the tool estimates 5,916; at about 11 per second the real cost is near 1,600; cap 7,000):**
-- 34 sounds that still play old placeholder clips:
+About 8,000 of the 121,000 credits are spent, which leaves about 113,000. Ryan's ElevenLabs page is the real count. The job list is `contrib/opus/sound/elevenlabs_gate3.json` (gate 3), and its `waves` key holds each wave's ids.
+
+**Lessons applied from waves A to E:**
+- Non-Sunward prompts lead with the faction's identity.
+- Each prompt uses one size word.
+- Every prompt passes the section 2 banned-word list. The list script checks it, with word-start matching.
+- No negative nouns.
+- Deaths are centered and midrange. boom_l, bass_drop and the bed own the sub-bass.
+- Short sounds ask for one dry point source, the lesson from the wide stereo in Wave D.
+- Beams, shields and UI rewards keep natural decay.
+- UI stays acoustic and mechanical, because Ryan dislikes electronic UI cues.
+
+**Variety:** variety takes reuse each keeper's exact recorded parameters from the relay wave manifests (prompt, length, influence and model), not today's list row. Two keepers' rows changed after their take was made: `wep_eclipse_gsentry` and `imp_metal_light`.
+
+**Wave F, sounds (80 ids, 161 takes; the tool estimates 8,264, about 2,300 real at 11 credits a second; cap 10,000):**
+- 34 sounds still on old placeholder clips:
   - Glasswright flak.
   - Gauss and ion hits, plus the hull and shield patter.
   - Metal pops and small and medium blasts.
-  - Engine loop, strike craft launch, phase jump, engine cough, thruster puff and charge-up.
+  - Engine loop, craft launch, phase jump, engine cough, thruster puff and charge-up.
   - Nine metal death beats.
   - Brace, adapt and the base boarding sound.
-  - Seven UI cues: cancel, select, panel, alert, round, enemy turn, plus click from Wave A. UI cues stay acoustic and mechanical.
-- Four Gate 3 re-rolls:
+  - Seven UI cues: cancel, select, hover, panel, alert, round and enemy turn.
+- Four polish re-rolls:
   - Pulsar as one even beam.
   - Hullbreaker rocket as one launch.
   - Boss cue at 3.5 s.
   - Engine fail at 1.5 s.
-- Variety: two more takes of each of the 27 most-heard keepers. Each uses the keeper's own list prompt, so the round robin has four takes (RULEBOOK 8.4).
-- Free, already made: Wave A's `wep_sunward_battery` t1 and t2 and `ui_click_switch` t1 and t2 passed in section 7 but never reached the keeper list. They join the Wave F listening page from relay `pc-out-opus1752wavea`.
+- 16 new moments the game has no sound for yet. Their hooks come in a later PR:
+  - Battle: Hullbreaker ram, torpedo shot down, shield back online, gravity well and nebula beds, asteroid scrape, low-hull alarm and command issued.
+  - Map and screens: map fleet jump and arrival, purchase, module install, relic socket, rank up, event transmission and ship lost.
+- 27 variety items at 2 takes each, so the most-heard sounds reach four takes (RULEBOOK 8.4).
+- Already made: Wave A's `wep_sunward_battery` t1 and t2 and `ui_click_switch` t1 and t2 passed in section 7 but never reached the keeper list. They join the Wave F listening page from relay `pc-out-opus1752wavea`.
 
-**Wave M, music (30 ids, 32 steps; the tool estimates 40,950 at 900 per minute; cap 45,000):**
-- Six factions, each with a calm and an intense battle layer. A pair shares tempo and key so the two can crossfade, and each loop is built so every part plays in every bar (row 6).
-- One title theme (2 takes).
-- Six map tracks, two per sector.
+**Wave M, music (34 ids, 36 steps; the tool estimates 45,000 at 900 a minute; cap 50,000).** It is dark orchestral, set around a dying sun, with the four-note D, A, F, E motif as the game's thread. Each faction's palette comes from the playbook's faction voices:
+- Sunward: iron, fire and cathedral organ.
+- Directorate: drilled brass and snare over a cold steady tone.
+- Hullbreakers: scrap-metal percussion and detuned brass.
+- Glasswrights: glass harmonica, celesta and harp.
+- Eclipse: one low held note, taiko and anvils.
+- Chorus: breathing basses and heartbeat drums.
+
+Each faction gets a calm and an intense battle layer. A pair shares tempo and key so the two crossfade, and each is a loop where every part plays in every bar (row 6). The rest of the wave:
+- Title (2 takes).
+- Six map tracks, two per sector, moving from ember-warm to cold.
 - Two boss tracks.
-- Three reward themes. `mus_reward_1` is the reward wording Ryan liked.
-- Five stings.
-- One stem split test on `mus_battle_sunward_stemloop`.
+- Nemesis and shipyard music, both new.
+- Three reward themes. `mus_reward_1` is the wording Ryan liked.
+- Seven stings, including run won and run lost.
+- One stem split test.
 
-After both waves, at least 65,000 credits stay in reserve for Gate 3 second takes, stems on the songs Ryan picks, and the tendril once issue 1877 lands.
+After both waves, about 65,000 credits stay in reserve for second takes, stems on the songs Ryan picks, and the tendril once issue 1877 lands.
 
-**Run and review:** the PC jobs are `OPUS1752_WAVEF.bat` and `OPUS1752_WAVEM.bat`, built on the Wave E skeleton and pinned to this list's merge. Each needs Ryan's own typed "go wave f" or "go wave m" in the Board thread. Neon reviews each listening page before Ryan does. Mastering and wiring follow the Gate 2 path in sections 8.6 and 8.7. Music wiring uses the Godot 4.7 AudioStreamInteractive plan in row 6.
+**Run and review:** the PC jobs are `OPUS1752_WAVEF.bat` and `OPUS1752_WAVEM.bat`, built on the Wave E skeleton and pinned to this list's merge. Each needs Ryan's own typed "go wave f" or "go wave m" in the Board thread. Neon reviews each listening page before Ryan does. Mastering and wiring follow sections 8.6 and 8.7. New moments get their hooks the way PR 1937 did. Music uses the Godot 4.7 AudioStreamInteractive plan in row 6.
