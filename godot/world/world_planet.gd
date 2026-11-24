@@ -26,7 +26,7 @@ static func rocky_available() -> bool:
 # world is held down from snow white to stay inside it). "bump" scales the relief shading; "glint" the sun's sheen on water or ice.
 const BOARD_LOOKS := {
 	0: {"bake": -1, "flat": Vector3(0.42, 0.33, 0.25), "clouds": true, "atmo": Vector3(0.72, 0.39, 0.19), "atmo_k": 0.32, "tints": [Vector3(1.0, 0.97, 0.93), Vector3(1.06, 0.95, 0.84), Vector3(0.96, 0.96, 0.98)], "gain": 1.5, "stand_gain": 0.3, "stand_clouds": 0.25},
-	1: {"bake": 2, "flat": Vector3(0.12, 0.2, 0.22), "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.03, 0.09, 0.18), "c": Vector3(0.66, 0.58, 0.44), "atmo": Vector3(0.38, 0.62, 1.0), "atmo_k": 0.55, "bump": 0.075, "glint": 1.0, "stand_gain": 0.65, "detail": 0.08, "detail_grain": 0.35},
+	1: {"bake": 2, "flat": Vector3(0.12, 0.2, 0.22), "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.03, 0.09, 0.18), "c": Vector3(0.66, 0.58, 0.44), "atmo": Vector3(0.38, 0.62, 1.0), "atmo_k": 0.55, "bump": 0.075, "glint": 1.0, "stand_gain": 0.65, "detail": 0.08, "detail_grain": 0.35, "cloud_detail": 0.85},
 	3: {"bake": 5, "flat": Vector3(0.52, 0.54, 0.56), "a": Vector3(0.6, 0.63, 0.66), "b": Vector3(0.46, 0.27, 0.16), "c": Vector3(0.42, 0.6, 0.8), "atmo": Vector3(0.6, 0.8, 1.0), "atmo_k": 0.22, "bump": 0.034, "glint": 0.5, "detail": 0.04, "detail_grain": 0.15, "stand_gain": 0.58, "stand_clouds": 0.2, "stand_b": Vector3(0.4, 0.47, 0.54)},
 	4: {"bake": 3, "flat": Vector3(0.3, 0.26, 0.23), "a": Vector3(0.56, 0.47, 0.4), "b": Vector3(0.15, 0.135, 0.125), "c": Vector3(0.8, 0.66, 0.42), "atmo": Vector3(1.0, 0.45, 0.2), "atmo_k": 0.3, "bump": 0.07, "glint": 0.0, "detail": 0.1, "detail_grain": 0.4, "cloud_col": Vector3(0.5, 0.43, 0.37), "stand_gain": 0.3, "stand_clouds": 0.25},
 	5: {"bake": -1, "flat": Vector3(0.36, 0.35, 0.34), "clouds": false, "desat": 0.65, "atmo": Vector3(0.6, 0.62, 0.7), "atmo_k": 0.0, "tints": [Vector3(0.9, 0.9, 0.92), Vector3(0.98, 0.9, 0.82), Vector3(0.82, 0.84, 0.88)], "gain": 1.35, "stand_gain": 0.33},
@@ -82,6 +82,7 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	stand_in.set_shader_parameter("glint", float(L.get("glint", 0.0)))
 	stand_in.set_shader_parameter("detail", float(L.get("detail", 0.0)))
 	stand_in.set_shader_parameter("detail_grain", float(L.get("detail_grain", 0.0)))
+	stand_in.set_shader_parameter("cloud_detail", float(L.get("cloud_detail", 0.0)))
 	stand_in.set_shader_parameter("turn", r.randf() * TAU)
 	# equator toward the camera (issue 1939); its own draw, so the R01 looks below keep their turn, window and tint
 	stand_in.set_shader_parameter("tilt", PI * 0.5 + (float(posmod(hash(["board_tilt", seed_v, look_kind]), 1000)) / 999.0 - 0.5) * 0.5)
@@ -396,6 +397,10 @@ uniform vec3 lava_col = vec3(1.0, 0.36, 0.08);
 // camera never shimmers. 0 turns it off (the stand-in and the rocky worlds never use it).
 uniform float detail = 0.0;
 uniform float detail_grain = 0.0;
+// Ryan (Nov 24): terran clouds need more detail. Live fine noise frays thin cloud into wisps while thick cores stay
+// solid, and each cloud is shaded by its own thickness toward the sun, so its sunward edge is bright and its far side
+// falls into shade. Same fade as the ground detail. 0 turns it off.
+uniform float cloud_detail = 0.0;
 // the procedural stand-in (cold cache, a bake that missed the loading cover, no bake possible): the look's own palette
 uniform vec3 col_a = vec3(0.4);
 uniform vec3 col_b = vec3(0.15);
@@ -434,6 +439,7 @@ void fragment() {
 	vec4 b = vec4(0.0, 0.0, 0.5, 0.0);
 	float h = 0.5;
 	float cloud = 0.0;
+	float cloud_lit = 0.5;
 	float shadow = 0.0;
 	if (has_tex > 0.5) {
 		vec4 a = bp_sample(tex_a, d, lod);
@@ -444,9 +450,24 @@ void fragment() {
 		cloud = bp_sample(tex_b, bp_spin(d, TIME * cloud_rate), lod).r;
 		vec3 toward_light = bp_spin(bp_tilt(normalize(normalize(local_direction) + normalize(local_light) * 0.012)), turn);
 		shadow = bp_sample(tex_b, bp_spin(toward_light, TIME * cloud_rate), lod).r;
+		// lattice cells per screen pixel at the map's own scale; each octave of live detail fades out before it can alias
+		float cells = max(length(dFdx(d)), length(dFdy(d))) * map_scale;
+		if (cloud_detail > 0.0) {
+			vec3 cq = bp_spin(d, TIME * cloud_rate) * map_scale;
+			float c1 = (wvn3(cq * 0.9 + 31.0) - 0.5) * (1.0 - smoothstep(0.25, 0.5, cells * 0.9));
+			float c2 = (wvn3(cq * 2.3 + 47.0) - 0.5) * (1.0 - smoothstep(0.25, 0.5, cells * 2.3));
+			float c3 = (wvn3(cq * 5.7 + 59.0) - 0.5) * (1.0 - smoothstep(0.25, 0.5, cells * 5.7));
+			float thin = 1.0 - smoothstep(0.4, 0.9, cloud);
+			cloud = clamp(cloud + (c1 * 0.5 + c2 * 0.3 + c3 * 0.2) * cloud_detail * (0.35 + thin), 0.0, 1.0);
+			cloud = smoothstep(0.08, 0.9, cloud);
+			// thickness just sunward of this point: thinner there means this side faces the sun
+			vec3 sunward = bp_spin(bp_tilt(normalize(normalize(local_direction) + normalize(local_light) * 0.004)), turn);
+			float c_sun = bp_sample(tex_b, bp_spin(sunward, TIME * cloud_rate), lod).r;
+			cloud_lit = clamp(0.5 + (cloud - c_sun) * 5.0, 0.0, 1.0);
+			// billows: the same fine noise lights and shades the cloud's own top
+			cloud_lit = clamp(cloud_lit + (c1 * 0.6 + c2 * 0.4) * 0.9, 0.0, 1.0);
+		}
 		if (detail > 0.0) {
-			// lattice cells per screen pixel at the map's own scale; each octave fades out before it can alias
-			float cells = max(length(dFdx(d)), length(dFdy(d))) * map_scale;
 			vec3 dp = d * map_scale;
 			float n1 = (wvn3(dp * 1.3 + 5.1) - 0.5) * (1.0 - smoothstep(0.25, 0.5, cells * 1.3));
 			float n2 = (wvn3(dp * 3.4 + 11.7) - 0.5) * (1.0 - smoothstep(0.25, 0.5, cells * 3.4));
@@ -489,6 +510,7 @@ void fragment() {
 	vec3 col = ground * (0.02 + lambert * 0.92 * day);
 	// clouds: lit tops over the ground, a cool grey toward the terminator
 	vec3 ctone = mix(vec3(0.6, 0.63, 0.67), vec3(0.93, 0.94, 0.95), smoothstep(-0.05, 0.4, ndl));
+	ctone *= cloud_detail > 0.0 ? mix(0.58, 1.12, cloud_lit) : 1.0;
 	col = mix(col, ctone * cloud_col * (0.03 + max(ndl, 0.0) * 0.95) * day, cloud * 0.92);
 	// the sun on water or ice: a tight glint with a soft halo
 	vec3 hv = normalize(l + v);
@@ -636,13 +658,13 @@ void fragment() {
 			relief = 0.45 - dep * 0.12;   // meets the land's height at the coast: no step (issue 1939)
 		} else {
 			float e = clamp((h - sea) * 4.0, 0.0, 1.0);
-			float dry = smoothstep(0.48, 0.66, fb(q * 2.2 + 3.0 + w, 4)) * (1.0 - smoothstep(0.55, 0.8, lat));
+			float dry = smoothstep(0.45, 0.62, fb(q * 2.2 + 3.0 + w, 4)) * (1.0 - smoothstep(0.55, 0.8, lat));
 			// Issue 1939 (Neon): the land read as smooth airbrushed fills. Wet lowlands carry dark forest, drier ground
 			// grass and steppe, dry belts sand and ochre; every tone is broken by grain at three finer scales
 			float moist = fb(q * 3.1 + w * 1.5 + 27.0, 5) + (fb(q * 11.0 + w * 3.0 + 29.0, 4) - 0.5) * 0.5;
 			float grain = fb(q * 14.0 + w * 2.0, 5) * 0.6 + fb(q * 48.0 + w * 3.0, 4) * 0.4;
 			vec3 grass = ca * (0.85 + 0.3 * fb(q * 7.0 + 1.0, 4));
-			vec3 forest = ca * vec3(0.55, 0.7, 0.55);
+			vec3 forest = ca * vec3(0.42, 0.58, 0.42);
 			float gk = 1.0 + (grain - 0.5) * 1.3;
 			vec3 green = mix(grass, forest, smoothstep(0.48, 0.68, moist)) * gk;
 			// bare brown uplands between the forests and the high rock
@@ -652,9 +674,9 @@ void fragment() {
 			alb = mix(green, steppe, smoothstep(0.35, 0.7, dry) * 0.6);
 			alb = mix(alb, sand, smoothstep(0.55, 0.9, dry));
 			// mountain chains: sharp ridges that rise with the land, rock then snow on the highest crests
-			float ridge = rg(q * 6.0 + w * 2.5, 6) * smoothstep(0.02, 0.3, e);
+			float ridge = (rg(q * 6.0 + w * 2.5, 6) * 0.75 + rg(q * 2.6 + w * 1.5 + 91.0, 5) * 0.5) * smoothstep(0.02, 0.3, e);
 			alb = mix(alb, vec3(0.31, 0.28, 0.25), smoothstep(0.3, 0.8, e) * 0.75);
-			alb = mix(alb, vec3(0.36, 0.32, 0.28) * gk, smoothstep(0.35, 0.75, ridge) * 0.6);   // bare rock on the crests
+			alb = mix(alb, vec3(0.4, 0.36, 0.31) * gk, smoothstep(0.28, 0.65, ridge) * 0.75);   // bare rock on the crests
 			alb *= 1.0 - ridge * 0.3;
 			alb = mix(alb, vec3(0.86, 0.87, 0.88), smoothstep(0.62, 0.85, e * 0.55 + ridge * 0.6) * 0.85);
 			// a pale rim of beach and shallows along every coast
@@ -681,10 +703,13 @@ void fragment() {
 		}
 		vec3 cw = vec3(fb(q * 2.0 + 13.0, 3), fb(q * 2.0 + 17.0, 3), 0.0) - 0.5;
 		float big = fb(vec3(dc.x * 3.0, dc.y * 10.0, dc.z * 3.0) + cw * 2.5 + 19.0, 6);
-		float fine = fb(vec3(dc.x * 12.0, dc.y * 40.0, dc.z * 12.0) + cw * 4.0 + 23.0, 5);
+		float fine = fb(vec3(dc.x * 12.0, dc.y * 40.0, dc.z * 12.0) + cw * 4.0 + 23.0, 6);
 		cloud = smoothstep(0.5, 0.72, big + (fine - 0.5) * 0.6) * 0.85;
 		cloud *= smoothstep(0.3, 0.55, fine + 0.12);
 		cloud = max(cloud, smoothstep(0.62, 0.8, fine) * 0.3 * smoothstep(0.36, 0.5, big));
+		// Ryan (Nov 24): more cloud detail. Puffy cells break up the inside of every cloud deck
+		float puff = fb(vec3(dc.x * 30.0, dc.y * 60.0, dc.z * 30.0) + cw * 5.0 + 29.0, 5);
+		cloud *= 0.72 + 0.4 * smoothstep(0.3, 0.7, puff);
 	} else if (kind == 3) {
 		// volcanic desert (issue 1765): ash plains, dark basalt flow lobes, canyon networks with fine ridged grit, and
 		// lava lakes in the low basins
