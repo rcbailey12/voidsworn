@@ -395,7 +395,7 @@ func _build_engines(fx) -> void:
 	var extra := String(fac.get("engine_extra", "none"))
 	# issue 1741 (R416): under Wounds V2 a damaged drive keeps its own faction's exhaust; only the Hullbreakers cough soot
 	# (main: any sputtering drive took the Hullbreaker soot, on glass, flesh and obsidian too)
-	var corsair = extra == "soot" or (_eng_sputter and not wounds_v2)
+	var corsair = extra == "soot" or (_eng_sputter and not wounds_v2 and faction == "voidsworn")
 	eng_soot = corsair
 	var q = POOLS.quad_shape()
 	var rs = POOLS.ribbon_shape(14)
@@ -442,12 +442,11 @@ func _build_engines(fx) -> void:
 				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 0.6), Vector4(v1.x, v1.y, v1.z, 2.0),
 					Vector4(eng.r * 0.4, eng.g * 0.4, eng.b * 0.3, 0.35), Vector4(r * 0.8, r * 3.0, 20, fx.rng.randf()), Vector4(2.4, 0, 0.6, 0)))
 		elif extra == "embers":
-			# embers in the faction's second colour when it has one (Eclipse: white-gold), else hot orange
-			var ec: Color = acc if acc is Color else Color(1.0, 0.5, 0.15)
+			var ec: Color = acc if acc is Color else eng
 			for k in 3:
 				var v2 := rot * Vector3(-6, fx.rng.randf() - 0.5, fx.rng.randf() - 0.5)
 				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 1.3), Vector4(v2.x, v2.y, v2.z, 0.9),
-					Vector4(ec.r, ec.g, ec.b, 2.2), Vector4(r * 0.2, r * 0.1, 19, fx.rng.randf()), Vector4(3.9, 0, 0.5, 0)))
+					Vector4(ec.r, ec.g, ec.b, 2.2), Vector4(r * 0.2, r * 0.1, 28, fx.rng.randf()), Vector4(3.9, 0, 0.5, 0)))
 	_eng_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 	_eng_rib_mat = fx.mat(SH.RIBBON, 1)
 	var holder = MeshInstance3D.new()
@@ -471,7 +470,10 @@ func _build_trails(fx) -> void:
 		mi.name = "fx_trail_%s" % id
 		mi.top_level = true
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		mi.material_override = fx.mat(SH.TRAIL, 1)
+		var mat: ShaderMaterial = fx.mat(SH.TRAIL, 1)
+		var ember: Color = fac.damage_glow
+		mat.set_shader_parameter("trail_ember", Vector3(ember.r, ember.g, ember.b))
+		mi.material_override = mat
 		mi.extra_cull_margin = 16384.0
 		fx.add_child(mi)
 		mi.global_transform = Transform3D.IDENTITY
@@ -554,7 +556,7 @@ func _update_trails(fx, _moved: bool) -> void:
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
 	var plume = clampf(1.5 * hull.W, 2.0, 32.0)
-	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or (_eng_sputter and not wounds_v2)) else int(fac["trail"])
+	var style: int = 1 if eng_soot else int(fac["trail"])
 	for ti in _trails.size():
 		var t: Dictionary = _trails[ti]
 		var hist: Array = t["hist"]
@@ -1500,7 +1502,7 @@ func _rcs(fx) -> void:
 		fx.record_spawn(self, wp)
 		match faction:
 			"ithar":
-				fx.spr(wp, fx.now, 0.14, Color(1.0, 0.86, 0.57), 1.5, 0.65 * k, 0.18 * k, 16, axis * k, 0.0, 0.0, 0.0, 13.0)
+				fx.spr(wp, fx.now, 0.14, fac.damage_glow, 1.5, 0.65 * k, 0.18 * k, 16, axis * k, 0.0, 0.0, 0.0, 13.0)
 			"deathless":
 				fx.ring(wp, axis, fx.now, 0.2, Color(0.59, 0.38, 1.0), 0.75, 0.20 * k, 0.9 * k, 3)
 			_:
@@ -2346,6 +2348,14 @@ func _refresh_damage_emitters(fx) -> void:
 	_damage_emitters = keep
 
 
+func _fire_kind() -> int:
+	match faction:
+		"deathless", "hegemony": return 26
+		"chorus": return 20
+		"ithar": return 7
+	return 25
+
+
 func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	if e.has("tur") or e.has("mp"):
 		_build_wisp(fx, e)
@@ -2371,8 +2381,9 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 		velocity = n * hull.L * 0.045
 	if faction == "chorus": color = glow * 0.45; kind = 20
 	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.24
+	if faction == "hegemony": color = glow * 0.35; kind = 7
 	if e.kind == "fire":
-		kind = 25
+		kind = _fire_kind()
 		color = glow
 		count = 8
 		life = 1.0
@@ -2381,9 +2392,8 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 		size1 = hull.L * 0.04
 		velocity = (n * 0.7 + Vector3.UP * 0.3) * hull.L * 0.06
 		if e.st == 4: p -= n * hull.L * 0.018
-		if faction == "deathless": kind = 26
-		if faction == "chorus": kind = 20; intensity = 0.35
-		if faction == "ithar": kind = 7; intensity = 0.3
+		if faction == "chorus": intensity = 0.35
+		if faction == "ithar": intensity = 0.3
 	elif e.kind == "vent":
 		kind = 7; color = glow.lerp(Color.WHITE, 0.75); intensity = 0.22
 		count = 4; life = 0.8
@@ -2427,8 +2437,14 @@ func _update_damage_emitters(fx) -> void:
 	if squadron and _squad_smoke and not fx.compat and fx.now >= _smoke_next:
 		_smoke_next = fx.now + 0.12
 		# World-space pooled samples form a short ribbon that stays behind a wing.
+		var smoke := Color(0.12, 0.12, 0.13)
+		var kind := 3
+		match faction:
+			"chorus": smoke = fac.damage_glow * 0.45; kind = 20
+			"ithar", "hegemony": smoke = fac.damage_glow * 0.7; kind = 7
+			"deathless": smoke = fac.damage_glow * 0.18; kind = 8
 		fx.spr(to_world(hull.c - Vector3.RIGHT * hull.L * 0.2), fx.now, 1.2,
-			Color(0.12, 0.12, 0.13), 0.32, hull.L * 0.015, hull.L * 0.10, 3,
+			smoke, 0.32, hull.L * 0.015, hull.L * 0.10, kind,
 			dir_world(Vector3.LEFT) * hull.L * 0.20)
 
 
@@ -2474,7 +2490,7 @@ func _cough(fx) -> void:
 		var kind := 3
 		if wounds_v2 and faction == "voidsworn":
 			col = Color(0.13, 0.115, 0.10)    # issue 1741: forged-iron drive smoke, grey, never the Hullbreaker soot
-		elif wounds_v2 and faction == "hegemony":
+		elif faction == "hegemony":
 			col = Color(0.30, 0.36, 0.44); kind = 7   # issue 1741: the Directorate's cold vapour (no soot, no orange)
 		if faction == "deathless":
 			col = Color(0.055, 0.025, 0.09); kind = 8
@@ -2483,7 +2499,7 @@ func _cough(fx) -> void:
 		for j in 4:
 			fx.spr(p + d * r * 0.5, fx.now + j * 0.06, 0.9 + 0.2 * fx.rng.randf(), col, 0.55, r * 1.1, r * 4.2, kind,
 				fx.rcone(d, 0.35) * r * (5.0 + 3.0 * fx.rng.randf()), 2.0)
-	for j in (0 if wounds_v2 and faction == "chorus" else 5):   # issue 1741: a Chorus drive coughs spores, no sparks
+	for j in (0 if faction == "chorus" else 5):   # a Chorus drive coughs spores
 		fx.stk(p + d * r * 0.4, fx.now + fx.rng.randf() * 0.12, 0.18 + 0.12 * fx.rng.randf(), eng.lerp(Color.WHITE, 0.3), 3.0,
 			0.06, 0.08, 1, fx.rcone(d, 0.6) * r * (8.0 + 6.0 * fx.rng.randf()), 2.0)
 	_wlog(["cough", sick_nozzle, fx.now])
@@ -2782,6 +2798,7 @@ func _build_wisp(fx, e: Dictionary) -> void:
 	if faction == "deathless": color = Color(0.055, 0.025, 0.09); kind = 8
 	if faction == "chorus": color = glow * 0.45; kind = 20
 	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.18
+	if faction == "hegemony": color = glow * 0.35; kind = 7
 	var life := 2.2
 	var count := 3
 	var v: Vector3 = Vector3.UP * hull.L * 0.05
@@ -2921,9 +2938,14 @@ func tick_flare(fx, kind: String) -> void:
 			if _shield_mat != null:
 				shield_hit(fx, shield_point(wp + wn * 30.0)["local"], T, 0.6, 14.0, 0.8)
 		_:
+			var glow: Color = fac.damage_glow
+			var sprite := _fire_kind()
+			# Preserve the short tick's size and strength for the two ember factions.
+			if sprite == 25: sprite = 1
+			var intensity := 0.8 if sprite == 7 or sprite == 20 else 2.4
 			for i in 8:
-				fx.spr(wp, T + i * 0.05, 0.7, Color(1, 0.5, 0.15), 2.4, 0.8 * k, 2.4 * k, 1, wn * 2.0 + fx.rdir(), 0.0)
-			fx.light(wp + wn, T, 0.6, 3.0, Color(1, 0.5, 0.15), 1)
+				fx.spr(wp, T + i * 0.05, 0.7, glow, intensity, 0.8 * k, 2.4 * k, sprite, wn * 2.0 + fx.rdir(), 0.0)
+			fx.light(wp + wn, T, 0.6, 3.0, glow, 1)
 
 
 func jump_out(fx) -> void:

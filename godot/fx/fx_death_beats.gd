@@ -179,12 +179,12 @@ static func debris(fx, s, p: Vector3, t: float, life: float, vel: Vector3, size:
 		3:
 			fx.shd(p, t, life, vel, size, 0.0, spin, drag, 0.0)
 		_:
-			fx.shd(p, t, life, vel, size, heat, spin, drag, tint)
+			fx.shd(p, t, life, vel, size, 0.0 if s.faction == "hegemony" else heat, spin, drag, tint)
 
 
-# the spark colour of a hull's crush or tear: hot brass on metal hulls, the faction's own death spark on Glasswright
-# and Eclipse hulls (white light, violet), bile on the Chorus (R367; never brass on those three)
+# The spark colour of a hull's crush or tear follows the material and faction.
 static func spark_col(s, metal: Color) -> Color:
+	if s.faction == "hegemony": return s.fac.damage_glow as Color
 	match int(s.fac.get("wound_kind", 0)):
 		1: return s.fac.damage_glow as Color
 		2, 3: return _death().boom_col(s, "spark", s.fac.damage_glow as Color)
@@ -294,7 +294,7 @@ static func _corridors(fx, s, ref: WeakRef) -> void:
 	if not is_instance_valid(node):
 		return
 	var h = s.hull
-	var col: Color = _col(s, "light", Color(1.0, 0.85, 0.6))
+	var col: Color = _col(s, "light", s.fac.damage_glow)
 	for i in 6:
 		var c: Dictionary = h.random_sample(-1, 1.0)
 		if c.is_empty():
@@ -323,10 +323,11 @@ static func _beacon(fx, s, ref: WeakRef) -> void:
 	var h = s.hull
 	var top: Dictionary = h.ray(h.c + Vector3.UP * (h.H + h.L * 0.2), Vector3.DOWN)
 	var p: Vector3 = node.global_transform * (top.get("p", h.c) as Vector3)
+	var col: Color = s.fac.damage_glow
 	if fx.reduce_flashing:
-		fx.spr(p, fx.now, 0.9, Color(1.0, 0.25, 0.12), 0.6, h.L * 0.008, h.L * 0.010, 18)   # a slow soft pulse
+		fx.spr(p, fx.now, 0.9, col, 0.6, h.L * 0.008, h.L * 0.010, 18)   # a slow soft pulse
 	else:
-		fx.spr(p, fx.now, 0.22, Color(1.0, 0.25, 0.12), 1.4, h.L * 0.008, h.L * 0.012, 18)
+		fx.spr(p, fx.now, 0.22, col, 1.4, h.L * 0.008, h.L * 0.010, 18)
 	note(s, "beacon")
 
 
@@ -343,8 +344,10 @@ static func corkscrew(fx, s, p: Vector3, frame: Transform3D) -> void:
 		var u := float(j) / 5.0
 		var a := u * TAU * 1.5
 		var q: Vector3 = p + fwd * L * 0.6 * u - up * L * 0.5 * u * u + (side * cos(a) + up * sin(a)) * L * 0.12
-		if s.faction != "ithar":   # a Glasswright craft never smokes: the flecks alone
-			fx.spr(q, fx.now + u * 0.35, 0.6, Color(0.12, 0.11, 0.1), 0.4, L * 0.04, L * 0.14, 3, Vector3.ZERO, 0.5)
+		if s.faction != "ithar":   # a Glasswright craft leaves glints instead of smoke
+			var kind := 8 if s.faction == "deathless" else (7 if s.faction == "hegemony" else 3)
+			var smoke: Color = Color(0.12, 0.11, 0.1) if kind == 3 else s.fac.damage_glow * 0.18
+			fx.spr(q, fx.now + u * 0.35, 0.6, smoke, 0.4, L * 0.04, L * 0.14, kind, Vector3.ZERO, 0.5)
 	var tint: Color = s.fac.damage_glow
 	for j in 2:
 		debris(fx, s, p, fx.now, 1.2, (fwd + fx.rdir() * 0.6).normalized() * L * 0.8, L * 0.04, 0.4, 6.0, 0.3, 0.6)
@@ -391,7 +394,7 @@ static func roll_end(fx, s, p: Vector3, inherited: Vector3) -> void:
 	# a short counted flash (the staging rule's core beat, small), refused in calm mode like every other
 	if fx.flash_at(p, fx.now, L * 0.45, 40.0, 0.10):
 		fx.light(p, fx.now, 0.10, 2.5, col, 1)
-		fx.spr(p, fx.now, 0.12, col.lerp(Color.WHITE, 0.5), 2.0, L * 0.05, L * 0.12, 19)
+		fx.spr(p, fx.now, 0.12, col.lerp(Color.WHITE, 0.5), 2.0, L * 0.05, L * 0.12, 28)
 	note(s, "roll_end")
 
 
@@ -512,7 +515,7 @@ static func _shafts(fx, s, center: Vector3, T: float) -> void:
 static func _implode(fx, s, center: Vector3, T: float) -> void:
 	note(s, "implode")
 	var L: float = s.hull.L
-	var vi := Color(0.55, 0.3, 1.0)
+	var vi: Color = s.fac.damage_glow
 	var at := T + 0.25
 	for j in 10:
 		var d: Vector3 = fx.rdir()
@@ -520,7 +523,7 @@ static func _implode(fx, s, center: Vector3, T: float) -> void:
 		d = d.normalized()
 		var p0: Vector3 = center + d * L * 0.25
 		fx.spr(p0, at, 0.28, vi, 1.1, L * 0.02, L * 0.004, 18, -d * L * 0.9, 0.0)
-	fx.spr(center, at + 0.25, 0.4, Color(0.02, 0.0, 0.04), 0.9, L * 0.12, L * 0.02, 3)
+	fx.spr(center, at + 0.25, 0.4, vi * 0.04, 0.9, L * 0.12, L * 0.02, 8)
 
 
 # Chorus: two or three slow chitin twitches after the break (a piece jerks a little about a random axis), with a wet puff.

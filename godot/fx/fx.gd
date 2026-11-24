@@ -1913,8 +1913,10 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 	# the line through the target's core. Either missing: nothing to show (logged and counted by the hull).
 	var toward: Vector3
 	var from_hatch := Vector3.INF
+	var hatch_glow := Color(1, 0.75, 0.3)
 	if ships.has(attacker_id):
 		var a: SHIP = ships[attacker_id]
+		if a.faction in ["ithar", "chorus", "deathless", "hegemony"]: hatch_glow = a.fac.damage_glow
 		var o: Dictionary = a.hull.board_origin(a.xf().affine_inverse() * s.to_world(s.hull.core))
 		if o.is_empty():
 			return 0.0
@@ -1944,18 +1946,20 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 	var T: float = now + 0.1
 	var bk: float = float(bl["burst"])
 	var vk: float = float(bl["vent"])
+	var own_glow: bool = s.faction in ["ithar", "chorus", "deathless", "hegemony"]
+	var organic: bool = s.faction == "chorus"
+	var glow: Color = s.fac.damage_glow
 	# a pried-open hatch: a short, dull blast (not a counted flash), then gas venting and sparks from inside
-	sprx(float(bl["burst_px"]), wp + wn * 0.3 * k * bk, T, 0.4 * sqrt(bk), Color(1, 0.65, 0.35), 2.5, 0.6 * k * bk, 1.8 * k * bk, 2)
+	sprx(float(bl["burst_px"]), wp + wn * 0.3 * k * bk, T, 0.4 * sqrt(bk), glow if own_glow else Color(1, 0.65, 0.35), 2.5, 0.6 * k * bk, 1.8 * k * bk, 20 if organic else 2)
 	for j in 14:
-		spr(wp + wn * 0.2 * k * vk, T + 0.15 + j * 0.2, 1.4, Color(0.62, 0.66, 0.74), 0.25 * sqrt(vk), 0.3 * k * vk, 2.2 * k * vk, 7,
+		spr(wp + wn * 0.2 * k * vk, T + 0.15 + j * 0.2, 1.4, glow * 0.55 if own_glow else Color(0.62, 0.66, 0.74), 0.25 * sqrt(vk), 0.3 * k * vk, 2.2 * k * vk, 20 if organic else 7,
 			(wn + rdir() * 0.25).normalized() * 4.0 * k * vk, 0.8, 0.0, 0.0, float(bl["vent_px"]))
-	for j in int(18 * sqrt(bk)):
-		stk(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05 * bk, 0.08 * k * bk, 1,
+	for j in (0 if organic else int(18 * sqrt(bk))):
+		stk(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, glow if own_glow else Color(1, 0.7, 0.4), 4.0, 0.05 * bk, 0.08 * k * bk, 1,
 			(wn + rdir() * 0.6).normalized() * (5 + rng.randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
 	# a soft pop ring on the plating round the hatch, sized to hold at camera 170 (issue 1547)
-	ring(wp + wn * 0.05 * k, wn, T, 0.7, Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
-	# the inside light in the boarding amber (render/line_style.gd "board"), not explosion orange (Muse council)
-	light(wp + wn * 0.6 * k * bk, T, 3.0, float(bl["light"]), Color(1, 0.75, 0.3), 1, float(bl["reach"]))
+	ring(wp + wn * 0.05 * k, wn, T, 0.7, glow if own_glow else Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
+	light(wp + wn * 0.6 * k * bk, T, 3.0, float(bl["light"]), glow if own_glow else Color(1, 0.75, 0.3), 1, float(bl["reach"]))
 	shake(T, 0.06, wp)
 	var hold: float = float(bl["hold"]) / 1000.0 * pace
 	if from_hatch != Vector3.INF:
@@ -1968,7 +1972,7 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 			var hi: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05 + dx, 0, 0), side) if dx != 0.0 else h
 			ends.append(s.to_world(hi["p"]) if not hi.is_empty() else wp)
 		_board_lines(from_hatch, ends, hold, pace)
-		sprx(18.0, from_hatch, now + minf(0.3 * pace, hold * 0.2), minf(0.3, hold * 0.2), Color(1, 0.75, 0.3), 2.0, 0.3 * k, 0.8 * k, 2)
+		sprx(18.0, from_hatch, now + minf(0.3 * pace, hold * 0.2), minf(0.3, hold * 0.2), hatch_glow, 2.0, 0.3 * k, 0.8 * k, 2)
 	return maxf(3.2, hold)
 
 

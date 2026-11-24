@@ -128,7 +128,7 @@ uniform bool organic = false;
 uniform float section_scale = 1.0;
 uniform float face_glow = 0.0;
 // R367 (issue 1399): the torn face's heat in the faction's death colours (defaults: today's metal, red to orange to white)
-uniform vec3 heat_cool = vec3(0.38, 0.035, 0.018);
+uniform vec3 heat_cool = vec3(0.12, 0.025, 0.013);
 uniform vec3 heat_hot = vec3(0.95, 0.40, 0.09);
 uniform vec3 heat_white = vec3(0.94, 0.84, 0.64);
 varying vec3 slag_p;
@@ -141,8 +141,8 @@ void fragment() {
 	float coarse = 0.5 + 0.25 * sin(dot(p, vec3(38.7, 13.1, 26.3))) * sin(dot(p, vec3(12.3, 52.1, 24.7)));
 	float band = clamp(slag_band.x, 0.0, 1.0);
 	bool rib = band > 0.4 && band < 0.6;
-	vec3 base = mix(vec3(0.045, 0.032, 0.026), vec3(0.014, 0.011, 0.012), band);
-	if (rib) { base = vec3(0.068, 0.056, 0.048); }
+	vec3 base = mix(heat_cool * 0.32, vec3(0.014, 0.010, 0.011), band);
+	if (rib) { base = heat_cool * 0.46; }
 	if (organic) {
 		float fibre = pow(abs(sin(dot(p, vec3(41.0, 67.0, 29.0)) + coarse * 8.0)), 6.0);
 		base = mix(vec3(0.025, 0.005, 0.013), vec3(0.085, 0.018, 0.031), coarse * 0.7 + fibre * 0.3);
@@ -160,7 +160,8 @@ void fragment() {
 	float vein = pow(1.0 - abs(sin(dot(p, vec3(23.1, 9.7, 17.3)) + coarse * 7.0)), 10.0)
 		+ pow(1.0 - abs(sin(dot(p, vec3(-7.9, 29.3, 11.1)) + n * 1.5)), 14.0) * 0.6;
 	float face = face_glow * (rib ? 0.45 : vein * 1.4) * smoothstep(0.0, 0.08, temperature);
-	ALBEDO = base + (organic ? vec3(0.0) : metal * (rim * 3.2 + face) * temperature * fx_gain);
+	float rim_power = mix(0.95, 3.2, smoothstep(0.35, 0.9, temperature));
+	ALBEDO = base + (organic ? vec3(0.0) : metal * (rim * rim_power + face) * temperature * fx_gain);
 }
 """
 
@@ -352,7 +353,7 @@ static func dsmoke(src) -> float:
 static func _style_heat(m: ShaderMaterial, st: Dictionary, prefix: String) -> void:
 	var rim = st.get("rim")
 	if not (rim is Color): return
-	m.set_shader_parameter(prefix + "cool", (rim as Color) * 0.32)
+	m.set_shader_parameter(prefix + "cool", (rim as Color) * 0.12)
 	m.set_shader_parameter(prefix + "hot", rim)
 	m.set_shader_parameter(prefix + "white", (rim as Color).lerp(Color(1, 1, 1), 0.7))
 
@@ -2381,9 +2382,15 @@ static func _wing_death(fx, s) -> float:
 	s.set_meta("death_split", fx.now)
 	if not hit.is_empty():
 		var p: Vector3 = s.to_world(hit["p"])
-		# Birth on the next FX step: a one-frame picture born between steps could expire before its first draw.
-		fx.later(fx.now + 0.000001, _wing_spark.bind(fx, s, p, s.xf()))
-		BEATS.corkscrew(fx, s, p, s.xf())   # issue 1586
+		if s.faction == "chorus":
+			var L: float = s.hull.L
+			fx.spr(p, fx.now, 0.55, s.fac.damage_glow, 1.4, L * 0.08, L * 0.32, 20, Vector3.ZERO, 0.0, 0.0, 0.0, 28.0)
+			for j in 2:
+				BEATS.debris(fx, s, p, fx.now, 1.2, fx.rdir() * L * 0.8, L * 0.04, 0.0)
+		else:
+			# Birth on the next FX step: a one-frame picture born between steps could expire before its first draw.
+			fx.later(fx.now + 0.000001, _wing_spark.bind(fx, s, p, s.xf()))
+			BEATS.corkscrew(fx, s, p, s.xf())   # issue 1586
 	_hide_ship(s)
 	return 1.0 / 60.0
 
@@ -2730,8 +2737,7 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 	m.set_shader_parameter("width", maxf(h.L * 0.010, 0.02))
 	if cause == "cut":
 		m.set_shader_parameter("straight", 1.0)
-		m.set_shader_parameter("ember", Vector3(1.0, 0.72, 0.45))
-	elif cause == "melt":
+	if cause == "melt":
 		m.set_shader_parameter("tip", Vector3(0.62, 0.85, 0.18))
 		m.set_shader_parameter("ember", Vector3(0.45, 0.62, 0.10))
 	elif not dstyle(s).is_empty():
@@ -2740,6 +2746,8 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 		var tip := dcol(s, "fire", Color(1.0, 0.94, 0.82))
 		m.set_shader_parameter("ember", Vector3(rim.r, rim.g, rim.b))
 		m.set_shader_parameter("tip", Vector3(tip.r, tip.g, tip.b))
+	elif cause == "cut":
+		m.set_shader_parameter("ember", Vector3(1.0, 0.72, 0.45))
 	for mm in s.meshes:
 		if is_instance_valid(mm):
 			var mi := mm as MeshInstance3D
@@ -2989,7 +2997,7 @@ static func _blast_inner(fx, src, p: Vector3, n: Vector3, px: float, tint: Color
 	if fx.quality != "low":
 		var k: float = px * STAGING_UNITS_PER_PIXEL / 10.0
 		for j in 5:
-			fx.stk(p + n * 0.1, fx.now, 0.35 + fx.rng.randf() * 0.25, tint.lerp(Color(1, 0.9, 0.6), 0.4), 5.0, 0.05, 0.10, 1, fx.rcone(n, 0.7) * (8.0 + fx.rng.randf() * 10.0) * k, 2.0)
+			fx.stk(p + n * 0.1, fx.now, 0.35 + fx.rng.randf() * 0.25, tint.lerp(Color.WHITE, 0.4), 5.0, 0.05, 0.10, 1, fx.rcone(n, 0.7) * (8.0 + fx.rng.randf() * 10.0) * k, 2.0)
 
 
 # Issue 484 (owner, Nov 11, on the secondaries: "the secondary explosion smoke looks a little too even and weird"). One
@@ -3003,15 +3011,15 @@ const CORE_VEIL_DELAY := 0.45
 
 # Issue 1558 item 2: the big-death gas veil, born after the core's full-heat window, so it never sits over the flash.
 static func _core_gas_veil(fx, s, node_ref: WeakRef, local: Vector3, capital: bool, vel: Vector3) -> void:
+	if dsmoke(s) < 0.02: return
 	# born 0.45 s after the flash: read the piece where it is now (it drifts), and skip the veil if it is already gone
 	var node := node_ref.get_ref() as Node3D
 	if not is_instance_valid(node) or node.is_queued_for_deletion() or not node.is_inside_tree():
 		return
 	var p: Vector3 = node.to_global(local)
 	var frame: Transform3D = node.global_transform * Transform3D(Basis.IDENTITY, -(node.get_meta("piece_cen", Vector3.ZERO) as Vector3))
-	var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, vel, 0.38, atlas_band(s.hull.L), null)
-	gas.set_meta("spawn_frame", frame)
-	fx.record_spawn(s, p, false, frame)
+	flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0,
+		vel, 0.38, atlas_band(s.hull.L), s, false, false, frame)
 
 
 static func _death_rng(s) -> RandomNumberGenerator:
@@ -3697,7 +3705,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		# without buckets, or a cut job not ready) still throws one pooled physical shard and a visible ember, never light
 		# and smoke alone.
 		_spawn_ship_debris(fx, s, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0)
-		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, 19, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
+		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, 28, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
 
 
 # Issue 484: the bite's fragments and the chips along the break, as real pieces of the hull (capped, glowing faces,
@@ -3781,7 +3789,7 @@ static func _organic_spill(fx, p: Vector3, L: float, tint: Color) -> void:
 		var dir := Vector3(cos(angle), fx.rng.randf_range(0.0, 0.12), sin(angle))
 		var speed: float = L * fx.rng.randf_range(0.2, 0.45)
 		fx.spr(p, fx.now, 1.0 + fx.rng.randf() * 0.8, tint, 1.5,
-			L * 0.018, L * 0.006, 19, dir * speed, 0.5, 0.0, 0.0, 6.0)
+			L * 0.018, L * 0.006, 28, dir * speed, 0.5, 0.0, 0.0, 6.0)
 		if i % 2 == 0:
 			fx.spr(p, fx.now, 1.4, tint * Color(0.24, 0.3, 0.18), 0.65,
 				L * 0.025, L * 0.06, 20, dir * speed * 0.65, 0.7)

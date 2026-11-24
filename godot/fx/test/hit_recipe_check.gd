@@ -204,16 +204,16 @@ func _substance_hits() -> void:
 			var kinds: Dictionary = fx.spr_kinds
 			var lamp: Color = fx._lev[-1][4] if not fx._lev.is_empty() else Color.BLACK
 			if faction == "ithar":
-				_check(lamp.r >= lamp.g and lamp.g > 0.9 and lamp.b > 0.7
+				_check(lamp.is_equal_approx(target.fac.damage_glow) and lamp.b >= lamp.g and lamp.g > lamp.r
 					and not kinds.has(27) and not kinds.has(19) and _glass_shards(plate),
-					label + ": white-gold light and unheated crystal shards")
+					label + ": stored white light and unheated crystal shards")
 			elif faction == "chorus":
 				_check(plate.emitted == 0 and kinds.has(15) and kinds.has(20) and not kinds.has(27) and not kinds.has(19)
 					and lamp.g > lamp.r and lamp.r > lamp.b,
 					label + ": bile, mist and amber-green light")
 			elif faction == "deathless":
 				var glow: Color = target.fac.damage_glow
-				_check(lamp.is_equal_approx(glow) and not kinds.has(27) and _eclipse_ejecta(fx, glow),
+				_check(lamp.is_equal_approx(glow) and not kinds.has(27) and not kinds.has(19) and _eclipse_ejecta(fx, glow),
 					label + ": impact sparks and embers take the Eclipse damage glow with no soot")
 			else:
 				_check(plate.emitted > 0 and (look == "crit" or (kinds.has(27) and kinds.has(19))),
@@ -258,7 +258,7 @@ func _eclipse_ejecta(fx: FX, glow: Color) -> bool:
 		return false
 	for pool in [streaks, sprites]:
 		for i in range(0, pool.pending.size(), POOLS.STRIDE * pool.vpp):
-			if pool == sprites and int(pool.pending[i + 18]) != 19:
+			if pool == sprites and int(pool.pending[i + 18]) != 28:
 				continue
 			var tint := Vector3(pool.pending[i + 12], pool.pending[i + 13], pool.pending[i + 14])
 			if not tint.is_equal_approx(expected) and not tint.is_equal_approx(expected * 0.35):

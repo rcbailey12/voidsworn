@@ -241,7 +241,7 @@ void process() {
 #  18 soft lift (reduce-flashing pop: a gentle glow, no peak)   19 ember   20 acid fume   21 heat glow (cooling metal)
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
-#  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
+#  26 faction-coloured plasma fire   27 directional hit gas (no emission)   28 palette-coloured embers and spores
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
 
@@ -279,7 +279,7 @@ void vertex() {
 		if (k == 1 || k == 20 || k == 25 || k == 26) { g = 1.0 - spow(1.0 - t, 2.2); }
 		else if (k == 2 || k == 5 || k == 18) { g = sqrt(t); }
 		else if (k == 3 || k == 7 || k == 8) { g = 1.0 - spow(1.0 - t, 1.6); }
-		else if (k == 4 || k == 11 || k == 13 || k == 14 || k == 15 || k == 16 || k == 17 || k == 19 || k == 21 || k == 22 || k == 23) { g = 0.0; }
+		else if (k == 4 || k == 11 || k == 13 || k == 14 || k == 15 || k == 16 || k == 17 || k == 19 || k == 21 || k == 22 || k == 23 || k == 28) { g = 0.0; }
 		else if (k == 12) { g = t * t; }
 		float size = mix(a3.x, a3.y, g);
 		// F3 round 2: a3.w carries the seed in its fraction and, in its whole part, an explicit on-screen floor in pixels
@@ -310,7 +310,7 @@ void vertex() {
 		else if (k == 5 || k == 16 || k == 23) { flo = 9.0; }
 		else if (k == 1) { flo = 8.0; }
 		else if (k == 22) { flo = 6.0; }
-		else if (k == 19 || k == 21) { flo = 4.5; }
+		else if (k == 19 || k == 21 || k == 28) { flo = 4.5; }
 		else if (k == 4 || k == 11) { flo = 3.0; }
 		bool own = fpx > flo;
 		flo = max(flo, fpx);
@@ -371,14 +371,14 @@ void fragment() {
 		add = vCol.rgb * exp(-r * r * 5.0) * f + vec3(exp(-r * r * 30.0)) * f * 0.8 + vCol.rgb * f * 0.5 * star;
 	} else if (k == 24) {
 		float f = (1.0 - smoothstep(0.18, 1.0, t)) * I;
-		add = (vCol.rgb * exp(-r * r * 5.0) + vec3(1.0, 0.88, 0.65) * exp(-r * r * 22.0) * 0.7) * f;
+		add = (vCol.rgb * exp(-r * r * 5.0) + vec3(1.0) * exp(-r * r * 22.0) * 0.7) * f;
 	} else if (k == 1 || k == 25 || k == 26) {
 		float n = fbm(p * 1.7 + vec2(seed * 13.1, seed * 7.7) + vec2(0.0, -t * 1.2));
 		float dens = (1.0 - r) * 1.4 + (n - 0.5) * 1.15;
 		float thr = t * 1.1;
 		float m = smoothstep(thr, thr + 0.35, dens);
 		float heat = clamp(dens - thr, 0.0, 1.0) * (1.0 - t * 0.6);
-		vec3 flame = k == 26 ? vCol.rgb * (0.5 + 1.8 * heat) + vec3(0.8, 0.7, 1.0) * pow(heat, 4.0) * 0.3 : heatRamp(heat) * mix(vec3(1.0), vCol.rgb * 1.6, 0.25);
+		vec3 flame = k == 26 ? vCol.rgb * (0.5 + 1.8 * heat) + mix(vCol.rgb, vec3(1.0), 0.5) * pow(heat, 4.0) * 0.3 : heatRamp(heat) * mix(vec3(1.0), vCol.rgb * 1.6, 0.25);
 		add = flame * I * (0.5 + 2.6 * heat * heat) * m * smoothstep(0.0, 0.05, t);
 	} else if (k == 2) {
 		float f = spow(1.0 - t, 1.5) * I;
@@ -411,7 +411,7 @@ void fragment() {
 		// the white centre can never add up to a general flash at the close cameras (60 and 26) with many engines on screen
 		float fl = flick(0.95 + 0.05 * vnoise(vec2(scene_t * 31.0, seed * 9.0)), scene_t, seed);
 		if (k == 11) { fl *= mix(cough(scene_t, seed), 0.7, fx_calm); }
-		add = (vCol.rgb * exp(-r * r * 4.0) + vec3(1.0, 0.95, 0.8) * exp(-r * r * 14.0) * 1.6) * I * fl;
+		add = (vCol.rgb * exp(-r * r * 4.0) + mix(vec3(1.0), vCol.rgb, 0.12) * exp(-r * r * 14.0) * 1.6) * I * fl;
 	} else if (k == 5) {
 		float f = (1.0 - t) * (1.0 - t) * I;
 		add = vec3(1.0, 0.6, 0.25) * exp(-r * r * 6.0) * f + vec3(exp(-r * r * 30.0)) * f + vec3(1.0, 0.7, 0.4) * star * f * 0.6;
@@ -455,9 +455,9 @@ void fragment() {
 	} else if (k == 18) {
 		float f = sin(3.14159 * t) * I;
 		add = vCol.rgb * exp(-r * r * 2.5) * f;
-	} else if (k == 19) {
+	} else if (k == 19 || k == 28) {
 		float f = spow(1.0 - t, 1.2) * I;
-		vec3 c = mix(vec3(1.0, 0.85, 0.5), vCol.rgb, t);
+		vec3 c = k == 28 ? vCol.rgb * (1.4 - 0.4 * t) : mix(vec3(1.0, 0.85, 0.5), vCol.rgb, t);
 		add = c * (exp(-r * r * 18.0) * 1.5 + exp(-r * r * 4.0) * 0.25) * f;
 	} else if (k == 21) {
 		float f = I * (1.0 - t);
@@ -876,6 +876,7 @@ void fragment() {
 	float motion = 0.75 + 0.5 * fast;
 	float fork_hot = 0.0; float fork_glow = 0.0;
 	if (k == 0 || k == 3) {
+		hot = mix(vec3(1.0), tint, 0.14);
 		float turbulence = fbm(vec2(s * 9.0 - age * 8.0, vSide * 3.0 + seed));
 		float shape = spow(1.0 - s, 1.25) * smoothstep(0.22, 0.65, turbulence + 0.2);
 		core *= shape * (0.8 + 0.3 * sin(s * 29.0 - age * 9.0));
@@ -947,6 +948,7 @@ render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabl
 """ + COMMON + """
 uniform float trail_elapsed = 0.0;
 uniform float trail_style = 0.0;
+uniform vec3 trail_ember;
 varying vec4 vCol;
 varying vec4 vInfo;
 void vertex() {
@@ -979,10 +981,10 @@ void fragment() {
 		m *= 0.6 + 0.8 * smoothstep(0.55, 0.8, fbm(vec2(s * 22.0 - scene_t * 0.4, seed)));
 	} else if (st == 3) {
 		col *= 0.55 + 0.45 * vnoise(vec2(s * 9.0 - scene_t * 2.0, seed));
-		col += vec3(1.0, 0.5, 0.15) * spow(vnoise(vec2(s * 60.0 - scene_t, seed * 3.0)), 12.0) * 2.0;
+		col += trail_ember * spow(vnoise(vec2(s * 60.0 - scene_t, seed * 3.0)), 12.0) * 2.0;
 	}
 	float root = smoothstep(0.0, 0.025, s);
-	vec3 hot = mix(col, vec3(1.0, 0.94, 0.82), 0.6) * exp(-x*x*16.0) * 0.5;
+	vec3 hot = mix(col, vec3(1.0), 0.6) * exp(-x*x*16.0) * 0.5;
 	ALBEDO = clamp((col * across * m * 1.4 + hot) * root * fade * vCol.a * fx_gain, 0.0, 512.0);
 }
 """

@@ -1678,8 +1678,9 @@ func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 	# issue 1581: an escort's movement jets read at r 170: a floor on their strength, brighter and bigger at the nozzle
 	var esc := (1.0 - clampf(mass, 0.0, 1.0)) if glide else 0.0
 	k = maxf(k, lerpf(k, 0.6, esc))
-	var tint: Color = {"corsair": Color(0.55, 0.48, 0.41), "ithar": Color(1.0, 0.86, 0.53),
+	var tint: Color = {"corsair": Color(0.55, 0.48, 0.41),
 		"deathless": Color(0.57, 0.38, 0.96)}.get(fac, Color(0.85, 0.88, 0.95))
+	if fac == "ithar": tint = FLOOK.of(fac).damage_glow
 	sp.modulate = Color(tint, minf(0.75 * k + esc * 0.15, 1.0))
 	# a jet reads at battle zoom: about 5% of the hull's length as it leaves the nozzle, three times that as it spreads
 	# (in a flown move a capital's jets are bigger and last longer: a heavy burn, not a puff)

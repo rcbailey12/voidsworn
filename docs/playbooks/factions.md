@@ -23,6 +23,10 @@ Ryan, Nov 10 2026 (R164), on hard points: "It should vary by size of ship, facti
 - Matched symmetric pairs at sensible hard points, on visible mounts. The Hullbreakers are the one exception.
 - The ship must read at the battle camera (camera 170): one clear silhouette, one main colour, one accent light. Detail that
   only shows up close is a bonus, never the identity.
+- Ship effects follow the owning hull's palette in `godot/fx/faction_looks.json` (issue 1991, Ryan's Nov 24 pick).
+  Eclipse damage and death light is violet-white, and its drive accents keep their white-gold. Glasswrights throw
+  stored white light and crystal glints. Chorus fire ticks and strike-craft deaths shed bile-coloured spores.
+  Cooled wreck caps keep a dark version of the faction's torn-edge colour, with dull red-brown on warm metal.
 - Every hull has real thickness and comprehensive insides through the whole hull: decks, frames, spaces and machinery, so a
   hit, break or death never shows an empty husk (R98, R209, R215). Ryan, Nov 11: "Let's ensure we're keeping in mind the
   hits, the breaks, the deaths and everything that affects the internals of the ship so we don't run into the issues of before
@@ -98,6 +102,8 @@ class and faction (issue 363), never from a constant.
 - **How it breaks:** in modules. It gives way at the bulkhead rings between modules, like a spine coming apart, the rims torn and scorched (R186). Inside:
   white corridors, blue emergency light, racks of identical equipment. Breach anchors sit on the module joints.
 - **Never:** rust, asymmetry, ornament, warm light. No yacht decks, no conning tower, no tall mast.
+- **Damage light (issue 1991):** hit sparks, breach fire and critical hits use the Directorate's cool blue-white
+  `damage_glow` in `godot/fx/faction_looks.json`, so damage reads without borrowing the ember colour of other fleets.
 - **What the present concepts get wrong:** H7 to H10 read as yachts or submarines (a tall sail-like tower, stepped cabin
   tiers); H4_11 is a sea battleship with a mast tower. Keep the wedge and the blue lines; flatten the superstructure into one
   low fin and turret rows.

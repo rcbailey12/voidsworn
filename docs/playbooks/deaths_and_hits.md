@@ -226,8 +226,9 @@ rupture and adds only the ram or tidal cue; a scuttled Chorus hull is a dead hul
 the kill itself sets off (Rolling Fire, a Brood Tithe wing) keeps the mark, a new turn or a later action by either ship
 ends it. Frigates and destroyers that break (not a burnout or scuttle hulk, not Chorus, not an acid melt) die one of four
 ways, seeded by ship and death count: a runaway drive torch (about 25%), a magazine snap (30%), a rolling
-burnout with a flank vent (25%) or a compact faction pop (20%). A lost strike craft leaves a 0.35 s smoky corkscrew and two
-faction flecks. A big breaking wreck (not Chorus, not a hulk, not an acid melt) gives 2 or 3 quiet ember or vent pops in
+burnout with a flank vent (25%) or a compact faction pop (20%). A lost strike craft leaves a 0.35 s corkscrew and two
+faction flecks. Glasswright craft give off crystal flecks. Chorus craft give off a spore puff and two wet flecks.
+A big breaking wreck (not Chorus, not a hulk, not an acid melt) gives 2 or 3 quiet ember or vent pops in
 the 10 s after it breaks. Glasswright hulls never smoke: their vents, flay jets and afterlife wisps are soft light and
 glass glints. The extra shreds are cosmetic shards from the shared pool (no physics bodies), the same at every quality.
 Limits (Neon's audit on PR 1666): an acid melt adds none of these beats (R398: no faction tell, archetype, smoke or vapour);
@@ -392,8 +393,8 @@ jobs 1690 (Wave 1A), 1691 (1B), 1692 (2A), 1693 (2B); the combat sound targets r
 5. **Firing has weight.** Heavy guns push the shooter back a little (about a fifth of the target's push) and the turret barrel
    kicks. A miss streaks past with a fading tail and never just vanishes.
 6. **The target's material decides the impact** (with R402). One substance table (metal, glass, bio, obsidian) feeds every
-   impact path. Glass gets white-gold flash and shard glints, never soot or red embers. Flesh gets bile and mist, never metal
-   plates. Eclipse sparks take its own damage glow, never green. Soot and wear patches are for metal ships only.
+   impact path. Glass flashes in stored white light and throws shard glints. Flesh gets bile and mist. Eclipse sparks and
+   Directorate damage light, sparks and fire use their own `damage_glow` (issue 1991). Soot and wear patches are for metal ships only.
 7. **Each weapon reads as itself.** The heavy battery has a shock ring and heat vent, the plasma cannon its own cyan-white
    pulse, the tendril an organic lash, and prism, star and nlance their own hull marks. salvo_check fails on any skipped volley.
 8. **Status shows on the board.** Acid leaves a light caustic mist while it burns, an ion lock flickers pale-blue arcs on the

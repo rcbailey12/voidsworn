@@ -45,6 +45,7 @@ const LOOK := preload("res://render/look.gd")
 const CAMRIG := preload("res://render/camera_rig.gd")
 const BL := preload("res://world/board_look.gd")
 const LIVING := preload("res://world/world_living.gd")
+const BLOCKERS := preload("res://world/blocker_visuals.gd")
 const WORLD_PATH := "res://world/world.gd"
 const MOMENTS := "res://bench/look_moments.json"
 const HEX_S := 10.0
@@ -83,6 +84,7 @@ var report := {"stills": [], "warnings": [], "parts": {}}
 var cfg := {}
 var steps := 0
 var headless := false
+var moment_deadstar := false
 var sfx: Node = null          # --sound only
 var death_audio: Node = null
 
@@ -121,10 +123,11 @@ func _warn(s: String) -> void:
 
 func _run() -> void:
 	# issue 370: --moments FILE reads another rows file (a job's own rows, e.g. bench/look_moments_attach.json)
-	var f := FileAccess.get_file_as_string(str(args.get("moments", MOMENTS)))
+	var moments_path := str(args.get("moments", MOMENTS))
+	var f := FileAccess.get_file_as_string(moments_path)
 	var parsed = JSON.parse_string(f)
 	if not (parsed is Dictionary):
-		_log("ERROR cannot read " + MOMENTS)
+		_log("ERROR cannot read " + moments_path)
 		get_tree().quit(2)
 		return
 	cfg = parsed
@@ -148,7 +151,7 @@ func _run() -> void:
 	report["adapter"] = RenderingServer.get_video_adapter_name()
 	report["fixed_fps"] = Engine.get_physics_ticks_per_second()
 	report["fleet_lighting"] = LOOK.fleet_lighting_enabled()   # issue 1679: which lighting this run drew (VS_FLEET_LIGHTING)
-	report["moments_sha256"] = FileAccess.get_sha256(MOMENTS)
+	report["moments_sha256"] = FileAccess.get_sha256(moments_path)
 	report["bench_sha256"] = FileAccess.get_sha256("res://bench/look_bench.gd")
 	headless = DisplayServer.get_name() == "headless"
 	if headless:
@@ -325,7 +328,7 @@ func _hex(q: int, r: int) -> Vector3:
 # Build the world twice: the first build bakes the sky and planet (seconds on the PC, cached after); then wait for the
 # frame grid; then the second build reuses the bakes inside one frame, and a fixed 120 frames pass. So the shader clock
 # (TIME) and the world's own clocks (world_living's storm and gas) stand at the same values on every run.
-func _world(biome: Dictionary, terrain: Dictionary, units: Array) -> void:
+func _world(biome: Dictionary, terrain: Dictionary, units: Array, map := {}) -> void:
 	for pass_i in 2:
 		if wld != null and is_instance_valid(wld):
 			world.remove_child(wld)
@@ -339,7 +342,7 @@ func _world(biome: Dictionary, terrain: Dictionary, units: Array) -> void:
 			await _grid()
 		wld = load(WORLD_PATH).new()
 		world.add_child(wld)
-		wld.build({"map": {}, "terrain": terrain, "units": units, "round": 1},
+		wld.build({"map": map, "terrain": terrain, "units": units, "round": 1},
 			{"biome": biome, "fac": "voidsworn", "hex_world": _hex, "camera": cam, "environment": env, "quality": "max", "seed": 7})
 		if pass_i == 0:
 			var t0 := Time.get_ticks_msec()
@@ -356,6 +359,10 @@ func _world(biome: Dictionary, terrain: Dictionary, units: Array) -> void:
 		_warn("world rebuild did not reuse the bake (pending %d): this part's stills may not repeat" % int(wld.pending_bakes))
 	for k in 120:
 		await get_tree().process_frame
+	if map.has("deadstar"):
+		var blockers := BLOCKERS.new()
+		wld.add_child(blockers)
+		blockers.build({"map": map, "terrain": terrain}, _hex)
 
 
 func _grid() -> void:
@@ -451,6 +458,8 @@ func _cam(focus: Vector3, r: float) -> void:
 
 
 func _grab() -> Image:
+	if headless:
+		return null
 	var img := vp.get_texture().get_image()
 	if img == null or img.is_empty():
 		return null
@@ -528,8 +537,7 @@ func _moments_part() -> void:
 	var only: Array = []
 	if args.has("only"):
 		only = Array(str(args["only"]).split(",", false))
-	await _world({"rock": "stone", "planet": 4}, {"0,-4": "rock", "-5,3": "rock", "4,3": "debris", "-1,5": "rock"},
-		[{"q": -3, "r": -2}, {"q": 3, "r": 2}])
+	await _moment_world(false)
 	report["parts"]["moments"] = {"region": str(wld.setting.get("region", "")), "start_frame": Engine.get_process_frames()}
 	# warm the effect shaders once (fx.warmup), off the measured moments
 	_clear()
@@ -578,9 +586,23 @@ func _hits(n: int, shield: bool, crit: bool) -> Array:
 	return h
 
 
+func _moment_world(deadstar: bool) -> void:
+	moment_deadstar = deadstar
+	var units := [{"q": -3, "r": -2}, {"q": 3, "r": 2}]
+	if deadstar:
+		var cells := [[0, 0], [1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1], [1, -1]]
+		await _world({"rock": "stone", "planet": 4}, {}, units,
+			{"deadstar": {"q": 0, "r": 0}, "holes": [{"kind": "deadstar", "cells": cells}]})
+	else:
+		await _world({"rock": "stone", "planet": 4}, {"0,-4": "rock", "-5,3": "rock", "4,3": "debris", "-1,5": "rock"}, units)
+
+
 func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: String, keep := true) -> bool:
 	var id := str(row["id"])
 	_clear()
+	var deadstar := bool(row.get("deadstar", false))
+	if deadstar != moment_deadstar:
+		await _moment_world(deadstar)
 	_make_fx()
 	# Issue 462: a row may set effect switches (for example reduce flashing). Set by
 	# name so a commit without the switch simply ignores it.
@@ -699,6 +721,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	# issue 370 (attach points): where a launch, the movement jets and the wounds start on the attacker's hull
 	elif what == "launch":
 		fx.launch("A", "T")
+	elif what == "fire_tick":
+		fx.tick("T", "fire")
+	elif what == "board":
+		fx.board("A", "T")
 	elif what == "jets":
 		# every movement jet ShipView fires, at once; the bench keeps ShipView's processing off, so each puff stays where
 		# it started (that start is what this row shows)
@@ -728,6 +754,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var cells: Array = []
 	var guard := 0
 	var wi := 0
+	var start_pos: Vector3 = T.global_position
+	var travel: Vector3 = T.global_basis.x.normalized() * 12.0 if what == "drive" else Vector3.ZERO
 	while wi < wins.size() and guard < 900:
 		var w: Dictionary = wins[wi]
 		if w["anchor"] == "split":
@@ -759,6 +787,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			if int(w["got"]) >= int(w["n"]):
 				wi += 1
 				continue
+		if travel != Vector3.ZERO:
+			var offset: Vector3 = travel * (fx.now + STEP - t_ev)
+			T.global_position = start_pos + offset
+			_cam(focus + offset, r)
 		await _step()
 		guard += 1
 	if wi < wins.size():

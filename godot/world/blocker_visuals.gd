@@ -132,7 +132,6 @@ static func outline(parent: Node3D, p: Vector3, col: Color, width: float) -> Nod
 	mat.emission_enabled = true
 	mat.emission = col * 0.65
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.no_depth_test = true
 	for i in 6:
 		var a := Vector3(cos(PI / 6.0 + i * TAU / 6.0), 0, sin(PI / 6.0 + i * TAU / 6.0)) * 9.6
 		var b := Vector3(cos(PI / 6.0 + (i + 1) * TAU / 6.0), 0, sin(PI / 6.0 + (i + 1) * TAU / 6.0)) * 9.6
