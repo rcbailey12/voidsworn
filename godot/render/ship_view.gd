@@ -11,6 +11,8 @@ const ATTACH := preload("res://fx/fx_hull.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const WING := preload("res://render/squadron_wing.gd")
 const PG := preload("res://render/placeholder_guard.gd")
+const THRUST := preload("res://fx/thrust_profile.gd")   # issue 1582: the six faction movement personalities
+const LINE_STYLE := preload("res://render/line_style.gd")   # issue 1582: the drop-line takes the one line style (R362)
 var squad_kind := ""
 
 var u: Dictionary
@@ -32,6 +34,8 @@ var hull_base := Vector3.ZERO
 var hull_lift := 0.0         # fitted hull's height above its rules hex; movement still owns the root
 var hull_basis := Basis.IDENTITY # the hull's fitted basis (scale, mirror, yaw fix); bank and pitch are laid over it
 var a4 := false              # an A4 kit ship (not mirrored)
+var tp: Dictionary = {}      # issue 1582: this faction's thrust profile (fx/thrust_profile.gd), set in setup
+var _jet_rng := RandomNumberGenerator.new()  # issue 1582: jet roughness and spark scatter, seeded per unit so frames repeat
 var hull_source := ""        # issue 1410: which manifest section the drawn hull loaded from ("ships", "hi", "hulls"), "" before setup
 var hull_res := ""           # issue 1410: the resource path that loaded (read by render/hull_age.gd; "" for the placeholder block)
 
@@ -55,6 +59,8 @@ static func clear_static() -> void:
 	_look_cache.clear()
 	_pm = null
 	_gt = null
+	_rt = null
+	_rm = null
 
 
 # issue 1204: battle.gd drops the per-hull look copies when a battle leaves the tree (keys are that battle's materials)
@@ -85,6 +91,8 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	fac = str(u.get("fac", "hegemony"))
 	if not FLOOK.has(fac):
 		fac = "hegemony"
+	tp = THRUST.of(fac)
+	_jet_rng.seed = hash("jet|" + str(u.get("id", fac)))
 	var cls := str(u.get("cls", "Frigate")) if u.get("cls") != null else "Frigate"
 	L = HT.CLS_LEN.get(cls, 10.0) * HT.SHIP_K
 	code = HT.code_for(fac, cls)
@@ -268,7 +276,122 @@ func _fit() -> void:
 # The ship's visual centre in the board's frame, for camera targets, labels and fallback effects.
 # Keep the rules root on its hex so a flown path, revive or hit reaction cannot reset the lift.
 func visual_position() -> Vector3:
-	return position + Vector3.UP * hull_lift
+	return position + Vector3.UP * (hull_lift + band_y)
+
+
+# ---------------------------------------------------------------- issue 1582: altitude band and drop-line
+# The battle lifts or lowers the drawn hull by its class band (render/altitude_band.gd). The root, the ring and the
+# footprint marker stay on the rules hex at the plane; a faint drop-line runs from the hull's centre to a small anchor dot
+# on the plane, so the hex a hull belongs to stays readable at camera 170. A look only: nothing here reaches the rules.
+var band_y := 0.0
+var drop: MeshInstance3D
+var drop_dot: MeshInstance3D
+var drop_hot := 0.0           # 0 resting, 1 hovered or selected (eased)
+var drop_hot_target := 0.0
+var _drop_sel := false
+var _drop_hover := false
+const DROP_MIN := 0.9         # a hull closer to the plane than this draws no line (capitals on the plane)
+const DROP_A := [0.43, 1.0]   # the line's strength at rest and when hovered or selected, times its line style role's
+const DROP_QW := 3.0          # the quad the line is drawn on (world units); the line inside it takes the shared width
+
+
+# issue 1582: Sunward radiators pulse while the drive burns; other factions hold steady (1.0)
+func drive_swell() -> float:
+	var dp := float(tp.get("drive_pulse", 0.0))
+	if dp <= 0.0 or calm or thrust < 0.3:
+		return 1.0
+	return 1.0 + dp * sin(_bob_time * 5.5 + bob_seed)
+
+
+func set_band(y: float) -> void:
+	var dy := y - band_y
+	band_y = y
+	hull_base.y += dy
+	if hull != null:
+		hull.position.y += dy
+	if absf(band_y) >= DROP_MIN and drop == null:   # wings too: they sit highest (Fable, PR 1874 item 2)
+		_make_drop()
+	_drop_step(0.0)
+
+
+func set_hot(on: bool) -> void:
+	_drop_hover = on
+	drop_hot_target = 1.0 if (_drop_hover or _drop_sel) else 0.0
+
+
+
+
+func _make_drop() -> void:
+	# the line takes the one line style (render/line_style.gd, R362): its role colour, core width and pixel floor
+	var lm := LINE_STYLE.quad_material()
+	lm.set_shader_parameter("qw", DROP_QW)
+	lm.set_shader_parameter("col", _drop_col(DROP_A[0]))
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	m.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+	m.albedo_color = _drop_col(DROP_A[0])
+	drop = MeshInstance3D.new()
+	drop.name = "fx_drop"   # fx_* keeps G4's mesh walk off it
+	var q := QuadMesh.new()
+	q.size = Vector2(DROP_QW, 1.0)
+	drop.mesh = q
+	drop.material_override = lm
+	drop.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(drop)
+	drop_dot = MeshInstance3D.new()
+	drop_dot.name = "fx_drop_dot"
+	var c := CylinderMesh.new()
+	c.top_radius = 0.55
+	c.bottom_radius = 0.55
+	c.height = 0.04
+	c.radial_segments = 16
+	c.rings = 1
+	drop_dot.mesh = c
+	drop_dot.material_override = m
+	drop_dot.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(drop_dot)
+
+
+func _drop_col(a: float) -> Color:
+	# your ships' line is the footprint's mint, the enemy's the footprint's violet, so the line reads as the marker's;
+	# the colours are line style roles (render/line_style.gd)
+	var base: Color = LINE_STYLE.col("drop_ally" if marker_friend == 1 else "drop_enemy" if marker_friend == 0 else "drop_neutral")
+	return Color(base, base.a * a)
+
+
+# Keep the line on the hull as it moves: the hull's centre now (band, bob, a boarding trim, a climb over a rock) down or
+# up to the plane under the rules root. Billboards about the vertical so it is the same width from any orbit.
+func _drop_step(dt: float) -> void:
+	if drop == null:
+		return
+	var on := not dead and visible and not wreck
+	drop_hot = move_toward(drop_hot, drop_hot_target, dt * 5.0) if dt > 0.0 else drop_hot_target
+	var top := hull_pivot.transform * hull.position if hull_pivot != null and hull != null else Vector3(0, band_y, 0)
+	top.x = 0.0
+	top.z = 0.0
+	var plane := -position.y + 0.05   # the battle plane in this node's frame (a move over a rock lifts the root)
+	var h := top.y - plane
+	drop.visible = on and absf(h) >= DROP_MIN * 0.5
+	drop_dot.visible = drop.visible
+	if not drop.visible:
+		return
+	var col := _drop_col(lerpf(DROP_A[0], DROP_A[1], drop_hot) * fade)
+	var lm := drop.material_override as ShaderMaterial
+	lm.set_shader_parameter("col", col)
+	lm.set_shader_parameter("wide", 1.0 + drop_hot * 0.6)
+	(drop_dot.material_override as StandardMaterial3D).albedo_color = col
+	# the root yaws with the ship; undo it so the quad's face can turn to the camera about the vertical
+	var cam := get_viewport().get_camera_3d() if is_inside_tree() else null
+	var yaw := 0.0
+	if cam != null:
+		var to_cam := cam.global_position - global_position
+		yaw = atan2(to_cam.x, to_cam.z) - rotation.y
+	# the quad's own height axis stretches (not the parent's x), so it never shears with heading (Fable, PR 1874 item 10)
+	drop.transform = Transform3D(Basis(Vector3.UP, yaw) * Basis.from_scale(Vector3(1.0, absf(h), 1.0)), Vector3(0, plane + h * 0.5, 0))
+	drop_dot.transform = Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * (1.0 + drop_hot * 0.5)), Vector3(0, plane, 0))
 
 
 func _rel(n: Node3D) -> Transform3D:
@@ -487,6 +610,8 @@ func flee() -> void:
 
 
 func set_selected(on: bool, col := EMBER) -> void:   # the ship that is up: ember (issue 271; lime retired, R191)
+	_drop_sel = on
+	drop_hot_target = 1.0 if (_drop_hover or _drop_sel) else 0.0
 	ring.visible = on
 	(ring.material_override as StandardMaterial3D).albedo_color = col
 	ring.rotation.y = -rotation.y
@@ -1114,7 +1239,8 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 	d01.y = 0.0
 	var along := d01.normalized().dot(Vector3(cos(h0), 0, -sin(h0))) if d01.length() > 1e-4 else 0.0
 	if n_pts > 1 and not gl_thr_only and t_motion > 0.0 and along > 0.9:
-		gl_ign_u = lerpf(GL_IGNITE[0], GL_IGNITE[1], clampf(mass / 1.25, 0.0, 1.0)) * (0.5 if calm else 1.0) / maxf(unit_s, 1e-3)
+		# issue 1582: each faction spools its drive its own way (Sunward lags, Hullbreakers kick, Eclipse is all but instant)
+		gl_ign_u = lerpf(GL_IGNITE[0], GL_IGNITE[1], clampf(mass / 1.25, 0.0, 1.0)) * float(tp.get("ign", 1.0)) * (0.5 if calm else 1.0) / maxf(unit_s, 1e-3)
 		gl_tm0 += gl_ign_u
 	var t_end := gl_tm0 + t_motion
 	# issue 1581: the turn to the final facing starts once the hull has braked nearly to rest (under GL_REST of cruise),
@@ -1661,7 +1787,8 @@ func jet_point(aim: Vector3, out: Vector3) -> Vector3:
 
 
 func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
-	if fac == "chorus":
+	var style := str(tp.get("style", "gas"))
+	if fac == "chorus" and style == "gas":
 		return
 	jet_count += 1
 	if dead or not visible or DisplayServer.get_name() == "headless":
@@ -1670,24 +1797,27 @@ func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 	if at == Vector3.INF:
 		return
 	var sp := Sprite3D.new()
-	sp.texture = _glow_tex()
+	sp.texture = _ripple_tex() if style == "ripple" else _glow_tex()
 	sp.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	sp.shaded = false
 	sp.transparent = true
-	sp.material_override = _puff_mat()
+	sp.material_override = _ripple_mat() if style == "ripple" else _puff_mat()
 	# issue 1581: an escort's movement jets read at r 170: a floor on their strength, brighter and bigger at the nozzle
 	var esc := (1.0 - clampf(mass, 0.0, 1.0)) if glide else 0.0
 	k = maxf(k, lerpf(k, 0.6, esc))
-	var tint: Color = {"corsair": Color(0.55, 0.48, 0.41),
-		"deathless": Color(0.57, 0.38, 0.96)}.get(fac, Color(0.85, 0.88, 0.95))
-	if fac == "ithar": tint = FLOOK.of(fac).damage_glow
+	# issue 1582: the faction's jet (fx/thrust_profile.gd): its gas or light, size, life, spread and roughness
+	var jit := float(tp.get("jitter", 0.0))
+	var rough := 1.0 + jit * (_jet_rng.randf() * 2.0 - 1.0)
+	var tint: Color = tp.get("tint", Color(0.85, 0.88, 0.95))
 	sp.modulate = Color(tint, minf(0.75 * k + esc * 0.15, 1.0))
 	# a jet reads at battle zoom: about 5% of the hull's length as it leaves the nozzle, three times that as it spreads
 	# (in a flown move a capital's jets are bigger and last longer: a heavy burn, not a puff)
 	var mk := clampf(mass / MASS_MAX, 0.0, 1.0) if glide else 0.0
 	# issue 521 (carried item 2): in a flown move no jet starts smaller than PUFF_MIN world units, about 18 px at the
 	# battle camera (r 170), so a frigate's small jets read; the bigger hulls were already past it
-	sp.pixel_size = clampf(L * lerpf(0.07, 0.1, mk), lerpf(PUFF_MIN, PUFF_MIN_ESCORT, esc) if glide else 1.4, maxf(lerpf(2.8, 4.6, mk), PUFF_MIN_ESCORT)) / 64.0 * (0.6 + 0.4 * k)
+	# the faction's size goes in before the floor, so a small or rough jet never drops under it (Fable, PR 1874 item 8)
+	var fk := float(tp.get("size", 1.0)) * rough
+	sp.pixel_size = clampf(L * lerpf(0.07, 0.1, mk) * fk, lerpf(PUFF_MIN, PUFF_MIN_ESCORT, esc) if glide else 1.4, maxf(lerpf(2.8, 4.6, mk), PUFF_MIN_ESCORT) * maxf(fk, 1.0)) / 64.0 * (0.6 + 0.4 * k)
 	if path_dur <= 0.0:  # station-keeping puffs are half the size of a movement jet
 		sp.pixel_size *= 0.5
 	sp.top_level = true
@@ -1697,10 +1827,71 @@ func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 		jet_dir = hull_pivot.basis * jet_dir
 	sp.global_position = to_global(at + jet_dir * maxf(L, 6.0) * 0.03)
 	var vw: Vector3 = global_transform.basis.orthonormalized() * jet_dir
-	var glint := fac in ["ithar", "deathless"]
-	var life := 0.18 if glint else (lerpf(lerpf(0.4, 0.55, mk), 0.55, esc) if glide else 0.4)
-	var velocity := _vel * 0.6 if glint else vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) + _vel * 0.6
-	puffs.append({"n": sp, "t": 0.0, "v": velocity, "s": sp.pixel_size, "a": sp.modulate.a, "life": life, "spread": 0.0 if glint else 5.0})
+	var base_life := lerpf(lerpf(0.4, 0.55, mk), 0.55, esc) if glide else 0.4
+	var life := base_life * float(tp.get("life", 1.0)) * rough
+	var spd := float(tp.get("speed", 1.0))
+	var velocity := vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) * spd + _vel * 0.6
+	var entry := {"n": sp, "t": 0.0, "v": velocity, "s": sp.pixel_size, "a": sp.modulate.a, "life": life,
+		"spread": float(tp.get("spread", 5.0)), "style": style}
+	match style:
+		"glint":
+			# a Glasswright trims on light: a short flash that rides the hull and walks the spectrum (prismatic shimmer)
+			entry["v"] = _vel
+			entry["hue"] = _jet_rng.randf()
+			life = 0.18 * float(tp.get("life", 1.0))
+			entry["life"] = life
+		"pulse":
+			# a Chorus vent swells and breathes out: it rises, then fades, with almost no throw
+			entry["a"] = minf(0.55 * k + 0.25, 0.9)
+			sp.modulate.a = 0.0
+		"ripple":
+			# an Eclipse null ripple opens flat about the drive ring and fades; nothing is thrown
+			entry["v"] = _vel
+			entry["a"] = minf(0.3 * k + 0.12, 0.45)
+	puffs.append(entry)
+	# the Hullbreakers' overburn throws a little bright grit with each rough blast
+	var n_sp := 0 if calm else int(tp.get("sparks", 0))   # Reduce motion: no thrown grit
+	for i in n_sp:
+		var g := Sprite3D.new()
+		g.texture = _glow_tex()
+		g.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		g.shaded = false
+		g.transparent = true
+		g.material_override = _puff_mat()
+		g.modulate = Color(1.0, 0.72, 0.35, 0.95)
+		g.pixel_size = sp.pixel_size * 0.16
+		g.top_level = true
+		add_child(g)
+		g.global_position = sp.global_position
+		var gv := (vw + Vector3(_jet_rng.randf() - 0.5, _jet_rng.randf() - 0.5, _jet_rng.randf() - 0.5) * 0.9).normalized() * maxf(L, 6.0) * (1.6 + _jet_rng.randf())
+		puffs.append({"n": g, "t": 0.0, "v": gv + _vel * 0.6, "s": g.pixel_size, "a": 0.95, "life": 0.3 + _jet_rng.randf() * 0.2,
+			"spread": 0.0, "style": "spark"})
+
+
+static var _rt: Texture2D = null
+static var _rm: StandardMaterial3D = null
+
+
+# issue 1582: Eclipse's null ripple: a thin soft ring, dark in the middle
+static func _ripple_tex() -> Texture2D:
+	if _rt != null:
+		return _rt
+	var img := Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	for y in 64:
+		for x in 64:
+			var d := Vector2(x - 31.5, y - 31.5).length() / 31.5
+			var a := clampf(exp(-pow((d - 0.78) / 0.09, 2.0)) + 0.5 * exp(-pow((d - 0.6) / 0.05, 2.0)), 0.0, 1.0)
+			img.set_pixel(x, y, Color(1, 1, 1, a))
+	_rt = ImageTexture.create_from_image(img)
+	return _rt
+
+
+static func _ripple_mat() -> StandardMaterial3D:
+	if _rm != null:
+		return _rm
+	_rm = _puff_mat().duplicate()
+	_rm.albedo_texture = _ripple_tex()
+	return _rm
 
 
 static var _pm: StandardMaterial3D = null
@@ -1731,7 +1922,18 @@ func _puffs_step(dt: float) -> void:
 		var life: float = pf.get("life", 0.4)
 		sp.global_position += (pf.v as Vector3) * dt * (1.0 - pf.t / life)
 		sp.pixel_size = float(pf.s) * (1.0 + pf.t * float(pf.spread))
-		sp.modulate.a = maxf(0.0, float(pf.a) * (1.0 - pf.t / life))
+		var u := clampf(pf.t / life, 0.0, 1.0)
+		match str(pf.get("style", "gas")):
+			"pulse":   # issue 1582: the Chorus vent swells in, then breathes out
+				sp.modulate.a = float(pf.a) * sin(PI * u) * (1.0 if calm else 0.85 + 0.15 * sin(pf.t * 9.0))
+			"glint":   # issue 1582: the Glasswright shimmer walks the spectrum as it fades
+				var c := Color.from_hsv(fposmod(float(pf.hue) + u * 0.6, 1.0), 0.45, 1.0)
+				sp.modulate = Color(c, maxf(0.0, float(pf.a) * (1.0 - u)))
+			"ripple":  # issue 1582: the Eclipse ring opens fast, then lingers as it fades
+				sp.pixel_size = float(pf.s) * (1.0 + float(pf.spread) * (1.0 - pow(1.0 - u, 3.0)))
+				sp.modulate.a = float(pf.a) * (1.0 - u) * (1.0 - u)
+			_:
+				sp.modulate.a = maxf(0.0, float(pf.a) * (1.0 - u))
 		if pf.t >= life:
 			sp.queue_free()
 			puffs.remove_at(i)
@@ -1816,5 +2018,7 @@ func _process(dt: float) -> void:
 			hull.position = hull_base + bob
 	if not campaign_map:
 		set_fallback_drive(thrust)
+	if drop != null:
+		_drop_step(dt)
 	if ring.visible:
 		ring.rotation.y = -rotation.y
