@@ -7,6 +7,7 @@ extends CanvasLayer
 # Colours and fonts match the battle HUD (godot/ui/battle/hud.gd). Sizes scale with the window height (designed at 1080).
 
 const CampaignTips = preload("res://ui/campaign/campaign_tips.gd")
+const RowHover = preload("res://ui/campaign/row_hover.gd")
 var teaching: Node
 const Map3D = preload("res://ui/campaign/map3d.gd")
 const ChoiceScript = preload("res://ui/campaign/choice_button.gd")
@@ -66,8 +67,14 @@ var _acts: Array = []                 # the buttons the current screen allows
 var _modal_acts: Array = []
 var _modal_scroll: ScrollContainer
 var _modal_kind := ""
+var _shown_modal
+var _page_scroll: ScrollContainer
+var _page_key: Array = []
+var _page_focus_key := ""
+var _page_focus_point := Vector2.INF
 var _dirty := false
-var _yard_bar: Button = null     # the shipyard's repair bar of the last render (the teaching card keeps off it)
+var _yard_bar: Button = null
+var _yard_tip_dock: HBoxContainer
 var _fs_name := ""
 
 func _ready() -> void:
@@ -122,6 +129,9 @@ func px(v: float) -> int: return int(round(v * k))
 
 func _process(delta: float) -> void:
 	if C == null: return
+	if not is_equal_approx(k, UiScale.k_for(get_viewport().get_visible_rect().size)):
+		_rescale()
+		_dirty = true
 	if C.RUN != null:
 		if not is_same(_end_live_run, C.RUN): _end_live_run = C.RUN; _end_last_flagship = {}
 		var fs = C.flagshipOf()
@@ -256,7 +266,7 @@ func _arg_of(list: Array, act: String) -> String:   # the arg of the first butto
 	return ""
 # The number key that picks this action in a dialog (1 to 9 pick the dialog's enabled actions in order, _unhandled_input)
 func _key_for(list, act: String, arg) -> String:
-	if list == null or C.modal_d == null or list != C.modal_d["acts"]: return ""
+	if list == null or C.modal_d == null or list != _modal_acts: return ""
 	var on = list.filter(func(a): return a[2] == 1)
 	var a0 = "" if arg == null else str(arg)
 	for i in range(min(9, on.size())):
@@ -267,6 +277,7 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 	var found = _find(list if list != null else _acts, act, arg)
 	if found.is_empty(): return null
 	var b = Button.new(); b.text = "Back to ledger" if _end_return and act == "title" else text; b.disabled = found[2] == 0; b.focus_mode = Control.FOCUS_ALL
+	GS.button_pointer(b)
 	if small: b.add_theme_font_size_override("font_size", px(17))
 	if primary:
 		var accent = BONE2 if act in ["pickFaction", "pickAdmiral", "progTab"] else GS.MAP_EMBER
@@ -276,7 +287,9 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 	# issue 1559 item 7: in a dialog its number key shows after the label, as on the choices and the finishing action (a
 	# boon's 4 and 5 ran Reroll and Decline with no cap shown, and Decline cannot be taken back)
 	var kk = _key_for(list, act, arg)
-	if kk != "":
+	if kk != "" and act in ["boonReroll", "boonDecline"]:
+		_boon_shortcut(b, kk)
+	elif kk != "":
 		var cap = keycap(kk); cap.mouse_filter = Control.MOUSE_FILTER_IGNORE; cap.name = "keycap"
 		cap.anchor_left = 1.0; cap.anchor_right = 1.0; cap.anchor_top = 0.5; cap.anchor_bottom = 0.5
 		cap.offset_left = -px(10); cap.offset_right = -px(10); cap.offset_top = 0; cap.offset_bottom = 0
@@ -291,12 +304,32 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 	b.pressed.connect(func(): _campaign_action(act, aa))
 	Kit.wire_sound(b, cue_role(act, "primary" if primary and not act in ["pickFaction", "pickAdmiral", "progTab"] else "quiet"))
 	return b
+
+func _boon_shortcut(b: Button, key: String) -> void:
+	var hint := lbl(key, 17, BONE2, font_num_b, false)
+	hint.name = "ShortcutHint"
+	hint.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	hint.offset_left = -px(10)
+	hint.offset_right = -px(10)
+	hint.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	hint.grow_vertical = Control.GROW_DIRECTION_BOTH
+	b.add_child(hint)
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.theme = theme_main
+	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+		if not b.has_theme_stylebox(state): continue
+		var box := b.get_theme_stylebox(state).duplicate() as StyleBox
+		box.set_content_margin(SIDE_RIGHT, maxf(box.get_margin(SIDE_RIGHT), hint.get_minimum_size().x + px(20)))
+		b.add_theme_stylebox_override(state, box)
+	GS.bind_sheet_label(b, hint, BONE2)
+
 # The screen's finishing action (Continue, Confirm, Plot a course, Done, Leave shipyard): the filled ember button, its label
 # in action caps, its key cap after the label in a dialog (ui_style.md 7). It sits at the bottom right of its screen or dialog.
 func fin(text: String, act: String, arg = "", list = null) -> Button:
 	var found = _find(list if list != null else _acts, act, arg)
 	if found.is_empty(): return null
 	var b = Button.new(); b.disabled = found[2] == 0; b.focus_mode = Control.FOCUS_ALL; b.set_meta("finish", true)
+	GS.button_pointer(b)
 	var fb = GS.finish_boxes(k)
 	for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, fb[st])
 	var h = hbox(10); h.alignment = BoxContainer.ALIGNMENT_CENTER; h.mouse_filter = Control.MOUSE_FILTER_IGNORE; h.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -332,7 +365,8 @@ func choice(title: String, small: String, act: String, arg = "", list = null, ac
 	if off: bar_c = GS.LINE
 	var n = GS.well(k, BONE2 if sel and not off else Color.TRANSPARENT, 12, 9, bar_c)
 	var h = GS.well(k, BONE2 if sel else BONE3, 12, 9, bar_c)
-	b.setup(n, h, h, off)
+	h.bg_color = n.bg_color.lerp(BONE, 0.07)
+	b.setup(n, h, GS.pressed_box(h), off)
 	b.ring = GS.focus_ring(k)
 	var row = hbox(10); row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var v = vbox(2); v.mouse_filter = Control.MOUSE_FILTER_IGNORE; v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -348,7 +382,6 @@ func choice(title: String, small: String, act: String, arg = "", list = null, ac
 		if kk != "": row.add_child(keycap(kk))
 	b.add_child(row)
 	var aa = found[1]
-	b.set_meta("act", act); b.set_meta("arg", aa)   # its key for keeping focus across a re-render (_focus_key)
 	press_tag(b, act, aa)
 	b.pressed.connect(func(): _campaign_action(act, aa))
 	Kit.wire_sound(b, cue_role(act, "quiet"))
@@ -388,10 +421,40 @@ func _toast(msg: String) -> void:   # a strip with a calm VERD bar (ui_style.md 
 # ---------------- render ----------------
 func render() -> void:
 	_route_click_id = ""
-	_refocus_key = _focus_key(get_viewport().gui_get_focus_owner()) if desk_opts_open else ""
+	var pg = C.page
+	var page_key: Array = [pg["kind"]]
+	match pg["kind"]:
+		"shipyard": page_key.append(pg["data"]["node"].get("id", ""))
+		"legacy": page_key.append(C.prog_tab)
+		"lineage": page_key.append(pg["data"]["id"])
+		"admiral": page_key.append(desk_opts_open)
+	var modal_kind := str(C.modal_d["kind"]) if C.modal_d != null else ""
+	var focus := get_viewport().gui_get_focus_owner()
+	var page_scroll := 0
+	if page_key != _page_key:
+		_page_focus_key = ""
+		_page_focus_point = Vector2.INF
+	elif is_instance_valid(_page_scroll):
+		page_scroll = _page_scroll.scroll_vertical
+		if focus != null and page_box.is_ancestor_of(focus):
+			_page_focus_key = ModalFocus.focus_key(focus)
+			_page_focus_point = _scroll_focus_point(_page_scroll, focus)
+	var modal_scroll := 0
+	var modal_focus_key := ""
+	var modal_focus_point := Vector2.INF
+	if modal_kind == _modal_kind and is_instance_valid(_modal_scroll):
+		modal_scroll = _modal_scroll.scroll_vertical
+		if focus != null and modal_box.is_ancestor_of(focus):
+			modal_focus_key = ModalFocus.focus_key(focus)
+			modal_focus_point = _scroll_focus_point(_modal_scroll, focus)
+	_page_key = page_key
+	_modal_kind = modal_kind
+	_shown_modal = C.modal_d
+	_page_scroll = null
+	_modal_scroll = null
 	for ch in page_box.get_children(): ch.queue_free()
 	for ch in modal_box.get_children(): ch.queue_free()
-	var pg = C.page; _acts = pg["acts"]
+	_acts = pg["acts"]
 	if pg["kind"] != "admiral": desk_opts_open = false; _drawer_shown = false; _focus_opener = false
 	if pg["kind"] != "aspect": aspect_pick = ""; podium = null
 	var battle = pg["kind"] == "battle"
@@ -405,6 +468,7 @@ func render() -> void:
 	if behind: bg.color = Color(INK, 0.86)
 	if map3d.visible: map3d.backdrop = behind; map3d.sync()
 	var body: Control = null
+	_yard_tip_dock = null
 	match pg["kind"]:
 		"title": body = _title()
 		"admiral": body = _desk()
@@ -423,7 +487,20 @@ func render() -> void:
 	_page_finish(str(pg["kind"]))
 	if C.modal_d != null: _modal(C.modal_d)
 	_teaching_screen()
-	call_deferred("_focus_first")
+	var in_modal := not modal_kind.is_empty()
+	_restore_view.call_deferred(body, page_scroll, modal_scroll, _modal_scroll if in_modal else _page_scroll,
+		modal_focus_key if in_modal else _page_focus_key, modal_focus_point if in_modal else _page_focus_point)
+
+func _scroll_focus_point(sc: ScrollContainer, focus: Control) -> Vector2:
+	return focus.get_global_rect().get_center() if sc.is_ancestor_of(focus) else Vector2.INF
+
+func _restore_view(body: Control, page_scroll: int, modal_scroll: int, sc: ScrollContainer, key: String, point: Vector2) -> void:
+	if page_scroll > 0 or modal_scroll > 0 or point.is_finite():
+		await get_tree().process_frame
+	if not is_instance_valid(body) or body.is_queued_for_deletion(): return
+	if _page_scroll != null: _page_scroll.scroll_vertical = page_scroll
+	if _modal_scroll != null: _modal_scroll.scroll_vertical = modal_scroll
+	_focus_first(key, sc, point)
 func _teaching_screen() -> void:
 	var kind := str(C.page.get("kind", ""))
 	var modal := str(C.modal_d.get("kind", "")) if C.modal_d != null else ""
@@ -436,14 +513,17 @@ func _teaching_screen() -> void:
 			"map": ids = ["c_map", "c_clock"]
 			"shipyard": ids = ["c_shipyard"]
 			"end": ids = [] # First-loss teaching is on The record R, beside the receipt.
-	# the first-visit card stays off the Map key and the Dossier (it waits while one is open) and off the shipyard's repair bar
-	var clear: Array = []
-	if kind == "shipyard" and modal == "" and _yard_bar != null and is_instance_valid(_yard_bar): clear.append(_yard_bar)
-	teaching.set_context(_overlay != "", clear)
+	# The map tip waits while a drawer is open. The shipyard tip has a row above the cards.
+	teaching.set_context(_overlay != "", _yard_tip_dock if modal == "" else null)
 	teaching.open_screen(kind + "|" + sector + "|" + pos + "|" + modal, ids)
 
-func _focus_first() -> void:
-	if _live_count(modal_box) > 0 or _overlay != "": return   # ModalFocus owns the keyboard while a dialog or drawer is open.
+func _focus_first(keep_key := "", sc: ScrollContainer = null, point := Vector2.INF) -> void:
+	if ModalFocus.covered(self) or _overlay != "": return
+	if _live_count(modal_box) > 0:
+		var panel := ModalFocus.top_panel()
+		if panel != null and modal_box.is_ancestor_of(panel):
+			_restore_focus(panel, sc, keep_key, point)
+		return
 	if C.modal_d == null and C.page.get("kind") == "fleet":
 		get_viewport().gui_release_focus()
 		return
@@ -457,7 +537,8 @@ func _focus_first() -> void:
 		var dr = _live_child("RunOptionsDrawer")
 		if dr != null and desk_opts_open:
 			_trap_focus(page_box, dr)
-			var keep = _find_focus_key(dr, _refocus_key) if _refocus_key != "" else null
+			var keep = ModalFocus.find_focus_key(dr, keep_key)
+			if keep == null and sc != null and point.is_finite(): keep = ModalFocus.nearest_button(sc, point)
 			var fb = keep if keep != null else _first_button(dr)
 			if fb != null: fb.grab_focus()
 			return
@@ -465,16 +546,26 @@ func _focus_first() -> void:
 			_focus_opener = false
 			var ro = _live_child("RunOptionsButton")
 			if ro != null: ro.grab_focus(); return
+	if _restore_focus(page_box, sc, keep_key, point): return
 	if C.page.get("kind") == "end":
 		var exit = _end_primary(page_box)
 		if exit != null:
 			exit.grab_focus()
-			var sc = exit.get_parent()
-			while sc != null and not sc is ScrollContainer: sc = sc.get_parent()
-			if sc is ScrollContainer: sc.set_deferred("scroll_vertical", 0)
+			var exit_scroll = exit.get_parent()
+			while exit_scroll != null and not exit_scroll is ScrollContainer: exit_scroll = exit_scroll.get_parent()
+			if exit_scroll is ScrollContainer: exit_scroll.set_deferred("scroll_vertical", 0)
 			return
 	var b = _first_button(page_box)
 	if b != null: b.grab_focus()
+
+func _restore_focus(host: Control, sc: ScrollContainer, key: String, point: Vector2) -> bool:
+	var keep := ModalFocus.find_focus_key(host, key)
+	if keep == null and is_instance_valid(sc) and point.is_finite():
+		keep = ModalFocus.nearest_button(sc, point)
+	if keep == null: return false
+	keep.grab_focus()
+	return true
+
 # a node of the current page by name: the last render's nodes are still in page_box until the frame ends (queue_free)
 func _live_child(nm: String) -> Control:
 	for ch in page_box.get_children():
@@ -482,18 +573,7 @@ func _live_child(nm: String) -> Control:
 		var f = ch if str(ch.name) == nm else ch.find_child(nm, true, false)
 		if f != null: return f
 	return null
-var _refocus_key := ""      # the focused control's key before the last render, while the Run options drawer is open
 var _focus_opener := false  # set when the drawer closes: focus goes back to Run options
-func _focus_key(n) -> String:
-	if not (n is Control) or not is_instance_valid(n): return ""
-	if n.has_meta("act"): return "act:" + str(n.get_meta("act")) + "|" + str(n.get_meta("arg", ""))
-	return "name:" + str(n.name)
-func _find_focus_key(n: Node, key: String) -> Control:
-	for ch in n.get_children():
-		if ch is Control and ch.focus_mode != Control.FOCUS_NONE and _focus_key(ch) == key and ch.is_visible_in_tree(): return ch
-		var r = _find_focus_key(ch, key)
-		if r != null: return r
-	return null
 # every focusable control under root but outside keep stops taking focus, so Tab, the arrows and a controller stay in keep
 # (the page is rebuilt when keep closes, which brings the focus modes back)
 func _trap_focus(root_n: Node, keep: Node) -> void:
@@ -524,7 +604,6 @@ func _first_button(n: Node) -> Control:
 # The desk's frame: the ledger veil, one centred column that scrolls, and a fixed bar below it that never moves (Back on the
 # left, the page's other quiet actions beside it). Card rows become kit grids (Kit.card_grid): one width, one height per
 # row, actions pinned to the card's foot.
-var _kit_scroll: ScrollContainer = null
 func _kit_page(inner: Control, maxw: float, left_btns: Array) -> Control:
 	var vs = get_viewport().get_visible_rect().size
 	var host = Control.new(); host.set_anchors_preset(Control.PRESET_FULL_RECT); host.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -535,7 +614,7 @@ func _kit_page(inner: Control, maxw: float, left_btns: Array) -> Control:
 	var left = (vs.x - cw) * 0.5
 	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	sc.anchor_right = 1.0; sc.anchor_bottom = 1.0; sc.offset_top = px(28); sc.offset_bottom = -px(96)
-	host.add_child(sc); _kit_scroll = sc
+	host.add_child(sc); _page_scroll = sc
 	var row = HBoxContainer.new(); row.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(row)
 	var lm = Control.new(); lm.custom_minimum_size.x = left; row.add_child(lm)
 	inner.custom_minimum_size.x = cw; row.add_child(inner)
@@ -586,6 +665,7 @@ func _pin_foot(cardp: Node) -> void:
 		body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 func _wrap_page(inner: Control, maxw: float = 1440) -> Control:
 	var sc = ScrollContainer.new(); sc.set_anchors_preset(Control.PRESET_FULL_RECT); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_page_scroll = sc
 	var hb = HBoxContainer.new(); hb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var m = MarginContainer.new()
 	m.add_theme_constant_override("margin_top", px(12)); m.add_theme_constant_override("margin_bottom", px(96))   # room under the page for the fixed finishing action
@@ -734,6 +814,7 @@ func _crest_tab(f: String, w: float) -> Button:
 	if found.is_empty(): return null
 	var picked = C.picked_faction == f
 	var b = Button.new(); b.custom_minimum_size = Vector2(w, px(58)); b.focus_mode = Control.FOCUS_ALL; b.disabled = found[2] == 0
+	GS.button_pointer(b)
 	b.tooltip_text = str(C.FACTIONS[f]["n"])
 	var bx = Kit.button_boxes(k, "quiet")
 	for st in bx: b.add_theme_stylebox_override(st, bx[st])
@@ -741,21 +822,32 @@ func _crest_tab(f: String, w: float) -> Button:
 	if picked:
 		var pb = (bx["normal"] as StyleBoxFlat).duplicate(); pb.bg_color = Color(GS.CAREER_PICTURE, 0.97); pb.border_color = GS.TEXT3
 		pb.border_width_bottom = maxi(3, px(3)); pb.border_color = Kit.faction_accent(f)
-		for st in ["normal", "hover", "pressed"]: b.add_theme_stylebox_override(st, pb)
+		var hi: StyleBoxFlat = pb.duplicate()
+		hi.bg_color = pb.bg_color.lerp(GS.TEXT, 0.08)
+		b.add_theme_stylebox_override("normal", pb)
+		b.add_theme_stylebox_override("hover", hi)
+		b.add_theme_stylebox_override("pressed", GS.pressed_box(hi))
 	var h = HBoxContainer.new(); h.set_anchors_preset(Control.PRESET_FULL_RECT); h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_theme_constant_override("separation", px(10)); h.alignment = BoxContainer.ALIGNMENT_CENTER
-	var cr = TextureRect.new(); cr.texture = load("res://portraits/portraits.gd").faction_crest(f) if ResourceLoader.exists("res://portraits/portraits.gd") else null
-	cr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; cr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	cr.custom_minimum_size = Vector2(px(34), px(34)); cr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	cr.modulate = Color(1, 1, 1, 1.0 if picked else 0.6)
 	var crest_on = w / k >= 170.0   # a narrow strip drops the crest so the name keeps its words whole
-	if crest_on: h.add_child(cr)
-	else: cr.free()   # issue 1457: an unparented crest was 6 leaked TextureRects and crests at exit on a narrow window
+	var cr: TextureRect = null
+	if crest_on:
+		cr = TextureRect.new()
+		cr.texture = load("res://portraits/portraits.gd").faction_crest(f) if ResourceLoader.exists("res://portraits/portraits.gd") else null
+		cr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; cr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		cr.custom_minimum_size = Vector2(px(34), px(34)); cr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cr.modulate = Color(1, 1, 1, 1.0 if picked else 0.6)
+		h.add_child(cr)
 	var name_w = w - (px(34) + px(10) if crest_on else 0) - px(20)
 	var nl = Kit.label(str(C.FACTIONS[f]["n"]), 18, k, GS.TEXT if picked else GS.TEXT2, Kit.medium_font(), true, name_w / k)
 	Kit.fit_words(nl, name_w, k)
 	nl.size_flags_horizontal = Control.SIZE_SHRINK_CENTER; nl.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(nl)
 	b.add_child(h)
+	b.draw.connect(func():
+		var active := GS.button_highlighted(b) or b.has_focus()
+		nl.add_theme_color_override("font_color", GS.TEXT3 if b.disabled else (GS.TEXT if active or picked else GS.TEXT2))
+		if cr != null: cr.modulate.a = 0.4 if b.disabled else (1.0 if active or picked else 0.6))
+	press_tag(b, "pickFaction", f)
 	b.pressed.connect(func(): _campaign_action("pickFaction", f))
 	Kit.wire_sound(b, "tab")
 	return b
@@ -839,13 +931,14 @@ func _desk_drawer(host: Control) -> void:
 	_drawer_shown = true
 	var v = VBoxContainer.new(); v.add_theme_constant_override("separation", px(14)); dr.add_child(v)
 	var dsc = ScrollContainer.new(); dsc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; dsc.size_flags_vertical = Control.SIZE_EXPAND_FILL; v.add_child(dsc)
+	_page_scroll = dsc
 	var ro = _run_options(); ro.size_flags_horizontal = Control.SIZE_EXPAND_FILL; dsc.add_child(ro)
-	v.add_child(Kit.action_bar(k, [], Kit.button("Done", k, "primary", func(): close_run_options())))
+	v.add_child(Kit.action_bar(k, [], Kit.button("Done", k, "primary", func(): close_run_options(false))))
 var _drawer_shown := false
-func close_run_options() -> void:
+func close_run_options(play_cancel := true) -> void:
 	if not desk_opts_open: return
 	desk_opts_open = false; _drawer_shown = false; _dirty = true; _focus_opener = true
-	Kit.play("ui_cancel")
+	if play_cancel: Kit.play("ui_cancel")
 func _reduce_motion() -> bool:
 	var m = get_node_or_null("/root/Main")
 	return m != null and "settings" in m and bool(m.settings.get("reduce_motion", false))
@@ -940,6 +1033,7 @@ func _run_options() -> Control:
 		var cv4 = card(false, 380); cv4[0].modulate.a = 0.55; cv4[1].add_child(lbl("Threat", 20, BONE, font_semi))
 		cv4[1].add_child(lbl("Lose a run to unlock Threat: optional rules that make runs harder and pay more renown.", 18, BONE3)); cards.add_child(cv4[0])
 	v.add_child(cards)
+	v.add_child(gap(8))   # Keep space after the last choice when scrolling above the fixed Done button.
 	return v
 
 # ---------------- aspect ----------------
@@ -989,6 +1083,7 @@ func _podium() -> Control:
 	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	sc.offset_left = left + stage_w + px(40); sc.offset_right = sc.offset_left + col_w; sc.offset_top = px(28); sc.anchor_bottom = 1.0; sc.offset_bottom = -px(96)
 	host.add_child(sc)
+	_page_scroll = sc
 	var v = VBoxContainer.new(); v.custom_minimum_size.x = col_w - px(4); v.add_theme_constant_override("separation", px(12)); sc.add_child(v)
 	v.add_child(Kit.heading("Choose its refit", 36, k))
 	v.add_child(Kit.label("One refit for the whole " + C.runWord() + ". If the flagship falls, it passes to your next-largest ship.", 18, k, GS.TEXT2, null, true, (col_w - px(4)) / k))
@@ -1030,14 +1125,20 @@ func _aspect_card(id: String, w: float, accent: Color) -> Control:
 	if picked: top.add_child(Kit.label("PICKED", 17, k, accent, Kit.medium_font(), false))
 	var dl = Kit.label(str(C.ASPECTS[id]["d"]), 18, k, GS.TEXT2, null, true, inner / k); dl.size_flags_horizontal = Control.SIZE_EXPAND_FILL; body.add_child(dl)
 	# the whole card is the button: a click, or Enter on its focus, picks it
-	var hit = Button.new(); hit.flat = true; hit.set_anchors_preset(Control.PRESET_FULL_RECT); hit.focus_mode = Control.FOCUS_ALL
+	var card_hit_area := MarginContainer.new()
+	card_hit_area.add_child(cv[0])
+	var hit = Button.new(); hit.focus_mode = Control.FOCUS_ALL
+	GS.button_pointer(hit)
 	hit.add_theme_stylebox_override("focus", GS.focus_ring(k)); hit.tooltip_text = "Pick " + str(C.ASPECTS[id]["n"])
-	for st in ["normal", "hover", "pressed", "disabled"]: hit.add_theme_stylebox_override(st, StyleBoxEmpty.new())
+	var boxes := GS.row_boxes(k, picked, 0, 0, false)
+	boxes["normal"] = StyleBoxEmpty.new()
+	for st in boxes: hit.add_theme_stylebox_override(st, boxes[st])
+	hit.name = "PickRefit_" + id
 	Kit.wire_sound(hit, "tab")
 	hit.pressed.connect(func(): aspect_pick = id; _dirty = true)
-	cv[0].add_child(hit)
-	cv[0].name = "Aspect_" + id
-	return cv[0]
+	card_hit_area.add_child(hit)
+	card_hit_area.name = "Aspect_" + id
+	return card_hit_area
 var _glow_cache := {}
 func _podium_glow(col: Color) -> Texture2D:
 	var key = col.to_html()
@@ -1276,7 +1377,18 @@ func _briefing_column() -> Control:
 	upper.minimum_size_changed.connect(func(): fit_fleet.call_deferred())
 	v.resized.connect(func(): fit_fleet.call_deferred())
 	fit_fleet.call_deferred()
-	return col
+	# A sibling of the sheet can draw beside it, outside the routes' scroll clipping.
+	var host := Control.new()
+	host.set_anchors_preset(Control.PRESET_FULL_RECT)
+	host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	host.add_child(col)
+	var hover := RowHover.new()
+	hover.column = col
+	hover.gap = px(12)
+	for row in _rows:
+		hover.watch(row["btn"])
+	host.add_child(hover)
+	return host
 
 func _objective_line(r: Dictionary) -> String:
 	var short = {"Engagement": "Break their fleet to make it flee.", "Ambush": "Break the fleets closing in from both sides.", "Hold the station": "Keep enemies off the station through round 6.", "Hunt": "Destroy their flagship before round 6 ends.", "Intercept": "Destroy the transports before they escape.", "Breakthrough": "Get your ships onto the far jump hexes.", "Relay": "Hold the relay, unopposed, for 3 rounds.", "Decapitation": "Destroy their flagship to scatter the fleet.", "Sector flagship": "Beat the command ship to end the sector."}
@@ -1289,7 +1401,9 @@ func _objective_line(r: Dictionary) -> String:
 func _route_row(r: Dictionary) -> Control:
 	var cw = COL_W - COL_PAD * 2.0; var on = r["id"] == picked
 	var v = vbox(0); var b = Button.new(); b.name = "Route" + str(r["num"]); b.focus_mode = Control.FOCUS_ALL; b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, StyleBoxEmpty.new())
+	var boxes := GS.row_boxes(k, on, 0, 0, false)
+	boxes["normal"] = StyleBoxEmpty.new()
+	for st in boxes: b.add_theme_stylebox_override(st, boxes[st])
 	b.add_theme_stylebox_override("focus", GS.focus_ring(k))
 	var h = row0(20); b.add_child(h); h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var numw = _baseline_row([[str(r["num"]), GS.sheet_name(), 132 if on else 36, GS.MAP_EMBER if on else GS.TEXT]], 132 if on else 36)
@@ -1320,6 +1434,7 @@ func _route_row(r: Dictionary) -> Control:
 	b.pressed.connect(func():
 		map3d.clear_keyboard_preview()
 		pick_route(id))
+	Kit.wire_sound(b, "quiet")
 	b.gui_input.connect(func(e: InputEvent):
 		if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
 			_route_click_id = id
@@ -1360,25 +1475,25 @@ func _jump_button() -> Button:
 	for r in _routes:
 		if r["id"] == picked: cur = r
 	var b = Button.new(); b.name = "JumpAction"; b.custom_minimum_size.y = px(56); b.focus_mode = Control.FOCUS_ALL; b.set_meta("finish", true)
-	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	var jb = GS.sheet_jump_boxes(k)
-	for st in ["normal", "hover", "pressed", "disabled", "focus"]: b.add_theme_stylebox_override(st, jb["hover" if st == "focus" else st])
+	for st in jb: b.add_theme_stylebox_override(st, jb[st])
+	b.add_theme_stylebox_override("focus", GS.focus_ring(k))
+	b.focus_entered.connect(func(): b.add_theme_stylebox_override("normal", jb["hover"]))
+	b.focus_exited.connect(func(): b.add_theme_stylebox_override("normal", jb["normal"]))
+	b.disabled = not _can_jump()
+	GS.button_pointer(b)
 	var h = row0(12); b.add_child(h); h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); h.offset_left = px(16); h.offset_right = -px(16)
 	var text = "JUMPING WHEN READY" if map3d != null and map3d._queued_jump else "JUMP TO " + str(cur.get("name", "")).to_upper(); var fs = 34.0
 	while fs > 28 and GS.sheet_name().get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px(fs)).x > px(COL_W - COL_PAD * 2 - 132): fs -= 1
 	var lw = tl(text, fs, 56, GS.MAP_EMBER, GS.sheet_name(), true); _jump_lbl = lw.get_meta("label"); h.add_child(lw)
 	var key = tl("Enter", 19, 56, GS.MAP_EMBER, GS.sheet_body()); h.add_child(key)
 	var arrow = tl("", 19, 56, GS.MAP_EMBER, GS.sheet_body()); arrow.custom_minimum_size.x = px(12); h.add_child(arrow)
-	var action_label = _jump_lbl
-	var paint = func():
-		var active = b.is_hovered() or b.has_focus(); var col = GS.ON_EMBER if active else GS.MAP_EMBER
-		action_label.add_theme_color_override("font_color", col); key.get_meta("label").add_theme_color_override("font_color", col)
-		arrow.queue_redraw()
+	GS.bind_sheet_label(b, _jump_lbl, GS.MAP_EMBER, true)
+	GS.bind_sheet_label(b, key.get_meta("label"), GS.MAP_EMBER, true)
+	b.draw.connect(arrow.queue_redraw)
 	arrow.draw.connect(func():
-		var col = GS.ON_EMBER if b.is_hovered() or b.has_focus() else GS.MAP_EMBER
+		var col := GS.sheet_action_colour(b, GS.MAP_EMBER, true)
 		var ctr = arrow.size * 0.5; arrow.draw_colored_polygon(PackedVector2Array([ctr + Vector2(-px(5), -px(6)), ctr + Vector2(px(6), 0), ctr + Vector2(-px(5), px(6))]), col))
-	for sig in [b.mouse_entered, b.mouse_exited, b.focus_entered, b.focus_exited]: sig.connect(paint)
-	b.disabled = cur.is_empty() or _find(_acts, "enterNode", picked).is_empty() or _find(_acts, "enterNode", picked)[2] == 0
 	b.pressed.connect(_jump); _jump_btn = b
 	Kit.wire_sound(b, "primary")
 	return b
@@ -1421,11 +1536,18 @@ func _rebuild_rail() -> void:
 		for scroll_name in scrolls:
 			var sc := rail.find_child(scroll_name, true, false) as ScrollContainer
 			sc.scroll_vertical = scrolls[scroll_name], CONNECT_ONE_SHOT)
+
+func _can_jump() -> bool:
+	var route := _find(_acts, "enterNode", picked)
+	return picked != "" and C.modal_d == null and not route.is_empty() and route[2] == 1
+
 func _confirm_map_jump() -> void:
-	if picked != "": Kit.play("ui_confirm")
+	if not _can_jump(): return
+	Kit.play("ui_confirm")
 	_jump()
+
 func _jump() -> void:
-	if picked == "" or C.modal_d != null or _find(_acts, "enterNode", picked).is_empty(): return
+	if not _can_jump(): return
 	if _overlay != "": _close_overlay()   # issue 1559 item 25: Jump on the rail works with a slide-over open
 	if map3d != null and map3d.visible and not map3d.backdrop: map3d.fly_to(picked)   # the fleet flies the route, then the campaign enters the stop
 	else: C.act("enterNode", picked)
@@ -1596,7 +1718,7 @@ func _map_key() -> Control:
 	else: body.add_child(_over_text("[b]" + term("relics", true) + "[/b] None yet. Elite fleets and flagships carry it.", 17))
 	if RN["hold"] > 0: body.add_child(_over_text(str(RN["hold"]) + " refit" + ("s" if RN["hold"] > 1 else "") + " in the hold.", 17))
 	head.call("Controls")
-	body.add_child(_over_text("Click a route, press its number, or point at its stop to pick it. Enter, the jump button or a double click flies it; click or Space skips the flight. Scroll to zoom, right-drag or WASD to pan, Home to reset.", 17))
+	body.add_child(_over_text("Point at a stop to preview it. Click a stop or route, or press its number to pick it. Double-click a stop or route, or press Enter or Space to jump to the picked stop. Click or press Space to skip the flight. Scroll to zoom, right-drag or use WASD to pan, and press Home to reset.", 17))
 	head.call("Settings")
 	var sr = row0(32)
 	sr.add_child(tbtn("Map detail: " + ("High" if map_quality != "low" else "Low"), 17, 24, func(): set_map_quality("low" if map_quality != "low" else "high"),
@@ -1766,8 +1888,13 @@ func _shipyard() -> Control:
 	v.add_child(lbl("Repairs cost %s per 2 hull, rounded up. A Mark upgrade adds 20%% hull and shields and 15%% damage. New hulls come with a fresh %s." % [(("1" if pm == 1.0 else C.numstr(snappedf(pm, 0.0001))) + (hw if hw != "" else (" credit" if pm == 1.0 else " credits"))), str(C.CAPTAINS.get(str(R["fac"]), C.CAPTAINS["voidsworn"])["ranks"][0]).to_lower()], 18, BONE2))
 	var allMiss = 0.0
 	for s in R["fleet"]: allMiss += float(C.derive(s)["maxHp"]) - float(s["hp"])
-	_yard_bar = abtn(("Repair entire fleet for " + C.numstr(ceil(allMiss / 2.0 * pm)) + hw) if allMiss > 0 else "Fleet fully repaired", "repairAll")   # the teaching card keeps off this bar
+	_yard_bar = abtn(("Repair entire fleet for " + C.numstr(ceil(allMiss / 2.0 * pm)) + hw) if allMiss > 0 else "Fleet fully repaired", "repairAll")
 	add(v, _yard_bar)
+	_yard_tip_dock = hbox(0)
+	_yard_tip_dock.alignment = BoxContainer.ALIGNMENT_END
+	_yard_tip_dock.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_yard_tip_dock.hide()
+	v.add_child(_yard_tip_dock)
 	var cores = C.or_(R.get("cores"), [])
 	if not cores.is_empty():   # issue 1178: Eclipse core recovery
 		v.add_child(sec_head("Recovered cores"))
@@ -1878,7 +2005,7 @@ func _legacy() -> Control:
 		if _find(_acts, "progTab", t[0]).is_empty(): continue
 		var tt = t[0]
 		var tb = Kit.tab_button(t[1], k, C.prog_tab == tt, GS.MAP_EMBER, func(): _campaign_action("progTab", tt))
-		tb.set_meta("act", "progTab"); tb.set_meta("arg", tt); tabs.add_child(tb)
+		press_tag(tb, "progTab", tt); tabs.add_child(tb)
 	var stc = _story()
 	if stc != null:   # story layer: the Career screen (records, medals, titles, history)
 		tabs.add_child(Kit.tab_button("Career", k, false, GS.MAP_EMBER, func(): stc.open_career()))
@@ -1992,10 +2119,10 @@ func _help() -> Control:
 			var sh = Kit.section(str(h[0]), k); v.add_child(sh)
 			var lk = Kit.link(str(h[0]), k, Callable(), 18); lk.alignment = HORIZONTAL_ALIGNMENT_LEFT; idx.add_child(lk); anchors.append([lk, sh])
 		var l = Kit.label(str(h[1]), 18, k, GS.TEXT2, null, true, minf(text_w, 820.0)); l.size_flags_horizontal = Control.SIZE_EXPAND_FILL; v.add_child(l)
-	first.pressed.connect(func(): if _kit_scroll != null: _kit_scroll.scroll_vertical = 0)
+	first.pressed.connect(func(): if _page_scroll != null: _page_scroll.scroll_vertical = 0)
 	for a in anchors:
 		var target: Control = a[1]
-		(a[0] as Button).pressed.connect(func(): if _kit_scroll != null: _kit_scroll.scroll_vertical = int(target.position.y + v.position.y))
+		(a[0] as Button).pressed.connect(func(): if _page_scroll != null: _page_scroll.scroll_vertical = int(target.position.y + v.position.y))
 	return outer
 
 # ---------------- run end ----------------
@@ -2029,7 +2156,9 @@ func _end_style(n: Node) -> void:
 		var focus = StyleBoxFlat.new(); focus.bg_color = Color(0, 0, 0, 0); focus.border_color = GS.TEXT2; focus.border_width_bottom = maxi(1, px(1)); n.add_theme_stylebox_override("focus", focus)
 	if n is Button and not n.get_meta("end_primary", false):
 		n.add_theme_color_override("font_color", GS.TEXT); n.add_theme_color_override("font_focus_color", GS.TEXT); n.add_theme_color_override("font_hover_color", GS.TEXT)
-		for state in ["normal", "hover", "pressed", "disabled"]: n.add_theme_stylebox_override(state, GS.flat(Color(0, 0, 0, 0), 10, 8, k))
+		var boxes := GS.row_boxes(k, false, 10, 8)
+		for state in boxes: n.add_theme_stylebox_override(state, boxes[state])
+		GS.button_pointer(n)
 	if n is RichTextLabel:
 		n.add_theme_font_override("normal_font", GS.sheet_body()); n.add_theme_font_override("bold_font", GS.sheet_medium())
 		n.add_theme_color_override("default_color", GS.TEXT)
@@ -2143,6 +2272,7 @@ func _end_back() -> void:
 func _campaign_action(act: String, arg = "") -> void:
 	# All end-page exits, including the old progression page's title link, pass here.
 	if _end_return and act == "title": _end_back(); return
+	if act == "buyMod": C.ACT_buyMod(str(arg), true); return
 	var ending = C.page.get("kind") == "end" or _end_return
 	if ending and act in ["title", "newRunScreen", "nextFac"] and not _end_confirmed: return
 	if ending and act in ["progTab", "lineage"]: _end_return = true
@@ -2343,11 +2473,13 @@ func _capstone_mastery(id) -> Control:
 
 # ---------------- dialogs ----------------
 func _modal(md: Dictionary) -> void:
-	_modal_acts = md["acts"]; var acts = _modal_acts; var d = md["data"]
-	var scroll := 0
-	if md["kind"] == "promotions" and _modal_kind == "promotions" and is_instance_valid(_modal_scroll):
-		scroll = _modal_scroll.scroll_vertical
-	_modal_kind = md["kind"]
+	_modal_acts = md["acts"].duplicate(); var acts = _modal_acts; var d = md["data"]
+	if md["kind"] == "victory":
+		# Taking a prize can fill the room a tow had when the battle ended.
+		for i in range(d["wrecks"].size()):
+			var wreck = d["wrecks"][i]
+			if C.jt(wreck["yield"].get("tow")) and C.wreck_tow_over_cap(wreck):
+				acts.erase(_find(acts, "takeSalvage", str(i) + ":tow"))
 	var dim = ColorRect.new(); dim.color = GS.SHADE; dim.set_anchors_preset(Control.PRESET_FULL_RECT); modal_box.add_child(dim)
 	dim.mouse_force_pass_scroll_events = false
 	var cc = CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT); modal_box.add_child(cc)
@@ -2482,8 +2614,20 @@ func _modal(md: Dictionary) -> void:
 			p.call("You get: " + (", ".join(PackedStringArray(parts)) if parts.size() > 0 else "Nothing") + ".", BONE2)
 			v.add_child(foot([fin("Confirm", "prizeConfirm", "", acts)]))
 		"mod":
-			h2.call("Recovered refits"); p.call(str(C.REWARD_DEF["refit"]), BONE3); p.call("Take one. It goes in the hold; fit it at a shipyard or from the fleet screen.")
-			for m in d["opts"]: add(v, choice(C.modName(m), C.MODULES[m]["d"], "takeMod", m, acts))
+			h2.call("Recovered refits"); p.call("Choose one refit. Fit it now or keep it in the hold.")
+			for m in d["opts"]:
+				var card_box := panel(IRON3, IRON2, 10)
+				var body := vbox(6); card_box.add_child(body)
+				body.add_child(lbl(C.modName(m), 20, BONE, font_semi))
+				body.add_child(lbl(C.MODULES[m]["d"], 17, BONE2))
+				_refit_fit_choices(body, m, "fitRewardRefit", str(m) + ":", acts)
+				add(body, choice("Keep in hold", "", "takeMod", m, acts))
+				v.add_child(card_box)
+		"bought_refit":
+			var m = d["module"]
+			h2.call(C.modName(m) + " purchased"); p.call(C.MODULES[m]["d"], BONE2)
+			_refit_fit_choices(v, m, "fitBoughtRefit", "", acts)
+			v.add_child(foot([fin("Keep in hold", "keepBoughtRefit", "", acts)]))
 		"boon":
 			var P = C.PATRONS[d["patron"]]; var pc = Color(P["col"])
 			var hd = hbox(12); var sg = lbl(P["glyph"], 26, INK, font_semi, false); var sgp = panel(pc, pc, 6); sgp.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; sgp.add_child(sg); hd.add_child(sgp)
@@ -2536,21 +2680,48 @@ func _modal(md: Dictionary) -> void:
 	var vh = get_viewport().get_visible_rect().size.y
 	sc.custom_minimum_size = Vector2(px(700), min(vh * 0.9 - px(48), v.get_combined_minimum_size().y + px(8)))
 	v.minimum_size_changed.connect(func(): sc.custom_minimum_size.y = min(vh * 0.9 - px(48), v.get_combined_minimum_size().y + px(8)))
-	if scroll > 0: sc.set_deferred("scroll_vertical", scroll)
 	ModalFocus.attach(box)
 
+func _refit_fit_choices(v: VBoxContainer, module_id, action: String, prefix: String, acts: Array) -> void:
+	var ships := flow(6)
+	for ship in C.RUN["fleet"]:
+		if not C.canFitModule(ship, module_id): continue
+		var arg := prefix + str(ship["uid"])
+		C.A(acts, action, arg)
+		ships.add_child(abtn("Fit onto " + str(ship["name"]), action, arg, false, true, acts))
+	if ships.get_child_count() == 0:
+		ships.free()
+		v.add_child(lbl("No free compatible slot.", 17, BONE3))
+	else:
+		v.add_child(ships)
+
 func _salvage_choices(v: VBoxContainer, wrecks: Array, acts: Array) -> void:
-	v.add_child(lbl("Salvage one wreck", 20, BONE))
-	v.add_child(lbl(str(C.REWARD_DEF["salvage"]), 17, BONE3))
+	v.add_child(lbl("Choose one wreck", 20, BONE))
 	for i in range(wrecks.size()):
 		var w = wrecks[i]; var y = w["yield"]; var F = C.FACTIONS.get(w.get("fac"))
 		var pp = panel(IRON3, IRON2, 10); var pv = vbox(6); pp.add_child(pv)
-		pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.clsName(C.or_(w.get("cls"), ""))) + ((", " + esc(F["n"])) if F != null else ""), BONE3) + "\n" + c(esc(C.CAUSE_WORD.get(w.get("cause"), "destroyed")) + ((" by the " + esc(w["by"])) if C.jt(w.get("by")) else "") + ".", BONE2), 18))
+		pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.clsName(C.or_(w.get("cls"), ""))) + ((", " + esc(F["n"])) if F != null else ""), BONE3), 18))
+		var cause := str(w.get("impact", C.CAUSE_WORD.get(w.get("cause"), "destroyed")))
+		cause = cause.substr(0, 1).to_upper() + cause.substr(1)
+		var bonus: int = C.wreck_credit_bonus(w.get("cause"))
+		if bonus > 0:
+			pv.add_child(lbl("%s: no module or hull recovered, +%d%% credits." % [cause, bonus], 17, BONE2))
+		else:
+			var by: String = " by " + C.ship_with_article(str(w["by"])) if C.jt(w.get("by")) else ""
+			var module_note := " No refit recoverable." if y.get("mod") == null else ""
+			pv.add_child(lbl(cause + by + "." + module_note, 17, BONE2))
 		var g = GridContainer.new(); g.columns = 3; g.add_theme_constant_override("h_separation", px(6))
-		if C.jt(y.get("mod")): add(g, choice("Strip it: " + C.modName(y["mod"]), C.MODULES[y["mod"]]["d"], "takeSalvage", str(i) + ":mod", acts))
-		add(g, choice("Scrap it", "+" + C.numstr(y["cred"]) + " credits", "takeSalvage", str(i) + ":cred", acts))
-		if C.jt(y.get("tow")): add(g, choice("Tow it home", "Joins your fleet at 35% hull", "takeSalvage", str(i) + ":tow", acts))
-		pv.add_child(g); v.add_child(pp)
+		if C.jt(y.get("mod")): add(g, choice("Strip wreck for refit", C.modName(y["mod"]) + " to the hold\n" + C.MODULES[y["mod"]]["d"], "takeSalvage", str(i) + ":mod", acts))
+		add(g, choice("Strip wreck for credits", "+" + C.numstr(y["cred"]) + " credits", "takeSalvage", str(i) + ":cred", acts))
+		if C.jt(y.get("tow")):
+			if C.wreck_tow_over_cap(w):
+				pv.add_child(lbl("No command points left to tow this wreck.", 17, BONE3))
+			else:
+				add(g, choice("Tow it home", "Joins your fleet at 35% hull", "takeSalvage", str(i) + ":tow", acts))
+		pv.add_child(g)
+		if C.jt(y.get("mod")):
+			_refit_fit_choices(pv, y["mod"], "fitWreckRefit", str(i) + ":", acts)
+		v.add_child(pp)
 
 # Every line of a dialog sits on a backing (ui_style.md 3): runs of plain words (labels, rich text, the title) are gathered
 # into one well each, in place; choices, rows of buttons and blocks that already are wells stay as they are.
@@ -2569,7 +2740,7 @@ func _well_text(v: VBoxContainer) -> void:
 const BACK_ACTS := ["title", "backToSetup"]
 # Issue 1448: the confirms that take a reward, relic or promotion perk, or buy a hull, play the built reward chime
 # (cues.json ui_reward) in place of the plain confirm.
-const REWARD_ACTS := ["takeMod", "takeBoon", "takeRelic", "takeSalvage", "prizeConfirm", "takePerk", "buyHull"]
+const REWARD_ACTS := ["takeMod", "fitRewardRefit", "fitWreckRefit", "fitBoughtRefit", "takeBoon", "takeRelic", "takeSalvage", "prizeConfirm", "takePerk", "buyHull"]
 # Names the action a button runs, so the player-path recorder presses the real button (and hears its cue) instead of
 # calling the action under it (issue 1448: SND1C's reward picks were silent because the recorder skipped the buttons).
 static func press_tag(b: Control, act: String, arg) -> void:
@@ -2605,6 +2776,10 @@ func _input(e: InputEvent) -> void:
 func _unhandled_input(e: InputEvent) -> void:
 	if C == null or not root.visible or not (e is InputEventKey) or not e.pressed or e.echo: return
 	if ModalFocus.covered(self): return   # issue 1559 item 5: Career (or another overlay) over the page has the keys
+	# A modal action can replace the offer before its new controls have been drawn.
+	if not is_same(C.modal_d, _shown_modal):
+		get_viewport().set_input_as_handled()
+		return
 	if e.keycode == KEY_ESCAPE and esc_back(): get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "fleet" and is_instance_valid(fleet_manifest):
 		if fleet_manifest.handle_key(e): _key_cue(e); get_viewport().set_input_as_handled(); return
@@ -2623,10 +2798,10 @@ func _unhandled_input(e: InputEvent) -> void:
 	if C.modal_d == null and C.page.get("kind") == "end" and is_instance_valid(debrief):
 		if debrief.handle_key(e): _key_cue(e); get_viewport().set_input_as_handled(); return
 	if C.modal_d != null:
-		var acts = C.modal_d["acts"]
+		var acts = _modal_acts
 		if e.keycode == KEY_ESCAPE:
 			for a in acts:   # issue 1559 item 26: the relic pick's Back (eventBack) answers Esc too
-				if a[2] == 1 and (a[0] == "closeModal" or a[0] == "c3retreatNo" or a[0] == "eventBack"):
+				if a[2] == 1 and a[0] in ["closeModal", "c3retreatNo", "eventBack", "keepBoughtRefit"]:
 					Kit.play("ui_cancel"); C.act(a[0], a[1]); get_viewport().set_input_as_handled(); return
 		var n = e.keycode - KEY_1
 		if n < 0 or n >= 9: n = e.keycode - KEY_KP_1   # the keypad's digits too, as on the map (item 26)

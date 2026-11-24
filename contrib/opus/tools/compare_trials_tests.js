@@ -23,6 +23,15 @@ const controlRows = [trial('control', 1706), trial('control', 1707)];
 const treatmentRows = [trial('treatment', 1706), trial('treatment', 1707)];
 const done = 'TRIALS_COMPLETE 2';
 
+function campaignRun(arm, seed, overrides = {}) {
+  return 'RUN ' + JSON.stringify({
+    faction: 'deathless', difficulty: 'veteran', admiral: 'khaz', arm, seed,
+    terminal_reason: 'won', sector: 3, boss_fights: 3, battles_fought: 12,
+    boss_credits: 80, boss_biomass: 0, abilities_fired: { phase: 5 }, shop_buys: { hull: 2 },
+    ...overrides,
+  });
+}
+
 function run(control, treatment) {
   fs.writeFileSync(controlPath, control.join('\n') + '\n');
   fs.writeFileSync(treatmentPath, treatment.join('\n') + '\n');
@@ -50,7 +59,26 @@ try {
   assert.equal(complete.status, 0, complete.stderr);
   assert.match(complete.stdout, /^PAIRED /);
   assert.equal(JSON.parse(complete.stdout.slice('PAIRED '.length)).pairs, 2);
-  console.log('PASS: paired trials require a completion marker and the planned count in both logs');
+  const runDone = 'RUNS_COMPLETE 2';
+  const runControl = [campaignRun('control', 1), campaignRun('control', 2)];
+  const runTreatment = [campaignRun('treatment', 1),
+    campaignRun('treatment', 2, { terminal_reason: 'lost', sector: 2, boss_fights: 2, boss_credits: null, boss_biomass: null })];
+  rejects([runControl[0]], [runTreatment[0]], /missing RUNS_COMPLETE/);
+  rejects([runControl[0], runDone], [runTreatment[0], runDone], /expected 2 RUN records, found 1/);
+  rejects([...runControl, runDone], [...runTreatment, runDone, runDone], /duplicate RUNS_COMPLETE/);
+  rejects([...runControl, runDone], [runTreatment[0], runDone, runTreatment[1]], /RUN after RUNS_COMPLETE/);
+  rejects([...runControl, runDone], [runTreatment[0], campaignRun('treatment', 2, { admiral: 'another' }), runDone], /RUN key sets differ/);
+  rejects([...runControl, runDone], [runTreatment[0], campaignRun('treatment', 2, { terminal_reason: 'engine_error' }), runDone], /engine error in RUN/);
+  rejects([...runControl, done], [...runTreatment, runDone], /mixed RUN and TRIAL/);
+  rejects([...controlRows, done], [...runTreatment, runDone], /same type of record/);
+  const completeRuns = run([...runControl, runDone], [...runTreatment, runDone]);
+  assert.equal(completeRuns.status, 0, completeRuns.stderr);
+  assert.match(completeRuns.stdout, /^PAIRED_RUN /);
+  const summary = JSON.parse(completeRuns.stdout.slice('PAIRED_RUN '.length));
+  assert.equal(summary.pairs, 2);
+  assert.equal(summary.delta.win_pp, -50);
+  assert.equal(summary.delta.loss_s2_pp, 50);
+  console.log('PASS: paired trials and runs require a completion marker, planned count and matching keys');
 } finally {
   for (const file of [controlPath, treatmentPath]) {
     if (fs.existsSync(file)) fs.unlinkSync(file);

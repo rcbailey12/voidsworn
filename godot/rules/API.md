@@ -26,10 +26,12 @@ api.new_battle(run, cfg)              # run = the campaign run dict (admiral, fa
 - **Classic mode:** `cfg.alt = false` plays whole turns instead of alternating activations (the game's setup option). See "Classic mode" below.
 - **AI level:** `api.R.AI_LEVEL` is `"veteran"` (the game's default) or `"standard"`. Set it before `new_battle`.
 - **Opening state:** after setup, `api.phase` is `"player"`, and the event stream holds `round 1` and `side player`.
+- **Deployment choices (issue 1870).** The human battle sets `api.interactive_deployment = true` before setup. With Iteration Swap and at least two deployed ships, the API pauses in `"deployment"`. `view().skill_target` supplies the skill name, prompt, valid targets (`id`, `name`, `q`, `r`) and the first pick. Send each target ID to `pick_skill_target(id)`, or an empty string to skip. The second pick swaps the two hexes and finishes setup. The round-one snapshot is taken after deployment and restores the resulting positions. Automated callers use their usual deployment by default.
 
 ## The turn flow (alternating activations, as the game plays by default)
 
 `api.phase` is one of:
+- `"deployment"`: waiting for a deployment skill choice before round one;
 - `"player"`: waiting for the player;
 - `"enemy"`: call `step()`;
 - `"over"`: the battle has ended;

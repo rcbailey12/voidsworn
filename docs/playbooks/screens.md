@@ -89,6 +89,7 @@ What moved behind a hover or a key (all still reachable):
 | the step hints (Move, Fire, End) | one short sentence; the full hint on the action's hover |
 | Cancel button | Esc |
 | speed, threat map, top-down, grid buttons | Esc menu (and R, T, Z keys) |
+| Brisk camera (Off by default) | skips routine lance, torpedo and volley cut-ins. Press K during a routine cut-in or enemy camera follow to skip that kind for the rest of the battle. |
 | the key line along the bottom | Menu > Controls, and the ship name's hover |
 | nameplates with bars on every ship | hover a ship |
 | the old log | three lines or a one-line ticker above the shelf; L opens the full history |
@@ -189,6 +190,11 @@ than 720 px in docs/shots/debrief_db1/. Stage the installed model cache before c
 The victory card lists the wrecks and lets the player work one directly. If there are captured ships, deal with the batch
 of prizes before selecting a wreck so prize decisions get first claim on command points. Put all captains with a pending
 perk on one promotions card and keep it open until their picks are made. A reload restores the current reward stage.
+
+The wreck card names the cause and shows each available Strip wreck payout or tow before you choose. A hull broken up by
+a heavy impact, null fire, corrosive damage or tidal stress yields credits at the existing 30% bonus, with no module or
+tow. Won and bought refit cards offer Fit onto a ship with a free compatible slot or Keep in hold. Escape on a purchase
+keeps that refit in the hold. Continuing a saved run reopens an unfinished fit card with the same refit.
 
 Drydock and field repair cards show the fleet hull and credit gain for both choices before applying either. The full
 service keeps the previous free repair rate. The lighter service adds a credit stipend. If the Nemesis holds a shipyard,
