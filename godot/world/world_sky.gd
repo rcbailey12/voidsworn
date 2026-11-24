@@ -399,7 +399,7 @@ void sky() {
 
 const SKY := """
 shader_type sky;
-uniform sampler2D neb_tex : filter_linear_mipmap, repeat_enable;
+uniform sampler2D neb_tex : filter_linear, repeat_enable;   // no mips: a sky has no smooth derivative at the longitude wrap
 uniform float has_neb = 0.0;
 uniform float neb_gain = 1.0;
 uniform vec3 mood_tint = vec3(1.0);   // issue 1272: a stop's mood on the sector's baked gas (defaults change nothing)
