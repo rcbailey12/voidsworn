@@ -100,8 +100,8 @@ func _run() -> void:
 	s.shield_hit(fx, Vector3.RIGHT, fx.now, 0.8, 3.0)
 	fx.step(0.0)  # make the hit shield visible before moving the hull
 	lifted.hull.position.y += 0.2
-	fx.step(0.01)
-	check(is_equal_approx(s._shield_mi.position.y, lifted.hull_lift + 0.2), "shield follows the lifted hull's bob")
+	var shield_at: Vector3 = lifted.to_local(s._shield_mi.global_position)
+	check(is_equal_approx(shield_at.y, lifted.hull_lift + 0.2), "shield follows the lifted hull's bob before the next FX step")
 	var stub := STUB.new()
 	world.add_child(stub)
 	stub.shield(lifted, lifted.L, 0, Color.GREEN)

@@ -7,9 +7,12 @@ const HT := preload("res://render/hull_table.gd")
 const BL := preload("res://world/board_look.gd")   # the board look trial (today, A holo, B living, C cinematic + tactical)
 const ModalFocus := preload("res://ui/theme/modal_focus.gd")
 const A4P := preload("res://assets/ships/a4_props.gd")  # A4's painted station and derelicts (null when not built)
+const TerrainScorch := preload("res://fx/terrain_scorch.gd")
+const BattleLook := preload("res://render/look.gd")
 const BV := preload("res://world/blocker_visuals.gd")
 const PL := preload("res://world/world_planet.gd")   # issue 1765: the board planet's surfaces
 const LS := preload("res://render/line_style.gd")   # issue 1374 (R362): the one line style (width, glow, fade, role colours)
+const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const HS := 10.0
 var HW := HS * sqrt(3.0)
 # The one scale table's board-side sizes (issue 710, R247; docs/playbooks/scale.md). All in world units, HEX_S = 10.
@@ -277,9 +280,7 @@ func build(rules) -> void:
 	outline = MeshInstance3D.new()
 	outline.name = "ReachOutline"
 	var om := ShaderMaterial.new()
-	var osh := Shader.new()
-	osh.code = OUTLINE_SHADER
-	om.shader = osh
+	om.shader = SHADER_CACHE.for_code(OUTLINE_SHADER)
 	outline.material_override = om
 	outline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(outline)
@@ -318,10 +319,8 @@ func _mm(mesh: Mesh, code: String) -> MultiMeshInstance3D:
 		mm.set_instance_transform(i, Transform3D(Basis(), hex_world(cells[i].q, cells[i].r, -0.4)))
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
-	var sh := Shader.new()
-	sh.code = code
 	var m := ShaderMaterial.new()
-	m.shader = sh
+	m.shader = SHADER_CACHE.for_code(code)
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mi)
@@ -963,6 +962,8 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 			offset = Vector3(2.0, 13.0, 1.5)
 		a4.transform = Transform3D(Basis.from_euler(attitude), c + offset)
 		props.add_child(a4)
+		if a4.has_meta("station_T2") and BattleLook.post_fx_enabled("DECALS"):
+			TerrainScorch.station(a4)
 		return
 	var p := "res://gen/hulls/O1_37.res"
 	if not ResourceLoader.exists(p):

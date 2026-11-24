@@ -1,16 +1,64 @@
 {
-  "source_commit": "5d7a6ce5af6f87a8f843eaf7c1e9cdee3f5a1230",
+  "source_commit": "59c722c7531e3549e7ef37abcf5d414ea47355ea",
   "source_dirty": true,
-  "source_diff_sha256": "fe9269219a635214e1fdfb5a99c0df67b8577191858e3a8a5108bac674655d58",
+  "source_diff_sha256": "301a3446fac282cae69eee87ec207c5f8fe40beaa531a26bf8346b0f8ad33cd2",
+  "source_dirty_files": {
+    "docs/ship_pipeline/build_sheets/ithar_GP1/README.md": "ef8bb84494008f5402aa62125a66ca7927dabd2e",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/camera170.jpg": "59b0fe34509f2998acdce02de3aa68d159f162d6",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/camera170.jpg.provenance.json": "ae435a4c056bba3032d73450f128ee27fbfeaf08",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/close.jpg": "03ccedecde4e4b0fe1f0fd73afbbbb030826372d",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/close.jpg.provenance.json": "c82976caaa8bb4bbd2cd8c44164f3e4b95822dff",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/compare.jpg": "df4924a80eb706b47cdcce6ef3cb28b406c158f4",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/compare.jpg.provenance.json": "14aad47d35fd6d3450bf117ee67cc5387f5113bc",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/feature_table.md": "91c9f1a3dee627975d6c262a92661d685fdb5606",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/fit.json": "d7d54d416fb896c4a0dc144a8cd78a6b85b2e77e",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/fit_view.jpg": "f0b7b7b855077a285f52555706b6323178efbcc5",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/fit_view.jpg.provenance.json": "44e176fb7a7c37f8831de65ca390cf6fb270ef0b",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/inside.jpg": "faae56f0205257934be188b8613afe97d0c27645",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/inside.jpg.provenance.json": "58f26c1a8b7086d5cd60201ae769a43de9eaf081",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/manifest.json": "965b0aa2cf610eead35d7d9050e1a6769329e866",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/model.json": "732052e4b608bbd2d99a10e63ce6a6902973a76e",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/sheet.jpg": "252bdc9df7772e59a088ba9c068e644c66ab455d",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/sheet.jpg.provenance.json": "15c6ea21648d52d09a06bb988a6a38119ba49f61",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/side.jpg": "9d00e7f043ddc37cf187739529a886bd3d00e89d",
+    "docs/ship_pipeline/build_sheets/ithar_GP1/side.jpg.provenance.json": "20bd5c5f01f2a7d0c1a62892dd8e088badf5d72c",
+    "tools/blender/build_sheets/ships/ithar_GP1.py": "f52cec1a57b0ca3657762cfc340f29788217ceae",
+    "tools/blender/kits/ithar/hull.py": "d8b295f90bfa637a64206298c70c8225b839f683",
+    "tools/blender/r209/sheet_hull.py": "ab10f56aa7aca69db660320c2eb6fe6148be7e39"
+  },
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "fit_view.jpg",
-  "date": "2026-11-21T19:53:50Z",
+  "date": "2026-11-23T17:46:37Z",
   "sources": [
     {
-      "source_commit": "5d7a6ce5af6f87a8f843eaf7c1e9cdee3f5a1230",
+      "source_commit": "59c722c7531e3549e7ef37abcf5d414ea47355ea",
       "source_dirty": true,
-      "source_diff_sha256": "fe9269219a635214e1fdfb5a99c0df67b8577191858e3a8a5108bac674655d58",
+      "source_diff_sha256": "301a3446fac282cae69eee87ec207c5f8fe40beaa531a26bf8346b0f8ad33cd2",
+      "source_dirty_files": {
+        "docs/ship_pipeline/build_sheets/ithar_GP1/README.md": "ef8bb84494008f5402aa62125a66ca7927dabd2e",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/camera170.jpg": "59b0fe34509f2998acdce02de3aa68d159f162d6",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/camera170.jpg.provenance.json": "ae435a4c056bba3032d73450f128ee27fbfeaf08",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/close.jpg": "03ccedecde4e4b0fe1f0fd73afbbbb030826372d",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/close.jpg.provenance.json": "c82976caaa8bb4bbd2cd8c44164f3e4b95822dff",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/compare.jpg": "df4924a80eb706b47cdcce6ef3cb28b406c158f4",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/compare.jpg.provenance.json": "14aad47d35fd6d3450bf117ee67cc5387f5113bc",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/feature_table.md": "91c9f1a3dee627975d6c262a92661d685fdb5606",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/fit.json": "d7d54d416fb896c4a0dc144a8cd78a6b85b2e77e",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/fit_view.jpg": "f0b7b7b855077a285f52555706b6323178efbcc5",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/fit_view.jpg.provenance.json": "44e176fb7a7c37f8831de65ca390cf6fb270ef0b",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/inside.jpg": "faae56f0205257934be188b8613afe97d0c27645",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/inside.jpg.provenance.json": "58f26c1a8b7086d5cd60201ae769a43de9eaf081",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/manifest.json": "965b0aa2cf610eead35d7d9050e1a6769329e866",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/model.json": "732052e4b608bbd2d99a10e63ce6a6902973a76e",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/sheet.jpg": "252bdc9df7772e59a088ba9c068e644c66ab455d",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/sheet.jpg.provenance.json": "15c6ea21648d52d09a06bb988a6a38119ba49f61",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/side.jpg": "9d00e7f043ddc37cf187739529a886bd3d00e89d",
+        "docs/ship_pipeline/build_sheets/ithar_GP1/side.jpg.provenance.json": "20bd5c5f01f2a7d0c1a62892dd8e088badf5d72c",
+        "tools/blender/build_sheets/ships/ithar_GP1.py": "f52cec1a57b0ca3657762cfc340f29788217ceae",
+        "tools/blender/kits/ithar/hull.py": "d8b295f90bfa637a64206298c70c8225b839f683",
+        "tools/blender/r209/sheet_hull.py": "ab10f56aa7aca69db660320c2eb6fe6148be7e39"
+      },
       "stage": "sheet built"
     }
   ],
@@ -26,11 +74,11 @@
     98
   ],
   "strip_sha256": [
-    "00f13362b1f98a8a39731c451a4b701aa77bb674c226cf1d5e449941a0353011"
+    "4537918c724dcde4e849ad3a5a9b99441beb2accc052c6b620c9382a68af5fd9"
   ],
-  "stamp_template_sha256": "3855c1e6f845c9f298bd0794baa616ab9fa7e42c7085c1aa6b97210948112571",
+  "stamp_template_sha256": "3709a824b2308b4fd30112aed6ec98b2e2e1a3f0a63f7c7f3f2ec816015e5c43",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkElEQVR4nO3VoQHAIADAsDGHxPP/nXgeoCK5oK5jrv0BQMn/OgAAbuYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOeYEQI45AZBjTgDkmBMAOQdtuAD6ke1SPAAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "a22ab0ba152810a6853721a92378a8141003bb9c1d0f8f6941ea0229f3469b39"
+  "image_sha256": "7d9131065080899efa1362d9430db7937982cf251cdf5477ed1d933b64ac2b69"
 }

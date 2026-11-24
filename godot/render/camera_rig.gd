@@ -4,6 +4,8 @@ extends Camera3D
 # Angles as in the game's Babylon ArcRotateCamera (alpha around, beta down from straight up), with the world's z mirrored
 # (Godot is right-handed, the game's Babylon scene left-handed), so the board looks the same way round.
 
+signal pose_applied
+
 var a := -PI / 2.0
 var b := 0.98
 var r := 170.0
@@ -32,6 +34,48 @@ var shake_offset := Vector2.ZERO
 # issue 271 (E1 LEDGER): pixels to move the board's centre to the right of the screen's middle, so the point the camera
 # looks at sits in the middle of the part the orders sheet leaves clear (hud.gd clear_shift). 0 keeps it centred.
 var screen_shift := 0.0
+
+var _close_dof := false
+var _dof_room := 0.0
+const DOF_AMOUNT := 0.075
+const DOF_ENTER_S := 0.55
+const DOF_CLOSE_LIMIT := 105.0
+
+
+# Each camera owns its attributes, so a close-up cannot turn on blur in another viewport.
+static func far_dof(focus_depth: float, subject_margin: float) -> CameraAttributesPractical:
+	var lens := CameraAttributesPractical.new()
+	lens.dof_blur_near_enabled = false
+	lens.dof_blur_far_distance = focus_depth + subject_margin
+	lens.dof_blur_far_transition = maxf(40.0, 2.0 * subject_margin)
+	lens.dof_blur_amount = 0.0
+	return lens
+
+
+func set_close_dof(active: bool, subject_length := 0.0) -> void:
+	_close_dof = active
+	if active:
+		_dof_room = maxf(10.0, subject_length * 1.2)
+		if attributes == null:
+			attributes = far_dof(_cr, _dof_room)
+	elif attributes is CameraAttributesPractical:
+		attributes.dof_blur_far_enabled = false
+		attributes.dof_blur_amount = 0.0
+
+
+func _step_close_dof(dt: float) -> void:
+	if not _close_dof:
+		return
+	var lens := attributes as CameraAttributesPractical
+	if r >= DOF_CLOSE_LIMIT:
+		lens.dof_blur_far_enabled = false
+		lens.dof_blur_amount = 0.0
+		return
+	# Wait for the shot to approach focus before fading in. Keep the target and nearby silhouettes sharp.
+	var near_shot := 1.0 - smoothstep(r * 1.15, r * 1.65, _cr)
+	lens.dof_blur_far_distance = _cr + _dof_room
+	lens.dof_blur_amount = move_toward(lens.dof_blur_amount, DOF_AMOUNT * near_shot, DOF_AMOUNT * dt / DOF_ENTER_S)
+	lens.dof_blur_far_enabled = lens.dof_blur_amount > 0.0001
 
 
 # Issue 1264: the far plane follows the zoom and pan, so the backdrop system is never cut off. The worst case from the
@@ -228,6 +272,7 @@ func _process(dt: float) -> void:
 	_cr += (r - _cr) * f
 	_ct += (t - _ct) * f
 	_apply()
+	_step_close_dof(dt)
 
 
 func _apply() -> void:
@@ -253,3 +298,5 @@ func _apply() -> void:
 	var vh := get_viewport().get_visible_rect().size.y if is_inside_tree() else 1080.0
 	h_offset = -screen_shift / maxf(vh * 0.5, 1.0) * _cr * tan(deg_to_rad(fov) * 0.5) + shake_offset.x
 	v_offset = shake_offset.y
+	if pose_applied.has_connections():
+		pose_applied.emit()

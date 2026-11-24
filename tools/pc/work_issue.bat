@@ -278,17 +278,20 @@ if errorlevel 1 (
   %PS% disk "%A%" "%R%" >> "%O%\result.txt" 2>&1
   exit /b 14
 )
-pushd "%R%"
-%PS% prep %N% %ARM% "%R%" "%O%" "%G%" >> "%O%\result.txt" 2>&1
-if errorlevel 1 goto :prepfail
-rem Give the probe, agent, and checks one private scratch directory, recorded before use.
+pushd "%R%\.." || goto :setupfail
+rem Set the private scratch and any profile redirects before starting PowerShell in the clone.
 set "PC_RUN_TEMP=%TEMP%"
-%COMMON% scratch "%O%"
+%COMMON% scratch "%O%" "%R%"
 if errorlevel 1 goto :probefail
 set /p PC_RUN_SCRATCH=<"%O%\scratch_path.txt" || goto :probefail
+if not exist "%O%\profile_env.txt" goto :probefail
+for /f "usebackq tokens=1,* delims==" %%V in ("%O%\profile_env.txt") do set "%%V=%%W"
 set "TEMP=%PC_RUN_SCRATCH%"
 set "TMP=%PC_RUN_SCRATCH%"
 set "TMPDIR=%PC_RUN_SCRATCH%"
+cd /d "%R%" || goto :probefail
+%PS% prep %N% %ARM% "%R%" "%O%" "%G%" >> "%O%\result.txt" 2>&1
+if errorlevel 1 goto :prepfail
 rem Tiny model call before ship copying or the full agent. CLI login and billing failures stop here.
 if "%PC_RUNNER_TEST%"=="1" goto :testpreflight
 if /i "%MODE%"=="dryrun" goto :ocpreflight
@@ -487,7 +490,7 @@ echo could not read the issue from GitHub >> "%O%\result.txt"
 set "RC=6"
 goto :finish
 :probefail
-if exist WORK_TASK.md move /y WORK_TASK.md "%O%\WORK_TASK.md" > nul
+if exist "%R%\WORK_TASK.md" move /y "%R%\WORK_TASK.md" "%O%\WORK_TASK.md" > nul
 set "RC=14"
 goto :finish
 :setupfail
