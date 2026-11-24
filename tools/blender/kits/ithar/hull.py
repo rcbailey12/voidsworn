@@ -13,7 +13,7 @@ contrib/muse/design/glasswright_family_2026_11/) build through this file:
   bow_optic       the ringed optic a lance or the shards come out of (three stepped pearl rings, silver lines, stored light)
   lance           the prism lance: a white core with a rainbow fringe out of a bow optic, fixed forward (pulsar F)
   shard_cluster   three short drawn needles gathered at the bow (shard F, the Prism shards)
-  star_torpedo    a star torpedo: glowing capsule in a pointed pearl sheath with swept fins, on a keel cradle (startorp F)
+  star_torpedo    a star torpedo: glowing capsule in a pointed pearl sheath with swept fins, on a keel or (dorsal=True) spine cradle (startorp F)
   stern_drive     a grown stern optic: deep lens, white bloom, rose-cut face; no flame
   lens_bay        a hangar lens grown into a flank with parked Starlings on a glowing floor (data.js hangar)
   launch_tunnel   a ringed launch tunnel at the forward end of a bay, a Starling nosing out
