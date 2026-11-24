@@ -1,4 +1,5 @@
 extends RefCounted
+const SKEEP := preload("res://render/shader_keep.gd")
 # F4 asteroids: the rock library (world/rocks/*.glb, made by world/tools/rockgen.py), a material per rock kind, and
 # instanced layers. Every rock of a layer that shares a mesh is one MultiMesh (one draw), with a fixed seeded pose in
 # the vertex shader (axis and seed in the instance's custom data). Time and camera movement never turn its geometry.
@@ -475,8 +476,7 @@ static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") ==
 static func material(kind: String, look: Dictionary) -> ShaderMaterial:
 	var K: Dictionary = KINDS.get(kind, KINDS["stone"])
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = ROCK_SHADER
+	var sh: Shader = SKEEP.of(ROCK_SHADER)   # issue 1434: one compiled shader per code
 	m.shader = sh
 	m.set_shader_parameter("kind", int(K["k"]))
 	m.set_shader_parameter("base", K["base"])

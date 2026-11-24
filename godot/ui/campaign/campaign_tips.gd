@@ -1,6 +1,6 @@
 extends Node
 # Shared teaching cards and profile preferences. The battle and campaign use one file and one off switch.
-const HUD = preload("res://ui/battle/hud.gd")
+const HUD_SCRIPT := "res://ui/battle/hud.gd"   # issue 1518: loaded when a tip is shown, so the title's Settings (is_off) loads no battle HUD
 const OPTS := "user://battle_opts.json"
 const ACTION_IDS := ["select", "target", "fired", "close"]
 const CARDS := [
@@ -64,7 +64,7 @@ func try_show(id: String, clock_pair := false) -> bool:
 	for t in CARDS:
 		if t[0] != id: continue
 		if hud == null:
-			hud = HUD.new()
+			hud = load(HUD_SCRIPT).new()
 			add_child(hud)
 			hud.layer = 30
 			hud.set_process(false)
