@@ -117,9 +117,17 @@ const FLASH_LIFT_POWER := 0.6
 # Issue 281 run 6 (R150): the baked muzzle and impact gas read better about 1.5x bigger than run 5 shipped them.
 const WEAPON_GAS_SCALE := 1.5
 
+# Comparison switches are fixed for the process, including the launch timing used by both shot and flight.
+static var _old_launch := OS.get_environment("VS_1379_LAUNCH") == "old"
+static var _old_casing := OS.get_environment("VS_1379_OLD") == "1"
+static var _warned_looks := {}   # not GPU: weapon kinds and ids already reported
+
 
 static func look_of(kind: String, wid: String, faction: String) -> String:
-	var lk: String = LOOK_BY_ID.get(wid, DEFAULT_LOOK.get(kind, "macro"))
+	var lk: String = LOOK_BY_ID.get(wid, "")
+	var fallback := lk.is_empty()
+	if fallback:
+		lk = DEFAULT_LOOK.get(kind, "macro")
 	if lk == "las":
 		lk = {"ithar": "needle", "corsair": "junk"}.get(faction, lk)
 	if lk == "auto" and faction == "voidsworn":
@@ -128,13 +136,18 @@ static func look_of(kind: String, wid: String, faction: String) -> String:
 		lk = "rockets"
 	if lk == "flak":
 		lk = {"hegemony": "pflak", "chorus": "spores", "ithar": "mflak", "deathless": "gflak"}.get(faction, "flak")
+	if fallback and (not wid.is_empty() or not DEFAULT_LOOK.has(kind)):
+		var key := [kind, wid]
+		if not _warned_looks.has(key):
+			_warned_looks[key] = true
+			push_warning("FX weapon '%s' of kind '%s' is unknown. Using '%s'." % [wid, kind, lk])
 	return lk
 
 
 static func default_shots(lk: String) -> int:
 	return {"macro": 4, "auto": 3, "las": 2, "plasma": 2, "scatter": 5, "prism": 3, "needle": 2, "lance": 1, "ion": 1,
 		"pulsar": 2, "doom": 1, "torp": 1, "rockets": 2, "star": 1, "spine": 2, "tendril": 2, "gauss": 3, "guns": 3,
-		"bombs": 2, "sporeb": 2, "nlance": 3, "junk": 3, "flak": 3}.get(lk, 2)
+		"bombs": 2, "sporeb": 2, "nlance": 3, "junk": 3, "flak": 3, "ram": 1}.get(lk, 2)
 
 
 # ---------------------------------------------------------------- the volley
@@ -186,7 +199,17 @@ static func _volley_entry(fx, aid: String, kind: String, tid: String, opts: Dict
 	var A = fx.ship(aid)
 	var Tg = fx.ship(tid)
 	if A == null or Tg == null:
-		return {"impacts": [], "fires": [], "done": 0.0}
+		var warned: Dictionary = fx.dstate.get_or_add("missing_volley_ships", {})
+		for id in [aid, tid]:
+			if fx.ship(id) == null and not warned.has(id):
+				warned[id] = true
+				push_warning("FX volley skipped because ship '%s' is missing" % id)
+		var shots: Array = opts.get("shots", [])
+		var skipped := shots.size()
+		if skipped == 0:
+			var faction: String = A.faction if A != null else String(opts.get("faction", "voidsworn"))
+			skipped = default_shots(look_of(kind, String(opts.get("weapon_id", "")), faction))
+		return {"impacts": [], "fires": [], "done": 0.0, "skipped": skipped}
 	var from_c: Vector3 = A.to_world(A.hull.c)
 	return _volley(fx, A, from_c, kind, Tg, Tg.to_world(Tg.hull.c), opts)
 
@@ -538,7 +561,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				if A != null and hd.size() > 0:
 					fx.later(T0, func l_ram_mark() -> void: A.add_mark(fx, "ram_self", 2, A.hull.bow, Vector3(1, 0, 0), Vector3(-1, 0, 0)))
 			else:
-				var slide_room := 0.30 if lk == "torp" and OS.get_environment("VS_1379_LAUNCH") != "old" else 0.0   # torp: room for the 0.7 s slide after the order (the old arm keeps main's timing)
+				var slide_room := 0.30 if lk == "torp" and not _old_launch else 0.0   # torp: room for the 0.7 s slide after the order (the old arm keeps main's timing)
 				var vent = 0.45 + slide_room + beat * (0.35 if lk == "torp" else 0.12)
 				tf = T0 + vent
 				var spd = (62.0 if lk == "torp" else (85.0 if lk == "rockets" else 55.0)) * fx.unit
@@ -655,35 +678,34 @@ static func _beam_ends(fx, from: Vector3, to: Vector3, t: float, life: float, co
 # Keep one derived shader per FX session, with the same three cached atlas maps.
 static func _weapon_shader(fx, routed := false) -> Shader:
 	if not fx.dstate.has("weapon_flipbook_shader"):
-		var code: String = SH.DEATH_FLIPBOOK.replace("uniform float intensity = 1.0;",
+		var code: String = SH.patch(SH.DEATH_FLIPBOOK, "uniform float intensity = 1.0;",
 			"uniform float intensity = 1.0;\nuniform vec3 weapon_tint = vec3(0.9, 0.6, 0.3);\nuniform float opacity = 1.0;\nuniform float aspect = 1.0;\nuniform float spin = 0.0;\nuniform float vent = 0.0;\nuniform float vent_cone = 1.0;\nuniform float hot = 0.0;\nuniform float looping = 0.0;")
-		code = code.replace("vec2 up = mix(vec2(0.0, 1.0), axis, directional);",
+		code = SH.patch(code, "vec2 up = mix(vec2(0.0, 1.0), axis, directional);",
 			"vec2 up = mix(vec2(sin(spin), cos(spin)), axis, directional);")
 		# Issue 1558 item 1: DEATH_FLIPBOOK builds the quad from `local` (pic_shape, pic_spin) since Nov 17, so the old
 		# "up * VERTEX.y" target matched nothing and every vent jet, muzzle jet and torpedo plume drew as a round puff.
-		code = code.replace("+ up * local.y)", "+ up * local.y * aspect)")
-		assert(code.contains("up * local.y * aspect"))
+		code = SH.patch(code, "+ up * local.y)", "+ up * local.y * aspect)")
 		# Issue 281 run 5: the baked muzzle/impact gas plays all 16 frames in order (bright core at birth, then it cools
 		# and thins) instead of the death flash's skip-the-first-three-frames ramp.
-		code = code.replace("float frame = mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);",
+		code = SH.patch(code, "float frame = mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);",
 			"float frame = hot > 0.5 ? age * 15.0 : mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);")
-		code = code.replace("vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);",
+		code = SH.patch(code, "vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);",
 			"vec3 core = mix(weapon_tint, vec3(0.9, 0.83, 0.68), age * 0.45);")
 		# Issue 281 Cone B: the vent gas cools toward the weapon colour and darkens with age, so the cone reads as hot
 		# exhaust instead of a flat pale blob. The flash keeps its own palette (vent is 0 for every other kind).
-		code = code.replace("vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);",
+		code = SH.patch(code, "vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);",
 			"vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);\n\tif (vent > 0.5 && vent_cone > 0.5) {\n\t\tvec3 tinted = smoke * clamp(0.35 + 1.25 * weapon_tint, 0.0, 1.10);\n\t\tsmoke = mix(smoke, tinted, 0.65) * mix(0.85, 0.50, age);\n\t}")
-		code = code.replace("ALPHA = gas.a * fade * soft", "ALPHA = gas.a * fade * soft * opacity * mix(1.0, 0.55, fx_calm)")
+		code = SH.patch(code, "ALPHA = gas.a * fade * soft", "ALPHA = gas.a * fade * soft * opacity * mix(1.0, 0.55, fx_calm)")
 		# The atlas_rect above already frames the gas inside the baked cell. An extra UV crop (0.36 x 0.48) sampled only
 		# the gas CORE, so every muzzle and impact burst lost its soft edge and drew as a pale translucent square (#232).
 		# Sample the whole framed cell instead and grow the quad by the same 1/0.46, so the gas keeps the on-screen size
 		# the F3 pixel floor was tuned for.
-		code = code.replace("float size = max(extent, px_world(min_pixels, -view_c.z, PROJECTION_MATRIX));",
+		code = SH.patch(code, "float size = max(extent, px_world(min_pixels, -view_c.z, PROJECTION_MATRIX));",
 			"float size = max(extent, px_world(min_pixels, -view_c.z, PROJECTION_MATRIX)) * 1.45;")
-		code = code.replace("float age = clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);",
+		code = SH.patch(code, "float age = clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);",
 			"float age = looping > 0.5 ? 0.15 + 0.55 * (0.5 + 0.5 * sin(elapsed * 9.0 * mix(1.0, 0.35, fx_calm) + spin)) : clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);")
-		code = code.replace("float fade = 1.0 - smoothstep(0.70, 1.0, age);", "float fade = mix(1.0 - smoothstep(0.70, 1.0, age), pow(clamp(UV.y, 0.0, 1.0), 0.7), looping);")
-		code = code.replace("(elapsed < lifetime ? 1.0 : 0.0)", "(elapsed < lifetime || looping > 0.5 ? 1.0 : 0.0)")
+		code = SH.patch(code, "float fade = 1.0 - smoothstep(0.70, 1.0, age);", "float fade = mix(1.0 - smoothstep(0.70, 1.0, age), pow(clamp(UV.y, 0.0, 1.0), 0.7), looping);")
+		code = SH.patch(code, "(elapsed < lifetime ? 1.0 : 0.0)", "(elapsed < lifetime || looping > 0.5 ? 1.0 : 0.0)")
 
 		fx.dstate["weapon_flipbook_shader"] = fx.mat(code, 2, "#define COMPAT\n" if fx.compat else "").shader
 		fx.dstate["weapon_flipbook_code"] = code
@@ -884,7 +906,7 @@ static func _launch_dir(mn: Vector3, from: Vector3, to: Vector3) -> Vector3:
 
 static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf: float, ti: float, col: Color, fac: Dictionary, k: float, i: int, intercept: bool, src = null, rhythm: RandomNumberGenerator = null, spread := 1.0, faction := "") -> float:
 	var eng: Color = fac["engine"]
-	var old := OS.get_environment("VS_1379_LAUNCH") == "old"   # the launch before this change, for before shots only
+	var old := _old_launch   # the launch before this change, for before shots only
 	var ed := _launch_dir(mn, from, to)
 	var ej: float = 0.0 if old else float(LAUNCH_EJECT.get(lk, 0.2))
 	var tl := tf - ej   # the hatch opens (the vent delay before tf, 0.75 s for torpedoes and 0.45 s for the rest, is longer than the slide, so this stays after the order)
@@ -927,7 +949,7 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 		var end = to + (fx.rdir() * 0.6 * (k if old else rk) if lk == "rockets" else Vector3.ZERO)   # the warheads scatter by the drawn round size
 		var p = {"lk": lk, "t0": t0, "t1": ti + float(pulse["phase"]) * 0.03, "a": e0, "b": mid, "c": end, "col": col, "eng": eng * float(pulse["power"]), "k": rk,
 			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, rk, eng * float(pulse["power"]), faction), "dead_at": INF,
-			"l0": l0, "lt": t0 - ej, "ed": ed, "fac": fac}
+			"l0": l0, "lt": t0 - ej, "ed": ed, "fac": fac, "faction": faction}
 		if not old:
 			_kit_nozzle_dark(p["mesh"], true)
 		if old:
@@ -1057,7 +1079,7 @@ const MUNITIONS_DIR := "res://fx/munition_bodies/"
 
 
 static func _kit_body(fx, lk: String, faction: String) -> Node3D:
-	if faction.is_empty() or lk == "star" or OS.get_environment("VS_1379_OLD") == "1":   # VS_1379_OLD: the code casing, for before shots
+	if faction.is_empty() or lk == "star" or _old_casing:   # the code casing, for before shots
 		return null
 	var key := "munition_%s_%s" % [faction, lk]
 	if not fx.dstate.has(key):
@@ -1359,6 +1381,7 @@ static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> int:
 const KIT_CORE := 0.62          # the drive core billboard on a kit body (body units; the nozzle exit radius is about 0.17)
 const KIT_TRAIL_LIFE := 0.38    # seconds a trail sample lives (a short wake: longer read as ruler lines at rocket speed)
 const KIT_TRAIL_PTS := 28
+static var _kit_trail_code := ""
 
 
 static func _kit_trail_start(fx, p: Dictionary, fac: Dictionary) -> void:
@@ -1366,12 +1389,15 @@ static func _kit_trail_start(fx, p: Dictionary, fac: Dictionary) -> void:
 	mi.name = "fx_kit_trail"
 	mi.top_level = true
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var mat: ShaderMaterial = fx.mat(kit_trail_shader_code(), 1, "", "kit trail")
 	var style: int = 1 if String(fac.get("engine_extra", "")) == "soot" else int(fac.get("trail", 0))
-	mat.set_shader_parameter("trail_style", float(style))
+	var key := "kit_trail|%s|%d" % [p.get("faction", ""), style]
+	var mat := _fresh(fx, key, func() -> ShaderMaterial:
+		var template: ShaderMaterial = fx.mat(kit_trail_shader_code(), 1, "", "kit trail")
+		template.set_shader_parameter("trail_style", float(style))
+		template.set_shader_parameter("life", KIT_TRAIL_LIFE)
+		return template)
 	var r: float = 0.17 * float(p["k"]) * fx.unit * (0.55 if String(p["lk"]) == "rockets" else 1.0)
 	var eng: Color = p["eng"]
-	mat.set_shader_parameter("life", KIT_TRAIL_LIFE)
 	mat.set_shader_parameter("eng", Vector4(eng.r, eng.g, eng.b, 0.55))
 	mat.set_shader_parameter("widths", Vector3(r * 1.8, r * 4.0, float(p["seed"])))
 	mat.set_shader_parameter("count", 0)
@@ -1385,7 +1411,9 @@ static func _kit_trail_start(fx, p: Dictionary, fac: Dictionary) -> void:
 
 
 static func kit_trail_shader_code() -> String:
-	return SH.kit_trail_code(KIT_TRAIL_PTS)
+	if _kit_trail_code.is_empty():
+		_kit_trail_code = SH.kit_trail_code(KIT_TRAIL_PTS)
+	return _kit_trail_code
 
 
 # One strip for every kit trail, built once: point i at VERTEX.x = i, its two sides at UV.y -0.5 and +0.5.
@@ -2449,19 +2477,19 @@ static func hull_impact_material(fx, rel: String) -> ShaderMaterial:
 	# Issue 1237 (Neon F7.2): the shader text is put together once per fx node, not with five replaces on every hit.
 	if fx.dstate.has("hull_impact_code"):
 		return DEATH.route_material(fx, fx.dstate["hull_impact_code"], rel, true, 0)
-	var code: String = SH.DEATH_FLIPBOOK.replace("uniform float smoke_tone = 1.0;", """uniform float smoke_tone = 1.0;
+	var code: String = SH.patch(SH.DEATH_FLIPBOOK, "uniform float smoke_tone = 1.0;", """uniform float smoke_tone = 1.0;
 uniform float impact_body = 0.0;
 uniform float impact_tinted = 0.0;
 uniform float impact_clean = 0.0;
 uniform float impact_prism = 0.0;
 uniform vec3 impact_tint = vec3(1.0);""")
-	code = code.replace("float a = floor(frame);", """// The first hot cells unfold before the cool cells. Full white heat ends well before 0.25 s.
+	code = SH.patch(code, "float a = floor(frame);", """// The first hot cells unfold before the cool cells. Full white heat ends well before 0.25 s.
 	float body_frame = age < 0.68 ? age * (3.5 / 0.68) : 3.5 + (age - 0.68) * (11.5 / 0.32);
 	float flash_frame = mix(age, max(0.0, (age - 0.5) * 2.0), softened) * 3.5;
 	frame = mix(flash_frame, body_frame, impact_body);
 	float a = floor(frame);""")
-	code = code.replace("max(extent * 0.1, 0.05)", "max(extent * 0.015, 0.035)")
-	code = code.replace("float fade = 1.0 - smoothstep(0.70, 1.0, age);", """float luminance = dot(gas.rgb, vec3(0.2126, 0.7152, 0.0722));
+	code = SH.patch(code, "max(extent * 0.1, 0.05)", "max(extent * 0.015, 0.035)")
+	code = SH.patch(code, "float fade = 1.0 - smoothstep(0.70, 1.0, age);", """float luminance = dot(gas.rgb, vec3(0.2126, 0.7152, 0.0722));
 	vec3 fringe = impact_tint;
 	if (impact_prism > 0.0) {
 		vec2 c = UV - 0.5;
@@ -2474,7 +2502,7 @@ uniform vec3 impact_tint = vec3(1.0);""")
 	ALBEDO = mix(ALBEDO, coloured, impact_tinted);
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);""")
 	# Keep the lit core and strip out the atlas's dim smoke lobes for non-metal hits.
-	code = code.replace("ALPHA = gas.a * fade * soft",
+	code = SH.patch(code, "ALPHA = gas.a * fade * soft",
 		"ALPHA = gas.a * smoothstep(0.035, 0.18, thick.b) * mix(1.0, smoothstep(0.1, 0.4, luminance), impact_clean) * fade * soft")
 	fx.dstate["hull_impact_code"] = code
 	return DEATH.route_material(fx, code, rel, true, 0)

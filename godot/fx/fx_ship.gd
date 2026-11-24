@@ -93,6 +93,7 @@ var _shield_pose := Transform3D.IDENTITY
 # Keep enough recent hulls for a fleet without retaining every asset or pose used in a run.
 const SHIELD_SKIN_CACHE_LIMIT := 48
 static var _shield_skin_arrays: Dictionary = {}   # not GPU: mesh arrays on the CPU, size capped
+static var _warned_shield_factions := {}   # not GPU: faction ids already reported
 var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
@@ -131,6 +132,7 @@ var _dmg_task = -1
 var _dmg_dirty = false
 var _dmg_job: Dictionary = {}
 var _damage_surfaces := {}  # mutable breach coordinates are private to each surface
+var _damage_surfaces_assigned := false
 var _hole_nodes: Array = []
 var _hole_lights: Array = []
 var _marks: Array = []     # weapon marks on the hull (fx_breach.Ent), oldest first, at most BREACH.MARK_CAP
@@ -594,6 +596,14 @@ func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 # ---------------------------------------------------------------- shields
 
 func _build_shield(fx) -> void:
+	var colour = fac.get("shield")
+	if not (colour is Color):
+		if not _warned_shield_factions.has(faction):
+			_warned_shield_factions[faction] = true
+			push_warning("FX shield requested for faction '%s' without a shield colour" % faction)
+		shielded = false
+		return
+	var sc: Color = colour
 	var sph = SphereMesh.new()
 	sph.radius = 1.0
 	sph.height = 2.0
@@ -609,7 +619,6 @@ func _build_shield(fx) -> void:
 		skin = sph
 	_shield_mat = fx.mat(SH.SHIELD, 2)
 	_shield_mat.set_shader_parameter("fitted_shape", _shield_tm != null)
-	var sc: Color = fac["shield"]
 	_shield_mat.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
 	_shield_mat.set_shader_parameter("rad", hull.shield_radii())
 	_shield_mat.set_shader_parameter("style", int(fac["shield_style"]))
@@ -1553,7 +1562,7 @@ func _set_wear(fx, hpf: float) -> void:
 # to build. A fresh or lightly hit hull gets them here once, with no mouths (no holes): the same materials a first breach
 # makes, so the brownout and the wear show before any section is cut.
 func ensure_damage_surfaces(fx) -> void:
-	if not _damage_surfaces.is_empty() or dead or gone or squadron or hull == null or fx == null or fx.compat:
+	if _damage_surfaces_assigned or dead or gone or squadron or hull == null or fx == null or fx.compat:
 		return
 	BREACH._inside_overlay(fx, self, meshes, [], fac.get("damage_glow", Color(1.0, 0.45, 0.12)))
 	_power_shown = -1.0
