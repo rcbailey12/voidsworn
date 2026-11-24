@@ -14,9 +14,9 @@ I read the Warden as a knife built around its gun. The three barrels sit above a
 
 The feature table resolves the extra tubs and spire in the artwork. I designed the underside around three access points. I used only the two approved pictures from the S9 sheet folder. I did not inspect the accepted build, its files or history, the installed V14_23 hull, the Opus branches, or any PR or issue comment.
 
-**Build and paint** · [Build sheet](../../../tools/blender/build_sheets/ships/voidsworn_S9A.py) · [Parts inventory](../../../tools/blender/build_sheets/ships/voidsworn_S9A_inv.py) · [Recipe](../../../tools/recipe/ships/voidsworn_S9A.json) · [Proof manifest](manifest.json) · [Packed CPU-painted Blender model](S9A_painted.blend)
+**Build and paint** · [Build sheet](../../../tools/blender/build_sheets/ships/voidsworn_S9A.py) · [Parts inventory](../../../tools/blender/build_sheets/ships/voidsworn_S9A_inv.py) · [Recipe](../../../tools/recipe/ships/voidsworn_S9A.json) · [Proof manifest](manifest.json)
 
-**Budget.** The 6.5-unit painted exterior has 30,822 triangles. With the two flak turrets articulated, the proof has eight exterior material surfaces, or eight draws per material pass. The interiors add 2,568 triangles. The packed model contains six 2048-square hull and parts maps and a 1024-square engine emission map. The Board's export supplies the final game budget.
+**Budget.** The 6.5-unit painted exterior has 30,822 triangles. With the two flak turrets articulated, the proof has eight exterior material surfaces, or eight draws per material pass. The interiors add 2,568 triangles. The CPU paint proof (kept on the PC, not committed) used six 2048-square hull and parts maps and a 1024-square engine emission map. The Board's export supplies the final game budget.
 
 The CPU bake used the Picket proof driver with `R209_SHIP` set to the S9A recipe and arguments `OUT unused unused S9A 2048 8`. Battle 170 uses the Picket proof's lens, distance and native pixel scale. [CPU bake driver](../picket_astra_1122/paint_proof.py) · [Five-view renderer](review_views.py)
 
