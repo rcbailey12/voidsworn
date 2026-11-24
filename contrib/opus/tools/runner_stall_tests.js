@@ -163,6 +163,17 @@ Assert ($message.StartsWith('PARTIAL RUN')) 'partial publisher must label the me
 Assert-SafeMessage $message
 Assert ([IO.File]::ReadAllText((Join-Path $out 'resume.txt')) -ceq $note) 'public write must leave full local resume note intact'
 Write-Output 'PASS Windows partial publisher keeps the stop reason and leaves raw details in the local resume note'
+# Model Win32_Process records without querying or touching real Godot processes.
+function Get-CimInstance($class, $Filter) { $script:playRecords }
+$script:playRecords = @(
+  [pscustomobject]@{ Name = 'Godot_fixture.exe'; ThreadCount = 0; CommandLine = $null }
+  [pscustomobject]@{ Name = 'Godot_fixture.exe'; ThreadCount = 4; CommandLine = 'Godot_fixture.exe --headless' }
+)
+Assert (-not (Test-RyanPlaying)) 'exited Godot child and headless job must not hold the lane'
+$script:playRecords += [pscustomobject]@{ Name = 'Godot_fixture.exe'; ThreadCount = 4; CommandLine = 'Godot_fixture.exe --path "game path" --rendering-method gl_compatibility' }
+Assert (Test-RyanPlaying) 'live windowed editor play must still hold the lane'
+$script:playRecords = @([pscustomobject]@{ Name = 'Voidsworn.exe'; ThreadCount = 4; CommandLine = $null })
+Assert (Test-RyanPlaying) 'an unreadable command line on a running game must still hold the lane'
 `);
 const p = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, pc, root], {
   encoding: 'utf8', windowsHide: true, timeout: 60000
@@ -307,9 +318,12 @@ const built = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'By
 });
 assert.equal(built.status, 0, built.stdout + built.stderr + String(built.error || ''));
 const tmo = path.join(pc, 'tmo.bat');
+// A solo cap starts at claim acquisition. A loaded lane spent nearly the entire old 2 s cap
+// getting to the launch, so the test child had too little time to create its process tree.
+const soloCap = 8;
 for (const [mode, reason] of [
   ['idle', 'IDLE after 1 s'], ['jolt', 'FATAL Jolt Physics job system exceeded'],
-  ['opt-in', 'FATAL Assertion failed'], ['solo-default', 'CEILING'], ['solo-override', 'SOLO CAP after 2 s'],
+  ['opt-in', 'FATAL Assertion failed'], ['solo-default', 'CEILING'], ['solo-override', `SOLO CAP after ${soloCap} s`],
   ['new-files', ''], ['cpu', ''], ['noisy', '']
 ]) {
   const folder = path.join(root, 'step-' + mode);
@@ -328,7 +342,7 @@ for (const [mode, reason] of [
     env: { ...process.env, TMO_REPO: '', TMO_OUT: '', TMO_LOG: '', TMO_ERR_LOG: '', TMO_STEP: 'fake Godot ' + mode,
       TMO_STEP_OUT: folder, TMO_IDLE_S: solo ? '10' : '1',
       TMO_FATAL_PATTERN: mode === 'opt-in' ? 'assertion failed' : '',
-      PC_GPU_SOLO_MAX_S: mode === 'solo-override' ? '2' : '',
+      PC_GPU_SOLO_MAX_S: mode === 'solo-override' ? String(soloCap) : '',
       PC_GPU_LANE: '', PC_GPU_ISSUE: '1192', PC_GPU_WAIT_SECONDS: '5', PC_GPU_MODE: '', PC_GPU_WEIGHT: '',
       PC_RUNNER_TEST: '1', PC_TEST_GPU_ROOT: gpu, PC_TEST_TIMEOUT_LOG: stepLog }
   });
