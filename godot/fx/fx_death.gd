@@ -4159,25 +4159,21 @@ static func _breakup_layout(fx, s, plan: Dictionary, pieces: Array, n_main: int,
 				yaw[i] = float(yaw[i]) * k
 		# Artoo on db791b40: where even the least parting leaves a middle out of reach (a piece starting near the edge,
 		# the drift, or a late snap), the whole wreck's rest spots move in together, which keeps every gap between pieces.
-		# A wreck too long to fit at all ends centred on its hex, as far out at each end.
-		var shift := Vector3.ZERO
-		for it in 24:
-			var worst := 0.0
-			var wdir := Vector3.ZERO
-			for i in n_main:
-				var at: Vector3 = bases[i] + shift
-				if i == child:
-					# it rides its parent, turning with it, then (late) snaps on from there
-					var off: Vector3 = (bases[i] as Vector3) - (bases[parent] as Vector3)
-					at = (bases[parent] as Vector3) + shift + (disp[parent] as Vector3) + Basis(Vector3.UP, float(yaw[parent])) * off
-					if kind == "late": at += out["snap_disp"]
-				else: at += disp[i]
-				var flat := Vector2(at.x, at.z)
-				if flat.length() - reach > worst:
-					worst = flat.length() - reach
-					wdir = Vector3(flat.x, 0.0, flat.y).normalized()
-			if worst <= 0.001: break
-			shift -= wdir * (worst * 0.5 + 0.001)
+		# Artoo on 951623ce: the move is found from the smallest circle round the rest spots, so it always fits when the
+		# spots can fit at all: the least share of the way to that circle's centre on the hex; a wreck too long to fit
+		# at all ends centred on its hex, as far out at each end.
+		var spots: Array = []
+		for i in n_main:
+			var at: Vector3 = bases[i]
+			if i == child:
+				# it rides its parent, turning with it, then (late) snaps on from there
+				var off: Vector3 = (bases[i] as Vector3) - (bases[parent] as Vector3)
+				at = (bases[parent] as Vector3) + (disp[parent] as Vector3) + Basis(Vector3.UP, float(yaw[parent])) * off
+				if kind == "late": at += out["snap_disp"]
+			else: at += disp[i]
+			spots.append(Vector2(at.x, at.z))
+		var fit: Vector2 = _hex_fit(spots, reach)
+		var shift := Vector3(fit.x, 0.0, fit.y)
 		if shift != Vector3.ZERO: out["hex_shift"] = shift
 		drift += shift
 	for i in n_main: disp[i] = (disp[i] as Vector3) + drift
@@ -4193,6 +4189,51 @@ static func _piece_cen(pc: Dictionary) -> Vector3:
 
 
 # the share of the displacement d from base (BREAKUP_MIN_PART at least, so the pieces still clear each other) that keeps base + d within reach on the board plane
+# the one move on the board plane that brings every spot within reach of the hex centre (the origin): none when they
+# already are, else the least share of the way to the centre of the smallest circle round them; centred when they cannot fit
+static func _hex_fit(spots: Array, reach: float) -> Vector2:
+	if _farthest(spots, Vector2.ZERO) <= reach: return Vector2.ZERO
+	var circ: Vector3 = _enclosing_circle(spots)   # x, y: the centre; z: the radius
+	var to := -Vector2(circ.x, circ.y)
+	if circ.z > reach: return to
+	var lo := 0.0
+	var t := 1.0
+	for it in 24:
+		var m := (lo + t) * 0.5
+		if _farthest(spots, to * m) <= reach: t = m
+		else: lo = m
+	return to * t
+
+
+# the farthest of the spots, each moved by d, from the hex centre (the origin)
+static func _farthest(spots: Array, d: Vector2) -> float:
+	var f := 0.0
+	for p in spots: f = maxf(f, ((p as Vector2) + d).length())
+	return f
+
+
+# the smallest circle round two or three spots, as Vector3(centre x, centre y, radius)
+static func _enclosing_circle(spots: Array) -> Vector3:
+	var best := Vector3(0.0, 0.0, INF)
+	for a in spots.size():
+		for b in range(a + 1, spots.size()):
+			var c: Vector2 = ((spots[a] as Vector2) + (spots[b] as Vector2)) * 0.5
+			var r: float = ((spots[a] as Vector2) - c).length()
+			if r < best.z and _farthest(spots, -c) <= r + 0.0001: best = Vector3(c.x, c.y, r)
+	if spots.size() == 3:
+		var A: Vector2 = spots[0]
+		var B: Vector2 = spots[1]
+		var C: Vector2 = spots[2]
+		var dd := 2.0 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y))
+		if absf(dd) > 0.000001:
+			var ux := (A.length_squared() * (B.y - C.y) + B.length_squared() * (C.y - A.y) + C.length_squared() * (A.y - B.y)) / dd
+			var uy := (A.length_squared() * (C.x - B.x) + B.length_squared() * (A.x - C.x) + C.length_squared() * (B.x - A.x)) / dd
+			var r := (A - Vector2(ux, uy)).length()
+			if r < best.z: best = Vector3(ux, uy, r)
+	if best.z == INF and not spots.is_empty(): best = Vector3((spots[0] as Vector2).x, (spots[0] as Vector2).y, 0.0)
+	return best
+
+
 static func _within_k(base: Vector3, d: Vector3, reach: float) -> float:
 	var b2 := Vector2(base.x, base.z)
 	var d2 := Vector2(d.x, d.z)

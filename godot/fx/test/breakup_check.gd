@@ -42,6 +42,7 @@ func _run() -> void:
 	await _breakup("high", "late", [-4.0, 4.0], INF, " (tight hex)", 4.0)
 	# Artoo on db791b40: a hull drifting out of its hex as it dies, its end piece already near the edge (ships in a
 	# real fight move about a hex a turn, a few units a second)
+	_hex_fit()
 	await _breakup("high", "three", [-4.0, 4.0], INF, " (hex edge, drifting out)", 6.0, Vector3(3.0, 0.0, 0.6))
 	await _breakup("high", "late", [-4.0, 4.0], INF, " (hex edge, drifting out)", 6.0, Vector3(3.0, 0.0, 0.6))
 	await _warmed_late_hit()
@@ -145,6 +146,27 @@ func _inside_share(a: PackedVector2Array, b: PackedVector2Array) -> float:
 func _yaw(nd: Node3D) -> float:
 	var x := nd.global_basis.x
 	return atan2(-x.z, x.x)
+
+
+# Artoo on 951623ce: the shared move into the hex fits whenever the rest spots can fit, even near a tangent (24 halving
+# steps toward the farthest spot stopped at 1.016 of the reach here), and centres a wreck too long to fit
+func _hex_fit() -> void:
+	var cases := [
+		[[Vector2(-0.99, 0.29), Vector2(0.0, 0.29), Vector2(0.99, 0.29)], 1.0, true],
+		[[Vector2(0.2, 1.1), Vector2(0.9, 0.6), Vector2(-0.3, 0.4)], 1.0, true],
+		[[Vector2(1.4, 0.0), Vector2(0.4, 0.3), Vector2(-0.5, -0.1)], 1.0, true],
+		[[Vector2(-1.3, 0.1), Vector2(0.0, 0.5), Vector2(1.3, 0.1)], 1.0, false],
+	]
+	for c in cases:
+		var spots: Array = c[0]
+		var reach: float = c[1]
+		var d: Vector2 = DEATH._hex_fit(spots, reach)
+		var far: float = DEATH._farthest(spots, d)
+		if c[2]:
+			check(far <= reach + 0.001, "hex fit: spots that can fit end within reach (farthest %.4f of %.2f, moved %.3f)" % [far, reach, d.length()])
+		else:
+			var circ: Vector3 = DEATH._enclosing_circle(spots)
+			check(absf(far - circ.z) < 0.001, "hex fit: a wreck too long to fit ends centred (farthest %.3f, circle %.3f)" % [far, circ.z])
 
 
 func _breakup(quality: String, kind: String, joints := [-4.0, 4.0], hit_x := INF, tag_extra := "", hex_r := 0.0, vel := Vector3.ZERO) -> void:
