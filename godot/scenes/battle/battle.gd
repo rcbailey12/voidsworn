@@ -3103,8 +3103,42 @@ func _end_sound(win: bool) -> String:
 	return "sting"
 
 
+func _end_cause_line() -> String:
+	match V.get("endCause", ""):
+		"enemy_gone": return "No enemy ships remain in the fight."
+		"rout": return "Their fleet broke and fled."
+		"boss", "flagship": return "The enemy flagship is out of the fight."
+		"flagship_escaped": return "The flagship escaped, and its escorts withdrew."
+		"convoy_broken": return "You stopped enough transports to break the convoy."
+		"convoy_escaped": return "Too many transports escaped. The escorts broke off."
+		"breakthrough": return "Enough of your ships broke through and jumped clear."
+		"breakthrough_short": return "Too few of your ships could still break through."
+		"station_held": return "You held the station until the enemy withdrew."
+		"station_lost": return "The enemy destroyed the station."
+		"relay_held": return "You held the relay for three rounds."
+		"relay_lost": return "The enemy secured the relay."
+		"fleet_lost":
+			var objective = V.get("obj")
+			if objective is Dictionary and objective.get("type") == "hold":
+				return "Your last ship was destroyed with the relay at %d/3." % int(objective["score"])
+			return "Your last ship was destroyed."
+	return ""
+
+
+func _continue_label(outcome: String) -> String:
+	if not in_campaign:
+		return "Continue to title"
+	match outcome:
+		"win": return "Continue to battle rewards"
+		"retreat": return "Return to campaign map"
+		_: return "Continue to run debrief"
+
+
 func _end_flow() -> void:
 	ended = true
+	inspect = ""
+	hud.set_panel({})
+	hud.set_target({})
 	if board != null:
 		board.set_process_unhandled_input(false)
 	# issue 1559 item 8: Fight again (the menu) during the victory beat starts a new battle while this one still waits; its
@@ -3137,12 +3171,15 @@ func _end_flow() -> void:
 	if bot or args.has("bot-runs"):
 		_finish(result)
 		return
+	var cause := _end_cause_line()
+	if cause != "":
+		body = cause + "\n" + body
 	if voice != null and not withdrawal:   # story hook: your admiral's last word (or the Nemesis's gloat) on the end card
 		var vl: String = voice.closing(win)
 		if vl != "":
 			body += "\n\n" + vl
 			recording_cue.emit("voice", vl)
-	hud.show_end(heading, body, win, external)
+	hud.show_end(heading, body, win, external, _continue_label(outcome))
 
 
 # ---------------------------------------------------------------- selection, overlays, tips
@@ -6094,6 +6131,8 @@ func _objective() -> String:
 
 
 func _panel_info() -> Dictionary:
+	if ended:
+		return {}
 	var id := sel if sel != "" else inspect
 	if id == "" or not VU.has(id):
 		return {}
