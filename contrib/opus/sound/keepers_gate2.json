@@ -64,9 +64,9 @@
   {"id": "imp_energy_sear", "cat": "impact", "wave": "D", "take": "t1", "eq": "presence"},
   {"id": "imp_las", "cat": "impact", "wave": "D", "take": "t1"},
   {"id": "dmg_shield_burnout", "cat": "damage", "wave": "D", "take": "t1", "eq": "air"},
-  {"id": "wep_directorate_picket", "cat": "weapon", "wave": "E", "take": "t1"},
+  {"id": "wep_directorate_picket", "cat": "weapon", "wave": "E", "take": "t1", "src": "fold", "trim_ms": 24},
   {"id": "wep_eclipse_gsentry", "cat": "weapon", "wave": "D", "take": "t2", "src": "L"},
   {"id": "imp_metal_light", "cat": "impact", "wave": "D", "take": "t1", "src": "L"},
-  {"id": "death_eclipse_shear", "cat": "death", "wave": "E", "take": "t2", "src": "fold"}
+  {"id": "death_eclipse_shear", "cat": "death", "wave": "E", "take": "t2", "src": "fold", "trim_ms": 9}
  ]
 }

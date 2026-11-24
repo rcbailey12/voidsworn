@@ -85,8 +85,14 @@ def master(k, srcdirs, targets):
         a = load(os.path.join(d, f'{k["id"]}_{k["take"]}.mp3'))
     c = corr(a)
     x, used = pick_source(a, k.get("src", "auto"))
-    if not k.get("notrim"):
-        x = x[onset(x):]
+    # trim_ms: a fixed head trim from a plan note (8.6); otherwise trim to the onset.
+    if k.get("notrim"):
+        cut = 0
+    elif "trim_ms" in k:
+        cut = int(k["trim_ms"] / 1000 * SR)
+    else:
+        cut = onset(x)
+    x = x[cut:]
     chain = [f'highpass=f={k.get("hp", 40)}:poles=2']
     if k.get("eq"):
         chain.append(EQ[k["eq"]])
@@ -107,7 +113,7 @@ def master(k, srcdirs, targets):
     x[:fi] *= np.linspace(0, 1, fi)[:, None]
     x[-fo:] *= np.linspace(1, 0, fo)[:, None]
     return x, {"corr": round(c, 2), "src": used, "gain_db": round(float(gain), 1), "limited": limited,
-               "seconds": round(len(x) / SR, 2), "loud_db": round(float(loud_db(x)), 1)}
+               "trim_ms": round(cut / SR * 1000, 1), "seconds": round(len(x) / SR, 2), "loud_db": round(float(loud_db(x)), 1)}
 
 def write_ogg(x, path):
     ch = x.shape[1]
