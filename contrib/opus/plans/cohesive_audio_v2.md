@@ -403,7 +403,7 @@ Each faction gets a calm and an intense battle layer. A pair shares tempo and ke
 **Wave M runs in two steps (Artoo on PR 1942).** Each track is a separate request, so a shared tempo and key in the prompt does not prove that a calm and intense pair line up. Today's `music_player.gd` crossfades independent loops by volume, so a pair that drifts still plays. A beat-synced switch, the Gate 3 plan, needs the pair to line up.
 - Wave M1 (4 steps; the tool estimates 4,230; cap 5,000) makes the Sunward calm and intense pair plus the stem split test.
 - Claude decodes the pair and measures its tempo, its loop points, and a switch at several bars.
-- Wave M2 (32 steps; the tool estimates 40,770; cap 45,000) runs only after that. If the pair drifts, the M2 layers are first re-planned as stems of one song or as an aligned transition.
+- Superseded by the re-plan below: Wave M2 (32 steps; the tool estimates 40,770; cap 45,000) was to run only after that. If the pair drifts, the M2 layers are first re-planned as stems of one song or as an aligned transition.
 
 **M1 result and the M2 re-plan (Nov 24, 05:50 UTC).** M1 made all 4 steps (relay `pc-out-opus1752wavem1`). Claude measured them, and the listening page is https://claude.ai/artifact/XrhJ1f7uG4qL6f2dMspvak.
 - **The separate calm and intense pair failed the check.** Its beat offset moved by up to 0.4 s across the track. The calm track also climbs 18 dB over its first 40 s to the intense track's level, and the intense track fades to silence in its last 5 s.
@@ -416,6 +416,14 @@ So M2 makes each faction's battle music as stem-split loops: the intense layer i
 - Title, map, boss, nemesis, shop, reward and stings are unchanged. Their fades are trimmed to loop points in mastering.
 - M2 is 44 steps. The tool estimates 46,290; the cap is 52,000.
 - The M2 job resumes from a fixed takes folder, `%VT%\el_resume\%JOB%`, because Wave F's rerun paid twice for 21 takes.
+
+**Stem check (Artoo on PR 1948).** `contrib/opus/tools/sound/stem_loop_check.py <song> <stems.zip> --xfade <s>` rebuilds both mixes from one archive, cut to the song's own samples, and checks them. It runs on every M2 loop before any loop is wired.
+- **Alignment.** The stems arrive 25.1 ms (1,203 samples) late against the song, so the tool aligns them first. After alignment, the stems sum to the song with a residual 25.2 dB under it.
+- **Calm level.** The calm mix sits 4.0 dB under the intense mix.
+- **Seams without a crossfade.** The intense seam passes. The calm seam fails: its last half second is 4.9 dB under its first (limit 3 dB).
+- **Seams with mastering's loop crossfade.** With 0.5 s, the calm seam is 2.6 dB and the intense 0.3 dB; with 1.0 s, 2.5 dB and 0.8 dB. Both pass with wrap jumps under 0.03.
+
+So mastering folds a 0.5 s loop crossfade into both mixes on the same samples. Ryan picked "One song split into parts" for the battle music (decision card, Nov 23 11:51 PM CT).
 
 After all the waves, about 55,000 credits stay in reserve for second takes, stems on the songs Ryan picks, and the tendril once issue 1877 lands.
 
