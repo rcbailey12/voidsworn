@@ -582,7 +582,6 @@ func _update_trails(fx, _moved: bool) -> void:
 		xfm = root.global_transform * (get_meta("death_motion") as Transform3D) * (get_meta("death_hull_motion", Transform3D.IDENTITY) as Transform3D)
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
-	var plume = clampf(1.5 * hull.W, 2.0, 32.0)
 	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or (_eng_sputter and not wounds_v2)) else int(fac["trail"])
 	for ti in _trails.size():
 		var t: Dictionary = _trails[ti]
@@ -593,11 +592,14 @@ func _update_trails(fx, _moved: bool) -> void:
 		var lvl_t: float = lvl * (sick_gate(fx.now, fx.reduce_flashing) if ti == sick_nozzle else 1.0)
 		if dead_nozzles.has(ti):
 			lvl_t = 0.0   # issue 1741: a dead nozzle lays no fresh trail (the dim samples let the old ribbon fade out)
-		var start: Vector3 = xfm * (t["p"] as Vector3) + (xfm.basis * (t["d"] as Vector3)).normalized() * (0.3 * plume)
+		# Issue 2042 item 2: anchor the trail root directly to the live nozzle (no 0.3 * plume stern gap).
+		var start: Vector3 = xfm * (t["p"] as Vector3)
+		var back_dir: Vector3 = (xfm.basis * (t["d"] as Vector3)).normalized()
 		# Each sample belongs to world space for its entire life. Turning, stopping
 		# or throttling down never drags old exhaust along with the nozzle.
 		# (issue 1581, OpenAI review F4: no fresh exhaust while the battle has the drive cold, even as the plume eases down)
-		if (not dead or flaring) and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12):
+		var active_burn: bool = (not dead or flaring) and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12)
+		if active_burn:
 			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (_tclock - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
 				hist.push_front([start, _tclock, lvl_t])
 				changed = true
@@ -613,6 +615,10 @@ func _update_trails(fx, _moved: bool) -> void:
 			t["mesh_time"] = _tclock
 			_trail_mesh(fx, t, eng)
 		mat.set_shader_parameter("trail_elapsed", (_tclock - float(t["mesh_time"])) / TRAIL_LIFE)
+		mat.set_shader_parameter("use_strip_taper", 1.0)
+		mat.set_shader_parameter("anchor_head", 1.0 if (active_burn and not dead_nozzles.has(ti)) else 0.0)
+		mat.set_shader_parameter("head_world", start)
+		mat.set_shader_parameter("head_dir", back_dir)
 		if int(t["style"]) != style:
 			t["style"] = style
 			mat.set_shader_parameter("trail_style", float(style))
@@ -629,16 +635,19 @@ func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 	var c0 = PackedFloat32Array()
 	var c1 = PackedFloat32Array()
 	var r: float = t["r"]
-	var w0 = r * 1.1
-	var w1 = r * 2.4 * clampf(scale_k(), 0.6, 1.6)
+	# Issue 2042 item 2: start at nozzle width and taper cleanly down to a slender tail (never a wide rectangle).
+	var w0 := r * 1.25
+	var w1 := r * 0.18 * clampf(scale_k(), 0.7, 1.3)
+	var denom := maxf(float(n - 1), 1.0)
 	for i in n:
 		var d = (hist[mini(i + 1, n - 1)][0] - hist[maxi(i - 1, 0)][0]).normalized()
+		var along := float(i) / denom
 		for sd in [-0.5, 0.5]:
 			verts.append(hist[i][0])
 			nrm.append(d)
 			uv.append(Vector2(clampf((_tclock - float(hist[i][1])) / TRAIL_LIFE, 0.0, 1.0), sd))
-			c0.append_array([eng.r, eng.g, eng.b, 0.28 * clampf(float(hist[i][2]), 0.0, 1.5)])
-			c1.append_array([w0, w1, float(t["seed"]), 0.0])
+			c0.append_array([eng.r, eng.g, eng.b, 0.34 * clampf(float(hist[i][2]), 0.0, 1.5)])
+			c1.append_array([w0, w1, float(t["seed"]), along])
 	if not _trail_indices.has(n):
 		var idx := PackedInt32Array()
 		for i in n - 1:

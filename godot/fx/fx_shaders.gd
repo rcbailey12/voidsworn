@@ -1076,13 +1076,25 @@ render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabl
 """ + COMMON + """
 uniform float trail_elapsed = 0.0;
 uniform float trail_style = 0.0;
+uniform float anchor_head = 0.0;
+uniform vec3 head_world = vec3(0.0);
+uniform vec3 head_dir = vec3(-1.0, 0.0, 0.0);
+uniform float use_strip_taper = 0.0;
 varying vec4 vCol;
 varying vec4 vInfo;
+varying float vAlong;
 void vertex() {
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	vec3 wd = snorm((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	float s = clamp(UV.x + trail_elapsed, 0.0, 1.0);
 	float w = mix(CUSTOM1.x, CUSTOM1.y, s);
+	float along = use_strip_taper > 0.5 ? CUSTOM1.w : s;
+	if (anchor_head > 0.5 && along < 0.001) {
+		wp = head_world;
+		wd = snorm(head_dir);
+		s = 0.0;
+		w = CUSTOM1.x;
+	}
 	vec3 side = snorm(cross(wd, CAMERA_POSITION_WORLD - wp));
 	float seed = CUSTOM1.z;
 	float du = frame_world(1.0, max(-(VIEW_MATRIX * vec4(wp, 1.0)).z, 0.01), PROJECTION_MATRIX, VIEWPORT_SIZE.y);
@@ -1092,27 +1104,34 @@ void vertex() {
 	VERTEX = (VIEW_MATRIX * vec4(wp, 1.0)).xyz;
 	vCol = CUSTOM0;
 	vInfo = vec4(s, UV.y * 2.0, seed, trail_style);
+	vAlong = along;
 }
 void fragment() {
 	float s = vInfo.x; float x = abs(vInfo.y); float seed = vInfo.z; int st = int(vInfo.w + 0.5);
+	float along = clamp(vAlong, 0.0, 1.0);
 	float n = fbm(vec2(s * 14.0 - scene_t * 0.6, vInfo.y * 1.2 + seed * 3.0));
 	float n2 = fbm(vec2(s * 40.0 - scene_t * 0.5, vInfo.y * 2.0 + seed * 3.0));
 	n = 0.5 * n + 0.5 * n2;
-	float across = exp(-x * x * 2.2);
-	float fade = spow(1.0 - s, 1.8);
-	vec3 col = mix(vCol.rgb, vec3(0.30, 0.38, 0.60), smoothstep(0.0, 0.55, s));
+	float taper = mix(1.0, 0.22, spow(max(s, along), 0.8));
+	float xt = x / max(taper, 0.14);
+	float across = exp(-xt * xt * 2.6);
+	float core_across = exp(-xt * xt * 15.0);
+	float tail_end = 1.0 - smoothstep(0.78, 1.0, along);
+	float fade = spow(1.0 - s, 1.65) * tail_end;
+	float lum = dot(vCol.rgb, vec3(0.2126, 0.7152, 0.0722));
+	vec3 col = mix(vCol.rgb, vCol.rgb * 0.55 + vec3(lum * 0.25), smoothstep(0.0, 0.65, s));
 	float m = smoothstep(0.25, 0.75, n + 0.15);
 	if (st == 1) {
-		col = mix(col, vec3(0.35, 0.25, 0.18), 0.5) * (0.5 + 0.5 * mix(cough(scene_t - s * 3.0, seed), 0.7, fx_calm));
+		col = mix(col, vec3(0.35, 0.22, 0.14), 0.45) * (0.5 + 0.5 * mix(cough(scene_t - s * 3.0, seed), 0.7, fx_calm));
 	} else if (st == 2) {
 		m *= 0.6 + 0.8 * smoothstep(0.55, 0.8, fbm(vec2(s * 22.0 - scene_t * 0.4, seed)));
 	} else if (st == 3) {
 		col *= 0.55 + 0.45 * vnoise(vec2(s * 9.0 - scene_t * 2.0, seed));
-		col += vec3(1.0, 0.5, 0.15) * spow(vnoise(vec2(s * 60.0 - scene_t, seed * 3.0)), 12.0) * 2.0;
+		col += mix(vCol.rgb, vec3(1.0, 0.9, 0.68), 0.45) * spow(vnoise(vec2(s * 52.0 - scene_t, seed * 3.0)), 10.0) * 1.4;
 	}
-	float root = smoothstep(0.0, 0.025, s);
-	vec3 hot = mix(col, vec3(1.0, 0.94, 0.82), 0.6) * exp(-x*x*16.0) * 0.5;
-	ALBEDO = clamp((col * across * m * 1.4 + hot) * root * fade * vCol.a * fx_gain, 0.0, 512.0);
+	float root = (anchor_head > 0.5 || use_strip_taper < 0.5) ? smoothstep(0.0, 0.05, along) : smoothstep(0.0, 0.18, along);
+	vec3 hot = mix(vCol.rgb, vec3(1.0, 0.97, 0.92), 0.55) * core_across * (0.65 * (1.0 - 0.55 * s));
+	ALBEDO = clamp((col * across * m * 1.45 + hot) * root * fade * vCol.a * fx_gain, 0.0, 512.0);
 }
 """
 
