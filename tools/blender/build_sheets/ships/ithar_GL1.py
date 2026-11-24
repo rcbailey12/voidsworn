@@ -1,6 +1,6 @@
 """GL1, the Glasswright lancet (data.js i_blade, Destroyer). Issue 1415, Ryan's Nov 16 pick Step 1
 (contrib/muse/design/glasswright_family_2026_11/destroyer.md): one slender leaf of flowing blown glass, the closest of the set
-to CD5; the shards grown into the bow optic; a star torpedo carried on the spine in a glass cradle; a white bloom at the stern.
+to CD5; the shards grown into the bow optic; a star torpedo carried on the keel in a glass cradle; a white bloom at the stern.
 
 Built in the R337 finish on the shared Glasswright kit (tools/blender/kits/ithar: parts.py, stack.py, hull.py): opaque
 reflective pearl ribbons with silver edges over glowing amber, violet and green mosaic. Nothing is see-through.
@@ -28,8 +28,8 @@ SHEET = dict(version=1, round='R337 / issue 1415', date='2026-11-20', stage='blo
 CAMERA = dict(az=62.0, el=30.0, roll=-14.0, scale=30.0)
 CLOSE = dict(daz=-10, del_=8, scale=0.50, target=(0.05, 0, 0.0))
 COMPARE_NOTE = ['One slender leaf: pearl ribbons sweep stern to bow over glowing panels; shards in the bow optic.',
-                'Opaque (R337). The star torpedo rides the spine in a grown pearl cradle, carried, not docked.']
-SIDE_NOTE = 'One long axis, about 4.5 to 1; the torpedo rides the spine over the forward body.'
+                'Opaque (R337). The star torpedo rides the keel in a grown pearl cradle, carried, not docked.']
+SIDE_NOTE = 'One long axis, about 4.5 to 1; the torpedo hangs on the keel under the forward body.'
 INSIDE_NOTE = 'Two shaped glass decks, open annealed frames and three braided light cores, cut at both break lines.'
 
 XS, XB = -4.45, 3.70
@@ -98,11 +98,9 @@ def build(K):
     hl.i8_shell(K, skin, f, XS + 0.10, XB - 0.05, 'gl1', scale=S, leaves=8, seed=1, width=W8)
     hl.shard_cluster(K, 'S1', (XB - 0.35, 0.0, 0.0), 1.35, 0.12, spread=0.09,
                      note='The Prism shards grown into the bow optic: three drawn needles on the centreline; fixed forward, F arc.')
-    # Ryan Nov 24 2026 ("I can't really see the torpedo on the destroyer"): the torpedo rides the spine, where the battle
-    # camera looks down on it, in the same grown cradle mirrored (arms down into the crown)
-    crown = height(TORP['x'])
-    zt = crown + TORP['r'] * 1.12 + 0.12 * S / 0.49   # clear of the shell's ribbons and swells on the crown
-    hl.star_torpedo(K, 'T1', (TORP['x'], 0.0, zt), TORP['len'], TORP['r'], cradle_up=zt - crown + 0.10, dorsal=True)
+    belly = -height(TORP['x']) * 0.88
+    zt = belly - TORP['r'] * 1.12
+    hl.star_torpedo(K, 'T1', (TORP['x'], 0.0, zt), TORP['len'], TORP['r'], cradle_up=belly - zt + 0.10)
     hl.stern_drive(K, 'E1', (XS + 0.28, 0.0, 0.0), 0.40)
     breaks = (-2.05, 2.30)
     breach_x = (2.95, -3.05)
@@ -126,8 +124,7 @@ def build(K):
              'R337 (Ryan, Nov 19): the Glasswright finish is opaque reflective pearl with glowing stained-glass panels; nothing see-through.')
     K.change('The bow optic is three short drawn needles on the centreline, not an open glass tube',
              'data.js shard F fires three shots, one per needle; the sketch habit of tube optics is written against (README).')
-    K.change('The star torpedo rides the spine over the forward body (Ryan Nov 24: under the keel the battle camera never saw it), '
-             'in a pearl cradle of two hoops and four arms grown into the crown',
+    K.change('The star torpedo hangs under the forward body in a pearl cradle of two hoops and four arms grown into the belly',
              'destroyer.md: the cradle must read as carried, not docked. The sketch\'s pod becomes the weapon itself: a glowing '
              'capsule in a pointed pearl sheath open down each flank, swept fins fore and aft (Ryan Nov 21: richer torpedo).')
     K.change('A waist before a round stern bulb; one stern optic with a white bloom and a rose-cut face',
