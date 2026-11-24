@@ -1679,24 +1679,8 @@ void fragment() {
 	} else if (style == 5 || style == 6 || style == 0) {
 		if (part > 0.95) { em += gc * exp(-age / 0.7) * 0.35 * heat * (0.7 + 0.3 * fl); }
 	}
-	if (wound_v2 >= 0) {
-		// R416: the V2 look below replaces the old faction looks
-	} else if (wound_kind == 1) {
-		base = mix(vec3(0.018, 0.002, 0.009), vec3(0.07, 0.012, 0.023), n1);
-		rough = 0.23; metal = 0.0;
-		float muscle = pow(abs(sin(p.x * 22.0 + n1 * 5.0)), 8.0);
-		em = glow * (0.07 + 0.04 * sin(scene_t * 2.3 + seed)) * muscle;
-		if (part > 0.8 && part < 0.9) { base = vec3(0.17, 0.13, 0.07); }
-	} else if (wound_kind == 2) {
-		base = part < 0.3 ? vec3(0.005, 0.004, 0.022) : glow * 0.12;
-		rough = 0.09; metal = 0.15;
-		em = mix(glow, vec3(0.3, 0.65, 1.0), n2) * (part < 0.3 ? emb * 0.06 : 0.16);
-	} else if (wound_kind == 3) {
-		base = part < 0.3 ? vec3(0.004, 0.002, 0.008) : vec3(0.045, 0.035, 0.06);
-		rough = 0.48; metal = 0.7;
-		float bus = pow(abs(sin(p.x * 19.0 + floor(p.y * 4.0))), 24.0);
-		em = glow * (emb * 0.06 + bus * 0.15) * flick(0.7 + n2 * 0.3, scene_t, seed);
-	}
+	// R416 (Nov 24, Ryan's yes): the old Chorus magenta flesh, Glasswright glow and Eclipse bus looks are retired; the V2
+	// look below is the only faction look
 	vec3 em_hdr = vec3(0.0);   // Fable B-review H2: rim heat, bus tips and fresh burns ride above the 0.25 soft cap
 	if (wound_v2 >= 0) {
 		// R416 5.2: the inside of an open wound in the faction's own matter, lit (never a black portal): the cut edge shows
@@ -2243,33 +2227,7 @@ void fragment() {
 		em = glow * 0.06 * exp(-pow((trench - 0.9) / 0.2, 2.0));
 	}
 	if (a < 0.003 && dot(em, vec3(1.0)) < 0.003) { discard; }
-	if (wound_v2 >= 0) {
-		// R416: the V2 look below replaces the old faction looks
-	} else if (wound_kind == 1) {
-		float vein = pow(abs(sin(q.x / R * 28.0 + n1 * 6.0)), 12.0);
-		alb = mix(vec3(0.06, 0.012, 0.07), vec3(0.12, 0.025, 0.045), n1);
-		rough = style == 13 ? 0.55 : 0.2;
-		em = glow * (0.025 + 0.06 * vein) * (0.8 + 0.2 * sin(scene_t * 2.3 + seed)) * a;
-	} else if (wound_kind == 2) {
-		float fracture = pow(abs(sin(ang * 7.0 + n1 * 2.0)), 32.0);
-		float web = pow(abs(sin(u * 26.0 + ang * 3.0)), 24.0);
-		alb = mix(vec3(0.28, 0.36, 0.48), glow * 0.8, max(fracture, web));
-		rough = 0.14;
-		a *= 0.18 + 0.82 * max(fracture, web);
-		em = glow * max(fracture, web) * a * 0.3;
-	} else if (wound_kind == 3) {
-		vec2 grid = abs(fract(q / R * 3.0 + seed) - 0.5);
-		float circuit = smoothstep(0.46, 0.49, max(grid.x, grid.y));
-		alb = vec3(0.012, 0.006, 0.02) * (0.6 + n1 * 0.4);
-		rough = 0.48;
-		a = max(a, (1.0 - smoothstep(0.7, 1.05, max(abs(q.x), abs(q.y)) / R)) * 0.9);
-		em = glow * circuit * 0.22 * flick(0.7 + n1 * 0.3, scene_t, seed);
-		if (vD.y > 0.3) {
-			float jagged = u - 0.72 + 0.07 * sin(ang * 13.0 + seed);
-			float arc = exp(-pow(jagged / 0.018, 2.0)) * smoothstep(0.1, 0.4, sin(ang * 6.0 + scene_t * 1.6 + seed));
-			em += mix(glow, vec3(0.9, 0.85, 1.0), 0.4) * arc * 0.65 * flick(0.6 + 0.4 * n1, scene_t, seed);
-		}
-	}
+	// R416 (Nov 24, Ryan's yes): the old Chorus magenta veins, Glasswright sine web and Eclipse square grid are retired
 	if (wound_v2 >= 0 && style != 16 && style != 17 && style != 18) {
 		// R416 3 and 5: each faction's marks in its own matter. Sunward keeps the dark soot and ember. Directorate: cool
 		// steel scorch, a pale-blue electrical burn, no orange. Hullbreakers: heavy soot, rust grime, red-amber slag.

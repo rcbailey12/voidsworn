@@ -147,7 +147,7 @@ void fragment() {
 	if (rib) { base = vec3(0.068, 0.056, 0.048); }
 	if (organic) {
 		float fibre = pow(abs(sin(dot(p, vec3(41.0, 67.0, 29.0)) + coarse * 8.0)), 6.0);
-		base = mix(vec3(0.025, 0.005, 0.013), vec3(0.085, 0.018, 0.031), coarse * 0.7 + fibre * 0.3);
+		base = mix(vec3(0.03, 0.015, 0.007), vec3(0.085, 0.04, 0.018), coarse * 0.7 + fibre * 0.3);   // R416: umber hide, never magenta (Nov 24)
 		if (rib) { base = vec3(0.20, 0.15, 0.085) * (0.65 + coarse * 0.35); }
 	}
 	base *= 0.65 + coarse * 0.55 + n * 0.2;

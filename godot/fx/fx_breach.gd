@@ -1728,7 +1728,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 	var ends_by: Array = res.get("ends", [])
 	var glow: Color = s.fac.get("damage_glow", Color(1.0, 0.45, 0.12))
 	# R416 (issue 1741): with Wounds V2 on, every wound shader reads the faction's own profile (faction_looks.json "wound")
-	var wv: Dictionary = wound_of(String(s.get("faction"))) if WOUNDS.v2() else {}
+	var wv: Dictionary = wound_of("" if s.get("faction") == null else str(s.get("faction"))) if WOUNDS.v2() else {}
 	var v2k: int = int(wv.get("kind", 0)) if not wv.is_empty() else -1
 	if v2k >= 0:
 		glow = wound_col(wv, "interior_accent", glow)
@@ -1789,7 +1789,7 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 	if s.dead or (fx != null and fx.compat):
 		return
 	var mouths := _mouth_uniforms(ents)
-	var wv: Dictionary = wound_of(String(s.get("faction"))) if WOUNDS.v2() else {}
+	var wv: Dictionary = wound_of("" if s.get("faction") == null else str(s.get("faction"))) if WOUNDS.v2() else {}
 	var wear_on: bool = "hull_wear" in s
 	var wear_p: Array = s.wear_patches() if wear_on else []
 	for m in mis:

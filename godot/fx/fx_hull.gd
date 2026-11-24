@@ -342,6 +342,7 @@ static func set_wear(mat: ShaderMaterial, wear: float, patches: Array) -> void:
 static func set_v2(mat: ShaderMaterial, wv: Dictionary) -> void:
 	if wv.is_empty():
 		mat.set_shader_parameter("fx_v2", -1)
+		mat.set_shader_parameter("fx_v2_soot", 1.0)
 		return
 	mat.set_shader_parameter("fx_v2", int(wv.get("kind", 0)))
 	mat.set_shader_parameter("fx_v2_soot", float(wv.get("soot_weight", 1.0)))
@@ -409,7 +410,7 @@ for (int i = 0; i < 64; i++) {
 	fx_soot = max(fx_soot, 1.0 - smoothstep(0.0, R * 0.65, max(edge, 0.0)));
 }
 """, """
-ALBEDO *= (1.0 - fx_soot * 0.94 * (fx_v2 >= 0 ? clamp(fx_v2_soot, 0.0, 1.0) : 1.0)) * (1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)));
+ALBEDO *= (1.0 - fx_soot * 0.94 * clamp(fx_v2_soot, 0.0, 1.0)) * (1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)));
 EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0) * fx_flick;
 if (fx_v2 == 4 || fx_v2 == 5) { EMISSION += fx_v2_accent * pow(fx_soot, 3.0) * 0.18; }   // R416: a lit glass or violet seam edge, no soot
 if (fx_scorch_count > 0) {
@@ -417,7 +418,7 @@ if (fx_scorch_count > 0) {
 	float fx_sc = fx_scorch_at(fx_hull_p);
 	// bench round 1: a strong bronze ring read as brown cardboard on a white hull; keep the stain faint and the soot dark
 	// R416 / R420 (Wounds V2): the stain and soot follow the faction's soot weight (none on Chorus, Glasswrights, Eclipse)
-	float fx_sw = fx_v2 >= 0 ? clamp(fx_v2_soot, 0.0, 1.0) : 1.0;
+	float fx_sw = clamp(fx_v2_soot, 0.0, 1.0);
 	ALBEDO *= mix(vec3(1.0), vec3(0.80, 0.72, 0.70), smoothstep(0.0, 0.35, fx_sc) * fx_sw) * (1.0 - 0.9 * smoothstep(0.25, 0.75, fx_sc) * fx_sw);
 	ROUGHNESS = mix(ROUGHNESS, 1.0, fx_sc * fx_sw);
 	float fx_em = smoothstep(0.65, 1.0, fx_sc) * step(0.72, burnt_hash(floor(fx_hull_p / max(fx_burnt_cell, vec3(0.001)) * 5.0)));
@@ -430,16 +431,18 @@ if (fx_scorch_count > 0) {
 if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 	ALBEDO = vec3(0.0); METALLIC = 0.0; SPECULAR = 0.0; ROUGHNESS = 1.0;
 	RIM = 0.0; CLEARCOAT = 0.0; SSS_STRENGTH = 0.0; BACKLIGHT = vec3(0.0);
-	EMISSION = hull_inside(fx_hull_p, vec3(0.0), 0.0, fx_burnt_cell, 0.35, vec3(1.0), 0.0);
+	// R416 (Nov 24, Ryan's yes): the orange ember speckle on the back of the plating stays on steel only (Sunward,
+	// Hullbreakers); every other faction's backface is its own matter, never orange
+	EMISSION = hull_inside(fx_hull_p, vec3(0.0), 0.0, fx_burnt_cell, (fx_v2 == 0 || fx_v2 == 2) ? 0.35 : 0.0, vec3(1.0), 0.0);
 	vec3 section = fx_hull_p / max(fx_burnt_cell, vec3(0.001));
 	float rib = 1.0 - smoothstep(0.02, 0.065, abs(fract(section.y * 0.65) - 0.5));
 	float beam = 1.0 - smoothstep(0.015, 0.045, abs(fract(section.z * 0.5) - 0.5));
 	vec3 structure = mix(vec3(0.008, 0.006, 0.007), vec3(0.032, 0.025, 0.021), max(rib, beam));
 	if (fx_organic) {
+		// R416: umber, never magenta (the old magenta flesh is retired, Nov 24)
 		float fibre = pow(abs(sin(section.x * 6.0 + sin(section.y * 3.0))), 8.0);
-		structure = mix(vec3(0.018, 0.003, 0.009), vec3(0.042, 0.009, 0.017), fibre);
+		structure = mix(vec3(0.016, 0.008, 0.004), vec3(0.036, 0.016, 0.008), fibre);
 		structure = mix(structure, vec3(0.085, 0.062, 0.033), rib * 0.7);
-		if (fx_v2 == 3) { structure = mix(vec3(0.016, 0.008, 0.004), vec3(0.036, 0.016, 0.008), fibre); structure = mix(structure, vec3(0.085, 0.062, 0.033), rib * 0.7); }   // R416: umber, never magenta
 	}
 	EMISSION = max(EMISSION, structure);
 	if (fx_v2 >= 0 && fx_near > 0.0) {

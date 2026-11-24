@@ -19,6 +19,7 @@ const BREACH := preload("res://fx/fx_breach.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
+const DEATH := preload("res://fx/fx_death.gd")
 const FL := preload("res://fx/faction_look.gd")
 var failures := 0
 var fx
@@ -298,7 +299,7 @@ func _run() -> void:
 	for u in dm.shader.get_shader_uniform_list():
 		dn.append(u["name"])
 	check(dn.has("fx_v2") and dn.has("fx_v2_soot"), "the hull damage shader parses with its V2 uniforms")
-	check(dm.shader.code.contains("(fx_v2 == 0 || fx_v2 == 2) ? smoothstep(0.65, 1.0, fx_sc) * step(0.95,") and dm.shader.code.contains("float fx_sw = fx_v2 >= 0 ? clamp(fx_v2_soot, 0.0, 1.0) : 1.0;"), "JOINT_B: with V2 the scorch keeps the faction soot weight and only steel keeps sparse embers")
+	check(dm.shader.code.contains("(fx_v2 == 0 || fx_v2 == 2) ? smoothstep(0.65, 1.0, fx_sc) * step(0.95,") and dm.shader.code.contains("float fx_sw = clamp(fx_v2_soot, 0.0, 1.0);"), "JOINT_B: with V2 the scorch keeps the faction soot weight and only steel keeps sparse embers")
 	var want_b := {0: 0.25, 1: 0.25, 2: 0.25, 3: 0.5, 4: 0.75, 5: 1.0}
 	for faction in ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
 		var eh = BREACH.place_hole(slab, Vector3(0, 3, 0), Vector3.UP, 1.0, 2.0, faction)
@@ -447,6 +448,7 @@ func _run() -> void:
 	var old = fx.wreck_interior(src, "ithar", 24.0)
 	check(old is BaseMaterial3D and (old as BaseMaterial3D).roughness == 1.0, "switch off: the wreck keeps the old sooted copy")
 	OS.unset_environment("VS_WOUNDS_V2")
+	_retired_looks()
 	_review_fixes()
 	print("wounds_v2_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)
 	quit(0 if failures == 0 else 1)
@@ -602,3 +604,19 @@ func _review_fixes() -> void:
 	check(kept >= 1, "the warm-up keeps its interior material, so the interior shader is not made again late (%d kept)" % kept)
 	check(tried > 0 and opened == tried, "H5: midship cutouts on the real hull open into the ship, not chip (%d of %d)" % [opened, tried])
 	OS.unset_environment("VS_WOUNDS_V2")
+
+
+# Nov 24 (Ryan's yes, Morning Pick Sheet item 5): V2 is on by default and the old wound looks are gone from the code
+func _retired_looks() -> void:
+	OS.unset_environment("VS_WOUNDS_V2")
+	check(WOUNDS.v2(), "default: Wounds V2 is on with the switch unset")
+	OS.set_environment("VS_WOUNDS_V2", "0")
+	check(not WOUNDS.v2(), "default: VS_WOUNDS_V2=0 still turns it off")
+	OS.unset_environment("VS_WOUNDS_V2")
+	check(not SH.HOLE.contains("muscle") and not SH.HOLE.contains("float bus ="), "retired: HOLE has no old Chorus flesh or Eclipse bus look")
+	check(not SH.MARK.contains("float circuit") and not SH.MARK.contains("float web ="), "retired: MARK has no Eclipse square grid or Glasswright sine web")
+	var dc: String = HULL._damage_code(HULL.EXTERIOR)
+	check(not dc.contains("fx_v2 >= 0 ? clamp(fx_v2_soot"), "retired: the 94% soot collar always follows the faction soot weight")
+	check(not dc.contains("vec3(0.018, 0.003, 0.009)"), "retired: no magenta flesh on the back of the plating")
+	check(dc.contains("(fx_v2 == 0 || fx_v2 == 2) ? 0.35 : 0.0"), "retired: orange backface embers on steel only")
+	check(not DEATH.SLAG.contains("vec3(0.025, 0.005, 0.013)"), "retired: SLAG has no magenta organic face")
