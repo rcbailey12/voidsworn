@@ -305,3 +305,22 @@ Neon's mastering notes (40 Hz high-pass, head trims, level lifts) carry into mas
 - Neon's six, with Neon's prompt fixes: `wep_directorate_picket`, `wep_eclipse_gsentry`, `imp_metal_light`, `imp_energy_sear`, `imp_las` and `dmg_shield_burnout` (lengthened to 0.7 s, because the Wave C t2 peaked at its last sample).
 
 All of these are close and centered, with no banned words. The run needs Ryan's typed "go wave d".
+
+## 8.5 Wave D result, Ryan's picks, and Wave E
+
+Wave D ran with 16 takes for about 138 credits (relay `pc-out-opus1752waved`). Listening page: https://claude.ai/artifact/UdWWLKAYaP7tkKkofF15hZ. Neon's notes are issue 1899 (PR 1901).
+
+**Ryan's call (Nov 23, 7:58 PM CT):** he agrees with Neon across the board, with one exception. For `imp_las` he picks t1 over Neon's t2, because it is close to the energy sear but different and lighter.
+
+**Keeps:**
+- junk_gun t2, which has no whine. Wave D t1 had a new one at 15.7 kHz.
+- energy_sear t1.
+- las t1.
+- shield_burnout t1.
+
+**Wave E re-roll (4 ids, 8 takes, tool estimate 280, about 80 real credits):** these are the ids Neon marked as still needing work.
+- `wep_directorate_picket`: two waves of muffled thumps. The prompt now asks for a small, thin, high electric crack and drops the starship-turret framing.
+- `wep_eclipse_gsentry` and `imp_metal_light`: the tone was right but came back wide stereo. Both now ask for "one dry point source", and metal_light drops the ringing plate tone.
+- `death_eclipse_shear`: the metal was right but sat below 100 Hz. The prompt now asks for grinding, scraping and strain in the midrange, and drops deep, massive and heavy, since boom_l and death_bed already own the sub-bass.
+
+If Wave E still misses, the fallbacks are: today's gun_flak for picket, and a single channel of Wave D t1 or t2 for metal_light and gsentry. The run needs Ryan's typed "go wave e".
