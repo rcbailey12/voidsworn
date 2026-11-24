@@ -48,12 +48,13 @@ def stills(run):
     with open(os.path.join(run, "bench.json"), encoding="utf-8") as f:
         rep = json.load(f)
     with open(os.path.join(run, "moments.json"), encoding="utf-8") as f:
-        rows = {r["id"]: r for r in json.load(f)["rows"]}
+        moments = json.load(f)
+    rows = {r["id"]: r for r in moments["rows"]}
     out = {}
     for st in rep.get("stills", []):
         if st.get("part") == "moments":
             out[(st["id"], int(st["cam"]))] = (os.path.join(run, st["file"]), st.get("cells", []), st.get("impacts", []))
-    return out, rows
+    return out, rows, moments.get("cell", (384, 216))[1]
 
 
 def cell(path, i, size=(384, 216)):
@@ -142,9 +143,10 @@ def main():
             for cam in (170, 60, 26):
                 rows = []
                 for name, _ in runs:
-                    st = data[name][0]
+                    st, _, cell_height = data[name]
                     if (mid, cam) in st:
-                        rows.append(PICTURES.open(st[(mid, cam)][0]).convert("RGB"))
+                        im = PICTURES.open(st[(mid, cam)][0]).convert("RGB")
+                        rows.append(im.crop((0, 0, im.width, cell_height)))
                 if rows:
                     s = Image.new("RGB", (max(r.width for r in rows), sum(r.height for r in rows)), BG)
                     yy = 0

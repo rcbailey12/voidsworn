@@ -140,7 +140,8 @@ var _refused: PackedFloat64Array = []    # flashes the budget turned down (their
 # that refused a flash in a field already holding FLASH_CAP flashes in the last second; the caller then draws no peak at all.
 var _soft_mem: Array = []
 var flash_lift := false
-var _later: Array = []      # [t, callable]
+var _later: Array = []      # [t, callable, insertion order]
+var _later_serial := 0
 var _shake_off = Vector2.ZERO
 var _punches: Array = []    # [t, amount] (F3 zoom punch)
 var _kick = 0.0             # the zoom punch now (share of the field of view taken off)
@@ -283,6 +284,10 @@ func release(wait := true) -> void:
 	_wreck_interiors.clear()
 	_piece_builds.clear()
 	_later.clear()
+	for line in _board_lines_live:
+		if is_instance_valid(line["node"]):
+			line["node"].queue_free()
+	_board_lines_live.clear()
 	_core_at.clear()
 	_lev.clear()
 	_lsrc.clear()
@@ -533,6 +538,7 @@ func step(delta: float) -> void:
 	RenderingServer.global_shader_parameter_set(&"scene_t", now)
 	var t0 := Time.get_ticks_usec()
 	_run_later()
+	_step_board_lines()
 	_build_death_pieces()
 	_gate_physics()
 	t0 = pend("later", t0)
@@ -683,7 +689,8 @@ func later(t: float, f: Callable) -> void:
 	if t <= now:
 		f.call()
 		return
-	_later.append([t, f])
+	_later.append([t, f, _later_serial])
+	_later_serial += 1
 
 
 func free_effect(ref: WeakRef) -> void:
@@ -723,7 +730,10 @@ func _run_later() -> void:
 		else:
 			keep.append(e)
 	_later = keep
-	due.sort_custom(func(a: Array, b: Array) -> bool: return float(a[0]) < float(b[0]))
+	due.sort_custom(func(a: Array, b: Array) -> bool:
+		if a[0] == b[0]:
+			return int(a[2]) < int(b[2])
+		return float(a[0]) < float(b[0]))
 	for e in due:
 		var t0 := Time.get_ticks_usec()
 		(e[1] as Callable).call()
@@ -1951,6 +1961,7 @@ func hull_mark(id: String, look: String, w := 2, world_p := Vector3.INF, dir := 
 const BOARD := {"hatch": 4.0, "ring_px": 70.0, "burst": 2.2, "burst_px": 60.0, "vent": 2.2, "vent_px": 22.0,
 	"spark_px": 3.0, "light": 7.0, "reach": 22.0, "lines": 3, "hold": 1600.0}
 var board_lines_s := 0.0   # how long the last boarding lines stay on screen (s; checked against the battle's hold)
+var _board_lines_live: Array[Dictionary] = []
 
 
 # how long the battle holds on a boarding before the next event (ms at speed 1; issue 1547)
@@ -1958,7 +1969,7 @@ func board_hold_ms() -> float:
 	return float(BOARD["hold"])
 
 
-# pace: the battle's pace (its wait() scale), so the lines end with the battle's hold (Artoo, PR 1549)
+# pace: the battle's wait() scale, used for the lines' hold on the effect clock (Artoo, PR 1549)
 func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -> float:
 	if not ships.has(target_id):
 		return 0.0
@@ -2006,8 +2017,8 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 		spr(wp + wn * 0.2 * k * vk, T + 0.15 + j * 0.2, 1.4, Color(0.62, 0.66, 0.74), 0.25 * sqrt(vk), 0.3 * k * vk, 2.2 * k * vk, 7,
 			(wn + rdir() * 0.25).normalized() * 4.0 * k * vk, 0.8, 0.0, 0.0, float(bl["vent_px"]))
 	for j in int(18 * sqrt(bk)):
-		stk(wp, T + 0.3 + randf() * 2.6, 0.3 + randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05 * bk, 0.08 * k * bk, 1,
-			(wn + rdir() * 0.6).normalized() * (5 + randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
+		stk(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05 * bk, 0.08 * k * bk, 1,
+			(wn + rdir() * 0.6).normalized() * (5 + rng.randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
 	# a soft pop ring on the plating round the hatch, sized to hold at camera 170 (issue 1547)
 	ring(wp + wn * 0.05 * k, wn, T, 0.7, Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
 	# the inside light in the boarding amber (render/line_style.gd "board"), not explosion orange (Muse council)
@@ -2032,7 +2043,7 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 # boarding target ring's amber, core only). One line per landing point, from the attacker's hatch to that point on the
 # target's flank, a shallow arc each. Muse council (contrib/muse/reviews/boarding_1547.md section 4): they draw in one
 # after another (0.2 s apart at speed 1), stay at full strength for the whole hold, pulse once mid-hold (the crew
-# crossing) and fade only in the hold's last tenth, so none outlives the battle's wait at any pace.
+# crossing) and fade in the hold's last tenth on the effect clock.
 func _board_lines(a: Vector3, ends: Array, hold: float, pace := 1.0) -> void:
 	var LSt = load("res://render/line_style.gd")
 	board_lines_s = 0.0
@@ -2060,20 +2071,42 @@ func _board_lines(a: Vector3, ends: Array, hold: float, pace := 1.0) -> void:
 		m.set_shader_parameter("gain", 0.0)
 		mi.material_override = m
 		add_child(mi)
-		var t0: float = minf(0.2 * pace * i, hold * 0.3)
-		var t_in: float = minf(0.2, hold * 0.15)
-		var t_out: float = minf(0.15, hold * 0.1)
-		var rest: float = maxf(0.0, hold - t0 - t_in - t_out)
-		var tw := mi.create_tween()
-		tw.tween_interval(t0)
-		tw.tween_property(m, "shader_parameter/gain", 1.0, t_in)
-		tw.tween_interval(rest * 0.4)
-		tw.tween_property(m, "shader_parameter/gain", 1.8, rest * 0.1)
-		tw.tween_property(m, "shader_parameter/gain", 1.0, rest * 0.1)
-		tw.tween_interval(rest * 0.4)
-		tw.tween_property(m, "shader_parameter/gain", 0.0, t_out)
-		tw.tween_callback(mi.queue_free)
-		board_lines_s = maxf(board_lines_s, t0 + t_in + rest + t_out)
+		var delay := minf(0.2 * pace * i, hold * 0.3)
+		var fade_in := minf(0.2, hold * 0.15)
+		var fade_out := minf(0.15, hold * 0.1)
+		var rest := maxf(0.0, hold - delay - fade_in - fade_out)
+		_board_lines_live.append({"node": mi, "start": now + delay, "end": now + hold, "fade_in": fade_in,
+			"fade_out": fade_out, "rest": rest})
+		board_lines_s = hold
+
+
+func _step_board_lines() -> void:
+	for i in range(_board_lines_live.size() - 1, -1, -1):
+		var line := _board_lines_live[i]
+		var node = line["node"]
+		if not is_instance_valid(node):
+			_board_lines_live.remove_at(i)
+			continue
+		var left: float = line["end"] - now
+		if left <= 0.0:
+			node.queue_free()
+			_board_lines_live.remove_at(i)
+			continue
+		var age: float = now - line["start"]
+		if age < 0.0:
+			continue
+		var fade_in: float = line["fade_in"]
+		var fade_out: float = line["fade_out"]
+		var rest: float = line["rest"]
+		var gain := 1.0
+		if age < fade_in:
+			gain = age / fade_in
+		elif left < fade_out:
+			gain = left / fade_out
+		elif rest > 0.0:
+			var pulse := absf((age - fade_in - rest * 0.5) / (rest * 0.1))
+			gain += 0.8 * maxf(0.0, 1.0 - pulse)
+		(node.material_override as ShaderMaterial).set_shader_parameter("gain", gain)
 
 
 func command(id: String, _cmd := "") -> void:

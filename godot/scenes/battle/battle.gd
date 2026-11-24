@@ -893,7 +893,7 @@ func _begin(a) -> void:
 	_log("Contact: %s. %d ship%s on the scanners." % [str(F.get("n", _enemy_fac())), ne, "s" if ne > 1 else ""], "s")
 	var well = api.world_info().get("well")
 	if well is Dictionary or (well is bool and well):
-		_log("The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "s")
+		_log("The %s warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim." % api.R.dead_star_name(api.R.RUN, true), "s")
 	batches.append({"events": api.take_events(), "view": api.view()})
 	if not showcase:
 		sfx.ambient_start()
@@ -907,9 +907,11 @@ func _begin(a) -> void:
 			voice.setup_from_api(api, V)
 		else:
 			voice.setup_from_rules(api.R, V)  # until the story layer reads battle_api.gd (setup_from_api)
-		for l in voice.opening():
-			hud.add_log(l["text"], l["kind"])
-			recording_cue.emit("voice", l["text"])
+		var opening_lines: Array = voice.opening()
+		if not _merge_nemesis_opening(opening_lines):
+			for l in opening_lines:
+				hud.add_log(l["text"], l["kind"])
+				recording_cue.emit("voice", l["text"])
 	var adm := _api_admiral()
 	if ResourceLoader.exists("res://portraits/portraits.gd") and adm != "":
 		var A = TBL.get("ADMIRALS", {}).get(adm, {})
@@ -1992,6 +1994,39 @@ func _voice_event(e: Dictionary) -> void:
 		recording_cue.emit("voice", l["text"])
 
 
+# C27 (issue 1911, Board pick Option A): one Nemesis opening hail. The story voice (rival_lines.json) owns it, so its lines
+# take the rules hail's place in the opening batch: "<Nemesis> commands this fleet", the story hail, the admiral's reply,
+# then the contact lines. The rules hail stays in B.log (the saved hashes hold) and is only kept off the screen. With no
+# story hail the rules hail still shows and the voice lines follow it. False when the opening batch has no Nemesis lines.
+func _merge_nemesis_opening(lines: Array) -> bool:
+	if lines.is_empty() or batches.is_empty():
+		return false
+	var evs: Array = batches[0].get("events", [])
+	var intro := -1
+	var hail := -1
+	for i in evs.size():
+		var e = evs[i]
+		if e is Dictionary and e.get("t") == "log":
+			if e.get("nem") == "intro" and intro < 0:
+				intro = i
+			elif e.get("nem") == "hail" and hail < 0:
+				hail = i
+	if intro < 0 and hail < 0:
+		return false
+	var story_hail := lines.any(func(l): return str(l.get("moment", "")) == "nem_hail")
+	var at := intro + 1
+	if hail >= 0:
+		if story_hail:
+			evs.remove_at(hail)
+			at = hail
+		else:
+			at = hail + 1
+	for l in lines:
+		evs.insert(at, {"t": "log", "text": str(l["text"]), "kind": str(l["kind"]), "voice": true})
+		at += 1
+	return true
+
+
 func _play_event(e: Dictionary, batch_view := {}) -> void:
 	_voice_event(e)
 	match e["t"]:
@@ -2017,6 +2052,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				regen_unlocks[e["unit"]] = int(regen_unlocks.get(e["unit"], 0)) + 1
 		"log":
 			hud.add_log(str(e.get("text", "")), str(e.get("kind", "")) if e.get("kind") != null else "")
+			if e.get("voice", false):
+				recording_cue.emit("voice", str(e.get("text", "")))   # a story opening line merged into the opening batch (C27)
 		"float":
 			# rules.gd flt(): the boon and lineage callout over a ship (issue #305)
 			var dyv = e.get("dy")
@@ -4520,19 +4557,20 @@ func _nova_tip(q: int, r: int) -> String:
 	return t
 
 
-# the Hollow Sun's pull on a hex, as one line for the move tip ("" away from it or on a board without it)
+# the dead star's pull on a hex, as one line for the move tip ("" away from it or on a board without it)
 func _well_line(q: int, r: int) -> String:
 	var W = api.world_info().get("well") if api != null else null
 	if not W is Dictionary:
 		return ""
 	var R = api.R
 	var d := _hex_d(q, r, int(W["q"]), int(W["r"]))
+	var star: String = R.dead_star_name(R.RUN)
 	if d <= int(R.WELL_RIM):
-		return "[color=#ff8a72]Hollow Sun rim: %d hull damage to a ship here at each round start (it still gets +1 movement).[/color]" % int(R.WELL_DMG)
+		return "[color=#ff8a72]%s rim: %d hull damage to a ship here at each round start (it still gets +1 movement).[/color]" % [star, int(R.WELL_DMG)]
 	if d <= int(R.WELL_PULL):
-		return "[color=#c79bff]Hollow Sun pull: a ship here is dragged 1 hex inward at each round start, with +1 movement.[/color]"
+		return "[color=#c79bff]%s pull: a ship here is dragged 1 hex inward at each round start, with +1 movement.[/color]" % star
 	if d <= int(R.WELL_ASSIST):
-		return "[color=#9fd4ff]Hollow Sun slingshot: +1 movement at each round start, no pull.[/color]"
+		return "[color=#9fd4ff]%s slingshot: +1 movement at each round start, no pull.[/color]" % star
 	return ""
 
 
@@ -5541,7 +5579,7 @@ func _blocker_text(t: Dictionary) -> String:
 	var counts := {}
 	var order: Array = []
 	for h in _shot_blockers(t):
-		var label: String = {"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(h.kind, h.kind)
+		var label: String = {"rock": "asteroid", "hulk": "wreck", "deadstar": api.R.dead_star_name(api.R.RUN, true)}.get(h.kind, h.kind)
 		if not counts.has(label):
 			counts[label] = 0
 			order.append(label)
@@ -5637,7 +5675,8 @@ func _legend() -> void:
 	var desc := str(E.get("d", "")) if E is Dictionary else ""
 	var shape = api.world_info().get("shape")
 	if shape != null and str(shape) != "open" and TBL.get("SHAPES", {}).has(str(shape)):
-		desc += " Board: %s." % str(TBL["SHAPES"][str(shape)]).to_lower()
+		var board_name: String = api.R.dead_star_name(api.R.RUN) if shape == "deadstar" else str(TBL["SHAPES"][str(shape)]).to_lower()
+		desc += " Board: %s." % board_name
 	var mods: Array = api.R.storyModifierLines()
 	if not mods.is_empty(): desc += "\n" + " ".join(PackedStringArray(mods))
 	hud.set_legend(title, desc.strip_edges(), rows)

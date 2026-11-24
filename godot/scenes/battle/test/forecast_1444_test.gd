@@ -334,20 +334,22 @@ func _well() -> void:
 		var tip := b._tip()
 		var d := _hd(int(st.q), int(st.r), 9, 6)
 		var band := "rim" if d <= int(R.WELL_RIM) else ("pull" if d <= int(R.WELL_PULL) else ("sling" if d <= int(R.WELL_ASSIST) else "none"))
-		var want: String = {"rim": "Hollow Sun rim", "pull": "Hollow Sun pull", "sling": "Hollow Sun slingshot", "none": ""}[band]
-		var ok: bool = tip.contains(want) if want != "" else not tip.contains("Hollow Sun")
+		var want: String = {"rim": "Dead star rim", "pull": "Dead star pull", "sling": "Dead star slingshot", "none": ""}[band]
+		var ok: bool = tip.contains(want) if want != "" else not tip.contains("Dead star")
 		if not ok:
 			_check(false, "WELL-1 hex %d,%d (%d from the sun) tip: %s" % [int(st.q), int(st.r), d, tip])
 		seen[band] = true
 	_check(seen.size() >= 3, "WELL-1 the move tip names the band on every reachable hex (bands seen: %s)" % ", ".join(PackedStringArray(seen.keys())))
+	R.RUN["sector"] = 3
+	_check(b._well_line(9, 6).contains("Hollow Sun rim"), "WELL-1 the sector III move tip names the Hollow Sun")
 	R.B["well"] = null
 	_sync(b)
 	var any := false
 	for k in b.reach_map:
 		var st = b.reach_map[k]
 		b.hover = Vector2i(int(st.q), int(st.r))
-		any = any or b._tip().contains("Hollow Sun")
-	_check(not any, "WELL-1 no Hollow Sun line on a board without it")
+		any = any or b._tip().contains("Dead star") or b._tip().contains("Hollow Sun")
+	_check(not any, "WELL-1 no well line on a board without it")
 	_done(b)
 
 

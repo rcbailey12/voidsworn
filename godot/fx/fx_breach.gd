@@ -1770,6 +1770,7 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 			if wear_on:
 				HULL.set_wear(surface, float(s.hull_wear), wear_p)   # issue 1235: wear as HP falls
 			mi.set_surface_override_material(si, surface)
+			s._damage_surfaces_assigned = true
 		if mi.has_meta("fx_inside"):
 			mi.material_overlay = null
 			mi.remove_meta("fx_inside")

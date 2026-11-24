@@ -12,6 +12,8 @@ const SKEEP := preload("res://render/shader_keep.gd")
 #   - the attach point service (issue 370, at the end of this file): where an effect starts on the ship, from the
 #     authored hard points first (docs/ship_pipeline/HARDPOINTS.md), else a surface ray, else nowhere (skipped, counted).
 
+const SH := preload("res://fx/fx_shaders.gd")
+
 const SEC_ENG := 0
 const SEC_MID := 1
 const SEC_PROW := 2
@@ -178,7 +180,7 @@ static var _shader_refs := {}   # not GPU: weak refs only, nothing is kept alive
 # derived from this code, so it keeps the alpha.
 static func exterior_alpha_code() -> String:
 	if not _ext_codes.has("exterior_alpha"):
-		_ext_codes["exterior_alpha"] = EXTERIOR.replace("ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;",
+		_ext_codes["exterior_alpha"] = SH.patch(EXTERIOR, "ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;",
 			"ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;\n\tALPHA = hull_albedo.a * texture(hull_color, UV).a;")
 	return _ext_codes["exterior_alpha"]
 

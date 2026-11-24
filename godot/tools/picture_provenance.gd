@@ -9,21 +9,22 @@ static var _glyphs: Dictionary = {}
 
 ## Issue 1567: every save names its stage (no default: a caller that forgot it used to claim "installed in game").
 ## "cloud direction check" is a cloud or software render, the compatibility renderer, or a scene with a placeholder hull.
-const STAGES := ["sheet built", "paint proof", "installed in game", "cloud direction check"]
+const STAGES := ["sheet built", "paint proof", "installed in game", "cloud direction check", "pre-merge capture"]
 
-static func save_png(image: Image, path: String, stage: String) -> Error:
-	return _save(image, path, stage, false, 0.9)
+static func save_png(image: Image, path: String, stage: String, footer := false) -> Error:
+	return _save(image, path, stage, false, 0.9, footer)
 
 static func save_jpg(image: Image, path: String, quality: float, stage: String) -> Error:
 	return _save(image, path, stage, true, quality)
 
-## The stage of a frame this process renders: "installed in game" only for the game's own renderer (Forward+) on a
-## real GPU with every ship drawn from its built file; anything else is a "cloud direction check".
+## Direction checks keep their stage. A game-quality checkout capture needs to be on main to count as installed.
 static func capture_stage() -> String:
-	return "cloud direction check" if capture_is_direction_check() else "installed in game"
+	if capture_is_direction_check():
+		return "cloud direction check"
+	return "pre-merge capture" if _context().get("_pre_merge", false) else "installed in game"
 
 static func capture_is_direction_check() -> bool:
-	# a headless process draws nothing itself (it lays out sheets from saved frames), so it keeps the old stage
+	# Headless checks and sheet tools draw nothing, so there is no renderer to classify.
 	if DisplayServer.get_name() == "headless":
 		return false
 	if RenderingServer.get_current_rendering_method() != "forward_plus":
@@ -122,12 +123,15 @@ static func _checkout_context(repo: String) -> Dictionary:
 	var record: Variant = JSON.parse_string(str(output[0]))
 	if not record is Dictionary or not record.has("source_commit"):
 		return {}
+	# A missing main ref or failed ancestry check cannot establish that this checkout is installed.
+	record["_pre_merge"] = OS.execute("git", PackedStringArray([
+		"-C", repo, "merge-base", "--is-ancestor", record.source_commit, "refs/remotes/origin/main"]), [], true) != 0
 	_glyphs = glyphs
 	return record
 
-static func _strip(record: Dictionary, size: Vector2i) -> Image:
-	var scale := 2 if size.x >= 1000 else 1
-	var width: int = size.x / scale
+static func _strip(record: Dictionary, image_width: int) -> Image:
+	var scale := 2 if image_width >= 1000 else 1
+	var width: int = image_width / scale
 	var lines: Array[String] = []
 	var text_lines: Array[String] = [record.picture_name]
 	for source: Dictionary in record.sources:
@@ -149,9 +153,6 @@ static func _strip(record: Dictionary, size: Vector2i) -> Image:
 			strip_width = maxi(strip_width, part.length() * 6 + 12)
 			line = line.substr(count)
 	var height := lines.size() * 13 + 10
-	if height * scale > size.y:
-		push_error("Picture is too small for a readable provenance strip")
-		return null
 	var strip := Image.create(mini(width, strip_width), height, false, Image.FORMAT_RGB8)
 	strip.fill(Color("#10151e"))
 	strip.fill_rect(Rect2i(0, 0, strip.get_width(), 1), Color("#e8b56b"))
@@ -165,20 +166,26 @@ static func _strip(record: Dictionary, size: Vector2i) -> Image:
 	strip.resize(strip.get_width() * scale, height * scale, Image.INTERPOLATE_NEAREST)
 	return strip
 
-static func _save(image: Image, path: String, stage: String, jpeg: bool, quality: float) -> Error:
+static func _save(image: Image, path: String, stage: String, jpeg: bool, quality: float, footer := false) -> Error:
 	var context := _context()
 	if context.is_empty() or _glyphs.is_empty() or stage not in STAGES:
 		return _failed(path)
 	var absolute := ProjectSettings.globalize_path(path)
-	var source := context.duplicate()
-	source.stage = stage
 	var record := context.duplicate()
+	record.erase("_pre_merge")
+	var source := record.duplicate()
+	source.stage = stage
 	record.merge({"schema": 1, "picture_name": absolute.get_file(), "stage": stage,
 		"date": Time.get_datetime_string_from_system(true) + "Z", "sources": [source], "inputs": []})
 	var original := image.duplicate() as Image
 	original.convert(Image.FORMAT_RGB8 if jpeg else Image.FORMAT_RGBA8)
-	var strip := _strip(record, original.get_size())
-	if strip == null:
+	var strip := _strip(record, original.get_width())
+	if footer:
+		var cell_height := original.get_height()
+		original.crop(original.get_width(), cell_height + strip.get_height())
+		original.fill_rect(Rect2i(0, cell_height, original.get_width(), strip.get_height()), Color("#10151e"))
+	elif strip.get_height() > original.get_height():
+		push_error("Picture is too small for a readable provenance strip")
 		return _failed(path)
 	var box := Rect2i(0, original.get_height() - strip.get_height(), strip.get_width(), strip.get_height())
 	var covered := original.get_region(box).save_png_to_buffer()
