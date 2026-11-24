@@ -151,15 +151,19 @@ func request_authored(path: String, size: Vector2i, float_mips := false, urgent 
 	return key
 
 # Waits for a requested map. A job keeps its dictionary until it is done, and a done job's image is cached.
+# The image is read before the pin is released: the last release trims the cache, and with every slot pinned the map
+# just collected can be the only one it may drop (Artoo, PR 1776).
 func result(key: String) -> Image:
 	if _cache.has(key):
+		var hit: Image = _cache[key]
 		_unpin(key)
-		return _cache[key]
+		return hit
 	var owner := service(_tree())
 	var job = owner._jobs.get(key)
 	if job == null:
+		var late: Image = _cache.get(key)
 		_unpin(key)
-		return _cache.get(key)
+		return late
 	while not job.done: await _tree().process_frame
 	_unpin(key)
 	return job.image

@@ -368,7 +368,8 @@ func _run() -> void:
 		BAKER._pin("full_pin_%d" % e)
 	_check(BAKER._cache.size() == BAKER.CACHE_MAX + 3, "a pinned map was evicted while every slot was in use")
 	for e in BAKER.CACHE_MAX + 3:
-		BAKER._unpin("full_pin_%d" % e)
+		var got: Image = await svc.result("full_pin_%d" % e)
+		_check(got != null, "result() lost a map the cap trim dropped while it was being collected (full_pin_%d)" % e)
 	_check(BAKER._cache.size() <= BAKER.CACHE_MAX and BAKER._pins.is_empty(), "the cache stayed over its cap after every pin was released (%d)" % BAKER._cache.size())
 	BAKER._cache.clear()
 	# item 1: a new battle drops the maps a freed showcase or earlier battle left waiting
