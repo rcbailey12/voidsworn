@@ -117,7 +117,6 @@ var env: Environment
 var batches: Array = []
 var busy := false
 var think_task := -1
-var think_out = null
 var thinking := false
 var speed := 1.0           # the game's SPEED (duration multiplier)
 var user_speed := 1.0      # Speed: normal (1) or fast (0.45)
@@ -569,6 +568,7 @@ func begin_with(a) -> void:
 func _begin(a) -> void:
 	_gen += 1   # issue 1433: work still awaiting from the last battle on this node is stale now
 	_api_join()
+	_join_think()
 	retiring = false
 	opening = false
 	_skipped_camera_kinds.clear()
@@ -1025,7 +1025,7 @@ func _runner() -> void:
 				if _stale(g):
 					return
 				var b = await _think()
-				if _stale(g):
+				if _stale(g) or quitting:
 					return
 				if b != null:
 					batches.append(b)
@@ -1049,24 +1049,30 @@ func _runner() -> void:
 		_refresh_ui()
 
 
-func _think():
-	# the enemy's activation runs on a worker thread, so the frame never stalls while it decides
-	think_out = null
+func _think() -> Variant:
+	var rules = api
+	return await _think_batch(func() -> Dictionary:
+		return {"events": rules.step(), "view": rules.view()})
+
+
+# The enemy and the replay bot use the same worker slot. The main thread plays the completed batch.
+func _think_batch(collect: Callable) -> Variant:
+	var gen := _gen
+	var out := [null]
 	thinking = true
-	var tid := WorkerThreadPool.add_task(func() -> void:
-		var ev = api.step()
-		think_out = {"events": ev, "view": api.view()})
+	var tid := WorkerThreadPool.add_task(func() -> void: out[0] = collect.call())
 	_think_tid = tid
-	while not WorkerThreadPool.is_task_completed(tid):
+	while _think_tid == tid and not WorkerThreadPool.is_task_completed(tid):
 		await get_tree().process_frame
-	if _think_tid == tid:
-		WorkerThreadPool.wait_for_task_completion(tid)
-		_think_tid = -1
-	thinking = false
+	if _think_tid != tid:
+		return null
+	_join_think()
+	if _stale(gen) or quitting:
+		return null
 	var np := _api_not_ported()
 	if np != "":
 		_error("NOT PORTED: " + np)
-	return think_out
+	return out[0]
 
 
 func _cmd(f: Callable) -> bool:
@@ -1081,20 +1087,30 @@ func _cmd(f: Callable) -> bool:
 		_error("NOT PORTED: " + np)
 	if ev.is_empty() and not ok:
 		return false
-	_plan_clear()   # issue 1589: once the rules have acted, a plan made before is stale
-	batches.append({"events": ev, "view": api.view()})
-	_clear_overlay()
-	_runner()
-	_refresh_ui()   # issue 1589 (Ryan, Nov 22): the runner is now busy, so the card leaves while the event plays
+	_play_command_batch({"events": ev, "view": api.view()})
 	return bool(ok)
 
 
-# Threads (the scene enforces this; the rules API locks only step()): the rules are never used by two threads at once.
-# The enemy's step() and the threat map run on worker threads. Every main-thread path that reads or changes the rules
+func _play_command_batch(batch: Dictionary) -> void:
+	_plan_clear()   # issue 1589: once the rules have acted, a plan made before is stale
+	batches.append(batch)
+	_clear_overlay()
+	_runner()
+	_refresh_ui()   # issue 1589 (Ryan, Nov 22): the runner is now busy, so the card leaves while the event plays
+
+
+# The enemy's step(), replay bot and threat map run on worker threads. A main-thread path that reads or changes the rules
 # first calls _api_join(): it finishes a running threat map at once (its result is kept) and answers false while the enemy
-# is thinking, so the caller skips the rules and draws from the last view instead. _exit_tree drains both tasks.
+# or bot is thinking, so the caller draws from the last view. _exit_tree drains both tasks.
 var _think_tid := -1
 var _threat_tid := -1
+
+
+func _join_think() -> void:
+	if _think_tid >= 0:
+		WorkerThreadPool.wait_for_task_completion(_think_tid)
+		_think_tid = -1
+	thinking = false
 
 
 # The rules only through battle_api.gd (the verifier's rule, Oct 26): the wrappers below are the API's; until each lands
@@ -1248,10 +1264,7 @@ func _exit_tree() -> void:
 		WorkerThreadPool.wait_for_task_completion(_threat_tid)
 		_threat_tid = -1
 	_threat_busy = false
-	if _think_tid >= 0:
-		WorkerThreadPool.wait_for_task_completion(_think_tid)
-		_think_tid = -1
-	thinking = false
+	_join_think()
 	# issue 1204: the per-hull look copies are keyed by this battle's materials; drop them so a run does not grow them
 	ShipView.clear_look_cache()
 
@@ -3241,7 +3254,7 @@ func _sel_unit() -> Dictionary:
 
 
 func _can_act() -> bool:
-	return not busy and not warming and not _threat_busy and not ended and api != null and api.phase == "player"
+	return not busy and not thinking and not warming and not _threat_busy and not ended and api != null and api.phase == "player"
 
 
 func _usable(u: Dictionary) -> bool:
@@ -5816,8 +5829,8 @@ func _sync_arrival() -> void:
 func _refresh_ui() -> void:
 	if _deployment_api != null or api == null or V.is_empty() or quitting or not is_instance_valid(hud):
 		return
-	if _worker_owns_rules():
-		return   # issue 1433: every read below locks the rules; the publish runs this pass (_threat_done)
+	if thinking or _worker_owns_rules():
+		return   # Reads below lock the rules. Refresh when the worker publishes its result.
 	_sync_ask()
 	if sel != "" and (not VU.has(sel) or VU[sel]["dead"]):
 		sel = ""
@@ -6532,7 +6545,7 @@ func _process(dt: float) -> void:
 	if api == null:
 		return
 	# issue 1451: the rules packed this round's start; save it once its animations have played and the player has the turn
-	if round_save_cb.is_valid() and int(api.round_snap_round) > round_saved and _can_act():
+	if round_save_cb.is_valid() and _can_act() and int(api.round_snap_round) > round_saved:
 		round_saved = int(api.round_snap_round)
 		if bool(round_save_cb.call()):
 			round_on_disk = round_saved
@@ -6540,11 +6553,12 @@ func _process(dt: float) -> void:
 	# issue 1437 (item 9): with the HUD hidden or behind the title (showcase) no plate shows, so the plate, priority and
 	# declutter work is skipped; the gold ring still breathes
 	var plates_on := not showcase and hud != null and hud.visible
+	var show_up: bool = not bot and not thinking and not ended and api.phase == "player"
 	for id in views:
 		var sv = views[id]
 		var u: Dictionary = VU.get(id, {})
 		if not plates_on:
-			_breathe_ring(sv, not u.is_empty() and str(id) == sel and api.phase == "player" and not ended and not bot and u["side"] == "player")
+			_breathe_ring(sv, show_up and not u.is_empty() and str(id) == sel and u["side"] == "player")
 			continue
 		# a cut-in hides the names, except the attacker and the target of the enemy volley playing (issue 1211)
 		var aimed := not aim.is_empty() and (str(id) == str(aim["t"]) or str(id) == str(aim["a"]))
@@ -6559,7 +6573,7 @@ func _process(dt: float) -> void:
 		var shs := 0.0
 		for x in d["sh"]:
 			shs += float(x)
-		var is_up: bool = str(id) == sel and api.phase == "player" and not ended and not bot and u["side"] == "player"
+		var is_up: bool = show_up and str(id) == sel and u["side"] == "player"
 		var px := {"nem": bool(u.get("nemesis", false)) and u["side"] == "enemy", "target": str(id) == target or aimed,
 			"regenLock": bool(d.get("regenLock", false))}
 		if _tgt_plate.has(str(id)):
@@ -6627,7 +6641,7 @@ func _float_step(dt: float) -> void:
 		if f.t > f_end:
 			lbl.queue_free()
 			floats.remove_at(i)
-	if bot and not busy and not warming and not _threat_busy and not ended and api.phase == "player" and Engine.get_process_frames() % 2 == 0:
+	if bot and not busy and not thinking and not warming and not _threat_busy and not ended and api.phase == "player" and Engine.get_process_frames() % 2 == 0:
 		bot_t += dt
 		if bot_t > 0.05:
 			bot_t = 0.0
@@ -6952,6 +6966,7 @@ var bot_tried := {}          # ship id -> round the bot last handed it to the AI
 
 
 func _bot_step() -> void:
+	var rules = api
 	var u_id := ""
 	for u in V["units"]:
 		if u["active"]:
@@ -6963,29 +6978,41 @@ func _bot_step() -> void:
 				break
 	if u_id == "":
 		if _classic():
-			_cmd(func(): api.end_turn(); return true)
+			_bot_command(rules.end_turn)
 		else:
-			_cmd(func(): api.end_activation(); return true)
+			_bot_command(rules.end_activation)
 		return
 	sel = u_id
-	var ru = api.unit(u_id)
 	# the game's own player-side AI (sim3d.js botUnit, G1 ai_activate) when the rules have it
-	if api.has_method("ai_activate"):
+	if rules.has_method("ai_activate"):
 		var aid := u_id
 		bot_tried[aid] = V.get("round")
-		_cmd(func():
-			var r0 = api.R.B["round"]
-			api.ai_activate(aid)
+		_bot_command(func() -> void:
+			var r0 = rules.R.B["round"]
+			rules.ai_activate(aid)
 			# a ship the AI leaves idle (nothing in reach, nothing to launch) never starts its activation: pass it, as the
 			# player's Pass does, or the bot would pick it forever (a Corsair carrier fleet softlocked the battle at round 1).
 			# Only in the same round: if the AI's action ended the round, the rules reset every activation flag and gave the
 			# turn back to the player, so a pass now would spend this ship's first move of the new round (issue 1499)
-			if api.R.B["round"] == r0 and api.phase == "player" and api.unit(aid) != null and _jt(api.unit(aid).get("activated")) == false:
-				api.end_activation(aid)
-			return true)
+			if rules.R.B["round"] == r0 and rules.phase == "player":
+				var unit = rules.unit(aid)
+				if unit != null and not _jt(unit.get("activated")):
+					rules.end_activation(aid))
 		return
 	# (rules without ai_activate: just end the activation)
-	_cmd(func(): api.end_activation(); return true)
+	_bot_command(rules.end_activation)
+
+
+func _bot_command(action: Callable) -> void:
+	if not _api_join() or busy or ended or api.phase != "player":
+		return
+	_click_q = {}
+	var rules = api
+	var batch = await _think_batch(func() -> Dictionary:
+		action.call()
+		return {"events": rules.take_events(), "view": rules.view()})
+	if batch != null:
+		_play_command_batch(batch)
 
 
 static func _z0(x) -> Variant:
