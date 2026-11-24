@@ -1,0 +1,129 @@
+{
+  "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+  "source_dirty": true,
+  "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+  "source_dirty_files": {
+    "contrib/opus/concepts/craft_1124/compose_sheets.py": "fe6249a343a64dfba317dfa7473d3010c14d1919",
+    "contrib/opus/concepts/craft_1124/torpedo_sheets.py": "2cb7291575676e7a0b820f5845eb205940678196"
+  },
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "sheet_1943_item7_deathless_torpedo.png",
+  "date": "2026-11-24T10:08:54Z",
+  "sources": [
+    {
+      "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+      "source_dirty": true,
+      "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+      "source_dirty_files": {
+        "contrib/opus/concepts/craft_1124/compose_sheets.py": "fe6249a343a64dfba317dfa7473d3010c14d1919",
+        "contrib/opus/concepts/craft_1124/torpedo_sheets.py": "2cb7291575676e7a0b820f5845eb205940678196"
+      },
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "close_ET_A.png",
+      "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+      "source_dirty": true,
+      "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+      "stage": "sheet built",
+      "date": "2026-11-24T10:08:53Z",
+      "image_sha256": "86b15206bdbb2fe4175d83f52e2448943d884f22529a9dd2796abda991ad2434",
+      "sources": [
+        {
+          "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+          "source_dirty": true,
+          "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+          "source_dirty_files": {
+            "contrib/opus/concepts/craft_1124/compose_sheets.py": "fe6249a343a64dfba317dfa7473d3010c14d1919",
+            "contrib/opus/concepts/craft_1124/torpedo_sheets.py": "2cb7291575676e7a0b820f5845eb205940678196"
+          },
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "close_ET_B.png",
+      "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+      "source_dirty": true,
+      "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+      "stage": "sheet built",
+      "date": "2026-11-24T10:08:53Z",
+      "image_sha256": "c9cd2b5ab3987c1ddfc038d8305d3d7d3e9d46aabdd09db489807c6f8d5fee13",
+      "sources": [
+        {
+          "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+          "source_dirty": true,
+          "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+          "source_dirty_files": {
+            "contrib/opus/concepts/craft_1124/compose_sheets.py": "fe6249a343a64dfba317dfa7473d3010c14d1919",
+            "contrib/opus/concepts/craft_1124/torpedo_sheets.py": "2cb7291575676e7a0b820f5845eb205940678196"
+          },
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "close_ET_C.png",
+      "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+      "source_dirty": true,
+      "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+      "stage": "sheet built",
+      "date": "2026-11-24T10:08:53Z",
+      "image_sha256": "3ce822138c8a7b0e5c29d0993569ff594707dc23e3458f47be4a0951bc881e43",
+      "sources": [
+        {
+          "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+          "source_dirty": true,
+          "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+          "source_dirty_files": {
+            "contrib/opus/concepts/craft_1124/compose_sheets.py": "fe6249a343a64dfba317dfa7473d3010c14d1919",
+            "contrib/opus/concepts/craft_1124/torpedo_sheets.py": "2cb7291575676e7a0b820f5845eb205940678196"
+          },
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "scale_strip.png",
+      "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+      "source_dirty": true,
+      "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+      "stage": "sheet built",
+      "date": "2026-11-24T10:08:53Z",
+      "image_sha256": "1f59b7ee3ea245bd3f3f17b0f73018b9a6ee2cd6f4fc5fcf9f2d7cc3884e80c5",
+      "sources": [
+        {
+          "source_commit": "97b92aa699835257096f792aaaef103831b4f58f",
+          "source_dirty": true,
+          "source_diff_sha256": "7fb6dafd2855f36c5327e5f745070a513016e1cc4b70591ff05aef49e306ed8b",
+          "source_dirty_files": {
+            "contrib/opus/concepts/craft_1124/compose_sheets.py": "fe6249a343a64dfba317dfa7473d3010c14d1919",
+            "contrib/opus/concepts/craft_1124/torpedo_sheets.py": "2cb7291575676e7a0b820f5845eb205940678196"
+          },
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "27f45c8ead0ef67dcaba8e2864fa5a0135d600f234f26c4282acae61770bbc31"
+  ],
+  "stamp_template_sha256": "27f45c8ead0ef67dcaba8e2864fa5a0135d600f234f26c4282acae61770bbc31",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VIQEAIQDAQPgUCCT9M76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAGDU/hfkBHJHLUksAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "d4e0c606bca0e9e1c84adaf28d817384a3bac3064bfc616039802869412a7a3a"
+}
