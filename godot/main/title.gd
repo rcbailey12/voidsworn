@@ -394,7 +394,7 @@ func _settings() -> void:
 	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(fill)
 	v.add_child(Kit.action_bar(k, [], done))
-	sc.custom_minimum_size = Vector2(0, minf(cols.get_combined_minimum_size().y, vs.y - s(190)))
+	_size_settings_list(sc, cols)
 	_fit_settings.call_deferred(sc, cols)
 	if _settings_focus != "":
 		for c in settings_panel.find_children("*", "Control", true, false):
@@ -420,8 +420,16 @@ func _fit_settings(sc: ScrollContainer, cols: Control) -> void:
 	await get_tree().process_frame
 	if not is_instance_valid(sc) or not is_instance_valid(cols):
 		return
-	var vs := get_viewport().get_visible_rect().size
-	sc.custom_minimum_size.y = minf(cols.get_combined_minimum_size().y, vs.y - s(190))
+	_size_settings_list(sc, cols)
+
+
+func _size_settings_list(sc: ScrollContainer, cols: Control) -> void:
+	var body := sc.get_parent() as VBoxContainer
+	var drawer := body.get_parent() as PanelContainer
+	var chrome := body.get_combined_minimum_size().y - sc.get_combined_minimum_size().y
+	chrome += drawer.get_theme_stylebox("panel").get_minimum_size().y
+	var room := get_viewport().get_visible_rect().size.y - chrome
+	sc.custom_minimum_size.y = minf(cols.get_combined_minimum_size().y, maxf(0, room))
 
 
 func _close_settings() -> void:
