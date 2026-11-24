@@ -190,10 +190,25 @@ func _run() -> void:
 		if not real:
 			u["code"] = "STAND"
 		sv.setup(u, hexw(row[2], row[3]))
+		# RUN5: a class with no installed hull for that faction drew the white placeholder block. On the PC, step down
+		# through the same band's classes until one has a real hull (hull_source is "" for the placeholder, issue 1410).
+		if real and str(sv.hull_source) == "":
+			var alts: Array = ["Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge"] if row[0] in ALT.PLANE else ["Cruiser", "Destroyer", "Frigate"]
+			for c2 in alts:
+				if c2 == row[0]:
+					continue
+				sv.free()
+				sv = SV.new()
+				world.add_child(sv)
+				u["cls"] = c2
+				sv.setup(u, hexw(row[2], row[3]))
+				if str(sv.hull_source) != "":
+					print("%s: no %s %s installed, drew a %s" % [id, row[1], row[0], c2])
+					break
 		sv.set_marker(row[4])
 		sv.set_band(ALT.height(u))
 		_paint(sv)
-		fx.add_ship(id, sv, {"faction": row[1], "cls": row[0], "meshes": sv.meshes})
+		fx.add_ship(id, sv, {"faction": row[1], "cls": u["cls"], "meshes": sv.meshes})
 		_paint(sv)
 		ships[id] = sv
 		print("%s %s band %.2f" % [id, row[1], sv.band_y])
@@ -252,13 +267,20 @@ func _run() -> void:
 		fx.dstate["craft_runs"] = []
 		FXW._strafe(fx, "fighter", from, to, fx.now, Color(0.7, 0.85, 1.0), {"engine": Color(0.45, 0.72, 1.0)}, 1.0, 1.0, 1, "hegemony")
 		var d2: Vector3 = to - from
-		_cam((from + to) * 0.5 + Vector3(0, 3, 0), 75.0, 1.5, atan2(-d2.z, d2.x) - PI / 2.0)
+		# RUN5: the frames kept the last still's label and the craft were specks at 75; close on the target, side on
+		_clear_label()
+		_cam(to + Vector3(0, 4, 0), 50.0, 1.45, atan2(-d2.z, d2.x) - PI / 2.0)
 		DirAccess.make_dir_recursive_absolute(out.path_join("clip_dive"))
+		# the effect clock steps exactly 1/30 s per saved frame, so the clip plays at game speed on any machine (RUN5's
+		# frames ran on the wall clock and caught only part of the pass)
+		fx.manual = true
 		var f := 0
 		while not fx.dstate.get("craft_runs", []).is_empty() and f < 300:
+			fx.step(1.0 / 30.0)
 			await RenderingServer.frame_post_draw
 			root.get_viewport().get_texture().get_image().save_jpg(out.path_join("clip_dive/%05d.jpg" % f), 0.85)
 			f += 1
+		fx.manual = false
 		print("[clip] dive frames ", f)
 	(run["node"] as Node).queue_free()
 	var im := ImmediateMesh.new()
