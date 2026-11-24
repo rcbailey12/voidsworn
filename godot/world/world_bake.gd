@@ -175,9 +175,18 @@ func authored(path: String, size: Vector2i, float_mips := false, urgent := false
 
 # Queues an authored map without waiting; returns its key for result(). A caller with several maps requests them all
 # first, so nothing else can slip in between them (Artoo, PR 1776).
+static func authored_key(path: String, size: Vector2i, float_mips := false) -> String:
+	return (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
+
+# Issue 1434 (Artoo on 002e143f): whether an authored map's texture is still made and held, asked without starting a
+# request or a pin (a trim drops the image and its texture together).
+static func authored_texture_resident(path: String, size: Vector2i, float_mips := false) -> bool:
+	var img = _cache.get(authored_key(path, size, float_mips))
+	return img is Image and _textures.has((img as Image).get_instance_id())
+
 func request_authored(path: String, size: Vector2i, float_mips := false, urgent := false) -> String:
 	var owner := service(_tree())
-	var key := (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
+	var key := authored_key(path, size, float_mips)
 	_pin(key)
 	if _cache.has(key): return key
 	if not owner._jobs.has(key):
