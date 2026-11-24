@@ -51,6 +51,7 @@ func quit_clean(code := 0, route := "menu") -> void:
 			n.queue_free()
 	if campaign != null and is_instance_valid(campaign):
 		campaign.queue_free()
+	_free_retired(1 << 40)   # issue 1519: a battle still being freed in slices goes now
 	if music != null and is_instance_valid(music) and music.has_method("release"):
 		music.release()
 	await get_tree().process_frame
@@ -506,8 +507,8 @@ func quick_battle() -> void:
 	b.start_default()
 	b.finished.connect(func(_r) -> void:
 		var t_leave := Time.get_ticks_usec()
-		b.queue_free()
 		battle = null
+		retire_scene(b)
 		show_title()
 		_time_title_return(t_leave), CONNECT_ONE_SHOT)
 	# --title-after S (issue 1435 PC proof): leave the quick battle for the title after S seconds, as the menu's "to title"
@@ -516,6 +517,78 @@ func quick_battle() -> void:
 			if is_instance_valid(b) and battle == b:
 				print("[main] leaving the battle for the title at %d ms" % Time.get_ticks_msec())
 				b._on_action("to_title", null))
+
+
+# Issue 1519: a finished battle used to be freed whole at the end of the leave frame, 0.4 to 0.8 s of node and
+# resource frees before the title could draw (1435 CLOSE5: first title frame 551 and 591 ms). Now it is switched off and
+# hidden at once, and its nodes are freed deepest first, a few milliseconds a frame, behind the screen that replaces it
+# (the battle node itself last, so its _exit_tree still drains its worker tasks). Bot runs free at once, as before.
+# quit_clean frees whatever is still waiting.
+const RETIRE_BUDGET_US := 6000
+var _retired: Array = []      # nodes still to free, children before parents
+var _retire_free_n := 0
+var _retire_worst_us := 0    # the longest single freeing slice, for the [main] line
+var _retire_hold := 0        # frames to wait before the first slice
+
+
+func retire_scene(n: Node) -> void:
+	if n == null or not is_instance_valid(n):
+		return
+	if bot_mode or quitting:
+		n.queue_free()
+		return
+	# It stays in the tree (its awaiting work still has a tree to wake in, and bails on quitting/retiring), but it stops
+	# processing, draws nothing and no longer owns the camera or the environment.
+	if "quitting" in n:
+		n.quitting = true
+	n.process_mode = Node.PROCESS_MODE_DISABLED
+	var order: Array = [n]
+	var i := 0
+	while i < order.size():
+		var c: Node = order[i]
+		if c is Camera3D:
+			(c as Camera3D).current = false
+		elif c is WorldEnvironment:
+			(c as WorldEnvironment).environment = null
+		if c is CanvasLayer:
+			(c as CanvasLayer).visible = false
+		elif c is CanvasItem or c is Node3D:
+			c.set("visible", false)
+		if c is AudioStreamPlayer or c is AudioStreamPlayer3D:
+			c.call("stop")
+		order.append_array(c.get_children(true))
+		i += 1
+	_retired.append_array(order)   # parents before children: freeing from the back takes children first
+	_retire_hold = 2   # the screen that replaces it draws first: a single GPU-heavy free (a mesh) can take tens of ms
+	set_process(true)
+
+
+func retire_pending() -> int:
+	return _retired.size()
+
+
+func _process(_delta: float) -> void:
+	if _retired.is_empty():
+		set_process(false)
+		return
+	if _retire_hold > 0:
+		_retire_hold -= 1
+		return
+	_free_retired(RETIRE_BUDGET_US)
+
+
+func _free_retired(budget_us: int) -> void:
+	var t0 := Time.get_ticks_usec()
+	while not _retired.is_empty() and Time.get_ticks_usec() - t0 < budget_us:
+		var n = _retired.pop_back()
+		if is_instance_valid(n):
+			var t1 := Time.get_ticks_usec()
+			var label := "%s (%s)" % [(n as Node).name, (n as Node).get_class()]
+			(n as Node).free()
+			_retire_free_n += 1
+			if Time.get_ticks_usec() - t1 > 20000:
+				print("[main] slow free: %s %.1f ms" % [label, (Time.get_ticks_usec() - t1) / 1000.0])
+	_retire_worst_us = maxi(_retire_worst_us, Time.get_ticks_usec() - t0)
 
 
 # Issue 1435: how long leaving a battle holds the player: the leave frame itself (the battle is freed at its end, which
@@ -527,6 +600,18 @@ func _time_title_return(t_leave: int) -> void:
 	var t_title := Time.get_ticks_usec()
 	print("[main] battle to title: leave frame %.1f ms, first title frame %.1f ms after the leave" % [
 		float(t_free - t_leave) / 1000.0, float(t_title - t_leave) / 1000.0])
+	# issue 1519: the old battle's nodes are freed in slices behind the title; say how long that took and the worst frame
+	var frames := 0
+	var worst := 0.0
+	var t_prev := t_title
+	while retire_pending() > 0 and frames < 2000:
+		await get_tree().process_frame
+		var t_now := Time.get_ticks_usec()
+		worst = maxf(worst, float(t_now - t_prev) / 1000.0)
+		t_prev = t_now
+		frames += 1
+	print("[main] battle to title: old battle freed over %d frames, %d nodes, done %.1f ms after the leave, longest freeing slice %.1f ms, slowest frame %.1f ms" % [
+		frames, _retire_free_n, float(Time.get_ticks_usec() - t_leave) / 1000.0, float(_retire_worst_us) / 1000.0, worst])
 
 
 # The campaign hands a battle over and gets the result back (README.md). run = the campaign run dictionary, cfg = the
@@ -558,7 +643,7 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 	var r: Dictionary = await b.finished
 	r["api"] = b.api
 	battle = null
-	b.queue_free()
+	retire_scene(b)
 	for c in hidden:
 		if is_instance_valid(c):
 			c.visible = true
@@ -591,7 +676,7 @@ func play_api(a, opts := {}) -> Dictionary:
 	b.begin_with(a)
 	var r: Dictionary = await b.finished
 	battle = null
-	b.queue_free()
+	retire_scene(b)
 	return r
 
 
