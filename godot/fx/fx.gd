@@ -74,6 +74,8 @@ var reduce_flashing = false:
 		reduce_flashing = v
 		RenderingServer.global_shader_parameter_set(&"fx_calm", 1.0 if v else 0.0)
 var shake_scale = 1.0
+# issue 1582: Reduce motion (the battle sets it): wing attack passes dive gently and never bank
+var reduce_motion := false
 # F3: scale of every effect's minimum on-screen size (fx_shaders px_world): 1 on (default), 0 off (the r19 look)
 var min_px = 1.0:
 	set(v):
