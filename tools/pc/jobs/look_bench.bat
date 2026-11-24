@@ -11,6 +11,7 @@ rem Settings a job may set first (all optional):
 rem   LB_HOME      the bench folder (default Downloads\voidsworn_test\look_bench)
 rem   LB_TOOL_REF  where the bench script itself comes from (default origin/main): the bench runs from that version on
 rem                every commit, so commits made before the bench existed can be benched too
+rem   LB_ARGS      extra bench words, e.g. --part moments --moments res://bench/look_moments_acid_thorn.json (issue 1877)
 rem   LB_SHIPS     a godot folder that has the PC-built hulls (gen, assets\ships, .godot) to copy from (copy only)
 rem   LB_PRE_RUN   a .bat called with the game checkout's folder after checkout (bench proofs: change one number)
 rem   LB_RUN_NAME  the run folder name for AFTER instead of its commit (use with LB_PRE_RUN)
@@ -179,7 +180,7 @@ rem the bench itself comes from the tool checkout, so any commit can be benched
 if not exist "%R%\godot\bench" mkdir "%R%\godot\bench"
 copy /y "%TOOL%\godot\bench\look_bench.gd" "%R%\godot\bench\look_bench.gd" > nul
 copy /y "%TOOL%\godot\bench\look_bench.tscn" "%R%\godot\bench\look_bench.tscn" > nul
-copy /y "%TOOL%\godot\bench\look_moments.json" "%R%\godot\bench\look_moments.json" > nul
+copy /y "%TOOL%\godot\bench\look_moments*.json" "%R%\godot\bench\" > nul
 rem The current capture tool stamps the game checkout's revision, including older baselines.
 if not exist "%R%\godot\tools" mkdir "%R%\godot\tools"
 copy /y "%TOOL%\godot\tools\picture_provenance.gd" "%R%\godot\tools\picture_provenance.gd" > nul
@@ -190,7 +191,7 @@ set "JW_STEP=import %SHA%" & call "%JW%" run 1800 "%G%" --headless --path "%R%\g
 if errorlevel 1 exit /b 1
 echo imported %REF% %SHA% %date% %time% >> "%ST%"
 rem R276: tmo claims a shared slot for these stills; timing scripts claim solo automatically.
-set "JW_STEP=bench %SHA%" & set "JW_EXPECT=%RUNDIR%" & call "%JW%" run 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 res://bench/look_bench.tscn -- --out "%RUNDIR%" --commit %SHA% > "%RUNDIR%\bench_log.txt" 2>&1
+set "JW_STEP=bench %SHA%" & set "JW_EXPECT=%RUNDIR%" & call "%JW%" run 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 res://bench/look_bench.tscn -- --out "%RUNDIR%" --commit %SHA% %LB_ARGS% > "%RUNDIR%\bench_log.txt" 2>&1
 set "BX=%ERRORLEVEL%"
 if not "%BX%"=="0" exit /b 1
 echo bench exit %BX% %REF% %date% %time% >> "%ST%"

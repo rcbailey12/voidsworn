@@ -321,6 +321,7 @@ func _run() -> void:
 	if b.lands.size() == 1:
 		_check(not bool(b.lands[0]["lock0"]), "E: the ion lock is not shown before its hit lands")
 	_check(bool(b.disp[t].get("regenLock", false)), "E: the ion lock reaches the nameplate state when its hit lands")
+	_check(b.gfx.ship(t)._ion_locked, "E: the landed ion enables shield arcs during volley playback")
 	# Play events from the actual rules turn-start path. Both sides can hold a lock independently.
 	var rules = b.api.R
 	var target: Dictionary = rules.alive("player")[0]
@@ -349,6 +350,7 @@ func _run() -> void:
 	late_land.merge({"numbers": false, "left": 1}, true)
 	b._land_hit(t, {"target": t, "regenLock": true, "hull": 0, "shield": 1, "quad": 0}, 0, late_land)
 	_check(not b.disp[t]["regenLock"], "E: a late hit from before the expiry cannot restore the icon")
+	_check(not b.gfx.ship(t)._ion_locked, "E: an expired ion hit cannot restart shield arcs")
 	# F: Artoo (PR 1256): a critical the armour absorbs, then a normal hull hit; one hull label, never two "Critical"
 	r = await _fire(b, a, t, [true, true], [[0, 0, true], [0, 5]], [])
 	var crits: Array = []

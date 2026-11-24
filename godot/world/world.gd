@@ -519,6 +519,7 @@ func _make_sky(env: Environment) -> void:
 	m.set_shader_parameter("sun_dir", SUN.normalized())
 	if LOOK.fleet_lighting_enabled():
 		m.set_shader_parameter("fleet_reflections", true)
+		m.set_shader_parameter("fleet_reflections_v2", LOOK.ship_look_v2_enabled())   # issue 1777: the extra lobes
 		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	m.set_shader_parameter("turn", Basis(Vector3.UP, -_yaw))
 	# the panorama always rides on the sky material (shown only on the dead-star board): the battle keeps one Environment
@@ -535,8 +536,11 @@ func _make_sky(env: Environment) -> void:
 	var s := Sky.new()
 	s.sky_material = m
 	s.radiance_size = Sky.RADIANCE_SIZE_256
-	s.process_mode = Sky.PROCESS_MODE_QUALITY
+	# issue 1434 (LOAD33c): the same importance-sampled radiance as QUALITY, spread over a few frames (the roughness
+	# layers) instead of all in the one frame the sky or its nebula map changes; the finished reflections are the same
+	s.process_mode = Sky.PROCESS_MODE_INCREMENTAL
 	env.sky = s
+	SKEEP.event("world sky made")
 	env.background_mode = Environment.BG_SKY
 	_sky_mat = m
 	_bake_sky(lamps)
@@ -564,6 +568,7 @@ func _load_sky(lamps: Array) -> void:
 	if not is_inside_tree() or img == null or not is_instance_valid(mat) or mat != _sky_mat: return
 	var tex := BAKER.texture(img)
 	mat.set_shader_parameter("neb_tex", tex)
+	SKEEP.event("sky nebula map set (%dx%d)" % [img.get_width(), img.get_height()])
 	mat.set_shader_parameter("has_neb", 1.0)
 	_sky_tex = tex
 	for k in _mats: _sky_into(_mats[k])
@@ -734,6 +739,7 @@ func _load_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int,
 	m.set_shader_parameter("tex_a", BAKER.texture(a))
 	m.set_shader_parameter("tex_b", BAKER.texture(b))
 	m.set_shader_parameter("has_tex", 1.0)
+	SKEEP.event("backdrop planet maps set")
 
 
 func _rings(pos: Vector3, R: float, basis: Basis, P: Dictionary, r: RandomNumberGenerator) -> void:

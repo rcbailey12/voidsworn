@@ -396,11 +396,16 @@
       "E1_silver_flow_10"
     ]
   },
+  "mosaic_share": {
+    "top": 0.357,
+    "side": 0.399,
+    "battle": 0.379
+  },
   "dimensions": [
     6.261775255203247,
     1.7838926315307617,
-    1.1939030289649963
+    1.1993042826652527
   ],
-  "design_sha256": "6ac656ef50db0b6e6fe7e1b1f2e25cf0c12ddc7aac8e5d02d3c6a832e12fba60",
-  "kit_sha256": "8112e03470e6c76ef0098ec39d3917b4b2eebd7a825f74eca8c289747d13470b"
+  "design_sha256": "2b3ec690dc3924679b0240ff1dcccde82b898a5970bc0fc44dbc6174e9222cde",
+  "kit_sha256": "17e83198aec65cf23fbdf1a9d9f7c82b11936d52d9e652f1c091b9868c28b3f0"
 }
