@@ -88,7 +88,8 @@
    "tgt": [
     "hegemony",
     "Cruiser"
-   ]
+   ],
+   "strict": true
   },
   {
    "group": "Chorus acid mark",
@@ -124,7 +125,8 @@
    "tgt": [
     "deathless",
     "Cruiser"
-   ]
+   ],
+   "strict": true
   }
  ]
 }

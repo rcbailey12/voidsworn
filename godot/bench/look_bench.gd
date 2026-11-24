@@ -745,6 +745,9 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var clip := bool(row.get("clip", false))
 	var clip_dir := d.path_join("%s__c%d" % [id, int(r)])
 	var clip_bad: Array = []   # frames that failed to save (a clip row with any missing frame fails, Artoo on PR 1904)
+	# a "strict" still row fails the same way on a blank cell, a window that never opened or a strip that did not save
+	# (Artoo on PR 1904: the acid colour proof rows must not pass with a blank cell)
+	var strict := bool(row.get("strict", false))
 	if clip and keep:
 		var mk := DirAccess.make_dir_recursive_absolute(clip_dir)
 		if mk != OK or not DirAccess.dir_exists_absolute(clip_dir):
@@ -790,6 +793,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
 			elif img != null:
 				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
+			elif strict and keep:
+				clip_bad.append("cell %d (no frame grabbed)" % ci)
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
 			ci += 1
 			w["got"] = int(w["got"]) + 1
@@ -818,7 +823,14 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			"cells": cells, "impacts": impacts, "clip": true})
 		_log("%s at %d: %d clip frames" % [id, int(r), ci])
 		return true
-	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
+	var sv: Error = preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
+	if strict:
+		if sv != OK or not FileAccess.file_exists(d.path_join(name)):
+			clip_bad.append("%s (save error %d)" % [name, sv])
+		if ci != total or not clip_bad.is_empty():
+			failed = "%s at %d: strict row failed: %d of %d cells taken; bad: %s" % [id, int(r), ci, total, ", ".join(clip_bad)]
+			_warn("LOOK_BENCH " + failed)
+			return false
 	# issue 1777 (Artoo on PR 1786): record the hull the target resolved to; a row naming "expect_code" says loudly when
 	# the faction and class drew a different hull (a later remap), so a capture bat can fail on it
 	var tcode := str(T.code) if is_instance_valid(T) else ""
