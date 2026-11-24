@@ -51,15 +51,144 @@ static func manifest() -> Dictionary:
 # drop the static caches before the engine shuts down (resources held in statics outlive the RenderingServer and crash
 # the exit on Windows: PC bot runs ended with an access violation after the summary)
 static func clear_static() -> void:
+	drain_build()   # issue 1434: retired hull loads and worker instances end before the rendering server goes
+	_retired_loads.clear()
+	_retired_insts.clear()
 	_manifest = null
 	_look_cache.clear()
+	_shader_keep.clear()
+	_keep_tex = null
 	_pm = null
 	_gt = null
 
 
+# Issue 1434 (Artoo on PR 1445): a battle that leaves mid-build (the title backdrop when the player clicks) must not wait
+# on the main thread for its hull loads and worker instances still running. It hands them here: each frame the finished
+# ones are collected (a threaded load is got, a worker task is waited for, which is instant once it is complete, and its
+# instance is freed), and a quit drains the rest before the rendering server goes (clear_static, and the root's exit).
+static var _retired_loads: Array = []   # resource paths whose threaded load still runs
+static var _retired_insts: Array = []   # {"tid", "out": [instance]}
+static var _reaping := false
+static var _exit_hooked := false
+
+
+static func retire_build(paths: Array, insts: Array) -> void:
+	_retired_loads.append_array(paths)
+	_retired_insts.append_array(insts)
+	if _retired_loads.is_empty() and _retired_insts.is_empty():
+		return
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		drain_build()
+		return
+	if not _reaping:
+		_reaping = true
+		tree.process_frame.connect(reap_build)
+	if not _exit_hooked and tree.root != null:
+		_exit_hooked = true
+		tree.root.tree_exiting.connect(drain_build)
+
+
+static func _free_inst(e: Dictionary) -> void:
+	var n = e["out"][0]
+	if n != null and is_instance_valid(n) and (n as Node).get_parent() == null:
+		(n as Node).free()
+
+
+static func reap_build() -> void:
+	for p in _retired_loads.duplicate():
+		if ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			ResourceLoader.load_threaded_get(p)
+			_retired_loads.erase(p)
+	for e in _retired_insts.duplicate():
+		if WorkerThreadPool.is_task_completed(int(e["tid"])):
+			WorkerThreadPool.wait_for_task_completion(int(e["tid"]))
+			_free_inst(e)
+			_retired_insts.erase(e)
+	if _retired_loads.is_empty() and _retired_insts.is_empty() and _reaping:
+		_reaping = false
+		var tree := Engine.get_main_loop() as SceneTree
+		if tree != null and tree.process_frame.is_connected(reap_build):
+			tree.process_frame.disconnect(reap_build)
+
+
+# everything retired, now (quit)
+static func drain_build() -> void:
+	for p in _retired_loads:
+		ResourceLoader.load_threaded_get(p)
+	_retired_loads.clear()
+	for e in _retired_insts:
+		WorkerThreadPool.wait_for_task_completion(int(e["tid"]))
+		_free_inst(e)
+	_retired_insts.clear()
+	if _reaping:
+		_reaping = false
+		var tree := Engine.get_main_loop() as SceneTree
+		if tree != null and tree.process_frame.is_connected(reap_build):
+			tree.process_frame.disconnect(reap_build)
+
+
+static func retired_build_count() -> int:
+	return _retired_loads.size() + _retired_insts.size()
+
+
 # issue 1204: battle.gd drops the per-hull look copies when a battle leaves the tree (keys are that battle's materials)
 static func clear_look_cache() -> void:
+	_keep_shaders()
 	_look_cache.clear()
+
+
+# Issue 1434 (LOAD5 on the PC: the first Sunward hull of each battle spent 460 to 500 ms in _look). A hull material's
+# shader lives only while a material uses it, so clearing the look cache at a battle's end freed every hull shader and
+# the next battle compiled them again. One stand-in per shader stays: a copy of the looked material with its textures
+# swapped for a 1 pixel one (no hull textures held), kept only when it still maps to the same shader. Cleared at quit.
+static var _shader_keep := {}   # shader signature -> stand-in material
+static var _keep_tex: Texture2D = null
+const SHADER_KEEP_MAX := 96
+
+
+# Which shader a BaseMaterial3D compiles to is set by its modes, features, flags and which textures it has; the
+# colours and numbers are uniforms. Godot gives no shader RID for a BaseMaterial3D (LOAD12: get_shader_rid() is a
+# script error), so two materials with the same signature share one shader, and one stand-in keeps it.
+static func shader_sig(bm: BaseMaterial3D) -> String:
+	var p := PackedStringArray([bm.get_class(), str(bm.transparency), str(bm.blend_mode), str(bm.cull_mode),
+		str(bm.depth_draw_mode), str(bm.shading_mode), str(bm.diffuse_mode), str(bm.specular_mode), str(bm.texture_filter),
+		str(bm.billboard_mode), str(bm.detail_blend_mode), str(bm.detail_uv_layer), str(bm.distance_fade_mode),
+		str(bm.alpha_antialiasing_mode), str(bm.vertex_color_use_as_albedo)])
+	var bits := ""
+	for f in BaseMaterial3D.FEATURE_MAX:
+		bits += "1" if bm.get_feature(f) else "0"
+	bits += "|"
+	for f in BaseMaterial3D.FLAG_MAX:
+		bits += "1" if bm.get_flag(f) else "0"
+	bits += "|"
+	for t in BaseMaterial3D.TEXTURE_MAX:
+		bits += "1" if bm.get_texture(t) != null else "0"
+	p.append(bits)
+	return ",".join(p)
+
+
+static func _keep_shaders() -> void:
+	for m in _look_cache.values():
+		var bm := m as BaseMaterial3D
+		if bm == null or _shader_keep.size() >= SHADER_KEEP_MAX:
+			continue
+		var sig := shader_sig(bm)
+		if _shader_keep.has(sig):
+			continue
+		if _keep_tex == null:
+			var img := Image.create(1, 1, false, Image.FORMAT_RGBA8)
+			img.fill(Color.WHITE)
+			_keep_tex = ImageTexture.create_from_image(img)
+		var k := bm.duplicate() as BaseMaterial3D
+		for t in BaseMaterial3D.TEXTURE_MAX:
+			if k.get_texture(t) != null:
+				k.set_texture(t, _keep_tex)   # still a texture, so the same shader; no hull texture held
+		_shader_keep[sig] = k
+
+
+static func kept_shader_count() -> int:
+	return _shader_keep.size()
 
 
 func _exit_tree() -> void:
@@ -77,8 +206,68 @@ static func yaw_of(f) -> float:
 	return -deg_to_rad(60.0 * float(f))
 
 
+# Issue 1434: the hull resource setup() will load for this unit (the same choice: named variant, the unit's own code, then
+# the A4 kit ship, the hi model, the plain hull), or "" for a strike wing or a unit with no built hull. The battle asks the
+# loader for these on a worker thread as soon as the roster is known, so setup() finds them in the cache.
+# issue 1434: true when this resource is an A4 kit ship (setup takes a worker-made instance of it as pre_inst)
+static func is_kit_res(path: String) -> bool:
+	for k in manifest().get("ships", {}):
+		var e = manifest()["ships"][k]
+		if e is Dictionary and str(e.get("res", "")) == path:
+			return true
+	return false
+
+
+static func hull_path(unit: Dictionary, use_hi := true) -> String:
+	var fac := str(unit.get("fac", "hegemony"))
+	if not FLOOK.has(fac):
+		fac = "hegemony"
+	var cls := str(unit.get("cls", "Frigate")) if unit.get("cls") != null else "Frigate"
+	if cls == "Squadron" or bool(unit.get("squadron", false)):
+		return ""
+	var man := manifest()
+	var code := HT.code_for(fac, cls)
+	if man.get("ships", {}).has(str(unit.get("tpl", ""))):
+		code = str(unit.get("tpl", ""))
+	if unit.has("code"):
+		code = str(unit["code"])
+	for k in (["ships", "hi", "hulls"] if use_hi else ["ships", "hulls"]):
+		if man.get(k) is Dictionary and man[k].has(code) and man[k][code] is Dictionary:
+			return str(man[k][code].get("res", ""))
+	return ""
+
+
+# Issue 1434 (LOAD15: a Navy fighter wing's setup 0.7 s, its model scene loaded on the main thread): the installed strike
+# craft model a squadron unit draws, for the battle's threaded preload; "" for a ship or a procedural craft
+static func wing_res(unit: Dictionary) -> String:
+	var cls := str(unit.get("cls", "Frigate")) if unit.get("cls") != null else "Frigate"
+	if not (cls == "Squadron" or bool(unit.get("squadron", false))):
+		return ""
+	var fac := str(unit.get("fac", "hegemony"))
+	if not FLOOK.has(fac):
+		fac = "hegemony"
+	return WING.model_res(fac, CRAFT.kind_for(unit))
+
+
+# Issue 1434: the battle's sliced build may hand over the A4 hull already instantiated on a worker thread (pre_inst, a
+# node not in the tree), and calls setup_begin and setup_end in separate frames when a stretch runs long. setup() runs
+# both at once as before. stage_us holds the last setup's time per stage in microseconds (inst, look, fit, rest).
+var pre_inst: Node3D = null
+var stage_us := {}
+var _end_pending := false
+var _end_pos := Vector3.ZERO
+var _proc_was := true
+
+
 # unit: a ship from the rules API's view() (id, fac, cls, facing ...)
 func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
+	setup_begin(unit, world_pos, use_hi)
+	setup_end()
+
+
+func setup_begin(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
+	var t0 := Time.get_ticks_usec()
+	stage_us = {}
 	u = unit
 	fac = str(u.get("fac", "hegemony"))
 	if not FLOOK.has(fac):
@@ -109,6 +298,7 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 			hull.patrol_limit = HT.HEX_S * sqrt(3.0) * 0.5
 			hull.patrol_target = 1.0
 		hull.setup(fac, squad_kind, L, 6 if fac == "chorus" else 3, bob_seed)
+		stage_us = (hull.stage_us as Dictionary).duplicate()   # issue 1434: the wing's load, instance and finish times
 		_collect(hull)
 		_ring()
 		position = world_pos
@@ -130,14 +320,23 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	var made := false
 	# A4's kit ship when it is built (true chirality: no mirror; keeps skin_<n> patches and hp_* hard points for fx)
 	if man.has("ships") and man["ships"].has(code):
-		var ps0 = load(man["ships"][code]["res"])
-		if ps0 is PackedScene:
-			var inst0: Node3D = (ps0 as PackedScene).instantiate()
-			hull.add_child(inst0)
+		if pre_inst != null and is_instance_valid(pre_inst):
+			hull.add_child(pre_inst)   # issue 1434: instantiated on a worker from this same resource
 			made = true
 			a4 = true
+		else:
+			var ps0 = load(man["ships"][code]["res"])
+			if ps0 is PackedScene:
+				var inst0: Node3D = (ps0 as PackedScene).instantiate()
+				hull.add_child(inst0)
+				made = true
+				a4 = true
+		if made:
 			hull_source = "ships"
 			hull_res = str(man["ships"][code]["res"])
+	elif pre_inst != null and is_instance_valid(pre_inst):
+		pre_inst.free()   # not this unit's kit ship after all
+	pre_inst = null
 	if not made and use_hi and man.has("hi") and man["hi"].has(code):
 		var ps = load(man["hi"][code]["res"])
 		if ps is PackedScene:
@@ -169,15 +368,51 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 		mi.mesh = am
 		hull.add_child(mi)
 	_collect(hull)
-	_look()
+	stage_us["inst"] = Time.get_ticks_usec() - t0
+	_end_pos = world_pos
+	_end_pending = true
+	_proc_was = is_processing()
+	set_process(false)   # no ring, engines or fit yet: _process waits for setup_end
+
+
+# the rest of setup: the faction look on every surface, the fit to the hex, the engines and the ring
+# Issue 1434 (LOAD5: a first hull's look took up to 500 ms): the sliced load gives the look its own frame. Optional;
+# setup_end runs it when this was not called.
+var _looked := false
+
+
+func setup_look(budget_us := -1) -> bool:
+	if not _end_pending or _looked:
+		return true
+	var t0 := Time.get_ticks_usec()
+	var done := _look_some(budget_us)
+	stage_us["look"] = int(stage_us.get("look", 0)) + Time.get_ticks_usec() - t0
+	_looked = done
+	return done
+
+
+func setup_end() -> void:
+	if not _end_pending:
+		return
+	_end_pending = false
+	set_process(_proc_was)
+	var t0 := Time.get_ticks_usec()
+	if not _looked:
+		_look()
+		stage_us["look"] = Time.get_ticks_usec() - t0
+	_looked = false
+	var t1 := Time.get_ticks_usec()
 	_fit()
+	var t2 := Time.get_ticks_usec()
+	stage_us["fit"] = t2 - t1
 	if fac == "deathless":
 		_remember_live_hull()
 	_engines()
 	_ring()
-	position = world_pos
+	position = _end_pos
 	cur_yaw = yaw_of(u["facing"])
 	rotation.y = cur_yaw
+	stage_us["rest"] = Time.get_ticks_usec() - t2
 
 
 # G4's per-faction hull fix (render/look.gd: rim light and albedo lift for the dark hulls), one material copy per hull
@@ -185,25 +420,63 @@ static var _look_cache := {}
 
 
 func _look() -> void:
+	_look_some(-1)
+
+
+# Issue 1434 (LOAD9: V16_37's 17 surfaces took 450 to 840 ms, all of it assigning the override materials, about 30 to
+# 50 ms each on the PC). The sliced load assigns surfaces until budget_us is spent and comes back next frame; -1 does
+# them all. True when every surface is done. Timings and counts add up over the calls.
+var _look_at := 0   # surfaces done so far, in the order meshes and surfaces are walked
+
+
+func _look_some(budget_us: int) -> bool:
 	if not ResourceLoader.exists("res://render/look.gd"):
-		return
+		return true
 	var LOOK = load("res://render/look.gd")
+	var start := Time.get_ticks_usec()
+	var idx := 0
+	var did := 0
 	for m in meshes:
 		var mi := m as MeshInstance3D
 		if mi.mesh == null:
 			continue
 		for i in mi.mesh.get_surface_count():
+			if idx < _look_at:
+				idx += 1
+				continue
+			if budget_us >= 0 and did > 0 and Time.get_ticks_usec() - start >= budget_us:
+				return false
+			did += 1
+			idx += 1
+			_look_at = idx
 			var src: Material = mi.get_active_material(i)
 			if src == null:
 				continue
 			var k := "%d|%s" % [src.get_instance_id(), fac]
+			var t0 := Time.get_ticks_usec()
+			var made := false
 			if not _look_cache.has(k):
 				_look_cache[k] = LOOK.hull(src, fac, true)
+				made = true
+			var t1 := Time.get_ticks_usec()
 			mi.set_surface_override_material(i, _look_cache[k])
+			var t2 := Time.get_ticks_usec()
+			stage_us["look_new_mats"] = int(stage_us.get("look_new_mats", 0)) + t1 - t0
+			stage_us["look_assign"] = int(stage_us.get("look_assign", 0)) + t2 - t1
+			stage_us["look_worst_assign"] = maxi(int(stage_us.get("look_worst_assign", 0)), t2 - t1)
+			# issue 1434 (LOAD32): a repeat build of C16s_23 spent 864 ms assigning, its first build 111 ms; split the
+			# assign time by a material made now or reused from an earlier hull, and by the hull being in the tree or not
+			if not made: stage_us["look_assign_reused"] = int(stage_us.get("look_assign_reused", 0)) + t2 - t1
+			if mi.is_inside_tree(): stage_us["look_assign_in_tree"] = int(stage_us.get("look_assign_in_tree", 0)) + t2 - t1
+			stage_us["look_counts"] = int(stage_us.get("look_counts", 0)) + (1001 if made else 1)   # new * 1000 + surfaces
 	# issue 1204: a hull already in the scene gets its rim and fog guard from the shared watcher this frame (a mesh
 	# just added is queued once already; touch does not queue it twice)
+	var t3 := Time.get_ticks_usec()
 	if is_inside_tree():
 		load("res://render/mesh_watch.gd").touch(self)
+	stage_us["look_touch"] = Time.get_ticks_usec() - t3
+	_look_at = 0
+	return true
 
 
 func _collect(n: Node) -> void:

@@ -81,6 +81,22 @@ func _run() -> void:
 		for q in range(-4, 5):
 			hexes.append({"q": q, "r": r})
 	_check(BOARD.PLANET_LOOKS == [0, 1, 3, 4, 5], "board.gd PLANET_LOOKS is not the five kinds (%s)" % str(BOARD.PLANET_LOOKS))
+	# 0. issue 1434 (LOAD32): the title menu's backdrop never makes the run's first 8K R01 upload; a rocky or barren seed
+	# takes the next baked look there until a battle has put R01 on screen
+	BAKER._trim(0)   # nothing of R01 held yet
+	for title_seed in [20, 24]:
+		var tr := StubRules.new()
+		tr.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
+		tr.w = {"seed": title_seed}
+		var tb: Node3D = BOARD.new()
+		tb.title_backdrop = true
+		root.add_child(tb)
+		tb.build(tr)
+		var tl := int(tb.planet_node.get_meta("planet_look", -1)) if tb.planet_node != null else -1
+		_check(tl >= 0 and not PL.uses_r01(tl), "title board seed %d: look %d draws the 8K R01 maps behind the title" % [title_seed, tl])
+		await tb.wait_planet()
+		tb.queue_free()
+		await process_frame
 	for i in BOARD.PLANET_LOOKS.size():
 		var rules := StubRules.new()
 		rules.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
@@ -118,6 +134,32 @@ func _run() -> void:
 		_check(not bool(mi.get_meta("planet_frozen", false)), "board look %d: frozen although its maps arrived in time" % want)
 		board.queue_free()
 		await process_frame
+	# once a battle has drawn R01 this run, the title may show a rocky world again (its maps are already uploaded)
+	_check(PL.r01_uploaded(), "R01 drawn on a battle board but not remembered as uploaded")
+	var again := StubRules.new()
+	again.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
+	again.w = {"seed": 20}
+	var ab: Node3D = BOARD.new()
+	ab.title_backdrop = true
+	root.add_child(ab)
+	ab.build(again)
+	_check(ab.planet_node != null and int(ab.planet_node.get_meta("planet_look", -1)) == 0, "title board after a battle: the rocky look was not kept")
+	await ab.wait_planet()
+	ab.queue_free()
+	await process_frame
+	# Artoo on 002e143f: once the cache evicts the R01 maps (a trim drops each image with its texture), the title takes
+	# the baked look again
+	BAKER._trim(0)
+	_check(not PL.r01_uploaded(), "R01 still counted as uploaded after the bake cache evicted it")
+	var ev := BOARD.new()
+	ev.title_backdrop = true
+	root.add_child(ev)
+	ev.build(again)
+	var evl := int(ev.planet_node.get_meta("planet_look", -1)) if ev.planet_node != null else -1
+	_check(evl >= 0 and not PL.uses_r01(evl), "title board after an eviction: look %d draws the 8K R01 maps again" % evl)
+	await ev.wait_planet()
+	ev.queue_free()
+	await process_frame
 	# a board whose maps miss the 20 s deadline freezes on the stand-in (counted from the planet's own start)
 	var slow := StubRules.new()
 	slow.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}

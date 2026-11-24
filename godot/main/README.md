@@ -56,7 +56,7 @@ var result: Dictionary = await main.start_battle(run, cfg, {"bot": true})   # bo
 
 | Field | Meaning |
 |---|---|
-| `result` | `"win"`, `"loss"`, `"retreat"`, `"quit"` (quick battles only: Quit to title), or `"softlock"` (bot runs only: nothing happened for 60 s) |
+| `result` | `"win"`, `"loss"`, `"retreat"`, `"quit"` (quick battles only: Quit to title), `"softlock"` (bot runs only: nothing happened for 60 s), `"save_quit"` (campaign Save and quit: not a result), or `"closing"` (the game closed before the battle began: not a result, the campaign host settles, counts and saves nothing; issue 1518) |
 | `rounds` | rounds played |
 | `killed`, `lost` | enemy ships destroyed, player ships lost |
 | `errors` | Array of strings: rules functions not ported yet, softlocks |

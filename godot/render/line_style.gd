@@ -1,4 +1,5 @@
 extends RefCounted
+const SKEEP := preload("res://render/shader_keep.gd")
 # Issue 1374 (Ryan, Nov 20 2026, R362; docs/playbooks/scale.md section 6): one line style for everything drawn as a line
 # on or over the battle board. This file owns the width (by camera distance), the glow and the fade; callers name only a
 # role, and the role's colour comes from ROLE below. Change a width or a glow here and every line follows.
