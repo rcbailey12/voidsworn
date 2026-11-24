@@ -123,9 +123,11 @@ Ryan, "Agree no" (issue 1560 item 14) and "Yes agree on skills". Set: Ryan, Nov 
 7.10 **The battle has depth, the rules stay flat.** Capitals hold the battle plane; cruisers, destroyers, transports and
 carriers sit a little above or below it, frigates and escorts a little further off it, each at its own height for the
 whole battle, and strike craft patrol well above the ships (godot/render/altitude_band.gd). A faint drop-line in the
-footprint's colour runs from every off-plane hull to an anchor dot on its hex, brighter on hover and selection, and a
-pointer on a raised hull's middle picks that hull's own hex. Wings dive steeply onto their target on an attack pass and
-climb back out; warships never bank (7.5). Torpedoes stay flat between heights (ships.md section 9). Each faction moves
+footprint's colour (a line style role, render/line_style.gd) runs from every off-plane hull and wing to an anchor dot on
+its hex, brighter on hover and selection, and a pointer on a raised hull's or wing's middle picks its own hex. Wings dive
+steeply onto their target on an attack pass (a miss flies past beside the hull, never under the board) and climb back
+out; under Reduce motion the dive is gentle and the craft never bank; warships never bank (7.5). Loose rock chips hang
+under the plane, below every ship band. Torpedoes stay flat between heights (ships.md section 9). Each faction moves
 with its own thrust personality (fx/thrust_profile.gd): Sunward lag and chunky white gas, Directorate crisp short
 blue-white, Hullbreaker amber overburn with grit, Glasswright prismatic glints, Chorus bioluminescent vent pulses,
 Eclipse violet null ripples. A look only: no rules, arcs, clicks or parity change (7.4). Why: Ryan approved the

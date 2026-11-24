@@ -593,7 +593,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			ti = tf + dist / (650.0 * fx.unit)
 		"guns", "bombs", "sporeb":
 			tf = T0 + beat * 0.15
-			ti = _strafe(fx, lk, from, to, tf, col, fac, ka, kt, i, faction, rhythm, spread)
+			ti = _strafe(fx, lk, from, to, tf, col, fac, ka, kt, i, faction, rhythm, spread, tg.get("pass", null))
 		_:
 			tf = T0 + 0.3
 			ti = T0 + 0.3
@@ -1617,7 +1617,13 @@ static func _flak(fx, lk: String, from: Vector3, dir: Vector3, dist: float, to: 
 
 
 # Strike craft: a loose formation flies a strafing run past the target, firing as it goes.
-static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: Color, fac: Dictionary, ka: float, kt: float, i: int, faction := "voidsworn", rhythm: RandomNumberGenerator = null, spread := 1.0) -> float:
+# fly_to: where the run flies over (a miss passes beside the hull, tg["pass"]); to: where the craft aim. A miss's
+# aim point runs on past the hull and, from wing height, ends below the plane, so the dive never bottoms out on it
+# (Fable review of PR 1874, finding 1).
+static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: Color, fac: Dictionary, ka: float, kt: float, i: int, faction := "voidsworn", rhythm: RandomNumberGenerator = null, spread := 1.0, fly_to: Variant = null) -> float:
+	var aim: Vector3 = to
+	if fly_to is Vector3:
+		to = fly_to
 	var d = (to - from)
 	var dist = maxf(d.length(), 1.0)
 	var dir = d / dist
@@ -1636,8 +1642,11 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 	var run_d: float = maxf(Vector2(end.x - start.x, end.z - start.z).length(), 1.0)
 	var pi_u := clampf((flat_d - 3.0) / run_d, 0.2, 0.8)
 	# level at patrol height until DIVE_RUN short of the target, then a steep dive; the pull-out climbs over CLIMB_RUN
-	var dive := {"ya": float(start.y), "yl": low_y, "yb": float(end.y), "pi": pi_u,
-		"pd": maxf(pi_u - DIVE_RUN / run_d, 0.0), "pc": minf(pi_u + CLIMB_RUN / run_d, 1.0)}
+	# Reduce motion: the dive and climb stretch over three times the ground (a gentle slope) and the craft never bank
+	var calm := bool(fx.get("reduce_motion")) if "reduce_motion" in fx else false
+	var dk := 3.0 if calm else 1.0
+	var dive := {"ya": float(start.y), "yl": low_y, "yb": float(end.y), "pi": pi_u, "calm": calm,
+		"pd": maxf(pi_u - DIVE_RUN * dk / run_d, 0.0), "pc": minf(pi_u + CLIMB_RUN * dk / run_d, 1.0)}
 	var life = _dive_len(start, end, dive) / spd
 	var timp = t0 + life * float(dive["pi"]) - 6.0 / spd
 	if rhythm == null:
@@ -1654,16 +1663,16 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 			var pulse: Dictionary = burst[s]
 			var tsh = timp - 0.35 + float(pulse["phase"]) * 0.08 + delay
 			var ps = _dive_pos(start + off, end + off, dive, clampf((tsh - t0 - delay) / life, 0.0, 1.0))
-			var dd = (to - ps).normalized()
+			var dd = (aim - ps).normalized()
 			match lk:
 				"bombs":
 					if s == 0:
-						fx.spr(ps, tsh, (to - ps).length() / 50.0, Color(0.15, 0.14, 0.13), 1.0, 0.5, 0.5, 23, dd * 50.0)
+						fx.spr(ps, tsh, (aim - ps).length() / 50.0, Color(0.15, 0.14, 0.13), 1.0, 0.5, 0.5, 23, dd * 50.0)
 				"sporeb":
 					if s == 0:
-						fx.spr(ps, tsh, (to - ps).length() / 45.0, col, 1.4, 0.7, 0.7, 15, dd * 45.0)
+						fx.spr(ps, tsh, (aim - ps).length() / 45.0, col, 1.4, 0.7, 0.7, 15, dd * 45.0)
 				_:
-					fx.stk(ps, tsh, (to - ps).length() / 260.0, col.lerp(Color.WHITE, 0.3), 10.0 * float(pulse["power"]), 3.5 * ka, 0.35 * ka * float(pulse["size"]), 0, dd * 260.0)
+					fx.stk(ps, tsh, (aim - ps).length() / 260.0, col.lerp(Color.WHITE, 0.3), 10.0 * float(pulse["power"]), 3.5 * ka, 0.35 * ka * float(pulse["size"]), 0, dd * 260.0)
 	return timp + (0.3 if lk == "bombs" else 0.1)
 
 
@@ -1750,7 +1759,7 @@ static func _craft_update(fx, dt: float) -> void:
 		var yaw_b := Basis(Vector3.UP, atan2(-flat.z, flat.x))
 		var pitch := asin(clampf(fwd.y, -1.0, 1.0))
 		var bank := 0.0
-		if not dive.is_empty():
+		if not dive.is_empty() and not bool(dive.get("calm", false)):
 			var pi_u := float(dive["pi"])
 			var pc := float(dive.get("pc", 1.0))
 			bank = 0.35 * sin(PI * clampf((progress - pi_u) / maxf(pc - pi_u, 1e-3), 0.0, 1.0))

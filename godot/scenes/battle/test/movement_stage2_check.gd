@@ -94,15 +94,15 @@ func _drop(world: Node3D) -> void:
 	var bottom: float = sv.drop.position.y - sv.drop.transform.basis.y.length() * 0.5
 	check(absf(top - sv.hull.position.y) < 0.05 and absf(bottom - 0.05) < 0.05, "the line runs from the plane to the hull's centre (%.2f to %.2f)" % [bottom, top])
 	check(absf(sv.drop_dot.position.y - 0.05) < 1e-3, "its anchor dot sits on the plane under the rules root")
-	var rest_a: float = (sv.drop.material_override as StandardMaterial3D).albedo_color.a
+	var rest_a: float = (sv.drop_dot.material_override as StandardMaterial3D).albedo_color.a
 	sv.set_hot(true)
 	sv._drop_step(1.0)
-	var hot_a: float = (sv.drop.material_override as StandardMaterial3D).albedo_color.a
+	var hot_a: float = (sv.drop_dot.material_override as StandardMaterial3D).albedo_color.a
 	check(hot_a > rest_a * 2.0, "hover brightens the line (%.2f to %.2f)" % [rest_a, hot_a])
 	sv.set_hot(false)
 	sv.set_selected(true)
 	sv._drop_step(1.0)
-	check((sv.drop.material_override as StandardMaterial3D).albedo_color.a > rest_a * 2.0, "selection brightens the line")
+	check((sv.drop_dot.material_override as StandardMaterial3D).albedo_color.a > rest_a * 2.0, "selection brightens the line")
 	sv.set_selected(false)
 	# the line stretches with the hull during a pass-over or a boarding trim
 	sv.hull.position.y += 4.0
@@ -255,6 +255,109 @@ func _dive(world: Node3D) -> void:
 	fx.dstate["proj"] = []
 	fx.queue_free()
 
+# Fable on PR 1874: the paths a hand-made call skips. A wing volley through FXW.volley (hits and misses), the wing's own
+# drop-line and pick, the real _ray_hex, the shared line style on the drop-line, and the chips' air.
+class StubBoard extends "res://render/board.gd":
+	func refresh() -> void:
+		pass
+
+
+func _min_run_y(fx) -> float:
+	var lo := INF
+	for r in fx.dstate.get("craft_runs", []):
+		for k in 41:
+			lo = minf(lo, FXW._dive_pos(r["a"], r["b"], r["dive"], float(k) / 40.0).y)
+	return lo
+
+
+func _fable(world: Node3D) -> void:
+	var fx := FX.new()
+	world.add_child(fx)
+	fx.manual = true
+	fx.setup({"quality": "low", "shake": 0.0})
+	var shooter := SV.new()
+	world.add_child(shooter)
+	shooter.setup({"id": "shooter", "fac": "hegemony", "cls": "Cruiser", "code": "H9_23", "facing": 1}, Vector3.ZERO)
+	shooter.set_band(ALT.WING)
+	var tgt := SV.new()
+	world.add_child(tgt)
+	tgt.setup({"id": "tgt", "fac": "corsair", "cls": "Battleship", "code": "H9_23", "facing": 4}, Vector3(70, 0, 10))
+	fx.add_ship("shooter", shooter, {"faction": "hegemony", "cls": "Cruiser", "meshes": shooter.meshes})
+	fx.add_ship("tgt", tgt, {"faction": "corsair", "cls": "Battleship", "meshes": tgt.meshes})
+	var T = fx.ship("tgt")
+	var ty: float = T.to_world(T.hull.c).y
+	for hit in [false, true]:
+		fx.dstate["craft_runs"] = []
+		FXW.volley(fx, "shooter", "sq", "tgt", {"weapon_id": "guns", "shots": [hit, hit, hit]})
+		var lo := _min_run_y(fx)
+		check(fx.dstate["craft_runs"].size() > 0, "a wing volley flies its craft (%s)" % ("hit" if hit else "miss"))
+		check(lo > ty - 1.0 and lo > -1.0, "a %s pass never dives under its target or the board (low %.2f, target %.2f)" % ["hit" if hit else "missed", lo, ty])
+		check(lo < ty + 4.0, "a %s pass still dives down to its target (low %.2f)" % ["hit" if hit else "missed", lo])
+	# Reduce motion: the same pass dives gently and never banks
+	var steep := {}
+	for calm in [false, true]:
+		fx.reduce_motion = calm
+		fx.dstate["craft_runs"] = []
+		FXW._strafe(fx, "fighter", Vector3(0, ALT.WING, 0), Vector3(60, -2.0, 8), fx.now, Color.WHITE, {"engine": Color.ORANGE}, 1.0, 1.0, 1, "hegemony")
+		var rc: Dictionary = fx.dstate["craft_runs"][0]
+		steep[calm] = _steepest(rc)
+		check(bool(rc["dive"].get("calm", false)) == calm, "the pass knows Reduce motion is %s" % ("on" if calm else "off"))
+	check(steep[true] < steep[false] * 0.6, "Reduce motion softens the dive (steepest %.2f against %.2f)" % [steep[true], steep[false]])
+	fx.reduce_motion = false
+	fx.remove_ship("shooter")
+	fx.remove_ship("tgt")
+	fx.queue_free()
+	# a wing draws a drop-line and the pointer on it picks the wing's hex, through the real ray pick
+	var wing := SV.new()
+	world.add_child(wing)
+	wing.setup({"id": "w1", "fac": "hegemony", "cls": "Squadron", "squadron": true, "facing": 0}, Vector3(30, 0, 0))
+	wing.set_marker(true)
+	wing.set_band(ALT.height({"id": "w1", "cls": "Squadron", "squadron": true}))
+	check(wing.drop != null and wing.drop.visible, "a wing draws its drop-line to its hex")
+	check(wing.drop != null and wing.drop.material_override is ShaderMaterial, "the drop-line takes the shared line style")
+	if wing.drop != null:
+		var lm := wing.drop.material_override as ShaderMaterial
+		var rest: float = (lm.get_shader_parameter("col") as Color).a
+		check(absf(rest - preload("res://render/line_style.gd").col("drop_ally").a * SV.DROP_A[0]) < 0.01, "its colour and strength are the line style role's")
+		wing.set_hot(true)
+		wing._drop_step(1.0)
+		check(float(lm.get_shader_parameter("wide")) > 1.2 and (lm.get_shader_parameter("col") as Color).a > rest * 2.0, "hover widens and brightens it")
+		var bx: Basis = wing.drop.transform.basis
+		check(absf(bx.x.dot(bx.y)) < 1e-4, "the line never shears with heading")
+		wing.set_hot(false)
+	var battle := BATTLE.new()
+	var board := StubBoard.new()
+	world.add_child(board)
+	for q in range(-2, 8):
+		for r in range(-4, 6):
+			board.index[board.key(q, r)] = q
+	battle.board = board
+	var cam := Camera3D.new()
+	world.add_child(cam)
+	var wq: Vector2i = board.world_hex(Vector3(30, 0, 0))
+	wing.position = board.hex_world(wq.x, wq.y)
+	cam.global_position = wing.position + Vector3(0, 170.0 * cos(0.98), 170.0 * sin(0.98))   # the home camera: 170 out, 0.98 from vertical
+	cam.look_at(wing.position)
+	cam.current = true
+	battle.cam = cam
+	battle.views = {"w1": wing}
+	battle.VU = {"w1": {"id": "w1", "q": wq.x, "r": wq.y, "squadron": true}}
+	var wp: Vector2 = cam.unproject_position(wing.visual_position())
+	var ro: Vector3 = cam.project_ray_origin(wp)
+	var rn: Vector3 = cam.project_ray_normal(wp)
+	var plane_h: Vector2i = board.world_hex(ro + rn * (-ro.y / rn.y))
+	check(plane_h != wq, "a wing's picture sits over another hex (the case the pick is for)")
+	check(battle._ray_hex(wp) == wq, "the pointer on a wing picks the wing's own hex through the ray pick (%s, want %s)" % [str(battle._ray_hex(wp)), str(wq)])
+	battle.views = {}
+	check(battle._ray_hex(wp) == plane_h, "with no hull there the ray pick keeps the plane hex")
+	battle.free()
+	# the chips hang under every ship band and far under the wings' passes
+	var BD := preload("res://render/board.gd")
+	var lowest_ship: float = float(ALT.ESCORT[1]) * ALT.BELOW_K
+	check(float(BD.FRAG_Y[0]) > lowest_ship + 0.8, "depth chips sit under the lowest ship (%.1f below, ships to %.1f)" % [BD.FRAG_Y[0], lowest_ship])
+	check(float(BD.FRAG_R[1]) < HT.HEX_S * 0.5, "and close to their own hex's middle")
+
+
 
 # the steepest downward slope of the dive (drop per ground unit)
 func _steepest(r: Dictionary) -> float:
@@ -308,6 +411,7 @@ func _run() -> void:
 	_bands()
 	_drop(world)
 	_dive(world)
+	_fable(world)
 	_personalities()
 	await process_frame
 	world.queue_free()

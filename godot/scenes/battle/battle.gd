@@ -384,6 +384,7 @@ func _build_world() -> void:
 	cam.current = true
 	if gfx != null and gfx.has_method("setup"):
 		gfx.setup({"camera": cam, "quality": str(args.get("quality", "max")), "reduce_flashing": reduce_flashing, "shake": shake_scale, "unit": 1.0})
+		gfx.reduce_motion = reduce_motion   # issue 1582: gentle wing dives, no bank
 	_build_arrow()
 
 
@@ -4357,6 +4358,7 @@ var _hover_uid := ""
 # length across) overrides the plane pick; an on-plane winner, or a pointer off the middle, keeps the plane pick.
 const PICK_MID := 0.17    # half the picked middle, in hull lengths
 const PICK_BODY := 0.3    # half the body that hides what is behind it, in hull lengths
+const PICK_WING := 5.0    # a wing patrols its whole hex: its picked middle and body are this far round it (world units)
 
 
 func _lifted_hull_hex(p: Vector2) -> Vector2i:
@@ -4370,21 +4372,25 @@ func _lifted_hull_hex(p: Vector2) -> Vector2i:
 		var sv = views[id]
 		if not is_instance_valid(sv) or sv.dead or not sv.visible:
 			continue
-		if not VU.has(id) or bool(VU[id].get("squadron", false)):
+		if not VU.has(id):
 			continue
+		# wings sit highest of all, so their picture is furthest from their hex: they pick too (Fable, PR 1874 item 2)
+		var wing := bool(VU[id].get("squadron", false))
 		var c: Vector3 = sv.visual_position()
 		if cam.is_position_behind(c):
 			continue
 		var sc: Vector2 = cam.unproject_position(c)
-		var unit: float = sc.distance_to(cam.unproject_position(c + cam.global_basis.x * float(sv.L)))
+		var reach: float = PICK_WING if wing else float(sv.L) * PICK_BODY
+		var mid: float = PICK_WING if wing else float(sv.L) * PICK_MID
+		var unit: float = sc.distance_to(cam.unproject_position(c + cam.global_basis.x))
 		var dd := sc.distance_to(p)
-		if dd > unit * PICK_BODY:
+		if dd > unit * reach:
 			continue
 		var eye := cam.global_position.distance_to(c)
 		if eye < best_d:
 			best_d = eye
 			best_id = id
-			best_mid = dd <= unit * PICK_MID and absf(float(sv.band_y)) >= ShipView.DROP_MIN
+			best_mid = dd <= unit * mid and absf(float(sv.band_y)) >= ShipView.DROP_MIN
 	if best_id == null or not best_mid:
 		return none
 	return Vector2i(int(VU[best_id]["q"]), int(VU[best_id]["r"]))
@@ -5509,6 +5515,8 @@ func _toggle_opt(k: String) -> void:
 			for vv in views.values():   # issue 1581: no idle drift, bob or trim nod with Reduce motion
 				if is_instance_valid(vv):
 					vv.calm = reduce_motion
+			if gfx != null and "reduce_motion" in gfx:
+				gfx.reduce_motion = reduce_motion
 			option_changed.emit("reduce_motion", reduce_motion)
 		"uiscale":
 			var i := 0

@@ -908,12 +908,14 @@ func _terrain() -> void:
 		_station(cen, rng, size, teaching, clearance)
 
 
-# Issue 1582 item 4: a few small loose fragments ride above and below the plane round each rock and debris hex, so a
-# fleet threads through a field with depth. They never block (the rules' rock stays the hex's core on the plane), stay
-# inside their own hex's footprint so no hex beside them looks taken, and use their own seed so the board's other random
-# draws do not shift. A look only.
-const FRAG_Y := [4.0, 9.0]     # height off the plane, up or down (world units)
+# Issue 1582 item 4: a few small loose fragments hang below the plane round each rock and debris hex, so a field has
+# depth. They sit under the lowest ship band (render/altitude_band.gd: no ship goes lower than ESCORT[1] * BELOW_K, about
+# 3.4) and far under the wings' passes, so no hull or craft shares their air (Fable on PR 1874, item 3); they keep close to
+# their hex's middle because a point under the plane draws a little toward the camera. They never block (the rules' rock
+# stays the hex's core on the plane) and use their own seed so the board's other random draws do not shift. A look only.
+const FRAG_Y := [4.6, 6.5]     # depth under the plane (world units)
 const FRAG_S := [0.45, 1.25]   # fragment size
+const FRAG_R := [1.2, 3.5]     # distance from the hex middle
 var depth_frags: Node3D
 
 
@@ -946,8 +948,8 @@ func _depth_fragments() -> void:
 		for i in (3 if typ == "rock" else 2):
 			var mesh_name := str(names[rng.randi() % names.size()])
 			var a := rng.randf() * TAU
-			var rad := rng.randf_range(1.5, HS * 0.55)
-			var y := rng.randf_range(FRAG_Y[0], FRAG_Y[1]) * (1.0 if rng.randf() < 0.55 else -0.8)
+			var rad := rng.randf_range(FRAG_R[0], FRAG_R[1])
+			var y := -rng.randf_range(FRAG_Y[0], FRAG_Y[1])
 			var mi := BV.cluster_piece(depth_frags, BV.WR.mesh(mesh_name), mat, c + Vector3(cos(a) * rad, y, sin(a) * rad), rng.randf_range(FRAG_S[0], FRAG_S[1]), rng)
 			mi.name = "frag_" + mesh_name
 			var box := (mi.mesh as Mesh).get_aabb()
