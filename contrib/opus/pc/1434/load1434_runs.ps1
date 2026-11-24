@@ -12,7 +12,10 @@
 #      Every case must also take the window route once, exit 0 and not crash (as CLOSE5).
 # Writes <Out>\load10_result.txt with one line per result (1434 load; 1518, 1519 and clean close, cold and warm) and the
 # gate line "[load10] RESULT PASS" only when every one passes. Nothing outside <Out> is written; every profile lives under <Out>.
-param([Parameter(Mandatory)][string]$Godot, [Parameter(Mandatory)][string]$Project, [Parameter(Mandatory)][string]$Out)
+# -CloseOnly (Board, Nov 24, for PR 1950): only step 3, the six close cases cold then warm, on any checkout that prints the
+# CLOSE5 lines; the warm profile is warmed by one ungraded launch (title_battle_30s's arguments) instead of the load
+# bench, step 4 is skipped, and only the 1518, 1519 and clean-close grades are written.
+param([Parameter(Mandatory)][string]$Godot, [Parameter(Mandatory)][string]$Project, [Parameter(Mandatory)][string]$Out, [switch]$CloseOnly)
 $ErrorActionPreference = 'Stop'
 New-Item -ItemType Directory -Force -Path $Out | Out-Null
 $res = Join-Path $Out 'load10_result.txt'
@@ -55,7 +58,14 @@ function Say-Cache($label, $before, $after) {
 $warmProfile = Join-Path $Out 'profile_warm'
 New-Item -ItemType Directory -Force -Path $warmProfile | Out-Null
 $bench = @{}
-foreach ($pass in @('cold', 'warm')) {
+if ($CloseOnly) {
+  $d = Join-Path $Out 'warmup'
+  New-Item -ItemType Directory -Force -Path $d | Out-Null
+  $p = Start-Game $warmProfile @('--path', "`"$Project`"", '--windowed', '--resolution', '1920x1080', '--', '--battle', '--quit-after', '240', '--title-after', '30') (Join-Path $d 'log.txt') (Join-Path $d 'log_err.txt')
+  if (-not $p.WaitForExit(60 * 1000)) { $null = $p.CloseMainWindow(); if (-not $p.WaitForExit(15000)) { Kill-Tree $p } }
+  Say "close only: one ungraded warm-up launch on the warm profile (exit $($p.ExitCode))"
+}
+foreach ($pass in @($(if ($CloseOnly) { @() } else { @('cold', 'warm') }))) {
   $d = Join-Path $Out "load_$pass"
   New-Item -ItemType Directory -Force -Path $d | Out-Null
   $argList = @('--path', "`"$Project`"", '--fullscreen', '--script', 'res://bench/load_1434.gd', '--', '--out', "`"$d`"", '--pass', $pass)
@@ -219,7 +229,7 @@ $rows | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $Out 'clos
 # The game prints "[main] title menu painted at N ms after the engine started (first button: ...)"; the case closes the
 # window after 20 s and reads that line after the exit.
 $launch = [ordered]@{}
-foreach ($lc in @(@{name = 'title_launch_nosave'; save = $false; want = 'New run'}, @{name = 'title_launch_save'; save = $true; want = 'Continue run'})) {
+foreach ($lc in @($(if ($CloseOnly) { @() } else { @(@{name = 'title_launch_nosave'; save = $false; want = 'New run'}, @{name = 'title_launch_save'; save = $true; want = 'Continue run'}) }))) {
   $dir = Join-Path $Out "close_cold\$($lc.name)"
   New-Item -ItemType Directory -Force -Path $dir | Out-Null
   $prof = Join-Path $dir 'profile'
@@ -272,6 +282,7 @@ function Set-Grade($set, $key) {
   return 'PASS'
 }
 $grades = [ordered]@{}
+if (-not $CloseOnly) {
 $grades['1434 load (warm bench, cold COVER)'] = if ($bench['warm'].pass -and $bench['cold'].cover_pass) { 'PASS' } else { 'FAIL' }
 # the two LOAD13 targets on lines of their own (Board, Nov 21): (a) the warm title backdrop's frame, (b) the cold close
 # while the title backdrop loads; both are also inside the lines around them
@@ -279,12 +290,13 @@ $grades['target a: warm title backdrop frame (bench title line)'] = if ($bench['
 $tl = @($rows | Where-Object { $_.set -eq 'cold' -and $_.case -eq 'title_load_5s' })
 # target b counts only when the backdrop itself was loading at the close; a world bake alone is UNVERIFIED (Artoo on PR 1445)
 $grades['target b: cold close during the title load hides within 500 ms'] = if ($tl.Count -eq 1) { $(if ($tl[0].g1518 -like 'FAIL*') { 'FAIL' } elseif ($tl[0].g1518 -like 'UNVERIFIED*') { 'UNVERIFIED' } elseif ([string]$tl[0].loading_at_close -notmatch '(^|, )backdrop ') { 'UNVERIFIED (the backdrop was not loading at the close)' } else { 'PASS' }) } else { 'FAIL' }
+}
 foreach ($set in @('cold', 'warm')) {
   $grades["1518 close hides within 500 ms, $set"] = Set-Grade $set 'g1518'
   $grades["1519 first title frame within 200 ms, $set"] = Set-Grade $set 'g1519'
   $grades["every close clean, $set"] = Set-Grade $set 'clean'
 }
-$grades['title launch to first painted menu within 20 s, cold, no save and with a saved run'] = if (@($launch.Values | Where-Object { $_ -ne 'PASS' }).Count -eq 0 -and $launch.Count -eq 2) { 'PASS' } else { 'FAIL' }
+if (-not $CloseOnly) { $grades['title launch to first painted menu within 20 s, cold, no save and with a saved run'] = if (@($launch.Values | Where-Object { $_ -ne 'PASS' }).Count -eq 0 -and $launch.Count -eq 2) { 'PASS' } else { 'FAIL' } }
 foreach ($k in $grades.Keys) { Say "[load10] $k`: $($grades[$k])" }
 $ok = @($grades.Values | Where-Object { $_ -ne 'PASS' }).Count -eq 0
 Say ("[load10] RESULT {0} (every line above must PASS; an Alt-F4 case that could not send its keys is UNVERIFIED, never PASS)" -f $(if ($ok) { 'PASS' } else { 'FAIL' }))
