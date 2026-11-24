@@ -2039,36 +2039,36 @@
    "turrets": 1,
    "files": {
     "ithar_GV2.glb": {
-     "bytes": 1125624,
-     "sha256": "7d7f4291b02e9bbfb57f0fac913233f568035080bf5939ddb90f1eaa4658c4b8"
+     "bytes": 6765648,
+     "sha256": "6af70a92dabb234d2b9210bd89dbf34f690e8629c6b7e0c9839eb9536e8a150f"
     },
     "ithar_GV2_base.jpg": {
-     "bytes": 1137809,
-     "sha256": "6b6c4682a16386ff5a4316f35a09bfcb23910f9dc30c5a32d50ac64effc63fe7"
+     "bytes": 1757439,
+     "sha256": "58a3b07470ee3eb6452e4c6515d78e90850e3bdbdac15299755cdb2a4b29b650"
     },
     "ithar_GV2_emission.jpg": {
-     "bytes": 448994,
-     "sha256": "bebdf86cd6a36a05cd57de3a529abc9bf497d59ac57c34914ca92fed128c8058"
+     "bytes": 198690,
+     "sha256": "7a2962b94cc127ee265c7c1eb3515b305b479ee850d6667ca0e96975a0f5d131"
     },
     "ithar_GV2_normal.png": {
-     "bytes": 4407887,
-     "sha256": "b5d01fa3ea263e7b4cc9ee8919b67319e989b338d4f1dfd6e0bbd94210bb7a6b"
+     "bytes": 4828317,
+     "sha256": "76565fd5288b61eb081992d3a31a8584503b1da9583cd858b96a5c9569ddd1df"
     },
     "ithar_GV2_orm.png": {
-     "bytes": 4366272,
-     "sha256": "9a9b6a2f8ae5fdcbf0192a790d8293df585ed6a2286588e09341151a5a286d03"
+     "bytes": 5897036,
+     "sha256": "f83da7d949289fe4db1adb924c1d5845a84867a62f8469ea7a82acf039e31883"
     },
     "ithar_GV2_parts_base.jpg": {
-     "bytes": 212055,
-     "sha256": "620d939eaa4b20f2d15587238a78dd2e31d797bd081c60f5a541c4ba3f886057"
+     "bytes": 198035,
+     "sha256": "ad3edc8d03d08d168eb585fa2feb6f6c36aa3dc1cbf48c4af0b8f6ff032ba56f"
     },
     "ithar_GV2_parts_normal.png": {
-     "bytes": 1919440,
-     "sha256": "e2f53cb20a875062f4c72edeb7c3f545074ce18fb9c1e726cc59ca87b2186ac1"
+     "bytes": 1919381,
+     "sha256": "c64716560fb4b382b7e35967d9a642a0615cfe794429f335fcd2db19dd32f364"
     },
     "ithar_GV2_parts_orm.png": {
-     "bytes": 1915861,
-     "sha256": "023677f19bf831123c37f0497ac3f1da4d206c5825ed3ceb383ae91abd909a9e"
+     "bytes": 1934422,
+     "sha256": "5415f54d814aaa06043073307bfb57ea56a3252b0453491de81a5db4855c83c1"
     }
    },
    "pc_path": "godot/assets/ships/ithar_GV2/",
@@ -2090,36 +2090,36 @@
    "turrets": 0,
    "files": {
     "ithar_GW4.glb": {
-     "bytes": 4519740,
-     "sha256": "9ce86aefa62b2d10e06a354c84653e50ad431ff87c822cf14b2ad0bc05745a2b"
+     "bytes": 10431140,
+     "sha256": "8360933140bd462cfb395152ce44a98896535b5d723d1cf8fe5f1b0bd479e9cf"
     },
     "ithar_GW4_base.jpg": {
-     "bytes": 1221897,
-     "sha256": "857e3484e22a96adfa3ca6b732f77dab77749f982f2806d8c13f9e52bd199bb0"
+     "bytes": 1909163,
+     "sha256": "ffc84b61491b213e7873369da149b91064eb3e36d89c7f160d02b3fcd1cff745"
     },
     "ithar_GW4_emission.jpg": {
-     "bytes": 701130,
-     "sha256": "635ab779bc8ed7b79686900f993db6bf961307de70083c654372025649fa4e94"
+     "bytes": 262436,
+     "sha256": "fb863502dadd9ca2c84256604d297d3ec3d4b483646a09109478dc1293a9f80a"
     },
     "ithar_GW4_normal.png": {
-     "bytes": 4400440,
-     "sha256": "2e56053d8a6f6a42137a3253fbb0310df7943e1083b174def99ceccf204b80dc"
+     "bytes": 5320340,
+     "sha256": "22eed9c7871f267fa414fc1175ea5e3e240a0c3b3f5804720eb81362667cf915"
     },
     "ithar_GW4_orm.png": {
-     "bytes": 4659935,
-     "sha256": "cea05f21c27d7965282ebc9e012255e7ac2b72aa3b52f3c41c9b582e9891e242"
+     "bytes": 7274056,
+     "sha256": "f15819bba437899c3fbc8c1e54de341c90d7c43269c765965378c4faeaddec92"
     },
     "ithar_GW4_parts_base.jpg": {
-     "bytes": 233591,
-     "sha256": "d51f56a09ca648cd93b21680214fa7c334e3082d21a6a8fe4a33647803f91078"
+     "bytes": 378974,
+     "sha256": "512cf4997a141165f62ca9a4120e89c1ef41b29c1aeb804dda9ec1716bb293db"
     },
     "ithar_GW4_parts_normal.png": {
-     "bytes": 4096432,
-     "sha256": "2f9cbcc911cf35c3dc88da44ac38e2bc2169e811d91aca94e30273deb1e49e88"
+     "bytes": 4229695,
+     "sha256": "8b6d859c31ac56c194383d863da2c2f28c41bf6dc3ae868e030794ff77b2963e"
     },
     "ithar_GW4_parts_orm.png": {
-     "bytes": 3484153,
-     "sha256": "7127776f6552de02efc0fb559502a76966cef69f3f72260e5666a964f9a95d60"
+     "bytes": 3984196,
+     "sha256": "224be7e56c656071d6e350a3168d6de163bb7728a0c10528354840e065663b16"
     }
    },
    "pc_path": "godot/assets/ships/ithar_GW4/",
