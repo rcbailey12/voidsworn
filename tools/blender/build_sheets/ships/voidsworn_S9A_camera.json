@@ -1,0 +1,21 @@
+{
+  "az": 54,
+  "el": 30,
+  "roll": -9,
+  "dist": 30,
+  "mm": 190,
+  "target": [
+    0,
+    0,
+    0
+  ],
+  "sx": -0.02,
+  "sy": -0.045,
+  "res": [
+    1024,
+    1024
+  ],
+  "note": "Framed against the bow point and the two bell exits in the square concept beauty. Overlap measured by fit.py with the recipe cutout.",
+  "iou": 0.7311,
+  "body_iou": 0.7318
+}
