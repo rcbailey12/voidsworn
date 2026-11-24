@@ -144,6 +144,45 @@ func _orbit_clip() -> void:
 	print("[clip] orbit frames 240")
 
 
+# issue 1582 (Artoo on PR 1874): every lineup slot's asked class, drawn class and hull source, so a placeholder or a
+# swapped class is never passed off as an installed hull of the asked class
+var slots: Array = []
+
+
+func _band_mates(cls: String) -> Array:
+	var same: Array = []
+	if cls in ALT.PLANE:
+		same = ALT.PLANE.duplicate()
+		same.erase("Station")
+	elif cls in ALT.LINE_CLS:
+		same = ALT.LINE_CLS.duplicate()
+	same.erase(cls)
+	return same
+
+
+func _slot(id: String, fac: String, asked: String, sv) -> void:
+	var src := str(sv.hull_source)
+	var drawn := str(sv.u.get("cls", asked))
+	var state := "MISSING (placeholder)" if src == "" else ("swapped, same band" if drawn != asked else "ok")
+	slots.append("%s %s asked %s drew %s source %s res %s: %s" % [id, fac, asked, drawn, src if src != "" else "-", str(sv.hull_res), state])
+
+
+func _partial() -> bool:
+	for l in slots:
+		if not str(l).ends_with(": ok"):
+			return true
+	return false
+
+
+func _write_slots() -> void:
+	var f := FileAccess.open(out.path_join("slots.txt"), FileAccess.WRITE)
+	for l in slots:
+		f.store_line(str(l))
+		print("[slot] ", l)
+	f.store_line("PARTIAL" if _partial() else "ALL INSTALLED")
+	f.close()
+
+
 func _run() -> void:
 	root.size = Vector2i(1280, 720)
 	world = Node3D.new()
@@ -174,7 +213,7 @@ func _run() -> void:
 		var man := {"ships": {}}
 		man.ships["STAND"] = {"res": hp}
 		SV._manifest = man
-	var tag := "PC installed hulls" if real else "cloud stand-in hull (C19_51 on every slot)"
+	var tag: String = "PC installed hulls" if real else "cloud stand-in hull (C19_51 on every slot)"
 	fx = FX.new()
 	world.add_child(fx)
 	fx.setup({"quality": "high", "shake": 0.0, "camera": cam})
@@ -190,21 +229,26 @@ func _run() -> void:
 		if not real:
 			u["code"] = "STAND"
 		sv.setup(u, hexw(row[2], row[3]))
-		# RUN5: a class with no installed hull for that faction drew the white placeholder block. On the PC, step down
-		# through the same band's classes until one has a real hull (hull_source is "" for the placeholder, issue 1410).
+		# RUN5: a class with no installed hull for that faction drew the white placeholder block. On the PC, try the other
+		# classes of the same altitude band only (Artoo on PR 1874: a cruiser in a frigate's slot would prove the line
+		# band, not the escort band); each slot's asked class, drawn class and source go to slots.txt, and a still with
+		# a missing or swapped hull says PARTIAL in its caption
 		if real and str(sv.hull_source) == "":
-			var alts: Array = ["Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge"] if row[0] in ALT.PLANE else ["Cruiser", "Destroyer", "Frigate"]
-			for c2 in alts:
-				if c2 == row[0]:
-					continue
+			for c2 in _band_mates(str(row[0])):
 				sv.free()
 				sv = SV.new()
 				world.add_child(sv)
 				u["cls"] = c2
 				sv.setup(u, hexw(row[2], row[3]))
 				if str(sv.hull_source) != "":
-					print("%s: no %s %s installed, drew a %s" % [id, row[1], row[0], c2])
 					break
+			if str(sv.hull_source) == "":   # none installed: keep the asked class (and its band), reported MISSING
+				sv.free()
+				sv = SV.new()
+				world.add_child(sv)
+				u["cls"] = row[0]
+				sv.setup(u, hexw(row[2], row[3]))
+		_slot(id, str(row[1]), str(row[0]), sv)
 		sv.set_marker(row[4])
 		sv.set_band(ALT.height(u))
 		_paint(sv)
@@ -213,6 +257,10 @@ func _run() -> void:
 		ships[id] = sv
 		print("%s %s band %.2f" % [id, row[1], sv.band_y])
 		i += 1
+	if real:
+		_write_slots()
+		if _partial():
+			tag += " · PARTIAL (slots.txt)"
 	var wing := SV.new()
 	world.add_child(wing)
 	var wu := {"id": "w1", "fac": "hegemony", "cls": "Squadron", "squadron": true, "facing": 0}
@@ -313,6 +361,8 @@ func _run() -> void:
 			fu["code"] = "STAND"
 		sv.setup(fu, Vector3(-75 + j * 30, 0, 60))
 		_paint(sv)
+		if real:
+			_slot(id, str(facs[j]), "Destroyer", sv)
 		fx.add_ship(id, sv, {"faction": facs[j], "cls": "Destroyer", "meshes": sv.meshes})
 		_paint(sv)
 		row6.append(sv)
@@ -341,4 +391,6 @@ func _run() -> void:
 	sheet.resize(960, 810, Image.INTERPOLATE_LANCZOS)
 	sheet.save_jpg(out.path_join("ST2_e_faction_jets.jpg"), 0.88)
 	print("[shot] ST2_e_faction_jets (rows: Sunward, Directorate / Hullbreakers, Glasswrights / Chorus, Eclipse)")
+	if real:
+		_write_slots()   # again, with the jets row
 	quit(0)
