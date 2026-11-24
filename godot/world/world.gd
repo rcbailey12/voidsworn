@@ -143,7 +143,8 @@ func _planet_size() -> Vector2i:
 func wait_ready() -> void:
 	# Hard cap (Opus review, Nov 3): a bake that never finishes must never hold the loading cover.
 	var t0 := Time.get_ticks_msec()
-	while pending_bakes > 0 and Time.get_ticks_msec() - t0 < 20000: await get_tree().process_frame
+	while pending_bakes > 0 and Time.get_ticks_msec() - t0 < 20000 and is_inside_tree():   # issue 1434: a left battle
+		await get_tree().process_frame                                                      # waits out of the tree
 
 
 func _sky_into(m: ShaderMaterial) -> void:

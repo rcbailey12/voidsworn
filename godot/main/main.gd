@@ -131,7 +131,7 @@ func quit_clean(code := 0, route := "menu") -> void:
 		ResourceLoader.load_threaded_get(FX_SCRIPT)
 		_fx_reading = false
 	if _host_reading and ResourceLoader.load_threaded_get_status(HOST_SCRIPT) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
-		ResourceLoader.load_threaded_get(HOST_SCRIPT)
+		_host_script = ResourceLoader.load_threaded_get(HOST_SCRIPT)
 		_host_reading = false
 	Sfx.drop_pending()
 	await get_tree().process_frame
@@ -194,11 +194,12 @@ func _ready() -> void:
 		print("[main] ready at %d ms after the engine started" % Time.get_ticks_msec())   # issue 1518 (LOAD29): the launch's own share
 		# issue 1518: the sound clips and the battle scene start loading on worker threads now, so the frame that builds the
 		# first battle only collects them
+		# the campaign host first: the title waits on it alone (Fable on 98926849)
+		if not ResourceLoader.has_cached(HOST_SCRIPT) and ResourceLoader.load_threaded_request(HOST_SCRIPT) == OK:
+			_host_reading = true   # read on a worker; a load() of it meanwhile waits only for what is not read yet
 		Sfx.prefetch()
 		if ResourceLoader.load_threaded_request(BATTLE_SCENE) == OK:
 			_scene_reading = true   # the sky read starts once the battle script is read (battle_parts_ready)
-		if not ResourceLoader.has_cached(HOST_SCRIPT) and ResourceLoader.load_threaded_request(HOST_SCRIPT) == OK:
-			_host_reading = true   # read on a worker; a load() of it meanwhile waits only for what is not read yet
 		if ResourceLoader.load_threaded_request(FX_SCRIPT) == OK:
 			_fx_reading = true
 	if args.has("player-path"):
@@ -441,7 +442,7 @@ func show_title(music_after_draw := false) -> void:
 	if _host_reading:
 		_host_reading = false
 		if ResourceLoader.load_threaded_get_status(HOST_SCRIPT) != ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
-			ResourceLoader.load_threaded_get(HOST_SCRIPT)   # read by now: no wait
+			_host_script = ResourceLoader.load_threaded_get(HOST_SCRIPT)   # read by now: no wait; held, so load() finds it cached
 	_clear()
 	if music != null:
 		if music_after_draw and DisplayServer.window_can_draw():
@@ -567,6 +568,8 @@ var _showcase_gen := 0   # bumped by each rebuild request, so only the newest pe
 func restart_showcase() -> void:
 	_showcase_gen += 1
 	if showcase != null and is_instance_valid(showcase):
+		if showcase.has_method("stop_build"):
+			showcase.stop_build()   # Fable on PR 1445: the backdrop's viewport settings go back before its free
 		showcase.queue_free()
 	showcase = null
 	if title != null and is_instance_valid(title) and title.has_method("cover_showcase"):
@@ -669,6 +672,7 @@ func battle_parts_ready() -> bool:
 # issue 1518: the battle scene, from the launch's worker read when it ran (it waits only for what is not read yet)
 var _scene_reading := false
 var _host_reading := false
+var _host_script: Resource = null   # held, as _fx_script, so the title's load() of it never compiles it again
 var hold_host_read := false   # prefetch_wait_check only: the host read counts as still running
 var _title_painted_said := false
 
@@ -692,6 +696,17 @@ func _battle_packed() -> PackedScene:
 		if _battle_scene == null:
 			_battle_scene = load(BATTLE_SCENE)
 	return _battle_scene
+
+
+# the title's Quick battle (Fable on PR 1445, 98926849): waits a frame at a time for the battle scene's launch read, so
+# a click while it is still read never holds the window; the title must still be the screen when it ends
+func quick_battle_from_title() -> void:
+	var t0: Node = title
+	if not await battle_parts_ready():
+		return
+	if title != t0 or title == null or not is_instance_valid(title) or battle != null:
+		return
+	quick_battle()
 
 
 func quick_battle() -> void:
@@ -730,8 +745,9 @@ func quick_battle() -> void:
 
 # Issue 1519 (CLOSE5: battle to title about 0.55 s): the battle used to be freed in the same frame the title was built, so
 # the player saw neither until both were done. Now the battle leaves the tree at once (nothing of it draws or runs), the
-# title is drawn on that frame, and the battle is freed just after that frame's draw, before any of its awaiting code
-# could resume out of the tree. Hiding it in the tree instead cost more (the hidden scene still drew its sky and world).
+# title is drawn on that frame, and the battle is freed after the title's second draw (_free_after_draws). Its awaiting
+# load code may resume out of the tree in between, so every load wait returns once is_inside_tree() is false (LOAD29).
+# Hiding it in the tree instead cost more (the hidden scene still drew its sky and world).
 # Only the quick battle's way back to the title uses this; the campaign's battles still free at once.
 func _retire_battle(b: Node, parts: Dictionary) -> void:
 	if b == null or not is_instance_valid(b):
@@ -770,7 +786,8 @@ var _retired: Node = null   # the battle out of the tree waiting for its free (q
 func _time_title_return(t_leave: int, parts := {}) -> void:
 	# issue 1519: where the time goes, frame by frame: the end of each frame's draw and the start of the next process step
 	var marks: Array = []
-	var on_draw := func() -> void: marks.append(["draw", Time.get_ticks_usec() - t_leave])
+	# a draw counts as a title frame only with the title in the tree (Fable on PR 1445: show_title may wait on the host read)
+	var on_draw := func() -> void: marks.append(["draw" if title != null and is_instance_valid(title) and title.is_inside_tree() else "draw_no_title", Time.get_ticks_usec() - t_leave])
 	RenderingServer.frame_post_draw.connect(on_draw)
 	RenderingServer.frame_pre_draw.connect(func() -> void: marks.append(["pre", Time.get_ticks_usec() - t_leave]), CONNECT_ONE_SHOT)
 	await get_tree().process_frame
@@ -784,19 +801,20 @@ func _time_title_return(t_leave: int, parts := {}) -> void:
 		await get_tree().process_frame
 		marks.append(["step", Time.get_ticks_usec() - t_leave])
 	RenderingServer.frame_post_draw.disconnect(on_draw)
-	# issue 1519: the first title frame is the first frame drawn after the leave (the title is in the tree from the
-	# leave on); before, this line gave the second process step, which also held the battle's free
+	# issue 1519: the first title frame is the first frame drawn after the leave with the title in the tree (from the leave
+	# on, unless the title waited on the host read); before, this line gave the second process step, which also held the
+	# battle's free. The worst frame counts every draw.
 	var first_draw := -1
 	var worst := 0
 	var prev := 0
 	for m in marks:
-		if m[0] == "draw":
-			if first_draw < 0:
+		if m[0] == "draw" or m[0] == "draw_no_title":
+			if first_draw < 0 and m[0] == "draw":
 				first_draw = int(m[1])
 			worst = maxi(worst, int(m[1]) - prev)
 			prev = int(m[1])
 	print("[main] battle to title: leave frame %.1f ms, first title frame %.1f ms after the leave" % [
-		float(t_free - t_leave) / 1000.0, float(first_draw if first_draw >= 0 else t_title - t_leave) / 1000.0])
+		float(t_free - t_leave) / 1000.0, float(first_draw if first_draw >= 0 else (t_title - t_leave if not DisplayServer.window_can_draw() else 9999000)) / 1000.0])   # 9999: no draw with the title in its first second
 	var bits: Array = []
 	for k in parts:
 		bits.append("%s %.1f" % [k, float(parts[k]) / 1000.0])

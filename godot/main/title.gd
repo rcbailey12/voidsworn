@@ -150,7 +150,7 @@ func _build() -> void:
 	_menu_gap(10)
 	if saved:
 		_menu_link("New run", func() -> void: main.new_run({}))
-	_menu_link("Quick battle", func() -> void: main.quick_battle())
+	_menu_link("Quick battle", func() -> void: main.quick_battle_from_title())
 	if camp:
 		_menu_link("Progression", func() -> void: main.new_run({"screen": "legacy"}))
 	if ResourceLoader.exists("res://story/story.gd"):   # story hook: the Career screen (godot/story/README.md)

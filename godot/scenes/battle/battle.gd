@@ -1034,6 +1034,7 @@ func _warmup() -> void:
 	hud.loading(true)
 	load_phase = "world"
 	if world != null: await world.wait_ready()
+	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	load_phase = "pull_back"
 	var keep := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
 	cam.b = 0.6

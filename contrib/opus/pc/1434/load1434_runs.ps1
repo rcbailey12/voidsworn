@@ -234,7 +234,7 @@ foreach ($lc in @(@{name = 'title_launch_nosave'; save = $false; want = 'New run
   }
   $p = Start-Game $prof @('--path', "`"$Project`"", '--windowed', '--resolution', '1920x1080', '--log-file', "`"$flog`"", '--', '--quit-after', '240') $log $err
   $found = Find-Game $p 60
-  $res = 'FAIL'; $why = @()
+  $verdict = 'FAIL'; $why = @()
   if ($note) { $why += $note }
   if (-not $found) { $why += 'no game window'; if (-not $p.HasExited) { Kill-Tree $p } }
   else {
@@ -254,12 +254,12 @@ foreach ($lc in @(@{name = 'title_launch_nosave'; save = $false; want = 'New run
       if ($mm.Groups[2].Value -ne $lc.want) { $why += "first button '$($mm.Groups[2].Value)', expected '$($lc.want)'" }
     }
     if ($text -match 'CrashHandlerException|Program crashed|access violation|RenderingServer is null|SCRIPT ERROR') { $why += 'crash or script error' }
-    if ($why.Count -eq 0) { $res = 'PASS' }
-    Say ("title launch cold {0}: {1} main ready at {2} ms, menu painted at {3} ms (first button: {4}){5}" -f $lc.name, $res, $ready,
+    if ($why.Count -eq 0) { $verdict = 'PASS' }
+    Say ("title launch cold {0}: {1} main ready at {2} ms, menu painted at {3} ms (first button: {4}){5}" -f $lc.name, $verdict, $ready,
       $(if ($mm.Success) { $mm.Groups[1].Value } else { '-' }), $(if ($mm.Success) { $mm.Groups[2].Value } else { '-' }), $(if ($why.Count) { ' | ' + ($why -join '; ') } else { '' }))
   }
   if (-not $found) { Say ("title launch cold {0}: FAIL | {1}" -f $lc.name, ($why -join '; ')) }
-  $launch[$lc.name] = $res
+  $launch[$lc.name] = $verdict
   Start-Sleep -Seconds 2
 }
 
