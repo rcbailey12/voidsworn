@@ -57,6 +57,7 @@ HW, HH = 0.095 * LENGTH, 0.070 * LENGTH   # the core's half-beam and half-height
 BOW_EXP = 0.75   # how fast the core swells from its bow point (t=1 is the bow, X1); lower is a blunter, rounder bow (the bomber sets it)
 MOSAIC_WEIGHTS = None           # the mosaic's amber, violet, green shares; None: the kit's (the bomber sets its own)
 MOSAIC_GRID = (64, 40)         # the mosaic core's vertex grid (along, around): colour is per vertex, so thin streaks on a big body need more
+I8 = None                      # R431: dict(leaves, width, seed, sign, start) lays the kit's I8_37 shell (hull.i8_shell) instead of ribbons()
 MOSAIC_KW = {}                 # extra kit mosaic_tint options (a wide body passes streak=True, issue 1415); none: the kit default
 
 
@@ -198,7 +199,14 @@ def body(K):
     stack = gw_kit('stack')
     stack.setup(kit)
     P = gw_kit('parts')
-    ribs = ribbons()
+    ribs = None if I8 else ribbons()
+    if I8:
+        # R431 (Ryan Nov 24: the craft "might not be using the same approach as the big ships"): the big ships' I8_37 shell
+        # from the kit, its long ribbons and swells laid on this craft's own core
+        field = gw_kit('hull').i8_field(X1 - X0, sign=I8.get('sign', 1), start=I8.get('start', 0.2))
+        gap_of = field.gap_of
+    else:
+        gap_of = lambda x_, a_: gaps(x_, a_, ribs)
 
     # ---------------- the core: the glowing stained-glass mosaic seen between the ribbons ----------------
     nu, nv = MOSAIC_GRID
@@ -212,7 +220,7 @@ def body(K):
     for i in range(len(tint.data)):
         ix, iv = divmod(i, nv)
         x = X0 + (X1 - X0) * ix / nu; a = TAU * iv / nv
-        rgb, g = P.mosaic_tint(x, a, lambda x_, a_: gaps(x_, a_, ribs), stack.PALETTE, MOSAIC_WEIGHTS or stack.WEIGHTS, seed=6, tones=stack.TONES, **MOSAIC_KW)
+        rgb, g = P.mosaic_tint(x, a, gap_of, stack.PALETTE, MOSAIC_WEIGHTS or stack.WEIGHTS, seed=6, tones=stack.TONES, **MOSAIC_KW)
         tint.data[i].color = (rgb[0], rgb[1], rgb[2], 1.0)
         glow.data[i].value = g
     K.hull_sections = [(x, core(x, 0.0)[1], core(x, 0.0)[1], core(x, -math.pi / 2)[2], core(x, math.pi / 2)[2], 0.0, 0.0)
@@ -221,7 +229,13 @@ def body(K):
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
 
     # ---------------- six pearl ribbons twisting together to one point at the bow ----------------
-    for r in ribs:
+    if I8:
+        obs = gw_kit('hull').i8_shell(K, core, field, X0 + U(0.02), X1 - U(0.01), CODE, scale=max(HW, HH) / 2.6,
+                                      leaves=I8.get('leaves', 6), seed=I8.get('seed', 0), grp='hull', nu=96, width=I8.get('width', 1.0),
+                                      raise_=0.012 * max(HW, HH) / 2.6)
+        K.mass('Pearl ribbons', obs[0], 'pearl ribbons with silver edges',
+               note='the I8_37 shell (kit hull.i8_shell): fine long ribbons spiralling stern to bow, chunkier swells riding them')
+    for r in (ribs or []):
         vv, ff, al, ac = thick_ribbon(r)
         ob = K._obj(CODE + '_' + r.name, vv, ff, 'gw_pearl', smooth=True, grp='hull')
         ob.data.attributes.new('gw_along', 'FLOAT', 'POINT'); ob.data.attributes.new('gw_across', 'FLOAT', 'POINT')
@@ -231,7 +245,8 @@ def body(K):
         for side in (-1, 1):
             e = r.edge(core, side, 72, U(0.0015))
             K._obj('%s_%s_silver_%s' % (CODE, r.name, 'p' if side > 0 else 's'), *tube_mesh(e, [U(0.0016)] * len(e), 5), 'gw_silver', smooth=True, grp='hull')
-    K.mass('Pearl ribbons', ob, 'pearl ribbons with silver edges', note='six ribbons wrap the core stern to bow and twist together to one point, like a drawn flame')
+    if ribs:
+        K.mass('Pearl ribbons', ob, 'pearl ribbons with silver edges', note='six ribbons wrap the core stern to bow and twist together to one point, like a drawn flame')
 
     # ---------------- the drive: three cut violet stones round the blunt stern face (no flame, no nozzle) ----------------
     for ang, sn in STONES:   # each stone's pearl seat runs forward into the core's stern swell (stage 4 audit: nothing floats)
@@ -275,7 +290,7 @@ def body(K):
     share = gw_kit('hull').mosaic_share(list(K.coll.objects))
     print('MOSAIC SHARE', CODE, share, 'max', gw_kit('stack').MOSAIC_MAX)
     if max(share['top'], share['battle']) > gw_kit('stack').MOSAIC_MAX:
-        raise ValueError('R431: %s shows %s bare stained glass (max %.2f); widen the pearl ribbons (F.HALF)'
+        raise ValueError('R431: %s shows %s bare stained glass (max %.2f); widen the pearl ribbons (F.HALF, or F.I8 width)'
                          % (CODE, share, gw_kit('stack').MOSAIC_MAX))
 
 

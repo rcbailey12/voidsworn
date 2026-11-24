@@ -78,41 +78,30 @@ def lowest_z(x):
     """the lobes' lowest line at station x"""
     t = (x - F.X0) / (F.X1 - F.X0)
     return belly_z(x, F.HW * C_LOBE / (C_LOBE + R_LOBE) * env(t) ** 0.5)
-F.NRIB = 12
-F.HALF = 0.19    # R431 (Ryan Nov 23, I8_37 look everywhere): broad pearl bands, the stained panes show in the seams between them
-F.TWIST = lambda x: -0.4 + 1.6 * (x - F.X0) / (F.X1 - F.X0)   # R431 round 3 (Ryan Nov 23, "wrapping" like I8_37): the ribbons spiral a quarter turn bow to stern
-# F.MOSAIC_WEIGHTS: the kit's four-colour weights (issue 1415, Ryan Nov 21 1:45 PM CT: less red and amber, more blue, green and
-# purple); the Nov 20 three-colour override would have dropped blue from the marble.
-F.MOSAIC_KW = dict(streak=True)   # Ryan, Nov 20 7:07 PM CT: "random lights rather than integrated"; evenly lit panes with a thin dark rim (kit, issue 1415)
-_gaps0 = F.gaps
-
-
-def gaps(x, a, ribs):
-    """long panes along the flow (issue 1415's streak style): each bay runs a little longer bow to stern than the kit's, so
-    a pane between two veins reads as one long streak of stained glass"""
-    r = _gaps0(x, a, ribs)
-    return (r[0], r[1] * 0.8) + tuple(r[2:])
-
-
-F.gaps = gaps
+# R431 (Ryan Nov 24: the craft should use "the same approach as the big ships"): the big ships' I8_37 shell from the kit
+# (hull.i8_field, hull.i8_shell) over both lobes, fine long ribbons spiralling with chunkier swells riding them
+F.I8 = dict(leaves=8, width=1.5, seed=6)
 F.MOSAIC_GRID = (160, 240)   # ten gaps of four thin streaks each round the twin lobes (kit MIX 'streaks', Ryan Nov 20 7:48 PM CT)
 F.CORE_NOTE = 'two plump lobes fused side by side, the same size and shape, fully closed; a groove top and bottom where they meet (W4b)'
-F.STONES = [(0.0, 'c')]
-F.STONE_RING = (0.0, 0.0)
-F.STONE_X = -0.42 - 0.004
-F.STONE_R = 0.016
+F.STONES = []   # Ryan Nov 24 ("the engine looks weird on the bomber"): the big ships' grown stern drive (kit stern_drive) in build()
 F.ROOMS = [('pilot', 'crew', 0.12, 0.26, 0.04, 0.04, 0.05, 'the pilot between the lobes at the front'),
            ('light_core', 'core', -0.15, 0.08, 0.05, 0.05, 0.05, 'the light core that lights the seam'),
            ('drive_well', 'engroom', -0.40, -0.25, 0.03, 0.03, 0.03, 'the light well behind the stern bloom')]
 F.BREAK_X = -0.2
 F.CORE_PT = 0.0
-TORP_X0, TORP_X1 = 0.06, 0.50          # the torpedoes' tail and star-head stations (shares of LENGTH)
+TORP_X0, TORP_X1 = -0.12, 0.33         # the torpedoes' tail and star-head stations (shares of LENGTH); Ryan Nov 24: they no longer poke past the bow like two exhausts
 
 
 def build(K):
     from mathutils import Vector
     F.body(K)
     P = F.gw_kit('parts')
+    # ---------------- the drive: the big ships' grown stern optic (kit hull.stern_drive), where the lobes taper together ----------------
+    R_DRIVE = U(0.075)
+    gw_hull = F.gw_kit('hull')
+    gw_hull.stern_drive(K, 'E1', (F.X0 + 0.55 * R_DRIVE, 0.0, 0.0), R_DRIVE)
+    K.change('One grown stern optic where the lobes taper together (the big ships\' stern drive from the kit), not a tiny stone on the stern point',
+             'Ryan, Nov 24 2026: "the engine looks weird on the bomber"; R431 the craft follow the big ships')
     # ---------------- the seam: a seafoam glow along the groove where the lobes meet, top and bottom ----------------
     for side, nm in ((1, 'top'), (-1, 'belly')):
         pts = [core(F.X0 + (F.X1 - F.X0) * i / 40, side * math.pi / 2, inset=U(0.004)) for i in range(4, 37)]
@@ -123,10 +112,10 @@ def build(K):
         fid = 'BT' + sn
         r = U(0.040)
         y = side * U(0.07)
-        zc = lowest_z(U(0.2)) + r                     # sunk into the V of the belly seam: its underside on the lobes' lowest line, never below
+        zc = lowest_z(U(0.5 * (TORP_X0 + TORP_X1))) + r                     # sunk into the V of the belly seam: its underside on the lobes' lowest line, never below
         body_pts = [(U(TORP_X0) + (U(TORP_X1 - 0.03) - U(TORP_X0)) * i / 10, y, zc) for i in range(11)]
         K._obj(fid + '_casing', *F.tube_mesh(body_pts, [r * min(1.0, 0.45 + 0.55 * i / 3) for i in range(11)], 10), 'gw_pearl', smooth=True, grp=fid)
-        K._obj(fid + '_cradle', *F.ellipsoid((U(0.22), y, zc + U(0.006)), (U(0.17), r * 1.2, r * 1.05), 16, 8), 'gw_silver', smooth=True, grp=fid)
+        K._obj(fid + '_cradle', *F.ellipsoid((U(0.5 * (TORP_X0 + TORP_X1)), y, zc + U(0.006)), (U(0.17), r * 1.2, r * 1.05), 16, 8), 'gw_silver', smooth=True, grp=fid)
         head = Vector((U(TORP_X1 - 0.03), y, zc))
         K._obj(fid + '_star', *F.ellipsoid(tuple(head), (U(0.035), r * 1.1, r * 1.1), 12, 6), 'gw_gem_amber', smooth=True, grp=fid)
         for j in range(6):
