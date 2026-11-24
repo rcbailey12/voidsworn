@@ -170,6 +170,47 @@ func _props_checks() -> void:
 	for n in [large, hole, plain]:
 		if n != null:
 			n.free()
+	_outpost_checks(rel)
+
+
+# Issue 1791 (Ryan, Nov 24 2026): with the outpost installed, every cluster under 19 hexes and every hole draws it, fitted
+# inside its hexes; the big cluster keeps T2 at unit scale. A box with the outpost's kit plan (about 15 x 10 x 17 kit
+# units at T2's 1.919 kit-to-world scale) stands in for the cache.
+func _outpost_checks(rel: Array) -> void:
+	# the installed outpost when there is one (the PC); otherwise a stand-in box of its size (28.4 x 33.4 x 18.6) in its
+	# place, which only this run sees. Never swap a box in under an outline already measured from the real one.
+	if not ResourceLoader.exists(PROPS.OUTPOST_PATH):
+		var node := Node3D.new()
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(28.4, 33.4, 18.6)
+		mi.mesh = box
+		node.add_child(mi)
+		mi.owner = node
+		var scene := PackedScene.new()
+		scene.pack(node)
+		node.free()
+		scene.take_over_path(PROPS.OUTPOST_PATH)
+		_keep.append(scene)
+	var tri := PROPS.station(34.0, 2.0 * HS, "rig", true, rel, HS, 0.0)
+	var one := PROPS.station(14.0, HS, "spire", false, [Vector2.ZERO], HS, 0.0)
+	var big := PROPS.station(46.0)
+	var ok := tri != null and one != null and big != null
+	var out := 99999
+	if ok:
+		ok = bool(tri.get_meta("station_outpost", false)) and bool(one.get_meta("station_outpost", false)) \
+			and not bool(big.get_meta("station_outpost", true)) and big.scale.is_equal_approx(Vector3.ONE)
+		for pair in [[tri, rel], [one, [Vector2.ZERO]]]:
+			var st: Node3D = pair[0]
+			st.rotation.y = float(st.get_meta("station_bearing", 0.0))
+			root.add_child(st)
+		out = _outside(tri, rel, HS) + _outside(one, [Vector2.ZERO], HS)
+		ok = ok and tri.find_child("station_T2_debris", true, false) == null
+	_report(ok and out == 0, "with the outpost installed, the 3-hex spot and a hole draw it inside their hexes (scale %.3f and %.3f, %d points outside), the big cluster keeps T2" % [
+		tri.scale.x if tri else 0.0, one.scale.x if one else 0.0, out])
+	for n in [tri, one, big]:
+		if n != null:
+			n.free()
 
 
 func _hulk_checks() -> void:

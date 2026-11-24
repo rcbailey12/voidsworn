@@ -81,7 +81,7 @@ def build():
                       (rr * math.cos(a), rr * math.sin(a), z + .15), .045, 'edge')
     # top cap: a dead beacon ring on the upper drum
     top = DRUMS[-1]['bottom'] + DRUMS[-1]['height']
-    p.record('core_cap', 'tower_cap', 'dead beacon ring on the upper deck')
+    p.record('beacon_ring', 'tower_cap', 'dead beacon ring on the upper deck')
     for zz in (.1, .42):
         p.band(.9, 1.7, top + zz, top + zz + .12, steps=32, zone='trim')
     for a in range(6):

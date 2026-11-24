@@ -52,8 +52,13 @@ static var _pending := {}   # not GPU: paths only (path -> true), the loaded sce
 
 # Fable on PR 1772 (7c734f53, item 2): station_T2 is large too, so a battle with station hexes or holes starts reading it
 # (and its debris) on a worker thread as the battle begins; station() collects it.
-static func prefetch_station() -> void:
-	for p in [T2_PATH, T2_DEBRIS_PATH]:
+static func prefetch_station(big := true, small := true) -> void:
+	var want: Array = []
+	if big or (small and not ResourceLoader.exists(OUTPOST_PATH)):
+		want += [T2_PATH, T2_DEBRIS_PATH]
+	if small:
+		want.append(OUTPOST_PATH)
+	for p in want:
 		if old_path() or _pending.has(p) or not ResourceLoader.exists(p) or ResourceLoader.has_cached(p):
 			continue
 		if ResourceLoader.load_threaded_request(p) == OK:
@@ -85,6 +90,10 @@ static func _collect(p: String) -> Resource:
 # a checkout with no T2 cache.
 const T2_PATH := "res://gen/ships/station_T2.scn"
 const T2_DEBRIS_PATH := "res://gen/ships/station_T2_debris.scn"
+# Issue 1791 (Ryan, Nov 24 2026, "Yes agree on 1"): every cluster under 19 hexes and every station hole draws the outpost,
+# a smaller station from the same kit (tools/blender/kits/hegemony_station/outpost.py), fitted to its hexes; T2 keeps the big
+# cluster at unit scale. Until the outpost is installed, T2 fitted the same way stands in.
+const OUTPOST_PATH := "res://gen/ships/station_outpost.scn"
 const T2_REACH := 60.8   # T2's horizontal reach from its centre at unit scale (bounds 99.2 x 70.2: production_checks.json)
 const BIG_FOOTPRINT_CELLS := 19   # the rules' big station (every hex within 2 of its centre, R314)
 const FIT_ANGLES := 720  # rays from the cluster centre used to measure its footprint
@@ -228,12 +237,16 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 		kind = ""
 	var info: Dictionary = STATION_KINDS.get(kind, {})
 	var path := T2_PATH
+	var small := cells.size() < BIG_FOOTPRINT_CELLS if not cells.is_empty() else size < LARGE_STATION_SIZE
 	if info.has("scene") and ResourceLoader.exists(str(info["scene"])):
 		path = str(info["scene"])
+	elif small and ResourceLoader.exists(OUTPOST_PATH):
+		path = OUTPOST_PATH
 	if ResourceLoader.exists(path):
 		var t2 := _scene_at(path).instantiate() as Node3D
 		t2.set_meta("station_T2", true)
 		t2.set_meta("station_kind", kind)
+		t2.set_meta("station_outpost", path == OUTPOST_PATH)
 		if not _reach.has(path):
 			_outline[path] = outline_points(t2)
 			var far := 0.0
