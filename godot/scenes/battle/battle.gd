@@ -1753,10 +1753,13 @@ func _lay_wreck(unit) -> void:
 	if not fx_pieces:
 		return   # no effects: the ship view keeps its own darkened hull in place (ShipView.die)
 	var gen: int = board.built
+	# the dead ship's own faction from its live view (the board's build-time view misses reinforcements: Artoo on PR 1772)
+	var sv = views.get(unit)
+	var fac: String = str(sv.fac) if sv != null and is_instance_valid(sv) else ""
 	get_tree().create_timer(WRECK_CHECK_S).timeout.connect(func() -> void:
 		if not is_instance_valid(board) or board.built != gen or board.wrecks.get(id, "") != board.key(at.x, at.y): return
 		if gfx == null or int(gfx.wreck_pieces(id)) > 0: return
-		board.add_wreck(id, at.x, at.y, true))
+		board.add_wreck(id, at.x, at.y, true, fac))
 
 
 func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:

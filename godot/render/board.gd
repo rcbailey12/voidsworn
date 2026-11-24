@@ -1169,7 +1169,7 @@ func _planet() -> void:
 # a wreck the map started with: the hex joins the blocked terrain (its edge shows with the grid, Z, as every rock and
 # hulk hex does), with the same scatter of torn rock and plate, and the ship's own pieces settle inside it (fx_death
 # _leash). hull: also lay the map's burnt hulk there, for a death that left no pieces (or a battle without the effects).
-func add_wreck(id: String, q: int, r: int, hull := false) -> void:
+func add_wreck(id: String, q: int, r: int, hull := false, fac := "") -> void:
 	var k := key(q, r)
 	if not index.has(k):
 		return
@@ -1185,7 +1185,7 @@ func add_wreck(id: String, q: int, r: int, hull := false) -> void:
 		_rocks(c, rng, 2, 1.5, 3.0)
 	if hull and not wreck_hulls.has(id):
 		wreck_hulls[id] = true
-		_hulk(c, rng, _unit_faction(id))
+		_hulk(c, rng, fac if fac != "" else _unit_faction(id))   # the caller's live faction first (a late reinforcement: Artoo)
 	if fresh:
 		_rebuild_edges()
 

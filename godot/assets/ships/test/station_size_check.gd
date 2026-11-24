@@ -433,6 +433,25 @@ func _board_checks() -> void:
 	var local := int(got.get("chorus", 0)) + int(got.get("ithar", 0))
 	print("  hulks by faction: %s" % str(got))
 	_report(local >= 3 and mirrored == 0, "a Chorus and Glasswright battle's six hulk hexes draw mostly their hulls (%d), none mirrored" % local)
+	# a reinforcement that arrived after the board was built (not in its view) dies and lays its hulk: the faction the
+	# battle passes wins (Artoo on PR 1772 at f4981c0d); unknown to both, the mixed draw stays
+	var before := {}
+	for n in b2.find_children("*", "Node3D", true, false):
+		if n.has_meta("hulk_faction"):
+			before[n.get_instance_id()] = true
+	var late_ok := true
+	var cells := [[3, -3], [-3, 3], [2, 2], [-2, -2]]
+	var facs := ["deathless", "corsair", "hegemony", "voidsworn"]
+	for i in cells.size():
+		b2.add_wreck("late_%d" % i, int(cells[i][0]), int(cells[i][1]), true, facs[i])
+	var laid: Array = []
+	for n in b2.find_children("*", "Node3D", true, false):
+		if n.has_meta("hulk_faction") and not before.has(n.get_instance_id()):
+			laid.append(str(n.get_meta("hulk_faction")))
+	laid.sort()
+	var want := facs.duplicate()
+	want.sort()
+	_report(laid == want, "a late reinforcement's wreck lays its own faction's hulk from the faction the battle passes: %s" % str(laid))
 	b2.free()
 
 
