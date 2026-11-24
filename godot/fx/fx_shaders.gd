@@ -11,6 +11,19 @@ extends RefCounted
 # Brightness: every effect colour is multiplied by the global fx_gain (look.gd sets it per tonemapper; 0.5556 matches
 # the A3 proof under Godot's ACES, which applies an exposure bias of 1.8 that Babylon's curve does not).
 
+static var _globals_added := false
+
+
+static func ensure_globals() -> void:
+	if _globals_added:
+		return
+	_globals_added = true
+	var existing: PackedStringArray = RenderingServer.global_shader_parameter_get_list()
+	for g in [[&"scene_t", 0.0], [&"fx_gain", 0.5556], [&"fx_calm", 0.0], [&"fx_px", 1.0]]:
+		if not ProjectSettings.has_setting("shader_globals/" + String(g[0])) and not existing.has(String(g[0])):
+			RenderingServer.global_shader_parameter_add(g[0], RenderingServer.GLOBAL_VAR_TYPE_FLOAT, g[1])
+
+
 static func patch(code: String, target: String, replacement: String) -> String:
 	if not code.contains(target):
 		push_error("FX shader patch target missing: " + target)
@@ -934,6 +947,122 @@ void fragment() {
 	}
 	vec3 colour = hot * (core * 1.35 + fork_hot) + tint * (sheath * (0.55 + slow * 0.7) + fork_glow * 0.5);
 	ALBEDO = clamp(colour * vCol.a * motion * env * ends * fx_gain, 0.0, 512.0);
+}
+"""
+
+# Directional RCS thruster cone-jet shader (issue 2042): replaces round Gaussian billboard dots with a short
+# nozzle-anchored directional cone jet (hot core, soft wash, quick fade) for mechanical gas factions, plus
+# faction-native non-mechanical modes for Glasswrights (prismatic vane flare), Chorus (organic vent pulse),
+# and Eclipse (cold violet null ripple). VERTEX.x in 0..1 along jet axis, VERTEX.y in -0.5..0.5 across width.
+const RCS_JET := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+""" + COMMON + """
+uniform vec3 jet_dir = vec3(-1.0, 0.0, 0.0);
+uniform float jet_len = 1.6;
+uniform float w_root = 0.28;
+uniform float w_tip = 1.15;
+uniform float age_u = 0.0;
+uniform float alpha_k = 1.0;
+uniform float jet_seed = 0.0;
+uniform float jet_kind = 0.0;
+uniform vec3 core_col = vec3(1.0, 0.96, 0.88);
+uniform vec3 wash_col = vec3(0.85, 0.9, 1.0);
+varying vec2 vUv;
+void vertex() {
+	vec3 origin = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+	vec3 wdir = snorm(jet_dir);
+	float u = clamp(age_u, 0.0, 1.0);
+	int kind = int(jet_kind + 0.5);
+	float s = VERTEX.x;
+	vec3 wp = origin;
+	if (kind == 3) {
+		// Eclipse null ripple: symmetric precision ring opening about the emitter, no flame or gas.
+		float depth = max(-(VIEW_MATRIX * vec4(origin, 1.0)).z, 0.01);
+		float px1 = max(px_world(1.0, depth, PROJECTION_MATRIX), frame_world(1.0, depth, PROJECTION_MATRIX, VIEWPORT_SIZE.y));
+		float rad = max(w_tip * (0.55 + 1.35 * (1.0 - spow(1.0 - u, 2.5))), 8.0 * px1);
+		vec3 right_cam = snorm(INV_VIEW_MATRIX[0].xyz);
+		vec3 up_cam = snorm(INV_VIEW_MATRIX[1].xyz);
+		wp = origin + (right_cam * (VERTEX.x - 0.5) + up_cam * VERTEX.y) * rad * 2.0;
+	} else {
+		float ext = jet_len;
+		if (kind == 0) {
+			ext = jet_len * (0.62 + 0.48 * smoothstep(0.0, 0.22, u)) * (1.0 - 0.14 * u);
+		} else if (kind == 1) {
+			ext = jet_len * 0.72;
+		} else {
+			ext = jet_len * (0.48 + 0.52 * sin(3.14159265 * clamp(u * 0.85 + 0.15, 0.0, 1.0)));
+		}
+		wp = origin + wdir * (s * ext);
+		vec3 c = cross(wdir, CAMERA_POSITION_WORLD - wp);
+		if (dot(c, c) < 1e-6) {
+			vec3 up = abs(wdir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+			c = cross(wdir, up);
+		}
+		vec3 side = snorm(c);
+		float depth = max(-(VIEW_MATRIX * vec4(wp, 1.0)).z, 0.01);
+		float px1 = max(px_world(1.0, depth, PROJECTION_MATRIX), frame_world(1.0, depth, PROJECTION_MATRIX, VIEWPORT_SIZE.y));
+		float w = w_root;
+		if (kind == 0) {
+			w = mix(w_root, w_tip * (1.0 + 0.32 * u), spow(s, 0.85));
+			w = max(w, mix(4.0, 9.5, s) * px1);
+		} else if (kind == 1) {
+			w = mix(w_root * 0.85, w_tip * 0.45, s);
+			w = max(w, 6.0 * px1);
+		} else {
+			float swell = 0.7 + 0.65 * sin(3.14159265 * s);
+			w = max(w_tip * 0.85 * swell * (0.75 + 0.45 * u), 7.0 * px1);
+		}
+		wp += side * VERTEX.y * w;
+	}
+	POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(wp, 1.0));
+	vUv = VERTEX.xy;
+}
+void fragment() {
+	float s = clamp(vUv.x, 0.0, 1.0);
+	float x = abs(vUv.y * 2.0);
+	float u = clamp(age_u, 0.0, 1.0);
+	int kind = int(jet_kind + 0.5);
+	vec3 col = vec3(0.0);
+	if (kind == 0) {
+		// Short directional cone jet: hot nozzle core, soft turbulent conical wash, quick fade.
+		float root_in = smoothstep(0.0, 0.08, s);
+		float tip_out = spow(1.0 - s, 1.35);
+		float turb = fbm(vec2(s * 7.0 - scene_t * 14.0 + jet_seed * 5.0, vUv.y * 4.0 + jet_seed * 3.0));
+		float core_r = x / mix(0.28, 0.08, spow(s, 0.6));
+		float core = exp(-core_r * core_r * 2.2) * spow(1.0 - clamp(s * 1.85, 0.0, 1.0), 1.5) * root_in;
+		float wash_r = x / mix(0.72, 0.96, s);
+		float wash = exp(-wash_r * wash_r * 2.6) * tip_out * root_in * (0.55 + 0.65 * turb);
+		float env = spow(1.0 - u, 1.65);
+		col = (core_col * core * 2.1 + wash_col * wash * 1.15) * env;
+	} else if (kind == 1) {
+		// Glasswrights: prismatic crystal vane shimmer, no white cold gas.
+		float diamond = exp(-abs(s - 0.22) * 5.5 - x * 6.5);
+		float sheen = exp(-x * x * 5.0) * smoothstep(0.0, 0.12, s) * spow(1.0 - s, 1.5);
+		vec3 prism = clamp(abs(fract(s * 0.75 + vUv.y * 0.55 + u * 0.65 + jet_seed + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+		float env = spow(1.0 - u, 1.4);
+		col = (mix(core_col, prism, 0.35) * diamond * 2.2 + mix(wash_col, prism, 0.55) * sheen * 1.15) * env;
+	} else if (kind == 2) {
+		// Chorus: organic bioluminescent vent pulse breathing softly outward.
+		vec2 p = vec2((s - 0.35) * 1.4, vUv.y * 2.0);
+		float r = length(p);
+		float cell = fbm(p * 2.6 + vec2(-u * 2.2 + jet_seed * 4.0, jet_seed * 7.0));
+		float body = exp(-r * r * 2.6) * (0.55 + 0.75 * cell);
+		float heart = exp(-r * r * 11.0);
+		float pulse_env = mix(0.45, 1.0, sin(3.14159265 * u)) * spow(1.0 - u, 0.85);
+		float throb = 1.0 - 0.14 * (1.0 - fx_calm) * sin(scene_t * 10.0 + jet_seed * 6.0);
+		col = (core_col * heart * 1.6 + wash_col * body * 1.05) * pulse_env * throb;
+	} else {
+		// Eclipse: cold violet null ripple, zero green and zero orange.
+		vec2 p = vec2(s * 2.0 - 1.0, vUv.y * 2.0);
+		float r = length(p);
+		if (r > 1.0) { discard; }
+		float r1 = exp(-spow((r - 0.78) / 0.08, 2.0));
+		float r2 = exp(-spow((r - 0.56) / 0.05, 2.0)) * 0.55;
+		float env = spow(1.0 - u, 1.8);
+		col = (core_col * r1 * 1.5 + wash_col * r2 * 1.2) * env;
+	}
+	ALBEDO = clamp(col * alpha_k * fx_gain, 0.0, 512.0);
 }
 """
 
