@@ -467,9 +467,10 @@ func start_default() -> void:
 		var e: String = a.load_rules()
 		if e != "":
 			push_error(e)
+		a.interactive_deployment = not bot and not showcase
 		a.new_battle_scenario(str(args["scenario"]), seed if args.has("seed") else -1)
 		a.set_undo(true)   # issue 1450: a test battle played in the scene can take moves back like any other
-		_begin(a)
+		begin_with(a)
 		return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
@@ -511,9 +512,10 @@ func start_scenario(sc: Dictionary) -> void:
 	var e: String = a.load_rules()
 	if e != "":
 		push_error(e)
+	a.interactive_deployment = not bot and not showcase
 	a.new_battle_scenario(sc, int(sc.get("seed", 1)))
 	battle_cfg = sc
-	_begin(a)
+	begin_with(a)
 
 
 # From the campaign: run = the campaign run dictionary, cfg = the battle config (API.md new_battle).
@@ -522,14 +524,26 @@ func start_battle(run: Dictionary, cfg: Dictionary) -> void:
 	var e: String = a.load_rules()
 	if e != "":
 		push_error(e)
+	a.interactive_deployment = not bot and not showcase
 	a.new_battle(run, cfg)
 	battle_cfg = cfg
-	_begin(a)
+	begin_with(a)
 
 
-# a battle the campaign has already set up (main.play_api)
+# A battle with its rules initialized, including one handed over by the campaign.
 func begin_with(a) -> void:
-	_begin(a)
+	if a.phase == "deployment":
+		_deployment_api = a
+		cam.keyboard_enabled = false
+		hud.hide_end()
+		hud.hide_menu()
+		if hud.log_open:
+			hud.toggle_log()
+		hud.hide_tipcard()
+		hud.set_playing(false)
+		_show_skill_picker()
+	else:
+		_begin(a)
 
 
 func _begin(a) -> void:
@@ -1179,6 +1193,7 @@ func _stale(g: int) -> bool:
 # mark the battle retired before finished goes out: post-await work from it is rejected from here on
 func _retire() -> void:
 	retiring = true
+	_deployment_api = null
 	_gen += 1
 	_click_q = {}
 
@@ -1548,7 +1563,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				for qi in range((d["sh"] as Array).size()):
 					d["sh"][qi] = 0   # R246: an empty pool drops every side at once (issue 1481)
 			_float(e["unit"], "Shields down", Color("#9fe2ff"), -40)
-			sfx.shield(_pos(e["unit"]), true)
+			sfx.shield(_pos(e["unit"]), true, str(VU.get(e["unit"], {}).get("fac", "")))
 			# issue 1239 (F2.5): a shield that drops with no volley to carry it (a storm, a special) still plays its failure
 			if gfx != null and gfx.has_method("shield_break"):
 				gfx.shield_break(str(e["unit"]), int(e["quad"]))
@@ -2257,6 +2272,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var u: Dictionary = VU.get(a_id, {})
 	var fac := str(u.get("fac", "hegemony"))
 	var fam := _wfam(u, e)
+	var wid := str(e.get("weapon_id", ""))   # issue 1752: the weapon's own recorded sound (a faction.weapon_id cue variant)
 	var shots: Array = e["shots"]
 	var n := shots.size()
 	var from := _pos(a_id) + Vector3(0, 1.6, 0)
@@ -2329,16 +2345,18 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			shot_at[str(a_id)] = float(gfx.now) + fire0   # issue 1581: the first muzzle of this volley, on the effect clock
 		if fam in ["lance", "ion"]:
 			if str(e.get("weapon_id", "")) == "nlance" and not fires.is_empty():
-				sfx.lance(false, fac, from, -1.0, _at_fx, fires)
+				sfx.lance(false, fac, from, -1.0, _at_fx, fires, wid)
 			elif str(e.get("weapon_id", "")) != "nlance":
-				sfx.lance(fam == "ion", fac, from, fire0, _at_fx)
+				sfx.lance(fam == "ion", fac, from, fire0, _at_fx, [], wid)
 		elif fam == "torp":
-			sfx.torp(fac, from, fire0, _at_fx)
+			sfx.torp(fac, from, fire0, _at_fx, wid)
 		else:
 			# issue 506: one gun cue per shot, on the fire times the fx layer used for its muzzle effects
 			var style = null if fam == "sq" else fam if fam in ["spine", "glob", "plasma", "las", "tracer", "needle", "rail"] else "shell"
+			if wid == "gauss" and fire0 >= 0.0:
+				sfx.gauss_charge(from, fire0, _at_fx)   # issue 1752: once per volley, ending on the first shot
 			for i in mini(fires.size(), n):
-				sfx.gun(str(e["kind"]), fam == "sq", style, from, float(fires[i]))
+				sfx.gun(str(e["kind"]), fam == "sq", style, from, float(fires[i]), fac, wid)
 		var imp: Array = r.get("impacts", [])
 		var tfac := str(VU.get(t_id, {}).get("fac", ""))
 		# issue 1211: the fx gives one arrival per SHOT (misses too); each hit lands on its own shot's arrival, on the
@@ -2351,12 +2369,12 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			_at_fx(at, func() -> void:
 				_land_hit(t_id, h, kk, land)
 				if float(h["shield"]) > 0 and float(h["hull"]) <= 0:
-					sfx.shield(_pos(t_id))
+					sfx.shield(_pos(t_id), false, tfac)
 				else:
-					sfx.impact(fam, tfac, _pos(t_id), bool(h["crit"]), _at_fx))
+					sfx.impact(fam, tfac, _pos(t_id), bool(h["crit"]), _at_fx, fac))
 		total = _fx_wait(float(r.get("done", 0.6)), imp, sp, dying.has(str(t_id)), btot)
 	elif fam in ["lance", "ion"]:
-		sfx.lance(fam == "ion", fac, from)
+		sfx.lance(fam == "ion", fac, from, -1.0, Callable(), [], wid)
 		total = 0.32 + n * 0.25 + 0.15
 		for i in n:
 			var dl := (0.32 + i * 0.25) * sp
@@ -2364,16 +2382,16 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			var end := to if hit else to + (to - from).normalized() * 30.0 + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6))
 			fx.beam(from, end, col, 0.22 * sp, dl, 1.0 if fam == "lance" else 1.3)
 			if hit and hi < hits.size():
-				_schedule_impact(t_id, hits[hi], dl + 0.05 * sp, L, shield_col, fam, hi, land)
+				_schedule_impact(t_id, hits[hi], dl + 0.05 * sp, L, shield_col, fam, hi, land, fac)
 				hi += 1
 	elif fam == "torp":
-		sfx.torp(fac, from)
+		sfx.torp(fac, from, -1.0, Callable(), wid)
 		total = 0.32 + n * 0.12 + 0.84
 		for i in n:
 			var dl := (0.32 + i * 0.12) * sp
 			fx.bolt(from, to, col, 0.8 * sp, dl, 2.2, not shots[i])
 			if shots[i] and hi < hits.size():
-				_schedule_impact(t_id, hits[hi], dl + 0.8 * sp, L, shield_col, fam, hi, land)
+				_schedule_impact(t_id, hits[hi], dl + 0.8 * sp, L, shield_col, fam, hi, land, fac)
 				hi += 1
 	else:
 		total = n * 0.07 + 0.49
@@ -2382,9 +2400,9 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			var dl := i * 0.07 * sp
 			var off := Vector3(randf_range(-1, 1), randf_range(-0.3, 0.6), randf_range(-1, 1)) * 0.25 * float(VU.get(a_id, {}).get("size", 0.5)) * 10.0
 			fx.bolt(from + off, to, col, 0.24 * sp, dl, 1.1 if fam != "rail" else 1.5, not shots[i])
-			sfx.gun(str(e["kind"]), fam == "sq", style, from, dl)
+			sfx.gun(str(e["kind"]), fam == "sq", style, from, dl, fac, wid)
 			if shots[i] and hi < hits.size():
-				_schedule_impact(t_id, hits[hi], dl + 0.24 * sp, L, shield_col, fam, hi, land)
+				_schedule_impact(t_id, hits[hi], dl + 0.24 * sp, L, shield_col, fam, hi, land, fac)
 				hi += 1
 	if shots_dir != "" and fire_shots < 4 and bot:
 		fire_shots += 1
@@ -2590,7 +2608,7 @@ func _shield_downs(land: Dictionary) -> void:
 			land["sh_f"] = _float_tally(sf, g["unit"], _shield_text(land), Color("#9fe2ff"), FLOAT_LANE_SHIELD)
 		else:
 			_float(g["unit"], "Shields down", Color("#9fe2ff"), FLOAT_LANE_SHIELD)
-		sfx.shield(_pos(g["unit"]), true)
+		sfx.shield(_pos(g["unit"]), true, str(VU.get(g["unit"], {}).get("fac", "")))
 		if gfx != null and gfx.has_method("shield_break"):
 			# issue 1239 (F2.1): the failure closes where the breaking shot struck (the quadrant's middle without one)
 			var pts: Array = land.get("pts", [])
@@ -2625,7 +2643,7 @@ func _aim_off(land: Dictionary) -> void:
 
 
 
-func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: Color, fam: String, k := -1, land := {}) -> void:
+func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: Color, fam: String, k := -1, land := {}, afac := "") -> void:
 	var tfac := str(VU.get(t_id, {}).get("fac", ""))
 	get_tree().create_timer(maxf(delay, 0.001)).timeout.connect(func() -> void:
 		if land.is_empty():
@@ -2639,13 +2657,13 @@ func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: C
 		if float(h["shield"]) > 0 and float(h["hull"]) <= 0:
 			fx.shield(sv, L, int(h["quad"]), shield_col)
 			_flash(p, 4.0 + L * 0.25, shield_col, 0.25, 0.0, false)
-			sfx.shield(p)
+			sfx.shield(p, false, tfac)
 		else:
 			_flash(p, 5.0 + L * 0.3 + (8.0 if fam == "torp" else 0.0), Color(1.0, 0.62, 0.3), 0.3)
 			if fam == "torp":
 				sfx.boom(0.8, p)
 			else:
-				sfx.impact(fam, tfac, p, bool(h["crit"]), _at_fx))
+				sfx.impact(fam, tfac, p, bool(h["crit"]), _at_fx, afac))
 
 
 func _apply_hit(h: Dictionary, show_regen_lock := true) -> void:
@@ -3947,6 +3965,22 @@ var _board_release := false
 
 
 func _input(e: InputEvent) -> void:
+	if _deployment_api != null:
+		# Keep keys away from focused controls and board shortcuts before Godot dispatches them.
+		var skip_key: bool = e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_ESCAPE, KEY_1, KEY_KP_1]
+		var skip_click: bool = e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_RIGHT and e.pressed
+		if skip_key or skip_click:
+			get_viewport().set_input_as_handled()
+			_pick_skill_target("")
+		elif e is InputEventMouseButton and e.pressed:
+			# Leave the picker rows, Skip and fleet paging to the ledger's normal GUI handler.
+			var ledger: Control = hud.ledger
+			var local_position: Vector2 = ledger.get_global_transform_with_canvas().affine_inverse() * e.position
+			if not ledger._has_point(local_position):
+				get_viewport().set_input_as_handled()
+		elif not e is InputEventMouse:
+			get_viewport().set_input_as_handled()
+		return
 	if not e is InputEventMouseButton or cam == null:
 		return
 	# End camera gestures before the GUI can consume their releases. Only an unhandled press can start one.
@@ -3958,7 +3992,7 @@ func _input(e: InputEvent) -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
-	if api == null or (e is InputEventMouse and hud.get("endcard") != null):
+	if _deployment_api != null or api == null or (e is InputEventMouse and hud.get("endcard") != null):
 		return
 	if opening and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed) or (e is InputEventKey and (e as InputEventKey).pressed)):
 		_end_opening()
@@ -4164,8 +4198,8 @@ func _rotate(d: int) -> void:
 
 
 # Issue 1589: can the ship that is up turn in place by rot steps now (sign = way)? Read on a copy of the rules' own unit with
-# canRotate, spending what _rotateUnit_raw spends for each turn (a skill's free turn, then a free pivot, then movement and a
-# turn charge). Each step is its own rotate at the commit, and the rules end the activation after a step that leaves the
+# canRotate, spending what _rotateUnit_raw spends for each turn through the rules' own spendTurn (Thorne's rider turn, a
+# skill's free turn, a free pivot, else movement and a turn charge). Each step is its own rotate at the commit, and the rules end the activation after a step that leaves the
 # ship with no movement and no gun on an enemy (battle_api _done_raw), so a middle heading like that cannot be planned
 # through (Codex on PR 1643, run 2). Read only: the copy is thrown away.
 func _turns_ok(rot: int) -> bool:
@@ -4180,16 +4214,7 @@ func _turns_ok(rot: int) -> bool:
 	for k in n:
 		if not R.canRotate(v):
 			return false
-		if float(_z0(v.get("treeFreeTurn"))) > 0.0:
-			v["treeFreeTurn"] = 0   # a skill's free turn: no movement, no turn charge (Artoo on PR 1643: still checked below)
-		else:
-			if R.freePivot(v):
-				v["pivotUsed"] = true
-			else:
-				v["mp"] = v["mp"] - 1
-				if R.jt(v.get("postFire")):
-					v["postMp"] = maxi(0, int(_z0(v.get("postMp"))) - 1)
-			v["turnsLeft"] = v["turnsLeft"] - 1
+		R.spendTurn(v)   # the rules' own charge for one turn: Thorne's rider turn, a skill's free turn, a free pivot, else movement and a turn (Artoo on PR 1876)
 		v["facing"] = posmod(int(v["facing"]) + signi(rot), 6)
 		if k < n - 1 and v["mp"] <= 0 and not _any_shot(v):
 			return false
@@ -5181,6 +5206,12 @@ func _attack_tip(t_id: String) -> String:
 
 
 func _on_action(name: String, arg) -> void:
+	if _deployment_api != null:
+		if name == "pick":
+			_pick_skill_target(str(arg))
+		elif name == "ask" and arg == "skip_skill_target":
+			_pick_skill_target("")
+		return
 	sfx.play("ui_click")
 	match name:
 		"end":
@@ -5343,6 +5374,41 @@ func _on_action(name: String, arg) -> void:
 # ---------------------------------------------------------------- issue 529: the tree prompts
 
 var roles_opened := false
+var _deployment_api: API
+
+
+# Deployment uses the fleet list before the board, ship views or effects are built.
+func _show_skill_picker() -> void:
+	var v: Dictionary = _deployment_api.view()
+	var picker: Dictionary = v["skill_target"]
+	var first := str(picker["picked"].get("id", ""))
+	var candidates := {}
+	for t in picker["targets"]:
+		candidates[t["id"]] = true
+	var rows: Array = []
+	for u in v["units"]:
+		var picked: bool = u["id"] == first
+		if picked or candidates.has(u["id"]):
+			rows.append({"id": u["id"], "name": u["name"], "cls": u["cls"], "hp": u["hp"], "maxHp": u["maxHp"],
+				"shp": _z0(u.get("shp")), "shMax": u["shMax"], "flag": u["flagship"], "sel": picked, "done": picked,
+				"status": "Selected" if picked else "Ready"})
+	hud.set_roster(rows)
+	hud.show_ask({"kind": "skill_target", "key": picker["key"], "id": first, "n": picker["n"],
+		"q": picker["q"] + " Choose from your fleet below.",
+		"opts": [{"id": "skip_skill_target", "n": "Skip", "d": "Skip this skill with Esc or right-click."}]})
+
+
+func _pick_skill_target(id: String) -> void:
+	if quitting or _deployment_api == null or not _deployment_api.pick_skill_target(id):
+		return
+	sfx.play("ui_cancel" if id == "" else "ui_click")
+	if _deployment_api.phase == "deployment":
+		_show_skill_picker()
+	else:
+		var a := _deployment_api
+		_deployment_api = null
+		hud.hide_ask()
+		_begin(a)
 
 
 func _sync_ask() -> void:
@@ -5566,7 +5632,7 @@ func _sync_arrival() -> void:
 
 
 func _refresh_ui() -> void:
-	if api == null or V.is_empty() or quitting or not is_instance_valid(hud):
+	if _deployment_api != null or api == null or V.is_empty() or quitting or not is_instance_valid(hud):
 		return
 	if _worker_owns_rules():
 		return   # issue 1433: every read below locks the rules; the publish runs this pass (_threat_done)
@@ -5853,6 +5919,7 @@ static func _command_tip(command: Dictionary) -> String:
 	if command["used"]: return "Already used this battle."
 	var power := int(command["power"])
 	var tip := "Power %d of 3: %s" % [power, command["effect"]]
+	if str(command.get("rider", "")) != "": tip += "\nRider: " + str(command["rider"])   # issue 1651
 	if command["next"] != "": return tip + "\nWait one round for power %d: %s" % [power + 1, command["next"]]
 	return tip + ("\nAlready at full power." if power == 3 else "\nOne more round does not raise the power.")
 
@@ -6249,6 +6316,8 @@ var showcase_ready := false
 
 
 func _process(dt: float) -> void:
+	if _deployment_api != null:
+		return
 	game_t += dt
 	if not torp_ft.is_empty():
 		_torp_ft_step(dt)

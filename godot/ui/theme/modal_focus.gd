@@ -217,7 +217,38 @@ func _take() -> void:
 
 static func _focusable(c: Control) -> bool:
 	return c.focus_mode != Control.FOCUS_NONE and c.is_visible_in_tree() and not c.is_queued_for_deletion() \
-		and not (c is BaseButton and (c as BaseButton).disabled)
+		and not ("disabled" in c and c.disabled)
+
+
+static func focus_key(c: Control) -> String:
+	if not is_instance_valid(c): return ""
+	if c.has_meta("press_act"):
+		return "action:" + str(c.get_meta("press_act")) + "|" + str(c.get_meta("press_arg", ""))
+	return "" if str(c.name).begins_with("@") else "name:" + str(c.name)
+
+
+static func find_focus_key(n: Node, key: String) -> Control:
+	if n.is_queued_for_deletion() or key.is_empty(): return null
+	if n is Control and _focusable(n) and focus_key(n) == key: return n
+	for ch in n.get_children():
+		var found := find_focus_key(ch, key)
+		if found != null: return found
+	return null
+
+
+static func nearest_button(scroll: ScrollContainer, point: Vector2) -> Control:
+	var nearest: Control = null
+	var distance := INF
+	var bounds := scroll.get_global_rect()
+	for node in scroll.find_children("*", "Control", true, false):
+		if not node.has_signal("pressed") or not _focusable(node): continue
+		var rect: Rect2 = node.get_global_rect()
+		if not bounds.intersects(rect): continue
+		var next: float = rect.get_center().distance_squared_to(point)
+		if next < distance:
+			distance = next
+			nearest = node
+	return nearest
 
 
 static func first_focusable(n: Node, reverse := false) -> Control:

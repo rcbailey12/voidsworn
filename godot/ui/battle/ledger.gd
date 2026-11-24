@@ -254,11 +254,18 @@ func layout() -> void:
 	var top_y := px(32 if not compact else 16)
 	var usable := vs.x - 2 * pad
 	var turn_w := minf(px(435), usable * 0.43)
+	var shelf_y := vs.y - px(SHELF_H)
+	sheet_r = Rect2(0, shelf_y, vs.x, vs.y - shelf_y)   # kept while hidden too: tips and toasts still place above it
+	if ask.get("kind") == "skill_target":
+		_rect(Rect2(Vector2.ZERO, vs), GS.INK)
+		_prompt(pad, top_y, turn_w)
+		_fleet(pad, vs.y - px(FLEET_H), usable)
+		_hover = hit_at(get_local_mouse_position()) if is_inside_tree() else -1
+		_dirty = false
+		return
 	var foe_w := minf(px(470), usable * 0.49)
 	_turn_block(Rect2(pad, top_y, turn_w, 0))
 	_top_right(Rect2(vs.x - pad - foe_w, top_y, foe_w, 0))
-	var shelf_y := vs.y - px(SHELF_H)
-	sheet_r = Rect2(0, shelf_y, vs.x, vs.y - shelf_y)   # kept while hidden too: tips and toasts still place above it
 	if playing:
 		# issue 1708: while a move, volley or enemy turn plays, the whole bottom sheet (ship, guns, odds, orders, fleet)
 		# leaves so the scene has the screen; the log stays where it was, and the sheet pops back when the event ends
@@ -863,7 +870,8 @@ func _fleet_slot(r: Rect2, row: Dictionary) -> void:
 			tip += "\nArrived this round."
 	if bool(row.get("flag", false)):
 		tip += "\nYour flagship."
-	_hit(r, "" if st == "Lost" else "pick", row.get("id"), tip if st == "Lost" else tip + "\nClick to pick it.")
+	var pickable: bool = st != "Lost" and (ask.get("kind") != "skill_target" or not row.get("sel", false))
+	_hit(r, "pick" if pickable else "", row.get("id"), tip + "\nClick to pick it." if pickable else tip)
 
 
 func _fleet_bars(x: float, y: float, w: float, row: Dictionary, h: float, col: Color) -> void:

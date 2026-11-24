@@ -7,12 +7,13 @@ Shapes follow real small bodies rather than lumpy potatoes:
   binary    contact binaries (Itokawa, Arrokoth, comet 67P): two lobes joined by a neck
   slab      flat broken plates
   shard     ice shards: long prisms with sharp cuts
-plus crystal clusters (hexagonal prisms with pointed tips) for crystal fields.
+Issue 1361: Ryan scrapped the free crystal clusters (Nov 22), so the game ships none and rocks.json lists none; a rerun
+keeps it that way unless --legacy-crystals asks for the old 216-tri clusters on purpose.
 
 Each body is a radial surface on a fine icosphere (10,242 points): an ellipsoid (or two lobes), large-scale warping,
 fracture planes (smooth-min cuts), ridges, a power-law crater population with bowls and raised rims, boulders, and fine
 grit. Vertex colour carries what the shader needs: R open-sky (cavity AO), G crater floor, B fresh fracture face,
-A a broad patch value. Run: python3 rockgen.py OUT_DIR [--preview sheet.png]
+A a broad patch value. Run: python3 rockgen.py OUT_DIR [--preview sheet.png] [--legacy-crystals]
 """
 import sys, os, json, struct, math
 import numpy as np
@@ -330,10 +331,17 @@ def main():
         man["rocks"].append({"name": name, "family": fam, "ext": [round(x, 3) for x in ext]})
         shapes.append((P, F, C))
         print(name, fam, "ext", np.round(ext, 2))
-    for i in range(3):
-        P, N, C, Fc = crystal_cluster(900 + i)
-        write_glb(os.path.join(out, "crystal_%02d.glb" % i), P, N, C, Fc, "crystal_%02d" % i)
-        man["crystals"].append("crystal_%02d" % i)
+    # Issue 1361: by default keep the crystals list of an existing rocks.json (empty since Ryan scrapped the clusters) and
+    # write no crystal file; --legacy-crystals brings back the old 216-tri clusters on purpose.
+    old_path = os.path.join(out, "rocks.json")
+    if "--legacy-crystals" in sys.argv:
+        for i in range(3):
+            P, N, C, Fc = crystal_cluster(900 + i)
+            write_glb(os.path.join(out, "crystal_%02d.glb" % i), P, N, C, Fc, "crystal_%02d" % i)
+            man["crystals"].append("crystal_%02d" % i)
+    elif os.path.exists(old_path):
+        with open(old_path) as f:
+            man["crystals"] = json.load(f).get("crystals", [])
     with open(os.path.join(out, "rocks.json"), "w") as f:
         json.dump(man, f, indent=1)
     if "--preview" in sys.argv:

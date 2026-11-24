@@ -271,3 +271,76 @@ Wave B ran with 108 takes for 1,421 credits. Relay: voidsworn-relay `pc-out-opus
 - The bridge bed drops the words that leaked a voice ("no vocals", "command bridge") and moves to influence 0.50.
 
 The run needs Ryan's typed "go wave c".
+
+## 8.4 Wave C result, Ryan's picks, and Wave D
+
+Wave C ran with 49 takes for 716 credits (relay `pc-out-opus1752wavec`). Listening page: https://claude.ai/artifact/191G3WngtXJgaAeg45wXuv. Neon's notes are issue 1891 (PR 1894). Neon's numbers match Claude's.
+
+**Ryan's call (Nov 23, 3:46 PM CT):** "neon nailed this". He takes Neon's picks with two exceptions:
+- `death_eclipse_shear`: it should not sound like rock. It should be a metallic material, darker and deeper. The prompt now uses black alloy armor plates instead of obsidian stone.
+- `wep_hullbreaker_junk_gun`: t2 ends in a whine like a tinnitus effect. Claude measured a 12.5 kHz tone in its tail at 0.15 to 0.25 s. The prompt drops "bright" and ends on a short dry rattle.
+
+**Keeps (Neon's picks):**
+- turret t2 and hbattery t2 (t1 as an alternate).
+- torp_eject t1.
+- pass_by_slug t2.
+- spore_cloud t2.
+- sporeb t1.
+- doom t2, which can loop 0.15 to 0.85 s for long arcs.
+- doom_charge t1.
+- craft_bombs t2.
+- obsidian_eclipse t1.
+- acid_on_metal t1.
+- breach_shear_metal t1.
+- breach_vent t1.
+- ithar_shatter t2.
+- sunward_magazine t2.
+- fleet_warp_in t2.
+- amb_bridge_bed t1.
+
+Neon's mastering notes (40 Hz high-pass, head trims, level lifts) carry into mastering.
+
+**Wave D re-roll (8 ids, 16 takes, tool estimate 484, about 135 real credits):**
+- The two ids above.
+- Neon's six, with Neon's prompt fixes: `wep_directorate_picket`, `wep_eclipse_gsentry`, `imp_metal_light`, `imp_energy_sear`, `imp_las` and `dmg_shield_burnout` (lengthened to 0.7 s, because the Wave C t2 peaked at its last sample).
+
+All of these are close and centered, with no banned words. The run needs Ryan's typed "go wave d".
+
+## 8.5 Wave D result, Ryan's picks, and Wave E
+
+Wave D ran with 16 takes for about 138 credits (relay `pc-out-opus1752waved`). Listening page: https://claude.ai/artifact/UdWWLKAYaP7tkKkofF15hZ. Neon's notes are issue 1899 (PR 1901).
+
+**Ryan's call (Nov 23, 7:58 PM CT):** he agrees with Neon across the board, with one exception. For `imp_las` he picks t1 over Neon's t2, because it is close to the energy sear but different and lighter.
+
+**Keeps:**
+- junk_gun t2, which has no whine. Wave D t1 had a new one at 15.7 kHz.
+- energy_sear t1.
+- las t1.
+- shield_burnout t1.
+
+**Wave E re-roll (4 ids, 8 takes, tool estimate 280, about 80 real credits):** these are the ids Neon marked as still needing work.
+- `wep_directorate_picket`: two waves of muffled thumps. The prompt now asks for a small, thin, high electric crack and drops the starship-turret framing.
+- `wep_eclipse_gsentry` and `imp_metal_light`: the tone was right but came back wide stereo. Both now ask for "one dry point source", and metal_light drops the ringing plate tone.
+- `death_eclipse_shear`: the metal was right but sat below 100 Hz. The prompt now asks for grinding, scraping and strain in the midrange, and drops deep, massive and heavy, since boom_l and death_bed already own the sub-bass.
+
+If Wave E still misses, the fallbacks are: today's gun_flak for picket, and a single channel of Wave D t1 or t2 for metal_light and gsentry. The run needs Ryan's typed "go wave e".
+
+## 8.6 Wave E result: every Gate 2 sound has a keeper
+
+Wave E ran with 8 takes for about 80 credits (relay `pc-out-opus1752wavee`). Listening page: https://claude.ai/artifact/U1dLvaKMJuQXnN9JGWwaEA. Neon's notes are in issue 1918 (PR 1919). Ryan agreed with all of Neon's final picks at 8:36 PM CT on Nov 23.
+
+**Final picks for the last four:**
+- `wep_directorate_picket`: Wave E t1. Fold to mono, trim the 24 ms lead-in, and high-pass at 40 Hz.
+- `wep_eclipse_gsentry`: Wave D t2, left channel only. Do not fold, because (L+R)/2 cancels the midrange. High-pass at 40 Hz.
+- `imp_metal_light`: Wave D t1, left channel only. Do not fold, for the same reason. High-pass at 40 Hz.
+- `death_eclipse_shear`: Wave E t2. Fold to mono, lift 3 dB, trim 9 ms, and high-pass at 40 Hz.
+
+**How the mastering script reads these notes (PR 1923, Artoo review):** the fixed trims are `trim_ms` in `contrib/opus/sound/keepers_gate2.json` (picket 24 ms, shear 9 ms) and the report logs every trim. The shear's "lift 3 dB" is met by the death loudness target, which already adds 3.2 dB; no extra gain goes on after the peak cap.
+
+**Mastering source rule:** each keeper's mastering note in 8.3 to 8.6 says either "fold" or "one channel". A wide take (correlation under about 0.3) uses one channel unless a note says otherwise.
+
+**Scope of Gate 2:**
+- Gate 2 is closed for these sounds.
+- Bioplasma stays on hold until the projectile look is set.
+- The tendril sound waits for issue 1877.
+- Next is mastering the keepers to mono game files, then the Gate 3 music plan.

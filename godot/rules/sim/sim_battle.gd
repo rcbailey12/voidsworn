@@ -30,9 +30,9 @@ func reset_timing() -> void:
 	categories = {}
 
 
-func startBattle(cfg: Dictionary) -> void:
+func startBattle(cfg: Dictionary, pick_skills := false) -> void:
 	_player_launches = 0
-	super.startBattle(cfg)
+	super.startBattle(cfg, pick_skills)
 
 
 func launchWing(u, h, kind) -> void:

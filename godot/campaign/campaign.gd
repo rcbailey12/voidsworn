@@ -3306,6 +3306,8 @@ func _arc_played(beat: int) -> bool:
 		if str(k).begins_with(pre): return true
 	return false
 func ACT_eventChoice(a: String) -> void:
+	if modal_d == null or cur_event == null or modal_d["kind"] not in ["event", "relic_pick"]: return
+	if not modal_d["acts"].any(func(action): return action == ["eventChoice", a, 1]): return
 	var parts := a.split(":")
 	var i = int(parts[0])
 	var j := int(parts[1]) if parts.size() > 1 else -1
@@ -3316,7 +3318,9 @@ func ACT_eventChoice(a: String) -> void:
 		relic_pick_modal(i); return   # issue 1449: pick the salvage first
 	eventFlags(cur_event, o, i)
 	if jt(cur_event.get("arc")):
-		_arc_choice(o, i); return
+		_arc_choice(o, i); cur_event = null; return
+	var event = cur_event
+	cur_event = null
 	var r = o["r"]
 	if paying and j >= 0:
 		r = r.duplicate(); r["payRelicAt"] = j
@@ -3328,7 +3332,7 @@ func ACT_eventChoice(a: String) -> void:
 	var lines = applyOutcome(r)
 	completeNode(); mapScreen()
 	var acts = []; A(acts, "closeModal")
-	show_modal("event_result", {"ev": cur_event, "lines": lines}, acts)
+	show_modal("event_result", {"ev": event, "lines": lines}, acts)
 
 func _event_battle_cfg(n: Dictionary, outcome: Dictionary) -> Dictionary:
 	return {"kind": "elite", "fac": outcome["fight"], "col": float(n["col"]) + 1, "node": n["id"], "eventRelic": true}
@@ -3614,6 +3618,8 @@ func ACT_rewardNext() -> void:
 		show_modal("mod", {"opts": opts}, acts); return
 	relicStep()
 func ACT_takeMod(m: String) -> void:
+	if modal_d == null or modal_d["kind"] != "mod" or not or_(W.get("modOffer"), []).has(m): return
+	W["modOffer"] = null
 	RUN["inventory"].append(m); tel("reward_pick", {"k": "mod", "id": m}); toast(modName(m) + " stowed in the hold."); close_modal(); relicStep()
 func boonStep(p, minR) -> void:
 	if RUN != null and RUN.get("eatenCore") != null and RUN["eatenCore"] == p:   # issue 1384: campaign_run.js boonStep remaps an eaten core
@@ -3670,13 +3676,17 @@ func ACT_boonReroll(a: String) -> void:
 	if boonReroll(p, m) == null: return
 	saveRun(); close_modal(); boonStep(p, m)
 func ACT_boonDecline() -> void:
+	if modal_d == null or modal_d["kind"] != "boon" or W.get("boonOffer") == null: return
+	W["boonOffer"] = null
 	var c = boonDecline(); tel("boon_decline", {"cred": c}); toast("You decline. +" + numstr(c) + " credits."); close_modal(); relicStep()
 func _add_boon(o) -> void:
 	RUN["boons"] = or_(RUN.get("boons"), []); RUN["boons"].append({"id": o["id"], "r": z0(o.get("r"))})
 func ACT_takeBoon(a: String) -> void:
+	if modal_d == null or modal_d["kind"] != "boon": return
 	var offer = or_(W.get("boonOffer"), []); var i = int(a)
 	var o = offer[i] if i >= 0 and i < offer.size() else null
 	if o == null: return
+	W["boonOffer"] = null
 	changeFleet(_add_boon.bind(o))
 	var ps = [BOONS[o["id"]]["p"]] if jt(BOONS[o["id"]].get("p")) else or_(BOONS[o["id"]].get("duo"), [])
 	META["favour"] = or_(META.get("favour"), {})

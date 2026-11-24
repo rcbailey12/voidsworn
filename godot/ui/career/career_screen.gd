@@ -59,21 +59,16 @@ func _btn(txt: String, cb: Callable, sel := false, action := false) -> Button:
 	b.add_theme_color_override("font_color", BONE if sel or action else BONE2)
 	b.add_theme_color_override("font_hover_color", GS.ON_EMBER if action else BONE)
 	b.add_theme_color_override("font_pressed_color", GS.ON_EMBER if action else BONE)
+	b.add_theme_color_override("font_hover_pressed_color", GS.ON_EMBER if action else BONE)
 	b.add_theme_color_override("font_focus_color", BONE)
-	var normal := GS.flat(Color.TRANSPARENT, 0, 0, k)
-	normal.content_margin_top = px(8)
-	normal.content_margin_bottom = px(8)
-	if sel:
-		normal.border_color = BONE
-		normal.border_width_bottom = maxi(1, px(1))
-	if action:
-		var boxes := GS.sheet_jump_boxes(k)
-		for state in boxes:
-			b.add_theme_stylebox_override(state, boxes[state])
-	else:
-		for state in ["normal", "hover", "pressed", "disabled"]:
-			b.add_theme_stylebox_override(state, normal)
+	var boxes := GS.sheet_jump_boxes(k) if action else GS.row_boxes(k, false, 0, 8)
+	for state in boxes:
+		if sel and not action:
+			boxes[state].border_color = BONE
+			boxes[state].border_width_bottom = maxi(1, px(1))
+		b.add_theme_stylebox_override(state, boxes[state])
 	b.add_theme_stylebox_override("focus", GS.ledger_focus(k))
+	GS.button_pointer(b)
 	b.pressed.connect(cb)
 	return b
 
@@ -107,11 +102,12 @@ func _key_button(text: String, key: String, cb: Callable, selected := false, act
 	var word_width := semi.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px(18)).x
 	var key_width := figures.get_string_size(key, HORIZONTAL_ALIGNMENT_LEFT, -1, px(17)).x
 	b.custom_minimum_size = Vector2(px(288) if action else ceilf(word_width + key_width + px(14)), px(56 if action else 40))
-	var recolour := func(over: bool):
-		words.add_theme_color_override("font_color", GS.ON_EMBER if action and over else (BONE if over or selected or action else BONE2))
-		keys.add_theme_color_override("font_color", GS.ON_EMBER if action and over else BONE2)
-	b.mouse_entered.connect(recolour.bind(true))
-	b.mouse_exited.connect(recolour.bind(false))
+	if action:
+		GS.bind_sheet_label(b, words, BONE)
+		GS.bind_sheet_label(b, keys, BONE2)
+	else:
+		b.draw.connect(func():
+			words.add_theme_color_override("font_color", BONE if GS.button_highlighted(b) or b.has_focus() or selected else BONE2))
 	return b
 
 
@@ -231,6 +227,9 @@ func set_tab(t: String) -> void:
 	tab = t
 	scroll.scroll_vertical = 0
 	render()
+	var selected := ModalFocus.find_focus_key(tab_row, "name:" + t)
+	if selected != null:
+		selected.grab_focus()
 
 
 func render() -> void:
