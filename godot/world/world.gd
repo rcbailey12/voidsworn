@@ -33,6 +33,7 @@ const DAWN_COL := Color(1.0, 0.76, 0.46)
 
 var quality := "max"
 var notes: PackedStringArray = []
+var comet_spots: Array = []   # each comet's nucleus moved a third of the way down its tail (the bench aims its wide comet frame here)
 var setting := {}
 var nebula_wake := false   # issue 1079 prototype, off by default (world_living.gd, nebula_wake.gd)
 var _spin: Array = []        # [node, axis, rate]
@@ -578,16 +579,29 @@ func system(with_planet: bool) -> void:
 		if _through_board(_center + mdir * dist, 40.0 + dist * sin(mang)):
 			continue
 		placed.append([mdir, mang])
-		var mkind := 4 if r.randf() < 0.65 else 5
-		var tints := [Vector3(1.0, 0.95, 0.88), Vector3(0.85, 0.82, 0.8), Vector3(1.0, 0.86, 0.7), Vector3(0.9, 0.95, 1.05)]
-		var MP := {"kind": mkind, "a": Vector3(0.5, 0.48, 0.45) if mkind == 4 else Vector3(0.8, 0.84, 0.88), "b": Vector3(0.22, 0.21, 0.2) if mkind == 4 else Vector3(0.5, 0.4, 0.32),
-			"c": Vector3(0.65, 0.62, 0.58) if mkind == 4 else Vector3(0.6, 0.75, 0.9), "atmo": Vector3.ZERO, "rings": false}
+		# issue 1765: each moon its own mineral (grey highland, rust regolith, dark basalt, pale ice), high contrast
+		var ML: Dictionary = MOON_LOOKS[posmod(int(setting["seed"]) * 7 + placed.size(), MOON_LOOKS.size())]
+		var mkind := int(ML["kind"])
+		var tints := [Vector3(1.0, 0.97, 0.93), Vector3(0.94, 0.93, 0.92), Vector3(1.0, 0.92, 0.84), Vector3(0.95, 0.97, 1.02)]
+		var MP := {"kind": mkind, "a": ML["a"], "b": ML["b"], "c": ML["c"], "atmo": Vector3.ZERO, "rings": false}
 		var mq := BAKER.MOON_SIZE
 		if OS.has_environment("VS_WORLD_PREVIEW"):
 			mq = Vector2i(256, 128)
 		_sphere(_center + mdir * dist, dist * sin(mang), Basis(Vector3(r.randfn(), r.randfn(), r.randfn()).normalized(), r.randf() * TAU), MP,
 			mkind * 1000 + int(setting["seed"]) % 7 + placed.size() * 101, mq, r.randf_range(0.0, 0.004), tints[placed.size() % tints.size()] * r.randf_range(0.8, 1.1), false)
 	notes.append("system: %s, %d moons" % [("planet %d" % int(setting["planet_i"])) if with_planet else "no backdrop planet (the board has one)", placed.size()])
+
+
+# Issue 1765: the moons' minerals (world_planet.gd recipe kind 4 cratered, 5 ice). No two moons of one sky share a look
+# unless the sky has more moons than looks.
+const MOON_LOOKS := [
+	# Nov 23: lifted back into band 2 after the land noise's finer layers were turned (it fell to 0.026)
+	{"kind": 4, "a": Vector3(0.6, 0.58, 0.54), "b": Vector3(0.25, 0.235, 0.22), "c": Vector3(0.8, 0.78, 0.74)},
+	{"kind": 4, "a": Vector3(0.64, 0.45, 0.32), "b": Vector3(0.26, 0.16, 0.11), "c": Vector3(0.84, 0.66, 0.5)},
+	# Wave 0 (Nov 23): the basalt moon read as a second grey highland moon; it is now a cool dark slate with bright rays
+	{"kind": 4, "a": Vector3(0.42, 0.45, 0.48), "b": Vector3(0.11, 0.125, 0.14), "c": Vector3(0.8, 0.82, 0.84)},
+	{"kind": 5, "a": Vector3(0.84, 0.87, 0.9), "b": Vector3(0.44, 0.3, 0.2), "c": Vector3(0.5, 0.64, 0.8)},
+]
 
 
 # r9: the light on a planet or moon. The battle's key light comes from behind the default camera, which lit every planet
@@ -858,12 +872,6 @@ func _hero_mat(kind: String) -> ShaderMaterial:
 	return _mats[key]
 
 
-func _crystal_mat() -> ShaderMaterial:
-	if not _mats.has("_crystal"):
-		_mats["_crystal"] = WR.crystal_material(_look)
-	return _mats["_crystal"]
-
-
 func _pick(kind: String, r: RandomNumberGenerator) -> String:
 	var names: Array = WR.names_for(kind)
 	if names.is_empty():
@@ -909,14 +917,6 @@ func blocker(p: Vector3, kind: String) -> void:
 		_batch.add(sn + "_lo" if _rng.randf() < 0.5 else sn, mat, true,
 			Transform3D(_rand_basis(_rng).scaled(Vector3.ONE * _rng.randf_range(1.0, 2.2)), p + Vector3(cos(a) * rr, _rng.randf_range(-2.0, 4.0), sin(a) * rr)),
 			_rand_axis(_rng), _rng.randf_range(0.02, 0.09), _rng.randf())
-	if crystal:
-		var names: Array = WR.lib().get("crystals", [])
-		if not names.is_empty():
-			for i in _rng.randi_range(1, 2):
-				var cb := Basis(Vector3.UP, _rng.randf() * TAU) * Basis(Vector3(1, 0, 0), _rng.randf_range(-0.4, 0.4))
-				var off := Vector3(_rng.randf_range(-3, 3), s * 0.35 + _rng.randf_range(0, 2), _rng.randf_range(-3, 3))
-				_batch.add(names[_rng.randi() % names.size()], _crystal_mat(), true, Transform3D(cb.scaled(Vector3.ONE * _rng.randf_range(3.5, 5.5)), p + off),
-					Vector3.UP, 0.0, _rng.randf())
 
 
 func debris_field(p: Vector3, kind: String) -> void:
@@ -1120,18 +1120,112 @@ func fields(mk: String, kind: String) -> void:
 		s = _backdrop_scale(nm, s, p)
 		_batch.add(nm, mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.0015, 0.006), r.randf())
 		mts += 1
-	# crystal fields: free crystal clusters drift among the edge rocks
+	# Ryan scrapped the crystal clusters (Nov 22, issue 1361): the crystal kind is ice comets, a few with tails
 	if kind == "crystal":
-		var names: Array = WR.lib().get("crystals", [])
-		for i in (12 if not names.is_empty() else 0):
-			var a := r.randf() * TAU
-			var p := _center + Vector3(cos(a) * (ext.x + 60.0) * r.randf_range(1.0, 1.8), r.randf_range(-40.0, 5.0), sin(a) * (ext.z + 60.0) * r.randf_range(1.0, 1.8))
-			if _over_board(p, 30.0):
-				continue
-			var nm: String = names[r.randi() % names.size()]
-			var s := _backdrop_scale(nm, r.randf_range(2.0, 6.0), p, 20.0)
-			_batch.add(nm, _crystal_mat(), false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.05), r.randf())
+		comets(r, ext)
 	notes.append("fields: %d edge rocks, %d deep, %d belt, %d mountains" % [placed, deep, belt, mts])
+
+
+# ---------------------------------------------------------------- comets (the "crystal" kind's look since Nov 22)
+
+# Issue 1361 (Ryan, Nov 22: scrap the crystals, "like an ice comet"; then "be careful with the glowing core"): two or
+# three big icy nuclei off the board's far edge and sides, each trailing a soft gas tail straight away from the sun. The
+# tail is the gas wisps' style (the same noise texture, additive, unshaded, faint), stretched along the anti-sun line and
+# fading out along its length; the nucleus is an ordinary rock of the kind (world_rocks.gd's comet ice). There is no
+# separate glowing coma: the tail is only a little brighter at its root.
+const TAIL_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled, world_vertex_coords;
+uniform sampler2D noise : filter_linear_mipmap, repeat_enable;
+uniform vec3 tail_col = vec3(0.55, 0.7, 0.9);
+uniform float gain = 0.22;
+varying vec2 vQ;
+varying float vSeed;
+varying float vFade;
+void vertex() {
+	// INSTANCE_CUSTOM: x tail length, y width at the root, z width at the end, w seed. The instance's Y axis is the tail.
+	vec3 head = MODEL_MATRIX[3].xyz;
+	vec3 axis = normalize(MODEL_MATRIX[1].xyz);
+	// world_vertex_coords: VERTEX arrives already in world space, so the quad's own corners come from its UV
+	float t = 1.0 - UV.y;
+	vec3 along = head + axis * t * INSTANCE_CUSTOM.x;
+	vec3 eye = INV_VIEW_MATRIX[3].xyz;
+	// Artoo on PR 1782: seen straight down the tail the cross product is zero; fall back to a fixed side (the card is
+	// faded out there anyway, below) so the corners never get an undefined direction
+	vec3 c = cross(axis, along - eye);
+	vec3 side = dot(c, c) > 1e-8 ? normalize(c) : normalize(cross(axis, abs(axis.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
+	vec3 to_head = head - eye;
+	vFade = 1.0 - smoothstep(0.82, 0.97, abs(dot(axis, to_head)) / max(length(to_head), 1e-3));
+	VERTEX = along + side * (UV.x - 0.5) * mix(INSTANCE_CUSTOM.y, INSTANCE_CUSTOM.z, sqrt(t));
+	vQ = vec2(UV.x * 2.0 - 1.0, t);
+	vSeed = INSTANCE_CUSTOM.w;
+}
+void fragment() {
+	float u = abs(vQ.x);
+	float t = vQ.y;
+	// streamers along the tail: noise stretched along its length, drifting slowly outward
+	vec2 uv = vec2(vQ.x * 0.9 + vSeed * 5.0, t * 0.18 - TIME * 0.002 + vSeed * 3.0);
+	float n = texture(noise, uv).r;
+	float m = texture(noise, uv * vec2(2.7, 1.3) + n * 0.2 + 0.4).r;
+	float streak = 0.55 + 0.75 * smoothstep(0.35, 0.8, n * 0.6 + m * 0.4);
+	float across = 1.0 - smoothstep(0.15, 1.0, u);
+	float along = smoothstep(0.0, 0.04, t) * exp(-t * 2.6) * (1.0 + 0.6 * exp(-t * 18.0));
+	ALBEDO = tail_col * across * along * streak * gain * vFade;
+}
+"""
+
+
+func comets(r: RandomNumberGenerator, ext: Vector3) -> void:
+	if quality == "low":
+		return
+	var mat := _mat("crystal")
+	var away := Vector3(-SUN.x, -SUN.y * 0.35, -SUN.z).normalized()
+	var want := r.randi_range(2, 3)
+	var mm := _quad_mm(want)
+	var i := 0
+	var tries := 0
+	while i < want and tries < 200:
+		tries += 1
+		# beyond the far edge, inside the battle camera's view, a little above the board's plane, against the sky
+		var p := _center + Vector3(r.randf_range(-1.2, 1.4) * ext.x, r.randf_range(5.0, 70.0), -ext.z - r.randf_range(70.0, 320.0))
+		if _seen_on_board(p, 60.0) or _on_planet(p, 0.06):
+			continue
+		var nm := _pick("crystal", r)
+		var s := _backdrop_scale(nm, r.randf_range(5.0, 14.0), p, 30.0)
+		var length := s * r.randf_range(26.0, 40.0)
+		var clear := true
+		for f in [0.25, 0.5, 0.75, 1.0]:
+			var q := p + away * length * float(f)
+			if _seen_on_board(q, 40.0) or _through_board(q, 20.0):
+				clear = false
+		# keep them apart, so they never read as a formation flying in line
+		for j in i:
+			if mm.get_instance_transform(j).origin.distance_to(p) < 140.0:
+				clear = false
+		if not clear:
+			continue
+		_batch.add(nm, mat, true, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.002, 0.006), r.randf())
+		var b := Basis(away.cross(Vector3.FORWARD).normalized(), away, away.cross(away.cross(Vector3.FORWARD)).normalized())
+		mm.set_instance_transform(i, Transform3D(b, p))
+		mm.set_instance_custom_data(i, Color(length, s * 2.2, s * 9.0, r.randf()))
+		comet_spots.append(p + away * length / 3.0)
+		i += 1
+	mm.visible_instance_count = i
+	if i == 0:
+		return
+	var mi := MultiMeshInstance3D.new()
+	mi.multimesh = mm
+	var m := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = TAIL_SHADER
+	m.shader = sh
+	m.set_shader_parameter("noise", _wisp_noise())
+	m.render_priority = -24
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.extra_cull_margin = 2000.0
+	add_child(mi)
+	notes.append("comets: %d with tails" % i)
 
 
 # ---------------------------------------------------------------- gas wisps (depth and parallax)

@@ -17,6 +17,7 @@ var matrix_stats := {"rounds": 0, "n": 0, "timeout": 0, "rams": {"player": 0, "e
 var hulls := {}
 var weapons := {}
 var abilities := {}
+var _player_launches := 0
 var _identity := {}
 var _speed := 1.0
 var _enemy_animation := false
@@ -27,6 +28,52 @@ func reset_timing() -> void:
 	clock = {"old": 0.0, "neu": 0.0, "real": 0.0, "rounds": 0, "max_round": 0.0}
 	tempo = {"player": 0, "enemy": 0, "fire": 0, "first_loss": 0, "first_count": 0}
 	categories = {}
+
+
+func startBattle(cfg: Dictionary, pick_skills := false) -> void:
+	_player_launches = 0
+	super.startBattle(cfg, pick_skills)
+
+
+func start_campaign(run: Dictionary, cfg: Dictionary) -> Dictionary:
+	RUN = run
+	not_ported = ""
+	events.clear()
+	var setup := cfg.duplicate()
+	setup.erase("campaign")
+	setup.erase("event_war")
+	startBattle(setup)
+	B.campaign = true
+	var nemesis = setup.get("nemesis")
+	var force = null
+	if jt(nemesis) and nemesis.fac == "hegemony":
+		force = "reinf_enemy"
+	elif cfg.get("event_war", false) and setup.kind != "boss":
+		force = "reinf_enemy" if rnd() < 0.6 else "reinf_ally"
+	B.event = rollBattleEvent(setup, force)
+	if jt(nemesis) and nemesis.fac == "hegemony":
+		B.event.r = 3
+	hook("start")
+	B.alt = true
+	# Muse's mcSetupBattle opens the enemy turn before mcBattleLoop opens it again.
+	_reset_activations()
+	startSideTurn("enemy")
+	flush_deferred()
+	return B
+
+
+func launchWing(u, h, kind) -> void:
+	super.launchWing(u, h, kind)
+	# Replacement wings use this path without calling useAbility. Initial wings use makeWing.
+	if u.side == "player":
+		_player_launches += 1
+
+
+func player_abilities_fired() -> Dictionary:
+	var fired: Dictionary = B.usage.ab.duplicate()
+	if _player_launches > 0:
+		fired["launch"] = _player_launches
+	return fired
 
 
 func fight(bot: Bot, alternating: bool) -> void:

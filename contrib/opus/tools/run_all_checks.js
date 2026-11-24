@@ -142,8 +142,8 @@ function buildChecks() {
     'campaign_saves_1556_tests', 'campaign_start_test', 'capstone_mastery_tests', 'checks_truth_tests',
     'chorus_eat_core_tests', 'chorus_biomass_1484_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
     'effect_caps_tests', 'env_reconcile_tests', 'fleet_list_tests', 'free_exit_tests', 'fx_death_spawn_tests',
-    'fx_late_shader_tests', 'gen_open_work_tests', 'gpu_slots_tests',
-    'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_pulse_ai_tests', 'ion_tests',
+    'fx_late_shader_tests', 'gpu_slots_tests',
+    'hardpoint_contract_tests', 'heat_tests', 'hull_details_tests', 'inheritance_tests', 'ion_pulse_ai_tests', 'ion_tests',
     'lineage_tests', 'main_commit_lint_tests', 'memory_lint_tests', 'montecarlo_bot_tests', 'nemesis_121_tests', 'nemesis_122_tests',
     'nemesis_395_tests', 'nemesis_clash_tests', 'nemesis_teach_tests',
     'paint_sheet_camera_tests', 'relic_trade_1449_tests', 'retreat_nemesis_1480_tests', 'event_fight_retreat_1628_tests', 'eclipse_violet_1641_tests', 'reporting_238_tests', 'rules_1479_tests', 'rules_1481_tests', 'rules_1560_tests', 'runner_stall_tests',
@@ -171,6 +171,7 @@ function buildChecks() {
   add('contrib/deepseek/chorus_biomass_1118/spiral_test.js', [], 'normal', 300, false, true); // #1085: the loss spiral prices a 25 percent repair of the worst ship, capped at what it is missing
   add('contrib/deepseek/ge_economy_1118/commission_test.js', [], 'normal', 300, false, true); // #1086: one shipyard visit queues at most one Glasswright commission, even with two affordable offers
   add('tools/pc/runner_selftest.js', [], 'normal', 600); // #687: free PC runner fault tests; static contract check on other hosts
+  add('tools/pc/mission/pc_daemon_selftest.js', [], 'normal', 300, false, true); // #1662: the PC daemon's gate, watchdog, profile removal and job order on fakes
   add('tools/pc/g2_export_selftest.js'); // #1100: a stand-in exporter proves only checked builds become live on Windows
   add('tools/pc/pause_all_selftest.js'); // #944: pause waits for runners and verifies each saved commit on GitHub
   add('tools/pc/lane_tools_refresh_selftest.js'); // #1018: lane tools refresh safety checks

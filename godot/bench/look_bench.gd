@@ -12,7 +12,8 @@ extends Node
 # Parts:
 #   moments  every row of bench/look_moments.json (weapons on a hull and on a shield, shield states, death classes, one
 #            weapon on every weight, the eight PR 327 looks), each at the three cameras, as 30 frames a second strips:
-#            DIR/moments/<id>__c<cam>.png (cells side by side, 384x216 each; camera 170 is a 1 to 1 pixel crop).
+#            DIR/moments/<id>__c<cam>.png (384x216 cells side by side with a provenance footer below them;
+#            camera 170 is a 1 to 1 pixel crop).
 #   fleet    all 36 hulls of render/hull_table.gd AI_HULLS at the battle camera (170) at true pixel size over every
 #            region's sky and a storm map (the sheet maker names the darkest and brightest by measurement):
 #            DIR/fleet/<sky>/<nn>_<code>.png (400x240, 1 to 1).
@@ -784,7 +785,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 						clip_bad.append("f%03d.png (no frame grabbed)" % ci)
 					else:
 						var se: Error = preload("res://tools/picture_provenance.gd").save_png(_crop(img, crop, cell), fp,
-							preload("res://tools/picture_provenance.gd").capture_stage())
+							preload("res://tools/picture_provenance.gd").capture_stage(), true)
 						if se != OK:
 							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
 			elif img != null:
@@ -817,7 +818,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			"cells": cells, "impacts": impacts, "clip": true})
 		_log("%s at %d: %d clip frames" % [id, int(r), ci])
 		return true
-	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
+	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts})
 	_log("%s at %d: %d cells" % [id, int(r), ci])

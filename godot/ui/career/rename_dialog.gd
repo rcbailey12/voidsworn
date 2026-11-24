@@ -88,9 +88,9 @@ func _build(name_text: String) -> void:
 	k = load("res://ui/ui_scale.gd").k_for(get_viewport_rect().size)   # the one shared law (ui_spec.md section 4); its ceiling was 2.0 here
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var regular := _font("res://ui/battle/fonts/BarlowSemiCondensed-Regular.ttf")
-	var semi := _font("res://ui/battle/fonts/BarlowSemiCondensed-SemiBold.ttf")
-	var goth: Font = load("res://ui/battle/brand.gd").display()  # Michroma (lore round 5; the blackletter is retired)
+	var regular := _font("res://ui/theme/fonts/Barlow-Regular.ttf")
+	var semi := _font("res://ui/theme/fonts/Barlow-Medium.ttf")
+	var goth: Font = load("res://ui/battle/brand.gd").display()  # Big Shoulders Display (R436 C28)
 	var dimr := ColorRect.new()
 	dimr.color = Color(0.024, 0.035, 0.063, 0.7)
 	dimr.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -163,9 +163,12 @@ func _btn(txt: String, cb: Callable, f: Font, primary: bool) -> Button:
 	b.add_theme_font_size_override("font_size", px(18))
 	b.add_theme_color_override("font_color", INK if primary else BONE)
 	b.add_theme_color_override("font_hover_color", INK if primary else GILT)
+	b.add_theme_color_override("font_focus_color", INK if primary else BONE)
+	b.add_theme_color_override("font_pressed_color", INK if primary else GILT)
+	b.add_theme_color_override("font_hover_pressed_color", INK if primary else GILT)
 	b.add_theme_stylebox_override("normal", _sb(GILT if primary else IRON, GILT2 if primary else IRON3, 1, 4, 10))
 	b.add_theme_stylebox_override("hover", _sb(Color("#e0b85c") if primary else IRON, GILT, 1, 4, 10))
-	b.add_theme_stylebox_override("pressed", _sb(GILT2 if primary else INK, GILT, 1, 4, 10))
+	b.add_theme_stylebox_override("pressed", _sb(GILT.lerp(GILT2, 0.45) if primary else INK, GILT, 1, 4, 10))
 	b.add_theme_stylebox_override("focus", _sb(Color(0, 0, 0, 0), GILT, 1, 4, 10))
 	b.pressed.connect(cb)
 	return b
