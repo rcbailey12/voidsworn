@@ -149,6 +149,8 @@ Nothing else is deleted (RULEBOOK 3.3, R326).
 Only that the bat calls the head (`init`, `checkout`, `ships` when it needs hulls, `tail`) and runs every Godot start
 through `"%JW%" run`. The head and `contrib/opus/tools/opus_job_head_tests.js` hold the rest.
 
+Workhorse arms and Codex lanes send empty or checkout-local `LOCALAPPDATA` and `PSModuleAnalysisCachePath` to per-run TEMP before the probe and append `/Microsoft/` once to each clone's `.git/info/exclude` (issue 1945).
+
 ## The Node PC daemon (issue 1662, built; not live until the Board's PC proof)
 
 `tools/pc/mission/pc_daemon.js` runs PC jobs straight from pull requests, one at a time. `PC_DAEMON.bat` (double-click)

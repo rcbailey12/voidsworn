@@ -117,19 +117,25 @@ set "SPARSE="
 if defined CODEX_TEST_ROOT set "SPARSE=%CODEX_TEST_SPARSE%"
 %COMMON% checkout "%R%" "%O%" "%BR%" "%SPARSE%"
 if errorlevel 1 exit /b 14
-pushd "%R%"
+pushd "%R%\.." || (
+  %COMMON% finish "%O%" 14 "" "%PUSHMODE%" 0
+  exit /b 14
+)
+rem Set the private scratch and any profile redirects before starting PowerShell in the clone.
+set "PC_RUN_TEMP=%TEMP%"
+%COMMON% scratch "%O%" "%R%"
+if errorlevel 1 goto :probefail
+set /p PC_RUN_SCRATCH=<"%O%\scratch_path.txt" || goto :probefail
+if not exist "%O%\profile_env.txt" goto :probefail
+for /f "usebackq tokens=1,* delims==" %%V in ("%O%\profile_env.txt") do set "%%V=%%W"
+set "TEMP=%PC_RUN_SCRATCH%"
+set "TMP=%PC_RUN_SCRATCH%"
+set "TMPDIR=%PC_RUN_SCRATCH%"
+cd /d "%R%" || goto :probefail
 %PS% prep %N% "%R%" "%O%"
 if errorlevel 1 goto :prepfail
 set /p EFF=<"%O%\effort.txt"
 %COMMON% effort "%O%" "%EFF%"
-rem Give the probe, agent, and checks one private scratch directory, recorded before use.
-set "PC_RUN_TEMP=%TEMP%"
-%COMMON% scratch "%O%"
-if errorlevel 1 goto :probefail
-set /p PC_RUN_SCRATCH=<"%O%\scratch_path.txt" || goto :probefail
-set "TEMP=%PC_RUN_SCRATCH%"
-set "TMP=%PC_RUN_SCRATCH%"
-set "TMPDIR=%PC_RUN_SCRATCH%"
 set "PROBE=%APPDATA%\npm\codex.cmd"
 if "%PC_RUNNER_TEST%"=="1" set "PROBE=%CODEX_TEST_AGENT%"
 %COMMON% preflight "%O%" "%R%" codex "%PROBE%" %CODEX_MODEL% ""
