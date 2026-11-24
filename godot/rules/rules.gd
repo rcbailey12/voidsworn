@@ -28,6 +28,7 @@ var WELL_RIM = 3; var WELL_PULL = 5; var WELL_ASSIST = 6; var WELL_DMG = 7
 var META: Dictionary = {}
 var RUN: Variant = null
 var B: Variant = null
+var end_cause := ""   # for the end card, outside the recorded battle state
 var ARENA: Dictionary = {}
 var CUT: Variant = null    # Set of "q,r" (Dictionary) or null
 var SOLID: Variant = null
@@ -43,12 +44,29 @@ func emit(e: Dictionary) -> void:
 	if events_on: events.append(e)
 func _uid(u): return u["id"] if u is Dictionary and u.get("id") != null else null
 # The battle log (battle.js log(m, c)): B.log gets {m, c} exactly as the game writes it (hashed by the parity test), and a log event.
-func logm(m: String, c = null) -> void:
+# nem tags the log event only (never B.log, so the saved hashes hold): "intro" or "hail" for the Nemesis opening lines,
+# so the battle screen can show one opening hail when the story voice gives its own (C27, issue 1911).
+func logm(m: String, c = null, nem = null, display_text := "") -> void:
 	if B == null or B.get("log") == null: return
 	var e = {"m": m}
 	if c != null: e["c"] = c
 	B["log"].append(e)
-	emit({"t": "log", "text": m, "kind": c})
+	var ev = {"t": "log", "text": m if display_text.is_empty() else display_text, "kind": c}
+	if nem != null: ev["nem"] = nem
+	emit(ev)
+
+
+static func dead_star_name(run, in_sentence := false) -> String:
+	if run is Dictionary and int(run.get("sector", 0)) == 3:
+		return "Hollow Sun"
+	return "dead star" if in_sentence else "Dead star"
+
+
+func log_well(prefix: String, suffix: String, color: String) -> void:
+	# Keep the recorded log stable for saved battles and show the sector's name in the event.
+	logm(prefix + "Hollow Sun" + suffix, color, null, prefix + dead_star_name(RUN, true) + suffix)
+
+
 func ns(x) -> String: return JSM.numstr(x)   # a number as JS prints it in a template string
 func tv(x) -> String: return "undefined" if x == null else (ns(x) if (x is float or x is int) else String(x))   # any value in a template string
 func pe(u) -> String: return "e" if u["side"] == "player" else "p"   # log colour for a loss on u's side
@@ -1268,7 +1286,7 @@ func wellTick(u, dq) -> Variant:
 	if d <= WELL_RIM:
 		u["hp"] = u["hp"] - WELL_DMG; emit({"t": "tick", "unit": u["id"], "kind": "tidal", "hull": WELL_DMG}); flt(u, "Tidal stress −" + ns(WELL_DMG), "#c79bff")
 		if u["hp"] <= 0:
-			u["hp"] = 0; logm(String(u["name"]) + " is torn apart by the Hollow Sun's gravity.", pe(u)); u["killCause"] = "tidal"; queueDeath(u, dq); return "dead"
+			u["hp"] = 0; log_well(String(u["name"]) + " is torn apart by the ", "'s gravity.", pe(u)); u["killCause"] = "tidal"; queueDeath(u, dq); return "dead"
 	elif d <= WELL_PULL:
 		var occ = occMap(); var best: Variant = null
 		for dd in DIRS:
@@ -1456,6 +1474,7 @@ func startBattle(cfg: Dictionary, pick_skills := false) -> void:
 	var biome = cfg["biome"] if jt(cfg.get("biome")) else (RUN["map"]["biome"] if RUN != null and jt(RUN.get("map")) and jt(RUN["map"].get("biome")) else rollBiome(null))
 	var well = {"q": TERRAIN_META.deadstar.q, "r": TERRAIN_META.deadstar.r} if shape == "deadstar" and TERRAIN_META.has("deadstar") else null
 	var depm = "ambush" if enc == "ambush" else ("line" if ["defend", "hunt", "intercept", "break"].has(enc) else (cfg["dep"] if jt(cfg.get("dep")) else "line"))
+	end_cause = ""
 	B = {"seed": seed, "units": [], "terrain": T, "map": TERRAIN_META, "shape": shape, "enc": enc, "arena": ARENA["kind"], "biome": biome, "approach": approach, "well": well, "deployMode": depm,
 		"resolve": {"player": 1, "enemy": 1}, "round": 1, "side": "player", "sel": null, "armed": null, "mode": null, "hover": null, "reach": null,
 		"busy": false, "log": [], "fx": [], "cfg": cfg, "over": false, "reviveUsed": false, "inspect": null, "showArcs": true, "showThreat": false, "called": null, "wingSel": null, "activeUnit": null, "sector": RUN["sector"]}
@@ -1622,7 +1641,7 @@ func _finishBattleSetup(enemy_count: int) -> void:
 	for u in alive("enemy"): u["intercepts"] = max(0, 2 - z0(u.get("treeFlakDown"))) if _has_flak(u) else 0
 	var F = FACTIONS[cfg["fac"]]
 	logm("Contact: " + String(F["n"]) + ". " + ns(enemy_count) + " ship" + ("s" if enemy_count > 1 else "") + " on the scanners.", "s")
-	if jt(B.get("well")): logm("The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "ember")
+	if jt(B.get("well")): log_well("The ", " warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "ember")
 	if cfg.get("kind") == "elite": logm("Elite captains command this fleet.", "e")
 	if cfg.get("kind") == "boss": logm(String(HULLS[F["boss"]]["n"]) + " is here. Everything else is escort.", "e")
 	for line in storyModifierLines(): logm(line, "ember")
@@ -2495,7 +2514,7 @@ func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, fac
 	for a in ad: an.append(nemAdaptName(a, N.get("fac")).to_lower())
 	if ad.size() > 0: emit({"t": "adaptation", "source": "nemesis"})
 	var pron = "It" if N.get("g") == "n" else ("She" if N.get("g") == "f" else "He")
-	logm(String(fl["name"]) + " commands this fleet: your Nemesis." + ((" " + pron + " has adapted: " + ", ".join(an) + ".") if ad.size() > 0 else ""), "e")
+	logm(String(fl["name"]) + " commands this fleet: your Nemesis." + ((" " + pron + " has adapted: " + ", ".join(an) + ".") if ad.size() > 0 else ""), "e", "intro")
 	var L = TB.NEM_LINES
 	var bw = null
 	if jt(N.get("last_beat")): bw = TB.NEM_BEAT_WORD.get(N["last_beat"]) if jt(TB.NEM_BEAT_WORD.get(N["last_beat"])) else N["last_beat"]
@@ -2508,7 +2527,7 @@ func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, fac
 		var ts = String(tpl); var bi = ts.find("{beat}")   # JS replace: the first occurrence only
 		line = (ts.substr(0, bi) + String(bw) + ts.substr(bi + 6)) if bi >= 0 else ts
 	else: line = L["meet"].get(N.get("persona")) if (N.get("persona") != null and jt(L["meet"].get(N["persona"]))) else ""
-	if jt(line): logm(String(fl["name"]) + ": \"" + String(line) + "\"", "e")
+	if jt(line): logm(String(fl["name"]) + ": \"" + String(line) + "\"", "e", "hail")
 	if jt(B.get("nemChallenge")): nemSig("challenge")
 	if beh.get("strike") == "duel": nemSig("duel")
 	if jt(beh.get("line")): nemSig("line")
@@ -4624,6 +4643,11 @@ func _has_reserve(side) -> bool:
 	for u in B["units"]:
 		if u["side"] == side and not jt(u.get("dead")) and jt(u.get("treeOff")): return true
 	return false
+
+func _set_battle_end(outcome: String, cause: String) -> void:
+	B["over"] = outcome
+	end_cause = cause
+
 func checkEndRules() -> void:
 	if jt(B.get("over")): return
 	# Issue 1885: the boss must die, even when its escorts put the fleet below the rout line by fleeing.
@@ -4635,7 +4659,7 @@ func checkEndRules() -> void:
 			bossDown = jt(u.get("dead"))
 			if not bossDown: break
 	if (not bossBattle or bossDown) and caps("enemy").size() == 0 and risers("enemy") == 0:   # issue 1479: an Eclipse wreck rising next round is still in the fight
-		B["over"] = "win"; return
+		_set_battle_end("win", "boss" if bossBattle else "enemy_gone"); return
 	var o = null if bossBattle else B.get("obj")
 	if o != null and o.type == "break":
 		var out = 0
@@ -4643,14 +4667,14 @@ func checkEndRules() -> void:
 			if jt(u.get("exited")): out += 1
 		o["out"] = out
 		if out >= o.need:
-			B["over"] = "win"; logm(ns(out) + " ship" + ("s" if out > 1 else "") + " broke through. The fleet jumps clear.", "s"); return
+			_set_battle_end("win", "breakthrough"); logm(ns(out) + " ship" + ("s" if out > 1 else "") + " broke through. The fleet jumps clear.", "s"); return
 		if out > 0 and caps("player").size() + risers("player") + out < o.need:
-			B["over"] = "loss"; B["withdraw"] = true; logm("Too few ships can still get through. The survivors jump clear.", "e"); return
+			_set_battle_end("loss", "breakthrough_short"); B["withdraw"] = true; logm("Too few ships can still get through. The survivors jump clear.", "e"); return
 	if caps("player").size() == 0 and risers("player") == 0 and not _has_reserve("player"):
-		B["over"] = "loss"; return
+		_set_battle_end("loss", "fleet_lost"); return
 	if bossBattle:
 		if bossDown:
-			B["over"] = "win"; B["routed"] = true; logm("The flagship is gone. Its escorts break and flee.", "s")
+			_set_battle_end("win", "boss"); B["routed"] = true; logm("The flagship is gone. Its escorts break and flee.", "s")
 		return
 	if o != null and o.type == "intercept":
 		var kill = 0; var esc = 0
@@ -4660,24 +4684,25 @@ func checkEndRules() -> void:
 			if jt(u.get("fled")): esc += 1
 		o["kill"] = kill; o["esc"] = esc
 		if kill >= o.need:
-			B["over"] = "win"; B["routed"] = true; logm("The convoy is broken. The escorts break off.", "s"); return
+			_set_battle_end("win", "convoy_broken"); B["routed"] = true; logm("The convoy is broken. The escorts break off.", "s"); return
 		if esc > o.total - o.need:
-			B["over"] = "win"; B["partial"] = true; logm("Enough transports got through. The escorts break off.", "e"); return
+			_set_battle_end("win", "convoy_escaped"); B["partial"] = true; logm("Enough transports got through. The escorts break off.", "e"); return
 	if o != null and o.type == "defend":
 		if o["hp"] <= 0:
-			B["over"] = "loss"; B["withdraw"] = true; logm("The station falls. Your fleet is forced to withdraw.", "e"); return
+			_set_battle_end("loss", "station_lost"); B["withdraw"] = true; logm("The station falls. Your fleet is forced to withdraw.", "e"); return
 		if B["round"] > o["rounds"]:
-			B["over"] = "win"; logm("The station holds. The enemy withdraws.", "s"); return
+			_set_battle_end("win", "station_held"); logm("The station holds. The enemy withdraws.", "s"); return
 	if o != null and o.type == "hunt":
 		var f = null
 		for u in B["units"]:
 			if jt(u.get("flagship")) and u["side"] == "enemy":
 				f = u; break
 		if f != null and jt(f.get("dead")):
-			B["over"] = "win"
 			if jt(o.get("escaped")):
+				_set_battle_end("win", "flagship_escaped")
 				B["partial"] = true; logm("The flagship got away. Its escorts withdraw.", "e")
 			else:
+				_set_battle_end("win", "flagship")
 				B["routed"] = true; logm("The flagship is destroyed. Its escorts scatter.", "s")
 			return
 	if jt(B.get("obj")) and B["obj"].type == "flagship":
@@ -4685,15 +4710,15 @@ func checkEndRules() -> void:
 		for u in B["units"]:
 			if jt(u.get("flagship")) and u["side"] == "enemy" and not jt(u.get("dead")): any = true
 		if not any:
-			B["over"] = "win"; B["routed"] = true; logm("The enemy flagship is gone. The rest of their fleet scatters.", "s"); return
+			_set_battle_end("win", "flagship"); B["routed"] = true; logm("The enemy flagship is gone. The rest of their fleet scatters.", "s"); return
 	if jt(B.get("obj")) and B["obj"].type == "hold":
 		if B["obj"]["score"] >= 3:
-			B["over"] = "win"; logm("The relay is yours. The enemy withdraws.", "s"); return
+			_set_battle_end("win", "relay_held"); logm("The relay is yours. The enemy withdraws.", "s"); return
 		if B["obj"]["escore"] >= 3:
-			B["over"] = "loss"; B["withdraw"] = true; logm("The enemy secures the relay. Your fleet is forced to withdraw.", "e"); return
+			_set_battle_end("loss", "relay_lost"); B["withdraw"] = true; logm("The enemy secures the relay. Your fleet is forced to withdraw.", "e"); return
 	if not jt(B.get("cp0")) or (o != null and (o.type == "intercept" or o.type == "hunt")): return
 	if sideCP("enemy") + riserCP("enemy") <= B["cp0"]["enemy"] * 0.35 and not jt(B.get("nemNoRout")):   # issue 1479: a wreck rising next round still counts toward the rout line   # R42: a Voidsworn or Deathless Nemesis fights to the last hull
-		B["over"] = "win"; B["routed"] = true; logm("The enemy fleet breaks and flees.", "s")
+		_set_battle_end("win", "rout"); B["routed"] = true; logm("The enemy fleet breaks and flees.", "s")
 
 # ======================= orders, commands, abilities =======================
 func canOrder(u, o) -> bool:

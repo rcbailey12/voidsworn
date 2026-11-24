@@ -12,9 +12,8 @@ const ownerFile = '.voidsworn-run-owner';
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner-cleanup-proof-'));
 // PR 1813 measured a 2.1x slowdown with overlapping PC lanes. Allow 65 s instead of 30 s per child.
 const childTimeout = 65000;
-// The first full dry scan still had folders left after 65 s with lanes A, B and D checking.
-// Allow 140 s for a Windows janitor scan (65 s x 2.1, rounded up).
-const janitorTimeout = windows ? 140000 : childTimeout;
+// Issue 1739: with overlapping lanes the dry scan was still checking kept folders at 140 s.
+const janitorTimeout = windows ? 240000 : childTimeout;
 const temp = path.join(root, 'temp'), board = path.join(root, 'board');
 const mirror = path.join(root, 'mirror.git'), repo = path.join(board, 'repo');
 const profile = path.join(root, 'profile'), flag = path.join(profile, 'Downloads', 'voidsworn_test', 'gpu_go.txt');
@@ -36,10 +35,10 @@ function execute(exe, args, input, extra = {}, timeout = childTimeout) {
   return r.stdout.trim();
 }
 const git = (args, input) => execute('git', args, input);
-function shared(args, scratch = '', issue = '') {
+function shared(args, scratch = '', issue = '', extra = {}) {
   const scratchEnv = scratch ? { TEMP: scratch, TMP: scratch, TMPDIR: scratch } : {};
   execute(windows ? 'powershell.exe' : 'pwsh', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', common, ...args], undefined,
-    { ...scratchEnv, PC_RUN_SCRATCH: scratch, PC_RUNNER_LOCKED_ISSUE: issue });
+    { ...scratchEnv, PC_RUN_SCRATCH: scratch, PC_RUNNER_LOCKED_ISSUE: issue, ...extra });
 }
 function start(name, issue = '') {
   const out = path.join(root, name);
@@ -90,6 +89,65 @@ function scratch(parent, name, hours) {
   dateTree(dir, hours);
   return dir;
 }
+function checkProfileCache() {
+  const slot = path.join(root, 'work217', 'slot_sonnet', 'repo');
+  const out = path.join(root, 'profile-cache-checkout');
+  fs.mkdirSync(out);
+  const branch = 'fixture/profile-cache';
+  shared(['init', out, branch]);
+  write(path.join(out, 'validated_issue.json'), JSON.stringify({ body: 'Owner: sonnet\nBrief: below\nDeliver to: tools/pc\n' }));
+  const checkout = () => shared(['checkout', slot, out, branch], '', '', {
+    PC_TEST_SOURCE: mirror, PC_TEST_MIRROR: path.join(root, 'profile-cache-mirror.git')
+  });
+  const exclude = path.join(slot, '.git', 'info', 'exclude');
+  checkout();
+  assert.match(read(exclude), /^\/Microsoft\/\r?$/m);
+  const existing = '# keep this comment\r\n/my-local-pattern/';
+  write(exclude, existing);
+  checkout();
+  assert.match(read(path.join(out, 'result.txt')), /earlier checkout reused in place/);
+  assert.equal(read(exclude), `${existing}\r\n/Microsoft/\r\n`);
+  checkout();
+  assert.equal(read(exclude), `${existing}\r\n/Microsoft/\r\n`, 'reused slot appends the pattern only once');
+
+  const cache = 'Microsoft/Windows/PowerShell/ModuleAnalysisCache';
+  write(path.join(slot, cache), 'fixture cache');
+  write(path.join(slot, 'nested', cache), 'ordinary work');
+  git(['-C', slot, 'add', '-A']);
+  assert.equal(git(['-C', slot, 'diff', '--cached', '--name-only']), `nested/${cache}`);
+  assert.equal(read(path.join(slot, cache)), 'fixture cache');
+
+  const outside = `${slot}-sibling`;
+  const inClone = path.join(slot, 'profile');
+  const cases = [
+    ['empty', null, null, ['LOCALAPPDATA', 'PSModuleAnalysisCachePath']],
+    ['inside', windows ? inClone.toUpperCase() : inClone, `./unused/../${cache}`, ['LOCALAPPDATA', 'PSModuleAnalysisCachePath']],
+    ['only-local', slot, path.join(outside, 'cache'), ['LOCALAPPDATA']],
+    ['only-cache', outside, path.join(slot, cache), ['PSModuleAnalysisCachePath']],
+    ['outside', outside, path.join(outside, 'cache'), []]
+  ];
+  const seenScratch = new Set();
+  for (const [name, local, moduleCache, redirected] of cases) {
+    const run = path.join(root, 'profile-' + name);
+    fs.mkdirSync(run);
+    shared(['init', run, branch]);
+    shared(['scratch', run, slot], '', '', { LOCALAPPDATA: local, PSModuleAnalysisCachePath: moduleCache });
+    const scratchPath = read(path.join(run, 'scratch_path.txt')).trim();
+    assert.equal(path.dirname(scratchPath), temp);
+    assert(!seenScratch.has(scratchPath));
+    seenScratch.add(scratchPath);
+    const values = {
+      LOCALAPPDATA: path.join(scratchPath, 'LocalAppData'),
+      PSModuleAnalysisCachePath: path.join(scratchPath, 'ModuleAnalysisCache')
+    };
+    const settings = redirected.map(key => `${key}=${values[key]}`);
+    assert.deepEqual(read(path.join(run, 'profile_env.txt')).split(/\r?\n/).filter(Boolean), settings, name);
+    const log = read(path.join(run, 'result.txt')).split(/\r?\n/).filter(line => line.startsWith('run profile cache: '));
+    assert.deepEqual(log, ['run profile cache: ' + (settings.join(', ') || 'kept inherited paths')]);
+    if (redirected.includes('LOCALAPPDATA')) assert(fs.statSync(values.LOCALAPPDATA).isDirectory());
+  }
+  console.log('PASS runner profile caches: per-run redirects and append-only slot excludes on clone and reuse');
+}
 try {
   fs.mkdirSync(temp);
   const other = path.join(temp, 'voidsworn-run-other');
@@ -126,6 +184,7 @@ try {
   const main = commit(mirror, 'shared history');
   git(['--git-dir', mirror, 'update-ref', 'refs/heads/main', main]);
   git(['--git-dir', mirror, 'symbolic-ref', 'HEAD', 'refs/heads/main']);
+  checkProfileCache();
   makeCopy('repo', 1);
   const rebuildable = makeCopy('repo-kept-caches', 1);
   write(path.join(rebuildable, '.git', 'info', 'exclude'), '/godot/.godot/\n');
@@ -812,38 +871,76 @@ try {
   assert.equal(runJanitor('--low-space'), '');
   assert(fs.existsSync(nightly));
   const nightTemp = path.join(root, 'night-temp');
+  const nightVt = path.join(root, 'night-profile', 'Downloads', 'voidsworn_test');
   fs.mkdirSync(nightTemp);
   const nightRun = now => runJanitor('--nightly', lockPath, {
     PC_TEST_JANITOR_NOW: now, PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
   });
-  fs.mkdirSync(path.join(root, 'night-profile', 'Downloads', 'voidsworn_test'), { recursive: true });
+  fs.mkdirSync(nightVt, { recursive: true });
   assert.equal(nightRun('2026-11-19T08:59:59Z'), '');
   assert.equal(nightRun('2026-11-19T12:00:00Z'), '');
   assert.equal(nightRun('2026-07-19T19:00:00Z'), '');
   assert.match(nightRun('2026-11-19T09:00:00Z'), /janitor --nightly/);
   assert.match(nightRun('2026-07-19T10:59:59Z'), /janitor --nightly/);
   assert.equal(nightRun('2026-07-19T10:59:59Z'), '');
-  // Issue 1180: --after-job skips silently while any GPU claim is held, and shares the hourly allowance with --low-space.
-  const nightVt = path.join(root, 'night-profile', 'Downloads', 'voidsworn_test');
-  const afterJob = (now, extra = {}) => runJanitor('--after-job', lockPath, {
-    PC_TEST_JANITOR_NOW: now, PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile'), ...extra
+  // Issue 1907: a solo timing leaves the nightly date and the hourly allowance available for a retry.
+  const nightLock = path.join(nightVt, 'janitor.lock');
+  const previousAdmission = read(nightLock);
+  const soloPath = path.join(nightVt, 'gpu_solo');
+  const soloClaim = '{"token":"t","issue":"bench","pid":1,"mode":"solo"}\n';
+  const slotPath = path.join(nightVt, 'gpu_slot_2');
+  const sharedClaim = '{"token":"u","issue":"render","pid":2,"mode":"shared"}\n';
+  const deferral = 'deferred nightly: a GPU solo claim is active';
+  write(soloPath, soloClaim);
+  assert.equal(nightRun('2026-11-20T09:30:00Z'), deferral);
+  const janitorLogLines = () => fs.readdirSync(nightVt).filter(name => /^janitor_\d{8}-\d{4}\.txt$/.test(name))
+    .flatMap(name => read(path.join(nightVt, name)).split(/\r?\n/));
+  assert.equal(janitorLogLines().filter(line => line === deferral).length, 1, 'the nightly deferral is saved once');
+  assert.match(runJanitor('--low-space', lockPath, {
+    PC_TEST_JANITOR_NOW: '2026-11-20T09:30:00Z', PC_RUN_TEMP: nightTemp,
+    JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
+  }), /deferred low-space disk scans: a GPU solo claim is active$/);
+  assert.equal(read(nightLock), previousAdmission, 'the solo claim spends neither allowance');
+  write(soloPath, '');
+  write(slotPath, sharedClaim);
+  assert.match(nightRun('2026-11-20T09:45:00Z'), /all done$/, 'a shared claim allows the same-night retry');
+  assert.match(read(nightLock), / 20261120$/);
+  assert.equal(nightRun('2026-11-20T10:00:00Z'), '');
+  write(slotPath, '');
+  // --after-job logs GPU deferrals and still checks TEMP during shared GPU work.
+  const afterTime = seconds => new Date(fixtureNow.getTime() + seconds * 1000).toISOString();
+  const afterJob = seconds => runJanitor('--after-job', lockPath, {
+    PC_TEST_JANITOR_NOW: afterTime(seconds), PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
   });
-  write(path.join(nightVt, 'gpu_solo'), '{"token":"t","issue":"bench","pid":1,"mode":"solo"}\n');
+  write(soloPath, soloClaim);
   write(path.join(nightVt, 'gpu_slot_1'), '');
-  assert.equal(afterJob('2026-11-20T15:00:00Z'), '', 'a held solo claim stops the after-job cleanup');
-  write(path.join(nightVt, 'gpu_solo'), '');
-  write(path.join(nightVt, 'gpu_slot_2'), '{"token":"u","issue":"render","pid":2,"mode":"shared"}\n');
-  assert.equal(afterJob('2026-11-20T15:00:00Z'), '', 'a held shared claim stops it too');
-  write(path.join(nightVt, 'gpu_slot_2'), '');
-  assert.match(afterJob('2026-11-20T15:00:00Z'), /janitor --after-job/, 'empty claim files: it runs, the GPU checks spent no allowance');
-  assert.equal(afterJob('2026-11-20T15:30:00Z'), '', 'once an hour');
+  const sharedScratch = scratch(nightTemp, 'issue-311-gpu-shared', 4);
+  markOwned(sharedScratch, 4);
+  assert.match(afterJob(0), /deferred after-job disk scans: a GPU solo claim is active/);
+  assert(fs.existsSync(sharedScratch), 'solo timing defers TEMP cleanup too');
+  write(soloPath, '');
+  write(slotPath, sharedClaim);
+  const legacyJob = path.join(nightVt, 'opus311legacy');
+  const legacyRepos = [path.join(legacyJob, 'repo'), path.join(legacyJob, 'out', 'run_old', 'repo')];
+  for (const repo of legacyRepos) fs.mkdirSync(repo, { recursive: true });
+  const inventory = runJanitor('--dry-run', lockPath, {
+    PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
+  });
+  for (const repo of legacyRepos) assert(inventory.includes(`legacy job repo (inventory only): ${repo}`), inventory);
+  const sharedRun = afterJob(1);
+  assert.match(sharedRun, /deferred after-job job-folder pass: a GPU claim is active/);
+  assert(!sharedRun.includes(legacyJob), 'shared GPU work defers the job-folder pass');
+  assert(!fs.existsSync(sharedScratch), 'shared GPU work allows TEMP cleanup');
+  assert(janitorLogLines().includes('deferred after-job job-folder pass: a GPU claim is active'), 'the deferral is saved to the janitor log');
+  write(slotPath, '');
+  assert.equal(afterJob(1800), '', 'once an hour');
   assert.equal(runJanitor('--low-space', lockPath, {
-    PC_TEST_JANITOR_NOW: '2026-11-20T15:40:00Z', PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
+    PC_TEST_JANITOR_NOW: afterTime(2400), PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
   }), '', 'the low-space trigger shares the hour');
-  assert.match(afterJob('2026-11-20T16:00:01Z'), /janitor --after-job/);
+  assert.match(afterJob(3602), /time: job folders done/, 'empty claim files: the next admitted run checks job folders');
   const heldLock = path.join(nightVt, 'janitor.lock');
   assert.equal(runJanitor('--after-job', heldLock, {
-    PC_TEST_JANITOR_NOW: '2026-11-20T18:00:00Z', PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
+    PC_TEST_JANITOR_NOW: afterTime(10800), PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
   }), '', 'a busy janitor lock: skipped without a word');
   if (windows) {
     const inUse = scratch(temp, 'issue-309-in-use', 4);

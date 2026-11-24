@@ -18,7 +18,7 @@ const SETTINGS_PATH := "user://settings.json"
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true, "render_scale": 1.0, "fps_cap": 0.0, "vsync": true}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "brisk_camera": false, "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true, "render_scale": 1.0, "fps_cap": 0.0, "vsync": true}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -159,7 +159,8 @@ func _ready() -> void:
 
 
 # --check-export (run on the exported build): no test trees in the package, and the real parts of the game are in it
-# (not the fallbacks). Prints [export-check] OK or FAIL with the reasons; exit code 0 or 1.
+# (not the fallbacks), and every ship file the game loads (main/export_ship_check.gd, issue 1438). Prints [export-check] OK
+# or FAIL with the reasons; exit code 0 or 1.
 func _check_export() -> void:
 	var bad: Array = []
 	for d in ["res://rules/test", "res://campaign/test", "res://fx/test", "res://music/test", "res://story/test", "res://portraits/test", "res://audio/build"]:
@@ -174,6 +175,12 @@ func _check_export() -> void:
 			bad.append("missing: " + f)
 	if not DirAccess.dir_exists_absolute("res://gen"):
 		bad.append("missing: res://gen (the built assets)")
+	else:
+		# issue 1438: every manifest row loads with its maps, the wing selector's models load, no source ship GLB shipped
+		var ships: Dictionary = load("res://main/export_ship_check.gd").check()
+		bad.append_array(ships["fails"])
+		for line in ships["notes"]:
+			print("[export-check] ", line)
 	if not FileAccess.file_exists("res://music/music.json"):
 		bad.append("note: no music content yet (res://music/music.json)")
 	var fails := bad.filter(func(x): return not str(x).begins_with("note:"))
@@ -316,6 +323,7 @@ func _settings_to_battle(b: Node) -> void:
 	b.ai_level = str(settings["ai"])
 	b.follow = bool(settings.get("follow", true))
 	b.cine = str(settings.get("cine", "key"))
+	b.brisk_camera = bool(settings.get("brisk_camera", false))
 	b._sync_teaching_switch()
 	b.set_fx_opts(bool(settings["reduce_flashing"]), float(settings["shake"]))
 	b.reduce_motion = bool(settings.get("reduce_motion", false))   # issue 521: no key in old settings reads off

@@ -1572,6 +1572,10 @@ static func is_turret_mesh(s, mi: Node) -> bool:
 	return hull._turret_above(mi, s.root) >= 0
 
 
+static func is_moving_damage_mesh(s, mi: Node) -> bool:
+	return is_turret_mesh(s, mi) or s.hull._door_above(mi, s.root) >= 0
+
+
 static func gather(s) -> Array:
 	var out: Array = []
 	# (F3: a ship whose node was freed before its first rebuild came round has nothing to gather)
@@ -1585,9 +1589,8 @@ static func gather(s) -> Array:
 		var mi := m as MeshInstance3D
 		if mi == null or not (mi.mesh is ArrayMesh) or not mi.is_inside_tree():
 			continue
-		# issue 1235 (F3.4): never a turret's turning mesh; a scar baked in its pose of the moment hung in the air
-		# once the turret trained back (fx_ship picks its damage reference mesh the same way)
-		if is_turret_mesh(s, mi):
+		# Doors and turrets move independently of the hull frame in which these scars are baked.
+		if is_moving_damage_mesh(s, mi):
 			continue
 		var am: ArrayMesh = mi.mesh
 		if am.get_blend_shape_count() > 0:
@@ -1770,6 +1773,7 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 			if wear_on:
 				HULL.set_wear(surface, float(s.hull_wear), wear_p)   # issue 1235: wear as HP falls
 			mi.set_surface_override_material(si, surface)
+			s._damage_surfaces_assigned = true
 		if mi.has_meta("fx_inside"):
 			mi.material_overlay = null
 			mi.remove_meta("fx_inside")

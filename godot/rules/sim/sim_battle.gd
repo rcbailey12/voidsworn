@@ -35,6 +35,33 @@ func startBattle(cfg: Dictionary, pick_skills := false) -> void:
 	super.startBattle(cfg, pick_skills)
 
 
+func start_campaign(run: Dictionary, cfg: Dictionary) -> Dictionary:
+	RUN = run
+	not_ported = ""
+	events.clear()
+	var setup := cfg.duplicate()
+	setup.erase("campaign")
+	setup.erase("event_war")
+	startBattle(setup)
+	B.campaign = true
+	var nemesis = setup.get("nemesis")
+	var force = null
+	if jt(nemesis) and nemesis.fac == "hegemony":
+		force = "reinf_enemy"
+	elif cfg.get("event_war", false) and setup.kind != "boss":
+		force = "reinf_enemy" if rnd() < 0.6 else "reinf_ally"
+	B.event = rollBattleEvent(setup, force)
+	if jt(nemesis) and nemesis.fac == "hegemony":
+		B.event.r = 3
+	hook("start")
+	B.alt = true
+	# Muse's mcSetupBattle opens the enemy turn before mcBattleLoop opens it again.
+	_reset_activations()
+	startSideTurn("enemy")
+	flush_deferred()
+	return B
+
+
 func launchWing(u, h, kind) -> void:
 	super.launchWing(u, h, kind)
 	# Replacement wings use this path without calling useAbility. Initial wings use makeWing.

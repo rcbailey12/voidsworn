@@ -6,6 +6,7 @@ extends CanvasLayer
 # Tab and the arrow keys move between buttons and map nodes, Enter or Space presses the focused one.
 # Colours and fonts match the battle HUD (godot/ui/battle/hud.gd). Sizes scale with the window height (designed at 1080).
 
+const Rules = preload("res://rules/rules.gd")
 const CampaignTips = preload("res://ui/campaign/campaign_tips.gd")
 const RowHover = preload("res://ui/campaign/row_hover.gd")
 var teaching: Node
@@ -266,7 +267,7 @@ func _arg_of(list: Array, act: String) -> String:   # the arg of the first butto
 	return ""
 # The number key that picks this action in a dialog (1 to 9 pick the dialog's enabled actions in order, _unhandled_input)
 func _key_for(list, act: String, arg) -> String:
-	if list == null or C.modal_d == null or list != C.modal_d["acts"]: return ""
+	if list == null or C.modal_d == null or list != _modal_acts: return ""
 	var on = list.filter(func(a): return a[2] == 1)
 	var a0 = "" if arg == null else str(arg)
 	for i in range(min(9, on.size())):
@@ -2272,6 +2273,7 @@ func _end_back() -> void:
 func _campaign_action(act: String, arg = "") -> void:
 	# All end-page exits, including the old progression page's title link, pass here.
 	if _end_return and act == "title": _end_back(); return
+	if act == "buyMod": C.ACT_buyMod(str(arg), true); return
 	var ending = C.page.get("kind") == "end" or _end_return
 	if ending and act in ["title", "newRunScreen", "nextFac"] and not _end_confirmed: return
 	if ending and act in ["progTab", "lineage"]: _end_return = true
@@ -2472,7 +2474,13 @@ func _capstone_mastery(id) -> Control:
 
 # ---------------- dialogs ----------------
 func _modal(md: Dictionary) -> void:
-	_modal_acts = md["acts"]; var acts = _modal_acts; var d = md["data"]
+	_modal_acts = md["acts"].duplicate(); var acts = _modal_acts; var d = md["data"]
+	if md["kind"] == "victory":
+		# Taking a prize can fill the room a tow had when the battle ended.
+		for i in range(d["wrecks"].size()):
+			var wreck = d["wrecks"][i]
+			if C.jt(wreck["yield"].get("tow")) and C.wreck_tow_over_cap(wreck):
+				acts.erase(_find(acts, "takeSalvage", str(i) + ":tow"))
 	var dim = ColorRect.new(); dim.color = GS.SHADE; dim.set_anchors_preset(Control.PRESET_FULL_RECT); modal_box.add_child(dim)
 	dim.mouse_force_pass_scroll_events = false
 	var cc = CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT); modal_box.add_child(cc)
@@ -2553,9 +2561,21 @@ func _modal(md: Dictionary) -> void:
 			if str(d.get("beat3Debrief", "")) != "": p.call(d["beat3Debrief"], VERD)
 			if not sm.is_empty(): v.add_child(rich(C.numstr(sm["kills"]) + " enemy ship" + ("" if int(sm["kills"]) == 1 else "s") + " destroyed in " + C.numstr(sm["rounds"]) + " round" + ("" if float(sm["rounds"]) == 1 else "s") + ". " + c("+", VERD) + n_(C.numstr(d["econ"]["bio"] if d.get("econ") is Dictionary and d["econ"].has("bio") else d["credits"]), VERD) + c(" biomass." if d.get("econ") is Dictionary and d["econ"].has("bio") else " credits.", VERD), 17))
 			if not sm.get("lost", []).is_empty():
-				var ls = []
-				for l in sm["lost"]: ls.append(C.ship_with_article(str(l["ship"])) + " and " + str(l["cap"]))
-				p.call("Lost: " + ", ".join(PackedStringArray(ls)) + ".", BLOOD)
+				var lost := PackedStringArray()
+				var survivors := PackedStringArray()
+				var escape_line: String = {
+					"chorus": "Captain %s survived in a detached spore-node.",
+					"deathless": "Captain %s streamed their backup clear before hull loss."
+				}.get(str(R["fac"]), "Captain %s escaped, wounded.")
+				for loss in sm["lost"]:
+					var ship_name: String = C.ship_with_article(str(loss["ship"]))
+					if C.loss_captain_escaped(loss):
+						lost.append(ship_name)
+						survivors.append(escape_line % str(loss["cap"]))
+					else:
+						lost.append(ship_name + " and " + str(loss["cap"]))
+				p.call("Lost: " + ", ".join(lost) + ".", BLOOD)
+				for line in survivors: p.call(line, BONE2)
 			var econ: Dictionary = d["econ"] if d.get("econ") is Dictionary else {}   # issue 1178: faction economies on the victory card
 			if econ.has("cullet"): p.call("Cullet from the lost glass: +" + C.numstr(econ["cullet"]) + " credits.", VERD)
 			if econ.has("core"): p.call("Core recovered: the " + str(C.HULLS[econ["core"]]["n"]) + " can be regrown at a shipyard.", VERD)
@@ -2607,8 +2627,20 @@ func _modal(md: Dictionary) -> void:
 			p.call("You get: " + (", ".join(PackedStringArray(parts)) if parts.size() > 0 else "Nothing") + ".", BONE2)
 			v.add_child(foot([fin("Confirm", "prizeConfirm", "", acts)]))
 		"mod":
-			h2.call("Recovered refits"); p.call(str(C.REWARD_DEF["refit"]), BONE3); p.call("Take one. It goes in the hold; fit it at a shipyard or from the fleet screen.")
-			for m in d["opts"]: add(v, choice(C.modName(m), C.MODULES[m]["d"], "takeMod", m, acts))
+			h2.call("Recovered refits"); p.call("Choose one refit. Fit it now or keep it in the hold.")
+			for m in d["opts"]:
+				var card_box := panel(IRON3, IRON2, 10)
+				var body := vbox(6); card_box.add_child(body)
+				body.add_child(lbl(C.modName(m), 20, BONE, font_semi))
+				body.add_child(lbl(C.MODULES[m]["d"], 17, BONE2))
+				_refit_fit_choices(body, m, "fitRewardRefit", str(m) + ":", acts)
+				add(body, choice("Keep in hold", "", "takeMod", m, acts))
+				v.add_child(card_box)
+		"bought_refit":
+			var m = d["module"]
+			h2.call(C.modName(m) + " purchased"); p.call(C.MODULES[m]["d"], BONE2)
+			_refit_fit_choices(v, m, "fitBoughtRefit", "", acts)
+			v.add_child(foot([fin("Keep in hold", "keepBoughtRefit", "", acts)]))
 		"boon":
 			var P = C.PATRONS[d["patron"]]; var pc = Color(P["col"])
 			var hd = hbox(12); var sg = lbl(P["glyph"], 26, INK, font_semi, false); var sgp = panel(pc, pc, 6); sgp.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; sgp.add_child(sg); hd.add_child(sgp)
@@ -2663,18 +2695,48 @@ func _modal(md: Dictionary) -> void:
 	v.minimum_size_changed.connect(func(): sc.custom_minimum_size.y = min(vh * 0.9 - px(48), v.get_combined_minimum_size().y + px(8)))
 	ModalFocus.attach(box)
 
+func _refit_fit_choices(v: VBoxContainer, module_id, action: String, prefix: String, acts: Array) -> void:
+	var ships := flow(6)
+	for ship in C.RUN["fleet"]:
+		if not C.canFitModule(ship, module_id): continue
+		var arg := prefix + str(ship["uid"])
+		C.A(acts, action, arg)
+		ships.add_child(abtn("Fit onto " + str(ship["name"]), action, arg, false, true, acts))
+	if ships.get_child_count() == 0:
+		ships.free()
+		v.add_child(lbl("No free compatible slot.", 17, BONE3))
+	else:
+		v.add_child(ships)
+
 func _salvage_choices(v: VBoxContainer, wrecks: Array, acts: Array) -> void:
-	v.add_child(lbl("Salvage one wreck", 20, BONE))
-	v.add_child(lbl(str(C.REWARD_DEF["salvage"]), 17, BONE3))
+	v.add_child(lbl("Choose one wreck", 20, BONE))
 	for i in range(wrecks.size()):
 		var w = wrecks[i]; var y = w["yield"]; var F = C.FACTIONS.get(w.get("fac"))
 		var pp = panel(IRON3, IRON2, 10); var pv = vbox(6); pp.add_child(pv)
-		pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.clsName(C.or_(w.get("cls"), ""))) + ((", " + esc(F["n"])) if F != null else ""), BONE3) + "\n" + c(esc(C.CAUSE_WORD.get(w.get("cause"), "destroyed")) + ((" by the " + esc(w["by"])) if C.jt(w.get("by")) else "") + ".", BONE2), 18))
+		pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.clsName(C.or_(w.get("cls"), ""))) + ((", " + esc(F["n"])) if F != null else ""), BONE3), 18))
+		var cause := str(w.get("impact", C.CAUSE_WORD.get(w.get("cause"), "destroyed")))
+		if w.get("cause") == "tidal":
+			cause = cause.replace("Hollow Sun", Rules.dead_star_name(C.RUN, true))
+		cause = cause.substr(0, 1).to_upper() + cause.substr(1)
+		var bonus: int = C.wreck_credit_bonus(w.get("cause"))
+		if bonus > 0:
+			pv.add_child(lbl("%s: no module or hull recovered, +%d%% credits." % [cause, bonus], 17, BONE2))
+		else:
+			var by: String = " by " + C.ship_with_article(str(w["by"])) if C.jt(w.get("by")) else ""
+			var module_note := " No refit recoverable." if y.get("mod") == null else ""
+			pv.add_child(lbl(cause + by + "." + module_note, 17, BONE2))
 		var g = GridContainer.new(); g.columns = 3; g.add_theme_constant_override("h_separation", px(6))
-		if C.jt(y.get("mod")): add(g, choice("Strip it: " + C.modName(y["mod"]), C.MODULES[y["mod"]]["d"], "takeSalvage", str(i) + ":mod", acts))
-		add(g, choice("Scrap it", "+" + C.numstr(y["cred"]) + " credits", "takeSalvage", str(i) + ":cred", acts))
-		if C.jt(y.get("tow")): add(g, choice("Tow it home", "Joins your fleet at 35% hull", "takeSalvage", str(i) + ":tow", acts))
-		pv.add_child(g); v.add_child(pp)
+		if C.jt(y.get("mod")): add(g, choice("Strip wreck for refit", C.modName(y["mod"]) + " to the hold\n" + C.MODULES[y["mod"]]["d"], "takeSalvage", str(i) + ":mod", acts))
+		add(g, choice("Strip wreck for credits", "+" + C.numstr(y["cred"]) + " credits", "takeSalvage", str(i) + ":cred", acts))
+		if C.jt(y.get("tow")):
+			if C.wreck_tow_over_cap(w):
+				pv.add_child(lbl("No command points left to tow this wreck.", 17, BONE3))
+			else:
+				add(g, choice("Tow it home", "Joins your fleet at 35% hull", "takeSalvage", str(i) + ":tow", acts))
+		pv.add_child(g)
+		if C.jt(y.get("mod")):
+			_refit_fit_choices(pv, y["mod"], "fitWreckRefit", str(i) + ":", acts)
+		v.add_child(pp)
 
 # Every line of a dialog sits on a backing (ui_style.md 3): runs of plain words (labels, rich text, the title) are gathered
 # into one well each, in place; choices, rows of buttons and blocks that already are wells stay as they are.
@@ -2693,7 +2755,7 @@ func _well_text(v: VBoxContainer) -> void:
 const BACK_ACTS := ["title", "backToSetup"]
 # Issue 1448: the confirms that take a reward, relic or promotion perk, or buy a hull, play the built reward chime
 # (cues.json ui_reward) in place of the plain confirm.
-const REWARD_ACTS := ["takeMod", "takeBoon", "takeRelic", "takeSalvage", "prizeConfirm", "takePerk", "buyHull"]
+const REWARD_ACTS := ["takeMod", "fitRewardRefit", "fitWreckRefit", "fitBoughtRefit", "takeBoon", "takeRelic", "takeSalvage", "prizeConfirm", "takePerk", "buyHull"]
 # Names the action a button runs, so the player-path recorder presses the real button (and hears its cue) instead of
 # calling the action under it (issue 1448: SND1C's reward picks were silent because the recorder skipped the buttons).
 static func press_tag(b: Control, act: String, arg) -> void:
@@ -2751,10 +2813,10 @@ func _unhandled_input(e: InputEvent) -> void:
 	if C.modal_d == null and C.page.get("kind") == "end" and is_instance_valid(debrief):
 		if debrief.handle_key(e): _key_cue(e); get_viewport().set_input_as_handled(); return
 	if C.modal_d != null:
-		var acts = C.modal_d["acts"]
+		var acts = _modal_acts
 		if e.keycode == KEY_ESCAPE:
 			for a in acts:   # issue 1559 item 26: the relic pick's Back (eventBack) answers Esc too
-				if a[2] == 1 and (a[0] == "closeModal" or a[0] == "c3retreatNo" or a[0] == "eventBack"):
+				if a[2] == 1 and a[0] in ["closeModal", "c3retreatNo", "eventBack", "keepBoughtRefit"]:
 					Kit.play("ui_cancel"); C.act(a[0], a[1]); get_viewport().set_input_as_handled(); return
 		var n = e.keycode - KEY_1
 		if n < 0 or n >= 9: n = e.keycode - KEY_KP_1   # the keypad's digits too, as on the map (item 26)

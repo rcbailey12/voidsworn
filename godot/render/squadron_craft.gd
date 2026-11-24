@@ -2,6 +2,7 @@ extends RefCounted
 # Small craft built in the game frame: bow +X, up +Y. Parts are merged by
 # material, so a whole detailed craft is one mesh with five surfaces.
 const LOOK := preload("res://fx/faction_look.gd")
+const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const DEFAULT_KIND := {"voidsworn": "fighter", "hegemony": "fighter", "corsair": "bomber", "chorus": "spore", "ithar": "fighter", "deathless": ""}
 static var _meshes := {} # not GPU: weak references share geometry without holding GPU resources at exit.
 const SKIN := """
@@ -115,9 +116,7 @@ func build(faction: String, kind: String) -> Node3D:
 			m.roughness = 0.2
 		if i < 3:
 			var skin := ShaderMaterial.new()
-			var shader := Shader.new()
-			shader.code = SKIN
-			skin.shader = shader
+			skin.shader = SHADER_CACHE.for_code(SKIN)
 			skin.set_shader_parameter("paint", colors[i])
 			skin.set_shader_parameter("organic", 1.0 if faction == "chorus" else 0.0)
 			materials.append(skin)

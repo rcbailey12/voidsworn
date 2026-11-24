@@ -2,7 +2,7 @@
 # No model calls except preflight.
 # init <out> <branch>; wait <out>; checkout <repo> <out> <branch> <sparse>;
 # preflight <out> <repo> <opencode|kimi|codex> <exe> <model> <variant>;
-# scratch <out>: create and record the run's private TEMP directory.
+# scratch <out> [repo]: create and record the run's private TEMP directory and profile cache redirects.
 # finish <out> <exit> <partial> <push mode> <checks ok> [repo].
 # space <out> <settings file> <target path>: refuse to start when the target's drive has less than min_free_gb
 #   (default 60) free; one line in result.txt, status failed. Test knobs: PC_TEST_SETTINGS, PC_TEST_SPACE_FREE_MB.
@@ -572,6 +572,53 @@ function Assert-PlainDirectory($directory) {
       throw "directory is missing or linked: $($dir.FullName)"
     }
   }
+}
+function Test-PathInsideRepo($path, $repo) {
+  $separator = [IO.Path]::DirectorySeparatorChar
+  $comparison = if ($separator -eq '\') { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+  $path = [IO.Path]::GetFullPath($path).TrimEnd($separator)
+  $root = [IO.Path]::GetFullPath($repo).TrimEnd($separator)
+  return $path.Equals($root, $comparison) -or $path.StartsWith($root + $separator, $comparison)
+}
+function Write-RunProfileRedirects($repo, $scratch) {
+  # Resolve relative settings from the agent's starting directory, even if the cache does not exist yet.
+  Push-Location -LiteralPath $repo
+  try {
+    $redirects = foreach ($name in @('LOCALAPPDATA', 'PSModuleAnalysisCachePath')) {
+      $value = [Environment]::GetEnvironmentVariable($name)
+      if (-not [string]::IsNullOrWhiteSpace($value)) {
+        $path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($value)
+        if (-not (Test-PathInsideRepo $path $repo)) { continue }
+      }
+      if ($name -eq 'LOCALAPPDATA') {
+        $path = [IO.Directory]::CreateDirectory((Join-Path $scratch 'LocalAppData')).FullName
+      } else {
+        $path = Join-Path $scratch 'ModuleAnalysisCache'
+      }
+      "$name=$path"
+    }
+  } finally { Pop-Location }
+  Put (Join-Path $out 'profile_env.txt') ((@($redirects) + '') -join "`r`n")
+  if ($redirects) { Log "run profile cache: $($redirects -join ', ')" }
+  else { Log 'run profile cache: kept inherited paths' }
+}
+function Add-ProfileCacheExclude($repo) {
+  Assert-PlainDirectory (Get-Item -LiteralPath (Join-Path $repo '.git') -Force)
+  $info = [IO.Directory]::CreateDirectory((Join-Path $repo '.git/info'))
+  Assert-PlainDirectory $info
+  $path = Join-Path $info.FullName 'exclude'
+  $file = Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+  $content = ''
+  if ($file) {
+    if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+      throw "Git exclude is not a plain file: $path"
+    }
+    $content = [IO.File]::ReadAllText($path)
+    if ($content -cmatch '(?m)^/Microsoft/\r?$') { return }
+  }
+  $newline = if ($content.Contains("`r`n")) { "`r`n" } else { "`n" }
+  $prefix = if ($content -and -not $content.EndsWith("`n")) { $newline } else { '' }
+  [IO.File]::AppendAllText($path, "$prefix/Microsoft/$newline", $utf8)
 }
 function Assert-NoLinkedChildren($directory) {
   $pending = New-Object 'Collections.Generic.Stack[string]'
@@ -1208,6 +1255,8 @@ try {
     if ($s.status -ne 'running' -or $s.scratch) { throw 'scratch directory can only be created once for a running job' }
     $temp = Get-Item -LiteralPath $env:PC_RUN_TEMP -Force
     Assert-PlainDirectory $temp
+    $repo = $args[2]
+    if ($repo -and (Test-PathInsideRepo $temp.FullName $repo)) { throw 'run scratch root is inside the checkout' }
     $issue = $env:PC_RUNNER_LOCKED_ISSUE
     $prefix = if ($issue -match '\A[1-9][0-9]*\z') { "voidsworn-run-$issue-" } else { 'voidsworn-run-' }
     $dir = New-Item -ItemType Directory -Path (Join-Path $temp.FullName ($prefix + [guid]::NewGuid().ToString('N')))
@@ -1219,6 +1268,7 @@ try {
     Save-State $s
     Put (Join-Path $out 'scratch_path.txt') ($dir.FullName + [Environment]::NewLine)
     Log "run scratch created: $($dir.FullName)"
+    if ($repo) { Write-RunProfileRedirects $repo $dir.FullName }
   }
   elseif ($mode -eq 'wait') {
     $script:out = $args[1]
@@ -1311,6 +1361,7 @@ try {
         if ($attempt -eq 3) { throw 'local clone failed after 3 attempts; see git_log.txt' }
         Log "local clone failed; retry in $delay seconds"; Start-Sleep -Seconds $delay
     }
+    Add-ProfileCacheExclude $repo
     # Local hardlinks share immutable objects without alternates. All pushes go to GitHub, never to the mirror.
     Must-Git @('-C',$repo,'remote','set-url','origin',$source)
     if (-not $reuse -and $patterns.Count) {

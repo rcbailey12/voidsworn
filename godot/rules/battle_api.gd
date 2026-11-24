@@ -292,7 +292,8 @@ func _i_view() -> Dictionary:
 			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy"),
 			"undo": phase == "player" and u["side"] == "player" and R.canUndo(u)})   # issue 1450: this ship's last move or turn can be taken back
 	return {"ask": B["treeAsk"].duplicate(true) if B.get("treeAsk") is Dictionary else null, "skill_target": R.skillTargetView(), "round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
-		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "zones": _zones(), "halt": halted if halted != "" else null}
+		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "zones": _zones(), "halt": halted if halted != "" else null,
+		"endCause": R.end_cause if R.jt(B.get("over")) else ""}
 func _zones() -> Dictionary: # battle.js objZone: "exit" (breakthrough: jump clear here), "texit" (intercept: transports escape here), "guard" (defend: the ring 2 hexes out)
 	var o := {}
 	if R.B.get("obj") == null: return o
@@ -1196,6 +1197,7 @@ func _i_restore_round(bytes: PackedByteArray, size: int, fp: String) -> String:
 	if not (S is Dictionary and int(S.get("v", 0)) == SNAP_V and S.get("B") is Dictionary and S.get("run") is Dictionary): return "the snapshot has the wrong shape"
 	R.not_ported = ""
 	R.RUN = S["run"]; R.B = S["B"]; R.ARENA = S["arena"]; R.CUT = S["cut"]; R.SOLID = S["solid"]; R.TERRAIN_META = S["tmeta"]; R.META = S["meta"]
+	R.end_cause = ""
 	R.UID = S["uid"]; R.AI_LEVEL = S["ai"]; JSM.rng_s = int(S["rng"])
 	R.deferred = []; R.events.clear(); R._runfx = null; R._ob.clear()
 	phase = str(S["phase"]); _queue = S["queue"]; _hexes = S["hexes"]; _alt = bool(S["alt"])
@@ -1230,7 +1232,7 @@ func entry_reason(id: String, q: int, r: int) -> String:
 	var why := ""
 	var u = unit(id)
 	if (R.SOLID != null and R.SOLID.has(R.hkey(q, r))) or R.blocks(R.terr(q, r)):
-		why = "Blocked by the %s on this hex." % [{"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(_blocker_kind(q, r), _blocker_kind(q, r))]   # Council 29 (issue 1401): no hex numbers on the board
+		why = "Blocked by the %s on this hex." % [{"rock": "asteroid", "hulk": "wreck", "deadstar": R.dead_star_name(R.RUN, true)}.get(_blocker_kind(q, r), _blocker_kind(q, r))]   # Council 29 (issue 1401): no hex numbers on the board
 	elif not R.onBoard(q, r):
 		why = "Outside the playable area."
 	elif u != null:

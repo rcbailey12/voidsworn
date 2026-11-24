@@ -12,7 +12,8 @@ extends Node
 # Parts:
 #   moments  every row of bench/look_moments.json (weapons on a hull and on a shield, shield states, death classes, one
 #            weapon on every weight, the eight PR 327 looks), each at the three cameras, as 30 frames a second strips:
-#            DIR/moments/<id>__c<cam>.png (cells side by side, 384x216 each; camera 170 is a 1 to 1 pixel crop).
+#            DIR/moments/<id>__c<cam>.png (384x216 cells side by side with a provenance footer below them;
+#            camera 170 is a 1 to 1 pixel crop).
 #   fleet    all 36 hulls of render/hull_table.gd AI_HULLS at the battle camera (170) at true pixel size over every
 #            region's sky and a storm map (the sheet maker names the darkest and brightest by measurement):
 #            DIR/fleet/<sky>/<nn>_<code>.png (400x240, 1 to 1).
@@ -765,8 +766,14 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if not keep:
 		return true
 	var name := "%s__c%d.png" % [id, int(r)]
-	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
+	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
+	# issue 1777 (Artoo on PR 1786): record the hull the target resolved to; a row naming "expect_code" says loudly when
+	# the faction and class drew a different hull (a later remap), so a capture bat can fail on it
+	var tcode := str(T.code) if is_instance_valid(T) else ""
+	if row.has("expect_code") and tcode != str(row["expect_code"]):
+		_warn("%s: target drew %s, the row expects %s" % [id, tcode, str(row["expect_code"])])
+		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
-		"impacts": impacts})
+		"impacts": impacts, "code": tcode})
 	_log("%s at %d: %d cells" % [id, int(r), ci])
 	return true
