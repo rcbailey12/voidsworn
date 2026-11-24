@@ -30,6 +30,9 @@ var _thread: Thread
 # was made for until it is in.
 static var _pending: Node = null
 static var _pending_tree: SceneTree = null
+# Neon (PR 1776 review, item 2): keys asked for with request_* and not yet collected with result(). The cache never
+# evicts them, so a map that finished first can never push out a later map of the same set before its caller reads it.
+static var _pins := {}
 
 static func service(tree: SceneTree) -> Node:
 	var node := tree.root.get_node_or_null("WorldBakes")
@@ -40,8 +43,33 @@ static func service(tree: SceneTree) -> Node:
 		node.name = "WorldBakes"
 		_pending = node
 		_pending_tree = tree
-		tree.root.add_child.call_deferred(node)
+		# Neon (PR 1776 review, item 3): the add runs through _attach, which skips a service clear_static already freed;
+		# a freed node handed straight to add_child corrupted the heap on Windows
+		Callable(node.get_script(), "_attach").call_deferred(node)
 	return node
+
+static func _attach(node) -> void:
+	if not is_instance_valid(node) or node.is_inside_tree(): return
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null or tree.root.get_node_or_null("WorldBakes") != null: return
+	tree.root.add_child(node)
+
+# Neon (PR 1776 review, item 1): a new battle drops every map still waiting in the queue. Jobs a freed title showcase,
+# sector map or earlier battle left behind otherwise run ahead of (or, when urgent, beside) the new battle's board
+# planet. The job already running cannot be stopped and finishes. A dropped job's waiters get null; a caller that still
+# wants the map asks again and is queued fresh. Returns how many were dropped.
+static func drop_waiting(tree: SceneTree) -> int:
+	var node := tree.root.get_node_or_null("WorldBakes")
+	if node == null and is_instance_valid(_pending): node = _pending
+	if node == null: return 0
+	var n: int = node._queue.size()
+	for k in node._queue:
+		if node._jobs.has(k):
+			node._jobs[k].done = true
+			node._jobs.erase(k)
+		_pins.erase(k)
+	node._queue.clear()
+	return n
 
 func _tree() -> SceneTree:
 	return get_tree() if is_inside_tree() else _pending_tree
@@ -65,17 +93,35 @@ static func texture(img: Image) -> Texture2D:
 static func remember(key: String, img: Image) -> void:
 	if _cache.has(key): return
 	if _cache.size() >= CACHE_MAX:
-		var oldest: String = _cache.keys()[0]
-		_textures.erase(_cache[oldest].get_instance_id())
-		_cache.erase(oldest)
+		# the oldest map nobody is still waiting to collect (item 2); with every slot pinned the cache grows by one
+		for oldest in _cache.keys():
+			if _pins.has(oldest): continue
+			_textures.erase(_cache[oldest].get_instance_id())
+			_cache.erase(oldest)
+			break
 	_cache[key] = img
+
+static func _pin(key: String) -> void:
+	_pins[key] = int(_pins.get(key, 0)) + 1
+	if _cache.has(key):
+		# a hit counts as a fresh use: it moves to the young end of the eviction order
+		var img: Image = _cache[key]
+		_cache.erase(key)
+		_cache[key] = img
+
+static func _unpin(key: String) -> void:
+	var n := int(_pins.get(key, 0)) - 1
+	if n > 0: _pins[key] = n
+	else: _pins.erase(key)
 
 static func clear_static() -> void:
 	_old_swept = false
 	_textures.clear()
 	_cache.clear()
+	_pins.clear()
 	# Issue 1765 (Artoo, PR 1776): a service whose deferred add never landed (its tree quit first) belongs to nobody
-	# else, so it is freed here; one already in a tree is owned by that tree's root and only forgotten.
+	# else, so it is freed here; one already in a tree is owned by that tree's root and only forgotten. Its queued add
+	# goes through _attach, which sees the freed node and does nothing (Neon, item 3).
 	if is_instance_valid(_pending) and not _pending.is_inside_tree(): _pending.free()
 	_pending = null
 	_pending_tree = null
@@ -90,6 +136,7 @@ func authored(path: String, size: Vector2i, float_mips := false, urgent := false
 func request_authored(path: String, size: Vector2i, float_mips := false, urgent := false) -> String:
 	var owner := service(_tree())
 	var key := (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
+	_pin(key)
 	if _cache.has(key): return key
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"path": path, "size": size, "done": false,
@@ -99,11 +146,16 @@ func request_authored(path: String, size: Vector2i, float_mips := false, urgent 
 
 # Waits for a requested map. A job keeps its dictionary until it is done, and a done job's image is cached.
 func result(key: String) -> Image:
-	if _cache.has(key): return _cache[key]
+	if _cache.has(key):
+		_unpin(key)
+		return _cache[key]
 	var owner := service(_tree())
 	var job = owner._jobs.get(key)
-	if job == null: return _cache.get(key)
+	if job == null:
+		_unpin(key)
+		return _cache.get(key)
 	while not job.done: await _tree().process_frame
+	_unpin(key)
 	return job.image
 
 # Issue 1765 (PC proof OPUS1765_PC_C): the board planet fills half the frame and holds the loading cover, but its maps
@@ -114,6 +166,7 @@ func _enqueue(key: String, urgent: bool) -> void:
 	var at := _queue.find(key)
 	if at < 0 and _jobs[key].get("queued", false): return   # already taken by the worker: never run twice
 	_jobs[key]["queued"] = true
+	if at == 0 and urgent: _jobs[key]["urgent"] = true   # Neon item 8: a promoted head keeps its place for later urgents
 	if at >= 0 and (not urgent or at == 0): return
 	if at >= 0: _queue.remove_at(at)
 	if urgent:
@@ -134,6 +187,7 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 func request_bake(key: String, code: String, params: Dictionary, size: Vector2i, _strips: int, half_mips := false, urgent := false) -> String:
 	var owner := service(_tree())
 	key = cache_key(key, code, params, size)
+	_pin(key)
 	if _cache.has(key): return key
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"code": code, "params": params.duplicate(true), "size": size, "half_mips": half_mips,
@@ -243,14 +297,25 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 
 
 # Issue 1765: a 16-bit height packed big-endian in R and G, as one 32-bit float channel (0 to 1). Worker thread only.
+# Neon (PR 1776 review, item 6): this runs on the worker for every cold and warm load of a baked look, about 1.6 s per
+# 4K map on the PC. The image is cut to its two height bytes (RG8, in native code), each pixel is read as one 16-bit
+# word and looked up in a 64K table of the exact heights: about half the time of the per-byte loop, same values.
+static var _height_lut := PackedFloat32Array()
+
 static func height_float(img: Image) -> Image:
-	if img.get_format() != Image.FORMAT_RGBA8: img.convert(Image.FORMAT_RGBA8)
+	if _height_lut.is_empty():
+		var lut := PackedFloat32Array()
+		lut.resize(65536)
+		for v in 65536: lut[v] = float((v & 255) * 256 + (v >> 8)) / 65535.0   # the word reads low byte first: R is v & 255
+		_height_lut = lut
+	if img.get_format() != Image.FORMAT_RG8: img.convert(Image.FORMAT_RG8)
 	var src := img.get_data()
 	var n := img.get_width() * img.get_height()
 	var out := PackedFloat32Array()
 	out.resize(n)
+	var lut := _height_lut
 	for i in n:
-		out[i] = float(src[i * 4] * 256 + src[i * 4 + 1]) / 65535.0
+		out[i] = lut[src.decode_u16(i * 2)]
 	return Image.create_from_data(img.get_width(), img.get_height(), false, Image.FORMAT_RF, out.to_byte_array())
 
 

@@ -106,11 +106,11 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 		return
 	planet.set_meta("planet_code", "BAKE%d" % int(L["bake"]))
 	var baker = preload("res://world/world_bake.gd").service(planet.get_tree())
-	var params := {"seed": float(posmod(seed_v * 31 + look_kind * 7, 997)) * 0.71, "kind": int(L["bake"]), "ca": L["a"], "cb": L["b"], "cc": L["c"], "pass_id": 0}
-	var key := "board_planet|%d|%d" % [look_kind, posmod(seed_v, 997)]
-	var size := BOARD_SIZE
-	if OS.has_environment("VS_WORLD_PREVIEW"): size = Vector2i(1024, 512)
-	var code := bake_code()
+	var job := board_job(look_kind, seed_v)
+	var params: Dictionary = job.params
+	var key: String = job.key
+	var size: Vector2i = job.size
+	var code: String = job.code
 	# urgent: ahead of the far backdrop bakes, so a cold cache still makes the loading cover (PC proof, PR 1776)
 	# all three are queued before any is awaited, so no backdrop runs between them (Artoo, PR 1776)
 	var ka: String = baker.request_bake(key + "|a", code, params, size, 32, false, true)
@@ -128,6 +128,16 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	stand_in.set_shader_parameter("tex_h", baker.texture(h))
 	stand_in.set_shader_parameter("map_scale", float(size.x) / TAU)
 	stand_in.set_shader_parameter("has_tex", 1.0)
+
+
+# The board planet's bake request for a baked look (terran, ice, volcanic): one place for install_board and the check
+# that seeds its cache (Neon, PR 1776 item 4). pass_id is 0 here; the b and h maps ask with 1 and 2.
+static func board_job(look_kind: int, seed_v: int) -> Dictionary:
+	var L: Dictionary = BOARD_LOOKS.get(look_kind, BOARD_LOOKS[0])
+	var size := BOARD_SIZE
+	if OS.has_environment("VS_WORLD_PREVIEW"): size = Vector2i(1024, 512)
+	return {"key": "board_planet|%d|%d" % [look_kind, posmod(seed_v, 997)], "code": bake_code(), "size": size,
+		"params": {"seed": float(posmod(seed_v * 31 + look_kind * 7, 997)) * 0.71, "kind": int(L["bake"]), "ca": L["a"], "cb": L["b"], "cc": L["c"], "pass_id": 0}}
 
 
 static func _board_air(air: MeshInstance3D, L: Dictionary, light_dir: Vector3) -> void:

@@ -98,7 +98,10 @@ func _run() -> void:
 		var first := _code(mi)
 		# the stand-in first; or, now that the maps are queued without a frame wait, the final R01 surface at once when
 		# its authored maps are already in memory (an earlier look loaded them)
-		var at_once: bool = (want == 0 or want == 5) and first == PL.ROCKY_SURFACE and not board.planet_pending
+		# never on the first look (i 0): R01 is not in memory yet, so a final surface there would be a main-thread load
+		var at_once: bool = i > 0 and (want == 0 or want == 5) and first == PL.ROCKY_SURFACE and not board.planet_pending
+		if at_once:
+			_check((mi.material_override as ShaderMaterial).shader == PL.shader(PL.ROCKY_SURFACE), "board look %d: the at-once surface compiled its own shader" % want)
 		_check(first == PL.BOARD_SURFACE or at_once, "board look %d: the first material is not world_planet.gd's stand-in" % want)
 		var stand := mi.material_override as ShaderMaterial
 		if stand != null and not at_once:
@@ -118,19 +121,57 @@ func _run() -> void:
 	# a board whose maps miss the 20 s deadline freezes on the stand-in (counted from the planet's own start)
 	var slow := StubRules.new()
 	slow.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
-	slow.w = {"seed": 27}   # ice, a map set no earlier step baked: the bake is still running when the deadline passes
+	slow.w = {"seed": 20}   # rocky: R01 is dropped from memory first, so its maps really arrive after the deadline
+	BAKER._cache.clear()   # (Neon item 4: a baked look returns no maps in headless and never reached the guard)
 	var sb: Node3D = BOARD.new()
 	root.add_child(sb)
 	sb.build(slow)
 	sb.planet_t0 -= 21000
 	await sb.wait_planet()
 	_check(bool(sb.planet_node.get_meta("planet_frozen", false)), "a board planet 21 s late was not frozen on its stand-in")
+	_check(sb.planet_pending, "the late planet's maps were already in before the freeze test ran")
 	while sb.planet_pending:
 		await process_frame
+	_check(BAKER._cache.size() >= 2, "the late planet's R01 maps never arrived, so the freeze guard was not reached")
 	var has_tex = (sb.planet_node.material_override as ShaderMaterial).get_shader_parameter("has_tex")
 	_check(_code(sb.planet_node) == PL.BOARD_SURFACE and (has_tex == null or float(has_tex) < 0.5),
 		"a frozen board planet still swapped its maps in (%s)" % str(sb.planet_node.get_meta("planet_code", "")))
 	sb.queue_free()
+	await process_frame
+	# the same freeze on a baked look (Neon item 4): headless bakes no maps, so its three maps are seeded on disk under
+	# the exact keys install_board asks for; the worker loads them after the deadline and the guard must keep them out
+	var fdir := OS.get_user_data_dir().path_join("planet_v2_check_freeze")
+	DirAccess.make_dir_recursive_absolute(fdir)
+	OS.set_environment("VS_WORLD_CACHE", fdir)
+	OS.set_environment("VS_WORLD_PREVIEW", "1")
+	var fj: Dictionary = PL.board_job(4, 33)   # volcanic, seed 33 (posmod(33, 5) = 3: PLANET_LOOKS[3] is 4)
+	var fparams: Dictionary = fj.params.duplicate()
+	var fkeys: Array = []
+	for pass_i in 3:
+		fparams["pass_id"] = pass_i
+		var fk: String = BAKER.cache_key(fj.key + ["|a", "|b", "|h"][pass_i], fj.code, fparams, fj.size)
+		fkeys.append(fk)
+		var dummy := Image.create(fj.size.x, fj.size.y, false, Image.FORMAT_RGBA8)
+		dummy.fill(Color(0.5, 0.4, 0.3, 1.0))
+		dummy.save_png(fdir.path_join(fk + ".png"))
+	var fslow := StubRules.new()
+	fslow.v = slow.v
+	fslow.w = {"seed": 33}
+	var fb: Node3D = BOARD.new()
+	root.add_child(fb)
+	fb.build(fslow)
+	fb.planet_t0 -= 21000
+	await fb.wait_planet()
+	_check(bool(fb.planet_node.get_meta("planet_frozen", false)), "a baked board planet 21 s late was not frozen on its stand-in")
+	while fb.planet_pending:
+		await process_frame
+	_check(BAKER._cache.has(fkeys[0]) and BAKER._cache.has(fkeys[2]), "the seeded baked maps never loaded, so the baked freeze guard was not reached")
+	var ftex = (fb.planet_node.material_override as ShaderMaterial).get_shader_parameter("has_tex")
+	_check(ftex == null or float(ftex) < 0.5, "a frozen baked board planet still swapped its maps in")
+	fb.queue_free()
+	for fk in fkeys: DirAccess.remove_absolute(fdir.path_join(str(fk) + ".png"))
+	OS.unset_environment("VS_WORLD_PREVIEW")
+	OS.unset_environment("VS_WORLD_CACHE")
 	await process_frame
 	var battle_src := FileAccess.get_file_as_string("res://scenes/battle/battle.gd")
 	_check(battle_src.contains("board.wait_planet()"), "battle.gd does not wait for the board planet behind the loading cover")
@@ -183,18 +224,34 @@ func _run() -> void:
 	root.add_child(rb)
 	var with_planet := StubRules.new()
 	with_planet.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
-	with_planet.w = {"seed": 26}   # terran, a map set no earlier step baked, so the build has to wait
+	with_planet.w = {"seed": 26}   # terran: in headless its bakes return at once with no maps
+	var slow_planet := StubRules.new()
+	slow_planet.v = with_planet.v
+	slow_planet.w = {"seed": 20}   # rocky, with R01 dropped from memory: its maps arrive well after the terran set
 	var no_planet := StubRules.new()
 	no_planet.v = {"hexes": hexes, "terrain": {}}
 	rb.build(with_planet)
 	rb.build(no_planet)
 	_check(not rb.planet_pending, "a rebuild onto a map with no planet still waits for the old planet")
+	BAKER._cache.clear()
 	rb.build(with_planet)
 	var gen_before: int = rb.built
-	rb.build(with_planet)
+	rb.build(slow_planet)
 	_check(rb.planet_pending and rb.built == gen_before + 1, "a second planet build is not waiting")
+	# let the first (terran) build's install finish while the newer rocky build is still loading R01: its finish must
+	# not clear the newer build's wait (Neon item 4: this needs two builds that finish at different times)
+	var rsvc = BAKER.service(self)
+	for f in 600:
+		var bake_left := false
+		for jk in rsvc._jobs:
+			if rsvc._jobs[jk].has("code"): bake_left = true
+		if not bake_left: break
+		await process_frame
+	for f in 3: await process_frame
+	_check(rb.planet_ready_ms < 0, "the rocky build finished before the terran one, so the rebuild case tests nothing")
+	_check(rb.planet_pending, "an older build's install cleared the newer build's planet wait")
 	await rb.wait_planet()
-	_check(not bool(rb.planet_node.get_meta("planet_frozen", false)) and str(rb.planet_node.get_meta("planet_code", "")) == "BAKE2",
+	_check(not bool(rb.planet_node.get_meta("planet_frozen", false)) and str(rb.planet_node.get_meta("planet_code", "")) == "R01",
 		"the newest build's planet did not finish after a rebuild")
 	rb.queue_free()
 	await process_frame
@@ -279,6 +336,41 @@ func _run() -> void:
 	OS.unset_environment("VS_WORLD_CACHE")
 	(tp[0] as Node).queue_free()
 	(tp[1] as Node).queue_free()
+	# Neon (PR 1776 review, item 5): the board queues its maps in the same frame it builds, before the world asks for
+	# its sky. Build a cold board, ask for a far map in that frame as world.build does, and read the queue at once.
+	OS.set_environment("VS_WORLD_CACHE", cache_dir)
+	var qb: Node3D = BOARD.new()
+	root.add_child(qb)
+	var qrules := StubRules.new()
+	qrules.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
+	qrules.w = {"seed": 31}   # terran, seed 31: a map set nothing above asked for
+	qb.build(qrules)
+	svc._jobs["far_z"] = {"path": "res://nope_z.json", "size": Vector2i(8, 8), "done": false, "image": null, "started": 0, "compute": false}
+	svc._enqueue("far_z", false)
+	var ahead: Array = ([svc._active] if svc._active != "" else []) + svc._queue
+	var far_at: int = ahead.find("far_z")
+	_check(far_at >= 3, "the world's first bake can start before the board planet's maps are queued (%s)" % str(ahead))
+	await qb.wait_planet()
+	qb.queue_free()
+	OS.unset_environment("VS_WORLD_CACHE")
+	# item 2: a map asked for and not yet collected is never evicted, however many maps finish meanwhile
+	var pin_img := Image.create(4, 4, false, Image.FORMAT_RGBA8)
+	BAKER.remember("pin_probe", pin_img)
+	BAKER._pin("pin_probe")
+	for e in BAKER.CACHE_MAX + 4:
+		BAKER.remember("evict_probe_%d" % e, Image.create(2, 2, false, Image.FORMAT_RGBA8))
+	_check(BAKER._cache.has("pin_probe"), "a map waiting to be collected was evicted from the cache")
+	_check(await svc.result("pin_probe") == pin_img and not BAKER._pins.has("pin_probe"), "result() did not return and release a pinned map")
+	# item 1: a new battle drops the maps a freed showcase or earlier battle left waiting
+	svc._jobs["stale_a"] = {"path": "res://nope_a.json", "size": Vector2i(8, 8), "done": false, "image": null, "started": 0, "compute": false}
+	svc._jobs["stale_b"] = {"path": "res://nope_b.json", "size": Vector2i(8, 8), "done": false, "image": null, "started": 0, "compute": false}
+	svc._enqueue("stale_a", true)
+	svc._enqueue("stale_b", false)
+	var stale_job: Dictionary = svc._jobs["stale_a"]
+	BAKER.drop_waiting(self)
+	_check(not svc._queue.has("stale_a") and not svc._queue.has("stale_b") and not svc._jobs.has("stale_b") and stale_job.done,
+		"drop_waiting left an old battle's maps in the queue (%s)" % str(svc._queue))
+	_check(FileAccess.get_file_as_string("res://scenes/battle/battle.gd").contains(".drop_waiting(get_tree())"), "battle.gd no longer drops the old maps before its board builds")
 	q = BAKER.new()
 	q.free()
 	# Wave 0 (Fable): a changed recipe must never draw old maps from a PC's disk cache. The key holds the whole shader

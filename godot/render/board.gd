@@ -26,6 +26,7 @@ var WI := {}                 # world_info()
 var planet_node: MeshInstance3D = null   # the board planet, when the map has one
 var planet_pending := false              # issue 1765: its maps are still loading or baking
 var planet_t0 := 0                       # issue 1765: when they started (one load deadline shared with the world)
+var planet_ready_ms := -1                # when its maps arrived, from planet_t0 (-1: not yet)
 var sun_dir := Vector3(0.4, 0.6, 0.7)   # toward the battle's key light (battle.gd sets it before build)
 # the board planet's look per battle, picked by the battle seed: 0 rock, 1 terran, 3 ice, 4 lava, 5 barren. Every colour
 # lives in world_planet.gd BOARD_LOOKS, the one planet palette (issue 1765; the old map shader's copies are gone).
@@ -1098,10 +1099,13 @@ func _planet() -> void:
 	props.add_child(shell)
 	planet_pending = true
 	planet_t0 = Time.get_ticks_msec()
+	planet_ready_ms = -1
 	mi.set_meta("planet_look", look_kind)
 	var gen := built
 	await PL.install_board(mi, shell, look_kind, seed_v, sun)
-	if built == gen: planet_pending = false   # an older build's install never clears a newer build's wait
+	if built == gen:
+		planet_pending = false   # an older build's install never clears a newer build's wait
+		planet_ready_ms = Time.get_ticks_msec() - planet_t0   # Neon item 7: when the planet itself finished
 
 
 # Issue 1765: the battle's loading cover waits for the board planet's maps. The maps start loading when the board is
@@ -1116,8 +1120,9 @@ func wait_planet() -> void:
 		push_warning("[planet] board planet maps missed the loading cover; the stand-in stays for this battle")
 	if is_instance_valid(planet_node):
 		# the PC load proof reads this line (issue 1765)
-		print("[planet] board planet ready in %d ms after board build: %s, look %s%s; video memory %.0f MB, static memory peak %.0f MB" % [
-			Time.get_ticks_msec() - planet_t0, str(planet_node.get_meta("planet_code", "stand-in")),
+		# Neon item 7: the planet's own ready time, not when the battle got round to asking (it waits on the world first)
+		print("[planet] board planet ready in %d ms after board build (cover asked at %d ms): %s, look %s%s; video memory %.0f MB, static memory peak %.0f MB" % [
+			planet_ready_ms if planet_ready_ms >= 0 else Time.get_ticks_msec() - planet_t0, Time.get_ticks_msec() - planet_t0, str(planet_node.get_meta("planet_code", "stand-in")),
 			str(planet_node.get_meta("planet_look", "?")), ", FROZEN (missed the cover)" if planet_node.get_meta("planet_frozen", false) else "",
 			Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0, OS.get_static_memory_peak_usage() / 1048576.0])
 

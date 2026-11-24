@@ -544,6 +544,10 @@ func _begin(a) -> void:
 		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
+	# Neon (PR 1776 review, item 1): maps a freed title showcase, sector map or earlier battle left waiting would run
+	# ahead of this battle's board planet; drop them before the frames below let the bake worker take one
+	if ResourceLoader.exists("res://world/world_bake.gd"):
+		load("res://world/world_bake.gd").drop_waiting(get_tree())
 	if DisplayServer.get_name() != "headless":
 		await get_tree().process_frame
 		await get_tree().process_frame
