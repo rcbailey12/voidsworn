@@ -118,6 +118,15 @@ func _log(s, kind: String) -> int:
 	return n
 
 
+# issue 1752: the damage sounds the ship asked for (fx_ship._cue logs each as ["sound", name, t])
+func _snd(s, name: String) -> int:
+	var n := 0
+	for e in s.wound_log:
+		if e[0] == "sound" and e[1] == name:
+			n += 1
+	return n
+
+
 func _nodes(s, prefix: String) -> int:
 	var n := 0
 	for c in s._dmg_root.get_children():
@@ -158,6 +167,9 @@ func _run() -> void:
 		check(cs.off.is_empty() and cs.turrets.is_empty() and cs.eng_tier == 0 and cs.sick == -1 and not cs.gen,
 			"%s: a healthy ship shows no lost capability" % faction)
 		var base_nodes := _nodes(s, "fx_damage_")
+		var metal: bool = HULL.target_substance(faction) == "metal"
+		check(_snd(s, "dmg_turret_knockout") + _snd(s, "dmg_engine_fail") + _snd(s, "dmg_shield_burnout") == 0,
+			"%s: a healthy arrival makes no damage sound" % faction)
 
 		# 1. exact weapon slots
 		s.sync(fx, _unit(100, 100, 100, [0, 2, 0]))
@@ -165,6 +177,8 @@ func _run() -> void:
 		cs = s.capability_state()
 		check(cs.off == [1] and cs.turrets == [1] and s.hull.turret_jammed(1) and not s.hull.turret_jammed(0),
 			"%s: a crit on slot 1 jams that slot's own turret only (%s)" % [faction, str(cs)])
+		check(_snd(s, "dmg_turret_knockout") == (1 if metal else 0), "%s: the knocked-out turret %s" % [faction,
+			"clanks once" if metal else "makes no metal clank"])
 		settle(0.5)
 		var fwd: Vector3 = (s.hull.turrets[1]["node"] as Node3D).transform.basis * Vector3(0, 0, -1)
 		check(fwd.y < -0.05 and absf(float(s.hull.turrets[1]["yaw"])) >= 12.0 - 1e-3, "%s: it hangs off its aim and sags" % faction)
@@ -174,6 +188,7 @@ func _run() -> void:
 		cs = s.capability_state()
 		check(cs.off == [1, 2] and cs.mounts == [2] and _nodes(s, "fx_damage_mount") == 1,
 			"%s: a lost launcher slot smokes at its own fixed mount" % faction)
+		check(_snd(s, "dmg_turret_knockout") == (2 if metal else 0), "%s: the next lost slot sounds once more, the held one never again" % faction)
 		var ms0 := _log(s, "mount_spark")
 		settle(5.0)
 		check(_log(s, "mount_spark") >= ms0 + 1 and _log(s, "mount_spark") <= ms0 + 3, "%s: the dead mount sparks every 2 to 4.5 s" % faction)
@@ -183,6 +198,7 @@ func _run() -> void:
 		cs = s.capability_state()
 		check(cs.off.is_empty() and cs.turrets.is_empty() and cs.mounts.is_empty() and not s.hull.turret_jammed(1),
 			"%s: repaired, the turret tracks again and the mount is quiet" % faction)
+		check(_snd(s, "dmg_turret_knockout") == (2 if metal else 0), "%s: a repair makes no knockout sound" % faction)
 		check(_nodes(s, "fx_damage_wisp") == 0 and _nodes(s, "fx_damage_mount") == 0, "%s: the wisp and mount smoke are freed" % faction)
 		# a wounded mid section with no slot off: nothing jams (the old random pick is off when the view lists weapons)
 		s.sync(fx, _unit(100, 30, 100))
@@ -237,6 +253,9 @@ func _run() -> void:
 		cs = s.capability_state()
 		check(cs.eng_tier == 0 and cs.sick == -1 and cs.dead_nozzles.is_empty() and _nodes(s, "fx_damage_bell") == 0,
 			"%s: repaired engines all burn again" % faction)
+		check(_snd(s, "dmg_engine_fail") == (0 if faction == "chorus" else 3), "%s: %s (%d)" % [faction,
+			"the Chorus drive fails silently" if faction == "chorus" else "each lost drive tier fails once, the repair never",
+			_snd(s, "dmg_engine_fail")])
 
 		# 4. the shield generator
 		s.sync(fx, _unit(100, 100, 100, [0, 0, 0], false, true))
@@ -244,7 +263,9 @@ func _run() -> void:
 		var g0 := _log(s, "gen_arc")
 		settle(6.0)
 		var arcs := _log(s, "gen_arc") - g0
+		var burn := _snd(s, "dmg_shield_burnout")
 		if s.shielded:
+			check(burn >= 1 and burn <= arcs + 1, "%s: the generator burns out loud once, then its crackles repeat quietly (%d sounds, %d arcs)" % [faction, burn, arcs])
 			check(s.gen_down and arcs >= 2 and arcs <= 5, "%s: the lost generator crackles every 1.4 to 3 s (%d in 6 s)" % [faction, arcs])
 			fx.reduce_flashing = true
 			g0 = _log(s, "gen_arc")
@@ -257,6 +278,9 @@ func _run() -> void:
 			g0 = _log(s, "gen_arc")
 			settle(4.0)
 			check(not s.gen_down and _log(s, "gen_arc") == g0, "%s: back up, the generator is quiet" % faction)
+			var b0 := _snd(s, "dmg_shield_burnout")
+			settle(2.0)
+			check(_snd(s, "dmg_shield_burnout") == b0, "%s: back up, no burnout sound" % faction)
 			# the midship lost (the rules' 999) crackles too, with no shieldOff field (a bench unit)
 			var u := _unit(100, 0, 100)
 			u.erase("shieldOff")
@@ -268,8 +292,34 @@ func _run() -> void:
 			flush(s)
 			settle(1.5)
 		else:
-			check(not s.gen_down and arcs == 0, "%s: no shield, no generator crackle" % faction)
+			check(not s.gen_down and arcs == 0 and burn == 0, "%s: no shield, no generator crackle or burnout sound" % faction)
 		check(_nodes(s, "fx_damage_") <= base_nodes, "%s: no damage emitters left after every repair (%d, was %d)" % [faction, _nodes(s, "fx_damage_"), base_nodes])
+
+	# issue 1752: a ship that arrives already wounded is seeded quietly; a section newly reaching stage 4 breaches once
+	var w = _ship("c_snd", "hegemony", Vector3(x, 0, 120), true)
+	w.sync(fx, _unit(0, 100, 100, [0, 2, 0], true, true, true))
+	flush(w)
+	check(_snd(w, "dmg_turret_knockout") + _snd(w, "dmg_engine_fail") + _snd(w, "dmg_shield_burnout") + _snd(w, "dmg_breach_vent") == 0,
+		"a ship that arrives already wounded makes no damage sound")
+	w.sync(fx, _unit(0, 0, 100, [0, 2, 0], true, true, true))
+	flush(w)
+	check(_snd(w, "dmg_breach_vent") == 1 and _snd(w, "dmg_breach_shear") == 1, "a metal midship newly at stage 4 vents and shears once (%d, %d)" % [
+		_snd(w, "dmg_breach_vent"), _snd(w, "dmg_breach_shear")])
+	w.sync(fx, _unit(0, 0, 100, [0, 2, 0], true, true, true))
+	flush(w)
+	check(_snd(w, "dmg_breach_vent") == 1, "a held breach never sounds again")
+	var gq = _ship("c_snd_g", "ithar", Vector3(x, 0, 180), true)
+	gq.sync(fx, _unit(100, 100, 100))
+	flush(gq)
+	gq.sync(fx, _unit(100, 0, 100))
+	flush(gq)
+	check(_snd(gq, "dmg_breach_vent") == 1 and _snd(gq, "dmg_breach_shear") == 0, "a Glasswright breach vents with no metal shear")
+	var wo = _ship("c_snd_off", "hegemony", Vector3(x, 0, 240), false)
+	wo.sync(fx, _unit(100, 100, 100))
+	flush(wo)
+	wo.sync(fx, _unit(0, 0, 100, [0, 2, 0], true, true, true))
+	flush(wo)
+	check(wo.wound_log.filter(func(e): return e[0] == "sound").is_empty(), "flag off: no damage sounds")
 
 	# 5. flag off: main's behaviour
 	var o = _ship("c_off", "ithar", Vector3(x, 0, 0), false)

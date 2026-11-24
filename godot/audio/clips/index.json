@@ -468,5 +468,29 @@
 ],
 "evt_pass_by_slug": [
 "evt_pass_by_slug_0.ogg"
+],
+"dmg_breach_vent": [
+"dmg_breach_vent_0.ogg"
+],
+"dmg_breach_shear_metal": [
+"dmg_breach_shear_metal_0.ogg"
+],
+"dmg_turret_knockout": [
+"dmg_turret_knockout_0.ogg"
+],
+"dmg_engine_fail": [
+"dmg_engine_fail_0.ogg"
+],
+"dmg_shield_burnout": [
+"dmg_shield_burnout_0.ogg"
+],
+"imp_acid_on_metal": [
+"imp_acid_on_metal_0.ogg"
+],
+"death_sunward_magazine": [
+"death_sunward_magazine_0.ogg"
+],
+"wep_eclipse_gauss_charge": [
+"wep_eclipse_gauss_charge_0.ogg"
 ]
 }
