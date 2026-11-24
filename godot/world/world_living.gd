@@ -762,10 +762,12 @@ func _bolts(ps: Array) -> void:
 	var bm := ShaderMaterial.new()
 	bm.shader = SHADER_CACHE.for_code(BOLT_SHADER)
 	var lit := 0
+	var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+	var storm_start: float = float(effects.now) if is_instance_valid(effects) else clock
 	for patch in _patches(ps):
 		var center := Vector3.ZERO
 		for point in patch: center += point
-		var burst := {"center": center / float(patch.size()), "bolts": [], "next": rng.randf_range(0.3, 3.5)}
+		var burst := {"center": center / float(patch.size()), "bolts": [], "next": storm_start + rng.randf_range(0.3, 3.5)}
 		_storm_bursts.append(burst)
 		var count := clampi(ceili(float(patch.size()) / 2.0), 2, 4)
 		var anchors: Array = []
@@ -890,8 +892,8 @@ static func _flash(t: float, soft := false) -> float:
 	return smoothstep(0.0, 0.018, t) * (1.0 - smoothstep(0.055, 0.52, t)) * exp(-t * 1.8)
 
 
-func _start_storm_burst(burst: Dictionary) -> void:
-	var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+# The caller passes the storm clock so the bolt, its light and its flash booking use the same time.
+func _start_storm_burst(burst: Dictionary, clock: float, effects) -> void:
 	for index in burst.bolts.size():
 		var bolt: Dictionary = burst.bolts[index]
 		var delay := float(index) * 0.075
@@ -900,7 +902,7 @@ func _start_storm_burst(burst: Dictionary) -> void:
 		if is_instance_valid(effects):
 			# Book the lit gas and bloom as a conservative 48-unit disc. Storms
 			# share the real fight's area counter, including other weapon effects.
-			bolt.soft = not effects.flash_at(bolt.pos, effects.now + delay, 48.0, 0.0, 0.52)
+			bolt.soft = not effects.flash_at(bolt.pos, bolt.start, 48.0, 0.0, 0.52)
 	burst.next = clock + rng.randf_range(2.2, 6.5)
 
 
@@ -970,15 +972,19 @@ func _process(dt: float) -> void:
 		_wake.apply(_wake_mats)
 	var reduced := is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))
 	_present_storm_ticks(reduced)
+	var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+	var storm_time: float = float(effects.now) if is_instance_valid(effects) else clock
 	for burst in _storm_bursts:
-		if clock >= float(burst.next): _start_storm_burst(burst)
+		if storm_time >= float(burst.next): _start_storm_burst(burst, storm_time, effects)
 	var fs: Array = []
 	for b in bolts:
-		var v := _flash(clock - float(b["start"]), bool(b.get("soft", false)) or reduced)
+		var age: float = storm_time - float(b.start)
+		var soft: bool = bool(b.get("soft", false)) or reduced
+		var v := _flash(age, soft)
 		var mi := b["mi"] as MeshInstance3D
 		if _instance_shader_ready(mi):
 			mi.set_instance_shader_parameter("flash", v)
-			mi.set_instance_shader_parameter("branch_flash", _flash((clock - float(b["start"])) * 1.6, bool(b.get("soft", false)) or reduced))
+			mi.set_instance_shader_parameter("branch_flash", _flash(age * 1.6, soft))
 		if b["light"] != null:
 			(b["light"] as OmniLight3D).light_energy = v * 1.2
 		if v > 0.0:
