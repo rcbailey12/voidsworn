@@ -256,7 +256,7 @@ func _arg_of(list: Array, act: String) -> String:   # the arg of the first butto
 	return ""
 # The number key that picks this action in a dialog (1 to 9 pick the dialog's enabled actions in order, _unhandled_input)
 func _key_for(list, act: String, arg) -> String:
-	if list == null or C.modal_d == null or list != C.modal_d["acts"]: return ""
+	if list == null or C.modal_d == null or list != _modal_acts: return ""
 	var on = list.filter(func(a): return a[2] == 1)
 	var a0 = "" if arg == null else str(arg)
 	for i in range(min(9, on.size())):
@@ -2143,6 +2143,7 @@ func _end_back() -> void:
 func _campaign_action(act: String, arg = "") -> void:
 	# All end-page exits, including the old progression page's title link, pass here.
 	if _end_return and act == "title": _end_back(); return
+	if act == "buyMod": C.ACT_buyMod(str(arg), true); return
 	var ending = C.page.get("kind") == "end" or _end_return
 	if ending and act in ["title", "newRunScreen", "nextFac"] and not _end_confirmed: return
 	if ending and act in ["progTab", "lineage"]: _end_return = true
@@ -2343,7 +2344,13 @@ func _capstone_mastery(id) -> Control:
 
 # ---------------- dialogs ----------------
 func _modal(md: Dictionary) -> void:
-	_modal_acts = md["acts"]; var acts = _modal_acts; var d = md["data"]
+	_modal_acts = md["acts"].duplicate(); var acts = _modal_acts; var d = md["data"]
+	if md["kind"] == "victory":
+		# Taking a prize can fill the room a tow had when the battle ended.
+		for i in range(d["wrecks"].size()):
+			var wreck = d["wrecks"][i]
+			if C.jt(wreck["yield"].get("tow")) and C.wreck_tow_over_cap(wreck):
+				acts.erase(_find(acts, "takeSalvage", str(i) + ":tow"))
 	var scroll := 0
 	if md["kind"] == "promotions" and _modal_kind == "promotions" and is_instance_valid(_modal_scroll):
 		scroll = _modal_scroll.scroll_vertical
@@ -2482,8 +2489,20 @@ func _modal(md: Dictionary) -> void:
 			p.call("You get: " + (", ".join(PackedStringArray(parts)) if parts.size() > 0 else "Nothing") + ".", BONE2)
 			v.add_child(foot([fin("Confirm", "prizeConfirm", "", acts)]))
 		"mod":
-			h2.call("Recovered refits"); p.call(str(C.REWARD_DEF["refit"]), BONE3); p.call("Take one. It goes in the hold; fit it at a shipyard or from the fleet screen.")
-			for m in d["opts"]: add(v, choice(C.modName(m), C.MODULES[m]["d"], "takeMod", m, acts))
+			h2.call("Recovered refits"); p.call("Choose one refit. Fit it now or keep it in the hold.")
+			for m in d["opts"]:
+				var card_box := panel(IRON3, IRON2, 10)
+				var body := vbox(6); card_box.add_child(body)
+				body.add_child(lbl(C.modName(m), 20, BONE, font_semi))
+				body.add_child(lbl(C.MODULES[m]["d"], 17, BONE2))
+				_refit_fit_choices(body, m, "fitRewardRefit", str(m) + ":", acts)
+				add(body, abtn("Keep in hold", "takeMod", m, false, true, acts))
+				v.add_child(card_box)
+		"bought_refit":
+			var m = d["module"]
+			h2.call(C.modName(m) + " purchased"); p.call(C.MODULES[m]["d"], BONE2)
+			_refit_fit_choices(v, m, "fitBoughtRefit", "", acts)
+			v.add_child(foot([fin("Keep in hold", "keepBoughtRefit", "", acts)]))
 		"boon":
 			var P = C.PATRONS[d["patron"]]; var pc = Color(P["col"])
 			var hd = hbox(12); var sg = lbl(P["glyph"], 26, INK, font_semi, false); var sgp = panel(pc, pc, 6); sgp.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; sgp.add_child(sg); hd.add_child(sgp)
@@ -2539,18 +2558,46 @@ func _modal(md: Dictionary) -> void:
 	if scroll > 0: sc.set_deferred("scroll_vertical", scroll)
 	ModalFocus.attach(box)
 
+func _refit_fit_choices(v: VBoxContainer, module_id, action: String, prefix: String, acts: Array) -> void:
+	var ships := flow(6)
+	for ship in C.RUN["fleet"]:
+		if not C.canFitModule(ship, module_id): continue
+		var arg := prefix + str(ship["uid"])
+		C.A(acts, action, arg)
+		ships.add_child(abtn("Fit onto " + str(ship["name"]), action, arg, false, true, acts))
+	if ships.get_child_count() == 0:
+		ships.free()
+		v.add_child(lbl("No free compatible slot.", 17, BONE3))
+	else:
+		v.add_child(ships)
+
 func _salvage_choices(v: VBoxContainer, wrecks: Array, acts: Array) -> void:
-	v.add_child(lbl("Salvage one wreck", 20, BONE))
-	v.add_child(lbl(str(C.REWARD_DEF["salvage"]), 17, BONE3))
+	v.add_child(lbl("Choose one wreck", 20, BONE))
 	for i in range(wrecks.size()):
 		var w = wrecks[i]; var y = w["yield"]; var F = C.FACTIONS.get(w.get("fac"))
 		var pp = panel(IRON3, IRON2, 10); var pv = vbox(6); pp.add_child(pv)
-		pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.clsName(C.or_(w.get("cls"), ""))) + ((", " + esc(F["n"])) if F != null else ""), BONE3) + "\n" + c(esc(C.CAUSE_WORD.get(w.get("cause"), "destroyed")) + ((" by the " + esc(w["by"])) if C.jt(w.get("by")) else "") + ".", BONE2), 18))
+		pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.clsName(C.or_(w.get("cls"), ""))) + ((", " + esc(F["n"])) if F != null else ""), BONE3), 18))
+		var cause := str(w.get("impact", C.CAUSE_WORD.get(w.get("cause"), "destroyed")))
+		cause = cause.substr(0, 1).to_upper() + cause.substr(1)
+		var bonus: int = C.wreck_credit_bonus(w.get("cause"))
+		if bonus > 0:
+			pv.add_child(lbl("%s: no module or hull recovered, +%d%% credits." % [cause, bonus], 17, BONE2))
+		else:
+			var by: String = " by " + C.ship_with_article(str(w["by"])) if C.jt(w.get("by")) else ""
+			var module_note := " No refit recoverable." if y.get("mod") == null else ""
+			pv.add_child(lbl(cause + by + "." + module_note, 17, BONE2))
 		var g = GridContainer.new(); g.columns = 3; g.add_theme_constant_override("h_separation", px(6))
-		if C.jt(y.get("mod")): add(g, choice("Strip it: " + C.modName(y["mod"]), C.MODULES[y["mod"]]["d"], "takeSalvage", str(i) + ":mod", acts))
-		add(g, choice("Scrap it", "+" + C.numstr(y["cred"]) + " credits", "takeSalvage", str(i) + ":cred", acts))
-		if C.jt(y.get("tow")): add(g, choice("Tow it home", "Joins your fleet at 35% hull", "takeSalvage", str(i) + ":tow", acts))
-		pv.add_child(g); v.add_child(pp)
+		if C.jt(y.get("mod")): add(g, choice("Strip wreck for refit", C.modName(y["mod"]) + " to the hold\n" + C.MODULES[y["mod"]]["d"], "takeSalvage", str(i) + ":mod", acts))
+		add(g, choice("Strip wreck for credits", "+" + C.numstr(y["cred"]) + " credits", "takeSalvage", str(i) + ":cred", acts))
+		if C.jt(y.get("tow")):
+			if C.wreck_tow_over_cap(w):
+				pv.add_child(lbl("No command points left to tow this wreck.", 17, BONE3))
+			else:
+				add(g, choice("Tow it home", "Joins your fleet at 35% hull", "takeSalvage", str(i) + ":tow", acts))
+		pv.add_child(g)
+		if C.jt(y.get("mod")):
+			_refit_fit_choices(pv, y["mod"], "fitWreckRefit", str(i) + ":", acts)
+		v.add_child(pp)
 
 # Every line of a dialog sits on a backing (ui_style.md 3): runs of plain words (labels, rich text, the title) are gathered
 # into one well each, in place; choices, rows of buttons and blocks that already are wells stay as they are.
@@ -2569,7 +2616,7 @@ func _well_text(v: VBoxContainer) -> void:
 const BACK_ACTS := ["title", "backToSetup"]
 # Issue 1448: the confirms that take a reward, relic or promotion perk, or buy a hull, play the built reward chime
 # (cues.json ui_reward) in place of the plain confirm.
-const REWARD_ACTS := ["takeMod", "takeBoon", "takeRelic", "takeSalvage", "prizeConfirm", "takePerk", "buyHull"]
+const REWARD_ACTS := ["takeMod", "fitRewardRefit", "fitWreckRefit", "fitBoughtRefit", "takeBoon", "takeRelic", "takeSalvage", "prizeConfirm", "takePerk", "buyHull"]
 # Names the action a button runs, so the player-path recorder presses the real button (and hears its cue) instead of
 # calling the action under it (issue 1448: SND1C's reward picks were silent because the recorder skipped the buttons).
 static func press_tag(b: Control, act: String, arg) -> void:
@@ -2623,10 +2670,10 @@ func _unhandled_input(e: InputEvent) -> void:
 	if C.modal_d == null and C.page.get("kind") == "end" and is_instance_valid(debrief):
 		if debrief.handle_key(e): _key_cue(e); get_viewport().set_input_as_handled(); return
 	if C.modal_d != null:
-		var acts = C.modal_d["acts"]
+		var acts = C.modal_d["acts"] if _dirty else _modal_acts
 		if e.keycode == KEY_ESCAPE:
 			for a in acts:   # issue 1559 item 26: the relic pick's Back (eventBack) answers Esc too
-				if a[2] == 1 and (a[0] == "closeModal" or a[0] == "c3retreatNo" or a[0] == "eventBack"):
+				if a[2] == 1 and a[0] in ["closeModal", "c3retreatNo", "eventBack", "keepBoughtRefit"]:
 					Kit.play("ui_cancel"); C.act(a[0], a[1]); get_viewport().set_input_as_handled(); return
 		var n = e.keycode - KEY_1
 		if n < 0 or n >= 9: n = e.keycode - KEY_KP_1   # the keypad's digits too, as on the map (item 26)
