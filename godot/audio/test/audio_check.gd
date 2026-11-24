@@ -20,8 +20,8 @@ const CUE_FAMILIES := {
 	"weapon_tails": ["salvo_tail", "shot_pass_by"],
 	"lances": ["lance", "lance_ion", "lance_dark", "lance_choir"],
 	"torpedoes": ["torp", "torp_rocket", "torp_sac", "torp_star", "torp_heavy"],
-	"charges": ["lance_charge", "torp_charge"],
-	"hits": ["hit", "hit_heavy", "hit_las", "hit_plasma", "hit_rail", "hit_wet", "hit_glass", "hit_ion", "hit_obsidian"],
+	"charges": ["lance_charge", "torp_charge", "gauss_charge"],
+	"hits": ["hit", "hit_heavy", "hit_las", "hit_plasma", "hit_rail", "hit_wet", "hit_glass", "hit_ion", "hit_obsidian", "hit_acid"],
 	"shields": ["shield", "shield_break"],
 	"patterns": ["patter_hull", "patter_shield"],
 	"explosions": ["pop", "boom_s", "boom_m", "boom_l"],
@@ -29,7 +29,8 @@ const CUE_FAMILIES := {
 	"ui": ["ui_click", "ui_confirm", "ui_cancel", "ui_round", "ui_your", "ui_enemy", "ui_select", "ui_panel", "ui_reward", "ui_alert", "ui_boss"],
 	"stings": ["sting_win", "sting_loss"],
 	"fleet": ["arrive_jump"],
-	"death": ["death_powerdown", "death_vent", "death_crack", "death_run", "chunk_cool", "hulk_vent", "bass_drop", "wreck", "death_bed", "death_tail"],
+	"death": ["death_powerdown", "death_vent", "death_crack", "death_run", "chunk_cool", "hulk_vent", "bass_drop", "wreck", "death_bed", "death_tail", "death_magazine"],
+	"damage": ["dmg_breach_vent", "dmg_breach_shear", "dmg_turret_knockout", "dmg_engine_fail", "dmg_shield_burnout"],
 	"orders": ["board_grapple", "brace_lock", "adapt_shift"],
 }
 var fails: Array = []
@@ -262,6 +263,10 @@ func _run() -> void:
 	_ok(s.impact_cue("las", "chorus") == "hit_wet", "a hit on Chorus plays hit_wet")
 	_ok(s.impact_cue("las", "ithar") == "hit_glass", "a hit on Glasswright plays hit_glass")
 	_ok(s.impact_cue("las", "hegemony", true) == "hit_heavy", "a critical keeps hit_heavy")
+	_ok(s.impact_cue("las", "hegemony", false, "chorus") == "hit_acid", "a Chorus shot on a metal hull plays hit_acid (issue 1752)")
+	_ok(s.impact_cue("las", "hegemony", true, "chorus") == "hit_heavy", "a Chorus critical keeps hit_heavy")
+	for tf in ["chorus", "ithar", "deathless"]:
+		_ok(s.impact_cue("las", tf, false, "chorus") == str(s.HIT_BY_TARGET[tf]), "a Chorus shot on " + tf + " keeps its material cue")
 	_ok(s.impact_cue("las", "deathless") == "hit_obsidian", "a hit on Eclipse plays hit_obsidian (issue 1752)")
 	_wired_1752(s)
 	var mi := AudioServer.get_bus_index("music")
