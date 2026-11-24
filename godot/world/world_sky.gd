@@ -397,6 +397,10 @@ void sky() {
 }
 """
 
+# The angle of one pixel at 45 degrees vertical FOV and 1080 lines, shared by stars and dust.
+# A fixed angle already covers twice as many pixels when the viewport height doubles.
+const ANGULAR_PIXEL_1080 := "0.000727220521664304"
+
 const SKY := """
 shader_type sky;
 uniform sampler2D neb_tex : filter_linear, repeat_enable;
@@ -415,7 +419,7 @@ uniform vec4 lamp[6];
 uniform vec3 lamp_col[6];
 uniform vec3 sun_dir = vec3(0.45, 0.7, 0.55);
 uniform vec3 sun_col = vec3(1.0, 0.93, 0.82);
-uniform float px = 0.0008;   // one screen pixel in radians (fov / height)
+uniform float px = """ + ANGULAR_PIXEL_1080 + """;   // 1080-line angular size; the sky shader has no VIEWPORT_SIZE
 uniform mat3 turn = mat3(1.0); // the battle's small turn of the whole sky
 // the dead-star board's painted sky (R2: its backdrop; A3's 8K dead-star panorama, with its dim red dead sun where the
 // key light comes from), under the gas; and how bright this sky's own sun is (none on the dead-star board)
