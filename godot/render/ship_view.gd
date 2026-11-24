@@ -2171,8 +2171,14 @@ func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 	puffs.append(entry)
 	# the Hullbreakers' overburn throws a little bright grit with each rough blast (sparks owned by issue 2018)
 	var n_sp := 0 if calm else int(tp.get("sparks", 0))   # Reduce motion: no thrown grit
-	var spark_px := clampf(L * lerpf(0.07, 0.1, mk) * fk, lerpf(PUFF_MIN, PUFF_MIN_ESCORT, esc) if glide else 1.4,
-		maxf(lerpf(2.8, 4.6, mk), PUFF_MIN_ESCORT) * maxf(fk, 1.0)) / 64.0 * (0.6 + 0.4 * k) * (0.5 if path_dur <= 0.0 else 1.0)
+	if n_sp > 0:
+		var spark_px := clampf(L * lerpf(0.07, 0.1, mk) * fk, lerpf(PUFF_MIN, PUFF_MIN_ESCORT, esc) if glide else 1.4,
+			maxf(lerpf(2.8, 4.6, mk), PUFF_MIN_ESCORT) * maxf(fk, 1.0)) / 64.0 * (0.6 + 0.4 * k) * (0.5 if path_dur <= 0.0 else 1.0)
+		_emit_thrust_grit(mi.global_position, vw, spark_px, n_sp)
+
+
+# Isolated nozzle-grit seam for issue 2018 / PR #2049 shared sparks integration (no new sparks added here).
+func _emit_thrust_grit(origin: Vector3, vw: Vector3, spark_px: float, n_sp: int) -> void:
 	for i in n_sp:
 		var g := Sprite3D.new()
 		g.texture = _glow_tex()
@@ -2184,7 +2190,7 @@ func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 		g.pixel_size = spark_px * 0.16
 		g.top_level = true
 		add_child(g)
-		g.global_position = mi.global_position
+		g.global_position = origin
 		var gv := (vw + Vector3(_jet_rng.randf() - 0.5, _jet_rng.randf() - 0.5, _jet_rng.randf() - 0.5) * 0.9).normalized() * maxf(L, 6.0) * (1.6 + _jet_rng.randf())
 		puffs.append({"n": g, "t": 0.0, "v": gv + _vel * 0.6, "s": g.pixel_size, "a": 0.95, "life": 0.3 + _jet_rng.randf() * 0.2,
 			"spread": 0.0, "style": "spark"})

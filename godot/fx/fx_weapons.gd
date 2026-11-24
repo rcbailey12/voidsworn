@@ -1812,16 +1812,18 @@ static func _craft_update(fx, dt: float) -> void:
 		_wing_trail_update(fx, node)
 
 
-# Issue 2042 item 4: squadron_wing.gd now natively owns SH.CRAFT_TRAIL on every wing and attack run.
-# Keep this hook to sync the live stern head and expose kit_trails metadata for warm-up and tests.
+# Issue 2042 item 4: squadron_wing.gd now natively owns SH.CRAFT_TRAIL and updates its uniforms in step().
+# Keep this hook for kit_trails discovery and any non-native fallback without duplicating per-step uniform writes.
 static func _wing_trail_update(fx, wing) -> void:
 	if wing == null or not is_instance_valid(wing):
 		return
 	if not wing.has_meta("kit_trails"):
 		var materials: Array = []
+		var fallback := false
 		for trail in wing.trails:
 			var material: ShaderMaterial = trail.get("mat") as ShaderMaterial
 			if material == null:
+				fallback = true
 				material = fx.mat(SH.CRAFT_TRAIL, 1)
 				material.set_shader_parameter("trail_len", wing.length)
 				material.set_shader_parameter("width_k", 0.048 if wing.faction == "chorus" else 0.026)
@@ -1832,6 +1834,9 @@ static func _wing_trail_update(fx, wing) -> void:
 				trail["mat"] = material
 			materials.append(material)
 		wing.set_meta("kit_trails", materials)
+		wing.set_meta("kit_trails_fallback", fallback)
+	if not bool(wing.get_meta("kit_trails_fallback", false)):
+		return
 	var materials: Array = wing.get_meta("kit_trails")
 	for i in mini(materials.size(), wing.craft.size()):
 		var material: ShaderMaterial = materials[i]
