@@ -1,5 +1,5 @@
 {
- "note": "Issue 1752 Gate 2 wiring: where each mastered keeper plays. Read by contrib/opus/tools/sound/wire_gate2.py. base = the cue's own layers are replaced; variant = a faction (fac or fac.weapon_id) variant; mode replace means the faction hears only this clip, add means it plays over the base. keep_tail keeps the cue's delayed tail layers under the new clip. level: category = matched to the energy mean of today's cues in that group; own = matched to today's level of that cue; category:<group> with offset_db sits a set step from a group (an ordinary shield block is quiet, R412 rule 4).",
+ "note": "Issue 1752 Gate 2 wiring (a charge lead never exceeds the picture's own charge: Doom's corona is 0.35 s in fx_weapons.gd, so its pull-in starts with the corona and fades out under the beam, Artoo PR 1932): where each mastered keeper plays. Read by contrib/opus/tools/sound/wire_gate2.py. base = the cue's own layers are replaced; variant = a faction (fac or fac.weapon_id) variant; mode replace means the faction hears only this clip, add means it plays over the base. keep_tail keeps the cue's delayed tail layers under the new clip. level: category = matched to the energy mean of today's cues in that group; own = matched to today's level of that cue; category:<group> with offset_db sits a set step from a group (an ordinary shield block is quiet, R412 rule 4).",
  "categories": {"weapon": ["gun_shell", "gun_las", "gun_plasma", "gun_flak", "gun_tracer", "gun_spine", "gun_needle", "gun_rail", "gun_sq", "lance", "lance_ion", "lance_choir", "lance_dark", "torp_heavy", "torp_rocket", "torp_star"],
   "impact": ["hit", "hit_heavy", "hit_las", "hit_plasma", "hit_wet", "hit_glass"]},
  "wires": [
@@ -30,7 +30,7 @@
   {"cue": "lance_choir", "variant": "ithar.pulsar", "clips": ["wep_ithar_pulsar"], "level": "category"},
   {"cue": "lance_dark", "variant": "deathless.nlance", "clips": ["wep_eclipse_nlance"], "level": "category"},
   {"cue": "lance_dark", "variant": "deathless.doom", "clips": ["wep_eclipse_doom"], "level": "category"},
-  {"cue": "lance_charge", "variant": "deathless.doom", "clips": ["wep_eclipse_doom_charge"], "level": "own", "duration": 0.65, "lead": 0.6},
+  {"cue": "lance_charge", "variant": "deathless.doom", "clips": ["wep_eclipse_doom_charge"], "level": "own", "duration": 0.4, "lead": 0.35},
   {"cue": "torp_heavy", "variant": "voidsworn.torp", "clips": ["wep_sunward_torp_launch"], "level": "category"},
   {"cue": "torp_charge", "variant": "voidsworn.torp", "clips": ["wep_torp_eject"], "level": "own", "duration": 0.48},
   {"cue": "torp_rocket", "variant": "corsair.torp", "clips": ["wep_hullbreaker_rockets"], "level": "category"},

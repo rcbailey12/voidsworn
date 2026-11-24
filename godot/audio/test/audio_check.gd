@@ -148,6 +148,13 @@ func _wired_1752(s) -> void:
 			_ok(s.weapon_variant(cue, fac, wid) == v, "%s picks variant %s" % [cue, v])
 			wired += 1
 	b.free()
+	# Artoo, PR 1932: a charge must not outlast the picture's own charge, or its tail runs over the shot. The Doom
+	# corona is 0.35 s (fx_weapons.gd "doom"); every lance charge variant starts no earlier and ends by the beam.
+	for v in s.cues["lance_charge"].get("variants", {}):
+		var vd: Dictionary = s.cues["lance_charge"]["variants"][v]
+		var lead := float(vd.get("lead", s.CHARGE_LEAD["lance_charge"]))
+		_ok(lead <= 0.35 + 0.001, "lance_charge:%s leads by %.2f s, inside the 0.35 s corona" % [v, lead])
+		_ok(float(vd.get("duration", 9.0)) <= lead + 0.06, "lance_charge:%s fades out by its beam" % v)
 	_ok(wired >= 30, "issue 1752: the recorded weapon sounds are wired (%d)" % wired)
 	_ok(s.weapon_variant("gun_sq", "hegemony", "guns") == "guns", "any faction's interceptor guns use the craft sound")
 	_ok(s.weapon_variant("gun_shell", "voidsworn", "battery") == "", "a weapon with no recorded sound keeps the base cue")
