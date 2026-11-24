@@ -24,7 +24,7 @@
 # Last, every inside object gets box-projected UVs at one texel density (TILE of the ship's length per tile), which the faction's
 # shared interior trim maps (tools/blender/kits/shared/interior_trim.py) tile over at paint (stage 5), and each is marked
 # interior_kit = 2 (the export records it; check_export.py holds a V2 export to its trim maps).
-import math, random
+import math, os, random
 import bpy
 import bmesh
 from mathutils import Vector
@@ -149,6 +149,8 @@ class Dresser:
         self.glass = faction == 'ithar'
         self.nr = 6 if self.glass else 16
         self.crys = None
+        if self.glass:
+            _gw_zones()
         self.tree = self._outer_tree()
 
     def _outer_tree(self):
@@ -678,8 +680,25 @@ def box_uv(ob, tile):
         me.uv_layers.active = me.uv_layers['UVMap']
 
 
+def _gw_zones():
+    """the Glasswright leaf glass zones the crystals take (gw_in_amber, _violet, _green), registered from kits/ithar/hull.py
+    when the sheet has not (a strike craft sets up only the paint stack)"""
+    import importlib.util, sys
+    km = sys.modules.get('kit')
+    if km is None or all(('gw_in_' + c) in km.MATS for c in ('amber', 'violet', 'green')):
+        return
+    sp = importlib.util.spec_from_file_location('ithar_hull_zones', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'kits', 'ithar', 'hull.py'))
+    hm = importlib.util.module_from_spec(sp); sp.loader.exec_module(hm)
+    for c in ('amber', 'violet', 'green'):
+        rgb, em = hm.ZONES['gw_in_' + c][:2]
+        km.MATS.setdefault('gw_in_' + c, (rgb, em))
+
+
 def faction_of(K, kit_name):
-    mats = {s.material.name for ob in K.cin.objects for s in ob.material_slots if s.material}
+    import bpy
+    # the whole ship, not only its insides: a Glasswright strike craft builds its insides from the base kit's zones (GV2, GW4),
+    # and was dressed as Hullbreaker machinery when only the insides were read
+    mats = {s.material.name for ob in bpy.context.scene.objects for s in getattr(ob, 'material_slots', ()) if s.material}
     if any(m.startswith('gw_') for m in mats):
         return 'ithar'
     return kit_name
