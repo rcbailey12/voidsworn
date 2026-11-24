@@ -35,11 +35,13 @@ var W = null                 # the world (world.gd)
 var rng := RandomNumberGenerator.new()
 var gas_mats: Array = []     # [ShaderMaterial, base alpha gain]
 var storm_mats: Array[ShaderMaterial] = []
+var _gas_patches: Array = [] # {mat, fog_mat, lo, hi, storm, lit_count}
 var _storm_patches: Array = []
 var _tick_presenter: Node = null
 var bolts: Array = []        # {mi, light, pos, next, start}
 var _storm_bursts: Array = []
 var clock := 0.0
+var _external_combat_lights: Array = [] # optional explicit lights [{pos, col, energy, range}] for tests/captures
 # Issue 1079 prototype (off by default): ships disturb the calm nebula as they pass. Storm gas is never touched.
 var _wake = null
 var _wake_mats: Array[ShaderMaterial] = []
@@ -86,8 +88,31 @@ const GAS_FEATHER_END := 1.6
 const GAS_FEATHER_REACH := GAS_FEATHER_END * 8.660254 * GAS_CLOUD_SCALE / 0.8660254   # 48 units
 const GAS_WARP := 4.5                            # GAS_SHADER: wv = (noise - 0.5) * 9.0
 const GAS_CLOUD_MARGIN := GAS_FIELD_REACH + 2.0
+const COMBAT_LIGHT_SLOTS := 6
+# Issue 2035 (AAA item 9): weapon flashes and explosions passing through nebula or storm hexes softly
+# illuminate nearby gas strata in the flash's own linear colour, bounded with a soft knee for WCAG comfort.
+const COMBAT_LIGHT_SHADER := """
+uniform vec4 combat_pos[%d];
+uniform vec4 combat_col[%d];
+uniform int combat_light_count = 0;
+vec3 combat_scatter(vec3 wp, float density_n) {
+	if (combat_light_count <= 0) { return vec3(0.0); }
+	vec3 acc = vec3(0.0);
+	for (int i = 0; i < %d; i++) {
+		if (i >= combat_light_count) { break; }
+		vec3 ld = wp - combat_pos[i].xyz;
+		ld.y *= 0.72;
+		float att = exp(-dot(ld, ld) * combat_pos[i].w);
+		acc += combat_col[i].rgb * (combat_col[i].a * att);
+	}
+	acc = acc / (vec3(1.0) + acc * 0.65);
+	return acc * (0.45 + 0.85 * density_n);
+}
+""" % [COMBAT_LIGHT_SLOTS, COMBAT_LIGHT_SLOTS, COMBAT_LIGHT_SLOTS]
+
 const FOG_SHADER := """
 shader_type fog;
+%COMBAT_LIGHTS%
 uniform sampler3D noise_tex : filter_linear, repeat_enable;
 uniform sampler2D mask_tex : filter_linear, repeat_disable;
 uniform vec4 mask_box;
@@ -101,19 +126,26 @@ uniform float storm = 0.0;
 void fog() {
 	vec3 p = WORLD_POSITION * 0.012 + vec3(0.0006, 0.0002, 0.00035) * gas_time;
 	// WAKE_SHIFT: issue 1079, world/nebula_wake.gd puts the wake's push here when it is on
-	float warp = texture(noise_tex, p * 0.55 + 0.31).r;
-	float n = texture(noise_tex, p + vec3(warp * 0.12)).r;
-	n = mix(n, texture(noise_tex, p * 3.1 - vec3(warp * 0.18)).r, 0.18);
-	vec2 uv = (WORLD_POSITION.xz - mask_box.xy) * mask_box.zw;
+	float alt = clamp((WORLD_POSITION.y + 7.0) / 38.5, 0.0, 1.0);
+	vec3 p_alt = p + vec3(0.055, -0.018, 0.038) * alt + vec3(0.0005, 0.0, 0.0003) * gas_time * (alt - 0.35);
+	float warp = texture(noise_tex, p_alt * 0.55 + 0.31).r;
+	float warp2 = texture(noise_tex, p_alt * 0.45 - vec3(0.21, 0.37, 0.19)).r;
+	float n = texture(noise_tex, p_alt + vec3(warp - 0.5) * 0.14).r;
+	n = mix(n, texture(noise_tex, p_alt * 2.1 - vec3(warp - 0.5) * 0.16).r, 0.14);
+	vec2 wv = vec2(warp - 0.5, warp2 - 0.5) * 9.0 + vec2(alt - 0.5, 0.5 - alt) * 2.6;
+	vec2 uv = (WORLD_POSITION.xz + wv - mask_box.xy) * mask_box.zw;
 	vec2 foot = texture(mask_tex, uv).rg;
 	foot *= step(vec2(0.0), uv).x * step(vec2(0.0), uv).y * step(uv, vec2(1.0)).x * step(uv, vec2(1.0)).y;
-	float height = smoothstep(-7.0, -2.0, WORLD_POSITION.y) * (1.0 - smoothstep(23.0, 31.5, WORLD_POSITION.y));
-	float shape = foot.g * smoothstep(0.08, 0.65, foot.r) * height;
-	DENSITY = smoothstep(0.32, 0.68, n) * shape * 0.045 * gain_a;
+	float height = smoothstep(-7.0, -1.5, WORLD_POSITION.y) * (1.0 - smoothstep(22.0, 31.5, WORLD_POSITION.y));
+	float strata = 0.78 + 0.22 * cos((alt - 0.30) * 6.28318);
+	float shape = foot.g * smoothstep(0.08, 0.62, foot.r) * height * strata;
+	float field = smoothstep(0.32, 0.68, n);
+	DENSITY = field * shape * 0.044 * gain_a;
 	// WAKE_THIN: issue 1079, the wake's thinning goes here when it is on
 	ALBEDO = mix(c_lit, c_glow, smoothstep(0.58, 0.85, n));
-	EMISSION = mix(c_dark, c_shadow, n) * 0.65;
-	EMISSION += c_glow * smoothstep(0.7, 0.9, n) * (0.2 + storm * 0.25);
+	EMISSION = mix(c_dark, c_shadow, n) * mix(0.55, 0.82, alt);
+	EMISSION += c_glow * smoothstep(0.68, 0.90, n) * (0.18 + storm * 0.25) * mix(0.7, 1.15, alt);
+	EMISSION += combat_scatter(WORLD_POSITION, field) * field * 0.42;
 }
 """
 
@@ -150,6 +182,45 @@ float gas_layer(float band, float y) {
 	float lower = band < 0.5 ? GAS_FLOOR_FADE : 1.5;
 	return smoothstep(limits.x, limits.x + lower, y) * (1.0 - smoothstep(limits.y - 1.5, limits.y, y));
 }
+// Issue 2035 (AAA item 9): rotated 2- and 3-octave billowing noise using the shared lattice,
+// eliminating 4th/5th-octave sub-pixel grain at battle camera 170 while cutting fragment work nearly in half.
+float gas_macro3(vec3 p) {
+	float s = 0.64 * wvn3(p);
+	p = vec3(p.x * 1.48 - p.z * 1.15, p.y * 1.88 + 2.3, p.x * 1.15 + p.z * 1.48) + vec3(3.1, 1.7, 4.9);
+	s += 0.36 * wvn3(p);
+	return s;
+}
+vec2 gas_cloud3(vec3 p, float close_k) {
+	float o1 = wvn3(p);
+	vec3 p2 = vec3(p.x * 1.52 - p.z * 1.18, p.y * 1.92 + 2.1, p.x * 1.18 + p.z * 1.52) + vec3(3.1, 1.7, 4.9);
+	float o2 = wvn3(p2);
+	float macro = 0.64 * o1 + 0.36 * o2;
+	vec3 p3 = vec3(p2.x * 1.52 + p2.z * 1.18, p2.y * 1.92 - 1.9, -p2.x * 1.18 + p2.z * 1.52) + vec3(5.3, 2.9, 1.4);
+	float o3 = wvn3(p3);
+	float full = 0.54 * o1 + 0.30 * o2 + 0.16 * mix(0.5, o3, 0.50 + 0.50 * close_k);
+	return vec2(full, macro);
+}
+// Distinct billow scale, 3D field offset and organic edge shift per height band so overlapping strata
+// read as layered parallax depth rather than repeated flat silhouettes.
+void gas_layer_style(float band, out vec3 scale_v, out vec3 offset_v, out vec2 edge_shift) {
+	if (band < 0.5) {
+		scale_v = vec3(0.80, 0.85, 0.80);
+		offset_v = vec3(-4.2, -1.9, 3.4);
+		edge_shift = vec2(-1.4, 1.1);
+	} else if (band < 1.5) {
+		scale_v = vec3(1.0, 1.0, 1.0);
+		offset_v = vec3(0.0, 0.0, 0.0);
+		edge_shift = vec2(0.0, 0.0);
+	} else if (band < 2.5) {
+		scale_v = vec3(1.12, 1.25, 1.12);
+		offset_v = vec3(11.3, 4.7, -8.2);
+		edge_shift = vec2(1.5, -1.2);
+	} else {
+		scale_v = vec3(0.68, 0.78, 0.68);
+		offset_v = vec3(-16.4, 8.9, 12.7);
+		edge_shift = vec2(-0.9, -1.5);
+	}
+}
 vec2 gas_card_offset(inout vec2 vertex, vec4 card, vec4 centre, mat4 inv_view, float height_scale) {
 	float angle = card.y * 6.2831;
 	mat2 spin = mat2(vec2(cos(angle), sin(angle)), vec2(-sin(angle), cos(angle)));
@@ -182,8 +253,9 @@ shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 %NOISE%
 %CARD_SUPPORT%
+%COMBAT_LIGHTS%
 uniform sampler2D depth_tex : hint_depth_texture, filter_nearest;
-// r: the round field, g: inward feather of the union boundary, zero outside.
+// r: the round field, g: smooth organic feather of the union boundary, zero outside.
 uniform sampler2D mask_tex : filter_linear, repeat_disable;
 uniform vec4 mask_box = vec4(0.0, 0.0, 1.0, 1.0);
 uniform vec3 c_dark = vec3(0.006, 0.002, 0.014);
@@ -209,24 +281,30 @@ void vertex() {
 	vW = (INV_VIEW_MATRIX * c).xyz;
 	POSITION = PROJECTION_MATRIX * c;
 }
-vec2 foot_at(vec2 xz) { return texture(mask_tex, (xz - mask_box.xy) * mask_box.zw).rg; }
+vec2 foot_at(vec2 xz) {
+	vec2 uv = (xz - mask_box.xy) * mask_box.zw;
+	vec2 s = texture(mask_tex, uv).rg;
+	float inside = step(0.0, uv.x) * step(0.0, uv.y) * step(uv.x, 1.0) * step(uv.y, 1.0);
+	return s * inside;
+}
 void fragment() {
 	float r = length(vQ);
 	if (r > 1.0) { discard; }
 	vec2 mask = foot_at(vW.xz);
-	if (mask.g <= 0.001) { discard; }
+	if (mask.r <= 0.0005 && mask.g <= 0.001) { discard; }
 	float band = floor(vI.w);
 	float layer = gas_layer(band, vW.y / height_scale);
-	float shape = 1.0 - smoothstep(0.4, 1.0, r);
+	float rs = 1.0 - smoothstep(0.06, 1.0, r);
+	float shape = rs * rs * (3.0 - 2.0 * rs);
 #ifdef HIGH_GAS_CARDS
-	if (shape * mask.g * layer * vI.z < GAS_DENSITY_BOUND) { discard; }
+	if (shape * layer * vI.z < GAS_DENSITY_BOUND) { discard; }
 #else
-	if (shape * mask.g * layer * vI.z <= 0.0) { discard; }
+	if (shape * layer * vI.z <= 0.0) { discard; }
 #endif
 	float dz = texture(depth_tex, SCREEN_UV).r;
 	vec4 vv = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, dz, 1.0);
 	vec3 opaque_world = (INV_VIEW_MATRIX * vec4(vv.xyz / vv.w, 1.0)).xyz;
-	// All gas layers leave opaque hulls intact, even a veil in front of a ship.
+	// All gas layers leave opaque hulls intact, even a veil in front of a ship (RULEBOOK 10.4).
 	if (dz > 0.000001 && opaque_world.y > -20.0) { discard; }
 	float phase = fract(vI.w);
 	// Layer rates and the base drift: contrib/opus/briefs/nebula_motion_spec.md (issue #230, NB8).
@@ -235,40 +313,57 @@ void fragment() {
 	vec3 drift = vec3(0.012, 0.004, 0.007) * gas_time * rate;
 	vec3 p = vW * 0.075 + drift;
 	// WAKE_SHIFT: issue 1079, world/nebula_wake.gd puts the wake's push here when it is on
-	float w = wfbm3(p * 0.55 + 4.0);
-	float n = wfbm3(p + vec3(w) * 0.9);
+	vec3 layer_scale;
+	vec3 layer_offset;
+	vec2 edge_shift;
+	gas_layer_style(band, layer_scale, layer_offset, edge_shift);
+	vec3 pl = p * layer_scale + layer_offset;
+	float w = gas_macro3(pl * 0.52 + 4.0);
+	float w2 = gas_macro3(pl * 0.40 - 7.0);
+	vec2 wv = vec2(w - 0.5, w2 - 0.5) * 9.0;
+	vec2 fmask = foot_at(vW.xz + wv + edge_shift);
+	if (fmask.g <= 0.001) { discard; }
+	float cam_d = length(CAMERA_POSITION_WORLD - vW);
+	float close_k = 1.0 - smoothstep(45.0, 150.0, cam_d);
+	vec2 cn = gas_cloud3(pl + vec3(w - 0.5) * 0.90, close_k);
+	float n = cn.x;
+	float n_macro = cn.y;
 	float breath = band > 0.5 && band < 1.5 ? sin(gas_time * 0.785398 + phase) * 0.025 : 0.0;
-	float field = smoothstep(0.27 + breath, 0.70 + breath, n);
+	float lo_cut = (band < 0.5 ? 0.24 : (band < 1.5 ? 0.28 : (band < 2.5 ? 0.33 : 0.36))) + breath;
+	float field = smoothstep(lo_cut, lo_cut + 0.42, n);
 #ifdef HIGH_GAS_CARDS
-	// The warped footprint can only lower mask.g, and contact can only soften it.
-	if (shape * mask.g * layer * field * vI.z < GAS_DENSITY_BOUND) { discard; }
+	if (shape * fmask.g * layer * field * vI.z < GAS_DENSITY_BOUND) { discard; }
 #endif
-	vec2 wv = vec2(w - 0.5, wfbm3(p * 0.4 - 7.0) - 0.5) * 9.0;
-	float fw = foot_at(vW.xz + wv).r;
-	float bar = 0.62 - 0.55 * smoothstep(0.3, 0.75, n);
-	float foot = smoothstep(bar, bar + 0.3, fw) * mask.g;
+	float fw = fmask.r;
+	float bar = mix(0.46, 0.62, smoothstep(0.5, 2.5, band)) - 0.50 * smoothstep(0.28, 0.74, n_macro);
+	float foot = smoothstep(bar, bar + 0.34, fw) * fmask.g;
 	float d = shape * foot * layer * field * vI.z;
 	// Soften contact with distant geometry below the playing surface.
 	d *= clamp((-vv.z / vv.w + VERTEX.z) / 5.0, 0.0, 1.0);
 	// WAKE_THIN: issue 1079, the wake's thinning goes here when it is on
 	if (d <= MIN_GAS_DENSITY) { discard; }
-	float n2 = wfbm3(p + normalize(sun_v) * 0.22 + vec3(w) * 0.9);
-	float lit = clamp(0.5 + (n - n2) * 5.0, 0.0, 1.0);
+	float n2 = gas_macro3(pl + normalize(sun_v) * 0.42 + vec3(w - 0.5) * 0.90);
+	float lit = clamp(0.52 + (n_macro - n2) * 2.4, 0.0, 1.0);
 	float density = clamp((n - 0.18) / 0.72, 0.0, 1.0);
-	vec3 col = mix(c_dark, c_shadow, smoothstep(0.0, 0.3, density));
-	col = mix(col, c_lit, smoothstep(0.3, 0.6, density));
-	col = mix(col, c_glow, smoothstep(0.6, 0.9, density));
-	col *= 0.25 + 0.75 * lit;
+	// Multi-height tonal separation inside the faction-neutral rose palette:
+	// deep dark-rose cushion below ships, sunlit mid billows, airy luminous upper wisps.
+	float alt_k = clamp((vW.y / height_scale + 6.0) / 22.0, 0.0, 1.0);
+	float stratum_lit = band < 0.5 ? 0.68 : (band < 1.5 ? 1.0 : (band < 2.5 ? 1.18 : 1.06));
+	vec3 col = mix(c_dark, c_shadow, smoothstep(0.0, 0.32, density));
+	col = mix(col, c_lit, smoothstep(0.28, 0.64, density) * mix(0.70, 1.05, alt_k));
+	col = mix(col, c_glow, smoothstep(0.62, 0.92, density) * mix(0.55, 1.0, alt_k));
+	col *= (0.30 + 0.70 * lit) * stratum_lit;
 	// R289: calm gas has broad soft radiance, never fine isocontours or electrical veins.
-	vec3 energy = c_glow * smoothstep(0.67, 0.85, n) * 0.22;
-	float layer_gain = band < 0.5 ? 0.50 : (band < 1.5 ? 1.0 : (band < 2.5 ? 0.55 : 0.10));
-	// Optical depth accumulates across overlapping puffs rather than a flat tint.
-	float a = 1.0 - exp(-d * dens * layer_gain * 3.6);
+	vec3 energy = c_glow * smoothstep(0.64, 0.86, n_macro) * 0.22 * mix(0.6, 1.1, alt_k);
+	vec3 c_flash = combat_scatter(vW, field) * (0.38 * field);
+	float layer_gain = band < 0.5 ? 0.62 : (band < 1.5 ? 0.94 : (band < 2.5 ? 0.68 : 0.24));
+	// Optical depth accumulates across overlapping strata rather than a flat tint.
+	float a = 1.0 - exp(-d * dens * layer_gain * 3.4);
 	float ship_band = 1.0 - smoothstep(3.0, 4.5, vW.y);
-	a = min(a, mix(0.7, 0.39, ship_band));
+	a = min(a, mix(0.68, 0.38, ship_band));
 	// Unshaded gas carries its internal light in the final radiance.
-	ALBEDO = col + energy;
-	ALPHA = clamp(a * gain_a, 0.0, 0.7);
+	ALBEDO = col + energy + c_flash;
+	ALPHA = clamp(a * gain_a, 0.0, 0.68);
 }
 """
 
@@ -442,8 +537,9 @@ func build(world) -> void:
 		var broad_left := (pts[kind] as Array).size() / 3
 		for j in patches.size():
 			var broad := (patches[j] as Array).size() / 3 if j < patches.size() - 1 else broad_left
-			_gas(patches[j], kind == "storm", broad)
 			broad_left -= broad
+			# Issue 2035: even a small 1-2 hex patch gets a high canopy veil so all four height strata are present.
+			_gas(patches[j], kind == "storm", maxi(1, broad))
 			# issue 1434 (LOAD25 warm title: every gas patch in one 650 ms frame, 463 ms of it before the draw): a sliced
 			# load builds one patch a frame
 			if bool(W.get("slice_yield")):
@@ -512,21 +608,31 @@ static func _gas_card_shader(storm: bool, high: bool, cached_noise: bool) -> Str
 	var noise: String = WS.NOISE_LATTICE if cached_noise else WS.NOISE
 	if high:
 		noise = "#define HIGH_GAS_CARDS\n" + noise
-	return code.replace("%CARD_SUPPORT%", GAS_CARD_SUPPORT).replace("%NOISE%", noise)
+	return code.replace("%CARD_SUPPORT%", GAS_CARD_SUPPORT).replace("%COMBAT_LIGHTS%", COMBAT_LIGHT_SHADER).replace("%NOISE%", noise)
+
+
+static func _fog_shader(storm: bool) -> String:
+	var code: String = ION.FOG if storm else FOG_SHADER
+	return code.replace("%COMBAT_LIGHTS%", COMBAT_LIGHT_SHADER)
 
 
 func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	var low: bool = W.quality == "low"
 	var expanded := gas_route != "today"
 	var volume: bool = gas_route == "fog" and W.quality == "max"
-	# step 2: fewer, broader, softer puffs; their shape comes from one noise field and the patch's footprint (_mask), so
-	# the patch reads as one body of gas, not a row of cotton balls on hex tiles
+	# step 2 + issue 2035: multi-height soft strata (under-stratum 0, mid body 1, upper wisps 2, high canopy veil 3).
+	# Max keeps all three primary height bands (0, 1, 2) per hex plus the high tying veil so clouds have real parallax depth.
 	var per := 3 if low else 5
 	if expanded:
-		per = 2 if volume or low else 5
-	var n_big := ps.size() / 3 if broad_count < 0 else broad_count
+		per = 3 if volume else (2 if low else 5)
+	var n_big := maxi(1, ps.size() / 3) if broad_count < 0 else maxi(1, broad_count)
 	var mm := _quad_mm(ps.size() * per + n_big)
 	var i := 0
+	var band_counts := {}
+	var y_min := INF
+	var y_max := -INF
+	var size_k := GAS_CLOUD_SCALE if expanded else 1.0
+	var dens_k := 0.55 if (expanded and volume) else 1.0
 	for p in ps:
 		for k in per:
 			var a := rng.randf() * TAU
@@ -539,27 +645,28 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 			var y := rng.randf_range(-2.5, 0.5) if layer == 0 else (rng.randf_range(2.5, 6.5) if layer == 1 else rng.randf_range(8.0, 12.0))
 			if expanded:
 				y *= GAS_HEIGHT
-			mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, (p as Vector3) + Vector3(cos(a) * rr, y, sin(a) * rr)))
-			mm.set_instance_custom_data(i, Color(rng.randf_range(GAS_PUFF_MIN, GAS_PUFF_MAX), rng.randf(), rng.randf_range(0.55, 0.85), layer + rng.randf() * 0.9))
-			if expanded:
-				var cd := mm.get_instance_custom_data(i)
-				cd.r *= GAS_CLOUD_SCALE
-				cd.b *= 0.55 if volume else 1.0
-				mm.set_instance_custom_data(i, cd)
+			var pos := (p as Vector3) + Vector3(cos(a) * rr, y, sin(a) * rr)
+			mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, pos))
+			mm.set_instance_custom_data(i, Color(rng.randf_range(GAS_PUFF_MIN, GAS_PUFF_MAX) * size_k, rng.randf(),
+				rng.randf_range(0.55, 0.85) * dens_k, layer + rng.randf() * 0.9))
+			band_counts[layer] = int(band_counts.get(layer, 0)) + 1
+			y_min = minf(y_min, pos.y)
+			y_max = maxf(y_max, pos.y)
 			i += 1
 	# One or two existing broad puffs become a very faint high tying veil.
 	for k in n_big:
 		var p: Vector3 = ps[rng.randi() % ps.size()]
-		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, p + Vector3(rng.randf_range(-4, 4), rng.randf_range(13.5, 16.5) if k < 2 else rng.randf_range(2.5, 6.5), rng.randf_range(-4, 4))))
-		mm.set_instance_custom_data(i, Color(rng.randf_range(GAS_VEIL_MIN, GAS_VEIL_MAX), rng.randf(), rng.randf_range(0.3, 0.4), (3 if k < 2 else 1) + rng.randf() * 0.9))
+		var vlayer := 3 if k < 2 else 1
+		var vy := rng.randf_range(13.5, 16.5) if k < 2 else rng.randf_range(2.5, 6.5)
+		var vpos := p + Vector3(rng.randf_range(-4, 4), vy, rng.randf_range(-4, 4))
 		if expanded:
-			var transform := mm.get_instance_transform(i)
-			transform.origin.y *= GAS_HEIGHT
-			mm.set_instance_transform(i, transform)
-			var custom := mm.get_instance_custom_data(i)
-			custom.r *= GAS_CLOUD_SCALE
-			custom.b *= 0.55 if volume else 1.0
-			mm.set_instance_custom_data(i, custom)
+			vpos.y *= GAS_HEIGHT
+		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, vpos))
+		mm.set_instance_custom_data(i, Color(rng.randf_range(GAS_VEIL_MIN, GAS_VEIL_MAX) * size_k, rng.randf(),
+			rng.randf_range(0.3, 0.4) * dens_k, vlayer + rng.randf() * 0.9))
+		band_counts[vlayer] = int(band_counts.get(vlayer, 0)) + 1
+		y_min = minf(y_min, vpos.y)
+		y_max = maxf(y_max, vpos.y)
 		i += 1
 	var mi := MultiMeshInstance3D.new()
 	mi.name = "Storm" if storm else "Nebula"
@@ -590,6 +697,15 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	m.set_shader_parameter("mask_tex", mk[0])
 	m.set_shader_parameter("mask_box", mk[1])
 	var g := 1.0
+	var plo: Vector3 = ps[0]
+	var phi := plo
+	for pt in ps:
+		plo = plo.min(pt)
+		phi = phi.max(pt)
+	var patch_rec := {"mat": m, "fog_mat": null, "lo": plo - Vector3(GAS_FEATHER_REACH, 12.0, GAS_FEATHER_REACH),
+		"hi": phi + Vector3(GAS_FEATHER_REACH, 32.0, GAS_FEATHER_REACH), "storm": storm, "lit_count": -1,
+		"bands": band_counts, "y_min": y_min, "y_max": y_max}
+	_gas_patches.append(patch_rec)
 	if storm:
 		# R282: the cloud carries broad cool charge, not the old warm contour veins.
 		storm_mats.append(m)
@@ -611,10 +727,10 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	mi.extra_cull_margin = GAS_VEIL_MAX * GAS_CLOUD_SCALE * 0.5 + GAS_PUFF_REACH if expanded else 30.0
 	add_child(mi)
 	if volume:
-		_fog_patch(ps, m, mk, storm)
+		_fog_patch(ps, m, mk, storm, patch_rec)
 
 
-func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void:
+func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool, patch_rec := {}) -> void:
 	const NOISE_PATH := "res://world/nebula_noise.res"
 	if not ResourceLoader.exists(NOISE_PATH):
 		push_error("Issue 368: bake world/nebula_noise_bake.gd before the fog bench")
@@ -630,7 +746,7 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 	volume.size = Vector3(hi.x - lo.x + GAS_FEATHER_REACH * 2.0, 38.5, hi.z - lo.z + GAS_FEATHER_REACH * 2.0)
 	volume.position = Vector3((hi.x + lo.x) * 0.5, 12.25, (hi.z + lo.z) * 0.5)
 	var mat := ShaderMaterial.new()
-	var code: String = ION.FOG if storm else FOG_SHADER
+	var code: String = _fog_shader(storm)
 	if _wake != null and not storm:
 		code = WAKE.into_fog(code, _wake.points)
 		_wake_mats.append(mat)
@@ -647,6 +763,8 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 		if value == null:
 			value = Vector3(0.055, 0.012, 0.14) if key == "c_shadow" else Vector3(0.006, 0.002, 0.014)
 		mat.set_shader_parameter(key, value)
+	if not patch_rec.is_empty():
+		patch_rec["fog_mat"] = mat
 	if storm:
 		storm_mats.append(mat)
 		_storm_patches.back()["fog_mat"] = mat
@@ -691,14 +809,18 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 				var j := (zi * w + xi) * 2
 				var q := dx * dx + dz * dz
 				if expanded:
-					# Issue 1263: a round window, so the field reaches zero smoothly instead of at a square's side.
-					f[j] += exp(-q / GAS_FIELD_SIG2) * (1.0 - smoothstep(GAS_FIELD_FADE, GAS_FIELD_REACH, sqrt(q)))
+					# Issue 1263 + 2035: round window and circular distance (never hexagonal isolines), so the
+					# cloud footprint reaches zero smoothly without echoing hex edges.
+					var dist := sqrt(q)
+					f[j] += exp(-q / GAS_FIELD_SIG2) * (1.0 - smoothstep(GAS_FIELD_FADE, GAS_FIELD_REACH, dist))
+					var d := dist / (HIN * GAS_CLOUD_SCALE)
+					if d < f[j + 1]:
+						f[j + 1] = d
 				else:
 					f[j] += exp(-q / SIG2)
-				var d := maxf(dx, 0.5 * dx + 0.8660254 * dz) / HIN
-				if expanded: d /= GAS_CLOUD_SCALE
-				if d < f[j + 1]:
-					f[j + 1] = d
+					var d := maxf(dx, 0.5 * dx + 0.8660254 * dz) / HIN
+					if d < f[j + 1]:
+						f[j + 1] = d
 	# Shared edges are not boundaries. Feather inward from only the union's outside.
 	var edges: Array = []
 	for p in ps:
@@ -957,6 +1079,91 @@ func _set_storm_tick_uniforms(mat: ShaderMaterial, values: PackedVector4Array, c
 	mat.set_shader_parameter("tick_flare_count", count)
 
 
+func set_combat_lights(lights: Array) -> void:
+	_external_combat_lights = lights.duplicate(true)
+
+
+func _find_effects():
+	if is_instance_valid(_tick_presenter):
+		var g = _tick_presenter.get("gfx")
+		if is_instance_valid(g):
+			return g
+	if W != null:
+		var wf = W.get("_fx")
+		if is_instance_valid(wf):
+			return wf
+		var parent: Node = W.get_parent()
+		if parent != null:
+			for sib in parent.get_children():
+				if sib != W and sib.get("_lpool") is Array:
+					return sib
+	return null
+
+
+func _present_combat_lights(effects, reduced: bool) -> void:
+	if _gas_patches.is_empty():
+		return
+	var active: Array = []
+	if is_instance_valid(effects):
+		var pool = effects.get("_lpool")
+		if pool is Array:
+			for l in pool:
+				if l is OmniLight3D and l.visible and l.light_energy > 0.03:
+					var rad := clampf(l.omni_range * 0.78, 18.0, 54.0)
+					var intensity := clampf(l.light_energy / 8.0, 0.0, 1.0) * (0.38 if reduced else 0.78)
+					if intensity > 0.005:
+						active.append({"pos": l.global_position if l.is_inside_tree() else l.position,
+							"col": l.light_color, "intensity": intensity, "radius": rad})
+	for ext in _external_combat_lights:
+		if ext is Dictionary:
+			var rad := clampf(float(ext.get("range", 36.0)) * 0.78, 18.0, 54.0)
+			var energy := float(ext.get("energy", 6.0))
+			var intensity := clampf(energy / 8.0, 0.0, 1.0) * (0.38 if reduced else 0.78)
+			if intensity > 0.005:
+				active.append({"pos": ext.get("pos", Vector3.ZERO), "col": ext.get("col", Color.WHITE),
+					"intensity": intensity, "radius": rad})
+	for patch in _gas_patches:
+		var lo: Vector3 = patch.lo
+		var hi: Vector3 = patch.hi
+		var near: Array = []
+		for item in active:
+			var pos: Vector3 = item.pos
+			var rad: float = item.radius
+			var reach := rad * 2.2
+			var clamped := Vector3(clampf(pos.x, lo.x, hi.x), clampf(pos.y, lo.y, hi.y), clampf(pos.z, lo.z, hi.z))
+			if pos.distance_squared_to(clamped) <= reach * reach:
+				near.append(item)
+		if near.size() > COMBAT_LIGHT_SLOTS:
+			near.sort_custom(func(a, b): return float(a.intensity) > float(b.intensity))
+			near = near.slice(0, COMBAT_LIGHT_SLOTS)
+		var count := near.size()
+		if count == 0 and int(patch.lit_count) == 0:
+			continue
+		patch.lit_count = count
+		var pos_arr := PackedVector4Array()
+		var col_arr := PackedVector4Array()
+		if count > 0:
+			pos_arr.resize(COMBAT_LIGHT_SLOTS)
+			col_arr.resize(COMBAT_LIGHT_SLOTS)
+			for k in count:
+				var item: Dictionary = near[k]
+				var p: Vector3 = item.pos
+				var c: Color = (item.col as Color).srgb_to_linear()
+				var r: float = item.radius
+				pos_arr[k] = Vector4(p.x, p.y, p.z, 1.0 / maxf(r * r, 1.0))
+				col_arr[k] = Vector4(c.r, c.g, c.b, float(item.intensity))
+		_set_combat_light_uniforms(patch.mat, pos_arr, col_arr, count)
+		if patch.fog_mat != null:
+			_set_combat_light_uniforms(patch.fog_mat, pos_arr, col_arr, count)
+
+
+func _set_combat_light_uniforms(mat: ShaderMaterial, pos_arr: PackedVector4Array, col_arr: PackedVector4Array, count: int) -> void:
+	if count > 0:
+		mat.set_shader_parameter("combat_pos", pos_arr)
+		mat.set_shader_parameter("combat_col", col_arr)
+	mat.set_shader_parameter("combat_light_count", count)
+
+
 func _process(dt: float) -> void:
 	if not visible:
 		return
@@ -971,9 +1178,11 @@ func _process(dt: float) -> void:
 		var views = W.get_parent().get("views") if W.get_parent() != null else null
 		_wake.update(dt, (views as Dictionary).values() if views is Dictionary else [])
 		_wake.apply(_wake_mats)
-	var reduced := is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))
+	var effects = _find_effects()
+	var reduced := (is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))) \
+		or (is_instance_valid(effects) and bool(effects.get("reduce_flashing")))
 	_present_storm_ticks(reduced)
-	var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+	_present_combat_lights(effects, reduced)
 	var storm_time: float = float(effects.now) if is_instance_valid(effects) else clock
 	for burst in _storm_bursts:
 		if storm_time >= float(burst.next): _start_storm_burst(burst, storm_time, effects)
