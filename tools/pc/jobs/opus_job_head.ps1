@@ -1266,6 +1266,10 @@ switch ($Action) {
       $resFile = ''
       if ($res.StartsWith('res://')) { $resFile = Join-Path $godot $res.Substring(6).Replace('/', $sep) }
       $hasRes = $resFile -and (Test-Path -LiteralPath $resFile -PathType Leaf)
+      if ((Test-Path -LiteralPath $dir -PathType Container) -and -not (Test-Path -LiteralPath (Join-Path $dir "$code.glb") -PathType Leaf)) {
+        # a copied ship folder without its main glb is a broken copy, never an older cache entry (Artoo on PR 2009)
+        $bad += "$code ship folder was copied but $code.glb is missing"; $lines += "$code no-glb-in-folder $res"; continue
+      }
       if (-not (Test-Path -LiteralPath (Join-Path $dir "$code.glb") -PathType Leaf)) {
         # an older cache entry with no ship folder: not checked, but listed, so two checkouts must still agree on it
         $noGlb++; $lines += "$code no-glb $res scene=$([int][bool]$hasRes)"; continue
