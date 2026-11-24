@@ -1535,57 +1535,6 @@ static func spines(hull, pt: Part, E: Ent, back_dir: Vector3, r: RandomNumberGen
 		nsp += 1
 
 
-# Fire, embers, thin smoke, venting gas and sparks for a breach or blast hole, all from inside it (repeating on the
-# effect clock, so a rebuild does not restart them).
-static func emitters(b: POOLS.Batch, bs: POOLS.Batch, E: Ent, ents: Array, ends: Array, r: RandomNumberGenerator, glow: Color) -> void:
-	var q := POOLS.quad_shape()
-	var qs := POOLS.streak_shape()
-	var R := E.R
-	var hot := absf(E.bend) > 1.0 or E.style == S_BLAST
-	var floor_pts: Array = []
-	for j in (3 if hot else 2):
-		var an := r.randf() * TAU
-		var p := E.c + (E.t1 * cos(an) + E.t2 * sin(an)) * R * r.randf() * 0.45
-		floor_pts.append(p - E.n * minf(maxf(E.recess_depth() * 0.65, R * 0.18), E.cut * 0.85))
-	for fp in floor_pts:
-		var P: Vector3 = fp
-		for kk in 3:
-			var v := E.n * R * (1.3 + r.randf() * 0.9) + E.t1 * (r.randf() - 0.5) * R * 0.5 + E.t2 * (r.randf() - 0.5) * R * 0.5
-			b.add(q, POOLS.pack(Vector4(P.x, P.y, P.z, -20.0 + kk * 0.09), Vector4(v.x, v.y, v.z, 0.55 + r.randf() * 0.3),
-				Vector4(0.65, 0.16, 0.025, 0.45), Vector4(R * 0.06, R * 0.15, 1, r.randf()), Vector4(0.8, 0, 0, 0)))
-	var P0: Vector3 = floor_pts[0]
-	for kk in (3 if hot else 2):
-		var v := (E.n * 1.0 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.9).normalized() * R * (0.5 + r.randf() * 0.9)
-		b.add(q, POOLS.pack(Vector4(P0.x, P0.y, P0.z, -20.0 + kk * 0.37 + r.randf() * 0.2), Vector4(v.x, v.y, v.z, 3.2),
-			Vector4(glow.r, glow.g, glow.b, 2.0), Vector4(R * 0.025, R * 0.015, 16, r.randf()), Vector4(3.9, 0, 0.3, 0)))
-	for kk in 3:
-		var v := E.n * R * 1.4 + Vector3(0, R * 0.2, 0)
-		b.add(q, POOLS.pack(Vector4(P0.x, P0.y, P0.z, -20.0 + kk * 0.9 + r.randf() * 0.2), Vector4(v.x, v.y, v.z, 2.7),
-			Vector4(0.1, 0.095, 0.09, 0.2), Vector4(R * 0.35, R * 1.7, 3, r.randf()), Vector4(2.7, 0, 0.7, 0.3)))
-	var vp: Vector3 = P0
-	var vd: Vector3 = E.n
-	if not ends.is_empty():
-		vp = ends[0][0]
-		vd = ((ends[0][1] as Vector3) * 0.5 + E.n).normalized()
-	for kk in 16:
-		var tk := -20.0 + kk * 0.08
-		var puff := 0.7 + 0.3 * sin(kk * 0.9)
-		var v := (vd + E.t1 * sin(kk * 0.45) * 0.15).normalized() * R * (3.2 + r.randf()) * puff
-		b.add(q, POOLS.pack(Vector4(vp.x, vp.y, vp.z, tk), Vector4(v.x, v.y, v.z, 1.1), Vector4(0.62, 0.68, 0.78, 0.22 * puff),
-			Vector4(R * 0.07, R * 0.7, 7, r.randf()), Vector4(1.3, 0, 0.8, r.randf() - 0.5)))
-	for e2 in ends:
-		var sp: Vector3 = e2[0]
-		var sd: Vector3 = e2[1]
-		var per := 0.9 + r.randf() * 1.6
-		var off := r.randf() * per
-		for kk in 7:
-			var v := (sd + E.n * 0.4 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.9).normalized() * R * (2.5 + r.randf() * 4.0)
-			bs.add(qs, POOLS.pack(Vector4(sp.x, sp.y, sp.z, off + r.randf() * 0.06), Vector4(v.x, v.y, v.z, 0.25 + r.randf() * 0.3),
-				Vector4(1.0, 0.75, 0.45, 3.5), Vector4(0.035, R * 0.025, 2.2, 1), Vector4(per, 0, 0, 0)))
-		b.add(q, POOLS.pack(Vector4(sp.x, sp.y, sp.z, off), Vector4(0, 0, 0, 0.12), Vector4(1.0, 0.8, 0.55, 2.5),
-			Vector4(R * 0.05, R * 0.12, 2, r.randf()), Vector4(per, 0, 0, 0)))
-
-
 # ---------------------------------------------------------------- ship side: gather, rebuild, apply
 
 static func is_turret_mesh(s, mi: Node) -> bool:

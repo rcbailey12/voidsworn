@@ -400,9 +400,13 @@ func _patrol_attitude(i: int, pos: Vector3) -> Quaternion:
 func _process(dt: float) -> void:
 	step(dt)
 
+
+# Battle wings are stepped by ShipView and attack runs by FX, both in effect seconds.
 func step(dt: float) -> void:
 	clock += dt
 	sample_t += dt
+	# Issue 1467: cap the pose correction on a slow frame. Weave and trail age keep the full effect time.
+	var pose_dt := minf(dt, 1.0 / 30.0)
 	var sample := sample_t >= 1.0 / 30.0
 	if sample: sample_t = 0.0
 	trail_mat.set_shader_parameter("clock_now", clock)
@@ -425,12 +429,12 @@ func step(dt: float) -> void:
 				pos = pos.lerp(parked, gain)
 				attitude = attitude.slerp(_patrol_attitude(i, parked), gain)
 				# Filter the hand-off when a craft turns through the travel pose's back side.
-				if dt > 0.0:
+				if pose_dt > 0.0:
 					var last := _attitudes[i]
-					var weight := 1.0 - exp(-24.0 * dt)
+					var weight := 1.0 - exp(-24.0 * pose_dt)
 					if gain < 1.0:
 						var turn := 2.0 * acos(clampf(absf(last.dot(attitude)), 0.0, 1.0))
-						weight = minf(weight, 12.0 * dt / maxf(turn, 0.001))
+						weight = minf(weight, 12.0 * pose_dt / maxf(turn, 0.001))
 					attitude = last.slerp(attitude, weight).normalized()
 				facing = Basis(attitude)
 			if _patrol_span > 0.0:
