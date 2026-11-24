@@ -737,9 +737,9 @@ void fragment() {
 const SPHERE := """
 shader_type spatial;
 render_mode unshaded, cull_back, shadows_disabled, fog_disabled;
-uniform sampler2D tex_a : source_color, filter_linear, repeat_enable;
+uniform sampler2D tex_a : source_color, filter_linear_mipmap, repeat_enable;
 // Packed masks and relief are linear data, including the ocean mask in tex_a.a.
-uniform sampler2D tex_b : filter_linear, repeat_enable;
+uniform sampler2D tex_b : filter_linear_mipmap, repeat_enable;
 uniform float has_tex = 0.0;
 uniform vec3 flat_col = vec3(0.3);
 uniform vec3 sun = vec3(0.45, 0.7, 0.55);     // toward the sun, world space
@@ -764,7 +764,10 @@ void vertex() {
 	vC = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 	vR = length(MODEL_MATRIX[0].xyz);
 }
-vec2 uv_of(vec3 d) { return vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359); }
+vec2 uv_of(vec3 d) {
+	float v = acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359;
+	return vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, clamp(v, 0.002, 0.998));
+}
 vec3 spun(vec3 d, float a) { float c = cos(a); float s = sin(a); return vec3(c * d.x + s * d.z, d.y, -s * d.x + c * d.z); }
 void fragment() {
 	vec3 n0 = normalize(vObj);
