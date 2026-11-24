@@ -351,7 +351,8 @@ static func _shield_lp(tg: Dictionary) -> Vector3:
 
 # Where a shot ends: the shield bubble, the hull (section, facing), or past the target for a miss.
 static func _target(fx, Tg, to_c: Vector3, from: Vector3, hit: bool, hd: Dictionary, quad: int, kt: float,
-		variation: Dictionary = {}, rhythm: RandomNumberGenerator = null, clusters: Dictionary = {}) -> Dictionary:
+		variation: Dictionary = {}, rhythm: RandomNumberGenerator = null, clusters: Dictionary = {},
+		force_shield := false) -> Dictionary:
 	if Tg == null:
 		var d = (to_c - from).normalized()
 		return {"p": to_c, "n": -d, "shield": false, "miss": not hit}
@@ -378,8 +379,9 @@ static func _target(fx, Tg, to_c: Vector3, from: Vector3, hit: bool, hd: Diction
 		var path := (pass_point - from).normalized()
 		var exit: Vector3 = pass_point + path * Tg.hull.L * fx.rng.randf_range(0.4, 1.2)
 		return {"p": exit, "n": -path, "shield": false, "miss": true, "pass": pass_point}
-	var on_shield: bool = Tg.shielded and Tg._shield_mat != null and float(hd.get("shield", 0)) > 0.0 and float(hd.get("hull", 0)) <= 0.0
-	var sec: int = {"eng": 0, "mid": 1, "prow": 2}.get(String(hd.get("section", "")), -1)
+	var on_shield: bool = force_shield or (Tg.shielded and Tg._shield_mat != null
+		and float(hd.get("shield", 0)) > 0.0 and float(hd.get("hull", 0)) <= 0.0)
+	var sec: int = {"eng": 0, "mid": 1, "prow": 2}.get(str(hd.get("section", "")), -1)
 	var inv: Transform3D = Tg.xf().affine_inverse()
 	var view := Vector3.ZERO
 	if fx.camera != null and is_instance_valid(fx.camera):
@@ -2071,6 +2073,26 @@ static func _hit_impulse(lk: String, weight: int, critical: bool) -> float:
 	return float(REACT_IMPULSE.get(lk, 0.5)) * [0.7, 0.85, 1.0, 1.3, 1.6][clampi(weight, 0, 4)] * (1.6 if critical else 1.0)
 
 
+static func standalone_hit(fx, target, hit: Dictionary, from: Vector3, breaking: bool) -> void:
+	var hull_damage := float(hit["hull"]) > 0.0
+	var shield_contact := not hull_damage and (float(hit["shield"]) > 0.0 or breaking)
+	var ion := bool(hit.get("regenLock", false))
+	if not hull_damage and not shield_contact and not ion and not bool(hit["crit"]):
+		return
+	var quad := int(hit.get("quad", 0))
+	var center: Vector3 = target.to_world(target.hull.c)
+	if from == Vector3.INF or from.is_equal_approx(center):
+		from = target.to_world(target.hull.c + target.hull.quad_dir(quad) * target.hull.L * 2.0)
+	var scale := maxf(target.scale_k(), VIS_K_HIT)
+	# The hit event has no weapon id. Use the light shell recipe or the ion recipe when it locked shield regen.
+	var look := "ion" if ion else "auto"
+	var contact := _target(fx, target, center, from, true, hit, quad, scale, {}, null, {}, shield_contact)
+	contact["breaking"] = breaking
+	contact["tk"] = TARGET_K.get(DEATH.atlas_band(float(target.hull.L)), 1.0)
+	var dir := (Vector3(contact["p"]) - from).normalized()
+	_impact(fx, look, 1, target, contact, fx.now, target.fac.damage_glow, dir, hit, scale, 0.0)
+
+
 static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: Color, dir: Vector3, hd: Dictionary, k: float, sustain: float) -> void:
 	var p: Vector3 = tg["p"]
 	var n: Vector3 = tg["n"]
@@ -2237,7 +2259,7 @@ static func _afterglow(fx, p: Vector3, T: float, col: Color, sz: float, light: b
 static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, dir: Vector3, k: float, sustain: float, torp: bool, beam: bool, bio: bool, light: bool, col := Color.WHITE) -> void:
 	var p: Vector3 = tg["p"]
 	var n: Vector3 = tg["n"]
-	var sc: Color = Tg.fac["shield"] if Tg != null else FLOOK.shield("hegemony")
+	var sc := FLOOK.shield(Tg.faction if Tg != null else "hegemony")
 	var strength = 0.6 if light else (1.0 if w <= 2 else 1.4)
 	var spread = (9.0 if light else 14.0) * k
 	var life = float(fx.timing.get("shield", 0.6))
