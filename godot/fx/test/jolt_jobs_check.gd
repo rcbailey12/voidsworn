@@ -91,11 +91,20 @@ func _run() -> void:
 	var threads := int(ProjectSettings.get_setting("threading/worker_pool/max_threads", -1))
 	if threads <= 0: threads = OS.get_processor_count()
 	var low := clampi(int(threads * float(ProjectSettings.get_setting("threading/worker_pool/low_priority_thread_ratio", 0.3))), 1, maxi(threads - 1, 1))
-	var lanes: int = DEATH.cut_lanes(64)
+	var lanes: int = DEATH.cut_lanes(threads)
 	print("JOLT_JOBS lanes: threads %d, low-priority cap %d, cut lanes %d" % [threads, low, lanes])
-	check(lanes >= 1, "a cut always has a lane")
+	check(threads < 4 or lanes >= 1, "a pool with room beyond the reserve gives cuts group lanes")
 	check(threads < 4 or lanes + low + 2 <= threads, "a cut leaves two lanes free beyond the low-priority cap")
 	check(DEATH.cut_lanes(3) <= 3, "a cut never asks for more lanes than it has work")
+	var first_cut := DEATH._reserve_cut_lanes(threads, true)
+	var second_cut := DEATH._reserve_cut_lanes(threads, true)
+	var live_cut := DEATH._reserve_cut_lanes(threads, false)
+	check(lanes < 2 or (first_cut > 0 and second_cut > 0), "two loading cuts can reserve lanes together")
+	check(first_cut + second_cut + live_cut == lanes and DEATH._reserve_cut_lanes(threads, false) == 0,
+		"loading and live cuts share one lane budget")
+	for count: int in [first_cut, second_cut, live_cut]:
+		if count > 0:
+			DEATH._run_cut_group(func(_i: int) -> void: pass, count, count, "jolt check")
 
 	var world := Node3D.new()
 	root.add_child(world)
