@@ -536,7 +536,7 @@ rendering, ship import, audio, or battle-feel PR." (Ryan, Nov 22 2026, 16:48 UTC
 3.14 **One global look and sound standard; no subsystem is tuned alone.** Every ship exterior and interior, weapon effect,
 wound, death, hulk, debris piece, station, planet, rock, sky and sound follows the six laws of
 `contrib/opus/plans/global_cohesion_standard.md`: (1) one value ladder (deep space near black; ship interiors and wreck cavities
-darker than lit armor, walls at most 0.11 linear; full glow only on cores, weapons and small accent strips, non-core interior
+darker than lit armor, walls at most 0.11 linear (the Glasswrights 0.45: pale pearl glass insides, never dark grey, R448); full glow only on cores, weapons and small accent strips, non-core interior
 emission at most 0.25); (2) interior materials come from each faction's own role table, never from the `kit.py` diagram
 colours, with structure (bone, frame, truss) kept apart from wall and flesh finishes; (3) one identity per faction across
 hull, interior, weapons, wounds, deaths, hulks and sound; (4) the world and audio tracks (10.11, the sound plan using Godot

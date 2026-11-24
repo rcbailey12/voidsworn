@@ -568,6 +568,7 @@ static func interior_material_v2(src: Material, frame: Transform3D, mouths: Dict
 	m.set_shader_parameter("v2_rough", float(wv.get("interior_rough", 0.6)))
 	m.set_shader_parameter("v2_soot", float(wv.get("soot_weight", 1.0)))
 	m.set_shader_parameter("v2_wreck_soot", float(wv.get("wreck_soot", 0.3)))
+	m.set_shader_parameter("v2_wall_max", float(wv.get("wall_max", 0.11)))
 	m.set_shader_parameter("fx_wreck", wreck)
 	if wreck > 0.0:
 		mouths = {"count": -1}

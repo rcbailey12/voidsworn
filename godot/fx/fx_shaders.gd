@@ -2359,6 +2359,7 @@ uniform vec3 v2_scorch_col = vec3(0.1);
 uniform vec3 v2_rim_metal = vec3(0.6);
 uniform vec3 v2_interior_lift = vec3(0.3);
 uniform vec3 v2_interior_accent = vec3(1.0, 0.5, 0.15);
+uniform float v2_wall_max = 0.11;   // the faction's interior wall ceiling (R420 0.11; Glasswrights 0.45, Ryan Nov 24)
 uniform float v2_rough = 0.6;
 uniform float v2_soot = 1.0;
 uniform float v2_wreck_soot = 0.3;
@@ -2488,12 +2489,13 @@ void fragment() {
 	vec3 lit = surf * mix(1.0, r.x * ao, trusted ? 0.5 : 1.0);
 	vec3 wreck = lit * (1.0 - v2_wreck_soot);
 	if (wound_v2 == 3) { wreck = mix(lit, vec3(0.1, 0.09, 0.07) * r.x, 0.35); }    // dull pale bone and wet dark tissue
-	if (wound_v2 == 4) { wreck = mix(lit, vec3(0.09, 0.1, 0.1) * r.x, 0.4); }      // frosted glass, never sooted black
+	if (wound_v2 == 4) { wreck = mix(lit, v2_rim_metal * vec3(1.0, 0.97, 0.93) * 0.4 * (0.6 + 0.4 * r.x), 0.4); }   // pale frosted pearl glass, never dark grey (Ryan Nov 24)
 	lit = mix(lit, wreck, wr);
-	// R420: walls at most 0.11 linear (mean), held by scaling the colour so the hue stays; bone and glass are exempt
+	// R420: walls at most the faction's ceiling (0.11 linear mean; Glasswrights 0.45), held by scaling the colour so the
+	// hue stays; bone and glass are exempt
 	if (role == 0 || role == 2 || role == 4) {
 		float lm = (lit.r + lit.g + lit.b) / 3.0;
-		lit *= lm > 0.11 ? 0.11 / lm : 1.0;
+		lit *= lm > v2_wall_max ? v2_wall_max / lm : 1.0;
 	}
 	// an older surface never shows its diagram colour, even away from a mouth: it fades toward a darker faction tone
 	// (Antigravity audit on PR 1755, finding 1); a role-table surface keeps its own colour there
