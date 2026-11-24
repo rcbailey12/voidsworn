@@ -11,6 +11,8 @@ extends RefCounted
 #   - the attach point service (issue 370, at the end of this file): where an effect starts on the ship, from the
 #     authored hard points first (docs/ship_pipeline/HARDPOINTS.md), else a surface ray, else nowhere (skipped, counted).
 
+const SH := preload("res://fx/fx_shaders.gd")
+
 const SEC_ENG := 0
 const SEC_MID := 1
 const SEC_PROW := 2
@@ -177,7 +179,7 @@ static var _shader_refs := {}   # not GPU: weak refs only, nothing is kept alive
 # derived from this code, so it keeps the alpha.
 static func exterior_alpha_code() -> String:
 	if not _ext_codes.has("exterior_alpha"):
-		_ext_codes["exterior_alpha"] = EXTERIOR.replace("ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;",
+		_ext_codes["exterior_alpha"] = SH.patch(EXTERIOR, "ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;",
 			"ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;\n\tALPHA = hull_albedo.a * texture(hull_color, UV).a;")
 	return _ext_codes["exterior_alpha"]
 
@@ -1848,9 +1850,9 @@ func _read_doors(root: Node3D) -> void:
 			"deg": float(ex.get("open_deg", -100.0)), "lobes": lobes, "wins": [], "f": 0.0})
 
 
-# The door a node hangs under (its nearest door ancestor below the root), or -1: a lobe turns, so the damage never rides it.
+# The door a node belongs to (itself or its nearest door ancestor below the root), or -1.
 func _door_above(n: Node, root: Node) -> int:
-	var p := n.get_parent()
+	var p := n
 	while p != null and p != root:
 		if _door_of.has(p.get_instance_id()):
 			return int(_door_of[p.get_instance_id()])

@@ -181,3 +181,252 @@ Wave A2 (20 takes, 272 real credits) was ear-audited by Antigravity, and Fable a
   - A beam may work better as ignition, a looped body and a release assembled in Godot, so it fits any beam length.
   - Shield break may be better layered (a new crackle over today's body) than one prompt.
   - Both are tried with the A3 takes before more spend.
+
+### 8.1 Wave A3 Results and Neon's Ear Notes (Nov 23 2026, input until Ryan's own picks)
+
+Wave A3 ran Nov 23 (`OPUS1752_WAVEA3B.bat`): all 18 takes, 224 credits. Relay: voidsworn-relay `pc-out-opus1752wavea3b`, folder `out_20261122_222753_165`. Listening page: https://claude.ai/artifact/FK5VJ8DZgzA3nuAAzWL6Am.
+
+Neon's full notes are in `contrib/neon/reviews/sound_wavea3_ear_1752.md` (PR 1856). Claude re-checked Neon's stereo correlation, below-500 Hz share and loudness on all 18 takes with its own script, and they match to the decimal. These are Neon's calls. **Ryan's ear picks decide**, and Wave B stays held until he gives them.
+
+- **Neon's keeps (7 of 18):**
+  - `shd_break_energy` t1
+  - `wep_directorate_laser_b` t1 and t2
+  - `wep_ithar_shard` t1
+  - `wep_sunward_lance_beam` t2
+  - `wep_chorus_spines` t2 and `wep_eclipse_gauss_fire` t2 (dark-leaning: loudness match and a small-speaker check)
+- **Neon's rejects:** everything else. `wep_ithar_shard` t2 is out of phase between left and right (correlation -0.29) and falls apart in mono.
+- **Directorate: recipe B (plasma cannon wording) wins.** Recipe A came out small and quiet, like a relay spark. If Ryan agrees, the Wave B Directorate prompts (turbo, hturbo, picket, and the ignition of ion_beam) are rewritten on recipe B wording, not on Fable's recipe A block in section 3 of the Fable review.
+- **Beams: influence 0.60 beats 0.45.** At 0.45 the takes went thin and hissy and lost 2 to 3 dB in mono.
+  - Every lance take spends 95% of its energy by 0.3 to 0.5 s. The "fast falling power-down into silence" clause makes the model rush to the end.
+  - For any Wave B beam that must sustain (ion_beam, pulsar, doom), drop that clause and build ignition, a looped body and a release in Godot, as section 8 already proposes.
+- **Eclipse control: the new wording fixed mono, not the bass.** New t1 is 97% below 500 Hz.
+  - Wave B Eclipse prompts drop "crushing seismic-charge cinematic bass" for midrange-anchored wording ("hard cold electrostatic snap", "hollow bowed-obsidian mid-low knock").
+  - This adds to Fable's bass-trap phrase swaps.
+- **Still open from section 8:** almost every keeper sits mostly below 500 Hz (the Directorate B lead take is 79%). Mastering (high-pass, presence lift, loudness match, mono fold) is required before any of them go in game, and the in-engine check against the battle music still decides.
+
+**Ryan's Wave A3 ear picks (Nov 23 2026, 11:23 AM CT, on headphones). These decide; Neon's notes above are input.**
+
+- **Sunward lance:** `wep_sunward_lance_beam` t1, not Neon's t2. That keeps influence 0.60 for beams.
+- **Directorate:** recipe B t1. `wep_directorate_laser_b` t2 is not a variant: Ryan hears it as much lighter. Variation comes from small random pitch and volume on t1 in Godot, or from a later re-roll. Wave B Directorate prompts use recipe B wording.
+- **Shield break:** `shd_break_energy` t1.
+- **Glasswright:** `wep_ithar_shard` t1.
+- **Chorus:** `wep_chorus_spines` t2.
+- **Eclipse:** `wep_eclipse_gauss_fire_ctl` t2 (the old A2 wording), not Neon's new-wording t2.
+  - This is the opposite of Neon's call.
+  - On one speaker this take loses about 3 to 4 dB of its mids and highs and is 94% below 500 Hz.
+  - A one-speaker check of this pick and the lance pick is on the listening page, because the game plays mono.
+  - Mono or stereo (checked in `godot/audio/sfx.gd`, Nov 23): every battle sound with a position already plays through an `AudioStreamPlayer3D` with `panning_strength` 0.72. So players hear direction, left or right, from where the shot is on screen. Battle sounds stay mono files, and the game supplies the stereo placement. Music and big one-off moments without a position (`AudioStreamPlayer`) can stay stereo. The same file also has per-layer pitch jitter (`pj`), which is how the Directorate t1 variation gets made.
+  - If Ryan still prefers it in mono, it stands. Mastering then adds a presence lift, and the Wave B Eclipse wording question is reopened with Ryan before Wave B.
+- **Stereo or mono (Ryan, Nov 23 11:28 AM CT): B.** He heard a 6 s offline battle mix of his picks two ways: stereo files as made, and folded to mono then panned by position the way `sfx.gd` does. He chose B. Battle sounds ship as mono files placed by the game. Music and unpositioned moments may stay stereo. His lance t1 and Eclipse ctl t2 picks were in that mono mix and stand.
+- **Eclipse wording for Wave B follows Ryan's pick, not Neon's swap.** Ryan preferred the old big seismic wording. So the Eclipse prompts keep that character, still without literal Hz numbers, and mastering adds the presence lift.
+
+### 8.2 Wave B Pre-Flight (Nov 23 2026)
+
+The manifest prompts are rewritten to Ryan's A3 picks:
+- **Directorate:** turbo, hturbo, picket and ion_beam use the recipe B plasma-cannon wording.
+- **Sustained beams:** ion_beam, pulsar and doom hold evenly to the end with no power-down clause. Their body is looped in Godot, with ignition and release as separate pieces.
+- **Eclipse:** keeps the big deep character Ryan chose. Only the literal "35 Hz" and the beam power-down wording go.
+- **Fable's fixes:** the banned-word and bass-trap fixes (review section 3) are applied to the other items. "Groan" is removed from the Glasswright and Hullbreaker deaths.
+- **Held:** `wep_chorus_bioplasma` stays as written until its projectile look is confirmed.
+
+**Size:**
+- Wave B is the 55 sound effects not yet made: 108 takes, about 128 s of audio.
+- Expected cost is about 1,410 real credits at 11 per second. The tool estimates 5,112, so the cap is 6,000.
+- The three music prototypes are not in Wave B; they move to Gate 3 with the Godot 4.7 music plan.
+
+**Gate:** Wave B runs only on Ryan's typed "go wave b". The runner copies the Wave A3B skeleton whole: a fresh folder, a list sha256 gate, a dry run requiring "108 steps, 108 still to make", and the wave and listening page outside the step wrapper.
+
+### 8.3 Wave B Ear Picks and Wave C (Ryan, Nov 23 2026, 12:41 PM CT)
+
+Wave B ran with 108 takes for 1,421 credits. Relay: voidsworn-relay `pc-out-opus1752waveb`. Listening page: https://claude.ai/artifact/MzdPpBUbFsJt1fNi5WgjHx. Neon's notes are PR 1865. Claude re-measured all 108 takes, and Neon's numbers match on 107. Ryan's picks decide.
+
+**Keeps, Ryan's calls:**
+- **Sunward:** autocannon t1 (the game already staggers 3 rounds), torp_launch t1.
+- **Directorate:** turbo t2 (t1 as a variant), hturbo t1, ion_beam t1.
+- **Glasswright:** needle t1, pulsar t2 (Ryan prefers it over Neon's t1 as more distinctive; needs cleanup), startorp t2.
+- **Eclipse:** gauss_charge t2, nlance t1.
+- **Chorus:** none. tendril t1 was dropped: Ryan scrapped the tendril weapon (R437, Nov 23), so wep_chorus_tendril is replaced pending issue 1877 and gets a new sound once the replacement weapon is picked. No re-roll.
+- **Hullbreakers:** scatter t2, rockets t2 (needs more ignition and trail: layer a torp ignition in Godot).
+- **Shared and craft:** flak_airburst t1, craft_guns t2, mech_recoil_tail t1, layer_body_heavy t1.
+- **Hits:** imp_glass_armor t1.
+- **Shields:** shd_break_prismatic t1 (close; check mono at mastering), shd_hit_absorb t1 (t2 is too high).
+- **Damage:** dmg_turret_knockout t2, dmg_engine_fail t2 (closer, but short).
+- **Deaths:** death_metal_break t1 (close, but does not sound like things breaking), death_hullbreaker_snap t2 (close, short), death_directorate_blackout as a t1 plus t2 mix.
+- **UI:** ui_boss_arrival t1, ui_confirm_latch t1, ui_turn_start t2.
+
+**Dropped:** `wep_sunward_hbattery_salvo` is one blast that rings out, not five shots. The game staggers five hbattery shots itself, so this reference is retired.
+
+**On hold:** `wep_chorus_bioplasma` waits for the projectile look.
+
+**"Too short" is a layering question, not a re-roll.** A ship death in game stacks the size boom (`boom_s/m/l`), the faction crack, and a `death_bed` loop of 3 to 16 s (`sfx.gd` `death_bed`). Before more death spend, Claude builds a full-moment preview that stacks the picked pieces the way the game does, so Ryan judges the whole moment.
+
+**Wave C re-roll (25 ids, 49 takes, about 707 real credits; tool estimate 2,572, cap 3,000).** Prompts rewritten to Ryan's notes and Neon's fixes:
+- The shell guns (turret, hbattery) ask for a bright breech crack and barrel ring.
+- All four metal hits (metal_light, energy_sear, las, acid) ask for a clear armored-steel clang first.
+- Eclipse doom is a crackling dark lightning arc, to match the Corona arc look.
+- The breach shear asks for buckling and ripping, and is lengthened to 1.4 s.
+- The spores and deaths are close and centered, with no "wide" or "outward" wording.
+- sporeb is reworded away from electrical static.
+- The craft bombs ask for a clamp release and thruster ignition.
+- The bridge bed drops the words that leaked a voice ("no vocals", "command bridge") and moves to influence 0.50.
+
+The run needs Ryan's typed "go wave c".
+
+## 8.4 Wave C result, Ryan's picks, and Wave D
+
+Wave C ran with 49 takes for 716 credits (relay `pc-out-opus1752wavec`). Listening page: https://claude.ai/artifact/191G3WngtXJgaAeg45wXuv. Neon's notes are issue 1891 (PR 1894). Neon's numbers match Claude's.
+
+**Ryan's call (Nov 23, 3:46 PM CT):** "neon nailed this". He takes Neon's picks with two exceptions:
+- `death_eclipse_shear`: it should not sound like rock. It should be a metallic material, darker and deeper. The prompt now uses black alloy armor plates instead of obsidian stone.
+- `wep_hullbreaker_junk_gun`: t2 ends in a whine like a tinnitus effect. Claude measured a 12.5 kHz tone in its tail at 0.15 to 0.25 s. The prompt drops "bright" and ends on a short dry rattle.
+
+**Keeps (Neon's picks):**
+- turret t2 and hbattery t2 (t1 as an alternate).
+- torp_eject t1.
+- pass_by_slug t2.
+- spore_cloud t2.
+- sporeb t1.
+- doom t2, which can loop 0.15 to 0.85 s for long arcs.
+- doom_charge t1.
+- craft_bombs t2.
+- obsidian_eclipse t1.
+- acid_on_metal t1.
+- breach_shear_metal t1.
+- breach_vent t1.
+- ithar_shatter t2.
+- sunward_magazine t2.
+- fleet_warp_in t2.
+- amb_bridge_bed t1.
+
+Neon's mastering notes (40 Hz high-pass, head trims, level lifts) carry into mastering.
+
+**Wave D re-roll (8 ids, 16 takes, tool estimate 484, about 135 real credits):**
+- The two ids above.
+- Neon's six, with Neon's prompt fixes: `wep_directorate_picket`, `wep_eclipse_gsentry`, `imp_metal_light`, `imp_energy_sear`, `imp_las` and `dmg_shield_burnout` (lengthened to 0.7 s, because the Wave C t2 peaked at its last sample).
+
+All of these are close and centered, with no banned words. The run needs Ryan's typed "go wave d".
+
+## 8.5 Wave D result, Ryan's picks, and Wave E
+
+Wave D ran with 16 takes for about 138 credits (relay `pc-out-opus1752waved`). Listening page: https://claude.ai/artifact/UdWWLKAYaP7tkKkofF15hZ. Neon's notes are issue 1899 (PR 1901).
+
+**Ryan's call (Nov 23, 7:58 PM CT):** he agrees with Neon across the board, with one exception. For `imp_las` he picks t1 over Neon's t2, because it is close to the energy sear but different and lighter.
+
+**Keeps:**
+- junk_gun t2, which has no whine. Wave D t1 had a new one at 15.7 kHz.
+- energy_sear t1.
+- las t1.
+- shield_burnout t1.
+
+**Wave E re-roll (4 ids, 8 takes, tool estimate 280, about 80 real credits):** these are the ids Neon marked as still needing work.
+- `wep_directorate_picket`: two waves of muffled thumps. The prompt now asks for a small, thin, high electric crack and drops the starship-turret framing.
+- `wep_eclipse_gsentry` and `imp_metal_light`: the tone was right but came back wide stereo. Both now ask for "one dry point source", and metal_light drops the ringing plate tone.
+- `death_eclipse_shear`: the metal was right but sat below 100 Hz. The prompt now asks for grinding, scraping and strain in the midrange, and drops deep, massive and heavy, since boom_l and death_bed already own the sub-bass.
+
+If Wave E still misses, the fallbacks are: today's gun_flak for picket, and a single channel of Wave D t1 or t2 for metal_light and gsentry. The run needs Ryan's typed "go wave e".
+
+## 8.6 Wave E result: every Gate 2 sound has a keeper
+
+Wave E ran with 8 takes for about 80 credits (relay `pc-out-opus1752wavee`). Listening page: https://claude.ai/artifact/U1dLvaKMJuQXnN9JGWwaEA. Neon's notes are in issue 1918 (PR 1919). Ryan agreed with all of Neon's final picks at 8:36 PM CT on Nov 23.
+
+**Final picks for the last four:**
+- `wep_directorate_picket`: Wave E t1. Fold to mono, trim the 24 ms lead-in, and high-pass at 40 Hz.
+- `wep_eclipse_gsentry`: Wave D t2, left channel only. Do not fold, because (L+R)/2 cancels the midrange. High-pass at 40 Hz.
+- `imp_metal_light`: Wave D t1, left channel only. Do not fold, for the same reason. High-pass at 40 Hz.
+- `death_eclipse_shear`: Wave E t2. Fold to mono, lift 3 dB, trim 9 ms, and high-pass at 40 Hz.
+
+**How the mastering script reads these notes (PR 1923, Artoo review):** the fixed trims are `trim_ms` in `contrib/opus/sound/keepers_gate2.json` (picket 24 ms, shear 9 ms) and the report logs every trim. The shear's "lift 3 dB" is met by the death loudness target, which already adds 3.2 dB; no extra gain goes on after the peak cap.
+
+**Mastering source rule:** each keeper's mastering note in 8.3 to 8.6 says either "fold" or "one channel". A wide take (correlation under about 0.3) uses one channel unless a note says otherwise.
+
+**Scope of Gate 2:**
+- Gate 2 is closed for these sounds.
+- Bioplasma stays on hold until the projectile look is set.
+- The tendril sound waits for issue 1877.
+- Next is mastering the keepers to mono game files, then the Gate 3 music plan.
+
+## 9. Gate 3 waves F and M (Ryan, Nov 23 2026, 11:02 and 11:09 PM CT)
+
+Ryan: "More music, more variety, whatever we got with the sound credits", then "Yeah, do everything. Let's use those credits. Use the learnings from the past waves to shape the prompts and outputs. Let's ensure the music fits the theme and factions. If possible, let's find other sound effects we might want to incorporate."
+
+About 8,000 of the 121,000 credits are spent, which leaves about 113,000. Ryan's ElevenLabs page is the real count. The job list is `contrib/opus/sound/elevenlabs_gate3.json` (gate 3), and its `waves` key holds each wave's ids.
+
+**Lessons applied from waves A to E:**
+- Non-Sunward prompts lead with the faction's identity.
+- Each prompt uses one size word.
+- Every prompt passes the section 2 banned-word list. The list script checks it, with word-start matching.
+- No negative nouns.
+- Deaths are centered and midrange. boom_l, bass_drop and the bed own the sub-bass.
+- Short sounds ask for one dry point source, the lesson from the wide stereo in Wave D.
+- Beams, shields and UI rewards keep natural decay.
+- UI stays acoustic and mechanical, because Ryan dislikes electronic UI cues.
+
+**Variety:** variety takes reuse each keeper's exact recorded parameters from the relay wave manifests (prompt, length, influence and model), not today's list row. Two keepers' rows changed after their take was made: `wep_eclipse_gsentry` and `imp_metal_light`.
+
+**Wave F, sounds (80 ids, 161 takes; the tool estimates 8,264, about 2,300 real at 11 credits a second; cap 10,000):**
+- 34 sounds still on old placeholder clips:
+  - Glasswright flak.
+  - Gauss and ion hits, plus the hull and shield patter.
+  - Metal pops and small and medium blasts.
+  - Engine loop, craft launch, phase jump, engine cough, thruster puff and charge-up.
+  - Nine metal death beats.
+  - Brace, adapt and the base boarding sound.
+  - Seven UI cues: cancel, select, hover, panel, alert, round and enemy turn.
+- Four polish re-rolls:
+  - Pulsar as one even beam.
+  - Hullbreaker rocket as one launch.
+  - Boss cue at 3.5 s.
+  - Engine fail at 1.5 s.
+- 16 new moments the game has no sound for yet. Their hooks come in a later PR:
+  - Battle: Hullbreaker ram, torpedo shot down, shield back online, gravity well and nebula beds, asteroid scrape, low-hull alarm and command issued.
+  - Map and screens: map fleet jump and arrival, purchase, module install, relic socket, rank up, event transmission and ship lost.
+- 27 variety items at 2 takes each, so the most-heard sounds reach four takes (RULEBOOK 8.4).
+- Already made: Wave A's `wep_sunward_battery` t1 and t2 and `ui_click_switch` t1 and t2 passed in section 7 but never reached the keeper list. They join the Wave F listening page from relay `pc-out-opus1752wavea`.
+
+**Wave M, music (34 ids, 36 steps; the tool estimates 45,000 at 900 a minute; cap 50,000).** It is dark orchestral, set around a dying sun, with the four-note D, A, F, E motif as the game's thread. Each faction's palette comes from the playbook's faction voices:
+- Sunward: iron, fire and cathedral organ.
+- Directorate: drilled brass and snare over a cold steady tone.
+- Hullbreakers: scrap-metal percussion and detuned brass.
+- Glasswrights: glass harmonica, celesta and harp.
+- Eclipse: one low held note, taiko and anvils.
+- Chorus: breathing basses and heartbeat drums.
+
+Each faction gets a calm and an intense battle layer. A pair shares tempo and key so the two crossfade, and each is a loop where every part plays in every bar (row 6). The rest of the wave:
+- Title (2 takes).
+- Six map tracks, two per sector, moving from ember-warm to cold.
+- Two boss tracks.
+- Nemesis and shipyard music, both new.
+- Three reward themes. `mus_reward_1` is the wording Ryan liked.
+- Seven stings, including run won and run lost.
+- One stem split test.
+
+**Wave M runs in two steps (Artoo on PR 1942).** Each track is a separate request, so a shared tempo and key in the prompt does not prove that a calm and intense pair line up. Today's `music_player.gd` crossfades independent loops by volume, so a pair that drifts still plays. A beat-synced switch, the Gate 3 plan, needs the pair to line up.
+- Wave M1 (4 steps; the tool estimates 4,230; cap 5,000) makes the Sunward calm and intense pair plus the stem split test.
+- Claude decodes the pair and measures its tempo, its loop points, and a switch at several bars.
+- Superseded by the re-plan below: Wave M2 (32 steps; the tool estimates 40,770; cap 45,000) was to run only after that. If the pair drifts, the M2 layers are first re-planned as stems of one song or as an aligned transition.
+
+**M1 result and the M2 re-plan (Nov 24, 05:50 UTC).** M1 made all 4 steps (relay `pc-out-opus1752wavem1`). Claude measured them, and the listening page is https://claude.ai/artifact/XrhJ1f7uG4qL6f2dMspvak.
+- **The separate calm and intense pair failed the check.** Its beat offset moved by up to 0.4 s across the track. The calm track also climbs 18 dB over its first 40 s to the intense track's level, and the intense track fades to silence in its last 5 s.
+- **The 40 s stem loop passed.** Its start and end are the same level, about 16 dB under full scale.
+- **Stems came back as drums plus "other".** The bass, piano, guitar and vocal stems were empty.
+
+So M2 makes each faction's battle music as stem-split loops: the intense layer is the full mix, and the calm layer is everything but the drums. The two stay in step by construction.
+- That means 11 loops of 24 bars each with stems: two per faction, and Sunward's second is added to the M1 loop.
+- The separate `_calm` and `_hot` items for the other five factions are dropped.
+- Title, map, boss, nemesis, shop, reward and stings are unchanged. Their fades are trimmed to loop points in mastering.
+- M2 is 44 steps. The tool estimates 46,290; the cap is 52,000.
+- The M2 job resumes from a fixed takes folder, `%VT%\el_resume\%JOB%`, because Wave F's rerun paid twice for 21 takes.
+
+**Stem check (Artoo on PR 1948).** `contrib/opus/tools/sound/stem_loop_check.py <song> <stems.zip> --xfade <s>` rebuilds both mixes from one archive, cut to the song's own samples, and checks them. It runs on every M2 loop before any loop is wired.
+- **Alignment.** The stems arrive 25.1 ms (1,203 samples) late against the song, so the tool aligns them first. After alignment, the stems sum to the song with a residual 25.2 dB under it.
+- **Calm level.** The calm mix sits 4.0 dB under the intense mix.
+- **Seams without a crossfade.** The intense seam passes. The calm seam fails: its last half second is 4.9 dB under its first (limit 3 dB).
+- **Seams with mastering's loop crossfade.** With 0.5 s, the calm seam is 2.6 dB and the intense 0.3 dB; with 1.0 s, 2.5 dB and 0.8 dB. Both pass with wrap jumps under 0.03.
+
+- **Switches (Artoo, second pass).** The tool also plays a real 2 s switch from calm to intense, and back, at four points in the loop. With the 0.5 s crossfade, the deepest dip under the softer mix is 0.14 dB (limit 1.5 dB). The largest step between neighbouring 50 ms windows is 9.4 dB, under the 10.5 dB the drums make on their own. All eight switches pass.
+
+So mastering folds a 0.5 s loop crossfade into both mixes on the same samples. An in-game listen to the switch still comes before wiring. Ryan picked "One song split into parts" for the battle music (decision card, Nov 23 11:51 PM CT).
+
+After all the waves, about 55,000 credits stay in reserve for second takes, stems on the songs Ryan picks, and the tendril once issue 1877 lands.
+
+**Run and review:** the PC jobs are `OPUS1752_WAVEF.bat`, `OPUS1752_WAVEM1.bat` and `OPUS1752_WAVEM2.bat`, built on the Wave E skeleton and pinned to this list's merge. Each needs Ryan's own typed "go wave f", "go wave m1" or "go wave m2" in the Board thread. Neon reviews each listening page before Ryan does. Mastering and wiring follow sections 8.6 and 8.7. New moments get their hooks the way PR 1937 did. Music uses the Godot 4.7 AudioStreamInteractive plan in row 6.

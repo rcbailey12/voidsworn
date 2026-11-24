@@ -92,10 +92,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           filter: blob:none
-      - uses: ./.github/actions/merge-main
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # Issue 1488: the fleet page must be current on the branch as pushed and again after main is merged in. A stale
+      # combined page fails here: merge main into the branch, run fleet_list.js --write, and commit docs/ship_pipeline/FLEET.md.
+      - name: Fleet page current on the branch
+        run: node contrib/opus/tools/fleet_list.js --check-page
+      - uses: ./.github/actions/merge-main
+      - name: Fleet page current after merging main
+        run: node contrib/opus/tools/fleet_list.js --check-page
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -193,11 +199,11 @@ jobs:
   # issue 1430) and the bot battle 360 s (shard 1 only), 23 minutes in all (the A16 seam has its own job, issue 1174)
   # before setup and the Godot download, so a shard can still be cut off (shown as "cancelled") by the 25 minute limit
   # when every step runs to its cap, as on the broken test commit 138ff38; the load gate makes that rare (audit 706, 9c).
-  # Three shards in parallel (issue 1430): run_checks.sh gives every headless check to exactly one shard, balanced by
+  # Four shards in parallel (issues 1430, 1957): run_checks.sh gives every headless check to exactly one shard, balanced by
   # godot/tools/ci/godot_check_times.txt; shard 1 also proves the list is whole and plays the bot battle. "All checks"
-  # reads the three as one result (needs.godot-game fails if any shard fails). 921 s in one job on Nov 22 2026.
+  # reads the four as one result (needs.godot-game fails if any shard fails). 921 s in one job on Nov 22 2026.
   godot-game:
-    name: Godot game checks (${{ matrix.shard }} of 3)
+    name: Godot game checks (${{ matrix.shard }} of 4)
     needs: changes
     if: needs.changes.outputs.godot == 'true'
     runs-on: ubuntu-latest
@@ -205,7 +211,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4]
     env:
       XDG_DATA_HOME: ${{ github.workspace }}/.godot_user   # user:// for every Godot run here; never a real profile
     steps:
@@ -249,12 +255,12 @@ jobs:
         if: ${{ !cancelled() && steps.load.outcome == 'success' }}
         uses: ./.github/actions/godot-import
       # (b) this shard's headless checks named in godot/tools/ci/godot_checks.txt (shard 1 also proves the list names every
-      # test script). Each shard has a 600 s budget (about 310 s each on Nov 22 2026); a check the budget never reached
+      # test script). Each shard has a 600 s budget (about 405 s each planned on Nov 24 2026, issue 1957; shard 2 of 3 had reached 590 s); a check the budget never reached
       # counts as failed.
-      - name: Headless Godot checks from the list (shard ${{ matrix.shard }} of 3)
+      - name: Headless Godot checks from the list (shard ${{ matrix.shard }} of 4)
         if: ${{ !cancelled() && steps.load.outcome == 'success' }}
         env:
-          SHARD: ${{ matrix.shard }}/3
+          SHARD: ${{ matrix.shard }}/4
           GODOT_CHECKS_BUDGET: 600
         run: |
           sh godot/tools/ci/run_checks.sh 2>&1 | tee "$RUNNER_TEMP/run_checks.log"; code=${PIPESTATUS[0]}

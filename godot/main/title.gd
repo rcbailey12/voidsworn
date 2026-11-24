@@ -42,7 +42,7 @@ func s(v: float) -> int:
 func _ready() -> void:
 	font = Kit.body_font()        # the kit's one font set (issue 1217); the wordmark keeps its own display face
 	font_semi = Kit.medium_font()
-	font_goth = Brand.display()  # the sci-fi display face (lore round 5); the blackletter is retired
+	font_goth = Brand.wordmark()  # the wordmark face, Michroma (R436 C28: Michroma is the wordmark only)
 	_build()
 	_report.call_deferred()
 	# screenshot jobs: --title-open credits opens the Credits screen (main.gd opens Settings for --title-open settings)
@@ -302,7 +302,7 @@ func _dialog_box() -> StyleBoxFlat:
 const SETTINGS_LAYOUT := [   # [section, column, rows]
 	["Sound and music", 0, [["toggle", "Sound", "sound"], ["slider", "Volume", "volume"], ["toggle", "Music", "music"], ["slider", "Music volume", "music_volume"]]],
 	["Display", 0, [["choice", "UI scale", "ui_scale"], ["toggle", "Full screen", "fullscreen"], ["choice", "Graphics", "quality"], ["toggle", "Temporal AA (smoother edges, softer motion)", "taa"], ["toggle", "Nebula wakes (ships stir the clouds)", "nebula_wake_on"], ["choice", "Render scale", "render_scale"], ["choice", "Frame cap", "fps_cap"], ["toggle", "V-Sync", "vsync"]]],
-	["Battle", 1, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Teaching tips", "tips"]]],
+	["Battle", 1, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Brisk camera", "brisk_camera"], ["toggle", "Teaching tips", "tips"]]],
 	["Comfort", 1, [["toggle", "Reduce motion", "reduce_motion"], ["toggle", "Reduce flashing", "reduce_flashing"], ["choice", "Screen shake", "shake"]]],
 ]
 const SETTINGS_CHOICES := {
@@ -394,7 +394,7 @@ func _settings() -> void:
 	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(fill)
 	v.add_child(Kit.action_bar(k, [], done))
-	sc.custom_minimum_size = Vector2(0, minf(cols.get_combined_minimum_size().y, vs.y - s(190)))
+	_size_settings_list(sc, cols)
 	_fit_settings.call_deferred(sc, cols)
 	if _settings_focus != "":
 		for c in settings_panel.find_children("*", "Control", true, false):
@@ -420,8 +420,16 @@ func _fit_settings(sc: ScrollContainer, cols: Control) -> void:
 	await get_tree().process_frame
 	if not is_instance_valid(sc) or not is_instance_valid(cols):
 		return
-	var vs := get_viewport().get_visible_rect().size
-	sc.custom_minimum_size.y = minf(cols.get_combined_minimum_size().y, vs.y - s(190))
+	_size_settings_list(sc, cols)
+
+
+func _size_settings_list(sc: ScrollContainer, cols: Control) -> void:
+	var body := sc.get_parent() as VBoxContainer
+	var drawer := body.get_parent() as PanelContainer
+	var chrome := body.get_combined_minimum_size().y - sc.get_combined_minimum_size().y
+	chrome += drawer.get_theme_stylebox("panel").get_minimum_size().y
+	var room := get_viewport().get_visible_rect().size.y - chrome
+	sc.custom_minimum_size.y = minf(cols.get_combined_minimum_size().y, maxf(0, room))
 
 
 func _close_settings() -> void:
@@ -537,7 +545,7 @@ func _focus_first(n: Node) -> void:
 func _toggle(t: String, key: String) -> Control:
 	if key == "tips": main.settings["tips"] = not preload("res://ui/campaign/campaign_tips.gd").is_off()
 	if not main.settings.has(key):
-		main.settings[key] = true
+		main.settings[key] = key != "brisk_camera"
 	var b := _button("On" if main.settings[key] else "Off")
 	b.set_meta("setting_key", key)
 	b.pressed.connect(func() -> void:

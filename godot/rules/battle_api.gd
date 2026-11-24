@@ -13,7 +13,9 @@ const RulesScript = preload("res://rules/rules.gd")
 const Snap = preload("res://rules/battle_snapshot.gd")
 
 var R                       # the rules (rules.gd); read-only for the game side, use view()
-var phase := "none"         # "player" | "enemy" | "over" | "none" | "halted" (hard stop, see below)
+var phase := "none"         # "deployment" | "player" | "enemy" | "over" | "none" | "halted" (hard stop, see below)
+var interactive_deployment := false  # only the human battle entry points opt in
+var _pending_start: Dictionary = {}
 var _queue: Array = []      # enemy units still to act in the current enemy step
 var _mutex := Mutex.new()    # recursive: every public call below holds it (see "Threads" in API.md)
 var _hexes: Array = []       # every playable hex {q, r} of this battle's board (fixed at setup; view().hexes, read-only)
@@ -128,10 +130,12 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	var boons := []
 	for x in S.get("boons", []): boons.append(x.duplicate())
 	var run := {"admiral": S.admiral, "fac": S.get("fac_player") if S.get("fac_player") != null else "voidsworn", "credits": 0, "cpCap": 40, "sector": int(S.sector), "relics": S.get("relics", []).duplicate(), "inventory": [], "fleet": [], "boons": boons, "patrons": [], "stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0}, "fallen": []}
+	if S.has("encounterCurve"): run["encounterCurve"] = S["encounterCurve"]
 	if R.jt(S.get("aspect")): run["aspect"] = S.aspect
 	if S.get("heat") != null: run["heat"] = S.heat.duplicate()
 	if S.get("class_track") != null: run["classTrack"] = S.class_track.duplicate()
 	if S.get("lineage") != null: run["lineage"] = S.lineage.duplicate(true)   # issue #305: the run snapshot of the flown admiral's tree
+	if S.get("cmdOverride") != null: run["cmdOverride"] = S.cmdOverride.duplicate(true)   # issue 1651: a Command swapped in by Mastery III (its own rider follows it)
 	R.RUN = run
 	for t in S.fleet: run["fleet"].append(R.newShip(t, R.jt(S.get("vet"))))
 	if S.get("mods") is Array:   # issue 1653: refits per fleet ship, in fleet order
@@ -208,17 +212,42 @@ func _i_new_battle(run: Dictionary, cfg: Dictionary) -> void:
 		R.events.clear(); _queue.clear(); _halt(cfg_errors[-1]); return
 	R.RUN = run; R.events.clear(); _queue.clear()
 	R.UNDO_ON = true; R.UNDO = null   # issue 1450: the game can take a move back (a scenario sets its own, below)
-	var campaign = R.jt(cfg.get("campaign")); var force = cfg.get("event_force"); var war = R.jt(cfg.get("event_war")); _alt = not R.js_false(cfg.get("alt"))   # JS cfg.alt!==false (type-safe: any other value, even a Dictionary, means alternating)
+	var start := {"campaign": R.jt(cfg.get("campaign")), "force": cfg.get("event_force"), "war": R.jt(cfg.get("event_war"))}
+	_alt = not R.js_false(cfg.get("alt"))   # JS cfg.alt!==false (type-safe: any other value, even a Dictionary, means alternating)
 	cfg = cfg.duplicate(); cfg.erase("campaign"); cfg.erase("event_force"); cfg.erase("event_war"); cfg.erase("alt")
-	R.startBattle(cfg)
+	R.startBattle(cfg, interactive_deployment)
 	_hexes = []
 	for h in R.boardHexes(): _hexes.append({"q": int(h.q), "r": int(h.r)})
-	if campaign: # campaign3d.js battleScreen: a campaign battle may roll a mid-battle event
+	_pending_start = {}
+	if R.B.has("skillTarget"):
+		_pending_start = start
+		phase = "deployment"
+		if start["campaign"]: R.B["campaign"] = true  # the campaign host reads this before showing the battle
+		round_snap = PackedByteArray()
+		round_snap_round = 0
+		round_snap_error = ""
+	else:
+		_finish_setup(start)
+
+func _finish_setup(start: Dictionary) -> void:
+	if start["campaign"]: # campaign3d.js battleScreen: a campaign battle may roll a mid-battle event
+		var cfg: Dictionary = R.B["cfg"]
+		var force = start["force"]
 		R.B["campaign"] = true
-		if war: force = ("reinf_enemy" if R.rnd() < 0.6 else "reinf_ally") if cfg.get("kind") != "boss" else null   # a sector at war: drawn after setup, as the browser does
+		if start["war"]: force = ("reinf_enemy" if R.rnd() < 0.6 else "reinf_ally") if cfg.get("kind") != "boss" else null   # a sector at war: drawn after setup, as the browser does
 		R.B["event"] = R.rollBattleEvent(cfg, force)
 	R.hook("start")
 	_prep()
+
+# An empty ID skips the deployment skill. The first accepted pick only records a target.
+func pick_skill_target(id: String) -> bool:
+	_enter()
+	var accepted: bool = halted == "" and phase == "deployment" and R.pickSkillTarget(id)
+	if accepted and not R.B.has("skillTarget"):
+		_finish_setup(_pending_start)
+		_pending_start = {}
+	_leave(accepted)
+	return accepted
 
 func _prep() -> void: # ui3d.js prepBattle
 	var B = R.B
@@ -262,7 +291,7 @@ func _i_view() -> Dictionary:
 			"role": R.treeRole(u), "canRole": R.treeCanChangeRole(u), "moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": (u.get("stance") if R.jt(u.get("stance")) else "strike") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
 			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy"),
 			"undo": phase == "player" and u["side"] == "player" and R.canUndo(u)})   # issue 1450: this ship's last move or turn can be taken back
-	return {"ask": B["treeAsk"].duplicate(true) if B.get("treeAsk") is Dictionary else null, "round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
+	return {"ask": B["treeAsk"].duplicate(true) if B.get("treeAsk") is Dictionary else null, "skill_target": R.skillTargetView(), "round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
 		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "zones": _zones(), "halt": halted if halted != "" else null}
 func _zones() -> Dictionary: # battle.js objZone: "exit" (breakthrough: jump clear here), "texit" (intercept: transports escape here), "guard" (defend: the ring 2 hexes out)
 	var o := {}
@@ -516,7 +545,7 @@ func command_info() -> Dictionary:
 			var tier: int = int(R.cmdTier())
 			var next: int = int(R.cmdTier(1))
 			info = {"label": str(cmd["n"]), "power": tier + 1, "effect": R.cmdDesc(cmd, tier, fac),
-				"next": R.cmdDesc(cmd, next, fac) if next > tier else "", "used": R.jt(R.B.get("cmdUsed"))}
+				"next": R.cmdDesc(cmd, next, fac) if next > tier else "", "used": R.jt(R.B.get("cmdUsed")), "rider": R.riderLine(cmd)}   # issue 1651: the Command's rider line
 	_leave(false)
 	return info
 func command() -> bool:
@@ -1201,7 +1230,7 @@ func entry_reason(id: String, q: int, r: int) -> String:
 	var why := ""
 	var u = unit(id)
 	if (R.SOLID != null and R.SOLID.has(R.hkey(q, r))) or R.blocks(R.terr(q, r)):
-		why = "Blocked by the %s at %d,%d." % [{"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(_blocker_kind(q, r), _blocker_kind(q, r)), q, r]
+		why = "Blocked by the %s on this hex." % [{"rock": "asteroid", "hulk": "wreck", "deadstar": R.dead_star_name(R.RUN, true)}.get(_blocker_kind(q, r), _blocker_kind(q, r))]   # Council 29 (issue 1401): no hex numbers on the board
 	elif not R.onBoard(q, r):
 		why = "Outside the playable area."
 	elif u != null:

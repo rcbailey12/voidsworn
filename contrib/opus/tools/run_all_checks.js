@@ -142,8 +142,8 @@ function buildChecks() {
     'campaign_saves_1556_tests', 'campaign_start_test', 'capstone_mastery_tests', 'checks_truth_tests',
     'chorus_eat_core_tests', 'chorus_biomass_1484_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
     'effect_caps_tests', 'env_reconcile_tests', 'fleet_list_tests', 'free_exit_tests', 'fx_death_spawn_tests',
-    'fx_late_shader_tests', 'gen_open_work_tests', 'gpu_slots_tests',
-    'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_pulse_ai_tests', 'ion_tests',
+    'fx_late_shader_tests', 'gpu_slots_tests',
+    'hardpoint_contract_tests', 'heat_tests', 'hull_details_tests', 'inheritance_tests', 'ion_pulse_ai_tests', 'ion_tests',
     'lineage_tests', 'main_commit_lint_tests', 'memory_lint_tests', 'montecarlo_bot_tests', 'nemesis_121_tests', 'nemesis_122_tests',
     'nemesis_395_tests', 'nemesis_clash_tests', 'nemesis_teach_tests',
     'paint_sheet_camera_tests', 'relic_trade_1449_tests', 'retreat_nemesis_1480_tests', 'event_fight_retreat_1628_tests', 'eclipse_violet_1641_tests', 'reporting_238_tests', 'rules_1479_tests', 'rules_1481_tests', 'rules_1560_tests', 'runner_stall_tests',
@@ -154,9 +154,16 @@ function buildChecks() {
   // library entries and break-piece interiors held against its sheet; docs/ship_pipeline/build_sheets/manifest_schema.md)
   // and the report_paths_tests.js and check_em_dashes_tests.js publication and punctuation fixtures.
   // The glob below runs each one once; a second add() line would run it twice.
-  // #1817: the Windows cleanup fixture took 307 s to set up under load, then starts six full janitor scans (up to
-  // 140 s each). Round 1147 s up to 1200 s for the short scans and teardown. Job probes get 510 s plus the claim race.
-  const windowsRunnerTimeouts = { 'runner_cleanup_tests.js': 1200, 'runner_job_tests.js': 600 };
+  // #1739: overlapping Windows lanes exhausted the row limits during relay and job proofs. The cleanup fixture
+  // needs about 307 s for setup under load plus up to six 240 s scans. The job fixture allows 750 s for its probes
+  // plus a separate claim race. Keep the hosted limits unchanged.
+  const windowsRunnerTimeouts = {
+    'pc_jobs_1194_tests.js': 600,
+    'relay_push_tests.js': 600,
+    'run_all_checks_live_tests.js': 600,
+    'runner_cleanup_tests.js': 1800,
+    'runner_job_tests.js': 900,
+  };
   fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => {
     const timeout = process.platform === 'win32' ? windowsRunnerTimeouts[f] ?? 300 : 300;
     add(OPUS + f, [], 'normal', timeout, false, FAST_AUTO.has(path.basename(f, '.js')));
@@ -170,8 +177,9 @@ function buildChecks() {
   add('contrib/deepseek/map_pace_1117/smoke_safety_test.js', [], 'normal', 300, false, true); // #1019: the documented smoke run leaves the saved 200-sim raw files byte for byte unchanged
   add('contrib/deepseek/chorus_biomass_1118/spiral_test.js', [], 'normal', 300, false, true); // #1085: the loss spiral prices a 25 percent repair of the worst ship, capped at what it is missing
   add('contrib/deepseek/ge_economy_1118/commission_test.js', [], 'normal', 300, false, true); // #1086: one shipyard visit queues at most one Glasswright commission, even with two affordable offers
-  add('tools/pc/runner_selftest.js', [], 'normal', 600); // #687: free PC runner fault tests; static contract check on other hosts
-  add('tools/pc/g2_export_selftest.js'); // #1100: a stand-in exporter proves only checked builds become live on Windows
+  add('tools/pc/runner_selftest.js', [], 'normal', process.platform === 'win32' ? 1200 : 600); // #1739: a loaded PC lane reached 600 s with the fault matrix still advancing
+  add('tools/pc/mission/pc_daemon_selftest.js', [], 'normal', 300, false, true); // #1662: the PC daemon's gate, watchdog, profile removal and job order on fakes
+  add('tools/pc/g2_export_selftest.js', [], 'normal', process.platform === 'win32' ? 600 : 300); // #1100: eleven Windows export cases, up to 45 s each
   add('tools/pc/pause_all_selftest.js'); // #944: pause waits for runners and verifies each saved commit on GitHub
   add('tools/pc/lane_tools_refresh_selftest.js'); // #1018: lane tools refresh safety checks
   add('tools/recipe/stage5_fail_selftest.js', [], 'normal', 600); // #873: stage 5 and bench 207 stop on a failed step; fake executables, static contract on other hosts

@@ -22,6 +22,7 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   (the tools_live watchdog with its strict hash check, the GPU label, the tool preflight); the path and sha256 of
   `tmo.bat` and `run_timeout.ps1` in `status.txt` (fail closed when either is missing); the watchdog's throwaway Godot
   profile kept on (issue 1228); Ryan's real `battle_opts.json` and `board_look.cfg` hashed.
+- Tool preflight lookup (issue 1352): `ffmpeg` is `FFMPEG_EXE`, `voidsworn_test\ffmpeg\bin`, PATH, then `imageio_ffmpeg` asked from each candidate Python, then `site-packages\imageio_ffmpeg\binaries`; `pil` is `PIL_PYTHON`, ComfyUI's Python, `py -0p` (newest first), then `python` on PATH, skipping the WindowsApps stub; each probe has one 20 s deadline covering its exit and its output pipes (a probe that misses it has its process tree stopped and the next candidate is tried), `preflight.txt` names the source that won, and `tools.cmd` keeps non-ASCII paths intact (UTF-8 between two `chcp` lines, only when a path needs it).
 - `checkout <name> <sha>`: a fresh checkout of that exact commit inside the attempt folder, from the shared
   `repo-mirror.git`; HEAD must equal the pin. With `OJ_SLOTS=1` (issue 1659, Ryan Nov 22; the template sets it to 1 since the Windows slot proofs passed, Board Nov 23; a bat sets 0 to opt out) it
   resets a warm slot instead: `voidsworn_test\slots\slot_gpu_1`, `slot_gpu_2` (`OJ_SLOT_KIND=gpu`) or `slot_cpu` (`cpu`),
@@ -59,7 +60,7 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   must show origin holding that branch at the commit checked in the shared mirror (the mirror is fetched once when it
   does not). The Board relays an attempt in that layout with `tools\pc\relay_push.bat <job> <attempt folder>` (the attempt
   folder at the tree's root on the relay repo's `pc-out-<job>`, adding to the branch for later attempts; RULEBOOK 3.3a) and then runs `dropcheckouts <attempt>`; a later tail of
-  the same job repeats the check. The janitor (hourly and after jobs) runs the same proof over every PASS attempt that still lists
+  the same job repeats the check. The janitor (nightly, on low space, and after enabled jobs) runs the same proof over every PASS attempt that still lists
   checkouts (`opus_job_head.ps1 dropjobs <job>`, `dry` on a janitor dry run), so no hand step is needed after a relay. Ship jobs' `droprepo` looks the same way for `board/pc-out-<job>` with `<job>_out`. A file over 10 MB the relay left out counts only when it is
   absent from the tree and the relay's own `<tree folder>/skipped_over_10MB.txt` lists that exact path (with `\`) and its
   size in MB; it stays on the PC, since out folders are never removed here. No receipt or any other difference keeps
@@ -116,15 +117,114 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   installed files matching the collected export count as
   rebuildable, anything else is saved into `out\checkout_leftovers_repo` first). A ship build that is never published
   keeps its slimmer clone: the janitor never removes a ship clone (issue 1396); an abandoned one goes to the Board as a
-  one-off. A second publish from the same job folder needs a new ship run.
+  one-off. A second publish from the same job folder needs a new ship run; it also writes `manifest_patch_<CODE>.json`
+  in its publish folder, which the Board applies with `publish_ship.py apply-patch` and commits with the publish so
+  `godot/assets/ships/manifest.json` follows every publish (issue 1357).
 - `opus_job_head.ps1 survey` lists every job checkout and ship clone on the PC with its size and state, read only, for
   a Board one-off cleanup request to Ryan.
 
+Ryan double-clicks `janitor_task.bat` once from the current `tools_live\<version>\pc` folder after the tools update
+(read `tools_live\current.txt` for the version). It installs or updates the **Voidsworn Janitor** task for his signed-in
+Windows account with limited privileges. Windows starts `janitor.bat --nightly` at 3:30 AM Central each day, using the
+tools version current at launch. The task can wake the PC and retries every 15 minutes for two hours if a pause or another
+cleanup delays it. A GPU solo claim also defers the nightly run without spending the date. Shared GPU claims allow the
+nightly run. Leave the Windows account signed in overnight so the task can use its Git credentials. The nightly date
+and lock prevent a second cleanup if the old watcher is running too. `janitor_task.bat --dry-run` previews the task and
+prints the exact action Windows will run.
+`janitor.bat --dry-run` previews cleanup.
+
+Low space triggers `--low-space` from the runner, and enabled job tails trigger `--after-job`. They share one run per hour.
+Helper jobs enable their after-job trigger with Ryan's approval via `OPUS_JOB_JANITOR=1`. An admitted after-job run logs
+a deferral and skips the job-folder pass while shared GPU claims are active. It can still check lane and TEMP leftovers.
+A solo GPU claim defers after-job and low-space disk scans and leaves the hourly run available, since disk reads can skew
+frame-time measurements.
+
 Each janitor run has a 45 minute budget checked between items, not a hard timeout: the board lanes and the Workhorse runs (one lane at a time) until a quarter of it, the TEMP folders until half, the job folders until the end. A lane or folder already started runs to its end. Past a stop point the run starts no new item of that kind, says where it stopped, and a live run writes that name to `janitor_resume.txt` (replaced whole, never through a link), so the next run starts there and wraps around; it never removes more for stopping early. Folders that take 10 s or more get a `folder time` line (issue 1396: the first full dry run ran 1 h 47 min unfinished).
 Janitor sizes say what removal would really free (issue 1739: the Nov 23 dry run said 49.9 GB, about 4.6 GB came back). A file counts once, and only when every hard link to it is inside the folder, so a checkout's links shared with the mirror count nothing. A folder another account owns (the Codex sandbox scratch) is logged as `cannot remove` and never counted. Each row reads `<N> bytes would be freed, <M> listed, ...`, and the run closes with `space would be freed: <total>`, the sum of its would-remove rows (`tools/pc/disk_space.ps1`).
-Nothing else is deleted (RULEBOOK 3.3, R326). The after-job janitor stays off unless `OPUS_JOB_JANITOR=1`, which needs Ryan's approval.
+Dry runs also print `legacy job repo (inventory only)` for the older `<job>\repo` and `<job>\out\run_*\repo` layouts in helper and playtest jobs. Any new removal for these layouts needs Ryan's yes (RULEBOOK 3.3).
+Nothing else is deleted (RULEBOOK 3.3, R326).
 
 ## What the Board checks
 
 Only that the bat calls the head (`init`, `checkout`, `ships` when it needs hulls, `tail`) and runs every Godot start
 through `"%JW%" run`. The head and `contrib/opus/tools/opus_job_head_tests.js` hold the rest.
+
+Workhorse arms and Codex lanes send empty or checkout-local `LOCALAPPDATA` and `PSModuleAnalysisCachePath` to per-run TEMP before the probe and append `/Microsoft/` once to each clone's `.git/info/exclude` (issue 1945).
+
+## The Node PC daemon (issue 1662, built; not live until the Board's PC proof)
+
+`tools/pc/mission/pc_daemon.js` runs PC jobs straight from pull requests, one at a time. `PC_DAEMON.bat` (double-click)
+is a dry run: it reads GitHub once and prints what it would run. `PC_DAEMON.bat live` runs jobs.
+
+A pull request runs when it is open, from this repo (never a fork), labelled `pc-ready`, its "All checks" run from
+`.github/workflows/checks.yml` on GitHub Actions is green at its head commit, and the newest owner comment that starts
+"PC go" names that head commit and is well formed (RULEBOOK 3.12). A newer malformed one holds the job; an older good one
+never wins. The Board writes that comment after the review, one comment per run:
+
+```
+PC go: <40-character head commit>
+reviewed: <who passed the diff at that commit>
+job: <name: a-z, 0-9, _>
+flow: godot | blender
+script: res://<path>.gd (godot, optional) | <repo path>.py (blender)
+args: <arguments; {out} is the results folder, {repo} the slot checkout>
+expect: <paths under the results folder that must exist and not be empty>
+```
+
+Optional lines: `slot: gpu|cpu`, `gpu: auto|solo|none` (auto: the watchdog's classifier picks; none is for Blender only),
+`ships: yes|no`, `hulls: <codes>`, `headless: yes|no`, `timeout: <seconds, at most 21600>`, `stall: <minutes with no
+output, 5 to 360>`. A cpu slot job does no GPU work: a headless Godot, or a Blender that says `gpu: none` itself (no
+Blender job defaults to no claim). A push after the go comment refuses the run (the label comes off with a note); a new
+go comment and the label start it again. The checks that count are the newest `checks.yml` run at the head commit, its
+newest attempt, and that attempt's own "All checks" job; an older green run, or an earlier attempt of a rerun, never
+stands in.
+
+Per job: `pc-ready` must come off (else nothing starts), `running` on, a new attempt `voidsworn_test\<job>\out_<stamp>_<n>`
+with results in `out_<job>` (the job reads it as `VS_OUT`), the attempt's tools version checked against its own
+`hashes.txt` (the head's `bundle` check), refused unless its `run_timeout.ps1` carries the `# pc-step-settings: 1` line
+(an older watchdog lacks the settings below), and used for the whole attempt through the first relay, the tool preflight, Ryan's options hashed, a warm
+slot reset to the head commit (its receipt must match the head's own lease record, `slot.txt`, `owner.txt` and the slot
+kind, and the head's `slotcheck` must prove the lease live: holder process, owner token, lease file locked; the head skips a
+slot holding `hold.txt` or `hold.txt.*.clearing`, checks both again once its holder owns the lease, and its reset stops
+without touching the slot if either appeared while it waited) and the built ships copied in. Then the daemon reads the pull request, the whole go comment, the
+checks, the pause, the holds and the game again; any change, or a GitHub it cannot read, aborts the job (nothing ran, the
+run key stays free, the slot is let go). Before the step it makes the slot's `run_scratch` folder, proves the lease live again, then writes the
+slot's `hold.txt` as an in-flight marker, so a daemon that stops mid-step leaves the slot set aside instead of free.
+
+The step runs through the installed watchdog `run_timeout.ps1` in step mode (RULEBOOK 3.5: hard ceiling, idle stop, Job
+Object kill with proof, GPU admission by its classifier, the game-open wait) with five settings only the daemon sets
+(`PC_STEP_*`; unset, the watchdog behaves as before, except that its game wait now also counts compatibility play, below, for
+ordinary jobs too): after its game wait and GPU admission it calls the daemon's
+`--recheck` once more, bound to the attempt, the pinned tools folder, the slot and the lease token (it refuses the go when
+any is missing, or when `pc_daemon_tools.txt` or the slot's `slot.txt` no longer match them), and starts nothing unless that says go (the GitHub reads first, then the pause, an unreadable `gpu_go.txt` counting as
+paused, the holds, and the game read as the watchdog reads it: any Voidsworn, or a windowed Godot with no job arguments, a renderer choice such as
+`play_godot_safe.bat`'s `--rendering-method gl_compatibility` still counting as play; the slot lease still proven live;
+an unreadable process list counts as playing); the step
+ends only when its whole Job Object is empty, so a child that outlives the job is still timed and killed; every program,
+Blender included, gets a throwaway profile (APPDATA, LOCALAPPDATA and Blender's user folders) inside the slot's
+`run_scratch` folder, with the child logs, and the watchdog removes both; and it writes `watchdog_record.json` with the
+exit, whether the tree was seen empty, and the profile. The daemon reads the tree state from that record only, never from
+the job's output. Then the outputs and options are checked, the in-flight marker cleared (only while `slotcheck` still
+proves the lease live and the marker is exactly what the daemon wrote; it is renamed aside to `hold.txt.<token>.clearing`
+before the compare, and the head's slot allocator skips a slot with that file as with `hold.txt`; a changed marker is
+linked back, never over a newer `hold.txt`), `done.txt`, the slot let go (bound to the lease the attempt was given: the head releases only while `slot.txt` is there and exactly
+that lease and `owner.txt` names this attempt and token, and otherwise keeps the slot: a job that ran is then `FAILED: slot release` with its outputs kept and
+delivered, never PASS, and a job stopped before launch says the slot was not let go), the relay push, a result comment with the links, `running` off.
+
+The done marker goes on only with the relay links: a failed relay is retried every 30 minutes from the kept attempt,
+never a rerun. Its ledger `voidsworn_test\pc_daemon\ran.txt` keeps start, aborted, the result and delivered apart, each
+with its attempt; only a result blocks a new go for that commit and job. A start with no end line from an earlier daemon
+process means it stopped mid-job: the daemon records it as interrupted and sets `pc_daemon\hold.txt`. Once the Board has checked that attempt's
+process tree is gone, `node tools\pc\mission\pc_daemon.js --clear <attempt folder>` records that (only for an interruption a
+live daemon recorded), and the Board removes the two hold files (in the slot: `hold.txt`, or `hold.txt.<token>.clearing` if the daemon stopped
+while clearing it; `--clear` names the file, and a newer `hold.txt` beside it is checked first; an unreadable `slot.txt` is refused with
+nothing recorded, and an attempt with no `slot.txt` took no slot, so only `pc_daemon\hold.txt` goes). A result whose tools failed their check is kept on the
+PC and relayed later, only from a verified tools version. One live daemon per PC (an exclusive localhost
+bind on port 47662 the system frees when the process ends), only on `%USERPROFILE%\Downloads\voidsworn_test` with no link
+anywhere on that path. A step the watchdog record does not prove gone (no record, survivors, or no end within the
+ceiling plus the waits) is a quarantine: the slot's in-flight `hold.txt` stays with the reason, the slot is not let go,
+the daemon writes `pc_daemon\hold.txt` and starts nothing, even after a restart, until the Board has looked and removed
+both. Nothing starts during the Board pause or while Voidsworn runs. The only file the daemon removes on the PC is its
+own in-flight marker. Stop it between jobs with `voidsworn_test\pc_daemon\stop.txt`. Run 1 still calls the tools_live
+PowerShell for the slot lease, the ships checks, the preflight, the watchdog and the relay; later runs move each one into
+Node and retire its wrapper. The selftest's Windows group runs the real watchdog with a Node stand-in.
