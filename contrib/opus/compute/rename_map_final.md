@@ -4,6 +4,30 @@ Written by L (lore rollout helper). Source of truth: `lore_bible_r8.md` and the 
 
 **Read at:** main `10c9c65` (first written at `e243729`; Where cells re-grepped at `10c9c65`, and a cell starting "applied:" means the owner has already made that change) (every Where cell below was produced by grepping the exact Old string at that commit; `(not found)` would mean the row is stale). Generated files are not listed and follow by re-export: `godot/rules/data/tables.json`, `godot/campaign/data/campaign_tables.json`, the oracle copies under `godot/*/test/oracle/`, and `voidsworn-3d.html`.
 
+## Current Godot names, Nov 24 2026
+
+The names here are the live display values from [the Godot campaign tables](../../../godot/campaign/data/campaign_tables.json). They supersede the corresponding October names below. The browser rows document the original rollout.
+
+| Old | New | Where | Owner | Note |
+|---|---|---|---|---|
+| Hegemony | Meridian Directorate | `FACTIONS.hegemony.n` | G3 | The internal faction id is kept. |
+| K-1 Kharon, the Unbent | K-1 Kovar, the Unbent | `PATRONS.iron.n` | G3 | Short name Kovar. |
+| H-3 Crucible, "the Hunger Below" | H-3 Calyx, "the Hunger Below" | `PATRONS.hunger.n` | G3 | Short name Calyx. |
+| Oath-Captain Malek Draven | Oath-Captain Torben Hark | `ADMIRALS.malek.n` | G3 | The admiral id stays `malek`. |
+| Maren | Annika | `NEM_FAC.hegemony.pre` and `.fem` | G3 | Maren is kept as the surname of the playable Line Admiral Oskar Maren. |
+| Dead star | Dead star | `SHAPES.deadstar` | G3 | Generic board label. The sector III name is Hollow Sun. |
+
+### Factions and admirals
+
+- `voidsworn`, Sunward Crusade. Admiral Roderic Vex, Oath-Captain Torben Hark, Commodore Sera Ashgrove, High Admiral Oryn Thale.
+- `hegemony`, Meridian Directorate. First Admiral Ilsa Kassar, Commodore Dace Vorn, Fleet Marshal Corin Reyes, Line Admiral Oskar Maren.
+- `corsair`, Ashfall Hullbreakers. Warlord Grax Ironmaw, Sable the Smiling Knife, Old Mott, Vesh the Collector.
+- `chorus`, The Chorus. The Matriarch of Nine Throats, Red Undertow, Mending Throng, Voice of the Deep.
+- `ithar`, The Glasswrights. Tamsa of the Clear Aperture, Saro of Long Focus, Vell of the Third Mirror, Brin of the Fourth Lens.
+- `deathless`, Eclipse. Nadir Aurex, Ninth Frame. Umbra Vessane, Third-Housed. Ostrel of the Long Copy. Seveth, Twice-Restored.
+
+The six cores are K-1 Kovar, the Unbent (`iron`), V-2 Vyre, the Storm Queen (`storm`), H-3 Calyx, "the Hunger Below" (`hunger`), A-4 Astra, the Silent Star (`star`), R-5 Rook, the Breaker (`rook`), and S-6 Seren, the Last Flame (`ember`).
+
 ## Rules for whoever applies a row
 
 - **Ids never change.** Faction ids (`voidsworn`, `corsair`, `ithar`, `deathless`, `chorus`, `hegemony`), hull, weapon, admiral, patron, boon, event, trait, style and file ids, save keys (`boons`, `patrons`, `favour`, `giftBoon`, `boonOffer` ...), action names (`takeBoon` ...), telemetry names, CSS classes (`.gothic`, `.boon`, `.sigil`) and `user://voidsworn_*` save paths all stay. Only text a player can read changes.
