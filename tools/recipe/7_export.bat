@@ -2,7 +2,7 @@
 rem Ship recipe, stage 7: the game export, automated (issue 209 round 7; FINDINGS R155, R156; issue 363).
 rem From the baked ship (stage 5) and the ship json, with no hand steps, this writes the game's ship folder into
 rem Downloads\voidsworn_test\recipe\SHIP\export\CODE\ : CODE.glb (one ship node with a child node per hard point: hp_w per weapon
-rem muzzle, hp_eng, hp_bay, hp_breach, hp_core, hp_rcs, hp_board) and the 2048 map set (export7.py), plus manifest_entry.json
+rem muzzle, hp_eng, hp_bay, hp_breach, hp_core, hp_rcs, hp_board) and the map set at the R411 band size (export7.py: 4096 flagships and battleships, 2048 escorts, 1024 strike craft; EXPORT_MAPS=N overrides), plus manifest_entry.json
 rem with the point counts. Then it reads the glb back and checks it (check_export.py): FAIL when a required point is missing
 rem (a weapon slot of the ship's Godot weapon list, an engine, a hangar mouth, the core, the braking and boarding origins), or
 rem the breach count for the ship's class and faction does not match the one table (tools/blender/kits/shared/hardpoints.py),
@@ -30,7 +30,9 @@ type "%JOB%\log_standing_all.txt"
 setlocal
 set "PC_GPU_MODE=none"
 set "TMO_STEP=recipe 7 game export"
-call "%REPO%\tools\pc\tmo.bat" %RECIPE_EXPORT_CAP% "%B%" -b "%JOB%\%CELL%.blend" -P "%RC%\export7.py" -- "%R209_SHIP%" "%EX%" maps=2048 %UNB% > "%JOB%\log_export.txt" 2>&1
+set "EXPORT_MAPS_ARG="
+if defined EXPORT_MAPS set "EXPORT_MAPS_ARG=maps=%EXPORT_MAPS%"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_EXPORT_CAP% "%B%" -b "%JOB%\%CELL%.blend" -P "%RC%\export7.py" -- "%R209_SHIP%" "%EX%" %EXPORT_MAPS_ARG% %UNB% > "%JOB%\log_export.txt" 2>&1
 if errorlevel 1 (echo Stage 7 FAILED: the game export exited %ERRORLEVEL%. See %JOB%\log_export.txt & goto bad)
 endlocal
 findstr /c:"[export7]" "%JOB%\log_export.txt"

@@ -21,7 +21,7 @@ const CUE_FAMILIES := {
 	"lances": ["lance", "lance_ion", "lance_dark", "lance_choir"],
 	"torpedoes": ["torp", "torp_rocket", "torp_sac", "torp_star", "torp_heavy"],
 	"charges": ["lance_charge", "torp_charge"],
-	"hits": ["hit", "hit_heavy", "hit_las", "hit_plasma", "hit_rail", "hit_wet", "hit_glass", "hit_ion"],
+	"hits": ["hit", "hit_heavy", "hit_las", "hit_plasma", "hit_rail", "hit_wet", "hit_glass", "hit_ion", "hit_obsidian"],
 	"shields": ["shield", "shield_break"],
 	"patterns": ["patter_hull", "patter_shield"],
 	"explosions": ["pop", "boom_s", "boom_m", "boom_l"],
@@ -103,6 +103,62 @@ func _ok(c: bool, message: String) -> void:
 	if not c:
 		fails.append(message)
 		print("  FAIL ", message)
+
+# Issue 1752 Gate 2: every recorded weapon sound is a "faction.weapon_id" variant on the cue the battle really plays for
+# that faction's weapon (battle._wfam, then sfx.gd's own cue choice), so no wired sound sits on a cue nobody reaches;
+# every layer of every cue and variant names a clip set the game loaded.
+func _wired_1752(s) -> void:
+	var tables: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://rules/data/tables.json"))["tables"]
+	var W: Dictionary = tables["W"]
+	var b = load("res://scenes/battle/battle.gd").new()
+	var wired := 0
+	for cue in s.cues:
+		for L in s.cues[cue]["layers"]:
+			if L.has("s"):
+				_ok(s.clips.has(L["s"]), "%s layer %s has its clips" % [cue, L["s"]])
+		for v in s.cues[cue].get("variants", {}):
+			for L in s.cues[cue]["variants"][v].get("layers", []):
+				if L.has("s"):
+					_ok(s.clips.has(L["s"]), "%s:%s layer %s has its clips" % [cue, v, L["s"]])
+			if not str(v).contains("."):
+				continue
+			var fac := str(v).split(".")[0]
+			var wid := str(v).split(".")[1]
+			_ok(W.has(wid) and (tables["FAC_WPOOL"][fac] as Array).has(wid), "%s:%s is a real %s weapon" % [cue, v, fac])
+			if not W.has(wid):
+				continue
+			var fam: String = b._wfam({"fac": fac, "squadron": str(W[wid]["k"]) == "sq"}, {"kind": W[wid]["k"], "weapon_id": wid})
+			var want := ""
+			if fam in ["lance", "ion"]:
+				want = "lance_dark" if fac == "deathless" else "lance_choir" if fac == "ithar" else "lance_ion" if fam == "ion" else "lance"
+				if cue == "lance_charge":
+					want = "lance_charge"
+			elif fam == "torp":
+				want = {"corsair": "torp_rocket", "chorus": "torp_sac", "ithar": "torp_star", "voidsworn": "torp_heavy"}.get(fac, "torp")
+				if cue == "torp_charge":
+					want = "torp_charge"
+			elif fam == "sq":
+				want = "gun_sq"
+			elif str(W[wid]["k"]) == "flak":
+				want = "gun_flak"
+			else:
+				var style = fam if fam in ["spine", "glob", "plasma", "las", "tracer", "needle", "rail"] else "shell"
+				want = "gun_" + str(style)
+			_ok(cue == want, "%s's %s plays %s, so its sound sits there, not on %s" % [fac, wid, want, cue])
+			_ok(s.weapon_variant(cue, fac, wid) == v, "%s picks variant %s" % [cue, v])
+			wired += 1
+	b.free()
+	# Artoo, PR 1932: a charge must not outlast the picture's own charge, or its tail runs over the shot. The Doom
+	# corona is 0.35 s (fx_weapons.gd "doom"); every lance charge variant starts no earlier and ends by the beam.
+	for v in s.cues["lance_charge"].get("variants", {}):
+		var vd: Dictionary = s.cues["lance_charge"]["variants"][v]
+		var lead := float(vd.get("lead", s.CHARGE_LEAD["lance_charge"]))
+		_ok(lead <= 0.35 + 0.001, "lance_charge:%s leads by %.2f s, inside the 0.35 s corona" % [v, lead])
+		_ok(float(vd.get("duration", 9.0)) <= lead + 0.06, "lance_charge:%s fades out by its beam" % v)
+	_ok(wired >= 30, "issue 1752: the recorded weapon sounds are wired (%d)" % wired)
+	_ok(s.weapon_variant("gun_sq", "hegemony", "guns") == "guns", "any faction's interceptor guns use the craft sound")
+	_ok(s.weapon_variant("gun_shell", "voidsworn", "battery") == "", "a weapon with no recorded sound keeps the base cue")
+
 
 func _run() -> void:
 	# Parsing battle.gd also checks the semantic dispatch integration.
@@ -206,6 +262,8 @@ func _run() -> void:
 	_ok(s.impact_cue("las", "chorus") == "hit_wet", "a hit on Chorus plays hit_wet")
 	_ok(s.impact_cue("las", "ithar") == "hit_glass", "a hit on Glasswright plays hit_glass")
 	_ok(s.impact_cue("las", "hegemony", true) == "hit_heavy", "a critical keeps hit_heavy")
+	_ok(s.impact_cue("las", "deathless") == "hit_obsidian", "a hit on Eclipse plays hit_obsidian (issue 1752)")
+	_wired_1752(s)
 	var mi := AudioServer.get_bus_index("music")
 	var si := AudioServer.get_bus_index("sfx")
 	m.set_volume(0.7)

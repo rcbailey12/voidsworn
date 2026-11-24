@@ -99,3 +99,10 @@ falls away instead of cutting off).
 | crackGlass | Rubberduck 75 Breaking / Falling / Hit | CC0 |
 | deathRun | Kenney Sci-Fi Sounds | CC0 |
 | uiRound | Kenney Impact Sounds; Kenney Interface Sounds | CC0 |
+
+## Generated sounds (issue 1752, Nov 24 2026)
+
+The Gate 2 clip sets named after their sound ids (`wep_*`, `imp_*`, `shd_*`, `death_*`, `ui_*`, `evt_*`, `amb_bridge_bed`)
+were generated for this game with ElevenLabs sound effects on the owner's paid account, then mastered in
+`contrib/opus/tools/sound/master_keepers.py`. They are not from a public library, so they carry no attribution line.
+Prompts: `contrib/opus/sound/elevenlabs_pilot_v2.json`; picks: `contrib/opus/plans/cohesive_audio_v2.md` sections 8.3 to 8.6.

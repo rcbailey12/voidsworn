@@ -1,0 +1,320 @@
+{
+  "code": "hegemony_H7A",
+  "sheet_version": 1,
+  "kit": "tools/blender/kits/hegemony/parts.py",
+  "paint": "tools/blender/kits/hegemony/stack.py",
+  "parts": [
+    {
+      "id": "bow",
+      "kind": "gun",
+      "what": "plasma cannon, twin fixed organ",
+      "count": 2,
+      "route": "kit",
+      "kit_builder": "casemate",
+      "source": "picture",
+      "inventory": [
+        "casemate"
+      ],
+      "turret": false
+    },
+    {
+      "id": "dorsal",
+      "kind": "gun",
+      "what": "picket lasers, triple turret",
+      "count": 3,
+      "route": "kit",
+      "kit_builder": "gun",
+      "source": "picture",
+      "inventory": [
+        "gun"
+      ],
+      "turret": true,
+      "pivot_object": "dorsal_turret",
+      "arc_lo": -180,
+      "arc_hi": 180
+    },
+    {
+      "id": "receiver",
+      "kind": "antenna",
+      "what": "low swept sensor",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "antenna",
+      "source": "picture",
+      "inventory": [
+        "antenna"
+      ]
+    },
+    {
+      "id": "drive0",
+      "kind": "engine",
+      "what": "engine, rectangular nozzle 0.5 across",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "engine_bell",
+      "source": "picture",
+      "inventory": [
+        "engine_bell"
+      ]
+    },
+    {
+      "id": "intake0",
+      "kind": "vent",
+      "what": "louvre panel 0.3 x 0.5",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "vent",
+      "source": "designed",
+      "inventory": [
+        "vent"
+      ]
+    },
+    {
+      "id": "transfer0",
+      "kind": "hatch",
+      "what": "square hatch 0.2",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "hatch",
+      "source": "designed",
+      "inventory": [
+        "hatch"
+      ]
+    },
+    {
+      "id": "cooler0_0",
+      "kind": "vent",
+      "what": "louvre panel 0.2 x 0.3",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "vent",
+      "source": "designed",
+      "inventory": [
+        "vent"
+      ]
+    },
+    {
+      "id": "cooler0_1",
+      "kind": "vent",
+      "what": "louvre panel 0.2 x 0.3",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "vent",
+      "source": "designed",
+      "inventory": [
+        "vent"
+      ]
+    },
+    {
+      "id": "cooler0_2",
+      "kind": "vent",
+      "what": "louvre panel 0.2 x 0.3",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "vent",
+      "source": "designed",
+      "inventory": [
+        "vent"
+      ]
+    },
+    {
+      "id": "cooler0_3",
+      "kind": "vent",
+      "what": "louvre panel 0.2 x 0.3",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "vent",
+      "source": "designed",
+      "inventory": [
+        "vent"
+      ]
+    },
+    {
+      "id": "cooler0_4",
+      "kind": "vent",
+      "what": "louvre panel 0.2 x 0.3",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "vent",
+      "source": "designed",
+      "inventory": [
+        "vent"
+      ]
+    },
+    {
+      "id": "drive1",
+      "kind": "engine",
+      "what": "engine, rectangular nozzle 0.5 across",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "engine_bell",
+      "source": "picture",
+      "inventory": [
+        "engine_bell"
+      ]
+    },
+    {
+      "id": "intake1",
+      "kind": "vent",
+      "what": "louvre panel 0.3 x 0.5",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "vent",
+      "source": "designed",
+      "inventory": [
+        "vent"
+      ]
+    },
+    {
+      "id": "transfer1",
+      "kind": "hatch",
+      "what": "square hatch 0.2",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "hatch",
+      "source": "designed",
+      "inventory": [
+        "hatch"
+      ]
+    },
+    {
+      "id": "cooler1_0",
+      "kind": "vent",
+      "what": "louvre panel 0.2 x 0.3",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "vent",
+      "source": "designed",
+      "inventory": [
+        "vent"
+      ]
+    },
+    {
+      "id": "cooler1_1",
+      "kind": "vent",
+      "what": "louvre panel 0.2 x 0.3",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "vent",
+      "source": "designed",
+      "inventory": [
+        "vent"
+      ]
+    },
+    {
+      "id": "cooler1_2",
+      "kind": "vent",
+      "what": "louvre panel 0.2 x 0.3",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "vent",
+      "source": "designed",
+      "inventory": [
+        "vent"
+      ]
+    },
+    {
+      "id": "cooler1_3",
+      "kind": "vent",
+      "what": "louvre panel 0.2 x 0.3",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "vent",
+      "source": "designed",
+      "inventory": [
+        "vent"
+      ]
+    },
+    {
+      "id": "cooler1_4",
+      "kind": "vent",
+      "what": "louvre panel 0.2 x 0.3",
+      "count": 1,
+      "route": "kit",
+      "kit_builder": "vent",
+      "source": "designed",
+      "inventory": [
+        "vent"
+      ]
+    },
+    {
+      "id": "modules",
+      "kind": "plate",
+      "what": "Chamfered armour plates in two sizes",
+      "route": "kit",
+      "kit_builder": "module_panels",
+      "source": "picture"
+    },
+    {
+      "id": "waist",
+      "kind": "strip",
+      "what": "Blue flank race, interrupted at module collars and transfer doors",
+      "route": "hand-built",
+      "source": "picture"
+    },
+    {
+      "id": "sole",
+      "kind": "rail",
+      "what": "Flat race covers and twin service runners",
+      "route": "hand-built",
+      "source": "designed"
+    },
+    {
+      "id": "joints",
+      "kind": "band",
+      "what": "Steel-blue cheeks around each break ring",
+      "count": 2,
+      "route": "hand-built",
+      "source": "designed"
+    }
+  ],
+  "masses": [
+    {
+      "name": "drive",
+      "route": "hand-built"
+    },
+    {
+      "name": "mission",
+      "route": "hand-built"
+    },
+    {
+      "name": "fore",
+      "route": "hand-built"
+    },
+    {
+      "name": "casemate",
+      "route": "hand-built"
+    }
+  ],
+  "break_pieces": [
+    {
+      "name": "bow piece",
+      "stations": "0 to 25.7 percent",
+      "bounded_by": [
+        "ring1"
+      ],
+      "full_interior": true,
+      "contents": "Bow feed racks and capacitor banks"
+    },
+    {
+      "name": "midships piece 1",
+      "stations": "25.7 to 76.8 percent",
+      "bounded_by": [
+        "ring1",
+        "ring0"
+      ],
+      "full_interior": true,
+      "contents": "Receiver, control racks and reactor"
+    },
+    {
+      "name": "stern piece",
+      "stations": "76.8 to 100 percent",
+      "bounded_by": [
+        "ring0"
+      ],
+      "full_interior": true,
+      "contents": "Drive racks and machinery"
+    }
+  ],
+  "insides": "Three deck runs, six open frames and paired banks of finned equipment beside a central corridor. Blue emergency lamps mark the racks."
+}

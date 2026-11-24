@@ -5,6 +5,7 @@ extends Node3D
 
 const HT := preload("res://render/hull_table.gd")
 const BL := preload("res://world/board_look.gd")   # the board look trial (today, A holo, B living, C cinematic + tactical)
+const ModalFocus := preload("res://ui/theme/modal_focus.gd")
 const A4P := preload("res://assets/ships/a4_props.gd")  # A4's painted station and derelicts (null when not built)
 const BV := preload("res://world/blocker_visuals.gd")
 const LS := preload("res://render/line_style.gd")   # issue 1374 (R362): the one line style (width, glow, fade, role colours)
@@ -487,6 +488,7 @@ const EDGE_C := {"neb": LS.ROLE["edge_neb"], "storm": LS.ROLE["edge_storm"], "de
 	"guard": LS.ROLE["edge_guard"], "hold": LS.ROLE["edge_hold"], "rim": LS.ROLE["edge_rim"], "pull": LS.ROLE["edge_pull"]}
 var edges: MeshInstance3D
 var well_c := Vector3.INF      # the gravity well's centre on the board (the dead star), INF when none
+var grid_button_enabled := true
 var _look_btn: Button = null
 var _look_layer: CanvasLayer = null
 var _toast: Label = null
@@ -778,7 +780,7 @@ func _look_ui(toast: bool) -> void:
 		_toast.visible = false
 		_look_layer.add_child(_toast)
 	_look_btn.set_pressed_no_signal(BL.tactical)
-	_look_btn.visible = BL.current() == "cine"
+	_look_btn.visible = grid_button_enabled and BL.current() == "cine"
 	if toast:
 		_toast.text = "Board look: " + str(BL.NAMES.get(BL.current(), BL.current())) + ("  (F8: next look)" if BL.current() != "cine" else "  (Z: tactical grid, F8: next look)")
 		_toast.visible = true
@@ -808,8 +810,14 @@ func _process(dt: float) -> void:
 			_look_layer.visible = fills.visible
 
 
+func toggle_tactical_grid() -> void:
+	if BL.current() == "cine":
+		BL.tactical = not BL.tactical
+		apply_look(false)
+
+
 func _unhandled_input(e: InputEvent) -> void:
-	if fills == null or not fills.visible:
+	if fills == null or not fills.visible or ModalFocus.any_open():
 		return
 	if e is InputEventKey and e.pressed and not e.echo:
 		var k := (e as InputEventKey).keycode
@@ -818,8 +826,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			apply_look(true)
 			get_viewport().set_input_as_handled()
 		elif k == KEY_Z and BL.current() == "cine":
-			BL.tactical = not BL.tactical
-			apply_look(false)
+			toggle_tactical_grid()
 			get_viewport().set_input_as_handled()
 
 

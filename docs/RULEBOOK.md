@@ -638,9 +638,10 @@ Set: Ryan, Oct 24 (R216).
 pinpoints in a 45-degree battle frame (about 96% fewer than the Nov 22 sky; Ryan picked 400 over 1,200, R421), faint stars gathered along a tilted galactic band,
 a steep brightness curve so only a few hero stars gleam, and opaque dark dust lanes (`star_floor = 0.0`; the `VS_STAR_FLOOR`
 override stays for tuning sheets) that black out the stars behind them. No mustard fog and no purple Eclipse nebula (10.9).
-Planets, rocks, crystal clusters, stations and hulks are lifted to one bar across every region: the 8K rocky planet maps (godot/world/rocks/r01) and all
-five foreground planet types on the high-relief planet pipeline, five asteroid biomes that read apart, faceted Blender crystal
-clusters, `station_T2` at every cluster size, and derelict hulks from all six factions. The track plan and its five
+Planets, rocks, comets, stations and hulks are lifted to one bar across every region: the 8K rocky planet maps (godot/world/rocks/r01) and all
+five foreground planet types on the high-relief planet pipeline, five asteroid biomes that read apart (the ice belt pale with frost, the nebula slot's
+ice comets dark with a few dirty ice patches, dim vents and faint anti-sun tails beyond the far edge; free-floating crystal
+clusters are scrapped: Ryan, Nov 22, "It doesn't make sense. It'd need to be like an ice comet"), `station_T2` at every cluster size, and derelict hulks from all six factions. The track plan and its five
 silent-regression traps are `contrib/opus/plans/world_consistency_v2.md`; each track runs independent-audit (3.13) before its
 GPU captures (3.12). Why: the Nov 22 world audit found A-tier pieces beside D-tier outliers, and about 85,000 sky stars read
 as white static behind ships, hexes and arcs; Ryan approved Option A on all four areas (tracker #1764). Set: Ryan, Nov 22 2026

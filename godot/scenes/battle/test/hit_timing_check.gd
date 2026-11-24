@@ -60,9 +60,9 @@ class RecSfx extends "res://audio/sfx.gd":
 	var heard: Array = []   # [cue name, effect time]
 	var lances: Array = []  # [effect time of the call, the fire times the battle passed]
 
-	func lance(ion: bool, fac: String, pos = null, fire_at := -1.0, sched := Callable(), fires := []) -> void:
+	func lance(ion: bool, fac: String, pos = null, fire_at := -1.0, sched := Callable(), fires := [], wid := "") -> void:
 		lances.append([float(fx_clock.now) if fx_clock != null else -1.0, (fires as Array).duplicate()])
-		super.lance(ion, fac, pos, fire_at, sched, fires)
+		super.lance(ion, fac, pos, fire_at, sched, fires, wid)
 
 	func play(name: String, o := {}) -> void:
 		heard.append([name, float(fx_clock.now) if fx_clock != null else -1.0])

@@ -25,7 +25,9 @@
 # required point is missing (including the breach count for the hull's class and faction) or a hard point is off the mesh.
 # The export also writes manifest_entry.json for this ship: the point counts, class, band and files, ready to merge into
 # godot/assets/ships/manifest.json.
-# usage: blender -b CELL.blend -P export7.py -- SHIP_JSON OUT_DIR [maps=2048] [unbaked=1]
+# usage: blender -b CELL.blend -P export7.py -- SHIP_JSON OUT_DIR [maps=N] [unbaked=1]
+#   maps: by default the R411 band rule (hardpoints.map_size: 4096 flagships and battleships, 2048 escorts, 1024 strike
+#   craft, issue 1680); maps=N overrides it for a test or a hand run and the log says so.
 #   unbaked=1 is for testing the geometry and hard points on a build that has not been baked (no maps are written and the
 #   export json says so; check_export.py fails such a folder unless it is told the same).
 import os, sys, json, math, struct, hashlib, shutil, time, random
@@ -40,7 +42,7 @@ sys.path.insert(0, SHARED)
 import hardpoints as HP_CONTRACT
 a = sys.argv[sys.argv.index('--') + 1:]
 SHIPJ, OUT = a[0], a[1]; kw = dict(x.split('=', 1) for x in a[2:] if '=' in x)
-MAPS = int(kw.get('maps', 2048)); UNBAKED = kw.get('unbaked') == '1'
+UNBAKED = kw.get('unbaked') == '1'
 if not UNBAKED:
     from PIL import Image
 ship = json.load(open(SHIPJ)); CODE = ship.get('game_code') or ship['ship']; GAME = ship.get('game_ship')
@@ -61,6 +63,12 @@ import gamedata
 try: WEAPONS = gamedata.weapons(GAME)      # [(kind, arc), ...] in slot order, from the Godot HULLS table
 except ValueError as e: die(str(e))
 CLS = gamedata.ship_attr(GAME, 'cls', default='Cruiser')
+if 'maps' in kw:
+    MAPS = int(kw['maps']); MAPS_WHY = 'maps=%d given on the command line' % MAPS
+else:
+    MAPS = HP_CONTRACT.map_size(CLS, ship.get('length_world'))
+    MAPS_WHY = 'R411 band rule: %s, length %s' % (CLS, ship.get('length_world') or HP_CONTRACT.CLASS_LENGTH.get(CLS))
+print('[export7] maps %d (%s)' % (MAPS, MAPS_WHY), flush=True)
 FAC = gamedata.ship_attr(GAME, 'fac', default=ship.get('faction'))
 WING = CLS == 'Squadron'
 if WING:
@@ -397,6 +405,7 @@ def resize_atlas(image, role):
     image.update()
 
 
+MAP_SIZES = {}      # each hull and parts atlas's real size after the resize (never upscaled; a smaller older bake stays small)
 if UNBAKED:      # test only: the plain role materials set before the join (<CODE>_hull, <CODE>_parts) so the glb still loads; no maps
     for s in J.material_slots: s.material.use_nodes = True
 else:
@@ -418,6 +427,7 @@ else:
         for r, im in role.items():
             if max(im.size) > MAPS:
                 resize_atlas(im, r)
+            MAP_SIZES[f'{pre}_{r}'] = int(max(im.size))     # Artoo on PR 1724: what is written, never only the target
     glow = next((s.material for s in J.material_slots if s.material and s.material.name.startswith('p3_glow')), None)
     if glow: glow.name = CODE + '_glow'
 
@@ -633,7 +643,8 @@ if WING and not UNBAKED:
     manifest['wing_role'] = GAME
 json.dump(manifest, open(os.path.join(OUT, 'manifest_entry.json'), 'w'), indent=1)
 rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, faction=ship.get('faction'), cls=CLS,
-           band=HP_CONTRACT.band(CLS), expected_breach=EXPECTED_BREACH, unbaked=UNBAKED, maps=0 if UNBAKED else MAPS,
+           band=HP_CONTRACT.band(CLS), expected_breach=EXPECTED_BREACH, unbaked=UNBAKED, maps=0 if UNBAKED else min(MAP_SIZES.values(), default=0), maps_target=0 if UNBAKED else MAPS,
+           maps_measured=MAP_SIZES, maps_undersized=sorted(k for k, v in MAP_SIZES.items() if v < MAPS),
            triangles=TRIS, turret_triangles=TURRET_TRIS, turrets=TURRET_NODES, door_triangles=DOOR_TRIS, doors=DOOR_NODES, surfaces=len([s for s in J.material_slots if s.material]), destruction=destruction,
            weapons=[dict(slot=i, weapon=wk, arc=arc, hard_points=by_slot.get(i, [])) for i, (wk, arc) in enumerate(WEAPONS)],
            slots_without_hard_points=missing, hardpoints=counts, length_world=LENGTH_WORLD, sheet=sc.get('r209_sheet', ''),
@@ -645,6 +656,9 @@ rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, 
            not_written=['<CODE>_wreck.glb (the death pieces)', '<CODE>_damage.glb and the skin_<n> hull patches (breach damage)',
                         '<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)'])
 json.dump(rep, open(os.path.join(OUT, CODE + '_export.json'), 'w'), indent=1)
+if not UNBAKED and rep['maps_undersized']:
+    print('[export7] UNDERSIZED maps (the source bake is smaller than the %d target; rebake at stage 5, this export is not complete): %s'
+          % (MAPS, ', '.join('%s %d' % (k, MAP_SIZES[k]) for k in rep['maps_undersized'])), flush=True)
 print('[export7]', CODE, 'triangles', TRIS, 'hard points', json.dumps(counts), 'turrets', len(TURRET_NODES), f'({TURRET_TRIS} triangles)', 'doors', len(DOOR_NODES), f'({DOOR_TRIS} triangles)', 'files', sorted(files), flush=True)
 if missing:
     die('no hard point for ' + ', '.join(missing))
