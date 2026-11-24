@@ -167,7 +167,22 @@ func _fx_work(node) -> String:
 	var ins := PackedStringArray()
 	for k in _draw_ins: ins.append("%s %d" % [str(k), int(_draw_ins[k])])
 	_draw_ins = {}
-	return said + (" (hull prep step at the draw: %s)" % step if step != "" else "") + (", installed before the draw: " + ", ".join(ins) if not ins.is_empty() else "")
+	return said + (" (hull prep step at the draw: %s)" % step if step != "" else "") + (", installed before the draw: " + ", ".join(ins) if not ins.is_empty() else "") + _reads_note(node)
+
+
+# issue 1434 (LOAD30d): the battle's hull reads that finished since the last row (", hull reads finished 3 of 8")
+var _reads_seen := {}
+
+
+func _reads_note(node) -> String:
+	if node == null or not is_instance_valid(node) or not node.has_method("hull_reads_done"):
+		return ""
+	var id: int = node.get_instance_id()
+	var done: int = node.hull_reads_done()
+	var was: int = int(_reads_seen.get(id, 0))
+	_reads_seen[id] = done
+	var total: int = (node.get("_preload") as Dictionary).size() if node.get("_preload") is Dictionary else 0
+	return ", hull reads finished %d of %d" % [done - was, total] if done > was else ""
 
 
 # Performance.TIME_PROCESS read after a frame's await is the step before it (the battle's coroutine runs ahead of the

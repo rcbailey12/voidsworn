@@ -1190,6 +1190,17 @@ func _preload_hulls(v: Dictionary) -> void:
 			_preload[p] = null
 
 
+# issue 1434 (LOAD30d warm title: a 1131 ms draw in the backdrop's start with one pipeline and no viewport time, just
+# after the hull reads were asked for): how many of this load's hull reads have finished, so the load bench can put a
+# long draw against the reads (and the textures they upload) that landed before it
+func hull_reads_done() -> int:
+	var n := 0
+	for p in _preload:
+		if _preload[p] != null or ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_LOADED:
+			n += 1
+	return n
+
+
 # every threaded request is collected once (an uncollected one keeps its resource alive to the end of the process), and
 # every worker instantiation is waited for; an instance never handed to a ship is freed. wait false (leaving the tree,
 # Artoo on PR 1445): what is still running is handed to ShipView.retire_build and collected over the next frames, so a

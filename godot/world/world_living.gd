@@ -1425,7 +1425,13 @@ func use_ship_debris(ships: Array) -> void:
 # issue 1434 (LOAD29 cold s25: the 7 chunk meshes landed in one prepare_hulls draw, 83 pipelines and 7 s): true while the
 # chunks are still being cut on the worker, so the battle's load waits and stages them in with the rest
 func debris_pending() -> bool:
-	return _chunk_task >= 0
+	return _chunk_task >= 0 or _installing
+
+
+# issue 1434 (LOAD30d cold s25: the 7 chunks added in one frame compiled 59 surface pipelines in its draw, 5.7 s; a
+# mesh's surface pipelines are made when it joins the scene, whatever layer it draws on): while a battle is loading
+# the chunks join one a frame
+var _installing := false
 
 
 func _install_chunks() -> void:
@@ -1450,7 +1456,7 @@ func _install_chunks() -> void:
 	var radii := {}
 	# Replace one existing kit slot per hex, preserving its size, pose and total
 	# count. Keep the other kit shapes visible alongside the painted fleet chunks.
-	for slot in _wreck_slots:
+	for slot in _wreck_slots.duplicate():   # issue 1434: the loop may span frames
 		var mi := MeshInstance3D.new()
 		mi.mesh = meshes[index % meshes.size()]
 		index += 1
@@ -1466,13 +1472,20 @@ func _install_chunks() -> void:
 		var pivot := Node3D.new()
 		pivot.transform = Transform3D((slot.xf as Transform3D).basis.orthonormalized(), slot.xf.origin)
 		holder.add_child(pivot)
-		pivot.add_child(mi)
 		mi.scale = Vector3.ONE * scale_v
 		mi.position = -box.get_center() * scale_v
+		pivot.add_child(mi)
 		var id: int = slot.mmi.get_instance_id()
 		if not replaced.has(id): replaced[id] = {"mmi": slot.mmi, "indices": []}
 		replaced[id].indices.append(int(slot.index))
 		_hull_spin.append([pivot, Vector3.UP if slot.get("orbiting", false) else (slot.axis as Vector3).normalized(), float(slot.get("rate", tumble_rate(float(slot.scale))))])
+		if not get_tree().get_nodes_in_group("battle_loading").is_empty():
+			_installing = true
+			await get_tree().process_frame
+			if not is_inside_tree() or not is_instance_valid(holder):
+				_installing = false
+				return
+	_installing = false
 	# Compact each affected draw once. Do not hide a replaced slot with a zero
 	# scale: a singular normal matrix can feed NaNs into lighting and bloom.
 	for group in replaced.values():
