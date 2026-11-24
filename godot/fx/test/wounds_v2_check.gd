@@ -324,9 +324,14 @@ func _run() -> void:
 		var ceil_w: float = 0.45 if faction == "ithar" else 0.11
 		var floor_w: float = 0.2 if faction == "ithar" else 0.025
 		check(float(lift.max()) <= ceil_w and mean >= floor_w and mean <= ceil_w - 0.01, "%s: wound interior lift within its ceiling %.2f (mean %.3f)" % [faction, ceil_w, mean])
-		var wm: float = float(BREACH.wound_of(faction).get("wall_max", -1.0))
+		# Artoo on 8361e0c8: the ceiling is asserted through the real material parameter, 0.45 exactly for the
+		# Glasswrights and 0.11 for the rest; a built-interior table entry (1743) must agree with the wound profile
+		var wmat := HULL.interior_material_v2(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, BREACH.wound_of(faction), 24.0)
+		var wm: float = float(wmat.get_shader_parameter("v2_wall_max"))
+		var want_wm: float = 0.45 if faction == "ithar" else 0.11
 		var iv = FL.of(faction).get("interior", {})
-		check(wm == (float(iv.get("wall_max", 0.11)) if iv is Dictionary else 0.11) and (faction == "ithar" or wm == 0.11), "%s: the interior wall ceiling reaches the wound profile (%.2f)" % [faction, wm])
+		var table_ok: bool = not (iv is Dictionary and (iv as Dictionary).has("wall_max")) or is_equal_approx(float(iv["wall_max"]), want_wm)
+		check(is_equal_approx(wm, want_wm) and table_ok, "%s: the interior material's wall ceiling is %.2f (want %.2f; interior table agrees %s)" % [faction, wm, want_wm, str(table_ok)])
 	check(SH.INTERIOR.contains("lit *= lm > v2_wall_max ? v2_wall_max / lm : 1.0;") and SH.INTERIOR.contains("uniform float v2_wall_max = 0.11;") and SH.INTERIOR.contains("soft *= pk > 0.25 ? 0.25 / pk : 1.0;"), "R420: the interior shader holds walls to the faction ceiling (0.11 default) and non-core glow to 0.25 by scaling the colour")
 	check(not SH.INTERIOR.contains("vec3(0.09, 0.1, 0.1) * r.x"), "Ryan Nov 24: a Glasswright wreck's inside goes to pale frosted pearl, never dark grey")
 	var ch: Dictionary = FL.of("chorus")["wound"]

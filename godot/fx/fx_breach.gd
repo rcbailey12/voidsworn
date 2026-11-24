@@ -2021,10 +2021,13 @@ static func wound_of(faction: String) -> Dictionary:
 	if not w is Dictionary:
 		return {}
 	# Ryan's Glasswright interiors pick (Nov 24: "it's just....dark grey? it will look extremely odd as wreckage"): a
-	# faction's interior wall ceiling is its interior.wall_max (Glasswrights 0.45, pale pearl glass); every other faction
-	# keeps the R420 0.11. The wound profile carries it, so the interior shader and its checks read one value
+	# faction's interior wall ceiling is its wound wall_max (Glasswrights 0.45, pale pearl glass); every other faction
+	# keeps the R420 0.11. A built-interior table entry (issue 1743, interior.wall_max) wins where it is set; the
+	# check holds the two equal
 	var iv = FL.of(faction).get("interior", {})
-	var wm: float = float(iv.get("wall_max", 0.11)) if iv is Dictionary else 0.11
+	var wm: float = float((w as Dictionary).get("wall_max", 0.11))
+	if iv is Dictionary and (iv as Dictionary).has("wall_max"):
+		wm = float(iv["wall_max"])
 	if not (w as Dictionary).has("wall_max") or float(w["wall_max"]) != wm:
 		w = (w as Dictionary).duplicate()
 		w["wall_max"] = wm
