@@ -20,10 +20,10 @@ extends RefCounted
 
 const BONE := Color(0.66, 0.55, 0.38)       # pale bone chips
 const HORN := Color(0.22, 0.16, 0.10)       # dark horn chips (the splints)
-const SPEED := 52.0      # world units a second, times fx.unit
+const SPEED := 40.0      # world units a second, times fx.unit (slower than a gun round, so the thorn reads in flight at camera 170)
 const WIND := 0.30       # the gland's swell before the shot
 const GAP := 0.35        # spacing of the two shots, times the volley beat
-const SCALE := 1.6       # the body against the munition frame (2.3 long): Ryan's pick "bigger, so it reads at camera 170"
+const SCALE := 2.1       # the body against the munition frame (2.3 long): Ryan's pick "bigger, so it reads at camera 170" (1.6 read as a few pixels in the cloud clip)
 const STICK := 1.15      # seconds the thorn stays stuck in the plating before it crumbles
 const CRUMBLE := 0.7     # seconds the crumble takes
 const TIP := 1.15        # the point's distance from the body's origin, in the munition frame

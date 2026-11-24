@@ -71,12 +71,6 @@ func _run() -> void:
 	if not hn.visible:
 		fails.append("the stuck thorn is not shown")
 	var rel0: Transform3D = tgt.global_transform.affine_inverse() * hn.global_transform
-	# the missed thorn flew on past its aim point
-	var mn := miss["node"] as Node3D
-	if fx.now < float(miss["end"]) and mn.visible:
-		var past: float = (mn.global_position - (miss["b"] as Vector3)).dot(miss["dir"])
-		if past <= 0.0:
-			fails.append("the missed thorn did not fly on past (%.2f)" % past)
 	# move and turn the target while the thorn is stuck: the thorn keeps its place on the hull
 	tgt.position += Vector3(6, 0, 3)
 	tgt.rotate_y(0.6)
@@ -86,6 +80,16 @@ func _run() -> void:
 	var drift := rel1.origin.distance_to(rel0.origin)
 	if drift > 0.15:
 		fails.append("the stuck thorn left the moving hull by %.2f" % drift)
+	# the missed thorn flew on past its aim point
+	while fx.now < float(miss["t1"]) + 0.2:
+		fx.step(1.0 / 60.0)
+	var mn := miss["node"] as Node3D
+	if not mn.visible:
+		fails.append("the missed thorn vanished at its aim point")
+	else:
+		var past: float = (mn.global_position - (miss["b"] as Vector3)).dot(miss["dir"])
+		if past <= 0.0:
+			fails.append("the missed thorn did not fly on past (%.2f)" % past)
 	# the target dies: the stuck thorn goes with it
 	fx.death("hegemony_0", "blast")
 	for i in 3:
