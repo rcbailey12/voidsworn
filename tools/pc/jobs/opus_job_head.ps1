@@ -1295,10 +1295,14 @@ switch ($Action) {
             if ($why) { break }
             $sf = Join-Path $dir ($sp.Name.Replace('/', $sep)); $want = @($sp.Value)
             $there = Test-Path -LiteralPath $sf -PathType Leaf
-            if ($want.Count -lt 3) { if ($there) { $why = "$($sp.Name) exists but was missing when cached" }; continue }
+            # [] = missing when cached; [mtime, size] (older stamps, glbs) = time and size as before; [mtime, size, sha256] adds the hash
+            if ($want.Count -eq 0) { if ($there) { $why = "$($sp.Name) exists but was missing when cached" }; continue }
             if (-not $there) { $why = "$($sp.Name) missing"; continue }
-            if ((Get-Item -LiteralPath $sf).Length -ne [long]$want[1]) { $why = "$($sp.Name) size differs"; continue }
-            if ((Get-FileHash -LiteralPath $sf -Algorithm SHA256).Hash -ne [string]$want[2]) { $why = "$($sp.Name) hash differs" }
+            $fi = Get-Item -LiteralPath $sf
+            if ($fi.Length -ne [long]$want[1]) { $why = "$($sp.Name) size differs"; continue }
+            if ($want.Count -ge 3) {
+              if ((Get-FileHash -LiteralPath $sf -Algorithm SHA256).Hash -ne [string]$want[2]) { $why = "$($sp.Name) hash differs" }
+            } elseif (([DateTimeOffset]$fi.LastWriteTimeUtc).ToUnixTimeSeconds() -ne [long]$want[0]) { $why = "$($sp.Name) time differs" }
           }
         }
         if (-not $why) { $srcOk = $true; $stamp = 'json:' + (@($sj.PSObject.Properties | ForEach-Object { '{0}={1}' -f $_.Name, (@($_.Value) -join ',') }) -join ';') }
