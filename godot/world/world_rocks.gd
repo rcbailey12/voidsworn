@@ -503,11 +503,13 @@ static func material(kind: String, look: Dictionary) -> ShaderMaterial:
 
 # Collects rock instances per (mesh, layer) and builds one MultiMeshInstance3D each.
 class Batch:
+	const Scorch := preload("res://fx/terrain_scorch.gd")
 	var groups := {}     # key -> {mesh, mat, shadow, xf: [], cd: []}
 	var dust_materials := {}
 	var legacy_debris_materials := {}
+	var _marked: Array[Dictionary] = []
 
-	func add(mesh_name: String, mat: Material, shadow: bool, xf: Transform3D, spin_axis: Vector3, rate: float, seed_v: float) -> void:
+	func add(mesh_name: String, mat: Material, shadow: bool, xf: Transform3D, spin_axis: Vector3, rate: float, seed_v: float, scorch := false) -> void:
 		# Dust-size rocks keep rockgen's light meshes. Large silhouettes use the
 		# scans, at the same radius as the old library, so blocker rules stay put.
 		if mesh_name.begins_with("scan_"):
@@ -520,9 +522,9 @@ class Batch:
 					dust_mat.set_shader_parameter("scanned", false)
 					dust_materials[mat_id] = dust_mat
 				mat = dust_materials[mat_id]
-		var key := "%s|%d|%d" % [mesh_name, mat.get_instance_id(), 1 if shadow else 0]
+		var key := "%s|%d|%d%s" % [mesh_name, mat.get_instance_id(), 1 if shadow else 0, "|scorch" if scorch else ""]
 		if not groups.has(key):
-			groups[key] = {"mesh": mesh_name, "mat": mat, "shadow": shadow, "xf": [], "cd": []}
+			groups[key] = {"mesh": mesh_name, "mat": mat, "shadow": shadow, "xf": [], "cd": [], "scorch": scorch}
 		groups[key]["xf"].append(xf)
 		var a := spin_axis.normalized() * rate
 		groups[key]["cd"].append(Color(a.x, a.y, a.z, seed_v))
@@ -555,5 +557,53 @@ class Batch:
 			# Give the bounds room for the shader's fixed seeded pose.
 			mmi.extra_cull_margin = 40.0
 			parent.add_child(mmi)
+			if g["scorch"]:
+				_mark_blockers(mmi, g)
 			n += mm.instance_count
 		return n
+
+	func _mark_blockers(receiver: MultiMeshInstance3D, group: Dictionary) -> void:
+		var mm := receiver.multimesh
+		var mat := receiver.material_override as ShaderMaterial
+		var shape := float(mat.get_shader_parameter("shape_k"))
+		var tumble := float(mat.get_shader_parameter("tumble_k"))
+		for i in mm.instance_count:
+			var base: Transform3D = group["xf"][i]
+			var custom: Color = group["cd"][i]
+			var spin := Vector3(custom.r, custom.g, custom.b)
+			var axis := spin.normalized() if spin.length_squared() > 0.0 else Vector3.UP
+			var angle := TAU * custom.a if spin.length_squared() > 0.0 else 0.0
+			var pose := base * Transform3D(Basis(axis, angle), Vector3.ZERO)
+			var squash := _scorch_shape(mm.mesh.get_aabb().size, shape, custom.a)
+			var hit := Scorch.surface_hit(mm.mesh, receiver.global_transform * pose * Transform3D(squash, Vector3.ZERO))
+			var mark := Scorch.stamp(receiver, hit, 3.2, _marked.size() % 2 == 1)
+			if mark == null:
+				continue
+			receiver.layers |= Scorch.RECEIVER
+			# Move the seeded tumble into the instance transform so the decal follows the surface.
+			mm.set_instance_custom_data(i, Color(0, 0, 0, custom.a))
+			mm.set_instance_transform(i, pose)
+			_marked.append({"mesh": mm, "index": i, "base": base, "axis": axis, "angle": angle,
+				"rate": spin.length() * tumble, "decal": mark, "local": pose.affine_inverse() * mark.transform})
+
+	static func _scorch_shape(extent: Vector3, shape: float, seed_v: float) -> Basis:
+		# Same local squeeze as ROCK_SHADER. Include it in the surface query, while the shader still draws it.
+		if is_zero_approx(shape):
+			return Basis.IDENTITY
+		var e := extent.max(Vector3.ONE * 0.001)
+		var k := shape * (0.6 + 0.8 * fposmod(seed_v * 431.7, 1.0))
+		var ratio := e / e[e.max_axis_index()] if k > 0.0 else Vector3.ONE * e[e.min_axis_index()] / e
+		var squeeze := Vector3(pow(ratio.x, absf(k)), pow(ratio.y, absf(k)), pow(ratio.z, absf(k)))
+		squeeze = squeeze.clamp(Vector3.ONE * 0.55, Vector3.ONE)
+		var drawn := e * squeeze
+		squeeze = squeeze.max(Vector3.ONE * (0.32 * drawn[drawn.max_axis_index()]) / e).min(Vector3.ONE)
+		return Basis.from_scale(squeeze)
+
+	func step(dt: float) -> void:
+		for entry in _marked:
+			if is_zero_approx(entry["rate"]):
+				continue
+			entry["angle"] = fposmod(float(entry["angle"]) + float(entry["rate"]) * dt, TAU)
+			var pose: Transform3D = entry["base"] * Transform3D(Basis(entry["axis"], entry["angle"]), Vector3.ZERO)
+			(entry["mesh"] as MultiMesh).set_instance_transform(entry["index"], pose)
+			(entry["decal"] as Decal).transform = pose * entry["local"]

@@ -1,9 +1,14 @@
 .godot/
 gen/
 *.import
+# LUTs require the Texture3D importer and explicit slice layout on a fresh checkout.
+!assets/luts/*.png.import
 # Per-hull ship assets are built on the PC and copied in for captures; only the manifest, README, scripts and previews are tracked.
 assets/ships/*/
 !assets/ships/previews/
 !assets/ships/test/
+# Issue 1777: the six faction micro-detail maps are tracked source art, with their import settings (normal maps as normal maps)
+!assets/ships/detail/
+!assets/ships/detail/*.import
 # Godot 4 regenerates .uid files; the repo does not track new ones.
 *.uid

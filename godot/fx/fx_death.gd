@@ -538,13 +538,28 @@ static func _fold(v: Vector3, crease: float, bend: float) -> Vector3:
 
 # `damp` (issue 1077's prototype): the plates slow and settle instead of drifting off for good; 0, the default, is today's
 # constant drift. A pooled plate takes the damping of the death that last threw it.
-static func spawn_debris(fx, pos: Vector3, vel: Vector3, count: int, size: float, damp := 0.0, leash := "") -> void:
+static func spawn_debris(fx, pos: Vector3, vel: Vector3, count: int, size: float, damp := 0.0, piece := {}) -> void:
 	var t0 := Time.get_ticks_usec()
-	_spawn_debris_inner(fx, pos, vel, count, size, damp, leash)
+	_spawn_debris_inner(fx, pos, vel, count, size, damp, piece)
 	fx.pend("debris", t0)
 
 
-static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size: float, damp := 0.0, leash := "") -> void:
+static func _spawn_ship_debris(fx, s, pos: Vector3, vel: Vector3, count: int, size: float, damp: float) -> void:
+	spawn_debris(fx, pos, vel, count, size, damp, _debris_spec(s))
+
+
+static func _debris_spec(s) -> Dictionary:
+	if not s.has_meta("death_debris"):
+		s.set_meta("death_debris", {"leash": s.id, "dstyle": dstyle(s)})
+	return s.get_meta("death_debris")
+
+
+static func _debris_rim(piece: Dictionary) -> Color:
+	var rim = piece.get("dstyle", {}).get("rim")
+	return rim if rim is Color else Color(1.0, 0.34, 0.05)
+
+
+static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size: float, damp: float, piece: Dictionary) -> void:
 	var st: Dictionary = fx.dstate
 	if not bool(st.get("physics_on", false)) or count <= 0:
 		return
@@ -607,8 +622,8 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 		b.angular_velocity = Vector3(fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6)) * spd
 		b.linear_damp = damp
 		b.angular_damp = damp * 0.5
-		# issue 1236: a plate from a wreck that blocks its hex is kept in that hex (_leash); a reused plate forgets its old one
-		b.set_meta("leash_id", leash)
+		# A reused plate takes this throw's leash and rim, even after the live hull is gone.
+		b.set_meta("debris_piece", piece)
 		b.remove_meta("leash_born")
 		b.sleeping = false
 		b.visible = true
@@ -617,7 +632,7 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 		# Headless uses the dummy server even though the configured method still says forward_plus.
 		if DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "dummy" and mesh.material_override != null:
 			mesh.set_instance_shader_parameter("spawn_t", fx.now)
-			mesh.set_instance_shader_parameter("rim_col", dcol(fx.ships.get(leash), "rim", Color(1.0, 0.34, 0.05)))
+			mesh.set_instance_shader_parameter("rim_col", _debris_rim(piece))
 
 
 # Issue 1237: the plates still flying. Past DEBRIS_FREE_S a plate takes the settle damping (or keeps a stronger one it was
@@ -2269,6 +2284,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 	s.set_meta("death_wall_usec", Time.get_ticks_usec())   # issue 1232: the break's wait for a late cut is in real time
 	s.remove_collider()
 	if cause == "melt" and s.faction != "chorus": s.set_meta("death_melt", true)
+	_debris_spec(s)
 	s.set_meta("death_cause", cause)   # issue 1586 (fx_death_beats.gd)
 	if s.squadron:
 		return _wing_death(fx, s)
@@ -2870,7 +2886,7 @@ static func _groan(fx, s, i: int) -> void:
 			fx.stk(p, fx.now, 0.32 + 0.1 * fx.rng.randf(), dcol(s, "spark", Color(1.0, 0.66, 0.32)), 2.6, L * 0.018, 0.035, 1, inherited + d * L * fx.rng.randf_range(0.25, 0.45), 1.6, 0.0, 1.5, 6.0)
 		# (Ryan on pass 4B, "way too much smoke": the groans keep their sparks, the breath of gas is gone)
 	if i % 2 == 1:
-		spawn_debris(fx, p + nw * L * 0.015, inherited + nw * L * 0.05, 1, L * 0.008, 0.9, s.id)
+		_spawn_ship_debris(fx, s, p + nw * L * 0.015, inherited + nw * L * 0.05, 1, L * 0.008, 0.9)
 	if s.death_tier == "capital":
 		s.set_meta("death_jolt", fx.now)
 
@@ -3216,7 +3232,7 @@ static func _patch_plate(fx, s) -> void:
 	var pw: Vector3 = s.to_world(hit["p"])
 	var nw: Vector3 = (s.xf().basis * (hit.get("n", Vector3.UP) as Vector3)).normalized()
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-	spawn_debris(fx, pw + nw * h.L * 0.01, inherited + (nw + fx.rdir() * 0.4).normalized() * h.L * 0.09, 1, h.L * 0.035, STORY_DEBRIS_DAMP, s.id)
+	_spawn_ship_debris(fx, s, pw + nw * h.L * 0.01, inherited + (nw + fx.rdir() * 0.4).normalized() * h.L * 0.09, 1, h.L * 0.035, STORY_DEBRIS_DAMP)
 	fx.stk(pw, fx.now, 0.35, dcol(s, "spark", Color(1.0, 0.5, 0.2)), 3.0, 0.04, maxf(h.L * 0.003, 0.03), 1, nw * h.L * 0.15, 0.8, 0.0, 1.5, 5.0)
 
 
@@ -3280,7 +3296,7 @@ static func _peel_band(fx, s, b: int, bands: int) -> void:
 		if hit.is_empty(): continue
 		var pw: Vector3 = s.to_world(hit["p"])
 		var nw: Vector3 = (s.xf().basis * (hit.get("n", Vector3.UP) as Vector3)).normalized()
-		spawn_debris(fx, pw + nw * h.L * 0.01, inherited + nw * h.L * 0.06, 1, h.L * 0.03, STORY_DEBRIS_DAMP, s.id)
+		_spawn_ship_debris(fx, s, pw + nw * h.L * 0.01, inherited + nw * h.L * 0.06, 1, h.L * 0.03, STORY_DEBRIS_DAMP)
 		fx.stk(pw, fx.now, 0.35, dcol(s, "spark", Color(1.0, 0.62, 0.3)), 3.0, 0.04, maxf(h.L * 0.003, 0.03), 1, nw * h.L * 0.15, 0.8, 0.0, 1.5, 5.0)
 
 
@@ -3473,9 +3489,9 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 	if organic:
 		_organic_spill(fx, center, h.L, tint)
 	elif calm:
-		spawn_debris(fx, center, inherited, 2 + w * 2, h.L * 0.025, STORY_DEBRIS_DAMP, s.id)
+		_spawn_ship_debris(fx, s, center, inherited, 2 + w * 2, h.L * 0.025, STORY_DEBRIS_DAMP)
 	else:
-		spawn_debris(fx, center, inherited, 4 + w * 3, h.L * 0.025, 0.0, s.id)
+		_spawn_ship_debris(fx, s, center, inherited, 4 + w * 3, h.L * 0.025, 0.0)
 	fx.punch(T, 0.018 if s.death_big else 0.006, center)
 	fx.shake(T, 0.45 if s.death_big else 0.18, center)
 	# the pieces: real parts of the hull, as rigid bodies that drift and burn
@@ -3671,7 +3687,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		BEATS.roll_end(fx, s, flash_site, inherited)
 		fx.resolve_death_core(s, true)
 		if pieces.is_empty():
-			spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0, s.id)
+			_spawn_ship_debris(fx, s, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0)
 		return
 	_core_flash(fx, flash_site, R, 70.0, tint, null, Vector3.ZERO, s, s.death_tier, xf)
 	if str(dstyle(s).get("style", "")) == "shatter": _glitter(fx, s, flash_site, h.L * 0.6)
@@ -3684,7 +3700,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		# Restored by the Board (Muse opus_check_701 condition 1): a hull with no pre-cut pieces at the kill frame (a class
 		# without buckets, or a cut job not ready) still throws one pooled physical shard and a visible ember, never light
 		# and smoke alone.
-		spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0, s.id)
+		_spawn_ship_debris(fx, s, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0)
 		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, 19, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
 
 
@@ -3754,12 +3770,12 @@ static func _throw_frags(fx, s, wreck: Dictionary, plan: Dictionary, lip_ref: We
 	var p: Vector3 = frame * (bc + out_l * float(bite["ry"]) * 1.2)
 	var big := tl.tier == "capital"
 	if fx.death_story:
-		spawn_debris(fx, p, inherited, 6 if big else 4, L * 0.012, STORY_DEBRIS_DAMP, s.id)
-		spawn_debris(fx, p, inherited, 2, L * 0.03, STORY_DEBRIS_DAMP, s.id)
+		_spawn_ship_debris(fx, s, p, inherited, 6 if big else 4, L * 0.012, STORY_DEBRIS_DAMP)
+		_spawn_ship_debris(fx, s, p, inherited, 2, L * 0.03, STORY_DEBRIS_DAMP)
 		return
 	# Issue 484 profiling: each plate is a physics body; keep the cloud lean (it adds to the plates at the break)
-	spawn_debris(fx, p, inherited, 10 if big else 7, L * 0.012, 0.0, s.id)
-	spawn_debris(fx, p, inherited, 4 if big else 3, L * 0.03, 0.0, s.id)
+	_spawn_ship_debris(fx, s, p, inherited, 10 if big else 7, L * 0.012, 0.0)
+	_spawn_ship_debris(fx, s, p, inherited, 4 if big else 3, L * 0.03, 0.0)
 
 
 # A fast radial spill of luminous spores and darker membrane clots, near the board.
@@ -4064,8 +4080,12 @@ static func leashed_nodes(fx, id: String, main_only := false) -> Array:
 			if is_instance_valid(nd): out.append(nd)
 	if main_only: return out
 	for b in fx.dstate.get("debris", []):
-		if is_instance_valid(b) and b.visible and str(b.get_meta("leash_id", "")) == id: out.append(b)
+		if is_instance_valid(b) and b.visible and _debris_leash(b) == id: out.append(b)
 	return out
+
+
+static func _debris_leash(body: RigidBody3D) -> String:
+	return body.get_meta("debris_piece", {}).get("leash", "")
 
 
 static func _leash_mark(fx) -> void:
@@ -4078,7 +4098,7 @@ static func _leash_mark(fx) -> void:
 			if is_instance_valid(nd): _born(nd, an)
 	for b in fx.dstate.get("debris", []):
 		if not is_instance_valid(b) or not b.visible: continue
-		var an = anchors.get(str(b.get_meta("leash_id", "")))
+		var an = anchors.get(_debris_leash(b))
 		if an != null: _born(b, an)
 
 
@@ -4137,7 +4157,7 @@ static func _leash(fx, dt: float) -> void:
 			_leash_clamp(nd, an, _rest_limit(nd, an, true) if settled else -1.0)
 	for b in fx.dstate.get("debris", []):
 		if not is_instance_valid(b) or not b.visible or b.sleeping: continue
-		var an = anchors.get(str(b.get_meta("leash_id", "")))
+		var an = anchors.get(_debris_leash(b))
 		if an == null: continue
 		b.linear_velocity = _leash_vel(b, b.linear_velocity, an, dt)
 		_leash_clamp(b, an)

@@ -136,6 +136,8 @@ static func retired_build_count() -> int:
 static func clear_look_cache() -> void:
 	_keep_shaders()
 	_look_cache.clear()
+	if ResourceLoader.exists("res://render/look.gd"):
+		load("res://render/look.gd").clear_fit_cache()   # issue 1777: the per-fit-scale copies of those materials
 
 
 # Issue 1434 (LOAD5 on the PC: the first Sunward hull of each battle spent 460 to 500 ms in _look). A hull material's
@@ -479,6 +481,23 @@ func _look_some(budget_us: int) -> bool:
 	return true
 
 
+# Issue 1777: the V2 micro-detail grain keeps one size in game units on every hull (look.gd detail_fit). Off: nothing to do.
+func _detail_fit(k: float) -> void:
+	if not ResourceLoader.exists("res://render/look.gd"):
+		return
+	var LOOK = load("res://render/look.gd")
+	if not LOOK.ship_look_v2_enabled():
+		return
+	for m in meshes:
+		var mi := m as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for i in mi.get_surface_override_material_count():
+			var mat := mi.get_surface_override_material(i)
+			if mat != null:
+				mi.set_surface_override_material(i, LOOK.fitted(mat, k))   # its own copy per fitted scale (Board audit, PR 1786)
+
+
 func _collect(n: Node) -> void:
 	for c in n.get_children():
 		if String(c.name).begins_with("fx_"):
@@ -505,6 +524,7 @@ func _fit() -> void:
 	var c := box.get_center()
 	hull.transform = Transform3D(Basis(Vector3.UP, yaw_fix).scaled(Vector3(k, k, k if a4 else -k)), Vector3.ZERO)
 	hull.position = -(hull.transform.basis * c)
+	_detail_fit(k)
 	var variant_lift := 0.0
 	if code == str(u.get("tpl", "")):
 		variant_lift = float(HT.HULL_LIFT.get(HT.code_for(fac, str(u.get("cls", ""))), 0.0))
