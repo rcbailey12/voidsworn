@@ -3630,7 +3630,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 			main_i = i
 	var phys = bool(fx.dstate.get("physics_on", false))
 	# issue 1236 round 4: how this wreck breaks up (two, three or a late snap) and where each piece comes to rest
-	var bu := _breakup_layout(fx, s, plan, pieces, n_main, xf, cause) if story else {}
+	var bu := _breakup_layout(fx, s, plan, pieces, n_main, xf, cause, inherited) if story else {}
 	wreck["frags"] = []
 	wreck["scorch_mats"] = []
 	if melting(s):
@@ -3757,10 +3757,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 			# turned to its planned angle (some lie diagonal), so the pieces spread across the hex and never run together
 			# Fable on 33561155: the dying hull's own drift carries on and dies away with the rest (capped at a tenth of
 			# the length, so a ship killed mid-move still settles in its hex)
-			var drift: Vector3 = inherited / BREAKUP_K_LIN
-			drift.y = 0.0
-			drift = drift.limit_length(s.hull.L * 0.05)
-			var disp_i: Vector3 = (bu["disp"][i] as Vector3) + drift
+			var disp_i: Vector3 = bu["disp"][i]   # the drift is in it (_breakup_layout), so the hex bound holds for it too
 			vel = disp_i * BREAKUP_K_LIN
 			# a pure turn on the board plane: any roll or pitch would lift a glued piece's end off the wreck's altitude
 			ang = Vector3(0.0, float(bu["yaw"][i]) * BREAKUP_K_ANG, 0.0)
@@ -4087,7 +4084,7 @@ static func _pick_breakup_for(id: String, tier: String, last, cause: String) -> 
 
 # The rest spots, as displacements on the board plane from where each piece broke, and the turn about the vertical each
 # piece makes on the way. disp and yaw are per main piece (x order); child is the piece glued across the unbroken joint.
-static func _breakup_layout(fx, s, plan: Dictionary, pieces: Array, n_main: int, xf: Transform3D, cause := "blast") -> Dictionary:
+static func _breakup_layout(fx, s, plan: Dictionary, pieces: Array, n_main: int, xf: Transform3D, cause := "blast", inherited := Vector3.ZERO) -> Dictionary:
 	if n_main != 3 or plan.is_empty() or not bool(plan.get("breakup", false)): return {}
 	# a ram's hard spin and the dead star's pull keep their own motion (audit: the plan overwrote them); three pieces part
 	if s.has_meta("death_spin") or cause == "tidal": return {}
@@ -4138,27 +4135,52 @@ static func _breakup_layout(fx, s, plan: Dictionary, pieces: Array, n_main: int,
 		# the snapped piece leaves the pair away from its parent, along the line
 		var away := ax if child > parent else -ax
 		out["snap_disp"] = away * d_ax * 1.1 + lat * d_lat * 0.7 * -side
+	# Fable on 33561155: the dying hull's own drift carries on and dies away with the rest (capped at a twentieth of the
+	# length, so a ship killed mid-move still settles in its hex). It is the same for every piece, so it never parts them.
+	var drift: Vector3 = inherited / BREAKUP_K_LIN
+	drift.y = 0.0
+	drift = drift.limit_length(L * 0.05)
 	# a long hull's end pieces already start far out of an anchored hex: their parting is shortened so no piece's middle
 	# rests more than BREAKUP_HEX_REACH rest radii from the hex (wreck_hex_check, a dreadnought in a real battle)
 	var an = (fx.dstate.get("anchors", {}) as Dictionary).get(s.id)
 	if an != null:
 		var reach: float = float(an["r"]) * BREAKUP_HEX_REACH
 		var c0: Vector3 = an["c"]
+		var bases: Array = []
+		for i in n_main: bases.append(xf * _piece_cen(pieces[i]) - c0 + drift)
 		# one shrink for every piece, turns included: shortening one piece's parting while it still turns in full swung
 		# it into its neighbour (breakup_check, tight hex)
 		var k := 1.0
 		for i in n_main:
-			var base: Vector3 = xf * _piece_cen(pieces[i]) - c0
-			k = minf(k, _within_k(base, disp[i], reach))
-		if kind == "late" and child >= 0:
-			var cb: Vector3 = xf * _piece_cen(pieces[child]) + (disp[parent] as Vector3) * k - c0
-			k = minf(k, _within_k(cb, out["snap_disp"], reach))
+			if i != child: k = minf(k, _within_k(bases[i], disp[i], reach))
 		if k < 1.0:
 			for i in n_main:
 				disp[i] = (disp[i] as Vector3) * k
 				yaw[i] = float(yaw[i]) * k
-			out["snap_disp"] = (out["snap_disp"] as Vector3) * k
-			out["snap_yaw"] = float(out["snap_yaw"]) * k * k   # the snapped piece swings past its parent's torn face: it turns least
+		# Artoo on db791b40: where even the least parting leaves a middle out of reach (a piece starting near the edge,
+		# the drift, or a late snap), the whole wreck's rest spots move in together, which keeps every gap between pieces.
+		# A wreck too long to fit at all ends centred on its hex, as far out at each end.
+		var shift := Vector3.ZERO
+		for it in 24:
+			var worst := 0.0
+			var wdir := Vector3.ZERO
+			for i in n_main:
+				var at: Vector3 = bases[i] + shift
+				if i == child:
+					# it rides its parent, turning with it, then (late) snaps on from there
+					var off: Vector3 = (bases[i] as Vector3) - (bases[parent] as Vector3)
+					at = (bases[parent] as Vector3) + shift + (disp[parent] as Vector3) + Basis(Vector3.UP, float(yaw[parent])) * off
+					if kind == "late": at += out["snap_disp"]
+				else: at += disp[i]
+				var flat := Vector2(at.x, at.z)
+				if flat.length() - reach > worst:
+					worst = flat.length() - reach
+					wdir = Vector3(flat.x, 0.0, flat.y).normalized()
+			if worst <= 0.001: break
+			shift -= wdir * (worst * 0.5 + 0.001)
+		if shift != Vector3.ZERO: out["hex_shift"] = shift
+		drift += shift
+	for i in n_main: disp[i] = (disp[i] as Vector3) + drift
 	return out
 
 
@@ -4220,12 +4242,25 @@ static func _glue(fx, s, wreck: Dictionary, bu: Dictionary) -> void:
 static func _snap(fx, s, wreck: Dictionary, child, bu: Dictionary) -> void:
 	if not is_instance_valid(child) or child.is_queued_for_deletion() or not child.has_meta("glued"): return
 	if not fx.dstate["wrecks"].has(wreck): return
+	# Artoo on db791b40: the parent may still be on its way when the joint lets go (a long move in to the hex), so the
+	# snapped piece's rest is taken from where it would ride to with its parent, not from where it is at the snap
+	var disp: Vector3 = bu["snap_disp"]
+	var yaw := float(bu["snap_yaw"])
+	var pn = child.get_parent()
+	if pn is Node3D and (pn as Node3D).has_meta("rest_at"):
+		var ra: Vector2 = pn.get_meta("rest_at")
+		var rem := wrapf(float(pn.get_meta("rest_yaw")) - heading(pn), -PI, PI)
+		var off: Vector3 = child.global_position - (pn as Node3D).global_position
+		off.y = 0.0
+		var planned: Vector3 = Vector3(ra.x, 0.0, ra.y) + Basis(Vector3.UP, rem) * off
+		disp += planned - Vector3(child.global_position.x, 0.0, child.global_position.z)
+		yaw += rem
 	child.reparent(fx.phys_root, true)
 	child.remove_meta("glued")
 	var L: float = s.hull.L
-	var vel: Vector3 = (bu["snap_disp"] as Vector3) * BREAKUP_K_LIN
-	var ang := Vector3(0.0, float(bu["snap_yaw"]) * BREAKUP_K_ANG, 0.0)
-	_set_rest(child, bu["snap_disp"], float(bu["snap_yaw"]))
+	var vel: Vector3 = disp * BREAKUP_K_LIN
+	var ang := Vector3(0.0, yaw * BREAKUP_K_ANG, 0.0)
+	_set_rest(child, disp, yaw)
 	_release_section(fx, wreck, child, vel, ang, bu.get("child_mats", []), L, true, int(bu["child"]), s)
 	# Neon's audit (PR 1902, item 12): the chips held in the joint's notch let go with it, thrown slow and settling round
 	# the snap like the death's own chips (the leash keeps them in the hex), instead of riding a piece for good

@@ -40,6 +40,10 @@ func _run() -> void:
 	# WRECK5d: in a tight hex (a long hull) the end pieces' parting is shortened; they still never run together
 	await _breakup("high", "three", [-4.0, 4.0], INF, " (tight hex)", 4.0)
 	await _breakup("high", "late", [-4.0, 4.0], INF, " (tight hex)", 4.0)
+	# Artoo on db791b40: a hull drifting out of its hex as it dies, its end piece already near the edge (ships in a
+	# real fight move about a hex a turn, a few units a second)
+	await _breakup("high", "three", [-4.0, 4.0], INF, " (hex edge, drifting out)", 6.0, Vector3(3.0, 0.0, 0.6))
+	await _breakup("high", "late", [-4.0, 4.0], INF, " (hex edge, drifting out)", 6.0, Vector3(3.0, 0.0, 0.6))
 	await _warmed_late_hit()
 	await _middle_glued()
 	await _kinked_seam()
@@ -143,7 +147,7 @@ func _yaw(nd: Node3D) -> float:
 	return atan2(-x.z, x.x)
 
 
-func _breakup(quality: String, kind: String, joints := [-4.0, 4.0], hit_x := INF, tag_extra := "", hex_r := 0.0) -> void:
+func _breakup(quality: String, kind: String, joints := [-4.0, 4.0], hit_x := INF, tag_extra := "", hex_r := 0.0, vel := Vector3.ZERO) -> void:
 	var world := Node3D.new()
 	root.add_child(world)
 	var fx = _fx(world, quality)
@@ -154,6 +158,13 @@ func _breakup(quality: String, kind: String, joints := [-4.0, 4.0], hit_x := INF
 	var tag := "%s %s%s" % [quality, kind, tag_extra]
 	check(int((job.get("plan", {}) as Dictionary).get("n_main", 0)) == 3, "%s: three main pieces cut" % tag)
 	if hex_r > 0.0: fx.anchor_wreck("k", Vector3.ZERO, hex_r)
+	if vel != Vector3.ZERO:
+		# the dying hull's own speed (death_velocity reads the root's _vel)
+		var gs := GDScript.new()
+		gs.source_code = "extends Node3D\nvar _vel := Vector3.ZERO\n"
+		gs.reload()
+		s.root.set_script(gs)
+		s.root.set("_vel", vel)
 	fx.death("k", "blast")
 	# Fable on 33561155: the tear draws its second line (open_b) only when that joint parts at the death
 	var open_b := Vector2(-1.0, 1.0)
@@ -224,6 +235,13 @@ func _breakup(quality: String, kind: String, joints := [-4.0, 4.0], hit_x := INF
 	check(worst <= OVERLAP_MAX, "%s: no piece runs into another (worst %.1f%% of an outline inside another)" % [tag, worst * 100.0])
 	check(turn_hi - turn_lo >= SPREAD_YAW, "%s: the pieces turn apart, some diagonal (%.2f rad)" % [tag, turn_hi - turn_lo])
 	check(far <= FAR_MAX, "%s: and stay close (farthest middle %.2f lengths out)" % [tag, far])
+	if hex_r > 0.0:
+		# Artoo on db791b40: every middle rests within the reach of the hex it is anchored to, drift included
+		# (a hull longer than the reach across can never fit: it ends centred, no farther out than its own ends)
+		var bound: float = DEATH.BREAKUP_HEX_REACH if 2.0 * hex_r * DEATH.BREAKUP_HEX_REACH >= 20.0 else 10.0 / hex_r + 0.1
+		var hex_far := 0.0
+		for nd in nodes: hex_far = maxf(hex_far, Vector2((nd as Node3D).global_position.x, (nd as Node3D).global_position.z).length() / hex_r)
+		check(hex_far <= bound + 0.02, "%s: every middle rests within %.2f rest radii of its hex (%.2f)" % [tag, bound, hex_far])
 	world.queue_free()
 	await process_frame
 

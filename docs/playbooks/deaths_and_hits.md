@@ -164,8 +164,9 @@ ship broke at the same spot, and "we want variety". Since Nov 23:
 - Where it cracks: a strained big metal hull is cut on two joints, leaving no piece under 0.15 of the length. Its
   authored joints come first; where they cannot (none, or too near an end: WRECK5c on Nov 24 showed most real hulls in
   two) a plain joint turned a little is added, never through a machine and never beside an authored joint. On a hull longer than its hex, the pieces part less
-  and turn less, all by the same share (no less than 0.6), so no middle rests beyond 1.75 rest radii and none swings into
-  another. The first crack is the joint nearest where the
+  and turn less, all by the same share (no less than 0.6), and if a middle would still rest beyond 1.75 rest radii (the
+  dying hull's drift counted, and a late snap from where its parent will rest) the whole wreck's rest spots move in
+  together, so no gap between pieces closes; a wreck too long to fit at all ends centred on its hex. The first crack is the joint nearest where the
   hull was last hit, measured on the struck side where a joint kinks round a machine (with no hit on record, a per-ship
   pick), never always the joint nearest the core. A lance cuts clean
   on the joint nearest the beam, in two. The cut is made ahead of the death (refreshed at most every few seconds as the hull is hit),
