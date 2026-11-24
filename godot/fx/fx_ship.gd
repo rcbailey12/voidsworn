@@ -109,6 +109,18 @@ var _brk_until = -1.0      # issue 1239 (F2.3): until when a shield failure is s
 var _fail_look := 2
 var _fail_low := false
 var _last_sh = -1.0
+var _shield_fraction := -1.0
+var _ion_locked := false
+var _ion_next := 0.0
+var _ion_until := -1.0
+var _acid_active := false
+var _acid_mist: POOLS.Pool
+var _acid_next := 0.0
+const ACID_SIZZLE_GAINS := [0.25, 0.125]
+var _sizzle_count := 0
+var _sizzle_next := 0.0
+var _acid_spot_index := 0
+var _acid_fallback: Dictionary = {}
 var section_fraction := [1.0, 1.0, 1.0]
 var stage = [0, 0, 0]     # eng, mid, prow
 var death_core_pending := false
@@ -492,6 +504,7 @@ func update(fx, dt: float) -> void:
 	_list_step(dt)
 	_react_step(fx, dt)
 	_power_step(fx)
+	_status_step(fx)
 	_hide_placeholder_engines()
 	var pos := root.global_position
 	if hull_pivot == null:
@@ -538,7 +551,7 @@ func update(fx, dt: float) -> void:
 		_trail_extra += dt * (TRAIL_COLD_AGE - 1.0)
 	_update_trails(fx, moved > 1e-4)
 	if _shield_mi != null:
-		_shield_mi.visible = fx.now < _shield_until or (_route_on != Vector4.ZERO and not dead and not gone)
+		_shield_mi.visible = fx.now < _shield_until or fx.now < _ion_until or (_route_on != Vector4.ZERO and not dead and not gone)
 
 
 func _update_trails(fx, _moved: bool) -> void:
@@ -1051,7 +1064,7 @@ func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
 	return {"p": xf() * (lp + hull.shield_centre()), "n": (xf().basis * n).normalized(), "local": lp}
 
 
-func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, life := 0.6) -> void:
+func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, life := 0.6, fraction := -1.0) -> void:
 	if _shield_mat == null:
 		return
 	# issue 1239 (F2.5): the shader has six ripple slots. Take a slot whose ripple has finished first, else the one that
@@ -1069,7 +1082,13 @@ func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, 
 			slot = i
 	_hit_i = slot
 	_hits[_hit_i] = Vector4(local_p.x, local_p.y, local_p.z, T)
-	_hitw[_hit_i] = Vector4(strength, life, spread * fx.unit, 0)
+	var remaining := _shield_fraction if fraction < 0.0 else fraction
+	var strained := remaining > 0.0 and remaining < 0.25
+	_hitw[_hit_i] = Vector4(strength, life, spread * fx.unit, 1.0 if strained else 0.0)
+	if strained:
+		fx.later(T, func l_shield_sputter() -> void:
+			if not dead and not gone and is_instance_valid(root) and fx.sound() != null:
+				fx.sound().play("shield_sputter", {"pos": to_world(hull.shield_centre() + local_p)}))
 	_shield_mat.set_shader_parameter("hits", _hits)
 	_shield_mat.set_shader_parameter("hitw", _hitw)
 	_shield_until = maxf(_shield_until, T + life + 0.05)
@@ -1114,6 +1133,8 @@ func _break_aim(quad: int, hit_lp: Vector3) -> Vector3:
 func shield_break(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	if _shield_mat == null:
 		return
+	# Playback can break the shield before the next rules view arrives.
+	_shield_fraction = 0.0
 	hit_power(fx, true)
 	if _fail_look == 1:
 		_break_shear(fx, quad, hit_lp)
@@ -1132,7 +1153,7 @@ func shield_break(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	var lp: Vector3 = contact["local"]
 	var wp: Vector3 = contact["p"]
 	var wn: Vector3 = contact["n"]
-	shield_hit(fx, lp, T, 1.0, rad.length() * 0.8 / fx.unit, 0.9)
+	shield_hit(fx, lp, T, 1.0, rad.length() * 0.8 / fx.unit, 0.9, 0.0)
 	var sc: Color = fac["shield"]
 	var st: int = fac["shield_style"]
 	var k = scale_k()
@@ -1190,7 +1211,7 @@ func _break_shear(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	var lp: Vector3 = contact["local"]
 	var wp: Vector3 = contact["p"]
 	var wn: Vector3 = contact["n"]
-	shield_hit(fx, lp, T, 1.0, rad.length() * 0.6 / fx.unit, 0.6)
+	shield_hit(fx, lp, T, 1.0, rad.length() * 0.6 / fx.unit, 0.6, 0.0)
 	var sc: Color = fac["shield"]
 	var st: int = fac["shield_style"]
 	var k = scale_k()
@@ -1260,7 +1281,7 @@ func _break_collapse(fx, quad: int, hit_lp := Vector3.INF) -> void:
 		lp = hit_lp
 		wp = xf() * (hit_lp + hull.shield_centre())
 	var wn: Vector3 = contact["n"]
-	shield_hit(fx, lp, T, 0.7, rad.length() * 0.3 / fx.unit, 0.5)
+	shield_hit(fx, lp, T, 0.7, rad.length() * 0.3 / fx.unit, 0.5, 0.0)
 	var sc: Color = fac["shield"]
 	var k = scale_k()
 	_shield_flash(fx, wp, T, sc.lerp(Color.WHITE, 0.3), 6.0 * k, 6.0, 0.15)
@@ -1687,6 +1708,12 @@ func _list_step(dt: float) -> void:
 func sync(fx, u: Dictionary) -> void:
 	if dead or gone:
 		return
+	var status = u.get("st")
+	_acid_active = status is Dictionary and status.get("acid") != null and float(status["acid"]) > 0.0
+	set_regen_lock(u.get("regenLock") != null and float(u["regenLock"]) > 0.0)
+	_shield_fraction = -1.0
+	if u.get("shp") != null and u.get("shMax") != null and float(u["shMax"]) > 0.0:
+		_shield_fraction = float(u["shp"]) / float(u["shMax"])
 	# view() sends null for fields a unit does not have (sec and sh for squadrons): treat them as absent
 	var sec: Dictionary = u["sec"] if u.get("sec") is Dictionary else {}
 	var maxhp = maxf(float(u["maxHp"]) if u.get("maxHp") != null else 1.0, 1.0)
@@ -1733,6 +1760,82 @@ func sync(fx, u: Dictionary) -> void:
 	if burn != _burning:
 		_burning = burn
 		_set_burning(fx, burn)
+
+
+func set_regen_lock(active: bool) -> void:
+	_ion_locked = active and _shield_mat != null
+
+
+# Both statuses use the effect clock. Repeated view syncs leave their cadence alone.
+func _status_step(fx) -> void:
+	if dead or not _acid_active:
+		if _acid_mist != null:
+			_acid_mist.mi.hide()
+			_acid_mist.mi.queue_free()
+			_acid_mist = null
+			_acid_fallback.clear()
+			_acid_next = 0.0
+			_sizzle_count = 0
+			_sizzle_next = 0.0
+	elif fx.now >= _acid_next:
+		_acid_next = fx.now + 0.30
+		_emit_acid(fx)
+	if dead or not _ion_locked or _shield_fraction <= 0.0 or fx.now < _brk_until:
+		if _ion_until >= 0.0:
+			_shield_mat.set_shader_parameter("ion_arc", Vector2(-100.0, 0.0))
+			_ion_until = -1.0
+			_ion_next = 0.0
+	elif fx.now >= _ion_next:
+		# An upper flank facing the battle camera. The shader draws on the actual shield skin as the ship moves.
+		var angle: float = fx.rng.randf_range(-PI, PI)
+		if is_instance_valid(fx.camera):
+			var eye: Vector3 = xf().affine_inverse() * fx.camera.global_position - hull.shield_centre()
+			angle = atan2(eye.z, eye.x) + fx.rng.randf_range(-0.65, 0.65)
+		_shield_mat.set_shader_parameter("ion_arc", Vector2(fx.now, angle))
+		_ion_until = fx.now + 0.45
+		_ion_next = _ion_until + fx.rng.randf_range(0.55, 1.25) * (2.0 if fx.reduce_flashing else 1.0)
+
+
+func _emit_acid(fx) -> void:
+	var spots: Array = get_meta("acid_spots", [])
+	var p: Vector3
+	var n := Vector3.UP
+	if spots.is_empty():
+		if fx.now < busy_until: return  # an in-flight shot can still supply its actual contact
+		# A restored ship has its rules status but no FX hit history. Find real plating once.
+		if _acid_fallback.is_empty():
+			if is_instance_valid(fx.camera):
+				var eye: Vector3 = xf().affine_inverse() * fx.camera.global_position
+				_acid_fallback = hull.surface(hull.core, eye - hull.core)
+			if _acid_fallback.is_empty():
+				_acid_fallback = hull.surface_sample(-1, 0.5, "acid")
+		if _acid_fallback.is_empty(): return
+		p = _acid_fallback["p"]
+		n = _acid_fallback["n"]
+	else:
+		var spot: Array = spots[_acid_spot_index % spots.size()]
+		_acid_spot_index += 1
+		p = spot[0]
+		if spot.size() > 2: n = spot[2]
+	if _acid_mist == null:
+		var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
+		_acid_mist = POOLS.Pool.new(8, material, _dmg_root, "fx_acid_mist", POOLS.quad_shape())
+	var col := _acid_colour()
+	# Lift the expanding mist off the plating so the hull and soft depth fade leave it room to show.
+	var origin := p + n * maxf(0.65, hull.L * 0.02)
+	var drift: Vector3 = (n + Vector3.UP * 0.70) * hull.L * 0.065
+	_acid_mist.emit(POOLS.pack(Vector4(origin.x, origin.y, origin.z, fx.now), Vector4(drift.x, drift.y, drift.z, 1.9),
+		Vector4(col.r, col.g, col.b, 0.68), Vector4(hull.L * 0.08, hull.L * 0.23, 20, fx.rng.randf()), Vector4(0, 0, 0.3, 0.15)))
+	_acid_mist.flush()
+	if _sizzle_count < ACID_SIZZLE_GAINS.size() and fx.now >= _sizzle_next:
+		_sizzle_next = fx.now + fx.rng.randf_range(1.7, 2.8)
+		if fx.sound() != null:
+			fx.sound().play("acid_sizzle", {"pos": to_world(p), "gain": ACID_SIZZLE_GAINS[_sizzle_count]})
+		_sizzle_count += 1
+
+
+func _acid_colour() -> Color:
+	return fac["damage_glow"] if faction == "deathless" else Color(0.5, 0.9, 0.2)
 
 
 # Issue 1446: the routed sides into the bubble's rim pulse (quad order prow, starboard, rear, port, as the rules)
@@ -2913,7 +3016,7 @@ func tick_flare(fx, kind: String) -> void:
 	match kind:
 		"acid":
 			for i in 6:
-				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, Color(0.5, 0.9, 0.2), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
+				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, _acid_colour(), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
 		"tidal":
 			for i in 20:
 				fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)

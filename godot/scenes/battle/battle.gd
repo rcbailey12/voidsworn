@@ -226,7 +226,10 @@ var chime_round := -1         # the round whose first hand-over played the "your
 
 
 func _ready() -> void:
-	_args()
+	# The title backdrop has its own args from Main. A finished quick battle can open the title in the same process.
+	# Reading the process args again there would run its capture a second time on the title viewport.
+	if not showcase:
+		_args()
 	t_start = Time.get_ticks_msec() / 1000.0
 	bot = bot or args.has("bot")
 	shots_dir = str(args.get("shots", ""))
@@ -1581,7 +1584,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				await wait(float(PACE["banner"]) + 140.0)
 		"regen_unlock":
 			if disp.has(e["unit"]):
-				disp[e["unit"]]["regenLock"] = false
+				_show_regen_lock(e["unit"], false)
 				regen_unlocks[e["unit"]] = int(regen_unlocks.get(e["unit"], 0)) + 1
 		"log":
 			hud.add_log(str(e.get("text", "")), str(e.get("kind", "")) if e.get("kind") != null else "")
@@ -2491,7 +2494,8 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	if gfx != null and gfx.has_method("volley"):
 		var hl: Array = []
 		for h in hits:
-			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
+			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"],
+				"shieldFraction": h.get("shieldFraction", -1.0)})
 		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0)),
 			"break_k": int(land["break_k"]) if not (land["downs"] as Array).is_empty() else -1})
 		land["pts"] = r.get("hit_pts", [])   # issue 1239: each hit's shield point, so the failure aims at the breaking shot
@@ -2832,11 +2836,19 @@ func _apply_hit(h: Dictionary, show_regen_lock := true) -> void:
 		return
 	var d: Dictionary = disp[t_id]
 	if show_regen_lock and bool(h.get("regenLock", false)):
-		d["regenLock"] = true
+		_show_regen_lock(t_id, true)
 	d["hp"] = maxf(0.0, float(d["hp"]) - float(h["hull"]))
 	var q := int(h.get("quad", 0))
 	if d["sh"] is Array and q < (d["sh"] as Array).size():
 		d["sh"][q] = maxf(0.0, float(d["sh"][q]) - float(h["shield"]))
+
+
+func _show_regen_lock(id: String, active: bool) -> void:
+	disp[id]["regenLock"] = active
+	if gfx != null and gfx.has_method("ship"):
+		var ship = gfx.ship(id)
+		if ship != null:
+			ship.set_regen_lock(active)
 
 
 func _impact(t_id, h: Dictionary, col: Color) -> void:
@@ -3202,7 +3214,7 @@ func _end_flow() -> void:
 		# --pace-report (with --bot): the battle's report with the enemy's time per round by event kind, then quit
 		_quit_report()
 		return
-	if bot or args.has("bot-runs"):
+	if (bot and not _taking_shots) or args.has("bot-runs"):
 		_finish(result)
 		return
 	var cause := _end_cause_line()
@@ -7027,6 +7039,7 @@ func _alive_active(id: String) -> bool:
 
 var shot_n := 0
 var fire_shots := 0
+var _taking_shots := false
 
 
 func _snap(name: String) -> void:
@@ -7063,6 +7076,7 @@ func _hover_unit(id: String) -> void:
 func _shots() -> void:
 	# fixed moments for the screenshot-verdict skill: the opening board, a selected ship with its move range, the move
 	# preview, the attack tip on an enemy, the threat map, top-down, mid-battle fire, and the end card
+	_taking_shots = true
 	while busy or warming or api == null:
 		await get_tree().process_frame
 	await get_tree().create_timer(2.5).timeout
@@ -7106,7 +7120,8 @@ func _shots() -> void:
 	_refresh_ui()
 	await get_tree().create_timer(1.0).timeout
 	bot = true
-	while not ended:
+	# _end_flow sets ended before the final banner. Wait for the settled result and end card before the last still.
+	while result.is_empty():
 		await get_tree().process_frame
 	await get_tree().create_timer(2.0).timeout
 	await _snap("end")
