@@ -38,6 +38,12 @@ var legacy := false
 # Issue 1217: main.gd's front-end sound node loads only the cues whose names start with this ("ui_"), and only their
 # clips, so the title and setup screens get their sounds without loading the battle's.
 var only := ""
+# The decorative battle can opt out before entering the tree. It leaves the shared audio buses alone.
+var silent := false
+static var _catalogs := {}    # not GPU: cue data and AudioStreams, shared without playback state
+static var _cue_data: Dictionary    # not GPU: parsed cue table
+static var _clip_index: Dictionary    # not GPU: clip names and paths
+static var _streams := {}    # not GPU: path -> AudioStream (or null for a missing asset)
 var _base_sfx_db := 0.0
 var _duck_db := 0.0
 var _duck_until := 0.0
@@ -56,50 +62,77 @@ const LEGACY_PITCH_CUES := ["death_powerdown", "death_vent", "death_crack", "dea
 
 
 func _ready() -> void:
+	if silent:
+		set_process(false)
+		return
 	_buses()
-	var t0 := Time.get_ticks_msec()
-	if FileAccess.file_exists("res://audio/cues.json"):
-		cues = JSON.parse_string(FileAccess.get_file_as_string("res://audio/cues.json"))
-	cues["shot_pass_by"] = PASS_BY_CUE
-	var want := {}
-	if only != "":
-		for k in cues.keys():
-			if not str(k).begins_with(only):
-				cues.erase(k)
-				continue
-			for L in cues[k]["layers"]:
-				if L.has("s"):
-					want[L["s"]] = true
-	var idx = JSON.parse_string(FileAccess.get_file_as_string("res://audio/clips/index.json")) if FileAccess.file_exists("res://audio/clips/index.json") else {}
-	for k in idx:
-		if only != "" and not want.has(k):
-			continue
-		var a: Array = []
-		for f in idx[k]:
-			var s := _load("res://audio/clips/" + f)
-			if s != null:
-				a.append(s)
-		if not a.is_empty():
-			clips[k] = a
-	for k in cues:
-		var a: Array = []
-		for f in cues[k]["synth"]:
-			var s := _load("res://audio/synth/" + f)
-			if s != null:
-				a.append(s)
-		synth[k] = a
-		for variant in cues[k].get("variants", {}):
-			var va: Array = []
-			for f in cues[k]["variants"][variant].get("synth", []):
-				var vs := _load("res://audio/synth/" + f)
-				if vs != null:
-					va.append(vs)
-			synth[k + ":" + variant] = va
-	print("[sfx] %d cues, %d clip sets, loaded in %d ms" % [cues.size(), clips.size(), Time.get_ticks_msec() - t0])
+	var catalog: Array = _catalogs.get(only, [])
+	if catalog.is_empty():
+		catalog = _load_catalog(only)
+		_catalogs[only] = catalog
+	cues = catalog[0]
+	clips = catalog[1]
+	synth = catalog[2]
 	set_volume(vol)
 
 
-func _load(p: String) -> AudioStream:
+static func _load_catalog(prefix: String) -> Array:
+	var t0 := Time.get_ticks_msec()
+	if _cue_data.is_empty():
+		_cue_data = _read_catalog_json("res://audio/cues.json")
+		_cue_data["shot_pass_by"] = PASS_BY_CUE
+		_clip_index = _read_catalog_json("res://audio/clips/index.json")
+	var catalog_cues := _cue_data.duplicate()
+	var catalog_clips := {}
+	var catalog_synth := {}
+	var want := {}
+	if prefix != "":
+		for k in _cue_data:
+			if not str(k).begins_with(prefix):
+				catalog_cues.erase(k)
+				continue
+			for L in _cue_data[k]["layers"]:
+				if L.has("s"):
+					want[L["s"]] = true
+	for k in _clip_index:
+		if prefix != "" and not want.has(k):
+			continue
+		var a := _load_takes("res://audio/clips/", _clip_index[k])
+		if not a.is_empty():
+			catalog_clips[k] = a
+	for k in catalog_cues:
+		var cue: Dictionary = catalog_cues[k]
+		catalog_synth[k] = _load_takes("res://audio/synth/", cue["synth"])
+		for variant in cue.get("variants", {}):
+			catalog_synth[k + ":" + variant] = _load_takes("res://audio/synth/", cue["variants"][variant].get("synth", []))
+	for catalog in [catalog_cues, catalog_clips, catalog_synth]:
+		catalog.make_read_only()
+	print("[sfx] %d cues, %d clip sets, loaded in %d ms" % [catalog_cues.size(), catalog_clips.size(), Time.get_ticks_msec() - t0])
+	return [catalog_cues, catalog_clips, catalog_synth]
+
+
+static func _read_catalog_json(path: String) -> Dictionary:
+	var data = JSON.parse_string(FileAccess.get_file_as_string(path)) if FileAccess.file_exists(path) else {}
+	return data if data is Dictionary else {}
+
+
+static func _load_takes(folder: String, files: Array) -> Array:
+	var takes: Array = []
+	for file in files:
+		var stream := _load(folder + file)
+		if stream != null:
+			takes.append(stream)
+	takes.make_read_only()
+	return takes
+
+
+static func _load(p: String) -> AudioStream:
+	if not _streams.has(p):
+		_streams[p] = _read_stream(p)
+	return _streams[p]
+
+
+static func _read_stream(p: String) -> AudioStream:
 	# the imported stream when the project has been imported or exported, else the raw Ogg file
 	if HUDRes.imported_ok(p):
 		var r = load(p)
@@ -157,6 +190,8 @@ func set_volume(v: float) -> void:
 	if not is_finite(v):
 		return
 	vol = clampf(v, 0.0, 1.0)
+	if silent:
+		return
 	var g := 0.62 * pow(vol, 1.6) if on else 0.0
 	_base_sfx_db = linear_to_db(maxf(g, 1e-5)) + 2.0
 	var i := AudioServer.get_bus_index("sfx")
@@ -174,6 +209,8 @@ func set_on(v: bool) -> void:
 # lowest one wins. The death bus stays out of the beat and the core duck; the near-silence rides the parent
 # sfx bus so it takes the death too. All values are dB; zero means no duck.
 func _apply_mix() -> void:
+	if silent:
+		return
 	var now := _now()
 	if now >= _duck_until:
 		_duck_db = 0.0
@@ -268,7 +305,7 @@ func _now() -> float:
 
 # o: {pos: Vector3, gain, rate, delay}
 func play(name: String, o := {}) -> void:
-	if not on or not cues.has(name):
+	if silent or not on or not cues.has(name):
 		return
 	var cue: Dictionary = cues[name]
 	var variant := str(o.get("variant", ""))
@@ -416,6 +453,8 @@ func _process(_delta: float) -> void:
 
 # R73 hook. The picture owns its clock; audio remains at normal pitch/speed.
 func death_beat(enabled: bool) -> void:
+	if silent:
+		return
 	_beat = enabled
 	_apply_mix()
 	# Music can be created after SFX, so connect its send when the beat is sampled.
@@ -642,10 +681,12 @@ func sting(win: bool) -> void:
 # drones and a fifth, a breath of air, rendered offline into a seamless 120 s loop) with the recorded room tone over it;
 # both fade in over a few seconds and sit on the ambient bus, which explosions duck
 func ambient_start() -> void:
+	if silent:
+		return
 	if _bed == null:
 		var bs := _load("res://audio/synth/ambient_bed.ogg")
 		if bs is AudioStreamOggVorbis:
-			var ob := bs as AudioStreamOggVorbis
+			var ob := bs.duplicate() as AudioStreamOggVorbis
 			ob.loop = true
 			ob.loop_offset = 1.0   # the file is [1 s of tail][the 120 s loop][1 s of head]; loop 121 s -> 1 s
 			ob.bpm = 60.0
@@ -662,6 +703,7 @@ func ambient_start() -> void:
 	_amb = AudioStreamPlayer.new()
 	var st: AudioStream = clips["ambient"][0]
 	if st is AudioStreamOggVorbis:
+		st = st.duplicate()
 		(st as AudioStreamOggVorbis).loop = true
 	_amb.stream = st
 	_amb.bus = "ambient"
