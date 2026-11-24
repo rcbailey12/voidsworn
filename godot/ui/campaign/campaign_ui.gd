@@ -6,6 +6,7 @@ extends CanvasLayer
 # Tab and the arrow keys move between buttons and map nodes, Enter or Space presses the focused one.
 # Colours and fonts match the battle HUD (godot/ui/battle/hud.gd). Sizes scale with the window height (designed at 1080).
 
+const Rules = preload("res://rules/rules.gd")
 const CampaignTips = preload("res://ui/campaign/campaign_tips.gd")
 const RowHover = preload("res://ui/campaign/row_hover.gd")
 var teaching: Node
@@ -2702,6 +2703,8 @@ func _salvage_choices(v: VBoxContainer, wrecks: Array, acts: Array) -> void:
 		var pp = panel(IRON3, IRON2, 10); var pv = vbox(6); pp.add_child(pv)
 		pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.clsName(C.or_(w.get("cls"), ""))) + ((", " + esc(F["n"])) if F != null else ""), BONE3), 18))
 		var cause := str(w.get("impact", C.CAUSE_WORD.get(w.get("cause"), "destroyed")))
+		if w.get("cause") == "tidal":
+			cause = cause.replace("Hollow Sun", Rules.dead_star_name(C.RUN, true))
 		cause = cause.substr(0, 1).to_upper() + cause.substr(1)
 		var bonus: int = C.wreck_credit_bonus(w.get("cause"))
 		if bonus > 0:

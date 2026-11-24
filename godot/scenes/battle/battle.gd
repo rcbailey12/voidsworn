@@ -694,7 +694,7 @@ func _begin(a) -> void:
 	_log("Contact: %s. %d ship%s on the scanners." % [str(F.get("n", _enemy_fac())), ne, "s" if ne > 1 else ""], "s")
 	var well = api.world_info().get("well")
 	if well is Dictionary or (well is bool and well):
-		_log("The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "s")
+		_log("The %s warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim." % api.R.dead_star_name(api.R.RUN, true), "s")
 	batches.append({"events": api.take_events(), "view": api.view()})
 	if not showcase:
 		sfx.ambient_start()
@@ -4113,19 +4113,20 @@ func _nova_tip(q: int, r: int) -> String:
 	return t
 
 
-# the Hollow Sun's pull on a hex, as one line for the move tip ("" away from it or on a board without it)
+# the dead star's pull on a hex, as one line for the move tip ("" away from it or on a board without it)
 func _well_line(q: int, r: int) -> String:
 	var W = api.world_info().get("well") if api != null else null
 	if not W is Dictionary:
 		return ""
 	var R = api.R
 	var d := _hex_d(q, r, int(W["q"]), int(W["r"]))
+	var star: String = R.dead_star_name(R.RUN)
 	if d <= int(R.WELL_RIM):
-		return "[color=#ff8a72]Hollow Sun rim: %d hull damage to a ship here at each round start (it still gets +1 movement).[/color]" % int(R.WELL_DMG)
+		return "[color=#ff8a72]%s rim: %d hull damage to a ship here at each round start (it still gets +1 movement).[/color]" % [star, int(R.WELL_DMG)]
 	if d <= int(R.WELL_PULL):
-		return "[color=#c79bff]Hollow Sun pull: a ship here is dragged 1 hex inward at each round start, with +1 movement.[/color]"
+		return "[color=#c79bff]%s pull: a ship here is dragged 1 hex inward at each round start, with +1 movement.[/color]" % star
 	if d <= int(R.WELL_ASSIST):
-		return "[color=#9fd4ff]Hollow Sun slingshot: +1 movement at each round start, no pull.[/color]"
+		return "[color=#9fd4ff]%s slingshot: +1 movement at each round start, no pull.[/color]" % star
 	return ""
 
 
@@ -5134,7 +5135,7 @@ func _blocker_text(t: Dictionary) -> String:
 	var counts := {}
 	var order: Array = []
 	for h in _shot_blockers(t):
-		var label: String = {"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(h.kind, h.kind)
+		var label: String = {"rock": "asteroid", "hulk": "wreck", "deadstar": api.R.dead_star_name(api.R.RUN, true)}.get(h.kind, h.kind)
 		if not counts.has(label):
 			counts[label] = 0
 			order.append(label)
@@ -5230,7 +5231,8 @@ func _legend() -> void:
 	var desc := str(E.get("d", "")) if E is Dictionary else ""
 	var shape = api.world_info().get("shape")
 	if shape != null and str(shape) != "open" and TBL.get("SHAPES", {}).has(str(shape)):
-		desc += " Board: %s." % str(TBL["SHAPES"][str(shape)]).to_lower()
+		var board_name: String = api.R.dead_star_name(api.R.RUN) if shape == "deadstar" else str(TBL["SHAPES"][str(shape)]).to_lower()
+		desc += " Board: %s." % board_name
 	var mods: Array = api.R.storyModifierLines()
 	if not mods.is_empty(): desc += "\n" + " ".join(PackedStringArray(mods))
 	hud.set_legend(title, desc.strip_edges(), rows)

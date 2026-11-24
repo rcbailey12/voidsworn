@@ -21,6 +21,7 @@ const PATH := "res://fx/faction_looks.json"
 const FALLBACK := "voidsworn"
 
 static var _cache: Dictionary = {}
+static var _warned_factions := {}
 
 
 static func _col(v) -> Variant:
@@ -61,7 +62,13 @@ static func table() -> Dictionary:
 
 static func of(faction: String) -> Dictionary:
 	var t := table()
-	return t.get(faction.to_lower(), t.get(FALLBACK, {}))
+	var id := faction.to_lower()
+	if t.has(id):
+		return t[id]
+	if not _warned_factions.has(id):
+		_warned_factions[id] = true
+		push_warning("FX faction '%s' is unknown. Using '%s'." % [id, FALLBACK])
+	return t.get(FALLBACK, {})
 
 
 # Drop the cache (a look editor or a test that rewrites the json).

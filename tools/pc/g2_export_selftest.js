@@ -84,12 +84,13 @@ const reportFailures = ['no-report', 'stale-report', 'one-run', 'errors', 'softl
 for (const failure of ['export', 'package', 'smoke', ...reportFailures, 'promotion', '']) {
   // A good report from an earlier run is on disk before every case; it must never count for this one.
   put(smokeReport, '{"runs":[{},{}],"errors":0,"softlocks":0}');
+  // Each case starts several PowerShell checks. A loaded lane ran past 15 s during the import and smoke cases.
   const r = spawnSync('cmd.exe', ['/d', '/s', '/c', `call "${job}"`], {
-    cwd: build, windowsVerbatimArguments: true, windowsHide: true, timeout: 15000, encoding: 'utf8',
+    cwd: build, windowsVerbatimArguments: true, windowsHide: true, timeout: 45000, encoding: 'utf8',
     env: { ...process.env, APPDATA: app, FIXTURE_FAILURE: failure, FIXTURE_STALE: staleReport },
   });
   const text = read(log);
-  assert.equal(r.status, failure ? 1 : 0, `${failure}: ${text}\n${r.stderr}`);
+  assert.equal(r.status, failure ? 1 : 0, `${failure || 'clean export'}: ${r.error || ''}\n${text}\n${r.stderr}`);
   for (const f of files) assert.equal(read(path.join(build, 'export', f)), failure ? 'last good' : 'candidate', `${failure}: live ${f}`);
   assert.equal(fs.existsSync(path.join(build, 'export/assets.dll')), !failure);
   assert.equal(text.includes('fixture package check'), failure !== 'export');
