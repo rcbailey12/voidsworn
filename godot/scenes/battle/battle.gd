@@ -38,6 +38,7 @@ const Backdrop := preload("res://render/backdrop.gd")
 const PG := preload("res://render/placeholder_guard.gd")
 const LOOK := preload("res://render/look.gd")
 const WORLD_SKY := preload("res://world/world_sky.gd")
+const BattleLens := preload("res://fx/battle_lens.gd")
 const LIVING := preload("res://world/world_living.gd")
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
@@ -164,9 +165,15 @@ var bot_cmd_used := false
 var wing_sel := ""          # one of your squadrons picked for a standing order
 var cmd_armed_t := -9.0
 var cine := "key"          # cut-ins: "key" moments, "all" attacks, "off" (settings)
+var brisk_camera := false
 var cine_saved := {}
 var follow := true          # follow enemy activations with the camera (settings)
 var cam_saved := {}
+const ROUTINE_CAMERA_NAMES := {"lance": "Lance cut-ins", "torp": "Torpedo cut-ins", "volley": "Volley cut-ins", "follow": "Enemy camera follow"}
+var _skipped_camera_kinds := {}
+var _routine_shot_cut := ""
+var _routine_follow := false
+var _shot_cut_timer: SceneTreeTimer
 var shots_dir := ""
 var torp_snapped := 0      # issue 1531: torpedo salvos captured so far (--torp-max)
 var torp_ft := {}          # issue 1379: frame times through one torpedo salvo (--torp-shots DIR --torp-ft)
@@ -318,6 +325,7 @@ func _build_world() -> void:
 		if LOOK.fleet_lighting_enabled():
 			pano.set_shader_parameter("sun_dir", -LOOK.KEY_DIR.normalized())
 			pano.set_shader_parameter("fleet_reflections", true)
+			pano.set_shader_parameter("fleet_reflections_v2", LOOK.ship_look_v2_enabled())   # issue 1777
 		var sky := Sky.new()
 		sky.sky_material = pano
 		sky.radiance_size = Sky.RADIANCE_SIZE_256
@@ -340,6 +348,15 @@ func _build_world() -> void:
 		env.set_glow_level(lv, [0.0, 0.6, 1.0, 0.5, 0.0, 0.0, 0.0][lv])
 	var we := WorldEnvironment.new()
 	we.environment = env
+	_death_dof = LOOK.post_fx_enabled("DOF")
+	_lens_well = LOOK.post_fx_enabled("LENSING")
+	_lens_shock = LOOK.post_fx_enabled("SHOCKWAVE")
+	if _lens_well or _lens_shock:
+		_battle_lens = BattleLens.new()
+		_battle_lens.warm()
+		var compositor := Compositor.new()
+		compositor.compositor_effects = [_battle_lens]
+		we.compositor = compositor
 	add_child(we)
 	var key := DirectionalLight3D.new()
 	key_light = key
@@ -381,6 +398,8 @@ func _build_world() -> void:
 	cam.name = "Camera"
 	add_child(cam)
 	cam.current = true
+	if _battle_lens != null:
+		cam.pose_applied.connect(_step_battle_lens)
 	if gfx != null and gfx.has_method("setup"):
 		gfx.setup({"camera": cam, "quality": str(args.get("quality", "max")), "reduce_flashing": reduce_flashing, "shake": shake_scale, "unit": 1.0})
 	_build_arrow()
@@ -465,9 +484,10 @@ func start_default() -> void:
 		var e: String = a.load_rules()
 		if e != "":
 			push_error(e)
+		a.interactive_deployment = not bot and not showcase
 		a.new_battle_scenario(str(args["scenario"]), seed if args.has("seed") else -1)
 		a.set_undo(true)   # issue 1450: a test battle played in the scene can take moves back like any other
-		_begin(a)
+		begin_with(a)
 		return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
@@ -509,9 +529,10 @@ func start_scenario(sc: Dictionary) -> void:
 	var e: String = a.load_rules()
 	if e != "":
 		push_error(e)
+	a.interactive_deployment = not bot and not showcase
 	a.new_battle_scenario(sc, int(sc.get("seed", 1)))
 	battle_cfg = sc
-	_begin(a)
+	begin_with(a)
 
 
 # From the campaign: run = the campaign run dictionary, cfg = the battle config (API.md new_battle).
@@ -520,14 +541,26 @@ func start_battle(run: Dictionary, cfg: Dictionary) -> void:
 	var e: String = a.load_rules()
 	if e != "":
 		push_error(e)
+	a.interactive_deployment = not bot and not showcase
 	a.new_battle(run, cfg)
 	battle_cfg = cfg
-	_begin(a)
+	begin_with(a)
 
 
-# a battle the campaign has already set up (main.play_api)
+# A battle with its rules initialized, including one handed over by the campaign.
 func begin_with(a) -> void:
-	_begin(a)
+	if a.phase == "deployment":
+		_deployment_api = a
+		cam.keyboard_enabled = false
+		hud.hide_end()
+		hud.hide_menu()
+		if hud.log_open:
+			hud.toggle_log()
+		hud.hide_tipcard()
+		hud.set_playing(false)
+		_show_skill_picker()
+	else:
+		_begin(a)
 
 
 func _begin(a) -> void:
@@ -535,6 +568,11 @@ func _begin(a) -> void:
 	_api_join()
 	retiring = false
 	opening = false
+	_skipped_camera_kinds.clear()
+	_shot_cut_timer = null
+	_cine_release()
+	_reset_battle_lens()
+	_end_enemy_follow()
 	_click_q = {}
 	_threat_version = -1
 	_threat_one_ver = -1
@@ -546,6 +584,10 @@ func _begin(a) -> void:
 		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
+	# Neon (PR 1776 review, item 1): maps a freed title showcase, sector map or earlier battle left waiting would run
+	# ahead of this battle's board planet; drop them before the frames below let the bake worker take one
+	if ResourceLoader.exists("res://world/world_bake.gd"):
+		load("res://world/world_bake.gd").drop_waiting(get_tree())
 	if DisplayServer.get_name() != "headless":
 		await get_tree().process_frame
 		await get_tree().process_frame
@@ -627,6 +669,10 @@ func _begin(a) -> void:
 			c.queue_free()
 	else:
 		backdrop.build(cam.bounds, env)
+	var grade_region := "frontier"
+	if world != null:
+		grade_region = "deadstar" if world.setting["deadstar"] else str(world.setting["region"])
+	LOOK.battle_grade(env, grade_region)
 	V = api.view()
 	_index_view()
 	for u in V["units"]:
@@ -649,7 +695,7 @@ func _begin(a) -> void:
 	_log("Contact: %s. %d ship%s on the scanners." % [str(F.get("n", _enemy_fac())), ne, "s" if ne > 1 else ""], "s")
 	var well = api.world_info().get("well")
 	if well is Dictionary or (well is bool and well):
-		_log("The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "s")
+		_log("The %s warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim." % api.R.dead_star_name(api.R.RUN, true), "s")
 	batches.append({"events": api.take_events(), "view": api.view()})
 	if not showcase:
 		sfx.ambient_start()
@@ -663,9 +709,11 @@ func _begin(a) -> void:
 			voice.setup_from_api(api, V)
 		else:
 			voice.setup_from_rules(api.R, V)  # until the story layer reads battle_api.gd (setup_from_api)
-		for l in voice.opening():
-			hud.add_log(l["text"], l["kind"])
-			recording_cue.emit("voice", l["text"])
+		var opening_lines: Array = voice.opening()
+		if not _merge_nemesis_opening(opening_lines):
+			for l in opening_lines:
+				hud.add_log(l["text"], l["kind"])
+				recording_cue.emit("voice", l["text"])
 	var adm := _api_admiral()
 	if ResourceLoader.exists("res://portraits/portraits.gd") and adm != "":
 		var A = TBL.get("ADMIRALS", {}).get(adm, {})
@@ -804,6 +852,7 @@ func _warmup() -> void:
 	warming = true
 	hud.loading(true)
 	if world != null: await world.wait_ready()
+	await board.wait_planet()   # issue 1765: the board planet's maps load or bake behind the cover
 	var keep := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
 	cam.b = 0.6
 	cam.r = maxf(cam.bounds.x, cam.bounds.y) * 2.4
@@ -928,6 +977,7 @@ static func hex_distance(a: Dictionary, b: Dictionary) -> int:
 
 
 func _sync(v: Dictionary) -> void:
+	LOOK.battle_ssr(env, str(args.get("quality", "max")), v.get("units", []))
 	V = v
 	_index_view()
 	_music_feed()
@@ -1174,6 +1224,10 @@ func _stale(g: int) -> bool:
 # mark the battle retired before finished goes out: post-await work from it is rejected from here on
 func _retire() -> void:
 	retiring = true
+	_reset_battle_lens()
+	if _death_dof and cam != null:
+		cam.set_close_dof(false)
+	_deployment_api = null
 	_gen += 1
 	_click_q = {}
 
@@ -1242,8 +1296,13 @@ func _error(m: String) -> void:
 	push_warning(m)
 
 
-func wait(ms: float) -> void:
-	await get_tree().create_timer(maxf(ms, 1.0) / 1000.0 * speed).timeout
+func wait(ms: float, skippable_cut := false) -> void:
+	var timer := get_tree().create_timer(maxf(ms, 1.0) / 1000.0 * speed)
+	if skippable_cut:
+		_shot_cut_timer = timer
+	await timer.timeout
+	if _shot_cut_timer == timer:
+		_shot_cut_timer = null
 
 
 # The round budget (presentation only, outcomes unchanged): past 5 s of a round's enemy time the rest of its turn speeds
@@ -1371,9 +1430,7 @@ func _play_batch(bt: Dictionary) -> void:
 		var ta := game_t
 		await wait(float(PACE["aiEnd"]))
 		pace_kind["aiEnd"] = float(pace_kind.get("aiEnd", 0.0)) + game_t - ta
-		if not cam_saved.is_empty():
-			cam.t = cam_saved["t"]
-			cam_saved = {}
+		_end_enemy_follow()
 		hud.set_chip("")
 		if skip:
 			plog.hurries += 1
@@ -1440,6 +1497,39 @@ func _voice_event(e: Dictionary) -> void:
 		recording_cue.emit("voice", l["text"])
 
 
+# C27 (issue 1911, Board pick Option A): one Nemesis opening hail. The story voice (rival_lines.json) owns it, so its lines
+# take the rules hail's place in the opening batch: "<Nemesis> commands this fleet", the story hail, the admiral's reply,
+# then the contact lines. The rules hail stays in B.log (the saved hashes hold) and is only kept off the screen. With no
+# story hail the rules hail still shows and the voice lines follow it. False when the opening batch has no Nemesis lines.
+func _merge_nemesis_opening(lines: Array) -> bool:
+	if lines.is_empty() or batches.is_empty():
+		return false
+	var evs: Array = batches[0].get("events", [])
+	var intro := -1
+	var hail := -1
+	for i in evs.size():
+		var e = evs[i]
+		if e is Dictionary and e.get("t") == "log":
+			if e.get("nem") == "intro" and intro < 0:
+				intro = i
+			elif e.get("nem") == "hail" and hail < 0:
+				hail = i
+	if intro < 0 and hail < 0:
+		return false
+	var story_hail := lines.any(func(l): return str(l.get("moment", "")) == "nem_hail")
+	var at := intro + 1
+	if hail >= 0:
+		if story_hail:
+			evs.remove_at(hail)
+			at = hail
+		else:
+			at = hail + 1
+	for l in lines:
+		evs.insert(at, {"t": "log", "text": str(l["text"]), "kind": str(l["kind"]), "voice": true})
+		at += 1
+	return true
+
+
 func _play_event(e: Dictionary, batch_view := {}) -> void:
 	_voice_event(e)
 	match e["t"]:
@@ -1465,6 +1555,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				regen_unlocks[e["unit"]] = int(regen_unlocks.get(e["unit"], 0)) + 1
 		"log":
 			hud.add_log(str(e.get("text", "")), str(e.get("kind", "")) if e.get("kind") != null else "")
+			if e.get("voice", false):
+				recording_cue.emit("voice", str(e.get("text", "")))   # a story opening line merged into the opening batch (C27)
 		"float":
 			# rules.gd flt(): the boon and lineage callout over a ship (issue #305)
 			var dyv = e.get("dy")
@@ -1512,11 +1604,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 					for sv in views.values():
 						sv.set_selected(false)
 					views[e["unit"]].set_selected(true, Color(0.79, 0.64, 1.0))
-					# follow activations (the browser's G.follow): ease the camera toward the acting enemy, back after
-					if follow and not bot:
-						if cam_saved.is_empty():
-							cam_saved = {"t": cam.t, "r": cam.r}
-						cam.t = cam.t.lerp(_pos(e["unit"]), 0.6)
+					_follow_enemy_activation(e["unit"])
 				await wait(float(PACE["aiGap"]))
 		"move":
 			await _play_move(e["unit"], e["path"], false)
@@ -1543,7 +1631,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				for qi in range((d["sh"] as Array).size()):
 					d["sh"][qi] = 0   # R246: an empty pool drops every side at once (issue 1481)
 			_float(e["unit"], "Shields down", Color("#9fe2ff"), -40)
-			sfx.shield(_pos(e["unit"]), true)
+			sfx.shield(_pos(e["unit"]), true, str(VU.get(e["unit"], {}).get("fac", "")))
 			# issue 1239 (F2.5): a shield that drops with no volley to carry it (a storm, a special) still plays its failure
 			if gfx != null and gfx.has_method("shield_break"):
 				gfx.shield_break(str(e["unit"]), int(e["quad"]))
@@ -2190,20 +2278,71 @@ func _wfam(u: Dictionary, w: Dictionary) -> String:
 func _cine_wants(kind: String, a_id, t_id) -> bool:
 	if cine == "off" or bot or (shots_dir != "" and not args.has("torp-cine")):   # --torp-cine: captures keep the cut-in (issue 1379)
 		return false
+	if (brisk_camera or _skipped_camera_kinds.has(kind)) and _routine_shot_camera(kind, a_id, t_id):
+		return false
 	if cine == "all":
 		return true
 	var a: Dictionary = VU.get(a_id, {})
 	var t: Dictionary = VU.get(t_id, {})
-	var big: bool = bool(a.get("flagship", false)) or bool(t.get("flagship", false))
-	var low: bool = not t.is_empty() and float(disp.get(t_id, {}).get("hp", t.get("hp", 1))) <= float(t.get("maxHp", 1)) * 0.35
+	var big := _flagship_camera(a_id, t_id)
 	match kind:
 		"kill":
 			return not t.is_empty() and not t.get("squadron", false) and (float(t.get("size", 0)) >= 0.6 or big)
 		"lance", "torp", "nova":
 			return true
 		"volley":
-			return float(a.get("size", 0)) >= 0.7 and (big or low)
+			return (big and float(a.get("size", 0)) >= 0.7) or _capital_volley_at_low_hull(a_id, t_id)
 	return false
+
+
+func _flagship_camera(a_id, t_id) -> bool:
+	return bool(VU.get(a_id, {}).get("flagship", false)) or bool(VU.get(t_id, {}).get("flagship", false))
+
+
+func _capital_volley_at_low_hull(a_id, t_id) -> bool:
+	var t: Dictionary = VU.get(t_id, {})
+	return float(VU.get(a_id, {}).get("size", 0)) >= 0.7 and not t.is_empty() \
+		and float(disp.get(t_id, {}).get("hp", t.get("hp", 1))) <= float(t.get("maxHp", 1)) * 0.35
+
+
+func _routine_shot_camera(kind: String, a_id, t_id) -> bool:
+	return kind in ["lance", "torp", "volley"] and not _flagship_camera(a_id, t_id) \
+		and (kind != "volley" or not _capital_volley_at_low_hull(a_id, t_id))
+
+
+func _follow_enemy_activation(id) -> void:
+	var routine := not _flagship_camera(null, id)
+	if not follow or bot:
+		return
+	if routine and _skipped_camera_kinds.has("follow"):
+		_end_enemy_follow()
+		return
+	if cam_saved.is_empty():
+		cam_saved = {"t": cam.t, "r": cam.r}
+	cam.t = cam.t.lerp(_pos(id), 0.6)
+	_routine_follow = routine
+
+
+func _end_enemy_follow() -> void:
+	if not cam_saved.is_empty():
+		cam.t = cam_saved["t"]
+		cam_saved = {}
+	_routine_follow = false
+
+
+func _skip_current_camera_kind() -> void:
+	var kind := _routine_shot_cut
+	if kind != "":
+		_cine_release()
+		if _shot_cut_timer != null:
+			_shot_cut_timer.time_left = 0.0
+	elif cine_saved.is_empty() and _routine_follow:
+		kind = "follow"
+		_end_enemy_follow()
+	else:
+		return
+	_skipped_camera_kinds[kind] = true
+	hud.toast("%s skipped for this battle." % ROUTINE_CAMERA_NAMES[kind])
 
 
 func _cine_frame(a_id, t_id) -> void:
@@ -2228,8 +2367,11 @@ func _cine_frame(a_id, t_id) -> void:
 
 
 func _cine_release() -> void:
+	if _death_dof and cam != null:
+		cam.set_close_dof(false)
 	if cine_saved.is_empty():
 		return
+	_routine_shot_cut = ""
 	cam.a = cine_saved["a"]
 	cam.b = cine_saved["b"]
 	cam.r = cine_saved["r"]
@@ -2240,17 +2382,22 @@ func _cine_release() -> void:
 
 
 func _play_fire(e: Dictionary, grp: Array) -> void:
+	var gen := _gen
 	var a_id = e["unit"]
 	var t_id = e["target"]
 	var ckind := "lance" if str(e["kind"]) == "lance" else "torp" if str(e["kind"]) == "torp" else "volley"
 	var cined := _cine_wants(ckind, a_id, t_id)
 	if cined:
 		_cine_frame(a_id, t_id)
+		_routine_shot_cut = ckind if _routine_shot_camera(ckind, a_id, t_id) else ""
 		recording_cue.emit("cut_start", "%s: %s to %s" % [ckind, _name(a_id), _name(t_id)])
-		await wait(320.0)
+		await wait(320.0, _routine_shot_cut != "")
+		if _stale(gen):
+			return
 	var u: Dictionary = VU.get(a_id, {})
 	var fac := str(u.get("fac", "hegemony"))
 	var fam := _wfam(u, e)
+	var wid := str(e.get("weapon_id", ""))   # issue 1752: the weapon's own recorded sound (a faction.weapon_id cue variant)
 	var shots: Array = e["shots"]
 	var n := shots.size()
 	var from := _pos(a_id) + Vector3(0, 1.6, 0)
@@ -2323,16 +2470,18 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			shot_at[str(a_id)] = float(gfx.now) + fire0   # issue 1581: the first muzzle of this volley, on the effect clock
 		if fam in ["lance", "ion"]:
 			if str(e.get("weapon_id", "")) == "nlance" and not fires.is_empty():
-				sfx.lance(false, fac, from, -1.0, _at_fx, fires)
+				sfx.lance(false, fac, from, -1.0, _at_fx, fires, wid)
 			elif str(e.get("weapon_id", "")) != "nlance":
-				sfx.lance(fam == "ion", fac, from, fire0, _at_fx)
+				sfx.lance(fam == "ion", fac, from, fire0, _at_fx, [], wid)
 		elif fam == "torp":
-			sfx.torp(fac, from, fire0, _at_fx)
+			sfx.torp(fac, from, fire0, _at_fx, wid)
 		else:
 			# issue 506: one gun cue per shot, on the fire times the fx layer used for its muzzle effects
 			var style = null if fam == "sq" else fam if fam in ["spine", "glob", "plasma", "las", "tracer", "needle", "rail"] else "shell"
+			if wid == "gauss" and fire0 >= 0.0:
+				sfx.gauss_charge(from, fire0, _at_fx)   # issue 1752: once per volley, ending on the first shot
 			for i in mini(fires.size(), n):
-				sfx.gun(str(e["kind"]), fam == "sq", style, from, float(fires[i]))
+				sfx.gun(str(e["kind"]), fam == "sq", style, from, float(fires[i]), fac, wid)
 		var imp: Array = r.get("impacts", [])
 		var tfac := str(VU.get(t_id, {}).get("fac", ""))
 		# issue 1211: the fx gives one arrival per SHOT (misses too); each hit lands on its own shot's arrival, on the
@@ -2345,12 +2494,12 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			_at_fx(at, func() -> void:
 				_land_hit(t_id, h, kk, land)
 				if float(h["shield"]) > 0 and float(h["hull"]) <= 0:
-					sfx.shield(_pos(t_id))
+					sfx.shield(_pos(t_id), false, tfac)
 				else:
-					sfx.impact(fam, tfac, _pos(t_id), bool(h["crit"]), _at_fx))
+					sfx.impact(fam, tfac, _pos(t_id), bool(h["crit"]), _at_fx, fac))
 		total = _fx_wait(float(r.get("done", 0.6)), imp, sp, dying.has(str(t_id)), btot)
 	elif fam in ["lance", "ion"]:
-		sfx.lance(fam == "ion", fac, from)
+		sfx.lance(fam == "ion", fac, from, -1.0, Callable(), [], wid)
 		total = 0.32 + n * 0.25 + 0.15
 		for i in n:
 			var dl := (0.32 + i * 0.25) * sp
@@ -2358,16 +2507,16 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			var end := to if hit else to + (to - from).normalized() * 30.0 + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6))
 			fx.beam(from, end, col, 0.22 * sp, dl, 1.0 if fam == "lance" else 1.3)
 			if hit and hi < hits.size():
-				_schedule_impact(t_id, hits[hi], dl + 0.05 * sp, L, shield_col, fam, hi, land)
+				_schedule_impact(t_id, hits[hi], dl + 0.05 * sp, L, shield_col, fam, hi, land, fac)
 				hi += 1
 	elif fam == "torp":
-		sfx.torp(fac, from)
+		sfx.torp(fac, from, -1.0, Callable(), wid)
 		total = 0.32 + n * 0.12 + 0.84
 		for i in n:
 			var dl := (0.32 + i * 0.12) * sp
 			fx.bolt(from, to, col, 0.8 * sp, dl, 2.2, not shots[i])
 			if shots[i] and hi < hits.size():
-				_schedule_impact(t_id, hits[hi], dl + 0.8 * sp, L, shield_col, fam, hi, land)
+				_schedule_impact(t_id, hits[hi], dl + 0.8 * sp, L, shield_col, fam, hi, land, fac)
 				hi += 1
 	else:
 		total = n * 0.07 + 0.49
@@ -2376,9 +2525,9 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			var dl := i * 0.07 * sp
 			var off := Vector3(randf_range(-1, 1), randf_range(-0.3, 0.6), randf_range(-1, 1)) * 0.25 * float(VU.get(a_id, {}).get("size", 0.5)) * 10.0
 			fx.bolt(from + off, to, col, 0.24 * sp, dl, 1.1 if fam != "rail" else 1.5, not shots[i])
-			sfx.gun(str(e["kind"]), fam == "sq", style, from, dl)
+			sfx.gun(str(e["kind"]), fam == "sq", style, from, dl, fac, wid)
 			if shots[i] and hi < hits.size():
-				_schedule_impact(t_id, hits[hi], dl + 0.24 * sp, L, shield_col, fam, hi, land)
+				_schedule_impact(t_id, hits[hi], dl + 0.24 * sp, L, shield_col, fam, hi, land, fac)
 				hi += 1
 	if shots_dir != "" and fire_shots < 4 and bot:
 		fire_shots += 1
@@ -2427,8 +2576,10 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			var sec := str(g["section"])
 			_log("%s: %s destroyed. %s" % [_name(g["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Flank guns and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(g["unit"]) == "player" else "p")
 	await wait(80.0)
-	if cined:
-		await wait(900.0)
+	if cined and not _stale(gen):
+		await wait(900.0, _routine_shot_cut != "")
+		if _stale(gen):
+			return
 		_cine_release()
 	# the marker stays until the volley is over and its last hit has landed (a paced volley lets go before its tail)
 	land["ended"] = true
@@ -2584,7 +2735,7 @@ func _shield_downs(land: Dictionary) -> void:
 			land["sh_f"] = _float_tally(sf, g["unit"], _shield_text(land), Color("#9fe2ff"), FLOAT_LANE_SHIELD)
 		else:
 			_float(g["unit"], "Shields down", Color("#9fe2ff"), FLOAT_LANE_SHIELD)
-		sfx.shield(_pos(g["unit"]), true)
+		sfx.shield(_pos(g["unit"]), true, str(VU.get(g["unit"], {}).get("fac", "")))
 		if gfx != null and gfx.has_method("shield_break"):
 			# issue 1239 (F2.1): the failure closes where the breaking shot struck (the quadrant's middle without one)
 			var pts: Array = land.get("pts", [])
@@ -2619,7 +2770,7 @@ func _aim_off(land: Dictionary) -> void:
 
 
 
-func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: Color, fam: String, k := -1, land := {}) -> void:
+func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: Color, fam: String, k := -1, land := {}, afac := "") -> void:
 	var tfac := str(VU.get(t_id, {}).get("fac", ""))
 	get_tree().create_timer(maxf(delay, 0.001)).timeout.connect(func() -> void:
 		if land.is_empty():
@@ -2633,13 +2784,13 @@ func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: C
 		if float(h["shield"]) > 0 and float(h["hull"]) <= 0:
 			fx.shield(sv, L, int(h["quad"]), shield_col)
 			_flash(p, 4.0 + L * 0.25, shield_col, 0.25, 0.0, false)
-			sfx.shield(p)
+			sfx.shield(p, false, tfac)
 		else:
 			_flash(p, 5.0 + L * 0.3 + (8.0 if fam == "torp" else 0.0), Color(1.0, 0.62, 0.3), 0.3)
 			if fam == "torp":
 				sfx.boom(0.8, p)
 			else:
-				sfx.impact(fam, tfac, p, bool(h["crit"]), _at_fx))
+				sfx.impact(fam, tfac, p, bool(h["crit"]), _at_fx, afac))
 
 
 func _apply_hit(h: Dictionary, show_regen_lock := true) -> void:
@@ -2673,6 +2824,53 @@ var shot_at := {}             # issue 1581: unit id -> effect-clock time of its 
 var reduce_motion := false    # settings key reduce_motion (ui_spec.md 7.6; the switch sits in Settings and this menu)
 var kill_hold_until := -1.0   # game_t when the kill cut-in lets go; -1 when none holds
 var _kill_hold_n := 0
+var _death_dof := false
+var _battle_lens: CompositorEffect
+var _lens_well := false
+var _lens_shock := false
+var _shock_deaths := {}
+const SHOCKWAVE_S := 0.62
+
+
+func _reset_battle_lens() -> void:
+	_shock_deaths.clear()
+	if _battle_lens != null:
+		_battle_lens.set_lenses(Vector4.ZERO, 0.0, Vector4.ZERO)
+
+
+func _track_capital_shockwave(id: String, center: Vector3, length: float) -> void:
+	if not _lens_shock or reduce_motion or reduce_flashing:
+		return
+	var ship = gfx.ship(id)
+	if ship != null and (ship.death_core_pending or gfx.death_core_at(id) >= 0.0):
+		_shock_deaths[id] = [center, length]
+
+
+func _step_battle_lens() -> void:
+	if retiring or warming:
+		return
+	var well := Vector4.ZERO
+	var well_depth := 0.0
+	if _lens_well and is_instance_valid(world) and world.well_position() != Vector3.INF:
+		var center: Vector3 = world.well_position()
+		well = BattleLens.project_lens(cam, center, 2.0 * world.well_radius(), -1.0)
+		var depth: float = -(cam.get_camera_transform().affine_inverse() * center).z
+		well_depth = clampf(cam.near * (cam.far - depth) / (maxf(depth, cam.near) * (cam.far - cam.near)), 0.0, 1.0)
+	var shock := Vector4.ZERO
+	var newest := -INF
+	for id in _shock_deaths.keys():
+		var ship = gfx.ship(id)
+		if ship != null and ship.death_core_pending:
+			continue
+		var core: float = gfx.death_core_at(id)
+		var age: float = (gfx.now - core) / SHOCKWAVE_S
+		if core < 0.0 or age >= 1.0 or reduce_motion or reduce_flashing:
+			_shock_deaths.erase(id)
+		elif age >= 0.0 and core >= newest:
+			newest = core
+			var source: Array = _shock_deaths[id]
+			shock = BattleLens.project_lens(cam, source[0], float(source[1]) * lerpf(0.3, 1.6, age), age)
+	_battle_lens.set_lenses(well, well_depth, shock)
 
 
 # Issue 521 (Board review of PR 525): while a kill cut-in holds, the camera frames the DYING ship, not the attacker and
@@ -2722,6 +2920,8 @@ func _kill_frame(id) -> void:
 	cam.r = rr
 	cam.t = tp
 	cam.slow_until = cam._clock + 1.2
+	if _death_dof and not reduce_motion and rr < CamRig.DOF_CLOSE_LIMIT:
+		cam.set_close_dof(true, float(sv.L))
 	hud.letterbox(true)
 
 
@@ -2835,6 +3035,9 @@ func _play_death(e: Dictionary) -> void:
 		if "kill_slowmo" in gfx:
 			gfx.kill_slowmo = not reduce_motion
 		var t: float = float(gfx.death(str(id), cause))
+		var unit: Dictionary = VU.get(id, {})
+		if not skip and (float(unit.get("size", 0.0)) > 0.8 or bool(unit.get("flagship", false))) and cause not in ["dark", "hulk", "board"]:
+			_track_capital_shockwave(str(id), p, L)
 		if skip and gfx.has_method("hurry_death"):
 			gfx.hurry_death()
 		if cined:
@@ -2901,8 +3104,42 @@ func _end_sound(win: bool) -> String:
 	return "sting"
 
 
+func _end_cause_line() -> String:
+	match V.get("endCause", ""):
+		"enemy_gone": return "No enemy ships remain in the fight."
+		"rout": return "Their fleet broke and fled."
+		"boss", "flagship": return "The enemy flagship is out of the fight."
+		"flagship_escaped": return "The flagship escaped, and its escorts withdrew."
+		"convoy_broken": return "You stopped enough transports to break the convoy."
+		"convoy_escaped": return "Too many transports escaped. The escorts broke off."
+		"breakthrough": return "Enough of your ships broke through and jumped clear."
+		"breakthrough_short": return "Too few of your ships could still break through."
+		"station_held": return "You held the station until the enemy withdrew."
+		"station_lost": return "The enemy destroyed the station."
+		"relay_held": return "You held the relay for three rounds."
+		"relay_lost": return "The enemy secured the relay."
+		"fleet_lost":
+			var objective = V.get("obj")
+			if objective is Dictionary and objective.get("type") == "hold":
+				return "Your last ship was destroyed with the relay at %d/3." % int(objective["score"])
+			return "Your last ship was destroyed."
+	return ""
+
+
+func _continue_label(outcome: String) -> String:
+	if not in_campaign:
+		return "Continue to title"
+	match outcome:
+		"win": return "Continue to battle rewards"
+		"retreat": return "Return to campaign map"
+		_: return "Continue to run debrief"
+
+
 func _end_flow() -> void:
 	ended = true
+	inspect = ""
+	hud.set_panel({})
+	hud.set_target({})
 	if board != null:
 		board.set_process_unhandled_input(false)
 	# issue 1559 item 8: Fight again (the menu) during the victory beat starts a new battle while this one still waits; its
@@ -2935,12 +3172,15 @@ func _end_flow() -> void:
 	if bot or args.has("bot-runs"):
 		_finish(result)
 		return
+	var cause := _end_cause_line()
+	if cause != "":
+		body = cause + "\n" + body
 	if voice != null and not withdrawal:   # story hook: your admiral's last word (or the Nemesis's gloat) on the end card
 		var vl: String = voice.closing(win)
 		if vl != "":
 			body += "\n\n" + vl
 			recording_cue.emit("voice", vl)
-	hud.show_end(heading, body, win, external)
+	hud.show_end(heading, body, win, external, _continue_label(outcome))
 
 
 # ---------------------------------------------------------------- selection, overlays, tips
@@ -3911,19 +4151,20 @@ func _nova_tip(q: int, r: int) -> String:
 	return t
 
 
-# the Hollow Sun's pull on a hex, as one line for the move tip ("" away from it or on a board without it)
+# the dead star's pull on a hex, as one line for the move tip ("" away from it or on a board without it)
 func _well_line(q: int, r: int) -> String:
 	var W = api.world_info().get("well") if api != null else null
 	if not W is Dictionary:
 		return ""
 	var R = api.R
 	var d := _hex_d(q, r, int(W["q"]), int(W["r"]))
+	var star: String = R.dead_star_name(R.RUN)
 	if d <= int(R.WELL_RIM):
-		return "[color=#ff8a72]Hollow Sun rim: %d hull damage to a ship here at each round start (it still gets +1 movement).[/color]" % int(R.WELL_DMG)
+		return "[color=#ff8a72]%s rim: %d hull damage to a ship here at each round start (it still gets +1 movement).[/color]" % [star, int(R.WELL_DMG)]
 	if d <= int(R.WELL_PULL):
-		return "[color=#c79bff]Hollow Sun pull: a ship here is dragged 1 hex inward at each round start, with +1 movement.[/color]"
+		return "[color=#c79bff]%s pull: a ship here is dragged 1 hex inward at each round start, with +1 movement.[/color]" % star
 	if d <= int(R.WELL_ASSIST):
-		return "[color=#9fd4ff]Hollow Sun slingshot: +1 movement at each round start, no pull.[/color]"
+		return "[color=#9fd4ff]%s slingshot: +1 movement at each round start, no pull.[/color]" % star
 	return ""
 
 
@@ -3941,6 +4182,22 @@ var _board_release := false
 
 
 func _input(e: InputEvent) -> void:
+	if _deployment_api != null:
+		# Keep keys away from focused controls and board shortcuts before Godot dispatches them.
+		var skip_key: bool = e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_ESCAPE, KEY_1, KEY_KP_1]
+		var skip_click: bool = e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_RIGHT and e.pressed
+		if skip_key or skip_click:
+			get_viewport().set_input_as_handled()
+			_pick_skill_target("")
+		elif e is InputEventMouseButton and e.pressed:
+			# Leave the picker rows, Skip and fleet paging to the ledger's normal GUI handler.
+			var ledger: Control = hud.ledger
+			var local_position: Vector2 = ledger.get_global_transform_with_canvas().affine_inverse() * e.position
+			if not ledger._has_point(local_position):
+				get_viewport().set_input_as_handled()
+		elif not e is InputEventMouse:
+			get_viewport().set_input_as_handled()
+		return
 	if not e is InputEventMouseButton or cam == null:
 		return
 	# End camera gestures before the GUI can consume their releases. Only an unhandled press can start one.
@@ -3952,12 +4209,14 @@ func _input(e: InputEvent) -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
-	if api == null or (e is InputEventMouse and hud.get("endcard") != null):
+	if _deployment_api != null or api == null or (e is InputEventMouse and hud.get("endcard") != null):
 		return
 	if opening and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed) or (e is InputEventKey and (e as InputEventKey).pressed)):
 		_end_opening()
 	if kill_hold_until > 0.0 and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed and (e as InputEventMouseButton).button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]) or (e is InputEventKey and (e as InputEventKey).pressed and not (e as InputEventKey).echo)):
 		_kill_skip()
+		if e is InputEventKey and e.keycode == KEY_K:
+			return
 	if e is InputEventMouseButton:
 		if e.button_index == MOUSE_BUTTON_LEFT and not e.pressed:
 			if _board_release and not hud.over_ui(e.position):
@@ -4021,6 +4280,8 @@ func _on_key(k: int) -> void:
 			gfx.hurry_death()
 		return
 	match k:
+		KEY_K:
+			_skip_current_camera_kind()
 		KEY_ESCAPE:
 			# F1: Esc drops the newest thing first (an ability or boarding pick, a wing pick, the plan or target, the armed
 			# weapon, the ship you were looking at); the ship that is up stays up. With nothing to drop it opens the menu.
@@ -4912,7 +5173,7 @@ func _blocker_text(t: Dictionary) -> String:
 	var counts := {}
 	var order: Array = []
 	for h in _shot_blockers(t):
-		var label: String = {"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(h.kind, h.kind)
+		var label: String = {"rock": "asteroid", "hulk": "wreck", "deadstar": api.R.dead_star_name(api.R.RUN, true)}.get(h.kind, h.kind)
 		if not counts.has(label):
 			counts[label] = 0
 			order.append(label)
@@ -5008,7 +5269,8 @@ func _legend() -> void:
 	var desc := str(E.get("d", "")) if E is Dictionary else ""
 	var shape = api.world_info().get("shape")
 	if shape != null and str(shape) != "open" and TBL.get("SHAPES", {}).has(str(shape)):
-		desc += " Board: %s." % str(TBL["SHAPES"][str(shape)]).to_lower()
+		var board_name: String = api.R.dead_star_name(api.R.RUN) if shape == "deadstar" else str(TBL["SHAPES"][str(shape)]).to_lower()
+		desc += " Board: %s." % board_name
 	var mods: Array = api.R.storyModifierLines()
 	if not mods.is_empty(): desc += "\n" + " ".join(PackedStringArray(mods))
 	hud.set_legend(title, desc.strip_edges(), rows)
@@ -5112,6 +5374,12 @@ func _attack_tip(t_id: String) -> String:
 
 
 func _on_action(name: String, arg) -> void:
+	if _deployment_api != null:
+		if name == "pick":
+			_pick_skill_target(str(arg))
+		elif name == "ask" and arg == "skip_skill_target":
+			_pick_skill_target("")
+		return
 	sfx.play("ui_click")
 	match name:
 		"end":
@@ -5274,6 +5542,41 @@ func _on_action(name: String, arg) -> void:
 # ---------------------------------------------------------------- issue 529: the tree prompts
 
 var roles_opened := false
+var _deployment_api: API
+
+
+# Deployment uses the fleet list before the board, ship views or effects are built.
+func _show_skill_picker() -> void:
+	var v: Dictionary = _deployment_api.view()
+	var picker: Dictionary = v["skill_target"]
+	var first := str(picker["picked"].get("id", ""))
+	var candidates := {}
+	for t in picker["targets"]:
+		candidates[t["id"]] = true
+	var rows: Array = []
+	for u in v["units"]:
+		var picked: bool = u["id"] == first
+		if picked or candidates.has(u["id"]):
+			rows.append({"id": u["id"], "name": u["name"], "cls": u["cls"], "hp": u["hp"], "maxHp": u["maxHp"],
+				"shp": _z0(u.get("shp")), "shMax": u["shMax"], "flag": u["flagship"], "sel": picked, "done": picked,
+				"status": "Selected" if picked else "Ready"})
+	hud.set_roster(rows)
+	hud.show_ask({"kind": "skill_target", "key": picker["key"], "id": first, "n": picker["n"],
+		"q": picker["q"] + " Choose from your fleet below.",
+		"opts": [{"id": "skip_skill_target", "n": "Skip", "d": "Skip this skill with Esc or right-click."}]})
+
+
+func _pick_skill_target(id: String) -> void:
+	if quitting or _deployment_api == null or not _deployment_api.pick_skill_target(id):
+		return
+	sfx.play("ui_cancel" if id == "" else "ui_click")
+	if _deployment_api.phase == "deployment":
+		_show_skill_picker()
+	else:
+		var a := _deployment_api
+		_deployment_api = null
+		hud.hide_ask()
+		_begin(a)
 
 
 func _sync_ask() -> void:
@@ -5372,6 +5675,7 @@ func _open_menu(row := -1) -> void:
 	items.append(["Movement: %s" % movement, "opt", "movement"])
 	items.append(["Follow enemy activations: %s" % ("on" if follow else "off"), "opt", "follow"])
 	items.append(["Cut-ins: %s" % {"key": "key moments", "all": "every attack", "off": "off"}.get(cine, cine), "opt", "cine"])
+	items.append(["Brisk camera: %s" % ("on" if brisk_camera else "off"), "opt", "brisk_camera"])
 	items.append(["Teaching tips: %s" % ("off" if tips_off else "on"), "opt", "tips"])
 	items.append(["Reduce flashing: %s" % ("on" if reduce_flashing else "off"), "opt", "flash"])
 	items.append(["Reduce motion: %s" % ("on" if reduce_motion else "off"), "opt", "motion"])
@@ -5434,6 +5738,9 @@ func _toggle_opt(k: String) -> void:
 		"cine":
 			cine = {"key": "all", "all": "off", "off": "key"}.get(cine, "key")
 			option_changed.emit("cine", cine)
+		"brisk_camera":
+			brisk_camera = not brisk_camera
+			option_changed.emit("brisk_camera", brisk_camera)
 		"tips":
 			tips_off = not tips_off
 			if tips_off: _tip_dismiss("off")
@@ -5495,7 +5802,7 @@ func _sync_arrival() -> void:
 
 
 func _refresh_ui() -> void:
-	if api == null or V.is_empty() or quitting or not is_instance_valid(hud):
+	if _deployment_api != null or api == null or V.is_empty() or quitting or not is_instance_valid(hud):
 		return
 	if _worker_owns_rules():
 		return   # issue 1433: every read below locks the rules; the publish runs this pass (_threat_done)
@@ -5825,6 +6132,8 @@ func _objective() -> String:
 
 
 func _panel_info() -> Dictionary:
+	if ended:
+		return {}
 	var id := sel if sel != "" else inspect
 	if id == "" or not VU.has(id):
 		return {}
@@ -6178,13 +6487,34 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 var showcase_ready := false
 
 
+# Issue 1777: how far the farthest board hex lies from a point (the shadow reach must cover the whole board at any zoom)
+var _board_cells_xz := PackedVector2Array()
+func _board_far(p: Vector3) -> float:
+	if _board_cells_xz.size() != board.cells.size():
+		_board_cells_xz.clear()
+		for c in board.cells:
+			var w: Vector3 = board.hex_world(float(c["q"]), float(c["r"]))
+			_board_cells_xz.append(Vector2(w.x, w.z))
+	var far := 0.0
+	var p2 := Vector2(p.x, p.z)
+	for c in _board_cells_xz:
+		far = maxf(far, p2.distance_squared_to(c))
+	return sqrt(far)
+
+
 func _process(dt: float) -> void:
+	if _deployment_api != null:
+		return
 	game_t += dt
 	if not torp_ft.is_empty():
 		_torp_ft_step(dt)
 	cam.keyboard_enabled = not warming and not ended and (hud == null or (hud.menu == null and hud.get("endcard") == null))
 	if showcase_ready:
 		cam.a += dt * 0.035
+	# issue 1777 (Ship Look V2): the key light's shadow reach follows the zoom, so its cascades spend their texels on the
+	# ships in view (the fixed 600 spread them over empty space: soft, blocky hull shadows)
+	if key_light != null and board != null and LOOK.ship_look_v2_enabled():
+		key_light.directional_shadow_max_distance = LOOK.shadow_reach(float(cam.r), _board_far(cam.t))
 	if world != null and world.has_method("step"):
 		world.step(dt)
 	if api == null:
@@ -7017,12 +7347,17 @@ func _closeups(id: String, tag: String) -> void:
 	var yaw: float = sv.rotation.y
 	var rr := clampf(float(sv.L) * 1.5, cam.min_r, 140.0)
 	var nm := "%s_%s_%s" % [tag, str(VU.get(id, {}).get("cls", "ship")).replace(" ", ""), id]
+	var use_dof := _death_dof and not reduce_motion and rr < CamRig.DOF_CLOSE_LIMIT
+	if use_dof:
+		cam.set_close_dof(true, float(sv.L))
 	for v in [[yaw + PI / 2.0, 0.35, "port"], [yaw - PI / 2.0, 0.35, "starboard"], [yaw + PI * 0.75, 0.9, "above"]]:
 		cam.a = float(v[0]); cam.b = float(v[1]); cam.r = rr; cam.t = sv.visual_position()
 		cam.snap()
 		await get_tree().create_timer(0.5).timeout
 		await _snap(nm + "_" + str(v[2]))
 	cam.a = save[0]; cam.b = save[1]; cam.r = save[2]; cam.t = save[3]
+	if use_dof:
+		cam.set_close_dof(false)
 	cam.snap()
 
 

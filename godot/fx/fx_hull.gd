@@ -12,6 +12,8 @@ const SHD := preload("res://fx/fx_shaders.gd")
 #   - the attach point service (issue 370, at the end of this file): where an effect starts on the ship, from the
 #     authored hard points first (docs/ship_pipeline/HARDPOINTS.md), else a surface ray, else nowhere (skipped, counted).
 
+const SH := preload("res://fx/fx_shaders.gd")
+
 const SEC_ENG := 0
 const SEC_MID := 1
 const SEC_PROW := 2
@@ -90,8 +92,30 @@ uniform bool hull_has_normal = false;
 uniform bool hull_has_orm = false;
 uniform bool hull_vertex_color = false;
 uniform bool hull_emission_multiply = false;
+// Issue 1777 (Ship Look V2): the faction micro-detail layer, the same object-space triplanar sum, multiply grain and
+// normal mix as Godot's own detail layer on the undamaged hull (render/look.gd _detail_layer), so a first hit never pops it off
+uniform bool hull_detail = false;
+uniform sampler2D hull_detail_albedo : source_color, hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D hull_detail_normal : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform vec3 hull_detail_scale = vec3(1.0);
+uniform float hull_detail_sharpness = 4.0;
+// Issue 1777: the V2 faction material channels (render/look.gd V2 "pbr"), zero when the hull has none (zero adds nothing)
+uniform float hull_aniso = 0.0;
+uniform float hull_coat = 0.0;
+uniform float hull_coat_rough = 0.3;
+uniform vec4 hull_back : source_color = vec4(0.0);
 varying vec4 hull_color_v;
-void vertex() { UV = UV * hull_uv_scale.xy + hull_uv_offset.xy; hull_color_v = COLOR; }
+varying vec3 hull_tp_pos;
+varying vec3 hull_tp_w;
+vec4 hull_triplanar(sampler2D s, vec3 w, vec3 p) {
+	return texture(s, p.xy) * w.z + texture(s, p.xz) * w.y + texture(s, p.zy * vec2(-1.0, 1.0)) * w.x;
+}
+void vertex() {
+	UV = UV * hull_uv_scale.xy + hull_uv_offset.xy; hull_color_v = COLOR;
+	hull_tp_w = pow(abs(NORMAL), vec3(hull_detail_sharpness));
+	hull_tp_w /= max(dot(hull_tp_w, vec3(1.0)), 0.0001);
+	hull_tp_pos = VERTEX * hull_detail_scale * vec3(1.0, -1.0, 1.0);
+}
 void fragment() {
 	ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;
 	if (hull_vertex_color) { ALBEDO *= hull_color_v.rgb; }
@@ -103,6 +127,16 @@ void fragment() {
 	AO_LIGHT_AFFECT = hull_ao_light;
 	RIM = hull_rim; RIM_TINT = hull_rim_tint;
 	if (hull_has_normal) { NORMAL_MAP = texture(hull_normal, UV).rgb; NORMAL_MAP_DEPTH = hull_normal_scale; }
+	if (hull_detail) {
+		vec4 dt = hull_triplanar(hull_detail_albedo, hull_tp_w, hull_tp_pos);
+		vec3 dn = hull_triplanar(hull_detail_normal, hull_tp_w, hull_tp_pos).rgb;
+		ALBEDO = mix(ALBEDO, ALBEDO * dt.rgb, dt.a);
+		NORMAL_MAP = mix(hull_has_normal ? NORMAL_MAP : vec3(0.5, 0.5, 1.0), dn, dt.a);
+		NORMAL_MAP_DEPTH = hull_normal_scale;
+	}
+	if (hull_aniso > 0.0) { ANISOTROPY = hull_aniso; ANISOTROPY_FLOW = vec2(1.0, 0.0); }
+	if (hull_coat > 0.0) { CLEARCOAT = hull_coat; CLEARCOAT_ROUGHNESS = hull_coat_rough; }
+	BACKLIGHT = hull_back.rgb;
 	vec3 em = texture(hull_emission, UV).rgb;
 	EMISSION = (hull_emission_multiply ? hull_emission_color.rgb * em : hull_emission_color.rgb + em) * hull_emission_energy;
 }
@@ -190,7 +224,7 @@ static var _shader_refs := {}   # not GPU: weak refs only, nothing is kept alive
 # derived from this code, so it keeps the alpha.
 static func exterior_alpha_code() -> String:
 	if not _ext_codes.has("exterior_alpha"):
-		_ext_codes["exterior_alpha"] = EXTERIOR.replace("ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;",
+		_ext_codes["exterior_alpha"] = SH.patch(EXTERIOR, "ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;",
 			"ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;\n\tALPHA = hull_albedo.a * texture(hull_color, UV).a;")
 	return _ext_codes["exterior_alpha"]
 
@@ -440,6 +474,19 @@ static func _exterior(src: Material) -> ShaderMaterial:
 		["ao_light", m.ao_light_affect], ["emission_multiply", m.emission_operator == BaseMaterial3D.EMISSION_OP_MULTIPLY]]:
 		mat.set_shader_parameter("hull_" + pair[0], pair[1])
 	mat.set_shader_parameter("hull_emission_color", m.emission if m.emission_enabled else Color.BLACK)
+	if m.detail_enabled and m.uv2_triplanar and m.detail_albedo != null and m.detail_normal != null:   # issue 1777
+		mat.set_shader_parameter("hull_detail", true)
+		mat.set_shader_parameter("hull_detail_albedo", m.detail_albedo)
+		mat.set_shader_parameter("hull_detail_normal", m.detail_normal)
+		mat.set_shader_parameter("hull_detail_scale", m.uv2_scale)
+		mat.set_shader_parameter("hull_detail_sharpness", m.uv2_triplanar_sharpness)
+	if m.anisotropy_enabled: mat.set_shader_parameter("hull_aniso", m.anisotropy)
+	if m.clearcoat_enabled:
+		mat.set_shader_parameter("hull_coat", m.clearcoat)
+		mat.set_shader_parameter("hull_coat_rough", m.clearcoat_roughness)
+	# subsurface scattering is not mirrored (small at 0.25, and the burnt pass sets its own); a wounded Chorus keeps its
+	# backlight and coat
+	if m.backlight_enabled: mat.set_shader_parameter("hull_back", m.backlight)
 	mat.set_shader_parameter("hull_emission_energy", m.emission_energy_multiplier)
 	var textures := {"color": BaseMaterial3D.TEXTURE_ALBEDO, "normal": BaseMaterial3D.TEXTURE_NORMAL,
 		"orm": BaseMaterial3D.TEXTURE_ORM, "rough": BaseMaterial3D.TEXTURE_ROUGHNESS,
@@ -1991,9 +2038,9 @@ func _read_doors(root: Node3D) -> void:
 			"deg": float(ex.get("open_deg", -100.0)), "lobes": lobes, "wins": [], "f": 0.0})
 
 
-# The door a node hangs under (its nearest door ancestor below the root), or -1: a lobe turns, so the damage never rides it.
+# The door a node belongs to (itself or its nearest door ancestor below the root), or -1.
 func _door_above(n: Node, root: Node) -> int:
-	var p := n.get_parent()
+	var p := n
 	while p != null and p != root:
 		if _door_of.has(p.get_instance_id()):
 			return int(_door_of[p.get_instance_id()])

@@ -17,6 +17,7 @@ rem (CODEX_MODEL, default gpt-6.2-sol since Nov 17 2026) into out\status.json an
 rem Test mode (for the Board's dry runs): CODEX_TEST_ROOT moves repo and out folders there, CODEX_TEST_AGENT is a .bat run
 rem in place of Codex (no Codex usage), CODEX_TEST_BRANCH is the branch pushed to (it must not start with codex/, muse/,
 rem work/ or opus/), CODEX_TEST_SPARSE lists the only folders a lean test clone checks out.
+rem From a lane checkout, "checks <existing output folder>" runs just the production check step.
 setlocal
 set "PYTHONDONTWRITEBYTECODE=1"
 rem The one Codex model pin (Ryan, Nov 17 2026: fresh work on gpt-6.2-sol). Change it here only.
@@ -29,6 +30,7 @@ if exist "%USERPROFILE%\Downloads\voidsworn_test\node\node.exe" set "PATH=%USERP
 set "ROOT=%USERPROFILE%\Downloads\voidsworn_test"
 set "B=%ROOT%\build_b"
 set "TP=%~dp0"
+if /i "%N%"=="checks" goto :checks_only
 rem %TPC% is %TP% without its trailing backslash, for passing the tools folder as a bare quoted argument (issue 722:
 rem cmd merges "%TP%" with the next quoted argument because of the backslash before the quote).
 set "TPC=%TP:~0,-1%"
@@ -115,19 +117,25 @@ set "SPARSE="
 if defined CODEX_TEST_ROOT set "SPARSE=%CODEX_TEST_SPARSE%"
 %COMMON% checkout "%R%" "%O%" "%BR%" "%SPARSE%"
 if errorlevel 1 exit /b 14
-pushd "%R%"
+pushd "%R%\.." || (
+  %COMMON% finish "%O%" 14 "" "%PUSHMODE%" 0
+  exit /b 14
+)
+rem Set the private scratch and any profile redirects before starting PowerShell in the clone.
+set "PC_RUN_TEMP=%TEMP%"
+%COMMON% scratch "%O%" "%R%"
+if errorlevel 1 goto :probefail
+set /p PC_RUN_SCRATCH=<"%O%\scratch_path.txt" || goto :probefail
+if not exist "%O%\profile_env.txt" goto :probefail
+for /f "usebackq tokens=1,* delims==" %%V in ("%O%\profile_env.txt") do set "%%V=%%W"
+set "TEMP=%PC_RUN_SCRATCH%"
+set "TMP=%PC_RUN_SCRATCH%"
+set "TMPDIR=%PC_RUN_SCRATCH%"
+cd /d "%R%" || goto :probefail
 %PS% prep %N% "%R%" "%O%"
 if errorlevel 1 goto :prepfail
 set /p EFF=<"%O%\effort.txt"
 %COMMON% effort "%O%" "%EFF%"
-rem Give the probe, agent, and checks one private scratch directory, recorded before use.
-set "PC_RUN_TEMP=%TEMP%"
-%COMMON% scratch "%O%"
-if errorlevel 1 goto :probefail
-set /p PC_RUN_SCRATCH=<"%O%\scratch_path.txt" || goto :probefail
-set "TEMP=%PC_RUN_SCRATCH%"
-set "TMP=%PC_RUN_SCRATCH%"
-set "TMPDIR=%PC_RUN_SCRATCH%"
 set "PROBE=%APPDATA%\npm\codex.cmd"
 if "%PC_RUNNER_TEST%"=="1" set "PROBE=%CODEX_TEST_AGENT%"
 %COMMON% preflight "%O%" "%R%" codex "%PROBE%" %CODEX_MODEL% ""
@@ -190,14 +198,7 @@ if errorlevel 1 goto :guardfail
 rem A chain needs green runner checks as well as a confirmed non-partial push.
 if defined PARTIAL goto :afterchecks
 if "%PC_RUNNER_TEST%"=="1" goto :afterchecks
-rem Issue 1739: 3600 s. A serial suite took about 950 s on a quiet PC and over 1,800 s with two lanes checking at once
-rem (1801, 1803, Nov 23). No row hung; each row keeps its own 300 or 600 s limit, which is what catches a hang.
-call "%TP%tmo.bat" 3600 node contrib\opus\tools\run_all_checks.js > "%O%\checks_node.txt" 2>&1
-set "NODE_EXIT=%ERRORLEVEL%"
-call "%TP%tmo.bat" 1500 "%COMSPEC%" /c tools\pc\parity.bat nopause > "%O%\checks_parity.txt" 2>&1
-set "PARITY_EXIT=%ERRORLEVEL%"
-if "%NODE_EXIT%"=="0" if "%PARITY_EXIT%"=="0" set "CHECKS_OK=1"
-echo checks: node exit %NODE_EXIT%, parity exit %PARITY_EXIT% >> "%O%\result.txt"
+call :checks "%O%"
 :afterchecks
 %PS% msg %N% "%R%" "%O%"
 %PSW% commit "%R%" "%O%" %PB% %PUSHMODE% >> "%O%\result.txt" 2>&1
@@ -262,3 +263,26 @@ rem Keep the checkout too. The patch and files can be salvaged without deleting 
 powershell -NoProfile -Command "$f=Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\board\queued.txt'; (Get-Content $f) -ne '%N%' | Set-Content $f"
 popd
 exit /b 9
+
+:checks_only
+if "%~2"=="" exit /b 2
+call :checks "%~2"
+exit /b %ERRORLEVEL%
+
+:checks
+setlocal
+set "CHECKS_OK=0"
+set "CHECKS_EXIT=1"
+rem Issue 1739: lane D hit the 3600 s total cap with checks still advancing. The suite also buffers a row's
+rem output until that row finishes. Let its longest row (1800 s) reach its own cap before the idle watchdog fires.
+set "CHECKS_PREV_IDLE=%TMO_IDLE_S%"
+set "TMO_IDLE_S=1860"
+call "%TP%tmo.bat" 5400 node contrib\opus\tools\run_all_checks.js > "%~1\checks_node.txt" 2>&1
+set "NODE_EXIT=%ERRORLEVEL%"
+set "TMO_IDLE_S=%CHECKS_PREV_IDLE%"
+call "%TP%tmo.bat" 1500 "%COMSPEC%" /c tools\pc\parity.bat nopause > "%~1\checks_parity.txt" 2>&1
+set "PARITY_EXIT=%ERRORLEVEL%"
+if "%NODE_EXIT%"=="0" if "%PARITY_EXIT%"=="0" set "CHECKS_OK=1"
+if "%CHECKS_OK%"=="1" set "CHECKS_EXIT=0"
+echo checks: node exit %NODE_EXIT%, parity exit %PARITY_EXIT% >> "%~1\result.txt"
+endlocal & set "NODE_EXIT=%NODE_EXIT%" & set "PARITY_EXIT=%PARITY_EXIT%" & set "CHECKS_OK=%CHECKS_OK%" & exit /b %CHECKS_EXIT%

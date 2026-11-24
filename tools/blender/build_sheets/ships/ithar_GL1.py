@@ -74,15 +74,15 @@ def skin(x, a, inset=0.0):
     return (x, w * math.cos(a) * flow, h * math.sin(a) * flow * belly)
 
 
-TWIST = lambda x: 0.16 * x + 0.30 * math.sin(0.45 * x)
+W8 = 1.12   # R431 round 3: i8_shell ribbon width, set by the kit gate (MOSAIC_MAX)
 
 
 def field():
     hl = hk('hull')
-    return hl.RibbonField(7, TWIST, sway=0.24, leaf_f=2.1, start=0.2, gather=hl.bow_gather(1.6, 4.0, (0.25, math.pi - 0.25, -math.pi / 2), 0.85))
+    # R431 round 3 (Ryan Nov 23, the white "more detailed and wrapping" like I8_37): the Ark's spiralling field from the kit
+    return hl.i8_field(XB - XS, start=0.2, gather=hl.bow_gather(1.6, 4.0, (0.25, math.pi - 0.25, -math.pi / 2), 0.85))
 
 
-LEAVES = [(-3.6, 1.5, 1.35, 0.20), (-2.4, 3.6, 2.20, 0.18), (-1.4, 3.7, 0.75, 0.18), (-3.0, 2.6, 4.75, 0.15)]
 
 
 def build(K):
@@ -94,22 +94,8 @@ def build(K):
     K.mass('Mosaic leaf core', core, 'opaque glowing stained-glass mosaic',
            note='One slender leaf; amber, violet and green panels between the ribbons; never see-through.')
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
-    ribbons = []
-    for k in range(f.n):
-        ribbons.append(gw.Ribbon(
-            XS + 0.10 + 0.08 * math.sin(2.3 * k), XB - 0.05 - 0.12 * (k % 3), f.centre(k),
-            # round 2 (Ryan Nov 21, "sleek"): seven narrow ribbons lying close on the leaf, like the pick's filigree
-            lambda t, k=k: (0.11 + 0.015 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.45, 0.42 + 0.05 * math.sin(k), tip=0.0)(t),
-            lambda t, v: S * (0.015 + 0.035 * (1 - v * v) ** 0.5 * (0.5 + 0.5 * math.sin(math.pi * t) ** 0.5)),
-            name='long_ribbon_%d' % k))
-    for k, (x0, x1, base, wd) in enumerate(LEAVES):
-        top = max(0.0, math.sin(base)) ** 2
-        ribbons.append(gw.Ribbon(
-            x0, x1, lambda x, base=base: base + 0.8 * TWIST(x),
-            lambda t, wd=wd: 0.75 * wd * gw.leaf(0.7, 0.0, 0.38)(t),
-            lambda t, v, top=top: S * (0.06 + 0.05 * (1 - v * v) ** 0.5 + 0.30 * top * ((v + 1) / 2) ** 2 * math.sin(math.pi * t) ** 1.5),
-            name='leaf_ribbon_%d' % k))
-    hl.lay_ribbons(K, ribbons, skin, 0.024 * S, 0.018 * S, nu=150, nv=6)
+    # R431 round 3: the I8_37 shell from the kit (twelve fine pillowed ribbons spiralling, crossing leaves curling up)
+    hl.i8_shell(K, skin, f, XS + 0.10, XB - 0.05, 'gl1', scale=S, leaves=8, seed=1, width=W8)
     hl.shard_cluster(K, 'S1', (XB - 0.35, 0.0, 0.0), 1.35, 0.12, spread=0.09,
                      note='The Prism shards grown into the bow optic: three drawn needles on the centreline; fixed forward, F arc.')
     belly = -height(TORP['x']) * 0.88

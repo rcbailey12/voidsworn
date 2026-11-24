@@ -88,9 +88,10 @@ if (process.platform !== 'win32') {
 // The lane can write to its own TEMP. Keep the fixture path short for PowerShell's Add-Type compiler.
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'r-'));
 const concurrency = 10;
-// Issue 1822: under lane load, an accounting fault can take over 90 s to finish its partial push and report.
-// Keep a per-launch limit inside the standing check's 600 s limit, with room for the runner to return its exit code.
-const entryTimeout = 180000;
+// Issue 1739: a loaded lane hit the 180 s entry limit during an OpenAI fixture's final reporting.
+const entryTimeout = 360000;
+// The held agent stays parked while another full fixture run reaches its final status.
+const agentHoldTimeout = 120000;
 const testChildren = [];
 const testPidFiles = [];
 const gh = require('./runner_claim_fixture')(root);
@@ -164,6 +165,23 @@ async function waitFor(condition, milliseconds) {
   const deadline = Date.now() + milliseconds;
   while (!condition() && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 25));
   return condition();
+}
+async function waitForFixtureReady(hold, running, message) {
+  const ready = hold + '.ready';
+  let watcher;
+  try {
+    await Promise.race([
+      new Promise((resolve, reject) => {
+        const check = () => { if (fs.existsSync(ready)) resolve(); };
+        watcher = fs.watch(path.dirname(hold), check);
+        watcher.on('error', reject);
+        check();
+      }),
+      running.then(run => { throw run.error || new Error(message + '\n' + run.text + run.result); })
+    ]);
+  } finally {
+    watcher?.close();
+  }
 }
 const source = path.join(root, 'upstream.git');
 assert.equal(run('git', ['init', '--bare', '-q', source]).code, 0);
@@ -239,7 +257,7 @@ if (probe) {
   const agentHold = process.env.STUB_AGENT_HOLD;
   if (agentHold) {
     fs.writeFileSync(agentHold + '.ready', 'agent owns checkout');
-    const deadline = Date.now() + 40000;
+    const deadline = Date.now() + ${agentHoldTimeout};
     while (!fs.existsSync(agentHold + '.release')) {
       if (Date.now() >= deadline) process.exit(38);
       Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 25);
@@ -379,7 +397,7 @@ if (exe.toLowerCase() === COMSPEC.toLowerCase()) {
   cmd = '""' + exe + '" ' + args + '"';
 }
 const result = spawnSync(COMSPEC, ['/d', '/s', '/c', cmd], { windowsVerbatimArguments: true, windowsHide: true, stdio: 'inherit',
-  timeout: process.env.STUB_AGENT_HOLD ? 45000 : 10000 });
+  timeout: process.env.STUB_AGENT_HOLD ? ${agentHoldTimeout + 10000} : 10000 });
 if (result.error) throw result.error;
 process.exitCode = result.status ?? 125;
 `);
@@ -430,7 +448,8 @@ async function job(arm, label, extra = {}) {
   const r = await runEntryPoint(cmd, env);
   write(path.join(home, 'console.txt'), r.text);
   const latest = path.join(env.WORK_ROOT, 'dryrun-687-' + arm, 'latest.txt');
-  assert(fs.existsSync(arm === 'codex' ? path.join(home, 'issue-687/status.json') : latest), r.text);
+  const startRecord = arm === 'codex' ? path.join(home, 'issue-687/status.json') : latest;
+  assert(fs.existsSync(startRecord), `${arm} ${label} exited ${r.code} before writing ${startRecord}\n${r.text}`);
   const runHome = arm === 'codex' ? home : read(latest).trim();
   const out = path.join(runHome, arm === 'codex' ? 'issue-687' : 'out');
   const repo = arm === 'codex' ? path.join(runHome, 'repo') : path.join(env.WORK_ROOT, 'slot_' + arm, 'repo');
@@ -949,23 +968,6 @@ async function testLaneOwnership() {
   const commonEnv = { CODEX_TEST_ROOT: home, USERPROFILE: profile, PC_TEST_SETTINGS: settings, PC_TEST_SPACE_FREE_MB: '131072' };
   const waiting = job('codex', 'lane-lock', { ...commonEnv, STUB_AGENT_HOLD: agentHold, PC_TEST_GH_HOLD_FINISH: finishHold })
     .catch(error => ({ error }));
-  async function waitForReady(hold, label) {
-    const ready = hold + '.ready';
-    let watcher;
-    try {
-      await Promise.race([
-        new Promise((resolve, reject) => {
-          const check = () => { if (fs.existsSync(ready)) resolve(); };
-          watcher = fs.watch(fixture, check);
-          watcher.on('error', reject);
-          check();
-        }),
-        waiting.then(run => { throw run.error || new Error(label + '\n' + run.text + run.result); })
-      ]);
-    } finally {
-      watcher?.close();
-    }
-  }
   async function refuse(issue) {
     const db = path.join(home, 'contender-gh.json');
     const trace = path.join(home, 'contender-gh.jsonl');
@@ -981,7 +983,7 @@ async function testLaneOwnership() {
   }
   let winner;
   try {
-    await waitForReady(agentHold, 'mock agent never reached its checkout');
+    await waitForFixtureReady(agentHold, waiting, 'mock agent never reached its checkout');
     assert(read(path.join(out, 'result.txt')).includes('has 128 GB free (min_free_gb floor 60)'), 'lane fixture must use fake space');
     const watched = [path.join(out, 'status.json'), path.join(out, 'result.txt'), path.join(home, 'repo', 'CODEX_TASK.md'),
       path.join(home, 'repo', '.git', 'HEAD'), path.join(home, 'repo', 'agent_started.txt')];
@@ -991,7 +993,7 @@ async function testLaneOwnership() {
     assert.deepEqual(watched.map(read), before, 'the live checkout, work and run records must be untouched');
     assert(!fs.existsSync(path.join(home, 'issue-688')), 'a different issue cannot create its output folder on this lane');
     write(agentHold + '.release', 'agent may finish');
-    await waitForReady(finishHold, 'runner never reached final reporting');
+    await waitForFixtureReady(finishHold, waiting, 'runner never reached final reporting');
     assert.equal(JSON.parse(read(path.join(out, 'status.json'))).status, 'unverified', 'local state was already finalized');
     await refuse(687);
     const refresh = run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
@@ -1115,7 +1117,7 @@ async function testWorkhorseSlots() {
   const running = job('deepseek', 'slot-held', { ...options, STUB_AGENT_HOLD: hold }).catch(error => ({ error }));
   let other;
   try {
-    assert(await waitFor(() => fs.existsSync(hold + '.ready'), 30000), 'mock DeepSeek did not reach the slot');
+    await waitForFixtureReady(hold, running, 'mock DeepSeek did not reach the slot');
     const repoHead = read(path.join(first.repo, '.git', 'HEAD'));
     const refused = await runEntryPoint('""' + path.join(tools, 'work_issue.bat') + '" 688 deepseek dryrun"', {
       ...defaults, WORK_ROOT: workRoot
@@ -1150,7 +1152,7 @@ async function testWorkhorseSlots() {
   const lockFree = () => { try { fs.closeSync(fs.openSync(slotLock, 'r+')); return true; } catch { return false; } };
   const orphan = job('deepseek', 'slot-orphan', { ...options, STUB_AGENT_HOLD: orphanHold }).catch(error => ({ error }));
   try {
-    assert(await waitFor(() => fs.existsSync(orphanHold + '.ready'), 30000), 'mock DeepSeek did not reach the slot');
+    await waitForFixtureReady(orphanHold, orphan, 'mock DeepSeek did not reach the slot');
     const holders = run('powershell.exe', ['-NoProfile', '-Command',
       "Get-CimInstance Win32_Process -Filter \"Name='powershell.exe'\" | Where-Object { $_.CommandLine -and " +
       "$_.CommandLine.Contains('work_issue.ps1\" run \"687\" \"deepseek\"') -and $_.CommandLine.Contains($env:ORPHAN_SLOT) } | " +
@@ -1493,8 +1495,10 @@ async function testRunnerStartChecks() {
   // The held runner and its contenders must be able to reach the fixture shell without waiting on unrelated cases.
   await testLaneOwnership();
   await testWorkhorseSlots();
+  // Keep the model-selection fixture's startup independent of the parallel fault cases.
+  await testOpenAIModels();
   await parallel([
-    testAccounting, testAccountingFaults, testOpenAIModels,
+    testAccounting, testAccountingFaults,
     testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testCampaignParityCleanup, testLateCheckoutEdits,
     testIncomingCheckoutCollisions, testKeptCheckoutHistory,
     testClaimRules, testClaimFailures, testAssignedBranch, testDeliveryCleanup, testNoEditRerun, testResumeAndFailures, testGitRetries,

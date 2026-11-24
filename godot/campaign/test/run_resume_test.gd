@@ -24,19 +24,26 @@ class CareerProbe extends Career:
 class EndHud extends CanvasLayer:
 	var heading := ""
 	var banner_text := ""
+	var body := ""
+	var continue_label := ""
+
+	func set_panel(_info: Dictionary) -> void: pass
+	func set_target(_info: Dictionary) -> void: pass
 
 	func banner(text: String, _color: Color, _seconds: float) -> void:
 		banner_text = text
 
-	func show_end(title: String, _body: String, _win: bool, _external: bool) -> void:
+	func show_end(title: String, details: String, _win: bool, _external: bool, next: String) -> void:
 		heading = title
+		body = details
+		continue_label = next
 
 class EndSound extends Node:
 	func sting(_win: bool) -> void: pass
 
 class EndScene extends "res://scenes/battle/battle.gd":
 	func _ready() -> void: pass
-	func wait(_ms: float) -> void: pass
+	func wait(_ms: float, _skippable_cut := false) -> void: pass
 	func _play_log_out(_res: String) -> void: pass
 
 var failures := 0
@@ -168,6 +175,8 @@ func _breakthrough() -> void:
 	c.finish_battle(scene.result["result"], r.B)
 	_check(hud.heading == "Withdrawal" and hud.banner_text == "Withdrawal" and scene.result["result"] == "retreat",
 		"2 HUD: a failed breakthrough with a ship clear is called Withdrawal")
+	_check(hud.body.begins_with("Too few of your ships could still break through.") and hud.continue_label == "Return to campaign map",
+		"C2: the withdrawal card names the failed breakthrough and the map")
 	_check(c.page["kind"] == "map" and c.RUN != null and c.RUN["fleet"].size() == 1 and c.RUN["fleet"][0]["uid"] == uid and not c.findNode(id)["done"] and c.RUN.get("curNode") == null and c.SAVED_RUN != null and career.result == "retreat",
 		"2 campaign and Career: the ship that jumped clear survives, the run continues, and the fight stays on the map (R381, issue 1480)")
 	scene.free()

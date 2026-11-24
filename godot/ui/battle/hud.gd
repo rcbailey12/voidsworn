@@ -478,7 +478,7 @@ func _show_dtip() -> void:
 
 
 func keys_text() -> String:
-	return "[font_size=%d][color=#a7b09d]Plan the ship's turn on its ghost: click a blue hex to move the ghost, [b]Q[/b]/[b]E[/b] turn it, click enemies to aim the guns that bear from it. Click the hex or a target again (or [b]Enter[/b]) and it all plays out at once. [b]1[/b]-[b]6[/b] pick one weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]C[/b] Command, [b]Tab[/b] next ship, [b]Space[/b] end ship, [b]Backspace[/b] take back the plan's last step (after a move has played, the last move or turn, until the ship fires), [b]Esc[/b] clear the plan. In the enemy turn [b]Enter[/b] or [b]Space[/b] hurries. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]Z[/b] tactical grid, [b]L[/b] full log, [b]Home[/b] reset view.[/color][/font_size]" % s(17)
+	return "[font_size=%d][color=#a7b09d]Plan the ship's turn on its ghost: click a blue hex to move the ghost, [b]Q[/b]/[b]E[/b] turn it, click enemies to aim the guns that bear from it. Click the hex or a target again (or [b]Enter[/b]) and it all plays out at once. [b]1[/b]-[b]6[/b] pick one weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]C[/b] Command, [b]Tab[/b] next ship, [b]Space[/b] end ship, [b]Backspace[/b] take back the plan's last step (after a move has played, the last move or turn, until the ship fires), [b]Esc[/b] clear the plan. In the enemy turn [b]Enter[/b] or [b]Space[/b] hurries. [b]K[/b] skips more cut-ins of the current routine shot kind or stops routine enemy camera follow for this battle. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]Z[/b] tactical grid, [b]L[/b] full log, [b]Home[/b] reset view.[/color][/font_size]" % s(17)
 
 
 
@@ -1219,9 +1219,9 @@ func _modal(pad_x: float, pad_y: float) -> Array:
 	return [p, p]
 
 
-func show_end(title: String, body: String, win: bool, external := false) -> void:
+func show_end(title: String, body: String, win: bool, external := false, continue_label := "Continue") -> void:
 	hide_end()
-	_last["show_end"] = [title, body, win, external]
+	_last["show_end"] = [title, body, win, external, continue_label]
 	end_block = ModalFocus.blocker(root)
 	end_block.mouse_force_pass_scroll_events = false
 	var mw := _modal(40, 30)
@@ -1245,7 +1245,7 @@ func show_end(title: String, body: String, win: bool, external := false) -> void
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", s(14))
 	if external:
-		row.add_child(_button("Continue", "continue", null, true, true))
+		row.add_child(_button(continue_label, "continue", null, true, true))
 	else:
 		row.add_child(_button("Fight again", "restart", null, true, true))
 		row.add_child(_button("Quit", "quit", null, false, true))

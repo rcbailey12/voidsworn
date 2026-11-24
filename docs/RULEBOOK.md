@@ -75,7 +75,7 @@ the level of design and setup, not patches (R225).
 that stretches his words past what he named says so and asks him. Board choices for one day or one job (effort, caps, job order,
 wrappers, which seat took a job) are operating notes in LOOP.md, never rules. A new ruling names what it replaces and the old row is
 marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, what is open and who has it on GitHub itself
-(checked live before any dispatch; contrib/opus/OPEN_WORK.md is only a timestamped nightly index of it, issue 890), what runs on the PC in LOOP.md's newest LATEST lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
+(checked live before any dispatch), what runs on the PC in LOOP.md's newest LATEST lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
 LOOP.md's LATEST lines roll into a dated summary once they pass about 15. Muse audits for stale or conflicting docs now and then.
 Why: several models and fresh chats read the repo cold; on Nov 14 a one-day choice nearly became a rule, an A20 note was stretched to
 every ship before Ryan ratified it (R244), and a summary line inverted Ryan's call on A18 and A19.
@@ -120,7 +120,7 @@ Only interrupt outside that batch for emergencies (disk <75 GB, key paste, stuck
 ## 2. The Board and the agents
 
 2.1 **The Board owns the whole board.** One Claude thread in the Project (Opus 5.5 since Nov 11) holds design calls, the final
-technical call and every merge; it starts agreed work on its own, picks the seat, keeps contrib/opus/OPEN_WORK.md moving, and
+technical call and every merge; it starts agreed work on its own, picks the seat, keeps the open GitHub issues moving, and
 asks Ryan only for design, key decisions, reviews of what he will see, and conflicts. Why: agreed items were left behind
 whenever new work arrived ("The station is a good example of something we already aligned on but is still sitting there",
 R194); and "you own the codebase and github. you are my orchestrator and control the building" (R202). Set: Ryan, Nov 8 to 11
@@ -245,8 +245,8 @@ Fix the cause for every future thread, not the one case: an audit or a fix names
 workflow or document that let it happen (a tool or workflow before a new rule); one-off patches are listed and removed once
 a global fix covers them. Why: "I don't want to overly respond to one time issues with patch, I want to address the core
 underlying issue so it doesn't happen for future threads or work streams. Global fixes" (Ryan, Nov 16). Example: stale
-status lines in HANDOFF and LOOP were hand-fixed again and again until contrib/opus/OPEN_WORK.md was regenerated nightly
-from GitHub (issue 890). Set: Ryan (R291).
+status lines in HANDOFF and LOOP were hand-fixed again and again until GitHub itself became the one live record of open
+work (0.10, issue 890). Set: Ryan (R291).
 
 2.11 **Outside audits follow docs/REVIEW_PROTOCOL.md**: a fresh session, symptoms not theories, file, line and a short exact
 quote per finding, OBSERVED or INFERRED. Findings come ranked, most important first; the job may set the count (reworded from
@@ -560,6 +560,9 @@ reflection lobe is desaturated to a neutral warm-white so Eclipse stays obsidian
 the #1786 lighting. The world PRs fold in the audit cleanups before merge: an obsidian Eclipse hulk finish (#1772), a
 procedural planet fallback when the remix is off (#1776), crystal `_lo` LODs (#1782); the planet relief map's VRAM is
 budgeted in #1780.
+R426 (Ryan, Nov 23 2026 03:22 UTC, on the #1777 before and after sheets): Ship Look V2 is the default look for every
+hull, the darker Hullbreaker red included; `VS_SHIP_LOOK_V2=0` keeps the old look for A/B captures only, and new ship
+work is judged under V2 (`look.gd` `ship_look_v2_enabled()`, guarded by `ship_look_v2_check`).
 
 ## 4. Ships and concepts
 

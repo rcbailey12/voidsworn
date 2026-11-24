@@ -11,7 +11,7 @@ Revision r1. Generated from the same Blender model as the pictures. Counts outra
 
 ## Size
 
-Frigate LENGTH 6.5; drawn 10.4 with SHIP_K 1.6. Measured mesh length / beam / height: 6.262 / 1.784 / 1.194.
+Frigate LENGTH 6.5; drawn 10.4 with SHIP_K 1.6. Measured mesh length / beam / height: 6.262 / 1.784 / 1.199.
 
 ## Major masses
 

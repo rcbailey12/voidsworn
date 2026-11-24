@@ -414,7 +414,7 @@
       ],
       "loss": [
         "The column has finally halted. Order surviving crews to abandon ship while bulkheads hold.",
-        "Armor breached beyond recovery. Save whoever can still reach a lifeboat."
+        "Armor breached beyond recovery. Save whoever can still reach an escape pod."
       ]
     },
     "grax": {
@@ -923,7 +923,7 @@
       ],
       "command": [
         "Converge every primary lance onto a single point and burn through.",
-        "Burning glass protocol active. Every emitter, synchronize onto target coordinates now.",
+        "Burning glass. Every emitter, synchronize onto target coordinates now.",
         "Full capacitor discharge through every lance. Cut their line clean."
       ],
       "win": [

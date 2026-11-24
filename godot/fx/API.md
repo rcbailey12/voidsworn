@@ -37,12 +37,12 @@ fx.remove_ship(id)                     # removes the ship and its effects at onc
 
 - `id`: the rules unit id (String) from `view()`.
 - `root`: the ship's Node3D. **Ship frame:** bow along local +X, up +Y. G2 mirrors each hull in z under the root (main 680c6ea), so root +Z is **starboard** on screen and -Z is port; fx follows that by default (`setup({"starboard_z": 1})`, the default; pass -1 for an unmirrored root where +Z is port). fx finds every hull point from the real, transformed triangles, so mirroring never puts an effect off the hull; only the facing quads (0 prow, 1 starboard, 2 rear, 3 port) use this setting. G2 turns the root for facing and moves it along paths; fx effects attached to the ship follow it.
-- `info` (all optional except `faction`):
-  - `faction`: `"voidsworn"`, `"hegemony"`, `"corsair"`, `"chorus"`, `"ithar"`, `"deathless"`;
+- `info` (all optional):
+  - `faction`: `"voidsworn"` (default), `"hegemony"`, `"corsair"`, `"chorus"`, `"ithar"`, `"deathless"`;
   - `meshes`: Array of the hull MeshInstance3Ds. **Pass `sv.meshes` from ShipView** (the default, every MeshInstance3D under `root`, would also take in the selection ring and the footprint marker). fx reads their triangles (hit points, breach placement, death pieces) and hides them at the break-up of a death. From damage stage 2 fx swaps in a rebuilt copy of a damaged hull's mesh (same vertex format; section 14). Damaged surfaces use a private shader material that keeps the hull textures and PBR settings while adding mouth discard and dark back faces, so G2 must not cache or reassign `mesh` on these nodes during a battle;
   - `cls`: the template class (`"Frigate"`, `"Cruiser"`, `"Squadron"`, ...) and `size` (the data.js draw scale); together they pick the effect weight (light, medium, heavy, capital);
   - `squadron`: true for strike-craft wings (no shield bubble, no damage ladder, small death);
-  - `shielded`: default true for Voidsworn, Hegemony, Corsair and Ithar, false for Chorus and Deathless (R3: shields keep faction colours);
+  - `shielded`: default true for Voidsworn, Hegemony, Corsair and Ithar, false for Chorus and Deathless (R3: shields keep faction colours). A request for a bubble without a shield colour is skipped with one warning per faction;
   - `flagship`: true adds weight to its death.
 - ShipView's placeholder engine glows (`sv.engines`) should be hidden once fx is on (fx draws the engines). Since r13 fx also hides them itself, every frame, for any ship it runs (they sit at fixed spots behind the stern, not on the real nozzles).
 - Engine trails start automatically: the hot core, the plume and the long cooling trail per faction (Corsair sputters and coughs soot). The trail bends behind a moving ship by itself (fx watches the root's motion). Optional: `fx.set_engine(id, level)` with 0 off, 1 cruise (default), 2 full burn (during a `move`, if G2 wants the extra flare).
@@ -64,14 +64,16 @@ Call it after the events that changed a ship have been animated (or simply after
 | 1 scorched | 0.6 < f <= 0.8 | spreading scorch and secondary burns, up to 2 surface marks; transition sparks, no persistent emitter |
 | 2 dented | 0.4 < f <= 0.6 | an anchor dent or material-specific concavity, wider surface damage, up to 3 marks; smoke starts |
 | 3 fissured | 0.2 < f <= 0.4 | a deep crater and buckled sealed fissure over intact dark skin; up to 4 marks, fire and smoke, a slow vent on heavy hulls |
-| 4 hull breach | f <= 0.2, or broken | the first open break: throat radius 0.032 L, stepped torn collar, recess 0.17 L, three cross members and seated fire; medium hulls up get a second break; transition sparks and debris |
+| 4 hull breach | f <= 0.2, or broken | open break with throat radius 0.048 L, stepped torn collar, recess 0.17 L, three cross members and seated fire; medium hulls up get a second break; transition sparks and debris |
 | 5 wreck | `dead` (after `death`) | see section 5 |
 
 - R80 owner rulings govern this ladder. Stage 3 and every weapon mark stay sealed. Squadrons keep stage 0 surfaces and trail pooled smoke below half total HP.
 - A stage that goes up while shots are still flying at that ship waits until they land, so holes open when the hit lands, not before.
 - Repair seals a stage 4 break with a material-specific patch and keeps dents, scorch and weapon scars. Removed emitters fade within 0.8 effect seconds. Chorus knits over 3 seconds.
-- `burning` shares the section emitter allocator. Per-ship caps (fire, smoke/vent): light (1, 2), medium (2, 3), heavy/capital (3, 4). Persistent emission spends zero counted flashes. Safe mode keeps flat marks and drops deformation, breaks and emitters. A broken `eng` section makes the engines sputter. Shields rising play a short faction-coloured regen shimmer.
+- `burning` shares the section emitter allocator. The per-ship caps for fire and smoke/vent are 4 and 8 for light hulls, 8 and 12 for medium hulls, and 12 and 16 for heavy and capital hulls. Persistent emission spends zero counted flashes. Safe mode keeps flat marks and drops deformation, breaks and emitters. A broken `eng` section makes the engines sputter. Shields rising play a short faction-coloured regen shimmer.
+- `prepare_battle_hulls()` warms the hull materials during loading. The first brownout or early wear assigns the ship's private damage materials if a damage rebuild has yet to assign them.
 - Capability loss (issue 1741 Milestone 3, R416; only with `VS_WOUNDS_V2=1` or `rendering/effects/wounds_v2`): `sync_ship` also reads `weapons[i].off`, `engHit` (the rules' `st.engine` above 0) and `shieldOff` (`st.shieldOff` above 0), view-only fields of `api.view()`. A slot with `off` above 0 jams every turret its `hp_w<slot>_*` muzzles hang under and smokes and sparks one of its fixed mounts (`fx_hull.turrets_for_slot`, `mounts_for_slot`); a hull with no point for the slot jams only a turret no slot owns in the slot's section by its rules arc (F prow, P and S midship), else smokes that section's plating without touching any gun. The flag is read through `godot/fx/fx_wounds_flag.gd` (`WOUNDS.v2()`), shared by every Wounds V2 file. With a `weapons` list the old random section turret pick (issue 1587) is off; without one (a bench unit) it stays. The drive fails in tiers (`engine_tier_for`): an engine hit or engine stage 2 gutters one nozzle (65% plume), stage 3 darkens one more, stage 4 or a broken `eng` leaves one nozzle at 35% with the rest dark, smoking at the bell and sparking as the ship tries to move. Only the Hullbreakers' drive coughs soot. A shielded ship with `shieldOff` or a broken `mid` crackles in its shield colour on the midship plating every 1.4 to 3 s (twice as long and no light under reduce flashing). Flesh throws no sparks. Checked by `godot/fx/test/capability_loss_check.gd`.
+- Idle motion (issue 1685, R411 Priority 3; only with `VS_IDLE_MOTION=1` or the project setting `rendering/effects/idle_motion`, default off until Ryan picks from the Pick Sheet; `godot/fx/fx_idle.gd`, `IDLE.enabled()`): a ship (never a squadron) carries one small looping motion for its faction, one batch of soft sprites (kind 18, no peak) under `_dmg_root`, so it rides the hull and costs one draw call and no CPU. Hegemony radar sweep (four blips in turn on the top plating), Sunward furnace-vent ember breath, Hullbreakers smelter flicker, Glasswrights optic shimmer, Eclipse violet corona pulse (all violet, R372), Chorus spore-sac swell. Spots are the hull's own upward `hp_breach_*` points, else plating found by a ray (R 6.7); no geometry is added and no mesh is moved (no kit export carries a named part for it yet). Colours come from `faction_looks.json`. Comfort (RULEBOOK 6.2): every sprite is under the flash counter's intensity line, none lasts under 0.5 s, one ship starts at most 2 pulses a second, and nothing spends the flash counter. Reduce flashing (`fx.reduce_flashing`) rebuilds the batch longer, dimmer and slower; Reduce motion (`ShipView.calm`) leaves the batch but stops the radar sweep (one steady blip). The flag is read when a ship is added. Checked by `godot/fx/test/idle_motion_check.gd`; frame cost and the per-faction sheets by `godot/fx/test/idle_motion_probe.gd` (a solo GPU job, R407).
 
 ## 3. Weapons
 
@@ -101,8 +103,8 @@ parked torpedo and next-turn strike (`torp_lane`, `torp_launch`, `torp_strike`, 
 
 ## 4. Shields
 
-- Shield hits come with `volley` (`hits[i].shield > 0`).
-- `fx.shield_break(id, quad)` on the `shield_down` event: the bubble comes apart from the struck facing outward, each faction its own way, and stays see-through while it does (r5): Voidsworn, the gold veil cracks into sheets that flare as they peel loose; Hegemony, the hex lattice shatters cell by cell (each cell fills bright and pops out, shards fly); Corsair, it sputters out in patches that stutter on and off and die (slow breathing with reduce flashing); Ithar, the veil sheets away from the struck side (unchanged while the Ithar look is under review).
+- Shield hits come with `volley` (`hits[i].shield > 0`). A fully absorbed hit transfers 0.12 of its impulse to the hull.
+- `fx.shield_break(id, quad, hit_lp)` handles the `shield_down` event. By default the fitted skin flashes once, then one band closes onto the breaking hit over 1.225 effect seconds. This also works with the optional egg shape. `hit_lp` is the hit point in the shield frame. Omit it to aim the collapse using the facing. The earlier faction-specific failures are selectable for dev comparisons with `VS_SHIELD_FAILURE=today`.
 
 ## 5. Death and wrecks
 
@@ -261,7 +263,7 @@ pieces are re-cut from the damaged hull afterwards.
 |---|---|
 | 2 | sealed dent/concavity, radius 5% of L, depth 22% of radius |
 | 3 | sealed fissure crater, radius 6% of L, depth 35% of radius, raised slot lips over dark intact skin |
-| 4 | first open throat, radius 3.2% of L; stepped curled collar about 14% of L across, recess 17% of L, three structural cross members; a second break on medium hulls up |
+| 4 | open throat, radius 4.8% of L; stepped curled collar, recess 17% of L, three structural cross members; a second break on medium hulls up |
 
 `wound_kind` in faction_looks.json selects metal (0), living tissue (1), crystal
 (2), or Eclipse machine wounds (3). Living hulls use spores and ichor; crystal
@@ -313,7 +315,7 @@ Proof: `fx/test/wounds_v2_check.gd`, look-bench rows `bench/look_moments_wounds_
 | ram | crumple | a deep fold of the plating at the bow or the struck side | scraped bare metal, no glow |
 | board | boarding pits | a shallow sealed cluster | char |
 
-Budget: at most 4 marks per hull section and 12 per ship (sections 0 eng, 1 mid, 2 prow). A repeat of the same mark close by (anywhere in the section for a torpedo crater or an ion burn) rebuilds the old one bigger and fresh (up to 1.6 times) instead of placing a twin; past the section budget the oldest shell crater or pockmark goes first, then the oldest mark. Repair retains bounded permanent scars. Fresh stage 1 renders up to 2 weapon marks, stage 2 up to 3, stages 3 and 4 up to 4. Only the stage 4 section entries can cut; section entries sit outside the weapon-mark budget.
+The ship stores up to 8 marks per hull section and 24 per ship (sections 0 eng, 1 mid, 2 prow). A repeat of the same mark close by (anywhere in the section for a torpedo crater or an ion burn) rebuilds the old one bigger and fresh (up to 1.6 times). Past the section budget the oldest light mark goes first, then the oldest mark. Repair retains bounded permanent scars. Stages 0 and 1 draw up to 2 weapon marks per section, stage 2 up to 3, and stages 3 and 4 up to 4, prioritizing heavy and newer marks. Repaired sections can draw the stored scars. Section entries sit outside the weapon-mark budget.
 
 Cost (cloud sandbox CPU, about three times slower than Ryan's PC; the PC numbers are in the gallery README once measured): a single mark rebuilds a 38k-triangle hull in 70 to 260 ms on a worker thread; the main thread only swaps in the meshes built there (a few ms). All rebuilds start from the hull's original arrays and keep its vertex format, so nothing compiles.
 
@@ -343,7 +345,11 @@ Cost (cloud sandbox CPU, about three times slower than Ryan's PC; the PC numbers
 
 ## 15. Faction looks as data
 
-Every faction colour and style the effects, hull fix and backdrops use comes from `res://fx/faction_looks.json` (read by `fx/faction_look.gd`; `FLOOK.of(faction)` returns the entry, `fx.faction_info(f)` the same). Fields: `weapon`, `shield` (null: no bubble), `engine`, `shield_style` (0 veil, 1 hex lattice, 2 patchy, 3 prismatic), `trail`, `shielded`, `engine_extra` (none, soot, spores, embers), `damage_glow` (fire inside hull damage), `hull_fix` (look.gd's rim and lift for dark hulls), `nebula` (the battle sky when this faction is the enemy), and two fields ready for the coming lore looks, both null today: `accent` (a second effect colour; when set, a corona glows round each engine core, for example the Deathless white-gold corona) and `shield_edge` (a colour or `"rainbow"` on the shield bubble's rim, for example the Ithar crystal). A repaint is an edit to the json; nothing in code names a faction's colour. Code outside fx/ reads the effect colours through `FLOOK.engine(f)`, `FLOOK.weapon(f)` and `FLOOK.shield(f)` (shield falls back to weapon where a faction has no bubble) and `FLOOK.has(f)`; hull_table's old FAC3D table is gone (issue 1205, R333) and `render/test/faction_colour_source_check.gd` fails if it comes back. The json ships in the export (`include_filter="*.json"`). Ids never change.
+The shared faction palette and styles live in `res://fx/faction_looks.json`. `FLOOK.of(faction)` and `fx.faction_info(faction)` return the entry. An unknown id warns once and falls back to Sunward. The palette includes `weapon`, `engine`, `shield` (null for factions without a bubble), `damage_glow` for fire and lit conduits inside damage, and optional `accent` for the engine corona and `shield_edge` for the rim. Sunward, Ashfall and Eclipse have engine accents. Sunward has a tinted shield rim and the Glasswrights have a rainbow rim. Eclipse has dedicated `weapon_core` and `weapon_sheath` fields.
+
+The table also supplies `shield_style` (0 veil, 1 hex lattice, 2 patchy, 3 prismatic), `shielded`, `trail`, `engine_extra` (none, soot, spores, embers), `hull_fix` for the rim and lift on dark hulls, `nebula` for the battle sky, faction death styles and `wound_kind` (0 metal, 1 living tissue, 2 crystal, 3 Eclipse machine).
+
+Code outside fx/ reads the effect colours through `FLOOK.engine(f)`, `FLOOK.weapon(f)` and `FLOOK.shield(f)`. The last returns the weapon colour for a faction without a bubble. `FLOOK.has(f)` checks for a known id. `render/test/faction_colour_source_check.gd` guards the shared source. The json ships in the export (`include_filter="*.json"`). Ids never change.
 
 ## 16. Effects at distance (F3, feel pass Nov 1)
 
@@ -526,7 +532,7 @@ recipes. Other beams keep `RIBBON`. This separation lets the violet-black
 sheath obscure the sky without changing another faction's beam blending.
 The full arc quad is at least 80 actual framebuffer pixels wide at cameras
 170 and 60, including room for forks. The dark trunk extends 10 to 15 pixels
-either side of its centre. Its green core has analytic FWHM 5.5 pixels,
+either side of its centre. Its deep violet core has analytic FWHM 5.5 pixels,
 with a separate 10.5 pixel FWHM packet profile; the
 white centre has FWHM 1 pixel. These describe shader profiles before bloom,
 not measurements of the final tone-mapped picture.
@@ -535,7 +541,7 @@ Three energy packets travel from shooter to target along the held jagged
 channel. A separate slower mask moves inside the sheath. Alternating attached
 forks grow and die on staggered clocks; reduce flashing slows those clocks and
 softens the arc's rise. The real emitter charges before firing. The contact
-flare is larger than the emitter flare, and both ends cool in green over
+flare is larger than the emitter flare, and both ends cool in deep violet over
 0.45 seconds. Hit times, damage, weapon ids and hull attachment stay on their
 existing public paths.
 

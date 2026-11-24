@@ -1,6 +1,6 @@
 # GS1 Sliver: Glasswright sliver GS1
 
-Issue 1415 (R368). Stage: **sheet built** (Blender review renders, not in the game), revision **r1**, design 6ac656ef50db.
+Issue 1415 (R368). Stage: **sheet built** (Blender review renders, not in the game), revision **r1**, design 2b3ec690dc39.
 Built from Ryan's Nov 16 pick R2a (contrib/muse/design/glasswright_family_2026_11/, PR 942) in the R337 finish on the
 shared Glasswright kit: opaque pearl ribbons with silver edges over glowing amber, violet and green mosaic; nothing see-through.
 

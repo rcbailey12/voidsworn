@@ -9,9 +9,9 @@ const SEED := 4103
 class Playback extends "res://scenes/battle/battle.gd":
 	var advance_frame: Callable
 
-	func wait(ms: float) -> void:
+	func wait(ms: float, skippable_cut := false) -> void:
 		if not advance_frame.is_valid():
-			await super.wait(ms)
+			await super.wait(ms, skippable_cut)
 			return
 		for frame in ceili(ms * speed / (1000.0 * STEP)):
 			advance_frame.call()
