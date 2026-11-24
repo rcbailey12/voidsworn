@@ -7,6 +7,7 @@ extends RefCounted
 
 const SCRIPTS := [
 	"res://render/ship_view.gd",
+	"res://render/shader_cache.gd",
 	"res://scenes/battle/fx_stub.gd",
 	"res://fx/fx.gd",
 	"res://portraits/portraits.gd",

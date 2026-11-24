@@ -1850,9 +1850,9 @@ func _read_doors(root: Node3D) -> void:
 			"deg": float(ex.get("open_deg", -100.0)), "lobes": lobes, "wins": [], "f": 0.0})
 
 
-# The door a node hangs under (its nearest door ancestor below the root), or -1: a lobe turns, so the damage never rides it.
+# The door a node belongs to (itself or its nearest door ancestor below the root), or -1.
 func _door_above(n: Node, root: Node) -> int:
-	var p := n.get_parent()
+	var p := n
 	while p != null and p != root:
 		if _door_of.has(p.get_instance_id()):
 			return int(_door_of[p.get_instance_id()])

@@ -120,6 +120,7 @@ headless|audio/test/sound_weight_check.gd|-|-|issue 771: death bed length from t
 headless|audio/test/faction_death_check.gd|-|-|issue 1238: Chorus cruiser and Bio-Titan rupture at their class time with the kill beat and Chorus sounds only; a Glasswright breaks with a glass shatter, no steel; prints the cue timing trace
 headless|fx/test/attach_check.gd|-|-|issue 370: every attach point (authored, surface ray) lies on the hull within 0.012 of its length; stand-in slab, ring and tower here, every ship file present on the PC; skips counted
 headless|fx/test/damage_surface_check.gd|-|-|R80 damage contracts on box ships: stages, emitters and their caps, marks
+headless|fx/test/graphics_correctness_check.gd|-|-|issue 1955: missing damage anchors, rim and fog on mesh-surface wrecks, five live point-defense pops, quality downgrade and shader cache teardown
 headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanup and drift (issue 137)
 headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battle.gd marks a ship dead; box ships
 headless|fx/test/destruction_staging_check.gd|-|-|staged deaths, class gating, flash limits and the hurry key
@@ -155,6 +156,7 @@ headless|fx/test/close_action_moments_check.gd|-|-|issues 1524 and 1461: in test
 headless|fx/test/broadside_mount_check.gd|-|-|issue 1117: every muzzle tier checks fixed gun bearing and turret reach, a broadside leaves from the facing flank, and missing muzzles use plating or skip the effect
 headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
 headless|fx/test/fx_correctness_1933_check.gd|-|-|issue 1933: early brownout and wear on battle-prepared hulls, one shield-blocked ram, shader patch text, equal-time callbacks and boarding on the manual clock
+headless|fx/test/fx_attachments_1965_check.gd|-|-|issue 1965: hinged doors and rotating turrets keep their materials, the shield follows the hull in the same frame, and delayed wreck debris keeps its faction rim after teardown
 headless|fx/test/munition_body_check.gd|-|-|issue 1379 (R362): torpedo and rocket bodies come from the faction part kits with the hull finish, keep the casing frame; no-file factions and the star torpedo keep their old look
 headless|fx/test/melt_death_check.gd|-|-|R398 (issue 1394): an acid kill dies in the acid's look whatever its faction: no tear or strain crack, green only on the acid hits, no smoke, haze or vapour, no hard white flash; a blast death on the same hull is the control
 headless|fx/test/fx_audit_1558_check.gd|-|-|issues 1558 and 1528: weapon gas stretched by aspect, big-death veil born when it shows, slag/debris/spark/craft trail ignore fog, hit pause in real seconds at 60 and 144 fps, kit trails on one shared strip, craft trails rebuilt on the sample step only, one heat ring per hull and one quad for rounds, kit munition bodies warmed before the first salvo
@@ -261,3 +263,4 @@ gpu|ui/test/front_end_shots.gd|-|{out}|issue 1217: F1 pictures of Settings, the 
 headless|main/test/player_path_map_ready_check.gd|-|-|issue 1448: the player-path recorder waits for the sector map loading cover before it jumps (a fresh Windows profile failed at "jump to 0-0 did not open")
 headless|rules/test/threat_preview_test.gd|-|-|issue 1859: the read-only enemy threat scorer ranks targets without changing the battle state
 headless|render/test/hull_age_check.gd|-|-|issue 1410: render/hull_age.gd reads the tracked ship manifest for the old Nov 1 layout (no _parts_ maps): V14_23 NEW, H7_23 OLD, unknown UNLISTED; the guard refuses old hulls except the O1_37 teaching exception unless ALLOW_OLD_HULLS=1; resolved() reports a placeholder for an unknown code
+headless|main/test/export_ship_check_test.gd|-|-|issue 1438: the export ship check passes a complete package and fails a missing damage scene, a lost texture, an unpainted ship, a non-mesh row and a shipped source GLB

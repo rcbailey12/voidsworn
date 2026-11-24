@@ -158,13 +158,21 @@ func result(key: String) -> Image:
 		var hit: Image = _cache[key]
 		_unpin(key)
 		return hit
-	var owner := service(_tree())
+	var tree := _tree()
+	if tree == null or _exiting:
+		_unpin(key)
+		return null
+	var owner := service(tree)
 	var job = owner._jobs.get(key)
 	if job == null:
 		var late: Image = _cache.get(key)
 		_unpin(key)
 		return late
-	while not job.done: await _tree().process_frame
+	while not job.done:
+		await tree.process_frame
+		if not is_instance_valid(owner) or owner._exiting:
+			_unpin(key)
+			return null
 	_unpin(key)
 	return job.image
 
@@ -222,7 +230,7 @@ func _process(_dt: float) -> void:
 			var img: Image = await _canvas(job.code, job.params, job.size)
 			# issue 1482: the raster awaited frames; if the service left the tree meanwhile, _exit_tree already joined
 			# and cleared every job, so no new worker may start (it would never be joined)
-			if _exiting or not is_inside_tree():
+			if _exiting or not is_inside_tree() or job.done:
 				job.done = true
 				return
 			_thread = Thread.new()
@@ -583,10 +591,15 @@ func _canvas(code: String, params: Dictionary, size: Vector2i) -> Image:
 		var img: Image = null
 		for attempt in 3:
 			vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-			await RenderingServer.frame_post_draw
 			# r6: one more frame before reading back (a strip read straight after its draw came back with a dark block
 			# missing from the gas on the PC)
-			await RenderingServer.frame_post_draw
+			for frame in 2:
+				await RenderingServer.frame_post_draw
+				if not is_instance_valid(vp):
+					return null
+				if _exiting or not is_inside_tree():
+					vp.queue_free()
+					return null
 			img = vp.get_texture().get_image()
 			if img == null or img.is_empty():
 				vp.queue_free()
