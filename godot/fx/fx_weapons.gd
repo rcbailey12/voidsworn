@@ -603,7 +603,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"tendril":
 			# Acid Thorns (issue 1877, R437): one built bone thorn a shot (fx_acid_thorn.gd); the old tendril lash is gone
 			tg["mark_look"] = "spine"
-			var cr: Array = THORN.shot(fx, from, mn, to, T0, beat, col, ka, A, tg)
+			var cr: Array = THORN.shot(fx, from, mn, to, T0, beat, col, ka, A, tg, Tg)
 			tf = cr[0]
 			ti = cr[1]
 			tend = cr[2]
@@ -2668,7 +2668,8 @@ static func _miss_fade(fx, lk: String, Tg, tg: Dictionary, from: Vector3, fire_a
 		if Tg != null and Tg.shielded:
 			fx.later(pass_at, func l_graze() -> void: _shield_graze(fx, Tg, from, dir, fx.now, k))
 	# Gauss has its own cooling wake. Guided rounds and craft leave persistent exhaust, and flak bursts in the air.
-	if lk in ["gauss", "torp", "star", "rockets", "guns", "bombs", "sporeb"] or family_of(lk) == "flak":
+	# The Acid Thorn draws its own built body flying on past (fx_acid_thorn.gd), so no streak over it (Artoo on PR 1904).
+	if lk in ["gauss", "torp", "star", "rockets", "guns", "bombs", "sporeb", "tendril"] or family_of(lk) == "flak":
 		return T
 	var speed := from.distance_to(exit) / flight
 	var life := clampf(14.0 * k / maxf(speed, 1.0), 0.08, 0.18)

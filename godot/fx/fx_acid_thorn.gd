@@ -53,7 +53,7 @@ static func _body(fx, k: float) -> Node3D:
 
 # One shot. Returns [fire time, impact time, end time] like fx_weapons._shot's arms.
 static func shot(fx, from: Vector3, mn: Vector3, to: Vector3, T0: float, beat: float, col: Color, ka: float, A,
-		tg: Dictionary) -> Array:
+		tg: Dictionary, Tg = null) -> Array:
 	var dv := to - from
 	var dist := maxf(dv.length(), 0.01)
 	var dir := dv / dist
@@ -81,7 +81,7 @@ static func shot(fx, from: Vector3, mn: Vector3, to: Vector3, T0: float, beat: f
 	var node := _body(fx, bk)
 	var list: Array = fx.dstate.get("thorn_proj", [])
 	list.append({"node": node, "t0": tf, "t1": ti, "a": from + out * 0.3 * bk, "b": to, "dir": dir, "seed": fx.rng.randf() * TAU,
-		"k": bk, "end": end, "stuck": stuck, "miss": miss, "spd": dist / maxf(ft, 0.001)})
+		"k": bk, "end": end, "stuck": stuck, "miss": miss, "spd": dist / maxf(ft, 0.001), "ship": Tg})
 	fx.dstate["thorn_proj"] = list
 	# a faint bile light rides with the thorn, so it reads at the battle camera as well as close up; bile drips off it
 	fx.light(from + dir * dist * 0.5, tf, ft, 1.4, col, 1)
@@ -92,7 +92,10 @@ static func shot(fx, from: Vector3, mn: Vector3, to: Vector3, T0: float, beat: f
 		_shatter(fx, to, -dir, ti, bk, 10)
 	elif stuck:
 		_hit_matter(fx, tg, ti, col, ka)
-		_crumble_matter(fx, to - dir * (TIP - BITE) * bk * SCALE * fx.unit, -dir, ti + STICK, col, bk)
+		# the crumble's dust and chips start where the thorn is then (it rides the ship it is stuck in)
+		fx.later(ti + STICK, func l_crumble() -> void:
+			if is_instance_valid(node) and node.visible:
+				_crumble_matter(fx, node.global_position, -node.global_transform.basis.x.normalized(), fx.now, col, bk))
 	return [tf, ti, ti + 0.4]
 
 
@@ -179,12 +182,25 @@ static func update(fx, _dt: float) -> void:
 			n3.visible = false
 			continue
 		else:
-			# stuck: the point sunk into the plate, the body at the angle it struck, a small shiver as it bites
+			# stuck: the point sunk into the plate, the body at the angle it struck, a small shiver as it bites. It rides the
+			# ship it is stuck in (its pose kept in the ship's frame, Artoo on PR 1904) and goes when that ship dies or leaves.
+			var ship = p["ship"]
+			if ship != null and (not is_instance_valid(ship) or bool(ship.dead) or bool(ship.gone)):
+				n3.visible = false
+				p["end"] = now
+				continue
 			var age := now - t1
-			pos = (p["b"] as Vector3) - d * (TIP - BITE) * s
-			pos += along.y * sin(age * 40.0) * 0.02 * s * exp(-age * 6.0)
 			roll = (t1 - float(p["t0"])) * 6.0 + float(p["seed"])
+			if not p.has("local"):
+				var at := (p["b"] as Vector3) - d * (TIP - BITE) * s
+				var w := Transform3D((along * Basis(Vector3.RIGHT, roll)).scaled(Vector3.ONE * s), at)
+				p["local"] = (ship.xf().affine_inverse() * w) if ship != null else w
+			var wx: Transform3D = (ship.xf() * (p["local"] as Transform3D)) if ship != null else (p["local"] as Transform3D)
+			wx.origin += wx.basis.y * sin(age * 40.0) * 0.02 * exp(-age * 6.0)
 			_crumble(n3, clampf((age - STICK) / CRUMBLE, 0.0, 1.0))
+			n3.global_transform = wx
+			n3.visible = true
+			continue
 		n3.global_transform = Transform3D((along * Basis(Vector3.RIGHT, roll)).scaled(Vector3.ONE * s), pos)
 		n3.visible = true
 	fx.dstate["thorn_proj"] = keep
