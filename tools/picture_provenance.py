@@ -22,7 +22,8 @@ from urllib.parse import quote, unquote, urlsplit
 if __name__ != '__main__' or sys.argv[1:2] != ['context']:
     from PIL import Image, ImageDraw, ImageSequence
 
-STAGES = ('sheet built', 'paint proof', 'installed in game', 'cloud direction check')   # issue 1567: cloud or software renders
+PRE_MERGE_STAGE = 'pre-merge capture'
+STAGES = ('sheet built', 'paint proof', 'installed in game', 'cloud direction check', PRE_MERGE_STAGE)
 EXTENSIONS = {'.png', '.jpg', '.jpeg', '.webp', '.gif'}
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -295,7 +296,11 @@ class Review:
                 output_sources.append(source)
         if not output_sources:
             raise ValueError('review sheet needs stamped source pictures; rerun the capture, do not relabel an old picture')
-        record = save_picture(image, path, self.stage, sources=output_sources, **options)
+        stage = self.stage
+        if stage == 'installed in game' and any(
+                source['stage'] == PRE_MERGE_STAGE for picture in output_sources for source in picture['sources']):
+            stage = PRE_MERGE_STAGE
+        record = save_picture(image, path, stage, sources=output_sources, **options)
         self.sources.clear()
         return record
 

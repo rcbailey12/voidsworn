@@ -61,7 +61,7 @@ class FakeApi extends RefCounted:
 class TestBattle extends "res://scenes/battle/battle.gd":
 	func _ready() -> void:
 		set_process(false)
-	func wait(_ms: float) -> void:
+	func wait(_ms: float, _skippable_cut := false) -> void:
 		await get_tree().process_frame
 	func _refresh_ui() -> void:
 		pass

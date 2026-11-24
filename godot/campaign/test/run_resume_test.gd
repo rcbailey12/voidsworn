@@ -36,7 +36,7 @@ class EndSound extends Node:
 
 class EndScene extends "res://scenes/battle/battle.gd":
 	func _ready() -> void: pass
-	func wait(_ms: float) -> void: pass
+	func wait(_ms: float, _skippable_cut := false) -> void: pass
 	func _play_log_out(_res: String) -> void: pass
 
 var failures := 0

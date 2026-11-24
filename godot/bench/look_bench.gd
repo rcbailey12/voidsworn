@@ -12,7 +12,8 @@ extends Node
 # Parts:
 #   moments  every row of bench/look_moments.json (weapons on a hull and on a shield, shield states, death classes, one
 #            weapon on every weight, the eight PR 327 looks), each at the three cameras, as 30 frames a second strips:
-#            DIR/moments/<id>__c<cam>.png (cells side by side, 384x216 each; camera 170 is a 1 to 1 pixel crop).
+#            DIR/moments/<id>__c<cam>.png (384x216 cells side by side with a provenance footer below them;
+#            camera 170 is a 1 to 1 pixel crop).
 #   props    (issue 1767, only when asked: --part props) the live board's stations and hulks at cameras 170 and 26 through
 #            render/board.gd itself: DIR/props/<item>__c<cam>.png, 1280x720 at 1 to 1 (VS_1767_OLD=1 draws the old path).
 #            A missing still, station or faction writes PROPS_FAILED.txt and exits 4 with no LOOK_BENCH_DONE line
@@ -780,7 +781,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if not keep:
 		return true
 	var name := "%s__c%d.png" % [id, int(r)]
-	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
+	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts})
 	_log("%s at %d: %d cells" % [id, int(r), ci])

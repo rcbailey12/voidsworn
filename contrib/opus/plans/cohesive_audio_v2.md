@@ -344,3 +344,89 @@ Wave E ran with 8 takes for about 80 credits (relay `pc-out-opus1752wavee`). Lis
 - Bioplasma stays on hold until the projectile look is set.
 - The tendril sound waits for issue 1877.
 - Next is mastering the keepers to mono game files, then the Gate 3 music plan.
+
+## 9. Gate 3 waves F and M (Ryan, Nov 23 2026, 11:02 and 11:09 PM CT)
+
+Ryan: "More music, more variety, whatever we got with the sound credits", then "Yeah, do everything. Let's use those credits. Use the learnings from the past waves to shape the prompts and outputs. Let's ensure the music fits the theme and factions. If possible, let's find other sound effects we might want to incorporate."
+
+About 8,000 of the 121,000 credits are spent, which leaves about 113,000. Ryan's ElevenLabs page is the real count. The job list is `contrib/opus/sound/elevenlabs_gate3.json` (gate 3), and its `waves` key holds each wave's ids.
+
+**Lessons applied from waves A to E:**
+- Non-Sunward prompts lead with the faction's identity.
+- Each prompt uses one size word.
+- Every prompt passes the section 2 banned-word list. The list script checks it, with word-start matching.
+- No negative nouns.
+- Deaths are centered and midrange. boom_l, bass_drop and the bed own the sub-bass.
+- Short sounds ask for one dry point source, the lesson from the wide stereo in Wave D.
+- Beams, shields and UI rewards keep natural decay.
+- UI stays acoustic and mechanical, because Ryan dislikes electronic UI cues.
+
+**Variety:** variety takes reuse each keeper's exact recorded parameters from the relay wave manifests (prompt, length, influence and model), not today's list row. Two keepers' rows changed after their take was made: `wep_eclipse_gsentry` and `imp_metal_light`.
+
+**Wave F, sounds (80 ids, 161 takes; the tool estimates 8,264, about 2,300 real at 11 credits a second; cap 10,000):**
+- 34 sounds still on old placeholder clips:
+  - Glasswright flak.
+  - Gauss and ion hits, plus the hull and shield patter.
+  - Metal pops and small and medium blasts.
+  - Engine loop, craft launch, phase jump, engine cough, thruster puff and charge-up.
+  - Nine metal death beats.
+  - Brace, adapt and the base boarding sound.
+  - Seven UI cues: cancel, select, hover, panel, alert, round and enemy turn.
+- Four polish re-rolls:
+  - Pulsar as one even beam.
+  - Hullbreaker rocket as one launch.
+  - Boss cue at 3.5 s.
+  - Engine fail at 1.5 s.
+- 16 new moments the game has no sound for yet. Their hooks come in a later PR:
+  - Battle: Hullbreaker ram, torpedo shot down, shield back online, gravity well and nebula beds, asteroid scrape, low-hull alarm and command issued.
+  - Map and screens: map fleet jump and arrival, purchase, module install, relic socket, rank up, event transmission and ship lost.
+- 27 variety items at 2 takes each, so the most-heard sounds reach four takes (RULEBOOK 8.4).
+- Already made: Wave A's `wep_sunward_battery` t1 and t2 and `ui_click_switch` t1 and t2 passed in section 7 but never reached the keeper list. They join the Wave F listening page from relay `pc-out-opus1752wavea`.
+
+**Wave M, music (34 ids, 36 steps; the tool estimates 45,000 at 900 a minute; cap 50,000).** It is dark orchestral, set around a dying sun, with the four-note D, A, F, E motif as the game's thread. Each faction's palette comes from the playbook's faction voices:
+- Sunward: iron, fire and cathedral organ.
+- Directorate: drilled brass and snare over a cold steady tone.
+- Hullbreakers: scrap-metal percussion and detuned brass.
+- Glasswrights: glass harmonica, celesta and harp.
+- Eclipse: one low held note, taiko and anvils.
+- Chorus: breathing basses and heartbeat drums.
+
+Each faction gets a calm and an intense battle layer. A pair shares tempo and key so the two crossfade, and each is a loop where every part plays in every bar (row 6). The rest of the wave:
+- Title (2 takes).
+- Six map tracks, two per sector, moving from ember-warm to cold.
+- Two boss tracks.
+- Nemesis and shipyard music, both new.
+- Three reward themes. `mus_reward_1` is the wording Ryan liked.
+- Seven stings, including run won and run lost.
+- One stem split test.
+
+**Wave M runs in two steps (Artoo on PR 1942).** Each track is a separate request, so a shared tempo and key in the prompt does not prove that a calm and intense pair line up. Today's `music_player.gd` crossfades independent loops by volume, so a pair that drifts still plays. A beat-synced switch, the Gate 3 plan, needs the pair to line up.
+- Wave M1 (4 steps; the tool estimates 4,230; cap 5,000) makes the Sunward calm and intense pair plus the stem split test.
+- Claude decodes the pair and measures its tempo, its loop points, and a switch at several bars.
+- Superseded by the re-plan below: Wave M2 (32 steps; the tool estimates 40,770; cap 45,000) was to run only after that. If the pair drifts, the M2 layers are first re-planned as stems of one song or as an aligned transition.
+
+**M1 result and the M2 re-plan (Nov 24, 05:50 UTC).** M1 made all 4 steps (relay `pc-out-opus1752wavem1`). Claude measured them, and the listening page is https://claude.ai/artifact/XrhJ1f7uG4qL6f2dMspvak.
+- **The separate calm and intense pair failed the check.** Its beat offset moved by up to 0.4 s across the track. The calm track also climbs 18 dB over its first 40 s to the intense track's level, and the intense track fades to silence in its last 5 s.
+- **The 40 s stem loop passed.** Its start and end are the same level, about 16 dB under full scale.
+- **Stems came back as drums plus "other".** The bass, piano, guitar and vocal stems were empty.
+
+So M2 makes each faction's battle music as stem-split loops: the intense layer is the full mix, and the calm layer is everything but the drums. The two stay in step by construction.
+- That means 11 loops of 24 bars each with stems: two per faction, and Sunward's second is added to the M1 loop.
+- The separate `_calm` and `_hot` items for the other five factions are dropped.
+- Title, map, boss, nemesis, shop, reward and stings are unchanged. Their fades are trimmed to loop points in mastering.
+- M2 is 44 steps. The tool estimates 46,290; the cap is 52,000.
+- The M2 job resumes from a fixed takes folder, `%VT%\el_resume\%JOB%`, because Wave F's rerun paid twice for 21 takes.
+
+**Stem check (Artoo on PR 1948).** `contrib/opus/tools/sound/stem_loop_check.py <song> <stems.zip> --xfade <s>` rebuilds both mixes from one archive, cut to the song's own samples, and checks them. It runs on every M2 loop before any loop is wired.
+- **Alignment.** The stems arrive 25.1 ms (1,203 samples) late against the song, so the tool aligns them first. After alignment, the stems sum to the song with a residual 25.2 dB under it.
+- **Calm level.** The calm mix sits 4.0 dB under the intense mix.
+- **Seams without a crossfade.** The intense seam passes. The calm seam fails: its last half second is 4.9 dB under its first (limit 3 dB).
+- **Seams with mastering's loop crossfade.** With 0.5 s, the calm seam is 2.6 dB and the intense 0.3 dB; with 1.0 s, 2.5 dB and 0.8 dB. Both pass with wrap jumps under 0.03.
+
+- **Switches (Artoo, second pass).** The tool also plays a real 2 s switch from calm to intense, and back, at four points in the loop. With the 0.5 s crossfade, the deepest dip under the softer mix is 0.14 dB (limit 1.5 dB). The largest step between neighbouring 50 ms windows is 9.4 dB, under the 10.5 dB the drums make on their own. All eight switches pass.
+
+So mastering folds a 0.5 s loop crossfade into both mixes on the same samples. An in-game listen to the switch still comes before wiring. Ryan picked "One song split into parts" for the battle music (decision card, Nov 23 11:51 PM CT).
+
+After all the waves, about 55,000 credits stay in reserve for second takes, stems on the songs Ryan picks, and the tendril once issue 1877 lands.
+
+**Run and review:** the PC jobs are `OPUS1752_WAVEF.bat`, `OPUS1752_WAVEM1.bat` and `OPUS1752_WAVEM2.bat`, built on the Wave E skeleton and pinned to this list's merge. Each needs Ryan's own typed "go wave f", "go wave m1" or "go wave m2" in the Board thread. Neon reviews each listening page before Ryan does. Mastering and wiring follow sections 8.6 and 8.7. New moments get their hooks the way PR 1937 did. Music uses the Godot 4.7 AudioStreamInteractive plan in row 6.

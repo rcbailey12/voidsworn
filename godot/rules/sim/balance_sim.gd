@@ -5,6 +5,7 @@ const SimBattle = preload("res://rules/sim/sim_battle.gd")
 const Bot = preload("res://rules/sim/sim_bot.gd")
 const Campaign = preload("res://campaign/campaign.gd")
 const Rewards = preload("res://rules/sim/sim_rewards.gd")
+const SimRun = preload("res://rules/sim/sim_run.gd")
 const JSM = preload("res://rules/jsm.gd")
 const CAMPAIGN_FLEETS := {
 	1: ["penitent", "harrow", "warden", "warden"],
@@ -12,7 +13,7 @@ const CAMPAIGN_FLEETS := {
 	3: ["ascendant", "cathedral", "penitent", "reliquary", "harrow"],
 }
 const CAMPAIGN_NODES := [["battle", 1], ["battle", 4], ["elite", 4], ["boss", 6]]
-const MODES := ["campaign", "campaignrewards", "fmatrix"]
+const MODES := ["campaign", "campaignrewards", "fmatrix", "run"]
 
 class TrialErrors extends Logger:
 	var first := ""
@@ -42,7 +43,7 @@ var failed := false
 func _initialize() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() > 3 or (args.size() == 3 and args[2] != "--classic"):
-		_fail("Usage: balance_sim.gd -- [campaign|campaignrewards|fmatrix] [battles per cell] [--classic]")
+		_fail("Usage: balance_sim.gd -- [campaign|campaignrewards|fmatrix|run] [count per cell] [--classic]")
 		return
 	var mode := args[0] if not args.is_empty() else "campaign"
 	if mode not in MODES:
@@ -51,7 +52,7 @@ func _initialize() -> void:
 	var count := 6 if mode == "fmatrix" else 10
 	if args.size() >= 2:
 		if not args[1].is_valid_int() or int(args[1]) <= 0:
-			_fail("Battles per cell must be a positive integer.")
+			_fail("Count per cell must be a positive integer.")
 			return
 		count = int(args[1])
 	alternating = args.size() < 3
@@ -81,9 +82,14 @@ func _initialize() -> void:
 			"banner": 520, "aiGap": 60, "aiEnd": 120, "volley": 1.0, "bigMin": 1.0}, true)
 	bot.command_enabled = OS.get_environment("BOTCMD") != "0"
 	bot.brace_enabled = OS.get_environment("BOTBRACE") != "0"
-	if not _load_build():
+	if mode == "run":
+		if not alternating or not OS.get_environment("SIM_BUILD").is_empty():
+			_fail("Run mode uses the Monte Carlo campaign policy and does not take --classic or SIM_BUILD.")
+			return
+		_full_runs(count, ai, int(pair_seed if not pair_seed.is_empty() else seed))
+	elif not _load_build():
 		return
-	if mode == "fmatrix":
+	elif mode == "fmatrix":
 		_fmatrix(count)
 	else:
 		_campaign(count, mode == "campaignrewards")
@@ -95,6 +101,55 @@ func _fail(message: String) -> void:
 	failed = true
 	printerr("Balance sim: " + message)
 	quit(1)
+
+
+func _full_runs(count: int, ai: String, seed_base: int) -> void:
+	var selected := OS.get_environment("PFACTION")
+	if not selected.is_empty() and selected not in campaign.RUN_FACTIONS:
+		_fail("Unknown PFACTION faction: " + selected)
+		return
+	var factions: Array = campaign.RUN_FACTIONS if selected.is_empty() else [selected]
+	var levels := ["standard", "veteran"] if ai.is_empty() else [ai]
+	var arm := OS.get_environment("SIM_ARM")
+	var driver := SimRun.new(campaign, battle, bot)
+	var summaries := []
+	var engine_errors := 0
+	for faction in factions:
+		var admirals: Array = campaign.ADMIRALS.keys().filter(func(id):
+			return campaign.ADMIRALS[id].get("fac", "voidsworn") == faction)
+		if admirals.is_empty():
+			_fail("No admirals for " + faction)
+			return
+		for level in levels:
+			var summary := {"faction": faction, "difficulty": level, "wins": 0, "losses": [0, 0, 0],
+				"concessions": 0, "timeouts": 0, "errors": 0}
+			for index in range(count):
+				var seed := JSM.to_u32(seed_base + index + 1)
+				var admiral: String = admirals[posmod(seed - 1, admirals.size())]
+				var row := driver.new_record(faction, level, admiral, seed, arm if not arm.is_empty() else "single")
+				var errors := TrialErrors.new()
+				OS.add_logger(errors)
+				driver.play(row)
+				OS.remove_logger(errors)
+				if not errors.first.is_empty():
+					row.terminal_reason = "engine_error"
+					row.error = errors.first
+				print("RUN " + JSON.stringify(row, "", true, true))
+				match row.terminal_reason:
+					"won": summary.wins += 1
+					"lost": summary.losses[int(row.sector) - 1] += 1
+					"bot_concession": summary.concessions += 1
+					"timeout": summary.timeouts += 1
+					"engine_error": summary.errors += 1
+			engine_errors += summary.errors
+			summaries.append(summary)
+	print("Faction     Difficulty    Runs     Win   S1   S2   S3   Concession   Timeout   Error")
+	for s in summaries:
+		print("%-11s %-12s %5d %6.1f%% %4d %4d %4d %12d %9d %7d" % [s.faction, s.difficulty,
+			count, 100.0 * s.wins / count, s.losses[0], s.losses[1], s.losses[2], s.concessions, s.timeouts, s.errors])
+	print("RUNS_COMPLETE %d" % (factions.size() * levels.size() * count))
+	if engine_errors > 0:
+		_fail("%d campaign run(s) hit an engine error." % engine_errors)
 
 
 func _next_pair() -> void:

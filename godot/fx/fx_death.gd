@@ -3183,6 +3183,10 @@ static func _drum_pop(fx, s, b: int, n: int, side: float) -> void:
 	var pw: Vector3 = s.to_world(hit["p"])
 	var nw: Vector3 = (s.xf().basis * (hit.get("n", Vector3(0.0, 0.0, side)) as Vector3)).normalized()
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
+	# issue 1752: one magazine pulse per accepted pop (a hidden hull or a missed ray above plays nothing)
+	var sx = fx.sound() if fx.has_method("sound") else null
+	if sx != null:
+		sx.play("death_magazine", {"pos": pw, "death": true})
 	fx.spr(pw + nw * h.L * 0.015, fx.now, 0.3, dcol(s, "light", Color(1.0, 0.78, 0.5)), 3.6, h.L * 0.04, h.L * 0.13, 0, inherited, 0.0, 0.0, 0.0, 24.0)
 	var col := dcol(s, "spark", Color(1.0, 0.62, 0.3))
 	for j in 8:

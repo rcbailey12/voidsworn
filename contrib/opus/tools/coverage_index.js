@@ -29,7 +29,7 @@ const findings = 'contrib/opus/FINDINGS.md';
 const plans = [
   'contrib/opus/next_phase_recommendation_2026_10_31.md',
   ...filesUnder('contrib/opus/briefs'),
-  'BACKLOG.md',
+  'docs/archive/BACKLOG_2026-11-08.md',
 ];
 const records = [findings, ...plans, 'HANDOFF.md', 'NEXT.md', 'PROGRESS.md']
   .map(file => ({ file, lines: read(file).split(/\r?\n/) }));

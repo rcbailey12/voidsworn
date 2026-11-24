@@ -43,12 +43,16 @@ func emit(e: Dictionary) -> void:
 	if events_on: events.append(e)
 func _uid(u): return u["id"] if u is Dictionary and u.get("id") != null else null
 # The battle log (battle.js log(m, c)): B.log gets {m, c} exactly as the game writes it (hashed by the parity test), and a log event.
-func logm(m: String, c = null) -> void:
+# nem tags the log event only (never B.log, so the saved hashes hold): "intro" or "hail" for the Nemesis opening lines,
+# so the battle screen can show one opening hail when the story voice gives its own (C27, issue 1911).
+func logm(m: String, c = null, nem = null) -> void:
 	if B == null or B.get("log") == null: return
 	var e = {"m": m}
 	if c != null: e["c"] = c
 	B["log"].append(e)
-	emit({"t": "log", "text": m, "kind": c})
+	var ev = {"t": "log", "text": m, "kind": c}
+	if nem != null: ev["nem"] = nem
+	emit(ev)
 func ns(x) -> String: return JSM.numstr(x)   # a number as JS prints it in a template string
 func tv(x) -> String: return "undefined" if x == null else (ns(x) if (x is float or x is int) else String(x))   # any value in a template string
 func pe(u) -> String: return "e" if u["side"] == "player" else "p"   # log colour for a loss on u's side
@@ -2495,7 +2499,7 @@ func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, fac
 	for a in ad: an.append(nemAdaptName(a, N.get("fac")).to_lower())
 	if ad.size() > 0: emit({"t": "adaptation", "source": "nemesis"})
 	var pron = "It" if N.get("g") == "n" else ("She" if N.get("g") == "f" else "He")
-	logm(String(fl["name"]) + " commands this fleet: your Nemesis." + ((" " + pron + " has adapted: " + ", ".join(an) + ".") if ad.size() > 0 else ""), "e")
+	logm(String(fl["name"]) + " commands this fleet: your Nemesis." + ((" " + pron + " has adapted: " + ", ".join(an) + ".") if ad.size() > 0 else ""), "e", "intro")
 	var L = TB.NEM_LINES
 	var bw = null
 	if jt(N.get("last_beat")): bw = TB.NEM_BEAT_WORD.get(N["last_beat"]) if jt(TB.NEM_BEAT_WORD.get(N["last_beat"])) else N["last_beat"]
@@ -2508,7 +2512,7 @@ func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, fac
 		var ts = String(tpl); var bi = ts.find("{beat}")   # JS replace: the first occurrence only
 		line = (ts.substr(0, bi) + String(bw) + ts.substr(bi + 6)) if bi >= 0 else ts
 	else: line = L["meet"].get(N.get("persona")) if (N.get("persona") != null and jt(L["meet"].get(N["persona"]))) else ""
-	if jt(line): logm(String(fl["name"]) + ": \"" + String(line) + "\"", "e")
+	if jt(line): logm(String(fl["name"]) + ": \"" + String(line) + "\"", "e", "hail")
 	if jt(B.get("nemChallenge")): nemSig("challenge")
 	if beh.get("strike") == "duel": nemSig("duel")
 	if jt(beh.get("line")): nemSig("line")
