@@ -17,11 +17,13 @@ authored_interiors_check 3
 backdrop_clip_check 39
 background_work_1437_check 4
 bake_cache_cap_check 0
+bake_close_check 3
 balance_sim_abilities_test 4
 balance_sim_run_test 34
 battle_feedback_1481_check 9
 battle_log_cap_test 2
 battle_reads_1446_check 7
+board_terrain_load_check 2
 boon_fleet_test 4
 boss_1885_test 1
 bot_round_boundary_check 13
@@ -142,6 +144,7 @@ playtest_batch3_check 3
 playtest_switch_test 2
 portraits_check 6
 post_win_modal_count_test 5
+prefetch_wait_check 12
 quit_route_check 4
 relic_trade_1449 3
 retreat_nemesis_1480 1
@@ -173,6 +176,7 @@ shield_handoff_check 20
 shield_overlap_check 30
 shield_pool_test 1
 shipyard_repair_text_test 3
+showcase_quiet_check 30
 skill_target_picker_test 7
 small_wreck_calm_check 5
 smoke_lifetime_check 2
@@ -202,7 +206,3 @@ wave_1a_check 4
 wing_cancel_test 3
 wreck_contact_check 22
 wreck_hex_check 27
-board_terrain_load_check 2
-showcase_quiet_check 30
-prefetch_wait_check 12
-bake_close_check 3
