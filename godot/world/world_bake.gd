@@ -44,6 +44,11 @@ static var _pending_tree: SceneTree = null
 # evicts them, so a map that finished first can never push out a later map of the same set before its caller reads it.
 static var _pins := {}
 
+# The two R01 relief images are decoded and cached as one job. Neither half can be evicted on its own.
+class RockyRelief extends RefCounted:
+	var height: Image
+	var masks: Image
+
 static func service(tree: SceneTree) -> Node:
 	var node := tree.root.get_node_or_null("WorldBakes")
 	if node == null and is_instance_valid(_pending) and not _pending.is_inside_tree():
@@ -93,17 +98,18 @@ static func cache_key(key: String, code: String, params: Dictionary, size: Vecto
 
 static func cached(key: String) -> Image:
 	# Disk hits also use the worker, never PNG decode on the caller's thread.
-	return _cache.get(key)
+	var entry: RefCounted = _cache.get(key)
+	return entry.height if entry is RockyRelief else entry as Image
 
 static func texture(img: Image) -> Texture2D:
 	var id := img.get_instance_id()
 	if not _textures.has(id): _textures[id] = ImageTexture.create_from_image(img)
 	return _textures[id]
 
-static func remember(key: String, img: Image) -> void:
+static func remember(key: String, entry: RefCounted) -> void:
 	if _cache.has(key): return
 	_trim(CACHE_MAX - 1)
-	_cache[key] = img
+	_cache[key] = entry
 
 # Drops the oldest maps nobody is still waiting to collect (item 2) until at most `cap` remain. With every slot pinned
 # the cache runs over CACHE_MAX for a while; each later add and each released pin trims it back (Artoo, PR 1776).
@@ -112,16 +118,21 @@ static func _trim(cap: int) -> void:
 	for oldest in _cache.keys():
 		if _cache.size() <= cap: return
 		if _pins.has(oldest): continue
-		_textures.erase(_cache[oldest].get_instance_id())
+		var entry: RefCounted = _cache[oldest]
+		if entry is RockyRelief:
+			_textures.erase(entry.height.get_instance_id())
+			_textures.erase(entry.masks.get_instance_id())
+		else:
+			_textures.erase(entry.get_instance_id())
 		_cache.erase(oldest)
 
 static func _pin(key: String) -> void:
 	_pins[key] = int(_pins.get(key, 0)) + 1
 	if _cache.has(key):
 		# a hit counts as a fresh use: it moves to the young end of the eviction order
-		var img: Image = _cache[key]
+		var entry: RefCounted = _cache[key]
 		_cache.erase(key)
-		_cache[key] = img
+		_cache[key] = entry
 
 static func _unpin(key: String) -> void:
 	var n := int(_pins.get(key, 0)) - 1
@@ -170,28 +181,30 @@ static func _stop_worker() -> void:
 
 # Authored R01 maps use the same shared worker and texture cache as the GPU
 # bakes. Decode and mip generation never block the battle's main thread.
-func authored(path: String, size: Vector2i, float_mips := false, urgent := false) -> Image:
-	return await result(request_authored(path, size, float_mips, urgent))
+func authored(path: String, size: Vector2i, split_relief := false, urgent := false) -> Image:
+	return await result(request_authored(path, size, split_relief, urgent))
 
 # Queues an authored map without waiting; returns its key for result(). A caller with several maps requests them all
 # first, so nothing else can slip in between them (Artoo, PR 1776).
-static func authored_key(path: String, size: Vector2i, float_mips := false) -> String:
-	return (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
+static func authored_key(path: String, size: Vector2i, split_relief := false) -> String:
+	return (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(split_relief)).sha256_text()
 
 # Issue 1434 (Artoo on 002e143f): whether an authored map's texture is still made and held, asked without starting a
 # request or a pin (a trim drops the image and its texture together).
-static func authored_texture_resident(path: String, size: Vector2i, float_mips := false) -> bool:
-	var img = _cache.get(authored_key(path, size, float_mips))
-	return img is Image and _textures.has((img as Image).get_instance_id())
+static func authored_texture_resident(path: String, size: Vector2i, split_relief := false) -> bool:
+	var entry: RefCounted = _cache.get(authored_key(path, size, split_relief))
+	if entry is RockyRelief:
+		return _textures.has(entry.height.get_instance_id()) and _textures.has(entry.masks.get_instance_id())
+	return entry is Image and _textures.has(entry.get_instance_id())
 
-func request_authored(path: String, size: Vector2i, float_mips := false, urgent := false) -> String:
+func request_authored(path: String, size: Vector2i, split_relief := false, urgent := false) -> String:
 	var owner := service(_tree())
-	var key := authored_key(path, size, float_mips)
+	var key := authored_key(path, size, split_relief)
 	_pin(key)
 	if _cache.has(key): return key
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"path": path, "size": size, "done": false,
-			"image": null, "started": Time.get_ticks_msec(), "compute": false, "float_mips": float_mips}
+			"image": null, "started": Time.get_ticks_msec(), "compute": false, "split_relief": split_relief}
 	owner._enqueue(key, urgent)
 	return key
 
@@ -199,8 +212,15 @@ func request_authored(path: String, size: Vector2i, float_mips := false, urgent 
 # The image is read before the pin is released: the last release trims the cache, and with every slot pinned the map
 # just collected can be the only one it may drop (Artoo, PR 1776).
 func result(key: String) -> Image:
+	var entry := await _result(key)
+	return entry.height if entry is RockyRelief else entry as Image
+
+func relief_result(key: String) -> RockyRelief:
+	return (await _result(key)) as RockyRelief
+
+func _result(key: String) -> RefCounted:
 	if _cache.has(key):
-		var hit: Image = _cache[key]
+		var hit: RefCounted = _cache[key]
 		_unpin(key)
 		return hit
 	var tree := _tree()
@@ -210,7 +230,7 @@ func result(key: String) -> Image:
 	var owner := service(tree)
 	var job = owner._jobs.get(key)
 	if job == null:
-		var late: Image = _cache.get(key)
+		var late: RefCounted = _cache.get(key)
 		_unpin(key)
 		return late
 	while not job.done:
@@ -366,10 +386,8 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 			authored_image = Image.load_from_file(job.path)
 		if authored_image == null or authored_image.get_size() != job.size:
 			return {"image": null, "error": "Missing or wrong-size R01 map: " + str(job.path)}
-		# Averaging the high/low height bytes into 8-bit mip levels rounds the
-		# high byte first. Near a pole that makes false radial ridges. Float
-		# channels preserve the linear packed value through filtering and mips.
-		if job.get("float_mips", false): authored_image.convert(Image.FORMAT_RGBAF)
+		if job.get("split_relief", false):
+			return {"image": split_rocky_relief(authored_image), "source": "authored"}
 		authored_image.generate_mipmaps()
 		return {"image": authored_image, "source": "authored"}
 	# Artoo on PR 1445: the folder is pinned when the job is queued, so a later VS_WORLD_CACHE change (the bench's b2r)
@@ -439,21 +457,47 @@ static func _save_later(key: String, img: Image, keep: Dictionary, folder: Strin
 # word and looked up in a 64K table of the exact heights: about half the time of the per-byte loop, same values.
 static var _height_lut := PackedFloat32Array()
 
-static func height_float(img: Image) -> Image:
+static func _height_table() -> PackedFloat32Array:
 	if _height_lut.is_empty():
 		var lut := PackedFloat32Array()
 		lut.resize(65536)
 		for v in 65536: lut[v] = float((v & 255) * 256 + (v >> 8)) / 65535.0   # the word reads low byte first: R is v & 255
 		_height_lut = lut
+	return _height_lut
+
+static func height_float(img: Image) -> Image:
 	if img.get_format() != Image.FORMAT_RG8: img.convert(Image.FORMAT_RG8)
 	var src := img.get_data()
 	var n := img.get_width() * img.get_height()
 	var out := PackedFloat32Array()
 	out.resize(n)
-	var lut := _height_lut
+	var lut := _height_table()
 	for i in n:
 		out[i] = lut[src.decode_u16(i * 2)]
 	return Image.create_from_data(img.get_width(), img.get_height(), false, Image.FORMAT_RF, out.to_byte_array())
+
+# R01's source RGBA8 is height (R high, G low), roughness (B), and cloud coverage (A). Decode the height before
+# filtering to avoid seams at byte carries. The other two channels are linear masks, not a stored normal.
+static func split_rocky_relief(img: Image) -> RockyRelief:
+	if img.get_format() != Image.FORMAT_RGBA8: img.convert(Image.FORMAT_RGBA8)
+	var size := img.get_size()
+	var count := size.x * size.y
+	var heights := PackedFloat32Array()
+	heights.resize(count)
+	var masks := PackedByteArray()
+	masks.resize(count * 2)
+	var lut := _height_table()
+	var src := img.get_data()
+	for i in count:
+		var rgba := src.decode_u32(i * 4)
+		heights[i] = lut[rgba & 0xffff]
+		masks.encode_u16(i * 2, rgba >> 16)
+	var relief := RockyRelief.new()
+	relief.height = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RF, heights.to_byte_array())
+	relief.masks = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RG8, masks)
+	relief.height.generate_mipmaps()
+	relief.masks.generate_mipmaps()
+	return relief
 
 
 static func _authored_tiles(path: String, size: Vector2i) -> Image:
