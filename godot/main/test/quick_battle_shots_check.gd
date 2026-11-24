@@ -19,6 +19,14 @@ func _run() -> void:
 	var main := MAIN.instantiate()
 	root.add_child(main)
 	current_scene = main
+	# Main may defer the battle start past its first draw (issue 1434 prefetch), so wait for it with a deadline,
+	# while still failing at once if the title shows up or Main quits first.
+	var deadline := Time.get_ticks_msec() + 60000
+	while main.battle == null and Time.get_ticks_msec() < deadline:
+		if main.title != null or main.showcase != null or main.quitting:
+			_fail("title appeared or Main quit before the battle started")
+			return
+		await process_frame
 	var battle: Node = main.battle
 	if battle == null or battle.shots_dir.is_empty():
 		_fail("Main did not start a seeded battle with a screenshot folder")
