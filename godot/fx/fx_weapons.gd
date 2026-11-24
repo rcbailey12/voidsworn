@@ -100,7 +100,7 @@ const DEBRIS_LIFE := Vector2(3.5, 6.0)     # torn plates tumble and drift well p
 const GAS_LIFE := Vector2(2.0, 2.6)        # compact soot clears quickly
 const EMBER_LIFE := Vector2(3.5, 7.0)      # cooling coals, no flicker
 # How long the hot spot on the plate glows and cools before the mark (fx_breach) is all that is left, by family.
-const HEAT_LIFE := {"energy": 1.5, "shell": 2.5, "lance": 3.0, "torp": 4.0, "bio": 2.0}
+const HEAT_LIFE := {"energy": 1.5, "shell": 2.5, "lance": 3.0, "torp": 4.0}
 const FLAME_CAP := 0.70                    # owner ruling: no flame lives longer (deaths_and_hits.md rule 2)
 # How far a torpedo hit's light carries (world units; hexes are 17.3 across): about two hexes, so the hulls near it are
 # lit for the length of the flash (audit item 11).
@@ -2513,7 +2513,7 @@ static func _ion_crawl(fx, Tg, p: Vector3, n: Vector3, T: float, col: Color, k: 
 
 
 # The Chorus row: a dim pressure burst and drifting bile droplets (no metal fireball), and an acid fume that hangs over
-# the wound for a few seconds while the acid keeps eating (fx_breach style 8).
+# the wound for a few seconds while the acid keeps eating (fx_breach style 8). No molten metal (R398).
 static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, lash: bool, w := 2) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	var eclipse: bool = Tg != null and Tg.faction == "deathless"
@@ -2532,7 +2532,6 @@ static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, l
 		_note(fx, "drop", "bio", v, n, life)
 	_burst(fx,p+n*k,n,T+0.12,4.5*k,"cool",0.8,col,0.5,0.0,n*k,0.45)
 	_gas_cloud(fx, p + n * 0.4 * k, n, T + 0.1, k, fume, 2, 2.4, "bio", 0.30, 20)
-	_heat_spot(fx, p + n * 0.1 * k, T, k, 0.7, "bio", 5.0, 0.6, Tg)
 	fx.light(p+n*2.0*k,T,0.55,3.0,col,1)
 	fx.shake(T,0.1 if lash else 0.05,p)
 

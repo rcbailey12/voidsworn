@@ -1833,15 +1833,32 @@ func _emit_acid(fx) -> void:
 		_acid_spot_index += 1
 		p = spot[0]
 		if spot.size() > 2: n = spot[2]
+	var eclipse: bool = faction == "deathless"
 	if _acid_mist == null:
 		var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
-		_acid_mist = POOLS.Pool.new(8, material, _dmg_root, "fx_acid_mist", POOLS.quad_shape())
+		_acid_mist = POOLS.Pool.new(8 if eclipse else 16, material, _dmg_root, "fx_acid_mist", POOLS.quad_shape())
 	var col := acid_colour()
-	# Lift the expanding mist off the plating so the hull and soft depth fade leave it room to show.
-	var origin := p + n * maxf(0.65, hull.L * 0.02)
+	var noise: float = fx.rng.randf()
+	var lift := maxf(0.65, hull.L * 0.02) if eclipse else maxf(0.9, hull.L * 0.04)
+	var origin := p + n * lift
 	var drift: Vector3 = (n + Vector3.UP * 0.70) * hull.L * 0.065
-	_acid_mist.emit(POOLS.pack(Vector4(origin.x, origin.y, origin.z, fx.now), Vector4(drift.x, drift.y, drift.z, 1.9),
-		Vector4(col.r, col.g, col.b, 0.68), Vector4(hull.L * 0.08, hull.L * 0.23, 20, fx.rng.randf()), Vector4(0, 0, 0.3, 0.15)))
+	if eclipse:
+		_acid_mist.emit(POOLS.pack(Vector4(origin.x, origin.y, origin.z, fx.now), Vector4(drift.x, drift.y, drift.z, 1.9),
+			Vector4(col.r, col.g, col.b, 0.68), Vector4(hull.L * 0.08, hull.L * 0.23, 20, noise), Vector4(0, 0, 0.3, 0.15)))
+	else:
+		# Split the mist along the plating and lift it so the hull doesn't slice one broad quad into a band.
+		var side := n.cross(Vector3.UP)
+		if side.length_squared() < 0.01:
+			side = n.cross(Vector3.FORWARD)
+		side = side.normalized()
+		for i in 2:
+			var spread: float = float(i * 2 - 1) * hull.L
+			var at := origin + side * spread * 0.025
+			var vel := drift + side * spread * 0.018
+			var variation := fposmod(noise + float(i) * 0.5, 1.0)
+			_acid_mist.emit(POOLS.pack(Vector4(at.x, at.y, at.z, fx.now), Vector4(vel.x, vel.y, vel.z, 1.9),
+				Vector4(col.r, col.g, col.b, lerpf(0.35, 0.40, variation)),
+				Vector4(hull.L * 0.04, hull.L * lerpf(0.10, 0.12, variation), 20, variation), Vector4(0, 0, 0.3, 0.15)))
 	_acid_mist.flush()
 	if _sizzle_count < ACID_SIZZLE_GAINS.size() and fx.now >= _sizzle_next:
 		_sizzle_next = fx.now + fx.rng.randf_range(1.7, 2.8)

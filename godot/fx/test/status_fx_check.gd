@@ -71,8 +71,8 @@ func _run() -> void:
 	# Start with a restored view, then let an actual bio hull hit supply a new local source.
 	fx.sync_ship(s.id, u)
 	fx.step(0.05)
-	check(s._acid_mist != null and s._acid_mist.emitted == 1 and not s._acid_fallback.is_empty(),
-		"an idle restored acid ship emits from real plating without a recorded impact")
+	check(s._acid_mist != null and s._acid_mist.emitted == 2 and not s._acid_fallback.is_empty(),
+		"an idle restored metal ship emits two acid puffs from real plating without a recorded impact")
 	check((s._acid_fallback.get("n", Vector3.ZERO) as Vector3).dot(Vector3.BACK) > 0.9,
 		"restored mist starts on the plating facing the camera")
 	check(sizzles.size() == 1 and float(sizzles[0].get("gain", 1.0)) <= 0.25, "the first acid sizzle is attenuated")
@@ -168,6 +168,8 @@ func _check_eclipse_acid(eclipse: SHIP, control: SHIP, world: Node3D, box: BoxMe
 	var violet: Color = eclipse.fac.damage_glow
 	var green: Color = fx.faction_info("chorus").weapon
 	check(eclipse.acid_colour() == violet and violet.b > maxf(violet.r, violet.g), "Eclipse idle and tick acid use its violet damage glow")
+	check(SH.BIO_CONTACT_GLOB == 29, "the bio contact glob uses kind 29, clear of the thrust sprite")
+	fx.spr_kinds = {}
 	for ship in [eclipse, control]:
 		var expected := violet if ship == eclipse else green
 		var smoke: POOLS.Pool = fx.pools["smk"]
@@ -201,6 +203,8 @@ func _check_eclipse_acid(eclipse: SHIP, control: SHIP, world: Node3D, box: BoxMe
 		var light: Color = fx._lev.back()[4]
 		check(_same_hue(Vector3(light.r, light.g, light.b), contact), "bioplasma impact light uses the contact palette on " + ship.faction)
 		fx.step(float(volley.impacts[0]) + 0.15)
+		var heat_pools: Dictionary = fx.dstate.get("heat_pools", {})
+		check(not heat_pools.has(ship.id) and not fx.spr_kinds.has(21), "bioplasma leaves no orange heat spot on " + ship.faction)
 		ship.flush_damage(fx)
 		var splash := fx.get_node_or_null("fx_weapon_flash") as MeshInstance3D
 		check(splash != null and _same_hue(splash.material_override.get_shader_parameter("weapon_tint"), contact),
