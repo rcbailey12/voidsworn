@@ -11,6 +11,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
 const SHIELD_CACHE := preload("res://fx/fx_shield_cache.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
+const IDLE := preload("res://fx/fx_idle.gd")
 const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
@@ -156,6 +157,11 @@ var _dip_start := 0.0
 var _dip_duration := 0.0
 var _ref_mi: MeshInstance3D = null
 var _ref0 := Transform3D.IDENTITY
+# Issue 1685 (R411): the faction's one idle motion (fx_idle.gd), behind VS_IDLE_MOTION or rendering/effects/idle_motion,
+# default off. Read once per ship, like wounds_v2. _idle is {} while off, or {node, mat, rows, motion} once built.
+var idle_on := IDLE.enabled()
+var _idle: Dictionary = {}
+var _idle_key := -1      # Reduce flashing (1) and Reduce motion (2) as the batch was built; a change rebuilds it
 
 
 # How the hull has moved under the root since the ship was added (ShipView's bob and bank), in the root's frame.
@@ -238,6 +244,37 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 		_build_shield(fx)
 	fx.pend("add:shield", t_a)
 	_last_pos = root.global_position
+	if idle_on:
+		_idle_refresh(fx)
+
+
+# Issue 1685: build (or rebuild) the faction's idle motion batch. Squadrons have none (a wing is craft, not a hull). Reduce
+# flashing and Reduce motion change what is built (fx_idle.gd), so a change of either rebuilds the one batch.
+func _idle_refresh(fx) -> void:
+	if is_instance_valid(_idle.get("node")):
+		var old := _idle["node"] as Node
+		if old.get_parent() != null:
+			old.get_parent().remove_child(old)   # out of the tree now, so the new holder does not get a renamed name
+		old.queue_free()
+	_idle = {}
+	_idle_key = (1 if fx.reduce_flashing else 0) + (2 if _reduce_motion() else 0)
+	if squadron or hull == null or not is_instance_valid(_dmg_root):
+		return
+	_idle = IDLE.build(fx, _dmg_root, hull, faction, fac, _seed, fx.reduce_flashing, _reduce_motion())
+
+
+func _reduce_motion() -> bool:
+	return is_instance_valid(root) and bool(root.get("calm"))   # ShipView.calm, set per view from the Reduce motion setting
+
+
+func _idle_step(fx) -> void:
+	if squadron:
+		return
+	var key := (1 if fx.reduce_flashing else 0) + (2 if _reduce_motion() else 0)
+	if key != _idle_key and not dead and not gone:
+		_idle_refresh(fx)
+	if not _idle.is_empty() and is_instance_valid(_idle.get("node")):
+		(_idle["node"] as Node3D).visible = not dead and not gone
 
 
 # ShipView's placeholder engine glows (render/ship_view.gd sv.engines) sit at fixed spots behind the stern, not at the
@@ -444,6 +481,8 @@ func update(fx, dt: float) -> void:
 	if not hull.doors.is_empty():
 		hull.door_step(fx.now)      # issue 1543: each launch mouth's door lobes at their pose for the effect clock
 	_update_damage_emitters(fx)
+	if idle_on:
+		_idle_step(fx)
 	_list_step(dt)
 	_react_step(fx, dt)
 	_power_step(fx)
