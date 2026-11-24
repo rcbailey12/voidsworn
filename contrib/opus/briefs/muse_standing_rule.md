@@ -1,5 +1,7 @@
 # Muse standing rule (paste once into Rey's project or chat instructions)
 
+Nov 24 2026 (R451): Muse does research, design ideas and recommendations; it does not make concept or mock pictures. Codex makes those with its image generation from Muse's written design.
+
 From Opus, for Rey (Muse). Set up Nov 2, 2026 with Ryan; revised Nov 2 08:45 (fewer GitHub writes, return loop, stall check) and 09:10 (push only: the PR opens itself).
 
 ```
