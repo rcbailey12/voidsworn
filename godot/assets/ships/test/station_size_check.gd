@@ -170,6 +170,71 @@ func _props_checks() -> void:
 	for n in [large, hole, plain]:
 		if n != null:
 			n.free()
+	_outpost_checks(rel)
+
+
+# Issue 1791 (Ryan, Nov 24 2026): with the outpost installed, every cluster under 19 hexes and every hole draws it, fitted
+# inside its hexes; the big cluster keeps T2 at unit scale. A box with the outpost's kit plan (about 15 x 10 x 17 kit
+# units at T2's 1.919 kit-to-world scale) stands in for the cache.
+func _outpost_checks(rel: Array) -> void:
+	# the installed outpost when there is one (the PC); otherwise a stand-in box of its size (28.4 x 33.4 x 18.6) in its
+	# place, which only this run sees. Never swap a box in under an outline already measured from the real one.
+	if not ResourceLoader.exists(PROPS.OUTPOST_PATH):
+		var node := Node3D.new()
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(28.4, 33.4, 18.6)
+		mi.mesh = box
+		node.add_child(mi)
+		mi.owner = node
+		var scene := PackedScene.new()
+		scene.pack(node)
+		node.free()
+		scene.take_over_path(PROPS.OUTPOST_PATH)
+		_keep.append(scene)
+	var tri := PROPS.station(34.0, 2.0 * HS, "rig", true, rel, HS, 0.0)
+	var one := PROPS.station(14.0, HS, "spire", false, [Vector2.ZERO], HS, 0.0)
+	var big := PROPS.station(46.0)
+	var ok := tri != null and one != null and big != null
+	var out := 99999
+	if ok:
+		ok = bool(tri.get_meta("station_outpost", false)) and bool(one.get_meta("station_outpost", false)) \
+			and not bool(big.get_meta("station_outpost", true)) and big.scale.is_equal_approx(Vector3.ONE)
+		for pair in [[tri, rel], [one, [Vector2.ZERO]]]:
+			var st: Node3D = pair[0]
+			st.rotation.y = float(st.get_meta("station_bearing", 0.0))
+			root.add_child(st)
+		out = _outside(tri, rel, HS) + _outside(one, [Vector2.ZERO], HS)
+		ok = ok and tri.find_child("station_T2_debris", true, false) == null
+	# Ryan, Nov 24 (issue 1791): the outpost stands above the grid on the board, no hex line through it
+	var units := [{"id": "p1", "side": "player", "fac": "ithar", "q": 0, "r": 5}]
+	var bt := _board({"0,0": "station", "1,0": "station", "0,1": "station"}, [], units, {"station": {"q": 0, "r": 0}, "stationR": 1}, 6, 2)
+	var bh := _board({}, [{"kind": "station", "cells": [[0, 0]]}], units, {}, 6, 2)
+	var lows: Array = []
+	for b in [bt, bh]:
+		var low := INF
+		for st in _stations(b):
+			if bool(st.get_meta("station_outpost", false)):
+				for mi in (st as Node).find_children("*", "MeshInstance3D", true, false):
+					var bb: AABB = (mi as MeshInstance3D).get_aabb()
+					for i in 8:
+						low = minf(low, ((mi as Node3D).global_transform * bb.get_endpoint(i)).y)
+		lows.append(snappedf(low, 0.01))
+		b.free()
+	var y0: float = 0.0
+	ok = ok and lows.size() == 2 and float(lows[0]) > y0 and float(lows[0]) < 3.0 and float(lows[1]) > y0 and float(lows[1]) < 3.0
+	print("  outpost lowest point above the grid: teaching %s, hole %s" % [str(lows[0]), str(lows[1])])
+	# one file list for the battle's prefetch and the board's terrain wait (Artoo on PR 1998, item 1)
+	var view := {"terrain": {"0,0": "station", "1,0": "station", "0,1": "station"}, "map": {"holes": [{"kind": "station", "cells": [[4, 4]]}]}}
+	var sp: Vector2i = PROPS.station_spots(view)
+	ok = ok and sp == Vector2i(0, 1)
+	var files: Array = PROPS.station_files(false, true)
+	ok = ok and files.has(PROPS.OUTPOST_PATH) and not files.has(PROPS.T2_DEBRIS_PATH)
+	_report(ok and out == 0, "with the outpost installed, the 3-hex spot and a hole draw it inside their hexes (scale %.3f and %.3f, %d points outside), the big cluster keeps T2" % [
+		tri.scale.x if tri else 0.0, one.scale.x if one else 0.0, out])
+	for n in [tri, one, big]:
+		if n != null:
+			n.free()
 
 
 func _hulk_checks() -> void:
