@@ -3026,8 +3026,8 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	var light_col: Color = dcol(s, "light", fire_col.lerp(Color.WHITE, 0.35))
 	var smoke_k: float = dsmoke(s)
 	var jet_vel: Vector3 = inherited + n * s.hull.L * 0.95
-	# Layer 1: primary directional supersonic vent jet (SH.SPRITE k=30; core fades inside 0.22 s, total life 0.30 s).
-	fx.spr(p, fx.now, 0.30, fire_col, 2.2 if ignited else 0.45, s.hull.L * 0.28, s.hull.L * 0.52, 30, jet_vel, 1.8)
+	# Layer 1: primary directional supersonic vent jet (SH.SPRITE SH.VENT_JET=40; core fades inside 0.22 s, total life 0.30 s).
+	fx.spr(p, fx.now, 0.30, fire_col, 2.2 if ignited else 0.45, s.hull.L * 0.28, s.hull.L * 0.52, SH.VENT_JET, jet_vel, 1.8)
 	# Layer 2: staggered sheared directional gas sheets (k=27) for smoky factions, or pale crystal shards (k=16) for Glasswrights.
 	if smoke_k > 0.01:
 		var soot_col: Color = Color(0.11, 0.08, 0.16) if s.faction == "deathless" else Color(0.16, 0.15, 0.14)

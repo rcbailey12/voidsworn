@@ -259,7 +259,10 @@ void process() {
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
-#  30 directional hull-rupture vent jet (tapered hot root + sheared gas cone; 28/29 reserved for PRs 2007/2021)
+#  40 directional hull-rupture vent jet (VENT_JET: tapered hot root + sheared gas cone)
+const TICK_EMBER := 38
+const TICK_DROPLET := 39
+const VENT_JET := 40
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
 
@@ -301,7 +304,9 @@ void vertex() {
 		else if (k == 3 || k == 7 || k == 8) { g = 1.0 - spow(1.0 - t, 1.6); }
 		else if (k == 4 || k == 11 || k == 13 || k == 14 || k == 15 || k == 16 || k == 17 || k == 19 || k == 21 || k == 22 || k == 23) { g = 0.0; }
 		else if (k == 12) { g = t * t; }
-		else if (k == 30) { g = 1.0 - spow(1.0 - t, 2.0); }
+		else if (k >= 30 && k <= 32) { g = 0.0; }
+		else if (k == 37) { g = 1.0 - spow(1.0 - t, 2.2); }
+		else if (k == 40) { g = 1.0 - spow(1.0 - t, 2.0); }
 		float size = mix(a3.x, a3.y, g);
 		// F3 round 2: a3.w carries the seed in its fraction and, in its whole part, an explicit on-screen floor in pixels
 		// for this one sprite (impact, muzzle and kill flashes that must read from the battle camera); 0 means the kind's
@@ -354,7 +359,7 @@ void vertex() {
 		// Explicit smoke/gas floors preserve opacity, without adding any light.
 		if (k == 24 || k == 25 || k == 26 || k == 37 || (own && (k == 3 || k == 7 || k == 8))) { boost = 1.0; }
 		vec2 q = VERTEX.xy;
-		if (k == 14 || k == 15 || k == 23 || k == 27 || k == 30) {
+		if (k == 14 || k == 15 || k == 23 || k == 27 || (k >= 30 && k <= 33) || k == 36 || k == 37 || k == 40) {
 			// stretched along the screen-space motion (bolts, globs and directional jets read as moving, not as dots)
 			vec3 vw = (MODEL_MATRIX * vec4(a1.xyz, 0.0)).xyz;
 			vec2 sv = (VIEW_MATRIX * vec4(vw, 0.0)).xy;
@@ -362,12 +367,12 @@ void vertex() {
 			vec2 dx = sl > 1e-4 ? sv / sl : vec2(1.0, 0.0);
 			vec2 dy = vec2(-dx.y, dx.x);
 			float st = k == 23 ? 1.4 : (k == 14 ? 1.0 + clamp(sl * 0.012, 0.0, 1.6) : 1.0 + clamp(sl * 0.006, 0.0, 0.6));
-			if (k == 27) {
-				q = dx * VERTEX.x * 1.85 + dy * VERTEX.y * 0.62;
-			} else if (k == 30) {
+			q = k == 27 ? dx * VERTEX.x * 1.85 + dy * VERTEX.y * 0.62 : dx * VERTEX.x * st + dy * VERTEX.y;
+			if (k == 40) {
 				q = dx * (VERTEX.x + 0.45) * 2.3 + dy * VERTEX.y * 0.50;
-			} else {
-				q = dx * VERTEX.x * st + dy * VERTEX.y;
+			} else if (k >= 30) {
+				float stretch = k == 37 ? 2.35 : (k == 30 ? 1.95 : (k == 32 ? 1.38 : 1.62));
+				q = dx * VERTEX.x * stretch + dy * VERTEX.y * (k == 37 ? 0.78 : 1.0);
 			}
 		} else {
 			float cs = cos(ang);
@@ -390,7 +395,7 @@ void fragment() {
 	float t = vInfo.x; int k = int(vInfo.y + 0.5); float seed = vInfo.z; float age = vInfo.w; float I = vCol.a;
 	vec2 p = vUv;
 	float r = length(p);
-	if (k != 30 && r > 1.0) { discard; }
+	if (k != 40 && r > 1.0) { discard; }
 	vec3 add = vec3(0.0); vec3 base = vec3(0.0); float alpha = 0.0;
 	float star = exp(-abs(p.x) * 40.0) * exp(-abs(p.y) * 3.0) + exp(-abs(p.y) * 40.0) * exp(-abs(p.x) * 3.0);
 	if (k == 0) {
@@ -426,7 +431,7 @@ void fragment() {
 		float dens = (1.0 - edge) + (n - 0.5) * 1.7;
 		alpha = smoothstep(0.05, 0.7, dens) * I * smoothstep(0.0, 0.035, t) * spow(1.0 - t, 0.85);
 		base = vCol.rgb * (0.65 + 0.55 * n);
-	} else if (k == 30) {
+	} else if (k == 40) {
 		// Issue 2048: directional hull-rupture vent jet (replaces round white small-death bow puff).
 		// u=0 sits at the breach mouth on the hull, u=1 is the sheared outer tip.
 		float u = clamp(p.x * 0.5 + 0.5, 0.0, 1.0);
@@ -533,7 +538,7 @@ void fragment() {
 		base = vec3(0.09, 0.09, 0.1);
 		add = vCol.rgb * eng * 2.5 * I;
 	}
-	float win = k == 30 ? 1.0 : (1.0 - r * r);
+	float win = k == 40 ? 1.0 : (1.0 - r * r);
 	add *= win * win;
 #ifdef SOFT
 	float scene_z = -scene_view_pos(SCREEN_UV, INV_PROJECTION_MATRIX).z;

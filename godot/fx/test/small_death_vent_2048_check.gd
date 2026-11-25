@@ -47,10 +47,13 @@ func _advance(fx, secs: float) -> void:
 
 
 func _run() -> void:
-	# 1. Shader check: SH.SPRITE has kind 30 directional hull-rupture vent jet with root-to-tip stretch (clear of PR 2007/2021).
-	_check(SH.SPRITE.contains("else if (k == 30)"), "SH.SPRITE implements kind 30 directional vent jet")
-	_check(SH.SPRITE.contains("if (k != 30 && r > 1.0) { discard; }"), "kind 30 is not clipped by circular r > 1.0 disc")
-	_check(SH.SPRITE.contains("q = dx * (VERTEX.x + 0.45) * 2.3 + dy * VERTEX.y * 0.50;"), "kind 30 roots on breach and stretches outward")
+	# 1. Shader check: SH.SPRITE keeps main kinds 30..39 intact and implements VENT_JET (kind 40) directional hull-rupture vent jet.
+	_check(SH.VENT_JET == 40, "SH.VENT_JET uses free sprite kind 40 (clear of main kinds 30..39)")
+	_check(SH.TICK_EMBER == 38 and SH.TICK_DROPLET == 39, "SH.TICK_EMBER (38) and SH.TICK_DROPLET (39) remain intact")
+	_check(SH.SPRITE.contains("else if (k == 40)"), "SH.SPRITE implements kind 40 directional vent jet")
+	_check(SH.SPRITE.contains("else if (k >= 30 && k <= 32)"), "SH.SPRITE keeps main bolt_sprite route for kinds 30..32")
+	_check(SH.SPRITE.contains("if (k != 40 && r > 1.0) { discard; }"), "kind 40 is not clipped by circular r > 1.0 disc")
+	_check(SH.SPRITE.contains("q = dx * (VERTEX.x + 0.45) * 2.3 + dy * VERTEX.y * 0.50;"), "kind 40 roots on breach and stretches outward")
 
 	# 2. Kill small hulls across factions in normal and reduce-flashing modes.
 	var factions := ["voidsworn", "hegemony", "corsair", "ithar", "deathless"]
