@@ -479,6 +479,13 @@ func _aud_of(gl: float, pos, focus, life: float) -> float:
 	return a
 
 
+# Where a sound sits, apart from how loud it is: the camera's distance and the selected ship's nearness (an unplaced sound
+# counts as at the camera). An incoming sound is dropped only when its place is worse than the voice it would replace, so a
+# deliberately quieter cue (the second acid sizzle) at the same place still takes the slot of an older one.
+func _place_of(pos, focus) -> float:
+	return _aud_of(1.0, pos, focus, 1.0)
+
+
 func _aud_voice(v: Dictionary, now: float, focus) -> float:
 	var span := maxf(0.05, float(v.end) - float(v.start))
 	var life := lerpf(0.4, 1.0, clampf((float(v.end) - now) / span, 0.0, 1.0))
@@ -554,7 +561,20 @@ func _start_pending(generation: int, name: String, o: Dictionary, lay: Array) ->
 		_start(name, o, lay)
 
 
+# Issue 2034: a start never starts another one in the same call (the salvo tail is always delayed), so a start that finds
+# itself two deep is a loop: it is dropped, not allowed to run until the stack overflows (volley_voice_check, CI Nov 25).
+var _start_depth := 0
+
+
 func _start(name: String, o: Dictionary, lay: Array) -> void:
+	if _start_depth >= 2:
+		return
+	_start_depth += 1
+	_start_voice(name, o, lay)
+	_start_depth -= 1
+
+
+func _start_voice(name: String, o: Dictionary, lay: Array) -> void:
 	if not on or _cancelled_tags.has(o.get("tag", "")):
 		return
 	var cue: Dictionary = cues[name]
@@ -575,18 +595,18 @@ func _start(name: String, o: Dictionary, lay: Array) -> void:
 	var dk := _near_factor(pos) if pos is Vector3 else 1.0
 	_reap(now)
 	# issue 2034: when a cue or the whole mix is out of voices, the weakest one goes (quiet and far, nearly finished), not
-	# the oldest, and a voice near the selected ship is kept. An incoming positional sound weaker than that one is dropped.
+	# the oldest, and a voice near the selected ship is kept. An incoming positional sound in a worse place than that one is dropped.
 	var focus = _focus_pos()
 	var in_gl := gain
 	var top_layer := 0.0
 	for L in lay:
 		top_layer = maxf(top_layer, float(L.g))
 	in_gl *= top_layer
-	var in_aud := _aud_of(in_gl, pos, focus, 1.0)
+	var in_place := _place_of(pos, focus)
 	var list: Array = by_cue.get(name, [])
 	while list.size() >= int(cue["max"]):
 		var vi := _weakest(list, now, focus)
-		if pos is Vector3 and in_aud < _aud_voice(list[vi], now, focus):
+		if pos is Vector3 and in_place < _place_of(list[vi].pos, focus):
 			return
 		_steal(list[vi])
 	if active.size() >= max_voices:
@@ -602,7 +622,7 @@ func _start(name: String, o: Dictionary, lay: Array) -> void:
 				vw = w
 		if vi < 0:
 			return
-		if pos is Vector3 and int(active[vi].pri) == pri and in_aud < vw:
+		if pos is Vector3 and int(active[vi].pri) == pri and in_place < _place_of(active[vi].pos, focus):
 			return
 		_steal(active[vi])
 	var u := randf() * 2.0 - 1.0
