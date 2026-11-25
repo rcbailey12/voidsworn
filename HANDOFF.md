@@ -11,9 +11,10 @@ makes it stale). The Nov 14 hand-over is in docs/archive/HANDOFF_0_2026-11-14.md
 Worker threads are started in the same Project: each gets a fresh cloud copy of the repo and the "voidsworn" cloud environment
 (Godot 4.7.2 headless; Ryan selected it Nov 16), works one issue on its own branch and never merges (RULEBOOK 2.2). Opus builds
 every Blender ship and paint stack (R205); not capped while Ryan's plan clears the backlog (Ryan, Nov 19; RULEBOOK 2.6), big new threads proposed to Ryan first. Codex is on the Pro
-plan (R264), local only, four lanes on the PC (R268, R301): main (tools build_b, repo
+plan (R264), local only, six lanes on the PC (R268, R301, issue 2057): main (tools build_b, repo
 board\repo, mirror repo-mirror.git; GPU jobs), lane B (build_c, board_b\repo, repo-mirror-b.git; Godot UI), lane C (build_d,
-board_c\repo, repo-mirror-c.git; code-only), lane D (build_e, board_d\repo; code-only, R301). No Codex cloud: its model cannot be pinned (R268). DeepSeek takes code, mid-size
+board_c\repo, repo-mirror-c.git; code-only), lane D (build_e, board_d\repo; code-only, R301), lanes E and F (build_f and build_g,
+board_e and board_f, repo-mirror-e.git and repo-mirror-f.git; code-only, issue 2057, live Nov 25). No Codex cloud: its model cannot be pinned (R268). DeepSeek takes code, mid-size
 included; Kimi is gone (R257); Muse does design, iteration and outside review only, never sound work; sound and anything important
 goes to Neon (Ryan, Nov 19; Neon's own accounts R363, started by the Board through T3 Code on the PC, R428). GPU work is sized to the job and the
 5080 (R293). Every PC write is read back before it is relied on (LOOP Known traps).
