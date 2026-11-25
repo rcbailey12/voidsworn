@@ -82,20 +82,21 @@ func _check_clock(fx: FX) -> void:
 	seed(1933)
 	fx.board("rammer", "target")
 	_check(randf() == expected_random, "boarding leaves the global random stream alone")
-	var lines := fx._board_lines_live
-	_check(lines.size() == 3, "boarding creates all three lines")
+	var lines := fx.event_paths.live.filter(func(row: Dictionary) -> bool: return row.tag == "board_assault")
+	_check(lines.size() == 3, "boarding creates all three assault cables")
 	if lines.is_empty():
 		return
 	var line: MeshInstance3D = lines[0]["node"]
 	var mat := line.material_override as ShaderMaterial
 	await process_frame
-	_check(float(mat.get_shader_parameter("gain")) == 0.0, "boarding lines wait for the manual effect clock")
-	var start: float = fx.now
+	_check(not line.visible and float(mat.get_shader_parameter("gain")) == 0.0, "boarding cables wait for the manual effect clock")
+	var initial: float = fx.now
 	fx.step(0.1)
-	_check(is_equal_approx(float(mat.get_shader_parameter("gain")), (fx.now - start) / 0.2),
-		"boarding line gain follows the effect clock")
+	_check(line.visible and is_equal_approx(float(mat.get_shader_parameter("phase")), (fx.now - initial) / fx.board_lines_s),
+		"boarding cable phase follows the effect clock")
 	fx.step(fx.board_lines_s)
-	_check(lines.is_empty() and line.is_queued_for_deletion(), "boarding lines expire at the effect-clock hold")
+	_check(fx.event_paths.live.all(func(row: Dictionary) -> bool: return row.tag != "board_assault") and line.is_queued_for_deletion(),
+		"boarding cables expire at the effect-clock hold")
 
 
 func _check_code(label: String, code: String, fragments: Array[String]) -> void:
