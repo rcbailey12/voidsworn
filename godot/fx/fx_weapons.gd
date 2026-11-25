@@ -248,6 +248,7 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var ka_geo: float = A.scale_k() if A != null else 1.0
 	var ka: float = maxf(ka_geo, VIS_K_FIRE)
 	var kt: float = maxf(Tg.scale_k() if Tg != null else 1.0, VIS_K_HIT)
+	# R46: both plasma weapons keep the same light blue from muzzle to impact.
 	var col: Color = PLASMA_COL if lk in ["plasma", "plasma_cannon"] else fac["weapon"]
 	# Doom uses its own deep violet core (issue 1503, was R263 green); the R271 null tracer uses the faction's violet-white.
 	if lk == "doom" and fac.has("weapon_core"):
@@ -434,9 +435,6 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 	var spread: float = float(variation.get("spread", 1.0))
 	ka *= size
 	col = Color(col.r * power, col.g * power, col.b * power, col.a)
-	# In-flight energy and muzzle tints use the shooter palette. Keep the existing impact tint.
-	var weapon_tint: Color = fac["weapon"]
-	weapon_tint *= power
 	var to: Vector3 = tg["p"]
 	var dv = to - from
 	var dist = maxf(dv.length(), 0.01)
@@ -490,19 +488,19 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"plasma_cannon":
 			tf = T0 + 0.06 + beat * 0.085
 			var spd: float = 230.0 * fx.unit
-			_muzzle(fx, from, dir, tf, weapon_tint, ka, 19.0 * size, MUZZLE_ENERGY, A)
-			_sprite_bolt(fx, from, tf, dist / spd, weapon_tint, 2.65, 1.45 * ka, BOLT_PLASMA, dir * spd, 16.0 * size)
+			_muzzle(fx, from, dir, tf, col, ka, 19.0 * size, MUZZLE_ENERGY, A)
+			_sprite_bolt(fx, from, tf, dist / spd, col, 2.65, 1.45 * ka, BOLT_PLASMA, dir * spd, 16.0 * size)
 			ti = tf + dist / spd
 		"plasma":
 			tf = T0 + 0.12 + beat * 0.24
 			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * 0.55 * fx.unit
 			var sz = (1.9 if w >= 3 else 1.5) * ka
-			_muzzle(fx, from, dir, tf, weapon_tint, sz, (30.0 if w >= 3 else 24.0) * size, MUZZLE_ENERGY, A)
-			_sprite_bolt(fx, from, tf, dist / spd, weapon_tint, 2.8, sz * 1.4, BOLT_PLASMA, dir * spd, (24.0 if w >= 3 else 19.0) * size)
+			_muzzle(fx, from, dir, tf, col, sz, (30.0 if w >= 3 else 24.0) * size, MUZZLE_ENERGY, A)
+			_sprite_bolt(fx, from, tf, dist / spd, col, 2.8, sz * 1.4, BOLT_PLASMA, dir * spd, (24.0 if w >= 3 else 19.0) * size)
 			# heat shimmer trailing the bolt
 			for s in 3:
-				fx.spr(from + dir * dist * (0.25 + s * 0.25), tf + dist / spd * (0.25 + s * 0.25), 0.4, weapon_tint, 0.3, sz * 0.6, sz * 1.4, 18)
-			fx.light(from + dir * 2.0, tf, dist / spd, 3.0, weapon_tint, 1)
+				fx.spr(from + dir * dist * (0.25 + s * 0.25), tf + dist / spd * (0.25 + s * 0.25), 0.4, col, 0.3, sz * 0.6, sz * 1.4, 18)
+			fx.light(from + dir * 2.0, tf, dist / spd, 3.0, col, 1)
 			ti = tf + dist / spd
 		"scatter":
 			tf = T0 + 0.1 + beat * 0.1

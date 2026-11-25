@@ -68,6 +68,11 @@ func _sprites(fx: RecordFX, kind: int) -> Array:
 	return fx.sprites.filter(func(row: Dictionary) -> bool: return row["kind"] == kind)
 
 
+func _same_hue(col: Color, palette: Color) -> bool:
+	return col.b > 0.0 and palette.b > 0.0 and is_equal_approx(col.r / col.b, palette.r / palette.b) \
+		and is_equal_approx(col.g / col.b, palette.g / palette.b)
+
+
 func _advance(fx: RecordFX, target: float) -> void:
 	while fx.now + 0.00001 < target:
 		fx.step(1.0 / 60.0)
@@ -100,13 +105,33 @@ func _bolts() -> void:
 		var expected: bool = fx.streaks.has(row[3]) if row[4] else not shots.is_empty()
 		_check(expected and res.get("impacts", []).size() == 1, "%s %s emits its layered projectile" % [row[2], row[1]])
 		if not shots.is_empty():
-			var hue: Color = shots[0]["col"]
-			var palette := FLOOK.weapon(row[2])
-			_check(is_equal_approx(hue.r / hue.b, palette.r / palette.b) and is_equal_approx(hue.g / hue.b, palette.g / palette.b),
-				"%s %s keeps the faction bolt tint" % [row[2], row[1]])
+			var palette := WEAP.PLASMA_COL if row[3] == WEAP.BOLT_PLASMA else FLOOK.weapon(row[2])
+			_check(_same_hue(shots[0]["col"], palette), "%s %s keeps its bolt tint" % [row[2], row[1]])
 		if row[1] == "bombs":
 			_check(_sprites(fx, 23).is_empty(), "bomb is not the craft silhouette sprite")
 		fx.free()
+
+
+func _plasma_palette() -> void:
+	# R46 applies to both weapons, even for factions whose own energy is orange or violet.
+	for faction in ["voidsworn", "deathless"]:
+		for weapon in ["laser", "turbo"]:
+			var fx := _fx()
+			var res := _volley(fx, "battery", weapon, faction)
+			var label := "%s %s" % [faction, weapon]
+			for profile in [WEAP.BOLT_PLASMA, WEAP.MUZZLE_ENERGY]:
+				var layers := _sprites(fx, profile)
+				_check(not layers.is_empty() and _same_hue(layers[0]["col"], WEAP.PLASMA_COL),
+					"%s uses light blue for sprite %d" % [label, profile])
+			var fire: float = res["fires"][0]
+			var lights: Array = fx._lev.filter(func(light: Array) -> bool: return is_equal_approx(light[1], fire))
+			_check(lights.size() == (2 if weapon == "turbo" else 1) and lights.all(
+				func(light: Array) -> bool: return _same_hue(light[4], WEAP.PLASMA_COL)), "%s has light-blue firing lights" % label)
+			if weapon == "turbo":
+				var shimmer := _sprites(fx, 18)
+				_check(shimmer.size() == 3 and shimmer.all(func(layer: Dictionary) -> bool: return _same_hue(layer["col"], WEAP.PLASMA_COL)),
+					"%s has light-blue heat shimmer" % label)
+			fx.free()
 
 
 func _muzzles() -> void:
@@ -179,6 +204,7 @@ func _ordnance() -> void:
 
 func _run() -> void:
 	_bolts()
+	_plasma_palette()
 	_muzzles()
 	_ordnance()
 	print("PASS shared weapon layers" if failures == 0 else "FAIL shared weapon layers: %d" % failures)

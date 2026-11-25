@@ -429,11 +429,12 @@ packs. Materials share the imported textures through `_mat`, including the
 attached engine batches; they do not allocate textures per shot.
 
 Build B (issue 2043) uses separate hot-core and tapered-sheath masks in the
-existing streak and sprite pools. The shooter palette tints the sheath, not
-the target's impact. Bombs have their own capsule mask. The shared muzzle
-kit keeps the approved gas on cartridge blasts and uses clean apertures for
-energy and crystal and a wet plume for bio. Bright muzzle and intercept
-cores still use the flash counter. Spark recipes stay separate (issue 2018).
+existing streak and sprite pools. The shooter palette normally tints the
+sheath, but plasma stays light blue from muzzle to impact (R46). Bombs have
+their own capsule mask. The shared muzzle kit keeps the approved gas on
+cartridge blasts and uses clean apertures for energy and crystal and a wet
+plume for bio. Bright muzzle and intercept cores still use the flash counter.
+Spark recipes stay separate (issue 2018).
 
 Star corona rays follow the original body after ignition and turn off on
 intercept. Rockets add a cold, short smoke layer over the nozzle wake with
