@@ -108,6 +108,7 @@ var apply_shake = true
 
 # --- clock
 var now = 0.0
+var dt := 0.0          # effect seconds advanced by the most recent step
 var _speed = 1.0
 var _pause_until = -1.0   # effect time; checks hold a pause open with it
 var _pause_left = 0.0      # issue 1558 item 4: the hit pause in real seconds, so it lasts the same at any frame rate
@@ -165,6 +166,13 @@ var _dark_interiors := {}
 var _wreck_interiors := {}
 const WRECK_SOOT := 0.33   # issue 1077: a strained wreck's insides, a third as bright
 var defer_initial_cuts := false
+var cut_abort := DEATH.CutAbort.new()
+# issue 1434 (LOAD13: the title backdrop built hull damage and death piece shaders in one 7.7 s frame): the title backdrop
+# never fights, so a passive fx cuts no hull for a death and builds no damage surfaces
+var passive := false
+# issue 1434: with defer_initial_cuts, add_ship leaves each shield for prepare_battle_hulls (battle.gd sets it for its load)
+var defer_shields := false
+var warmup_batch := 0   # issue 1434: warm meshes revealed this many per frame (0: all at once); battle.gd sets 2
 var _piece_builds: Array = []
 var _shield_jobs := {}
 const LOAD_PIECE_BUDGET := 16000  # microseconds per frame while the cover is up
@@ -186,10 +194,29 @@ func _ready() -> void:
 
 
 func _enter_tree() -> void:
+	if closed:
+		cut_abort = DEATH.CutAbort.new()
 	closed = false
 
 
+# issue 1434: the warm-up's root while it fills out of the tree, and its meshes waiting to enter (Artoo on PR 1445: a
+# battle closed mid warm-up must not leave them orphaned, the coroutine may never resume)
+var _warm_off_tree: Node = null
+var _warm_parked: Array = []   # [mesh, its parent]
+
+
+func _free_warm_parked() -> void:
+	for pk in _warm_parked:
+		if is_instance_valid(pk[0]) and not (pk[0] as Node).is_inside_tree():
+			(pk[0] as Node).free()
+	_warm_parked = []
+	if is_instance_valid(_warm_off_tree) and not _warm_off_tree.is_inside_tree():
+		_warm_off_tree.free()
+	_warm_off_tree = null
+
+
 func _exit_tree() -> void:
+	_free_warm_parked()
 	_set_physics_awake(true)   # the world can outlive this fx (look bench battles share the root world)
 	# Issue 1435: leaving a battle no longer waits here for the death cut, shield and damage jobs (5.7 to 6.5 s on the
 	# caller with one A16 cut out). The jobs still running are retired with their inputs held and reaped over the
@@ -213,6 +240,7 @@ static var _exit_hooked := false
 func release(wait := true) -> void:
 	var t_rel := Time.get_ticks_usec()
 	closed = true
+	cut_abort.cancel()
 	attach_report(true)
 	_end_dim()
 	var tids: Array = []
@@ -244,6 +272,7 @@ func release(wait := true) -> void:
 		if s.has_meta("cut_prev"):
 			keep.append(s.get_meta("cut_prev"))
 		s.remove_meta("cut_task")
+		s.remove_meta("cut_work")
 		s.remove_meta("cut_job")
 		s.remove_meta("cut_prev")
 	if not tids.is_empty():
@@ -502,7 +531,6 @@ func step(delta: float) -> void:
 	var hold: bool = now < _pause_until
 	var crawl: float = 0.0 if hold else minf(real, float(_pause_left))
 	_pause_left = maxf(0.0, _pause_left - real)
-	var dt: float
 	if hold or (crawl > 1e-6 and crawl >= real - 1e-9):
 		_speed = crawl_spd
 		dt = real * _speed
@@ -521,7 +549,7 @@ func step(delta: float) -> void:
 	_build_death_pieces()
 	_gate_physics()
 	t0 = pend("later", t0)
-	_update_feel(delta)
+	_update_feel()
 	_update_dim()
 	for id in ships:
 		(ships[id] as SHIP).update(self, dt)
@@ -631,6 +659,21 @@ func prof_take() -> Dictionary:
 	var p := prof
 	prof = {}
 	return p
+
+
+# issue 1434 (LOAD17: 83 pipelines in one hull-prep draw): what hull prep put into the scene since the bench last read
+# it, by kind (shield built, shield skin, cut finished, death pieces), so a long draw names the installs before it
+var installs := {}
+
+
+func count_install(kind: String) -> void:
+	installs[kind] = int(installs.get(kind, 0)) + 1
+
+
+func installs_take() -> Dictionary:
+	var d := installs
+	installs = {}
+	return d
 
 
 # Persistent damage is continuous emission and never calls flash(). Report its
@@ -1311,7 +1354,7 @@ func punch_now() -> float:
 	return _kick
 
 
-func _update_feel(delta: float) -> void:
+func _update_feel() -> void:
 	var cp = camera.global_position if camera != null else Vector3.ZERO
 	var keep: Array = []
 	for s in _shakes:
@@ -1332,9 +1375,9 @@ func _update_feel(delta: float) -> void:
 	_pauses = keep
 	_update_punch()
 	# trauma decays in about 0.3 s from a normal hit, about 0.45 s from the heaviest (A5 ranges)
-	_trauma = maxf(0.0, _trauma - delta * 2.4)
+	_trauma = maxf(0.0, _trauma - dt * 2.4)
 	var k = _trauma * _trauma * shake_scale * (0.5 if reduce_flashing else 1.0)
-	var T = Time.get_ticks_msec() / 1000.0 if not manual else now
+	var T = now
 	var amp = 0.06 * k
 	_shake_off = Vector2(amp * (sin(T * 37.0) * 0.6 + sin(T * 61.0 + 1.0) * 0.4), amp * (sin(T * 43.0 + 2.0) * 0.6 + sin(T * 71.0) * 0.4))
 	if apply_shake and camera != null and is_instance_valid(camera):
@@ -1510,6 +1553,7 @@ func _finish_shield_skins() -> void:
 			SHIP.save_shield_skin(key, arrays)
 			for entry in job["ships"]:
 				entry[0].install_shield_skin(arrays, entry[1], self, key)
+				count_install("shield skin")
 		if Time.get_ticks_usec() >= deadline:
 			return
 
@@ -1518,13 +1562,28 @@ func _build_death_pieces() -> void:
 	if _piece_builds.is_empty():
 		return
 	var deadline := Time.get_ticks_usec() + (LOAD_PIECE_BUDGET if defer_initial_cuts else DEATH.PREBUILD_BUDGET)
+	# issue 1434 (LOAD22 cold s25: 83 pipelines in one 6.9 s draw): each piece's new materials make its pipelines, so under
+	# the load cover a frame builds a few pieces (a call past its deadline builds one), not a time budget's worth
+	var calls := warmup_batch * 2 if defer_initial_cuts and warmup_batch > 0 else -1
 	while not _piece_builds.is_empty():
 		var entry: Array = _piece_builds[0]
+		if calls == 0:
+			return
+		if calls > 0:
+			calls -= 1
+			deadline = 0
 		if not DEATH.build_pieces(self, entry[0], entry[1], deadline):
+			if calls > 0:
+				continue
 			return
 		_piece_builds.pop_front()
+		count_install("death pieces")
 		if Time.get_ticks_usec() >= deadline:
 			return
+
+
+# issue 1434 (LOAD15: one 3 to 6 s draw inside prepare_hulls, 83 pipelines): the step under way, read by the load bench
+var prep_step := ""
 
 
 func prepare_battle_hulls() -> void:
@@ -1534,8 +1593,22 @@ func prepare_battle_hulls() -> void:
 	_warm_hull_adapters()
 	var pending: Array[SHIP] = []
 	var deadline := Time.get_ticks_usec() + LOAD_PIECE_BUDGET
+	# issue 1434: the shields the load put off (fx_ship.setup with defer_shields), one ship at a time between frames
+	for value in ships.values():
+		var ship_s: SHIP = value
+		if ship_s.shield_later:
+			var t_s := Time.get_ticks_usec()
+			prep_step = "shield " + str(ship_s.id)
+			ship_s.build_shield_later(self)
+			count_install("shield built")
+			pend("prep:shield", t_s)
+			if Time.get_ticks_usec() >= deadline:
+				await get_tree().process_frame
+				if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+				deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	for value in ships.values():
 		var ship: SHIP = value
+		prep_step = "surfaces " + str(ship.id)
 		FRAGMENTS.warm_source(ship)
 		if ship.weight <= 0:
 			continue
@@ -1563,24 +1636,34 @@ func prepare_battle_hulls() -> void:
 	# together while the loading cover is up.
 	var cut_limit := clampi(OS.get_processor_count() / 2, 1, LOAD_CUT_LIMIT)
 	var active: Array[SHIP] = []
+	var shared_cuts := {}
+	prep_step = "cuts"
 	while not pending.is_empty() or not active.is_empty():
 		while active.size() < cut_limit and not pending.is_empty():
 			var ship: SHIP = pending.pop_front()
-			DEATH.precompute(self, ship, "blast", true)
+			DEATH.precompute(self, ship, "blast", true, shared_cuts)
 			active.append(ship)
 		for i in range(active.size() - 1, -1, -1):
 			if DEATH.finish_precompute(self, active[i]):
 				active.remove_at(i)
+				count_install("cut finished")
+				# issue 1434 (LOAD22 cold s25: 83 pipelines and 6.9 s in one draw): under the load cover one finished cut
+				# installs its pieces per frame, the others wait for the next
+				if warmup_batch > 0:
+					break
 		_finish_shield_skins()
 		await get_tree().process_frame
 		if closed or not is_inside_tree():
 			return
+	shared_cuts.clear()
+	prep_step = "shield skins and pieces"
 	while not _piece_builds.is_empty() or not _shield_jobs.is_empty():
 		_finish_shield_skins()
 		await get_tree().process_frame
 		if closed or not is_inside_tree():
 			return
 	defer_initial_cuts = false
+	prep_step = ""
 
 
 # A cut belongs to this session until joined, even after it loses its ship or its result is discarded.
@@ -1603,6 +1686,16 @@ func join_death_cut(tid: int) -> void:
 		_death_cut_tasks.erase(tid)
 
 
+func finish_death_cut(tid: int) -> bool:
+	# A ship that shares the cut may already have joined it.
+	if not _death_cut_tasks.has(tid):
+		return true
+	if not WorkerThreadPool.is_task_completed(tid):
+		return false
+	join_death_cut(tid)
+	return true
+
+
 func collect_death_cut(tid: int) -> void:
 	if not _death_cut_tasks.has(tid):
 		return
@@ -1617,6 +1710,7 @@ func discard_ship_cut(s: SHIP) -> void:
 		var tid := int(s.get_meta("cut_task"))
 		s.remove_meta("cut_task")
 		collect_death_cut(tid)
+	s.remove_meta("cut_work")
 	s.remove_meta("cut_job")
 	s.remove_meta("cut_prev")
 
@@ -1626,6 +1720,7 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 		remove_ship(id)
 	var s = SHIP.new()
 	s.setup(self, id, root, info)
+	s.set_meta("cut_class", String(info.get("cls", "")))
 	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
 	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
@@ -1852,6 +1947,12 @@ func anchor_wreck(id: String, centre: Vector3, radius: float) -> void:
 
 func wreck_pieces(id: String) -> int:
 	return DEATH.wreck_pieces(self, id)
+
+
+# A late cut keeps the live hull visible until the split, hulk copy or no-pieces pop has run.
+func wreck_settled(id: String) -> bool:
+	var s: SHIP = ships.get(id)
+	return s == null or s.has_meta("death_hidden") or not is_instance_valid(s.root)
 
 
 func jump_out(id: String) -> void:
@@ -2109,6 +2210,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	if closed or not is_inside_tree() or not is_instance_valid(cam) or not cam.is_inside_tree():
 		return
 	_warm_hull_adapters()
+	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
+		await get_tree().process_frame
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
 	var c = Color(1, 0.6, 0.3)
@@ -2124,10 +2228,19 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	_warm_fragment_finish(at, T, c)
 	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
 	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
+	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
+		await get_tree().process_frame
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	var tmp = Node3D.new()
 	tmp.name = "fx_warmup"
-	add_child(tmp)
-	tmp.global_position = at
+	tmp.position = global_transform.affine_inverse() * at
+	if warmup_batch > 0:
+		# issue 1434 (LOAD20, cloud trace: 64 warm meshes entering the scene in one frame compiled 173 pipelines in one
+		# draw, hidden or not): the warm root stays out of the tree while it fills, and its meshes enter a few a frame
+		# below. Until they are all in, _exit_tree frees whatever is still out of the tree (_free_warm_parked).
+		_warm_off_tree = tmp
+	else:
+		add_child(tmp)
 	var box = BoxMesh.new()
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
@@ -2144,6 +2257,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			var damage := HULL.damage_material(source, Transform3D.IDENTITY, {}, 1.0)
 			mats.append(damage)
 			mats.append(DEATH.power_material(damage.duplicate(), death_story))
+	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
+		await get_tree().process_frame
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	if not compat:
 		mats.append(mat(SH.SPRITE, 1, "#define SOFT\n"))
 	for band in ["small", "cruiser", "capital"]:
@@ -2152,6 +2268,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			baked.set_shader_parameter("born", now)
 			baked.set_shader_parameter("intensity", 0.01)
 			mats.append(baked)
+		if warmup_batch > 0:
+			await get_tree().process_frame
+			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	mats.append(mat(SH.TEAR, 1))   # issue 462: the dying hull's tear overlay
 	# issue 220: the torpedo and rocket bodies (drive glow, star torpedo body, exhaust plume) and the weapon bursts' atlas
 	# shader: their first launch or hit compiled them mid-fight (a 53 ms frame with 3 surface pipelines at the gate scene)
@@ -2168,6 +2287,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		wgas.set_shader_parameter("born", now)
 		wgas.set_shader_parameter("intensity", 0.01)
 		mats.append(wgas)
+		if warmup_batch > 0:
+			await get_tree().process_frame
+			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	for rel in ["weapons/impact/impact_", "weapons/impact/flash_", "weapons/macro/impact_", "weapons/macro/flash_", "death/small/flash_", "death/cruiser/flash_", "death/capital/flash_"]:
 		if rel.begins_with("weapons/"):
 			var hit := WEAP.hull_impact_material(self, rel)
@@ -2179,7 +2301,13 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			production.set_shader_parameter("born", now)
 			production.set_shader_parameter("intensity", 0.01)
 			mats.append(production)
+		if warmup_batch > 0:
+			await get_tree().process_frame
+			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	DEATH.tear_particles(self, at, Vector3.UP, 0.1, Vector3.ZERO)
+	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
+		await get_tree().process_frame
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	for i in mats.size():
 		# Pin generated hull shaders until release, even after the temporary warmup meshes go away.
 		_shaders["warm:" + str(mats[i].shader.code.hash())] = mats[i].shader
@@ -2228,8 +2356,13 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# tell puts on every dying hull.
 	var seen := {}
 	var hk := 0
-	for sid in ships:
+	for sid in ships.keys():
+		if not ships.has(sid):
+			continue
 		hk = _warm_hull_meshes(tmp, ships[sid], seen, hk)
+		if warmup_batch > 0:
+			await get_tree().process_frame
+			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0][0]
@@ -2259,8 +2392,48 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		rb.linear_velocity = Vector3(0.1, 0, 0)
 		DEATH.spawn_debris(self, deep + Vector3(10, 0, 0), Vector3.ZERO, 3, 0.2 * unit)
 		get_tree().create_timer(0.5).timeout.connect(_settle_warm_debris.bind(weakref(rb), deep.y * 0.5))
-	WEAP.warm_craft_trail(self, tmp)
-	dstate["warm_munitions"] = WEAP.warm_munitions(self, tmp)   # issue 1528: the first salvo's body, materials and trail
+	if warmup_batch <= 0:
+		WEAP.warm_craft_trail(self, tmp)
+		dstate["warm_munitions"] = WEAP.warm_munitions(self, tmp)   # issue 1528: the first salvo's body, materials and trail
+	# Issue 1434 (PC run 1: cover frames of 2 to 9 s): every warm mesh drew its first frame together, so all their
+	# pipelines compiled in one frame. They now appear WARM_BATCH at a time, a frame apart, and all of them stay up for
+	# the closing frames as before (outside the load cover, warmup_batch 0 keeps the old one-frame reveal).
+	if warmup_batch > 0:
+		# issue 1434 (LOAD20 and a cloud trace: 64 warm meshes added in one frame compiled 173 pipelines in one draw,
+		# hidden or not): the renderer makes a mesh's pipelines when the mesh enters the scene, not when it shows. So
+		# the warm root (out of the tree until now) goes in empty, and its meshes follow warmup_batch at a time, a frame apart;
+		# all of them stay up for the closing frames as before. Only the outermost meshes move (a nested one travels
+		# with its parent); Artoo on PR 1445: nested ones under a plain Node3D (issue 1528's munition bodies) are
+		# outermost meshes too. Outside the load cover, warmup_batch 0 keeps the old one-frame reveal.
+		var parked: Array = _warm_parked   # [mesh, its parent]
+		for wc in tmp.find_children("*", "GeometryInstance3D", true, false):
+			var up: Node = wc.get_parent()
+			var nested := false
+			while up != null and up != tmp:
+				if up is GeometryInstance3D:
+					nested = true
+					break
+				up = up.get_parent()
+			if not nested:
+				parked.append([wc, wc.get_parent()])
+		for pk in parked:
+			(pk[1] as Node).remove_child(pk[0])
+		add_child(tmp)
+		_warm_off_tree = null
+		# these two read the warm root's place in the world, so they come once it is in the tree (a few meshes)
+		WEAP.warm_craft_trail(self, tmp)
+		dstate["warm_munitions"] = WEAP.warm_munitions(self, tmp)   # issue 1528: the first salvo's body, materials and trail
+		for i in parked.size():
+			if is_instance_valid(parked[i][0]) and is_instance_valid(parked[i][1]):
+				(parked[i][1] as Node).add_child(parked[i][0])
+			if (i + 1) % warmup_batch == 0:
+				await RenderingServer.frame_post_draw
+				if closed or not is_inside_tree():   # issue 1434: a left battle waits two draws out of the tree before its free
+					_free_warm_parked()
+					if is_instance_valid(tmp):
+						tmp.queue_free()
+					return
+		_free_warm_parked()   # a parent gone meanwhile left its mesh out of the tree: free it here
 	for i in frames:
 		await RenderingServer.frame_post_draw
 		if closed or not is_inside_tree():

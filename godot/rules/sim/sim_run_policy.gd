@@ -177,11 +177,12 @@ func shop(node: Dictionary, buy: Callable) -> void:
 	for i in range(stock.mods.size()):
 		var id: String = stock.mods[i]
 		var cost := JSM.jsround(campaign.MODULES[id].cost * pm)
-		var credits: float = run.credits
-		if not stock.sold.has(i) and credits - cost >= 120:
+		# Paying with biomass can change which purse shopKey would select next.
+		var purse := campaign.shopKey(cost)
+		var funds: float = run[purse]
+		if not stock.sold.has(i) and funds - cost >= 120:
 			buy.call("buyMod", i, "mod")
-			# The Muse bot fits a yard refit immediately when the credit purse paid for it.
-			if run.credits < credits:
+			if run[purse] < funds:
 				_fit_module(id)
 	if run.fac != "chorus":
 		_buy_marks(buy)
