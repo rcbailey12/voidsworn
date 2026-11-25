@@ -14,6 +14,10 @@ extends Node
 #            weapon on every weight, the eight PR 327 looks), each at the three cameras, as 30 frames a second strips:
 #            DIR/moments/<id>__c<cam>.png (384x216 cells side by side with a provenance footer below them;
 #            camera 170 is a 1 to 1 pixel crop).
+#   props    (issue 1767, only when asked: --part props) the live board's stations and hulks at cameras 170 and 26 through
+#            render/board.gd itself: DIR/props/<item>__c<cam>.png, 1280x720 at 1 to 1 (VS_1767_OLD=1 draws the old path).
+#            A missing still, station or faction writes PROPS_FAILED.txt and exits 4 with no LOOK_BENCH_DONE line
+#            (--props-smoke, for a cloud parse run with no pictures, lets it finish).
 #   fleet    all 36 hulls of render/hull_table.gd AI_HULLS at the battle camera (170) at true pixel size over every
 #            region's sky and a storm map (the sheet maker names the darkest and brightest by measurement):
 #            DIR/fleet/<sky>/<nn>_<code>.png (400x240, 1 to 1).
@@ -173,6 +177,8 @@ func _run() -> void:
 		await _fleet_part()
 	if part == "all" or part == "moments":
 		await _moments_part()
+	if part == "props":   # issue 1767 only (not in "all", so the standing sets do not change)
+		await _props_part()
 	report["pipelines_compiled"] = _pipelines()
 	report["late_shaders_after_warmup"] = HULL.late_shader_count()
 	report["late_shader_names"] = HULL.late_shader_names()
@@ -181,6 +187,15 @@ func _run() -> void:
 		_log("  late shader " + str(line))
 	_save_report()
 	_log("stills: %d, warnings: %d" % [report["stills"].size(), report["warnings"].size()])
+	if not prop_failures.is_empty() and not args.has("props-smoke"):   # --props-smoke: a cloud parse run, no pictures
+		# issue 1767 (Artoo on PR 1772): a props set with a missing still, station or faction never reads as done
+		var ff := FileAccess.open(out.path_join("PROPS_FAILED.txt"), FileAccess.WRITE)
+		if ff != null:
+			ff.store_string("\n".join(PackedStringArray(prop_failures)) + "\n")
+			ff.close()
+		print("LOOK_BENCH_PROPS_FAILED %d" % prop_failures.size())
+		get_tree().quit(4)
+		return
 	print("LOOK_BENCH_DONE")
 	# a clean exit: drop the static caches and the effects' GPU resources while the rendering server is alive (the
 	# first PC run ended with an access violation after its last line)
@@ -414,7 +429,7 @@ func _clear() -> void:
 
 
 # One ship as the battle draws it (G2's ShipView, added to G4's effects as the battle does), or null when it is a block.
-func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code := ""):
+func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code := "", cut_on_arrival := false):
 	var sv = SV.new()
 	sv.name = "ship_" + id
 	world.add_child(sv)
@@ -427,7 +442,8 @@ func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code
 	if _is_block(sv) and not args.has("allow-blocks"):
 		_placeholder("%s %s drew a block (code %s)" % [fac, cls, str(sv.code)])
 		return null
-	var info := {"faction": fac, "cls": cls, "size": 1.0, "squadron": false, "flagship": false, "code": sv.code}
+	var info := {"faction": fac, "cls": cls, "size": 1.0, "squadron": false, "flagship": false, "code": sv.code,
+		"cut_on_arrival": cut_on_arrival}
 	if not sv.a4:
 		info["meshes"] = sv.meshes
 	fx.add_ship(id, sv, info)
@@ -601,7 +617,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		return false
 	# issue 370: a row may place the target ("tgt_at": [x, z]), for a broadside or a shot from behind
 	var tat: Array = row.get("tgt_at", [34, 0])
-	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2)
+	# Only the target of a death row can die. Hull and shader warm-up still runs for every ship.
+	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2, "", row.get("do") == "death")
 	if T == null:
 		return false
 	if row.has("shield_left"):
@@ -630,7 +647,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var fo: Array = row.get("focus_off", [0, 0])
 	focus += Vector3(float(fo[0]), 0.0, float(fo[1]))
 	_cam(focus, r)
-	for k in 72:   # 1.2 s: engines up, the first damage and cut jobs done
+	for k in 72:   # 1.2 s: engines up, and any scheduled cut jobs done
 		await _step()
 	# Issue 1235 run 2: a row may land hits on the target first ("pre": [[kind, weapon, section], ...], one shot each,
 	# 0.75 s apart, each on its named hull section: eng, mid or prow; Artoo on PR 1570: without it every hit took "mid")
@@ -777,3 +794,154 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		"impacts": impacts, "code": tcode})
 	_log("%s at %d: %d cells" % [id, int(r), ci])
 	return true
+
+
+# ---------------------------------------------------------------- props (issue 1767): stations and hulks on the live board
+
+class PropRules extends RefCounted:
+	var v := {}
+	var w := {}
+	func view() -> Dictionary:
+		return v
+	func world_info() -> Dictionary:
+		return w
+
+
+const PROP_CELL := Vector2i(1280, 720)
+
+
+# the real render/board.gd built over `terrain` (and station holes), in the bench world, for one board of the part
+func _prop_board(terrain: Dictionary, holes: Array, map: Dictionary, units: Array, kind: String) -> Node3D:
+	var hexes := []
+	for q in range(-8, 9):
+		for r in range(-8, 9):
+			if absi(q + r) <= 8:
+				hexes.append({"q": q, "r": r})
+	var m := map.duplicate()
+	m["holes"] = holes
+	var rules := PropRules.new()
+	rules.v = {"hexes": hexes, "terrain": terrain, "units": units, "map": m}
+	rules.w = {"seed": 7, "biome": {"rock": "stone", "planet": 4, "station": kind}}
+	var board: Node3D = load("res://render/board.gd").new()
+	board.name = "prop_board"
+	world.add_child(board)
+	board.build(rules)
+	return board
+
+
+func _prop_still(item: String, focus: Vector3, cams: Array) -> void:
+	var d := out.path_join("props")
+	DirAccess.make_dir_recursive_absolute(d)
+	for r in cams:
+		_cam(focus, float(r))
+		for k in 8:
+			await _step()
+		var img := _grab()
+		if img == null:
+			_prop_fail("empty frame for %s c%d" % [item, int(r)])
+			continue
+		var name := "%s__c%d.png" % [item, int(r)]
+		var path := d.path_join(name)
+		# Artoo on PR 1772: a still counts only when the writer says OK and both the picture and its sidecar are on disk
+		var err := preload("res://tools/picture_provenance.gd").save_png(_crop(img, PROP_CELL, PROP_CELL), path, preload("res://tools/picture_provenance.gd").capture_stage())
+		if err != OK or not FileAccess.file_exists(path) or not FileAccess.file_exists(path + ".provenance.json"):
+			_prop_fail("%s not saved (writer %d)" % [name, int(err)])
+			continue
+		report["stills"].append({"part": "props", "id": item, "cam": int(r), "file": "props/" + name, "step": steps,
+			"old_path": OS.get_environment("VS_1767_OLD") == "1"})
+
+
+var prop_failures: Array = []
+
+
+func _prop_fail(why: String) -> void:
+	prop_failures.append(why)
+	_warn("props FAIL " + why)
+
+
+func _props_part() -> void:
+	var tag := "old" if OS.get_environment("VS_1767_OLD") == "1" else "new"
+	prop_failures.clear()
+	var want := 0
+	await _world({"rock": "stone", "planet": 4}, {}, [{"q": 0, "r": 0}])
+	report["parts"]["props"] = {"region": str(wld.setting.get("region", "")), "path": tag}
+	var stations := [
+		# item, terrain cells, holes, map, ship hex (the next hex out, for lamp spill), biome kind
+		["ST1_teaching_3hex", ["0,0", "1,0", "0,1"], [], {"station": {"q": 0, "r": 0}, "stationR": 1}, Vector2i(1, 1), "rig"],
+		["ST2_big_19hex", [], [], {"station": {"q": 0, "r": 0}, "stationR": 2}, Vector2i(3, 0), "ring"],
+		["ST3_hole_1hex", [], [{"kind": "station", "cells": [[0, 0]]}], {}, Vector2i(1, 0), "spire"],
+	]
+	for st in stations:
+		var cells: Array = st[1]
+		if str(st[0]).begins_with("ST2"):
+			for q in range(-2, 3):
+				for r in range(-2, 3):
+					if absi(q + r) <= 2:
+						cells.append("%d,%d" % [q, r])
+		var terrain := {}
+		for k in cells:
+			terrain[k] = "station"
+		_clear()
+		seed(2070)
+		fx.rng.seed = 11
+		var board := _prop_board(terrain, st[2], st[3], [], str(st[5]))
+		var sh: Vector2i = st[4]
+		var sp := _hex(sh.x, sh.y)
+		var sv = _ship("A", "hegemony", "Cruiser", sp, 3)
+		if sv == null:
+			return
+		# the station the item is about must be the path's own: T2 after; before, O1_37 off the big cluster
+		var t2n := 0
+		var o1n := 0
+		for n in board.find_children("*", "Node3D", true, false):
+			if n.has_meta("station_T2"):
+				t2n += 1
+				report["parts"]["props"]["%s_scale" % st[0]] = snappedf(float(n.get_meta("station_scale", n.scale.x)), 0.001)
+			elif n.name.begins_with("StationDock"):
+				# Fable on PR 1772 (item 7): a station hex no mesh covers gets a grey dock drum; count them per item
+				report["parts"]["props"]["%s_docks" % st[0]] = int(report["parts"]["props"].get("%s_docks" % st[0], 0)) + 1
+			elif n.has_meta("station_kind"):
+				o1n += 1
+		var big := str(st[0]).begins_with("ST2")
+		if (tag == "new" or big) and t2n != 1:
+			_prop_fail("%s: %d station_T2 drawn, want 1" % [st[0], t2n])
+		if tag == "old" and not big and o1n != 1:
+			_prop_fail("%s: %d old O1_37 drawn, want 1" % [st[0], o1n])
+		want += 2
+		var centre := Vector3.ZERO
+		for k in cells:
+			var qr: PackedStringArray = str(k).split(",")
+			centre += _hex(int(qr[0]), int(qr[1]))
+		centre = centre / float(cells.size()) if not cells.is_empty() else _hex(0, 0)
+		await _prop_still("%s_%s" % [st[0], tag], (centre + sp) * 0.5, [170, 26])
+		world.remove_child(board)
+		board.queue_free()
+	# a graveyard: 31 hulk hexes, no fleet (every faction may be drawn); one overview, then each faction's first hulk
+	var field := {}
+	for q in range(-6, 7):
+		for r in range(-6, 7):
+			if absi(q + r) <= 6 and (q * 7 + r * 3) % 4 == 0:
+				field["%d,%d" % [q, r]] = "hulk"
+	_clear()
+	var gy := _prop_board(field, [], {}, [], "")
+	await _prop_still("HK0_graveyard_%s" % tag, Vector3.ZERO, [170])
+	want += 1
+	var seen := {}
+	for n in gy.find_children("*", "Node3D", true, false):
+		var fac := str(n.get_meta("hulk_faction", "")) if n.has_meta("hulk_faction") else ""
+		if fac != "" and not seen.has(fac):
+			seen[fac] = true
+			await _prop_still("HK_%s_%s" % [fac, tag], (n as Node3D).global_position, [170, 26])
+			want += 2
+	report["parts"]["props"]["hulk_factions"] = seen.keys()
+	var facs_want := 4 if tag == "old" else 6
+	if seen.size() != facs_want:
+		_prop_fail("graveyard drew %d factions' hulks %s, want %d" % [seen.size(), str(seen.keys()), facs_want])
+	var got: int = report["stills"].filter(func(x): return x.get("part") == "props").size()
+	if got != want:
+		_prop_fail("%d props stills saved, want %d" % [got, want])
+	report["parts"]["props"]["failures"] = prop_failures.duplicate()
+	_log("props %s: hulk factions %s" % [tag, str(seen.keys())])
+	world.remove_child(gy)
+	gy.queue_free()
+	_clear()

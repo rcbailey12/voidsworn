@@ -74,7 +74,8 @@ const ROLE := {
 	"drop_ally": Color(0.32, 0.94, 0.77, 0.75),
 	"drop_enemy": Color(0.62, 0.22, 1.0, 0.75),
 	"drop_neutral": Color(0.8, 0.85, 0.9, 0.75),
-	# storm lightning until its baked bolts land (issue 1360): hot tube, cyan skirt, cool cyan-white corona (HDR values)
+	# storm lightning (issue 1360 colours its baked bolts with these; the old ribbon too): hot channel, cyan skirt, cool
+	# cyan-white corona (HDR values)
 	"bolt_core": Color(2.2, 2.1, 2.4, 1.0),
 	"bolt_skirt": Color(0.005, 0.8, 2.0, 1.0),
 	"bolt_corona": Color(0.40, 0.72, 1.10, 1.0),

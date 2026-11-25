@@ -49,7 +49,7 @@ function Install-JanitorTask([bool]$preview) {
 }
 function Get-CleanupRuns($root) {
   # Runner status records supply the exact scratch path and its issue.
-  foreach ($lane in @('board','board_b','board_c','board_d','work217')) {
+  foreach ($lane in @('board','board_b','board_c','board_d','board_e','board_f','work217')) {
     $base = Join-Path $root $lane
     if (-not (Test-Path -LiteralPath $base -PathType Container)) { continue }
     $laneDir = Get-Item -LiteralPath $base -Force
@@ -755,7 +755,7 @@ try {
   $script:commandLines = Get-CommandLines
   # The board lanes and the recorded Workhorse runs share the first quarter of the budget, one lane at a time, in turn
   # from where the last capped run stopped (review of PR 1592: they ran before any cap check).
-  $lanes = @(@('board','board_b','board_c','board_d') + $slots + @('work217-runs'))
+  $lanes = @(@('board','board_b','board_c','board_d','board_e','board_f') + $slots + @('work217-runs'))
   foreach ($lane in (Get-Rotated $lanes $lanes $resumeAt.lane)) {
     if (Test-JanitorCap 'lane' $lane ([int]($capSeconds / 4))) { break }
     Assert-GpuQuiet -SoloOnly
@@ -765,7 +765,7 @@ try {
     }
     $board = Join-Path $root $lane
     if (-not (Test-Path -LiteralPath $board -PathType Container)) { continue }
-    try { Remove-OlderKeptRepos $board $mirror $dryRun $now $salvageRoot }
+    try { Remove-OlderKeptRepos $board (Repo-Mirror $lane) $dryRun $now $salvageRoot }
     catch { Log "kept lane $board (scan unavailable: $($_.Exception.Message))" }
   }
   Log "time: lanes and runner records done at $([int]$script:clock.Elapsed.TotalSeconds) s"

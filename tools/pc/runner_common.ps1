@@ -24,7 +24,10 @@ function Public-RunnerText($status, $reason, $code, $folder) {
   switch ($status) {
     'running' { return 'claimed before checkout and model calls' }
     'checked_push' { return 'non-partial push confirmed and runner checks passed' }
-    'unverified' { return 'dry/test push or checks did not pass; chain stays stopped' }
+    'unverified' {
+      if ($reason -eq 'non-partial push confirmed but local checks did not pass') { return 'non-partial push confirmed but local checks did not pass' }
+      return 'dry/test push or checks did not pass; chain stays stopped'
+    }
     'no_changes' { return 'no changes pushed' }
     'partial' {
       switch -Exact ($reason) {
@@ -80,12 +83,13 @@ function Log($line) {
   try { Add-Content -LiteralPath (Join-Path $script:out 'result.txt') -Value $line -Encoding UTF8 -ErrorAction Stop } catch { }
   Write-Host $line
 }
-function State($status, $reason) {
+function State($status, $reason, $confirmed = '') {
   $p = Join-Path $script:out 'status.json'
   $s = Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
   $s.status = $status; $s.reason = $reason
   $s.finished = if ($status -eq 'running') { '' } else { [DateTime]::UtcNow.ToString('o') }
   $s.commit = Read (Join-Path $script:out 'run_commit.txt')
+  $s | Add-Member -NotePropertyName confirmed_commit -NotePropertyValue $confirmed -Force
   Save-State $s
 }
 function Save-State($s) {
@@ -556,9 +560,14 @@ function Can-ReuseRepo($repo, $mirror, $patterns) {
     return $true
   } catch { Log "checkout needs keeping: $($_.Exception.Message)"; return $false }
 }
-function Repo-Mirror {
+function Repo-Mirror($lane = '') {
   if ($test) { return $env:PC_TEST_MIRROR }
-  Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\repo-mirror.git'
+  $name = switch ($lane) {
+    'board_e' { 'repo-mirror-e.git' }
+    'board_f' { 'repo-mirror-f.git' }
+    default { 'repo-mirror.git' }
+  }
+  Join-Path (Join-Path $env:USERPROFILE 'Downloads\voidsworn_test') $name
 }
 function Cleanup-Paused {
   if (-not $env:USERPROFILE) { return $false }
@@ -1281,12 +1290,16 @@ try {
     Log "chain waiting for $p"
     $run = ''
     while ($true) {
-      if (-not (Test-Path -LiteralPath $p)) { throw 'chain stopped: predecessor status.json is missing; text results cannot prove a checked push' }
+      if (-not (Test-Path -LiteralPath $p)) { throw 'chain stopped: predecessor status.json is missing; text results cannot prove a confirmed push' }
       $s = Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
       if (-not $run) { $run = $s.run }
       if (-not $run -or $run -ne $s.run) { throw 'chain stopped: predecessor run changed while waiting' }
       if ($env:PC_WAIT_RUN -and $s.run -ne $env:PC_WAIT_RUN) { throw 'chain stopped: predecessor run id does not match PC_WAIT_RUN' }
       if ($s.status -eq 'checked_push' -and $s.commit -match '^[0-9a-f]{40,64}$') { Log "chain released: checked push $($s.branch) $($s.commit)"; exit 0 }
+      if ($s.status -eq 'unverified' -and $s.commit -match '^[0-9a-f]{40,64}$' -and $s.confirmed_commit -eq $s.commit) {
+        Log "chain released: confirmed push with unverified local checks $($s.branch) $($s.commit)"
+        exit 0
+      }
       if ($s.status -ne 'running') { throw "chain stopped: predecessor ended $($s.status): $($s.reason)" }
       if ([DateTime]::UtcNow -ge $end) { throw 'chain stopped: predecessor did not finish before the wait limit' }
       Start-Sleep -Milliseconds 500
@@ -1298,7 +1311,7 @@ try {
     $patterns = @()
     $slot = Split-Path -Leaf (Split-Path -Parent $repo)
     if ($args[4]) { $patterns = @($args[4] -split '\s+') }
-    elseif ($slot -match '\A(board_[cd]|slot_(deepseek|deepseekpro|kimi|kimicode|sonnet|opus|openai))\z') {
+    elseif ($slot -match '\A(board_[c-f]|slot_(deepseek|deepseekpro|kimi|kimicode|sonnet|opus|openai))\z') {
       # Only the opening fixed block can opt a folder back in. Later prose and older runs never change the profile.
       $snapshot = Read (Join-Path $out 'validated_issue.json')
       $fixed = [regex]::Match(($snapshot | ConvertFrom-Json).body, $fixedBlockPattern).Value
@@ -1307,7 +1320,7 @@ try {
       if ($excluded.Count) { Log "code checkout excludes: $($excluded -join ', ')" }
     }
     $source = 'https://github.com/rcbailey12/voidsworn'
-    $mirror = Repo-Mirror
+    $mirror = Repo-Mirror $slot
     if ($test) {
       if (-not $env:PC_TEST_SOURCE -or -not $env:PC_TEST_MIRROR) { throw 'test checkout requires PC_TEST_SOURCE and PC_TEST_MIRROR (no live network)' }
       $source = $env:PC_TEST_SOURCE
@@ -1502,7 +1515,12 @@ try {
       if ($args[7] -ne 'real' -and -not $test) { Log "job validated: issue #$issue (dry run, no claim written)"; exit 0 }
       $head = @($branches | Where-Object { $_.name -eq 'main' } | ForEach-Object { $_.commit.sha }) -join ''
       # Issue 947: the public status comment names the lane, never the machine or a PC path (folder stays in local state only).
-      $lane = switch ((Split-Path -Leaf (Split-Path -Parent $repo)).ToLowerInvariant()) { 'board' { 'main' } 'board_b' { 'B' } 'board_c' { 'C' } 'board_d' { 'D' } default { 'other' } }
+      $board = Split-Path -Leaf (Split-Path -Parent $repo)
+      $lane = switch -Regex ($board) {
+        '^board$' { 'main' }
+        '^board_[b-f]$' { $board.Substring(6).ToUpperInvariant() }
+        default { 'other' }
+      }
       $g = @{ issue = $issue; seat = $args[3]; folder = $repo; lane = $lane;
         started = [DateTime]::UtcNow.ToString('o'); ceiling = $args[5]; resume = $args[6]; comment = 0;
         start_commit = $head; claimed = $false; marker = "<!-- voidsworn-runner-status branch=$($s.branch) -->" }
@@ -1975,11 +1993,16 @@ try {
     $script:out = $args[1]; $code = $args[2]; $partial = $args[3]; $push = $args[4]; $checks = $args[5]
     $old = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
     $status = 'failed'; $reason = "runner exit $code"
+    $confirmedPush = ''
     if ($old.status -eq 'failed' -and $old.reason) { $reason = $old.reason }
     if ($code -eq '0' -and -not $partial) {
       $commit = Read (Join-Path $out 'run_commit.txt')
       $confirmed = Read (Join-Path $out 'confirmed_commit.txt')
-      if ($push -eq 'real' -and $checks -eq '1' -and $commit -match '^[0-9a-f]{40,64}$' -and $confirmed -eq $commit) { $status = 'checked_push'; $reason = 'non-partial push confirmed and runner checks passed' }
+      if ($push -eq 'real' -and $commit -match '^[0-9a-f]{40,64}$' -and $confirmed -eq $commit) {
+        $confirmedPush = $confirmed
+        if ($checks -eq '1') { $status = 'checked_push'; $reason = 'non-partial push confirmed and runner checks passed' }
+        else { $status = 'unverified'; $reason = 'non-partial push confirmed but local checks did not pass' }
+      }
       else { $status = 'unverified'; $reason = 'dry/test push or checks did not pass; chain stays stopped' }
     }
     elseif ($partial) { $status = 'partial'; $reason = $partial }
@@ -1993,15 +2016,16 @@ try {
           if ($status -eq 'checked_push' -and $args[6]) {
             $repo = [IO.Path]::GetFullPath($args[6])
             $board = Split-Path -Parent $repo
-            if ($test -or ((Split-Path -Leaf $repo) -eq 'repo' -and (Split-Path -Leaf $board) -in @('board','board_b','board_c','board_d') -and
+            $lane = Split-Path -Leaf $board
+            if ($test -or ((Split-Path -Leaf $repo) -eq 'repo' -and $lane -match '\Aboard(?:_[b-f])?\z' -and
                 (Split-Path -Parent $board) -eq (Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'))) {
-              Remove-OlderKeptRepos $board (Repo-Mirror)
+              Remove-OlderKeptRepos $board (Repo-Mirror $lane)
             }
           }
         }
       } catch { Log "run cleanup stopped: $($_.Exception.Message)" }
     }
-    State $status $reason
+    State $status $reason $confirmedPush
     # State is authoritative; reporting errors never change it or the runner exit code.
     $s = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
     End-Announcement $s

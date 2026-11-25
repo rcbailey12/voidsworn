@@ -1,0 +1,2 @@
+# Issue 1360: these import settings keep the storm bolt channels (main, forks, near and far glow) as exact data.
+!**/*.png.import
