@@ -716,8 +716,9 @@ def dress(K, kit_name):
         m = ob.data.materials[0].name if ob.data.materials else ''
         if m.startswith(('gw_', 'cd5_')):
             if skins:
-                from room_skin_check import tuck_structure
-                tuck_structure(ob, skins, K.length)
+                from room_skin_check import BRIDGE_KEY, tuck_structure
+                if BRIDGE_KEY not in ob:
+                    tuck_structure(ob, skins, K.length)
             continue
         if ob.name.startswith('in_deck_'):
             if m == 'septum':
@@ -738,7 +739,7 @@ def dress(K, kit_name):
     if skins:
         from room_skin_check import check
         bpy.context.view_layer.update()
-        bad, count, _ = check(K.cin.objects, skins)
+        bad, count, _ = check(K.cin.objects, skins, bridges=getattr(K, 'gw_bridges', None))
         if bad or not count:
             raise ValueError(f'{K.code} rooms: {bad} of {count} inside parts past the inner skin')
     tile = TILE * K.length

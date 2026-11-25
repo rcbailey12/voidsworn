@@ -39,6 +39,9 @@ YP = 1.72                     # pod centre line, port (+) and starboard (-)
 R = 1.30                      # pod radius at the widest
 S = (LENGTH / 26.0) ** 0.7
 BRIDGES = (-2.7, 2.2)
+# A bridge interior names one of these mesh enclosures via room_skin_bridge.
+# The silver edges and seafoam strips under the arches are exterior fittings.
+BRIDGE_ENCLOSURES = dict(zip((f'{CODE}_bridge_aft', f'{CODE}_bridge_fwd'), BRIDGES))
 
 
 def hk(name):
@@ -82,6 +85,17 @@ def light(side):
     return f
 
 
+def bridge_centre(x, y):
+    u = y / YP
+    return x, 0.25 + 0.72 * max(0, 1 - u * u) ** 0.8
+
+
+def bridge_skins(objects, scale=1.0):
+    from room_skin_check import BridgeSkin
+    return {name: BridgeSkin(objects[name], lambda y, x=x: bridge_centre(x, y), scale)
+            for name, x in BRIDGE_ENCLOSURES.items()}
+
+
 def bridge(K, hl, x, name):
     """an arched glass bridge from pod to pod: a flattened oval tube rising over the cleft, pearl over a mosaic underside,
     a silver line along each edge"""
@@ -89,7 +103,7 @@ def bridge(K, hl, x, name):
     for i in range(41):
         u = -1 + 2 * i / 40
         y = u * YP
-        z = 0.25 + 0.72 * (1 - u * u) ** 0.8
+        _, z = bridge_centre(x, y)
         pts.append((x, y, z))
     sec = lambda xx, a, i: None
     vv, ff = [], []
@@ -139,10 +153,11 @@ def build(K):
                  what='grown lens point at the %s bow / pulsar' % tag)
         hl.stern_drive(K, 'E%d' % (1 if side > 0 else 2), (XS + 0.38, side * YP, 0.0), 0.62)
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
-    for i, x in enumerate(BRIDGES):
-        b = bridge(K, hl, x, '%s_bridge_%s' % (CODE, 'aft' if i == 0 else 'fwd'))
+    for i, (name, x) in enumerate(BRIDGE_ENCLOSURES.items()):
+        b = bridge(K, hl, x, name)
         K.mass('Arched bridge %s' % ('aft' if i == 0 else 'fwd'), b, 'pearl glass bridge between the hulls',
                note='Grows out of both hulls; carries a row of stored light under its arch.')
+    K.gw_bridges = bridge_skins(K.coll.objects)
     # the turret: a lens blister grown on the crown of the forward bridge, on the centreline
     hl.turret_optic(K, 'O1', (BRIDGES[1], 0.0, 0.25 + 0.72 + 0.20 + 0.19), 'turret', 'violet', s=1.15,
                     note='The Needle beam: a violet lens blister grown on the crown of the forward bridge, 360 degrees.')
