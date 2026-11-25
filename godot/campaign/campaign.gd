@@ -4210,11 +4210,8 @@ func finishBattle(result: String) -> void:
 			var xp = min(60.0, jsround(8.0 + float(z0(u.get("dealt"))) / 4.0 + float(z0(u.get("kills"))) * 12.0)); var rk = ship["cap"]["rank"]
 			var xp_before: float = ship["cap"]["xp"]
 			addXp(ship, xp)
-			var promoted: bool = float(ship["cap"]["rank"]) > float(rk)
-			var rollup := CombatRecords.ship_rollup(B, u["id"])
-			rollup["captain_xp"] = float(ship["cap"]["xp"]) - xp_before
-			rollup["promoted"] = promoted
-			summary["xp"].append({"ship": ship["name"], "cap": ship["cap"].duplicate(true), "xp": xp, "up": promoted})
+			CombatRecords.ship_rollup(B, u["id"])["captain_xp"] = float(ship["cap"]["xp"]) - xp_before
+			summary["xp"].append({"ship": ship["name"], "cap": ship["cap"].duplicate(true), "xp": xp, "up": float(ship["cap"]["rank"]) > float(rk)})
 	if result == "win":
 		for sh in RUN["fleet"]:
 			var mx = float(derive(sh)["maxHp"]); sh["hp"] = min(mx, float(sh["hp"]) + jsround(mx * 0.15))

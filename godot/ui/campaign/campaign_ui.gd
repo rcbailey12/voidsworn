@@ -2634,7 +2634,7 @@ func _modal(md: Dictionary) -> void:
 			if econ.has("core"): p.call("Core recovered: the " + str(C.HULLS[econ["core"]]["n"]) + " can be regrown at a shipyard.", VERD)
 			if d.get("extra", "") != "": p.call(d["extra"], VERD)
 			for line in d.get("weaknessConfirmed", []): p.call(line, VERD)
-			var has_table := AfterAction.append(self, v, sm, width, _report_killmail)
+			var has_table := AfterAction.append(self, v, AfterAction.source(sm, R), width, _report_killmail)
 			if not lost.is_empty(): p.call("Lost: " + ", ".join(lost) + ".", BLOOD)
 			for line in fates: p.call(line, BONE2)
 			if victory and not d["wrecks"].is_empty(): _salvage_choices(v, d["wrecks"], acts, width)
