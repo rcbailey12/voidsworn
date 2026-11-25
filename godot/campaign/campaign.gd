@@ -38,6 +38,8 @@ var NEM_WEAK; var NEM_ADAPT; var NEM_CLOCK; var FAC_VERBS; var WING_PERKS; var W
 var META: Dictionary = {}
 var RUN = null          # the run (Dictionary) or null
 var SAVED_RUN = null    # the last saved copy of the run
+var _broken_run := false
+var _aspect_setup: Dictionary = {}   # the offer and launch RNG while the flagship choice is pending
 # Issue 1451 (R378): the battle in progress, saved at the start of its newest round: {"node", "round", "fp", "size", "data"} (data:
 # the rules snapshot, base64), or null. It belongs with SAVED_RUN (the last checkpoint, usually the map before the stop; kept as the fallback) and clears
 # when the battle is settled. Continue resumes that round when the snapshot fits the game's rules (battle_restore).
@@ -470,10 +472,15 @@ func _enc(v):
 	return v
 func save_text() -> String:
 	# storyGuard (issue 1338): saves from this build on never need the old story-buff repair (_restore_legacy_story_modifier)
-	return JSON.stringify(_enc({"format": "voidsworn-godot-campaign", "v": 1, "uid": UID, "meta": META, "run": SAVED_RUN if SAVED_RUN != null else {"none": true}, "yard": saved_in_yard, "tel": tel_log,
-		"battle": saved_battle if SAVED_RUN != null else null, "storyGuard": true}))
+	var data = {"format": "voidsworn-godot-campaign", "v": 1, "uid": UID, "meta": META, "run": SAVED_RUN if SAVED_RUN != null else {"none": true}, "yard": saved_in_yard, "tel": tel_log,
+		"battle": saved_battle if SAVED_RUN != null else null, "storyGuard": true}
+	if _broken_run: data["brokenRun"] = true
+	if not _aspect_setup.is_empty() and _aspect_pending(SAVED_RUN): data["aspectSetup"] = _aspect_setup
+	return JSON.stringify(_enc(data))
 var last_save_ok := true   # issue 1451: did the newest persist_save reach the disk (true while saves are off)
 func persist_save(meta_only: bool = false) -> void:
+	_persist_save(meta_only, false)
+func _persist_save(meta_only: bool, cleared_run: bool) -> void:
 	var now = now_ms()
 	META["updated"] = now
 	if not meta_only: META["runAt"] = now
@@ -482,6 +489,18 @@ func persist_save(meta_only: bool = false) -> void:
 	var data = save_text()
 	# Atomic: the new save is written whole to a temp file, flushed and checked, then renamed over the old one, so a crash or a
 	# power cut mid-write leaves either the old save or the new one, never half a file. The save before it becomes the .bak.
+	if cleared_run:
+		# Prepare a profile-only backup first so a successful abandon cannot be undone by a damaged primary later.
+		# Until the primary write succeeds it still takes precedence over the staged backup.
+		var backup := save_path + ".bak"
+		var prior := FileAccess.get_file_as_string(backup)
+		if _write_atomic(backup, data):
+			if _write_atomic(save_path, data): return
+			if prior.is_empty(): prior = FileAccess.get_file_as_string(save_path)
+			if not prior.is_empty() and not _write_atomic(backup, prior):
+				push_warning("campaign: could not restore the prior backup after the failed write")
+		last_save_ok = false; toast("This computer could not save the game (is the disk full?).")
+		return
 	if FileAccess.file_exists(save_path):
 		var prev = FileAccess.get_file_as_string(save_path)
 		if prev != data and saneSave(_dec(_json_quiet(prev))):
@@ -506,17 +525,23 @@ static func _resolve_save(primary, backup) -> Dictionary:
 	if saneSave(primary): return primary
 	if saneSave(backup): return backup
 	if not (primary is Dictionary): return {}
-	if not saneRun(primary.get("run")): primary.erase("run")
+	if not saneRun(primary.get("run")):
+		primary.erase("run")
+		primary["brokenRun"] = true
 	if not saneMeta(primary.get("meta")): primary.erase("meta")
 	return primary
 
 static func _read_save(path: String) -> Dictionary:
 	var primary = _dec(_json_quiet(FileAccess.get_file_as_string(path)))
 	if saneSave(primary): return primary
-	return _resolve_save(primary, _dec(_json_quiet(FileAccess.get_file_as_string(path + ".bak"))))
+	var resolved := _resolve_save(primary, _dec(_json_quiet(FileAccess.get_file_as_string(path + ".bak"))))
+	if resolved.is_empty() and (FileAccess.file_exists(path) or FileAccess.file_exists(path + ".bak")):
+		resolved["brokenRun"] = true
+	return resolved
 
 static func has_saved_run(path: String = SAVE_PATH) -> bool:
-	return _has_run(_read_save(path).get("run"))
+	var data := _read_save(path)
+	return _has_run(data.get("run")) or jt(data.get("brokenRun"))
 
 func _apply_save(o: Dictionary) -> void:
 	tel_log = o["tel"] if o.get("tel") is Array else []
@@ -526,12 +551,15 @@ func _apply_save(o: Dictionary) -> void:
 		META = migrateMeta(m, tel_log)
 	var r = o.get("run")
 	SAVED_RUN = migrateRun(r) if _has_run(r) else null
+	_broken_run = jt(o.get("brokenRun")) or _unplayable_run(SAVED_RUN)
+	_aspect_setup = o["aspectSetup"] if _aspect_pending(SAVED_RUN) and o.get("aspectSetup") is Dictionary else {}
+	_launch_rng = int(z0(_aspect_setup.get("launchRng"))) if _aspect_setup.has("launchRng") else -1
 	var sb = o.get("battle")
 	saved_battle = sb if (SAVED_RUN != null and sb is Dictionary and sb.get("data") is String and sb.get("node") is String and sb.get("fp") is String) else null
 	# Issue 1338: only a save written before storyGuard may be missing a story buff the old mid-battle checkpoint erased
 	if SAVED_RUN != null and o.get("storyGuard") != true: SAVED_RUN["storyLegacy"] = true
 	# Older builds showed the line on every Sector III win. Use the saved log when it can prove it already appeared.
-	if SAVED_RUN != null and not SAVED_RUN.has("beat3DebriefSeen") and _beat3_line(SAVED_RUN, "debrief") != "":
+	if SAVED_RUN != null and not _broken_run and not SAVED_RUN.has("beat3DebriefSeen") and _beat3_line(SAVED_RUN, "debrief") != "":
 		var started: float = float(z0(SAVED_RUN.get("t0")))
 		if started > 0 and tel_log.any(func(e): return e is Dictionary and e.get("ev") == "battle_end" and e.get("result") == "win" and e.get("sector") == 3 and float(z0(e.get("t"))) >= started):
 			SAVED_RUN["beat3DebriefSeen"] = true
@@ -1423,12 +1451,13 @@ func altCommand(admiralId) -> Variant:
 		var c = ADMIRALS[ids[(i + k) % ids.size()]].get("cmd")
 		if jt(c) and jt(a.get("cmd")) and c["id"] != a["cmd"]["id"]: return c
 	return null
-func newRun(admiralId, fac, opt = {}) -> void:
+func newRun(admiralId, fac, opt = {}, checkpoint := true) -> void:
 	if not ADMIRALS.has(admiralId): return
 	# R1 (PROG-6): an admiral you do not own cannot launch. The screen checks this too; the rules function is the gate now.
 	# Harnesses that start a run with an admiral they have not bought grant that ownership in their own setup first.
 	if not admiralOwned(admiralId): RUN = null; return
 	var adm = ADMIRALS[admiralId]
+	_aspect_setup.clear()
 	fac = fac if RUN_FACTIONS.has(fac) else "voidsworn"
 	var foes = shuffle(RUN_FACTIONS.filter(func(f): return f != fac))
 	RUN = {"fac": fac, "foes": foes, "admiral": admiralId, "credits": 120, "cpCap": 10, "sector": 1, "relics": [], "inventory": [], "fleet": [], "pos": null,
@@ -1486,7 +1515,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	RUN["map"] = genSector(1)
 	RUN["flags"] = {}; RUN["nems"] = {}; RUN["nemAssign"] = drawNemAssign(); RUN["nemClock"] = 0; RUN["nemStrike"] = false; RUN["nemEscapes"] = 0; RUN["nem"] = newNemesis(RUN["nemAssign"][0])   # B4: the first hunter is ready, the rest are created lazily
 	META["stats"]["runs"] = float(META["stats"]["runs"]) + 1
-	saveRun()
+	if checkpoint: saveRun()
 func saveRun() -> void:
 	SAVED_RUN = clone(RUN) if (RUN != null and not jt(RUN.get("over"))) else null
 	if B == null: saved_battle = null   # a new checkpoint outside a battle replaces any battle save
@@ -1527,7 +1556,10 @@ func act(name: String, arg = "") -> void:
 		"continueRun": ACT_continueRun()
 		"newRunScreen": ACT_newRunScreen()
 		"abandonRun":
-			RUN = clone(SAVED_RUN); endRun(false, true)
+			if _needs_run_recovery(): _show_run_recovery()
+			elif SAVED_RUN != null:
+				RUN = clone(SAVED_RUN); endRun(false, true)
+		"discardBrokenRun": ACT_discardBrokenRun()
 		"legacy": legacyScreen()
 		"help": helpScreen()
 		"progTab":
@@ -1632,12 +1664,49 @@ func titleScreen() -> void:
 	RUN = null; B = null
 	map_trial_choice = false
 	var acts = []
-	if SAVED_RUN != null: A(acts, "continueRun")
+	var saved = SAVED_RUN != null or _broken_run
+	if saved: A(acts, "continueRun")
 	A(acts, "newRunScreen"); A(acts, "legacy"); A(acts, "help")
-	show_page("title", {"saved": SAVED_RUN != null, "renown_dot": float(z0(META.get("renown"))) >= 15, "best": META["stats"].get("best"), "wins": META["stats"].get("wins")}, acts)
+	show_page("title", {"saved": saved, "renown_dot": float(z0(META.get("renown"))) >= 15, "best": META["stats"].get("best"), "wins": META["stats"].get("wins")}, acts)
+func _unplayable_run(run) -> bool:
+	return run != null and (not saneRun(run) or run["fleet"].is_empty()
+		or not FACTIONS.has(run["map"].get("fac")) or not (run["sector"] is int or run["sector"] is float)
+		or not run["fleet"].all(func(s): return s is Dictionary and s.has("uid")))
+func _needs_run_recovery() -> bool:
+	return _broken_run or _unplayable_run(SAVED_RUN)
+func _show_run_recovery() -> void:
+	var acts = []; A(acts, "discardBrokenRun"); A(acts, "closeModal")
+	show_modal("brokenRun", {}, acts)
+func ACT_discardBrokenRun() -> void:
+	if not _needs_run_recovery(): return
+	var old = [SAVED_RUN, saved_battle, saved_in_yard, _broken_run, META.duplicate(true)]
+	SAVED_RUN = null; saved_battle = null; saved_in_yard = false; _broken_run = false
+	_persist_save(false, true)
+	if not last_save_ok:
+		SAVED_RUN = old[0]; saved_battle = old[1]; saved_in_yard = old[2]; _broken_run = old[3]; META = old[4]
+		changed.emit()
+		return
+	RUN = null; B = null
+	admiralScreen()
+func _aspect_pending(run) -> bool:
+	if not (run is Dictionary) or jt(run.get("aspect")) or run.get("sector") != 1 or run.get("pos") != null \
+			or run.get("curNode") != null or run.get("reward") != null or not (run.get("stats") is Dictionary) \
+			or z0(run["stats"].get("battles")) != 0 or not saneRun(run):
+		return false
+	# Old pre-pick checkpoints have no setup record. Opening the map seeds its stops, even before the first jump.
+	for col in run["map"]["cols"]:
+		if col.any(func(n): return n.get("seed") != null): return false
+	return true
 func ACT_continueRun() -> void:
+	if _needs_run_recovery(): _show_run_recovery(); return
 	if SAVED_RUN == null: return
 	if saved_battle != null and _resume_saved_battle(): return
+	if _aspect_pending(SAVED_RUN):
+		RUN = clone(SAVED_RUN)
+		picked_admiral = RUN["admiral"]; picked_faction = RUN["fac"]
+		run_opt = {"alt": jt(RUN.get("altFleet")), "cmdAlt": jt(RUN.get("cmdOverride")), "heat": RUN.get("heat", []).duplicate()}
+		aspectScreen()
+		return
 	RUN = clone(SAVED_RUN)
 	ensureFlagship()
 	if RUN.get("reward") != null:
@@ -1654,6 +1723,7 @@ func ACT_continueRun() -> void:
 		RUN.erase("_repairs"); RUN.erase("_shipsDropped")
 		if page.get("kind") != "battle": saveRun()
 func ACT_newRunScreen() -> void:
+	if _needs_run_recovery(): _show_run_recovery(); return
 	if SAVED_RUN != null:
 		var acts = []; A(acts, "abandonRun"); A(acts, "closeModal")
 		show_modal("abandon", {}, acts); return
@@ -1717,13 +1787,20 @@ func ACT_startRun() -> void:
 		JSM.rnd_seed(int(META["parkedRng"])); META.erase("parkedRng")
 	_launch_rng = JSM.to_u32(JSM.rng_s)
 	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3,
-		"heat": run_opt["heat"].duplicate() if heatUnlocked() else [], "mapTrial": map_trial_choice})
+		"heat": run_opt["heat"].duplicate() if heatUnlocked() else [], "mapTrial": map_trial_choice}, false)
 	map_trial_choice = false
 	tel("run_start", {"fac": RUN["fac"], "admiral": picked_admiral})
+	_aspect_setup = {"offer": _roll_aspect_offer(), "launchRng": _launch_rng}
+	saveRun()
 	aspectScreen()
+func _roll_aspect_offer() -> Array:
+	return shuffle(ASPECTS.keys()).slice(0, 4 if float(z0(RUN.get("mastery"))) >= 2 else 3)
 func aspectScreen() -> void:
 	var f = ensureFlagship()
-	var opts = shuffle(ASPECTS.keys()).slice(0, 4 if float(z0(RUN.get("mastery"))) >= 2 else 3)
+	var opts = _aspect_setup.get("offer")
+	if not (opts is Array) or opts.is_empty() or not opts.all(func(k): return ASPECTS.has(k)):
+		opts = _roll_aspect_offer()
+		_aspect_setup = {"offer": opts, "launchRng": _launch_rng}
 	W["aspOffer"] = opts
 	var acts = []
 	for k in opts: A(acts, "pickAspect", k)
@@ -1896,6 +1973,11 @@ func ACT_nameHeir(id) -> void:
 	show_page("end", d, endActions(run, d["next"]))
 func endRun(victory: bool, abandoned: bool = false) -> void:
 	if RUN == null or jt(RUN.get("over")): return
+	# Clear the old checkpoint before staging its earnings. Commit both changes together or leave the run as it was.
+	var old = []
+	if abandoned:
+		old = [SAVED_RUN, saved_battle, saved_in_yard, META.duplicate(true), tel_log.duplicate()]
+		SAVED_RUN = null; saved_battle = null; saved_in_yard = false
 	var s = RUN["stats"]
 	if META["stats"].has("finishedRuns") and not jt(RUN.get("over")): META["stats"]["finishedRuns"] += 1
 	var prevBest = float(z0(META["stats"].get("best"))); META["stats"]["best"] = max(prevBest, float(RUN["sector"]))
@@ -1923,7 +2005,14 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 	RUN["carry"].merge(earnings)
 	if arcs_on and not abandoned and arc_end_cb is Callable and (arc_end_cb as Callable).is_valid() and _arc_played(3): arc_end_cb.call(victory)
 	RUN["carry"]["inheritance"] = inheritanceSummary(RUN)
-	RUN["over"] = true; SAVED_RUN = null; saved_battle = null; persist_save()
+	RUN["over"] = true; SAVED_RUN = null; saved_battle = null
+	if abandoned: _persist_save(false, true)
+	else: persist_save()
+	if abandoned and not last_save_ok:
+		SAVED_RUN = old[0]; saved_battle = old[1]; saved_in_yard = old[2]; META = old[3]; tel_log = old[4]
+		RUN = null
+		changed.emit()
+		return
 	var nf = nextFacPick() if victory else null
 	var acts = endActions(RUN, nf)
 	var mins = null
@@ -3990,7 +4079,7 @@ func nodeSeeds(nodes: Array) -> int:
 func initFinishedRuns() -> void:
 	# Only the real host opts in to tracking. Old profiles counted launches, including one saved active run.
 	if not META["stats"].has("finishedRuns"):
-		var active = (RUN != null and not jt(RUN.get("over"))) or (SAVED_RUN != null and not jt(SAVED_RUN.get("over")))
+		var active = (RUN != null and not jt(RUN.get("over"))) or (SAVED_RUN != null and not jt(SAVED_RUN.get("over"))) or _broken_run
 		META["stats"]["finishedRuns"] = max(0, float(z0(META["stats"].get("runs"))) - (1 if active else 0))
 func set_teaching_tips(on: bool) -> void:
 	teaching_tips = on
