@@ -29,6 +29,9 @@ headless|campaign/test/boon_fleet_test.gd|-|-|issues 1075 and 1147: protocol car
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
 headless|campaign/test/capstone_mastery_iii_test.gd|-|-|issue 1650: every capstone has one Mastery III row and rules handler, every admiral a Mastery I row, and only the chosen capstone reaches a run
 headless|campaign/test/truth_pass_test.gd|-|-|issues 1144 and 1147: starters, capstones, Nemesis, selection, repair prices, join messages and battle tooltips
+headless|campaign/test/run_recovery_2171_test.gd|-|-|issue 2171: aspect resume, safe abandon and broken-run discard
+headless|rules/test/tree_gun_limits_2171_test.gd|-|-|issue 2171: Throat Spits and Second Volley respect disabled guns and bow bearing
+headless|scenes/battle/test/battle_recovery_2171_test.gd|-|-|issue 2171: shared teaching preference and visible rules hard stop
 headless|campaign/test/cinder_prizes_test.gd|-|-|issue 41 (R78 Q9): captured Hegemony and Eclipse hulls at the Crusade yards from run 3, links ripped out, Crusade prices; gate, stock, price, ripped buy, ripped battle rules
 headless|campaign/test/salvage_1653_test.gd|-|-|issue 1653: the new salvage relics and refits are only offered where they can act, every new id has data and card text, ledger2 raises the Command cap
 headless|campaign/test/core_eat_test.gd|-|-|issue 42 (R78 Q15): the Chorus core-eating offer in sector 3, the growth, the lost protocols, refusing, the save round trip and other factions
