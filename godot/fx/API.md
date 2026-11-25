@@ -72,7 +72,7 @@ Call it after the events that changed a ship have been animated (or simply after
 - Repair seals a stage 4 break with a material-specific patch and keeps dents, scorch and weapon scars. Removed emitters fade within 0.8 effect seconds. Chorus knits over 3 seconds.
 - `burning` shares the section emitter allocator. The per-ship caps for fire and smoke/vent are 4 and 8 for light hulls, 8 and 12 for medium hulls, and 12 and 16 for heavy and capital hulls. Persistent emission spends zero counted flashes. Safe mode keeps flat marks and drops deformation, breaks and emitters. A broken `eng` section makes the engines sputter. Shields rising play a short faction-coloured regen shimmer.
 - `prepare_battle_hulls()` warms the hull materials during loading. The first brownout or early wear assigns the ship's private damage materials if a damage rebuild has yet to assign them.
-- Capability loss (issue 1741 Milestone 3, R416; only with `VS_WOUNDS_V2=1` or `rendering/effects/wounds_v2`): `sync_ship` also reads `weapons[i].off`, `engHit` (the rules' `st.engine` above 0) and `shieldOff` (`st.shieldOff` above 0), view-only fields of `api.view()`. A slot with `off` above 0 jams every turret its `hp_w<slot>_*` muzzles hang under and smokes and sparks one of its fixed mounts (`fx_hull.turrets_for_slot`, `mounts_for_slot`); a hull with no point for the slot jams only a turret no slot owns in the slot's section by its rules arc (F prow, P and S midship), else smokes that section's plating without touching any gun. The flag is read through `godot/fx/fx_wounds_flag.gd` (`WOUNDS.v2()`), shared by every Wounds V2 file. With a `weapons` list the old random section turret pick (issue 1587) is off; without one (a bench unit) it stays. The drive fails in tiers (`engine_tier_for`): an engine hit or engine stage 2 gutters one nozzle (65% plume), stage 3 darkens one more, stage 4 or a broken `eng` leaves one nozzle at 35% with the rest dark, smoking at the bell and sparking as the ship tries to move. Only the Hullbreakers' drive coughs soot. A shielded ship with `shieldOff` or a broken `mid` crackles in its shield colour on the midship plating every 1.4 to 3 s (twice as long and no light under reduce flashing). Flesh throws no sparks. Checked by `godot/fx/test/capability_loss_check.gd`.
+- Capability loss (issue 1741 Milestone 3, R416; Wounds V2, on by default since Nov 24): `sync_ship` also reads `weapons[i].off`, `engHit` (the rules' `st.engine` above 0) and `shieldOff` (`st.shieldOff` above 0), view-only fields of `api.view()`. A slot with `off` above 0 jams every turret its `hp_w<slot>_*` muzzles hang under and smokes and sparks one of its fixed mounts (`fx_hull.turrets_for_slot`, `mounts_for_slot`); a hull with no point for the slot jams only a turret no slot owns in the slot's section by its rules arc (F prow, P and S midship), else smokes that section's plating without touching any gun. The flag is read through `godot/fx/fx_wounds_flag.gd` (`WOUNDS.v2()`), shared by every Wounds V2 file. With a `weapons` list the old random section turret pick (issue 1587) is off; without one (a bench unit) it stays. The drive fails in tiers (`engine_tier_for`): an engine hit or engine stage 2 gutters one nozzle (65% plume), stage 3 darkens one more, stage 4 or a broken `eng` leaves one nozzle at 35% with the rest dark, smoking at the bell and sparking as the ship tries to move. Only the Hullbreakers' drive coughs soot. A shielded ship with `shieldOff` or a broken `mid` crackles in its shield colour on the midship plating every 1.4 to 3 s (twice as long and no light under reduce flashing). Flesh throws no sparks. Checked by `godot/fx/test/capability_loss_check.gd`.
 - Idle motion (issue 1685, R411 Priority 3; only with `VS_IDLE_MOTION=1` or the project setting `rendering/effects/idle_motion`, default off until Ryan picks from the Pick Sheet; `godot/fx/fx_idle.gd`, `IDLE.enabled()`): a ship (never a squadron) carries one small looping motion for its faction, one batch of soft sprites (kind 18, no peak) under `_dmg_root`, so it rides the hull and costs one draw call and no CPU. Hegemony radar sweep (four blips in turn on the top plating), Sunward furnace-vent ember breath, Hullbreakers smelter flicker, Glasswrights optic shimmer, Eclipse violet corona pulse (all violet, R372), Chorus spore-sac swell. Spots are the hull's own upward `hp_breach_*` points, else plating found by a ray (R 6.7); no geometry is added and no mesh is moved (no kit export carries a named part for it yet). Colours come from `faction_looks.json`. Comfort (RULEBOOK 6.2): every sprite is under the flash counter's intensity line, none lasts under 0.5 s, one ship starts at most 2 pulses a second, and nothing spends the flash counter. Reduce flashing (`fx.reduce_flashing`) rebuilds the batch longer, dimmer and slower; Reduce motion (`ShipView.calm`) leaves the batch but stops the radar sweep (one steady blip). The flag is read when a ship is added. Checked by `godot/fx/test/idle_motion_check.gd`; frame cost and the per-faction sheets by `godot/fx/test/idle_motion_probe.gd` (a solo GPU job, R407).
 
 ## 3. Weapons
@@ -131,7 +131,7 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 - `fx.nova(id, target, pace)` returns the detonation time on the FX clock, or `-1` if the ship is missing or inactive. The bench sets `fx.nova_look` to `ember_hammer` or `crown_lance` to compare the three beats. Leaving it unset preserves the pre-pick cue until Ryan selects a default. The two choices use the shared flash counter and never call the old stub.
 - `var t = fx.board(attacker_id, target_id, result)` on the rules' `board` event: a breach in the target's hull at a plausible boarding point (its side facing the attacker, mid section), venting gas and lit from inside for about 3 s, then a dark gash that stays as a mark. Returns seconds until it has played. (G2: this replaces the stub flash at the board event.) Issue 1547: a party from dead ahead or astern breaks in on the side the camera sees; the look Ryan picked (B: a wider hatch, pop ring, burst, vent and amber inside light, and the amber boarding lines in the shared line style) comes from `BOARD`, and `fx.board_hold_ms()` is how long the battle holds on it before the next event.
 - `fx.hull_mark(id, look, w, world_p, dir, sec)`: a weapon mark without a volley (look as in volley, plus `board` and `ram`).
-- `fx.tick(id, kind)` for turn-start damage (`fire`, `acid`, `tidal`, `storm`): a small flare-up of that kind on the ship.
+- `fx.tick(id, kind)` plays the turn-start beat only. Fire uses a short baked plume, acid adds droplets and an etch, tidal pulls toward `fx.well`, and a storm branches down from the cloud onto the live shield or the bare hull. A zero pool never wakes the shield. Persistent acid and ion status are separate.
 - `fx.hull_point(id, section, toward)`: `{p, n}` in world space on the hull (section `"prow"`, `"mid"`, `"eng"` or `""`, on the side facing the point `toward`), for anything G2 wants to anchor there.
 
 ## 7. Feel: shake and hit pause
@@ -270,6 +270,33 @@ pieces are re-cut from the damaged hull afterwards.
 uses dust and vapour with no flame; Eclipse uses dead panels, violet circuits,
 slow rim arcs, coolant, dark smoke and violet plasma. Repair seals every break.
 
+**Wounds V2 (R416, issue 1741; on by default since Ryan's yes on Nov 24, Morning Pick Sheet item 5; `VS_WOUNDS_V2=0` or
+the setting `rendering/effects/wounds_v2` false turns it off and gives a plain neutral wound, since the old faction wound
+looks (Eclipse square grid, Glasswright sine web, Chorus magenta flesh, orange backfaces on non-steel factions) are
+retired; read by `fx/fx_wounds_flag.gd` `v2()`).** Each faction's `wound` profile in faction_looks.json (kind 0 Sunward to 5 Eclipse,
+rim_style, scorch_col, rim_metal, interior_lift, interior_accent, interior_pattern, interior_rough, soot_weight,
+wreck_soot) drives every wound shader. On an authored-interior hull a section opens a real cutout from stage 2 (0.026 L,
+0.038 L at stage 3, 0.052 L at stage 4; a second one at stage 3 and up on medium hulls), and a heavy hit (torpedo, lance,
+null lance, star, gauss exit, weight 3+) on a section under 80% HP opens one where it struck; at most 6 per ship and 2 per
+section, clear of turrets and bay doors (`fx_ship._clear_spot`). Every cutout goes through
+`fx_breach.validate_footprint` (8 rays at 0.85 R: shrink to 0.75 R and 0.55 R, slide toward the plating, else a small
+surface mark) and `place_hole` (faction rim, plate thickness `clamp(Dt * 0.14, 0.008 L, 0.24 R)`; a plate thinner than
+0.4 R chips with `thin_shear` instead of opening; `thickness` marches through stacked plating within 1.2 R to the first
+real cavity, so layered armour opens). Overlays skip faces turned more than about 70 degrees from the hit and
+sit in a tighter slab; the hull shader's cut skips walls at right angles to it. `fx_breach.dress` puts the faction's own
+3D dressing inside each mouth (beams and cables, bone ribs and tendons, crystal shards, obsidian truss and violet bus),
+`inside_lights` adds at most 2 soft lights per ship (8 in the battle, `BATTLE_HOLE_LIGHTS`) in `interior_accent`, and
+the built interior takes the shared `fx_shaders.INTERIOR` shader (`fx_hull.interior_material_v2`) once a mouth is open.
+That shader multiplies the faction pattern over the surface: a surface whose glTF material extras name an
+`interior_role` (Interior Kit V2) keeps its own colour and trim maps; an older one keeps only its texture's light and dark
+in the faction's `interior_lift`, and its own glow keeps only its brightness, in `interior_accent`
+(`fx_hull.interior_role`: wall, bone, core, glass, organ). Walls are held to the faction ceiling (`wound_of(...).wall_max`: 0.11, the Glasswrights 0.45, pale pearl glass; a 1743 `interior.wall_max` wins and must agree) and non-core glow to 0.25 by scaling
+the colour, never per channel; cores, rim heat, bus tips and fresh burns pass. `fx.wreck_interior(source, faction)`
+hands the same shader to the wreck pieces, settling into the wreck look over 4 s from the death. Over the caps the
+oldest cutouts stay open (`cap_holes`). `fx_breach.open_mouths(s)` lists a ship's open mouths ({c, n, R}, hull
+frame, after the caps) for vents and embers. With V2 on, prism, star and null lance hits leave `S_PRISM`, `S_STAR` and `S_NLANCE` marks.
+Proof: `fx/test/wounds_v2_check.gd`, look-bench rows `bench/look_moments_wounds_v2.json` (cameras 170 and 26).
+
 **Refinement (r5).** Coarse geometry (kit plates and big AI hull panels are a few large triangles) is split locally before a mark is cut: edges longer than the mark needs, near the mark, are split (conforming on both sides, every vertex attribute interpolated, so the vertex format and materials stay), so a hole or crater smaller than a plate is still cut and dented. The overlay skin covers every triangle that reaches into the mark, not only those whose centre does.
 
 **Halo (r5).** Every weapon mark also lays a wide halo in its own signature, at least `HALO_MIN` world units (fx_breach.gd; 0.75 for a lance cut up to 2.1 for a torpedo crater), so it reads from the battle camera 170 units away, where the mark's own detail is a few pixels: soot round shells, torpedo craters and boarding pits; soot with temper colours along a lance cut; dark blue glass freckles with a faint lasting sheen round plasma; a grey rash round flak; green-black etch round acid; a blue-black field round ion burns; bright scraped metal round a ram; a pale spalled field round a gauss exit.
@@ -405,6 +432,19 @@ core/sheath flow mask, and a filled faceted chip. There are no downloaded sprite
 packs. Materials share the imported textures through `_mat`, including the
 attached engine batches; they do not allocate textures per shot.
 
+Build B (issue 2043) uses separate hot-core and tapered-sheath masks in the
+existing streak and sprite pools. The shooter palette normally tints the
+sheath, but plasma stays light blue from muzzle to impact (R46). Bombs have
+their own capsule mask. The shared muzzle kit keeps the approved gas on
+cartridge blasts and uses clean apertures for energy and crystal and a wet
+plume for bio. Bright muzzle and intercept cores still use the flash counter.
+Spark recipes stay separate (issue 2018).
+
+Star corona rays follow the original body after ignition and turn off on
+intercept. Rockets add a cold, short smoke layer over the nozzle wake with
+its own small pixel floor. A torpedo without its kit model uses the same
+tapered wake as a kit round.
+
 Streaks retain their existing pool and API. The mask has a bright compact head,
 a short irregular tail, and a soft halo. Spark heads follow drag and a gentle
 curved drift; the cooling history bends inside the quad. After the usual length
@@ -461,9 +501,9 @@ beam endpoints have a muzzle/contact flare and a separate 0.30 s quiet cooling
 glow. The real impact still owns the wound, flash and thrown matter. The curved
 moving-engine history also has a resolved centre, soft sheath and end fades.
 
-Prism sprite kind 16 is now a small filled lit facet rather than a four-armed
-cross. This intentionally covers every existing kind-16 caller: shield chips,
-prism flight, muzzle and impact glints. No shield recipe or shard count changes.
+Prism sprite kind 16 is a small filled lit facet rather than a four-armed
+cross. Shield chips and impact glints still use it. Build B's prism flight
+and muzzle use their own masks. No shield recipe or shard count changes.
 
 Rockets and torpedoes retain the real closed casings, fins and sampled baked
 exhaust. Their motor has a 12 px quad floor with distinct core and halo, existing

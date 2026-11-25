@@ -154,9 +154,10 @@ func _run() -> void:
 	#    so the kill camera and the turn, which wait for the core flash, are never held longer than that
 	ship = _load_ship(world)
 	fx = _fx(world)
-	fx.defer_initial_cuts = true
-	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
+	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22, "cut_on_arrival": false})
 	s = fx.ship("a16")
+	fx.step(0.3)
+	check(not s.has_meta("cut_job") and not s.has_meta("cut_task"), "a scripted survivor skips its arrival cut")
 	DEATH.precompute(fx, s, "blast", true)
 	while not DEATH.finish_precompute(fx, s):
 		await process_frame

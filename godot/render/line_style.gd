@@ -74,7 +74,8 @@ const ROLE := {
 	"drop_ally": Color(0.32, 0.94, 0.77, 0.75),
 	"drop_enemy": Color(0.62, 0.22, 1.0, 0.75),
 	"drop_neutral": Color(0.8, 0.85, 0.9, 0.75),
-	# storm lightning until its baked bolts land (issue 1360): hot tube, cyan skirt, cool cyan-white corona (HDR values)
+	# storm lightning (issue 1360 colours its baked bolts with these; the old ribbon too): hot channel, cyan skirt, cool
+	# cyan-white corona (HDR values)
 	"bolt_core": Color(2.2, 2.1, 2.4, 1.0),
 	"bolt_skirt": Color(0.005, 0.8, 2.0, 1.0),
 	"bolt_corona": Color(0.40, 0.72, 1.10, 1.0),
@@ -133,6 +134,7 @@ const SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 uniform float gain = 1.0;
+uniform float cut_overlay_alpha = 1.0;
 uniform float breath = 0.0;
 """ + GLSL + """
 varying vec4 vcol;
@@ -145,7 +147,7 @@ void fragment() {
 	float d = UV.x + vc * 0.5 * ls_core_w(fw);
 	float l = ls_line(d, fw, vg);
 	float sh = mix(1.0, ls_breath(wp, TIME), breath);
-	ALBEDO = vcol.rgb * vcol.a * gain * sh * l;
+	ALBEDO = vcol.rgb * vcol.a * gain * sh * l * cut_overlay_alpha;
 }
 """
 

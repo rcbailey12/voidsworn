@@ -271,8 +271,10 @@ def body(K):
     K.colour('amber gun optic; violet drive stones', GX + U(0.02), X0, 'the spine optic, the stern face')
 
     # ---------------- INSIDE: kept small; the build contract needs one, the game never breaks a craft ----------------
+    rooms = gw_kit('rooms')
+    inner = rooms.register_skin(K, hull, core)
     for nm, kind, a0, a1, hw, zb, zt, note in ROOMS:
-        K.room(nm, kind, U(a0), U(a1), -U(hw), U(hw), -U(zb), U(zt), note=note)
+        rooms.craft_room(K, inner, nm, kind, (U(a0), U(a1), -U(hw), U(hw), -U(zb), U(zt)), note)
     K.inside.append(dict(kind='note', name='insides', note='A craft: the game shows its death as a spark (godot/fx/fx_death.gd _wing_death); nothing breaks open. These few rooms are here because the build contract needs an inside.'))
     K.armour('annealed outer glass', U(0.004), 'pearl ribbons over the mosaic; no plates')
     b = BREAK_X

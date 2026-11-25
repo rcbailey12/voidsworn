@@ -57,6 +57,8 @@ func _run() -> void:
 	_step(m, 4.0)
 	var st: Dictionary = m.call("state")
 	_ok(st["mode"] == "map" and st["single"] != "", "map loop playing")
+	var stem_by_faction := {"": "sunward_stemloop", "voidsworn": "sunward_stemloop",
+		"chorus": "chorus_loop_a", "ithar": "glasswright_combo2"}
 	for fac in ["", "voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
 		m.call("play_battle", "voidsworn", fac)
 		_step(m, 3.0)
@@ -68,20 +70,32 @@ func _run() -> void:
 		var b: Dictionary = m.call("state")
 		_ok(float(b["hot_db"]) > -12.0, "intense layer up under heavy fire (%s): %.1f dB" % [fac, b["hot_db"]])
 		_ok(float(b["calm_db"]) < float(a["calm_db"]), "calm layer down under heavy fire (%s)" % fac)
+		if stem_by_faction.has(fac):
+			var stem: String = stem_by_faction[fac]
+			_check_pair(m, tracks, stem)
+			_ok(float(b["calm_db"]) <= -79.0, stem + " calm is fully out at full intensity")
+		else:
+			_ok(not bool(m.get("_stem_pair")), "other factions keep their original mix")
 		m.call("set_intensity", 0.0)
 		_step(m, 25.0)
 		var c: Dictionary = m.call("state")
 		_ok(float(c["hot_db"]) < -30.0, "intense layer back down when quiet (%s): %.1f dB" % [fac, c["hot_db"]])
+		_ok(float(c["calm_db"]) > -20.0, "calm layer back up when quiet (%s): %.1f dB" % [fac, c["calm_db"]])
 	m.call("victory")
 	_step(m, 3.0)
 	_ok(String(m.call("state")["mode"]) == "sting", "victory sting")
 	# boss fight: the boss theme is the intense layer, and a boss win plays the champion sting
 	var boss_id := String(man.get("battle", {}).get("boss", ""))
-	m.call("play_battle", "voidsworn", "hegemony", true)
+	m.call("play_battle", "voidsworn", "chorus", true)
 	_step(m, 3.0)
 	if boss_id != "":
 		var hot: AudioStreamPlayer = m.get("_hot")
 		_ok(hot.stream == m.call("_stream", boss_id, true), "boss battle uses the boss theme as the intense layer")
+	_ok(not bool(m.get("_stem_pair")), "Chorus boss battle never layers Loop A underneath")
+	var boss_bed: AudioStreamPlayer = m.get("_bed")
+	_ok(boss_bed.stream != null and boss_bed.stream == m.call("_stream", "fac_chorus", true),
+		"Chorus boss keeps the legacy faction bed")
+	_ok(m.call("faction_preview_id", "chorus") == "fac_chorus", "Chorus faction preview keeps its theme")
 	m.call("feed", {"close": 6, "shots": 14, "hull": 0.5, "flagship": 0.4, "mine": 5, "enemy": 6, "boss": true})
 	_step(m, 8.0)
 	_ok(float(m.call("state")["hot_db"]) > -12.0, "boss intense layer up under heavy fire")
@@ -123,3 +137,18 @@ func _run() -> void:
 	m.free()
 	print("MUSIC CHECK ", "PASS" if fails.is_empty() else "FAIL (%d)" % fails.size())
 	quit(0 if fails.is_empty() else 1)
+
+
+func _check_pair(m: Node, tracks: Dictionary, stem: String) -> void:
+	_ok(bool(m.get("_stem_pair")), stem + " is the active battle pair")
+	var bed: AudioStreamPlayer = m.get("_bed")
+	_ok(bed.stream == null and not bed.playing, stem + " plays without a separate faction bed")
+	for layer in [["_calm", "_calm"], ["_hot", "_full"]]:
+		var p: AudioStreamPlayer = m.get(layer[0])
+		var id: String = stem + layer[1]
+		var stream := p.stream as AudioStreamOggVorbis
+		_ok(stream != null and stream == m.call("_stream", id, true) and p.playing, id + " is playing")
+		if stream != null:
+			var sec := float(tracks.get(id, {}).get("sec", 0.0))
+			_ok(stream.loop and stream.loop_offset == 0.0 and absf(stream.get_length() - sec) < 1.0 / 48000.0,
+				id + " wraps from zero on its exact bar grid")

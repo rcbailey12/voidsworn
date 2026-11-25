@@ -1,4 +1,5 @@
 @echo off
+setlocal EnableExtensions DisableDelayedExpansion
 REM Voidsworn test watcher with a job queue: leave this window open.
 REM Old way still works: drop run.request (runs build\job.bat through run_smoke.bat).
 REM Queue: drop any NAME.bat into queue\ ; jobs run one at a time, oldest first, from build\ ;
@@ -12,17 +13,16 @@ if not exist queue\done mkdir queue\done
 if not exist queue\failed mkdir queue\failed
 if not exist queue\logs mkdir queue\logs
 if not exist queue\running mkdir queue\running
-set "JANITOR=%~dp0janitor.bat"
-if not exist "%JANITOR%" set "JANITOR=%~dp0build_b\tools\pc\janitor.bat"
-set "JANITOR_MINUTE="
+rem Only one watcher can open this queue lock for writing. The handle stays open for the loop.
+(call :watch) 9>"%~dp0queue\watcher.lock" || echo WARNING: could not lock queue\watcher.lock. Another watcher may be running.
+exit /b
+:watch
+schtasks /query /tn "Voidsworn Janitor" >nul 2>&1 || echo WARNING: Voidsworn Janitor task missing or unreadable. Run janitor_task.bat from the current tools_live pc folder.
 set "OX_MINUTE="
 echo Watching %cd% for run.request and queue\*.bat ... (close this window to stop)
 :loop
 cd /d "%~dp0"
-if not "%JANITOR_MINUTE%"=="%time:~0,5%" (
-  set "JANITOR_MINUTE=%time:~0,5%"
-  if exist "%JANITOR%" call "%JANITOR%" --nightly
-)
+findstr /b /c:"GPU not cleared: paused by the Board" gpu_go.txt >nul 2>&1 && goto idle_wait
 if exist run.request (
   del run.request
   echo [%time%] Smoke run started
@@ -31,7 +31,7 @@ if exist run.request (
 )
 cd /d "%~dp0"
 set "J="
-for /f "delims=" %%F in ('dir /b /od queue\*.bat 2^>nul') do if not defined J set "J=%%F"
+for /f "delims=" %%F in ('dir /b /od queue\*.bat 2^>nul') do if not defined J if not exist "queue\running\%%F" set "J=%%F"
 if not defined J goto idle
 rem (1194) Between jobs, refresh the main queue's build\tools and the canonical tools_live copy that every tmo.bat uses.
 rem A busy or failed refresh keeps the copies it has; the log says why. Nothing here deletes a job's work.
@@ -42,13 +42,18 @@ if defined TLV if exist "tools_live\%TLV%\pc\lane_tools_refresh.ps1" set "RF=%~d
 if exist "%RF%" powershell -NoProfile -ExecutionPolicy Bypass -File "%RF%" -Build tools_live >> "queue\logs\tools_refresh.txt" 2>&1
 if exist "%RF%" powershell -NoProfile -ExecutionPolicy Bypass -File "%RF%" -Build build >> "queue\logs\tools_refresh.txt" 2>&1
 cd /d "%~dp0"
-move /y "queue\%J%" "queue\running\%J%" >nul
+findstr /b /c:"GPU not cleared: paused by the Board" gpu_go.txt >nul 2>&1 && goto idle_wait
+rem Keep an older interrupted job, and never run a file this watcher did not claim.
+if exist "queue\running\%J%" goto idle
+move /y "queue\%J%" "queue\running\%J%" >nul 2>&1 || goto idle
 echo [%date% %time%] queue: %J% started
 echo [%date% %time%] started > "queue\logs\%J%.log"
-pushd build
-call "%~dp0queue\running\%J%" >> "%~dp0queue\logs\%J%.log" 2>&1
+set "JX=1"
+pushd build || goto file_result
+"%ComSpec%" /d /c call "%~dp0queue\running\%J%" >> "%~dp0queue\logs\%J%.log" 2>&1
 set "JX=%ERRORLEVEL%"
 popd
+:file_result
 cd /d "%~dp0"
 rem (1194) The exit code decides where the job file goes: 0 to queue\done, anything else to queue\failed.
 echo [%date% %time%] finished, exit %JX% >> "queue\logs\%J%.log"

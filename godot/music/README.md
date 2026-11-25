@@ -61,3 +61,5 @@ Rebuild: copy the raw pool from the PC (`Downloads\voidsworn_test\music\raw\`), 
 ## How the layers work
 
 A battle starts the calm layer and the intense layer together (intense silent) plus an optional faction bed. Intensity crossfades them; the calm layer never drops below about -16 dB so the pulse stays under the brass. The enemy faction's flavour wins (you hear who you are fighting), with your own faction as the fallback. Flavour can replace the calm layer, the intense layer, or add a bed under both (`factions` in `music.json`).
+
+In non-boss battles, `stem_pairs.json` replaces that legacy mix for Sunward and Chorus. The calm and full mixes start together, loop from zero on the same bar grid, and crossfade without a separate bed. Calm drops out entirely at full intensity. A missing pair falls back to the legacy mix, and the Chorus faction preview and boss battle still use the legacy theme.

@@ -44,7 +44,6 @@ var hex := 0.0
 # fails the check until its line here is deleted, so the job that fixes it also retires it (the same ratchet as
 # contrib/opus/tools/checks_baseline.json). Nothing else may be added here without the Board's review.
 const KNOWN := {
-	"station (one hex)": "issue 373 (station T2, PR 700)",
 	"station (5+ hexes)": "issue 373 (station T2, PR 700)",
 	"map station node": "issue 373 (the station on the sector map, R249)",
 	"asteroid field biggest rock": "issue 369 (board planet and rocks)",
@@ -138,11 +137,10 @@ func _run() -> void:
 	row("fighter / bomber", craft, 2.0, 6.0, "tiny beside a frigate (%.2f)" % (0.5 * float(drawn["Frigate"])))
 	row("fighter / bomber vs frigate", craft / float(drawn["Frigate"]), 0.0, 0.5, "a wing craft is under half a frigate's length")
 
-	# 2. The station: on the board it must dwarf every ship class.
-	var station_small := float(BRD.STATION_BASE_LEN) + float(BRD.STATION_PER_HEX)
+	# 2. The big station: on the board it must dwarf every ship class.
 	var station_big := float(BRD.STATION_BIG_LEN)
 	var largest_ship := float(drawn["Super-dreadnought"])
-	row("station (one hex)", station_small, 2.0 * largest_ship, 6.0 * largest_ship, "dwarfs every ship class")
+	# the one-hex spot is the outpost now, fitted inside its hexes (Ryan, Nov 24 2026, issue 1791; station_size_check)
 	row("station (5+ hexes)", station_big, 2.0 * largest_ship, 6.0 * largest_ship, "dwarfs every ship class")
 
 	# 3. Terrain on the board.

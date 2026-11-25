@@ -169,6 +169,10 @@ echo %R%| findstr /i /c:"board_c" >nul
 if not errorlevel 1 set "PC_GPU_LANE=C"
 echo %R%| findstr /i /c:"board_d" >nul
 if not errorlevel 1 set "PC_GPU_LANE=D"
+echo %R%| findstr /i /c:"board_e" >nul
+if not errorlevel 1 set "PC_GPU_LANE=E"
+echo %R%| findstr /i /c:"board_f" >nul
+if not errorlevel 1 set "PC_GPU_LANE=F"
 mkdir "%O%"
 echo %A%> "%WORK_ROOT%\%K%\latest.txt"
 echo started %date% %time% (%MODE%) > "%O%\result.txt"
@@ -442,7 +446,7 @@ rem (c) and the issue 541 check: one checked commit that keeps the branch's earl
 set "SX=%ERRORLEVEL%"
 if "%SX%"=="7" goto :nochange
 if not "%SX%"=="0" goto :stopped
-if "%PUSHMODE%"=="dry" (git push --dry-run origin HEAD:refs/heads/%PB% > "%O%\push.txt" 2>&1) else (git push origin HEAD:refs/heads/%PB% > "%O%\push.txt" 2>&1)
+%COMMON% push "%R%" "%PB%" "%PUSHMODE%" > "%O%\push.txt" 2>&1
 if errorlevel 1 goto :pushfail
 %PS% confirm "%R%" "%O%" %PB% %PUSHMODE% >> "%O%\result.txt" 2>&1
 set "SX=%ERRORLEVEL%"
