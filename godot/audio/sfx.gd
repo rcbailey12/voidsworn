@@ -540,6 +540,7 @@ func play(name: String, o := {}) -> void:
 	var now := _now()
 	var t := now + float(o.get("delay", 0.0)) + 0.004
 	var gap := float(cue["gap"])
+	var had_last := last.has(name)
 	var lt := float(last.get(name, -99.0))
 	if gap > 0.0 and t < lt + gap:
 		var nt := lt + gap * (1.0 + randf() * 0.6)
@@ -547,19 +548,22 @@ func play(name: String, o := {}) -> void:
 			return
 		t = nt
 	last[name] = t
+	# Issue 2034 (Artoo, PR 2071): this is only a reservation. If the sound is then refused (a distant one with no voice to
+	# take), _start hands the slot back, so it cannot block a louder sound for the same cue.
+	var slot := {"t": t, "had": had_last, "prev": lt}
 	# Reserve the stagger now, but enforce voice caps only when it is due.
 	# Otherwise later ships steal delayed players before they have ever started.
 	var generation := _pending_generation
 	var start := t - now
 	if start <= 0.01:
-		_start(name, o, lay)
+		_start(name, o, lay, slot)
 	else:
-		get_tree().create_timer(start, false, false, true).timeout.connect(_start_pending.bind(generation, name, o, lay))
+		get_tree().create_timer(start, false, false, true).timeout.connect(_start_pending.bind(generation, name, o, lay, slot))
 
 
-func _start_pending(generation: int, name: String, o: Dictionary, lay: Array) -> void:
+func _start_pending(generation: int, name: String, o: Dictionary, lay: Array, slot := {}) -> void:
 	if generation == _pending_generation:
-		_start(name, o, lay)
+		_start(name, o, lay, slot)
 
 
 # Issue 2034: a start never starts another one in the same call (the salvo tail is always delayed), so a start that finds
@@ -567,17 +571,30 @@ func _start_pending(generation: int, name: String, o: Dictionary, lay: Array) ->
 var _start_depth := 0
 
 
-func _start(name: String, o: Dictionary, lay: Array) -> void:
-	if _start_depth >= 2:
+func _start(name: String, o: Dictionary, lay: Array, slot := {}) -> void:
+	var started := false
+	if _start_depth < 2:
+		_start_depth += 1
+		started = _start_voice(name, o, lay)
+		_start_depth -= 1
+	if not started:
+		_release_slot(name, slot)
+
+
+# Issue 2034 (Artoo, PR 2071): a sound that never played gives its cue cooldown back, but only while it still owns it. A newer
+# reservation (a later delayed sound for the same cue) has replaced `last[name]`, so that one is left alone.
+func _release_slot(name: String, slot: Dictionary) -> void:
+	if slot.is_empty() or not last.has(name) or not is_equal_approx(float(last[name]), float(slot.t)):
 		return
-	_start_depth += 1
-	_start_voice(name, o, lay)
-	_start_depth -= 1
+	if bool(slot.had):
+		last[name] = float(slot.prev)
+	else:
+		last.erase(name)
 
 
-func _start_voice(name: String, o: Dictionary, lay: Array) -> void:
+func _start_voice(name: String, o: Dictionary, lay: Array) -> bool:
 	if not on or _cancelled_tags.has(o.get("tag", "")):
-		return
+		return false
 	var cue: Dictionary = cues[name]
 	var now := _now()
 	var t := now
@@ -608,7 +625,7 @@ func _start_voice(name: String, o: Dictionary, lay: Array) -> void:
 	while list.size() >= int(cue["max"]):
 		var vi := _weakest(list, now, focus)
 		if pos is Vector3 and in_place < _place_of(list[vi].pos, focus):
-			return
+			return false
 		_steal(list[vi])
 	if active.size() >= max_voices:
 		var pri := int(cue["pri"])
@@ -622,9 +639,9 @@ func _start_voice(name: String, o: Dictionary, lay: Array) -> void:
 				vi = i
 				vw = w
 		if vi < 0:
-			return
+			return false
 		if pos is Vector3 and int(active[vi].pri) == pri and in_place < _place_of(active[vi].pos, focus):
-			return
+			return false
 		_steal(active[vi])
 	var u := randf() * 2.0 - 1.0
 	var v := {"name": name, "players": [], "start": t, "end": t, "pri": int(cue["pri"]), "tag": o.get("tag", ""),
@@ -689,6 +706,7 @@ func _start_voice(name: String, o: Dictionary, lay: Array) -> void:
 		_ambient_duck = maxf(_ambient_duck, float(cue["duck"]))
 		_ambient_duck_until = now + 0.5
 	cue_started.emit(name, o)
+	return true
 
 
 func _play_pending(player: WeakRef, voice: Dictionary) -> void:

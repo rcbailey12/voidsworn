@@ -152,6 +152,29 @@ func _stealing() -> void:
 	s.play("hit", {"pos": near + Vector3(40, 0, 0)})
 	await create_timer(0.02).timeout
 	_ok(not _voice_at("hit", sel_pos).is_empty(), "2: the selected ship's voice is kept although it is far and the oldest")
+	# Artoo (PR 2071): a distant request that is refused must not keep the cue cooldown, with the real gap left on
+	_fresh()
+	s.focus_fn = func() -> Variant: return sel_pos
+	for i in cap:
+		s.last.clear()
+		s.play("hit", {"pos": near + Vector3(i * 2.0, 0, 0)})
+		await create_timer(0.02).timeout
+	var full: Array = s.by_cue["hit"].duplicate()
+	s.last.clear()
+	s.play("hit", {"pos": far})
+	await create_timer(0.02).timeout
+	_ok(s.by_cue["hit"] == full, "2: the distant request is refused by a full cue of nearer voices")
+	_ok(not s.last.has("hit"), "2: a refused request hands its cue cooldown back")
+	s.play("hit", {"pos": sel_pos})   # no last.clear(): the real 0.45 s gap is in force
+	await create_timer(0.02).timeout
+	_ok(not _voice_at("hit", sel_pos).is_empty(), "2: the selected ship's hit plays right after a refused distant one (real cue gap on)")
+	_ok(s.by_cue["hit"].size() == cap, "2: the cap still holds after that (%d)" % s.by_cue["hit"].size())
+	# a release never cancels a newer reservation: only the slot that still owns last[name] is handed back
+	s.last["hit"] = 5.0
+	s._release_slot("hit", {"t": 4.0, "had": false, "prev": -99.0})
+	_ok(is_equal_approx(float(s.last["hit"]), 5.0), "2: an older refused slot leaves a newer reservation alone")
+	s._release_slot("hit", {"t": 5.0, "had": true, "prev": 4.0})
+	_ok(is_equal_approx(float(s.last["hit"]), 4.0), "2: the slot that still owns the cooldown is restored to the one before it")
 	# no places at all (ui cues): the oldest still goes, as before
 	_fresh()
 	var ucap := int(s.cues["ui_click"].max)
