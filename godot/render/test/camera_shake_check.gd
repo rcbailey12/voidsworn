@@ -32,7 +32,7 @@ func _run() -> void:
 	# 2. the revival flash colour
 	var src := FileAccess.get_file_as_string("res://scenes/battle/battle.gd")
 	_check(not src.contains("Color(0.2, 1.0, 0.4)"), "battle.gd has no lime Color(0.2, 1.0, 0.4)")
-	var rx := RegEx.create_from_string("func _reassemble[\\s\\S]*?\\n\\t_flash\\([^\\n]*FLOOK\\.engine\\(")
+	var rx := RegEx.create_from_string("func _reassemble[\\s\\S]*?\\n\\t+_flash\\([^\\n]*FLOOK\\.engine\\(")
 	_check(rx.search(src) != null, "_reassemble's revival flash takes its colour from FLOOK (faction_looks.json)")
 	var ecl: Color = FLOOK.engine("deathless")
 	_check(ecl.b > ecl.g and ecl.r > ecl.g, "the Eclipse colour it uses is violet (%s), not green" % str(ecl))
