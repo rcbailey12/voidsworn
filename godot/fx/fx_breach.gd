@@ -52,6 +52,7 @@ const S_HATCH := 11
 const S_DENT := 12
 const S_PATCH := 14
 const S_FISSURE := 15
+const S_NULL_BURN := 16
 const S_SCORCH := 13      # the stage ladder's spreading scorch (fx_ship._plan)
 
 # Issue 461 (audit item 4, "scorch that stays"): doubled from 12 and 4, so a ship that has been in a fight keeps its scars
@@ -62,7 +63,7 @@ const SEC_MARK_CAP := 8   # ... and per hull section; past it a repeat grows an 
 const GROW_MAX := 1.6     # how far repeats can grow a mark (lance slots lengthen, craters widen, ion trees spread)
 # The smallest halo per mark style, in world units (the game's scale: hexes 17.3 across; the battle camera sits 170 away,
 # about 7.7 pixels a unit at 1080p). Claude's picks, vetoable; tuned on the r5 battle-distance stills.
-const HALO_MIN := {S_BURN: 1.1, S_SHELL: 1.3, S_PLASMA: 1.6, S_GAUSS_IN: 1.1, S_GAUSS_OUT: 1.4, S_BLAST: 2.8,
+const HALO_MIN := {S_BURN: 1.1, S_NULL_BURN: 1.1, S_SHELL: 1.3, S_PLASMA: 1.6, S_GAUSS_IN: 1.1, S_GAUSS_OUT: 1.4, S_BLAST: 2.8,
 	S_FLAK: 2.4, S_ACID: 1.7, S_ION: 2.3, S_RAM: 2.6, S_HATCH: 1.6}
 # Issue 1235 (F1.1): the smallest a weapon mark gets on a healthy section, as a share of its full (broken-section) size
 const MARK_FLOOR := 0.7
@@ -1795,11 +1796,14 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 		tang = n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT)
 	tang = tang.normalized()
 	match look:
-		"lance", "needle", "pulsar", "las":
+		"lance", "nlance", "needle", "pulsar", "las":
 			# the beam drags across the plate: the cut runs across the line of fire; repeats lengthen it
 			var cut_dir := n.cross(tang)
 			var R: float = L * 0.0045 * wk * (0.6 if look in ["needle", "las"] else 1.0) * sqrt(g)
-			out.append(slot(hull, p, n, cut_dir, R, L * 0.035 * wk * g, seed_v))
+			var e := slot(hull, p, n, cut_dir, R, L * 0.035 * wk * g, seed_v)
+			if look == "nlance":
+				e.style = S_NULL_BURN
+			out.append(e)
 		"ion", "doom":
 			out.append(surface(p, n, L * 0.06 * wk * g, seed_v, S_ION))
 		"macro", "battery", "auto", "scatter", "prism", "guns":

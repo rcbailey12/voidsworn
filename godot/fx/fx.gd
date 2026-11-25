@@ -414,6 +414,7 @@ func setup(opts := {}) -> void:
 	pools["rng"] = POOLS.Pool.new(2048, _mat(SH.RING, 0), self, "fx_rings", POOLS.quad_shape())
 	pools["rib"] = POOLS.Pool.new(192, _mat(SH.RIBBON, 1), self, "fx_ribbons", POOLS.ribbon_shape(32))
 	pools["arc"] = POOLS.Pool.new(64, _mat(SH.ECLIPSE_ARC, 0), self, "fx_eclipse_arcs", POOLS.ribbon_shape(96))
+	pools["nlance"] = POOLS.Pool.new(96, _mat(SH.null_lance_code(), 1, "#define NULL_LANCE\n", "null lance"), self, "fx_null_lances", POOLS.ribbon_shape(32))
 	pools["null"] = POOLS.Pool.new(192, _mat(SH.NULL_SLUG, 1), self, "fx_null_slugs", POOLS.streak_shape())
 	var srng = RandomNumberGenerator.new()
 	srng.seed = 991
@@ -473,9 +474,13 @@ func _mat(code: String, prio := 0, defines := "", label := "") -> ShaderMaterial
 	var m = ShaderMaterial.new()
 	m.shader = s
 	m.render_priority = prio
-	if code.contains("uniform vec3 eclipse_sheath"):
+	var eclipse_uniforms := not code.contains("#ifdef NULL_LANCE") or defines.contains("NULL_LANCE")
+	if eclipse_uniforms and code.contains("uniform vec3 eclipse_sheath"):
 		var shade: Color = faction_info("deathless")["weapon_sheath"]
 		m.set_shader_parameter("eclipse_sheath", Vector3(shade.r, shade.g, shade.b))
+	if eclipse_uniforms and code.contains("uniform vec3 eclipse_core"):
+		var core: Color = faction_info("deathless")["weapon_core"]
+		m.set_shader_parameter("eclipse_core", Vector3(core.r, core.g, core.b))
 	# Shared materials reuse the same imported masks, including attached
 	# engine batches. No textures are created per shot.
 	if code.contains("uniform sampler2D kit_flow"):
@@ -842,7 +847,8 @@ func ring(p: Vector3, n: Vector3, t: float, life: float, col: Color, i: float, s
 func rib(p: Vector3, dir: Vector3, length: float, t: float, life: float, col: Color, i: float, w0: float, w1: float, kind: int) -> void:
 	if rib_log != null:
 		rib_log.append([t, col])
-	var pool: POOLS.Pool = pools["arc"] if kind == 10 else pools["rib"]
+	var pool_key := "arc" if kind == 10 else ("nlance" if kind == SH.RIB_NULL_LANCE else "rib")
+	var pool: POOLS.Pool = pools[pool_key]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, kind), Vector4(dir.x, dir.y, dir.z, length),
 		Vector4(col.r, col.g, col.b, i), Vector4(w0 * unit, w1 * unit, rng.randf(), 0.0), Vector4(t, life, 0.0, 0.0)))
 
@@ -2216,9 +2222,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		spr(at + rdir(), T, 0.5, c, 0.02, 0.5, 0.5, k)
 	for k in [0, 1, 3, 4, 5, 6, 7]:
 		stk(at, T, 0.5, c, 0.02, 1.0, 0.1, k, Vector3(1, 0, 0))
-	for k in [0, 1, 2, 3, 4]:
+	for k in [0, 1, 2, 3, 4, SH.RING_HARMONIC]:
 		ring(at, Vector3.UP, T, 0.5, c, 0.02, 0.5, 1.0, k)
-	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]:
+	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10, SH.RIB_NULL_LANCE]:
 		rib(at, Vector3(1, 0, 0), 2.0, T, 0.5, c, 0.02, 0.2, 0.2, k)
 	shd(at, T, 0.5, Vector3.ZERO, 0.2, 1.0)
 	_warm_fragment_finish(at, T, c)
@@ -2240,7 +2246,8 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var box = BoxMesh.new()
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
-		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(DEATH.SLAG, 0)]
+		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), pools["nlance"].mi.material_override,
+		mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(DEATH.SLAG, 0)]
 	# Warm the PBR fallbacks for late arrivals and generated pieces as well as the
 	# actual hull formats below. Glasswright sails blend, and nebula hulls ignore fog.
 	for fog_disabled in [false, true]:

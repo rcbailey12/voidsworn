@@ -519,8 +519,9 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			ti = tf + dist / spd
 		"needle":
 			tf = T0 + 0.1 + beat * 0.25
-			fx.spr(from, tf - 0.12, 0.12, col, 4.0, 0.3 * ka, 1.6 * ka, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
-			fx.rib(from, dir, dist, tf, 0.35, col, 1.6, 0.35 * ka, 0.3 * ka, 8)
+			_beam_charge(fx, from, dir, tf, minf(0.10, tf - T0), col, ka, lk)
+			fx.rib(from, dir, dist, tf, 0.35, col, 1.6, 0.35 * ka, 0.3 * ka, SH.RIB_NEEDLE)
+			fx.spr(from, tf, 0.15, col, 2.6, 0.65 * ka, 0.8 * ka, 16, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
 			_beam_ends(fx, from, to, tf, 0.35, col, ka)
 			fx.light(from + mn * 1.2 * ka, tf, 0.35, 5.0, col, 1)
 			ti = tf + 0.03
@@ -529,11 +530,10 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			var charge := 0.29
 			var dur := 0.32
 			tf = T0 + charge + beat * 0.36
-			for s in 3:
-				var ctime: float = tf - charge + s * 0.07
-				fx.ring(from - dir * (1.2 - s * 0.6) * ka, dir, ctime, tf - ctime, col, 1.5, 0.8 * ka, 2.6 * ka, 3)
-			fx.rib(from, dir, dist, tf, dur, col, 2.1, 3.5 * ka, 1.5 * ka, 11)
+			_beam_charge(fx, from, dir, tf, charge, col, ka, lk)
+			fx.rib(from, dir, dist, tf, dur, col, 1.8, 3.5 * ka, 1.5 * ka, SH.RIB_NULL_LANCE)
 			_beam_ends(fx, from, to, tf, dur, col, ka)
+			_beam_lenses(fx, from, dir, dist, tf, dur, ka, true)
 			fx.light(from + mn * ka, tf, dur, 6.0, col, 1)
 			ti = tf + 0.03
 			tend = tf + dur
@@ -542,21 +542,26 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			tf = T0 + charge + beat * 0.45
 			var dur = float(fx.timing.get("lance", 0.7)) if lk != "pulsar" else 0.45
 			var wd = (2.4 if lk != "doom" else 1.6) * ka * (1.15 if w >= 3 else 1.0)
-			fx.spr(from, tf - charge, charge, col.lerp(Color.WHITE, 0.2), 9.0, 0.6 * ka, 5.0 * ka, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 30.0)
-			fx.light(from + dir + mn * ka, tf - charge, charge, 6.0, col, 2)
 			if lk == "doom":
 				# A visible charging corona stays rooted on the actual emitter.
+				fx.spr(from, tf - charge, charge, col.lerp(Color.WHITE, 0.2), 9.0, 0.6 * ka, 5.0 * ka, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 30.0)
+				fx.light(from + dir + mn * ka, tf - charge, charge, 6.0, col, 2)
 				fx.ring(from, dir, tf - charge, charge, col, 1.8, 0.5 * ka, 1.8 * ka, 3, 0.0, 0.0, 32.0)
 				fx.spr(from, tf - charge * 0.55, charge * 0.55, col, 2.5, 0.6 * ka, 1.6 * ka, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 26.0)
-			var rk: int = {"lance": 2, "ion": 5, "pulsar": 7, "doom": 10}[lk]
+			else:
+				_beam_charge(fx, from, dir, tf, charge, col, ka, lk)
+				fx.light(from + dir + mn * ka, tf - charge, charge, 6.0, col, 2)
+			var rk: int = {"lance": SH.RIB_LANCE, "ion": SH.RIB_ION, "pulsar": SH.RIB_PULSAR, "doom": 10}[lk]
 			_burst(fx, from, dir, tf, 4.5 * ka, "flash", 0.28, col, 3.6, 22.0)
-			fx.rib(from, dir, dist, tf, dur, col, 2.4, wd, wd * 0.85, rk)
+			fx.rib(from, dir, dist, tf, dur, col, 2.4 if lk == "doom" else 1.65, wd, wd * 0.85, rk)
 			_beam_ends(fx, from, to, tf, dur, col, ka, lk == "doom")
 			fx.light(from + dir * 1.5 + mn * ka, tf, dur, 6.0, col, 1)
 			if lk == "doom":
 				_doom_shed(fx, from, to, tf, dur, col, ka)
+			elif lk == "pulsar":
+				_harmonics(fx, from, dir, dist, tf, dur, col, ka)
 			else:
-				fx.dst(from + dir * dist * 0.5, tf, dur, dist * 0.3, dist * 0.35, 1, 0.6)
+				_beam_lenses(fx, from, dir, dist, tf, dur, ka, false)
 			fx.shake(tf, 0.08, from)
 			ti = tf + 0.03
 			tend = tf + dur
@@ -640,6 +645,44 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		else:
 			tend = maxf(tend, _miss_fade(fx, lk, Tg, tg, from, tf, ti, col, dir, kt))
 	return [ti, tend + 0.3, tf]
+
+
+# Shared pre-fire beat. Focus just in front of the authored muzzle so the rings
+# never charge from inside the barrel. The bright focus still goes through fx.spr's flash budget.
+static func _beam_charge(fx, from: Vector3, dir: Vector3, fire: float, charge: float, col: Color, k: float, look: String) -> void:
+	if charge <= 0.0:
+		return
+	var focus := from + dir * 0.22 * k
+	var needle := look == "needle"
+	var ring_count := 1 if needle or look == "ion" else (3 if look == "nlance" else 2)
+	var ring_kind := SH.RING_HARMONIC if look in ["pulsar", "needle"] else 3
+	for j in ring_count:
+		var life := charge * (1.0 - float(j) * 0.19)
+		var col_k := 0.84 + float(j) * 0.14
+		fx.ring(focus + dir * float(j) * 0.42 * k, dir, fire - life, life, col, col_k,
+			(1.75 if needle else 3.6) * k, 0.45 * k, ring_kind, -1.0 * k, 0.0, 0.0)
+	var gather := charge * (0.9 if needle else 0.72)
+	fx.spr(focus, fire - gather, gather, col, 3.2 if needle else 5.4, 0.45 * k,
+		(1.4 if needle else 2.7) * k, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 15.0 if needle else 26.0)
+
+
+# Cost is bounded and fx.dst honors the existing distortion and comfort settings.
+# Glasswrights use emitted spectral edges instead of sampling or bending the scene (R421).
+static func _beam_lenses(fx, from: Vector3, dir: Vector3, length: float, fire: float, life: float, k: float, null_lance: bool) -> void:
+	var count := 5 if null_lance else 3
+	for j in count:
+		var u := (float(j) + 0.5) / float(count)
+		var lag := u * 0.03
+		var span := maxf(5.0 * k, length / float(count) * 1.3)
+		fx.dst(from + dir * length * u, fire + lag, life - lag, span * 0.8, span, SH.DISTORT_BEAM, 0.23 if null_lance else 0.13)
+
+
+static func _harmonics(fx, from: Vector3, dir: Vector3, length: float, fire: float, life: float, col: Color, k: float) -> void:
+	var travel := life * 0.62
+	for j in 3:
+		# Three staggered wavefronts never travel past the beam's own contact.
+		fx.ring(from, dir, fire + life * 0.16 * float(j), travel, col, 1.25,
+			3.8 * k, 5.2 * k, SH.RING_HARMONIC, length / travel)
 
 
 # R271 replaces the two-frame/26 px null shot. One head moves at the original
@@ -2218,7 +2261,7 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var ld: Vector3 = (Tg.xf().basis.inverse() * dir).normalized()
 		var lp0: Vector3 = tg["lp"]
 		var ln0: Vector3 = tg["ln"]
-		var wound_look: String = tg.get("mark_look", {"nlance": "lance", "plasma_cannon": "plasma", "gsentry": "gflak", "junk": "auto"}.get(lk, lk))
+		var wound_look: String = tg.get("mark_look", {"plasma_cannon": "plasma", "gsentry": "gflak", "junk": "auto"}.get(lk, lk))
 		fx.later(T, func l_mark() -> void: Tg.add_mark(fx, wound_look, w, lp0, ln0, ld))
 	var matter_k: float = k * sqrt(float(tg.get("gk", 1.0)))
 	if beam:
@@ -2427,10 +2470,11 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 	var steps := maxi(2,int(ceil(dur/0.09)))
 	var px := ladder_px(lk, w, tg)
 	var ion := lk == "ion"
+	var null_lance := lk == "nlance"
 	var spectral := lk in ["ion", "nlance", "doom", "needle", "pulsar"]
 	var response := _impact_response(Tg)
-	var contact := _impact_color(response, Tg, col)
-	var flash := _impact_color(response, Tg, col if spectral else col.lerp(Color(1.0, 0.72, 0.38), 0.55))
+	var contact := col if null_lance else _impact_color(response, Tg, col)
+	var flash := col if null_lance else _impact_color(response, Tg, col if spectral else col.lerp(Color(1.0, 0.72, 0.38), 0.55))
 	var molten := _impact_color(response, Tg, col.lerp(Color.WHITE, 0.22) if spectral else col.lerp(Color(0.97, 0.66, 0.30), 0.6))
 	# the crawl: along the plate, the way the beam was sweeping (its own direction laid onto the plate)
 	var run: Vector3 = dir - n * dir.dot(n)
@@ -2454,11 +2498,18 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 				nj = Tg.dir_world(hit["n"])
 		last = pj
 		if j % 2 == 0:
-			_impact_flash(fx, Tg, pj, nj, at, k, 4.0 * k, 0.16, flash, px * BURST_PX_K, response, 0.3 * k, 4.2)
+			if null_lance and not response.get("hot_plate", false):
+				# A clean, budgeted flare. Do not borrow the struck material's green or warm tint.
+				fx.spr(pj + nj * 0.3 * k, at, 0.16, flash, 4.2, 2.0 * k, 2.0 * k, 13,
+					Vector3.ZERO, 0.0, 0.0, 0.0, px * BURST_PX_K)
+			else:
+				_impact_flash(fx, Tg, pj, nj, at, k, 4.0 * k, 0.16, flash, px * BURST_PX_K, response, 0.3 * k, 4.2)
 			_note(fx, "flash", "lance", Vector3.ZERO, nj, 0.16, px)
 		fx.spr(pj + nj * 0.2 * k, at, 0.18, contact, 3.0, 1.2 * k, 1.6 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.45)
-		_heat_spot(fx, pj + nj * 0.1 * k, at, k, 0.55, "lance", 5.0, 1.5, Tg)
-		if not ion and response.fire_body:
+		# The null trench carries its own violet heat, with no orange plate spot or molten metal.
+		if not null_lance:
+			_heat_spot(fx, pj + nj * 0.1 * k, at, k, 0.55, "lance", 5.0, 1.5, Tg)
+		if not ion and not null_lance and response.fire_body:
 			# molten metal sprays off the plate: drips with a short trail, and sparks
 			for s in _amount(fx, 5):
 				var d := _outward(nj, fx.rcone((nj + run * 0.6).normalized(), 0.55), 0.2)
@@ -2468,7 +2519,7 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 				_note(fx, "spark", "lance", v, nj, life)
 		elif ion and j % 2 == 0:
 			fx.rib(pj, _outward(nj, fx.rdir(), 0.3), 1.8 * k, at, 0.09, molten, 1.2, 0.12 * k, 0.04 * k, 6)
-	if not ion:
+	if not ion and not null_lance:
 		_impact_embers(fx, p, n, T + dur * 0.3, k, 6, "lance", response, Tg, col * 0.28)
 		_throw_debris(fx, last, n, (n + run * 0.5).normalized(), T + dur * 0.6, k, 2, 5.0, 0.12, 1.0, "lance", Tg.faction if Tg != null else "metal", false, Tg)
 	if ion:
@@ -2476,8 +2527,9 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 		_ion_crawl(fx, Tg, p, n, T, contact, k)
 	# the tail when the beam lifts: the contact glow fades over a third of a second
 	fx.spr(last + n * 0.2 * k, T + dur, 0.33, contact, 2.6, 1.6 * k, 1.0 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.4)
-	_impact_gas(fx, p + n * 0.3 * k, n, T + 0.2, k, molten.lerp(Color(0.38, 0.37, 0.36), 0.75),
-		3, 2.2, "lance", 0.28, response, (n + run * 0.7).normalized())
+	if not null_lance:
+		_impact_gas(fx, p + n * 0.3 * k, n, T + 0.2, k, molten.lerp(Color(0.38, 0.37, 0.36), 0.75),
+			3, 2.2, "lance", 0.28, response, (n + run * 0.7).normalized())
 	if lk == "doom":
 		for j in 3: fx.rib(p,fx.rcone(n,0.8),2.5*k,T+j*0.12,0.1,contact,1.0,0.15*k,0.05*k,6)
 	# Doom lights only the struck plating. The existing mark cools into a scar.
