@@ -4612,8 +4612,13 @@ func _queue_threat_input(action: Callable) -> bool:
 	return true
 
 
+func _battle_modal_open() -> bool:
+	return is_instance_valid(hud) and (is_instance_valid(hud.menu) or is_instance_valid(hud.ask_panel) or is_instance_valid(hud.get("endcard")))
+
+
 func _replay_threat_inputs(g: int) -> void:
-	while not _stale(g) and not quitting and not _threat_busy and not _threat_inputs.is_empty():
+	# A replayed order can start playback or open a prompt. Check again before removing the next intent.
+	while not _threat_inputs.is_empty() and not _stale(g) and not quitting and _can_act() and not _battle_modal_open():
 		var action: Callable = _threat_inputs.pop_front()
 		action.call()
 
@@ -5783,7 +5788,11 @@ func _auto_end(id: String) -> void:
 
 
 func _auto_end_finish(id: String) -> void:
-	if _queue_threat_input(_auto_end_finish.bind(id)):
+	var finish := _auto_end_finish.bind(id)
+	if _queue_threat_input(finish):
+		return
+	if _battle_modal_open():
+		_threat_inputs.append(finish)
 		return
 	ending = false
 	if is_inside_tree() and not ended and _can_act() and _active_id() == id and _nothing_left(id):
@@ -7281,6 +7290,9 @@ func _process(dt: float) -> void:
 	_step_cut_overlays(dt)
 	if api == null:
 		return
+	# The worker may be done already. Retry orders held by playback or a modal as soon as the player can act again.
+	if not _threat_inputs.is_empty():
+		_replay_threat_inputs(_gen)
 	# issue 1451: the rules packed this round's start; save it once its animations have played and the player has the turn
 	if round_save_cb.is_valid() and _can_act() and int(api.round_snap_round) > round_saved:
 		round_saved = int(api.round_snap_round)
