@@ -1,0 +1,37 @@
+# Stale work sweep (ways-of-working audit, Nov 25 2026). Every two hours, list work that was done but is not moving
+# (contrib/opus/tools/stale_work.js) and send any job branch that never got a pull request back through auto-pr
+# (codex/issue-2148 and 2149 were pushed during the Nov 25 GitHub outage and sat with none). Reads with REST only.
+# The report goes to this run's summary and, when the STALE_ISSUE variable names an issue, replaces that issue's body.
+name: stale-work
+on:
+  schedule:
+    - cron: '17 */2 * * *'
+  workflow_dispatch:
+concurrency:
+  group: stale-work
+  cancel-in-progress: true
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write      # only the STALE_ISSUE body
+  actions: write     # only to start auto-pr for a branch with no PR
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/workflows
+            contrib/opus/tools/stale_work.js
+          sparse-checkout-cone-mode: false
+      - name: Sweep
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STALE_ISSUE: ${{ vars.STALE_ISSUE }}
+        run: |
+          set -e
+          extra=""
+          if [ -n "$STALE_ISSUE" ]; then extra="--issue $STALE_ISSUE"; fi
+          node contrib/opus/tools/stale_work.js --github --dispatch $extra

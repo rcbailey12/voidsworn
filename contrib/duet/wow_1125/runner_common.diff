@@ -1,0 +1,13 @@
+--- vs/tools/pc/runner_common.ps1	2026-11-25 17:23:38.877403975 +0000
++++ fixes/tools/pc/runner_common.ps1	2026-11-25 17:52:15.387389482 +0000
+@@ -1589,7 +1589,9 @@
+     $reuse = Can-ReuseRepo $repo $mirror $patterns
+     if ($reuse) {
+       # --prune: a reused slot must drop a branch GitHub deleted, or a rerun would continue its stale tip (PR 1804).
+-      Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags','--no-auto-maintenance','--prune',$mirror,'+refs/heads/*:refs/remotes/origin/*')
++      # A lane never reads the relay result branches (board/pc-out-*: 348 of them held over 21.9 GB on Nov 25), so it never
++      # copies them (ways-of-working audit). Needs git 2.29 or newer for the '^' (leave-out) refspec.
++      Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags','--no-auto-maintenance','--prune',$mirror,'+refs/heads/*:refs/remotes/origin/*','^refs/heads/board/pc-out-*')
+     }
+     # A pinned lane must not hold the shared mirror lock for the ten-minute preservation wait.
+     if (-not $reuse) { Keep-Repo $repo 'kept' }

@@ -1,0 +1,54 @@
+--- ../guard.orig.cjs	2026-11-25 17:48:58.542942594 +0000
++++ .claude/hooks/guard.cjs	2026-11-25 17:55:39.625296817 +0000
+@@ -162,6 +162,18 @@
+         'Everything else goes through an issue branch and a pull request.';
+     }
+   }
++  // Every branch's checks merge main in: a log row that fails these lints turns every pushed branch red (Nov 23,
++  // b63f3be6 to 1c295417). Run them on the tip before it lands. The working tree must hold the tip's logs.
++  const top = git(cwd, ['rev-parse', '--show-toplevel']).trim();
++  if (git(cwd, ['diff', '--name-only', tip, '--', ...boardLogs]).trim()) return 'Commit the Board logs before pushing them to main.';
++  for (const lint of ['contrib/opus/tools/memory_lint_tests.js', 'contrib/opus/tools/doc_check_tests.js']) {
++    if (!fs.existsSync(path.join(top, lint))) continue;
++    const run = spawnSync(process.execPath, [path.join(top, lint)], { cwd: top, encoding: 'utf8', timeout: 30000, windowsHide: true });
++    if (run.status !== 0) {
++      const fails = String((run.stdout || '') + (run.stderr || '')).split(/\r?\n/).filter(line => /^FAIL/.test(line)).slice(0, 5);
++      return 'The Board logs fail ' + path.basename(lint) + ' at this tip, so every branch would go red after merging main:\n' + fails.join('\n');
++    }
++  }
+ }
+ 
+ // git push options that take a separate value.
+@@ -190,8 +202,8 @@
+       positional.push(word);
+     }
+   }
+-  if (options.some(option => /^--(?:all|mirror|branches)$/.test(option))) {
+-    return 'Push named branches instead of --all, --mirror or --branches, so main cannot move by accident.';
++  if (options.some(option => /^--(?:all|mirror|branches)$/.test(option)) || positional.slice(1).some(spec => spec.includes('*'))) {
++    return 'Push named branches instead of --all, --mirror, --branches or a wildcard refspec, so main cannot move by accident.';
+   }
+   const deleting = options.some(option => option === '--delete' || option === '-d');
+   const forced = options.some(option => /^(?:-f|--force|--force-with-lease(?:=.*)?|--force-if-includes)$/.test(option) ||
+@@ -256,6 +268,10 @@
+     const mentionsPush = /\bgit(?:\.exe)?\b[\s\S]*\bpush\b|\bgit[- ]send-pack\b/i.test(segment);
+     if (!mentionsPush) continue;
+     if (words && /^git(?:\.exe)?$/i.test(words[0])) {
++      // git -c alias.x=push x ... is a push under another name (Fable's audit of PR 1706).
++      if (words.some((word, i) => words[i - 1] === '-c' && /^alias\./i.test(word) && /\bpush\b/.test(word))) {
++        return 'Run this push as a plain git push command, not through an alias.';
++      }
+       if (gitSubcommand(words) !== 'push') continue;
+       const others = segments.filter(part => part !== raw && !/^cd\s/.test(part));
+       const reason = gitPush(here, words, others.length === 0);
+@@ -297,6 +313,10 @@
+ 
+ function ghApiPolicy(command) {
+   if (!/\bgh(?:\.exe)?\s+api\b/i.test(command)) return;
++  // POST /repos/o/r/merges merges any branch into main with no pull request and no checks.
++  if (/\/merges\b/i.test(command) && /(?:--method|-X)(?:\s+|=)POST\b|(?:--(?:raw-)?field|-[fF])[\s=]/i.test(command)) {
++    return 'Merge through a pull request (pulls/<n>/merge), not the branch merges API.';
++  }
+   const contents = /\/contents(?:\/|\b)/i.test(command);
+   const refs = /\/git\/(?:refs|matching-refs)(?:\/|\b)/i.test(command);
+   if (!contents && !refs) return;

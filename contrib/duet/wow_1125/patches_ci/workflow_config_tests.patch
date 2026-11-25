@@ -1,0 +1,11 @@
+--- ../workflow_config_tests.orig.js	2026-11-25 17:54:24.115324594 +0000
++++ contrib/opus/tools/workflow_config_tests.js	2026-11-25 17:54:24.124894209 +0000
+@@ -49,7 +49,7 @@
+   ['neon/issue-12-partial', false, false],
+   // A nested Muse branch gets checks but no pull request (auto_pr.yml opens PRs for one-level muse/<name> only).
+   ['muse/a/b', false, true],
+-  ['claude/project-thread-x', false, false],
++  ['claude/project-thread-x', false, true],
+   ['main', false, false],
+ ];
+ for (const [branch, wantPr, wantChecks] of cases) {

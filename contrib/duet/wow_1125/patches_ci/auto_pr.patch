@@ -1,0 +1,33 @@
+--- ../auto_pr.orig.yml	2026-11-25 17:51:14.041701259 +0000
++++ .github/workflows/auto_pr.yml	2026-11-25 17:52:13.396982503 +0000
+@@ -34,6 +34,8 @@
+   pull-requests: write
+ jobs:
+   open-pr:
++    # A merged PR's branch is deleted (delete_branch_on_merge), and a deletion is a push with no head commit.
++    if: ${{ !github.event.deleted }}
+     runs-on: ubuntu-latest
+     # A hung gh call used to hold a runner for the default 360 minutes (issue 1488, audit GH-06).
+     timeout-minutes: 5
+@@ -192,12 +194,21 @@
+               opus/*) echo "PR already open for $BRANCH" ;;
+               *)
+                 pr=$(open_prs '.[0].number')
++                # A merge-main commit carries no run report: keep the text the run wrote (PRs 2105, 2086 and 9 more
++                # merged with a merge commit's message as their whole body, Nov 22 to 25).
++                parents=$(gh api "repos/$REPO/commits/$GITHUB_SHA" --jq '.parents | length' 2>/dev/null) || parents=1
++                case "$parents" in ''|*[!0-9]*) parents=1 ;; esac
++                if [ "$parents" -gt 1 ]; then echo "head $GITHUB_SHA is a merge commit: PR $pr text kept"; exit 0; fi
+                 # Issue 1135 kept the Board's "Refs #N" on refresh; since Nov 23 every refresh says Refs (refs_only).
+                 body=$(printf '%s\n' "$TITLE" | tail -n +2)
+                 printf '%s\n\nRefreshed from the latest push to branch %s. The Board reviews and merges.\n' "$body" "$BRANCH" > body.md
+                 refs_only
+                 guard_standing
+                 limit_body
++                # Anything the Board or a reviewer writes under this line survives every refresh.
++                keep='<!-- kept on refresh: notes and evidence below -->'
++                gh api "repos/$REPO/pulls/$pr" --jq .body | sed -n "\|^$keep\$|,\$p" > kept.md
++                if [ -s kept.md ]; then { printf '\n'; cat kept.md; } >> body.md; limit_body; fi
+                 gh api -X PATCH "repos/$REPO/pulls/$pr" -F body=@body.md --silent && echo "PR $pr text refreshed"
+                 ;;
+             esac

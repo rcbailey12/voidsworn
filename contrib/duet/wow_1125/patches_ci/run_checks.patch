@@ -1,0 +1,19 @@
+--- ../run_checks.orig.sh	2026-11-25 17:50:28.115725927 +0000
++++ godot/tools/ci/run_checks.sh	2026-11-25 17:50:28.125982429 +0000
+@@ -56,6 +56,16 @@
+ mine=$(awk -F'|' -v i="$si" '$1 == i' "$T/plan.txt" | grep -vc '|step:')
+ est=$(awk -F'|' -v i="$si" '$2 == i {print $3}' "$T/loads.txt")
+ echo "  shard: $si of $sn, $mine checks, about $est s by the recorded times"
++# The shard count lives in the branch's own checks.yml, but this list comes from main after the merge: a branch cut
++# before a shard bump gets more checks than its budget holds and fails checks it never ran. Raise the budget to the
++# plan plus 15 percent (never past the 1080 s one-job limit) and say so; warn when a shard plans past 80 percent.
++need=$(( ${est:-0} * 115 / 100 )); [ "$need" -gt 1080 ] && need=1080
++if [ "$need" -gt "$BUDGET" ]; then
++  echo "  shard: WARN, $est s planned for a $BUDGET s budget; budget raised to $need s. Merge main into this branch or add shards."
++  BUDGET=$need
++elif [ $(( ${est:-0} * 100 )) -gt $(( BUDGET * 80 )) ]; then
++  echo "  shard: WARN, $est s planned is over 80 percent of the $BUDGET s budget; add a shard in checks.yml soon."
++fi
+ if [ "${GODOT_CHECKS_PLAN:-0}" = 1 ]; then cat "$T/plan.txt"; exit 0; fi
+ 
+ # 1. the list is whole (shard 1 only: the list and the plan are the same on every shard)

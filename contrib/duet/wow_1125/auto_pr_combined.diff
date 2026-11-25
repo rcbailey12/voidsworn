@@ -1,0 +1,59 @@
+--- vs/.github/workflows/auto_pr.yml	2026-11-25 17:23:38.217879360 +0000
++++ sim_both/.github/workflows/auto_pr.yml	2026-11-25 18:00:27.252315580 +0000
+@@ -24,6 +24,9 @@
+       - '!neon/issue-*-partial'
+       - '!muse/wip-*'
+       # Keep these '!' lines in step with checks.yml (issue 1488); contrib/opus/tools/workflow_config_tests.js checks both.
++  # stale_work.yml starts this for a job branch whose push opened no PR (a GitHub outage, Nov 25: 2148 and 2149).
++  # GitHub runs a dispatch on the branch it names, so github.ref_name is that branch, as on a push.
++  workflow_dispatch:
+ # One run at a time per branch, in order (never cancelled): Muse pushes a new branch and its first commit a second apart,
+ # and two runs racing each other both saw no pull request, so the slower one failed on 'already exists' (Nov 10, PR 409).
+ concurrency:
+@@ -34,6 +37,8 @@
+   pull-requests: write
+ jobs:
+   open-pr:
++    # A merged PR's branch is deleted (delete_branch_on_merge), and a deletion is a push with no head commit.
++    if: ${{ !github.event.deleted }}
+     runs-on: ubuntu-latest
+     # A hung gh call used to hold a runner for the default 360 minutes (issue 1488, audit GH-06).
+     timeout-minutes: 5
+@@ -145,7 +150,14 @@
+             mv body-short.md body.md
+           }
+           # Read large messages from the payload rather than passing them in the process environment.
+-          TITLE=$(jq -r '.head_commit.message' "$GITHUB_EVENT_PATH")
++          TITLE=$(jq -r '.head_commit.message // empty' "$GITHUB_EVENT_PATH")
++          # A dispatch has no head commit in its event: read the branch tip's message instead.
++          if [ -z "$TITLE" ]; then TITLE=$(gh api "repos/$REPO/commits/$BRANCH" --jq .commit.message); fi
++          # A dispatch can name any branch: only the job branches the push list above covers get a PR.
++          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
++            case "$BRANCH" in codex/issue-*|work/issue-*|opus/issue-*|neon/issue-*|muse/*) ;; *) echo "not a job branch: $BRANCH"; exit 0 ;; esac
++            case "$BRANCH" in muse/wip-*|muse/*/*) echo "not a job branch: $BRANCH"; exit 0 ;; esac
++          fi
+           # A Muse branch without issue-<n> in its name (Nov 17 audit fix D) gets a PR titled from its commit and no closing word.
+           n=""; arm=""
+           if printf '%s' "$BRANCH" | grep -qE 'issue-[0-9]+'; then
+@@ -192,12 +204,21 @@
+               opus/*) echo "PR already open for $BRANCH" ;;
+               *)
+                 pr=$(open_prs '.[0].number')
++                # A merge-main commit carries no run report: keep the text the run wrote (PRs 2105, 2086 and 9 more
++                # merged with a merge commit's message as their whole body, Nov 22 to 25).
++                parents=$(gh api "repos/$REPO/commits/$GITHUB_SHA" --jq '.parents | length' 2>/dev/null) || parents=1
++                case "$parents" in ''|*[!0-9]*) parents=1 ;; esac
++                if [ "$parents" -gt 1 ]; then echo "head $GITHUB_SHA is a merge commit: PR $pr text kept"; exit 0; fi
+                 # Issue 1135 kept the Board's "Refs #N" on refresh; since Nov 23 every refresh says Refs (refs_only).
+                 body=$(printf '%s\n' "$TITLE" | tail -n +2)
+                 printf '%s\n\nRefreshed from the latest push to branch %s. The Board reviews and merges.\n' "$body" "$BRANCH" > body.md
+                 refs_only
+                 guard_standing
+                 limit_body
++                # Anything the Board or a reviewer writes under this line survives every refresh.
++                keep='<!-- kept on refresh: notes and evidence below -->'
++                gh api "repos/$REPO/pulls/$pr" --jq .body | sed -n "\|^$keep\$|,\$p" > kept.md
++                if [ -s kept.md ]; then { printf '\n'; cat kept.md; } >> body.md; limit_body; fi
+                 gh api -X PATCH "repos/$REPO/pulls/$pr" -F body=@body.md --silent && echo "PR $pr text refreshed"
+                 ;;
+             esac

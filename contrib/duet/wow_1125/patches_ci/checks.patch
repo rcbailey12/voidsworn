@@ -1,0 +1,119 @@
+--- ../checks.orig.yml	2026-11-25 17:50:58.668380993 +0000
++++ .github/workflows/checks.yml	2026-11-25 17:54:24.124681417 +0000
+@@ -18,6 +18,7 @@
+       - 'work/**'
+       - 'opus/**'
+       - 'neon/**'
++      - 'claude/**'      # Claude cloud threads (claude/project-thread-*): 12 of 171 merges Nov 22 to 25 had no automatic run
+       # A run the PC runner marks partial pushes to <branch>-partial: a mid-work snapshot that fails by nature and opens no
+       # pull request, so it gets no checks (each failure mailed Ryan; Nov 15, "I keep seeing GitHub errors"). The resumed
+       # run's own branch is checked when it lands.
+@@ -29,6 +30,7 @@
+       # audit GH-06: each scratch push used to start a full run). Keep these '!' lines in step with auto_pr.yml;
+       # contrib/opus/tools/workflow_config_tests.js holds the two lists against each other.
+       - '!muse/wip-**'
++  workflow_call:      # main_checks.yml tests main after each merge
+   workflow_dispatch:
+     inputs:
+       base:
+@@ -47,6 +49,7 @@
+   # hand runs every check. "All checks" at the end always reports one pass or fail mark, skipped jobs included.
+   changes:
+     name: What changed (docs-only pushes skip the Godot jobs)
++    if: ${{ !github.event.deleted }}   # a branch deletion is a push too: nothing to test
+     runs-on: ubuntu-latest
+     timeout-minutes: 5
+     outputs:
+@@ -70,6 +73,10 @@
+             say "Started by hand or on main with no base: every check runs."; echo "godot=true" >> "$GITHUB_OUTPUT"; exit 0
+           fi
+           base=${BASE:-main}
++          # A new branch at main's tip (Muse pushes the branch a second before its first commit) has nothing to test.
++          if git fetch -q --no-tags --filter=blob:none origin "$base" && [ "$(git rev-parse FETCH_HEAD)" = "$(git rev-parse HEAD)" ]; then
++            say "Nothing ahead of $base yet: the Godot jobs are skipped."; echo "godot=false" >> "$GITHUB_OUTPUT"; exit 0
++          fi
+           if git fetch -q --no-tags --filter=blob:none --unshallow origin "$base" \
+              && git diff --name-only --no-renames "$(git rev-parse FETCH_HEAD)...HEAD" > "$RUNNER_TEMP/changed.txt"; then
+             node tools/ci/docs_only.js "$RUNNER_TEMP/changed.txt" | tee "$RUNNER_TEMP/verdict.txt"
+@@ -85,13 +92,23 @@
+           fi
+   standing-checks:
+     name: Standing checks (rules, text, saves)
++    if: ${{ !github.event.deleted }}
+     runs-on: ubuntu-latest
+     timeout-minutes: 20
+     steps:
+-      # This commit's files only (blob:none): no 10 GB history. merge-main fetches the history it needs without contents.
++      # The PC lanes' lean tree (runner_common.ps1, issue 1739): 0.6 GB instead of 2.3 GB. sparse_check_inputs.js answers
++      # the left-out files from the index, so every row gives the same verdict (checked on 96149fb, 127 rows).
+       - uses: actions/checkout@v4
+         with:
+           filter: blob:none
++          sparse-checkout-cone-mode: false
++          sparse-checkout: |
++            /*
++            !/docs/shots/
++            !/docs/ship_pipeline/build_sheets/
++            !/contrib/muse/design/
++            !/hulls_hi/
++            !/rocks_hi/
+       - uses: actions/setup-node@v4
+         with:
+           node-version: 22
+@@ -203,7 +220,7 @@
+   # godot/tools/ci/godot_check_times.txt; shard 1 also proves the list is whole and plays the bot battle. "All checks"
+   # reads the four as one result (needs.godot-game fails if any shard fails). 921 s in one job on Nov 22 2026.
+   godot-game:
+-    name: Godot game checks (${{ matrix.shard }} of 4)
++    name: Godot game checks (${{ matrix.shard }} of 5)
+     needs: changes
+     if: needs.changes.outputs.godot == 'true'
+     runs-on: ubuntu-latest
+@@ -211,7 +228,7 @@
+     strategy:
+       fail-fast: false
+       matrix:
+-        shard: [1, 2, 3, 4]
++        shard: [1, 2, 3, 4, 5]   # 390 s each by the recorded times (4 shards: 487 s of the 600 s budget, Nov 25)
+     env:
+       XDG_DATA_HOME: ${{ github.workspace }}/.godot_user   # user:// for every Godot run here; never a real profile
+     steps:
+@@ -257,10 +274,10 @@
+       # (b) this shard's headless checks named in godot/tools/ci/godot_checks.txt (shard 1 also proves the list names every
+       # test script). Each shard has a 600 s budget (about 405 s each planned on Nov 24 2026, issue 1957; shard 2 of 3 had reached 590 s); a check the budget never reached
+       # counts as failed.
+-      - name: Headless Godot checks from the list (shard ${{ matrix.shard }} of 4)
++      - name: Headless Godot checks from the list (shard ${{ matrix.shard }} of 5)
+         if: ${{ !cancelled() && steps.load.outcome == 'success' }}
+         env:
+-          SHARD: ${{ matrix.shard }}/4
++          SHARD: ${{ matrix.shard }}/5
+           GODOT_CHECKS_BUDGET: 600
+         run: |
+           sh godot/tools/ci/run_checks.sh 2>&1 | tee "$RUNNER_TEMP/run_checks.log"; code=${PIPESTATUS[0]}
+@@ -298,10 +315,13 @@
+     env:
+       XDG_DATA_HOME: ${{ github.workspace }}/.godot_user
+     steps:
+-      # This commit's files only (blob:none): no 10 GB history. merge-main fetches the history it needs without contents.
++      # Root files, tools/ and godot/ only (sheet_fixture_hash.py, the Blender kit and the seam check): 0.3 GB, not 2.3 GB.
+       - uses: actions/checkout@v4
+         with:
+           filter: blob:none
++          sparse-checkout: |
++            tools
++            godot
+       - uses: ./.github/actions/merge-main
+       - name: Is the A16 fixture record fresh? (sheet_fixture_hash.py --check)
+         id: record
+@@ -340,7 +360,9 @@
+   # One mark for the whole run (issue 1487): passes when every job passed or was skipped as docs-only, fails otherwise.
+   all-checks:
+     name: All checks
+-    if: ${{ always() }}
++    # !cancelled(), not always(): a run cancelled by a newer push on the branch posts no red mark (and no mail) on the
++    # superseded commit. A job that fails or times out inside a live run still fails this one.
++    if: ${{ !cancelled() && !github.event.deleted }}
+     needs: [changes, standing-checks, godot-parity, rules-safety, godot-game, a16-fixture]
+     runs-on: ubuntu-latest
+     timeout-minutes: 2

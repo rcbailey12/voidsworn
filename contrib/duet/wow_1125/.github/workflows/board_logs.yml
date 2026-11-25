@@ -1,0 +1,31 @@
+# The Board pushes LOOP.md and FINDINGS.md straight to main (R102), so no branch run checks them, and every branch
+# merges main in: on Nov 23 three such pushes left main failing memory_lint_tests (R428, R436, R439), which turned
+# every branch pushed meanwhile red. This says so within a minute of the push.
+name: board logs
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'contrib/opus/LOOP.md'
+      - 'contrib/opus/FINDINGS.md'
+permissions:
+  contents: read
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs/shots/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: The checks that read the Board logs
+        run: |
+          node contrib/opus/tools/memory_lint_tests.js
+          node contrib/opus/tools/doc_check_tests.js

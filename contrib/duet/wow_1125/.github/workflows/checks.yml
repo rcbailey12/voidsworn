@@ -1,0 +1,378 @@
+# Automatic checks on every agent branch (Ryan, Nov 2 2026, FINDINGS R75). One run per push since issue 359.
+# Every push to a codex/, muse/, work/ or opus/ branch gets a pass or fail mark on its head commit, and the pull request
+# of that branch shows it, before the Board reviews it.
+# Why this starts on "push" and not on "pull_request" (Nov 10 2026): auto_pr.yml opens the pull request with GitHub's own
+# token, and GitHub holds every pull_request run of a bot-opened pull request until a person approves it. Nobody did, so
+# that run never started a job, and when the pull request was merged it turned into a failed run with no jobs: one
+# failure email per pull request. auto_pr.yml started a second run by hand to get round that, so every later push ran
+# all the checks twice. A push made with a person's token (the PC, Muse, a Claude thread) starts this workflow once.
+# A branch with any other name gets no automatic run: open its pull request by hand and start the checks by hand
+# (Actions tab, "checks", "Run workflow", pick the branch; or: gh workflow run checks.yml --ref <branch>).
+# Each job merges main into its checkout first, so it tests what would land, as the old pull_request runs did.
+name: checks
+on:
+  push:
+    branches:
+      - 'codex/**'
+      - 'muse/**'
+      - 'work/**'
+      - 'opus/**'
+      - 'neon/**'
+      - 'claude/**'      # Claude cloud threads (claude/project-thread-*): 12 of 171 merges Nov 22 to 25 had no automatic run
+      # A run the PC runner marks partial pushes to <branch>-partial: a mid-work snapshot that fails by nature and opens no
+      # pull request, so it gets no checks (each failure mailed Ryan; Nov 15, "I keep seeing GitHub errors"). The resumed
+      # run's own branch is checked when it lands.
+      - '!codex/**-partial'
+      - '!work/**-partial'
+      - '!opus/**-partial'
+      - '!neon/**-partial'
+      # A Muse scratch branch (muse/wip-<name>) opts out of a pull request in auto_pr.yml and of checks here too (issue 1488,
+      # audit GH-06: each scratch push used to start a full run). Keep these '!' lines in step with auto_pr.yml;
+      # contrib/opus/tools/workflow_config_tests.js holds the two lists against each other.
+      - '!muse/wip-**'
+  workflow_call:      # main_checks.yml tests main after each merge
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'Leave empty to run every check. Or a branch or commit: the Godot jobs then run only if this run changes non-docs files compared with it (issue 1487).'
+        required: false
+        default: ''
+# Read-only token: no step here writes to the repo, issues or pull requests (issue 1488, audit GH-06).
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}-${{ github.event_name }}   # issue 1507: a by-hand run no longer cancels the push run
+  cancel-in-progress: true
+jobs:
+  # Issue 1487 (audit GH-03): a push that changes only writing and pictures (tools/ci/docs_only.js says exactly which files
+  # count) skips the four Godot jobs; the standing checks always run. Any other file, a failed lookup or a run started by
+  # hand runs every check. "All checks" at the end always reports one pass or fail mark, skipped jobs included.
+  changes:
+    name: What changed (docs-only pushes skip the Godot jobs)
+    if: ${{ !github.event.deleted }}   # a branch deletion is a push too: nothing to test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      godot: ${{ steps.classify.outputs.godot }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            tools/ci
+            .github/workflows
+      - name: Docs only, or code too?
+        id: classify
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ inputs.base }}
+        run: |
+          node tools/ci/docs_only.js --self-test
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          if [ -z "$BASE" ] && { [ "$EVENT" = workflow_dispatch ] || [ "$GITHUB_REF" = refs/heads/main ]; }; then
+            say "Started by hand or on main with no base: every check runs."; echo "godot=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          base=${BASE:-main}
+          # A new branch at main's tip (Muse pushes the branch a second before its first commit) has nothing to test.
+          if git fetch -q --no-tags --filter=blob:none origin "$base" && [ "$(git rev-parse FETCH_HEAD)" = "$(git rev-parse HEAD)" ]; then
+            say "Nothing ahead of $base yet: the Godot jobs are skipped."; echo "godot=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if git fetch -q --no-tags --filter=blob:none --unshallow origin "$base" \
+             && git diff --name-only --no-renames "$(git rev-parse FETCH_HEAD)...HEAD" > "$RUNNER_TEMP/changed.txt"; then
+            node tools/ci/docs_only.js "$RUNNER_TEMP/changed.txt" | tee "$RUNNER_TEMP/verdict.txt"
+          else
+            echo "docs_only=false" > "$RUNNER_TEMP/verdict.txt"; echo "could not compare with $base"
+          fi
+          if grep -qx 'docs_only=true' "$RUNNER_TEMP/verdict.txt"; then
+            say "Docs-only change compared with $base: the Godot jobs are skipped. $(sed -n 2p "$RUNNER_TEMP/verdict.txt")"
+            echo "godot=false" >> "$GITHUB_OUTPUT"
+          else
+            say "Code changed compared with $base (or the comparison failed): every check runs. $(sed -n 2p "$RUNNER_TEMP/verdict.txt")"
+            echo "godot=true" >> "$GITHUB_OUTPUT"
+          fi
+  standing-checks:
+    name: Standing checks (rules, text, saves)
+    if: ${{ !github.event.deleted }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # The PC lanes' lean tree (runner_common.ps1, issue 1739): 0.6 GB instead of 2.3 GB. sparse_check_inputs.js answers
+      # the left-out files from the index, so every row gives the same verdict (checked on 96149fb, 127 rows).
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs/shots/
+            !/docs/ship_pipeline/build_sheets/
+            !/contrib/muse/design/
+            !/hulls_hi/
+            !/rocks_hi/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Issue 1488: the fleet page must be current on the branch as pushed and again after main is merged in. A stale
+      # combined page fails here: merge main into the branch, run fleet_list.js --write, and commit docs/ship_pipeline/FLEET.md.
+      - name: Fleet page current on the branch
+        run: node contrib/opus/tools/fleet_list.js --check-page
+      - uses: ./.github/actions/merge-main
+      - name: Fleet page current after merging main
+        run: node contrib/opus/tools/fleet_list.js --check-page
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Picture provenance and detail check self-test dependencies
+        run: python -m pip install Pillow numpy
+      - name: No em dashes in changed text files (house rule)
+        run: node contrib/opus/tools/check_em_dashes.js
+      - name: Run all standing checks
+        run: node contrib/opus/tools/run_all_checks.js --jobs 4   # issue 1489: four rows at once, same table
+  godot-parity:
+    name: Godot rules (saved results)
+    needs: changes
+    if: needs.changes.outputs.godot == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # This commit's files only (blob:none), minus the review pictures no Godot check reads (docs/shots, 1.1 GB, and
+      # contrib/muse, 0.13 GB; checked Nov 21 2026, issue 1487). If a Godot check ever needs them, delete the two '!' lines.
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs/shots/
+            !/contrib/muse/
+      - uses: ./.github/actions/merge-main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Get Godot 4.7.2 (headless, from main's cache)
+        id: godot
+        uses: ./.github/actions/setup-godot
+      # The Godot checks below each run even when an earlier one fails, so one red run shows every failure.
+      # Each script prints PASS or FAIL and exits 1 on any FAIL, which fails this job and the PR (issue #264).
+      # Issue 1654 (R405, Ryan Nov 22 2026): the browser rules twin is retired. Godot is the only rules source; every battle,
+      # seeded campaign run and Nemesis scenario is compared byte for byte with the reviewed saved Godot results in the repo.
+      - name: Rules, every battle against the saved Godot results
+        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        run: sh godot/rules/test/run_parity.sh
+      - name: Saved results this branch changes compared with main
+        if: ${{ always() }}
+        run: node godot/rules/test/saved/diff_vs_main.js origin/main "$RUNNER_TEMP/saved_changes_vs_main.txt"
+      - name: Keep changed-battles evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: saved-godot-results
+          if-no-files-found: ignore
+          path: |
+            ${{ runner.temp }}/voidsworn-parity-*/changed-battles.txt
+            ${{ runner.temp }}/voidsworn-parity-*/saved_summary.json
+            ${{ runner.temp }}/voidsworn-parity-*/summary.json
+            ${{ runner.temp }}/saved_changes_vs_main.txt
+      - name: Campaign, 30 seeded runs and the Nemesis scenarios against the saved Godot results
+        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        run: sh godot/campaign/test/run_campaign_checks.sh 1 30
+      - name: Tree hand-off (campaign picks reach the battle)
+        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        run: '"$GODOT" --headless --path godot --script res://campaign/test/tree_handoff_test.gd'
+  # Issue 979: Godot-only rules safety net: every battle with scoring caches on and off, byte for byte, plus the ruled
+  # numbers test. Its own job, so it adds no time to the saved-results job (kept as is after the twin's retirement, R405).
+  rules-safety:
+    name: Rules safety net (Godot only)
+    needs: changes
+    if: needs.changes.outputs.godot == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      # This commit's files only (blob:none), minus the review pictures no Godot check reads (docs/shots, 1.1 GB, and
+      # contrib/muse, 0.13 GB; checked Nov 21 2026, issue 1487). If a Godot check ever needs them, delete the two '!' lines.
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs/shots/
+            !/contrib/muse/
+      - uses: ./.github/actions/merge-main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Get Godot 4.7.2 (headless, from main's cache)
+        uses: ./.github/actions/setup-godot
+      - name: Run Godot-only rules safety net
+        run: sh godot/rules/test/safety/run_cache_check.sh
+  # Issue 359: GitHub opens the game the player sees (the battle scene, HUD, effects, world, story), not only the rules.
+  # Its own job, so it runs beside the parity job and has its own 25 minute limit per shard. Ship files (godot/gen) are never on
+  # GitHub: ships are placeholder blocks.
+  # The load step is the gate: when a script or scene does not load, the job fails there in seconds and names the file,
+  # and the steps after it do not run (they would only repeat the same error, some by waiting out their time limits).
+  # When everything loads, the list step and the bot battle each run even if the other fails. Every step has its own
+  # time limit: load 120 s, import 300 s, the shard's part of the list 600 s (the whole list had 1080 s in one job before
+  # issue 1430) and the bot battle 360 s (shard 1 only), 23 minutes in all (the A16 seam has its own job, issue 1174)
+  # before setup and the Godot download, so a shard can still be cut off (shown as "cancelled") by the 25 minute limit
+  # when every step runs to its cap, as on the broken test commit 138ff38; the load gate makes that rare (audit 706, 9c).
+  # Four shards in parallel (issues 1430, 1957): run_checks.sh gives every headless check to exactly one shard, balanced by
+  # godot/tools/ci/godot_check_times.txt; shard 1 also proves the list is whole and plays the bot battle. "All checks"
+  # reads the four as one result (needs.godot-game fails if any shard fails). 921 s in one job on Nov 22 2026.
+  godot-game:
+    name: Godot game checks (${{ matrix.shard }} of 5)
+    needs: changes
+    if: needs.changes.outputs.godot == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5]   # 390 s each by the recorded times (4 shards: 487 s of the 600 s budget, Nov 25)
+    env:
+      XDG_DATA_HOME: ${{ github.workspace }}/.godot_user   # user:// for every Godot run here; never a real profile
+    steps:
+      # This commit's files only (blob:none), minus the review pictures no Godot check reads (docs/shots, 1.1 GB, and
+      # contrib/muse, 0.13 GB; checked Nov 21 2026, issue 1487). If a Godot check ever needs them, delete the two '!' lines.
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs/shots/
+            !/contrib/muse/
+      - uses: ./.github/actions/merge-main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Get Godot 4.7.2 (headless, from main's cache)
+        id: godot
+        uses: ./.github/actions/setup-godot
+      # (a) typo insurance: compiles every .gd file and loads every .tscn under godot/ (nothing runs). No asset import is
+      # needed: no script or scene preloads a texture or sound. Fails on any file that does not load and on any SCRIPT ERROR.
+      - name: Load every Godot script and scene (typo check)
+        id: load
+        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        run: |
+          timeout -k 10 120 "$GODOT" --headless --path godot --script res://tools/ci/load_all.gd 2>&1 | tee "$RUNNER_TEMP/load_all.log"; code=${PIPESTATUS[0]}
+          { echo '### Load every Godot script and scene'; echo '```'; grep -E '^load all:' "$RUNNER_TEMP/load_all.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          bad=0
+          if grep -q 'SCRIPT ERROR' "$RUNNER_TEMP/load_all.log"; then echo "SCRIPT ERROR lines above"; bad=1; fi
+          if [ $code -ne 0 ]; then echo "load_all.gd ended with exit code $code (124 or 137 is its 120 s time limit)"; bad=1; fi
+          if [ $bad -ne 0 ]; then
+            echo 'The Godot checks after this step were not run: a file above does not load. Repair it first.' | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      # The game's fonts, crests, world and effect textures and rock models, imported as the editor would, so the checks
+      # below draw with them. From main's cache, re-importing only what changed (issue 1495); fails on a real import error,
+      # and the checks below still run. Details in .github/actions/godot-import/action.yml.
+      - name: Import the game's fonts and textures (headless, from main's cache)
+        id: import
+        if: ${{ !cancelled() && steps.load.outcome == 'success' }}
+        uses: ./.github/actions/godot-import
+      # (b) this shard's headless checks named in godot/tools/ci/godot_checks.txt (shard 1 also proves the list names every
+      # test script). Each shard has a 600 s budget (about 405 s each planned on Nov 24 2026, issue 1957; shard 2 of 3 had reached 590 s); a check the budget never reached
+      # counts as failed.
+      - name: Headless Godot checks from the list (shard ${{ matrix.shard }} of 5)
+        if: ${{ !cancelled() && steps.load.outcome == 'success' }}
+        env:
+          SHARD: ${{ matrix.shard }}/5
+          GODOT_CHECKS_BUDGET: 600
+        run: |
+          sh godot/tools/ci/run_checks.sh 2>&1 | tee "$RUNNER_TEMP/run_checks.log"; code=${PIPESTATUS[0]}
+          { echo "### Godot checks from the list (shard $SHARD)"; echo '```'; grep -E '^  [a-z0-9_]+: |^  list: |^Ran |^PASS|^FAIL' "$RUNNER_TEMP/run_checks.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit $code
+      # (c) one battle reached from a real campaign start, played to its end by the game's AI on both sides in the real
+      # battle scene. Fails on any script error and on any "unknown event" line. Seeds 359, 360 and 361 rotate on UTC
+      # Mondays, with the week and seed in the summary for replay (issue 732). No retry. The driver stops itself at the
+      # first script error and at 300 s; the 360 s limit here is the backstop.
+      - name: Bot battle from a real campaign start (weekly seed rotation)
+        if: ${{ !cancelled() && steps.load.outcome == 'success' && matrix.shard == 1 }}
+        run: |
+          now=$(date -u +%s)
+          week=$(date -u -d "@$now" +%G-W%V)
+          seed=$((359 + ((now + 259200) / 604800) % 3))
+          echo "UTC week $week: seed $seed (rotation: 359, 360, 361)" | tee -a "$GITHUB_STEP_SUMMARY"
+          timeout -k 10 360 "$GODOT" --headless --path godot --script res://tools/ci/bot_battle.gd -- --seed "$seed" 2>&1 | tee "$RUNNER_TEMP/bot_battle.log"; code=${PIPESTATUS[0]}
+          { echo '### Bot battle'; echo '```'; grep '^bot battle:' "$RUNNER_TEMP/bot_battle.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          if grep -qE 'SCRIPT ERROR|unknown event' "$RUNNER_TEMP/bot_battle.log"; then echo "SCRIPT ERROR or unknown event lines above"; exit 1; fi
+          exit $code
+  # (d) the A16 death seam (issue 600) on its own job, so a stale fixture record never fails a branch by itself (issue 1174).
+  # The record (tools/recipe/sheet_fixture_hash.py) hashes shared kit files (kit.py, export7.py, contract.py, variants.py,
+  # gamedata.py, shared hardpoints.py and turrets.py), so every shared kit fix (R333) used to fail here until someone rebaked
+  # on the PC: 6 of 8 failed runs on Nov 19 14:00 to 15:51 UTC. Now: a fresh record runs the seam check on the committed
+  # fixture, as before. A stale record bakes A16 again here with pinned Blender 4.5.14 (one copy cached on main, issue 1487), into the runner's temp
+  # folder only, and runs the same seam check on that bake: a clean seam passes, with "fixture record stale: refresh before
+  # merge" in the summary; a seam failure on the fresh bake fails. A broken record (missing or unreadable) still fails.
+  # godot/tools/ci/godot_checks.txt marks death_seam_check.gd "step:" so the list step does not run it a second time.
+  a16-fixture:
+    name: A16 death seam (fixture or fresh bake)
+    needs: changes
+    if: needs.changes.outputs.godot == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      XDG_DATA_HOME: ${{ github.workspace }}/.godot_user
+    steps:
+      # Root files, tools/ and godot/ only (sheet_fixture_hash.py, the Blender kit and the seam check): 0.3 GB, not 2.3 GB.
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            tools
+            godot
+      - uses: ./.github/actions/merge-main
+      - name: Is the A16 fixture record fresh? (sheet_fixture_hash.py --check)
+        id: record
+        timeout-minutes: 2
+        run: |
+          set +e
+          python3 tools/recipe/sheet_fixture_hash.py --check --quiet-stale; code=$?
+          case $code in
+            0) echo "state=fresh" >> "$GITHUB_OUTPUT" ;;
+            3) echo "state=stale" >> "$GITHUB_OUTPUT"
+               echo "fixture record stale: refresh before merge (this run bakes A16 fresh and checks the seam on that bake)" | tee -a "$GITHUB_STEP_SUMMARY" ;;
+            *) echo "The fixture record is missing or unreadable (exit $code): repair it, a rebake alone will not." | tee -a "$GITHUB_STEP_SUMMARY"; exit 1 ;;
+          esac
+      - name: Get Godot 4.7.2 (headless, from main's cache)
+        uses: ./.github/actions/setup-godot
+      - name: Get Blender 4.5.14 from main's cache (stale record only)
+        if: steps.record.outputs.state == 'stale'
+        uses: ./.github/actions/setup-blender
+      - name: Bake A16 fresh into the runner's temp folder (stale record only)
+        if: steps.record.outputs.state == 'stale'
+        timeout-minutes: 8
+        run: |
+          set +e   # the step shell is bash -e: keep going after a failed bake so its log tail is printed
+          python3 tools/recipe/sheet_fixture_hash.py --bake "$BLENDER" --out "$RUNNER_TEMP/a16" > "$RUNNER_TEMP/a16_bake.log" 2>&1
+          code=$?
+          tail -40 "$RUNNER_TEMP/a16_bake.log"
+          exit $code
+      - name: Death seam check (fx/test/death_seam_check.gd)
+        timeout-minutes: 5
+        run: |
+          if [ "${{ steps.record.outputs.state }}" = "stale" ]; then ship="$RUNNER_TEMP/a16/C19_51_unbaked.glb.gz"; src="fresh bake (record stale)"; else ship=""; src="committed fixture"; fi
+          timeout -k 10 300 "$GODOT" --headless --path godot --script res://fx/test/death_seam_check.gd ${ship:+--} $ship 2>&1 | tee "$RUNNER_TEMP/death_seam.log"; code=${PIPESTATUS[0]}
+          { echo "### A16 death seam on the $src"; echo '```'; grep -E '^DEATH_SEAM (ship|fixture|machines|inside|failures)' "$RUNNER_TEMP/death_seam.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          if grep -q 'SCRIPT ERROR' "$RUNNER_TEMP/death_seam.log"; then echo "SCRIPT ERROR lines above"; exit 1; fi
+          exit $code
+  # One mark for the whole run (issue 1487): passes when every job passed or was skipped as docs-only, fails otherwise.
+  all-checks:
+    name: All checks
+    # !cancelled(), not always(): a run cancelled by a newer push on the branch posts no red mark (and no mail) on the
+    # superseded commit. A job that fails or times out inside a live run still fails this one.
+    if: ${{ !cancelled() && !github.event.deleted }}
+    needs: [changes, standing-checks, godot-parity, rules-safety, godot-game, a16-fixture]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Every job passed or was skipped for a docs-only push
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+          GODOT: ${{ needs.changes.outputs.godot }}
+        run: |
+          echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"' | tee -a "$GITHUB_STEP_SUMMARY"
+          bad=$(echo "$RESULTS" | jq -r --arg g "$GODOT" '[to_entries[] | select(.value.result != "success" and ((.value.result == "skipped" and $g == "false" and (.key | IN("godot-parity", "rules-safety", "godot-game", "a16-fixture"))) | not))] | length')
+          if [ "$bad" != 0 ]; then echo "::error::$bad job(s) failed, were cancelled, or were skipped without being one of the four Godot jobs on a docs-only verdict."; exit 1; fi
+          echo "PASS" | tee -a "$GITHUB_STEP_SUMMARY"

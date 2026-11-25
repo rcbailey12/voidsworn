@@ -1,0 +1,14 @@
+--- ../auto_pr_body_tests.orig.js	2026-11-25 17:52:05.013087421 +0000
++++ contrib/opus/tools/auto_pr_body_tests.js	2026-11-25 17:52:11.546669927 +0000
+@@ -202,4 +202,11 @@
+ assert.notEqual(down.status, 0, 'create and lookup both failed: the run must fail, not report a race');
+ assert.doesNotMatch(down.stdout, /was opened by another run/);
+ 
++// A refresh keeps whatever sits under the keep line in the PR's current body (Board notes, evidence links).
++const keepLine = '<!-- kept on refresh: notes and evidence below -->';
++const keptBody = send('edit', title + '\n\nRun 3 report', branch, 'Run 2 report\n\n' + keepLine + '\nBoard: evidence for run 2 is in comment 7131859574');
++assert.match(keptBody, /Run 3 report/);
++assert.doesNotMatch(keptBody, /Run 2 report/);
++assert.ok(keptBody.includes(keepLine + '\nBoard: evidence for run 2 is in comment 7131859574'), 'kept notes lost on refresh');
++
+ console.log('PASS auto_pr_body_tests: create and edit bound long bodies, and no PR body carries a closing word (Refs only)');

@@ -1,0 +1,17 @@
+# Test main itself after each merge (no checks ran on main before: 72 percent of merges landed after other code had
+# reached main since the PR's last push). Board log pushes skip it; a newer merge cancels an older run.
+name: main checks
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'contrib/opus/LOOP.md'
+      - 'contrib/opus/FINDINGS.md'
+permissions:
+  contents: read
+concurrency:
+  group: main-checks
+  cancel-in-progress: true
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
