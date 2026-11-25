@@ -1727,9 +1727,10 @@ func sync(fx, u: Dictionary) -> void:
 	var status = u.get("st")
 	_acid_active = status is Dictionary and status.get("acid") != null and float(status["acid"]) > 0.0
 	set_regen_lock(u.get("regenLock") != null and float(u["regenLock"]) > 0.0)
-	_shield_fraction = -1.0
-	if u.get("shp") != null and u.get("shMax") != null and float(u["shMax"]) > 0.0:
-		_shield_fraction = float(u["shp"]) / float(u["shMax"])
+	if u.has("shp") and u.has("shMax"):
+		_shield_fraction = -1.0
+		if u["shp"] != null and u["shMax"] != null and float(u["shMax"]) > 0.0:
+			_shield_fraction = float(u["shp"]) / float(u["shMax"])
 	# view() sends null for fields a unit does not have (sec and sh for squadrons): treat them as absent
 	var sec: Dictionary = u["sec"] if u.get("sec") is Dictionary else {}
 	var maxhp = maxf(float(u["maxHp"]) if u.get("maxHp") != null else 1.0, 1.0)
@@ -1791,10 +1792,10 @@ func _status_step(fx) -> void:
 			_acid_mist.mi.hide()
 			_acid_mist.mi.queue_free()
 			_acid_mist = null
-			_acid_fallback.clear()
-			_acid_next = 0.0
-			_sizzle_count = 0
-			_sizzle_next = 0.0
+		_acid_fallback.clear()
+		_acid_next = 0.0
+		_sizzle_count = 0
+		_sizzle_next = 0.0
 	elif fx.now >= _acid_next:
 		_acid_next = fx.now + 0.30
 		_emit_acid(fx)

@@ -3763,10 +3763,11 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		# R398 (1394 PC run): the main pieces' torn faces and scorched plating were built before the kill in the
 		# faction's fire colours and showed orange embers where the acid hit. Use the melt palette when the hull breaks.
 		var style := dstyle(s)
+		var rim: Color = style.get("rim", MELT_STYLE["rim"])
 		for i in n_main:
 			var mp: Dictionary = pieces[i]
 			if mp.has("cap_mat"): _style_heat(mp["cap_mat"], style, "heat_")
-			for hm in mp.get("hull_mats", []): (hm as ShaderMaterial).set_shader_parameter("fx_scorch_col", style["rim"])
+			for hm in mp.get("hull_mats", []): (hm as ShaderMaterial).set_shader_parameter("fx_scorch_col", rim)
 	for i in n_main:
 		var pc: Dictionary = pieces[i]
 		if (pc["surfs"] as Array).is_empty():

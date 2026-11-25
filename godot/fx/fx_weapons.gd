@@ -830,7 +830,7 @@ static func _old_look(fx) -> bool:
 # keeps a bright forward flash and a few sparks with almost no ball, and a hull hit is a tight jet on the surface normal.
 # w is the weapon weight (1 light, 2 medium, 3 heavy), kept so the muzzle callers pass one shape.
 static func _vent(fx, p: Vector3, axis: Vector3, T: float, size: float, life: float, col: Color, strength := 0.8,
-		velocity := Vector3.ZERO, opacity := 0.55, aspect := 1.0, w := 2, src = null) -> void:
+		velocity := Vector3.ZERO, opacity := 0.55, aspect := 1.0, w := 2, src = null, sparks := true) -> void:
 	fx.record_spawn(src, p, true)
 	if String(fx.vent_look) == "today":
 		_burst(fx, p, axis, T, size, "vent", life, col, strength, 0.0, velocity, opacity, aspect)
@@ -844,7 +844,8 @@ static func _vent(fx, p: Vector3, axis: Vector3, T: float, size: float, life: fl
 		_burst(fx, p + axis * reach * u, axis, T + u * 0.02, size * (0.06 + 0.27 * taper), "vent",
 			life * (0.45 + 0.20 * u), col, strength * (0.80 - 0.25 * u), 0.0, velocity * (1.0 + 0.5 * u),
 			opacity * (0.45 - 0.25 * u), 2.0 + u * 2.0)
-	_impact_sparks(fx, p, axis, T + 0.02, size * 0.35, col, 10, 18.0)
+	if sparks:
+		_impact_sparks(fx, p, axis, T + 0.02, size * 0.35, col, 10, 18.0)
 
 
 # Issue 281 run 5: sparks are a few small, soft glowing points with short trails that slow down (drag) and fade, hot
@@ -2523,7 +2524,8 @@ static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, l
 	var fume := col * 0.65 if eclipse else col.lerp(Color(0.3, 0.32, 0.18), 0.5)
 	var px: float = 28.0 * float(tg.get("gk", 1.0)) * float(tg.get("tk", 1.0))
 	_burst(fx,p+n*0.3*k,n,T,4.5*k,"flash",0.35,col,1.4,px)
-	_vent(fx,p+n*0.4*k,n,T,5.0*k,0.65,col,0.8,n*3.0*k,0.65,1.0,w,Tg)
+	# Keep the pressure puff without the hot birth sparks used by weapon vents.
+	_vent(fx, p + n * 0.4 * k, n, T, 5.0 * k, 0.65, col, 0.8, n * 3.0 * k, 0.65, 1.0, w, Tg, false)
 	for j in 8:
 		var d := _outward(n, fx.rcone(n,0.9), 0.2)
 		var v: Vector3 = d*fx.rng.randf_range(3.0,7.0)*k

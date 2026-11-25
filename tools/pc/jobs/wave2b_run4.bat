@@ -7,8 +7,8 @@ set "AFTER=%~1"
 set AFTER | findstr /r /x "AFTER=[0-9a-fA-F][0-9a-fA-F]*" >nul || goto usage
 if "%AFTER:~39,1%"=="" goto usage
 if not "%AFTER:~40,1%"=="" goto usage
-rem BEFORE is the run 3 tip with the same main already merged by the run 4 runner.
-set "BEFORE=5d445b9a34374dd9685d86a65a9add51982ed713"
+rem BEFORE is the main snapshot merged by the run 5 runner.
+set "BEFORE=17b151f032d7562d47f9db083322c4d064bcb1aa"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "BENCH=%~dp0look_bench.bat"
 if not exist "%BENCH%" set "BENCH=%VT%\build_b\tools\pc\jobs\look_bench.bat"
@@ -19,7 +19,7 @@ if not exist "%BENCH%" (
 set "PC_GPU_ISSUE=1693"
 set "LB_HOME=%VT%\look_bench_1693_run4"
 set "LB_TOOL_REF=%AFTER%"
-set "LB_ARGS=--part moments --moments res://bench/look_moments_1693_run4.json"
+set "LB_MOMENTS=res://bench/look_moments_1693_run4.json"
 set "LB_PRE_RUN="
 set "LB_RUN_NAME="
 set "LB_QUIET=1"

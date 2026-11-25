@@ -68,6 +68,17 @@ func _run() -> void:
 	var empty := u.duplicate()
 	empty["shp"] = 0.0
 	empty["sh"] = [0, 0, 0, 0]
+	var inactive := u.merged({"st": {"acid": 0}}, true)
+	# An in-flight shot can delay mist until after the status has already expired.
+	s.busy_until = fx.now + 1.0
+	fx.sync_ship(s.id, u)
+	fx.step(0.05)
+	check(s._acid_mist == null and s._acid_next > fx.now, "an in-flight shot delays the first acid puff")
+	fx.sync_ship(s.id, inactive)
+	fx.step(0.05)
+	check(s._acid_next == 0.0 and s._acid_fallback.is_empty() and s._sizzle_count == 0 and s._sizzle_next == 0.0,
+		"acid expiry resets the episode even when no mist spawned")
+	s.busy_until = fx.now
 	# Start with a restored view, then let an actual bio hull hit supply a new local source.
 	fx.sync_ship(s.id, u)
 	fx.step(0.05)
@@ -78,6 +89,13 @@ func _run() -> void:
 	check(sizzles.size() == 1 and float(sizzles[0].get("gain", 1.0)) <= 0.25, "the first acid sizzle is attenuated")
 	check(s._shield_mi.visible and (s._shield_mat.get_shader_parameter("ion_arc") as Vector2).x >= 0.0,
 		"the battle view starts a shield arc on the idle ion-locked ship at half shields")
+	var partial := u.duplicate()
+	partial.erase("shp")
+	partial.erase("shMax")
+	fx.sync_ship(s.id, partial)
+	fx.step(0.05)
+	check(s._shield_fraction == 0.5 and (s._shield_mat.get_shader_parameter("ion_arc") as Vector2).x >= 0.0,
+		"a partial sync keeps the last known shield fraction and the ion arc")
 	var pulse_end := s._ion_until
 	fx.sync_ship(s.id, u)
 	fx.step(pulse_end - fx.now + 0.01)
@@ -169,11 +187,13 @@ func _check_eclipse_acid(eclipse: SHIP, control: SHIP, world: Node3D, box: BoxMe
 	var green: Color = fx.faction_info("chorus").weapon
 	check(eclipse.acid_colour() == violet and violet.b > maxf(violet.r, violet.g), "Eclipse idle and tick acid use its violet damage glow")
 	check(SH.BIO_CONTACT_GLOB == 29, "the bio contact glob uses kind 29, clear of the thrust sprite")
-	fx.spr_kinds = {}
 	for ship in [eclipse, control]:
 		var expected := violet if ship == eclipse else green
 		var smoke: POOLS.Pool = fx.pools["smk"]
+		var streaks: POOLS.Pool = fx.pools["stk"]
 		smoke.flush()
+		streaks.flush()
+		fx.spr_kinds = {}
 		var volley := fx.volley("chorus", "bio", ship.id, {"weapon_id": "bioplasma", "shots": [true], "hits": [{"shield": 0, "hull": 2}]})
 		if volley.impacts.size() != 1:
 			check(false, "Chorus volley hits " + ship.faction)
@@ -200,6 +220,11 @@ func _check_eclipse_acid(eclipse: SHIP, control: SHIP, world: Node3D, box: BoxMe
 			colours_ok = colours_ok and (rgb.z > maxf(rgb.x, rgb.y) if ship == eclipse else rgb.y > maxf(rgb.x, rgb.z))
 		check(glob_ok, "Chorus retains its green flight glob toward " + ship.faction)
 		check(drops == 8 and fumes > 0 and colours_ok, "bioplasma droplets and fume use the contact palette on " + ship.faction)
+		var contact_streaks := 0
+		for offset in range(0, streaks.pending.size(), POOLS.STRIDE * streaks.vpp):
+			if streaks.pending[offset + 7] >= impact_at - 0.0001:
+				contact_streaks += 1
+		check(not fx.spr_kinds.has(19) and contact_streaks == 0, "bioplasma contact emits no warm vent sparks on " + ship.faction)
 		var light: Color = fx._lev.back()[4]
 		check(_same_hue(Vector3(light.r, light.g, light.b), contact), "bioplasma impact light uses the contact palette on " + ship.faction)
 		fx.step(float(volley.impacts[0]) + 0.15)
