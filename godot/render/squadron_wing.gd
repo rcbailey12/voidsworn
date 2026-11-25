@@ -4,7 +4,9 @@ const SKEEP := preload("res://render/shader_keep.gd")
 # Each ribbon samples its own craft's stern in world space, including turns.
 const CRAFT := preload("res://render/squadron_craft.gd")
 const LOOK := preload("res://fx/faction_look.gd")
+const SH := preload("res://fx/fx_shaders.gd")
 const SHADER_CACHE := preload("res://render/shader_cache.gd")
+const FLOW_TEX_PATH := "res://fx/textures/beam_flow.png"
 static var ship_manifest_path := "res://assets/ships/manifest.json"
 static var ship_cache_dir := "res://gen/ships"
 static var _model_codes: Dictionary = {}   # not GPU: model code strings
@@ -48,34 +50,9 @@ const TRAIL_LIFE_CHORUS := 0.2
 var trail_life := TRAIL_LIFE
 var _model_scene: PackedScene
 var _stern := Vector3(-0.47, 0.0, 0.0)
-# issue 221: the ribbon's ageing (drift back along the craft's wake, widening, fading) runs in the vertex shader from
-# each sample's birth time (UV2.x) and the wing's clock, so the mesh is rebuilt only when a sample is added or dropped,
-# not every frame. Same maths as the old per-frame GDScript build.
-const TRAIL := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform float clock_now = 0.0;
-uniform float trail_len = 1.0;
-uniform float width_k = 0.026;
-uniform float alpha_k = 0.56;
-uniform float life = 0.65;
-void vertex() {
-    float age = clock_now - UV2.x;
-    vec3 back = NORMAL;
-    vec3 c = cross(back, vec3(0.0, 1.0, 0.0));
-    float cl = length(c);
-    vec3 side = cl > 1e-6 ? c / cl : vec3(0.0);
-    float width = trail_len * width_k * (1.0 + age);
-    VERTEX += back * age * trail_len * 1.2 + side * width * (1.0 - 2.0 * UV.y);
-    COLOR.a = max(0.0, 1.0 - age / life) * alpha_k;
-    UV.x = age / life;
-}
-void fragment() {
-    float edge = smoothstep(0.0, 0.38, UV.y) * (1.0 - smoothstep(0.62, 1.0, UV.y));
-    ALBEDO = COLOR.rgb;
-    ALPHA = COLOR.a * edge;
-}
-"""
+# Issue 2042 item 4: unified strike craft trail shader. Patrol wings, attack runs, launches and
+# standalone previews all draw through the shared SH.CRAFT_TRAIL kit (no separate flat fallback).
+const TRAIL := SH.CRAFT_TRAIL
 
 # issue 1434 (Artoo on PR 1445): setup's main-thread time by stage in microseconds (load, instance, finish, copies), copied
 # into ShipView.stage_us for the load bench
@@ -87,15 +64,20 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	faction = fac
 	length = size
 	phase = seed_value
+	SH.ensure_globals()
 	trail_mat = ShaderMaterial.new()
-	trail_mat.shader = SHADER_CACHE.for_code(TRAIL)
+	trail_mat.shader = SHADER_CACHE.for_code(SH.CRAFT_TRAIL)
+	trail_mat.render_priority = 1
+	if ResourceLoader.exists(FLOW_TEX_PATH):
+		trail_mat.set_shader_parameter("kit_flow", ResourceLoader.load(FLOW_TEX_PATH))
 	trail_mat.set_shader_parameter("trail_len", size)
 	# Ryan (Nov 20 2026, issue 1373): the long wide Chorus wake made each spore read as a tadpole ("comes off looking like
 	# sperm"); a spore now leaves only a short faint shimmer that is gone within a craft length or two
 	trail_life = TRAIL_LIFE_CHORUS if fac == "chorus" else TRAIL_LIFE
-	trail_mat.set_shader_parameter("width_k", 0.022 if fac == "chorus" else 0.026)
-	trail_mat.set_shader_parameter("alpha_k", 0.14 if fac == "chorus" else 0.56)
+	trail_mat.set_shader_parameter("width_k", 0.048 if fac == "chorus" else 0.026)
+	trail_mat.set_shader_parameter("alpha_k", 0.22 if fac == "chorus" else 0.56)
 	trail_mat.set_shader_parameter("life", trail_life)
+	trail_mat.set_shader_parameter("trail_style", 1.0 if fac == "chorus" else (2.0 if fac == "ithar" else 0.0))
 	if count <= 0:
 		return
 	var t_make := Time.get_ticks_usec()
@@ -114,13 +96,14 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 		ribbon.name = "fx_craft_trail_%d" % i
 		ribbon.top_level = true
 		ribbon.mesh = ImmediateMesh.new()
-		ribbon.material_override = trail_mat
+		var mat := trail_mat.duplicate() as ShaderMaterial
+		ribbon.material_override = mat
 		ribbon.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		ribbon.extra_cull_margin = 20.0
 		add_child(ribbon)
 		if ribbon.is_inside_tree():
 			ribbon.global_transform = Transform3D.IDENTITY
-		trails.append({"node": ribbon, "hist": []})
+		trails.append({"node": ribbon, "mat": mat, "hist": []})
 	stage_us["wing_copies"] = Time.get_ticks_usec() - t_copies
 	fit_formation()
 	_patrol_blend = patrol_target
@@ -458,6 +441,15 @@ func step(dt: float) -> void:
 		while not hist.is_empty() and (sample or not active) and (clock - float(hist[-1][1]) > trail_life or hist.size() > 20):
 			hist.pop_back()
 			changed = true
+		var mat: ShaderMaterial = tr.get("mat") as ShaderMaterial
+		if mat != null:
+			mat.set_shader_parameter("clock_now", clock)
+			mat.set_shader_parameter("head_world", stern)
+			if not hist.is_empty():
+				mat.set_shader_parameter("newest_birth", float(hist[0][1]))
+				mat.set_shader_parameter("anchor_ready", 1.0)
+			else:
+				mat.set_shader_parameter("anchor_ready", 0.0)
 		# issue 221: the shader ages the ribbon; the mesh only changes with its samples
 		if changed or not tr.get("built", false):
 			_draw_trail(tr)

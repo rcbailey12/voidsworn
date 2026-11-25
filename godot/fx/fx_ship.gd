@@ -12,6 +12,7 @@ const BREACH := preload("res://fx/fx_breach.gd")
 const SHIELD_CACHE := preload("res://fx/fx_shield_cache.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const IDLE := preload("res://fx/fx_idle.gd")
+const STATUS_TICK := preload("res://fx/fx_status_tick.gd")
 const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
@@ -424,6 +425,43 @@ func scale_k() -> float:
 
 # ---------------------------------------------------------------- engines
 
+# Issue 2042 item 3: per-faction main plume palette (bright core + soft outer wash + style) derived from faction_looks.json.
+# style: 0 Sunward ember/frost, 1 Meridian ion spear, 2 Hullbreaker rough overburn, 3 Chorus organic pulse,
+#        4 Glasswright crystal violet (no white cold gas), 5 Eclipse violet/white-gold (no green, no orange).
+static func plume_palette(fac_id: String, fac_info: Dictionary) -> Dictionary:
+	var fid := fac_id.to_lower()
+	var eng: Color = fac_info.get("engine", Color(1.0, 0.55, 0.18))
+	var acc = fac_info.get("accent")
+	var weap: Color = fac_info.get("weapon", eng) if fac_info.get("weapon") is Color else eng
+	var dmg: Color = fac_info.get("damage_glow", eng) if fac_info.get("damage_glow") is Color else eng
+	match fid:
+		"hegemony":
+			return {"core": eng.lerp(Color.WHITE, 0.72), "wash": eng.lerp(weap, 0.35), "style": 1}
+		"corsair":
+			var cw: Color = (acc as Color).lerp(eng, 0.45) if acc is Color else eng
+			return {"core": eng.lerp(Color(1.0, 0.94, 0.8), 0.55), "wash": cw, "style": 2}
+		"chorus":
+			return {"core": dmg.lerp(Color(0.95, 1.0, 0.76), 0.35), "wash": eng * 0.88, "style": 3}
+		"ithar":
+			return {"core": eng.lerp(weap, 0.58), "wash": eng, "style": 4}
+		"deathless":
+			var wcore: Color = fac_info.get("weapon_core", eng) if fac_info.get("weapon_core") is Color else eng
+			var ew: Color = wcore.lerp(acc as Color, 0.22) if acc is Color else wcore
+			return {"core": eng.lerp(Color(0.94, 0.88, 1.0), 0.45), "wash": ew, "style": 5}
+		_:
+			var vw: Color = (acc as Color).lerp(eng, 0.58) if acc is Color else eng
+			return {"core": Color(1.0, 0.96, 0.86).lerp(eng, 0.18), "wash": vw, "style": 0}
+
+
+static func _apply_plume_palette(mat: ShaderMaterial, fac_id: String, fac_info: Dictionary) -> void:
+	var pal := plume_palette(fac_id, fac_info)
+	var pc: Color = pal["core"]
+	var pw: Color = pal["wash"]
+	mat.set_shader_parameter("plume_core", Vector3(pc.r, pc.g, pc.b))
+	mat.set_shader_parameter("plume_wash", Vector3(pw.r, pw.g, pw.b))
+	mat.set_shader_parameter("plume_style", float(int(pal["style"])))
+
+
 func _build_engines(fx) -> void:
 	if is_instance_valid(_eng_node):
 		_eng_node.queue_free()
@@ -465,8 +503,10 @@ func _build_engines(fx) -> void:
 			# a corona round the core in the faction's second colour (faction look data, accent; three factions set one)
 			b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0), Vector4(0, 0, 0, 1.0), Vector4(acc.r, acc.g, acc.b, 0.9),
 				Vector4(r * 5.0, r * 5.0, 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
-		rb.add(rs, POOLS.pack(Vector4(np.x, np.y, np.z, 3 if corsair else 0), Vector4(nd.x, nd.y, nd.z, plume), Vector4(eng.r, eng.g, eng.b, 0.9),
-			Vector4(r * 1.3, r * 0.5, fx.rng.randf(), 0), Vector4(-20.0, 1.0, 1.0, 0)))
+		# Issue 2042 item 3: tuck root slightly into the nozzle bell and widen quad for soft outer wash around the bright core.
+		var rp: Vector3 = np - nd * (r * 0.12)
+		rb.add(rs, POOLS.pack(Vector4(rp.x, rp.y, rp.z, 3 if corsair else 0), Vector4(nd.x, nd.y, nd.z, plume), Vector4(eng.r, eng.g, eng.b, 0.92),
+			Vector4(r * 2.15, r * 0.82, fx.rng.randf(), 0), Vector4(-20.0, 1.0, 1.0, 0)))
 		if corsair:
 			# soot coughs (the Corsair exception: haphazard, junky)
 			for k in 9:
@@ -488,6 +528,7 @@ func _build_engines(fx) -> void:
 					Vector4(ec.r, ec.g, ec.b, 2.2), Vector4(r * 0.2, r * 0.1, 19, fx.rng.randf()), Vector4(3.9, 0, 0.5, 0)))
 	_eng_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 	_eng_rib_mat = fx.mat(SH.RIBBON, 1)
+	_apply_plume_palette(_eng_rib_mat, faction, fac)
 	var holder = MeshInstance3D.new()
 	holder.name = "fx_engines"
 	_attach(holder)
@@ -499,6 +540,7 @@ func _build_engines(fx) -> void:
 	if sick_nozzle >= 0:
 		_sick_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 		_sick_rib_mat = fx.mat(SH.RIBBON, 1)
+		_apply_plume_palette(_sick_rib_mat, faction, fac)
 		sb.build(_sick_mat, holder, "fx_eng_sick_core")
 		srb.build(_sick_rib_mat, holder, "fx_eng_sick_plume")
 
@@ -556,14 +598,18 @@ func update(fx, dt: float) -> void:
 			# a heavy hit makes the drive stumble: the plume gutters and catches again
 			var flick := 1.0 if fposmod(sin(fx.now * 37.0 + float(_seed)) * 43758.5, 1.0) > 0.45 else 0.0
 			g *= 0.3 + 0.7 * maxf(flick, smoothstep(_stutter_until - 0.25, _stutter_until, fx.now))
+		var tk := clampf(_eng_cur / 1.4, 0.15, 1.4)
 		_eng_mat.set_shader_parameter("gate", g)
 		_eng_rib_mat.set_shader_parameter("gate", g)
 		_eng_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8))
+		_eng_rib_mat.set_shader_parameter("throttle_k", tk)
 		if _sick_mat != null:
-			var sg := g * sick_gate(fx.now, fx.reduce_flashing)
+			var sk: float = sick_gate(fx.now, fx.reduce_flashing)
+			var sg := g * sk
 			_sick_mat.set_shader_parameter("gate", sg)
 			_sick_rib_mat.set_shader_parameter("gate", sg)
 			_sick_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8) * _sick_len)
+			_sick_rib_mat.set_shader_parameter("throttle_k", tk * sk)
 	var moving_now: bool = _moving > 0.0 and not dead
 	if moving_now and not _was_moving and sick_nozzle >= 0 and fx.now >= _cough_next:
 		_cough(fx)
@@ -592,7 +638,6 @@ func _update_trails(fx, _moved: bool) -> void:
 		xfm = root.global_transform * (get_meta("death_motion") as Transform3D) * (get_meta("death_hull_motion", Transform3D.IDENTITY) as Transform3D)
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
-	var plume = clampf(1.5 * hull.W, 2.0, 32.0)
 	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or (_eng_sputter and not wounds_v2)) else int(fac["trail"])
 	for ti in _trails.size():
 		var t: Dictionary = _trails[ti]
@@ -603,11 +648,14 @@ func _update_trails(fx, _moved: bool) -> void:
 		var lvl_t: float = lvl * (sick_gate(fx.now, fx.reduce_flashing) if ti == sick_nozzle else 1.0)
 		if dead_nozzles.has(ti):
 			lvl_t = 0.0   # issue 1741: a dead nozzle lays no fresh trail (the dim samples let the old ribbon fade out)
-		var start: Vector3 = xfm * (t["p"] as Vector3) + (xfm.basis * (t["d"] as Vector3)).normalized() * (0.3 * plume)
+		# Issue 2042 item 2: anchor the trail root directly to the live nozzle (no 0.3 * plume stern gap).
+		var start: Vector3 = xfm * (t["p"] as Vector3)
+		var back_dir: Vector3 = (xfm.basis * (t["d"] as Vector3)).normalized()
 		# Each sample belongs to world space for its entire life. Turning, stopping
 		# or throttling down never drags old exhaust along with the nozzle.
 		# (issue 1581, OpenAI review F4: no fresh exhaust while the battle has the drive cold, even as the plume eases down)
-		if (not dead or flaring) and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12):
+		var active_burn: bool = (not dead or flaring) and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12)
+		if active_burn:
 			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (_tclock - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
 				hist.push_front([start, _tclock, lvl_t])
 				changed = true
@@ -623,6 +671,10 @@ func _update_trails(fx, _moved: bool) -> void:
 			t["mesh_time"] = _tclock
 			_trail_mesh(fx, t, eng)
 		mat.set_shader_parameter("trail_elapsed", (_tclock - float(t["mesh_time"])) / TRAIL_LIFE)
+		mat.set_shader_parameter("use_strip_taper", 1.0)
+		mat.set_shader_parameter("anchor_head", 1.0 if (active_burn and not dead_nozzles.has(ti)) else 0.0)
+		mat.set_shader_parameter("head_world", start)
+		mat.set_shader_parameter("head_dir", back_dir)
 		if int(t["style"]) != style:
 			t["style"] = style
 			mat.set_shader_parameter("trail_style", float(style))
@@ -639,16 +691,19 @@ func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 	var c0 = PackedFloat32Array()
 	var c1 = PackedFloat32Array()
 	var r: float = t["r"]
-	var w0 = r * 1.1
-	var w1 = r * 2.4 * clampf(scale_k(), 0.6, 1.6)
+	# Issue 2042 item 2: start at nozzle width and taper cleanly down to a slender tail (never a wide rectangle).
+	var w0 := r * 1.25
+	var w1 := r * 0.18 * clampf(scale_k(), 0.7, 1.3)
+	var denom := maxf(float(n - 1), 1.0)
 	for i in n:
 		var d = (hist[mini(i + 1, n - 1)][0] - hist[maxi(i - 1, 0)][0]).normalized()
+		var along := float(i) / denom
 		for sd in [-0.5, 0.5]:
 			verts.append(hist[i][0])
 			nrm.append(d)
 			uv.append(Vector2(clampf((_tclock - float(hist[i][1])) / TRAIL_LIFE, 0.0, 1.0), sd))
-			c0.append_array([eng.r, eng.g, eng.b, 0.28 * clampf(float(hist[i][2]), 0.0, 1.5)])
-			c1.append_array([w0, w1, float(t["seed"]), 0.0])
+			c0.append_array([eng.r, eng.g, eng.b, 0.34 * clampf(float(hist[i][2]), 0.0, 1.5)])
+			c1.append_array([w0, w1, float(t["seed"]), along])
 	if not _trail_indices.has(n):
 		var idx := PackedInt32Array()
 		for i in n - 1:
@@ -2401,6 +2456,9 @@ func _place_mark(fx, e) -> void:
 		var o = _marks[j]
 		if o.style != e.style or o.sec != e.sec or o.style in [BREACH.S_GAUSS_IN, BREACH.S_GAUSS_OUT]:
 			continue
+		# The three V2 Null Lance cuts overlap the repeat radius. Reheat the matching cut, not its neighbour.
+		if e.style == BREACH.S_NLANCE and e.v2 >= 0 and o.part_i != e.part_i:
+			continue
 		if whole_sec or o.c.distance_to(e.c) < o.R * 0.8 + e.R * 0.5 + o.hl:
 			var g: float = minf(o.grow * 1.2, BREACH.GROW_MAX)
 			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.hit_origin, o.hit_normal, o.ldir, o.seed_v, faction, g, 1.0 - section_fraction[o.sec], o.hatch_k)
@@ -2611,6 +2669,8 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	var p: Vector3 = a.p
 	var n: Vector3 = a.n
 	var glow: Color = fac.damage_glow
+	var eclipse_wound := wounds_v2 and faction == "deathless"
+	var wound_accent := BREACH.wound_col(fac["wound"], "interior_accent", glow) if eclipse_wound else glow
 	var b := POOLS.Batch.new()
 	var kind := 3
 	var color := Color(0.13, 0.12, 0.11)
@@ -2622,7 +2682,7 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	var velocity: Vector3 = (n * 0.7 + Vector3.UP * 0.3) * hull.L * 0.10
 	if faction == "deathless": color = Color(0.055, 0.025, 0.09); kind = 8
 	if faction == "deathless" and e.st == 2:
-		kind = 7; color = glow * 0.55
+		kind = 7; color = wound_accent * 0.55
 		size0 = hull.L * 0.004; size1 = hull.L * 0.018
 		velocity = n * hull.L * 0.045
 	if faction == "chorus": color = chorus_gas(glow) * 0.45; kind = 20
@@ -2638,12 +2698,15 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 		velocity = (n * 0.7 + Vector3.UP * 0.3) * hull.L * 0.06
 		if e.st == 4: p -= n * hull.L * 0.018
 		if faction == "deathless": kind = 26
+		if eclipse_wound: color = wound_accent; intensity = 0.28
+		if wounds_v2 and faction == "hegemony": kind = 26   # cold electric vent, never the orange heat ramp
 		if faction == "chorus": kind = 20; intensity = 0.35; color = chorus_gas(glow)
 		if faction == "ithar": kind = 7; intensity = 0.3
 	elif e.kind == "vent":
 		kind = 7; color = glow.lerp(Color.WHITE, 0.75); intensity = 0.22
 		count = 4; life = 0.8
 		velocity = n * hull.L * 0.13
+		if eclipse_wound: color = wound_accent; intensity = 0.16
 		if faction == "chorus": kind = 20; color = chorus_gas(glow) * 0.6
 	var period := life if e.kind != "vent" else 3.2
 	for j in count:
@@ -3131,6 +3194,10 @@ func _blowout(fx, i: int) -> void:
 	var glow: Color = fac.damage_glow
 	var col := glow.lerp(Color.WHITE, 0.75)
 	var kind := 7
+	var eclipse_wound := wounds_v2 and faction == "deathless"
+	if eclipse_wound:
+		glow = BREACH.wound_col(fac["wound"], "interior_accent", glow)
+		col = glow
 	if faction == "chorus":
 		col = chorus_gas(glow) * 0.6; kind = 20
 	var heavy := int(stage[i]) == 4
@@ -3140,7 +3207,7 @@ func _blowout(fx, i: int) -> void:
 			kind, fx.rcone(n, 0.22) * L * (0.38 - j * 0.03), 1.6)
 	for j in 3 + posmod(_seed + i, 2):
 		DEATH.BEATS.debris(fx, self, p, fx.now + j * 0.05, 1.6, fx.rcone(n, 0.6) * L * (0.10 + 0.05 * fx.rng.randf()), L * 0.006, 0.5)
-	fx.light(p + n * L * 0.03, fx.now, 0.35, 2.5, glow.lerp(Color.WHITE, 0.5), 1)
+	fx.light(p + n * L * 0.03, fx.now, 0.35, 2.5, glow if eclipse_wound else glow.lerp(Color.WHITE, 0.5), 1)
 	_wlog(["blowout", i, fx.now])
 
 
@@ -3159,27 +3226,28 @@ func pulse(fx, strength: float) -> void:
 
 
 func tick_flare(fx, kind: String) -> void:
-	var h: Dictionary = hull.surface_sample(-1, 0.5, "flare")   # issue 370: a seen point on the plating, or none
+	if dead or gone or hull == null:
+		return
+	var h: Dictionary = {}
+	if kind == "acid":
+		var spots: Array = get_meta("acid_spots", [])
+		if not spots.is_empty() and spots.back().size() > 2:
+			h = {"p": spots.back()[0], "n": spots.back()[2]}
+	elif kind == "tidal" and fx.well.is_finite():
+		var local_well: Vector3 = xf().affine_inverse() * fx.well
+		h = hull.surface(hull.core, (local_well - hull.core).normalized())
+	if h.is_empty():
+		h = hull.surface_sample(-1, 0.65, "flare")
 	if h.is_empty():
 		return
-	var wp = to_world(h["p"])
-	var wn = dir_world(h["n"])
-	var k = scale_k()
-	var T: float = fx.now
-	match kind:
-		"acid":
-			for i in 6:
-				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, _acid_colour(), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
-		"tidal":
-			for i in 20:
-				fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
-		"storm":
-			if _shield_mat != null:
-				shield_hit(fx, shield_point(wp + wn * 30.0)["local"], T, 0.6, 14.0, 0.8)
-		_:
-			for i in 8:
-				fx.spr(wp, T + i * 0.05, 0.7, Color(1, 0.5, 0.15), 2.4, 0.8 * k, 2.4 * k, 1, wn * 2.0 + fx.rdir(), 0.0)
-			fx.light(wp + wn, T, 0.6, 3.0, Color(1, 0.5, 0.15), 1)
+	STATUS_TICK.play(fx, self, kind, h)
+	# Keep the tidal spark site for the shared spark upgrade. Living hulls shed glowing organic motes only.
+	if kind == "tidal" and faction != "chorus":
+		var wp := to_world(h["p"])
+		var k := scale_k()
+		var T: float = fx.now
+		for i in 20:
+			fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
 
 
 func jump_out(fx) -> void:
