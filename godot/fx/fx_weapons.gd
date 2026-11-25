@@ -1341,7 +1341,7 @@ static func _bez(a: Vector3, b: Vector3, c: Vector3, u: float) -> Vector3:
 	return a.lerp(b, u).lerp(b.lerp(c, u), u)
 
 
-static func _projectile_contact_pos(p: Dictionary, pos: Vector3, pose: Basis) -> Vector3:
+static func _projectile_contact_pos(p: Dictionary, pos: Vector3, pose: Basis, approach := 0.0) -> Vector3:
 	if not p.has("axis"):
 		return pos
 	var axis: Vector3 = p["axis"]
@@ -1350,8 +1350,10 @@ static func _projectile_contact_pos(p: Dictionary, pos: Vector3, pose: Basis) ->
 	var front := Vector3(bounds.end.x if local_axis.x >= 0.0 else bounds.position.x,
 		bounds.end.y if local_axis.y >= 0.0 else bounds.position.y,
 		bounds.end.z if local_axis.z >= 0.0 else bounds.position.z)
-	var past := (pos - (p["c"] as Vector3)).dot(axis) + front.dot(local_axis)
-	return pos - axis * maxf(past, 0.0)
+	var nose := front.dot(local_axis)
+	var past := (pos - (p["c"] as Vector3)).dot(axis) + nose
+	# Ease in the nose offset through flight so the casing does not hit the plane early and sit there.
+	return pos - axis * maxf(past, maxf(nose, 0.0) * approach)
 
 
 static func _projectile_pose(p: Dictionary, e: float) -> Transform3D:
@@ -1361,7 +1363,7 @@ static func _projectile_pose(p: Dictionary, e: float) -> Transform3D:
 		d = Vector3.RIGHT
 	var z := d.cross(Vector3.UP if absf(d.y) < 0.95 else Vector3.FORWARD).normalized()
 	var pose := Basis(d, z.cross(d).normalized(), z).scaled((p["mesh"] as Node3D).scale)
-	return Transform3D(pose, _projectile_contact_pos(p, pos, pose))
+	return Transform3D(pose, _projectile_contact_pos(p, pos, pose, e))
 
 
 static func update(fx, dt: float) -> void:
@@ -2305,7 +2307,7 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 				Tg.set_meta("acid_spots", sp))
 	var fraction := 0.0 if breaking else float(hd.get("shieldFraction", -1.0))
 	if lk == "tendril":
-		THORN.impact(fx, tg, T, col, k)
+		THORN.impact(fx, tg, T, col, k, Tg)
 	elif not beam and lk != "ram":
 		# The projectile's own pop is right at contact. The bubble or hull response develops around it.
 		var size := (1.4 if torp else 0.65) * k

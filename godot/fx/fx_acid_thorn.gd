@@ -86,12 +86,15 @@ static func shot(fx, from: Vector3, mn: Vector3, to: Vector3, T0: float, beat: f
 
 
 # Reuse the shared shard pool, with the thorn's bone/horn finish and no metal plate ejecta.
-static func impact(fx, tg: Dictionary, T: float, col: Color, k: float) -> void:
+static func impact(fx, tg: Dictionary, T: float, col: Color, k: float, target = null) -> void:
 	var p: Vector3 = tg["p"]
 	var n: Vector3 = tg["n"]
 	var shield := bool(tg.get("shield", false))
 	var FXW = load("res://fx/fx_weapons.gd")
-	fx.spr(p, T, 0.10, BONE.lerp(col, 0.3), 1.9, 0.6 * k, 1.4 * k, 0)
+	# Keep the hull's strike palette from PR 1904. The shield gets a smaller bone-coloured pop.
+	var tint: Color = BONE.lerp(col, 0.3) if shield else FXW._impact_color(
+		FXW._impact_response(target), target, Color(1.0, 0.95, 0.82))
+	fx.spr(p, T, 0.10, tint, 1.9 if shield else 6.0, 0.6 * k, 1.4 * k, 0)
 	for j in (3 if shield else 4):
 		var v: Vector3 = FXW._outward(n, fx.rcone(n, 1.1), 0.25)
 		var speed: float = fx.rng.randf_range(2.6, 6.0) * k

@@ -4,6 +4,7 @@ const FX := preload("res://fx/fx.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const THORN := preload("res://fx/fx_acid_thorn.gd")
 const SH := preload("res://fx/fx_shaders.gd")
+const BREACH := preload("res://fx/fx_breach.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const EPS := 0.002
@@ -74,6 +75,8 @@ func _run() -> void:
 	_check(SH.NULL_SLUG.contains("s > 1.0") and SH.NULL_SLUG.contains("scene_t < vShape.z"),
 		"the gauss shader clips the wake and switches off only its head at contact")
 	_check(WEAP.kit_trail_shader_code().contains("wp -= contact_plane.xyz"), "the kit trail clips its drawn width")
+	_check(SH.MARK.contains("pit * 0.12 * exp(-age / 2.5)") and SH.MARK.contains("drip * 0.15 * exp(-age / 2.5)"),
+		"the dark acid etch keeps the 2.5 s glow decay from PR 1904")
 	world.free()
 	FX.clear_static()
 	print("PROJECTILE_CONTACT %d weapon looks, %d shield and hull cases, %d failures" % [CASES.size(), CASES.size() * 2 + 2, failures])
@@ -124,13 +127,17 @@ func _case(fx: FX, target, lk: String, route: String) -> void:
 	if shield_only:
 		var local: Vector3 = volley["hit_pts"][0]
 		_check(p.distance_to(frame * (local + target.hull.shield_centre())) < EPS, label + " aims at the shield ripple")
+		if target._shield_tm == null:
+			_check(absf((local / target.hull.shield_radii()).length() - 1.0) < EPS, label + " is on the bubble surface")
 	else:
-		_check(target.hull.box.grow(EPS).has_point(frame.affine_inverse() * p), label + " aims at the hull")
+		var box: AABB = target.hull.box
+		var local := frame.affine_inverse() * p
+		_check(box.grow(EPS).has_point(local) and not box.grow(-EPS).has_point(local), label + " is on the hull surface")
 	_check(_packets(fx, p, at, label) == int(spec[3]), label + " all moving pooled layers end at contact")
 	_check(_has_pop(fx, p, at), label + " has a pop at the projectile's exact point and time")
 	if lk == "tendril":
 		_check(fx.pools["plate"].emitted == plate_count, label + " has no metal plating debris")
-		_check(fx.pools["shd"].n_pending == (3 if shield_only else 4), label + " throws only a few bone and horn chips")
+		_check_thorn_shards(fx.pools["shd"], label, at, 3 if shield_only else 4)
 	var solid_key := "thorn_proj" if lk == "tendril" else "proj"
 	var bodies: Array = fx.dstate.get(solid_key, []).duplicate()
 	_check(bodies.size() == int(spec[4]), label + " number of solid bodies")
@@ -149,7 +156,12 @@ func _case(fx: FX, target, lk: String, route: String) -> void:
 	for body in bodies:
 		var node: Node3D = body.get("node", body.get("mesh"))
 		_check(is_instance_valid(node) and node.is_visible_in_tree(), label + " body still draws on approach")
-		_check(_front(body, node, p, lk) <= EPS, label + " the drawn front does not cross contact on approach")
+		if is_instance_valid(node):
+			_check(_front(body, node, p, lk) < 0.0, label + " the drawn front is still short of contact on approach")
+		if lk == "torp":
+			var a: Vector3 = body["a"]
+			var middle: Vector3 = body["b"]
+			_check(middle.y >= minf(a.y, p.y) - EPS and middle.y <= maxf(a.y, p.y) + EPS, label + " flight does not arc upward")
 	fx.now = at
 	fx.step(0.0)
 	if shield_only:
@@ -160,6 +172,13 @@ func _case(fx: FX, target, lk: String, route: String) -> void:
 		_check(target._mark_n > marks, label + " marks the hull on contact")
 		var last_hit: Array = target.get_meta("last_hit", [])
 		_check(not last_hit.is_empty() and (frame * (last_hit[0] as Vector3)).distance_to(p) < EPS, label + " uses the same point as the hull hit")
+		if lk == "tendril":
+			var acid := false
+			for mark in target._marks:
+				if mark.style == BREACH.S_ACID and mark.look == "thorn" and absf(mark.t0 - at) < EPS:
+					acid = true
+					break
+			_check(acid, label + " leaves the thorn acid etch at contact")
 	_check(target.root.global_transform.is_equal_approx(root_xf), label + " keeps the ship marker root flat")
 	for body in bodies:
 		var node: Node3D = body.get("node", body.get("mesh"))
@@ -190,6 +209,14 @@ func _front(body: Dictionary, node: Node3D, p: Vector3, lk: String) -> float:
 		var offset := node.global_transform * bounds.get_endpoint(i) - p
 		maximum = maxf(maximum, offset.dot(body["axis"]))
 	return maximum
+
+
+func _check_thorn_shards(pool: POOLS.Pool, label: String, at: float, count: int) -> void:
+	_check(pool.n_pending == count, label + " throws only a few bone and horn chips")
+	for j in range(0, pool.pending.size(), pool.vpp * POOLS.STRIDE):
+		var tint: float = pool.pending[j + 18]
+		_check((tint == 5.0 or tint == 6.0) and pool.pending[j] == 0.0 and absf(pool.pending[j + 7] - at) < EPS,
+			label + " each contact shard uses the unheated bone or horn material")
 
 
 func _packets(fx: FX, contact: Vector3, at: float, label: String) -> int:

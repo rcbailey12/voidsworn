@@ -1,6 +1,5 @@
 extends SceneTree
-# Issue 1877: the Acid Thorn uses its built body, and a miss flies on past without a jump.
-# Impact and the removal of the old embedded pose are covered by projectile_contact_check.gd.
+# Issues 1877 and 2142: the built Acid Thorn vanishes when it hits the hull, and a miss flies past without a jump.
 
 const FX := preload("res://fx/fx.gd")
 const GUARD := preload("res://tools/ci/check_guard.gd")
@@ -58,12 +57,22 @@ func _run() -> void:
 		fails.append("expected 2 thorns, got %d" % list.size())
 		_end()
 		return
-	var hit: Dictionary = list[0]
-	var miss: Dictionary = list[1]
+	var miss_first := bool(list[0]["miss"])
+	var hit: Dictionary = list[1] if miss_first else list[0]
+	var miss: Dictionary = list[0] if miss_first else list[1]
 	if bool(hit["miss"]) or not bool(miss["miss"]):
-		fails.append("expected a hit followed by a miss")
+		fails.append("expected one hit and one miss")
 	if (hit["node"] as Node3D).get_node_or_null("kit_body") == null:
 		fails.append("the thorn has no built body (fx/munition_bodies/chorus_bolt.glb)")
+	var hn := hit["node"] as Node3D
+	fx.now = float(hit["t1"]) - 0.01
+	fx.step(0.0)
+	if not hn.is_visible_in_tree():
+		fails.append("the hull-hit thorn is not shown on approach")
+	fx.now = float(hit["t1"])
+	fx.step(0.0)
+	if hn.is_visible_in_tree() or not hn.is_queued_for_deletion() or _thorns().has(hit):
+		fails.append("the intact thorn stayed at the hull after contact")
 	# the missed thorn flew on past its aim point
 	# no jump where the flight ends and the pass-through begins (Artoo on PR 1904): one frame either side of t1
 	var mn := miss["node"] as Node3D
