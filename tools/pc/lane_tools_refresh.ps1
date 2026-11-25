@@ -89,7 +89,8 @@ function Assert-IdleLane {
 function Invoke-SourceGit([string]$Step, [string[]]$Arguments) {
   # The only remote is public. Suppress native output and prevent credential helpers and prompts.
   $ErrorActionPreference = 'Continue'
-  $output = & git.exe -c credential.helper= -c core.autocrlf=false -c http.sslBackend=openssl -c maintenance.auto=false -c gc.auto=0 @Arguments 2>$null
+  $output = & git.exe -c credential.helper= -c credential.interactive=false -c core.askPass= `
+    -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 -c core.autocrlf=false -c http.sslBackend=openssl -c maintenance.auto=false -c gc.auto=0 @Arguments 2>$null
   if ($LASTEXITCODE -ne 0) { throw "$Step failed (git exit $LASTEXITCODE)" }
   return $output
 }
@@ -324,6 +325,9 @@ try {
   $env:GIT_CONFIG_NOSYSTEM = '1'
   $env:GIT_CONFIG_GLOBAL = 'NUL'
   $env:GIT_TERMINAL_PROMPT = '0'
+  $env:GCM_INTERACTIVE = 'never'
+  $env:GIT_ASKPASS = ''
+  $env:SSH_ASKPASS = ''
   $env:GIT_NO_REPLACE_OBJECTS = '1'
   foreach ($directory in @($sourceRoot, $backupRoot)) {
     $null = [IO.Directory]::CreateDirectory($directory)
