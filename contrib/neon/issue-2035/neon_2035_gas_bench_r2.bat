@@ -7,8 +7,8 @@ setlocal EnableExtensions
 set "JOB=neon2035"
 set "LABEL=2035"
 set "TOOLS=godot pil"
-set "PIN_NEW=cb10b07421cc1e296406733acb25d0849f18099b"
-set "PIN_OLD=b4bcfe544c14311880986cd1d5998bb2da90b39f"
+set "PIN_NEW=601af634d5a892dcbcd0d4dd8bc4bfcf6ac7d766"
+set "PIN_OLD=66c2d22d47e18e8d5ee5f0dd0c5165082d47c487"
 set "OJ_SLOTS=1"
 set "OJ_SLOT_KIND=gpu"
 
