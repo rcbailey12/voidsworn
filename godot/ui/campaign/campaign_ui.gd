@@ -1892,6 +1892,21 @@ func _spec_drawer(parent: VBoxContainer, ship: Dictionary, key: String) -> void:
 			"ability_d": box.add_child(lbl(line["t"], 17, BONE2))
 			"weapon": box.add_child(lbl(line["t"], 17, BONE, font_semi))
 			_: box.add_child(lbl(line["t"], 17, BONE2))
+func _preview_row(rows: Array, stat_key: String) -> Dictionary:
+	for row in rows:
+		if row["stat_key"] == stat_key: return row
+	return {}
+
+func _yard_repair_label(rows: Array, currency_suffix: String) -> String:
+	var hull := _preview_row(rows, "hull")
+	var max_hull := _preview_row(rows, "max_hull")
+	if hull.is_empty() or max_hull.is_empty(): return "Repair"
+	var missing: float = max_hull["old"] - hull["old"]
+	if missing <= 0.0: return "Fully repaired"
+	var points: float = hull["delta"]
+	var partial: String = C.numstr(points) + " of " if points > 0.0 and points < missing else ""
+	return "Repair " + partial + C.numstr(missing) + " for " + C.numstr(hull["cost"]) + currency_suffix
+
 func _shipyard() -> Control:
 	var v = vbox(10); var R = C.RUN; var n = C.page["data"]["node"]; var st = n["stock"]; var pm = C.priceMult(); var cp = C.fleetCP()
 	var head = hbox(); head.add_child(gothic("Shipyard")); head.add_child(spacer())
@@ -1942,11 +1957,14 @@ func _shipyard() -> Control:
 		v.add_child(lm)
 	var cards = flow()
 	for s in R["fleet"]:
-		var repair: Dictionary = C.preview_op("repair", s["uid"])[0]
-		var mark: Dictionary = C.preview_op("upgradeMk", s["uid"])[1]
-		var miss: float = repair["delta"]; var rc: float = repair["cost"]; var mc: float = mark["cost"]; var sell = C.sellValue(s)   # R1 (TXT-8): what the button pays; hulls without a shop price too
-		var ex = [abtn(("Repair " + C.numstr(miss) + " for " + C.numstr(rc) + hw) if miss > 0 else "Fully repaired", "repair", s["uid"], false, true),
-			abtn(("Mk " + C.roman(mark["new"]) + " for " + C.numstr(mc) + hw) if float(s["mk"]) < 3 else "Max Mark", "upgradeMk", s["uid"], false, true)]
+		var repair_label := _yard_repair_label(C.preview_op("repair", s["uid"]), hw)
+		var mark := _preview_row(C.preview_op("upgradeMk", s["uid"]), "mark")
+		var mark_label := "Upgrade Mark"
+		if not mark.is_empty():
+			mark_label = ("Mk " + C.roman(mark["new"]) + " for " + C.numstr(mark["cost"]) + hw) if mark["old"] < 3 else "Max Mark"
+		var sell = C.sellValue(s)   # R1 (TXT-8): what the button pays; hulls without a shop price too
+		var ex = [abtn(repair_label, "repair", s["uid"], false, true),
+			abtn(mark_label, "upgradeMk", s["uid"], false, true)]
 		var apart = [abtn("Decommission (+" + C.numstr(sell) + hw + ")", "sellShip", s["uid"], false, true)]   # asks first: the sell modal names the ship and the credits
 		cards.add_child(_ship_card(s, false, ex, apart))
 	v.add_child(cards)

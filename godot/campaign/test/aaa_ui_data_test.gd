@@ -5,6 +5,8 @@ const API = preload("res://rules/battle_api.gd")
 const CaptainData = preload("res://rules/captain_data.gd")
 const Portraits = preload("res://portraits/portraits.gd")
 const PreviewOp = preload("res://campaign/preview_op.gd")
+const Story = preload("res://story/story.gd")
+const CampaignUI = preload("res://ui/campaign/campaign_ui.gd")
 
 var fails := 0
 
@@ -15,14 +17,14 @@ func check(ok: bool, label: String) -> void:
 		printerr("FAIL: " + label)
 
 
-func fresh() -> Campaign:
+func fresh(admiral := "vex", faction := "voidsworn") -> Campaign:
 	var c := Campaign.new()
 	check(c.load_tables() == "", "load campaign tables")
 	c.fixed_clock = true
 	c.persist_on = false
 	c.META = c.defaultMeta()
 	API.JSM.rnd_seed(2078)
-	c.newRun("vex", "voidsworn", {})
+	c.newRun(admiral, faction, {})
 	return c
 
 
@@ -34,6 +36,11 @@ func _run() -> void:
 	captains()
 	shipyard()
 	combat()
+	for side in ["player", "enemy"]:
+		legion_cycle(side, false)
+		legion_cycle(side, true)
+	burn_stays()
+	coolant()
 	earned_xp()
 	print("AAA UI data: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails))
 	quit(0 if fails == 0 else 1)
@@ -59,6 +66,15 @@ func captains() -> void:
 	check(restored["reserve"][0]["cap"]["xp"] == 9 and restored["reserve"][0]["cap"]["full_name"] == "Reserve Captain", "legacy reserve migrated")
 	check(restored["fallen"][0]["cap"]["rank"] == 2 and other.META["fallen"][0]["cap"]["full_name"] == "Fallen Captain", "both fallen rolls migrated")
 	check(other.migrateRun(restored.duplicate(true)) == restored, "migration is idempotent")
+	var story := Story.new()
+	story.C = other
+	check(story.arc_context()["fallen_name"] == "Fallen Captain", "story names the migrated fallen captain from a prior run")
+	other.RUN["fallen"] = other.META["fallen"].duplicate(true)
+	check(story.arc_context()["fallen_name"] == "", "story does not name a loss from this run as a prior loss")
+	other.RUN["fallen"].clear()
+	other.META["fallen"] = c.META["fallen"]
+	check(story.arc_context()["fallen_name"] == "Fallen Captain", "story still reads a legacy fallen row")
+	story.free()
 	var used := {}
 	var faces := Portraits.captain_pool("voidsworn")
 	for i in range(faces.size() + 1):
@@ -104,6 +120,19 @@ func shipyard() -> void:
 	c.ACT_repair(uid)
 	verify_commit(c, sh, repair, money - c.RUN["credits"], "repair")
 	check(not c.preview_op("repair", uid)[0]["disabled_reason"].is_empty(), "cannot repair a full hull")
+	sh["hp"] -= 20
+	money = c.RUN["credits"]
+	c.RUN["credits"] = 9
+	var partial := c.preview_op("repair", uid)
+	var ui := CampaignUI.new()
+	ui.C = c
+	check(ui._yard_repair_label(partial, "") == "Repair 18 of 20 for 9", "yard label reads the partial repair and bill from the preview")
+	check(ui._yard_repair_label(c.preview_op("repair", "missing"), "") == "Repair", "yard label handles an error-only preview")
+	ui.free()
+	c.ACT_repair(uid)
+	verify_commit(c, sh, partial, 9.0 - c.RUN["credits"], "partial repair")
+	check(row(partial, "hull")["delta"] == 18 and c.RUN["credits"] == 0, "partial repair buys 18 hull for 9 credits")
+	c.RUN["credits"] = money
 	var mark := c.preview_op("upgradeMk", uid)
 	check(row(mark, "mark")["new"] == 2 and row(mark, "shield_pool")["delta"] > 0, "Mk II increases mark and the one shield pool")
 	money = c.RUN["credits"]
@@ -114,6 +143,17 @@ func shipyard() -> void:
 	var hold: int = c.RUN["inventory"].size()
 	c.ACT_equip("0:" + uid)
 	verify_commit(c, sh, refit, hold - c.RUN["inventory"].size(), "refit")
+	var named_block := false
+	for module in c.MODULES:
+		var reason := c.fitBlock(sh, module)
+		if reason.is_empty(): continue
+		named_block = true
+		c.RUN["inventory"] = [module]
+		check(row(c.preview_op("refit", uid, 0), "hull")["disabled_reason"] == reason, "refit preview carries the named block")
+		c.ACT_equip("0:" + uid)
+		check(c.RUN["inventory"] == [module], "blocked refit does not take the module")
+		break
+	check(named_block, "the yard fixture has a named refit block to test")
 	var reserve: Dictionary = c.newCaptain(false, "voidsworn", "reserve-test")
 	reserve["perks"] = [c.PERKS.keys()[0]]
 	var reserve_id: String = reserve["captain_id"]
@@ -202,9 +242,98 @@ func combat() -> void:
 	check(tidal["ship_id"] == hazard["ship"]["uid"] and tidal["hazard_name"] == "Dead star", "environmental kill names the hazard")
 	check(tidal["killer_ship_id"] == "" and tidal["final_damage"] == 1.0, "environmental final damage is capped with no killer ship")
 	r.flush_deferred()
-	b["well"] = null
-	check(r.legionRise(hazard, true), "returning hull finds room to reassemble")
-	check(c.RUN["timeline"].size() == 1 and c.RUN["timeline"][0] == lost, "a reassembled ship no longer counts as a fleet loss")
+
+
+func legion_cycle(side: String, dies_again: bool) -> void:
+	var c := fresh("nekhet", "deathless") if side == "player" else fresh()
+	var api := API.new()
+	check(api.load_rules() == "", "load rules for Eclipse reassembly")
+	var tpl := "h_picket" if side == "player" else "d_jackal"
+	api.new_battle(c.RUN, {"campaign": true, "seed": 2078, "kind": "battle", "obj": "rout",
+		"col": 2, "map": "plain", "shape": "open", "arena": "strip", "fac": "hegemony" if side == "player" else "deathless",
+		"enemies": [{"tpl": tpl}, {"tpl": tpl}, {"tpl": tpl}]})
+	var r = api.R
+	var b: Dictionary = r.B
+	var targets: Array = r.caps(side).filter(func(u): return r.legionCan(u))
+	var attackers: Array = r.caps("enemy" if side == "player" else "player")
+	check(not targets.is_empty() and not attackers.is_empty(), side + " fight has an eligible Eclipse legion ship and opponent")
+	if targets.is_empty() or attackers.is_empty(): return
+	var target: Dictionary = targets[0]
+	var killer: Dictionary = attackers[0]
+	var killer_id: String = killer["id"]
+	var gun: Dictionary = killer["weapons"][0].duplicate()
+	gun.merge({"pierce": 1.0, "ion": false, "crit": -1000, "acid": false, "ignite": false}, true)
+	var down := func() -> Dictionary:
+		var event: Dictionary = r.applyHit(killer, gun, target, 1000.0, 0)["combat_event"]
+		r.killUnit(target, killer, false, event)
+		return event
+	var first: Dictionary = down.call()
+	var due = target.get("riseAt")
+	check(target["dead"] and due == b["round"] + 1, side + " lethal hit schedules a real legion rise")
+	if due == null: return
+	check(r.legionTurn(side).is_empty(), side + " legion does not rise before its round")
+	b["round"] = due
+	check(r.legionTurn(side).has(target) and not target["dead"], side + " legion reassembles on its next round")
+	var risen := api.combat_report()
+	check(c.RUN["timeline"].is_empty() and risen["lost_ship_records"].is_empty(), side + " reassembly leaves no loss record")
+	check(not first["is_killing_blow"] and risen["ship_rollups"][killer_id]["kills"] == 0, side + " reassembly leaves no killing blow or kill credit")
+	check(first["damage_applied"] > 0 and risen["ship_rollups"][killer_id]["damage_dealt"] == first["damage_applied"], side + " reassembly keeps the applied damage")
+	if not dies_again: return
+	var last: Dictionary = down.call()
+	var report := api.combat_report()
+	check(target["dead"] and target.get("riseAt") == null, side + " legion cannot rise twice")
+	check(last["is_killing_blow"] and not first["is_killing_blow"] and report["ship_rollups"][killer_id]["kills"] == 1, side + " only the permanent death earns a kill")
+	var expected_losses := 1 if side == "player" else 0
+	check(c.RUN["timeline"].size() == expected_losses and report["lost_ship_records"].size() == expected_losses, side + " permanent death logs only the fleet loss")
+	if side == "player" and c.RUN["timeline"].size() == 1:
+		check(c.RUN["timeline"][0]["fatal_event"] == last, "only the permanent killing blow is in the timeline")
+
+
+func burn_stays() -> void:
+	var api := API.new()
+	check(api.load_rules() == "", "load rules for The Burn Stays")
+	api.new_battle_scenario({"seed": 31719, "admiral": "voice", "fac_player": "chorus",
+		"fleet": ["b_spitter"], "enemies": ["h_dominion"], "fac": "hegemony", "obj": "rout",
+		"shape": "open", "map": "open", "dep": "line", "kind": "battle", "sector": 1,
+		"lineage": {"id": "voice", "picks": ["voice:A:1:0"], "capstone": null}})
+	var r = api.R
+	var b: Dictionary = r.B
+	var u: Dictionary = r.caps("player")[0]
+	var target: Dictionary = r.caps("enemy")[0]
+	u.merge({"q": 8, "r": 6, "facing": 0, "aim": 200.0}, true)
+	target.merge({"q": 9, "r": 6, "facing": 3, "shp": 0.0, "armor": 0.0}, true)
+	r.syncShields(target)
+	var hp_before: float = target["hp"]
+	check(r.useCommand("player") and target["hp"] < hp_before, "Chorus Command lands its starting volley")
+	var before := api.combat_report()
+	target["hp"] = 2.0
+	b["round"] += 1
+	r.treeRoundStart()
+	var after := api.combat_report()
+	var events: Array = after["combat_events"].slice(before["combat_events"].size())
+	check(target["hp"] == 1.0 and events.size() == 1, "The Burn Stays is recorded once and leaves one hull")
+	if events.size() != 1: return
+	var hit: Dictionary = events[0]
+	check(hit["hazard_name"] == "The Burn Stays" and hit["hull_applied"] == 1.0 and not hit["is_killing_blow"], "lingering burn records only the applied nonlethal damage")
+
+
+func coolant() -> void:
+	var c := fresh()
+	c.RUN["relics"].append("coolant")
+	var api := API.new()
+	check(api.load_rules() == "", "load rules for coolant burn")
+	api.new_battle(c.RUN, {"campaign": true, "seed": 2078, "kind": "battle", "col": 2, "map": "plain", "fac": "hegemony"})
+	var r = api.R
+	var u: Dictionary = r.caps("player")[0]
+	u["hp"] = 2.0
+	check(r.useAbility(u), "ship uses an active ability with cracked coolant")
+	var report := api.combat_report()
+	var events: Array = report["combat_events"]
+	check(u["hp"] == 1.0 and events.size() == 1, "coolant leaves one hull and records one event")
+	if events.size() != 1: return
+	var hit: Dictionary = events[0]
+	check(hit["hazard_name"] == "Cracked Coolant Manifold" and hit["hull_applied"] == 1.0 and not hit["is_killing_blow"], "coolant event names the relic and records actual nonlethal damage")
+	check(hit["attacker_ship_id"].is_empty() and report["ship_rollups"][u["id"]]["damage_taken"] == 1.0, "coolant burn is damage taken, with no attacker credit")
 
 
 func earned_xp() -> void:

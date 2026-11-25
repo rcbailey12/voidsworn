@@ -2378,7 +2378,7 @@ func legionRise(u, quiet = false) -> bool:
 		if not quiet: logm(String(u["name"]) + " cannot find room to reassemble and stays dark.", "x")
 		return false
 	u["q"] = h.q; u["r"] = h.r; u["dead"] = false; u["riseAt"] = null; u["hp"] = max(1, JSM.jsround(u["maxHp"] * TB.LEGION_HP)); u["st"] = {"fire": 0, "shieldOff": 0, "engine": 0}; u["shredded"] = 0
-	if B.has("lost_ship_records"): CombatRecords.ship_returned(B, RUN, u["id"])
+	CombatRecords.ship_returned(B, RUN, u["id"])
 	if jt(u.get("sec")):
 		for k in u["sec"].keys():
 			repairSection(u, k, TB.LEGION_HP); u["sec"][k]["hp"] = max(1, JSM.jsround(u["sec"][k]["max"] * TB.LEGION_HP))
@@ -5541,7 +5541,12 @@ func treeRoundStart() -> void:
 					if tb2 == null or jt(tb2.get("dead")): continue
 					var dd = JSM.jsround(float(p["map"][id]) * float(bs2["n"]))
 					if dd <= 0: continue
-					anyB = true; tb2["hp"] = max(1, tb2["hp"] - dd); flt(tb2, "Acid −" + ns(dd), "#c8e04a", -16)
+					var after := maxf(1.0, float(tb2["hp"]) - float(dd))
+					var applied := float(tb2["hp"]) - after
+					# This is the lingering damage from the combined volley, not any one gun's hit.
+					if applied > 0.0: _combat_hull(tb2, applied, _combat_source(null, {}, "The Burn Stays"))
+					tb2["hp"] = after # Keep the existing 1 HP floor, including fractional hull.
+					anyB = true; flt(tb2, "Acid −" + ns(dd), "#c8e04a", -16)
 					logm(String(tb2["name"]) + " takes " + ns(dd) + " acid damage from the last volley.", pe(tb2))
 				if anyB: treeFx(_treeFlag(), "burnStays", "the burn stays")
 			if p["k"] == "manyMouths":
@@ -7223,7 +7228,9 @@ func _useAbility_raw(u, arg = null) -> bool:
 	undoSpend()
 	if u["side"] == "player" and a != "launch" and rfx("coolant") > 0:   # issue 1653 Cracked Coolant Manifold: 3% hull per active use, never below 1
 		var ccH = min(max(1, JSM.jsround(u["maxHp"] * rfx("coolant"))), u["hp"] - 1)
-		if ccH > 0: u["hp"] = u["hp"] - ccH; flt(u, "Coolant burn", "#ff7a6e", -40)
+		if ccH > 0:
+			_combat_hull(u, ccH, _combat_source(null, {}, "Cracked Coolant Manifold"))
+			flt(u, "Coolant burn", "#ff7a6e", -40)
 	if jt(B.get("usage")) and u["side"] == "player": B["usage"]["ab"][u["ab"]] = z0(B["usage"]["ab"].get(u["ab"])) + 1
 	emit({"t": "ability", "unit": u["id"], "ab": a, "hex": arg.get("hex") if arg is Dictionary else null})
 	if a == "evasive":

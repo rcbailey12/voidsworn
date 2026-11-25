@@ -87,13 +87,21 @@ static func kill(battle: Dictionary, run, target: Dictionary, fatal: Dictionary)
 	battle["lost_ship_records"].append(record.duplicate(true))
 
 
-static func ship_returned(battle: Dictionary, run: Dictionary, id: String) -> void:
-	if not battle.has("lost_ship_records"): return
-	var losses: Array = battle["lost_ship_records"]
+static func ship_returned(battle: Dictionary, run, id: String) -> void:
+	# A reassembly keeps the damage, but the hit was a knockdown, not a kill.
+	# Enemy hulls have combat events too, even though they never write a fleet loss.
+	var events: Array = battle.get("combat_events", [])
+	for i in range(events.size() - 1, -1, -1):
+		var event: Dictionary = events[i]
+		if event["target_ship_id"] != id or not event["is_killing_blow"]: continue
+		event["is_killing_blow"] = false
+		var killer: String = event["attacker_ship_id"]
+		if not killer.is_empty(): ship_rollup(battle, killer)["kills"] -= 1
+		break
+	var losses: Array = battle.get("lost_ship_records", [])
 	for i in range(losses.size() - 1, -1, -1):
 		var record: Dictionary = losses[i]
 		if record["battle_unit_id"] != id: continue
-		# A successful Eclipse reassembly removes the pending fleet loss, not the hit or kill.
-		run["timeline"].erase(record)
+		if run is Dictionary and run.get("timeline") is Array: run["timeline"].erase(record)
 		losses.remove_at(i)
 		return
