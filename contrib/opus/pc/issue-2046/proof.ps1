@@ -14,6 +14,9 @@ if (@($rows | Select-Object -ExpandProperty id -Unique).Count -ne $rows.Count) {
     throw 'Duplicate look-bench row id.'
 }
 foreach ($row in $rows) {
+    if ($row.strict -ne $true) {
+        throw "Expected a strict capture row: $($row.id)"
+    }
     if ($row.id -notmatch '^[a-z0-9_]+$' -or $row.id -ne $row.group -or $row.label -notlike "*$($row.expect_code)*" -or
         ($row.expect_attacker -and $row.label -notlike "*$($row.expect_attacker)*")) {
         throw "Missing row or hull label: $($row.id)"

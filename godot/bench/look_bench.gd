@@ -860,10 +860,21 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		else:
 			take = steps >= int(w["next"])
 		if take:
-			if not headless:
-				var img := _grab()
-				if img != null:
-					strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
+			var img := _grab() if not headless else null
+			if clip:
+				if keep:
+					var fp := clip_dir.path_join("f%03d.png" % ci)
+					if img == null:
+						clip_bad.append("f%03d.png (no frame grabbed)" % ci)
+					else:
+						var se: Error = preload("res://tools/picture_provenance.gd").save_png(_crop(img, crop, cell), fp,
+							preload("res://tools/picture_provenance.gd").capture_stage(), true)
+						if se != OK:
+							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
+			elif img != null:
+				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
+			elif strict and keep:
+				clip_bad.append("cell %d (no frame grabbed)" % ci)
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
 			ci += 1
 			w["got"] = int(w["got"]) + 1
@@ -878,8 +889,30 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if not keep:
 		return true
 	var name := "%s__c%d.png" % [id, int(r)]
+	if clip:
+		# every numbered frame 0 .. total-1 must be on disk, or the row fails (and with it the run: no LOOK_BENCH_DONE)
+		for fi in total:
+			var fn := "f%03d.png" % fi
+			if not FileAccess.file_exists(clip_dir.path_join(fn)) and not clip_bad.any(func(b): return str(b).begins_with(fn)):
+				clip_bad.append(fn + " (missing)")
+		if ci != total or not clip_bad.is_empty():
+			failed = "%s at %d: clip row failed: %d of %d frames taken; bad: %s" % [id, int(r), ci, total, ", ".join(clip_bad)]
+			_warn("LOOK_BENCH " + failed)
+			return false
+		report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/%s__c%d/" % [id, int(r)],
+			"cells": cells, "impacts": impacts, "clip": true})
+		_log("%s at %d: %d clip frames" % [id, int(r), ci])
+		return true
+	var sv: Error = ERR_UNAVAILABLE
 	if not headless:
-		preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
+		sv = preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
+	if strict:
+		if sv != OK or not FileAccess.file_exists(d.path_join(name)):
+			clip_bad.append("%s (save error %d)" % [name, sv])
+		if ci != total or not clip_bad.is_empty():
+			failed = "%s at %d: strict row failed: %d of %d cells taken; bad: %s" % [id, int(r), ci, total, ", ".join(clip_bad)]
+			_warn("LOOK_BENCH " + failed)
+			return false
 	# issue 1777 (Artoo on PR 1786): record the hull the target resolved to; a row naming "expect_code" says loudly when
 	# the faction and class drew a different hull (a later remap), so a capture bat can fail on it
 	var tcode := str(T.code) if is_instance_valid(T) else ""
@@ -889,6 +922,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts, "code": tcode, "attacker_code": acode})
+	if not _wound.is_empty():
+		report["stills"][-1]["wound"] = _wound.duplicate()
 	_log("%s at %d: %d cells" % [id, int(r), ci])
 	return true
 

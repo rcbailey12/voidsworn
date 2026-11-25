@@ -242,8 +242,8 @@ void process() {
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
-const TICK_EMBER := 30
-const TICK_DROPLET := 31
+const TICK_EMBER := 38
+const TICK_DROPLET := 39
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
 
@@ -312,7 +312,7 @@ void vertex() {
 		else if (k == 5 || k == 16 || k == 23) { flo = 9.0; }
 		else if (k == 1) { flo = 8.0; }
 		else if (k == 22) { flo = 6.0; }
-		else if (k == 19 || k == 21 || k == 30) { flo = 4.5; }
+		else if (k == 19 || k == 21 || k == 38) { flo = 4.5; }
 		else if (k == 4 || k == 11) { flo = 3.0; }
 		bool own = fpx > flo;
 		flo = max(flo, fpx);
@@ -433,14 +433,14 @@ void fragment() {
 		float corona = exp(-r * r * 2.2) * (0.55 + 0.6 * n2) * smoothstep(1.0, 0.6, r + (n2 - 0.5) * 0.4);
 		vec3 hot = mix(vCol.rgb, vec3(0.88, 0.96, 1.0), core * core * 0.6);
 		add = (hot * core * 1.8 + vCol.rgb * corona * 1.1) * I;
-	} else if (k == 15 || k == 31) {
+	} else if (k == 15 || k == 39) {
 		// bio glob: a wet, dark-skinned body with a bioluminescent heart and a wobbling rim
 		float n = fbm(p * 2.0 + vec2(seed * 5.0, age * 2.0));
 		float body = smoothstep(0.85, 0.55, r + (n - 0.5) * 0.45);
 		float heart = exp(-r * r * 6.0) * (0.6 + 0.4 * sin(age * 11.0 + seed * 9.0));
 		float rim = smoothstep(0.45, 0.8, r + (n - 0.5) * 0.3) * body;
 		alpha = body * I * 0.9;
-		base = (k == 31 ? vCol.rgb * 0.075 : vec3(0.05, 0.06, 0.03)) * (0.6 + n);
+		base = (k == 39 ? vCol.rgb * 0.075 : vec3(0.05, 0.06, 0.03)) * (0.6 + n);
 		add = vCol.rgb * (heart * 1.8 + rim * 0.6) * I;
 	} else if (k == 16) {
 		// A filled tumbling chip, with broad facets rather than thin cross arms.
@@ -457,9 +457,9 @@ void fragment() {
 	} else if (k == 18) {
 		float f = sin(3.14159 * t) * I;
 		add = vCol.rgb * exp(-r * r * 2.5) * f;
-	} else if (k == 19 || k == 30) {
+	} else if (k == 19 || k == 38) {
 		float f = spow(1.0 - t, 1.2) * I;
-		vec3 c = k == 30 ? mix(vCol.rgb, vec3(1.0), (1.0 - t) * 0.25) : mix(vec3(1.0, 0.85, 0.5), vCol.rgb, t);
+		vec3 c = k == 38 ? mix(vCol.rgb, vec3(1.0), (1.0 - t) * 0.25) : mix(vec3(1.0, 0.85, 0.5), vCol.rgb, t);
 		add = c * (exp(-r * r * 18.0) * 1.5 + exp(-r * r * 4.0) * 0.25) * f;
 	} else if (k == 21) {
 		float f = I * (1.0 - t);

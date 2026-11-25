@@ -14,7 +14,8 @@ if /i "%~1"=="--dry-run" (
 set "AFTER_REF=%~1"
 set "BEFORE_REF=%~2"
 if not defined AFTER_REF set "AFTER_REF=origin/codex/issue-2046"
-if not defined BEFORE_REF set "BEFORE_REF=649f694d69343cdf8f0d954b7094fb0b6f2838fd"
+rem The shared bench needs Wounds V2 on both revisions.
+if not defined BEFORE_REF set "BEFORE_REF=96149fbb08feaa676a1bd447944fcad78ea5a3d8"
 if not defined VS_2046_SHOTS set "VS_2046_SHOTS=%VT%\board_e\issue-2046\shots"
 set "LB_HOME=%VT%\look_bench_2046"
 set "LB_TOOL_REF=%AFTER_REF%"

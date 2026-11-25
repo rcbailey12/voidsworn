@@ -56,6 +56,7 @@ func _statuses() -> void:
 	for faction in FACTIONS:
 		_reset()
 		var ship = _ship("T", faction)
+		var sooty: bool = faction not in ["ithar", "chorus"]
 		fx.tick("T", "fire")
 		var flame := fx.get_node_or_null("fx_tick_flame") as MeshInstance3D
 		_check(flame != null, "%s: the fire tick takes a baked picture" % faction)
@@ -68,8 +69,12 @@ func _statuses() -> void:
 			var tint: Color = m.get_shader_parameter("fac_mid")
 			_check(tint == (ship.fac.weapon if faction == "hegemony" else ship.fac.damage_glow),
 				"%s: fire takes its faction colour" % faction)
-		_check(fx.spr_kinds.has(8) and fx.spr_kinds.has(SH.TICK_EMBER) and not fx._lev.is_empty(),
-			"%s: the plume has separate neutral smoke, colour-locked embers and light" % faction)
+			_check((float(m.get_shader_parameter("fac_smoke")) > 0.0) == sooty,
+				"%s: baked plume keeps only its allowed soot" % faction)
+			_check(float(m.get_shader_parameter("fac_prism")) == (1.0 if faction == "ithar" else 0.0),
+				"%s: only the Glasswright plume has a prismatic edge" % faction)
+		_check(fx.spr_kinds.has(8) == sooty and fx.spr_kinds.has(SH.TICK_EMBER) and not fx._lev.is_empty(),
+			"%s: the plume has faction-appropriate smoke, colour-locked embers and light" % faction)
 
 	_reset()
 	var ship = _ship("T", "deathless")
@@ -99,29 +104,36 @@ func _statuses() -> void:
 
 
 func _storm() -> void:
-	for spec in [["hegemony", 30.0, 60.0], ["hegemony", 0.0, 60.0], ["deathless", 0.0, 0.0], ["chorus", 0.0, 0.0]]:
-		_reset(float(spec[1]) == 0.0)
+	for spec in [["hegemony", 30.0, 60.0], ["hegemony", null, null], ["hegemony", 0.0, 60.0],
+		["deathless", 0.0, 0.0], ["chorus", 0.0, 0.0]]:
+		var unsynced: bool = spec[1] == null
+		var live_shield: bool = unsynced or float(spec[1]) > 0.0
+		_reset(not live_shield)
 		var ship = _ship("T", spec[0])
-		fx.sync_ship("T", {"shp": spec[1], "shMax": spec[2], "sh": [0, 0, 0, 0]})
+		if not unsynced:
+			fx.sync_ship("T", {"shp": spec[1], "shMax": spec[2], "sh": [0, 0, 0, 0]})
+		else:
+			_check(ship.shielded and ship._shield_fraction < 0.0, "unsynced fixture has a shield but no pool snapshot")
 		fx.tick("T", "storm")
 		var arcs := _rows("storm_arc")
 		_check(arcs.size() == 1 and _rows("storm_fork").size() == 2 and fx.spr_kinds.has(18),
-			"%s at %d: arc, two forks and soft contact" % [spec[0], spec[1]])
+			"%s at %s: arc, two forks and soft contact" % [spec[0], "unsynced" if unsynced else str(spec[1])])
 		if not arcs.is_empty():
 			var row: Dictionary = arcs[0]
 			var pts: PackedVector3Array = row.path
 			_check(pts[0].y >= 12.0 and pts[-1].y < 6.0 and pts[0].distance_to(pts[-1]) > 7.0,
 				"the bolt spans the upper cloud bank to the ship")
-			if float(spec[1]) == 0.0:
+			if not live_shield:
 				_check(ship.hull.box.grow(0.05).has_point(ship.xf().affine_inverse() * pts[-1]),
 					"zero shield reaches true plating")
 			else:
-				_check(pts[-1].distance_to(ship.shield_point(pts[0]).p) < 0.01, "live shield catches the arc")
+				_check(pts[-1].distance_to(ship.shield_point(pts[0]).p) < 0.01 and ship._shield_until > fx.now,
+					"live shield catches the arc and ripples, even before pool sync")
 			fx.step(0.08)
 			_check(row.node.visible and fx._flashes.is_empty(), "arc is live and doesn't book an extra flash")
 		fx.step(STATUS.STORM_LIFE)
 		_check(fx.event_paths.live.is_empty(), "cloud-to-ship arc and forks expire")
-		if float(spec[1]) == 0.0 and ship._shield_mi != null:
+		if not live_shield and ship._shield_mi != null:
 			_check(ship._shield_until <= 0.0 and not ship._shield_mi.visible, "zero pool never brings the shield back")
 
 
@@ -174,6 +186,7 @@ func _boarding() -> void:
 
 
 func _run() -> void:
+	_check(SH.TICK_EMBER == 38 and SH.TICK_DROPLET == 39, "status sprites use the shared 38 and 39 slots")
 	_statuses()
 	_storm()
 	_boarding()

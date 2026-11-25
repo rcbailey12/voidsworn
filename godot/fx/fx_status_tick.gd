@@ -35,13 +35,14 @@ static func _fire(fx, ship, p: Vector3, n: Vector3, k: float) -> void:
 	mat.set_shader_parameter("min_pixels", 31.0)
 	mat.set_shader_parameter("fac_fire", hot)
 	mat.set_shader_parameter("fac_mid", col)
-	mat.set_shader_parameter("fac_prism", 0.0)
-	mat.set_shader_parameter("fac_smoke", 0.12)
+	var sooty: bool = ship.faction not in ["ithar", "chorus"]
+	mat.set_shader_parameter("fac_smoke", 0.12 if sooty else 0.0)
 	mat.set_shader_parameter("calm_intensity", 1.2)
-	for i in 5:
-		var flow: Vector3 = fx.rcone(n, 0.38)
-		fx.sprx(16.0, p, t + i * 0.07, 0.9 + i * 0.10, Color(0.17, 0.16, 0.20), 0.69,
-			0.55 * k, 3.1 * k, 8, flow * (2.4 * k), 0.75)
+	if sooty:
+		for i in 5:
+			var flow: Vector3 = fx.rcone(n, 0.38)
+			fx.sprx(16.0, p, t + i * 0.07, 0.9 + i * 0.10, Color(0.17, 0.16, 0.20), 0.69,
+				0.55 * k, 3.1 * k, 8, flow * (2.4 * k), 0.75)
 	for i in 9:
 		fx.sprx(4.0, p, t + i * 0.037, 0.48 + i * 0.046, col, 2.3,
 			0.16 * k, 0.055 * k, SH.TICK_EMBER, fx.rcone(n, 0.70) * (3.5 * k), 1.3)
@@ -106,7 +107,8 @@ static func _storm(fx, ship, sample: Dictionary) -> void:
 	var n: Vector3 = ship.dir_world(contact.n)
 	var local: Vector3 = contact.p
 	var t: float = fx.now
-	if ship._shield_mat != null and ship._shield_fraction > 0.0:
+	# A negative fraction means no pool snapshot yet, not an empty shield.
+	if ship._shield_mat != null and (ship._shield_fraction > 0.0 or (ship._shield_fraction < 0.0 and ship.shielded)):
 		var shield: Dictionary = ship.shield_point(cloud)
 		p = shield.p
 		n = shield.n
