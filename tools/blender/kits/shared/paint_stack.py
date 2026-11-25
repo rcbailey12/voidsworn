@@ -1227,10 +1227,14 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     # Ryan, Nov 12 16:32 CST: "a white square near the back and another white square underneath")
     if hasattr(S, 'inside_material'):
         inside = {}
+        # Interior Kit V2 (issue 1743, R416 Layer 3): insides built with the kit's UVs take the faction's shared trim maps
+        # (tools/blender/kits/shared/interior_trim.py); a blend built before it keeps the flat inside colours
+        v2 = bool(I) and all(o.get('interior_kit', 0) >= 2 and o.data.uv_layers.get('UVMap') for o in I)
+        INFO['interior_kit'] = 2 if v2 else 0
         for o in I:
             for i, sl in enumerate(o.material_slots):
                 z = sl.material.name if sl.material else 'room'
-                if z not in inside: inside[z] = S.inside_material(z)
+                if z not in inside: inside[z] = S.inside_material(z, trim=True) if v2 else S.inside_material(z)
                 o.material_slots[i].material = inside[z]
         INFO['inside_materials'] = sorted(m.name for m in inside.values())
     INFO['texel_density'] = texel_density(H, P, res, parts_res)

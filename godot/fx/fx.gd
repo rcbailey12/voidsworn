@@ -15,6 +15,8 @@ const SHIP := preload("res://fx/fx_ship.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 
+signal torpedo_shot_down(pos: Vector3)
+
 # Faction colours and styles come from data (fx/faction_looks.json via fx/faction_look.gd; API.md 15), so a faction's
 # palette can change without touching code. Styles are Claude's calls (vetoable).
 const FLOOK := preload("res://fx/faction_look.gd")
@@ -286,7 +288,6 @@ func release(wait := true) -> void:
 	_damage_templates.clear()
 	_power_templates.clear()
 	shield_poses.clear()
-	hull_shared.clear()
 	shield_keys.clear()
 	_dark_interiors.clear()
 	_wreck_interiors.clear()
@@ -375,6 +376,7 @@ static func clear_static() -> void:
 		if n != null and is_instance_valid(n):
 			n.release()
 	_live_ids.clear()
+	HULL.clear_static()   # look bench and standalone FX checks also call this quit path
 
 
 func setup(opts := {}) -> void:
@@ -1196,8 +1198,9 @@ func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 
 	_lev.append([p, t, life, peak, col, shape, reach, false])
 
 
-func light_source(node: Node3D, off: Vector3, col: Color, base: float, flick := 0.3) -> Dictionary:
-	var s = {"node": node, "off": off, "col": col, "base": base, "flick": flick, "seed": rng.randf() * 10.0, "on": true}
+# reach: the light's range in world units over unit (0: the standing LIGHT_REACH); R416 cavity lights keep it short.
+func light_source(node: Node3D, off: Vector3, col: Color, base: float, flick := 0.3, reach := 0.0) -> Dictionary:
+	var s = {"node": node, "off": off, "col": col, "base": base, "flick": flick, "seed": rng.randf() * 10.0, "on": true, "reach": reach}
 	_lsrc.append(s)
 	return s
 
@@ -1250,7 +1253,7 @@ func _update_lights() -> void:
 		var fl = 1.0 - float(s["flick"]) * (0.5 + 0.5 * sin(now * 23.0 + float(s["seed"])) * sin(now * 7.1 + float(s["seed"]) * 2.0))
 		if reduce_flashing:
 			fl = 1.0 - float(s["flick"]) * 0.3 * (0.5 + 0.5 * sin(now * 2.0 + float(s["seed"])))
-		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"], 0.0])
+		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"], float(s.get("reach", 0.0))])
 	_lsrc = ks
 	# brightest first, nearer lights count more when the pool is short
 	for e in ev:
@@ -1508,8 +1511,21 @@ func dark_interior(source: Material) -> Material:
 
 # Issue 1077 (prototype): a strained wreck's insides, powered down and sooted (the dark copy, its colour a third as bright
 # and fully rough), so torn decks read as burnt metal in the gap, not as flat grey panels. One copy per source material.
-func wreck_interior(source: Material) -> Material:
+# R416 5.3 (issue 1741, Wounds V2 on): instead, the faction's own interior shader settled into its wreck look (sooted iron
+# for the metal factions, pale bone and wet tissue for the Chorus, frosted glass for the Glasswrights, cold obsidian for
+# Eclipse), the same shader the live breach used, so the inside reads the same from the live hole into the wreck.
+func wreck_interior(source: Material, faction := "", L := 1.0) -> Material:
 	if source == null: return source
+	if faction != "" and BREACH.v2_on():
+		# Fable review M2: the wreck look settles in over WRECK_SETTLE seconds from the death, not in one step, so the
+		# material is kept per death moment (a tenth of a second) as well as per surface, faction and length
+		var t0 := snappedf(now, 0.1)
+		var key := [source, faction, snappedf(L, 0.01), t0]
+		if not _wreck_interiors.has(key):
+			var m := HULL.interior_material_v2(source, Transform3D.IDENTITY, {}, BREACH.wound_of(faction), L, 1.0)
+			m.set_shader_parameter("fx_wreck_t0", t0)
+			_wreck_interiors[key] = m
+		return _wreck_interiors[key]
 	if not _wreck_interiors.has(source):
 		var dark: Material = (dark_interior(source) as Material).duplicate()
 		if dark is BaseMaterial3D:
@@ -1592,8 +1608,14 @@ func _build_death_pieces() -> void:
 var prep_step := ""
 
 
+# issue 1519: a left battle stays in the tree, switched off (PROCESS_MODE_DISABLED), while main.gd frees it in slices
+# behind the title. Its awaits still wake there, so the load's warm-up stops at its next step instead of building on.
+func _parked() -> bool:
+	return closed or not is_inside_tree() or not can_process()
+
+
 func prepare_battle_hulls() -> void:
-	if closed or not is_inside_tree():
+	if _parked():
 		return
 	HULL.pause_late_watch()
 	_warm_hull_adapters()
@@ -1610,7 +1632,7 @@ func prepare_battle_hulls() -> void:
 			pend("prep:shield", t_s)
 			if Time.get_ticks_usec() >= deadline:
 				await get_tree().process_frame
-				if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+				if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 				deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	for value in ships.values():
 		var ship: SHIP = value
@@ -1635,7 +1657,7 @@ func prepare_battle_hulls() -> void:
 		pending.append(ship)
 		if Time.get_ticks_usec() >= deadline:
 			await get_tree().process_frame
-			if closed or not is_inside_tree():
+			if _parked():
 				return
 			deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	# Limit simultaneous cuts so the hull workers and renderer can make progress
@@ -1659,14 +1681,14 @@ func prepare_battle_hulls() -> void:
 					break
 		_finish_shield_skins()
 		await get_tree().process_frame
-		if closed or not is_inside_tree():
+		if _parked():
 			return
 	shared_cuts.clear()
 	prep_step = "shield skins and pieces"
 	while not _piece_builds.is_empty() or not _shield_jobs.is_empty():
 		_finish_shield_skins()
 		await get_tree().process_frame
-		if closed or not is_inside_tree():
+		if _parked():
 			return
 	defer_initial_cuts = false
 	prep_step = ""
@@ -1676,8 +1698,6 @@ func prepare_battle_hulls() -> void:
 var _death_cut_tasks := {}
 # Issue 1289: each fitted shield pose this battle built (fx_ship._posed_skin), shared by later ships of the same hull.
 var shield_poses := {}
-# Issue 1289: each hull's triangles, hit BVH and turret reach this battle (fx_hull.analyse), shared by later ships of it.
-var hull_shared := {}
 var shield_keys := {}   # issue 1289: each fitted shield skin's cache key by mesh set (fx_ship._shield_skin)
 
 
@@ -2201,7 +2221,7 @@ func _warm_fragment_finish(at: Vector3, t: float, color: Color) -> void:
 
 # Draw the effect materials under the loading cover so their pipelines are ready for battle.
 func warmup(cam: Camera3D, frames := 4) -> void:
-	if closed or not is_inside_tree() or not is_instance_valid(cam) or not cam.is_inside_tree():
+	if _parked() or not is_instance_valid(cam) or not cam.is_inside_tree():
 		return
 	# Issue 376: rebuilds under the load cover are expected. Start the late watch
 	# once the warm objects have drawn.
@@ -2209,12 +2229,12 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# ShipView sets its paint just after adding the meshes. Let the deferred mesh
 	# watcher apply the nebula's fog policy before deriving shaders from that paint.
 	await get_tree().process_frame
-	if closed or not is_inside_tree() or not is_instance_valid(cam) or not cam.is_inside_tree():
+	if _parked() or not is_instance_valid(cam) or not cam.is_inside_tree():
 		return
 	_warm_hull_adapters()
 	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
 	var c = Color(1, 0.6, 0.3)
@@ -2232,7 +2252,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
 	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	var tmp = Node3D.new()
 	tmp.name = "fx_warmup"
 	tmp.position = global_transform.affine_inverse() * at
@@ -2262,7 +2282,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			mats.append(DEATH.power_material(damage.duplicate(), death_story))
 	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	if not compat:
 		mats.append(mat(SH.SPRITE, 1, "#define SOFT\n"))
 	for band in ["small", "cruiser", "capital"]:
@@ -2273,7 +2293,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			mats.append(baked)
 		if warmup_batch > 0:
 			await get_tree().process_frame
-			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+			if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	mats.append(mat(SH.TEAR, 1))   # issue 462: the dying hull's tear overlay
 	# issue 220: the torpedo and rocket bodies (drive glow, star torpedo body, exhaust plume) and the weapon bursts' atlas
 	# shader: their first launch or hit compiled them mid-fight (a 53 ms frame with 3 surface pipelines at the gate scene)
@@ -2292,7 +2312,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		mats.append(wgas)
 		if warmup_batch > 0:
 			await get_tree().process_frame
-			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+			if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	for rel in ["weapons/impact/impact_", "weapons/impact/flash_", "weapons/macro/impact_", "weapons/macro/flash_", "death/small/flash_", "death/cruiser/flash_", "death/capital/flash_"]:
 		if rel.begins_with("weapons/"):
 			var hit := WEAP.hull_impact_material(self, rel)
@@ -2306,11 +2326,11 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			mats.append(production)
 		if warmup_batch > 0:
 			await get_tree().process_frame
-			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+			if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	DEATH.tear_particles(self, at, Vector3.UP, 0.1, Vector3.ZERO)
 	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	for i in mats.size():
 		# Pin generated hull shaders until release, even after the temporary warmup meshes go away.
 		_shaders["warm:" + str(mats[i].shader.code.hash())] = mats[i].shader
@@ -2365,7 +2385,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		hk = _warm_hull_meshes(tmp, ships[sid], seen, hk)
 		if warmup_batch > 0:
 			await get_tree().process_frame
-			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+			if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0][0]
@@ -2431,7 +2451,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 				(parked[i][1] as Node).add_child(parked[i][0])
 			if (i + 1) % warmup_batch == 0:
 				await RenderingServer.frame_post_draw
-				if closed or not is_inside_tree():   # issue 1434: a left battle waits two draws out of the tree before its free
+				if _parked():   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 					_free_warm_parked()
 					if is_instance_valid(tmp):
 						tmp.queue_free()
@@ -2439,7 +2459,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		_free_warm_parked()   # a parent gone meanwhile left its mesh out of the tree: free it here
 	for i in frames:
 		await RenderingServer.frame_post_draw
-		if closed or not is_inside_tree():
+		if _parked():
 			if is_instance_valid(tmp):
 				tmp.queue_free()
 			return
@@ -2512,4 +2532,18 @@ func _warm_hull_meshes(tmp: Node3D, sh: SHIP, seen: Dictionary, hk: int) -> int:
 		pm.position = dm.position + Vector3.RIGHT * unit
 		tmp.add_child(dm)
 		tmp.add_child(pm)
+		# R416 (Wounds V2): the interior shader in this hull's vertex format, once per format, before the first breach
+		var ikey := "interior_warm_%d" % smi.mesh.surface_get_format(0) if smi.mesh.get_surface_count() > 0 else "interior_warm_none"
+		if BREACH.v2_on() and sh.hull.authored and not _warm_seen.has(ikey):
+			_warm_seen[ikey] = true
+			var im := MeshInstance3D.new()
+			im.mesh = smi.mesh
+			im.material_override = HULL.interior_material_v2(null, Transform3D.IDENTITY, {"count": -1}, BREACH.wound_of(sh.faction), sh.hull.L)
+			# kept for the battle (the shader cache is weak): freed with the stand-in, the shader was made again on the
+			# first breach and compiled late (V2B PC run, Nov 22: "late shader: interior v2")
+			_damage_templates["interior_v2_" + ikey] = im.material_override
+			im.scale = dm.scale
+			im.position = dm.position + Vector3.LEFT * unit
+			tmp.add_child(im)
+			stats["interior_warm_draws"] = int(stats.get("interior_warm_draws", 0)) + 1
 	return hk

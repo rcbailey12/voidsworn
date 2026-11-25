@@ -26,6 +26,9 @@ const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const STORM_TICK_LIFE := 0.45
 
 const HD := preload("res://world/hull_debris.gd")
+const DEATH := preload("res://fx/fx_death.gd")
+const SV := preload("res://render/ship_view.gd")
+const STAGE_IN := preload("res://render/stage_in.gd")
 var _chunk_task := -1
 var _chunk_job := {}
 var _wreck_slots: Array = []  # one replaceable kit slot per hex for issue 49's painted hull chunks
@@ -1563,10 +1566,12 @@ func use_ship_debris(ships: Array) -> void:
 	if W._terr_pts.debris.is_empty() or _chunk_task >= 0 or has_node("HullDebris"): return
 	var sources := HD.gather(ships)
 	if sources.is_empty(): return  # keep current debris when assets are absent
-	_chunk_job = {"sources": sources, "chunks": []}
-	var job := _chunk_job
-	_chunk_task = WorkerThreadPool.add_task(func() -> void: job.chunks = HD.cut(job.sources))
+	_chunk_job = {"sources": sources, "chunks": [], "abort": DEATH.CutAbort.new()}
+	_chunk_task = WorkerThreadPool.add_task(_cut_chunks.bind(_chunk_job), false, "board debris cut")
 	_install_chunks()
+
+static func _cut_chunks(job: Dictionary) -> void:
+	job.chunks = HD.cut(job.sources, job.abort)
 
 # issue 1434 (LOAD29 cold s25: the 7 chunk meshes landed in one prepare_hulls draw, 83 pipelines and 7 s): true while the
 # chunks are still being cut on the worker, so the battle's load waits and stages them in with the rest
@@ -1586,24 +1591,39 @@ func _install_chunks() -> void:
 		if not is_inside_tree() or _chunk_task < 0: return
 	WorkerThreadPool.wait_for_task_completion(_chunk_task)
 	_chunk_task = -1
-	var t_meshes := Time.get_ticks_usec()
-	var meshes := HD.meshes(_chunk_job.chunks)
-	SKEEP.event("debris meshes made (%d, %d ms)" % [meshes.size(), (Time.get_ticks_usec() - t_meshes) / 1000])
-	# These are old, weathered board wrecks, not fresh deaths. Keep their cut caps
-	# cold; only the kit's three bounded torn-edge points carry residual heat.
-	for chunk in _chunk_job.chunks:
+	var chunks: Array = _chunk_job.chunks
+	_chunk_job = {}
+	var meshes := []
+	var sliced := not get_tree().get_nodes_in_group("battle_loading").is_empty()
+	_installing = true
+	for chunk in chunks:
+		var t_mesh := Time.get_ticks_usec()
+		var mesh := HD.build_mesh(chunk)
+		if mesh.get_surface_count() == 0:
+			continue
+		# These are old wrecks, not fresh deaths. Only the kit's torn-edge points carry residual heat.
 		if chunk.get("cap_mat") is ShaderMaterial:
 			(chunk.cap_mat as ShaderMaterial).set_shader_parameter("heat", 0.0)
-	_chunk_job = {}
-	if meshes.is_empty(): return
+		mesh.resource_name = "chunk %d" % meshes.size()
+		meshes.append(mesh)
+		SKEEP.event("debris %s buffers made (%d ms)" % [mesh.resource_name, (Time.get_ticks_usec() - t_mesh) / 1000])
+		if sliced:
+			await get_tree().process_frame
+			if not is_inside_tree():
+				_installing = false
+				return
+	if meshes.is_empty():
+		_installing = false
+		return
 	var holder := Node3D.new()
 	holder.name = "HullDebris"
 	add_child(holder)
-	# issue 1434 (LOAD32): one chunk alone still made 59 surface pipelines in a 5.9 s frame (cold and warm), all of its
-	# materials' shaders at once. While a battle loads, its first mesh joins once per surface, the other surfaces on a
-	# plain material, so each shader's pipelines land in a frame of their own.
-	if not _wreck_slots.is_empty() and not get_tree().get_nodes_in_group("battle_loading").is_empty():
-		if not await _warm_surfaces(holder, meshes[0], (_wreck_slots[0].xf as Transform3D).origin):
+	# LOAD38: give each material/layout pair a lit draw and a shadow pass before
+	# the real chunk joins, without showing the proxy in the live scene.
+	if not _wreck_slots.is_empty() and sliced:
+		var stage := STAGE_IN.new()
+		if not await stage.warm_meshes(holder, meshes, "debris", Callable(), true):
+			_installing = false
 			return
 	var index := 0
 	var replaced := {}
@@ -1660,48 +1680,15 @@ func _install_chunks() -> void:
 	_wreck_slots.clear()
 	W.notes.append("painted hull debris: %d cached chunks, %d instances" % [meshes.size(), index])
 
-# Joins `mesh` once per surface at `at`, a speck the size of a dust grain, the other surfaces on one plain material,
-# a frame apart; false when the world left the tree meanwhile. LOAD33c: one surface alone still made 73 pipelines in a
-# 5.7 s cold frame, so each surface first joins without shadows (its colour passes) and casts them a frame later (its
-# shadow passes).
-func _warm_surfaces(holder: Node3D, mesh: Mesh, at: Vector3) -> bool:
-	var plain := StandardMaterial3D.new()
-	var mi := MeshInstance3D.new()
-	mi.name = "SurfaceWarm"
-	mi.mesh = mesh
-	mi.scale = Vector3.ONE * 0.001
-	mi.position = at
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	for s in mesh.get_surface_count():
-		mi.set_surface_override_material(s, plain)
-	holder.add_child(mi)
-	_installing = true
-	var steps: Array = [[-1, true]]   # the plain material's shadow pass first
-	for k in mesh.get_surface_count():
-		steps.append([k, false])
-		steps.append([k, true])
-	for st in steps:
-		await get_tree().process_frame
-		if not is_inside_tree() or not is_instance_valid(mi):
-			_installing = false
-			return false
-		var k: int = st[0]
-		for s in mesh.get_surface_count():
-			mi.set_surface_override_material(s, null if s == k else plain)
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if st[1] else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		SKEEP.event("debris warm surface %d of %d%s" % [k, mesh.get_surface_count(), " with shadows" if st[1] else ""])
-	await get_tree().process_frame
-	_installing = false
-	if not is_inside_tree() or not is_instance_valid(mi): return false
-	mi.queue_free()
-	return true
-
 func _exit_tree() -> void:
 	for mat in _legacy_debris_mats:
 		mat.set_shader_parameter("living_terrain", false)
 	if _chunk_task >= 0:
-		WorkerThreadPool.wait_for_task_completion(_chunk_task)
+		_chunk_job.abort.cancel()
+		# The worker only owns data. Reap it after leaving the tree, not on the first title frame.
+		SV.retire_build([], [{"tid": _chunk_task, "keep": _chunk_job}])
 		_chunk_task = -1
+		_chunk_job = {}
 
 
 # Issue 1268: capture-only colour options for Ryan's sky sheet. Off unless a capture sets the env vars;

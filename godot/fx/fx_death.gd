@@ -10,6 +10,8 @@ extends RefCounted
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
+const FLOOK_W := preload("res://fx/faction_look.gd")
 const SKEEP := preload("res://render/shader_keep.gd")   # issue 1434: one Shader per code for the session
 const BEATS := preload("res://fx/fx_death_beats.gd")   # issue 1586: cause, faction, archetype and afterlife beats
 
@@ -1552,7 +1554,7 @@ static func precompute(fx, s, cause := "blast", under_cover := false, shared_cut
 				sd["tur"] = tk
 				sd["anchor"] = inv * (s.hull.turrets[tk]["node"] as Node3D).global_transform.origin
 			surfs.append(sd)
-	var inputs := {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus",
+	var inputs := {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "faction": s.faction, "L": s.hull.L,
 		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan, "authored": s.hull.authored,
 		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
 		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn}
@@ -1710,6 +1712,18 @@ static func _piece_geometry(pc: Dictionary) -> ArrayMesh:
 	return am
 
 
+# Neon's work audit (PR 1902, Fable M2): a piece mesh built ahead of the death carries a wreck interior stamped with the
+# time it was built, so its wreck look was fully settled on the first frame. At the break its interior surfaces take the
+# wreck interior of the death moment (fx.wreck_interior keys by it), so the look settles in over WRECK_SETTLE from then.
+static func _restamp_interiors(fx, am: ArrayMesh, pc: Dictionary) -> void:
+	if fx == null or not fx.death_story: return
+	var si := 0
+	for sd in pc["surfs"]:
+		if bool(sd.get("interior", false)) and si < am.get_surface_count():
+			am.surface_set_material(si, fx.wreck_interior(sd["mat"], String(pc.get("faction", "")), float(pc.get("L", 1.0))))
+		si += 1
+
+
 # The piece's materials, in surface order (main thread).
 static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, fx = null) -> ArrayMesh:
 	var si := 0
@@ -1717,19 +1731,26 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, 
 		if bool(sd.get("interior", false)):
 			# issue 1077 (prototype): the grouped wreck keeps its torn insides in view up close, and the live inside paint read
 			# as flat grey slabs there (pass 3, c26), so a strained wreck's insides are powered down and sooted
-			am.surface_set_material(si, fx.wreck_interior(sd["mat"]) if fx != null and fx.death_story else sd["mat"])
+			# R416 5.3 (Wounds V2): the faction's own interior shader carries on into the wreck (fx.wreck_interior)
+			am.surface_set_material(si, fx.wreck_interior(sd["mat"], String(pc.get("faction", "")), float(pc.get("L", 1.0))) if fx != null and fx.death_story else sd["mat"])
 			si += 1
 			continue
 		var length := float(pc.get("section_scale", 1.0))
 		var organic := bool(pc.get("organic", false))
 		var base: ShaderMaterial = fx.hull_damage_template(sd["mat"], 1.0, organic) if fx != null else null
-		var hull_mat: ShaderMaterial = base.duplicate() if base != null else HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, length, organic)
+		var hull_mat: ShaderMaterial = base.duplicate() if base != null else HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, length, organic, weathered)
 		if base != null:
 			hull_mat.set_shader_parameter("fx_burnt_cell", Vector3.ONE * maxf(length * 0.05, 0.001))
 		hull_mat.set_shader_parameter("fx_power", 0.0)
 		hull_mat.set_shader_parameter("fx_weather", 0.8 if weathered else 0.0)
 		var rim = (pc.get("dstyle", {}) as Dictionary).get("rim")
 		if rim is Color: hull_mat.set_shader_parameter("fx_scorch_col", rim)
+		# Issue 1741 (JOINT_B, Nov 23: every wreck's scorched plating glittered with dots in the faction rim colour at 6 s):
+		# with Wounds V2 on, a wreck piece's plating carries its faction's wound profile, so the scorch keeps the
+		# faction's soot weight and only steel (Sunward, Hullbreakers) keeps a few cooling embers (fx_hull.gd EXTERIOR)
+		if WOUNDS.v2():
+			var wv = FLOOK_W.of(String(pc.get("faction", ""))).get("wound", {})
+			HULL.set_v2(hull_mat, wv if wv is Dictionary else {})
 		# issue 484: blackened, heat-stained plating round the wound (fx_hull.gd DAMAGE_UNIFORMS, fx_scorch)
 		var scorch: Array = pc.get("scorch", [])
 		if not scorch.is_empty():
@@ -2027,7 +2048,8 @@ static func _blank_pieces(job: Dictionary, plan: Dictionary, ns: int, n_main: in
 	var pieces: Array = []
 	for c in ns:
 		pieces.append({"surfs": [], "pts": PackedVector3Array(), "edge": PackedVector3Array(), "n": 0, "organic": job.get("organic", false),
-			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan, "authored": job.get("authored", false)})
+			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan, "authored": job.get("authored", false),
+			"faction": job.get("faction", ""), "L": job.get("L", 1.0)})
 	return pieces
 
 
@@ -3759,6 +3781,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		if (pc["surfs"] as Array).is_empty():
 			continue
 		var am: ArrayMesh = meshes[i]
+		_restamp_interiors(fx, am, pc)   # built ahead: the wreck look starts at the death (PR 1902)
 		var cen: Vector3 = pc["cen"] if pc.has("cen") else Vector3.ZERO
 		if not pc.has("cen"):
 			for p in (pc["pts"] as PackedVector3Array):
@@ -3976,6 +3999,7 @@ static func _make_frags(fx, s, wreck: Dictionary, job: Dictionary, pieces: Array
 		var pc: Dictionary = pieces[i]
 		if (pc["surfs"] as Array).is_empty(): continue
 		var am: ArrayMesh = meshes[i]
+		_restamp_interiors(fx, am, pc)   # built ahead: the wreck look starts at the death (PR 1902)
 		var cen: Vector3 = pc["cen"] if pc.has("cen") else Vector3.ZERO
 		var node := Node3D.new()
 		node.name = "fx_wreck_frag_%s_%d" % [s.id, i]
