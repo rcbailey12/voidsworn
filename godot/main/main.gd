@@ -825,19 +825,37 @@ func _take_parked(now_3d: bool) -> bool:
 func _free_after_title_draws(b: Node, parts: Dictionary, vp: Viewport, restore_3d: bool) -> void:
 	var draws := 0
 	while draws < 2:
-		await RenderingServer.frame_post_draw
+		await _after_draw()
 		if quitting or not is_instance_valid(b) or _retired != b:
-			return   # quit_clean owns the parked battle now
-		if is_instance_valid(title) and title.is_inside_tree() and not title.is_queued_for_deletion():
+			_give_back_3d(b, vp, restore_3d)
+			return   # quit_clean owns the parked battle now, or a newer park holds the saved setting
+		if _title_up():
 			draws += 1
 		else:
-			# The player left the title after its first draw. Do not keep the next screen's 3D off.
-			if draws > 0:
-				break
+			# The player left the title, or replaced it, before its first draw or after it. Do not keep the next screen's 3D
+			# off: leave the wait now (issue 2161, Artoo on PR 2154). _free_in_slices sees no title and frees the rest at once.
+			break
 	if not await _free_in_slices(b, parts):
+		_give_back_3d(b, vp, restore_3d)
 		return   # quit_clean owns the rest of the parked battle now
 	_retired = null
 	vp.disable_3d = restore_3d
+
+
+# One painted frame (a seam: the check for the wait below has no window, so it waits a process frame instead)
+func _after_draw() -> void:
+	await RenderingServer.frame_post_draw
+
+
+# issue 2161: an exit from the parked battle's wait that is neither a close (quit_clean owns the rest) nor a newer park
+# (it took the 3D setting through _take_parked) still owes the viewport its 3D back
+func _give_back_3d(b, vp: Viewport, restore_3d: bool) -> void:   # b untyped: it may already be freed
+	if quitting or (retire_pending() and _retired != b):
+		return
+	if _retired == b:
+		_retired = null
+	if is_instance_valid(vp):
+		vp.disable_3d = restore_3d
 
 
 var _retired: Node = null   # parked battle waiting for the title paints, its slices or a close

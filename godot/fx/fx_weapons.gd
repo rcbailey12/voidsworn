@@ -1915,6 +1915,7 @@ const IMPACT_RESPONSE := {
 	"obsidian": {"fire_body": true, "gas_kind": 0, "debris": "plate", "faction_glow": true},
 }
 const METAL_EMBER := Color(0.42, 0.07, 0.02)
+const EMBER_KEEP := 1.0   # the ember sprite's spin value that keeps its tint from the first frame (see _embers)
 
 
 static func _impact_response(target) -> Dictionary:
@@ -1945,8 +1946,9 @@ static func _impact_gas(fx, p: Vector3, n: Vector3, T: float, k: float, col: Col
 static func _impact_embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, fam: String,
 		response: Dictionary, target, col := METAL_EMBER) -> void:
 	if response.fire_body:
-		var ember: Color = target.fac.damage_glow * 0.35 if response.get("faction_glow", false) else col
-		_embers(fx, p, n, T, k, count, fam, ember)
+		var glow: bool = response.get("faction_glow", false)
+		var ember: Color = target.fac.damage_glow * 0.35 if glow else col
+		_embers(fx, p, n, T, k, count, fam, ember, glow)
 
 
 # Issue 461: the weapon family whose hit recipe a look uses (deaths_and_hits.md "The hits, upgraded"). Shell: a spark
@@ -2113,12 +2115,15 @@ static func _gas_cloud(fx, p: Vector3, n: Vector3, T: float, k: float, col: Colo
 
 
 # Embers: small sparks of hot metal that hang near the plate and cool yellow-white to dark red, with no flicker.
-static func _embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, fam: String, col := METAL_EMBER) -> void:
+# `keep_tint` (the Eclipse damage glow, R372, RULEBOOK 10.9): the ember starts violet-white, never the warm yellow-white of
+# metal (the sprite's spin channel carries it; kind 19 in fx_shaders.gd).
+static func _embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, fam: String, col := METAL_EMBER,
+		keep_tint := false) -> void:
 	for j in _amount(fx, int(ceil(count * 1.5))):
 		var d := _outward(n, fx.rcone(n, 0.85), 0.2)
 		var v: Vector3 = d * fx.rng.randf_range(0.6, 3.2) * k * fx.unit
 		var life: float = fx.rng.randf_range(EMBER_LIFE.x, EMBER_LIFE.y)
-		fx.spr(p, T + fx.rng.randf() * 0.12, life, col, 1.6, 0.18 * k, 0.09 * k, 19, v, 0.5, 0.0, 0.0, 6.0)
+		fx.spr(p, T + fx.rng.randf() * 0.12, life, col, 1.6, 0.18 * k, 0.09 * k, 19, v, 0.5, EMBER_KEEP if keep_tint else 0.0, 0.0, 6.0)
 		_note(fx, "ember", fam, v, n, life)
 
 
@@ -2296,7 +2301,8 @@ static func _energy_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 			var d := _outward(n, tang + n * 0.12, 0.08)
 			var v: Vector3 = d * fx.rng.randf_range(5.0, 13.0) * k * fx.unit
 			var life: float = fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y)
-			fx.spr(p + n * 0.05 * k, T + fx.rng.randf() * 0.03, life, c, 1.8, 0.14 * k, 0.06 * k, 19, v, 1.8, 0.0, 0.0, 6.0)
+			fx.spr(p + n * 0.05 * k, T + fx.rng.randf() * 0.03, life, c, 1.8, 0.14 * k, 0.06 * k, 19, v, 1.8,
+				EMBER_KEEP if response.get("faction_glow", false) else 0.0, 0.0, 6.0)
 			fx.stk(p + n * 0.05 * k, T, life * 0.6, c, 1.4, 0.16 * k, 0.045 * k, 1, v, 1.8, 0.0, 2.0, 9.0)
 			_note(fx, "spark", "energy", v, n, life)
 	_impact_embers(fx, p + n * 0.1 * k, n, T + 0.08, k, 4 + w, "energy", response, Tg, col * 0.35)

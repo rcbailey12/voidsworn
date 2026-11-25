@@ -6865,6 +6865,11 @@ func _class_label(cls) -> String:
 
 
 func _objective() -> String:
+	if boss_fight:   # R440 (issue 1885): only the boss's death wins a boss fight, so the line says so (the rout line is wrong here)
+		for u in V["units"]:
+			if u["flagship"] and u["side"] == "enemy":
+				return "Objective: destroy the boss %s" % u["name"]
+		return "Objective: destroy the boss"
 	var o = V.get("obj")
 	if o == null or o.get("type") in ["rout", "ambush"]:
 		return "Objective: break their fleet"

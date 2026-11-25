@@ -76,11 +76,11 @@
       "Took hits from your fleet {scars} on the way in, and my reactor's still hotter than yours!"
     ],
     "memory": {
-      "lance": "Your long beams chewed us up last time, so my engineers doubled the screen capacitors. Try punching through now.",
+      "lance": "The reports say your long beams chew through screens, so my engineers doubled the capacitors. Try punching through now.",
       "torp": "Still hiding behind torpedo spreads? My flak crews have been drilling intercept patterns since you jumped out.",
       "sq": "Your strike wings stung us before, alright. Brought enough spark flak this time to turn your flight lanes into scrap.",
       "ram": "Tried to cave our bow in like a Hullbreaker, didn't you? Welded three extra layers of black iron onto the front just for you.",
-      "board": "Your breach teams made it inside my corridors last time. Every bulkhead's got armed watch crews waiting behind it now.",
+      "board": "I hear your breach teams like to get inside a hull. Every bulkhead's got armed watch crews waiting behind it.",
       "battery": "You outgunned us in a slugging match before. We're not sitting still inside your flank arcs this round.",
       "evasive": "Couldn't pin you down last fight. Good thing we brought wider fire lanes and longer fuses this time."
     },
@@ -183,10 +183,10 @@
     "memory": {
       "lance": "Your lance fire stressed my deflectors previously. Meridian issued reinforced capacitors for this deployment.",
       "torp": "You leaned heavily on torpedoes in our last engagement. My point-defense officers have been replaced and re-drilled.",
-      "sq": "Your strike wings exploited a gap in our fighter screen last time. That flight officer is no longer on my bridge.",
+      "sq": "Your dossier says your strike wings exploit any gap in a fighter screen. I had mine audited, and no gap remains.",
       "ram": "Ramming a Directorate column is crude, though effective once. My bows now carry reinforced impact bulkheads.",
       "board": "Your breach teams accessed my interior corridors previously. Marine detachments have orders to vent any compromised deck.",
-      "battery": "Close-range battery fire favored you last time. We intend to control engagement distance today.",
+      "battery": "Your dossier favors close-range battery fire. We intend to control engagement distance today.",
       "evasive": "Your erratic maneuvering degraded our gunnery solution previously. My crews have run four hundred tracking drills since."
     },
     "personality": {
@@ -286,12 +286,12 @@
       "Marked me {scars} across these lanes, and I'm still standing! Let's see how your armor looks after today!"
     ],
     "memory": {
-      "lance": "Your beams carved right through my escorts last time, so we welded double thickness onto every flank. Shoot at that!",
+      "lance": "Word is your beams carve right through escorts, so we welded double thickness onto every flank. Shoot at that!",
       "torp": "Loved throwing torpedoes at us, didn't you? Brought twice as many rocket pods this time, let's see who runs out of flak first!",
       "sq": "Your little fighters chewed up our radiators last fight. Bolted flak guns onto every spare hardpoint since!",
       "ram": "You actually rammed my flagship! Now that's proper fighting! Come try it again on my new bow spike!",
       "board": "Your breach crews stole my best cruiser last round. I'm taking her back, and I'm welding your bridge crew into my engine gangs!",
-      "battery": "You hammered us with close fire last time. Bolted thicker plate onto every cruiser, half of it stripped off your own wrecks!",
+      "battery": "Word is you love hammering ships with close fire. Bolted thicker plate onto every cruiser, half of it stripped off other people's wrecks!",
       "evasive": "You kept slipping out of my claws last battle. Won't help you when my whole pack closes the lane!"
     },
     "personality": {

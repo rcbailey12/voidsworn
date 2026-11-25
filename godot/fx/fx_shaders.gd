@@ -238,7 +238,7 @@ void process() {
 # Sprites (camera-facing). kinds:
 #  0 flash   1 flame   2 fireball core   3 smoke   4 engine core   5 squib   7 vent gas   8 soot   11 sputtering core
 #  12 beam charge   13 beam impact flare   14 plasma bolt   15 bio glob   16 prism glint   17 star ball
-#  18 soft lift (reduce-flashing pop: a gentle glow, no peak)   19 ember   20 acid fume   21 heat glow (cooling metal)
+#  18 soft lift (reduce-flashing pop: a gentle glow, no peak)   19 ember (spin 1.0 keeps its tint: Eclipse violet-white)   20 acid fume   21 heat glow (cooling metal)
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
@@ -261,6 +261,7 @@ varying vec4 vCol;
 varying vec4 vInfo;
 varying float vLife;
 varying float vDepth;
+varying float vKeep;
 #ifdef SOFT
 """ + DEPTH + """
 #endif
@@ -269,7 +270,7 @@ void vertex() {
 	float a = scene_t - a0.w;
 	float age = pAge(a, a4.x);
 	float life = a1.w;
-	vUv = vec2(0.0); vCol = vec4(0.0); vInfo = vec4(0.0); vLife = life;
+	vUv = vec2(0.0); vCol = vec4(0.0); vInfo = vec4(0.0); vLife = life; vKeep = 0.0;
 	if (a < 0.0 || age >= life || gate <= 0.0 || a2.a <= 0.0) {
 		""" + HIDE + """
 	} else {
@@ -357,6 +358,7 @@ void vertex() {
 		}
 		vCol = vec4(a2.rgb, power * gate * boost);
 		vInfo = vec4(t, a3.z, sd, age);
+		vKeep = a4.w;   // ember (19) only: spin has no look on a round ember, so 1.0 here means "keep the tint" (see kind 19)
 	}
 }
 void fragment() {
@@ -457,7 +459,11 @@ void fragment() {
 		add = vCol.rgb * exp(-r * r * 2.5) * f;
 	} else if (k == 19) {
 		float f = spow(1.0 - t, 1.2) * I;
-		vec3 c = mix(vec3(1.0, 0.85, 0.5), vCol.rgb, t);
+		// Metal embers start hot yellow-white and cool to their tint. An ember that keeps its tint (spin 1.0: the Eclipse
+		// damage glow, R372 and RULEBOOK 10.9) starts violet-white, the tint at full strength lifted halfway to white, so no
+		// warm yellow is ever mixed in (issue 2161, Artoo on PR 1736).
+		vec3 keep = mix(vCol.rgb / max(max(vCol.r, vCol.g), max(vCol.b, 0.001)), vec3(1.0), 0.5);
+		vec3 c = mix(vKeep > 0.5 ? keep : vec3(1.0, 0.85, 0.5), vCol.rgb, t);
 		add = c * (exp(-r * r * 18.0) * 1.5 + exp(-r * r * 4.0) * 0.25) * f;
 	} else if (k == 21) {
 		float f = I * (1.0 - t);

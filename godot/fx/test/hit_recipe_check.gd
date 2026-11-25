@@ -173,6 +173,11 @@ func _run() -> void:
 	await _yield_check()
 	await _shield_torp_check()
 	await _lance_kill()
+	# issue 2161: the ember shader mixes its warm yellow-white start in only when the sprite does not keep its tint
+	var at19: int = SH.SPRITE.find("} else if (k == 19) {")
+	var body19: String = SH.SPRITE.substr(at19, SH.SPRITE.find("} else if (k == 21) {") - at19) if at19 >= 0 else ""
+	_check(body19.contains("vKeep > 0.5 ? keep : vec3(1.0, 0.85, 0.5)") and not body19.contains("mix(vec3(1.0, 0.85, 0.5), vCol.rgb, t)"),
+		"the ember shader keeps the warm start for metal only; a keep-tint ember starts violet-white")
 	# 8. the engine core flicker and the scar cap
 	_check(SH.SPRITE.find("flick(0.95 + 0.05 * vnoise(vec2(scene_t * 31.0") >= 0, "engine cores flicker 0.95 to 1.0 only")
 	_check(SH.SPRITE.find("flick(0.85 + 0.15 * vnoise(vec2(scene_t * 31.0") < 0, "the old 0.85 to 1.0 engine flicker is gone")
@@ -218,6 +223,7 @@ func _substance_hits() -> void:
 			else:
 				_check(plate.emitted > 0 and (look == "crit" or (kinds.has(27) and kinds.has(19))),
 					label + ": metal keeps its plates, soot and embers")
+				_check(_ember_spins(fx, 0.0), label + ": metal embers keep their hot yellow-white start (no keep-tint flag)")
 			# The fire body starts on the second beat. Inspect the live pooled pictures after it would arrive.
 			fx.now += 0.03
 			fx._run_later()
@@ -250,6 +256,15 @@ func _glass_shards(plate: FRAGMENTS.Pool) -> bool:
 	return true
 
 
+# Every ember sprite (kind 19) booked so far carries this spin value.
+func _ember_spins(fx: FX, want: float) -> bool:
+	var sprites: POOLS.Pool = fx.pools["spr"]
+	for i in range(0, sprites.pending.size(), POOLS.STRIDE * sprites.vpp):
+		if int(sprites.pending[i + 18]) == 19 and not is_equal_approx(float(sprites.pending[i + 3]), want):
+			return false
+	return true
+
+
 func _eclipse_ejecta(fx: FX, glow: Color) -> bool:
 	var streaks: POOLS.Pool = fx.pools["stk"]
 	var sprites: POOLS.Pool = fx.pools["spr"]
@@ -260,6 +275,10 @@ func _eclipse_ejecta(fx: FX, glow: Color) -> bool:
 		for i in range(0, pool.pending.size(), POOLS.STRIDE * pool.vpp):
 			if pool == sprites and int(pool.pending[i + 18]) != 19:
 				continue
+			# issue 2161 (Artoo on PR 1736): every Eclipse ember and spark keeps its tint from its first frame, never the
+			# warm yellow-white a metal ember starts with (the sprite's spin channel, 3 floats into the particle)
+			if pool == sprites and not is_equal_approx(float(pool.pending[i + 3]), WEAP.EMBER_KEEP):
+				return false
 			var tint := Vector3(pool.pending[i + 12], pool.pending[i + 13], pool.pending[i + 14])
 			if not tint.is_equal_approx(expected) and not tint.is_equal_approx(expected * 0.35):
 				return false

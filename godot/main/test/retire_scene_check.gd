@@ -10,7 +10,10 @@ extends SceneTree
 #   4. a second leave while an older battle is still parked frees the older one, and gives back the first 3D setting;
 #   5. the awaiting load steps of a parked battle stop at their next step in the tree too (the _parked guards in
 #      world.gd, board.gd and fx.gd), where before they stopped only once the battle was out of the tree.
-# The window's draw wait before the slices (_free_after_title_draws) needs a window, so the PC CLOSE5 run covers it.
+#   6. (issue 2161, Artoo on PR 2154) the draw wait before the slices (_free_after_title_draws): a title gone before its
+#      first draw (draws == 0) leaves the wait, frees the battle and gives the 3D setting back; a battle freed under the
+#      wait gives it back too; a close and a newer park keep owning it. The wait's own timing on a window is still the PC
+#      CLOSE5 run.
 
 const MAIN := preload("res://main/main.gd")
 const GUARD := preload("res://tools/ci/check_guard.gd")
@@ -33,6 +36,9 @@ class TestMain extends MAIN:
 
 	func _battle_packed() -> PackedScene:
 		return stub
+
+	func _after_draw() -> void:
+		await get_tree().process_frame   # no window here, so no painted frame: a process frame stands in
 
 
 # stands in for the backdrop battle: notes whether the old battle was still waiting when it was built
@@ -101,6 +107,76 @@ func _title(m: TestMain) -> void:
 	var t := FakeHud.new()
 	m.add_child(t)
 	m.title = t
+
+
+# Runs _free_after_title_draws on the real root viewport with 3D off, as _retire_battle leaves it, and returns the state
+# after `frames` frames: [3D still off, parked battle freed, _retired cleared]
+func _wait_state(m: TestMain, b: Node, frames: int, restore_3d: bool) -> Array:
+	root.disable_3d = true
+	var run := func() -> void: await m._free_after_title_draws(b, {}, root, restore_3d)
+	run.call()
+	for i in frames:
+		await process_frame
+	return [root.disable_3d, not is_instance_valid(b), m._retired == null]
+
+
+func _draw_wait_exits(m: TestMain) -> void:
+	var was_off := root.disable_3d
+	# 6a. no title at the first draw (left before it drew): the wait ends, the battle goes, 3D comes back
+	if m.title != null:
+		m.title.free()
+		m.title = null
+	var b := _old_battle(m, "E")
+	m._retired = b
+	var st: Array = await _wait_state(m, b, 40, false)
+	_check(not st[0] and st[1] and st[2], "a title gone before its first draw: the wait ends, the battle is freed and 3D is back on (3D off %s, freed %s)" % [st[0], st[1]])
+	# 6b. the restore is the saved setting, not always on
+	_title(m)
+	m.title.free()
+	m.title = null
+	var b2 := _old_battle(m, "F")
+	m._retired = b2
+	st = await _wait_state(m, b2, 40, true)
+	_check(st[0] and st[1] and st[2], "the saved 3D setting is given back as it was (it was off)")
+	# 6c. a title that draws twice takes the old path: freed in slices, 3D back
+	_title(m)
+	var b3 := _old_battle(m, "G")
+	m._retired = b3
+	st = await _wait_state(m, b3, 120, false)
+	_check(not st[0] and st[1] and st[2], "a title that stays up: freed in slices after its draws and 3D is back on")
+	# 6d. the battle is freed under the wait (not a close): 3D still comes back
+	var b4 := _old_battle(m, "H")
+	m._retired = b4
+	root.disable_3d = true
+	var run := func() -> void: await m._free_after_title_draws(b4, {}, root, false)
+	run.call()
+	b4.free()
+	for i in 4:
+		await process_frame
+	_check(not root.disable_3d and m._retired == null, "a parked battle freed under the wait still gives 3D back")
+	# 6e. a newer park took over (its own battle is parked, it holds the saved setting): the older wait leaves 3D alone
+	var b5 := _old_battle(m, "I")
+	var b6 := _old_battle(m, "J")
+	m._retired = b5
+	root.disable_3d = true
+	var run5 := func() -> void: await m._free_after_title_draws(b5, {}, root, false)
+	run5.call()
+	m._retired = b6   # the newer park
+	for i in 4:
+		await process_frame
+	_check(root.disable_3d and m._retired == b6, "a newer park keeps its own hold on 3D: the older wait leaves it off")
+	# 6f. a close: nothing is given back (quit_clean owns it)
+	m.quitting = true
+	for i in 4:
+		await process_frame
+	m.quitting = false
+	b6.free()
+	m._retired = null
+	root.disable_3d = was_off
+	if m.title != null:
+		m.title.free()
+		m.title = null
+	_title(m)
 
 
 func _run() -> void:
@@ -193,6 +269,9 @@ func _run() -> void:
 	_check(not is_instance_valid(old) and not m.retire_pending(), "an older parked battle is freed at the second leave")
 	_check(restore == false and m._retire_3d == false, "the first park's 3D setting is the one given back")
 	_check(m._take_parked(false) == false and m._take_parked(true) == true, "with nothing parked the current setting is kept")
+
+	# 6. the draw wait before the slices: every exit gives the 3D setting back (issue 2161)
+	await _draw_wait_exits(m)
 
 	# 5. a parked battle's awaiting load steps stop in the tree
 	var parked := Node3D.new()
