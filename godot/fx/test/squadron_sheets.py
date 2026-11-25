@@ -34,7 +34,7 @@ def main():
         # Fixed time steps in the probe, played back at the same 12 fps.
         PICTURES.save(frames[0], out / f'{faction}_motion.gif', save_all=True,
                        append_images=frames[1:], duration=83, loop=0, optimize=True)
-    names = ['Sunward Crusade', 'Hegemony Navy', 'Ashfall Hullbreakers',
+    names = ['Sunward Crusade', 'Meridian Directorate', 'Ashfall Hullbreakers',
              'The Chorus', 'The Glasswrights', 'Eclipse']
     rows = []
     for faction, name in zip(factions, names):

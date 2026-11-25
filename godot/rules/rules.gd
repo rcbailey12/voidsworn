@@ -2369,7 +2369,7 @@ func legionRise(u, quiet = false) -> bool:
 		u["riseAt"] = null
 		if not quiet: logm(String(u["name"]) + " cannot find room to reassemble and stays dark.", "x")
 		return false
-	u["q"] = h.q; u["r"] = h.r; u["dead"] = false; u["riseAt"] = null; u["hp"] = max(1, JSM.jsround(u["maxHp"] * TB.LEGION_HP)); u["st"] = {"fire": 0, "shieldOff": 0, "engine": 0}; u["shredded"] = 0
+	u["q"] = h.q; u["r"] = h.r; u["dead"] = false; u["riseAt"] = null; u["hp"] = max(1, JSM.jsround(u["maxHp"] * TB.LEGION_HP)); u["st"] = {"fire": 0, "shieldOff": 0, "engine": 0}; u["shredded"] = 0; u.erase("splashKill")
 	if jt(u.get("sec")):
 		for k in u["sec"].keys():
 			repairSection(u, k, TB.LEGION_HP); u["sec"][k]["hp"] = max(1, JSM.jsround(u["sec"][k]["max"] * TB.LEGION_HP))
@@ -2857,6 +2857,7 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 				var r = applyHit(gh, w, x, S["base"] * gh["fx"]["spread"], qS); shieldDrained(x, shSp, qS, mS); boonFx(x, "e_spread", "−" + ns(r.hull), -20)
 				if x["hp"] <= 0:
 					x["killCause"] = "big"; killUnit(x, shooter)   # Spread Pattern
+					if jt(x.get("dead")): x["splashKill"] = true   # issue 2095: the wreck card credits only a hull this burst actually killed
 	if real != null and not jt(real.get("dead")) and not jt(res.get("hits")): treeSecondKnife(real)   # Sable T2b: a torpedo that misses reloads one turn sooner than normal
 	if jt(res.hits): fstat(S["fac"], "torpHit")
 	if real != null: real["dealt"] = z0(real.get("dealt")) + z0(gh.get("dealt")) - d0
