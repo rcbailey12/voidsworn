@@ -92,7 +92,7 @@ func _run() -> void:
 		await create_timer(0.012).timeout
 		var v := _voice("death_crack")
 		if not v.is_empty() and not v.players.is_empty() and is_instance_valid(v.players[0]):
-			ratios.append(float(v.players[0].pitch_scale) / 0.75)
+			ratios.append(float(v.players[0].pitch_scale) / float(s.cues["death_crack"]["layers"][0]["r"]))
 	var distinct := {}
 	var lo := 9.0
 	var hi := 0.0
@@ -133,9 +133,9 @@ func _run() -> void:
 	_ok(absf(bl - want) <= 0.2, "the bed lasts the death picture (%.2f s, picture %.2f s)" % [bl, want])
 	var bass_clip := false
 	for L in s.cues.get("bass_drop", {}).get("layers", []):
-		if str(L.get("s", "")) == "bassDrop":
+		if str(L.get("s", "")) == "death_bass_drop":
 			bass_clip = true
-	_ok(bass_clip, "the sub-bass uses the existing bassDrop clip")
+	_ok(bass_clip, "the sub-bass uses the approved Wave F bass drop")
 	ship.set_meta("death_hidden", true)
 	fx.now = float(tl.cut)
 	d._process(0.0)

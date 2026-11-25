@@ -100,7 +100,7 @@ func captain_loss_check() -> void:
 	for row in [["Cold Reckoning", "Lucan Ivers"], ["Iron Wake", "Octavia Vale"]]:
 		var ship: Dictionary = C.newShip("penitent")
 		ship["name"] = row[0]
-		ship["cap"]["name"] = row[1]
+		ship["cap"]["full_name"] = row[1]
 		C.RUN["fleet"].append(ship)
 	var node: Dictionary = C.RUN["map"]["cols"][0][0]
 	C.RUN["pos"] = node["id"]
