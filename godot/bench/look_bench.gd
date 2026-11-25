@@ -429,7 +429,7 @@ func _clear() -> void:
 
 
 # One ship as the battle draws it (G2's ShipView, added to G4's effects as the battle does), or null when it is a block.
-func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code := ""):
+func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code := "", cut_on_arrival := false):
 	var sv = SV.new()
 	sv.name = "ship_" + id
 	world.add_child(sv)
@@ -442,7 +442,8 @@ func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code
 	if _is_block(sv) and not args.has("allow-blocks"):
 		_placeholder("%s %s drew a block (code %s)" % [fac, cls, str(sv.code)])
 		return null
-	var info := {"faction": fac, "cls": cls, "size": 1.0, "squadron": false, "flagship": false, "code": sv.code}
+	var info := {"faction": fac, "cls": cls, "size": 1.0, "squadron": false, "flagship": false, "code": sv.code,
+		"cut_on_arrival": cut_on_arrival}
 	if not sv.a4:
 		info["meshes"] = sv.meshes
 	fx.add_ship(id, sv, info)
@@ -616,7 +617,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		return false
 	# issue 370: a row may place the target ("tgt_at": [x, z]), for a broadside or a shot from behind
 	var tat: Array = row.get("tgt_at", [34, 0])
-	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2)
+	# Only the target of a death row can die. Hull and shader warm-up still runs for every ship.
+	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2, "", row.get("do") == "death")
 	if T == null:
 		return false
 	if row.has("shield_left"):
@@ -645,7 +647,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var fo: Array = row.get("focus_off", [0, 0])
 	focus += Vector3(float(fo[0]), 0.0, float(fo[1]))
 	_cam(focus, r)
-	for k in 72:   # 1.2 s: engines up, the first damage and cut jobs done
+	for k in 72:   # 1.2 s: engines up, and any scheduled cut jobs done
 		await _step()
 	# Issue 1235 run 2: a row may land hits on the target first ("pre": [[kind, weapon, section], ...], one shot each,
 	# 0.75 s apart, each on its named hull section: eng, mid or prow; Artoo on PR 1570: without it every hit took "mid")
