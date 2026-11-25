@@ -23,6 +23,7 @@ const FADE_IN := 2.5
 const XFADE := 3.0           # seconds for a map or title change
 const LO := 0.38             # intensity band where the calm layer hands over to the intense one
 const HI := 0.62
+const URGENCY_LIFT := 0.3    # issue 2034: most the objective's urgency adds to the battle intensity
 
 var man := {}
 var vol := 0.7
@@ -287,7 +288,8 @@ func set_intensity(x: float) -> void:
 
 # One call per activation or round with whatever the battle knows; returns the intensity it set.
 # d keys (all optional): mine, enemy (ships alive), mine0, enemy0 (ships at start), hull (your fleet hull left, 0..1),
-# flagship (your flagship hull left, 0..1), shots (hits this round), close (enemy ships within 3 hexes of yours), boss (bool)
+# flagship (your flagship hull left, 0..1), shots (hits this round), close (enemy ships within 3 hexes of yours), boss (bool),
+# urgency (0..1, objective_urgency below: a relay one tick from changing hands, a transport one move from escape)
 func feed(d: Dictionary) -> float:
 	var x := 0.15
 	var close := float(d.get("close", 0))
@@ -299,12 +301,42 @@ func feed(d: Dictionary) -> float:
 		x += 0.15                                                    # flagship in danger
 	if bool(d.get("boss", false)):
 		x += 0.15
+	x += clampf(float(d.get("urgency", 0.0)), 0.0, 1.0) * URGENCY_LIFT   # issue 2034: the objective's last step lifts the music
 	var mine := float(d.get("mine", 1))
 	var enemy := float(d.get("enemy", 1))
 	if enemy <= 0.0 or mine <= 0.0:
 		x = 0.3                                                      # battle is ending, ease off before the sting
 	set_intensity(x)
 	return intensity
+
+
+# Issue 2034 (AAA item 8): how close the battle's objective is to turning, 0..1, from the battle view's obj and units
+# (battle_api view: obj {type, score, escore | exitR, total, need, esc}; units {side, dead, fled, squadron, weapons, r, mp}).
+# hold: the relay has 3 ticks to a side; one tick left for either side is 1.0, one tick taken 0.35.
+# intercept: a live transport that can reach the exit edge with one move is 0.7, 1.0 when one more escape ends the fight.
+# Every other objective is 0 (the fight's own pressure already moves the music).
+func objective_urgency(obj, units: Array) -> float:
+	if not (obj is Dictionary):
+		return 0.0
+	match str(obj.get("type", "")):
+		"hold":
+			var lead := maxi(int(obj.get("score", 0)), int(obj.get("escore", 0)))
+			return 1.0 if lead >= 2 else 0.35 if lead == 1 else 0.0
+		"intercept":
+			var exit_r := int(obj.get("exitR", 0))
+			var near := false
+			for u in units:
+				if str(u.get("side", "")) != "enemy" or bool(u.get("dead", false)) or bool(u.get("fled", false)) or bool(u.get("squadron", false)):
+					continue
+				if not (u.get("weapons", [1]) as Array).is_empty():
+					continue   # a transport carries no guns (rules.gd: u["weapons"] = [])
+				if int(u.get("r", 0)) + int(u.get("mp", 0)) >= exit_r:
+					near = true
+					break
+			if not near:
+				return 0.0
+			return 1.0 if int(obj.get("esc", 0)) >= int(obj.get("total", 0)) - int(obj.get("need", 0)) else 0.7
+	return 0.0
 
 
 # ---------- stings ----------

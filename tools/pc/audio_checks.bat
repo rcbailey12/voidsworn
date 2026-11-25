@@ -1,5 +1,5 @@
 @echo off
-rem Double-click for the sound, 20-ship salvo and existing music checks.
+rem Double-click for the sound, 20-ship salvo, sound mix (issue 2034) and existing music checks.
 rem Optional: set GODOT_EXE to the console exe, or pass its full path as argument 1.
 setlocal enableextensions disabledelayedexpansion
 set "ROOT=%~dp0..\.."
@@ -28,6 +28,7 @@ if not exist "%OUT%" mkdir "%OUT%"
 set "FAILS=0"
 call :check audio res://audio/test/audio_check.gd "AUDIO CHECK PASS"
 call :check salvo res://audio/test/salvo_check.gd "SALVO CHECK PASS"
+call :check mix2034 res://audio/test/mix_2034_check.gd "MIX 2034 CHECK PASS"
 call :check music res://music/test/music_check.gd "MUSIC CHECK PASS"
 echo.
 echo Failed checks: %FAILS%. Logs: %OUT%

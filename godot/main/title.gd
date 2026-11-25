@@ -301,9 +301,9 @@ func _dialog_box() -> StyleBoxFlat:
 # (Larger at 1080 leaves 831 design pixels; issue 1217). Every control sits in one right-hand column of one width; long
 # names wrap. Esc or Done saves and closes. Changing the UI scale rebuilds the panel and keeps focus on that row.
 const SETTINGS_LAYOUT := [   # [section, column, rows]
-	["Sound and music", 0, [["toggle", "Sound", "sound"], ["slider", "Volume", "volume"], ["toggle", "Music", "music"], ["slider", "Music volume", "music_volume"]]],
-	["Display", 0, [["choice", "UI scale", "ui_scale"], ["toggle", "Full screen", "fullscreen"], ["choice", "Graphics", "quality"], ["toggle", "Temporal AA (smoother edges, softer motion)", "taa"], ["toggle", "Nebula wakes (ships stir the clouds)", "nebula_wake_on"], ["choice", "Render scale", "render_scale"], ["choice", "Frame cap", "fps_cap"], ["toggle", "V-Sync", "vsync"]]],
-	["Battle", 1, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Brisk camera", "brisk_camera"], ["toggle", "Teaching tips", "tips"]]],
+	["Sound and music", 0, [["toggle", "Sound", "sound"], ["slider", "Volume", "volume"], ["slider", "Effects volume", "effects_volume"], ["slider", "Tactical cues volume", "tactical_volume"], ["toggle", "Music", "music"], ["slider", "Music volume", "music_volume"]]],
+	["Battle", 0, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Brisk camera", "brisk_camera"], ["toggle", "Teaching tips", "tips"]]],
+	["Display", 1, [["choice", "UI scale", "ui_scale"], ["toggle", "Full screen", "fullscreen"], ["choice", "Graphics", "quality"], ["toggle", "Temporal AA (smoother edges, softer motion)", "taa"], ["toggle", "Nebula wakes (ships stir the clouds)", "nebula_wake_on"], ["choice", "Render scale", "render_scale"], ["choice", "Frame cap", "fps_cap"], ["toggle", "V-Sync", "vsync"]]],
 	["Comfort", 1, [["toggle", "Reduce motion", "reduce_motion"], ["toggle", "Reduce flashing", "reduce_flashing"], ["choice", "Screen shake", "shake"]]],
 ]
 const SETTINGS_CHOICES := {
@@ -318,6 +318,7 @@ const SETTINGS_CHOICES := {
 	"render_scale": [[1.0, "100%"], [0.85, "85%"], [0.7, "70%"]],
 	"fps_cap": [[0.0, "Off"], [60.0, "60"], [120.0, "120"], [144.0, "144"]],
 }
+const SLIDER_DEFAULTS := {"effects_volume": 1.0, "tactical_volume": 1.0}   # issue 2034: the mix as it was; the others start at 0.7
 var _settings_focus := ""   # the setting whose control takes focus when the panel is rebuilt (the UI scale row)
 var _ctrl_w := 0.0
 
@@ -593,7 +594,7 @@ func _slider(t: String, key: String, lo: float, hi: float) -> Control:
 	sl.focus_mode = Control.FOCUS_ALL
 	sl.set_meta("setting_key", key)
 	if not main.settings.has(key):
-		main.settings[key] = 0.7
+		main.settings[key] = float(SLIDER_DEFAULTS.get(key, 0.7))
 	sl.value = float(main.settings[key])
 	sl.custom_minimum_size.y = s(24)
 	sl.add_theme_stylebox_override("focus", GS.focus_ring(k))

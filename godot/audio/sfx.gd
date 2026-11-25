@@ -8,6 +8,12 @@ const GSRes := preload("res://ui/theme/glass_shell.gd")   # issue 1518: _importe
 # Panning comes from the ship's place on screen (3D players heard from the camera).
 
 const BUSES := {"weapons": 0.8, "impacts": 0.8, "explosions": 1.0, "ui": 1.0, "ambient": 0.5}
+const DIST_REF := 230.0         # camera distance at which a positional sound is at full level (issue 2034: one place)
+const FOCUS_RADIUS := 15.0      # world units (a hex is 10): a voice this close to the selected ship is kept when voices run out
+const FOCUS_WEIGHT := 4.0
+const SUSTAIN_MIN := 1.0        # seconds: a positional voice at least this long follows the camera while it plays
+const FOLLOW_STEP := 0.1        # seconds between distance updates of a sustained voice
+const FOLLOW_RATE := 0.3        # most a sustained voice's distance factor moves per second (gentle: a full swing takes 1.7 s)
 const SENDS := {"weapons": 0.22, "impacts": 0.2, "explosions": 0.3, "ui": 0.06}
 
 var cues := {}
@@ -21,11 +27,18 @@ var tail_t := -9.0
 var rr := {}
 var vol := 0.8
 var on := true
+# Issue 2034 (AAA item 8): two more volume channels under the master Volume. Effects scales every battle sound bus
+# (weapons, impacts, explosions, ambient, deaths); Tactical cues scales the ui bus (turn chimes, confirms, alerts, stings).
+# 1.0 is the mix as it was before the sliders existed.
+var effects_vol := 1.0
+var tactical_vol := 1.0
 var max_voices := 34
 var _amb: AudioStreamPlayer
 var _bed: AudioStreamPlayer
 const BED_GAIN := 0.0411      # render_ambient_bed.py prints it: the browser's bed level (0.065) over the file's normalising
 var cam: Camera3D
+var focus_fn := Callable()     # issue 2034: returns the selected ship's world position (Vector3) or null; the battle sets it
+var _follow_t := 0.0
 var _pending_generation := 0
 var _cancelled_tags := {}
 var _loop_copies := {}   # issue 1237: source clip -> its looping copy
@@ -306,6 +319,25 @@ func set_on(v: bool) -> void:
 	set_volume(vol)
 
 
+# Issue 2034: the same curve as the master Volume, so the slider feels alike; 1.0 leaves the mix as it was.
+static func channel_gain(v: float) -> float:
+	return pow(clampf(v, 0.0, 1.0), 1.6)
+
+
+func set_effects_volume(v: float) -> void:
+	if not is_finite(v):
+		return
+	effects_vol = clampf(v, 0.0, 1.0)
+	_apply_mix()
+
+
+func set_tactical_volume(v: float) -> void:
+	if not is_finite(v):
+		return
+	tactical_vol = clampf(v, 0.0, 1.0)
+	_apply_mix()
+
+
 # Issue 771. The beat, the core-flash duck and the near-silence hold are layers on the same buses, so the
 # lowest one wins. The death bus stays out of the beat and the core duck; the near-silence rides the parent
 # sfx bus so it takes the death too. All values are dB; zero means no duck.
@@ -319,11 +351,26 @@ func _apply_mix() -> void:
 		_quiet_db = 0.0
 	var beat_db := -6.0 if _beat else 0.0
 	var mix := minf(beat_db, _duck_db)
+	var eg := channel_gain(effects_vol)
+	var effects_db := linear_to_db(maxf(eg, 1e-5))
 	for b in ["battle_sfx", "music_duck"]:
 		var i := AudioServer.get_bus_index(b)
 		if i >= 0:
 			# The near-silence hold must take the music too; the music bus is not under sfx.
-			AudioServer.set_bus_volume_db(i, minf(mix, _quiet_db) if b == "music_duck" else mix)
+			# Issue 2034: the Effects volume rides battle_sfx (the weapons, impacts, explosions and ambient buses sit under it).
+			AudioServer.set_bus_volume_db(i, minf(mix, _quiet_db) if b == "music_duck" else mix + effects_db)
+			if b == "battle_sfx":
+				AudioServer.set_bus_mute(i, effects_vol <= 0.001)
+	# the death bus sends to sfx, not battle_sfx (it stays out of the beat and the core duck), so it takes Effects itself
+	var di := AudioServer.get_bus_index("death")
+	if di >= 0:
+		AudioServer.set_bus_volume_db(di, effects_db)
+		AudioServer.set_bus_mute(di, effects_vol <= 0.001)
+	# Tactical cues: the ui bus keeps its own base level (BUSES) under the slider
+	var ui := AudioServer.get_bus_index("ui")
+	if ui >= 0:
+		AudioServer.set_bus_volume_db(ui, linear_to_db(maxf(float(BUSES["ui"]) * channel_gain(tactical_vol), 1e-5)))
+		AudioServer.set_bus_mute(ui, tactical_vol <= 0.001)
 	var si := AudioServer.get_bus_index("sfx")
 	if si >= 0:
 		AudioServer.set_bus_volume_db(si, _base_sfx_db + _quiet_db)
@@ -404,6 +451,71 @@ func _now() -> float:
 	return Time.get_ticks_msec() / 1000.0
 
 
+# Issue 2034. How far the camera is from a positional sound sets its level (never below half, never above full).
+func _near_factor(pos: Vector3) -> float:
+	if cam == null:
+		return 1.0
+	return clampf(sqrt(DIST_REF / maxf(1.0, cam.global_position.distance_to(pos))), 0.5, 1.0)
+
+
+func _focus_pos():
+	if focus_fn.is_valid():
+		var f = focus_fn.call()
+		if f is Vector3:
+			return f
+	return null
+
+
+# How audible a sound is, for choosing which voice to give up: its loudness, the camera's distance with no floor (so a sound
+# at 900 still ranks below one at 300), four times that for a sound within a hex and a half of the selected ship, and less
+# as it nears its end. A sound with no place (a ui cue) counts as at the camera.
+func _aud_of(gl: float, pos, focus, life: float) -> float:
+	var a := gl * life
+	if pos is Vector3:
+		if cam != null:
+			a *= clampf(sqrt(DIST_REF / maxf(1.0, cam.global_position.distance_to(pos))), 0.15, 1.5)
+		if focus is Vector3 and (focus as Vector3).distance_to(pos) <= FOCUS_RADIUS:
+			a *= FOCUS_WEIGHT
+	return a
+
+
+func _aud_voice(v: Dictionary, now: float, focus) -> float:
+	var span := maxf(0.05, float(v.end) - float(v.start))
+	var life := lerpf(0.4, 1.0, clampf((float(v.end) - now) / span, 0.0, 1.0))
+	return _aud_of(float(v.gl), v.pos, focus, life)
+
+
+# the index of the least audible voice in `list`; equal sounds give up the oldest (first) one
+func _weakest(list: Array, now: float, focus) -> int:
+	var vi := 0
+	var vw := INF
+	for i in list.size():
+		var w := _aud_voice(list[i], now, focus)
+		if w < vw:
+			vw = w
+			vi = i
+	return vi
+
+
+# Issue 2034: a sustained positional voice (a death bed, a wreck's burn, a long vent) follows the camera's distance gently
+# while it plays. The factor moves at most FOLLOW_RATE a second, and stops once the voice's own fade-out begins.
+func _follow_camera(now: float, elapsed: float) -> void:
+	if cam == null:
+		return
+	for v in active:
+		if not bool(v.follow) or now >= float(v.fade_at):
+			continue
+		var target := _near_factor(v.pos)
+		var dk := move_toward(float(v.dk), target, FOLLOW_RATE * elapsed)
+		if is_equal_approx(dk, float(v.dk)):
+			continue
+		v.dk = dk
+		for i in v.players.size():
+			var p = v.players[i]
+			if is_instance_valid(p):
+				p.volume_db = linear_to_db(maxf(float(v.base[i]) * dk, 1e-5))
+
+
 # o: {pos: Vector3, gain, rate, delay}
 func play(name: String, o := {}) -> void:
 	if silent or not on or not cues.has(name):
@@ -459,24 +571,43 @@ func _start(name: String, o: Dictionary, lay: Array) -> void:
 			tail_t = now
 			play("salvo_tail", {"gain": float(cue["tail"]), "delay": 0.06, "pos": o.get("pos")})
 	var pos = o.get("pos")
-	if pos is Vector3 and cam != null:
-		var dist := cam.global_position.distance_to(pos)
-		gain *= clampf(sqrt(230.0 / maxf(1.0, dist)), 0.5, 1.0)
+	# issue 2034: the distance factor is kept apart from the gain so a sustained voice can follow the camera while it plays
+	var dk := _near_factor(pos) if pos is Vector3 else 1.0
 	_reap(now)
+	# issue 2034: when a cue or the whole mix is out of voices, the weakest one goes (quiet and far, nearly finished), not
+	# the oldest, and a voice near the selected ship is kept. An incoming positional sound weaker than that one is dropped.
+	var focus = _focus_pos()
+	var in_gl := gain
+	var top_layer := 0.0
+	for L in lay:
+		top_layer = maxf(top_layer, float(L.g))
+	in_gl *= top_layer
+	var in_aud := _aud_of(in_gl, pos, focus, 1.0)
 	var list: Array = by_cue.get(name, [])
 	while list.size() >= int(cue["max"]):
-		_steal(list[0])
+		var vi := _weakest(list, now, focus)
+		if pos is Vector3 and in_aud < _aud_voice(list[vi], now, focus):
+			return
+		_steal(list[vi])
 	if active.size() >= max_voices:
 		var pri := int(cue["pri"])
 		var vi := -1
+		var vw := 0.0
 		for i in active.size():
-			if int(active[i].pri) <= pri and (vi < 0 or int(active[i].pri) < int(active[vi].pri)):
+			if int(active[i].pri) > pri:
+				continue
+			var w := _aud_voice(active[i], now, focus)
+			if vi < 0 or int(active[i].pri) < int(active[vi].pri) or (int(active[i].pri) == int(active[vi].pri) and w < vw):
 				vi = i
+				vw = w
 		if vi < 0:
+			return
+		if pos is Vector3 and int(active[vi].pri) == pri and in_aud < vw:
 			return
 		_steal(active[vi])
 	var u := randf() * 2.0 - 1.0
-	var v := {"name": name, "players": [], "start": t, "end": t, "pri": int(cue["pri"]), "tag": o.get("tag", "")}
+	var v := {"name": name, "players": [], "start": t, "end": t, "pri": int(cue["pri"]), "tag": o.get("tag", ""),
+		"pos": pos if pos is Vector3 else null, "gl": in_gl, "dk": dk, "base": [], "follow": false, "fade_at": INF}
 	var dur := 0.0
 	# A bed sets the whole voice length (issue 771), so a short looped clip can last the death picture.
 	var limit := float(o.get("duration", cue.get("duration", 0.0)))
@@ -498,7 +629,7 @@ func _start(name: String, o: Dictionary, lay: Array) -> void:
 			p3.position = pos
 			p3.stream = st
 			p3.pitch_scale = rate
-			p3.volume_db = linear_to_db(maxf(gain * float(L.g), 1e-5))
+			p3.volume_db = linear_to_db(maxf(gain * dk * float(L.g), 1e-5))
 			p3.bus = "death" if o.get("death", false) else cue["bus"]
 			p = p3
 		else:
@@ -523,10 +654,13 @@ func _start(name: String, o: Dictionary, lay: Array) -> void:
 			# avoids a freed lambda capture, which errors before its body can guard it.
 			get_tree().create_timer(start, false, false, true).timeout.connect(_play_pending.bind(weakref(p), v))
 		v.players.append(p)
+		v.base.append(gain * float(L.g))
 		dur = maxf(dur, float(L.d) + st.get_length() / rate)
 	if limit > 0.0:
 		dur = limit
+		v.fade_at = t + maxf(0.0, limit - 0.06)   # the voice's own fade-out takes the level from here
 	v.end = t + dur + 0.05
+	v.follow = pos is Vector3 and cam != null and dur >= SUSTAIN_MIN
 	list.append(v)
 	by_cue[name] = list
 	active.append(v)
@@ -542,12 +676,17 @@ func _play_pending(player: WeakRef, voice: Dictionary) -> void:
 		p.call("play")
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not _late.is_empty():
 		_collect_late()
-	_reap(_now())
+	var now := _now()
+	_reap(now)
 	_apply_mix()
-	if _now() >= _ambient_duck_until:
+	_follow_t += delta
+	if _follow_t >= FOLLOW_STEP:
+		_follow_camera(now, _follow_t)
+		_follow_t = 0.0
+	if now >= _ambient_duck_until:
 		_ambient_duck = 0.0
 	var i := AudioServer.get_bus_index("ambient")
 	if i >= 0:
