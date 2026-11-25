@@ -2,7 +2,8 @@
  "note": "Aligned mixes switch linearly from calm to full. This add-on is independent of the legacy music build.",
  "pairs": {
   "voidsworn": ["sunward_stemloop_calm", "sunward_stemloop_full"],
-  "chorus": ["chorus_loop_a_calm", "chorus_loop_a_full"]
+  "chorus": ["chorus_loop_a_calm", "chorus_loop_a_full"],
+  "ithar": ["glasswright_combo2_calm", "glasswright_combo2_full"]
  },
  "tracks": {
   "sunward_stemloop_calm": {
@@ -28,6 +29,18 @@
    "gain_db": 0.0,
    "loop_from": 0.0,
    "sec": 75.78947916666667
+  },
+  "glasswright_combo2_calm": {
+   "file": "glasswright_combo2_calm.ogg",
+   "gain_db": 0.0,
+   "loop_from": 0.0,
+   "sec": 114.54545833333333
+  },
+  "glasswright_combo2_full": {
+   "file": "glasswright_combo2_full.ogg",
+   "gain_db": 0.0,
+   "loop_from": 0.0,
+   "sec": 114.54545833333333
   }
  }
 }

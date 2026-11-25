@@ -822,6 +822,7 @@ func _begin(a) -> void:
 	boss_fight = _api_battle_kind() == "boss"
 	finale_fight = _api_battle_finale()
 	ended = false
+	_rules_halt_shown = false
 	board.set_process_unhandled_input(true)
 	result = {}
 	errors.clear()
@@ -1592,9 +1593,15 @@ func _runner() -> void:
 	while true:
 		if _stale(g):
 			return
-		while hold and is_inside_tree():
+		if _show_rules_halt():
+			busy = false
+			return
+		while hold and not _rules_halt_shown and is_inside_tree():
 			await get_tree().process_frame
 		if _stale(g):
+			return
+		if _rules_halt_shown:
+			busy = false
 			return
 		if batches.is_empty():
 			if api.phase == "enemy" and not ended:
@@ -1649,7 +1656,7 @@ func _think_batch(collect: Callable) -> Variant:
 	if _stale(gen) or quitting:
 		return null
 	var np := _api_not_ported()
-	if np != "":
+	if np != "" and api.phase != "halted":
 		_error("NOT PORTED: " + np)
 	return out[0]
 
@@ -1662,7 +1669,7 @@ func _cmd(f: Callable) -> bool:
 	var ok = f.call()
 	var ev: Array = api.take_events()
 	var np := _api_not_ported()
-	if np != "":
+	if np != "" and api.phase != "halted":
 		_error("NOT PORTED: " + np)
 	if ev.is_empty() and not ok:
 		return false
@@ -1910,6 +1917,22 @@ func _flash(p: Vector3, size: float, col: Color, dur := 0.35, delay := 0.0, ligh
 func _error(m: String) -> void:
 	errors.append(m)
 	push_warning(m)
+
+
+var _rules_halt_shown := false
+
+
+func _show_rules_halt() -> bool:
+	if api == null or api.phase != "halted" or thinking or _worker_owns_rules() or not is_instance_valid(hud):
+		return false
+	if not _rules_halt_shown:
+		_rules_halt_shown = true
+		var reason := "Rules error: " + str(api.halted)
+		_error(reason)
+		hud.add_log(reason, "s")
+		hud.show_menu("Battle stopped", [["Return to title", "halt_exit"], ["Copy a problem report", "report"]],
+			0, "The rules hit an error. This battle cannot continue.\n\n" + reason)
+	return true
 
 
 func wait(ms: float, skippable_cut := false) -> void:
@@ -4977,6 +5000,8 @@ func _unhandled_input(e: InputEvent) -> void:
 
 
 func _on_key(k: int) -> void:
+	if _rules_halt_shown:
+		return
 	if hud.menu != null and is_instance_valid(hud.menu):
 		# issue 1559 item 1: the menu is modal. Its own buttons take Enter, Space and the arrows; only Esc reaches the
 		# battle (it closes the menu). No order key (B, X, G, C, Q, E, 1 to 6, Backspace) acts behind it.
@@ -6162,6 +6187,8 @@ func _attack_tip(t_id: String) -> String:
 
 
 func _on_action(name: String, arg) -> void:
+	if _rules_halt_shown and name not in ["halt_exit", "report"]:
+		return
 	if _deployment_api != null:
 		if name == "pick":
 			_pick_skill_target(str(arg))
@@ -6230,9 +6257,7 @@ func _on_action(name: String, arg) -> void:
 		"tip_ok":
 			_tip_dismiss("got_it")
 		"tip_off":
-			_tip_dismiss("off")
-			tips_off = true
-			_save_opts()
+			_set_teaching_off(true)
 		"command":
 			# the game asks for a second tap to confirm the once-per-battle Command
 			var now := Time.get_ticks_msec() / 1000.0
@@ -6290,10 +6315,11 @@ func _on_action(name: String, arg) -> void:
 			hud.toast("Problem report copied to the clipboard. Paste it wherever you report bugs.")
 		"opt":
 			_toggle_opt(str(arg))
-		"to_title":
+		"to_title", "halt_exit":
 			hud.hide_menu()
 			ended = true
-			result = {"result": "quit", "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
+			var leaving := "save_quit" if name == "halt_exit" and in_campaign else "quit"
+			result = {"result": leaving, "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
 			_play_log_out("quit")
 			_finish(result)
 		"save_quit", "save_quit_older":
@@ -6530,9 +6556,7 @@ func _toggle_opt(k: String) -> void:
 			brisk_camera = not brisk_camera
 			option_changed.emit("brisk_camera", brisk_camera)
 		"tips":
-			tips_off = not tips_off
-			if tips_off: _tip_dismiss("off")
-			option_changed.emit("tips", not tips_off)
+			_set_teaching_off(not Teaching.is_off())
 		"flash":
 			set_fx_opts(not reduce_flashing, shake_scale)
 			option_changed.emit("reduce_flashing", reduce_flashing)
@@ -6596,6 +6620,8 @@ func _refresh_ui() -> void:
 		return
 	if thinking or _worker_owns_rules():
 		return   # Reads below lock the rules. Refresh when the worker publishes its result.
+	if _show_rules_halt():
+		return
 	_sync_ask()
 	if sel != "" and (not VU.has(sel) or VU[sel]["dead"]):
 		sel = ""
@@ -7310,6 +7336,8 @@ func _process(dt: float) -> void:
 	_step_cut_overlays(dt)
 	if api == null:
 		return
+	if not quitting and _show_rules_halt() and not bot:
+		return
 	# issue 1451: the rules packed this round's start; save it once its animations have played and the player has the turn
 	if round_save_cb.is_valid() and _can_act() and int(api.round_snap_round) > round_saved:
 		round_saved = int(api.round_snap_round)
@@ -7710,7 +7738,6 @@ func _tutorial() -> void:
 func _load_opts() -> void:
 	var o := Teaching.load_opts()
 	tips = o["tips"]
-	tips_off = bool(o.get("tipsOff", false))
 	var sp = o.get("speed", 1.0)
 	user_speed = float(sp) if (sp is int or sp is float) and is_finite(float(sp)) and float(sp) > 0.0 else 1.0
 	Teaching.save_opts({})
@@ -7719,12 +7746,20 @@ func _load_opts() -> void:
 
 func _sync_teaching_switch() -> void:
 	tips_off = Teaching.is_off()
-	if args.has("no-tips") or args.has("shots") or args.has("breach-shots") or args.has("f1-trace") or args.has("ui-shots") or args.has("tree-shots"):
+	if showcase or shots_dir != "" or args.has("sheet-check") or args.has("no-tips") or args.has("shots") or args.has("breach-shots") or args.has("f1-trace") or args.has("ui-shots") or args.has("tree-shots"):
 		tips_off = true
 
 
+func _set_teaching_off(off: bool) -> void:
+	# Persist the shared switch before notifying listeners that can immediately read it back.
+	Teaching.set_off(off)
+	_sync_teaching_switch()
+	if tips_off: _tip_dismiss("off")
+	option_changed.emit("tips", not off)
+
+
 func _save_opts() -> void:
-	Teaching.save_opts({"tips": tips, "tipsOff": tips_off, "speed": user_speed})
+	Teaching.save_opts({"tips": tips, "speed": user_speed})
 
 
 # ---------------------------------------------------------------- the bot (both sides on AI, for test runs)

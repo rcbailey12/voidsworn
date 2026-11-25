@@ -61,13 +61,14 @@ Call it after the events that changed a ship have been animated (or simply after
 | Stage | When (per section, hp fraction) | Look |
 |---|---|---|
 | 0 intact | above 0.8 | clean hull |
-| 1 scorched | 0.6 < f <= 0.8 | spreading scorch and secondary burns, up to 2 surface marks; transition sparks, no persistent emitter |
-| 2 dented | 0.4 < f <= 0.6 | an anchor dent or material-specific concavity, wider surface damage, up to 3 marks; smoke starts |
+| 1 scorched | 0.6 < f <= 0.8 | spreading scorch and secondary burns, up to 2 surface marks. Transition sparks and a brief cold puff, no persistent emitter |
+| 2 dented | 0.4 < f <= 0.6 | an anchor dent or material-specific concavity, wider surface damage, up to 3 marks and a steady smoke sheath |
 | 3 fissured | 0.2 < f <= 0.4 | a deep crater and buckled sealed fissure over intact dark skin; up to 4 marks, fire and smoke, a slow vent on heavy hulls |
 | 4 hull breach | f <= 0.2, or broken | open break with throat radius 0.048 L, stepped torn collar, recess 0.17 L, three cross members and seated fire; medium hulls up get a second break; transition sparks and debris |
 | 5 wreck | `dead` (after `death`) | see section 5 |
 
-- R80 owner rulings govern this ladder. Stage 3 and every weapon mark stay sealed. Squadrons keep stage 0 surfaces and trail pooled smoke below half total HP.
+- R80 owner rulings govern this ladder. Stage 3 and every weapon mark stay sealed. Squadrons keep stage 0 surfaces and trail a baked ribbon from one craft's exhaust below half total HP.
+- Issue 2044 uses one shared baked vent for wound, wisp, wing and hulk plumes. A wound combines a short core and a longer sheath with a small nearby light that does not scatter into fog. Wounds V2 keeps its separate cavity lights and their fog and falloff. Meridian vents cold blue, Eclipse stays violet, Chorus vents ochre organic mist and Glasswrights get pale vapour without fire or soot. Hulk smoke thins for about a minute and stays as a cold wisp until the wreck is cleared (R458).
 - A stage that goes up while shots are still flying at that ship waits until they land, so holes open when the hit lands, not before.
 - Repair seals a stage 4 break with a material-specific patch and keeps dents, scorch and weapon scars. Removed emitters fade within 0.8 effect seconds. Chorus knits over 3 seconds.
 - `burning` shares the section emitter allocator. The per-ship caps for fire and smoke/vent are 4 and 8 for light hulls, 8 and 12 for medium hulls, and 12 and 16 for heavy and capital hulls. Persistent emission spends zero counted flashes. Safe mode keeps flat marks and drops deformation, breaks and emitters. A broken `eng` section makes the engines sputter. Shields rising play a short faction-coloured regen shimmer.
@@ -128,9 +129,9 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 
 - `fx.ability(id, ab)` and `fx.command(id, cmd)`: a short faction-coloured pulse on the ship (a stand-in until each ability gets its own look; coming).
 - `fx.launch(carrier_id, squadron_id)`: bay flare and craft streaming out toward the new wing.
-- `var t = fx.board(attacker_id, target_id, result)` on the rules' `board` event: a breach in the target's hull at a plausible boarding point (its side facing the attacker, mid section), venting gas and lit from inside for about 3 s, then a dark gash that stays as a mark. Returns seconds until it has played. (G2: this replaces the stub flash at the board event.) Issue 1547: a party from dead ahead or astern breaks in on the side the camera sees; the look Ryan picked (B: a wider hatch, pop ring, burst, vent and amber inside light, and the amber boarding lines in the shared line style) comes from `BOARD`, and `fx.board_hold_ms()` is how long the battle holds on it before the next event.
+- `var t = fx.board(attacker_id, target_id, result)` on the rules' `board` event. The shared kit sends the faction's pods, phase beams, prismatic locks or living umbilicals between hull attachments, then opens a cutter ring and vents at the target's hatch. The wider hatch leaves a scar on the facing flank (camera-facing flank if the attacker is dead ahead or astern). The crossing uses the same paced 1.6 s hold from `fx.board_hold_ms()` as before. The return value estimates the whole effect, including the vent tail.
 - `fx.hull_mark(id, look, w, world_p, dir, sec)`: a weapon mark without a volley (look as in volley, plus `board` and `ram`).
-- `fx.tick(id, kind)` for turn-start damage (`fire`, `acid`, `tidal`, `storm`): a small flare-up of that kind on the ship.
+- `fx.tick(id, kind)` plays the turn-start beat only. Fire uses a short baked plume, acid adds droplets and an etch, tidal pulls toward `fx.well`, and a storm branches down from the cloud onto the live shield or the bare hull. A zero pool never wakes the shield. Persistent acid and ion status are separate.
 - `fx.hull_point(id, section, toward)`: `{p, n}` in world space on the hull (section `"prow"`, `"mid"`, `"eng"` or `""`, on the side facing the point `toward`), for anything G2 wants to anchor there.
 
 ## 7. Feel: shake and hit pause
