@@ -16,6 +16,7 @@ const CaptainData = preload("res://rules/captain_data.gd")
 
 signal changed            # the page or the modal changed
 signal battle_requested   # a battle page is up (external mode): the battle side reads pending_battle and calls finish_battle()
+signal fleet_results(lost: bool, ranked_up: bool)  # one report per settled battle, never on a reopened reward panel
 
 const BattleAPI = preload("res://rules/battle_api.gd")   # the rules are reached only through the battle API (rules/API.md)
 const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and the campaign both draw from
@@ -999,6 +1000,24 @@ func canFitModule(sh, m) -> bool:
 			if W_.has(pair[0]) and W_[pair[0]].get("k") == kind: return true
 		return false
 	return not jt(need)
+# Issue 2029 item 8: why a refit cannot go on a ship, in words ("" when it fits). The item that fills the slot is named, or
+# the class is said to have no slot of the kind the refit needs. Never changes what canFitModule answers.
+func fitBlock(sh, m) -> String:
+	if canFitModule(sh, m): return ""
+	var t = HULLS.get(sh.get("tpl")) if sh is Dictionary else null
+	if t == null or not (m is String) or not MODULES.has(m): return "That refit cannot go there."
+	var cls = str(t.get("n", "ship")); cls = cls if cls.begins_with("The ") else "The " + cls
+	if int(z0(t.get("slots"))) <= 0: return cls + " has no refit slot."
+	var probe = sh.duplicate(); probe["mods"] = []   # the same ship with every slot free: what is left in the way is the class itself
+	if not canFitModule(probe, m):
+		var md = MODULES[m]; var need = MOD_NEED.get(m)
+		if jt(md.get("only")) and t.get("ab") != md["only"]: return cls + " has no " + {"launch": "launch bay"}.get(md["only"], "slot of that kind") + " for this refit."
+		if need == "brace": return cls + " cannot brace, so this refit has nothing to do."
+		var what = {"shields": "shield", "carrier": "hangar", "chaser": "fore or flank gun to swivel", "batt": "battery", "lance": "lance", "torp": "torpedo tube", "flak": "flak gun"}.get(need, "slot of that kind")
+		return cls + " has no " + what + " for this refit."
+	var held = []
+	for x in sh["mods"]: held.append(modName(x) if MODULES.has(x) else str(x))
+	return ("Slot taken by " if held.size() == 1 else "Slots taken by ") + " and ".join(held) + "."
 func randomRelic() -> Variant:
 	var pool = []
 	for r in RELICS.keys():
@@ -2307,6 +2326,17 @@ func ACT_finishBoughtRefit(uid := "") -> void:
 		toast(modName(offer["module"]) + " stowed in the hold.")
 	RUN.erase("boughtRefit")
 	shipyardScreen(yard_node)
+# Issue 2029 item 7: a yard repair buys as many hull points as the purse allows, at the price of a full repair per point
+# (priceMult / 2 each, the whole bill rounded up as ever). repairPoints is how many of the `miss` missing points `funds` pays
+# for; repairBill is what those points cost. A purse that covers everything pays exactly the old bill; one that cannot buy a
+# single point gets 0 (the button stays off). repairAll stays all or nothing.
+func repairBill(points: float, pm: float) -> float: return ceil(points / 2.0 * pm)
+func repairPoints(miss: float, pm: float, funds: float) -> float:
+	if miss <= 0.0: return 0.0
+	if repairBill(miss, pm) <= funds: return miss
+	var pts = floor(funds * 2.0 / maxf(pm, 0.0001) + 0.000001)
+	while pts > 0.0 and repairBill(pts, pm) > funds: pts -= 1.0
+	return clampf(pts, 0.0, miss)
 func preview_op(action: String, key := "", slot := -1) -> Array:
 	return PreviewOp.plan(self, action, key, slot)["rows"]
 
@@ -3596,15 +3626,13 @@ func _heavy_wreck_cause(unit: Dictionary, log: Array) -> String:
 	var ram_recoil := target + " rams " + str(unit.get("killedBy", "")) + " at full speed:"
 	var torp_hit := " reach " + target
 	var direct_hit := " at " + target + ":"
-	# Spread Pattern: the burst line names the ship that was aimed at, never the neighbours it kills,
-	# so a splash kill is credited to the torpedo that killedBy names, not to an earlier gun hit.
-	var splash_from := " from " + str(unit.get("killedBy", "")) + " burst against "
-	var splash_miss := " burst against " + target + ","
+	# Spread Pattern marks the hull it actually kills at the moment of death (rules.gd torpImpact).
+	# The burst summary names only the ship that was aimed at, so it cannot identify the victims;
+	# the mark does, and a hull killed by the same attacker elsewhere in the fight has no mark.
+	if jt(unit.get("splashKill")): return "Torpedo strike"
 	for i in range(log.size() - 1, -1, -1):
 		var line: String = log[i].get("m", "")
 		if line.contains(ram_hit) or line.begins_with(ram_recoil): return "Rammed"
-		if unit.get("killedBy", "") != "" and line.contains(splash_from) and line.contains(", catching ") and not line.contains(splash_miss):
-			return "Torpedo strike"
 		if line.begins_with("Torpedoes from ") and (line.contains(torp_hit + ":") or line.contains(torp_hit + " (a stray hit in the lane):")):
 			return "Torpedo strike"
 		var gun := line.find(" fires ")
@@ -4244,6 +4272,7 @@ func finishBattle(result: String) -> void:
 	if msg.size() > 0: toast(" ".join(PackedStringArray(msg)))
 	tel("battle_end", {"result": result, "kind": cfg.get("kind"), "fac": cfg.get("fac"), "rounds": B["round"], "kills": kills, "lost": summary["lost"].size()})
 	B = null
+	fleet_results.emit(not summary["lost"].is_empty(), summary["xp"].any(func(entry): return entry["up"]))
 	if result == "win" and RUN["fleet"].size() == 0:
 		var sh2 = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh2); ensureFlagship()
 		var p_line: String = str({"chorus": "Your surviving spores coalesce into a fresh " + ship_bare(str(sh2["name"])) + " to carry the brood.", "deathless": "An automated reserve berth dispatches " + ship_with_article(str(sh2["name"])) + " to hold the uplink.", "corsair": "A straggling raider from the outer belt joins your pack to carry the flag: " + ship_with_article(str(sh2["name"])) + ".", "ithar": "A distant picket answers your distress pulse to carry the standard: " + ship_with_article(str(sh2["name"])) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(str(sh2["name"])) + " to carry the flag."))

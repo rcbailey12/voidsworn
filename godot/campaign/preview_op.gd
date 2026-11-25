@@ -18,15 +18,23 @@ static func plan(c, action: String, key: String, slot: int) -> Dictionary:
 	match action:
 		"repair", "repairAll":
 			p["purse"] = c.hullKey()
+			var pm: float = c.priceMult()
 			var ships: Array = run["fleet"] if action == "repairAll" else ([] if ship == null else [ship])
 			var missing := 0.0
 			for sh in ships:
 				var after: Dictionary = sh.duplicate(true)
 				var full: float = c.derive(sh)["maxHp"]
-				missing += full - float(sh["hp"])
-				after["hp"] = full
+				var miss := full - float(sh["hp"])
+				missing += miss
+				if action == "repair":
+					var points: float = c.repairPoints(miss, pm, c.hullFunds())
+					after["hp"] = full if points >= miss else float(sh["hp"]) + points
+					# If nothing is affordable, keep the full quote for the disabled button.
+					p["price"] = c.repairBill(points if points > 0.0 else maxf(0.0, miss), pm)
+				else:
+					after["hp"] = full
 				_entry(p, c, sh, after)
-			p["price"] = ceil(maxf(0.0, missing) / 2.0 * c.priceMult())
+			if action == "repairAll": p["price"] = c.repairBill(maxf(0.0, missing), pm)
 			if ships.is_empty(): p["reason"] = "No ship to repair."
 			elif missing <= 0: p["reason"] = "Hull already full."
 		"upgradeMk", "refit":
@@ -42,10 +50,12 @@ static func plan(c, action: String, key: String, slot: int) -> Dictionary:
 			else:
 				p["purse"] = "hold"
 				if slot < 0 or slot >= run["inventory"].size(): p["reason"] = "Refit unavailable."
-				elif not c.canFitModule(ship, run["inventory"][slot]): p["reason"] = "This ship cannot fit that refit."
 				else:
-					p["price"] = 1.0
-					after["mods"].append(run["inventory"][slot])
+					var module = run["inventory"][slot]
+					p["reason"] = c.fitBlock(ship, module)
+					if p["reason"].is_empty():
+						p["price"] = 1.0
+						after["mods"].append(module)
 			if p["reason"].is_empty(): c.adjustHull(after, c.derive(ship)["maxHp"], c.derive(after)["maxHp"])
 			_entry(p, c, ship, after)
 		"buyHull":
