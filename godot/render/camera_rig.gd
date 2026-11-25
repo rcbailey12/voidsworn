@@ -40,6 +40,9 @@ var _dof_room := 0.0
 const DOF_AMOUNT := 0.075
 const DOF_ENTER_S := 0.55
 const DOF_CLOSE_LIMIT := 105.0
+# Issue 2029 item 6 (Neon review): a pointer ray hitting the board plane farther out than this many times the bounds is
+# treated as sky for the zoom-to-pointer anchor.
+const HIT_MARGIN := 1.5
 
 
 # Each camera owns its attributes, so a close-up cannot turn on blur in another viewport.
@@ -198,7 +201,9 @@ func zoom_at(screen_pos: Vector2, factor: float) -> void:
 	if is_equal_approx(new_r, r):
 		r = new_r
 		return
-	var anchor = _plane_hit(screen_pos, _ca, _cb, _cr, _ct, t.y)   # the point the player sees under the pointer now
+	# Both trial poses use the target angles (a, b), so an orbit still easing is not turned into a pan jump: only the
+	# distance and the target differ between the two points.
+	var anchor = _plane_hit(screen_pos, a, b, _cr, _ct, t.y)   # the point the player sees under the pointer now
 	r = new_r
 	if anchor == null:
 		_apply()
@@ -212,7 +217,8 @@ func zoom_at(screen_pos: Vector2, factor: float) -> void:
 
 
 # The board point (on the plane y = plane_y) under a pixel for a camera pose (angles, distance, target), or null when that
-# pixel looks at or above the horizon. Poses the camera briefly; the caller calls _apply() to restore the live one.
+# pixel looks at or above the horizon, or grazes the plane so far out that the hit lies beyond HIT_MARGIN times the board
+# bounds (a wheel click over distant sky then falls back to the plain zoom, not a slam to the map edge). Poses the camera briefly; the caller calls _apply() to restore the live one.
 func _plane_hit(screen_pos: Vector2, pa: float, pb: float, pr: float, pt: Vector3, plane_y: float) -> Variant:
 	if not is_inside_tree():
 		return null
@@ -221,7 +227,10 @@ func _plane_hit(screen_pos: Vector2, pa: float, pb: float, pr: float, pt: Vector
 	var d := project_ray_normal(screen_pos)
 	if d.y > -0.02:
 		return null
-	return o + d * ((plane_y - o.y) / d.y)
+	var hit := o + d * ((plane_y - o.y) / d.y)
+	if absf(hit.x) > bounds.x * HIT_MARGIN or absf(hit.z) > bounds.y * HIT_MARGIN:
+		return null
+	return hit
 
 
 # returns true when the event was a drag the camera used (so a click is not fired at the end of it)

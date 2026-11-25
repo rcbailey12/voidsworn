@@ -105,6 +105,57 @@ func _run() -> void:
 		_check(absf(cam.r - home_r * exp(-120.0 * 0.0011)) < 0.01, "over empty sky the zoom factor is the plain one")
 	else:
 		_check(false, "test setup: the top row of the screen should look above the horizon at b 1.36")
+	# grazing ray (Neon review 2): a pixel whose ray meets the board plane only far out, just below the horizon. The hit
+	# lies past 1.5 times the bounds, so it counts as sky: the target stays put (no slam to the map edge), the same as the
+	# plain zoom, which moves nothing but r
+	var cg = _fresh()
+	cg.b = 1.36
+	cg.r = home_r
+	cg.t = Vector3(10.0, 0.0, -6.0)
+	cg.snap()
+	var graze := Vector2(-1.0, -1.0)
+	var graze_y := 0.0
+	for row in range(0, int(vs.y)):
+		var gd: Vector3 = cg.project_ray_normal(Vector2(vs.x * 0.5, float(row)))
+		if gd.y < -0.022 and gd.y > -0.06:
+			graze = Vector2(vs.x * 0.5, float(row))
+			graze_y = gd.y
+			break
+	if graze.x < 0.0:
+		_check(false, "test setup: no pixel row grazes the plane at b 1.36")
+	else:
+		var go: Vector3 = cg.project_ray_origin(graze)
+		var far_hit: Vector3 = go + cg.project_ray_normal(graze) * ((cg.t.y - go.y) / graze_y)
+		print("     grazing pixel %s: ray y %.4f, unclamped hit %.0f units out" % [str(graze), graze_y, far_hit.length()])
+		_check(absf(far_hit.x) > cg.bounds.x * 1.5 or absf(far_hit.z) > cg.bounds.y * 1.5, "test setup: the grazing hit lies beyond 1.5 times the bounds")
+		var tg0: Vector3 = cg.t
+		_wheel(cg, graze, true)
+		_check(absf(cg.t.x) <= cg.bounds.x and absf(cg.t.z) <= cg.bounds.y, "grazing ray: the target stays inside the bounds")
+		_check(cg.t.distance_to(tg0) < 0.001, "grazing ray: the target moves no more than a plain zoom (%.4f)" % cg.t.distance_to(tg0))
+		_check(absf(cg.r - home_r * exp(-120.0 * 0.0011)) < 0.01, "grazing ray: the zoom factor is the plain one")
+	# a zoom while an orbit is still easing: the live angles lag the target angles. The leftover orbit must not turn into a
+	# pan jump (the target moves exactly as it would had the orbit already settled), and the zoom must not snap the orbit.
+	var ce = _fresh()
+	var cs = _fresh()
+	for c in [ce, cs]:
+		c.r = home_r
+		c.t = Vector3(10.0, 0.0, -6.0)
+		c.snap()
+		c.a += 0.6
+		c.b = 0.6
+	cs.snap()   # the settled twin: same target angles, orbit already done
+	var pe := vs * Vector2(0.2, 0.3)
+	var ca0: float = ce._ca
+	var cb0: float = ce._cb
+	var ev := InputEventMouseButton.new()
+	ev.button_index = MOUSE_BUTTON_WHEEL_UP
+	ev.pressed = true
+	ev.position = pe
+	ce.handle_input(ev)
+	cs.handle_input(ev)
+	_check(is_equal_approx(ce._ca, ca0) and is_equal_approx(ce._cb, cb0) and absf(ce._ca - ce.a) > 0.3, "easing orbit: the zoom does not snap the orbit (live angle %.3f, target %.3f)" % [ce._ca, ce.a])
+	_check(ce.t.distance_to(cs.t) < 0.001, "easing orbit: the target matches the settled twin (off by %.4f), no pan jump" % ce.t.distance_to(cs.t))
+	_check(ce.t.distance_to(Vector3(10.0, 0.0, -6.0)) < 40.0, "easing orbit: the target moved %.2f, a zoom-sized step" % ce.t.distance_to(Vector3(10.0, 0.0, -6.0)))
 	# limits
 	var c2 = _fresh()
 	for i in range(80):
