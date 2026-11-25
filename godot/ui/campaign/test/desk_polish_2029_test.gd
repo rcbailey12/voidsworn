@@ -115,6 +115,11 @@ func run() -> void:
 	C.act("enterNode", target); await frames(8)
 	check(str(C.page["kind"]) == "shipyard", "the shipyard is open")
 	var ship = C.RUN["fleet"][1]; var uid: String = ship["uid"]
+	var roster: Array = ui.page_box.find_children("*", "Button", true, false).filter(func(b): return b.get_meta("yard_ship", "") == uid)
+	check(roster.size() == 1, "the ship has one selectable Gantry roster row")
+	if roster.size() == 1:
+		roster[0].pressed.emit()
+		await frames()
 	var dec = _press_node(ui.page_box, "sellShip", uid)
 	var rep = _press_node(ui.page_box, "repair", uid)
 	var mk = _press_node(ui.page_box, "upgradeMk", uid)

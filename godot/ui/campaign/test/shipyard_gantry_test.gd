@@ -10,6 +10,7 @@ const ShipView := preload("res://render/ship_view.gd")
 const PreviewOp := preload("res://campaign/preview_op.gd")
 const JSM := preload("res://rules/jsm.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
+const Kit := preload("res://ui/theme/orders_kit.gd")
 const Picture := preload("res://tools/picture_provenance.gd")
 const Age := preload("res://render/hull_age.gd")
 
@@ -17,6 +18,12 @@ var C := Campaign.new()
 var ui: CampaignUI
 var fails := 0
 var stop := {}
+
+class CueEar extends Node:
+	var heard: Array[String] = []
+
+	func play(id: String) -> void:
+		heard.append(id)
 
 
 func _initialize() -> void: _run.call_deferred()
@@ -84,7 +91,9 @@ func _run() -> void:
 	yard = _yard()
 	repair = _button("repair", uid)
 	check(repair.disabled and _reason_above(repair, "Hull already full."), "full hull reason is above Repair")
-	check(_button("sellShip", uid).disabled and _reason_above(_button("sellShip", uid), "The flagship stays with the fleet."), "flagship protection has a written reason")
+	_check_partial_repair(s)
+	await _resize(Vector2i(1920, 1080), 1.0)
+	yard = _yard()
 	var other: Dictionary = C.RUN["fleet"].back()
 	var before_select := _snapshot()
 	_pick(other["uid"])
@@ -105,12 +114,22 @@ func _run() -> void:
 	C.shipyardScreen(stop)
 	await _resize(Vector2i(1920, 1080), 1.0)
 	var order := PreviewOp.plan(C, "buyHull", "warden", -1)
+	var ear := CueEar.new()
+	root.add_child(ear)
+	var old_sound = Kit.sound
+	Kit.sound = ear
+	var funds: float = C.RUN["credits"]
 	_button("buyHull", "warden").pressed.emit()
+	Kit.sound = old_sound
+	check(ear.heard == ["ui_reward"], "Buy Hull plays exactly one reward cue: " + str(ear.heard))
+	ear.free()
 	var bought: Dictionary = C.RUN["fleet"].back()
 	var numbers := PreviewOp._stats(C, bought)
 	check(order["rows"].all(func(row): return is_equal_approx(numbers[row["stat_key"]], row["new"])), "purchased hull has every previewed figure")
+	check(funds - C.RUN["credits"] == order["rows"][0]["cost"], "the hull purchase charges the previewed price")
 	await _resize(Vector2i(1920, 1080), 1.0)
 	check(_yard().selected["uid"] == bought["uid"], "confirming a hull selects the real new ship")
+	await _check_flagship_sale(uid)
 	await _geometry()
 	var damaged := Podium.damage_snapshot({"hp": 10, "yard_sections": {"eng": {"broken": true, "hp": 0, "max": 20}}}, 100)
 	check(damaged["sec"]["eng"]["broken"] and damaged["sec"]["prow"].is_empty(), "wear never invents a broken section from total hull")
@@ -121,6 +140,49 @@ func _run() -> void:
 	await _check_loaded_mesh()
 	print("SY-A Gantry: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails))
 	quit(1 if fails > 0 else 0)
+
+
+func _check_partial_repair(ship: Dictionary) -> void:
+	ship["hp"] = C.derive(ship)["maxHp"] - 20.0
+	C.RUN["credits"] = 9
+	C.shipyardScreen(stop)
+	ui.render()
+	var uid: String = ship["uid"]
+	var repair := _button("repair", uid)
+	check(not repair.disabled and repair.text == "Repair 18 of 20 for 9", "the visible Repair label shows the partial quote")
+	_hover(repair)
+	var rows := _preview_labels(_yard()).map(func(l): return l.get_meta("preview_row"))
+	var mark := _button("upgradeMk", uid)
+	var quote: Dictionary = C.preview_op("upgradeMk", uid)[0]
+	check(mark.text == "Mk II for " + C.numstr(quote["cost"]) and mark.disabled and _reason_above(mark, quote["disabled_reason"]), "Mark shows its previewed quote and disabled reason")
+	repair.pressed.emit()
+	check(rows.size() == 1 and ship["hp"] == rows[0]["new"] and 9.0 - C.RUN["credits"] == rows[0]["cost"], "the partial repair matches its visible hover row and bill")
+
+
+func _check_flagship_sale(uid: String) -> void:
+	_pick(uid)
+	var sell := _button("sellShip", uid)
+	check(not sell.disabled, "the flagship may be decommissioned with other ships in the fleet")
+	if sell.disabled: return
+	var previous_count: int = C.RUN["fleet"].size()
+	sell.pressed.emit()
+	await _resize(Vector2i(1920, 1080), 1.0)
+	check(C.modal_d != null and C.modal_d["kind"] == "sell" and C.RUN["fleet"].size() == previous_count, "Decommission asks before selling the flagship")
+	var confirm := _action_button(ui.modal_box, "sellConfirm", uid)
+	check(confirm != null, "the sale modal offers a confirmation for the selected flagship")
+	if confirm == null: return
+	confirm.pressed.emit()
+	var replacement = C.flagshipOf()
+	check(C._ship(uid) == null and C.RUN["fleet"].size() == previous_count - 1, "the confirmed sale removes the old flagship")
+	check(replacement != null and replacement["uid"] != uid, "Campaign hands the flag to a remaining ship")
+	if replacement == null: return
+	await _resize(Vector2i(1920, 1080), 1.0)
+	check(_yard().selected["uid"] == replacement["uid"], "the Gantry selects the replacement flagship")
+	C.RUN["fleet"] = [replacement]
+	C.shipyardScreen(stop)
+	await _resize(Vector2i(1920, 1080), 1.0)
+	sell = _button("sellShip", replacement["uid"])
+	check(sell.disabled and _reason_above(sell, "Keep at least one ship."), "the last ship cannot be decommissioned")
 
 
 func _geometry() -> void:
@@ -269,7 +331,11 @@ func _yard() -> Yard:
 
 
 func _button(action: String, arg: String) -> Button:
-	for b in _yard().find_children("*", "Button", true, false):
+	return _action_button(_yard(), action, arg)
+
+
+func _action_button(under: Node, action: String, arg: String) -> Button:
+	for b in under.find_children("*", "Button", true, false):
 		if b.get_meta("press_act", "") == action and b.get_meta("press_arg", "") == arg: return b
 	return null
 

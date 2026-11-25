@@ -1795,54 +1795,6 @@ func _fac_crest(Pt, fac: String) -> Texture2D:   # the crest of the first admira
 	return null
 
 # ---------------- ship cards, fleet, shipyard ----------------
-func _ship_card(s: Dictionary, refit: bool, extra: Array = [], apart: Array = []) -> Control:   # apart: buttons set on their own row below the rest (issue 2029 item 4)
-	var t = C.HULLS[s["tpl"]]; var d = C.derive(s); var cap = s["cap"]
-	var cv = card(false, 330); var v = cv[1]
-	var r0 = hbox(); var name_label = lbl(s["name"], 20, BONE, font_semi); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	r0.add_child(name_label); r0.add_child(lbl("MK " + C.roman(s["mk"]), 17, BONE2, font_caps, false)); v.add_child(r0)
-	v.add_child(lbl(t["n"], 18, BONE2))
-	if C.jt(s.get("ripped")): v.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
-	var r1 = hbox(); r1.add_child(lbl("Hull " + C.hull_text(s["hp"]) + "/" + C.hull_text(d["maxHp"]), 17)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(t["cp"]) + " CP", 17, BONE3, null, false)); v.add_child(r1)
-	v.add_child(bar(float(s["hp"]) / float(d["maxHp"])))
-	v.add_child(rich("[b]" + c("Shields", BONE2) + "[/b] " + C.numstr(d["shMax"]) + ", +" + C.numstr(d["regen"]) + "/turn   [b]" + c("Armor", BONE2) + "[/b] " + C.pct(d["armor"]) + "\n[b]" + c("Speed", BONE2) + "[/b] " + C.numstr(d["speed"]) + "   [b]" + c("Turns", BONE2) + "[/b] " + C.numstr(d["turns"]) + "   [b]" + c("Evasion", BONE2) + "[/b] " + C.numstr(d["ev"]), 17))
-	if C.jt(t.get("ab")) and C.ABILITIES.has(t["ab"]): v.add_child(rich(c(esc(C.ABILITIES[t["ab"]]["n"]) + ".", VERD) + " " + c(esc(C.ABILITIES[t["ab"]]["d"]), BONE3), 17))
-	for w in d["weapons"]:
-		var arc = "Turret" if w["arc"] == "T" else str(C.ARC_NAME.get(w["arc"], w["arc"]))
-		v.add_child(lbl(str(w["n"]) + "  " + arc + "  " + C.numstr(w["shots"]) + "×" + C.numstr(w["dmg"]) + ", range " + C.numstr(w["r"]) + ((", reload " + C.numstr(w["cd"])) if C.jt(w.get("cd")) else ""), 17, BONE3))
-	var sect = vbox(4); sect.add_child(HSeparator.new())
-	sect.add_child(lbl(C.rankName(cap) + " " + str(cap["full_name"]), 18, BONE, font_semi))
-	var nx = C.RANK_XP[int(cap["rank"]) + 1] if int(cap["rank"]) + 1 < C.RANK_XP.size() else null
-	if nx != null:
-		var nxt = cap.duplicate(); nxt["rank"] = float(cap["rank"]) + 1
-		sect.add_child(lbl(C.numstr(cap["xp"]) + "/" + C.numstr(nx) + " experience to " + C.rankName(nxt), 17, BONE3))
-	else: sect.add_child(lbl(C.numstr(cap["xp"]) + " experience, highest rank", 17, BONE3))
-	if cap["perks"].size() > 0:
-		var pf = flow(4)
-		for p in cap["perks"]:
-			var pl = lbl(str(C.PERKS[p]["n"]), 17, VERD, null, false); pl.tooltip_text = str(C.PERKS[p]["d"]); pl.mouse_filter = Control.MOUSE_FILTER_PASS; pf.add_child(pl)
-		sect.add_child(pf)
-	else: sect.add_child(lbl("No perks yet.", 17, BONE3))
-	add(sect, abtn("Choose promotion perk", "promote", s["uid"], true, true))
-	v.add_child(sect)
-	var rs = vbox(4); rs.add_child(HSeparator.new()); rs.add_child(sec_head("Refits"))
-	for i in range(int(C.z0(t.get("slots")))):   # R1: hulls without refit slots (sector flagships) show none
-		if i < s["mods"].size() and C.jt(s["mods"][i]):
-			var m = s["mods"][i]; var rr = hbox(6)
-			rr.add_child(rich("[b]" + esc(C.modName(m)) + "[/b] " + c(esc(C.MODULES[m]["d"]), BONE3), 17))
-			if refit: add(rr, abtn("Remove", "unequip", s["uid"] + ":" + str(i), false, true))
-			rs.add_child(rr)
-		else: rs.add_child(lbl("Empty refit slot", 17, BONE3))
-	v.add_child(rs)
-	if extra.size() > 0:
-		var ex = flow(6)
-		for b in extra: add(ex, b)
-		v.add_child(HSeparator.new()); v.add_child(ex)
-	if apart.size() > 0:   # issue 2029 item 4: Decommission cannot be taken back, so it sits on its own row, away from Repair and Mk
-		var ap = flow(6); ap.name = "ApartRow"
-		for b in apart: add(ap, b)
-		var gap = Control.new(); gap.custom_minimum_size.y = px(14); gap.name = "ApartGap"
-		v.add_child(gap); v.add_child(HSeparator.new()); v.add_child(ap)
-	return cv[0]
 const FleetManifest = preload("res://ui/campaign/fleet_manifest.gd")
 var fleet_manifest: Control
 var fleet_state := {"uid": "", "mode": "", "held": {}}
@@ -2691,15 +2643,15 @@ func _well_text(v: VBoxContainer) -> void:
 # Back button runs. The flagship aspect page has no back action yet (phase 4 adds one to both twins), so Esc does nothing
 # there until then.
 const BACK_ACTS := ["title", "backToSetup"]
-# Issue 1448: the confirms that take a reward, relic or promotion perk, or buy a hull, play the built reward chime
+# Issue 1448: confirms that take a reward or promotion perk, or buy a hull, play the built reward chime
 # (cues.json ui_reward) in place of the plain confirm.
-const REWARD_ACTS := ["takeMod", "takeBoon", "takeSalvage", "prizeConfirm", "takePerk"]
+const REWARD_ACTS := ["takeMod", "takeBoon", "takeSalvage", "prizeConfirm", "takePerk", "buyHull"]
 # Names the action a button runs, so the player-path recorder presses the real button (and hears its cue) instead of
 # calling the action under it (issue 1448: SND1C's reward picks were silent because the recorder skipped the buttons).
 static func press_tag(b: Control, act: String, arg) -> void:
 	b.set_meta("press_act", act); b.set_meta("press_arg", str(arg))
 func cue_role(act: String, fallback: String) -> String:
-	if act in ["buyHull", "buyMod", "lateBuy"]: return "purchase"
+	if act in ["buyMod", "lateBuy"]: return "purchase"
 	if act in ["equip", "fitRewardRefit", "fitWreckRefit", "fitBoughtRefit"]: return "install"
 	if act == "takeRelic": return "relic"
 	if act in REWARD_ACTS: return "reward"

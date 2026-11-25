@@ -125,13 +125,15 @@ func _build_head(page: VBoxContainer) -> void:
 	if hurt: _wire_preview(repair_all, "repairAll", "", -1, "Repair fleet", all)
 	var hold := _campaign_button("Manage refits", "yardFleet")
 	offers.add_child(hold)
+	var biomass: bool = C.hullKey() == "bio"
+	if biomass:
+		page.add_child(_word("The Chorus regrow with biomass: repairs, new hulls and Marks are paid in biomass. Refits, upgrade tracks, protocol rerolls and the late market take biomass first, then credits.", GS.TEXT2))
 	var pm: float = C.priceMult()
 	var rate: String = C.numstr(snappedf(pm, 0.0001))
-	var unit: String = "biomass" if C.hullKey() == "bio" else ("credit" if pm == 1.0 else "credits")
+	var unit: String = "biomass" if biomass else ("credit" if pm == 1.0 else "credits")
 	var rank: String = str(C.CAPTAINS[C.RUN["fac"]]["ranks"][0]).to_lower()
 	var help := _word("Repairs cost %s %s per 2 hull, rounded up. A Mark upgrade adds 20%% hull and shields and 15%% damage. New hulls come with a fresh %s." % [rate, unit, rank], GS.TEXT2)
 	page.add_child(help)
-	if unit == "biomass": hold.tooltip_text = "Hull work uses biomass. Refits, class refits and the late market take biomass first, then credits."
 
 
 func _build_bay() -> Control:
@@ -298,19 +300,20 @@ func _captain(parent: VBoxContainer, cap: Dictionary) -> void:
 
 func _build_actions() -> void:
 	var uid: String = selected["uid"]
-	var repair: Dictionary = C.preview_op("repair", uid)[0]
-	var mark: Dictionary = C.preview_op("upgradeMk", uid)[0]
-	var up: String = "Mk " + C.roman(float(selected["mk"]) + 1) if float(selected["mk"]) < 3 else "Upgrade Mark"
+	var repairs: Array = C.preview_op("repair", uid)
+	var mark: Dictionary = ui._preview_row(C.preview_op("upgradeMk", uid), "mark")
+	var mark_label: String = "Mk " + C.roman(mark["new"]) + " for " + _price(mark, false) if mark["old"] < 3 else "Max Mark"
 	var actions := HFlowContainer.new()
 	actions.add_theme_constant_override("h_separation", px(8))
 	actions.add_theme_constant_override("v_separation", px(4))
 	_inspector.add_child(actions)
-	var b := _campaign_button("Repair · " + _price(repair) if repair["delta"] > 0 else "Repair", "repair", uid)
-	var item := _with_reason(actions, b, str(repair["disabled_reason"]))
+	var repair_label: String = ui._yard_repair_label(repairs, " biomass" if repairs[0]["currency"] == "bio" else "")
+	var b := _campaign_button(repair_label, "repair", uid)
+	var item := _with_reason(actions, b, str(repairs[0]["disabled_reason"]))
 	_wire_preview(b, "repair", uid, -1, "Repair", item)
-	b = _campaign_button(up + " · " + _price(mark) if float(selected["mk"]) < 3 else up, "upgradeMk", uid)
+	b = _campaign_button(mark_label, "upgradeMk", uid)
 	item = _with_reason(actions, b, str(mark["disabled_reason"]))
-	_wire_preview(b, "upgradeMk", uid, -1, up, item)
+	_wire_preview(b, "upgradeMk", uid, -1, mark_label, item)
 	var fit: Array = []
 	for i in C.RUN["inventory"].size():
 		if C.preview_op("refit", uid, i)[0]["disabled_reason"].is_empty(): fit.append(i)
@@ -325,11 +328,15 @@ func _build_actions() -> void:
 	item = _with_reason(actions, b, "No hulls in stock." if b.disabled else "")
 	if hulls.size() == 1:
 		_wire_preview(b, "buyHull", hulls[0], -1, C.HULLS[hulls[0]]["n"], item)
+	# Decommission stays apart from the work orders because its confirmation cannot be undone.
+	var gap := Control.new()
+	gap.custom_minimum_size.y = px(14)
+	_inspector.add_child(gap)
+	_inspector.add_child(HSeparator.new())
 	var cash := _price({"cost": C.sellValue(selected), "currency": C.hullKey()})
-	var sell_reason := "Keep at least one ship." if C.RUN["fleet"].size() <= 1 else ("The flagship stays with the fleet." if is_same(selected, C.flagshipOf()) else "")
 	b = _campaign_button("Decommission · +" + cash, "sellShip", uid)
-	b.disabled = not sell_reason.is_empty()
-	_with_reason(actions, b, sell_reason)
+	var apart := _with_reason(_inspector, b, "Keep at least one ship." if b.disabled else "")
+	apart.name = "ApartRow"
 
 
 func _build_refits() -> void:
@@ -400,12 +407,13 @@ func _build_market() -> void:
 func _hull_for_sale(tpl: String, captured: bool) -> void:
 	var hull: Dictionary = C.HULLS[tpl]
 	var offer := PreviewOp.plan(C, "buyHull", tpl, -1)
+	var quote: Dictionary = offer["rows"][0]
 	var name: String = hull["n"]
 	_market.add_child(_word(name, GS.TEXT, 19, Kit.medium_font()))
 	if C.jt(hull.get("variant")): _market.add_child(_word(str(C.HULL_VARIANTS[hull["variant"]]["d"]), GS.TEXT2))
 	ui._hull_summary(_market, offer["ship"], ("cap:" if captured else "yard:") + tpl)
-	var b := _campaign_button("Buy for " + _price(offer["rows"][0]), "buyHull", tpl)
-	var item := _with_reason(_market, b, str(offer["reason"]))
+	var b := _campaign_button("Buy for " + _price(quote), "buyHull", tpl)
+	var item := _with_reason(_market, b, str(quote["disabled_reason"]))
 	_wire_preview(b, "buyHull", tpl, -1, name, item)
 
 
@@ -549,7 +557,7 @@ func _price(row: Dictionary, with_credits := true) -> String:
 
 
 func _campaign_button(text: String, action: String, arg = "") -> Button:
-	var b := Kit.button(text, k, "quiet", _activate.bind(action, arg), 17)
+	var b := Kit.button(text, k, ui.cue_role(action, "quiet"), _activate.bind(action, arg), 17)
 	var found: Array = ui._find(C.page["acts"], action, arg)
 	b.disabled = found.is_empty() or found[2] == 0
 	ui.press_tag(b, action, arg)
