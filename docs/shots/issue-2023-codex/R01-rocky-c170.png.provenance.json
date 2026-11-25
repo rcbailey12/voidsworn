@@ -1,0 +1,91 @@
+{
+  "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+  "source_commit_date": "2026-11-24T20:59:08Z",
+  "source_diff_sha256": "",
+  "source_dirty": false,
+  "stage": "cloud direction check",
+  "schema": 1,
+  "picture_name": "R01-rocky-c170.png",
+  "date": "2026-11-24T21:31:44Z",
+  "sources": [
+    {
+      "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+      "source_commit_date": "2026-11-24T20:59:08Z",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "cloud direction check"
+    },
+    {
+      "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+      "source_diff_sha256": "4e2b601a95d042c90aec7d1a040ffce68d0837bb94ece8ebcfcd9c35a90447e4",
+      "source_dirty": true,
+      "source_dirty_files": {
+        "godot/world/test/planet_v2_check.gd": "41e693a304e06b116f1a41101d71971be36d388c",
+        "godot/world/world_bake.gd": "fc2df5892a3487e63f99429dfbae95088875c8a0",
+        "godot/world/world_planet.gd": "2c9b61df2087475d4e9803f93590e67ca8c783f2"
+      },
+      "stage": "cloud direction check"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "board_0_c170_before.png",
+      "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "cloud direction check",
+      "date": "2026-11-24T21:28:54Z",
+      "image_sha256": "efa196fb07d2bf4744163fda6653bb4f66c900b145c9cddb3fa3b7d606a17d3a",
+      "sources": [
+        {
+          "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+          "source_commit_date": "2026-11-24T20:59:08Z",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "cloud direction check"
+        }
+      ],
+      "source_commit_date": "2026-11-24T20:59:08Z"
+    },
+    {
+      "picture_name": "board_0_c170_after.png",
+      "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+      "source_dirty": true,
+      "source_diff_sha256": "4e2b601a95d042c90aec7d1a040ffce68d0837bb94ece8ebcfcd9c35a90447e4",
+      "stage": "cloud direction check",
+      "date": "2026-11-24T21:30:08Z",
+      "image_sha256": "cd1c375e953b0c5bd210980fc7d7990cac596f831a65ccf1a57c51a72e6d49c8",
+      "sources": [
+        {
+          "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+          "source_diff_sha256": "4e2b601a95d042c90aec7d1a040ffce68d0837bb94ece8ebcfcd9c35a90447e4",
+          "source_dirty": true,
+          "source_dirty_files": {
+            "godot/world/test/planet_v2_check.gd": "41e693a304e06b116f1a41101d71971be36d388c",
+            "godot/world/world_bake.gd": "fc2df5892a3487e63f99429dfbae95088875c8a0",
+            "godot/world/world_planet.gd": "2c9b61df2087475d4e9803f93590e67ca8c783f2"
+          },
+          "stage": "cloud direction check"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    684,
+    720
+  ],
+  "strip_size": [
+    684,
+    124
+  ],
+  "strip_sha256": [
+    "f1cca94fd5858e01a446a8b04c9bf49c248f5cb6ee002cad11a298da1056e8fc"
+  ],
+  "stamp_template_sha256": "f1cca94fd5858e01a446a8b04c9bf49c248f5cb6ee002cad11a298da1056e8fc",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAqwAAAB8CAIAAAAjAXVhAAACH0lEQVR4nO3WIQEAIADAMCABBkv/mMRAfEtw+bnPHQBAz/odAAD8YQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAMBoevwTATsWivZ5AAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "7e1769d52a3037d5b489d896aa5dbc8418bfedd360faa6daff4e97b87bc452ec"
+}
