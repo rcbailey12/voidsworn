@@ -123,3 +123,17 @@ prove production seam export or tearing. Costs are reported without a triangle c
 
 Board sheet review, production recipe/export and paint, complete fit/tear checks, station-map performance gate, outside
 check and Ryan's look remain open. This kit is review evidence only under RULEBOOK 5.1.
+
+## The outpost (issue 1791)
+
+Ryan, Nov 24 2026 ("Yes agree on 1", "Yes outpost"): the 3-hex teaching cluster and the 1-hex station hole get a smaller
+station from this kit instead of a shrunken T2; the big 19-hex cluster keeps T2 at unit scale (docs/playbooks/scale.md,
+Outpost row).
+- `outpost.py`: the shape. Four stacked drums, two docking arms, one dish tower, two radiators, emergency lights, all
+  from `parts.py` and the Hegemony stack. Pictures only (`--out DIR`).
+- `outpost_production.py`: T2's paint route on that shape: production.py's masks, glass and wear, at T2's kit-to-world
+  factor, with T2's own painted tiles read from the installed station_T2.glb (`--t2-glb`). Writes station_outpost.glb.
+  Its own tile bake (no `--t2-glb`) goes through the newer shared paint stack and is not the accepted T2 look.
+- `outpost_install.gd`: caches gen/ships/station_outpost.scn and reads back the two small spots (they must pick it) and
+  the big one (it must keep T2). a4_props.station() uses the outpost for any cluster under 19 hexes once it exists.
+- The PC job (build, install, look bench props capture, nothing published) is OPUS1791_OUTPOST_<letter>.bat on the board.

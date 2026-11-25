@@ -43,11 +43,13 @@ const REGION := {
 const PLANETS := [
 	{"kind": 0, "a": Vector3(0.78, 0.62, 0.42), "b": Vector3(0.42, 0.28, 0.17), "c": Vector3(0.95, 0.88, 0.74), "atmo": Vector3(0.95, 0.78, 0.55), "rings": true, "moons": 3},
 	{"kind": 1, "a": Vector3(0.36, 0.55, 0.85), "b": Vector3(0.16, 0.3, 0.6), "c": Vector3(0.7, 0.85, 1.0), "atmo": Vector3(0.45, 0.7, 1.0), "rings": false, "moons": 2},
-	{"kind": 0, "a": Vector3(0.58, 0.44, 0.7), "b": Vector3(0.24, 0.14, 0.34), "c": Vector3(0.92, 0.8, 0.9), "atmo": Vector3(0.75, 0.55, 1.0), "rings": false, "moons": 2},
-	{"kind": 2, "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.02, 0.06, 0.14), "c": Vector3(0.62, 0.55, 0.42), "atmo": Vector3(0.38, 0.62, 1.0), "rings": false, "moons": 1},
-	{"kind": 3, "a": Vector3(0.62, 0.32, 0.17), "b": Vector3(0.24, 0.1, 0.06), "c": Vector3(0.85, 0.6, 0.4), "atmo": Vector3(1.0, 0.55, 0.32), "rings": false, "moons": 2},
-	{"kind": 4, "a": Vector3(0.42, 0.4, 0.38), "b": Vector3(0.17, 0.16, 0.16), "c": Vector3(0.6, 0.58, 0.55), "atmo": Vector3(0.0, 0.0, 0.0), "rings": false, "moons": 0},
-	{"kind": 5, "a": Vector3(0.68, 0.71, 0.74), "b": Vector3(0.48, 0.38, 0.3), "c": Vector3(0.6, 0.78, 0.95), "atmo": Vector3(0.55, 0.75, 1.0), "rings": false, "moons": 1},
+	# issue 1765: the old purple-lavender giant, re-paletted to dusty slate, umber-bronze belts and cream zones (RULEBOOK 10.9)
+	{"kind": 0, "a": Vector3(0.56, 0.54, 0.5), "b": Vector3(0.3, 0.22, 0.15), "c": Vector3(0.88, 0.83, 0.71), "atmo": Vector3(0.72, 0.72, 0.7), "rings": false, "moons": 2},
+	{"kind": 2, "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.025, 0.07, 0.15), "c": Vector3(0.62, 0.55, 0.42), "atmo": Vector3(0.38, 0.62, 1.0), "rings": false, "moons": 1},
+	# issue 1765: lifted into R420's band 2 (it sat at 0.027 on the day side; lifted again for the Wave 0 scorched fissures)
+	{"kind": 3, "a": Vector3(0.76, 0.45, 0.26), "b": Vector3(0.46, 0.24, 0.15), "c": Vector3(0.88, 0.66, 0.46), "atmo": Vector3(1.0, 0.55, 0.32), "rings": false, "moons": 2},
+	{"kind": 4, "a": Vector3(0.54, 0.51, 0.47), "b": Vector3(0.15, 0.14, 0.13), "c": Vector3(0.78, 0.75, 0.7), "atmo": Vector3(0.0, 0.0, 0.0), "rings": false, "moons": 0},
+	{"kind": 5, "a": Vector3(0.86, 0.89, 0.92), "b": Vector3(0.46, 0.27, 0.16), "c": Vector3(0.42, 0.6, 0.8), "atmo": Vector3(0.55, 0.75, 1.0), "rings": false, "moons": 1},
 	{"kind": 0, "a": Vector3(0.38, 0.66, 0.62), "b": Vector3(0.12, 0.3, 0.32), "c": Vector3(0.82, 0.95, 0.9), "atmo": Vector3(0.4, 0.95, 0.85), "rings": true, "moons": 2},
 ]
 
@@ -61,9 +63,9 @@ const PLANETS_ALT := [
 	{"kind": 1, "a": Vector3(0.3, 0.62, 0.66), "b": Vector3(0.12, 0.34, 0.4), "c": Vector3(0.75, 0.95, 0.95), "atmo": Vector3(0.45, 0.9, 0.95), "rings": true, "moons": 1},
 	{"kind": 0, "a": Vector3(0.74, 0.5, 0.46), "b": Vector3(0.36, 0.18, 0.16), "c": Vector3(0.96, 0.84, 0.76), "atmo": Vector3(1.0, 0.7, 0.6), "rings": true, "moons": 3},
 	{"kind": 2, "a": Vector3(0.42, 0.34, 0.22), "b": Vector3(0.05, 0.08, 0.12), "c": Vector3(0.82, 0.76, 0.66), "atmo": Vector3(0.5, 0.7, 0.95), "rings": false, "moons": 2},
-	{"kind": 3, "a": Vector3(0.36, 0.32, 0.3), "b": Vector3(0.12, 0.08, 0.07), "c": Vector3(0.95, 0.42, 0.18), "atmo": Vector3(0.9, 0.42, 0.25), "rings": false, "moons": 1},
+	{"kind": 3, "a": Vector3(0.6, 0.54, 0.5), "b": Vector3(0.42, 0.31, 0.25), "c": Vector3(0.95, 0.42, 0.18), "atmo": Vector3(0.9, 0.42, 0.25), "rings": false, "moons": 1},
 	{"kind": 4, "a": Vector3(0.52, 0.44, 0.36), "b": Vector3(0.22, 0.17, 0.13), "c": Vector3(0.7, 0.62, 0.52), "atmo": Vector3(0.0, 0.0, 0.0), "rings": true, "moons": 1},
-	{"kind": 5, "a": Vector3(0.82, 0.8, 0.86), "b": Vector3(0.4, 0.44, 0.56), "c": Vector3(0.7, 0.86, 1.0), "atmo": Vector3(0.7, 0.8, 1.0), "rings": false, "moons": 0},
+	{"kind": 5, "a": Vector3(0.84, 0.85, 0.86), "b": Vector3(0.36, 0.4, 0.46), "c": Vector3(0.7, 0.86, 1.0), "atmo": Vector3(0.7, 0.8, 1.0), "rings": false, "moons": 0},
 	{"kind": 0, "a": Vector3(0.66, 0.6, 0.38), "b": Vector3(0.3, 0.24, 0.12), "c": Vector3(0.95, 0.92, 0.7), "atmo": Vector3(0.9, 0.85, 0.5), "rings": false, "moons": 2},
 ]
 
@@ -372,12 +374,24 @@ void fragment() {
 # Issue 1679, SG option. Broad, subdued lobes in linear light. The sun side is warmer and brighter than the back-bounce.
 const FLEET_REFLECTIONS := """
 uniform bool fleet_reflections = false;
+// Issue 1777 (Ship Look V2): more lobes on top of the 1679 gradient, seen only by the reflection probe (cubemap pass):
+// a tight warm sun lobe for a real specular highlight on metal plates, a cool bounce band low on the far side (the
+// nebula and planet light), and dark-space troughs straight up and straight down so curved armor keeps deep contrast.
+uniform bool fleet_reflections_v2 = false;
 
 vec3 fleet_reflection_gradient(vec3 direction, vec3 sun_direction) {
 	float sun_side = dot(direction, sun_direction);
 	float warm = smoothstep(0.0, 1.0, sun_side);
 	float cool = smoothstep(0.0, 1.0, -sun_side);
-	return vec3(0.12, 0.10, 0.075) * warm + vec3(0.025, 0.036, 0.05) * cool;
+	vec3 c = vec3(0.12, 0.10, 0.075) * warm + vec3(0.025, 0.036, 0.05) * cool;
+	if (fleet_reflections_v2) {
+		float fr_lobe = pow(max(sun_side, 0.0), 24.0);   // neutral warm-white (Ryan, Nov 22: the orange lobe browned Eclipse)
+		float fr_bd = (direction.y + 0.18) / 0.22;   // Artoo on PR 1786: square by multiplying (pow of a negative base is undefined)
+		float fr_band = exp(-fr_bd * fr_bd) * (1.0 - smoothstep(-0.6, 0.2, sun_side));   // and smoothstep edges in order
+		float fr_trough = smoothstep(0.55, 0.95, abs(direction.y));
+		c = c * (1.0 - 0.75 * fr_trough) + vec3(0.86, 0.83, 0.78) * fr_lobe + vec3(0.045, 0.07, 0.11) * fr_band;
+	}
+	return c;
 }
 """
 
@@ -395,9 +409,13 @@ void sky() {
 }
 """
 
+# The angle of one pixel at 45 degrees vertical FOV and 1080 lines, shared by stars and dust.
+# A fixed angle already covers twice as many pixels when the viewport height doubles.
+const ANGULAR_PIXEL_1080 := "0.000727220521664304"
+
 const SKY := """
 shader_type sky;
-uniform sampler2D neb_tex : filter_linear, repeat_enable;
+uniform sampler2D neb_tex : filter_linear, repeat_enable;   // no mips: a sky has no smooth derivative at the longitude wrap
 uniform float has_neb = 0.0;
 uniform float neb_gain = 1.0;
 uniform vec3 mood_tint = vec3(1.0);   // issue 1272: a stop's mood on the sector's baked gas (defaults change nothing)
@@ -413,7 +431,7 @@ uniform vec4 lamp[6];
 uniform vec3 lamp_col[6];
 uniform vec3 sun_dir = vec3(0.45, 0.7, 0.55);
 uniform vec3 sun_col = vec3(1.0, 0.93, 0.82);
-uniform float px = 0.0008;   // one screen pixel in radians (fov / height)
+uniform float px = """ + ANGULAR_PIXEL_1080 + """;   // 1080-line angular size; the sky shader has no VIEWPORT_SIZE
 uniform mat3 turn = mat3(1.0); // the battle's small turn of the whole sky
 // the dead-star board's painted sky (R2: its backdrop; A3's 8K dead-star panorama, with its dim red dead sun where the
 // key light comes from), under the gas; and how bright this sky's own sun is (none on the dead-star board)

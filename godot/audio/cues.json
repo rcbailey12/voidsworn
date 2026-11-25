@@ -32,7 +32,35 @@
    "gun_shell_1.ogg",
    "gun_shell_2.ogg",
    "gun_shell_3.ogg"
-  ]
+  ],
+  "variants": {
+   "voidsworn.hbattery": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_sunward_hbattery",
+      "g": 0.621,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "voidsworn.battery": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_sunward_battery",
+      "g": 0.622,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "gun_flak": {
   "bus": "weapons",
@@ -55,7 +83,100 @@
     "pj": null
    }
   ],
-  "synth": []
+  "synth": [],
+  "variants": {
+   "voidsworn.flak": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_flak_airburst",
+      "g": 1.002,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "corsair.flak": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_flak_airburst",
+      "g": 1.002,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "hegemony.flak": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_directorate_picket",
+      "g": 1.279,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "chorus.spores": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_chorus_spore_cloud",
+      "g": 0.993,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "deathless.gsentry": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_eclipse_gsentry_more_f3",
+      "g": 2.803,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "deathless.flak": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_eclipse_gsentry",
+      "g": 1.017,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "ithar.flak": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_ithar_flak",
+      "g": 1.146,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "gun_sq": {
   "bus": "weapons",
@@ -82,7 +203,48 @@
    "gun_sq_0.ogg",
    "gun_sq_1.ogg",
    "gun_sq_2.ogg"
-  ]
+  ],
+  "variants": {
+   "guns": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_craft_guns",
+      "g": 1.039,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "bombs": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_craft_bombs",
+      "g": 1.106,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "chorus.sporeb": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_chorus_sporeb",
+      "g": 1.027,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "gun_las": {
   "bus": "weapons",
@@ -117,7 +279,35 @@
    "gun_las_1.ogg",
    "gun_las_2.ogg",
    "gun_las_3.ogg"
-  ]
+  ],
+  "variants": {
+   "voidsworn.autocannon": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_sunward_autocannon",
+      "g": 0.87,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "voidsworn.turret": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_sunward_turret",
+      "g": 0.88,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "gun_plasma": {
   "bus": "weapons",
@@ -151,7 +341,48 @@
    "gun_plasma_0.ogg",
    "gun_plasma_1.ogg",
    "gun_plasma_2.ogg"
-  ]
+  ],
+  "variants": {
+   "hegemony.laser": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_directorate_laser",
+      "g": 0.835,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "hegemony.turbo": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_directorate_turbo",
+      "g": 0.76,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "hegemony.hturbo": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_directorate_hturbo",
+      "g": 0.769,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "gun_tracer": {
   "bus": "weapons",
@@ -174,7 +405,48 @@
     "pj": null
    }
   ],
-  "synth": []
+  "synth": [],
+  "variants": {
+   "corsair.autocannon": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_hullbreaker_junk_gun",
+      "g": 0.871,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "corsair.turret": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_hullbreaker_junk_gun",
+      "g": 0.871,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "corsair.scatter": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_hullbreaker_scatter",
+      "g": 0.873,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "gun_spine": {
   "bus": "weapons",
@@ -197,7 +469,22 @@
     "pj": null
    }
   ],
-  "synth": []
+  "synth": [],
+  "variants": {
+   "chorus.bioplasma": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_chorus_spines",
+      "g": 0.818,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "gun_needle": {
   "bus": "weapons",
@@ -232,7 +519,35 @@
    "gun_needle_1.ogg",
    "gun_needle_2.ogg",
    "gun_needle_3.ogg"
-  ]
+  ],
+  "variants": {
+   "ithar.shard": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_ithar_shard",
+      "g": 0.81,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "ithar.turret": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_ithar_needle",
+      "g": 0.811,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "gun_rail": {
   "bus": "weapons",
@@ -266,7 +581,22 @@
    "gun_rail_0.ogg",
    "gun_rail_1.ogg",
    "gun_rail_2.ogg"
-  ]
+  ],
+  "variants": {
+   "deathless.gauss": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_eclipse_gauss_fire",
+      "g": 0.613,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "gun_glob": {
   "bus": "weapons",
@@ -355,7 +685,22 @@
   "synth": [
    "lance_0.ogg",
    "lance_1.ogg"
-  ]
+  ],
+  "variants": {
+   "voidsworn.lance": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_sunward_lance_beam",
+      "g": 1.017,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "lance_charge": {
   "bus": "weapons",
@@ -386,7 +731,24 @@
    }
   ],
   "synth": [],
-  "duration": 0.32
+  "duration": 0.32,
+  "variants": {
+   "deathless.doom": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_eclipse_doom_charge",
+      "g": 0.878,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": [],
+    "duration": 0.4,
+    "lead": 0.35
+   }
+  }
  },
  "lance_ion": {
   "bus": "weapons",
@@ -419,7 +781,22 @@
   "synth": [
    "lance_ion_0.ogg",
    "lance_ion_1.ogg"
-  ]
+  ],
+  "variants": {
+   "hegemony.ion": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_directorate_ion_beam",
+      "g": 1.322,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "lance_dark": {
   "bus": "weapons",
@@ -452,7 +829,35 @@
   "synth": [
    "lance_dark_0.ogg",
    "lance_dark_1.ogg"
-  ]
+  ],
+  "variants": {
+   "deathless.nlance": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_eclipse_nlance",
+      "g": 0.863,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "deathless.doom": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_eclipse_doom",
+      "g": 0.976,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "lance_choir": {
   "bus": "weapons",
@@ -485,7 +890,22 @@
   "synth": [
    "lance_choir_0.ogg",
    "lance_choir_1.ogg"
-  ]
+  ],
+  "variants": {
+   "ithar.pulsar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_ithar_pulsar",
+      "g": 1.092,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "torp": {
   "bus": "weapons",
@@ -542,7 +962,35 @@
     "pj": null
    }
   ],
-  "synth": []
+  "synth": [],
+  "variants": {
+   "corsair.torp": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_hullbreaker_rockets_b",
+      "g": 0.915,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "corsair.htorp": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_hullbreaker_rockets_b",
+      "g": 0.915,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "torp_sac": {
   "bus": "weapons",
@@ -599,7 +1047,22 @@
    "torp_star_0.ogg",
    "torp_star_1.ogg",
    "torp_star_2.ogg"
-  ]
+  ],
+  "variants": {
+   "ithar.startorp": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_ithar_startorp",
+      "g": 0.933,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "torp_heavy": {
   "bus": "weapons",
@@ -633,7 +1096,22 @@
    "torp_heavy_0.ogg",
    "torp_heavy_1.ogg",
    "torp_heavy_2.ogg"
-  ]
+  ],
+  "variants": {
+   "voidsworn.torp": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_sunward_torp_launch",
+      "g": 0.649,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "torp_charge": {
   "bus": "weapons",
@@ -664,7 +1142,23 @@
    }
   ],
   "synth": [],
-  "duration": 0.36
+  "duration": 0.36,
+  "variants": {
+   "voidsworn.torp": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "wep_torp_eject",
+      "g": 0.711,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": [],
+    "duration": 0.48
+   }
+  }
  },
  "hit": {
   "bus": "impacts",
@@ -680,26 +1174,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "hullHit",
-    "g": 1,
-    "r": 1,
-    "d": 0,
-    "pj": null
-   },
-   {
-    "s": "hullTick",
-    "g": 0.5,
+    "s": "imp_metal_light",
+    "g": 1.156,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "hit_0.ogg",
-   "hit_1.ogg",
-   "hit_2.ogg",
-   "hit_3.ogg"
-  ]
+  "synth": []
  },
  "hit_heavy": {
   "bus": "impacts",
@@ -715,15 +1197,8 @@
   "duck": 0,
   "layers": [
    {
-    "s": "hullHitBig",
-    "g": 1,
-    "r": 1,
-    "d": 0,
-    "pj": null
-   },
-   {
-    "s": "boomLow",
-    "g": 0.45,
+    "s": "imp_metal_heavy",
+    "g": 1.224,
     "r": 1,
     "d": 0,
     "pj": null
@@ -736,11 +1211,7 @@
     "pj": 0.03
    }
   ],
-  "synth": [
-   "hit_heavy_0.ogg",
-   "hit_heavy_1.ogg",
-   "hit_heavy_2.ogg"
-  ],
+  "synth": [],
   "variants": {
    "chorus": {
     "replace": true,
@@ -798,25 +1269,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "hullHit",
-    "g": 0.45,
-    "r": 1.3,
-    "d": 0,
-    "pj": null
-   },
-   {
-    "s": "lasSear",
-    "g": 0.4,
+    "s": "imp_las",
+    "g": 1.578,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "hit_las_0.ogg",
-   "hit_las_1.ogg",
-   "hit_las_2.ogg"
-  ]
+  "synth": []
  },
  "hit_plasma": {
   "bus": "impacts",
@@ -832,25 +1292,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "hullHitBig",
-    "g": 0.55,
-    "r": 0.78,
-    "d": 0,
-    "pj": null
-   },
-   {
-    "s": "plasmaHit",
-    "g": 0.5,
+    "s": "imp_energy_sear",
+    "g": 1.144,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "hit_plasma_0.ogg",
-   "hit_plasma_1.ogg",
-   "hit_plasma_2.ogg"
-  ]
+  "synth": []
  },
  "hit_rail": {
   "bus": "impacts",
@@ -866,25 +1315,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "hullHitBig",
-    "g": 0.6,
-    "r": 1.12,
-    "d": 0,
-    "pj": null
-   },
-   {
-    "s": "railHit",
-    "g": 0.5,
+    "s": "imp_gauss_slug",
+    "g": 1.167,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "hit_rail_0.ogg",
-   "hit_rail_1.ogg",
-   "hit_rail_2.ogg"
-  ]
+  "synth": []
  },
  "hit_wet": {
   "bus": "impacts",
@@ -900,8 +1338,8 @@
   "duck": 0,
   "layers": [
    {
-    "s": "hitWet",
-    "g": 0.4,
+    "s": "imp_bio_flesh",
+    "g": 1.433,
     "r": 1,
     "d": 0,
     "pj": null
@@ -923,8 +1361,8 @@
   "duck": 0,
   "layers": [
    {
-    "s": "hitGlass",
-    "g": 0.35,
+    "s": "imp_glass_armor",
+    "g": 1.879,
     "r": 1,
     "d": 0,
     "pj": null
@@ -946,25 +1384,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "arc",
-    "g": 0.6,
-    "r": 1.2,
-    "d": 0,
-    "pj": null
-   },
-   {
-    "s": "ionZap",
-    "g": 0.38,
+    "s": "imp_ion_disrupt",
+    "g": 1.588,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "hit_ion_0.ogg",
-   "hit_ion_1.ogg",
-   "hit_ion_2.ogg"
-  ]
+  "synth": []
  },
  "shield": {
   "bus": "impacts",
@@ -980,25 +1407,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "shieldHit",
-    "g": 1,
+    "s": "shd_hit_absorb",
+    "g": 1.48,
     "r": 1,
-    "d": 0,
-    "pj": null
-   },
-   {
-    "s": "shieldShimmer",
-    "g": 0.3,
-    "r": 0.9,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "shield_0.ogg",
-   "shield_1.ogg",
-   "shield_2.ogg"
-  ]
+  "synth": []
  },
  "patter_hull": {
   "bus": "impacts",
@@ -1014,8 +1430,8 @@
   "duck": 0,
   "layers": [
    {
-    "s": "patterHull",
-    "g": 0.15,
+    "s": "imp_patter_hull",
+    "g": 0.244,
     "r": 1,
     "d": 0,
     "pj": null
@@ -1037,8 +1453,8 @@
   "duck": 0,
   "layers": [
    {
-    "s": "patterShield",
-    "g": 0.12,
+    "s": "imp_patter_shield",
+    "g": 0.173,
     "r": 1,
     "d": 0,
     "pj": null
@@ -1060,18 +1476,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "boomSmall",
-    "g": 0.8,
-    "r": 1.35,
+    "s": "boom_pop_metal",
+    "g": 0.721,
+    "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "pop_0.ogg",
-   "pop_1.ogg",
-   "pop_2.ogg"
-  ]
+  "synth": []
  },
  "boom_s": {
   "bus": "explosions",
@@ -1087,25 +1499,14 @@
   "duck": 0.3,
   "layers": [
    {
-    "s": "boomSmall",
-    "g": 1,
-    "r": 1,
-    "d": 0,
-    "pj": null
-   },
-   {
-    "s": "boomCrunch",
-    "g": 0.42,
+    "s": "boom_small_metal",
+    "g": 0.895,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "boom_s_0.ogg",
-   "boom_s_1.ogg",
-   "boom_s_2.ogg"
-  ],
+  "synth": [],
   "variants": {
    "chorus": {
     "replace": true,
@@ -1177,31 +1578,14 @@
   "duck": 0.5,
   "layers": [
    {
-    "s": "boomSmall",
-    "g": 1,
-    "r": 0.8,
-    "d": 0,
-    "pj": null
-   },
-   {
-    "s": "boomLow",
-    "g": 0.65,
+    "s": "boom_medium_metal",
+    "g": 1.098,
     "r": 1,
     "d": 0,
-    "pj": null
-   },
-   {
-    "s": "debris",
-    "g": 0.4,
-    "r": 1,
-    "d": 0.15,
     "pj": null
    }
   ],
-  "synth": [
-   "boom_m_0.ogg",
-   "boom_m_1.ogg"
-  ]
+  "synth": []
  },
  "boom_l": {
   "bus": "explosions",
@@ -1217,54 +1601,23 @@
   "duck": 0.75,
   "layers": [
    {
-    "s": "boomBig",
-    "g": 1,
+    "s": "death_metal_break",
+    "g": 1.562,
     "r": 1,
     "d": 0,
     "pj": null
-   },
-   {
-    "s": "debris",
-    "g": 0.45,
-    "r": 1,
-    "d": 0.3,
-    "pj": null
    }
   ],
-  "synth": [
-   "boom_l_0.ogg",
-   "boom_l_1.ogg"
-  ],
+  "synth": [],
   "variants": {
    "chorus": {
     "replace": true,
     "layers": [
      {
-      "s": "torpSac",
-      "g": 1.0,
-      "r": 0.55,
+      "s": "death_chorus_rupture",
+      "g": 1.2,
+      "r": 1,
       "d": 0,
-      "pj": null
-     },
-     {
-      "s": "gunGlob",
-      "g": 0.7,
-      "r": 0.45,
-      "d": 0.04,
-      "pj": null
-     },
-     {
-      "s": "boomLow",
-      "g": 0.6,
-      "r": 0.7,
-      "d": 0,
-      "pj": null
-     },
-     {
-      "s": "hitWet",
-      "g": 0.45,
-      "r": 0.5,
-      "d": 0.25,
       "pj": null
      }
     ],
@@ -1320,24 +1673,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "whoosh",
-    "g": 0.6,
-    "r": 1.2,
-    "d": 0,
-    "pj": null
-   },
-   {
-    "s": "arc",
-    "g": 0.4,
+    "s": "ship_phase_jump",
+    "g": 0.788,
     "r": 1,
-    "d": 0.25,
+    "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "phase_0.ogg",
-   "phase_1.ogg"
-  ]
+  "synth": []
  },
  "launch": {
   "bus": "weapons",
@@ -1353,18 +1696,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "launch",
-    "g": 1,
+    "s": "ship_craft_launch",
+    "g": 2.195,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "launch_0.ogg",
-   "launch_1.ogg",
-   "launch_2.ogg"
-  ]
+  "synth": []
  },
  "engine": {
   "bus": "impacts",
@@ -1380,14 +1719,15 @@
   "duck": 0,
   "layers": [
    {
-    "s": "engineLoop",
-    "g": 0.3,
+    "s": "ship_engine_loop",
+    "g": 1.211,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": []
+  "synth": [],
+  "loop": true
  },
  "cough": {
   "bus": "impacts",
@@ -1403,8 +1743,8 @@
   "duck": 0,
   "layers": [
    {
-    "s": "cough",
-    "g": 0.2,
+    "s": "ship_engine_cough",
+    "g": 0.196,
     "r": 1,
     "d": 0,
     "pj": null
@@ -1426,8 +1766,8 @@
   "duck": 0,
   "layers": [
    {
-    "s": "puff",
-    "g": 0.3,
+    "s": "ship_thruster_puff_f3",
+    "g": 0.27,
     "r": 1,
     "d": 0,
     "pj": null
@@ -1449,19 +1789,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "uiClick",
-    "g": 1,
+    "s": "ui_click_switch",
+    "g": 1.251,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "ui_click_0.ogg",
-   "ui_click_1.ogg",
-   "ui_click_2.ogg",
-   "ui_click_3.ogg"
-  ]
+  "synth": []
  },
  "ui_confirm": {
   "bus": "ui",
@@ -1477,16 +1812,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "uiConfirm",
-    "g": 1,
+    "s": "ui_confirm_latch",
+    "g": 1.669,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "ui_confirm_0.ogg"
-  ]
+  "synth": []
  },
  "ui_cancel": {
   "bus": "ui",
@@ -1502,16 +1835,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "uiDeny",
-    "g": 1,
+    "s": "ui_cancel_switch",
+    "g": 1.15,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "ui_cancel_0.ogg"
-  ]
+  "synth": []
  },
  "ui_round": {
   "bus": "ui",
@@ -1527,9 +1858,9 @@
   "duck": 0,
   "layers": [
    {
-    "s": "uiRound",
-    "g": 0.2,
-    "r": 0.95,
+    "s": "ui_round_bell",
+    "g": 0.318,
+    "r": 1,
     "d": 0,
     "pj": null
    }
@@ -1550,16 +1881,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "yourTurn",
-    "g": 1,
+    "s": "ui_turn_start",
+    "g": 0.922,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "ui_your_0.ogg"
-  ]
+  "synth": []
  },
  "ui_enemy": {
   "bus": "ui",
@@ -1575,16 +1904,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "enemyTurn",
-    "g": 0.6,
+    "s": "ui_enemy_turn",
+    "g": 0.627,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "ui_enemy_0.ogg"
-  ]
+  "synth": []
  },
  "sting_win": {
   "bus": "ui",
@@ -1650,22 +1977,8 @@
   "duck": 0,
   "layers": [
    {
-    "s": "shieldBig",
-    "g": 1,
-    "r": 1,
-    "d": 0,
-    "pj": null
-   },
-   {
-    "s": "shieldHit",
-    "g": 0.5,
-    "r": 0.8,
-    "d": 0,
-    "pj": null
-   },
-   {
-    "s": "shieldShatter",
-    "g": 0.45,
+    "s": "shd_break_energy",
+    "g": 2.382,
     "r": 1,
     "d": 0,
     "pj": null
@@ -1685,10 +1998,22 @@
     "pj": 0.03
    }
   ],
-  "synth": [
-   "shield_break_0.ogg",
-   "shield_break_1.ogg"
-  ]
+  "synth": [],
+  "variants": {
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "shd_break_prismatic",
+      "g": 2.302,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "charge": {
   "bus": "weapons",
@@ -1704,16 +2029,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "ionCharge",
-    "g": 1,
+    "s": "ship_power_charge",
+    "g": 1.24,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "charge_0.ogg"
-  ]
+  "synth": []
  },
  "bass_drop": {
   "bus": "explosions",
@@ -1729,16 +2052,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "bassDrop",
-    "g": 1,
+    "s": "death_bass_drop",
+    "g": 2.734,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "bass_drop_0.ogg"
-  ]
+  "synth": []
  },
  "wreck": {
   "bus": "explosions",
@@ -1828,16 +2149,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "uiSelect",
-    "g": 1,
+    "s": "ui_select_detent",
+    "g": 3.299,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "ui_select_0.ogg"
-  ]
+  "synth": []
  },
  "ui_panel": {
   "bus": "ui",
@@ -1853,16 +2172,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "uiPanel",
-    "g": 1,
+    "s": "ui_panel_slide",
+    "g": 0.968,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "ui_panel_0.ogg"
-  ]
+  "synth": []
  },
  "ui_reward": {
   "bus": "ui",
@@ -1878,16 +2195,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "reward",
-    "g": 1,
+    "s": "ui_reward_vault",
+    "g": 0.86,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "ui_reward_0.ogg"
-  ]
+  "synth": []
  },
  "ui_alert": {
   "bus": "ui",
@@ -1903,16 +2218,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "enemyTurn",
-    "g": 0.6,
+    "s": "ui_alert_bell",
+    "g": 0.818,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "ui_alert_0.ogg"
-  ]
+  "synth": []
  },
  "ui_boss": {
   "bus": "ui",
@@ -1928,16 +2241,14 @@
   "duck": 0,
   "layers": [
    {
-    "s": "impactChord",
-    "g": 1,
+    "s": "ui_boss_arrival_long",
+    "g": 0.644,
     "r": 1,
     "d": 0,
     "pj": null
    }
   ],
-  "synth": [
-   "ui_boss_0.ogg"
-  ]
+  "synth": []
  },
  "death_bed": {
   "bus": "death",
@@ -1978,24 +2289,10 @@
   "duck": 0,
   "layers": [
    {
-    "s": "scrape",
-    "g": 0.5,
-    "r": 0.6,
+    "s": "death_metal_tail",
+    "g": 0.99,
+    "r": 1,
     "d": 0,
-    "pj": 0.025
-   },
-   {
-    "s": "debris",
-    "g": 0.45,
-    "r": 0.55,
-    "d": 0.5,
-    "pj": 0.025
-   },
-   {
-    "s": "boomLow",
-    "g": 0.35,
-    "r": 0.5,
-    "d": 1.1,
     "pj": 0.025
    }
   ],
@@ -2072,20 +2369,11 @@
   "duck": 0,
   "layers": [
    {
-    "s": "ionCharge",
-    "g": 0.55,
-    "r": 0.55,
+    "s": "death_metal_powerdown_f2",
+    "g": 0.478,
+    "r": 1,
     "d": 0,
-    "pj": 0.025,
-    "end_rate": 0.25
-   },
-   {
-    "s": "whoosh",
-    "g": 0.25,
-    "r": 0.7,
-    "d": 0,
-    "pj": 0.025,
-    "end_rate": 0.3
+    "pj": 0.025
    }
   ],
   "synth": [],
@@ -2136,6 +2424,20 @@
     ],
     "synth": [],
     "duration": 1.0
+   },
+   "hegemony": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "death_directorate_blackout",
+      "g": 0.529,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": [],
+    "duration": 1.36
    }
   }
  },
@@ -2153,9 +2455,9 @@
   "duck": 0,
   "layers": [
    {
-    "s": "whoosh",
-    "g": 0.5,
-    "r": 1.7,
+    "s": "death_metal_vent",
+    "g": 0.463,
+    "r": 1,
     "d": 0,
     "pj": 0.025
    }
@@ -2219,22 +2521,8 @@
   "duck": 0,
   "layers": [
    {
-    "s": "scrape",
-    "g": 0.6,
-    "r": 0.75,
-    "d": 0,
-    "pj": 0.025
-   },
-   {
-    "s": "hullHitBig",
-    "g": 0.45,
-    "r": 0.8,
-    "d": 0.14,
-    "pj": 0.025
-   },
-   {
-    "s": "crackSettle",
-    "g": 0.4,
+    "s": "death_metal_crack_f3",
+    "g": 0.789,
     "r": 1,
     "d": 0,
     "pj": 0.025
@@ -2246,33 +2534,15 @@
     "replace": true,
     "layers": [
      {
-      "s": "crackGlass",
-      "g": 0.6,
-      "r": 1.0,
+      "s": "death_ithar_shatter",
+      "g": 0.724,
+      "r": 1,
       "d": 0,
-      "pj": 0.025
-     },
-     {
-      "s": "hitGlass",
-      "g": 0.4,
-      "r": 0.7,
-      "d": 0.08,
-      "pj": 0.025
-     },
-     {
-      "s": "choirBell",
-      "g": 0.3,
-      "r": 0.5,
-      "d": 0,
-      "pj": 0.025
+      "pj": null
      }
     ],
-    "synth": [
-     "hit_glass_0.ogg",
-     "hit_glass_1.ogg",
-     "hit_glass_2.ogg"
-    ],
-    "duration": 0.8
+    "synth": [],
+    "duration": 1.6
    },
    "chorus": {
     "replace": true,
@@ -2301,6 +2571,34 @@
     ],
     "synth": [],
     "duration": 0.6
+   },
+   "corsair": {
+    "replace": false,
+    "layers": [
+     {
+      "s": "death_hullbreaker_snap",
+      "g": 1.014,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": [],
+    "duration": 1.08
+   },
+   "deathless": {
+    "replace": false,
+    "layers": [
+     {
+      "s": "death_eclipse_shear",
+      "g": 1.002,
+      "r": 1,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": [],
+    "duration": 1.75
    }
   },
   "duration": 0.4
@@ -2319,9 +2617,9 @@
   "duck": 0,
   "layers": [
    {
-    "s": "deathRun",
-    "g": 0.32,
-    "r": 0.92,
+    "s": "death_metal_run_f2",
+    "g": 0.696,
+    "r": 1,
     "d": 0,
     "pj": 0.025
    }
@@ -2385,17 +2683,10 @@
   "duck": 0,
   "layers": [
    {
-    "s": "debris",
-    "g": 0.3,
-    "r": 0.8,
+    "s": "death_debris_cool",
+    "g": 0.438,
+    "r": 1,
     "d": 0,
-    "pj": 0.025
-   },
-   {
-    "s": "scrape",
-    "g": 0.15,
-    "r": 0.65,
-    "d": 0.35,
     "pj": 0.025
    }
   ],
@@ -2458,17 +2749,10 @@
   "duck": 0,
   "layers": [
    {
-    "s": "whoosh",
-    "g": 0.5,
-    "r": 1.4,
+    "s": "death_hulk_vent",
+    "g": 0.968,
+    "r": 1,
     "d": 0,
-    "pj": 0.025
-   },
-   {
-    "s": "scrape",
-    "g": 0.2,
-    "r": 0.9,
-    "d": 0.45,
     "pj": 0.025
    }
   ],
@@ -2531,22 +2815,15 @@
   "duck": 0,
   "layers": [
    {
-    "s": "whoosh",
-    "g": 0.6,
-    "r": 1.3,
+    "s": "evt_fleet_warp_in",
+    "g": 0.784,
+    "r": 1,
     "d": 0,
-    "pj": 0
-   },
-   {
-    "s": "boomLow",
-    "g": 0.22,
-    "r": 1.5,
-    "d": 0.08,
-    "pj": 0
+    "pj": null
    }
   ],
   "synth": [],
-  "duration": 0.45
+  "duration": 1.28
  },
  "board_grapple": {
   "bus": "impacts",
@@ -2562,25 +2839,11 @@
   "duck": 0,
   "layers": [
    {
-    "s": "hullHitBig",
-    "g": 0.65,
-    "r": 0.85,
+    "s": "ord_board_grapple",
+    "g": 1.536,
+    "r": 1,
     "d": 0,
-    "pj": 0
-   },
-   {
-    "s": "scrape",
-    "g": 0.5,
-    "r": 1.2,
-    "d": 0.12,
-    "pj": 0
-   },
-   {
-    "s": "whoosh",
-    "g": 0.2,
-    "r": 1.6,
-    "d": 0.22,
-    "pj": 0
+    "pj": null
    }
   ],
   "synth": [],
@@ -2618,18 +2881,11 @@
   "duck": 0,
   "layers": [
    {
-    "s": "hullHit",
-    "g": 0.65,
-    "r": 0.7,
+    "s": "ord_brace_lock",
+    "g": 0.608,
+    "r": 1,
     "d": 0,
-    "pj": 0
-   },
-   {
-    "s": "hullHitBig",
-    "g": 0.25,
-    "r": 0.8,
-    "d": 0.1,
-    "pj": 0
+    "pj": null
    }
   ],
   "synth": [],
@@ -2649,21 +2905,616 @@
   "duck": 0,
   "layers": [
    {
-    "s": "uiSelect",
-    "g": 0.55,
-    "r": 0.8,
+    "s": "ord_adapt_shift",
+    "g": 0.979,
+    "r": 1,
     "d": 0,
-    "pj": 0
-   },
-   {
-    "s": "uiSelect",
-    "g": 0.5,
-    "r": 0.85,
-    "d": 0.24,
-    "pj": 0
+    "pj": null
    }
   ],
   "synth": [],
   "duration": 0.6
+ },
+ "hit_obsidian": {
+  "bus": "impacts",
+  "g": 0.3,
+  "max": 4,
+  "gap": 0.05,
+  "defer": 0.1,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "imp_obsidian_eclipse",
+    "g": 1.889,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "dmg_breach_vent": {
+  "bus": "impacts",
+  "g": 0.5,
+  "max": 2,
+  "gap": 0.15,
+  "defer": 0.12,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "dmg_breach_vent",
+    "g": 0.927,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "dmg_breach_shear": {
+  "bus": "impacts",
+  "g": 0.5,
+  "max": 2,
+  "gap": 0.15,
+  "defer": 0.12,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "dmg_breach_shear_metal",
+    "g": 0.911,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "dmg_turret_knockout": {
+  "bus": "impacts",
+  "g": 0.5,
+  "max": 2,
+  "gap": 0.2,
+  "defer": 0.12,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "dmg_turret_knockout",
+    "g": 0.798,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "dmg_engine_fail": {
+  "bus": "impacts",
+  "g": 0.5,
+  "max": 2,
+  "gap": 0.2,
+  "defer": 0.12,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "dmg_engine_fail_long",
+    "g": 0.811,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "dmg_shield_burnout": {
+  "bus": "impacts",
+  "g": 0.5,
+  "max": 1,
+  "gap": 0.3,
+  "defer": 0.12,
+  "pri": 0,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "dmg_shield_burnout",
+    "g": 0.721,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "hit_acid": {
+  "bus": "impacts",
+  "g": 0.4,
+  "max": 4,
+  "gap": 0.05,
+  "defer": 0.1,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "imp_acid_on_metal",
+    "g": 1.436,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "death_magazine": {
+  "bus": "explosions",
+  "g": 0.42,
+  "max": 3,
+  "gap": 0.06,
+  "defer": 0.12,
+  "pri": 2,
+  "pj": 0.06,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "death_sunward_magazine",
+    "g": 0.668,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "gauss_charge": {
+  "bus": "weapons",
+  "g": 0.3,
+  "max": 2,
+  "gap": 0.08,
+  "defer": 0.15,
+  "pri": 1,
+  "pj": 0.02,
+  "spj": 0.02,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "wep_eclipse_gauss_charge",
+    "g": 0.781,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": [],
+  "duration": 0.3,
+  "lead": 0.25
+ },
+ "ui_hover": {
+  "bus": "ui",
+  "g": 0.35,
+  "max": 2,
+  "gap": 0.04,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0,
+  "spj": 0.02,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "ui_hover_tick",
+    "g": 0.55,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "shd_raise": {
+  "bus": "impacts",
+  "g": 0.24,
+  "max": 4,
+  "gap": 0.06,
+  "defer": 0.12,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "shd_raise",
+    "g": 1.47,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "evt_gravity_well": {
+  "bus": "ambient",
+  "g": 0.12,
+  "max": 1,
+  "gap": 0.07,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "evt_gravity_well",
+    "g": 2.083,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": [],
+  "loop": true
+ },
+ "evt_asteroid_scrape": {
+  "bus": "impacts",
+  "g": 0.5,
+  "max": 4,
+  "gap": 0.05,
+  "defer": 0.12,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "evt_asteroid_scrape",
+    "g": 0.446,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "evt_hull_alarm": {
+  "bus": "ui",
+  "g": 0.18,
+  "max": 1,
+  "gap": 0.5,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0,
+  "spj": 0.02,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "evt_hull_alarm",
+    "g": 0.706,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "ui_command_issue": {
+  "bus": "ui",
+  "g": 0.4,
+  "max": 2,
+  "gap": 0.06,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0,
+  "spj": 0.02,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "ui_command_issue",
+    "g": 1.407,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "ui_map_fleet_jump": {
+  "bus": "impacts",
+  "g": 0.3,
+  "max": 3,
+  "gap": 0.12,
+  "defer": 2,
+  "pri": 2,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "map_fleet_jump",
+    "g": 0.551,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "ui_map_fleet_arrive": {
+  "bus": "impacts",
+  "g": 0.3,
+  "max": 3,
+  "gap": 0.12,
+  "defer": 2,
+  "pri": 2,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "map_fleet_arrive",
+    "g": 0.786,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "ui_purchase": {
+  "bus": "ui",
+  "g": 0.3,
+  "max": 1,
+  "gap": 0.2,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0,
+  "spj": 0.02,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "ui_purchase",
+    "g": 1.215,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "ui_module_install": {
+  "bus": "ui",
+  "g": 0.3,
+  "max": 1,
+  "gap": 0.2,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0,
+  "spj": 0.02,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "ui_module_install",
+    "g": 0.882,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "ui_relic_socket": {
+  "bus": "ui",
+  "g": 0.3,
+  "max": 1,
+  "gap": 0.2,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0,
+  "spj": 0.02,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "ui_relic_socket",
+    "g": 1.216,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "ui_event_comm": {
+  "bus": "ui",
+  "g": 0.32,
+  "max": 2,
+  "gap": 0.06,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0,
+  "spj": 0.02,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "ui_event_comm",
+    "g": 0.951,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "ui_ship_lost": {
+  "bus": "ui",
+  "g": 0.34,
+  "max": 1,
+  "gap": 0,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "ui_ship_lost",
+    "g": 1.479,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "evt_ram_impact": {
+  "bus": "explosions",
+  "g": 0.6,
+  "max": 3,
+  "gap": 0.08,
+  "defer": 0.15,
+  "pri": 3,
+  "pj": 0.05,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0.5,
+  "layers": [
+   {
+    "s": "evt_ram_impact_f2",
+    "g": 1.862,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "evt_nebula_bed": {
+  "bus": "ambient",
+  "g": 0.12,
+  "max": 1,
+  "gap": 0.07,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "evt_nebula_bed_f2",
+    "g": 2.083,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": [],
+  "loop": true
+ },
+ "ui_rank_up": {
+  "bus": "ui",
+  "g": 0.3,
+  "max": 1,
+  "gap": 0.2,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0,
+  "spj": 0.02,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "ui_rank_up_f2",
+    "g": 0.671,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "evt_torp_intercept": {
+  "bus": "explosions",
+  "g": 0.3,
+  "max": 3,
+  "gap": 0.05,
+  "defer": 0.12,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "evt_torp_intercept_f2",
+    "g": 0.98,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
  }
 }

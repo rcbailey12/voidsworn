@@ -25,6 +25,24 @@ def main():
     for cls, fac, want in table:
         ok(H.expected_breach(cls, fac) == want, f'breach {cls} {fac}: {H.expected_breach(cls, fac)}, expected {want}')
     ok(H.expected_breach('Cruiser', 'hullbreakers') == 5, 'the ship json name hullbreakers reads as the corsair sheet (+1)')
+    # issue 1680 (R411): stage 7 map size by length band, every class covered, lengths kept equal to the game's CLS_LEN
+    for cls, want in [('Squadron', 1024), ('Frigate', 2048), ('Destroyer', 2048), ('Cruiser', 2048), ('Carrier', 2048),
+                      ('transport', 2048), ('beacon', 2048), ('Battleship', 4096), ('Battle-barge', 4096), ('Ark', 4096),
+                      ('Dreadnought', 4096), ('Super-dreadnought', 4096), ('Bio-titan', 4096), ('Tomb-ark', 4096), ('station', 4096)]:
+        ok(H.map_size(cls) == want, f'map size {cls}: {H.map_size(cls)}, expected {want}')
+    for length, want in [(1.6, 1024), (4.0, 1024), (6.5, 2048), (18.0, 2048), (20.99, 2048), (21.0, 4096)]:
+        ok(H.map_size('Cruiser', length) == want, f'map size at length {length}: {H.map_size("Cruiser", length)}, expected {want}')
+    ok(set(H.BAND) <= set(H.CLASS_LENGTH), 'every BAND class has a CLASS_LENGTH: missing %s' % sorted(set(H.BAND) - set(H.CLASS_LENGTH)))
+    import re
+    src = open(os.path.join(REPO, 'godot', 'render', 'hull_table.gd'), encoding='utf-8').read()
+    game = {k: float(v) for k, v in re.findall(r'"([A-Za-z-]+)": ([0-9.]+)', src[src.index('const CLS_LEN'):src.index('}', src.index('const CLS_LEN'))])}
+    for k, v in game.items():
+        mine = H.CLASS_LENGTH.get(k, H.CLASS_LENGTH.get(k.lower()))
+        ok(mine == v, f'CLASS_LENGTH {k} {mine} matches hull_table.gd CLS_LEN {v}')
+    try:
+        H.map_size('Corvette'); ok(False, 'an unknown class must fail the map size, not default')
+    except ValueError:
+        ok(True, 'an unknown class fails the map size')
     try:
         H.expected_breach('Corvette', 'corsair'); ok(False, 'an unknown class must fail, not default')
     except ValueError:

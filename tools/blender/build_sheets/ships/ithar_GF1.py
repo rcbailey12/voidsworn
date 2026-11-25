@@ -57,6 +57,7 @@ HW, HH = 0.095 * LENGTH, 0.070 * LENGTH   # the core's half-beam and half-height
 BOW_EXP = 0.75   # how fast the core swells from its bow point (t=1 is the bow, X1); lower is a blunter, rounder bow (the bomber sets it)
 MOSAIC_WEIGHTS = None           # the mosaic's amber, violet, green shares; None: the kit's (the bomber sets its own)
 MOSAIC_GRID = (64, 40)         # the mosaic core's vertex grid (along, around): colour is per vertex, so thin streaks on a big body need more
+I8 = None                      # R431: dict(leaves, width, seed, sign, start) lays the kit's I8_37 shell (hull.i8_shell) instead of ribbons()
 MOSAIC_KW = {}                 # extra kit mosaic_tint options (a wide body passes streak=True, issue 1415); none: the kit default
 
 
@@ -198,7 +199,14 @@ def body(K):
     stack = gw_kit('stack')
     stack.setup(kit)
     P = gw_kit('parts')
-    ribs = ribbons()
+    ribs = None if I8 else ribbons()
+    if I8:
+        # R431 (Ryan Nov 24: the craft "might not be using the same approach as the big ships"): the big ships' I8_37 shell
+        # from the kit, its long ribbons and swells laid on this craft's own core
+        field = gw_kit('hull').i8_field(X1 - X0, sign=I8.get('sign', 1), start=I8.get('start', 0.2))
+        gap_of = field.gap_of
+    else:
+        gap_of = lambda x_, a_: gaps(x_, a_, ribs)
 
     # ---------------- the core: the glowing stained-glass mosaic seen between the ribbons ----------------
     nu, nv = MOSAIC_GRID
@@ -212,7 +220,7 @@ def body(K):
     for i in range(len(tint.data)):
         ix, iv = divmod(i, nv)
         x = X0 + (X1 - X0) * ix / nu; a = TAU * iv / nv
-        rgb, g = P.mosaic_tint(x, a, lambda x_, a_: gaps(x_, a_, ribs), stack.PALETTE, MOSAIC_WEIGHTS or stack.WEIGHTS, seed=6, tones=stack.TONES, **MOSAIC_KW)
+        rgb, g = P.mosaic_tint(x, a, gap_of, stack.PALETTE, MOSAIC_WEIGHTS or stack.WEIGHTS, seed=6, tones=stack.TONES, **MOSAIC_KW)
         tint.data[i].color = (rgb[0], rgb[1], rgb[2], 1.0)
         glow.data[i].value = g
     K.hull_sections = [(x, core(x, 0.0)[1], core(x, 0.0)[1], core(x, -math.pi / 2)[2], core(x, math.pi / 2)[2], 0.0, 0.0)
@@ -221,7 +229,13 @@ def body(K):
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
 
     # ---------------- six pearl ribbons twisting together to one point at the bow ----------------
-    for r in ribs:
+    if I8:
+        obs = gw_kit('hull').i8_shell(K, core, field, X0 + U(0.02), X1 - U(0.01), CODE, scale=max(HW, HH) / 2.6,
+                                      leaves=I8.get('leaves', 6), seed=I8.get('seed', 0), grp='hull', nu=96, width=I8.get('width', 1.0),
+                                      raise_=0.012 * max(HW, HH) / 2.6)
+        K.mass('Pearl ribbons', obs[0], 'pearl ribbons with silver edges',
+               note='the I8_37 shell (kit hull.i8_shell): fine long ribbons spiralling stern to bow, chunkier swells riding them')
+    for r in (ribs or []):
         vv, ff, al, ac = thick_ribbon(r)
         ob = K._obj(CODE + '_' + r.name, vv, ff, 'gw_pearl', smooth=True, grp='hull')
         ob.data.attributes.new('gw_along', 'FLOAT', 'POINT'); ob.data.attributes.new('gw_across', 'FLOAT', 'POINT')
@@ -231,7 +245,8 @@ def body(K):
         for side in (-1, 1):
             e = r.edge(core, side, 72, U(0.0015))
             K._obj('%s_%s_silver_%s' % (CODE, r.name, 'p' if side > 0 else 's'), *tube_mesh(e, [U(0.0016)] * len(e), 5), 'gw_silver', smooth=True, grp='hull')
-    K.mass('Pearl ribbons', ob, 'pearl ribbons with silver edges', note='six ribbons wrap the core stern to bow and twist together to one point, like a drawn flame')
+    if ribs:
+        K.mass('Pearl ribbons', ob, 'pearl ribbons with silver edges', note='six ribbons wrap the core stern to bow and twist together to one point, like a drawn flame')
 
     # ---------------- the drive: three cut violet stones round the blunt stern face (no flame, no nozzle) ----------------
     for ang, sn in STONES:   # each stone's pearl seat runs forward into the core's stern swell (stage 4 audit: nothing floats)
@@ -256,8 +271,10 @@ def body(K):
     K.colour('amber gun optic; violet drive stones', GX + U(0.02), X0, 'the spine optic, the stern face')
 
     # ---------------- INSIDE: kept small; the build contract needs one, the game never breaks a craft ----------------
+    rooms = gw_kit('rooms')
+    inner = rooms.register_skin(K, hull, core)
     for nm, kind, a0, a1, hw, zb, zt, note in ROOMS:
-        K.room(nm, kind, U(a0), U(a1), -U(hw), U(hw), -U(zb), U(zt), note=note)
+        rooms.craft_room(K, inner, nm, kind, (U(a0), U(a1), -U(hw), U(hw), -U(zb), U(zt)), note)
     K.inside.append(dict(kind='note', name='insides', note='A craft: the game shows its death as a spark (godot/fx/fx_death.gd _wing_death); nothing breaks open. These few rooms are here because the build contract needs an inside.'))
     K.armour('annealed outer glass', U(0.004), 'pearl ribbons over the mosaic; no plates')
     b = BREAK_X
@@ -269,6 +286,14 @@ def body(K):
              'docs/playbooks/scale.md, Squadron rows, binding; Glasswrights are a small elite fleet, so the craft is slim and sleek (Ryan, Nov 20)')
     K.change('Three cut violet drive stones on the blunt stern face, no flame or nozzle', 'the CD5 concept\'s stern stones in small')
     K.open_item('Colours and the ribbons\' sheen come from the shared Glasswright kit (tools/blender/kits/ithar/stack.py); PR 1283\'s warmer look reaches this craft when it merges')
+    # R431 (Ryan Nov 23): the craft read as I8_37 too, a pearl shell with the glass only in the seams (kit MOSAIC_MAX)
+    import bpy
+    bpy.context.view_layer.update()
+    share = gw_kit('hull').mosaic_share(list(K.coll.objects))
+    print('MOSAIC SHARE', CODE, share, 'max', gw_kit('stack').MOSAIC_MAX)
+    if max(share['top'], share['battle']) > gw_kit('stack').MOSAIC_MAX:
+        raise ValueError('R431: %s shows %s bare stained glass (max %.2f); widen the pearl ribbons (F.HALF, or F.I8 width)'
+                         % (CODE, share, gw_kit('stack').MOSAIC_MAX))
 
 
 def gun_optic(K):

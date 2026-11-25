@@ -12,7 +12,12 @@ extends Node
 # Parts:
 #   moments  every row of bench/look_moments.json (weapons on a hull and on a shield, shield states, death classes, one
 #            weapon on every weight, the eight PR 327 looks), each at the three cameras, as 30 frames a second strips:
-#            DIR/moments/<id>__c<cam>.png (cells side by side, 384x216 each; camera 170 is a 1 to 1 pixel crop).
+#            DIR/moments/<id>__c<cam>.png (384x216 cells side by side with a provenance footer below them;
+#            camera 170 is a 1 to 1 pixel crop).
+#   props    (issue 1767, only when asked: --part props) the live board's stations and hulks at cameras 170 and 26 through
+#            render/board.gd itself: DIR/props/<item>__c<cam>.png, 1280x720 at 1 to 1 (VS_1767_OLD=1 draws the old path).
+#            A missing still, station or faction writes PROPS_FAILED.txt and exits 4 with no LOOK_BENCH_DONE line
+#            (--props-smoke, for a cloud parse run with no pictures, lets it finish).
 #   fleet    all 36 hulls of render/hull_table.gd AI_HULLS at the battle camera (170) at true pixel size over every
 #            region's sky and a storm map (the sheet maker names the darkest and brightest by measurement):
 #            DIR/fleet/<sky>/<nn>_<code>.png (400x240, 1 to 1).
@@ -37,6 +42,7 @@ extends Node
 
 const FX := preload("res://fx/fx.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const BREACH := preload("res://fx/fx_breach.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const SV := preload("res://render/ship_view.gd")
 const HT := preload("res://render/hull_table.gd")
@@ -48,8 +54,9 @@ const WORLD_PATH := "res://world/world.gd"
 const MOMENTS := "res://bench/look_moments.json"
 const HEX_S := 10.0
 const HEX_W := 17.320508
-const W := 1920
-const H := 1080
+# issue 1877: --size WxH draws smaller (a cloud stand-in run on the software renderer); the PC keeps 1920x1080
+var W := 1920
+var H := 1080
 const STEP := 1.0 / 60.0
 const GRID := 900          # every part starts on a multiple of this many drawn frames
 const FLEET_CELL := Vector2i(400, 240)
@@ -79,9 +86,11 @@ var wld = null
 var A = null
 var T = null
 var report := {"stills": [], "warnings": [], "parts": {}}
+var _wound := {}   # issue 1741 (Artoo on 6fbf60fe): a wound-aimed row's open cutouts and pose, for its still's report entry
 var cfg := {}
 var steps := 0
 var headless := false
+var failed := ""   # issue 1877 (Artoo on PR 1904): a failed clip row fails the whole run (no LOOK_BENCH_DONE, exit 4)
 var sfx: Node = null          # --sound only
 var death_audio: Node = null
 
@@ -100,6 +109,10 @@ func _ready() -> void:
 				args[k] = true
 		i += 1
 	out = str(args.get("out", "user://look_bench"))
+	if args.has("size"):
+		var wh := str(args["size"]).split("x")
+		W = int(wh[0])
+		H = int(wh[1])
 	DirAccess.make_dir_recursive_absolute(out)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	Engine.max_fps = 0
@@ -172,15 +185,37 @@ func _run() -> void:
 		await _fleet_part()
 	if part == "all" or part == "moments":
 		await _moments_part()
+	if part == "props":   # issue 1767 only (not in "all", so the standing sets do not change)
+		await _props_part()
 	report["pipelines_compiled"] = _pipelines()
 	report["late_shaders_after_warmup"] = HULL.late_shader_count()
 	report["late_shader_names"] = HULL.late_shader_names()
 	_log("late shaders after warm-up (issue 376): %d; pipelines compiled in this run: %d" % [HULL.late_shader_count(), _pipelines()])
 	for line in HULL.late_shader_names():
 		_log("  late shader " + str(line))
+	if failed != "":
+		# the report stays for diagnosis; no DONE line, so look_bench.bat reports the run as failed
+		report["failed"] = failed
+		_save_report()
+		print("LOOK_BENCH_FAILED " + failed)
+		await _shutdown(4)
+		return
 	_save_report()
 	_log("stills: %d, warnings: %d" % [report["stills"].size(), report["warnings"].size()])
+	if not prop_failures.is_empty() and not args.has("props-smoke"):   # --props-smoke: a cloud parse run, no pictures
+		# issue 1767 (Artoo on PR 1772): a props set with a missing still, station or faction never reads as done
+		var ff := FileAccess.open(out.path_join("PROPS_FAILED.txt"), FileAccess.WRITE)
+		if ff != null:
+			ff.store_string("\n".join(PackedStringArray(prop_failures)) + "\n")
+			ff.close()
+		print("LOOK_BENCH_PROPS_FAILED %d" % prop_failures.size())
+		get_tree().quit(4)
+		return
 	print("LOOK_BENCH_DONE")
+	await _shutdown(0)
+
+
+func _shutdown(code: int) -> void:
 	# a clean exit: drop the static caches and the effects' GPU resources while the rendering server is alive (the
 	# first PC run ended with an access violation after its last line)
 	_clear()
@@ -190,7 +225,7 @@ func _run() -> void:
 	FX.clear_static()
 	SV.clear_static()
 	await get_tree().process_frame
-	get_tree().quit(0)
+	get_tree().quit(code)
 
 
 func _pipelines() -> int:
@@ -413,7 +448,7 @@ func _clear() -> void:
 
 
 # One ship as the battle draws it (G2's ShipView, added to G4's effects as the battle does), or null when it is a block.
-func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code := ""):
+func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code := "", cut_on_arrival := false):
 	var sv = SV.new()
 	sv.name = "ship_" + id
 	world.add_child(sv)
@@ -426,7 +461,8 @@ func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code
 	if _is_block(sv) and not args.has("allow-blocks"):
 		_placeholder("%s %s drew a block (code %s)" % [fac, cls, str(sv.code)])
 		return null
-	var info := {"faction": fac, "cls": cls, "size": 1.0, "squadron": false, "flagship": false, "code": sv.code}
+	var info := {"faction": fac, "cls": cls, "size": 1.0, "squadron": false, "flagship": false, "code": sv.code,
+		"cut_on_arrival": cut_on_arrival}
 	if not sv.a4:
 		info["meshes"] = sv.meshes
 	fx.add_ship(id, sv, info)
@@ -600,7 +636,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		return false
 	# issue 370: a row may place the target ("tgt_at": [x, z]), for a broadside or a shot from behind
 	var tat: Array = row.get("tgt_at", [34, 0])
-	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2)
+	# Only the target of a death row can die. Hull and shader warm-up still runs for every ship.
+	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2, "", row.get("do") == "death")
 	if T == null:
 		return false
 	if row.has("shield_left"):
@@ -629,7 +666,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var fo: Array = row.get("focus_off", [0, 0])
 	focus += Vector3(float(fo[0]), 0.0, float(fo[1]))
 	_cam(focus, r)
-	for k in 72:   # 1.2 s: engines up, the first damage and cut jobs done
+	for k in 72:   # 1.2 s: engines up, and any scheduled cut jobs done
 		await _step()
 	# Issue 1235 run 2: a row may land hits on the target first ("pre": [[kind, weapon, section], ...], one shot each,
 	# 0.75 s apart, each on its named hull section: eng, mid or prow; Artoo on PR 1570: without it every hit took "mid")
@@ -653,6 +690,50 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.sync_ship("T", row["sync_t"])
 		for k in 30:
 			await _step()
+		# Issue 1741 (JOINT_B, Nov 23: the breached rows showed no cutout and logged no wound pose): a ship still taking
+		# a pre shot (a torpedo in flight) holds its new hull stages until that impact lands (fx_ship.sync, busy_until),
+		# so wait for it (at most 8 s), then finish the hull rebuild, so the still and the wound camera see the stages
+		# the row sets
+		var ts = fx.ship("T")
+		if ts != null:
+			for k in 480:
+				if fx.now > float(ts.busy_until) + 0.1:
+					break
+				await _step()
+			if fx.now <= float(ts.busy_until) + 0.1:
+				_warn("%s at %d: the target was still waiting on a pre shot after 8 s" % [str(row.get("id", "")), int(r)])
+			for k in 3:
+				ts.flush_damage(fx)
+				await _step()
+	# Issue 1741 (V2B PC run, Nov 22: most Wounds V2 cutouts fell outside the close frame or on the far side): "focus":
+	# "wound" turns a close camera (under 100) to face the target's biggest open cutout, centred on it; camera 170 keeps
+	# the battle angle on the ship's centre (RULEBOOK 6.1). A ship with no open cutout keeps the usual view. The pose
+	# depends on the run's own cutouts, so it is logged and such a row is a detail, never a before/after pair (Artoo).
+	_wound = {}
+	if str(row.get("focus", "")) == "wound" and r < 100.0 and fx.ship("T") != null:
+		var st = fx.ship("T")
+		var best: Dictionary = {}
+		var mouths: Array = BREACH.open_mouths(st)
+		for mo in mouths:
+			if best.is_empty() or float(mo["R"]) > float(best["R"]):
+				best = mo
+		# a wound detail with no open cutout is not proof of anything: the still is kept, but its report entry says
+		# incomplete and the log carries one LOOK_BENCH WOUND MISSING line (a run with V2 off expects none)
+		_wound = {"mouths": mouths.size(), "v2": BREACH.v2_on(), "complete": not best.is_empty()}
+		if best.is_empty() and BREACH.v2_on():
+			_warn("LOOK_BENCH WOUND MISSING %s at %d: no open cutout, default camera kept" % [str(row.get("id", "")), int(r)])
+		if not best.is_empty():
+			var wc: Vector3 = st.to_world(best["c"])
+			var wn: Vector3 = (st.to_world(best["c"] + best["n"]) - wc).normalized()
+			cam.a = atan2(-wn.z, wn.x)
+			cam.b = clampf(acos(clampf(wn.y, -1.0, 1.0)), 0.35, 1.25)
+			cam.r = r
+			cam.t = wc
+			cam.snap()
+			_wound["pose"] = [cam.a, cam.b, cam.r, wc.x, wc.y, wc.z]
+			_log("%s wound pose at %d: a %.4f b %.4f r %.1f t (%.2f, %.2f, %.2f)" % [str(row.get("id", "")), int(r), cam.a, cam.b, cam.r, wc.x, wc.y, wc.z])
+			for k in 6:
+				await _step()
 	fx.rng.seed = 11
 	seed(2070)
 	var t_ev: float = fx.now
@@ -722,7 +803,21 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	for wv in row.get("windows", [["impact", -0.07, 12]]):
 		wins.append({"anchor": str(wv[0]), "at": float(wv[1]), "n": int(wv[2]), "got": 0, "next": -1})
 		total += int(wv[2])
-	var strip := Image.create_empty(cell.x * total, cell.y, false, Image.FORMAT_RGB8)
+	# issue 1877: a "clip" row saves every cell as its own frame (DIR/moments/<id>__c<cam>/f000.png ...) for a video,
+	# since a long strip passes Godot's 16384-pixel image limit; the strip is then not made
+	var clip := bool(row.get("clip", false))
+	var clip_dir := d.path_join("%s__c%d" % [id, int(r)])
+	var clip_bad: Array = []   # frames that failed to save (a clip row with any missing frame fails, Artoo on PR 1904)
+	# a "strict" still row fails the same way on a blank cell, a window that never opened or a strip that did not save
+	# (Artoo on PR 1904: the acid colour proof rows must not pass with a blank cell)
+	var strict := bool(row.get("strict", false))
+	if clip and keep:
+		var mk := DirAccess.make_dir_recursive_absolute(clip_dir)
+		if mk != OK or not DirAccess.dir_exists_absolute(clip_dir):
+			failed = "%s at %d: clip folder %s could not be made (error %d)" % [id, int(r), clip_dir, mk]
+			_warn("LOOK_BENCH " + failed)
+			return false
+	var strip := Image.create_empty(1 if clip else cell.x * total, cell.y, false, Image.FORMAT_RGB8)
 	var ci := 0
 	var cells: Array = []
 	var guard := 0
@@ -749,8 +844,20 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			take = steps >= int(w["next"])
 		if take:
 			var img := _grab()
-			if img != null:
+			if clip:
+				if keep:
+					var fp := clip_dir.path_join("f%03d.png" % ci)
+					if img == null:
+						clip_bad.append("f%03d.png (no frame grabbed)" % ci)
+					else:
+						var se: Error = preload("res://tools/picture_provenance.gd").save_png(_crop(img, crop, cell), fp,
+							preload("res://tools/picture_provenance.gd").capture_stage(), true)
+						if se != OK:
+							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
+			elif img != null:
 				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
+			elif strict and keep:
+				clip_bad.append("cell %d (no frame grabbed)" % ci)
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
 			ci += 1
 			w["got"] = int(w["got"]) + 1
@@ -765,8 +872,188 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if not keep:
 		return true
 	var name := "%s__c%d.png" % [id, int(r)]
-	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage())
+	if clip:
+		# every numbered frame 0 .. total-1 must be on disk, or the row fails (and with it the run: no LOOK_BENCH_DONE)
+		for fi in total:
+			var fn := "f%03d.png" % fi
+			if not FileAccess.file_exists(clip_dir.path_join(fn)) and not clip_bad.any(func(b): return str(b).begins_with(fn)):
+				clip_bad.append(fn + " (missing)")
+		if ci != total or not clip_bad.is_empty():
+			failed = "%s at %d: clip row failed: %d of %d frames taken; bad: %s" % [id, int(r), ci, total, ", ".join(clip_bad)]
+			_warn("LOOK_BENCH " + failed)
+			return false
+		report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/%s__c%d/" % [id, int(r)],
+			"cells": cells, "impacts": impacts, "clip": true})
+		_log("%s at %d: %d clip frames" % [id, int(r), ci])
+		return true
+	var sv: Error = preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
+	if strict:
+		if sv != OK or not FileAccess.file_exists(d.path_join(name)):
+			clip_bad.append("%s (save error %d)" % [name, sv])
+		if ci != total or not clip_bad.is_empty():
+			failed = "%s at %d: strict row failed: %d of %d cells taken; bad: %s" % [id, int(r), ci, total, ", ".join(clip_bad)]
+			_warn("LOOK_BENCH " + failed)
+			return false
+	# issue 1777 (Artoo on PR 1786): record the hull the target resolved to; a row naming "expect_code" says loudly when
+	# the faction and class drew a different hull (a later remap), so a capture bat can fail on it
+	var tcode := str(T.code) if is_instance_valid(T) else ""
+	if row.has("expect_code") and tcode != str(row["expect_code"]):
+		_warn("%s: target drew %s, the row expects %s" % [id, tcode, str(row["expect_code"])])
+		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
-		"impacts": impacts})
+		"impacts": impacts, "code": tcode})
+	if not _wound.is_empty():
+		report["stills"][-1]["wound"] = _wound.duplicate()
 	_log("%s at %d: %d cells" % [id, int(r), ci])
 	return true
+
+
+# ---------------------------------------------------------------- props (issue 1767): stations and hulks on the live board
+
+class PropRules extends RefCounted:
+	var v := {}
+	var w := {}
+	func view() -> Dictionary:
+		return v
+	func world_info() -> Dictionary:
+		return w
+
+
+const PROP_CELL := Vector2i(1280, 720)
+
+
+# the real render/board.gd built over `terrain` (and station holes), in the bench world, for one board of the part
+func _prop_board(terrain: Dictionary, holes: Array, map: Dictionary, units: Array, kind: String) -> Node3D:
+	var hexes := []
+	for q in range(-8, 9):
+		for r in range(-8, 9):
+			if absi(q + r) <= 8:
+				hexes.append({"q": q, "r": r})
+	var m := map.duplicate()
+	m["holes"] = holes
+	var rules := PropRules.new()
+	rules.v = {"hexes": hexes, "terrain": terrain, "units": units, "map": m}
+	rules.w = {"seed": 7, "biome": {"rock": "stone", "planet": 4, "station": kind}}
+	var board: Node3D = load("res://render/board.gd").new()
+	board.name = "prop_board"
+	world.add_child(board)
+	board.build(rules)
+	return board
+
+
+func _prop_still(item: String, focus: Vector3, cams: Array) -> void:
+	var d := out.path_join("props")
+	DirAccess.make_dir_recursive_absolute(d)
+	for r in cams:
+		_cam(focus, float(r))
+		for k in 8:
+			await _step()
+		var img := _grab()
+		if img == null:
+			_prop_fail("empty frame for %s c%d" % [item, int(r)])
+			continue
+		var name := "%s__c%d.png" % [item, int(r)]
+		var path := d.path_join(name)
+		# Artoo on PR 1772: a still counts only when the writer says OK and both the picture and its sidecar are on disk
+		var err := preload("res://tools/picture_provenance.gd").save_png(_crop(img, PROP_CELL, PROP_CELL), path, preload("res://tools/picture_provenance.gd").capture_stage())
+		if err != OK or not FileAccess.file_exists(path) or not FileAccess.file_exists(path + ".provenance.json"):
+			_prop_fail("%s not saved (writer %d)" % [name, int(err)])
+			continue
+		report["stills"].append({"part": "props", "id": item, "cam": int(r), "file": "props/" + name, "step": steps,
+			"old_path": OS.get_environment("VS_1767_OLD") == "1"})
+
+
+var prop_failures: Array = []
+
+
+func _prop_fail(why: String) -> void:
+	prop_failures.append(why)
+	_warn("props FAIL " + why)
+
+
+func _props_part() -> void:
+	var tag := "old" if OS.get_environment("VS_1767_OLD") == "1" else "new"
+	prop_failures.clear()
+	var want := 0
+	await _world({"rock": "stone", "planet": 4}, {}, [{"q": 0, "r": 0}])
+	report["parts"]["props"] = {"region": str(wld.setting.get("region", "")), "path": tag}
+	var stations := [
+		# item, terrain cells, holes, map, ship hex (the next hex out, for lamp spill), biome kind
+		["ST1_teaching_3hex", ["0,0", "1,0", "0,1"], [], {"station": {"q": 0, "r": 0}, "stationR": 1}, Vector2i(1, 1), "rig"],
+		["ST2_big_19hex", [], [], {"station": {"q": 0, "r": 0}, "stationR": 2}, Vector2i(3, 0), "ring"],
+		["ST3_hole_1hex", [], [{"kind": "station", "cells": [[0, 0]]}], {}, Vector2i(1, 0), "spire"],
+	]
+	for st in stations:
+		var cells: Array = st[1]
+		if str(st[0]).begins_with("ST2"):
+			for q in range(-2, 3):
+				for r in range(-2, 3):
+					if absi(q + r) <= 2:
+						cells.append("%d,%d" % [q, r])
+		var terrain := {}
+		for k in cells:
+			terrain[k] = "station"
+		_clear()
+		seed(2070)
+		fx.rng.seed = 11
+		var board := _prop_board(terrain, st[2], st[3], [], str(st[5]))
+		var sh: Vector2i = st[4]
+		var sp := _hex(sh.x, sh.y)
+		var sv = _ship("A", "hegemony", "Cruiser", sp, 3)
+		if sv == null:
+			return
+		# the station the item is about must be the path's own: T2 after; before, O1_37 off the big cluster
+		var t2n := 0
+		var o1n := 0
+		for n in board.find_children("*", "Node3D", true, false):
+			if n.has_meta("station_T2"):
+				t2n += 1
+				report["parts"]["props"]["%s_scale" % st[0]] = snappedf(float(n.get_meta("station_scale", n.scale.x)), 0.001)
+			elif n.name.begins_with("StationDock"):
+				# Fable on PR 1772 (item 7): a station hex no mesh covers gets a grey dock drum; count them per item
+				report["parts"]["props"]["%s_docks" % st[0]] = int(report["parts"]["props"].get("%s_docks" % st[0], 0)) + 1
+			elif n.has_meta("station_kind"):
+				o1n += 1
+		var big := str(st[0]).begins_with("ST2")
+		if (tag == "new" or big) and t2n != 1:
+			_prop_fail("%s: %d station_T2 drawn, want 1" % [st[0], t2n])
+		if tag == "old" and not big and o1n != 1:
+			_prop_fail("%s: %d old O1_37 drawn, want 1" % [st[0], o1n])
+		want += 2
+		var centre := Vector3.ZERO
+		for k in cells:
+			var qr: PackedStringArray = str(k).split(",")
+			centre += _hex(int(qr[0]), int(qr[1]))
+		centre = centre / float(cells.size()) if not cells.is_empty() else _hex(0, 0)
+		await _prop_still("%s_%s" % [st[0], tag], (centre + sp) * 0.5, [170, 26])
+		world.remove_child(board)
+		board.queue_free()
+	# a graveyard: 31 hulk hexes, no fleet (every faction may be drawn); one overview, then each faction's first hulk
+	var field := {}
+	for q in range(-6, 7):
+		for r in range(-6, 7):
+			if absi(q + r) <= 6 and (q * 7 + r * 3) % 4 == 0:
+				field["%d,%d" % [q, r]] = "hulk"
+	_clear()
+	var gy := _prop_board(field, [], {}, [], "")
+	await _prop_still("HK0_graveyard_%s" % tag, Vector3.ZERO, [170])
+	want += 1
+	var seen := {}
+	for n in gy.find_children("*", "Node3D", true, false):
+		var fac := str(n.get_meta("hulk_faction", "")) if n.has_meta("hulk_faction") else ""
+		if fac != "" and not seen.has(fac):
+			seen[fac] = true
+			await _prop_still("HK_%s_%s" % [fac, tag], (n as Node3D).global_position, [170, 26])
+			want += 2
+	report["parts"]["props"]["hulk_factions"] = seen.keys()
+	var facs_want := 4 if tag == "old" else 6
+	if seen.size() != facs_want:
+		_prop_fail("graveyard drew %d factions' hulks %s, want %d" % [seen.size(), str(seen.keys()), facs_want])
+	var got: int = report["stills"].filter(func(x): return x.get("part") == "props").size()
+	if got != want:
+		_prop_fail("%d props stills saved, want %d" % [got, want])
+	report["parts"]["props"]["failures"] = prop_failures.duplicate()
+	_log("props %s: hulk factions %s" % [tag, str(seen.keys())])
+	world.remove_child(gy)
+	gy.queue_free()
+	_clear()

@@ -29,6 +29,20 @@
 #   bell_radius     (each open engine bell, issues 592, 967) that engine's             must FAIL (not the centre of an open bell)
 #                   extras.radius doubled
 #   bell_plane      the same engine point moved half its radius down its exhaust       must FAIL (not the centre of an open bell)
+#   interior_no_uv  (an Interior Kit V2 export, issue 1743) one room surface's UVs      must FAIL (a room surface without interior UVs)
+#                   taken off
+#   interior_no_trim (a painted V2 export) one room material's detail normal taken off must FAIL (the shared trim maps missing)
+#   interior_no_role (a painted V2 export, R420) a room material's interior_role off   must FAIL (a kit zone colour, no role)
+#   interior_bright the same, a wall's base colour factor four times over             must FAIL (over the wall ceiling)
+#   interior_glow   the same, a non-core room given a constant lime light              must FAIL (only the core may)
+#   interior_guard  (Chorus) a bone material given a light; (Eclipse) a green room     must FAIL (the faction guard)
+#   interior_wrong_role a lit non-core room relabelled core (Artoo on PR 1763)         must FAIL (the role does not match its zone)
+#   interior_role_contract the contract's interior_roles taken off (PR 1755 reads it)  must FAIL (the game would not see the roles)
+#   maps_undersized (a painted export, Artoo on PR 1724) stage 7's report asks for     must FAIL (maps under the target)
+#                   twice the size its maps were written at
+#   maps_oversized  (a painted export, strike craft too)   the report asks for half    must FAIL (maps over the target)
+#                   the smallest side its maps were written at
+#   maps_unreadable (a painted export, Artoo on PR 1724)   one map's header zeroed     must FAIL (size could not be read)
 # A case whose points the export does not carry is skipped and named (issue 1413: an objective has no guns, and the Relay beacon
 # has no engines, braking or boarding points and no breach anchors). The 'pass' case still proves the check accepts that export,
 # so a point the game requires and the export lacks fails there, not here.
@@ -171,6 +185,39 @@ def liner_only(g):
     mats = root['extras']['voidsworn_destruct']['interior_materials']
     g['meshes'][root['mesh']]['primitives'] = [p for p in g['meshes'][root['mesh']]['primitives'] if g['materials'][p['material']]['name'] not in mats or g['materials'][p['material']]['name'] == code + '_inside_skin']
     root['extras']['voidsworn_destruct']['interior_materials'] = [code + '_inside_skin']
+def _room_mats(g):
+    root = next(n for n in g['nodes'] if n.get('name') == code)
+    return root, [m for m in root['extras']['voidsworn_destruct']['interior_materials'] if m != code + '_inside_skin']
+def interior_no_uv(g):  # issue 1743: an Interior Kit V2 room surface without its interior UVs
+    root, mats = _room_mats(g)
+    p = next(p for p in g['meshes'][root['mesh']]['primitives'] if g['materials'][p['material']]['name'] in mats and 'TEXCOORD_0' in p['attributes'])
+    del p['attributes']['TEXCOORD_0']
+def interior_no_trim(g):  # issue 1743: a painted V2 room material without the shared trim's detail normal
+    root, mats = _room_mats(g)
+    next(m for m in g['materials'] if m.get('name') in mats and m.get('normalTexture')).pop('normalTexture')
+def _room(g, test):   # the first painted V2 room material that test accepts
+    root, mats = _room_mats(g)
+    return next(m for m in g['materials'] if m.get('name') in mats and test(m))
+def _role(m): return (m.get('extras') or {}).get('interior_role')
+def interior_no_role(g):  # R420: a room material that names no role (a kit.py zone colour)
+    _room(g, lambda m: _role(m))['extras'].pop('interior_role')
+def interior_bright(g):  # R420: a wall over the shared value ceiling (the chalk-white corridor)
+    m = _room(g, lambda m: _role(m) not in ('bone', 'glass', 'glass_strut', None))
+    m['pbrMetallicRoughness']['baseColorFactor'] = [min(1.0, 4 * c) for c in m['pbrMetallicRoughness']['baseColorFactor'][:3]] + [1]
+def interior_glow(g):  # R420: a non-core room with a constant full-surface light (the neon vat)
+    m = _room(g, lambda m: _role(m) not in ('core', None))
+    m.pop('emissiveTexture', None); m['emissiveFactor'] = [0.55, 0.85, 0.1]
+def interior_wrong_role(g):  # Artoo on PR 1763: a lit wall relabelled core, so the exemptions would let it through
+    m = _room(g, lambda m: _role(m) not in ('core', None)); m['extras']['interior_role'] = 'core'
+    m.pop('emissiveTexture', None); m['emissiveFactor'] = [1, 1, 1]
+    root, _ = _room_mats(g); root['extras']['voidsworn_destruct'].setdefault('interior_roles', {})[m['name']] = 'core'   # the contract agrees
+def interior_role_contract(g):  # PR 1755: a room role the contract does not carry never reaches the game
+    root, _ = _room_mats(g); root['extras']['voidsworn_destruct'].pop('interior_roles', None)
+def interior_guard(g):  # R420 faction guards: Chorus bone that glows; Eclipse green
+    if FAC == 'chorus':
+        m = _room(g, lambda m: _role(m) == 'bone'); m['emissiveFactor'] = [0.3, 0.3, 0.1]
+    else:
+        m = _room(g, lambda m: _role(m) not in ('core', None)); m['pbrMetallicRoughness']['baseColorFactor'] = [0.05, 0.2, 0.05, 1]
 def turret_merged(g):   # issue 560: the turrets folded back into the ship mesh (turret nodes gone, their muzzles on the ship node)
     W, par = CE.world_matrices(g); root = next(i for i, n in enumerate(g['nodes']) if n.get('name') == code)
     for i, n in enumerate(g['nodes']):
@@ -209,6 +256,24 @@ if not wing:
     CASES += (('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
               ('liner_only', liner_only, 1, 'no authored interior rooms'))
     if BREACH: CASES += (('hull_trim_near', hull_trim_near, 0, ''), ('part_near', part_near, 1, 'from a part (at least'))
+    # issue 1743: an Interior Kit V2 export (voidsworn_destruct.interior_kit 2) must fail without its interior UVs, and, painted,
+    # without its shared trim maps; a legacy export has neither, so the cases are named as skipped
+    _root0 = next(n for n in _g0['nodes'] if n.get('name') == code)
+    V2 = int(_root0.get('extras', {}).get('voidsworn_destruct', {}).get('interior_kit', 0) or 0) >= 2
+    want(['interior_no_uv'], V2, (('interior_no_uv', interior_no_uv, 1, 'have no interior UVs'),))
+    want(['interior_no_trim'], V2 and 'unbaked=1' not in sys.argv[3:], (('interior_no_trim', interior_no_trim, 1, 'lack the shared interior trim maps'),))
+    PAINTED = V2 and 'unbaked=1' not in sys.argv[3:]
+    FAC = ship.get('faction')
+    _roles0 = {_role(m) for m in _g0.get('materials', []) if m.get('name') in _room_mats(_g0)[1]}
+    want(['interior_no_role', 'interior_glow', 'interior_wrong_role', 'interior_role_contract'], PAINTED,
+         (('interior_no_role', interior_no_role, 1, 'names no interior_role'), ('interior_glow', interior_glow, 1, 'has a constant light'),
+          ('interior_wrong_role', interior_wrong_role, 1, 'does not match its zone'),
+          ('interior_role_contract', interior_role_contract, 1, 'missing from the contract interior_roles')))
+    # the Glasswrights' rooms are all glass, which the wall ceiling does not bind
+    want(['interior_bright'], PAINTED and bool(_roles0 - {'bone', 'glass', 'glass_strut', None}),
+         (('interior_bright', interior_bright, 1, 'wall ceiling'),))
+    if PAINTED and FAC in ('chorus', 'eclipse'):
+        CASES += (('interior_guard', interior_guard, 1, 'Chorus bone' if FAC == 'chorus' else 'is green'),)
 
 def sided_points(g, kind, side):
     return [n for n in g['nodes'] if n.get('name', '').startswith(f'hp_{kind}_') and n.get('extras', {}).get('side') == side]
@@ -267,6 +332,25 @@ for name in RECTANGULAR_EXHAUSTS:
     CASES += ((f'exhaust_width_{name}', lambda g, name=name: double_exhaust_size(g, name, 0), 1, error),
               (f'exhaust_height_{name}', lambda g, name=name: double_exhaust_size(g, name, 1), 1, error),
               (f'exhaust_plane_{name}', lambda g, name=name: bell_plane(g, name), 1, error))
+POST = {}      # cases that break a file beside the glb (the glb itself is copied as written)
+def maps_undersized(d):
+    rp = os.path.join(d, code + '_export.json'); r = json.load(open(rp))
+    r['maps_target'] = 2 * max(CE.image_size(os.path.join(d, f)) and max(CE.image_size(os.path.join(d, f))) or 0
+                               for f in os.listdir(d) if re.fullmatch(re.escape(code) + r'_(base|orm|normal)\.\w+', f))
+    json.dump(r, open(rp, 'w'), indent=1)
+def maps_oversized(d):
+    rp = os.path.join(d, code + '_export.json'); r = json.load(open(rp))
+    r['maps_target'] = min(min(CE.image_size(os.path.join(d, f)) or (2, 2)) for f in os.listdir(d)
+                           if re.fullmatch(re.escape(code) + r'_(base|orm|normal)\.\w+', f)) // 2
+    json.dump(r, open(rp, 'w'), indent=1)
+def maps_unreadable(d):
+    f = sorted(f for f in os.listdir(d) if re.fullmatch(re.escape(code) + r'_(base|orm|normal)\.\w+', f))[0]
+    b = open(os.path.join(d, f), 'rb').read(); open(os.path.join(d, f), 'wb').write(b'\x00' * 32 + b[32:])
+# strike craft too (Board audit on PR 1724): their maps are checked against the 1024 band like every other ship
+if 'unbaked=1' not in sys.argv[3:] and os.path.exists(os.path.join(src, code + '_export.json')):
+    CASES += (('maps_undersized', None, 1, 'maps under the'), ('maps_oversized', None, 1, 'maps over the'),
+              ('maps_unreadable', None, 1, 'size could not be read'))
+    POST['maps_undersized'] = maps_undersized; POST['maps_oversized'] = maps_oversized; POST['maps_unreadable'] = maps_unreadable
 if SKIPPED: print('skip', ', '.join(SKIPPED) + ': the export carries none of their points (the pass case proves the check accepts that)')
 bad = 0; base = os.path.join(src, '_selftest')
 for name, fn, want, why_must in CASES:
@@ -276,6 +360,7 @@ for name, fn, want, why_must in CASES:
     g, blob = CE.read_glb(os.path.join(src, code + '.glb'))
     if fn: fn(g)
     write_glb(os.path.join(d, code + '.glb'), g, blob)
+    if name in POST: POST[name](d)
     mp = os.path.join(d, 'manifest_entry.json')
     if os.path.exists(mp):      # keep the manifest in step, so the only problem is the one this case broke
         c = {}

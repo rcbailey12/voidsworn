@@ -4,7 +4,8 @@ bridges, stored light glowing in the cleft between them; one lens point at each 
 amidships (the turret), a white bloom at each stern. Ryan likes the parallel read: the hulls are never merged.
 
 Built in the R337 finish on the shared Glasswright kit (tools/blender/kits/ithar: parts.py, stack.py, hull.py). This hull is
-the pane-heavy one of the family: narrow pearl ribbons over a mostly mosaic skin, as the pick's thick lens panes.
+the paned one of the family: since R431 (Ryan Nov 23 2026) broad flush pearl panels make the shell, as on I8_37, and the
+thick lens panes show in the leaf-shaped seams between them.
 Nothing is see-through. Replaces the Nov 1 hull I15_11 (R368).
   python THIS_FILE review TEMP_OUT
   python THIS_FILE layout TEMP_OUT docs/ship_pipeline/build_sheets/ithar_GP1
@@ -29,7 +30,7 @@ SHEET = dict(version=1, round='R337 / issue 1415', date='2026-11-20', stage='blo
 CAMERA = dict(az=58.0, el=42.0, roll=-8.0, scale=33.0)
 CLOSE = dict(daz=-12, del_=6, scale=0.45, target=(0.0, 0, 0.03))
 COMPARE_NOTE = ['Two parallel pane hulls joined by two arched bridges; seafoam stored light on the inner flanks.',
-                'Opaque (R337): mostly glowing panes with narrow pearl ribbons. Lens points at both bows, blister on top.']
+                'Opaque (R337): a pearl shell of flush panels, glowing panes in the seams (R431). Lens points at both bows, blister on top.']
 SIDE_NOTE = 'Two hulls, each about 6.5 to 1, side by side; the bridges arch above the cleft.'
 INSIDE_NOTE = 'Each hull: two shaped glass decks, open annealed frames and three braided light cores, cut at both break lines.'
 
@@ -38,6 +39,9 @@ YP = 1.72                     # pod centre line, port (+) and starboard (-)
 R = 1.30                      # pod radius at the widest
 S = (LENGTH / 26.0) ** 0.7
 BRIDGES = (-2.7, 2.2)
+# A bridge interior names one of these mesh enclosures via room_skin_bridge.
+# The silver edges and seafoam strips under the arches are exterior fittings.
+BRIDGE_ENCLOSURES = dict(zip((f'{CODE}_bridge_aft', f'{CODE}_bridge_fwd'), BRIDGES))
 
 
 def hk(name):
@@ -64,12 +68,12 @@ def pod(side):
     return skin
 
 
-TWIST = lambda x: 0.035 * x + 0.10 * math.sin(0.30 * x)
 
 
 def field(side):
     hl = hk('hull')
-    return hl.RibbonField(8, lambda x: side * TWIST(x), sway=0.0, leaf_f=1.1, start=0.15)
+    # R431 round 3 (Ryan Nov 23: the white "more detailed and wrapping", like I8_37): the Ark's own spiralling field
+    return hl.i8_field(XB - XS, sign=side, start=0.15)
 
 
 def light(side):
@@ -81,6 +85,17 @@ def light(side):
     return f
 
 
+def bridge_centre(x, y):
+    u = y / YP
+    return x, 0.25 + 0.72 * max(0, 1 - u * u) ** 0.8
+
+
+def bridge_skins(objects, scale=1.0):
+    from room_skin_check import BridgeSkin
+    return {name: BridgeSkin(objects[name], lambda y, x=x: bridge_centre(x, y), scale)
+            for name, x in BRIDGE_ENCLOSURES.items()}
+
+
 def bridge(K, hl, x, name):
     """an arched glass bridge from pod to pod: a flattened oval tube rising over the cleft, pearl over a mosaic underside,
     a silver line along each edge"""
@@ -88,7 +103,7 @@ def bridge(K, hl, x, name):
     for i in range(41):
         u = -1 + 2 * i / 40
         y = u * YP
-        z = 0.25 + 0.72 * (1 - u * u) ** 0.8
+        _, z = bridge_centre(x, y)
         pts.append((x, y, z))
     sec = lambda xx, a, i: None
     vv, ff = [], []
@@ -125,34 +140,24 @@ def build(K):
         skin = pod(side)
         f = field(side)
         core = hl.mosaic_core(K, '%s_%s_pane_hull' % (CODE, tag), skin, XS, XB, f.gap_of, nu=180, nv=120, thick=0.04,
-                              seed=5 if side > 0 else 8, light=light(side))
+                              seed=5 if side > 0 else 8)   # R431: no seafoam wash on the inner flank (Ryan Nov 23: it read washed-out white)
         K.mass('%s pane hull' % tag.capitalize(), core, 'opaque glowing stained-glass panes',
-               note='One of the two parallel hulls; thick amber, violet and green panes under narrow pearl ribbons.')
-        # Round 2 (Ryan Nov 21, "agree with the prism pods"): no raised ribbons (they read as corn-cob lobes). As the pick,
-        # each pod is big stained-glass panes in a grid of leading: eight flush pearl lines along the pod and a silver ring
-        # round it about every 1.2 units.
-        ribbons = []
-        for k in range(f.n):
-            ribbons.append(gw.Ribbon(
-                XS + 0.15, XB - 0.30, f.centre(k),
-                lambda t: 0.032 * gw.leaf(0.12, 0.12, 0.5, tip=0.6)(t),
-                lambda t, v: S * (0.012 + 0.016 * (1 - v * v) ** 0.5),
-                name='%s_lead_%d' % (tag, k)))
-        hl.lay_ribbons(K, ribbons, skin, 0.025 * S, 0.018 * S, nu=160, nv=4)
-        for j, xr in enumerate([XS + 0.9 + 1.2 * i for i in range(11)]):
-            if xr > XB - 0.6:
-                break
-            ring = [skin(xr, hl.TAU * i / 72, -0.01) for i in range(73)]
-            K._obj('%s_%s_ring_%d' % (CODE, tag, j), *hl.tube_mesh(ring, [0.035 * S] * 73, 6), 'gw_silver', smooth=True)
+               note='One of the two parallel hulls; flush pearl panels over thick amber, violet and green panes that show in the seams.')
+        # R431 (Ryan Nov 23, "the top is how we want it to look across the board"; then "ensure that white material also
+        # matches i8_37 too ... more detailed and wrapping"): the I8_37 shell from the kit, twelve fine pillowed ribbons that
+        # spiral round each pod with crossing leaves over them; the stained glass shows only in their leaf seams. The flush
+        # panels and silver hoops of round 2 are gone (I8_37 has neither).
+        hl.i8_shell(K, skin, f, XS + 0.15, XB - 0.30, tag, scale=R / 2.6, leaves=12, seed=3 if side > 0 else 7, width=1.6)
         hl.lance(K, 'L%d' % (1 if side > 0 else 2), (XB - 0.22, side * YP, 0.0), 1.55, 0.36,
                  note='One pulsar lance per hull: a grown lens point at the bow on the hull\'s own axis; fixed forward, F arc.',
                  what='grown lens point at the %s bow / pulsar' % tag)
         hl.stern_drive(K, 'E%d' % (1 if side > 0 else 2), (XS + 0.38, side * YP, 0.0), 0.62)
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
-    for i, x in enumerate(BRIDGES):
-        b = bridge(K, hl, x, '%s_bridge_%s' % (CODE, 'aft' if i == 0 else 'fwd'))
+    for i, (name, x) in enumerate(BRIDGE_ENCLOSURES.items()):
+        b = bridge(K, hl, x, name)
         K.mass('Arched bridge %s' % ('aft' if i == 0 else 'fwd'), b, 'pearl glass bridge between the hulls',
                note='Grows out of both hulls; carries a row of stored light under its arch.')
+    K.gw_bridges = bridge_skins(K.coll.objects)
     # the turret: a lens blister grown on the crown of the forward bridge, on the centreline
     hl.turret_optic(K, 'O1', (BRIDGES[1], 0.0, 0.25 + 0.72 + 0.20 + 0.19), 'turret', 'violet', s=1.15,
                     note='The Needle beam: a violet lens blister grown on the crown of the forward bridge, 360 degrees.')
@@ -161,6 +166,8 @@ def build(K):
     for side, tag in ((1, 'port'), (-1, 'stbd')):
         hl.insides(K, lambda x: 0.70 * radius(x), lambda x: 0.60 * radius(x), XS + 0.9, XB - 0.9, breaks, breach_x,
                    decks=(-0.35, 0.25), frames=9, y0=side * YP, tag='_' + tag)
+        hk('rooms').rooms(K, lambda x: 0.70 * radius(x), lambda x: 0.60 * radius(x), XS + 0.9, XB - 0.9, breaks, breach_x,
+                          decks=(-0.35, 0.25), frames=9, y0=side * YP, tag='_' + tag, heart=side > 0)   # rooms (Ryan, Nov 23)
     K.armour('annealed outer glass', 0.04, 'actual shell thickness; layered blown glass, no armour plates')
     hl.ragged_break(K, 'B1', breaks[0], 2 * (YP + R) + 0.6, 'ragged shatter path through both hulls aft of the aft bridge; the stern optics stay whole')
     hl.ragged_break(K, 'B2', breaks[1], 2 * (YP + R) + 0.6, 'ragged shatter path through both hulls forward of the forward bridge; the bow lances stay whole')
@@ -171,9 +178,9 @@ def build(K):
         a = 0.0 if side > 0 else math.pi
         K.point('rcs', 'hp_rcs_%d' % i, pod(side)(x, a), side='port' if side > 0 else 'stbd')
         K.point('board', 'hp_board_%d' % i, pod(side)(x - 1.0, a), side='port' if side > 0 else 'stbd')
-    K.colour('amber, violet, green panes', XB, XS, 'most of each hull; glows from within')
-    K.colour('opaque pearl ribbons, silver edges', XB, XS, 'nine narrow ribbons on each hull, the bridges')
-    K.colour('seafoam stored light', BRIDGES[1] + 1.2, BRIDGES[0] - 1.2, 'the inner flanks facing the cleft and under each bridge')
+    K.colour('amber, violet, green panes', XB, XS, 'the leaf-shaped seams between the pearl panels; glows from within (R431)')
+    K.colour('opaque pearl panels, silver edges', XB, XS, 'eight broad flush panels on each hull (the shell), the bridges')
+    K.colour('seafoam stored light', BRIDGES[1] + 0.6, BRIDGES[0] - 0.6, 'a thin row under each bridge only (R431: the inner flanks carry the same coloured glass as the outside)')
     K.colour('soft white bloom', XS + 0.4, XS - 0.4, 'one stern drive optic per hull, no flame')
     K.change('Opaque panes and pearl instead of the sketch\'s clear glass', 'R337 (Ryan, Nov 19): nothing see-through.')
     K.change('Two arched bridges, the turret blister on the crown of the forward one',

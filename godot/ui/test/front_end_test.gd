@@ -12,6 +12,10 @@ const UiScale := preload("res://ui/ui_scale.gd")
 const Title := preload("res://main/title.gd")
 const Campaign := preload("res://campaign/campaign.gd")
 const UI := preload("res://ui/campaign/campaign_ui.gd")
+const GS := preload("res://ui/theme/glass_shell.gd")
+const Choice := preload("res://ui/campaign/choice_button.gd")
+const MapChart := preload("res://ui/campaign/map3d.gd")
+const RowHover := preload("res://ui/campaign/row_hover.gd")
 var fails := 0
 
 
@@ -19,6 +23,14 @@ class FakeSound extends Node:
 	var heard: Array = []
 	func play(n: String, _o := {}) -> void:
 		heard.append(n)
+
+class TestChart extends MapChart:
+	var pointed := ""
+	var flown := ""
+	func _ready() -> void: set_process(false)
+	func _node_at(_position: Vector2) -> String: return pointed
+	func _paint_lanes() -> void: pass
+	func fly_to(id: String) -> void: flown = id
 
 
 class FakeMusic extends Node:
@@ -28,7 +40,7 @@ class FakeMusic extends Node:
 
 
 class FakeMain extends Node:
-	var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false}
+	var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "brisk_camera": false, "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false}
 	var args := {}
 	var saves := 0
 	func has_campaign() -> bool: return false
@@ -81,6 +93,15 @@ func run() -> void:
 
 
 func kit_checks(snd: FakeSound) -> void:
+	var banks := [GS.button_boxes(1.0), GS.finish_boxes(1.0), GS.lit_boxes(1.0, GS.TEXT),
+		GS.sheet_jump_boxes(1.0), GS.row_boxes(1.0, true), GS.jump_boxes(1.0), Kit.button_boxes(1.0)]
+	for i in banks.size():
+		var bank: Dictionary = banks[i]
+		check(bank["pressed"].bg_color != bank["hover"].bg_color or bank["pressed"].border_color != bank["hover"].border_color,
+			"button style %d has distinct pressed feedback" % i)
+	check(banks[2]["hover"].bg_color.get_luminance() > banks[2]["normal"].bg_color.get_luminance(), "outlined action brightens on hover")
+	check(banks[3]["disabled"].border_color == GS.SHEET_HAIR, "disabled sheet action has a muted border")
+	await choice_checks()
 	var box := VBoxContainer.new(); box.size = Vector2(200, 400); box.custom_minimum_size.x = 200; root.add_child(box)
 	var long := Kit.label("Temporal AA (smoother edges, softer motion) and a few more words to be sure", 18, 1.0)
 	var short := Kit.label("Sound", 18, 1.0)
@@ -99,13 +120,65 @@ func kit_checks(snd: FakeSound) -> void:
 	snd.heard.clear()
 	var l := Kit.link("Credits", 1.0)
 	l.mouse_entered.emit(); l.pressed.emit()
-	check(snd.heard == ["ui_select", "ui_click"], "a kit link plays the hover cue, then the press cue")
+	check(snd.heard == ["ui_hover", "ui_click"], "a kit link plays the hover cue, then the press cue")
 	l.free()
+
+
+func choice_checks() -> void:
+	var b := Choice.new()
+	var n := GS.well(1.0)
+	var h := GS.well(1.0, GS.TEXT3)
+	var down := h.duplicate() as StyleBoxFlat
+	down.bg_color = GS.ROW_HOVER
+	b.setup(n, h, down, false)
+	root.add_child(b)
+	b.size = Vector2(200, 100)
+	var hits := [0]
+	b.pressed.connect(func(): hits[0] += 1)
+	var e := InputEventMouseButton.new()
+	e.button_index = MOUSE_BUTTON_LEFT
+	var motion := InputEventMouseMotion.new(); motion.position = Vector2(20, 20)
+	root.push_input(motion)
+	e.position = motion.position
+	e.pressed = true
+	root.push_input(e)
+	check(hits[0] == 0 and b.get_theme_stylebox("panel") == down, "choice shows a press without firing on mouse-down")
+	motion.position = Vector2(220, 20); root.push_input(motion)
+	e.position = motion.position; e.pressed = false
+	root.push_input(e)
+	check(hits[0] == 0, "choice can be dragged out to cancel")
+	motion.position = Vector2(20, 20); root.push_input(motion)
+	e.position = motion.position; e.pressed = true
+	root.push_input(e)
+	e.pressed = false
+	root.push_input(e)
+	var key := InputEventKey.new(); key.keycode = KEY_SPACE; key.pressed = true
+	root.push_input(key)
+	check(hits[0] == 1 and b.disabled, "choice fires once across click and keyboard")
+	b.queue_free()
+
+
+func action(root_node: Node, act: String, arg: String) -> Control:
+	for b in root_node.find_children("*", "Control", true, false):
+		if b.get_meta("press_act", "") == act and b.get_meta("press_arg", "") == arg:
+			return b
+	return null
+
+
+func set_scroll(sc: ScrollContainer) -> int:
+	var bar := sc.get_v_scroll_bar()
+	sc.scroll_vertical = mini(150, int((bar.max_value - bar.page) * 0.5))
+	return sc.scroll_vertical
+
+
+func scrolled(sc: ScrollContainer, saved: int) -> bool:
+	return saved > 0 and abs(sc.scroll_vertical - saved) <= 1
 
 
 func title_checks(snd: FakeSound) -> void:
 	var m := FakeMain.new(); root.add_child(m)
 	m.settings["ui_scale"] = 1.3; UiScale.set_player(1.3)
+	m.settings.erase("brisk_camera")
 	var t := Title.new(); t.main = m; root.add_child(t)
 	await frames()
 	var vs := Vector2(root.size)
@@ -124,15 +197,22 @@ func title_checks(snd: FakeSound) -> void:
 			rows += 1
 			var lb: Label = r.get_child(0)
 			if lb.autowrap_mode == TextServer.AUTOWRAP_OFF or lb.get_global_rect().end.x > r.get_child(1).get_global_rect().position.x: unwrapped += 1
-	check(rows == 21 and unwrapped == 0, "all 21 settings names (issue 1437 added Render scale, Frame cap and V-Sync) wrap and stay clear of their control (%d rows, %d bad)" % [rows, unwrapped])
+	check(rows == 22 and unwrapped == 0, "all 22 settings names wrap and stay clear of their control (%d rows, %d bad)" % [rows, unwrapped])
 	var xs := {}
 	for c in t.settings_panel.find_children("*", "Control", true, false):
 		if c.has_meta("setting_key"): xs[int(round(c.size.x))] = true
 	check(xs.size() == 1, "every settings control is one width (%s)" % str(xs.keys()))
 	# the UI scale row keeps focus through the rebuild
 	var us: Button = null
+	var brisk: Button = null
 	for c in t.settings_panel.find_children("*", "Button", true, false):
 		if c.get_meta("setting_key", "") == "ui_scale": us = c
+		if c.get_meta("setting_key", "") == "brisk_camera": brisk = c
+	check(brisk != null and brisk.text == "Off", "Title Settings shows Brisk camera Off when the saved key is missing")
+	if brisk != null:
+		var before := m.saves
+		brisk.pressed.emit()
+		check(brisk.text == "On" and m.settings["brisk_camera"] and m.saves == before + 1, "the Brisk camera row saves its new setting")
 	us.grab_focus(); us.pressed.emit(); await frames(6)
 	var fo := root.gui_get_focus_owner()
 	check(fo != null and fo.get_meta("setting_key", "") == "ui_scale" and t.settings_panel != null, "changing the UI scale keeps focus on the UI scale row")
@@ -154,6 +234,19 @@ func title_checks(snd: FakeSound) -> void:
 	var click := InputEventMouseButton.new(); click.button_index = MOUSE_BUTTON_LEFT; click.pressed = true
 	t.settings_dim.gui_input.emit(click); await frames()
 	check(t.settings_panel == null, "a click beside the Settings drawer closes it")
+	root.size = Vector2i(1000, 900)
+	UiScale.set_player(1.4); m.settings["ui_scale"] = 1.4; m.settings["reduce_motion"] = true
+	t._rebuild(); await frames()
+	t._settings(); await frames(6)
+	var narrow_scroll := t.settings_panel.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
+	var settings_done := t.settings_panel.find_children("*", "Button", true, false).filter(func(b): return b.text == "Done")
+	var narrow_bar := narrow_scroll.get_v_scroll_bar()
+	var drawer_bottom: float = t.settings_panel.get_global_rect().end.y
+	check(narrow_bar.max_value > narrow_bar.page and drawer_bottom <= root.size.y + 1
+		and settings_done.size() == 1 and settings_done[0].get_global_rect().end.y <= root.size.y + 1,
+		"Settings keeps Done and its bottom padding inside the window when the list scrolls (drawer ends at %.0f)" % drawer_bottom)
+	t._close_settings()
+	root.size = Vector2i(1920, 1080); await frames()
 	# Credits: Esc closes it, and it names every font the game ships
 	t._credits(); await frames()
 	var text := t.credits_bbcode()
@@ -202,6 +295,20 @@ func campaign_checks(snd: FakeSound) -> void:
 			bad.append("%s(cards %d, rows %d, bottoms %d, widths %s, fits %s)" % [fac, ui._desk_cards.size(), tops.size(), bots.size(), str(ws.keys()), str(fits)])
 	check(bad.is_empty(), "at Larger every faction's desk fits with no scroll and its admiral cards line up: one width, one bottom per row (%s)" % str(bad))
 	check(mus.previews.size() >= C.RUN_FACTIONS.size() - 1 and mus.previews.has(str(C.picked_faction)), "picking a faction plays its music preview (%s)" % str(mus.previews))
+	var crest_tab: Button = null
+	var crest_label: Label = null
+	var crest: TextureRect = null
+	for button in ui.page_box.find_children("*", "Button", true, false):
+		var labels: Array[Node] = button.find_children("*", "Label", true, false)
+		var crests: Array[Node] = button.find_children("*", "TextureRect", true, false)
+		if labels.size() != 1 or crests.size() != 1: continue
+		if labels[0].text != C.FACTIONS["voidsworn"]["n"]: continue
+		crest_tab = button; crest_label = labels[0]; crest = crests[0]
+		break
+	if crest_tab != null: crest_tab.grab_focus()
+	await frames()
+	check(crest_tab != null and crest_label.get_theme_color("font_color") == GS.TEXT and crest.modulate.a == 1.0,
+		"focusing a faction tab lights its crest and name")
 	root.size = Vector2i(1280, 1024); ui._dirty = true; await frames(4)   # a 5:4 window at Larger is the tightest 831-tall case
 	var sc5: ScrollContainer = null
 	for n in ui.page_box.find_children("*", "ScrollContainer", true, false): sc5 = n; break
@@ -234,12 +341,39 @@ func campaign_checks(snd: FakeSound) -> void:
 	dr = ui.page_box.find_child("RunOptionsDrawer", true, false); fo = root.gui_get_focus_owner()
 	check(C.map_trial_choice != trial0 and dr != null and fo != null and str(fo.name) == "MapTrialToggle", "Accept inside the drawer changes its option and the focus stays on that control after the redraw (%s)" % (str(fo.name) if fo != null else "none"))
 	if C.map_trial_choice != trial0: C.act("optMapTrial", "1" if trial0 else "0"); await frames(3)
+	C.META["stats"]["losses"] = 1
+	C.act("pickFaction", str(C.picked_faction)); await frames()
+	dr = ui.page_box.find_child("RunOptionsDrawer", true, false)
+	var heat_id := str(C.HEAT.keys()[-1])
+	var heat := action(dr, "optHeat", heat_id)
+	var options_scroll := dr.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
+	var option_offset := set_scroll(options_scroll)
+	if heat != null:
+		heat.grab_focus()
+		var enter := InputEventKey.new(); enter.keycode = KEY_ENTER; enter.pressed = true
+		root.push_input(enter)
+	await frames(5)
+	dr = ui.page_box.find_child("RunOptionsDrawer", true, false)
+	options_scroll = dr.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
+	check(C.run_opt["heat"].has(heat_id) and scrolled(options_scroll, option_offset)
+		and root.gui_get_focus_owner() == action(dr, "optHeat", heat_id), "a Threat toggle keeps Run Options scroll and focus")
 	check(str(C.picked_faction) == fac_before and str(C.picked_admiral) == adm_before and str(C.page["kind"]) == "admiral", "nothing on the desk behind the drawer was pressed")
 	var ro_open: bool = ui.desk_opts_open
 	ui._unhandled_input(esc()); await frames(4)
 	fo = root.gui_get_focus_owner()
 	check(ro_open and not ui.desk_opts_open and str(C.page["kind"]) == "admiral" and fo != null and str(fo.name) == "RunOptionsButton",
 		"Esc closes the Run options drawer first, stays on the desk, and gives focus back to Run options (%s)" % (str(fo.name) if fo != null else "none"))
+	ui.desk_opts_open = true; ui.render(); await frames()
+	var options_done: Button = null
+	for b in ui.page_box.find_children("*", "Button", true, false):
+		if b.text == "Done": options_done = b
+	snd.heard.clear()
+	if options_done != null: options_done.pressed.emit()
+	await frames()
+	check(not ui.desk_opts_open and snd.heard == ["ui_confirm"], "Run Options Done plays only confirm (%s)" % str(snd.heard))
+	UiScale.set_player(1.4); await frames()
+	check(is_equal_approx(ui.k, 1.4), "campaign follows a UI scale setting change without a resize")
+	UiScale.set_player(1.3); await frames()
 	mus.queue_free()
 	var back: Button = null
 	for b in ui.page_box.find_children("*", "Button", true, false):
@@ -280,6 +414,7 @@ func campaign_checks(snd: FakeSound) -> void:
 		if ui.page_box.find_children("*", "HFlowContainer", true, false).size() > 0: bad_pages.append(tag + " still has a loose card flow")
 		if backs != 1: bad_pages.append(tag + " has %d Back buttons" % backs)
 	check(bad_pages.is_empty(), "Progression (each tab), Lineage and How to play: one Back in the fixed bar, card rows on the kit grid, one card width per grid (%s)" % str(bad_pages))
+	await progression_scroll_checks(C, ui, tree_id)
 	C.act("help"); await frames(3)
 	var names := UI.HELP.filter(func(h): return str(h[0]) != "").map(func(h): return str(h[0]))
 	var named := names.size(); var links := 0
@@ -306,8 +441,13 @@ func campaign_checks(snd: FakeSound) -> void:
 	if ui._aspect_cards.size() > 1:
 		for b in (ui._aspect_cards[1][0] as Node).find_children("*", "Button", true, false): hit = b
 	var found_hit := hit != null   # the button is freed by the re-render, so remember that it was there
+	check(found_hit and hit.get_global_rect().is_equal_approx(ui._aspect_cards[1][0].get_global_rect())
+		and hit.mouse_default_cursor_shape == Control.CURSOR_POINTING_HAND
+		and hit.get_theme_stylebox("hover") is StyleBoxFlat, "refit hover and hit area cover the full card")
 	var podium0 = ui.podium
-	if found_hit: hit.pressed.emit()
+	if found_hit:
+		hit.grab_focus()
+		await press("ui_accept")
 	await frames(3)
 	go = ui.page_box.find_child("LaunchButton", true, false)
 	# issue 1559 item 27: the pick keeps the live podium (its turning ship carries on; no reload, no snap to the start angle)
@@ -315,6 +455,8 @@ func campaign_checks(snd: FakeSound) -> void:
 		"an aspect pick keeps the same flagship podium on the new render (item 27)")
 	check(found_hit and go != null and not go.disabled and ui.aspect_pick == pick_id and go.text.ends_with(str(C.ASPECTS[pick_id]["n"])),
 		"clicking an aspect card picks it and Launch names it (%s)" % (go.text if go != null else "no button"))
+	var focused := root.gui_get_focus_owner()
+	check(focused != null and ui._aspect_cards[1][0].is_ancestor_of(focused), "keyboard refit selection keeps focus on the chosen card")
 	var bk: Button = null
 	for b in ui.page_box.find_children("*", "Button", true, false):
 		if (b as Button).text == "Back": bk = b
@@ -322,8 +464,240 @@ func campaign_checks(snd: FakeSound) -> void:
 	if go != null: go.pressed.emit()
 	await frames(3)
 	check(C.RUN != null and str(C.RUN.get("aspect")) == pick_id and str(C.page["kind"]) != "aspect", "Launch takes the picked aspect and starts the run (page %s)" % str(C.page["kind"]))
+	await reward_checks(C, ui)
+	await map_input_checks(C, ui, snd)
+	await row_hover_checks(C, ui)
+	await shipyard_and_prize_checks(C, ui)
 	ui.queue_free(); UiScale.set_player(1.0)
 	await frames()
+
+
+func progression_scroll_checks(C, ui, tree_id: String) -> void:
+	C.META["renown"] = 10000
+	C.act("progTab", "variants"); await frames()
+	var buy = C.page["acts"].filter(func(a): return a[0] == "buyVariant" and a[2] == 1)[-1]
+	var sc := ui.page_box.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
+	var saved := set_scroll(sc)
+	var button := action(ui.page_box, buy[0], buy[1]) as Button
+	button.pressed.emit(); await frames(5)
+	sc = ui.page_box.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
+	check(C.META["variants"].get(buy[1], false) and scrolled(sc, saved), "buying a variant keeps Progression scroll")
+	C.act("lineage", tree_id); await frames()
+	sc = ui.page_box.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
+	saved = set_scroll(sc)
+	var choice = C.page["acts"].filter(func(a): return a[0] == "offerLineage" and a[2] == 1)[-1]
+	button = action(ui.page_box, choice[0], choice[1])
+	button.grab_focus(); button.pressed.emit(); await frames()
+	var confirm := action(ui.modal_box, "confirmLineage", choice[1]) as Button
+	confirm.pressed.emit(); await frames(5)
+	sc = ui.page_box.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
+	check(C.lineageBuild(tree_id)["picks"].size() == 1 and scrolled(sc, saved), "confirming a Lineage pick keeps the underlying scroll")
+
+
+func reward_checks(C, ui) -> void:
+	C.close_modal()
+	C.W["relicChoice"] = ["compass"]
+	C.RUN["reward"] = {"stage": "pick", "kind": "battle"}
+	var inventory := int(C.RUN["inventory"].size())
+	C.W["modOffer"] = ["prow"]
+	C.show_modal("mod", {"opts": ["prow"]}, [["takeMod", "prow", 1]])
+	await frames()
+	var card := action(ui.modal_box, "takeMod", "prow")
+	var click := InputEventMouseButton.new(); click.button_index = MOUSE_BUTTON_LEFT
+	click.position = Vector2(5, 5); click.pressed = true; card._gui_input(click)
+	click.pressed = false; card._gui_input(click)
+	var stale_key := InputEventKey.new(); stale_key.keycode = KEY_1; stale_key.pressed = true
+	ui._unhandled_input(stale_key)
+	check(C.modal_d != null and C.modal_d["kind"] == "relic" and C.W["relicChoice"] == ["compass"],
+		"a key from the old modal cannot spend the next offer before it is shown")
+	C.RUN["reward"] = {"stage": "pick", "kind": "battle"}
+	C.W["relicChoice"] = ["compass"]
+	C.act("takeMod", "prow")
+	check(C.RUN["inventory"].size() == inventory + 1 and C.W.get("modOffer") == null, "refit reward is consumed once across rapid repeat dispatch")
+	var boon_id := str(C.BOONS.keys()[0])
+	var boons := int(C.or_(C.RUN.get("boons"), []).size())
+	C.W["boonOffer"] = [{"id": boon_id, "r": 0}]
+	C.show_modal("boon", {}, [["takeBoon", "0", 1]])
+	C.act("takeBoon", "0"); C.act("takeBoon", "0")
+	check(C.RUN["boons"].size() == boons + 1 and C.W.get("boonOffer") == null, "protocol pick is consumed once")
+	var credits := float(C.RUN["credits"])
+	var decline: float = C.boonDeclineCred()
+	C.W["boonOffer"] = [{"id": boon_id, "r": 0}]
+	C.show_modal("boon", {}, [["boonDecline", "", 1]])
+	C.act("boonDecline"); C.act("boonDecline")
+	check(float(C.RUN["credits"]) == credits + decline and C.W.get("boonOffer") == null, "protocol decline pays once")
+	credits = float(C.RUN["credits"])
+	C.show_event({"id": "choice_test", "o": [{"k": "collect", "r": {"cred": 25}}]})
+	C.act("eventChoice", "0"); C.act("eventChoice", "0")
+	check(float(C.RUN["credits"]) == credits + 25 and C.cur_event == null, "event credits pay once")
+	C.RUN["reward"] = null
+
+
+func map_input_checks(C, ui, snd: FakeSound) -> void:
+	for edge in C.RUN["map"]["edges"]:
+		C.RUN["pos"] = edge[0]
+		if C.availableNodes().size() >= 2: break
+	C.mapScreen(); await frames()
+	check(ui._routes.size() >= 2, "map input fixture offers two routes")
+	if ui._routes.size() < 2: return
+	var first := str(ui._routes[0]["id"])
+	var chosen := str(ui._routes[1]["id"])
+	var real_chart: Control = ui.map3d
+	var chart := TestChart.new()
+	chart.ui = ui
+	root.add_child(chart)
+	chart.size = root.get_visible_rect().size
+	ui.map3d = chart
+	ui.picked = first
+	chart.pointed = chosen
+	var motion := InputEventMouseMotion.new()
+	motion.position = Vector2(1400, 500)
+	chart._gui_input(motion)
+	check(ui.picked == first and chart._hot == chosen, "hover previews a map stop without picking it")
+	var click := InputEventMouseButton.new(); click.button_index = MOUSE_BUTTON_LEFT; click.pressed = true
+	click.position = motion.position
+	snd.heard.clear()
+	chart._gui_input(click)
+	check(ui.picked == chosen and chart.flown == "" and snd.heard == ["ui_click"], "single map click picks with the click cue")
+	click.double_click = true
+	snd.heard.clear()
+	chart._gui_input(click)
+	check(chart.flown == chosen and snd.heard == ["ui_confirm"], "double-clicking a map stop flies the route with the confirm cue")
+	chart.pointed = first
+	chart._gui_input(motion)
+	for code in [KEY_ENTER, KEY_SPACE]:
+		chart.flown = ""
+		var key := InputEventKey.new(); key.keycode = code; key.pressed = true
+		chart._gui_input(key)
+		check(chart.flown == chosen, "map key %s jumps only to the picked stop" % OS.get_keycode_string(code))
+	var rail_button: Button = ui._rows[0]["btn"]
+	rail_button.grab_focus()
+	check(ui.picked == chosen and rail_button.get_theme_stylebox("normal") is StyleBoxEmpty
+		and rail_button.get_theme_stylebox("hover") is StyleBoxFlat
+		and rail_button.get_theme_stylebox("focus") is StyleBoxFlat, "route keyboard focus preserves the pick and shows a ring")
+	chart.flown = ""
+	for down in [true, false]:
+		var space := InputEventKey.new(); space.keycode = KEY_SPACE; space.pressed = down
+		root.push_input(space)
+	check(chart.flown == chosen, "Space on a focused route jumps to the picked stop")
+	var real_acts: Array = ui._acts
+	ui._acts = real_acts.duplicate(true)
+	for offer in ui._acts:
+		if offer[0] == "enterNode" and offer[1] == chosen: offer[2] = 0
+	var disabled_jump: Button = ui._jump_button()
+	check(disabled_jump.disabled and disabled_jump.mouse_default_cursor_shape == Control.CURSOR_ARROW
+		and ui._jump_lbl.get_theme_color("font_color") == GS.TEXT3, "disabled Jump uses muted ink and the arrow cursor")
+	disabled_jump.free()
+	ui._acts = real_acts
+	ui.map3d = real_chart
+	chart.queue_free()
+	await frames()
+
+
+func hover_card(node: Node) -> Rect2:
+	for child in node.get_children(true):
+		if child is Control and child.name == "RowHoverCard" and child.is_visible_in_tree():
+			return (child as Control).get_global_rect()
+		if child is PopupPanel and child.visible:
+			return Rect2(child.position, child.size)
+		var nested := hover_card(child)
+		if nested.has_area(): return nested
+	return Rect2()
+
+
+func move_pointer(point: Vector2) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.position = point
+	root.push_input(motion)
+
+
+func check_row_hover(row: Control, column: Control, label: String) -> void:
+	move_pointer(row.get_global_rect().get_center())
+	var delay := float(ProjectSettings.get_setting("gui/timers/tooltip_delay_sec", 0.5))
+	await create_timer(delay + 0.1).timeout
+	await frames(2)
+	var card := hover_card(root)
+	check(card.has_area() and root.get_visible_rect().encloses(card), "%s hover card fits the viewport (%s)" % [label, card])
+	check(card.has_area() and not card.intersects(row.get_global_rect()) and not card.intersects(column.get_global_rect()),
+		"%s hover card clears the hovered row and its column" % label)
+	var bounds := root.get_visible_rect()
+	var leave_y := bounds.end.y - 2.0 if row.get_global_rect().get_center().y < bounds.get_center().y else 2.0
+	move_pointer(Vector2(2, leave_y))
+	await frames()
+	check(not hover_card(root).has_area(), "%s hover card clears when the pointer leaves" % label)
+
+
+func row_hover_checks(C, ui) -> void:
+	var route_index: int = ui._routes.find_custom(func(r): return r["id"] != ui.picked and not ui._detail_text(r).is_empty())
+	check(route_index >= 0, "M1 has an unselected route with hover details")
+	if route_index >= 0:
+		var picked: String = ui.picked
+		await check_row_hover(ui._rows[route_index]["btn"], ui.page_box.find_child("OrdersSheet", true, false), "M1 route")
+		check(ui.picked == picked, "M1 hovering a route keeps the selected stop")
+	C.act("fleetScreen"); await frames()
+	var manifest = ui.fleet_manifest
+	check(is_instance_valid(manifest) and manifest.rows.size() > 1, "F1 has adjacent fleet rows")
+	if is_instance_valid(manifest) and manifest.rows.size() > 1:
+		var selected: String = manifest.state["uid"]
+		var other: Dictionary = manifest.rows.filter(func(row): return row["ship"]["uid"] != selected)[0]
+		await check_row_hover(other["button"], manifest.manifest_scroll, "F1 ship")
+		check(manifest.state["uid"] == selected, "F1 hovering a ship keeps the selected ship")
+	var layer := CanvasLayer.new()
+	layer.layer = 50
+	root.add_child(layer)
+	var host := Control.new()
+	host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(host)
+	var row := Button.new()
+	host.add_child(row)
+	var hover := RowHover.new()
+	hover.column = row
+	host.add_child(hover)
+	row.tooltip_text = "Route or ship details\nA second line of text"
+	hover.watch(row)
+	var viewport := root.get_visible_rect().size
+	for edge in ["top", "right", "bottom", "left"]:
+		match edge:
+			"top":
+				row.position = Vector2.ZERO
+				row.size = Vector2(viewport.x, 50)
+			"right":
+				row.position = Vector2(viewport.x - 180, viewport.y / 2)
+				row.size = Vector2(180, 50)
+			"bottom":
+				row.position = Vector2(0, viewport.y - 50)
+				row.size = Vector2(viewport.x, 50)
+			"left":
+				row.position = Vector2(0, viewport.y / 2)
+				row.size = Vector2(180, 50)
+		await check_row_hover(row, row, "M1/F1 %s edge" % edge)
+	layer.queue_free()
+	await frames()
+
+
+func shipyard_and_prize_checks(C, ui) -> void:
+	C.RUN["credits"] = 10000
+	for i in 12: C.RUN["fleet"].append(C.newShip(C.RUN["fleet"][0]["tpl"]))
+	C.shipyardScreen({"id": "input_yard", "stock": {"hulls": [], "mods": ["prow", "spill"], "sold": [], "cap": []}})
+	await frames()
+	var yard := ui.page_box.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
+	var saved := set_scroll(yard)
+	var buy := action(ui.page_box, "buyMod", "0") as Button
+	buy.pressed.emit(); await frames(5)
+	yard = ui.page_box.find_children("*", "ScrollContainer", true, false)[0] as ScrollContainer
+	check(C.yard_node["stock"]["sold"].has(0) and scrolled(yard, saved), "buying a refit keeps Shipyard scroll")
+	var prizes := []
+	for i in 7: prizes.append({"tpl": "penitent", "cp": 1, "hpf": 0.4, "name": "Prize %d" % i})
+	C.RUN["reward"] = {"stage": "prize", "kind": "battle", "prizes": prizes}
+	C.ACT_prizeStep(); await frames()
+	var prize_scroll: ScrollContainer = ui._modal_scroll
+	saved = set_scroll(prize_scroll)
+	var ransom := action(ui.modal_box, "prizeSet", "2:ransom")
+	ransom.grab_focus()
+	var key := InputEventKey.new(); key.keycode = KEY_SPACE; key.pressed = true
+	root.push_input(key); await frames(5)
+	check(C.RUN["reward"]["prizeSel"][2] == "ransom" and scrolled(ui._modal_scroll, saved)
+		and root.gui_get_focus_owner() == action(ui.modal_box, "prizeSet", "2:ransom"), "selecting Prize #3 keeps scroll and focus")
 
 
 func showcase_checks() -> void:

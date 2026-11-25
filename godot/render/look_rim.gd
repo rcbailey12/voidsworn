@@ -18,6 +18,7 @@ extends DirectionalLight3D
 
 const LOOK := preload("res://render/look.gd")
 const MESH_WATCH := preload("res://render/mesh_watch.gd")
+const STAGE_IN := preload("res://render/stage_in.gd")
 
 var _cfg := {}
 # issue 601: the soft rim light (LookRimSoft) lights only the stack-painted surfaces, with RIM soft of the specular
@@ -71,19 +72,19 @@ func _mark(n) -> void:
 	if not is_instance_valid(n) or not (n is GeometryInstance3D):
 		return
 	var g := n as GeometryInstance3D
-	if g.layers & (LOOK.RIM_LAYER | LOOK.RIM_SOFT_LAYER):
+	if STAGE_IN.visible_layers(g) & (LOOK.RIM_LAYER | LOOK.RIM_SOFT_LAYER):
 		return
 	if _is_hull(g):
 		if _has_mark(g, "look_rim_none"):   # issue 1315: a faction with READ rim_light 0 (the Glasswrights) takes no rim light
 			return
 		if _is_soft(g):      # issue 601: a stack-painted hull joins the soft rim light's layer instead
-			g.layers |= LOOK.RIM_SOFT_LAYER
+			STAGE_IN.add_visible_layer(g, LOOK.RIM_SOFT_LAYER)
 			var sl = get_parent().get_node_or_null("LookRimSoft") if get_parent() else null
 			if sl and not sl.get("_soft_seen"):
 				sl.set("_soft_seen", true)
 				sl.call("configure")
 		else:
-			g.layers |= LOOK.RIM_LAYER
+			STAGE_IN.add_visible_layer(g, LOOK.RIM_LAYER)
 
 
 static func _hull_mat(m: Material) -> bool:
@@ -114,8 +115,8 @@ static func _is_soft(g: GeometryInstance3D) -> bool:
 	var mi := g as MeshInstance3D
 	if mi == null or mi.mesh == null:
 		return false
-	for i in mi.get_surface_override_material_count():
-		if _soft_mat(mi.get_surface_override_material(i)):
+	for i in mi.mesh.get_surface_count():
+		if _soft_mat(mi.get_active_material(i)):
 			return true
 	return false
 
@@ -137,8 +138,8 @@ static func _has_mark(g: GeometryInstance3D, key: String) -> bool:
 	var mi := g as MeshInstance3D
 	if mi == null or mi.mesh == null:
 		return false
-	for i in mi.get_surface_override_material_count():
-		if _mark_mat(mi.get_surface_override_material(i), key):
+	for i in mi.mesh.get_surface_count():
+		if _mark_mat(mi.get_active_material(i), key):
 			return true
 	return false
 
@@ -149,7 +150,7 @@ static func _is_hull(g: GeometryInstance3D) -> bool:
 	var mi := g as MeshInstance3D
 	if mi == null or mi.mesh == null:
 		return false
-	for i in mi.get_surface_override_material_count():
-		if _hull_mat(mi.get_surface_override_material(i)):
+	for i in mi.mesh.get_surface_count():
+		if _hull_mat(mi.get_active_material(i)):
 			return true
 	return false

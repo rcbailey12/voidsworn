@@ -25,10 +25,12 @@
 # required point is missing (including the breach count for the hull's class and faction) or a hard point is off the mesh.
 # The export also writes manifest_entry.json for this ship: the point counts, class, band and files, ready to merge into
 # godot/assets/ships/manifest.json.
-# usage: blender -b CELL.blend -P export7.py -- SHIP_JSON OUT_DIR [maps=2048] [unbaked=1]
+# usage: blender -b CELL.blend -P export7.py -- SHIP_JSON OUT_DIR [maps=N] [unbaked=1]
+#   maps: by default the R411 band rule (hardpoints.map_size: 4096 flagships and battleships, 2048 escorts, 1024 strike
+#   craft, issue 1680); maps=N overrides it for a test or a hand run and the log says so.
 #   unbaked=1 is for testing the geometry and hard points on a build that has not been baked (no maps are written and the
 #   export json says so; check_export.py fails such a folder unless it is told the same).
-import os, sys, json, math, struct, hashlib, shutil, time, random
+import os, sys, json, math, struct, hashlib, shutil, time, random, re
 import bpy, bmesh
 import numpy as np
 from mathutils import Vector, Matrix
@@ -40,7 +42,7 @@ sys.path.insert(0, SHARED)
 import hardpoints as HP_CONTRACT
 a = sys.argv[sys.argv.index('--') + 1:]
 SHIPJ, OUT = a[0], a[1]; kw = dict(x.split('=', 1) for x in a[2:] if '=' in x)
-MAPS = int(kw.get('maps', 2048)); UNBAKED = kw.get('unbaked') == '1'
+UNBAKED = kw.get('unbaked') == '1'
 if not UNBAKED:
     from PIL import Image
 ship = json.load(open(SHIPJ)); CODE = ship.get('game_code') or ship['ship']; GAME = ship.get('game_ship')
@@ -61,6 +63,12 @@ import gamedata
 try: WEAPONS = gamedata.weapons(GAME)      # [(kind, arc), ...] in slot order, from the Godot HULLS table
 except ValueError as e: die(str(e))
 CLS = gamedata.ship_attr(GAME, 'cls', default='Cruiser')
+if 'maps' in kw:
+    MAPS = int(kw['maps']); MAPS_WHY = 'maps=%d given on the command line' % MAPS
+else:
+    MAPS = HP_CONTRACT.map_size(CLS, ship.get('length_world'))
+    MAPS_WHY = 'R411 band rule: %s, length %s' % (CLS, ship.get('length_world') or HP_CONTRACT.CLASS_LENGTH.get(CLS))
+print('[export7] maps %d (%s)' % (MAPS, MAPS_WHY), flush=True)
 FAC = gamedata.ship_attr(GAME, 'fac', default=ship.get('faction'))
 WING = CLS == 'Squadron'
 if WING:
@@ -305,9 +313,14 @@ def inside_material(srcmat, liner=False):
         m.name = CODE + '_inside_' + ('skin' if liner else str(len(inside_mats)))
         m.use_nodes = True
         if not srcmat:
+            from interior_trim import faction_interior
+            interior = faction_interior(FAC)
+            skin = interior['skin']
+            role = skin['role']
             bs = m.node_tree.nodes.get('Principled BSDF')
-            bs.inputs['Base Color'].default_value = (.035, .028, .022, 1)
-            bs.inputs['Roughness'].default_value = .85
+            bs.inputs['Base Color'].default_value = (*interior['roles'][role], 1)
+            bs.inputs['Roughness'].default_value = skin['roughness']
+            m['interior_role'] = role
         inside_mats[key] = m
         destruction['interior_materials'].append(m.name)
     return inside_mats[key]
@@ -360,6 +373,13 @@ TURN_OBJS = [join([prep(o) for o in ms], f'turret_{k}_turn') for k, (pv, ms) in 
 DOOR_OBJS = [[join([prep(o)], f'door_{n}_lobe_{k}_mesh') for k, o in enumerate(obs)] for n, (fid, obs) in enumerate(DOORS)]
 used_materials = {slot.material.name for o in [J] + TURN_OBJS + [d for ds in DOOR_OBJS for d in ds] for slot in o.material_slots if slot.material}
 destruction['interior_materials'] = [m for m in destruction['interior_materials'] if m in used_materials]
+# Interior Kit V2 (issue 1743, R416 Layer 3): insides built by the kit carry its mark; check_export.py then holds a painted export
+# to the shared interior trim maps (albedo, ORM, normal) and its interior UVs
+# R420: each room material's role for the game (Godot's glTF import drops material extras; fx_hull reads this, PR 1755)
+_roles = {m.name: str(m['interior_role']) for m in inside_mats.values() if m.get('interior_role') and m.name in destruction['interior_materials']}
+if _roles:
+    destruction['interior_roles'] = _roles
+destruction['interior_kit'] = 2 if any(o.get('role') == 'interior' and o.get('interior_kit', 0) >= 2 for o in src) else 0
 J.data.calc_loop_triangles(); TRIS = len(J.data.loop_triangles)
 TURRET_TRIS = 0
 for t in TURN_OBJS:
@@ -397,6 +417,7 @@ def resize_atlas(image, role):
     image.update()
 
 
+MAP_SIZES = {}      # each hull and parts atlas's real size after the resize (never upscaled; a smaller older bake stays small)
 if UNBAKED:      # test only: the plain role materials set before the join (<CODE>_hull, <CODE>_parts) so the glb still loads; no maps
     for s in J.material_slots: s.material.use_nodes = True
 else:
@@ -418,6 +439,7 @@ else:
         for r, im in role.items():
             if max(im.size) > MAPS:
                 resize_atlas(im, r)
+            MAP_SIZES[f'{pre}_{r}'] = int(max(im.size))     # Artoo on PR 1724: what is written, never only the target
     glow = next((s.material for s in J.material_slots if s.material and s.material.name.startswith('p3_glow')), None)
     if glow: glow.name = CODE + '_glow'
 
@@ -564,7 +586,11 @@ files = {}
 role = {}
 def use(mat, slot, tex):
     if tex is None: return
-    i = g['textures'][tex['index']]['source']; pre = CODE if mat['name'] == CODE + '_hull' else mat['name']; nm = f'{pre}_{slot}'
+    i = g['textures'][tex['index']]['source']; pre = CODE if mat['name'] == CODE + '_hull' else mat['name']
+    if mat['name'] in destruction['interior_materials']:      # issue 1743: one shared trim set per style (R420: panels, flesh, gland, bone, glass)
+        st = re.match(r'trim_[a-z]+_([a-z]+)_[0-9a-f]{8}_', str(g['images'][i].get('name', '')))
+        pre = CODE + '_inside_' + (st.group(1) + '_' + st.group(0).split('_')[-2] if st else 'trim')
+    nm = f'{pre}_{slot}'
     if mat['name'] in destruction['interior_materials'] and i in role: return  # authored trim maps may be shared
     if i in role and role[i][0] != nm: die(f'one image does two jobs ({role[i][0]} and {nm}): the ORM map must hold occlusion, roughness and metal together')
     role[i] = (nm, slot)
@@ -608,6 +634,18 @@ for i, im in enumerate(g.get('images', [])):
     im['name'] = image_name
     if 'mimeType' in im:
         im['mimeType'] = 'image/png' if lossless else 'image/jpeg'
+# R420 (global_cohesion_standard.md 6.1): the interior maps' linear means, measured from the files as written, so
+# check_export.py can hold every room to the wall ceiling and the emission budget (base colour factor x the map's mean)
+imaps = {}
+for im in g.get('images', []):
+    if im['name'].startswith(CODE + '_inside_') and im['name'].rsplit('_', 1)[-1] in ('base', 'emission', 'orm'):
+        with Image.open(os.path.join(OUT, im['uri'])) as image:
+            a = np.asarray(image.convert('RGB'), dtype=np.float64) / 255.0
+        lin = a if im['name'].endswith('_orm') else np.where(a <= 0.04045, a / 12.92, ((a + 0.055) / 1.055) ** 2.4)
+        imaps[im['uri']] = [round(float(v), 5) for v in lin.reshape(-1, 3).mean(0)]
+if imaps:
+    root_ex = next(n for n in g['nodes'] if n.get('name') == CODE).setdefault('extras', {})
+    root_ex.setdefault('voidsworn_destruct', {})['interior_map_means'] = imaps
 if not UNBAKED:
     need = {CODE + '_base', CODE + '_orm', CODE + '_normal', CODE + '_parts_base', CODE + '_parts_orm'}
     if ship.get('bake') == 'stack':
@@ -633,7 +671,8 @@ if WING and not UNBAKED:
     manifest['wing_role'] = GAME
 json.dump(manifest, open(os.path.join(OUT, 'manifest_entry.json'), 'w'), indent=1)
 rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, faction=ship.get('faction'), cls=CLS,
-           band=HP_CONTRACT.band(CLS), expected_breach=EXPECTED_BREACH, unbaked=UNBAKED, maps=0 if UNBAKED else MAPS,
+           band=HP_CONTRACT.band(CLS), expected_breach=EXPECTED_BREACH, unbaked=UNBAKED, maps=0 if UNBAKED else min(MAP_SIZES.values(), default=0), maps_target=0 if UNBAKED else MAPS,
+           maps_measured=MAP_SIZES, maps_undersized=sorted(k for k, v in MAP_SIZES.items() if v < MAPS),
            triangles=TRIS, turret_triangles=TURRET_TRIS, turrets=TURRET_NODES, door_triangles=DOOR_TRIS, doors=DOOR_NODES, surfaces=len([s for s in J.material_slots if s.material]), destruction=destruction,
            weapons=[dict(slot=i, weapon=wk, arc=arc, hard_points=by_slot.get(i, [])) for i, (wk, arc) in enumerate(WEAPONS)],
            slots_without_hard_points=missing, hardpoints=counts, length_world=LENGTH_WORLD, sheet=sc.get('r209_sheet', ''),
@@ -645,6 +684,9 @@ rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, 
            not_written=['<CODE>_wreck.glb (the death pieces)', '<CODE>_damage.glb and the skin_<n> hull patches (breach damage)',
                         '<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)'])
 json.dump(rep, open(os.path.join(OUT, CODE + '_export.json'), 'w'), indent=1)
+if not UNBAKED and rep['maps_undersized']:
+    print('[export7] UNDERSIZED maps (the source bake is smaller than the %d target; rebake at stage 5, this export is not complete): %s'
+          % (MAPS, ', '.join('%s %d' % (k, MAP_SIZES[k]) for k in rep['maps_undersized'])), flush=True)
 print('[export7]', CODE, 'triangles', TRIS, 'hard points', json.dumps(counts), 'turrets', len(TURRET_NODES), f'({TURRET_TRIS} triangles)', 'doors', len(DOOR_NODES), f'({DOOR_TRIS} triangles)', 'files', sorted(files), flush=True)
 if missing:
     die('no hard point for ' + ', '.join(missing))

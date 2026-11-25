@@ -119,7 +119,10 @@ import os as _os
 # How the panel colours mix (Ryan Nov 20 7:48 PM CT, look test A/B/C, issue 1415: picked C): 'streaks' runs thin streaks of
 # mixed amber, violet and green side by side down each gap between the ribbons, each its own colour and length, for every
 # Glasswright hull. 'blocks' (one colour per leaf panel, R337 round 5) stays for comparison only; GW_MIX overrides it in a test.
-MIX = _os.environ.get('GW_MIX', 'marble')
+# R431 (Ryan Nov 23 2026, on the in-game sheets): "the top is how we want it to look across the board", the top being I8_37,
+# baked Nov 20 with one deep-to-hot colour per leaf. That replaces the Nov 21 marble (and its tile swap) for every hull:
+# 'blocks' is the default again; GW_MIX=marble or streaks brings an old mix back for a comparison only.
+MIX = _os.environ.get('GW_MIX', 'blocks')
 
 
 def _hash2(i, j, seed):

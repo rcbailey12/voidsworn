@@ -422,7 +422,7 @@ func _build_region() -> void:
 			props.hollow_asteroid(landmark)
 			for i in 14:
 				var field = Node3D.new(); region_scenery.add_child(field); field.position = _region_point(float(i) / 13.0, 1.0 if i % 3 != 0 else -1.0, 14)
-				props.region_rocks(field, 22 if quality != "low" else 8, 3.5 if i % 3 == 0 else 2.0)
+				props.region_rocks(field, 22 if quality != "low" else 8, 3.5 if i % 3 == 0 else 2.0, i)
 				if i in [2, 6, 10]: props.mining_rig(field, 1.1)
 		"deep":
 			landmark.visible = false
@@ -1142,13 +1142,15 @@ var _words: Array = []        # where the map's words were drawn last frame: the
 var _caption_hits := {}
 var _icon_hits := {}
 var _body_hits := {}
-# The tip card: the one box on the map. It shows for a stop that is not your stop or a next jump (the route list already says
-# everything about those), on hover or when the arrow keys reach it: the name, what it is and against whom, the danger as
+# The tip card previews an unpicked stop on hover, or a distant stop when the arrow keys reach it:
+# the name, what it is and against whom, the danger as
 # four pips and a word (or the stop's one-line note), a modifier or an unusual board, the reward, the Nemesis line in red
 # where true, and the safest and the richest way on from it to the flagship (the old hover card's route planner).
 func _update_card() -> void:
 	var C = _C()
-	if _hot == "" or _flying or not _nodes.has(_hot) or _avail().has(_hot) or C.RUN.get("pos") == _hot or _controls_covered():
+	if _hot == "" or _flying or not _nodes.has(_hot) or _controls_covered() or C.RUN.get("pos") == _hot:
+		card.visible = false; return
+	if _avail().has(_hot) and (_hot_by_key or _hot == str(ui.picked)):
 		card.visible = false; return
 	var ck = _hot + "|" + str(_routes.size()) + "|" + str(_danger.get(_hot, {}).get("ratio", 0)) + "|" + str(ui.k)
 	if ck != _card_key:   # the words only change with the stop, its routes or its danger
@@ -1205,7 +1207,7 @@ func _fill_card(n: Dictionary) -> void:
 			add.call(t, GS.TEXT2)
 			if fc["hurt"] and not st["repair_before_boss"]: add.call("Your fleet is hurt and this way has no repair stop before the flagship.", GS.TEXT2)
 
-# ---------------- input: hover and click pick a route, a double click or Enter flies it; zoom and pan; keys ----------------
+# ---------------- input: hover previews a stop, click picks a route, double-click or Enter and Space fly it ----------------
 func _set_hot(h: String) -> void:
 	if h == _hot: return
 	_hot = h
@@ -1268,7 +1270,7 @@ func _gui_input(e: InputEvent) -> void:
 			zoom_by(1.0 / 0.88, e.position); accept_event()
 		elif e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
 			var id = _node_at(e.position)
-			if id != "" and _avail().has(id):   # a click picks the route; a double click flies it (so does Enter or the lime button)
+			if id != "" and _avail().has(id):
 				accept_event()
 				_hot_by_key = false
 				_set_hot(id)
@@ -1292,10 +1294,9 @@ func _gui_input(e: InputEvent) -> void:
 			_hot_by_key = true; _set_hot(_kb_order[_kb]); accept_event()
 			if _avail().has(_hot) and ui.has_method("pick_route"): ui.pick_route(_hot)
 		elif e.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
-			var pk = str(ui.picked) if ui.get("picked") != null else ""
 			accept_event()
 			if _hot_by_key and _hot != "" and not _avail().has(_hot): return
-			if not e.echo and pk != "": Kit.play("ui_confirm"); fly_to(pk)
+			if not e.echo: ui._confirm_map_jump()
 func _input(e: InputEvent) -> void:
 	if e is InputEventMouseButton and not e.pressed and e.button_index in [MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
 		_drag = false
@@ -1316,6 +1317,7 @@ func fly_to(id: String) -> void:
 	if _flying or loading or backdrop or token == null or not _avail().has(id) or not _nodes.has(id) or _C().modal_d != null: return
 	if _arrival_tween != null: _arrival_tween.kill()
 	_flying = true; card.visible = false; _drag = false
+	Kit.play("ui_map_fleet_jump")
 	_flight_id = id; _flight_time = 0.0; _flight_rotation = token.quaternion
 	var a = token.position; var b = _nodes[id]["pos"] + TOKEN_OFF + Vector3(0, _nodes[id]["top"], 0)
 	var from = a - TOKEN_OFF; from.y = 0.0
@@ -1390,6 +1392,7 @@ func _finish_flight() -> void:
 	token.basis = Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.UP, PI * 0.5)
 	_flying = false; _flight_id = ""
 	_set_token_drive(0.0)
+	Kit.play("ui_map_fleet_arrive")
 	_C().act("enterNode", id)
 	_last_pos = _C().RUN.get("pos")
 	_arrive(false)

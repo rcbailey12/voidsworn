@@ -14,7 +14,7 @@ Revision r1. Generated from the same Blender model as the pictures. Counts outra
 
 ## Size
 
-Cruiser LENGTH 14.5; drawn 23.2 with SHIP_K 1.6. Measured mesh length / beam / height: 14.463 / 6.094 / 2.757.
+Cruiser LENGTH 14.5; drawn 23.2 with SHIP_K 1.6. Measured mesh length / beam / height: 14.463 / 6.133 / 2.774.
 
 ## Major masses
 

@@ -176,14 +176,21 @@ ships catch, store and release light.
 - **Colours (R337, Ryan Nov 19):** opaque, reflective pearl ribbons with silver edges, and glowing amber, violet and green
   mosaic panels between them, like stained glass. Nothing is see-through: nothing inside an intact hull shows. This replaces
   the clear, lit-from-inside glass direction (issue 1058 runs 2 to 6 for CD5); issue 1183 rebuilds CD5 to it.
-  The colours run together as marbled veins that cross the gaps and wander along the hull, and about a quarter of the
-  tiles take another palette colour, so no gap or panel reads as one colour (Ryan Nov 21, after look test C still showed
-  "rectangle after rectangle of same color"; look test D, issue 1415; tools/blender/kits/ithar/parts.py MIX 'marble' and
-  stack.py TILE_SWAP). Never one colour per block or per streak. Ryan Nov 21 1:45 PM CT on the in-game sheets: "tone down
+  Each leaf-shaped seam panel is ONE colour, deep at its leading and hot in its middle, running into the next leaf's
+  colour only at its ends, as on I8_37 (R431, Ryan Nov 23 2026: "the top is how we want it to look across the board";
+  tools/blender/kits/ithar/parts.py MIX 'blocks', stack.py TILE_SWAP 0). This reverses the Nov 21 marbled veins and tile
+  swaps (look test D, issue 1415, "rectangle after rectangle of same color"), which read in game as pastel confetti;
+  GW_MIX=marble brings them back for a comparison only. The pearl is I8_37's too (Ryan Nov 23: "ensure that white material
+  also matches i8_37 ... more detailed and wrapping"): warm white with a rose and lilac sheen, never gold, laid as the Ark's
+  fine spiralling ribbons with crossing leaves on every hull (kit hull.i8_field, hull.i8_shell). Ryan Nov 21 1:45 PM CT on the in-game sheets: "tone down
   red and amber with a bit more blue and green and purple": amber is about a third of the panels and golden, not red;
   violet and green rise, and a sapphire blue joins the palette (stack.py PALETTE, WEIGHTS 32/26/22/20, TONES). Ryan Nov 21 on the
   strike craft, then 8:29 PM CT for the big ships too: the stones are 25% more saturated on every Glasswright hull ("a little,
   nothing crazy"; stack.py SATURATION 1.25, applied once in the shared mosaic).
+  The pearl is the shell and the glass is the seams (R431, Ryan Nov 23 2026, I8_37 against I15_11: "the top is how we want
+  it to look ascross the board"): every Glasswright hull, craft included, shows the coloured glass only in the leaf-shaped
+  seams and openings between pearl ribbons, never as a whole-hull mosaic; the kit review fails a hull above stack.MOSAIC_MAX
+  (0.42) bare glass from above or the battle camera. Each seam carries its one colour per leaf, as above.
 - **Guns sit:** on the optical axis. The prism lance is the hull's stored light let out through the bow optic: a white core
   with a rainbow fringe. Smaller lenses along the hull are the secondary guns.
 - **Engines:** no flame. A soft white bloom at the stern optic.
@@ -269,9 +276,18 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
   gated by the stage 5 detail check (issue 1517; ships.md section 0, rule 16). Surface detail must read at
   camera 26 and still give texture at 170; stage 5's detail check (tools/recipe/detail_check.py) fails a flat clay skin.
 - **Guns sit:** in throats, spines and sacs: a weapon is an organ. Brood sacs along the flanks for the wings.
+- **Close-in weapon: Acid Thorns** (rules id `tendril`; Ryan, Nov 24 2026, issue 1877, replacing the tendril lash R437 scrapped:
+  "we should make sure we actually build those not with code and improve the quality"; the name his pick). A gland snaps out
+  one heavy bone thorn a shot: a pale ridged bone point with swept-back barbs, dark horn splints round a bile core that shows
+  only in the cracks, sinew wraps, a knuckled butt; it flies point first, bites into the plating and sticks, acid sheets down
+  and pools, then the thorn crumbles, its own built pieces breaking apart. The body is built in Blender from this faction's kit
+  and baked with the Chorus paint stack (tools/blender/build_sheets/munitions/munitions.py `chorus_bolt`, fx/munition_bodies/
+  chorus_bolt.glb), never a code shape; the shot is godot/fx/fx_acid_thorn.gd. Its sounds are its own (fire, bite, crumble;
+  contrib/opus/sound/elevenlabs_1877_thorns.json), never a metal gun's.
 - **Engines:** no nozzles. Pulsing vents or trailing membranes with a yellow-green glow.
 - **How it breaks:** it bursts and tears. Sacs rupture first, then the body tears open. Inside: flesh and bone (R98), wet and
-  lit from within. One more breach anchor than the base count on the big ones.
+  lit from within: deep wet crimson-umber tissue, dry weathered ochre-ivory bone with no glow, and only a few dim olive-amber
+  pores alight (R420, Ryan Nov 22; this holds for the insides only, the hide keeps its olive-brown and "never red" stands there). One more breach anchor than the base count on the big ones.
 - **Never:** grub or caterpillar segments, anything cute or round-cheeked, legs, eyes, a face, any metal (no masts, antennas,
   towers or plates), red or magenta flesh.
 

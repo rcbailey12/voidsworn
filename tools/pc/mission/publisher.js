@@ -15,6 +15,7 @@ const REPO = 'https://github.com/rcbailey12/voidsworn';
 const SEATS = [
   ['main', 'Codex main', 'board'], ['b', 'Codex lane B', 'board_b'],
   ['c', 'Codex lane C', 'board_c'], ['d', 'Codex lane D', 'board_d'],
+  ['e', 'Codex lane E', 'board_e'], ['f', 'Codex lane F', 'board_f'],
   ['deepseek', 'DeepSeek', 'work217'], ['openai', 'OpenAI', 'work217']
 ];
 const WORKHORSE_ARMS = {deepseek:['deepseek','deepseekpro'],openai:['openai']};
@@ -492,7 +493,7 @@ function pictureStamp(text) {
   let stamp;
   try { stamp = JSON.parse(text); } catch (_) { return null; }
   return sha(stamp?.source_commit) && /^[a-f0-9]{64}$/i.test(stamp.image_sha256 || '') && time(stamp.date) &&
-    ['sheet built','paint proof','installed in game','cloud direction check','Ryan accepted'].includes(stamp.stage) ? stamp : null;
+    ['sheet built','paint proof','installed in game','cloud direction check','pre-merge capture','Ryan accepted'].includes(stamp.stage) ? stamp : null;
 }
 function sidecarRunLink(sidecar, info) {
   if (!info || (sidecar.issue != null && sidecar.issue !== info.issue)) return null;
@@ -683,7 +684,7 @@ function options(args) {
   opts.root = path.resolve(opts.root);
   opts.out = path.resolve(opts.out || path.join(opts.root, 'mission_local'));
   const relative = path.relative(opts.root, opts.out);
-  if (!relative || (!relative.startsWith('..') && /^(?:board(?:_[bcd])?|work217|queue[^\\/]*|build[^\\/]*)(?:[\\/]|$)/i.test(relative))) throw new Error('Output must be separate from all lane, job, build and queue folders.');
+  if (!relative || (!relative.startsWith('..') && /^(?:board(?:_[b-f])?|work217|queue[^\\/]*|build[^\\/]*)(?:[\\/]|$)/i.test(relative))) throw new Error('Output must be separate from all lane, job, build and queue folders.');
   checkOutputParents(opts.out);
   opts.port = Number(opts.port);
   if (!Number.isInteger(opts.port) || opts.port < 1 || opts.port > 65535) throw new Error('Port must be 1 to 65535.');

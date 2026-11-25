@@ -57,3 +57,22 @@ Gate 2 production and Gate 3 stems. Nothing is wired into godot/ until Ryan pick
   terms in godot/audio/SFX_CREDITS.md or godot/music/CREDITS.md and docs/playbooks/sound.md.
 - The playbook line "Free tools and free sources only" (docs/playbooks/sound.md) predates Ryan's Nov 22 buy; the Board
   updates it with the first wired pick.
+
+## Gate 3 listening and staged waves (issue 2039)
+
+- Ryan can open [Sound Gate 3](listen_gate3/index.html) with `listen_gate3/LISTEN.bat`. The clips that play in game
+  are on the page, with the three Wave F3 picks and the full Chorus calm and intense loops first. The sound effect previews
+  use the cue levels without battle bus effects or distance.
+- The list has 80 SFX keeper IDs including the two Wave A extras. Godot plays 78. Asteroid scrape and shield raise remain
+  catalogued but do not fire until their triggers are decided. Wreck settle stays as it is.
+- `keepers_gate3.json` records the source take, channel and mastering edits. `wiring_gate3.json` records the runtime
+  cue and the original keeper for variety additions. Rebuild from clean pre-Gate-3 cue tables with `master_keepers.py`
+  and `wire_gate3.py`. The latter also renders shipped cues for the listening page.
+- The shipped F3 picks are `death_metal_crack_f3` t1, `ship_thruster_puff_f3` t1 and
+  `wep_eclipse_gsentry_more_f3` t1. `mus_chorus_loop_a_test2` t1 is the Chorus battle pair. Its calm mix is all stems
+  except drums, and its intense mix is the full song. `wire_gate3.py --chorus-music` adds both listening previews.
+- `M2_test3` stages `mus_ithar_loop_a_test3` with a moving lead and four distinct sections. The new ID keeps its receipt
+  separate from the rejected test2. Use the named wave's IDs with the generator's `--only` flag. No paid request without Ryan's go.
+- Run `stem_loop_check.py` with the planned BPM and bar count. The source MP3 may be 50 ms short or 120 ms long,
+  but the mastered loop uses the exact bar grid and the 25 ms click guard. Listen across the wrap and compare calm and
+  full at the switch points. Review the Glasswrights test3 by ear before starting the rest of M2. The remaining M2 rows are unchanged.

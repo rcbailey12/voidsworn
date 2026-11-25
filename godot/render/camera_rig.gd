@@ -4,6 +4,8 @@ extends Camera3D
 # Angles as in the game's Babylon ArcRotateCamera (alpha around, beta down from straight up), with the world's z mirrored
 # (Godot is right-handed, the game's Babylon scene left-handed), so the board looks the same way round.
 
+signal pose_applied
+
 var a := -PI / 2.0
 var b := 0.98
 var r := 170.0
@@ -32,6 +34,51 @@ var shake_offset := Vector2.ZERO
 # issue 271 (E1 LEDGER): pixels to move the board's centre to the right of the screen's middle, so the point the camera
 # looks at sits in the middle of the part the orders sheet leaves clear (hud.gd clear_shift). 0 keeps it centred.
 var screen_shift := 0.0
+
+var _close_dof := false
+var _dof_room := 0.0
+const DOF_AMOUNT := 0.075
+const DOF_ENTER_S := 0.55
+const DOF_CLOSE_LIMIT := 105.0
+# Issue 2029 item 6 (Neon review): a pointer ray hitting the board plane farther out than this many times the bounds is
+# treated as sky for the zoom-to-pointer anchor.
+const HIT_MARGIN := 1.5
+
+
+# Each camera owns its attributes, so a close-up cannot turn on blur in another viewport.
+static func far_dof(focus_depth: float, subject_margin: float) -> CameraAttributesPractical:
+	var lens := CameraAttributesPractical.new()
+	lens.dof_blur_near_enabled = false
+	lens.dof_blur_far_distance = focus_depth + subject_margin
+	lens.dof_blur_far_transition = maxf(40.0, 2.0 * subject_margin)
+	lens.dof_blur_amount = 0.0
+	return lens
+
+
+func set_close_dof(active: bool, subject_length := 0.0) -> void:
+	_close_dof = active
+	if active:
+		_dof_room = maxf(10.0, subject_length * 1.2)
+		if attributes == null:
+			attributes = far_dof(_cr, _dof_room)
+	elif attributes is CameraAttributesPractical:
+		attributes.dof_blur_far_enabled = false
+		attributes.dof_blur_amount = 0.0
+
+
+func _step_close_dof(dt: float) -> void:
+	if not _close_dof:
+		return
+	var lens := attributes as CameraAttributesPractical
+	if r >= DOF_CLOSE_LIMIT:
+		lens.dof_blur_far_enabled = false
+		lens.dof_blur_amount = 0.0
+		return
+	# Wait for the shot to approach focus before fading in. Keep the target and nearby silhouettes sharp.
+	var near_shot := 1.0 - smoothstep(r * 1.15, r * 1.65, _cr)
+	lens.dof_blur_far_distance = _cr + _dof_room
+	lens.dof_blur_amount = move_toward(lens.dof_blur_amount, DOF_AMOUNT * near_shot, DOF_AMOUNT * dt / DOF_ENTER_S)
+	lens.dof_blur_far_enabled = lens.dof_blur_amount > 0.0001
 
 
 # Issue 1264: the far plane follows the zoom and pan, so the backdrop system is never cut off. The worst case from the
@@ -145,6 +192,47 @@ func orbit(dx: float, dy: float) -> void:
 	topdown = false
 
 
+# Issue 2029 item 6: a wheel step zooms about the board point under the pointer, not about the screen's middle. The factor,
+# the limits (min_r to 900) and the easing are today's; only the orbit target t moves, by the amount that puts the point
+# under the pointer (on the plane through the target) back under it at the new distance. Over empty sky, where the pointer
+# ray never reaches that plane, it is the plain zoom about the target.
+func zoom_at(screen_pos: Vector2, factor: float) -> void:
+	var new_r := clampf(r * factor, min_r, 900.0)
+	if is_equal_approx(new_r, r):
+		r = new_r
+		return
+	# Both trial poses use the target angles (a, b), so an orbit still easing is not turned into a pan jump: only the
+	# distance and the target differ between the two points.
+	var anchor = _plane_hit(screen_pos, a, b, _cr, _ct, t.y)   # the point the player sees under the pointer now
+	r = new_r
+	if anchor == null:
+		_apply()
+		return
+	var after = _plane_hit(screen_pos, a, b, new_r, t, t.y)   # where the same pixel will land once the zoom settles
+	if after != null:
+		var nt: Vector3 = t + ((anchor as Vector3) - (after as Vector3))
+		t.x = clampf(nt.x, -bounds.x, bounds.x)
+		t.z = clampf(nt.z, -bounds.y, bounds.y)
+	_apply()   # put the live pose back after the trial poses
+
+
+# The board point (on the plane y = plane_y) under a pixel for a camera pose (angles, distance, target), or null when that
+# pixel looks at or above the horizon, or grazes the plane so far out that the hit lies beyond HIT_MARGIN times the board
+# bounds (a wheel click over distant sky then falls back to the plain zoom, not a slam to the map edge). Poses the camera briefly; the caller calls _apply() to restore the live one.
+func _plane_hit(screen_pos: Vector2, pa: float, pb: float, pr: float, pt: Vector3, plane_y: float) -> Variant:
+	if not is_inside_tree():
+		return null
+	_set_pose(pa, pb, pr, pt, Vector3.ZERO)
+	var o := project_ray_origin(screen_pos)
+	var d := project_ray_normal(screen_pos)
+	if d.y > -0.02:
+		return null
+	var hit := o + d * ((plane_y - o.y) / d.y)
+	if absf(hit.x) > bounds.x * HIT_MARGIN or absf(hit.z) > bounds.y * HIT_MARGIN:
+		return null
+	return hit
+
+
 # returns true when the event was a drag the camera used (so a click is not fired at the end of it)
 func handle_input(e: InputEvent) -> bool:
 	if e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_RIGHT and not e.pressed:
@@ -157,10 +245,10 @@ func handle_input(e: InputEvent) -> bool:
 	if e is InputEventMouseButton:
 		var mb := e as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_WHEEL_UP and mb.pressed:
-			r = clampf(r * exp(-120.0 * 0.0011), min_r, 900.0)
+			zoom_at(mb.position, exp(-120.0 * 0.0011))
 			return true
 		if mb.button_index == MOUSE_BUTTON_WHEEL_DOWN and mb.pressed:
-			r = clampf(r * exp(120.0 * 0.0011), min_r, 900.0)
+			zoom_at(mb.position, exp(120.0 * 0.0011))
 			return true
 		if mb.button_index == MOUSE_BUTTON_RIGHT:
 			_drag = 2
@@ -228,6 +316,7 @@ func _process(dt: float) -> void:
 	_cr += (r - _cr) * f
 	_ct += (t - _ct) * f
 	_apply()
+	_step_close_dof(dt)
 
 
 func _apply() -> void:
@@ -241,15 +330,25 @@ func _apply() -> void:
 	var env := get_world_3d().environment if is_inside_tree() else null
 	if env != null and env.volumetric_fog_enabled and OS.get_environment("VS_NEBULA_ROUTE") != "today":
 		env.volumetric_fog_length = maxf(250.0, _cr + 200.0)
+	var p := _set_pose(_ca, _cb, _cr, _ct, shake)
 	var tg := _ct + shake
-	var p := tg + Vector3(cos(_ca) * sin(_cb), cos(_cb), -sin(_ca) * sin(_cb)) * _cr
-	var up := Vector3.UP if _cb > 0.02 else Vector3(-cos(_ca), 0, sin(_ca))
-	look_at_from_position(p, tg, up)
 	if current:
 		RenderingServer.global_shader_parameter_set(EYE_GLOBAL, Vector4(p.x, p.y, p.z, 1.0))
 		RenderingServer.global_shader_parameter_set(FWD_GLOBAL, (tg - p).normalized())
+	if pose_applied.has_connections():
+		pose_applied.emit()
+
+
+# Place the camera for a pose (angles, distance, target) and its screen shift; returns the eye. The one copy of the
+# placement, so _apply and the zoom-to-pointer trial poses cannot drift apart.
+func _set_pose(pa: float, pb: float, pr: float, pt: Vector3, shake_v: Vector3) -> Vector3:
+	var tg := pt + shake_v
+	var p := tg + Vector3(cos(pa) * sin(pb), cos(pb), -sin(pa) * sin(pb)) * pr
+	var up := Vector3.UP if pb > 0.02 else Vector3(-cos(pa), 0, sin(pa))
+	look_at_from_position(p, tg, up)
 	# a sideways shift of the camera in its own plane moves the target right on screen by screen_shift pixels at its
 	# distance (the field of view is vertical, so half the window height spans tan(fov / 2) * distance)
 	var vh := get_viewport().get_visible_rect().size.y if is_inside_tree() else 1080.0
-	h_offset = -screen_shift / maxf(vh * 0.5, 1.0) * _cr * tan(deg_to_rad(fov) * 0.5) + shake_offset.x
+	h_offset = -screen_shift / maxf(vh * 0.5, 1.0) * pr * tan(deg_to_rad(fov) * 0.5) + shake_offset.x
 	v_offset = shake_offset.y
+	return p

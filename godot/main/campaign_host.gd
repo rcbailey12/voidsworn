@@ -54,6 +54,8 @@ func start(m: Node, o: Dictionary) -> void:
 	C.battle_setup = _setup_battle
 	C.battle_restore = _restore_battle   # issue 1451: Continue into the saved round
 	C.battle_requested.connect(_on_battle)
+	if not bot:
+		C.fleet_results.connect(_on_fleet_results)
 	# the campaign's random stream: the browser seeds it at random on every load (core.js RNG_S, nothing saved), so a new
 	# or continued run gets fresh draws each launch; bot runs seed it from --seed so each run differs and repeats exactly
 	if o.has("player_path_seed"):
@@ -145,6 +147,20 @@ func _on_changed() -> void:
 		run_over.emit({"result": "title"})
 
 
+func _on_fleet_results(lost: bool, ranked_up: bool) -> void:
+	if lost:
+		Kit.play("ui_ship_lost")
+	if ranked_up:
+		if lost:
+			get_tree().create_timer(1.8).timeout.connect(_play_rank_up)
+		else:
+			_play_rank_up()
+
+
+func _play_rank_up() -> void:
+	Kit.play("ui_rank_up")
+
+
 # The enemy AI level from the settings ("standard" or "veteran"; bot runs default to Veteran in main.gd), issue 1336.
 # A missing setting falls back to Standard, the new-player default (R49, issue 1504); a bare host with no main keeps the
 # API default, Veteran.
@@ -162,6 +178,7 @@ func _setup_battle(run: Dictionary, cfg: Dictionary) -> Dictionary:
 		errors.append("rules: " + e)
 	api_now.set_ai_level(ai_level())   # issue 1336: before new_battle, which rolls the enemy fleet at the level
 	api_now.round_saves = round_saves_on()   # issue 1451: pack the rules state at each round start (round 1 included)
+	api_now.interactive_deployment = not bot
 	api_now.new_battle(run, cfg)
 	cfg_now = cfg
 	if bot:
@@ -229,6 +246,10 @@ func _play_battle() -> void:
 	if a.round_saves:
 		po["on_round"] = _save_round
 	var r: Dictionary = await main.play_api(a, po)
+	if str(r.get("result", "")) == "closing":
+		# issue 1518 (Artoo on PR 1445): the game closed while the battle was still waiting to begin. No battle was
+		# played, so nothing is settled, counted or saved: the run stays at its checkpoint, as if the battle never opened
+		return
 	if str(r.get("result", "")) == "save_quit":
 		# issue 1451 (and Artoo on the issue): Save and quit is not a result. Nothing is settled; the run stays saved at the round
 		if ui != null:

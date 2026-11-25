@@ -18,6 +18,9 @@ extends RefCounted
 # The campaign map's Briefing layout (FINDINGS R165) reads: header, sector_notes, routes, stop_tip, nemesis, nem_dossier,
 # purse, fleet_rows, faction_action and run_notes. Other readers move with their own screen groups.
 
+const Rules := preload("res://rules/rules.gd")
+
+
 static func _jt(v) -> bool:
 	return v != null and not (v is bool and v == false) and not (v is float and v == 0.0) and not (v is int and v == 0) and not (v is String and v == "")
 
@@ -79,7 +82,7 @@ static func fleet_rows(C) -> Array:
 			"hp": hp, "max_hp": float(d["maxHp"]), "frac": hp / mx,
 			"cls": str(C.clsName(T["cls"])),
 			"mk": C.roman(s["mk"]),
-			"captain": str(C.rankName(s["cap"])) + " " + str(s["cap"]["name"]),
+			"captain": str(C.rankName(s["cap"])) + " " + str(s["cap"]["full_name"]),
 			"promotion": _jt(s["cap"].get("pending")),
 			"free_slots": int(T["slots"]) - int(s["mods"].size()),
 			"hold": hold,
@@ -262,6 +265,10 @@ static func stop_name(C, n) -> String:
 	return str(C.NODE_INFO[t]["n"]) if C.NODE_INFO.has(t) else t
 
 
+static func _shape_name(C, shape: String) -> String:
+	return Rules.dead_star_name(C.RUN) if shape == "deadstar" else str(C.SHAPES[shape])
+
+
 # One stop in words, for a route row or the map's hover tip. Everything the old fight card and the old hover card said
 # about the stop itself is here; the screen decides what sits on the row and what waits one hover away.
 #   kind: the stop's type; kind_word: "Fight", "Elite fight", "Flagship fight", "Event", "Shipyard", ...
@@ -291,7 +298,7 @@ static func stop(C, n) -> Dictionary:
 		if _jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]):
 			var d := str(C.ENCOUNTERS[n["enc"]]["d"]); row["boss_enc"] = str(C.ENCOUNTERS[n["enc"]]["n"])
 			row["objective"] = str(C.ENCOUNTERS[n["enc"]]["n"]) + ": " + d.substr(0, 1).to_lower() + d.substr(1) + " Sinking the command ship also ends it."
-			if _jt(n.get("shape")) and C.SHAPES.has(n["shape"]): row["shape"] = str(C.SHAPES[n["shape"]])
+			if _jt(n.get("shape")) and C.SHAPES.has(n["shape"]): row["shape"] = _shape_name(C, n["shape"])
 		else:
 			row["objective"] = "The sector's command ship and its escort. Beat it to end the sector."
 	elif not (t in ["battle", "elite"]):
@@ -306,7 +313,7 @@ static func stop(C, n) -> Dictionary:
 				row["arch_d"] = str(C.ARCHETYPES[a]["d"])
 		if _jt(n.get("mod")) and C.NODE_MODS.has(n["mod"]):
 			row["mod"] = str(C.NODE_MODS[n["mod"]]["n"]); row["mod_d"] = str(C.NODE_MODS[n["mod"]]["d"])
-		if _jt(n.get("shape")) and n["shape"] != "open" and C.SHAPES.has(n["shape"]): row["shape"] = str(C.SHAPES[n["shape"]])
+		if _jt(n.get("shape")) and n["shape"] != "open" and C.SHAPES.has(n["shape"]): row["shape"] = _shape_name(C, n["shape"])
 	if _jt(n.get("map")) and C.MAP_NAME.has(n["map"]): row["place"] = str(C.MAP_NAME[n["map"]])
 	var who := fac_in_sentence(C, fac)
 	if row["nemesis"]:

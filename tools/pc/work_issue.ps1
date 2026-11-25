@@ -463,10 +463,19 @@ function Refuse-Reason($st, $p, $repo, $maxMb) {
   $lp = $p.ToLower()
   if ($lp.StartsWith('godot/gen/')) { return 'under godot/gen (built on the PC, never committed)' }
   if ($lp.StartsWith('godot/.godot/')) { return "under godot/.godot (Godot's import cache)" }
+  # Issue 2025: the API arms twice committed a stray Microsoft/Windows/PowerShell/ModuleAnalysisCache (PR 2020).
+  if ($lp.StartsWith('microsoft/')) { return 'under Microsoft/ (a PowerShell cache written into the checkout, never committed)' }
   if ($p -match '^godot/assets/ships/([^/]+)/' -and $Matches[1] -notin @('previews', 'test')) { return "ship files under godot/assets/ships/$($Matches[1])/ (PC-built, never committed)" }
   if ($lp.EndsWith('.uid') -and $st -eq 'A') { return 'a new .uid file (Godot makes these)' }
-  if ($lp.EndsWith('.import') -and $st -eq 'M') { return 'a re-saved .import file (Godot rewrites these on import)' }
-  if ($lp.EndsWith('.import') -and $st -eq 'A') { return 'a new .import file (Godot makes these)' }
+  if ($lp.EndsWith('.import') -and ($st -eq 'A' -or $st -eq 'M')) {
+    # A .gitignore "!" line that un-ignores this file means its import settings are tracked on purpose (LUTs, linear fx atlases):
+    # keep it. Ship folders stay refused above. Exit code 1 from check-ignore means not ignored (Neon audit 1994 item 3; PRs 1961 and 1986).
+    & git -C $repo check-ignore -q --no-index -- $p 2>$null
+    if ($LASTEXITCODE -ne 1) {
+      if ($st -eq 'M') { return 'a re-saved .import file (Godot rewrites these on import)' }
+      return 'a new .import file (Godot makes these)'
+    }
+  }
   if ($st -eq 'A' -or $st -eq 'M') {
     $f = Join-Path $repo ($p -replace '/', '\')
     if (Test-Path -LiteralPath $f) {
@@ -508,7 +517,7 @@ Rules:
 - GPU work must use tools/pc/tmo.bat <seconds> <exe> [args]. Shared capacity comes from Downloads\voidsworn_test\gpu_slots.json (default 2).
   Captures weigh 1, Blender weighs 2; set PC_GPU_WEIGHT=2 for other heavy bakes, or the Board's chosen weight;
   frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
-  gpu_go.txt must say GPU cleared. Lane C is code only. Never launch GPU executables directly.
+  gpu_go.txt must say GPU cleared. Codex lanes C to F are code only. Never launch GPU executables directly.
 - Keep scratch output (logs, temp files) out of this folder, in the system temp folder.
 - Save review pictures and their .provenance.json sidecars in $out\shots (create it). Link them as shots/<file> so the
   runner can copy them into docs/shots/issue-$n-$arm and rewrite the links before publishing.

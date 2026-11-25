@@ -21,7 +21,8 @@ His scope answers:
    game is really played at (camera 170 on the look bench). It is the proof that the recipes work and the reference every
    later job is judged against.
 2. **A playbook per area**, written from what that battle needed, so another model can do the next ship, effect, hex or
-   screen without asking: docs/playbooks/effects.md, ships.md, space.md, screens.md, sound.md.
+   screen without asking: docs/playbooks/effects.md, ships.md, space.md (not written yet; until it is, the space rules are
+   RULEBOOK section 10), screens.md, sound.md.
 3. **The front door**: HANDOFF.md section 0 and AGENTS.md point at the playbooks, and the job board holds the remaining items
    as ready jobs written from each playbook's job template.
 
@@ -73,9 +74,9 @@ other work to free you up on these crucial items" (R205, R206). So "Fable" in th
 | Work | Seat |
 |---|---|
 | Options sheets, art direction, faction sheets, picture reviews, the playbooks, picks put to Ryan, merges | The Board (one Claude thread, Opus 5.5 since Nov 11, R194) |
-| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station), hard or visual builds, read-only code audits | Opus 5.5 worker threads, two at most (R205; LOOP.md duties item 9) |
+| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station), hard or visual builds, read-only code audits | Opus 5.5 worker threads, not capped while Ryan's plan clears the backlog (Ryan, Nov 19; R205; RULEBOOK 2.6, LOOP.md duties item 9) |
 | Well-specified code: services, checks, tables, wiring, screens and builds to a spec | DeepSeek workhorse on the PC |
-| Captures, benches, look-bench runs, scripted pipeline steps that shape no ship, code, image-tool jobs | Codex on the PC, one job at a time (R205, R206) |
+| Captures, benches, look-bench runs, scripted pipeline steps that shape no ship, code, image-tool jobs | Codex on the PC, up to six local lanes, one job per lane: GPU jobs on the main lane, Godot UI and lighter captures on lane B, lanes C to F code only, no GPU (RULEBOOK 2.7, issue 2057) |
 | Concept pictures by image to image, research, design text, outside checks of Opus-built changes | Muse (Ryan starts every run) |
 | Picks, looks, money | Ryan |
 
@@ -100,7 +101,7 @@ The one-page Board note, deployment files and free Windows proof are in tools/pc
 | Effects start on the ship: attach point service | 370 | DeepSeek | nothing |
 | Rebake every explosion by the picked route | 365 | Codex (GPU) | decision 1 |
 | Shield options sheet | DONE: Muse design PR 699 (merged Nov 14); Ryan picked Rim and Gap and one pool (R246) | Muse | nothing |
-| Shield model (371, Kimi arm, rules and balance first) then surface (372) | 371, 372 | Kimi for 371; Codex or an Opus worker for 372 | nothing: R246 ruled |
+| Shield model (371, rules and balance first) then surface (372) | DONE: 371 and 372 closed | DeepSeek for 371 (moved from Kimi, no longer a seat, R257); Codex or an Opus worker for 372 | nothing: R246 ruled |
 | Trails, beams and flares: options sheet, then one kit | 367 | Fable options, then DeepSeek | decision on the sheet |
 | Deaths in three beats to the staging table | 366 | DeepSeek build, Fable review | 365, 370 |
 | Every faction readable at the played camera | 362 | Fable helper | the above, last |
@@ -134,8 +135,8 @@ from it by Opus workers (every Blender step, R205), with Codex on captures and t
 | Planet and rocks from real data, remixed: three options | 369 | Fable options, Codex build | nothing |
 | Environment reconciliation and nebula motion | 230 | DeepSeek, to the picked look | 368 |
 
-Playbook: docs/playbooks/space.md, with the frame gate numbers, the data sources and the remix rules ("Shouldn't be obvious
-planets we know").
+Playbook: docs/playbooks/space.md, not written yet; until it is, the space rules are RULEBOOK section 10. It is to hold the
+frame gate numbers, the data sources and the remix rules ("Shouldn't be obvious planets we know").
 
 ### 4. Screens (lighter)
 
@@ -190,8 +191,9 @@ Answer like: 1=B, 2=Yes
 
 ## Budget and pacing (rewritten Nov 11 2026 evening)
 
-- Ryan's Fable resets are all used (R180). The Board and Opus workers draw the Claude plan: two Opus workers at most while the
-  Board thread is active (the five-hour limit was hit on Nov 11 with three; LOOP.md duties item 9).
+- Ryan's Fable resets are all used (R180). The Board and Opus workers draw the Claude plan: Opus workers are not capped while
+  Ryan's plan clears the backlog (Ryan, Nov 19; LOOP.md duties item 9); the earlier cap of two followed the five-hour limit
+  hit on Nov 11 with three.
 - Codex gives about 100 minutes of work per five-hour window; one Codex job per lane; GPU work sized to the job (RULEBOOK 3.4, R293).
 - If a limit is hit, nothing stops: DeepSeek, Muse and Codex keep running the rows that are theirs, and the Board's picks wait
   in LOOP.md.

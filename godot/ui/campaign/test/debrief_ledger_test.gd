@@ -40,7 +40,7 @@ func fixture(state: String, fac := "voidsworn", admiral := "vex") -> void:
 		ui._end_live_run = R; ui._end_last_flagship = flag.duplicate(true)
 		R["fleet"] = []
 	if state == "empty": R["fleet"] = []; ui._end_last_flagship = {}
-	R["fallen"] = [{"name": "Ilse Marrow", "ship": "Last Light", "fac": fac, "rank": 1, "sector": 2}]
+	R["fallen"] = C._migrate_fallen([{"name": "Ilse Marrow", "ship": "Last Light", "fac": fac, "rank": 1, "sector": 2}], fac, "test")
 	for i in 6:
 		R["sector"] = 1 + i / 2 if state == "win" else 1 + i / 3
 		C.tel("battle_end", {"kind": "boss" if i == 3 else "battle", "result": "win", "lost": 1 if i in [2, 4] else 0})
@@ -190,7 +190,7 @@ func run() -> void:
 			for card in UI.CampaignTips.CARDS:
 				if card[0] == "c_loss": check(text.contains(str(card[2])), "record keeps original next-run teaching card")
 		if code == KEY_F:
-			for fallen in run_data["fallen"]: check(text.contains(str(fallen["name"])), "fleet keeps each lost captain")
+			for fallen in run_data["fallen"]: check(text.contains(str(fallen["cap"]["full_name"])), "fleet keeps each lost captain")
 		key(KEY_ESCAPE); await frames()
 	key(KEY_P); await frames(); check(C.page["kind"] == "legacy" and C.prog_tab == "legacy", "P opens actual renown spending")
 	ui._campaign_action("title"); await frames()
@@ -199,10 +199,32 @@ func run() -> void:
 	for action in ["title", "newRunScreen", "nextFac"]:
 		ui._campaign_action(action, "corsair"); check(C.page["kind"] == "end", "unconfirmed exit blocked: " + action)
 	check(ui.debrief.exits.all(func(b): return b.disabled), "both exit words inert")
+	var dim_exits: bool = ui.debrief.exits.all(func(b):
+		return b.get_theme_color("font_disabled_color") == GS.TEXT3 and b.mouse_default_cursor_shape == Control.CURSOR_ARROW)
+	check(dim_exits, "disabled exits show dim ink and an arrow")
 	var original = C.META["heirs"]["voidsworn"]
 	var ids = C.shadowAdmirals("voidsworn", "vex"); var chosen = str(ids[-1])
-	ui.debrief.choose_heir(chosen); check(C.META["heirs"]["voidsworn"] == original, "selection alone does not name heir")
-	key(KEY_ENTER); await frames()
+	var last_card: Button = ui.debrief.cards[-1]
+	var xp_point := last_card.get_global_rect().position + Vector2(last_card.size.x * 0.5, 235 * ui.k)
+	for down in [true, false]:
+		var click := InputEventMouseButton.new(); click.button_index = MOUSE_BUTTON_LEFT; click.position = xp_point; click.pressed = down
+		root.push_input(click)
+	check(ui._end_heir_pick == chosen and C.META["heirs"]["voidsworn"] == original, "clicking the Heir XP strip selects without confirming")
+	check(last_card.get_theme_stylebox("hover").bg_color != last_card.get_theme_stylebox("normal").bg_color
+		and last_card.mouse_default_cursor_shape == Control.CURSOR_POINTING_HAND, "heir card highlights on hover")
+	ui.debrief.choose_heir(chosen)
+	ui.debrief.open_detail("record"); await frames()
+	var ignored := InputEventKey.new(); ignored.keycode = KEY_X; ignored.pressed = true
+	check(not ui.debrief.handle_key(ignored) and is_instance_valid(ui.debrief.overlay), "detail ignores unrelated keys")
+	ui.debrief.close_detail(); await frames()
+	var enter := InputEventAction.new(); enter.action = "ui_accept"; enter.pressed = true
+	ui.debrief.primary.grab_focus()
+	root.push_input(enter); await frames()
+	var action_words: Label = ui.debrief.primary.find_children("*", "Label", true, false)[0]
+	check(action_words.get_theme_color("font_color") == GS.ON_EMBER, "debrief action uses dark text while pressed by keyboard (mode %s, colour %s)" % [
+		ui.debrief.primary.get_draw_mode(), action_words.get_theme_color("font_color")])
+	enter.pressed = false
+	root.push_input(enter); await frames()
 	check(ui._end_confirmed and C.META["heirs"]["voidsworn"] == chosen, "Enter confirms selected heir")
 	check(ui.debrief.exits.all(func(b): return not b.disabled), "exits enabled after confirmation")
 	await capture("confirmed")
@@ -215,7 +237,7 @@ func run() -> void:
 	var long_run = C.page["data"]["run"]
 	for ship in long_run["fleet"]:
 		if ship["uid"] == long_run["flagUid"]: ship["name"] = "Sunward Martyr of the Ninth Pyre"
-	for i in 20: long_run["fallen"].append({"name": "Fallen captain " + str(i)})
+	for i in 20: long_run["fallen"].append({"cap": {"full_name": "Fallen captain " + str(i)}})
 	for i in range(20 - long_run["fleet"].size()):
 		var ship = C.newShip(long_run["fleet"][0]["tpl"]); ship["name"] = "Ledger escort " + str(i); long_run["fleet"].append(ship)
 	ui.render(); await frames(); readability("long flagship, 20 ships")

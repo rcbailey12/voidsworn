@@ -24,6 +24,12 @@ class FakeHud extends CanvasLayer:
 	func toast(_text: String, _opts := {}) -> void:
 		pass
 
+	func set_panel(_info: Dictionary) -> void:   # issue 1402: the end flow clears the ship and target panels
+		pass
+
+	func set_target(_info: Dictionary) -> void:
+		pass
+
 	func toggle_log() -> void:
 		log_open = not log_open
 
@@ -61,7 +67,7 @@ class FakeApi extends RefCounted:
 class TestBattle extends "res://scenes/battle/battle.gd":
 	func _ready() -> void:
 		set_process(false)
-	func wait(_ms: float) -> void:
+	func wait(_ms: float, _skippable_cut := false) -> void:
 		await get_tree().process_frame
 	func _refresh_ui() -> void:
 		pass

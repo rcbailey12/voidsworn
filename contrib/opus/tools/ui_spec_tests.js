@@ -7,9 +7,28 @@ const fs = require('fs');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '../../..');
 const diff = require('./ui_constants_diff.js');
-const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
+// Issue 2091: Ryan's Windows checkout can hold these files with CRLF line endings, so a raw "\n" pattern fails there
+// and every lane job ends unverified. Normalize "\r\n" to "\n" at the one place these checks read a file.
+const normalizeEol = s => s.replace(/\r\n/g, '\n');
+const read = (f, root = ROOT) => normalizeEol(fs.readFileSync(path.join(root, f), 'utf8'));
 let pass = 0, fail = 0;
 function check(ok, what) { if (ok) pass++; else { fail++; console.log('FAIL ' + what); } }
+
+// Issue 2091: prove the fix through the same read helper every check uses. Write a CRLF copy of a real source file
+// in the system temp folder: the raw bytes miss a newline-anchored pattern (the Windows failure), and read() passes it.
+{
+  const os = require('os');
+  const src = fs.readFileSync(path.join(ROOT, 'godot/main/main.gd'), 'utf8').replace(/\r\n/g, '\n');
+  const name = `ui-spec-crlf-${process.pid}-${Date.now()}.gd`;
+  const tmp = path.join(os.tmpdir(), name);
+  fs.writeFileSync(tmp, src.replace(/\n/g, '\r\n'));
+  const raw = fs.readFileSync(tmp, 'utf8');
+  let viaRead = '';
+  try { viaRead = read(name, os.tmpdir()); } finally { fs.rmSync(tmp, { force: true }); }
+  const anchored = /for k in o:\n\s*settings\[k\] = o\[k\]/;
+  check(!anchored.test(raw), 'a CRLF copy misses the newline-anchored settings check on its raw bytes (issue 2091)');
+  check(viaRead === src && anchored.test(viaRead), 'read() normalizes \\r\\n to \\n, so a CRLF checkout passes the same check (issue 2091)');
+}
 
 const LAW = 'godot/ui/ui_scale.gd';
 const law = read(LAW);
@@ -71,7 +90,8 @@ check(/th\.set_stylebox\("focus", "Button", focus_ring\(k\)\)/.test(gsh) && /GS\
 check(!/set_stylebox\("focus"/.test(hud), 'hud.gd sets no focus stylebox of its own (one source for the ring)');
 check(/func _button\([^)]*keys := false\)/.test(hud) && /Control\.FOCUS_ALL if keys else Control\.FOCUS_NONE/.test(hud), 'battle buttons take focus only when asked (keys)');
 check(/_button\(str\(it\[0\]\), str\(it\[1\]\), it\[2\] if it\.size\(\) > 2 else null, it == items\[0\], true\)/.test(hud), 'battle menu buttons take keyboard focus');
-check(/_button\("Continue", "continue", null, true, true\)/.test(hud) && /_button\("Fight again", "restart", null, true, true\)/.test(hud), 'end card buttons take keyboard focus');
+// The Continue caption names its destination. Check focus by action so the copy can vary.
+check(/_button\([^,\n]+, "continue", null, true, true\)/.test(hud) && /_button\("Fight again", "restart", null, true, true\)/.test(hud), 'end card buttons take keyboard focus');
 const t = read('godot/main/title.gd');
 const okit = read('godot/ui/theme/orders_kit.gd');
 check(/Kit\.button\(/.test(t) && /add_theme_stylebox_override\("focus", GS\.focus_ring\(k\)\)/.test(okit), 'title buttons use the shared focus ring (through the orders kit, issue 1217)');
@@ -149,7 +169,7 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(/const COL_W := 540\.0/.test(sec) && /const COL_PAD := 40\.0/.test(sec) && /MarginContainer.new/.test(fn('_briefing_column')) && !/PanelContainer|GS\.column/.test(fn('_briefing_column')), 'orders sheet is an unboxed rail with 40 px margins');
   check(/sheet_veil\.anchor_right = 0\.43/.test(m3) && /GS\.sheet_veil/.test(m3) && /0\.96/.test(gsh2), 'a smooth dark veil reaches 43 percent of the map, below its words');
   check(/#ff8a3a/.test(gsh2) && /#f0eade/.test(gsh2) && /#c4beb0/.test(gsh2) && /#969084/.test(gsh2) && /#ff6050/.test(gsh2), 'orders sheet palette matches the approved ember, text and Nemesis colors');
-  check(!/\bGILT\b|\bGILT2\b|GS\.row_boxes|GS\.jump_boxes|GS\.keycap_flat|GS\.thin_bar/.test(orders + m3), 'no lime, key badges, row fills or hull bars on the orders sheet or map');
+  check(!/\bGILT\b|\bGILT2\b|GS\.jump_boxes|GS\.keycap_flat|GS\.thin_bar/.test(orders + m3), 'no lime, key badges or hull bars on the orders sheet or map');
   check(/sheet_jump_boxes/.test(fn('_jump_button')) && /px\(56\)/.test(fn('_jump_button')) && /focus/.test(fn('_jump_button')), 'the jump action is a 56 px square ember outline with a filled hover and focus state');
   const jumpStyle = gsh2.slice(gsh2.indexOf('static func sheet_jump_boxes'), gsh2.indexOf('# ---------------------------------------------------------------- type', gsh2.indexOf('static func sheet_jump_boxes')));
   check(/set_border_width_all\(maxi\(2/.test(jumpStyle) && !/corner_radius|shadow/.test(jumpStyle), 'the action has a 2 px edge, no rounded corners and no shadow');

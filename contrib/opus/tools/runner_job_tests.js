@@ -11,10 +11,9 @@ const zlib = require('zlib');
 const { spawnSync, spawn } = require('child_process');
 const pc = path.resolve(__dirname, '../../../tools/pc');
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner846 proof '));
-// Lane B hit the old 240 s limit and the 1817 rerun was still cloning fixtures at 270 s.
-// Scale the old limit by PR 1813's measured 2.1x slowdown and round 504 s to 510 s.
-// The 600 s Windows standing row leaves room for the separate claim race.
-const probeTimeout = process.platform === 'win32' ? 510000 : 240000;
+// Issue 1739: a loaded lane reached 510 s while the probes were still running.
+// The Windows standing row also leaves room for the separate claim race.
+const probeTimeout = process.platform === 'win32' ? 750000 : 240000;
 // Scale the runner's 30 s issue-lock window by the same slowdown, rounded up.
 const claimTimeout = 65000;
 const fixtureEnv = {
@@ -118,6 +117,23 @@ function Base($body, $expected = 0) {
   Assert ($LASTEXITCODE -eq $expected) "base exit expected $expected, got $LASTEXITCODE"
 }
 function Finish($code = '0', $partial = '') { Shared @('finish',$out,$code,$partial,'real','1') }
+function Wait-After($expected) {
+  $predecessor = Join-Path $out 'status.json'
+  $state = Get-Content -LiteralPath $predecessor -Raw | ConvertFrom-Json
+  $next = "$out-next"
+  $null = New-Item -ItemType Directory -Path $next
+  Shared @('init',$next,'codex/issue-847')
+  $oldWait = $env:PC_WAIT_FOR; $oldRun = $env:PC_WAIT_RUN; $oldSeconds = $env:PC_WAIT_SECONDS
+  try {
+    $env:PC_WAIT_FOR = $predecessor; $env:PC_WAIT_RUN = $state.run; $env:PC_WAIT_SECONDS = '0'
+    & $common wait $next
+    Assert ($LASTEXITCODE -eq $expected) "wait after $($state.status): expected exit $expected, got $LASTEXITCODE"
+    if ($expected -ne 0) {
+      $child = Get-Content -LiteralPath (Join-Path $next 'status.json') -Raw | ConvertFrom-Json
+      Assert ($child.status -eq 'failed' -and $child.reason.StartsWith("chain stopped: predecessor ended $($state.status):")) 'the predecessor outcome must be why the chain stopped'
+    }
+  } finally { $env:PC_WAIT_FOR = $oldWait; $env:PC_WAIT_RUN = $oldRun; $env:PC_WAIT_SECONDS = $oldSeconds }
+}
 $script:git = 'git'; if ($PSVersionTable.Platform -ne 'Unix') { $script:git = 'git.exe' }
 $repo = New-Repo 'repo'
 Init 'normal'
@@ -138,7 +154,8 @@ Assert ($end.endpoint -eq 'repos/rcbailey12/voidsworn/issues/comments/77') 'edit
 Assert ($end.payload.body.Contains('Runner status: finished') -and $end.payload.body.Contains(('a' * 40))) 'finished body'
 Assert ($calls[-1].method -eq 'DELETE' -and $calls[-1].endpoint -match '/issues/846/labels/running$') 'running removed'
 Assert (@($calls | Where-Object { $_.method -eq 'POST' -and $_.endpoint -match '/comments$' }).Count -eq 1) 'only one comment'
-Pass 'checked finish edits the original comment and clears running'
+Wait-After 0
+Pass 'checked finish edits the original comment, clears running and releases the next job'
 Shared @('init',$out,'codex/issue-846')
 Announce
 Assert (@(Calls | Where-Object { $_.method -eq 'POST' -and $_.endpoint -match '/comments$' }).Count -eq 1) 'retry must reuse comment, even from another page'
@@ -149,14 +166,30 @@ Pass 'retry reuses one paginated comment; partial names its branch and stop reas
 Init 'failed'; Announce; Finish '8'
 $end = @(Calls | Where-Object { $_.method -eq 'PATCH' })[-1]
 Assert ($end.payload.body.Contains('Runner status: failed') -and $end.payload.body.Contains('runner exit 8')) 'failed comment'
-Pass 'failed publish still edits status and clears the label'
+Wait-After 14
+Pass 'failed publish still edits status and clears the label, but stops the chain'
 Init 'failed-checks'; Announce
 Put (Join-Path $out 'run_commit.txt') ('a' * 40); Put (Join-Path $out 'confirmed_commit.txt') ('a' * 40)
 Shared @('finish',$out,'0','','real','0')
 $end = @(Calls | Where-Object { $_.method -eq 'PATCH' })[-1]
 Assert ($end.payload.body.Contains('Runner status: unverified') -and $end.payload.body.Contains('checks did not pass')) 'confirmed push with failed checks stays unverified publicly'
 Assert ((Calls)[-1].method -eq 'DELETE') 'unverified finish still clears the running label'
-Pass 'a zero-exit confirmed push with failed checks cannot report finished'
+Wait-After 0
+Pass 'a confirmed push with failed checks stays unverified and releases the next job'
+foreach ($case in @(
+  @{ name = 'dry-push'; mode = 'dry'; confirmed = ('a' * 40) },
+  @{ name = 'test-push'; mode = 'test'; confirmed = ('a' * 40) },
+  @{ name = 'missing-confirmation'; mode = 'real'; confirmed = '' },
+  @{ name = 'wrong-confirmation'; mode = 'real'; confirmed = ('b' * 40) }
+)) {
+  Init $case.name
+  Put (Join-Path $out 'run_commit.txt') ('a' * 40)
+  Put (Join-Path $out 'confirmed_commit.txt') $case.confirmed
+  Shared @('finish',$out,'0','',$case.mode,'0')
+  Assert ((Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json).status -eq 'unverified') "expected unverified: $($case.name)"
+  Wait-After 14
+}
+Pass 'dry, test, missing and mismatched push confirmations do not release the next job'
 Init 'private-exception'; Announce
 $secret = 'fake-secret-for-status-1100'
 $privatePath = 'Z:/private runner/' + $secret
@@ -164,6 +197,7 @@ Base "Base: $privatePath" 14
 $end = @(Calls | Where-Object { $_.method -eq 'PATCH' })[-1]
 Assert ($end.payload.body.Contains('Runner status: failed') -and -not $end.payload.body.Contains($secret) -and -not $end.payload.body.Contains('Z:/')) 'public comment leaked a raw runner exception'
 Assert ((Get-Content -LiteralPath (Join-Path $out 'result.txt') -Raw).Contains($privatePath)) 'the full exception should be available locally'
+Wait-After 14
 Pass 'public failed status hides exception paths and secrets and keeps the local diagnostic'
 Init 'patch-failure'; Announce; $env:PC_TEST_GH_FAIL = 'PATCH'; Finish '0' 'CEILING'
 Assert ((Calls)[-1].method -eq 'DELETE') 'label clear after failed comment edit'

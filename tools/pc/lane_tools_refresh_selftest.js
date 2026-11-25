@@ -24,6 +24,12 @@ assert.match(versions, /IndexOf\(\$old\.FullName[\s\S]*?continue[\s\S]*?Remove-I
 assert.match(versions, /if \(\$old\.Name -eq \$Current\) \{ continue \}/, 'the current version stays');
 assert.doesNotMatch(script, /three dated backups/, 'a fourth backup no longer stops the refresh');
 assert.match(script, /'work217', 'build', 'tools_live'\)\]/, 'build and tools_live are refreshable');
+const builds = /\[ValidateSet\(([^\n]+)\)\]/.exec(script)[1];
+const seats = /^\$seat = @\{([^\n]+)\}/m.exec(script)[1];
+for (const [build, board] of [['build_f', 'board_e'], ['build_g', 'board_f']]) {
+  assert(builds.includes(`'${build}'`), `${build} is refreshable`);
+  assert(seats.includes(`${build} = '${board}'`), `refresh checks the checkout lock in ${board}`);
+}
 assert.match(script, /if \(\$seat -eq 'build'\) \{[\s\S]*?queue\\running[\s\S]*?throw "refused: a queue job is still running/, 'build refuses while a queue job runs');
 const live = script.slice(script.indexOf("if ($seat -eq 'tools_live') {\n    $null = [IO.Directory]::CreateDirectory($liveRoot)"));
 assert.match(live, /Test-ToolsMatch \$staged \$snapshot \$sourceFiles[\s\S]*?Write-Hashes \$staged[\s\S]*?\[IO\.Directory\]::Move\(\$staged, \$target\)/, 'tools_live installs a verified, hashed copy in one move');

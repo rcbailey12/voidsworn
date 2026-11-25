@@ -181,6 +181,8 @@ func _battle_tips(c: Campaign) -> void:
 	h.ledger._orders(20, 10, 440, 190, {}, false)
 	_check(h.ledger.hits.any(func(x): return x["act"] == "command" and "+30% damage" in x["tip"] and "Wait one round for power 2" in x["tip"] and "+45% damage" in x["tip"]),
 		"the Command hover shows the present effect and the next round's stronger effect before use")
+	_check(h.ledger.hits.any(func(x): return x["act"] == "command" and "Rider: Ships that land a rear-arc hit this round gain +10% critical chance." in x["tip"]),
+		"issue 1651: the Command hover carries Anuket's rider line")
 	for w in torps: w["fired"] = true; w["cdLeft"] = 2
 	_check(api.command() and torps.all(func(w): return not w["fired"] and w["cdLeft"] == 0), "Ostrel reloads the captured ship's torpedoes")
 	_check("Slip the Net" in h.ledger.keyword_tip("Fired") and "Glasswright" in h.ledger.keyword_tip("Fired"), "Fired tooltip names the two movement exceptions")

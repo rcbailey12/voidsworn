@@ -26,10 +26,20 @@ api.new_battle(run, cfg)              # run = the campaign run dict (admiral, fa
 - **Classic mode:** `cfg.alt = false` plays whole turns instead of alternating activations (the game's setup option). See "Classic mode" below.
 - **AI level:** `api.R.AI_LEVEL` is `"veteran"` (the game's default) or `"standard"`. Set it before `new_battle`.
 - **Opening state:** after setup, `api.phase` is `"player"`, and the event stream holds `round 1` and `side player`.
+- **Deployment choices (issue 1870).** The human battle sets `api.interactive_deployment = true` before setup. With Iteration Swap and at least two deployed ships, the API pauses in `"deployment"`. `view().skill_target` supplies the skill name, prompt, valid targets (`id`, `name`, `q`, `r`) and the first pick. Send each target ID to `pick_skill_target(id)`, or an empty string to skip. The second pick swaps the two hexes and finishes setup. The round-one snapshot is taken after deployment and restores the resulting positions. Automated callers use their usual deployment by default.
 
 ## The turn flow (alternating activations, as the game plays by default)
 
+`view().units[].captain` is a copy of CaptainData for a fleet ship, or null. `combat_report()` returns a separate copy of
+`combat_events`, `ship_rollups` (keyed by battle unit ID), and `lost_ship_records`. A CombatEvent is one landed hit or
+separate damage effect. Its timestamp is the 1-based event order in that battle. Applied damage is actual shield spend
+plus applied hull, including temporary grown hull. A hull section shutting down the shield is not a second hit. Carrier
+ships get credit for their wings' attacks, with the wing retained as the source unit. Hazards have no attacker ID.
+The campaign records the captain XP earned at settlement without changing how XP is awarded. A fleet ship's killmail
+is also copied into `RUN.timeline` at the kill.
+
 `api.phase` is one of:
+- `"deployment"`: waiting for a deployment skill choice before round one;
 - `"player"`: waiting for the player;
 - `"enemy"`: call `step()`;
 - `"over"`: the battle has ended;

@@ -1,4 +1,7 @@
 extends Node3D
+const SV := preload("res://render/ship_view.gd")   # issue 1434: retire_build collects a terrain load left running
+const SKEEP := preload("res://render/shader_keep.gd")
+const STAGE_IN := preload("res://render/stage_in.gd")
 # The hex board at the game's scale: pointy-top hexes of corner radius 10 (HEX_S), laid out as scene3d.js hexWorld does,
 # with the world's z mirrored for Godot. One MultiMesh for the hex fills and one for the outlines (two draws for the
 # whole board); overlays (move range, targets, hover, zones) only change instance colours.
@@ -7,12 +10,16 @@ const HT := preload("res://render/hull_table.gd")
 const BL := preload("res://world/board_look.gd")   # the board look trial (today, A holo, B living, C cinematic + tactical)
 const ModalFocus := preload("res://ui/theme/modal_focus.gd")
 const A4P := preload("res://assets/ships/a4_props.gd")  # A4's painted station and derelicts (null when not built)
+const TerrainScorch := preload("res://fx/terrain_scorch.gd")
+const BattleLook := preload("res://render/look.gd")
 const BV := preload("res://world/blocker_visuals.gd")
+const PL := preload("res://world/world_planet.gd")   # issue 1765: the board planet's surfaces
 const LS := preload("res://render/line_style.gd")   # issue 1374 (R362): the one line style (width, glow, fade, role colours)
+const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const HS := 10.0
 var HW := HS * sqrt(3.0)
 # The one scale table's board-side sizes (issue 710, R247; docs/playbooks/scale.md). All in world units, HEX_S = 10.
-const STATION_BASE_LEN := 22.0     # a small station cluster: 22, then 4 more per hex
+const STATION_BASE_LEN := 22.0     # a small station cluster: 22, then 4 more per hex (the O1_37 fallback only; T2 is fitted to its hexes)
 const STATION_PER_HEX := 4.0
 const STATION_BIG_LEN := A4P.LARGE_STATION_SIZE  # a cluster of 5 or more station hexes
 const STATION_BIG_HEXES := 5
@@ -24,15 +31,13 @@ var api = null               # the rules API (godot/rules/battle_api.gd): read t
 var VW := {}                 # the view the board was built from
 var WI := {}                 # world_info()
 var planet_node: MeshInstance3D = null   # the board planet, when the map has one
+var planet_pending := false              # issue 1765: its maps are still loading or baking
+var planet_t0 := 0                       # issue 1765: when they started (one load deadline shared with the world)
+var planet_ready_ms := -1                # when its maps arrived, from planet_t0 (-1: not yet)
 var sun_dir := Vector3(0.4, 0.6, 0.7)   # toward the battle's key light (battle.gd sets it before build)
-# the board planet's look per battle: [kind (G3 map shader: 0 rock, 1 terran, 3 ice, 4 lava, 5 barren), colour a, b, atmosphere]
-const PLANET_LOOKS := [
-	[0, Color(0.55, 0.42, 0.3), Color(0.22, 0.15, 0.1), Color(0.9, 0.65, 0.4)],
-	[1, Color(0.36, 0.42, 0.24), Color(0.07, 0.15, 0.3), Color(0.45, 0.7, 1.0)],
-	[3, Color(0.82, 0.88, 0.94), Color(0.42, 0.52, 0.62), Color(0.6, 0.8, 1.0)],
-	[4, Color(0.28, 0.2, 0.16), Color(0.08, 0.06, 0.05), Color(1.0, 0.45, 0.2)],
-	[5, Color(0.5, 0.48, 0.46), Color(0.2, 0.19, 0.19), Color(0.6, 0.62, 0.7)],
-]
+# the board planet's look per battle, picked by the battle seed: 0 rock, 1 terran, 3 ice, 4 lava, 5 barren. Every colour
+# lives in world_planet.gd BOARD_LOOKS, the one planet palette (issue 1765; the old map shader's copies are gone).
+const PLANET_LOOKS := [0, 1, 3, 4, 5]
 var ox := 0.0
 var oz := 0.0
 var cells: Array = []        # [{q, r}]
@@ -48,11 +53,14 @@ var hover_key := ""
 var blocker_visuals: Node3D
 var blocker_highlights: Node3D
 var props: Node3D
+var _station_pending: Array[Node3D] = []
+var _station_warm := STAGE_IN.new()
 var rock_meshes: Array = []
 var wrecks := {}             # issue 1236: unit id -> "q,r" of each wreck the rules laid down during this battle
 var wreck_hulls := {}        # issue 1236: unit id -> true where the board laid the burnt hulk (the death left no pieces)
 var built := 0               # how many times build() ran (a late wreck check knows its battle is gone)
 var props_world := false     # G4 world draws the rocks, debris and nebula; the board keeps hulks, stations and the planet
+var title_backdrop := false   # issue 1434: set by the battle for the title menu's backdrop (see _planet)
 
 # The board plane passes through the lower half of tall hulls. Depth-test alone
 # cannot protect those pixels, so mask opaque ship/terrain surfaces near the board.
@@ -248,12 +256,20 @@ func key(q, r) -> String:
 	return str(int(q)) + "," + str(int(r))
 
 
-func build(rules) -> void:
+# issue 1434 (LOAD13: start to board 0.9 to 1.4 s in one frame): the battle load passes slice, so each step below gets
+# its own frame; build_us names each step's main-thread time for the load bench
+var build_us := {}
+
+
+func build(rules, slice := false) -> void:
+	build_us = {}
+	var t := Time.get_ticks_usec()
 	api = rules
 	VW = api.view()
 	wrecks.clear()
 	wreck_hulls.clear()
 	built += 1
+	planet_pending = false   # issue 1765: a rebuild never inherits the last build's planet wait
 	WI = api.world_info() if api.has_method("world_info") else {}
 	for c in get_children():
 		c.queue_free()
@@ -272,14 +288,13 @@ func build(rules) -> void:
 	index.clear()
 	for i in cells.size():
 		index[key(cells[i].q, cells[i].r)] = i
+	t = _step("cells", t)
 	fills = _mm(_hex_mesh(HS * 0.985, false), FILL_SHADER)
 	rings = _mm(_hex_mesh(HS, true), RING_SHADER)
 	outline = MeshInstance3D.new()
 	outline.name = "ReachOutline"
 	var om := ShaderMaterial.new()
-	var osh := Shader.new()
-	osh.code = OUTLINE_SHADER
-	om.shader = osh
+	om.shader = SHADER_CACHE.for_code(OUTLINE_SHADER)
 	outline.material_override = om
 	outline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(outline)
@@ -287,16 +302,162 @@ func build(rules) -> void:
 	props = Node3D.new()
 	props.name = "Terrain"
 	add_child(props)
-	_terrain()
+	t = _step("grid", t)
+	if slice:
+		# issue 1434 (LOAD14: terrain 0.9 s in one frame): the rock, hulk and station files load on worker threads first.
+		# Every request is collected once or handed on (_drop_terrain_loads), also when the board leaves the tree mid-wait
+		_drop_terrain_loads(false)
+		for p in _terrain_files():
+			if _terrain_keep.has(p):
+				continue   # loaded by an earlier battle or the title this session: load() is a cache hit
+			if ResourceLoader.load_threaded_request(p) == OK:
+				_terrain_loads.append(p)
+		t = _step("terrain_request", t)
+		# the cover stays up and frames keep drawing while this waits, so the wait is long; only a load that never ends
+		# (60 s) goes on without it, logged, and then _terrain() loads that file itself
+		var w0 := Time.get_ticks_msec()
+		while Time.get_ticks_msec() - w0 < TERRAIN_WAIT_MS:
+			await get_tree().process_frame
+			if _parked():
+				return   # _exit_tree handed the loads on
+			var busy := false
+			for p in _terrain_loads:
+				if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+					busy = true
+					break
+			if not busy:
+				break
+		# each request classified once (Artoo on PR 1445): a finished or failed one is collected here, an unfinished one
+		# is handed on with no second status read in between
+		var running := []
+		for p in _terrain_loads:
+			var st := ResourceLoader.load_threaded_get_status(p)
+			if st == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+				running.append(p)
+			else:
+				var res = ResourceLoader.load_threaded_get(p)
+				if res != null:
+					_terrain_keep[p] = res   # kept for the session, so load() finds it cached in this battle and the next
+		_terrain_loads.clear()
+		if not running.is_empty():
+			printerr("[board] %d terrain file(s) still loading after %d ms; the terrain loads them itself: %s" % [running.size(), TERRAIN_WAIT_MS, ", ".join(running)])
+			SV.retire_build(running, [])
+		build_us["terrain_wait"] = (Time.get_ticks_msec() - w0) * 1000
+		t = Time.get_ticks_usec()
+	_terrain(slice and title_backdrop)
+	while not _station_pending.is_empty():
+		var station := _station_pending.front() as Node3D
+		var pieces := station.find_children("*", "MeshInstance3D", true, false)
+		if station is MeshInstance3D:
+			pieces.push_front(station)
+		if not await _station_warm.warm_meshes(self, pieces, "title station") or _parked():
+			return
+		_station_pending.pop_front()
+		_put_station(station)
+	t = _step("terrain", t)
+	if slice:
+		await get_tree().process_frame
+		if _parked():
+			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
+		t = Time.get_ticks_usec()
 	blocker_visuals = BV.new()
 	props.add_child(blocker_visuals)
 	blocker_visuals.build(VW, hex_world)
+	_depth_fragments()
 	blocker_highlights = Node3D.new()
 	add_child(blocker_highlights)
 	_zones()
 	_well_info()
+	t = _step("blockers", t)
+	if slice:
+		await get_tree().process_frame
+		if _parked():
+			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
+		t = Time.get_ticks_usec()
 	_terrain_edges()
+	t = _step("edges", t)
+	if slice:
+		await get_tree().process_frame
+		if _parked():
+			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
+		t = Time.get_ticks_usec()
 	apply_look(false)
+	_step("look", t)
+
+
+# issue 1434 (LOAD15: b2 and b2r each waited 1.4 s for the same terrain files): every terrain file loaded once for the
+# session. GPU-holding static: render/static_caches.gd clears it before the engine exits.
+static var _terrain_keep := {}
+
+
+static func clear_static() -> void:
+	_terrain_keep.clear()
+var _terrain_loads := []   # threaded requests not collected yet
+const TERRAIN_WAIT_MS := 60000
+
+
+# collect every terrain request once; wait false: one still running goes to ShipView.retire_build, collected over the
+# next frames (the same hand-off as the battle's hull loads), so a close or a leave never waits on it
+func _drop_terrain_loads(wait := true) -> void:
+	var running := []
+	for p in _terrain_loads:
+		if wait or ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			ResourceLoader.load_threaded_get(p)
+		else:
+			running.append(p)
+	_terrain_loads.clear()
+	if not running.is_empty():
+		SV.retire_build(running, [])
+
+
+func _exit_tree() -> void:
+	for station in _station_pending:
+		station.free()
+	_station_pending.clear()
+	_drop_terrain_loads(false)
+
+
+# every file _terrain may load for this view: the rock set, the hulks' painted hulls and the station
+func _terrain_files() -> Array:
+	var out := []
+	var man = JSON.parse_string(FileAccess.get_file_as_string("res://gen/manifest.json")) if FileAccess.file_exists("res://gen/manifest.json") else null
+	if not (man is Dictionary):
+		return out
+	var T: Dictionary = VW.get("terrain", {})
+	var kinds := {}
+	for k in T:
+		kinds[str(T[k])] = true
+	var set_name := "RST"
+	var biome = WI.get("biome")
+	if biome is Dictionary and HT.ROCK_SET.has(biome.get("rock", "")):
+		set_name = HT.ROCK_SET[biome["rock"]]
+	if man.has("rocks"):
+		for code in man["rocks"]:
+			if man["rocks"][code]["set"] == set_name:
+				out.append(str(man["rocks"][code]["res"]))
+	var ships: Dictionary = man.get("ships", {}) if man.get("ships") is Dictionary else {}
+	if kinds.has("hulk"):
+		for code in ["H8_23", "V15_37", "C14s_23", "D20_23"]:
+			if ships.has(code):
+				out.append(str(ships[code]["res"]))
+	var spots := A4P.station_spots({"terrain": T, "map": VW.get("map", {})})
+	if spots != Vector2i.ZERO:
+		# the same station files the battle prefetches: T2 for the big cluster, the outpost for small ones and holes (1791)
+		out += A4P.station_files(spots.x == 1, spots.y == 1)
+	if kinds.has("station"):
+		if ships.has("O1_37"):
+			out.append(str(ships["O1_37"]["res"]))
+	var keep := []
+	for p in out:
+		if ResourceLoader.exists(p) and not keep.has(p):
+			keep.append(p)
+	return keep
+
+
+func _step(name: String, t0: int) -> int:
+	var t1 := Time.get_ticks_usec()
+	build_us[name] = int(build_us.get(name, 0)) + t1 - t0
+	return t1
 
 
 func bounds() -> Vector2:
@@ -318,10 +479,8 @@ func _mm(mesh: Mesh, code: String) -> MultiMeshInstance3D:
 		mm.set_instance_transform(i, Transform3D(Basis(), hex_world(cells[i].q, cells[i].r, -0.4)))
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
-	var sh := Shader.new()
-	sh.code = code
 	var m := ShaderMaterial.new()
-	m.shader = sh
+	m.shader = SHADER_CACHE.for_code(code)
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mi)
@@ -846,7 +1005,7 @@ func _rock_lib() -> Array:
 	return out
 
 
-func _terrain() -> void:
+func _terrain(warm_station := false) -> void:
 	base_fill.clear()
 	rock_meshes = _rock_lib()
 	var rng := RandomNumberGenerator.new()
@@ -904,7 +1063,59 @@ func _terrain() -> void:
 			clearance = maxf(clearance, cen.distance_to(p) + HS)
 		var size := STATION_BIG_LEN if cl.size() >= STATION_BIG_HEXES else STATION_BASE_LEN + STATION_PER_HEX * cl.size()
 		var teaching: bool = cl.size() == 3 and VW.get("map", {}).get("stationR", 0) == 1
-		_station(cen, rng, size, teaching, clearance)
+		var rel: Array = []
+		for p in centres:
+			rel.append(Vector2(p.x - cen.x, p.z - cen.z))
+		_station(cen, rng, size, teaching, clearance, rel, warm_station)
+
+
+# Issue 1582 item 4: a few small loose fragments hang below the plane round each rock and debris hex, so a field has
+# depth. They sit under the lowest ship band (render/altitude_band.gd: no ship goes lower than ESCORT[1] * BELOW_K, about
+# 3.4) and far under the wings' passes, so no hull or craft shares their air (Fable on PR 1874, item 3); they keep close to
+# their hex's middle because a point under the plane draws a little toward the camera. They never block (the rules' rock
+# stays the hex's core on the plane) and use their own seed so the board's other random draws do not shift. A look only.
+const FRAG_Y := [4.6, 6.5]     # depth under the plane (world units)
+const FRAG_S := [0.45, 1.25]   # fragment size
+const FRAG_R := [1.2, 3.5]     # distance from the hex middle
+var depth_frags: Node3D
+
+
+func _depth_fragments() -> void:
+	if depth_frags != null and is_instance_valid(depth_frags):
+		depth_frags.queue_free()
+	depth_frags = Node3D.new()
+	depth_frags.name = "fx_depth_fragments"
+	add_child(depth_frags)
+	var T: Dictionary = VW.get("terrain", {}) if VW.get("terrain") is Dictionary else {}
+	var biome = WI.get("biome")
+	var rock_kind := str(biome.get("rock", "stone")) if biome is Dictionary else "stone"
+	var names: Array = BV.WR.names_for(rock_kind)
+	if names.is_empty():
+		return
+	# the same procedural rocks and finish the world's blockers use (world/blocker_visuals.gd), so the chips match
+	var mat: ShaderMaterial = BV.WR.material(rock_kind, {"haze_max": 0.0})
+	mat.set_shader_parameter("lift", 1.2)
+	mat.set_shader_parameter("amb", 0.65)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("depth|%s" % str(WI.get("seed", 1)))
+	var keys: Array = T.keys()
+	keys.sort()
+	for k in keys:
+		var typ: String = T[k]
+		if typ != "rock" and typ != "debris":
+			continue
+		var qr: PackedStringArray = str(k).split(",")
+		var c := hex_world(int(qr[0]), int(qr[1]))
+		for i in (3 if typ == "rock" else 2):
+			var mesh_name := str(names[rng.randi() % names.size()])
+			var a := rng.randf() * TAU
+			var rad := rng.randf_range(FRAG_R[0], FRAG_R[1])
+			var y := -rng.randf_range(FRAG_Y[0], FRAG_Y[1])
+			var mi := BV.cluster_piece(depth_frags, BV.WR.mesh(mesh_name), mat, c + Vector3(cos(a) * rad, y, sin(a) * rad), rng.randf_range(FRAG_S[0], FRAG_S[1]), rng)
+			mi.name = "frag_" + mesh_name
+			var box := (mi.mesh as Mesh).get_aabb()
+			mi.set_instance_shader_parameter("rock_radius", box.position.abs().max(box.end.abs()).length())
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
 func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float) -> void:
@@ -924,9 +1135,10 @@ func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float
 		props.add_child(mi)
 
 
-func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
-	var codes := ["H8_23", "V15_37", "C14s_23", "D20_23"]
-	var code: String = codes[rng.randi() % codes.size()]
+func _hulk(c: Vector3, rng: RandomNumberGenerator, own := "") -> void:
+	# issue 1767 (R419): all six factions' derelicts, mostly the factions in this battle, so a Chorus or Glasswright
+	# graveyard shows their own dead. One draw, as before, so the rest of the board's props do not shift.
+	var code := A4P.pick_hulk(rng.randi(), _battle_factions(), own)
 	# A4's painted hull, burnt (same random draws as the old path, so the rest of the board does not shift)
 	var a4 := A4P.hulk(code)
 	if a4 != null:
@@ -950,19 +1162,49 @@ func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 	BV.fit_hulk(mi, c)
 
 
-func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, teaching := false, clearance := 0.0) -> void:
-	# The painted station for this cluster size, with the original hull below as a fallback.
-	var a4 := A4P.station(size, clearance)
+# the faction of unit `id` ("" when the view has no such unit), so a ship that dies leaves its own faction's hulk
+func _unit_faction(id: String) -> String:
+	for u in VW.get("units", []):
+		if u is Dictionary and str(u.get("id", "")) == id and u.get("fac") != null:
+			return str(u["fac"])
+	return ""
+
+
+# the factions with ships in this battle (both sides), for the hulk draw
+func _battle_factions() -> Array:
+	var out: Array = []
+	for u in VW.get("units", []):
+		if u is Dictionary and u.get("fac") != null and not out.has(str(u["fac"])):
+			out.append(str(u["fac"]))
+	return out
+
+
+# the biome's station kind (rules REGION_BIOME: rig, ring or spire), "" when the battle rolled none
+func station_kind() -> String:
+	var biome = WI.get("biome")
+	return str(biome.get("station", "")) if biome is Dictionary else ""
+
+
+func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, teaching := false, clearance := 0.0, cells: Array = [], warm := false) -> void:
+	# The painted station for this cluster size, with the original hull below as a fallback. issue 1767: station_T2 on
+	# every cluster, fitted inside the cluster's own hexes at its bearing (A4P.fit_scale), level and lifted in proportion.
+	# The bearing is drawn first (A4P draws nothing, so the board's random stream is as before).
+	var bearing := rng.randf() * 6.0
+	var a4 := A4P.station(size, clearance, station_kind(), true, cells, HS, bearing)
 	if a4 != null:
-		var bearing := rng.randf() * 6.0
-		var attitude := Vector3(0, bearing, 0) if a4.has_meta("station_T2") else Vector3(0.06, bearing, 0.04)
-		var offset := Vector3(0, 3, 0)
-		if teaching:
+		var t2 := a4.has_meta("station_T2")
+		bearing = float(a4.get_meta("station_bearing", bearing))   # a fitted T2's best turn (A4P.best_bearing)
+		var attitude := Vector3(0, bearing, 0) if t2 else Vector3(0.06, bearing, 0.04)
+		var k: float = a4.scale.x
+		var offset := Vector3(0, 3, 0) * k
+		if bool(a4.get_meta("station_outpost", false)):
+			offset.y = A4P.lift_outpost(a4)
+		if teaching and not t2:
 			# Bank O1_37 into the triangular cluster at full scale and lift its low edge above the grid.
 			attitude = Vector3(deg_to_rad(-63.0), deg_to_rad(65.0), 0.0)
 			offset = Vector3(2.0, 13.0, 1.5)
-		a4.transform = Transform3D(Basis.from_euler(attitude), c + offset)
-		props.add_child(a4)
+		a4.transform = Transform3D(Basis.from_euler(attitude).scaled(Vector3.ONE * k), c + offset)
+		_stage_station(a4, warm)
 		return
 	var p := "res://gen/hulls/O1_37.res"
 	if not ResourceLoader.exists(p):
@@ -982,8 +1224,22 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 		m.ao_texture = (src as StandardMaterial3D).ao_texture
 		m.ao_texture_channel = (src as StandardMaterial3D).ao_texture_channel
 	mi.material_override = m
-	mi.transform = Transform3D(Basis.from_euler(Vector3(0.06, rng.randf() * 6.0, 0.04)).scaled(Vector3(size, size, -size)), c + Vector3(0, 3, 0))
-	props.add_child(mi)
+	mi.transform = Transform3D(Basis.from_euler(Vector3(0.06, bearing, 0.04)).scaled(Vector3(size, size, -size)), c + Vector3(0, 3, 0))
+	_stage_station(mi, warm)
+
+
+
+func _stage_station(station: Node3D, warm: bool) -> void:
+	if warm:
+		_station_pending.append(station)
+	else:
+		_put_station(station)
+
+
+func _put_station(station: Node3D) -> void:
+	props.add_child(station)
+	if station.has_meta("station_T2") and BattleLook.post_fx_enabled("DECALS"):
+		TerrainScorch.station(station)
 
 
 # Issue 1536 (Ryan, Nov 22 2026, "Yes"): in a Hold battle the Navy relay beacon O3_11 stands under the hold hex, so the gold hex
@@ -1080,64 +1336,82 @@ func _planet() -> void:
 	var sp := SphereMesh.new()
 	sp.radius = rad
 	sp.height = rad * 2.0
-	sp.radial_segments = 96
-	sp.rings = 48
+	sp.radial_segments = 192   # issue 1765: a smooth limb when the planet fills half the frame
+	sp.rings = 96
 	var mi := MeshInstance3D.new()
 	mi.mesh = sp
 	# Keep the map's radius and sink 78% of it. At radius 50: centre -39, cap 11, board-plane chord about 63.
 	mi.position = hex_world(pl.q, pl.r, -rad * 0.78)
 	props.add_child(mi)
 	planet_node = mi
-	# the campaign map's planet look (G3's map3d_shaders.gd PLANET and ATMO, which Ryan has seen on the map): surface
-	# detail per kind, a night side away from the battle's key light, a thin lit limb; the flat matte ball only if the
-	# shaders are missing from the build
-	var MS = load("res://ui/campaign/map3d_shaders.gd") if ResourceLoader.exists("res://ui/campaign/map3d_shaders.gd") else null
-	if MS == null:
-		var m := StandardMaterial3D.new()
-		m.albedo_color = Color(0.33, 0.29, 0.27)
-		m.roughness = 0.95
-		mi.material_override = m
-		return
+	# Issue 1765 (R419, Planets V2): the planet's surface comes from world_planet.gd. Rocky and barren worlds draw the
+	# authored 8K R01 relief, turned and tinted per battle; terran, ice and volcanic worlds bake a 4K surface with a
+	# relief map. The campaign map's icon shader is no longer used here.
 	var seed_v := int(WI.get("seed", 1)) if WI.get("seed") != null else 1
-	var look: Array = PLANET_LOOKS[posmod(seed_v, PLANET_LOOKS.size())]
+	var look_kind: int = PLANET_LOOKS[posmod(seed_v, PLANET_LOOKS.size())]
+	# Issue 1434 (LOAD32): the rocky and barren looks draw the two 8K R01 maps, 853 MB with mips, uploaded in one frame
+	# whatever thread asks (682 ms of a 910 ms cold title frame, 914 ms warm). Under the title menu there is no loading
+	# cover to hide that, so the title's board takes the next baked look (4K maps) unless this run already holds R01.
+	if title_backdrop and not PL.r01_uploaded():
+		var at := posmod(seed_v, PLANET_LOOKS.size())
+		for i in PLANET_LOOKS.size():
+			var k: int = PLANET_LOOKS[(at + i) % PLANET_LOOKS.size()]
+			if PL.uses_r01(k): continue
+			look_kind = k
+			break
 	var sun := mi.position + sun_dir.normalized() * 100000.0
-	var pm := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = MS.PLANET
-	pm.shader = sh
-	pm.set_shader_parameter("kind", float(look[0]))
-	pm.set_shader_parameter("a", look[1])
-	pm.set_shader_parameter("b", look[2])
-	pm.set_shader_parameter("atmo", look[3])
-	pm.set_shader_parameter("seed", float(posmod(seed_v, 97)) * 1.37)
-	pm.set_shader_parameter("sun_pos", sun)
-	pm.set_shader_parameter("q", 1.0)
-	mi.material_override = pm
 	var shell := MeshInstance3D.new()
 	var ss := SphereMesh.new()
 	ss.radius = rad * 1.03
 	ss.height = rad * 2.06
-	ss.radial_segments = 96
-	ss.rings = 48
+	ss.radial_segments = 128
+	ss.rings = 64
 	shell.mesh = ss
-	var am := ShaderMaterial.new()
-	var ash := Shader.new()
-	ash.code = MS.ATMO
-	am.shader = ash
-	am.set_shader_parameter("atmo", look[3])
-	am.set_shader_parameter("sun_pos", sun)
-	am.set_shader_parameter("gain", 1.0)
-	shell.material_override = am
 	shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	shell.position = mi.position
 	props.add_child(shell)
+	planet_pending = true
+	planet_t0 = Time.get_ticks_msec()
+	planet_ready_ms = -1
+	mi.set_meta("planet_look", look_kind)
+	var gen := built
+	await PL.install_board(mi, shell, look_kind, seed_v, sun)
+	if built == gen:
+		planet_pending = false   # an older build's install never clears a newer build's wait
+		planet_ready_ms = Time.get_ticks_msec() - planet_t0   # Neon item 7: when the planet itself finished
+
+
+# issue 1519: a left battle stays in the tree switched off (PROCESS_MODE_DISABLED) while main.gd frees it in slices
+# behind the title; its awaits still wake there, so a build or wait under way stops as it would out of the tree
+func _parked() -> bool:
+	return not is_inside_tree() or not can_process()
+
+
+# Issue 1765: the battle's loading cover waits for the board planet's maps. The maps start loading when the board is
+# built, alongside the world's bakes, so the 20 s cap counts from then, not after the world is ready (Artoo, PR 1776).
+# Maps that miss the cover are never swapped in mid-battle (a late 4K or 8K upload would hitch the first turns): the
+# planet keeps its lit stand-in for this battle, and the finished bake stays cached for the next.
+func wait_planet() -> void:
+	while planet_pending and Time.get_ticks_msec() - planet_t0 < 20000:
+		await get_tree().process_frame
+		if _parked(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	if planet_pending and is_instance_valid(planet_node):
+		planet_node.set_meta("planet_frozen", true)
+		push_warning("[planet] board planet maps missed the loading cover; the stand-in stays for this battle")
+	if is_instance_valid(planet_node):
+		# the PC load proof reads this line (issue 1765)
+		# Neon item 7: the planet's own ready time, not when the battle got round to asking (it waits on the world first)
+		print("[planet] board planet ready in %d ms after board build (cover asked at %d ms): %s, look %s%s; video memory %.0f MB, static memory peak %.0f MB" % [
+			planet_ready_ms if planet_ready_ms >= 0 else Time.get_ticks_msec() - planet_t0, Time.get_ticks_msec() - planet_t0, str(planet_node.get_meta("planet_code", "stand-in")),
+			str(planet_node.get_meta("planet_look", "?")), ", FROZEN (missed the cover)" if planet_node.get_meta("planet_frozen", false) else "",
+			Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0, OS.get_static_memory_peak_usage() / 1048576.0])
 
 
 # issue 1236: a dead cruiser or capital's hex became a wreck in the rules ("wreck" event). The board marks it as it marks
 # a wreck the map started with: the hex joins the blocked terrain (its edge shows with the grid, Z, as every rock and
 # hulk hex does), with the same scatter of torn rock and plate, and the ship's own pieces settle inside it (fx_death
 # _leash). hull: also lay the map's burnt hulk there, for a death that left no pieces (or a battle without the effects).
-func add_wreck(id: String, q: int, r: int, hull := false) -> void:
+func add_wreck(id: String, q: int, r: int, hull := false, fac := "") -> void:
 	var k := key(q, r)
 	if not index.has(k):
 		return
@@ -1153,7 +1427,7 @@ func add_wreck(id: String, q: int, r: int, hull := false) -> void:
 		_rocks(c, rng, 2, 1.5, 3.0)
 	if hull and not wreck_hulls.has(id):
 		wreck_hulls[id] = true
-		_hulk(c, rng)
+		_hulk(c, rng, fac if fac != "" else _unit_faction(id))   # the caller's live faction first (a late reinforcement: Artoo)
 	if fresh:
 		_rebuild_edges()
 

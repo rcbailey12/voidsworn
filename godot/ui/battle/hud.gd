@@ -478,7 +478,7 @@ func _show_dtip() -> void:
 
 
 func keys_text() -> String:
-	return "[font_size=%d][color=#a7b09d]Plan the ship's turn on its ghost: click a blue hex to move the ghost, [b]Q[/b]/[b]E[/b] turn it, click enemies to aim the guns that bear from it. Click the hex or a target again (or [b]Enter[/b]) and it all plays out at once. [b]1[/b]-[b]6[/b] pick one weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]C[/b] Command, [b]Tab[/b] next ship, [b]Space[/b] end ship, [b]Backspace[/b] take back the plan's last step (after a move has played, the last move or turn, until the ship fires), [b]Esc[/b] clear the plan. In the enemy turn [b]Enter[/b] or [b]Space[/b] hurries. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]Z[/b] tactical grid, [b]L[/b] full log, [b]Home[/b] reset view.[/color][/font_size]" % s(17)
+	return "[font_size=%d][color=#a7b09d]Plan the ship's turn on its ghost: click a blue hex to move the ghost, [b]Q[/b]/[b]E[/b] turn it, click enemies to aim the guns that bear from it. Click the hex or a target again (or [b]Enter[/b]) and it all plays out at once. [b]1[/b]-[b]6[/b] pick one weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]C[/b] Command, [b]Tab[/b] next ship, [b]Space[/b] end ship, [b]Backspace[/b] take back the plan's last step (after a move has played, the last move or turn, until the ship fires), [b]Esc[/b] clear the plan. In the enemy turn [b]Enter[/b] or [b]Space[/b] hurries. [b]K[/b] skips more cut-ins of the current routine shot kind or stops routine enemy camera follow for this battle. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]Z[/b] tactical grid, [b]L[/b] full log, [b]Home[/b] reset view.[/color][/font_size]" % s(17)
 
 
 
@@ -1219,9 +1219,9 @@ func _modal(pad_x: float, pad_y: float) -> Array:
 	return [p, p]
 
 
-func show_end(title: String, body: String, win: bool, external := false) -> void:
+func show_end(title: String, body: String, win: bool, external := false, continue_label := "Continue") -> void:
 	hide_end()
-	_last["show_end"] = [title, body, win, external]
+	_last["show_end"] = [title, body, win, external, continue_label]
 	end_block = ModalFocus.blocker(root)
 	end_block.mouse_force_pass_scroll_events = false
 	var mw := _modal(40, 30)
@@ -1245,7 +1245,7 @@ func show_end(title: String, body: String, win: bool, external := false) -> void
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", s(14))
 	if external:
-		row.add_child(_button("Continue", "continue", null, true, true))
+		row.add_child(_button(continue_label, "continue", null, true, true))
 	else:
 		row.add_child(_button("Fight again", "restart", null, true, true))
 		row.add_child(_button("Quit", "quit", null, false, true))
@@ -1370,10 +1370,31 @@ func loading(on: bool) -> void:
 		l.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		l.grow_vertical = Control.GROW_DIRECTION_BOTH
 		load_cover.add_child(l)
+		# issue 1434: a count under the title while the ships are built a few per frame, so the cover visibly moves
+		load_count = _label("", 22, S_TEXT, font_name)
+		load_count.set_anchors_preset(Control.PRESET_CENTER)
+		load_count.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		load_count.grow_vertical = Control.GROW_DIRECTION_BOTH
+		load_count.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		load_count.offset_top = s(56)
+		load_count.offset_bottom = s(56)
+		load_count.modulate.a = 0.75
+		load_cover.add_child(load_count)
 		root.add_child(load_cover)
 	elif not on and load_cover != null:
 		load_cover.queue_free()
 		load_cover = null
+		load_count = null
+
+
+var load_count: Label
+
+
+# issue 1434: "SHIPS READY 7 / 24" on the cover; a total of 0 clears it (the warm-up after the ships are built)
+func loading_count(n: int, total: int) -> void:
+	if load_count == null or not is_instance_valid(load_count):
+		return
+	load_count.text = "SHIPS READY %d / %d" % [n, total] if total > 0 else ""
 
 
 # Issue 529 (PR 533): a tree prompt (a "you may" skill's yes or no, a Chorus role) takes the shot's place in the sheet,

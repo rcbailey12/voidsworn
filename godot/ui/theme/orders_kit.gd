@@ -29,8 +29,10 @@ static func clear_static() -> void:
 # The cue each kind of button plays when pressed; hover and arrow-key focus play HOVER_CUE.
 # "reward" (issue 1448): the confirm that takes a reward, relic, promotion perk or bought hull plays the built reward chime
 # instead of the plain confirm, so the two never sound together.
-const PRESS_CUE := {"primary": "ui_confirm", "quiet": "ui_click", "link": "ui_click", "back": "ui_cancel", "tab": "ui_select", "reward": "ui_reward"}
-const HOVER_CUE := "ui_select"
+const PRESS_CUE := {"primary": "ui_confirm", "quiet": "ui_click", "link": "ui_click", "back": "ui_cancel",
+	"tab": "ui_select", "reward": "ui_reward", "purchase": "ui_purchase", "install": "ui_module_install",
+	"relic": "ui_relic_socket"}
+const HOVER_CUE := "ui_hover"
 const OPEN_CUE := "ui_panel"
 
 # Every face the game ships, for Credits (title.gd) and the font check (godot/ui/test/front_end_test.gd fails when a .ttf
@@ -151,12 +153,7 @@ static func section(text: String, k: float) -> Control:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", px(4, k))
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var l := label(text.to_upper(), 17, k, GS.TEXT3, medium_font(), false)
-	var sp := maxi(1, int(round(17.0 * 0.12 * k)))
-	var fv := FontVariation.new()
-	fv.base_font = medium_font()
-	fv.spacing_glyph = sp
-	l.add_theme_font_override("font", fv)
+	var l := label(text.to_upper(), 17, k, GS.TEXT3, GS.caps(k), false)
 	v.add_child(l)
 	var r := ColorRect.new()
 	r.color = GS.SHEET_HAIR
@@ -190,7 +187,7 @@ static func button_boxes(k: float, role := "quiet") -> Dictionary:
 	var d := n.duplicate() as StyleBoxFlat
 	d.bg_color = Color(GS.CAREER_INK, 0.8)
 	d.border_color = GS.LINE
-	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
+	return {"normal": n, "hover": h, "pressed": GS.pressed_box(h), "disabled": d}
 
 
 static func button(text: String, k: float, role := "quiet", cb := Callable(), size := 18.0) -> Button:
@@ -208,7 +205,7 @@ static func style_button(b: Button, k: float, role := "quiet", size := 18.0) -> 
 		b.add_theme_stylebox_override(st, bx[st])
 	b.add_theme_stylebox_override("focus", GS.focus_ring(k))
 	b.focus_mode = Control.FOCUS_ALL
-	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	GS.button_pointer(b)
 	b.add_theme_font_size_override("font_size", px(maxf(size, UiScale.MIN_TEXT), k))
 	if role == "primary":
 		b.add_theme_font_override("font", GS.action_font(k))
@@ -394,8 +391,11 @@ static func tab_button(text: String, k: float, picked: bool, accent: Color, cb :
 		pb.bg_color = Color(GS.CAREER_PICTURE, 0.97)
 		pb.border_color = accent
 		pb.border_width_bottom = maxi(3, px(3, k))
-		for st in ["normal", "hover", "pressed"]:
-			b.add_theme_stylebox_override(st, pb)
+		var hover := pb.duplicate() as StyleBoxFlat
+		hover.bg_color = pb.bg_color.lerp(GS.TEXT, 0.08)
+		b.add_theme_stylebox_override("normal", pb)
+		b.add_theme_stylebox_override("hover", hover)
+		b.add_theme_stylebox_override("pressed", GS.pressed_box(hover))
 		b.add_theme_color_override("font_color", GS.TEXT)
 	return b
 
@@ -447,6 +447,7 @@ static func sheet_box(k: float, pad_x := 32.0, pad_y := 24.0) -> StyleBoxFlat:
 static func drawer(parent: Control, k: float, w: float, slide := true, reduce_motion := false) -> PanelContainer:
 	var p := PanelContainer.new()
 	var box := sheet_box(k, 40, 36)
+	box.bg_color.a = 1.0   # issue 2029 item 2: solid, so no card text or button behind it shows through
 	box.set_border_width_all(0)
 	box.border_width_left = maxi(1, px(1, k))
 	p.add_theme_stylebox_override("panel", box)

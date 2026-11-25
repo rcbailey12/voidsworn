@@ -8,7 +8,8 @@ const CACHE_DIR := "user://world_bakes/v3"
 # R79: the sector map primes the same 4K surface the backdrop planet uses.
 # Size and shader source are part of cache_key, so older bakes cannot be reused.
 const PLANET_SIZE := Vector2i(4096, 2048)
-const MOON_SIZE := Vector2i(1024, 512)
+# Issue 1765: moons bake at 2K so craters and rays stay crisp when a moon sits large in the frame.
+const MOON_SIZE := Vector2i(2048, 1024)
 # Issue 1265: the disk cache on C: is capped. A sector bakes about three 4096 by 2048 maps (sky, planet a and b) plus
 # moons, so 500 MB holds the last several sectors (Neon audit P6). After a bake is saved, least recently used maps go
 # first; maps the running battle holds never go; a stray .tmp older than a day goes. Only rebuildable bakes are removed.
@@ -22,14 +23,71 @@ var _jobs := {}
 var _queue: Array = []
 var _active := ""
 var _thread: Thread
+# Issue 1434 (LOAD12: a 9 s main-thread frame lined up with the worker's time after a bake's compute, cold and warm,
+# with no pipeline compiled in it): a bake finished while a battle or the title backdrop is loading (group
+# "battle_loading") keeps its image in memory and writes its PNG and prunes the cache only once nothing is loading.
+# work_stage says what the worker is doing (0 idle, 1 disk check, 2 compute, 3 png save, 4 prune, 5 mips), so the load
+# bench can put a frozen frame against it.
+var _unsaved: Array = []   # [key, image, folder] baked during a load, saved later into the folder it was queued for
+var written := 0           # deferred writes that saved and renamed (the load bench reads these)
+var write_failed := 0
+const SAVE_JOB := "#save"
+static var work_stage := 0
+
+# Issue 1765: a battle opened as the main scene builds its world and board inside its own _ready, while the root is
+# still adding children; add_child is refused there ("Parent node is busy") and every bake request then failed on a
+# service that never joined the tree. The service now joins with a deferred add, and its calls wait on the tree it
+# was made for until it is in.
+static var _pending: Node = null
+static var _pending_tree: SceneTree = null
+# Neon (PR 1776 review, item 2): keys asked for with request_* and not yet collected with result(). The cache never
+# evicts them, so a map that finished first can never push out a later map of the same set before its caller reads it.
+static var _pins := {}
+
+# The two R01 relief images are decoded and cached as one job. Neither half can be evicted on its own.
+class RockyRelief extends RefCounted:
+	var height: Image
+	var masks: Image
 
 static func service(tree: SceneTree) -> Node:
 	var node := tree.root.get_node_or_null("WorldBakes")
+	if node == null and is_instance_valid(_pending) and not _pending.is_inside_tree():
+		node = _pending
 	if node == null:
 		node = load("res://world/world_bake.gd").new()
 		node.name = "WorldBakes"
-		tree.root.add_child(node)
+		_pending = node
+		_pending_tree = tree
+		# Neon (PR 1776 review, item 3): the add runs through _attach, which skips a service clear_static already freed;
+		# a freed node handed straight to add_child corrupted the heap on Windows
+		Callable(node.get_script(), "_attach").call_deferred(node)
 	return node
+
+static func _attach(node) -> void:
+	if not is_instance_valid(node) or node.is_inside_tree() or node._exiting: return
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null or tree.root.get_node_or_null("WorldBakes") != null: return
+	tree.root.add_child(node)
+
+# Neon (PR 1776 review, item 1): a new battle drops every map still waiting in the queue. Jobs a freed title showcase,
+# sector map or earlier battle left behind otherwise run ahead of (or, when urgent, beside) the new battle's board
+# planet. The job already running cannot be stopped and finishes. A dropped job's waiters get null; a caller that still
+# wants the map asks again and is queued fresh. Returns how many were dropped.
+static func drop_waiting(tree: SceneTree) -> int:
+	var node := tree.root.get_node_or_null("WorldBakes")
+	if node == null and is_instance_valid(_pending): node = _pending
+	if node == null: return 0
+	var n: int = node._queue.size()
+	for k in node._queue:
+		if node._jobs.has(k):
+			node._jobs[k].done = true
+			node._jobs.erase(k)
+		_pins.erase(k)
+	node._queue.clear()
+	return n
+
+func _tree() -> SceneTree:
+	return get_tree() if is_inside_tree() else _pending_tree
 
 static func cache_key(key: String, code: String, params: Dictionary, size: Vector2i) -> String:
 	var ordered := {}
@@ -40,52 +98,219 @@ static func cache_key(key: String, code: String, params: Dictionary, size: Vecto
 
 static func cached(key: String) -> Image:
 	# Disk hits also use the worker, never PNG decode on the caller's thread.
-	return _cache.get(key)
+	var entry: RefCounted = _cache.get(key)
+	return entry.height if entry is RockyRelief else entry as Image
 
 static func texture(img: Image) -> Texture2D:
 	var id := img.get_instance_id()
 	if not _textures.has(id): _textures[id] = ImageTexture.create_from_image(img)
 	return _textures[id]
 
-static func remember(key: String, img: Image) -> void:
+static func remember(key: String, entry: RefCounted) -> void:
 	if _cache.has(key): return
-	if _cache.size() >= CACHE_MAX:
-		var oldest: String = _cache.keys()[0]
-		_textures.erase(_cache[oldest].get_instance_id())
+	_trim(CACHE_MAX - 1)
+	_cache[key] = entry
+
+# Drops the oldest maps nobody is still waiting to collect (item 2) until at most `cap` remain. With every slot pinned
+# the cache runs over CACHE_MAX for a while; each later add and each released pin trims it back (Artoo, PR 1776).
+static func _trim(cap: int) -> void:
+	if _cache.size() <= cap: return
+	for oldest in _cache.keys():
+		if _cache.size() <= cap: return
+		if _pins.has(oldest): continue
+		var entry: RefCounted = _cache[oldest]
+		if entry is RockyRelief:
+			_textures.erase(entry.height.get_instance_id())
+			_textures.erase(entry.masks.get_instance_id())
+		else:
+			_textures.erase(entry.get_instance_id())
 		_cache.erase(oldest)
-	_cache[key] = img
+
+static func _pin(key: String) -> void:
+	_pins[key] = int(_pins.get(key, 0)) + 1
+	if _cache.has(key):
+		# a hit counts as a fresh use: it moves to the young end of the eviction order
+		var entry: RefCounted = _cache[key]
+		_cache.erase(key)
+		_cache[key] = entry
+
+static func _unpin(key: String) -> void:
+	var n := int(_pins.get(key, 0)) - 1
+	if n > 0: _pins[key] = n
+	else:
+		_pins.erase(key)
+		_trim(CACHE_MAX)
 
 static func clear_static() -> void:
 	_old_swept = false
+	# issue 1434 (Artoo on PR 1445): quit_clean clears statics before the tree quits, while the root service's worker can
+	# still be inside a bake. Stop the worker here first (a compute bake leaves at its next strip and frees its own
+	# device), then forget the pins and free a service whose deferred add never landed (issue 1765).
+	_stop_worker()
 	_textures.clear()
 	_cache.clear()
+	_pins.clear()
+	# Issue 1765 (Artoo, PR 1776): a service whose deferred add never landed (its tree quit first) belongs to nobody
+	# else, so it is freed here; one already in a tree is owned by that tree's root and only forgotten. Its queued add
+	# goes through _attach, which sees the freed node and does nothing (Neon, item 3).
+	if is_instance_valid(_pending) and not _pending.is_inside_tree(): _pending.free()
+	_pending = null
+	_pending_tree = null
+
+
+static var _abort := false   # set while shutting down: a running compute bake stops at its next strip
+
+
+static func begin_shutdown(tree: SceneTree) -> void:
+	var node := tree.root.get_node_or_null("WorldBakes")
+	if node == null and is_instance_valid(_pending):
+		node = _pending
+	if node == null:
+		return
+	# Stop submitting work as soon as the window closes, before scene disposal and the join.
+	# In particular, a cut-short battle must not start a deferred 4K PNG write during those frames.
+	node._exiting = true
+	_abort = node._thread != null
+	drop_waiting(tree)
+	node._unsaved.clear()
+
+
+static func _stop_worker() -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	var node: Node = tree.root.get_node_or_null("WorldBakes") if tree != null and tree.root != null else null
+	if node == null or node.get("_thread") == null:
+		return
+	var t0 := Time.get_ticks_usec()
+	var stage := work_stage
+	var active: String = node._active
+	_abort = true
+	var th: Thread = node._thread
+	if th.is_started():
+		th.wait_to_finish()
+	node._thread = null
+	_abort = false
+	# a clear that is not a quit (a check): the stopped job ends without an image, so nobody waits on it
+	var act: String = node._active
+	if act != "" and node._jobs.has(act):
+		node._jobs[act].done = true
+		node._jobs.erase(act)
+	node._active = ""
+	print("[world] quit bake join %.1f ms (job %s, worker stage %d)" % [
+		(Time.get_ticks_usec() - t0) / 1000.0, active.left(12), stage])
 
 # Authored R01 maps use the same shared worker and texture cache as the GPU
 # bakes. Decode and mip generation never block the battle's main thread.
-func authored(path: String, size: Vector2i, float_mips := false) -> Image:
-	var owner := service(get_tree())
-	var key := (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
-	if _cache.has(key): return _cache[key]
+func authored(path: String, size: Vector2i, split_relief := false, urgent := false) -> Image:
+	return await result(request_authored(path, size, split_relief, urgent))
+
+# Queues an authored map without waiting; returns its key for result(). A caller with several maps requests them all
+# first, so nothing else can slip in between them (Artoo, PR 1776).
+static func authored_key(path: String, size: Vector2i, split_relief := false) -> String:
+	return (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(split_relief)).sha256_text()
+
+# Issue 1434 (Artoo on 002e143f): whether an authored map's texture is still made and held, asked without starting a
+# request or a pin (a trim drops the image and its texture together).
+static func authored_texture_resident(path: String, size: Vector2i, split_relief := false) -> bool:
+	var entry: RefCounted = _cache.get(authored_key(path, size, split_relief))
+	if entry is RockyRelief:
+		return _textures.has(entry.height.get_instance_id()) and _textures.has(entry.masks.get_instance_id())
+	return entry is Image and _textures.has(entry.get_instance_id())
+
+func request_authored(path: String, size: Vector2i, split_relief := false, urgent := false) -> String:
+	var owner := service(_tree())
+	var key := authored_key(path, size, split_relief)
+	_pin(key)
+	if _cache.has(key): return key
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"path": path, "size": size, "done": false,
-			"image": null, "started": Time.get_ticks_msec(), "compute": false, "float_mips": float_mips}
-		owner._queue.append(key)
-	var job: Dictionary = owner._jobs[key]
-	while not job.done: await get_tree().process_frame
+			"image": null, "started": Time.get_ticks_msec(), "compute": false, "split_relief": split_relief}
+	owner._enqueue(key, urgent)
+	return key
+
+# Waits for a requested map. A job keeps its dictionary until it is done, and a done job's image is cached.
+# The image is read before the pin is released: the last release trims the cache, and with every slot pinned the map
+# just collected can be the only one it may drop (Artoo, PR 1776).
+func result(key: String) -> Image:
+	var entry := await _result(key)
+	return entry.height if entry is RockyRelief else entry as Image
+
+func relief_result(key: String) -> RockyRelief:
+	return (await _result(key)) as RockyRelief
+
+func _result(key: String) -> RefCounted:
+	if _cache.has(key):
+		var hit: RefCounted = _cache[key]
+		_unpin(key)
+		return hit
+	var tree := _tree()
+	if tree == null or _exiting:
+		_unpin(key)
+		return null
+	var owner := service(tree)
+	var job = owner._jobs.get(key)
+	if job == null:
+		var late: RefCounted = _cache.get(key)
+		_unpin(key)
+		return late
+	while not job.done:
+		await tree.process_frame
+		if not is_instance_valid(owner) or owner._exiting:
+			_unpin(key)
+			return null
+	_unpin(key)
 	return job.image
 
-func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int) -> Image:
-	var owner := service(get_tree())
+# Issue 1765 (PC proof OPUS1765_PC_C): the board planet fills half the frame and holds the loading cover, but its maps
+# queued behind every far backdrop bake, so a cold cache missed the 20 s cover. An urgent job goes to the front of the
+# queue (behind only the job already running); a queued job asked for urgently moves up.
+func _enqueue(key: String, urgent: bool) -> void:
+	if not _jobs.has(key) or _active == key: return
+	var at := _queue.find(key)
+	if at < 0 and _jobs[key].get("queued", false): return   # already taken by the worker: never run twice
+	_jobs[key]["queued"] = true
+	if at == 0 and urgent: _jobs[key]["urgent"] = true   # Neon item 8: a promoted head keeps its place for later urgents
+	if at >= 0 and (not urgent or at == 0): return
+	if at >= 0: _queue.remove_at(at)
+	if urgent:
+		# behind the urgent maps already waiting, ahead of everything else: a board map set runs in the order asked
+		var n := 0
+		while n < _queue.size() and _jobs.has(_queue[n]) and _jobs[_queue[n]].get("urgent", false): n += 1
+		_queue.insert(n, key)
+		_jobs[key]["urgent"] = true
+	else: _queue.append(key)
+
+# half_mips (issue 1765): the map holds a 16-bit height packed in R and G (the board planet's relief). It is decoded to
+# one 32-bit float channel before its mips are made: exact, half the memory of half floats in four channels (Fable,
+# PR 1776 M4), and averaging never rounds the high byte into false ridges.
+func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int, half_mips := false, urgent := false) -> Image:
+	return await result(request_bake(key, code, params, size, strips, half_mips, urgent))
+
+# Queues a bake without waiting; returns its key for result() (see request_authored).
+func request_bake(key: String, code: String, params: Dictionary, size: Vector2i, _strips: int, half_mips := false, urgent := false) -> String:
+	var owner := service(_tree())
 	key = cache_key(key, code, params, size)
-	if _cache.has(key): return _cache[key]
+	_pin(key)
+	if _cache.has(key): return key
 	if not owner._jobs.has(key):
-		owner._jobs[key] = {"code": code, "params": params.duplicate(true), "size": size,
-			"done": false, "image": null, "started": Time.get_ticks_msec(),
+		owner._jobs[key] = {"code": code, "params": params.duplicate(true), "size": size, "half_mips": half_mips,
+			"done": false, "image": null, "started": Time.get_ticks_msec(), "folder": _folder(),
 			"compute": DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "gl_compatibility"}
-		owner._queue.append(key)
-	var job: Dictionary = owner._jobs[key]
-	while not job.done: await get_tree().process_frame
-	return job.image
+	owner._enqueue(key, urgent)
+	return key
+
+# issue 1434 (LOAD17): the bakes handed back to the main thread since main.gd last read it (12-character keys)
+static var handed_back := ""
+
+
+static func take_handed_back() -> String:
+	var s := handed_back
+	handed_back = ""
+	return s
+
+
+func _loading() -> bool:
+	var t := _tree()   # issue 1765: a service still waiting on its deferred add has no get_tree()
+	return t != null and not t.get_nodes_in_group("battle_loading").is_empty()
 
 var _exiting := false   # issue 1482: set in _exit_tree; a raster that finishes after it starts no worker
 
@@ -93,33 +318,58 @@ func _enter_tree() -> void:
 	_exiting = false
 
 func _process(_dt: float) -> void:
+	if _exiting:
+		return
 	if _thread != null:
 		if _thread.is_alive(): return
 		var result: Dictionary = _thread.wait_to_finish()
 		_thread = null
+		if _active == SAVE_JOB:
+			if result.get("ok", false): written += 1
+			else: write_failed += 1
+			print("[world] %s %s later (stages ms %s)" % ["saved" if result.get("ok", false) else "could not save", str(result.get("key", "")), str(result.get("stages", {}))])
+			_active = ""
+			return
 		var job: Dictionary = _jobs[_active]
 		if result.image == null and not job.has("path") and not job.compute and DisplayServer.get_name() != "headless" and not job.get("raster_done", false):
 			job.raster_done = true
 			var img: Image = await _canvas(job.code, job.params, job.size)
 			# issue 1482: the raster awaited frames; if the service left the tree meanwhile, _exit_tree already joined
 			# and cleared every job, so no new worker may start (it would never be joined)
-			if _exiting or not is_inside_tree():
+			if _exiting or not is_inside_tree() or job.done:
 				job.done = true
 				return
 			_thread = Thread.new()
-			_thread.start(_finish_image.bind(_active, img, _keep_keys()))
+			_thread.start(_finish_image.bind(_active, img, _keep_keys(), bool(job.get("half_mips", false))))
 			return
 		job.image = result.image
 		job.done = true
+		if result.get("unsaved", false):
+			_unsaved.append([_active, result.image, str(job.get("folder", _folder()))])
 		if result.image != null:
 			remember(_active, result.image)
-			print("[world] %s %s %dx%d in %d ms (worker)" % [result.source, _active, job.size.x, job.size.y, Time.get_ticks_msec() - job.started])
+			handed_back = (handed_back + " " if handed_back != "" else "") + _active.left(12)
+			# Artoo on PR 1445: queued, worker start and completion apart (absolute ms), so a frozen frame can be put
+			# against the wait in the queue, the worker's own stages, or the hand-back here
+			print("[world] %s %s %dx%d in %d ms (worker%s; queued at %d, worker from %d, handed back at %d ms)" % [result.source, _active, job.size.x, job.size.y, Time.get_ticks_msec() - job.started,
+				"; stages ms %s" % str(result.get("stages")) if result.get("stages") is Dictionary else "", int(job.started), int(job.get("worker_from", -1)), Time.get_ticks_msec()])
 		elif result.get("error", "") != "":
 			push_error("World bake: " + result.error)
 		_jobs.erase(_active)
 		_active = ""
-	if _active != "" or _queue.is_empty(): return
+	if _active != "": return
+	if _queue.is_empty():
+		if not _unsaved.is_empty() and not _loading():
+			var u: Array = _unsaved.pop_front()
+			_active = SAVE_JOB
+			_thread = Thread.new()
+			if _thread.start(_save_later.bind(u[0], u[1], _keep_keys(), u[2])) != OK:
+				_thread = null
+				_active = ""
+		return
 	_active = _queue.pop_front()
+	_jobs[_active]["defer_save"] = _loading()
+	_jobs[_active]["worker_from"] = Time.get_ticks_msec()
 	_thread = Thread.new()
 	var err := _thread.start(_work.bind(_active, _jobs[_active], _keep_keys()))
 	if err != OK:
@@ -132,7 +382,11 @@ func _process(_dt: float) -> void:
 func _exit_tree() -> void:
 	# Deleting a world does not cancel its shared job. Only shutdown joins it.
 	_exiting = true
-	if _thread != null: _thread.wait_to_finish()
+	if _thread != null:
+		_abort = true
+		_thread.wait_to_finish()
+		_thread = null
+		_abort = false
 	for job in _jobs.values(): job.done = true
 	_jobs.clear()
 	_queue.clear()
@@ -157,33 +411,118 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 			authored_image = Image.load_from_file(job.path)
 		if authored_image == null or authored_image.get_size() != job.size:
 			return {"image": null, "error": "Missing or wrong-size R01 map: " + str(job.path)}
-		# Averaging the high/low height bytes into 8-bit mip levels rounds the
-		# high byte first. Near a pole that makes false radial ridges. Float
-		# channels preserve the linear packed value through filtering and mips.
-		if job.get("float_mips", false): authored_image.convert(Image.FORMAT_RGBAF)
+		if job.get("split_relief", false):
+			return {"image": split_rocky_relief(authored_image), "source": "authored"}
 		authored_image.generate_mipmaps()
 		return {"image": authored_image, "source": "authored"}
-	var folder := _folder()
+	# Artoo on PR 1445: the folder is pinned when the job is queued, so a later VS_WORLD_CACHE change (the bench's b2r)
+	# cannot move this job's read or its deferred write
+	var folder: String = str(job.get("folder", _folder()))
 	var path := folder.path_join(key + ".png")
 	var img: Image = null
+	work_stage = 1
 	if FileAccess.file_exists(path): img = Image.load_from_file(path)
 	var source := "loaded"
 	var error := ""
+	var stages := {}
 	if img == null or img.is_empty() or img.get_size() != job.size:
 		img = null
 		if job.compute:
+			work_stage = 2
 			var result := _compute(job.code, job.params, job.size)
 			img = result.image
 			error = result.get("error", "")
+			stages = result.get("stages", {})
 			source = "baked"
-			if img != null and DirAccess.make_dir_recursive_absolute(folder) == OK:
-				var tmp := path + ".tmp"
-				if img.save_png(tmp) == OK and DirAccess.rename_absolute(tmp, path) == OK:
-					prune(folder, CACHE_CAP_BYTES, keep, key)
+			if img != null and job.get("defer_save", false):
+				stages["save"] = "deferred (a load is running)"
+			elif img != null:
+				_save(key, img, keep, stages, folder)
 	elif source == "loaded":
 		touch(folder, key)
+	work_stage = 5
+	var tm := Time.get_ticks_usec()
+	if img != null and job.get("half_mips", false): img = height_float(img)
 	if img != null and not img.has_mipmaps(): img.generate_mipmaps()
-	return {"image": img, "source": source, "error": error}
+	if not stages.is_empty(): stages["mips"] = (Time.get_ticks_usec() - tm) / 1000
+	work_stage = 0
+	return {"image": img, "source": source, "error": error, "stages": stages,
+		"unsaved": source == "baked" and img != null and job.get("defer_save", false)}
+
+
+# The PNG write and the cache prune of one baked map, each timed (stages "save" and "prune", with their wall-clock start).
+static func _save(key: String, img: Image, keep: Dictionary, stages: Dictionary, folder: String) -> bool:
+	var path := folder.path_join(key + ".png")
+	if DirAccess.make_dir_recursive_absolute(folder) != OK:
+		return false
+	work_stage = 3
+	var t := Time.get_ticks_usec()
+	stages["save_began"] = Time.get_ticks_msec()
+	var tmp := path + ".tmp"
+	var ok := img.save_png(tmp) == OK and DirAccess.rename_absolute(tmp, path) == OK
+	stages["save"] = (Time.get_ticks_usec() - t) / 1000
+	if ok:
+		work_stage = 4
+		t = Time.get_ticks_usec()
+		prune(folder, CACHE_CAP_BYTES, keep, key)
+		stages["prune"] = (Time.get_ticks_usec() - t) / 1000
+	work_stage = 0
+	return ok
+
+
+static func _save_later(key: String, img: Image, keep: Dictionary, folder: String) -> Dictionary:
+	var stages := {}
+	var ok := _save(key, img, keep, stages, folder)
+	return {"key": key, "ok": ok, "stages": stages}
+
+
+# Issue 1765: a 16-bit height packed big-endian in R and G, as one 32-bit float channel (0 to 1). Worker thread only.
+# Neon (PR 1776 review, item 6): this runs on the worker for every cold and warm load of a baked look, about 1.6 s per
+# 4K map on the PC. The image is cut to its two height bytes (RG8, in native code), each pixel is read as one 16-bit
+# word and looked up in a 64K table of the exact heights: about half the time of the per-byte loop, same values.
+static var _height_lut := PackedFloat32Array()
+
+static func _height_table() -> PackedFloat32Array:
+	if _height_lut.is_empty():
+		var lut := PackedFloat32Array()
+		lut.resize(65536)
+		for v in 65536: lut[v] = float((v & 255) * 256 + (v >> 8)) / 65535.0   # the word reads low byte first: R is v & 255
+		_height_lut = lut
+	return _height_lut
+
+static func height_float(img: Image) -> Image:
+	if img.get_format() != Image.FORMAT_RG8: img.convert(Image.FORMAT_RG8)
+	var src := img.get_data()
+	var n := img.get_width() * img.get_height()
+	var out := PackedFloat32Array()
+	out.resize(n)
+	var lut := _height_table()
+	for i in n:
+		out[i] = lut[src.decode_u16(i * 2)]
+	return Image.create_from_data(img.get_width(), img.get_height(), false, Image.FORMAT_RF, out.to_byte_array())
+
+# R01's source RGBA8 is height (R high, G low), roughness (B), and cloud coverage (A). Decode the height before
+# filtering to avoid seams at byte carries. The other two channels are linear masks, not a stored normal.
+static func split_rocky_relief(img: Image) -> RockyRelief:
+	if img.get_format() != Image.FORMAT_RGBA8: img.convert(Image.FORMAT_RGBA8)
+	var size := img.get_size()
+	var count := size.x * size.y
+	var heights := PackedFloat32Array()
+	heights.resize(count)
+	var masks := PackedByteArray()
+	masks.resize(count * 2)
+	var lut := _height_table()
+	var src := img.get_data()
+	for i in count:
+		var rgba := src.decode_u32(i * 4)
+		heights[i] = lut[rgba & 0xffff]
+		masks.encode_u16(i * 2, rgba >> 16)
+	var relief := RockyRelief.new()
+	relief.height = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RF, heights.to_byte_array())
+	relief.masks = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RG8, masks)
+	relief.height.generate_mipmaps()
+	relief.masks.generate_mipmaps()
+	return relief
 
 
 static func _authored_tiles(path: String, size: Vector2i) -> Image:
@@ -213,13 +552,14 @@ static func _authored_tiles(path: String, size: Vector2i) -> Image:
 		image.blit_rect(tile, Rect2i(Vector2i.ZERO, tile_size), pos)
 	return image
 
-static func _finish_image(key: String, img: Image, keep: Dictionary = {}) -> Dictionary:
+static func _finish_image(key: String, img: Image, keep: Dictionary = {}, half_mips := false) -> Dictionary:
 	if img != null:
 		var folder := _folder()
 		if DirAccess.make_dir_recursive_absolute(folder) == OK:
 			var path := folder.path_join(key + ".png")
 			if img.save_png(path + ".tmp") == OK and DirAccess.rename_absolute(path + ".tmp", path) == OK:
 				prune(folder, CACHE_CAP_BYTES, keep, key)
+		if half_mips: img = height_float(img)
 		img.generate_mipmaps()
 	return {"image": img, "source": "baked"}
 
@@ -360,11 +700,20 @@ static func _compute_source(code: String, params: Dictionary, size: Vector2i) ->
 	var entry := "\nvoid main() { ivec2 p=ivec2(gl_GlobalInvocationID.xy)+ivec2(0,tile.y); if(any(greaterThanEqual(p,ivec2(full_size)))) return; UV=(vec2(p)+0.5)/full_size; bake_pixel(); imageStore(output_image,p,COLOR); }\n"
 	return {"code": header + defines + code + entry, "data": values.to_byte_array()}
 
+# Issue 1434 (LOAD6 on the PC: with world bakes pending, single main-thread frames of 5 to 10 s that were neither
+# render nor pipeline time). Each stage of a compute bake is timed with its wall-clock start, so a PC log lines up a
+# frozen frame against the stage that ran during it. The local device stays per bake: it belongs to the thread that
+# made it (a cloud trial on software Vulkan refused free_rid and finalize from any other thread), and each bake is a
+# new worker thread.
 static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictionary:
 	var source := _compute_source(code, params, size)
 	if source.has("error"): return {"image": null, "error": source.error}
+	var stages := {"began": Time.get_ticks_msec()}
+	var t := Time.get_ticks_usec()
 	var rd := RenderingServer.create_local_rendering_device()
+	stages["device"] = (Time.get_ticks_usec() - t) / 1000
 	if rd == null: return {"image": null, "error": "Local RenderingDevice is unavailable"}
+	t = Time.get_ticks_usec()
 	var shader_source := RDShaderSource.new()
 	shader_source.source_compute = source.code
 	var spirv := rd.shader_compile_spirv_from_source(shader_source)
@@ -372,8 +721,12 @@ static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictio
 	if error != "":
 		rd.free()
 		return {"image": null, "error": error}
+	stages["spirv"] = (Time.get_ticks_usec() - t) / 1000
+	t = Time.get_ticks_usec()
 	var shader := rd.shader_create_from_spirv(spirv)
 	var pipeline := rd.compute_pipeline_create(shader)
+	stages["pipeline"] = (Time.get_ticks_usec() - t) / 1000
+	t = Time.get_ticks_usec()
 	var format := RDTextureFormat.new()
 	format.width = size.x
 	format.height = size.y
@@ -391,7 +744,13 @@ static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictio
 	data_uniform.add_id(buffer)
 	var uniforms := rd.uniform_set_create([image_uniform, data_uniform], shader, 0)
 	# Small dispatches avoid the Windows GPU watchdog on slower graphics cards.
+	var worst_strip := 0
 	for y in range(0, size.y, 32):
+		if _abort:
+			for rid in [uniforms, buffer, output, pipeline, shader]: rd.free_rid(rid)
+			rd.free()
+			return {"image": null, "error": "", "stages": stages}
+		var ts := Time.get_ticks_usec()
 		var list := rd.compute_list_begin()
 		rd.compute_list_bind_compute_pipeline(list, pipeline)
 		rd.compute_list_bind_uniform_set(list, uniforms, 0)
@@ -401,11 +760,16 @@ static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictio
 		rd.compute_list_end()
 		rd.submit()
 		rd.sync()
+		worst_strip = maxi(worst_strip, Time.get_ticks_usec() - ts)
+	stages["dispatch"] = (Time.get_ticks_usec() - t) / 1000
+	stages["worst_strip"] = worst_strip / 1000
+	t = Time.get_ticks_usec()
 	var bytes := rd.texture_get_data(output, 0)
 	for rid in [uniforms, buffer, output, pipeline, shader]: rd.free_rid(rid)
 	rd.free()
-	if bytes.size() != size.x * size.y * 4: return {"image": null, "error": "Incomplete bake readback"}
-	return {"image": Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBA8, bytes)}
+	stages["readback"] = (Time.get_ticks_usec() - t) / 1000
+	if bytes.size() != size.x * size.y * 4: return {"image": null, "error": "Incomplete bake readback", "stages": stages}
+	return {"image": Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBA8, bytes), "stages": stages}
 
 
 # Compatibility has no compute device. Keep its original raster bake under the
@@ -439,10 +803,15 @@ func _canvas(code: String, params: Dictionary, size: Vector2i) -> Image:
 		var img: Image = null
 		for attempt in 3:
 			vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-			await RenderingServer.frame_post_draw
 			# r6: one more frame before reading back (a strip read straight after its draw came back with a dark block
 			# missing from the gas on the PC)
-			await RenderingServer.frame_post_draw
+			for frame in 2:
+				await RenderingServer.frame_post_draw
+				if not is_instance_valid(vp):
+					return null
+				if _exiting or not is_inside_tree():
+					vp.queue_free()
+					return null
 			img = vp.get_texture().get_image()
 			if img == null or img.is_empty():
 				vp.queue_free()

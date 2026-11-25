@@ -11,6 +11,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
 const SHIELD_CACHE := preload("res://fx/fx_shield_cache.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
+const IDLE := preload("res://fx/fx_idle.gd")
 const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
@@ -76,6 +77,11 @@ var _want_eng_hit := false
 var _want_gen := false
 var gen_down := false           # the shield generator is out and crackles (shielded ships only)
 var _gen_next := 0.0
+# Issue 1752 (plan row 4b): capability and breach sounds fire on transitions only. The first capability snapshot is the
+# ship as it arrives (a rebuilt view) and is seeded quietly; repairs, death and teardown never sound.
+var _cap_seeded := false     # _cap_seen as this sync began (the engine tier step runs after the capability step)
+var _cap_seen := false       # the capability step has run once (its first run seeds quietly)
+var _gen_loud_at := -99.0    # when the generator's loud first crackle played
 var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t, level], seed, r}
 var _trail_extra := 0.0    # issue 1581: extra age the trails carry (they age faster while the drive is cold under way)
 static var _trail_indices: Dictionary = {}   # not GPU: index arrays (PackedInt32Array)
@@ -88,6 +94,7 @@ var _shield_pose := Transform3D.IDENTITY
 # Keep enough recent hulls for a fleet without retaining every asset or pose used in a run.
 const SHIELD_SKIN_CACHE_LIMIT := 48
 static var _shield_skin_arrays: Dictionary = {}   # not GPU: mesh arrays on the CPU, size capped
+static var _warned_shield_factions := {}   # not GPU: faction ids already reported
 var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
@@ -102,6 +109,18 @@ var _brk_until = -1.0      # issue 1239 (F2.3): until when a shield failure is s
 var _fail_look := 2
 var _fail_low := false
 var _last_sh = -1.0
+var _shield_fraction := -1.0
+var _ion_locked := false
+var _ion_next := 0.0
+var _ion_until := -1.0
+var _acid_active := false
+var _acid_mist: POOLS.Pool
+var _acid_next := 0.0
+const ACID_SIZZLE_GAINS := [0.25, 0.125]
+var _sizzle_count := 0
+var _sizzle_next := 0.0
+var _acid_spot_index := 0
+var _acid_fallback: Dictionary = {}
 var section_fraction := [1.0, 1.0, 1.0]
 var stage = [0, 0, 0]     # eng, mid, prow
 var death_core_pending := false
@@ -126,6 +145,7 @@ var _dmg_task = -1
 var _dmg_dirty = false
 var _dmg_job: Dictionary = {}
 var _damage_surfaces := {}  # mutable breach coordinates are private to each surface
+var _damage_surfaces_assigned := false
 var _hole_nodes: Array = []
 var _hole_lights: Array = []
 var _marks: Array = []     # weapon marks on the hull (fx_breach.Ent), oldest first, at most BREACH.MARK_CAP
@@ -151,6 +171,11 @@ var _dip_start := 0.0
 var _dip_duration := 0.0
 var _ref_mi: MeshInstance3D = null
 var _ref0 := Transform3D.IDENTITY
+# Issue 1685 (R411): the faction's one idle motion (fx_idle.gd), behind VS_IDLE_MOTION or rendering/effects/idle_motion,
+# default off. Read once per ship, like wounds_v2. _idle is {} while off, or {node, mat, rows, motion} once built.
+var idle_on := IDLE.enabled()
+var _idle: Dictionary = {}
+var _idle_key := -1      # Reduce flashing (1) and Reduce motion (2) as the batch was built; a change rebuilds it
 
 
 # How the hull has moved under the root since the ship was added (ShipView's bob and bank), in the root's frame.
@@ -160,13 +185,38 @@ func hull_motion() -> Transform3D:
 	return (root.global_transform.affine_inverse() * _ref_mi.global_transform) * _ref0.affine_inverse()
 
 
-# Hang a node in the hull's frame of add_ship time so it moves with the hull mesh (r18; see setup).
-func _attach(n: Node3D) -> void:
+# Hang a node at its pose in the hull's add_ship frame (r18; see setup).
+func _attach(n: Node3D, pose := Transform3D.IDENTITY) -> void:
+	n.transform = _ref0.affine_inverse() * pose
 	if _ref_mi != null and is_instance_valid(_ref_mi):
 		_ref_mi.add_child(n)
-		n.transform = _ref0.affine_inverse()
 	else:
 		root.add_child(n)
+
+
+var shield_later := false   # issue 1434: the shield waits for fx.prepare_battle_hulls (see setup)
+
+
+func build_shield_later(fx) -> void:
+	if not shield_later:
+		return
+	shield_later = false
+	if shielded and is_instance_valid(root):
+		_build_shield(fx)
+
+
+static func _new_hull(fx, r: Node3D, sid: String, squad: bool):
+	var analysis := HULL.new()
+	analysis.stb_z = float(fx.starboard_z)
+	analysis.code = str(r.get("code")) if r.get("code") != null else sid
+	analysis.formation = squad
+	analysis.cache_geometry = true
+	return analysis
+
+
+static func prime_hull(fx, r: Node3D, sid: String, squad: bool, parts: Array) -> bool:
+	var analysis = _new_hull(fx, r, sid, squad)
+	return analysis.prime(r, parts if not parts.is_empty() else _find_meshes(r))
 
 
 func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
@@ -193,11 +243,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	if meshes.is_empty():
 		meshes = _find_meshes(root)
 	_seed = hash(sid)
-	hull = HULL.new()
-	hull.stb_z = float(fx.starboard_z)
-	hull.code = str(root.get("code")) if root.get("code") != null else sid
-	hull.formation = squadron
-	hull.shared = fx.get("hull_shared")
+	hull = _new_hull(fx, root, sid, squadron)
 	var t_a := Time.get_ticks_usec()   # issue 1289: an arriving ship's parts, named in fx.prof (the arrival bench reads them)
 	hull.analyse(root, meshes, _seed)
 	t_a = fx.pend("add:analyse", t_a)
@@ -212,8 +258,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	# whenever the hull moved between fx steps (the stills: overlays sank into the bobbing hull at random, which is
 	# why marks came and went between runs)
 	for m in meshes:
-		# (issue 560: never a turret's turning mesh, which turns under the hull and would carry the damage round with it)
-		if m is MeshInstance3D and hull._turret_above(m, root) < 0 and hull._door_above(m, root) < 0:
+		if m is MeshInstance3D and not BREACH.is_moving_damage_mesh(self, m):
 			_ref_mi = m
 			break
 	if _ref_mi != null:
@@ -230,9 +275,45 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 		_build_trails(fx)
 	t_a = fx.pend("add:engines", t_a)
 	if shielded:
-		_build_shield(fx)
+		if fx.defer_initial_cuts and fx.get("defer_shields"):
+			# issue 1434: under the load cover the shield is built by fx.prepare_battle_hulls, one ship per slice (a fitted
+			# skin's face scan and cache key cost up to about 500 ms in one ship's registration on the PC)
+			shield_later = true
+		else:
+			_build_shield(fx)
 	fx.pend("add:shield", t_a)
 	_last_pos = root.global_position
+	if idle_on:
+		_idle_refresh(fx)
+
+
+# Issue 1685: build (or rebuild) the faction's idle motion batch. Squadrons have none (a wing is craft, not a hull). Reduce
+# flashing and Reduce motion change what is built (fx_idle.gd), so a change of either rebuilds the one batch.
+func _idle_refresh(fx) -> void:
+	if is_instance_valid(_idle.get("node")):
+		var old := _idle["node"] as Node
+		if old.get_parent() != null:
+			old.get_parent().remove_child(old)   # out of the tree now, so the new holder does not get a renamed name
+		old.queue_free()
+	_idle = {}
+	_idle_key = (1 if fx.reduce_flashing else 0) + (2 if _reduce_motion() else 0)
+	if squadron or hull == null or not is_instance_valid(_dmg_root):
+		return
+	_idle = IDLE.build(fx, _dmg_root, hull, faction, fac, _seed, fx.reduce_flashing, _reduce_motion())
+
+
+func _reduce_motion() -> bool:
+	return is_instance_valid(root) and bool(root.get("calm"))   # ShipView.calm, set per view from the Reduce motion setting
+
+
+func _idle_step(fx) -> void:
+	if squadron:
+		return
+	var key := (1 if fx.reduce_flashing else 0) + (2 if _reduce_motion() else 0)
+	if key != _idle_key and not dead and not gone:
+		_idle_refresh(fx)
+	if not _idle.is_empty() and is_instance_valid(_idle.get("node")):
+		(_idle["node"] as Node3D).visible = not dead and not gone
 
 
 # ShipView's placeholder engine glows (render/ship_view.gd sv.engines) sit at fixed spots behind the stern, not at the
@@ -281,6 +362,11 @@ func _hide_meshes() -> void:
 
 
 func hide_live_hull() -> void:
+	# The shield collapse can outlast the hull's last visible frame (issue 1239).
+	if is_instance_valid(_shield_mi):
+		var parent := hull_pivot if is_instance_valid(hull_pivot) else root
+		if _shield_mi.get_parent() != parent:
+			_shield_mi.reparent(parent)
 	_hide_meshes()
 	_hide_attachments()
 
@@ -439,12 +525,13 @@ func update(fx, dt: float) -> void:
 	if not hull.doors.is_empty():
 		hull.door_step(fx.now)      # issue 1543: each launch mouth's door lobes at their pose for the effect clock
 	_update_damage_emitters(fx)
+	if idle_on:
+		_idle_step(fx)
 	_list_step(dt)
 	_react_step(fx, dt)
 	_power_step(fx)
+	_status_step(fx)
 	_hide_placeholder_engines()
-	if _shield_mi != null and _shield_mi.visible:
-		_shield_mi.transform = hull_motion() * _shield_pose
 	var pos := root.global_position
 	if hull_pivot == null:
 		var parent := root.get_parent_node_3d()
@@ -490,7 +577,7 @@ func update(fx, dt: float) -> void:
 		_trail_extra += dt * (TRAIL_COLD_AGE - 1.0)
 	_update_trails(fx, moved > 1e-4)
 	if _shield_mi != null:
-		_shield_mi.visible = fx.now < _shield_until or (_route_on != Vector4.ZERO and not dead and not gone)
+		_shield_mi.visible = fx.now < _shield_until or fx.now < _ion_until or (_route_on != Vector4.ZERO and not dead and not gone)
 
 
 func _update_trails(fx, _moved: bool) -> void:
@@ -589,6 +676,14 @@ func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 # ---------------------------------------------------------------- shields
 
 func _build_shield(fx) -> void:
+	var colour = fac.get("shield")
+	if not (colour is Color):
+		if not _warned_shield_factions.has(faction):
+			_warned_shield_factions[faction] = true
+			push_warning("FX shield requested for faction '%s' without a shield colour" % faction)
+		shielded = false
+		return
+	var sc: Color = colour
 	var sph = SphereMesh.new()
 	sph.radius = 1.0
 	sph.height = 2.0
@@ -604,7 +699,6 @@ func _build_shield(fx) -> void:
 		skin = sph
 	_shield_mat = fx.mat(SH.SHIELD, 2)
 	_shield_mat.set_shader_parameter("fitted_shape", _shield_tm != null)
-	var sc: Color = fac["shield"]
 	_shield_mat.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
 	_shield_mat.set_shader_parameter("rad", hull.shield_radii())
 	_shield_mat.set_shader_parameter("style", int(fac["shield_style"]))
@@ -636,7 +730,7 @@ func _build_shield(fx) -> void:
 	_shield_pose = _shield_mi.transform
 	_shield_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_shield_mi.visible = false
-	root.add_child(_shield_mi)
+	_attach(_shield_mi, _shield_pose)
 
 
 func _shield_skin(fx = null) -> ArrayMesh:
@@ -734,8 +828,9 @@ func install_shield_skin(arrays: Array, bob: Vector3, fx = null, key := "") -> v
 		return
 	_shield_mi.mesh = _posed_skin(fx, key, arrays, bob) if key != "" else _pose_shield_skin(arrays, bob)
 	_shield_mat.set_shader_parameter("fitted_shape", true)
+	var frame := _shield_mi.transform * _shield_pose.affine_inverse()
 	_shield_pose = Transform3D(Basis.IDENTITY, hull.shield_centre())
-	_shield_mi.transform = _shield_pose
+	_shield_mi.transform = frame * _shield_pose
 
 
 func _pose_shield_skin(arrays: Array, bob: Vector3) -> ArrayMesh:
@@ -995,7 +1090,7 @@ func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
 	return {"p": xf() * (lp + hull.shield_centre()), "n": (xf().basis * n).normalized(), "local": lp}
 
 
-func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, life := 0.6) -> void:
+func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, life := 0.6, fraction := -1.0) -> void:
 	if _shield_mat == null:
 		return
 	# issue 1239 (F2.5): the shader has six ripple slots. Take a slot whose ripple has finished first, else the one that
@@ -1013,7 +1108,13 @@ func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, 
 			slot = i
 	_hit_i = slot
 	_hits[_hit_i] = Vector4(local_p.x, local_p.y, local_p.z, T)
-	_hitw[_hit_i] = Vector4(strength, life, spread * fx.unit, 0)
+	var remaining := _shield_fraction if fraction < 0.0 else fraction
+	var strained := remaining > 0.0 and remaining < 0.25
+	_hitw[_hit_i] = Vector4(strength, life, spread * fx.unit, 1.0 if strained else 0.0)
+	if strained:
+		fx.later(T, func l_shield_sputter() -> void:
+			if not dead and not gone and is_instance_valid(root) and fx.sound() != null:
+				fx.sound().play("shield_sputter", {"pos": to_world(hull.shield_centre() + local_p)}))
 	_shield_mat.set_shader_parameter("hits", _hits)
 	_shield_mat.set_shader_parameter("hitw", _hitw)
 	_shield_until = maxf(_shield_until, T + life + 0.05)
@@ -1029,6 +1130,16 @@ const FAIL_LOOKS := ["today", "shear", "collapse"]
 
 static func wounds_v2_setting() -> bool:
 	return WOUNDS.v2()
+
+
+# Issue 1741 (JOINT_C, Nov 23: a lime gas plume under the Chorus wound read as neon against R420): with Wounds V2 on,
+# the Chorus's smoke, fume and vent gas take its wound accent (ochre over dark olive) in place of the bile lime of
+# damage_glow, which stays for its lit glands and fire. Off, the old colour.
+func chorus_gas(glow: Color) -> Color:
+	if not wounds_v2:
+		return glow
+	var a = (fac.get("wound", {}) as Dictionary).get("interior_accent", [0.6, 0.52, 0.14]) if fac.get("wound") is Dictionary else [0.6, 0.52, 0.14]
+	return Color(float(a[0]), float(a[1]), float(a[2]))
 
 
 static func fail_look_setting() -> int:
@@ -1058,6 +1169,8 @@ func _break_aim(quad: int, hit_lp: Vector3) -> Vector3:
 func shield_break(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	if _shield_mat == null:
 		return
+	# Playback can break the shield before the next rules view arrives.
+	_shield_fraction = 0.0
 	hit_power(fx, true)
 	if _fail_look == 1:
 		_break_shear(fx, quad, hit_lp)
@@ -1076,7 +1189,7 @@ func shield_break(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	var lp: Vector3 = contact["local"]
 	var wp: Vector3 = contact["p"]
 	var wn: Vector3 = contact["n"]
-	shield_hit(fx, lp, T, 1.0, rad.length() * 0.8 / fx.unit, 0.9)
+	shield_hit(fx, lp, T, 1.0, rad.length() * 0.8 / fx.unit, 0.9, 0.0)
 	var sc: Color = fac["shield"]
 	var st: int = fac["shield_style"]
 	var k = scale_k()
@@ -1134,7 +1247,7 @@ func _break_shear(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	var lp: Vector3 = contact["local"]
 	var wp: Vector3 = contact["p"]
 	var wn: Vector3 = contact["n"]
-	shield_hit(fx, lp, T, 1.0, rad.length() * 0.6 / fx.unit, 0.6)
+	shield_hit(fx, lp, T, 1.0, rad.length() * 0.6 / fx.unit, 0.6, 0.0)
 	var sc: Color = fac["shield"]
 	var st: int = fac["shield_style"]
 	var k = scale_k()
@@ -1204,7 +1317,7 @@ func _break_collapse(fx, quad: int, hit_lp := Vector3.INF) -> void:
 		lp = hit_lp
 		wp = xf() * (hit_lp + hull.shield_centre())
 	var wn: Vector3 = contact["n"]
-	shield_hit(fx, lp, T, 0.7, rad.length() * 0.3 / fx.unit, 0.5)
+	shield_hit(fx, lp, T, 0.7, rad.length() * 0.3 / fx.unit, 0.5, 0.0)
 	var sc: Color = fac["shield"]
 	var k = scale_k()
 	_shield_flash(fx, wp, T, sc.lerp(Color.WHITE, 0.3), 6.0 * k, 6.0, 0.15)
@@ -1548,9 +1661,13 @@ func _set_wear(fx, hpf: float) -> void:
 # to build. A fresh or lightly hit hull gets them here once, with no mouths (no holes): the same materials a first breach
 # makes, so the brownout and the wear show before any section is cut.
 func ensure_damage_surfaces(fx) -> void:
-	if not _damage_surfaces.is_empty() or dead or gone or squadron or hull == null or fx == null or fx.compat:
+	if _damage_surfaces_assigned or dead or gone or squadron or hull == null or fx == null or fx.compat:
 		return
-	BREACH._inside_overlay(fx, self, meshes, [], fac.get("damage_glow", Color(1.0, 0.45, 0.12)))
+	var static_meshes: Array = []
+	for mi in meshes:
+		if is_instance_valid(mi) and not BREACH.is_moving_damage_mesh(self, mi):
+			static_meshes.append(mi)
+	BREACH._inside_overlay(fx, self, static_meshes, [], fac.get("damage_glow", Color(1.0, 0.45, 0.12)))
 	_power_shown = -1.0
 	_wear_shown = -1.0
 
@@ -1627,6 +1744,12 @@ func _list_step(dt: float) -> void:
 func sync(fx, u: Dictionary) -> void:
 	if dead or gone:
 		return
+	var status = u.get("st")
+	_acid_active = status is Dictionary and status.get("acid") != null and float(status["acid"]) > 0.0
+	set_regen_lock(u.get("regenLock") != null and float(u["regenLock"]) > 0.0)
+	_shield_fraction = -1.0
+	if u.get("shp") != null and u.get("shMax") != null and float(u["shMax"]) > 0.0:
+		_shield_fraction = float(u["shp"]) / float(u["shMax"])
 	# view() sends null for fields a unit does not have (sec and sh for squadrons): treat them as absent
 	var sec: Dictionary = u["sec"] if u.get("sec") is Dictionary else {}
 	var maxhp = maxf(float(u["maxHp"]) if u.get("maxHp") != null else 1.0, 1.0)
@@ -1646,7 +1769,7 @@ func sync(fx, u: Dictionary) -> void:
 			st = 4
 		section_fraction[i] = clampf(f, 0.0, 1.0)
 		want[i] = st
-	_regrade_marks(fx)
+	var marks_changed := _regrade_marks()
 	_set_wear(fx, hpf)
 	if wounds_v2:
 		_read_capability(u, sec)
@@ -1654,10 +1777,12 @@ func sync(fx, u: Dictionary) -> void:
 		want = [0, 0, 0]
 		_squad_smoke = hpf < 0.5 and not fx.compat
 	if fx.now < busy_until:
+		if marks_changed:
+			_dmg_request(fx)
 		var w = want.duplicate()
 		fx.later(busy_until + 0.05, func l_stages() -> void: _apply_stages(fx, w))
 	else:
-		_apply_stages(fx, want)
+		_apply_stages(fx, want, marks_changed)
 	# shields: a rise means regen
 	var shs = 0.0
 	var sh_list = u.get("sh")
@@ -1673,6 +1798,82 @@ func sync(fx, u: Dictionary) -> void:
 	if burn != _burning:
 		_burning = burn
 		_set_burning(fx, burn)
+
+
+func set_regen_lock(active: bool) -> void:
+	_ion_locked = active and _shield_mat != null
+
+
+# Both statuses use the effect clock. Repeated view syncs leave their cadence alone.
+func _status_step(fx) -> void:
+	if dead or not _acid_active:
+		if _acid_mist != null:
+			_acid_mist.mi.hide()
+			_acid_mist.mi.queue_free()
+			_acid_mist = null
+			_acid_fallback.clear()
+			_acid_next = 0.0
+			_sizzle_count = 0
+			_sizzle_next = 0.0
+	elif fx.now >= _acid_next:
+		_acid_next = fx.now + 0.30
+		_emit_acid(fx)
+	if dead or not _ion_locked or _shield_fraction <= 0.0 or fx.now < _brk_until:
+		if _ion_until >= 0.0:
+			_shield_mat.set_shader_parameter("ion_arc", Vector2(-100.0, 0.0))
+			_ion_until = -1.0
+			_ion_next = 0.0
+	elif fx.now >= _ion_next:
+		# An upper flank facing the battle camera. The shader draws on the actual shield skin as the ship moves.
+		var angle: float = fx.rng.randf_range(-PI, PI)
+		if is_instance_valid(fx.camera):
+			var eye: Vector3 = xf().affine_inverse() * fx.camera.global_position - hull.shield_centre()
+			angle = atan2(eye.z, eye.x) + fx.rng.randf_range(-0.65, 0.65)
+		_shield_mat.set_shader_parameter("ion_arc", Vector2(fx.now, angle))
+		_ion_until = fx.now + 0.45
+		_ion_next = _ion_until + fx.rng.randf_range(0.55, 1.25) * (2.0 if fx.reduce_flashing else 1.0)
+
+
+func _emit_acid(fx) -> void:
+	var spots: Array = get_meta("acid_spots", [])
+	var p: Vector3
+	var n := Vector3.UP
+	if spots.is_empty():
+		if fx.now < busy_until: return  # an in-flight shot can still supply its actual contact
+		# A restored ship has its rules status but no FX hit history. Find real plating once.
+		if _acid_fallback.is_empty():
+			if is_instance_valid(fx.camera):
+				var eye: Vector3 = xf().affine_inverse() * fx.camera.global_position
+				_acid_fallback = hull.surface(hull.core, eye - hull.core)
+			if _acid_fallback.is_empty():
+				_acid_fallback = hull.surface_sample(-1, 0.5, "acid")
+		if _acid_fallback.is_empty(): return
+		p = _acid_fallback["p"]
+		n = _acid_fallback["n"]
+	else:
+		var spot: Array = spots[_acid_spot_index % spots.size()]
+		_acid_spot_index += 1
+		p = spot[0]
+		if spot.size() > 2: n = spot[2]
+	if _acid_mist == null:
+		var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
+		_acid_mist = POOLS.Pool.new(8, material, _dmg_root, "fx_acid_mist", POOLS.quad_shape())
+	var col := _acid_colour()
+	# Lift the expanding mist off the plating so the hull and soft depth fade leave it room to show.
+	var origin := p + n * maxf(0.65, hull.L * 0.02)
+	var drift: Vector3 = (n + Vector3.UP * 0.70) * hull.L * 0.065
+	_acid_mist.emit(POOLS.pack(Vector4(origin.x, origin.y, origin.z, fx.now), Vector4(drift.x, drift.y, drift.z, 1.9),
+		Vector4(col.r, col.g, col.b, 0.68), Vector4(hull.L * 0.08, hull.L * 0.23, 20, fx.rng.randf()), Vector4(0, 0, 0.3, 0.15)))
+	_acid_mist.flush()
+	if _sizzle_count < ACID_SIZZLE_GAINS.size() and fx.now >= _sizzle_next:
+		_sizzle_next = fx.now + fx.rng.randf_range(1.7, 2.8)
+		if fx.sound() != null:
+			fx.sound().play("acid_sizzle", {"pos": to_world(p), "gain": ACID_SIZZLE_GAINS[_sizzle_count]})
+		_sizzle_count += 1
+
+
+func _acid_colour() -> Color:
+	return fac["damage_glow"] if faction == "deathless" else Color(0.5, 0.9, 0.2)
 
 
 # Issue 1446: the routed sides into the bubble's rim pulse (quad order prow, starboard, rear, port, as the rules)
@@ -1694,9 +1895,10 @@ func set_stages(fx, st: Array) -> void:
 	_apply_stages(fx, [0, 0, 0] if squadron else st)
 
 
-func _apply_stages(fx, want: Array) -> void:
+func _apply_stages(fx, want: Array, marks_changed := false) -> void:
 	if dead or gone:
 		return
+	var rebuild := marks_changed
 	for i in 3:
 		if int(want[i]) != int(stage[i]):
 			var up: bool = int(want[i]) > int(stage[i])
@@ -1706,19 +1908,32 @@ func _apply_stages(fx, want: Array) -> void:
 			_scar_stage[i] = maxi(_scar_stage[i], stage[i])
 			stage[i] = int(want[i])
 			_build_section(fx, i, up)
+			rebuild = true
 			# issue 1587: a hit that pushes a section into stage 3 or 4 vents it once (never on the ship's first stage
 			# update, which is its state as it arrives: a view rebuilt with the damage already there)
 			if up and _stages_seen and ((was < 3 and stage[i] >= 3) or (was < 4 and stage[i] == 4)):
 				_blowout(fx, i)
+			# issue 1752: a section that newly reaches stage 4 opens its real cutout (_plan), so the breach sounds once, at it
+			if up and _stages_seen and was < 4 and stage[i] == 4 and wounds_v2:
+				_breach_sound(fx, i)
 	_stages_seen = true
 
+	# Issue 2087: snapshot the marks and all changed sections once. Submitting inside the loop built a partial wound,
+	# then made the dirty flag start a second full hull rebuild.
+	if rebuild:
+		_dmg_request(fx)
 	_refresh_wounds(fx)
+	_cap_seeded = _cap_seen   # false on this ship's first capability snapshot: its engine tier is seeded quietly too
 	if wounds_v2:
 		_refresh_capability(fx)
+		_cap_seen = true
 	_refresh_damage_emitters(fx)
 	if wounds_v2:
 		var tier := engine_tier_for(int(stage[0]), _want_eng_hit) if not squadron else 0
 		if tier != eng_tier:
+			# issue 1752: a drive that loses a tier (never a repair, never the arriving state, never the Chorus) fails audibly
+			if tier > eng_tier and _cap_seeded and not dead and faction != "chorus":
+				_cue(fx, "dmg_engine_fail", root.global_position if is_instance_valid(root) else Vector3.ZERO)
 			eng_tier = tier
 			_eng_sputter = tier >= 1
 			_build_engines(fx)
@@ -1785,7 +2000,7 @@ func _anchor(i: int, kind: String) -> Dictionary:
 # footprint (Artoo, PR 1245: two seats side by side could push it from one into the other). If no clear spot is found
 # the section opens no hole there ({}), never one under a turret.
 func _off_turrets(h: Dictionary, R: float, sec := -1) -> Dictionary:
-	if _clear_of_turrets(h["p"], R):
+	if _clear_spot(h["p"], R):
 		return h
 	var nn: Vector3 = h["n"]
 	var p0: Vector3 = h["p"]
@@ -1801,14 +2016,56 @@ func _off_turrets(h: Dictionary, R: float, sec := -1) -> Dictionary:
 			for grow in [1.0, 1.5, 2.2]:
 				var q := Vector3(c.x + cos(an) * rad * grow, p0.y, c.z + sin(an) * rad * grow)
 				var hit: Dictionary = hull.ray(q + nn * hull.L, -nn)
-				if not hit.is_empty() and _clear_of_turrets(hit["p"], R):
+				if not hit.is_empty() and _clear_spot(hit["p"], R):
 					return {"p": hit["p"], "n": hit["n"]}
 	if sec >= 0:
 		for t in 48:
 			var c2: Dictionary = hull.random_sample(sec, 0.0)
-			if not c2.is_empty() and (c2["n"] as Vector3).dot(nn) > 0.3 and _clear_of_turrets(c2["p"], R):
+			if not c2.is_empty() and (c2["n"] as Vector3).dot(nn) > 0.3 and _clear_spot(c2["p"], R):
 				return {"p": c2["p"], "n": c2["n"]}
 	return {}
+
+
+# R416 4.3 (Wounds V2 on): a cutout keeps clear of the bay doors too, not only the turrets.
+func _clear_spot(p: Vector3, R: float) -> bool:
+	return _clear_of_turrets(p, R) and (not BREACH.v2_on() or _clear_of_doors(p, R))
+
+
+func _clear_of_doors(p: Vector3, R: float) -> bool:
+	for b in door_boxes():
+		if (b as AABB).grow(R * 1.15).has_point(p):
+			return false
+	return true
+
+
+var _door_boxes: Array = []
+var _door_boxes_done := false
+
+
+# Each bay door's box at rest in the ship frame, from its meshes.
+func door_boxes() -> Array:
+	if _door_boxes_done:
+		return _door_boxes
+	_door_boxes_done = true
+	if hull == null or not ("doors" in hull) or not is_instance_valid(root):
+		return _door_boxes
+	var inv: Transform3D = root.global_transform.affine_inverse()
+	for d in hull.doors:
+		var node = d.get("node")
+		if not is_instance_valid(node):
+			continue
+		var box := AABB()
+		var any := false
+		for m in (node as Node).find_children("*", "MeshInstance3D", true, false):
+			var mi := m as MeshInstance3D
+			if mi.mesh == null:
+				continue
+			var b: AABB = (inv * mi.global_transform) * mi.mesh.get_aabb()
+			box = b if not any else box.merge(b)
+			any = true
+		if any:
+			_door_boxes.append(box)
+	return _door_boxes
 
 
 func _clear_of_turrets(p: Vector3, R: float) -> bool:
@@ -1882,6 +2139,35 @@ func _plan(fx, i: int, st: int) -> Array:
 		s2.sec = i
 		s2.heat = sc.heat * 0.6
 		out.append(s2)
+	# R416 5.1 (issue 1741, Wounds V2 on): an authored-interior hull opens real cutouts from stage 2 (about 55% section
+	# HP), 0.026 L growing to 0.038 L and 0.052 L, each through the footprint check; a second one at stage 3 and up
+	# on a heavier ship (two per section at most). Older hollow hulls keep the stage 4 ladder below.
+	if BREACH.v2_on() and hull.authored and not fx.compat and st >= 2:
+		var R2: float = L * float(BREACH.V2_HOLE_L[clampi(st - 2, 0, 2)])
+		var e2 = BREACH.place_hole(hull, a.p, a.n, R2, sd, faction)
+		e2.t0 = _t0(a, st, fx)
+		e2.sec = i
+		if e2.has_cut() and not _clear_spot(e2.c, e2.R):
+			e2 = BREACH.crater(a.p, a.n, R2 * 0.6, R2 * 0.12, sd, BREACH.S_DENT)   # the footprint slid it under a turret or door
+			e2.v2 = BREACH.wound_of(faction).get("kind", 0)
+			e2.t0 = _t0(a, st, fx)
+			e2.sec = i
+		out.append(e2)
+		if weight >= 2 and st >= 3:
+			var b2 = _anchor(i, "b")
+			if not b2.is_empty():
+				var eb2 = BREACH.place_hole(hull, b2.p, b2.n, R2 * 0.8, sd + 2.1, faction)
+				eb2.t0 = _t0(b2, st, fx)
+				eb2.sec = i
+				if not eb2.has_cut() or _clear_spot(eb2.c, eb2.R):
+					out.append(eb2)
+		if scar == 4 and st < 4:
+			var patch2 = BREACH.surface(a.p, a.n, L * 0.07, sd, BREACH.S_PATCH)
+			patch2.t0 = _patch_time[i]
+			patch2.sec = i
+			patch2.heat = 0.0
+			out.append(patch2)
+		return out
 	if not fx.compat and grade >= 2 and st < 4 and not (scar == 4 and st < 4):
 		var R: float = L * (0.05 if grade == 2 else 0.06)
 		var e = BREACH.crater(a.p, a.n, R, R * (0.22 if grade == 2 else 0.35), sd, BREACH.S_DENT)
@@ -1954,7 +2240,7 @@ static func _heavy_mark(e) -> bool:
 
 # Rebuild the hull from its original arrays with every section's damage, on a worker thread; apply when done.
 func _dmg_request(fx) -> void:
-	if fx.get("closed") == true:   # issue 1435: a released fx takes no new jobs
+	if fx.get("closed") == true or fx.get("passive") == true:   # issue 1435: a released fx takes no new jobs; 1434: nor the backdrop's
 		return
 	if _dmg_task >= 0:
 		_dmg_dirty = true
@@ -1963,6 +2249,7 @@ func _dmg_request(fx) -> void:
 	for i in 3:
 		ents.append_array(_ents[i])
 	ents.append_array(visible_marks(fx))
+	ents = BREACH.cap_holes(ents)
 	if fx.compat:
 		var flat: Array = []
 		for e in ents:
@@ -2061,9 +2348,47 @@ func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3,
 		e.t0 = fx.now
 		e.sec = hull.section_of(e.c.x)
 		_place_mark(fx, e)
+	_v2_heavy_hole(fx, look, w, es)
 	t_m = fx.pend("mark", t_m)
 	_dmg_request(fx)
 	fx.pend("dmg_request", t_m)
+
+
+# R416 5.1 (issue 1741, Wounds V2 on): a heavy hit (torpedo, lance, null lance, star, a gauss exit, or any weight 3+
+# weapon) on a section under 80% HP opens a real cutout where it struck, on an authored-interior hull only, at most
+# V2_HOLES_SHIP per ship and V2_HOLES_SEC per section counting the stage cutouts, clear of turrets and bay doors.
+func _v2_heavy_hole(fx, look: String, w: int, es: Array) -> void:
+	if not BREACH.v2_on() or fx.compat or not hull.authored or es.is_empty():
+		return
+	if not (look in ["torp", "lance", "nlance", "star", "gauss"] or w >= 3):
+		return
+	var at = es[0]
+	for e in es:
+		if e.style == BREACH.S_GAUSS_OUT:
+			at = e
+	if look == "gauss" and at.style != BREACH.S_GAUSS_OUT:
+		return
+	var sec: int = hull.section_of(at.c.x)
+	if section_fraction[sec] >= 0.8:
+		return
+	var all: Array = []
+	for i in 3:
+		all.append_array(_ents[i])
+	all.append_array(_marks)
+	if BREACH.count_holes(all) >= BREACH.V2_HOLES_SHIP or BREACH.count_holes(all, sec) >= BREACH.V2_HOLES_SEC:
+		return
+	var R: float = hull.L * float(BREACH.V2_HOLE_L[0])
+	if not _clear_spot(at.c, R):
+		return
+	var eh = BREACH.place_hole(hull, at.c, at.n, R, at.seed_v + 0.77, faction)
+	if not eh.has_cut() or not _clear_spot(eh.c, eh.R):
+		return
+	eh.t0 = fx.now
+	eh.sec = sec
+	eh.look = "v2hole"
+	eh.wt = maxi(w, 3)
+	eh.section_damage = 1.0 - section_fraction[sec]
+	_marks.append(eh)
 
 
 # One new mark into the ship's list (R43 budget). A repeat of the same style close by (anywhere in the section for a
@@ -2168,7 +2493,6 @@ func _build_section(fx, i: int, up: bool) -> void:
 	var st: int = stage[i]
 	_ents[i] = _plan(fx, i, st)
 	for e in _ents[i]: e.wound_kind = int(fac.get("wound_kind", 0))
-	_dmg_request(fx)
 	if not up or st < 1 or fx.compat: return
 	var a := _anchor(i, "a")
 	if a.is_empty(): return
@@ -2203,6 +2527,8 @@ func damage_caps(k := 1.0) -> Vector2i:
 func damage_counts() -> Dictionary:
 	var counts := {"fire": 0, "smoke": 0, "vent": 0, "particles": 0}
 	for e in _damage_emitters + _fading_emitters:
+		if not is_instance_valid(e.get("node")):
+			continue
 		counts[e.kind] += 1
 		counts.particles += e.particles
 	return counts
@@ -2212,7 +2538,9 @@ func _refresh_damage_emitters(fx) -> void:
 	var key := str(stage) + str(_burning) + str(fx.compat) + str(_jammed.keys()) + str(_mount_dead.keys()) + str(dead_nozzles)
 	if key == _emitter_key: return
 	_emitter_key = key
-	for e in _fading_emitters: e.node.queue_free()
+	for e in _fading_emitters:
+		if is_instance_valid(e.get("node")):
+			e.node.queue_free()
 	_fading_emitters.clear()
 	var desired: Array = []
 	var caps := damage_caps(fx.cap_k)
@@ -2253,6 +2581,8 @@ func _refresh_damage_emitters(fx) -> void:
 				smoke += 1
 	var keep: Array = []
 	for e in _damage_emitters:
+		if not is_instance_valid(e.get("node")):
+			continue
 		var match_i := -1
 		for j in desired.size():
 			if desired[j].id == e.id and desired[j].st == e.st: match_i = j; break
@@ -2267,17 +2597,17 @@ func _refresh_damage_emitters(fx) -> void:
 				_fading_emitters.append(e)
 			else: e.node.queue_free()
 	for e in desired:
-		_build_damage_emitter(fx, e)
-		keep.append(e)
+		if _build_damage_emitter(fx, e):
+			keep.append(e)
 	_damage_emitters = keep
 
 
-func _build_damage_emitter(fx, e: Dictionary) -> void:
+func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	if e.has("tur") or e.has("mp"):
 		_build_wisp(fx, e)
-		return
+		return true
 	var a := _anchor(e.sec, "a")
-	if a.is_empty(): return
+	if a.is_empty(): return false
 	var p: Vector3 = a.p
 	var n: Vector3 = a.n
 	var glow: Color = fac.damage_glow
@@ -2295,7 +2625,7 @@ func _build_damage_emitter(fx, e: Dictionary) -> void:
 		kind = 7; color = glow * 0.55
 		size0 = hull.L * 0.004; size1 = hull.L * 0.018
 		velocity = n * hull.L * 0.045
-	if faction == "chorus": color = glow * 0.45; kind = 20
+	if faction == "chorus": color = chorus_gas(glow) * 0.45; kind = 20
 	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.24
 	if e.kind == "fire":
 		kind = 25
@@ -2308,13 +2638,13 @@ func _build_damage_emitter(fx, e: Dictionary) -> void:
 		velocity = (n * 0.7 + Vector3.UP * 0.3) * hull.L * 0.06
 		if e.st == 4: p -= n * hull.L * 0.018
 		if faction == "deathless": kind = 26
-		if faction == "chorus": kind = 20; intensity = 0.35
+		if faction == "chorus": kind = 20; intensity = 0.35; color = chorus_gas(glow)
 		if faction == "ithar": kind = 7; intensity = 0.3
 	elif e.kind == "vent":
 		kind = 7; color = glow.lerp(Color.WHITE, 0.75); intensity = 0.22
 		count = 4; life = 0.8
 		velocity = n * hull.L * 0.13
-		if faction == "chorus": kind = 20; color = glow * 0.6
+		if faction == "chorus": kind = 20; color = chorus_gas(glow) * 0.6
 	var period := life if e.kind != "vent" else 3.2
 	for j in count:
 		var t: float = fx.now - life + float(j) / count * period
@@ -2331,15 +2661,20 @@ func _build_damage_emitter(fx, e: Dictionary) -> void:
 	e["particles"] = b.particle_count
 	e["sprite_kind"] = kind
 	e["source"] = p
+	return true
 
 
 func _update_damage_emitters(fx) -> void:
 	if dead or gone:
-		for e in _damage_emitters: e.node.visible = false
-		for e in _fading_emitters: e.node.visible = false
+		for e in _damage_emitters + _fading_emitters:
+			if is_instance_valid(e.get("node")):
+				e.node.visible = false
 		return
 	for j in range(_fading_emitters.size() - 1, -1, -1):
 		var e: Dictionary = _fading_emitters[j]
+		if not is_instance_valid(e.get("node")):
+			_fading_emitters.remove_at(j)
+			continue
 		var gate: float = clampf((e.until - fx.now) / 0.8, 0.0, 1.0)
 		e.mat.set_shader_parameter("gate", gate)
 		if gate <= 0.0:
@@ -2400,7 +2735,7 @@ func _cough(fx) -> void:
 		if faction == "deathless":
 			col = Color(0.055, 0.025, 0.09); kind = 8
 		elif faction == "chorus":
-			col = glow * 0.45; kind = 20
+			col = chorus_gas(glow) * 0.45; kind = 20
 		for j in 4:
 			fx.spr(p + d * r * 0.5, fx.now + j * 0.06, 0.9 + 0.2 * fx.rng.randf(), col, 0.55, r * 1.1, r * 4.2, kind,
 				fx.rcone(d, 0.35) * r * (5.0 + 3.0 * fx.rng.randf()), 2.0)
@@ -2470,6 +2805,7 @@ func _refresh_capability(fx) -> void:
 	if hull == null or squadron:
 		return
 	var want: Dictionary = _want_off if _exact_slots else {}
+	var knocked := []   # issue 1752: the slots newly off this sync (one knockout sound per ship per sync)
 	for slot in _slot_off.keys():
 		if want.has(slot):
 			continue
@@ -2527,8 +2863,17 @@ func _refresh_capability(fx) -> void:
 			_mount_dead[slot] = {"p": mp, "n": pt.get("n", Vector3.UP), "sec": hull.section_of(mp.x),
 				"next": fx.now + 0.6 + fx.rng.randf() * 1.5}
 		_wlog(["slot_off", slot, fx.now])
+		knocked.append(slot)
+	# issue 1752: metal hulls only (the Chorus throw no sparks, glass and obsidian are not plated guns); once per sync
+	if not knocked.is_empty() and _cap_seen and not dead and HULL.target_substance(faction) == "metal":
+		var md = _mount_dead.get(knocked[0])
+		_cue(fx, "dmg_turret_knockout", to_world(md["p"]) if md is Dictionary else root.global_position)
 	var g: bool = _want_gen and not dead
 	if g != gen_down:
+		# issue 1752: the generator's false-to-true edge crackles at full level once; its repeats are quiet
+		if g and _cap_seen:
+			_cue(fx, "dmg_shield_burnout", root.global_position)
+			_gen_loud_at = fx.now
 		gen_down = g
 		_gen_next = fx.now + 0.15   # the generator's first crackle comes right as it goes
 		_wlog(["gen", 1 if g else 0, fx.now])
@@ -2554,6 +2899,9 @@ func _capability_step(fx) -> void:
 		var k: float = 2.0 if fx.reduce_flashing else 1.0
 		_gen_next = fx.now + (GEN_GAP.x + fx.rng.randf() * (GEN_GAP.y - GEN_GAP.x)) * k
 		_gen_crackle(fx)
+		# the quiet repeats (the visual's first crackle, 0.15 s after the edge, is covered by the loud one)
+		if faction != "chorus" and fx.now - _gen_loud_at > 0.6:
+			_cue(fx, "dmg_shield_burnout", root.global_position, 0.35)
 
 
 # A failed shield emitter arcs on the midship plating: a short jagged run of small sparks in the shield's own colour (a dim
@@ -2615,6 +2963,28 @@ func capability_state() -> Dictionary:
 		"dead_nozzles": dead_nozzles.duplicate(), "gen": gen_down}
 
 
+# Issue 1752: a damage sound through the battle's sound node (fx.sound(), as the missed-shot pass-by), if there is one.
+func _cue(fx, name: String, p: Vector3, gain := 1.0) -> void:
+	_wlog(["sound", name, fx.now])
+	var sx = fx.sound() if fx.has_method("sound") else null
+	if sx != null:
+		sx.play(name, {"pos": p, "gain": gain})
+
+
+# Issue 1752 (plan row 3): the stage 4 cutout opening. Every hull vents; metal hulls also shear (glass, bio and obsidian
+# opening sounds come from their own impact cue, so no metal sound on a Chorus or Glasswright breach).
+func _breach_sound(fx, i: int) -> void:
+	if squadron or weight <= 0 or hull == null or fx.compat or dead:
+		return
+	var a := _anchor(i, "a")
+	if a.is_empty():
+		return
+	var p := to_world(a.p)
+	_cue(fx, "dmg_breach_vent", p)
+	if HULL.target_substance(faction) == "metal":
+		_cue(fx, "dmg_breach_shear", p)
+
+
 func _wlog(e: Array) -> void:
 	if wound_log_on:
 		wound_log.append(e)
@@ -2666,7 +3036,7 @@ func _build_wisp(fx, e: Dictionary) -> void:
 	var color := Color(0.15, 0.14, 0.13)
 	var intensity := 0.26
 	if faction == "deathless": color = Color(0.055, 0.025, 0.09); kind = 8
-	if faction == "chorus": color = glow * 0.45; kind = 20
+	if faction == "chorus": color = chorus_gas(glow) * 0.45; kind = 20
 	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.18
 	var life := 2.2
 	var count := 3
@@ -2762,7 +3132,7 @@ func _blowout(fx, i: int) -> void:
 	var col := glow.lerp(Color.WHITE, 0.75)
 	var kind := 7
 	if faction == "chorus":
-		col = glow * 0.6; kind = 20
+		col = chorus_gas(glow) * 0.6; kind = 20
 	var heavy := int(stage[i]) == 4
 	for j in 7:
 		var t: float = fx.now + j * 0.08
@@ -2799,7 +3169,7 @@ func tick_flare(fx, kind: String) -> void:
 	match kind:
 		"acid":
 			for i in 6:
-				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, Color(0.5, 0.9, 0.2), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
+				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, _acid_colour(), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
 		"tidal":
 			for i in 20:
 				fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
@@ -2833,10 +3203,13 @@ func jump_out(fx) -> void:
 
 # A mark's geometry follows the section's actual damage, including repairs.
 # Recreate entries rather than mutating entries a worker may be reading.
-func _regrade_marks(fx) -> void:
+func _regrade_marks() -> bool:
 	var changed := false
 	var updated: Array = []
 	for e in _marks:
+		if e.look == "v2hole":
+			updated.append(e)   # a V2 cutout keeps its size: it is not regraded from a weapon look
+			continue
 		var damage: float = 1.0 - section_fraction[e.sec]
 		# issue 1235 (F1.1): regrade only when the size really changes (a repair, or a section badly hurt since), so
 		# the sync right after a volley does not rebuild the hull a second time for a few percent
@@ -2851,4 +3224,4 @@ func _regrade_marks(fx) -> void:
 		else: updated.append(e)
 	if changed:
 		_marks = updated
-		_dmg_request(fx)
+	return changed
