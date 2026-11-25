@@ -2807,13 +2807,38 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	var p: Vector3 = pose * (hit["p"] as Vector3)
 	var n: Vector3 = (pose.basis * (hit["n"] as Vector3)).normalized()
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-	var jet := flipbook(fx, p, n, s.hull.L * (0.35 if s.death_big else 0.85), "vent", 0.65 if s.death_big else 0.30, inherited + n * s.hull.L * 0.12, 1.3, atlas_band(s.hull.L), s, true)
-	# The ignition and its light share one booking. Calm mode keeps dark gas. On a big hull the vent opens 0.04 s
-	# before the first chain blast, so the two are one counted flash (FLASH_WINDOW).
-	if fx.flash_at(p, fx.now, s.hull.L * 0.85, 44.0, 0.10):
-		(jet.material_override as ShaderMaterial).set_shader_parameter("ignition", 1.0)
-		fx.light(p, fx.now, 0.10, 5.0, Color(0.7, 0.81, 1.0), 0)
-	tear_particles(fx, p, n, s.hull.L, inherited, false, s)
+	# Issue 2048: replace the round white small-death bow vent flipbook puff with a layered directional rupture jet
+	# rooted on the real plating (p, outward normal n), faction-coloured from faction_looks.json, keeping R186/R193 caps.
+	fx.record_spawn(s, p, false, pose)
+	s.set_meta("death_vent_style", "directional_jet")
+	var ignited: bool = fx.flash_at(p, fx.now, s.hull.L * 0.55, 44.0, 0.10)
+	var fire_col: Color = dcol(s, "fire_mid", s.fac.damage_glow)
+	var core_col: Color = dcol(s, "fire", fire_col.lerp(Color.WHITE, 0.45))
+	var light_col: Color = dcol(s, "light", fire_col.lerp(Color.WHITE, 0.35))
+	var smoke_k: float = dsmoke(s)
+	var jet_vel: Vector3 = inherited + n * s.hull.L * 0.95
+	# Layer 1: primary directional supersonic vent jet (SH.SPRITE k=28; core fades inside 0.22 s, total life 0.30 s).
+	fx.spr(p, fx.now, 0.30, fire_col, 2.2 if ignited else 0.45, s.hull.L * 0.28, s.hull.L * 0.52, 28, jet_vel, 1.8)
+	# Layer 2: staggered sheared directional gas sheets (k=27) for smoky factions, or pale crystal shards (k=16) for Glasswrights.
+	if smoke_k > 0.01:
+		var soot_col: Color = Color(0.11, 0.08, 0.16) if s.faction == "deathless" else Color(0.16, 0.15, 0.14)
+		for j in 3:
+			var jf := float(j)
+			var gv: Vector3 = inherited + fx.rcone(n, 0.14) * s.hull.L * (0.75 + jf * 0.22)
+			fx.spr(p + n * s.hull.L * (0.04 + jf * 0.06), fx.now + jf * 0.03, 0.32 + jf * 0.06, soot_col,
+				clampf(0.45 + 0.35 * smoke_k, 0.22, 0.78) * (1.0 - jf * 0.16), s.hull.L * (0.14 + jf * 0.05),
+				s.hull.L * (0.34 + jf * 0.08), 27, gv, 1.4)
+	else:
+		for j in 4:
+			var sv: Vector3 = inherited + fx.rcone(n, 0.22) * s.hull.L * (0.55 + float(j) * 0.15)
+			fx.spr(p + n * s.hull.L * 0.04, fx.now + float(j) * 0.025, 0.40, core_col, 1.6 if ignited else 0.8,
+				s.hull.L * 0.05, s.hull.L * 0.02, 16, sv, 1.2)
+	# Layer 3: tight breach-mouth ignition ember and faction light when the flash counter permits.
+	if ignited:
+		fx.spr(p + n * s.hull.L * 0.02, fx.now, 0.20, core_col, 2.4, s.hull.L * 0.09, s.hull.L * 0.18, 19, inherited + n * s.hull.L * 0.15, 3.0)
+		fx.light(p + n * s.hull.L * 0.06, fx.now, 0.10, 4.5, light_col, 0)
+	# Keep #2018 tear sparks intact; skip the old round fx_vent_cone dots.
+	tear_particles(fx, p, n, s.hull.L, inherited, true, s)
 
 
 static func _update_dying(fx, s) -> void:

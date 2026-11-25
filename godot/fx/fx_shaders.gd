@@ -242,6 +242,7 @@ void process() {
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
+#  28 directional hull-rupture vent jet (tapered hot root + sheared gas cone)
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
 
@@ -281,6 +282,7 @@ void vertex() {
 		else if (k == 3 || k == 7 || k == 8) { g = 1.0 - spow(1.0 - t, 1.6); }
 		else if (k == 4 || k == 11 || k == 13 || k == 14 || k == 15 || k == 16 || k == 17 || k == 19 || k == 21 || k == 22 || k == 23) { g = 0.0; }
 		else if (k == 12) { g = t * t; }
+		else if (k == 28) { g = 1.0 - spow(1.0 - t, 2.0); }
 		float size = mix(a3.x, a3.y, g);
 		// F3 round 2: a3.w carries the seed in its fraction and, in its whole part, an explicit on-screen floor in pixels
 		// for this one sprite (impact, muzzle and kill flashes that must read from the battle camera); 0 means the kind's
@@ -333,15 +335,21 @@ void vertex() {
 		// Explicit smoke/gas floors preserve opacity, without adding any light.
 		if (k == 24 || k == 25 || k == 26 || (own && (k == 3 || k == 7 || k == 8))) { boost = 1.0; }
 		vec2 q = VERTEX.xy;
-		if (k == 14 || k == 15 || k == 23 || k == 27) {
-			// stretched along the screen-space motion (bolts and globs read as moving, not as dots)
+		if (k == 14 || k == 15 || k == 23 || k == 27 || k == 28) {
+			// stretched along the screen-space motion (bolts, globs and directional jets read as moving, not as dots)
 			vec3 vw = (MODEL_MATRIX * vec4(a1.xyz, 0.0)).xyz;
 			vec2 sv = (VIEW_MATRIX * vec4(vw, 0.0)).xy;
 			float sl = length(sv);
 			vec2 dx = sl > 1e-4 ? sv / sl : vec2(1.0, 0.0);
 			vec2 dy = vec2(-dx.y, dx.x);
 			float st = k == 23 ? 1.4 : (k == 14 ? 1.0 + clamp(sl * 0.012, 0.0, 1.6) : 1.0 + clamp(sl * 0.006, 0.0, 0.6));
-			q = k == 27 ? dx * VERTEX.x * 1.85 + dy * VERTEX.y * 0.62 : dx * VERTEX.x * st + dy * VERTEX.y;
+			if (k == 27) {
+				q = dx * VERTEX.x * 1.85 + dy * VERTEX.y * 0.62;
+			} else if (k == 28) {
+				q = dx * (VERTEX.x + 0.45) * 2.3 + dy * VERTEX.y * 0.50;
+			} else {
+				q = dx * VERTEX.x * st + dy * VERTEX.y;
+			}
 		} else {
 			float cs = cos(ang);
 			float sn = sin(ang);
@@ -363,7 +371,7 @@ void fragment() {
 	float t = vInfo.x; int k = int(vInfo.y + 0.5); float seed = vInfo.z; float age = vInfo.w; float I = vCol.a;
 	vec2 p = vUv;
 	float r = length(p);
-	if (r > 1.0) { discard; }
+	if (k != 28 && r > 1.0) { discard; }
 	vec3 add = vec3(0.0); vec3 base = vec3(0.0); float alpha = 0.0;
 	float star = exp(-abs(p.x) * 40.0) * exp(-abs(p.y) * 3.0) + exp(-abs(p.y) * 40.0) * exp(-abs(p.x) * 3.0);
 	if (k == 0) {
@@ -399,6 +407,23 @@ void fragment() {
 		float dens = (1.0 - edge) + (n - 0.5) * 1.7;
 		alpha = smoothstep(0.05, 0.7, dens) * I * smoothstep(0.0, 0.035, t) * spow(1.0 - t, 0.85);
 		base = vCol.rgb * (0.65 + 0.55 * n);
+	} else if (k == 28) {
+		// Issue 2048: directional hull-rupture vent jet (replaces round white small-death bow puff).
+		// u=0 sits at the breach mouth on the hull, u=1 is the sheared outer tip.
+		float u = clamp(p.x * 0.5 + 0.5, 0.0, 1.0);
+		float n1 = fbm(vec2(u * 3.6 - t * 4.2 + seed * 7.3, p.y * 2.8 + seed * 11.1));
+		float n2 = fbm(vec2(u * 7.2 - t * 7.0 + seed * 3.1, p.y * 5.2 - seed * 5.7));
+		float half_w = mix(0.18, 0.72, sqrt(u)) * (1.0 - 0.35 * smoothstep(0.65, 1.0, u));
+		float ay = abs(p.y) / max(half_w, 0.05);
+		float body = (1.0 - smoothstep(0.32, 1.0, ay + (n1 - 0.5) * 0.55)) * smoothstep(0.0, 0.06, u) * (1.0 - smoothstep(0.62, 1.0, u));
+		float core_ax = exp(-u * 4.5) * exp(-ay * ay * 3.2);
+		float heat_fade = (1.0 - smoothstep(0.05, 0.72, t)) * smoothstep(0.0, 0.04, t);
+		float gas_fade = smoothstep(0.0, 0.05, t) * spow(1.0 - t, 1.15);
+		alpha = clamp(body * (0.55 + 0.55 * n2) * gas_fade * 0.65, 0.0, 1.0);
+		base = mix(vCol.rgb * 0.30, vec3(0.14, 0.14, 0.16), 0.55) * (0.65 + 0.55 * n1);
+		vec3 hot_c = mix(vCol.rgb, vec3(1.0), 0.55 * core_ax);
+		float calm_k = mix(1.0, 0.15, fx_calm);
+		add = (hot_c * core_ax * 2.4 + vCol.rgb * body * (0.35 + 0.65 * n2) * exp(-u * 1.9) * 0.85) * I * heat_fade * calm_k;
 	} else if (k == 7 || k == 20) {
 		float n = fbm(p * 1.6 + vec2(seed * 9.1, seed * 4.3) + vec2(0.0, -age * 1.4));
 		float dens = (1.0 - r) * 1.1 + (n - 0.5) * 1.3;
@@ -472,7 +497,7 @@ void fragment() {
 		base = vec3(0.09, 0.09, 0.1);
 		add = vCol.rgb * eng * 2.5 * I;
 	}
-	float win = 1.0 - r * r;
+	float win = k == 28 ? 1.0 : (1.0 - r * r);
 	add *= win * win;
 #ifdef SOFT
 	float scene_z = -scene_view_pos(SCREEN_UV, INV_PROJECTION_MATRIX).z;
