@@ -339,7 +339,8 @@ is a candidate when the shared build holds the same file written strictly later;
 those files once each into `salvage\superseded_store\<sha256>.bin`, reads each back by size and SHA-256, lists them in
 `salvage\<lane>_<name>_superseded\superseded_manifest.txt`, and only then removes the copy;
 any failed check keeps it (issue 1180 run 7, Board Nov 20; Artoo on PR 1260). The safe list also includes stage 7 leftovers in `godot/.stage7-replaced-*`
-and `godot/assets/ships/manifest.bak_*`. The runner fetches and switches to the new branch with those files in place. A collision or an
+and the ships manifest backups, both the `godot/assets/ships/manifest.bak_*` folders and the flat
+`godot/assets/ships/manifest.json.bak_*` files (PR 2077). The runner fetches and switches to the new branch with those files in place. A collision or an
 uncertain check keeps the earlier checkout beside repo. More than two `repo-kept-*` copies triggers a warning naming each
 copy and its size. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
 unique ignored work (issue 860, run 2, Board Nov 16).
