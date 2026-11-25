@@ -489,6 +489,9 @@ limit, and 3600 seconds in the shared ship runner. Why: a Jolt stall in the issu
 almost an hour and queued work timed out behind it (Board, Nov 19, issue 1192).
 
 3.5 to 3.7 **PC harness.** See the [PC harness rules](../.claude/rules/pc-harness.md) for queue and watchdog jobs, Board PC control and PC clones.
+**A confirmed real, non-partial push releases the next lane job even if local checks fail.** The status comment stays
+`unverified` when local checks fail. Failed, partial, unchanged, dry/test and unconfirmed runs still stop the chain.
+Why: GitHub's "All checks" is the merge gate (12.3). A local check failure should not idle a lane after a confirmed push (issue 2098).
 
 3.8 **Free tools and sources, local first; a paid service only with Ryan's yes, for that one evaluation.** Why: money is his.
 Set: Ryan (AGENTS.md; R110). Ids: R110b, agents-20, audit-02.

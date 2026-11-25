@@ -364,7 +364,8 @@ void fragment() {
 	float tick = smoothstep(0.03, 0.0, abs(fract(ang / 6.28318 * 24.0) - 0.5) - 0.44) * step(r - 0.07, d) * step(d, r - 0.025);
 	float dsh = dash * step(0.5, fract(ang / 6.28318 * 18.0 - TIME * 0.25)) * smoothstep(0.016, 0.0, abs(d - r - 0.045));
 	float inner = smoothstep(r, r * 0.2, d) * (0.06 + fill * 0.1);
-	float glow = exp(-pow((d - r) / 0.09, 2.0)) * (0.25 + hot * 0.4);
+	float dr9 = (d - r) / 0.09;
+	float glow = exp(-(dr9 * dr9)) * (0.25 + hot * 0.4);
 	float a = ring * 1.4 + tick * 0.6 + dsh * 1.5 + inner + glow + outer * 0.5 * (0.4 + hot);
 	ALBEDO = col.rgb * a * col.a * 1.6;
 }
@@ -417,7 +418,8 @@ void fragment() {
 	vec2 p = (UV - 0.5) * 2.0;
 	float d = length(p);
 	float ang = atan(p.y, p.x);
-	float band = smoothstep(0.03, 0.0, abs(d - r)) * 1.2 + exp(-pow((d - r) / 0.08, 2.0)) * 0.4;
+	float dr8 = (d - r) / 0.08;
+	float band = smoothstep(0.03, 0.0, abs(d - r)) * 1.2 + exp(-(dr8 * dr8)) * 0.4;
 	vec3 c = mix(col.rgb, col2.rgb, 0.5 + 0.5 * sin(ang * 3.0 + TIME * 0.4));
 	if (look > 1.5 && look < 2.5) c = hue(ang / 6.28318 + TIME * 0.05) * 1.2;
 	float pl = (look > 0.5 && look < 1.5) ? 0.65 + 0.45 * sin(TIME * 2.4) : 1.0;
@@ -562,11 +564,14 @@ void fragment() {
 	float src_z = -vsrc.z / vsrc.w;
 	if (src_z < hole_z * 0.98) { suv = SCREEN_UV + dir * 0.02 * edge; }
 	vec3 col = textureLod(screen_tex, suv, 0.0).rgb;
-	float mag = 1.0 + 0.6 * exp(-pow((th - r_einstein) / (r_einstein * 0.35), 2.0)) * edge;
+	float me = (th - r_einstein) / (r_einstein * 0.35);
+	float mag = 1.0 + 0.6 * exp(-(me * me)) * edge;
 	col *= mag;
 	float sh = smoothstep(r_shadow * 1.02, r_shadow * 0.98, th);
-	float ring = exp(-pow((th - r_shadow * 1.05) / (r_shadow * 0.035), 2.0)) * photon;
-	float ring2 = exp(-pow((th - r_shadow * 1.12) / (r_shadow * 0.08), 2.0)) * photon * 0.35;
+	float r1 = (th - r_shadow * 1.05) / (r_shadow * 0.035);
+	float r2 = (th - r_shadow * 1.12) / (r_shadow * 0.08);
+	float ring = exp(-(r1 * r1)) * photon;
+	float ring2 = exp(-(r2 * r2)) * photon * 0.35;
 	col = mix(col, vec3(0.0), sh) + ring_col * (ring * 6.0 + ring2 * 2.0) * (0.92 + 0.08 * sin(TIME * 0.7));
 	ALBEDO = col;
 	ALPHA = smoothstep(1.0, 0.85, r);
@@ -586,8 +591,10 @@ void vertex() {
 void fragment() {
 	float th = length(UV - 0.5) * 2.0;
 	float sh = smoothstep(r_shadow * 1.02, r_shadow * 0.98, th);
-	float ring = exp(-pow((th - r_shadow * 1.05) / (r_shadow * 0.035), 2.0));
-	float ring2 = exp(-pow((th - r_shadow * 1.2) / (r_shadow * 0.15), 2.0)) * 0.25;
+	float r1 = (th - r_shadow * 1.05) / (r_shadow * 0.035);
+	float r2 = (th - r_shadow * 1.2) / (r_shadow * 0.15);
+	float ring = exp(-(r1 * r1));
+	float ring2 = exp(-(r2 * r2)) * 0.25;
 	ALBEDO = ring_col * (ring * 6.0 + ring2 * 2.0) * (1.0 - sh);
 	ALPHA = clamp(sh + ring + ring2, 0.0, 1.0);
 }
@@ -810,7 +817,9 @@ void fragment() {
 	c = mix(c, c * vec3(0.85, 0.97, 1.2), clamp(beam, 0.0, 1.0) * 0.35);
 	c = mix(c, c * vec3(1.1, 0.8, 0.65), clamp(-beam, 0.0, 1.0) * 0.35);
 	// the photon ring: thin, sharp, hugging the shadow, a little brighter on the approaching side
-	float ring = exp(-pow((th - 1.02) / 0.011, 2.0)) * 3.2 * (1.0 + 0.25 * beam) + exp(-pow((th - 1.06) / 0.05, 2.0)) * 0.35;
+	float rb1 = (th - 1.02) / 0.011;
+	float rb2 = (th - 1.06) / 0.05;
+	float ring = exp(-(rb1 * rb1)) * 3.2 * (1.0 + 0.25 * beam) + exp(-(rb2 * rb2)) * 0.35;
 	ALBEDO = (c * arc + vec3(1.0, 0.88, 0.68) * ring) * gain;
 	ALBEDO *= exposure_gain;
 }

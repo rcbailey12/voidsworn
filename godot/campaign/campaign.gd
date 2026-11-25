@@ -3546,15 +3546,13 @@ func _heavy_wreck_cause(unit: Dictionary, log: Array) -> String:
 	var ram_recoil := target + " rams " + str(unit.get("killedBy", "")) + " at full speed:"
 	var torp_hit := " reach " + target
 	var direct_hit := " at " + target + ":"
-	# Spread Pattern: the burst line names the ship that was aimed at, never the neighbours it kills,
-	# so a splash kill is credited to the torpedo that killedBy names, not to an earlier gun hit.
-	var splash_from := " from " + str(unit.get("killedBy", "")) + " burst against "
-	var splash_miss := " burst against " + target + ","
+	# Spread Pattern marks the hull it actually kills at the moment of death (rules.gd torpImpact).
+	# The burst summary names only the ship that was aimed at, so it cannot identify the victims;
+	# the mark does, and a hull killed by the same attacker elsewhere in the fight has no mark.
+	if jt(unit.get("splashKill")): return "Torpedo strike"
 	for i in range(log.size() - 1, -1, -1):
 		var line: String = log[i].get("m", "")
 		if line.contains(ram_hit) or line.begins_with(ram_recoil): return "Rammed"
-		if unit.get("killedBy", "") != "" and line.contains(splash_from) and line.contains(", catching ") and not line.contains(splash_miss):
-			return "Torpedo strike"
 		if line.begins_with("Torpedoes from ") and (line.contains(torp_hit + ":") or line.contains(torp_hit + " (a stray hit in the lane):")):
 			return "Torpedo strike"
 		var gun := line.find(" fires ")
