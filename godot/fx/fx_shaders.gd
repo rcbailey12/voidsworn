@@ -369,6 +369,9 @@ void fragment() {
 	if (k == 0) {
 		float f = (1.0 - t) * (1.0 - t) * I;
 		add = vCol.rgb * exp(-r * r * 5.0) * f + vec3(exp(-r * r * 30.0)) * f * 0.8 + vCol.rgb * f * 0.5 * star;
+	} else if (k == 34) {
+		// Temporary Nova default, equivalent to the legacy moving glow until the bench pick.
+		add = vCol.rgb * min(exp(-r * r * 4.0) * 0.7 + exp(-r * r * 24.0) * 0.6, 1.0) * I;
 	} else if (k == 24) {
 		float f = (1.0 - smoothstep(0.18, 1.0, t)) * I;
 		add = (vCol.rgb * exp(-r * r * 5.0) + vec3(1.0, 0.88, 0.65) * exp(-r * r * 22.0) * 0.7) * f;
@@ -705,7 +708,7 @@ void vertex() {
 		// F3: shock fronts, soft pops and pale shock rings keep at least 12 px across (1080 lines), dimming as they grow
 		float rb = 1.0;
 		int rk = int(a3.z + 0.5);
-		if (rk >= 1 && rk <= 3) {
+		if ((rk >= 1 && rk <= 3) || (rk >= 5 && rk <= 10)) {
 			// round 2: a4.w is this ring's own final size in pixels (kill shock rings, shield ripples): the floor grows with
 			// the ring's own easing (15% to 100% of it), so a far ring still visibly expands; grown to it, it dims as f^-0.5
 			float dv = max(-(VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).z, 0.01);
@@ -753,6 +756,40 @@ void fragment() {
 	} else if (k == 3) {
 		float d1 = (r - 0.93) / 0.03;
 		add = vCol.rgb * exp(-d1 * d1) * spow(1.0 - t, 2.0) * vCol.a;
+	} else if (k >= 5 && k <= 10) {
+		// Shared rift/pulse edge: contour, soft membrane and a slow moving filament on the same plane.
+		float d = r;
+		float gaps = 1.0;
+		if (k == 5) {
+			// Sunward's pointed double arch.
+			d = length(vec2(p.x * 1.45, p.y)) + 0.24 * abs(p.x);
+		} else if (k == 6) {
+			// Meridian's interrupted six-sided scan.
+			float sector = mod(ang + 0.523599, 1.047198) - 0.523599;
+			d = r * cos(sector) * 1.16;
+			gaps = 0.12 + 0.88 * smoothstep(0.025, 0.075, 0.523599 - abs(sector));
+		} else if (k == 7) {
+			// Ashfall's uneven furnace vents, not a clean ring.
+			d = r + 0.09 * sin(ang * 5.0 + seed * 2.0) + 0.036 * sin(ang * 11.0);
+			gaps = 0.16 + 0.84 * smoothstep(-0.35, 0.16, sin(ang * 3.0 + 1.3));
+		} else if (k == 8) {
+			// Chorus's soft breathing lobes.
+			d = r + 0.085 * cos(ang * 5.0 - t * 2.0) + 0.045 * sin(ang * 3.0 + t * 3.0);
+		} else if (k == 9) {
+			// Glasswrights' pale, crisp beveled facets.
+			d = max(abs(p.x), abs(p.y)) + min(abs(p.x), abs(p.y)) * 0.72;
+		} else {
+			// Eclipse's paired fold slits.
+			d = length(vec2(p.x * 2.7, p.y));
+			gaps = 0.35 + smoothstep(0.08, 0.22, abs(p.x)) * 0.65;
+		}
+		float edge = d - 0.75;
+		float core = exp(-spow(abs(edge) / (k == 8 ? 0.067 : 0.031), 2.0));
+		float sheath = exp(-spow(abs(edge) / 0.14, 2.0));
+		float thread = exp(-spow(abs(d - 0.60) / 0.031, 2.0));
+		float flow = 0.60 + 0.40 * cos(ang * 2.0 - t * 4.0 + seed);
+		float f = smoothstep(0.0, 0.22, t) * (1.0 - smoothstep(0.38, 1.0, t));
+		add = vCol.rgb * (core * gaps * flow + sheath * 0.24 + thread * gaps * 0.27) * f * vCol.a;
 	} else {
 		// a ring of hex cells that flies apart (shield shatter)
 		vec2 q = p * 7.0;

@@ -18,6 +18,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 # Faction colours and styles come from data (fx/faction_looks.json via fx/faction_look.gd; API.md 15), so a faction's
 # palette can change without touching code. Styles are Claude's calls (vetoable).
 const FLOOK := preload("res://fx/faction_look.gd")
+const SPECIAL := preload("res://fx/fx_special.gd")
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const LIGHT_K := 0.9
 const LIGHT_REACH := 30.0   # an event light's standing reach in world units (hexes are 17.3 across)
@@ -92,6 +93,8 @@ var timing := {"ripple": 0.08, "shell_speed": 160.0, "lance": 0.7, "charge": 0.2
 # Issue 281 vent gas: the shipped look is Cone B, a tight forward cone of gas and sparks along the barrel. "today" draws
 # the pre-Cone-B baked gas cell and is only set by the review capture to shoot the before stills; the game leaves it "".
 var vent_look := ""
+# Bench options only. An unset or unknown name keeps the pre-pick Nova look.
+var nova_look := ""
 # Optional comparison folder (VS_FX_ATLAS). The production macro, torpedo and death cores load the picked B atlases
 # directly from fx/atlases/rebake; they require no environment switch.
 var fx_atlas := ""
@@ -260,6 +263,7 @@ func release(wait := true) -> void:
 	_shield_jobs.clear()
 	for id in ships:
 		var s = ships[id]
+		s.clear_rift_pose()
 		s.end_brownout()
 		if not wait and s._dmg_task >= 0 and not WorkerThreadPool.is_task_completed(s._dmg_task):
 			tids.append(s._dmg_task)
@@ -1919,6 +1923,8 @@ func death(id: String, cause := "blast") -> float:
 	var s: SHIP = ships.get(id)
 	if s == null or s.dead or s.gone:
 		return 0.0
+	# Death must sample the real hull, never the transient rift stretch.
+	s.clear_rift_pose()
 	s.end_brownout()
 	stats["deaths"] += 1
 	var t0 := Time.get_ticks_usec()
@@ -1955,14 +1961,35 @@ func wreck_settled(id: String) -> bool:
 	return s == null or s.has_meta("death_hidden") or not is_instance_valid(s.root)
 
 
-func jump_out(id: String) -> void:
-	if ships.has(id):
-		(ships[id] as SHIP).jump_out(self)
+func _special_ship(id: String) -> SHIP:
+	var s: SHIP = ships.get(id)
+	return s if s != null and not s.dead and not s.gone and is_instance_valid(s.root) else null
+
+
+func nova(id: String, target: Vector3, pace := 1.0) -> float:
+	var s := _special_ship(id)
+	return SPECIAL.nova(self, s, target, maxf(pace, 0.01), nova_look) if s != null else -1.0
+
+
+func rift_in(id: String, pace := 1.0, delay := 0.0, risen := false) -> float:
+	var s := _special_ship(id)
+	return SPECIAL.arrive(self, s, maxf(pace, 0.01), delay, risen) if s != null else -1.0
+
+
+func fold(id: String, pace := 1.0, transfer := Callable()) -> float:
+	var s := _special_ship(id)
+	return SPECIAL.fold(self, s, maxf(pace, 0.01), transfer) if s != null else -1.0
+
+
+func jump_out(id: String, pace := 1.0) -> float:
+	var s := _special_ship(id)
+	return SPECIAL.jump(self, s, maxf(pace, 0.01)) if s != null else -1.0
 
 
 func ability(id: String, _ab := "") -> void:
-	if ships.has(id):
-		(ships[id] as SHIP).pulse(self, 1.0)
+	var s := _special_ship(id)
+	if s != null:
+		SPECIAL.pulse(self, s, false)
 
 
 # A weapon mark on a ship's hull without a volley (API.md 14): look as in volley's looks plus "board" (a blown boarding
@@ -2146,8 +2173,9 @@ func _step_board_lines() -> void:
 
 
 func command(id: String, _cmd := "") -> void:
-	if ships.has(id):
-		(ships[id] as SHIP).pulse(self, 1.6)
+	var s := _special_ship(id)
+	if s != null:
+		SPECIAL.pulse(self, s, true)
 
 
 func launch(carrier_id: String, squadron_id := "") -> void:
@@ -2241,6 +2269,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
 		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(DEATH.SLAG, 0)]
+	mats.append(mat(SPECIAL.GHOST, -2))
 	# Warm the PBR fallbacks for late arrivals and generated pieces as well as the
 	# actual hull formats below. Glasswright sails blend, and nebula hulls ignore fog.
 	for fog_disabled in [false, true]:
