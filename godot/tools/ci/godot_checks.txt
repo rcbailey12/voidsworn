@@ -73,7 +73,7 @@ headless|campaign/test/sector_routes_test.gd|-|-|issue 1176: 3,000 sectors, two-
 headless|campaign/test/shadow_xp_test.gd|-|res://campaign/test/shadow_xp_cases.json|shadow XP, heirs and saves match the saved overflow cases
 headless|campaign/test/story_buff_resume_test.gd|-|-|issue 1338: a resumed Sector III fight never gets a spent story buff back; a pre-storyGuard save is repaired once
 headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices, gated run payoff and one-time victory debrief across reloads
-headless|campaign/test/beat3_paths_test.gd|-|-|issue 1990: every faction's beat 1 and 2 paths into beat 3 offer only the outlines.md choices that fit, with a fallback
+headless|campaign/test/beat3_paths_test.gd|-|-|issue 1990: every faction's beat 1 and 2 paths into beat 3 offer only the outlines.md choices that fit, with a fallback; every path played from the real arc cards through act(); the picked salvage is the piece spent
 headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks reach the battle)|-|already its own step (issue 335)
 headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the battle scene uses, to its end
 headless|rules/test/undo_test.gd|-|-|issue 1450: undo a move before firing: the whole state and dice come back, a free or pivot turn comes back, battles with every move undone and redone end identical, and undo is refused after a shot, fire on the move, ram, boarding, ability, order, Command, the ship ending, the enemy phase or any other change

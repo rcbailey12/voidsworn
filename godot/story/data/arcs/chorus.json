@@ -1,0 +1,127 @@
+{
+  "_about": "Faction story arc, beats 1 and 2, from godot/story/outlines.md (issue 1990). Beat 3 is STORY_BEAT3 in campaign_tables.json; the run ending is RUN_ENDING. Shapes: godot/story/arc.gd.",
+  "fac": "chorus",
+  "arc": "Consume the Cores",
+  "charge": "Calyx feeds the swarm. Five other Lattice cores call from the dark around the Hollow Sun. Hunger intends to devour them.",
+  "prior_loss": "Our outer spores still carry the cold shock of an earlier brood failing on this lane.",
+  "prior_win": "",
+  "beats": {
+    "1": {
+      "A": {
+        "id": "split_node",
+        "title": "The Split Node",
+        "rival_line": "",
+        "skim": "",
+        "text": [
+          "We wake starving across every chamber. Far ahead, Calyx feeds us. Five other cores near Ardent pulse straight through our sensory pits. Memory still recognizes that dead star from when our Fleshwright makers had hands and walked under its light.",
+          "On the first jump we find a severed Chorus nursery node sliced neatly open, its young left unconsumed to freeze in hard vacuum. Nothing living wastes good biomass like that. {rival} cut it open. {rival_deed} Hunger wants us to swallow the dead tissue immediately and thicken our hides. Memory wants us to sample the weapon residue and track {his} drive-burn instead. Two drives pull inside one swarm; choose which leads."
+        ],
+        "options": [
+          {
+            "k": "ate",
+            "l": "Consume the dead node",
+            "s": "Every hull regrows 30%. Hunger grows louder inside the swarm.",
+            "out": "We draw the frozen tissue back into our sacs, tasting the scorch of {his} weapons as the hides thicken.",
+            "r": {
+              "healAll": 0.3
+            },
+            "flag": "ch_ate"
+          },
+          {
+            "k": "smell",
+            "l": "Sample the weapon trace and leave the dead",
+            "s": "Tracking {his} burn signature slows {his} ambush: clock goes back 1. Memory sharpens.",
+            "out": "We map the exact isotope trail left by {his} drives and slip cleanly onto {his} wake.",
+            "r": {
+              "nemClock": -1
+            },
+            "flag": "ch_smell"
+          }
+        ]
+      }
+    },
+    "2": {
+      "A": {
+        "id": "shallows",
+        "title": "The Warm Shallows",
+        "rival_line": "open",
+        "skim": "",
+        "text": [
+          "An oceanic moon turns warm beneath a low cloud deck, its shallow seas crowded with dormant Chorus spawn left over from an older migration. {rival} has seeded the orbital cloud layer with proximity mines and hangs waiting above the gravity well.",
+          "{rival_line}",
+          "Hunger urges us to dive straight through the blasts, gorge on the drifting biomass, and climb back heavier. Memory pushes us to feed our own cells down to the spawn so they mature fast and rise into orbit beside us.",
+          {
+            "t": "Hunger's surge lit our thermal trail bright, and {he} packed the densest mine cluster right over the thickest spawn.",
+            "if": "flag:ch_ate"
+          },
+          {
+            "t": "{His} picket engines are still hot from laying the grid an hour ago.",
+            "if": "flag:ch_smell"
+          },
+          "The young pulse upward through the water, waiting."
+        ],
+        "options": [
+          {
+            "k": "dove",
+            "l": "Dive and feed",
+            "s": "Every hull regrows 30%. {He} reads the massive thermal spike: clock moves on 1.",
+            "out": "We drop straight through the mine detonations, swallowing fragments of steel and warm spawn alike.",
+            "r": {
+              "healAll": 0.3,
+              "nemClock": 1
+            },
+            "flag": "ch_dove",
+            "fl": {
+              "loud": 1
+            }
+          },
+          {
+            "k": "spawn",
+            "l": "Seed the spawn with our own tissue",
+            "s": "Every hull sheds 5% mass; a fresh Chorus drone-spawn rises to join the swarm.",
+            "out": "Our membranes split open over the warm tide, and a new brood-hull climbs into vacuum minutes later.",
+            "r": {
+              "dmgAll": 0.05,
+              "ship": "b_drone"
+            },
+            "flag": "ch_spawn"
+          },
+          {
+            "k": "hunt",
+            "l": "Cut off {his} mine-laying pickets",
+            "s": "Every hull takes 8% abrasion skimming atmosphere, yet we catch {his} flank off guard and expose a Nemesis weakness.",
+            "out": "We surge out of the cloud cover behind {his} pickets and learn exactly where {his} shielding runs thin.",
+            "r": {
+              "dmgAll": 0.08,
+              "nemIntel": 1
+            },
+            "flag": "ch_hunted",
+            "if": "flag:ch_smell",
+            "need": {
+              "flag": "ch_smell",
+              "say": "the tracked trace"
+            }
+          },
+          {
+            "k": "hunger",
+            "l": "Give full control to Hunger",
+            "s": "Every hull takes 10% mine damage, then regrows 40%. Memory goes silent for the rest of the run.",
+            "out": "We swallow mines, burning plasma, and spawn together until the makers' old voices drown completely under raw appetite.",
+            "r": {
+              "dmgAll": 0.1,
+              "healAll": 0.4
+            },
+            "flag": "ch_hunger",
+            "if": "flag:ch_ate",
+            "need": {
+              "flag": "ch_ate",
+              "say": "the dead node consumed"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "win": [],
+  "loss": []
+}

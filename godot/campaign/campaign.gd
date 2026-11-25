@@ -45,8 +45,10 @@ var W: Dictionary = {}  # the JS window._* transients: rewardCfg, rw, relicChoic
 var promote_after: Callable = Callable()
 var cur_event = null
 # Story arcs (godot/story/README.md "Story arcs"): a faction arc card at the start of each sector, drawn by the event screen.
-# OFF until the coordinator relays Ryan's approval of the arc text; with arcs_on false nothing below runs, so parity is unchanged.
-var arcs_on := false
+# Issue 1990 run 3: ON, so the beat 3 choices Ryan kept (Pick Sheet, Nov 24 2026) are reached through the outlines.md beats
+# 1 and 2 (godot/story/data/arcs/<fac>.json). Only a host that sets arc_source (campaign_ui.gd) shows cards, so the sims
+# and campaign parity run unchanged. Set false to hide beats 1 and 2 again; beat 3 then offers its fallback choices.
+var arcs_on := true
 var arc_source = null    # Callable(beat 1..3) -> event-shaped card (story.arc_beat), {} when the faction has no arc file
 var arc_chose_cb = null  # Callable(card, key) (story.arc_chose), after the campaign applied the choice
 var arc_end_cb = null    # Callable(won) (story.arc_end), at the end of a run whose beat 3 was played
@@ -3369,13 +3371,13 @@ func ACT_eventChoice(a: String) -> void:
 	if paying and RUN["relics"].size() > 1 and not (j >= 0 and j < RUN["relics"].size()):
 		relic_pick_modal(i); return   # issue 1449: pick the salvage first
 	eventFlags(cur_event, o, i)
+	if paying and j >= 0:   # the salvage the player picked is the piece spent (arc cards too: Artoo audit, PR 2020)
+		o = o.duplicate(); o["r"] = o["r"].duplicate(); o["r"]["payRelicAt"] = j
 	if jt(cur_event.get("arc")):
 		_arc_choice(o, i); cur_event = null; return
 	var event = cur_event
 	cur_event = null
 	var r = o["r"]
-	if paying and j >= 0:
-		r = r.duplicate(); r["payRelicAt"] = j
 	if r is Dictionary and jt(r.get("fight")):
 		var n = findNode(RUN["curNode"])
 		if n != null: n["evFight"] = or_(o.get("k"), str(i))   # issue 1628
@@ -3395,7 +3397,7 @@ func beat3Text(t: String) -> String:
 # Issue 1990: the outlines.md beat 3 choices read the beat 1 and 2 story flags (RUN.flags, written by the arc cards).
 # A condition uses the arc.gd syntax: terms joined by "&" must all hold, a term lists alternatives with "|", "!" negates;
 # the only atom is flag:<name>. An option whose "if" fails is not offered; a callback line whose "if" fails is not shown.
-# Until beats 1 and 2 play (arcs_on), no story flag is set, so each card offers only its plain choices (the fallback).
+# With no story flag set (arcs_on false, or a host without arc cards), each card offers only its plain choices (the fallback).
 func beat3Cond(c, run = null) -> bool:
 	var src = run if run != null else RUN
 	var flags = src.get("flags") if src is Dictionary else null

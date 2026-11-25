@@ -1,0 +1,127 @@
+{
+  "_about": "Faction story arc, beats 1 and 2, from godot/story/outlines.md (issue 1990). Beat 3 is STORY_BEAT3 in campaign_tables.json; the run ending is RUN_ENDING. Shapes: godot/story/arc.gd.",
+  "fac": "ithar",
+  "arc": "The Last Lens",
+  "charge": "Recover the Lattice's last primary lens from the Hollow Sun before Eclipse bolts it onto a stolen star.",
+  "prior_loss": "Nobody mentions the earlier voyage that never came home.",
+  "prior_win": "",
+  "beats": {
+    "1": {
+      "A": {
+        "id": "mirror_buoy",
+        "title": "The Mirror-Buoy",
+        "rival_line": "",
+        "skim": "",
+        "text": [
+          "The black hole ahead used to be Ardent, and your grandmothers polished the collectors that harvested its light before Eclipse killed the star. The Lens-keepers sent you to recover the last intact primary lens before your uploaded siblings seize it, and reminded you twice to bring its gimbal frame too.",
+          "On your first jump, an ancient optical buoy rotates toward your flagship and flashes a sharp warning code. {rival} came through first. {rival_deed} The buoy offers to drain its thousand-year core of stored starlight to expose {his} route, though doing so leaves it dark forever. Your cataloger already pulses eager amber."
+        ],
+        "options": [
+          {
+            "k": "song",
+            "l": "Draw the buoy's stored light",
+            "s": "Its logs reveal {his} lane: Nemesis clock goes back 1, and the buoy dims permanently.",
+            "out": "The buoy empties its core willingly, and your cataloger marks the entry irreplaceable in muted violet.",
+            "r": {
+              "nemClock": -1
+            },
+            "flag": "it_song"
+          },
+          {
+            "k": "mercy",
+            "l": "Leave the buoy lit",
+            "s": "Your captains study its warning angles instead: every captain gains 15 XP.",
+            "out": "The buoy settles back onto its quiet orbit while your cataloger logs two stiff footnotes of protest.",
+            "r": {
+              "xp": 15
+            },
+            "flag": "it_mercy",
+            "fl": {
+              "mercy": 1
+            }
+          }
+        ]
+      }
+    },
+    "2": {
+      "A": {
+        "id": "ringing_field",
+        "title": "The Ringing Field",
+        "rival_line": "open",
+        "skim": "",
+        "text": [
+          "Sector II forces your formation across the Ringing Field, a drift of shattered Glasswright hulls from the collapse whose glass fragments still flash blindingly whenever coherent light strikes them. {rival} turned the graveyard into a trap, deliberately cracking wrecks to flood your interferometers with glare.",
+          "{rival_line}",
+          "Your youngest captains, barely a century old, ripple pale grief across their inlays while the cataloger logs every destroyed hull number with shaking focus. Your eldest Mirror flew in this fleet when it was whole; she suggests pulsing one synchronized damping tone across all hulls to quiet the shards, though stopping gives {rival} time to maneuver.",
+          {
+            "t": "The buoy's resonance maps which shards {rival} intends to shatter next.",
+            "if": "flag:it_song"
+          },
+          {
+            "t": "The spared buoy's early warning marked an unmined corridor around the worst debris.",
+            "if": "flag:it_mercy"
+          }
+        ],
+        "options": [
+          {
+            "k": "lament",
+            "l": "Pulse the damping tone",
+            "s": "Your crews steady their focus: every captain gains 20 XP. {He} reads your position clearly: clock moves on 1.",
+            "out": "The fractured hulls absorb the matched frequency and dim one by one as the cataloger records each hull code.",
+            "r": {
+              "xp": 20,
+              "nemClock": 1
+            },
+            "flag": "it_lament"
+          },
+          {
+            "k": "dark",
+            "l": "Cut emissions and burn blind through the glare",
+            "s": "Every ship takes 5% debris damage, yet you catch {him} mid-turn and expose a Nemesis weakness.",
+            "out": "You fly purely on inertial drift through blinding shards, emerging close enough to read {his} shield seams.",
+            "r": {
+              "dmgAll": 0.05,
+              "nemIntel": 1
+            },
+            "flag": "it_dark",
+            "fl": {
+              "loud": 1
+            }
+          },
+          {
+            "k": "vent",
+            "l": "Vent the stored light across the field",
+            "s": "Every shard goes dark instantly: no damage and Nemesis clock back 1, though the light is spent.",
+            "out": "The glare dies in half a second, and your cataloger draws one neat line through the inventory entry.",
+            "r": {
+              "nemClock": -1
+            },
+            "flag": "it_spent",
+            "if": "flag:it_song",
+            "need": {
+              "flag": "it_song",
+              "say": "the buoy's light"
+            }
+          },
+          {
+            "k": "path",
+            "l": "Thread the warned corridor",
+            "s": "Clean transit with no damage and no clock gain: every captain gains 10 XP.",
+            "out": "The unmined lane holds true to the exact arc, and your cataloger adds a rare note of praise.",
+            "r": {
+              "xp": 10
+            },
+            "flag": "it_path",
+            "if": "flag:it_mercy",
+            "need": {
+              "flag": "it_mercy",
+              "say": "the buoy spared"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "win": [],
+  "loss": []
+}

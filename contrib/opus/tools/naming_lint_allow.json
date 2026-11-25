@@ -21,6 +21,9 @@
   "godot/story/data/titles.json": [
     "the Patient"
   ],
+  "godot/story/data/voices.json": [
+    "the Unfinished"
+  ],
   "godot/world/world_sky.gd": [
     "warp"
   ],

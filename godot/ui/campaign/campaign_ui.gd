@@ -2540,7 +2540,9 @@ func _modal(md: Dictionary) -> void:
 				if opt["credits"] > 0: detail += " and +" + C.numstr(opt["credits"]) + " credits"
 				add(v, choice("Repairs and credits" if i else "Take the full service", detail + ".", "repairStop", "stipend" if i else "service", acts))
 		"event":
-			var ev = d["ev"]; h2.call(ev["t"]); p.call(ev["b"])
+			var ev = d["ev"]; h2.call(ev["t"])
+			if str(ev.get("charge", "")) != "": p.call(str(ev["charge"]), BONE3)   # issue 1990: a story arc's one-line charge sits above beat 1
+			p.call(ev["b"])
 			for i in range(ev["o"].size()):
 				var o = ev["o"][i]; var cost = o["r"].get("cost") if o["r"] is Dictionary else null; var ok = not C.jt(cost) or float(R["credits"]) >= float(cost)
 				var blue = C.jt(o.get("need"))   # B4 blue options: the requirement in plain words, shown either way
