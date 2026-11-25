@@ -450,6 +450,7 @@ static func sheet_box(k: float, pad_x := 32.0, pad_y := 24.0) -> StyleBoxFlat:
 static func drawer(parent: Control, k: float, w: float, slide := true, reduce_motion := false) -> PanelContainer:
 	var p := PanelContainer.new()
 	var box := sheet_box(k, 40, 36)
+	box.bg_color.a = 1.0   # issue 2029 item 2: solid, so no card text or button behind it shows through
 	box.set_border_width_all(0)
 	box.border_width_left = maxi(1, px(1, k))
 	p.add_theme_stylebox_override("panel", box)
