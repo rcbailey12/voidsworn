@@ -1473,12 +1473,11 @@ func _install_chunks() -> void:
 	var holder := Node3D.new()
 	holder.name = "HullDebris"
 	add_child(holder)
-	# LOAD37: warm the distinct material/layout pairs on a triangle with no visible draw.
-	# The LOAD36 proxy used one full chunk and its 11 placeholder surfaces, so its first
-	# real material could still hold the frame and trigger a scene-wide pass expansion.
+	# LOAD38: give each material/layout pair a lit draw and a shadow pass before
+	# the real chunk joins, without showing the proxy in the live scene.
 	if not _wreck_slots.is_empty() and sliced:
 		var stage := STAGE_IN.new()
-		if not await stage.warm_meshes(holder, meshes, "debris"):
+		if not await stage.warm_meshes(holder, meshes, "debris", Callable(), true):
 			_installing = false
 			return
 	var index := 0

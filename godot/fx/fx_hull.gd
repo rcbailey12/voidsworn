@@ -42,12 +42,23 @@ var stb_z = 1.0                    # +1: root +Z is starboard (G2), -1: +Z is po
 # the attach point service (issue 370)
 var code := ""                     # the hull's code (ShipView.code), for the log lines
 var formation := false             # a squadron's wing of craft: no hull of its own, so no core to miss
+var cache_geometry := false         # FxShip opts in. Standalone analysers do not keep installed meshes alive.
 var points := {}                   # point type -> Array of {name, p, n (+Y), f (-Z), i, and for guns slot, weapon, arc}
 var core := Vector3.ZERO           # hp_core; else the triangles' centre of volume (a load error, logged); see _find_core
 var core_authored := false
 var attach_counts := {}            # point type -> {"hp", "ray", "centre", "skip"}: what every request was answered with
 var _attach_logged := {}
 var _gun_turn := {}                # per slot: the rotating first point (HARDPOINTS.md "When shots outnumber points" 2)
+
+# LOAD38: keep only seed-free geometry across battles and title backdrops. Mesh references
+# keep the key's resource identities alive. Bound the cache so old installed kits can age out.
+const GEO_LIMIT := 32
+static var _hull_geometry := {}
+
+
+static func clear_static() -> void:
+	_hull_geometry.clear()
+
 
 # Shared by live hulls, wreck backs and slag. Stable embers, never lit compartments.
 const BURNT := """
@@ -630,6 +641,8 @@ static func face_corners(triangle: int, strip: bool) -> Vector3i:
 
 func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	_rng.seed = seed_v
+	if code == "" and root.get("code") != null:
+		code = str(root.get("code"))
 	_authored(root)
 	var inv = root.global_transform.affine_inverse()
 	var first = true
@@ -648,16 +661,9 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	H = maxf(box.size.y, 0.05)
 	c = box.get_center()
 	bvh_ranges.clear()
-	# Issue 1289: the triangles, the hit BVH and the turret reach depend only on the hull's meshes and their pose, so the
-	# battle's effects keep them per hull (shared, set by fx_ship.setup) and a later ship of the same hull reuses them: an
-	# arriving A16 spent about 270 ms here on the PC. Read only after this; each ship keeps its own samples and points.
-	var geo_key: String = _geo_key(root, meshes) if shared is Dictionary else ""
-	var geo = (shared as Dictionary).get(geo_key) if geo_key != "" else null
-	if geo == null and geo_key != "":
-		geo = build_geo(root, meshes)   # issue 1434: a sliced load builds it a frame earlier (prime), so this is a hit
-		shared[geo_key] = geo
+	var geo := _geometry(root, meshes)
 	var faces: PackedVector3Array
-	if geo is Dictionary:
+	if not geo.is_empty():
 		faces = geo["faces"]
 		tm = geo["tm"]
 		for r in geo["ranges"]:
@@ -678,22 +684,25 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	tri_count = faces.size() / 3
 	_samples(900)
 	_find_bow()
-	_find_nozzles()
+	if geo.has("nozzles"):
+		nozzles = (geo["nozzles"] as Array).duplicate(true)
+	else:
+		_find_nozzles()
+		if not geo.is_empty():
+			geo["nozzles"] = nozzles.duplicate(true)
 	_kit_nozzles(root)
 	for side in ["port", "stb", "top"]:
 		mounts[side] = _mount_row(side)
-	if code == "" and root.get("code") != null:
-		code = str(root.get("code"))
 	_read_turrets(root)
 	_read_doors(root)
 	_read_points(root)
-	_find_core(faces)
-	if geo is Dictionary and geo.has("turrets") and (geo["turrets"] as Array).size() == turrets.size():
+	_find_core(faces, geo)
+	if geo.has("turrets") and (geo["turrets"] as Array).size() == turrets.size():
 		for k in turrets.size():
-			(turrets[k] as Dictionary).merge(geo["turrets"][k], true)
+			(turrets[k] as Dictionary).merge((geo["turrets"][k] as Dictionary).duplicate(true), true)
 	else:
 		_turret_clearance(root, meshes)
-		if geo is Dictionary:
+		if not geo.is_empty():
 			var reach: Array = []
 			for t in turrets:
 				reach.append({"full": t.get("full"), "ymin": t.get("ymin"), "ymax": t.get("ymax"), "blocked": t.get("blocked", [])})
@@ -719,39 +728,67 @@ static func build_geo(root: Node3D, meshes: Array) -> Dictionary:
 	return {"faces": faces, "tm": tm2, "ranges": keep}
 
 
-# Issue 1434: the sliced battle load builds a new hull's geometry in its own frame before the ship's effects are
-# registered (on the PC a first hull's analyse took 100 to 450 ms, most of it here). True when it built one.
-static func prime(root: Node3D, meshes: Array, shared: Dictionary) -> bool:
+# Issue 1434: the sliced load builds the BVH in a separate frame from seeded analysis.
+func prime(root: Node3D, meshes: Array) -> bool:
 	var key := _geo_key(root, meshes)
-	if key == "" or shared.has(key):
+	if key.is_empty() or _hull_geometry.has(key):
 		return false
-	shared[key] = build_geo(root, meshes)
+	_authored(root)   # mark interior faces before building the outside BVH
+	_geometry(root, meshes)
 	return true
 
 
-var shared = null   # issue 1289: the battle's per-hull geometry (fx.hull_shared), or null to analyse alone
-
-
-# The hull's geometry and pose: each mesh resource and its frame in the ship's root. Same key, same triangles.
-# The frames are composed from local transforms (not world ones), so the key does not depend on where the ship stands.
-static func _geo_key(root: Node3D, meshes: Array) -> String:
-	var parts := PackedStringArray()
+func _geometry(root: Node3D, meshes: Array) -> Dictionary:
+	var key := _geo_key(root, meshes)
+	if key.is_empty():
+		return {}
+	if _hull_geometry.has(key):
+		var cached: Dictionary = _hull_geometry[key]
+		_hull_geometry.erase(key)
+		_hull_geometry[key] = cached
+		return cached
+	if _hull_geometry.size() >= GEO_LIMIT:
+		_hull_geometry.erase(_hull_geometry.keys()[0])
+	var geo := build_geo(root, meshes)
+	var resources: Array[Mesh] = []
 	for m in meshes:
+		if not is_instance_valid(m):
+			continue
 		var mi := m as MeshInstance3D
-		if mi == null or not is_instance_valid(mi) or mi.mesh == null:
-			parts.append("-")
+		if mi != null and mi.mesh != null:
+			resources.append(mi.mesh)
+	geo["resources"] = resources
+	_hull_geometry[key] = geo
+	return geo
+
+
+# Only installed hulls have a stable kit contract. The local frames keep world
+# position and facing out of the key, but a different mesh set or pose misses.
+func _geo_key(root: Node3D, meshes: Array) -> Array:
+	var path = root.get("hull_res")
+	if not cache_geometry or code.is_empty() or formation or not path is String or path.is_empty():
+		return []
+	var parts: Array = [code, path, stb_z]
+	for m in meshes:
+		if not is_instance_valid(m):
+			parts.append(null)
+			continue
+		var mi := m as MeshInstance3D
+		if mi == null or mi.mesh == null:
+			parts.append(null)
 			continue
 		var frame := Transform3D.IDENTITY
 		var part: Node3D = mi
 		while part != null and part != root:
 			if part.top_level:
-				return ""   # placed in the world, not under the ship: no sharing
+				return []   # placed in the world, not under the ship: no sharing
 			frame = part.transform * frame
 			part = part.get_parent_node_3d()
 		if part != root:
-			return ""
-		parts.append("%d@%s" % [mi.mesh.get_instance_id(), str(frame)])
-	return "|".join(parts)
+			return []
+		parts.append(mi.mesh.get_instance_id())
+		parts.append(frame)
+	return parts
 
 
 func section_of(x: float) -> int:
@@ -1091,7 +1128,7 @@ func _read_points(root: Node3D) -> void:
 # The core: hp_core when the hull has one. The contract gives the core no ray fallback (the death explosion has to start
 # inside the hull) and calls a missing core a load error; an old hull without one still plays, from the centre of volume
 # of its own triangles (never the box centre), and says so once.
-func _find_core(faces: PackedVector3Array) -> void:
+func _find_core(faces: PackedVector3Array, geo: Dictionary) -> void:
 	var pts: Array = points.get("core", [])
 	core_authored = not pts.is_empty()
 	if core_authored:
@@ -1100,6 +1137,17 @@ func _find_core(faces: PackedVector3Array) -> void:
 	core = c
 	if faces.size() < 3:
 		return
+	if geo.has("fallback_core"):
+		core = geo["fallback_core"]
+	else:
+		core = _volume_center(faces)
+		if not geo.is_empty():
+			geo["fallback_core"] = core
+	if not formation:
+		_attach_note("core", "load", "hp_core missing on %s (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles" % _who())
+
+
+func _volume_center(faces: PackedVector3Array) -> Vector3:
 	var vol := 0.0
 	var acc := Vector3.ZERO
 	var area := 0.0
@@ -1117,11 +1165,8 @@ func _find_core(faces: PackedVector3Array) -> void:
 		aacc += (a + b + d) * (ar / 3.0)
 		i += 3
 	if absf(vol) > 1e-6 * maxf(L * W * H, 1e-6):
-		core = c + acc / vol
-	elif area > 0.0:
-		core = c + aacc / area
-	if not formation:
-		_attach_note("core", "load", "hp_core missing on %s (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles" % _who())
+		return c + acc / vol
+	return c + aacc / area if area > 0.0 else c
 
 
 func _who() -> String:
