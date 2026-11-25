@@ -262,8 +262,8 @@ try {
   const ignored = ['godot/campaign/test/out/c1.jsonl', 'godot/audio/build/test.gd.uid',
     'godot/scenes/campaign/test.gd.uid', '.onboarding_checks/build.txt', generatedShip,
     'godot/assets/ships/manifest.bak_1/manifest.json', 'godot/.stage7-replaced-1/previous/test.glb',
-    // Issue 2091: the flat backup PR 2077 ignores (manifest.json.bak_<stamp>) is rebuildable too, so `caches` is
-    // removable; without the Reuse-Caches pattern it falls to Test-SharedBuildCopy and the copy is retained.
+    // Issue 2091: the flat backup PR 2077 ignores (manifest.json.bak_<stamp>) is rebuildable cache too, so `caches`
+    // is removable; without the Reuse-Caches pattern this untracked file falls through to the kept-checkout throw.
     'godot/assets/ships/manifest.json.bak_20261116_120000'];
   const rules = ['godot/campaign/test/out/', 'godot/**/*.uid', '.onboarding_checks/', 'godot/gen/', 'godot/assets/ships/*/'];
   write(path.join(caches, '.git', 'info', 'exclude'), rules.join('\n') + '\n');

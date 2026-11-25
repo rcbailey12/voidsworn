@@ -10,22 +10,24 @@ const diff = require('./ui_constants_diff.js');
 // Issue 2091: Ryan's Windows checkout can hold these files with CRLF line endings, so a raw "\n" pattern fails there
 // and every lane job ends unverified. Normalize "\r\n" to "\n" at the one place these checks read a file.
 const normalizeEol = s => s.replace(/\r\n/g, '\n');
-const read = f => normalizeEol(fs.readFileSync(path.join(ROOT, f), 'utf8'));
+const read = (f, root = ROOT) => normalizeEol(fs.readFileSync(path.join(root, f), 'utf8'));
 let pass = 0, fail = 0;
 function check(ok, what) { if (ok) pass++; else { fail++; console.log('FAIL ' + what); } }
 
-// Issue 2091: prove the fix. Write a CRLF copy of a real source file: the raw bytes miss a newline-anchored pattern
-// (the Windows failure), and the normalizing read passes it.
+// Issue 2091: prove the fix through the same read helper every check uses. Write a CRLF copy of a real source file
+// in the system temp folder: the raw bytes miss a newline-anchored pattern (the Windows failure), and read() passes it.
 {
   const os = require('os');
   const src = fs.readFileSync(path.join(ROOT, 'godot/main/main.gd'), 'utf8').replace(/\r\n/g, '\n');
-  const tmp = path.join(os.tmpdir(), `ui-spec-crlf-${process.pid}-${Date.now()}.gd`);
+  const name = `ui-spec-crlf-${process.pid}-${Date.now()}.gd`;
+  const tmp = path.join(os.tmpdir(), name);
   fs.writeFileSync(tmp, src.replace(/\n/g, '\r\n'));
   const raw = fs.readFileSync(tmp, 'utf8');
-  fs.rmSync(tmp, { force: true });
+  let viaRead = '';
+  try { viaRead = read(name, os.tmpdir()); } finally { fs.rmSync(tmp, { force: true }); }
   const anchored = /for k in o:\n\s*settings\[k\] = o\[k\]/;
   check(!anchored.test(raw), 'a CRLF copy misses the newline-anchored settings check on its raw bytes (issue 2091)');
-  check(normalizeEol(raw) === src && anchored.test(normalizeEol(raw)), 'a CRLF copy passes the same check after \\r\\n is normalized to \\n (issue 2091)');
+  check(viaRead === src && anchored.test(viaRead), 'read() normalizes \\r\\n to \\n, so a CRLF checkout passes the same check (issue 2091)');
 }
 
 const LAW = 'godot/ui/ui_scale.gd';
