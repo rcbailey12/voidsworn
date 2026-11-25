@@ -16,7 +16,7 @@ extends Node
 #
 #   godot --path godot --rendering-method forward_plus --resolution 1920x1080 res://bench/scene_gate.tscn -- --out DIR
 #         [--sessions 3] [--warmup 120] [--frames 720] [--modes base,shadows_off,...] [--camera engagement|turn]
-#         [--build-wait-s 60] (a cold clone that bakes its skies first needs longer)
+#         [--build-wait-s 180] (a cold clone that bakes its skies first needs longer)
 #
 # Writes DIR/scene_gate.json (every mode, every session, plus the scene's per-ship and per-class counts) and
 # DIR/scene_base.png (the base scene as measured). Modes, each on a freshly built battle:
@@ -179,7 +179,8 @@ func _run() -> void:
 	var sessions := int(args.get("sessions", 3))
 	# --build-wait-s (issue 1079): how long one battle build may take. A fresh clone bakes its skies cold (about 40 s
 	# each on the RTX 5080, several at once), which passed the 60 s default before the first base build finished.
-	build_wait_usec = int(float(args.get("build-wait-s", 60)) * 1000000.0)
+	# Nov 25 2026: 60 s timed out the 2035 gas bench and STB clips while four Codex lanes loaded the CPU; 180 s by default.
+	build_wait_usec = int(float(args.get("build-wait-s", 180)) * 1000000.0)
 	var modes: Array = MODES.duplicate()
 	if args.has("modes"):
 		modes = Array(str(args["modes"]).split(",", false))
@@ -641,7 +642,7 @@ func _build(mode: String, seed: int) -> bool:
 	while (b.warming or b.busy) and Time.get_ticks_usec() < deadline:
 		await get_tree().process_frame
 	if b.warming or b.busy:
-		push_error("[scene_gate] %s build timed out" % mode)
+		push_error("[scene_gate] %s build timed out after %.0f s (warming %s, busy %s)" % [mode, (Time.get_ticks_usec() - tb) / 1000000.0, b.warming, b.busy])
 		get_tree().quit(1)
 		return false
 	build_ms = (Time.get_ticks_usec() - tb) / 1000.0
