@@ -73,6 +73,7 @@ function batchProof(after, before) {
   const batchHome = path.join(tmp, 'batch bench');
   fs.mkdirSync(jobs, { recursive: true });
   fs.copyFileSync(path.join(pc, 'runner_common.ps1'), path.join(tools, 'runner_common.ps1'));
+  fs.copyFileSync(path.join(pc, 'run_timeout.ps1'), path.join(tools, 'run_timeout.ps1'));
   fs.copyFileSync(path.join(pc, 'jobs/look_bench.bat'), path.join(jobs, 'look_bench.bat'));
   // Run the real cmd launcher and all its Git steps, with no Godot, Python or GPU claims.
   write(path.join(tools, 'job_wrap.bat'), [
@@ -114,8 +115,18 @@ async function main() {
   git('-C', seed, 'commit', '-q', '--allow-empty', '-m', 'after');
   const after = git('-C', seed, 'rev-parse', 'HEAD');
   git('-C', seed, 'branch', 'unrelated', after);
+  git('-C', seed, 'checkout', '-q', '-b', 'bench-prunable');
+  write(path.join(seed, 'prune-proof.txt'), 'before\n');
+  git('-C', seed, 'add', 'prune-proof.txt');
+  git('-C', seed, 'commit', '-q', '-m', 'prunable before');
+  const prunableBefore = git('-C', seed, 'rev-parse', 'HEAD');
+  write(path.join(seed, 'prune-proof.txt'), 'after\n');
+  git('-C', seed, 'commit', '-qam', 'prunable after');
+  const prunableAfter = git('-C', seed, 'rev-parse', 'HEAD');
+  git('-C', seed, 'checkout', '-q', 'main');
   git('clone', '-q', '--bare', seed, source);
   git('clone', '-q', '--mirror', source, mirror);
+  git('--git-dir', mirror, 'repack', '-ad');
 
   const hook = path.join(tmp, 'git-hook.js');
   const shim = path.join(tmp, windows ? 'fixture-git.cmd' : 'fixture-git');
@@ -160,14 +171,44 @@ process.exit(result.status ?? 99);
   assert.equal(git('-C', path.join(bench, 'tool'), 'rev-parse', 'HEAD'), tool);
   for (const [folder, refs] of [['tool', ['refs/look-bench/tool']], ['repo', ['refs/look-bench/after', 'refs/look-bench/before']]]) {
     const checkout = path.join(bench, folder);
-    assert.equal(read(path.join(checkout, '.git/objects/info/alternates')), path.join(mirror, 'objects').replaceAll('\\', '/'));
+    assert(!fs.existsSync(path.join(checkout, '.git/objects/info/alternates')), 'bench does not borrow objects');
     assert.deepEqual(git('-C', checkout, 'for-each-ref', '--format=%(refname)').split(/\r?\n/), refs);
-    const counts = git('-C', checkout, 'count-objects', '-v');
-    assert.match(counts, /^count: 0$/m, 'borrowed objects are not copied loose');
-    assert.match(counts, /^in-pack: 0$/m, 'borrowed objects do not fill a new local pack');
+    const pack = fs.readdirSync(path.join(mirror, 'objects/pack')).find(file => file.endsWith('.pack'));
+    const shared = fs.statSync(path.join(mirror, 'objects/pack', pack), { bigint: true });
+    const local = fs.statSync(path.join(checkout, '.git/objects/pack', pack), { bigint: true });
+    assert.equal(local.ino, shared.ino, 'the checkout hardlinks the mirror pack');
+    assert(local.nlink > 1n, 'pack is linked, not copied');
   }
-  console.log('PASS lane checkout finished while the look bench fetch was still gated, with only three pins and no local pack copies');
+  console.log('PASS lane checkout finished while the look bench fetch was still gated, with only three pins and hardlinked packs');
   if (windows) batchProof(after, before);
+
+  const legacyBench = path.join(tmp, 'legacy bench');
+  for (const folder of ['tool', 'repo']) {
+    const checkout = path.join(legacyBench, folder);
+    git('init', '-q', checkout);
+    write(path.join(checkout, '.git/objects/info/alternates'), path.join(mirror, 'objects').replaceAll('\\', '/') + '\n');
+  }
+  const pruneEnv = { LB_HOME: legacyBench, LB_TOOL_REF: prunableBefore, AFTER: 'bench-prunable', BEFORE: prunableBefore };
+  pass(await ps('runner_common.ps1', ['look-bench-checkout', pins], pruneEnv).done);
+  assert.equal(read(pins), `${prunableAfter} ${prunableBefore}`);
+
+  git('--git-dir', source, 'update-ref', '-d', 'refs/heads/bench-prunable');
+  git('--git-dir', mirror, 'fetch', '-q', '--prune', '--no-auto-maintenance', 'origin');
+  git('--git-dir', mirror, 'gc', '--prune=now');
+  const mirrorObjects = git('--git-dir', mirror, 'cat-file', '--batch-check=%(objectname)', '--batch-all-objects').split(/\r?\n/);
+  for (const sha of [prunableAfter, prunableBefore]) {
+    assert(!mirrorObjects.includes(sha), 'mirror GC really removed the pin');
+  }
+  const prunedRepo = path.join(legacyBench, 'repo');
+  for (const [slot, sha] of [['after', prunableAfter], ['before', prunableBefore]]) {
+    assert.equal(git('-C', prunedRepo, 'rev-parse', `refs/look-bench/${slot}`), sha);
+    git('-C', prunedRepo, 'checkout', '-q', '-f', '--detach', sha);
+    assert.equal(read(path.join(prunedRepo, 'prune-proof.txt')), slot);
+  }
+  const prunedTool = path.join(legacyBench, 'tool');
+  git('-C', prunedTool, 'checkout', '-q', '-f', '--detach', prunableBefore);
+  assert.equal(read(path.join(prunedTool, 'prune-proof.txt')), 'before');
+  console.log('PASS tool, AFTER and BEFORE still check out after the source branch is deleted and the mirror prunes and runs GC');
 
   git('-C', seed, 'commit', '-q', '--allow-empty', '-m', 'not in mirror');
   const ahead = git('-C', seed, 'rev-parse', 'HEAD');

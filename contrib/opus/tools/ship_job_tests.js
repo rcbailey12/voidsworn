@@ -149,12 +149,12 @@ for (const l of code) {
 }
 pass('no deletes or moves; logs only under out');
 
-// The ship job still serializes its hardlink clone. The bench uses runner_common's read-only pin setup.
+// The ship job still serializes its hardlink clone. The bench uses runner_common's pin setup.
 const look = fs.readFileSync(LOOK, 'utf8');
 for (const [name, script, root] of [['ship job', text, '%V%']]) {
   assert(script.includes(`set "MIRROR=${root}\\repo-mirror.git"`), `${name} uses the shared PC mirror`);
   const lock = script.indexOf("[IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None')");
-  const refresh = script.indexOf('fetch --prune origin');
+  const refresh = script.indexOf('fetch --prune --no-auto-maintenance origin');
   const head = script.indexOf('symbolic-ref HEAD refs/heads/main');
   const clone = script.indexOf('clone --local');
   const fetch = script.indexOf('fetch -', clone);
@@ -168,7 +168,7 @@ assert(text.includes("fetch -q --no-tags --no-write-fetch-head $mirror ('+refs/h
 assert(look.includes('runner_common.ps1" look-bench-checkout ') &&
   look.includes('call :bench "%AFTER_PIN%"') && look.includes('call :bench "%BEFORE_PIN%"'), 'look bench uses exact prepared pins');
 assert(!look.includes('refs/heads/*') && !look.includes("'.lock'"), 'look bench has no broad fetch or inline writer lock');
-pass('shared mirror hardlinks for ship job and read-only pin setup for look bench');
+pass('shared mirror hardlinks for ship job and exact pin setup for look bench');
 
 const collect = code.slice(at(/^:collect$/), finish).map(l => l.s);
 const collectScript = text.slice(text.indexOf(':collect'), text.indexOf(':collect_skipped'));

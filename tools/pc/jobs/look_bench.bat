@@ -75,7 +75,7 @@ timeout /t 60 /nobreak > nul
 goto gowait
 :gook
 
-rem ---- prepare the three requested pins only, borrowing mirror objects without locking its writers
+rem ---- seed local checkouts once under the mirror lock, then fetch just the requested pins without it
 set "TOOL=%LB_HOME%\tool"
 set "R=%LB_HOME%\repo"
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\runner_common.ps1" look-bench-checkout "%TEMP%\look_bench_pins.txt" > "%LB_HOME%\git_tool.txt" 2>&1

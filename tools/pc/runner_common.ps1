@@ -1009,20 +1009,20 @@ function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false, $now = [DateTi
 }
 # Windows command line quoting, including trailing backslashes. Inputs are argument values, never shell snippets.
 function Quote($value) { return '"' + ([regex]::Replace(([string]$value), '(\\*)"', '$1$1\"') -replace '(\\+)$', '$1$1') + '"' }
-function Invoke-BoundedMirrorFetch([string[]]$words, $seconds) {
+function Invoke-BoundedMirrorGit([string[]]$words, $seconds, $step = 'mirror fetch', [switch]$NativeGit) {
   $exe = 'git.exe'
   $windows = [Environment]::OSVersion.Platform -eq 'Win32NT'
   if (-not $windows) { $exe = @(Get-Command git -CommandType Application -ErrorAction Stop)[0].Source }
-  if ($test -and $env:PC_TEST_GIT) { $exe = $env:PC_TEST_GIT }
+  if ($test -and $env:PC_TEST_GIT -and -not $NativeGit) { $exe = $env:PC_TEST_GIT }
   $argLine = ($words | ForEach-Object { Quote $_ }) -join ' '
   if ($windows) {
-    # The existing watchdog's Job Object stops fetch, its transport and index-pack before unlocking.
+    # The existing watchdog's Job Object stops Git and its children before unlocking.
     . (Join-Path $PSScriptRoot 'run_timeout.ps1') -LibraryOnly
     Initialize-RunTree
     $target = (Get-Command -Name $exe -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
     $command = (Quote $target) + ' ' + $argLine
     if ($target -match '\.(bat|cmd)$') { $command = (Quote $env:ComSpec) + ' /d /s /c "' + $command + '"' }
-    $spool = Join-Path (Get-ScratchParent) ('mirror-fetch-' + [guid]::NewGuid().ToString('N'))
+    $spool = Join-Path (Get-ScratchParent) ('mirror-git-' + [guid]::NewGuid().ToString('N'))
     $stdout = "$spool.stdout"
     $stderr = "$spool.stderr"
     $tree = [RunnerStep]::new($command, (Get-Location).Path, $stdout, $stderr)
@@ -1036,7 +1036,7 @@ function Invoke-BoundedMirrorFetch([string[]]$words, $seconds) {
     } finally {
       try {
         $stopped = [bool]$tree.ReadUsage().Active
-        if ($stopped) { Stop-StepTree $tree "$spool.kill" 'mirror fetch' | ForEach-Object { Write-Host $_ } }
+        if ($stopped) { Stop-StepTree $tree "$spool.kill" $step | ForEach-Object { Write-Host $_ } }
         $code = if ($stopped) { 124 } else { $proc.ExitCode }
       } finally {
         $tree.Dispose()
@@ -1055,7 +1055,7 @@ function Invoke-BoundedMirrorFetch([string[]]$words, $seconds) {
     $stderr = $proc.StandardError.ReadToEndAsync()
     if (-not $proc.WaitForExit($seconds * 1000)) {
       $proc.Kill($true)
-      if (-not $proc.WaitForExit(5000)) { throw 'could not stop timed-out mirror fetch' }
+      if (-not $proc.WaitForExit(5000)) { throw "could not stop timed-out $step" }
       return @{ Code = 124; Lines = @() }
     }
     $left = [int][Math]::Max(0, $seconds * 1000 - $clock.ElapsedMilliseconds)
@@ -1078,7 +1078,7 @@ function Update-SharedMirror($mirror, $source, $job, $attempts = 1, $wait = 1800
       }
       $url = @(Git @('--git-dir',$mirror,'remote','get-url','origin'))
       if ($gitExit -ne 0 -or $url[0] -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }
-      $fetch = Invoke-BoundedMirrorFetch @('--git-dir',$mirror,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60',
+      $fetch = Invoke-BoundedMirrorGit @('--git-dir',$mirror,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60',
         '-c','fetch.writeCommitGraph=false','fetch','--no-auto-maintenance','--prune','origin') $seconds
       if ($fetch.Code -eq 0) { Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main') }
     } finally { $lock.Dispose() }
@@ -1097,22 +1097,49 @@ function Update-SharedMirror($mirror, $source, $job, $attempts = 1, $wait = 1800
 }
 function Initialize-LookBenchCheckout($checkout, $mirror, $source) {
   $gitDir = Join-Path $checkout '.git'
-  if (-not (Test-Path -LiteralPath $gitDir)) {
-    Must-Git @('init','-q',$checkout)
-    Must-Git @('-C',$checkout,'config','core.autocrlf','false')
-    Must-Git @('-C',$checkout,'config','remote.origin.url',$source)
+  $alternate = Join-Path $gitDir 'objects/info/alternates'
+  if ((Test-Path -LiteralPath $gitDir) -and -not (Test-Path -LiteralPath $alternate)) { return }
+
+  # Stage beside the checkout so a failed or interrupted clone never becomes the active repo.
+  $checkout = [IO.Path]::GetFullPath($checkout)
+  $null = [IO.Directory]::CreateDirectory((Split-Path -Parent $checkout))
+  $stage = "$checkout-seed-$([guid]::NewGuid().ToString('N'))"
+  $hasMirror = Test-Path -LiteralPath (Join-Path $mirror 'HEAD')
+  if ($hasMirror) {
+    $step = 'look bench local clone'
+    $lock = Open-MirrorWriterLock $mirror 'look bench' $step
+    try {
+      $hasMirror = Test-Path -LiteralPath (Join-Path $mirror 'HEAD')
+      if ($hasMirror) {
+        # Explicit --local hardlinks the immutable objects. Bound the locked step even if disk I/O hangs.
+        $clone = Invoke-BoundedMirrorGit @('-c','core.autocrlf=false','clone','-q','--local','--no-checkout',
+          '--no-tags','--single-branch','--origin','origin',$mirror,$stage) 180 $step -NativeGit
+      }
+    } finally { $lock.Dispose() }
   }
-  $objects = Join-Path $mirror 'objects'
-  if (-not (Test-Path -LiteralPath $objects -PathType Container)) { return }
-  $alternate = [IO.Path]::GetFullPath($objects)
-  if ([Environment]::OSVersion.Platform -eq 'Win32NT') { $alternate = $alternate.Replace('\','/') }
-  $info = Join-Path $gitDir 'objects/info'
-  $file = Join-Path $info 'alternates'
-  $lines = @(Get-Content -LiteralPath $file -Encoding UTF8 -ErrorAction SilentlyContinue)
-  if ($lines -notcontains $alternate) {
-    $null = [IO.Directory]::CreateDirectory($info)
-    Put $file ((($lines + $alternate) -join "`n") + "`n")
+  if ($hasMirror) {
+    $clone.Lines | ForEach-Object { Write-Host $_ }
+    if ($clone.Code -eq 124) { throw "$step timed out after 180 s" }
+    if ($clone.Code -ne 0) { throw "$step failed (git exit $($clone.Code))" }
+    if (Test-Path -LiteralPath (Join-Path $stage '.git/objects/info/alternates')) {
+      throw 'the shared mirror has alternates; the staged bench checkout was not installed'
+    }
+    # Keep the objects, not the mirror's branch refs. Only the requested bench pins will be stored.
+    Must-Git @('-C',$stage,'remote','remove','origin')
+    Must-Git @('-C',$stage,'update-ref','-d','HEAD')
+  } else {
+    # The bench can still run before any lane has built the mirror.
+    Must-Git @('init','-q',$stage)
   }
+  Must-Git @('-C',$stage,'config','core.autocrlf','false')
+  Must-Git @('-C',$stage,'config','remote.origin.url',$source)
+  if (Test-Path -LiteralPath $checkout) {
+    # Keep the old alternate-based checkout and its worktree intact. Never use it for new pins.
+    $kept = "$checkout-kept-$([guid]::NewGuid().ToString('N'))"
+    [IO.Directory]::Move($checkout, $kept)
+    Write-Host "kept previous look bench checkout at $kept"
+  }
+  [IO.Directory]::Move($stage, $checkout)
 }
 function Get-LookBenchPin($ref, $checkout, $source) {
   if ($ref -match '\A[0-9a-fA-F]{4,40}\z') {
