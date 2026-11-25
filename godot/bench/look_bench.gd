@@ -53,8 +53,9 @@ const WORLD_PATH := "res://world/world.gd"
 const MOMENTS := "res://bench/look_moments.json"
 const HEX_S := 10.0
 const HEX_W := 17.320508
-const W := 1920
-const H := 1080
+# issue 1877: --size WxH draws smaller (a cloud stand-in run on the software renderer); the PC keeps 1920x1080
+var W := 1920
+var H := 1080
 const STEP := 1.0 / 60.0
 const GRID := 900          # every part starts on a multiple of this many drawn frames
 const FLEET_CELL := Vector2i(400, 240)
@@ -87,6 +88,7 @@ var report := {"stills": [], "warnings": [], "parts": {}}
 var cfg := {}
 var steps := 0
 var headless := false
+var failed := ""   # issue 1877 (Artoo on PR 1904): a failed clip row fails the whole run (no LOOK_BENCH_DONE, exit 4)
 var sfx: Node = null          # --sound only
 var death_audio: Node = null
 
@@ -105,6 +107,10 @@ func _ready() -> void:
 				args[k] = true
 		i += 1
 	out = str(args.get("out", "user://look_bench"))
+	if args.has("size"):
+		var wh := str(args["size"]).split("x")
+		W = int(wh[0])
+		H = int(wh[1])
 	DirAccess.make_dir_recursive_absolute(out)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	Engine.max_fps = 0
@@ -185,6 +191,13 @@ func _run() -> void:
 	_log("late shaders after warm-up (issue 376): %d; pipelines compiled in this run: %d" % [HULL.late_shader_count(), _pipelines()])
 	for line in HULL.late_shader_names():
 		_log("  late shader " + str(line))
+	if failed != "":
+		# the report stays for diagnosis; no DONE line, so look_bench.bat reports the run as failed
+		report["failed"] = failed
+		_save_report()
+		print("LOOK_BENCH_FAILED " + failed)
+		await _shutdown(4)
+		return
 	_save_report()
 	_log("stills: %d, warnings: %d" % [report["stills"].size(), report["warnings"].size()])
 	if not prop_failures.is_empty() and not args.has("props-smoke"):   # --props-smoke: a cloud parse run, no pictures
@@ -197,6 +210,10 @@ func _run() -> void:
 		get_tree().quit(4)
 		return
 	print("LOOK_BENCH_DONE")
+	await _shutdown(0)
+
+
+func _shutdown(code: int) -> void:
 	# a clean exit: drop the static caches and the effects' GPU resources while the rendering server is alive (the
 	# first PC run ended with an access violation after its last line)
 	_clear()
@@ -206,7 +223,7 @@ func _run() -> void:
 	FX.clear_static()
 	SV.clear_static()
 	await get_tree().process_frame
-	get_tree().quit(0)
+	get_tree().quit(code)
 
 
 func _pipelines() -> int:
@@ -740,7 +757,21 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	for wv in row.get("windows", [["impact", -0.07, 12]]):
 		wins.append({"anchor": str(wv[0]), "at": float(wv[1]), "n": int(wv[2]), "got": 0, "next": -1})
 		total += int(wv[2])
-	var strip := Image.create_empty(cell.x * total, cell.y, false, Image.FORMAT_RGB8)
+	# issue 1877: a "clip" row saves every cell as its own frame (DIR/moments/<id>__c<cam>/f000.png ...) for a video,
+	# since a long strip passes Godot's 16384-pixel image limit; the strip is then not made
+	var clip := bool(row.get("clip", false))
+	var clip_dir := d.path_join("%s__c%d" % [id, int(r)])
+	var clip_bad: Array = []   # frames that failed to save (a clip row with any missing frame fails, Artoo on PR 1904)
+	# a "strict" still row fails the same way on a blank cell, a window that never opened or a strip that did not save
+	# (Artoo on PR 1904: the acid colour proof rows must not pass with a blank cell)
+	var strict := bool(row.get("strict", false))
+	if clip and keep:
+		var mk := DirAccess.make_dir_recursive_absolute(clip_dir)
+		if mk != OK or not DirAccess.dir_exists_absolute(clip_dir):
+			failed = "%s at %d: clip folder %s could not be made (error %d)" % [id, int(r), clip_dir, mk]
+			_warn("LOOK_BENCH " + failed)
+			return false
+	var strip := Image.create_empty(1 if clip else cell.x * total, cell.y, false, Image.FORMAT_RGB8)
 	var ci := 0
 	var cells: Array = []
 	var guard := 0
@@ -767,8 +798,20 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			take = steps >= int(w["next"])
 		if take:
 			var img := _grab()
-			if img != null:
+			if clip:
+				if keep:
+					var fp := clip_dir.path_join("f%03d.png" % ci)
+					if img == null:
+						clip_bad.append("f%03d.png (no frame grabbed)" % ci)
+					else:
+						var se: Error = preload("res://tools/picture_provenance.gd").save_png(_crop(img, crop, cell), fp,
+							preload("res://tools/picture_provenance.gd").capture_stage(), true)
+						if se != OK:
+							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
+			elif img != null:
 				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
+			elif strict and keep:
+				clip_bad.append("cell %d (no frame grabbed)" % ci)
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
 			ci += 1
 			w["got"] = int(w["got"]) + 1
@@ -783,7 +826,28 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if not keep:
 		return true
 	var name := "%s__c%d.png" % [id, int(r)]
-	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
+	if clip:
+		# every numbered frame 0 .. total-1 must be on disk, or the row fails (and with it the run: no LOOK_BENCH_DONE)
+		for fi in total:
+			var fn := "f%03d.png" % fi
+			if not FileAccess.file_exists(clip_dir.path_join(fn)) and not clip_bad.any(func(b): return str(b).begins_with(fn)):
+				clip_bad.append(fn + " (missing)")
+		if ci != total or not clip_bad.is_empty():
+			failed = "%s at %d: clip row failed: %d of %d frames taken; bad: %s" % [id, int(r), ci, total, ", ".join(clip_bad)]
+			_warn("LOOK_BENCH " + failed)
+			return false
+		report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/%s__c%d/" % [id, int(r)],
+			"cells": cells, "impacts": impacts, "clip": true})
+		_log("%s at %d: %d clip frames" % [id, int(r), ci])
+		return true
+	var sv: Error = preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
+	if strict:
+		if sv != OK or not FileAccess.file_exists(d.path_join(name)):
+			clip_bad.append("%s (save error %d)" % [name, sv])
+		if ci != total or not clip_bad.is_empty():
+			failed = "%s at %d: strict row failed: %d of %d cells taken; bad: %s" % [id, int(r), ci, total, ", ".join(clip_bad)]
+			_warn("LOOK_BENCH " + failed)
+			return false
 	# issue 1777 (Artoo on PR 1786): record the hull the target resolved to; a row naming "expect_code" says loudly when
 	# the faction and class drew a different hull (a later remap), so a capture bat can fail on it
 	var tcode := str(T.code) if is_instance_valid(T) else ""

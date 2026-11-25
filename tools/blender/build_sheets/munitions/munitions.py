@@ -32,6 +32,7 @@ def kit(name, fn='parts.py'):
 VS = kit('voidsworn')
 HB = kit('hullbreakers')
 HBC = kit('hullbreakers', 'craft.py')
+CH = kit('chorus')
 
 # the sheet kit's shared rows (tools/blender/build_sheets/kit.py MATS) the munitions use, plus each kit's own rows
 BASE_MATS = {
@@ -44,6 +45,12 @@ MATS = dict(BASE_MATS)
 MATS.update(VS.MATS)
 MATS['oath'] = ((0.62, 0.65, 0.68), 0)   # the frost-white oath band as paint (Sunward markings), not a light
 METAL = ('steel', 'iron', 'brass', 'sworn')
+# the Chorus rows the bone bolt uses (the sheet kit's rows, tools/blender/build_sheets/kit.py MATS); the stack names the zones
+MATS.update({
+    'scar': ((0.17, 0.125, 0.07), 0), 'chitin': ((0.25, 0.15, 0.045), 0), 'bone': ((0.55, 0.45, 0.27), 0),
+    'tissue': ((0.13, 0.075, 0.035), 0), 'pore': ((0.012, 0.010, 0.005), 0), 'pit': ((0.010, 0.007, 0.004), 0),
+    'veilroot': ((0.45, 0.68, 0.06), 1.0), 'carapace': ((0.17, 0.122, 0.074), 0), 'flesh': ((0.068, 0.056, 0.029), 0), 'maw': ((0.022, 0.014, 0.008), 0),
+})
 
 
 def _move(p, M):
@@ -259,14 +266,153 @@ def hullbreaker_rocket(variant='A'):
     return p
 
 
+# ------------------------------------------------------------------------------------------------- Chorus bone bolt (tendril)
+# Issue 1877 (Ryan, Nov 24 2026: "Yes bone bolts but we should make sure we actually build those not with code and improve
+# the quality"): the Chorus close-in weapon (data.js tendril, range 1, acid) is one heavy bone bolt grown in a gland and
+# snapped out. factions.md, The Chorus: grown, not built; bone to horn chitin, olive-brown tissue, bile light from inside only;
+# never metal, eyes or a flat lime surface. Every shape comes from the Chorus kit (tools/blender/kits/chorus/parts.py: blob,
+# tube, welt, pore, spine_blade, chitin) and the hull's zones (bone, chitin, tissue, scar; veilroot the restrained bile glow),
+# so the Chorus paint stack bakes it like a hull. Frame as the casing: +X the point, x -1.15 to 1.15.
+#   head   a twisted, ridged pale bone spike (seven growth ridges, a worn point): the part that reads at camera 170
+#   barbs  four swept-back bone barbs at the shoulder (the bolt holds once it is in)
+#   knuckle  a lumpy bone knuckle with growth rings where the head grows out of the shaft
+#   shaft  six splints of dark horn (the hulls' armour finish, carapace) round a bile core: the acid shows only in the cracks
+#   sinew  three wet tissue wraps binding the splints
+#   tail   three raked bone vanes and a rough butt knob (it flies point first, never tumbling)
+def _loft(secs, n, cap0=True, cap1=True):
+    """sections [(x, [r per angle], twist)] along +X; a closed ring of n points each"""
+    V, F = [], []
+    for x, rs, tw in secs:
+        for k in range(n):
+            a = 2 * math.pi * k / n + tw
+            V.append((x, rs[k] * math.cos(a), rs[k] * math.sin(a)))
+    m = len(secs)
+    for j in range(m - 1):
+        for k in range(n):
+            a, b = j * n + k, j * n + (k + 1) % n
+            F.append((a, a + n, b + n, b))
+    if cap0:
+        F.append(tuple(range(n)))
+    if cap1:
+        F.append(tuple(range((m - 1) * n, m * n))[::-1])
+    return V, F
+
+
+def _bare(part):
+    """a kit blade without its tissue collar (the collar is for a hull; on a bolt it reads as a flat disc)"""
+    part.comps = [c for c in part.comps if c['name'] != 'collar']
+    return part
+
+
+def chorus_bolt(variant='A'):
+    import random
+    rnd = random.Random(1877)
+    p = Part('munition')
+    # head: seven ridges, the valleys a third deeper, a quarter turn of twist to the point, a little lumpy
+    n, ridges = 28, 7
+    xh0, xh1 = 0.30, 1.15
+    secs = []
+    for j in range(15):
+        s = j / 14
+        x = xh0 + (xh1 - xh0) * s
+        R = 0.20 * (1 - s) ** 0.85 + 0.004
+        rs = []
+        for k in range(n):
+            a = 2 * math.pi * k / n
+            ridge = 0.5 + 0.5 * math.cos(ridges * a)
+            rs.append(R * (0.70 + 0.30 * ridge ** 1.6) * (1 + 0.05 * math.sin(3 * a + 7 * s + 1.3)))
+        secs.append((x, rs, 0.9 * s))
+    p.add('head', 'body', 'bone', _loft(secs, n, cap0=True, cap1=True))
+    # barbs: four swept-back blades at the shoulder, raked aft, set between the head ridges
+    for k in range(4):
+        a = 2 * math.pi * k / 4 + math.pi / 4
+        b = _bare(CH.spine_blade(0.13, 0.15, t=0.045, rake=60.0, teeth=2, growth=2, seed=10 + k))
+        # spine_blade grows out of +Z and rakes toward -X: on the shoulder it sweeps aft like a fish-hook barb
+        _on_surface(p, 'barb%d' % k, b, 0.42, a, 0.135)
+    # knuckle: the lumpy bone where the head grows out of the shaft, with two growth rolls
+    p.add('knuckle', 'body', 'bone', CH.blob(0.13, 0.215, 0.215, centre=(0.25, 0, 0), nu=22, nv=12, seed=4, amp=0.12))
+    for x, r in ((0.17, 0.19), (0.33, 0.18)):
+        pts = [Vector((x, r * math.cos(2 * math.pi * k / 24), r * math.sin(2 * math.pi * k / 24))) for k in range(25)]
+        p.add('roll%.2f' % x, 'body', 'scar', CH.tube(pts, [0.022] * 25, n=6, cap0=False, cap1=False))
+    # shaft: the bile core, and six splints round it with cracks between (the acid shows only in the cracks)
+    xs0, xs1 = -0.80, 0.20
+    core = []
+    for j in range(9):
+        s = j / 8
+        core.append((xs0 + (xs1 - xs0) * s, [0.09] * 12, 0.0))
+    p.add('core', 'body', 'veilroot', _loft(core, 12))
+    nsp = 6
+    for i in range(nsp):
+        a0 = 2 * math.pi * i / nsp + 0.085 + rnd.uniform(-0.03, 0.03)
+        a1 = 2 * math.pi * (i + 1) / nsp - 0.085 + rnd.uniform(-0.03, 0.03)
+        m = 6
+        rows = []
+        off = rnd.uniform(-0.014, 0.014)
+        for j in range(12):
+            s = j / 11
+            x = xs0 + (xs1 - xs0) * s
+            ro = 0.152 + off + 0.026 * math.sin(math.pi * s) + 0.011 * math.sin(13 * s + 2.1 * i) + 0.006 * math.sin(29 * s + i)
+            # a crack wanders: the splint's edges shift a little along the shaft
+            w = 0.02 * math.sin(6 * s + i * 1.7)
+            ring = []
+            for q in range(m):
+                a = a0 + w + (a1 - a0 - 2 * w * 0) * q / (m - 1)
+                bulge = 1 + 0.06 * math.sin(math.pi * q / (m - 1))
+                ring.append(Vector((x, ro * bulge * math.cos(a), ro * bulge * math.sin(a))))
+            rows.append(ring)
+        V, F = [], []
+        for ring in rows:
+            for v in ring:
+                V.append(tuple(v))
+            for v in ring:
+                d = Vector((0, v.y, v.z)).normalized()
+                V.append(tuple(v - d * 0.045))
+        for j in range(len(rows) - 1):
+            o0, o1 = j * 2 * m, (j + 1) * 2 * m
+            for q in range(m - 1):
+                F.append((o0 + q, o0 + q + 1, o1 + q + 1, o1 + q))                  # outer face
+                F.append((o0 + m + q + 1, o0 + m + q, o1 + m + q, o1 + m + q + 1))  # inner face
+            F.append((o0, o1, o1 + m, o0 + m))                                       # crack walls
+            F.append((o0 + m - 1, o0 + 2 * m - 1, o1 + 2 * m - 1, o1 + m - 1))
+        last = (len(rows) - 1) * 2 * m
+        F.append(tuple([q for q in range(m)] + [m + q for q in reversed(range(m))]))
+        F.append(tuple([last + m + q for q in range(m)] + [last + q for q in reversed(range(m))]))
+        p.add('splint%d' % i, 'body', 'carapace', (V, F))
+    # sinew: three tissue wraps binding the splints, slightly spiralled
+    for x in (-0.68, -0.38, -0.08):
+        pts = [Vector((x + 0.05 * k / 24, 0.178 * math.cos(2 * math.pi * k / 24), 0.178 * math.sin(2 * math.pi * k / 24))) for k in range(25)]
+        p.add('sinew%.2f' % x, 'body', 'tissue', CH.tube(pts, [0.026 + 0.006 * math.sin(k) for k in range(25)], n=6, cap0=False, cap1=False))
+    # acid pores on the shaft between the wraps (the bile weeps out as it flies)
+    for i, (x, a) in enumerate(((-0.52, 0.5), (-0.24, 2.6), (-0.52, 4.3), (0.06, 1.6))):
+        nv = Vector((0, math.cos(a), math.sin(a)))
+        c = Vector((x, 0, 0)) + nv * 0.175
+        p.add('pore%d' % i, 'body', 'scar', CH.pore(c, nv, 0.03, n=14))
+    # tail: the shaft narrows into a rough knuckled butt, like the end of a long bone, with three short hooked spurs (no fins:
+    # it is grown, not a rocket)
+    tl = []
+    for j in range(7):
+        s_ = j / 6
+        x = xs0 + 0.02 - 0.30 * s_
+        R = 0.15 * (1 - 0.35 * s_)
+        tl.append((x, [R * (1 + 0.10 * math.sin(3 * k * 2 * math.pi / 18 + 2 * s_)) for k in range(18)], 0.3 * s_))
+    p.add('neck', 'body', 'carapace', _loft(tl, 18))
+    p.add('butt', 'body', 'bone', CH.blob(0.13, 0.15, 0.13, centre=(-1.04, 0.01, 0), nu=20, nv=10, seed=9, amp=0.2))
+    p.add('butttip', 'body', 'chitin', CH.blob(0.06, 0.08, 0.07, centre=(-1.13, 0, 0.02), nu=14, nv=8, seed=3, amp=0.25))
+    for k in range(3):
+        a = 2 * math.pi * k / 3 + math.pi / 6
+        _on_surface(p, 'spur%d' % k, _bare(CH.spine_blade(0.08, 0.10, t=0.035, rake=55.0, teeth=0, growth=1, seed=20 + k)), -0.96, a, 0.12)
+    return p
+
 MUNITIONS = {
     'voidsworn_torp': ('voidsworn', 'torp', sunward_torpedo),
     'corsair_rockets': ('corsair', 'rockets', hullbreaker_rocket),
+    'chorus_bolt': ('chorus', 'bolt', chorus_bolt),
 }
 # the variant the game uses (options sheet /mnt/project-files/board/torpedo_rework/tp_body_*_r1.jpg; the Board's pick
 # VT-A and KR-B until Ryan picks)
-PICK = {'voidsworn_torp': 'A', 'corsair_rockets': 'B'}
-OUT_GAME = os.path.join(REPO, 'godot', 'fx', 'munitions')
+PICK = {'voidsworn_torp': 'A', 'corsair_rockets': 'B', 'chorus_bolt': 'A'}
+OUT_GAME = os.path.join(REPO, 'godot', 'fx', 'munition_bodies')
+
 
 
 def old_casing():
@@ -309,7 +455,7 @@ def _mat(bpy, name):
 
 def _job(cname):
     """the paint stack's job for a piece: the body is hull (one atlas), the drive and the fittings are parts"""
-    for pre, kind in (('drive_', 'engine'), ('boost_', 'engine'), ('vent', 'vent')):
+    for pre, kind in (('drive_', 'engine'), ('boost_', 'engine'), ('vent', 'vent'), ('barb', 'spine'), ('spur', 'spine')):
         if cname.startswith(pre):
             return 'part', kind, pre.rstrip('_')
     return 'hull', '', 'body'
@@ -330,7 +476,7 @@ def to_blender(bpy, part, name, at=(0, 0, 0)):
         nm = '%s_%s_%s' % (name, grp, m)
         me = bpy.data.meshes.new(nm); me.from_pydata(V, [], F); me.validate(); me.update()
         for poly in me.polygons:
-            poly.use_smooth = False
+            poly.use_smooth = name in SMOOTH     # grown parts are smooth shaded, as the Chorus kit's (parts.SMOOTH)
         ob = bpy.data.objects.new(nm, me); ob.data.materials.append(_mat(bpy, m))
         ob['role'] = role; ob['grp'] = grp
         if kind:
@@ -339,11 +485,13 @@ def to_blender(bpy, part, name, at=(0, 0, 0)):
     return root
 
 
-STACKS = {'voidsworn': 'voidsworn', 'corsair': 'hullbreakers'}
+STACKS = {'voidsworn': 'voidsworn', 'corsair': 'hullbreakers', 'chorus': 'chorus'}
 # Ryan, Nov 20 (PC run 1379c): the Sunward torpedo read near black in game ("Brighten"). A torpedo is a few pixels on the board,
 # so the black-iron hull finish is lifted on its baked albedo (the ships keep theirs). 1.0 = the ship finish as baked.
-LIFT = {'voidsworn': 2.3, 'corsair': 1.15}
+LIFT = {'voidsworn': 2.3, 'corsair': 1.15, 'chorus': 1.0}
 KEEP = ('oath',)      # painted marks the stack has no zone for: kept as their own flat material (the frost-white oath band)
+SMOOTH = ('chorus_bolt',)
+RES = {'chorus_bolt': 1024}   # the bolt is seen close at camera 26 (Ryan: "improve the quality"); the rest keep 512
 
 
 def lift(bpy, cell, k):
@@ -413,7 +561,7 @@ def main():
             v = PICK[code]
             root = to_blender(bpy, fn(v), code)
             if mode != 'flat':
-                paint(bpy, root, fac, code, os.path.join(out, '_paint', code))
+                paint(bpy, root, fac, code, os.path.join(out, '_paint', code), res=RES.get(code, 512))
             bpy.ops.object.select_all(action='DESELECT')
             for o in [root] + list(root.children):
                 o.select_set(True)

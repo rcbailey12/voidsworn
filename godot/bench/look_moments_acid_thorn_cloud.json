@@ -1,0 +1,58 @@
+{
+ "about": "Issue 1877: Acid Thorns, the Chorus close-in weapon (rules id tendril: range 1, 2 shots, acid), built in Blender (fx/munition_bodies/chorus_bolt.glb, fx/fx_acid_thorn.gd). The Spitter (the Chorus destroyer that carries it) fires its two thorns at a Directorate destroyer one hex away, as a clip (every frame saved): the gland swells, the thorns fly point first, stick in the plating, acid sheets down and pools, then each thorn crumbles. Run with --part moments --moments res://bench/look_moments_acid_thorn.json. Cloud stand-in: whole frame at both cameras, run with --size 960x540.",
+ "cameras": [
+  170,
+  26
+ ],
+ "cell": [
+  960,
+  540
+ ],
+ "crop": {
+  "170": [
+   960,
+   540
+  ],
+  "26": [
+   960,
+   540
+  ]
+ },
+ "rows": [
+  {
+   "id": "thorn",
+   "group": "Acid Thorns",
+   "label": "Acid Thorns (built thorn, sticks then crumbles)",
+   "att": [
+    "chorus",
+    "Destroyer"
+   ],
+   "tgt": [
+    "hegemony",
+    "Destroyer"
+   ],
+   "tgt_at": [
+    -16.7,
+    0
+   ],
+   "focus": "target",
+   "focus_off": [
+    -8.6,
+    0
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "tendril",
+   "on": "hull",
+   "clip": true,
+   "windows": [
+    [
+     "fire",
+     0.0,
+     110
+    ]
+   ],
+   "key": 0
+  }
+ ]
+}
