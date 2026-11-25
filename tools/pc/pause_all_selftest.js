@@ -93,9 +93,14 @@ $b = New-Job board_b 2 partial b
 $c = New-Job board_c 3 checked_push c
 $d = New-Job board_d 4 checked_push d
 $ds = New-Job work217 5 running e
+$e = New-Job board_e 6 running a
+$f = New-Job board_f 7 partial b
 # Old successful history must not be mistaken for this lane's current job.
 $old = New-Job board 99 checked_push f '2026-11-16T00:00:00Z'
-$script:hook = { if ($script:now -ge [datetime]'2026-11-17T01:03:20') { Set-Status $ds checked_push } }
+$script:hook = {
+  if ($script:now -ge [datetime]'2026-11-17T01:03:20') { Set-Status $ds checked_push }
+  if ($script:now -ge [datetime]'2026-11-17T01:03:25') { Set-Status $e checked_push }
+}
 $script:agents = @(
   [pscustomobject]@{Name='codex.exe'; CommandLine='codex voidsworn_test\board'; ProcessId=101},
   [pscustomobject]@{Name='opencode.exe'; CommandLine='opencode voidsworn_test\work217'; ProcessId=102},
@@ -111,14 +116,15 @@ $log = Read-Log
 Assert ($log -match 'board/issue-1: done') 'finished job not done'
 Assert ($log -match 'board_b/issue-2: checkpoint verified') 'partial checkpoint not verified'
 Assert ($log -match 'board_c/issue-3: done' -and $log -match 'board_d/issue-4: done') 'C or D missing'
+Assert ($log -match 'board_e/issue-6: done' -and $log -match 'board_f/issue-7: checkpoint verified') 'E or F missing'
 Assert ($log -match 'work217/issue-5-deepseek: done') 'DeepSeek final checks not awaited'
 Assert (-not $log.Contains('issue-99')) 'old terminal history reported as current'
-Assert ($script:now -ge [datetime]'2026-11-17T01:03:20') 'quiet process list skipped runner checks'
+Assert ($script:now -ge [datetime]'2026-11-17T01:03:25') 'quiet process list skipped runner checks'
 Assert ($log.TrimEnd().EndsWith('safe to restart') -and -not $log.Contains('NOT safe')) 'verified pause not safe'
 Assert (($script:killed | Sort-Object) -join ',' -eq '101,102,105') 'ended unrelated process or active window'
-Assert ($script:queries.Count -eq 5 -and $script:queries.Contains('refs/heads/codex/issue-2-partial')) 'wrong branch verified'
+Assert ($script:queries.Count -eq 7 -and $script:queries.Contains('refs/heads/codex/issue-2-partial') -and $script:queries.Contains('refs/heads/codex/issue-7-partial')) 'wrong branch verified'
 Assert ((Read-PauseText (Join-Path $script:case 'gpu_go.txt')) -like 'GPU not cleared*') 'GPU go not withdrawn'
-Write-Host 'PASS finished job, partial checkpoint, all five lanes, wait through DeepSeek checks, narrow kills and waiting windows'
+Write-Host 'PASS finished jobs, partial checkpoints, all six Codex lanes and DeepSeek, narrow kills and waiting windows'
 
 Begin-Case 'mid-checks-timeout'
 $ds = New-Job work217 10 running

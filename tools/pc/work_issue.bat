@@ -169,6 +169,10 @@ echo %R%| findstr /i /c:"board_c" >nul
 if not errorlevel 1 set "PC_GPU_LANE=C"
 echo %R%| findstr /i /c:"board_d" >nul
 if not errorlevel 1 set "PC_GPU_LANE=D"
+echo %R%| findstr /i /c:"board_e" >nul
+if not errorlevel 1 set "PC_GPU_LANE=E"
+echo %R%| findstr /i /c:"board_f" >nul
+if not errorlevel 1 set "PC_GPU_LANE=F"
 mkdir "%O%"
 echo %A%> "%WORK_ROOT%\%K%\latest.txt"
 echo started %date% %time% (%MODE%) > "%O%\result.txt"
