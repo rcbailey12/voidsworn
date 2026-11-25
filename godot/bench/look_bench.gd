@@ -125,10 +125,11 @@ func _warn(s: String) -> void:
 
 func _run() -> void:
 	# issue 370: --moments FILE reads another rows file (a job's own rows, e.g. bench/look_moments_attach.json)
-	var f := FileAccess.get_file_as_string(str(args.get("moments", MOMENTS)))
+	var moments_path := str(args.get("moments", MOMENTS))
+	var f := FileAccess.get_file_as_string(moments_path)
 	var parsed = JSON.parse_string(f)
 	if not (parsed is Dictionary):
-		_log("ERROR cannot read " + MOMENTS)
+		_log("ERROR cannot read " + moments_path)
 		get_tree().quit(2)
 		return
 	cfg = parsed
@@ -152,7 +153,7 @@ func _run() -> void:
 	report["adapter"] = RenderingServer.get_video_adapter_name()
 	report["fixed_fps"] = Engine.get_physics_ticks_per_second()
 	report["fleet_lighting"] = LOOK.fleet_lighting_enabled()   # issue 1679: which lighting this run drew (VS_FLEET_LIGHTING)
-	report["moments_sha256"] = FileAccess.get_sha256(MOMENTS)
+	report["moments_sha256"] = FileAccess.get_sha256(moments_path)
 	report["bench_sha256"] = FileAccess.get_sha256("res://bench/look_bench.gd")
 	headless = DisplayServer.get_name() == "headless"
 	if headless:
@@ -675,6 +676,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	seed(2070)
 	var t_ev: float = fx.now
 	var impacts: Array = []
+	var extra_anchors := {}
 	var what := str(row.get("do", "volley"))
 	if what == "volley":
 		var kind := str(row.get("kind", "battery"))
@@ -683,13 +685,47 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		if n <= 0:
 			n = WEAP.default_shots(WEAP.look_of(kind, wid, str(att[0])))
 		var shots := []
+		var pd := int(row.get("pd", 0))
 		for i in n:
-			shots.append(true)
+			shots.append(i >= pd)
+		var old_casing := WEAP._old_casing
+		if row.has("fallback_casing"):
+			WEAP._old_casing = bool(row["fallback_casing"])
 		var res: Dictionary = fx.volley("A", kind, "T", {"weapon_id": wid, "shots": shots, "slot": int(row.get("slot", -1)),
-			"hits": _hits(n, str(row.get("on", "hull")) == "shield", bool(row.get("crit", false)))})
+			"hits": _hits(n - pd, str(row.get("on", "hull")) == "shield", bool(row.get("crit", false))), "pd": pd})
+		WEAP._old_casing = old_casing
 		impacts = res.get("impacts", [])
 		if impacts.is_empty():
 			_warn("%s: the volley reported no impact time; impact anchor set to fire + 0.6 s" % id)
+			if row.has("shot_focus"):
+				return false
+		if not impacts.is_empty() and row.has("shot_focus"):
+			var fire: float = res["fires"][0]
+			var muzzle: Vector3 = res["muzzles"][0]["p"]
+			var point: Vector3 = res["points"][0]
+			extra_anchors["release"] = t_ev + fire
+			extra_anchors["flight"] = t_ev + lerpf(fire, float(impacts[0]), 0.5)
+			var shot_focus := str(row["shot_focus"])
+			if shot_focus == "muzzle":
+				focus = muzzle
+			elif shot_focus == "ordnance" or shot_focus == "intercept":
+				var rounds: Array = fx.dstate.get("proj", [])
+				if rounds.is_empty():
+					_warn("%s: no ordnance to frame" % id)
+					return false
+				var round_: Dictionary = rounds[0]
+				if shot_focus == "intercept":
+					if not is_finite(float(round_["dead_at"])):
+						_warn("%s: no scheduled intercept" % id)
+						return false
+					extra_anchors["intercept"] = float(round_["dead_at"])
+					focus = WEAP._down_point(round_)
+				else:
+					focus = WEAP._bez(round_["a"], round_["b"], round_["c"], WEAP._ease(0.5))
+					extra_anchors["flight"] = lerpf(float(round_["t0"]), float(round_["t1"]), 0.5)
+			else:
+				focus = muzzle.lerp(point, float(row.get("flight_focus", 0.5)))
+			_cam(focus, r)
 	elif what == "break":
 		# a hit first, so the bubble is up, then the collapse half a second later
 		fx.volley("A", "gauss", "T", {"weapon_id": "gauss", "shots": [true], "hits": _hits(1, true, false)})
@@ -732,6 +768,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.sync_ship("A", {"hp": 25.0, "maxHp": 100.0, "burning": false, "sh": [5, 5, 5, 5],
 			"sec": {"eng": {"hp": 10, "max": 100}, "mid": {"hp": 10, "max": 100}, "prow": {"hp": 10, "max": 100}}})
 	var anchors := {"fire": t_ev, "event": t_ev, "impact": t_ev + (float(impacts[0]) if impacts.size() > 0 else 0.6)}
+	anchors.merge(extra_anchors)
 	# Issue 504: a row may fire a second volley from A at T during the event ("also": [seconds after the event, kind,
 	# weapon]), for example a torpedo landing on a dying capital; the "also" anchor is that volley's first impact.
 	var also: Array = row.get("also", [])
