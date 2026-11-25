@@ -26,7 +26,9 @@ $web = 'https://github.com/rcbailey12/voidsworn-relay'
 # OEM code page, so a non-ASCII name would never match in the tree check. A process with no console may refuse the change.
 try { [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false) } catch { }
 $gitExe = 'git.exe'; if ($unix) { $gitExe = @(Get-Command git -CommandType Application)[0].Source }
-$gitLongPaths = @('-c', 'core.longpaths=true')
+. (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
+Set-PCGitNonInteractive
+$gitLongPaths = @('-c', 'core.longpaths=true') + @(PCGitNetworkOptions)
 $OutputEncoding = New-Object System.Text.UTF8Encoding $false
 function Run-Git {
   $ErrorActionPreference = 'Continue'
