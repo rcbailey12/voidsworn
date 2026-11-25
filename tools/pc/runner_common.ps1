@@ -564,9 +564,14 @@ function Can-ReuseRepo($repo, $mirror, $patterns) {
     return $true
   } catch { Log "checkout needs keeping: $($_.Exception.Message)"; return $false }
 }
-function Repo-Mirror {
+function Repo-Mirror($lane = '') {
   if ($test) { return $env:PC_TEST_MIRROR }
-  Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\repo-mirror.git'
+  $name = switch ($lane) {
+    'board_e' { 'repo-mirror-e.git' }
+    'board_f' { 'repo-mirror-f.git' }
+    default { 'repo-mirror.git' }
+  }
+  Join-Path (Join-Path $env:USERPROFILE 'Downloads\voidsworn_test') $name
 }
 function Cleanup-Paused {
   if (-not $env:USERPROFILE) { return $false }
@@ -1508,7 +1513,7 @@ try {
     $patterns = @()
     $slot = Split-Path -Leaf (Split-Path -Parent $repo)
     if ($args[4]) { $patterns = @($args[4] -split '\s+') }
-    elseif ($slot -match '\A(board_[cd]|slot_(deepseek|deepseekpro|kimi|kimicode|sonnet|opus|openai))\z') {
+    elseif ($slot -match '\A(board_[c-f]|slot_(deepseek|deepseekpro|kimi|kimicode|sonnet|opus|openai))\z') {
       # Only the opening fixed block can opt a folder back in. Later prose and older runs never change the profile.
       $snapshot = Read (Join-Path $out 'validated_issue.json')
       $fixed = [regex]::Match(($snapshot | ConvertFrom-Json).body, $fixedBlockPattern).Value
@@ -1517,7 +1522,7 @@ try {
       if ($excluded.Count) { Log "code checkout excludes: $($excluded -join ', ')" }
     }
     $source = 'https://github.com/rcbailey12/voidsworn'
-    $mirror = Repo-Mirror
+    $mirror = Repo-Mirror $slot
     if ($test) {
       if (-not $env:PC_TEST_SOURCE -or -not $env:PC_TEST_MIRROR) { throw 'test checkout requires PC_TEST_SOURCE and PC_TEST_MIRROR (no live network)' }
       $source = $env:PC_TEST_SOURCE
@@ -1686,7 +1691,12 @@ try {
       if ($args[7] -ne 'real' -and -not $test) { Log "job validated: issue #$issue (dry run, no claim written)"; exit 0 }
       $head = @($branches | Where-Object { $_.name -eq 'main' } | ForEach-Object { $_.commit.sha }) -join ''
       # Issue 947: the public status comment names the lane, never the machine or a PC path (folder stays in local state only).
-      $lane = switch ((Split-Path -Leaf (Split-Path -Parent $repo)).ToLowerInvariant()) { 'board' { 'main' } 'board_b' { 'B' } 'board_c' { 'C' } 'board_d' { 'D' } default { 'other' } }
+      $board = Split-Path -Leaf (Split-Path -Parent $repo)
+      $lane = switch -Regex ($board) {
+        '^board$' { 'main' }
+        '^board_[b-f]$' { $board.Substring(6).ToUpperInvariant() }
+        default { 'other' }
+      }
       $g = @{ issue = $issue; seat = $args[3]; folder = $repo; lane = $lane;
         started = [DateTime]::UtcNow.ToString('o'); ceiling = $args[5]; resume = $args[6]; comment = 0;
         start_commit = $head; claimed = $false; marker = "<!-- voidsworn-runner-status branch=$($s.branch) -->" }
@@ -2177,9 +2187,10 @@ try {
           if ($status -eq 'checked_push' -and $args[6]) {
             $repo = [IO.Path]::GetFullPath($args[6])
             $board = Split-Path -Parent $repo
-            if ($test -or ((Split-Path -Leaf $repo) -eq 'repo' -and (Split-Path -Leaf $board) -in @('board','board_b','board_c','board_d') -and
+            $lane = Split-Path -Leaf $board
+            if ($test -or ((Split-Path -Leaf $repo) -eq 'repo' -and $lane -match '\Aboard(?:_[b-f])?\z' -and
                 (Split-Path -Parent $board) -eq (Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'))) {
-              Remove-OlderKeptRepos $board (Repo-Mirror)
+              Remove-OlderKeptRepos $board (Repo-Mirror $lane)
             }
           }
         }

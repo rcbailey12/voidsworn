@@ -35,8 +35,9 @@ rem %TPC% is %TP% without its trailing backslash, for passing the tools folder a
 rem cmd merges "%TP%" with the next quoted argument because of the backslash before the quote).
 set "TPC=%TP:~0,-1%"
 rem Issue 947: each lane runs its own tools copy and its own board folder (build_b main: board, build_c lane B: board_b,
-rem build_d lane C: board_c, build_e lane D: board_d). The folder comes from where this file sits, so one runner file
-rem serves every lane. On Nov 17 a single hard-coded board\repo sent lanes C and D at the main chain's live checkout.
+rem build_d lane C: board_c, build_e lane D: board_d, build_f lane E: board_e, build_g lane F: board_f).
+rem The folder comes from where this file sits, so one runner file serves every lane. On Nov 17 a single
+rem hard-coded board\repo sent lanes C and D at the main chain's live checkout.
 for %%I in ("%TP%..\..") do set "LANEDIR=%%~fI"
 for %%I in ("%LANEDIR%") do set "LANEDIR=%%~nxI"
 set "BOARD="
@@ -44,7 +45,9 @@ if /i "%LANEDIR%"=="build_b" set "BOARD=board"
 if /i "%LANEDIR%"=="build_c" set "BOARD=board_b"
 if /i "%LANEDIR%"=="build_d" set "BOARD=board_c"
 if /i "%LANEDIR%"=="build_e" set "BOARD=board_d"
-if not defined CODEX_TEST_ROOT if not defined BOARD (echo job refused: this runner copy is in %LANEDIR%, which is not a lane tools folder ^(build_b to build_e^); no agent started & exit /b 2)
+if /i "%LANEDIR%"=="build_f" set "BOARD=board_e"
+if /i "%LANEDIR%"=="build_g" set "BOARD=board_f"
+if not defined CODEX_TEST_ROOT if not defined BOARD (echo job refused: this runner copy is in %LANEDIR%, which is not a lane tools folder ^(build_b to build_g^); no agent started & exit /b 2)
 set "R=%ROOT%\%BOARD%\repo"
 set "O=%ROOT%\%BOARD%\issue-%N%"
 set "ASSIGNED_BRANCH=codex/issue-%N%"
@@ -54,10 +57,10 @@ rem R276: all nested GPU launchers inherit the issue and the code-only lane.
 set "PC_GPU_ISSUE=%N%"
 if not defined PC_GPU_WAIT_SECONDS set "PC_GPU_WAIT_SECONDS=1500"
 set "PC_GPU_LANE="
-echo %R%| findstr /i /c:"board_c" >nul
-if not errorlevel 1 set "PC_GPU_LANE=C"
-echo %R%| findstr /i /c:"board_d" >nul
-if not errorlevel 1 set "PC_GPU_LANE=D"
+if /i "%BOARD%"=="board_c" set "PC_GPU_LANE=C"
+if /i "%BOARD%"=="board_d" set "PC_GPU_LANE=D"
+if /i "%BOARD%"=="board_e" set "PC_GPU_LANE=E"
+if /i "%BOARD%"=="board_f" set "PC_GPU_LANE=F"
 if not defined CODEX_TEST_ROOT goto :setup
 set "B=%CODEX_TEST_ROOT%"
 set "R=%CODEX_TEST_ROOT%\repo"
