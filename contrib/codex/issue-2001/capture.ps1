@@ -1,6 +1,28 @@
-param([string]$Shots)
+param([string]$Shots, [switch]$Plan)
 
 $ErrorActionPreference = 'Stop'
+$trialModes = [ordered]@{ before = $null; after = '1' }
+
+function Get-PlanetCaptureOptions($dir, $side) {
+    # Offset 0 frames a dark basalt flow at c26. Offset 5 puts lit ash and basalt in view at the same exposure.
+    # --seed is a bench offset, applied to both planet kinds and held fixed across the two passes.
+    @(
+        '--rendering-method', 'forward_plus', '--fixed-fps', '60', '--disable-vsync', '--windowed',
+        '--resolution', '1280x720', '--script', 'res://world/planet_v2_shots.gd', '--',
+        '--out', $dir, '--only', 'board', '--mm-trial', '--seed', '5', '--tag', $side
+    )
+}
+
+if ($Plan) {
+    Write-Host 'Planet comparison plan only. No captures are run.'
+    foreach ($side in $trialModes.Keys) {
+        $trial = if ($null -eq $trialModes[$side]) { '<unset>' } else { $trialModes[$side] }
+        $options = Get-PlanetCaptureOptions "<scratch>\$side" $side
+        Write-Host ("{0} (VS_MM_TRIAL={1}): {2}" -f $side, $trial, ($options -join ' '))
+    }
+    exit 0
+}
+
 $pc = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
 if ($repo -match '[\\/]board_[cd][\\/]') { throw 'Use a GPU lane checkout for the comparison.' }
@@ -84,8 +106,8 @@ $planets = 'terran', 'volcanic'
 $planetTrialLoads = foreach ($planet in $planets) { "$planet res://world/detail/mm_trial/$planet.png" }
 
 $pictures = @()
-foreach ($side in 'before', 'after') {
-    if ($side -eq 'after') { $env:VS_MM_TRIAL = '1' }
+foreach ($side in $trialModes.Keys) {
+    $env:VS_MM_TRIAL = $trialModes[$side]
     $dir = Join-Path $work $side
     New-Item -ItemType Directory -Path $dir | Out-Null
     $rows = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'look_moments.json') -Raw | ConvertFrom-Json
@@ -112,11 +134,7 @@ foreach ($side in 'before', 'after') {
         }
     }
 
-    Invoke-GodotStep "planets-$side" 1200 @(
-        '--rendering-method', 'forward_plus', '--fixed-fps', '60', '--disable-vsync', '--windowed',
-        '--resolution', '1280x720', '--script', 'res://world/planet_v2_shots.gd', '--',
-        '--out', $dir, '--only', 'board', '--mm-trial', '--tag', $side
-    ) 'planet v2 shots: band 2 PASS' $planetTrialLoads
+    Invoke-GodotStep "planets-$side" 1200 (Get-PlanetCaptureOptions $dir $side) 'planet v2 shots: band 2 PASS' $planetTrialLoads
     foreach ($planet in $planets) {
         foreach ($camera in 'c170', 'c26') {
             $pictures += Join-Path $dir ('{0}_{1}_{2}.png' -f $planet, $camera, $side)
