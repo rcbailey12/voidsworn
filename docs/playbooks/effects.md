@@ -74,6 +74,18 @@ effect: a weapon hit, a shield response, a trail, a death.
 6. Make the before and after strip, camera 170 first. That strip is the one image for Ryan.
 7. Write what changed into this playbook if it taught anything (a new trap, a new moment).
 
+### Shared effect kind IDs
+
+Pick kind IDs from the [registry in fx.gd](../../godot/fx/fx.gd) before adding an emitter or changing a shader branch
+(issue 2176). SPRITE, STREAK, RING, RIBBON, DISTORT and BREACH each have their own number space. Reuse an existing name
+only for the same effect. For a new effect, add a name and an unused number there first. Keep shipped IDs, legacy gaps
+and reservations for other PRs intact. Use the named ID at new call sites, and keep the shader's vertex and fragment
+tests in step with it. A reservation alone does not turn on an effect.
+
+When adding a BREACH style, keep the matching `S_*` constant in `fx_breach.gd` in step too. The headless
+`fx_kind_registry_check.gd` in `godot_checks.txt` rejects duplicate numbers within a family, unregistered shader
+comparisons, and drift in those breach constants.
+
 ## 4. The checks that prove it
 
 - The bench strip at camera 170 shows the effect, with its measured size and time beside the table's row. The row is a

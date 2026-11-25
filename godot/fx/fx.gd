@@ -15,6 +15,133 @@ const SHIP := preload("res://fx/fx_ship.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 
+# Shared effect kind registry (issue 2176). Numbers are unique within each family, not across families.
+# These IDs are packed into particle or mesh data. Keep shipped assignments stable and use named IDs in new emitters.
+# PR reservations do not add a shader branch or turn on an effect. The headless registry check reads the shader
+# selectors and the existing fx_breach.gd S_* constants against this registry.
+enum SpriteKind {
+	FLASH = 0,
+	FLAME = 1,
+	FIREBALL_CORE = 2,
+	SMOKE = 3,
+	ENGINE_CORE = 4,
+	SQUIB = 5,
+	# Keep legacy gaps 6, 9 and 10 free.
+	VENT_GAS = 7,
+	SOOT = 8,
+	SPUTTER_CORE = 11,
+	BEAM_CHARGE = 12,
+	BEAM_IMPACT = 13,
+	PLASMA_BOLT = 14,
+	BIO_GLOB = 15,
+	PRISM_GLINT = 16,
+	STAR_BALL = 17,
+	SOFT_LIFT = 18,
+	EMBER = 19,
+	ACID_FUME = 20, # Also the existing organic mist mask.
+	HEAT_GLOW = 21,
+	COIL_GLOW = 22,
+	CRAFT = 23,
+	DEATH_CORE = 24,
+	DEATH_FIRE = 25,
+	PLASMA_FIRE = 26, # Existing faction-coloured fire, including Eclipse damage.
+	HIT_GAS = 27,
+	PALETTE_EMBER = 28, # PR 2007: palette-coloured embers and spores.
+	BIO_CONTACT_GLOB = 29, # PR 2021
+	BOLT_PLASMA = 30, # PR 2133
+	BOLT_BIO = 31,
+	BOLT_BOMB = 32,
+	MUZZLE_BALLISTIC = 33,
+	MUZZLE_ENERGY = 34,
+	MUZZLE_CRYSTAL = 35,
+	MUZZLE_BIO = 36,
+	ROCKET_SMOKE = 37,
+	TICK_EMBER = 38, # PR 2132
+	TICK_DROPLET = 39,
+	HULL_RUPTURE_JET = 40, # PR 2084
+	NOVA_SHELL = 41, # PR 2069
+	FACTION_VENT_GAS = 42, # PR 2007: new tinted vents, separate from 7.
+	ECLIPSE_DEATH_SMOKE = 43, # PR 2007: new violet smoke emitters, separate from 8.
+	PALETTE_PLASMA_FIRE = 44, # PR 2007: its retuned plasma fire mask, separate from 26.
+}
+
+enum StreakKind {
+	SHELL = 0,
+	SPARK = 1,
+	# Keep legacy gap 2 free.
+	FLAME_TONGUE = 3,
+	LAS_DART = 4,
+	NULL_SLUG = 5, # Own pool and shader.
+	BIO_DROPLET = 6,
+	MOLTEN_DRIP = 7,
+	HULL_HIT_SPARK = 8,
+	BOLT_SHELL = 9, # PR 2133
+	BOLT_ENERGY = 10,
+	BOLT_CRYSTAL = 11,
+	BOLT_SCRAP = 12,
+	SHARED_SPARK = 13, # PR 2049: own spark pool and shader.
+}
+
+enum RingKind {
+	SMOKE = 0,
+	SHOCKWAVE = 1,
+	SOFT_POP = 2,
+	THIN_PALE = 3,
+	HEX_CELL = 4,
+	DEATH_FRONT = 5, # PR 2128
+	HARMONIC = 6, # PR 2136
+	RIFT_ARCH = 7, # PR 2069
+	RIFT_SCAN = 8,
+	RIFT_VENT = 9,
+	RIFT_BLOOM = 10,
+	RIFT_FACET = 11,
+	RIFT_FOLD = 12,
+}
+
+enum RibbonKind {
+	PLUME = 0,
+	TRAIL = 1,
+	LANCE = 2,
+	SPUTTER_PLUME = 3,
+	# Keep legacy gap 4 free.
+	ION = 5,
+	DOOM_LIGHTNING = 6,
+	PULSAR = 7,
+	NEEDLE = 8,
+	TENDRIL = 9,
+	ECLIPSE_ARC = 10, # Own pool and shader.
+	NULL_LANCE = 11, # Already shipped. PR 2136 extends it.
+}
+
+enum DistortKind {
+	RING = 0,
+	HAZE = 1,
+	BEAM = 2, # PR 2136
+}
+
+# Shared HOLE and MARK surface styles, not the mesh-cut kinds (K_*) or the faction wound modes.
+enum BreachStyle {
+	BREACH = 0,
+	BURN = 1,
+	SHELL = 2,
+	PLASMA = 3,
+	GAUSS_IN = 4,
+	GAUSS_OUT = 5,
+	BLAST = 6,
+	FLAK = 7,
+	ACID = 8,
+	ION = 9,
+	RAM = 10,
+	HATCH = 11,
+	DENT = 12,
+	SCORCH = 13,
+	PATCH = 14,
+	FISSURE = 15,
+	PRISM = 16,
+	STAR = 17,
+	NLANCE = 18, # PR 2136 also uses this style for its V2-off fallback.
+}
+
 signal torpedo_shot_down(pos: Vector3)
 
 # Faction colours and styles come from data (fx/faction_looks.json via fx/faction_look.gd; API.md 15), so a faction's
@@ -759,7 +886,8 @@ func _p(a0: Vector4, a1: Vector4, a2: Vector4, a3: Vector4, a4: Vector4) -> Pack
 	return POOLS.pack(a0, a1, a2, a3, a4)
 
 
-const SMOKY := {3: true, 7: true, 8: true, 15: true, 20: true, 23: true, 27: true}
+const SMOKY := {SpriteKind.SMOKE: true, SpriteKind.VENT_GAS: true, SpriteKind.SOOT: true,
+	SpriteKind.BIO_GLOB: true, SpriteKind.ACID_FUME: true, SpriteKind.CRAFT: true, SpriteKind.HIT_GAS: true}
 
 
 # `px` (F3 round 2): this sprite's own minimum size on screen, in pixels on a 1080-line screen (0: the kind's floor).
@@ -770,9 +898,9 @@ func spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1:
 	# contact, secondary pops, death flames): refused or in reduce-flashing mode it becomes a soft lift with no peak
 	# Issue 504: the counter adds this sprite's lit area to the bright ones around it (flash_at).
 	if i >= FLASH_I and life <= 0.6 and SH.FLASH_SPRITE_FLOORS.has(kind):
-		var size := s0 if kind == 13 else maxf(s0, s1) # The crackle does not grow.
+		var size := s0 if kind == SpriteKind.BEAM_IMPACT else maxf(s0, s1) # The crackle does not grow.
 		if not flash_at(p, t, size, SH.flash_sprite_floor(kind, px), life):
-			kind = 18
+			kind = SpriteKind.SOFT_LIFT
 			i = minf(i, 3.0) * 0.4
 			life = maxf(life * 3.0, 0.4)
 	_emit_spr(p, t, life, col, i, s0, s1, kind, vel, drag, spin, acc, px)
@@ -801,7 +929,7 @@ func sprx(px: float, p: Vector3, t: float, life: float, col: Color, i: float, s0
 # `wpx`, `lpx` (F3 round 2): this streak's own minimum width and length on screen (pixels at 1080 lines; 0: the kind's).
 func stk(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
 		drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
-	var pool: POOLS.Pool = pools["null"] if kind == 5 else pools["stk"]
+	var pool: POOLS.Pool = pools["null"] if kind == StreakKind.NULL_SLUG else pools["stk"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
 		Vector4(col.r, col.g, col.b, i), Vector4(length, w * unit, drag, kind), Vector4(0.0, acc, wpx, lpx)))
 
@@ -844,7 +972,7 @@ func ring(p: Vector3, n: Vector3, t: float, life: float, col: Color, i: float, s
 func rib(p: Vector3, dir: Vector3, length: float, t: float, life: float, col: Color, i: float, w0: float, w1: float, kind: int) -> void:
 	if rib_log != null:
 		rib_log.append([t, col])
-	var pool: POOLS.Pool = pools["arc"] if kind == 10 else pools["rib"]
+	var pool: POOLS.Pool = pools["arc"] if kind == RibbonKind.ECLIPSE_ARC else pools["rib"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, kind), Vector4(dir.x, dir.y, dir.z, length),
 		Vector4(col.r, col.g, col.b, i), Vector4(w0 * unit, w1 * unit, rng.randf(), 0.0), Vector4(t, life, 0.0, 0.0)))
 
@@ -2232,18 +2360,24 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
 	var c = Color(1, 0.6, 0.3)
-	for k in [0, 1, 2, 3, 4, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]:
+	for k in [SpriteKind.FLASH, SpriteKind.FLAME, SpriteKind.FIREBALL_CORE, SpriteKind.SMOKE, SpriteKind.ENGINE_CORE,
+			SpriteKind.SQUIB, SpriteKind.VENT_GAS, SpriteKind.SOOT, SpriteKind.SPUTTER_CORE, SpriteKind.BEAM_CHARGE,
+			SpriteKind.BEAM_IMPACT, SpriteKind.PLASMA_BOLT, SpriteKind.BIO_GLOB, SpriteKind.PRISM_GLINT,
+			SpriteKind.STAR_BALL, SpriteKind.SOFT_LIFT, SpriteKind.EMBER, SpriteKind.ACID_FUME, SpriteKind.HEAT_GLOW,
+			SpriteKind.COIL_GLOW, SpriteKind.CRAFT]:
 		spr(at + rdir(), T, 0.5, c, 0.02, 0.5, 0.5, k)
-	for k in [0, 1, 3, 4, 5, 6, 7]:
+	for k in [StreakKind.SHELL, StreakKind.SPARK, StreakKind.FLAME_TONGUE, StreakKind.LAS_DART, StreakKind.NULL_SLUG,
+			StreakKind.BIO_DROPLET, StreakKind.MOLTEN_DRIP]:
 		stk(at, T, 0.5, c, 0.02, 1.0, 0.1, k, Vector3(1, 0, 0))
-	for k in [0, 1, 2, 3, 4]:
+	for k in [RingKind.SMOKE, RingKind.SHOCKWAVE, RingKind.SOFT_POP, RingKind.THIN_PALE, RingKind.HEX_CELL]:
 		ring(at, Vector3.UP, T, 0.5, c, 0.02, 0.5, 1.0, k)
-	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]:
+	for k in [RibbonKind.PLUME, RibbonKind.TRAIL, RibbonKind.LANCE, RibbonKind.SPUTTER_PLUME, RibbonKind.ION,
+			RibbonKind.DOOM_LIGHTNING, RibbonKind.PULSAR, RibbonKind.NEEDLE, RibbonKind.TENDRIL, RibbonKind.ECLIPSE_ARC]:
 		rib(at, Vector3(1, 0, 0), 2.0, T, 0.5, c, 0.02, 0.2, 0.2, k)
 	shd(at, T, 0.5, Vector3.ZERO, 0.2, 1.0)
 	_warm_fragment_finish(at, T, c)
-	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
-	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
+	dst(at, T, 0.5, 0.5, 1.0, DistortKind.RING, 0.1)
+	dst(at, T, 0.5, 0.5, 1.0, DistortKind.HAZE, 0.1)
 	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
 		await get_tree().process_frame
 		if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)

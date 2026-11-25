@@ -8,6 +8,7 @@ extends RefCounted
 #   a0 = CUSTOM0 (pos, tStart)   a1 = CUSTOM1 (vel, life)   a2 = CUSTOM2 (colour, intensity)
 #   a3 = CUSTOM3 (size0, size1, kind, seed)   a4 = (UV, UV2) = (period, accel, drag, spin)
 # period 0 = once; accel = acceleration along the velocity direction (u/s2, torpedo boost, rockets)
+# Shared kind IDs live in fx.gd. fx_kind_registry_check.gd checks the selectors below against that registry.
 # Brightness: every effect colour is multiplied by the global fx_gain (look.gd sets it per tonemapper; 0.5556 matches
 # the A3 proof under Godot's ACES, which applies an exposure bias of 1.8 that Babylon's curve does not).
 
@@ -235,13 +236,7 @@ void process() {
 }
 """
 
-# Sprites (camera-facing). kinds:
-#  0 flash   1 flame   2 fireball core   3 smoke   4 engine core   5 squib   7 vent gas   8 soot   11 sputtering core
-#  12 beam charge   13 beam impact flare   14 plasma bolt   15 bio glob   16 prism glint   17 star ball
-#  18 soft lift (reduce-flashing pop: a gentle glow, no peak)   19 ember   20 acid fume   21 heat glow (cooling metal)
-#  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
-#  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
-#  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
+# Camera-facing sprites. See SpriteKind in fx.gd.
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
 
@@ -486,9 +481,7 @@ void fragment() {
 """
 
 # Camera-facing textured heads and tails. a3 = (length or blur seconds, width, drag, kind).
-# kinds: 0 shell/tracer   1 spark   3 flame tongue   4 textured las dart
-# Kind 5 now routes to NULL_SLUG; its old vertex branch below is unused there.
-#        6 droplet (bio, falls off a glob)   7 molten drip (lance trench)   8 hull-hit spark
+# See StreakKind in fx.gd. NULL_SLUG uses its own shader, leaving its old branch below unused at runtime.
 const STREAK_VERTEX := """
 uniform float gate = 1.0;
 uniform sampler2D kit_tail : filter_linear, repeat_disable;
@@ -674,8 +667,7 @@ void fragment() {
 """
 
 # Oriented rings. a1 = (normal, life); a3 = (size0, size1, kind, seed); a4 = (period, speed, drag, 0).
-# kinds: 0 smoke ring (alpha)   1 shockwave   2 soft pop ring (reduce-flashing replacement)   3 thin pale ring (gauss
-#        muzzle shock, sonic boom)   4 hex-cell ring (Hegemony shield shatter)
+# See RingKind in fx.gd.
 const RING := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -773,9 +765,7 @@ void fragment() {
 # Ribbons along a straight line: plumes, beams, arcs. VERTEX = (s along 0..1, side -0.5..0.5).
 # a0 = (origin, kind); a1 = (dir, length); a2 = (colour, intensity); a3 = (width0, width1, seed, 0);
 # a4 = (tStart, life, period, 0)
-# kinds: 0 plume   1 straight trail (idle)   2 beam (lance)   3 sputter plume   5 ion beam (beam plus crawling arcs)
-#        6 doom arc (jagged lightning)   7 pulsar (beam in travelling pulses)   8 needle beam (thin, prismatic)
-#        9 tendril (bio lash: thick, organic, wriggling)
+# See RibbonKind in fx.gd.
 const RIBBON := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -2751,7 +2741,7 @@ static func tear_strain_code() -> String:
 
 
 # Screen-space distortion: shockwave rings and heat haze bend the picture behind them (max only).
-# Per quad: a0 = (pos, tStart), a1 = (normal, life), a3 = (size0, size1, kind, strength): kind 0 ring, 1 haze blob.
+# Per quad: a0 = (pos, tStart), a1 = (normal, life), a3 = (size0, size1, kind, strength). See DistortKind in fx.gd.
 const DISTORT := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
