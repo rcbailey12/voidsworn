@@ -134,7 +134,17 @@ foreach ($side in $trialModes.Keys) {
         }
     }
 
-    Invoke-GodotStep "planets-$side" 1200 (Get-PlanetCaptureOptions $dir $side) 'planet v2 shots: band 2 PASS' $planetTrialLoads
+    # The before pass measures the stock look. Only grade the trial.
+    $planetMarker = if ($side -eq 'before') {
+        '(?m)^planet v2 shots: done in \d+ s\r?$'
+    } else {
+        '(?m)^planet v2 shots: band 2 PASS\r?$'
+    }
+    $planetStep = "planets-$side"
+    Invoke-GodotStep $planetStep 1200 (Get-PlanetCaptureOptions $dir $side) $planetMarker $planetTrialLoads
+    Write-Host "Planet band 2 summary ($side)"
+    Select-String -LiteralPath (Join-Path $work "$planetStep.log") -Pattern '^planet v2 shots: band(2 | 2 (PASS|MISS)\b)' |
+        ForEach-Object { Write-Host $_.Line }
     foreach ($planet in $planets) {
         foreach ($camera in 'c170', 'c26') {
             $pictures += Join-Path $dir ('{0}_{1}_{2}.png' -f $planet, $camera, $side)
