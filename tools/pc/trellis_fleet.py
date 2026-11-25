@@ -54,12 +54,17 @@ try:
             t = time.time(); torch.cuda.reset_peak_memory_stats(); f = cutimg(code)
             if not f: log('no cut image', code); continue
             img = Image.open(f).convert('RGBA')
-            mesh = None
-            for pt in ('1536_cascade', '1024_cascade'):
+            mesh = None; errs = []
+            try: log(code, 'cut image', f, img.size, 'GPU free GB', round(torch.cuda.mem_get_info()[0] / 1e9, 1))
+            except Exception as e: log(code, 'GPU check failed', repr(e)[:300])
+            # issue 1412 (Nov 25): H7 and H8 failed both cascades and the loop then died on mesh None with no cause in the stage
+            # output; now every try logs its traceback, two lighter types are tried last, and a total failure names each cause
+            for pt in ('1536_cascade', '1024_cascade', '1024', '512'):
                 try:
                     outputs, latents = pipe.run(img, seed=1234, pipeline_type=pt, return_latent=True); mesh = outputs[0]; res = latents[2]; log(code, 'pipeline', pt, 'res', res); break
                 except Exception as e:
-                    log(code, pt, 'failed', repr(e)[:200]); torch.cuda.empty_cache()
+                    errs.append(pt + ': ' + repr(e)[:300]); log(code, pt, 'failed', repr(e)[:600]); log(traceback.format_exc()[-1500:]); torch.cuda.empty_cache()
+            if mesh is None: raise RuntimeError('no pipeline type made a mesh; ' + ' | '.join(errs))
             mesh.simplify(16777216); mesh.attrs = mesh.attrs.float(); del latents; torch.cuda.empty_cache()
             glb = o_voxel.postprocess.to_glb(vertices=mesh.vertices, faces=mesh.faces, attr_volume=mesh.attrs, coords=mesh.coords, attr_layout=pipe.pbr_attr_layout,
                 grid_size=res, aabb=[[-0.5, -0.5, -0.5], [0.5, 0.5, 0.5]], decimation_target=600000, texture_size=2048, remesh=True, remesh_band=1, remesh_project=0)
