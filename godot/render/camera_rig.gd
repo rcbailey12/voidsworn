@@ -34,6 +34,10 @@ var shake_offset := Vector2.ZERO
 # issue 271 (E1 LEDGER): pixels to move the board's centre to the right of the screen's middle, so the point the camera
 # looks at sits in the middle of the part the orders sheet leaves clear (hud.gd clear_shift). 0 keeps it centred.
 var screen_shift := 0.0
+const CUT_RETURN_S := 0.72
+var _cut_return := Vector3.ZERO
+var _cut_return_target := Vector3.ZERO
+var _cut_return_elapsed := CUT_RETURN_S
 
 var _close_dof := false
 var _dof_room := 0.0
@@ -125,11 +129,91 @@ func reset_view() -> void:
 
 
 func snap() -> void:
+	_cut_return_elapsed = CUT_RETURN_S
 	_ca = a
 	_cb = b
 	_cr = r
 	_ct = t
 	_apply()
+
+
+func cut_pose() -> Dictionary:
+	return {"a": a, "b": b, "r": r, "t": t}
+
+
+# Low shoulder for a battery volley. A chase looks nearly along the shot from behind the firing ship, but
+# keeps a shoulder offset so the attacker cannot hide the target. Only the target has to clear the frame on impact.
+func shot_cut(kind: String, source: Vector3, target: Vector3, source_len: float, target_len: float, calm: bool) -> Dictionary:
+	var axis := target - source
+	var dist := Vector2(axis.x, axis.z).length()
+	if dist < 0.01 or kind in ["kill", "nova"]:
+		return impact_cut(target, target_len, target_len >= 20.0, [], calm)
+	var line := atan2(-axis.z, axis.x)
+	var chase := kind in ["lance", "torp"]
+	var shoulder := deg_to_rad(32.0 if chase else 62.0)
+	var left := angle_difference(_ca, line + PI - shoulder)
+	var right := angle_difference(_ca, line + PI + shoulder)
+	var turn := left if absf(left) <= absf(right) else right
+	var azimuth := _ca if calm else _ca + turn
+	var beta := _cb if calm else (1.20 if chase else 1.29)
+	var across := absf(sin(azimuth - line))
+	var along := absf(cos(azimuth - line))
+	var aspect := get_viewport().get_visible_rect().size.aspect()
+	var span := 2.0 * tan(deg_to_rad(fov) * 0.5)
+	# Allow for both the projected width and perspective (the foreground ship is closer than the focal point).
+	var width := (dist * across + (source_len + target_len) * 0.52) / (span * maxf(aspect, 1.0) * 0.78)
+	var height := (dist * along * cos(beta) + maxf(source_len, target_len) * 0.55 + absf(axis.y)) / (span * 0.72)
+	var radius := maxf(width, height) + dist * along * 0.50
+	return {"a": azimuth, "b": beta, "r": maxf(min_r, radius),
+		"t": source.lerp(target, 0.57 if chase else 0.48)}
+
+
+const IMPACT_BETA := 1.12
+
+
+func impact_cut(target: Vector3, length: float, capital: bool, blockers: Array, calm: bool, yaw := 0.0) -> Dictionary:
+	var span := 2.0 * tan(deg_to_rad(fov) * 0.5)
+	var radius := clampf(maxf(length, 6.0) / ((1.0 if capital else 0.85) * span), min_r, 200.0)
+	var best := _ca
+	var beta := _cb if calm else IMPACT_BETA
+	var score := INF
+	if not calm:
+		for quarter in [PI / 4.0, 3.0 * PI / 4.0, -PI / 4.0, -3.0 * PI / 4.0]:
+			var turn := angle_difference(_ca, yaw + float(quarter))
+			var azimuth := _ca + turn
+			var eye := target + Vector3(cos(azimuth) * sin(beta), cos(beta), -sin(azimuth) * sin(beta)) * radius
+			var seg := target - eye
+			var cost := absf(turn)
+			for blocker in blockers:
+				var p: Vector3 = blocker[0]
+				var k := clampf((p - eye).dot(seg) / seg.length_squared(), 0.0, 1.0)
+				if k < 0.92 and (eye + seg * k).distance_to(p) < float(blocker[1]) * 0.6 + length * 0.15:
+					cost += 10.0
+			if cost < score:
+				score = cost
+				best = azimuth
+	return {"a": best, "b": beta, "r": radius, "t": target}
+
+
+func enter_cut(pose: Dictionary, hold := false) -> void:
+	_cut_return_elapsed = CUT_RETURN_S
+	_set_cut_pose(pose)
+	slow_until = _clock + 1.2 if hold else _clock
+
+
+func return_from_cut(pose: Dictionary) -> void:
+	_cut_return = Vector3(_ca, _cb, _cr)
+	_cut_return_target = _ct
+	_cut_return_elapsed = 0.0
+	_set_cut_pose(pose)
+	slow_until = _clock
+
+
+func _set_cut_pose(pose: Dictionary) -> void:
+	a = pose["a"]
+	b = pose["b"]
+	r = pose["r"]
+	t = pose["t"]
 
 
 func focus(p: Vector3, rr := -1.0) -> void:
@@ -176,7 +260,16 @@ func toggle_top() -> void:
 		topdown = true
 
 
+func _cancel_cut_return() -> void:
+	if _cut_return_elapsed >= CUT_RETURN_S:
+		return
+	_cut_return_elapsed = CUT_RETURN_S
+	# Keep the board's heading but unwrap it against what's on screen, so normal easing cannot take the long way round.
+	a = _ca + angle_difference(_ca, a)
+
+
 func pan_by(dx: float, dz: float) -> void:
+	_cancel_cut_return()
 	var s := r / 340.0
 	# screen-up on the board, given the camera's azimuth (mirrored z)
 	var fwd := Vector3(-cos(a), 0, sin(a))
@@ -187,6 +280,7 @@ func pan_by(dx: float, dz: float) -> void:
 
 
 func orbit(dx: float, dy: float) -> void:
+	_cancel_cut_return()
 	a -= dx * 0.0055
 	b = clampf(b - dy * 0.0045, 0.05, 1.36)
 	topdown = false
@@ -197,6 +291,7 @@ func orbit(dx: float, dy: float) -> void:
 # under the pointer (on the plane through the target) back under it at the new distance. Over empty sky, where the pointer
 # ray never reaches that plane, it is the plain zoom about the target.
 func zoom_at(screen_pos: Vector2, factor: float) -> void:
+	_cancel_cut_return()
 	var new_r := clampf(r * factor, min_r, 900.0)
 	if is_equal_approx(new_r, r):
 		r = new_r
@@ -310,11 +405,21 @@ func _process(dt: float) -> void:
 		if p != Vector2.ZERO:
 			pan_by(p.x * dt * 300.0, p.y * dt * 300.0)
 	r = maxf(r, min_r)
-	var f := 1.0 - exp(-dt * (1.7 if _clock < slow_until else 7.0))
-	_ca += (a - _ca) * f
-	_cb += (b - _cb) * f
-	_cr += (r - _cr) * f
-	_ct += (t - _ct) * f
+	if _cut_return_elapsed < CUT_RETURN_S:
+		_cut_return_elapsed = minf(_cut_return_elapsed + dt, CUT_RETURN_S)
+		var f := smoothstep(0.0, CUT_RETURN_S, _cut_return_elapsed)
+		_ca = _cut_return.x + angle_difference(_cut_return.x, a) * f
+		_cb = lerpf(_cut_return.y, b, f)
+		_cr = lerpf(_cut_return.z, r, f)
+		_ct = _cut_return_target.lerp(t, f)
+		if _cut_return_elapsed >= CUT_RETURN_S:
+			_ca = a   # same rendered angle, with the board's original turn count
+	else:
+		var f := 1.0 - exp(-dt * (1.7 if _clock < slow_until else 7.0))
+		_ca += (a - _ca) * f
+		_cb += (b - _cb) * f
+		_cr += (r - _cr) * f
+		_ct += (t - _ct) * f
 	_apply()
 	_step_close_dof(dt)
 
