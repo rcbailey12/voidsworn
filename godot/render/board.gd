@@ -1033,6 +1033,7 @@ func _terrain(warm_station := false) -> void:
 				pass
 	_planet()
 	_beacon()
+	_relay_label()
 	# one station structure per cluster of station hexes (the game builds one across the cluster)
 	var seen := {}
 	for k in T:
@@ -1284,6 +1285,38 @@ func _beacon() -> void:
 	n.transform = Transform3D(basis, mid - box.get_center())
 	props.add_child(n)
 	beacon_node = n
+
+
+# Council item 23 (issue 1403): "I cannot find the relay". The hold hex carries a gold RELAY name on the board, drawn over
+# the ships and the beacon at a fixed size on screen (readable zoomed out), at the hex's far edge so a ship holding the hex
+# does not cover it. Built with or without the O3_11 beacon. Picture only; the rules place nothing there.
+const RELAY_LABEL_TEXT := "RELAY"
+const RELAY_LABEL_COL := Color(1.0, 0.78, 0.35)   # line_style edge_hold, the relay hex's own outline gold
+var relay_label: Label3D = null
+
+
+func _relay_label() -> void:
+	relay_label = null
+	var o = VW.get("obj")
+	if not (o is Dictionary and str(o.get("type", "")) == "hold" and o.get("hex") is Dictionary):
+		return
+	var l := Label3D.new()
+	l.name = "relay_label"
+	l.text = RELAY_LABEL_TEXT
+	l.font_size = 40
+	l.outline_size = 12
+	l.pixel_size = 0.0005
+	l.fixed_size = true
+	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	l.no_depth_test = true
+	l.double_sided = true
+	l.modulate = RELAY_LABEL_COL
+	l.outline_modulate = Color(0.05, 0.04, 0.02, 0.85)
+	l.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	l.render_priority = 2
+	l.position = hex_world(float(o["hex"]["q"]), float(o["hex"]["r"]), 0.4) + Vector3(0.0, 0.0, -HS * 0.55)
+	props.add_child(l)
+	relay_label = l
 
 
 # The battle camera's opening view (scenes/battle/battle.gd _begin uses this): it looks at a point 30% of the way from the

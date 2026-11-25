@@ -8,7 +8,8 @@ extends SceneTree
 #   a battle with another objective: no beacon;
 #   a Hold battle on a build without O3_11: no beacon and no error (the gold hex alone, as before);
 #   a stale manifest row naming a missing file: no beacon, and no load is tried (PR 1561 review);
-#   the threaded prefetch the battle starts (A4P.prefetch_beacon) is collected by the board build, none left pending.
+#   the threaded prefetch the battle starts (A4P.prefetch_beacon) is collected by the board build, none left pending;
+#   Council item 23 (issue 1403): one RELAY label inside the hold hex, with or without the beacon, none in a Rout battle.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const BOARD := preload("res://render/board.gd")
@@ -55,6 +56,22 @@ func _board(obj) -> Node3D:
 
 func _beacons(board: Node3D) -> Array:
 	return board.find_children("relay_beacon", "", true, false)
+
+
+# Council item 23 (issue 1403): the hold hex is named RELAY on the board, inside its own hex, drawn over ships, with or
+# without the beacon model
+func _label_checks(board: Node3D, hx: Vector2i, why: String) -> void:
+	var found := board.find_children("relay_label", "Label3D", true, false)
+	_check(found.size() == 1, "%s: %d RELAY labels on the board, want 1" % [why, found.size()])
+	if found.size() != 1:
+		return
+	var l := found[0] as Label3D
+	var hex: Vector3 = board.hex_world(float(hx.x), float(hx.y))
+	var off := Vector2(l.global_position.x - hex.x, l.global_position.z - hex.z).length()
+	_check(l.text == "RELAY" and l.visible, "%s: the label reads '%s'" % [why, l.text])
+	_check(off < BOARD.HS, "%s: the label sits %.1f from the hold hex centre, want inside the hex (%.1f)" % [why, off, BOARD.HS])
+	_check(l.no_depth_test and l.fixed_size and l.billboard == BaseMaterial3D.BILLBOARD_ENABLED, "%s: the label is not drawn over ships at a fixed screen size" % why)
+	_check(board.relay_label == l, "%s: board.relay_label does not point at the label" % why)
 
 
 func _box(n: Node3D) -> AABB:
@@ -114,6 +131,7 @@ func _run() -> void:
 	var board := _board(hold)
 	_check(A4P._pending.is_empty(), "the board build left the beacon prefetch uncollected")
 	_beacon_checks(board, Vector2i(1, -1))
+	_label_checks(board, Vector2i(1, -1), "a Hold battle")
 	board.free()
 	# Artoo on PR 1561: a hold hex well off the camera's axis (far left, on the enemy side) must read centred too
 	var far := {"type": "hold", "hex": {"q": -3, "r": 0}, "score": 0, "escore": 0}
@@ -122,10 +140,12 @@ func _run() -> void:
 	board.free()
 	board = _board({"type": "rout"})
 	_check(_beacons(board).is_empty(), "a Rout battle draws a relay beacon")
+	_check(board.find_children("relay_label", "", true, false).is_empty() and board.relay_label == null, "a Rout battle draws a RELAY label")
 	board.free()
 	A4P._man = {"ships": {}}
 	board = _board(hold)
 	_check(_beacons(board).is_empty(), "a build without O3_11 draws a relay beacon")
+	_label_checks(board, Vector2i(1, -1), "a Hold battle without O3_11")
 	board.free()
 	A4P._man = {"ships": {"O3_11": {"res": "res://render/test/fixtures/beacon/missing_beacon.scn"}}}
 	_check(A4P._res("O3_11") == "", "a stale manifest row still names a file to load")
