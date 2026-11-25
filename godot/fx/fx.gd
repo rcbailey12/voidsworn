@@ -286,7 +286,6 @@ func release(wait := true) -> void:
 	_damage_templates.clear()
 	_power_templates.clear()
 	shield_poses.clear()
-	hull_shared.clear()
 	shield_keys.clear()
 	_dark_interiors.clear()
 	_wreck_interiors.clear()
@@ -375,6 +374,7 @@ static func clear_static() -> void:
 		if n != null and is_instance_valid(n):
 			n.release()
 	_live_ids.clear()
+	HULL.clear_static()   # look bench and standalone FX checks also call this quit path
 
 
 func setup(opts := {}) -> void:
@@ -1684,8 +1684,6 @@ func prepare_battle_hulls() -> void:
 var _death_cut_tasks := {}
 # Issue 1289: each fitted shield pose this battle built (fx_ship._posed_skin), shared by later ships of the same hull.
 var shield_poses := {}
-# Issue 1289: each hull's triangles, hit BVH and turret reach this battle (fx_hull.analyse), shared by later ships of it.
-var hull_shared := {}
 var shield_keys := {}   # issue 1289: each fitted shield skin's cache key by mesh set (fx_ship._shield_skin)
 
 
