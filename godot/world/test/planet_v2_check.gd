@@ -294,11 +294,10 @@ func _run() -> void:
 	# let the first (terran) build's install finish while the newer rocky build is still loading R01: its finish must
 	# not clear the newer build's wait (Neon item 4: this needs two builds that finish at different times)
 	var rsvc = BAKER.service(self)
+	var rjob := PL.board_job(1, 26)
+	var rkey := BAKER.board_key(rjob.key, rjob.code, rjob.params, rjob.size)
 	for f in 600:
-		var bake_left := false
-		for jk in rsvc._jobs:
-			if rsvc._jobs[jk].has("code"): bake_left = true
-		if not bake_left: break
+		if not rsvc._jobs.has(rkey): break
 		await process_frame
 	for f in 3: await process_frame
 	_check(rb.planet_ready_ms < 0, "the rocky build finished before the terran one, so the rebuild case tests nothing")

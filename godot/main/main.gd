@@ -109,10 +109,13 @@ func quit_clean(code := 0, route := "menu") -> void:
 		loading.append("battle launch prefetch")
 	if showcase != null and is_instance_valid(showcase) and showcase.get("showcase_ready") == false:
 		loading.append("backdrop %s" % str(showcase.get("load_phase")))
-	var svc := get_tree().root.get_node_or_null("WorldBakes")
-	# a world bake still to run belongs to a load; the deferred PNG write ("#save") runs once loads are over, so it is not
-	if svc != null and ((str(svc.get("_active")) != "" and str(svc.get("_active")) != "#save") or not (svc.get("_queue") as Array).is_empty()):
-		loading.append("world bake %s" % str(svc.get("_active")).left(12))
+	var svc := WORLD_BAKE._find_service(get_tree())
+	# a world bake still to run belongs to a load; the deferred write ("#save") runs once loads are over, so it is not
+	if svc != null:
+		var bs: Dictionary = svc.busy_status()
+		var active: String = str(bs.get("active", ""))
+		if (active != "" and active != WORLD_BAKE.SAVE_JOB) or int(bs.get("queued", 0)) > 0:
+			loading.append("world bake %s" % active.left(12))
 	print("[main] loading at the close: %s" % (", ".join(loading) if not loading.is_empty() else "nothing"))
 	WORLD_BAKE.begin_shutdown(get_tree())
 	for n in [battle, showcase]:

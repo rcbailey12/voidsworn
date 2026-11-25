@@ -61,6 +61,34 @@ func _run() -> void:
 	_expect(got[0] == null, "the job's waiter returned without an image")
 	svc.queue_free()
 	await process_frame
+	# 3. begin_shutdown before attach stops deferred add; during work drops queue and unsaved writes
+	var late_pending = BAKE.service(self)
+	BAKE.begin_shutdown(self)
+	for i in 3:
+		await process_frame
+	_expect(root.get_node_or_null("WorldBakes") == null and not late_pending.is_inside_tree(), "begin_shutdown skipped the deferred attach")
+	BAKE.clear_static()
+	var svc2 = BAKE.service(self)
+	for i in 3:
+		await process_frame
+	_expect(svc2.is_inside_tree(), "a third service attached for begin_shutdown check")
+	var scratch := OS.get_temp_dir().path_join("bake_close_shutdown_%d" % OS.get_process_id())
+	var unsaved_key := "a".repeat(64)
+	var dummy := Image.create(4, 4, false, Image.FORMAT_RGBA8)
+	svc2._mutex.lock()
+	svc2._unsaved.append({"key": unsaved_key, "maps": dummy, "folder": scratch})
+	svc2._mutex.unlock()
+	var busy_before: Dictionary = svc2.busy_status()
+	_expect(bool(busy_before["busy"]) and int(busy_before["unsaved"]) == 1, "busy_status reports pending unsaved write under lock")
+	BAKE.begin_shutdown(self)
+	for i in 3:
+		await process_frame
+	var busy_after: Dictionary = svc2.busy_status()
+	_expect(int(busy_after["unsaved"]) == 0 and int(busy_after["queued"]) == 0 and not FileAccess.file_exists(scratch.path_join(unsaved_key + ".png")),
+		"begin_shutdown cleared unsaved writes and kept _process from writing during quit frames")
+	BAKE.clear_static()
+	svc2.queue_free()
+	await process_frame
 	if failures == 0:
 		print("PASS: bake_close_check")
 		quit(0)

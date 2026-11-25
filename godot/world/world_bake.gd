@@ -60,6 +60,11 @@ static var _pending_tree: SceneTree = null
 # evicts them, so a map that finished first can never push out a later map of the same set before its caller reads it.
 static var _pins := {}
 
+# The two R01 relief images are decoded and cached as one job. Neither half can be evicted on its own.
+class RockyRelief extends RefCounted:
+	var height: Image
+	var masks: Image
+
 static func service(tree: SceneTree) -> Node:
 	var node := _find_service(tree)
 	if node == null:
@@ -73,7 +78,7 @@ static func service(tree: SceneTree) -> Node:
 	return node
 
 static func _attach(node) -> void:
-	if not is_instance_valid(node) or node.is_inside_tree(): return
+	if not is_instance_valid(node) or node.is_inside_tree() or node._exiting: return
 	var tree := Engine.get_main_loop() as SceneTree
 	if tree == null or tree.root.get_node_or_null("WorldBakes") != null: return
 	tree.root.add_child(node)
@@ -121,7 +126,13 @@ static func cache_key(key: String, code: String, params: Dictionary, size: Vecto
 
 static func cached(key: String) -> Image:
 	# Disk hits also use the worker, never PNG decode on the caller's thread.
-	return _cache.get(key) as Image
+	var entry: Variant = _cache.get(key)
+	return entry.height if entry is RockyRelief else entry as Image
+
+static func _entry_images(entry: Variant) -> Array:
+	if entry is Array: return entry
+	if entry is RockyRelief: return [entry.height, entry.masks]
+	return [entry] if entry is Image else []
 
 static func texture(img: Image) -> Texture2D:
 	var id := img.get_instance_id()
@@ -130,20 +141,20 @@ static func texture(img: Image) -> Texture2D:
 
 static func remember(key: String, maps: Variant) -> void:
 	if _cache.has(key): return
-	_trim(CACHE_MAX - (maps.size() if maps is Array else 1))
+	_trim(CACHE_MAX - _entry_images(maps).size())
 	_cache[key] = maps
 
-# The limit counts images. A board entry occupies three slots and is evicted as
-# a set. If every key is pinned, let the cache run over until a waiter collects.
+# The limit counts images. A board entry occupies three slots and a RockyRelief
+# occupies two, each evicted as a set. If every key is pinned, let the cache run
+# over until a waiter collects.
 static func _trim(cap: int) -> void:
 	var count := 0
 	for maps in _cache.values():
-		count += maps.size() if maps is Array else 1
+		count += _entry_images(maps).size()
 	for oldest in _cache.keys():
 		if count <= cap: return
 		if _pins.has(oldest): continue
-		var maps: Variant = _cache[oldest]
-		for img in (maps if maps is Array else [maps]):
+		for img in _entry_images(_cache[oldest]):
 			_textures.erase(img.get_instance_id())
 			count -= 1
 		_cache.erase(oldest)
@@ -173,6 +184,46 @@ static func clear_static() -> void:
 	if is_instance_valid(_pending) and not _pending.is_inside_tree(): _pending.free()
 	_pending = null
 	_pending_tree = null
+
+
+static func begin_shutdown(tree: SceneTree) -> void:
+	var node := _find_service(tree)
+	if node == null and is_instance_valid(_pending): node = _pending
+	if node != null: node._begin_shutdown()
+
+
+func _begin_shutdown() -> void:
+	# Stop submitting work as soon as the window closes, before scene disposal and the join.
+	# In particular, a cut-short battle must not start a deferred write during those frames.
+	_exiting = true
+	_mutex.lock()
+	var dropped := _queue
+	_queue = []
+	_unsaved.clear()
+	_save_ready = false
+	_stopping = true
+	_wake_locked()
+	_mutex.unlock()
+	for work in dropped:
+		if _jobs.has(work.key):
+			_jobs[work.key]["cancelled"] = true
+			_jobs[work.key].done = true
+			_jobs.erase(work.key)
+		_pins.erase(work.key)
+
+
+# Locked snapshot of worker state for main-thread callers (quit logs, load bench).
+func busy_status() -> Dictionary:
+	_mutex.lock()
+	var status := {
+		"active": _active,
+		"queued": _queue.size(),
+		"unsaved": _unsaved.size(),
+		"saving": _active == SAVE_JOB,
+		"busy": _active != "" or not _queue.is_empty() or not _unsaved.is_empty() or not _finished.is_empty(),
+	}
+	_mutex.unlock()
+	return status
 
 
 static func _stop_worker() -> void:
@@ -210,28 +261,35 @@ func _join_worker() -> void:
 
 # Authored R01 maps use the same shared worker and texture cache as the GPU
 # bakes. Decode and mip generation never block the battle's main thread.
-func authored(path: String, size: Vector2i, float_mips := false, urgent := false) -> Image:
-	return await result(request_authored(path, size, float_mips, urgent))
+func authored(path: String, size: Vector2i, split_relief := false, urgent := false) -> Image:
+	return await result(request_authored(path, size, split_relief, urgent))
 
 # Queues an authored map without waiting; returns its key for result(). A caller with several maps requests them all
 # first, so nothing else can slip in between them (Artoo, PR 1776).
-static func authored_key(path: String, size: Vector2i, float_mips := false) -> String:
-	return (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
+static func authored_key(path: String, size: Vector2i, split_relief := false) -> String:
+	return (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(split_relief)).sha256_text()
 
 # Issue 1434 (Artoo on 002e143f): whether an authored map's texture is still made and held, asked without starting a
 # request or a pin (a trim drops the image and its texture together).
-static func authored_texture_resident(path: String, size: Vector2i, float_mips := false) -> bool:
-	var img = _cache.get(authored_key(path, size, float_mips))
-	return img is Image and _textures.has((img as Image).get_instance_id())
+static func authored_texture_resident(path: String, size: Vector2i, split_relief := false) -> bool:
+	var entry: Variant = _cache.get(authored_key(path, size, split_relief))
+	if entry is RockyRelief:
+		return entry.height != null and entry.masks != null and _textures.has(entry.height.get_instance_id()) and _textures.has(entry.masks.get_instance_id())
+	return entry is Image and _textures.has((entry as Image).get_instance_id())
 
-func request_authored(path: String, size: Vector2i, float_mips := false, urgent := false) -> String:
-	var key := authored_key(path, size, float_mips)
-	_owner()._request(key, {"path": path, "size": size, "float_mips": float_mips}, urgent)
+func request_authored(path: String, size: Vector2i, split_relief := false, urgent := false) -> String:
+	var key := authored_key(path, size, split_relief)
+	_owner()._request(key, {"path": path, "size": size, "split_relief": split_relief}, urgent)
 	return key
 
 
 func result(key: String) -> Image:
-	return await _owner()._result(key) as Image
+	var entry: Variant = await _owner()._result(key)
+	return entry.height if entry is RockyRelief else entry as Image
+
+
+func relief_result(key: String) -> RockyRelief:
+	return (await _owner()._result(key)) as RockyRelief
 
 
 func board_maps(key: String, code: String, params: Dictionary, size: Vector2i) -> Array:
@@ -263,6 +321,9 @@ func _result(key: String) -> Variant:
 		return null
 	while not job.done:
 		await tree.process_frame
+		if _exiting:
+			if not job.get("cancelled", false): _unpin(key)
+			return null
 	# A dropped ticket's pins were already released. Do not unpin a fresh request for that key.
 	if not job.get("cancelled", false): _unpin(key)
 	return job.maps
@@ -354,6 +415,7 @@ func _loading() -> bool:
 	return t != null and t.has_group(&"battle_loading")
 
 func _process(_dt: float) -> void:
+	if _exiting: return
 	_refresh_worker()
 	_mutex.lock()
 	var finished := _finished
@@ -386,6 +448,7 @@ func _process(_dt: float) -> void:
 
 
 func _refresh_worker() -> void:
+	if _exiting: return
 	var loading := _loading()
 	_mutex.lock()
 	# Main authorizes only one low-priority write at a time, based on the live loading group.
@@ -444,7 +507,7 @@ func _worker_loop() -> void:
 				value = _work(work)
 			work_stage = 0
 			_mutex.lock()
-			if value.has("save"):
+			if value.has("save") and not _stopping:
 				_unsaved.append({"key": work.key, "maps": value.save, "folder": work.folder})
 				value.erase("save")
 				value.stages["save"] = "deferred"
@@ -493,9 +556,10 @@ func _work(work: Dictionary) -> Dictionary:
 			img = Image.load_from_file(work.path)
 		if img == null or img.get_size() != work.size:
 			return {"error": "Missing or wrong-size R01 map: " + str(work.path)}
+		if _should_stop(): return {}
 		work_stage = 5
-		# Preserve both packed height bytes through filtering and mips.
-		if work.float_mips: img.convert(Image.FORMAT_RGBAF)
+		if work.get("split_relief", false):
+			return {"maps": split_rocky_relief(img), "source": "authored"}
 		img.generate_mipmaps()
 		return {"maps": img, "source": "authored"}
 	if work.has("raster_maps"):
@@ -598,21 +662,47 @@ static func _store_board(path: String, maps: Array) -> bool:
 # word and looked up in a 64K table of the exact heights: about half the time of the per-byte loop, same values.
 static var _height_lut := PackedFloat32Array()
 
-static func height_float(img: Image) -> Image:
+static func _height_table() -> PackedFloat32Array:
 	if _height_lut.is_empty():
 		var lut := PackedFloat32Array()
 		lut.resize(65536)
 		for v in 65536: lut[v] = float((v & 255) * 256 + (v >> 8)) / 65535.0   # the word reads low byte first: R is v & 255
 		_height_lut = lut
+	return _height_lut
+
+static func height_float(img: Image) -> Image:
 	if img.get_format() != Image.FORMAT_RG8: img.convert(Image.FORMAT_RG8)
 	var src := img.get_data()
 	var n := img.get_width() * img.get_height()
 	var out := PackedFloat32Array()
 	out.resize(n)
-	var lut := _height_lut
+	var lut := _height_table()
 	for i in n:
 		out[i] = lut[src.decode_u16(i * 2)]
 	return Image.create_from_data(img.get_width(), img.get_height(), false, Image.FORMAT_RF, out.to_byte_array())
+
+# R01's source RGBA8 is height (R high, G low), roughness (B), and cloud coverage (A). Decode the height before
+# filtering to avoid seams at byte carries. The other two channels are linear masks, not a stored normal.
+static func split_rocky_relief(img: Image) -> RockyRelief:
+	if img.get_format() != Image.FORMAT_RGBA8: img.convert(Image.FORMAT_RGBA8)
+	var size := img.get_size()
+	var count := size.x * size.y
+	var heights := PackedFloat32Array()
+	heights.resize(count)
+	var masks := PackedByteArray()
+	masks.resize(count * 2)
+	var lut := _height_table()
+	var src := img.get_data()
+	for i in count:
+		var rgba := src.decode_u32(i * 4)
+		heights[i] = lut[rgba & 0xffff]
+		masks.encode_u16(i * 2, rgba >> 16)
+	var relief := RockyRelief.new()
+	relief.height = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RF, heights.to_byte_array())
+	relief.masks = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RG8, masks)
+	relief.height.generate_mipmaps()
+	relief.masks.generate_mipmaps()
+	return relief
 
 
 static func _authored_tiles(path: String, size: Vector2i) -> Image:
