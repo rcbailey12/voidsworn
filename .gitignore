@@ -5,3 +5,5 @@ tools/blender/a1/__pycache__/
 __pycache__/
 checks_report.json
 godot/.godot
+/Microsoft/
+godot/assets/ships/manifest.json.bak_*

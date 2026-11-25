@@ -2,6 +2,7 @@ extends SceneTree
 # Issue 1905: the real reward and shipyard cards, with a cold Continue from the saved text.
 const Campaign = preload("res://campaign/campaign.gd")
 const CampaignUI = preload("res://ui/campaign/campaign_ui.gd")
+const BattleAPI = preload("res://rules/battle_api.gd")
 const REFIT := "prow"
 
 class RewardUI extends CampaignUI:
@@ -142,6 +143,61 @@ func promotion_words_check() -> void:
 	var rules = preload("res://rules/rules.gd").new()
 	check(rules.load_tables("res://rules/data/tables.json") == "" and rules.PERKS == C.PERKS, "C39: both Godot perk tables agree")
 
+# Issue 2095: build a real Spread Pattern burst with the rules, not a hand-written log.
+# A missed torpedo bursts on the aimed hull and every hull within 1 hex of it. The aimed hull
+# and one neighbour die in the burst; a third enemy is killed by the same attacker before the
+# burst and is not caught by it. The rules mark only the hulls the burst actually killed.
+func splash_checks() -> void:
+	var api = BattleAPI.new()
+	var err: String = api.load_rules()
+	check(err == "", "the rules load for the splash fixture")
+	if err != "": return
+	var R = api.R
+	var attempt := 0
+	while attempt < 40:
+		attempt += 1
+		api.new_battle_scenario({"seed": 20 + attempt, "admiral": "vex", "fac_player": "voidsworn", "fleet": ["harrow"],
+			"fac": "hegemony", "enemies": ["h_picket", "h_picket", "h_picket"], "obj": "rout", "shape": "open",
+			"map": "open", "dep": "line", "kind": "battle", "sector": 1, "boons": [{"id": "e_spread", "r": 0}]})
+		var B = R.B
+		B["cp0"] = null   # no rout ending in the middle of the burst
+		B["terrain"] = {}
+		var attacker = null; var foes := []
+		for u in B["units"]:
+			if R.jt(u.get("isSq")): continue
+			if u["side"] == "player": attacker = u
+			else: foes.append(u)
+		if attacker == null or foes.size() < 3: continue
+		var aimed = foes[0]; var neighbour = foes[1]; var unrelated = foes[2]
+		attacker["name"] = "Splash Ship"
+		aimed["name"] = "Aimed Hull"; neighbour["name"] = "Near Hull"; unrelated["name"] = "Unrelated Kill"
+		# The attacker fires east from (10,6); the aimed hull is 3 hexes ahead with two neighbours.
+		attacker["q"] = 10; attacker["r"] = 6; attacker["facing"] = 0
+		aimed["q"] = 13; aimed["r"] = 6
+		neighbour["q"] = 14; neighbour["r"] = 6
+		unrelated["q"] = 13; unrelated["r"] = 7
+		for f in foes:
+			f["dead"] = false; f["hp"] = 1; f["shp"] = 0; f["sh"] = [0, 0, 0, 0]; f["killCause"] = null; f.erase("splashKill")
+			f["ev"] = 45   # the torpedo shot misses (5% hit), as Spread Pattern needs
+		var wi := -1
+		for i in range(attacker["weapons"].size()):
+			if attacker["weapons"][i]["k"] == "torp": wi = i; break
+		if wi < 0: continue
+		# The same attacker kills this hull outside the burst. The log never names the attack.
+		unrelated["killCause"] = "big"; R.killUnit(unrelated, attacker)
+		var w = attacker["weapons"][wi]; w["fired"] = false; w["cdLeft"] = 0; w["off"] = 0
+		R.fireWeapon(attacker, wi, aimed)
+		var burst := false
+		for entry in B["log"]:
+			if String(entry.get("m", "")).contains(", catching "): burst = true; break
+		if not (burst and R.jt(aimed.get("dead")) and R.jt(neighbour.get("dead")) and R.jt(aimed.get("splashKill")) and R.jt(neighbour.get("splashKill"))): continue
+		check(C._heavy_wreck_cause(aimed, B["log"]) == "Torpedo strike", "a Spread Pattern burst credits the hull it was aimed at")
+		check(C._heavy_wreck_cause(neighbour, B["log"]) == "Torpedo strike", "a Spread Pattern burst credits a neighbour it actually hit")
+		check(C._heavy_wreck_cause(unrelated, B["log"]) == "", "an unrelated heavy kill by the same attacker keeps the generic wording")
+		check(unrelated["killCause"] == "big" and not R.jt(unrelated.get("splashKill")), "the unrelated kill is heavy and carries no burst mark")
+		return
+	check(false, "the splash fixture never produced a real Spread Pattern burst kill")
+
 func wreck_checks() -> void:
 	var ship := {"name": "Broken Crown", "killedBy": "Quiet Resolve"}
 	var ram: String = C._heavy_wreck_cause(ship, [{"m": "Quiet Resolve rams Broken Crown at full speed: 30 to its prow, 10 back to the ram."}])
@@ -149,6 +205,9 @@ func wreck_checks() -> void:
 	check(ram == "Rammed" and torpedo == "Torpedo strike", "the shared big kill class is distinguished by the battle log")
 	var stray: String = C._heavy_wreck_cause(ship, [{"m": "Torpedoes from Quiet Resolve reach Broken Crown (a stray hit in the lane): 36 hull."}])
 	check(stray == "Torpedo strike", "a stray torpedo uses the same wreck wording")
+	# issue 2095: a real Spread Pattern burst, produced by the rules, credits the aimed-at hull and a
+	# neighbour it actually hit, and leaves an unrelated heavy kill by the same ship on the generic wording.
+	splash_checks()
 	for row in [
 		["big", ram, "Rammed"],
 		["big", torpedo, "Torpedo strike"],

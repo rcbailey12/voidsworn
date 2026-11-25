@@ -124,7 +124,8 @@ static func _checkout_context(repo: String) -> Dictionary:
 	if not record is Dictionary or not record.has("source_commit"):
 		return {}
 	# A missing main ref or failed ancestry check cannot establish that this checkout is installed.
-	record["_pre_merge"] = OS.execute("git", PackedStringArray([
+	# Issue 2025: neither can a dirty source, even when its commit is on main: the pictures show edits that main does not have.
+	record["_pre_merge"] = bool(record.get("source_dirty", false)) or OS.execute("git", PackedStringArray([
 		"-C", repo, "merge-base", "--is-ancestor", record.source_commit, "refs/remotes/origin/main"]), [], true) != 0
 	_glyphs = glyphs
 	return record
