@@ -34,8 +34,9 @@ and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R29
   12.3, R386). A branch with any other name gets no automatic checks: open its pull request by hand, then start them by hand
   (Actions tab, "checks", "Run workflow"; or `gh workflow run checks.yml --ref <branch>`). The Board reviews and merges;
   nobody merges their own pull request except the Board (R452; RULEBOOK 2.2).
-- Codex runs locally on the PC only, in up to four lanes (RULEBOOK 2.7, R301; no cloud tasks: their model cannot be pinned, R268). The Board launches each Codex job itself through the PC queue (LOOP.md
-  "The seats" says how), and every `codex` issue also carries `blocked`, so the old board watcher (tools/pc/codex_board.bat)
+- Codex runs locally on the PC only, in up to six lanes, with C to F code only (RULEBOOK 2.7, issue 2057). Cloud tasks cannot
+  pin the model (R268). The Board launches each Codex job itself through the PC queue (LOOP.md "The seats" says how), and
+  every `codex` issue also carries `blocked`, so the old board watcher (tools/pc/codex_board.bat)
   cannot run it a second time.
 - Every issue opens with this fixed block, so any agent can pick it up without asking:
   ```
@@ -99,8 +100,8 @@ Domain words: `GLOSSARY.md`; decisions are RULEBOOK rules and FINDINGS rows, nev
 - No paid OpenAI API review where Artoo or Claude code review covers the PR (2.18, R406); no GPU capture on a PR before green
   checks and a passed review (3.12, R407).
 - Heavy work (AI models, Blender, Godot captures) runs on Ryan's PC through the queue. GPU work is sized to the job and to
-  what the RTX 5080 can hold, not a fixed job count (R293, RULEBOOK 3.4); frame-time measurements claim the GPU solo, lane C
-  stays code only, and gpu_go.txt still wins.
+  what the RTX 5080 can hold, not a fixed job count (R293, RULEBOOK 3.4); frame-time measurements claim the GPU solo, lanes C to F
+  stay code only, and gpu_go.txt still wins.
   Keep your PC folder lean. Deleting on his PC follows RULEBOOK 3.3: jobs and the cleanup janitor may remove their own
   rebuildable leftovers under its safe rules; nothing else is deleted without Ryan's yes.
 
