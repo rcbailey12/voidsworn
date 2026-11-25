@@ -149,6 +149,12 @@ function titleFromLog(text, issue) {
 
 const runId = value => typeof value === 'string' && /^[a-f0-9]{32}$/i.test(value) ? value.toLowerCase() : null;
 const sha = value => typeof value === 'string' && /^[a-f0-9]{40,64}$/i.test(value) ? value.toLowerCase() : null;
+// Since issue 2098 (PR 2131) a confirmed non-partial real push is delivered even when
+// local checks failed. The runner records that as unverified with commit === confirmed_commit.
+const confirmedPush = status => {
+  const commit = sha(status?.commit);
+  return !!commit && sha(status?.confirmed_commit) === commit;
+};
 function resultVerdict(text) {
   if (/chain stopped:|usage limit|push stopped|no changes pushed|agent made no changes/i.test(text)) return 'blocked';
   if (/clone failed|preflight failed|push failed|refuse step failed|runner exit [1-9]\d*|agent exit [1-9]\d*/i.test(text)) return 'failed';
@@ -255,6 +261,7 @@ function classify(info) {
   if (s === 'running' && info.resultMatches && info.resultState === 'ended') return {state:'unknown',reason:'Run output ended; the runner has not confirmed its result.'};
   if (s === 'running') return info.started ? {state:'running',reason:null} : {state:'unknown',reason:'Runner start time is missing.'};
   if (s === 'checked_push') return {state:'finished',reason:'Checked push confirmed; runner checks passed.'};
+  if (s === 'unverified' && confirmedPush(info.status)) return {state:'finished',reason:'Confirmed push; local checks did not pass.'};
   if (['partial','unverified','no_changes','blocked'].includes(s)) return {state:'blocked',reason:safeReason(info.status.reason) || 'Runner did not produce a checked push.'};
   if (s === 'failed') return {state:'failed',reason:safeReason(info.status.reason) || 'Runner reported a failure.'};
   if (!info.run && ['blocked','failed'].includes(info.resultState)) return {state:info.resultState,reason:safeReason(info.result.text)};
@@ -638,8 +645,9 @@ function snapshot(root, now = Date.now(), reader = new Reader(), github = emptyG
     // Legacy Next is a listing only. Groups retain the actual partial order and every branch.
     const next = groups.flatMap(g=>g.jobs.map(j=>({...j,chain:g.chain,queueState:g.state}))).filter(j=>j.issue!==current?.issue);
     const sourceAt = maxTime(info?.updated,...own.map(c=>c.mtime));
+    const deliveredPush = info?.status?.status === 'checked_push' || info?.status?.status === 'unverified' && confirmedPush(info?.status);
     return {id:seat[0],label:seat[1],state:verdict.state,runnerState:['running','checked_push','partial','unverified','no_changes','blocked','failed'].includes(info?.status?.status) ? info.status.status : 'unknown',
-      stale,endedWithoutPush:!!(info?.resultMatches && info.resultState==='ended' && info.status?.status!=='checked_push'),leftovers,current,
+      stale,endedWithoutPush:!!(info?.resultMatches && info.resultState==='ended' && !deliveredPush),leftovers,current,
       run:info?.run?.slice(0,8) || null,startedAt:iso(started),finishedAt:iso(info?.finished || chain?.endedAt),logAt:iso(info?.logAt),lastActivityAt:iso(activity),reason:verdict.reason,
       claim:{state:info?.status ? 'runner recorded' : claimOld ? 'not confirmed' : current ? 'claimed, not started' : 'unknown',amber:claimOld},
       next,queue:{state:queueState,label:unknown.length ? 'queue unknown' : 'recorded chains; separate chains have no implied order',reason:unknown.length ? [...new Set(unknown.map(c=>c.reason))].join('; ') : null,groups,
