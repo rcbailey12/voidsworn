@@ -352,11 +352,11 @@ func _shield_total(unit: Dictionary) -> float:
 	return total
 
 
-func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
+func applyHit(att, w, t, dmg: float, quad: int, combat_origin: Dictionary = {}) -> Dictionary:
 	if not matrix or t.isSq:
-		return super.applyHit(att, w, t, dmg, quad)
+		return super.applyHit(att, w, t, dmg, quad, combat_origin)
 	var absorbed := minf(dmg * (1.0 - z0(w.get("pierce"))), t.sh[quad] / ionOf(att, w))
-	var result := super.applyHit(att, w, t, dmg, quad)
+	var result := super.applyHit(att, w, t, dmg, quad, combat_origin)
 	var faction := _faction(t.fac)
 	faction.raw += dmg
 	faction.shield += absorbed

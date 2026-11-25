@@ -29,8 +29,10 @@ static func clear_static() -> void:
 # The cue each kind of button plays when pressed; hover and arrow-key focus play HOVER_CUE.
 # "reward" (issue 1448): the confirm that takes a reward, relic, promotion perk or bought hull plays the built reward chime
 # instead of the plain confirm, so the two never sound together.
-const PRESS_CUE := {"primary": "ui_confirm", "quiet": "ui_click", "link": "ui_click", "back": "ui_cancel", "tab": "ui_select", "reward": "ui_reward"}
-const HOVER_CUE := "ui_select"
+const PRESS_CUE := {"primary": "ui_confirm", "quiet": "ui_click", "link": "ui_click", "back": "ui_cancel",
+	"tab": "ui_select", "reward": "ui_reward", "purchase": "ui_purchase", "install": "ui_module_install",
+	"relic": "ui_relic_socket"}
+const HOVER_CUE := "ui_hover"
 const OPEN_CUE := "ui_panel"
 
 # Every face the game ships, for Credits (title.gd) and the font check (godot/ui/test/front_end_test.gd fails when a .ttf
