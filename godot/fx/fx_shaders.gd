@@ -1697,7 +1697,7 @@ void fragment() {
 		emb = smoothstep(0.66, 0.88, fbm(p.xy * 6.0 + p.zx * 4.0 + vec2(seed, scene_t * 0.12))) * (part < 0.3 ? 1.0 : 0.3);
 	}
 	vec3 gc = glow;
-	if (style == 8) { gc = vec3(0.62, 0.95, 0.14); hot *= 0.35; }
+	if (style == 8) { gc = vec3(0.42, 0.46, 0.08); hot *= 0.2; }
 	if (style == 4 || style == 11) { hot *= 0.3; }
 	vec3 em = gc * (lam * fall * 0.6 * fl * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)) + emb * 0.8 * (0.6 + 0.4 * fl) * (1.0 - smoothstep(0.3, 1.4, dist))) * hot;
 	if (style == 1) {
@@ -1951,10 +1951,15 @@ void fragment() {
 		float bub = smoothstep(0.72, 0.9, vnoise(q / R * 14.0 + vec2(scene_t * 0.7, -scene_t * 0.5) + seed)) * exp(-age / 8.0);
 		float fall = 1.0 - smoothstep(0.55, 1.3, ue + (n1 - 0.5) * 0.4);
 		float wet = exp(-age / 9.0);
-		a = fall * (0.5 + 0.5 * pits);
-		alb = mix(vec3(0.05, 0.07, 0.025), vec3(0.01, 0.015, 0.005), pits);
-		rough = mix(0.8, 0.25, wet * smoothstep(1.0, 0.4, ue));
-		em = vec3(0.62, 0.95, 0.14) * (pits * 0.25 + bub * 1.2) * fall * mix(0.15, 1.0, exp(-age / 6.0));
+		// issue 1877 (Ryan, Nov 24: the flat lime slab "looks a bit cheesy"): an etched burn, not a glowing patch. Dark
+		// eaten pits in a crazed, ochre-brown corroded skin; only the wet rims of fresh pits keep a faint bile glow, and
+		// that is gone in a few seconds
+		float craze = 1.0 - smoothstep(0.0, 0.06, abs(fbm(q / R * 9.0 + seed * 1.3) - 0.5));
+		float rimp = smoothstep(0.5, 0.6, etch) * (1.0 - pits);
+		a = fall * (0.55 + 0.45 * max(pits, craze * 0.8));
+		alb = mix(vec3(0.034, 0.027, 0.012), vec3(0.004, 0.0035, 0.002), max(pits, craze * 0.7));
+		rough = mix(0.85, 0.35, wet * smoothstep(1.0, 0.4, ue) * pits);
+		em = vec3(0.42, 0.46, 0.08) * (rimp * 0.35 + bub * 0.3) * fall * exp(-age / 2.5);
 	} else if (style == 9) {
 		// ion: a branching electrical burn; fresh, arcs crawl it blue-white, then it sets as a dark etched fern
 #if CURRENT_RENDERER == RENDERER_COMPATIBILITY
@@ -2135,9 +2140,9 @@ void fragment() {
 			hem += vec3(1.0, 0.42, 0.1) * cdot * step(0.78, cv) * (0.3 * exp(-age / 300.0) + 0.9 * live);
 		} else if (style == 8) {
 			float pit = smoothstep(0.58, 0.72, hn);
-			hc = mix(vec3(0.03, 0.045, 0.012), vec3(0.006, 0.01, 0.003), pit);
-			hr = mix(0.85, 0.3, exp(-age / 9.0) * pit);
-			hem = vec3(0.6, 0.95, 0.14) * pit * (0.04 + 0.4 * exp(-age / 6.0));
+			hc = mix(vec3(0.026, 0.021, 0.01), vec3(0.005, 0.004, 0.002), pit);
+			hr = mix(0.9, 0.4, exp(-age / 9.0) * pit);
+			hem = vec3(0.42, 0.46, 0.08) * pit * 0.12 * exp(-age / 2.5);
 			// r18 (Muse audit B4.3): the signature is a green stain with drips running off it, down the hull side (or
 			// aft along a deck), long enough to read as streaks from the battle camera
 			vec3 dn = vec3(0.0, -1.0, 0.0);
@@ -2150,9 +2155,10 @@ void fragment() {
 			float drip = smoothstep(0.55, 0.75, lane) * smoothstep(-0.05, 0.1, along) * (1.0 - smoothstep(0.35 + 0.6 * lane, 1.1, along)) * (1.0 - smoothstep(0.3, 0.55, abs(acr)));
 			float stain = 1.0 - smoothstep(0.12, 0.42, length(hq) + (hn - 0.5) * 0.25);
 			float ac2 = max(drip, stain);
-			hc = mix(hc, vec3(0.02, 0.05, 0.008), ac2 * 0.85);
+			// issue 1877: the stain and drips are dark corroded runs, not a lasting lime glow
+			hc = mix(hc, vec3(0.012, 0.009, 0.004), ac2 * 0.85);
 			ha = max(ha, max(drip * 0.9, stain));
-			hem += vec3(0.62, 0.95, 0.14) * (drip * 0.6 + stain * 0.45) * (0.28 * exp(-age / 300.0) + 0.6 * exp(-age / 6.0));
+			hem += vec3(0.42, 0.46, 0.08) * drip * 0.15 * exp(-age / 2.5);
 		} else if (style == 9) {
 			hc = vec3(0.012, 0.015, 0.03);
 			hem = vec3(0.3, 0.5, 1.0) * smoothstep(0.62, 0.8, hn) * (0.03 + 0.5 * live);
@@ -2204,7 +2210,7 @@ void fragment() {
 		float sk = 1.0;
 		if (style == 1) { sc = vec3(1.0, 0.48, 0.14); scl = 5.0; }
 		else if (style == 3) { sc = vec3(0.35, 0.65, 1.0); scl = 6.0; }
-		else if (style == 8) { sc = vec3(0.62, 0.95, 0.14); scl = 8.0; sk = 1.3; }
+		else if (style == 8) { sc = vec3(0.42, 0.46, 0.08); scl = 2.5; sk = 0.45; }
 		else if (style == 9) { sc = vec3(0.45, 0.65, 1.0); scl = 6.0; sk = 1.3; }
 		else if (style == 7) { sk = 1.0; scl = 6.0; }
 		else if (style == 6 || style == 11) { scl = 9.0; sk = 1.2; }
@@ -2243,7 +2249,7 @@ void fragment() {
 		else if (style == 7) { le = 0.5; eb = vec2(0.55, 0.8); }
 		// r17: and a small smouldering core that lasts the battle, tight round the mark's centre, so a frigate still
 		// carries its hits from the battle camera without the wide wash of r9-r15
-		float lc = (style == 2 || style == 3 || style == 4 || style == 5 || style == 7) ? 0.7 : ((style == 8 || style == 9) ? 0.4 : 0.0);
+		float lc = (style == 2 || style == 3 || style == 4 || style == 5 || style == 7) ? 0.7 : (style == 9 ? 0.4 : 0.0);
 		if (lc > 0.0) {
 			float core = (1.0 - smoothstep(0.04, 0.22, hu)) * (0.5 + 0.5 * smoothstep(0.35, 0.65, hn));
 			em += sc * core * lc * smoothstep(0.0, 0.25, age) * exp(-age / 300.0);
