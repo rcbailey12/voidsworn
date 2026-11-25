@@ -1,5 +1,85 @@
 # Vanguard cruiser redraw, issue 2094
 
+## Run 2
+
+**Pick H9C Lance Citadel.** Its four capacitor frames in a long bow trench put the forward ion weapon on display from above, and the two raised turbo shoulders change the top and side outline. **H9D Carrier Citadel** keeps H9B's compact bow weapon and makes the drone role visible at the stern with closed flank gates, projecting launch lips and two steps in the solid aft roof.
+
+| Pick | Beauty | Concept sheet |
+| --- | --- | --- |
+| H9C Lance Citadel (recommended) | [H9C beauty](../../../docs/shots/issue-2094-codex/vanguard_beauty_c.png) | [H9C top, port and bow with inherited stern reference](../../../docs/shots/issue-2094-codex/vanguard_sheet_c.png) |
+| H9D Carrier Citadel | [H9D beauty](../../../docs/shots/issue-2094-codex/vanguard_beauty_d.png) | [H9D top, port, bow and stern](../../../docs/shots/issue-2094-codex/vanguard_sheet_d.png) |
+| H9B Citadel (picked run 1 baseline) | [H9B beauty](../../../docs/shots/issue-2094-codex/vanguard_beauty_b.png) | [H9B sheet](../../../docs/shots/issue-2094-codex/vanguard_sheet_b.png) |
+
+[Equal-length silhouette check](../../../docs/shots/issue-2094-codex/vanguard_silhouette_check.png) · [Family line-up at game length](../../../docs/shots/issue-2094-codex/vanguard_family_lineup.png)
+
+### What separates the two Citadels from the fleet
+
+| Reference | H9C Lance Citadel | H9D Carrier Citadel |
+| --- | --- | --- |
+| H7 Picket | Picket's rounded dart is shallow and has no paired armored shoulders. Lance has a blunt collar, a forward shoulder step and a rising aft roof. | Picket rounds back inward. Carrier expands into long aft launch shoulders and steps down at the squared drive end. |
+| H8 Cordon | Both have an overhead shoulder cue. Lance holds a full rectangular afterbody and climbs in profile. Cordon cuts sharply inward and drops into a shallow tail. | Cordon's widest mass is forward and steps down by midship. Carrier's widest mass surrounds the aft hangar, with the roof steps behind it. |
+| H10 Dominion | Lance has no forked stern or low, long battleship roofline. Its forward collar and turret shoulders lead into a solid rising transom. | Carrier ends in one solid transom with an aft roof staircase. Dominion carries its shoulder near the front and splits its stern. |
+| H9B Citadel | H9B widens smoothly and carries a small bow pocket and low turrets. Lance interrupts that taper with armored turbo shoulders and moves the ion detail up where it can be read from overhead. | H9B has one smooth roof rise and flush rectangular side panels. Carrier adds a distinct rear shoulder, a closed launch gate with a lit lip on each flank and a stepped aft roof. |
+
+The six ships were checked in black at 220 px bow-to-stern in both top and port view. None read as the same ship when those views were compared together. The two closest reads were H9C and H8 from above, where the side rise separates them, and H9D and H9B from the side, where the roof steps and overhead hangar shoulders separate them. The line-up uses the same outlines at 13 px per nominal world unit and retains H9A, Convoy and Relay as context.
+
+### Feature table
+
+Both are Meridian Directorate Vanguard concepts for game hull `h_vanguard` (`H9_23`). Cruiser length is 14.5 world units from `CLS_LEN` in `godot/render/hull_table.gd`. Stations below are approximate design targets from the bow, not build dimensions. Offsets are from the centerline in world units.
+
+| Feature | H9C Lance Citadel | H9D Carrier Citadel |
+| --- | --- | --- |
+| Hull | One closed armor hull with a low blunt collar, widened gun shoulders and a rising aft citadel. Roughly 4.5 u beam and 3.8 u overall height in the drawing. | One closed armor hull with a low blunt nose, wider launch shoulders and two steps down to a single solid stern. Roughly 5.5 u beam and 4.0 u overall height in the drawing. |
+| Forward ion | One forward-facing emitter on centerline. Heavy bow collar at 0%, four spaced capacitor frames along a blind trench ending near 33%. Continuous armor floor beneath it. | One forward-facing emitter at 0% on centerline in H9B's short, blind armored bow pocket. Four nested frames per the sheet inset. |
+| Port turbo | One short twin-barrel turbo at 41%, port 1.25 u, on a broad raised barbette, facing forward at rest. | One low short twin-barrel turbo at 30%, port 1.05 u, facing forward at rest. |
+| Starboard turbo | One matching turbo at 41%, starboard 1.25 u, same height and rest angle. | One matching turbo at 30%, starboard 1.05 u, same height and rest angle. |
+| Drone wing | One internal bay at about 68-93%, with closed flush flank panels and lateral exit. Keep the launch gear visually quiet. | One internal bay with one closed launch gate per flank at about 55-90%, about 2.6 u outboard on each side. Lateral exits with one projecting lip and a row of recovery lights per gate. |
+| Sensor fin | One low fore-aft blade at 94%, centered. | One low fore-aft blade at 92%, centered on the rear terrace. |
+| Main drives | Four inset rectangular nozzles, facing aft at 100%, in one row on an uninterrupted transom. H9B stern inset shows the inherited arrangement. | Four inset rectangular nozzles, facing aft at 100%, in one row below the stepped roof. |
+| Bulkhead breaks and finish | Keep H9B's three transverse seam targets at 30%, 55% and 80%. Pale machined plate, flush seams and a thin blue flank line. | Same seam targets and Navy finish. Recovery lights mark the lips, not additional weapons or drives. |
+
+These are generated pick sheets, not matched cameras on one model. Top and side were normalized to a common length without changing their aspect ratios. The concepts came back narrower than H9B and their ends and fittings vary slightly by view. If H9C is picked, resolve the collar, four frames and emitter into one unobstructed forward axis in the build sheet. The top and bow show four spaced frames, but the beauty angle does not prove that the muzzle and all frames align. For H9D, the render paints extra rim highlights in the ion pocket. Use the four-ring inset for the exact count. No installed hull, Blender work or GPU capture.
+
+### Image method and prompts
+
+Built-in ImageGen, image to image. The two first passes used the run 1 H9B beauty and sheet together. The H9C four-view correction used its first plate, then the lower beauty angle used the corrected plate. The H9D stern inset used the carrier plate and the run 1 sheet. Renders were cropped and laid out without repainting the ships. H9C and H9D silhouettes trace their final top and port outlines. H9B, H7, H8 and H10 use the run 1 traces unchanged. Pictures carry verified provenance.
+
+<details>
+<summary>Run 2 image prompts</summary>
+
+### Shared setup for both first passes
+
+Use case: stylized-concept, precise image-to-image industrial spacecraft design. The attached H9B beauty is the original ship's identity and materials; the H9B sheet is the source of its top, port, bow and stern geometry. Revise that exact compact Meridian Directorate Vanguard cruiser. Keep a single continuous enclosed armored hull, low blunt flat nose, steady widening run and a rising aft citadel, pale machined matte naval plates, flush panel seams, dark lower bevels, one thin continuous blue flank line, two mirrored short heavy turbo turrets, one low aft sensor fin, four inset rectangular stern nozzles in one row and a broad single unbroken transom. No air gap, through-opening, open frame, fork, fins other than the low sensor blade, battle smoke or weapons fire. Hardware is stylized fictional game art. No typography, cards, graphic panels or watermark from the references in the result. Smooth flat neutral grey #414141 background, no shadows outside hull, lit from top port, matte technical product rendering.
+
+### H9C first pass
+
+H9C Lance Citadel. Edit the forward third into an unmistakable broad deep blind longitudinal ion trench, open to view from above but with a solid armored floor and a solid aft bulkhead. Make the trench bridge the deck and the bow face inside one broad, heavy faceted armored collar that projects slightly above and out from the original low nose. Show EXACTLY FOUR physical transverse blue capacitor frames at four spaced stations from bow to back of trench, visible along its length instead of just four stacked outlines on the bow. Keep a small blue emitter deep in the closed rear of the recess. Exactly two substantial mirrored twin-barrel turbo guns on tall wide armored octagonal barbettes flank the trench at its rear end, barrels aligned forward. Big distinctive turret shoulders at the forward third, balanced by the original higher rear citadel. Do not make these wings or separate pods. Keep the aft flank hangar doors flush and unremarkable, and retain the roof profile and solid aft flanks.
+
+### H9D first pass
+
+H9D Carrier Citadel. Edit only the aft citadel, which rises as a visibly functional closed flight-deck block integrated into the same widening armor. One large closed horizontally inset armored launch gate on each upper flank, not two square hatches on a side. Each gate stays fully closed with a distinct thick shallow projecting straight launch lip built onto its lower rim and a short row of spaced small icy blue-white recovery lights across that lip beside the gate. The supporting raised armored shoulders at the rear extend a little past the sides of the continuous hull only just below the gates, all one solid block. On the aft roof, behind the high armored hangar block, drop two broad distinct horizontal terraces toward the stern like stairs, one continuous roof in side and top view, with one very low aft sensor blade. The solid four-nozzle transom remains. Preserve the H9B flat low blunt nose, the compact recessed bow ion pocket with four stacked rings, and the two modest mirrored low twin-barrel turbo turrets exactly where they were, no long trench or barbettes. The most distinctive feature must be the big closed hangar shoulders with launch lips and the terraced roof, not a slimmer hull.
+
+### Shared layout for both first passes
+
+Return ONE wide landscape source plate with four separate images of exactly the same redesign on that flat gray background, no lines or captions, completely visible with wide padding between views. Upper left quadrant: large forward port three-quarter beauty, nose lower left, 35 degrees above, showing top and port and bow clearly. Upper right quadrant: strict true overhead top, fully symmetric, bow to the LEFT and stern right. Lower left quadrant: strict level orthographic port profile, bow to the LEFT and stern right; hide top planes and the far mirrored gun. Lower right quadrant: strict straight-on orthographic bow view facing viewer, perfectly symmetric; do not show the stern here. No view may intersect any other. Aim for the large beauty and long views to nearly fill the width of their own quadrant, with 6% room around edges. Give the bow-on view larger scale if necessary to read the guns and ion device. Preserve exact geometry across views.
+
+### H9C collar and shoulder correction
+
+Targeted corrective pass on this same four-view H9C Lance Citadel source plate. Keep all four views in exactly the same positions and keep the original overall widening Vanguard body, rear rise, low aft fin, pale plating, blue flank seam, four bright frames, two mirrored heavy twin-barrel turrets and plain rear flank doors. Correct just the forward ion trench entrance and shoulder silhouette. Currently the tall solid transverse bow lip blocks the shot and makes the device look like a roof tub. The broad front face must instead have a clear chunky octagonal firing aperture inset at center, with deep-cut tapered beveled edges and a dead-straight forward line of sight from the blue emitter through all four countable capacitor frames. This is still a closed solid pressure hull: thick continuous bottom sole beneath the blind trench and an unbroken armored collar spanning port and starboard beneath the firing axis. No fork, no split or ship-length open well. Make the trench slightly shorter, about one third of hull length. At the same time strengthen the distinctive silhouette made by the guns: each compact turret sits on a broad tall armored hexagonal barbette with an abrupt stepped shoulder in top view, visibly changing the outline at the rear of the trench instead of disappearing into the foredeck. Keep the true side view fully level with the rear visibly higher than the nose, and keep the same bold unbroken aft transom. Straight bow-on view sees into the firing aperture and sees the two mirrored shoulders. Four views of the same ship, no added or missing view, smooth gray studio backdrop, no text.
+
+### H9C lower beauty angle
+
+Use case: stylized-concept. This four-view sheet is the revised H9C Lance Citadel. Return a single isolated matching beauty rendering, no labels, on plain neutral charcoal without cast shadow. Render the exact same ship from a lower forward port three-quarter angle, about 30 degrees above the firing axis and 30 degrees off bow. We must see both the open muzzle at the tip of the bow and the four transverse capacitor frames inside the short dorsal recess. Pay particular attention to the bow-on cell of the reference: the octagonal aperture is open towards the front and to the top, with faceted armor at the sides and underneath, NOT an opaque high crosswall. Behind it is a short armored blind channel whose four countable spaced metal frames glow blue and terminate at a small blue emitter in the aft wall. The ion device belongs to a single, closed, solid armor hull with a thick continuous plate below the blind channel. No through-hole. Retain precisely the pronounced hexagonal armored shoulder barbettes holding two short twin-barrel guns, the expanding run, the tall rising aft roof with one low fin, the plain shut aft doors, the navy silver plates, the one blue flank line and the solid stern. Keep the beauty recognizable as the upper-left ship of the attached sheet, no changes to the silhouette except the visible opening in the collar already depicted in the other views. Nose lower left, stern upper right. One single complete ship with generous margins on all sides.
+
+### H9D stern inset
+
+Use case: stylized-concept, matching stern detail for H9D Carrier Citadel. Input 1 is the approved target four-view H9D design and identity reference. Input 2 is its H9B parent layout and engine end reference, lower middle marked STERN. Return one complete stern-on image of the H9D only, no labels or borders. A perfectly centered horizontal orthographic camera from directly behind (not the bow and not above), dead symmetric. Preserve the H9B composition of exactly four broad identical rectangular inset blue-white nozzles equally spaced in one horizontal row across a thick contiguous pale gray transom. That is the only blue glow from directly behind. Do not add a center opening, fork, panels that read as extra nozzles, fins, or windows. Incorporate H9D rear differences from input 1: the roof steps down in two broad integrated armored terraces toward the transom, and a pair of modest symmetric armored launch shoulders sit at its flanks, thick and entirely joined to the single solid hull. Just one low centered sensor blade, as in the H9D side view. No space scene, no cast shadow, no text, flat neutral charcoal #414141 background, matte realistic machined naval surface, source plate look.
+
+</details>
+
+## Run 1 (historical)
+
+
 **Start with H9A Bullion.** Its nearly full-width bow and long parallel flanks give the cruiser a recognizable shape without relying on its guns or scale. **H9B Citadel** is the alternate. Its hull gets wider and taller toward a solid stern, and the drone wing exits through closed flank doors rather than the roof.
 
 | Pick | Beauty | Concept sheet |
@@ -7,13 +87,13 @@
 | H9A Bullion (recommended) | [H9A beauty](../../../docs/shots/issue-2094-codex/vanguard_beauty_a.png) | [H9A top, port, bow and stern](../../../docs/shots/issue-2094-codex/vanguard_sheet_a.png) |
 | H9B Citadel | [H9B beauty](../../../docs/shots/issue-2094-codex/vanguard_beauty_b.png) | [H9B top, port, bow and stern](../../../docs/shots/issue-2094-codex/vanguard_sheet_b.png) |
 
-[Equal-length silhouette check](../../../docs/shots/issue-2094-codex/vanguard_silhouette_check.png) · [Family line-up at game length](../../../docs/shots/issue-2094-codex/vanguard_family_lineup.png)
+The run 1 comparison plates have been superseded by the run 2 links above.
 
-## What changed from run 3
+### What changed from run 3
 
 Both options replace the open rails, bridge block and exposed central well with one continuous armored body. Both keep the pale machined Meridian Directorate plating, straight flush seams, thin blue flank light, single low sensor fin, mirrored short-barrel shoulder turrets, blind bow ion trench and one row of four rectangular stern nozzles. Neither needs a visible hangar opening to read as a carrier. The locked Picket, Cordon, Dominion, Convoy and Relay remain unchanged.
 
-## Vanguard feature table
+### Vanguard feature table
 
 Game hull `h_vanguard`, old hull code `H9_23`, cruiser. Game size 0.78 is the battle size factor, not the ship's drawing length. Cruiser length 14.5 world units comes from `CLS_LEN` in `godot/render/hull_table.gd`. Mount and wing counts follow the Godot ship table, cross-checked with `data.js`. Stations are design targets, rounded from the drawings as percentages from the prow. Offsets are in world units from the centerline.
 
@@ -30,7 +110,7 @@ Game hull `h_vanguard`, old hull code `H9_23`, cruiser. Game size 0.78 is the ba
 
 The three-quarter views are in the beauty pictures. These are generated pick sheets, not matched camera exports from a rigid model. Side and top crops use one nominal drawing scale. The front and stern are visual references, not dimension masters. The bow render simplifies the ring count on H9A and overdraws it on H9B. Use the exact four-ring inset on each sheet and the table, not the painted ring count. The H9B bow render does not resolve the aft fin. Both options' final mounts need to sit lower than the concept paint suggests. No build sheet or installed hull is implied.
 
-## How to read the comparison
+### How to read the comparison
 
 - **H9A vs H9B:** broad box-nose and parallel sides vs a flare into the stern. Their sides are a flat roof over a thick belt vs a roof that rises toward the aft block.
 - **Against H7 Picket:** the dart has a pinched nose and an elliptical taper. H9A carries its width through the nose and belt. H9B widens to a square rear without tapering back in.
@@ -40,7 +120,7 @@ The three-quarter views are in the beauty pictures. These are generated pick she
 
 The equal-length comparison is a black contour trace of the two concept plates and the picked or built reference views, with tiny fittings simplified. The family line-up uses those same overhead traces plus the O2 and O3 build sheet outlines, at 13 px per nominal world unit rather than the rounded physical mesh lengths. Lengths are H10 21.0, H9 14.5, O2 11.0, H8 9.5, O3 7.5 and H7 6.5. No game capture or GPU work.
 
-## Image method and prompts
+### Image method and prompts
 
 Built-in ImageGen, image to image, using the run 3 [Vanguard beauty](../../muse/design/class_family_hegemony_2026_11/vanguard_beauty.webp) and [Vanguard sheet](../../muse/design/class_family_hegemony_2026_11/vanguard_sheet.webp) as style and view references. The picked escort sheets came from [Picket](../../muse/design/class_family_hegemony_2026_11/picket_sheet.webp) and [Cordon](../../muse/design/class_family_hegemony_2026_11/cordon_sheet.webp). The anchors use the checked-in H10, O2 and O3 build sheet views. Source outputs were cropped and laid out without repainting the ship. The silhouette and four-ring spec diagrams were drawn separately. Later passes still drew three lit rings even with a four-ring diagram as a reference, so the deeper rendered recesses were retained for the pick.
 
