@@ -1620,32 +1620,7 @@ uniform vec3 v2_interior_accent = vec3(1.0, 0.5, 0.15);
 uniform float v2_rough = 0.6;
 uniform float v2_soot = 1.0;
 uniform float v2_wreck_soot = 0.3;
-// JOINT_D (Nov 23): straight-edged cells for the Glasswright fracture facets: x the distance to the nearest cell edge
-// in cells, y and z the cell's own random values
-vec3 gw_cells(vec2 p) {
-	vec2 ip = floor(p);
-	vec2 fp = fract(p);
-	vec2 mb = vec2(0.0);
-	vec2 mr = vec2(0.0);
-	float md = 8.0;
-	for (int j = -1; j <= 1; j++) {
-		for (int k = -1; k <= 1; k++) {
-			vec2 g = vec2(float(k), float(j));
-			vec2 r = g + vec2(h21(ip + g), h21(ip + g + 17.3)) - fp;
-			float d = dot(r, r);
-			if (d < md) { md = d; mr = r; mb = g; }
-		}
-	}
-	md = 8.0;
-	for (int j = -2; j <= 2; j++) {
-		for (int k = -2; k <= 2; k++) {
-			vec2 g = mb + vec2(float(k), float(j));
-			vec2 r = g + vec2(h21(ip + g), h21(ip + g + 17.3)) - fp;
-			if (dot(mr - r, mr - r) > 1e-5) { md = min(md, dot(0.5 * (mr + r), normalize(r - mr))); }
-		}
-	}
-	return vec3(md, h21(ip + mb + 3.1), h21(ip + mb + 9.7));
-}
+uniform float v2_wall_max = 0.11;
 varying vec3 vL;
 varying vec3 vNl;
 varying vec4 vC;
@@ -1741,34 +1716,20 @@ void fragment() {
 		}
 		if (dress > 0.7 && dress < 0.8) { em += v2_interior_accent * 0.22 * (0.6 + 0.4 * vC.g); }
 		if (wound_v2 == 3) { em += v2_interior_accent * 0.05 * pow(abs(sin(p.x * 22.0 + n1 * 5.0)), 8.0) * (0.8 + 0.2 * sin(scene_t * 2.3 + seed)); }
-		if (wound_v2 == 4 && part < 0.95 && !(dress > 0.7 && dress < 0.8)) {
-			// JOINT_C and D (Nov 23; deaths_and_hits.md 1: "straight-edged crystalline fracture facets and popped mosaic
-			// panes over braided light cores"): the crater and walls of a Glasswright cut are glass panes, each its own
-			// pale tone and tilt with a lit seam between; a few panes are popped (dark, the stored light behind them);
-			// the faction's stored light (glow) rises from deep inside. Never a charcoal disc, no soot
-			vec3 ax = snorm(axis);
-			vec3 t1 = snorm(cross(ax, abs(ax.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
-			vec3 t2 = cross(ax, t1);
-			vec3 dl = vL - centre;
-			// wedge-shaped panes: cells in angle and distance round the cut, so the cracks run out from it like a star
-			vec2 pq = vec2(dot(dl, t1), dot(dl, t2));
-			vec3 gq = gw_cells(vec2(atan(pq.y, pq.x) * 1.9, length(pq) / R * 2.2) + vec2(seed * 7.0, seed * 3.0));
-			float seam = 1.0 - smoothstep(0.0, 0.035, gq.x);
-			bool popped = gq.y > 0.8 && part < 0.3;
-			// R431 (Nov 23, the I8_37 family): pale pearl panes; coloured glass shows only in the seams, and only near
-			// the opening (a spectral hue round the cut), with the deep glow below; never rainbow tiles across the crater
-			vec3 pearl = v2_rim_metal * vec3(1.0, 0.97, 0.93);
-			base = mix(pearl * 0.16, pearl * 0.36, gq.z) * (popped ? 0.25 : 1.0);
-			base = mix(base, pearl * 0.55, seam * 0.4);
-			rough = popped ? 0.3 : 0.06; metal = 0.1; ao = mix(ao, 1.0, 0.6);
-			float near_cut = 1.0 - smoothstep(1.0, 1.9, length(pq) / R);
-			vec3 hue = 0.5 + 0.5 * cos(6.2832 * (atan(pq.y, pq.x) / 6.2832 + gq.y * 0.35 + vec3(0.0, 0.33, 0.67)));
-			em += mix(mix(v2_interior_accent, gc, 0.5) * 0.12, hue * 0.25, near_cut) * seam + gc * (popped ? 0.2 : 0.0);
-			em_hdr += gc * 0.45 * smoothstep(0.7, 1.3, deep) * (0.85 + 0.15 * fl);
-			vec3 tilt = (t1 * (gq.y - 0.5) + t2 * (gq.z - 0.5)) * 0.9;
-			NORMAL = snorm(NORMAL + mat3(VIEW_MATRIX) * (mat3(MODEL_MATRIX) * tilt));
+		if (wound_v2 == 4) {
+			// Issue 2125 / R431: the facets are geometry, not dark tiles painted over the floor. Colour lives on seams.
+			bool rim = part > 0.95;
+			bool seam = dress > 0.60 && dress < 0.65; // fx_breach GLASS_SEAM
+			base = min(v2_interior_lift * mix(0.72, 1.25, vC.g), vec3(v2_wall_max));
+			if (rim) { base = v2_rim_metal * mix(0.72, 1.0, n2); }
+			rough = rim || seam ? 0.15 : 0.32;
+			metal = 0.0;
+			ao = rim ? 1.0 : mix(0.74, 1.0, vC.g);
+			em = rim ? v2_rim_metal * 0.42 : base * 0.42;
+			if (seam) { em += mix(v2_interior_accent, vec3(0.63, 0.49, 1.0), vC.g) * 0.46; }
+			em_hdr = vec3(0.0);
 		}
-		if (style == 1) {
+		if (style == 1 && wound_v2 != 4) {
 			// a fresh lance burn-through: the ember ramp only on Sunward and Hullbreaker steel; Directorate burns
 			// blue-white, the other factions glow in their own accent (audit, PR 1755: no orange on them)
 			float cool = exp(-age / 3.0);
@@ -2533,6 +2494,15 @@ void fragment() {
 	else if (role == 4 && wound_v2 == 3) { hue = vec3(0.075, 0.03, 0.022); }   // wet crimson-umber organ
 	vec3 surf = trusted ? baked : hue * detail;
 	vec3 lit = surf * mix(1.0, r.x * ao, trusted ? 0.5 : 1.0);
+	// Light the real surfaces behind a live Glasswright opening. Dark baked trim must not fill the centre with black.
+	float glass_reveal = wound_v2 == 4 && fx_wreck == 0.0 ? smoothstep(0.04, 0.32, open_f) : 0.0;
+	vec3 glass_pearl = vec3(0.0);
+	if (glass_reveal > 0.0) {
+		glass_pearl = v2_interior_lift * (0.72 + 0.16 * r.x);
+		float value = clamp(dot(lit, vec3(1.0)) / max(dot(glass_pearl, vec3(1.0)), 1e-3), 1.0, 1.4);
+		lit = mix(lit, glass_pearl * value, glass_reveal);
+		open_f = max(open_f, glass_reveal);
+	}
 	vec3 wreck = lit * (1.0 - v2_wreck_soot);
 	if (wound_v2 == 3) {
 		if (role == 1) {
@@ -2547,8 +2517,8 @@ void fragment() {
 	if (wound_v2 == 4) { wreck = mix(lit, v2_rim_metal * vec3(1.0, 0.97, 0.93) * 0.4 * (0.6 + 0.4 * r.x), 0.4); }   // pale frosted pearl glass, never dark grey (Ryan Nov 24)
 	lit = mix(lit, wreck, wr);
 	// R420: walls at most the faction's ceiling (0.11 linear mean; Glasswrights 0.45), held by scaling the colour so the
-	// hue stays; bone and glass are exempt
-	if (role == 0 || role == 2 || role == 4) {
+	// hue stays; bone and glass trim are exempt unless it is the pearl surface of an open Glasswright wound.
+	if (role == 0 || role == 2 || role == 4 || glass_reveal > 0.0) {
 		float lm = (lit.r + lit.g + lit.b) / 3.0;
 		lit *= lm > v2_wall_max ? v2_wall_max / lm : 1.0;
 	}
@@ -2569,7 +2539,7 @@ void fragment() {
 		ROUGHNESS = mix(base_rough, rough, open_f);
 		float metal = (role == 1 || role == 4) ? 0.0 : ((wound_v2 <= 2 || wound_v2 == 5) ? 0.45 : 0.0);
 		if (has_orm) { metal = mix(metal, orm.b, 0.5); }
-		METALLIC = mix(base_metal, metal, open_f);
+		METALLIC = mix(base_metal, metal, open_f) * (1.0 - glass_reveal);
 		SPECULAR = mix(0.5, 0.26, wound_v2 == 1 ? wr : 0.0) * ao;
 	}
 	AO = ao * (has_orm ? orm.r : 1.0);
@@ -2592,17 +2562,18 @@ void fragment() {
 	float pw = clamp(fx_power, 0.0, 1.0);
 	vec3 em = v2_interior_accent * r.z * pulse * fade * open_f * 0.35 * pw;
 	em += v2_interior_accent * near * 0.04 * (1.0 - wr);
-	// Fable review H3: the surface's own light keeps only its brightness, in the faction accent (no green Eclipse cores,
-	// no lime Chorus vats from the old diagram colours); a role-table surface's light is already in faction colour
-	vec3 bsrc = base_emission.rgb * base_emission_energy * texture(base_em_tex, UV).rgb;
-	float bl = max(bsrc.r, max(bsrc.g, bsrc.b));
-	float am = max(v2_interior_accent.r, max(v2_interior_accent.g, v2_interior_accent.b));
-	vec3 bem = (trusted ? bsrc : v2_interior_accent / max(am, 1e-3) * bl) * pw * (1.0 - wr);
-	bem *= mix(0.15, 1.0, open_f);
-	// Once a Directorate room tears open, its full faces lose power. The authored emission can cover a whole
-	// rectangular panel (including a legacy surface inferred to be a core). Leave the narrow blue strips, not HDR panels.
+	em += glass_pearl * 0.24 * glass_reveal;
+	// Cut full-face Directorate emission on the first wreck frame. A 0.8 s fade could still light the entire box.
+	// Keep the narrow blue strips above, which still pulse and fade on the death clock.
 	bool directorate_wreck = wound_v2 == 1 && fx_wreck > 0.0;
-	if (directorate_wreck) { bem *= fx_wreck_t0 < 0.0 ? 0.0 : 1.0 - smoothstep(0.0, 0.8, scene_t - fx_wreck_t0); }
+	vec3 bem = vec3(0.0);
+	if (!directorate_wreck) {
+		// H3: legacy surfaces keep only authored brightness, in faction colour. Role-table colour is already correct.
+		vec3 bsrc = base_emission.rgb * base_emission_energy * texture(base_em_tex, UV).rgb;
+		float bl = max(bsrc.r, max(bsrc.g, bsrc.b));
+		float am = max(v2_interior_accent.r, max(v2_interior_accent.g, v2_interior_accent.b));
+		bem = (trusted ? bsrc : v2_interior_accent / max(am, 1e-3) * bl) * pw * (1.0 - wr) * mix(0.15, 1.0, open_f);
+	}
 	bool hdr_core = role == 2 && !directorate_wreck;
 	// R420: non-core light at most 0.25, held by scaling (Fable review H2); a core is the HDR band and passes
 	vec3 soft = em + (hdr_core ? vec3(0.0) : bem);
