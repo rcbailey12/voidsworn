@@ -771,20 +771,9 @@ func _begin(a) -> void:
 		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
 	# PR 1772 (Fable, item 2): station_T2 reads on a worker too when the board has station hexes or a station hole
 	if v0 is Dictionary and _has_station(v0):
-		# the big cluster draws station_T2, smaller clusters and holes the outpost (issue 1791); a rough split by cell
-		# count is enough for a prefetch (the board builds whatever it needs either way)
-		var cells := 0
-		var t0 = v0.get("terrain", {})
-		if t0 is Dictionary:
-			for k in t0:
-				cells += 1 if str(t0[k]) == "station" else 0
-		var holes := 0
-		var m0 = v0.get("map", {})
-		if m0 is Dictionary:
-			for h in m0.get("holes", []):
-				holes += 1 if h is Dictionary and str(h.get("kind", "")) == "station" else 0
-		var big: bool = cells >= A4P.BIG_FOOTPRINT_CELLS
-		A4P.prefetch_station(big, holes > 0 or (cells > 0 and not big))
+		# the big cluster draws station_T2, smaller clusters and holes the outpost (issue 1791)
+		var spots := A4P.station_spots(v0)
+		A4P.prefetch_station(spots.x == 1, spots.y == 1)
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
 		if "passive" in gfx:

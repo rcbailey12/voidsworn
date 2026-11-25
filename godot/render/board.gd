@@ -425,10 +425,11 @@ func _terrain_files() -> Array:
 		for code in ["H8_23", "V15_37", "C14s_23", "D20_23"]:
 			if ships.has(code):
 				out.append(str(ships[code]["res"]))
+	var spots := A4P.station_spots({"terrain": T, "map": VW.get("map", {})})
+	if spots != Vector2i.ZERO:
+		# the same station files the battle prefetches: T2 for the big cluster, the outpost for small ones and holes (1791)
+		out += A4P.station_files(spots.x == 1, spots.y == 1)
 	if kinds.has("station"):
-		for p in ["res://gen/ships/station_T2.scn", "res://gen/ships/station_T2_debris.scn"]:
-			if ResourceLoader.exists(p):
-				out.append(p)
 		if ships.has("O1_37"):
 			out.append(str(ships["O1_37"]["res"]))
 	var keep := []

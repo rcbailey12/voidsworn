@@ -206,6 +206,12 @@ func _outpost_checks(rel: Array) -> void:
 			root.add_child(st)
 		out = _outside(tri, rel, HS) + _outside(one, [Vector2.ZERO], HS)
 		ok = ok and tri.find_child("station_T2_debris", true, false) == null
+	# one file list for the battle's prefetch and the board's terrain wait (Artoo on PR 1998, item 1)
+	var view := {"terrain": {"0,0": "station", "1,0": "station", "0,1": "station"}, "map": {"holes": [{"kind": "station", "cells": [[4, 4]]}]}}
+	var sp: Vector2i = PROPS.station_spots(view)
+	ok = ok and sp == Vector2i(0, 1)
+	var files: Array = PROPS.station_files(false, true)
+	ok = ok and files.has(PROPS.OUTPOST_PATH) and not files.has(PROPS.T2_DEBRIS_PATH)
 	_report(ok and out == 0, "with the outpost installed, the 3-hex spot and a hole draw it inside their hexes (scale %.3f and %.3f, %d points outside), the big cluster keeps T2" % [
 		tri.scale.x if tri else 0.0, one.scale.x if one else 0.0, out])
 	for n in [tri, one, big]:

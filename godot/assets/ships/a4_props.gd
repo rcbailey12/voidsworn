@@ -53,16 +53,40 @@ static var _pending := {}   # not GPU: paths only (path -> true), the loaded sce
 # Fable on PR 1772 (7c734f53, item 2): station_T2 is large too, so a battle with station hexes or holes starts reading it
 # (and its debris) on a worker thread as the battle begins; station() collects it.
 static func prefetch_station(big := true, small := true) -> void:
-	var want: Array = []
-	if big or (small and not ResourceLoader.exists(OUTPOST_PATH)):
-		want += [T2_PATH, T2_DEBRIS_PATH]
-	if small:
-		want.append(OUTPOST_PATH)
-	for p in want:
+	for p in station_files(big, small):
 		if old_path() or _pending.has(p) or not ResourceLoader.exists(p) or ResourceLoader.has_cached(p):
 			continue
 		if ResourceLoader.load_threaded_request(p) == OK:
 			_pending[p] = true
+
+
+# The installed station files a board with these station spots draws (issue 1791): T2 and its debris for the big cluster,
+# or for a small spot while no outpost is installed; the outpost for small clusters and holes. One list for the battle's
+# prefetch and the board's own terrain wait (Artoo on PR 1998, item 1).
+static func station_files(big: bool, small: bool) -> Array:
+	var out: Array = []
+	if big or (small and not ResourceLoader.exists(OUTPOST_PATH)):
+		out += [T2_PATH, T2_DEBRIS_PATH]
+	if small:
+		out.append(OUTPOST_PATH)
+	return out.filter(func(p: String) -> bool: return ResourceLoader.exists(p))
+
+
+# The big and small station spots of a battle view: station terrain cells (19 or more is the big cluster, a rough split
+# by count that is enough to choose files) and station holes.
+static func station_spots(view: Dictionary) -> Vector2i:
+	var cells := 0
+	var t0 = view.get("terrain", {})
+	if t0 is Dictionary:
+		for k in t0:
+			cells += 1 if str(t0[k]) == "station" else 0
+	var holes := 0
+	var m0 = view.get("map", {})
+	if m0 is Dictionary and m0.get("holes", []) is Array:
+		for h in m0.get("holes", []):
+			holes += 1 if h is Dictionary and str(h.get("kind", "")) == "station" else 0
+	var big := cells >= BIG_FOOTPRINT_CELLS
+	return Vector2i(1 if big else 0, 1 if holes > 0 or (cells > 0 and not big) else 0)
 
 
 static func _scene_at(p: String) -> PackedScene:
@@ -79,6 +103,9 @@ static func prefetch_beacon() -> void:
 
 static func _collect(p: String) -> Resource:
 	_pending.erase(p)
+	# the board's sliced terrain wait may have collected the same file first (issue 1434): it is cached then
+	if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+		return load(p)
 	return ResourceLoader.load_threaded_get(p)   # waits only for what the worker has not read yet
 
 
@@ -279,6 +306,8 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 		t2.set_meta("station_bearing", bearing)
 		# Refs #863. Separate kit/cache leaves PR 977's painted station intact. The field lives in T2's own (scaled) frame,
 		# so the clearance it keeps out of is divided by the same scale.
+		# The outpost gets no drifting debris (issue 1791): T2's field is cut and spread for the big station, and the
+		# outpost's damage is its own modelled breach (outpost.py BREACH). Artoo on PR 1998, item 2: a recorded exception.
 		if with_debris and path == T2_PATH and ResourceLoader.exists(T2_DEBRIS_PATH):
 			var debris := _scene_at(T2_DEBRIS_PATH).instantiate() as Node3D
 			debris.name = "station_T2_debris"
