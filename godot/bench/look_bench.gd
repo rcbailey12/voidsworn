@@ -42,6 +42,7 @@ extends Node
 
 const FX := preload("res://fx/fx.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const BREACH := preload("res://fx/fx_breach.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const SV := preload("res://render/ship_view.gd")
 const HT := preload("res://render/hull_table.gd")
@@ -53,8 +54,9 @@ const WORLD_PATH := "res://world/world.gd"
 const MOMENTS := "res://bench/look_moments.json"
 const HEX_S := 10.0
 const HEX_W := 17.320508
-const W := 1920
-const H := 1080
+# issue 1877: --size WxH draws smaller (a cloud stand-in run on the software renderer); the PC keeps 1920x1080
+var W := 1920
+var H := 1080
 const STEP := 1.0 / 60.0
 const GRID := 900          # every part starts on a multiple of this many drawn frames
 const FLEET_CELL := Vector2i(400, 240)
@@ -84,6 +86,7 @@ var wld = null
 var A = null
 var T = null
 var report := {"stills": [], "warnings": [], "parts": {}}
+var _wound := {}   # issue 1741 (Artoo on 6fbf60fe): a wound-aimed row's open cutouts and pose, for its still's report entry
 var cfg := {}
 var steps := 0
 var headless := false
@@ -106,6 +109,10 @@ func _ready() -> void:
 				args[k] = true
 		i += 1
 	out = str(args.get("out", "user://look_bench"))
+	if args.has("size"):
+		var wh := str(args["size"]).split("x")
+		W = int(wh[0])
+		H = int(wh[1])
 	DirAccess.make_dir_recursive_absolute(out)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	Engine.max_fps = 0
@@ -187,6 +194,13 @@ func _run() -> void:
 	_log("late shaders after warm-up (issue 376): %d; pipelines compiled in this run: %d" % [HULL.late_shader_count(), _pipelines()])
 	for line in HULL.late_shader_names():
 		_log("  late shader " + str(line))
+	if failed != "":
+		# the report stays for diagnosis; no DONE line, so look_bench.bat reports the run as failed
+		report["failed"] = failed
+		_save_report()
+		print("LOOK_BENCH_FAILED " + failed)
+		await _shutdown(4)
+		return
 	_save_report()
 	_log("stills: %d, warnings: %d" % [report["stills"].size(), report["warnings"].size()])
 	if not prop_failures.is_empty() and not args.has("props-smoke"):   # --props-smoke: a cloud parse run, no pictures
@@ -791,7 +805,21 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	for wv in row.get("windows", [["impact", -0.07, 12]]):
 		wins.append({"anchor": str(wv[0]), "at": float(wv[1]), "n": int(wv[2]), "got": 0, "next": -1})
 		total += int(wv[2])
-	var strip := Image.create_empty(cell.x * total, cell.y, false, Image.FORMAT_RGB8)
+	# issue 1877: a "clip" row saves every cell as its own frame (DIR/moments/<id>__c<cam>/f000.png ...) for a video,
+	# since a long strip passes Godot's 16384-pixel image limit; the strip is then not made
+	var clip := bool(row.get("clip", false))
+	var clip_dir := d.path_join("%s__c%d" % [id, int(r)])
+	var clip_bad: Array = []   # frames that failed to save (a clip row with any missing frame fails, Artoo on PR 1904)
+	# a "strict" still row fails the same way on a blank cell, a window that never opened or a strip that did not save
+	# (Artoo on PR 1904: the acid colour proof rows must not pass with a blank cell)
+	var strict := bool(row.get("strict", false))
+	if clip and keep:
+		var mk := DirAccess.make_dir_recursive_absolute(clip_dir)
+		if mk != OK or not DirAccess.dir_exists_absolute(clip_dir):
+			failed = "%s at %d: clip folder %s could not be made (error %d)" % [id, int(r), clip_dir, mk]
+			_warn("LOOK_BENCH " + failed)
+			return false
+	var strip := Image.create_empty(1 if clip else cell.x * total, cell.y, false, Image.FORMAT_RGB8)
 	var ci := 0
 	var cells: Array = []
 	var guard := 0
@@ -863,6 +891,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		moments_failed = moments_failed or args.has("strict-moments")
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts, "code": tcode})
+	if not _wound.is_empty():
+		report["stills"][-1]["wound"] = _wound.duplicate()
 	_log("%s at %d: %d cells" % [id, int(r), ci])
 	return true
 

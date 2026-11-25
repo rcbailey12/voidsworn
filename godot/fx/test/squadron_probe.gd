@@ -6,7 +6,7 @@ const PG := preload("res://render/placeholder_guard.gd")
 const HullAge := preload("res://render/hull_age.gd")
 const HT := preload("res://render/hull_table.gd")
 const WING := preload("res://render/squadron_wing.gd")
-const CASES := [["voidsworn", "Sunward Crusade", "bomber", "Carrier"], ["hegemony", "Hegemony Navy", "fighter", "Battleship"], ["corsair", "Ashfall Hullbreakers", "bomber", "Carrier"], ["chorus", "The Chorus", "spore", "Carrier"], ["ithar", "The Glasswrights", "fighter", "Carrier"], ["deathless", "Eclipse", "", "Tomb-ark"]]
+const CASES := [["voidsworn", "Sunward Crusade", "bomber", "Carrier"], ["hegemony", "Meridian Directorate", "fighter", "Battleship"], ["corsair", "Ashfall Hullbreakers", "bomber", "Carrier"], ["chorus", "The Chorus", "spore", "Carrier"], ["ithar", "The Glasswrights", "fighter", "Carrier"], ["deathless", "Eclipse", "", "Tomb-ark"]]
 var vp: SubViewport
 var world: Node3D
 var cam: Camera3D

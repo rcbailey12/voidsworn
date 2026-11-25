@@ -13,6 +13,7 @@ const WING := preload("res://render/squadron_wing.gd")
 const PG := preload("res://render/placeholder_guard.gd")
 const THRUST := preload("res://fx/thrust_profile.gd")   # issue 1582: the six faction movement personalities
 const LINE_STYLE := preload("res://render/line_style.gd")   # issue 1582: the drop-line takes the one line style (R362)
+const STAGE_IN := preload("res://render/stage_in.gd")
 var squad_kind := ""
 
 var u: Dictionary
@@ -102,7 +103,7 @@ static func retire_build(paths: Array, insts: Array) -> void:
 
 
 static func _free_inst(e: Dictionary) -> void:
-	var n = e["out"][0]
+	var n = e["out"][0] if e.has("out") else null   # a retired debris cut holds data, not a node
 	if n != null and is_instance_valid(n) and (n as Node).get_parent() == null:
 		(n as Node).free()
 
@@ -126,13 +127,20 @@ static func reap_build() -> void:
 
 # everything retired, now (quit)
 static func drain_build() -> void:
+	var t0 := Time.get_ticks_usec()
+	var loads := _retired_loads.size()
+	var jobs := _retired_insts.size()
 	for p in _retired_loads:
 		ResourceLoader.load_threaded_get(p)
 	_retired_loads.clear()
+	var t1 := Time.get_ticks_usec()
 	for e in _retired_insts:
 		WorkerThreadPool.wait_for_task_completion(int(e["tid"]))
 		_free_inst(e)
 	_retired_insts.clear()
+	if loads + jobs > 0:
+		print("[load] quit joined %d reads in %.1f ms and %d build tasks in %.1f ms" % [
+			loads, (t1 - t0) / 1000.0, jobs, (Time.get_ticks_usec() - t1) / 1000.0])
 	if _reaping:
 		_reaping = false
 		var tree := Engine.get_main_loop() as SceneTree
@@ -165,21 +173,7 @@ const SHADER_KEEP_MAX := 96
 # colours and numbers are uniforms. Godot gives no shader RID for a BaseMaterial3D (LOAD12: get_shader_rid() is a
 # script error), so two materials with the same signature share one shader, and one stand-in keeps it.
 static func shader_sig(bm: BaseMaterial3D) -> String:
-	var p := PackedStringArray([bm.get_class(), str(bm.transparency), str(bm.blend_mode), str(bm.cull_mode),
-		str(bm.depth_draw_mode), str(bm.shading_mode), str(bm.diffuse_mode), str(bm.specular_mode), str(bm.texture_filter),
-		str(bm.billboard_mode), str(bm.detail_blend_mode), str(bm.detail_uv_layer), str(bm.distance_fade_mode),
-		str(bm.alpha_antialiasing_mode), str(bm.vertex_color_use_as_albedo)])
-	var bits := ""
-	for f in BaseMaterial3D.FEATURE_MAX:
-		bits += "1" if bm.get_feature(f) else "0"
-	bits += "|"
-	for f in BaseMaterial3D.FLAG_MAX:
-		bits += "1" if bm.get_flag(f) else "0"
-	bits += "|"
-	for t in BaseMaterial3D.TEXTURE_MAX:
-		bits += "1" if bm.get_texture(t) != null else "0"
-	p.append(bits)
-	return ",".join(p)
+	return STAGE_IN.shader_sig(bm)
 
 
 static func _keep_shaders() -> void:

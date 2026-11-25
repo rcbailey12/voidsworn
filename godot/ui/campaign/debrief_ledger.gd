@@ -278,14 +278,14 @@ func advance() -> void:
 
 func _fallen_text() -> String:
 	var names = []
-	for f in R["fallen"]: names.append(str(f["name"]))
+	for f in R["fallen"]: names.append(str(f["cap"]["full_name"]))
 	return "Captains lost: " + (", ".join(PackedStringArray(names)) if not names.is_empty() else "None")
 
 func _fleet_tip() -> String:
 	var lines = ["The fleet that finished it (full record F):"]
 	for ship in R["fleet"]:
 		var car = ship.get("car", {})
-		lines.append(str(ship["name"]) + ", " + str(C.HULLS[ship["tpl"]]["n"]) + ": " + C.numstr(car.get("kills", 0)) + " kills, " + C.numstr(car.get("dealt", 0)) + " damage. " + str(C.rankName(ship["cap"])) + " " + str(ship["cap"]["name"]))
+		lines.append(str(ship["name"]) + ", " + str(C.HULLS[ship["tpl"]]["n"]) + ": " + C.numstr(car.get("kills", 0)) + " kills, " + C.numstr(car.get("dealt", 0)) + " damage. " + str(C.rankName(ship["cap"])) + " " + str(ship["cap"]["full_name"]))
 	if R["fleet"].is_empty(): lines.append("No ships still flying.")
 	lines.append(_fallen_text())
 	return "\n".join(PackedStringArray(lines))
@@ -304,7 +304,7 @@ func _build_fleet(w: float, right: float) -> void:
 		var name_label = heading(str(flagship["name"]), Rect2(360, 953, width - 1100, 44), 30)
 		var car = flagship.get("car", {}); var caption = C.numstr(car.get("kills", 0)) + " KILLS - " + C.numstr(car.get("dealt", 0)) + " DMG"
 		hover(name_label, "Flagship: " + str(flagship["name"]) + ", " + caption + " across " + C.numstr(car.get("battles", 0)) + " battles.\nFull fleet F.")
-		words(str(C.HULLS[flagship["tpl"]]["n"]) + " - " + str(C.rankName(flagship["cap"])) + " " + str(flagship["cap"]["name"]), Rect2(360, 1000, 320, 46), 17)
+		words(str(C.HULLS[flagship["tpl"]]["n"]) + " - " + str(C.rankName(flagship["cap"])) + " " + str(flagship["cap"]["full_name"]), Rect2(360, 1000, 320, 46), 17)
 		words(caption, Rect2(360, 1044, 320, 28), 17, GS.TEXT2, GS.num())
 	else: words("No ships still flying.\nThe fleet and its losses are recorded.   F", Rect2(72, 965, 560, 76), 20)
 	var lost_text = _fallen_text()

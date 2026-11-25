@@ -314,62 +314,82 @@
 "wreckSettle_2.ogg"
 ],
 "wep_sunward_autocannon": [
-"wep_sunward_autocannon_0.ogg"
+"wep_sunward_autocannon_0.ogg",
+"wep_sunward_autocannon_more_f2_0.ogg",
+"wep_sunward_autocannon_more_f2_1.ogg"
 ],
 "wep_sunward_turret": [
-"wep_sunward_turret_0.ogg"
+"wep_sunward_turret_0.ogg",
+"wep_sunward_turret_more_f2_0.ogg"
 ],
 "wep_sunward_hbattery": [
-"wep_sunward_hbattery_0.ogg"
+"wep_sunward_hbattery_0.ogg",
+"wep_sunward_hbattery_more_0.ogg"
 ],
 "wep_directorate_laser": [
-"wep_directorate_laser_0.ogg"
+"wep_directorate_laser_0.ogg",
+"wep_directorate_laser_b_more_0.ogg"
 ],
 "wep_directorate_turbo": [
 "wep_directorate_turbo_0.ogg",
-"wep_directorate_turbo_1.ogg"
+"wep_directorate_turbo_1.ogg",
+"wep_directorate_turbo_more_0.ogg"
 ],
 "wep_directorate_hturbo": [
-"wep_directorate_hturbo_0.ogg"
+"wep_directorate_hturbo_0.ogg",
+"wep_directorate_hturbo_more_0.ogg"
 ],
 "wep_flak_airburst": [
-"wep_flak_airburst_0.ogg"
+"wep_flak_airburst_0.ogg",
+"wep_flak_airburst_more_0.ogg"
 ],
 "wep_directorate_picket": [
-"wep_directorate_picket_0.ogg"
+"wep_directorate_picket_0.ogg",
+"wep_directorate_picket_more_0.ogg"
 ],
 "wep_chorus_spore_cloud": [
-"wep_chorus_spore_cloud_0.ogg"
+"wep_chorus_spore_cloud_0.ogg",
+"wep_chorus_spore_cloud_more_0.ogg"
 ],
 "wep_eclipse_gsentry": [
 "wep_eclipse_gsentry_0.ogg"
 ],
 "wep_hullbreaker_junk_gun": [
-"wep_hullbreaker_junk_gun_0.ogg"
+"wep_hullbreaker_junk_gun_0.ogg",
+"wep_hullbreaker_junk_gun_more_f2_0.ogg"
 ],
 "wep_hullbreaker_scatter": [
-"wep_hullbreaker_scatter_0.ogg"
+"wep_hullbreaker_scatter_0.ogg",
+"wep_hullbreaker_scatter_more_0.ogg"
 ],
 "wep_chorus_spines": [
-"wep_chorus_spines_0.ogg"
+"wep_chorus_spines_0.ogg",
+"wep_chorus_spines_more_0.ogg"
 ],
 "wep_ithar_shard": [
-"wep_ithar_shard_0.ogg"
+"wep_ithar_shard_0.ogg",
+"wep_ithar_shard_more_0.ogg"
 ],
 "wep_ithar_needle": [
-"wep_ithar_needle_0.ogg"
+"wep_ithar_needle_0.ogg",
+"wep_ithar_needle_more_0.ogg",
+"wep_ithar_needle_more_1.ogg"
 ],
 "wep_eclipse_gauss_fire": [
-"wep_eclipse_gauss_fire_0.ogg"
+"wep_eclipse_gauss_fire_0.ogg",
+"wep_eclipse_gauss_fire_ctl_more_0.ogg"
 ],
 "wep_craft_guns": [
-"wep_craft_guns_0.ogg"
+"wep_craft_guns_0.ogg",
+"wep_craft_guns_more_f2_0.ogg",
+"wep_craft_guns_more_f2_1.ogg"
 ],
 "wep_craft_bombs": [
 "wep_craft_bombs_0.ogg"
 ],
 "wep_chorus_sporeb": [
-"wep_chorus_sporeb_0.ogg"
+"wep_chorus_sporeb_0.ogg",
+"wep_chorus_sporeb_more_0.ogg"
 ],
 "wep_sunward_lance_beam": [
 "wep_sunward_lance_beam_0.ogg"
@@ -402,30 +422,40 @@
 "wep_ithar_startorp_0.ogg"
 ],
 "imp_metal_light": [
-"imp_metal_light_0.ogg"
+"imp_metal_light_0.ogg",
+"imp_metal_light_more_0.ogg"
 ],
 "imp_metal_heavy": [
 "imp_metal_heavy_0.ogg",
-"imp_metal_heavy_1.ogg"
+"imp_metal_heavy_1.ogg",
+"imp_metal_heavy_more_0.ogg"
 ],
 "imp_las": [
-"imp_las_0.ogg"
+"imp_las_0.ogg",
+"imp_las_more_0.ogg"
 ],
 "imp_energy_sear": [
-"imp_energy_sear_0.ogg"
+"imp_energy_sear_0.ogg",
+"imp_energy_sear_more_f2_0.ogg"
 ],
 "imp_bio_flesh": [
 "imp_bio_flesh_0.ogg",
-"imp_bio_flesh_1.ogg"
+"imp_bio_flesh_1.ogg",
+"imp_bio_flesh_more_0.ogg",
+"imp_bio_flesh_more_1.ogg"
 ],
 "imp_glass_armor": [
-"imp_glass_armor_0.ogg"
+"imp_glass_armor_0.ogg",
+"imp_glass_armor_more_0.ogg",
+"imp_glass_armor_more_1.ogg"
 ],
 "imp_obsidian_eclipse": [
-"imp_obsidian_eclipse_0.ogg"
+"imp_obsidian_eclipse_0.ogg",
+"imp_obsidian_eclipse_more_f2_0.ogg"
 ],
 "shd_hit_absorb": [
-"shd_hit_absorb_0.ogg"
+"shd_hit_absorb_0.ogg",
+"shd_hit_absorb_more_0.ogg"
 ],
 "shd_break_energy": [
 "shd_break_energy_0.ogg"
@@ -458,7 +488,8 @@
 "ui_boss_arrival_0.ogg"
 ],
 "ui_confirm_latch": [
-"ui_confirm_latch_0.ogg"
+"ui_confirm_latch_0.ogg",
+"ui_confirm_latch_more_0.ogg"
 ],
 "ui_turn_start": [
 "ui_turn_start_0.ogg"
@@ -492,5 +523,181 @@
 ],
 "wep_eclipse_gauss_charge": [
 "wep_eclipse_gauss_charge_0.ogg"
+],
+"wep_ithar_flak": [
+"wep_ithar_flak_0.ogg",
+"wep_ithar_flak_1.ogg"
+],
+"imp_gauss_slug": [
+"imp_gauss_slug_0.ogg"
+],
+"imp_ion_disrupt": [
+"imp_ion_disrupt_0.ogg",
+"imp_ion_disrupt_1.ogg"
+],
+"imp_patter_hull": [
+"imp_patter_hull_0.ogg"
+],
+"imp_patter_shield": [
+"imp_patter_shield_0.ogg"
+],
+"boom_pop_metal": [
+"boom_pop_metal_0.ogg"
+],
+"boom_small_metal": [
+"boom_small_metal_0.ogg"
+],
+"boom_medium_metal": [
+"boom_medium_metal_0.ogg"
+],
+"ship_engine_loop": [
+"ship_engine_loop_0.ogg"
+],
+"ship_craft_launch": [
+"ship_craft_launch_0.ogg"
+],
+"ship_phase_jump": [
+"ship_phase_jump_0.ogg"
+],
+"ship_engine_cough": [
+"ship_engine_cough_0.ogg",
+"ship_engine_cough_1.ogg"
+],
+"ship_power_charge": [
+"ship_power_charge_0.ogg"
+],
+"death_metal_vent": [
+"death_metal_vent_0.ogg",
+"death_metal_vent_1.ogg"
+],
+"death_debris_cool": [
+"death_debris_cool_0.ogg"
+],
+"death_hulk_vent": [
+"death_hulk_vent_0.ogg"
+],
+"death_metal_tail": [
+"death_metal_tail_0.ogg",
+"death_metal_tail_1.ogg"
+],
+"death_bass_drop": [
+"death_bass_drop_0.ogg"
+],
+"ord_brace_lock": [
+"ord_brace_lock_0.ogg"
+],
+"ord_adapt_shift": [
+"ord_adapt_shift_0.ogg"
+],
+"ord_board_grapple": [
+"ord_board_grapple_0.ogg"
+],
+"ui_cancel_switch": [
+"ui_cancel_switch_0.ogg"
+],
+"ui_select_detent": [
+"ui_select_detent_0.ogg",
+"ui_select_detent_1.ogg"
+],
+"ui_hover_tick": [
+"ui_hover_tick_0.ogg"
+],
+"ui_panel_slide": [
+"ui_panel_slide_0.ogg",
+"ui_panel_slide_1.ogg"
+],
+"ui_alert_bell": [
+"ui_alert_bell_0.ogg"
+],
+"ui_round_bell": [
+"ui_round_bell_0.ogg"
+],
+"ui_enemy_turn": [
+"ui_enemy_turn_0.ogg"
+],
+"wep_hullbreaker_rockets_b": [
+"wep_hullbreaker_rockets_b_0.ogg"
+],
+"ui_boss_arrival_long": [
+"ui_boss_arrival_long_0.ogg"
+],
+"dmg_engine_fail_long": [
+"dmg_engine_fail_long_0.ogg"
+],
+"shd_raise": [
+"shd_raise_0.ogg"
+],
+"evt_gravity_well": [
+"evt_gravity_well_0.ogg"
+],
+"evt_asteroid_scrape": [
+"evt_asteroid_scrape_0.ogg",
+"evt_asteroid_scrape_1.ogg"
+],
+"evt_hull_alarm": [
+"evt_hull_alarm_0.ogg"
+],
+"ui_command_issue": [
+"ui_command_issue_0.ogg",
+"ui_command_issue_1.ogg"
+],
+"map_fleet_jump": [
+"map_fleet_jump_0.ogg"
+],
+"map_fleet_arrive": [
+"map_fleet_arrive_0.ogg"
+],
+"ui_purchase": [
+"ui_purchase_0.ogg",
+"ui_purchase_1.ogg"
+],
+"ui_module_install": [
+"ui_module_install_0.ogg"
+],
+"ui_relic_socket": [
+"ui_relic_socket_0.ogg",
+"ui_relic_socket_1.ogg"
+],
+"ui_event_comm": [
+"ui_event_comm_0.ogg",
+"ui_event_comm_1.ogg"
+],
+"ui_ship_lost": [
+"ui_ship_lost_0.ogg"
+],
+"wep_sunward_battery": [
+"wep_sunward_battery_0.ogg"
+],
+"ui_click_switch": [
+"ui_click_switch_0.ogg"
+],
+"evt_ram_impact_f2": [
+"evt_ram_impact_f2_0.ogg"
+],
+"evt_nebula_bed_f2": [
+"evt_nebula_bed_f2_0.ogg"
+],
+"ui_rank_up_f2": [
+"ui_rank_up_f2_0.ogg",
+"ui_rank_up_f2_1.ogg"
+],
+"evt_torp_intercept_f2": [
+"evt_torp_intercept_f2_0.ogg"
+],
+"death_metal_powerdown_f2": [
+"death_metal_powerdown_f2_0.ogg"
+],
+"death_metal_run_f2": [
+"death_metal_run_f2_0.ogg",
+"death_metal_run_f2_1.ogg"
+],
+"death_metal_crack_f3": [
+"death_metal_crack_f3_0.ogg"
+],
+"ship_thruster_puff_f3": [
+"ship_thruster_puff_f3_0.ogg"
+],
+"wep_eclipse_gsentry_more_f3": [
+"wep_eclipse_gsentry_more_f3_0.ogg"
 ]
 }
