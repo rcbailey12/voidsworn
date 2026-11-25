@@ -355,7 +355,15 @@ function Get-RepoCleanupStatus($repo) {
 function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWork = $false, $forRemoval = $false) {
   foreach ($line in $status) {
     # These installer leftovers can be untracked or ignored, depending on the checkout's ignore rules.
+    # PR 2077 ignores flat ships manifest backups (manifest.json.bak_<stamp>) beside the older manifest.bak_* folders.
     if ($line -match '^(?:!!|\?\?) ("?)(godot/(?:\.stage7-replaced-[^/"\\:\r\n]+|assets/ships/manifest\.bak_[^/"\\:\r\n]+)/[^"\\:\r\n]+)(?<!/)\1$' -and
+        (Test-Path -LiteralPath (Join-Path $repo $Matches[2]) -PathType Leaf)) {
+      $Matches[2]
+      continue
+    }
+    # Issue 2091: a flat manifest backup is unique, so reuse may leave it in place but the janitor must keep its checkout.
+    if (-not $forRemoval -and
+        $line -match '^(?:!!|\?\?) ("?)(godot/assets/ships/manifest\.json\.bak_[^/"\\:\r\n]+)(?<!/)\1$' -and
         (Test-Path -LiteralPath (Join-Path $repo $Matches[2]) -PathType Leaf)) {
       $Matches[2]
       continue

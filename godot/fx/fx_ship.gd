@@ -1132,6 +1132,16 @@ static func wounds_v2_setting() -> bool:
 	return WOUNDS.v2()
 
 
+# Issue 1741 (JOINT_C, Nov 23: a lime gas plume under the Chorus wound read as neon against R420): with Wounds V2 on,
+# the Chorus's smoke, fume and vent gas take its wound accent (ochre over dark olive) in place of the bile lime of
+# damage_glow, which stays for its lit glands and fire. Off, the old colour.
+func chorus_gas(glow: Color) -> Color:
+	if not wounds_v2:
+		return glow
+	var a = (fac.get("wound", {}) as Dictionary).get("interior_accent", [0.6, 0.52, 0.14]) if fac.get("wound") is Dictionary else [0.6, 0.52, 0.14]
+	return Color(float(a[0]), float(a[1]), float(a[2]))
+
+
 static func fail_look_setting() -> int:
 	var v := OS.get_environment("VS_SHIELD_FAILURE")
 	if v.is_empty():
@@ -1990,7 +2000,7 @@ func _anchor(i: int, kind: String) -> Dictionary:
 # footprint (Artoo, PR 1245: two seats side by side could push it from one into the other). If no clear spot is found
 # the section opens no hole there ({}), never one under a turret.
 func _off_turrets(h: Dictionary, R: float, sec := -1) -> Dictionary:
-	if _clear_of_turrets(h["p"], R):
+	if _clear_spot(h["p"], R):
 		return h
 	var nn: Vector3 = h["n"]
 	var p0: Vector3 = h["p"]
@@ -2006,14 +2016,56 @@ func _off_turrets(h: Dictionary, R: float, sec := -1) -> Dictionary:
 			for grow in [1.0, 1.5, 2.2]:
 				var q := Vector3(c.x + cos(an) * rad * grow, p0.y, c.z + sin(an) * rad * grow)
 				var hit: Dictionary = hull.ray(q + nn * hull.L, -nn)
-				if not hit.is_empty() and _clear_of_turrets(hit["p"], R):
+				if not hit.is_empty() and _clear_spot(hit["p"], R):
 					return {"p": hit["p"], "n": hit["n"]}
 	if sec >= 0:
 		for t in 48:
 			var c2: Dictionary = hull.random_sample(sec, 0.0)
-			if not c2.is_empty() and (c2["n"] as Vector3).dot(nn) > 0.3 and _clear_of_turrets(c2["p"], R):
+			if not c2.is_empty() and (c2["n"] as Vector3).dot(nn) > 0.3 and _clear_spot(c2["p"], R):
 				return {"p": c2["p"], "n": c2["n"]}
 	return {}
+
+
+# R416 4.3 (Wounds V2 on): a cutout keeps clear of the bay doors too, not only the turrets.
+func _clear_spot(p: Vector3, R: float) -> bool:
+	return _clear_of_turrets(p, R) and (not BREACH.v2_on() or _clear_of_doors(p, R))
+
+
+func _clear_of_doors(p: Vector3, R: float) -> bool:
+	for b in door_boxes():
+		if (b as AABB).grow(R * 1.15).has_point(p):
+			return false
+	return true
+
+
+var _door_boxes: Array = []
+var _door_boxes_done := false
+
+
+# Each bay door's box at rest in the ship frame, from its meshes.
+func door_boxes() -> Array:
+	if _door_boxes_done:
+		return _door_boxes
+	_door_boxes_done = true
+	if hull == null or not ("doors" in hull) or not is_instance_valid(root):
+		return _door_boxes
+	var inv: Transform3D = root.global_transform.affine_inverse()
+	for d in hull.doors:
+		var node = d.get("node")
+		if not is_instance_valid(node):
+			continue
+		var box := AABB()
+		var any := false
+		for m in (node as Node).find_children("*", "MeshInstance3D", true, false):
+			var mi := m as MeshInstance3D
+			if mi.mesh == null:
+				continue
+			var b: AABB = (inv * mi.global_transform) * mi.mesh.get_aabb()
+			box = b if not any else box.merge(b)
+			any = true
+		if any:
+			_door_boxes.append(box)
+	return _door_boxes
 
 
 func _clear_of_turrets(p: Vector3, R: float) -> bool:
@@ -2087,6 +2139,35 @@ func _plan(fx, i: int, st: int) -> Array:
 		s2.sec = i
 		s2.heat = sc.heat * 0.6
 		out.append(s2)
+	# R416 5.1 (issue 1741, Wounds V2 on): an authored-interior hull opens real cutouts from stage 2 (about 55% section
+	# HP), 0.026 L growing to 0.038 L and 0.052 L, each through the footprint check; a second one at stage 3 and up
+	# on a heavier ship (two per section at most). Older hollow hulls keep the stage 4 ladder below.
+	if BREACH.v2_on() and hull.authored and not fx.compat and st >= 2:
+		var R2: float = L * float(BREACH.V2_HOLE_L[clampi(st - 2, 0, 2)])
+		var e2 = BREACH.place_hole(hull, a.p, a.n, R2, sd, faction)
+		e2.t0 = _t0(a, st, fx)
+		e2.sec = i
+		if e2.has_cut() and not _clear_spot(e2.c, e2.R):
+			e2 = BREACH.crater(a.p, a.n, R2 * 0.6, R2 * 0.12, sd, BREACH.S_DENT)   # the footprint slid it under a turret or door
+			e2.v2 = BREACH.wound_of(faction).get("kind", 0)
+			e2.t0 = _t0(a, st, fx)
+			e2.sec = i
+		out.append(e2)
+		if weight >= 2 and st >= 3:
+			var b2 = _anchor(i, "b")
+			if not b2.is_empty():
+				var eb2 = BREACH.place_hole(hull, b2.p, b2.n, R2 * 0.8, sd + 2.1, faction)
+				eb2.t0 = _t0(b2, st, fx)
+				eb2.sec = i
+				if not eb2.has_cut() or _clear_spot(eb2.c, eb2.R):
+					out.append(eb2)
+		if scar == 4 and st < 4:
+			var patch2 = BREACH.surface(a.p, a.n, L * 0.07, sd, BREACH.S_PATCH)
+			patch2.t0 = _patch_time[i]
+			patch2.sec = i
+			patch2.heat = 0.0
+			out.append(patch2)
+		return out
 	if not fx.compat and grade >= 2 and st < 4 and not (scar == 4 and st < 4):
 		var R: float = L * (0.05 if grade == 2 else 0.06)
 		var e = BREACH.crater(a.p, a.n, R, R * (0.22 if grade == 2 else 0.35), sd, BREACH.S_DENT)
@@ -2168,6 +2249,7 @@ func _dmg_request(fx) -> void:
 	for i in 3:
 		ents.append_array(_ents[i])
 	ents.append_array(visible_marks(fx))
+	ents = BREACH.cap_holes(ents)
 	if fx.compat:
 		var flat: Array = []
 		for e in ents:
@@ -2266,9 +2348,47 @@ func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3,
 		e.t0 = fx.now
 		e.sec = hull.section_of(e.c.x)
 		_place_mark(fx, e)
+	_v2_heavy_hole(fx, look, w, es)
 	t_m = fx.pend("mark", t_m)
 	_dmg_request(fx)
 	fx.pend("dmg_request", t_m)
+
+
+# R416 5.1 (issue 1741, Wounds V2 on): a heavy hit (torpedo, lance, null lance, star, a gauss exit, or any weight 3+
+# weapon) on a section under 80% HP opens a real cutout where it struck, on an authored-interior hull only, at most
+# V2_HOLES_SHIP per ship and V2_HOLES_SEC per section counting the stage cutouts, clear of turrets and bay doors.
+func _v2_heavy_hole(fx, look: String, w: int, es: Array) -> void:
+	if not BREACH.v2_on() or fx.compat or not hull.authored or es.is_empty():
+		return
+	if not (look in ["torp", "lance", "nlance", "star", "gauss"] or w >= 3):
+		return
+	var at = es[0]
+	for e in es:
+		if e.style == BREACH.S_GAUSS_OUT:
+			at = e
+	if look == "gauss" and at.style != BREACH.S_GAUSS_OUT:
+		return
+	var sec: int = hull.section_of(at.c.x)
+	if section_fraction[sec] >= 0.8:
+		return
+	var all: Array = []
+	for i in 3:
+		all.append_array(_ents[i])
+	all.append_array(_marks)
+	if BREACH.count_holes(all) >= BREACH.V2_HOLES_SHIP or BREACH.count_holes(all, sec) >= BREACH.V2_HOLES_SEC:
+		return
+	var R: float = hull.L * float(BREACH.V2_HOLE_L[0])
+	if not _clear_spot(at.c, R):
+		return
+	var eh = BREACH.place_hole(hull, at.c, at.n, R, at.seed_v + 0.77, faction)
+	if not eh.has_cut() or not _clear_spot(eh.c, eh.R):
+		return
+	eh.t0 = fx.now
+	eh.sec = sec
+	eh.look = "v2hole"
+	eh.wt = maxi(w, 3)
+	eh.section_damage = 1.0 - section_fraction[sec]
+	_marks.append(eh)
 
 
 # One new mark into the ship's list (R43 budget). A repeat of the same style close by (anywhere in the section for a
@@ -2505,7 +2625,7 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 		kind = 7; color = glow * 0.55
 		size0 = hull.L * 0.004; size1 = hull.L * 0.018
 		velocity = n * hull.L * 0.045
-	if faction == "chorus": color = glow * 0.45; kind = 20
+	if faction == "chorus": color = chorus_gas(glow) * 0.45; kind = 20
 	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.24
 	if e.kind == "fire":
 		kind = 25
@@ -2518,13 +2638,13 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 		velocity = (n * 0.7 + Vector3.UP * 0.3) * hull.L * 0.06
 		if e.st == 4: p -= n * hull.L * 0.018
 		if faction == "deathless": kind = 26
-		if faction == "chorus": kind = 20; intensity = 0.35
+		if faction == "chorus": kind = 20; intensity = 0.35; color = chorus_gas(glow)
 		if faction == "ithar": kind = 7; intensity = 0.3
 	elif e.kind == "vent":
 		kind = 7; color = glow.lerp(Color.WHITE, 0.75); intensity = 0.22
 		count = 4; life = 0.8
 		velocity = n * hull.L * 0.13
-		if faction == "chorus": kind = 20; color = glow * 0.6
+		if faction == "chorus": kind = 20; color = chorus_gas(glow) * 0.6
 	var period := life if e.kind != "vent" else 3.2
 	for j in count:
 		var t: float = fx.now - life + float(j) / count * period
@@ -2615,7 +2735,7 @@ func _cough(fx) -> void:
 		if faction == "deathless":
 			col = Color(0.055, 0.025, 0.09); kind = 8
 		elif faction == "chorus":
-			col = glow * 0.45; kind = 20
+			col = chorus_gas(glow) * 0.45; kind = 20
 		for j in 4:
 			fx.spr(p + d * r * 0.5, fx.now + j * 0.06, 0.9 + 0.2 * fx.rng.randf(), col, 0.55, r * 1.1, r * 4.2, kind,
 				fx.rcone(d, 0.35) * r * (5.0 + 3.0 * fx.rng.randf()), 2.0)
@@ -2916,7 +3036,7 @@ func _build_wisp(fx, e: Dictionary) -> void:
 	var color := Color(0.15, 0.14, 0.13)
 	var intensity := 0.26
 	if faction == "deathless": color = Color(0.055, 0.025, 0.09); kind = 8
-	if faction == "chorus": color = glow * 0.45; kind = 20
+	if faction == "chorus": color = chorus_gas(glow) * 0.45; kind = 20
 	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.18
 	var life := 2.2
 	var count := 3
@@ -3012,7 +3132,7 @@ func _blowout(fx, i: int) -> void:
 	var col := glow.lerp(Color.WHITE, 0.75)
 	var kind := 7
 	if faction == "chorus":
-		col = glow * 0.6; kind = 20
+		col = chorus_gas(glow) * 0.6; kind = 20
 	var heavy := int(stage[i]) == 4
 	for j in 7:
 		var t: float = fx.now + j * 0.08
@@ -3087,6 +3207,9 @@ func _regrade_marks() -> bool:
 	var changed := false
 	var updated: Array = []
 	for e in _marks:
+		if e.look == "v2hole":
+			updated.append(e)   # a V2 cutout keeps its size: it is not regraded from a weapon look
+			continue
 		var damage: float = 1.0 - section_fraction[e.sec]
 		# issue 1235 (F1.1): regrade only when the size really changes (a repair, or a section badly hurt since), so
 		# the sync right after a volley does not rebuild the hull a second time for a few percent

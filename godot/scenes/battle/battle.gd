@@ -7037,11 +7037,11 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 	# class line: the template name, elite captain; then the captain and perks
 	if not _jt(ru.get("isSq")):
 		info["cls"] = str(T.get("n", _class_label(u["cls"]))) + (", elite captain" if _jt(ru.get("elite")) else "")
-	var cap = ru.get("ship", {}).get("cap") if ru.get("ship") is Dictionary else null
+	var cap = u.get("captain")
 	if cap is Dictionary:
 		var ranks: Array = TBL.get("CAPTAINS", {}).get(str(cap.get("fac", "voidsworn")), TBL.get("CAPTAINS", {}).get("voidsworn", {})).get("ranks", [])
 		var rk := str(ranks[clampi(int(_z0(cap.get("rank"))), 0, ranks.size() - 1)]) if not ranks.is_empty() else ""
-		var line := "%s %s" % [rk, str(cap.get("name", ""))]
+		var line := "%s %s" % [rk, str(cap.get("full_name", ""))]
 		info["cap_name"] = line.strip_edges()
 		for pk in cap.get("perks", []):
 			var P = TBL.get("PERKS", {}).get(str(pk))
