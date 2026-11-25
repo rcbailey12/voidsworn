@@ -152,7 +152,7 @@ func run() -> void:
 	for i in int(C.HULLS[filled_target["tpl"]]["slots"]): filled_target["mods"].append("prow")
 	before = snap(); page().select_ship(filled_target["uid"])
 	check(snap() == before and not page().state["held"].is_empty(), "full target leaves source and held refit intact")
-	check(page().state["uid"] == source["uid"] and text(page().workspace).contains("has no free compatible slot"), "failed move explains the problem without changing ships")
+	check(page().state["uid"] == source["uid"] and text(page().workspace).contains(str(filled_target["name"]) + ": Slot") and text(page().workspace).contains("taken by " + C.modName("prow")), "failed move names the item that fills the slot, without changing ships")
 	var cancel = page().workspace.find_children("*", "Button", true, false).filter(func(b): return b.text == "Cancel move")
 	check(cancel.size() == 1, "failed move offers a mouse Cancel")
 	if cancel.size() == 1: cancel[0].pressed.emit()
