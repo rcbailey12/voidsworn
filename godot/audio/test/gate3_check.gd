@@ -102,7 +102,7 @@ func _run() -> void:
 		"the wreck keeps today's sound")
 	_check(Kit.press_cue("purchase") == "ui_purchase" and Kit.press_cue("install") == "ui_module_install"
 		and Kit.press_cue("relic") == "ui_relic_socket", "shared UI hook owns the new one-shot cues")
-	_check(plan["wires"].size() == 65 and staged == 2, "all 65 keeper IDs are accounted for, including two design holds")
+	_check(plan["wires"].size() == 77 and staged == 2, "all 77 keeper IDs are accounted for, including two design holds")
 	s.free()
 	ui.free()
 	print("GATE 3 CHECK ", "PASS" if failures == 0 else "FAIL (%d)" % failures)

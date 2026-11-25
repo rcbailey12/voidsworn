@@ -1,6 +1,134 @@
 {
- "note": "Wave F and Wave A extras after Ryan's picks. Hold means catalogued but no game event yet.",
+ "note": "Wave F, Wave F2 and Wave A extras after Ryan's picks. Hold means catalogued but no game event yet.",
  "wires": [
+  {
+   "id": "evt_ram_impact_f2",
+   "group": "Wave F2",
+   "takes": 1,
+   "pick": "channel R of t1",
+   "note": "One low, heavy hull-on-hull crunch from the right channel.",
+   "today": "boom_m",
+   "cue": "evt_ram_impact",
+   "template": "boom_m",
+   "before_gain": 0.9552631578947368,
+   "play_gain": 0.8
+  },
+  {
+   "id": "evt_nebula_bed_f2",
+   "group": "Wave F2",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A dark, slow stereo hum under nebula and ion storm terrain.",
+   "today": "",
+   "cue": "evt_nebula_bed",
+   "template": "patter_hull",
+   "bed": true
+  },
+  {
+   "id": "ui_rank_up_f2",
+   "group": "Wave F2",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "Two rising brass calls for a promotion. Take 1 is brighter, take 2 warmer.",
+   "today": "",
+   "cue": "ui_rank_up",
+   "template": "ui_reward"
+  },
+  {
+   "id": "evt_torp_intercept_f2",
+   "group": "Wave F2",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A short point-defense rattle followed by the warhead burst.",
+   "today": "pop",
+   "cue": "evt_torp_intercept",
+   "template": "pop",
+   "reference": true
+  },
+  {
+   "id": "death_metal_powerdown_f2",
+   "group": "Wave F2",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A deep reactor hum winds down into a steel groan.",
+   "today": "death_powerdown",
+   "cue": "death_powerdown"
+  },
+  {
+   "id": "death_metal_run_f2",
+   "group": "Wave F2",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "Two rolls of sharp metallic blasts, with a longer roll in take 1.",
+   "today": "death_run",
+   "cue": "death_run"
+  },
+  {
+   "id": "imp_energy_sear_more_f2",
+   "group": "Wave F2",
+   "takes": 1,
+   "pick": "t2",
+   "note": "Ryan's pick. A solid armor hit with a brief plasma arc.",
+   "today": "hit_plasma",
+   "cue": "hit_plasma",
+   "append": "imp_energy_sear",
+   "match_rms": true
+  },
+  {
+   "id": "imp_obsidian_eclipse_more_f2",
+   "group": "Wave F2",
+   "takes": 1,
+   "pick": "t2",
+   "note": "A denser, lower obsidian hit, trimmed to land on contact.",
+   "today": "hit_obsidian",
+   "cue": "hit_obsidian",
+   "append": "imp_obsidian_eclipse",
+   "match_rms": true
+  },
+  {
+   "id": "wep_hullbreaker_junk_gun_more_f2",
+   "group": "Wave F2",
+   "takes": 1,
+   "pick": "t2",
+   "note": "An immediate cannon bang with a tight scrap-metal tail.",
+   "today": "gun_shell",
+   "cue": "gun_shell",
+   "append": "wep_hullbreaker_junk_gun",
+   "match_rms": true
+  },
+  {
+   "id": "wep_sunward_autocannon_more_f2",
+   "group": "Wave F2",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "Two dry autocannon reports, matched to the keeper after removing sub-bass rumble.",
+   "today": "gun_tracer",
+   "cue": "gun_tracer",
+   "append": "wep_sunward_autocannon",
+   "match_rms": true
+  },
+  {
+   "id": "wep_sunward_turret_more_f2",
+   "group": "Wave F2",
+   "takes": 1,
+   "pick": "channel L of t2",
+   "note": "The left channel keeps the forged-steel bark sharp and centered.",
+   "today": "gun_shell",
+   "cue": "gun_shell",
+   "append": "wep_sunward_turret",
+   "match_rms": true
+  },
+  {
+   "id": "wep_craft_guns_more_f2",
+   "group": "Wave F2",
+   "takes": 2,
+   "pick": "t1 and t2",
+   "note": "Two tight three-round bursts, with a fuller lead in take 2.",
+   "today": "gun_sq",
+   "cue": "gun_sq",
+   "append": "wep_craft_guns",
+   "match_rms": true
+  },
   {
    "id": "wep_ithar_flak",
    "group": "Placeholder",

@@ -1542,6 +1542,7 @@ static func _pd_fire(fx, p: Dictionary) -> void:
 
 static func _shot_down(fx, p: Dictionary) -> void:
 	var pp := _down_point(p)
+	fx.torpedo_shot_down.emit(pp)
 	var now: float = fx.now
 	var k: float = p["k"]
 	var d: Vector3 = ((p["c"] as Vector3) - (p["a"] as Vector3)).normalized()

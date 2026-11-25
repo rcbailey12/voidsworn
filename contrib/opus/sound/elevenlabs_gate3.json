@@ -2,7 +2,7 @@
  "batch": "elevenlabs_gate3",
  "gate": 3,
  "made_for": "issue 1752 Gate 3 (Ryan, Nov 23 2026 11:02 PM and 11:09 PM CT: more music, more variety, use the credits, prompts shaped by past waves, music on theme for each faction, new sound effects)",
- "note": "Wave F: every sound still on an old placeholder, the Gate 3 re-rolls, 16 new moments the game has no sound for yet, and 2 more takes of 27 most-heard keepers re-made from each keeper's exact recorded parameters (relay manifests) for the round robin. Wave M (run as M1, one calm and intense pair plus the stem test, measured for beat and loop alignment before M2, Artoo on PR 1942): a full soundtrack (calm and intense battle layers per faction from the sound playbook's faction voices, title, 6 map, 2 boss, nemesis, shop, 3 reward, 7 stings) plus one stem split test. Prompts follow plan sections 2 to 8 (identity first, one size word, banned-word list, no negative nouns, deaths centered and midrange, UI acoustic and mechanical). F2 and M2 are staged only. Run M2_test first and review the stem split before selecting the remaining M2 ids. No live run without Ryan typing go.",
+ "note": "Wave F: every sound still on an old placeholder, the Gate 3 re-rolls, 16 new moments the game has no sound for yet, and 2 more takes of 27 most-heard keepers re-made from each keeper's exact recorded parameters (relay manifests) for the round robin. Wave M (run as M1, one calm and intense pair plus the stem test, measured for beat and loop alignment before M2, Artoo on PR 1942): a full soundtrack (calm and intense battle layers per faction from the sound playbook's faction voices, title, 6 map, 2 boss, nemesis, shop, 3 reward, 7 stings) plus one stem split test. Prompts follow plan sections 2 to 8 (identity first, one size word, banned-word list, no negative nouns, deaths centered and midrange, UI acoustic and mechanical). F3 and M2_test2 are staged only. Review the second music test's stem splits before selecting the remaining M2 ids. No live run without Ryan typing go.",
  "sfx_model": "eleven_text_to_sound_v3",
  "music_model": "music_v2",
  "waves": {
@@ -146,6 +146,15 @@
    "mus_sting_defeat_2",
    "mus_sting_run_won",
    "mus_sting_run_lost"
+  ],
+  "F3": [
+   "death_metal_crack_f3",
+   "ship_thruster_puff_f3",
+   "wep_eclipse_gsentry_more_f3"
+  ],
+  "M2_test2": [
+   "mus_ithar_loop_a_test2",
+   "mus_chorus_loop_a_test2"
   ]
  },
  "items": [
@@ -1871,14 +1880,89 @@
    "prompt": "One crude Hullbreaker scrap cannon fires. An immediate dry propellant bang lands with a solid recoil punch, followed by a tight rattle of loose scrap plates on the gun housing. Close and centered, with the bang up front and a short mechanical tail.",
    "model": "eleven_text_to_sound_v2",
    "reroll_of": "wep_hullbreaker_junk_gun_more"
+  },
+  {
+   "id": "death_metal_crack_f3",
+   "kind": "sfx",
+   "cue": "F3 re-roll: death_crack base (a loaded ship bulkhead buckles)",
+   "today": "death_crack",
+   "group": "death",
+   "seconds": 1.5,
+   "influence": 0.6,
+   "takes": 2,
+   "prompt": "A massive internal bulkhead girder in a starship buckles once under load. One dull low-frequency snap and a brief heavy groan below 500 Hz, with a dense close thud and a fast dry decay. No metallic ring or clang.",
+   "reroll_of": "death_metal_crack_f2",
+   "model": "eleven_text_to_sound_v2"
+  },
+  {
+   "id": "ship_thruster_puff_f3",
+   "kind": "sfx",
+   "cue": "F3 re-roll: puff (a maneuvering thruster firing)",
+   "today": "puff",
+   "group": "ship",
+   "seconds": 1.0,
+   "influence": 0.6,
+   "takes": 2,
+   "prompt": "One instant pressurized valve burst from a starship maneuvering thruster, a compact dry push of gas confined to the first 250 milliseconds. The valve shuts and the sound is gone before 300 milliseconds. Hold total silence for the last 700 milliseconds.",
+   "reroll_of": "ship_thruster_puff_f2",
+   "model": "eleven_text_to_sound_v2"
+  },
+  {
+   "id": "wep_eclipse_gsentry_more_f3",
+   "kind": "sfx",
+   "cue": "F3 re-roll: two takes closer to today's Eclipse gauss sentry keeper",
+   "today": "gun_rail",
+   "group": "weapon_eclipse",
+   "seconds": 0.6,
+   "influence": 0.65,
+   "takes": 2,
+   "prompt": "Single shot from an ancient Eclipse obsidian point-defense spire, close and centered. One cold electrostatic crack of a dark-crystal bolt with a solid hollow body, clear midrange presence and a brief magnetic snap. Dry and precise. The report cuts cleanly into silence.",
+   "model": "eleven_text_to_sound_v3",
+   "reroll_of": "wep_eclipse_gsentry_more_f2"
+  },
+  {
+   "id": "mus_ithar_loop_a_test2",
+   "kind": "music",
+   "cue": "battle music loop a for ithar fights, with stems: calm layer = all but drums, intense = full mix",
+   "today": null,
+   "group": "music",
+   "seconds": 65.454545,
+   "takes": 1,
+   "prompt": "Space fleet battle music for the Glasswrights, elite optical engineers whose ships catch and release light. Instrumental, 88 BPM, 4/4, F sharp minor, 24 bars. Luminous glass harmonica, high harp and poised celesta arpeggios. A firm rhythmic timpani pulse leads the percussion from the first downbeat and keeps its strength through every bar, distinct from the tuned crystalline percussion. A small motif refracts through shimmering voicings. Airy, measured, and bright. Continuous loop with even energy from the first beat to the last. Every part plays in every bar from bar 1 beat 1 at full texture, with no intro build and no fade-in. End exactly before the first downbeat repeats. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "stems": true,
+   "loop_grid": {
+    "bpm": 88,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   },
+   "reroll_of": "mus_ithar_loop_a"
+  },
+  {
+   "id": "mus_chorus_loop_a_test2",
+   "kind": "music",
+   "cue": "battle music loop a for chorus fights, with stems: calm layer = all but drums, intense = full mix",
+   "today": null,
+   "group": "music",
+   "seconds": 75.789474,
+   "takes": 1,
+   "prompt": "Space fleet battle music for the Chorus, vast eyeless living ships grown as weapons. Instrumental, 76 BPM, 4/4, B minor, 24 bars. Foreground sustained bowed cellos, a clear pitched contrabassoon melody and eerie high string harmonics in every bar. The cello and reeds carry a creeping half-step figure above a restrained frame-drum heartbeat. The tonal parts carry the music on their own. Alien, organic, and unnerving. Continuous loop with even energy from the first beat to the last. Every part plays in every bar from bar 1 beat 1 at full texture, with no intro build and no fade-in. End exactly before the first downbeat repeats. Real acoustic orchestra, instrumental, no vocals, no choir.",
+   "stems": true,
+   "loop_grid": {
+    "bpm": 76,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   },
+   "reroll_of": "mus_chorus_loop_a"
   }
  ],
  "M2_mastering": {
   "run_order": [
-   "M2_test",
+   "M2_test2",
    "M2"
   ],
-  "review_gate": "Review both test stems by ear. The calm mix must stand on its own, with at least 1 dB of contrast and no missing tonal parts. If a split fails, revise percussion or choose an in-game calm treatment before the remainder.",
+  "review_gate": "Review both M2_test2 stem splits by ear. The calm mix must stand on its own, with no missing tonal parts. For Glasswrights, listen for the timpani from bar 1 and at least 2.5 dB of contrast. If a split fails, revise percussion or choose an in-game calm treatment before the remainder.",
   "loop": "Trim MP3 padding to the exact bar grid in samples. Apply a 20 to 30 ms click guard without removing samples. Never fold 0.5 s into an exact-bar loop. Check sample joins and listen across the downbeat.",
   "boss_nemesis": "Use their own aligned calm and intense stems. Never layer either over another faction calm track."
  }

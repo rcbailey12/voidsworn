@@ -60,17 +60,16 @@ Gate 2 production and Gate 3 stems. Nothing is wired into godot/ until Ryan pick
 
 ## Gate 3 listening and staged waves (issue 2039)
 
-- Ryan can open [Sound Gate 3](listen_gate3/index.html) with `listen_gate3/LISTEN.bat`. Compare each pair, choose Keep,
-  Swap or Cut, then press **Show my picks**. The page now reflects Ryan's run 2 picks.
-- The final list has 65 keeper IDs, including the two Wave A extras. Godot plays 63. The list spells out exact takes,
-  channel choices and trims in `keepers_gate3.json`. `wiring_gate3.json` records the old and new cue names. Wreck
-  settle stays as it is.
-  Asteroid scrape and shield raise are mastered and on the page, but do not fire until the trigger is decided.
-- Rebuild from clean pre-Gate-3 cue tables with `master_keepers.py` and `wire_gate3.py`. The latter also renders the
-  listening clips. Use `--sunward-music` when the two M1 Oggs are present. A dry generator plan never sends a request.
-- F2 has 16 staged re-roll rows, two takes each. M2 is staged as `M2_test` first (Glasswrights and Chorus, two tracks and two stem
-  splits), then `M2` only if the tests pass by ear. Keep the test output for those two tracks. No paid call without
-  Ryan's typed go. Use the named wave's IDs with the generator's `--only` flag.
-- For the test, pass the planned BPM and bar count to `stem_loop_check.py`. Listen across the exact-grid wrap and
-  compare calm and full at the switch points. The 25 ms click guard does not shorten the loop. The boss and Nemesis
-  tracks each have their own stem split to avoid fighting the faction's key and tempo.
+- Ryan can open [Sound Gate 3](listen_gate3/index.html) with `listen_gate3/LISTEN.bat`. The clips that play in game
+  are on the page, with the 12 Wave F2 IDs first. The previews use the cue levels without battle bus effects or distance.
+- The list has 77 keeper IDs including the two Wave A extras. Godot plays 75. Asteroid scrape and shield raise remain
+  catalogued but do not fire until their triggers are decided. Wreck settle stays as it is.
+- `keepers_gate3.json` records the source take, channel and mastering edits. `wiring_gate3.json` records the runtime
+  cue and the original keeper for variety additions. Rebuild from clean pre-Gate-3 cue tables with `master_keepers.py`
+  and `wire_gate3.py`. The latter also renders shipped cues for the listening page.
+- F3 stages two takes each for the metal crack, thruster puff and Eclipse gauss sentry. M2_test2 stages revised
+  Glasswrights and Chorus Loop A tracks with stem splits. The test IDs end in `_test2` so their receipts stay distinct
+  from the first test. Use the named wave's IDs with the generator's `--only` flag. No paid request without Ryan's go.
+- Run `stem_loop_check.py` with the planned BPM and bar count. The source MP3 may be 50 ms short or 120 ms long,
+  but the mastered loop uses the exact bar grid and the 25 ms click guard. Listen across the wrap and compare calm and
+  full at the switch points. Review both tests by ear before starting the rest of M2. The remaining M2 rows are unchanged.

@@ -2369,20 +2369,11 @@
   "duck": 0,
   "layers": [
    {
-    "s": "ionCharge",
-    "g": 0.55,
-    "r": 0.55,
+    "s": "death_metal_powerdown_f2",
+    "g": 0.478,
+    "r": 1,
     "d": 0,
-    "pj": 0.025,
-    "end_rate": 0.25
-   },
-   {
-    "s": "whoosh",
-    "g": 0.25,
-    "r": 0.7,
-    "d": 0,
-    "pj": 0.025,
-    "end_rate": 0.3
+    "pj": 0.025
    }
   ],
   "synth": [],
@@ -2640,9 +2631,9 @@
   "duck": 0,
   "layers": [
    {
-    "s": "deathRun",
-    "g": 0.32,
-    "r": 0.92,
+    "s": "death_metal_run_f2",
+    "g": 0.696,
+    "r": 1,
     "d": 0,
     "pj": 0.025
    }
@@ -3440,6 +3431,99 @@
    {
     "s": "ui_ship_lost",
     "g": 1.479,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "evt_ram_impact": {
+  "bus": "explosions",
+  "g": 0.6,
+  "max": 3,
+  "gap": 0.08,
+  "defer": 0.15,
+  "pri": 3,
+  "pj": 0.05,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0.5,
+  "layers": [
+   {
+    "s": "evt_ram_impact_f2",
+    "g": 1.862,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "evt_nebula_bed": {
+  "bus": "ambient",
+  "g": 0.12,
+  "max": 1,
+  "gap": 0.07,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "evt_nebula_bed_f2",
+    "g": 2.083,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": [],
+  "loop": true
+ },
+ "ui_rank_up": {
+  "bus": "ui",
+  "g": 0.3,
+  "max": 1,
+  "gap": 0.2,
+  "defer": 0,
+  "pri": 1,
+  "pj": 0,
+  "spj": 0.02,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "ui_rank_up_f2",
+    "g": 0.671,
+    "r": 1,
+    "d": 0,
+    "pj": null
+   }
+  ],
+  "synth": []
+ },
+ "evt_torp_intercept": {
+  "bus": "explosions",
+  "g": 0.3,
+  "max": 3,
+  "gap": 0.05,
+  "defer": 0.12,
+  "pri": 1,
+  "pj": 0.03,
+  "spj": 0.07,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "evt_torp_intercept_f2",
+    "g": 0.98,
     "r": 1,
     "d": 0,
     "pj": null

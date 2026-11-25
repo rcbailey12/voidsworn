@@ -73,7 +73,7 @@ label,audio{display:block}audio{width:200px;height:34px;margin:.2rem 0 .5rem}sma
 select,button,textarea{font:inherit}textarea{width:100%;min-height:6rem;margin:.75rem 0}
 @media(max-width:850px){tr,td{display:block}thead{display:none}td{border:0}tr{border-bottom:1px solid #34404d}}
 </style>
-<h1>Sound Gate 3</h1><p>Hear today's cue beside the mastered pick. Keep uses the proposed sound, Swap asks to keep today's sound or try another take, and Cut drops the proposed moment. For a new moment, silence may be the only before. Picks are for run 2, before merge.</p>
+<h1>Sound Gate 3</h1><p>Hear the sounds that ship, with the Wave F2 picks first. Each row compares the old cue with the mastered take or takes. A new moment may have no before.</p>
 <p>The previews use the cue's mix level, with no battle bus effects or distance. Play one at a time.</p>
 <button id="export">Show my picks</button>
 <textarea id="picks" readonly aria-label="Picks to send to the Board" placeholder="Your picks will appear here to copy."></textarea>
@@ -99,11 +99,11 @@ document.querySelector('#export').onclick = () => {
     (out / "LISTEN.bat").write_bytes(b'@echo off\r\nstart "" "%~dp0index.html"\r\n')
 
 
-def row_html(row, before, after, status=""):
+def row_html(row, before, after):
     sid = escape(row["id"])
     review = (f'<select id="{sid}" aria-label="Pick for {sid}"><option value="">Choose</option>'
               '<option>Keep</option><option>Swap</option><option>Cut</option></select>')
-    return (f'<tr><td><b>{sid}</b><small>{escape(row["note"])}</small>{status}</td>'
+    return (f'<tr><td><b>{sid}</b><small>{escape(row["note"])}</small></td>'
             f'<td>{before}</td><td>{after}</td><td>{review}</td></tr>')
 
 
@@ -155,16 +155,21 @@ def main():
         # Use the actual old keeper for variety, the first real weapon variant for a
         # polish swap, and the old base cue for brand-new variants.
         baseline = next((v for v in vs if v in old_cues.get(r["today"], {}).get("variants", {})), None)
-        before = mix(old_cues, old_index, r["today"], baseline) if r["today"] else None
+        before = mix(old_cues, old_index, r["today"], baseline) if r["today"] and not append else None
         old_takes = len(index[key]) if append else 0
         for i, src in enumerate(source):
             name = f"{sid}_{i}.ogg"
             dst = AUDIO / "clips" / name
             if append:
                 from master_keepers import load as stereo_load
-                x = stereo_load(src)
                 old = load(str(AUDIO / "clips" / index[key][0]))
-                gain = 10 ** ((loud(old) - loud(x.mean(1))) / 20)
+                if r.get("match_rms"):
+                    # F2 variety clips are positional mono and match the existing keeper's whole-take RMS.
+                    x = load(str(src))[:, None]
+                    gain = np.sqrt(np.mean(old ** 2) / np.mean(x ** 2))
+                else:
+                    x = stereo_load(src)
+                    gain = 10 ** ((loud(old) - loud(x.mean(1))) / 20)
                 gain = min(gain, 10 ** (-1 / 20) / np.abs(x).max())
                 write_ogg(x * gain, str(dst))
             else:
@@ -177,6 +182,7 @@ def main():
                 cues[cue].pop("duration", None)
             c = cues[cue]
             target = render(old_cues, old_index, r["today"], baseline) if before is not None else -27.0
+            target += 20 * np.log10(r.get("before_gain", 1.0) / r.get("play_gain", 1.0))
             if "category" in r:
                 target = targets[r["category"]]
             if sid == "ui_hover_tick":
@@ -207,19 +213,21 @@ def main():
             before = mix(old_cues, old_index, cue, variant)
         else:
             variant = vs[0]
+        if "hold" in r:
+            continue
         before_html = "No cue today"
         if before is not None:
             name = sid + "_before.ogg"
-            write_ogg(before, str(preview / name))
+            write_ogg(before * r.get("before_gain", 1.0), str(preview / name))
             before_html = player("Today (reference cue)" if r.get("reference") else "Today", "audio/" + name)
         after_html = ""
         for i in range(r["takes"]):
             x = mix(cues, index, cue, variant, old_takes + i)
             name = f"{sid}_after{i + 1}.ogg"
-            write_ogg(x, str(preview / name))
-            after_html += player(f"New take {i + 1}" if r["takes"] > 1 else "Mastered pick", "audio/" + name)
-        status = f'<small>Staged only. {escape(r["hold"])}</small>' if "hold" in r else ""
-        table.append(row_html(r, before_html, after_html, status))
+            write_ogg(x * r.get("play_gain", 1.0), str(preview / name))
+            label = f"New take {i + 1}" if r["takes"] > 1 else r["pick"] if sid.endswith("_f2") else "Mastered pick"
+            after_html += player(label, "audio/" + name)
+        table.append(row_html(r, before_html, after_html))
     if args.sunward_music:
         table.append(music_row(preview))
     cue_file.write_text(json.dumps(cues, indent=1) + "\n", encoding="utf-8", newline="\n")
