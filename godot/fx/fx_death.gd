@@ -2809,6 +2809,8 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	# Issue 2048: replace the round white small-death bow vent flipbook puff with a layered directional rupture jet
 	# rooted on the real plating (p, outward normal n), faction-coloured from faction_looks.json, keeping R186/R193 caps.
+	# Preserve fx.rng state so the replacement visual jet never perturbs downstream breakup/wreck physics randomness.
+	var saved_rng_state: int = fx.rng.state
 	fx.record_spawn(s, p, false, pose)
 	s.set_meta("death_vent_style", "directional_jet")
 	var ignited: bool = fx.flash_at(p, fx.now, s.hull.L * 0.55, 44.0, 0.10)
@@ -2837,6 +2839,7 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	if ignited:
 		fx.spr(p + n * s.hull.L * 0.02, fx.now, 0.20, core_col, 2.4, s.hull.L * 0.09, s.hull.L * 0.18, 19, inherited + n * s.hull.L * 0.15, 3.0)
 		fx.light(p + n * s.hull.L * 0.06, fx.now, 0.10, 4.5, light_col, 0)
+	fx.rng.state = saved_rng_state
 	# Keep #2018 tear sparks intact; skip the old round fx_vent_cone dots.
 	tear_particles(fx, p, n, s.hull.L, inherited, true, s)
 
