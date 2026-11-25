@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
+import statistics
 import subprocess
 import sys
 from PIL import Image, ImageDraw, ImageFont
@@ -63,6 +64,26 @@ def _crop_center_fit(img: Image.Image, target_w: int, target_h: int) -> Image.Im
     return cropped.resize((target_w, target_h), Image.Resampling.LANCZOS)
 
 
+def _iter_mode_rows(data: dict) -> list[tuple[str, dict]]:
+    modes = data.get("modes")
+    pairs: list[tuple[str, dict]] = []
+    if isinstance(modes, dict):
+        for mode_name, entries in modes.items():
+            if isinstance(entries, dict):
+                pairs.append((str(mode_name), entries))
+            elif isinstance(entries, list):
+                for entry in entries:
+                    if isinstance(entry, dict):
+                        pairs.append((str(entry.get("mode", mode_name)), entry))
+        return pairs
+    rows = modes if isinstance(modes, list) else data.get("rows")
+    if isinstance(rows, list):
+        for entry in rows:
+            if isinstance(entry, dict):
+                pairs.append((str(entry.get("mode", "")), entry))
+    return pairs
+
+
 def _read_gate(path: pathlib.Path) -> dict | None:
     if not path.exists():
         return None
@@ -70,29 +91,56 @@ def _read_gate(path: pathlib.Path) -> dict | None:
         data = json.loads(path.read_text(encoding="utf-8"))
     except Exception:
         return None
-    rows = data.get("modes") or data.get("rows") or []
-    out: dict[str, float | bool] = {}
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
-        mode = str(row.get("mode", ""))
+    if not isinstance(data, dict):
+        return None
+    expected_sessions = int(data.get("sessions") or 0)
+    f1080_vals: list[float] = []
+    g4k_vals: list[float] = []
+    for mode, row in _iter_mode_rows(data):
         if mode == "base" and row.get("frame_median") is not None:
-            out["f1080"] = float(row["frame_median"])
+            f1080_vals.append(float(row["frame_median"]))
         if mode == "res_2160" and row.get("gpu_median") is not None:
-            out["g4k"] = float(row["gpu_median"])
-    return out or None
+            g4k_vals.append(float(row["gpu_median"]))
+    if not f1080_vals and not g4k_vals:
+        return None
+    out: dict[str, float | int | bool] = {"expected_sessions": expected_sessions}
+    if f1080_vals:
+        med = float(statistics.median(f1080_vals))
+        out["f1080"] = med
+        out["f1080_sessions"] = len(f1080_vals)
+        out["f1080_pass"] = med <= 12.5
+    if g4k_vals:
+        med = float(statistics.median(g4k_vals))
+        out["g4k"] = med
+        out["g4k_sessions"] = len(g4k_vals)
+        out["g4k_pass"] = med <= 12.5
+    need = expected_sessions if expected_sessions > 0 else 1
+    out["complete"] = (
+        int(out.get("f1080_sessions", 0)) >= need
+        and int(out.get("g4k_sessions", 0)) >= need
+    )
+    return out
 
 
 def _fmt_gate(label: str, metrics: dict | None) -> str:
     if not metrics:
-        return f"{label}: timing pending"
+        return f"{label}: timing incomplete"
+    need = int(metrics.get("expected_sessions", 0) or 0)
     parts = []
     if "f1080" in metrics:
-        ok = "PASS" if metrics["f1080"] <= 12.5 else "OVER"
-        parts.append(f"1080p {metrics['f1080']:.2f}ms ({ok})")
+        ok = "PASS" if float(metrics["f1080"]) <= 12.5 else "OVER"
+        n = int(metrics.get("f1080_sessions", 1))
+        suf = f" [{n}/{need}s]" if need > 0 and n < need else ""
+        parts.append(f"1080p {float(metrics['f1080']):.2f}ms ({ok}{suf})")
+    else:
+        parts.append("1080p MISSING")
     if "g4k" in metrics:
-        ok = "PASS" if metrics["g4k"] <= 12.5 else "OVER"
-        parts.append(f"4K GPU {metrics['g4k']:.2f}ms ({ok})")
+        ok = "PASS" if float(metrics["g4k"]) <= 12.5 else "OVER"
+        n = int(metrics.get("g4k_sessions", 1))
+        suf = f" [{n}/{need}s]" if need > 0 and n < need else ""
+        parts.append(f"4K GPU {float(metrics['g4k']):.2f}ms ({ok}{suf})")
+    else:
+        parts.append("4K GPU MISSING")
     return f"{label}: " + ", ".join(parts)
 
 
