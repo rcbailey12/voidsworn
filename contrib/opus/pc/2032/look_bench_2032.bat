@@ -26,7 +26,7 @@ for /f %%H in ('git -C "%LB_HOME%\repo" rev-parse --short^=8 HEAD') do set "BEFO
 if not defined AFTER_SHA exit /b 1
 if not defined BEFORE_SHA exit /b 1
 set "SHEETS=%LB_HOME%\sheets\%BEFORE_SHA%_vs_%AFTER_SHA%"
-set "SHOTS=%VT%\board_c\issue-2032\shots"
+set "SHOTS=%VT%\board\issue-2032\shots"
 if not exist "%SHOTS%" mkdir "%SHOTS%"
 for %%I in (Lance_hit Torpedo_kill Capital_death) do (
   copy /y "%SHEETS%\moments_overview_2032_%%I.jpg" "%SHOTS%\2032_%%I.jpg" > nul

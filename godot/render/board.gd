@@ -368,6 +368,7 @@ func build(rules, slice := false) -> void:
 	blocker_visuals.build(VW, hex_world)
 	_depth_fragments()
 	blocker_highlights = Node3D.new()
+	blocker_highlights.visible = cut_overlay_alpha >= 1.0
 	add_child(blocker_highlights)
 	_zones()
 	_well_info()
@@ -628,6 +629,8 @@ func set_cut_overlay_alpha(alpha: float) -> void:
 	for mesh in [fills, rings, edges, gas_edges, hazard_edges, solid_edges, cover_edges, _hover_shown, arrival_edge, reach_edge]:
 		if is_instance_valid(mesh):
 			(mesh.material_override as ShaderMaterial).set_shader_parameter("cut_overlay_alpha", alpha)
+	if is_instance_valid(blocker_highlights):
+		blocker_highlights.visible = alpha >= 1.0
 
 
 # F1: one bright line around the whole area a ship can reach (keys: "q,r" -> anything), drawn on the board just inside

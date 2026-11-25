@@ -260,7 +260,16 @@ func toggle_top() -> void:
 		topdown = true
 
 
+func _cancel_cut_return() -> void:
+	if _cut_return_elapsed >= CUT_RETURN_S:
+		return
+	_cut_return_elapsed = CUT_RETURN_S
+	# Keep the board's heading but unwrap it against what's on screen, so normal easing cannot take the long way round.
+	a = _ca + angle_difference(_ca, a)
+
+
 func pan_by(dx: float, dz: float) -> void:
+	_cancel_cut_return()
 	var s := r / 340.0
 	# screen-up on the board, given the camera's azimuth (mirrored z)
 	var fwd := Vector3(-cos(a), 0, sin(a))
@@ -271,6 +280,7 @@ func pan_by(dx: float, dz: float) -> void:
 
 
 func orbit(dx: float, dy: float) -> void:
+	_cancel_cut_return()
 	a -= dx * 0.0055
 	b = clampf(b - dy * 0.0045, 0.05, 1.36)
 	topdown = false
@@ -281,6 +291,7 @@ func orbit(dx: float, dy: float) -> void:
 # under the pointer (on the plane through the target) back under it at the new distance. Over empty sky, where the pointer
 # ray never reaches that plane, it is the plain zoom about the target.
 func zoom_at(screen_pos: Vector2, factor: float) -> void:
+	_cancel_cut_return()
 	var new_r := clampf(r * factor, min_r, 900.0)
 	if is_equal_approx(new_r, r):
 		r = new_r

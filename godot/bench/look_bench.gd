@@ -90,7 +90,7 @@ var _wound := {}   # issue 1741 (Artoo on 6fbf60fe): a wound-aimed row's open cu
 var cfg := {}
 var steps := 0
 var headless := false
-var moments_failed := false
+var failed := ""   # issue 1877 (Artoo on PR 1904): a failed clip or strict row fails the run (no LOOK_BENCH_DONE, exit 4)
 var sfx: Node = null          # --sound only
 var death_audio: Node = null
 
@@ -212,7 +212,11 @@ func _run() -> void:
 		print("LOOK_BENCH_PROPS_FAILED %d" % prop_failures.size())
 		get_tree().quit(4)
 		return
-	print("LOOK_BENCH_MOMENTS_FAILED" if moments_failed else "LOOK_BENCH_DONE")
+	print("LOOK_BENCH_DONE")
+	await _shutdown(0)
+
+
+func _shutdown(code: int) -> void:
 	# a clean exit: drop the static caches and the effects' GPU resources while the rendering server is alive (the
 	# first PC run ended with an access violation after its last line)
 	_clear()
@@ -222,7 +226,7 @@ func _run() -> void:
 	FX.clear_static()
 	SV.clear_static()
 	await get_tree().process_frame
-	get_tree().quit(4 if moments_failed else 0)
+	get_tree().quit(code)
 
 
 func _pipelines() -> int:
@@ -649,6 +653,7 @@ func _moment_cut(kind: String) -> void:
 
 func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: String, keep := true) -> bool:
 	var id := str(row["id"])
+	var strict := bool(row.get("strict", false)) or args.has("strict-moments")
 	_clear()
 	_make_fx()
 	# Issue 462: a row may set effect switches (for example reduce flashing). Set by
@@ -727,6 +732,46 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.sync_ship("T", row["sync_t"])
 		for k in 30:
 			await _step()
+		# Issue 1741: a shot still in flight can defer the hull stages. Finish the rebuild before aiming at a wound.
+		var ts = fx.ship("T")
+		if ts != null:
+			for k in 480:
+				if fx.now > float(ts.busy_until) + 0.1:
+					break
+				await _step()
+			if fx.now <= float(ts.busy_until) + 0.1:
+				_warn("%s at %d: the target was still waiting on a pre shot after 8 s" % [id, int(r)])
+			for k in 3:
+				ts.flush_damage(fx)
+				await _step()
+	# Close wound details face the largest open cutout. Camera 170 keeps the board angle. Log the actual pose so these
+	# rows are details, not before/after pairs. The shared bench also loads on revisions without the Wounds V2 API.
+	_wound = {}
+	var breach: Variant = BREACH
+	if str(row.get("focus", "")) == "wound" and r < 100.0 and fx.ship("T") != null and breach.has_method("open_mouths"):
+		var st = fx.ship("T")
+		var best: Dictionary = {}
+		var mouths: Array = breach.open_mouths(st)
+		for mo in mouths:
+			if best.is_empty() or float(mo["R"]) > float(best["R"]):
+				best = mo
+		# No open cutout means the detail is incomplete, even though its still is kept. V2 off expects none.
+		var v2: bool = breach.v2_on()
+		_wound = {"mouths": mouths.size(), "v2": v2, "complete": not best.is_empty()}
+		if best.is_empty() and v2:
+			_warn("LOOK_BENCH WOUND MISSING %s at %d: no open cutout, default camera kept" % [id, int(r)])
+		if not best.is_empty():
+			var wc: Vector3 = st.to_world(best["c"])
+			var wn: Vector3 = (st.to_world(best["c"] + best["n"]) - wc).normalized()
+			cam.a = atan2(-wn.z, wn.x)
+			cam.b = clampf(acos(clampf(wn.y, -1.0, 1.0)), 0.35, 1.25)
+			cam.r = r
+			cam.t = wc
+			cam.snap()
+			_wound["pose"] = [cam.a, cam.b, cam.r, wc.x, wc.y, wc.z]
+			_log("%s wound pose at %d: a %.4f b %.4f r %.1f t (%.2f, %.2f, %.2f)" % [id, int(r), cam.a, cam.b, cam.r, wc.x, wc.y, wc.z])
+			for k in 6:
+				await _step()
 	var cut := str(row.get("cutin", ""))
 	if cut != "":
 		_moment_cut(cut)
@@ -752,8 +797,9 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			"hits": _hits(n, str(row.get("on", "hull")) == "shield", bool(row.get("crit", false)))})
 		impacts = res.get("impacts", [])
 		if impacts.is_empty():
+			if strict:
+				return _fail_moment(id, r, "the volley reported no impact time")
 			_warn("%s: the volley reported no impact time; impact anchor set to fire + 0.6 s" % id)
-			moments_failed = moments_failed or args.has("strict-moments")
 	elif what == "break":
 		# a hit first, so the bubble is up, then the collapse half a second later
 		fx.volley("A", "gauss", "T", {"weapon_id": "gauss", "shots": [true], "hits": _hits(1, true, false)})
@@ -812,13 +858,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var clip_bad: Array = []   # frames that failed to save (a clip row with any missing frame fails, Artoo on PR 1904)
 	# a "strict" still row fails the same way on a blank cell, a window that never opened or a strip that did not save
 	# (Artoo on PR 1904: the acid colour proof rows must not pass with a blank cell)
-	var strict := bool(row.get("strict", false))
 	if clip and keep:
 		var mk := DirAccess.make_dir_recursive_absolute(clip_dir)
 		if mk != OK or not DirAccess.dir_exists_absolute(clip_dir):
-			failed = "%s at %d: clip folder %s could not be made (error %d)" % [id, int(r), clip_dir, mk]
-			_warn("LOOK_BENCH " + failed)
-			return false
+			return _fail_moment(id, r, "clip folder %s could not be made (error %d)" % [clip_dir, mk])
 	var strip := Image.create_empty(1 if clip else cell.x * total, cell.y, false, Image.FORMAT_RGB8)
 	var ci := 0
 	var cells: Array = []
@@ -856,11 +899,20 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			take = steps >= int(w["next"])
 		if take:
 			var img := _grab() if keep and not headless else null
-			if img != null:
+			if clip:
+				if keep:
+					var fp := clip_dir.path_join("f%03d.png" % ci)
+					if img == null:
+						clip_bad.append("f%03d.png (no frame grabbed)" % ci)
+					else:
+						var se: Error = preload("res://tools/picture_provenance.gd").save_png(_crop(img, crop, cell), fp,
+							preload("res://tools/picture_provenance.gd").capture_stage(), true)
+						if se != OK:
+							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
+			elif img != null:
 				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
-			elif keep and not headless and args.has("strict-moments"):
-				_warn("%s at %d: cell %d had no drawn frame" % [id, int(r), ci])
-				moments_failed = true
+			elif strict and keep:
+				clip_bad.append("cell %d (no frame grabbed)" % ci)
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
 			ci += 1
 			w["got"] = int(w["got"]) + 1
@@ -872,29 +924,50 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		guard += 1
 	if wi < wins.size():
 		_warn("%s at %d: only %d of %d cells (a window never opened)" % [id, int(r), ci, total])
-		moments_failed = moments_failed or args.has("strict-moments")
+		if strict and not keep:
+			return _fail_moment(id, r, "warm pass took %d of %d cells" % [ci, total])
 	if not keep:
 		return true
-	var name := "%s__c%d.png" % [id, int(r)]
-	if not headless:
-		var picture := preload("res://tools/picture_provenance.gd")
-		var saved := preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), picture.capture_stage(), true)
-		if saved != OK and args.has("strict-moments"):
-			_warn("%s: could not save the stamped strip" % id)
-			moments_failed = true
 	# issue 1777 (Artoo on PR 1786): record the hull the target resolved to; a row naming "expect_code" says loudly when
 	# the faction and class drew a different hull (a later remap), so a capture bat can fail on it
 	var tcode := str(T.code) if is_instance_valid(T) else ""
 	if row.has("expect_code") and tcode != str(row["expect_code"]):
 		_warn("%s: target drew %s, the row expects %s" % [id, tcode, str(row["expect_code"])])
 		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
-		moments_failed = moments_failed or args.has("strict-moments")
+		if strict:
+			return _fail_moment(id, r, "target drew %s, expected %s" % [tcode, str(row["expect_code"])])
+	if clip:
+		# Every numbered frame must be on disk, and a stale frame cannot cover a failed read or save this run.
+		for fi in total:
+			var fn := "f%03d.png" % fi
+			if not FileAccess.file_exists(clip_dir.path_join(fn)) and not clip_bad.any(func(b): return str(b).begins_with(fn)):
+				clip_bad.append(fn + " (missing)")
+		if ci != total or not clip_bad.is_empty():
+			return _fail_moment(id, r, "clip row failed: %d of %d frames taken; bad: %s" % [ci, total, ", ".join(clip_bad)])
+		report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/%s__c%d/" % [id, int(r)],
+			"cells": cells, "impacts": impacts, "clip": true})
+		_log("%s at %d: %d clip frames" % [id, int(r), ci])
+		return true
+	var name := "%s__c%d.png" % [id, int(r)]
+	if strict and (ci != total or not clip_bad.is_empty()):
+		return _fail_moment(id, r, "strict row failed: %d of %d cells taken; bad: %s" % [ci, total, ", ".join(clip_bad)])
+	if not headless:
+		var picture := preload("res://tools/picture_provenance.gd")
+		var saved := preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), picture.capture_stage(), true)
+		if strict and (saved != OK or not FileAccess.file_exists(d.path_join(name))):
+			return _fail_moment(id, r, "strict row failed: %s (save error %d)" % [name, saved])
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts, "code": tcode})
 	if not _wound.is_empty():
 		report["stills"][-1]["wound"] = _wound.duplicate()
 	_log("%s at %d: %d cells" % [id, int(r), ci])
 	return true
+
+
+func _fail_moment(id: String, r: float, why: String) -> bool:
+	failed = "%s at %d: %s" % [id, int(r), why]
+	_warn("LOOK_BENCH " + failed)
+	return false
 
 
 # ---------------------------------------------------------------- props (issue 1767): stations and hulks on the live board

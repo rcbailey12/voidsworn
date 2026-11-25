@@ -680,10 +680,11 @@ void fragment() {
 # Oriented rings. a1 = (normal, life); a3 = (size0, size1, kind, seed); a4 = (period, speed, drag, 0).
 # kinds: 0 smoke ring (alpha)   1 shockwave   2 soft pop ring (reduce-flashing replacement)   3 thin pale ring (gauss
 #        muzzle shock, sonic boom)   4 hex-cell ring (Hegemony shield shatter)   5 soft death front (camera-facing)
+const RING_DEATH_FRONT := 5
 const RING := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + """
+""" + COMMON + ("\nconst int RING_DEATH_FRONT = %d;\n" % RING_DEATH_FRONT) + """
 varying vec2 vUv;
 varying vec4 vCol;
 varying vec4 vInfo;
@@ -720,7 +721,7 @@ void vertex() {
 				size = mn;
 			}
 		}
-		if (rk == 5) {
+		if (rk == RING_DEATH_FRONT) {
 			// Read at a low angle too. The noise breaks the front up instead of drawing a clean circle.
 			vec3 centre_view = (VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).xyz;
 			size = max(size, px_world(a4.w, -centre_view.z, PROJECTION_MATRIX) * mix(0.24, 1.0, g));
@@ -764,7 +765,7 @@ void fragment() {
 	} else if (k == 3) {
 		float d1 = (r - 0.93) / 0.03;
 		add = vCol.rgb * exp(-d1 * d1) * spow(1.0 - t, 2.0) * vCol.a;
-	} else if (k == 5) {
+	} else if (k == RING_DEATH_FRONT) {
 		float n = fbm(p * 4.5 + vec2(seed * 8.0, t * 1.8));
 		float ragged = (r - mix(0.77, 0.94, n)) / mix(0.07, 0.13, t);
 		float envelope = smoothstep(0.03, 0.38, t) * (1.0 - smoothstep(0.45, 1.0, t));

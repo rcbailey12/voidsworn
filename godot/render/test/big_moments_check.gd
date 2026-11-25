@@ -5,6 +5,7 @@ const BATTLE := preload("res://scenes/battle/battle.tscn")
 const SHIP := preload("res://render/ship_view.gd")
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
+const SH := preload("res://fx/fx_shaders.gd")
 const GUARD := preload("res://tools/ci/check_guard.gd")
 var failures := 0
 
@@ -68,6 +69,23 @@ func _camera_checks(cam: Camera3D) -> void:
 	_check(cut_radius < early and early < late and late < float(board_pose["r"]) and cam._ct != cut_target, "return stays continuous")
 	cam._process(RIG.CUT_RETURN_S * 0.25)
 	_check(is_equal_approx(cam._cr, board_pose["r"]) and cam._ct == board_pose["t"] and cam.cut_pose() == board_pose, "return restores the board exactly")
+	var wrapped := chase.duplicate()
+	wrapped["a"] = float(board_pose["a"]) + TAU - 0.3
+	for input in ["orbit", "pan", "zoom"]:
+		cam.enter_cut(wrapped)
+		cam.snap()
+		cam.return_from_cut(board_pose)
+		match input:
+			"orbit": cam.orbit(12.0, 3.0)
+			"pan": cam.pan_by(24.0, 12.0)
+			"zoom": cam.zoom_at(Vector2(960, 540), 0.9)
+		_check(cam._cut_return_elapsed == RIG.CUT_RETURN_S and cam.cut_pose() != board_pose,
+			"%s interrupts the return and changes the board pose" % input)
+		var azimuth: float = cam._ca
+		cam._process(1.0 / 60.0)
+		_check(absf(cam._ca - azimuth) < 0.1, "%s takes the short route from a wrapped cut heading" % input)
+	cam.enter_cut(board_pose)
+	cam.snap()
 	var calm: Dictionary = cam.shot_cut("torp", source, target, 14.5, 14.5, true)
 	_check(calm["a"] == cam._ca and calm["b"] == cam._cb, "reduce motion keeps the current orbit")
 	var quarter: Dictionary = cam.impact_cut(target, 27.0, true, [], false)
@@ -106,7 +124,8 @@ func _flash_checks(viewport: SubViewport, cam: Camera3D) -> void:
 	_check(float(fx.flash_area_log[0][3]) >= float(DEATH.CORE_READ_PX["small"]), "the flash counter accounts for the enlarged core")
 	# One instance uses five packed vec4s. Verify the new ring is the sub-flash, bounded kind with a screen floor.
 	_check(rings.pending.size() >= 20 and is_equal_approx(rings.pending[11], DEATH.CORE_RING_S)
-		and rings.pending[15] <= 0.30 and rings.pending[18] == 5.0 and rings.pending[3] > float(DEATH.CORE_READ_PX["small"]),
+		and rings.pending[15] <= 0.30 and rings.pending[18] == SH.RING_DEATH_FRONT
+		and rings.pending[3] > float(DEATH.CORE_READ_PX["small"]),
 		"the core emits a short, low-contrast screen-sized front")
 	fx.reduce_flashing = true
 	fx.now = 2.0
@@ -136,18 +155,34 @@ func _overlay_checks() -> void:
 	ship._ring()
 	ship.set_marker(true)
 	ship.set_selected(true)
+	ship.set_band(3.0)
+	var drop_alpha := (ship.drop_dot.material_override as StandardMaterial3D).albedo_color.a
+	var ring_mat := ship.ring.material_override as StandardMaterial3D
+	_check(ring_mat.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA and ship.drop.visible, "the board starts with alpha rings and a visible drop-line")
+	var blockers := Node3D.new()
+	battle.board.add_child(blockers)
+	battle.board.blocker_highlights = blockers
+	battle.board.show_blockers([{"q": 0, "r": 0}])
 	battle.views["probe"] = ship
 	battle._cine_frame("probe", "probe")
 	battle._step_cut_overlays(0.08)
 	_check(is_equal_approx(battle.hud.plates_root.modulate.a, 0.5), "ship names fade during the cut")
+	var drop_col: Color = ship.drop.material_override.get_shader_parameter("col")
+	_check(ship.drop.visible and ship.drop_dot.visible and is_equal_approx(drop_col.a, drop_alpha * 0.5)
+		and is_equal_approx(ship.drop_dot.material_override.albedo_color.a, drop_alpha * 0.5), "drop-line and dot fade together")
 	battle._step_cut_overlays(0.10)
 	battle.hud.show_tip("blocked", Vector2.ZERO)
 	_check(battle.board.cut_overlay_alpha == 0.0 and not battle.hud.tip.visible, "grid and hover text stay out during the cut")
 	_check(ship.ring.material_override.albedo_color.a == 0.0 and ship.marker.material_override.albedo_color.a == 0.0, "rings fade to zero")
+	_check(not ship.drop.visible and not ship.drop_dot.visible and not blockers.visible, "the cut hides altitude and blocker overlays")
+	_check(ring_mat.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA, "fading does not change the ring pipeline")
 	ship.ring.visible = false   # a death while the cut is holding must not resurrect the selection ring on return
 	battle._cine_release()
 	battle._step_cut_overlays(0.70)
 	_check(battle.board.cut_overlay_alpha == 1.0 and battle.hud.plates_root.modulate.a == 1.0 and not ship.ring.visible
 		and is_equal_approx(ship.marker.material_override.albedo_color.a, 0.85), "board state restores without reviving dead rings")
+	_check(ship.drop.visible and ship.drop_dot.visible and blockers.visible
+		and is_equal_approx(ship.drop_dot.material_override.albedo_color.a, drop_alpha), "the board brings back the live drop and blocker overlays")
+	_check(ring_mat.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA, "the ring stays on the same pipeline after the cut")
 	battle.queue_free()
 	await process_frame

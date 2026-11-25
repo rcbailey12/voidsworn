@@ -4151,7 +4151,7 @@ static func _core_flash_inner(fx, p: Vector3, R: float, px: float, tint: Color, 
 		var ring_size := ring_px * STAGING_UNITS_PER_PIXEL
 		var ring_seed := fposmod(p.dot(Vector3(0.173, 0.371, 0.227)), 1.0)
 		fx.ring(p, Vector3.UP, fx.now, CORE_RING_S, ring_col, 0.26, ring_size * 0.22, ring_size,
-			5, 0.0, 0.0, ring_px, ring_seed)
+			SH.RING_DEATH_FRONT, 0.0, 0.0, ring_px, ring_seed)
 		# Issue 461 (audit item 11): the core flash lights the hulls round it, about two hexes for a cruiser and three for
 		# a capital, for the length of the flash (deaths_and_hits.md, beat 2)
 		if not fx.reduce_flashing: fx.light(p, fx.now, float(row[1]), 9.0, dcol(src, "light", Color(0.65, 0.75, 0.91)), 0, CORE_LIGHT_REACH[band])
