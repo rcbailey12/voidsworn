@@ -3,7 +3,7 @@ extends SceneTree
 # Verifies that fx_ship._update_trails anchors samples and live shader head_world directly to the
 # nozzle (zero detached stern offset), tapers width from nozzle root to slender tip, encodes strip
 # progress along CUSTOM1.w, detaches cleanly with feathered edges when the drive cuts cold, and
-# removes hardcoded orange sparks from Eclipse trail style 3.
+# gates ship taper/tail fade behind use_strip_taper while keeping style 3's orange sparkle.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const FX := preload("res://fx/fx.gd")
@@ -28,10 +28,10 @@ func _check(ok: bool, msg: String) -> void:
 func _run() -> void:
 	_check(SH.TRAIL.contains("uniform float anchor_head") and SH.TRAIL.contains("uniform vec3 head_world"),
 		"SH.TRAIL exposes live nozzle anchoring uniforms")
-	_check(SH.TRAIL.contains("float taper = mix(1.0,") and SH.TRAIL.contains("tail_end"),
-		"SH.TRAIL tapers visual cross-section and feathers the tail end")
-	_check(not SH.TRAIL.contains("vec3(1.0, 0.5, 0.15)"),
-		"SH.TRAIL has no hardcoded orange leak on Eclipse style 3")
+	_check(SH.TRAIL.contains("if (use_strip_taper > 0.5)") and SH.TRAIL.contains("float taper = mix(1.0,") and SH.TRAIL.contains("tail_end"),
+		"SH.TRAIL gates ship taper and tail fade behind use_strip_taper > 0.5")
+	_check(SH.TRAIL.contains("vec3(1.0, 0.5, 0.15) * spow(vnoise(vec2(s * 60.0 - scene_t, seed * 3.0)), 12.0) * 2.0"),
+		"SH.TRAIL keeps style 3 orange sparkle from main")
 
 	var world := Node3D.new()
 	root.add_child(world)

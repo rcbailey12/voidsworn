@@ -35,10 +35,15 @@ func _run() -> void:
 		"SH.RCS_JET orients its cone along the 3D jet direction toward the camera")
 	_check(SH.RCS_JET.contains("core_col") and SH.RCS_JET.contains("wash_col") and SH.RCS_JET.contains("spow(1.0 - u"),
 		"SH.RCS_JET carries hot core, soft wash and quick fade")
+	_check(SH.RCS_JET.contains("uniform float jet_kind") and SH.RCS_JET.contains("instance uniform vec3 jet_dir")
+		and SH.RCS_JET.contains("instance uniform float age_u") and SH.RCS_JET.contains("instance uniform vec3 core_col")
+		and SH.RCS_JET.contains("instance uniform vec3 wash_col"),
+		"SH.RCS_JET shares jet_kind per material and puts per-puff state in instance uniforms")
 
-	# 2. Faction palettes come from faction_looks.json and preserve approved faction looks
+	# 2. Faction palettes come from faction_looks.json, share one material per jet_kind, and preserve approved faction looks
 	var expected_kind := {"voidsworn": 0, "hegemony": 0, "corsair": 0, "ithar": 1, "chorus": 2, "deathless": 3}
 	var washes := {}
+	var kind_mats := {}
 	for fac in expected_kind:
 		var pal: Dictionary = TP.palette(fac)
 		var core: Color = pal["core"]
@@ -47,16 +52,29 @@ func _run() -> void:
 		_check(kind == int(expected_kind[fac]), "%s uses RCS mode %d (got %d)" % [fac, int(expected_kind[fac]), kind])
 		washes[fac] = wash
 		var mi := SV.build_rcs_jet(fac, Vector3(0, 0, 1), 2.4, 0.45, 1.3, 0.9, 0.25)
+		var mi2 := SV.build_rcs_jet(fac, Vector3(1, 0, 0), 1.8, 0.35, 0.9, 0.7, 0.75)
 		_check(mi is MeshInstance3D and mi.mesh == SV._rcs_quad_mesh(), "%s builds shared cone-jet mesh" % fac)
 		_check(mi.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "%s casts no shadows" % fac)
 		var mat := mi.material_override as ShaderMaterial
 		_check(mat != null and mat.shader != null and mat.shader.code == SH.RCS_JET, "%s uses shared SH.RCS_JET shader" % fac)
+		_check(mi.material_override == mi2.material_override, "%s shares one ShaderMaterial across puffs" % fac)
+		if kind_mats.has(kind):
+			_check(kind_mats[kind] == mat, "%s reuses the same shared ShaderMaterial for jet_kind %d" % [fac, kind])
+		else:
+			kind_mats[kind] = mat
 		_check(is_equal_approx(float(mat.get_shader_parameter("jet_kind")), float(kind)), "%s sets jet_kind uniform" % fac)
-		var c_u: Vector3 = mat.get_shader_parameter("core_col")
-		var w_u: Vector3 = mat.get_shader_parameter("wash_col")
-		_check(c_u.is_equal_approx(Vector3(core.r, core.g, core.b)), "%s passes faction core_col" % fac)
-		_check(w_u.is_equal_approx(Vector3(wash.r, wash.g, wash.b)), "%s passes faction wash_col" % fac)
+		var c_u: Vector3 = mi.get_instance_shader_parameter("core_col")
+		var w_u: Vector3 = mi.get_instance_shader_parameter("wash_col")
+		_check(c_u.is_equal_approx(Vector3(core.r, core.g, core.b)), "%s passes faction core_col as instance uniform" % fac)
+		_check(w_u.is_equal_approx(Vector3(wash.r, wash.g, wash.b)), "%s passes faction wash_col as instance uniform" % fac)
+		_check(not (mi.get_instance_shader_parameter("jet_dir") as Vector3).is_equal_approx(mi2.get_instance_shader_parameter("jet_dir") as Vector3),
+			"%s keeps per-puff jet_dir independent on the shared material" % fac)
 		mi.free()
+		mi2.free()
+	var distinct_mats := {}
+	for k in kind_mats:
+		distinct_mats[(kind_mats[k] as Object).get_instance_id()] = true
+	_check(distinct_mats.size() == 4, "all 4 RCS jet kinds have their own distinct shared ShaderMaterial (%d)" % distinct_mats.size())
 
 	# Faction look invariants
 	var ithar_pal: Dictionary = TP.palette("ithar")
@@ -89,29 +107,40 @@ func _run() -> void:
 	var local_at := Vector3(4.0, 0.2, 1.5)
 	var local_dir := Vector3(0.0, 0.0, 1.0)
 	var jet := SV.build_rcs_jet("hegemony", local_dir, 2.5, 0.5, 1.4, 0.9, 0.1)
+	var jet_b := SV.build_rcs_jet("voidsworn", Vector3(1.0, 0.0, 0.0), 2.0, 0.4, 1.1, 0.8, 0.5)
+	_check(jet.material_override == jet_b.material_override,
+		"simultaneous puffs of the same jet_kind share one ShaderMaterial")
 	jet.top_level = true
+	jet_b.top_level = true
 	sv.add_child(jet)
+	sv.add_child(jet_b)
 	jet.global_position = sv.to_global(local_at)
-	sv.puffs.append({"n": jet, "mat": jet.material_override, "t": 0.0, "life": 0.25, "style": "gas",
+	jet_b.global_position = sv.to_global(Vector3(-4.0, 0.2, -1.5))
+	sv.puffs.append({"n": jet, "rcs": true, "t": 0.0, "life": 0.25, "style": "gas",
 		"local_at": local_at, "local_dir": local_dir})
+	sv.puffs.append({"n": jet_b, "rcs": true, "t": 0.1, "life": 0.4, "style": "gas",
+		"local_at": Vector3(-4.0, 0.2, -1.5), "local_dir": Vector3(1.0, 0.0, 0.0)})
 	sv.position = Vector3(10.0, 0.0, -3.0)
 	sv.rotation.y = PI * 0.5
 	sv._puffs_step(0.1)
-	var mat_live := jet.material_override as ShaderMaterial
-	_check(is_equal_approx(float(mat_live.get_shader_parameter("age_u")), 0.4),
-		"stepping advances cone-jet age_u cleanly")
+	_check(is_equal_approx(float(jet.get_instance_shader_parameter("age_u")), 0.4)
+		and is_equal_approx(float(jet_b.get_instance_shader_parameter("age_u")), 0.5),
+		"stepping advances per-puff age_u independently via instance uniforms")
 	_check(jet.global_position.is_equal_approx(sv.to_global(local_at)),
 		"cone jet stays anchored to the moving and turning hull nozzle")
 	var expected_dir := sv.global_transform.basis.orthonormalized() * local_dir
-	_check((mat_live.get_shader_parameter("jet_dir") as Vector3).is_equal_approx(expected_dir),
-		"cone jet direction rotates with the hull")
-	sv._puffs_step(0.2)
-	_check(sv.puffs.is_empty(), "cone jet frees cleanly once its quick fade finishes")
+	_check((jet.get_instance_shader_parameter("jet_dir") as Vector3).is_equal_approx(expected_dir),
+		"cone jet direction rotates with the hull via instance uniform")
+	sv._puffs_step(0.35)
+	_check(sv.puffs.is_empty(), "cone jets free cleanly once their quick fade finishes")
 
 	world.queue_free()
 	await process_frame
+	kind_mats.clear()
 	var mesh_ref := weakref(SV._rcs_quad_mesh())
+	var mat_ref := weakref(SV._rcs_jet_mat(0))
 	SV.clear_static()
-	_check(mesh_ref.get_ref() == null, "ShipView.clear_static releases the shared RCS cone-jet mesh")
+	_check(mesh_ref.get_ref() == null and mat_ref.get_ref() == null and SV._rcs_mats.is_empty(),
+		"ShipView.clear_static releases the shared RCS cone-jet mesh and materials")
 	print("RCS_CONE_JET_CHECK %s: %d checks, %d failures" % ["PASS" if failures == 0 else "FAIL", checks, failures])
 	quit(1 if failures > 0 else 0)

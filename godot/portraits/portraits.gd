@@ -27,6 +27,27 @@ static func has_painting(id: String) -> bool:
 	return e is Dictionary and String(e.get("pick", "")) != "" and _exists("res://portraits/" + String(e["pick"]))
 
 
+# One picked face per subject. Alternate pictures of the same face are not new captains.
+static func captain_pool(fac: String) -> Array:
+	var pool := []
+	for id in _index().get("painted", {}):
+		if _index()["painted"][id].get("faction") == fac and has_painting(id): pool.append(id)
+	for id in _index().get("nemesis", {}):
+		var entry: Dictionary = _index()["nemesis"][id]
+		if id.begins_with("nem_" + fac + "_") and _exists("res://portraits/" + str(entry["pick"])):
+			pool.append(id)
+	pool.sort()
+	return pool
+
+
+static func captain_face(id: String) -> Texture2D:
+	if id.is_empty(): return null
+	var entry: Dictionary = _index().get("nemesis", {}).get(id, {})
+	# The unframed source is a portrait, not the red-framed Nemesis card or scar overlay.
+	if not entry.is_empty(): return _tex("res://portraits/" + str(entry["pick"]))
+	return face(id)
+
+
 static func face(id: String, level: int = 0, capstone: int = 0) -> Texture2D:
 	var base := _face_base(id)
 	if base == null:

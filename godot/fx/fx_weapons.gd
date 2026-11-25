@@ -18,7 +18,7 @@ extends RefCounted
 #            small sooty rockets)   star (Ithar star torpedo: a little sun)
 #   flak:    airbursts in the faction's style (Hegemony picket lasers, Chorus spores, Ithar mirror glints, Deathless
 #            gauss shredder streaks, Corsair chaff)
-#   bio:     spine (bioplasma: wobbling globs that splash and corrode)   tendril (boarding tendrils: an organic lash)
+#   bio:     spine (bioplasma: wobbling globs that splash and corrode)   tendril (Acid Thorns: a built bone thorn that sticks, then crumbles)
 #   gauss:   coil charge, a visible null slug, a punch-through with an exit spray
 #   sq:      guns, bombs, sporeb: craft on a strafing run
 
@@ -30,6 +30,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const WING := preload("res://render/squadron_wing.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
+const THORN := preload("res://fx/fx_acid_thorn.gd")   # issue 1877: Acid Thorns, the Chorus close-in weapon
 
 const LOOK_BY_ID := {
 	"battery": "macro", "hbattery": "macro", "autocannon": "auto", "turret": "las", "laser": "plasma_cannon", "turbo": "plasma",
@@ -58,6 +59,18 @@ const REACT_IMPULSE := {"torp": 6.0, "star": 6.5, "ram": 8.0, "rockets": 2.0, "m
 const SHOOTER_RECOIL := {"macro": 0.22, "gauss": 0.20, "torp": 0.25, "rockets": 0.18, "star": 0.25}
 const ABSORBED_IMPULSE := 0.12
 const PLASMA_HOT := Color(0.86, 0.95, 1.0)
+# Projectile and muzzle profiles consumed by the shared STREAK and SPRITE masks.
+const BOLT_SHELL := 9
+const BOLT_ENERGY := 10
+const BOLT_CRYSTAL := 11
+const BOLT_SCRAP := 12
+const BOLT_PLASMA := 30
+const BOLT_BIO := 31
+const BOLT_BOMB := 32
+const MUZZLE_BALLISTIC := 33
+const MUZZLE_ENERGY := 34
+const MUZZLE_CRYSTAL := 35
+const MUZZLE_BIO := 36
 const MELT_SPOTS := 6   # R398: the acid hits a ship remembers for its melt death (fx_shaders MELT_GLOW holds six)
 const CRIT_BEAT := 0.12
 # Issue 1239 (F2.2): the shot that breaks a shield and still hurts the hull lands its hull fire this much after the
@@ -234,6 +247,7 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var ka_geo: float = A.scale_k() if A != null else 1.0
 	var ka: float = maxf(ka_geo, VIS_K_FIRE)
 	var kt: float = maxf(Tg.scale_k() if Tg != null else 1.0, VIS_K_HIT)
+	# R46: both plasma weapons keep the same light blue from muzzle to impact.
 	var col: Color = PLASMA_COL if lk in ["plasma", "plasma_cannon"] else fac["weapon"]
 	# Doom uses its own deep violet core (issue 1503, was R263 green); the R271 null tracer uses the faction's violet-white.
 	if lk == "doom" and fac.has("weapon_core"):
@@ -430,14 +444,14 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 	match lk:
 		"macro":
 			tf = T0 + 0.2 + beat * float(fx.timing.get("ripple", 0.08))
-			_muzzle_blast(fx, from, dir, tf, col, ka * (1.25 if w >= 3 else 1.0), (MUZ_PX[clampi(w, 1, 3)] + 4.0) * size, w, A)
+			_muzzle(fx, from, dir, tf, col, ka * (1.25 if w >= 3 else 1.0), (MUZ_PX[clampi(w, 1, 3)] + 4.0) * size, MUZZLE_BALLISTIC, A, true, w)
 			if w >= 3:
 				# Hot gas bleeds from the barrel mouth after the muzzle flash.
 				_weapon_gas(fx, from, dir, tf + 0.19, 2.2 * ka, "muzzle", 0.36, col, 0.85,
 					dir * 1.4 * ka, 0.5, 1.0, 14.0 * size, A)
 			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * fx.unit
 			ti = tf + dist / spd
-			fx.stk(from, tf, dist / spd, col.lerp(Color.WHITE, 0.3), 8.0 * power, 3.2 * ka, 0.60 * ka * (1.2 if w >= 3 else 1.0), 0, dir * spd, 0.0, 0.0, (4.0 if w >= 3 else 3.4) * size, 26.0 * size)
+			fx.stk(from, tf, dist / spd, col, 8.0 * power, 3.2 * ka, 0.60 * ka * (1.2 if w >= 3 else 1.0), BOLT_SHELL, dir * spd, 0.0, 0.0, (4.0 if w >= 3 else 3.4) * size, 26.0 * size)
 			fx.light(from + mn * 1.5 * ka, tf, 0.22, 7.8, col.lerp(Color.WHITE, 0.4), 0)
 			fx.shake(tf, 0.03, from)
 		"auto":
@@ -450,8 +464,8 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				var tb = tf + float(pulse["phase"]) * 0.05
 				var jit = fx.rdir() * 0.3 * kt * spread
 				# Four short tracers in a tight line give the autocannon its chatter.
-				_burst(fx, from + dir * 0.4 * ka, dir, tb, 1.8 * bk, "flash", 0.12, col, 3.8 * power * float(pulse["power"]), 14.0 * size * float(pulse["size"]))
-				fx.stk(from, tb, dist / spd, col.lerp(Color.WHITE, 0.22), 13.0 * power * float(pulse["power"]), 4.0 * bk, 0.4 * bk, 0, (dir + jit / dist) * spd, 0.0, 0.0, 3.6 * size * float(pulse["size"]), 18.0 * size * float(pulse["size"]))
+				_muzzle(fx, from, dir, tb, col, bk, 14.0 * size * float(pulse["size"]), MUZZLE_BALLISTIC, A)
+				fx.stk(from, tb, dist / spd, col, 9.0 * power * float(pulse["power"]), 4.0 * bk, 0.4 * bk, BOLT_SHELL, (dir + jit / dist) * spd, 0.0, 0.0, 3.6 * size * float(pulse["size"]), 18.0 * size * float(pulse["size"]))
 				if faction == "corsair":
 					_burst(fx, from + dir * 0.8 * ka, dir, tb + 0.02, 2.0 * ka, "cool", 0.4, col, 0.5, 0.0, dir * 2.0, 0.4)
 			fx.light(from + mn * 1.2 * ka, tf, 0.25, 5.5, col, 1)
@@ -459,68 +473,62 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"junk":
 			tf = T0 + 0.10 + beat * 0.19
 			var spd: float = 145.0 * fx.unit
-			_muzzle_blast(fx, from, dir, tf, col, ka, 21.0 * size, w, A)
+			_muzzle(fx, from, dir, tf, col, ka, 21.0 * size, MUZZLE_BALLISTIC, A, true, w)
 			_burst(fx, from + dir * ka, dir, tf + 0.035, 2.6 * ka, "cool", 0.52, col.darkened(0.65), 0.65, 0.0, dir * 2.0)
-			fx.stk(from, tf, dist / spd, col, 11.0, 2.1 * ka, 0.65 * ka, 0, dir * spd, 0.0, 0.0, 4.8 * size, 13.0 * size)
+			fx.stk(from, tf, dist / spd, col, 9.0, 2.1 * ka, 0.65 * ka, BOLT_SCRAP, dir * spd, 0.0, 0.0, 4.8 * size, 13.0 * size)
 			ti = tf + dist / spd
 		"las":
 			tf = T0 + 0.05 + beat * 0.12
 			var spd = 280.0 * fx.unit
 			# round 2: a hard, faction-coloured bolt with a white core, long and fat enough to read as a laser at battle zoom
-			_muzzle(fx, from, dir, mn, tf, col, ka, (MUZ_PX[1] + 2.0) * size, 0, 6.5, 0.16, w, A)
-			fx.stk(from, tf, dist / spd, col, 16.0, 5.5 * ka, 0.7 * ka, 4, dir * spd, 0.0, 0.0, 4.6 * size, 30.0 * size)
+			_muzzle(fx, from, dir, tf, col, ka, (MUZ_PX[1] + 2.0) * size, MUZZLE_ENERGY, A)
+			fx.stk(from, tf, dist / spd, col, 11.0, 5.5 * ka, 0.7 * ka, BOLT_ENERGY, dir * spd, 0.0, 0.0, 4.6 * size, 30.0 * size)
 			ti = tf + dist / spd
 		"plasma_cannon":
 			tf = T0 + 0.06 + beat * 0.085
 			var spd: float = 230.0 * fx.unit
-			var ionized := Color(col.r * 0.55, col.g, col.b)
-			_muzzle(fx, from, dir, mn, tf, ionized, ka, 19.0 * size, 0, 5.5, 0.14, w, A)
-			# A short white centre travels inside a wider, turbulent cyan envelope.
-			fx.spr(from, tf, dist / spd, ionized, 1.8, 1.6 * ka, 1.6 * ka, 14, dir * spd, 0.0, 0.0, 0.0, 16.0 * size)
-			fx.spr(from, tf, dist / spd, PLASMA_HOT, 2.0, 0.65 * ka, 0.65 * ka, 4, dir * spd, 0.0, 0.0, 0.0, 7.0 * size)
+			_muzzle(fx, from, dir, tf, col, ka, 19.0 * size, MUZZLE_ENERGY, A)
+			_sprite_bolt(fx, from, tf, dist / spd, col, 2.65, 1.45 * ka, BOLT_PLASMA, dir * spd, 16.0 * size)
 			ti = tf + dist / spd
 		"plasma":
 			tf = T0 + 0.12 + beat * 0.24
 			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * 0.55 * fx.unit
 			var sz = (1.9 if w >= 3 else 1.5) * ka
-			_burst(fx, from + dir * 0.6 * ka, dir, tf, sz * 2.4, "flash", 0.22, col, 4.0, (30.0 if w >= 3 else 24.0) * size)
-			fx.spr(from, tf, dist / spd, col, 2.0, sz * 1.6, sz * 1.6, 14, dir * spd, 0.0, 0.0, 0.0, (24.0 if w >= 3 else 19.0) * size)
-			fx.stk(from, tf, dist / spd, col, 3.0, 4.0 * ka, sz * 0.7, 0, dir * spd)
+			_muzzle(fx, from, dir, tf, col, sz, (30.0 if w >= 3 else 24.0) * size, MUZZLE_ENERGY, A)
+			_sprite_bolt(fx, from, tf, dist / spd, col, 2.8, sz * 1.4, BOLT_PLASMA, dir * spd, (24.0 if w >= 3 else 19.0) * size)
 			# heat shimmer trailing the bolt
 			for s in 3:
 				fx.spr(from + dir * dist * (0.25 + s * 0.25), tf + dist / spd * (0.25 + s * 0.25), 0.4, col, 0.3, sz * 0.6, sz * 1.4, 18)
 			fx.light(from + dir * 2.0, tf, dist / spd, 3.0, col, 1)
-			fx.light(from + mn * 1.2 * ka, tf, 0.3, 7.5, col, 0)
 			ti = tf + dist / spd
 		"scatter":
 			tf = T0 + 0.1 + beat * 0.1
 			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * 1.2 * fx.unit
-			_muzzle_blast(fx, from, dir, tf, col, ka * 0.7, MUZ_PX[2] * size, w, A)
+			_muzzle(fx, from, dir, tf, col, ka * 0.7, MUZ_PX[2] * size, MUZZLE_BALLISTIC, A, true, w)
 			fx.light(from + mn * 1.2 * ka, tf, 0.18, 6.5, col, 0)
 			var burst := _volley_pattern(rhythm, 6)
 			for b in 6:
 				var pulse: Dictionary = burst[b]
 				var bk: float = ka * float(pulse["size"])
 				var d2 = (dir + fx.rdir() * 0.06 * spread).normalized()
-				fx.stk(from, tf + float(pulse["phase"]) * 0.006, dist / spd, col, 10.0 * power * float(pulse["power"]), 3.0 * bk, 0.38 * bk, 0, d2 * spd, 0.0, 0.0, 2.8 * size * float(pulse["size"]), 12.0 * size * float(pulse["size"]))
+				fx.stk(from, tf + float(pulse["phase"]) * 0.006, dist / spd, col, 9.0 * power * float(pulse["power"]), 3.0 * bk, 0.38 * bk, BOLT_SCRAP, d2 * spd, 0.0, 0.0, 2.8 * size * float(pulse["size"]), 12.0 * size * float(pulse["size"]))
 			ti = tf + dist / spd
 		"prism":
 			tf = T0 + 0.08 + beat * 0.1
 			var spd = 220.0 * fx.unit
-			# round 2: a glassy glint at the emitter and three needles, each riding a slow-turning spectral glint
-			_muzzle(fx, from, dir, mn, tf, col, ka, MUZ_PX[2] * size, 16, 5.5, 0.25, w, A)
+			_muzzle(fx, from, dir, tf, col, ka, MUZ_PX[2] * size, MUZZLE_CRYSTAL, A)
 			var burst := _volley_pattern(rhythm, 3)
 			for b in 3:
 				var pulse: Dictionary = burst[b]
 				var bk: float = ka * float(pulse["size"])
 				var d2 = (dir + fx.rdir() * 0.02 * spread).normalized()
-				fx.stk(from, tf + float(pulse["phase"]) * 0.03, dist / spd, col.lerp(Color.WHITE, 0.4), 12.0 * float(pulse["power"]), 3.5 * bk, 0.32 * bk, 4, d2 * spd, 0.0, 0.0, 3.2 * size * float(pulse["size"]), 24.0 * size * float(pulse["size"]))
-				fx.spr(from, tf + float(pulse["phase"]) * 0.03, dist / spd, col, 2.2, 0.7 * ka, 0.7 * ka, 16, d2 * spd, 0.0, 0.0, 0.0, 12.0)
+				fx.stk(from, tf + float(pulse["phase"]) * 0.03, dist / spd, col, 8.5 * float(pulse["power"]), 3.5 * bk, 0.32 * bk, BOLT_CRYSTAL, d2 * spd, 0.0, 0.0, 3.2 * size * float(pulse["size"]), 24.0 * size * float(pulse["size"]))
 			ti = tf + dist / spd
 		"needle":
 			tf = T0 + 0.1 + beat * 0.25
-			fx.spr(from, tf - 0.12, 0.12, col, 4.0, 0.3 * ka, 1.6 * ka, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
-			fx.rib(from, dir, dist, tf, 0.35, col, 1.6, 0.35 * ka, 0.3 * ka, 8)
+			_beam_charge(fx, from, dir, tf, minf(0.10, tf - T0), col, ka, lk)
+			fx.rib(from, dir, dist, tf, 0.35, col, 1.6, 0.35 * ka, 0.3 * ka, SH.RIB_NEEDLE)
+			fx.spr(from, tf, 0.15, col, 2.6, 0.65 * ka, 0.8 * ka, 16, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
 			_beam_ends(fx, from, to, tf, 0.35, col, ka)
 			fx.light(from + mn * 1.2 * ka, tf, 0.35, 5.0, col, 1)
 			ti = tf + 0.03
@@ -529,11 +537,10 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			var charge := 0.29
 			var dur := 0.32
 			tf = T0 + charge + beat * 0.36
-			for s in 3:
-				var ctime: float = tf - charge + s * 0.07
-				fx.ring(from - dir * (1.2 - s * 0.6) * ka, dir, ctime, tf - ctime, col, 1.5, 0.8 * ka, 2.6 * ka, 3)
-			fx.rib(from, dir, dist, tf, dur, col, 2.1, 3.5 * ka, 1.5 * ka, 11)
+			_beam_charge(fx, from, dir, tf, charge, col, ka, lk)
+			fx.rib(from, dir, dist, tf, dur, col, 1.8, 3.5 * ka, 1.5 * ka, SH.RIB_NULL_LANCE)
 			_beam_ends(fx, from, to, tf, dur, col, ka)
+			_beam_lenses(fx, from, dir, dist, tf, dur, ka, true)
 			fx.light(from + mn * ka, tf, dur, 6.0, col, 1)
 			ti = tf + 0.03
 			tend = tf + dur
@@ -542,21 +549,26 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			tf = T0 + charge + beat * 0.45
 			var dur = float(fx.timing.get("lance", 0.7)) if lk != "pulsar" else 0.45
 			var wd = (2.4 if lk != "doom" else 1.6) * ka * (1.15 if w >= 3 else 1.0)
-			fx.spr(from, tf - charge, charge, col.lerp(Color.WHITE, 0.2), 9.0, 0.6 * ka, 5.0 * ka, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 30.0)
-			fx.light(from + dir + mn * ka, tf - charge, charge, 6.0, col, 2)
 			if lk == "doom":
 				# A visible charging corona stays rooted on the actual emitter.
+				fx.spr(from, tf - charge, charge, col.lerp(Color.WHITE, 0.2), 9.0, 0.6 * ka, 5.0 * ka, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 30.0)
+				fx.light(from + dir + mn * ka, tf - charge, charge, 6.0, col, 2)
 				fx.ring(from, dir, tf - charge, charge, col, 1.8, 0.5 * ka, 1.8 * ka, 3, 0.0, 0.0, 32.0)
 				fx.spr(from, tf - charge * 0.55, charge * 0.55, col, 2.5, 0.6 * ka, 1.6 * ka, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 26.0)
-			var rk: int = {"lance": 2, "ion": 5, "pulsar": 7, "doom": 10}[lk]
+			else:
+				_beam_charge(fx, from, dir, tf, charge, col, ka, lk)
+				fx.light(from + dir + mn * ka, tf - charge, charge, 6.0, col, 2)
+			var rk: int = {"lance": SH.RIB_LANCE, "ion": SH.RIB_ION, "pulsar": SH.RIB_PULSAR, "doom": 10}[lk]
 			_burst(fx, from, dir, tf, 4.5 * ka, "flash", 0.28, col, 3.6, 22.0)
-			fx.rib(from, dir, dist, tf, dur, col, 2.4, wd, wd * 0.85, rk)
+			fx.rib(from, dir, dist, tf, dur, col, 2.4 if lk == "doom" else 1.65, wd, wd * 0.85, rk)
 			_beam_ends(fx, from, to, tf, dur, col, ka, lk == "doom")
 			fx.light(from + dir * 1.5 + mn * ka, tf, dur, 6.0, col, 1)
 			if lk == "doom":
 				_doom_shed(fx, from, to, tf, dur, col, ka)
+			elif lk == "pulsar":
+				_harmonics(fx, from, dir, dist, tf, dur, col, ka)
 			else:
-				fx.dst(from + dir * dist * 0.5, tf, dur, dist * 0.3, dist * 0.35, 1, 0.6)
+				_beam_lenses(fx, from, dir, dist, tf, dur, ka, false)
 			fx.shake(tf, 0.08, from)
 			ti = tf + 0.03
 			tend = tf + dur
@@ -579,20 +591,19 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"flak", "pflak", "spores", "mflak", "gflak", "gsentry":
 			var cadence := 0.19 if lk == "gsentry" else 0.12 if lk == "flak" else 0.07
 			tf = T0 + 0.03 + beat * cadence
-			ti = _flak(fx, lk, from, dir, dist, to, tf, col, ka, kt, i, tg, rhythm, spread)
+			ti = _flak(fx, lk, from, dir, to, tf, col, ka, kt, rhythm, spread, A)
 			tend = ti + 0.4
 		"spine":
 			var wind = 0.3
 			tf = T0 + wind + beat * 0.145
 			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * 0.5 * fx.unit
 			fx.spr(from, tf - wind, wind, col, 1.4, 0.4 * ka, 1.6 * ka, 22)
-			fx.spr(from + dir * 0.5 * ka, tf, 0.25, col, 2.4, 0.8 * ka, 2.0 * ka, 18, Vector3.ZERO, 0.0, 0.0, 0.0, 22.0)
-			fx.light(from + mn * 1.2 * ka, tf, 0.3, 4.5, col, 1)
+			_muzzle(fx, from, dir, tf, col, ka, 22.0, MUZZLE_BIO, A)
 			for s in 5:
 				fx.stk(from, tf, 0.4, col, 2.0, 0.08, 0.12 * ka, 6, (dir + fx.rdir() * 0.4).normalized() * 8.0 * ka, 1.5)
 			var gsz = 1.5 * ka
 			var ft = dist / spd
-			fx.spr(from, tf, ft, col, 2.0, gsz, gsz, 15, dir * spd, 0.0, 0.0, 0.0, 15.0)
+			_sprite_bolt(fx, from, tf, ft, col, 2.35, gsz, BOLT_BIO, dir * spd, 15.0)
 			# dripping trail
 			for s in 8:
 				var u = (s + 0.5) / 8.0
@@ -600,16 +611,12 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			fx.light(from + dir, tf, ft, 1.6, col, 1)
 			ti = tf + ft
 		"tendril":
-			tf = T0 + 0.2 + beat * 0.2
-			ti = tf + 0.25
-			tend = tf + 0.9
-			fx.rib(from, dir, dist, tf, tend - tf, col, 1.4, 1.6 * ka, 0.35 * ka, 9)
-			# The advancing tip sheds spores. Use the ribbon's eased reach so haze never leads it.
-			for j in 5:
-				var u: float = (float(j) + fx.rng.randf_range(0.2, 0.8)) / 5.0
-				var tip := from.lerp(to, smoothstep(0.0, 1.0, u))
-				var drift: Vector3 = (Vector3.UP + fx.rdir()) * 2.0 * ka
-				fx.spr(tip, lerpf(tf, ti, u), 0.52, col, 0.48, 0.5 * ka, 2.0 * ka, 20, drift, 0.8, 0.0, 0.0, 14.0 * size)
+			# Acid Thorns (issue 1877, R437): one built bone thorn a shot (fx_acid_thorn.gd); the old tendril lash is gone
+			tg["mark_look"] = "thorn"  # the etched burn, no drawn spines: the built thorn is the spine (issue 1877)
+			var cr: Array = THORN.shot(fx, from, mn, to, T0, beat, col, ka, A, tg, Tg)
+			tf = cr[0]
+			ti = cr[1]
+			tend = cr[2]
 		"gauss":
 			var heavy = w >= 3
 			var wind = 0.75 if heavy else 0.25
@@ -640,6 +647,44 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		else:
 			tend = maxf(tend, _miss_fade(fx, lk, Tg, tg, from, tf, ti, col, dir, kt))
 	return [ti, tend + 0.3, tf]
+
+
+# Shared pre-fire beat. Focus just in front of the authored muzzle so the rings
+# never charge from inside the barrel. The bright focus still goes through fx.spr's flash budget.
+static func _beam_charge(fx, from: Vector3, dir: Vector3, fire: float, charge: float, col: Color, k: float, look: String) -> void:
+	if charge <= 0.0:
+		return
+	var focus := from + dir * 0.22 * k
+	var needle := look == "needle"
+	var ring_count := 1 if needle or look == "ion" else (3 if look == "nlance" else 2)
+	var ring_kind := SH.RING_HARMONIC if look in ["pulsar", "needle"] else 3
+	for j in ring_count:
+		var life := charge * (1.0 - float(j) * 0.19)
+		var col_k := 0.84 + float(j) * 0.14
+		fx.ring(focus + dir * float(j) * 0.42 * k, dir, fire - life, life, col, col_k,
+			(1.75 if needle else 3.6) * k, 0.45 * k, ring_kind, -1.0 * k, 0.0, 0.0)
+	var gather := charge * (0.9 if needle else 0.72)
+	fx.spr(focus, fire - gather, gather, col, 3.2 if needle else 5.4, 0.45 * k,
+		(1.4 if needle else 2.7) * k, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 15.0 if needle else 26.0)
+
+
+# Cost is bounded and fx.dst honors the existing distortion and comfort settings.
+# Glasswrights use emitted spectral edges instead of sampling or bending the scene (R421).
+static func _beam_lenses(fx, from: Vector3, dir: Vector3, length: float, fire: float, life: float, k: float, null_lance: bool) -> void:
+	var count := 5 if null_lance else 3
+	for j in count:
+		var u := (float(j) + 0.5) / float(count)
+		var lag := u * 0.03
+		var span := maxf(5.0 * k, length / float(count) * 1.3)
+		fx.dst(from + dir * length * u, fire + lag, life - lag, span * 0.8, span, SH.DISTORT_BEAM, 0.23 if null_lance else 0.13)
+
+
+static func _harmonics(fx, from: Vector3, dir: Vector3, length: float, fire: float, life: float, col: Color, k: float) -> void:
+	var travel := life * 0.62
+	for j in 3:
+		# Three staggered wavefronts never travel past the beam's own contact.
+		fx.ring(from, dir, fire + life * 0.16 * float(j), travel, col, 1.25,
+			3.8 * k, 5.2 * k, SH.RING_HARMONIC, length / travel)
 
 
 # R271 replaces the two-frame/26 px null shot. One head moves at the original
@@ -865,12 +910,30 @@ static func _impact_sparks(fx, p: Vector3, axis: Vector3, T: float, k: float, co
 
 # ---------------------------------------------------------------- fire
 
-# A small baked muzzle burst and a short light identify the firing ship.
-# The pixel floor keeps it readable at battle distance; close flashes use the budget.
-static func _muzzle(fx, p: Vector3, dir: Vector3, mn: Vector3, t: float, col: Color, k: float, px: float, kind := 0, lpk := 6.0, llife := 0.2, w := 2, src = null) -> void:
-	_burst(fx, p + dir * 0.5 * k, dir, t, 2.6 * k, "flash", 0.18, col, 4.5, px)
-	_vent(fx, p + dir * k, dir, t + 0.035, 2.2 * k, 0.28, col, 0.7, dir * 3.0 * k, 0.45, 1.0, w, src)
-	fx.light(p + mn * 1.2 * k + dir * 0.6 * k, t, llife, lpk, col.lerp(Color(0.94, 0.87, 0.73), 0.3), 0)
+static func _sprite_bolt(fx, p: Vector3, t: float, life: float, col: Color, power: float,
+		size: float, profile: int, vel: Vector3, px: float) -> void:
+	fx.spr(p, t, life, col, power, size, size, profile, vel, 0.0, 0.0, 0.0, px)
+
+
+# One muzzle kit. Actual cartridge blasts keep the approved gas. Light guns and
+# smoke-free emitters share a counted core and a dimmer material-specific sheath.
+static func _muzzle(fx, p: Vector3, dir: Vector3, t: float, col: Color, k: float, px: float,
+		profile: int, src = null, heavy_gas := false, w := 2) -> void:
+	if heavy_gas:
+		_muzzle_blast(fx, p, dir, t, col, k, px, w, src)
+		return
+	var organic := profile == MUZZLE_BIO
+	var forward := profile == MUZZLE_BALLISTIC or organic
+	var offset: Vector3 = dir * k * (0.65 if forward else 0.22) * fx.unit
+	var lifetime := 0.23 if organic else 0.16
+	var core_life := 0.12 if forward else 0.15
+	fx.record_spawn(src, p, true)
+	_burst(fx, p + dir * k * 0.28 * fx.unit, dir, t, 1.55 * k, "flash", core_life, col,
+		2.5 if organic else 4.2, px)
+	fx.spr(p + offset, t, lifetime, col, 1.15, 1.65 * k, 2.55 * k, profile,
+		dir * (2.0 * k * fx.unit if forward else 0.0), 0.0, 0.0, 0.0, px)
+	if profile != MUZZLE_BALLISTIC:
+		fx.light(p + offset, t, lifetime, 4.0 if organic else 5.5, col, 1)
 
 
 static func _muzzle_blast(fx, p: Vector3, dir: Vector3, t: float, col: Color, k: float, px := 24.0, w := 2, src = null) -> void:
@@ -970,7 +1033,7 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 			_kit_nozzle_dark(p["mesh"], true)
 		if old:
 			p.erase("lt")
-			if (p["mesh"] as Node3D).has_meta("kit"):
+			if lk != "star":
 				_kit_trail_start(fx, p, fac)
 		if intercept:
 			p["dead_at"] = lerpf(t0, float(p["t1"]), 0.62)
@@ -996,17 +1059,28 @@ static func _launch_step(fx, p: Dictionary, now: float) -> void:
 	n3.global_transform = Transform3D(Basis(d, z.cross(d).normalized(), z).scaled(n3.scale), pos)
 	n3.visible = true
 	(n3.get_meta("motor") as ShaderMaterial).set_shader_parameter("throttle", 0.0)
+	_ordnance_layers(n3, false)
 	p["pos"] = pos
 
 
 # Ignition (launch step 3): a short hot flash at the nozzle, then the drive and the wake take over.
 static func _ignite(fx, p: Dictionary, fac_engine: Color) -> void:
 	_kit_nozzle_dark(p["mesh"], false)
+	_ordnance_layers(p["mesh"], true)
 	var d: Vector3 = p["ed"]
 	var k: float = p["k"]
 	var nozzle: Vector3 = (p["a"] as Vector3) - d * 1.2 * k * fx.unit * (0.55 if String(p["lk"]) == "rockets" else 1.0)
 	_burst(fx, nozzle, -d, float(p["t0"]), 1.1 * k, "flash", 0.10, fac_engine, 2.4, 8.0)
 	_burst(fx, nozzle - d * 0.4 * k, -d, float(p["t0"]) + 0.02, 1.4 * k, "cool", 0.45, Color(0.4, 0.4, 0.42), 0.5, 0.0, -d * 3.0 * k, 0.35)
+
+
+static func _ordnance_layers(node, enabled: bool) -> void:
+	if not is_instance_valid(node):
+		return
+	for name in ["exhaust", "corona"]:
+		var layer := (node as Node3D).get_node_or_null(name) as MeshInstance3D
+		if layer != null:
+			layer.visible = enabled
 
 
 # Compact, lit casings with a closed nose, a recessed motor and rear fins.
@@ -1239,6 +1313,7 @@ static func _projectile_body(fx, lk: String, k: float, eng: Color, faction := ""
 	mat.set_shader_parameter("seed", fx.rng.randf() * TAU)
 	drive.material_override = mat
 	node.set_meta("motor", mat)
+	node.set_meta("wake_nozzle", drive.position.x - 0.02)
 	drive.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	drive.extra_cull_margin = 3.0
 	node.add_child(drive)
@@ -1247,6 +1322,20 @@ static func _projectile_body(fx, lk: String, k: float, eng: Color, faction := ""
 		node.visible = false
 		fx.add_child(node)
 		return node
+	if lk == "star":
+		# The transparent rays sit at the centre of the existing star body. Depth
+		# testing lets that body occlude the corona's middle and leaves its rim intact.
+		var corona := MeshInstance3D.new()
+		corona.name = "corona"
+		corona.mesh = quad
+		corona.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		corona.extra_cull_margin = 5.0
+		var solar := _fresh(fx, "star_corona_mat", func() -> ShaderMaterial: return fx.mat(SH.ORDNANCE_CORONA, 1, "", "star corona"))
+		var palette := FLOOK.weapon(faction if not faction.is_empty() else "ithar")
+		solar.set_shader_parameter("tint", Vector3(palette.r, palette.g, palette.b))
+		solar.set_shader_parameter("seed", mat.get_shader_parameter("seed"))
+		corona.material_override = solar
+		node.add_child(corona)
 	var plume := MeshInstance3D.new()
 	plume.name = "exhaust"
 	plume.mesh = quad
@@ -1300,6 +1389,7 @@ static func _bez(a: Vector3, b: Vector3, c: Vector3, u: float) -> Vector3:
 
 static func update(fx, dt: float) -> void:
 	_craft_update(fx, dt)
+	THORN.update(fx, dt)
 	for ship in fx.ships.values():
 		if is_instance_valid(ship.root):
 			var squad = ship.root.get("squad_kind")
@@ -1319,7 +1409,7 @@ static func update(fx, dt: float) -> void:
 		if p.has("lt") and not p.has("lit"):
 			p["lit"] = true
 			_ignite(fx, p, p["eng"])
-			if is_instance_valid(p["mesh"]) and (p["mesh"] as Node3D).has_meta("kit"):
+			if is_instance_valid(p["mesh"]) and p["lk"] != "star" and now < minf(t1, float(p["dead_at"])):
 				_kit_trail_start(fx, p, p["fac"])
 		if now >= float(p["dead_at"]) and float(p["dead_at"]) < t1:
 			# shot down short of the hull (issue 1379 round 5: Ryan could not tell this from a hull hit)
@@ -1353,20 +1443,20 @@ static func update(fx, dt: float) -> void:
 			(node.get_meta("motor") as ShaderMaterial).set_shader_parameter("throttle", fade)
 		if p.has("trail"):
 			_kit_trail_push(fx, p)
-		else:
+		if not p.has("trail") or p["lk"] == "rockets":
 			_projectile_exhaust(fx, p, d)
 	fx.dstate["proj"] = keep
 	_kit_trails_update(fx)
 # Sample the actual curved path at fixed intervals. Cap catch-up after a hitch,
 # and let each short puff cool independently. There is no persistent hot ribbon.
 # Issue 1467: "last" walks the fixed puff grid, so the part of an interval a frame leaves over carries to the next
-# frame (14 puffs a second at 15, 30 or 144 fps). After a hitch, intervals past the 3-puff cap are dropped, not
+# frame. After a hitch, intervals past the 3-puff cap are dropped, not
 # banked, so no burst repeats; the fraction still carries. Returns the puffs emitted (the frame-rate check counts them).
 static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> int:
 	var lk: String = p["lk"]
 	var k: float = p["k"]
 	var last: float = p["last"]
-	var rate := 10.0 if lk == "rockets" else 14.0
+	var rate := 24.0 if lk == "rockets" else 14.0
 	if fx.quality == "low": rate *= 0.6
 	var due := int((fx.now-last) * rate + 1e-6)
 	if due <= 0: return 0
@@ -1380,10 +1470,17 @@ static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> int:
 		var at := _bez(p["a"],p["b"],p["c"],e)
 		var d: Vector3 = ((p["b"] as Vector3)-(p["a"] as Vector3)).lerp((p["c"] as Vector3)-(p["b"] as Vector3),e).normalized()
 		if d.length_squared() < 0.01: d = dir
-		var size: float = k * (0.65 if lk == "rockets" else 1.0)
+		if lk == "rockets":
+			var tail: Vector3 = at - d * (0.72 * k * fx.unit)
+			var smoke := Color(0.30, 0.27, 0.25) if p.get("faction", "") == "corsair" else Color(0.31, 0.33, 0.36)
+			# Premultiplied smoke, not light or flame. Stretch along the real nozzle path.
+			fx.spr(tail, tt, ROCKET_SMOKE_LIFE, smoke, 0.62, k * 1.6, k * 4.0, SH.ROCKET_SMOKE,
+				-d * (2.5 * k * fx.unit), 0.8, 0.0, 0.0, 13.0)
+			continue
+		var size: float = k
 		var tail: Vector3 = at - d * size * 1.2 * fx.unit
-		_burst(fx, tail-d*size, -d, tt+0.04, 1.7 * size, "cool", 0.30 if lk == "rockets" else 0.22,
-			eng, 0.5, 0.0, -d*size*2.0, 0.30 if lk == "rockets" else 0.12)
+		_burst(fx, tail-d*size, -d, tt+0.04, 1.7 * size, "cool", 0.22,
+			eng, 0.5, 0.0, -d*size*2.0, 0.12)
 		if fx.quality == "max":
 			for j in 3:
 				var f := float(j) / 3.0
@@ -1395,6 +1492,7 @@ static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> int:
 # world-space strip through the nozzle's recent positions in the faction's engine colour and trail style (Hullbreakers
 # sooty). It is short because the round is small and fast; it keeps fading after the hit until its last sample cools.
 const KIT_CORE := 0.62          # the drive core billboard on a kit body (body units; the nozzle exit radius is about 0.17)
+const ROCKET_SMOKE_LIFE := 0.30  # a short cold second layer, independent of the luminous kit wake
 const KIT_TRAIL_LIFE := 0.38    # seconds a trail sample lives (a short wake: longer read as ruler lines at rocket speed)
 const KIT_TRAIL_PTS := 28
 static var _kit_trail_code := ""
@@ -1459,7 +1557,7 @@ static func _kit_trail_push(fx, p: Dictionary) -> void:
 		return
 	var t: Dictionary = p["trail"]
 	var hist: Array = t["hist"]
-	var at: Vector3 = (node as Node3D).global_transform * Vector3(-1.3, 0, 0)
+	var at: Vector3 = (node as Node3D).global_transform * Vector3(float(node.get_meta("wake_nozzle", -1.3)), 0, 0)
 	if hist.is_empty() or (hist[0][0] as Vector3).distance_to(at) > 0.02 * fx.unit:
 		hist.push_front([at, fx.now])
 		t["dirty"] = true
@@ -1537,25 +1635,29 @@ static func _pd_fire(fx, p: Dictionary) -> void:
 		var aim: Vector3 = pp + fx.rdir() * (0.5 if j < 3 else 0.05) * k
 		var ft := maxf(src.distance_to(aim) / (260.0 * fx.unit), 0.05)
 		var tb := float(p["dead_at"]) - ft - (3 - j) * 0.07
-		fx.stk(src, tb, ft, PD_TRACER, 6.0, 5.0 * k, 0.12 * k, 4, (aim - src) / ft, 0.0, 0.0, 1.6, 18.0)
+		fx.stk(src, tb, ft, PD_TRACER, 7.0, 5.0 * k, 0.22 * k, BOLT_ENERGY, (aim - src) / ft, 0.0, 0.0, 3.0, 18.0)
 
 
 static func _shot_down(fx, p: Dictionary) -> void:
 	var pp := _down_point(p)
+	fx.torpedo_shot_down.emit(pp)
 	var now: float = fx.now
 	var k: float = p["k"]
 	var d: Vector3 = ((p["c"] as Vector3) - (p["a"] as Vector3)).normalized()
+	_burst(fx, pp, -d, now, 0.9 * k, "flash", 0.10, PD_TRACER, 4.2, 11.0)
+	fx.ring(pp, -d if d.length_squared() > 0.01 else Vector3.UP, now, 0.23, PD_TRACER, 0.8, 0.4 * k, 3.6 * k, 3, 0.0, 0.0, 22.0)
 	# cold sparks where the round is holed: white-blue, not fire
 	_impact_sparks(fx, pp, -d, now, k * 0.7, PD_TRACER, 5)
 	for j in 5:
 		var off: Vector3 = fx.rdir() * (0.9 + fx.rng.randf() * 0.9) * k
 		var tj := now + j * 0.045
-		_burst(fx, pp + off, Vector3.UP, tj, 0.35 * k, "flash", 0.06, Color(1.0, 0.85, 0.6), 2.0, 4.0)
+		_burst(fx, pp + off, Vector3.UP, tj, 0.35 * k, "flash", 0.06, PD_TRACER, 2.0, 4.0)
 		_burst(fx, pp + off, Vector3.UP, tj + 0.02, 1.1 * k, "cool", 0.9, Color(0.16, 0.15, 0.14), 0.5, 0.0, Vector3.ZERO, 0.6)
 	# the round goes dead. Drive out, it tumbles on along its path, slowing, trailing grey smoke
 	var node = p["mesh"]
 	if is_instance_valid(node) and (node as Node3D).has_meta("motor"):
 		((node as Node3D).get_meta("motor") as ShaderMaterial).set_shader_parameter("throttle", 0.0)
+		_ordnance_layers(node, false)
 	var e := _ease(clampf((now - float(p["t0"])) / maxf(float(p["t1"]) - float(p["t0"]), 0.001), 0.0, 1.0))
 	var vd: Vector3 = ((p["b"] as Vector3) - (p["a"] as Vector3)).lerp((p["c"] as Vector3) - (p["b"] as Vector3), e)
 	p["down_v"] = vd.normalized() * minf(vd.length(), 40.0 * k * fx.unit) * 0.35 + Vector3(0, -0.8 * k * fx.unit, 0)
@@ -1608,13 +1710,12 @@ static func _ease(u: float) -> float:
 
 
 # Flak: proximity-fused shells bursting around the target; returns the last burst time.
-static func _flak(fx, lk: String, from: Vector3, dir: Vector3, dist: float, to: Vector3, tf: float, col: Color, ka: float, kt: float, i: int, tg: Dictionary, rhythm: RandomNumberGenerator = null, spread := 1.0) -> float:
+static func _flak(fx, lk: String, from: Vector3, dir: Vector3, to: Vector3, tf: float, col: Color, ka: float, kt: float, rhythm: RandomNumberGenerator, spread: float, src) -> float:
 	var spd = 220.0 * fx.unit
 	var last = tf
 	var nb := 2 if lk == "gsentry" else 3 if lk == "flak" else 4
-	if rhythm == null:
-		rhythm = _volley_rng(fx)
 	var burst := _volley_pattern(rhythm, nb)
+	var muzzle_profile: int = {"mflak": MUZZLE_CRYSTAL, "spores": MUZZLE_BIO, "flak": MUZZLE_BALLISTIC}.get(lk, MUZZLE_ENERGY)
 	for b in nb:
 		var pulse: Dictionary = burst[b]
 		var bk: float = ka * float(pulse["size"])
@@ -1624,26 +1725,23 @@ static func _flak(fx, lk: String, from: Vector3, dir: Vector3, dist: float, to: 
 		var off = fx.rdir() * (2.0 + fx.rng.randf() * 3.0) * kt * spread * fan
 		var bp = to + off - dir * (1.0 + fx.rng.randf() * 2.0) * kt
 		var ft = from.distance_to(bp) / spd
+		_muzzle(fx, from, dir, tb, col, bk, 12.0 * float(pulse["size"]), muzzle_profile, src)
 		match lk:
 			"pflak":
-				fx.stk(from, tb, ft, col.lerp(Color.WHITE, 0.4), 9.0 * pk, 3.5 * bk, 0.32 * bk, 4, (bp - from).normalized() * spd, 0.0, 0.0, 3.2 * float(pulse["size"]), 18.0 * float(pulse["size"]))
+				fx.stk(from, tb, ft, col, 9.0 * pk, 3.5 * bk, 0.32 * bk, BOLT_ENERGY, (bp - from).normalized() * spd, 0.0, 0.0, 3.2 * float(pulse["size"]), 18.0 * float(pulse["size"]))
 			"gflak":
 				_gauss_wake(fx, from, bp, tb, col * pk, bk, 0.02)
 				ft = 0.02
 			"gsentry":
 				ft = 0.055
-				fx.stk(from, tb, ft, col, 7.0 * pk, 7.0 * bk, 0.18 * bk, 4, (bp - from) / ft, 0.0, 0.0, 2.0, 32.0)
+				fx.stk(from, tb, ft, col, 7.0 * pk, 7.0 * bk, 0.18 * bk, BOLT_ENERGY, (bp - from) / ft, 0.0, 0.0, 2.0, 32.0)
 			"spores":
 				ft *= 2.2
-				fx.spr(from, tb, ft, col, 1.4 * pk, 0.7 * bk, 0.7 * bk, 15, (bp - from) / ft)
+				_sprite_bolt(fx, from, tb, ft, col, 1.8 * pk, 0.85 * bk, BOLT_BIO, (bp - from) / ft, 11.0)
 			"mflak":
-				fx.spr(from, tb, 0.15, col, 3.2 * pk, 0.75 * bk, 0.40 * bk,
-					16, Vector3.ZERO, 0.0, 0.0, 0.0, 14.0)
-				fx.light(from + dir * bk, tb, 0.12, 4.0, col, 1)
-				fx.stk(from, tb, ft, col, 8.0 * pk, 4.5 * bk, 0.24 * bk, 4, (bp - from) / ft, 0.0, 0.0, 2.4, 22.0)
+				fx.stk(from, tb, ft, col, 8.0 * pk, 4.5 * bk, 0.24 * bk, BOLT_CRYSTAL, (bp - from) / ft, 0.0, 0.0, 2.4, 22.0)
 			_:
-				_burst(fx, from + dir * 0.4 * ka, dir, tb, 1.8 * bk, "flash", 0.14, col, 3.4 * pk, 12.0 * float(pulse["size"]))
-				fx.stk(from, tb, ft, col.lerp(Color.WHITE, 0.18), 8.0 * pk, 1.5 * bk, 0.55 * bk, 0, (bp - from) / ft, 0.0, 0.0, 4.0, 9.0)
+				fx.stk(from, tb, ft, col, 8.0 * pk, 1.5 * bk, 0.55 * bk, BOLT_SHELL, (bp - from) / ft, 0.0, 0.0, 4.0, 9.0)
 		var t_b = tb + ft
 		last = maxf(last, t_b)
 		if lk == "mflak" or lk == "gsentry":
@@ -1711,12 +1809,12 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 			match lk:
 				"bombs":
 					if s == 0:
-						fx.spr(ps, tsh, (aim - ps).length() / 50.0, Color(0.15, 0.14, 0.13), 1.0, 0.5, 0.5, 23, dd * 50.0)
+						_sprite_bolt(fx, ps, tsh, (aim - ps).length() / 50.0, col, 1.7, 0.65, BOLT_BOMB, dd * 50.0, 9.0)
 				"sporeb":
 					if s == 0:
-						fx.spr(ps, tsh, (aim - ps).length() / 45.0, col, 1.4, 0.7, 0.7, 15, dd * 45.0)
+						_sprite_bolt(fx, ps, tsh, (aim - ps).length() / 45.0, col, 1.8, 0.7, BOLT_BIO, dd * 45.0, 10.0)
 				_:
-					fx.stk(ps, tsh, (aim - ps).length() / 260.0, col.lerp(Color.WHITE, 0.3), 10.0 * float(pulse["power"]), 3.5 * ka, 0.35 * ka * float(pulse["size"]), 0, dd * 260.0)
+					fx.stk(ps, tsh, (aim - ps).length() / 260.0, col, 8.0 * float(pulse["power"]), 3.5 * ka, 0.35 * ka * float(pulse["size"]), BOLT_SHELL, dd * 260.0)
 	return timp + (0.3 if lk == "bombs" else 0.1)
 
 
@@ -2225,7 +2323,9 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var ld: Vector3 = (Tg.xf().basis.inverse() * dir).normalized()
 		var lp0: Vector3 = tg["lp"]
 		var ln0: Vector3 = tg["ln"]
-		var wound_look: String = tg.get("mark_look", {"nlance": "lance", "plasma_cannon": "plasma", "gsentry": "gflak", "junk": "auto"}.get(lk, lk))
+		# Send the null lance's own look in both modes. marks_for keeps R416's three cuts with V2 on
+		# and makes Build F's single sealed trench with V2 off. Explicit mark overrides still win.
+		var wound_look: String = tg.get("mark_look", {"plasma_cannon": "plasma", "gsentry": "gflak", "junk": "auto"}.get(lk, lk))
 		fx.later(T, func l_mark() -> void: Tg.add_mark(fx, wound_look, w, lp0, ln0, ld))
 	var matter_k: float = k * sqrt(float(tg.get("gk", 1.0)))
 	if beam:
@@ -2434,10 +2534,11 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 	var steps := maxi(2,int(ceil(dur/0.09)))
 	var px := ladder_px(lk, w, tg)
 	var ion := lk == "ion"
+	var null_lance := lk == "nlance"
 	var spectral := lk in ["ion", "nlance", "doom", "needle", "pulsar"]
 	var response := _impact_response(Tg)
-	var contact := _impact_color(response, Tg, col)
-	var flash := _impact_color(response, Tg, col if spectral else col.lerp(Color(1.0, 0.72, 0.38), 0.55))
+	var contact := col if null_lance else _impact_color(response, Tg, col)
+	var flash := col if null_lance else _impact_color(response, Tg, col if spectral else col.lerp(Color(1.0, 0.72, 0.38), 0.55))
 	var molten := _impact_color(response, Tg, col.lerp(Color.WHITE, 0.22) if spectral else col.lerp(Color(0.97, 0.66, 0.30), 0.6))
 	# the crawl: along the plate, the way the beam was sweeping (its own direction laid onto the plate)
 	var run: Vector3 = dir - n * dir.dot(n)
@@ -2461,11 +2562,18 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 				nj = Tg.dir_world(hit["n"])
 		last = pj
 		if j % 2 == 0:
-			_impact_flash(fx, Tg, pj, nj, at, k, 4.0 * k, 0.16, flash, px * BURST_PX_K, response, 0.3 * k, 4.2)
+			if null_lance and not response.get("hot_plate", false):
+				# A clean, budgeted flare. Do not borrow the struck material's green or warm tint.
+				fx.spr(pj + nj * 0.3 * k, at, 0.16, flash, 4.2, 2.0 * k, 2.0 * k, 13,
+					Vector3.ZERO, 0.0, 0.0, 0.0, px * BURST_PX_K)
+			else:
+				_impact_flash(fx, Tg, pj, nj, at, k, 4.0 * k, 0.16, flash, px * BURST_PX_K, response, 0.3 * k, 4.2)
 			_note(fx, "flash", "lance", Vector3.ZERO, nj, 0.16, px)
 		fx.spr(pj + nj * 0.2 * k, at, 0.18, contact, 3.0, 1.2 * k, 1.6 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.45)
-		_heat_spot(fx, pj + nj * 0.1 * k, at, k, 0.55, "lance", 5.0, 1.5, Tg)
-		if not ion and response.fire_body:
+		# The null trench carries its own violet heat, with no orange plate spot or molten metal.
+		if not null_lance:
+			_heat_spot(fx, pj + nj * 0.1 * k, at, k, 0.55, "lance", 5.0, 1.5, Tg)
+		if not ion and not null_lance and response.fire_body:
 			# molten metal sprays off the plate: drips with a short trail, and sparks
 			for s in _amount(fx, 5):
 				var d := _outward(nj, fx.rcone((nj + run * 0.6).normalized(), 0.55), 0.2)
@@ -2475,7 +2583,7 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 				_note(fx, "spark", "lance", v, nj, life)
 		elif ion and j % 2 == 0:
 			fx.rib(pj, _outward(nj, fx.rdir(), 0.3), 1.8 * k, at, 0.09, molten, 1.2, 0.12 * k, 0.04 * k, 6)
-	if not ion:
+	if not ion and not null_lance:
 		_impact_embers(fx, p, n, T + dur * 0.3, k, 6, "lance", response, Tg, col * 0.28)
 		_throw_debris(fx, last, n, (n + run * 0.5).normalized(), T + dur * 0.6, k, 2, 5.0, 0.12, 1.0, "lance", Tg.faction if Tg != null else "metal", false, Tg)
 	if ion:
@@ -2483,8 +2591,9 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 		_ion_crawl(fx, Tg, p, n, T, contact, k)
 	# the tail when the beam lifts: the contact glow fades over a third of a second
 	fx.spr(last + n * 0.2 * k, T + dur, 0.33, contact, 2.6, 1.6 * k, 1.0 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.4)
-	_impact_gas(fx, p + n * 0.3 * k, n, T + 0.2, k, molten.lerp(Color(0.38, 0.37, 0.36), 0.75),
-		3, 2.2, "lance", 0.28, response, (n + run * 0.7).normalized())
+	if not null_lance:
+		_impact_gas(fx, p + n * 0.3 * k, n, T + 0.2, k, molten.lerp(Color(0.38, 0.37, 0.36), 0.75),
+			3, 2.2, "lance", 0.28, response, (n + run * 0.7).normalized())
 	if lk == "doom":
 		for j in 3: fx.rib(p,fx.rcone(n,0.8),2.5*k,T+j*0.12,0.1,contact,1.0,0.15*k,0.05*k,6)
 	# Doom lights only the struck plating. The existing mark cools into a scar.
@@ -2742,8 +2851,8 @@ const TURRET_LIGHT_KICK := 0.14   # a turreted gun outside SHOOTER_RECOIL: its b
 
 static func _miss_fade(fx, lk: String, Tg, tg: Dictionary, from: Vector3, fire_at: float, T: float, col: Color, dir: Vector3, k: float) -> float:
 	var exit: Vector3 = tg["p"]
-	if family_of(lk) == "lance" or lk == "tendril":
-		if lk not in ["needle", "tendril"]:
+	if family_of(lk) == "lance":
+		if lk != "needle":
 			fx.spr(exit, T, 0.4, col, 2.0, 2.0 * k, 3.0 * k, 18)
 		return T
 	if lk == "ram":
@@ -2756,7 +2865,8 @@ static func _miss_fade(fx, lk: String, Tg, tg: Dictionary, from: Vector3, fire_a
 		if Tg != null and Tg.shielded:
 			fx.later(pass_at, func l_graze() -> void: _shield_graze(fx, Tg, from, dir, fx.now, k))
 	# Gauss has its own cooling wake. Guided rounds and craft leave persistent exhaust, and flak bursts in the air.
-	if lk in ["gauss", "torp", "star", "rockets", "guns", "bombs", "sporeb"] or family_of(lk) == "flak":
+	# The Acid Thorn draws its own built body flying on past (fx_acid_thorn.gd), so no streak over it (Artoo on PR 1904).
+	if lk in ["gauss", "torp", "star", "rockets", "guns", "bombs", "sporeb", "tendril"] or family_of(lk) == "flak":
 		return T
 	var speed := from.distance_to(exit) / flight
 	var life := clampf(14.0 * k / maxf(speed, 1.0), 0.08, 0.18)

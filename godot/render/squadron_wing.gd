@@ -101,7 +101,8 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 		ribbon.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		ribbon.extra_cull_margin = 20.0
 		add_child(ribbon)
-		ribbon.global_transform = Transform3D.IDENTITY
+		if ribbon.is_inside_tree():
+			ribbon.global_transform = Transform3D.IDENTITY
 		trails.append({"node": ribbon, "mat": mat, "hist": []})
 	stage_us["wing_copies"] = Time.get_ticks_usec() - t_copies
 	fit_formation()
@@ -427,7 +428,7 @@ func step(dt: float) -> void:
 			n.transform = Transform3D(facing.scaled(Vector3.ONE * size), pos)
 		var tr: Dictionary = trails[i]
 		var hist: Array = tr.hist
-		var stern := n.to_global(_stern)
+		var stern := n.to_global(_stern) if n.is_inside_tree() else Vector3.ZERO
 		var changed := false
 		if not hist.is_empty() and stern.distance_to(hist[0][0]) > length * 8.0:
 			hist.clear()

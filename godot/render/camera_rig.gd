@@ -34,12 +34,19 @@ var shake_offset := Vector2.ZERO
 # issue 271 (E1 LEDGER): pixels to move the board's centre to the right of the screen's middle, so the point the camera
 # looks at sits in the middle of the part the orders sheet leaves clear (hud.gd clear_shift). 0 keeps it centred.
 var screen_shift := 0.0
+const CUT_RETURN_S := 0.72
+var _cut_return := Vector3.ZERO
+var _cut_return_target := Vector3.ZERO
+var _cut_return_elapsed := CUT_RETURN_S
 
 var _close_dof := false
 var _dof_room := 0.0
 const DOF_AMOUNT := 0.075
 const DOF_ENTER_S := 0.55
 const DOF_CLOSE_LIMIT := 105.0
+# Issue 2029 item 6 (Neon review): a pointer ray hitting the board plane farther out than this many times the bounds is
+# treated as sky for the zoom-to-pointer anchor.
+const HIT_MARGIN := 1.5
 
 
 # Each camera owns its attributes, so a close-up cannot turn on blur in another viewport.
@@ -122,11 +129,91 @@ func reset_view() -> void:
 
 
 func snap() -> void:
+	_cut_return_elapsed = CUT_RETURN_S
 	_ca = a
 	_cb = b
 	_cr = r
 	_ct = t
 	_apply()
+
+
+func cut_pose() -> Dictionary:
+	return {"a": a, "b": b, "r": r, "t": t}
+
+
+# Low shoulder for a battery volley. A chase looks nearly along the shot from behind the firing ship, but
+# keeps a shoulder offset so the attacker cannot hide the target. Only the target has to clear the frame on impact.
+func shot_cut(kind: String, source: Vector3, target: Vector3, source_len: float, target_len: float, calm: bool) -> Dictionary:
+	var axis := target - source
+	var dist := Vector2(axis.x, axis.z).length()
+	if dist < 0.01 or kind in ["kill", "nova"]:
+		return impact_cut(target, target_len, target_len >= 20.0, [], calm)
+	var line := atan2(-axis.z, axis.x)
+	var chase := kind in ["lance", "torp"]
+	var shoulder := deg_to_rad(32.0 if chase else 62.0)
+	var left := angle_difference(_ca, line + PI - shoulder)
+	var right := angle_difference(_ca, line + PI + shoulder)
+	var turn := left if absf(left) <= absf(right) else right
+	var azimuth := _ca if calm else _ca + turn
+	var beta := _cb if calm else (1.20 if chase else 1.29)
+	var across := absf(sin(azimuth - line))
+	var along := absf(cos(azimuth - line))
+	var aspect := get_viewport().get_visible_rect().size.aspect()
+	var span := 2.0 * tan(deg_to_rad(fov) * 0.5)
+	# Allow for both the projected width and perspective (the foreground ship is closer than the focal point).
+	var width := (dist * across + (source_len + target_len) * 0.52) / (span * maxf(aspect, 1.0) * 0.78)
+	var height := (dist * along * cos(beta) + maxf(source_len, target_len) * 0.55 + absf(axis.y)) / (span * 0.72)
+	var radius := maxf(width, height) + dist * along * 0.50
+	return {"a": azimuth, "b": beta, "r": maxf(min_r, radius),
+		"t": source.lerp(target, 0.57 if chase else 0.48)}
+
+
+const IMPACT_BETA := 1.12
+
+
+func impact_cut(target: Vector3, length: float, capital: bool, blockers: Array, calm: bool, yaw := 0.0) -> Dictionary:
+	var span := 2.0 * tan(deg_to_rad(fov) * 0.5)
+	var radius := clampf(maxf(length, 6.0) / ((1.0 if capital else 0.85) * span), min_r, 200.0)
+	var best := _ca
+	var beta := _cb if calm else IMPACT_BETA
+	var score := INF
+	if not calm:
+		for quarter in [PI / 4.0, 3.0 * PI / 4.0, -PI / 4.0, -3.0 * PI / 4.0]:
+			var turn := angle_difference(_ca, yaw + float(quarter))
+			var azimuth := _ca + turn
+			var eye := target + Vector3(cos(azimuth) * sin(beta), cos(beta), -sin(azimuth) * sin(beta)) * radius
+			var seg := target - eye
+			var cost := absf(turn)
+			for blocker in blockers:
+				var p: Vector3 = blocker[0]
+				var k := clampf((p - eye).dot(seg) / seg.length_squared(), 0.0, 1.0)
+				if k < 0.92 and (eye + seg * k).distance_to(p) < float(blocker[1]) * 0.6 + length * 0.15:
+					cost += 10.0
+			if cost < score:
+				score = cost
+				best = azimuth
+	return {"a": best, "b": beta, "r": radius, "t": target}
+
+
+func enter_cut(pose: Dictionary, hold := false) -> void:
+	_cut_return_elapsed = CUT_RETURN_S
+	_set_cut_pose(pose)
+	slow_until = _clock + 1.2 if hold else _clock
+
+
+func return_from_cut(pose: Dictionary) -> void:
+	_cut_return = Vector3(_ca, _cb, _cr)
+	_cut_return_target = _ct
+	_cut_return_elapsed = 0.0
+	_set_cut_pose(pose)
+	slow_until = _clock
+
+
+func _set_cut_pose(pose: Dictionary) -> void:
+	a = pose["a"]
+	b = pose["b"]
+	r = pose["r"]
+	t = pose["t"]
 
 
 func focus(p: Vector3, rr := -1.0) -> void:
@@ -173,7 +260,16 @@ func toggle_top() -> void:
 		topdown = true
 
 
+func _cancel_cut_return() -> void:
+	if _cut_return_elapsed >= CUT_RETURN_S:
+		return
+	_cut_return_elapsed = CUT_RETURN_S
+	# Keep the board's heading but unwrap it against what's on screen, so normal easing cannot take the long way round.
+	a = _ca + angle_difference(_ca, a)
+
+
 func pan_by(dx: float, dz: float) -> void:
+	_cancel_cut_return()
 	var s := r / 340.0
 	# screen-up on the board, given the camera's azimuth (mirrored z)
 	var fwd := Vector3(-cos(a), 0, sin(a))
@@ -184,9 +280,52 @@ func pan_by(dx: float, dz: float) -> void:
 
 
 func orbit(dx: float, dy: float) -> void:
+	_cancel_cut_return()
 	a -= dx * 0.0055
 	b = clampf(b - dy * 0.0045, 0.05, 1.36)
 	topdown = false
+
+
+# Issue 2029 item 6: a wheel step zooms about the board point under the pointer, not about the screen's middle. The factor,
+# the limits (min_r to 900) and the easing are today's; only the orbit target t moves, by the amount that puts the point
+# under the pointer (on the plane through the target) back under it at the new distance. Over empty sky, where the pointer
+# ray never reaches that plane, it is the plain zoom about the target.
+func zoom_at(screen_pos: Vector2, factor: float) -> void:
+	_cancel_cut_return()
+	var new_r := clampf(r * factor, min_r, 900.0)
+	if is_equal_approx(new_r, r):
+		r = new_r
+		return
+	# Both trial poses use the target angles (a, b), so an orbit still easing is not turned into a pan jump: only the
+	# distance and the target differ between the two points.
+	var anchor = _plane_hit(screen_pos, a, b, _cr, _ct, t.y)   # the point the player sees under the pointer now
+	r = new_r
+	if anchor == null:
+		_apply()
+		return
+	var after = _plane_hit(screen_pos, a, b, new_r, t, t.y)   # where the same pixel will land once the zoom settles
+	if after != null:
+		var nt: Vector3 = t + ((anchor as Vector3) - (after as Vector3))
+		t.x = clampf(nt.x, -bounds.x, bounds.x)
+		t.z = clampf(nt.z, -bounds.y, bounds.y)
+	_apply()   # put the live pose back after the trial poses
+
+
+# The board point (on the plane y = plane_y) under a pixel for a camera pose (angles, distance, target), or null when that
+# pixel looks at or above the horizon, or grazes the plane so far out that the hit lies beyond HIT_MARGIN times the board
+# bounds (a wheel click over distant sky then falls back to the plain zoom, not a slam to the map edge). Poses the camera briefly; the caller calls _apply() to restore the live one.
+func _plane_hit(screen_pos: Vector2, pa: float, pb: float, pr: float, pt: Vector3, plane_y: float) -> Variant:
+	if not is_inside_tree():
+		return null
+	_set_pose(pa, pb, pr, pt, Vector3.ZERO)
+	var o := project_ray_origin(screen_pos)
+	var d := project_ray_normal(screen_pos)
+	if d.y > -0.02:
+		return null
+	var hit := o + d * ((plane_y - o.y) / d.y)
+	if absf(hit.x) > bounds.x * HIT_MARGIN or absf(hit.z) > bounds.y * HIT_MARGIN:
+		return null
+	return hit
 
 
 # returns true when the event was a drag the camera used (so a click is not fired at the end of it)
@@ -201,10 +340,10 @@ func handle_input(e: InputEvent) -> bool:
 	if e is InputEventMouseButton:
 		var mb := e as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_WHEEL_UP and mb.pressed:
-			r = clampf(r * exp(-120.0 * 0.0011), min_r, 900.0)
+			zoom_at(mb.position, exp(-120.0 * 0.0011))
 			return true
 		if mb.button_index == MOUSE_BUTTON_WHEEL_DOWN and mb.pressed:
-			r = clampf(r * exp(120.0 * 0.0011), min_r, 900.0)
+			zoom_at(mb.position, exp(120.0 * 0.0011))
 			return true
 		if mb.button_index == MOUSE_BUTTON_RIGHT:
 			_drag = 2
@@ -266,11 +405,21 @@ func _process(dt: float) -> void:
 		if p != Vector2.ZERO:
 			pan_by(p.x * dt * 300.0, p.y * dt * 300.0)
 	r = maxf(r, min_r)
-	var f := 1.0 - exp(-dt * (1.7 if _clock < slow_until else 7.0))
-	_ca += (a - _ca) * f
-	_cb += (b - _cb) * f
-	_cr += (r - _cr) * f
-	_ct += (t - _ct) * f
+	if _cut_return_elapsed < CUT_RETURN_S:
+		_cut_return_elapsed = minf(_cut_return_elapsed + dt, CUT_RETURN_S)
+		var f := smoothstep(0.0, CUT_RETURN_S, _cut_return_elapsed)
+		_ca = _cut_return.x + angle_difference(_cut_return.x, a) * f
+		_cb = lerpf(_cut_return.y, b, f)
+		_cr = lerpf(_cut_return.z, r, f)
+		_ct = _cut_return_target.lerp(t, f)
+		if _cut_return_elapsed >= CUT_RETURN_S:
+			_ca = a   # same rendered angle, with the board's original turn count
+	else:
+		var f := 1.0 - exp(-dt * (1.7 if _clock < slow_until else 7.0))
+		_ca += (a - _ca) * f
+		_cb += (b - _cb) * f
+		_cr += (r - _cr) * f
+		_ct += (t - _ct) * f
 	_apply()
 	_step_close_dof(dt)
 
@@ -286,17 +435,25 @@ func _apply() -> void:
 	var env := get_world_3d().environment if is_inside_tree() else null
 	if env != null and env.volumetric_fog_enabled and OS.get_environment("VS_NEBULA_ROUTE") != "today":
 		env.volumetric_fog_length = maxf(250.0, _cr + 200.0)
+	var p := _set_pose(_ca, _cb, _cr, _ct, shake)
 	var tg := _ct + shake
-	var p := tg + Vector3(cos(_ca) * sin(_cb), cos(_cb), -sin(_ca) * sin(_cb)) * _cr
-	var up := Vector3.UP if _cb > 0.02 else Vector3(-cos(_ca), 0, sin(_ca))
-	look_at_from_position(p, tg, up)
 	if current:
 		RenderingServer.global_shader_parameter_set(EYE_GLOBAL, Vector4(p.x, p.y, p.z, 1.0))
 		RenderingServer.global_shader_parameter_set(FWD_GLOBAL, (tg - p).normalized())
+	if pose_applied.has_connections():
+		pose_applied.emit()
+
+
+# Place the camera for a pose (angles, distance, target) and its screen shift; returns the eye. The one copy of the
+# placement, so _apply and the zoom-to-pointer trial poses cannot drift apart.
+func _set_pose(pa: float, pb: float, pr: float, pt: Vector3, shake_v: Vector3) -> Vector3:
+	var tg := pt + shake_v
+	var p := tg + Vector3(cos(pa) * sin(pb), cos(pb), -sin(pa) * sin(pb)) * pr
+	var up := Vector3.UP if pb > 0.02 else Vector3(-cos(pa), 0, sin(pa))
+	look_at_from_position(p, tg, up)
 	# a sideways shift of the camera in its own plane moves the target right on screen by screen_shift pixels at its
 	# distance (the field of view is vertical, so half the window height spans tan(fov / 2) * distance)
 	var vh := get_viewport().get_visible_rect().size.y if is_inside_tree() else 1080.0
-	h_offset = -screen_shift / maxf(vh * 0.5, 1.0) * _cr * tan(deg_to_rad(fov) * 0.5) + shake_offset.x
+	h_offset = -screen_shift / maxf(vh * 0.5, 1.0) * pr * tan(deg_to_rad(fov) * 0.5) + shake_offset.x
 	v_offset = shake_offset.y
-	if pose_applied.has_connections():
-		pose_applied.emit()
+	return p

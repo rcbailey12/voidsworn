@@ -1,10 +1,138 @@
-Saved manifest before: 0d9420f884f9ead96d7da348c273a0b1398db9689d89d182a58a694adf5be82c
-Saved manifest after: 16675d25392c1d73e07c43ffa8297d2bb13a1d50151f3521f7e160916daa2129
+Saved manifest before: 0442f6d8eb2da69b99a9a1ed060ca72727aec1d62dad3b1e20f2961122e928bf
+Saved manifest after: 5ff4444344ae9cedaebe963ed5338f9f5b3041bdd6fb71806663a67f17337e45
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t_ecl_iterationswap
-  turn 0, round 1, after tick player; unit x05 (player d_harvester)
-  state.units[0].q: 2 -> 1
-  later changed records: 49; total records: 49 -> 50
-FAIL: saved Godot results; 354 battles checked, 1 changed, 0 other files changed, 1 failures; 27.201 s
+FAIL battle s9
+  turn 136, round 4, after tick enemy; unit none (battle state)
+  state.b.combat_events[19].is_killing_blow: true -> false
+  later changed records: 202; total records: 339 -> 339
+FAIL battle s15
+  turn 63, round 3, after tick enemy; unit none (battle state)
+  state.b.combat_events[19].is_killing_blow: true -> false
+  later changed records: 109; total records: 173 -> 173
+FAIL battle s19
+  turn 66, round 3, after tick enemy; unit none (battle state)
+  state.b.combat_events[13].is_killing_blow: true -> false
+  later changed records: 112; total records: 179 -> 179
+FAIL battle s28
+  turn 124, round 4, after tick player; unit none (battle state)
+  state.b.combat_events[42].is_killing_blow: true -> false
+  later changed records: 216; total records: 341 -> 341
+FAIL battle s39
+  turn 123, round 3, after tick enemy; unit none (battle state)
+  state.b.combat_events[16].is_killing_blow: true -> false
+  later changed records: 242; total records: 366 -> 366
+FAIL battle s44
+  turn 99, round 5, after tick enemy; unit none (battle state)
+  state.b.combat_events[58].is_killing_blow: true -> false
+  later changed records: 23; total records: 123 -> 123
+FAIL battle t_recordedangle
+  turn 44, round 3, after tick enemy; unit none (battle state)
+  state.b.combat_events[5].is_killing_blow: true -> false
+  later changed records: 9; total records: 54 -> 54
+FAIL battle t_flawforever
+  turn 41, round 3, after tick enemy; unit none (battle state)
+  state.b.combat_events[3].is_killing_blow: true -> false
+  later changed records: 8; total records: 50 -> 50
+FAIL battle t_refraction
+  turn 56, round 5, after tick enemy; unit none (battle state)
+  state.b.combat_events[10].is_killing_blow: true -> false
+  later changed records: 26; total records: 83 -> 83
+FAIL battle t_mirrorturns
+  turn 43, round 4, after tick enemy; unit none (battle state)
+  state.b.combat_events[12].is_killing_blow: true -> false
+  later changed records: 13; total records: 57 -> 57
+FAIL battle t_falsehulls
+  turn 63, round 5, after tick enemy; unit none (battle state)
+  state.b.combat_events[24].is_killing_blow: true -> false
+  later changed records: 8; total records: 72 -> 72
+FAIL battle t_rechargelit
+  turn 32, round 3, after tick enemy; unit none (battle state)
+  state.b.combat_events[8].is_killing_blow: true -> false
+  later changed records: 6; total records: 39 -> 39
+FAIL battle t_wardglass
+  turn 57, round 5, after tick enemy; unit none (battle state)
+  state.b.combat_events[22].is_killing_blow: true -> false
+  later changed records: 13; total records: 71 -> 71
+FAIL battle t_castcorrected
+  turn 30, round 3, after tick enemy; unit none (battle state)
+  state.b.combat_events[5].is_killing_blow: true -> false
+  later changed records: 2; total records: 33 -> 33
+FAIL battle t_firstlight
+  turn 58, round 5, after tick enemy; unit none (battle state)
+  state.b.combat_events[24].is_killing_blow: true -> false
+  later changed records: 7; total records: 66 -> 66
+FAIL battle t_ecl_tenthframe
+  turn 112, round 5, after tick player; unit none (battle state)
+  state.b.combat_events[64].is_killing_blow: true -> false
+  later changed records: 3; total records: 116 -> 116
+FAIL battle t_ecl_copiedbehind
+  turn 64, round 4, after tick player; unit none (battle state)
+  state.b.combat_events[10].is_killing_blow: true -> false
+  later changed records: 59; total records: 124 -> 124
+FAIL battle t_ecl_iterationkill
+  turn 83, round 5, after tick player; unit none (battle state)
+  state.b.combat_events[21].is_killing_blow: true -> false
+  later changed records: 11; total records: 95 -> 95
+FAIL battle t_ecl_twicerestored
+  turn 104, round 5, after tick player; unit none (battle state)
+  state.b.combat_events[43].is_killing_blow: true -> false
+  later changed records: 5; total records: 110 -> 110
+FAIL battle t_ecl_tenthousand
+  turn 96, round 4, after tick player; unit none (battle state)
+  state.b.combat_events[29].is_killing_blow: true -> false
+  later changed records: 72; total records: 169 -> 169
+FAIL battle t7a_splitthree
+  turn 56, round 5, after tick enemy; unit none (battle state)
+  state.b.combat_events[24].is_killing_blow: true -> false
+  later changed records: 7; total records: 64 -> 64
+FAIL battle t7a_fleetelsewhere
+  turn 64, round 5, after tick enemy; unit none (battle state)
+  state.b.combat_events[26].is_killing_blow: true -> false
+  later changed records: 7; total records: 72 -> 72
+FAIL battle t7a_weakside
+  turn 31, round 3, after tick enemy; unit none (battle state)
+  state.b.combat_events[7].is_killing_blow: true -> false
+  later changed records: 7; total records: 39 -> 39
+FAIL battle t7b_ecl_formation_b
+  turn 69, round 4, after tick player; unit none (battle state)
+  state.b.combat_events[20].is_killing_blow: true -> false
+  later changed records: 12; total records: 82 -> 82
+FAIL battle t7b_ecl_triage
+  turn 90, round 5, after tick player; unit none (battle state)
+  state.b.combat_events[31].is_killing_blow: true -> false
+  later changed records: 28; total records: 119 -> 119
+FAIL battle r1653_coolant
+  turn 3, round 1, after ability x04; unit none (battle state)
+  state.b.combat_events: <missing> -> [{"attacker_class":"","attacker_name":"","attacker_ship_id":"","attacker_side":"","damage_applied":4,"hazard_name":"Cracked Coolant Manifold","hull_applied":4,"is_killing_blow":...
+  later changed records: 167; total records: 171 -> 171
+FAIL battle s1649_fold
+  turn 63, round 3, after tick enemy; unit none (battle state)
+  state.b.combat_events[12].is_killing_blow: true -> false
+  later changed records: 45; total records: 109 -> 109
+FAIL battle t_ecl_tenthousand_m3
+  turn 96, round 4, after tick player; unit none (battle state)
+  state.b.combat_events[33].is_killing_blow: true -> false
+  later changed records: 70; total records: 167 -> 167
+FAIL battle t_wardglass_m3
+  turn 57, round 5, after tick enemy; unit none (battle state)
+  state.b.combat_events[22].is_killing_blow: true -> false
+  later changed records: 13; total records: 71 -> 71
+FAIL battle t_ecl_tenthframe_m3
+  turn 112, round 5, after tick player; unit none (battle state)
+  state.b.combat_events[64].is_killing_blow: true -> false
+  later changed records: 3; total records: 116 -> 116
+FAIL battle t7a_fleetelsewhere_m3
+  turn 64, round 5, after tick enemy; unit none (battle state)
+  state.b.combat_events[24].is_killing_blow: true -> false
+  later changed records: 7; total records: 72 -> 72
+FAIL battle t_flawforever_m3
+  turn 41, round 3, after tick enemy; unit none (battle state)
+  state.b.combat_events[3].is_killing_blow: true -> false
+  later changed records: 8; total records: 50 -> 50
+FAIL battle r1651_nekhet
+  turn 55, round 4, after tick player; unit none (battle state)
+  state.b.combat_events[19].is_killing_blow: true -> false
+  later changed records: 8; total records: 64 -> 64
+FAIL: saved Godot results; 379 battles checked, 33 changed, 0 other files changed, 33 failures; 40.424 s

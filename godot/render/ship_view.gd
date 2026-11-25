@@ -13,6 +13,7 @@ const WING := preload("res://render/squadron_wing.gd")
 const PG := preload("res://render/placeholder_guard.gd")
 const THRUST := preload("res://fx/thrust_profile.gd")   # issue 1582: the six faction movement personalities
 const LINE_STYLE := preload("res://render/line_style.gd")   # issue 1582: the drop-line takes the one line style (R362)
+const STAGE_IN := preload("res://render/stage_in.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 const SHADER_CACHE := preload("res://render/shader_cache.gd")
 var squad_kind := ""
@@ -75,6 +76,7 @@ static func clear_static() -> void:
 	_rt = null
 	_rm = null
 	_rcs_mesh = null
+	_rcs_mats.clear()
 
 
 # Issue 1434 (Artoo on PR 1445): a battle that leaves mid-build (the title backdrop when the player clicks) must not wait
@@ -105,7 +107,7 @@ static func retire_build(paths: Array, insts: Array) -> void:
 
 
 static func _free_inst(e: Dictionary) -> void:
-	var n = e["out"][0]
+	var n = e["out"][0] if e.has("out") else null   # a retired debris cut holds data, not a node
 	if n != null and is_instance_valid(n) and (n as Node).get_parent() == null:
 		(n as Node).free()
 
@@ -129,13 +131,20 @@ static func reap_build() -> void:
 
 # everything retired, now (quit)
 static func drain_build() -> void:
+	var t0 := Time.get_ticks_usec()
+	var loads := _retired_loads.size()
+	var jobs := _retired_insts.size()
 	for p in _retired_loads:
 		ResourceLoader.load_threaded_get(p)
 	_retired_loads.clear()
+	var t1 := Time.get_ticks_usec()
 	for e in _retired_insts:
 		WorkerThreadPool.wait_for_task_completion(int(e["tid"]))
 		_free_inst(e)
 	_retired_insts.clear()
+	if loads + jobs > 0:
+		print("[load] quit joined %d reads in %.1f ms and %d build tasks in %.1f ms" % [
+			loads, (t1 - t0) / 1000.0, jobs, (Time.get_ticks_usec() - t1) / 1000.0])
 	if _reaping:
 		_reaping = false
 		var tree := Engine.get_main_loop() as SceneTree
@@ -168,21 +177,7 @@ const SHADER_KEEP_MAX := 96
 # colours and numbers are uniforms. Godot gives no shader RID for a BaseMaterial3D (LOAD12: get_shader_rid() is a
 # script error), so two materials with the same signature share one shader, and one stand-in keeps it.
 static func shader_sig(bm: BaseMaterial3D) -> String:
-	var p := PackedStringArray([bm.get_class(), str(bm.transparency), str(bm.blend_mode), str(bm.cull_mode),
-		str(bm.depth_draw_mode), str(bm.shading_mode), str(bm.diffuse_mode), str(bm.specular_mode), str(bm.texture_filter),
-		str(bm.billboard_mode), str(bm.detail_blend_mode), str(bm.detail_uv_layer), str(bm.distance_fade_mode),
-		str(bm.alpha_antialiasing_mode), str(bm.vertex_color_use_as_albedo)])
-	var bits := ""
-	for f in BaseMaterial3D.FEATURE_MAX:
-		bits += "1" if bm.get_feature(f) else "0"
-	bits += "|"
-	for f in BaseMaterial3D.FLAG_MAX:
-		bits += "1" if bm.get_flag(f) else "0"
-	bits += "|"
-	for t in BaseMaterial3D.TEXTURE_MAX:
-		bits += "1" if bm.get_texture(t) != null else "0"
-	p.append(bits)
-	return ",".join(p)
+	return STAGE_IN.shader_sig(bm)
 
 
 static func _keep_shaders() -> void:
@@ -641,7 +636,7 @@ func _drop_col(a: float) -> Color:
 	# your ships' line is the footprint's mint, the enemy's the footprint's violet, so the line reads as the marker's;
 	# the colours are line style roles (render/line_style.gd)
 	var base: Color = LINE_STYLE.col("drop_ally" if marker_friend == 1 else "drop_enemy" if marker_friend == 0 else "drop_neutral")
-	return Color(base, base.a * a)
+	return Color(base, base.a * a * _cut_overlay_alpha)
 
 
 # Keep the line on the hull as it moves: the hull's centre now (band, bob, a boarding trim, a climb over a rock) down or
@@ -649,8 +644,14 @@ func _drop_col(a: float) -> Color:
 func _drop_step(dt: float) -> void:
 	if drop == null:
 		return
-	var on := not dead and visible and not wreck
 	drop_hot = move_toward(drop_hot, drop_hot_target, dt * 5.0) if dt > 0.0 else drop_hot_target
+	_draw_drop()
+
+
+func _draw_drop() -> void:
+	if drop == null:
+		return
+	var on := not dead and visible and not wreck and _cut_overlay_alpha > 0.001
 	var top := hull_pivot.transform * hull.position if hull_pivot != null and hull != null else Vector3(0, band_y, 0)
 	top.x = 0.0
 	top.z = 0.0
@@ -745,6 +746,7 @@ func _ring() -> void:
 	ring.mesh = tm
 	var m := StandardMaterial3D.new()
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	m.albedo_color = EMBER
 	m.emission_enabled = true
 	ring.material_override = m
@@ -757,6 +759,8 @@ func _ring() -> void:
 # the footprint under every ship (B1 markers): a mint ring under yours, a broken violet hex under the enemy's
 var marker: MeshInstance3D
 var marker_friend := -1
+var _cut_overlay_alpha := 1.0
+var _ring_col := EMBER
 
 
 func set_marker(friend: bool) -> void:
@@ -795,11 +799,34 @@ func set_marker(friend: bool) -> void:
 	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	m.cull_mode = BaseMaterial3D.CULL_DISABLED
 	# your ring is the HUD's FRIEND mint (glass_shell.gd, R149: moved off green so it never reads as the lime accent)
-	m.albedo_color = Color(0.32, 0.94, 0.77, 0.85) if friend else Color(0.62, 0.22, 1.0, 0.9)
+	_color_marker(m)
 	marker.material_override = m
 	marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	marker.position.y = hull_lift - 0.25
 	add_child(marker)
+
+
+func _color_marker(mat: StandardMaterial3D) -> void:
+	var col := Color(0.32, 0.94, 0.77, 0.85) if marker_friend == 1 else Color(0.62, 0.22, 1.0, 0.9)
+	col.a *= _cut_overlay_alpha
+	mat.albedo_color = col
+
+
+func _color_ring(mat: StandardMaterial3D) -> void:
+	var col := _ring_col
+	col.a *= _cut_overlay_alpha
+	mat.albedo_color = col
+
+
+func set_cut_overlay_alpha(alpha: float) -> void:
+	if _cut_overlay_alpha == alpha:
+		return
+	_cut_overlay_alpha = alpha
+	if ring != null:
+		_color_ring(ring.material_override)
+	if marker != null:
+		_color_marker(marker.material_override)
+	_draw_drop()
 
 
 var wreck := false
@@ -895,7 +922,8 @@ func set_selected(on: bool, col := EMBER) -> void:   # the ship that is up: embe
 	_drop_sel = on
 	drop_hot_target = 1.0 if (_drop_hover or _drop_sel) else 0.0
 	ring.visible = on
-	(ring.material_override as StandardMaterial3D).albedo_color = col
+	_ring_col = col
+	_color_ring(ring.material_override)
 	ring.rotation.y = -rotation.y
 
 
@@ -1989,8 +2017,8 @@ func snap_to(p: Vector3, yaw: float) -> void:
 	rotation.y = yaw
 
 
-# ---------------------------------------------------------------- RCS jets: short cold-gas bursts on the hull
-# (puffs are left in space where they were fired; they do not ride along with the hull)
+# ---------------------------------------------------------------- RCS jets: short directional cone jets on the hull
+# (cone jets stay anchored to their hull nozzle as the ship moves and turns; thrown grit sparks drift in space)
 # Issue 370 (R150, RULEBOOK 6.7): each jet starts on the ship. The spot each one is named by below (a station along the
 # length, a side, from the fitted box) only aims: the attach point service (fx/fx_hull.gd jet) gives the authored hp_rcs
 # nearest it, else the plating a ray finds on that side at that station, else no puff (logged and counted). Before
@@ -2069,6 +2097,7 @@ func jet_point(aim: Vector3, out: Vector3) -> Vector3:
 
 
 static var _rcs_mesh: ArrayMesh = null
+static var _rcs_mats: Dictionary = {}   # int jet_kind -> shared ShaderMaterial
 
 
 # Shared axial ribbon strip (VERTEX.x in 0..1 along jet axis, VERTEX.y in -0.5..0.5 across width) for SH.RCS_JET.
@@ -2095,29 +2124,39 @@ static func _rcs_quad_mesh() -> ArrayMesh:
 	return _rcs_mesh
 
 
+# Shared ShaderMaterial per RCS jet_kind; per-puff parameters go through instance uniforms.
+static func _rcs_jet_mat(kind: int) -> ShaderMaterial:
+	var mat := _rcs_mats.get(kind) as ShaderMaterial
+	if mat != null:
+		return mat
+	mat = ShaderMaterial.new()
+	mat.shader = SHADER_CACHE.for_code(SH.RCS_JET)
+	mat.render_priority = 1
+	mat.set_shader_parameter("jet_kind", float(kind))
+	_rcs_mats[kind] = mat
+	return mat
+
+
 # Issue 2042: shared directional RCS cone-jet builder (hot core, soft wash, quick fade) tinted from faction_looks.json.
 static func build_rcs_jet(fac_id: String, dir: Vector3, length: float, w_root: float, w_tip: float, alpha: float, seed_val: float) -> MeshInstance3D:
 	SH.ensure_globals()
 	var pal: Dictionary = THRUST.palette(fac_id)
 	var core: Color = pal["core"]
 	var wash: Color = pal["wash"]
-	var mat := ShaderMaterial.new()
-	mat.shader = SHADER_CACHE.for_code(SH.RCS_JET)
-	mat.render_priority = 1
+	var kind := int(pal["kind"])
 	var nd := dir.normalized() if dir.length() > 1e-5 else Vector3(-1, 0, 0)
-	mat.set_shader_parameter("jet_dir", nd)
-	mat.set_shader_parameter("jet_len", maxf(length, 0.1))
-	mat.set_shader_parameter("w_root", maxf(w_root, 0.05))
-	mat.set_shader_parameter("w_tip", maxf(w_tip, 0.08))
-	mat.set_shader_parameter("age_u", 0.0)
-	mat.set_shader_parameter("alpha_k", clampf(alpha, 0.0, 2.5))
-	mat.set_shader_parameter("jet_seed", seed_val)
-	mat.set_shader_parameter("jet_kind", float(int(pal["kind"])))
-	mat.set_shader_parameter("core_col", Vector3(core.r, core.g, core.b))
-	mat.set_shader_parameter("wash_col", Vector3(wash.r, wash.g, wash.b))
 	var mi := MeshInstance3D.new()
 	mi.mesh = _rcs_quad_mesh()
-	mi.material_override = mat
+	mi.material_override = _rcs_jet_mat(kind)
+	mi.set_instance_shader_parameter("jet_dir", nd)
+	mi.set_instance_shader_parameter("jet_len", maxf(length, 0.1))
+	mi.set_instance_shader_parameter("w_root", maxf(w_root, 0.05))
+	mi.set_instance_shader_parameter("w_tip", maxf(w_tip, 0.08))
+	mi.set_instance_shader_parameter("age_u", 0.0)
+	mi.set_instance_shader_parameter("alpha_k", clampf(alpha, 0.0, 2.5))
+	mi.set_instance_shader_parameter("jet_seed", seed_val)
+	mi.set_instance_shader_parameter("core_col", Vector3(core.r, core.g, core.b))
+	mi.set_instance_shader_parameter("wash_col", Vector3(wash.r, wash.g, wash.b))
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.extra_cull_margin = 16.0
 	return mi
@@ -2166,7 +2205,7 @@ func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 	var life := base_life * float(tp.get("life", 1.0)) * rough
 	if style == "glint":
 		life = 0.16 * float(tp.get("life", 1.0))
-	var entry := {"n": mi, "mat": mi.material_override, "t": 0.0, "life": life, "style": style,
+	var entry := {"n": mi, "rcs": true, "t": 0.0, "life": life, "style": style,
 		"local_at": at, "local_dir": jet_dir}
 	puffs.append(entry)
 	# the Hullbreakers' overburn throws a little bright grit with each rough blast (sparks owned by issue 2018)
@@ -2248,14 +2287,13 @@ func _puffs_step(dt: float) -> void:
 		pf.t += dt
 		var life: float = maxf(float(pf.get("life", 0.3)), 1e-4)
 		var u := clampf(float(pf.t) / life, 0.0, 1.0)
-		if pf.has("mat"):
-			var mi: Node3D = pf.n
-			var mat := pf["mat"] as ShaderMaterial
-			if is_instance_valid(mi) and mat != null:
-				mat.set_shader_parameter("age_u", u)
+		if pf.get("rcs", false) or pf.has("mat"):
+			var mi := pf.n as GeometryInstance3D
+			if is_instance_valid(mi):
+				mi.set_instance_shader_parameter("age_u", u)
 				if is_inside_tree():
 					mi.global_position = to_global(pf["local_at"] as Vector3)
-					mat.set_shader_parameter("jet_dir", global_transform.basis.orthonormalized() * (pf["local_dir"] as Vector3))
+					mi.set_instance_shader_parameter("jet_dir", global_transform.basis.orthonormalized() * (pf["local_dir"] as Vector3))
 			if float(pf.t) >= life:
 				if is_instance_valid(mi):
 					mi.queue_free()
