@@ -2866,6 +2866,7 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 				var r = applyHit(gh, w, x, S["base"] * gh["fx"]["spread"], qS, _combat_source(shooter, w)); shieldDrained(x, shSp, qS, mS); boonFx(x, "e_spread", "−" + ns(r.hull), -20)
 				if x["hp"] <= 0:
 					x["killCause"] = "big"; killUnit(x, shooter, false, r.combat_event)   # Spread Pattern
+					if jt(x.get("dead")): x["splashKill"] = true   # issue 2095: the wreck card credits only a hull this burst actually killed
 	if real != null and not jt(real.get("dead")) and not jt(res.get("hits")): treeSecondKnife(real)   # Sable T2b: a torpedo that misses reloads one turn sooner than normal
 	if jt(res.hits): fstat(S["fac"], "torpHit")
 	if real != null: real["dealt"] = z0(real.get("dealt")) + z0(gh.get("dealt")) - d0

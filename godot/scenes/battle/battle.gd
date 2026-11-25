@@ -239,6 +239,8 @@ func _ready() -> void:
 	# Reading the process args again there would run its capture a second time on the title viewport.
 	if not showcase:
 		_args()
+	if title_backdrop:
+		stage.max_step = 1   # still spread first draws for any geometry the small warm proxy cannot represent
 	if _sliced():
 		stage.start(self)   # issue 1434 (LOAD22): from the first mesh on, so the effect pools and the board are spread too
 	var t_ready := Time.get_ticks_usec()
@@ -576,6 +578,7 @@ var _build_gen := 0
 
 func stop_build() -> void:
 	_build_gen += 1
+	_drop_staged_ship()
 	stage.stop()
 	if not _vp_saved.is_empty():
 		var vp := get_viewport()
@@ -771,7 +774,9 @@ func _begin(a) -> void:
 		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
 	# PR 1772 (Fable, item 2): station_T2 reads on a worker too when the board has station hexes or a station hole
 	if v0 is Dictionary and _has_station(v0):
-		A4P.prefetch_station()
+		# the big cluster draws station_T2, smaller clusters and holes the outpost (issue 1791)
+		var spots := A4P.station_spots(v0)
+		A4P.prefetch_station(spots.x == 1, spots.y == 1)
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
 		if "passive" in gfx:
@@ -1100,6 +1105,13 @@ var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arri
 # issue 1434: what the load is doing now (bench/load_1434.gd names the phase of the worst frame under the cover)
 var load_phase := ""
 var stage := StageIn.new()   # issue 1434 (LOAD22): holds each new mesh's first draw until the load gives it back
+var _staged_ship: ShipView   # title only: not owned by the tree until its final surface materials are warm
+
+
+func _drop_staged_ship() -> void:
+	if is_instance_valid(_staged_ship):
+		_staged_ship.free()
+	_staged_ship = null
 
 
 # --sliced-load: the windowed path in a headless check (main/test/showcase_quiet_check.gd)
@@ -1370,7 +1382,11 @@ func _make_views_sliced(gen: int) -> bool:
 		var ts := Time.get_ticks_usec()
 		var sv = ShipView.new()
 		sv.name = "ship_" + str(u["id"])
-		add_child(sv)
+		var staged := title_backdrop
+		if staged:
+			_staged_ship = sv   # stop_build and _exit_tree own this off-tree node if the title is left
+		else:
+			add_child(sv)
 		sv.pre_inst = inst
 		sv.setup_begin(u, board.hex_world(u["q"], u["r"]), true)
 		var used := Time.get_ticks_usec() - ts
@@ -1390,9 +1406,19 @@ func _make_views_sliced(gen: int) -> bool:
 		var te := Time.get_ticks_usec()
 		sv.setup_end()
 		sv.set_marker(u["side"] == "player")
+		used += Time.get_ticks_usec() - te
+		if staged:
+			ok = await _ls_yield(gen, true)
+			if not ok:
+				return false
+			ok = await stage.warm_meshes(self, sv.meshes, "title ship " + sv.code, func() -> bool: return gen == _build_gen)
+			if not ok or gen != _build_gen or not is_inside_tree():
+				return false
+			_ls_t = Time.get_ticks_usec()
+			_staged_ship = null
+			add_child(sv)
 		views[u["id"]] = sv
 		disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
-		used += Time.get_ticks_usec() - te
 		_ls["setup"] += used
 		if used > _ls["worst_setup"]:
 			_ls["worst_setup"] = used
@@ -1406,10 +1432,13 @@ func _make_views_sliced(gen: int) -> bool:
 		ok = await _ls_yield(gen)
 		if not ok:
 			return false
-		if gfx != null and "hull_shared" in gfx:
+		if gfx != null and "starboard_z" in gfx:
 			var tg := Time.get_ticks_usec()
-			var ms_list: Array = sv.meshes if not sv.a4 else load("res://fx/fx_ship.gd")._find_meshes(sv)
-			if load("res://fx/fx_hull.gd").prime(sv, ms_list, gfx.hull_shared):
+			# The altitude band moves the hull in its root frame. Set it before keying the BVH,
+			# just as for effect registration, or registration rebuilds the geometry at the new pose.
+			sv.set_band(ALT_BAND.height(u))
+			var ms_list: Array = sv.meshes if not sv.a4 else []
+			if load("res://fx/fx_ship.gd").prime_hull(gfx, sv, str(u["id"]), bool(u["squadron"]), ms_list):
 				var g_us := Time.get_ticks_usec() - tg
 				_ls["geo"] = int(_ls.get("geo", 0)) + g_us
 				if g_us > int(_ls.get("worst_geo", 0)):
@@ -1800,6 +1829,7 @@ static var last_exit_id := 0   # which battle the two above belong to (the bench
 
 func _exit_tree() -> void:
 	var t_exit := Time.get_ticks_usec()
+	_drop_staged_ship()
 	stage.stop()
 	_build_gen += 1   # issue 1518: a build still awaiting stops at its next step (quit or leave mid-load)
 	last_exit_mid_build = not _inst_tasks.is_empty() or _preload.values().has(null)

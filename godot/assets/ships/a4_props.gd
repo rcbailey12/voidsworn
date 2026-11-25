@@ -52,12 +52,41 @@ static var _pending := {}   # not GPU: paths only (path -> true), the loaded sce
 
 # Fable on PR 1772 (7c734f53, item 2): station_T2 is large too, so a battle with station hexes or holes starts reading it
 # (and its debris) on a worker thread as the battle begins; station() collects it.
-static func prefetch_station() -> void:
-	for p in [T2_PATH, T2_DEBRIS_PATH]:
+static func prefetch_station(big := true, small := true) -> void:
+	for p in station_files(big, small):
 		if old_path() or _pending.has(p) or not ResourceLoader.exists(p) or ResourceLoader.has_cached(p):
 			continue
 		if ResourceLoader.load_threaded_request(p) == OK:
 			_pending[p] = true
+
+
+# The installed station files a board with these station spots draws (issue 1791): T2 and its debris for the big cluster,
+# or for a small spot while no outpost is installed; the outpost for small clusters and holes. One list for the battle's
+# prefetch and the board's own terrain wait (Artoo on PR 1998, item 1).
+static func station_files(big: bool, small: bool) -> Array:
+	var out: Array = []
+	if big or (small and not ResourceLoader.exists(OUTPOST_PATH)):
+		out += [T2_PATH, T2_DEBRIS_PATH]
+	if small:
+		out.append(OUTPOST_PATH)
+	return out.filter(func(p: String) -> bool: return ResourceLoader.exists(p))
+
+
+# The big and small station spots of a battle view: station terrain cells (19 or more is the big cluster, a rough split
+# by count that is enough to choose files) and station holes.
+static func station_spots(view: Dictionary) -> Vector2i:
+	var cells := 0
+	var t0 = view.get("terrain", {})
+	if t0 is Dictionary:
+		for k in t0:
+			cells += 1 if str(t0[k]) == "station" else 0
+	var holes := 0
+	var m0 = view.get("map", {})
+	if m0 is Dictionary and m0.get("holes", []) is Array:
+		for h in m0.get("holes", []):
+			holes += 1 if h is Dictionary and str(h.get("kind", "")) == "station" else 0
+	var big := cells >= BIG_FOOTPRINT_CELLS
+	return Vector2i(1 if big else 0, 1 if holes > 0 or (cells > 0 and not big) else 0)
 
 
 static func _scene_at(p: String) -> PackedScene:
@@ -74,6 +103,9 @@ static func prefetch_beacon() -> void:
 
 static func _collect(p: String) -> Resource:
 	_pending.erase(p)
+	# the board's sliced terrain wait may have collected the same file first (issue 1434): it is cached then
+	if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+		return load(p)
 	return ResourceLoader.load_threaded_get(p)   # waits only for what the worker has not read yet
 
 
@@ -85,6 +117,10 @@ static func _collect(p: String) -> Resource:
 # a checkout with no T2 cache.
 const T2_PATH := "res://gen/ships/station_T2.scn"
 const T2_DEBRIS_PATH := "res://gen/ships/station_T2_debris.scn"
+# Issue 1791 (Ryan, Nov 24 2026, "Yes agree on 1"): every cluster under 19 hexes and every station hole draws the outpost,
+# a smaller station from the same kit (tools/blender/kits/hegemony_station/outpost.py), fitted to its hexes; T2 keeps the big
+# cluster at unit scale. Until the outpost is installed, T2 fitted the same way stands in.
+const OUTPOST_PATH := "res://gen/ships/station_outpost.scn"
 const T2_REACH := 60.8   # T2's horizontal reach from its centre at unit scale (bounds 99.2 x 70.2: production_checks.json)
 const BIG_FOOTPRINT_CELLS := 19   # the rules' big station (every hex within 2 of its centre, R314)
 const FIT_ANGLES := 720  # rays from the cluster centre used to measure its footprint
@@ -106,6 +142,7 @@ static func old_path() -> bool:
 	return OS.get_environment("VS_1767_OLD") == "1"
 static var _reach := {}    # not GPU: scene path -> measured horizontal reach at unit scale
 static var _outline := {}  # not GPU: scene path -> PackedVector2Array, its mesh boxes' corners and edge points (x, z)
+static var _floor := {}    # not GPU: scene path -> the lowest point of its mesh boxes at unit scale (y)
 static var _fit_cache := {}  # not GPU: path|cells|hex_r|bearing -> Vector2(best bearing, scale)
 static var _painted_cache := {}  # source material id -> [weakref(source), weakref(painted copy)], owns nothing
 
@@ -136,6 +173,32 @@ static func footprint_rays(cells: Array, hex_r: float) -> PackedFloat32Array:
 				hi = mid
 		out[i] = lo
 	return out
+
+
+# issue 1791 (Ryan, Nov 24: the outpost looked "below the grid and hexes"): the outpost stands with its lowest point a
+# little above the grid, so no hex line crosses it; the big station keeps its approved lift of 3. The height the board
+# lifts a placed outpost by (its scaled floor from "station_floor", plus the clearance).
+const OUTPOST_CLEAR := 1.0
+static func lift_outpost(st: Node3D) -> float:
+	return -float(st.get_meta("station_floor", 0.0)) + OUTPOST_CLEAR
+
+
+# the lowest y of every mesh box of `root` at unit scale, in root's own frame
+static func lowest_point(root: Node3D) -> float:
+	var low := INF
+	for child in root.find_children("*", "MeshInstance3D", true, false):
+		var mi := child as MeshInstance3D
+		if mi.mesh == null or mi.get_parent().name == "station_T2_debris":
+			continue
+		var xf := Transform3D.IDENTITY
+		var p: Node = mi
+		while p != null and p != root:
+			xf = (p as Node3D).transform * xf if p is Node3D else xf
+			p = p.get_parent()
+		var bb := mi.get_aabb()
+		for i in 8:
+			low = minf(low, (xf * bb.get_endpoint(i)).y)
+	return 0.0 if low == INF else low
 
 
 # corners and edge points of every mesh box of `root` at unit scale, projected onto the board (x, z)
@@ -228,18 +291,23 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 		kind = ""
 	var info: Dictionary = STATION_KINDS.get(kind, {})
 	var path := T2_PATH
+	var small := cells.size() < BIG_FOOTPRINT_CELLS if not cells.is_empty() else size < LARGE_STATION_SIZE
 	if info.has("scene") and ResourceLoader.exists(str(info["scene"])):
 		path = str(info["scene"])
+	elif small and ResourceLoader.exists(OUTPOST_PATH):
+		path = OUTPOST_PATH
 	if ResourceLoader.exists(path):
 		var t2 := _scene_at(path).instantiate() as Node3D
 		t2.set_meta("station_T2", true)
 		t2.set_meta("station_kind", kind)
+		t2.set_meta("station_outpost", path == OUTPOST_PATH)
 		if not _reach.has(path):
 			_outline[path] = outline_points(t2)
 			var far := 0.0
 			for q in _outline[path]:
 				far = maxf(far, (q as Vector2).length())
 			_reach[path] = far if far > 0.0 else T2_REACH
+			_floor[path] = lowest_point(t2)
 		var k := 1.0
 		# only the approved big 19-hex station keeps unit scale; any other cluster that names its cells is fitted (a 5 to
 		# 18 hex cluster too: Fable on PR 1772, L2)
@@ -263,9 +331,14 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 				k = clampf(size / LARGE_STATION_SIZE, 0.05, 1.0)
 		t2.scale = Vector3.ONE * k
 		t2.set_meta("station_scale", k)
+		# Ryan, Nov 24 2026 (issue 1791, the OUTPOST_B pictures): "they look like they're below the grid and hexes". The
+		# outpost's origin is its middle deck, so the board lifts it by this (its scaled floor) to stand on the grid.
+		t2.set_meta("station_floor", float(_floor.get(path, 0.0)) * k)
 		t2.set_meta("station_bearing", bearing)
 		# Refs #863. Separate kit/cache leaves PR 977's painted station intact. The field lives in T2's own (scaled) frame,
 		# so the clearance it keeps out of is divided by the same scale.
+		# The outpost gets no drifting debris (issue 1791): T2's field is cut and spread for the big station, and the
+		# outpost's damage is its own modelled breach (outpost.py BREACH). Artoo on PR 1998, item 2: a recorded exception.
 		if with_debris and path == T2_PATH and ResourceLoader.exists(T2_DEBRIS_PATH):
 			var debris := _scene_at(T2_DEBRIS_PATH).instantiate() as Node3D
 			debris.name = "station_T2_debris"

@@ -205,6 +205,20 @@ func build_shield_later(fx) -> void:
 		_build_shield(fx)
 
 
+static func _new_hull(fx, r: Node3D, sid: String, squad: bool):
+	var analysis := HULL.new()
+	analysis.stb_z = float(fx.starboard_z)
+	analysis.code = str(r.get("code")) if r.get("code") != null else sid
+	analysis.formation = squad
+	analysis.cache_geometry = true
+	return analysis
+
+
+static func prime_hull(fx, r: Node3D, sid: String, squad: bool, parts: Array) -> bool:
+	var analysis = _new_hull(fx, r, sid, squad)
+	return analysis.prime(r, parts if not parts.is_empty() else _find_meshes(r))
+
+
 func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	id = sid
 	root = r
@@ -229,11 +243,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	if meshes.is_empty():
 		meshes = _find_meshes(root)
 	_seed = hash(sid)
-	hull = HULL.new()
-	hull.stb_z = float(fx.starboard_z)
-	hull.code = str(root.get("code")) if root.get("code") != null else sid
-	hull.formation = squadron
-	hull.shared = fx.get("hull_shared")
+	hull = _new_hull(fx, root, sid, squadron)
 	var t_a := Time.get_ticks_usec()   # issue 1289: an arriving ship's parts, named in fx.prof (the arrival bench reads them)
 	hull.analyse(root, meshes, _seed)
 	t_a = fx.pend("add:analyse", t_a)
@@ -1749,7 +1759,7 @@ func sync(fx, u: Dictionary) -> void:
 			st = 4
 		section_fraction[i] = clampf(f, 0.0, 1.0)
 		want[i] = st
-	_regrade_marks(fx)
+	var marks_changed := _regrade_marks()
 	_set_wear(fx, hpf)
 	if wounds_v2:
 		_read_capability(u, sec)
@@ -1757,10 +1767,12 @@ func sync(fx, u: Dictionary) -> void:
 		want = [0, 0, 0]
 		_squad_smoke = hpf < 0.5 and not fx.compat
 	if fx.now < busy_until:
+		if marks_changed:
+			_dmg_request(fx)
 		var w = want.duplicate()
 		fx.later(busy_until + 0.05, func l_stages() -> void: _apply_stages(fx, w))
 	else:
-		_apply_stages(fx, want)
+		_apply_stages(fx, want, marks_changed)
 	# shields: a rise means regen
 	var shs = 0.0
 	var sh_list = u.get("sh")
@@ -1873,9 +1885,10 @@ func set_stages(fx, st: Array) -> void:
 	_apply_stages(fx, [0, 0, 0] if squadron else st)
 
 
-func _apply_stages(fx, want: Array) -> void:
+func _apply_stages(fx, want: Array, marks_changed := false) -> void:
 	if dead or gone:
 		return
+	var rebuild := marks_changed
 	for i in 3:
 		if int(want[i]) != int(stage[i]):
 			var up: bool = int(want[i]) > int(stage[i])
@@ -1885,6 +1898,7 @@ func _apply_stages(fx, want: Array) -> void:
 			_scar_stage[i] = maxi(_scar_stage[i], stage[i])
 			stage[i] = int(want[i])
 			_build_section(fx, i, up)
+			rebuild = true
 			# issue 1587: a hit that pushes a section into stage 3 or 4 vents it once (never on the ship's first stage
 			# update, which is its state as it arrives: a view rebuilt with the damage already there)
 			if up and _stages_seen and ((was < 3 and stage[i] >= 3) or (was < 4 and stage[i] == 4)):
@@ -1894,6 +1908,10 @@ func _apply_stages(fx, want: Array) -> void:
 				_breach_sound(fx, i)
 	_stages_seen = true
 
+	# Issue 2087: snapshot the marks and all changed sections once. Submitting inside the loop built a partial wound,
+	# then made the dirty flag start a second full hull rebuild.
+	if rebuild:
+		_dmg_request(fx)
 	_refresh_wounds(fx)
 	_cap_seeded = _cap_seen   # false on this ship's first capability snapshot: its engine tier is seeded quietly too
 	if wounds_v2:
@@ -2355,7 +2373,6 @@ func _build_section(fx, i: int, up: bool) -> void:
 	var st: int = stage[i]
 	_ents[i] = _plan(fx, i, st)
 	for e in _ents[i]: e.wound_kind = int(fac.get("wound_kind", 0))
-	_dmg_request(fx)
 	if not up or st < 1 or fx.compat: return
 	var a := _anchor(i, "a")
 	if a.is_empty(): return
@@ -3066,7 +3083,7 @@ func jump_out(fx) -> void:
 
 # A mark's geometry follows the section's actual damage, including repairs.
 # Recreate entries rather than mutating entries a worker may be reading.
-func _regrade_marks(fx) -> void:
+func _regrade_marks() -> bool:
 	var changed := false
 	var updated: Array = []
 	for e in _marks:
@@ -3084,4 +3101,4 @@ func _regrade_marks(fx) -> void:
 		else: updated.append(e)
 	if changed:
 		_marks = updated
-		_dmg_request(fx)
+	return changed
