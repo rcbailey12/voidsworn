@@ -1,5 +1,5 @@
 {
- "note": "Neon Wave F, Wave F2 and Wave A extras after Ryan's picks. Each approved take is a separate round-robin clip.",
+ "note": "Neon Wave F, F2, F3 and Wave A extras after Ryan's picks. Each approved take is a separate round-robin clip.",
  "targets_db": {
   "weapon": -12,
   "impact": -14,
@@ -11,6 +11,33 @@
   "amb": -26
  },
  "keepers": [
+  {
+   "id": "death_metal_crack_f3",
+   "wave": "F3",
+   "take": "t1",
+   "cat": "death",
+   "src": "auto",
+   "out": "death_metal_crack_f3_0",
+   "hp": 40
+  },
+  {
+   "id": "ship_thruster_puff_f3",
+   "wave": "F3",
+   "take": "t1",
+   "cat": "event",
+   "src": "auto",
+   "out": "ship_thruster_puff_f3_0",
+   "hp": 40
+  },
+  {
+   "id": "wep_eclipse_gsentry_more_f3",
+   "wave": "F3",
+   "take": "t1",
+   "cat": "weapon",
+   "src": "auto",
+   "out": "wep_eclipse_gsentry_more_f3_0",
+   "hp": 40
+  },
   {
    "id": "evt_ram_impact_f2",
    "wave": "F2",

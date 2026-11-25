@@ -141,8 +141,8 @@
     "replace": true,
     "layers": [
      {
-      "s": "wep_eclipse_gsentry",
-      "g": 1.017,
+      "s": "wep_eclipse_gsentry_more_f3",
+      "g": 2.803,
       "r": 1,
       "d": 0,
       "pj": null
@@ -1766,8 +1766,8 @@
   "duck": 0,
   "layers": [
    {
-    "s": "puff",
-    "g": 0.3,
+    "s": "ship_thruster_puff_f3",
+    "g": 0.27,
     "r": 1,
     "d": 0,
     "pj": null
@@ -2521,22 +2521,8 @@
   "duck": 0,
   "layers": [
    {
-    "s": "scrape",
-    "g": 0.6,
-    "r": 0.75,
-    "d": 0,
-    "pj": 0.025
-   },
-   {
-    "s": "hullHitBig",
-    "g": 0.45,
-    "r": 0.8,
-    "d": 0.14,
-    "pj": 0.025
-   },
-   {
-    "s": "crackSettle",
-    "g": 0.4,
+    "s": "death_metal_crack_f3",
+    "g": 0.789,
     "r": 1,
     "d": 0,
     "pj": 0.025

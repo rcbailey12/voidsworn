@@ -271,7 +271,8 @@ func play_battle(player_fac := "", enemy_fac := "", boss := false) -> void:
 		hot_id = pair[1]
 		_stem_pair = true
 	_boss = boss
-	var bed_id := _pick(fl.get("bed")) if fl.has("bed") else ""
+	# A matched pair is the whole score. Keep the legacy bed for the preview, boss and missing-pair fallback.
+	var bed_id := "" if _stem_pair else _pick(fl.get("bed"))
 	_bed_db = float(fl.get("bed_db", -14.0))
 	_start(_calm, calm_id)
 	_start(_hot, hot_id)

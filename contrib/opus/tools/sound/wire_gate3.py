@@ -20,12 +20,17 @@ AUDIO = Path(G)
 SOUND = Path(ROOT) / "contrib/opus/sound"
 
 
-def mix(cues, index, cue, variant=None, take=0):
+def mix(cues, index, cue, variant=None, take=0, apply_rate=False):
     c = cues[cue]
-    layers = _layers(c, index)
+    def clip_layers(data):
+        rates = {(index[layer["s"]][0], layer["d"]): layer.get("r", 1.0)
+                 for layer in data["layers"] if apply_rate and layer.get("s") in index}
+        return [(p, g, d, rates.get((Path(p).name, d), 1.0)) for p, g, d in _layers(data, index)]
+
+    layers = clip_layers(c)
     v = c.get("variants", {}).get(variant)
     if v:
-        layers_v = _layers(dict(c, **v), index)
+        layers_v = clip_layers(dict(c, **v))
         layers = layers_v if v["replace"] and layers_v else layers + layers_v
     if not layers:
         return None
@@ -36,7 +41,14 @@ def mix(cues, index, cue, variant=None, take=0):
     # Gate 2's loader and envelope measure use a single channel. The review render
     # keeps the captured stereo image of stereo takes.
     from master_keepers import load as stereo_load
-    rendered = [(stereo_load(paths.get(str(Path(p)), p)), gain, round(delay * SR)) for p, gain, delay in layers]
+    rendered = []
+    for p, gain, delay, rate in layers:
+        x = stereo_load(paths.get(str(Path(p)), p))
+        if rate != 1.0:
+            t = np.arange(len(x))
+            play_t = np.arange(0, len(x), rate)
+            x = np.column_stack([np.interp(play_t, t, channel) for channel in x.T])
+        rendered.append((x, gain, round(delay * SR)))
     out = np.zeros((max(delay + len(x) for x, _, delay in rendered), 2), dtype=np.float32)
     for x, gain, delay in rendered:
         out[delay:delay + len(x)] += x * gain * c["g"]
@@ -73,7 +85,7 @@ label,audio{display:block}audio{width:200px;height:34px;margin:.2rem 0 .5rem}sma
 select,button,textarea{font:inherit}textarea{width:100%;min-height:6rem;margin:.75rem 0}
 @media(max-width:850px){tr,td{display:block}thead{display:none}td{border:0}tr{border-bottom:1px solid #34404d}}
 </style>
-<h1>Sound Gate 3</h1><p>Hear the sounds that ship, with the Wave F2 picks first. Each row compares the old cue with the mastered take or takes. A new moment may have no before.</p>
+<h1>Sound Gate 3</h1><p>Hear the sounds that ship, with the Wave F3 picks and Chorus battle loop first. Each row compares the old cue with the mastered take or takes. A new moment may have no before.</p>
 <p>The previews use the cue's mix level, with no battle bus effects or distance. Play one at a time.</p>
 <button id="export">Show my picks</button>
 <textarea id="picks" readonly aria-label="Picks to send to the Board" placeholder="Your picks will appear here to copy."></textarea>
@@ -107,43 +119,35 @@ def row_html(row, before, after):
             f'<td>{before}</td><td>{after}</td><td>{review}</td></tr>')
 
 
-def music_row(preview):
+def music_row(preview, chorus=False):
     tracks = AUDIO.parent / "music/tracks"
-    labels = [
-        ("fac_voidsworn", "Today (Sunward theme)"),
-        ("sunward_stemloop_calm", "After (calm)"),
-        ("sunward_stemloop_full", "After (full)"),
-    ]
+    if chorus:
+        row = {"id": "mus_chorus_loop_a_test2",
+               "note": "Take 1, 24 bars at 76 BPM. Hear the whole loop in calm (no drums) or intense (full mix)."}
+        labels = [("fac_chorus", "Before (Chorus bed excerpt)", 12),
+                  ("chorus_loop_a_calm", "t1 calm (no drums)", None),
+                  ("chorus_loop_a_full", "t1 intense (full mix)", None)]
+    else:
+        row = {"id": "mus_battle_sunward_stemloop",
+               "note": "Steady, dark Sunward weight. Calm holds up on its own and the two mixes switch cleanly."}
+        labels = [("fac_voidsworn", "Today (Sunward theme)", 12),
+                  ("sunward_stemloop_calm", "After (calm)", 12),
+                  ("sunward_stemloop_full", "After (full)", 12)]
     players = []
-    for name, label in labels:
+    for name, label, seconds in labels:
         file = f"{name}_preview.ogg"
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(tracks / f"{name}.ogg"),
-                        "-t", "12", "-c:a", "libvorbis", "-q:a", "5", str(preview / file)], check=True)
+                        *(["-t", str(seconds)] if seconds else []),
+                        "-c:a", "libvorbis", "-q:a", "5" if seconds else "4", str(preview / file)], check=True)
         players.append(player(label, "audio/" + file))
-    return row_html({"id": "mus_battle_sunward_stemloop",
-                     "note": "Steady, dark Sunward weight. Calm holds up on its own and the two mixes switch cleanly."},
-                    players[0], "".join(players[1:]))
+    return row_html(row, players[0], "".join(players[1:]))
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--mastered", type=Path, required=True)
-    parser.add_argument("--listen", type=Path, required=True)
-    parser.add_argument("--baseline", type=Path, help="folder holding the pre-Gate-3 cues.json and index.json")
-    parser.add_argument("--sunward-music", action="store_true", help="add already mastered M1 music previews")
-    args = parser.parse_args()
-    wires = json.loads((SOUND / "wiring_gate3.json").read_text())["wires"]
-    cue_file = AUDIO / "cues.json"
-    index_file = AUDIO / "clips/index.json"
-    cues = json.loads((args.baseline / "cues.json" if args.baseline else cue_file).read_text())
-    index = json.loads((args.baseline / "index.json" if args.baseline else index_file).read_text())
+def wire_rows(wires, cues, index, mastered, preview):
     old_cues, old_index = deepcopy(cues), deepcopy(index)
     categories = json.loads((SOUND / "wiring_gate2.json").read_text())["categories"]
     targets = {cat: 10 * np.log10(np.mean([10 ** (render(cues, index, n) / 10) for n in names]))
                for cat, names in categories.items()}
-    if any(r["template"] == r["cue"] or r["cue"] in cues for r in wires if "template" in r):
-        parser.error("start with the pre-Gate-3 cue tables")
-    preview = args.listen / "audio"
     preview.mkdir(parents=True, exist_ok=True)
     table = []
     for r in wires:
@@ -151,11 +155,12 @@ def main():
         template = r.get("template", cue)
         vs = r.get("variants") or [None]
         key = append or sid
-        source = [args.mastered / f"{sid}_{i}.ogg" for i in range(r["takes"])]
+        source = [mastered / f"{sid}_{i}.ogg" for i in range(r["takes"])]
+        f3 = r["group"] == "Wave F3"
         # Use the actual old keeper for variety, the first real weapon variant for a
         # polish swap, and the old base cue for brand-new variants.
         baseline = next((v for v in vs if v in old_cues.get(r["today"], {}).get("variants", {})), None)
-        before = mix(old_cues, old_index, r["today"], baseline) if r["today"] and not append else None
+        before = mix(old_cues, old_index, r["today"], baseline, apply_rate=f3) if r["today"] and not append else None
         old_takes = len(index[key]) if append else 0
         for i, src in enumerate(source):
             name = f"{sid}_{i}.ogg"
@@ -181,7 +186,13 @@ def main():
                 cues[cue].pop("variants", None)
                 cues[cue].pop("duration", None)
             c = cues[cue]
-            target = render(old_cues, old_index, r["today"], baseline) if before is not None else -27.0
+            if f3:
+                from master_keepers import load as stereo_load
+                target = loud(before.mean(1))
+                source_db = loud(stereo_load(source[0]).mean(1))
+            else:
+                target = render(old_cues, old_index, r["today"], baseline) if before is not None else -27.0
+                source_db = loud(load(str(source[0])))
             target += 20 * np.log10(r.get("before_gain", 1.0) / r.get("play_gain", 1.0))
             if "category" in r:
                 target = targets[r["category"]]
@@ -192,7 +203,7 @@ def main():
                 # Preserve the terrain beds' mastering gain and leave room for the bridge.
                 g = 0.25 / c["g"]
             else:
-                g = 10 ** ((target - loud(load(str(source[0])))) / 20) / c["g"]
+                g = 10 ** ((target - source_db) / 20) / c["g"]
             if sid == "ship_engine_loop":
                 c["loop"] = True
             for v in vs:
@@ -222,12 +233,35 @@ def main():
             before_html = player("Today (reference cue)" if r.get("reference") else "Today", "audio/" + name)
         after_html = ""
         for i in range(r["takes"]):
-            x = mix(cues, index, cue, variant, old_takes + i)
+            x = mix(cues, index, cue, variant, old_takes + i, apply_rate=f3)
             name = f"{sid}_after{i + 1}.ogg"
             write_ogg(x * r.get("play_gain", 1.0), str(preview / name))
-            label = f"New take {i + 1}" if r["takes"] > 1 else r["pick"] if sid.endswith("_f2") else "Mastered pick"
+            label = f"New take {i + 1}" if r["takes"] > 1 else r["pick"] if sid.endswith(("_f2", "_f3")) else "Mastered pick"
             after_html += player(label, "audio/" + name)
         table.append(row_html(r, before_html, after_html))
+    return table
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mastered", type=Path, required=True)
+    parser.add_argument("--listen", type=Path, required=True)
+    parser.add_argument("--baseline", type=Path, help="folder holding the pre-Gate-3 cues.json and index.json")
+    parser.add_argument("--sunward-music", action="store_true", help="add already mastered M1 music previews")
+    parser.add_argument("--chorus-music", action="store_true", help="add already mastered Chorus Loop A previews")
+    args = parser.parse_args()
+    wires = json.loads((SOUND / "wiring_gate3.json").read_text())["wires"]
+    cue_file = AUDIO / "cues.json"
+    index_file = AUDIO / "clips/index.json"
+    cues = json.loads((args.baseline / "cues.json" if args.baseline else cue_file).read_text())
+    index = json.loads((args.baseline / "index.json" if args.baseline else index_file).read_text())
+    if any(r["template"] == r["cue"] or r["cue"] in cues for r in wires if "template" in r):
+        parser.error("start with the pre-Gate-3 cue tables")
+    preview = args.listen / "audio"
+    table = wire_rows(wires, cues, index, args.mastered, preview)
+    if args.chorus_music:
+        f3_rows = sum(r["group"] == "Wave F3" for r in wires)
+        table.insert(f3_rows, music_row(preview, chorus=True))
     if args.sunward_music:
         table.append(music_row(preview))
     cue_file.write_text(json.dumps(cues, indent=1) + "\n", encoding="utf-8", newline="\n")

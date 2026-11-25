@@ -199,6 +199,7 @@ func _run() -> void:
 	_check(_first("fx", "pop").is_empty(), "no placeholder pop")
 	_check(_held_ok(held, 500.0 * SPEED), "the ram keeps its 500 ms hold (%.1f game ms at pace %.2f, want %.0f to %.0f)" % [held, SPEED, 500.0 * SPEED, 500.0 * SPEED + 2.0 * clock.max_dt])
 	_check(_sounds() == ["evt_ram_impact"], "the ram plays only its approved impact (%s)" % str(_sounds()))
+	_check(not _first("sfx", "engine").is_empty(), "a forward ram still starts the main drive loop")
 
 	print("-- torpedo shot down")
 	log.clear()
@@ -234,6 +235,19 @@ func _run() -> void:
 	_check(_sounds() == ["ui_command_issue"], "the player command plays only its approved cue (%s)" % str(_sounds()))
 	var want := (float(b.PACE["banner"]) + 140.0) * SPEED
 	_check(_held_ok(held, want), "the command keeps its banner hold (%.1f game ms, want %.0f to %.0f)" % [held, want, want + 2.0 * clock.max_dt])
+
+	print("-- maneuvering thrusters")
+	var sv = b.views[mine]
+	var pos: Vector3 = sv.visual_position()
+	log.clear()
+	await b._play_move(mine, [{"f": (f + 1) % 6, "rot": true}], false)
+	var puff := _first("sfx", "puff")
+	_check(_sounds() == ["puff"] and not puff.is_empty() and puff[4][0].get("pos") == pos
+		and _first("sfx", "engine").is_empty(), "a turn in place plays one thruster puff at the ship, with no drive loop")
+	log.clear()
+	await b._play_move(mine, [{"q": u0["q"], "r": u0["r"], "f": (f + 1) % 6, "slip": true}], false)
+	_check(_sounds() == ["puff"] and _first("sfx", "engine").is_empty(),
+		"a one-hex slide plays one thruster puff without the drive loop")
 
 	b.gfx = real_fx
 	b.sfx = real_sfx

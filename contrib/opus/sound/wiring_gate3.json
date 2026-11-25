@@ -1,6 +1,37 @@
 {
- "note": "Wave F, Wave F2 and Wave A extras after Ryan's picks. Hold means catalogued but no game event yet.",
+ "note": "Wave F, F2, F3 and Wave A extras after Ryan's picks. Hold means catalogued but no game event yet.",
  "wires": [
+  {
+   "id": "death_metal_crack_f3",
+   "group": "Wave F3",
+   "takes": 1,
+   "pick": "t1",
+   "note": "One low bulkhead snap replaces the old metal crack. Faction layers stay as they were.",
+   "today": "death_crack",
+   "cue": "death_crack"
+  },
+  {
+   "id": "ship_thruster_puff_f3",
+   "group": "Wave F3",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A short valve burst replaces the maneuvering cue. The organic death layers keep the old puff.",
+   "today": "puff",
+   "cue": "puff",
+   "reference": true
+  },
+  {
+   "id": "wep_eclipse_gsentry_more_f3",
+   "group": "Wave F3",
+   "takes": 1,
+   "pick": "t1",
+   "note": "A dry electrostatic crack replaces the old gauss sentry shot.",
+   "today": "gun_flak",
+   "cue": "gun_flak",
+   "variants": [
+    "deathless.gsentry"
+   ]
+  },
   {
    "id": "evt_ram_impact_f2",
    "group": "Wave F2",

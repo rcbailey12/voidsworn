@@ -325,3 +325,11 @@ The Deathless mix is CC0 and so are all three of its sources (vitalezzz "Claimed
 The Sunward battle pair comes from the M1 take `mus_battle_sunward_stemloop_t1` on the owner's paid ElevenLabs plan.
 The two mixes are aligned and cut to 16 bars at 96 BPM. ElevenLabs paid self-serve music terms allow commercial use
 in an indie game within their game and studio revenue limits. No attribution is required.
+
+## Gate 3 Chorus battle loop A (issue 2039, Nov 25 2026 UTC)
+
+Both Chorus mixes come from the owner's paid ElevenLabs take `mus_chorus_loop_a_test2_t1`.
+`chorus_loop_a_calm.ogg` uses the aligned sum of all stems except drums. `chorus_loop_a_full.ogg` uses the full song.
+Both are cut to 24 bars at 76 BPM with a 25 ms click guard and the same 6 dB mastering gain.
+The Vorbis quality 8 encodes keep both decoded wrap jumps below 0.001 without changing the sample count.
+The same ElevenLabs paid self-serve indie game music terms apply. No attribution is required.
