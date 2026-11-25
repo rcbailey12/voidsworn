@@ -24,7 +24,10 @@ function Public-RunnerText($status, $reason, $code, $folder) {
   switch ($status) {
     'running' { return 'claimed before checkout and model calls' }
     'checked_push' { return 'non-partial push confirmed and runner checks passed' }
-    'unverified' { return 'dry/test push or checks did not pass; chain stays stopped' }
+    'unverified' {
+      if ($reason -eq 'non-partial push confirmed but local checks did not pass') { return 'non-partial push confirmed but local checks did not pass' }
+      return 'dry/test push or checks did not pass; chain stays stopped'
+    }
     'no_changes' { return 'no changes pushed' }
     'partial' {
       switch -Exact ($reason) {
@@ -80,12 +83,13 @@ function Log($line) {
   try { Add-Content -LiteralPath (Join-Path $script:out 'result.txt') -Value $line -Encoding UTF8 -ErrorAction Stop } catch { }
   Write-Host $line
 }
-function State($status, $reason) {
+function State($status, $reason, $confirmed = '') {
   $p = Join-Path $script:out 'status.json'
   $s = Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
   $s.status = $status; $s.reason = $reason
   $s.finished = if ($status -eq 'running') { '' } else { [DateTime]::UtcNow.ToString('o') }
   $s.commit = Read (Join-Path $script:out 'run_commit.txt')
+  $s | Add-Member -NotePropertyName confirmed_commit -NotePropertyValue $confirmed -Force
   Save-State $s
 }
 function Save-State($s) {
@@ -1286,12 +1290,16 @@ try {
     Log "chain waiting for $p"
     $run = ''
     while ($true) {
-      if (-not (Test-Path -LiteralPath $p)) { throw 'chain stopped: predecessor status.json is missing; text results cannot prove a checked push' }
+      if (-not (Test-Path -LiteralPath $p)) { throw 'chain stopped: predecessor status.json is missing; text results cannot prove a confirmed push' }
       $s = Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
       if (-not $run) { $run = $s.run }
       if (-not $run -or $run -ne $s.run) { throw 'chain stopped: predecessor run changed while waiting' }
       if ($env:PC_WAIT_RUN -and $s.run -ne $env:PC_WAIT_RUN) { throw 'chain stopped: predecessor run id does not match PC_WAIT_RUN' }
       if ($s.status -eq 'checked_push' -and $s.commit -match '^[0-9a-f]{40,64}$') { Log "chain released: checked push $($s.branch) $($s.commit)"; exit 0 }
+      if ($s.status -eq 'unverified' -and $s.commit -match '^[0-9a-f]{40,64}$' -and $s.confirmed_commit -eq $s.commit) {
+        Log "chain released: confirmed push with unverified local checks $($s.branch) $($s.commit)"
+        exit 0
+      }
       if ($s.status -ne 'running') { throw "chain stopped: predecessor ended $($s.status): $($s.reason)" }
       if ([DateTime]::UtcNow -ge $end) { throw 'chain stopped: predecessor did not finish before the wait limit' }
       Start-Sleep -Milliseconds 500
@@ -1985,11 +1993,16 @@ try {
     $script:out = $args[1]; $code = $args[2]; $partial = $args[3]; $push = $args[4]; $checks = $args[5]
     $old = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
     $status = 'failed'; $reason = "runner exit $code"
+    $confirmedPush = ''
     if ($old.status -eq 'failed' -and $old.reason) { $reason = $old.reason }
     if ($code -eq '0' -and -not $partial) {
       $commit = Read (Join-Path $out 'run_commit.txt')
       $confirmed = Read (Join-Path $out 'confirmed_commit.txt')
-      if ($push -eq 'real' -and $checks -eq '1' -and $commit -match '^[0-9a-f]{40,64}$' -and $confirmed -eq $commit) { $status = 'checked_push'; $reason = 'non-partial push confirmed and runner checks passed' }
+      if ($push -eq 'real' -and $commit -match '^[0-9a-f]{40,64}$' -and $confirmed -eq $commit) {
+        $confirmedPush = $confirmed
+        if ($checks -eq '1') { $status = 'checked_push'; $reason = 'non-partial push confirmed and runner checks passed' }
+        else { $status = 'unverified'; $reason = 'non-partial push confirmed but local checks did not pass' }
+      }
       else { $status = 'unverified'; $reason = 'dry/test push or checks did not pass; chain stays stopped' }
     }
     elseif ($partial) { $status = 'partial'; $reason = $partial }
@@ -2012,7 +2025,7 @@ try {
         }
       } catch { Log "run cleanup stopped: $($_.Exception.Message)" }
     }
-    State $status $reason
+    State $status $reason $confirmedPush
     # State is authoritative; reporting errors never change it or the runner exit code.
     $s = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
     End-Announcement $s
