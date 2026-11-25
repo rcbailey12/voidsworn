@@ -152,6 +152,7 @@ headless|fx/test/damage_alpha_check.gd|-|-|issue 569: a transparent sail surface
 headless|fx/test/flash_area_check.gd|-|-|issue 504: the flash counter by area on a staged worst second, checked against a brute-force area count; zero in calm mode
 headless|fx/test/flash_projection.gd|-|-|issue 1116: projected flash width and the three-flash cap at the edge, with and without pixel floors
 headless|fx/test/shield_flash_booking.gd|-|-|issue 1116: a torpedo shield crackle books one picture at its drawn centre and size, or none in calm mode
+headless|fx/test/shield_ripple_collapse_2048_check.gd|-|-|issue 2048: shield hits tighten the c170 local ripple without washing the whole bubble and clean collapse adds a travelling edge wave while keeping the 1.225 s timing, one shield pool and Glasswright pale glass
 headless|fx/test/shield_cache_check.gd|-|-|issue 1130: stable bounded fitted shield cache, geometry replacement, contact and puff cleanup
 headless|fx/test/hit_recipe_check.gd|-|-|issue 461: the hit ladder, a recipe per weapon family, thrown matter outliving flame, outward direction, torpedo light reach, zero flashes in calm mode, the lance kill's clean cut
 headless|fx/test/hit_fragments_check.gd|-|-|issue 1000: closed hull fragment meshes, faction paint and glass, larger macro bursts, outward motion, bounded pools and the shared hit random sequence; issue 1117: a real dent rebuild preserves chip paint and UVs on the struck surface

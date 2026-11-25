@@ -1375,23 +1375,26 @@ void fragment() {
 		float fade = (1.0 - f) * (1.0 - f) * smoothstep(0.0, 0.025, age);
 		float d = length(lp - h.xyz);
 		float S = hitw[i].x;
-		float spread = max(hitw[i].z, wpx * 22.0);
-		float mask = 1.0 - smoothstep(spread * 0.35, spread, d);
-		float hd = d / max(0.9 + S * 0.4, wpx * 5.0);
-		float core = exp(-hd * hd) * 4.0 * (1.0 - f) * mix(1.0, 0.25, fx_calm);
+		float s_cap = min(S, 1.8);
+		float max_local = max(maxR * 0.72, wpx * 18.0);
+		float spread = clamp(hitw[i].z, wpx * 14.0, max_local);
+		float mask = 1.0 - smoothstep(spread * 0.28, spread * 0.92, d);
+		float hd = d / max(0.65 + s_cap * 0.22, wpx * 3.2);
+		float core = exp(-hd * hd) * 3.2 * (1.0 - f) * mix(1.0, 0.25, fx_calm);
 		float rg = 0.0;
 		for (int j = 0; j < 3; j++) {
 			float aj = age - float(j) * 0.08;
 			if (aj > 0.0) {
 				// R303: the moving band is evaluated only on this shield surface.
-				float rd = (d - aj / life * spread) / max(0.35 + aj * 0.6, wpx * 1.5);
-				rg += exp(-rd * rd) * (j == 0 ? 1.7 : 0.8);
+				float rd = (d - aj / life * spread) / max(0.22 + aj * 0.32, wpx * 1.15);
+				rg += exp(-rd * rd) * (j == 0 ? 2.1 : (j == 1 ? 1.15 : 0.65));
 			}
 		}
 		float ga = clamp(age / min(life, 0.55), 0.0, 1.0);
-		float glow_all = (1.0 - ga) * (1.0 - ga) * smoothstep(0.0, 0.04, age) * (0.10 + 0.22 * far) * mix(1.0, 0.5, fx_calm);
+		float hemi = smoothstep(-0.35, 0.65, dot(snorm(vL), snorm(h.xyz / rad)));
+		float glow_all = (1.0 - ga) * (1.0 - ga) * smoothstep(0.0, 0.04, age) * (0.025 + 0.045 * far) * (0.35 + 0.65 * hemi) * mix(1.0, 0.5, fx_calm);
 		float ripple_fade = pow(1.0 - f, 1.3) * smoothstep(0.0, 0.025, age);
-		I += (core * fade + rg * mask * (0.6 + 0.4 * S) * ripple_fade + glow_all) * S;
+		I += core * fade * s_cap + rg * mask * (0.65 + 0.35 * s_cap) * ripple_fade * s_cap + glow_all * min(S, 1.3);
 		if (hitw[i].w > 0.5) {
 			// Two uneven surges on the edge near this contact. A single soft lift under reduce flashing.
 			float beat = 0.3 + 0.7 * pow(0.5 + 0.5 * cos(age * 28.0), 2.0);
@@ -1522,14 +1525,26 @@ void fragment() {
 			float gw = style == 3 ? 1.0 : 0.0;
 			float flash = exp(-ba * 12.0) * 0.3 * calm;
 			float bp = 1.0 - clamp((ba - 0.08) / max(brk_close - 0.08, 0.05), 0.0, 1.0);
-			float bw = 0.03 + 0.025 * bp + 0.02 * gw;
-			float bd = (dist - bp) / bw;
-			float band = exp(-bd * bd) * 2.4 * (1.0 + gw * (1.0 - fx_calm)) * mix(1.0, 0.6, fx_calm) * smoothstep(0.06, 0.2, ba) * step(0.001, bp);
-			alive = smoothstep(bp + bw, bp - bw, dist);
+			// Issue 2048: travelling collapse edge wave along the closing front; keeps the 1.225 s close timing (COLLAPSE_CLOSE)
+			// and Glasswright pale prismatic look.
+			float wave_n = fbm(lp.xy * 0.45 + lp.zx * 0.35 + vec2(ba * 2.4, -ba * 1.7)) - 0.5;
+			float wave_amp = mix(0.045, 0.028, gw) * smoothstep(0.0, 0.14, bp) * smoothstep(1.0, 0.85, bp);
+			float bp_w = clamp(bp + wave_n * wave_amp, 0.0, 1.0);
+			float bw = 0.026 + 0.022 * bp + 0.018 * gw;
+			float bd = (dist - bp_w) / bw;
+			float band_env = smoothstep(0.06, 0.18, ba) * step(0.001, bp) * mix(1.0, 0.6, fx_calm);
+			float band = exp(-bd * bd) * 2.2 * (1.0 + gw * (1.0 - fx_calm)) * band_env;
+			// Secondary leading ripple just inside the surviving shield ahead of the closing edge.
+			float lead_d = (dist - (bp_w - bw * 2.1)) / (bw * 0.85);
+			float ripple_mod = 0.65 + 0.35 * sin(dot(un, vec3(11.0, 7.0, 13.0)) + ba * mix(14.0, 4.0, fx_calm));
+			float edge_wave = exp(-lead_d * lead_d) * 1.15 * ripple_mod * (1.0 + 0.5 * gw * (1.0 - fx_calm)) * band_env * smoothstep(0.02, 0.12, bp);
+			// Crisp bright receding rim right on the tear line where the surviving field gives way.
+			float rim_tear = exp(-bd * bd * 4.5) * (0.95 + 0.65 * pat) * (1.0 + 0.4 * gw * (1.0 - fx_calm)) * band_env;
+			alive = smoothstep(bp_w + bw * 0.85, bp_w - bw * 0.85, dist);
 			float kt = ba - brk_close;
 			float knot = kt > 0.0 ? exp(-dist * dist * mix(600.0, 300.0, gw)) * exp(-kt * 5.0) * 3.0 * (1.0 + gw * (1.0 - fx_calm)) * calm : 0.0;
-			add += (flash * pat * 0.5 + band * (0.55 + 0.45 * pat)) * stut + knot;
-			hot += (band * 0.25 + knot * 0.5) * (1.0 - gw);
+			add += (flash * pat * 0.5 + (band + rim_tear) * (0.55 + 0.45 * pat) + edge_wave * (0.4 + 0.6 * pat)) * stut + knot;
+			hot += (band * 0.25 + rim_tear * 0.35 + edge_wave * 0.15 + knot * 0.5) * (1.0 - gw);
 		}
 		// what is left of the field stays faintly visible until the failure reaches it
 		add += alive * 0.28 * pat * (0.3 + 0.7 * fres);
