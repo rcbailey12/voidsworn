@@ -1,0 +1,54 @@
+{
+  "source_commit": "7c426f028ddf9941690ac60d535f7254bc89a524",
+  "source_diff_sha256": "558ec1f31343fef02d9fea091934990f6423c7218461fce9ac960ef605723e0c",
+  "source_dirty": true,
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "CM-A_turn-corner.png",
+  "date": "2026-11-24T23:27:46Z",
+  "sources": [
+    {
+      "source_commit": "7c426f028ddf9941690ac60d535f7254bc89a524",
+      "source_diff_sha256": "558ec1f31343fef02d9fea091934990f6423c7218461fce9ac960ef605723e0c",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "keel_log_collapsed_1080.png",
+      "source_commit": "7c426f028ddf9941690ac60d535f7254bc89a524",
+      "source_dirty": true,
+      "source_diff_sha256": "558ec1f31343fef02d9fea091934990f6423c7218461fce9ac960ef605723e0c",
+      "stage": "installed in game",
+      "date": "2026-11-18T03:14:10Z",
+      "image_sha256": "050af870fa8289930720c1228a20dbebb6a0274a039fb8f6bacf97ab8a3dd133",
+      "sources": [
+        {
+          "source_commit": "7c426f028ddf9941690ac60d535f7254bc89a524",
+          "source_diff_sha256": "558ec1f31343fef02d9fea091934990f6423c7218461fce9ac960ef605723e0c",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "5e50f951c6f8999b5207e21b9c6e0d03953d1d8da3155d0f3410c47288c9501a"
+  ],
+  "stamp_template_sha256": "5e50f951c6f8999b5207e21b9c6e0d03953d1d8da3155d0f3410c47288c9501a",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABm0lEQVR4nO3XMREAIAADMWAF/NtFBT8lBjr+de57BgDw3wo2AADRBYCOpwsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAIzGA3bMAOjbHqLUAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "6e70c16894a45c38e25bff36d80419b061a8dd9691478094650f5e5589208d9c"
+}

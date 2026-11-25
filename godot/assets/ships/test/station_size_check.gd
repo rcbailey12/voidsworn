@@ -1,9 +1,33 @@
 extends SceneTree
+# Issue 975, then issue 1767 (World V2, R419): station_T2 is the one station on every station cluster and hole, and the
+# board's derelict hulks come from all six factions. GitHub has no built ship files, so when the cache is missing the
+# check stands in T2 as a box with T2's real bounds (99.2 x 69.3 x 70.2, production_checks.json) and every hulk code as
+# the beacon stub box. It checks:
+#   A4P: the big cluster gets T2 at unit scale; a smaller cluster and a lone hole get T2 scaled so every mesh box (corners
+#     and points along each edge, at the placed bearing) projects inside the cluster's own hexes, tested here with its own
+#     point-in-hex sum, not A4P's (Artoo on PR 1772: a circle round the corners let the flats overhang); the biome station kind is recorded and lights a faint lamp in its colour; a hole has no debris;
+#   A4P: the hulk pool holds all six factions, each faction drawn equally often (then one of its hulls), the draw prefers the battle's factions about 70 percent of the time, and the
+#     derelict finish keeps Glasswright glass and Chorus chitin in their own hue (never the metal soot);
+#   the real board: a teaching (3-hex) cluster and a station hole build T2, level, inside their own hexes (the teaching
+#     cluster on six board seeds, so six bearings); the big (19-hex) cluster keeps unit scale; a Chorus and Glasswright battle's hulk hexes draw their hulls, at positive scale (true chirality).
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const PROPS := preload("res://assets/ships/a4_props.gd")
+const BOARD := preload("res://render/board.gd")
 const T2_PATH := "res://gen/ships/station_T2.scn"
-const A4_PATH := "res://gen/ships/O1_37.scn"
+const STUB := "res://render/test/fixtures/beacon/beacon_stub.tscn"
+const HS := 10.0
+
+class StubRules extends RefCounted:
+	var v := {}
+	var w := {}
+	func view() -> Dictionary:
+		return v
+	func world_info() -> Dictionary:
+		return w
+
+var failures := 0
+var _keep: Array = []
 
 
 func _init() -> void:
@@ -11,48 +35,511 @@ func _init() -> void:
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 
-func _run() -> void:
-	# The game cache is optional in CI. Register both scenes in the resource cache
-	# so the real loader takes its installed path there too.
-	var stand_ins: Array[PackedScene] = []
-	if not ResourceLoader.exists(T2_PATH):
-		stand_ins = [_cache_scene(T2_PATH), _cache_scene(A4_PATH)]
-		PROPS._man = {"ships": {"O1_37": {"res": A4_PATH}}}
+func _report(ok: bool, description: String) -> void:
+	print("%s: %s" % ["PASS" if ok else "FAIL", description])
+	if not ok:
+		failures += 1
 
+
+func _run() -> void:
 	if not ResourceLoader.exists(T2_PATH):
-		printerr("FAIL: T2 must be in the cache for this check")
+		_keep.append(_t2_stand_in())
+	if not ResourceLoader.exists(T2_PATH):
+		_report(false, "T2 must be in the cache for this check")
 		quit(1)
 		return
-
-	var large := PROPS.station(46.0)
-	var large_ok := (large != null and large.scene_file_path == T2_PATH
-		and large.has_meta("station_T2") and large.scale.is_equal_approx(Vector3.ONE))
-	_report(large_ok, "station(46) returns T2 at unit scale")
-
-	var small := PROPS.station(34.0)
-	var small_ok: bool = (small != null and not small.has_meta("station_T2") and small.get_child_count() == 1
-		and small.get_child(0).scene_file_path == A4_PATH
-		and small.get_child(0).scale.is_equal_approx(Vector3.ONE * 34.0))
-	_report(small_ok, "station(34) returns O1_37 at scale 34")
-
-	if large != null:
-		large.free()
-	if small != null:
-		small.free()
-	stand_ins.clear()
-	quit(0 if large_ok and small_ok else 1)
+	var ships := {"O1_37": {"res": STUB}}
+	for fac in PROPS.HULKS:
+		for code in PROPS.HULKS[fac]:
+			ships[code] = {"res": STUB}
+	PROPS._man = {"ships": ships}
+	_props_checks()
+	_hulk_checks()
+	_board_checks()
+	_old_path_checks()
+	_keep.clear()
+	quit(0 if failures == 0 else 1)
 
 
-func _cache_scene(path: String) -> PackedScene:
+func _t2_stand_in() -> PackedScene:
 	var node := Node3D.new()
+	var mi := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(99.2, 69.3, 70.2)
+	mi.mesh = box
+	node.add_child(mi)
+	mi.owner = node
 	var scene := PackedScene.new()
-	var packed := scene.pack(node)
+	scene.pack(node)
 	node.free()
-	if packed != OK:
-		return null
-	scene.take_over_path(path)
+	scene.take_over_path(T2_PATH)
 	return scene
 
 
-func _report(ok: bool, description: String) -> void:
-	print("%s: %s" % ["PASS" if ok else "FAIL", description])
+# the points of a node's mesh boxes (corners and points along every edge) that fall outside the pointy-top hexes of
+# corner radius `hex_r` round `cells` (board x, z); the debris field is left out (it drifts below the board by design)
+func _outside(n: Node3D, cells: Array, hex_r: float) -> int:
+	var bad := 0
+	var a := hex_r * sqrt(3.0) / 2.0
+	for mi in n.find_children("*", "MeshInstance3D", true, false):
+		if (mi as Node).get_parent().name == "station_T2_debris":
+			continue
+		var bb: AABB = (mi as MeshInstance3D).get_aabb()
+		var xf: Transform3D = (mi as Node3D).global_transform
+		for i in 8:
+			for j in 8:
+				if not [1, 2, 4].has(i ^ j) or j < i:
+					continue
+				for t in 9:
+					var p: Vector3 = xf * bb.get_endpoint(i).lerp(bb.get_endpoint(j), float(t) / 8.0)
+					var inside := false
+					for c in cells:
+						var dx := absf(p.x - (c as Vector2).x)
+						var dz := absf(p.z - (c as Vector2).y)
+						# a pointy-top hex (corners toward +z and -z): inside its flats and inside its slanted sides
+						if dx <= a + 1e-3 and dz + dx / sqrt(3.0) <= hex_r + 1e-3:
+							inside = true
+							break
+					if not inside:
+						bad += 1
+	return bad
+
+
+func _props_checks() -> void:
+	var large := PROPS.station(46.0)
+	_report(large != null and large.has_meta("station_T2") and large.scale.is_equal_approx(Vector3.ONE),
+		"station(46) returns T2 at unit scale (the approved big station)")
+	# a 3-hex cluster round its centre, as the board passes it (pointy-top hexes, corner radius 10)
+	var hw := HS * sqrt(3.0)
+	var tri: Array = [Vector2(0, 0), Vector2(hw, 0), Vector2(hw / 2.0, 1.5 * HS)]
+	var cen: Vector2 = (tri[0] + tri[1] + tri[2]) / 3.0
+	var rel: Array = []
+	for c in tri:
+		rel.append((c as Vector2) - cen)
+	var worst := 0
+	var k_min := 1.0
+	var k_max := 0.0
+	for i in 12:
+		var bearing := float(i) * 0.5
+		var small := PROPS.station(34.0, 2.0 * HS, "rig", true, rel, HS, bearing)
+		if small == null or not small.has_meta("station_T2"):
+			worst = 99999
+			break
+		var k: float = small.scale.x
+		k_min = minf(k_min, k)
+		k_max = maxf(k_max, k)
+		var turn := float(small.get_meta("station_bearing", bearing))
+		small.transform = Transform3D(Basis.from_euler(Vector3(0, turn, 0)).scaled(Vector3.ONE * k), Vector3.ZERO)
+		root.add_child(small)
+		worst = maxi(worst, _outside(small, rel, HS))
+		if i == 0:
+			var lamp: Node = small.find_child("station_kind_light", true, false)
+			_report(small.get_meta("station_kind", "") == "rig" and lamp is OmniLight3D
+				and (lamp as OmniLight3D).light_color.is_equal_approx(PROPS.STATION_KINDS["rig"]["light"]) and not (lamp as OmniLight3D).shadow_enabled,
+				"the biome kind rig is recorded and lights one faint unshadowed amber lamp")
+		small.free()
+	_report(worst == 0 and k_min > 0.05, "a 3-hex cluster's T2 projects inside its three hexes at 12 bearings (scale %.3f to %.3f, %d points outside)" % [k_min, k_max, worst])
+	# Wave 0 on Sheet M (Nov 23): a fitted T2 turns to its best of FIT_TURNS bearings, never smaller than the drawn
+	# bearing's fit, and the best turn's scale is fit_scale's own at that turn
+	var pts: PackedVector2Array = PROPS._outline[PROPS.T2_PATH]
+	var gain_ok := true
+	var gained := false
+	var exact := true
+	for i in 12:
+		var b0 := float(i) * 0.5
+		var drawn := PROPS.fit_scale(pts, rel, HS, b0)
+		var best := PROPS.best_bearing(pts, rel, HS, b0)
+		gain_ok = gain_ok and best.y >= drawn - 1e-5
+		gained = gained or best.y > drawn * 1.02
+		exact = exact and absf(PROPS.fit_scale(pts, rel, HS, best.x) - best.y) < 1e-3
+	var one_drawn := PROPS.fit_scale(pts, [Vector2.ZERO], HS, 0.0)
+	var one_best := PROPS.best_bearing(pts, [Vector2.ZERO], HS, 0.0)
+	_report(gain_ok and gained and exact and one_best.y >= one_drawn - 1e-5,
+		"a fitted T2 turns to its best fit: never smaller than the drawn turn, larger on the 3-hex cluster, exact (1 hex %.3f to %.3f)" % [one_drawn, one_best.y])
+	var hole := PROPS.station(14.0, HS, "spire", false, [Vector2.ZERO], HS, 0.0)
+	var out_hole := 99999
+	if hole != null:
+		hole.rotation.y = float(hole.get_meta("station_bearing", 0.0))
+		root.add_child(hole)
+		out_hole = _outside(hole, [Vector2.ZERO], HS)
+	_report(hole != null and hole.has_meta("station_T2") and out_hole == 0 and hole.find_child("station_T2_debris", true, false) == null,
+		"a lone station hole's T2 projects inside its one hex (scale %.3f, %d points outside), with no drifting debris" % [hole.scale.x if hole else 0.0, out_hole])
+	var plain := PROPS.station(34.0, 2.0 * HS, "", true, rel, HS, 0.0)
+	_report(plain != null and plain.find_child("station_kind_light", true, false) == null,
+		"no biome kind: no lamp")
+	for n in [large, hole, plain]:
+		if n != null:
+			n.free()
+	_outpost_checks(rel)
+
+
+# Issue 1791 (Ryan, Nov 24 2026): with the outpost installed, every cluster under 19 hexes and every hole draws it, fitted
+# inside its hexes; the big cluster keeps T2 at unit scale. A box with the outpost's kit plan (about 15 x 10 x 17 kit
+# units at T2's 1.919 kit-to-world scale) stands in for the cache.
+func _outpost_checks(rel: Array) -> void:
+	# the installed outpost when there is one (the PC); otherwise a stand-in box of its size (28.4 x 33.4 x 18.6) in its
+	# place, which only this run sees. Never swap a box in under an outline already measured from the real one.
+	if not ResourceLoader.exists(PROPS.OUTPOST_PATH):
+		var node := Node3D.new()
+		var mi := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(28.4, 33.4, 18.6)
+		mi.mesh = box
+		node.add_child(mi)
+		mi.owner = node
+		var scene := PackedScene.new()
+		scene.pack(node)
+		node.free()
+		scene.take_over_path(PROPS.OUTPOST_PATH)
+		_keep.append(scene)
+	var tri := PROPS.station(34.0, 2.0 * HS, "rig", true, rel, HS, 0.0)
+	var one := PROPS.station(14.0, HS, "spire", false, [Vector2.ZERO], HS, 0.0)
+	var big := PROPS.station(46.0)
+	var ok := tri != null and one != null and big != null
+	var out := 99999
+	if ok:
+		ok = bool(tri.get_meta("station_outpost", false)) and bool(one.get_meta("station_outpost", false)) \
+			and not bool(big.get_meta("station_outpost", true)) and big.scale.is_equal_approx(Vector3.ONE)
+		for pair in [[tri, rel], [one, [Vector2.ZERO]]]:
+			var st: Node3D = pair[0]
+			st.rotation.y = float(st.get_meta("station_bearing", 0.0))
+			root.add_child(st)
+		out = _outside(tri, rel, HS) + _outside(one, [Vector2.ZERO], HS)
+		ok = ok and tri.find_child("station_T2_debris", true, false) == null
+	# Ryan, Nov 24 (issue 1791): the outpost stands above the grid on the board, no hex line through it
+	var units := [{"id": "p1", "side": "player", "fac": "ithar", "q": 0, "r": 5}]
+	var bt := _board({"0,0": "station", "1,0": "station", "0,1": "station"}, [], units, {"station": {"q": 0, "r": 0}, "stationR": 1}, 6, 2)
+	var bh := _board({}, [{"kind": "station", "cells": [[0, 0]]}], units, {}, 6, 2)
+	var lows: Array = []
+	for b in [bt, bh]:
+		var low := INF
+		for st in _stations(b):
+			if bool(st.get_meta("station_outpost", false)):
+				for mi in (st as Node).find_children("*", "MeshInstance3D", true, false):
+					var bb: AABB = (mi as MeshInstance3D).get_aabb()
+					for i in 8:
+						low = minf(low, ((mi as Node3D).global_transform * bb.get_endpoint(i)).y)
+		lows.append(snappedf(low, 0.01))
+		b.free()
+	var y0: float = 0.0
+	ok = ok and lows.size() == 2 and float(lows[0]) > y0 and float(lows[0]) < 3.0 and float(lows[1]) > y0 and float(lows[1]) < 3.0
+	print("  outpost lowest point above the grid: teaching %s, hole %s" % [str(lows[0]), str(lows[1])])
+	# one file list for the battle's prefetch and the board's terrain wait (Artoo on PR 1998, item 1)
+	var view := {"terrain": {"0,0": "station", "1,0": "station", "0,1": "station"}, "map": {"holes": [{"kind": "station", "cells": [[4, 4]]}]}}
+	var sp: Vector2i = PROPS.station_spots(view)
+	ok = ok and sp == Vector2i(0, 1)
+	var files: Array = PROPS.station_files(false, true)
+	ok = ok and files.has(PROPS.OUTPOST_PATH) and not files.has(PROPS.T2_DEBRIS_PATH)
+	_report(ok and out == 0, "with the outpost installed, the 3-hex spot and a hole draw it inside their hexes (scale %.3f and %.3f, %d points outside), the big cluster keeps T2" % [
+		tri.scale.x if tri else 0.0, one.scale.x if one else 0.0, out])
+	for n in [tri, one, big]:
+		if n != null:
+			n.free()
+
+
+func _hulk_checks() -> void:
+	var facs := {}
+	for v in 600:
+		facs[PROPS.hulk_faction(PROPS.pick_hulk(v * 7919))] = true
+	_report(facs.size() == 6 and not facs.has(""), "the hulk draw reaches all six factions: %s" % str(facs.keys()))
+	var local := 0
+	var n := 1000
+	for v in n:
+		var code := PROPS.pick_hulk(v * 104729 + 17, ["chorus", "ithar"])
+		if PROPS.hulk_faction(code) in ["chorus", "ithar"]:
+			local += 1
+	# 70 percent local plus their share (4 of 8 hulls) of the 30 percent ambient draw: about 85 percent
+	_report(local > n * 0.75 and local < n * 0.95, "a Chorus and Glasswright battle draws their hulks %d of %d times" % [local, n])
+	# Wave 0 on Sheet M (Nov 23): dead metal loses its polish and keeps at most DEAD_METAL_DIM of its paint (darker only,
+	# inside R425); dead glass keeps its gloss with a softer glint; Eclipse obsidian and Chorus chitin are untouched by it
+	var metal := StandardMaterial3D.new()
+	metal.albedo_color = Color(0.8, 0.8, 0.82)
+	metal.metallic = 0.8
+	metal.roughness = 0.4
+	var dull := true
+	for fac in ["hegemony", "voidsworn", "corsair"]:
+		var d := PROPS.derelict(metal, fac)
+		dull = dull and d.metallic <= 0.4 + 1e-5 and d.metallic_specular <= PROPS.DEAD_SPECULAR + 1e-5
+		dull = dull and PROPS.effective_luma(Color.WHITE, d.albedo_color) <= PROPS.effective_luma(Color.WHITE, metal.albedo_color * PROPS.DEAD_METAL_DIM) + 1e-5
+	var gl := StandardMaterial3D.new()
+	gl.albedo_color = Color(0.5, 0.8, 0.9)
+	gl.roughness = 0.1
+	var dg := PROPS.derelict(gl, "ithar")
+	var de := PROPS.derelict(metal, "deathless")
+	var dc := PROPS.derelict(metal, "chorus")
+	_report(dull and is_equal_approx(dg.roughness, 0.1) and dg.metallic_specular < gl.metallic_specular
+		and is_equal_approx(de.metallic, metal.metallic) and is_equal_approx(dc.metallic_specular, metal.metallic_specular),
+		"dead metal hulks are dull and at most %.0f%% of their paint; dead glass keeps its gloss, softer glint" % (PROPS.DEAD_METAL_DIM * 100.0))
+	# Fable on PR 1772 (7c734f53): a ship that dies leaves its own faction's hulk; the scorch layer keeps the hull's relief
+	var own_ok := true
+	for fac in PROPS.HULKS:
+		for v in 50:
+			own_ok = own_ok and PROPS.hulk_faction(PROPS.pick_hulk(v * 7919, ["corsair"], fac)) == fac
+	var bumpy := StandardMaterial3D.new()
+	bumpy.normal_enabled = true
+	bumpy.normal_texture = NoiseTexture2D.new()
+	var db := PROPS.derelict(bumpy, "corsair")
+	_report(own_ok and db.detail_enabled and db.detail_normal == bumpy.normal_texture,
+		"a dying ship leaves its own faction's hulk; a burnt hulk's scorch keeps the hull's own normal map")
+	var glass := StandardMaterial3D.new()
+	glass.albedo_color = Color(0.5, 0.8, 0.9, 0.6)
+	glass.roughness = 0.1
+	glass.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass.emission_enabled = true
+	var g := PROPS.derelict(glass, "ithar")
+	_report(is_equal_approx(g.albedo_color.a, 0.6) and g.albedo_color.b > g.albedo_color.r and is_equal_approx(g.roughness, 0.1)
+		and g.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA and not g.emission_enabled,
+		"a dead Glasswright keeps its glass hue, clarity and gloss, lights out")
+	var chitin := StandardMaterial3D.new()
+	chitin.albedo_color = Color(0.6, 0.3, 0.35)
+	chitin.roughness = 0.5
+	var c := PROPS.derelict(chitin, "chorus")
+	var soot := PROPS.derelict(chitin, "hegemony")
+	_report(c.albedo_color.r > c.albedo_color.g and not c.albedo_color.is_equal_approx(soot.albedo_color),
+		"a dead Chorus keeps its own chitin colour, not the metal soot")
+	var grey := StandardMaterial3D.new()
+	grey.albedo_color = Color(0.7, 0.7, 0.7)
+	var navy := PROPS.derelict(grey, "hegemony")
+	var crusade := PROPS.derelict(grey, "voidsworn")
+	var hull_breaker := PROPS.derelict(grey, "corsair")
+	print("  grey paint burnt: hegemony %.3f, voidsworn %.3f, corsair %.3f linear" % [PROPS.linear_luma(navy.albedo_color), PROPS.linear_luma(crusade.albedo_color), PROPS.linear_luma(hull_breaker.albedo_color)])
+	_report(PROPS.linear_luma(hull_breaker.albedo_color) <= PROPS.linear_luma(crusade.albedo_color) + 1e-4
+		and PROPS.linear_luma(crusade.albedo_color) < PROPS.linear_luma(navy.albedo_color),
+		"metal hulks burn by their own wound profile (Hullbreakers sootiest, Directorate cleanest), not one shared soot")
+	# an equal draw per faction when no faction is local (two-hull factions are not drawn twice as often)
+	var per := {}
+	for v in 6000:
+		var f := PROPS.hulk_faction(PROPS.pick_hulk(v * 2654435 + 7))
+		per[f] = int(per.get(f, 0)) + 1
+	var lo := 6000
+	var hi := 0
+	for f in per:
+		lo = mini(lo, per[f])
+		hi = maxi(hi, per[f])
+	_report(per.size() == 6 and lo > 6000 * 0.12 and hi < 6000 * 0.22, "an ambient draw gives each faction about a sixth: %s" % str(per))
+	# an Eclipse hulk is dark violet obsidian whatever its paint (Ryan, Nov 22: Astra's cleanup item 4), glossy, not brown
+	var warm := Image.create(8, 8, false, Image.FORMAT_RGBA8)
+	warm.fill(Color(0.55, 0.42, 0.3))
+	var ecl_src := StandardMaterial3D.new()
+	ecl_src.albedo_texture = ImageTexture.create_from_image(warm)
+	ecl_src.roughness = 0.7
+	var ecl := PROPS.derelict(ecl_src, "deathless")
+	var ee := PROPS.texture_mean(ecl_src) * ecl.albedo_color
+	var ey := PROPS.effective_luma(PROPS.texture_mean(ecl_src), ecl.albedo_color)
+	_report(ee.b > ee.r and ee.r > ee.g and ey <= PROPS.HULK_BAND.y + 1e-3 and ey >= PROPS.HULK_BAND.x - 1e-3
+		and ecl.roughness <= 0.3 + 1e-4 and not ecl.emission_enabled,
+		"an Eclipse hulk over warm paint lands on dark violet obsidian %s (%.3f linear), glossy" % [str(ee), ey])
+	# a textured pale glass hull stays in the dull band once its texture is counted (Fable on PR 1772, H9)
+	var img := Image.create(8, 8, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.95, 0.97, 1.0))
+	var pale := StandardMaterial3D.new()
+	pale.albedo_texture = ImageTexture.create_from_image(img)
+	var pg := PROPS.derelict(pale, "ithar")
+	var eff := PROPS.texture_mean(pale) * pg.albedo_color
+	var ye := PROPS.effective_luma(PROPS.texture_mean(pale), pg.albedo_color)
+	# the mean comes from a small mip, not the whole map (Artoo on PR 1772): a 1024 map of two-tone squares, mipmapped
+	var big := Image.create(1024, 1024, false, Image.FORMAT_RGBA8)
+	for y in 64:
+		for x in 64:
+			big.fill_rect(Rect2i(x * 16, y * 16, 16, 16), Color(0.8, 0.4, 0.2) if (x + y) % 2 == 0 else Color(0.2, 0.4, 0.6))
+	big.generate_mipmaps()
+	var t0 := Time.get_ticks_usec()
+	var mean := PROPS.image_mean(big)
+	var us := Time.get_ticks_usec() - t0
+	_report(absf(mean.r - 0.5) < 0.03 and absf(mean.b - 0.4) < 0.03 and us < 20000,
+		"the texture mean reads a small mip: %s in %d us" % [str(mean), us])
+	_report(ye <= PROPS.HULK_BAND.y + 1e-3 and ye >= PROPS.HULK_BAND.x - 1e-3, "a textured pale Glasswright hulk lands at %.3f linear, inside the dull band" % ye)
+	# visible burn (Board look-tune on the PROPS_E pictures, Nov 22): metal hulks carry scorch patches, Hullbreakers the
+	# most; Chorus chitin, Glasswright glass and Eclipse obsidian carry none; the ceiling sits at 0.045
+	var plain := StandardMaterial3D.new()
+	var burnt := {}
+	for fac in ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
+		var dm := PROPS.derelict(plain, fac)
+		var bt := dm.detail_albedo as NoiseTexture2D
+		burnt[fac] = bt.color_ramp.offsets[1] if dm.detail_enabled and bt != null else 0.0
+	_report(burnt["corsair"] > burnt["voidsworn"] and burnt["voidsworn"] > burnt["hegemony"] and burnt["hegemony"] > 0.0
+		and burnt["chorus"] == 0.0 and burnt["ithar"] == 0.0 and burnt["deathless"] == 0.0
+		and is_equal_approx(PROPS.HULK_BAND.y, 0.045), "burn patches by wreck_soot: %s" % str(burnt))
+	# one burnt material per source material and faction, shared by every hulk of that hull (LOAD probe, Board Nov 22)
+	var sh1 := PROPS.derelict_shared(plain, "corsair")
+	_report(sh1 == PROPS.derelict_shared(plain, "corsair") and sh1 != PROPS.derelict_shared(plain, "voidsworn"),
+		"hulks of one hull share their burnt materials, per faction")
+	# the cache owns no burnt copy (Antigravity audit, Artoo on PR 1772): once the hulks wearing it are gone, so is the copy,
+	# with no later cache miss needed (a battle exit to the map makes none)
+	var src2 := StandardMaterial3D.new()
+	var worn := PROPS.derelict_shared(src2, "corsair")
+	var held := weakref(worn)
+	worn = null
+	_report(held.get_ref() == null, "a burnt copy is freed with the last hulk wearing it, not held by the cache")
+	var wet := StandardMaterial3D.new()
+	wet.roughness = 0.2
+	_report(PROPS.derelict(wet, "chorus").roughness >= 0.85 - 1e-4 and PROPS.derelict(wet, "ithar").roughness <= 0.2 + 1e-4,
+		"a Chorus hulk is dry matte chitin; Glasswright glass keeps its gloss")
+	# R423 (Ryan, Nov 23): Chorus hulks alone sit below the band 3 floor, about 0.025; Eclipse obsidian stays as it was
+	var tan := StandardMaterial3D.new()
+	tan.albedo_color = Color(0.7, 0.55, 0.4)
+	var cy := PROPS.linear_luma(PROPS.derelict(tan, "chorus").albedo_color)
+	var my := PROPS.linear_luma(PROPS.derelict(tan, "hegemony").albedo_color)
+	_report(cy <= 0.03 + 1e-3 and cy >= PROPS.CHORUS_HULK_BAND.x - 1e-3 and cy < my,
+		"Chorus hulks sit at %.3f linear, below the metal hulks' %.3f (R423)" % [cy, my])
+	# R425 (Ryan, Nov 23): a wreck is never lighter than its dimmed live paint, for any faction (the 0.04 floor had lifted the
+	# Hullbreaker hull from 0.027 live to 0.040 dead, and left the dark Chorus body undimmed)
+	var lifted := []
+	for fac in ["voidsworn", "hegemony", "corsair", "chorus", "ithar"]:
+		for col in [Color(0.21, 0.17, 0.15), Color(0.18, 0.15, 0.11), Color(0.05, 0.05, 0.06)]:
+			var dk := StandardMaterial3D.new()
+			dk.albedo_color = col
+			var live := PROPS.linear_luma(col)
+			var dead := PROPS.linear_luma(PROPS.derelict(dk, fac).albedo_color)
+			if dead > maxf(live * PROPS.DEAD_DIM, PROPS.HULK_BAND.x) + 1e-3:
+				lifted.append("%s %s: %.4f live, %.4f dead" % [fac, str(col), live, dead])
+	_report(lifted.is_empty(), "no wreck is lighter than its dimmed live paint (R425): %s" % str(lifted))
+	# textured paint (Artoo at deddb79b): measured and corrected in one linear space, so a textured hulk lands under the
+	# ceiling exactly, and never above its dimmed live paint (Eclipse obsidian is checked on its own above)
+	var tex_off := []
+	for v in [0.5, 0.25, 0.9]:
+		var img2 := Image.create(8, 8, false, Image.FORMAT_RGBA8)
+		img2.fill(Color(v, v * 0.9, v * 0.8))
+		var tm := StandardMaterial3D.new()
+		tm.albedo_texture = ImageTexture.create_from_image(img2)
+		tm.albedo_color = Color(0.6, 0.6, 0.6)
+		for fac in ["hegemony", "corsair", "chorus", "ithar"]:
+			var dm2 := PROPS.derelict(tm, fac)
+			var mean2 := PROPS.texture_mean(tm)
+			var live2 := PROPS.effective_luma(mean2, tm.albedo_color)
+			var dead2 := PROPS.effective_luma(mean2, dm2.albedo_color)
+			var cap: float = (PROPS.CHORUS_HULK_BAND if fac == "chorus" else PROPS.HULK_BAND).y
+			if dead2 > cap + 1e-4 or dead2 > maxf(live2 * PROPS.DEAD_DIM, PROPS.HULK_BAND.x) + 1e-4:
+				tex_off.append("%s %.2f: live %.4f dead %.4f cap %.3f" % [fac, v, live2, dead2, cap])
+	_report(tex_off.is_empty(), "textured hulks land under the ceiling in linear space, never above dimmed paint: %s" % str(tex_off))
+
+
+func _board(terrain: Dictionary, holes: Array, units: Array, map: Dictionary, radius: int, seed := 7) -> Node3D:
+	var hexes := []
+	for q in range(-radius, radius + 1):
+		for r in range(-radius, radius + 1):
+			if absi(q + r) <= radius:
+				hexes.append({"q": q, "r": r})
+	var m := map.duplicate()
+	m["holes"] = holes
+	var rules := StubRules.new()
+	rules.v = {"hexes": hexes, "terrain": terrain, "units": units, "map": m}
+	rules.w = {"seed": seed, "biome": {"rock": "stone", "planet": 0, "station": "ring"}}
+	var board: Node3D = BOARD.new()
+	root.add_child(board)
+	board.build(rules)
+	return board
+
+
+func _stations(board: Node3D) -> Array:
+	var out: Array = []
+	for n in board.find_children("*", "Node3D", true, false):
+		if n.has_meta("station_T2"):
+			out.append(n)
+	return out
+
+
+func _board_checks() -> void:
+	var units := [{"id": "p1", "side": "player", "fac": "ithar", "q": 0, "r": 5}, {"id": "e1", "side": "enemy", "fac": "chorus", "q": 0, "r": -5}]
+	# a teaching cluster: three station hexes, rules radius 1 (rules.gd edgeFeature for a defend battle)
+	var tri := {"0,0": "station", "1,0": "station", "0,1": "station"}
+	var ok1 := true
+	for seed in [1, 2, 3, 4, 5, 6]:
+		var b1 := _board(tri, [], units, {"station": {"q": 0, "r": 0}, "stationR": 1}, 6, seed)
+		var s1 := _stations(b1)
+		var one := s1.size() == 1
+		if one:
+			var st: Node3D = s1[0]
+			var level: bool = absf(st.global_transform.basis.y.normalized().dot(Vector3.UP) - 1.0) < 1e-4
+			var cells: Array = []
+			for k in tri:
+				var qr: PackedStringArray = k.split(",")
+				var w: Vector3 = b1.hex_world(int(qr[0]), int(qr[1]))
+				cells.append(Vector2(w.x, w.z))
+			var bad := _outside(st, cells, HS)
+			one = level and bad == 0 and st.get_meta("station_kind") == "ring"
+			print("  teaching cluster on the board, seed %d: scale %.3f, %d points outside, level %s" % [seed, st.scale.x, bad, str(level)])
+		ok1 = ok1 and one
+		b1.free()
+	_report(ok1, "the teaching battle's 3-hex cluster builds T2 level and inside its own hexes on the board (no banked O1_37)")
+	# the big station: every hex within 2 of the centre (19 hexes)
+	var big := {}
+	for q in range(-2, 3):
+		for r in range(-2, 3):
+			if absi(q + r) <= 2:
+				big["%d,%d" % [q, r]] = "station"
+	var hulks := {"5,-1": "hulk", "-5,1": "hulk", "4,1": "hulk", "-4,-1": "hulk", "1,4": "hulk", "-1,-4": "hulk"}
+	big.merge(hulks)
+	var b2 := _board(big, [{"kind": "station", "cells": [[6, -3]]}], units, {"station": {"q": 0, "r": 0}, "stationR": 2}, 8)
+	var s2 := _stations(b2)
+	var big_one: Node3D = null
+	var hole_one: Node3D = null
+	for st in s2:
+		if (st as Node3D).scale.is_equal_approx(Vector3.ONE):
+			big_one = st
+		else:
+			hole_one = st
+	_report(s2.size() == 2 and big_one != null, "the big cluster keeps T2 at unit scale")
+	if hole_one != null:
+		var hp: Vector3 = b2.hex_world(6, -3)
+		var hb := _outside(hole_one, [Vector2(hp.x, hp.z)], HS)
+		print("  station hole on the board: scale %.3f, %d points outside" % [hole_one.scale.x, hb])
+		_report(hb == 0 and hole_one.find_child("station_T2_debris", true, false) == null, "the station hole's T2 stays inside its hex on the board")
+	else:
+		_report(false, "the station hole builds T2")
+	var got := {}
+	var mirrored := 0
+	for n in b2.find_children("*", "Node3D", true, false):
+		if n.has_meta("hulk_faction"):
+			got[n.get_meta("hulk_faction")] = int(got.get(n.get_meta("hulk_faction"), 0)) + 1
+			var bs: Basis = (n as Node3D).global_transform.basis
+			if bs.determinant() <= 0.0:
+				mirrored += 1
+	var local := int(got.get("chorus", 0)) + int(got.get("ithar", 0))
+	print("  hulks by faction: %s" % str(got))
+	_report(local >= 3 and mirrored == 0, "a Chorus and Glasswright battle's six hulk hexes draw mostly their hulls (%d), none mirrored" % local)
+	# a reinforcement that arrived after the board was built (not in its view) dies and lays its hulk: the faction the
+	# battle passes wins (Artoo on PR 1772 at f4981c0d); unknown to both, the mixed draw stays
+	var before := {}
+	for n in b2.find_children("*", "Node3D", true, false):
+		if n.has_meta("hulk_faction"):
+			before[n.get_instance_id()] = true
+	var late_ok := true
+	var cells := [[3, -3], [-3, 3], [2, 2], [-2, -2]]
+	var facs := ["deathless", "corsair", "hegemony", "voidsworn"]
+	for i in cells.size():
+		b2.add_wreck("late_%d" % i, int(cells[i][0]), int(cells[i][1]), true, facs[i])
+	var laid: Array = []
+	for n in b2.find_children("*", "Node3D", true, false):
+		if n.has_meta("hulk_faction") and not before.has(n.get_instance_id()):
+			laid.append(str(n.get_meta("hulk_faction")))
+	laid.sort()
+	var want := facs.duplicate()
+	want.sort()
+	_report(laid == want, "a late reinforcement's wreck lays its own faction's hulk from the faction the battle passes: %s" % str(laid))
+	b2.free()
+
+
+# VS_1767_OLD=1 (before pictures only): the old path comes back whole, and nothing of it leaks when the switch is off
+func _old_path_checks() -> void:
+	OS.set_environment("VS_1767_OLD", "1")
+	var small := PROPS.station(34.0, 2.0 * HS, "rig", true, [Vector2.ZERO], HS, 0.0)
+	var big := PROPS.station(46.0, 3.0 * HS, "rig")
+	var facs := {}
+	for v in 400:
+		facs[PROPS.hulk_faction(PROPS.pick_hulk(v * 7919))] = true
+	var glass := StandardMaterial3D.new()
+	glass.albedo_color = Color(0.5, 0.8, 0.9)
+	var g := PROPS.derelict(glass, "ithar")
+	OS.set_environment("VS_1767_OLD", "")
+	_report(small != null and not small.has_meta("station_T2") and small.get_child_count() == 1
+		and small.get_child(0).scale.is_equal_approx(Vector3.ONE * 34.0), "VS_1767_OLD: a small cluster gets O1_37 at its size again")
+	_report(big != null and big.has_meta("station_T2") and big.find_child("station_kind_light", true, false) == null,
+		"VS_1767_OLD: the big cluster keeps T2 with no kind lamp")
+	_report(facs.size() == 4 and not facs.has("chorus") and not facs.has("ithar"), "VS_1767_OLD: the old four factions' hulks only")
+	_report(g.albedo_color.is_equal_approx(Color(0.32, 0.29, 0.27)), "VS_1767_OLD: the old soot on every hulk")
+	var after := PROPS.station(34.0, 2.0 * HS, "", true, [Vector2.ZERO], HS, 0.0)
+	_report(after != null and after.has_meta("station_T2"), "switch off again: T2 is back")
+	for n in [small, big, after]:
+		if n != null:
+			n.free()
