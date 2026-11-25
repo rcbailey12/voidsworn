@@ -76,7 +76,7 @@ other work to free you up on these crucial items" (R205, R206). So "Fable" in th
 | Options sheets, art direction, faction sheets, picture reviews, the playbooks, picks put to Ryan, merges | The Board (one Claude thread, Opus 5.5 since Nov 11, R194) |
 | Every ship model in Blender (blockouts, build sheets, hulls, kits, the station), hard or visual builds, read-only code audits | Opus 5.5 worker threads, not capped while Ryan's plan clears the backlog (Ryan, Nov 19; R205; RULEBOOK 2.6, LOOP.md duties item 9) |
 | Well-specified code: services, checks, tables, wiring, screens and builds to a spec | DeepSeek workhorse on the PC |
-| Captures, benches, look-bench runs, scripted pipeline steps that shape no ship, code, image-tool jobs | Codex on the PC, up to four local lanes, one job per lane: GPU jobs on the main lane, Godot UI and lighter captures on lane B, lanes C and D code only, no GPU (R205, R206, R268, R301) |
+| Captures, benches, look-bench runs, scripted pipeline steps that shape no ship, code, image-tool jobs | Codex on the PC, up to six local lanes, one job per lane: GPU jobs on the main lane, Godot UI and lighter captures on lane B, lanes C to F code only, no GPU (RULEBOOK 2.7, issue 2057) |
 | Concept pictures by image to image, research, design text, outside checks of Opus-built changes | Muse (Ryan starts every run) |
 | Picks, looks, money | Ryan |
 

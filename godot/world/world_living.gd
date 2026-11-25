@@ -37,9 +37,22 @@ var gas_mats: Array = []     # [ShaderMaterial, base alpha gain]
 var storm_mats: Array[ShaderMaterial] = []
 var _storm_patches: Array = []
 var _tick_presenter: Node = null
-var bolts: Array = []        # {mi, light, pos, next, start}
+var bolts: Array = []        # {mi, light, pos, next, start, soft, variant, strikes, frame, gain}
 var _storm_bursts: Array = []
 var clock := 0.0
+# Issue 1360: "baked" plays the Blender flipbooks; "ribbon" (VS_STORM_BOLTS=ribbon) the old ribbon, for before shots.
+var bolt_style := selected_bolt_style()
+var _bolt_mats: Array[ShaderMaterial] = []   # one per BOLT_VARIANTS entry
+static var _bolt_card: QuadMesh = null
+
+
+static func selected_bolt_style() -> String:
+	return "ribbon" if OS.get_environment("VS_STORM_BOLTS") == "ribbon" else "baked"
+
+
+static func bolt_atlas(variant: String) -> Texture2D:
+	var path: String = BOLT_ATLAS_DIR + "bolt_%s.png" % variant
+	return load(path) as Texture2D if ResourceLoader.exists(path) else null
 # Issue 1079 prototype (off by default): ships disturb the calm nebula as they pass. Storm gas is never touched.
 var _wake = null
 var _wake_mats: Array[ShaderMaterial] = []
@@ -295,6 +308,51 @@ void fragment() {
 	float weight = vc.a;
 	if (vc.b > 0.5) { weight = sin(clamp(vc.a / 0.16, 0.0, 1.0) * 3.14159265) * 0.22; }
 	ALBEDO = radiance * weight * pulse;
+}
+"""
+
+# Issue 1360 (Ryan's pick B, Nov 20 2026): storm lightning plays a strike baked in Blender
+# (tools/blender/vfx/bake_storm_bolts.py) instead of the ribbon above. Each atlas is 4x4 frames of one variant:
+# R main channel core, G fork core, B near glow, A far glow (linear data, not colour). The colours stay the one line
+# style's storm roles, so PR 1299's cyan-white look is unchanged. The ribbon stays for before shots: VS_STORM_BOLTS=ribbon.
+const BOLT_ATLAS_DIR := "res://fx/atlases/storm/"
+const BOLT_VARIANTS := ["a", "b", "c"]     # STB-A Forked, STB-B Branched, STB-C Twin strike
+const BOLT_FRAMES := 16
+const BOLT_GRID := 4
+const BOLT_LIFE := 0.56                    # one strike, 35 ms a frame; the old flash envelope ends by 0.52 s
+const BOLT_FILL := 0.80                    # the main channel runs from tile row 0.10 to 0.90 (BOLT_TOP, BOLT_BOTTOM)
+const BOLT_PEAK := {"a": 2, "b": 3, "c": 1}   # each variant's return-stroke frame (bake_manifest.json main_brightness)
+const BOLT_FLIP_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform sampler2D atlas : filter_linear_mipmap, repeat_disable, hint_default_black;
+instance uniform float frame = -1.0;
+instance uniform float gain = 0.0;
+instance uniform float mirror = 0.0;
+""" + LS.GLSL + """
+void vertex() {
+	// A card turned about the bolt's own axis to face the camera: MODEL_MATRIX's y column runs from the bolt's end to
+	// its start (the tile's height), x carries the width, the origin is the tile's centre.
+	vec3 centre = MODEL_MATRIX[3].xyz;
+	vec3 up = MODEL_MATRIX[1].xyz;
+	float width = length(MODEL_MATRIX[0].xyz);
+	vec3 side = cross(up, CAMERA_POSITION_WORLD - centre);
+	side = length(side) > 0.0001 ? normalize(side) : normalize(MODEL_MATRIX[0].xyz);
+	vec3 world = centre + side * VERTEX.x * width + up * VERTEX.y;
+	POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(world, 1.0));
+}
+void fragment() {
+	if (gain <= 0.0 || frame < 0.0) { discard; }
+	float f = floor(frame);
+	vec2 uv = vec2(mix(UV.x, 1.0 - UV.x, mirror), UV.y);
+	vec2 cell = vec2(mod(f, 4.0), floor(f / 4.0));
+	vec4 s = texture(atlas, (cell + clamp(uv, 0.004, 0.996)) / 4.0);
+	// Issue 1374 (R362): colours from the one line style (render/line_style.gd bolt_*). The hot channel is the core
+	// colour, the near glow the cyan skirt, and the cyan-white corona sits outside the skirt, never on the hot tube.
+	float core = max(s.r, s.g * 0.85);
+	float corona = max(s.a - s.b * 0.5, 0.0);
+	vec3 col = LS_BOLT_CORE * core + LS_BOLT_SKIRT * s.b * 0.30 + LS_BOLT_CORONA * corona * 0.22;
+	ALBEDO = col * gain;
 }
 """
 
@@ -762,11 +820,15 @@ func _set_flashes(fs: Array) -> void:
 func _bolts(ps: Array) -> void:
 	var bm := ShaderMaterial.new()
 	bm.shader = SHADER_CACHE.for_code(BOLT_SHADER)
+	var baked := bolt_style == "baked" and _bolt_materials()
+	if not baked:
+		bolt_style = "ribbon"
 	var lit := 0
+	var now := _bolt_now()
 	for patch in _patches(ps):
 		var center := Vector3.ZERO
 		for point in patch: center += point
-		var burst := {"center": center / float(patch.size()), "bolts": [], "next": rng.randf_range(0.3, 3.5)}
+		var burst := {"center": center / float(patch.size()), "bolts": [], "next": now + rng.randf_range(0.3, 3.5)}
 		_storm_bursts.append(burst)
 		var count := clampi(ceili(float(patch.size()) / 2.0), 2, 4)
 		var anchors: Array = []
@@ -786,8 +848,10 @@ func _bolts(ps: Array) -> void:
 			var z := a + Vector3(cos(angle + 1.0) * 10.0, rng.randf_range(-10.0, -5.0), sin(angle + 1.0) * 10.0)
 			var st := SurfaceTool.new()
 			st.begin(Mesh.PRIMITIVE_TRIANGLES)
+			# The ribbon paths are drawn by the random stream either way, so the baked bolts leave every later layout
+			# (the debris after the storm) exactly where it was.
 			var path := _jag(a, z, 9, 0.09)
-			_ribbon(st, path, 0.20, 1.15)
+			if not baked: _ribbon(st, path, 0.20, 1.15)
 			var forks := rng.randi_range(2, 4)
 			var fork_paths: Array = []
 			for k in forks:
@@ -798,11 +862,18 @@ func _bolts(ps: Array) -> void:
 				var direction := (z - a).normalized().rotated(Vector3.UP, turn)
 				var tip := start + direction * rng.randf_range(7.0, 11.0) + Vector3(0, rng.randf_range(0.0, 5.0), 0)
 				var fork := _jag(start, tip, 6, 0.11)
-				_ribbon(st, fork, 0.115, 0.85, true)
+				if not baked: _ribbon(st, fork, 0.115, 0.85, true)
 				fork_paths.append(fork)
+			var variant := bolts.size() % BOLT_VARIANTS.size()
 			var mi := MeshInstance3D.new()
-			mi.mesh = st.commit()
-			mi.material_override = bm
+			if baked:
+				mi.mesh = _bolt_card_mesh()
+				mi.transform = bolt_card_transform(a, z)
+				mi.custom_aabb = AABB(Vector3(-0.5, -0.5, -0.5), Vector3.ONE)
+				mi.material_override = _bolt_mats[variant]
+			else:
+				mi.mesh = st.commit()
+				mi.material_override = bm
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			add_child(mi)
 			var light: OmniLight3D = null
@@ -818,9 +889,68 @@ func _bolts(ps: Array) -> void:
 				add_child(light)
 				lit += 1
 			var bolt := {"mi": mi, "light": light, "pos": (a + z) * 0.5,
-				"next": burst.next, "start": -10.0, "soft": false, "fork_paths": fork_paths, "path": path}
+				"next": burst.next, "start": -1e9, "soft": false, "fork_paths": fork_paths, "path": path,
+				"variant": variant, "strikes": 0, "frame": -1.0, "gain": 0.0}
 			bolts.append(bolt)
 			burst.bolts.append(bolt)
+
+
+# Issue 1360: one material per baked variant; false (and the ribbon) when an atlas is missing.
+func _bolt_materials() -> bool:
+	if not _bolt_mats.is_empty():
+		return true
+	var shader := SHADER_CACHE.for_code(BOLT_FLIP_SHADER)
+	for key in BOLT_VARIANTS:
+		var tex := bolt_atlas(key)
+		if tex == null:
+			push_warning("Issue 1360: storm bolt atlas %s is missing; storms fall back to the ribbon" % key)
+			_bolt_mats.clear()
+			return false
+		var m := ShaderMaterial.new()
+		m.shader = shader
+		m.set_shader_parameter("atlas", tex)
+		_bolt_mats.append(m)
+	return true
+
+
+static func _bolt_card_mesh() -> QuadMesh:
+	if _bolt_card == null:
+		_bolt_card = QuadMesh.new()
+		_bolt_card.size = Vector2.ONE
+	return _bolt_card
+
+
+# The card for a bolt from a to z: its origin is the tile's centre, its y column runs from z up to a over the whole tile
+# height (the main channel fills BOLT_FILL of it), and its x and z columns are the same length, square to it. The shader
+# turns the card about that axis to face the camera, so the bolt keeps the ribbon's start, end and storm footprint.
+static func bolt_card_transform(a: Vector3, z: Vector3) -> Transform3D:
+	var h := a.distance_to(z) / BOLT_FILL
+	var up := (a - z).normalized()
+	var side := up.cross(Vector3.UP)
+	if side.length() < 0.1: side = up.cross(Vector3.RIGHT)
+	side = side.normalized()
+	var depth := side.cross(up).normalized()
+	return Transform3D(Basis(side * h, up * h, depth * h), (a + z) * 0.5)
+
+
+# Bolts run on the effects clock (fx.now): a hit pause or a slow death slows the strike with every other effect.
+# Without a battle presenter (a bench world) they run on this node's own clock.
+func _bolt_now() -> float:
+	var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+	return float(effects.now) if is_instance_valid(effects) else clock
+
+
+# Issue 1360: which baked frame a strike shows and how bright, age seconds after it starts. A reduced or refused strike
+# holds the variant's return-stroke frame (no flicker) and eases through the old soft envelope's lower peak.
+static func bolt_frame(age: float, soft: bool, variant: int) -> Vector2:
+	if age < 0.0:
+		return Vector2(-1.0, 0.0)
+	if soft:
+		var g := _flash(age, true)
+		return Vector2(float(BOLT_PEAK[BOLT_VARIANTS[variant]]), g) if g > 0.0 else Vector2(-1.0, 0.0)
+	if age >= BOLT_LIFE:
+		return Vector2(-1.0, 0.0)
+	return Vector2(floorf(age / BOLT_LIFE * BOLT_FRAMES), 1.0)
 
 
 func _jag(a: Vector3, z: Vector3, n: int, amp: float) -> Array:
@@ -893,16 +1023,23 @@ static func _flash(t: float, soft := false) -> float:
 
 func _start_storm_burst(burst: Dictionary) -> void:
 	var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+	var now := _bolt_now()
 	for index in burst.bolts.size():
 		var bolt: Dictionary = burst.bolts[index]
 		var delay := float(index) * 0.075
-		bolt.start = clock + delay
+		bolt.start = now + delay
 		bolt.soft = false
 		if is_instance_valid(effects):
 			# Book the lit gas and bloom as a conservative 48-unit disc. Storms
 			# share the real fight's area counter, including other weapon effects.
-			bolt.soft = not effects.flash_at(bolt.pos, effects.now + delay, 48.0, 0.0, 0.52)
-	burst.next = clock + rng.randf_range(2.2, 6.5)
+			bolt.soft = not effects.flash_at(bolt.pos, now + delay, 48.0, 0.0, 0.52)
+		if bolt_style == "baked":
+			# Issue 1360: each strike plays the next variant, mirrored every other time, so a storm never repeats a shape
+			# twice running (no random draws: the layout stream stays as it was).
+			bolt.strikes = int(bolt.strikes) + 1
+			bolt.variant = (int(bolt.variant) + 1) % BOLT_VARIANTS.size()
+			(bolt.mi as MeshInstance3D).material_override = _bolt_mats[bolt.variant]
+	burst.next = now + rng.randf_range(2.2, 6.5)
 
 
 static func _instance_shader_ready(mi: MeshInstance3D) -> bool:
@@ -971,15 +1108,28 @@ func _process(dt: float) -> void:
 		_wake.apply(_wake_mats)
 	var reduced := is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))
 	_present_storm_ticks(reduced)
+	var now := _bolt_now()
 	for burst in _storm_bursts:
-		if clock >= float(burst.next): _start_storm_burst(burst)
+		if now >= float(burst.next): _start_storm_burst(burst)
 	var fs: Array = []
+	var baked := bolt_style == "baked"
 	for b in bolts:
-		var v := _flash(clock - float(b["start"]), bool(b.get("soft", false)) or reduced)
+		var age := now - float(b["start"])
+		var soft := bool(b.get("soft", false)) or reduced
+		# The light on the gas and ships keeps the old envelope; the baked strike draws the bolt itself.
+		var v := _flash(age, soft)
 		var mi := b["mi"] as MeshInstance3D
-		if _instance_shader_ready(mi):
+		if baked:
+			var fg := bolt_frame(age, soft, int(b["variant"]))
+			b["frame"] = fg.x
+			b["gain"] = fg.y
+			if _instance_shader_ready(mi):
+				mi.set_instance_shader_parameter("frame", fg.x)
+				mi.set_instance_shader_parameter("gain", fg.y)
+				mi.set_instance_shader_parameter("mirror", float(int(b["strikes"]) % 2))
+		elif _instance_shader_ready(mi):
 			mi.set_instance_shader_parameter("flash", v)
-			mi.set_instance_shader_parameter("branch_flash", _flash((clock - float(b["start"])) * 1.6, bool(b.get("soft", false)) or reduced))
+			mi.set_instance_shader_parameter("branch_flash", _flash(age * 1.6, soft))
 		if b["light"] != null:
 			(b["light"] as OmniLight3D).light_energy = v * 1.2
 		if v > 0.0:
@@ -1276,6 +1426,7 @@ static var _wreck_mesh_cache: Array = []
 static func clear_static() -> void:
 	_wreck_mesh_cache = []
 	_piece_radii.clear()   # keyed by those meshes' instance ids
+	_bolt_card = null   # issue 1360: the shared bolt card
 
 
 # Issue #230 AS14: the one tumble figure of record (contrib/opus/briefs/environment_reconciliation.md section 1). A

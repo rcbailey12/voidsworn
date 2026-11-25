@@ -18,7 +18,13 @@ var squad_kind := ""
 var u: Dictionary
 var hull: Node3D
 var hull_pivot: Node3D
-var fx_clock: Node
+var fx_clock: Node:
+	set(value):
+		fx_clock = value
+		_motion_fx_step = -1
+		if not squad_kind.is_empty() and is_instance_valid(hull):
+			hull.set_process(value == null)
+var _motion_fx_step := -1
 var L := 10.0
 var fac := "hegemony"
 var code := ""
@@ -2213,6 +2219,24 @@ func _puffs_step(dt: float) -> void:
 
 
 func _process(dt: float) -> void:
+	if not is_instance_valid(fx_clock):
+		_step_motion(dt)
+		return
+	var frame: int = fx_clock.step_count
+	if frame == _motion_fx_step:
+		return
+	_motion_fx_step = frame
+	var elapsed: float = fx_clock.dt
+	# Issue 1467: keep a slow frame's motion in steps of at most 1/30 s, with bounded work on a hitch.
+	var steps := clampi(ceili(elapsed * 30.0 - 1e-6), 1, 8)
+	var h := minf(elapsed, 8.0 / 30.0) / float(steps)
+	for i in steps:
+		_step_motion(h)
+	if not squad_kind.is_empty():
+		hull.step(elapsed)
+
+
+func _step_motion(dt: float) -> void:
 	if not puffs.is_empty():
 		_puffs_step(dt)
 	if dead:

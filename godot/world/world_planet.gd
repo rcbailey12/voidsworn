@@ -604,14 +604,16 @@ float craters_r(vec3 d, float scale, float dens, inout float ray) {
 		float size = hh(c + 7.7);
 		float r = (0.18 + 0.3 * size) / scale;
 		float u = acos(clamp(dot(d, cp), -1.0, 1.0)) / r;
-		h += (u < 1.0 ? -(1.0 - u * u) : 0.0) * 0.6 + exp(-pow((u - 1.0) / 0.2, 2.0)) * 0.25;
+		float uc = (u - 1.0) / 0.2;
+		h += (u < 1.0 ? -(1.0 - u * u) : 0.0) * 0.6 + exp(-(uc * uc)) * 0.25;
 		h += exp(-pow(u / 0.16, 2.0)) * 0.3 * smoothstep(0.5, 0.9, size);
 		if (hh(c + 9.3) < 0.18 && u > 0.9 && u < 2.4) {
 			vec3 e1 = normalize(cross(abs(cp.y) > 0.95 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0), cp));
 			vec3 e2 = cross(cp, e1);
 			float ang = atan(dot(d, e2), dot(d, e1));
 			float streak = smoothstep(0.62, 0.92, wvn3(vec3(cos(ang) * 5.0, sin(ang) * 5.0, hh(c + 3.7) * 40.0)));
-			ray += streak * exp(-pow((u - 1.0) / 0.55, 2.0)) * smoothstep(0.9, 1.1, u);
+			float ur = (u - 1.0) / 0.55;
+			ray += streak * exp(-(ur * ur)) * smoothstep(0.9, 1.1, u);
 		}
 	}
 	return h;
@@ -833,9 +835,9 @@ void fragment() {
 const SPHERE := """
 shader_type spatial;
 render_mode unshaded, cull_back, shadows_disabled, fog_disabled;
-uniform sampler2D tex_a : source_color, filter_linear, repeat_enable;
+uniform sampler2D tex_a : source_color, filter_linear_mipmap, repeat_enable;
 // Packed masks and relief are linear data, including the ocean mask in tex_a.a.
-uniform sampler2D tex_b : filter_linear, repeat_enable;
+uniform sampler2D tex_b : filter_linear_mipmap, repeat_enable;
 uniform float has_tex = 0.0;
 uniform vec3 flat_col = vec3(0.3);
 uniform vec3 sun = vec3(0.45, 0.7, 0.55);     // toward the sun, world space
@@ -860,7 +862,13 @@ void vertex() {
 	vC = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 	vR = length(MODEL_MATRIX[0].xyz);
 }
-vec2 uv_of(vec3 d) { return vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359); }
+vec2 uv_of(vec3 d) {
+	float v = acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359;
+	return vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, clamp(v, 0.002, 0.998));
+}
+// Mip level from the direction's screen change, not the uv's: the longitude wrap jumps u from 1 to 0, so plain texture()
+// would pick the smallest mip along that meridian and draw a seam (the V2 path, r01_sample, does the same).
+float lod_of(sampler2D m, float g) { return clamp(log2(max(g * float(textureSize(m, 0).x) / 6.28318530718, 1.0)), 0.0, 11.0); }
 vec3 spun(vec3 d, float a) { float c = cos(a); float s = sin(a); return vec3(c * d.x + s * d.z, d.y, -s * d.x + c * d.z); }
 void fragment() {
 	vec3 n0 = normalize(vObj);
@@ -868,14 +876,15 @@ void fragment() {
 	vec3 L = normalize(sun);
 	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
 	vec3 ds = spun(n0, TIME * spin);
+	float dg = max(length(dFdx(ds)), length(dFdy(ds)));
 	vec3 alb = flat_col;
 	vec4 b = vec4(0.0, 0.0, 0.5, 0.0);
 	float ocean = 0.0;
 	if (has_tex > 0.5) {
-		vec4 a = texture(tex_a, uv_of(ds));
+		vec4 a = textureLod(tex_a, uv_of(ds), lod_of(tex_a, dg));
 		alb = a.rgb;
 		ocean = a.a;
-		b = texture(tex_b, uv_of(ds));
+		b = textureLod(tex_b, uv_of(ds), lod_of(tex_b, dg));
 	}
 	alb *= tint;
 	float ndl = dot(N, L);
@@ -888,8 +897,8 @@ void fragment() {
 	vec3 b_o = cross(n0, t_o);
 	vec3 dsx = spun(normalize(n0 + t_o * 0.003), TIME * spin);
 	vec3 dsy = spun(normalize(n0 + b_o * 0.003), TIME * spin);
-	float hx = has_tex > 0.5 ? texture(tex_b, uv_of(dsx)).b - b.b : 0.0;
-	float hy = has_tex > 0.5 ? texture(tex_b, uv_of(dsy)).b - b.b : 0.0;
+	float hx = has_tex > 0.5 ? textureLod(tex_b, uv_of(dsx), lod_of(tex_b, dg)).b - b.b : 0.0;
+	float hy = has_tex > 0.5 ? textureLod(tex_b, uv_of(dsy), lod_of(tex_b, dg)).b - b.b : 0.0;
 	mat3 m3 = mat3(MODEL_MATRIX[0].xyz, MODEL_MATRIX[1].xyz, MODEL_MATRIX[2].xyz);
 	vec3 tx = normalize(m3 * t_o);
 	tx = normalize(tx - N * dot(tx, N));
@@ -904,7 +913,7 @@ void fragment() {
 	float cs = 0.0;
 	if (has_tex > 0.5 && b.r > 0.0) {
 		vec3 dl = spun(normalize(n0 + (transpose(mat3(MODEL_MATRIX[0].xyz, MODEL_MATRIX[1].xyz, MODEL_MATRIX[2].xyz)) * L) / vR * 0.012), TIME * spin);
-		cs = texture(tex_b, uv_of(dl)).r;
+		cs = textureLod(tex_b, uv_of(dl), lod_of(tex_b, dg)).r;
 	}
 	vec3 ground = alb * (1.0 - cs * 0.55);
 	vec3 col = mix(ground, vec3(0.82, 0.85, 0.88), b.r) * diff * sun_col;
@@ -999,7 +1008,8 @@ void fragment() {
 	dens = clamp(dens / 1.9, 0.0, 1.0);
 	dens *= smoothstep(0.0, 0.04, u) * (1.0 - smoothstep(0.94, 1.0, u));
 	// a dark gap two thirds of the way out (Cassini-like) and a thin faint inner ring
-	dens *= 1.0 - 0.9 * exp(-pow((u - 0.66) / 0.018, 2.0));
+	float ug = (u - 0.66) / 0.018;
+	dens *= 1.0 - 0.9 * exp(-(ug * ug));
 	dens *= mix(0.35, 1.0, smoothstep(0.08, 0.2, u));
 	vec3 L = normalize(sun);
 	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);

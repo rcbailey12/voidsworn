@@ -715,8 +715,10 @@ static var _dirs: PackedVector3Array = PackedVector3Array()
 
 # F3 perf: each piece's centre and its collider points (at most _HULL_DIRS extreme points), worked out on the cut's
 # worker thread; the break-up used to do this in GDScript on the main thread for every vertex of every piece.
-static func _piece_hulls(pieces: Array) -> void:
+static func _piece_hulls(pieces: Array, abort: CutAbort = null) -> void:
 	for pc in pieces:
+		if abort != null and abort.cancelled():
+			return
 		var pts: PackedVector3Array = pc["pts"]
 		var cen := Vector3.ZERO
 		for p in pts:
@@ -728,14 +730,14 @@ static func _piece_hulls(pieces: Array) -> void:
 			hp[i] -= cen
 		pc["hull"] = hp
 		var tr := Time.get_ticks_usec()
-		pc["reach"] = _piece_reach(pc)
+		pc["reach"] = _piece_reach(pc, abort)
 		pc["reach_usec"] = Time.get_ticks_usec() - tr   # issue 1395: the worker's share, printed by fx/test/death_cost_check.gd
 
 
 # Issue 1395 (Neon F9): the piece's reach for the leash (see _measure_reach), worked out here on the cut's worker from
 # the very vertex arrays its mesh is built from, so the wreck's draw-in reads no faces on the main thread. The middle is
 # the middle of the mesh's box (every surface and the cap), the reach the farthest vertex from it on the board plane.
-static func _piece_reach(pc: Dictionary) -> float:
+static func _piece_reach(pc: Dictionary, abort: CutAbort = null) -> float:
 	var lists: Array = []
 	for sd in pc["surfs"]:
 		var v = (sd["arrays"] as Array)[Mesh.ARRAY_VERTEX]
@@ -746,14 +748,18 @@ static func _piece_reach(pc: Dictionary) -> float:
 	if lists.is_empty(): return -1.0
 	var lo := Vector3.INF
 	var hi := -Vector3.INF
-	for vs in lists:
-		for v in (vs as PackedVector3Array):
+	for verts: PackedVector3Array in lists:
+		for i in verts.size():
+			if (i & 1023) == 0 and abort != null and abort.cancelled(): return -1.0
+			var v := verts[i]
 			lo = lo.min(v)
 			hi = hi.max(v)
 	var mid := (lo + hi) * 0.5
 	var far := 0.0
-	for vs in lists:
-		for v in (vs as PackedVector3Array):
+	for verts: PackedVector3Array in lists:
+		for i in verts.size():
+			if (i & 1023) == 0 and abort != null and abort.cancelled(): return -1.0
+			var v := verts[i]
 			far = maxf(far, (v.x - mid.x) * (v.x - mid.x) + (v.z - mid.z) * (v.z - mid.z))
 	return sqrt(far)
 
@@ -1481,6 +1487,7 @@ static func _lance_recut(fx, s) -> void:
 		var tid: int = s.get_meta("cut_task")
 		if not finish_precompute(fx, s):
 			s.remove_meta("cut_job")  # the detached worker still owns this result
+			s.remove_meta("cut_work")
 			fx.collect_death_cut(tid)
 			s.remove_meta("cut_task")
 	var h = s.hull
@@ -1504,7 +1511,7 @@ static func _lance_recut(fx, s) -> void:
 
 
 # Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
-static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
+static func precompute(fx, s, cause := "blast", under_cover := false, shared_cuts: Variant = null) -> void:
 	if fx.get("closed") == true:   # issue 1435: a released fx takes no new cuts
 		return
 	if fx.get("passive") == true:   # issue 1434: the title backdrop never dies
@@ -1552,41 +1559,88 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 				sd["tur"] = tk
 				sd["anchor"] = inv * (s.hull.turrets[tk]["node"] as Node3D).global_transform.origin
 			surfs.append(sd)
-	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "out": null,
+	var inputs := {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus",
 		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan, "authored": s.hull.authored,
 		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
-		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn,
-		# the worker's results (its timings, and the uploaded geometry on a windowed run), keyed here before the job is
-		# shared: the worker only overwrites these values and never adds a key while the main thread may read the
-		# dictionary (a cold kill reads it before "out" is set; issue 1395 review)
-		"cut_usec": 0, "hulls_usec": 0, "geo": []}
+		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn}
+	var cut: CutWork
+	var matches: Array = []
+	if shared_cuts != null:
+		# Ship IDs still seed the break. Same class and seeds narrow the search, and every input must still match.
+		var key := [s.faction, s.get_meta("cut_class", ""), seeds]
+		matches = shared_cuts.get_or_add(key, [])
+		for candidate: CutWork in matches:
+			if inputs == candidate.inputs:
+				cut = candidate
+				break
+	if cut == null:
+		cut = CutWork.new()
+		cut.inputs = inputs
+		_init_dirs()
+		var share_lanes: bool = under_cover and fx.ships.size() > 1
+		cut.task = fx.submit_death_cut(_run_cut.bind(cut, fx.cut_abort, share_lanes))
+		if shared_cuts != null:
+			matches.append(cut)
+	var job := inputs.duplicate()
+	job["out"] = null
 	s.set_meta("cut_job", job)
-	_init_dirs()
-	var tid: int = fx.submit_death_cut(func() -> void:
-		var tc := Time.get_ticks_usec()
-		var pieces := _cut(job)
-		var cut_usec := Time.get_ticks_usec() - tc
-		var th := Time.get_ticks_usec()
-		_piece_hulls(pieces)
-		var hulls_usec := Time.get_ticks_usec() - th   # issue 1395: includes each piece's reach (_piece_reach)
-		if bool(job.get("sites", false)):
-			var n_main: int = int(job["plan"]["n_main"]) if not (job["plan"] as Dictionary).is_empty() else pieces.size()
-			for i in mini(n_main, pieces.size()):
-				pieces[i]["sec_sites"] = _piece_sites_in(job["sp"], job["sn"], job["seeds"], pieces[i]["cen"], 5, job["plan"], i)
-		# issue 220: the pieces' geometry is uploaded here on the worker (as the hull rebuild's meshes are, fx_breach
-		# compute): on the main thread it cost 20 to 85 ms frames in battle, once per ship and after every cut refresh.
-		# Materials stay on the main thread (_prebuild). A headless run builds it all in _prebuild instead.
-		if bool(job["mesh_on_worker"]):
-			var geo: Array = []
-			for pc in pieces:
-				geo.append(_piece_geometry(pc))
-			job["geo"] = geo
-		job["cut_usec"] = cut_usec   # handed over with the result, on keys that already exist
-		job["hulls_usec"] = hulls_usec
-		job["out"] = pieces)
-	s.set_meta("cut_task", tid)
+	s.set_meta("cut_work", cut)
+	s.set_meta("cut_task", cut.task)
 	if not under_cover:
 		fx.later(fx.now + 0.5, func l_prebuild() -> void: _prebuild(fx, s))
+
+
+class CutWork extends RefCounted:
+	var task := -1
+	var inputs: Dictionary
+	# Read the worker's results only after joining the task.
+	var pieces: Array
+	var geo: Array
+	var cut_usec := 0
+	var hulls_usec := 0
+
+
+class CutAbort extends RefCounted:
+	var _lock := Mutex.new()
+	var _cancelled := false
+
+	func cancel() -> void:
+		_lock.lock()
+		_cancelled = true
+		_lock.unlock()
+
+	func cancelled() -> bool:
+		_lock.lock()
+		var stopped := _cancelled
+		_lock.unlock()
+		return stopped
+
+
+static func _run_cut(work: CutWork, abort: CutAbort, share_lanes: bool) -> void:
+	var job := work.inputs
+	var tc := Time.get_ticks_usec()
+	var pieces := _cut(job, abort, share_lanes)
+	if abort.cancelled():
+		return
+	work.cut_usec = Time.get_ticks_usec() - tc
+	var th := Time.get_ticks_usec()
+	_piece_hulls(pieces, abort)
+	if abort.cancelled():
+		return
+	work.hulls_usec = Time.get_ticks_usec() - th   # issue 1395: includes each piece's reach (_piece_reach)
+	if bool(job["sites"]):
+		var n_main: int = int(job["plan"]["n_main"]) if not (job["plan"] as Dictionary).is_empty() else pieces.size()
+		for i in mini(n_main, pieces.size()):
+			if abort.cancelled():
+				return
+			pieces[i]["sec_sites"] = _piece_sites_in(job["sp"], job["sn"], job["seeds"], pieces[i]["cen"], 5, job["plan"], i)
+	# Issue 220: upload geometry on the worker; the piece's materials are set on the main thread.
+	if bool(job["mesh_on_worker"]):
+		for pc in pieces:
+			if abort.cancelled():
+				return
+			work.geo.append(_piece_geometry(pc))
+	work.pieces = pieces
 
 
 # When the cut is done, upload the pieces' meshes while the battle is quiet, so the break-up itself only shows them
@@ -1600,11 +1654,22 @@ static func finish_precompute(fx, s) -> bool:
 	if not s.has_meta("cut_task") or s.has_meta("death_hidden"):
 		return true
 	var tid: int = s.get_meta("cut_task")
-	if not WorkerThreadPool.is_task_completed(tid):
+	if not fx.finish_death_cut(tid):
 		return false
-	fx.join_death_cut(tid)
 	s.remove_meta("cut_task")
 	var job: Dictionary = s.get_meta("cut_job", {})
+	if s.has_meta("cut_work"):
+		var cut: CutWork = s.get_meta("cut_work")
+		s.remove_meta("cut_work")
+		# Each wreck's materials, shapes and motion are set independently. The cut arrays stay shared.
+		var pieces: Array = []
+		for piece: Dictionary in cut.pieces:
+			pieces.append(piece.duplicate())
+		job["out"] = pieces
+		job["cut_usec"] = cut.cut_usec
+		job["hulls_usec"] = cut.hulls_usec
+		job["geo"] = cut.geo
+		cut.geo = []  # ArrayMesh receives this ship's materials, so only one ship takes the worker's upload.
 	if not job.has("meshes"):
 		job["meshes"] = []
 		fx.queue_death_pieces(s, job)
@@ -1709,7 +1774,7 @@ const REFINE_EPS_SKIN := 0.02
 const REFINE_CAP := 200000   # new points per surface at most (a guard; A16 needs a few thousand)
 
 
-static func _refine(plan: Dictionary, vl_in: PackedVector3Array, arr: Array, idx: PackedInt32Array, eps: float, interior: bool) -> Dictionary:
+static func _refine(plan: Dictionary, vl_in: PackedVector3Array, arr: Array, idx: PackedInt32Array, eps: float, interior: bool, abort: CutAbort = null) -> Dictionary:
 	var vl := vl_in.duplicate()   # the source arrays are shared with the live ship: never grown in place
 	var n0 := vl.size()
 	var nrm := PackedVector3Array()
@@ -1732,7 +1797,9 @@ static func _refine(plan: Dictionary, vl_in: PackedVector3Array, arr: Array, idx
 	var out_piece := PackedInt32Array()
 	var stack := PackedInt32Array()
 	var m := PackedInt32Array([-1, -1, -1])
+	var refined := 0
 	for t in range(0, idx.size() - 2, 3):
+		if (t & 255) == 0 and abort != null and abort.cancelled(): return {}
 		var a0 := idx[t]
 		var b0 := idx[t + 1]
 		var c0 := idx[t + 2]
@@ -1755,6 +1822,8 @@ static func _refine(plan: Dictionary, vl_in: PackedVector3Array, arr: Array, idx
 		stack.append(c0)
 		stack.append(0)
 		while not stack.is_empty():
+			refined += 1
+			if (refined & 255) == 0 and abort != null and abort.cancelled(): return {}
 			var n := stack.size()
 			var a := stack[n - 4]
 			var b := stack[n - 3]
@@ -1872,22 +1941,46 @@ static func _torn(plan: Dictionary, vl: PackedVector3Array, vp: PackedInt32Array
 
 static var cut_serial := false   # issue 1232: the one-thread cut, for fx/test/cold_kill_check.gd to compare against
 
-# Issue 1279: Jolt's physics jobs queue on the same high-priority worker lanes as the cut's side-by-side work. Two cuts
-# at once (an arrival's cut beside another), each on every lane but two, left the physics jobs waiting until Jolt's job
-# table filled and the step stalled. One cut runs side by side at a time, and it leaves two lanes free beyond every lane
-# low-priority work can hold (the cut's own waiting task is one of those), so the physics step always finds a lane.
-static var _lanes_lock := Mutex.new()
+# Issue 1279: Jolt's physics jobs use the same high-priority lanes. Reserve two beyond the low-priority cap across
+# all cuts, including cuts from another battle. The mutex only guards the count. A cut that finds no room works
+# on its own low-priority worker, which the budget already accounts for.
+static var _lane_budget_lock := Mutex.new()
+static var _lanes_in_use := 0
 
 
-static func cut_lanes(work: int) -> int:
+static func _cut_lane_budget() -> int:
 	var threads := int(ProjectSettings.get_setting("threading/worker_pool/max_threads", -1))
-	if threads <= 0:
+	if threads < 0:
 		threads = OS.get_processor_count()
 	var ratio := float(ProjectSettings.get_setting("threading/worker_pool/low_priority_thread_ratio", 0.3))
 	var low := clampi(int(threads * ratio), 1, maxi(threads - 1, 1))
-	return clampi(threads - 2 - low, 1, maxi(work, 1))
+	return maxi(threads - 2 - low, 0)
 
-static func _cut(job: Dictionary) -> Array:
+
+static func cut_lanes(work: int) -> int:
+	return mini(_cut_lane_budget(), work)
+
+
+static func _reserve_cut_lanes(work: int, share_lanes: bool) -> int:
+	var total := _cut_lane_budget()
+	var limit := mini(work, (total + 1) / 2 if share_lanes else total)
+	_lane_budget_lock.lock()
+	var lanes := mini(limit, maxi(total - _lanes_in_use, 0))
+	_lanes_in_use += lanes
+	_lane_budget_lock.unlock()
+	return lanes
+
+
+static func _run_cut_group(work: Callable, count: int, lanes: int, label: String) -> void:
+	var group := WorkerThreadPool.add_group_task(work, count, lanes, true, label)
+	WorkerThreadPool.wait_for_group_task_completion(group)
+	_lane_budget_lock.lock()
+	_lanes_in_use -= lanes
+	_lane_budget_lock.unlock()
+
+
+static func _cut(job: Dictionary, abort: CutAbort = null, share_lanes := false) -> Array:
+	if abort != null and abort.cancelled(): return []
 	var seeds: PackedVector3Array = job["seeds"]
 	var plan: Dictionary = job.get("plan", {})
 	var warp: Array = job.get("warp", [])
@@ -1901,21 +1994,20 @@ static func _cut(job: Dictionary) -> Array:
 	# cut. A16's headless cut was 2.8 s, about 1 s of it one plating surface cut after all the others; on the PC it was
 	# 5.4 s, longer than a capital's 2.67 s death, so a kill before the cut was ready lost its pieces.
 	var surfs: Array = job["surfs"]
-	if plan.is_empty() or surfs.size() < 2 or cut_serial:
+	var lanes := 0 if plan.is_empty() or surfs.size() < 2 or cut_serial else _reserve_cut_lanes(surfs.size(), share_lanes)
+	if lanes == 0:
 		for sd in surfs:
-			_cut_surface(job, sd, pieces, ns, plan, warp, seeds)
+			if abort != null and abort.cancelled(): return []
+			_cut_surface(job, sd, pieces, ns, plan, warp, seeds, abort)
 	else:
-		# leave lanes to the game and to Jolt (Board on PR 1240, issue 1279)
-		var lanes := cut_lanes(surfs.size())
 		var parts: Array = []
 		for i in surfs.size():
 			parts.append({"pieces": _blank_pieces(job, plan, ns, n_main)})
-		_lanes_lock.lock()
-		var gid := WorkerThreadPool.add_group_task(func(i: int) -> void:
-			_cut_surface(job, surfs[i], (parts[i] as Dictionary)["pieces"], ns, plan, warp, seeds), surfs.size(), lanes, true, "death cut surfaces")
-		WorkerThreadPool.wait_for_group_task_completion(gid)
-		_lanes_lock.unlock()
+		_run_cut_group(func(i: int) -> void:
+			_cut_surface(job, surfs[i], (parts[i] as Dictionary)["pieces"], ns, plan, warp, seeds, abort),
+			surfs.size(), lanes, "death cut surfaces")
 		for part in parts:
+			if abort != null and abort.cancelled(): return []
 			var own: Array = part["pieces"]
 			for c in ns:
 				var src: Dictionary = own[c]
@@ -1927,14 +2019,14 @@ static func _cut(job: Dictionary) -> Array:
 				pts.append_array(src["pts"])
 				pc["pts"] = pts
 	# each piece seals its own boundary loops (no shared state), so the pieces seal side by side too
-	if pieces.size() < 2 or cut_serial:
+	if abort != null and abort.cancelled(): return []
+	lanes = 0 if pieces.size() < 2 or cut_serial else _reserve_cut_lanes(pieces.size(), share_lanes)
+	if lanes == 0:
 		for pc in pieces:
-			_seal_piece(pc)
+			if abort != null and abort.cancelled(): return []
+			_seal_piece(pc, abort)
 	else:
-		_lanes_lock.lock()
-		var sid := WorkerThreadPool.add_group_task(func(i: int) -> void: _seal_piece(pieces[i]), pieces.size(), cut_lanes(pieces.size()), true, "death cut seals")
-		WorkerThreadPool.wait_for_group_task_completion(sid)
-		_lanes_lock.unlock()
+		_run_cut_group(func(i: int) -> void: _seal_piece(pieces[i], abort), pieces.size(), lanes, "death cut seals")
 	return pieces
 
 
@@ -1947,7 +2039,8 @@ static func _blank_pieces(job: Dictionary, plan: Dictionary, ns: int, n_main: in
 
 
 # One surface of the hull, cut into the given pieces (issue 1232: on its own worker when the cut has a plan).
-static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int, plan: Dictionary, warp: Array, seeds: PackedVector3Array) -> void:
+static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int, plan: Dictionary, warp: Array, seeds: PackedVector3Array, abort: CutAbort) -> void:
+	if abort != null and abort.cancelled(): return
 	var arr: Array = sd["arrays"]
 	var xf: Transform3D = sd["xf"]
 	var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
@@ -1977,7 +2070,8 @@ static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int
 			if (inside or bool(sd.get("skin", false))) and plan.has("mach"):
 				sp = plan.duplicate()
 				sp.erase("mach")
-			var rf := _refine(sp, vl, arr, idx, float(plan["L"]) * (REFINE_EPS if inside else REFINE_EPS_SKIN), inside)
+			var rf := _refine(sp, vl, arr, idx, float(plan["L"]) * (REFINE_EPS if inside else REFINE_EPS_SKIN), inside, abort)
+			if rf.is_empty(): return
 			vl = rf["vl"]
 			arr = rf["arr"]
 			idx = rf["idx"]
@@ -1987,6 +2081,7 @@ static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int
 	for c in ns:
 		buckets.append(PackedInt32Array())
 	for t in range(0, idx.size() - 2, 3):
+		if (t & 1023) == 0 and abort != null and abort.cancelled(): return
 		var a = idx[t]
 		var b = idx[t + 1]
 		var cc = idx[t + 2]
@@ -2019,6 +2114,7 @@ static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int
 			edge.append(q)
 			pc["edge"] = edge
 	for c in ns:
+		if abort != null and abort.cancelled(): return
 		var tri: PackedInt32Array = buckets[c]
 		if tri.is_empty():
 			continue
@@ -2091,15 +2187,18 @@ static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int
 
 # Trace the actual welded boundary loops. Ear clipping uses boundary vertices only:
 # no centre vertex, radial bands or centre-point ribs can show through as spokes.
-static func _seal_piece(pc: Dictionary) -> void:
+static func _seal_piece(pc: Dictionary, abort: CutAbort = null) -> void:
 	var all_edges := {}
 	var welds := {}
 	var positions := PackedVector3Array()
 	var bounds := AABB()
 	var first := true
 	for sd in pc["surfs"]:
-		for p in sd["arrays"][Mesh.ARRAY_VERTEX]:
-			if not (p as Vector3).is_finite(): continue
+		var verts: PackedVector3Array = sd["arrays"][Mesh.ARRAY_VERTEX]
+		for i in verts.size():
+			if (i & 1023) == 0 and abort != null and abort.cancelled(): return
+			var p := verts[i]
+			if not p.is_finite(): continue
 			if first:
 				bounds = AABB(p, Vector3.ZERO)
 				first = false
@@ -2116,6 +2215,7 @@ static func _seal_piece(pc: Dictionary) -> void:
 		ids.resize(pts.size())
 		ids.fill(-1)
 		for i in pts.size():
+			if (i & 1023) == 0 and abort != null and abort.cancelled(): return
 			if not pts[i].is_finite(): continue
 			var key := Vector3i((pts[i] / quantum).round())
 			if not welds.has(key):
@@ -2123,6 +2223,7 @@ static func _seal_piece(pc: Dictionary) -> void:
 				positions.append(pts[i])
 			ids[i] = int(welds[key])
 		for t in range(0, idx.size() - 2, 3):
+			if (t & 1023) == 0 and abort != null and abort.cancelled(): return
 			for j in 3:
 				var ka := ids[idx[t + j]]
 				var kb := ids[idx[t + (j + 1) % 3]]
@@ -2132,7 +2233,10 @@ static func _seal_piece(pc: Dictionary) -> void:
 				else: all_edges[key] = true
 	pc["boundary_edges"] = all_edges.size()
 	var adj := {}
+	var edge_count := 0
 	for key in all_edges:
+		if (edge_count & 255) == 0 and abort != null and abort.cancelled(): return
+		edge_count += 1
 		for j in 2:
 			if not adj.has(key[j]): adj[key[j]] = []
 			adj[key[j]].append(key[1 - j])
@@ -2140,9 +2244,13 @@ static func _seal_piece(pc: Dictionary) -> void:
 	var cap := {"v": PackedVector3Array(), "n": PackedVector3Array(), "c": PackedColorArray()}
 	pc["cap_loops"] = 0
 	pc["cap_fallbacks"] = 0
+	var walked := 0
 	for start in adj:
+		if abort != null and abort.cancelled(): return
 		var walk: Array = [start]
 		while not walk.is_empty():
+			if (walked & 255) == 0 and abort != null and abort.cancelled(): return
+			walked += 1
 			var at: int = walk.back()
 			var next := -1
 			for other in adj[at]:
@@ -2159,7 +2267,7 @@ static func _seal_piece(pc: Dictionary) -> void:
 				var outline := PackedVector3Array()
 				for j in range(seen, walk.size()): outline.append(positions[walk[j]])
 				if outline.size() >= 3:
-					_cap_outline(cap, outline, bounds, quantum, pc)
+					_cap_outline(cap, outline, bounds, quantum, pc, abort)
 				walk.resize(seen + 1)
 			else: walk.append(next)
 	if not (cap["v"] as PackedVector3Array).is_empty():
@@ -2171,7 +2279,8 @@ static func _seal_piece(pc: Dictionary) -> void:
 		pc["cap"] = arr
 
 
-static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: AABB, quantum: float, pc: Dictionary) -> void:
+static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: AABB, quantum: float, pc: Dictionary, abort: CutAbort = null) -> void:
+	if abort != null and abort.cancelled(): return
 	var centre := Vector3.ZERO
 	for p in outline: centre += p
 	centre /= outline.size()
@@ -2198,6 +2307,7 @@ static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: A
 		var rough := sin(p.dot(Vector3(3.1, 5.7, 2.3))) * sin(p.dot(Vector3(8.3, 2.1, 4.7)))
 		inset.append(p + (centre - p) * 0.018 + inward * depth * (1.0 + rough * 0.12))
 	var indices := Geometry2D.triangulate_polygon(polygon)
+	if abort != null and abort.cancelled(): return
 	if indices.is_empty():
 		# Imported non-planar/self-overlapping loops can fail 2D ear clipping.
 		# A boundary-only zipper still seals them without a hub or radial spokes.

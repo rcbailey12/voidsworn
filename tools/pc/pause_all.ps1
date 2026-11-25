@@ -25,7 +25,7 @@ function Get-PauseJobs($Root) {
   $processes = @(Get-CimInstance Win32_Process -ErrorAction Stop)
   $recent = (Get-Date).ToUniversalTime().AddMinutes(-30)
   # Only job metadata, never a recursive walk through repos, caches or old Codex runs/backups.
-  foreach ($lane in @('board','board_b','board_c','board_d','work217')) {
+  foreach ($lane in @('board','board_b','board_c','board_d','board_e','board_f','work217')) {
     $base = Join-Path $Root $lane
     if (-not (Test-Path -LiteralPath $base -PathType Container)) { continue }
     $jobs = @(
@@ -146,7 +146,7 @@ if ($At) {
   while ((Get-Date) -lt $t) { Start-Sleep 20 }
 }
 Log 'pausing'
-Log 'lanes: main=board, B=board_b, C=board_c, D=board_d, DeepSeek=work217'
+Log 'lanes: main=board, B=board_b, C=board_c, D=board_d, E=board_e, F=board_f, DeepSeek=work217'
 Set-Content -LiteralPath (Join-Path $V 'gpu_go.txt') -Value ("GPU not cleared: paused by the Board at {0:yyyy-MM-dd HH:mm} for Ryan. Paused until he says go again." -f (Get-Date))
 Log 'gpu_go.txt: GPU not cleared'
 # (2) chain windows still waiting for an earlier chain: their log's last line starts with "waiting"
@@ -210,7 +210,7 @@ foreach ($j in @($leftovers.Values | Sort-Object Out)) {
   Log ("leftover record (not counted): {0}/{1}, last activity {2:yyyy-MM-dd HH:mm:ss} UTC; {3}" -f
     $j.Lane, $j.Job, $j.Activity, $j.Out)
 }
-foreach ($lane in @('board','board_b','board_c','board_d','work217')) {
+foreach ($lane in @('board','board_b','board_c','board_d','board_e','board_f','work217')) {
   $laneJobs = @($jobs.Values | Where-Object { $_.Lane -eq $lane } | Sort-Object Out)
   if (-not $laneJobs.Count) { Log "${lane}: no current job found" }
   foreach ($j in $laneJobs) {
