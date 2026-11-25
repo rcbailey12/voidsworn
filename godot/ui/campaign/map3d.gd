@@ -422,7 +422,7 @@ func _build_region() -> void:
 			props.hollow_asteroid(landmark)
 			for i in 14:
 				var field = Node3D.new(); region_scenery.add_child(field); field.position = _region_point(float(i) / 13.0, 1.0 if i % 3 != 0 else -1.0, 14)
-				props.region_rocks(field, 22 if quality != "low" else 8, 3.5 if i % 3 == 0 else 2.0)
+				props.region_rocks(field, 22 if quality != "low" else 8, 3.5 if i % 3 == 0 else 2.0, i)
 				if i in [2, 6, 10]: props.mining_rig(field, 1.1)
 		"deep":
 			landmark.visible = false
