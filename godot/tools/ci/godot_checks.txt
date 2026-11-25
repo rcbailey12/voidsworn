@@ -10,6 +10,7 @@
 # setup (gpu): - | env:<NAME> (NAME is set to the output folder) | envpng:<NAME> (NAME is set to <output folder>\shot.png)
 #   | scene:<res path> (run that scene instead of --script) | compat (gl_compatibility renderer); several split by commas
 # args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
+headless|fx/test/event_layers_2046_check.gd|-|-|issue 2046: layered turn-start ticks, storm contact at zero shield, six boarding looks, effect clock and release
 headless|world/test/storm_drain_check.gd|-|-|issue 1148: two shield drains keep independent cues through battle playback in Standard and Reduced Flashing
 headless|world/test/storm_bolt_check.gd|-|-|issue 1360: storm lightning plays the three baked bolt flipbooks (atlases load, 16 frames on the effects clock, soft hold in Reduced Flashing) at the ribbon's places; VS_STORM_BOLTS=ribbon keeps the old ribbon
 headless|world/test/finale_check.gd|-|-|issue 44: finale lighting preserves round 1, adds no floor and stays out of ordinary bosses

@@ -14,6 +14,8 @@ const HULL := preload("res://fx/fx_hull.gd")
 const SHIP := preload("res://fx/fx_ship.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const DEATH := preload("res://fx/fx_death.gd")
+const BOARDING := preload("res://fx/fx_boarding.gd")
+const EVENT_PATHS := preload("res://fx/fx_event_paths.gd")
 
 # Faction colours and styles come from data (fx/faction_looks.json via fx/faction_look.gd; API.md 15), so a faction's
 # palette can change without touching code. Styles are Claude's calls (vetoable).
@@ -101,6 +103,7 @@ var fx_atlas := ""
 var check_radius := false
 var effect_spawns: Array = []
 var well = Vector3.INF     # the dead star, when the board has one (world.gd sets it): tidal deaths fall toward it
+var event_paths := EVENT_PATHS.new()
 var dstate = {}
 var manual = false
 var camera: Camera3D = null
@@ -292,10 +295,7 @@ func release(wait := true) -> void:
 	_wreck_interiors.clear()
 	_piece_builds.clear()
 	_later.clear()
-	for line in _board_lines_live:
-		if is_instance_valid(line["node"]):
-			line["node"].queue_free()
-	_board_lines_live.clear()
+	event_paths.clear()
 	_core_at.clear()
 	_lev.clear()
 	_lsrc.clear()
@@ -545,7 +545,6 @@ func step(delta: float) -> void:
 	RenderingServer.global_shader_parameter_set(&"scene_t", now)
 	var t0 := Time.get_ticks_usec()
 	_run_later()
-	_step_board_lines()
 	_build_death_pieces()
 	_gate_physics()
 	t0 = pend("later", t0)
@@ -553,6 +552,7 @@ func step(delta: float) -> void:
 	_update_dim()
 	for id in ships:
 		(ships[id] as SHIP).update(self, dt)
+	event_paths.step(now)
 	t0 = pend("ships", t0)
 	WEAP.update(self, dt)
 	DEATH.update(self, dt)
@@ -757,7 +757,7 @@ func _p(a0: Vector4, a1: Vector4, a2: Vector4, a3: Vector4, a4: Vector4) -> Pack
 	return POOLS.pack(a0, a1, a2, a3, a4)
 
 
-const SMOKY := {3: true, 7: true, 8: true, 15: true, 20: true, 23: true, 27: true}
+const SMOKY := {3: true, 7: true, 8: true, 15: true, 20: true, 23: true, 27: true, SH.TICK_DROPLET: true}
 
 
 # `px` (F3 round 2): this sprite's own minimum size on screen, in pixels on a 1080-line screen (0: the kind's floor).
@@ -1986,18 +1986,9 @@ func hull_mark(id: String, look: String, w := 2, world_p := Vector3.INF, dir := 
 	s.add_mark(self, look, w, lp, ln, ld)
 
 
-# The rules' "board" event (API.md 11): the boarding party's breach in the target's hull at a plausible boarding point
-# (the side facing the attacker, mid section, near the waterline of the hull's side, never on top or below), venting
-# gas and lit from inside while the fight goes on (about 3 s), then a dark gash. Returns seconds until it has played.
-# Issue 1547 (Ryan picked look B, Nov 22 2026): at battle camera 110 and 170 the first breach (PR 1527) was a few dots.
-# Now: the hatch mark four times wider, a pop ring, burst, vent plume and inside light with pixel floors so they hold at
-# camera 170, and amber boarding lines (the shared line style's "board" role, the boarding target ring's amber) from the
-# attacker's hatch to the breach. "hold" is how long the battle waits (ms, at speed 1) before the next event, so the
-# player sees it before the enemy turn. The A and C looks shown beside it on the look sheets were removed.
-const BOARD := {"hatch": 4.0, "ring_px": 70.0, "burst": 2.2, "burst_px": 60.0, "vent": 2.2, "vent_px": 22.0,
-	"spark_px": 3.0, "light": 7.0, "reach": 22.0, "lines": 3, "hold": 1600.0}
-var board_lines_s := 0.0   # how long the last boarding lines stay on screen (s; checked against the battle's hold)
-var _board_lines_live: Array[Dictionary] = []
+# The rules' "board" event. Keep the wider hatch and the original 1.6 s playback hold (R401).
+const BOARD := {"hatch": 4.0, "burst": 2.2, "spark_px": 3.0, "hold": 1600.0}
+var board_lines_s := 0.0
 
 
 # how long the battle holds on a boarding before the next event (ms at speed 1; issue 1547)
@@ -2015,14 +2006,14 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 	# side plating facing it through its core) and breaks in through the target's side plating facing that hatch, on
 	# the line through the target's core. Either missing: nothing to show (logged and counted by the hull).
 	var toward: Vector3
-	var from_hatch := Vector3.INF
-	if ships.has(attacker_id):
-		var a: SHIP = ships[attacker_id]
+	var a: SHIP = ships.get(attacker_id)
+	var launch := Vector3.ZERO
+	if a != null:
 		var o: Dictionary = a.hull.board_origin(a.xf().affine_inverse() * s.to_world(s.hull.core))
 		if o.is_empty():
 			return 0.0
-		toward = a.to_world(o["p"])
-		from_hatch = toward
+		launch = o["p"]
+		toward = a.to_world(launch)
 	else:
 		toward = s.to_world(s.hull.core + Vector3(0, 0, s.hull.W * 3.0))
 	var inv: Transform3D = s.xf().affine_inverse()
@@ -2044,105 +2035,30 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 	var wp: Vector3 = s.to_world(lp)
 	var wn: Vector3 = s.dir_world(ln)
 	var k: float = s.scale_k()
-	var T: float = now + 0.1
-	var bk: float = float(bl["burst"])
-	var vk: float = float(bl["vent"])
-	# a pried-open hatch: a short, dull blast (not a counted flash), then gas venting and sparks from inside
-	sprx(float(bl["burst_px"]), wp + wn * 0.3 * k * bk, T, 0.4 * sqrt(bk), Color(1, 0.65, 0.35), 2.5, 0.6 * k * bk, 1.8 * k * bk, 2)
-	for j in 14:
-		spr(wp + wn * 0.2 * k * vk, T + 0.15 + j * 0.2, 1.4, Color(0.62, 0.66, 0.74), 0.25 * sqrt(vk), 0.3 * k * vk, 2.2 * k * vk, 7,
-			(wn + rdir() * 0.25).normalized() * 4.0 * k * vk, 0.8, 0.0, 0.0, float(bl["vent_px"]))
-	for j in int(18 * sqrt(bk)):
-		stk(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05 * bk, 0.08 * k * bk, 1,
-			(wn + rdir() * 0.6).normalized() * (5 + rng.randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
-	# a soft pop ring on the plating round the hatch, sized to hold at camera 170 (issue 1547)
-	ring(wp + wn * 0.05 * k, wn, T, 0.7, Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
-	# the inside light in the boarding amber (render/line_style.gd "board"), not explosion orange (Muse council)
-	light(wp + wn * 0.6 * k * bk, T, 3.0, float(bl["light"]), Color(1, 0.75, 0.3), 1, float(bl["reach"]))
-	shake(T, 0.06, wp)
 	var hold: float = float(bl["hold"]) / 1000.0 * pace
-	if from_hatch != Vector3.INF:
-		# Muse council: the lines land at points spread along the flank round the breach (grapples securing the two
-		# ships), not on one dot, so they never read as a beam; the attacker's hatch flashes where they leave
-		var ends: Array = []
-		var nl: int = int(bl["lines"])
+	var T: float = now + hold * 0.67 if a != null else now + 0.1
+	var recipe := BOARDING.skin(a if a != null else s)
+	BOARDING.breach(self, s, h, T, recipe)
+	var bk: float = float(bl["burst"])
+	var spark_tint: Color = s.fac.damage_glow
+	var metal_sparks: bool = recipe.style == 0 and s.faction != "chorus"
+	for j in (int(18 * sqrt(bk)) if metal_sparks else 0):
+		stk(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, spark_tint, 4.0, 0.05 * bk, 0.08 * k * bk, 1,
+			(wn + rdir() * 0.6).normalized() * (5 + rng.randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
+	shake(T, 0.06, wp)
+	board_lines_s = 0.0
+	if a != null and hold > 0.0:
+		var ends: Array[Vector3] = []
+		var nl: int = recipe.lines
 		for i in nl:
 			var dx: float = (float(i) - float(nl - 1) * 0.5) * s.hull.L * 0.12
 			var hi: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05 + dx, 0, 0), side) if dx != 0.0 else h
-			ends.append(s.to_world(hi["p"]) if not hi.is_empty() else wp)
-		_board_lines(from_hatch, ends, hold, pace)
-		sprx(18.0, from_hatch, now + minf(0.3 * pace, hold * 0.2), minf(0.3, hold * 0.2), Color(1, 0.75, 0.3), 2.0, 0.3 * k, 0.8 * k, 2)
-	return maxf(3.2, hold)
-
-
-# Issue 1547 (R362): the boarding lines, drawn in the one shared line style (render/line_style.gd, role "board": the
-# boarding target ring's amber, core only). One line per landing point, from the attacker's hatch to that point on the
-# target's flank, a shallow arc each. Muse council (contrib/muse/reviews/boarding_1547.md section 4): they draw in one
-# after another (0.2 s apart at speed 1), stay at full strength for the whole hold, pulse once mid-hold (the crew
-# crossing) and fade in the hold's last tenth on the effect clock.
-func _board_lines(a: Vector3, ends: Array, hold: float, pace := 1.0) -> void:
-	var LSt = load("res://render/line_style.gd")
-	board_lines_s = 0.0
-	var n := ends.size()
-	for i in n:
-		var b: Vector3 = ends[i]
-		var d := b - a
-		var side := d.cross(Vector3.UP).normalized()
-		if side == Vector3.ZERO:
-			side = Vector3.RIGHT
-		var lift: float = d.length() * (0.10 + 0.04 * i)
-		var pts: Array = []
-		for j in 11:
-			var t := float(j) / 10.0
-			pts.append(a.lerp(b, t) + Vector3.UP * lift * sin(t * PI))
-		var st := SurfaceTool.new()
-		st.begin(Mesh.PRIMITIVE_TRIANGLES)
-		for j in 10:
-			LSt.strip_into(st, pts[j], pts[j + 1], side, side, "board", Color(-1, -1, -1, -1), true)
-			LSt.strip_into(st, pts[j], pts[j + 1], -side, -side, "board", Color(-1, -1, -1, -1), true)
-		var mi := MeshInstance3D.new()
-		mi.mesh = st.commit()
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		var m: ShaderMaterial = LSt.material(false)
-		m.set_shader_parameter("gain", 0.0)
-		mi.material_override = m
-		add_child(mi)
-		var delay := minf(0.2 * pace * i, hold * 0.3)
-		var fade_in := minf(0.2, hold * 0.15)
-		var fade_out := minf(0.15, hold * 0.1)
-		var rest := maxf(0.0, hold - delay - fade_in - fade_out)
-		_board_lines_live.append({"node": mi, "start": now + delay, "end": now + hold, "fade_in": fade_in,
-			"fade_out": fade_out, "rest": rest})
+			ends.append(hi["p"] if not hi.is_empty() else lp)
+		BOARDING.crossing(self, a, launch, s, ends, hold, recipe)
+		var launch_col: Color = recipe.core
+		sprx(18.0, toward, now + hold * 0.12, minf(0.3, hold * 0.2), launch_col, 2.0, 0.3 * k, 0.8 * k, 18)
 		board_lines_s = hold
-
-
-func _step_board_lines() -> void:
-	for i in range(_board_lines_live.size() - 1, -1, -1):
-		var line := _board_lines_live[i]
-		var node = line["node"]
-		if not is_instance_valid(node):
-			_board_lines_live.remove_at(i)
-			continue
-		var left: float = line["end"] - now
-		if left <= 0.0:
-			node.queue_free()
-			_board_lines_live.remove_at(i)
-			continue
-		var age: float = now - line["start"]
-		if age < 0.0:
-			continue
-		var fade_in: float = line["fade_in"]
-		var fade_out: float = line["fade_out"]
-		var rest: float = line["rest"]
-		var gain := 1.0
-		if age < fade_in:
-			gain = age / fade_in
-		elif left < fade_out:
-			gain = left / fade_out
-		elif rest > 0.0:
-			var pulse := absf((age - fade_in - rest * 0.5) / (rest * 0.1))
-			gain += 0.8 * maxf(0.0, 1.0 - pulse)
-		(node.material_override as ShaderMaterial).set_shader_parameter("gain", gain)
+	return maxf(3.2, hold)
 
 
 func command(id: String, _cmd := "") -> void:
@@ -2312,6 +2228,10 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		mi.material_override = mats[i]
 		mi.position = Vector3((i % 4 - 1.5) * 2.5, (i / 4 - 1.0) * 2.5, 0) * unit
 		tmp.add_child(mi)
+	# Warm the boarding and tick current shader in its indexed tube format, not the primitive box format.
+	var conduit := EVENT_PATHS.TUBE.make(self, PackedVector3Array([Vector3.LEFT, Vector3.RIGHT]),
+		PackedFloat32Array([0.1, 0.1]), Color.WHITE, Color.WHITE, 0, 0.0)
+	tmp.add_child(conduit)
 	# the torpedo and rocket casings, in their own vertex format (position, normal, colour) and lit material
 	for rocket in [false, true]:
 		var cm := MeshInstance3D.new()

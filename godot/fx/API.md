@@ -128,9 +128,9 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 
 - `fx.ability(id, ab)` and `fx.command(id, cmd)`: a short faction-coloured pulse on the ship (a stand-in until each ability gets its own look; coming).
 - `fx.launch(carrier_id, squadron_id)`: bay flare and craft streaming out toward the new wing.
-- `var t = fx.board(attacker_id, target_id, result)` on the rules' `board` event: a breach in the target's hull at a plausible boarding point (its side facing the attacker, mid section), venting gas and lit from inside for about 3 s, then a dark gash that stays as a mark. Returns seconds until it has played. (G2: this replaces the stub flash at the board event.) Issue 1547: a party from dead ahead or astern breaks in on the side the camera sees; the look Ryan picked (B: a wider hatch, pop ring, burst, vent and amber inside light, and the amber boarding lines in the shared line style) comes from `BOARD`, and `fx.board_hold_ms()` is how long the battle holds on it before the next event.
+- `var t = fx.board(attacker_id, target_id, result)` on the rules' `board` event. The shared kit sends the faction's pods, phase beams, prismatic locks or living umbilicals between hull attachments, then opens a cutter ring and vents at the target's hatch. The wider hatch leaves a scar on the facing flank (camera-facing flank if the attacker is dead ahead or astern). The crossing uses the same paced 1.6 s hold from `fx.board_hold_ms()` as before. The return value estimates the whole effect, including the vent tail.
 - `fx.hull_mark(id, look, w, world_p, dir, sec)`: a weapon mark without a volley (look as in volley, plus `board` and `ram`).
-- `fx.tick(id, kind)` for turn-start damage (`fire`, `acid`, `tidal`, `storm`): a small flare-up of that kind on the ship.
+- `fx.tick(id, kind)` plays the turn-start beat only. Fire uses a short baked plume, acid adds droplets and an etch, tidal pulls toward `fx.well`, and a storm branches down from the cloud onto the live shield or the bare hull. A zero pool never wakes the shield. Persistent acid and ion status are separate.
 - `fx.hull_point(id, section, toward)`: `{p, n}` in world space on the hull (section `"prow"`, `"mid"`, `"eng"` or `""`, on the side facing the point `toward`), for anything G2 wants to anchor there.
 
 ## 7. Feel: shake and hit pause

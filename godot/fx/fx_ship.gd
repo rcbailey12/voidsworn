@@ -12,6 +12,7 @@ const BREACH := preload("res://fx/fx_breach.gd")
 const SHIELD_CACHE := preload("res://fx/fx_shield_cache.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const IDLE := preload("res://fx/fx_idle.gd")
+const STATUS_TICK := preload("res://fx/fx_status_tick.gd")
 const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
@@ -3029,27 +3030,28 @@ func pulse(fx, strength: float) -> void:
 
 
 func tick_flare(fx, kind: String) -> void:
-	var h: Dictionary = hull.surface_sample(-1, 0.5, "flare")   # issue 370: a seen point on the plating, or none
+	if dead or gone or hull == null:
+		return
+	var h: Dictionary = {}
+	if kind == "acid":
+		var spots: Array = get_meta("acid_spots", [])
+		if not spots.is_empty() and spots.back().size() > 2:
+			h = {"p": spots.back()[0], "n": spots.back()[2]}
+	elif kind == "tidal" and fx.well.is_finite():
+		var local_well: Vector3 = xf().affine_inverse() * fx.well
+		h = hull.surface(hull.core, (local_well - hull.core).normalized())
+	if h.is_empty():
+		h = hull.surface_sample(-1, 0.65, "flare")
 	if h.is_empty():
 		return
-	var wp = to_world(h["p"])
-	var wn = dir_world(h["n"])
-	var k = scale_k()
-	var T: float = fx.now
-	match kind:
-		"acid":
-			for i in 6:
-				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, _acid_colour(), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
-		"tidal":
-			for i in 20:
-				fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
-		"storm":
-			if _shield_mat != null:
-				shield_hit(fx, shield_point(wp + wn * 30.0)["local"], T, 0.6, 14.0, 0.8)
-		_:
-			for i in 8:
-				fx.spr(wp, T + i * 0.05, 0.7, Color(1, 0.5, 0.15), 2.4, 0.8 * k, 2.4 * k, 1, wn * 2.0 + fx.rdir(), 0.0)
-			fx.light(wp + wn, T, 0.6, 3.0, Color(1, 0.5, 0.15), 1)
+	STATUS_TICK.play(fx, self, kind, h)
+	# Keep the tidal spark site for the shared spark upgrade. Living hulls shed glowing organic motes only.
+	if kind == "tidal" and faction != "chorus":
+		var wp := to_world(h["p"])
+		var k := scale_k()
+		var T: float = fx.now
+		for i in 20:
+			fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
 
 
 func jump_out(fx) -> void:

@@ -544,7 +544,9 @@ func _moments_part() -> void:
 	var only: Array = []
 	if args.has("only"):
 		only = Array(str(args["only"]).split(",", false))
-	await _world({"rock": "stone", "planet": 4}, {"0,-4": "rock", "-5,3": "rock", "4,3": "debris", "-1,5": "rock"},
+	var terrain := {"0,-4": "rock", "-5,3": "rock", "4,3": "debris", "-1,5": "rock"}
+	terrain.merge(cfg.get("terrain", {}), true)
+	await _world({"rock": "stone", "planet": 4}, terrain,
 		[{"q": -3, "r": -2}, {"q": 3, "r": 2}])
 	report["parts"]["moments"] = {"region": str(wld.setting.get("region", "")), "start_frame": Engine.get_process_frames()}
 	# warm the effect shaders once (fx.warmup), off the measured moments
@@ -612,7 +614,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	fx.rng.seed = 11
 	var att: Array = row.get("att", ["voidsworn", "Cruiser"])
 	var tgt: Array = row.get("tgt", ["deathless", "Cruiser"])
-	A = _ship("A", str(att[0]), str(att[1]), Vector3(-34, 0, 0), 0)
+	var aat: Array = row.get("att_at", [-34, 0])
+	A = _ship("A", str(att[0]), str(att[1]), Vector3(float(aat[0]), 0, float(aat[1])), 0)
 	if A == null:
 		return false
 	# issue 370: a row may place the target ("tgt_at": [x, z]), for a broadside or a shot from behind
@@ -622,7 +625,12 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if T == null:
 		return false
 	if row.has("shield_left"):
-		fx.sync_ship("T", _unit(1.0, int(row["shield_left"])))
+		var sh := int(row["shield_left"])
+		var unit := _unit(1.0, sh)
+		if row.has("shield_max"):
+			unit["shp"] = sh
+			unit["shMax"] = int(row["shield_max"])
+		fx.sync_ship("T", unit)
 	# Issue 461: a row may park a third ship beside the target ("near": [faction, class, dx, dz] in world units from
 	# the target), for example to show a torpedo hit lighting the hull next to it; and may run the engines at a level
 	# ("engine": 0 to 1) instead of the parked glow, for the engine flicker rows at the close cameras.
@@ -634,6 +642,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		for sid in fx.ships.keys():
 			fx.set_engine(str(sid), float(row["engine"]))
 	var focus: Vector3 = (A if str(row.get("focus", "target")) == "attacker" else T).global_position
+	if row.get("focus") == "midpoint":
+		focus = A.global_position.lerp(T.global_position, 0.55)
 	# Issue 461: "attacker_engines" centres on the mean of the attacker's engine nozzles (the engine flicker rows)
 	if str(row.get("focus", "")) == "attacker_engines" and fx.ship("A") != null:
 		var sa = fx.ship("A")
@@ -714,6 +724,13 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		if death_audio != null:
 			death_audio.watch("T", T.global_position)
 	# issue 370 (attach points): where a launch, the movement jets and the wounds start on the attacker's hull
+	elif what == "tick":
+		if row.has("well"):
+			var wv: Array = row["well"]
+			fx.well = T.global_position + Vector3(float(wv[0]), float(wv[1]), float(wv[2]))
+		fx.tick("T", str(row["kind"]))
+	elif what == "board":
+		fx.board("A", "T")
 	elif what == "launch":
 		fx.launch("A", "T")
 	elif what == "jets":
@@ -766,9 +783,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		else:
 			take = steps >= int(w["next"])
 		if take:
-			var img := _grab()
-			if img != null:
-				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
+			if not headless:
+				var img := _grab()
+				if img != null:
+					strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
 			ci += 1
 			w["got"] = int(w["got"]) + 1
@@ -783,15 +801,17 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if not keep:
 		return true
 	var name := "%s__c%d.png" % [id, int(r)]
-	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
+	if not headless:
+		preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
 	# issue 1777 (Artoo on PR 1786): record the hull the target resolved to; a row naming "expect_code" says loudly when
 	# the faction and class drew a different hull (a later remap), so a capture bat can fail on it
 	var tcode := str(T.code) if is_instance_valid(T) else ""
+	var acode := str(A.code) if is_instance_valid(A) else ""
 	if row.has("expect_code") and tcode != str(row["expect_code"]):
 		_warn("%s: target drew %s, the row expects %s" % [id, tcode, str(row["expect_code"])])
 		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
-		"impacts": impacts, "code": tcode})
+		"impacts": impacts, "code": tcode, "attacker_code": acode})
 	_log("%s at %d: %d cells" % [id, int(r), ci])
 	return true
 
