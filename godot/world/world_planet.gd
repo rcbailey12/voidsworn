@@ -11,6 +11,7 @@ const SKEEP := preload("res://render/shader_keep.gd")
 # tinted and turned its own way (never two that look alike).
 
 const NOISE := preload("res://world/world_shaders.gd")
+const BK := preload("res://world/world_bake.gd")
 const R01_DIR := "res://world/rocks/r01/"
 const R01_SIZE := Vector2i(8192, 4096)
 
@@ -43,11 +44,10 @@ static var _shaders := {}
 static func clear_static() -> void:
 	_shaders.clear()
 
-# Issue 1434 (LOAD32, Artoo on 002e143f): true while both R01 textures are still made and held by the bake cache, so the
-# title backdrop may draw a rocky or barren look without a fresh 853 MB upload (board.gd _planet); a trim that evicted
-# either one makes it false again. Asks the cache only: no request, no pin.
+# Issue 1434 (LOAD32, Artoo on 002e143f): true while all R01 textures are still made and held by the bake cache, so the
+# title backdrop may draw a rocky or barren look without a fresh 8K upload (board.gd _planet); eviction of any texture
+# makes it false again. Asks the cache only: no request, no pin.
 static func r01_uploaded() -> bool:
-	var BK := preload("res://world/world_bake.gd")
 	return BK.authored_texture_resident(R01_DIR + "colour.json", R01_SIZE, false) and BK.authored_texture_resident(R01_DIR + "relief.json", R01_SIZE, true)
 
 static func uses_r01(look_kind: int) -> bool:
@@ -120,7 +120,7 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 		await install_rocky(planet, air, sun_position, opts)
 		return
 	planet.set_meta("planet_code", "BAKE%d" % int(L["bake"]))
-	var baker = preload("res://world/world_bake.gd").service(planet.get_tree())
+	var baker = BK.service(planet.get_tree())
 	var job := board_job(look_kind, seed_v)
 	var size: Vector2i = job.size
 	# One urgent job, ahead of the far backdrops. Its third image is float relief.
@@ -165,20 +165,22 @@ static func _board_air(air: MeshInstance3D, L: Dictionary, light_dir: Vector3) -
 static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_position: Vector3, opts := {}) -> void:
 	if not rocky_available(): return
 	var started := Time.get_ticks_msec()
-	var baker = preload("res://world/world_bake.gd").service(planet.get_tree())
+	var baker = BK.service(planet.get_tree())
 	var urgent := bool(opts.get("urgent", false))
 	var kc: String = baker.request_authored(R01_DIR + "colour.json", R01_SIZE, false, urgent)
 	var kd: String = baker.request_authored(R01_DIR + "relief.json", R01_SIZE, true, urgent)
 	var colour: Image = await baker.result(kc)
-	var data: Image = await baker.result(kd)
-	if not is_instance_valid(planet) or colour == null or data == null: return
+	var relief: BK.RockyRelief = await baker.relief_result(kd)
+	if not is_instance_valid(planet) or colour == null or relief == null: return
 	if planet.get_meta("planet_frozen", false): return   # the loading cover already lifted (board.gd wait_planet)
 	var light_dir := (sun_position - planet.global_position).normalized()
 	var clouds := bool(opts.get("clouds", true))
 	var ground := ShaderMaterial.new()
 	ground.shader = shader(ROCKY_SURFACE)
 	ground.set_shader_parameter("colour_map", baker.texture(colour))
-	ground.set_shader_parameter("surface_data", baker.texture(data))
+	ground.set_shader_parameter("relief_height", baker.texture(relief.height))
+	var masks: Texture2D = baker.texture(relief.masks)
+	ground.set_shader_parameter("surface_masks", masks)
 	ground.set_shader_parameter("sun", light_dir)
 	_remix(ground, opts)
 	if not clouds: ground.set_shader_parameter("shadow_strength", 0.0)
@@ -198,7 +200,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 			atmosphere.set_shader_parameter("k", atmo_k)
 			air.material_override = atmosphere
 	if not clouds:
-		print("[R01] material install including map readiness: %d ms; two shared 8K maps, no clouds" % (Time.get_ticks_msec() - started))
+		print("[R01] material install including map readiness: %d ms; three shared 8K textures, no clouds" % (Time.get_ticks_msec() - started))
 		return
 	var cloud := MeshInstance3D.new()
 	cloud.name = "R01Clouds"
@@ -208,13 +210,13 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	cloud.mesh = cloud_mesh
 	var cloud_material := ShaderMaterial.new()
 	cloud_material.shader = shader(ROCKY_CLOUDS)
-	cloud_material.set_shader_parameter("surface_data", baker.texture(data))
+	cloud_material.set_shader_parameter("surface_masks", masks)
 	cloud_material.set_shader_parameter("sun", light_dir)
 	_remix(cloud_material, opts)
 	cloud.material_override = cloud_material
 	cloud.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	planet.add_child(cloud)
-	print("[R01] material install including map readiness: %d ms; two shared 8K maps" % (Time.get_ticks_msec() - started))
+	print("[R01] material install including map readiness: %d ms; three shared 8K textures" % (Time.get_ticks_msec() - started))
 
 
 static func _remix(m: ShaderMaterial, opts: Dictionary) -> void:
@@ -226,8 +228,8 @@ static func _remix(m: ShaderMaterial, opts: Dictionary) -> void:
 	m.set_shader_parameter("remix_gain", float(opts.get("gain", 1.0)))
 
 
-# Shared by the R01 and the baked board surfaces: the remix turn, explicit mip levels from the direction's own footprint
-# (UV derivatives jump at the longitude wrap and at the poles; this never does), and the 16-bit height.
+# Shared by the R01 ground and cloud surfaces: the remix turn and sampling at an explicit mip level.
+# UV derivatives jump at the longitude wrap and at the poles, so the level comes from the direction's own footprint.
 const ROCKY_FUNCTIONS := """
 uniform float remix_turn = 0.0;
 uniform float remix_tilt = 0.0;
@@ -254,16 +256,12 @@ vec4 r01_sample(sampler2D map, vec3 d, float lod) {
 	uv.y = clamp(uv.y, pole_pad, 1.0-pole_pad);
 	return textureLod(map, uv, lod);
 }
-float r01_height(vec3 d, sampler2D data_map, float lod) {
-	vec2 h = r01_sample(data_map, d, lod).rg;
-	return dot(h, vec2(65280.0, 255.0)) / 65535.0;
-}
 """ + NOISE.NOISE + """
 // Issue 1765: the R01 cloud field broken into fine wisps. The authored coverage says where weather is; flow-warped noise,
 // stretched along the latitude, carves it into thin cyclonic streaks with clear gaps, fading out where the planet is too
 // small on screen for the detail to hold still.
-float r01_cloud(sampler2D data_map, vec3 s, float lod) {
-	float base = r01_sample(data_map, s, lod).a;
+float r01_cloud(sampler2D masks, vec3 s, float lod) {
+	float base = r01_sample(masks, s, lod).g;
 	vec3 q = s * 3.1 + remix_seed;
 	vec3 w = vec3(wvn3(q), wvn3(q + 5.2), wvn3(q + 9.1)) - 0.5;
 	float ang = (w.x + w.y) * 2.4;
@@ -282,8 +280,9 @@ const ROCKY_SURFACE := """
 shader_type spatial;
 render_mode unshaded, cull_back, shadows_disabled, fog_disabled;
 uniform sampler2D colour_map : source_color, filter_linear_mipmap, repeat_enable;
-// Linear data: RG = 16-bit height, B = roughness, A = cloud coverage.
-uniform sampler2D surface_data : filter_linear_mipmap, repeat_enable;
+uniform sampler2D relief_height : filter_linear_mipmap, repeat_enable;
+// Linear masks: R = roughness, G = cloud coverage.
+uniform sampler2D surface_masks : filter_linear_mipmap, repeat_enable;
 uniform vec3 sun = vec3(0.45, 0.7, 0.55);
 uniform float cloud_rate = 0.009;
 uniform float shadow_strength = 0.64;
@@ -303,13 +302,12 @@ void fragment() {
 	// Angular footprint stays finite at poles and the longitude seam. UV
 	// derivatives there chose coarse levels in radial bands across the terrain.
 	float lod = clamp(log2(max(length(dFdx(d)),length(dFdy(d)))*1303.7973),0.0,11.0);
-	vec4 data = r01_sample(surface_data, d, lod);
 	vec3 n = normalize(world_point-world_centre);
 	vec3 v = normalize(CAMERA_POSITION_WORLD-world_point);
 	vec3 l = normalize(sun);
 	// Use surface derivatives for relief. This remains stable at the poles and
 	// after a board transform, unlike a fixed world-X normal offset.
-	float h = r01_height(d, surface_data, lod);
+	float h = r01_sample(relief_height, d, lod).r;
 	vec3 dpdx = dFdx(world_point);
 	vec3 dpdy = dFdy(world_point);
 	vec3 r1 = cross(dpdy,n);
@@ -325,15 +323,16 @@ void fragment() {
 	// A ray from the ground toward the sun reaches the higher cloud layer
 	// ahead of the surface sample, separating shadows from the cloud itself.
 	vec3 toward_light = r01_remix(normalize(normalize(local_direction) + normalize(local_light)*0.012));
-	float shadow = shadow_strength > 0.0 ? r01_cloud(surface_data,r01_spin(toward_light,TIME*cloud_rate),lod) : 0.0;
+	float shadow = shadow_strength > 0.0 ? r01_cloud(surface_masks,r01_spin(toward_light,TIME*cloud_rate),lod) : 0.0;
 	vec3 albedo = r01_sample(colour_map,d,lod).rgb;
 	albedo = mix(albedo, vec3(dot(albedo, vec3(0.3, 0.55, 0.15))) * 1.5, remix_desat);
 	// mineral provinces: broad patches of the battle's tint, so a turned face also reads as a new world
 	float prov = smoothstep(0.35, 0.75, wvn3(d * 2.3 + remix_seed));
 	albedo *= mix(vec3(1.0), remix_tint, 0.55 + 0.45 * prov) * remix_gain;
 	vec3 colour = albedo*(0.022 + lambert*0.88*day)*(1.0-shadow*shadow_strength);
-	float spec_power = mix(90.0,7.0,data.b);
-	float sheen = pow(max(dot(bumped,normalize(l+v)),0.0),spec_power)*(1.0-data.b)*0.055*day;
+	float roughness = r01_sample(surface_masks, d, lod).r;
+	float spec_power = mix(90.0,7.0,roughness);
+	float sheen = pow(max(dot(bumped,normalize(l+v)),0.0),spec_power)*(1.0-roughness)*0.055*day;
 	colour += vec3(1.0,0.87,0.72)*sheen;
 	float rim = pow(1.0-max(dot(n,v),0.0),4.0)*day;
 	colour += vec3(0.32,0.13,0.045)*rim*0.16*step(0.001, shadow_strength);
@@ -344,7 +343,7 @@ void fragment() {
 const ROCKY_CLOUDS := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_back, shadows_disabled, fog_disabled;
-uniform sampler2D surface_data : filter_linear_mipmap, repeat_enable;
+uniform sampler2D surface_masks : filter_linear_mipmap, repeat_enable;
 uniform vec3 sun = vec3(0.45,0.7,0.55);
 varying vec3 local_direction;
 varying vec3 world_point;
@@ -359,7 +358,7 @@ void fragment() {
 	vec3 n = normalize(world_point-world_centre);
 	vec3 d = r01_remix(normalize(local_direction));
 	float lod = clamp(log2(max(length(dFdx(d)),length(dFdy(d)))*1303.7973),0.0,11.0);
-	float coverage = r01_cloud(surface_data,r01_spin(d,TIME*0.009),lod);
+	float coverage = r01_cloud(surface_masks,r01_spin(d,TIME*0.009),lod);
 	float day = smoothstep(-0.12,0.3,dot(n,normalize(sun)));
 	// thick cores whiter, thin wisps take the dust colour
 	vec3 tone = mix(vec3(0.5,0.43,0.33), vec3(0.66,0.6,0.5), smoothstep(0.4, 0.9, coverage));

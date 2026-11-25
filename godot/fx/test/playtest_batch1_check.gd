@@ -78,7 +78,10 @@ func _run() -> void:
 	check(sources.size() == 2, "chunks gather each faction from loaded hulls")
 	var chunks := HD.cut(sources)
 	check(chunks.size() >= 4, "stand-in ship scenes cut into multiple hull chunks")
-	var meshes := HD.meshes(chunks)
+	var meshes: Array = []
+	for chunk in chunks:
+		var built: ArrayMesh = HD.build_mesh(chunk)
+		if built.get_surface_count() > 0: meshes.append(built)
 	check(not meshes.is_empty(), "cut chunks build real meshes")
 	for chunk in chunks:
 		check(chunk.has("cap") and not chunk.cap[Mesh.ARRAY_VERTEX].is_empty(), "chunk has a sealed torn face")

@@ -20,6 +20,7 @@ const OrdersKit := preload("res://ui/theme/orders_kit.gd")
 const CAMPAIGN_SCRIPT := "res://campaign/campaign.gd"
 const SETTINGS_PATH := "user://settings.json"
 const WORLD_BAKE := preload("res://world/world_bake.gd")   # issue 1434: bakes handed back, for the close frame log
+const StaticCaches := preload("res://render/static_caches.gd")
 
 signal battle_done(result: Dictionary)
 
@@ -38,6 +39,7 @@ var player_path: Node
 # (static_caches clear_all, fx.gd clear_static) and the statics are cleared before the process ends.
 var quitting := false
 var quit_route := ""   # what started the quit ("menu" or "window"), for logs and the quit route check
+var _launch_battle_pending := false
 
 
 # issue 1434 (LOAD13 cold title_load_5s: the window hid 5.2 s after the close): the last frames before a close, each
@@ -91,6 +93,10 @@ func quit_clean(code := 0, route := "menu") -> void:
 	quitting = true
 	quit_route = route
 	var t0 := Time.get_ticks_msec()
+	# Hide first, then prevent a last resize/minimize draw from submitting more pipelines.
+	if route == "window" and DisplayServer.get_name() != "headless":
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
+		RenderingServer.render_loop_enabled = false
 	print("[main] quit (%s) at %d ms" % [route, t0])
 	if _frame_t > 0:
 		_frames.append("%d ms so far (this frame; %s)" % [(Time.get_ticks_usec() - _frame_t) / 1000, _frame_parts()])
@@ -99,6 +105,8 @@ func quit_clean(code := 0, route := "menu") -> void:
 	var loading := PackedStringArray()
 	if battle != null and is_instance_valid(battle) and battle.get("warming") == true:
 		loading.append("battle %s" % str(battle.get("load_phase")))
+	elif _launch_battle_pending:
+		loading.append("battle launch prefetch")
 	if showcase != null and is_instance_valid(showcase) and showcase.get("showcase_ready") == false:
 		loading.append("backdrop %s" % str(showcase.get("load_phase")))
 	var svc := get_tree().root.get_node_or_null("WorldBakes")
@@ -106,9 +114,7 @@ func quit_clean(code := 0, route := "menu") -> void:
 	if svc != null and ((str(svc.get("_active")) != "" and str(svc.get("_active")) != "#save") or not (svc.get("_queue") as Array).is_empty()):
 		loading.append("world bake %s" % str(svc.get("_active")).left(12))
 	print("[main] loading at the close: %s" % (", ".join(loading) if not loading.is_empty() else "nothing"))
-	# Issue 1435: the player asked to close, so the window goes at once; the clean-up below still runs to the end
-	if route == "window" and DisplayServer.get_name() != "headless":
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
+	WORLD_BAKE.begin_shutdown(get_tree())
 	for n in [battle, showcase]:
 		if n != null and is_instance_valid(n):
 			if n.has_method("stop_build"):
@@ -118,8 +124,9 @@ func quit_clean(code := 0, route := "menu") -> void:
 			n.queue_free()
 	if campaign != null and is_instance_valid(campaign):
 		campaign.queue_free()
-	if _retired != null and is_instance_valid(_retired) and _retired.get_parent() == null:
-		_retired.free()   # issue 1519: a battle left for the title and not yet freed goes before the statics are cleared
+	if is_instance_valid(_retired):
+		_retired.queue_free()   # the close may beat the first title draw
+		_retired = null
 	if music != null and is_instance_valid(music) and music.has_method("release"):
 		music.release()
 	if ResourceLoader.has_cached(BATTLE_SCRIPT):
@@ -134,13 +141,17 @@ func quit_clean(code := 0, route := "menu") -> void:
 		_host_script = ResourceLoader.load_threaded_get(HOST_SCRIPT)
 		_host_reading = false
 	Sfx.drop_pending()
+	var t_queued := Time.get_ticks_msec()
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var t1 := Time.get_ticks_msec()
 	# issue 1204: every script with a GPU-holding static is on one list (render/static_caches.gd)
-	load("res://render/static_caches.gd").clear_all()
+	StaticCaches.trace = true
+	StaticCaches.clear_all()
 	var t2 := Time.get_ticks_msec()
 	print("[main] quit stages: scenes freed + 2 frames %d ms, statics and fx drain %d ms, engine exit from %d ms" % [t1 - t0, t2 - t1, t2])
+	print("[main] quit split: stop and queue %d ms, dispose scenes %d ms, engine handoff wall ms %d" % [
+		t_queued - t0, t1 - t_queued, int(Time.get_unix_time_from_system() * 1000.0)])
 	get_tree().quit(code)
 
 
@@ -646,8 +657,11 @@ static func campaign_has_save() -> bool:
 # issue 1518 (LOAD22 warm: a close during the start hid after 2.7 s, before the game's first frame): the window draws
 # and answers its messages once before the battle is built, so a close that comes during that build is seen at once
 func _quick_battle_after_first_frame() -> void:
+	_launch_battle_pending = true
 	await RenderingServer.frame_post_draw
-	if await battle_parts_ready():
+	var ready := await battle_parts_ready()
+	_launch_battle_pending = false
+	if ready:
 		quick_battle()
 
 
@@ -759,12 +773,9 @@ func quick_battle() -> void:
 				b._on_action("to_title", null))
 
 
-# Issue 1519 (CLOSE5: battle to title about 0.55 s): the battle used to be freed in the same frame the title was built, so
-# the player saw neither until both were done. Now the battle leaves the tree at once (nothing of it draws or runs), the
-# title is drawn on that frame, and the battle is freed after the title's second draw (_free_after_draws). Its awaiting
-# load code may resume out of the tree in between, so every load wait returns once is_inside_tree() is false (LOAD29).
-# Hiding it in the tree instead cost more (the hidden scene still drew its sky and world).
-# Only the quick battle's way back to the title uses this; the campaign's battles still free at once.
+# LOAD36: removing the battle from the tree took 440 ms before the first title frame, even without freeing it.
+# Park rendering and input, paint the title, then detach and free after the second painted title frame.
+# Only quick battle takes this route. The campaign still owns its battle hand-off.
 func _retire_battle(b: Node, parts: Dictionary) -> void:
 	if b == null or not is_instance_valid(b):
 		return
@@ -773,28 +784,47 @@ func _retire_battle(b: Node, parts: Dictionary) -> void:
 		b.stop_build()
 	if "quitting" in b:
 		b.quitting = true   # issue 521: nothing awaiting in it draws again
-	if b.get_parent() != null:
-		b.get_parent().remove_child(b)   # its _exit_tree runs here (load hand-off, worker joins, look cache)
-	parts["battle_out"] = Time.get_ticks_usec() - t
 	if not DisplayServer.window_can_draw():
-		b.queue_free()   # headless or minimised: no frame is drawn to wait for, so it goes at the end of this one as before
+		if b.get_parent() != null:
+			b.get_parent().remove_child(b)
+		parts["battle_out"] = Time.get_ticks_usec() - t
+		b.queue_free()
 		return
+	var vp := get_viewport()
+	var restore_3d := vp.disable_3d
+	vp.disable_3d = true   # simply hiding Battle still drew its sky and world
+	b.process_mode = Node.PROCESS_MODE_DISABLED
+	if "hud" in b and is_instance_valid(b.hud):
+		b.hud.hide()
+	parts["battle_park"] = Time.get_ticks_usec() - t
 	_retired = b
-	_free_after_draws(b, parts, 2)
+	_free_after_title_draws(b, parts, vp, restore_3d)
 
 
-# issue 1519 (LOAD22 cold: first title frame 284 ms, 90 of it the free just after that frame's draw): the battle out of
-# the tree is freed after the title's second draw, so its free never shares the first title frame
-func _free_after_draws(b: Node, parts: Dictionary, draws: int) -> void:
-	for i in draws:
+func _free_after_title_draws(b: Node, parts: Dictionary, vp: Viewport, restore_3d: bool) -> void:
+	var draws := 0
+	while draws < 2:
 		await RenderingServer.frame_post_draw
-	if is_instance_valid(b) and b.get_parent() == null:
-		var t1 := Time.get_ticks_usec()
-		b.free()
-		parts["battle_free"] = Time.get_ticks_usec() - t1
+		if quitting or not is_instance_valid(b) or _retired != b:
+			return   # quit_clean owns the parked battle now
+		if is_instance_valid(title) and title.is_inside_tree() and not title.is_queued_for_deletion():
+			draws += 1
+		else:
+			# The player left the title after its first draw. Do not keep the next screen's 3D off.
+			if draws > 0:
+				break
+	var t := Time.get_ticks_usec()
+	if b.get_parent() != null:
+		b.get_parent().remove_child(b)
+	var t1 := Time.get_ticks_usec()
+	parts["battle_out"] = t1 - t
+	b.free()
+	parts["battle_free"] = Time.get_ticks_usec() - t1
+	_retired = null
+	vp.disable_3d = restore_3d
 
 
-var _retired: Node = null   # the battle out of the tree waiting for its free (quit_clean frees it if a close comes first)
+var _retired: Node = null   # parked battle waiting for the title paints or a close
 
 
 # Issue 1435: how long leaving a battle holds the player: the leave frame itself (the battle is freed at its end, which
