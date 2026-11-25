@@ -422,7 +422,7 @@ func _build_region() -> void:
 			props.hollow_asteroid(landmark)
 			for i in 14:
 				var field = Node3D.new(); region_scenery.add_child(field); field.position = _region_point(float(i) / 13.0, 1.0 if i % 3 != 0 else -1.0, 14)
-				props.region_rocks(field, 22 if quality != "low" else 8, 3.5 if i % 3 == 0 else 2.0)
+				props.region_rocks(field, 22 if quality != "low" else 8, 3.5 if i % 3 == 0 else 2.0, i)
 				if i in [2, 6, 10]: props.mining_rig(field, 1.1)
 		"deep":
 			landmark.visible = false
@@ -1317,6 +1317,7 @@ func fly_to(id: String) -> void:
 	if _flying or loading or backdrop or token == null or not _avail().has(id) or not _nodes.has(id) or _C().modal_d != null: return
 	if _arrival_tween != null: _arrival_tween.kill()
 	_flying = true; card.visible = false; _drag = false
+	Kit.play("ui_map_fleet_jump")
 	_flight_id = id; _flight_time = 0.0; _flight_rotation = token.quaternion
 	var a = token.position; var b = _nodes[id]["pos"] + TOKEN_OFF + Vector3(0, _nodes[id]["top"], 0)
 	var from = a - TOKEN_OFF; from.y = 0.0
@@ -1391,6 +1392,7 @@ func _finish_flight() -> void:
 	token.basis = Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.UP, PI * 0.5)
 	_flying = false; _flight_id = ""
 	_set_token_drive(0.0)
+	Kit.play("ui_map_fleet_arrive")
 	_C().act("enterNode", id)
 	_last_pos = _C().RUN.get("pos")
 	_arrive(false)

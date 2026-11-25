@@ -270,6 +270,31 @@ pieces are re-cut from the damaged hull afterwards.
 uses dust and vapour with no flame; Eclipse uses dead panels, violet circuits,
 slow rim arcs, coolant, dark smoke and violet plasma. Repair seals every break.
 
+**Wounds V2 (R416, issue 1741; off unless `VS_WOUNDS_V2=1` or the setting `rendering/effects/wounds_v2`, read by
+`fx/fx_wounds_flag.gd` `v2()`).** Each faction's `wound` profile in faction_looks.json (kind 0 Sunward to 5 Eclipse,
+rim_style, scorch_col, rim_metal, interior_lift, interior_accent, interior_pattern, interior_rough, soot_weight,
+wreck_soot) drives every wound shader. On an authored-interior hull a section opens a real cutout from stage 2 (0.026 L,
+0.038 L at stage 3, 0.052 L at stage 4; a second one at stage 3 and up on medium hulls), and a heavy hit (torpedo, lance,
+null lance, star, gauss exit, weight 3+) on a section under 80% HP opens one where it struck; at most 6 per ship and 2 per
+section, clear of turrets and bay doors (`fx_ship._clear_spot`). Every cutout goes through
+`fx_breach.validate_footprint` (8 rays at 0.85 R: shrink to 0.75 R and 0.55 R, slide toward the plating, else a small
+surface mark) and `place_hole` (faction rim, plate thickness `clamp(Dt * 0.14, 0.008 L, 0.24 R)`; a plate thinner than
+0.4 R chips with `thin_shear` instead of opening; `thickness` marches through stacked plating within 1.2 R to the first
+real cavity, so layered armour opens). Overlays skip faces turned more than about 70 degrees from the hit and
+sit in a tighter slab; the hull shader's cut skips walls at right angles to it. `fx_breach.dress` puts the faction's own
+3D dressing inside each mouth (beams and cables, bone ribs and tendons, crystal shards, obsidian truss and violet bus),
+`inside_lights` adds at most 2 soft lights per ship (8 in the battle, `BATTLE_HOLE_LIGHTS`) in `interior_accent`, and
+the built interior takes the shared `fx_shaders.INTERIOR` shader (`fx_hull.interior_material_v2`) once a mouth is open.
+That shader multiplies the faction pattern over the surface: a surface whose glTF material extras name an
+`interior_role` (Interior Kit V2) keeps its own colour and trim maps; an older one keeps only its texture's light and dark
+in the faction's `interior_lift`, and its own glow keeps only its brightness, in `interior_accent`
+(`fx_hull.interior_role`: wall, bone, core, glass, organ). Walls are held to the faction ceiling (`wound_of(...).wall_max`: 0.11, the Glasswrights 0.45, pale pearl glass; a 1743 `interior.wall_max` wins and must agree) and non-core glow to 0.25 by scaling
+the colour, never per channel; cores, rim heat, bus tips and fresh burns pass. `fx.wreck_interior(source, faction)`
+hands the same shader to the wreck pieces, settling into the wreck look over 4 s from the death. Over the caps the
+oldest cutouts stay open (`cap_holes`). `fx_breach.open_mouths(s)` lists a ship's open mouths ({c, n, R}, hull
+frame, after the caps) for vents and embers. With V2 on, prism, star and null lance hits leave `S_PRISM`, `S_STAR` and `S_NLANCE` marks.
+Proof: `fx/test/wounds_v2_check.gd`, look-bench rows `bench/look_moments_wounds_v2.json` (cameras 170 and 26).
+
 **Refinement (r5).** Coarse geometry (kit plates and big AI hull panels are a few large triangles) is split locally before a mark is cut: edges longer than the mark needs, near the mark, are split (conforming on both sides, every vertex attribute interpolated, so the vertex format and materials stay), so a hole or crater smaller than a plate is still cut and dented. The overlay skin covers every triangle that reaches into the mark, not only those whose centre does.
 
 **Halo (r5).** Every weapon mark also lays a wide halo in its own signature, at least `HALO_MIN` world units (fx_breach.gd; 0.75 for a lance cut up to 2.1 for a torpedo crater), so it reads from the battle camera 170 units away, where the mark's own detail is a few pixels: soot round shells, torpedo craters and boarding pits; soot with temper colours along a lance cut; dark blue glass freckles with a faint lasting sheen round plasma; a grey rash round flak; green-black etch round acid; a blue-black field round ion burns; bright scraped metal round a ram; a pale spalled field round a gauss exit.
