@@ -242,7 +242,7 @@ void process() {
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
-#  28 directional hull-rupture vent jet (tapered hot root + sheared gas cone)
+#  30 directional hull-rupture vent jet (tapered hot root + sheared gas cone; 28/29 reserved for PRs 2007/2021)
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
 
@@ -282,7 +282,7 @@ void vertex() {
 		else if (k == 3 || k == 7 || k == 8) { g = 1.0 - spow(1.0 - t, 1.6); }
 		else if (k == 4 || k == 11 || k == 13 || k == 14 || k == 15 || k == 16 || k == 17 || k == 19 || k == 21 || k == 22 || k == 23) { g = 0.0; }
 		else if (k == 12) { g = t * t; }
-		else if (k == 28) { g = 1.0 - spow(1.0 - t, 2.0); }
+		else if (k == 30) { g = 1.0 - spow(1.0 - t, 2.0); }
 		float size = mix(a3.x, a3.y, g);
 		// F3 round 2: a3.w carries the seed in its fraction and, in its whole part, an explicit on-screen floor in pixels
 		// for this one sprite (impact, muzzle and kill flashes that must read from the battle camera); 0 means the kind's
@@ -335,7 +335,7 @@ void vertex() {
 		// Explicit smoke/gas floors preserve opacity, without adding any light.
 		if (k == 24 || k == 25 || k == 26 || (own && (k == 3 || k == 7 || k == 8))) { boost = 1.0; }
 		vec2 q = VERTEX.xy;
-		if (k == 14 || k == 15 || k == 23 || k == 27 || k == 28) {
+		if (k == 14 || k == 15 || k == 23 || k == 27 || k == 30) {
 			// stretched along the screen-space motion (bolts, globs and directional jets read as moving, not as dots)
 			vec3 vw = (MODEL_MATRIX * vec4(a1.xyz, 0.0)).xyz;
 			vec2 sv = (VIEW_MATRIX * vec4(vw, 0.0)).xy;
@@ -345,7 +345,7 @@ void vertex() {
 			float st = k == 23 ? 1.4 : (k == 14 ? 1.0 + clamp(sl * 0.012, 0.0, 1.6) : 1.0 + clamp(sl * 0.006, 0.0, 0.6));
 			if (k == 27) {
 				q = dx * VERTEX.x * 1.85 + dy * VERTEX.y * 0.62;
-			} else if (k == 28) {
+			} else if (k == 30) {
 				q = dx * (VERTEX.x + 0.45) * 2.3 + dy * VERTEX.y * 0.50;
 			} else {
 				q = dx * VERTEX.x * st + dy * VERTEX.y;
@@ -371,7 +371,7 @@ void fragment() {
 	float t = vInfo.x; int k = int(vInfo.y + 0.5); float seed = vInfo.z; float age = vInfo.w; float I = vCol.a;
 	vec2 p = vUv;
 	float r = length(p);
-	if (k != 28 && r > 1.0) { discard; }
+	if (k != 30 && r > 1.0) { discard; }
 	vec3 add = vec3(0.0); vec3 base = vec3(0.0); float alpha = 0.0;
 	float star = exp(-abs(p.x) * 40.0) * exp(-abs(p.y) * 3.0) + exp(-abs(p.y) * 40.0) * exp(-abs(p.x) * 3.0);
 	if (k == 0) {
@@ -407,7 +407,7 @@ void fragment() {
 		float dens = (1.0 - edge) + (n - 0.5) * 1.7;
 		alpha = smoothstep(0.05, 0.7, dens) * I * smoothstep(0.0, 0.035, t) * spow(1.0 - t, 0.85);
 		base = vCol.rgb * (0.65 + 0.55 * n);
-	} else if (k == 28) {
+	} else if (k == 30) {
 		// Issue 2048: directional hull-rupture vent jet (replaces round white small-death bow puff).
 		// u=0 sits at the breach mouth on the hull, u=1 is the sheared outer tip.
 		float u = clamp(p.x * 0.5 + 0.5, 0.0, 1.0);
@@ -497,7 +497,7 @@ void fragment() {
 		base = vec3(0.09, 0.09, 0.1);
 		add = vCol.rgb * eng * 2.5 * I;
 	}
-	float win = k == 28 ? 1.0 : (1.0 - r * r);
+	float win = k == 30 ? 1.0 : (1.0 - r * r);
 	add *= win * win;
 #ifdef SOFT
 	float scene_z = -scene_view_pos(SCREEN_UV, INV_PROJECTION_MATRIX).z;
@@ -581,18 +581,21 @@ void fragment() {
 		// Hegemony radar sweep: Layer 0 sensor beacon + range tick; Layer 1 rotating directional sweep cone.
 		if (layer < 0.5) {
 			float pip = exp(-r * r * 16.0) * 1.15;
-			float ring = exp(-pow((r - 0.52) / 0.075, 2.0)) * 0.55;
+			float rd0 = (r - 0.52) / 0.075;
+			float ring = exp(-rd0 * rd0) * 0.55;
 			add = (vCol.rgb * (pip + ring) + vec3(0.85, 0.95, 1.0) * pip * 0.35) * env;
 		} else {
 			if (still > 0.5) {
-				float steady_ring = exp(-pow((r - 0.68) / 0.08, 2.0)) * 0.65 + exp(-r * r * 5.0) * 0.30;
+				float rds = (r - 0.68) / 0.08;
+				float steady_ring = exp(-rds * rds) * 0.65 + exp(-r * r * 5.0) * 0.30;
 				add = vCol.rgb * steady_ring * env;
 			} else {
 				float sweep_a = scene_t * 1.8 + slot * 6.2831853;
 				float da = mod(sweep_a - ang + 6.2831853, 6.2831853);
 				float cone = exp(-da * 2.4) * smoothstep(0.08, 0.25, r) * (1.0 - smoothstep(0.65, 1.0, r));
 				float lead = exp(-da * 14.0) * smoothstep(0.10, 0.85, r) * (1.0 - smoothstep(0.85, 1.0, r));
-				float ticks = exp(-pow((r - 0.72) / 0.055, 2.0)) * (0.35 + 0.65 * cone);
+				float rdt = (r - 0.72) / 0.055;
+				float ticks = exp(-rdt * rdt) * (0.35 + 0.65 * cone);
 				add = (vCol.rgb * (cone * 0.85 + ticks * 0.50) + vec3(0.82, 0.94, 1.0) * lead * 0.75) * env;
 			}
 		}
@@ -634,7 +637,8 @@ void fragment() {
 			float hue = fract(ang / 6.2831853 + r * 0.65 + t * 0.45 + seed);
 			vec3 prism = clamp(abs(fract(hue + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
 			vec3 pale = mix(vCol.rgb, mix(vec3(0.95), prism, 0.42), 0.55);
-			float band = exp(-pow((r - mix(0.22, 0.76, t)) / 0.16, 2.0));
+			float bnd = (r - mix(0.22, 0.76, t)) / 0.16;
+			float band = exp(-bnd * bnd);
 			float glint = (0.65 + 0.35 * cos(ang * 6.0 + seed * 12.0)) * band;
 			add = pale * (glint * 0.85 + exp(-r * r * 3.5) * 0.25) * env;
 		}
@@ -643,22 +647,26 @@ void fragment() {
 		vec3 v_deep = vec3(vCol.r * 0.72, vCol.g * 0.45, max(vCol.b, vCol.r * 1.15));
 		vec3 v_pale = mix(vCol.rgb, vec3(0.86, 0.74, 1.0), 0.45);
 		if (layer < 0.5) {
-			float ring = exp(-pow((r - 0.38) / 0.16, 2.0)) * 0.95;
+			float rde = (r - 0.38) / 0.16;
+			float ring = exp(-rde * rde) * 0.95;
 			float inner = exp(-r * r * 9.0) * 0.55;
 			add = (v_deep * ring + v_pale * inner) * env;
 		} else {
 			float n = fbm(p * 2.8 + vec2(scene_t * 0.35 + seed * 9.0, -scene_t * 0.25));
-			float arc_band = exp(-pow((r - 0.62 - (n - 0.5) * 0.22) / 0.12, 2.0));
-			float curl = pow(0.5 + 0.5 * sin(ang * 3.0 + r * 5.0 - scene_t * 1.4 + seed * 11.0), 2.0);
+			float rda = (r - 0.62 - (n - 0.5) * 0.22) / 0.12;
+			float arc_band = exp(-rda * rda);
+			float cw = 0.5 + 0.5 * sin(ang * 3.0 + r * 5.0 - scene_t * 1.4 + seed * 11.0);
+			float curl = cw * cw;
 			add = mix(v_deep, v_pale, curl) * (arc_band * (0.45 + 0.75 * curl) + exp(-r * r * 3.0) * 0.20) * env;
 		}
 	} else {
 		// Chorus spore-sac swell: Layer 0 pulsing bioluminescent sac; Layer 1 branching veins & spore motes (no metal sparks).
 		if (layer < 0.5) {
 			float n = fbm(p * 2.6 + vec2(seed * 8.0, t * 0.8));
-			float sac = smoothstep(0.82, 0.35, r + (n - 0.5) * 0.28);
+			float sac = 1.0 - smoothstep(0.35, 0.82, r + (n - 0.5) * 0.28);
 			float heart = exp(-r * r * 8.5);
-			float wall = exp(-pow((r - 0.54 + (n - 0.5) * 0.14) / 0.11, 2.0));
+			float rdw = (r - 0.54 + (n - 0.5) * 0.14) / 0.11;
+			float wall = exp(-rdw * rdw);
 			add = vCol.rgb * (heart * 0.95 + wall * 0.60 + sac * 0.22) * env;
 		} else {
 			float vein_n = 1.0 - abs(fbm(p * 4.2 + vec2(seed * 13.0, -t * 0.6)) * 2.0 - 1.0);
@@ -1717,7 +1725,7 @@ void fragment() {
 			// Issue 2048: travelling collapse edge wave along the closing front; keeps the 1.225 s close timing (COLLAPSE_CLOSE)
 			// and Glasswright pale prismatic look.
 			float wave_n = fbm(lp.xy * 0.45 + lp.zx * 0.35 + vec2(ba * 2.4, -ba * 1.7)) - 0.5;
-			float wave_amp = mix(0.045, 0.028, gw) * smoothstep(0.0, 0.14, bp) * smoothstep(1.0, 0.85, bp);
+			float wave_amp = mix(0.045, 0.028, gw) * smoothstep(0.0, 0.14, bp) * (1.0 - smoothstep(0.85, 1.0, bp));
 			float bp_w = clamp(bp + wave_n * wave_amp, 0.0, 1.0);
 			float bw = 0.026 + 0.022 * bp + 0.018 * gw;
 			float bd = (dist - bp_w) / bw;
@@ -1729,7 +1737,7 @@ void fragment() {
 			float edge_wave = exp(-lead_d * lead_d) * 1.15 * ripple_mod * (1.0 + 0.5 * gw * (1.0 - fx_calm)) * band_env * smoothstep(0.02, 0.12, bp);
 			// Crisp bright receding rim right on the tear line where the surviving field gives way.
 			float rim_tear = exp(-bd * bd * 4.5) * (0.95 + 0.65 * pat) * (1.0 + 0.4 * gw * (1.0 - fx_calm)) * band_env;
-			alive = smoothstep(bp_w + bw * 0.85, bp_w - bw * 0.85, dist);
+			alive = 1.0 - smoothstep(bp_w - bw * 0.85, bp_w + bw * 0.85, dist);
 			float kt = ba - brk_close;
 			float knot = kt > 0.0 ? exp(-dist * dist * mix(600.0, 300.0, gw)) * exp(-kt * 5.0) * 3.0 * (1.0 + gw * (1.0 - fx_calm)) * calm : 0.0;
 			add += (flash * pat * 0.5 + (band + rim_tear) * (0.55 + 0.45 * pat) + edge_wave * (0.4 + 0.6 * pat)) * stut + knot;

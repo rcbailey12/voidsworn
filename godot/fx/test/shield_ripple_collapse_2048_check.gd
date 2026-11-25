@@ -75,6 +75,8 @@ func _run() -> void:
 	_check(code.contains("float bp_w = clamp(bp + wave_n * wave_amp, 0.0, 1.0);"), "SHIELD clean collapse carries travelling edge wave perturbation")
 	_check(code.contains("float edge_wave = exp(-lead_d * lead_d)"), "SHIELD clean collapse carries secondary leading edge wave")
 	_check(code.contains("float rim_tear = exp(-bd * bd * 4.5)"), "SHIELD clean collapse carries sharp receding rim tear")
+	_check(code.contains("1.0 - smoothstep(0.85, 1.0, bp)") and code.contains("1.0 - smoothstep(bp_w - bw * 0.85, bp_w + bw * 0.85, dist)"),
+		"SHIELD collapse uses ascending smoothstep edges (no GLSL undefined reversed bounds)")
 	_check(code.contains("hot += (band * 0.25 + rim_tear * 0.35 + edge_wave * 0.15 + knot * 0.5) * (1.0 - gw);"), "Glasswright collapse keeps prismatic colour without burning white")
 	_check(is_equal_approx(SHIP.COLLAPSE_CLOSE, 1.225), "clean collapse close timing stays 1.225 s (1.23 s)")
 	_check(is_equal_approx(SHIP.collapse_close_setting(), 1.225), "default collapse_close_setting stays 1.225 s")

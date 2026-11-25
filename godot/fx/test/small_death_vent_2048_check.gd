@@ -47,10 +47,10 @@ func _advance(fx, secs: float) -> void:
 
 
 func _run() -> void:
-	# 1. Shader check: SH.SPRITE has kind 28 directional hull-rupture vent jet with root-to-tip stretch.
-	_check(SH.SPRITE.contains("else if (k == 28)"), "SH.SPRITE implements kind 28 directional vent jet")
-	_check(SH.SPRITE.contains("if (k != 28 && r > 1.0) { discard; }"), "kind 28 is not clipped by circular r > 1.0 disc")
-	_check(SH.SPRITE.contains("q = dx * (VERTEX.x + 0.45) * 2.3 + dy * VERTEX.y * 0.50;"), "kind 28 roots on breach and stretches outward")
+	# 1. Shader check: SH.SPRITE has kind 30 directional hull-rupture vent jet with root-to-tip stretch (clear of PR 2007/2021).
+	_check(SH.SPRITE.contains("else if (k == 30)"), "SH.SPRITE implements kind 30 directional vent jet")
+	_check(SH.SPRITE.contains("if (k != 30 && r > 1.0) { discard; }"), "kind 30 is not clipped by circular r > 1.0 disc")
+	_check(SH.SPRITE.contains("q = dx * (VERTEX.x + 0.45) * 2.3 + dy * VERTEX.y * 0.50;"), "kind 30 roots on breach and stretches outward")
 
 	# 2. Kill small hulls across factions in normal and reduce-flashing modes.
 	var factions := ["voidsworn", "hegemony", "corsair", "ithar", "deathless"]

@@ -1,7 +1,8 @@
 extends SceneTree
 ## Issue 2048 (Build G): look bench capture probe for before/after rows at cameras 170 and 26, per faction where it differs.
-## Runs identically on origin/main (PROBE_TAG=before) and neon/issue-2048 (PROBE_TAG=after), then composes 1280x720
-## before/after rows (PROBE_COMPOSE="<before_dir>;<after_dir>"), each picture stamped with its code name (<= 720 px tall).
+## Runs identically on pinned origin/main (PROBE_TAG=before) and neon/issue-2048 (PROBE_TAG=after), then composes 1280x720
+## before/after rows (PROBE_COMPOSE="<before_dir>;<after_dir>"), each picture stamped with its code name (<= 720 px tall)
+## and retaining both pinned source commits in manifests and composed provenance.
 ##
 ## Items covered:
 ##   1. Shield hits (c170 + c26, per shielded faction: voidsworn, hegemony, corsair, ithar)
@@ -11,11 +12,13 @@ extends SceneTree
 ##   4. Layered fx_idle.gd motion pieces (VS_IDLE_MOTION=1 during capture only; c170 + c26, all 6 factions)
 ##
 ## Env:
-##   PROBE_OUT      output folder (required)
-##   PROBE_TAG      before | after (default after)
-##   PROBE_COMPOSE  "<before_dir>;<after_dir>" to stitch 1280x720 before/after sheets without rendering
-##   PROBE_ONLY     optional comma filter: shield,vent,terrain,idle (default all)
-##   PROBE_BLOCKS   1 allows placeholder hulls (cloud syntax test only; never for Ryan)
+##   PROBE_OUT         output folder (required)
+##   PROBE_TAG         before | after (default after)
+##   PROBE_COMPOSE     "<before_dir>;<after_dir>" to stitch 1280x720 before/after sheets without rendering
+##   PROBE_ONLY        optional comma filter from: shield,vent,terrain,idle (invalid names fail closed)
+##   PROBE_BEFORE_SHA  pinned full 40-char baseline commit SHA (recorded in manifest and sheet header)
+##   PROBE_AFTER_SHA   pinned full 40-char branch commit SHA (recorded in manifest and sheet header)
+##   PROBE_BLOCKS      1 allows placeholder hulls (cloud syntax test only; never for Ryan)
 ## Prints SWEEP2048_DONE (or SWEEP2048_FAILED) last.
 
 const FX := preload("res://fx/fx.gd")
@@ -29,6 +32,7 @@ const SCORCH := preload("res://fx/terrain_scorch.gd")
 const IDLE := preload("res://fx/fx_idle.gd")
 const WORLD_SCRIPT := preload("res://world/world.gd")
 
+const VALID_GROUPS := ["shield", "vent", "terrain", "idle"]
 const SHIELD_FACS := ["voidsworn", "hegemony", "corsair", "ithar"]
 const VENT_FACS := ["voidsworn", "hegemony", "corsair", "ithar", "deathless"]
 const ALL_FACS := ["hegemony", "voidsworn", "corsair", "ithar", "deathless", "chorus"]
@@ -42,6 +46,7 @@ var out := ""
 var tag := "after"
 var allow_blocks := false
 var failed := false
+var groups: Array[String] = []
 var vp: SubViewport
 var world: Node3D
 var env: Environment
@@ -66,17 +71,51 @@ func _hex(q: int, r: int) -> Vector3:
 	return Vector3(HEX_W * (q + r / 2.0), 0.0, 1.5 * HEX_S * r)
 
 
-func _want(group: String) -> bool:
-	var only := _env("PROBE_ONLY", "")
+func _parse_groups() -> bool:
+	var only := _env("PROBE_ONLY", "").strip_edges()
 	if only.is_empty():
+		for g in VALID_GROUPS:
+			groups.append(g)
 		return true
-	return group in only.split(",")
+	for raw in only.split(","):
+		var g := raw.strip_edges()
+		if g.is_empty() or not (g in VALID_GROUPS):
+			push_error("SWEEP2048 invalid PROBE_ONLY group '%s' (allowed: %s)" % [g, ",".join(VALID_GROUPS)])
+			return false
+		if not (g in groups):
+			groups.append(g)
+	if groups.is_empty():
+		push_error("SWEEP2048 PROBE_ONLY selected zero groups")
+		return false
+	return true
+
+
+func _expected_count() -> int:
+	var n := 0
+	if "shield" in groups:
+		n += SHIELD_FACS.size() * CAMS.size() * 2
+	if "vent" in groups:
+		n += VENT_FACS.size() * CAMS.size()
+	if "terrain" in groups:
+		n += 3 * CAMS.size()
+	if "idle" in groups:
+		n += ALL_FACS.size() * CAMS.size()
+	return n
+
+
+func _short_sha(sha: String) -> String:
+	var s := sha.strip_edges()
+	return s.substr(0, mini(8, s.length())) if not s.is_empty() else "unpinned"
 
 
 func _run() -> void:
 	out = _env("PROBE_OUT", "")
 	if out.is_empty():
 		push_error("SWEEP2048 PROBE_OUT is not set")
+		print("SWEEP2048_FAILED")
+		quit(2)
+		return
+	if not _parse_groups():
 		print("SWEEP2048_FAILED")
 		quit(2)
 		return
@@ -97,21 +136,33 @@ func _run() -> void:
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	_setup_stage()
 
-	if _want("shield"):
+	if "shield" in groups:
 		await _capture_shields(dir)
-	if _want("vent") and not failed:
+	if "vent" in groups and not failed:
 		await _capture_small_vents(dir)
-	if _want("terrain") and not failed:
+	if "terrain" in groups and not failed:
 		await _capture_terrain(dir)
-	if _want("idle") and not failed:
+	if "idle" in groups and not failed:
 		await _capture_idle(dir)
 
+	var expected := _expected_count()
+	if manifest.is_empty() or manifest.size() != expected:
+		push_error("SWEEP2048 row count mismatch for %s: captured %d, expected %d" % [tag, manifest.size(), expected])
+		failed = true
+
+	var commit_sha := _env("PROBE_BEFORE_SHA", "") if tag == "before" else _env("PROBE_AFTER_SHA", "")
 	var fp := FileAccess.open(dir.path_join("manifest.json"), FileAccess.WRITE)
 	if fp == null:
 		failed = true
 		push_error("SWEEP2048 could not write manifest.json")
 	else:
-		fp.store_string(JSON.stringify({"tag": tag, "rows": manifest}, "  "))
+		fp.store_string(JSON.stringify({
+			"tag": tag,
+			"commit": commit_sha,
+			"groups": groups,
+			"expected": expected,
+			"rows": manifest,
+		}, "  "))
 		fp.close()
 
 	OS.unset_environment("VS_IDLE_MOTION")
@@ -154,7 +205,7 @@ func _setup_stage() -> void:
 	cam.current = true
 	banner = Label.new()
 	banner.position = Vector2(12, 10)
-	banner.add_theme_font_size_override("font_size", 22)
+	banner.add_theme_font_size_override("font_size", 20)
 	banner.add_theme_color_override("font_color", Color(0.97, 0.96, 0.90))
 	banner.add_theme_color_override("font_outline_color", Color(0.02, 0.02, 0.04, 0.95))
 	banner.add_theme_constant_override("outline_size", 5)
@@ -211,6 +262,11 @@ func _step_to(dt_total: float) -> void:
 		await RenderingServer.frame_post_draw
 
 
+func _tag_rev() -> String:
+	var sha := _env("PROBE_BEFORE_SHA", "") if tag == "before" else _env("PROBE_AFTER_SHA", "")
+	return "%s (%s)" % [tag.to_upper(), _short_sha(sha)]
+
+
 func _grab_cell(code_label: String) -> Image:
 	banner.text = code_label
 	for i in 3:
@@ -226,13 +282,18 @@ func _save_pair(dir: String, code: String, left: Image, right: Image) -> void:
 	row.blit_rect(left, Rect2i(Vector2i.ZERO, CELL_SIZE), Vector2i(0, 0))
 	row.blit_rect(right, Rect2i(Vector2i.ZERO, CELL_SIZE), Vector2i(CELL_SIZE.x, 0))
 	var path := dir.path_join(code + ".png")
-	PP.save_png(row, path, PP.capture_stage())
+	var err: Error = load("res://tools/picture_provenance.gd").save_png(row, path, PP.capture_stage())
+	if err != OK or not FileAccess.file_exists(path):
+		push_error("SWEEP2048 failed saving %s (err=%d)" % [path, int(err)])
+		failed = true
+		return
 	manifest.append(code)
 	print("[sweep2048] saved ", code, " (", tag, ")")
 
 
 func _capture_shields(dir: String) -> void:
 	OS.unset_environment("VS_IDLE_MOTION")
+	var tr := _tag_rev()
 	for fac in SHIELD_FACS:
 		for r in CAMS:
 			# 1A: heavy torpedo shield hit local ripple vs bubble wash
@@ -247,9 +308,9 @@ func _capture_shields(dir: String) -> void:
 			s.shield_hit(fx, pt["local"], fx.now, 2.86, 26.0, 1.1, 0.65)
 			await _step_to(0.08)
 			var code_h := "SHLD_HIT_%s_c%d" % [fac, r]
-			var a := await _grab_cell("%s | %s | t=0.08s" % [code_h, tag.to_upper()])
+			var a := await _grab_cell("%s | %s | t=0.08s" % [code_h, tr])
 			await _step_to(0.18)
-			var b := await _grab_cell("%s | %s | t=0.26s" % [code_h, tag.to_upper()])
+			var b := await _grab_cell("%s | %s | t=0.26s" % [code_h, tr])
 			_save_pair(dir, code_h, a, b)
 
 			# 1B: clean collapse edge wave (1.225 s close)
@@ -264,14 +325,15 @@ func _capture_shields(dir: String) -> void:
 			sb.shield_break(fx, 0, ptb["local"])
 			await _step_to(0.35)
 			var code_b := "SHLD_BRK_%s_c%d" % [fac, r]
-			var ba := await _grab_cell("%s | %s | t=0.35s" % [code_b, tag.to_upper()])
+			var ba := await _grab_cell("%s | %s | t=0.35s" % [code_b, tr])
 			await _step_to(0.50)
-			var bb := await _grab_cell("%s | %s | t=0.85s" % [code_b, tag.to_upper()])
+			var bb := await _grab_cell("%s | %s | t=0.85s" % [code_b, tr])
 			_save_pair(dir, code_b, ba, bb)
 
 
 func _capture_small_vents(dir: String) -> void:
 	OS.unset_environment("VS_IDLE_MOTION")
+	var tr := _tag_rev()
 	for fac in VENT_FACS:
 		for r in CAMS:
 			await _fresh_fx(20483)
@@ -285,14 +347,15 @@ func _capture_small_vents(dir: String) -> void:
 			fx.death("fr_" + fac, "blast")
 			await _step_to(0.033)
 			var code := "DTH_VENT_%s_c%d" % [fac, r]
-			var a := await _grab_cell("%s | %s | t=0.03s" % [code, tag.to_upper()])
+			var a := await _grab_cell("%s | %s | t=0.03s" % [code, tr])
 			await _step_to(0.084)
-			var b := await _grab_cell("%s | %s | t=0.12s" % [code, tag.to_upper()])
+			var b := await _grab_cell("%s | %s | t=0.12s" % [code, tr])
 			_save_pair(dir, code, a, b)
 
 
 func _capture_terrain(dir: String) -> void:
 	OS.unset_environment("VS_IDLE_MOTION")
+	var tr := _tag_rev()
 	# 3A: Dead Star INFALL motes
 	for r in CAMS:
 		await _fresh_fx(20484)
@@ -304,12 +367,12 @@ func _capture_terrain(dir: String) -> void:
 		_aim(Vector3(16.0 if r == 26 else 0.0, 6.0 if r == 26 else 0.0, 0.0), r)
 		await _step_to(0.6)
 		var code := "TERR_INFALL_c%d" % r
-		var a := await _grab_cell("%s | %s | t=0.6s" % [code, tag.to_upper()])
+		var a := await _grab_cell("%s | %s | t=0.6s" % [code, tr])
 		await _step_to(0.9)
-		var b := await _grab_cell("%s | %s | t=1.5s" % [code, tag.to_upper()])
+		var b := await _grab_cell("%s | %s | t=1.5s" % [code, tr])
 		_save_pair(dir, code, a, b)
 
-	# 3B: terrain_scorch.gd decals (char crater + light-blue plasma melt)
+	# 3B: terrain_scorch.gd decals (char crater + light-blue plasma melt) + cold first-mark timing
 	for r in CAMS:
 		await _fresh_fx(20485)
 		var slab := MeshInstance3D.new()
@@ -324,15 +387,18 @@ func _capture_terrain(dir: String) -> void:
 		slab.layers |= SCORCH.RECEIVER
 		world.add_child(slab)
 		SCORCH.clear_static()
+		var t0 := Time.get_ticks_usec()
 		SCORCH.stamp(slab, {"position": Vector3(-3.2, 1.0, 0.0), "normal": Vector3.UP}, 4.8, false)
+		var cold_ms := float(Time.get_ticks_usec() - t0) / 1000.0
 		SCORCH.stamp(slab, {"position": Vector3(3.2, 1.0, 0.0), "normal": Vector3.UP}, 4.8, true)
+		print("[sweep2048] scorch cold_ms=%.2f (%s c%d)" % [cold_ms, tag, r])
 		_aim(Vector3(0.0, 1.0, 0.0), r, -PI / 2.0, 1.05)
 		await _step_to(0.1)
 		var code := "TERR_SCORCH_c%d" % r
-		var a := await _grab_cell("%s | %s | char + plasma" % [code, tag.to_upper()])
+		var a := await _grab_cell("%s | %s | cold=%.1fms" % [code, tr, cold_ms])
 		_aim(Vector3(0.0, 1.0, 0.0), r, -PI / 4.0, 0.65)
 		await _step_to(0.1)
-		var b := await _grab_cell("%s | %s | raking light" % [code, tag.to_upper()])
+		var b := await _grab_cell("%s | %s | raking light" % [code, tr])
 		_save_pair(dir, code, a, b)
 
 	# 3C: Debris & background DUST_SHADER
@@ -347,14 +413,15 @@ func _capture_terrain(dir: String) -> void:
 		_aim(Vector3.ZERO, r)
 		await _step_to(0.5)
 		var code := "TERR_DUST_c%d" % r
-		var a := await _grab_cell("%s | %s | t=0.5s" % [code, tag.to_upper()])
+		var a := await _grab_cell("%s | %s | t=0.5s" % [code, tr])
 		await _step_to(1.2)
-		var b := await _grab_cell("%s | %s | t=1.7s" % [code, tag.to_upper()])
+		var b := await _grab_cell("%s | %s | t=1.7s" % [code, tr])
 		_save_pair(dir, code, a, b)
 
 
 func _capture_idle(dir: String) -> void:
 	OS.set_environment("VS_IDLE_MOTION", "1")
+	var tr := _tag_rev()
 	for fac in ALL_FACS:
 		for r in CAMS:
 			await _fresh_fx(20487)
@@ -365,11 +432,19 @@ func _capture_idle(dir: String) -> void:
 			await fx.warmup(cam)
 			await _step_to(0.6)
 			var code := "IDLE_%s_c%d" % [fac, r]
-			var a := await _grab_cell("%s | %s | t=0.6s" % [code, tag.to_upper()])
+			var a := await _grab_cell("%s | %s | t=0.6s" % [code, tr])
 			await _step_to(1.2)
-			var b := await _grab_cell("%s | %s | t=1.8s" % [code, tag.to_upper()])
+			var b := await _grab_cell("%s | %s | t=1.8s" % [code, tr])
 			_save_pair(dir, code, a, b)
 	OS.unset_environment("VS_IDLE_MOTION")
+
+
+func _read_manifest(path: String) -> Dictionary:
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return {}
+	var parsed = JSON.parse_string(f.get_as_text())
+	return parsed if parsed is Dictionary else {}
 
 
 func _compose_all(spec: String) -> void:
@@ -380,20 +455,29 @@ func _compose_all(spec: String) -> void:
 		return
 	var bdir := parts[0]
 	var adir := parts[1]
-	var mf := FileAccess.open(adir.path_join("manifest.json"), FileAccess.READ)
-	if mf == null:
-		push_error("SWEEP2048 missing after manifest in " + adir)
+	var bdata := _read_manifest(bdir.path_join("manifest.json"))
+	var adata := _read_manifest(adir.path_join("manifest.json"))
+	if bdata.is_empty() or adata.is_empty() or not (bdata.get("rows") is Array) or not (adata.get("rows") is Array):
+		push_error("SWEEP2048 missing or malformed before/after manifest.json")
 		failed = true
 		return
-	var data = JSON.parse_string(mf.get_as_text())
-	if not (data is Dictionary) or not (data.get("rows") is Array):
-		push_error("SWEEP2048 malformed after manifest")
+	var brows: Array = bdata["rows"]
+	var arows: Array = adata["rows"]
+	var expected := _expected_count()
+	if arows.is_empty() or arows.size() != expected or brows != arows:
+		push_error("SWEEP2048 manifest row mismatch: before=%d after=%d expected=%d" % [brows.size(), arows.size(), expected])
+		failed = true
+		return
+	var before_sha := str(bdata.get("commit", _env("PROBE_BEFORE_SHA", "")))
+	var after_sha := str(adata.get("commit", _env("PROBE_AFTER_SHA", "")))
+	if before_sha.length() < 8 or after_sha.length() < 8:
+		push_error("SWEEP2048 missing pinned before/after commit SHAs (before='%s' after='%s')" % [before_sha, after_sha])
 		failed = true
 		return
 	var sheets_dir := out.path_join("sheets")
 	DirAccess.make_dir_recursive_absolute(sheets_dir)
-	var composed := 0
-	for code_v in data["rows"]:
+	var written: Array = []
+	for code_v in arows:
 		var code := str(code_v)
 		var b_img := Image.new()
 		var a_img := Image.new()
@@ -412,6 +496,38 @@ func _compose_all(spec: String) -> void:
 		sheet.fill(Color(0.02, 0.02, 0.03, 1.0))
 		sheet.blit_rect(b_img, Rect2i(0, 0, mini(1280, b_img.get_width()), mini(360, b_img.get_height())), Vector2i(0, 0))
 		sheet.blit_rect(a_img, Rect2i(0, 0, mini(1280, a_img.get_width()), mini(360, a_img.get_height())), Vector2i(0, 360))
-		PP.save_png(sheet, sheets_dir.path_join(code + "_before_after.png"), PP.capture_stage())
-		composed += 1
-	print("[sweep2048] composed ", composed, " before/after sheets in ", sheets_dir)
+		var out_path := sheets_dir.path_join(code + "_before_after.png")
+		var err: Error = load("res://tools/picture_provenance.gd").save_png(sheet, out_path, PP.capture_stage())
+		if err != OK or not FileAccess.file_exists(out_path):
+			push_error("SWEEP2048 failed saving composed sheet %s (err=%d)" % [out_path, int(err)])
+			failed = true
+			continue
+		# Augment the sheet's provenance sidecar with both pinned revisions so before and after commits stay recorded.
+		var sidecar_path := out_path + ".provenance.json"
+		var sc := _read_manifest(sidecar_path)
+		if not sc.is_empty():
+			sc["before_commit"] = before_sha
+			sc["after_commit"] = after_sha
+			var sf := FileAccess.open(sidecar_path, FileAccess.WRITE)
+			if sf != null:
+				sf.store_string(JSON.stringify(sc, "  "))
+				sf.close()
+		written.append(code + "_before_after.png")
+	if written.size() != expected:
+		push_error("SWEEP2048 composed %d sheets, expected %d" % [written.size(), expected])
+		failed = true
+	var cf := FileAccess.open(sheets_dir.path_join("composed_manifest.json"), FileAccess.WRITE)
+	if cf == null:
+		push_error("SWEEP2048 could not write composed_manifest.json")
+		failed = true
+	else:
+		cf.store_string(JSON.stringify({
+			"before_commit": before_sha,
+			"after_commit": after_sha,
+			"groups": groups,
+			"expected": expected,
+			"composed": written.size(),
+			"files": written,
+		}, "  "))
+		cf.close()
+	print("[sweep2048] composed ", written.size(), "/", expected, " before/after sheets in ", sheets_dir)

@@ -47,14 +47,31 @@ set "R=%HOME2048%\repo"
 if not exist "%R%\.git" git -c core.autocrlf=false clone https://github.com/rcbailey12/voidsworn "%R%" > "%HOME2048%\git.txt" 2>&1
 git -C "%R%" fetch origin >> "%HOME2048%\git.txt" 2>&1
 set "OUT="
-call :safe_checkout %REF% branch
+
+rem Pin full 40-char BEFORE (origin/main) and AFTER (REF) commit SHAs before running either capture.
+set "BEFORE_SHA="
+for /f %%H in ('git -C "%R%" rev-parse origin/main') do set "BEFORE_SHA=%%H"
+set "AFTER_SHA="
+for /f %%H in ('git -C "%R%" rev-parse %REF%') do set "AFTER_SHA=%%H"
+if not defined BEFORE_SHA (
+  echo FAILED: could not resolve origin/main SHA >> "%ST%"
+  set "JOBFAIL=1"
+  goto finish
+)
+if not defined AFTER_SHA (
+  echo FAILED: could not resolve %REF% SHA >> "%ST%"
+  set "JOBFAIL=1"
+  goto finish
+)
+
+call :safe_checkout %AFTER_SHA% branch
 if errorlevel 1 goto finish
-for /f %%H in ('git -C "%R%" rev-parse --short^=8 HEAD') do set "SHA=%%H"
+set "SHA=%AFTER_SHA:~0,8%"
 set "ATT=%SHA%_%RANDOM%%RANDOM%"
 set "OUT=%HOME2048%\work\%ATT%"
 set "RES=%HOME2048%\out\%ATT%"
 mkdir "%OUT%" "%RES%"
-echo commit %SHA% attempt %ATT%: results in out\%ATT% >> "%ST%"
+echo after_sha %AFTER_SHA% before_sha %BEFORE_SHA% attempt %ATT%: results in out\%ATT% >> "%ST%"
 
 set "PROF=%HOME2048%\profile_%ATT%"
 mkdir "%PROF%\appdata"
@@ -72,6 +89,8 @@ if exist "%S2048_SHIPS%\assets\ships" robocopy "%S2048_SHIPS%\assets\ships" "%R%
 if not exist "%R%\godot\.godot" if exist "%S2048_SHIPS%\.godot" robocopy "%S2048_SHIPS%\.godot" "%R%\godot\.godot" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_cache.txt" 2>&1
 set "PICTURE_STAMP_TOOL=%R%\tools\picture_provenance.py"
 set "PICTURE_SOURCE_REPO=%R%"
+set "PROBE_BEFORE_SHA=%BEFORE_SHA%"
+set "PROBE_AFTER_SHA=%AFTER_SHA%"
 call "%TMO%" 1800 "%G%" --headless --path "%R%\godot" --import > "%OUT%\import.txt" 2>&1
 call "%TMO%" 1800 "%G%" --headless --path "%R%\godot" --script res://render/build_assets.gd -- --ships-only > "%OUT%\ships_cache.txt" 2>&1
 if errorlevel 1 (
@@ -80,15 +99,20 @@ if errorlevel 1 (
   goto finish
 )
 
-rem Keep a copy of the probe so the exact same script runs on origin/main for the BEFORE row.
+rem Keep a copy of the probe so the exact same script runs on pinned BEFORE_SHA.
 copy /y "%R%\godot\fx\test\sweep_2048_probe.gd" "%HOME2048%\probe_copy.gd" > nul
 
-rem Pass 1: AFTER (branch)
+rem Pass 1: AFTER (pinned AFTER_SHA)
 set "PROBE_OUT=%OUT%"
 set "PROBE_TAG=after"
 set "PROBE_COMPOSE="
 set "PC_GPU_MODE=shared"
 call "%TMO%" 2400 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1280x720 --script res://fx/test/sweep_2048_probe.gd > "%OUT%\after_log.txt" 2>&1
+if errorlevel 1 (
+  echo FAILED: AFTER capture exited non-zero, see %OUT%\after_log.txt >> "%ST%"
+  set "JOBFAIL=1"
+  goto done
+)
 findstr /c:"SWEEP2048_DONE" "%OUT%\after_log.txt" > nul
 if errorlevel 1 (
   echo FAILED: AFTER capture did not finish, see %OUT%\after_log.txt >> "%ST%"
@@ -97,8 +121,8 @@ if errorlevel 1 (
 )
 echo AFTER pass done %date% %time% >> "%ST%"
 
-rem Pass 2: BEFORE (origin/main)
-call :safe_checkout origin/main main
+rem Pass 2: BEFORE (pinned BEFORE_SHA)
+call :safe_checkout %BEFORE_SHA% main
 if errorlevel 1 goto done
 copy /y "%HOME2048%\probe_copy.gd" "%R%\godot\fx\test\sweep2048_main_probe.gd" > nul
 set "PROBE_OUT=%OUT%"
@@ -106,35 +130,60 @@ set "PROBE_TAG=before"
 set "PROBE_COMPOSE="
 set "PC_GPU_MODE=shared"
 call "%TMO%" 2400 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1280x720 --script res://fx/test/sweep2048_main_probe.gd > "%OUT%\before_log.txt" 2>&1
+set "BERR=%ERRORLEVEL%"
 del /q "%R%\godot\fx\test\sweep2048_main_probe.gd" > nul 2>&1
+if not "%BERR%"=="0" (
+  echo FAILED: BEFORE capture exited non-zero, see %OUT%\before_log.txt >> "%ST%"
+  set "JOBFAIL=1"
+  goto done
+)
 findstr /c:"SWEEP2048_DONE" "%OUT%\before_log.txt" > nul
 if errorlevel 1 (
-  echo FAILED: BEFORE capture on origin/main did not finish, see %OUT%\before_log.txt >> "%ST%"
+  echo FAILED: BEFORE capture on %BEFORE_SHA% did not finish, see %OUT%\before_log.txt >> "%ST%"
   set "JOBFAIL=1"
   goto done
 )
 echo BEFORE pass done %date% %time% >> "%ST%"
 
-rem Pass 3: Compose 1280x720 before/after comparison sheets (top = main, bottom = branch)
-call :safe_checkout %SHA% back
+rem Pass 3: Compose 1280x720 before/after comparison sheets (top = BEFORE_SHA, bottom = AFTER_SHA)
+call :safe_checkout %AFTER_SHA% back
 if errorlevel 1 goto done
 set "PROBE_OUT=%OUT%"
 set "PROBE_TAG="
 set "PROBE_COMPOSE=%OUT%\before;%OUT%\after"
 call "%TMO%" 600 "%G%" --headless --path "%R%\godot" --script res://fx/test/sweep_2048_probe.gd > "%OUT%\compose_log.txt" 2>&1
+set "CERR=%ERRORLEVEL%"
 set "PROBE_COMPOSE="
+if not "%CERR%"=="0" (
+  echo FAILED: compose exited non-zero, see %OUT%\compose_log.txt >> "%ST%"
+  set "JOBFAIL=1"
+  goto done
+)
 findstr /c:"SWEEP2048_DONE" "%OUT%\compose_log.txt" > nul
 if errorlevel 1 (
   echo FAILED: before/after sheet compose did not finish, see %OUT%\compose_log.txt >> "%ST%"
   set "JOBFAIL=1"
   goto done
 )
-echo compose done %date% %time% >> "%ST%"
+
+rem Fail closed: require composed_manifest.json and non-zero composed PNGs matching manifest expected count.
+if not exist "%OUT%\sheets\composed_manifest.json" (
+  echo FAILED: composed_manifest.json missing >> "%ST%"
+  set "JOBFAIL=1"
+  goto done
+)
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$m = Get-Content -LiteralPath '%OUT%\sheets\composed_manifest.json' -Raw | ConvertFrom-Json; if ($m.expected -le 0 -or $m.composed -ne $m.expected) { exit 1 }; foreach ($f in $m.files) { if (-not (Test-Path -LiteralPath (Join-Path '%OUT%\sheets' $f))) { exit 1 } }"
+if errorlevel 1 (
+  echo FAILED: composed sheets count or files did not match composed_manifest.json >> "%ST%"
+  set "JOBFAIL=1"
+  goto done
+)
+echo compose verified %date% %time% >> "%ST%"
 
 :done
 call :profile_check
 if "%JOBFAIL%"=="0" (
-  echo DONE %SHA% %date% %time% >> "%ST%"
+  echo DONE %AFTER_SHA% vs %BEFORE_SHA% %date% %time% >> "%ST%"
 ) else (
   echo RESULT: FAILED, see FAILED lines above %date% %time% >> "%ST%"
 )
@@ -143,6 +192,7 @@ if "%JOBFAIL%"=="0" (
 if not defined PCHK call :profile_check
 if exist "%OUT%\sheets" copy /y "%OUT%\sheets\*.png" "%RES%\" > nul 2>&1
 if exist "%OUT%\sheets" copy /y "%OUT%\sheets\*.provenance.json" "%RES%\" > nul 2>&1
+if exist "%OUT%\sheets\composed_manifest.json" copy /y "%OUT%\sheets\composed_manifest.json" "%RES%\" > nul 2>&1
 if exist "%OUT%\after\manifest.json" copy /y "%OUT%\after\manifest.json" "%RES%\manifest_after.json" > nul 2>&1
 if exist "%OUT%\before\manifest.json" copy /y "%OUT%\before\manifest.json" "%RES%\manifest_before.json" > nul 2>&1
 copy /y "%OUT%\*_log.txt" "%RES%\" > nul 2>&1

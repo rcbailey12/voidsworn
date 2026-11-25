@@ -33,7 +33,7 @@ func _run() -> void:
 	var mark := SCORCH.stamp(holder, hit, 3.2, true)
 	var build_ms := float(Time.get_ticks_usec() - t0) / 1000.0
 	_check(mark is Decal, "terrain_scorch.stamp returns a Decal")
-	_check(build_ms < 2500.0, "terrain_scorch 256px texture generation completes promptly (%.1f ms)" % build_ms)
+	_check(build_ms < 250.0, "terrain_scorch 256px cold texture generation stays under 250 ms (%.1f ms)" % build_ms)
 	_check(mark.texture_albedo != null and mark.texture_albedo.get_width() == 256 and mark.texture_albedo.get_height() == 256,
 		"scorch albedo texture is 256x256")
 	_check(mark.texture_normal != null and mark.texture_normal.get_width() == 256 and mark.texture_normal.get_height() == 256,

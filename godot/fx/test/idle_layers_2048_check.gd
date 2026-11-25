@@ -47,6 +47,8 @@ func _run() -> void:
 	for st in [0, 1, 2, 3, 4]:
 		_check(code.contains("st == %d" % st), "IDLE_MOTION implements faction style %d" % st)
 	_check(code.contains("vec3 v_deep =") and code.contains("float veins ="), "IDLE_MOTION implements Eclipse violet corona and Chorus bio-veins")
+	_check(not code.contains("pow((r -"), "IDLE_MOTION squares signed ring distances without undefined negative-base pow()")
+	_check(not code.contains("smoothstep(0.82, 0.35"), "IDLE_MOTION uses ascending smoothstep edges")
 
 	# 2. Stays OFF by default.
 	OS.unset_environment("VS_IDLE_MOTION")

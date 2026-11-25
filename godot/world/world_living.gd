@@ -463,7 +463,8 @@ void fragment() {
 	// Tapered ember tail behind the leading head.
 	float along = clamp((vQ.x + 1.0) * 0.5, 0.0, 1.0);
 	float tail_w = mix(0.18, 0.78, along) * (1.0 - smoothstep(0.72, 1.0, along));
-	float sheath = exp(-pow(abs(vQ.y) / max(tail_w, 0.08), 2.0) * 2.6) * smoothstep(0.0, 0.35, along) * (1.0 - smoothstep(0.78, 1.0, along));
+	float td = abs(vQ.y) / max(tail_w, 0.08);
+	float sheath = exp(-td * td * 2.6) * smoothstep(0.0, 0.35, along) * (1.0 - smoothstep(0.78, 1.0, along));
 	float twinkle = 0.80 + 0.20 * sin(TIME * (2.6 + fract(vSeed * 17.3) * 2.0) + vSeed * 41.0);
 	vec3 outer_c = vec3(0.38, 0.20, 0.13);
 	vec3 hot_c = vec3(0.95, 0.54, 0.22);
