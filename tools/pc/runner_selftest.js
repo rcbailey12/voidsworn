@@ -84,7 +84,10 @@ for (const id of [openaiDefault, 'openai/gpt-6.1-sol', openaiReview]) {
 }
 assert(!/(?:getkey|setx|set)\s+"?OPENAI_API_KEY\b/i.test(workBat));
 const openaiKeyBat = read(path.join(here, 'openai_api_key.bat'));
-assert(openaiKeyBat.includes('setx VOIDSWORN_OPENAI_API_KEY "%K%"'));
+// Issue 2172: the key is read hidden with Read-Host -AsSecureString and set for the user without a set /p echo.
+assert(/Read-Host -AsSecureString/i.test(openaiKeyBat));
+assert(openaiKeyBat.includes("[System.Environment]::SetEnvironmentVariable('VOIDSWORN_OPENAI_API_KEY', $k, 'User')"));
+assert(!/set\s+\/p/i.test(openaiKeyBat));
 assert(!/setx\s+OPENAI_API_KEY\b/i.test(openaiKeyBat));
 pass('OpenAI arm defaults, isolated key name, lean config and local stand-in config');
 assert(!/['"](?:reset|clean|--force)['"]/.test(shared), 'checkout reuse must never discard working tree bytes');

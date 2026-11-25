@@ -6,6 +6,8 @@ const DIRECTORY := "user://shield_skins"
 # Bump when the bake or the file layout changes. Old entries are never selected.
 const VERSION := "2"
 const MAX_BYTES := 32 * 1024 * 1024
+# issue 2172: the folder is pruned back to this size after a write, oldest entries first
+const MAX_CACHE_BYTES := 128 * 1024 * 1024
 
 
 static func key_for(box: AABB, faces: PackedVector3Array) -> String:
@@ -53,6 +55,54 @@ static func write_skin(key: String, arrays: Array) -> void:
 	file.close()
 	if not written or DirAccess.rename_absolute(temp, path) != OK:
 		DirAccess.remove_absolute(temp)
+		return
+	_prune(path)
+
+
+# issue 2172: keep the folder under MAX_CACHE_BYTES, removing the least recently written entries first and never the
+# entry just written. Writes are rare (a new hull or bake version), so one directory scan per write is enough.
+static func _prune(keep: String) -> void:
+	_prune_dir(DIRECTORY, keep, MAX_CACHE_BYTES)
+
+
+static func _prune_dir(dir_path: String, keep: String, limit: int) -> void:
+	var dir := DirAccess.open(dir_path)
+	if dir == null:
+		return
+	var entries: Array = []
+	var total := 0
+	dir.list_dir_begin()
+	var name := dir.get_next()
+	while name != "":
+		if not dir.current_is_dir() and name.ends_with(".bin"):
+			var path := dir_path.path_join(name)
+			var size := _file_size(path)
+			if size > 0:
+				entries.append({"path": path, "size": size, "mtime": FileAccess.get_modified_time(path)})
+				total += size
+		name = dir.get_next()
+	dir.list_dir_end()
+	if total <= limit:
+		return
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a["mtime"]) < int(b["mtime"]))
+	for e in entries:
+		if total <= limit:
+			break
+		var path := str(e["path"])
+		if path == keep:
+			continue
+		if DirAccess.remove_absolute(path) == OK:
+			total -= int(e["size"])
+
+
+static func _file_size(path: String) -> int:
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return 0
+	var size := f.get_length()
+	f.close()
+	return size
 
 
 static func _path(key: String) -> String:

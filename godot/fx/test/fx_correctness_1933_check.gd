@@ -75,6 +75,18 @@ func _check_clock(fx: FX) -> void:
 		fx.later(fx.now + 0.01, func() -> void: order.append(i))
 	fx.step(0.1)
 	_check(order == range(24), "equal-time callbacks run in insertion order")
+	# issue 2172: the queue stays ordered as it is filled and only the due front leaves each step
+	var order2: Array[int] = []
+	fx.later(fx.now + 0.03, func() -> void: order2.append(3))
+	fx.later(fx.now + 0.01, func() -> void: order2.append(1))
+	fx.later(fx.now + 0.02, func() -> void: order2.append(2))
+	var ordered := true
+	for i in range(1, fx._later.size()):
+		if float(fx._later[i][0]) < float(fx._later[i - 1][0]):
+			ordered = false
+	_check(ordered, "the deferred queue is kept in time order as callbacks are added")
+	fx.step(0.05)
+	_check(order2 == [1, 2, 3] and fx._later.is_empty(), "out of order callbacks run by time and leave the queue")
 
 	seed(1933)
 	var expected_random := randf()

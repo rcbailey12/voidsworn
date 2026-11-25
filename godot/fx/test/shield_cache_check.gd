@@ -50,6 +50,30 @@ func _register(mesh: Mesh, facing: float, bob: float) -> Dictionary:
 	return result
 
 
+func _prune_check() -> void:
+	var dir := "user://shield_cache_prune_test"
+	DirAccess.make_dir_recursive_absolute(dir)
+	var paths: Array = []
+	for i in 3:
+		var path := dir.path_join("entry%d.bin" % i)
+		var f := FileAccess.open(path, FileAccess.WRITE)
+		if f == null:
+			_check(false, "could not write a prune fixture entry")
+			return
+		f.store_string("x".repeat(1000))
+		f.close()
+		paths.append(path)
+		if i < 2:
+			OS.delay_msec(1100)
+	# issue 2172: three 1000 byte entries against a 1500 byte cap keep the newest and drop both older ones
+	SHIELD_CACHE._prune_dir(dir, str(paths[2]), 1500)
+	_check(not FileAccess.file_exists(str(paths[0])) and not FileAccess.file_exists(str(paths[1])) and FileAccess.file_exists(str(paths[2])),
+		"the disk cache drops its oldest entries down to the size cap and keeps the newest")
+	for path in paths:
+		DirAccess.remove_absolute(str(path))
+	DirAccess.remove_absolute(dir)
+
+
 func _run() -> void:
 	var box := BoxMesh.new()
 	box.size = Vector3(12, 3, 4)
@@ -94,5 +118,6 @@ func _run() -> void:
 	_check(puff.get_ref() == null and texture.get_ref() == null, "shutdown releases the cached puff material and texture")
 	_check(SV._puff_mat().albedo_texture != null, "the puff material can be built again after cleanup")
 	SV.clear_static()
+	_prune_check()
 	print("Shield cache and puff cleanup failures=%d" % failures)
 	quit(0 if failures == 0 else 1)

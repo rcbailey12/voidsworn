@@ -73,6 +73,8 @@ func _run(write_ok: bool) -> void:
 	b.finished.connect(func(r): got.merge(r), CONNECT_ONE_SHOT)
 	if write_ok:
 		_check(acts.has("save_quit") and not acts.has("save_quit_older"), "%s: the menu offers Save and quit to title" % tag)
+		# issue 2172: the victory beat sets ended before its end card; Save and quit must still leave the battle
+		b.ended = true
 		b._on_action("save_quit", null)
 	else:
 		_check(not acts.has("save_quit") and acts.has("save_quit_older") and labels.has("Quit to title (Continue starts from the last checkpoint)"),

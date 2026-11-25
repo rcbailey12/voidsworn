@@ -822,6 +822,8 @@ func _begin(a) -> void:
 	boss_fight = _api_battle_kind() == "boss"
 	finale_fight = _api_battle_finale()
 	ended = false
+	busy = false   # issue 2172: a battle begun again mid-turn takes the flag back from the old runner
+	_threat_busy = false
 	board.set_process_unhandled_input(true)
 	result = {}
 	errors.clear()
@@ -1974,6 +1976,7 @@ var _deaths_left := 0         # issue 1238: death events still to play in this b
 
 func _play_batch(bt: Dictionary) -> void:
 	var evs: Array = bt["events"]
+	var gen := _gen
 	_view_cause = view_causes(evs)
 	var enemy := false
 	dying.clear()
@@ -2006,12 +2009,16 @@ func _play_batch(bt: Dictionary) -> void:
 	var i := 0
 	var pre := {}   # F1: event indexes already played (your wings' moves, flown together)
 	while i < evs.size():
+		if _stale(gen):
+			return
 		var e: Dictionary = evs[i]
 		if pre.has(i):
 			i += 1
 			continue
 		if e["t"] == "activation" and str(e.get("side", "")) == "player" and _is_wing(e["unit"]) and not args.has("wings-apart"):
 			await _wings_together(evs, i, pre)
+			if _stale(gen):
+				return
 		if e["t"] == "fire":
 			var j := volley_end(evs, i)
 			var grp: Array = evs.slice(i + 1, j)
@@ -2025,6 +2032,8 @@ func _play_batch(bt: Dictionary) -> void:
 			for g in grp:
 				_voice_event(g)
 			await _play_fire(e, grp)
+			if _stale(gen):
+				return
 			_tip_completed(e)
 			if enemy:
 				pace_kind["fire"] = float(pace_kind.get("fire", 0.0)) + game_t - tf
@@ -2046,9 +2055,13 @@ func _play_batch(bt: Dictionary) -> void:
 						"wid": str(e2.get("weapon_id", "")), "n": maxi((e2.get("shots", []) as Array).size(), 1)}
 					break
 		await _play_event(e, bt["view"])
+		if _stale(gen):
+			return
 		_tip_completed(e)
 		if e["t"] == "round" and not arrivals.is_empty():
 			await _arrive(arrivals)
+			if _stale(gen):
+				return
 			arrivals = []
 		if enemy:
 			pace_kind[str(e["t"])] = float(pace_kind.get(str(e["t"]), 0.0)) + game_t - te
@@ -2058,12 +2071,16 @@ func _play_batch(bt: Dictionary) -> void:
 		i += 1
 	if not arrivals.is_empty():
 		await _arrive(arrivals)
+		if _stale(gen):
+			return
 	if not bot and not showcase and not _flag_hull_warned:
 		_flag_hull_warned = _flagship_hull_alarm(bt["view"])
 	if enemy:
 		tip_enemy_done = true
 		var ta := game_t
 		await wait(float(PACE["aiEnd"]))
+		if _stale(gen):
+			return
 		pace_kind["aiEnd"] = float(pace_kind.get("aiEnd", 0.0)) + game_t - ta
 		_end_enemy_follow()
 		hud.set_chip("")
@@ -2182,6 +2199,7 @@ func _merge_nemesis_opening(lines: Array) -> bool:
 
 
 func _play_event(e: Dictionary, batch_view := {}) -> void:
+	var gen := _gen
 	_voice_event(e)
 	match e["t"]:
 		"adaptation":
@@ -2200,6 +2218,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				sfx.turn("round")
 				hud.banner("Round %d" % int(e["round"]))
 				await wait(float(PACE["banner"]) + 140.0)
+				if _stale(gen):
+					return
 		"regen_unlock":
 			if disp.has(e["unit"]):
 				_show_regen_lock(e["unit"], false)
@@ -2225,10 +2245,14 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 					_flash(board.hex_world(int(e["q"]), int(e["r"]), 2.0), 10.0, Color(1, 0.8, 0.5), 0.4)
 				sfx.play("launch", {"pos": board.hex_world(int(e["q"]), int(e["r"]))})
 			await wait(220.0)
+			if _stale(gen):
+				return
 		"risen":
 			_reassemble(e, batch_view)
 			_float(e["unit"], "Risen", Color("#ddc4ff"), -30)   # only Eclipse ships rise (legionCan); Eclipse violet, never green (issue 1641)
 			await wait(600.0)
+			if _stale(gen):
+				return
 		"stance":
 			_float(e["unit"], "Wings: %s" % str(e["stance"]), Color("#9fd4ff"), -24)
 		"blink":
@@ -2238,9 +2262,13 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
 				sfx.play("phase", {"pos": sv.visual_position()})
 				await wait(250.0)
+				if _stale(gen):
+					return
 				sv.position = board.hex_world(int(e["to"]["q"]), int(e["to"]["r"]))
 				_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
 				await wait(250.0)
+				if _stale(gen):
+					return
 		"side":
 			if e["side"] == "player":
 				hud.set_chip("")
@@ -2257,8 +2285,12 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 					views[e["unit"]].set_selected(true, Color(0.79, 0.64, 1.0))
 					_follow_enemy_activation(e["unit"])
 				await wait(float(PACE["aiGap"]))
+				if _stale(gen):
+					return
 		"move":
 			await _play_move(e["unit"], e["path"], false)
+			if _stale(gen):
+				return
 		"undo":
 			# issue 1450: the ship's last move or turn was taken back; it stands at once on the hex and facing the rules give
 			# (no burn back along the path), and the reach overlay is rebuilt from there on the next refresh
@@ -2267,6 +2299,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			reach_map.clear()
 		"pulled":
 			await _play_move(e["unit"], [{"q": e["to"]["q"], "r": e["to"]["r"], "f": VU[e["unit"]]["facing"] if VU.has(e["unit"]) else 0}], false)
+			if _stale(gen):
+				return
 			_float(e["unit"], "Pulled in", Color("#c79bff"))
 		"hit":
 			_apply_hit(e)
@@ -2276,6 +2310,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				if e.get("float", true):   # issue 1481: counter-fire, ram shockwave and reactor hits already float their boon number
 					_float_hit(e["target"], float(e["shield"]), float(e["hull"]), e["crit"])
 			await wait(160.0)
+			if _stale(gen):
+				return
 		"shield_down":
 			var d: Dictionary = disp.get(e["unit"], {})
 			if d.get("sh") is Array:
@@ -2304,6 +2340,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			if gfx != null and gfx.has_method("tick"):
 				gfx.tick(str(e["unit"]), str(e["kind"]))
 			await wait(120.0)
+			if _stale(gen):
+				return
 		"ability":
 			var ab := str(e["ab"])
 			var A = TBL.get("ABILITIES", {}).get(ab, {})
@@ -2326,12 +2364,18 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			elif ab == "nova" and e.get("hex") != null:
 				sfx.play("charge", {"pos": _pos(e["unit"])})
 				await wait(500.0)
+				if _stale(gen):
+					return
 				var p: Vector3 = board.hex_world(e["hex"]["q"], e["hex"]["r"], 2.0)
 				fx.bolt(_pos(e["unit"]) + Vector3(0, 2, 0), p, Color(1, 0.8, 0.5), 0.35 * speed, 0.0, 3.0)
 				await wait(350.0)
+				if _stale(gen):
+					return
 				_flash(p, 60.0, Color(1, 0.7, 0.4), 0.8)
 				sfx.boom(1.0, p)
 			await wait(300.0)
+			if _stale(gen):
+				return
 		"order":
 			var O = TBL.get("ORDERS", {}).get(str(e["order"]), {})
 			_log("%s: %s." % [_name(e["unit"]), str(O.get("n", e["order"]))], _who(e["unit"]))
@@ -2339,8 +2383,12 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				sfx.play("brace_lock", {"pos": _pos(e["unit"])})
 				_float(e["unit"], "Braced", Color("#9fd4ff"), -24)
 			await wait(200.0)
+			if _stale(gen):
+				return
 		"ram":
 			await _play_move(e["unit"], e["path"], true)
+			if _stale(gen):
+				return
 			sfx.play("evt_ram_impact", {"pos": _pos(e["target"]), "gain": 0.8})
 			# issue 1524 (fx/API.md 11): the approved ram look: the crumple on the target's struck section, a smaller one on
 			# the rammer's bow, the biggest shove and the zoom punch. The generic pop stays only when the fx layer drew nothing.
@@ -2361,6 +2409,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			if d2.has("hp"):
 				d2["hp"] = float(d2["hp"]) - float(e["recoil"])
 			await wait(500.0)
+			if _stale(gen):
+				return
 		"board":
 			var res := str(e["result"])
 			var who := _who(e["unit"])
@@ -2384,6 +2434,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				bsv.elev_target = clampf(float(btv.hull_lift) + float(btv.band_y) - float(bsv.hull_lift) - float(bsv.band_y), -9.0, 9.0)
 				if absf(float(bsv.elev_target)) > 0.2:
 					await wait(450.0)
+					if _stale(gen):
+						return
 			# the grapple sounds on the breach's frame, after any height trim (issue 1582: hulls now sit at their bands)
 			sfx.play("board_grapple", {"pos": _pos(e["target"]), "variant": str(VU.get(e["unit"], {}).get("fac", ""))})
 			if gfx != null and gfx.has_method("board"):
@@ -2392,6 +2444,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				_flash(_pos(e["target"]) + Vector3(0, 2, 0), 14.0, Color(1, 0.8, 0.5), 0.5)
 			# issue 1547: hold on the breach long enough to read it before the next event (the enemy turn)
 			await wait(float(gfx.board_hold_ms()) if boarded > 0.0 and gfx.has_method("board_hold_ms") else 600.0)
+			if _stale(gen):
+				return
 			if bsv != null and is_instance_valid(bsv):
 				bsv.elev_target = 0.0
 		"command_warning":
@@ -2400,6 +2454,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			hud.banner("%s next round" % str(C.get("n", e["id"])), Color("#ff8a6a"))
 			sfx.play("ui_alert")
 			await wait(float(PACE["banner"]) + 140.0)
+			if _stale(gen):
+				return
 		"command":
 			var C = _command(str(e["id"]))
 			if e["side"] == "player":
@@ -2412,6 +2468,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			if cmd_ship != "" and gfx != null and gfx.has_method("command"):
 				gfx.command(cmd_ship, str(e["id"]))
 			await wait(float(PACE["banner"]) + 140.0)
+			if _stale(gen):
+				return
 		"wreck":
 			# issue 1236: the wreck sits in the hex it blocks. Its death pieces are kept inside that hex from the start;
 			# the board marks the hex once the death has played ("death" below).
@@ -2421,6 +2479,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			_log("The wreck of %s breaks into tumbling wreckage, blocking movement and line of fire." % _name(e["unit"]), "x")
 		"death":
 			await _play_death(e)
+			if _stale(gen):
+				return
 			if wrecked.has(e["unit"]):
 				_lay_wreck(e["unit"])
 		"fled":
@@ -2436,6 +2496,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				sv.flee()
 			_log("%s leaves the battle." % _name(e["unit"]), "e" if _side(e["unit"]) == "player" else "s")
 			await wait(300.0)
+			if _stale(gen):
+				return
 		"end":
 			pass
 		_:
@@ -6231,7 +6293,9 @@ func _on_action(name: String, arg) -> void:
 			_play_log_out("quit")
 			_finish(result)
 		"save_quit", "save_quit_older":
-			if ended or not round_save_cb.is_valid():
+			# issue 2172: the victory beat sets ended before its end card, so guard on the retirement instead and let
+			# Save and quit still leave the battle while that beat plays
+			if retiring or not round_save_cb.is_valid():
 				return
 			# Save and quit is offered only while this round's save is on disk (a failed write offers the older start instead,
 			# by name), so leaving never promises more than Continue will load; the host still tries to write a newer round

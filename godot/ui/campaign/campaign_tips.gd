@@ -20,21 +20,47 @@ var disabled := false
 var covered := false        # a slide-over is open over the page: the card waits out of sight
 var shipyard_dock: Control
 
+# issue 2172: one cached read for every frame and every caller, and writes only when a value really changed
+static var _opts_cache: Dictionary = {}   # not GPU: plain option values (text, numbers, flags)
+static var _opts_loaded := false
+static var _opts_writes := 0   # test seam: how many times the file was actually rewritten
+
 static func load_opts() -> Dictionary:
-	var o = JSON.parse_string(FileAccess.get_file_as_string(OPTS)) if FileAccess.file_exists(OPTS) else {}
-	if not (o is Dictionary): o = {}
-	if not (o.get("tips") is Dictionary): o["tips"] = {}
-	o["tips"]["start"] = true
-	o["tips"]["turns"] = true
-	return o
+	if not _opts_loaded:
+		var o = JSON.parse_string(FileAccess.get_file_as_string(OPTS)) if FileAccess.file_exists(OPTS) else {}
+		if not (o is Dictionary): o = {}
+		if not (o.get("tips") is Dictionary): o["tips"] = {}
+		o["tips"]["start"] = true
+		o["tips"]["turns"] = true
+		_opts_cache = o
+		_opts_loaded = true
+	return _opts_cache.duplicate(true)
 
 static func save_opts(patch: Dictionary) -> void:
 	var o := load_opts()
 	for key in patch:
 		if key == "tips": o["tips"].merge(patch[key], true)
 		else: o[key] = patch[key]
-	var f := FileAccess.open(OPTS, FileAccess.WRITE)
-	if f != null: f.store_string(JSON.stringify(o))
+	if o == _opts_cache:
+		return
+	_opts_cache = o.duplicate(true)
+	_opts_writes += 1
+	_write_opts(o)
+
+# Write a temporary file, then rename it over the old one, so a crash never leaves a half written profile.
+static func _write_opts(o: Dictionary) -> void:
+	var tmp := OPTS + ".tmp"
+	var f := FileAccess.open(tmp, FileAccess.WRITE)
+	if f == null: return
+	f.store_string(JSON.stringify(o))
+	f.flush()
+	f.close()
+	var err := DirAccess.rename_absolute(tmp, OPTS)
+	if err != OK:
+		DirAccess.remove_absolute(OPTS)
+		err = DirAccess.rename_absolute(tmp, OPTS)
+	if err != OK:
+		push_warning("battle_opts: could not replace the options file; the new copy is kept at " + tmp)
 
 static func is_off() -> bool:
 	return bool(load_opts().get("tipsOff", false))
