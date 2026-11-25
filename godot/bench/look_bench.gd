@@ -606,6 +606,60 @@ func _moments_part() -> void:
 	_clear()
 
 
+func _moment_volley(row: Dictionary, faction: String) -> Dictionary:
+	var kind := str(row.get("kind", "battery"))
+	var wid := str(row.get("weapon", kind))
+	var n := int(row.get("shots", 0))
+	if n <= 0:
+		n = WEAP.default_shots(WEAP.look_of(kind, wid, faction))
+	var shots := []
+	var pd := int(row.get("pd", 0))
+	for i in n:
+		shots.append(i >= pd)
+	var old_casing := WEAP._old_casing
+	if row.has("fallback_casing"):
+		WEAP._old_casing = bool(row["fallback_casing"])
+	var res: Dictionary = fx.volley("A", kind, "T", {"weapon_id": wid, "shots": shots, "slot": int(row.get("slot", -1)),
+		"hits": _hits(n - pd, str(row.get("on", "hull")) == "shield", bool(row.get("crit", false))), "pd": pd})
+	WEAP._old_casing = old_casing
+	return res
+
+
+# Build B frames the released shot, not the battle cut-in or the eventual impact.
+func _frame_moment_volley(row: Dictionary, res: Dictionary, anchors: Dictionary, r: float) -> bool:
+	var id := str(row["id"])
+	var impacts: Array = res.get("impacts", [])
+	if impacts.is_empty():
+		failed = "%s at %d: no impact time to frame the shot" % [id, int(r)]
+		return false
+	var fire: float = res["fires"][0]
+	var muzzle: Vector3 = res["muzzles"][0]["p"]
+	var t_ev: float = anchors["fire"]
+	anchors["release"] = t_ev + fire
+	anchors["flight"] = t_ev + lerpf(fire, float(impacts[0]), 0.5)
+	var focus := muzzle
+	var shot_focus := str(row["shot_focus"])
+	if shot_focus == "ordnance" or shot_focus == "intercept":
+		var rounds: Array = fx.dstate.get("proj", [])
+		if rounds.is_empty():
+			failed = "%s at %d: no ordnance to frame" % [id, int(r)]
+			return false
+		var round_: Dictionary = rounds[0]
+		if shot_focus == "intercept":
+			if not is_finite(float(round_["dead_at"])):
+				failed = "%s at %d: no scheduled intercept" % [id, int(r)]
+				return false
+			anchors["intercept"] = float(round_["dead_at"])
+			focus = WEAP._down_point(round_)
+		else:
+			focus = WEAP._bez(round_["a"], round_["b"], round_["c"], WEAP._ease(0.5))
+			anchors["flight"] = lerpf(float(round_["t0"]), float(round_["t1"]), 0.5)
+	elif shot_focus != "muzzle":
+		focus = muzzle.lerp(res["points"][0], float(row.get("flight_focus", 0.5)))
+	_cam(focus, r)
+	return true
+
+
 func _hits(n: int, shield: bool, crit: bool) -> Array:
 	var h := []
 	var secs := ["mid", "prow", "mid", "eng"]
@@ -783,18 +837,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	seed(2070)
 	var t_ev: float = fx.now
 	var impacts: Array = []
+	var res := {}
 	var what := str(row.get("do", "volley"))
 	if what == "volley":
-		var kind := str(row.get("kind", "battery"))
-		var wid := str(row.get("weapon", kind))
-		var n := int(row.get("shots", 0))
-		if n <= 0:
-			n = WEAP.default_shots(WEAP.look_of(kind, wid, str(att[0])))
-		var shots := []
-		for i in n:
-			shots.append(true)
-		var res: Dictionary = fx.volley("A", kind, "T", {"weapon_id": wid, "shots": shots, "slot": int(row.get("slot", -1)),
-			"hits": _hits(n, str(row.get("on", "hull")) == "shield", bool(row.get("crit", false)))})
+		res = _moment_volley(row, str(att[0]))
 		impacts = res.get("impacts", [])
 		if impacts.is_empty():
 			if strict:
@@ -846,6 +892,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	# Issue 504: a row may fire a second volley from A at T during the event ("also": [seconds after the event, kind,
 	# weapon]), for example a torpedo landing on a dying capital; the "also" anchor is that volley's first impact.
 	var also: Array = row.get("also", [])
+	if what == "volley" and row.has("shot_focus") and not _frame_moment_volley(row, res, anchors, r):
+		return false
 	var wins: Array = []
 	var total := 0
 	for wv in row.get("windows", [["impact", -0.07, 12]]):

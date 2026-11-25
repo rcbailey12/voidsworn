@@ -254,10 +254,12 @@ static func flash_sprite_floor(kind: int, px: float) -> float:
 	return maxf(FLASH_SPRITE_FLOORS[kind], floorf(clampf(px, 0.0, 4000.0)))
 
 
+const WEAPON_MASKS := preload("res://render/weapon_layer_masks.gd")
+const ROCKET_SMOKE := 37
 const SPRITE := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + """
+""" + COMMON + WEAPON_MASKS.SPRITE + """
 uniform float gate = 1.0;
 uniform sampler2D kit_flake : filter_linear, repeat_disable;
 varying vec2 vUv;
@@ -285,6 +287,8 @@ void vertex() {
 		else if (k == 3 || k == 7 || k == 8) { g = 1.0 - spow(1.0 - t, 1.6); }
 		else if (k == 4 || k == 11 || k == 13 || k == 14 || k == 15 || k == 16 || k == 17 || k == 19 || k == 21 || k == 22 || k == 23) { g = 0.0; }
 		else if (k == 12) { g = t * t; }
+		else if (k >= 30 && k <= 32) { g = 0.0; }
+		else if (k == 37) { g = 1.0 - spow(1.0 - t, 2.2); }
 		float size = mix(a3.x, a3.y, g);
 		// F3 round 2: a3.w carries the seed in its fraction and, in its whole part, an explicit on-screen floor in pixels
 		// for this one sprite (impact, muzzle and kill flashes that must read from the battle camera); 0 means the kind's
@@ -335,9 +339,9 @@ void vertex() {
 		// Death cores and narrow fires keep their surface brightness at the floor.
 		// Enlarging an almost subpixel craft flame must not make it a faint dot.
 		// Explicit smoke/gas floors preserve opacity, without adding any light.
-		if (k == 24 || k == 25 || k == 26 || (own && (k == 3 || k == 7 || k == 8))) { boost = 1.0; }
+		if (k == 24 || k == 25 || k == 26 || k == 37 || (own && (k == 3 || k == 7 || k == 8))) { boost = 1.0; }
 		vec2 q = VERTEX.xy;
-		if (k == 14 || k == 15 || k == 23 || k == 27) {
+		if (k == 14 || k == 15 || k == 23 || k == 27 || (k >= 30 && k <= 33) || k == 36 || k == 37) {
 			// stretched along the screen-space motion (bolts and globs read as moving, not as dots)
 			vec3 vw = (MODEL_MATRIX * vec4(a1.xyz, 0.0)).xyz;
 			vec2 sv = (VIEW_MATRIX * vec4(vw, 0.0)).xy;
@@ -346,6 +350,10 @@ void vertex() {
 			vec2 dy = vec2(-dx.y, dx.x);
 			float st = k == 23 ? 1.4 : (k == 14 ? 1.0 + clamp(sl * 0.012, 0.0, 1.6) : 1.0 + clamp(sl * 0.006, 0.0, 0.6));
 			q = k == 27 ? dx * VERTEX.x * 1.85 + dy * VERTEX.y * 0.62 : dx * VERTEX.x * st + dy * VERTEX.y;
+			if (k >= 30) {
+				float stretch = k == 37 ? 2.35 : (k == 30 ? 1.95 : (k == 32 ? 1.38 : 1.62));
+				q = dx * VERTEX.x * stretch + dy * VERTEX.y * (k == 37 ? 0.78 : 1.0);
+			}
 		} else {
 			float cs = cos(ang);
 			float sn = sin(ang);
@@ -456,6 +464,23 @@ void fragment() {
 		float sphere = smoothstep(0.42, 0.36, r);
 		float ray = spow(abs(cos(atan(p.y, p.x) * 6.0 + age * 1.5 + seed * 4.0)), 18.0) * exp(-r * 2.5);
 		add = (mix(vCol.rgb, vec3(1.0, 0.98, 0.9), 0.6) * sphere * (1.2 + 0.8 * n) + vCol.rgb * exp(-r * r * 4.0) * 0.8 + vCol.rgb * ray * 1.2) * I;
+	} else if (k >= 30 && k <= 32) {
+		vec2 bolt = bolt_sprite(p, k, age, seed);
+		vec3 hot = mix(vCol.rgb, vec3(1.0), k == 31 ? 0.30 : 0.72);
+		add = (hot * bolt.x * 0.88 + vCol.rgb * bolt.y * 0.38) * I;
+		if (k == 32) {
+			alpha = bolt.y * 0.72;
+			base = vCol.rgb * 0.095;
+		}
+	} else if (k >= 33 && k <= 36) {
+		float env = smoothstep(0.0, 0.13, t) * (1.0 - smoothstep(0.22, 1.0, t));
+		add = vCol.rgb * muzzle_sheath(p, k, t, seed) * env * I * mix(1.0, 0.57, fx_calm);
+	} else if (k == 37) {
+		float n = fbm(p * vec2(4.0, 2.5) + vec2(seed * 9.3 + t, -t * 1.7));
+		float edge = length(vec2(p.x, p.y + (n - 0.5) * 0.22));
+		float density = 1.0 - edge + (n - 0.5) * 0.68;
+		alpha = smoothstep(0.12, 0.72, density) * smoothstep(0.02, 0.16, t) * spow(1.0 - t, 1.5) * I;
+		base = vCol.rgb * (0.74 + n * 0.35);
 	} else if (k == 18) {
 		float f = sin(3.14159 * t) * I;
 		add = vCol.rgb * exp(-r * r * 2.5) * f;
@@ -493,6 +518,7 @@ void fragment() {
 # kinds: 0 shell/tracer   1 spark   3 flame tongue   4 textured las dart
 # Kind 5 now routes to NULL_SLUG; its old vertex branch below is unused there.
 #        6 droplet (bio, falls off a glob)   7 molten drip (lance trench)   8 hull-hit spark
+#        9 shell   10 energy dart   11 crystal dart   12 scrap
 const STREAK_VERTEX := """
 uniform float gate = 1.0;
 uniform sampler2D kit_tail : filter_linear, repeat_disable;
@@ -588,8 +614,8 @@ void vertex() {
 		} else {
 			// Kit floors describe the whole mask quad, including its soft halo.
 			// The separate projected-length cap below uses actual framebuffer pixels.
-			float wf = k == 4 ? 7.0 : (k == 5 ? 22.0 : (k == 0 ? 8.0 : 6.0));
-			float lf = (k == 0 || k == 4 || k == 5) ? 14.0 : 5.0;
+			float wf = k == 4 || k == 10 || k == 11 ? 7.0 : (k == 5 ? 22.0 : (k == 0 || k == 9 || k == 12 ? 8.0 : 6.0));
+			float lf = (k == 0 || k == 4 || k == 5 || k >= 9) ? 14.0 : 5.0;
 			// round 2: a4.z and a4.w carry this streak's own width and length floors (pixels), for fatter tracer cores and
 			// bolder sparks; a line grown to its own floor dims only as f^-0.3
 			bool own = a4.z > wf;
@@ -609,7 +635,7 @@ void vertex() {
 		// Cap projected head-to-tail distance, including perspective. The cap is in 1080-line pixels like the width
 		// and length floors (issue 1211: it was raw pixels, so 4K streaks were half length), it never clips the streak's
 		// own length floor (the macro shell asks 26), and it holds with fx_px disabled.
-		float cap_px = max(k == 4 ? 32.0 : (k == 5 ? 26.0 : (k == 0 ? 22.0 : 16.0)), lf) * (VIEWPORT_SIZE.y / 1080.0);
+		float cap_px = max(k == 4 || k == 10 || k == 11 ? 32.0 : (k == 5 ? 26.0 : (k == 0 || k == 9 || k == 12 ? 22.0 : 16.0)), lf) * (VIEWPORT_SIZE.y / 1080.0);
 		vec4 hc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(head, 1.0);
 		vec4 tc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(tail, 1.0);
 		float projected = length((hc.xy / max(hc.w, 0.0001) - tc.xy / max(tc.w, 0.0001)) * VIEWPORT_SIZE * 0.5);
@@ -626,7 +652,19 @@ void vertex() {
 		vK = a3.w;
 		vU = u;
 		vCol = a2.rgb * a2.a * fade * bw * clamp(gate, 0.0, 1.0);
-		POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(p, 1.0));
+		if (k >= 9 && k <= 12) {
+			vec3 h = (VIEW_MATRIX * vec4(head, 1.0)).xyz;
+			vec3 t = (VIEW_MATRIX * vec4(tail, 1.0)).xyz;
+			vec2 delta = h.xy - t.xy;
+			float screen_length = length(delta);
+			vec2 axis = screen_length > 1e-4 ? delta / screen_length : vec2(1.0, 0.0);
+			t.xy -= axis * max(lmin - screen_length, 0.0);
+			vec3 view_pos = mix(t, h, VERTEX.x);
+			view_pos.xy += vec2(-axis.y, axis.x) * VERTEX.y * sw;
+			POSITION = PROJECTION_MATRIX * vec4(view_pos, 1.0);
+		} else {
+			POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(p, 1.0));
+		}
 		}
 	}
 }
@@ -636,7 +674,7 @@ const STREAK := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 """ + COMMON + """
-""" + STREAK_VERTEX + """
+""" + STREAK_VERTEX + WEAPON_MASKS.STREAK + """
 void fragment() {
 	int k = int(vK + 0.5);
 	if (k == 8) {
@@ -655,6 +693,12 @@ void fragment() {
 		float halo_x = (x - 0.86) * 2.1;
 		float halo = exp(-13.0 * halo_x * halo_x - 17.0 * y * y) * head * heat * 0.13;
 		ALBEDO = (mix(vCol, vec3(energy), white) * thread + vCol * halo) * fx_gain;
+	} else if (k >= 9 && k <= 12) {
+		vec2 bolt = bolt_streak(vUv, k, vU);
+		float peak = max(vCol.r, max(vCol.g, vCol.b));
+		vec3 hot = mix(vCol, vec3(peak), 0.84);
+		vec3 sheath = k == 11 ? vCol * vec3(0.72, 0.90, 1.0) : vCol;
+		ALBEDO = clamp((hot * bolt.x * 0.27 + sheath * bolt.y * 0.16) * fx_gain, 0.0, 512.0);
 	} else {
 		// The baked tail is displaced across its quad to curve the cooling
 		// history. The hot head stays on the true ballistic position.
@@ -674,6 +718,24 @@ void fragment() {
 	}
 	ALBEDO = clamp(c * fx_gain, 0.0, 512.0);
 	}
+}
+"""
+
+const ORDNANCE_CORONA := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+""" + COMMON + WEAPON_MASKS.SOLAR + """
+uniform vec3 tint = vec3(1.0);
+uniform float seed = 0.0;
+void vertex() {
+	vec3 centre = (VIEW_MATRIX * MODEL_MATRIX[3]).xyz;
+	float size = 4.6 * length(MODEL_MATRIX[0].xyz);
+	size = max(size, px_world(26.0, -centre.z, PROJECTION_MATRIX));
+	POSITION = PROJECTION_MATRIX * vec4(centre + vec3(VERTEX.xy * size, 0.0), 1.0);
+}
+void fragment() {
+	float wisps = solar_wisps(UV * 2.0 - 1.0, scene_t, seed);
+	ALBEDO = tint * wisps * fx_gain * mix(0.9, 0.58, fx_calm);
 }
 """
 
