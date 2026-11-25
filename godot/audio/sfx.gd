@@ -1,6 +1,6 @@
 extends Node
 signal cue_started(name: String, options: Dictionary)
-const HUDRes := preload("res://ui/battle/hud.gd")
+const GSRes := preload("res://ui/theme/glass_shell.gd")   # issue 1518: _imported_ok from the light kit, not the battle HUD
 # The game's sound (sfx.js) in Godot: the same cue table (cues.json, rendered from sfx.js by build/render_synth.js), the
 # same recorded clips (clips/, converted from sfx_data.js) and the same synth takes (synth/, rendered offline from the
 # game's own synth code). A cue plays its recorded layers (round robin, pitch jitter, rate and delay per layer) plus its
@@ -43,6 +43,10 @@ var only := ""
 # the real battle), and plays nothing. Before this the showcase loaded the whole bank (about 435 ms) and pushed the
 # shared bus from -21.42 to -5.25 dB at a 0.25 volume setting for a frame.
 var silent := false
+static var _catalogs := {}    # not GPU: cue data and AudioStreams, shared without playback state (issue 1995)
+static var _cue_data: Dictionary    # not GPU: parsed cue table
+static var _clip_index: Dictionary    # not GPU: clip names and paths
+static var _streams := {}    # not GPU: path -> AudioStream (or null for a missing asset)
 var _base_sfx_db := 0.0
 var _duck_db := 0.0
 var _duck_until := 0.0
@@ -53,7 +57,19 @@ var _quiet_until := 0.0
 const PASS_BY_CUE := {
 	"g": 0.17, "pri": 0, "max": 2, "gap": 0.12, "defer": 0.0, "bus": "weapons",
 	"salvo": null, "duck": 0.0, "spj": 0.08, "synth": [],
-	"layers": [{"s": "whoosh", "d": 0.0, "g": 1.0, "r": 1.0, "pj": null}],
+	# Issue 1752 Gate 2: the mastered pass-by (evt_pass_by_slug), level-matched to the old whoosh
+	"layers": [{"s": "evt_pass_by_slug", "d": 0.0, "g": 1.322, "r": 1.0, "pj": null}],
+}
+const ACID_SIZZLE := {
+	"g": 0.14, "pri": 0, "max": 2, "gap": 0.45, "defer": 0.0, "bus": "impacts",
+	"salvo": null, "duck": 0.0, "spj": 0.08, "synth": [],
+	"layers": [{"s": "lasSear", "d": 0.0, "g": 0.55, "r": 0.84, "pj": 0.08}],
+}
+const SHIELD_SPUTTER := {
+	"g": 0.21, "pri": 1, "max": 2, "gap": 0.12, "defer": 0.0, "bus": "impacts",
+	"salvo": null, "duck": 0.0, "spj": 0.07, "synth": [],
+	"layers": [{"s": "arc", "d": 0.0, "g": 0.35, "r": 1.2, "pj": 0.07},
+		{"s": "patterShield", "d": 0.085, "g": 0.5, "r": 0.78, "pj": 0.05}],
 }
 const LEGACY_TAIL_CUES := ["hit_heavy", "shield_break"]
 const LEGACY_PITCH_CUES := ["death_powerdown", "death_vent", "death_crack", "death_run", "chunk_cool", "hulk_vent"]
@@ -64,51 +80,162 @@ func _ready() -> void:
 		set_process(false)
 		return
 	_buses()
-	var t0 := Time.get_ticks_msec()
-	if FileAccess.file_exists("res://audio/cues.json"):
-		cues = JSON.parse_string(FileAccess.get_file_as_string("res://audio/cues.json"))
-	cues["shot_pass_by"] = PASS_BY_CUE
-	var want := {}
-	if only != "":
-		for k in cues.keys():
-			if not str(k).begins_with(only):
-				cues.erase(k)
-				continue
-			for L in cues[k]["layers"]:
-				if L.has("s"):
-					want[L["s"]] = true
-	var idx = JSON.parse_string(FileAccess.get_file_as_string("res://audio/clips/index.json")) if FileAccess.file_exists("res://audio/clips/index.json") else {}
-	for k in idx:
-		if only != "" and not want.has(k):
-			continue
-		var a: Array = []
-		for f in idx[k]:
-			var s := _load("res://audio/clips/" + f)
-			if s != null:
-				a.append(s)
-		if not a.is_empty():
-			clips[k] = a
-	for k in cues:
-		var a: Array = []
-		for f in cues[k]["synth"]:
-			var s := _load("res://audio/synth/" + f)
-			if s != null:
-				a.append(s)
-		synth[k] = a
-		for variant in cues[k].get("variants", {}):
-			var va: Array = []
-			for f in cues[k]["variants"][variant].get("synth", []):
-				var vs := _load("res://audio/synth/" + f)
-				if vs != null:
-					va.append(vs)
-			synth[k + ":" + variant] = va
-	print("[sfx] %d cues, %d clip sets, loaded in %d ms" % [cues.size(), clips.size(), Time.get_ticks_msec() - t0])
+	# issue 1995: the cue table and the streams load once per run and are shared (read-only) by every sound node with the
+	# same prefix. Issue 1518: a clip still being read on a worker is never waited for; it joins this node's own copy of
+	# its set once read (_collect_late), and a catalog with late takes is not shared.
+	var catalog: Array = _catalogs.get(only, [])
+	if catalog.is_empty():
+		var late: Array = []
+		catalog = _load_catalog(only, late)
+		if late.is_empty():
+			for part in catalog:
+				part.make_read_only()
+			_catalogs[only] = catalog
+		else:
+			_late = late
+	cues = catalog[0]
+	clips = catalog[1]
+	synth = catalog[2]
 	set_volume(vol)
 
 
-func _load(p: String) -> AudioStream:
+static func _load_catalog(prefix: String, late: Array) -> Array:
+	var t0 := Time.get_ticks_msec()
+	if _cue_data.is_empty():
+		_cue_data = _read_catalog_json("res://audio/cues.json")
+		_cue_data["shot_pass_by"] = PASS_BY_CUE
+		_cue_data["acid_sizzle"] = ACID_SIZZLE
+		_cue_data["shield_sputter"] = SHIELD_SPUTTER
+		_clip_index = _read_catalog_json("res://audio/clips/index.json")
+	var catalog_cues := _cue_data.duplicate()
+	var catalog_clips := {}
+	var catalog_synth := {}
+	var want := {}
+	if prefix != "":
+		for k in _cue_data:
+			if not str(k).begins_with(prefix):
+				catalog_cues.erase(k)
+				continue
+			for L in _cue_data[k]["layers"]:
+				if L.has("s"):
+					want[L["s"]] = true
+	for k in _clip_index:
+		if prefix != "" and not want.has(k):
+			continue
+		var a := _load_takes("res://audio/clips/", _clip_index[k], "clips", k, late)
+		if not a.is_empty():
+			catalog_clips[k] = a
+	for k in catalog_cues:
+		var cue: Dictionary = catalog_cues[k]
+		catalog_synth[k] = _load_takes("res://audio/synth/", cue["synth"], "synth", k, late)
+		for variant in cue.get("variants", {}):
+			var vk: String = k + ":" + variant
+			catalog_synth[vk] = _load_takes("res://audio/synth/", cue["variants"][variant].get("synth", []), "synth", vk, late)
+	print("[sfx] %d cues, %d clip sets, loaded in %d ms" % [catalog_cues.size(), catalog_clips.size(), Time.get_ticks_msec() - t0])
+	return [catalog_cues, catalog_clips, catalog_synth]
+
+
+static func _read_catalog_json(path: String) -> Dictionary:
+	var data = JSON.parse_string(FileAccess.get_file_as_string(path)) if FileAccess.file_exists(path) else {}
+	return data if data is Dictionary else {}
+
+
+# a take still being read on a worker goes on `late` as [path, into, key] instead of being waited for
+static func _load_takes(folder: String, files: Array, into: String, key: String, late: Array) -> Array:
+	var takes: Array = []
+	for file in files:
+		var p: String = folder + file
+		if _pending.has(p) and ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			late.append([p, into, key])
+			continue
+		var stream := _load(p)
+		if stream != null:
+			takes.append(stream)
+	return takes
+
+
+# issue 1518 (LOAD25 cold: a close during the battle's first frame waited on its 0.3 s of clip loads): the game starts
+# reading the battle's clips on worker threads when it starts (main.gd), and a battle's sound only collects them.
+# Paths only (path -> true); the streams stay in the ResourceLoader.
+static var _pending := {}   # not GPU: paths only (path -> true), the streams stay in the ResourceLoader
+
+
+static func prefetch() -> void:
+	var paths: Array = []
+	var idx = JSON.parse_string(FileAccess.get_file_as_string("res://audio/clips/index.json")) if FileAccess.file_exists("res://audio/clips/index.json") else {}
+	if idx is Dictionary:
+		for k in idx:
+			for f in idx[k]:
+				paths.append("res://audio/clips/" + str(f))
+	var cue_d = JSON.parse_string(FileAccess.get_file_as_string("res://audio/cues.json")) if FileAccess.file_exists("res://audio/cues.json") else {}
+	if cue_d is Dictionary:
+		for k in cue_d:
+			if not (cue_d[k] is Dictionary):
+				continue
+			for f in cue_d[k].get("synth", []):
+				paths.append("res://audio/synth/" + str(f))
+			for variant in cue_d[k].get("variants", {}):
+				for f in cue_d[k]["variants"][variant].get("synth", []):
+					paths.append("res://audio/synth/" + str(f))
+	for p in paths:
+		if _pending.has(p) or ResourceLoader.has_cached(p) or not GSRes._imported_ok(p):
+			continue
+		if ResourceLoader.load_threaded_request(p) == OK:
+			_pending[p] = true
+
+
+# true once every prefetched clip is read
+static func prefetch_ready() -> bool:
+	for p in _pending:
+		if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			return false
+	return true
+
+
+# Artoo on PR 1445: a clip still being read on a worker when this sound starts is never waited for. It joins its set
+# once the read is done (_process looks each frame); until then that set plays the takes it has, or stays quiet.
+var _late: Array = []   # [path, "clips" or "synth", key]
+
+
+func _collect_late() -> void:
+	var keep: Array = []
+	for e in _late:
+		var p: String = e[0]
+		if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			keep.append(e)
+			continue
+		var s := _load(p)   # read by now: collected at once
+		if s == null:
+			continue
+		var d: Dictionary = clips if e[1] == "clips" else synth
+		if not d.has(e[2]):
+			d[e[2]] = []
+		(d[e[2]] as Array).append(s)
+	_late = keep
+
+
+# the game is closing: whatever finished is collected, the rest is left to the loader (main.gd quit_clean)
+static func drop_pending() -> void:
+	for p in _pending.keys():
+		if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_LOADED:
+			ResourceLoader.load_threaded_get(p)
+	_pending.clear()
+
+
+static func _load(p: String) -> AudioStream:
+	if not _streams.has(p):
+		_streams[p] = _read_stream(p)
+	return _streams[p]
+
+
+static func _read_stream(p: String) -> AudioStream:
+	if _pending.has(p):
+		_pending.erase(p)
+		var got = ResourceLoader.load_threaded_get(p)   # waits only for what the worker has not read yet
+		if got is AudioStream:
+			return got
 	# the imported stream when the project has been imported or exported, else the raw Ogg file
-	if HUDRes.imported_ok(p):
+	if GSRes._imported_ok(p):
 		var r = load(p)
 		if r is AudioStream:
 			return r
@@ -279,7 +406,7 @@ func _now() -> float:
 
 # o: {pos: Vector3, gain, rate, delay}
 func play(name: String, o := {}) -> void:
-	if not on or not cues.has(name):
+	if silent or not on or not cues.has(name):
 		return
 	var cue: Dictionary = cues[name]
 	var variant := str(o.get("variant", ""))
@@ -416,6 +543,8 @@ func _play_pending(player: WeakRef, voice: Dictionary) -> void:
 
 
 func _process(_delta: float) -> void:
+	if not _late.is_empty():
+		_collect_late()
 	_reap(_now())
 	_apply_mix()
 	if _now() >= _ambient_duck_until:
@@ -488,19 +617,31 @@ func stop_all() -> void:
 
 # ---- the game's cue helpers (sfx.js) ----
 
-func gun(k: String, sq: bool, style, pos = null, delay := 0.0) -> void:
+# Issue 1752 Gate 2: a weapon's own recorded sound is a variant of the cue its family plays, named "faction.weapon_id"
+# (or the bare weapon_id for strike craft any faction flies). No such variant: the cue's base sound, as before.
+func weapon_variant(name: String, fac: String, wid: String) -> String:
+	var vs: Dictionary = cues.get(name, {}).get("variants", {})
+	if vs.has(fac + "." + wid):
+		return fac + "." + wid
+	if wid != "" and vs.has(wid):
+		return wid
+	return ""
+
+
+func gun(k: String, sq: bool, style, pos = null, delay := 0.0, fac := "", wid := "") -> void:
 	if sq:
-		play("gun_sq", {"pos": pos, "delay": delay})
+		play("gun_sq", {"pos": pos, "delay": delay, "variant": weapon_variant("gun_sq", fac, wid)})
 		return
 	if k == "flak":
-		play("gun_flak", {"pos": pos, "delay": delay})
+		play("gun_flak", {"pos": pos, "delay": delay, "variant": weapon_variant("gun_flak", fac, wid)})
 		return
 	if style == "twin":
 		play("gun_shell", {"pos": pos, "gain": 0.8, "delay": delay})
 		play("gun_shell", {"pos": pos, "gain": 0.6, "delay": delay + 0.05})
 		return
 	var n := "gun_" + (str(style) if style != null else "shell")
-	play(n if cues.has(n) else "gun_shell", {"pos": pos, "delay": delay})
+	n = n if cues.has(n) else "gun_shell"
+	play(n, {"pos": pos, "delay": delay, "variant": weapon_variant(n, fac, wid)})
 
 
 # Issue 771: the lance and the torpedo charge briefly before the shot. Guns stay dry.
@@ -510,43 +651,65 @@ const CHARGE_LEAD := {"lance_charge": 0.26, "torp_charge": 0.30}
 # Issue 1211: with `sched` (a Callable(seconds, Callable), the battle's effect-clock scheduler) the shot cue lands on the
 # effect's own fire time fire_at and the charge leads it by its usual lead (from now at the earliest), both on that clock,
 # so hit pause and the kill beat delay them with the picture. Without it: the charge now, the shot after the fixed lead.
-func _charged(shot: String, charge: String, pos, fire_at := -1.0, sched := Callable()) -> void:
+# Issue 1752: fac and wid pick the weapon's own variant of the shot and the charge; a charge variant may set its own
+# "lead" in cues.json (a longer pull-in starts earlier so it still ends on the shot).
+func _charge_lead(charge: String, cv: String) -> float:
+	return float(cues.get(charge, {}).get("variants", {}).get(cv, {}).get("lead", CHARGE_LEAD.get(charge, 0.0)))
+
+
+func _charged(shot: String, charge: String, pos, fire_at := -1.0, sched := Callable(), fac := "", wid := "") -> void:
 	var has_charge := not legacy and cues.has(charge)
+	var sv := weapon_variant(shot, fac, wid)
+	var cv := weapon_variant(charge, fac, wid)
+	var lead := _charge_lead(charge, cv)
 	if fire_at >= 0.0 and sched.is_valid():
-		var lead := float(CHARGE_LEAD.get(charge, 0.0))
 		if has_charge:
-			sched.call(maxf(fire_at - lead, 0.0), func() -> void: play(charge, {"pos": pos}))
-		sched.call(fire_at, func() -> void: play(shot, {"pos": pos}))
+			sched.call(maxf(fire_at - lead, 0.0), func() -> void: play(charge, {"pos": pos, "variant": cv}))
+		sched.call(fire_at, func() -> void: play(shot, {"pos": pos, "variant": sv}))
 		return
 	if not has_charge:
-		play(shot, {"pos": pos})
+		play(shot, {"pos": pos, "variant": sv})
 		return
-	play(charge, {"pos": pos})
-	play(shot, {"pos": pos, "delay": float(CHARGE_LEAD[charge])})
+	play(charge, {"pos": pos, "variant": cv})
+	play(shot, {"pos": pos, "delay": lead, "variant": sv})
 
 
-func lance(ion: bool, fac: String, pos = null, fire_at := -1.0, sched := Callable(), fires := []) -> void:
+func lance(ion: bool, fac: String, pos = null, fire_at := -1.0, sched := Callable(), fires := [], wid := "") -> void:
 	var shot := "lance_dark" if fac == "deathless" else "lance_choir" if fac == "ithar" else "lance_ion" if ion else "lance"
 	if fires.is_empty():
-		_charged(shot, "lance_charge", pos, fire_at, sched)
+		_charged(shot, "lance_charge", pos, fire_at, sched, fac, wid)
 		return
 	# one shot cue per fire time (the null lance), the charge leading the first; on the effect clock when sched is given
-	var lead := float(CHARGE_LEAD["lance_charge"])
+	var sv := weapon_variant(shot, fac, wid)
+	var cv := weapon_variant("lance_charge", fac, wid)
+	var lead := _charge_lead("lance_charge", cv)
 	if sched.is_valid():
 		if not legacy:
-			sched.call(maxf(float(fires.min()) - lead, 0.0), func() -> void: play("lance_charge", {"pos": pos}))
+			sched.call(maxf(float(fires.min()) - lead, 0.0), func() -> void: play("lance_charge", {"pos": pos, "variant": cv}))
 		for t in fires:
-			sched.call(float(t), func() -> void: play(shot, {"pos": pos}))
+			sched.call(float(t), func() -> void: play(shot, {"pos": pos, "variant": sv}))
 		return
 	if not legacy:
-		play("lance_charge", {"pos": pos, "delay": maxf(float(fires.min()) - lead, 0.0)})
+		play("lance_charge", {"pos": pos, "delay": maxf(float(fires.min()) - lead, 0.0), "variant": cv})
 	for t in fires:
-		play(shot, {"pos": pos, "delay": float(t)})
+		play(shot, {"pos": pos, "delay": float(t), "variant": sv})
 
 
-func torp(fac: String, pos = null, fire_at := -1.0, sched := Callable()) -> void:
+# Issue 1752: the Eclipse null cannon's capacitor charge, once per volley, ending on its first shot (its cue's "lead"
+# fits the picture's capacitor wind-up in fx_weapons.gd "gauss").
+func gauss_charge(pos, fire_at: float, sched := Callable()) -> void:
+	if legacy or not cues.has("gauss_charge"):
+		return
+	var lead := float(cues["gauss_charge"].get("lead", 0.25))
+	if sched.is_valid():
+		sched.call(maxf(fire_at - lead, 0.0), func() -> void: play("gauss_charge", {"pos": pos}))
+	else:
+		play("gauss_charge", {"pos": pos, "delay": maxf(fire_at - lead, 0.0)})
+
+
+func torp(fac: String, pos = null, fire_at := -1.0, sched := Callable(), wid := "") -> void:
 	var m := {"corsair": "torp_rocket", "chorus": "torp_sac", "ithar": "torp_star", "voidsworn": "torp_heavy"}
-	_charged(m.get(fac, "torp"), "torp_charge", pos, fire_at, sched)
+	_charged(m.get(fac, "torp"), "torp_charge", pos, fire_at, sched, fac, wid if wid != "" else "torp")
 
 
 # The death bed: a looped low rumble held for the whole death picture. Its length comes from the death beats.
@@ -570,27 +733,32 @@ const HIT_BY_WEAPON := {
 	"las": "hit_las", "lance": "hit_las", "plasma": "hit_plasma",
 	"rail": "hit_rail", "gauss": "hit_rail", "ion": "hit_ion",
 }
-const HIT_BY_TARGET := {"chorus": "hit_wet", "ithar": "hit_glass"}
-const CRIT_BEAT := preload("res://fx/fx_weapons.gd").CRIT_BEAT
+const HIT_BY_TARGET := {"chorus": "hit_wet", "ithar": "hit_glass", "deathless": "hit_obsidian"}
+const CRIT_BEAT := 0.12   # fx_weapons.gd CRIT_BEAT, the same beat (issue 1518: not preloaded, so the title loads no effects script; prefetch_wait_check holds the two equal)
 
 
-func impact_cue(fam: String, target_fac: String, heavy := false) -> String:
+# Issue 1752: shooter is the firing ship's faction. A Chorus shot on a metal hull (no target material cue) is acid.
+func impact_cue(fam: String, target_fac: String, heavy := false, shooter := "") -> String:
 	if HIT_BY_TARGET.has(target_fac):
 		return str(HIT_BY_TARGET[target_fac])
 	if heavy:
 		return "hit_heavy"
+	# Issue 1752: a Chorus shot on a metal hull eats in (a critical keeps hit_heavy)
+	if shooter == "chorus" and cues.has("hit_acid"):
+		return "hit_acid"
 	return str(HIT_BY_WEAPON.get(fam, "hit"))
 
 
-func impact(fam: String, target_fac: String, pos, heavy: bool, sched: Callable) -> void:
-	play(impact_cue(fam, target_fac, heavy), {"pos": pos})
+func impact(fam: String, target_fac: String, pos, heavy: bool, sched: Callable, shooter := "") -> void:
+	play(impact_cue(fam, target_fac, heavy, shooter), {"pos": pos})
 	if heavy and HIT_BY_TARGET.has(target_fac):
 		# Issue 1238 (F5.4): the heavy tail under a Chorus or Glasswright hit keeps the target's material (its variant)
 		sched.call(CRIT_BEAT, func() -> void: play("hit_heavy", {"pos": pos, "gain": 0.55, "variant": target_fac}))
 
 
-func shield(pos = null, big := false) -> void:
-	play("shield_break" if big else "shield", {"pos": pos})
+# Issue 1752: fac is the shielded ship's faction (the Glasswright prismatic barrier has its own break).
+func shield(pos = null, big := false, fac := "") -> void:
+	play("shield_break" if big else "shield", {"pos": pos, "variant": fac})
 
 
 func boom(s := 1.0, pos = null) -> void:
@@ -621,7 +789,7 @@ func ambient_start() -> void:
 	if _bed == null:
 		var bs := _load("res://audio/synth/ambient_bed.ogg")
 		if bs is AudioStreamOggVorbis:
-			var ob := bs as AudioStreamOggVorbis
+			var ob := bs.duplicate() as AudioStreamOggVorbis
 			ob.loop = true
 			ob.loop_offset = 1.0   # the file is [1 s of tail][the 120 s loop][1 s of head]; loop 121 s -> 1 s
 			ob.bpm = 60.0
@@ -638,10 +806,12 @@ func ambient_start() -> void:
 	_amb = AudioStreamPlayer.new()
 	var st: AudioStream = clips["ambient"][0]
 	if st is AudioStreamOggVorbis:
+		st = st.duplicate()
 		(st as AudioStreamOggVorbis).loop = true
 	_amb.stream = st
 	_amb.bus = "ambient"
 	add_child(_amb)
 	_amb.volume_db = -60.0
 	_amb.play(randf() * st.get_length() * 0.5)
-	create_tween().tween_property(_amb, "volume_db", linear_to_db(0.032), 5.0)  # the browser's room tone level over the bed
+	# Issue 1752: the bridge bed (amb_bridge_bed) replaces the room tone; 0.113 matches the old 0.032 tone's level
+	create_tween().tween_property(_amb, "volume_db", linear_to_db(0.113), 5.0)

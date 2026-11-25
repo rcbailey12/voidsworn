@@ -4,6 +4,8 @@ extends Node
 const RIM := preload("res://render/look_rim.gd")
 const MESH_WATCH := preload("res://render/mesh_watch.gd")
 
+var _fog_variants: Dictionary[Shader, Shader] = {}
+
 
 func _ready() -> void:
 	# issue 1204: the one shared new-mesh watcher calls _protect at the end of the frame a mesh enters (the game
@@ -31,7 +33,11 @@ func _material(mat: Material) -> void:
 	elif mat is ShaderMaterial and mat.shader != null:
 		# Fallback for custom hulls and overlays. Generated damage shaders take
 		# the mode from the source material when they are constructed.
-		var code: String = mat.shader.code
-		if not code.contains("fog_disabled"):
-			mat.shader.code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
+		var source: Shader = mat.shader
+		if not source.code.contains("fog_disabled") and source.code.contains("shader_type spatial;"):
+			if not _fog_variants.has(source):
+				var variant := source.duplicate() as Shader
+				variant.code = source.code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
+				_fog_variants[source] = variant
+			mat.shader = _fog_variants[source]
 	if mat.next_pass != null: _material(mat.next_pass)

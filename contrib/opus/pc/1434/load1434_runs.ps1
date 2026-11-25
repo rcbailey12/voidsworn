@@ -12,7 +12,10 @@
 #      Every case must also take the window route once, exit 0 and not crash (as CLOSE5).
 # Writes <Out>\load10_result.txt with one line per result (1434 load; 1518, 1519 and clean close, cold and warm) and the
 # gate line "[load10] RESULT PASS" only when every one passes. Nothing outside <Out> is written; every profile lives under <Out>.
-param([Parameter(Mandatory)][string]$Godot, [Parameter(Mandatory)][string]$Project, [Parameter(Mandatory)][string]$Out)
+# -CloseOnly (Board, Nov 24, for PR 1950): only step 3, the six close cases cold then warm, on any checkout that prints the
+# CLOSE5 lines; the warm profile is warmed by one ungraded launch (title_battle_30s's arguments) instead of the load
+# bench, step 4 is skipped, and only the 1518, 1519 and clean-close grades are written.
+param([Parameter(Mandatory)][string]$Godot, [Parameter(Mandatory)][string]$Project, [Parameter(Mandatory)][string]$Out, [switch]$CloseOnly)
 $ErrorActionPreference = 'Stop'
 New-Item -ItemType Directory -Force -Path $Out | Out-Null
 $res = Join-Path $Out 'load10_result.txt'
@@ -55,7 +58,14 @@ function Say-Cache($label, $before, $after) {
 $warmProfile = Join-Path $Out 'profile_warm'
 New-Item -ItemType Directory -Force -Path $warmProfile | Out-Null
 $bench = @{}
-foreach ($pass in @('cold', 'warm')) {
+if ($CloseOnly) {
+  $d = Join-Path $Out 'warmup'
+  New-Item -ItemType Directory -Force -Path $d | Out-Null
+  $p = Start-Game $warmProfile @('--path', "`"$Project`"", '--windowed', '--resolution', '1920x1080', '--', '--battle', '--quit-after', '240', '--title-after', '30') (Join-Path $d 'log.txt') (Join-Path $d 'log_err.txt')
+  if (-not $p.WaitForExit(60 * 1000)) { $null = $p.CloseMainWindow(); if (-not $p.WaitForExit(15000)) { Kill-Tree $p } }
+  Say "close only: one ungraded warm-up launch on the warm profile (exit $($p.ExitCode))"
+}
+foreach ($pass in @($(if ($CloseOnly) { @() } else { @('cold', 'warm') }))) {
   $d = Join-Path $Out "load_$pass"
   New-Item -ItemType Directory -Force -Path $d | Out-Null
   $argList = @('--path', "`"$Project`"", '--fullscreen', '--script', 'res://bench/load_1434.gd', '--', '--out', "`"$d`"", '--pass', $pass)
@@ -83,12 +93,12 @@ foreach ($pass in @('cold', 'warm')) {
 }
 
 # ---- 3: the close cases (close1435_timing5.ps1's method), cold set then warm set
-$shell = New-Object -ComObject WScript.Shell
 Add-Type -Namespace V1434L -Name User32 -MemberDefinition @'
 [DllImport("user32.dll")] public static extern System.IntPtr GetForegroundWindow();
 [DllImport("user32.dll")] public static extern bool IsIconic(System.IntPtr hWnd);
 [DllImport("user32.dll")] public static extern bool IsWindowVisible(System.IntPtr hWnd);
 [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetClassName(System.IntPtr hWnd, System.Text.StringBuilder buf, int max);
+[DllImport("user32.dll")] public static extern bool PostMessage(System.IntPtr hWnd, uint msg, System.IntPtr wParam, System.IntPtr lParam);
 '@
 function Get-WindowClass($h) { $b = New-Object Text.StringBuilder 256; [void][V1434L.User32]::GetClassName($h, $b, 256); $b.ToString() }
 function Find-Game($p, $seconds) {
@@ -144,14 +154,16 @@ foreach ($set in @('cold', 'warm')) {
       $row.sent = 'x'
       if ($c.how -eq 'x') { [void]$g.CloseMainWindow() }
       else {
-        # Alt-F4 only when the game's own window is verified in front; otherwise its own window is closed directly
+        # Alt-F4 is the system menu's Close: WM_SYSCOMMAND SC_CLOSE, posted straight to the game's window (Board, Nov 23:
+        # AppActivate and SendKeys need the focus, which Windows refuses for 200 s after Ryan touches the PC, so the old
+        # key press came back UNVERIFIED or never arrived). The same message the key makes, no focus needed.
         $g.Refresh()
-        $activated = $shell.AppActivate($g.Id)
-        Start-Sleep -Milliseconds 150
-        $g.Refresh()
-        $front = [V1434L.User32]::GetForegroundWindow()
-        if ($activated -and $g.MainWindowHandle -ne [IntPtr]::Zero -and $front -eq $g.MainWindowHandle) { $sw.Restart(); $shell.SendKeys('%{F4}'); $row.sent = 'altf4' }
-        else { $row.skip = 'Alt-F4 UNVERIFIED: game not in front, closed with the title bar close'; $sw.Restart(); [void]$g.CloseMainWindow() }
+        if ($g.MainWindowHandle -ne [IntPtr]::Zero) {
+          $sw.Restart()
+          if ([V1434L.User32]::PostMessage($g.MainWindowHandle, 0x0112, [IntPtr]0xF060, [IntPtr]::Zero)) { $row.sent = 'altf4' }
+          else { $row.skip = 'Alt-F4 UNVERIFIED: the system close could not be posted, closed with the title bar close'; [void]$g.CloseMainWindow() }
+        }
+        else { $row.skip = 'Alt-F4 UNVERIFIED: no game window handle, closed with the title bar close'; $sw.Restart(); [void]$g.CloseMainWindow() }
       }
       $hwnd = $g.MainWindowHandle
       $row.hidden_ms = $null
@@ -211,6 +223,56 @@ foreach ($set in @('cold', 'warm')) {
 Say-Cache 'the cold then warm close launches' $cw0 (Get-CacheStat $warmProfile)
 $rows | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $Out 'close_timing.json') -Encoding Ascii
 
+# ---- 4: the title from launch (issue 1518, Artoo on PR 1445, 6784b6b1): the title waits a frame at a time for the
+# launch's campaign host read, so launch to the first painted menu is measured on its own, cold without a save and cold
+# with a valid saved run (its first button "Continue run"), each on a fresh profile; no menu in 20 s fails plainly.
+# The game prints "[main] title menu painted at N ms after the engine started (first button: ...)"; the case closes the
+# window after 20 s and reads that line after the exit.
+$launch = [ordered]@{}
+foreach ($lc in @($(if ($CloseOnly) { @() } else { @(@{name = 'title_launch_nosave'; save = $false; want = 'New run'}, @{name = 'title_launch_save'; save = $true; want = 'Continue run'}) }))) {
+  $dir = Join-Path $Out "close_cold\$($lc.name)"
+  New-Item -ItemType Directory -Force -Path $dir | Out-Null
+  $prof = Join-Path $dir 'profile'
+  New-Item -ItemType Directory -Force -Path $prof | Out-Null
+  $log = Join-Path $dir 'game.log'; $err = Join-Path $dir 'game_err.log'; $flog = Join-Path $dir 'godot_file.log'
+  $note = ''
+  if ($lc.save) {
+    $sp = Start-Game $prof @('--headless', '--path', "`"$Project`"", '-s', 'res://bench/write_save_1434.gd') (Join-Path $dir 'save.log') (Join-Path $dir 'save_err.log')
+    if (-not $sp.WaitForExit(120000)) { Kill-Tree $sp }
+    $st = Get-Content -LiteralPath (Join-Path $dir 'save.log') -Raw -ErrorAction SilentlyContinue
+    if ($st -notmatch '\[save1434\] PASS') { $note = 'no saved run was written (see save.log)' }
+  }
+  $p = Start-Game $prof @('--path', "`"$Project`"", '--windowed', '--resolution', '1920x1080', '--log-file', "`"$flog`"", '--', '--quit-after', '240') $log $err
+  $found = Find-Game $p 60
+  $verdict = 'FAIL'; $why = @()
+  if ($note) { $why += $note }
+  if (-not $found) { $why += 'no game window'; if (-not $p.HasExited) { Kill-Tree $p } }
+  else {
+    Start-Sleep -Seconds 20
+    $g = $found.proc
+    [void]$g.CloseMainWindow()
+    if (-not $g.WaitForExit(15000)) { $why += 'still running 15 s after the close'; Kill-Tree $p } else { [void]$p.WaitForExit(5000) }
+    Start-Sleep -Milliseconds 300
+    $text = (Get-Content -LiteralPath $flog -Raw -ErrorAction SilentlyContinue) + "`n" + (Get-Content -LiteralPath $log -Raw -ErrorAction SilentlyContinue) + "`n" + (Get-Content -LiteralPath $err -Raw -ErrorAction SilentlyContinue)
+    $mr = [regex]::Match($text, '\[main\] ready at ([0-9]+) ms')
+    $mm = [regex]::Match($text, '\[main\] title menu painted at ([0-9]+) ms after the engine started \(first button: ([^)]*)\)')
+    $ready = if ($mr.Success) { $mr.Groups[1].Value } else { '-' }
+    if (-not $mm.Success) { $why += 'no menu painted within the 20 s' }
+    else {
+      $painted = [int]$mm.Groups[1].Value
+      if ($painted -gt 20000) { $why += "menu painted only at $painted ms" }
+      if ($mm.Groups[2].Value -ne $lc.want) { $why += "first button '$($mm.Groups[2].Value)', expected '$($lc.want)'" }
+    }
+    if ($text -match 'CrashHandlerException|Program crashed|access violation|RenderingServer is null|SCRIPT ERROR') { $why += 'crash or script error' }
+    if ($why.Count -eq 0) { $verdict = 'PASS' }
+    Say ("title launch cold {0}: {1} main ready at {2} ms, menu painted at {3} ms (first button: {4}){5}" -f $lc.name, $verdict, $ready,
+      $(if ($mm.Success) { $mm.Groups[1].Value } else { '-' }), $(if ($mm.Success) { $mm.Groups[2].Value } else { '-' }), $(if ($why.Count) { ' | ' + ($why -join '; ') } else { '' }))
+  }
+  if (-not $found) { Say ("title launch cold {0}: FAIL | {1}" -f $lc.name, ($why -join '; ')) }
+  $launch[$lc.name] = $verdict
+  Start-Sleep -Seconds 2
+}
+
 # Separate results (Artoo on PR 1445): the Board's warm grading covers the issue 1434 load items only; issues 1518 and
 # 1519 keep their own limits on BOTH profiles, and every close must be clean on both.
 function Set-Grade($set, $key) {
@@ -220,6 +282,7 @@ function Set-Grade($set, $key) {
   return 'PASS'
 }
 $grades = [ordered]@{}
+if (-not $CloseOnly) {
 $grades['1434 load (warm bench, cold COVER)'] = if ($bench['warm'].pass -and $bench['cold'].cover_pass) { 'PASS' } else { 'FAIL' }
 # the two LOAD13 targets on lines of their own (Board, Nov 21): (a) the warm title backdrop's frame, (b) the cold close
 # while the title backdrop loads; both are also inside the lines around them
@@ -227,11 +290,13 @@ $grades['target a: warm title backdrop frame (bench title line)'] = if ($bench['
 $tl = @($rows | Where-Object { $_.set -eq 'cold' -and $_.case -eq 'title_load_5s' })
 # target b counts only when the backdrop itself was loading at the close; a world bake alone is UNVERIFIED (Artoo on PR 1445)
 $grades['target b: cold close during the title load hides within 500 ms'] = if ($tl.Count -eq 1) { $(if ($tl[0].g1518 -like 'FAIL*') { 'FAIL' } elseif ($tl[0].g1518 -like 'UNVERIFIED*') { 'UNVERIFIED' } elseif ([string]$tl[0].loading_at_close -notmatch '(^|, )backdrop ') { 'UNVERIFIED (the backdrop was not loading at the close)' } else { 'PASS' }) } else { 'FAIL' }
+}
 foreach ($set in @('cold', 'warm')) {
   $grades["1518 close hides within 500 ms, $set"] = Set-Grade $set 'g1518'
   $grades["1519 first title frame within 200 ms, $set"] = Set-Grade $set 'g1519'
   $grades["every close clean, $set"] = Set-Grade $set 'clean'
 }
+if (-not $CloseOnly) { $grades['title launch to first painted menu within 20 s, cold, no save and with a saved run'] = if (@($launch.Values | Where-Object { $_ -ne 'PASS' }).Count -eq 0 -and $launch.Count -eq 2) { 'PASS' } else { 'FAIL' } }
 foreach ($k in $grades.Keys) { Say "[load10] $k`: $($grades[$k])" }
 $ok = @($grades.Values | Where-Object { $_ -ne 'PASS' }).Count -eq 0
 Say ("[load10] RESULT {0} (every line above must PASS; an Alt-F4 case that could not send its keys is UNVERIFIED, never PASS)" -f $(if ($ok) { 'PASS' } else { 'FAIL' }))

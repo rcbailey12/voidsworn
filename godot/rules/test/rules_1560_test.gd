@@ -1,5 +1,5 @@
 # Issue 1560 (battle rules audit, Nov 21 2026) and R396 (Ryan, Nov 22 2026: firing ends a non-Glasswright ship's movement), on
-# rules.gd. Twin of contrib/opus/tools/rules_1560_tests.js (battle.js), with the same case names; every case fails on main 8de3af33.
+# rules.gd. Based on contrib/opus/tools/rules_1560_tests.js (battle.js); issue 1885 replaces case 4 in the Godot check.
 #   godot --headless --path godot --script res://rules/test/rules_1560_test.gd
 # Three extra cases check Godot-only code: battle_api.move refusing a stale state, and the HUD volley preview (previewVolley).
 # ramFrom (the browser's move-overlay ram marks) has no Godot twin, so case 15 checks ramInfo from a moved copy instead.
@@ -43,7 +43,6 @@ func _init() -> void:
 		["1: a hit never heals a shieldless ship (damage taken stays at least 5%)", c_1],
 		["2: a torpedo rear hit gives the real ship its Cut and Turn free turn", c_2],
 		["3: escorts that flee are not raised again by the legion", c_3],
-		["4: the rout line is checked as soon as the escorts flee", c_4],
 		["5: Fleet drill keeps a wider tree sync radius", c_5],
 		["6: a ship that broke through does not charge the Command as a loss", c_6],
 		["7: point defence adds no attack value against ships", c_7],
@@ -114,11 +113,6 @@ func c_3() -> Array:
 	var wreck = E[1]; wreck["dead"] = true; wreck["riseAt"] = B["round"]; wreck["fled"] = false
 	R.escortsBreak(); var risen: Array = R.legionTurn("enemy")
 	return [R.jt(wreck.get("dead")) and wreck.get("riseAt") == null and risen.size() == 0, "wreck dead " + str(wreck.get("dead")) + ", riseAt " + str(wreck.get("riseAt")) + ", risen " + str(risen.size())]
-func c_4() -> Array:
-	fresh(["penitent"], "deathless", ["d_scythe", "d_harvester", "d_harvester"])
-	B["cfg"]["kind"] = "boss"; var boss = E[0]; boss["boss"] = true; boss["hp"] = floor(boss["maxHp"] * 0.4)
-	R.escortsBreak()
-	return [str(B.get("over")) == "win", "over " + str(B.get("over"))]
 func c_5() -> Array:
 	fresh(["penitent"], "hegemony", ["h_picket"])
 	B["syncR"] = {"player": 8}; R.applyVerb("drill")

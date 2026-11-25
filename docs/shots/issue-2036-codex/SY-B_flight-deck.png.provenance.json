@@ -1,0 +1,54 @@
+{
+  "source_commit": "310105124457c03a64c612965d27ed03d3415029",
+  "source_diff_sha256": "622f3073a938741fb2c9d3074e0ed2d20352e13e2d7055414512cb672b8f0836",
+  "source_dirty": true,
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "SY-B_flight-deck.png",
+  "date": "2026-11-24T23:27:43Z",
+  "sources": [
+    {
+      "source_commit": "310105124457c03a64c612965d27ed03d3415029",
+      "source_diff_sha256": "622f3073a938741fb2c9d3074e0ed2d20352e13e2d7055414512cb672b8f0836",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "L1178_late_market.png",
+      "source_commit": "310105124457c03a64c612965d27ed03d3415029",
+      "source_dirty": true,
+      "source_diff_sha256": "622f3073a938741fb2c9d3074e0ed2d20352e13e2d7055414512cb672b8f0836",
+      "stage": "installed in game",
+      "date": "2026-11-20T02:15:42Z",
+      "image_sha256": "d91e42b96d12d277b08a021b694dd7320ee85a1c3c7c2db7a76f91a1c89ae135",
+      "sources": [
+        {
+          "source_commit": "310105124457c03a64c612965d27ed03d3415029",
+          "source_diff_sha256": "622f3073a938741fb2c9d3074e0ed2d20352e13e2d7055414512cb672b8f0836",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "dfbf10d5acd334599ee0c4b98d99d74c5f318f317348b02d4e66505522ce1813"
+  ],
+  "stamp_template_sha256": "dfbf10d5acd334599ee0c4b98d99d74c5f318f317348b02d4e66505522ce1813",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABm0lEQVR4nO3XMREAIAADMWAF/NtFBT8lBjr+de57BgDw3wo2AADRBYCOpwsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAIzGA3bMAOjbHqLUAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "b416d6269865fbd581b6cfa3cd6889d2a271c967b34fad4e49f93347d1157c33"
+}

@@ -15,6 +15,31 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    (item 5) is not traced again: the sheet is its hull, the recipe builds the sheet through one build contract and reads every
    fact from it (RECIPE.md "Ships built from a build sheet", issue 592); stage 2's reference still comes from the accepted
    concept, for the outline score and the grime.
+
+   **Opt-in hull methods from the Astra Picket (R443, issue 1888).** Import these inside a sheet's `build(K)` from
+   `tools/recipe/hull_methods.py`. They run through the usual sheet recipe. Use the faction sheet's shapes, spacing and
+   materials.
+
+   - Use `FlatSoleLoft` and `loft_module` for a faceted hull with a level maintenance floor. Start with transverse stations
+     for the bow, shoulders, belly and drive block. The Picket used nine. Set the taper, deck height, widths and sole from
+     this ship's sheet. End each module at its authored break. The same rings can locate fittings and plates.
+   - Use `plate_region` where the Navy's ordered two-size panel grid suits the hull. Pass the intended facets and module
+     rings. `pv` sets the crosswise pitch, `gap` opens the joins to the dark pressure hull, `unit` scales the seat and
+     minimum panel size, and `t_big` and `t_small` set the two plate heights. Seat cassettes, covers and vents on the
+     plates by default. For a mount that needs bare land, pass its centre and reach in `keepouts`. The allowance adds
+     30 percent of the panel radius to that reach. Use `keep` for shaped reserves such as a door or module band.
+   - Use `slatted_cassette` and `mount_service_part` for cooler banks and radiator grilles that need a visible dark recess
+     and real gaps between slats. Use `belly_cover` along a service trunk, with each lid a separate mesh that can be removed
+     in Blender. Seat the frames on the real hull, leave land between banks, and end each fitting before a break line.
+   - Use `broken_stripe` where a door interrupts a hull light or trim race. Enter the door's X span on that flank and its
+     edge clearance. Sample the hull at each station so the race and inlay follow it and both stop at the same cut.
+
+   The standing checks run `tools/recipe/test/hull_details_selftest.py`. Run `tools/recipe/test/picket_kit_review.py` in
+   cloud Blender in background mode for matching before and after views of the deck, stripe and belly. The Blender test
+   fails if plate coverage on any facet differs from Astra's by more than 5 percent of that facet's original coverage.
+   Pass `--selftest` after Blender's `--` to run the geometry check alone. The renders use Cycles CPU and carry the
+   `cloud direction check` label.
+
 2. **Paint.** Procedural materials driven by masks baked from the ship's own geometry (curvature, ambient occlusion, edge
    wear), plus trim sheets and decals; colours may be sampled from the concept; the concept picture is never projected onto
    the ship (R96 Q1). Local AI texturing only after a one-hull proof of unlit PBR output (R96 Q1). A ship built from a build
@@ -76,7 +101,11 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    issue 1183), set in `tools/blender/kits/ithar/` for every Glasswright sheet ship, never on one ship (R333): opaque,
    reflective champagne pearl ribbons (warm, never lilac grey: issue 1282), many and fine, each a bundle of strands with silver
    lines and a colour shift, over a core of emissive amber, violet and emerald stained-glass mosaic panels lit from behind (hot
-   in the middle, dark at the lead edge); ribbons cover under half the hull; a slender spindle, about 4 to 1; stones are cut and
+   in the middle, dark at the lead edge), one colour per leaf as on I8_37 (`parts.MIX` 'blocks', R431; the Nov 21 marble read as pastel confetti in game); the pearl is the shell, built on every hull, strike craft included (Ryan Nov 24), with the kit's `hull.i8_field` and `hull.i8_shell` (the CD5 Ark's twelve fine pillowed ribbons spiralling round the body with crossing leaves that curl up, scaled to the hull; Ryan Nov 23: the white "more detailed and wrapping" like I8_37), in I8_37's warm white, not gold (`stack.LOOK` pearl) and the glass shows only in the seams and openings between
+   ribbons, as on I8_37: at most `stack.MOSAIC_MAX` (0.42) of the outside is bare glass from above or from the battle camera,
+   measured and enforced by the kit review (`hull.mosaic_share`; R431, Ryan Nov 23 2026: "the top is how we want it to look
+   ascross the board", after the Prism I15_11 showed about 0.77 glass; the old "ribbons cover under half" wording let it
+   through); a slender spindle, about 4 to 1; stones are cut and
    glowing, and optics are small glints, never domes (round 5 outside read, Nov 19). Judge each round at camera 170 beside the
    concept first. Never see-through: every intact-hull surface has transmission 0 and the interior shows only in the break-up.
    No wear. The bake marks it authored_look so the game keeps its values (R329). The game's rim back light skips Glasswright
@@ -466,6 +495,8 @@ we don't run into the issues of before with just empty looking husks". What he w
 | H | Ryan sees one image: the ship at the battle camera beside its concept | | Board |
 | I | Only after Ryan's yes: publish the checked build into build\godot (section 0, rule 15) | tools/pc/jobs/publish_ship.bat JOB_DIR CODE COMMIT GLB_SHA | Board queues it |
 
+Captures and benches use the new builds (R368, Ryan, Nov 20 2026: "we need to start using the actual new ships for references rather than the old builds"): `godot/render/hull_age.gd` labels each ship NEW or OLD from the tracked manifest, `HullAge.guard` refuses old hulls in a reference run unless ALLOW_OLD_HULLS=1, and O1_37 is the named teaching exception (issues 1767, 1791). NEW means the layout only, not the approved model (issue 1291).
+
 The seven recipe stages, each a double-click file that stops with FAILED and a non-zero exit when it should:
 1 concept in, 2 the AI shape reference (TRELLIS.2, a shape and grime source only, never shipped), 3 the traced hull and the
 outline overlap, 4 the faction parts kit and its audit, 5 the paint bake, 6 the LOD chain and its cost, 7 the game export with
@@ -578,7 +609,9 @@ board/torpedo_rework/launch_1121/TL_*.jpg, "Yes much better"): it starts at its 
 its drive and baked nozzle glow dark (a torpedo for 0.7 s, rockets 0.14 s, the star 0.22 s), lights with a flash at the
 nozzle, then turns onto the target. It flies flat (issue 1713, Ryan Nov 22: "I'd think we'd keep it flat"): a deck
 tube's slide rises at most about 20 degrees, and from ignition the flight never climbs above the higher of its ignition
-point and the target (`torpedo_flat_flight_check`). Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
+point and the target (`torpedo_flat_flight_check`). Between altitude bands (issue 1582) it stays a straight line that
+slopes only to the target's height, with no cold-launch pop or arc (Ryan, Nov 23 2026, decision card in the stage 2
+thread: "Keep them flat", over the stage 2 brief's pop-and-arc; `movement_stage2_check`). Drawn size against the ships (`ROUND_SIZE`): torpedoes 0.5 and
 rockets 0.7 of the old round, with trail and flashes to match; the slide distance does not shrink with it
 (fx_weapons.gd `_launch`, `_launch_step`, `_ignite`).
 
@@ -592,7 +625,8 @@ A build brief, sheet or PR for any ship follows all four; a ship that cannot say
    `length_world`; no per-ship flag (issue 1680, RECIPE.md stage 7).
 2. **AO light and LODs.** Every hull's material gets a calibrated `ao_light_affect` from its faction's look.gd READ row
    (0.35 to 0.55, Glasswrights 0.2), never Godot's 0.0, and the importer generates Godot mesh LODs for far cameras
-   (issues 1678, 1679).
+   (issues 1678, 1679). Fleet lighting (that AO light plus the sky reflection gradient) is on by default for every ship
+   (R433, Ryan Nov 23); `VS_FLEET_LIGHTING=0` turns it off, only for before/after comparisons.
 3. **One authored look per faction.** When a faction is next baked or repainted, its stack writes `authored_look = 1`
    calibrated to the single battle light rig, and that faction's READ albedo lift stops applying to those hulls. Order as
    the work lands: Eclipse (1422), Navy flagship H4_11 (1681), Glasswright flagship I8_37 (1682), Chorus (1683),

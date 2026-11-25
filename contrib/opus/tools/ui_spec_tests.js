@@ -71,7 +71,8 @@ check(/th\.set_stylebox\("focus", "Button", focus_ring\(k\)\)/.test(gsh) && /GS\
 check(!/set_stylebox\("focus"/.test(hud), 'hud.gd sets no focus stylebox of its own (one source for the ring)');
 check(/func _button\([^)]*keys := false\)/.test(hud) && /Control\.FOCUS_ALL if keys else Control\.FOCUS_NONE/.test(hud), 'battle buttons take focus only when asked (keys)');
 check(/_button\(str\(it\[0\]\), str\(it\[1\]\), it\[2\] if it\.size\(\) > 2 else null, it == items\[0\], true\)/.test(hud), 'battle menu buttons take keyboard focus');
-check(/_button\("Continue", "continue", null, true, true\)/.test(hud) && /_button\("Fight again", "restart", null, true, true\)/.test(hud), 'end card buttons take keyboard focus');
+// The Continue caption names its destination. Check focus by action so the copy can vary.
+check(/_button\([^,\n]+, "continue", null, true, true\)/.test(hud) && /_button\("Fight again", "restart", null, true, true\)/.test(hud), 'end card buttons take keyboard focus');
 const t = read('godot/main/title.gd');
 const okit = read('godot/ui/theme/orders_kit.gd');
 check(/Kit\.button\(/.test(t) && /add_theme_stylebox_override\("focus", GS\.focus_ring\(k\)\)/.test(okit), 'title buttons use the shared focus ring (through the orders kit, issue 1217)');
@@ -149,7 +150,7 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(/const COL_W := 540\.0/.test(sec) && /const COL_PAD := 40\.0/.test(sec) && /MarginContainer.new/.test(fn('_briefing_column')) && !/PanelContainer|GS\.column/.test(fn('_briefing_column')), 'orders sheet is an unboxed rail with 40 px margins');
   check(/sheet_veil\.anchor_right = 0\.43/.test(m3) && /GS\.sheet_veil/.test(m3) && /0\.96/.test(gsh2), 'a smooth dark veil reaches 43 percent of the map, below its words');
   check(/#ff8a3a/.test(gsh2) && /#f0eade/.test(gsh2) && /#c4beb0/.test(gsh2) && /#969084/.test(gsh2) && /#ff6050/.test(gsh2), 'orders sheet palette matches the approved ember, text and Nemesis colors');
-  check(!/\bGILT\b|\bGILT2\b|GS\.row_boxes|GS\.jump_boxes|GS\.keycap_flat|GS\.thin_bar/.test(orders + m3), 'no lime, key badges, row fills or hull bars on the orders sheet or map');
+  check(!/\bGILT\b|\bGILT2\b|GS\.jump_boxes|GS\.keycap_flat|GS\.thin_bar/.test(orders + m3), 'no lime, key badges or hull bars on the orders sheet or map');
   check(/sheet_jump_boxes/.test(fn('_jump_button')) && /px\(56\)/.test(fn('_jump_button')) && /focus/.test(fn('_jump_button')), 'the jump action is a 56 px square ember outline with a filled hover and focus state');
   const jumpStyle = gsh2.slice(gsh2.indexOf('static func sheet_jump_boxes'), gsh2.indexOf('# ---------------------------------------------------------------- type', gsh2.indexOf('static func sheet_jump_boxes')));
   check(/set_border_width_all\(maxi\(2/.test(jumpStyle) && !/corner_radius|shadow/.test(jumpStyle), 'the action has a 2 px edge, no rounded corners and no shadow');

@@ -12,6 +12,12 @@ extends Node
 # Use: ModalFocus.attach(panel) once the panel is in the tree or about to be added (it waits for the panel's tree).
 
 static var _stack: Array[int] = []   # instance ids of the open traps, newest last
+const FOCUS_EDGES := [
+	[SIDE_LEFT, &"ui_left", &"focus_neighbor_left"],
+	[SIDE_TOP, &"ui_up", &"focus_neighbor_top"],
+	[SIDE_RIGHT, &"ui_right", &"focus_neighbor_right"],
+	[SIDE_BOTTOM, &"ui_down", &"focus_neighbor_bottom"],
+]
 
 
 # the static stack goes at exit with the other statics (tools/ci gpu_statics: every script static gets a clear)
@@ -151,6 +157,39 @@ func _on_focus(c: Control) -> void:
 		_take.call_deferred()
 
 
+# Keep native GUI navigation inside the panel before any control behind it receives focus.
+# Only redirect an edge that would leave the panel. The focused widget still gets the key.
+func _input(event: InputEvent) -> void:
+	if not event is InputEventKey or not event.pressed or not _is_top() or not panel.is_visible_in_tree():
+		return
+	var owner := get_viewport().gui_get_focus_owner()
+	if not _inside(owner):
+		return
+	if event.is_action_pressed("ui_focus_next", true, true):
+		if not _inside(owner.find_next_valid_focus()):
+			_redirect_focus(owner, "focus_next", first_focusable(panel))
+	elif event.is_action_pressed("ui_focus_prev", true, true):
+		if not _inside(owner.find_prev_valid_focus()):
+			_redirect_focus(owner, "focus_previous", first_focusable(panel, true))
+	else:
+		for edge in FOCUS_EDGES:
+			if event.is_action_pressed(edge[1], true) and not _inside(owner.find_valid_focus_neighbor(edge[0])):
+				_redirect_focus(owner, edge[2], owner)
+
+
+func _redirect_focus(owner: Control, property: StringName, target: Control) -> void:
+	var previous: NodePath = owner.get(property)
+	var local := owner.get_path_to(target if target != null else owner)
+	owner.set(property, local)
+	_restore_edge.call_deferred(weakref(owner), property, local, previous)
+
+
+static func _restore_edge(ref: WeakRef, property: StringName, local: NodePath, previous: NodePath) -> void:
+	var owner = ref.get_ref()
+	if is_instance_valid(owner) and owner.get(property) == local:
+		owner.set(property, previous)
+
+
 # focus back inside: the control that last had it there, else the named first one, else the first focusable control
 func _take() -> void:
 	if not is_inside_tree() or _gone() or not panel.is_visible_in_tree():
@@ -178,14 +217,49 @@ func _take() -> void:
 
 static func _focusable(c: Control) -> bool:
 	return c.focus_mode != Control.FOCUS_NONE and c.is_visible_in_tree() and not c.is_queued_for_deletion() \
-		and not (c is BaseButton and (c as BaseButton).disabled)
+		and not ("disabled" in c and c.disabled)
 
 
-static func first_focusable(n: Node) -> Control:
+static func focus_key(c: Control) -> String:
+	if not is_instance_valid(c): return ""
+	if c.has_meta("press_act"):
+		return "action:" + str(c.get_meta("press_act")) + "|" + str(c.get_meta("press_arg", ""))
+	return "" if str(c.name).begins_with("@") else "name:" + str(c.name)
+
+
+static func find_focus_key(n: Node, key: String) -> Control:
+	if n.is_queued_for_deletion() or key.is_empty(): return null
+	if n is Control and _focusable(n) and focus_key(n) == key: return n
 	for ch in n.get_children():
-		if ch is Control and _focusable(ch as Control) and (ch as Control).focus_mode == Control.FOCUS_ALL:
+		var found := find_focus_key(ch, key)
+		if found != null: return found
+	return null
+
+
+static func nearest_button(scroll: ScrollContainer, point: Vector2) -> Control:
+	var nearest: Control = null
+	var distance := INF
+	var bounds := scroll.get_global_rect()
+	for node in scroll.find_children("*", "Control", true, false):
+		if not node.has_signal("pressed") or not _focusable(node): continue
+		var rect: Rect2 = node.get_global_rect()
+		if not bounds.intersects(rect): continue
+		var next: float = rect.get_center().distance_squared_to(point)
+		if next < distance:
+			distance = next
+			nearest = node
+	return nearest
+
+
+static func first_focusable(n: Node, reverse := false) -> Control:
+	var children := n.get_children()
+	if reverse: children.reverse()
+	for ch in children:
+		if not reverse and ch is Control and _focusable(ch as Control) and ch.focus_mode == Control.FOCUS_ALL:
 			return ch
-		var f := first_focusable(ch)
+		var f := first_focusable(ch, reverse)
 		if f != null:
 			return f
+		if reverse and ch is Control and _focusable(ch as Control) and ch.focus_mode == Control.FOCUS_ALL:
+			return ch
 	return null

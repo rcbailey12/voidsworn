@@ -60,7 +60,7 @@ check(/const TUMBLE_K := 0\.10\b/.test(liv) && has(liv, 'return TUMBLE_K / maxf(
 check(has(liv, 'uniform float tumble_k = 0.10;') && has(liv, 'min(rate, tumble_k / max(1.0, scale_v))'), 'the wreck shader caps tumble with the same figure');
 check(!/0\.10 \/ max\(1\.0, scale_v\)/.test(liv), 'no second hard-coded 0.10 tumble cap in world_living.gd');
 check(has(liv, 'OS.get_environment("VS_TUMBLE") == "periods" else "cap"'), 'the terrain-periods tumble is a capture variant, off by default');
-check((rocks.match(/uniform float tumble_k = 0\.0;/g) || []).length === 2 && has(rocks, 'static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") == "0" else 1.0'), 'rocks turn at the slow law by default (rock and crystal shaders; VS_ROCK_TUMBLE=0 holds the pose)');
+check((rocks.match(/uniform float tumble_k = 0\.0;/g) || []).length === 1 && has(rocks, 'static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") == "0" else 1.0'), 'rocks turn at the slow law by default (the rock shader; the crystal shader went with the clusters, issue 1361; VS_ROCK_TUMBLE=0 holds the pose)');
 check(has(rec, '0.10 / max(1, scale)'), 'environment_reconciliation.md states the figure of record');
 // 3b. The documents of record state the values the code side pins (contrib/muse/reviews/opus_check_286.md conditions 1 and 3)
 for (const row of [
@@ -72,7 +72,7 @@ for (const row of [
 check(has(spec, 'sampled at 0.075 cycles per unit'), 'nebula_motion_spec.md section 0 states the 0.075 sample rate');
 check(has(spec, 'plus or minus 0.025') && has(spec, '`sin(gas_time * 0.785398 + phase)`'), 'nebula_motion_spec.md section 3 states the body breathing');
 check(has(spec, 'Shipped play never sets it.'), 'nebula_motion_spec.md section 2 states the flat-rate variant is off in play');
-check(has(spec, 'a patch burst waits 2.2 to 6.5 s') && has(liv, 'burst.next = clock + rng.randf_range(2.2, 6.5)'), 'nebula_motion_spec.md section 4 states the patch burst cadence');
+check(has(spec, 'a patch burst waits 2.2 to 6.5 s') && has(liv, 'burst.next = now + rng.randf_range(2.2, 6.5)'), 'nebula_motion_spec.md section 4 states the patch burst cadence');
 check(has(spec, 'fades linearly over 0.45 s (`tick` decays by dt / 0.45)'), 'nebula_motion_spec.md section 4 states the shield-tick flare');
 check(has(rec, 'rocks 5.6, wrecks 7.6, plain path 3.9'), 'environment_reconciliation.md section 2 states the AS18 piece sizes');
 check(has(rec, 'VS_TUMBLE=periods'), 'environment_reconciliation.md states the periods capture variant');

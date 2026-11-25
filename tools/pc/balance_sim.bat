@@ -1,5 +1,7 @@
 @echo off
-rem Run the Godot balance sim. Double-click for campaign, or pass mode, count, and nopause.
+rem Run the Godot balance sim. Modes: campaign, campaignrewards, fmatrix, run. Pass mode, count, and nopause.
+rem Double-click for campaign. Run plays complete campaigns on both difficulties. Set PFACTION for one faction or AI for one difficulty.
+rem Set ONLY_BOSS=1 to select the boss cells and the elite comparison.
 setlocal enableextensions disabledelayedexpansion
 for %%D in ("%~dp0..\..") do set "BALANCE_REPO=%%~fD"
 set "BALANCE_GODOT=%GODOT_EXE%"

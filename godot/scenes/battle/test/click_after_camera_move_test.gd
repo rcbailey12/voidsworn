@@ -18,9 +18,13 @@ class TestBoard extends "res://render/board.gd":
 
 class ClickSink extends Control:
 	var presses := 0
+	var right_releases := 0
 	func _gui_input(e: InputEvent) -> void:
-		if e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT:
-			if e.pressed: presses += 1
+		if e is InputEventMouseButton:
+			if e.button_index == MOUSE_BUTTON_LEFT and e.pressed:
+				presses += 1
+			if e.button_index == MOUSE_BUTTON_RIGHT and not e.pressed:
+				right_releases += 1
 			accept_event()
 
 class TestBattle extends Battle:
@@ -38,6 +42,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	root.size = Vector2i(1920, 1080)
 	var b := TestBattle.new()
 	root.add_child(b)
 	b.api = TestApi.new()
@@ -89,16 +94,69 @@ func _run() -> void:
 	if sink.presses != 1 or b.cam._drag != 0 or not b.clicks.is_empty():
 		printerr("FAIL: a press consumed by GUI became a board gesture")
 		ok = false
+	var off_hud := p + Vector2(80, 0)
+	_mouse(off_hud, true, MOUSE_BUTTON_RIGHT)
+	var angle: float = b.cam.a
+	_motion(off_hud + Vector2(20, 0), MOUSE_BUTTON_MASK_RIGHT)
+	var orbit_started: bool = b.cam.a != angle
+	# Headless Viewport input only delivers releases to a Control with mouse capture.
+	_mouse(p, true, MOUSE_BUTTON_RIGHT)
+	_mouse(p, false, MOUSE_BUTTON_RIGHT)
+	angle = b.cam.a
+	_motion(off_hud, 0)
+	if not orbit_started or sink.right_releases != 1 or b.cam._drag != 0 or b.cam.a != angle:
+		printerr("FAIL D2: GUI release must stop orbit (started %s, GUI releases %d, drag %d, moved %s)" % [
+			orbit_started, sink.right_releases, b.cam._drag, b.cam.a != angle])
+		ok = false
+	else:
+		print("PASS D2: right release consumed by GUI stops orbit")
+	_mouse(off_hud, false, MOUSE_BUTTON_RIGHT)
 	sink.free()
 	b.hud.free()
+	b.hud = Battle.HUD.new()
+	b.add_child(b.hud)
+	await process_frame
+	b.hud.set_playing(true)
+	b.hud.ledger.ensure_layout()
+	var shelf: Vector2 = b.hud.ledger.sheet_r.get_center()
+	var radius: float = b.cam.r
+	b.clicks.clear()
+	_mouse(shelf, true)
+	_mouse(shelf, false)
+	var clicked := b.clicks.size() == 1
+	_mouse(shelf, true, MOUSE_BUTTON_WHEEL_UP)
+	var angle_before: float = b.cam.a
+	_mouse(shelf, true, MOUSE_BUTTON_RIGHT)
+	_motion(shelf + Vector2(20, 0), MOUSE_BUTTON_MASK_RIGHT)
+	_mouse(shelf + Vector2(20, 0), false, MOUSE_BUTTON_RIGHT)
+	if b.hud.over_ui(shelf) or not clicked or b.cam.r >= radius or b.cam.a == angle_before:
+		printerr("FAIL D1: the hidden shelf must pass clicks, wheel zoom and orbit drags to the board")
+		ok = false
+	else:
+		print("PASS D1: clicks, wheel zoom and orbit drags reach the board over the hidden shelf")
+	if not b.hud.over_ui(b.hud.ledger.log_r.get_center()):
+		printerr("FAIL D1: the visible log must still catch input during playback")
+		ok = false
+	b.hud.set_playing(false)
+	if not b.hud.over_ui(shelf):
+		printerr("FAIL D1: the shelf must catch input when it returns")
+		ok = false
 	b.free()
 	if ok: print("PASS: battle picks the release ray after camera motion and skips HUD gestures and drags")
 	quit(0 if ok else 1)
 
 
-func _mouse(p: Vector2, pressed: bool) -> void:
+func _mouse(p: Vector2, pressed: bool, button := MOUSE_BUTTON_LEFT) -> void:
 	var e := InputEventMouseButton.new()
-	e.button_index = MOUSE_BUTTON_LEFT
+	e.button_index = button
 	e.position = p
 	e.pressed = pressed
+	root.push_input(e, true)
+
+
+func _motion(p: Vector2, mask: int) -> void:
+	var e := InputEventMouseMotion.new()
+	e.position = p
+	e.relative = Vector2(20, 0)
+	e.button_mask = mask
 	root.push_input(e, true)

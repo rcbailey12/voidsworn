@@ -8,18 +8,46 @@ extends SceneTree
 # the fixture units itself, with no rules battle and no saved profile, the same way onboarding_test.gd drives the scene.
 # The HUD, sound and camera are stand-ins so the check runs headless; select, _on_action, _on_key and _cancel are the
 # screen's own code. The check reads wing_sel after each path and fails on the path that leaves it armed.
+# Issue 1803: the same fixture checks Escape and an order key during the victory beat.
 
+var checks := 0
 var fails := 0
 
 
 class FakeHud extends CanvasLayer:
-	var menu = null
+	var menu: Control
+	var endcard: Control
 	var ask_panel = null   # issue 529: the real HUD has a prompt panel; null means no prompt is open
+	var log_open := false
+	var legend_open := false
+
 	func toast(_text: String, _opts := {}) -> void:
 		pass
 
+	func set_panel(_info: Dictionary) -> void:   # issue 1402: the end flow clears the ship and target panels
+		pass
+
+	func set_target(_info: Dictionary) -> void:
+		pass
+
+	func toggle_log() -> void:
+		log_open = not log_open
+
+	func toggle_legend() -> void:
+		legend_open = not legend_open
+
+	func show_menu(_title: String, _items: Array, _row: int) -> void:
+		menu = Control.new()
+		add_child(menu)
+
+	func hide_menu() -> void:
+		menu.free()
+		menu = null
+
 
 class FakeSfx extends Node:
+	var on := true
+
 	func play(_name: String, _opts := {}) -> void:
 		pass
 
@@ -32,8 +60,15 @@ class FakeCam extends Camera3D:
 class FakeApi extends RefCounted:
 	var phase := "player"
 
+	func battle_result() -> String:
+		return "win"
+
 
 class TestBattle extends "res://scenes/battle/battle.gd":
+	func _ready() -> void:
+		set_process(false)
+	func wait(_ms: float, _skippable_cut := false) -> void:
+		await get_tree().process_frame
 	func _refresh_ui() -> void:
 		pass
 	func _update_reach() -> void:
@@ -41,6 +76,7 @@ class TestBattle extends "res://scenes/battle/battle.gd":
 
 
 func check(ok: bool, what: String) -> void:
+	checks += 1
 	if ok:
 		print("PASS: " + what)
 	else:
@@ -55,6 +91,10 @@ func unit(id: String, name: String, squadron: bool) -> Dictionary:
 
 
 func _init() -> void:
+	_run.call_deferred()
+
+
+func _run() -> void:
 	var b = TestBattle.new()
 	b.hud = FakeHud.new()
 	b.sfx = FakeSfx.new()
@@ -96,9 +136,34 @@ func _init() -> void:
 	check(b.plan == null, "the Cancel button drops the planned move")
 	check(b.wing_sel == "", "the Cancel button clears the armed wing")
 
+	# 5. the battle has ended, and _end_flow is waiting before it shows the end card.
+	p1["weapons"] = [{}]
+	b._on_key(KEY_1)
+	check(b.armed == 0, "1 can arm the selected ship's weapon during battle")
+	b._on_key(KEY_1)
+	root.add_child(b)
+	b.api.phase = "over"
+	b._end_flow()
+	check(b.ended and b.hud.endcard == null, "the battle ended and the end card is still pending")
+	b.hud.log_open = true
+	b.hud.legend_open = true
+	b._on_key(KEY_ESCAPE)
+	check(not b.hud.log_open and b.hud.legend_open and b.hud.menu == null, "victory beat: Esc closes the log first")
+	b._on_key(KEY_ESCAPE)
+	check(not b.hud.legend_open and b.hud.menu == null, "victory beat: Esc closes the legend next")
+	b._on_key(KEY_ESCAPE)
+	check(b.hud.menu != null, "victory beat: Esc opens the battle menu")
+	b._on_key(KEY_ESCAPE)
+	check(b.hud.menu == null, "victory beat: Esc closes the battle menu")
+	b._on_key(KEY_1)
+	check(b.armed == -1, "victory beat: 1 cannot arm a weapon")
+	# Retire before the wait ends so the fixture needs no end card or sound sting.
+	b._retire()
+	await process_frame
+
 	b.hud.free()
 	b.sfx.free()
 	b.cam.free()
 	b.free()
-	print("Wing cancel: %s (%d checks)" % ["PASS" if fails == 0 else "FAIL", 6])
+	print("Wing cancel: %s (%d checks)" % ["PASS" if fails == 0 else "FAIL", checks])
 	quit(1 if fails > 0 else 0)

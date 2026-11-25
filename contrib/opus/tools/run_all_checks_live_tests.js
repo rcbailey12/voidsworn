@@ -10,6 +10,8 @@ const { spawnSync } = require('child_process');
 const { ROOT } = require('./run_all_checks');
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'checks962 proof '));
 const runner = path.join(root, 'contrib/opus/tools/run_all_checks.js');
+const launchTimeout = process.platform === 'win32' ? 180000 : 60000;
+const codex = fs.readFileSync(path.join(ROOT, 'tools/pc/codex_issue.bat'), 'utf8');
 const write = (file, text) => {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, text);
@@ -19,9 +21,10 @@ write(path.join(path.dirname(runner), 'checks_baseline.json'), JSON.stringify({
   knownFindingsFailures: [], checksCeiling: 0, namingHardHits: 0, driftDifferedCeiling: 1,
 }));
 const failName = 'a_fixture_fail_tests';
+const failFile = path.join(path.dirname(runner), failName + '.js');
 const nextName = 'b_fixture_next_tests';
 const lines = Array.from({ length: 20 }, (_, i) => 'fixture output ' + String(i + 1).padStart(2, '0'));
-write(path.join(path.dirname(runner), failName + '.js'),
+write(failFile,
   'console.log(' + JSON.stringify(lines.concat('FAIL: fixture reason').join('\n')) + ');\nprocess.exitCode = 7;\n');
 write(path.join(path.dirname(runner), nextName + '.js'), `
 const fs = require('fs'), assert = require('assert');
@@ -53,7 +56,7 @@ function run(args, verifyLive = false) {
   try {
     result = spawnSync(process.execPath, [runner, ...args], {
       cwd: root, env: { ...process.env, CHECKS962_LOG: logFile, CHECKS962_VERIFY_LIVE: verifyLive ? '1' : '0' },
-      stdio: ['ignore', fd, fd], windowsHide: true, timeout: 60000,
+      stdio: ['ignore', fd, fd], windowsHide: true, timeout: launchTimeout,
     });
   } finally { fs.closeSync(fd); }
   assert.ifError(result.error);
@@ -89,9 +92,39 @@ for (const row of fastReport) assert(fast.output.includes(row.result + ': ' + ro
 assert(fastReport.some(r => r.check === failName && r.result === 'SKIP' && r.detail === 'SKIP: fast'));
 assert(fastReport.some(r => r.check === 'nem_assign_enum' && r.result === 'PASS'));
 assert.equal(run(['--only', 'missing_fixture']).status, 1);
-const codex = fs.readFileSync(path.join(ROOT, 'tools/pc/codex_issue.bat'), 'utf8');
+
+// Exercise the successful CLI exit with a real KNOWN row. On Windows feed that exit through the Codex check
+// step too, with a stand-in watchdog and parity command so this fixture never starts the real suite or Godot.
+write(failFile, "console.log('PASS: fixture repaired');\n");
+if (process.platform === 'win32') {
+  const bat = path.join(root, 'tools/pc/codex_issue.bat');
+  write(bat, codex);
+  write(path.join(path.dirname(bat), 'tmo.bat'), [
+    '@echo off',
+    'if /i "%~2"=="%COMSPEC%" exit /b 0',
+    '"%CHECKS962_NODE%" "%~3" --json --jobs 4',
+    'exit /b %ERRORLEVEL%',
+  ].join('\r\n') + '\r\n');
+  const checked = spawnSync(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', `call "${bat}" checks "${root}"`], {
+    cwd: root, env: { ...process.env, CHECKS962_NODE: process.execPath }, windowsVerbatimArguments: true,
+    encoding: 'utf8', windowsHide: true, timeout: launchTimeout,
+  });
+  assert.ifError(checked.error);
+  const nodeLog = fs.readFileSync(path.join(root, 'checks_node.txt'), 'utf8');
+  assert.equal(checked.status, 0, nodeLog + checked.stderr);
+  assert.match(fs.readFileSync(path.join(root, 'result.txt'), 'utf8'), /checks: node exit 0, parity exit 0/);
+} else {
+  const checked = run(['--json', '--jobs', '4']);
+  assert.equal(checked.status, 0, checked.output);
+}
+const accepted = JSON.parse(fs.readFileSync(path.join(root, 'checks_report.json'), 'utf8'));
+assert(accepted.every(row => ['PASS', 'KNOWN'].includes(row.result)));
+assert(accepted.some(row => row.result === 'PASS'));
+assert(accepted.some(row => row.result === 'KNOWN' && row.detail.includes('within the baseline')));
+
 const work = fs.readFileSync(path.join(ROOT, 'tools/pc/work_issue.bat'), 'utf8');
-assert(/call "%TP%tmo\.bat" 3600 node contrib\\opus\\tools\\run_all_checks\.js/.test(codex));
+assert(/call :checks "%O%"/.test(codex));
+assert(/call "%TP%tmo\.bat" 5400 node contrib\\opus\\tools\\run_all_checks\.js/.test(codex));
 assert(/if not defined CHECK_CAP set "CHECK_CAP=3600"/.test(work));
 assert(/call "%T%tmo\.bat" %CHECK_CAP% "%NODE%" contrib\\opus\\tools\\run_all_checks\.js/.test(work));
 assert(/call "%TP%tmo\.bat" 1500 "%COMSPEC%" \/c tools\\pc\\parity\.bat/.test(codex));
@@ -101,5 +134,5 @@ const { rowEnv } = require(path.join(__dirname, 'run_all_checks.js'));
 const leaked = rowEnv({ PATH: 'p', TEMP: 't', PC_GPU_LANE: 'C', PC_RUN_TEMP: 'x', PC_RUN_SCRATCH: 'x', PC_RUNNER_LOCKED_ISSUE: '1693',
   CODEX_MODEL: 'gpt-6.2-astra', CODEX_LOCKED_REPO: 'r', WORK_LOCKED_REPO: 'r', TMO_REPO: 'r', CHECKS_OK: '0', PC_WAIT_FOR: 'w' });
 assert.deepEqual(leaked, { PATH: 'p', TEMP: 't', PC_GPU_LANE: 'C' });
-console.log('PASS: live failure detail and the whole FAIL output precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 3600 s and parity stays 1500 s');
+console.log('PASS: live failures precede the next row; table and JSON agree; PASS with reasoned KNOWN rows exits 0; FAIL exits 1; Codex runs the same check step in the lane and proof');
 console.log('Evidence: ' + root);

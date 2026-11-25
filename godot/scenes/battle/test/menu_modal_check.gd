@@ -10,6 +10,7 @@ extends SceneTree
 # Run: godot --headless --path godot --script res://scenes/battle/test/menu_modal_check.gd
 const BattleScene = preload("res://scenes/battle/battle.tscn")
 const UiScale = preload("res://ui/ui_scale.gd")
+const BL := preload("res://world/board_look.gd")
 var b
 var fails := 0
 
@@ -65,10 +66,10 @@ func _key(code: int) -> void:
 		await process_frame
 
 
-func _click(p: Vector2) -> void:
+func _click(p: Vector2, button := MOUSE_BUTTON_LEFT) -> void:
 	for pressed in [true, false]:
 		var e := InputEventMouseButton.new()
-		e.button_index = MOUSE_BUTTON_LEFT
+		e.button_index = button
 		e.position = p
 		e.global_position = p
 		e.pressed = pressed
@@ -212,6 +213,8 @@ func _run() -> void:
 	await _key(KEY_B)
 	await _frames(3)
 	_check(_state() != before, "with the menu closed, B acts again")
+	await _grid_shortcut()
+	await _overlay_escape()
 	# item 13: the end card keeps the keyboard after Esc, Esc (a menu over it opens and closes)
 	for early in [false, true]:
 		b.hud.show_end("Victory", "The line holds.", true)
@@ -239,5 +242,125 @@ func _run() -> void:
 	await create_timer(2.5).timeout
 	await _wait_idle(20000)
 	_check(b.hud.endcard == null and not b.ended, "item 8: Fight again during the victory beat leaves no old end card in the new fight")
+	await _end_modal()
+	b.hud.hide_end()
+	await _hold_end_cards()
+	b.hud.hide_end()
+	b.queue_free()
+	await _frames(3)
 	print("MENU_MODAL fails=%d" % fails)
 	quit(1 if fails else 0)
+
+
+func _grid_row() -> Button:
+	for child in b.hud.menu.find_children("*", "Button", true, false):
+		if (child as Button).text.begins_with("Tactical grid"):
+			return child
+	return null
+
+
+func _grid_shortcut() -> void:
+	BL.set_look("cine", false)
+	BL.tactical = false
+	b.board.apply_look(false)
+	b._refresh_ui()
+	b._open_menu()
+	await _frames(4)
+	var row := _grid_row()
+	_check(row != null and row.text == "Tactical grid: off (Z)", "D3: the cinematic menu offers the grid before Z is pressed")
+	await _key(KEY_Z)
+	_check(not BL.tactical, "D3: Z does nothing while the modal menu is open")
+	if row != null:
+		row.grab_focus()
+		await _key(KEY_ENTER)
+		row = _grid_row()
+		_check(BL.tactical and row != null and row.text == "Tactical grid: on (Z)", "D3: the menu toggles the grid and reflects its state")
+	await _key(KEY_ESCAPE)
+	var was := BL.tactical
+	await _key(KEY_Z)
+	var legacy = b.board.get("_look_btn")
+	_check(BL.tactical != was and (legacy == null or not legacy.is_visible_in_tree()), "D3: Z toggles the grid without showing a top-right button")
+	BL.tactical = false
+	b.board.apply_look(false)
+
+
+func _overlay_escape() -> void:
+	b.hud.set_legend("Terrain", "", [["Debris", "#887766", "Cover"]])
+	await _frames(3)
+	await _click(b.hud.legend.get_global_rect().get_center())
+	await _key(KEY_L)
+	_check(b.hud.log_open and b.hud.legend_open, "D5: the full log and terrain legend can both be open")
+	await _key(KEY_ESCAPE)
+	_check(not b.hud.log_open and b.hud.legend_open and b.hud.menu == null, "D5: Esc closes the full log first")
+	await _key(KEY_ESCAPE)
+	_check(not b.hud.legend_open and b.hud.menu == null, "D5: the next Esc closes the terrain legend")
+	if b.hud.menu != null:
+		b.hud.hide_menu()
+	if b.hud.log_open:
+		b.hud.toggle_log()
+	if b.hud.legend_open:
+		await _click(b.hud.legend.get_global_rect().get_center())
+	await _frames(3)
+
+
+func _end_modal() -> void:
+	b._end_flow()
+	var deadline := Time.get_ticks_msec() + 5000
+	while b.hud.endcard == null and Time.get_ticks_msec() < deadline:
+		await process_frame
+	_check(b.hud.endcard != null, "D5: the end card appeared")
+	if b.hud.endcard == null:
+		return
+	_check(b.hud._end_first.text == "Continue to title", "C2: a quick battle names the title as its destination")
+	var point := Vector2(90, 580)
+	var view := [b.cam.topdown, b.cam.r, b.cam.a, b.cam.t, b.threat_on, b.arcs_on, BL.tactical]
+	var menu_point := Vector2.ZERO
+	b.hud.ledger.ensure_layout()
+	for hit in b.hud.ledger.hits:
+		if hit.act == "menu":
+			menu_point = Rect2(hit.r).get_center()
+	_check(b.hud.over_ui(point), "D5: the end card covers the whole board")
+	await _click(point, MOUSE_BUTTON_WHEEL_UP)
+	for code in [KEY_Z, KEY_T, KEY_R, KEY_V, KEY_HOME, KEY_F, KEY_L, KEY_ESCAPE]:
+		await _key(code)
+	_check(not b.hud.log_open and b.hud.menu == null, "D5: L and Esc open nothing behind the end card")
+	_check(view == [b.cam.topdown, b.cam.r, b.cam.a, b.cam.t, b.threat_on, b.arcs_on, BL.tactical], "D5: wheel zoom and view shortcuts do nothing behind the end card")
+	if b.hud.menu != null:
+		b.hud.hide_menu()
+		await _frames(3)
+	await _click(menu_point)
+	_check(menu_point != Vector2.ZERO and b.hud.menu == null, "D5: clicks cannot reach Menu behind the end card")
+
+
+func _hold_end_cards() -> void:
+	var rules = b.api.R
+	rules.setupObjective("hold")
+	var enemy: Dictionary = rules.caps("enemy")[0]
+	b.in_campaign = true
+	for row in [
+		[2, "Their fleet broke and fled.", "Continue to battle rewards"],
+		[3, "You held the relay for three rounds.", "Continue to battle rewards"],
+		[2, "Your last ship was destroyed with the relay at 2/3.", "Continue to run debrief"],
+	]:
+		rules.B["over"] = false
+		rules.B["obj"]["score"] = row[0]
+		b.ended = false
+		b.sel = ""
+		b.inspect = enemy["id"]
+		b.hud.set_panel(b._panel_info())
+		_check(not b.hud.ledger.ship.is_empty(), "C2: an enemy was on the shelf before the end")
+		# Keep opponents in the fight. The same hold mission can end by rout, relay score or fleet loss.
+		rules.B["cp0"] = {"enemy": rules.sideCP("enemy") * 3.0}
+		if row[2] == "Continue to run debrief":
+			for ship in rules.caps("player"):
+				ship["hp"] = 0
+				ship["dead"] = true
+		rules.checkEnd()
+		b.V = b.api.view()
+		await b._end_flow()
+		var labels: Array[Node] = b.hud.endcard.find_children("*", "Label", true, false)
+		_check(labels.any(func(label): return label.text.begins_with(row[1])), "C2: hold card starts with " + row[1])
+		_check(b.hud._end_first.text == row[2], "C2: end card offers " + row[2])
+		_check(b.inspect == "" and b.hud.ledger.ship.is_empty() and b._panel_info().is_empty(), "C2: the end card clears the inspected enemy from the shelf")
+		b.hud.hide_end()
+		await _frames(2)

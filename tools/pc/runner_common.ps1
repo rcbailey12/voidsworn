@@ -2,7 +2,7 @@
 # No model calls except preflight.
 # init <out> <branch>; wait <out>; checkout <repo> <out> <branch> <sparse>;
 # preflight <out> <repo> <opencode|kimi|codex> <exe> <model> <variant>;
-# scratch <out>: create and record the run's private TEMP directory.
+# scratch <out> [repo]: create and record the run's private TEMP directory and profile cache redirects.
 # finish <out> <exit> <partial> <push mode> <checks ok> [repo].
 # space <out> <settings file> <target path>: refuse to start when the target's drive has less than min_free_gb
 #   (default 60) free; one line in result.txt, status failed. Test knobs: PC_TEST_SETTINGS, PC_TEST_SPACE_FREE_MB.
@@ -556,9 +556,14 @@ function Can-ReuseRepo($repo, $mirror, $patterns) {
     return $true
   } catch { Log "checkout needs keeping: $($_.Exception.Message)"; return $false }
 }
-function Repo-Mirror {
+function Repo-Mirror($lane = '') {
   if ($test) { return $env:PC_TEST_MIRROR }
-  Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\repo-mirror.git'
+  $name = switch ($lane) {
+    'board_e' { 'repo-mirror-e.git' }
+    'board_f' { 'repo-mirror-f.git' }
+    default { 'repo-mirror.git' }
+  }
+  Join-Path (Join-Path $env:USERPROFILE 'Downloads\voidsworn_test') $name
 }
 function Cleanup-Paused {
   if (-not $env:USERPROFILE) { return $false }
@@ -572,6 +577,53 @@ function Assert-PlainDirectory($directory) {
       throw "directory is missing or linked: $($dir.FullName)"
     }
   }
+}
+function Test-PathInsideRepo($path, $repo) {
+  $separator = [IO.Path]::DirectorySeparatorChar
+  $comparison = if ($separator -eq '\') { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+  $path = [IO.Path]::GetFullPath($path).TrimEnd($separator)
+  $root = [IO.Path]::GetFullPath($repo).TrimEnd($separator)
+  return $path.Equals($root, $comparison) -or $path.StartsWith($root + $separator, $comparison)
+}
+function Write-RunProfileRedirects($repo, $scratch) {
+  # Resolve relative settings from the agent's starting directory, even if the cache does not exist yet.
+  Push-Location -LiteralPath $repo
+  try {
+    $redirects = foreach ($name in @('LOCALAPPDATA', 'PSModuleAnalysisCachePath')) {
+      $value = [Environment]::GetEnvironmentVariable($name)
+      if (-not [string]::IsNullOrWhiteSpace($value)) {
+        $path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($value)
+        if (-not (Test-PathInsideRepo $path $repo)) { continue }
+      }
+      if ($name -eq 'LOCALAPPDATA') {
+        $path = [IO.Directory]::CreateDirectory((Join-Path $scratch 'LocalAppData')).FullName
+      } else {
+        $path = Join-Path $scratch 'ModuleAnalysisCache'
+      }
+      "$name=$path"
+    }
+  } finally { Pop-Location }
+  Put (Join-Path $out 'profile_env.txt') ((@($redirects) + '') -join "`r`n")
+  if ($redirects) { Log "run profile cache: $($redirects -join ', ')" }
+  else { Log 'run profile cache: kept inherited paths' }
+}
+function Add-ProfileCacheExclude($repo) {
+  Assert-PlainDirectory (Get-Item -LiteralPath (Join-Path $repo '.git') -Force)
+  $info = [IO.Directory]::CreateDirectory((Join-Path $repo '.git/info'))
+  Assert-PlainDirectory $info
+  $path = Join-Path $info.FullName 'exclude'
+  $file = Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+  $content = ''
+  if ($file) {
+    if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+      throw "Git exclude is not a plain file: $path"
+    }
+    $content = [IO.File]::ReadAllText($path)
+    if ($content -cmatch '(?m)^/Microsoft/\r?$') { return }
+  }
+  $newline = if ($content.Contains("`r`n")) { "`r`n" } else { "`n" }
+  $prefix = if ($content -and -not $content.EndsWith("`n")) { $newline } else { '' }
+  [IO.File]::AppendAllText($path, "$prefix/Microsoft/$newline", $utf8)
 }
 function Assert-NoLinkedChildren($directory) {
   $pending = New-Object 'Collections.Generic.Stack[string]'
@@ -1208,6 +1260,8 @@ try {
     if ($s.status -ne 'running' -or $s.scratch) { throw 'scratch directory can only be created once for a running job' }
     $temp = Get-Item -LiteralPath $env:PC_RUN_TEMP -Force
     Assert-PlainDirectory $temp
+    $repo = $args[2]
+    if ($repo -and (Test-PathInsideRepo $temp.FullName $repo)) { throw 'run scratch root is inside the checkout' }
     $issue = $env:PC_RUNNER_LOCKED_ISSUE
     $prefix = if ($issue -match '\A[1-9][0-9]*\z') { "voidsworn-run-$issue-" } else { 'voidsworn-run-' }
     $dir = New-Item -ItemType Directory -Path (Join-Path $temp.FullName ($prefix + [guid]::NewGuid().ToString('N')))
@@ -1219,6 +1273,7 @@ try {
     Save-State $s
     Put (Join-Path $out 'scratch_path.txt') ($dir.FullName + [Environment]::NewLine)
     Log "run scratch created: $($dir.FullName)"
+    if ($repo) { Write-RunProfileRedirects $repo $dir.FullName }
   }
   elseif ($mode -eq 'wait') {
     $script:out = $args[1]
@@ -1248,7 +1303,7 @@ try {
     $patterns = @()
     $slot = Split-Path -Leaf (Split-Path -Parent $repo)
     if ($args[4]) { $patterns = @($args[4] -split '\s+') }
-    elseif ($slot -match '\A(board_[cd]|slot_(deepseek|deepseekpro|kimi|kimicode|sonnet|opus|openai))\z') {
+    elseif ($slot -match '\A(board_[c-f]|slot_(deepseek|deepseekpro|kimi|kimicode|sonnet|opus|openai))\z') {
       # Only the opening fixed block can opt a folder back in. Later prose and older runs never change the profile.
       $snapshot = Read (Join-Path $out 'validated_issue.json')
       $fixed = [regex]::Match(($snapshot | ConvertFrom-Json).body, $fixedBlockPattern).Value
@@ -1257,7 +1312,7 @@ try {
       if ($excluded.Count) { Log "code checkout excludes: $($excluded -join ', ')" }
     }
     $source = 'https://github.com/rcbailey12/voidsworn'
-    $mirror = Repo-Mirror
+    $mirror = Repo-Mirror $slot
     if ($test) {
       if (-not $env:PC_TEST_SOURCE -or -not $env:PC_TEST_MIRROR) { throw 'test checkout requires PC_TEST_SOURCE and PC_TEST_MIRROR (no live network)' }
       $source = $env:PC_TEST_SOURCE
@@ -1311,6 +1366,7 @@ try {
         if ($attempt -eq 3) { throw 'local clone failed after 3 attempts; see git_log.txt' }
         Log "local clone failed; retry in $delay seconds"; Start-Sleep -Seconds $delay
     }
+    Add-ProfileCacheExclude $repo
     # Local hardlinks share immutable objects without alternates. All pushes go to GitHub, never to the mirror.
     Must-Git @('-C',$repo,'remote','set-url','origin',$source)
     if (-not $reuse -and $patterns.Count) {
@@ -1451,7 +1507,12 @@ try {
       if ($args[7] -ne 'real' -and -not $test) { Log "job validated: issue #$issue (dry run, no claim written)"; exit 0 }
       $head = @($branches | Where-Object { $_.name -eq 'main' } | ForEach-Object { $_.commit.sha }) -join ''
       # Issue 947: the public status comment names the lane, never the machine or a PC path (folder stays in local state only).
-      $lane = switch ((Split-Path -Leaf (Split-Path -Parent $repo)).ToLowerInvariant()) { 'board' { 'main' } 'board_b' { 'B' } 'board_c' { 'C' } 'board_d' { 'D' } default { 'other' } }
+      $board = Split-Path -Leaf (Split-Path -Parent $repo)
+      $lane = switch -Regex ($board) {
+        '^board$' { 'main' }
+        '^board_[b-f]$' { $board.Substring(6).ToUpperInvariant() }
+        default { 'other' }
+      }
       $g = @{ issue = $issue; seat = $args[3]; folder = $repo; lane = $lane;
         started = [DateTime]::UtcNow.ToString('o'); ceiling = $args[5]; resume = $args[6]; comment = 0;
         start_commit = $head; claimed = $false; marker = "<!-- voidsworn-runner-status branch=$($s.branch) -->" }
@@ -1660,9 +1721,146 @@ try {
       }
       return ''
     }
+    # Issue 1352: stop a probe that missed its deadline, and every process it started. A wrapper that exits but leaves a
+    # child holding stdout open has no live parent to follow, so the children are found by their parent PID and start
+    # time (a child is never older than its parent). Cleanup is bounded: 5 s at most, then the probe is given up on.
+    function Stop-ProbeTree($proc, $rootStart) {
+      $kill = @{}
+      $windows = [Environment]::OSVersion.Platform -eq 'Win32NT'
+      $swept = $false
+      if ($windows -and $rootStart) {
+        try {
+          $table = @(Get-CimInstance -ClassName Win32_Process -ErrorAction Stop | ForEach-Object {
+            New-Object PSObject -Property @{ id = [int]$_.ProcessId; parent = [int]$_.ParentProcessId; born = $_.CreationDate } })
+          $swept = $true
+          $born = @{}
+          $born[$proc.Id] = $rootStart
+          $queue = New-Object 'System.Collections.Generic.Queue[int]'
+          $queue.Enqueue($proc.Id)
+          while ($queue.Count) {
+            $parentId = $queue.Dequeue()
+            foreach ($row in $table) {
+              if ($row.parent -ne $parentId -or $born.ContainsKey($row.id) -or -not $row.born) { continue }
+              if ($row.born -lt $born[$parentId].AddSeconds(-1)) { continue }
+              $born[$row.id] = $row.born
+              $queue.Enqueue($row.id)
+            }
+          }
+          foreach ($id in $born.Keys) { $kill[[int]$id] = $true }
+        } catch { }
+      }
+      $kill[[int]$proc.Id] = $true
+      $victims = @()
+      foreach ($id in $kill.Keys) {
+        try { $v = [System.Diagnostics.Process]::GetProcessById($id); $null = $v.Handle; $victims += $v } catch { }
+      }
+      if ($windows -and -not $swept) {
+        # No process table: taskkill can still walk the tree while the wrapper is alive.
+        try { $null = & taskkill.exe /PID $proc.Id /T /F 2>&1 } catch { }
+      }
+      foreach ($v in $victims) { try { $v.Kill() } catch { } }
+      $stop = [DateTime]::UtcNow.AddSeconds(5)
+      foreach ($v in $victims) {
+        $left = [int][Math]::Max(0, ($stop - [DateTime]::UtcNow).TotalMilliseconds)
+        try { $null = $v.WaitForExit($left) } catch { }
+        try { $v.Dispose() } catch { }
+      }
+    }
+    # Issue 1352: run one probe under ONE 20 s deadline that covers the process exit and both pipe reads. ok = it exited 0
+    # inside the deadline with its pipes closed. A probe that misses the deadline (a hung tool, or a wrapper that exits
+    # but leaves a child holding stdout) has its process tree stopped and counts as not ok (timedOut), so the caller
+    # moves to the next candidate. utf8Out: a Python probe, asked for UTF-8 so a path with accents arrives intact.
+    function Invoke-Probe($exe, $argText, $utf8Out) {
+      $r = New-Object PSObject -Property @{ ok = $false; out = ''; timedOut = $false }
+      $capMs = 20000
+      if ($test -and $env:PC_TEST_PROBE_MS -match '^[0-9]+$') { $capMs = [int]$env:PC_TEST_PROBE_MS }
+      $clock = [System.Diagnostics.Stopwatch]::StartNew()
+      $ea = $ErrorActionPreference
+      $proc = $null
+      $rootStart = $null
+      $finished = $false
+      try {
+        $ErrorActionPreference = 'Continue'
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = $exe
+        $psi.Arguments = $argText
+        $psi.UseShellExecute = $false
+        $psi.CreateNoWindow = $true
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true
+        if ($utf8Out) {
+          $psi.StandardOutputEncoding = New-Object System.Text.UTF8Encoding($false)
+          $psi.EnvironmentVariables['PYTHONUTF8'] = '1'
+          $psi.EnvironmentVariables['PYTHONIOENCODING'] = 'utf-8'
+        }
+        $proc = [System.Diagnostics.Process]::Start($psi)
+        try { $rootStart = $proc.StartTime } catch { }
+        $outTask = $proc.StandardOutput.ReadToEndAsync()
+        $errTask = $proc.StandardError.ReadToEndAsync()
+        $left = [int][Math]::Max(0, $capMs - $clock.ElapsedMilliseconds)
+        $finished = $proc.WaitForExit($left)
+        if ($finished) {
+          $left = [int][Math]::Max(0, $capMs - $clock.ElapsedMilliseconds)
+          $finished = [System.Threading.Tasks.Task]::WaitAll([System.Threading.Tasks.Task[]]@($outTask, $errTask), $left)
+        }
+        if ($finished) {
+          $r.out = [string]$outTask.Result
+          $r.ok = ($proc.ExitCode -eq 0)
+        } else {
+          $r.timedOut = $true
+          Stop-ProbeTree $proc $rootStart
+        }
+      } catch { } finally {
+        $ErrorActionPreference = $ea
+        if ($proc) { try { $proc.Dispose() } catch { } }
+      }
+      return $r
+    }
+    # Issue 1352: the Pythons a tool may live in, first hit first: PIL_PYTHON, ComfyUI's portable Python, the Python
+    # Launcher's list (py -0p, newest first), then python on PATH. The Windows Store stub under WindowsApps is skipped.
+    $script:pyList = $null
+    function Get-PythonCandidates {
+      if ($null -ne $script:pyList) { return $script:pyList }
+      $list = @()
+      $seen = @{}
+      $raw = @()
+      $raw += , @($env:PIL_PYTHON, 'PIL_PYTHON')
+      $raw += , @((Join-Path $env:USERPROFILE 'Downloads\ComfyUI_windows_portable\python_embeded\python.exe'), 'ComfyUI portable Python')
+      $launcher = Get-Command -Name 'py' -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+      if ($launcher) {
+        $listing = Invoke-Probe $launcher.Source '-0p'
+        $found = @()
+        foreach ($line in @(([string]$listing.out) -split "[\r\n]+")) {
+          $m = [regex]::Match($line, '^\s*-(?:V:|)(\S+)\s+\*?\s*(\S.*?)\s*$')
+          if (-not $m.Success) { continue }
+          $ver = [version]'0.0'
+          $vm = [regex]::Match($m.Groups[1].Value, '(\d+\.\d+)')
+          if ($vm.Success) { $ver = [version]$vm.Groups[1].Value }
+          $found += New-Object PSObject -Property @{ ver = $ver; path = $m.Groups[2].Value; order = $found.Count }
+        }
+        foreach ($f in @($found | Sort-Object -Property @{ Expression = { $_.ver }; Descending = $true }, @{ Expression = { $_.order }; Descending = $false })) {
+          $raw += , @($f.path, 'py launcher')
+        }
+      }
+      foreach ($cmd in @(Get-Command -Name 'python' -All -CommandType Application -ErrorAction SilentlyContinue)) {
+        $raw += , @($cmd.Source, 'python on PATH')
+      }
+      foreach ($pair in $raw) {
+        $py = $pair[0]
+        if (-not $py -or -not (Test-Path -LiteralPath $py -PathType Leaf)) { continue }
+        $full = (Get-Item -LiteralPath $py).FullName
+        if ($full -match '[\\/]Microsoft[\\/]WindowsApps[\\/]') { continue }
+        if ($seen.ContainsKey($full.ToLowerInvariant())) { continue }
+        $seen[$full.ToLowerInvariant()] = $true
+        $list += New-Object PSObject -Property @{ path = $full; source = $pair[1] }
+      }
+      $script:pyList = $list
+      return $script:pyList
+    }
     foreach ($tool in @(([string]$args[2]) -split '[\s,;]+' | Where-Object { $_ })) {
       $name = $tool.ToLowerInvariant()
       $path = ''
+      $source = ''
       switch ($name) {
         'godot' {
           $listed = ''
@@ -1671,25 +1869,67 @@ try {
           $path = Find-Exe @($env:GODOT_EXE, $listed, (Join-Path $vt 'godot\Godot_v4.7.2-stable_win64_console.exe')) ''
         }
         'blender' { $path = Find-Exe @($env:BLENDER_EXE, (Join-Path $vt 'blender\blender-4.5.14-windows-x64\blender.exe')) '' }
-        'ffmpeg' { $path = Find-Exe @($env:FFMPEG_EXE, (Join-Path $vt 'ffmpeg\bin\ffmpeg.exe')) 'ffmpeg' }
+        'ffmpeg' {
+          # Issue 1352: first hit wins; a candidate counts only if "<exe> -version" exits 0. Settings and the PC's usual
+          # place first, then PATH, then imageio_ffmpeg's own answer from each candidate Python, then its binaries folder.
+          $tries = @()
+          $tries += , @($env:FFMPEG_EXE, 'FFMPEG_EXE')
+          $tries += , @((Join-Path $vt 'ffmpeg\bin\ffmpeg.exe'), 'voidsworn_test\ffmpeg\bin')
+          foreach ($cmd in @(Get-Command -Name 'ffmpeg' -All -CommandType Application -ErrorAction SilentlyContinue)) { $tries += , @($cmd.Source, 'PATH') }
+          foreach ($pair in $tries) {
+            if (-not $pair[0] -or -not (Test-Path -LiteralPath $pair[0] -PathType Leaf)) { continue }
+            $full = (Get-Item -LiteralPath $pair[0]).FullName
+            $try = Invoke-Probe $full '-version'
+            if ($try.ok) { $path = $full; $source = $pair[1]; break }
+            if ($try.timedOut) { $lines += "skipped ffmpeg: $full (-version timed out)" } else { $lines += "skipped ffmpeg: $full (-version did not exit 0)" }
+          }
+          if (-not $path) {
+            foreach ($py in @(Get-PythonCandidates)) {
+              $ask = Invoke-Probe $py.path '-c "import imageio_ffmpeg,sys; print(imageio_ffmpeg.get_ffmpeg_exe())"' $true
+              if ($ask.timedOut) { $lines += "skipped imageio_ffmpeg question: $($py.path) (timed out)" }
+              if (-not $ask.ok) { continue }
+              $answer = ''
+              foreach ($l in @(([string]$ask.out) -split "[\r\n]+")) { if ($l.Trim()) { $answer = $l.Trim() } }
+              if (-not $answer -or -not (Test-Path -LiteralPath $answer -PathType Leaf)) { continue }
+              $full = (Get-Item -LiteralPath $answer).FullName
+              $try = Invoke-Probe $full '-version'
+              if ($try.ok) { $path = $full; $source = "imageio_ffmpeg via $($py.path)"; break }
+              if ($try.timedOut) { $lines += "skipped ffmpeg: $full (-version timed out)" } else { $lines += "skipped ffmpeg: $full (-version did not exit 0)" }
+            }
+          }
+          if (-not $path) {
+            $seenBins = @{}
+            foreach ($py in @(Get-PythonCandidates)) {
+              $dir = Split-Path -Parent $py.path
+              foreach ($root in @((Join-Path $dir 'Lib\site-packages'), (Join-Path (Split-Path -Parent $dir) 'Lib\site-packages'))) {
+                $binDir = Join-Path $root 'imageio_ffmpeg\binaries'
+                if ($seenBins.ContainsKey($binDir.ToLowerInvariant()) -or -not (Test-Path -LiteralPath $binDir -PathType Container)) { continue }
+                $seenBins[$binDir.ToLowerInvariant()] = $true
+                foreach ($file in @(Get-ChildItem -LiteralPath $binDir -Filter 'ffmpeg*.exe' -File -ErrorAction SilentlyContinue | Sort-Object -Property Name -Descending)) {
+                  $try = Invoke-Probe $file.FullName '-version'
+                  if ($try.ok) { $path = $file.FullName; $source = "imageio_ffmpeg binaries via $($py.path)"; break }
+                  if ($try.timedOut) { $lines += "skipped ffmpeg: $($file.FullName) (-version timed out)" } else { $lines += "skipped ffmpeg: $($file.FullName) (-version did not exit 0)" }
+                }
+                if ($path) { break }
+              }
+              if ($path) { break }
+            }
+          }
+        }
         'node' { $path = Find-Exe @($env:NODE_EXE, (Join-Path $vt 'node\node.exe')) 'node' }
         'pil' {
-          # Python with Pillow: ComfyUI's portable Python has it on this PC.
-          $pythons = @($env:PIL_PYTHON, (Join-Path $env:USERPROFILE 'Downloads\ComfyUI_windows_portable\python_embeded\python.exe'))
-          foreach ($py in $pythons) {
-            if (-not $py -or -not (Test-Path -LiteralPath $py -PathType Leaf)) { continue }
-            $ea = $ErrorActionPreference
-            try {
-              $ErrorActionPreference = 'Continue'
-              $null = & $py -c 'import PIL' 2>&1
-              if ($LASTEXITCODE -eq 0) { $path = (Get-Item -LiteralPath $py).FullName; break }
-            } catch { } finally { $ErrorActionPreference = $ea }
+          # Python with Pillow. Issue 1352: PIL_PYTHON, ComfyUI's portable Python, the Python Launcher's list, python on
+          # PATH. A candidate counts only if "-c import PIL" exits 0 (each probe capped at 20 s).
+          foreach ($py in @(Get-PythonCandidates)) {
+            $try = Invoke-Probe $py.path '-c "import PIL"'
+            if ($try.ok) { $path = $py.path; $source = $py.source; break }
+            if ($try.timedOut) { $lines += "skipped pil: $($py.path) (import PIL timed out)" }
           }
         }
         default { $lines += "MISSING ${name}: unknown tool name (known: godot, blender, ffmpeg, node, pil)"; $missing += $name; continue }
       }
       if ($path) {
-        $lines += "found ${name}: $path"
+        if ($source) { $lines += "found ${name}: $path ($source)" } else { $lines += "found ${name}: $path" }
         $sets += ('set "JW_' + $name.ToUpperInvariant() + '=' + $path + '"')
       } elseif ($name -ne $null -and $missing -notcontains $name) {
         $lines += "MISSING ${name}: set " + @{ godot = 'GODOT_EXE'; blender = 'BLENDER_EXE'; ffmpeg = 'FFMPEG_EXE'; node = 'NODE_EXE'; pil = 'PIL_PYTHON' }[$name] + ' or install it'
@@ -1698,7 +1938,21 @@ try {
     }
     if ($missing.Count) { $lines += "STOPPED: missing tools: $($missing -join ', ')" } else { $lines += 'all tools found' }
     [IO.File]::WriteAllText($report, (($lines -join "`r`n") + "`r`n"), $utf8)
-    [IO.File]::WriteAllText((Join-Path $script:out 'tools.cmd'), ((@('@echo off') + $sets) -join "`r`n") + "`r`n", (New-Object Text.ASCIIEncoding))
+    # Issue 1352 (Astra, PR 1806): the paths reach the job unchanged. A path with accents or other non-ASCII characters
+    # is written as UTF-8 (no BOM) between two chcp lines, so cmd reads the set lines as UTF-8 and the console code page
+    # is put back after; a plain ASCII path file is exactly what it was. A percent sign is doubled so cmd keeps it.
+    $cmdLines = @('@echo off')
+    $wide = @($sets | Where-Object { $_ -match '[^ -~]' }).Count -gt 0
+    if ($wide) {
+      $cmdLines += 'for /f "tokens=2 delims=:" %%a in (''chcp'') do set "JW_CP=%%a"'
+      $cmdLines += 'chcp 65001 >nul'
+    }
+    foreach ($set in $sets) { $cmdLines += $set.Replace('%', '%%') }
+    if ($wide) {
+      $cmdLines += 'if defined JW_CP chcp %JW_CP% >nul'
+      $cmdLines += 'set "JW_CP="'
+    }
+    [IO.File]::WriteAllText((Join-Path $script:out 'tools.cmd'), (($cmdLines -join "`r`n") + "`r`n"), $utf8)
     foreach ($l in $lines) { Write-Host $l }
     if ($missing.Count) { exit 2 }
     exit 0
@@ -1749,9 +2003,10 @@ try {
           if ($status -eq 'checked_push' -and $args[6]) {
             $repo = [IO.Path]::GetFullPath($args[6])
             $board = Split-Path -Parent $repo
-            if ($test -or ((Split-Path -Leaf $repo) -eq 'repo' -and (Split-Path -Leaf $board) -in @('board','board_b','board_c','board_d') -and
+            $lane = Split-Path -Leaf $board
+            if ($test -or ((Split-Path -Leaf $repo) -eq 'repo' -and $lane -match '\Aboard(?:_[b-f])?\z' -and
                 (Split-Path -Parent $board) -eq (Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'))) {
-              Remove-OlderKeptRepos $board (Repo-Mirror)
+              Remove-OlderKeptRepos $board (Repo-Mirror $lane)
             }
           }
         }

@@ -73,6 +73,8 @@ var reduce_flashing = false:
 		reduce_flashing = v
 		RenderingServer.global_shader_parameter_set(&"fx_calm", 1.0 if v else 0.0)
 var shake_scale = 1.0
+# issue 1582: Reduce motion (the battle sets it): wing attack passes dive gently and never bank
+var reduce_motion := false
 # F3: scale of every effect's minimum on-screen size (fx_shaders px_world): 1 on (default), 0 off (the r19 look)
 var min_px = 1.0:
 	set(v):
@@ -106,6 +108,7 @@ var apply_shake = true
 
 # --- clock
 var now = 0.0
+var dt := 0.0          # effect seconds advanced by the most recent step
 var _speed = 1.0
 var _pause_until = -1.0   # effect time; checks hold a pause open with it
 var _pause_left = 0.0      # issue 1558 item 4: the hit pause in real seconds, so it lasts the same at any frame rate
@@ -140,7 +143,8 @@ var _refused: PackedFloat64Array = []    # flashes the budget turned down (their
 # that refused a flash in a field already holding FLASH_CAP flashes in the last second; the caller then draws no peak at all.
 var _soft_mem: Array = []
 var flash_lift := false
-var _later: Array = []      # [t, callable]
+var _later: Array = []      # [t, callable, insertion order]
+var _later_serial := 0
 var _shake_off = Vector2.ZERO
 var _punches: Array = []    # [t, amount] (F3 zoom punch)
 var _kick = 0.0             # the zoom punch now (share of the field of view taken off)
@@ -162,6 +166,7 @@ var _dark_interiors := {}
 var _wreck_interiors := {}
 const WRECK_SOOT := 0.33   # issue 1077: a strained wreck's insides, a third as bright
 var defer_initial_cuts := false
+var cut_abort := DEATH.CutAbort.new()
 # issue 1434 (LOAD13: the title backdrop built hull damage and death piece shaders in one 7.7 s frame): the title backdrop
 # never fights, so a passive fx cuts no hull for a death and builds no damage surfaces
 var passive := false
@@ -189,6 +194,8 @@ func _ready() -> void:
 
 
 func _enter_tree() -> void:
+	if closed:
+		cut_abort = DEATH.CutAbort.new()
 	closed = false
 
 
@@ -233,6 +240,7 @@ static var _exit_hooked := false
 func release(wait := true) -> void:
 	var t_rel := Time.get_ticks_usec()
 	closed = true
+	cut_abort.cancel()
 	attach_report(true)
 	_end_dim()
 	var tids: Array = []
@@ -264,6 +272,7 @@ func release(wait := true) -> void:
 		if s.has_meta("cut_prev"):
 			keep.append(s.get_meta("cut_prev"))
 		s.remove_meta("cut_task")
+		s.remove_meta("cut_work")
 		s.remove_meta("cut_job")
 		s.remove_meta("cut_prev")
 	if not tids.is_empty():
@@ -283,6 +292,10 @@ func release(wait := true) -> void:
 	_wreck_interiors.clear()
 	_piece_builds.clear()
 	_later.clear()
+	for line in _board_lines_live:
+		if is_instance_valid(line["node"]):
+			line["node"].queue_free()
+	_board_lines_live.clear()
 	_core_at.clear()
 	_lev.clear()
 	_lsrc.clear()
@@ -518,7 +531,6 @@ func step(delta: float) -> void:
 	var hold: bool = now < _pause_until
 	var crawl: float = 0.0 if hold else minf(real, float(_pause_left))
 	_pause_left = maxf(0.0, _pause_left - real)
-	var dt: float
 	if hold or (crawl > 1e-6 and crawl >= real - 1e-9):
 		_speed = crawl_spd
 		dt = real * _speed
@@ -533,10 +545,11 @@ func step(delta: float) -> void:
 	RenderingServer.global_shader_parameter_set(&"scene_t", now)
 	var t0 := Time.get_ticks_usec()
 	_run_later()
+	_step_board_lines()
 	_build_death_pieces()
 	_gate_physics()
 	t0 = pend("later", t0)
-	_update_feel(delta)
+	_update_feel()
 	_update_dim()
 	for id in ships:
 		(ships[id] as SHIP).update(self, dt)
@@ -683,7 +696,8 @@ func later(t: float, f: Callable) -> void:
 	if t <= now:
 		f.call()
 		return
-	_later.append([t, f])
+	_later.append([t, f, _later_serial])
+	_later_serial += 1
 
 
 func free_effect(ref: WeakRef) -> void:
@@ -723,7 +737,10 @@ func _run_later() -> void:
 		else:
 			keep.append(e)
 	_later = keep
-	due.sort_custom(func(a: Array, b: Array) -> bool: return float(a[0]) < float(b[0]))
+	due.sort_custom(func(a: Array, b: Array) -> bool:
+		if a[0] == b[0]:
+			return int(a[2]) < int(b[2])
+		return float(a[0]) < float(b[0]))
 	for e in due:
 		var t0 := Time.get_ticks_usec()
 		(e[1] as Callable).call()
@@ -1337,7 +1354,7 @@ func punch_now() -> float:
 	return _kick
 
 
-func _update_feel(delta: float) -> void:
+func _update_feel() -> void:
 	var cp = camera.global_position if camera != null else Vector3.ZERO
 	var keep: Array = []
 	for s in _shakes:
@@ -1358,9 +1375,9 @@ func _update_feel(delta: float) -> void:
 	_pauses = keep
 	_update_punch()
 	# trauma decays in about 0.3 s from a normal hit, about 0.45 s from the heaviest (A5 ranges)
-	_trauma = maxf(0.0, _trauma - delta * 2.4)
+	_trauma = maxf(0.0, _trauma - dt * 2.4)
 	var k = _trauma * _trauma * shake_scale * (0.5 if reduce_flashing else 1.0)
-	var T = Time.get_ticks_msec() / 1000.0 if not manual else now
+	var T = now
 	var amp = 0.06 * k
 	_shake_off = Vector2(amp * (sin(T * 37.0) * 0.6 + sin(T * 61.0 + 1.0) * 0.4), amp * (sin(T * 43.0 + 2.0) * 0.6 + sin(T * 71.0) * 0.4))
 	if apply_shake and camera != null and is_instance_valid(camera):
@@ -1570,6 +1587,8 @@ var prep_step := ""
 
 
 func prepare_battle_hulls() -> void:
+	if closed or not is_inside_tree():
+		return
 	HULL.pause_late_watch()
 	_warm_hull_adapters()
 	var pending: Array[SHIP] = []
@@ -1585,6 +1604,7 @@ func prepare_battle_hulls() -> void:
 			pend("prep:shield", t_s)
 			if Time.get_ticks_usec() >= deadline:
 				await get_tree().process_frame
+				if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 				deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	for value in ships.values():
 		var ship: SHIP = value
@@ -1609,16 +1629,19 @@ func prepare_battle_hulls() -> void:
 		pending.append(ship)
 		if Time.get_ticks_usec() >= deadline:
 			await get_tree().process_frame
+			if closed or not is_inside_tree():
+				return
 			deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	# Limit simultaneous cuts so the hull workers and renderer can make progress
 	# together while the loading cover is up.
 	var cut_limit := clampi(OS.get_processor_count() / 2, 1, LOAD_CUT_LIMIT)
 	var active: Array[SHIP] = []
+	var shared_cuts := {}
 	prep_step = "cuts"
 	while not pending.is_empty() or not active.is_empty():
 		while active.size() < cut_limit and not pending.is_empty():
 			var ship: SHIP = pending.pop_front()
-			DEATH.precompute(self, ship, "blast", true)
+			DEATH.precompute(self, ship, "blast", true, shared_cuts)
 			active.append(ship)
 		for i in range(active.size() - 1, -1, -1):
 			if DEATH.finish_precompute(self, active[i]):
@@ -1630,10 +1653,15 @@ func prepare_battle_hulls() -> void:
 					break
 		_finish_shield_skins()
 		await get_tree().process_frame
+		if closed or not is_inside_tree():
+			return
+	shared_cuts.clear()
 	prep_step = "shield skins and pieces"
 	while not _piece_builds.is_empty() or not _shield_jobs.is_empty():
 		_finish_shield_skins()
 		await get_tree().process_frame
+		if closed or not is_inside_tree():
+			return
 	defer_initial_cuts = false
 	prep_step = ""
 
@@ -1658,6 +1686,16 @@ func join_death_cut(tid: int) -> void:
 		_death_cut_tasks.erase(tid)
 
 
+func finish_death_cut(tid: int) -> bool:
+	# A ship that shares the cut may already have joined it.
+	if not _death_cut_tasks.has(tid):
+		return true
+	if not WorkerThreadPool.is_task_completed(tid):
+		return false
+	join_death_cut(tid)
+	return true
+
+
 func collect_death_cut(tid: int) -> void:
 	if not _death_cut_tasks.has(tid):
 		return
@@ -1672,6 +1710,7 @@ func discard_ship_cut(s: SHIP) -> void:
 		var tid := int(s.get_meta("cut_task"))
 		s.remove_meta("cut_task")
 		collect_death_cut(tid)
+	s.remove_meta("cut_work")
 	s.remove_meta("cut_job")
 	s.remove_meta("cut_prev")
 
@@ -1681,6 +1720,7 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 		remove_ship(id)
 	var s = SHIP.new()
 	s.setup(self, id, root, info)
+	s.set_meta("cut_class", String(info.get("cls", "")))
 	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
 	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
@@ -1715,7 +1755,7 @@ var _arrival_cuts := 0
 
 
 func warm_arrival(s: SHIP) -> void:
-	if s == null or s.gone or s.dead:
+	if closed or s == null or s.gone or s.dead:
 		return
 	var fresh := false
 	for m in s.meshes:
@@ -1738,8 +1778,12 @@ func warm_arrival(s: SHIP) -> void:
 	pend("warm_arrival", t0)
 	for i in 2:
 		await RenderingServer.frame_post_draw
-	tmp.queue_free()
-	if paused: HULL.start_late_watch()
+		if closed or not is_inside_tree() or not is_instance_valid(tmp):
+			break
+	if is_instance_valid(tmp):
+		tmp.queue_free()
+	if paused and not closed and is_inside_tree():
+		HULL.start_late_watch()
 
 
 # Issue 370: what the attach point service answered for each ship this battle (per point type: authored "hp", surface
@@ -1905,6 +1949,12 @@ func wreck_pieces(id: String) -> int:
 	return DEATH.wreck_pieces(self, id)
 
 
+# A late cut keeps the live hull visible until the split, hulk copy or no-pieces pop has run.
+func wreck_settled(id: String) -> bool:
+	var s: SHIP = ships.get(id)
+	return s == null or s.has_meta("death_hidden") or not is_instance_valid(s.root)
+
+
 func jump_out(id: String) -> void:
 	if ships.has(id):
 		(ships[id] as SHIP).jump_out(self)
@@ -1947,6 +1997,7 @@ func hull_mark(id: String, look: String, w := 2, world_p := Vector3.INF, dir := 
 const BOARD := {"hatch": 4.0, "ring_px": 70.0, "burst": 2.2, "burst_px": 60.0, "vent": 2.2, "vent_px": 22.0,
 	"spark_px": 3.0, "light": 7.0, "reach": 22.0, "lines": 3, "hold": 1600.0}
 var board_lines_s := 0.0   # how long the last boarding lines stay on screen (s; checked against the battle's hold)
+var _board_lines_live: Array[Dictionary] = []
 
 
 # how long the battle holds on a boarding before the next event (ms at speed 1; issue 1547)
@@ -1954,7 +2005,7 @@ func board_hold_ms() -> float:
 	return float(BOARD["hold"])
 
 
-# pace: the battle's pace (its wait() scale), so the lines end with the battle's hold (Artoo, PR 1549)
+# pace: the battle's wait() scale, used for the lines' hold on the effect clock (Artoo, PR 1549)
 func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -> float:
 	if not ships.has(target_id):
 		return 0.0
@@ -2002,8 +2053,8 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 		spr(wp + wn * 0.2 * k * vk, T + 0.15 + j * 0.2, 1.4, Color(0.62, 0.66, 0.74), 0.25 * sqrt(vk), 0.3 * k * vk, 2.2 * k * vk, 7,
 			(wn + rdir() * 0.25).normalized() * 4.0 * k * vk, 0.8, 0.0, 0.0, float(bl["vent_px"]))
 	for j in int(18 * sqrt(bk)):
-		stk(wp, T + 0.3 + randf() * 2.6, 0.3 + randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05 * bk, 0.08 * k * bk, 1,
-			(wn + rdir() * 0.6).normalized() * (5 + randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
+		stk(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05 * bk, 0.08 * k * bk, 1,
+			(wn + rdir() * 0.6).normalized() * (5 + rng.randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
 	# a soft pop ring on the plating round the hatch, sized to hold at camera 170 (issue 1547)
 	ring(wp + wn * 0.05 * k, wn, T, 0.7, Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
 	# the inside light in the boarding amber (render/line_style.gd "board"), not explosion orange (Muse council)
@@ -2028,7 +2079,7 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 # boarding target ring's amber, core only). One line per landing point, from the attacker's hatch to that point on the
 # target's flank, a shallow arc each. Muse council (contrib/muse/reviews/boarding_1547.md section 4): they draw in one
 # after another (0.2 s apart at speed 1), stay at full strength for the whole hold, pulse once mid-hold (the crew
-# crossing) and fade only in the hold's last tenth, so none outlives the battle's wait at any pace.
+# crossing) and fade in the hold's last tenth on the effect clock.
 func _board_lines(a: Vector3, ends: Array, hold: float, pace := 1.0) -> void:
 	var LSt = load("res://render/line_style.gd")
 	board_lines_s = 0.0
@@ -2056,20 +2107,42 @@ func _board_lines(a: Vector3, ends: Array, hold: float, pace := 1.0) -> void:
 		m.set_shader_parameter("gain", 0.0)
 		mi.material_override = m
 		add_child(mi)
-		var t0: float = minf(0.2 * pace * i, hold * 0.3)
-		var t_in: float = minf(0.2, hold * 0.15)
-		var t_out: float = minf(0.15, hold * 0.1)
-		var rest: float = maxf(0.0, hold - t0 - t_in - t_out)
-		var tw := mi.create_tween()
-		tw.tween_interval(t0)
-		tw.tween_property(m, "shader_parameter/gain", 1.0, t_in)
-		tw.tween_interval(rest * 0.4)
-		tw.tween_property(m, "shader_parameter/gain", 1.8, rest * 0.1)
-		tw.tween_property(m, "shader_parameter/gain", 1.0, rest * 0.1)
-		tw.tween_interval(rest * 0.4)
-		tw.tween_property(m, "shader_parameter/gain", 0.0, t_out)
-		tw.tween_callback(mi.queue_free)
-		board_lines_s = maxf(board_lines_s, t0 + t_in + rest + t_out)
+		var delay := minf(0.2 * pace * i, hold * 0.3)
+		var fade_in := minf(0.2, hold * 0.15)
+		var fade_out := minf(0.15, hold * 0.1)
+		var rest := maxf(0.0, hold - delay - fade_in - fade_out)
+		_board_lines_live.append({"node": mi, "start": now + delay, "end": now + hold, "fade_in": fade_in,
+			"fade_out": fade_out, "rest": rest})
+		board_lines_s = hold
+
+
+func _step_board_lines() -> void:
+	for i in range(_board_lines_live.size() - 1, -1, -1):
+		var line := _board_lines_live[i]
+		var node = line["node"]
+		if not is_instance_valid(node):
+			_board_lines_live.remove_at(i)
+			continue
+		var left: float = line["end"] - now
+		if left <= 0.0:
+			node.queue_free()
+			_board_lines_live.remove_at(i)
+			continue
+		var age: float = now - line["start"]
+		if age < 0.0:
+			continue
+		var fade_in: float = line["fade_in"]
+		var fade_out: float = line["fade_out"]
+		var rest: float = line["rest"]
+		var gain := 1.0
+		if age < fade_in:
+			gain = age / fade_in
+		elif left < fade_out:
+			gain = left / fade_out
+		elif rest > 0.0:
+			var pulse := absf((age - fade_in - rest * 0.5) / (rest * 0.1))
+			gain += 0.8 * maxf(0.0, 1.0 - pulse)
+		(node.material_override as ShaderMaterial).set_shader_parameter("gain", gain)
 
 
 func command(id: String, _cmd := "") -> void:
@@ -2122,7 +2195,7 @@ func _warm_fragment_finish(at: Vector3, t: float, color: Color) -> void:
 
 # Draw the effect materials under the loading cover so their pipelines are ready for battle.
 func warmup(cam: Camera3D, frames := 4) -> void:
-	if cam == null:
+	if closed or not is_inside_tree() or not is_instance_valid(cam) or not cam.is_inside_tree():
 		return
 	# Issue 376: rebuilds under the load cover are expected. Start the late watch
 	# once the warm objects have drawn.
@@ -2130,10 +2203,12 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# ShipView sets its paint just after adding the meshes. Let the deferred mesh
 	# watcher apply the nebula's fog policy before deriving shaders from that paint.
 	await get_tree().process_frame
-	if closed or not is_instance_valid(cam):
+	if closed or not is_inside_tree() or not is_instance_valid(cam) or not cam.is_inside_tree():
 		return
 	_warm_hull_adapters()
-	if warmup_batch > 0: await get_tree().process_frame   # issue 1434: the sliced load spreads the warm-up's setup
+	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
+		await get_tree().process_frame
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
 	var c = Color(1, 0.6, 0.3)
@@ -2149,7 +2224,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	_warm_fragment_finish(at, T, c)
 	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
 	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
-	if warmup_batch > 0: await get_tree().process_frame   # issue 1434: the sliced load spreads the warm-up's setup
+	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
+		await get_tree().process_frame
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	var tmp = Node3D.new()
 	tmp.name = "fx_warmup"
 	tmp.position = global_transform.affine_inverse() * at
@@ -2176,7 +2253,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			var damage := HULL.damage_material(source, Transform3D.IDENTITY, {}, 1.0)
 			mats.append(damage)
 			mats.append(DEATH.power_material(damage.duplicate(), death_story))
-	if warmup_batch > 0: await get_tree().process_frame   # issue 1434: the sliced load spreads the warm-up's setup
+	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
+		await get_tree().process_frame
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	if not compat:
 		mats.append(mat(SH.SPRITE, 1, "#define SOFT\n"))
 	for band in ["small", "cruiser", "capital"]:
@@ -2185,7 +2264,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			baked.set_shader_parameter("born", now)
 			baked.set_shader_parameter("intensity", 0.01)
 			mats.append(baked)
-		if warmup_batch > 0: await get_tree().process_frame
+		if warmup_batch > 0:
+			await get_tree().process_frame
+			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	mats.append(mat(SH.TEAR, 1))   # issue 462: the dying hull's tear overlay
 	# issue 220: the torpedo and rocket bodies (drive glow, star torpedo body, exhaust plume) and the weapon bursts' atlas
 	# shader: their first launch or hit compiled them mid-fight (a 53 ms frame with 3 surface pipelines at the gate scene)
@@ -2202,7 +2283,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		wgas.set_shader_parameter("born", now)
 		wgas.set_shader_parameter("intensity", 0.01)
 		mats.append(wgas)
-		if warmup_batch > 0: await get_tree().process_frame
+		if warmup_batch > 0:
+			await get_tree().process_frame
+			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	for rel in ["weapons/impact/impact_", "weapons/impact/flash_", "weapons/macro/impact_", "weapons/macro/flash_", "death/small/flash_", "death/cruiser/flash_", "death/capital/flash_"]:
 		if rel.begins_with("weapons/"):
 			var hit := WEAP.hull_impact_material(self, rel)
@@ -2214,9 +2297,13 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			production.set_shader_parameter("born", now)
 			production.set_shader_parameter("intensity", 0.01)
 			mats.append(production)
-		if warmup_batch > 0: await get_tree().process_frame
+		if warmup_batch > 0:
+			await get_tree().process_frame
+			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	DEATH.tear_particles(self, at, Vector3.UP, 0.1, Vector3.ZERO)
-	if warmup_batch > 0: await get_tree().process_frame   # issue 1434: the sliced load spreads the warm-up's setup
+	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
+		await get_tree().process_frame
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	for i in mats.size():
 		# Pin generated hull shaders until release, even after the temporary warmup meshes go away.
 		_shaders["warm:" + str(mats[i].shader.code.hash())] = mats[i].shader
@@ -2269,7 +2356,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		if not ships.has(sid):
 			continue
 		hk = _warm_hull_meshes(tmp, ships[sid], seen, hk)
-		if warmup_batch > 0: await get_tree().process_frame
+		if warmup_batch > 0:
+			await get_tree().process_frame
+			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0][0]
@@ -2298,16 +2387,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		rb.global_position = deep
 		rb.linear_velocity = Vector3(0.1, 0, 0)
 		DEATH.spawn_debris(self, deep + Vector3(10, 0, 0), Vector3.ZERO, 3, 0.2 * unit)
-		var rb_ref := weakref(rb)   # issue 1482: the lambda holds a weak reference, never the body (a freed capture errors)
-		get_tree().create_timer(0.5).timeout.connect(func() -> void:
-			free_effect(rb_ref)
-			# issue 1279: the warm debris would drift far below the board for the whole battle and keep Jolt stepping;
-			# stopped, they sleep (the space with them) until a death reuses them from the pool
-			for b in dstate["debris"]:
-				if is_instance_valid(b) and (b as RigidBody3D).global_position.y < deep.y * 0.5:
-					(b as RigidBody3D).linear_velocity = Vector3.ZERO
-					(b as RigidBody3D).angular_velocity = Vector3.ZERO
-					(b as RigidBody3D).sleeping = true)
+		get_tree().create_timer(0.5).timeout.connect(_settle_warm_debris.bind(weakref(rb), deep.y * 0.5))
 	if warmup_batch <= 0:
 		WEAP.warm_craft_trail(self, tmp)
 		dstate["warm_munitions"] = WEAP.warm_munitions(self, tmp)   # issue 1528: the first salvo's body, materials and trail
@@ -2344,12 +2424,37 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 				(parked[i][1] as Node).add_child(parked[i][0])
 			if (i + 1) % warmup_batch == 0:
 				await RenderingServer.frame_post_draw
+				if closed or not is_inside_tree():   # issue 1434: a left battle waits two draws out of the tree before its free
+					_free_warm_parked()
+					if is_instance_valid(tmp):
+						tmp.queue_free()
+					return
 		_free_warm_parked()   # a parent gone meanwhile left its mesh out of the tree: free it here
 	for i in frames:
 		await RenderingServer.frame_post_draw
+		if closed or not is_inside_tree():
+			if is_instance_valid(tmp):
+				tmp.queue_free()
+			return
+	if not is_instance_valid(tmp):
+		HULL.start_late_watch()
+		return
 	warmed = true
 	tmp.queue_free()
 	HULL.start_late_watch()
+
+
+func _settle_warm_debris(rb_ref: WeakRef, below: float) -> void:
+	free_effect(rb_ref)
+	if closed or not is_inside_tree():
+		return
+	# Issue 1279: stop the warm debris below the board so Jolt can sleep until a death reuses it.
+	for body in dstate.get("debris", []):
+		if not is_instance_valid(body) or not body.is_inside_tree() or body.global_position.y >= below:
+			continue
+		body.linear_velocity = Vector3.ZERO
+		body.angular_velocity = Vector3.ZERO
+		body.sleeping = true
 
 
 # Every hull as it is drawn, with the death overlays on top, and its cuttable PBR surface (from warmup, shared with the

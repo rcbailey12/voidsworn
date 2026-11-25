@@ -5,22 +5,26 @@ const SKEEP := preload("res://render/shader_keep.gd")
 # the vertex shader (axis and seed in the instance's custom data). Time and camera movement never turn its geometry.
 #
 # Kinds (battle.js ROCK_KINDS, the sector's biome):
-#   stone   grey-brown S-type rock, lighter fresh fracture faces
-#   iron    dark iron-nickel: bright metal where it broke, a dull brown crust elsewhere
-#   carbon  near-black C-type rubble, matte, faint grey speckle
-#   ice     dark dirty crust with clean blue-white ice on the fracture faces and in the cliffs, glossy, faint cold glow
-#           in the cracks
-#   crystal dark stone carrying clusters of glowing crystal (see CRYSTAL)
+#   stone   warm ochre S-type silicate rock, dark dust pockets, lighter fresh fracture faces
+#   iron    cool dark gunmetal slag crust, bright nickel-iron metal on the fresh ridges (issue 1361)
+#   carbon  deep charcoal C-type rock, matte, ash-grey ridge highlights, never tan (issue 1361)
+#   ice     pale: a matte frost coat over most of the rock, clean ice in the fresh breaks, no glow (Wave 0, Nov 23)
+#   crystal ice comets (Ryan, Nov 22: the crystals were scrapped): a dark dusty crust with a few dirty ice patches, a faint
+#           cold glow only in a few deep vents, and on a few big ones a soft gas tail away from the sun (world.gd comets())
+# Issue 1361 (World V2, R419): each kind draws on its own subset of the scans (KIND_SCANS) and squeezes them its own way in
+# the vertex shader (shape_k: iron chunkier, ice longer and sharper), so the five belts differ in shape as well as colour.
+# The scans' COLOR_0.b (facet) is ridge convexity re-baked by world/tools/scan_facet.py, spanning 0 to 1 like rockgen's.
 # Far rocks fade into the sky's haze by their distance from the board, so the board's own rocks stay the crispest things
 # on screen and the deep field reads as far away (and never as a hex obstacle).
 
 const LIB_DIR := "res://world/rocks/"
-
+static var lib_dir := LIB_DIR
 static var _meshes := {}      # name -> Mesh
 static var _lib: Dictionary = {}   # not GPU: rocks.json
 static var _detail: Texture3D = null
 static var _scans: Array = []   # not GPU: scan names
 static var _scans_checked := false
+static var fallbacks: Array = []   # not GPU: names mesh() had to draw as a fallback sphere
 
 
 # Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
@@ -28,23 +32,29 @@ static func clear_static() -> void:
 	_meshes.clear()
 	_detail = null
 
-# The eight CC0 scans and their explicit far meshes are one package. A partial
+# The CC0 scans and their explicit far meshes are one package. A partial
 # copy must not make some of the seeded choices turn into fallback spheres.
+# Issue 1361: five scans (scan_06 and the flat boomerang scan_07 were retired; scan_00, a rubble pile scanned from above
+# with an open base, drew as a torn see-through shell from below in the PC capture ROCKS_H; scans.json "retired").
+const SCAN_COUNT := 5
+# Issue 1361: the flattest a rock may be drawn after its kind's squeeze (shortest over longest side), as ROCK_SHADER
+# enforces it (0.32) and world/test/rock_scan_check.gd checks it with the same formula (Fable M5 on PR 1782).
+const DRAWN_ASPECT := 0.32
 static func scan_names() -> Array:
 	if OS.get_environment("VS_PLANET_REMIX") == "0": return []
 	if not _scans_checked:
 		_scans_checked = true
-		var path := LIB_DIR + "scans.json"
+		var path := lib_dir + "scans.json"
 		if not FileAccess.file_exists(path): return []
 		var manifest = JSON.parse_string(FileAccess.get_file_as_string(path))
-		if not manifest is Dictionary or manifest.get("rocks", []).size() != 8:
+		if not manifest is Dictionary or manifest.get("rocks", []).size() != SCAN_COUNT:
 			push_error("R01 scan manifest is incomplete")
 			return []
 		for entry in manifest.rocks:
 			for suffix in ["", "_lo"]:
 				# An exported game packs only the imported scene and its remap, not the .glb itself, so a plain
 				# file check fails there; ResourceLoader.exists sees the remap (mesh() loads the same way).
-				var glb: String = LIB_DIR + str(entry.name) + str(suffix) + ".glb"
+				var glb: String = lib_dir + str(entry.name) + str(suffix) + ".glb"
 				if not (ResourceLoader.exists(glb) or FileAccess.file_exists(glb)):
 					push_error("Missing scanned rock: " + str(entry.name) + suffix)
 					return []
@@ -56,10 +66,18 @@ shader_type spatial;
 render_mode cull_back;
 // A sphere about the pose's origin bounds every orientation of this batch's mesh.
 instance uniform float rock_radius = 1.0;
+// Issue 1361: the mesh's own box size (Batch.build), so shape_k can squeeze its long or short axes
+instance uniform vec3 rock_ext = vec3(2.0);
 global uniform float cam_near;
 global uniform vec4 cam_eye;
 global uniform vec3 cam_fwd;
 varying flat float camera_cover;
+// Issue 1361: per kind shape. > 0 thins the shorter axes (longer, sharper rocks); < 0 pulls the longer axes in toward
+// the shortest (chunkier, heavier rocks). Every factor is at most 1, so a rock never outgrows its scale-table size.
+uniform float shape_k = 0.0;
+// Issue 1361: rock to rock tone (value jitter) and a second tint inside the kind's own palette
+uniform float tone_var = 0.18;
+uniform vec3 tint_var = vec3(1.0);
 // #230 option B (issue #541): rocks turn at their stored rate under the cap law by default; VS_ROCK_TUMBLE=0 holds the pose.
 uniform float tumble_k = 0.0;
 uniform int kind = 0;
@@ -140,6 +158,19 @@ void vertex() {
 	vC = COLOR;
 	vec4 ic = INSTANCE_CUSTOM;
 	vSeed = ic.w;
+	if (shape_k != 0.0) {
+		// in the rock's own frame, before its turn, so the shape tumbles with it and never morphs
+		vec3 e = max(rock_ext, vec3(1e-3));
+		float k = shape_k * (0.6 + 0.8 * fract(ic.w * 431.7));
+		vec3 sq = k > 0.0 ? pow(e / max(e.x, max(e.y, e.z)), vec3(k)) : pow(min(e.x, min(e.y, e.z)) / e, vec3(-k));
+		sq = clamp(sq, vec3(0.55), vec3(1.0));
+		// never flatter than DRAWN_ASPECT (rock_scan_check.gd checks the same rule on every kind's scans): a slab that
+		// is already thin keeps its thinnest side at least that share of its longest drawn side
+		vec3 d = e * sq;
+		sq = min(max(sq, vec3(0.32 * max(d.x, max(d.y, d.z))) / e), vec3(1.0));
+		VERTEX *= sq;
+		NORMAL = normalize(NORMAL / sq);
+	}
 	float axis_length = length(ic.xyz);
 	if (axis_length > 1e-6) {
 		vec3 ax = ic.xyz / axis_length;
@@ -190,53 +221,75 @@ void fragment() {
 	float patchv = vC.a;
 	vec3 a = base * mix(0.72, 1.25, patchv) * (0.78 + 0.45 * n1) * (0.86 + 0.28 * n2);
 	a *= 1.0 - crat * 0.25;
+	// Issue 1361: rock to rock tone and tint inside the kind (seeded per instance, so a belt is not one rock repeated)
+	vec3 rs = h33(vec3(vSeed * 97.31, vSeed * 13.7 + 3.1, 7.7));
+	a *= (1.0 - tone_var) + 2.0 * tone_var * rs.x;
+	a *= mix(vec3(1.0), tint_var, rs.y);
+	// Issue 1361: crisp hairline cracks (a thin ridge of the noise), faded out where they would shimmer
+	float ncr = texture(detail, p * 1.35 + 0.83).r;
+	float crack_w = clamp(fw * 0.5, 0.0, 1.0);
+	float cracks = smoothstep(0.972, 0.994, 1.0 - abs(ncr * 2.0 - 1.0)) * (1.0 - crack_w);
 	float rough = 0.9;
 	float metal = 0.0;
 	vec3 em = vec3(0.0);
 	float fr = clamp(facet * 0.8 + smoothstep(0.62, 0.8, n1) * 0.25, 0.0, 1.0);
 	if (kind == 0) {
-		a = mix(a, fresh * (0.85 + 0.3 * n2), fr * 0.7);
+		a = mix(a, fresh * (0.85 + 0.3 * n2), smoothstep(0.35, 0.95, fr) * 0.75);
 		a *= mix(vec3(1.0), vec3(1.06, 0.98, 0.9), smoothstep(0.4, 0.7, n2));
+		// dark dust pockets in the hollows
+		a *= mix(0.7, 1.0, smoothstep(0.05, 0.3, facet));
 	} else if (kind == 1) {
-		float m = clamp(fr + smoothstep(0.6, 0.75, n2) * 0.5, 0.0, 1.0);
-		a = mix(a, fresh, m);
-		metal = mix(0.15, 0.85, m);
-		rough = mix(0.82, 0.38, m) + n3 * 0.1;
+		// Issue 1361: cool gunmetal slag crust; bright nickel-iron only on the fresh ridges (metallic 0.65 to 0.9)
+		float m = clamp(smoothstep(0.66, 0.95, fr) + smoothstep(0.7, 0.8, n2) * 0.2, 0.0, 1.0);
+		a = mix(a, fresh * (0.9 + 0.2 * n3), m);
+		metal = mix(0.12, 0.88, m);
+		rough = mix(0.8, 0.3, m) + n3 * 0.08;
 	} else if (kind == 2) {
-		a *= 1.0 + smoothstep(0.7, 0.85, n3) * 0.8;
-		a = mix(a, fresh, fr * 0.3);
-		rough = 0.96;
+		// Issue 1361: deep charcoal, matte; ash-grey only on the sharpest ridges and a faint speckle
+		a *= 1.0 + smoothstep(0.72, 0.86, n3) * 0.5;
+		a = mix(a, fresh, smoothstep(0.6, 0.98, fr) * 0.55);
+		rough = 0.94;
 	} else if (kind == 3) {
-		// r2: dark dusty crust, clean ice only in the fresh breaks and a few patches, frosty rather than glossy (r1's ice
-		// covered most faces at roughness 0.2 and read as pale blue plastic)
-		float ice = clamp(fr * 0.85 + smoothstep(0.64, 0.8, n1) * 0.4 - crat * 0.4, 0.0, 1.0);
+		// Wave 0 (Board, Nov 23): the ice belt reads pale overall. A matte frost coat over most of the rock (dark only in
+		// the deep hollows and crater floors), clean ice a little brighter in the fresh breaks, and no glow at all. The
+		// r2 dark crust with a few white shelves read grey at c170, the same as the comets
+		float frost = clamp(smoothstep(0.06, 0.3, facet) * (0.7 + 0.3 * n1) - crat * 0.35, 0.0, 1.0);
+		a = mix(a, fresh * (0.6 + 0.2 * n2), frost * 0.85);
+		float ice = clamp(smoothstep(0.5, 0.95, fr) + smoothstep(0.7, 0.82, n1) * 0.3 - crat * 0.4, 0.0, 1.0);
 		ice *= ice;
-		a = mix(a, fresh * (0.8 + 0.3 * n2), ice);
-		rough = mix(0.88, 0.42, ice);
-		float crack = smoothstep(0.93, 0.985, 1.0 - abs(n2 * 2.0 - 1.0));
-		em = glow_col * crack * ice * 0.05;
+		a = mix(a, fresh * (0.85 + 0.25 * n2), ice);
+		cracks *= 0.5;
+		rough = mix(0.8, 0.45, ice);
 	} else {
-		a = mix(a, fresh, fr * 0.5);
-		// r2: thinner and dimmer veins, only in the fresh faces (r1 laced every rock with a bright net)
-		float vein = smoothstep(0.965, 0.995, 1.0 - abs(n1 * 2.0 - 1.0)) * smoothstep(0.2, 0.7, fr);
-		em = glow_col * vein * 0.3;
-		rough = mix(0.85, 0.4, fr);
+		// Issue 1361 (Ryan, Nov 22): the "crystal" kind is now ice comets: a dark dusty crust, darker than the pale ice belt,
+		// with a few soft patches of dirty ice on the faces and a faint cold glow only deep in a few vents ("be careful with
+		// the glowing core": small, dim, never the whole surface). Wave 0 (Nov 23): the ice follows broad noise on the faces,
+		// not the ridges, so it reads as patches rather than white outlines round every face
+		float ice = smoothstep(0.56, 0.78, n1) * smoothstep(0.12, 0.45, facet) * (1.0 - crat * 0.6);
+		a *= 0.62;   // a comet's crust is among the darkest things in space; the shared lift had it mid grey
+		a = mix(a, fresh * (0.55 + 0.2 * n2), ice * 0.8);
+		cracks *= 0.35;   // the hairline crack net reads as black scribbles on comet ice
+		rough = mix(0.88, 0.55, ice);
+		float vent = (1.0 - smoothstep(0.02, 0.1, facet)) * smoothstep(0.75, 0.9, n2);
+		em = glow_col * vent * 0.05;
 	}
+	a *= 1.0 - cracks * 0.6;
 	// r8: fresh, lighter rock on crater rims, a little dust darkening their floors
 	a *= (1.0 + c_rim * 0.35) * (1.0 - c_fl * 0.12);
-	// r11: a warm cast on stone, iron crust and carbon (the cool ambient and fill light turned them blue-grey)
-	if (kind != 3 && kind != 4) { a *= vec3(1.12, 1.0, 0.84); }
+	// r11: a warm cast on stone (the cool ambient and fill light turned it blue-grey). Issue 1361: stone only; it had
+	// turned iron and carbon the same sandy tan, so three of the five belts read as one rock
+	if (kind == 0) { a *= vec3(1.12, 1.0, 0.84); }
 	a *= mix(0.4, 1.0, cav) * lift;
 	// height in world units (object units times the rock's scale): craters plus grit, so the bump reads the same on a
 	// pebble and on a mountain
-	float ht = (c_h + (n2 - 0.5) * 0.05 + (n3 - 0.5) * 0.02 - crat * 0.01) * vScale;
+	float ht = (c_h + (n2 - 0.5) * 0.05 + (n3 - 0.5) * 0.02 - crat * 0.01 - cracks * 0.012) * vScale;
 	NORMAL = bump_normal(NORMAL, VERTEX, ht, q > 0.5 ? 1.0 : 0.6);
 	ALBEDO = a;
 	ROUGHNESS = rough;
 	METALLIC = metal;
 	// r2: a dull dielectric sheen (the default 0.5 caught the cold fill light and turned brown rock grey-blue)
 	// r11: less for plain rock (its dull sheen picked up the blue of the sky and the fill light and read as frost)
-	SPECULAR = kind == 3 ? 0.5 : (kind == 1 ? 0.3 : 0.12);
+	SPECULAR = kind == 3 || kind == 4 ? 0.5 : (kind == 1 ? 0.45 : (kind == 2 ? 0.08 : 0.12));
 	if (debris_glint > 0.0) {
 		vec3 sun = normalize((VIEW_MATRIX * vec4(sun_v, 0.0)).xyz);
 		vec3 half_v = normalize(sun + VIEW);
@@ -280,79 +333,31 @@ void fragment() {
 }
 """
 
-# Crystal clusters: dark glassy prisms lit from inside, brightest at the tips, split into colour at the edges.
-const CRYSTAL_SHADER := """
-shader_type spatial;
-render_mode cull_back;
-instance uniform float rock_radius = 1.0;
-global uniform float cam_near;
-global uniform vec4 cam_eye;
-global uniform vec3 cam_fwd;
-varying flat float camera_cover;
-uniform vec3 glow = vec3(0.3, 0.8, 1.0);
-uniform vec3 edge = vec3(0.7, 0.45, 1.0);
-uniform float tumble_k = 0.0;   // as ROCK_SHADER: turns at the stored rate unless VS_ROCK_TUMBLE=0 holds it
-uniform vec3 board_c = vec3(0.0);
-uniform vec2 haze_r = vec2(320.0, 2200.0);
-uniform vec3 haze_col = vec3(0.01);
-uniform float haze_max = 0.85;
-varying vec4 vC;
-varying vec3 vW;
-varying float vSeed;
-vec3 rot(vec3 v, vec3 ax, float a) { float c = cos(a); float s = sin(a); return v * c + cross(ax, v) * s + ax * dot(ax, v) * (1.0 - c); }
-void vertex() {
-	vC = COLOR;
-	float scale = max(length(MODEL_MATRIX[0].xyz), max(length(MODEL_MATRIX[1].xyz), length(MODEL_MATRIX[2].xyz)));
-	float radius = rock_radius * scale;
-	// Artoo, PR 1306: measure from the gameplay camera the rig publishes, not this pass's own camera, so a shadow pass
-	// (seen from the light) fades the rock exactly as the view does. Without a live rig, the pass's camera is used.
-	vec3 eye = cam_eye.w > 0.5 ? cam_eye.xyz : CAMERA_POSITION_WORLD;
-	vec3 fwd = cam_eye.w > 0.5 ? cam_fwd : -INV_VIEW_MATRIX[2].xyz;
-	float clearance = distance(eye, MODEL_MATRIX[3].xyz) - radius;
-	// Issue 1264: as ROCK_SHADER, fade before the live near plane cuts the surface.
-	float depth_clear = dot(MODEL_MATRIX[3].xyz - eye, fwd) - radius;
-	camera_cover = smoothstep(cam_near + 1.5, cam_near + 1.5 + max(1.0, radius * 0.25), min(clearance, depth_clear));
-	vec4 ic = INSTANCE_CUSTOM;
-	vSeed = ic.w;
-	float axis_length = length(ic.xyz);
-	if (axis_length > 1e-6) {
-		vec3 ax = ic.xyz / axis_length;
-		float a = ic.w * 6.2831 + TIME * axis_length * tumble_k; // Crystal clusters turn with their rocks under the same law.
-		VERTEX = rot(VERTEX, ax, a);
-		NORMAL = rot(NORMAL, ax, a);
-	}
-	vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-}
-void fragment() {
-	float screen_dither = fract(52.9829189 * fract(dot(FRAGCOORD.xy, vec2(0.06711056, 0.00583715))));
-	if (camera_cover <= screen_dither) { discard; }
-	float up = vC.g;
-	float f = pow(1.0 - clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0), 2.0);
-	ALBEDO = vec3(0.02, 0.035, 0.05);
-	ROUGHNESS = 0.08;
-	METALLIC = 0.3;
-	SPECULAR = 0.9;
-	float pulse = 0.85 + 0.15 * sin(TIME * 0.7 + vSeed * 17.0);
-	EMISSION = (glow * (0.12 + 0.9 * up * up) + mix(glow, edge, f) * f * 0.9) * pulse;
-	float dist = length(vW - board_c);
-	float below = -(vW.y - board_c.y);
-	FOG = vec4(haze_col, clamp(smoothstep(haze_r.x, haze_r.y, dist) * 0.55 + smoothstep(60.0, 700.0, below) * 0.4, 0.0, 1.0) * haze_max);
-}
-"""
-
-# per kind: base albedo (linear), fresh fracture colour, shader kind, crystal glow
+# per kind: base albedo (linear), fresh fracture colour, shader kind, shape (shape_k), tone jitter and second tint.
+# Issue 1361: iron is cool gunmetal with nickel ridges, carbon charcoal, each with its own tint range (no shared tan).
 const KINDS := {
-	"stone": {"base": Vector3(0.12, 0.098, 0.078), "fresh": Vector3(0.27, 0.235, 0.2), "k": 0},
-	"iron": {"base": Vector3(0.085, 0.066, 0.054), "fresh": Vector3(0.44, 0.41, 0.38), "k": 1},
-	"carbon": {"base": Vector3(0.045, 0.041, 0.038), "fresh": Vector3(0.09, 0.085, 0.08), "k": 2},
-	"ice": {"base": Vector3(0.085, 0.086, 0.092), "fresh": Vector3(0.5, 0.62, 0.74), "k": 3},
-	"crystal": {"base": Vector3(0.06, 0.058, 0.064), "fresh": Vector3(0.14, 0.14, 0.16), "k": 4},
+	"stone": {"base": Vector3(0.125, 0.098, 0.074), "fresh": Vector3(0.29, 0.245, 0.2), "k": 0, "shape": 0.0, "tone": 0.2, "tint": Vector3(1.08, 0.96, 0.84)},
+	"iron": {"base": Vector3(0.058, 0.061, 0.067), "fresh": Vector3(0.4, 0.395, 0.385), "k": 1, "shape": -0.35, "tone": 0.16, "tint": Vector3(0.94, 0.98, 1.06)},
+	"carbon": {"base": Vector3(0.042, 0.041, 0.04), "fresh": Vector3(0.1, 0.1, 0.104), "k": 2, "shape": -0.12, "tone": 0.22, "tint": Vector3(0.94, 0.96, 1.02)},
+	"ice": {"base": Vector3(0.07, 0.074, 0.084), "fresh": Vector3(0.6, 0.7, 0.8), "k": 3, "shape": 0.55, "tone": 0.16, "tint": Vector3(0.92, 1.0, 1.08)},
+	# the id stays "crystal" (rules and biomes use it); the look is ice comets since Ryan scrapped the crystals (Nov 22)
+	"crystal": {"base": Vector3(0.06, 0.062, 0.068), "fresh": Vector3(0.68, 0.72, 0.77), "k": 4, "shape": 0.3, "tone": 0.14, "tint": Vector3(0.94, 0.99, 1.06)},
+}
+
+# Issue 1361: which scans each kind draws on, its most typical first (world.gd _pick weights the first ones double).
+# By the scans' own boxes (scans.json ext): 02 is chunky and round, 05 and 01 thick, 04 long, 00 and 03 flat slabs.
+const KIND_SCANS := {
+	"stone": ["scan_02", "scan_01", "scan_03", "scan_04", "scan_05"],
+	"iron": ["scan_02", "scan_05", "scan_01", "scan_04"],
+	"carbon": ["scan_03", "scan_05", "scan_02", "scan_01"],
+	"ice": ["scan_04", "scan_03", "scan_01", "scan_05"],
+	"crystal": ["scan_04", "scan_01", "scan_03", "scan_02"],
 }
 
 
 static func lib() -> Dictionary:
-	if _lib.is_empty() and FileAccess.file_exists(LIB_DIR + "rocks.json"):
-		var j = JSON.parse_string(FileAccess.get_file_as_string(LIB_DIR + "rocks.json"))
+	if _lib.is_empty() and FileAccess.file_exists(lib_dir + "rocks.json"):
+		var j = JSON.parse_string(FileAccess.get_file_as_string(lib_dir + "rocks.json"))
 		if j is Dictionary:
 			_lib = j
 	return _lib
@@ -362,7 +367,7 @@ static func mesh(name: String) -> Mesh:
 	if _meshes.has(name):
 		return _meshes[name]
 	var m: Mesh = null
-	var p := LIB_DIR + name + ".glb"
+	var p := lib_dir + name + ".glb"
 	var n: Node = null
 	if ResourceLoader.exists(p):
 		var ps = load(p)
@@ -382,6 +387,8 @@ static func mesh(name: String) -> Mesh:
 		n.free()
 	if m == null:
 		m = fallback_mesh(name)
+		if not fallbacks.has(name):   # one entry per name, so a long session never grows it (Board on PR 1782)
+			fallbacks.append(name)   # issue 1361: the rock bench fails on any (Artoo on PR 1782)
 	_meshes[name] = m
 	return m
 
@@ -424,7 +431,11 @@ static func _find_mesh(n: Node) -> MeshInstance3D:
 # the names of the rocks a kind draws on (its families first)
 static func names_for(kind: String) -> Array:
 	var scans := scan_names()
-	if not scans.is_empty(): return scans.duplicate()
+	if not scans.is_empty():
+		var out: Array = []
+		for nm in KIND_SCANS.get(kind, scans):
+			if scans.has(nm): out.append(nm)
+		return out if not out.is_empty() else scans.duplicate()
 	var L := lib()
 	if L.is_empty():
 		return ["fallback_" + kind]
@@ -470,6 +481,9 @@ static func material(kind: String, look: Dictionary) -> ShaderMaterial:
 	m.set_shader_parameter("kind", int(K["k"]))
 	m.set_shader_parameter("base", K["base"])
 	m.set_shader_parameter("fresh", K["fresh"])
+	m.set_shader_parameter("shape_k", float(K.get("shape", 0.0)))
+	m.set_shader_parameter("tone_var", float(K.get("tone", 0.18)))
+	m.set_shader_parameter("tint_var", K.get("tint", Vector3.ONE))
 	m.set_shader_parameter("detail", detail_tex())
 	m.set_shader_parameter("q", 1.0 if str(look.get("quality", "max")) == "max" else 0.0)
 	m.set_shader_parameter("scanned", not scan_names().is_empty())
@@ -485,28 +499,17 @@ static func material(kind: String, look: Dictionary) -> ShaderMaterial:
 	return m
 
 
-static func crystal_material(look: Dictionary) -> ShaderMaterial:
-	var m := ShaderMaterial.new()
-	var sh: Shader = SKEEP.of(CRYSTAL_SHADER)   # issue 1434: one compiled shader per code
-	m.shader = sh
-	m.set_shader_parameter("tumble_k", rock_tumble_k)
-	m.set_shader_parameter("board_c", look.get("board_c", Vector3.ZERO))
-	m.set_shader_parameter("haze_col", look.get("haze", Vector3(0.01, 0.012, 0.02)))
-	m.set_shader_parameter("haze_r", look.get("haze_r", Vector2(320, 2200)))
-	if look.has("glow"):
-		m.set_shader_parameter("glow", look["glow"])
-	return m
-
-
 # ---------------------------------------------------------------- instanced layers
 
 # Collects rock instances per (mesh, layer) and builds one MultiMeshInstance3D each.
 class Batch:
+	const Scorch := preload("res://fx/terrain_scorch.gd")
 	var groups := {}     # key -> {mesh, mat, shadow, xf: [], cd: []}
 	var dust_materials := {}
 	var legacy_debris_materials := {}
+	var _marked: Array[Dictionary] = []
 
-	func add(mesh_name: String, mat: Material, shadow: bool, xf: Transform3D, spin_axis: Vector3, rate: float, seed_v: float) -> void:
+	func add(mesh_name: String, mat: Material, shadow: bool, xf: Transform3D, spin_axis: Vector3, rate: float, seed_v: float, scorch := false) -> void:
 		# Dust-size rocks keep rockgen's light meshes. Large silhouettes use the
 		# scans, at the same radius as the old library, so blocker rules stay put.
 		if mesh_name.begins_with("scan_"):
@@ -519,9 +522,9 @@ class Batch:
 					dust_mat.set_shader_parameter("scanned", false)
 					dust_materials[mat_id] = dust_mat
 				mat = dust_materials[mat_id]
-		var key := "%s|%d|%d" % [mesh_name, mat.get_instance_id(), 1 if shadow else 0]
+		var key := "%s|%d|%d%s" % [mesh_name, mat.get_instance_id(), 1 if shadow else 0, "|scorch" if scorch else ""]
 		if not groups.has(key):
-			groups[key] = {"mesh": mesh_name, "mat": mat, "shadow": shadow, "xf": [], "cd": []}
+			groups[key] = {"mesh": mesh_name, "mat": mat, "shadow": shadow, "xf": [], "cd": [], "scorch": scorch}
 		groups[key]["xf"].append(xf)
 		var a := spin_axis.normalized() * rate
 		groups[key]["cd"].append(Color(a.x, a.y, a.z, seed_v))
@@ -548,9 +551,59 @@ class Batch:
 			var box := m.get_aabb()
 			var radius := box.position.abs().max(box.end.abs()).length()
 			mmi.set_instance_shader_parameter("rock_radius", radius)
+			if g["mat"] is ShaderMaterial and (g["mat"] as ShaderMaterial).shader.code.contains("rock_ext"):
+				mmi.set_instance_shader_parameter("rock_ext", box.size)
 			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if g["shadow"] else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			# Give the bounds room for the shader's fixed seeded pose.
 			mmi.extra_cull_margin = 40.0
 			parent.add_child(mmi)
+			if g["scorch"]:
+				_mark_blockers(mmi, g)
 			n += mm.instance_count
 		return n
+
+	func _mark_blockers(receiver: MultiMeshInstance3D, group: Dictionary) -> void:
+		var mm := receiver.multimesh
+		var mat := receiver.material_override as ShaderMaterial
+		var shape := float(mat.get_shader_parameter("shape_k"))
+		var tumble := float(mat.get_shader_parameter("tumble_k"))
+		for i in mm.instance_count:
+			var base: Transform3D = group["xf"][i]
+			var custom: Color = group["cd"][i]
+			var spin := Vector3(custom.r, custom.g, custom.b)
+			var axis := spin.normalized() if spin.length_squared() > 0.0 else Vector3.UP
+			var angle := TAU * custom.a if spin.length_squared() > 0.0 else 0.0
+			var pose := base * Transform3D(Basis(axis, angle), Vector3.ZERO)
+			var squash := _scorch_shape(mm.mesh.get_aabb().size, shape, custom.a)
+			var hit := Scorch.surface_hit(mm.mesh, receiver.global_transform * pose * Transform3D(squash, Vector3.ZERO))
+			var mark := Scorch.stamp(receiver, hit, 3.2, _marked.size() % 2 == 1)
+			if mark == null:
+				continue
+			receiver.layers |= Scorch.RECEIVER
+			# Move the seeded tumble into the instance transform so the decal follows the surface.
+			mm.set_instance_custom_data(i, Color(0, 0, 0, custom.a))
+			mm.set_instance_transform(i, pose)
+			_marked.append({"mesh": mm, "index": i, "base": base, "axis": axis, "angle": angle,
+				"rate": spin.length() * tumble, "decal": mark, "local": pose.affine_inverse() * mark.transform})
+
+	static func _scorch_shape(extent: Vector3, shape: float, seed_v: float) -> Basis:
+		# Same local squeeze as ROCK_SHADER. Include it in the surface query, while the shader still draws it.
+		if is_zero_approx(shape):
+			return Basis.IDENTITY
+		var e := extent.max(Vector3.ONE * 0.001)
+		var k := shape * (0.6 + 0.8 * fposmod(seed_v * 431.7, 1.0))
+		var ratio := e / e[e.max_axis_index()] if k > 0.0 else Vector3.ONE * e[e.min_axis_index()] / e
+		var squeeze := Vector3(pow(ratio.x, absf(k)), pow(ratio.y, absf(k)), pow(ratio.z, absf(k)))
+		squeeze = squeeze.clamp(Vector3.ONE * 0.55, Vector3.ONE)
+		var drawn := e * squeeze
+		squeeze = squeeze.max(Vector3.ONE * (0.32 * drawn[drawn.max_axis_index()]) / e).min(Vector3.ONE)
+		return Basis.from_scale(squeeze)
+
+	func step(dt: float) -> void:
+		for entry in _marked:
+			if is_zero_approx(entry["rate"]):
+				continue
+			entry["angle"] = fposmod(float(entry["angle"]) + float(entry["rate"]) * dt, TAU)
+			var pose: Transform3D = entry["base"] * Transform3D(Basis(entry["axis"], entry["angle"]), Vector3.ZERO)
+			(entry["mesh"] as MultiMesh).set_instance_transform(entry["index"], pose)
+			(entry["decal"] as Decal).transform = pose * entry["local"]

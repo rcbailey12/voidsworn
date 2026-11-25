@@ -76,7 +76,15 @@ var _digits := RegEx.create_from_string("[0-9@]+")
 func _on_node_added(n: Node) -> void:
 	if n is GeometryInstance3D:
 		var p := n.get_parent()
-		var key := "%s<%s" % [_digits.sub(str(n.name), "", true), _digits.sub(str(p.name), "", true) if p != null else "-"]
+		var g := p.get_parent() if p != null else null
+		# LOAD23 (cold s25: 7 meshes under an unnamed node in the cuts frame, 83 pipelines): the grandparent and the script
+		# line that added the mesh (a debug build's stack), so the row names who adds it
+		var key := "%s<%s<%s" % [_digits.sub(str(n.name), "", true), _digits.sub(str(p.name), "", true) if p != null else "-", _digits.sub(str(g.name), "", true) if g != null else "-"]
+		for fr in get_stack():
+			var src := str(fr.get("source", ""))
+			if src != "" and not src.ends_with("load_1434.gd"):
+				key += " @%s:%d" % [src.get_file(), int(fr.get("line", 0))]
+				break
 		_nodes_now[key] = int(_nodes_now.get(key, 0)) + 1
 
 
@@ -159,7 +167,22 @@ func _fx_work(node) -> String:
 	var ins := PackedStringArray()
 	for k in _draw_ins: ins.append("%s %d" % [str(k), int(_draw_ins[k])])
 	_draw_ins = {}
-	return said + (" (hull prep step at the draw: %s)" % step if step != "" else "") + (", installed before the draw: " + ", ".join(ins) if not ins.is_empty() else "")
+	return said + (" (hull prep step at the draw: %s)" % step if step != "" else "") + (", installed before the draw: " + ", ".join(ins) if not ins.is_empty() else "") + _reads_note(node)
+
+
+# issue 1434 (LOAD30d): the battle's hull reads that finished since the last row (", hull reads finished 3 of 8")
+var _reads_seen := {}
+
+
+func _reads_note(node) -> String:
+	if node == null or not is_instance_valid(node) or not node.has_method("hull_reads_done"):
+		return ""
+	var id: int = node.get_instance_id()
+	var done: int = node.hull_reads_done()
+	var was: int = int(_reads_seen.get(id, 0))
+	_reads_seen[id] = done
+	var total: int = (node.get("_preload") as Dictionary).size() if node.get("_preload") is Dictionary else 0
+	return ", hull reads finished %d of %d" % [done - was, total] if done > was else ""
 
 
 # Performance.TIME_PROCESS read after a frame's await is the step before it (the battle's coroutine runs ahead of the
@@ -358,7 +381,22 @@ func _cover_note(tag: String, gaps: int, stalls: int, worst_ms: int) -> void:
 
 func _title() -> void:
 	var m = MainScript.new()
+	var tw := Time.get_ticks_msec()
 	root.add_child(m)
+	# issue 1518 (Artoo on PR 1445, 6784b6b1): the title waits a frame at a time for the launch's campaign host read, so
+	# the time from the new Main to its first painted menu is its own line, and no menu in 20 s fails the title plainly
+	while (m.title == null or not is_instance_valid(m.title)) and Time.get_ticks_msec() - tw < 20000:
+		await process_frame
+	if m.title == null or not is_instance_valid(m.title):
+		pass_all = false
+		_say("[load1434] title FAIL (no menu painted 20 s after the new Main)")
+		m.queue_free()
+		for i in 10:
+			await process_frame
+		finished.append("title")
+		return
+	await RenderingServer.frame_post_draw
+	_say("[load1434] title launch to first painted menu: %d ms (first button: %s)" % [Time.get_ticks_msec() - tw, str(m.title.get("first_label"))])
 	for i in 5:
 		await process_frame
 	m.settings["sound"] = true
@@ -384,6 +422,7 @@ func _title() -> void:
 	var w0 := Time.get_ticks_msec()
 	var click_ms := -1        # -1: never clicked while building; -2: clicked, drawer never opened
 	var click_t := -1
+	var begin_seen := {}
 	var link: Button = _find_button(m.title, "Settings")
 	while (m.showcase == null or not is_instance_valid(m.showcase) or not m.showcase.showcase_ready) and Time.get_ticks_msec() - w0 < 240000:
 		if click_t < 0 and link != null and m.showcase != null and is_instance_valid(m.showcase) and m.showcase.api != null and m.showcase.load_stats.is_empty():
@@ -398,6 +437,8 @@ func _title() -> void:
 		var now := Time.get_ticks_usec()
 		worst = maxi(worst, now - last)
 		var sc1 = m.showcase
+		if sc1 != null and is_instance_valid(sc1) and not (sc1.begin_us as Dictionary).is_empty():
+			begin_seen = (sc1.begin_us as Dictionary).duplicate()   # LOAD29: the backdrop may be gone by the report
 		var ph1: String = sc1.load_phase if sc1 != null and is_instance_valid(sc1) else "none"
 		var pipes := _pipes()
 		var bakes: int = int(sc1.world.pending_bakes) if sc1 != null and is_instance_valid(sc1) and sc1.world != null and is_instance_valid(sc1.world) else -1
@@ -445,8 +486,7 @@ func _title() -> void:
 	_say("[load1434] title: backdrop %s; longest build stretch %d ms; worst frame while it built %d ms; backdrop ready after %d ms; sfx bus %s before, %s" % [
 		"%d ships" % st["ships"] if not st.is_empty() else "never built", int(st.get("worst_stretch", 0)) / 1000,
 		worst / 1000, Time.get_ticks_msec() - w0, before, "never moved" if moved.is_empty() else "moved to %s" % [moved.slice(0, 3)]])
-	if m.showcase != null and is_instance_valid(m.showcase):
-		_say("[load1434] title start to board parts (us) %s" % str(m.showcase.begin_us))
+	_say("[load1434] title start to board parts (us) %s" % str(begin_seen))
 	m.queue_free()
 	for i in 10:
 		await process_frame

@@ -3,6 +3,8 @@ extends SceneTree
 const SV := preload("res://render/ship_view.gd")
 const FX := preload("res://fx/fx.gd")
 const PG := preload("res://render/placeholder_guard.gd")
+const HullAge := preload("res://render/hull_age.gd")
+const HT := preload("res://render/hull_table.gd")
 const WING := preload("res://render/squadron_wing.gd")
 const CASES := [["voidsworn", "Sunward Crusade", "bomber", "Carrier"], ["hegemony", "Hegemony Navy", "fighter", "Battleship"], ["corsair", "Ashfall Hullbreakers", "bomber", "Carrier"], ["chorus", "The Chorus", "spore", "Carrier"], ["ithar", "The Glasswrights", "fighter", "Carrier"], ["deathless", "Eclipse", "", "Tomb-ark"]]
 var vp: SubViewport
@@ -28,6 +30,16 @@ func _run() -> void:
 		var kv := pair.split("=")
 		if kv.size() == 2: expect[kv[0].strip_edges()] = kv[1].strip_edges()
 	_add_trial_entries()
+	# Issue 1410 (R368): the carriers drawn beside the wings must be new builds (ALLOW_OLD_HULLS=1 draws old ones on purpose);
+	# the wings themselves are code-built or kit craft, not manifest hulls, so they are not listed
+	var drawn: Array = []
+	for c in CASES:
+		drawn.append(HT.code_for(c[0], c[3]))
+	var old_hull := HullAge.guard(drawn)
+	if old_hull != "":
+		print("SQUADRON_OLD_HULL " + old_hull)
+		quit(1)
+		return
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	vp = SubViewport.new()
 	vp.size = Vector2i(2560, 1440)
@@ -107,6 +119,12 @@ func _check_models(sv, fac: String, kind: String, want_models: bool) -> void:
 			return
 	print("SQUADRON_EXPECT ok %s %s" % [key, want if want != "" else "code-built"])
 
+# Issue 1410 (R368, Astra audit of PR 1814): the carrier's game code and hull layout, so an old hull allowed by
+# ALLOW_OLD_HULLS=1 is named in the caption of every picture that draws it, e.g. "carrier H7_23 OLD hull (ships)".
+func _hull_tag(carrier) -> String:
+	var r := HullAge.resolved(carrier)
+	return "carrier %s (%s)" % [HullAge.label(str(r["code"])), r["source"]]
+
 func _still(name: String) -> void:
 	if PG.stop_if_any():
 		return
@@ -127,8 +145,9 @@ func _capture(c: Array) -> void:
 	fx.add_ship(fac + "_carrier", carrier, {"faction": fac, "cls": c[3], "meshes": carrier.meshes, "shielded": false})
 	fx._later.clear()
 	fx.step(0.1)
+	var hull_tag := _hull_tag(carrier)
 	if fac == "deathless":
-		detail.text = "No squadron craft: FACTIONS.sq = null; no Eclipse hull has a hangar"
+		detail.text = "No squadron craft: FACTIONS.sq = null; no Eclipse hull has a hangar | " + hull_tag
 		for zoom in ["close", "battle"]:
 			var target := Vector3(24, 0, 5)
 			cam.look_at_from_position(target + Vector3(-0.45, 0.7, 0.6).normalized() * (85.0 if zoom == "close" else 170.0), target)
@@ -149,11 +168,11 @@ func _capture(c: Array) -> void:
 		cam.look_at_from_position(lead + dir.normalized() * 26.0, lead)
 		await _still(fac + "_" + angle)
 	carrier.visible = true
-	detail.text = "Battle camera | 170 units | unchanged craft scale | launch hull for context"
+	detail.text = "Battle camera | 170 units | unchanged craft scale | launch hull for context: " + hull_tag
 	cam.look_at_from_position(Vector3(5, 0, 0) + Vector3(0.0, 0.557, 0.831) * 170.0, Vector3(5, 0, 0))
 	await _still(fac + "_battle")
 	# Issue 1373: the near battle camera too, the craft beside their carrier
-	detail.text = "Battle camera | 100 units | unchanged craft scale | beside the carrier"
+	detail.text = "Battle camera | 100 units | unchanged craft scale | beside the carrier: " + hull_tag
 	cam.look_at_from_position(Vector3(5, 0, 0) + Vector3(0.0, 0.557, 0.831) * 100.0, Vector3(5, 0, 0))
 	await _still(fac + "_c100")
 	# Both adaptive roles get a close capture for the factions that can use them.
@@ -175,7 +194,7 @@ func _capture(c: Array) -> void:
 		await _still("%s_motion_%02d" % [fac, frame])
 	# Capture the real launch and weapon entry points as well as parked wings.
 	carrier.visible = true
-	detail.text = c[2] + " | actual carrier launch event | faction craft leaving the bay"
+	detail.text = c[2] + " | actual carrier launch event | faction craft leaving the bay | " + hull_tag
 	cam.look_at_from_position(Vector3(5, 0, 0) + Vector3(0, 0.557, 0.831) * 170.0, Vector3(5, 0, 0))
 	fx.launch(fac + "_carrier", fac + "_wing")
 	fx.step(0.65)

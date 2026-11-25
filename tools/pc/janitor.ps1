@@ -6,9 +6,50 @@ function Log($line) {
   if ($script:log) { $script:log.WriteLine($line) }
   Write-Host $line
 }
+function Install-JanitorTask([bool]$preview) {
+  if ((Get-TimeZone).Id -ne 'Central Standard Time') { throw 'The PC must be on Central Time for the 3:30 AM schedule.' }
+  $name = 'Voidsworn Janitor'
+  $launch = {
+    $ErrorActionPreference = 'Stop'
+    $env:GIT_TERMINAL_PROMPT = '0'
+    $env:GCM_INTERACTIVE = 'never'
+    $live = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test/tools_live'
+    $version = (Get-Content -LiteralPath (Join-Path $live 'current.txt') -Raw).Trim()
+    if ($version -notmatch '\A[0-9a-f]{12}\z') { throw 'tools_live/current.txt does not name a tools version' }
+    $janitor = Join-Path (Join-Path $live $version) 'pc/janitor.bat'
+    & $janitor --nightly
+    exit $LASTEXITCODE
+  }
+  $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($launch.ToString().Trim()))
+  $execute = Join-Path $PSHOME 'powershell.exe'
+  $arguments = "-NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand $encoded"
+  $at = [DateTime]::Today.AddHours(3).AddMinutes(30)
+  # A boundary without a UTC offset tracks Central clock time across daylight saving changes.
+  $boundary = $at.ToString("yyyy-MM-dd'T'HH:mm:ss", [Globalization.CultureInfo]::InvariantCulture)
+  $interval = New-TimeSpan -Minutes 15
+  $duration = New-TimeSpan -Hours 2
+  $user = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+  if ($preview) {
+    Write-Host "Task dry run: $name, $boundary, daily, retries $([Xml.XmlConvert]::ToString($interval)) for $([Xml.XmlConvert]::ToString($duration))"
+    Write-Host "Account: $user (Interactive, Limited)"
+    Write-Host "Action: $execute $arguments"
+    return
+  }
+  $action = New-ScheduledTaskAction -Execute $execute -Argument $arguments
+  $daily = New-ScheduledTaskTrigger -Daily -At $at
+  $daily.StartBoundary = $boundary
+  # Retry inside the nightly window after a GPU solo claim, a pause or another cleanup at 3:30.
+  $retry = New-ScheduledTaskTrigger -Once -At $at -RepetitionInterval $interval -RepetitionDuration $duration
+  $daily.Repetition = $retry.Repetition
+  # Use Ryan's signed-in session so Git can use its existing credentials for private relay checks.
+  $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
+  $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -WakeToRun -MultipleInstances IgnoreNew
+  Register-ScheduledTask -TaskName $name -Action $action -Trigger $daily -Principal $principal -Settings $settings -Force | Out-Null
+  Write-Host "Installed $name for 3:30 AM Central each day. Keep this Windows account signed in overnight."
+}
 function Get-CleanupRuns($root) {
   # Runner status records supply the exact scratch path and its issue.
-  foreach ($lane in @('board','board_b','board_c','board_d','work217')) {
+  foreach ($lane in @('board','board_b','board_c','board_d','board_e','board_f','work217')) {
     $base = Join-Path $root $lane
     if (-not (Test-Path -LiteralPath $base -PathType Container)) { continue }
     $laneDir = Get-Item -LiteralPath $base -Force
@@ -94,7 +135,7 @@ function Clear-WorkRunRepos($runs, $mirror, $dryRun, $now, $temp, $salvageRoot, 
   }
 }
 function Reserve-AutomaticRun($lock, $trigger, $now, $night) {
-  # Both triggers serialize across lanes. Record admission before cleaning so a killed run cannot be retried in a loop.
+  # Automatic runs serialize across lanes. Record admission before cleaning so a killed run cannot be retried in a loop.
   $reader = New-Object IO.StreamReader($lock, $utf8, $false, 1024, $true)
   try { $line = $reader.ReadLine() } finally { $reader.Dispose() }
   $last = 0L; $lastNight = ''
@@ -111,19 +152,20 @@ function Reserve-AutomaticRun($lock, $trigger, $now, $night) {
   $lock.Flush()
   return $true
 }
-function Test-GpuClaimed($root) {
-  # A non-empty gpu_slot_N or gpu_solo file is a live GPU claim (gpu_slots.js empties it on release). The after-job run
-  # stays out of every GPU job so it never skews a timing; a file that cannot be read counts as claimed.
+function Test-JanitorGpuClaim([switch]$SoloOnly) {
+  if (-not $automatic) { return $false }
+  # gpu_slots.js empties claims on release. An unreadable claim is treated as active.
   try {
-    foreach ($file in (Get-Item -LiteralPath $root -Force).EnumerateFiles()) {
-      if ($file.Name -notmatch '^(gpu_slot_[1-9][0-9]*|gpu_solo)$') { continue }
+    $names = if ($SoloOnly -or $trigger -ne '--after-job') { '^gpu_solo$' } else { '^(gpu_slot_[1-9][0-9]*|gpu_solo)$' }
+    foreach ($file in (Get-Item -LiteralPath $root -Force).EnumerateFiles('gpu_*')) {
+      if ($file.Name -notmatch $names) { continue }
       if ([IO.File]::ReadAllText($file.FullName).Trim()) { return $true }
     }
     return $false
   } catch { return $true }
 }
-function Assert-GpuQuiet {
-  if ($trigger -eq '--after-job' -and (Test-GpuClaimed $root)) { throw 'a GPU claim started; the after-job cleanup stops until a later job ends' }
+function Assert-GpuQuiet([switch]$SoloOnly) {
+  if (Test-JanitorGpuClaim -SoloOnly:$SoloOnly) { throw "a GPU claim started; deferred the remaining $($trigger.Substring(2)) cleanup in this pass" }
 }
 function Open-JanitorLock($path, $wait) {
   $deadline = [DateTime]::UtcNow.AddMinutes(10)
@@ -403,6 +445,25 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
 $helperJobName = '\Aopus(?<issue>[1-9][0-9]*)(?:[A-Za-z_-][A-Za-z0-9_-]*)?\z'
 $playtestJobName = '\Apt[0-9]{4}[a-z]*\z'
 $checkoutIdleHours = 6
+function Write-LegacyJobRepos($root) {
+  # Inventory only. The older layout never enters the attempt relay proof.
+  foreach ($job in (Get-Item -LiteralPath $root -Force).EnumerateDirectories()) {
+    if (($job.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+        ($job.Name -notmatch $helperJobName -and $job.Name -notmatch $playtestJobName)) { continue }
+    $out = Get-Item -LiteralPath (Join-Path $job.FullName 'out') -Force -ErrorAction SilentlyContinue
+    $parents = @($job)
+    if ($out -is [IO.DirectoryInfo] -and -not ($out.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+      try { $parents += @($out.EnumerateDirectories('run_*') | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) }) }
+      catch { Log "legacy job inventory unavailable in $($out.FullName): $($_.Exception.Message)" }
+    }
+    foreach ($parent in $parents) {
+      $repo = Get-Item -LiteralPath (Join-Path $parent.FullName 'repo') -Force -ErrorAction SilentlyContinue
+      if ($repo -is [IO.DirectoryInfo] -and -not ($repo.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        Log "legacy job repo (inventory only): $($repo.FullName)"
+      }
+    }
+  }
+}
 function Find-JobCheckouts($dir) {
   # Every standalone Git checkout inside a job folder, at any depth (job_head attempts keep theirs inside out_*). Links
   # are never followed, and the search stops at a checkout, so a repository nested inside one is not a candidate.
@@ -597,6 +658,15 @@ function Write-FolderTime($dir, $since) {
 }
 
 $trigger = $args[0]
+if ($trigger -eq '--install-task') {
+  if ($args.Count -gt 2 -or ($args.Count -eq 2 -and $args[1] -ne '--dry-run')) {
+    Write-Host 'usage: janitor_task.bat [--dry-run]'
+    exit 2
+  }
+  try { Install-JanitorTask ($args.Count -eq 2) }
+  catch { Write-Host "janitor task setup failed: $($_.Exception.Message)"; exit 1 }
+  exit 0
+}
 if ($args.Count -gt 1 -or $trigger -notin @($null,'--dry-run','--nightly','--low-space','--after-job')) {
   Write-Host 'usage: janitor.bat [--dry-run | --nightly | --low-space | --after-job]'
   exit 2
@@ -607,6 +677,7 @@ $root = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'
 $temp = [IO.Path]::GetFullPath((Runner-Temp)).TrimEnd('\','/')
 $now = [DateTime]::UtcNow
 $salvageRoot = Join-Path $root 'salvage'
+$soloClaim = $false
 $lock = $null; $drive = $null; $script:log = $null
 try {
   if ($test -and $env:PC_TEST_JANITOR_NOW) { $now = [DateTimeOffset]::Parse($env:PC_TEST_JANITOR_NOW).UtcDateTime }
@@ -629,9 +700,9 @@ try {
       if ($trigger -ne '--after-job') { Write-Host "janitor lock in use or unavailable: $($_.Exception.Message)" }
       exit 0
     }
-    # Checked before the hourly allowance is spent, so a GPU job only delays the next after-job run.
-    if ($trigger -eq '--after-job' -and (Test-GpuClaimed $root)) { exit 0 }
-    if ($automatic -and -not (Reserve-AutomaticRun $lock $trigger $now $night)) { exit 0 }
+    $soloClaim = Test-JanitorGpuClaim -SoloOnly
+    # A solo deferral leaves the nightly date or hourly allowance available for a later run.
+    if ($automatic -and -not $soloClaim -and -not (Reserve-AutomaticRun $lock $trigger $now $night)) { exit 0 }
     $logPath = Join-Path $root "janitor_$((Get-Date).ToString('yyyyMMdd-HHmm')).txt"
     $logItem = Get-Item -LiteralPath $logPath -Force -ErrorAction SilentlyContinue
     if ($logItem -and ($logItem -isnot [IO.FileInfo] -or ($logItem.Attributes -band [IO.FileAttributes]::ReparsePoint))) {
@@ -640,9 +711,19 @@ try {
     $script:log = New-Object IO.StreamWriter($logPath, $true, $utf8)
     $script:log.AutoFlush = $true
   }
-  $drive = New-Object IO.DriveInfo([IO.Path]::GetPathRoot($root))
+  if ($soloClaim -and $trigger -eq '--nightly') {
+    Log 'deferred nightly: a GPU solo claim is active'
+    exit 0
+  }
   $mode = if ($dryRun) { 'dry run' } elseif ($automatic) { $trigger } else { 'manual' }
   Log "janitor $mode at $($now.ToString('o'))"
+  if ($soloClaim) {
+    Log "deferred $($trigger.Substring(2)) disk scans: a GPU solo claim is active"
+    exit 0
+  }
+  $deferJobs = $trigger -eq '--after-job' -and (Test-JanitorGpuClaim)
+  if ($deferJobs) { Log 'deferred after-job job-folder pass: a GPU claim is active' }
+  $drive = New-Object IO.DriveInfo([IO.Path]::GetPathRoot($root))
   $script:wouldFreeBytes = 0L; $script:wouldFreeCount = 0; $script:cannotRemoveCount = 0
   $script:plannedFreeTally = if ($dryRun) { New-FreeTally }
   $script:clock = [Diagnostics.Stopwatch]::StartNew()
@@ -655,6 +736,7 @@ try {
   $resumeAt = @{ lane = $script:resume.lane; temp = $script:resume.temp; root = $script:resume.root }
   $script:resume.lane = ''; $script:resume.temp = ''; $script:resume.root = ''
   Log "free space before: $($drive.AvailableFreeSpace) bytes"
+  if ($dryRun) { Write-LegacyJobRepos $root }
   $script:boardKeep = Read-BoardKeepList (Join-Path $root 'janitor_keep.txt')
   Log "Board keep list: $($script:boardKeep.Count) paths"
   $mirror = Repo-Mirror
@@ -673,24 +755,24 @@ try {
   $script:commandLines = Get-CommandLines
   # The board lanes and the recorded Workhorse runs share the first quarter of the budget, one lane at a time, in turn
   # from where the last capped run stopped (review of PR 1592: they ran before any cap check).
-  $lanes = @(@('board','board_b','board_c','board_d') + $slots + @('work217-runs'))
+  $lanes = @(@('board','board_b','board_c','board_d','board_e','board_f') + $slots + @('work217-runs'))
   foreach ($lane in (Get-Rotated $lanes $lanes $resumeAt.lane)) {
     if (Test-JanitorCap 'lane' $lane ([int]($capSeconds / 4))) { break }
-    Assert-GpuQuiet
+    Assert-GpuQuiet -SoloOnly
     if ($lane -eq 'work217-runs') {
       Clear-WorkRunRepos @($runs | Where-Object { $_.Lane -eq 'work217' }) $mirror $dryRun $now $temp $salvageRoot $activeLegacy
       continue
     }
     $board = Join-Path $root $lane
     if (-not (Test-Path -LiteralPath $board -PathType Container)) { continue }
-    try { Remove-OlderKeptRepos $board $mirror $dryRun $now $salvageRoot }
+    try { Remove-OlderKeptRepos $board (Repo-Mirror $lane) $dryRun $now $salvageRoot }
     catch { Log "kept lane $board (scan unavailable: $($_.Exception.Message))" }
   }
   Log "time: lanes and runner records done at $([int]$script:clock.Elapsed.TotalSeconds) s"
   foreach ($dir in (Get-RotatedFolders $temp $resumeAt.temp)) {
     if (Test-JanitorCap 'temp' $dir.Name ([int]($capSeconds / 2))) { break }
     $since = $script:clock.Elapsed.TotalSeconds
-    Assert-GpuQuiet
+    Assert-GpuQuiet -SoloOnly
     $records = $recordedScratch[$dir.FullName]
     $hasOwner = -not ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
       (Test-Path -LiteralPath (Join-Path $dir.FullName $scratchOwnerFile))
@@ -707,7 +789,9 @@ try {
     Write-FolderTime $dir $since
   }
   Log "time: TEMP folders done at $([int]$script:clock.Elapsed.TotalSeconds) s"
-  foreach ($dir in (Get-RotatedFolders $root $resumeAt.root)) {
+  $jobFolders = if (-not $deferJobs) { Get-RotatedFolders $root $resumeAt.root }
+  if ($deferJobs) { $script:resume.root = $resumeAt.root }
+  foreach ($dir in $jobFolders) {
     # Issue 1396: suffixed job folders (opus1369b, opus1211_run6, opus1373probe2) and playtest folders (pt1120c) too.
     $issue = ''
     if ($dir.Name -match $helperJobName) { $issue = $Matches['issue'] }
@@ -716,7 +800,12 @@ try {
     if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { Log "$(if ($dryRun) { 'would keep' } else { 'kept' }) $($dir.FullName) (a linked job folder is never entered)"; continue }
     if (Test-JanitorCap 'root' $dir.Name $capSeconds) { break }
     $since = $script:clock.Elapsed.TotalSeconds
-    Assert-GpuQuiet
+    if (Test-JanitorGpuClaim) {
+      Log "deferred $($trigger.Substring(2)) job-folder pass: a GPU claim is active"
+      $deferJobs = $true
+      $script:resume.root = $dir.Name
+      break
+    }
     $script:helperGone = $false
     Clear-ScratchFolder $dir $issue 'helper folder with its results relayed' 24 $temp $now $dryRun $activeLegacy -Helper -Mirror $mirror
     if (-not $script:helperGone) {
@@ -725,7 +814,7 @@ try {
     }
     Write-FolderTime $dir $since
   }
-  Log "time: job folders done at $([int]$script:clock.Elapsed.TotalSeconds) s"
+  if (-not $deferJobs) { Log "time: job folders done at $([int]$script:clock.Elapsed.TotalSeconds) s" }
   if (-not $dryRun) {
     $lines = @(foreach ($k in @('lane','temp','root')) { if ($script:resume[$k]) { "$k $($script:resume[$k])" } })
     Write-JanitorResume $resumePath ([string[]]$lines)

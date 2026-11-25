@@ -128,6 +128,9 @@ func run() -> void:
 	var before = snap(); ui.render(); await frames()
 	check(snap() == before, "drawing is read only, including save and campaign random stream")
 	check(page().rows.size() == 12 and page().rows[0]["damaged"] and page().rows[1]["damaged"] and not page().rows[2]["damaged"], "damage groups contain real ships")
+	var first_row: Button = page().rows[0]["button"]
+	check(first_row.get_theme_stylebox("hover") is StyleBoxFlat and first_row.get_theme_stylebox("pressed") is StyleBoxFlat,
+		"fleet row shows hover and pressed states")
 	check(page().manifest_scroll.get_v_scroll_bar().max_value <= page().manifest_scroll.size.y + 1, "twelve ships fit with no scroll at 1080")
 	readability("1080"); await capture("1080")
 	var source = C.RUN["fleet"][0]; var target = C.RUN["fleet"][3]
@@ -140,13 +143,21 @@ func run() -> void:
 	check(source["mods"] == ["prow"] and C.RUN["inventory"].is_empty(), "real Fleet screen performs a refit")
 	press_slot(0); await frames()
 	check(not page().state["held"].is_empty(), "filled slot starts a local move")
+	var held_slot: Button = buttons(page().workspace, "slot", 0)[0]
+	for st in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
+		check(held_slot.get_theme_color(st) == GS.MAP_EMBER, "held refit keeps ember text in " + st)
+	check(held_slot.get_theme_stylebox("focus").get_margin(SIDE_LEFT) == ui.px(38), "held refit focus keeps the icon inset")
 	# A full target does not silently strip the source or write a partial transfer.
 	var filled_target = C.RUN["fleet"][4]
 	for i in int(C.HULLS[filled_target["tpl"]]["slots"]): filled_target["mods"].append("prow")
 	before = snap(); page().select_ship(filled_target["uid"])
 	check(snap() == before and not page().state["held"].is_empty(), "full target leaves source and held refit intact")
-	page().select_ship(source["uid"])
-	before = snap(); key(KEY_ESCAPE); check(snap() == before and page().state["held"].is_empty(), "cancel move is read only")
+	check(page().state["uid"] == source["uid"] and text(page().workspace).contains("has no free compatible slot"), "failed move explains the problem without changing ships")
+	var cancel = page().workspace.find_children("*", "Button", true, false).filter(func(b): return b.text == "Cancel move")
+	check(cancel.size() == 1, "failed move offers a mouse Cancel")
+	if cancel.size() == 1: cancel[0].pressed.emit()
+	else: page().select_ship(source["uid"]); key(KEY_ESCAPE)
+	check(snap() == before and page().state["held"].is_empty(), "cancel move is read only")
 	press_slot(0); page().select_ship(str(target["uid"])); await frames()
 	check(source["mods"].is_empty() and target["mods"] == ["prow"], "clicking another ship transfers through real campaign actions")
 	var remove = buttons(page().workspace, "remove_slot", 0)
@@ -161,6 +172,9 @@ func run() -> void:
 		C.RUN["inventory"].append(carrier_mod); C.fleetScreen(""); await frames(); key(KEY_H)
 		var incompatible = buttons(page().workspace, "inventory_index", 1)
 		check(incompatible.size() == 1 and incompatible[0].disabled, "incompatible refit remains disabled")
+		if incompatible.size() == 1:
+			check(incompatible[0].get_theme_color("font_disabled_color") == GS.TEXT3
+				and incompatible[0].mouse_default_cursor_shape == Control.CURSOR_ARROW, "disabled refit shows dim ink and an arrow")
 	await capture("hold"); key(KEY_ESCAPE)
 	# Pending promotions stay on the selected ship's sheet and use the old modal.
 	target["cap"]["pending"] = 1; C.fleetScreen(""); await frames()
@@ -210,6 +224,14 @@ func run() -> void:
 		if fac == "voidsworn": await capture("busy")
 	for scale in [0.8, 1.4]:
 		UI.UiScale.player = scale; ui._rescale(); fixture("ithar", 20); await frames(); readability("player scale " + str(scale))
+		var change = page().find_children("*", "Button", true, false).filter(func(b): return b.text.begins_with("Change"))
+		var manifest_edge: float = (72 + page().manifest_w) * page().k
+		var change_edge: float = change[0].get_global_rect().end.x if change.size() == 1 else -1
+		check(change_edge > 0 and change_edge <= manifest_edge + 1,
+			"Change stays inside the manifest at scale %s (ends at %.1f against %.1f)" % [scale, change_edge, manifest_edge])
+		var primary_words: Array = page().primary.find_children("*", "Label", true, false)
+		check(primary_words.size() == 2 and not primary_words[0].get_global_rect().intersects(primary_words[1].get_global_rect()),
+			"Done and Enter stay clear of each other at scale " + str(scale))
 	UI.UiScale.player = 1.0; ui._rescale()
 	fixture("voidsworn", 0); await frames(); check(text(page()).contains("No ships"), "empty fleet stays usable")
 	print("FL5: " + ("PASS" if failures == 0 else "FAIL " + str(failures)))

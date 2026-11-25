@@ -40,6 +40,8 @@ func _init() -> void:
 	C = CampaignScript.new()
 	var err = C.load_tables()
 	if err != "": printerr(err); quit(1); return
+	check(C.nemGender("hegemony", "Maren Bauer") == "f", "a legacy Directorate rival keeps her pronoun")
+	check(C.nemGender("hegemony", "Annika Bauer") == "f", "the new Directorate name has the same pronoun")
 	C.fixed_clock = true
 	fresh(101)
 	C.act("pickAspect", C.W["aspOffer"][0]); C.act("closeModal")

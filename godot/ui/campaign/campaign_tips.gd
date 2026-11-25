@@ -1,6 +1,6 @@
 extends Node
 # Shared teaching cards and profile preferences. The battle and campaign use one file and one off switch.
-const HUD = preload("res://ui/battle/hud.gd")
+const HUD_SCRIPT := "res://ui/battle/hud.gd"   # issue 1518: loaded when a tip is shown, so the title's Settings (is_off) loads no battle HUD
 const OPTS := "user://battle_opts.json"
 const ACTION_IDS := ["select", "target", "fired", "close"]
 const CARDS := [
@@ -18,7 +18,7 @@ var screen := ""
 var shown_on_screen := false
 var disabled := false
 var covered := false        # a slide-over is open over the page: the card waits out of sight
-var keep_clear: Array = []  # controls on the page the card must not sit on
+var shipyard_dock: Control
 
 static func load_opts() -> Dictionary:
 	var o = JSON.parse_string(FileAccess.get_file_as_string(OPTS)) if FileAccess.file_exists(OPTS) else {}
@@ -64,7 +64,7 @@ func try_show(id: String, clock_pair := false) -> bool:
 	for t in CARDS:
 		if t[0] != id: continue
 		if hud == null:
-			hud = HUD.new()
+			hud = load(HUD_SCRIPT).new()
 			add_child(hud)
 			hud.layer = 30
 			hud.set_process(false)
@@ -82,16 +82,20 @@ func _card_only() -> void:
 	for child in hud.root.get_children():
 		if child is CanvasItem: child.visible = child == hud.tipcard
 	if hud.tipcard != null:
-		hud.tipcard.visible = false # shown again by _place, once the page under it has its layout
-		_place_later(hud.tipcard)
+		hud.tipcard.hide()
+		_refresh_placement()
 
-# The screen tells the card what it must stay off (issue 652): `covered` is true while a slide-over (the Map key, the
-# Dossier) is open, and the card waits out of sight until it closes; `clear` lists the controls on the page the card must
-# not sit on (the shipyard's repair bar). The campaign screen calls this every time it draws a page.
-func set_context(is_covered: bool, clear: Array = []) -> void:
+func set_context(is_covered: bool, dock: Control = null) -> void:
 	covered = is_covered
-	keep_clear = clear
-	if hud != null and hud.tipcard != null: _place_later(hud.tipcard)
+	shipyard_dock = dock
+	if hud != null and hud.tipcard != null: _refresh_placement()
+
+func _refresh_placement() -> void:
+	if current == "c_shipyard" and is_instance_valid(shipyard_dock):
+		# Move the live card before the previous shipyard render is freed.
+		place_card()
+	else:
+		_place_later(hud.tipcard)
 
 # The page under the card gets its layout a frame or two after it is built, so the card is placed then.
 func _place_later(card: Control) -> void:
@@ -99,34 +103,31 @@ func _place_later(card: Control) -> void:
 	if hud == null or not is_instance_valid(card) or card != hud.tipcard: return
 	place_card()
 
-# Top right under the corner buttons, pushed down below any control it would cover. Hidden while a slide-over is open.
+# The shipyard's scroll layout owns its card. Other pages keep the top-right overlay.
 func place_card() -> void:
 	var card: Control = hud.tipcard if hud != null else null
 	if card == null or not is_instance_valid(card): return
 	card.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
+	if current == "c_shipyard" and is_instance_valid(shipyard_dock):
+		if card.get_parent() != shipyard_dock:
+			card.theme = hud.root.theme
+			card.reparent(shipyard_dock, false)
+		shipyard_dock.visible = not covered
+		card.visible = not covered
+		return
 	card.reset_size()
 	var vs := get_viewport().get_visible_rect().size
 	var margin := float(hud.s(24))
-	var gap := float(hud.s(12))
 	var x := vs.x - margin - card.size.x
-	var y := float(hud.s(90))
-	for pass_n in 6:
-		var moved := false
-		var r := Rect2(Vector2(x, y), card.size)
-		for c in keep_clear:
-			if not is_instance_valid(c) or not (c as Control).is_visible_in_tree(): continue
-			var cr: Rect2 = (c as Control).get_global_rect()
-			if r.intersects(cr):
-				y = cr.end.y + gap
-				moved = true
-				break
-		if not moved: break
-	y = maxf(0.0, minf(y, vs.y - card.size.y - margin))
+	var y := clampf(vs.y - card.size.y - margin, 0.0, float(hud.s(90)))
 	card.position = Vector2(x, y).round()
 	card.visible = not covered
 
 func _resize() -> void:
 	if hud == null: return
+	# The HUD frees its old root when it rebuilds. Include its docked card in that cleanup.
+	if hud.tipcard != null and hud.tipcard.get_parent() != hud.root:
+		hud.tipcard.reparent(hud.root, false)
 	hud._rebuild()
 	_card_only()
 
@@ -141,6 +142,7 @@ func _dismiss(why: String, retire: bool) -> void:
 	_log("dismiss", id, why)
 	if retire: save_opts({"tips": {id: true}})
 	current = ""
+	if is_instance_valid(shipyard_dock): shipyard_dock.hide()
 	hud.hide_tipcard()
 
 func _action(name: String, _arg) -> void:

@@ -1,7 +1,6 @@
 extends CanvasLayer
 # The title screen (campaign_meta.js titleScreen), Settings and Credits.
 
-const HUD := preload("res://ui/battle/hud.gd")
 const Brand := preload("res://ui/battle/brand.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
 const GS := preload("res://ui/theme/glass_shell.gd")
@@ -17,6 +16,7 @@ var font: FontFile
 var font_semi: FontFile
 var font_goth: Font
 var settings_panel: PanelContainer
+var first_label := ""   # the menu's first button, "Continue run" or "New run" (issue 1518: the launch line reads it)
 var settings_dim: ColorRect
 var toast_lbl: Label
 var _toast_t := 0.0
@@ -25,7 +25,7 @@ var _toast_t := 0.0
 func _font(n: String) -> FontFile:
 	# the imported font when the project has been imported or exported, else the raw file
 	var p := "res://ui/battle/fonts/" + n
-	if HUD.imported_ok(p):
+	if GS._imported_ok(p):   # issue 1518: not the battle HUD's copy, which loaded the HUD script with the title
 		var r = load(p)
 		if r is FontFile:
 			return r
@@ -42,7 +42,7 @@ func s(v: float) -> int:
 func _ready() -> void:
 	font = Kit.body_font()        # the kit's one font set (issue 1217); the wordmark keeps its own display face
 	font_semi = Kit.medium_font()
-	font_goth = Brand.display()  # the sci-fi display face (lore round 5); the blackletter is retired
+	font_goth = Brand.wordmark()  # the wordmark face, Michroma (R436 C28: Michroma is the wordmark only)
 	_build()
 	_report.call_deferred()
 	# screenshot jobs: --title-open credits opens the Credits screen (main.gd opens Settings for --title-open settings)
@@ -143,13 +143,14 @@ func _build() -> void:
 		first = _button("Continue run", func() -> void: main.new_run({"continue": true}), true)
 	else:
 		first = _button("New run", func() -> void: main.new_run({}), true)
+	first_label = first.text   # issue 1518: the launch line names which first button the saved run gave
 	first.custom_minimum_size = Vector2(s(340), s(56))
 	first.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	menu.add_child(first)
 	_menu_gap(10)
 	if saved:
 		_menu_link("New run", func() -> void: main.new_run({}))
-	_menu_link("Quick battle", func() -> void: main.quick_battle())
+	_menu_link("Quick battle", func() -> void: main.quick_battle_from_title())
 	if camp:
 		_menu_link("Progression", func() -> void: main.new_run({"screen": "legacy"}))
 	if ResourceLoader.exists("res://story/story.gd"):   # story hook: the Career screen (godot/story/README.md)
@@ -302,7 +303,7 @@ func _dialog_box() -> StyleBoxFlat:
 const SETTINGS_LAYOUT := [   # [section, column, rows]
 	["Sound and music", 0, [["toggle", "Sound", "sound"], ["slider", "Volume", "volume"], ["toggle", "Music", "music"], ["slider", "Music volume", "music_volume"]]],
 	["Display", 0, [["choice", "UI scale", "ui_scale"], ["toggle", "Full screen", "fullscreen"], ["choice", "Graphics", "quality"], ["toggle", "Temporal AA (smoother edges, softer motion)", "taa"], ["toggle", "Nebula wakes (ships stir the clouds)", "nebula_wake_on"], ["choice", "Render scale", "render_scale"], ["choice", "Frame cap", "fps_cap"], ["toggle", "V-Sync", "vsync"]]],
-	["Battle", 1, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Teaching tips", "tips"]]],
+	["Battle", 1, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Brisk camera", "brisk_camera"], ["toggle", "Teaching tips", "tips"]]],
 	["Comfort", 1, [["toggle", "Reduce motion", "reduce_motion"], ["toggle", "Reduce flashing", "reduce_flashing"], ["choice", "Screen shake", "shake"]]],
 ]
 const SETTINGS_CHOICES := {
@@ -394,7 +395,7 @@ func _settings() -> void:
 	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(fill)
 	v.add_child(Kit.action_bar(k, [], done))
-	sc.custom_minimum_size = Vector2(0, minf(cols.get_combined_minimum_size().y, vs.y - s(190)))
+	_size_settings_list(sc, cols)
 	_fit_settings.call_deferred(sc, cols)
 	if _settings_focus != "":
 		for c in settings_panel.find_children("*", "Control", true, false):
@@ -420,8 +421,16 @@ func _fit_settings(sc: ScrollContainer, cols: Control) -> void:
 	await get_tree().process_frame
 	if not is_instance_valid(sc) or not is_instance_valid(cols):
 		return
-	var vs := get_viewport().get_visible_rect().size
-	sc.custom_minimum_size.y = minf(cols.get_combined_minimum_size().y, vs.y - s(190))
+	_size_settings_list(sc, cols)
+
+
+func _size_settings_list(sc: ScrollContainer, cols: Control) -> void:
+	var body := sc.get_parent() as VBoxContainer
+	var drawer := body.get_parent() as PanelContainer
+	var chrome := body.get_combined_minimum_size().y - sc.get_combined_minimum_size().y
+	chrome += drawer.get_theme_stylebox("panel").get_minimum_size().y
+	var room := get_viewport().get_visible_rect().size.y - chrome
+	sc.custom_minimum_size.y = minf(cols.get_combined_minimum_size().y, maxf(0, room))
 
 
 func _close_settings() -> void:
@@ -535,14 +544,14 @@ func _focus_first(n: Node) -> void:
 
 
 func _toggle(t: String, key: String) -> Control:
-	if key == "tips": main.settings["tips"] = not preload("res://ui/campaign/campaign_tips.gd").is_off()
+	if key == "tips": main.settings["tips"] = not load("res://ui/campaign/campaign_tips.gd").is_off()
 	if not main.settings.has(key):
-		main.settings[key] = true
+		main.settings[key] = key != "brisk_camera"
 	var b := _button("On" if main.settings[key] else "Off")
 	b.set_meta("setting_key", key)
 	b.pressed.connect(func() -> void:
 		main.settings[key] = not bool(main.settings[key])
-		if key == "tips": preload("res://ui/campaign/campaign_tips.gd").set_off(not main.settings[key])
+		if key == "tips": load("res://ui/campaign/campaign_tips.gd").set_off(not main.settings[key])
 		b.text = "On" if main.settings[key] else "Off"
 		main.save_settings()
 		if key == "taa" and main.has_method("restart_showcase"):
