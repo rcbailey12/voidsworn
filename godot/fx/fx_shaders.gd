@@ -1612,6 +1612,40 @@ render_mode cull_disabled, fog_disabled;
 """ + COMMON + """
 uniform int wound_kind = 0;
 uniform vec3 glow = vec3(1.0, 0.45, 0.12);
+uniform int wound_v2 = -1;   // R416 Wounds V2 faction kind (0 Sunward .. 5 Eclipse); -1 off (the old look)
+uniform vec3 v2_scorch_col = vec3(0.1);
+uniform vec3 v2_rim_metal = vec3(0.6);
+uniform vec3 v2_interior_lift = vec3(0.3);
+uniform vec3 v2_interior_accent = vec3(1.0, 0.5, 0.15);
+uniform float v2_rough = 0.6;
+uniform float v2_soot = 1.0;
+uniform float v2_wreck_soot = 0.3;
+// JOINT_D (Nov 23): straight-edged cells for the Glasswright fracture facets: x the distance to the nearest cell edge
+// in cells, y and z the cell's own random values
+vec3 gw_cells(vec2 p) {
+	vec2 ip = floor(p);
+	vec2 fp = fract(p);
+	vec2 mb = vec2(0.0);
+	vec2 mr = vec2(0.0);
+	float md = 8.0;
+	for (int j = -1; j <= 1; j++) {
+		for (int k = -1; k <= 1; k++) {
+			vec2 g = vec2(float(k), float(j));
+			vec2 r = g + vec2(h21(ip + g), h21(ip + g + 17.3)) - fp;
+			float d = dot(r, r);
+			if (d < md) { md = d; mr = r; mb = g; }
+		}
+	}
+	md = 8.0;
+	for (int j = -2; j <= 2; j++) {
+		for (int k = -2; k <= 2; k++) {
+			vec2 g = mb + vec2(float(k), float(j));
+			vec2 r = g + vec2(h21(ip + g), h21(ip + g + 17.3)) - fp;
+			if (dot(mr - r, mr - r) > 1e-5) { md = min(md, dot(0.5 * (mr + r), normalize(r - mr))); }
+		}
+	}
+	return vec3(md, h21(ip + mb + 3.1), h21(ip + mb + 9.7));
+}
 varying vec3 vL;
 varying vec3 vNl;
 varying vec4 vC;
@@ -1672,27 +1706,75 @@ void fragment() {
 	} else if (style == 5 || style == 6 || style == 0) {
 		if (part > 0.95) { em += gc * exp(-age / 0.7) * 0.35 * heat * (0.7 + 0.3 * fl); }
 	}
-	if (wound_kind == 1) {
-		base = mix(vec3(0.018, 0.002, 0.009), vec3(0.07, 0.012, 0.023), n1);
-		rough = 0.23; metal = 0.0;
-		float muscle = pow(abs(sin(p.x * 22.0 + n1 * 5.0)), 8.0);
-		em = glow * (0.07 + 0.04 * sin(scene_t * 2.3 + seed)) * muscle;
-		if (part > 0.8 && part < 0.9) { base = vec3(0.17, 0.13, 0.07); }
-	} else if (wound_kind == 2) {
-		base = part < 0.3 ? vec3(0.005, 0.004, 0.022) : glow * 0.12;
-		rough = 0.09; metal = 0.15;
-		em = mix(glow, vec3(0.3, 0.65, 1.0), n2) * (part < 0.3 ? emb * 0.06 : 0.16);
-	} else if (wound_kind == 3) {
-		base = part < 0.3 ? vec3(0.004, 0.002, 0.008) : vec3(0.045, 0.035, 0.06);
-		rough = 0.48; metal = 0.7;
-		float bus = pow(abs(sin(p.x * 19.0 + floor(p.y * 4.0))), 24.0);
-		em = glow * (emb * 0.06 + bus * 0.15) * flick(0.7 + n2 * 0.3, scene_t, seed);
-	}
+	// R416 (Nov 24, Ryan's yes): the old Chorus magenta flesh, Glasswright glow and Eclipse bus looks are retired; the V2
+	// look below is the only faction look
+	vec3 em_hdr = vec3(0.0);   // Fable B-review H2: rim heat, bus tips and fresh burns ride above the 0.25 soft cap
+	if (wound_v2 >= 0) {
+		// R416 5.2: the inside of an open wound in the faction's own matter, lit (never a black portal): the cut edge shows
+		// the plate's bare thickness, the mouth dressing its own material (COLOR.b: 0.25 beam or cable, 0.5 tendon,
+		// 0.75 crystal shard, 1 power bus), a soft accent glow from deep inside, no fire on glass, flesh or obsidian
+		float dress = vC.b;
+		bool metalk = wound_v2 <= 2;
+		base = v2_interior_lift * (0.35 + 0.5 * n1) * (part < 0.3 ? 0.6 : 1.0) * (0.75 + 0.5 * vC.g);
+		rough = v2_rough;
+		metal = metalk ? 0.55 : (wound_v2 == 5 ? 0.6 : 0.0);
+		if (part > 0.95) { base = v2_rim_metal * (0.75 + 0.35 * n2); rough = metalk ? 0.38 : 0.2; metal = metalk ? 0.85 : 0.1; ao = 1.0; }
+		if (dress > 0.2 && dress < 0.3) { base = v2_rim_metal * (0.35 + 0.3 * vC.g); metal = wound_v2 == 5 ? 0.5 : 0.75; rough = 0.45; ao = 0.9; }
+		if (part > 0.8 && part < 0.9) {
+			// R420: wet crimson-umber tendon; dry weathered ochre-ivory bone (0.14 to 0.18 linear, no glow)
+			base = dress > 0.4 ? vec3(0.075, 0.03, 0.022) * (0.8 + 0.4 * n2) : vec3(0.17, 0.15, 0.11) * (0.85 + 0.2 * n2);
+			rough = dress > 0.4 ? 0.2 : 0.5; metal = 0.0; ao = 1.0;
+		}
+		if (dress > 0.7 && dress < 0.8) { base = min(v2_rim_metal * 0.2, vec3(0.18)); rough = 0.05; metal = 0.25; ao = 1.0; }
+		float v2hot = metalk ? hot : 0.0;
+		em = v2_interior_accent * (lam * fall * 0.45 * (0.6 + 0.4 * fl) * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)));
+		em_hdr += gc * emb * 0.5 * (0.6 + 0.4 * fl) * (1.0 - smoothstep(0.3, 1.4, dist)) * v2hot;
+		if (dress > 0.9) { em_hdr += v2_interior_accent * (0.9 + 0.3 * flick(0.7 + n2 * 0.3, scene_t, seed)); base *= 0.5; }
+		if (dress > 0.7 && dress < 0.8) { em += v2_interior_accent * 0.22 * (0.6 + 0.4 * vC.g); }
+		if (wound_v2 == 3) { em += v2_interior_accent * 0.05 * pow(abs(sin(p.x * 22.0 + n1 * 5.0)), 8.0) * (0.8 + 0.2 * sin(scene_t * 2.3 + seed)); }
+		if (wound_v2 == 4 && part < 0.95 && !(dress > 0.7 && dress < 0.8)) {
+			// JOINT_C and D (Nov 23; deaths_and_hits.md 1: "straight-edged crystalline fracture facets and popped mosaic
+			// panes over braided light cores"): the crater and walls of a Glasswright cut are glass panes, each its own
+			// pale tone and tilt with a lit seam between; a few panes are popped (dark, the stored light behind them);
+			// the faction's stored light (glow) rises from deep inside. Never a charcoal disc, no soot
+			vec3 ax = snorm(axis);
+			vec3 t1 = snorm(cross(ax, abs(ax.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
+			vec3 t2 = cross(ax, t1);
+			vec3 dl = vL - centre;
+			// wedge-shaped panes: cells in angle and distance round the cut, so the cracks run out from it like a star
+			vec2 pq = vec2(dot(dl, t1), dot(dl, t2));
+			vec3 gq = gw_cells(vec2(atan(pq.y, pq.x) * 1.9, length(pq) / R * 2.2) + vec2(seed * 7.0, seed * 3.0));
+			float seam = 1.0 - smoothstep(0.0, 0.035, gq.x);
+			bool popped = gq.y > 0.8 && part < 0.3;
+			// R431 (Nov 23, the I8_37 family): pale pearl panes; coloured glass shows only in the seams, and only near
+			// the opening (a spectral hue round the cut), with the deep glow below; never rainbow tiles across the crater
+			vec3 pearl = v2_rim_metal * vec3(1.0, 0.97, 0.93);
+			base = mix(pearl * 0.16, pearl * 0.36, gq.z) * (popped ? 0.25 : 1.0);
+			base = mix(base, pearl * 0.55, seam * 0.4);
+			rough = popped ? 0.3 : 0.06; metal = 0.1; ao = mix(ao, 1.0, 0.6);
+			float near_cut = 1.0 - smoothstep(1.0, 1.9, length(pq) / R);
+			vec3 hue = 0.5 + 0.5 * cos(6.2832 * (atan(pq.y, pq.x) / 6.2832 + gq.y * 0.35 + vec3(0.0, 0.33, 0.67)));
+			em += mix(mix(v2_interior_accent, gc, 0.5) * 0.12, hue * 0.25, near_cut) * seam + gc * (popped ? 0.2 : 0.0);
+			em_hdr += gc * 0.45 * smoothstep(0.7, 1.3, deep) * (0.85 + 0.15 * fl);
+			vec3 tilt = (t1 * (gq.y - 0.5) + t2 * (gq.z - 0.5)) * 0.9;
+			NORMAL = snorm(NORMAL + mat3(VIEW_MATRIX) * (mat3(MODEL_MATRIX) * tilt));
+		}
+		if (style == 1) {
+			// a fresh lance burn-through: the ember ramp only on Sunward and Hullbreaker steel; Directorate burns
+			// blue-white, the other factions glow in their own accent (audit, PR 1755: no orange on them)
+			float cool = exp(-age / 3.0);
+			float m = cool * (1.0 - smoothstep(0.3, 2.5, dist));
+			vec3 hc = (wound_v2 == 0 || wound_v2 == 2) ? heatRamp(cool) : (wound_v2 == 1 ? mix(vec3(0.35, 0.6, 1.0), vec3(0.9, 0.95, 1.0), cool) : v2_interior_accent);
+			em_hdr += hc * m * (metalk ? 2.0 : 0.6);
+		}
+	} else {
 	if (part > 0.95) { em += glow * 0.025; base *= 0.6 + n2 * 0.4; }
 	if (part > 0.4 && part < 0.9) { em += glow * 0.07; }
+	}
 	if (style == 14) {
 		base = wound_kind == 1 ? vec3(0.22, 0.19, 0.10) : (wound_kind == 2 ? vec3(0.48, 0.53, 0.62) : vec3(0.13, 0.15, 0.17));
 		em = glow * 0.015;
+		em_hdr = vec3(0.0);
 	}
 	ALBEDO = base;
 	ROUGHNESS = rough;
@@ -1700,7 +1782,15 @@ void fragment() {
 	AO = ao;
 	AO_LIGHT_AFFECT = 1.0;
 	SPECULAR = 0.3 * ao;
-	EMISSION = clamp(em * 0.5 * fx_gain, vec3(0.0), vec3(0.35));
+	if (wound_v2 >= 0) {
+		// R420 with V2 on: the soft cavity glow is held to 0.25 by scaling the colour (never per channel, so a violet
+		// stays violet); rim heat, bus tips and fresh burns are the HDR band and pass (Fable review H2)
+		vec3 soft = max(em, vec3(0.0)) * 0.5 * fx_gain;
+		float pk = max(soft.r, max(soft.g, soft.b));
+		EMISSION = soft * (pk > 0.25 ? 0.25 / pk : 1.0) + max(em_hdr, vec3(0.0)) * 0.5 * fx_gain;
+	} else {
+		EMISSION = clamp(em * 0.5 * fx_gain, vec3(0.0), vec3(0.35));
+	}
 }
 """
 
@@ -1750,6 +1840,45 @@ vec2 ionTree(vec2 q, float seed) {
 uniform int wound_kind = 0;
 uniform vec3 glow = vec3(1.0, 0.45, 0.12);
 uniform vec3 weapon = vec3(1.0, 0.6, 0.3);
+uniform int wound_v2 = -1;   // R416 Wounds V2 faction kind (0 Sunward .. 5 Eclipse); -1 off (the old look)
+uniform vec3 v2_scorch_col = vec3(0.1);
+uniform vec3 v2_rim_metal = vec3(0.6);
+uniform vec3 v2_interior_lift = vec3(0.3);
+uniform vec3 v2_interior_accent = vec3(1.0, 0.5, 0.15);
+uniform float v2_rough = 0.6;
+uniform float v2_soot = 1.0;
+uniform float v2_wreck_soot = 0.3;
+// Straight-edged cells (Voronoi): x the distance to the nearest cell edge in cells, y the cell's own random value.
+vec2 v2cells(vec2 p) {
+	vec2 g = floor(p);
+	vec2 f = fract(p);
+	float d1 = 8.0, d2 = 8.0;
+	float id = 0.0;
+	for (int j = -1; j <= 1; j++) {
+		for (int i = -1; i <= 1; i++) {
+			vec2 o = vec2(float(i), float(j));
+			vec2 c = o + vec2(h21(g + o), h21(g + o + 17.3)) - f;
+			float d = dot(c, c);
+			if (d < d1) { d2 = d1; d1 = d; id = h21(g + o + 5.1); } else if (d < d2) { d2 = d; }
+		}
+	}
+	return vec2(sqrt(d2) - sqrt(d1), id);
+}
+// Straight radial cracks from the strike point: n of them, each a straight line (no sine waves).
+float v2rays(vec2 q, float n, float seed, float w) {
+	float best = 1.0;
+	for (int i = 0; i < 9; i++) {
+		if (float(i) >= n) { break; }
+		float an = (float(i) + h21(vec2(float(i), seed)) * 0.7) * 6.2831853 / n;
+		vec2 dir = vec2(cos(an), sin(an));
+		float along = dot(q, dir);
+		float len = 0.7 + 0.9 * h21(vec2(seed, float(i) + 3.0));
+		float side = abs(dot(q, vec2(-dir.y, dir.x)));
+		float on = step(0.0, along) * (1.0 - smoothstep(len * 0.8, len, along));
+		best = min(best, mix(1.0, side / w, on));
+	}
+	return 1.0 - smoothstep(0.4, 1.0, best);
+}
 varying vec3 vL;
 varying vec4 vA;
 varying vec4 vB;
@@ -1851,6 +1980,36 @@ void fragment() {
 		rough = 0.92;
 		float emb = smoothstep(0.7, 0.9, fbm(q / R * 6.0 + seed * 2.0)) * (1.0 - smoothstep(0.1, 0.5, u));
 		em = vec3(1.0, 0.35, 0.06) * emb * vD.y * mix(0.25, 1.0, exp(-age / 6.0)) * 3.0;
+	} else if (style == 16) {
+		// R416 (1692 d) prism: a crystal star fracture, straight cracks and facet cells catching a spectral glint, no soot
+		float cr = v2rays(q / R, 8.0, seed, 0.035);
+		vec2 vc = v2cells(q / R * 3.2 + seed);
+		float cell = (1.0 - smoothstep(0.0, 0.06, vc.x)) * (1.0 - smoothstep(0.5, 1.1, u));
+		float fall = 1.0 - smoothstep(0.9, 1.6, u);
+		a = max(cr * fall, cell * 0.7);
+		alb = mix(vec3(0.22, 0.25, 0.3), vec3(0.75, 0.82, 0.9), max(cr, cell));
+		rough = 0.1;
+		vec3 spec = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + ang / 6.2831853 + vc.y));
+		em = (vec3(0.85, 0.92, 1.0) * cr * 1.2 + spec * cell * 0.5) * mix(0.12, 1.0, exp(-age / 2.0)) * fall;
+	} else if (style == 17) {
+		// R416 (1692 d) star: a white-gold heat bloom that cools to bleached, glazed alloy (never a black soot ring)
+		float cool = exp(-age / 2.5);
+		float bloom = 1.0 - smoothstep(0.2, 1.3 + 0.3 * n1, u);
+		a = bloom * (0.6 + 0.4 * n1);
+		alb = mix(vec3(0.34, 0.31, 0.27), vec3(0.62, 0.58, 0.5), smoothstep(0.9, 0.2, u));
+		rough = mix(0.6, 0.2, bloom);
+		em = mix(vec3(1.0, 0.62, 0.25), vec3(1.0, 0.95, 0.82), cool) * bloom * (cool * 3.0 + 0.04);
+	} else if (style == 18) {
+		// R416 (1692 d) null lance: a narrow cold violet-black trench with a violet-white rim that fades
+		vec2 dd = vec2(dot(vE.xyz, t1), dot(vE.xyz, t2));
+		float al = clamp(dot(q, dd), -vE.w, vE.w);
+		float s = length(q - dd * al) / R;
+		hd = s;
+		a = 1.0 - smoothstep(0.8, 1.6, s);
+		alb = vec3(0.012, 0.008, 0.02);
+		rough = 0.4;
+		float sd = (s - 1.0) / 0.22;   // issue 2092: d * d, never pow of a possibly negative base
+		em = vec3(0.62, 0.5, 1.0) * exp(-(sd * sd)) * (0.15 + 1.2 * exp(-age / 3.0));
 	} else if (style == 12) {
 		a = 0.4 * (1.0 - smoothstep(0.3, 1.0, u + (n1 - 0.5) * 0.4));
 	} else {
@@ -2024,6 +2183,9 @@ void fragment() {
 			hc = mix(temper, vec3(0.014), smoothstep(0.75, 1.0, tb) * 0.7);
 			hr = 0.45;
 		}
+		if (style == 16) { hc = vec3(0.3, 0.34, 0.4); hr = 0.15; }
+		else if (style == 17) { hc = vec3(0.3, 0.27, 0.22); hr = 0.4; }
+		else if (style == 18) { hc = vec3(0.02, 0.012, 0.035); hr = 0.4; hem += vec3(0.5, 0.4, 0.9) * smoothstep(0.62, 0.8, hn) * 0.05; }
 		// r8 (Opus): every mark carries a short-lived glowing scorch, broken by the halo noise, in the weapon's own
 		// heat colour, so a fresh hit reads from the battle camera even on a frigate. It comes up softly over a quarter
 		// second and cools over several (no flash: it never jumps, so the flash budget is untouched). The soot under
@@ -2039,13 +2201,16 @@ void fragment() {
 		else if (style == 6 || style == 11) { scl = 9.0; sk = 1.2; }
 		else if (style == 10) { sc = vec3(1.0, 0.55, 0.25); scl = 5.0; sk = 1.1; }
 		else if (style == 12 || style == 13) { sk = 0.0; }
+		else if (style == 16) { sc = vec3(0.8, 0.9, 1.0); scl = 3.0; }
+		else if (style == 17) { sc = vec3(1.0, 0.85, 0.5); scl = 5.0; }
+		else if (style == 18) { sc = vec3(0.6, 0.45, 1.0); scl = 4.0; }
 		// ... and a dim glow that lingers for most of a minute, so a hit ship still shows its hits from the battle camera
 		// r16: the scorch is brief and tight (r9-r15 kept a wide orange wash for most of a minute that flattened whole
 		// panels of a frigate in close-up); what lasts is the darker matte char and the thin edge ring below
 		float sglow = smoothstep(0.0, 0.25, age) * exp(-age / scl) * sk;
 		float sband = (1.0 - smoothstep(0.1, 0.42, hu)) * (0.35 + 0.65 * smoothstep(0.42, 0.68, hn));
 		hem += sc * sband * sglow * 2.0;
-		if (style != 10 && style != 7) { hc *= 0.7; ha = min(1.0, ha * 1.25); }
+		if (style != 10 && style != 7 && style != 16 && style != 17) { hc *= 0.7; ha = min(1.0, ha * 1.25); }
 		// r12 (Opus): plasma, shell and gauss scars stay stronger once cooled: darker, denser char
 		if (style == 2 || style == 3 || style == 4 || style == 5) { hc *= 0.6; ha = min(1.0, ha * 1.3); }
 		if (style == 6 || style == 11 || style == 5) {
@@ -2091,31 +2256,54 @@ void fragment() {
 		em = glow * 0.06 * exp(-(td * td));
 	}
 	if (a < 0.003 && dot(em, vec3(1.0)) < 0.003) { discard; }
-	if (wound_kind == 1) {
-		float vein = pow(abs(sin(q.x / R * 28.0 + n1 * 6.0)), 12.0);
-		alb = mix(vec3(0.06, 0.012, 0.07), vec3(0.12, 0.025, 0.045), n1);
-		rough = style == 13 ? 0.55 : 0.2;
-		em = glow * (0.025 + 0.06 * vein) * (0.8 + 0.2 * sin(scene_t * 2.3 + seed)) * a;
-	} else if (wound_kind == 2) {
-		float fracture = pow(abs(sin(ang * 7.0 + n1 * 2.0)), 32.0);
-		float web = pow(abs(sin(u * 26.0 + ang * 3.0)), 24.0);
-		alb = mix(vec3(0.28, 0.36, 0.48), glow * 0.8, max(fracture, web));
-		rough = 0.14;
-		a *= 0.18 + 0.82 * max(fracture, web);
-		em = glow * max(fracture, web) * a * 0.3;
-	} else if (wound_kind == 3) {
-		vec2 grid = abs(fract(q / R * 3.0 + seed) - 0.5);
-		float circuit = smoothstep(0.46, 0.49, max(grid.x, grid.y));
-		alb = vec3(0.012, 0.006, 0.02) * (0.6 + n1 * 0.4);
-		rough = 0.48;
-		a = max(a, (1.0 - smoothstep(0.7, 1.05, max(abs(q.x), abs(q.y)) / R)) * 0.9);
-		em = glow * circuit * 0.22 * flick(0.7 + n1 * 0.3, scene_t, seed);
-		if (vD.y > 0.3) {
-			float jagged = u - 0.72 + 0.07 * sin(ang * 13.0 + seed);
-			float ja = jagged / 0.018;
-			float arc = exp(-(ja * ja)) * smoothstep(0.1, 0.4, sin(ang * 6.0 + scene_t * 1.6 + seed));
-			em += mix(glow, vec3(0.9, 0.85, 1.0), 0.4) * arc * 0.65 * flick(0.6 + 0.4 * n1, scene_t, seed);
+	// R416 (Nov 24, Ryan's yes): the old Chorus magenta veins, Glasswright sine web and Eclipse square grid are retired
+	if (wound_v2 >= 0 && style != 16 && style != 17 && style != 18) {
+		// R416 3 and 5: each faction's marks in its own matter. Sunward keeps the dark soot and ember. Directorate: cool
+		// steel scorch, a pale-blue electrical burn, no orange. Hullbreakers: heavy soot, rust grime, red-amber slag.
+		// Chorus: cracked chitin flakes over umber and maroon-brown hide, no soot, no magenta. Glasswrights: straight
+		// fracture planes that catch the light, no soot, no black, no sine webs. Eclipse: a stepped obsidian chip with a
+		// thin cold violet-white seam, no grid, no green, no soot wash.
+		float lum = dot(em, vec3(0.3, 0.5, 0.2));
+		if (wound_v2 == 1) {
+			em = vec3(lum) * vec3(0.55, 0.78, 1.0);
+			alb = mix(alb, v2_scorch_col, 0.5 * hs);
+		} else if (wound_v2 == 2) {
+			alb = mix(alb * vec3(1.2, 0.88, 0.72), v2_scorch_col, 0.4 * hs);
+			em = vec3(lum) * vec3(1.0, 0.32, 0.08);
+			a = min(1.0, a * 1.15);
+		} else if (wound_v2 == 3) {
+			vec2 vc = v2cells(q / R * 2.6 + seed);
+			float crack = 1.0 - smoothstep(0.0, 0.07, vc.x);
+			float flake = step(0.62, vc.y) * (1.0 - smoothstep(0.4, 1.0, u));
+			alb = mix(vec3(0.20, 0.13, 0.07), vec3(0.17, 0.065, 0.04), n1);
+			alb = mix(alb, vec3(0.62, 0.55, 0.38), max(crack * 0.85, flake * 0.6));
+			a *= 0.3 + 0.7 * max(crack, flake);
+			rough = 0.3;
+			em = v2_interior_accent * crack * 0.05 * (0.8 + 0.2 * sin(scene_t * 2.3 + seed)) * a;
+			hs = 0.0;
+		} else if (wound_v2 == 4) {
+			float cr = v2rays(q / R, 7.0 + floor(h21(vec2(seed, 2.0)) * 3.0), seed, 0.03);
+			vec2 vc = v2cells(q / R * 3.0 + seed);
+			float plane = (1.0 - smoothstep(0.0, 0.05, vc.x)) * (1.0 - smoothstep(0.6, 1.2, u));
+			float gone = step(0.8, vc.y) * (1.0 - smoothstep(0.2, 0.7, u));
+			float m = max(max(cr, plane), gone * 0.8);
+			alb = mix(v2_rim_metal * 0.55, vec3(0.9, 0.94, 1.0), max(cr, plane));
+			a *= 0.12 + 0.88 * m;
+			rough = 0.06;
+			vec3 spec = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + vc.y));
+			em = (v2_interior_accent * (cr * 0.35 + gone * 0.25) + spec * plane * 0.06) * a;
+			hs = 0.0;
+		} else if (wound_v2 == 5) {
+			float st = max(abs(q.x), abs(q.y)) / R;
+			float step3 = floor(st * 3.0 + n1 * 0.4);
+			float seam = 1.0 - smoothstep(0.0, 0.06, abs(fract(st * 3.0 + n1 * 0.4) - 0.5) * 2.0 - 0.88);
+			alb = mix(vec3(0.05, 0.04, 0.07), vec3(0.012, 0.008, 0.02), clamp(step3 / 3.0, 0.0, 1.0));
+			a = max(a * 0.5, (1.0 - smoothstep(0.85, 1.05, st)) * 0.85);
+			rough = 0.32;
+			em = v2_interior_accent * seam * 0.12 * (1.0 - smoothstep(0.6, 1.05, st)) * flick(0.7 + n1 * 0.3, scene_t, seed);
+			hs = 0.0;
 		}
+		if (v2_soot <= 0.01) { hs = 0.0; }
 	}
 	if (style == 14) {
 		float rg = (u - 0.9) / 0.05;
@@ -2137,6 +2325,223 @@ void fragment() {
 	METALLIC = mix(0.35, 0.0, hs);
 	SPECULAR = mix(0.5, 0.1, hs);
 	EMISSION = em * fx_gain;
+}
+"""
+
+# R416 5.3 (issue 1741, Wounds V2 only): the one interior shader for authored inside surfaces (decks, bulkheads, rooms,
+# organs, bone hoops, light cores) once a ship is holed or dying; intact ships keep their own material. The surfaces have
+# no UVs, so the detail is triplanar in the hull frame: floors and decks one pattern, walls another, per faction
+# (wound_v2 0 Sunward iron grating and riveted panels, 1 Directorate pale panels and blue strips, 2 Hullbreakers bolted
+# scrap and red-amber seams, 3 Chorus wet muscle, bone and bile veins, 4 Glasswright facets and braided light, 5 Eclipse
+# milled obsidian ribs and violet seams), with a bump from the pattern and cavity shading in its grooves. Live
+# (fx_wreck 0), only what an open mouth looks into is lifted out of the dark (fx_mouths, the same list the hull's cut
+# uses); fx_mouth_count < 0 lifts it all (a wreck piece). fx_wreck 1 settles it into the faction's own wreck look.
+const INTERIOR := """
+shader_type spatial;
+render_mode cull_disabled, fog_disabled;
+""" + COMMON + """
+uniform vec4 base_albedo : source_color = vec4(0.5, 0.5, 0.5, 1.0);
+uniform sampler2D base_tex : source_color, hint_default_white;
+uniform vec4 base_emission : source_color = vec4(0.0);
+uniform float base_emission_energy = 1.0;
+uniform sampler2D base_em_tex : source_color, hint_default_white;
+uniform sampler2D base_normal : hint_normal;
+uniform bool has_normal = false;
+uniform sampler2D base_orm : hint_default_white;
+uniform bool has_orm = false;
+uniform float base_metal = 0.0;
+uniform float base_rough = 0.8;
+// Fable review B3: the surface's role (0 wall, deck, frame or machinery; 1 bone; 2 core; 3 glass; 4 organ or gland) and
+// whether its colour came from the faction role table (Interior Kit V2, PR 1763) and so is kept, not replaced
+uniform int role = 0;
+uniform bool trusted = false;
+uniform int wound_v2 = 0;
+uniform vec3 v2_scorch_col = vec3(0.1);
+uniform vec3 v2_rim_metal = vec3(0.6);
+uniform vec3 v2_interior_lift = vec3(0.3);
+uniform vec3 v2_interior_accent = vec3(1.0, 0.5, 0.15);
+uniform float v2_wall_max = 0.11;   // the faction's interior wall ceiling (R420 0.11; Glasswrights 0.45, Ryan Nov 24)
+uniform float v2_rough = 0.6;
+uniform float v2_soot = 1.0;
+uniform float v2_wreck_soot = 0.3;
+uniform float tri_scale = 1.0;
+uniform mat4 fx_hull_frame;
+uniform int fx_mouth_count = 0;
+uniform vec4 fx_mouths[64];
+uniform vec4 fx_axes[64];
+uniform float fx_wreck = 0.0;
+uniform float fx_wreck_t0 = -1.0;   // the death moment (scene_t): the wreck look settles in over 4 s from it; < 0 at once
+uniform float fx_power = 1.0;
+varying vec3 vP;
+varying vec3 vN;
+float ih(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+float inz(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(ih(i), ih(i + vec2(1.0, 0.0)), f.x), mix(ih(i + vec2(0.0, 1.0)), ih(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+// 1 on a seam line (within w of a whole number of x), 0 across the panel (Fable review B2: it was inverted)
+float line(float x, float w) { return smoothstep(0.0, w, abs(fract(x) - 0.5) * 2.0 - (1.0 - w * 2.0)); }
+vec2 icells(vec2 p) {
+	vec2 g = floor(p);
+	vec2 f = fract(p);
+	float d1 = 8.0, d2 = 8.0, id = 0.0;
+	for (int j = -1; j <= 1; j++) {
+		for (int i = -1; i <= 1; i++) {
+			vec2 o = vec2(float(i), float(j));
+			vec2 c = o + vec2(ih(g + o), ih(g + o + 17.3)) - f;
+			float d = dot(c, c);
+			if (d < d1) { d2 = d1; d1 = d; id = ih(g + o + 5.1); } else if (d < d2) { d2 = d; }
+		}
+	}
+	return vec2(sqrt(d2) - sqrt(d1), id);
+}
+// One plane of the pattern: x shade, y groove (1 deep in a seam), z glowing line, w roughness offset.
+vec4 pat(vec2 uv, bool flat_f) {
+	vec4 r = vec4(1.0, 0.0, 0.0, 0.0);
+	float n = inz(uv * 3.0);
+	if (wound_v2 == 0) {
+		if (flat_f) { float slat = line(uv.x * 4.0, 0.25); float bar = line(uv.y * 0.5, 0.06); r.y = max(slat, bar) * 0.8; r.x = 0.85 + 0.3 * n; }
+		else {
+			vec2 pc = fract(uv * vec2(1.0, 1.6));
+			float seam = max(line(uv.x, 0.04), line(uv.y * 1.6, 0.05));
+			float rivet = 1.0 - smoothstep(0.03, 0.05, min(length(pc - vec2(0.08)), length(pc - vec2(0.92, 0.08))));
+			float rib = line(uv.x * 0.25, 0.08);
+			r.y = max(seam, rib * 0.7); r.x = 0.8 + 0.4 * n + rivet * 0.5; r.z = seam * step(0.85, inz(uv * 0.7)) * 0.6;
+		}
+	} else if (wound_v2 == 1) {
+		if (flat_f) { r.y = max(line(uv.x, 0.03), line(uv.y, 0.03)); r.x = 1.05 + 0.1 * n; r.w = -0.1; }
+		else {
+			vec2 pc = fract(uv * vec2(1.0, 0.5));
+			float louver = step(0.2, pc.x) * step(pc.x, 0.8) * step(0.3, pc.y) * step(pc.y, 0.7) * line(uv.y * 8.0, 0.3);
+			r.y = max(max(line(uv.x, 0.03), line(uv.y * 0.5, 0.03)), louver * 0.6);
+			r.x = 1.05 + 0.1 * n;
+			r.z = line(uv.y * 0.5 + 0.5, 0.025) * 1.2;
+		}
+	} else if (wound_v2 == 2) {
+		vec2 sz = vec2(0.7 + ih(floor(uv * 0.5)) * 0.8, 0.5 + ih(floor(uv * 0.5) + 3.1) * 0.7);
+		vec2 pc = fract(uv / sz);
+		float edge = max(line(uv.x / sz.x, 0.05), line(uv.y / sz.y, 0.06));
+		float bolt = (1.0 - smoothstep(0.03, 0.06, abs(pc.y - 0.07))) * step(0.5, fract(pc.x * 6.0));
+		float rust = smoothstep(0.55, 0.8, inz(uv * 1.3 + 7.0));
+		r.y = max(edge, bolt * 0.5); r.x = (0.7 + 0.5 * ih(floor(uv / sz))) * (1.0 - rust * 0.3); r.w = 0.1 + rust * 0.15;
+		r.z = edge * step(0.8, inz(uv * 0.5 + 3.0)) * 0.7;
+	} else if (wound_v2 == 3) {
+		float wv = uv.x * 5.0 + sin(uv.y * 1.3 + n * 2.0) * 1.2;
+		float fibre = pow(abs(sin(wv)), 6.0);
+		vec2 cc = icells(uv * 2.2);
+		float bump = smoothstep(0.0, 0.25, cc.x);
+		float vein = 1.0 - smoothstep(0.0, 0.04, abs(sin(uv.y * 0.9 + inz(uv * 0.8) * 4.0)) - 0.0);
+		r.x = 0.7 + 0.4 * fibre + 0.2 * bump; r.y = (1.0 - fibre) * 0.4 + (1.0 - bump) * 0.4; r.z = vein * 0.9; r.w = -0.1;
+	} else if (wound_v2 == 4) {
+		vec2 cc = icells(uv * 1.6);
+		float edge = 1.0 - smoothstep(0.0, 0.05, cc.x);
+		float braid = pow(abs(sin(uv.x * 3.0 + sin(uv.y * 2.0) * 1.5)), 48.0) + pow(abs(sin(uv.x * 3.0 - sin(uv.y * 2.0) * 1.5 + 1.0)), 48.0);
+		// sanity frame (Nov 22): the braid at 0.8 lit the whole wall as a lattice; a faint thread, the cell edges carry it
+		r.x = 0.75 + 0.5 * cc.y; r.y = edge * 0.5; r.z = edge * 0.35 + braid * 0.2; r.w = -0.2;
+	} else {
+		float rib = line(uv.y * 6.0, 0.18);
+		vec2 g = fract(uv * 1.5);
+		float chan = max(line(uv.x * 1.5, 0.03) * step(0.3, inz(uv * 2.0)), line(uv.y * 1.5, 0.03) * step(0.6, inz(uv * 2.0 + 4.0)));
+		r.x = 0.8 + 0.25 * n; r.y = max(rib * 0.6, chan); r.z = chan * 0.9;
+	}
+	return r;
+}
+void vertex() {
+	vP = (fx_hull_frame * vec4(VERTEX, 1.0)).xyz;
+	vN = normalize(mat3(fx_hull_frame) * NORMAL);
+}
+void fragment() {
+	vec3 w = pow(abs(vN), vec3(4.0));
+	w /= max(w.x + w.y + w.z, 1e-4);
+	vec3 p = vP * tri_scale;
+	bool flat_f = abs(vN.y) > 0.7;
+	vec4 r = pat(p.zy, false) * w.x + pat(p.xz, flat_f) * w.y + pat(p.xy, false) * w.z;
+	if (role == 1 || role == 2 || role == 3) { r.z = 0.0; }   // bone, cores and glass carry no glowing pattern lines
+	if (role == 1) { r.y *= 0.4; }
+	// how open this spot is to the outside: near an open mouth and below it
+	float open_f = fx_mouth_count < 0 ? 1.0 : 0.0;
+	float near = 0.0;
+	for (int i = 0; i < 64; i++) {
+		if (i >= fx_mouth_count) { break; }
+		vec3 d = vP - fx_mouths[i].xyz;
+		float R = max(fx_mouths[i].w, 1e-4);
+		float h = dot(d, fx_axes[i].xyz);
+		float o = (1.0 - smoothstep(R * 1.4, R * 5.5, length(d))) * (1.0 - smoothstep(R * 0.2, R * 0.6, h));
+		open_f = max(open_f, o);
+		near = max(near, 1.0 - smoothstep(0.0, R * 3.0, length(d)));
+	}
+	vec3 tex = texture(base_tex, UV).rgb;
+	vec3 baked = base_albedo.rgb * tex;
+	float ao = 1.0 - r.y * 0.65;
+	float wr = clamp(fx_wreck, 0.0, 1.0) * (fx_wreck_t0 < 0.0 ? 1.0 : smoothstep(0.0, 4.0, scene_t - fx_wreck_t0));
+	// Fable review B3: the pattern multiplies over the surface instead of replacing it. A role-table surface keeps its own
+	// colour and trim; an older diagram-coloured surface keeps only its texture's light and dark (luma against the
+	// texture's own mean, its last mip), in the faction's interior colour, so no diagram hue leaks into a breach
+	float tl = dot(tex, vec3(0.2126, 0.7152, 0.0722));
+	float tm = dot(textureLod(base_tex, UV, 14.0).rgb, vec3(0.2126, 0.7152, 0.0722));
+	float detail = clamp(tl / max(tm, 0.02), 0.4, 1.8);
+	vec3 hue = v2_interior_lift;
+	if (role == 1) { hue = vec3(0.17, 0.15, 0.11); }                       // dry weathered bone, never flesh
+	else if (role == 2) { hue = v2_interior_lift * 0.6; }                  // a core's housing is dark; its light does the work
+	else if (role == 4 && wound_v2 == 3) { hue = vec3(0.075, 0.03, 0.022); }   // wet crimson-umber organ
+	vec3 surf = trusted ? baked : hue * detail;
+	vec3 lit = surf * mix(1.0, r.x * ao, trusted ? 0.5 : 1.0);
+	vec3 wreck = lit * (1.0 - v2_wreck_soot);
+	if (wound_v2 == 3) { wreck = mix(lit, vec3(0.1, 0.09, 0.07) * r.x, 0.35); }    // dull pale bone and wet dark tissue
+	if (wound_v2 == 4) { wreck = mix(lit, v2_rim_metal * vec3(1.0, 0.97, 0.93) * 0.4 * (0.6 + 0.4 * r.x), 0.4); }   // pale frosted pearl glass, never dark grey (Ryan Nov 24)
+	lit = mix(lit, wreck, wr);
+	// R420: walls at most the faction's ceiling (0.11 linear mean; Glasswrights 0.45), held by scaling the colour so the
+	// hue stays; bone and glass are exempt
+	if (role == 0 || role == 2 || role == 4) {
+		float lm = (lit.r + lit.g + lit.b) / 3.0;
+		lit *= lm > v2_wall_max ? v2_wall_max / lm : 1.0;
+	}
+	// an older surface never shows its diagram colour, even away from a mouth: it fades toward a darker faction tone
+	// (Antigravity audit on PR 1755, finding 1); a role-table surface keeps its own colour there
+	ALBEDO = mix(trusted ? baked : lit * 0.15, lit, open_f);
+	vec3 orm = has_orm ? texture(base_orm, UV).rgb : vec3(1.0, base_rough, base_metal);
+	float rough = clamp(v2_rough + r.w, 0.04, 1.0);
+	if (has_orm) { rough = mix(rough, orm.g, 0.5); }
+	if (role == 1) { rough = 0.55; }
+	if (wound_v2 <= 2) { rough = mix(rough, 0.92, wr * v2_wreck_soot); }
+	ROUGHNESS = mix(base_rough, rough, open_f);
+	float metal = (role == 1 || role == 4) ? 0.0 : ((wound_v2 <= 2 || wound_v2 == 5) ? 0.45 : 0.0);
+	if (has_orm) { metal = mix(metal, orm.b, 0.5); }
+	METALLIC = mix(base_metal, metal, open_f);
+	SPECULAR = 0.5 * ao;
+	AO = ao * (has_orm ? orm.r : 1.0);
+	AO_LIGHT_AFFECT = 0.6;
+	// bump from the pattern's grooves (screen-space derivatives: no tangents needed), over the trim's own normal map
+	if (has_normal) { NORMAL_MAP = texture(base_normal, UV).rgb; }
+	float hgt = -r.y * 0.6;
+	vec3 sx = dFdx(VERTEX);
+	vec3 sy = dFdy(VERTEX);
+	vec3 r1 = cross(sy, NORMAL);
+	vec3 r2 = cross(NORMAL, sx);
+	float det = dot(sx, r1);
+	vec3 grad = sign(det) * (dFdx(hgt) * r1 + dFdy(hgt) * r2);
+	vec3 bn = abs(det) * NORMAL - grad * 1.5;
+	bn = dot(bn, bn) > 1e-12 ? normalize(bn) : NORMAL;   // a grazing face (det 0) keeps its normal, never NaN (audit finding 2)
+	NORMAL = normalize(mix(NORMAL, bn, open_f * (trusted ? 0.4 : 0.8)));
+	float pulse = 0.75 + 0.25 * sin(scene_t * (wound_v2 == 3 ? 2.3 : 1.1) + vP.x * 0.4);
+	float fade = wound_v2 == 4 ? mix(1.0, 0.25, wr) : (1.0 - wr * 0.85);
+	float pw = clamp(fx_power, 0.0, 1.0);
+	vec3 em = v2_interior_accent * r.z * pulse * fade * open_f * 0.35 * pw;
+	em += v2_interior_accent * near * 0.04 * (1.0 - wr);
+	// Fable review H3: the surface's own light keeps only its brightness, in the faction accent (no green Eclipse cores,
+	// no lime Chorus vats from the old diagram colours); a role-table surface's light is already in faction colour
+	vec3 bsrc = base_emission.rgb * base_emission_energy * texture(base_em_tex, UV).rgb;
+	float bl = max(bsrc.r, max(bsrc.g, bsrc.b));
+	float am = max(v2_interior_accent.r, max(v2_interior_accent.g, v2_interior_accent.b));
+	vec3 bem = (trusted ? bsrc : v2_interior_accent / max(am, 1e-3) * bl) * pw * (1.0 - wr);
+	bem *= mix(0.15, 1.0, open_f);
+	// R420: non-core light at most 0.25, held by scaling (Fable review H2); a core is the HDR band and passes
+	vec3 soft = em + (role == 2 ? vec3(0.0) : bem);
+	float pk = max(soft.r, max(soft.g, soft.b));
+	soft *= pk > 0.25 ? 0.25 / pk : 1.0;
+	EMISSION = soft + (role == 2 ? bem : vec3(0.0));
 }
 """
 

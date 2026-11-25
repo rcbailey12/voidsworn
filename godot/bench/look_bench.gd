@@ -42,6 +42,7 @@ extends Node
 
 const FX := preload("res://fx/fx.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const BREACH := preload("res://fx/fx_breach.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const SV := preload("res://render/ship_view.gd")
 const HT := preload("res://render/hull_table.gd")
@@ -84,6 +85,7 @@ var wld = null
 var A = null
 var T = null
 var report := {"stills": [], "warnings": [], "parts": {}}
+var _wound := {}   # issue 1741 (Artoo on 6fbf60fe): a wound-aimed row's open cutouts and pose, for its still's report entry
 var cfg := {}
 var steps := 0
 var headless := false
@@ -671,6 +673,50 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.sync_ship("T", row["sync_t"])
 		for k in 30:
 			await _step()
+		# Issue 1741 (JOINT_B, Nov 23: the breached rows showed no cutout and logged no wound pose): a ship still taking
+		# a pre shot (a torpedo in flight) holds its new hull stages until that impact lands (fx_ship.sync, busy_until),
+		# so wait for it (at most 8 s), then finish the hull rebuild, so the still and the wound camera see the stages
+		# the row sets
+		var ts = fx.ship("T")
+		if ts != null:
+			for k in 480:
+				if fx.now > float(ts.busy_until) + 0.1:
+					break
+				await _step()
+			if fx.now <= float(ts.busy_until) + 0.1:
+				_warn("%s at %d: the target was still waiting on a pre shot after 8 s" % [str(row.get("id", "")), int(r)])
+			for k in 3:
+				ts.flush_damage(fx)
+				await _step()
+	# Issue 1741 (V2B PC run, Nov 22: most Wounds V2 cutouts fell outside the close frame or on the far side): "focus":
+	# "wound" turns a close camera (under 100) to face the target's biggest open cutout, centred on it; camera 170 keeps
+	# the battle angle on the ship's centre (RULEBOOK 6.1). A ship with no open cutout keeps the usual view. The pose
+	# depends on the run's own cutouts, so it is logged and such a row is a detail, never a before/after pair (Artoo).
+	_wound = {}
+	if str(row.get("focus", "")) == "wound" and r < 100.0 and fx.ship("T") != null:
+		var st = fx.ship("T")
+		var best: Dictionary = {}
+		var mouths: Array = BREACH.open_mouths(st)
+		for mo in mouths:
+			if best.is_empty() or float(mo["R"]) > float(best["R"]):
+				best = mo
+		# a wound detail with no open cutout is not proof of anything: the still is kept, but its report entry says
+		# incomplete and the log carries one LOOK_BENCH WOUND MISSING line (a run with V2 off expects none)
+		_wound = {"mouths": mouths.size(), "v2": BREACH.v2_on(), "complete": not best.is_empty()}
+		if best.is_empty() and BREACH.v2_on():
+			_warn("LOOK_BENCH WOUND MISSING %s at %d: no open cutout, default camera kept" % [str(row.get("id", "")), int(r)])
+		if not best.is_empty():
+			var wc: Vector3 = st.to_world(best["c"])
+			var wn: Vector3 = (st.to_world(best["c"] + best["n"]) - wc).normalized()
+			cam.a = atan2(-wn.z, wn.x)
+			cam.b = clampf(acos(clampf(wn.y, -1.0, 1.0)), 0.35, 1.25)
+			cam.r = r
+			cam.t = wc
+			cam.snap()
+			_wound["pose"] = [cam.a, cam.b, cam.r, wc.x, wc.y, wc.z]
+			_log("%s wound pose at %d: a %.4f b %.4f r %.1f t (%.2f, %.2f, %.2f)" % [str(row.get("id", "")), int(r), cam.a, cam.b, cam.r, wc.x, wc.y, wc.z])
+			for k in 6:
+				await _step()
 	fx.rng.seed = 11
 	seed(2070)
 	var t_ev: float = fx.now
@@ -792,6 +838,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts, "code": tcode})
+	if not _wound.is_empty():
+		report["stills"][-1]["wound"] = _wound.duplicate()
 	_log("%s at %d: %d cells" % [id, int(r), ci])
 	return true
 
