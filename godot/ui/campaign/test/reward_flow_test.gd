@@ -149,6 +149,18 @@ func wreck_checks() -> void:
 	check(ram == "Rammed" and torpedo == "Torpedo strike", "the shared big kill class is distinguished by the battle log")
 	var stray: String = C._heavy_wreck_cause(ship, [{"m": "Torpedoes from Quiet Resolve reach Broken Crown (a stray hit in the lane): 36 hull."}])
 	check(stray == "Torpedo strike", "a stray torpedo uses the same wreck wording")
+	# issue 2025: a Spread Pattern splash kill is never named in the burst line, so an earlier gun hit must not take the credit
+	var splash := {"name": "Broken Crown", "killedBy": "Quiet Resolve"}
+	var splash_log := [
+		{"m": "Pale Lantern fires Heavy Battery at Broken Crown: 4 hull."},
+		{"m": "Volley Torpedo from Quiet Resolve burst against Iron Vow, catching 2 ships."},
+		{"m": "Broken Crown is destroyed."},
+	]
+	check(C._heavy_wreck_cause(splash, splash_log) == "Torpedo strike", "a Spread Pattern splash kill is credited to the torpedo, not an earlier gun hit")
+	var splash_ram := splash_log.duplicate(); splash_ram.append({"m": "Quiet Resolve rams Broken Crown at full speed: 30 to its prow, 10 back to the ram."})
+	check(C._heavy_wreck_cause(splash, splash_ram) == "Rammed", "a later ram on the wreck still wins over an earlier burst")
+	check(C._heavy_wreck_cause({"name": "Iron Vow", "killedBy": "Quiet Resolve"}, splash_log.slice(0, 2)) == "", "the ship the burst was aimed at is not credited by the burst line")
+	check(C._heavy_wreck_cause({"name": "Broken Crown", "killedBy": "Other Hull"}, splash_log) == "", "a burst from a different ship does not take the credit")
 	for row in [
 		["big", ram, "Rammed"],
 		["big", torpedo, "Torpedo strike"],
