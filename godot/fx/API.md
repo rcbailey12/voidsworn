@@ -430,6 +430,19 @@ core/sheath flow mask, and a filled faceted chip. There are no downloaded sprite
 packs. Materials share the imported textures through `_mat`, including the
 attached engine batches; they do not allocate textures per shot.
 
+Build B (issue 2043) uses separate hot-core and tapered-sheath masks in the
+existing streak and sprite pools. The shooter palette normally tints the
+sheath, but plasma stays light blue from muzzle to impact (R46). Bombs have
+their own capsule mask. The shared muzzle kit keeps the approved gas on
+cartridge blasts and uses clean apertures for energy and crystal and a wet
+plume for bio. Bright muzzle and intercept cores still use the flash counter.
+Spark recipes stay separate (issue 2018).
+
+Star corona rays follow the original body after ignition and turn off on
+intercept. Rockets add a cold, short smoke layer over the nozzle wake with
+its own small pixel floor. A torpedo without its kit model uses the same
+tapered wake as a kit round.
+
 Streaks retain their existing pool and API. The mask has a bright compact head,
 a short irregular tail, and a soft halo. Spark heads follow drag and a gentle
 curved drift; the cooling history bends inside the quad. After the usual length
@@ -486,9 +499,9 @@ beam endpoints have a muzzle/contact flare and a separate 0.30 s quiet cooling
 glow. The real impact still owns the wound, flash and thrown matter. The curved
 moving-engine history also has a resolved centre, soft sheath and end fades.
 
-Prism sprite kind 16 is now a small filled lit facet rather than a four-armed
-cross. This intentionally covers every existing kind-16 caller: shield chips,
-prism flight, muzzle and impact glints. No shield recipe or shard count changes.
+Prism sprite kind 16 is a small filled lit facet rather than a four-armed
+cross. Shield chips and impact glints still use it. Build B's prism flight
+and muzzle use their own masks. No shield recipe or shard count changes.
 
 Rockets and torpedoes retain the real closed casings, fins and sampled baked
 exhaust. Their motor has a 12 px quad floor with distinct core and halo, existing

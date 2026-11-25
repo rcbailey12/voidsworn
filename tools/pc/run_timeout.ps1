@@ -340,6 +340,19 @@ function Update-RunTree($Tree) {
     }
   } while ($added)
 }
+function Test-TreeCpuProgress($Tree, $CpuTicks) {
+  $advanced = $false
+  foreach ($child in $Tree.Values) {
+    try {
+      # Keep per-process totals. A child exiting must not hide another child's work by lowering a tree-wide sum.
+      $ticks = $child.TotalProcessorTime.Ticks
+      if ($ticks -gt [long]$CpuTicks[$child.Id]) { $advanced = $true }
+      $CpuTicks[$child.Id] = $ticks
+    } catch [InvalidOperationException] { }
+      catch [ComponentModel.Win32Exception] { }
+  }
+  return $advanced
+}
 function Write-KillLog($Log, $Line) {
   Write-Output "run_timeout: $Line"
   try { "$(Get-Date -Format s) $Line" | Out-File -LiteralPath $Log -Append -Encoding utf8 }
@@ -876,6 +889,7 @@ try {
 }
 $null = $p.Handle   # keeps the exit code readable after the process ends
 $tree = @{ }; $tree[$p.Id] = $p
+$cpuTicks = @{}
 $completed = $false
 try {
 $poll = 5000
@@ -884,6 +898,7 @@ while ($true) {
   Update-RunTree $tree
   $remaining = [Math]::Max(1, [Math]::Min($poll, ($Seconds - $timer.Elapsed.TotalSeconds) * 1000))
   if ($p.WaitForExit([int]$remaining)) { $p.WaitForExit(); $completed = $true; exit $p.ExitCode }
+  if (Test-TreeCpuProgress $tree $cpuTicks) { $lastProgress = $timer.Elapsed.TotalSeconds }
   # Scan the checkout once a minute to avoid walking a large repo on every poll.
   if ($timer.Elapsed.TotalSeconds -ge $nextScan) {
     $after = Get-RunProgress $watchRepo $logs

@@ -108,6 +108,7 @@ uniform float ignition = 0.0;
 uniform vec4 atlas_rect = vec4(0.0, 0.0, 1.0, 1.0);
 uniform float min_pixels = 0.0;
 uniform float size_divisor = 1.0;
+uniform float read_pixels = 0.0;
 uniform float soft_flash = 0.0;
 // Opt-in for a weapon flash or its body. A setting change can dim an existing picture without restarting its clock.
 uniform float calm_intensity = 0.0;
@@ -135,6 +136,9 @@ void vertex() {
 	particle_depth = -view_c.z;
 	float size = max(extent, px_world(min_pixels, -view_c.z, PROJECTION_MATRIX));
 	size /= size_divisor;
+	if (read_pixels > 0.0) {
+		size = max(size, px_world(read_pixels, -view_c.z, PROJECTION_MATRIX));
+	}
 	vec2 axis = (VIEW_MATRIX * vec4(tear_normal, 0.0)).xy;
 	axis = length(axis) > 0.01 ? normalize(axis) : vec2(0.0, 1.0);
 	vec2 up = mix(vec2(0.0, 1.0), axis, directional);
@@ -250,10 +254,12 @@ static func flash_sprite_floor(kind: int, px: float) -> float:
 	return maxf(FLASH_SPRITE_FLOORS[kind], floorf(clampf(px, 0.0, 4000.0)))
 
 
+const WEAPON_MASKS := preload("res://render/weapon_layer_masks.gd")
+const ROCKET_SMOKE := 37
 const SPRITE := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + """
+""" + COMMON + WEAPON_MASKS.SPRITE + """
 uniform float gate = 1.0;
 uniform sampler2D kit_flake : filter_linear, repeat_disable;
 varying vec2 vUv;
@@ -281,6 +287,8 @@ void vertex() {
 		else if (k == 3 || k == 7 || k == 8) { g = 1.0 - spow(1.0 - t, 1.6); }
 		else if (k == 4 || k == 11 || k == 13 || k == 14 || k == 15 || k == 16 || k == 17 || k == 19 || k == 21 || k == 22 || k == 23) { g = 0.0; }
 		else if (k == 12) { g = t * t; }
+		else if (k >= 30 && k <= 32) { g = 0.0; }
+		else if (k == 37) { g = 1.0 - spow(1.0 - t, 2.2); }
 		float size = mix(a3.x, a3.y, g);
 		// F3 round 2: a3.w carries the seed in its fraction and, in its whole part, an explicit on-screen floor in pixels
 		// for this one sprite (impact, muzzle and kill flashes that must read from the battle camera); 0 means the kind's
@@ -331,9 +339,9 @@ void vertex() {
 		// Death cores and narrow fires keep their surface brightness at the floor.
 		// Enlarging an almost subpixel craft flame must not make it a faint dot.
 		// Explicit smoke/gas floors preserve opacity, without adding any light.
-		if (k == 24 || k == 25 || k == 26 || (own && (k == 3 || k == 7 || k == 8))) { boost = 1.0; }
+		if (k == 24 || k == 25 || k == 26 || k == 37 || (own && (k == 3 || k == 7 || k == 8))) { boost = 1.0; }
 		vec2 q = VERTEX.xy;
-		if (k == 14 || k == 15 || k == 23 || k == 27) {
+		if (k == 14 || k == 15 || k == 23 || k == 27 || (k >= 30 && k <= 33) || k == 36 || k == 37) {
 			// stretched along the screen-space motion (bolts and globs read as moving, not as dots)
 			vec3 vw = (MODEL_MATRIX * vec4(a1.xyz, 0.0)).xyz;
 			vec2 sv = (VIEW_MATRIX * vec4(vw, 0.0)).xy;
@@ -342,6 +350,10 @@ void vertex() {
 			vec2 dy = vec2(-dx.y, dx.x);
 			float st = k == 23 ? 1.4 : (k == 14 ? 1.0 + clamp(sl * 0.012, 0.0, 1.6) : 1.0 + clamp(sl * 0.006, 0.0, 0.6));
 			q = k == 27 ? dx * VERTEX.x * 1.85 + dy * VERTEX.y * 0.62 : dx * VERTEX.x * st + dy * VERTEX.y;
+			if (k >= 30) {
+				float stretch = k == 37 ? 2.35 : (k == 30 ? 1.95 : (k == 32 ? 1.38 : 1.62));
+				q = dx * VERTEX.x * stretch + dy * VERTEX.y * (k == 37 ? 0.78 : 1.0);
+			}
 		} else {
 			float cs = cos(ang);
 			float sn = sin(ang);
@@ -452,6 +464,23 @@ void fragment() {
 		float sphere = smoothstep(0.42, 0.36, r);
 		float ray = spow(abs(cos(atan(p.y, p.x) * 6.0 + age * 1.5 + seed * 4.0)), 18.0) * exp(-r * 2.5);
 		add = (mix(vCol.rgb, vec3(1.0, 0.98, 0.9), 0.6) * sphere * (1.2 + 0.8 * n) + vCol.rgb * exp(-r * r * 4.0) * 0.8 + vCol.rgb * ray * 1.2) * I;
+	} else if (k >= 30 && k <= 32) {
+		vec2 bolt = bolt_sprite(p, k, age, seed);
+		vec3 hot = mix(vCol.rgb, vec3(1.0), k == 31 ? 0.30 : 0.72);
+		add = (hot * bolt.x * 0.88 + vCol.rgb * bolt.y * 0.38) * I;
+		if (k == 32) {
+			alpha = bolt.y * 0.72;
+			base = vCol.rgb * 0.095;
+		}
+	} else if (k >= 33 && k <= 36) {
+		float env = smoothstep(0.0, 0.13, t) * (1.0 - smoothstep(0.22, 1.0, t));
+		add = vCol.rgb * muzzle_sheath(p, k, t, seed) * env * I * mix(1.0, 0.57, fx_calm);
+	} else if (k == 37) {
+		float n = fbm(p * vec2(4.0, 2.5) + vec2(seed * 9.3 + t, -t * 1.7));
+		float edge = length(vec2(p.x, p.y + (n - 0.5) * 0.22));
+		float density = 1.0 - edge + (n - 0.5) * 0.68;
+		alpha = smoothstep(0.12, 0.72, density) * smoothstep(0.02, 0.16, t) * spow(1.0 - t, 1.5) * I;
+		base = vCol.rgb * (0.74 + n * 0.35);
 	} else if (k == 18) {
 		float f = sin(3.14159 * t) * I;
 		add = vCol.rgb * exp(-r * r * 2.5) * f;
@@ -489,6 +518,7 @@ void fragment() {
 # kinds: 0 shell/tracer   1 spark   3 flame tongue   4 textured las dart
 # Kind 5 now routes to NULL_SLUG; its old vertex branch below is unused there.
 #        6 droplet (bio, falls off a glob)   7 molten drip (lance trench)   8 hull-hit spark
+#        9 shell   10 energy dart   11 crystal dart   12 scrap
 const STREAK_VERTEX := """
 uniform float gate = 1.0;
 uniform sampler2D kit_tail : filter_linear, repeat_disable;
@@ -584,8 +614,8 @@ void vertex() {
 		} else {
 			// Kit floors describe the whole mask quad, including its soft halo.
 			// The separate projected-length cap below uses actual framebuffer pixels.
-			float wf = k == 4 ? 7.0 : (k == 5 ? 22.0 : (k == 0 ? 8.0 : 6.0));
-			float lf = (k == 0 || k == 4 || k == 5) ? 14.0 : 5.0;
+			float wf = k == 4 || k == 10 || k == 11 ? 7.0 : (k == 5 ? 22.0 : (k == 0 || k == 9 || k == 12 ? 8.0 : 6.0));
+			float lf = (k == 0 || k == 4 || k == 5 || k >= 9) ? 14.0 : 5.0;
 			// round 2: a4.z and a4.w carry this streak's own width and length floors (pixels), for fatter tracer cores and
 			// bolder sparks; a line grown to its own floor dims only as f^-0.3
 			bool own = a4.z > wf;
@@ -605,7 +635,7 @@ void vertex() {
 		// Cap projected head-to-tail distance, including perspective. The cap is in 1080-line pixels like the width
 		// and length floors (issue 1211: it was raw pixels, so 4K streaks were half length), it never clips the streak's
 		// own length floor (the macro shell asks 26), and it holds with fx_px disabled.
-		float cap_px = max(k == 4 ? 32.0 : (k == 5 ? 26.0 : (k == 0 ? 22.0 : 16.0)), lf) * (VIEWPORT_SIZE.y / 1080.0);
+		float cap_px = max(k == 4 || k == 10 || k == 11 ? 32.0 : (k == 5 ? 26.0 : (k == 0 || k == 9 || k == 12 ? 22.0 : 16.0)), lf) * (VIEWPORT_SIZE.y / 1080.0);
 		vec4 hc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(head, 1.0);
 		vec4 tc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(tail, 1.0);
 		float projected = length((hc.xy / max(hc.w, 0.0001) - tc.xy / max(tc.w, 0.0001)) * VIEWPORT_SIZE * 0.5);
@@ -622,7 +652,19 @@ void vertex() {
 		vK = a3.w;
 		vU = u;
 		vCol = a2.rgb * a2.a * fade * bw * clamp(gate, 0.0, 1.0);
-		POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(p, 1.0));
+		if (k >= 9 && k <= 12) {
+			vec3 h = (VIEW_MATRIX * vec4(head, 1.0)).xyz;
+			vec3 t = (VIEW_MATRIX * vec4(tail, 1.0)).xyz;
+			vec2 delta = h.xy - t.xy;
+			float screen_length = length(delta);
+			vec2 axis = screen_length > 1e-4 ? delta / screen_length : vec2(1.0, 0.0);
+			t.xy -= axis * max(lmin - screen_length, 0.0);
+			vec3 view_pos = mix(t, h, VERTEX.x);
+			view_pos.xy += vec2(-axis.y, axis.x) * VERTEX.y * sw;
+			POSITION = PROJECTION_MATRIX * vec4(view_pos, 1.0);
+		} else {
+			POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(p, 1.0));
+		}
 		}
 	}
 }
@@ -632,7 +674,7 @@ const STREAK := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 """ + COMMON + """
-""" + STREAK_VERTEX + """
+""" + STREAK_VERTEX + WEAPON_MASKS.STREAK + """
 void fragment() {
 	int k = int(vK + 0.5);
 	if (k == 8) {
@@ -651,6 +693,12 @@ void fragment() {
 		float halo_x = (x - 0.86) * 2.1;
 		float halo = exp(-13.0 * halo_x * halo_x - 17.0 * y * y) * head * heat * 0.13;
 		ALBEDO = (mix(vCol, vec3(energy), white) * thread + vCol * halo) * fx_gain;
+	} else if (k >= 9 && k <= 12) {
+		vec2 bolt = bolt_streak(vUv, k, vU);
+		float peak = max(vCol.r, max(vCol.g, vCol.b));
+		vec3 hot = mix(vCol, vec3(peak), 0.84);
+		vec3 sheath = k == 11 ? vCol * vec3(0.72, 0.90, 1.0) : vCol;
+		ALBEDO = clamp((hot * bolt.x * 0.27 + sheath * bolt.y * 0.16) * fx_gain, 0.0, 512.0);
 	} else {
 		// The baked tail is displaced across its quad to curve the cooling
 		// history. The hot head stays on the true ballistic position.
@@ -673,13 +721,32 @@ void fragment() {
 }
 """
 
+const ORDNANCE_CORONA := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+""" + COMMON + WEAPON_MASKS.SOLAR + """
+uniform vec3 tint = vec3(1.0);
+uniform float seed = 0.0;
+void vertex() {
+	vec3 centre = (VIEW_MATRIX * MODEL_MATRIX[3]).xyz;
+	float size = 4.6 * length(MODEL_MATRIX[0].xyz);
+	size = max(size, px_world(26.0, -centre.z, PROJECTION_MATRIX));
+	POSITION = PROJECTION_MATRIX * vec4(centre + vec3(VERTEX.xy * size, 0.0), 1.0);
+}
+void fragment() {
+	float wisps = solar_wisps(UV * 2.0 - 1.0, scene_t, seed);
+	ALBEDO = tint * wisps * fx_gain * mix(0.9, 0.58, fx_calm);
+}
+"""
+
 # Oriented rings. a1 = (normal, life); a3 = (size0, size1, kind, seed); a4 = (period, speed, drag, 0).
 # kinds: 0 smoke ring (alpha)   1 shockwave   2 soft pop ring (reduce-flashing replacement)   3 thin pale ring (gauss
-#        muzzle shock, sonic boom)   4 hex-cell ring (Hegemony shield shatter)
+#        muzzle shock, sonic boom)   4 hex-cell ring (Hegemony shield shatter)   5 soft death front (camera-facing)
+const RING_DEATH_FRONT := 5
 const RING := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + """
+""" + COMMON + ("\nconst int RING_DEATH_FRONT = %d;\n" % RING_DEATH_FRONT) + """
 varying vec2 vUv;
 varying vec4 vCol;
 varying vec4 vInfo;
@@ -702,9 +769,15 @@ void vertex() {
 		vec3 t2 = cross(n, t1);
 		float g = a3.z < 0.5 ? 1.0 - spow(1.0 - t, 2.0) : 1.0 - spow(1.0 - t, 3.0);
 		float size = mix(a3.x, a3.y, g);
+		int rk = int(a3.z + 0.5);
+		if (rk == 6) {
+			// Tilt the facet plane a little so its edges still read from the side.
+			t2 = snorm(t2 + n * 0.32);
+			float dv = max(-(VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).z, 0.01);
+			size = max(size, px_world(36.0, dv, PROJECTION_MATRIX));
+		}
 		// F3: shock fronts, soft pops and pale shock rings keep at least 12 px across (1080 lines), dimming as they grow
 		float rb = 1.0;
-		int rk = int(a3.z + 0.5);
 		if (rk >= 1 && rk <= 3) {
 			// round 2: a4.w is this ring's own final size in pixels (kill shock rings, shield ripples): the floor grows with
 			// the ring's own easing (15% to 100% of it), so a far ring still visibly expands; grown to it, it dims as f^-0.5
@@ -716,8 +789,15 @@ void vertex() {
 				size = mn;
 			}
 		}
-		vec3 p = c + (t1 * VERTEX.x + t2 * VERTEX.y) * size;
-		POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * (MODEL_MATRIX * vec4(p, 1.0)));
+		if (rk == RING_DEATH_FRONT) {
+			// Read at a low angle too. The noise breaks the front up instead of drawing a clean circle.
+			vec3 centre_view = (VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).xyz;
+			size = max(size, px_world(a4.w, -centre_view.z, PROJECTION_MATRIX) * mix(0.24, 1.0, g));
+			POSITION = PROJECTION_MATRIX * vec4(centre_view + vec3(VERTEX.xy * size, 0.0), 1.0);
+		} else {
+			vec3 p = c + (t1 * VERTEX.x + t2 * VERTEX.y) * size;
+			POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * (MODEL_MATRIX * vec4(p, 1.0)));
+		}
 		vUv = VERTEX.xy * 2.0;
 		vCol = vec4(a2.rgb, a2.a * rb);
 		vInfo = vec4(t, a3.z, a3.w, age);
@@ -730,7 +810,17 @@ void fragment() {
 	if (r > 1.0) { discard; }
 	float ang = atan(p.y, p.x);
 	vec3 add = vec3(0.0); vec3 base = vec3(0.0); float alpha = 0.0;
-	if (k == 0) {
+	if (k == 6) {
+		// Two bevel edges on a hexagon, not a round bead or a screen lens.
+		vec2 a = abs(p);
+		float facet = max(a.y, dot(a, vec2(0.8660254, 0.5)));
+		float aa = clamp(fwidth(facet) * 0.55, 0.018, 0.12);
+		float face = 1.0 - smoothstep(0.035, 0.035 + aa, abs(facet - 0.68));
+		float bevel = 1.0 - smoothstep(0.014, 0.014 + aa, abs(facet - 0.79));
+		vec3 prism = mix(vec3(0.34, 0.83, 1.0), vec3(0.82, 0.48, 1.0), smoothstep(-0.7, 0.7, p.x));
+		float envelope = smoothstep(0.0, mix(0.15, 0.28, fx_calm), t) * (1.0 - smoothstep(0.54, 1.0, t));
+		add = (vCol.rgb * face * 0.72 + prism * bevel * 0.48) * envelope * vCol.a;
+	} else if (k == 0) {
 		float n = fbm(vec2(ang * 1.6 + seed * 7.0, r * 3.0 + age * 0.3));
 		float w = 0.15 + 0.12 * t;
 		float rq = (r - 0.62) / w;
@@ -753,6 +843,13 @@ void fragment() {
 	} else if (k == 3) {
 		float d1 = (r - 0.93) / 0.03;
 		add = vCol.rgb * exp(-d1 * d1) * spow(1.0 - t, 2.0) * vCol.a;
+	} else if (k == RING_DEATH_FRONT) {
+		float n = fbm(p * 4.5 + vec2(seed * 8.0, t * 1.8));
+		float ragged = (r - mix(0.77, 0.94, n)) / mix(0.07, 0.13, t);
+		float envelope = smoothstep(0.03, 0.38, t) * (1.0 - smoothstep(0.45, 1.0, t));
+		// A slow, bounded colour wash, not a second flash. Premultiplied so the front cannot go HDR.
+		alpha = min(0.18, exp(-ragged * ragged) * smoothstep(0.28, 0.70, n) * vCol.a * envelope);
+		base = clamp(vCol.rgb, 0.0, 1.0);
 	} else {
 		// a ring of hex cells that flies apart (shield shatter)
 		vec2 q = p * 7.0;
@@ -770,18 +867,27 @@ void fragment() {
 }
 """
 
+const RING_HARMONIC := 6   # crystalline pulse (5 reserved for the death front)
+
 # Ribbons along a straight line: plumes, beams, arcs. VERTEX = (s along 0..1, side -0.5..0.5).
 # a0 = (origin, kind); a1 = (dir, length); a2 = (colour, intensity); a3 = (width0, width1, seed, 0);
 # a4 = (tStart, life, period, 0)
-# kinds: 0 plume   1 straight trail (idle)   2 beam (lance)   3 sputter plume   5 ion beam (beam plus crawling arcs)
-#        6 doom arc (jagged lightning)   7 pulsar (beam in travelling pulses)   8 needle beam (thin, prismatic)
-#        9 tendril (bio lash: thick, organic, wriggling)
+# Kinds 0/1/3/6/9 are the legacy plume, trail, spark and lash. The weapon beams share a separate fragment recipe.
+const RIB_LANCE := 2
+const RIB_ION := 5
+const RIB_PULSAR := 7
+const RIB_NEEDLE := 8
+const RIB_NULL_LANCE := 11
 const RIBBON := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 """ + COMMON + """
 uniform float gate = 1.0;
 uniform sampler2D kit_flow : filter_linear, repeat_enable;
+#ifdef NULL_LANCE
+uniform vec3 eclipse_sheath;
+uniform vec3 eclipse_core;
+#endif
 varying float vPixels;
 uniform float lenk = 1.0;
 varying vec4 vCol;
@@ -789,6 +895,12 @@ varying vec3 vInfo;
 varying vec2 vInfo2;
 varying float vSide;
 varying vec2 vAge;
+bool layered_beam(int k) {
+	return k == 2 || k == 5 || k == 7 || k == 8 || k == 11;
+}
+float beam_taper(float s, int k) {
+	return k == 2 ? mix(1.0, 0.54, s) : 1.0;
+}
 void vertex() {
 	vec4 a0 = CUSTOM0; vec4 a1 = CUSTOM1; vec4 a2 = CUSTOM2; vec4 a3 = CUSTOM3; vec4 a4 = vec4(UV, UV2);
 	float a = scene_t - a4.x;
@@ -830,7 +942,6 @@ void vertex() {
 			p += (n1 * sin(wave) + n2 * (0.5 * cos(wave * 0.75))) * bend;
 		}
 		float w = mix(a3.x, a3.y, s);
-		if (k == 2 || k == 5 || k == 8) { w *= 0.92 + 0.08 * sin(scene_t * 90.0 + s * 40.0); }
 		vec3 wp = (MODEL_MATRIX * vec4(p, 1.0)).xyz;
 		vec3 wdir = snorm((MODEL_MATRIX * vec4(dir, 0.0)).xyz);
 		vec3 side = snorm(cross(wdir, CAMERA_POSITION_WORLD - wp));
@@ -838,6 +949,12 @@ void vertex() {
 		// Fragment widths below are FWHM in render-target pixels.
 		// Doom's wider quad is room for forks, not a wider white trunk.
 		float rf = k == 6 ? 64.0 : (k == 8 ? 12.0 : (k == 1 ? 10.0 : ((k == 0 || k == 3) ? 12.0 : 16.0)));
+		if (layered_beam(k)) {
+			// Padding is independent of the hot width: the thin core does not grow just to make room for its edges.
+			rf = k == 5 ? 56.0 : (k == 8 ? 26.0 : (k == 7 ? 38.0 : 60.0));
+			rf *= beam_taper(s, k);
+			w *= beam_taper(s, k);
+		}
 		float bw = 1.0;
 		float pixel_unit = frame_world(1.0, max(-(VIEW_MATRIX * vec4(wp, 1.0)).z, 0.01), PROJECTION_MATRIX, VIEWPORT_SIZE.y);
 		w = max(w, max(px_world(rf, max(-(VIEW_MATRIX * vec4(wp, 1.0)).z, 0.01), PROJECTION_MATRIX), pixel_unit * rf));
@@ -851,91 +968,156 @@ void vertex() {
 		vAge = vec2(age, a4.y);
 	}
 }
+
+float beam_line(float x, float width) {
+	float d = x / width;
+	return exp(-d * d);
+}
+
+// All widths passed to this recipe are in 1080-line pixels. Fine detail moves on the effect clock,
+// and motion is carried along the shot rather than flickering the entire shaft.
+vec3 beam_layers(int k, float s, float y, float age, float seed, out float cover) {
+	float t = age * mix(1.0, 0.32, fx_calm);
+	float length_k = clamp(vInfo2.x / 55.0, 0.35, 2.0);
+	float along = s * length_k;
+	float flow = texture(kit_flow, vec2(along * 5.0 - t * 4.2 + seed, y * 0.035 + seed)).g;
+	vec3 tint = vCol.rgb;
+	vec3 hot = mix(vec3(0.96, 0.97, 1.0), tint, 0.16);
+	cover = 0.0;
+	if (k == 2 || k == 11) {
+		float taper = beam_taper(s, k);
+		float twist = along * 35.0 - t * 13.0 + seed * 6.283185;
+		float helix = sin(twist);
+		float body = 6.0 + 4.0 * flow;
+		float channel = 0.8 + 0.2 * sin(along * 120.0 - t * 31.0);
+		float centre = 0.9 * helix;
+		float core = beam_line(y - centre, 1.55 * taper);
+		float braid = beam_line(y + centre * 0.85, 1.15 * taper);
+		float sheath = beam_line(y, body * taper);
+		float filaments = beam_line(y - helix * body * taper, 1.25)
+			+ beam_line(y + helix * body * taper, 1.05) * 0.63;
+		if (k == 11) {
+#ifdef NULL_LANCE
+			float pinch = 3.0 + sin(s * 3.141593) * (4.0 + flow * 2.0);
+			float rails = beam_line(abs(y) - pinch - helix * 1.25, 1.1);
+			cover = sheath * (0.68 + flow * 0.18);
+			return eclipse_sheath * cover + eclipse_core * (rails * 0.8 + sheath * flow * 0.25)
+				+ mix(tint, hot, 0.4) * (core * channel * 0.86 + braid * 0.32);
+#endif
+		}
+		return hot * (core * channel * 0.96 + braid * 0.36)
+			+ tint * (sheath * (0.13 + 0.25 * flow) + filaments * (0.26 + flow * 0.38));
+	}
+	if (k == 5) {
+		float arcs = 0.0;
+		float halo = 0.0;
+		for (int j = 0; j < 2; j++) {
+			float a = float(j);
+			float lane = along * 11.0 - t * 4.7 + a * 3.37;
+			float bind = pow(abs(sin(lane)), 0.7) * sin(3.141593 * s);
+			float noise = vnoise(vec2(along * 68.0 - t * 10.0, seed * 7.0 + a * 5.0));
+			float pos = (1.0 - 2.0 * a) * bind * (9.0 + noise * 10.0);
+			float live = smoothstep(0.10, 0.60, noise);
+			arcs += beam_line(y - pos, 1.12) * live;
+			halo += beam_line(y - pos, 2.8) * live;
+		}
+		// In calm mode keep the body and allow smooth movement, but lower the contrast of the moving arcs.
+		return hot * beam_line(y, 1.65) + tint * (beam_line(y, 4.5) * 0.26 + halo * 0.24)
+			+ mix(tint, hot, 0.36) * arcs * mix(0.76, 0.39, fx_calm);
+	}
+	if (k == 7) {
+		// The travelling hex rings are separate oriented rings; this is their pale glass shaft.
+		float facet = abs(fract(along * 14.0 + abs(y) * 0.12) - 0.5);
+		float edge = beam_line(abs(y) - (5.2 + facet * 2.5), 1.05);
+		vec3 prism = mix(vec3(0.34, 0.83, 1.0), vec3(0.82, 0.48, 1.0), smoothstep(-4.0, 4.0, y));
+		return hot * beam_line(y, 2.05) * (0.58 + flow * 0.16)
+			+ tint * beam_line(y, 5.4) * 0.22 + prism * edge * (0.31 + 0.13 * flow);
+	}
+	// Needle: spectral separation at the edge, not a screen sample, and a glint that travels down the shaft.
+	float shimmer = sin(along * 59.0 - t * 24.0 + seed * 6.283185);
+	float edge = 3.7 + shimmer * 0.65;
+	float glint = 0.7 + 0.3 * flow;
+	vec3 prism = vec3(0.28, 0.82, 1.0) * beam_line(y - edge, 1.18)
+		+ vec3(0.76, 0.43, 1.0) * beam_line(y + edge, 1.14);
+	return hot * beam_line(y, 1.16) * (0.78 + glint * 0.28)
+		+ tint * beam_line(y, 3.05) * 0.19 + prism * glint * 0.57;
+}
+
 void fragment() {
 	float s = vInfo.x; int k = int(vInfo.y + 0.5); float seed = vInfo.z;
 	float life = max(vAge.y, 0.001); float age = vAge.x;
 	float x = abs(vSide);
 	// Fixed beam details use 1080-line pixels (issue 1211).
 	float fr = max(VIEWPORT_SIZE.y / 1080.0, 0.0001);
-	float beam_pixels = vPixels;
-	if (k == 5 || k == 8 || k == 11) {
-		beam_pixels /= fr;
+	if (layered_beam(k)) {
+		float fade = smoothstep(0.0, mix(0.035, 0.13, fx_calm), age) * (1.0 - smoothstep(life * 0.70, life, age));
+		float anchor = smoothstep(0.0, 0.015, s) * (1.0 - smoothstep(0.982, 1.0, s));
+		float cover;
+		float beam_y = vSide * vPixels * 0.5 / fr;
+		vec3 layers = beam_layers(k, s, beam_y, age, seed, cover);
+		float power = fade * anchor * vCol.a;
+		ALBEDO = clamp(layers * power * fx_gain, 0.0, 512.0);
+#ifdef NULL_LANCE
+		ALPHA = clamp(cover * power, 0.0, 0.94);
+#endif
+	} else {
+		float beam_pixels = vPixels;
+		float px = x * beam_pixels * 0.5;
+		float hot_width = k == 6 ? 3.0 * fr : max(3.0, beam_pixels * 0.17);
+		float glow_width = k == 6 ? 11.0 * fr : max(7.0, beam_pixels * 0.48);
+		float core = exp(-2.772589 * px * px / (hot_width * hot_width));
+		float sheath = exp(-2.772589 * px * px / (glow_width * glow_width));
+		float fast = texture(kit_flow, vec2(fract(s * 3.0 - age * 2.4 + seed), vSide * 0.5 + 0.5)).g;
+		float slow = texture(kit_flow, vec2(fract(s * 2.0 + age * 0.7 + seed), vSide * 0.5 + 0.5)).b;
+		float env = smoothstep(0.0, mix(0.025, 0.12, fx_calm), age) * (1.0 - smoothstep(max(life - 0.16, 0.0), life, age));
+		float ends = smoothstep(0.0, 0.025, s) * (1.0 - smoothstep(0.95, 1.0, s));
+		vec3 hot = mix(vec3(1.0, 0.97, 0.92), vCol.rgb, 0.14);
+		vec3 tint = vCol.rgb;
+		float motion = 0.75 + 0.5 * fast;
+		float fork_hot = 0.0; float fork_glow = 0.0;
+		if (k == 0 || k == 3) {
+			float turbulence = fbm(vec2(s * 9.0 - age * 8.0, vSide * 3.0 + seed));
+			float shape = spow(1.0 - s, 1.25) * smoothstep(0.22, 0.65, turbulence + 0.2);
+			core *= shape * (0.8 + 0.3 * sin(s * 29.0 - age * 9.0));
+			sheath *= shape;
+			if (k == 3) { motion *= mix(cough(scene_t - s * 0.2, seed), 0.8, fx_calm); }
+			ends = 1.0 - smoothstep(0.72, 1.0, s);
+		} else if (k == 1) {
+			float fade = spow(1.0 - s, 1.5);
+			core *= fade * 0.4;
+			sheath *= fade * (0.4 + slow);
+		} else if (k == 6) {
+			// Keep the faction hue in the sheath without whitening it into the
+			// trunk. Forks reach outside the trunk's bloom footprint.
+			tint /= max(max(tint.r, tint.g), max(tint.b, 0.0001));
+			tint = mix(tint, tint * tint * tint * tint, 0.8);
+			float strike = floor(age / mix(0.07, 0.23, fx_calm));
+			motion = flick(0.75 + 0.25 * h21(vec2(strike, seed)), age, seed);
+			// Forks grow from the live jagged path. They occupy distinct filled
+			// pixels inside the wider sheath, and never detach from the trunk.
+			float q = fract(s * 4.0 + seed);
+			float sign_side = mod(floor(s * 4.0 + seed), 2.0) * 2.0 - 1.0;
+			float target = sign_side * q * 1.7;
+			float d = (vSide - target) * vPixels * 0.5 / fr;
+			float window = smoothstep(0.0, 0.04, q) * (1.0 - smoothstep(0.32, 0.55, q));
+			fork_hot = exp(-2.772589 * d*d / 4.0) * window;
+			fork_glow = exp(-2.772589 * d*d / 25.0) * window;
+		} else if (k == 9) {
+			float tissue = fbm(vec2(s * 14.0 - age * 3.0, vSide * 2.0 + seed));
+			core *= 0.5 + tissue;
+			sheath *= smoothstep(0.2, 0.7, tissue + 0.2);
+			hot = mix(hot, tint, 0.5);
+		}
+		vec3 colour = hot * (core * 1.35 + fork_hot) + tint * (sheath * (0.55 + slow * 0.7) + fork_glow * 0.5);
+		ALBEDO = clamp(colour * vCol.a * motion * env * ends * fx_gain, 0.0, 512.0);
 	}
-	float px = x * beam_pixels * 0.5;
-	float hot_floor = k == 8 ? 2.0 : 3.0;
-	float hot_width = k == 6 ? 3.0 * fr : max(hot_floor, beam_pixels * 0.17);
-	float glow_width = k == 6 ? 11.0 * fr : max(7.0, beam_pixels * 0.48);
-	float core = exp(-2.772589 * px * px / (hot_width * hot_width));
-	float sheath = exp(-2.772589 * px * px / (glow_width * glow_width));
-	float fast = texture(kit_flow, vec2(fract(s * 3.0 - age * 2.4 + seed), vSide * 0.5 + 0.5)).g;
-	float slow = texture(kit_flow, vec2(fract(s * 2.0 + age * 0.7 + seed), vSide * 0.5 + 0.5)).b;
-	float env = smoothstep(0.0, mix(0.025, 0.12, fx_calm), age) * (1.0 - smoothstep(max(life - 0.16, 0.0), life, age));
-	float ends = smoothstep(0.0, 0.025, s) * (1.0 - smoothstep(0.95, 1.0, s));
-	vec3 hot = mix(vec3(1.0, 0.97, 0.92), vCol.rgb, 0.14);
-	vec3 tint = vCol.rgb;
-	float motion = 0.75 + 0.5 * fast;
-	float fork_hot = 0.0; float fork_glow = 0.0;
-	if (k == 0 || k == 3) {
-		float turbulence = fbm(vec2(s * 9.0 - age * 8.0, vSide * 3.0 + seed));
-		float shape = spow(1.0 - s, 1.25) * smoothstep(0.22, 0.65, turbulence + 0.2);
-		core *= shape * (0.8 + 0.3 * sin(s * 29.0 - age * 9.0));
-		sheath *= shape;
-		if (k == 3) { motion *= mix(cough(scene_t - s * 0.2, seed), 0.8, fx_calm); }
-		ends = 1.0 - smoothstep(0.72, 1.0, s);
-	} else if (k == 1) {
-		float fade = spow(1.0 - s, 1.5);
-		core *= fade * 0.4;
-		sheath *= fade * (0.4 + slow);
-	} else if (k == 6) {
-		// Keep the faction hue in the sheath without whitening it into the
-		// trunk. Forks reach outside the trunk's bloom footprint.
-		tint /= max(max(tint.r, tint.g), max(tint.b, 0.0001));
-		tint = mix(tint, tint * tint * tint * tint, 0.8);
-		float strike = floor(age / mix(0.07, 0.23, fx_calm));
-		motion = flick(0.75 + 0.25 * h21(vec2(strike, seed)), age, seed);
-		// Forks grow from the live jagged path. They occupy distinct filled
-		// pixels inside the wider sheath, and never detach from the trunk.
-		float q = fract(s * 4.0 + seed);
-		float sign_side = mod(floor(s * 4.0 + seed), 2.0) * 2.0 - 1.0;
-		float target = sign_side * q * 1.7;
-		float d = (vSide - target) * vPixels * 0.5 / fr;
-		float window = smoothstep(0.0, 0.04, q) * (1.0 - smoothstep(0.32, 0.55, q));
-		fork_hot = exp(-2.772589 * d*d / 4.0) * window;
-		fork_glow = exp(-2.772589 * d*d / 25.0) * window;
-	} else if (k == 5) {
-		// Broken crawling filaments, replacing the regular diagonal bands.
-		float arc = sin(s * 27.0 - age * 17.0 + seed) * 0.55;
-		float d = (vSide - arc) * beam_pixels * 0.5;
-		fork_hot = exp(-2.772589 * d*d / 4.0) * smoothstep(0.45, 0.7, fast);
-	} else if (k == 7) {
-		float pulse = spow(0.5 + 0.5 * sin(s * 30.0 - age * 25.0), 3.0);
-		motion *= 0.35 + pulse;
-		vec3 rainbow = clamp(abs(fract(x * 0.45 + s * 0.6 - age * 0.4 + seed + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
-		tint = mix(tint, rainbow, 0.65);
-	} else if (k == 8) {
-		motion *= 0.7 + 0.5 * spow(0.5 + 0.5 * sin(s * 63.0 - age * 28.0), 6.0);
-		// A white needle with a thin, moving spectrum along either edge.
-		vec3 rainbow = clamp(abs(fract(vSide * 0.30 + s * 0.45 - age * 0.35 + seed + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
-		tint = mix(tint, rainbow, smoothstep(1.1, 3.0, px) * 0.90);
-	} else if (k == 9) {
-		float tissue = fbm(vec2(s * 14.0 - age * 3.0, vSide * 2.0 + seed));
-		core *= 0.5 + tissue;
-		sheath *= smoothstep(0.2, 0.7, tissue + 0.2);
-		hot = mix(hot, tint, 0.5);
-	} else if (k == 11) {
-		// Null lance: two pinched rails around a violet-white core.
-		float pinch = 2.0 + 3.5 * sin(s * 3.14159);
-		float d = (px - pinch) / 1.15;
-		float rails = exp(-d*d) * (0.75 + 0.25 * fast);
-		hot = mix(hot, tint, 0.45);
-		core *= 0.8;
-		sheath = sheath * 0.30 + rails * 1.35;
-		motion = 1.0;
-	}
-	vec3 colour = hot * (core * 1.35 + fork_hot) + tint * (sheath * (0.55 + slow * 0.7) + fork_glow * 0.5);
-	ALBEDO = clamp(colour * vCol.a * motion * env * ends * fx_gain, 0.0, 512.0);
 }
 """
+
+
+static func null_lance_code() -> String:
+	# The same beam recipe, with an occluding violet body instead of an additive-only sheath.
+	return patch(RIBBON, "blend_add,", "blend_premul_alpha,")
 
 # Engine exhaust trails that follow a moving ship: a strip through the nozzle's recent positions (world space).
 # VERTEX = centre point; NORMAL = the path's direction there; UV = (s along 0..1, side -0.5..0.5);
@@ -1818,6 +2000,8 @@ uniform vec3 v2_interior_accent = vec3(1.0, 0.5, 0.15);
 uniform float v2_rough = 0.6;
 uniform float v2_soot = 1.0;
 uniform float v2_wreck_soot = 0.3;
+uniform vec3 eclipse_core;
+uniform vec3 eclipse_sheath;
 // Straight-edged cells (Voronoi): x the distance to the nearest cell edge in cells, y the cell's own random value.
 vec2 v2cells(vec2 p) {
 	vec2 g = floor(p);
@@ -1876,7 +2060,20 @@ void fragment() {
 	vec3 em = vec3(0.0);
 	float rough = 0.85;
 	float hd = u;
-	if (style == 1) {
+	bool null_fallback = style == 18 && wound_v2 < 0;
+	if (null_fallback) {
+		// Build F: with V2 off, a single violet trench, without the target's legacy burn or soot halo.
+		vec2 dd = vec2(dot(vE.xyz, t1), dot(vE.xyz, t2));
+		float along = clamp(dot(q, dd), -vE.w, vE.w);
+		float trench = length(q - dd * along) / R;
+		float edge = (trench - 0.91) / 0.42;
+		float lip = exp(-edge * edge) * (0.6 + 0.4 * n1);
+		float cool = exp(-age / 4.0);
+		alb = eclipse_sheath * (0.38 + lip * 0.44);
+		em = eclipse_core * lip * (0.08 + 1.15 * cool) * smoothstep(0.0, 0.18, age);
+		a = 1.0 - smoothstep(0.72, 2.5 + n1, trench);
+		rough = 0.52;
+	} else if (style == 1) {
 		vec2 dd = vec2(dot(vE.xyz, t1), dot(vE.xyz, t2));
 		float al = clamp(dot(q, dd), -vE.w, vE.w);
 		float s = length(q - dd * al) / R;
@@ -2050,7 +2247,7 @@ void fragment() {
 	// scorched fern field round ion burns; bright scraped metal round a ram; a pale spalled field round a gauss exit.
 	float H = vH;
 	float hs = 0.0;   // the halo's share of this pixel (soot is matte: no metal, little specular; r13)
-	if (H > 0.05) {
+	if (H > 0.05 && !null_fallback) {
 		float hb = fbm(q / R * (0.55 / max(H * 0.25, 0.5)) + seed * 1.7);
 		float hn = fbm(q / R * (2.2 / max(H * 0.25, 0.5)) + seed * 3.1);
 		float hu = hd / H + (hb - 0.5) * 0.35;
@@ -2751,7 +2948,8 @@ static func tear_strain_code() -> String:
 
 
 # Screen-space distortion: shockwave rings and heat haze bend the picture behind them (max only).
-# Per quad: a0 = (pos, tStart), a1 = (normal, life), a3 = (size0, size1, kind, strength): kind 0 ring, 1 haze blob.
+# Per quad: a0 = (pos, tStart), a1 = (normal, life), a3 = (size0, size1, kind, strength): 0 ring, 1 haze, 2 beam lens.
+const DISTORT_BEAM := 2
 const DISTORT := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -2783,6 +2981,7 @@ void fragment() {
 	float r = length(p);
 	if (r > 1.0) { discard; }
 	float t = vInfo.x; int k = int(vInfo.y + 0.5); float S = vInfo.z;
+	if (k == 2 && fx_calm > 0.5) { discard; }
 	vec2 off = vec2(0.0);
 	if (k == 0) {
 		float d = (r - 0.8) / 0.12;

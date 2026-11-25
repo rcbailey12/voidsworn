@@ -169,6 +169,7 @@ var cmd_armed_t := -9.0
 var cine := "key"          # cut-ins: "key" moments, "all" attacks, "off" (settings)
 var brisk_camera := false
 var cine_saved := {}
+var _cut_overlay_alpha := 1.0
 var follow := true          # follow enemy activations with the camera (settings)
 var cam_saved := {}
 const ROUTINE_CAMERA_NAMES := {"lance": "Lance cut-ins", "torp": "Torpedo cut-ins", "volley": "Volley cut-ins", "follow": "Enemy camera follow"}
@@ -2967,8 +2968,7 @@ func _wfam(u: Dictionary, w: Dictionary) -> String:
 	return {"voidsworn": "las", "hegemony": "plasma", "corsair": "tracer", "chorus": "spine", "ithar": "needle", "deathless": "rail"}.get(faction, "shell")
 
 
-# fx3d.js cineWants and cineFrame: a side-on shot of the big moments (lances, torpedoes and novas on bosses or a nearly
-# dead target, capital volleys on them, kills of bigger ships), letterboxed, back to the board after
+# Keep the existing cut-in eligibility and skip rules. The moment picks the camera pose separately.
 func _cine_wants(kind: String, a_id, t_id) -> bool:
 	if cine == "off" or bot or (shots_dir != "" and not args.has("torp-cine")):   # --torp-cine: captures keep the cut-in (issue 1379)
 		return false
@@ -3039,24 +3039,18 @@ func _skip_current_camera_kind() -> void:
 	hud.toast("%s skipped for this battle." % ROUTINE_CAMERA_NAMES[kind])
 
 
-func _cine_frame(a_id, t_id) -> void:
-	var pa := _pos(a_id)
-	var pt := _pos(t_id)
-	var mid := (pa + pt) * 0.5
-	var dist := Vector2(pt.x - pa.x, pt.z - pa.z).length()
-	# Godot camera azimuth: side-on to the line of fire, the side nearer the current view
-	var base := atan2(-(pt.z - pa.z), pt.x - pa.x)
-	var al := base + PI / 2.0
-	var al2 := base - PI / 2.0
-	var cur: float = cam.a
-	al = cur + angle_difference(cur, al)
-	al2 = cur + angle_difference(cur, al2)
+func _cine_frame(a_id, t_id, kind := "volley") -> void:
+	var attacker = views.get(a_id)
+	var victim = views.get(t_id)
+	var source_len: float = attacker.L if is_instance_valid(attacker) else 6.0
+	var target_len: float = victim.L if is_instance_valid(victim) else 6.0
+	_cine_enter(cam.shot_cut(kind, _pos(a_id), _pos(t_id), source_len, target_len, reduce_motion))
+
+
+func _cine_enter(pose: Dictionary, hold := false) -> void:
 	if cine_saved.is_empty():
-		cine_saved = {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
-	cam.a = al if absf(al - cur) < absf(al2 - cur) else al2
-	cam.b = 1.02
-	cam.r = clampf(dist * 1.25 + 34.0, 60.0, 200.0)
-	cam.t = mid
+		cine_saved = cam.cut_pose()
+	cam.enter_cut(pose, hold)
 	hud.letterbox(true)
 
 
@@ -3066,13 +3060,25 @@ func _cine_release() -> void:
 	if cine_saved.is_empty():
 		return
 	_routine_shot_cut = ""
-	cam.a = cine_saved["a"]
-	cam.b = cine_saved["b"]
-	cam.r = cine_saved["r"]
-	cam.t = cine_saved["t"]
+	cam.return_from_cut(cine_saved)
 	cine_saved = {}
 	hud.letterbox(false)
 	recording_cue.emit("cut_end", "")
+
+
+func _step_cut_overlays(dt: float) -> void:
+	var board_view := cine_saved.is_empty()
+	var alpha := move_toward(_cut_overlay_alpha, 1.0 if board_view else 0.0, dt / (0.60 if board_view else 0.16))
+	if alpha == 1.0 and _cut_overlay_alpha == 1.0:
+		return
+	_cut_overlay_alpha = alpha
+	if is_instance_valid(board):
+		board.set_cut_overlay_alpha(alpha)
+	if is_instance_valid(hud.plates_root):
+		hud.plates_root.modulate.a = alpha
+	for sv in views.values():
+		if is_instance_valid(sv):
+			sv.set_cut_overlay_alpha(alpha)
 
 
 func _play_fire(e: Dictionary, grp: Array) -> void:
@@ -3082,7 +3088,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var ckind := "lance" if str(e["kind"]) == "lance" else "torp" if str(e["kind"]) == "torp" else "volley"
 	var cined := _cine_wants(ckind, a_id, t_id)
 	if cined:
-		_cine_frame(a_id, t_id)
+		_cine_frame(a_id, t_id, ckind)
 		_routine_shot_cut = ckind if _routine_shot_camera(ckind, a_id, t_id) else ""
 		recording_cue.emit("cut_start", "%s: %s to %s" % [ckind, _name(a_id), _name(t_id)])
 		await wait(320.0, _routine_shot_cut != "")
@@ -3595,56 +3601,21 @@ func _step_battle_lens() -> void:
 	_battle_lens.set_lenses(well, well_depth, shock)
 
 
-# Issue 521 (Board review of PR 525): while a kill cut-in holds, the camera frames the DYING ship, not the attacker and
-# target pair (that wide shot left a dreadnought's death a speck): a low three-quarter view on the target, close enough
-# that the hull fills about KILL_FILL of the screen height (a capital more), on whichever quarter is nearest the current
-# view so the camera never whips round, eased in over the first beat (the rig's slow easing). _cine_release eases back.
-const KILL_FILL := [0.85, 1.0]    # the hull's length against the screen height before the three-quarter view shortens it
-                                  # (on screen about 0.4 of the height for a cruiser, about half for a capital): cruiser, capital
-const KILL_BETA := 1.12           # the camera's angle down from straight up (64 degrees: low, still above the board)
-
-
+# Keep the kill hold and slow beat. Frame only the dying hull and avoid a quarter blocked by another ship.
 func _kill_frame(id) -> void:
 	var sv = views.get(id)
 	if sv == null:
 		return
-	if cine_saved.is_empty():
-		cine_saved = {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
 	var cap: bool = float(VU.get(id, {}).get("size", 0.6)) > 0.8 or bool(VU.get(id, {}).get("flagship", false))
-	var fill: float = KILL_FILL[1] if cap else KILL_FILL[0]
-	var span := 2.0 * tan(deg_to_rad(cam.fov) * 0.5)   # screen height per unit of distance
-	var rr := clampf(maxf(float(sv.L), 6.0) / (fill * span), cam.min_r, 200.0)
-	var tp: Vector3 = sv.visual_position()
-	# the four three-quarter views (bow and stern quarters, either side): one with no other hull between the camera and
-	# the dying ship, nearest the current view (so the camera never swings far)
-	var cur: float = cam.a
-	var best := cur
-	var score := INF
-	for q in [PI / 4.0, 3.0 * PI / 4.0, -PI / 4.0, -3.0 * PI / 4.0]:
-		var cand: float = cur + angle_difference(cur, float(sv.cur_yaw) + q)
-		var eye := tp + Vector3(cos(cand) * sin(KILL_BETA), cos(KILL_BETA), -sin(cand) * sin(KILL_BETA)) * rr
-		var blocked := 0.0
-		for oid in views:
-			var ov = views[oid]
-			if oid == id or ov == null or ov.dead or not ov.visible:
-				continue
-			var o: Vector3 = ov.visual_position()
-			var seg := tp - eye
-			var k := clampf((o - eye).dot(seg) / maxf(seg.length_squared(), 1e-4), 0.0, 1.0)
-			if (eye + seg * k).distance_to(o) < float(ov.L) * 0.6 + float(sv.L) * 0.15 and k < 0.92:
-				blocked += 1.0
-		var sc := blocked * 10.0 + absf(cand - cur)
-		if sc < score:
-			score = sc
-			best = cand
-	cam.a = best
-	cam.b = KILL_BETA
-	cam.r = rr
-	cam.t = tp
-	cam.slow_until = cam._clock + 1.2
-	if _death_dof and not reduce_motion and rr < CamRig.DOF_CLOSE_LIMIT:
+	var blockers := []
+	for other in views:
+		var ov = views[other]
+		if other != id and is_instance_valid(ov) and not ov.dead and ov.visible:
+			blockers.append([ov.visual_position(), ov.L])
+	var pose: Dictionary = cam.impact_cut(sv.visual_position(), sv.L, cap, blockers, reduce_motion, sv.cur_yaw)
+	_cine_enter(pose, true)
+	if _death_dof and not reduce_motion and float(pose["r"]) < CamRig.DOF_CLOSE_LIMIT:
 		cam.set_close_dof(true, float(sv.L))
-	hud.letterbox(true)
 
 
 func _kill_hold(core_id := "") -> void:
@@ -3673,8 +3644,6 @@ func _kill_hold(core_id := "") -> void:
 func _kill_let_go() -> void:
 	kill_hold_until = -1.0
 	_kill_hold_n += 1
-	if not cine_saved.is_empty():
-		cam.slow_until = cam._clock + 0.9   # back to the board view on the slow easing, not a snap out of the close-up
 	_cine_release()
 
 
@@ -7298,6 +7267,7 @@ func _process(dt: float) -> void:
 		key_light.directional_shadow_max_distance = LOOK.shadow_reach(float(cam.r), _board_far(cam.t))
 	if world != null and world.has_method("step"):
 		world.step(dt)
+	_step_cut_overlays(dt)
 	if api == null:
 		return
 	if not quitting and _show_rules_halt() and not bot:
@@ -7318,9 +7288,8 @@ func _process(dt: float) -> void:
 		if not plates_on:
 			_breathe_ring(sv, show_up and not u.is_empty() and str(id) == sel and u["side"] == "player")
 			continue
-		# a cut-in hides the names, except the attacker and the target of the enemy volley playing (issue 1211)
 		var aimed := not aim.is_empty() and (str(id) == str(aim["t"]) or str(id) == str(aim["a"]))
-		if u.is_empty() or sv.dead or not sv.visible or (not cine_saved.is_empty() and not aimed):
+		if u.is_empty() or sv.dead or not sv.visible or _cut_overlay_alpha <= 0.0:
 			hud.set_plate(str(id), Vector2.ZERO, false, "", true, false, 0, 1, 0, 0)
 			continue
 		var wp: Vector3 = sv.visual_position() + Vector3(0, 3.0 + sv.L * 0.18, 0)
@@ -7395,7 +7364,7 @@ func _float_step(dt: float) -> void:
 		else:
 			lbl.position = fp - lbl.size * 0.5 + Vector2(0, f.dy)
 		var f_end := float(f.get("end", 1.6))
-		lbl.modulate.a = clampf(f_end - f.t, 0.0, 1.0)
+		lbl.modulate.a = clampf(f_end - f.t, 0.0, 1.0) * _cut_overlay_alpha
 		if f.t > f_end:
 			lbl.queue_free()
 			floats.remove_at(i)
