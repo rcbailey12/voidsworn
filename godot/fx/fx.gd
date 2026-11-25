@@ -1602,8 +1602,14 @@ func _build_death_pieces() -> void:
 var prep_step := ""
 
 
+# issue 1519: a left battle stays in the tree, switched off (PROCESS_MODE_DISABLED), while main.gd frees it in slices
+# behind the title. Its awaits still wake there, so the load's warm-up stops at its next step instead of building on.
+func _parked() -> bool:
+	return closed or not is_inside_tree() or not can_process()
+
+
 func prepare_battle_hulls() -> void:
-	if closed or not is_inside_tree():
+	if _parked():
 		return
 	HULL.pause_late_watch()
 	_warm_hull_adapters()
@@ -1620,7 +1626,7 @@ func prepare_battle_hulls() -> void:
 			pend("prep:shield", t_s)
 			if Time.get_ticks_usec() >= deadline:
 				await get_tree().process_frame
-				if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+				if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 				deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	for value in ships.values():
 		var ship: SHIP = value
@@ -1645,7 +1651,7 @@ func prepare_battle_hulls() -> void:
 		pending.append(ship)
 		if Time.get_ticks_usec() >= deadline:
 			await get_tree().process_frame
-			if closed or not is_inside_tree():
+			if _parked():
 				return
 			deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	# Limit simultaneous cuts so the hull workers and renderer can make progress
@@ -1669,14 +1675,14 @@ func prepare_battle_hulls() -> void:
 					break
 		_finish_shield_skins()
 		await get_tree().process_frame
-		if closed or not is_inside_tree():
+		if _parked():
 			return
 	shared_cuts.clear()
 	prep_step = "shield skins and pieces"
 	while not _piece_builds.is_empty() or not _shield_jobs.is_empty():
 		_finish_shield_skins()
 		await get_tree().process_frame
-		if closed or not is_inside_tree():
+		if _parked():
 			return
 	defer_initial_cuts = false
 	prep_step = ""
@@ -2209,7 +2215,7 @@ func _warm_fragment_finish(at: Vector3, t: float, color: Color) -> void:
 
 # Draw the effect materials under the loading cover so their pipelines are ready for battle.
 func warmup(cam: Camera3D, frames := 4) -> void:
-	if closed or not is_inside_tree() or not is_instance_valid(cam) or not cam.is_inside_tree():
+	if _parked() or not is_instance_valid(cam) or not cam.is_inside_tree():
 		return
 	# Issue 376: rebuilds under the load cover are expected. Start the late watch
 	# once the warm objects have drawn.
@@ -2217,12 +2223,12 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# ShipView sets its paint just after adding the meshes. Let the deferred mesh
 	# watcher apply the nebula's fog policy before deriving shaders from that paint.
 	await get_tree().process_frame
-	if closed or not is_inside_tree() or not is_instance_valid(cam) or not cam.is_inside_tree():
+	if _parked() or not is_instance_valid(cam) or not cam.is_inside_tree():
 		return
 	_warm_hull_adapters()
 	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
 	var c = Color(1, 0.6, 0.3)
@@ -2240,7 +2246,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
 	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	var tmp = Node3D.new()
 	tmp.name = "fx_warmup"
 	tmp.position = global_transform.affine_inverse() * at
@@ -2269,7 +2275,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			mats.append(DEATH.power_material(damage.duplicate(), death_story))
 	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	if not compat:
 		mats.append(mat(SH.SPRITE, 1, "#define SOFT\n"))
 	for band in ["small", "cruiser", "capital"]:
@@ -2280,7 +2286,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			mats.append(baked)
 		if warmup_batch > 0:
 			await get_tree().process_frame
-			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+			if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	mats.append(mat(SH.TEAR, 1))   # issue 462: the dying hull's tear overlay
 	# issue 220: the torpedo and rocket bodies (drive glow, star torpedo body, exhaust plume) and the weapon bursts' atlas
 	# shader: their first launch or hit compiled them mid-fight (a 53 ms frame with 3 surface pipelines at the gate scene)
@@ -2299,7 +2305,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		mats.append(wgas)
 		if warmup_batch > 0:
 			await get_tree().process_frame
-			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+			if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	for rel in ["weapons/impact/impact_", "weapons/impact/flash_", "weapons/macro/impact_", "weapons/macro/flash_", "death/small/flash_", "death/cruiser/flash_", "death/capital/flash_"]:
 		if rel.begins_with("weapons/"):
 			var hit := WEAP.hull_impact_material(self, rel)
@@ -2313,11 +2319,11 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			mats.append(production)
 		if warmup_batch > 0:
 			await get_tree().process_frame
-			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+			if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	DEATH.tear_particles(self, at, Vector3.UP, 0.1, Vector3.ZERO)
 	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	for i in mats.size():
 		# Pin generated hull shaders until release, even after the temporary warmup meshes go away.
 		_shaders["warm:" + str(mats[i].shader.code.hash())] = mats[i].shader
@@ -2372,7 +2378,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		hk = _warm_hull_meshes(tmp, ships[sid], seen, hk)
 		if warmup_batch > 0:
 			await get_tree().process_frame
-			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+			if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0][0]
@@ -2438,7 +2444,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 				(parked[i][1] as Node).add_child(parked[i][0])
 			if (i + 1) % warmup_batch == 0:
 				await RenderingServer.frame_post_draw
-				if closed or not is_inside_tree():   # issue 1434: a left battle waits two draws out of the tree before its free
+				if _parked():   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 					_free_warm_parked()
 					if is_instance_valid(tmp):
 						tmp.queue_free()
@@ -2446,7 +2452,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		_free_warm_parked()   # a parent gone meanwhile left its mesh out of the tree: free it here
 	for i in frames:
 		await RenderingServer.frame_post_draw
-		if closed or not is_inside_tree():
+		if _parked():
 			if is_instance_valid(tmp):
 				tmp.queue_free()
 			return
