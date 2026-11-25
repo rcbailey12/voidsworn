@@ -149,9 +149,9 @@ for (const l of code) {
 }
 pass('no deletes or moves; logs only under out');
 
-// Both standalone launchers serialize the refresh, hardlink clone and branch fetch with runner_common.ps1.
+// The ship job still serializes its hardlink clone. The bench uses runner_common's read-only pin setup.
 const look = fs.readFileSync(LOOK, 'utf8');
-for (const [name, script, root] of [['ship job', text, '%V%'], ['look bench', look, '%VT%']]) {
+for (const [name, script, root] of [['ship job', text, '%V%']]) {
   assert(script.includes(`set "MIRROR=${root}\\repo-mirror.git"`), `${name} uses the shared PC mirror`);
   const lock = script.indexOf("[IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None')");
   const refresh = script.indexOf('fetch --prune origin');
@@ -165,9 +165,10 @@ for (const [name, script, root] of [['ship job', text, '%V%'], ['look bench', lo
 }
 assert(text.includes("fetch -q --no-tags @depth $mirror ('refs/heads/' + $env:BRANCH)"), 'ship job fetches the requested branch from the mirror');
 assert(text.includes("fetch -q --no-tags --no-write-fetch-head $mirror ('+refs/heads/' + $env:PAINT_BASE"), 'PAINT_BASE is fetched from the same mirror without replacing FETCH_HEAD');
-assert(look.includes('foreach ($checkout in @($env:TOOL, $env:R))') &&
-  look.includes("fetch --no-tags $mirror '+refs/heads/*:refs/remotes/origin/*'"), 'look bench refreshes both checkouts and their origin refs');
-pass('mirror refresh and local clone for ship job and both look bench checkouts');
+assert(look.includes('runner_common.ps1" look-bench-checkout ') &&
+  look.includes('call :bench "%AFTER_PIN%"') && look.includes('call :bench "%BEFORE_PIN%"'), 'look bench uses exact prepared pins');
+assert(!look.includes('refs/heads/*') && !look.includes("'.lock'"), 'look bench has no broad fetch or inline writer lock');
+pass('shared mirror hardlinks for ship job and read-only pin setup for look bench');
 
 const collect = code.slice(at(/^:collect$/), finish).map(l => l.s);
 const collectScript = text.slice(text.indexOf(':collect'), text.indexOf(':collect_skipped'));
