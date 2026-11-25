@@ -56,6 +56,13 @@ assert(ghLookup.includes('Log "GitHub CLI: $exe"'), 'log the selected executable
 assert(ghLookup.includes('GitHub CLI gh is missing; install it and run gh auth login before starting PC jobs'));
 pass('GitHub CLI lookup uses PATH, ProgramFiles, then LOCALAPPDATA and keeps the missing-tool refusal');
 const workBat = read(path.join(here, 'work_issue.bat'));
+const codexBat = read(path.join(here, 'codex_issue.bat'));
+const newLanes = [['E', 'build_f', 'board_e'], ['F', 'build_g', 'board_f']];
+for (const [lane, build, board] of newLanes) {
+  assert(codexBat.includes(`if /i "%LANEDIR%"=="${build}" set "BOARD=${board}"`));
+  assert(codexBat.includes(`if /i "%BOARD%"=="${board}" set "PC_GPU_LANE=${lane}"`));
+}
+pass('Codex E and F use separate tools and boards and pass the code-only GPU flag');
 const lean = JSON.parse(read(path.join(here, 'work/opencode_lean.json')));
 const mock = JSON.parse(read(path.join(here, 'work/opencode_mock.json')));
 const openaiDefault = 'openai/gpt-6.2-sol';
@@ -956,6 +963,42 @@ async function testAssignedBranch() {
   assert(fs.existsSync(path.join(r.repo, 'agent_started.txt')));
   pass('fixture push override still validates the issue against the actual Codex assignment');
 }
+function testLaneRouting() {
+  const profile = path.join(root, 'lane-route');
+  const pc = path.join(profile, 'Downloads', 'voidsworn_test');
+  const env = { USERPROFILE: profile, CODEX_TEST_ROOT: '', CODEX_LOCKED_REPO: '', FIX_COMMON: path.join(here, 'runner_common.ps1') };
+  for (const [lane, build, board] of [...newLanes, ['', 'build_h', '']]) {
+    const launchers = path.join(pc, build, 'tools', 'pc');
+    const bat = path.join(launchers, 'codex_issue.bat');
+    write(bat, codexBat.replace(/\r?\n/g, '\r\n'));
+    // Stop at the real batch launcher's handoff. This stand-in neither claims nor starts an issue.
+    write(path.join(launchers, 'codex_issue.ps1'), `
+      . $env:FIX_COMMON cleanup-library
+      $mirror = Repo-Mirror (Split-Path -Leaf (Split-Path -Parent $env:R))
+      @{ repo = $env:R; out = $env:O; lane = $env:PC_GPU_LANE; mirror = $mirror } | ConvertTo-Json -Compress
+    `);
+    const result = run(process.env.COMSPEC, ['/d', '/s', '/c', `""${bat}" 687"`], env);
+    if (!lane) {
+      assert.equal(result.code, 2, result.text);
+      assert.match(result.text, /build_h, which is not a lane tools folder/);
+      continue;
+    }
+    assert.equal(result.code, 0, result.text);
+    const route = JSON.parse(result.text);
+    assert.deepEqual(route, {
+      repo: path.join(pc, board, 'repo'), out: path.join(pc, board, 'issue-687'), lane,
+      mirror: path.join(pc, `repo-mirror-${lane.toLowerCase()}.git`)
+    });
+    fs.mkdirSync(route.repo, { recursive: true });
+    for (const [flag, cwd] of [[route.lane, root], ['', route.repo]]) {
+      const gpu = run(process.execPath, [path.join(here, 'gpu_slots.js'), 'acquire', pc, '687', String(process.pid), 'shared'],
+        { PC_GPU_LANE: flag, PC_GPU_WAIT_SECONDS: '1' }, cwd);
+      assert.notEqual(gpu.code, 0, gpu.text);
+      assert(gpu.text.includes(`Lane ${lane} is code only; GPU work refused`), gpu.text);
+    }
+  }
+  pass('Windows launcher routes E and F to separate repos, outputs and mirrors, refuses GPU claims by flag or folder, and rejects an unknown tools folder');
+}
 async function testLaneOwnership() {
   const fixture = fs.mkdtempSync(path.join(root, 'lane-lock-'));
   const profile = path.join(fixture, 'profile');
@@ -1491,6 +1534,7 @@ async function testRunnerStartChecks() {
   pass('a run whose tools folder drifts from the Board hashes still starts and warns');
 }
 (async () => { try {
+  testLaneRouting();
   shell = await require('./runner_selftest_shell')(root, concurrency, [here, tools, faultTools, deliveryTools]);
   // The held runner and its contenders must be able to reach the fixture shell without waiting on unrelated cases.
   await testLaneOwnership();

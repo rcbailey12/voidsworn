@@ -67,10 +67,15 @@ func build(view: Dictionary, hw: Callable) -> void:
 			if kind == "hulk":
 				visuals[key] = hulk_fallback(self, p, rng)
 			elif kind == "station":
-				var station := A4P.station(14.0)
+				# issue 1767: station_T2 fitted inside its one hex at its best turn (A4P.best_bearing), no drifting debris
+				var hex_r: float = p.distance_to(hw.call(int(cell[0]) + 1, int(cell[1]))) / sqrt(3.0)
+				var station := A4P.station(14.0, hex_r, str(biome.get("station", "")), false, [Vector2.ZERO], hex_r, 0.0)
 				if station != null:
 					add_child(station)
-					station.position = p + Vector3.UP * 3.0
+					station.position = p + Vector3.UP * 3.0 * station.scale.x
+					if bool(station.get_meta("station_outpost", false)):
+						station.position = p + Vector3.UP * A4P.lift_outpost(station)
+					station.rotation.y = float(station.get_meta("station_bearing", 0.0))
 					visuals[key] = station
 				else:
 					visuals[key] = station_fallback(self, p)
@@ -90,7 +95,7 @@ func build(view: Dictionary, hw: Callable) -> void:
 		# still need solid docking hardware, not just an exclusion outline.
 		if kind == "station" and not solid_at(get_parent(), p):
 			station_fallback(self, p)
-		visuals[key] = outline(self, p, Color(0.48, 0.30, 0.13), 0.25)
+		visuals[key] = outline(self, p, Color(0.48, 0.30, 0.13), 0.25, kind != "station")
 
 static func solid_at(node: Node3D, p: Vector3) -> bool:
 	if node is MeshInstance3D and node.mesh != null:
@@ -122,7 +127,7 @@ static func station_fallback(parent: Node3D, p: Vector3) -> Node3D:
 		mi.position.y = 1.2 if tier == 0 else 3.5
 	return node
 
-static func outline(parent: Node3D, p: Vector3, col: Color, width: float) -> Node3D:
+static func outline(parent: Node3D, p: Vector3, col: Color, width: float, on_top := true) -> Node3D:
 	var node := Node3D.new()
 	node.name = "BlockedFootprint"
 	parent.add_child(node)
@@ -132,7 +137,9 @@ static func outline(parent: Node3D, p: Vector3, col: Color, width: float) -> Nod
 	mat.emission_enabled = true
 	mat.emission = col * 0.65
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.no_depth_test = true
+	# A station's rim lies on the grid under the station (Ryan, Nov 24, issue 1791: the outpost looked "below the grid and
+	# hexes" with its rim drawn across it); other rims still draw over everything
+	mat.no_depth_test = on_top
 	for i in 6:
 		var a := Vector3(cos(PI / 6.0 + i * TAU / 6.0), 0, sin(PI / 6.0 + i * TAU / 6.0)) * 9.6
 		var b := Vector3(cos(PI / 6.0 + (i + 1) * TAU / 6.0), 0, sin(PI / 6.0 + (i + 1) * TAU / 6.0)) * 9.6

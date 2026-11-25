@@ -731,6 +731,19 @@ func begin_with(a) -> void:
 		_begin(a)
 
 
+# true when a battle view has station terrain or a station hole (the board then draws station_T2)
+static func _has_station(v: Dictionary) -> bool:
+	var t = v.get("terrain", {})
+	if t is Dictionary and "station" in (t as Dictionary).values():
+		return true
+	var m = v.get("map", {})
+	if m is Dictionary:
+		for h in m.get("holes", []):
+			if h is Dictionary and str(h.get("kind", "")) == "station":
+				return true
+	return false
+
+
 func _begin(a) -> void:
 	_gen += 1   # issue 1433: work still awaiting from the last battle on this node is stale now
 	_api_join()
@@ -755,9 +768,15 @@ func _begin(a) -> void:
 	var sliced := _sliced()
 	if sliced:
 		stage.start(self)   # a no-op when _ready already started it; a battle begun again on this node starts it here
-	var obj0 = api.view().get("obj")
+	var v0 = api.view()
+	var obj0 = v0.get("obj") if v0 is Dictionary else null
 	if obj0 is Dictionary and str(obj0.get("type", "")) == "hold":
 		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
+	# PR 1772 (Fable, item 2): station_T2 reads on a worker too when the board has station hexes or a station hole
+	if v0 is Dictionary and _has_station(v0):
+		# the big cluster draws station_T2, smaller clusters and holes the outpost (issue 1791)
+		var spots := A4P.station_spots(v0)
+		A4P.prefetch_station(spots.x == 1, spots.y == 1)
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
 		if "passive" in gfx:
@@ -2402,6 +2421,9 @@ func _lay_wreck(unit) -> void:
 		return   # no effects: the ship view keeps its own darkened hull in place (ShipView.die)
 	var built: int = board.built
 	var ship = effects.ship(id)
+	# the dead ship's own faction from its live view (the board's build-time view misses reinforcements: Artoo on PR 1772)
+	var sv = views.get(unit)
+	var fac: String = str(sv.fac) if sv != null and is_instance_valid(sv) else ""
 	# A recheck of an established wreck can run immediately if its death has already settled.
 	var check_at: float = float(effects.now) + (WRECK_CHECK_S if first or not effects.wreck_settled(id) else 0.0)
 	if not await _await_fx(check_at, effects.wreck_settled.bind(id)):
@@ -2409,7 +2431,7 @@ func _lay_wreck(unit) -> void:
 	if not is_instance_valid(board) or board.built != built or not wrecked.has(unit) or wrecked[unit] != at:
 		return
 	if board.wrecks.get(id, "") == board.key(at.x, at.y) and effects.ship(id) == ship and int(effects.wreck_pieces(id)) == 0:
-		board.add_wreck(id, at.x, at.y, true)
+		board.add_wreck(id, at.x, at.y, true, fac)
 
 
 func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
