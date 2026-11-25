@@ -1,0 +1,91 @@
+{
+  "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+  "source_commit_date": "2026-11-24T20:59:08Z",
+  "source_diff_sha256": "",
+  "source_dirty": false,
+  "stage": "cloud direction check",
+  "schema": 1,
+  "picture_name": "R01-barren-close.png",
+  "date": "2026-11-24T21:31:45Z",
+  "sources": [
+    {
+      "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+      "source_commit_date": "2026-11-24T20:59:08Z",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "cloud direction check"
+    },
+    {
+      "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+      "source_diff_sha256": "4e2b601a95d042c90aec7d1a040ffce68d0837bb94ece8ebcfcd9c35a90447e4",
+      "source_dirty": true,
+      "source_dirty_files": {
+        "godot/world/test/planet_v2_check.gd": "41e693a304e06b116f1a41101d71971be36d388c",
+        "godot/world/world_bake.gd": "fc2df5892a3487e63f99429dfbae95088875c8a0",
+        "godot/world/world_planet.gd": "2c9b61df2087475d4e9803f93590e67ca8c783f2"
+      },
+      "stage": "cloud direction check"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "board_5_close_before.png",
+      "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "cloud direction check",
+      "date": "2026-11-24T21:29:44Z",
+      "image_sha256": "77acadc0bd136ff8ee9066d443015a3859e3803a1221f5ec6ec818a31c880ca6",
+      "sources": [
+        {
+          "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+          "source_commit_date": "2026-11-24T20:59:08Z",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "cloud direction check"
+        }
+      ],
+      "source_commit_date": "2026-11-24T20:59:08Z"
+    },
+    {
+      "picture_name": "board_5_close_after.png",
+      "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+      "source_dirty": true,
+      "source_diff_sha256": "4e2b601a95d042c90aec7d1a040ffce68d0837bb94ece8ebcfcd9c35a90447e4",
+      "stage": "cloud direction check",
+      "date": "2026-11-24T21:30:19Z",
+      "image_sha256": "85dfe7a6ece9a58d9ab1339cf0f5b7d7b872e9a6e1260ab26ce1ebb558e024d8",
+      "sources": [
+        {
+          "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+          "source_diff_sha256": "4e2b601a95d042c90aec7d1a040ffce68d0837bb94ece8ebcfcd9c35a90447e4",
+          "source_dirty": true,
+          "source_dirty_files": {
+            "godot/world/test/planet_v2_check.gd": "41e693a304e06b116f1a41101d71971be36d388c",
+            "godot/world/world_bake.gd": "fc2df5892a3487e63f99429dfbae95088875c8a0",
+            "godot/world/world_planet.gd": "2c9b61df2087475d4e9803f93590e67ca8c783f2"
+          },
+          "stage": "cloud direction check"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    684,
+    720
+  ],
+  "strip_size": [
+    684,
+    124
+  ],
+  "strip_sha256": [
+    "784098392d6b6b820be0705c59bfbba1ab0e26f77b5c91cfb170b7e202c190ca"
+  ],
+  "stamp_template_sha256": "784098392d6b6b820be0705c59bfbba1ab0e26f77b5c91cfb170b7e202c190ca",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAqwAAAB8CAIAAAAjAXVhAAACH0lEQVR4nO3WIQEAIADAMCABBkv/mMRAfEtw+bnPHQBAz/odAAD8YQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAMBoevwTATsWivZ5AAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "d4902d8978b51bfe7112e5763004faf56ff164eb6aec61dd8f441cf360cad34f"
+}

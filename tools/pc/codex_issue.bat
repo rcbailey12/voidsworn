@@ -3,7 +3,7 @@ rem Work one job-board issue with Codex on Ryan's PC (queued by codex_board.ps1 
 rem Usage: codex_issue.bat <issue number>
 rem Fresh checkout of main in the lane's Downloads\voidsworn_test\board*\repo (issue 947) on branch codex/issue-<n>, Codex runs at the effort
 rem the issue names (high by default), then the change is committed and pushed. GitHub opens the PR and runs the checks.
-rem If the push fails, the change is saved as build_b\cx_issue<n>.patch for Opus instead.
+rem If the push fails, the change is saved as the job output as push_failed.patch instead.
 rem Everything for the job (log, Codex's report, result) lands in Downloads\voidsworn_test\board\issue-<n>\.
 rem Runner 2 (issue 377, Opus, Nov 12 2026), the same steps as tools/pc/work_issue.bat through work_issue.ps1:
 rem  a Codex exit code that is not 0 (124 is stall or ceiling) pushes to codex/issue-<n>-partial, which opens no pull request;
@@ -35,8 +35,9 @@ rem %TPC% is %TP% without its trailing backslash, for passing the tools folder a
 rem cmd merges "%TP%" with the next quoted argument because of the backslash before the quote).
 set "TPC=%TP:~0,-1%"
 rem Issue 947: each lane runs its own tools copy and its own board folder (build_b main: board, build_c lane B: board_b,
-rem build_d lane C: board_c, build_e lane D: board_d). The folder comes from where this file sits, so one runner file
-rem serves every lane. On Nov 17 a single hard-coded board\repo sent lanes C and D at the main chain's live checkout.
+rem build_d lane C: board_c, build_e lane D: board_d, build_f lane E: board_e, build_g lane F: board_f).
+rem The folder comes from where this file sits, so one runner file serves every lane. On Nov 17 a single
+rem hard-coded board\repo sent lanes C and D at the main chain's live checkout.
 for %%I in ("%TP%..\..") do set "LANEDIR=%%~fI"
 for %%I in ("%LANEDIR%") do set "LANEDIR=%%~nxI"
 set "BOARD="
@@ -44,7 +45,9 @@ if /i "%LANEDIR%"=="build_b" set "BOARD=board"
 if /i "%LANEDIR%"=="build_c" set "BOARD=board_b"
 if /i "%LANEDIR%"=="build_d" set "BOARD=board_c"
 if /i "%LANEDIR%"=="build_e" set "BOARD=board_d"
-if not defined CODEX_TEST_ROOT if not defined BOARD (echo job refused: this runner copy is in %LANEDIR%, which is not a lane tools folder ^(build_b to build_e^); no agent started & exit /b 2)
+if /i "%LANEDIR%"=="build_f" set "BOARD=board_e"
+if /i "%LANEDIR%"=="build_g" set "BOARD=board_f"
+if not defined CODEX_TEST_ROOT if not defined BOARD (echo job refused: this runner copy is in %LANEDIR%, which is not a lane tools folder ^(build_b to build_g^); no agent started & exit /b 2)
 set "R=%ROOT%\%BOARD%\repo"
 set "O=%ROOT%\%BOARD%\issue-%N%"
 set "ASSIGNED_BRANCH=codex/issue-%N%"
@@ -54,10 +57,10 @@ rem R276: all nested GPU launchers inherit the issue and the code-only lane.
 set "PC_GPU_ISSUE=%N%"
 if not defined PC_GPU_WAIT_SECONDS set "PC_GPU_WAIT_SECONDS=1500"
 set "PC_GPU_LANE="
-echo %R%| findstr /i /c:"board_c" >nul
-if not errorlevel 1 set "PC_GPU_LANE=C"
-echo %R%| findstr /i /c:"board_d" >nul
-if not errorlevel 1 set "PC_GPU_LANE=D"
+if /i "%BOARD%"=="board_c" set "PC_GPU_LANE=C"
+if /i "%BOARD%"=="board_d" set "PC_GPU_LANE=D"
+if /i "%BOARD%"=="board_e" set "PC_GPU_LANE=E"
+if /i "%BOARD%"=="board_f" set "PC_GPU_LANE=F"
 if not defined CODEX_TEST_ROOT goto :setup
 set "B=%CODEX_TEST_ROOT%"
 set "R=%CODEX_TEST_ROOT%\repo"
@@ -72,7 +75,7 @@ set "PUSHMODE=test"
 rem The PowerShell parent owns the lane until this batch returns, including final reporting.
 set "PC_RUNNER_TEST=0"
 if defined CODEX_TEST_ROOT if defined CODEX_TEST_AGENT set "PC_RUNNER_TEST=1"
-if "%~2"=="locked" if /i "%CODEX_LOCKED_REPO%"=="%R%" goto :locked
+if "%~2"=="locked" if "%PC_RUNNER_LOCKED_ISSUE%"=="%N%" if /i "%CODEX_LOCKED_REPO%"=="%R%" goto :locked
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%TP%codex_issue.ps1" run "%N%" "%R%"
 exit /b %ERRORLEVEL%
 :locked
@@ -87,9 +90,9 @@ set "GIT_AUTHOR_EMAIL=rcbailey12@users.noreply.github.com"
 set "GIT_COMMITTER_NAME=Ryan Bailey"
 set "GIT_COMMITTER_EMAIL=rcbailey12@users.noreply.github.com"
 if not exist "%O%" mkdir "%O%"
-echo started %date% %time% > "%O%\result.txt"
-%COMMON% init "%O%" "%BR%"
+%COMMON% init "%O%" "%BR%" archive-codex
 if errorlevel 1 exit /b 14
+echo started %date% %time% > "%O%\result.txt"
 rem (722) Free-space floor, Board hashes and the resolved model stamp, as in work_issue.bat.
 set "SETF=%ROOT%\work217\runner_settings.txt"
 set "HASHF=%ROOT%\work217\runner_hashes.txt"
@@ -205,7 +208,7 @@ call :checks "%O%"
 set "SX=%ERRORLEVEL%"
 if "%SX%"=="7" goto :nochange
 if not "%SX%"=="0" goto :stopped
-if "%PUSHMODE%"=="dry" (git push --dry-run origin HEAD:refs/heads/%PB% > "%O%\push.txt" 2>&1) else (git push origin HEAD:refs/heads/%PB% > "%O%\push.txt" 2>&1)
+%COMMON% push "%R%" "%PB%" "%PUSHMODE%" > "%O%\push.txt" 2>&1
 if errorlevel 1 goto :pushfail
 %PSW% confirm "%R%" "%O%" %PB% %PUSHMODE% >> "%O%\result.txt" 2>&1
 set "SX=%ERRORLEVEL%"
@@ -217,8 +220,8 @@ popd
 exit /b 0
 :pushfail
 set /p PRE=<"%O%\pre_commit.txt"
-git diff --binary --output="%B%\cx_issue%N%.patch" %PRE% HEAD
-echo push failed, patch saved as build_b\cx_issue%N%.patch >> "%O%\result.txt"
+git diff --binary --output="%O%\push_failed.patch" %PRE% HEAD
+if errorlevel 1 (echo push failed, could not save patch. The checkout is kept. >> "%O%\result.txt") else (echo push failed, patch saved as push_failed.patch >> "%O%\result.txt")
 %COMMON% finish "%O%" 8 "%PARTIAL%" "%PUSHMODE%" 0
 popd
 exit /b 8
@@ -260,7 +263,7 @@ git diff --cached --binary > "%O%\limit_wip.patch"
 git reset -q
 rem Keep the checkout too. The patch and files can be salvaged without deleting anything.
 %COMMON% finish "%O%" 9 "usage limit" "%PUSHMODE%" 0
-powershell -NoProfile -Command "$f=Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\board\queued.txt'; (Get-Content $f) -ne '%N%' | Set-Content $f"
+powershell -NoProfile -Command "$f=Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\board\queued.txt'; if (Test-Path -LiteralPath $f) { [IO.File]::WriteAllLines($f, [string[]](@(Get-Content -LiteralPath $f) -ne '%N%')) }"
 popd
 exit /b 9
 

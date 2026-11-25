@@ -15,7 +15,7 @@
 # -CloseOnly (Board, Nov 24, for PR 1950): only step 3, the six close cases cold then warm, on any checkout that prints the
 # CLOSE5 lines; the warm profile is warmed by one ungraded launch (title_battle_30s's arguments) instead of the load
 # bench, step 4 is skipped, and only the 1518, 1519 and clean-close grades are written.
-param([Parameter(Mandatory)][string]$Godot, [Parameter(Mandatory)][string]$Project, [Parameter(Mandatory)][string]$Out, [switch]$CloseOnly)
+param([Parameter(Mandatory)][string]$Godot, [Parameter(Mandatory)][string]$Project, [Parameter(Mandatory)][string]$Out, [switch]$CloseOnly, [switch]$Load37)
 $ErrorActionPreference = 'Stop'
 New-Item -ItemType Directory -Force -Path $Out | Out-Null
 $res = Join-Path $Out 'load10_result.txt'
@@ -29,6 +29,7 @@ function Kill-Tree($p) {
 
 function Start-Game($profile, $argList, $log, $err) {
   $env:APPDATA = $profile; $env:LOCALAPPDATA = $profile
+  if ($Load37 -and $argList -contains '--log-file') { $argList = @('--verbose') + $argList }
   try {
     $p = Start-Process -FilePath $Godot -ArgumentList $argList -PassThru -RedirectStandardOutput $log -RedirectStandardError $err
     $null = $p.Handle   # keeps ExitCode readable after exit (PowerShell 5.1)
@@ -52,6 +53,14 @@ function Get-CacheStat($profile) {
 function Say-Cache($label, $before, $after) {
   $bits = foreach ($k in $after.Keys) { "$k $($before[$k].n) -> $($after[$k].n) files ($($before[$k].mb) -> $($after[$k].mb) MB)" }
   Say "cache readback, $label`: $($bits -join '; ')"
+}
+
+function Say-ExitSplit($label, $text, $exitWall) {
+  $m = [regex]::Match($text, 'engine handoff wall ms (\d+)')
+  $engine = if ($m.Success -and $null -ne $exitWall) { [long]$exitWall - [long]$m.Groups[1].Value } else { 'unknown' }
+  $cache = [regex]::Matches($text, 'Updated PSO cache \([^)]+\)') | Select-Object -Last 1
+  $pso = if ($cache) { $cache.Value } else { 'no cache update logged' }
+  Say ("exit split {0}: native teardown {1} ms (includes cache save and engine joins) | {2}" -f $label, $engine, $pso)
 }
 
 # ---- 1 and 2: the load bench, cold then warm, on one profile
@@ -83,7 +92,10 @@ foreach ($pass in @($(if ($CloseOnly) { @() } else { @('cold', 'warm') }))) {
     title = [regex]::Match($r, '\[load1434\] title (PASS|FAIL)[^\r\n]*').Value
     title_pass = $r -match '\[load1434\] title PASS'
     title_split = [regex]::Match($r, '\[load1434\] title worst frames split: [^\r\n]*').Value
+    s25_max_ms = $null
   }
+  $s25 = [regex]::Match($r, '(?m)^\[load1434\] s25 worst cover frames split: (\d+) ms')
+  if ($s25.Success) { $bench[$pass].s25_max_ms = [int]$s25.Groups[1].Value }
   if (-not $r) { Say "load $pass`: FAIL: no load_result.txt (see load_$pass\log.txt)" }
   else {
     Say "load $pass`: $($bench[$pass].result)"; Say "load $pass`: $($bench[$pass].cover)"
@@ -180,6 +192,7 @@ foreach ($set in @('cold', 'warm')) {
         Start-Sleep -Milliseconds 300
         $text = (Get-Content -LiteralPath $flog -Raw -ErrorAction SilentlyContinue) + "`n" + (Get-Content -LiteralPath $log -Raw -ErrorAction SilentlyContinue) + "`n" + (Get-Content -LiteralPath $err -Raw -ErrorAction SilentlyContinue)
         $row.exit_code = $g.ExitCode
+        if ($Load37) { Say-ExitSplit "$set $($c.name)" $text (([DateTimeOffset]$g.ExitTime).ToUnixTimeMilliseconds()) }
         $per = @($flog, $log) | ForEach-Object { $t1 = Get-Content -LiteralPath $_ -Raw -ErrorAction SilentlyContinue; if ($t1) { ([regex]::Matches($t1, '\[main\] quit \(')).Count } else { 0 } }
         $row.quit_window = $text -match '\[main\] quit \(window\)'
         $row.quit_lines = ($per | Measure-Object -Maximum).Maximum
@@ -250,11 +263,24 @@ foreach ($lc in @($(if ($CloseOnly) { @() } else { @(@{name = 'title_launch_nosa
   else {
     Start-Sleep -Seconds 20
     $g = $found.proc
-    [void]$g.CloseMainWindow()
-    if (-not $g.WaitForExit(15000)) { $why += 'still running 15 s after the close'; Kill-Tree $p } else { [void]$p.WaitForExit(5000) }
+    $closeWall = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+    if (-not $g.CloseMainWindow()) { $why += 'close could not be sent' }
+    $exitWall = $null
+    if (-not $g.WaitForExit(15000)) { $why += 'still running 15 s after the close'; Kill-Tree $p }
+    else {
+      $exitWall = ([DateTimeOffset]$g.ExitTime).ToUnixTimeMilliseconds()
+      if ($g.ExitCode -ne 0) { $why += "exit $($g.ExitCode)" }
+      if ($exitWall - $closeWall -gt 15000) { $why += 'close to exit exceeded 15 s' }
+      [void]$p.WaitForExit(5000)
+    }
     Start-Sleep -Milliseconds 300
     $text = (Get-Content -LiteralPath $flog -Raw -ErrorAction SilentlyContinue) + "`n" + (Get-Content -LiteralPath $log -Raw -ErrorAction SilentlyContinue) + "`n" + (Get-Content -LiteralPath $err -Raw -ErrorAction SilentlyContinue)
     $mr = [regex]::Match($text, '\[main\] ready at ([0-9]+) ms')
+    if ($Load37) {
+      Say-ExitSplit "cold $($lc.name)" $text $exitWall
+      $closeMs = if ($null -ne $exitWall) { $exitWall - $closeWall } else { 'timeout' }
+      Say ("title launch cold {0}: close to exit {1} ms (2 s goal, 15 s cap)" -f $lc.name, $closeMs)
+    }
     $mm = [regex]::Match($text, '\[main\] title menu painted at ([0-9]+) ms after the engine started \(first button: ([^)]*)\)')
     $ready = if ($mr.Success) { $mr.Groups[1].Value } else { '-' }
     if (-not $mm.Success) { $why += 'no menu painted within the 20 s' }
@@ -297,6 +323,12 @@ foreach ($set in @('cold', 'warm')) {
   $grades["every close clean, $set"] = Set-Grade $set 'clean'
 }
 if (-not $CloseOnly) { $grades['title launch to first painted menu within 20 s, cold, no save and with a saved run'] = if (@($launch.Values | Where-Object { $_ -ne 'PASS' }).Count -eq 0 -and $launch.Count -eq 2) { 'PASS' } else { 'FAIL' } }
+if ($Load37 -and -not $CloseOnly) {
+  foreach ($set in @('cold', 'warm')) {
+    $ms = $bench[$set].s25_max_ms
+    $grades["LOAD37 s25 cover under 5000 ms, $set"] = if ($null -ne $ms -and $ms -lt 5000) { 'PASS' } else { 'FAIL' }
+  }
+}
 foreach ($k in $grades.Keys) { Say "[load10] $k`: $($grades[$k])" }
 $ok = @($grades.Values | Where-Object { $_ -ne 'PASS' }).Count -eq 0
 Say ("[load10] RESULT {0} (every line above must PASS; an Alt-F4 case that could not send its keys is UNVERIFIED, never PASS)" -f $(if ($ok) { 'PASS' } else { 'FAIL' }))

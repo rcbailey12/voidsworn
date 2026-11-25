@@ -56,6 +56,7 @@ set "JW_FAILED=GPU label"
 goto jw_init_fail
 :jw_label_ok
 set "PC_GPU_ISSUE=%~3"
+if not defined PC_GPU_WAIT_SECONDS set "PC_GPU_WAIT_SECONDS=3600"
 set "JW_VT=%USERPROFILE%\Downloads\voidsworn_test"
 if defined JW_TOOLS goto jw_tools_set
 if not "%JW_NO_REFRESH%"=="1" if exist "%~dp0lane_tools_refresh.ps1" powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0lane_tools_refresh.ps1" -Build tools_live >> "%JW_OUT%\tools_refresh.txt" 2>&1

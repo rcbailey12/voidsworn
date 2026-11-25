@@ -7,7 +7,7 @@
 # replaced more than a day ago and no running process names it.
 param(
   [Parameter(Mandatory = $true)]
-  [ValidateSet('build_b', 'build_c', 'build_d', 'build_e', 'work217', 'build', 'tools_live')]
+  [ValidateSet('build_b', 'build_c', 'build_d', 'build_e', 'build_f', 'build_g', 'work217', 'build', 'tools_live')]
   [string]$Build,
   # R417 (Ryan, Nov 22 2026): -NoRotate installs or refreshes and deletes nothing (no old tools_live version, no old
   # backup), so a relayed install needs no new yes from him. The rotation then waits for a run without it.
@@ -17,7 +17,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $Build = $Build.ToLowerInvariant()
 $root = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test'
-$seat = @{ build_b = 'board'; build_c = 'board_b'; build_d = 'board_c'; build_e = 'board_d'; work217 = 'work217'; build = 'build'; tools_live = 'tools_live' }[$Build]
+$seat = @{ build_b = 'board'; build_c = 'board_b'; build_d = 'board_c'; build_e = 'board_d'; build_f = 'board_e'; build_g = 'board_f'; work217 = 'work217'; build = 'build'; tools_live = 'tools_live' }[$Build]
 $liveTools = Join-Path $root "$Build\tools"
 $liveRoot = Join-Path $root 'tools_live'
 $keepBackups = 3
@@ -89,7 +89,8 @@ function Assert-IdleLane {
 function Invoke-SourceGit([string]$Step, [string[]]$Arguments) {
   # The only remote is public. Suppress native output and prevent credential helpers and prompts.
   $ErrorActionPreference = 'Continue'
-  $output = & git.exe -c credential.helper= -c core.autocrlf=false -c http.sslBackend=openssl -c maintenance.auto=false -c gc.auto=0 @Arguments 2>$null
+  $output = & git.exe -c credential.helper= -c credential.interactive=false -c core.askPass= `
+    -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 -c core.autocrlf=false -c http.sslBackend=openssl -c maintenance.auto=false -c gc.auto=0 @Arguments 2>$null
   if ($LASTEXITCODE -ne 0) { throw "$Step failed (git exit $LASTEXITCODE)" }
   return $output
 }
@@ -324,6 +325,9 @@ try {
   $env:GIT_CONFIG_NOSYSTEM = '1'
   $env:GIT_CONFIG_GLOBAL = 'NUL'
   $env:GIT_TERMINAL_PROMPT = '0'
+  $env:GCM_INTERACTIVE = 'never'
+  $env:GIT_ASKPASS = ''
+  $env:SSH_ASKPASS = ''
   $env:GIT_NO_REPLACE_OBJECTS = '1'
   foreach ($directory in @($sourceRoot, $backupRoot)) {
     $null = [IO.Directory]::CreateDirectory($directory)

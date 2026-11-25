@@ -362,7 +362,7 @@ func _label(parent: Node, text: String, pos: Vector2, px: int, col: Color, width
 
 func _fac_name(f: String) -> String:
 	return {"voidsworn": "Sunward Crusade", "corsair": "Ashfall Hullbreakers", "ithar": "the Glasswrights",
-		"hegemony": "Hegemony Navy", "chorus": "the Chorus", "deathless": "Eclipse"}.get(f, f)
+		"hegemony": "Meridian Directorate", "chorus": "the Chorus", "deathless": "Eclipse"}.get(f, f)
 
 
 # ---------------------------------------------------------------- the cost pass
