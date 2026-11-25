@@ -1818,7 +1818,7 @@ func _ship_card(s: Dictionary, refit: bool, extra: Array = [], apart: Array = []
 		var arc = "Turret" if w["arc"] == "T" else str(C.ARC_NAME.get(w["arc"], w["arc"]))
 		v.add_child(lbl(str(w["n"]) + "  " + arc + "  " + C.numstr(w["shots"]) + "×" + C.numstr(w["dmg"]) + ", range " + C.numstr(w["r"]) + ((", reload " + C.numstr(w["cd"])) if C.jt(w.get("cd")) else ""), 17, BONE3))
 	var sect = vbox(4); sect.add_child(HSeparator.new())
-	sect.add_child(lbl(C.rankName(cap) + " " + str(cap["name"]), 18, BONE, font_semi))
+	sect.add_child(lbl(C.rankName(cap) + " " + str(cap["full_name"]), 18, BONE, font_semi))
 	var nx = C.RANK_XP[int(cap["rank"]) + 1] if int(cap["rank"]) + 1 < C.RANK_XP.size() else null
 	if nx != null:
 		var nxt = cap.duplicate(); nxt["rank"] = float(cap["rank"]) + 1
@@ -1892,6 +1892,21 @@ func _spec_drawer(parent: VBoxContainer, ship: Dictionary, key: String) -> void:
 			"ability_d": box.add_child(lbl(line["t"], 17, BONE2))
 			"weapon": box.add_child(lbl(line["t"], 17, BONE, font_semi))
 			_: box.add_child(lbl(line["t"], 17, BONE2))
+func _preview_row(rows: Array, stat_key: String) -> Dictionary:
+	for row in rows:
+		if row["stat_key"] == stat_key: return row
+	return {}
+
+func _yard_repair_label(rows: Array, currency_suffix: String) -> String:
+	var hull := _preview_row(rows, "hull")
+	var max_hull := _preview_row(rows, "max_hull")
+	if hull.is_empty() or max_hull.is_empty(): return "Repair"
+	var missing: float = max_hull["old"] - hull["old"]
+	if missing <= 0.0: return "Fully repaired"
+	var points: float = hull["delta"]
+	var partial: String = C.numstr(points) + " of " if points > 0.0 and points < missing else ""
+	return "Repair " + partial + C.numstr(missing) + " for " + C.numstr(hull["cost"]) + currency_suffix
+
 func _shipyard() -> Control:
 	var v = vbox(10); var R = C.RUN; var n = C.page["data"]["node"]; var st = n["stock"]; var pm = C.priceMult(); var cp = C.fleetCP()
 	var head = hbox(); head.add_child(gothic("Shipyard")); head.add_child(spacer())
@@ -1904,9 +1919,9 @@ func _shipyard() -> Control:
 	v.add_child(head)   # Leave shipyard is the finishing action, fixed at the bottom right (_page_finish)
 	if hw != "": v.add_child(lbl("The Chorus regrow with biomass: repairs, new hulls and Marks are paid in biomass. Refits, upgrade tracks, protocol rerolls and the late market take biomass first, then credits.", 18, VERD))
 	v.add_child(lbl("Repairs cost %s per 2 hull, rounded up. A Mark upgrade adds 20%% hull and shields and 15%% damage. New hulls come with a fresh %s." % [(("1" if pm == 1.0 else C.numstr(snappedf(pm, 0.0001))) + (hw if hw != "" else (" credit" if pm == 1.0 else " credits"))), str(C.CAPTAINS.get(str(R["fac"]), C.CAPTAINS["voidsworn"])["ranks"][0]).to_lower()], 18, BONE2))
-	var allMiss = 0.0
-	for s in R["fleet"]: allMiss += float(C.derive(s)["maxHp"]) - float(s["hp"])
-	_yard_bar = abtn(("Repair entire fleet for " + C.numstr(ceil(allMiss / 2.0 * pm)) + hw) if allMiss > 0 else "Fleet fully repaired", "repairAll")
+	var all_repairs: Array = C.preview_op("repairAll")
+	var all_miss: float = all_repairs.reduce(func(total, row): return total + row["delta"], 0.0)
+	_yard_bar = abtn(("Repair entire fleet for " + C.numstr(all_repairs[0]["cost"]) + hw) if all_miss > 0 else "Fleet fully repaired", "repairAll")
 	add(v, _yard_bar)
 	_yard_tip_dock = hbox(0)
 	_yard_tip_dock.alignment = BoxContainer.ALIGNMENT_END
@@ -1942,24 +1957,29 @@ func _shipyard() -> Control:
 		v.add_child(lm)
 	var cards = flow()
 	for s in R["fleet"]:
-		var d = C.derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var rc = ceil(miss / 2.0 * pm); var rp = C.repairPoints(miss, pm, C.hullFunds()); var mc = C.mkCost(s); var sell = C.sellValue(s)   # R1 (TXT-8): what the button pays; hulls without a shop price too
-		var ex = [abtn(("Repair " + (C.numstr(rp) + " of " if rp > 0.0 and rp < miss else "") + C.numstr(miss) + " for " + C.numstr(C.repairBill(rp, pm) if rp > 0.0 else rc) + hw) if miss > 0 else "Fully repaired", "repair", s["uid"], false, true),
-			abtn(("Mk " + C.roman(float(s["mk"]) + 1) + " for " + C.numstr(mc) + hw) if float(s["mk"]) < 3 else "Max Mark", "upgradeMk", s["uid"], false, true)]
+		var repair_label := _yard_repair_label(C.preview_op("repair", s["uid"]), hw)
+		var mark := _preview_row(C.preview_op("upgradeMk", s["uid"]), "mark")
+		var mark_label := "Upgrade Mark"
+		if not mark.is_empty():
+			mark_label = ("Mk " + C.roman(mark["new"]) + " for " + C.numstr(mark["cost"]) + hw) if mark["old"] < 3 else "Max Mark"
+		var sell = C.sellValue(s)   # R1 (TXT-8): what the button pays; hulls without a shop price too
+		var ex = [abtn(repair_label, "repair", s["uid"], false, true),
+			abtn(mark_label, "upgradeMk", s["uid"], false, true)]
 		var apart = [abtn("Decommission (+" + C.numstr(sell) + hw + ")", "sellShip", s["uid"], false, true)]   # asks first: the sell modal names the ship and the credits
 		cards.add_child(_ship_card(s, false, ex, apart))
 	v.add_child(cards)
 	v.add_child(sec_head("Hulls for sale"))
 	var hs = flow()
 	for h in st["hulls"]:
-		var t = C.HULLS[h]; var cost = C.jsround(float(t["cost"]) * pm); var fits = cp + float(t["cp"]) <= float(R["cpCap"])
-		var uniq = C.jt(t.get("unique")) and R["fleet"].any(func(s): return s["tpl"] == h)
+		var t = C.HULLS[h]; var offer: Dictionary = C.preview_op("buyHull", h)[0]
+		var cost: float = offer["cost"]; var reason: String = offer["disabled_reason"]
 		var cv = card(false, 320); var cvv = cv[1]
 		cvv.add_child(rich("[b]" + esc(t["n"]) + "[/b]" + (" " + c("Variant", VERD) if C.jt(t.get("variant")) else ""), 20))
 		if C.jt(t.get("variant")): cvv.add_child(lbl(C.HULL_VARIANTS[t["variant"]]["d"], 17, VERD))
 		_hull_summary(cvv, FleetManifest.preview_ship(C, h), "yard:" + str(h))
 		var fr = hbox(); add(fr, abtn("Buy for " + C.numstr(cost) + hw, "buyHull", h))
-		if not fits: fr.add_child(lbl("Not enough command points", 17, BONE3, null, false))
-		elif uniq: fr.add_child(lbl("Only one allowed", 17, BONE3, null, false))
+		if reason == "Not enough command points.": fr.add_child(lbl("Not enough command points", 17, BONE3, null, false))
+		elif reason == "That unique hull is already in the fleet.": fr.add_child(lbl("Only one allowed", 17, BONE3, null, false))
 		cvv.add_child(fr); hs.add_child(cv[0])
 	v.add_child(hs)
 	if st.get("cap") is Array and not st["cap"].is_empty():
@@ -1967,13 +1987,14 @@ func _shipyard() -> Control:
 		v.add_child(lbl("Prizes taken from the Meridian Directorate and Eclipse, refitted along the Cinder Line. Their links are ripped out: no synchronized fire, no Archive restore. Sold at Crusade prices.", 17, BONE3))
 		var cs = flow()
 		for h in st["cap"]:
-			var t2 = C.HULLS[h]; var cost2 = C.capturedHullPrice(t2); var fits2 = cp + float(t2["cp"]) <= float(R["cpCap"])
+			var t2 = C.HULLS[h]; var offer: Dictionary = C.preview_op("buyHull", h)[0]
+			var cost2: float = offer["cost"]
 			var cv3 = card(false, 320); var cvv3 = cv3[1]
 			cvv3.add_child(rich("[b]" + esc(t2["n"]) + "[/b]", 20))
 			cvv3.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
 			_hull_summary(cvv3, FleetManifest.preview_ship(C, h, true), "cap:" + str(h))
 			var fr2 = hbox(); add(fr2, abtn("Buy for " + C.numstr(cost2) + hw, "buyHull", h))
-			if not fits2: fr2.add_child(lbl("Not enough command points", 17, BONE3, null, false))
+			if offer["disabled_reason"] == "Not enough command points.": fr2.add_child(lbl("Not enough command points", 17, BONE3, null, false))
 			cvv3.add_child(fr2); cs.add_child(cv3[0])
 		v.add_child(cs)
 	v.add_child(sec_head("Refits for sale"))
@@ -1982,7 +2003,9 @@ func _shipyard() -> Control:
 		var m = st["mods"][i]; var cv2 = card(false, 300)
 		cv2[1].add_child(lbl(C.modName(m), 20, BONE, font_semi)); cv2[1].add_child(lbl(C.MODULES[m]["d"], 18, BONE2))
 		if C._has_num(st["sold"], i): cv2[1].add_child(lbl("Bought", 18, VERD))
-		else: add(cv2[1], abtn("Buy for " + C.numstr(C.jsround(float(C.MODULES[m]["cost"]) * pm)) + C.shopWord(C.jsround(float(C.MODULES[m]["cost"]) * pm)), "buyMod", i))
+		else:
+			var cost: float = C.preview_op("buyMod", "", i)[0]["cost"]
+			add(cv2[1], abtn("Buy for " + C.numstr(cost) + C.shopWord(cost), "buyMod", i))
 		ms.add_child(cv2[0])
 	v.add_child(ms)
 	v.add_child(sec_head("Class refits"))
@@ -2103,7 +2126,7 @@ func _legacy() -> Control:
 			else:
 				var fc2 = flow()
 				for f in fallen:
-					var cv = card(false, 260); cv[1].add_child(lbl(f["name"], 18, BONE, font_semi)); cv[1].add_child(lbl(C.rankName(f) + ", " + str(f.get("ship", "")), 17, BONE2)); cv[1].add_child(lbl("Lost in sector " + C.roman(f.get("sector", 1)), 17, BONE3)); fc2.add_child(cv[0])
+					var cv = card(false, 260); cv[1].add_child(lbl(f["cap"]["full_name"], 18, BONE, font_semi)); cv[1].add_child(lbl(C.rankName(f["cap"]) + ", " + str(f.get("ship", "")), 17, BONE2)); cv[1].add_child(lbl("Lost in sector " + C.roman(f.get("sector", 1)), 17, BONE3)); fc2.add_child(cv[0])
 				v.add_child(fc2)
 	return v   # Back sits in the page's fixed bar (_kit_page)
 const HELP := [
@@ -2379,11 +2402,11 @@ func _end_detail_body(d: Dictionary, section: String) -> Control:
 			for x in fl:
 				var cr = x.get("car") if x.get("car") != null else {"dealt": 0, "kills": 0}
 				var p = _end_plain(8); var r = hbox()
-				r.add_child(rich("[b]" + esc(x["name"]) + "[/b] " + c(esc(C.HULLS[x["tpl"]]["n"]), GS.TEXT2) + "\n" + c(esc(C.rankName(x["cap"])) + " " + esc(x["cap"]["name"]), GS.TEXT2), 17))
+				r.add_child(rich("[b]" + esc(x["name"]) + "[/b] " + c(esc(C.HULLS[x["tpl"]]["n"]), GS.TEXT2) + "\n" + c(esc(C.rankName(x["cap"])) + " " + esc(x["cap"]["full_name"]), GS.TEXT2), 17))
 				r.add_child(rich("[right]" + C.numstr(cr["kills"]) + " kills\n" + c(C.numstr(cr["dealt"]) + " dmg", GS.TEXT2) + "[/right]", 17)); p.add_child(r); v.add_child(p)
 		if R["fallen"].size() > 0:
 			var nm = []
-			for f in R["fallen"]: nm.append(f["name"])
+			for f in R["fallen"]: nm.append(f["cap"]["full_name"])
 			v.add_child(lbl("Captains lost this run: " + ", ".join(PackedStringArray(nm)) + ".", 18, GS.TEXT2))
 	if section == "nemesis": _end_nem(v, R)
 	if section == "record":
@@ -2588,9 +2611,9 @@ func _modal(md: Dictionary) -> void:
 					var ship_name: String = C.ship_with_article(str(loss["ship"]))
 					if C.loss_captain_escaped(loss):
 						lost.append(ship_name)
-						survivors.append(escape_line % str(loss["cap"]))
+						survivors.append(escape_line % str(loss["cap"]["full_name"]))
 					else:
-						lost.append(ship_name + " and " + str(loss["cap"]))
+						lost.append(ship_name + " and " + str(loss["cap"]["full_name"]))
 				p.call("Lost: " + ", ".join(lost) + ".", BLOOD)
 				for line in survivors: p.call(line, BONE2)
 			var econ: Dictionary = d["econ"] if d.get("econ") is Dictionary else {}   # issue 1178: faction economies on the victory card
@@ -2606,7 +2629,7 @@ func _modal(md: Dictionary) -> void:
 				for key in tks: tls.append(_tree_name(str(key)) + " x" + C.numstr(tstats[key]))
 				p.call("Lineage in action: " + ", ".join(PackedStringArray(tls)) + ".", VERD)
 			if d.get("flagName", "") != "": p.call("The admiral transfers the flag to " + C.ship_with_article(str(d["flagName"])) + ". Its refit goes with it.", VERD)
-			for x in sm.get("xp", []): v.add_child(rich("• " + esc(x["cap"]) + " (" + esc(x["ship"]) + "): +" + C.numstr(x["xp"]) + " experience" + ((" " + c("promoted to " + str(C.RANKS[int(x["rank"])]), VERD)) if x["up"] else ""), 18))
+			for x in sm.get("xp", []): v.add_child(rich("• " + esc(x["cap"]["full_name"]) + " (" + esc(x["ship"]) + "): +" + C.numstr(x["xp"]) + " experience" + ((" " + c("promoted to " + str(C.RANKS[int(x["cap"]["rank"])]), VERD)) if x["up"] else ""), 18))
 			if d["wrecks"].is_empty():
 				var rw = d["rw"]
 				var next := "Continue"
@@ -2685,14 +2708,14 @@ func _modal(md: Dictionary) -> void:
 			for r in d["opts"]: add(v, choice(C.relicName(r), C.relicText(r), "takeRelic", r, acts))
 		"promote":
 			var s = d["ship"]; h2.call("Promotion")
-			v.add_child(rich(esc(s["cap"]["name"]) + " of the [i]" + esc(s["name"]) + "[/i] is now " + esc(C.rankName(s["cap"])) + ". Choose one perk.", 17)); p.call(str(C.REWARD_DEF["promotion"]), BONE3)
+			v.add_child(rich(esc(s["cap"]["full_name"]) + " of the [i]" + esc(s["name"]) + "[/i] is now " + esc(C.rankName(s["cap"])) + ". Choose one perk.", 17)); p.call(str(C.REWARD_DEF["promotion"]), BONE3)
 			for pk in s["cap"]["offer"]: add(v, choice(C.PERKS[pk]["n"], C.PERKS[pk]["d"], "takePerk", s["uid"] + ":" + pk, acts))
 		"promotions":
 			h2.call("Promotions"); p.call("Choose a perk for each captain.", BONE2)
 			p.call(str(C.REWARD_DEF["promotion"]), BONE3)
 			for s in d["ships"]:
 				var pp := panel(IRON3, IRON2, 10); var pv := vbox(6); pp.add_child(pv)
-				pv.add_child(rich("[b]" + esc(s["cap"]["name"]) + "[/b]  " + c(esc(C.rankName(s["cap"])), VERD) + "  " + esc(s["name"]), 18))
+				pv.add_child(rich("[b]" + esc(s["cap"]["full_name"]) + "[/b]  " + c(esc(C.rankName(s["cap"])), VERD) + "  " + esc(s["name"]), 18))
 				var options := hbox(8)
 				for perk in s["cap"]["offer"]:
 					var button = choice(C.PERKS[perk]["n"], C.PERKS[perk]["d"], "takePerk", s["uid"] + ":" + perk, acts)
