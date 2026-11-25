@@ -96,25 +96,32 @@ def _read_gate(path: pathlib.Path) -> dict | None:
     expected_sessions = int(data.get("sessions") or 0)
     f1080_vals: list[float] = []
     g4k_vals: list[float] = []
-    for mode, row in _iter_mode_rows(data):
+    f1080_sessions: set[int] = set()
+    g4k_sessions: set[int] = set()
+    for idx, (mode, row) in enumerate(_iter_mode_rows(data)):
+        sid = int(row.get("session") or (idx + 1))
         if mode == "base" and row.get("frame_median") is not None:
             f1080_vals.append(float(row["frame_median"]))
+            f1080_sessions.add(sid)
         if mode == "res_2160" and row.get("gpu_median") is not None:
             g4k_vals.append(float(row["gpu_median"]))
+            g4k_sessions.add(sid)
     if not f1080_vals and not g4k_vals:
         return None
+    need = expected_sessions if expected_sessions > 0 else 1
     out: dict[str, float | int | bool] = {"expected_sessions": expected_sessions}
     if f1080_vals:
         med = float(statistics.median(f1080_vals))
+        n_sess = len(f1080_sessions)
         out["f1080"] = med
-        out["f1080_sessions"] = len(f1080_vals)
-        out["f1080_pass"] = med <= 12.5
+        out["f1080_sessions"] = n_sess
+        out["f1080_pass"] = n_sess >= need and med <= 12.5
     if g4k_vals:
         med = float(statistics.median(g4k_vals))
+        n_sess = len(g4k_sessions)
         out["g4k"] = med
-        out["g4k_sessions"] = len(g4k_vals)
-        out["g4k_pass"] = med <= 12.5
-    need = expected_sessions if expected_sessions > 0 else 1
+        out["g4k_sessions"] = n_sess
+        out["g4k_pass"] = n_sess >= need and med <= 12.5
     out["complete"] = (
         int(out.get("f1080_sessions", 0)) >= need
         and int(out.get("g4k_sessions", 0)) >= need
@@ -128,17 +135,23 @@ def _fmt_gate(label: str, metrics: dict | None) -> str:
     need = int(metrics.get("expected_sessions", 0) or 0)
     parts = []
     if "f1080" in metrics:
-        ok = "PASS" if float(metrics["f1080"]) <= 12.5 else "OVER"
-        n = int(metrics.get("f1080_sessions", 1))
-        suf = f" [{n}/{need}s]" if need > 0 and n < need else ""
-        parts.append(f"1080p {float(metrics['f1080']):.2f}ms ({ok}{suf})")
+        n = int(metrics.get("f1080_sessions", 0))
+        val = float(metrics["f1080"])
+        if need > 0 and n < need:
+            status = f"INCOMPLETE {n}/{need}s"
+        else:
+            status = "PASS" if val <= 12.5 else "OVER"
+        parts.append(f"1080p {val:.2f}ms ({status})")
     else:
         parts.append("1080p MISSING")
     if "g4k" in metrics:
-        ok = "PASS" if float(metrics["g4k"]) <= 12.5 else "OVER"
-        n = int(metrics.get("g4k_sessions", 1))
-        suf = f" [{n}/{need}s]" if need > 0 and n < need else ""
-        parts.append(f"4K GPU {float(metrics['g4k']):.2f}ms ({ok}{suf})")
+        n = int(metrics.get("g4k_sessions", 0))
+        val = float(metrics["g4k"])
+        if need > 0 and n < need:
+            status = f"INCOMPLETE {n}/{need}s"
+        else:
+            status = "PASS" if val <= 12.5 else "OVER"
+        parts.append(f"4K GPU {val:.2f}ms ({status})")
     else:
         parts.append("4K GPU MISSING")
     return f"{label}: " + ", ".join(parts)
@@ -208,11 +221,19 @@ def build_sheets(
         t_before = _read_gate(before_dir / f"timing_{case}" / "scene_gate.json")
         t_after = _read_gate(after_dir / f"timing_{case}" / "scene_gate.json")
         summary["timing"][case] = {"before": t_before, "after": t_after}
+        # Place timing summary under the right column so the bottom-left provenance stamp never covers it.
+        foot_x = x_right
         foot_y = y_row1 + CELL_H + 10
         draw.text(
-            (PAD_X, foot_y),
-            f"Gate <= 12.50ms  |  {_fmt_gate('Before', t_before)}  |  {_fmt_gate('After', t_after)}",
-            fill=(206, 216, 230),
+            (foot_x, foot_y),
+            f"{_fmt_gate('Before', t_before)}  (gate <= 12.5ms)",
+            fill=(195, 204, 218),
+            font=f_sub,
+        )
+        draw.text(
+            (foot_x, foot_y + 22),
+            f"{_fmt_gate('After', t_after)}  (gate <= 12.5ms)",
+            fill=(135, 224, 208),
             font=f_sub,
         )
 
@@ -238,15 +259,93 @@ def build_sheets(
     return summary
 
 
+def _selftest() -> int:
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as td:
+        tmp = pathlib.Path(td)
+        # 1. Partial fixture: only 1 of 3 base sessions (below 12.5 ms) and missing GPU row.
+        partial = tmp / "partial.json"
+        partial.write_text(
+            json.dumps({"sessions": 3, "modes": {"base": [{"session": 1, "frame_median": 9.5}]}}),
+            encoding="utf-8",
+        )
+        m_part = _read_gate(partial)
+        assert m_part is not None and not m_part["complete"] and not m_part["f1080_pass"]
+        txt_part = _fmt_gate("After", m_part)
+        assert "INCOMPLETE 1/3s" in txt_part and "PASS" not in txt_part and "4K GPU MISSING" in txt_part, txt_part
+
+        # 2. Complete over-budget fixture: 3 distinct sessions, base over 12.5 ms, 4K under.
+        over = tmp / "over.json"
+        over.write_text(
+            json.dumps(
+                {
+                    "sessions": 3,
+                    "modes": {
+                        "base": [
+                            {"session": 1, "frame_median": 13.4},
+                            {"session": 2, "frame_median": 14.5},
+                            {"session": 3, "frame_median": 16.6},
+                        ],
+                        "res_2160": [
+                            {"session": 1, "gpu_median": 8.4},
+                            {"session": 2, "gpu_median": 8.5},
+                            {"session": 3, "gpu_median": 8.4},
+                        ],
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        m_over = _read_gate(over)
+        assert m_over is not None and m_over["complete"] and not m_over["f1080_pass"] and m_over["g4k_pass"]
+        txt_over = _fmt_gate("After", m_over)
+        assert "(OVER)" in txt_over and "(PASS)" in txt_over, txt_over
+
+        # 3. Complete passing fixture: 3 distinct sessions under 12.5 ms in both modes.
+        ok = tmp / "ok.json"
+        ok.write_text(
+            json.dumps(
+                {
+                    "sessions": 3,
+                    "modes": {
+                        "base": [
+                            {"session": 1, "frame_median": 11.2},
+                            {"session": 2, "frame_median": 11.5},
+                            {"session": 3, "frame_median": 11.4},
+                        ],
+                        "res_2160": [
+                            {"session": 1, "gpu_median": 7.9},
+                            {"session": 2, "gpu_median": 8.1},
+                            {"session": 3, "gpu_median": 8.0},
+                        ],
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        m_ok = _read_gate(ok)
+        assert m_ok is not None and m_ok["complete"] and m_ok["f1080_pass"] and m_ok["g4k_pass"]
+        txt_ok = _fmt_gate("After", m_ok)
+        assert "1080p 11.40ms (PASS)" in txt_ok and "4K GPU 8.00ms (PASS)" in txt_ok, txt_ok
+    print("make_sheets_2035 selftest: PASS")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--before", required=True)
-    ap.add_argument("--after", required=True)
-    ap.add_argument("--out", required=True)
+    ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--before")
+    ap.add_argument("--after")
+    ap.add_argument("--out")
     ap.add_argument("--before-sha", default="main")
     ap.add_argument("--after-sha", default="issue2035")
     ap.add_argument("--repo", default="")
     args = ap.parse_args()
+    if args.selftest:
+        return _selftest()
+    if not args.before or not args.after or not args.out:
+        ap.error("--before, --after, and --out are required unless --selftest is given")
     repo = pathlib.Path(args.repo) if args.repo else None
     summary = build_sheets(
         pathlib.Path(args.before),

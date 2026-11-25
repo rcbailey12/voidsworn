@@ -76,44 +76,47 @@ void fragment() {
 	gas_layer_style(band, layer_scale, layer_offset, edge_shift);
 	vec3 pl = p * layer_scale + layer_offset;
 	float warp = gas_macro3(pl * 0.52 + 4.0);
-	float warp2 = gas_macro3(pl * 0.42 - 6.3);
+	float warp2 = gas_macro3(pl * 0.44 - 5.2);
 	// Organic domain-warped footprint so storm boundaries never echo hex lines.
 	vec2 wv = vec2(warp - 0.5, warp2 - 0.5) * 9.0 + edge_shift;
 	vec2 fmask = storm_foot(world.xz + wv);
 	if (fmask.g <= 0.001) { discard; }
 	float cam_d = length(CAMERA_POSITION_WORLD - world);
+	float near_cam = smoothstep(10.0, 32.0, cam_d);
+	if (near_cam <= 0.001) { discard; }
 	float close_k = 1.0 - smoothstep(45.0, 150.0, cam_d);
-	vec2 cn = gas_cloud3(pl + vec3(warp - 0.5) * 0.92, close_k);
+	vec3 warp_v = vec3(warp - 0.5, (warp + warp2 - 1.0) * 0.5, warp2 - 0.5) * 1.10;
+	vec2 cn = gas_cloud3(pl + warp_v, close_k);
 	float n = cn.x;
 	float n_macro = cn.y;
-	float bar = mix(0.10, 0.24, smoothstep(0.5, 2.5, band)) + (0.52 - n_macro) * 0.34;
+	float bar = mix(0.12, 0.26, smoothstep(0.5, 2.5, band)) + (0.52 - n_macro) * 0.34;
 	float foot = fmask.g * smoothstep(bar, bar + 0.38, fmask.r);
-	float lo_cut = band < 0.5 ? 0.31 : (band < 1.5 ? 0.35 : (band < 2.5 ? 0.40 : 0.42));
+	float lo_cut = band < 0.5 ? 0.32 : (band < 1.5 ? 0.35 : (band < 2.5 ? 0.40 : 0.43));
 	float field = smoothstep(lo_cut, lo_cut + 0.36, n);
-	float density = shape * foot * field * cloud.z;
+	float density = shape * foot * field * near_cam * cloud.z;
 	density *= clamp((-view_pos.z / view_pos.w + VERTEX.z) / 5.0, 0.0, 1.0);
 	if (density < MIN_GAS_DENSITY) { discard; }
-	float sun_macro = gas_macro3(pl + vec3(warp - 0.5) * 0.92 + vec3(0.24, 0.38, 0.28));
-	float rim = clamp(0.50 + (n_macro - sun_macro) * 2.4, 0.0, 1.0);
+	float sun_macro = gas_macro3(pl + warp_v + vec3(0.24, 0.38, 0.28));
+	float rim = clamp(0.50 + (n_macro - sun_macro) * 2.6, 0.0, 1.0);
 	// Broad rolling charge lobes (no grainy high-frequency static at battle distance).
 	float charge_lobe = gas_macro3(pl * 1.18 + vec3(3.7, 1.2, 7.4));
 	float charge = smoothstep(0.46, 0.72, charge_lobe) * smoothstep(0.36, 0.68, n_macro);
 	// Vertical stratification: dark brooding under-stratum below ships, steel-blue rolling core, cool sunlit upper wisps.
 	float alt_k = clamp((world.y / height_scale + 6.0) / 22.0, 0.0, 1.0);
-	float stratum_lit = band < 0.5 ? 0.70 : (band < 1.5 ? 1.0 : (band < 2.5 ? 1.16 : 1.08));
-	vec3 col = mix(vec3(0.006, 0.014, 0.022), vec3(0.032, 0.065, 0.11), field * mix(0.75, 1.1, alt_k));
+	float stratum_lit = band < 0.5 ? 0.68 : (band < 1.5 ? 0.98 : (band < 2.5 ? 1.06 : 0.94));
+	vec3 col = mix(vec3(0.006, 0.014, 0.022), vec3(0.032, 0.065, 0.11), field * mix(0.72, 1.02, alt_k));
 	col += vec3(0.04, 0.13, 0.18) * rim * field * stratum_lit;
-	col += vec3(0.10, 0.42, 0.52) * charge * (0.35 + 0.04 * sin(gas_time * 2.8 + cloud.y * 6.28)) * mix(0.65, 1.05, alt_k);
+	col += vec3(0.10, 0.42, 0.52) * charge * (0.35 + 0.04 * sin(gas_time * 2.8 + cloud.y * 6.28)) * mix(0.65, 1.0, alt_k);
 	float flash = tick_light(world.xz);
 	for (int i = 0; i < 8; i++) {
 		vec3 delta = world - flashes[i].xyz;
 		flash += exp(-dot(delta, delta) / 240.0) * flashes[i].w;
 	}
 	col += vec3(0.14, 0.55, 1.05) * flash * field * 1.2;
-	col += combat_scatter(world, field) * (0.34 * field);
-	float weight = band < 0.5 ? 0.58 : (band < 1.5 ? 0.96 : (band < 2.5 ? 0.72 : 0.26));
+	col += combat_scatter(world, field) * (0.42 * field);
+	float weight = band < 0.5 ? 0.52 : (band < 1.5 ? 0.92 : (band < 2.5 ? 0.46 : 0.14));
 	ALBEDO = col;
-	ALPHA = min(0.56, (1.0 - exp(-density * weight * 2.4)) * gain_a);
+	ALPHA = min(0.54, (1.0 - exp(-density * weight * 2.4)) * gain_a);
 }
 """
 
@@ -152,11 +155,11 @@ void fog() {
 		vec3 delta = WORLD_POSITION - flashes[i].xyz;
 		flash += exp(-dot(delta, delta) / 240.0) * flashes[i].w;
 	}
-	DENSITY = field * shape * 0.052 * gain_a;
+	DENSITY = field * shape * 0.046 * gain_a;
 	ALBEDO = mix(vec3(0.04, 0.085, 0.14), vec3(0.12, 0.36, 0.46), charge);
-	EMISSION = mix(vec3(0.006, 0.014, 0.022), vec3(0.015, 0.05, 0.085), field) * mix(0.75, 1.15, alt);
-	EMISSION += vec3(0.04, 0.20, 0.27) * charge * mix(0.7, 1.1, alt);
+	EMISSION = mix(vec3(0.006, 0.014, 0.022), vec3(0.015, 0.05, 0.085), field) * mix(0.70, 1.0, alt);
+	EMISSION += vec3(0.04, 0.20, 0.27) * charge * mix(0.70, 1.0, alt);
 	EMISSION += vec3(0.12, 0.50, 1.0) * flash * field * 2.5;
-	EMISSION += combat_scatter(WORLD_POSITION, field) * field * 0.42;
+	EMISSION += combat_scatter(WORLD_POSITION, field) * field * 0.48;
 }
 """

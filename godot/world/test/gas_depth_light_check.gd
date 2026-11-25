@@ -84,6 +84,10 @@ func _check_layers(living, quality: String) -> void:
 				"%s/%s: all shader placeholders substituted" % [quality, node_name])
 			_check(code.contains("combat_scatter(") and code.contains("gas_layer_style(") and code.contains("gas_cloud3("),
 				"%s/%s: upgraded multi-layer smooth shader with combat scatter active" % [quality, node_name])
+			_check(code.contains("gas_rot0(") and code.contains("gas_oct_step("),
+				"%s/%s: rotated multi-octave noise active (no axis-aligned square tiles)" % [quality, node_name])
+			_check(code.contains("span * 0.44") and code.contains("near_cam = smoothstep("),
+				"%s/%s: smooth vertical bell rolloff and near-camera lens fade active" % [quality, node_name])
 			if not is_storm:
 				_check(not code.contains("flashes["), "%s/Nebula: calm gas has no storm lightning array" % quality)
 			if quality == "max":
@@ -92,6 +96,15 @@ func _check_layers(living, quality: String) -> void:
 					var fcode: String = (patch.fog_mat as ShaderMaterial).shader.code
 					_check(not fcode.contains("%COMBAT_LIGHTS%") and fcode.contains("combat_scatter("),
 						"%s/%s: fog shader carries combat scatter" % [quality, node_name])
+		if quality == "max":
+			var mm_cards := 0
+			for mmi in mmis:
+				mm_cards += (mmi as MultiMeshInstance3D).multimesh.instance_count
+			_check(mm_cards <= 7, "%s/%s: Max card count stays lean (got %d for 3 hexes)" % [quality, node_name, mm_cards])
+			var fog_name := "StormFog368" if is_storm else "NebulaFog368"
+			var fogs: Array = living.find_children(fog_name, "FogVolume", false, false)
+			_check(not fogs.is_empty() and (fogs[0] as FogVolume).size.x >= LIVING.GAS_FIELD_REACH * 2.0,
+				"%s/%s: FogVolume margin covers full warped field" % [quality, node_name])
 		if quality == "max" or quality == "high":
 			for b in [0, 1, 2, 3]:
 				_check(int(bands.get(b, 0)) > 0, "%s/%s: height band %d populated (got %s)" % [quality, node_name, b, str(bands)])

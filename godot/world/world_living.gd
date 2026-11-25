@@ -35,9 +35,16 @@ var W = null                 # the world (world.gd)
 var rng := RandomNumberGenerator.new()
 var gas_mats: Array = []     # [ShaderMaterial, base alpha gain]
 var storm_mats: Array[ShaderMaterial] = []
-var _gas_patches: Array = [] # {mat, fog_mat, lo, hi, storm, lit_count}
+var _gas_patches: Array = [] # {mat, fog_mat, lo, hi, storm, lit_count, pos_arr, col_arr, last_hash}
 var _storm_patches: Array = []
 var _tick_presenter: Node = null
+var _cached_effects = null
+var _effects_looked_up := false
+var _any_combat_lit := false
+var _cl_pos: Array[Vector3] = []
+var _cl_col: Array[Color] = []
+var _cl_int: PackedFloat32Array = PackedFloat32Array()
+var _cl_rad: PackedFloat32Array = PackedFloat32Array()
 var bolts: Array = []        # {mi, light, pos, next, start, soft, variant, strikes, frame, gain}
 var _storm_bursts: Array = []
 var clock := 0.0
@@ -101,7 +108,7 @@ const GAS_FEATHER_END := 1.6
 const GAS_FEATHER_REACH := GAS_FEATHER_END * 8.660254 * GAS_CLOUD_SCALE / 0.8660254   # 48 units
 const GAS_WARP := 4.5                            # GAS_SHADER: wv = (noise - 0.5) * 9.0
 const GAS_CLOUD_MARGIN := GAS_FIELD_REACH + 2.0
-const COMBAT_LIGHT_SLOTS := 6
+const COMBAT_LIGHT_SLOTS := 4
 # Issue 2035 (AAA item 9): weapon flashes and explosions passing through nebula or storm hexes softly
 # illuminate nearby gas strata in the flash's own linear colour, bounded with a soft knee for WCAG comfort.
 const COMBAT_LIGHT_SHADER := """
@@ -144,7 +151,7 @@ void fog() {
 	float warp = texture(noise_tex, p_alt * 0.55 + 0.31).r;
 	float warp2 = texture(noise_tex, p_alt * 0.45 - vec3(0.21, 0.37, 0.19)).r;
 	float n = texture(noise_tex, p_alt + vec3(warp - 0.5) * 0.14).r;
-	n = mix(n, texture(noise_tex, p_alt * 2.1 - vec3(warp - 0.5) * 0.16).r, 0.14);
+	n = mix(n, texture(noise_tex, p_alt * 2.8 - vec3(warp - 0.5) * 0.18).r, 0.18);
 	vec2 wv = vec2(warp - 0.5, warp2 - 0.5) * 9.0 + vec2(alt - 0.5, 0.5 - alt) * 2.6;
 	vec2 uv = (WORLD_POSITION.xz + wv - mask_box.xy) * mask_box.zw;
 	vec2 foot = texture(mask_tex, uv).rg;
@@ -153,12 +160,12 @@ void fog() {
 	float strata = 0.78 + 0.22 * cos((alt - 0.30) * 6.28318);
 	float shape = foot.g * smoothstep(0.08, 0.62, foot.r) * height * strata;
 	float field = smoothstep(0.32, 0.68, n);
-	DENSITY = field * shape * 0.044 * gain_a;
+	DENSITY = field * shape * 0.038 * gain_a;
 	// WAKE_THIN: issue 1079, the wake's thinning goes here when it is on
-	ALBEDO = mix(c_lit, c_glow, smoothstep(0.58, 0.85, n));
-	EMISSION = mix(c_dark, c_shadow, n) * mix(0.55, 0.82, alt);
-	EMISSION += c_glow * smoothstep(0.68, 0.90, n) * (0.18 + storm * 0.25) * mix(0.7, 1.15, alt);
-	EMISSION += combat_scatter(WORLD_POSITION, field) * field * 0.42;
+	ALBEDO = mix(c_lit, c_glow, smoothstep(0.60, 0.86, n));
+	EMISSION = mix(c_dark, c_shadow, n) * mix(0.45, 0.65, alt);
+	EMISSION += c_glow * smoothstep(0.71, 0.91, n) * (0.16 + storm * 0.25) * mix(0.75, 1.0, alt);
+	EMISSION += combat_scatter(WORLD_POSITION, field) * field * 0.48;
 }
 """
 
@@ -188,49 +195,71 @@ const float GAS_DENSITY_BOUND = MIN_GAS_DENSITY * 0.95;
 // The bottom band now starts lower and fades in over 5 band units (half density at -4.0 instead of -3.25).
 const float GAS_FLOOR_FADE = 5.0;
 vec2 gas_band(float band) {
-	return band < 0.5 ? vec2(-6.5, 2.0) : (band < 1.5 ? vec2(1.0, 8.0) : (band < 2.5 ? vec2(6.0, 14.0) : vec2(12.0, 18.0)));
+	return band < 0.5 ? vec2(-6.5, 3.0) : (band < 1.5 ? vec2(0.0, 9.5) : (band < 2.5 ? vec2(4.5, 15.5) : vec2(9.5, 19.0)));
 }
 float gas_layer(float band, float y) {
 	vec2 limits = gas_band(band);
 	float lower = band < 0.5 ? GAS_FLOOR_FADE : 1.5;
-	return smoothstep(limits.x, limits.x + lower, y) * (1.0 - smoothstep(limits.y - 1.5, limits.y, y));
+	float span = max(limits.y - limits.x, 1.0);
+	float lo_f = max(lower, span * 0.44);
+	float hi_f = span * 0.44;
+	float edge = smoothstep(limits.x, limits.x + lo_f, y) * (1.0 - smoothstep(limits.y - hi_f, limits.y, y));
+	return edge * edge * (3.0 - 2.0 * edge);
 }
-// Issue 2035 (AAA item 9): rotated 2- and 3-octave billowing noise using the shared lattice,
-// eliminating 4th/5th-octave sub-pixel grain at battle camera 170 while cutting fragment work nearly in half.
+// Issue 2035 (AAA item 9, run 3): orthonormal 3D-rotated 4-octave billowing cloud noise so no octave
+// aligns with world X/Y/Z or screen axes (no rectangular lattice tiles) while staying inside the baked
+// 3D lattice for octaves 1 to 3 and using half the wvn3 calls of 5-octave wfbm3.
+vec3 gas_rot0(vec3 p) {
+	return vec3(
+		0.80 * p.x - 0.60 * p.y,
+		0.48 * p.x + 0.64 * p.y - 0.60 * p.z,
+		0.36 * p.x + 0.48 * p.y + 0.80 * p.z
+	);
+}
+vec3 gas_oct_step(vec3 p, vec3 bias) {
+	return vec3(
+		1.188 * p.x + 1.584 * p.z,
+		1.2672 * p.x + 1.188 * p.y - 0.9504 * p.z,
+		-0.9504 * p.x + 1.584 * p.y + 0.7128 * p.z
+	) + bias;
+}
 float gas_macro3(vec3 p) {
-	float s = 0.64 * wvn3(p);
-	p = vec3(p.x * 1.48 - p.z * 1.15, p.y * 1.88 + 2.3, p.x * 1.15 + p.z * 1.48) + vec3(3.1, 1.7, 4.9);
-	s += 0.36 * wvn3(p);
+	vec3 q = gas_rot0(p);
+	float s = 0.60 * wvn3(q);
+	q = gas_oct_step(q, vec3(3.1, 1.7, 4.9));
+	s += 0.40 * wvn3(q);
 	return s;
 }
 vec2 gas_cloud3(vec3 p, float close_k) {
-	float o1 = wvn3(p);
-	vec3 p2 = vec3(p.x * 1.52 - p.z * 1.18, p.y * 1.92 + 2.1, p.x * 1.18 + p.z * 1.52) + vec3(3.1, 1.7, 4.9);
-	float o2 = wvn3(p2);
-	float macro = 0.64 * o1 + 0.36 * o2;
-	vec3 p3 = vec3(p2.x * 1.52 + p2.z * 1.18, p2.y * 1.92 - 1.9, -p2.x * 1.18 + p2.z * 1.52) + vec3(5.3, 2.9, 1.4);
-	float o3 = wvn3(p3);
-	float full = 0.54 * o1 + 0.30 * o2 + 0.16 * mix(0.5, o3, 0.50 + 0.50 * close_k);
+	vec3 q = gas_rot0(p);
+	float o1 = wvn3(q);
+	q = gas_oct_step(q, vec3(3.1, 1.7, 4.9));
+	float o2 = wvn3(q);
+	q = gas_oct_step(q, vec3(2.7, 4.3, 1.9));
+	float o3 = wvn3(q);
+	q = gas_oct_step(q, vec3(5.1, 2.3, 3.7));
+	float o4 = wvn3(q);
+	float full = 0.46 * o1 + 0.27 * o2 + 0.16 * o3 + (0.08 + 0.03 * close_k) * o4 + 0.015 * (1.0 - close_k);
+	float macro = 0.56 * o1 + 0.29 * o2 + 0.15 * o3;
 	return vec2(full, macro);
 }
-// Distinct billow scale, 3D field offset and organic edge shift per height band so overlapping strata
-// read as layered parallax depth rather than repeated flat silhouettes.
+// Distinct billow scale, compact 3D field offset (inside gas_hash_lattice) and organic edge shift per band.
 void gas_layer_style(float band, out vec3 scale_v, out vec3 offset_v, out vec2 edge_shift) {
 	if (band < 0.5) {
-		scale_v = vec3(0.80, 0.85, 0.80);
-		offset_v = vec3(-4.2, -1.9, 3.4);
+		scale_v = vec3(0.86, 0.90, 0.86);
+		offset_v = vec3(-2.3, -1.1, 1.9);
 		edge_shift = vec2(-1.4, 1.1);
 	} else if (band < 1.5) {
 		scale_v = vec3(1.0, 1.0, 1.0);
 		offset_v = vec3(0.0, 0.0, 0.0);
 		edge_shift = vec2(0.0, 0.0);
 	} else if (band < 2.5) {
-		scale_v = vec3(1.12, 1.25, 1.12);
-		offset_v = vec3(11.3, 4.7, -8.2);
+		scale_v = vec3(1.10, 1.15, 1.10);
+		offset_v = vec3(3.1, 1.7, -2.6);
 		edge_shift = vec2(1.5, -1.2);
 	} else {
-		scale_v = vec3(0.68, 0.78, 0.68);
-		offset_v = vec3(-16.4, 8.9, 12.7);
+		scale_v = vec3(0.80, 0.85, 0.80);
+		offset_v = vec3(-3.4, 2.5, 3.2);
 		edge_shift = vec2(-0.9, -1.5);
 	}
 }
@@ -332,51 +361,54 @@ void fragment() {
 	gas_layer_style(band, layer_scale, layer_offset, edge_shift);
 	vec3 pl = p * layer_scale + layer_offset;
 	float w = gas_macro3(pl * 0.52 + 4.0);
-	float w2 = gas_macro3(pl * 0.40 - 7.0);
+	float w2 = gas_macro3(pl * 0.44 - 5.2);
 	vec2 wv = vec2(w - 0.5, w2 - 0.5) * 9.0;
 	vec2 fmask = foot_at(vW.xz + wv + edge_shift);
 	if (fmask.g <= 0.001) { discard; }
 	float cam_d = length(CAMERA_POSITION_WORLD - vW);
+	float near_cam = smoothstep(10.0, 32.0, cam_d);
+	if (near_cam <= 0.001) { discard; }
 	float close_k = 1.0 - smoothstep(45.0, 150.0, cam_d);
-	vec2 cn = gas_cloud3(pl + vec3(w - 0.5) * 0.90, close_k);
+	vec3 warp_v = vec3(w - 0.5, (w + w2 - 1.0) * 0.5, w2 - 0.5) * 1.15;
+	vec2 cn = gas_cloud3(pl + warp_v, close_k);
 	float n = cn.x;
 	float n_macro = cn.y;
 	float breath = band > 0.5 && band < 1.5 ? sin(gas_time * 0.785398 + phase) * 0.025 : 0.0;
-	float lo_cut = (band < 0.5 ? 0.24 : (band < 1.5 ? 0.28 : (band < 2.5 ? 0.33 : 0.36))) + breath;
+	float lo_cut = (band < 0.5 ? 0.27 : (band < 1.5 ? 0.28 : (band < 2.5 ? 0.34 : 0.38))) + breath;
 	float field = smoothstep(lo_cut, lo_cut + 0.42, n);
 #ifdef HIGH_GAS_CARDS
-	if (shape * fmask.g * layer * field * vI.z < GAS_DENSITY_BOUND) { discard; }
+	if (shape * fmask.g * layer * field * near_cam * vI.z < GAS_DENSITY_BOUND) { discard; }
 #endif
 	float fw = fmask.r;
-	float bar = mix(0.46, 0.62, smoothstep(0.5, 2.5, band)) - 0.50 * smoothstep(0.28, 0.74, n_macro);
+	float bar = mix(0.54, 0.64, smoothstep(0.5, 2.5, band)) - 0.52 * smoothstep(0.28, 0.74, n_macro);
 	float foot = smoothstep(bar, bar + 0.34, fw) * fmask.g;
-	float d = shape * foot * layer * field * vI.z;
+	float d = shape * foot * layer * field * near_cam * vI.z;
 	// Soften contact with distant geometry below the playing surface.
 	d *= clamp((-vv.z / vv.w + VERTEX.z) / 5.0, 0.0, 1.0);
 	// WAKE_THIN: issue 1079, the wake's thinning goes here when it is on
 	if (d <= MIN_GAS_DENSITY) { discard; }
-	float n2 = gas_macro3(pl + normalize(sun_v) * 0.42 + vec3(w - 0.5) * 0.90);
-	float lit = clamp(0.52 + (n_macro - n2) * 2.4, 0.0, 1.0);
-	float density = clamp((n - 0.18) / 0.72, 0.0, 1.0);
+	float n2 = gas_macro3(pl + normalize(sun_v) * 0.36 + warp_v);
+	float lit = clamp(0.50 + (n_macro - n2) * 2.6, 0.0, 1.0);
+	float density = clamp((n - 0.22) / 0.70, 0.0, 1.0);
 	// Multi-height tonal separation inside the faction-neutral rose palette:
-	// deep dark-rose cushion below ships, sunlit mid billows, airy luminous upper wisps.
+	// deep dark-rose cushion below ships, sunlit mid billows, airy upper wisps (preserving dark space contrast).
 	float alt_k = clamp((vW.y / height_scale + 6.0) / 22.0, 0.0, 1.0);
-	float stratum_lit = band < 0.5 ? 0.68 : (band < 1.5 ? 1.0 : (band < 2.5 ? 1.18 : 1.06));
-	vec3 col = mix(c_dark, c_shadow, smoothstep(0.0, 0.32, density));
-	col = mix(col, c_lit, smoothstep(0.28, 0.64, density) * mix(0.70, 1.05, alt_k));
-	col = mix(col, c_glow, smoothstep(0.62, 0.92, density) * mix(0.55, 1.0, alt_k));
-	col *= (0.30 + 0.70 * lit) * stratum_lit;
+	float stratum_lit = band < 0.5 ? 0.65 : (band < 1.5 ? 0.98 : (band < 2.5 ? 1.04 : 0.90));
+	vec3 col = mix(c_dark, c_shadow, smoothstep(0.0, 0.34, density));
+	col = mix(col, c_lit, smoothstep(0.32, 0.68, density) * mix(0.72, 1.0, alt_k));
+	col = mix(col, c_glow, smoothstep(0.68, 0.94, density) * mix(0.50, 0.85, alt_k));
+	col *= (0.22 + 0.78 * lit) * stratum_lit;
 	// R289: calm gas has broad soft radiance, never fine isocontours or electrical veins.
-	vec3 energy = c_glow * smoothstep(0.64, 0.86, n_macro) * 0.22 * mix(0.6, 1.1, alt_k);
-	vec3 c_flash = combat_scatter(vW, field) * (0.38 * field);
-	float layer_gain = band < 0.5 ? 0.62 : (band < 1.5 ? 0.94 : (band < 2.5 ? 0.68 : 0.24));
+	vec3 energy = c_glow * smoothstep(0.69, 0.88, n) * 0.18 * mix(0.65, 1.0, alt_k);
+	vec3 c_flash = combat_scatter(vW, field) * (0.48 * field);
+	float layer_gain = band < 0.5 ? 0.52 : (band < 1.5 ? 0.92 : (band < 2.5 ? 0.44 : 0.12));
 	// Optical depth accumulates across overlapping strata rather than a flat tint.
-	float a = 1.0 - exp(-d * dens * layer_gain * 3.4);
+	float a = 1.0 - exp(-d * dens * layer_gain * 3.2);
 	float ship_band = 1.0 - smoothstep(3.0, 4.5, vW.y);
-	a = min(a, mix(0.68, 0.38, ship_band));
+	a = min(a, mix(0.62, 0.36, ship_band));
 	// Unshaded gas carries its internal light in the final radiance.
 	ALBEDO = col + energy + c_flash;
-	ALPHA = clamp(a * gain_a, 0.0, 0.68);
+	ALPHA = clamp(a * gain_a, 0.0, 0.62);
 }
 """
 
@@ -678,11 +710,12 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	var low: bool = W.quality == "low"
 	var expanded := gas_route != "today"
 	var volume: bool = gas_route == "fog" and W.quality == "max"
-	# step 2 + issue 2035: multi-height soft strata (under-stratum 0, mid body 1, upper wisps 2, high canopy veil 3).
-	# Max keeps all three primary height bands (0, 1, 2) per hex plus the high tying veil so clouds have real parallax depth.
+	# step 2 + issue 2035 (run 3): keep Max card count lean (2 per hex, matching main's budget) while
+	# cycling primary height bands (0, 1, 2) across hexes plus the high tying veil (band 3) so all four
+	# strata give parallax depth without extra overdraw or C26 pale-pink wash.
 	var per := 3 if low else 5
 	if expanded:
-		per = 3 if volume else (2 if low else 5)
+		per = 2 if volume or low else 5
 	var n_big := maxi(1, ps.size() / 3) if broad_count < 0 else maxi(1, broad_count)
 	var mm := _quad_mm(ps.size() * per + n_big)
 	var i := 0
@@ -691,14 +724,18 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	var y_max := -INF
 	var size_k := GAS_CLOUD_SCALE if expanded else 1.0
 	var dens_k := 0.55 if (expanded and volume) else 1.0
+	const MAX_BAND_PAIRS := [[0, 1], [1, 2], [0, 2]]
+	var hex_idx := 0
 	for p in ps:
 		for k in per:
 			var a := rng.randf() * TAU
 			var rr := sqrt(rng.randf()) * GAS_PUFF_REACH
 			# Preserve the count and size; split the existing puffs into height bands.
 			var layer: int = [0, 1, 2, 1, 2][k % 5]
-			# Low drops the dim bottom puff, retaining the core and upper layer.
-			if expanded and low:
+			if expanded and volume:
+				layer = MAX_BAND_PAIRS[hex_idx % 3][k % 2]
+			elif expanded and low:
+				# Low drops the dim bottom puff, retaining the core and upper layer.
 				layer = k + 1
 			var y := rng.randf_range(-2.5, 0.5) if layer == 0 else (rng.randf_range(2.5, 6.5) if layer == 1 else rng.randf_range(8.0, 12.0))
 			if expanded:
@@ -711,6 +748,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 			y_min = minf(y_min, pos.y)
 			y_max = maxf(y_max, pos.y)
 			i += 1
+		hex_idx += 1
 	# One or two existing broad puffs become a very faint high tying veil.
 	for k in n_big:
 		var p: Vector3 = ps[rng.randi() % ps.size()]
@@ -754,14 +792,20 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	var mk: Array = _mask(ps, 1.5 if storm else 2.0)
 	m.set_shader_parameter("mask_tex", mk[0])
 	m.set_shader_parameter("mask_box", mk[1])
+	m.set_shader_parameter("combat_light_count", 0)
 	var g := 1.0
 	var plo: Vector3 = ps[0]
 	var phi := plo
 	for pt in ps:
 		plo = plo.min(pt)
 		phi = phi.max(pt)
+	var pos_arr := PackedVector4Array()
+	var col_arr := PackedVector4Array()
+	pos_arr.resize(COMBAT_LIGHT_SLOTS)
+	col_arr.resize(COMBAT_LIGHT_SLOTS)
 	var patch_rec := {"mat": m, "fog_mat": null, "lo": plo - Vector3(GAS_FEATHER_REACH, 12.0, GAS_FEATHER_REACH),
-		"hi": phi + Vector3(GAS_FEATHER_REACH, 32.0, GAS_FEATHER_REACH), "storm": storm, "lit_count": -1,
+		"hi": phi + Vector3(GAS_FEATHER_REACH, 32.0, GAS_FEATHER_REACH), "storm": storm, "lit_count": 0,
+		"pos_arr": pos_arr, "col_arr": col_arr, "last_hash": 0,
 		"bands": band_counts, "y_min": y_min, "y_max": y_max}
 	_gas_patches.append(patch_rec)
 	if storm:
@@ -801,7 +845,7 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool, patch_r
 	var volume := FogVolume.new()
 	volume.name = "StormFog368" if storm else "NebulaFog368"
 	volume.shape = RenderingServer.FOG_VOLUME_SHAPE_BOX
-	volume.size = Vector3(hi.x - lo.x + GAS_FEATHER_REACH * 2.0, 38.5, hi.z - lo.z + GAS_FEATHER_REACH * 2.0)
+	volume.size = Vector3(hi.x - lo.x + GAS_FIELD_REACH * 2.0, 38.5, hi.z - lo.z + GAS_FIELD_REACH * 2.0)
 	volume.position = Vector3((hi.x + lo.x) * 0.5, 12.25, (hi.z + lo.z) * 0.5)
 	var mat := ShaderMaterial.new()
 	var code: String = _fog_shader(storm)
@@ -814,6 +858,7 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool, patch_r
 	mat.set_shader_parameter("noise_tex", _fog_noise)
 	mat.set_shader_parameter("mask_tex", mk[0])
 	mat.set_shader_parameter("mask_box", mk[1])
+	mat.set_shader_parameter("combat_light_count", 0)
 	for key in ["c_dark", "c_shadow", "c_lit", "c_glow"]:
 		if storm: continue
 		# Shader defaults are not returned by get_shader_parameter until set.
@@ -1219,77 +1264,143 @@ func set_combat_lights(lights: Array) -> void:
 
 
 func _find_effects():
+	if _effects_looked_up:
+		if is_instance_valid(_cached_effects):
+			return _cached_effects
+		_cached_effects = null
+		_effects_looked_up = false
 	if is_instance_valid(_tick_presenter):
 		var g = _tick_presenter.get("gfx")
 		if is_instance_valid(g):
+			_cached_effects = g
+			_effects_looked_up = true
 			return g
 	if W != null:
 		var wf = W.get("_fx")
 		if is_instance_valid(wf):
+			_cached_effects = wf
+			_effects_looked_up = true
 			return wf
 		var parent: Node = W.get_parent()
 		if parent != null:
 			for sib in parent.get_children():
 				if sib != W and sib.get("_lpool") is Array:
+					_cached_effects = sib
+					_effects_looked_up = true
 					return sib
+	_effects_looked_up = true
 	return null
 
 
 func _present_combat_lights(effects, reduced: bool) -> void:
 	if _gas_patches.is_empty():
 		return
-	var active: Array = []
+	var scale_k := 0.38 if reduced else 0.78
+	var active_n := 0
 	if is_instance_valid(effects):
 		var pool = effects.get("_lpool")
 		if pool is Array:
 			for l in pool:
 				if l is OmniLight3D and l.visible and l.light_energy > 0.03:
-					var rad := clampf(l.omni_range * 0.78, 18.0, 54.0)
-					var intensity := clampf(l.light_energy / 8.0, 0.0, 1.0) * (0.38 if reduced else 0.78)
+					var intensity := clampf(l.light_energy / 8.0, 0.0, 1.0) * scale_k
 					if intensity > 0.005:
-						active.append({"pos": l.global_position if l.is_inside_tree() else l.position,
-							"col": l.light_color, "intensity": intensity, "radius": rad})
+						if active_n >= _cl_pos.size():
+							_cl_pos.append(Vector3.ZERO)
+							_cl_col.append(Color.WHITE)
+							_cl_int.append(0.0)
+							_cl_rad.append(18.0)
+						_cl_pos[active_n] = l.global_position if l.is_inside_tree() else l.position
+						_cl_col[active_n] = l.light_color
+						_cl_int[active_n] = intensity
+						_cl_rad[active_n] = clampf(l.omni_range * 0.78, 18.0, 54.0)
+						active_n += 1
 	for ext in _external_combat_lights:
 		if ext is Dictionary:
-			var rad := clampf(float(ext.get("range", 36.0)) * 0.78, 18.0, 54.0)
-			var energy := float(ext.get("energy", 6.0))
-			var intensity := clampf(energy / 8.0, 0.0, 1.0) * (0.38 if reduced else 0.78)
+			var intensity := clampf(float(ext.get("energy", 6.0)) / 8.0, 0.0, 1.0) * scale_k
 			if intensity > 0.005:
-				active.append({"pos": ext.get("pos", Vector3.ZERO), "col": ext.get("col", Color.WHITE),
-					"intensity": intensity, "radius": rad})
+				if active_n >= _cl_pos.size():
+					_cl_pos.append(Vector3.ZERO)
+					_cl_col.append(Color.WHITE)
+					_cl_int.append(0.0)
+					_cl_rad.append(18.0)
+				_cl_pos[active_n] = ext.get("pos", Vector3.ZERO)
+				_cl_col[active_n] = ext.get("col", Color.WHITE)
+				_cl_int[active_n] = intensity
+				_cl_rad[active_n] = clampf(float(ext.get("range", 36.0)) * 0.78, 18.0, 54.0)
+				active_n += 1
+	if active_n == 0:
+		if not _any_combat_lit:
+			return
+		for patch in _gas_patches:
+			if int(patch.lit_count) != 0:
+				patch.lit_count = 0
+				patch.last_hash = 0
+				(patch.mat as ShaderMaterial).set_shader_parameter("combat_light_count", 0)
+				if patch.fog_mat != null:
+					(patch.fog_mat as ShaderMaterial).set_shader_parameter("combat_light_count", 0)
+		_any_combat_lit = false
+		return
+	var any_lit := false
 	for patch in _gas_patches:
 		var lo: Vector3 = patch.lo
 		var hi: Vector3 = patch.hi
-		var near: Array = []
-		for item in active:
-			var pos: Vector3 = item.pos
-			var rad: float = item.radius
+		var pos_arr: PackedVector4Array = patch.pos_arr
+		var col_arr: PackedVector4Array = patch.col_arr
+		var count := 0
+		var min_slot := 0
+		var min_int := INF
+		for idx in active_n:
+			var pos := _cl_pos[idx]
+			var rad := _cl_rad[idx]
 			var reach := rad * 2.2
-			var clamped := Vector3(clampf(pos.x, lo.x, hi.x), clampf(pos.y, lo.y, hi.y), clampf(pos.z, lo.z, hi.z))
-			if pos.distance_squared_to(clamped) <= reach * reach:
-				near.append(item)
-		if near.size() > COMBAT_LIGHT_SLOTS:
-			near.sort_custom(func(a, b): return float(a.intensity) > float(b.intensity))
-			near = near.slice(0, COMBAT_LIGHT_SLOTS)
-		var count := near.size()
-		if count == 0 and int(patch.lit_count) == 0:
+			var cx := clampf(pos.x, lo.x, hi.x)
+			var cy := clampf(pos.y, lo.y, hi.y)
+			var cz := clampf(pos.z, lo.z, hi.z)
+			var dx := pos.x - cx
+			var dy := pos.y - cy
+			var dz := pos.z - cz
+			if dx * dx + dy * dy + dz * dz > reach * reach:
+				continue
+			var intensity := _cl_int[idx]
+			var slot := count
+			if count < COMBAT_LIGHT_SLOTS:
+				count += 1
+			elif intensity > min_int:
+				slot = min_slot
+			else:
+				continue
+			var c := _cl_col[idx].srgb_to_linear()
+			pos_arr[slot] = Vector4(pos.x, pos.y, pos.z, 1.0 / maxf(rad * rad, 1.0))
+			col_arr[slot] = Vector4(c.r, c.g, c.b, intensity)
+			if count == COMBAT_LIGHT_SLOTS:
+				min_int = INF
+				for s in COMBAT_LIGHT_SLOTS:
+					if col_arr[s].w < min_int:
+						min_int = col_arr[s].w
+						min_slot = s
+		if count == 0:
+			if int(patch.lit_count) != 0:
+				patch.lit_count = 0
+				patch.last_hash = 0
+				(patch.mat as ShaderMaterial).set_shader_parameter("combat_light_count", 0)
+				if patch.fog_mat != null:
+					(patch.fog_mat as ShaderMaterial).set_shader_parameter("combat_light_count", 0)
+			continue
+		any_lit = true
+		var sig := count
+		for s in count:
+			var pv := pos_arr[s]
+			var cv := col_arr[s]
+			sig = sig * 31 + int(roundf(pv.x * 4.0)) + int(roundf(pv.y * 4.0)) * 7 + int(roundf(pv.z * 4.0)) * 13 \
+				+ int(roundf(pv.w * 10000.0)) * 41 + int(roundf(cv.w * 200.0)) * 29 + int(roundf(cv.x * 50.0)) * 53 + int(roundf(cv.z * 50.0)) * 97
+		if count == int(patch.lit_count) and sig == int(patch.last_hash):
 			continue
 		patch.lit_count = count
-		var pos_arr := PackedVector4Array()
-		var col_arr := PackedVector4Array()
-		if count > 0:
-			pos_arr.resize(COMBAT_LIGHT_SLOTS)
-			col_arr.resize(COMBAT_LIGHT_SLOTS)
-			for k in count:
-				var item: Dictionary = near[k]
-				var p: Vector3 = item.pos
-				var c: Color = (item.col as Color).srgb_to_linear()
-				var r: float = item.radius
-				pos_arr[k] = Vector4(p.x, p.y, p.z, 1.0 / maxf(r * r, 1.0))
-				col_arr[k] = Vector4(c.r, c.g, c.b, float(item.intensity))
+		patch.last_hash = sig
 		_set_combat_light_uniforms(patch.mat, pos_arr, col_arr, count)
 		if patch.fog_mat != null:
 			_set_combat_light_uniforms(patch.fog_mat, pos_arr, col_arr, count)
+	_any_combat_lit = any_lit
 
 
 func _set_combat_light_uniforms(mat: ShaderMaterial, pos_arr: PackedVector4Array, col_arr: PackedVector4Array, count: int) -> void:
@@ -1345,7 +1456,8 @@ func _process(dt: float) -> void:
 		if v > 0.0:
 			var p: Vector3 = b["pos"]
 			fs.append(Vector4(p.x, p.y, p.z, v))
-	_set_flashes(fs)
+	if not storm_mats.is_empty():
+		_set_flashes(fs)
 
 
 # ---------------------------------------------------------------- debris: dense rock and wreck clusters
