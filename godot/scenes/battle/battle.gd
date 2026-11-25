@@ -1408,10 +1408,13 @@ func _make_views_sliced(gen: int) -> bool:
 		ok = await _ls_yield(gen)
 		if not ok:
 			return false
-		if gfx != null and "hull_shared" in gfx:
+		if gfx != null and "starboard_z" in gfx:
 			var tg := Time.get_ticks_usec()
-			var ms_list: Array = sv.meshes if not sv.a4 else load("res://fx/fx_ship.gd")._find_meshes(sv)
-			if load("res://fx/fx_hull.gd").prime(sv, ms_list, gfx.hull_shared):
+			# The altitude band moves the hull in its root frame. Set it before keying the BVH,
+			# just as for effect registration, or registration rebuilds the geometry at the new pose.
+			sv.set_band(ALT_BAND.height(u))
+			var ms_list: Array = sv.meshes if not sv.a4 else []
+			if load("res://fx/fx_ship.gd").prime_hull(gfx, sv, str(u["id"]), bool(u["squadron"]), ms_list):
 				var g_us := Time.get_ticks_usec() - tg
 				_ls["geo"] = int(_ls.get("geo", 0)) + g_us
 				if g_us > int(_ls.get("worst_geo", 0)):
