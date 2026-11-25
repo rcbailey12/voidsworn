@@ -632,7 +632,7 @@ func _drop_col(a: float) -> Color:
 	# your ships' line is the footprint's mint, the enemy's the footprint's violet, so the line reads as the marker's;
 	# the colours are line style roles (render/line_style.gd)
 	var base: Color = LINE_STYLE.col("drop_ally" if marker_friend == 1 else "drop_enemy" if marker_friend == 0 else "drop_neutral")
-	return Color(base, base.a * a)
+	return Color(base, base.a * a * _cut_overlay_alpha)
 
 
 # Keep the line on the hull as it moves: the hull's centre now (band, bob, a boarding trim, a climb over a rock) down or
@@ -640,8 +640,14 @@ func _drop_col(a: float) -> Color:
 func _drop_step(dt: float) -> void:
 	if drop == null:
 		return
-	var on := not dead and visible and not wreck
 	drop_hot = move_toward(drop_hot, drop_hot_target, dt * 5.0) if dt > 0.0 else drop_hot_target
+	_draw_drop()
+
+
+func _draw_drop() -> void:
+	if drop == null:
+		return
+	var on := not dead and visible and not wreck and _cut_overlay_alpha > 0.001
 	var top := hull_pivot.transform * hull.position if hull_pivot != null and hull != null else Vector3(0, band_y, 0)
 	top.x = 0.0
 	top.z = 0.0
@@ -736,6 +742,7 @@ func _ring() -> void:
 	ring.mesh = tm
 	var m := StandardMaterial3D.new()
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	m.albedo_color = EMBER
 	m.emission_enabled = true
 	ring.material_override = m
@@ -748,6 +755,8 @@ func _ring() -> void:
 # the footprint under every ship (B1 markers): a mint ring under yours, a broken violet hex under the enemy's
 var marker: MeshInstance3D
 var marker_friend := -1
+var _cut_overlay_alpha := 1.0
+var _ring_col := EMBER
 
 
 func set_marker(friend: bool) -> void:
@@ -786,11 +795,34 @@ func set_marker(friend: bool) -> void:
 	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	m.cull_mode = BaseMaterial3D.CULL_DISABLED
 	# your ring is the HUD's FRIEND mint (glass_shell.gd, R149: moved off green so it never reads as the lime accent)
-	m.albedo_color = Color(0.32, 0.94, 0.77, 0.85) if friend else Color(0.62, 0.22, 1.0, 0.9)
+	_color_marker(m)
 	marker.material_override = m
 	marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	marker.position.y = hull_lift - 0.25
 	add_child(marker)
+
+
+func _color_marker(mat: StandardMaterial3D) -> void:
+	var col := Color(0.32, 0.94, 0.77, 0.85) if marker_friend == 1 else Color(0.62, 0.22, 1.0, 0.9)
+	col.a *= _cut_overlay_alpha
+	mat.albedo_color = col
+
+
+func _color_ring(mat: StandardMaterial3D) -> void:
+	var col := _ring_col
+	col.a *= _cut_overlay_alpha
+	mat.albedo_color = col
+
+
+func set_cut_overlay_alpha(alpha: float) -> void:
+	if _cut_overlay_alpha == alpha:
+		return
+	_cut_overlay_alpha = alpha
+	if ring != null:
+		_color_ring(ring.material_override)
+	if marker != null:
+		_color_marker(marker.material_override)
+	_draw_drop()
 
 
 var wreck := false
@@ -886,7 +918,8 @@ func set_selected(on: bool, col := EMBER) -> void:   # the ship that is up: embe
 	_drop_sel = on
 	drop_hot_target = 1.0 if (_drop_hover or _drop_sel) else 0.0
 	ring.visible = on
-	(ring.material_override as StandardMaterial3D).albedo_color = col
+	_ring_col = col
+	_color_ring(ring.material_override)
 	ring.rotation.y = -rotation.y
 
 

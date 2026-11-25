@@ -111,6 +111,10 @@ const ATLAS_DIR := "res://fx/atlases/death/"
 const STAGING_UNITS_PER_PIXEL := 2.0 * 170.0 * tan(PI / 8.0) / 1080.0
 # The one scale table's death core flash (issue 710, R247; docs/playbooks/scale.md), pixels at the staging camera.
 const CORE_FLASH_PX := {"small": 216.0, "destroyer": 255.0, "cruiser": 302.0, "capital": 423.0}
+# Minimum core card and final shock-front diameter on a 1080-line view. The card floor is after the
+# atlas calibration, so that divisor cannot shrink the far shot below the intended read.
+const CORE_READ_PX := {"small": 112.0, "destroyer": 135.0, "cruiser": 178.0, "capital": 330.0}
+const CORE_RING_S := 0.64
 
 # Issue 354: where the visible gas starts inside the baked vent picture. Measured on today's pictures
 # (godot/fx/atlases/death/{small,cruiser,capital}/vent_color.png): in frame 0 the gas runs down to row 0.90 of the crop,
@@ -4132,12 +4136,22 @@ static func _core_flash_inner(fx, p: Vector3, R: float, px: float, tint: Color, 
 	if staged:
 		var soft: bool = fx.reduce_flashing or not allowed
 		var life: float = float(row[2] if soft else row[1])
+		var divisor: float = float(row[4] if soft else row[3])
 		var flash := flipbook(fx, p, Vector3.UP, 0.0, "flash", life, Vector3.ZERO, 1.25 if soft else 6.0, band, src, false, true, frame)
 		var mat := flash.material_override as ShaderMaterial
+		# The approved counted diameter above already bounds this floor, including room for bloom.
 		mat.set_shader_parameter("min_pixels", px)
+		mat.set_shader_parameter("read_pixels", CORE_READ_PX[band])
 		mat.set_shader_parameter("extent", px * STAGING_UNITS_PER_PIXEL)
-		mat.set_shader_parameter("size_divisor", float(row[4] if soft else row[3]))
+		mat.set_shader_parameter("size_divisor", divisor)
 		mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
+		# This soft front mints no flash token, adds no light and does not touch the faction's fire or break.
+		var ring_px: float = float(CORE_READ_PX[band]) * 1.45
+		var ring_col := dcol(src, "light", tint)
+		var ring_size := ring_px * STAGING_UNITS_PER_PIXEL
+		var ring_seed := fposmod(p.dot(Vector3(0.173, 0.371, 0.227)), 1.0)
+		fx.ring(p, Vector3.UP, fx.now, CORE_RING_S, ring_col, 0.26, ring_size * 0.22, ring_size,
+			SH.RING_DEATH_FRONT, 0.0, 0.0, ring_px, ring_seed)
 		# Issue 461 (audit item 11): the core flash lights the hulls round it, about two hexes for a cruiser and three for
 		# a capital, for the length of the flash (deaths_and_hits.md, beat 2)
 		if not fx.reduce_flashing: fx.light(p, fx.now, float(row[1]), 9.0, dcol(src, "light", Color(0.65, 0.75, 0.91)), 0, CORE_LIGHT_REACH[band])
