@@ -34,9 +34,9 @@ class RecordFX extends "res://fx/fx.gd":
 		return allowed
 
 	func ring(p: Vector3, n: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int,
-			speed := 0.0, drag := 0.0, px := 0.0) -> void:
+			speed := 0.0, drag := 0.0, px := 0.0, seed_override := -1.0) -> void:
 		rings.append([p, kind])
-		super.ring(p, n, t, life, col, i, s0, s1, kind, speed, drag, px)
+		super.ring(p, n, t, life, col, i, s0, s1, kind, speed, drag, px, seed_override)
 
 
 func _init() -> void:
