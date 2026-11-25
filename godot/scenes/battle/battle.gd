@@ -1205,8 +1205,24 @@ func _enemy_fac() -> String:
 
 func _index_view() -> void:
 	VU.clear()
+	_plate_state.clear()
+	var enemy_numbers := {}
 	for u in V["units"]:
 		VU[u["id"]] = u
+		var friend: bool = u["side"] == "player"
+		var plate_name: String = u["name"]
+		if not friend:
+			var label := _class_label(u["cls"])
+			var number := int(enemy_numbers.get(label, 0)) + 1
+			enemy_numbers[label] = number
+			if not bool(u.get("nemesis", false)):
+				plate_name = "%s %d" % [label, number]
+		var parts := ShipSections.read(u)
+		_plate_state[u["id"]] = {"name": plate_name, "friend": friend, "sections": parts,
+			"nemesis": not friend and bool(u.get("nemesis", false)),
+			"shield": float(_z0(u.get("shp"))), "shield_max": float(u["shMax"]),
+			"generator_lost": parts.size() == 3 and parts[1]["lost"] and u["shieldOff"],
+			"hull_fraction": clampf(float(u["hp"]) / maxf(1.0, float(u["maxHp"])), 0.0, 1.0)}
 
 
 func _make_view(u: Dictionary) -> void:
@@ -4290,11 +4306,16 @@ func _overlay() -> void:
 		var rm2 = _ui(sel).get("ram")
 		if rm2 is Dictionary:
 			_path_dots(u, {"path": rm2["path"]})   # issue 1444: the ram's run as the shared path line
+	# The active enemy target gets screen-space brackets. Other planned picks keep their tactical rings.
 	if target != "" and VU.has(target) and not VU[target]["dead"]:
-		rings[board.key(VU[target]["q"], VU[target]["r"])] = TARGET_ON
+		var key: String = board.key(VU[target]["q"], VU[target]["r"])
+		if not showcase and hud.visible:
+			rings.erase(key)
+		else:
+			rings[key] = TARGET_ON
 	for a in aims:   # issue 1589: every enemy picked in the plan shows the lock ring
 		var at: Dictionary = VU.get(str(a["tid"]), {})
-		if not at.is_empty() and not at["dead"]:
+		if not at.is_empty() and not at["dead"] and (at["id"] != target or showcase or not hud.visible):
 			rings[board.key(at["q"], at["r"])] = TARGET_ON
 	_fans(sel if (arcs_on and _usable(u)) else "", ghost if (pst != null and ghost != null and ghost.visible) else null)
 	_enemy_fans(_inspected_enemy() if arcs_on else "")
@@ -6823,6 +6844,8 @@ func _panel_info() -> Dictionary:
 	var view: ShipView = views.get(id)
 	var info := {"name": u["name"], "cls": _class_label(u["cls"]), "side": u["side"], "flag": u["flagship"], "code": view.code if is_instance_valid(view) else "", "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"], "shp": _z0(u.get("shp")),
 		"routed": _routed_sides(u)}
+	var parts: Array[Dictionary] = _plate_state[id]["sections"] if _plate_state.has(id) else ShipSections.read(u)
+	info["section_losses"] = ShipSections.losses(parts)
 	var mleft := int(u.get("moveLeft", u["mp"])) if u.get("moveLeft") != null else int(u["mp"])
 	var stats := "Hull [color=#ffad3b]%s/%s[/color]   Armor %d%%   Evasion %d\nMovement %d of %d   Turns %d" % [Campaign.hull_text(d["hp"]), Campaign.hull_text(u["maxHp"]), int(round(float(ru.get("armor", 0)) * 100.0)), int(_z0(ru.get("ev"))), mleft, int(_z0(ru.get("speed"))), int(u["turnsLeft"])]
 	if u.get("fired", false) and mleft < int(u["mp"]):
@@ -7202,41 +7225,66 @@ func _process(dt: float) -> void:
 		round_saved = int(api.round_snap_round)
 		if bool(round_save_cb.call()):
 			round_on_disk = round_saved
-	var vs := get_viewport().get_visible_rect().size
-	# issue 1437 (item 9): with the HUD hidden or behind the title (showcase) no plate shows, so the plate, priority and
-	# declutter work is skipped; the gold ring still breathes
-	var plates_on := not showcase and hud != null and hud.visible
 	var show_up: bool = not bot and not thinking and not ended and api.phase == "player"
+	_board_marks(show_up)
+	if not showcase and hud != null and hud.visible:
+		_ship_plates(get_viewport().get_visible_rect().size, get_viewport().get_mouse_position(), show_up)
+	_float_step(dt)
+
+
+const ShipSections = preload("res://ui/battle/ship_section_state.gd")
+var _plate_state := {}
+
+
+func _ship_plates(vs: Vector2, mouse: Vector2, show_up: bool) -> void:
+	var blockers: Array = hud.hud_blockers()
+	var hover_id := ""
+	if not hud.over_ui(mouse):
+		hover_id = hud.plates_root.hovered_ship(mouse)
+		if hover_id.is_empty():
+			hover_id = str(_unit_at(hover.x, hover.y).get("id", ""))
+	else:
+		hud.plates_root.hovered_ship(Vector2(-1, -1))
+	var target_box := Rect2()
 	for id in views:
-		var sv = views[id]
+		var sv: ShipView = views[id]
 		var u: Dictionary = VU.get(id, {})
-		if not plates_on:
-			_breathe_ring(sv, show_up and not u.is_empty() and str(id) == sel and u["side"] == "player")
-			continue
 		# a cut-in hides the names, except the attacker and the target of the enemy volley playing (issue 1211)
 		var aimed := not aim.is_empty() and (str(id) == str(aim["t"]) or str(id) == str(aim["a"]))
 		if u.is_empty() or sv.dead or not sv.visible or (not cine_saved.is_empty() and not aimed):
-			hud.set_plate(str(id), Vector2.ZERO, false, "", true, false, 0, 1, 0, 0)
+			hud.plates_root.set_ship(str(id), Vector2.ZERO, {}, false, cam.r, hud.k, 0)
 			continue
-		var wp: Vector3 = sv.visual_position() + Vector3(0, 3.0 + sv.L * 0.18, 0)
-		var on := not cam.is_position_behind(wp)
-		var sp := cam.unproject_position(wp)
-		on = on and sp.x > -50 and sp.y > -50 and sp.x < vs.x + 50 and sp.y < vs.y + 50
-		var d: Dictionary = disp.get(id, {"hp": u["hp"], "sh": u["sh"]})
-		var shs := 0.0
-		for x in d["sh"]:
-			shs += float(x)
-		var is_up: bool = show_up and str(id) == sel and u["side"] == "player"
-		var px := {"nem": bool(u.get("nemesis", false)) and u["side"] == "enemy", "target": str(id) == target or aimed,
-			"regenLock": bool(d.get("regenLock", false))}
-		if _tgt_plate.has(str(id)):
-			px["odds"] = _tgt_plate[str(id)]["odds"]
-			px["ghost"] = _tgt_plate[str(id)]["ghost"]
-		hud.set_plate(str(id), sp, on, str(u["name"]), u["side"] == "player", u["flagship"], float(d["hp"]), float(u["maxHp"]), shs, float(u["shMax"]) * 4.0, is_up, px)
-		_breathe_ring(sv, is_up)
-	if plates_on:
-		_declutter()
-	_float_step(dt)
+		var position_3d := sv.visual_position()
+		var ship_sp: Vector2 = cam.unproject_position(position_3d)
+		if cam.is_position_behind(position_3d) or not Rect2(Vector2.ZERO, vs).grow(50.0).has_point(ship_sp):
+			hud.plates_root.set_ship(str(id), ship_sp, {}, false, cam.r, hud.k, 0)
+			continue
+		var lifted: Vector2 = cam.unproject_position(position_3d + Vector3(0, 3.0 + sv.L * 0.18, 0))
+		var sp := ship_sp + (lifted - ship_sp).limit_length(36.0 * hud.k)
+		var data: Dictionary = _plate_state[id].duplicate()
+		data["up"] = show_up and id == sel and data["friend"]
+		data["locked"] = bool(disp.get(id, {}).get("regenLock", false))
+		var detail: bool = id == sel or id == hover_id
+		var priority := 3 if id == sel else (2 if id == hover_id or id == target or aimed else 0)
+		hud.plates_root.set_ship(str(id), sp, data, detail, cam.r, hud.k, priority, ship_sp)
+		if id == target and not data["friend"]:
+			target_box = _ship_target_box(sv, vs)
+	hud.plates_root.place(blockers, vs, hud.k, target_box)
+
+
+func _ship_target_box(sv: ShipView, vs: Vector2) -> Rect2:
+	var center := sv.visual_position()
+	if cam.is_position_behind(center):
+		return Rect2()
+	var at: Vector2 = cam.unproject_position(center)
+	var axis: Vector3 = sv.global_basis.z * sv.L * 0.5
+	var span := Vector2.ZERO
+	for end in [center + axis, center - axis]:
+		if not cam.is_position_behind(end):
+			span = span.max((cam.unproject_position(end) - at).abs())
+	var width := at.distance_to(cam.unproject_position(center + cam.global_basis.x * sv.L * 0.20))
+	var half := span + Vector2.ONE * maxf(8.0, width)
+	return Rect2(at - half, half * 2.0).intersection(Rect2(Vector2.ZERO, vs).grow(-4.0))
 
 
 # the gold ring under the ship that is up breathes, so the eye finds it; a reinforcement's ring flashes on arrival
@@ -7250,27 +7298,32 @@ func _breathe_ring(sv, is_up: bool) -> void:
 		sv.ring.scale = Vector3.ONE
 
 
-func _declutter() -> void:
-	# F1: names never pile up. The ship that is up and the target keep theirs, then the ship under the mouse and the enemy
-	# acting now, then the flagship; any other name that would overlap one already shown is hidden (hover shows it).
-	var prio := {}
-	for u in V.get("units", []):
-		if u["dead"]:
+func _board_marks(show_up: bool) -> void:
+	var ordered: Array[Dictionary] = []
+	for id in views:
+		var sv: ShipView = views[id]
+		_breathe_ring(sv, show_up and id == sel)
+		if showcase or warming or sv.dead or not sv.visible or sv.marker == null or sv.ring == null:
 			continue
-		var pr := 1 if u.get("flagship", false) else 0
-		if u["active"] and u["side"] == "enemy":
-			pr = 2
-		prio[str(u["id"])] = pr
-	var hu := _unit_at(hover.x, hover.y)
-	if not hu.is_empty():
-		prio[str(hu["id"])] = 2
-	if sel != "":
-		prio[sel] = 3
-	if target != "":
-		prio[target] = 3
-	if not aim.is_empty():
-		prio[str(aim["t"])] = 3
-	hud.declutter_plates(prio)
+		var rank := 3 if str(aim.get("t", "")) == id else (2 if id == sel else int(sv.has_highlight()))
+		ordered.append({"id": id, "view": sv, "rank": rank})
+	ordered.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return a["rank"] > b["rank"] if a["rank"] != b["rank"] else str(a["id"]) < str(b["id"]))
+	var shown: Array[Vector3] = []
+	for item in ordered:
+		var sv: ShipView = item["view"]
+		var highlight := sv.has_highlight()
+		var footprint: bool = not highlight and (item["id"] != target or hud == null or not hud.visible)
+		var center := sv.ring.global_position if highlight else sv.marker.global_position
+		var radius := sv.mark_radius(highlight)
+		for other in shown:
+			if Vector2(center.x - other.x, center.z - other.y).length_squared() < pow(radius + other.z, 2):
+				highlight = false
+				footprint = false
+				break
+		sv.set_mark_visibility(footprint, highlight)
+		if footprint or highlight:
+			shown.append(Vector3(center.x, center.z, radius))
 
 
 # floating numbers, the bot's turn and its trace: every frame, plates or not
@@ -7285,8 +7338,9 @@ func _float_step(dt: float) -> void:
 		var pc = hud.plates.get(str(f.get("id", ""))) if f.has("id") else null
 		if pc != null and is_instance_valid(pc) and (pc as Control).visible:
 			# a ship's numbers start above its name plate and rise from there, never across it (run 2 pictures)
-			var base := minf(fp.y + lbl.size.y * 0.5, (pc as Control).position.y - 4.0 * hud.k)
-			lbl.position = Vector2(fp.x - lbl.size.x * 0.5, base - lbl.size.y + f.dy)
+			var plate_rect: Rect2 = (pc as Control).get_rect()
+			var base := minf(fp.y + lbl.size.y * 0.5, plate_rect.position.y - 4.0 * hud.k)
+			lbl.position = Vector2(clampf(fp.x, plate_rect.position.x, plate_rect.end.x) - lbl.size.x * 0.5, base - lbl.size.y + f.dy)
 		else:
 			lbl.position = fp - lbl.size * 0.5 + Vector2(0, f.dy)
 		var f_end := float(f.get("end", 1.6))
@@ -7358,7 +7412,6 @@ func _fire_preview_at(id: String, wi: int, tid: String, st: Dictionary) -> Dicti
 var _crests := {}
 var _info_last := {}
 var _nem_last := {}
-var _tgt_plate := {}          # target id -> {odds, ghost}: the target's nameplate tags, read every frame
 
 
 func _fac_crest(fac: String) -> Texture2D:
@@ -7448,7 +7501,6 @@ func _nem_info() -> Dictionary:
 
 # The enemy aimed at (or under the pointer) and what the bearing guns are expected to take from its shield pool and hull.
 func _target_info() -> Dictionary:
-	_tgt_plate = {}
 	if api == null or api.phase != "player" or ended or bot or showcase or sel == "" or not VU.has(sel) or VU[sel]["side"] != "player":
 		return {}
 	var tid := target
@@ -7495,9 +7547,6 @@ func _target_info() -> Dictionary:
 		var who := ("Both bearing guns" if set.size() == 2 else ("%d bearing guns" % set.size() if set.size() > 2 else "The bearing gun"))
 		line = "%s%s: about %d damage" % [who, " from the planned hex" if plan != null else "", total]
 		line += ": %d to shields, %d to hull." % [shields, hull] if shields > 0 else ", all to hull."
-		# no kill prediction (ui_spec S1 board ruling on the #314 check): the expected value only; the hatched ghost on the
-		# target's hull bar already shows the hull reaching zero
-		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]), "shp": float(_z0(tu.get("shp"))),
 		"defenses": _target_defenses(foe), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind,
 		"quad": quad, "routed": routed, "struck_routed": quad >= 0 and quad in routed}
