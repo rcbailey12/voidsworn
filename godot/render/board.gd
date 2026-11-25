@@ -1182,6 +1182,8 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 		var attitude := Vector3(0, bearing, 0) if t2 else Vector3(0.06, bearing, 0.04)
 		var k: float = a4.scale.x
 		var offset := Vector3(0, 3, 0) * k
+		if bool(a4.get_meta("station_outpost", false)):
+			offset.y = A4P.lift_outpost(a4)
 		if teaching and not t2:
 			# Bank O1_37 into the triangular cluster at full scale and lift its low edge above the grid.
 			attitude = Vector3(deg_to_rad(-63.0), deg_to_rad(65.0), 0.0)

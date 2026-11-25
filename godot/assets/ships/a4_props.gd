@@ -142,6 +142,7 @@ static func old_path() -> bool:
 	return OS.get_environment("VS_1767_OLD") == "1"
 static var _reach := {}    # not GPU: scene path -> measured horizontal reach at unit scale
 static var _outline := {}  # not GPU: scene path -> PackedVector2Array, its mesh boxes' corners and edge points (x, z)
+static var _floor := {}    # not GPU: scene path -> the lowest point of its mesh boxes at unit scale (y)
 static var _fit_cache := {}  # not GPU: path|cells|hex_r|bearing -> Vector2(best bearing, scale)
 static var _painted_cache := {}  # source material id -> [weakref(source), weakref(painted copy)], owns nothing
 
@@ -172,6 +173,32 @@ static func footprint_rays(cells: Array, hex_r: float) -> PackedFloat32Array:
 				hi = mid
 		out[i] = lo
 	return out
+
+
+# issue 1791 (Ryan, Nov 24: the outpost looked "below the grid and hexes"): the outpost stands with its lowest point a
+# little above the grid, so no hex line crosses it; the big station keeps its approved lift of 3. The height the board
+# lifts a placed outpost by (its scaled floor from "station_floor", plus the clearance).
+const OUTPOST_CLEAR := 1.0
+static func lift_outpost(st: Node3D) -> float:
+	return -float(st.get_meta("station_floor", 0.0)) + OUTPOST_CLEAR
+
+
+# the lowest y of every mesh box of `root` at unit scale, in root's own frame
+static func lowest_point(root: Node3D) -> float:
+	var low := INF
+	for child in root.find_children("*", "MeshInstance3D", true, false):
+		var mi := child as MeshInstance3D
+		if mi.mesh == null or mi.get_parent().name == "station_T2_debris":
+			continue
+		var xf := Transform3D.IDENTITY
+		var p: Node = mi
+		while p != null and p != root:
+			xf = (p as Node3D).transform * xf if p is Node3D else xf
+			p = p.get_parent()
+		var bb := mi.get_aabb()
+		for i in 8:
+			low = minf(low, (xf * bb.get_endpoint(i)).y)
+	return 0.0 if low == INF else low
 
 
 # corners and edge points of every mesh box of `root` at unit scale, projected onto the board (x, z)
@@ -280,6 +307,7 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 			for q in _outline[path]:
 				far = maxf(far, (q as Vector2).length())
 			_reach[path] = far if far > 0.0 else T2_REACH
+			_floor[path] = lowest_point(t2)
 		var k := 1.0
 		# only the approved big 19-hex station keeps unit scale; any other cluster that names its cells is fitted (a 5 to
 		# 18 hex cluster too: Fable on PR 1772, L2)
@@ -303,6 +331,9 @@ static func station(size: float, debris_clearance := 0.0, kind := "", with_debri
 				k = clampf(size / LARGE_STATION_SIZE, 0.05, 1.0)
 		t2.scale = Vector3.ONE * k
 		t2.set_meta("station_scale", k)
+		# Ryan, Nov 24 2026 (issue 1791, the OUTPOST_B pictures): "they look like they're below the grid and hexes". The
+		# outpost's origin is its middle deck, so the board lifts it by this (its scaled floor) to stand on the grid.
+		t2.set_meta("station_floor", float(_floor.get(path, 0.0)) * k)
 		t2.set_meta("station_bearing", bearing)
 		# Refs #863. Separate kit/cache leaves PR 977's painted station intact. The field lives in T2's own (scaled) frame,
 		# so the clearance it keeps out of is divided by the same scale.

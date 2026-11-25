@@ -206,6 +206,24 @@ func _outpost_checks(rel: Array) -> void:
 			root.add_child(st)
 		out = _outside(tri, rel, HS) + _outside(one, [Vector2.ZERO], HS)
 		ok = ok and tri.find_child("station_T2_debris", true, false) == null
+	# Ryan, Nov 24 (issue 1791): the outpost stands above the grid on the board, no hex line through it
+	var units := [{"id": "p1", "side": "player", "fac": "ithar", "q": 0, "r": 5}]
+	var bt := _board({"0,0": "station", "1,0": "station", "0,1": "station"}, [], units, {"station": {"q": 0, "r": 0}, "stationR": 1}, 6, 2)
+	var bh := _board({}, [{"kind": "station", "cells": [[0, 0]]}], units, {}, 6, 2)
+	var lows: Array = []
+	for b in [bt, bh]:
+		var low := INF
+		for st in _stations(b):
+			if bool(st.get_meta("station_outpost", false)):
+				for mi in (st as Node).find_children("*", "MeshInstance3D", true, false):
+					var bb: AABB = (mi as MeshInstance3D).get_aabb()
+					for i in 8:
+						low = minf(low, ((mi as Node3D).global_transform * bb.get_endpoint(i)).y)
+		lows.append(snappedf(low, 0.01))
+		b.free()
+	var y0: float = 0.0
+	ok = ok and lows.size() == 2 and float(lows[0]) > y0 and float(lows[0]) < 3.0 and float(lows[1]) > y0 and float(lows[1]) < 3.0
+	print("  outpost lowest point above the grid: teaching %s, hole %s" % [str(lows[0]), str(lows[1])])
 	# one file list for the battle's prefetch and the board's terrain wait (Artoo on PR 1998, item 1)
 	var view := {"terrain": {"0,0": "station", "1,0": "station", "0,1": "station"}, "map": {"holes": [{"kind": "station", "cells": [[4, 4]]}]}}
 	var sp: Vector2i = PROPS.station_spots(view)
