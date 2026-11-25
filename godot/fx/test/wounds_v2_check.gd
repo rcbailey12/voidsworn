@@ -462,6 +462,13 @@ func _run() -> void:
 	for faction in ["ithar", "chorus"]:
 		var wm = fx.wreck_interior(src, faction, 24.0)
 		check(wm is ShaderMaterial and (wm as ShaderMaterial).shader.code == SH.INTERIOR and float((wm as ShaderMaterial).get_shader_parameter("fx_wreck")) == 1.0, "%s: the wreck keeps the faction interior shader" % faction)
+		if faction == "chorus" and wm is ShaderMaterial:
+			# Headless does not render fragments. Check the final outputs of the actual wreck shader, not the ORM inputs.
+			var finish := RegEx.create_from_string("if \\(wound_v2 == 3\\) \\{\\s*ROUGHNESS = role == 1 \\? ([0-9.]+) : ([0-9.]+);\\s*METALLIC = ([0-9.]+);")
+			var finish_match := finish.search((wm as ShaderMaterial).shader.code)
+			check(int((wm as ShaderMaterial).get_shader_parameter("wound_v2")) == 3 and finish_match != null
+				and minf(float(finish_match.get_string(1)), float(finish_match.get_string(2))) >= 0.7
+				and is_zero_approx(float(finish_match.get_string(3))), "chorus: wreck bone and tissue are rough (at least 0.7) and non-metallic")
 	OS.set_environment("VS_WOUNDS_V2", "0")
 	var old = fx.wreck_interior(src, "ithar", 24.0)
 	check(old is BaseMaterial3D and (old as BaseMaterial3D).roughness == 1.0, "switch off: the wreck keeps the old sooted copy")

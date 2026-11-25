@@ -2529,9 +2529,14 @@ void fragment() {
 	vec3 lit = surf * mix(1.0, r.x * ao, trusted ? 0.5 : 1.0);
 	vec3 wreck = lit * (1.0 - v2_wreck_soot);
 	if (wound_v2 == 3) {
-		// Keep the actual bone distinct from the wet tissue and collapsed glands behind it.
-		vec3 settled = role == 1 ? vec3(0.12, 0.10, 0.075) : vec3(0.046, 0.024, 0.016);
-		wreck = mix(lit, settled * r.x, 0.35);
+		if (role == 1) {
+			wreck = mix(lit, vec3(0.12, 0.10, 0.075) * r.x, 0.35);
+		} else {
+			// Umber in the furrows, deep crimson on the fibres. Keep the source shading, not its hue.
+			vec3 tissue = mix(vec3(0.048, 0.027, 0.017), vec3(0.078, 0.019, 0.013), smoothstep(0.79, 1.21, r.x));
+			float shade = clamp(dot(surf, vec3(1.0)) / max(dot(v2_interior_lift, vec3(1.0)), 1e-3), 0.6, 1.4);
+			wreck = tissue * (shade * r.x * ao);
+		}
 	}
 	if (wound_v2 == 4) { wreck = mix(lit, v2_rim_metal * vec3(1.0, 0.97, 0.93) * 0.4 * (0.6 + 0.4 * r.x), 0.4); }   // pale frosted pearl glass, never dark grey (Ryan Nov 24)
 	lit = mix(lit, wreck, wr);
@@ -2545,15 +2550,22 @@ void fragment() {
 	// (Antigravity audit on PR 1755, finding 1); a role-table surface keeps its own colour there
 	ALBEDO = mix(trusted ? baked : lit * 0.15, lit, open_f);
 	vec3 orm = has_orm ? texture(base_orm, UV).rgb : vec3(1.0, base_rough, base_metal);
-	float rough = clamp(v2_rough + r.w, 0.04, 1.0);
-	if (has_orm) { rough = mix(rough, orm.g, 0.5); }
-	if (role == 1) { rough = 0.55; }
-	if (wound_v2 <= 2) { rough = mix(rough, 0.92, wr * v2_wreck_soot); }
-	ROUGHNESS = mix(base_rough, rough, open_f);
-	float metal = (role == 1 || role == 4) ? 0.0 : ((wound_v2 <= 2 || wound_v2 == 5) ? 0.45 : 0.0);
-	if (has_orm) { metal = mix(metal, orm.b, 0.5); }
-	METALLIC = mix(base_metal, metal, open_f);
-	SPECULAR = mix(0.5, 0.26, (wound_v2 == 1 || wound_v2 == 3) ? wr : 0.0) * ao;
+	// Chorus bone is dry and the muscle has only a faint wet sheen. No polish or metal from imported maps.
+	if (wound_v2 == 3) {
+		ROUGHNESS = role == 1 ? 0.88 : 0.78;
+		METALLIC = 0.0;
+		SPECULAR = (role == 1 ? 0.04 : 0.12) * ao;
+	} else {
+		float rough = clamp(v2_rough + r.w, 0.04, 1.0);
+		if (has_orm) { rough = mix(rough, orm.g, 0.5); }
+		if (role == 1) { rough = 0.55; }
+		if (wound_v2 <= 2) { rough = mix(rough, 0.92, wr * v2_wreck_soot); }
+		ROUGHNESS = mix(base_rough, rough, open_f);
+		float metal = (role == 1 || role == 4) ? 0.0 : ((wound_v2 <= 2 || wound_v2 == 5) ? 0.45 : 0.0);
+		if (has_orm) { metal = mix(metal, orm.b, 0.5); }
+		METALLIC = mix(base_metal, metal, open_f);
+		SPECULAR = mix(0.5, 0.26, wound_v2 == 1 ? wr : 0.0) * ao;
+	}
 	AO = ao * (has_orm ? orm.r : 1.0);
 	AO_LIGHT_AFFECT = 0.6;
 	// bump from the pattern's grooves (screen-space derivatives: no tangents needed), over the trim's own normal map
