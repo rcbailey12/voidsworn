@@ -1,0 +1,54 @@
+{
+  "source_commit": "310105124457c03a64c612965d27ed03d3415029",
+  "source_diff_sha256": "622f3073a938741fb2c9d3074e0ed2d20352e13e2d7055414512cb672b8f0836",
+  "source_dirty": true,
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "SY-C_fleet-ledger.png",
+  "date": "2026-11-24T23:27:43Z",
+  "sources": [
+    {
+      "source_commit": "310105124457c03a64c612965d27ed03d3415029",
+      "source_diff_sha256": "622f3073a938741fb2c9d3074e0ed2d20352e13e2d7055414512cb672b8f0836",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "L1178_late_market.png",
+      "source_commit": "310105124457c03a64c612965d27ed03d3415029",
+      "source_dirty": true,
+      "source_diff_sha256": "622f3073a938741fb2c9d3074e0ed2d20352e13e2d7055414512cb672b8f0836",
+      "stage": "installed in game",
+      "date": "2026-11-20T02:15:42Z",
+      "image_sha256": "d91e42b96d12d277b08a021b694dd7320ee85a1c3c7c2db7a76f91a1c89ae135",
+      "sources": [
+        {
+          "source_commit": "310105124457c03a64c612965d27ed03d3415029",
+          "source_diff_sha256": "622f3073a938741fb2c9d3074e0ed2d20352e13e2d7055414512cb672b8f0836",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "663a4dd7165e3aecb7b33aaf5b4922a40d16bc8f1836f7f468ac77b72c96f2aa"
+  ],
+  "stamp_template_sha256": "663a4dd7165e3aecb7b33aaf5b4922a40d16bc8f1836f7f468ac77b72c96f2aa",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABm0lEQVR4nO3XMREAIAADMWAF/NtFBT8lBjr+de57BgDw3wo2AADRBYCOpwsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAIzGA3bMAOjbHqLUAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "ab00c985b62ed107eb4ffd54a2595447005c9cf2d8d572f14cd90617d4664ab1"
+}

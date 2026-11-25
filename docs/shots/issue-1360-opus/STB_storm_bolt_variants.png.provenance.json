@@ -1,0 +1,60 @@
+{
+  "source_commit": "8bfa6447f37eaa6883f2f3b1faf31054ccf8891b",
+  "source_dirty": true,
+  "source_diff_sha256": "a1c261488750d54a146aebde66ab58121de342be1981852d48f675f94701a1d5",
+  "source_dirty_files": {
+    "contrib/opus/tools/env_reconcile_tests.js": "bbae754eae6ed6435dc13001e89ced9eb0f2efc9",
+    "docs/playbooks/scale.md": "ccb93becf8acb9f453c794013f211678dd34c637",
+    "godot/render/line_style.gd": "f1728bdbcafe096261d230836a58ce7bb2f82bd4",
+    "godot/render/test/line_style_check.gd": "73b41d623139c9b5b9f49d8e6375ec50fe662dca",
+    "godot/tools/ci/godot_checks.txt": "9880eb2c7897b972e708024bf690d889687543a4",
+    "godot/world/test/storm_bolt_check.gd": "5aaf58c43a5370b9bb03c18bbfdb02f6a9205aec",
+    "godot/world/world_living.gd": "028c5e57450a6fd642b545cdefe4ae60b02ebfc2",
+    "tools/blender/vfx/bake_storm_bolts.bat": "27ba1f4fb7178f17796dda17c431983f65e86ada",
+    "tools/blender/vfx/bake_storm_bolts.py": "5a523420a0d547231c4885aa3a8f25e1dd48d5ab",
+    "tools/blender/vfx/storm_bolt_sheet.py": "5cc0b8e7be1b0e05a3ce4d2de926f52d59679c78"
+  },
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "STB_storm_bolt_variants.png",
+  "date": "2026-11-24T12:10:37Z",
+  "sources": [
+    {
+      "source_commit": "8bfa6447f37eaa6883f2f3b1faf31054ccf8891b",
+      "source_dirty": true,
+      "source_diff_sha256": "a1c261488750d54a146aebde66ab58121de342be1981852d48f675f94701a1d5",
+      "source_dirty_files": {
+        "contrib/opus/tools/env_reconcile_tests.js": "bbae754eae6ed6435dc13001e89ced9eb0f2efc9",
+        "docs/playbooks/scale.md": "ccb93becf8acb9f453c794013f211678dd34c637",
+        "godot/render/line_style.gd": "f1728bdbcafe096261d230836a58ce7bb2f82bd4",
+        "godot/render/test/line_style_check.gd": "73b41d623139c9b5b9f49d8e6375ec50fe662dca",
+        "godot/tools/ci/godot_checks.txt": "9880eb2c7897b972e708024bf690d889687543a4",
+        "godot/world/test/storm_bolt_check.gd": "5aaf58c43a5370b9bb03c18bbfdb02f6a9205aec",
+        "godot/world/world_living.gd": "028c5e57450a6fd642b545cdefe4ae60b02ebfc2",
+        "tools/blender/vfx/bake_storm_bolts.bat": "27ba1f4fb7178f17796dda17c431983f65e86ada",
+        "tools/blender/vfx/bake_storm_bolts.py": "5a523420a0d547231c4885aa3a8f25e1dd48d5ab",
+        "tools/blender/vfx/storm_bolt_sheet.py": "5cc0b8e7be1b0e05a3ce4d2de926f52d59679c78"
+      },
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    616,
+    564,
+    714
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "7b00f716290cade5e45904cec3e7678a63675f1848d7a78db3d760b766d252b5"
+  ],
+  "stamp_template_sha256": "7b00f716290cade5e45904cec3e7678a63675f1848d7a78db3d760b766d252b5",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAYAAABHw0nAAAAB0ElEQVR4nO3WsQ3AIADAMMqMOvX/V+EIhiqSfUHGPOv99gAACJt/BwAA3DI0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAGHUHTdoB8QvhcC0AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "9b483773facb38b5e60e838aed9bb95e193f4af470600938046fb79072e7458b"
+}
