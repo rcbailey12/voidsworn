@@ -94,7 +94,7 @@ while (-not $lock) {
 try {
   if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) { Say 'waiting: no shared repo copy yet (a job makes it)'; exit 0 }
   if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin' }
-  Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+  Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune --no-auto-maintenance origin | Out-Null
   $main = (Run-Git --git-dir $mirror rev-parse 'refs/heads/main^{commit}') | Select-Object -Last 1
   $changed = $true
   if ($state.exported -match '\A[0-9a-f]{40}\z') {
