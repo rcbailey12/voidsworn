@@ -125,7 +125,7 @@ func _run() -> void:
 	for sd in job.surfs:
 		if sd.interior: original_area += _area(sd.arrays[Mesh.ARRAY_VERTEX], sd.arrays[Mesh.ARRAY_INDEX], sd.xf)
 	for pc in job.out:
-		check(pc.authored, "authored cut bypasses full fallback caps")
+		check(pc.authored, "cut retains authored interior ownership")
 		for sd in pc.surfs:
 			if sd.interior:
 				interior_triangles += sd.arrays[Mesh.ARRAY_INDEX].size() / 3
@@ -139,10 +139,10 @@ func _run() -> void:
 	var outline := PackedVector3Array([Vector3(0, -2, -3), Vector3(0, 2, -3), Vector3(0, 2, 3), Vector3(0, -2, 3)])
 	var cap := {"v": PackedVector3Array(), "n": PackedVector3Array(), "c": PackedColorArray()}
 	DEATH._cap_outline(cap, outline, AABB(Vector3(-5, -2, -3), Vector3(5, 4, 6)), 0.000001,
-		{"authored": true, "cap_loops": 0, "cap_fallbacks": 0})
+		{"authored": true, "cap_loops": 0, "cap_fallbacks": 0, "plan": {"L": 5.0, "breaks": [], "bite": {}}})
 	var largest := 0.0
 	for i in range(0, cap.v.size(), 3): largest = maxf(largest, (cap.v[i + 1] - cap.v[i]).cross(cap.v[i + 2] - cap.v[i]).length() * 0.5)
-	check(largest < 1.0, "authored rooms have narrow torn rims, no solid fallback face blocking them")
+	check(largest < 1.0, "an existing opening stays open rather than receiving a tear bulkhead")
 	var originals: Array = BREACH.gather(s)
 	check(originals.any(func(sd): return sd.interior), "breach reader recognises authored rooms")
 	var wound = BREACH.hole(null, s.hull.c + Vector3.UP * s.hull.H * 0.5, Vector3.UP, s.hull.L * 0.08, 0.8, 0.1, 73.0)

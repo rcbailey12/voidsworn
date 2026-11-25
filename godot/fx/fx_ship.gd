@@ -2402,6 +2402,9 @@ func _place_mark(fx, e) -> void:
 		var o = _marks[j]
 		if o.style != e.style or o.sec != e.sec or o.style in [BREACH.S_GAUSS_IN, BREACH.S_GAUSS_OUT]:
 			continue
+		# The three V2 Null Lance cuts overlap the repeat radius. Reheat the matching cut, not its neighbour.
+		if e.style == BREACH.S_NLANCE and e.v2 >= 0 and o.part_i != e.part_i:
+			continue
 		if whole_sec or o.c.distance_to(e.c) < o.R * 0.8 + e.R * 0.5 + o.hl:
 			var g: float = minf(o.grow * 1.2, BREACH.GROW_MAX)
 			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.hit_origin, o.hit_normal, o.ldir, o.seed_v, faction, g, 1.0 - section_fraction[o.sec], o.hatch_k)
@@ -2612,6 +2615,8 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	var p: Vector3 = a.p
 	var n: Vector3 = a.n
 	var glow: Color = fac.damage_glow
+	var eclipse_wound := wounds_v2 and faction == "deathless"
+	var wound_accent := BREACH.wound_col(fac["wound"], "interior_accent", glow) if eclipse_wound else glow
 	var b := POOLS.Batch.new()
 	var kind := 3
 	var color := Color(0.13, 0.12, 0.11)
@@ -2623,7 +2628,7 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	var velocity: Vector3 = (n * 0.7 + Vector3.UP * 0.3) * hull.L * 0.10
 	if faction == "deathless": color = Color(0.055, 0.025, 0.09); kind = 8
 	if faction == "deathless" and e.st == 2:
-		kind = 7; color = glow * 0.55
+		kind = 7; color = wound_accent * 0.55
 		size0 = hull.L * 0.004; size1 = hull.L * 0.018
 		velocity = n * hull.L * 0.045
 	if faction == "chorus": color = chorus_gas(glow) * 0.45; kind = 20
@@ -2639,12 +2644,15 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 		velocity = (n * 0.7 + Vector3.UP * 0.3) * hull.L * 0.06
 		if e.st == 4: p -= n * hull.L * 0.018
 		if faction == "deathless": kind = 26
+		if eclipse_wound: color = wound_accent; intensity = 0.28
+		if wounds_v2 and faction == "hegemony": kind = 26   # cold electric vent, never the orange heat ramp
 		if faction == "chorus": kind = 20; intensity = 0.35; color = chorus_gas(glow)
 		if faction == "ithar": kind = 7; intensity = 0.3
 	elif e.kind == "vent":
 		kind = 7; color = glow.lerp(Color.WHITE, 0.75); intensity = 0.22
 		count = 4; life = 0.8
 		velocity = n * hull.L * 0.13
+		if eclipse_wound: color = wound_accent; intensity = 0.16
 		if faction == "chorus": kind = 20; color = chorus_gas(glow) * 0.6
 	var period := life if e.kind != "vent" else 3.2
 	for j in count:
@@ -3132,6 +3140,10 @@ func _blowout(fx, i: int) -> void:
 	var glow: Color = fac.damage_glow
 	var col := glow.lerp(Color.WHITE, 0.75)
 	var kind := 7
+	var eclipse_wound := wounds_v2 and faction == "deathless"
+	if eclipse_wound:
+		glow = BREACH.wound_col(fac["wound"], "interior_accent", glow)
+		col = glow
 	if faction == "chorus":
 		col = chorus_gas(glow) * 0.6; kind = 20
 	var heavy := int(stage[i]) == 4
@@ -3141,7 +3153,7 @@ func _blowout(fx, i: int) -> void:
 			kind, fx.rcone(n, 0.22) * L * (0.38 - j * 0.03), 1.6)
 	for j in 3 + posmod(_seed + i, 2):
 		DEATH.BEATS.debris(fx, self, p, fx.now + j * 0.05, 1.6, fx.rcone(n, 0.6) * L * (0.10 + 0.05 * fx.rng.randf()), L * 0.006, 0.5)
-	fx.light(p + n * L * 0.03, fx.now, 0.35, 2.5, glow.lerp(Color.WHITE, 0.5), 1)
+	fx.light(p + n * L * 0.03, fx.now, 0.35, 2.5, glow if eclipse_wound else glow.lerp(Color.WHITE, 0.5), 1)
 	_wlog(["blowout", i, fx.now])
 
 

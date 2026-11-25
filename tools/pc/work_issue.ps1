@@ -767,7 +767,9 @@ elseif ($mode -eq 'commit') {
   Write-Lines (Join-Path $out 'diffstat.txt') @(Git-Lines -c core.quotepath=off diff --cached --stat --no-renames)
   # The branch's earlier tip (an earlier run, or the Board's own fix-ups): kept, never overwritten.
   $old = ''
-  $ls = @(Git-Lines ls-remote origin "refs/heads/$br")
+  Set-PCGitNonInteractive
+  $net = @(PCGitNetworkOptions)
+  $ls = @(Git-Lines @net ls-remote origin "refs/heads/$br")
   if ($gx -ne 0) { Write-Host "push stopped: could not read branch $br on GitHub, the check failed; change kept as out\change.patch"; Save-Patch $out $pre; Pop-Location; exit 12 }
   if ($ls.Count) {
     $want = ($ls[0] -split '\s+')[0]
@@ -864,7 +866,10 @@ elseif ($mode -eq 'confirm') {
   $pre = Read-Txt (Join-Path $out 'pre_commit.txt'); $new = Read-Txt (Join-Path $out 'run_commit.txt')
   $num = @(Read-Lines (Join-Path $out 'diff_numstat.txt'))
   if ($push -eq 'dry') { Write-Host 'dry run: nothing pushed; the commit that would be pushed carries exactly out\diffstat.txt (checked before the push)'; Pop-Location; exit 0 }
-  $ls = @(Git-Lines ls-remote origin "refs/heads/$br")
+  . (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
+  Set-PCGitNonInteractive
+  $net = @(PCGitNetworkOptions)
+  $ls = @(Git-Lines @net ls-remote origin "refs/heads/$br")
   $remote = ''; if ($ls.Count) { $remote = ($ls[0] -split '\s+')[0] }
   if ($remote -ne $new) {
     Write-Lines (Join-Path $out 'DIFF_MISMATCH.txt') @('PUSH CHECK FAILED (issue 377)', "GitHub's $br is '$remote'", "the runner's commit is $new")
