@@ -11,6 +11,7 @@
 #   | scene:<res path> (run that scene instead of --script) | compat (gl_compatibility renderer); several split by commas
 # args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
 headless|world/test/storm_drain_check.gd|-|-|issue 1148: two shield drains keep independent cues through battle playback in Standard and Reduced Flashing
+headless|world/test/storm_bolt_check.gd|-|-|issue 1360: storm lightning plays the three baked bolt flipbooks (atlases load, 16 frames on the effects clock, soft hold in Reduced Flashing) at the ribbon's places; VS_STORM_BOLTS=ribbon keeps the old ribbon
 headless|world/test/finale_check.gd|-|-|issue 44: finale lighting preserves round 1, adds no floor and stays out of ordinary bosses
 headless|world/test/nebula_wake_check.gd|-|-|issue 1079: the nebula wake reaches every calm gas shader at max, high and low when on (high is where 1210 picks its optimised cards); off and storm shaders unchanged
 headless|world/test/audit_leftovers_check.gd|-|-|issue 1130: missing wreck kit pieces, Max storm fog, one nebula bench build, and gallery MSAA parity
@@ -188,7 +189,8 @@ headless|render/test/hold_beacon_check.gd|-|-|issue 1536: a Hold battle stands o
 headless|render/test/line_style_check.gd|-|-|issue 1374 (R362): board and battle line colours come from one role table; grid, move rims, edges, path and storm bolts carry the shared width, glow and fade code
 headless|render/test/scale_check.gd|-|-|issue 710 (R247): reads the live sizes of ships, fighters, station, terrain, planet, wrecks, explosions and the campaign map and fails when any object leaves its target range in docs/playbooks/scale.md
 headless|render/test/parked_thrusters_check.gd|-|-|issue 1203: count jets and read the pilot glow over 30 seconds parked on the map and in battle, then verify that the drives light for travel and settle at arrival
-headless|assets/ships/test/station_size_check.gd|-|-|issue 975: an installed T2 is used at unit scale for the large station; the teaching station uses O1_37 at its own scale
+headless|assets/ships/test/station_size_check.gd|-|-|issues 975 and 1767: station_T2 at unit scale on the big 19-hex cluster; the station outpost (issue 1791) fitted in the 3-hex cluster and the 1-hex hole when installed, else T2 fitted inside the cluster's own hexes at its best turn, the biome station kind hook, all six factions' hulks with their own derelict finish
+headless|world/test/unwired_station_hulk_check.gd|-|-|R420 gate 6.2 item 1 (issue 1767 half): the live board puts station_T2 on small, big and hole stations when installed, _hulk() draws all six rules factions from manifest hulls, and every derelict finish stays in band 3 (no green Eclipse, no soot on glass or chitin)
 headless|render/test/formation_check.gd|-|-|issue 843: no projected wingmate footprints overlap through flight for every factory craft kind, sheet-sized Sunward hulls and wide, long, tall, nested and breathing mesh regressions
 headless|render/test/hull_lift_check.gd|-|-|issue 811: only E14 lifts after fitting; movement and revival keep its height; markers, camera, hard points and shields follow
 headless|render/test/faction_colour_source_check.gd|-|-|issue 1205 (R333): no script reads or defines hull_table FAC3D again; engine, weapon and shield colours come from fx/faction_looks.json (Eclipse violet, Hegemony blue)

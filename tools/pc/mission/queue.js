@@ -1,9 +1,9 @@
 'use strict';
 // Board chains wait for text, independently of the runner's checked-push wait.
 const STARTING_GRACE_MS = 3 * 60000;
-const fileStem = '(?:codex_chain_[a-z0-9_]+|codex_lane_[bcd][a-z0-9_]*|ds_[a-z0-9_]+|oa_[a-z0-9_]+)';
+const fileStem = '(?:codex_chain_[a-z0-9_]+|codex_lane_[b-f][a-z0-9_]*|ds_[a-z0-9_]+|oa_[a-z0-9_]+)';
 const filePattern = new RegExp('^'+fileStem+'\\.txt$', 'i');
-const laneId = name => /^oa_/i.test(name) ? 'openai' : /^ds_/i.test(name) ? 'deepseek' : (name.match(/^codex_lane_([bcd])/i) || [0, 'main'])[1].toLowerCase();
+const laneId = name => /^oa_/i.test(name) ? 'openai' : /^ds_/i.test(name) ? 'deepseek' : (name.match(/^codex_lane_([b-f])/i) || [0, 'main'])[1].toLowerCase();
 function normalise(value) {
   const s = String(value || '').trim().toLowerCase();
   const name = s.split(/[\\/]/).at(-1);
