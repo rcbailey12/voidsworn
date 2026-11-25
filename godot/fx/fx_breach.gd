@@ -38,7 +38,7 @@ const K_CRATER := 3
 const K_CLUSTER := 4
 const K_SURFACE := 5
 
-# styles (the surface pattern and the inside's glow), shared with the shaders
+# Wound styles (surface pattern and inside glow), shared with the shaders. Owners are in API.md section 20.
 const S_BREACH := 0
 const S_BURN := 1
 const S_SHELL := 2
@@ -60,6 +60,9 @@ const S_SCORCH := 13      # the stage ladder's spreading scorch (fx_ship._plan)
 const S_PRISM := 16
 const S_STAR := 17
 const S_NLANCE := 18
+
+# Reserved for PR #2136. No mark uses this style yet.
+const S_NULL_BURN := 19
 
 # Issue 461 (audit item 4, "scorch that stays"): doubled from 12 and 4, so a ship that has been in a fight keeps its scars
 # instead of losing the oldest after a dozen hits. Cost reported, never capped (R111): the gate's frame intervals and the

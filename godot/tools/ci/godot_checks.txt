@@ -127,6 +127,7 @@ headless|audio/test/salvo_check.gd|-|-|salvo sounds: counts real player starts a
 headless|audio/test/smoke_lifetime_check.gd|-|-|sound and debris lifetimes leave no freed node behind; no ship files needed
 headless|audio/test/sound_weight_check.gd|-|-|issue 771: death bed length from the death beats, tail, sub-bass, core-flash duck, capital near-silence, heavy hit and shield tails, lance and torpedo charge, seeded death pitch, dry guns
 headless|audio/test/faction_death_check.gd|-|-|issue 1238: Chorus cruiser and Bio-Titan rupture at their class time with the kill beat and Chorus sounds only; a Glasswright breaks with a glass shatter, no steel; prints the cue timing trace
+headless|tools/ci/test/fx_ids_check.gd|-|-|issue 2148: sprite kinds and wound styles have unique ids and match the owner table
 headless|fx/test/attach_check.gd|-|-|issue 370: every attach point (authored, surface ray) lies on the hull within 0.012 of its length; stand-in slab, ring and tower here, every ship file present on the PC; skips counted
 headless|fx/test/damage_surface_check.gd|-|-|R80 damage contracts on box ships: stages, emitters and their caps, marks
 headless|fx/test/graphics_correctness_check.gd|-|-|issue 1955: missing damage anchors, rim and fog on mesh-surface wrecks, five live point-defense pops, quality downgrade and shader cache teardown
