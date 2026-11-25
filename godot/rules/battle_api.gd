@@ -284,7 +284,7 @@ func _i_view() -> Dictionary:
 		us.append({"id": u["id"], "side": u["side"], "tpl": u["tpl"], "name": u["name"], "cls": u.get("cls"), "fac": u["fac"], "size": u["size"], "squadron": R.jt(u.get("isSq")),
 			"q": int(u["q"]), "r": int(u["r"]), "facing": int(u["facing"]), "hp": u["hp"], "maxHp": u["maxHp"], "sh": u["sh"].duplicate(), "shMax": u["shMax"], "shp": u.get("shp"),
 			"route": u["route"].duplicate() if u.get("route") is Array else [0, 0, 0, 0], "cov": u["cov"].duplicate() if u.get("cov") is Array else null,   # issue 1446: R246 shield routing for the HUD and the bubble
-			"regenLock": R.jt(u.get("regenLock")),
+			"regenLock": R.jt(u.get("regenLock")), "st": {"acid": R.z0(u["st"].get("acid"))},
 			"sec": u.get("sec").duplicate(true) if u.get("sec") != null else null, "crew": u.get("crew"), "crewMax": u.get("crewMax"), "dead": R.jt(u.get("dead")), "fled": R.jt(u.get("fled")),
 			"activated": R.jt(u.get("activated")), "active": B.get("activeUnit") != null and is_same(B["activeUnit"], u), "braced": R.jt(u.get("braced")), "mp": u["mp"], "turnsLeft": u["turnsLeft"],
 			"ab": u.get("ab"), "abCd": u["abCd"], "abReady": R.canAbility(u) if not R.jt(u.get("dead")) else false, "burning": R.z0(u["st"].get("fire")) > 0, "engHit": R.z0(u["st"].get("engine")) > 0, "shieldOff": R.z0(u["st"].get("shieldOff")) > 0, "flagship": R.jt(u.get("flagship")) or R.jt(u.get("boss")), "weapons": ws,

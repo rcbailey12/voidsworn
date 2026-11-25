@@ -12,7 +12,7 @@ Revision r1. Generated from the same Blender model as the pictures. Counts outra
 
 ## Size
 
-Destroyer LENGTH 9.5; drawn 15.2 with SHIP_K 1.6. Measured mesh length / beam / height: 9.287 / 2.364 / 2.558.
+Destroyer LENGTH 9.5; drawn 15.2 with SHIP_K 1.6. Measured mesh length / beam / height: 9.287 / 2.407 / 2.558.
 
 ## Major masses
 

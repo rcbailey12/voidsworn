@@ -1,4 +1,5 @@
 extends RefCounted
+const SKEEP := preload("res://render/shader_keep.gd")
 # Issue 1374 (Ryan, Nov 20 2026, R362; docs/playbooks/scale.md section 6): one line style for everything drawn as a line
 # on or over the battle board. This file owns the width (by camera distance), the glow and the fade; callers name only a
 # role, and the role's colour comes from ROLE below. Change a width or a glow here and every line follows.
@@ -69,6 +70,10 @@ const ROLE := {
 	"edge_arrive_ally": Color(0.32, 0.94, 0.77, 0.9),
 	"arc_enemy": Color(0.941, 0.918, 0.871, 0.42),
 	"edge_reach_enemy": Color(0.941, 0.918, 0.871, 0.6),   # issue 1446: the outline of where an inspected enemy can reach next turn
+	# issue 1582: the drop-line from an off-plane hull to its hex, in its footprint's colour (yours mint, the enemy's violet)
+	"drop_ally": Color(0.32, 0.94, 0.77, 0.75),
+	"drop_enemy": Color(0.62, 0.22, 1.0, 0.75),
+	"drop_neutral": Color(0.8, 0.85, 0.9, 0.75),
 	# storm lightning (issue 1360 colours its baked bolts with these; the old ribbon too): hot channel, cyan skirt, cool
 	# cyan-white corona (HDR values)
 	"bolt_core": Color(2.2, 2.1, 2.4, 1.0),
@@ -144,6 +149,34 @@ void fragment() {
 	ALBEDO = vcol.rgb * vcol.a * gain * sh * l;
 }
 """
+
+# issue 1582: a straight line drawn on its own quad (the drop-line under an off-plane hull). UV.x runs across the quad,
+# qw world units wide; the line sits in the middle at the shared core width with its pixel floor and widen-dim, so it
+# never breaks up when zoomed out. col is the role's colour and strength, wide a hover widening (1 = normal).
+const QUAD_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform vec4 col = vec4(1.0);
+uniform float qw = 3.0;
+uniform float wide = 1.0;
+""" + GLSL + """
+void fragment() {
+	float x = abs(UV.x - 0.5) * qw;
+	float fw = max(fwidth(x), 0.0001);
+	float w = ls_core_w(fw) * wide;
+	float l = (1.0 - smoothstep(0.5 * w - 0.5 * fw, 0.5 * w + 0.5 * fw, x)) * ls_dim(w / wide);
+	ALBEDO = col.rgb * col.a * l;
+}
+"""
+
+
+static func quad_material() -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = QUAD_SHADER
+	m.shader = sh
+	return m
+
 
 # how far past the outer edge a strip starts (room for the anti-aliased edge) and how deep it runs (the widest core the
 # pixel floor gives when zoomed far out, plus the glow band)

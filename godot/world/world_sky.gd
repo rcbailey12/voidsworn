@@ -374,12 +374,24 @@ void fragment() {
 # Issue 1679, SG option. Broad, subdued lobes in linear light. The sun side is warmer and brighter than the back-bounce.
 const FLEET_REFLECTIONS := """
 uniform bool fleet_reflections = false;
+// Issue 1777 (Ship Look V2): more lobes on top of the 1679 gradient, seen only by the reflection probe (cubemap pass):
+// a tight warm sun lobe for a real specular highlight on metal plates, a cool bounce band low on the far side (the
+// nebula and planet light), and dark-space troughs straight up and straight down so curved armor keeps deep contrast.
+uniform bool fleet_reflections_v2 = false;
 
 vec3 fleet_reflection_gradient(vec3 direction, vec3 sun_direction) {
 	float sun_side = dot(direction, sun_direction);
 	float warm = smoothstep(0.0, 1.0, sun_side);
 	float cool = smoothstep(0.0, 1.0, -sun_side);
-	return vec3(0.12, 0.10, 0.075) * warm + vec3(0.025, 0.036, 0.05) * cool;
+	vec3 c = vec3(0.12, 0.10, 0.075) * warm + vec3(0.025, 0.036, 0.05) * cool;
+	if (fleet_reflections_v2) {
+		float fr_lobe = pow(max(sun_side, 0.0), 24.0);   // neutral warm-white (Ryan, Nov 22: the orange lobe browned Eclipse)
+		float fr_bd = (direction.y + 0.18) / 0.22;   // Artoo on PR 1786: square by multiplying (pow of a negative base is undefined)
+		float fr_band = exp(-fr_bd * fr_bd) * (1.0 - smoothstep(-0.6, 0.2, sun_side));   // and smoothstep edges in order
+		float fr_trough = smoothstep(0.55, 0.95, abs(direction.y));
+		c = c * (1.0 - 0.75 * fr_trough) + vec3(0.86, 0.83, 0.78) * fr_lobe + vec3(0.045, 0.07, 0.11) * fr_band;
+	}
+	return c;
 }
 """
 
@@ -397,9 +409,13 @@ void sky() {
 }
 """
 
+# The angle of one pixel at 45 degrees vertical FOV and 1080 lines, shared by stars and dust.
+# A fixed angle already covers twice as many pixels when the viewport height doubles.
+const ANGULAR_PIXEL_1080 := "0.000727220521664304"
+
 const SKY := """
 shader_type sky;
-uniform sampler2D neb_tex : filter_linear, repeat_enable;
+uniform sampler2D neb_tex : filter_linear, repeat_enable;   // no mips: a sky has no smooth derivative at the longitude wrap
 uniform float has_neb = 0.0;
 uniform float neb_gain = 1.0;
 uniform vec3 mood_tint = vec3(1.0);   // issue 1272: a stop's mood on the sector's baked gas (defaults change nothing)
@@ -415,7 +431,7 @@ uniform vec4 lamp[6];
 uniform vec3 lamp_col[6];
 uniform vec3 sun_dir = vec3(0.45, 0.7, 0.55);
 uniform vec3 sun_col = vec3(1.0, 0.93, 0.82);
-uniform float px = 0.0008;   // one screen pixel in radians (fov / height)
+uniform float px = """ + ANGULAR_PIXEL_1080 + """;   // 1080-line angular size; the sky shader has no VIEWPORT_SIZE
 uniform mat3 turn = mat3(1.0); // the battle's small turn of the whole sky
 // the dead-star board's painted sky (R2: its backdrop; A3's 8K dead-star panorama, with its dim red dead sun where the
 // key light comes from), under the gas; and how bright this sky's own sun is (none on the dead-star board)

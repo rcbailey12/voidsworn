@@ -6,7 +6,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #    ship's damage root, on the ship (an authored hp_breach point, else plating found by a ray), in the faction's colours
 #    (Eclipse all violet, R372), with no sprite on a squadron
 # 3. comfort (RULEBOOK 6.2): every sprite under the flash counter's brightness line, none under 0.5 s, at most 2 starts a
-#    second per ship, no counted flash spent over ten effect seconds of a 20-ship fleet, and the fleet's lit area (every
+#    second per ship (the worst second, not the average rate; issue 2025), no counted flash spent over ten effect seconds of a 20-ship fleet, and the fleet's lit area (every
 #    sprite at the pixel floor, all at once, at camera 170) under the counter's area limit
 # 4. Reduce flashing rebuilds softer (longer, dimmer, same size); Reduce motion stops the radar sweep; both back again
 #    without leaking a node
@@ -92,7 +92,29 @@ func _col_ok(faction: String, c: Color) -> bool:
 	return false
 
 
+# Issue 2025 (Artoo 7125579753): the comfort figure is the worst case of starts inside any one-second window, not the average rate.
+func _worst_window_checks() -> void:
+	var row := func(t: float, period: float) -> Dictionary: return {"t": t, "period": period, "life": 1.0, "i": 1.0}
+	# four sprites on a 4 s period start inside 0.3 s: the average is 1 a second, the worst second holds all four
+	var bunched: Array = [row.call(0.0, 4.0), row.call(0.1, 4.0), row.call(0.2, 4.0), row.call(0.3, 4.0)]
+	check(is_equal_approx(IDLE.stats(bunched)["starts_per_s"], 4.0), "four sprites starting within 0.3 s count as 4 starts in a second, not the 1.0 average")
+	check(IDLE.stats(bunched)["starts_per_s"] > IDLE.MAX_STARTS_PER_S, "that bunched ship fails the comfort limit of %.1f" % IDLE.MAX_STARTS_PER_S)
+	# the same four, one second apart, never share a window
+	var spread: Array = [row.call(0.0, 4.0), row.call(1.0, 4.0), row.call(2.0, 4.0), row.call(3.0, 4.0)]
+	check(is_equal_approx(IDLE.stats(spread)["starts_per_s"], 1.0), "four sprites starting a second apart count as 1 start in a second")
+	# a window opens on a start and is half open: a start exactly one second later is outside it
+	var edge: Array = [row.call(0.0, 4.0), row.call(1.0, 4.0), row.call(1.5, 4.0)]
+	check(is_equal_approx(IDLE.stats(edge)["starts_per_s"], 2.0), "starts at 0, 1 and 1.5 s hold at most 2 in any second")
+	# a window that wraps past the end of the period still counts the start from the next loop
+	var wrap: Array = [row.call(0.1, 4.0), row.call(3.8, 4.0), row.call(3.9, 4.0)]
+	check(is_equal_approx(IDLE.stats(wrap)["starts_per_s"], 3.0), "starts at 3.8, 3.9 and 0.1 s of the next loop share one second")
+	# a period under a second starts more than once in a window by itself
+	check(is_equal_approx(IDLE.stats([row.call(0.0, 0.4)])["starts_per_s"], 3.0), "one sprite on a 0.4 s period starts 3 times in a second")
+	check(IDLE.stats([])["starts_per_s"] == 0.0, "no sprites, no starts")
+
+
 func _run() -> void:
+	_worst_window_checks()
 	world = Node3D.new()
 	root.add_child(world)
 	_calm_script = GDScript.new()
