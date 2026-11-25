@@ -11,6 +11,18 @@ const read = name => fs.readFileSync(path.join(dir, name), 'utf8').replace(/\r\n
 const autoPr = read('auto_pr.yml');
 const checks = read('checks.yml');
 
+// A newly downloaded tool must be checked before it can be extracted or put in main's shared cache.
+for (const [tool, command] of [['godot', 'unzip -q '], ['blender', 'tar -xJf ']]) {
+  const action = fs.readFileSync(path.join(dir, '../actions/setup-' + tool, 'action.yml'), 'utf8');
+  const verification = action.indexOf('sha256sum --check -');
+  assert.ok(verification > action.indexOf('curl -fsSL ') && verification < action.indexOf(command), tool + ': verify before extraction');
+  assert.ok(action.includes('curl -fsSL '), tool + ': fail on an HTTP error');
+  const keys = [...action.matchAll(/^\s+key: (\S+)\s*$/gm)].map(m => m[1]);
+  assert.equal(keys.length, 2, tool + ': expected restore and save cache keys');
+  assert.equal(keys[0], keys[1], tool + ': cache key mismatch');
+  assert.match(keys[0], /-verified$/, tool + ': old unverified caches must not be restored');
+}
+
 function branchPatterns(text) {
   const block = /^on:\n  push:\n    branches:\n((?:      [^\n]*\n|\s*#[^\n]*\n)*)/m.exec(text);
   assert.ok(block, 'no on.push.branches list');

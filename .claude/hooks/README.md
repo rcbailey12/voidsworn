@@ -22,15 +22,15 @@ else ever reaches main.
 - **Before a tool call (every seat).** Project read-deny permissions and the credential guard cover named credential
   paths. A non-secret file whose name matches (for example `hotkeys.key`) cannot be read by Claude: rename it so the name
   no longer ends in a credential pattern (`hotkeys_key.txt`), or ask Ryan to open it.
-- **Pushes (every seat).** Only a push that lands on main is checked; every other push, with any flags or several
-  refspecs, goes through. A push to main must be a fast-forward, in a Bash call of its own, whose commits each change
-  only `contrib/opus/LOOP.md` or `contrib/opus/FINDINGS.md`. Force, delete, `--all` and `--mirror` are refused.
-  The hook reads the literal words `git push`, so a git alias or a script that pushes gets past it: it is a guard
-  against mistakes, not a lock. GitHub's branch protection on main is the real lock (Fable's audit of PR 1706).
+- **Pushes (every seat).** Use plain `git push` with named refs. Wildcard and matching refspecs, bulk flags, push
+  aliases and Git shell aliases are refused. A push to main must be a fast-forward, in a Bash call of its own, whose
+  commits each change only `contrib/opus/LOOP.md` or `contrib/opus/FINDINGS.md`. The checked-out tracked files must
+  match the tip, and both the memory and doc lints must pass. Arbitrary scripts are still outside the hook's view.
+  GitHub's branch protection on main is the real lock (Fable's audit of PR 1706).
 - **Key file names in shell commands.** A bare word ending in `.key`, `.pem`, `.p12` or `.pfx` counts as a credential only
   when it is a path (slash, backslash or colon) or names a file that exists, so code such as `board.key(` can be searched.
 - **GitHub API writes (every seat).** `push_files`, `create_or_update_file` and similar MCP calls, and `gh api` writes to
-  contents or refs, are refused only when they target main or name no branch.
+  contents or refs, are refused when they target main or name no branch. The direct branch merges endpoint is refused.
 - **After a Claude file edit.** The edited text is checked for em dashes. A warning on the tool result names the fix.
 - **At the end of a turn that changed Godot code.** The hook finds changed GDScript, scenes and project settings since
   the prompt, and runs Godot's headless loader. A real parse failure blocks once so the model can fix it; if the retry

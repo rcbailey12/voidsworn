@@ -73,6 +73,18 @@ try {
   write('.gitignore', 'godot/.godot/\n');
   write('contrib/opus/LOOP.md', 'before\n');
   write('contrib/opus/FINDINGS.md', 'before\n');
+  // Stand-ins read the same paths as the two real lints. The other standing rows run the real lints.
+  for (const [lint, log] of [['memory_lint_tests.js', 'FINDINGS.md'], ['doc_check_tests.js', 'LOOP.md']]) {
+    write('contrib/opus/tools/' + lint, `
+      const fs = require('node:fs');
+      const path = require('node:path');
+      const log = fs.readFileSync(path.join(process.env.VS_ROOT, 'contrib/opus', ${JSON.stringify(log)}), 'utf8');
+      if (log.includes('planted lint error')) {
+        console.error('FAIL: planted lint error');
+        process.exitCode = 1;
+      }
+    `);
+  }
   write('godot/project.godot', 'config_version=5\n');
   write('godot/tools/ci/load_all.gd', fs.readFileSync(path.join(root, 'godot/tools/ci/load_all.gd')));
   git('add', '.');
@@ -144,6 +156,18 @@ try {
 
   deny(shell('git push origin HEAD:refs/heads/main', fence), /Only a main seat/);
   deny(shell('git push --mirror origin', main), /named branches/);
+  deny(shell("git push origin 'refs/heads/*:refs/heads/*'", main), /wildcard/);
+  deny(shell('git push origin :', main), /matching refspec/);
+  deny(shell('git push --repo origin +HEAD:main', main), /fast-forward/);
+  deny(shell('git -c alias.ship=push ship origin opus/issue-1660:main', main), /not through an alias/);
+  git('config', 'alias.ship', 'push');
+  deny(shell('git ship origin opus/issue-1660:main', main), /not through an alias/);
+  git('config', 'alias.deliver', 'ship');
+  deny(shell('git deliver origin opus/issue-1660:main', main), /not through an alias/);
+  git('config', 'alias.st', 'status --short');
+  permit(shell('git st', main));
+  git('config', 'alias.pushlog', 'log --grep=push');
+  permit(shell('git pushlog', main));
   deny(shell('git push origin :main', main), /cannot be deleted/);
   deny(shell('git push origin --delete main', main), /cannot be deleted/);
   deny(shell('git push -f origin HEAD:main', main), /fast-forward/);
@@ -161,6 +185,10 @@ try {
   deny(shell('gh api -X PUT repos/team/game/contents/README.md -f message=x -f content=eA==', main), /Direct writes to main/);
   permit(shell('gh api -X PUT repos/team/game/contents/README.md -f message=x -f content=eA== -f branch=opus/issue-1660', main));
   permit(shell('gh api -X GET repos/team/game/git/refs/heads/main', main));
+  deny(shell('gh api -X POST repos/team/game/merges -f base=main -f head=opus/issue-1660', main), /pull request/);
+  deny(shell('gh api repos/team/game/merges -f base=main -f head=opus/issue-1660', main), /pull request/);
+  deny(shell('gh api -XPOST repos/team/game/merges --input payload.json', main), /pull request/);
+  permit(shell('gh api -X PUT repos/team/game/pulls/1660/merge', main));
   console.log('PASS main guard: force, delete, mirror, unverifiable and direct API writes to main blocked; branch writes allowed');
 
   git('switch', '-q', 'main');
@@ -172,6 +200,18 @@ try {
   permit(shell('git push origin HEAD:refs/heads/main', main));
   permit(shell('git push', main));
   permit(shell('cd ' + work + ' && git push origin main 2>&1', main));
+  const goodLogTip = git('rev-parse', 'HEAD');
+  for (const [log, lint] of [['FINDINGS.md', /memory_lint_tests\.js[\s\S]*planted lint error/],
+    ['LOOP.md', /doc_check_tests\.js[\s\S]*planted lint error/]]) {
+    const file = 'contrib/opus/' + log;
+    write(file, 'planted lint error\n');
+    git('add', file);
+    git('commit', '-m', 'Plant a Board log lint error');
+    deny(shell('git push origin main', main), lint);
+    write(file, 'unstaged fix\n');
+    deny(shell('git push origin main', main), /no tracked changes/);
+    git('reset', '-q', '--hard', goodLogTip);
+  }
   write('README.md', 'planted outside change\n');
   git('add', 'README.md');
   git('commit', '-m', 'Plant a disallowed change');
@@ -195,6 +235,15 @@ try {
   console.log('PASS punctuation hook: flagged the planted em dash and cleared after replacement');
 
   git('reset', '-q', '--hard', 'origin/main');
+  const installed = path.join(os.homedir(), 'Downloads', 'voidsworn_test', 'godot', 'Godot_v4.7.2-stable_win64_console.exe');
+  const godot = mainEnv.GODOT_EXE || mainEnv.GODOT ||
+    (process.platform === 'win32' && fs.existsSync(installed) ? installed : 'godot');
+  const version = spawnSync(godot, ['--headless', '--version'], { encoding: 'utf8', timeout: 30000, windowsHide: true });
+  if (version.error?.code === 'ENOENT' && godot === 'godot') {
+    console.log('Godot not installed: real parse subprocess not exercised. Missing-engine behavior is tested below.');
+  } else {
+  assert.ifError(version.error);
+  assert.equal(version.status, 0, version.stderr);
   const loaderPath = 'godot/tools/ci/load_all.gd';
   const loader = fs.readFileSync(path.join(work, loaderPath), 'utf8');
   write(loaderPath, loader + '\n# Earlier edit\n');
@@ -221,6 +270,7 @@ try {
   permit(fixedGodot);
   assert.match(fixedGodot.stdout, /Godot parse check passed/);
   console.log('PASS Godot hook: skipped a clean turn, blocked a real parse error, ended after one unchanged retry, passed the fix');
+  }
 
   // Godot missing: never block, on the first stop or the retry; say it was skipped.
   write('godot/probe.gd', 'extends Node\nfunc broken(\n');

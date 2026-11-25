@@ -19,7 +19,10 @@ ROOT=$(cd .. && pwd)
 G="${GODOT:-godot}"
 LIST="$P/tools/ci/godot_checks.txt"
 T="${RUNNER_TEMP:-/tmp}/godot_checks"
-rm -rf "$T"; mkdir -p "$T/logs" "$T/fixtures" "$T/xdg"
+rm -rf "$T"
+if ! mkdir "$T" || ! mkdir "$T/logs" "$T/fixtures" "$T/xdg"; then
+  echo "FAIL: could not prepare Godot check scratch space under ${RUNNER_TEMP:-/tmp}."; exit 1
+fi
 F=0
 BUDGET="${GODOT_CHECKS_BUDGET:-1080}"
 TIMES="${GODOT_CHECKS_TIMES:-$P/tools/ci/godot_check_times.txt}"
@@ -56,6 +59,16 @@ fi
 mine=$(awk -F'|' -v i="$si" '$1 == i' "$T/plan.txt" | grep -vc '|step:')
 est=$(awk -F'|' -v i="$si" '$2 == i {print $3}' "$T/loads.txt")
 echo "  shard: $si of $sn, $mine checks, about $est s by the recorded times"
+# A branch can still use an older shard count after CI merges in main's longer check list.
+# Add 15 percent headroom to the plan without exceeding the normal single-job cap.
+need=$(( (${est:-0} * 115 + 99) / 100 ))
+[ "$need" -gt 1080 ] && need=1080
+if [ "$need" -gt "$BUDGET" ]; then
+  echo "  shard: WARN, $est s planned for a $BUDGET s budget; budget raised to $need s. Update the branch's shard count."
+  BUDGET=$need
+elif [ $(( ${est:-0} * 100 )) -gt $(( BUDGET * 80 )) ]; then
+  echo "  shard: WARN, $est s planned is over 80 percent of the $BUDGET s budget."
+fi
 if [ "${GODOT_CHECKS_PLAN:-0}" = 1 ]; then cat "$T/plan.txt"; exit 0; fi
 
 # 1. the list is whole (shard 1 only: the list and the plan are the same on every shard)

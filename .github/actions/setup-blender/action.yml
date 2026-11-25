@@ -12,21 +12,27 @@ runs:
       uses: actions/cache/restore@v4
       with:
         path: ~/blender-4.5.14
-        key: blender-4.5.14-linux-x64
+        key: blender-4.5.14-linux-x64-verified
     - name: Download Blender 4.5.14 (cache miss)
       if: steps.cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        curl -sSL --retry 3 --retry-all-errors -o "$RUNNER_TEMP/blender.tar.xz" https://download.blender.org/release/Blender4.5/blender-4.5.14-linux-x64.tar.xz
+        release=https://download.blender.org/release/Blender4.5
+        archive=blender-4.5.14-linux-x64.tar.xz
+        curl -fsSL --retry 3 --retry-all-errors -o "$RUNNER_TEMP/blender.tar.xz" "$release/$archive"
+        curl -fsSL --retry 3 --retry-all-errors -o "$RUNNER_TEMP/blender.sha256" "$release/blender-4.5.14.sha256"
+        sha=$(awk -v file="$archive" '$2 == file || $2 == "*" file { print $1 }' "$RUNNER_TEMP/blender.sha256")
+        if [[ ! "$sha" =~ ^[[:xdigit:]]{64}$ ]]; then echo "Expected one SHA-256 for $archive"; exit 1; fi
+        printf '%s  %s\n' "$sha" "$RUNNER_TEMP/blender.tar.xz" | sha256sum --check -
         mkdir -p ~/blender-4.5.14
         tar -xJf "$RUNNER_TEMP/blender.tar.xz" -C ~/blender-4.5.14 --strip-components=1
-        rm -f "$RUNNER_TEMP/blender.tar.xz"
+        rm -f "$RUNNER_TEMP/blender.tar.xz" "$RUNNER_TEMP/blender.sha256"
     - name: Save Blender to the cache (main only)
       if: steps.cache.outputs.cache-hit != 'true' && github.ref == 'refs/heads/main'
       uses: actions/cache/save@v4
       with:
         path: ~/blender-4.5.14
-        key: blender-4.5.14-linux-x64
+        key: blender-4.5.14-linux-x64-verified
     - name: Blender's libraries and BLENDER
       shell: bash
       run: |

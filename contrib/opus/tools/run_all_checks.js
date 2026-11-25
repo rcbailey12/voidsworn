@@ -189,6 +189,7 @@ function buildChecks() {
   add(OPUS + 'naming_lint_game.js', [], 'naming');
   add(OPUS + 'shader_pow_2092.js', [], 'normal', 300, false, true); // #2092: no shader pow(x, 2.0) on a base that can be negative (Vulkan undefined); write d * d
   add(OPUS + 'checkpack/checks.js', [], 'pack', 300, false, true);
+  add('.claude/hooks/guard.test.cjs', [], 'normal', 300, false, true);
   add('tools/ci/big_files.js', ['--self-test'], 'normal', 300, false, true); // #1491 (audit GH-01): self-test row; the warnings print below the table and never fail
   add(OPUS + 'fast_selection_test.js', [], 'normal', 300, false, true); // #946: --fast selects exactly the marked rows plus the gate; a plain run still runs every row
   for (const file of ['fleet_invariants.js', 'save_fuzz.js', 'softlock_sweep.js', 'validators/table_xref.js']) add(MUSE + 'harness/' + file, [ROOT], 'normal', 300, false, file !== 'softlock_sweep.js');
@@ -328,7 +329,10 @@ async function main() {
     }
     console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
     const row = await execute(c, baseline);
-    if (c.gate && row.result === 'SKIP') { row.result = 'FAIL'; row.detail = 'FAIL: gating row would skip: ' + row.detail; }
+    if (row.result === 'SKIP' && (c.gate || process.env.CI)) {
+      row.result = 'FAIL';
+      row.detail = 'FAIL: ' + (c.gate ? 'gating row would skip' : 'check could not run in CI') + ': ' + row.detail;
+    }
     report[i] = row;
     printRow(row);
   };

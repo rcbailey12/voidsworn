@@ -15,9 +15,10 @@ const WORKFLOW = path.join(ROOT, '.github/workflows/checks.yml');
 const windows = process.platform === 'win32';
 const sh = windows ? path.join(process.env.ProgramFiles, 'Git', 'bin', 'bash.exe') : 'sh';
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'godot-shard-1430-'));
+const shellPath = file => windows ? file.replace(/\\/g, '/') : file;
 
 function plan(shard, extra) {
-  const env = Object.assign({}, process.env, { SHARD: shard, GODOT_CHECKS_PLAN: '1', RUNNER_TEMP: tmp }, extra || {});
+  const env = Object.assign({}, process.env, { SHARD: shard, GODOT_CHECKS_PLAN: '1', RUNNER_TEMP: shellPath(tmp) }, extra || {});
   const r = spawnSync(sh, [SCRIPT], { cwd: ROOT, env, encoding: 'utf8', windowsHide: true, timeout: 60000 });
   return { status: r.status, out: (r.stdout || '') + (r.stderr || '') };
 }
@@ -60,9 +61,48 @@ function cover(n, extra) {
   return seen;
 }
 
-[1, 2, wfCount, 5].forEach(n => cover(n));
+[...new Set([1, 2, 3, wfCount, 5])].forEach(n => cover(n));
+const budget = plan('1/3', { GODOT_CHECKS_BUDGET: '600' });
+assert.equal(budget.status, 0, budget.out);
+const raised = /([0-9]+) s planned for a 600 s budget; budget raised to ([0-9]+) s/.exec(budget.out);
+assert.ok(raised, budget.out);
+assert.equal(Number(raised[2]), Math.min(1080, Math.ceil(Number(raised[1]) * 1.15)));
+const capped = plan('1/1', { GODOT_CHECKS_BUDGET: '600' });
+assert.equal(capped.status, 0, capped.out);
+assert.match(capped.out, /budget raised to 1080 s/);
+
+// Exercise the same merge-tree probe as CI, without moving a real ref or merging this checkout.
+const mergeFixture = path.join(tmp, 'merge-fixture');
+fs.mkdirSync(mergeFixture);
+function fixtureGit(status, ...args) {
+  const r = spawnSync('git', ['-c', 'user.name=CI Fixture', '-c', 'user.email=fixture@example.invalid', ...args], {
+    cwd: mergeFixture, encoding: 'utf8', windowsHide: true, timeout: 10000
+  });
+  assert.ifError(r.error);
+  assert.equal(r.status, status, r.stdout + r.stderr);
+  return r.stdout.trim();
+}
+fixtureGit(0, 'init', '-q');
+fs.copyFileSync(path.join(ROOT, '.gitattributes'), path.join(mergeFixture, '.gitattributes'));
+const unionFiles = ['godot_checks.txt', 'godot_check_times.txt'].map(name => 'godot/tools/ci/' + name);
+fs.mkdirSync(path.join(mergeFixture, 'godot/tools/ci'), { recursive: true });
+function treeCommit(files, label, parent) {
+  for (const file of files) fs.writeFileSync(path.join(mergeFixture, file), 'shared\n' + label + '\n');
+  fixtureGit(0, 'add', '.');
+  return fixtureGit(0, 'commit-tree', fixtureGit(0, 'write-tree'), '-m', label, ...(parent ? ['-p', parent] : []));
+}
+const base = treeCommit([...unionFiles, 'ordinary.txt'], 'base');
+const left = treeCommit(unionFiles, 'left', base);
+const right = treeCommit(unionFiles, 'right', base);
+const mergedTree = fixtureGit(0, 'merge-tree', '--write-tree', left, right);
+for (const file of unionFiles) {
+  assert.deepEqual(fixtureGit(0, 'show', mergedTree + ':' + file).split(/\r?\n/).sort(), ['left', 'right', 'shared']);
+}
+const conflictLeft = treeCommit(['ordinary.txt'], 'left', base);
+const conflictRight = treeCommit(['ordinary.txt'], 'right', base);
+assert.match(fixtureGit(1, 'merge-tree', '--write-tree', conflictLeft, conflictRight), /CONFLICT.*ordinary\.txt/);
 // No recorded times at all (a fresh check, or the file gone): still every check exactly once.
-cover(wfCount, { GODOT_CHECKS_TIMES: path.join(tmp, 'missing_times.txt') });
+cover(wfCount, { GODOT_CHECKS_TIMES: shellPath(path.join(tmp, 'missing_times.txt')) });
 
 // Balance at the workflow's count by the recorded times: no shard more than 25% over the even share.
 plan('1/' + wfCount);
@@ -90,4 +130,4 @@ est.forEach((t, i) => assert.ok(t <= 1.25 * total / wfCount, 'shard ' + (i + 1) 
 });
 
 fs.rmSync(tmp, { recursive: true, force: true });
-console.log('PASS godot_shard_tests: ' + headless.length + ' headless checks, each in exactly one of 1, 2, ' + wfCount + ' and 5 shards; ' + wfCount + ' shards planned at ' + est.join(', ') + ' s');
+console.log('PASS godot_shard_tests: ' + headless.length + ' headless checks, including the 5-shard plan and old-branch budget; workflow uses ' + wfCount + ' shards at ' + est.join(', ') + ' s');

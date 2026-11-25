@@ -162,13 +162,29 @@ function checkMainPush(cwd, remote, source, alone) {
         'Everything else goes through an issue branch and a pull request.';
     }
   }
+  if (base === tip) return;
+  const top = git(cwd, ['rev-parse', '--show-toplevel']).trim();
+  // Both lints read other tracked documents too. Check the tip, not an unstaged fix or another branch's docs.
+  if (git(top, ['diff', '--name-only', tip, '--']).trim() ||
+      git(top, ['diff', '--cached', '--name-only', tip, '--']).trim()) {
+    return 'Check out the Board log tip with no tracked changes before pushing it to main.';
+  }
+  for (const lint of ['memory_lint_tests.js', 'doc_check_tests.js']) {
+    const run = spawnSync(process.execPath, [path.join(top, 'contrib/opus/tools', lint)], {
+      cwd: top, env: { ...process.env, VS_ROOT: top }, encoding: 'utf8', timeout: 10000, windowsHide: true
+    });
+    if (run.status !== 0) {
+      const detail = (run.stderr || run.stdout || run.error?.message || 'No output').trim().split(/\r?\n/).slice(0, 5);
+      return 'The Board log tip did not pass ' + lint + ':\n' + detail.join('\n');
+    }
+  }
 }
 
 // git push options that take a separate value.
 const pushValueOptions = new Set(['--repo', '-o', '--push-option', '--receive-pack', '--exec']);
 
 function gitPush(cwd, words, alone) {
-  // Only pushes that land on main are checked. Every other push goes through untouched.
+  // Require concrete destinations before deciding whether a push can land on main.
   let index = 1;
   while (index < words.length && words[index] !== 'push') {
     if (words[index] === '-C') cwd = path.resolve(cwd, words[++index] || '.');
@@ -177,6 +193,7 @@ function gitPush(cwd, words, alone) {
   }
   const options = [];
   const positional = [];
+  let namedRepo;
   for (index++; index < words.length; index++) {
     const word = words[index];
     if (word === '--') {
@@ -185,18 +202,21 @@ function gitPush(cwd, words, alone) {
     }
     if (word.startsWith('-') && word !== '-') {
       options.push(word);
-      if (pushValueOptions.has(word)) index++;
+      if (word === '--repo') namedRepo = words[++index];
+      else if (word.startsWith('--repo=')) namedRepo = word.slice('--repo='.length);
+      else if (pushValueOptions.has(word)) index++;
     } else {
       positional.push(word);
     }
   }
-  if (options.some(option => /^--(?:all|mirror|branches)$/.test(option))) {
-    return 'Push named branches instead of --all, --mirror or --branches, so main cannot move by accident.';
+  if (options.some(option => /^--(?:all|mirror|branches)$/.test(option)) ||
+      positional.some(spec => spec.includes('*') || /^\+?:$/.test(spec))) {
+    return 'Push named branches instead of --all, --mirror, --branches or a wildcard or matching refspec, so main cannot move by accident.';
   }
   const deleting = options.some(option => option === '--delete' || option === '-d');
   const forced = options.some(option => /^(?:-f|--force|--force-with-lease(?:=.*)?|--force-if-includes)$/.test(option) ||
     /^-[a-zA-Z]*f[a-zA-Z]*$/.test(option));
-  const [remote = 'origin', ...specs] = positional;
+  const [remote = 'origin', ...specs] = namedRepo ? [namedRepo, ...positional] : positional;
   const targets = [];
   if (!specs.length) {
     const current = currentBranch(cwd);
@@ -226,10 +246,36 @@ function gitPush(cwd, words, alone) {
 
 function gitSubcommand(words) {
   for (let index = 1; index < words.length; index++) {
-    if (words[index] === '-C' || words[index] === '-c') index++;
+    if (words[index] === '-C' || words[index] === '-c' || words[index] === '--config-env') index++;
     else if (!words[index].startsWith('-')) return words[index];
   }
   return '';
+}
+
+function pushAlias(cwd, words, subcommand) {
+  if (!/^[a-z][\w-]*$/i.test(subcommand)) return false;
+  const prefix = [];
+  // Ask Git for the effective alias, including any -C and -c options before the alias name.
+  for (let i = 1; i < words.length; i++) {
+    if (words[i] === subcommand) break;
+    if (words[i] === '-C' || words[i] === '-c' || words[i] === '--config-env') prefix.push(words[i], words[++i]);
+    else prefix.push(words[i]);
+  }
+  const seen = new Set();
+  let name = subcommand.toLowerCase();
+  while (/^[a-z][\w-]*$/.test(name) && !seen.has(name)) {
+    if (name === 'push' || name === 'send-pack') return true;
+    seen.add(name);
+    const alias = spawnSync('git', [...prefix, 'config', '--get', 'alias.' + name], {
+      cwd, encoding: 'utf8', timeout: 3000, windowsHide: true
+    });
+    if (alias.status !== 0) return false;
+    const expansion = alias.stdout.trim();
+    if (expansion.startsWith('!')) return true;
+    const args = bareWords(expansion);
+    name = (args ? gitSubcommand(['git', ...args]) : expansion.split(/\s/, 1)[0]).toLowerCase();
+  }
+  return false;
 }
 
 function shellSegments(command) {
@@ -254,13 +300,17 @@ function pushPolicy(cwd, command) {
       }
     }
     const mentionsPush = /\bgit(?:\.exe)?\b[\s\S]*\bpush\b|\bgit[- ]send-pack\b/i.test(segment);
-    if (!mentionsPush) continue;
     if (words && /^git(?:\.exe)?$/i.test(words[0])) {
-      if (gitSubcommand(words) !== 'push') continue;
+      const subcommand = gitSubcommand(words);
+      if (!/^(?:push|send-pack)$/.test(subcommand)) {
+        if (pushAlias(here, words, subcommand)) return 'Run pushes as plain git push commands, not through an alias.';
+        continue;
+      }
+      if (subcommand === 'send-pack') return 'Use plain git push with named branches instead of git send-pack.';
       const others = segments.filter(part => part !== raw && !/^cd\s/.test(part));
       const reason = gitPush(here, words, others.length === 0);
       if (reason) return reason;
-    } else if (/\b(?:main|master)\b|--(?:all|mirror|branches)\b|\bsend-pack\b|\$/.test(segment)) {
+    } else if (mentionsPush && /\b(?:main|master)\b|--(?:all|mirror|branches)\b|\bsend-pack\b|\$|\*/.test(segment)) {
       return 'Run this push as a plain git push command with literal names, so the hook can check it does not land on main.';
     }
   }
@@ -297,12 +347,16 @@ function shellSecret(word, cwd) {
 
 function ghApiPolicy(command) {
   if (!/\bgh(?:\.exe)?\s+api\b/i.test(command)) return;
+  const method = /(?:^|\s)(?:--method[\s=]+|-X[\s=]*)["']?(\w+)/i.exec(command)?.[1].toUpperCase();
+  const writes = method ? /^(?:POST|PATCH|PUT|DELETE)$/.test(method)
+    : /(?:--input|--(?:raw-)?field|-[fF])(?:[\s=]|[A-Z])/i.test(command);
+  if (!writes) return;
+  if (/\/merges(?:[/?\s"']|$)/i.test(command)) {
+    return 'Merge through a pull request (pulls/<n>/merge), not the branch merges API.';
+  }
   const contents = /\/contents(?:\/|\b)/i.test(command);
   const refs = /\/git\/(?:refs|matching-refs)(?:\/|\b)/i.test(command);
   if (!contents && !refs) return;
-  const writes = /(?:--method|-X)(?:\s+|=)(?:POST|PATCH|PUT|DELETE)\b|(?:--input|--(?:raw-)?field|-[fF])(?:[\s=]|[A-Z])/i.test(command) &&
-    !/(?:--method|-X)(?:\s+|=)GET\b/i.test(command);
-  if (!writes) return;
   if (fenced()) return 'Fenced seats push their own branch with git push.';
   if (/heads\/(?:main|master)\b|\bbranch[=:]\s*["']?(?:main|master)\b/i.test(command) || (contents && !/\bbranch[=:]/i.test(command))) {
     return 'Direct writes to main are blocked. Name a branch other than main, or push the Board logs with git push.';
@@ -319,7 +373,7 @@ function shellPolicy(event, root, input) {
   }
   const pushReason = pushPolicy(event.cwd || '.', command);
   if (pushReason) return pushReason;
-  const apiReason = ghApiPolicy(command);
+  const apiReason = shellSegments(command).map(ghApiPolicy).find(Boolean);
   if (apiReason) return apiReason;
   if (!root) return;
   const words = bareWords(command.trim());

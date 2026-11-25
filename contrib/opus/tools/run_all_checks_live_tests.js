@@ -49,13 +49,13 @@ for (const c of require(runner).buildChecks()) {
   ].join('\n')) + ');\n');
 }
 let runs = 0;
-function run(args, verifyLive = false) {
+function run(args, verifyLive = false, ci = false) {
   const logFile = path.join(root, 'run-' + (++runs) + '.txt');
   const fd = fs.openSync(logFile, 'w');
   let result;
   try {
     result = spawnSync(process.execPath, [runner, ...args], {
-      cwd: root, env: { ...process.env, CHECKS962_LOG: logFile, CHECKS962_VERIFY_LIVE: verifyLive ? '1' : '0' },
+      cwd: root, env: { ...process.env, CI: ci ? 'true' : '', CHECKS962_LOG: logFile, CHECKS962_VERIFY_LIVE: verifyLive ? '1' : '0' },
       stdio: ['ignore', fd, fd], windowsHide: true, timeout: launchTimeout,
     });
   } finally { fs.closeSync(fd); }
@@ -92,6 +92,7 @@ for (const row of fastReport) assert(fast.output.includes(row.result + ': ' + ro
 assert(fastReport.some(r => r.check === failName && r.result === 'SKIP' && r.detail === 'SKIP: fast'));
 assert(fastReport.some(r => r.check === 'nem_assign_enum' && r.result === 'PASS'));
 assert.equal(run(['--only', 'missing_fixture']).status, 1);
+assert(require(runner).buildChecks().some(c => c.file === '.claude/hooks/guard.test.cjs'));
 
 // Exercise the successful CLI exit with a real KNOWN row. On Windows feed that exit through the Codex check
 // step too, with a stand-in watchdog and parity command so this fixture never starts the real suite or Godot.
@@ -121,6 +122,15 @@ const accepted = JSON.parse(fs.readFileSync(path.join(root, 'checks_report.json'
 assert(accepted.every(row => ['PASS', 'KNOWN'].includes(row.result)));
 assert(accepted.some(row => row.result === 'PASS'));
 assert(accepted.some(row => row.result === 'KNOWN' && row.detail.includes('within the baseline')));
+
+const optional = require(runner).buildChecks().find(c => c.kind === 'optional');
+write(path.join(root, optional.file), "console.error('Cannot find module: planted dependency'); process.exitCode = 1;\n");
+const localMissing = run(['--only', optional.name]);
+assert.equal(localMissing.status, 0, localMissing.output);
+assert.match(localMissing.output, /SKIP: fixture_check/);
+const ciMissing = run(['--only', optional.name], false, true);
+assert.equal(ciMissing.status, 1, ciMissing.output);
+assert.match(ciMissing.output, /FAIL: check could not run in CI: SKIP: Cannot find module/);
 
 const work = fs.readFileSync(path.join(ROOT, 'tools/pc/work_issue.bat'), 'utf8');
 assert(/call :checks "%O%"/.test(codex));
