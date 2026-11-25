@@ -21,6 +21,8 @@ extends RefCounted
 const SH := preload("res://fx/fx_shaders.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
+const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
+const FL := preload("res://fx/faction_look.gd")
 
 const PART_CUP := 0.0
 const PART_SKIN := 0.25
@@ -53,6 +55,11 @@ const S_DENT := 12
 const S_PATCH := 14
 const S_FISSURE := 15
 const S_SCORCH := 13      # the stage ladder's spreading scorch (fx_ship._plan)
+# R416 (issue 1741, folded 1692 item d), Wounds V2 only: a prism hit's crystal star fracture, a star lance's white-gold
+# heat sear, a null lance's three parallel violet-black cuts
+const S_PRISM := 16
+const S_STAR := 17
+const S_NLANCE := 18
 
 # Issue 461 (audit item 4, "scorch that stays"): doubled from 12 and 4, so a ship that has been in a fight keeps its scars
 # instead of losing the oldest after a dozen hits. Cost reported, never capped (R111): the gate's frame intervals and the
@@ -63,7 +70,7 @@ const GROW_MAX := 1.6     # how far repeats can grow a mark (lance slots lengthe
 # The smallest halo per mark style, in world units (the game's scale: hexes 17.3 across; the battle camera sits 170 away,
 # about 7.7 pixels a unit at 1080p). Claude's picks, vetoable; tuned on the r5 battle-distance stills.
 const HALO_MIN := {S_BURN: 1.1, S_SHELL: 1.3, S_PLASMA: 1.6, S_GAUSS_IN: 1.1, S_GAUSS_OUT: 1.4, S_BLAST: 2.8,
-	S_FLAK: 2.4, S_ACID: 1.7, S_ION: 2.3, S_RAM: 2.6, S_HATCH: 1.6}
+	S_FLAK: 2.4, S_ACID: 1.7, S_ION: 2.3, S_RAM: 2.6, S_HATCH: 1.6, S_PRISM: 1.6, S_STAR: 2.6, S_NLANCE: 1.4}
 # Issue 1235 (F1.1): the smallest a weapon mark gets on a healthy section, as a share of its full (broken-section) size
 const MARK_FLOOR := 0.7
 # Issue 1235 (F1.2): a stage 4 breach hole's radius as a share of the ship's length (was 0.032: 5 to 16 px at camera 170)
@@ -82,6 +89,11 @@ const HALO_MAX_L := 0.16   # ... but never wider than this share of the ship's l
 
 class Ent:
 	var wound_kind := 0
+	# R416 Wounds V2 (issue 1741): the faction's V2 wound kind (0 Sunward, 1 Directorate, 2 Hullbreakers, 3 Chorus,
+	# 4 Glasswrights, 5 Eclipse); -1 with the switch off, and every V2 branch below is skipped
+	var v2 := -1
+	var thin_shear := false   # V2: a thin plate (ring arc, fin, strut): the outer layer chips off over a frame strip, no cavity
+	var facets := 0           # V2: a straight-edged pane cut with this many sides (Glasswrights); 0 round or square
 	var kind := 1
 	var style := 0
 	var c := Vector3.ZERO
@@ -150,6 +162,10 @@ class Ent:
 	# signed distance from (x, y) in the tangent plane to this entry's cut outline (negative inside; 1e9: no cut)
 	func edge(x: float, y: float) -> float:
 		if kind == 1:
+			if facets > 2:
+				var seg := TAU / float(facets)
+				var a2 := fposmod(atan2(y, x) - p[5], seg) - seg * 0.5
+				return sqrt(x * x + y * y) * cos(a2) - R * cos(seg * 0.5)
 			if square:
 				var ca := cos(p[5])
 				var sa := sin(p[5])
@@ -511,6 +527,9 @@ static func _in_overlay(Q: Vector3, E: Ent) -> bool:
 	var h := d.dot(E.n)
 	if absf(h) > E.ov * 0.6 + E.depth:
 		return false
+	# R416 V2: a tighter slab, so an overlay never reaches a twin pontoon or a stacked scute a little below the hit face
+	if E.v2 >= 0 and absf(h) > maxf(maxf(E.R * 0.35, E.depth + E.th * 3.0), E.ov * 0.22):
+		return false
 	var lx := d.dot(E.t1)
 	var ly := d.dot(E.t2)
 	if E.kind == K_SLOT:
@@ -522,8 +541,12 @@ static func _in_overlay(Q: Vector3, E: Ent) -> bool:
 
 
 # Does triangle abc (centroid Q) reach into E's overlay? The centroid alone missed big plates under a small mark (r4).
-static func _tri_in_overlay(a: Vector3, b: Vector3, c: Vector3, Q: Vector3, E: Ent) -> bool:
+static func _tri_in_overlay(a: Vector3, b: Vector3, c: Vector3, Q: Vector3, E: Ent, tn := Vector3.ZERO) -> bool:
 	if E.ov <= 0.0:
+		return false
+	# R416 V2: only faces turned the way of the hit (normal within about 70 degrees), never the far side of a ring arc
+	# or the inner face of a strut; tn is the triangle's summed vertex normals
+	if E.v2 >= 0 and tn != Vector3.ZERO and tn.normalized().dot(E.n) < 0.35:
 		return false
 	if _in_overlay(Q, E) or _in_overlay(a, E) or _in_overlay(b, E) or _in_overlay(c, E):
 		return true
@@ -881,7 +904,7 @@ static func compute(job: Dictionary) -> Dictionary:
 		var authored := bool(job.get("hull").get("authored")) if job.get("hull") is Object else false
 		if E.walls and E.style != S_BREACH and not E.through and not job.get("organic", false) and not authored:
 			_walls(parts[i], E)
-		if E.kind == K_HOLE and not authored:
+		if E.kind == K_HOLE and not authored and not E.thin_shear:
 			_throat(parts[i], E, int(job.get("wound_kind", 0)))
 		elif E.style == S_PATCH and not job.get("flat", false):
 			_patch(parts[i], E, job.get("hull"))
@@ -895,7 +918,9 @@ static func compute(job: Dictionary) -> Dictionary:
 		var E: Ent = ents[i]
 		r.seed = int(E.seed_v * 1000.0) + 5
 		var ends: Array = []
-		if E.kind == K_HOLE and E.style != S_BREACH and E.conduits and not job.get("organic", false):
+		if E.v2 >= 0 and E.kind == K_HOLE:
+			ends = dress(hull, parts[i], E, r)   # R416 5.2: the faction's own mouth dressing replaces the pipes
+		elif E.kind == K_HOLE and E.style != S_BREACH and E.conduits and not job.get("organic", false):
 			ends = conduits(hull, parts[i], E, ents, r)
 		elif E.kind == K_CLUSTER and E.style == S_ACID and E.look != "thorn":
 			spines(hull, parts[i], E, E.dir, r)
@@ -1190,8 +1215,8 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 			var reach := Em.ov + Em.hl + trr
 			if Q.distance_squared_to(Em.c) > reach * reach:
 				continue
-			if _tri_in_overlay(a, b, c, Q, Em):
-				_otri(parts[lmap[lj]], Dp[i0] + n0 * ovl, Dp[i1] + n1 * ovl, Dp[i2] + n2 * ovl, n0, n1, n2, n0 + n1 + n2, Color(float(Em.style) / 16.0, 0, 0, 1))
+			if _tri_in_overlay(a, b, c, Q, Em, n0 + n1 + n2):
+				_otri(parts[lmap[lj]], Dp[i0] + n0 * ovl, Dp[i1] + n1 * ovl, Dp[i2] + n2 * ovl, n0, n1, n2, n0 + n1 + n2, Color(float(Em.style) / 32.0, 0, 0, 1))   # styles to 31 (the MARK shader reads the exact style from CUSTOM2.w)
 		if not cz:
 			continue
 		tri_i[0] = i0
@@ -1651,6 +1676,11 @@ static func apply(fx, s, job: Dictionary) -> void:
 	var ents: Array = job["ents"]
 	var ends_by: Array = res.get("ends", [])
 	var glow: Color = s.fac.get("damage_glow", Color(1.0, 0.45, 0.12))
+	# R416 (issue 1741): with Wounds V2 on, every wound shader reads the faction's own profile (faction_looks.json "wound")
+	var wv: Dictionary = wound_of(String(s.get("faction"))) if WOUNDS.v2() else {}
+	var v2k: int = int(wv.get("kind", 0)) if not wv.is_empty() else -1
+	if v2k >= 0:
+		glow = wound_col(wv, "interior_accent", glow)
 	t_b = fx.pend("ba_swap", t_b)
 	_inside_overlay(fx, s, by_mi.keys(), ents, glow)
 	t_b = fx.pend("ba_overlay", t_b)
@@ -1663,10 +1693,14 @@ static func apply(fx, s, job: Dictionary) -> void:
 		var m: ShaderMaterial = fx.mat(SH.HOLE, 0)
 		m.set_shader_parameter("glow", Vector3(glow.r, glow.g, glow.b))
 		m.set_shader_parameter("wound_kind", int(s.fac.get("wound_kind", 0)))
+		if v2k >= 0:
+			set_v2_look(m, wv)
 		mi.material_override = m
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		s._dmg_root.add_child(mi)
 		s._hole_nodes.append(mi)
+		if v2k >= 0:
+			inside_lights(fx, s, mi, ents, glow)
 	var skin = res.get("skin")
 	if skin != null:
 		var mo := MeshInstance3D.new()
@@ -1677,6 +1711,8 @@ static func apply(fx, s, job: Dictionary) -> void:
 		m2.set_shader_parameter("wound_kind", int(s.fac.get("wound_kind", 0)))
 		m2.set_shader_parameter("glow", Vector3(glow.r, glow.g, glow.b))
 		m2.set_shader_parameter("weapon", Vector3(wc.r, wc.g, wc.b))
+		if v2k >= 0:
+			set_v2_look(m2, wv)
 		mo.material_override = m2
 		mo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		s._dmg_root.add_child(mo)
@@ -1702,6 +1738,7 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 	if s.dead or (fx != null and fx.compat):
 		return
 	var mouths := _mouth_uniforms(ents)
+	var wv: Dictionary = wound_of(String(s.get("faction"))) if WOUNDS.v2() else {}
 	var wear_on: bool = "hull_wear" in s
 	var wear_p: Array = s.wear_patches() if wear_on else []
 	for m in mis:
@@ -1713,12 +1750,20 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 		mi.material_override = null
 		for si in mi.mesh.get_surface_count():
 			var src: Material = override if override != null else mi.get_active_material(si)
-			if HULL.interior_material(mi.mesh.surface_get_material(si)) and not mi.mesh.surface_get_material(si).resource_name.ends_with("_inside_skin"): continue
+			if HULL.interior_material(mi.mesh.surface_get_material(si)) and not mi.mesh.surface_get_material(si).resource_name.ends_with("_inside_skin"):
+				# R416 5.3: once the ship is open, its built interior takes the faction's interior shader, lit only where a
+				# mouth looks into it (no cost before the first opening)
+				if not wv.is_empty() and int(mouths.get("count", 0)) > 0:
+					mi.set_surface_override_material(si, _interior_v2(s, mi, si, frame, mouths, wv))
+				elif si < mi.get_surface_override_material_count() and mi.get_surface_override_material(si) != null and (mi.get_meta("fx_interior_v2", {}) as Dictionary).values().has(mi.get_surface_override_material(si)):
+					mi.set_surface_override_material(si, null)   # every mouth closed (repair, revive): the built interior goes dark again
+				continue
 			if fx == null:
 				mi.set_surface_override_material(si, HULL.damage_material(src, frame, mouths, s.hull.L, s.get("faction") == "chorus"))
 				continue
 			var surface: ShaderMaterial = s.damage_surface(fx, mi, si, src)
 			HULL.set_damage_pose(surface, frame, mouths)
+			HULL.set_v2(surface, wv)
 			if wear_on:
 				HULL.set_wear(surface, float(s.hull_wear), wear_p)   # issue 1235: wear as HP falls
 			mi.set_surface_override_material(si, surface)
@@ -1728,13 +1773,26 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 			mi.remove_meta("fx_inside")
 
 
+# One V2 interior material per ship surface, kept on the mesh and re-posed on every rebuild.
+static func _interior_v2(s, mi: MeshInstance3D, si: int, frame: Transform3D, mouths: Dictionary, wv: Dictionary) -> ShaderMaterial:
+	var cache: Dictionary = mi.get_meta("fx_interior_v2", {})
+	var m: ShaderMaterial = cache.get(si)
+	if m == null:
+		m = HULL.interior_material_v2(mi.mesh.surface_get_material(si), frame, mouths, wv, s.hull.L)
+		cache[si] = m
+		mi.set_meta("fx_interior_v2", cache)
+	else:
+		HULL.set_interior_pose(m, frame, mouths)
+	return m
+
+
 static func _mouth_uniforms(ents: Array) -> Dictionary:
 	var out := {"count": 0, "mouths": [], "axes": [], "tangents": [], "shapes": [], "tears": []}
 	for e in ents:
 		var E: Ent = e
 		if not E.has_cut():
 			continue
-		var centers: Array = [[E.c, E.R, 1.0 if E.square else (2.0 if E.kind == K_SLOT else 0.0)]]
+		var centers: Array = [[E.c, E.R, 4.0 if E.facets > 2 else (1.0 if E.square else (2.0 if E.kind == K_SLOT else 0.0))]]
 		if E.kind == K_CLUSTER:
 			centers = []
 			for sub in E.subs:
@@ -1750,7 +1808,7 @@ static func _mouth_uniforms(ents: Array) -> Dictionary:
 			out["axes"].append(Vector4(E.n.x, E.n.y, E.n.z, E.cut))
 			out["tangents"].append(Vector4(tangent.x, tangent.y, tangent.z, E.hl))
 			out["shapes"].append(Vector4(spec[2], E.p[0], E.p[1], E.p[2]))
-			out["tears"].append(Vector4(E.p[5], E.p[3], E.p[4], 0.0))
+			out["tears"].append(Vector4(E.p[5], E.p[3], E.p[4], float(E.facets)))
 			out["count"] = int(out["count"]) + 1
 	if int(out["count"]) == 0:
 		return {"count": 0}
@@ -1794,7 +1852,24 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 	if tang.length_squared() < 0.01:
 		tang = n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT)
 	tang = tang.normalized()
-	match look:
+	# R416 (issue 1741), Wounds V2 on: the target faction's wound kind, and three weapons get marks of their own
+	var v2k := -1
+	if WOUNDS.v2():
+		v2k = int(wound_of(faction).get("kind", 0))
+		match look:
+			"prism":
+				out.append(crater(p, n, L * 0.018 * wk * g, L * 0.004 * wk, seed_v, S_PRISM))
+			"star":
+				out.append(crater(p, n, L * 0.04 * wk * g, L * 0.006 * wk, seed_v, S_STAR))
+			"nlance":
+				var cut_dir := n.cross(tang)
+				var side := n.cross(cut_dir).normalized()
+				var R0: float = L * 0.003 * wk * sqrt(g)
+				for k in 3:
+					var e3 := slot(hull, p + side * R0 * 3.2 * (k - 1), n, cut_dir, R0, L * 0.03 * wk * g * (1.0 - 0.15 * absf(k - 1)), seed_v + k * 0.31)
+					e3.style = S_NLANCE
+					out.append(e3)
+	match look if out.is_empty() else "":
 		"lance", "needle", "pulsar", "las":
 			# the beam drags across the plate: the cut runs across the line of fire; repeats lengthen it
 			var cut_dir := n.cross(tang)
@@ -1847,6 +1922,7 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 			var k: float = hull.L * CRATER_MAX_L / e.R
 			e.R *= k; e.depth *= k; e.ov *= k; e.inf2 *= k * k; e.tess *= k; e.treach *= k
 		e.wound_kind = {"chorus": 1, "ithar": 2, "deathless": 3}.get(faction, 0)
+		e.v2 = v2k
 		if faction == "chorus" and e.kind == K_HOLE:
 			e.bend = 0.35; e.w = e.R * 0.22; e.buckle = 0.035
 		# Every weapon leaves a sealed surface mark, even at stage 4.
@@ -1877,3 +1953,447 @@ static func _tissue(pt: Part, e: Ent) -> void:
 			var t := k / 8.0
 			points.append(e.c + radial * e.R * (0.15 + 0.8 * t) - e.n * (e.recess_depth() * 0.5 * (1.0 - t) + e.R * 0.12 * sin(t * PI)))
 		_tube(pt, points, e.R * 0.06, e.R * 0.018, Color(PART_BONE, 0.6, 0, 1))
+
+
+# ---------------------------------------------------------------- Wounds V2 (R416, issue 1741; VS_WOUNDS_V2=1 only)
+
+const FOOT_RAYS := 8
+const FOOT_MIN := 6          # rays that must land on solid plating facing the hit (75% support)
+const V2_HOLES_SHIP := 6     # open cutouts at once per ship ...
+const V2_HOLES_SEC := 2      # ... and per hull section
+const V2_HOLE_L := [0.026, 0.038, 0.052]   # cutout radius as a share of the ship's length at stage 2, 3 and 4
+
+
+static func v2_on() -> bool:
+	return WOUNDS.v2()
+
+
+# The faction's V2 wound profile (faction_looks.json "wound"); {} for an unknown faction.
+static func wound_of(faction: String) -> Dictionary:
+	var w = FL.of(faction).get("wound", {})
+	if not w is Dictionary:
+		return {}
+	# Ryan's Glasswright interiors pick (Nov 24: "it's just....dark grey? it will look extremely odd as wreckage"): a
+	# faction's interior wall ceiling is its wound wall_max (Glasswrights 0.45, pale pearl glass); every other faction
+	# keeps the R420 0.11. A built-interior table entry (issue 1743, interior.wall_max) wins where it is set; the
+	# check holds the two equal
+	var iv = FL.of(faction).get("interior", {})
+	var wm: float = float((w as Dictionary).get("wall_max", 0.11))
+	if iv is Dictionary and (iv as Dictionary).has("wall_max"):
+		wm = float(iv["wall_max"])
+	if not (w as Dictionary).has("wall_max") or float(w["wall_max"]) != wm:
+		w = (w as Dictionary).duplicate()
+		w["wall_max"] = wm
+	return w
+
+
+static func wound_col(w: Dictionary, key: String, fb: Color) -> Color:
+	var v = w.get(key)
+	if v is Array and (v as Array).size() >= 3:
+		return Color(float(v[0]), float(v[1]), float(v[2]))
+	return fb
+
+
+static func _basis(n: Vector3) -> Array:
+	var t1 := n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
+	return [t1, n.cross(t1)]
+
+
+# [rays that land on plating facing the hit inside the depth band, the sum of their hit points]
+static func _foot_count(hull, c: Vector3, n: Vector3, R: float) -> Array:
+	var tb := _basis(n)
+	var band := maxf(R * 0.45, hull.L * 0.025)
+	var ok := 0
+	var sum := Vector3.ZERO
+	for k in FOOT_RAYS:
+		var an := TAU * k / FOOT_RAYS
+		var o: Vector3 = c + ((tb[0] as Vector3) * cos(an) + (tb[1] as Vector3) * sin(an)) * (0.85 * R) + n * (R * 0.9)
+		var h: Dictionary = hull.ray(o, -n)
+		if h.is_empty():
+			continue
+		var hp: Vector3 = h["p"]
+		if absf((hp - c).dot(n)) < band and (h["n"] as Vector3).dot(n) > 0.30:
+			ok += 1
+			sum += hp
+	return [ok, sum]
+
+
+# The plate's thickness under (c, n): the median of the centre and four half-radius inward rays (1e9: no far face).
+static func thickness(hull, c: Vector3, n: Vector3, R: float, lim := 0.0) -> float:
+	if hull == null:
+		return 1e9
+	var tb := _basis(n)
+	var ds: Array = []
+	for k in 5:
+		var o := c
+		if k > 0:
+			var an := TAU * (k - 1) / 4.0
+			var h0: Dictionary = hull.ray(c + ((tb[0] as Vector3) * cos(an) + (tb[1] as Vector3) * sin(an)) * (0.5 * R) + n * (R * 0.9), -n)
+			if h0.is_empty() or absf(((h0["p"] as Vector3) - c).dot(n)) > R * 0.6:
+				continue
+			o = h0["p"]
+		# Fable review H5: real hulls stack plating (armour plates, superstructure decks a few hundredths of the
+		# length apart). A gap thinner than lim, within 1.2 R of the surface, is layered plating, not the far side of a
+		# thin part: march on through it to the first real cavity, so a midship cutout opens instead of chipping
+		var at := o
+		var d := 1e9
+		for layer in 6:
+			var far: Dictionary = hull.ray(at - n * (R * 0.03), -n)
+			if far.is_empty():
+				if layer > 0:
+					d = (at - o).length() + R * 0.03   # out the far side through plating only: a thin part after all
+				break
+			var fp: Vector3 = far["p"]
+			var gap := (fp - at).length() + R * 0.03
+			var depth := (fp - o).length()
+			if lim <= 0.0 or gap >= lim or depth > R * 1.2:
+				d = depth + R * 0.03 if lim > 0.0 and layer > 0 else gap
+				break
+			at = fp
+		ds.append(d)
+	if ds.is_empty():
+		return 1e9
+	ds.sort()
+	return float(ds[ds.size() / 2])
+
+
+# R416 4.1: before any cutout or heavy mark of radius R at (c, n) goes on, eight rays round 0.85 R check there is plating
+# under it. Short of six, the mark shrinks (0.75 R, then 0.55 R) and slides toward the plating the rays did find; still
+# short (or under 1.5% of the ship's length), ok is false and the caller makes a small surface mark instead. thin: the
+# plate is thinner than 0.4 R (a shade ring arc, a fin, a strut), so it chips instead of opening into a cavity.
+static func validate_footprint(hull, c: Vector3, n: Vector3, R: float) -> Dictionary:
+	var out := {"ok": false, "c": c, "n": n, "R": R, "valid": 0, "thin": false, "Dt": 1e9}
+	if hull == null:
+		out["ok"] = true
+		return out
+	var cc := c
+	var nn := n
+	for k in [1.0, 0.75, 0.55]:
+		var r: float = R * float(k)
+		if r < hull.L * 0.015:
+			break
+		var res := _foot_count(hull, cc, nn, r)
+		out["valid"] = int(res[0])
+		if int(res[0]) >= FOOT_MIN:
+			out["ok"] = true
+			out["c"] = cc
+			out["n"] = nn
+			out["R"] = r
+			break
+		if int(res[0]) > 0:
+			var avg: Vector3 = (res[1] as Vector3) / float(res[0])
+			var h: Dictionary = hull.ray(avg + nn * r * 0.9, -nn)
+			if not h.is_empty() and (h["n"] as Vector3).dot(nn) > 0.3:
+				cc = h["p"]
+				nn = h["n"]
+	if bool(out["ok"]):
+		var lim := maxf(float(out["R"]) * 0.4, hull.L * 0.018)
+		var Dt := thickness(hull, out["c"], out["n"], out["R"], lim)
+		out["Dt"] = Dt
+		out["thin"] = Dt < lim
+	return out
+
+
+# A V2 cutout for this faction at (c, n): the footprint check first, then a hole with the faction's rim (curled or ragged
+# petals, square sheared panels, chitin, straight glass panes, stepped obsidian) and a real plate thickness on its cut
+# edge; a thin plate chips (thin_shear); no support at all gives a small surface mark (fallback_style) instead.
+static func place_hole(hull, c: Vector3, n: Vector3, R: float, seed_v: float, faction: String, style := S_BREACH, fallback_style := S_DENT) -> Ent:
+	var w := wound_of(faction)
+	var kind := int(w.get("kind", 0))
+	var fp := validate_footprint(hull, c, n, R)
+	if not bool(fp["ok"]):
+		var e0 := crater(c, n, maxf(R * 0.45, hull.L * 0.008 if hull != null else R * 0.45), R * 0.08, seed_v, fallback_style)
+		e0.v2 = kind
+		return e0
+	var cc: Vector3 = fp["c"]
+	var nn: Vector3 = fp["n"]
+	var r: float = fp["R"]
+	var Dt: float = fp["Dt"]
+	var rim := String(w.get("rim_style", "curled"))
+	var bend := 1.0
+	var buckle := 0.14
+	match rim:
+		"ragged":
+			bend = 1.3; buckle = 0.2
+		"modular", "stepped", "facet":
+			bend = 0.0; buckle = 0.02
+		"chitin":
+			bend = 0.35; buckle = 0.035
+	var e := hole(hull, cc, nn, r, bend, buckle, seed_v, style)
+	e.v2 = kind
+	match rim:
+		"modular", "stepped":
+			e.square = true
+			e.k = 1.0
+		"facet":
+			e.facets = 6 + int(e.p[6] / TAU * 3.0)
+			e.k = 1.0
+		"ragged":
+			e.k = 7.0
+		"chitin":
+			e.w = r * 0.22
+	var L: float = hull.L if hull != null else r * 20.0
+	e.th = minf(maxf(Dt * 0.14, L * 0.008), r * 0.24) if Dt < 1e8 else r * 0.24
+	if bool(fp["thin"]):
+		# R416 4.1: a thin structure chips its outer layer over a frame strip; nothing cuts through to open space
+		e.thin_shear = true
+		e.cut = Dt * 0.55
+		e.D = Dt * 0.6
+		e.th = Dt * 0.3
+		e.walls = false
+		e.conduits = false
+	return e
+
+
+# Every open V2 mouth on a ship, in its hull frame (for the live wisps and embers of 1587 blowouts, the M3 thread).
+static func open_mouths(s) -> Array:
+	var out: Array = []
+	var ents: Array = []
+	for i in 3:
+		ents.append_array(s._ents[i])
+	ents.append_array(s._marks)
+	for x in cap_holes(ents):   # the list the hull draws: no vent on a hole the caps sealed (Fable review M2)
+		var e: Ent = x
+		if e.has_cut() and not e.thin_shear:
+			out.append({"c": e.c, "n": e.n, "R": e.R})
+	return out
+
+
+# The V2 cutout caps over the final entry list a rebuild draws (Artoo on PR 1755: the stage path and the hit path each
+# checked their own list, so their sum could pass the caps). The oldest cutouts keep their holes (by opening time, list
+# order on a tie): a newer one past V2_HOLES_SHIP on the ship or V2_HOLES_SEC in its section becomes a sealed dent, so a
+# hole that is already open never heals when a later one arrives (Fable review M2). Every other entry stays, in its
+# place. With V2 off no entry has v2 >= 0, so the list comes back unchanged.
+static func cap_holes(ents: Array) -> Array:
+	var cuts: Array = []
+	for i in ents.size():
+		var e: Ent = ents[i]
+		if e.has_cut() and e.v2 >= 0:
+			cuts.append(i)
+	if cuts.size() <= 1:
+		return ents
+	cuts.sort_custom(func(a: int, b: int) -> bool:
+		var ta: float = (ents[a] as Ent).t0
+		var tb: float = (ents[b] as Ent).t0
+		return ta < tb if ta != tb else a < b)
+	var shut := {}
+	var total := 0
+	var per := {}
+	for i in cuts:
+		var e: Ent = ents[i]
+		if total >= V2_HOLES_SHIP or int(per.get(e.sec, 0)) >= V2_HOLES_SEC:
+			shut[i] = true
+			continue
+		total += 1
+		per[e.sec] = int(per.get(e.sec, 0)) + 1
+	if shut.is_empty():
+		return ents
+	var out: Array = []
+	for i in ents.size():
+		var e: Ent = ents[i]
+		if shut.has(i):
+			# past the caps: a sealed dent where it would have opened, never nothing (audit, PR 1755)
+			var d := crater(e.c, e.n, e.R * 0.6, e.R * 0.12, e.seed_v, S_DENT)
+			d.v2 = e.v2
+			d.sec = e.sec
+			d.t0 = e.t0
+			out.append(d)
+		else:
+			out.append(e)
+	return out
+
+
+static func count_holes(ents: Array, sec := -1) -> int:
+	var k := 0
+	for x in ents:
+		var e: Ent = x
+		if e.has_cut() and e.v2 >= 0 and (sec < 0 or e.sec == sec):
+			k += 1
+	return k
+
+
+# A straight beam (box section) from a to b, w wide and h tall, its height along up.
+static func _beam(pt: Part, a: Vector3, b: Vector3, w: float, h: float, up: Vector3, col: Color) -> void:
+	var ax := (b - a).normalized()
+	var u := (up - ax * up.dot(ax)).normalized()
+	var v := ax.cross(u)
+	var cs := [u * h * 0.5 + v * w * 0.5, -u * h * 0.5 + v * w * 0.5, -u * h * 0.5 - v * w * 0.5, u * h * 0.5 - v * w * 0.5]
+	var ns := [u, -v, -u, v]
+	for k in 4:
+		var c0: Vector3 = cs[k]
+		var c1: Vector3 = cs[(k + 1) % 4]
+		var nm: Vector3 = ((c0 + c1) * 0.5).normalized()
+		_quad(pt, a + c0, b + c0, b + c1, a + c1, nm, col)
+	_quad(pt, b + cs[0], b + cs[1], b + cs[2], b + cs[3], ax, col)
+	_quad(pt, a + cs[0], a + cs[1], a + cs[2], a + cs[3], -ax, col)
+
+
+# A thin shard: a flat blade from base (width w) to tip.
+static func _shard(pt: Part, base: Vector3, tip: Vector3, side: Vector3, w: float, col: Color) -> void:
+	var a := base + side * w * 0.5
+	var b := base - side * w * 0.5
+	var nm := (tip - base).cross(side).normalized()
+	_tri(pt, a, b, tip, nm, nm, nm, nm, col)
+	_tri(pt, a, b, tip, -nm, -nm, -nm, -nm, col)
+
+
+# R416 5.2: the faction's 3D dressing just inside an open V2 mouth, all of it below the plating (never standing proud
+# of the intact skin): snapped I-beams and hanging cables (Sunward, Directorate, Hullbreakers), snapped bone ribs and wet
+# tendons across the lip (Chorus), crystal shards round the pane edge (Glasswrights), an obsidian truss with severed
+# violet bus rails (Eclipse); a thin-plate chip gets a frame strip. COLOR: r the part, g a shade, b the dressing (0.25
+# beam or cable, 0.5 tendon, 0.75 shard, 1 power bus). Returns the torn tips for sparks and arcs: [[pos, dir], ...].
+static func dress(hull, pt: Part, E: Ent, r: RandomNumberGenerator) -> Array:
+	var ends: Array = []
+	if E.v2 < 0 or not E.has_cut():
+		return ends
+	var R := E.R
+	var n := E.n
+	var lid := E.th * 1.6 + R * 0.04   # just under the skin's back
+	if E.thin_shear:
+		# the chipped layer's backing: two frame strips crossing under it
+		for j in 2:
+			var d := (E.t1 if j == 0 else E.t2)
+			_beam(pt, E.c - d * R * 1.2 - n * E.cut * 0.9, E.c + d * R * 1.2 - n * E.cut * 0.9, R * 0.14, E.th * 0.8, n, Color(PART_WALL, 0.6, 0.25, 1))
+		return ends
+	# how open it is behind the rim: a deep gap gets a collar of ribs just inside the lip (R416 5.2, grazing views)
+	var deep := 1e9
+	if hull != null:
+		var h: Dictionary = hull.ray(E.c - n * (E.th * 2.0), -n)
+		if not h.is_empty():
+			deep = ((h["p"] as Vector3) - E.c).length()
+	var collar := deep > R * 0.45
+	match E.v2:
+		0, 1, 2:
+			var nb := 2 + (1 if r.randf() < 0.5 else 0)
+			for j in nb:
+				var an := (r.randf() * TAU) if E.v2 != 1 else (float(j % 2) * PI * 0.5 + (0.0 if j < 2 else PI * 0.25))
+				var d := E.t1 * cos(an) + E.t2 * sin(an)
+				var side := n.cross(d)
+				var off := (r.randf() - 0.5) * R * 0.9
+				var a := E.c - d * R * 1.25 + side * off - n * (lid + R * 0.06 * j)
+				var snap := R * (0.05 + r.randf() * 0.55)
+				var b := E.c + d * snap + side * off - n * (lid + R * 0.06 * j)
+				if E.v2 == 2:
+					b += n.cross(d) * R * 0.15 * (r.randf() - 0.5) - n * R * 0.12 * r.randf()   # crooked scrap girder
+				var bw := R * (0.09 if E.v2 != 2 else 0.12)
+				_beam(pt, a, b, bw, bw * 1.6, n, Color(PART_WALL, 0.3 + 0.4 * r.randf(), 0.25, 1))
+				ends.append([b, d])
+			for j in 1 + (1 if R > 1.0 else 0):
+				var an := r.randf() * TAU
+				var rd := E.t1 * cos(an) + E.t2 * sin(an)
+				var st := E.c + rd * R * (0.7 + r.randf() * 0.2) - n * lid
+				var cp := PackedVector3Array()
+				var lc := R * (0.5 + r.randf() * 0.4)
+				for k in 7:
+					var tt := k / 6.0
+					cp.append(st - rd * tt * lc * 0.6 - n * (tt * tt * lc * 0.7) + n.cross(rd) * sin(tt * 3.0 + an) * lc * 0.06)
+				_tube(pt, cp, R * 0.03, R * 0.022, Color(PART_PIPE, 0.2, 0.25, 1))
+				ends.append([cp[6], (cp[6] - cp[5]).normalized()])
+		3:
+			for j in 2 + (1 if r.randf() < 0.6 else 0):
+				var an := r.randf() * TAU
+				var d := E.t1 * cos(an) + E.t2 * sin(an)
+				var sp := PackedVector3Array()
+				var ln := R * (1.1 + r.randf() * 0.6)
+				for k in 6:
+					var tt := k / 5.0
+					sp.append(E.c - d * R * 1.2 + d * ln * tt - n * (lid + R * 0.25 * sin(tt * PI) + R * 0.05 * j))
+				_tube(pt, sp, R * 0.09, R * 0.025, Color(PART_BONE, 0.5 + 0.4 * r.randf(), 0.0, 1))
+			for j in 3:
+				var a0 := r.randf() * TAU
+				var a1 := a0 + PI * (0.6 + r.randf() * 0.8)
+				var p0 := E.c + (E.t1 * cos(a0) + E.t2 * sin(a0)) * R * 0.95 - n * E.th
+				var p1 := E.c + (E.t1 * cos(a1) + E.t2 * sin(a1)) * R * 0.95 - n * E.th
+				var cp := PackedVector3Array()
+				for k in 7:
+					var tt := k / 6.0
+					cp.append(p0.lerp(p1, tt) - n * R * 0.35 * sin(tt * PI))
+				_tube(pt, cp, R * 0.022, R * 0.016, Color(PART_BONE, 0.3, 0.5, 1))
+		4:
+			var ns := 7 + int(r.randf() * 4.0)
+			for j in ns:
+				var an := TAU * (j + r.randf() * 0.6) / float(ns)
+				var rd := E.t1 * cos(an) + E.t2 * sin(an)
+				var base := E.c + rd * R * (0.98 + r.randf() * 0.06) - n * E.th * 0.5
+				var tip := base - rd * R * (0.18 + r.randf() * 0.3) - n * R * (0.05 + r.randf() * 0.25)
+				_shard(pt, base, tip, n.cross(rd), R * (0.08 + r.randf() * 0.08), Color(PART_WALL, 0.5 + 0.5 * r.randf(), 0.75, 1))
+				if r.randf() < 0.3:
+					ends.append([tip, (tip - base).normalized()])
+		5:
+			var d := E.t1
+			var side := E.t2
+			for j in 2:
+				var off := (j - 0.5) * R * 0.8
+				_beam(pt, E.c - d * R * 1.2 + side * off - n * lid, E.c + d * R * 1.2 + side * off - n * lid, R * 0.07, R * 0.1, n, Color(PART_WALL, 0.25, 0.25, 1))
+			for j in 4:
+				var x0 := -R * 1.0 + R * 0.5 * j
+				_beam(pt, E.c + d * x0 - side * R * 0.4 - n * lid, E.c + d * (x0 + R * 0.5) + side * R * 0.4 - n * lid, R * 0.04, R * 0.05, n, Color(PART_WALL, 0.2, 0.25, 1))
+			for j in 2:
+				var off := (j - 0.5) * R * 0.45
+				var snap := R * (0.1 + r.randf() * 0.4)
+				var a := E.c - d * R * 1.2 + side * off - n * (lid + R * 0.12)
+				var b := E.c + d * snap * (1.0 if j == 0 else -1.0) + side * off - n * (lid + R * 0.12)
+				_beam(pt, a if j == 0 else E.c + d * R * 1.2 + side * off - n * (lid + R * 0.12), b, R * 0.035, R * 0.035, n, Color(PART_PIPE, 0.8, 1.0, 1))
+				ends.append([b, (b - a).normalized() if j == 0 else -d])
+	if collar:
+		var nc := 3
+		for j in nc:
+			var a0 := TAU * j / float(nc) + r.randf() * 0.6
+			var cp := PackedVector3Array()
+			for k in 6:
+				var an := a0 + k * 0.28
+				cp.append(E.c + (E.t1 * cos(an) + E.t2 * sin(an)) * R * 1.05 - n * (lid + R * 0.15))
+			var col := Color(PART_BONE, 0.6, 0.0, 1) if E.v2 == 3 else (Color(PART_WALL, 0.6, 0.75, 1) if E.v2 == 4 else Color(PART_WALL, 0.4, 0.25, 1))
+			_tube(pt, cp, R * 0.06, R * 0.06, col)
+	return ends
+
+
+# R416 5.3: at most two soft lights inside a ship's open V2 mouths (the biggest), a quarter radius in, tinted by the
+# faction's interior accent, reach about 2.2 radii, so the built decks and the rim dressing catch real light.
+const INSIDE_LIGHTS := 2
+const BATTLE_HOLE_LIGHTS := 8   # every ship's breach lights together (Fable review M2)
+const INSIDE_LIGHT_E := 0.7   # R420: interiors sit at 0.03 to 0.10 linear, so the cavity light carries the read
+
+
+static func inside_lights(fx, s, mi: Node3D, ents: Array, accent: Color) -> int:
+	if fx == null or not fx.has_method("light_source"):
+		return 0
+	var cuts: Array = []
+	for x in ents:
+		var e: Ent = x
+		if e.has_cut() and e.v2 >= 0 and not e.thin_shear:
+			cuts.append(e)
+	cuts.sort_custom(func(a: Ent, b: Ent) -> bool: return a.R > b.R)
+	# the battle cap (Fable review M2): at most BATTLE_HOLE_LIGHTS breach lights across every ship, so a big fight
+	# of open wounds stays inside the light budget; this ship's own lights were cleared before the rebuild
+	var used := 0
+	var all = fx.get("ships")
+	if all is Dictionary:
+		for sid in all:
+			var o = all[sid]
+			if o != null and o != s and o.get("_hole_lights") is Array:
+				used += (o.get("_hole_lights") as Array).size()
+	var k := 0
+	for e in cuts:
+		if k >= INSIDE_LIGHTS or used + k >= BATTLE_HOLE_LIGHTS:
+			break
+		var E: Ent = e
+		var off := E.c - E.n * (E.R * 0.25 + E.th)
+		var flick: float = [0.3, 0.12, 0.35, 0.18, 0.04, 0.15][clampi(E.v2, 0, 5)]
+		s._hole_lights.append(fx.light_source(mi, off, accent, INSIDE_LIGHT_E, flick, E.R * 2.2 * mi.global_transform.basis.get_scale().x / maxf(float(fx.unit), 1e-3)))
+		k += 1
+	return k
+
+
+# The V2 faction look on a HOLE or MARK material: wound_v2 turns the old faction branches off (wound_kind stays for the
+# repair patch), the faction's own colours on.
+static func set_v2_look(m: ShaderMaterial, wv: Dictionary) -> void:
+	m.set_shader_parameter("wound_v2", int(wv.get("kind", 0)))
+	for key in ["scorch_col", "rim_metal", "interior_lift", "interior_accent"]:
+		var c := wound_col(wv, key, Color(0.5, 0.5, 0.5))
+		m.set_shader_parameter("v2_" + key, Vector3(c.r, c.g, c.b))
+	m.set_shader_parameter("v2_rough", float(wv.get("interior_rough", 0.6)))
+	m.set_shader_parameter("v2_soot", float(wv.get("soot_weight", 1.0)))
+	m.set_shader_parameter("v2_wreck_soot", float(wv.get("wreck_soot", 0.3)))
+	var acc := wound_col(wv, "interior_accent", Color(1.0, 0.45, 0.12))
+	m.set_shader_parameter("glow", Vector3(acc.r, acc.g, acc.b))

@@ -30,6 +30,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const WING := preload("res://render/squadron_wing.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
+const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const THORN := preload("res://fx/fx_acid_thorn.gd")   # issue 1877: Acid Thorns, the Chorus close-in weapon
 
 const LOOK_BY_ID := {
@@ -2217,6 +2218,8 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var lp0: Vector3 = tg["lp"]
 		var ln0: Vector3 = tg["ln"]
 		var wound_look: String = tg.get("mark_look", {"nlance": "lance", "plasma_cannon": "plasma", "gsentry": "gflak", "junk": "auto"}.get(lk, lk))
+		if lk == "nlance" and not tg.has("mark_look") and WOUNDS.v2():
+			wound_look = "nlance"   # R416 (1692 d): the null lance keeps its own three-cut mark with Wounds V2 on
 		fx.later(T, func l_mark() -> void: Tg.add_mark(fx, wound_look, w, lp0, ln0, ld))
 	var matter_k: float = k * sqrt(float(tg.get("gk", 1.0)))
 	if beam:
