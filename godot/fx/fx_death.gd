@@ -1723,7 +1723,7 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, 
 		var length := float(pc.get("section_scale", 1.0))
 		var organic := bool(pc.get("organic", false))
 		var base: ShaderMaterial = fx.hull_damage_template(sd["mat"], 1.0, organic) if fx != null else null
-		var hull_mat: ShaderMaterial = base.duplicate() if base != null else HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, length, organic)
+		var hull_mat: ShaderMaterial = base.duplicate() if base != null else HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, length, organic, weathered)
 		if base != null:
 			hull_mat.set_shader_parameter("fx_burnt_cell", Vector3.ONE * maxf(length * 0.05, 0.001))
 		hull_mat.set_shader_parameter("fx_power", 0.0)
