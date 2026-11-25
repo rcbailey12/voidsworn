@@ -449,6 +449,8 @@ func render() -> void:
 			modal_focus_key = ModalFocus.focus_key(focus)
 			modal_focus_point = _scroll_focus_point(_modal_scroll, focus)
 	_page_key = page_key
+	if modal_kind == "event" and _modal_kind != "event" and _modal_kind != "relic_pick":
+		Kit.play("ui_event_comm")
 	_modal_kind = modal_kind
 	_shown_modal = C.modal_d
 	_page_scroll = null
@@ -2796,12 +2798,15 @@ func _well_text(v: VBoxContainer) -> void:
 const BACK_ACTS := ["title", "backToSetup"]
 # Issue 1448: the confirms that take a reward, relic or promotion perk, or buy a hull, play the built reward chime
 # (cues.json ui_reward) in place of the plain confirm.
-const REWARD_ACTS := ["takeMod", "fitRewardRefit", "fitWreckRefit", "fitBoughtRefit", "takeBoon", "takeRelic", "takeSalvage", "prizeConfirm", "takePerk", "buyHull"]
+const REWARD_ACTS := ["takeMod", "takeBoon", "takeSalvage", "prizeConfirm", "takePerk"]
 # Names the action a button runs, so the player-path recorder presses the real button (and hears its cue) instead of
 # calling the action under it (issue 1448: SND1C's reward picks were silent because the recorder skipped the buttons).
 static func press_tag(b: Control, act: String, arg) -> void:
 	b.set_meta("press_act", act); b.set_meta("press_arg", str(arg))
 func cue_role(act: String, fallback: String) -> String:
+	if act in ["buyHull", "buyMod", "lateBuy"]: return "purchase"
+	if act in ["equip", "fitRewardRefit", "fitWreckRefit", "fitBoughtRefit"]: return "install"
+	if act == "takeRelic": return "relic"
 	if act in REWARD_ACTS: return "reward"
 	if act in BACK_ACTS: return "back"
 	return fallback
