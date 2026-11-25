@@ -754,6 +754,7 @@ static func _has_station(v: Dictionary) -> bool:
 
 func _begin(a) -> void:
 	_gen += 1   # issue 1433: work still awaiting from the last battle on this node is stale now
+	_threat_inputs.clear()
 	_api_join()
 	_join_think()
 	retiring = false
@@ -1834,6 +1835,7 @@ func _retire() -> void:
 	_deployment_api = null
 	_gen += 1
 	_click_q = {}
+	_threat_inputs.clear()
 
 
 func _finish(r: Dictionary) -> void:
@@ -4629,6 +4631,22 @@ func _danger_at(u: Dictionary) -> int:
 
 var _threat_busy := false
 var _threat_next := {}
+var _threat_inputs: Array[Callable] = []
+
+
+# Keep player intents in arrival order without blocking on the rules worker. The normal handlers still check
+# whether an order is legal when it runs (an earlier intent may have changed the plan or ended the activation).
+func _queue_threat_input(action: Callable) -> bool:
+	if not _threat_busy or busy or thinking or warming or ended or retiring or quitting or api == null or api.phase != "player":
+		return false
+	_threat_inputs.append(action)
+	return true
+
+
+func _replay_threat_inputs(g: int) -> void:
+	while not _stale(g) and not quitting and not _threat_busy and not _threat_inputs.is_empty():
+		var action: Callable = _threat_inputs.pop_front()
+		action.call()
 
 
 # polls completion each frame; whoever sees it finished first reaps it once (_threat_reap)
@@ -4644,6 +4662,8 @@ func _threat_wait(tid: int) -> void:
 
 func _threat_done() -> void:
 	_threat_busy = false
+	if not _threat_inputs.is_empty():
+		_replay_threat_inputs.call_deferred(_gen)
 	if not _threat_idle() or _threat_pending_version != int(api.version):
 		_threat_request.call_deferred()
 		return
@@ -4659,7 +4679,6 @@ func _threat_done() -> void:
 	_refresh_ui.call_deferred()
 	_overlay.call_deferred()
 	_ptr_refresh.call_deferred()   # the stationary pointer: tip, panel and target as of this result
-	_click_replay.call_deferred()
 
 
 # issue 1433: after a publish, the pointer reads that answered "pending" are redone where the pointer stands
@@ -4978,6 +4997,12 @@ func _on_key(k: int) -> void:
 		if gfx != null and gfx.has_method("hurry_death"):
 			gfx.hurry_death()
 		return
+	if k in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER, KEY_Q, KEY_E, KEY_BACKSPACE, KEY_B, KEY_X, KEY_G]:
+		# Keep the handover guard at keypress time, so an early Space never becomes an End after the worker.
+		if k == KEY_SPACE and Time.get_ticks_msec() / 1000.0 - handed_t <= 0.5:
+			return
+		if _queue_threat_input(_on_key.bind(k)):
+			return
 	match k:
 		KEY_K:
 			_skip_current_camera_kind()
@@ -5012,10 +5037,7 @@ func _on_key(k: int) -> void:
 			elif _can_act():
 				hud.toast("Nothing planned. Click a blue hex to plan a move, or an enemy to target it. Space ends the ship.")
 		KEY_SPACE:
-			# F1 (Ryan, Nov 1): Space ends the ship. Not in its first half second, so a Space pressed to hurry the enemy
-			# never ends the ship handed over right after.
-			if Time.get_ticks_msec() / 1000.0 - handed_t > 0.5:
-				_end_ship("space")
+			_end_ship("space")
 		KEY_T:
 			cam.toggle_top()
 		KEY_HOME:
@@ -5219,6 +5241,8 @@ func _active_id() -> String:
 
 # End ship (Space, the card's button, the top bar): the ship that is up stops (it holds position if it did nothing)
 func _end_ship(how: String) -> void:
+	if _queue_threat_input(_end_ship.bind(how)):
+		return
 	if not _can_act():
 		return
 	var active := _active_id()
@@ -5246,6 +5270,8 @@ func _end_activation() -> void:
 # allow it only while nothing else has happened since (no shot, ram, boarding, ability, order, Command or dice: view undo).
 # Each press takes back one; after the first move is undone the ship is free again and another may go first.
 func _undo(how: String) -> void:
+	if _queue_threat_input(_undo.bind(how)):
+		return
 	if not _can_act():
 		return
 	# issue 1589: while a plan is open, Backspace takes back its last step (a target, a turn or a move); nothing reaches the
@@ -5378,6 +5404,7 @@ func _on_click() -> void:
 		# issue 1433: the threat map is still computing; keep this click (once) and play it when the result lands
 		if _click_q.is_empty():
 			_click_q = {"hex": hover, "gen": _gen, "v": int(api.version), "sel": sel, "mode": mode, "plan_k": plan_k, "target": target}
+			_threat_inputs.append(_click_replay)
 		return
 	if not _can_act() or hover.x == 99999 or not _api_join():
 		return
@@ -5622,6 +5649,8 @@ func _cancel(why: String) -> void:
 
 # F1: commit what is planned, once: the move, the attack-move, or the fire on the target
 func _confirm() -> void:
+	if _queue_threat_input(_confirm):
+		return
 	if not _can_act() or not _usable(_sel_unit()) or not _api_join():
 		return
 	if mode == "ram":
@@ -5778,7 +5807,15 @@ func _auto_end(id: String) -> void:
 	ending = true
 	hud.toast("The %s has nothing left to do this round: next ship." % _name(id))
 	_refresh_ui()
+	var g := _gen
 	await get_tree().create_timer(0.8).timeout
+	if not _stale(g):
+		_auto_end_finish(id)
+
+
+func _auto_end_finish(id: String) -> void:
+	if _queue_threat_input(_auto_end_finish.bind(id)):
+		return
 	ending = false
 	if is_inside_tree() and not ended and _can_act() and _active_id() == id and _nothing_left(id):
 		_end_ship("nothing_left")

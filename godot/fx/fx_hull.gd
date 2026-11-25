@@ -1436,7 +1436,7 @@ func _gun_points(slot: int, weapon: String, target_local: Vector3, d: Vector3) -
 func _bears(pt: Dictionary, target_local: Vector3, d: Vector3) -> bool:
 	if pt.has("tur"):
 		return turret_reaches(int(pt["tur"]), target_local)
-	return str(pt.get("arc", "")) == "T" or maxf((pt["f"] as Vector3).dot(d), (pt["n"] as Vector3).dot(d)) > 0.2
+	return maxf((pt["f"] as Vector3).dot(d), (pt["n"] as Vector3).dot(d)) > 0.2
 
 
 # A wing launch: the i-th hangar mouth; else the plating facing up and toward the target, on the line through the core.
