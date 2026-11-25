@@ -113,9 +113,11 @@ var _shield_fraction := -1.0
 var _ion_locked := false
 var _ion_next := 0.0
 var _ion_until := -1.0
+const ACID_MIST_LIFE := 2.0
+const ACID_MIST_TAIL := 0.25
 var _acid_active := false
 var _acid_mist: POOLS.Pool
-var _acid_mist_start := -1.0
+var _acid_fallback_start := -1.0
 var _acid_next := 0.0
 const ACID_SIZZLE_GAINS := [0.25, 0.125]
 var _sizzle_count := 0
@@ -1804,7 +1806,7 @@ func _status_step(fx) -> void:
 			_acid_mist.mi.queue_free()
 			_acid_mist = null
 		_acid_fallback.clear()
-		_acid_mist_start = -1.0
+		_acid_fallback_start = -1.0
 		_acid_next = 0.0
 		_sizzle_count = 0
 		_sizzle_next = 0.0
@@ -1833,6 +1835,7 @@ func _emit_acid(fx) -> void:
 	var spots: Array = get_meta("acid_spots", [])
 	var p: Vector3
 	var n := Vector3.UP
+	var start: float
 	if spots.is_empty():
 		if fx.now < busy_until: return  # an in-flight shot can still supply its actual contact
 		# A restored ship has its rules status but no FX hit history. Find real plating once.
@@ -1845,19 +1848,22 @@ func _emit_acid(fx) -> void:
 		if _acid_fallback.is_empty(): return
 		p = _acid_fallback["p"]
 		n = _acid_fallback["n"]
+		if _acid_fallback_start < 0.0:
+			_acid_fallback_start = fx.now
+		start = _acid_fallback_start
 	else:
-		var spot: Array = spots[_acid_spot_index % spots.size()]
+		# Old contacts remain for scars and melt deaths, but a new hit must not reheat them.
+		var first_fresh := spots.size()
+		while first_fresh > 0 and fx.now - float(spots[first_fresh - 1][1]) < ACID_MIST_LIFE - ACID_MIST_TAIL:
+			first_fresh -= 1
+		var first := first_fresh if first_fresh < spots.size() else 0
+		var spot: Array = spots[first + _acid_spot_index % (spots.size() - first)]
 		_acid_spot_index += 1
 		p = spot[0]
+		start = spot[1]
 		if spot.size() > 2: n = spot[2]
-	# The rules status can outlast the visible reaction. Only a fresh contact or a new
-	# status episode starts another mist, not repeated view syncs or the sizzle cadence.
-	if _acid_mist_start < 0.0:
-		_acid_mist_start = fx.now
-	elif not spots.is_empty():
-		_acid_mist_start = maxf(_acid_mist_start, float(spots.back()[1]))
-	var remaining: float = _acid_mist_start + 2.0 - fx.now
-	if remaining > 0.25:
+	var remaining: float = start + ACID_MIST_LIFE - fx.now
+	if remaining > ACID_MIST_TAIL:
 		_emit_acid_mist(fx, p, n, remaining)
 	if _sizzle_count < ACID_SIZZLE_GAINS.size() and fx.now >= _sizzle_next:
 		_sizzle_next = fx.now + fx.rng.randf_range(1.7, 2.8)
@@ -1876,7 +1882,7 @@ func _emit_acid_mist(fx, p: Vector3, n: Vector3, remaining: float) -> void:
 	var lift := maxf(0.65, hull.L * 0.02) if eclipse else maxf(0.9, hull.L * 0.04)
 	var origin := p + n * lift
 	var drift: Vector3 = (n + Vector3.UP * 0.70) * hull.L * 0.065
-	var fade := smoothstep(0.25, 1.7, remaining)
+	var fade := smoothstep(ACID_MIST_TAIL, 1.7, remaining)
 	var life := minf(1.35, remaining)
 	if eclipse:
 		_acid_mist.emit(POOLS.pack(Vector4(origin.x, origin.y, origin.z, fx.now), Vector4(drift.x, drift.y, drift.z, life),

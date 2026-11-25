@@ -1760,6 +1760,7 @@ vec2 ionTree(vec2 q, float seed) {
 uniform int wound_kind = 0;
 uniform vec3 glow = vec3(1.0, 0.45, 0.12);
 uniform vec3 weapon = vec3(1.0, 0.6, 0.3);
+uniform vec3 acid_tint = vec3(0.09, 0.08, 0.06);
 varying vec3 vL;
 varying vec4 vA;
 varying vec4 vB;
@@ -1824,9 +1825,9 @@ void fragment() {
 		float fall = 1.0 - smoothstep(0.55, 1.3, ue + (n1 - 0.5) * 0.4);
 		float wet = exp(-age / 9.0);
 		a = fall * (0.5 + 0.5 * pits);
-		alb = mix(vec3(0.05, 0.07, 0.025), vec3(0.01, 0.015, 0.005), pits);
+		alb = acid_tint * mix(0.65, 0.14, pits);
 		rough = mix(0.8, 0.25, wet * smoothstep(1.0, 0.4, ue));
-		em = vec3(0.62, 0.95, 0.14) * (pits * 0.25 + bub * 1.2) * fall * mix(0.15, 1.0, exp(-age / 6.0));
+		em = acid_tint * (pits * 0.25 + bub * 1.2) * fall * mix(0.15, 1.0, exp(-age / 6.0));
 	} else if (style == 9) {
 		// ion: a branching electrical burn; fresh, arcs crawl it blue-white, then it sets as a dark etched fern
 #if CURRENT_RENDERER == RENDERER_COMPATIBILITY
@@ -1922,7 +1923,7 @@ void fragment() {
 	}
 	// The halo (r4 review): every mark carries a wide, broken field in its own signature so it reads from the battle
 	// camera, 170 units away, where the mark's own detail is a few pixels: soot round shells, torpedo holes and lance
-	// cuts; dark blue glass freckles round plasma; a grey rash round flak; green-black etch round acid; a blue-black
+	// cuts; dark blue glass freckles round plasma; a grey rash round flak; dark etch round acid; a blue-black
 	// scorched fern field round ion burns; bright scraped metal round a ram; a pale spalled field round a gauss exit.
 	float H = vH;
 	float hs = 0.0;   // the halo's share of this pixel (soot is matte: no metal, little specular; r13)
@@ -1977,10 +1978,10 @@ void fragment() {
 			hem += vec3(1.0, 0.42, 0.1) * cdot * step(0.78, cv) * (0.3 * exp(-age / 300.0) + 0.9 * live);
 		} else if (style == 8) {
 			float pit = smoothstep(0.58, 0.72, hn);
-			hc = mix(vec3(0.03, 0.045, 0.012), vec3(0.006, 0.01, 0.003), pit);
+			hc = acid_tint * mix(0.42, 0.09, pit);
 			hr = mix(0.85, 0.3, exp(-age / 9.0) * pit);
-			hem = vec3(0.6, 0.95, 0.14) * pit * (0.04 + 0.4 * exp(-age / 6.0));
-			// r18 (Muse audit B4.3): the signature is a green stain with drips running off it, down the hull side (or
+			hem = acid_tint * pit * (0.04 + 0.4 * exp(-age / 6.0));
+			// r18 (Muse audit B4.3): the signature is a stain with drips running off it, down the hull side (or
 			// aft along a deck), long enough to read as streaks from the battle camera
 			vec3 dn = vec3(0.0, -1.0, 0.0);
 			vec2 gd = vec2(dot(dn, t1), dot(dn, t2));
@@ -1992,9 +1993,9 @@ void fragment() {
 			float drip = smoothstep(0.55, 0.75, lane) * smoothstep(-0.05, 0.1, along) * (1.0 - smoothstep(0.35 + 0.6 * lane, 1.1, along)) * (1.0 - smoothstep(0.3, 0.55, abs(acr)));
 			float stain = 1.0 - smoothstep(0.12, 0.42, length(hq) + (hn - 0.5) * 0.25);
 			float ac2 = max(drip, stain);
-			hc = mix(hc, vec3(0.02, 0.05, 0.008), ac2 * 0.85);
+			hc = mix(hc, acid_tint * 0.35, ac2 * 0.85);
 			ha = max(ha, max(drip * 0.9, stain));
-			hem += vec3(0.62, 0.95, 0.14) * (drip * 0.6 + stain * 0.45) * (0.28 * exp(-age / 300.0) + 0.6 * exp(-age / 6.0));
+			hem += acid_tint * (drip * 0.6 + stain * 0.45) * (0.28 * exp(-age / 300.0) + 0.6 * exp(-age / 6.0));
 		} else if (style == 9) {
 			hc = vec3(0.012, 0.015, 0.03);
 			hem = vec3(0.3, 0.5, 1.0) * smoothstep(0.62, 0.8, hn) * (0.03 + 0.5 * live);
@@ -2043,7 +2044,7 @@ void fragment() {
 		float sk = 1.0;
 		if (style == 1) { sc = vec3(1.0, 0.48, 0.14); scl = 5.0; }
 		else if (style == 3) { sc = vec3(0.35, 0.65, 1.0); scl = 6.0; }
-		else if (style == 8) { sc = vec3(0.62, 0.95, 0.14); scl = 8.0; sk = 1.3; }
+		else if (style == 8) { sc = acid_tint; scl = 8.0; sk = 1.3; }
 		else if (style == 9) { sc = vec3(0.45, 0.65, 1.0); scl = 6.0; sk = 1.3; }
 		else if (style == 7) { sk = 1.0; scl = 6.0; }
 		else if (style == 6 || style == 11) { scl = 9.0; sk = 1.2; }

@@ -2236,7 +2236,14 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		_energy_hit(fx, lk, w, Tg, tg, T, col, dir, matter_k)
 	else:
 		_shell_hit(fx, lk, w, Tg, tg, T, col, dir, matter_k)
-	if crit: _crit(fx, Tg, tg, T + CRIT_BEAT, k, col, w)
+	if crit:
+		if bio:
+			# Keep the critical beat without layering a generic hot impact over the wet splat.
+			fx.shake(T + CRIT_BEAT, 0.15, p)
+			fx.hit_pause(T + CRIT_BEAT, 2)
+			fx.punch(T + CRIT_BEAT, 0.006, p)
+		else:
+			_crit(fx, Tg, tg, T + CRIT_BEAT, k, col, w)
 
 
 # Issue 461, the shell row (macro, autocannon, scatter, strike craft guns, flak): a short white bite on the plate, then a
