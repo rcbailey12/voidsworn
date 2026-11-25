@@ -212,57 +212,6 @@ def material_setup():
     kit.KIT_NAME = 'ithar_CD5 on the shared Glasswright kit (tools/blender/kits/ithar)'
 
 
-def thick_shell(ob, t, centre):
-    """give an open surface real thickness t without a solidify modifier (r5c): a back layer along the vertex normals
-    (inward, or split either side when `centre`) and walls on the open edges. Point attributes are copied to the back
-    layer. A vertex with no normal (a pinched ribbon tip) stays put, so no spikes."""
-    import bpy
-    me = ob.data
-    n = len(me.vertices)
-    co = [v.co.copy() for v in me.vertices]
-    nr = [me.vertex_normals[i].vector.copy() for i in range(n)]
-    a, b = (0.5 * t, -0.5 * t) if centre else (0.0, -t)
-    verts = [c + q * a for c, q in zip(co, nr)] + [c + q * b for c, q in zip(co, nr)]
-    faces = [tuple(p.vertices) for p in me.polygons]
-    faces += [tuple(v + n for v in reversed(f)) for f in faces]
-    count = {}
-    for f in me.polygons:
-        vs = list(f.vertices)
-        for i in range(len(vs)):
-            e = (vs[i], vs[(i + 1) % len(vs)])
-            count[tuple(sorted(e))] = count.get(tuple(sorted(e)), 0) + 1
-    for f in me.polygons:
-        vs = list(f.vertices)
-        for i in range(len(vs)):
-            u, w = vs[i], vs[(i + 1) % len(vs)]
-            if count[tuple(sorted((u, w)))] == 1:
-                faces.append((w, u, u + n, w + n))
-    attrs = {}
-    for at in me.attributes:
-        if at.domain == 'POINT' and not at.name.startswith('.') and at.name != 'position':
-            if at.data_type == 'FLOAT':
-                vals = [0.0] * n; at.data.foreach_get('value', vals); attrs[at.name] = ('FLOAT', vals)
-            elif at.data_type == 'FLOAT_COLOR':
-                vals = [0.0] * (4 * n); at.data.foreach_get('color', vals); attrs[at.name] = ('FLOAT_COLOR', vals)
-    mats = list(me.materials)
-    new = bpy.data.meshes.new(me.name + '_thick')
-    new.from_pydata([tuple(v) for v in verts], [], faces)
-    for m in mats:
-        new.materials.append(m)
-    for name, (kind, vals) in attrs.items():
-        if kind == 'FLOAT':
-            new.attributes.new(name, 'FLOAT', 'POINT')
-        else:
-            new.color_attributes.new(name, 'FLOAT_COLOR', 'POINT')
-    for name, (kind, vals) in attrs.items():   # fetch after creating all (adding one moves the others' storage)
-        at = new.attributes[name]
-        at.data.foreach_set('value' if kind == 'FLOAT' else 'color', vals + vals)
-    for p in new.polygons:
-        p.use_smooth = True
-    ob.data = new
-    new.update()
-
-
 def own_part():
     # Part is a data container, not a borrowed shape.
     from kit import HP
@@ -353,7 +302,9 @@ def build(K):
     # r5c (death seam check, r5b): the core's thickness is real geometry, not a 'skin' modifier. The export lines a skin
     # modifier's back with a dark inside material; under the ribbons that lining tore apart from its own piece at every
     # break and breach (about 3,000 of the 3,500 triangles outside their piece). The core's inner face is mosaic too.
-    thick_shell(hull, 0.065, centre=False)
+    gw_hull = gw_kit('hull')
+    gw_hull.thick_shell(hull, 0.065, centre=False, back=gw_hull.mat_of('gw_smoke'))
+    gw_kit('rooms').register_skin(K, hull, skin)
     K.mass('Mosaic core', hull, 'opaque glowing stained-glass mosaic',
            note='Run 2 oval core, unchanged optic roots; leaf panels of amber, violet and green cells; never see-through.')
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
@@ -387,7 +338,7 @@ def build(K):
         # r5c: the ribbon's thickness is real geometry, not a solidify modifier. A modifier would be the contract's 'skin',
         # and the export lines a skin's back with an inside material: a ribbon's underside is outside plating over the
         # mosaic, not an inside lining (death seam check, r5b).
-        thick_shell(ob, 0.035, centre=True)
+        gw_hull.thick_shell(ob, 0.035, centre=True)
         ob['zone'] = 'pearl ribbon'
         for side in (-1, 1):
             pts = r.edge(skin, side, 180)
@@ -486,7 +437,7 @@ def build(K):
     env = lambda x: max(0.0, math.sin(math.pi * (x + 12.75) / 23.0)) ** 0.45
     gw_kit('rooms').rooms(K, lambda x: 0.62 * SLIM * width(x), lambda x: 0.62 * SLIM * (0.30 + 2.15 * env(x)), -11.3, 6.6,
                           BREAKS, BREACH_X, y0=0.0, gap=GAP, deck_z=(-0.55 * SLIM, 0.20 * SLIM), deck_t=0.06, rings=cd5_rings,
-                          ring_r=0.065, bands=('mid', 'low'))
+                          ring_r=0.065, bands=('mid', 'low'), skin=skin)
     K.inside.append(dict(kind='space', name='continuous light core and stern drive chamber', x=(-12, 9),
                          y=(-0.8, 0.8), z=(-0.6, 0.9), mat='layered glass and light', note='three braided waveguides throughout the hull'))
     K.armour('annealed outer glass', 0.065, 'actual shell thickness; layered blown glass, no armour plates')

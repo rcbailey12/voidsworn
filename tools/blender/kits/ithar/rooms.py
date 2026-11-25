@@ -13,8 +13,7 @@
 #   under the bottom deck   one centreline row: the crystal heart in the longest compartment, the drive resonators aft, the
 #                           lens stores forward, stored-light racks between
 # half_w(x), half_h(x), x0, x1, breaks, breach_x, decks, frames, y0 and tag are hull.insides()'s own arguments, so the rooms sit
-# where its decks and frames do; the rooms fill out to ENV of that envelope (inside the hull's inner glass, which the Interior
-# Kit and surface_check.py hold the furniture and the room boxes off).
+# where its decks and frames do; ENV is the starting envelope. Room boxes fit to the actual inner glass before dressing.
 import math
 import os
 
@@ -27,6 +26,74 @@ MINL = 0.03         # of the ship's length: the shortest bay worth a room
 LONG = 0.12         # of the ship's length: a bay with no ring in it is split into rooms about this long
 EDGE = 0.008        # of the ship's length: the wall gap between two rooms split from one bay
 ENV = 1.12          # the rooms' envelope, of hull.insides()'s half beam and height (its frame rings stand at 0.8 of them)
+CLEAR = 0.003       # of ship length: gap from the inner glass for the box and everything inside it
+
+
+def register_skin(K, core, skin):
+    """Share the sheet's skin and its modeled back layer with room placement and the build gate."""
+    from room_skin_check import InnerSkin
+    if not hasattr(K, 'gw_skins'):
+        K.gw_skins = []
+    inner = InnerSkin(core, skin)
+    K.gw_skins.append(inner)
+    return inner
+
+
+def fit_box(skin, box, length, minh, band='mid', axis=0.0):
+    """Fit a room in its bay, trying the original box first. Crown and belly rooms may move into a lobe."""
+    if skin is None:
+        return box
+    xa, xb, ya, yb, za, zb = box
+    nx = max(2, math.ceil((xb - xa) / (0.008 * length)))
+    xs = [xa + (xb - xa) * i / nx for i in range(nx + 1)]
+    margin = CLEAR * length
+
+    def fits(yl, yh, zl, zh):
+        # Check faces as well as corners. A box can bridge the empty part of
+        # the twisted cleft even when its corners lie in the two lobes.
+        return all(skin.overrun(x, yl + (yh - yl) * j / 4, z) <= -margin
+                   for x in xs for j in range(5) for z in (zl, (zl + zh) / 2, zh))
+
+    if fits(ya, yb, za, zb):
+        return box
+    w, h = yb - ya, zb - za
+    yc, zc = (ya + yb) / 2, (za + zb) / 2
+    offsets = [0.0]
+    if band in ('top', 'low', 'free'):
+        offsets += [side * w * i / 8 for i in range(1, 21 if band == 'free' else 11) for side in (1, -1)]
+    fractions = (1.0, .85, .70, .55, .40, .30, .20)
+    # Try the largest useful furnished room first, without crossing a deck.
+    sizes = sorted(((max(minh, w * a), max(minh, h * b)) for a in fractions for b in fractions),
+                   key=lambda wh: wh[0] * wh[1], reverse=True)
+    for ww, hh in sizes:
+        zl = za if band == 'top' else zb - hh if band == 'low' else zc - hh / 2
+        zh = zl + hh
+        for shift in offsets:
+            c = yc + shift
+            if band == 'mid':
+                # Stay on the same side of the light-core trunk.
+                c = ya + ww / 2 if yc >= axis else yb - ww / 2
+            yl, yh = c - ww / 2, c + ww / 2
+            if fits(yl, yh, zl, zh):
+                return xa, xb, yl, yh, zl, zh
+    return None
+
+
+def craft_room(K, skin, name, kind, box, note):
+    """Keep the craft's small contract rooms, without adding ship-sized bands."""
+    xa, xb, *section = box
+    c = (xa + xb) / 2
+    # A solidified craft's thin tail can pinch shut. Move a small room in
+    # toward midships only after trying to keep it at its authored station.
+    for shift in (0.0, .25, .5, .75):
+        cx = c - math.copysign((xb - xa) * shift, c)
+        for f in (1.0, .8, .6, .4):
+            half = (xb - xa) * f / 2
+            fit = fit_box(skin, (cx - half, cx + half, *section), K.length, MINH * K.length, band='free')
+            if fit:
+                K.room(name, kind, *fit, note=note)
+                return
+    print(f'[gw_rooms] {K.code}: omitted {name}, no clearance inside the glass', flush=True)
 
 
 def frame_xs(K, x0, x1, breaks, breach_x, frames):
@@ -78,13 +145,18 @@ def _most(f, a, b, n=7):
 
 
 def rooms(K, half_w, half_h, x0, x1, breaks, breach_x=(), decks=(-0.3, 0.2), frames=8, y0=0.0, tag='', heart=True, gap=None,
-          deck_z=None, deck_t=None, rings=None, ring_r=None, bands=('mid', 'top', 'low')):
+          deck_z=None, deck_t=None, rings=None, ring_r=None, bands=('mid', 'top', 'low'), skin=None):
     """the Glasswright rooms for one hull (a twin hull calls it once per pod, with its y0 and tag); returns the room count.
     deck_z, deck_t: the decks' own heights and thickness when a sheet builds them itself (CD5), instead of decks as fractions
     of half_h and hull.insides()' 0.015 of the length;
     rings / ring_r: the sheet's own frame positions and tube radius when it stands its own frames (CD5); gap: the sheet's own
-    clearance either side of a break (CD5 0.22); bands: which bands to fill (CD5 leaves out 'top' for its light reservoirs)"""
+    clearance either side of a break (CD5 0.22); bands: which bands to fill (CD5 leaves out 'top' for its light reservoirs).
+    skin: optional sheet skin, with its inner wall registered by the core builder. Older callers can omit it."""
     L = K.length
+    skins = getattr(K, 'gw_skins', ())
+    inner = min((s for s in skins if skin is None or s.skin is skin), key=lambda s: abs(s.y0 - y0), default=None)
+    if skin is not None and inner is None:
+        raise ValueError('register the sheet skin with its core before placing rooms')
     spans = _spans(K, x0, x1, breaks, gap)
     if not spans:
         return 0
@@ -104,6 +176,14 @@ def rooms(K, half_w, half_h, x0, x1, breaks, breach_x=(), decks=(-0.3, 0.2), fra
     longest = max(range(len(spans_b)), key=lambda i: spans_b[i][1] - spans_b[i][0])
     bow, stern = len(spans_b) - 1, 0                        # x runs stern (x0) to bow (x1)
     made = 0
+
+    def place(nm, kind, box, band, note):
+        nonlocal made
+        fit = fit_box(inner, box, L, minh, band, axis=y0)
+        if fit is not None:
+            K.room(nm, kind, *fit, note=note)
+            made += 1
+
     for si, (a, b, bays) in enumerate(spans_b):
         mid_bay = len(bays) // 2
         for ci, (ra, rb) in enumerate(bays):
@@ -128,20 +208,18 @@ def rooms(K, half_w, half_h, x0, x1, breaks, breach_x=(), decks=(-0.3, 0.2), fra
                 kind = 'hold' if (si + ci) % 2 == 0 else 'machinery'
                 for s, side in ((1, 'p'), (-1, 's')):
                     lo, hi = sorted((y0 + s * yi, y0 + s * yo))
-                    K.room(name('gw_' + kind + side), kind, ra, rb, lo, hi, z0, z1,
+                    place(name('gw_' + kind + side), kind, (ra, rb, lo, hi, z0, z1), 'mid',
                            note='Glasswright %s beside the light-core trunk, in pearl and smoked glass' %
                                 ('stores hold' if kind == 'hold' else 'stored-light machinery'))
-                    made += 1
             # above the top deck: the song bridge in the bow compartment, crew galleries elsewhere
             z0 = zhi_x + dk + th
             w = 0.45 * ew; z1 = eh * math.sqrt(max(0.0, 1 - (w / ew) ** 2)) * 0.92
             if 'top' in bands and z1 - z0 > minh:
                 fore = si == bow and ci == len(bays) - 1
                 kind = 'bridge' if fore else 'crew'
-                K.room(name('gw_' + kind), kind, ra, rb, y0 - w, y0 + w, z0, z1,
+                place(name('gw_' + kind), kind, (ra, rb, y0 - w, y0 + w, z0, z1), 'top',
                        note='the song bridge: consoles of lit crystal under the crown' if fore else
                        'a crew gallery over the light cores, a lit crystal at every console')
-                made += 1
             # under the bottom deck: the crystal heart, the drive resonators, the lens stores, the stored-light racks
             z1 = zlo_x - dk - th
             w = 0.45 * ew; z0 = -eh * math.sqrt(max(0.0, 1 - (w / ew) ** 2)) * 0.92
@@ -154,8 +232,7 @@ def rooms(K, half_w, half_h, x0, x1, breaks, breach_x=(), decks=(-0.3, 0.2), fra
                     kind, note = 'magazine', 'the lens stores: racked crystal lenses for the lances'
                 else:
                     kind, note = 'machinery', 'stored-light racks with lit crystal caps'
-                K.room(name('gw_' + kind), kind, ra, rb, y0 - w, y0 + w, z0, z1, note=note)
-                made += 1
+                place(name('gw_' + kind), kind, (ra, rb, y0 - w, y0 + w, z0, z1), 'low', note=note)
     K.inside.append(dict(kind='note', name='%srooms' % (tag.strip('_') + ' ' if tag else ''),
                          note='Glasswright rooms (Ryan, Nov 23): %d rooms in three bands, one per bay between the glass '
                               'frames, furnished by the shared Interior Kit V2 in crystal shapes' % made))

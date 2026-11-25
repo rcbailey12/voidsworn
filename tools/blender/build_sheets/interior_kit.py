@@ -710,10 +710,14 @@ def dress(K, kit_name):
     fac = faction_of(K, kit_name)
     D = Dresser(K, fac)
     src = [ob for ob in list(K.cin.objects) if ob.type == 'MESH']
+    skins = getattr(K, 'gw_skins', ())
     hoops = []
     for ob in src:
         m = ob.data.materials[0].name if ob.data.materials else ''
-        if m.startswith('gw_'):
+        if m.startswith(('gw_', 'cd5_')):
+            if skins:
+                from room_skin_check import tuck_structure
+                tuck_structure(ob, skins, K.length)
             continue
         if ob.name.startswith('in_deck_'):
             if m == 'septum':
@@ -731,6 +735,12 @@ def dress(K, kit_name):
             D.room(ob, m)
     if hoops:
         D.hoops(hoops)
+    if skins:
+        from room_skin_check import check
+        bpy.context.view_layer.update()
+        bad, count, _ = check(K.cin.objects, skins)
+        if bad or not count:
+            raise ValueError(f'{K.code} rooms: {bad} of {count} inside parts past the inner skin')
     tile = TILE * K.length
     for ob in K.cin.objects:
         if ob.type == 'MESH':

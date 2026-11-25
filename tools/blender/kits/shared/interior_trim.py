@@ -206,25 +206,31 @@ def maps(spec, n=SIZE):
     return out
 
 
-def _key(fac, spec):
-    return hashlib.sha1(json.dumps([fac, spec], sort_keys=True, default=str).encode()).hexdigest()[:8]
-
-
-_CACHE = {}
+def _key(fac, spec, n):
+    key = [fac, spec] if n == SIZE else [fac, spec, n]
+    return hashlib.sha1(json.dumps(key, sort_keys=True, default=str).encode()).hexdigest()[:8]
 
 
 def images(fac, spec, n=SIZE):
     """the faction's packed Blender images (made once per blend: a second call returns the same images)"""
     import bpy
-    key = _key(fac, spec)
-    pre = 'trim_%s_%s_%s' % (fac, spec.get('style', 'panels'), key)    # export7 names the files by the style (one set per style)
-    if bpy.data.images.get(pre + '_base') is not None:
-        return {k: bpy.data.images.get('%s_%s' % (pre, k)) for k in ('base', 'orm', 'normal', 'emission')}
-    m = maps(spec, n); out = {}; stats = m.pop('_stats')
+    style = spec.get('style', 'panels')
+    # The glass glow variants do not touch the other three maps. Panels, for
+    # example, cannot ignore strip settings because they also change relief.
+    surface = {k: v for k, v in spec.items() if k != 'glow'} if style == 'glass' else spec
+    pre = f'trim_{fac}_{style}_'
+    keys = {k: pre + _key(fac, surface, n) + '_' + k for k in ('base', 'orm', 'normal')}
+    if (style == 'panels' and spec.get('strip')) or (style in ('glass', 'flesh') and spec.get('glow')):
+        keys['emission'] = pre + _key(fac, spec, n) + '_emission'
+    out = {k: bpy.data.images.get(name) for k, name in keys.items()}
+    if all(out.values()):
+        out.setdefault('emission', None)
+        return out
+    m = maps(spec, n); stats = m.pop('_stats')
     for k, a in m.items():
-        if a is None:
-            out[k] = None; continue
-        im = bpy.data.images.new('%s_%s' % (pre, k), n, n, alpha=False)
+        if a is None or out.get(k) is not None:
+            continue
+        im = bpy.data.images.new(keys[k], n, n, alpha=False)
         im.colorspace_settings.name = 'sRGB' if k in ('base', 'emission') else 'Non-Color'
         px = np.concatenate([a.astype(np.float32), np.ones((n, n, 1), np.float32)], -1)
         im.pixels.foreach_set(px.ravel()); im.update()
@@ -232,6 +238,7 @@ def images(fac, spec, n=SIZE):
         im['interior_trim'] = fac; im['interior_style'] = spec.get('style', 'panels')
         if stats.get(k) is not None: im['mean_linear'] = stats[k]
         out[k] = im
+    out.setdefault('emission', None)
     return out
 
 

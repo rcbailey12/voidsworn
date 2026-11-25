@@ -313,9 +313,14 @@ def inside_material(srcmat, liner=False):
         m.name = CODE + '_inside_' + ('skin' if liner else str(len(inside_mats)))
         m.use_nodes = True
         if not srcmat:
+            from interior_trim import faction_interior
+            interior = faction_interior(FAC)
+            skin = interior['skin']
+            role = skin['role']
             bs = m.node_tree.nodes.get('Principled BSDF')
-            bs.inputs['Base Color'].default_value = (.035, .028, .022, 1)
-            bs.inputs['Roughness'].default_value = .85
+            bs.inputs['Base Color'].default_value = (*interior['roles'][role], 1)
+            bs.inputs['Roughness'].default_value = skin['roughness']
+            m['interior_role'] = role
         inside_mats[key] = m
         destruction['interior_materials'].append(m.name)
     return inside_mats[key]
@@ -372,9 +377,7 @@ destruction['interior_materials'] = [m for m in destruction['interior_materials'
 # to the shared interior trim maps (albedo, ORM, normal) and its interior UVs
 # R420: each room material's role for the game (Godot's glTF import drops material extras; fx_hull reads this, PR 1755)
 _roles = {m.name: str(m['interior_role']) for m in inside_mats.values() if m.get('interior_role') and m.name in destruction['interior_materials']}
-if _roles:      # the liner keeps its own dark colour in the game as a trusted wall (PR 1755 note)
-    for m in destruction['interior_materials']:
-        if m == CODE + '_inside_skin': _roles[m] = 'wall'
+if _roles:
     destruction['interior_roles'] = _roles
 destruction['interior_kit'] = 2 if any(o.get('role') == 'interior' and o.get('interior_kit', 0) >= 2 for o in src) else 0
 J.data.calc_loop_triangles(); TRIS = len(J.data.loop_triangles)

@@ -261,6 +261,7 @@ def mosaic_core(K, name, skin, x0, x1, gap_of, nu=200, nv=128, thick=0.04, seed=
         glow.data[i].value = g
     # R421/R427 (issue 1743): the panes' back is the smoked inner lining, never the bright mosaic seen from behind
     thick_shell(hull, thick, centre=False, back=mat_of('gw_smoke') if smoke_back else None)
+    gw_kit('rooms').register_skin(K, hull, skin)
     return hull
 
 
@@ -766,7 +767,7 @@ def prism_nodes(points, centre, size):
     return vv, ff
 
 
-def lens_collars(points, r, every=4):
+def lens_collars(points, r, every=4, fits=None):
     """collared lens rings round a light core: a square-section glass ring every few points along it (issue 1743)"""
     from mathutils import Vector
     vv, ff = [], []
@@ -775,10 +776,13 @@ def lens_collars(points, r, every=4):
         p = points[i]; d = (points[i + 1] - points[i - 1 if i else 0]).normalized()
         q = d.cross(Vector((0, 0, 1)))
         q = (q if q.length > 0.1 else d.cross(Vector((0, 1, 0)))).normalized(); w = d.cross(q).normalized()
-        o = len(vv); n = 12
+        o = len(vv); n = 12; ring = []
         for s_ in (-0.9 * r, 0.9 * r):
             for rr in (1.15 * r, 1.75 * r):
-                vv += [tuple(p + d * s_ + (q * math.cos(j * TAU / n) + w * math.sin(j * TAU / n)) * rr) for j in range(n)]
+                ring += [tuple(p + d * s_ + (q * math.cos(j * TAU / n) + w * math.sin(j * TAU / n)) * rr) for j in range(n)]
+        if fits is not None and not all(fits(*v) for v in ring):
+            continue
+        vv.extend(ring)
         for j in range(n):
             k = (j + 1) % n
             ff += [(o + n + j, o + n + k, o + 3 * n + k, o + 3 * n + j), (o + k, o + j, o + 2 * n + j, o + 2 * n + k),
@@ -819,6 +823,12 @@ def insides(K, half_w, half_h, x0, x1, breaks, breach_x, decks=(-0.3, 0.2), fram
         K._obj('in%s_frame_%02d_prisms' % (tag, i), *prism_nodes(pts[:-1:6], (x, y0, 0.0), 0.022 * K.length), 'gw_in_frame', inside=True)
         K.inside.append(dict(kind='bulkhead', name='%sannealed frame %02d' % (tag and tag + ' ', i), x=x, note='open structural glass frame'))
     if cores:
+        skins = getattr(K, 'gw_skins', ())
+        inner = min(skins, key=lambda skin: abs(skin.y0 - y0), default=None)
+        # A lens collar at the glass can be caught by a shatter tooth even
+        # when the waveguide beneath it fits. Omit the whole ring there.
+        collar_clearance = 0.022 * K.length
+        fits = None if inner is None else lambda x, y, z: inner.overrun(x, y, z) <= -collar_clearance
         for k, col in enumerate(('amber', 'violet', 'green')):
             for si, (a, b) in enumerate(spans):
                 n = max(4, int(50 * (b - a) / K.length))
@@ -829,8 +839,9 @@ def insides(K, half_w, half_h, x0, x1, breaks, breach_x, decks=(-0.3, 0.2), fram
                        inside=True, smooth=True)
                 # Interior Kit V2 (issue 1743): collared lens rings along the waveguide, in the frame's glass
                 if len(pts) >= 5:
-                    K._obj('in%s_light_core_%s_%d_collars' % (tag, col, si), *lens_collars(pts, 0.012 * K.length, every=max(2, len(pts) // 5)),
-                           'gw_in_frame', inside=True, smooth=True)
+                    v, f = lens_collars(pts, 0.012 * K.length, every=max(2, len(pts) // 5), fits=fits)
+                    if f:
+                        K._obj('in%s_light_core_%s_%d_collars' % (tag, col, si), v, f, 'gw_in_frame', inside=True, smooth=True)
         K.inside.append(dict(kind='space', name='%scontinuous light core' % (tag and tag + ' '), x=(x0, x1), y=(y0 - 0.3, y0 + 0.3),
                              z=(-0.3, 0.3), mat='layered glass and light', note='three braided waveguides of amber, violet and green light'))
     return spans
