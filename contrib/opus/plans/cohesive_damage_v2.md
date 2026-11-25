@@ -2,7 +2,7 @@
 
 Issue #1741. Ruling: R416 (Ryan, Nov 22 2026: rejected the 2D painted R402 concept sheet `opus1235wd`, approved picks `1=A, 2=A, 3=A, 4=A`, and mandated one singular cohesive chain from ship build through weapons, weapon effects, weapon damage, ship damage and capability loss, to ship destruction).
 
-Feature flag during review: `VS_WOUNDS_V2=1` (ProjectSettings `rendering/effects/wounds_v2`, default `false` until Ryan approves real 3D camera-170 and camera-26 captures on all six factions and the solo GPU frame-time check passes).
+Feature flag during review: `VS_WOUNDS_V2=1` (ProjectSettings `rendering/effects/wounds_v2`, on by default since Ryan's yes on Nov 24, Morning Pick Sheet item 5, after the before and after pass; it was off until Ryan approved real 3D camera-170 and camera-26 captures on all six factions and the solo GPU frame-time check passes).
 
 ---
 

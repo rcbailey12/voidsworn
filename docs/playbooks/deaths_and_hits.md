@@ -313,7 +313,7 @@ Three upgrades run through all of them:
    (`wound_kind` 0 for metal on Sunward, Directorate and Hullbreakers, 1 for Chorus tissue, 2 for Glasswright crystal,
    and 3 for Eclipse machine wounds). The 2D painted concept sheet
    (`opus1235wd`) was rejected ("it almost looks like a random portal... there's a reason we did the interior work on the
-   ships"): visual review uses real 3D in-engine look-bench captures behind `VS_WOUNDS_V2=1` (camera 170 and camera 26,
+   ships"): visual review uses real 3D in-engine look-bench captures (Wounds V2, on by default since Nov 24; camera 170 and camera 26,
    1 hit, 50% hull, 20% hull, capability loss and death transition) instead of 2D paint-overs. Six rules govern the build:
    (a) **Real mid-battle cutouts into authored interiors (RULEBOOK 6.14):** light grazes and healthy armor take surface marks
    only; heavy hits on weakened sections and Stage 2+ section wear (~55% section HP) cut real 3D openings through outer

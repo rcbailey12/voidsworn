@@ -787,7 +787,8 @@ func _emit_spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: floa
 		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
 	if spr_kinds != null:
 		spr_kinds[kind] = int(spr_kinds.get(kind, 0)) + 1
-	var pool: POOLS.Pool = pools["smk"] if SMOKY.has(kind) else pools["spr"]
+	var smoke := kind == SH.ROCKET_SMOKE or SMOKY.has(kind)
+	var pool: POOLS.Pool = pools["smk"] if smoke else pools["spr"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life), Vector4(col.r, col.g, col.b, i),
 		Vector4(s0 * unit, s1 * unit, kind, minf(rng.randf(), 0.999) + floorf(clampf(px, 0.0, 4000.0))), Vector4(0.0, acc, drag, spin)))
 
@@ -836,9 +837,10 @@ func null_trace(from: Vector3, to: Vector3, t: float, flight: float, col: Color,
 # `px` (F3 round 2): the ring's own final size on screen in pixels (shock rings and ripples, kinds 1 to 3); the floor
 # grows with the ring, so a far ring still expands.
 func ring(p: Vector3, n: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int,
-		speed := 0.0, drag := 0.0, px := 0.0) -> void:
+		speed := 0.0, drag := 0.0, px := 0.0, seed_override := -1.0) -> void:
+	var seed_value: float = rng.randf() if seed_override < 0.0 else seed_override
 	(pools["rng"] as POOLS.Pool).emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(n.x, n.y, n.z, life),
-		Vector4(col.r, col.g, col.b, i), Vector4(s0 * unit, s1 * unit, kind, rng.randf()), Vector4(0.0, speed, drag, px)))
+		Vector4(col.r, col.g, col.b, i), Vector4(s0 * unit, s1 * unit, kind, seed_value), Vector4(0.0, speed, drag, px)))
 
 
 func rib(p: Vector3, dir: Vector3, length: float, t: float, life: float, col: Color, i: float, w0: float, w1: float, kind: int) -> void:
@@ -2290,7 +2292,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	mats.append(mat(SH.TEAR, 1))   # issue 462: the dying hull's tear overlay
 	# issue 220: the torpedo and rocket bodies (drive glow, star torpedo body, exhaust plume) and the weapon bursts' atlas
 	# shader: their first launch or hit compiled them mid-fight (a 53 ms frame with 3 surface pipelines at the gate scene)
-	mats.append_array([mat(WEAP.DRIVE, 1), mat(WEAP.STAR_BODY)])
+	mats.append_array([mat(WEAP.DRIVE, 1), mat(WEAP.STAR_BODY), mat(SH.ORDNANCE_CORONA, 1, "", "star corona")])
 	var wburst: ShaderMaterial = DEATH.flipbook_material(self, "vent", "small")
 	wburst.shader = WEAP._weapon_shader(self)
 	wburst.set_shader_parameter("born", now)
