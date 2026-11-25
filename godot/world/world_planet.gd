@@ -122,32 +122,21 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	planet.set_meta("planet_code", "BAKE%d" % int(L["bake"]))
 	var baker = preload("res://world/world_bake.gd").service(planet.get_tree())
 	var job := board_job(look_kind, seed_v)
-	var params: Dictionary = job.params
-	var key: String = job.key
 	var size: Vector2i = job.size
-	var code: String = job.code
-	# urgent: ahead of the far backdrop bakes, so a cold cache still makes the loading cover (PC proof, PR 1776)
-	# all three are queued before any is awaited, so no backdrop runs between them (Artoo, PR 1776)
-	var ka: String = baker.request_bake(key + "|a", code, params, size, 32, false, true)
-	params["pass_id"] = 1
-	var kb: String = baker.request_bake(key + "|b", code, params, size, 32, false, true)
-	params["pass_id"] = 2
-	var kh: String = baker.request_bake(key + "|h", code, params, size, 32, true, true)
-	var a: Image = await baker.result(ka)
-	var b: Image = await baker.result(kb)
-	var h: Image = await baker.result(kh)   # one 32-bit float height channel
-	if not is_instance_valid(planet) or a == null or b == null or h == null: return
+	# One urgent job, ahead of the far backdrops. Its third image is float relief.
+	var maps: Array = await baker.board_maps(job.key, job.code, job.params, size)
+	if not is_instance_valid(planet) or maps.size() != 3: return
 	if planet.get_meta("planet_frozen", false): return   # the loading cover already lifted (board.gd wait_planet)
-	stand_in.set_shader_parameter("tex_a", baker.texture(a))
-	stand_in.set_shader_parameter("tex_b", baker.texture(b))
-	stand_in.set_shader_parameter("tex_h", baker.texture(h))
+	stand_in.set_shader_parameter("tex_a", baker.texture(maps[0]))
+	stand_in.set_shader_parameter("tex_b", baker.texture(maps[1]))
+	stand_in.set_shader_parameter("tex_h", baker.texture(maps[2]))
 	stand_in.set_shader_parameter("map_scale", float(size.x) / TAU)
 	stand_in.set_shader_parameter("has_tex", 1.0)
 	SKEEP.event("board planet maps set")
 
 
-# The board planet's bake request for a baked look (terran, ice, volcanic): one place for install_board and the check
-# that seeds its cache (Neon, PR 1776 item 4). pass_id is 0 here; the b and h maps ask with 1 and 2.
+# The board planet's bake request for a baked look (terran, ice, volcanic).
+# Only the compatibility path and the legacy parity check select separate passes.
 static func board_job(look_kind: int, seed_v: int) -> Dictionary:
 	var L: Dictionary = BOARD_LOOKS.get(look_kind, BOARD_LOOKS[0])
 	var size := BOARD_SIZE

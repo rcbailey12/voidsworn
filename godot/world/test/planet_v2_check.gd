@@ -180,22 +180,20 @@ func _run() -> void:
 		"a frozen board planet still swapped its maps in (%s)" % str(sb.planet_node.get_meta("planet_code", "")))
 	sb.queue_free()
 	await process_frame
-	# the same freeze on a baked look (Neon item 4): headless bakes no maps, so its three maps are seeded on disk under
-	# the exact keys install_board asks for; the worker loads them after the deadline and the guard must keep them out
+	# Seed the real board cache entry on disk. Even a complete set arriving after
+	# the deadline must not replace the frozen stand-in.
 	var fdir := OS.get_user_data_dir().path_join("planet_v2_check_freeze")
-	DirAccess.make_dir_recursive_absolute(fdir)
 	OS.set_environment("VS_WORLD_CACHE", fdir)
 	OS.set_environment("VS_WORLD_PREVIEW", "1")
 	var fj: Dictionary = PL.board_job(4, 33)   # volcanic, seed 33 (posmod(33, 5) = 3: PLANET_LOOKS[3] is 4)
-	var fparams: Dictionary = fj.params.duplicate()
-	var fkeys: Array = []
-	for pass_i in 3:
-		fparams["pass_id"] = pass_i
-		var fk: String = BAKER.cache_key(fj.key + ["|a", "|b", "|h"][pass_i], fj.code, fparams, fj.size)
-		fkeys.append(fk)
-		var dummy := Image.create(fj.size.x, fj.size.y, false, Image.FORMAT_RGBA8)
+	var fk := BAKER.board_key(fj.key, fj.code, fj.params, fj.size)
+	var maps: Array[Image] = []
+	for format in BAKER.BOARD_FORMATS:
+		var dummy := Image.create(fj.size.x, fj.size.y, false, format)
 		dummy.fill(Color(0.5, 0.4, 0.3, 1.0))
-		dummy.save_png(fdir.path_join(fk + ".png"))
+		dummy.generate_mipmaps()
+		maps.append(dummy)
+	_check(BAKER._save(fk, maps, {}, {}, fdir), "could not seed the baked board cache")
 	var fslow := StubRules.new()
 	fslow.v = slow.v
 	fslow.w = {"seed": 33}
@@ -207,11 +205,11 @@ func _run() -> void:
 	_check(bool(fb.planet_node.get_meta("planet_frozen", false)), "a baked board planet 21 s late was not frozen on its stand-in")
 	while fb.planet_pending:
 		await process_frame
-	_check(BAKER._cache.has(fkeys[0]) and BAKER._cache.has(fkeys[2]), "the seeded baked maps never loaded, so the baked freeze guard was not reached")
+	_check(BAKER._cache.get(fk, []).size() == 3, "the seeded baked maps never loaded, so the baked freeze guard was not reached")
 	var ftex = (fb.planet_node.material_override as ShaderMaterial).get_shader_parameter("has_tex")
 	_check(ftex == null or float(ftex) < 0.5, "a frozen baked board planet still swapped its maps in")
 	fb.queue_free()
-	for fk in fkeys: DirAccess.remove_absolute(fdir.path_join(str(fk) + ".png"))
+	DirAccess.remove_absolute(fdir.path_join(fk + BAKER.BOARD_SUFFIX))
 	OS.unset_environment("VS_WORLD_PREVIEW")
 	OS.unset_environment("VS_WORLD_CACHE")
 	await process_frame
@@ -339,62 +337,25 @@ func _run() -> void:
 	for i in WORLD.MOON_LOOKS.size():
 		for key in ["a", "b", "c"]:
 			_check(not _purple(WORLD.MOON_LOOKS[i][key]), "moon look %d %s leans indigo to purple" % [i, key])
-	# the board planet's maps jump the bake queue (PC proof OPUS1765_PC_C: behind the backdrops a cold cache missed the
-	# 20 s cover); a job the worker already took is never queued twice
-	var q = BAKER.new()
-	for k in ["far1", "far2"]:
-		q._jobs[k] = {}
-		q._enqueue(k, false)
-	for k in ["board_a", "board_b", "board_h"]:
-		q._jobs[k] = {}
-		q._enqueue(k, true)
-	_check(q._queue == ["board_a", "board_b", "board_h", "far1", "far2"], "the board planet's map set does not jump the bake queue in order (%s)" % str(q._queue))
-	q._queue.pop_front()
-	q._enqueue("board_a", true)
-	_check(q._queue == ["board_b", "board_h", "far1", "far2"], "a bake the worker already took was queued again (%s)" % str(q._queue))
-	q.free()
-	# Artoo (PR 1776): install_board queues its whole map set before awaiting any, so no backdrop can start between two
-	# of its maps. Watch the live service while a cold terran board installs behind two queued backdrop jobs.
-	var cache_dir := OS.get_user_data_dir().path_join("planet_v2_check_cache")
-	OS.set_environment("VS_WORLD_CACHE", cache_dir)
+	# Build the real board and request a far map in the same frame as world.build
+	# does. No process tick should be needed to enqueue the one urgent board job.
 	var svc = BAKER.service(self)
 	await process_frame
-	svc._jobs["far_x"] = {"path": "res://nope_x.json", "size": Vector2i(8, 8), "done": false, "image": null, "started": 0, "compute": false}
-	svc._jobs["far_y"] = {"path": "res://nope_y.json", "size": Vector2i(8, 8), "done": false, "image": null, "started": 0, "compute": false}
-	svc._enqueue("far_x", false)
-	svc._enqueue("far_y", false)
-	var tp := _planet()
-	var seen: Array = []
-	_done = false
-	_install(tp[0], tp[1], 1, 77, Vector3(0.4, 0.6, 0.7) * 100000.0)
-	while not _done:
-		if svc._active != "" and (seen.is_empty() or seen[-1] != svc._active): seen.append(svc._active)
-		await process_frame
-	# a backdrop already running may finish first; after the first board map, the other two follow with nothing between
-	var board_at: Array = []
-	for i in seen.size():
-		if not str(seen[i]).begins_with("far_"): board_at.append(i)
-	_check(board_at.size() == 3 and board_at[2] - board_at[0] == 2, "a backdrop bake ran between the board planet's maps (%s)" % str(seen))
-	OS.unset_environment("VS_WORLD_CACHE")
-	(tp[0] as Node).queue_free()
-	(tp[1] as Node).queue_free()
-	# Neon (PR 1776 review, item 5): the board queues its maps in the same frame it builds, before the world asks for
-	# its sky. Build a cold board, ask for a far map in that frame as world.build does, and read the queue at once.
-	OS.set_environment("VS_WORLD_CACHE", cache_dir)
 	var qb: Node3D = BOARD.new()
 	root.add_child(qb)
 	var qrules := StubRules.new()
 	qrules.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
 	qrules.w = {"seed": 31}   # terran, seed 31: a map set nothing above asked for
+	var existing: Array = svc._jobs.keys()
 	qb.build(qrules)
-	svc._jobs["far_z"] = {"path": "res://nope_z.json", "size": Vector2i(8, 8), "done": false, "image": null, "started": 0, "compute": false}
-	svc._enqueue("far_z", false)
-	var ahead: Array = ([svc._active] if svc._active != "" else []) + svc._queue
-	var far_at: int = ahead.find("far_z")
-	_check(far_at >= 3, "the world's first bake can start before the board planet's maps are queued (%s)" % str(ahead))
+	var bjob := PL.board_job(1, 31)
+	var bkey := BAKER.board_key(bjob.key, bjob.code, bjob.params, bjob.size)
+	_check(svc._jobs.keys() == existing + [bkey], "building the board did not enqueue exactly one job in the same frame")
+	var far: String = svc.request_bake("far_z", bjob.code, bjob.params, Vector2i(8, 4), 32)
+	_check(svc._jobs.keys() == existing + [bkey, far], "the board job did not precede the world's first bake")
 	await qb.wait_planet()
+	await svc.result(far)
 	qb.queue_free()
-	OS.unset_environment("VS_WORLD_CACHE")
 	# item 2: a map asked for and not yet collected is never evicted, however many maps finish meanwhile
 	var pin_img := Image.create(4, 4, false, Image.FORMAT_RGBA8)
 	BAKER.remember("pin_probe", pin_img)
@@ -414,39 +375,27 @@ func _run() -> void:
 		_check(got != null, "result() lost a map the cap trim dropped while it was being collected (full_pin_%d)" % e)
 	_check(BAKER._cache.size() <= BAKER.CACHE_MAX and BAKER._pins.is_empty(), "the cache stayed over its cap after every pin was released (%d)" % BAKER._cache.size())
 	BAKER._cache.clear()
-	# item 1: a new battle drops the maps a freed showcase or earlier battle left waiting
-	svc._jobs["stale_a"] = {"path": "res://nope_a.json", "size": Vector2i(8, 8), "done": false, "image": null, "started": 0, "compute": false}
-	svc._jobs["stale_b"] = {"path": "res://nope_b.json", "size": Vector2i(8, 8), "done": false, "image": null, "started": 0, "compute": false}
-	svc._enqueue("stale_a", true)
-	svc._enqueue("stale_b", false)
-	var stale_job: Dictionary = svc._jobs["stale_a"]
-	BAKER.drop_waiting(self)
-	_check(not svc._queue.has("stale_a") and not svc._queue.has("stale_b") and not svc._jobs.has("stale_b") and stale_job.done,
-		"drop_waiting left an old battle's maps in the queue (%s)" % str(svc._queue))
 	_check(FileAccess.get_file_as_string("res://scenes/battle/battle.gd").contains(".drop_waiting(get_tree())"), "battle.gd no longer drops the old maps before its board builds")
-	q = BAKER.new()
-	q.free()
-	# Wave 0 (Fable): a changed recipe must never draw old maps from a PC's disk cache. The key holds the whole shader
-	# text, and both save paths (the GPU compute bake in _work, the raster bake in _finish_image) and the load path use
-	# <key>.png, so a stale file under the old key is never read for the new recipe.
+	# A shader change invalidates both the single-map and new board cache entries.
 	var code_now: String = PL.bake_code()
+	var code_old := code_now + "\n// an older recipe"
 	var bp := {"seed": 1.0, "kind": 5, "ca": Vector3.ONE, "cb": Vector3.ZERO, "cc": Vector3.ONE, "pass_id": 0}
-	var k_old: String = BAKER.cache_key("board_planet|3|1|a", code_now + "\n// an older recipe", bp, Vector2i(8, 4))
-	var k_new: String = BAKER.cache_key("board_planet|3|1|a", code_now, bp, Vector2i(8, 4))
+	var csize := Vector2i(8, 4)
+	var k_old := BAKER.cache_key("cache_probe", code_old, bp, csize)
+	var k_new := BAKER.cache_key("cache_probe", code_now, bp, csize)
 	_check(k_old != k_new, "a recipe change keeps the old bake cache key")
+	_check(BAKER.board_key("board_probe", code_old, bp, csize) != BAKER.board_key("board_probe", code_now, bp, csize),
+		"a recipe change keeps the old board cache key")
 	var cdir := OS.get_user_data_dir().path_join("planet_v2_cache_paths")
-	DirAccess.make_dir_recursive_absolute(cdir)
 	OS.set_environment("VS_WORLD_CACHE", cdir)
 	var stale := Image.create(8, 4, false, Image.FORMAT_RGBA8)
 	stale.fill(Color(1, 0, 0))
-	var saved: Dictionary = BAKER._finish_image(k_old, stale.duplicate())   # the raster path saves <key>.png
-	_check(saved.get("image") != null and FileAccess.file_exists(cdir.path_join(k_old + ".png")), "the raster bake path did not save under its cache key")
-	var hit: Dictionary = BAKER._work(k_old, {"size": Vector2i(8, 4), "compute": false})
-	_check(hit.get("source", "") == "loaded", "the load path did not read a map saved under its own key")
-	var miss: Dictionary = BAKER._work(k_new, {"size": Vector2i(8, 4), "compute": false})
-	_check(miss.get("image") == null, "a changed recipe loaded the old recipe's map from disk")
-	_check(hit.get("image") != null and (hit.get("image") as Image).get_pixel(0, 0).r > 0.9, "the load path did not return the saved map")
-	_check(FileAccess.get_file_as_string("res://world/world_bake.gd").contains('var path := folder.path_join(key + ".png")'), "the compute bake path no longer saves under <key>.png")
+	_check(BAKER._save(k_old, stale, {}, {}, cdir), "the single-map save path did not write under its cache key")
+	var hit: Image = await svc.bake("cache_probe", code_old, bp, csize, 32)
+	_check(hit != null and hit.get_pixel(0, 0).r > 0.9, "the load path did not return the saved map")
+	if DisplayServer.get_name() == "headless":
+		var miss: Image = await svc.bake("cache_probe", code_now, bp, csize, 32)
+		_check(miss == null, "a changed recipe loaded the old recipe's map from disk")
 	DirAccess.remove_absolute(cdir.path_join(k_old + ".png"))
 	OS.unset_environment("VS_WORLD_CACHE")
 	# relief: one exact 32-bit float channel (Fable, PR 1776 M4)

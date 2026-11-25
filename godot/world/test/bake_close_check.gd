@@ -43,9 +43,14 @@ func _run() -> void:
 	var wait := func() -> void: got[0] = await svc.result(key)
 	wait.call()
 	var t0 := Time.get_ticks_msec()
-	while not (svc._active == key and svc._thread != null) and Time.get_ticks_msec() - t0 < 10000:
-		await process_frame
-	_expect(svc._active == key and svc._thread != null, "the worker took the job (the case under test)")
+	var taken := false
+	# Do not give _process a chance to drain the hand-back while observing the worker.
+	while not taken and Time.get_ticks_msec() - t0 < 10000:
+		svc._mutex.lock()
+		taken = svc._active == key or not svc._finished.is_empty()
+		svc._mutex.unlock()
+		if not taken: OS.delay_msec(1)
+	_expect(taken and svc._thread != null, "the worker took the job (the case under test)")
 	var tc := Time.get_ticks_msec()
 	BAKE.clear_static()
 	print("  clear_static with the worker inside the job: %d ms" % (Time.get_ticks_msec() - tc))
