@@ -12,6 +12,7 @@ const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const FLOOK_W := preload("res://fx/faction_look.gd")
+const DAMAGE_PLUME := preload("res://fx/fx_damage_plume.gd")
 const SKEEP := preload("res://render/shader_keep.gd")   # issue 1434: one Shader per code for the session
 const BEATS := preload("res://fx/fx_death_beats.gd")   # issue 1586: cause, faction, archetype and afterlife beats
 
@@ -3871,7 +3872,7 @@ static func _hide_ship(s) -> void:
 	s.hide_live_hull()
 
 
-# One independent copy of the damaged hull, no fracture upload, fire or lights.
+# One independent copy of the damaged hull and a cold vent, no fracture upload, fire or lights.
 # G2 may release its live ship root as soon as death()'s returned time expires.
 static func _hulk(fx, s) -> void:
 	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s or s.has_meta("death_hidden"): return
@@ -3913,14 +3914,10 @@ static func _hulk(fx, s) -> void:
 	var hit: Dictionary = s.hull.ray(s.hull.c + Vector3.UP * maxf(s.hull.L, 1.0), Vector3.DOWN)
 	var p: Vector3 = hit.get("p", s.hull.core)   # issue 370: a missed ray falls back to the core, never a box point
 	var n: Vector3 = hit.get("n", Vector3.UP)
-	var b := POOLS.Batch.new()
-	var size: float = maxf(s.hull.L * 0.025, 0.06)
-	for j in 9:
-		var v := n * size * 8.0
-		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, fx.now + j * 0.13),
-			Vector4(v.x, v.y, v.z, 1.7), Vector4(0.22, 0.32, 0.06, 0.3) if s.faction == "chorus" else Vector4(0.42, 0.46, 0.5, 0.5),
-			Vector4(size * 0.4, size * 3.2, 20 if s.faction == "chorus" else 7, 16.3), Vector4(0, 0, 0.5, 0)))
-	b.build(fx.mat(SH.SPRITE, 1), node, "fx_hulk_vent")
+	var vent := DAMAGE_PLUME.build(fx, node, p, (n + Vector3.UP * 0.3).normalized(), maxf(s.hull.L * 0.20, 0.12),
+		DAMAGE_PLUME.Form.HULK, s.fac, 0.12, "fx_hulk_vent")
+	wreck["vent_material"] = vent.material_override
+	wreck["vent_next"] = fx.now
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
 	BEATS.on_hulk(fx, s, node, str(s.get_meta("death_cause", "dark")))
@@ -4840,6 +4837,12 @@ static func update(fx, dt: float) -> void:
 				(nd as RigidBody3D).angular_velocity *= fa
 		w["speed"] = speed
 		var age: float = fx.now - float(w["t0"])
+		if w.has("vent_material") and fx.now >= float(w["vent_next"]):
+			if DAMAGE_PLUME.thin_hulk(w["vent_material"], age):
+				w.erase("vent_material")
+				w.erase("vent_next")
+			else:
+				w["vent_next"] = fx.now + 0.1
 		# Heat fades over a few seconds. The cold opaque cap remains.
 		# Issue 484 profiling: a wreck now has up to a dozen glowing faces and its scorched plating. Heat falls by about a
 		# tenth a second, so faces are set 15 times a second, not every frame, and a wreck that has gone cold is never

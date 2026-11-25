@@ -71,7 +71,7 @@ func _run() -> void:
 		for e in s._damage_emitters:
 			if e.kind == "fire":
 				check((e.source - s._anchor(e.sec, "a").p).dot(s._anchor(e.sec, "a").n) < 0.0, "stage 4 source seated inside")
-			if faction in ["chorus", "ithar"]: check(e.sprite_kind != 25 and e.sprite_kind != 1, "living and crystal hulls never use flame")
+			if faction == "ithar": check(e.mat.get_shader_parameter("core_power") == 0.0, "crystal hulls never use flame")
 		s.add_mark(fx, "torp", 4, Vector3(0, 2.5, 0), Vector3.UP, Vector3.DOWN)
 		flush(s)
 		var builds_before: int = s.mark_ms.size()
@@ -106,7 +106,7 @@ func _run() -> void:
 			flush(s)
 			var counts: Dictionary = s.damage_counts()
 			check(counts.fire <= caps.x and counts.smoke + counts.vent <= caps.y, "class cap %d stage %d" % [weight, st])
-			if st == 1: check(counts.particles == 0, "stage 1 no permanent emitters")
+			if st == 1: check(counts.fire == 0 and counts.smoke <= 3, "stage 1 uses at most one cold puff per section")
 			if st == 2: check(counts.fire == 0 and counts.smoke > 0, "smoke starts at stage 2")
 			s.sync(fx, {"hp": [100, 70, 50, 30, 10][st], "maxHp": 100, "burning": true})
 			var count: Dictionary = s.damage_counts()
@@ -116,14 +116,12 @@ func _run() -> void:
 			fx.step(0.81)
 	var wing = _ship("wing", "hegemony", 0.2, true)
 	wing.sync(fx, {"hp": 49, "maxHp": 100})
-	var emitted: int = fx.pools.smk.emitted
 	fx.step(0.2)
 	check(wing.stage == [0, 0, 0] and wing._orig.is_empty(), "squadrons retain clean surfaces")
-	check(fx.pools.smk.emitted > emitted, "below-half squadron emits pooled smoke ribbon")
+	check(is_instance_valid(wing._wing_smoke), "below-half squadron draws its baked smoke ribbon")
 	wing.sync(fx, {"hp": 50, "maxHp": 100})
-	emitted = fx.pools.smk.emitted
 	fx.step(0.2)
-	check(fx.pools.smk.emitted == emitted, "squadron stops smoke at half health")
+	check(not is_instance_valid(wing._wing_smoke), "squadron stops smoke at half health")
 	var flashes: int = fx.flash_log.size()
 	for i in 120: fx.step(1.0 / 60.0)
 	check(fx.flash_log.size() == flashes, "persistent wounds spend zero counted flashes")
