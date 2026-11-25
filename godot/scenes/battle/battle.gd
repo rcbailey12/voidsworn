@@ -421,7 +421,7 @@ func _build_world() -> void:
 	if sky_res != "" and ResourceLoader.exists(sky_res):
 		# the dead-star sky (A3), mipmapped so the 8K star field does not alias into speckle, and kept dim and subtle
 		var pano := ShaderMaterial.new()
-		pano.shader = sh
+		pano.shader = WORLD_SKY.PANORAMA_SKY
 		_bw_us["sky shader"] = Time.get_ticks_usec() - tw
 		tw = Time.get_ticks_usec()
 		var sky_tex = _sky_texture_now(sky_res)
@@ -542,23 +542,26 @@ func _apply_quality(q: String) -> void:
 	if title_backdrop and _vp_saved.is_empty():
 		# issue 1434 (item 10): the backdrop shares the root viewport with the menu; stop_build() puts these back
 		_vp_saved = {"msaa_3d": vp.msaa_3d, "screen_space_aa": vp.screen_space_aa, "use_taa": vp.use_taa}
-	var aa_was := [vp.msaa_3d, vp.screen_space_aa, vp.use_taa]
+	var aa_was := [vp.msaa_3d, vp.screen_space_aa, vp.use_taa, vp.scaling_3d_mode, vp.scaling_3d_scale]
 	# LOAD34b: the backdrop's own 2X (from the menu's 4X) cost the next title draw 847 ms warm (render cpu 846 ms, no
 	# pipelines: the render buffers and their passes made again), so the backdrop leaves the viewport's AA as the menu
 	# had it (no write at all; Artoo on b21535a6), and stop_build still puts the saved state back
 	if title_backdrop:
 		RenderingServer.directional_shadow_atlas_set_size(2048 if q == "low" else 4096, true)   # the rest of apply_quality_to
 	else:
-		apply_quality_to(vp, q, _jt(args.get("taa", false)))
-	if aa_was != [vp.msaa_3d, vp.screen_space_aa, vp.use_taa]:
-		SKEEP.event("viewport AA changed %s to %s" % [str(aa_was), str([vp.msaa_3d, vp.screen_space_aa, vp.use_taa])])
+		apply_quality_to(vp, q, _jt(args.get("taa", false)), str(args.get("battle_aa", "default")),
+			float(args.get("render_scale", vp.scaling_3d_scale)))
+	var aa_now := [vp.msaa_3d, vp.screen_space_aa, vp.use_taa, vp.scaling_3d_mode, vp.scaling_3d_scale]
+	if aa_was != aa_now:
+		SKEEP.event("viewport AA changed %s to %s" % [str(aa_was), str(aa_now)])
 
 
-static func apply_quality_to(vp: Viewport, q: String, taa: bool, msaa := -1) -> void:
-	vp.msaa_3d = LOOK.msaa_for_quality(q) if msaa < 0 else msaa as Viewport.MSAA
+static func apply_quality_to(vp: Viewport, q: String, taa: bool, aa := "default", render_scale := 1.0) -> void:
+	var fsr2 := RenderingServer.get_current_rendering_method() == "forward_plus" and aa in ["fsr2_native", "fsr2_quality"]
+	vp.msaa_3d = Viewport.MSAA_DISABLED if fsr2 else LOOK.msaa_for_quality(q)
 	# issue 1437 (item 8): the whole AA state every time (the viewport is the game's own, shared by every later screen
 	# and battle), so Low then Max no longer leaves FXAA on
-	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if q == "low" else Viewport.SCREEN_SPACE_AA_DISABLED
+	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if q == "low" and not fsr2 else Viewport.SCREEN_SPACE_AA_DISABLED
 	RenderingServer.directional_shadow_atlas_set_size(2048 if q == "low" else 4096, true)
 	vp.use_taa = taa and q != "low" and not fsr2
 	if fsr2:
@@ -910,7 +913,7 @@ func _begin(a) -> void:
 		for c in backdrop.get_children():
 			c.queue_free()
 	else:
-		backdrop.build(cam.bounds, env)
+		backdrop.build(cam.bounds)
 	var grade_region := "frontier"
 	if world != null:
 		grade_region = "deadstar" if world.setting["deadstar"] else str(world.setting["region"])

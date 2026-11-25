@@ -24,7 +24,7 @@ const WORLD_BAKE := preload("res://world/world_bake.gd")   # issue 1434: bakes h
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "brisk_camera": false, "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true, "render_scale": 1.0, "fps_cap": 0.0, "vsync": true}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "brisk_camera": false, "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true, "render_scale": 1.0, "fps_cap": 0.0, "vsync": true, "world_bc7": false}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -340,6 +340,7 @@ func _capture_window(spec: String) -> void:
 
 
 func _apply_settings() -> void:
+	WORLD_BAKE.set_bc7_enabled(bool(settings.get("world_bc7", false)))
 	# the player's UI scale (R2, ui_spec.md 4.4): the Settings entry writes settings["ui_scale"], a missing key reads as 1.0
 	load("res://ui/ui_scale.gd").set_player(settings.get("ui_scale", 1.0))
 	# screenshot and capture jobs keep the window the command line asked for (--resolution), so every frame is one size
@@ -373,10 +374,9 @@ func _apply_display() -> void:
 	# the battle draws in the game's own viewport; the sector map draws in its own full-screen one (map3d.gd), which
 	# reads the same value when it is built. Small portraits and podiums stay at full scale.
 	Engine.set_meta("render_scale", rs)
-	var current_battle: Node = battle if is_instance_valid(battle) else showcase
-	if is_instance_valid(current_battle):
-		_set_battle_display_args(current_battle)
-		current_battle._apply_quality(str(current_battle.args.get("quality", "max")))
+	if is_instance_valid(battle):
+		_set_battle_display_args(battle)
+		battle._apply_quality(str(battle.args.get("quality", "max")))
 	else:
 		apply_render_scale(get_viewport(), rs)
 	for vp in get_tree().get_nodes_in_group("player_3d_viewport"):

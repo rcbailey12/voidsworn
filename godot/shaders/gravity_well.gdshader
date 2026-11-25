@@ -39,7 +39,8 @@ void fragment() {
 	float an = 0.06 * w + 0.04 * w * sin(TIME * 0.20943951); // 30 s slow twist
 	mat2 R = mat2(vec2(cos(an), sin(an)), vec2(-sin(an), cos(an)));
 	vec2 suv = clamp(cs + R * dv * (1.0 - s), vec2(0.001), vec2(0.999));
-	vec2 shift = normalize(dv + vec2(0.000001)) / vec2(textureSize(screen_tex, 0)) * chroma_px * rim;
+	float fr = VIEWPORT_SIZE.y / 1080.0;
+	vec2 shift = normalize(dv + vec2(0.000001)) / vec2(textureSize(screen_tex, 0)) * chroma_px * rim * fr;
 	vec2 red_uv = clamp(suv + shift, vec2(0.001), vec2(0.999));
 	vec2 blue_uv = clamp(suv - shift, vec2(0.001), vec2(0.999));
 	if (foreground(suv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX) || foreground(red_uv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX) || foreground(blue_uv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX)) {

@@ -1,4 +1,5 @@
 extends Node
+const SKEEP := preload("res://render/shader_keep.gd")
 # A shared queue survives title, map and battle changes. Workers own their local
 # RenderingDevice, compilation, GPU waits, readback, mipmaps and disk I/O.
 # Scene nodes and texture uploads stay on the main thread, behind loading.
@@ -25,14 +26,18 @@ var _active := ""
 var _thread: Thread
 # Issue 1434 (LOAD12: a 9 s main-thread frame lined up with the worker's time after a bake's compute, cold and warm,
 # with no pipeline compiled in it): a bake finished while a battle or the title backdrop is loading (group
-# "battle_loading") keeps its image in memory and writes its PNG and prunes the cache only once nothing is loading.
-# work_stage says what the worker is doing (0 idle, 1 disk check, 2 compute, 3 png save, 4 prune, 5 mips), so the load
+# "battle_loading") keeps its image in memory and writes the cache file and prunes only once nothing is loading.
+# work_stage says what the worker is doing (0 idle, 1 disk check, 2 compute, 3 save, 4 prune, 5 mips, 6 BC7 encode), so the load
 # bench can put a frozen frame against it.
 var _unsaved: Array = []   # [key, image, folder] baked during a load, saved later into the folder it was queued for
 var written := 0           # deferred writes that saved and renamed (the load bench reads these)
 var write_failed := 0
 const SAVE_JOB := "#save"
 static var work_stage := 0
+static var bc7_enabled := false   # player opt-in, read only when resolving new requests
+
+static func set_bc7_enabled(enabled: bool) -> void:
+	bc7_enabled = enabled
 
 # Issue 1765: a battle opened as the main scene builds its world and board inside its own _ready, while the root is
 # still adding children; add_child is refused there ("Parent node is busy") and every bake request then failed on a
@@ -175,23 +180,26 @@ func authored(path: String, size: Vector2i, float_mips := false, urgent := false
 
 # Queues an authored map without waiting; returns its key for result(). A caller with several maps requests them all
 # first, so nothing else can slip in between them (Artoo, PR 1776).
-static func authored_key(path: String, size: Vector2i, float_mips := false) -> String:
-	return (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
+static func authored_key(path: String, size: Vector2i, float_mips := false, bc7 := false) -> String:
+	var key := (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
+	return _format_key(key, bc7 and not float_mips)
 
 # Issue 1434 (Artoo on 002e143f): whether an authored map's texture is still made and held, asked without starting a
 # request or a pin (a trim drops the image and its texture together).
-static func authored_texture_resident(path: String, size: Vector2i, float_mips := false) -> bool:
-	var img = _cache.get(authored_key(path, size, float_mips))
+static func authored_texture_resident(path: String, size: Vector2i, float_mips := false, color := false) -> bool:
+	var img = _cache.get(authored_key(path, size, float_mips, _use_bc7(color, float_mips)))
 	return img is Image and _textures.has((img as Image).get_instance_id())
 
-func request_authored(path: String, size: Vector2i, float_mips := false, urgent := false) -> String:
+func request_authored(path: String, size: Vector2i, float_mips := false, urgent := false, color := false) -> String:
 	var owner := service(_tree())
-	var key := authored_key(path, size, float_mips)
+	var bc7 := _use_bc7(color, float_mips)
+	var key := authored_key(path, size, float_mips, bc7)
 	_pin(key)
 	if _cache.has(key): return key
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"path": path, "size": size, "done": false,
-			"image": null, "started": Time.get_ticks_msec(), "compute": false, "float_mips": float_mips, "bc7": bc7}
+			"image": null, "started": Time.get_ticks_msec(), "compute": false, "float_mips": float_mips,
+			"bc7": bc7, "folder": _folder()}
 	owner._enqueue(key, urgent)
 	return key
 
@@ -249,13 +257,12 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 # Queues a bake without waiting; returns its key for result() (see request_authored).
 func request_bake(key: String, code: String, params: Dictionary, size: Vector2i, _strips: int, half_mips := false, urgent := false, color := false) -> String:
 	var owner := service(_tree())
-	var png_key := cache_key(key, code, params, size)
-	var bc7 := color and not half_mips and _supports_bc7()
-	key = (png_key + "|bc7").sha256_text() if bc7 else png_key
+	var bc7 := _use_bc7(color, half_mips)
+	key = _format_key(cache_key(key, code, params, size), bc7)
 	_pin(key)
 	if _cache.has(key): return key
 	if not owner._jobs.has(key):
-		owner._jobs[key] = {"code": code, "params": params.duplicate(true), "size": size, "half_mips": half_mips,
+		owner._jobs[key] = {"code": code, "params": params.duplicate(true), "size": size, "half_mips": half_mips, "bc7": bc7,
 			"done": false, "image": null, "started": Time.get_ticks_msec(), "folder": _folder(),
 			"compute": DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "gl_compatibility"}
 	owner._enqueue(key, urgent)
@@ -301,12 +308,13 @@ func _process(_dt: float) -> void:
 				job.done = true
 				return
 			_thread = Thread.new()
-			_thread.start(_finish_image.bind(_active, img, _keep_keys(), bool(job.get("half_mips", false))))
+			job["defer_save"] = job.get("defer_save", false) or _loading()
+			_thread.start(_finish_image.bind(_active, img, _keep_keys(), job))
 			return
 		job.image = result.image
 		job.done = true
-		if result.get("unsaved", false):
-			_unsaved.append([_active, result.image, str(job.get("folder", _folder()))])
+		if result.get("save_image") != null:
+			_unsaved.append([_active, result.save_image, str(job.get("folder", _folder()))])
 		if result.image != null:
 			remember(_active, result.image)
 			handed_back = (handed_back + " " if handed_back != "" else "") + _active.left(12)
@@ -359,6 +367,12 @@ func _keep_keys() -> Dictionary:
 static func _folder() -> String:
 	return OS.get_environment("VS_WORLD_CACHE") if OS.has_environment("VS_WORLD_CACHE") else CACHE_DIR
 
+static func _format_key(key: String, bc7: bool) -> String:
+	return (key + "|bc7").sha256_text() if bc7 else key
+
+static func _use_bc7(color: bool, high_precision: bool) -> bool:
+	return bc7_enabled and color and not high_precision and _supports_bc7()
+
 static func _supports_bc7() -> bool:
 	var rd := RenderingServer.get_rendering_device()
 	if rd == null: return false
@@ -383,30 +397,28 @@ static func _load_bc7(path: String, size: Vector2i) -> Image:
 	return Image.create_from_data(size.x, size.y, true, Image.FORMAT_BPTC_RGBA, bytes)
 
 
-static func _save_bc7(img: Image, path: String, keep: Dictionary, key: String) -> void:
+static func _compress_bc7(img: Image, stages: Dictionary) -> bool:
 	# The sky's alpha is transmittance, and planet albedo alpha is ocean/ice sheen. BC7 keeps both.
 	# Only 8-bit color goes through this path. Packed relief and the half-float sky planned in #1502 keep their format.
-	if img.get_format() != Image.FORMAT_RGBA8 and img.get_format() != Image.FORMAT_RGB8: return
-	if img.compress(Image.COMPRESS_BPTC, Image.COMPRESS_SOURCE_GENERIC) != OK: return
-	var folder := path.get_base_dir()
-	if DirAccess.make_dir_recursive_absolute(folder) != OK: return
-	var tmp := path + ".tmp"
-	var file := FileAccess.open(tmp, FileAccess.WRITE)
-	if file == null: return
-	var wrote := file.store_buffer(img.get_data())
-	file.close()
-	if wrote and DirAccess.rename_absolute(tmp, path) == OK:
-		prune(folder, CACHE_CAP_BYTES, keep, key)
+	if img.get_format() != Image.FORMAT_RGBA8 and img.get_format() != Image.FORMAT_RGB8: return false
+	work_stage = 6
+	var t := Time.get_ticks_usec()
+	var ok := img.compress(Image.COMPRESS_BPTC, Image.COMPRESS_SOURCE_GENERIC) == OK
+	stages["bc7_encode"] = (Time.get_ticks_usec() - t) / 1000
+	work_stage = 0
+	return ok and img.get_format() == Image.FORMAT_BPTC_RGBA
 
 
 static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictionary:
-	var folder := _folder()
+	# Issue 1434: the folder is pinned when queued, including reads and deferred writes for both formats.
+	var folder := str(job.get("folder", _folder()))
 	var bc7 := bool(job.get("bc7", false))
-	var bc7_path := folder.path_join(key + ".bc7")
+	work_stage = 1
 	if bc7:
-		var hit := _load_bc7(bc7_path, job.size)
+		var hit := _load_bc7(folder.path_join(key + ".bc7"), job.size)
 		if hit != null:
 			touch(folder, key)
+			work_stage = 0
 			return {"image": hit, "source": "loaded BC7"}
 	if job.has("path"):
 		var authored_image: Image = null
@@ -415,21 +427,24 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 		else:
 			authored_image = Image.load_from_file(job.path)
 		if authored_image == null or authored_image.get_size() != job.size:
+			work_stage = 0
 			return {"image": null, "error": "Missing or wrong-size R01 map: " + str(job.path)}
 		# Averaging the high/low height bytes into 8-bit mip levels rounds the
 		# high byte first. Near a pole that makes false radial ridges. Float
 		# channels preserve the linear packed value through filtering and mips.
+		work_stage = 5
 		if job.get("float_mips", false): authored_image.convert(Image.FORMAT_RGBAF)
 		authored_image.generate_mipmaps()
-		if bc7: _save_bc7(authored_image, bc7_path, keep, key)
-		return {"image": authored_image, "source": "authored"}
-	# Artoo on PR 1445: the folder is pinned when the job is queued, so a later VS_WORLD_CACHE change (the bench's b2r)
-	# cannot move this job's read or its deferred write
-	var folder: String = str(job.get("folder", _folder()))
+		var authored_stages := {}
+		var save_image: Image = null
+		if bc7 and _compress_bc7(authored_image, authored_stages):
+			save_image = _save_or_defer(key, authored_image, keep, authored_stages, job)
+		work_stage = 0
+		return {"image": authored_image, "source": "authored", "stages": authored_stages, "save_image": save_image}
 	var path := folder.path_join(key + ".png")
 	var img: Image = null
 	work_stage = 1
-	if FileAccess.file_exists(path): img = Image.load_from_file(path)
+	if not bc7 and FileAccess.file_exists(path): img = Image.load_from_file(path)
 	var source := "loaded"
 	var error := ""
 	var stages := {}
@@ -442,32 +457,61 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 			error = result.get("error", "")
 			stages = result.get("stages", {})
 			source = "baked"
-			if img != null and job.get("defer_save", false):
-				stages["save"] = "deferred (a load is running)"
-			elif img != null:
-				_save(key, img, keep, stages, folder)
-	elif source == "loaded":
+	else:
 		touch(folder, key)
+	var finished := _prepare_bake(key, img, keep, stages, job, source == "baked")
+	finished.merge({"source": source, "error": error, "stages": stages})
+	return finished
+
+
+static func _prepare_bake(key: String, img: Image, keep: Dictionary, stages: Dictionary, job: Dictionary, baked: bool) -> Dictionary:
+	var save_image: Image = null
+	var bc7 := bool(job.get("bc7", false))
+	var half_mips := bool(job.get("half_mips", false))
+	if img == null:
+		work_stage = 0
+		return {"image": null}
+	if baked and not bc7:
+		save_image = _save_or_defer(key, img, keep, stages, job)
 	work_stage = 5
 	var tm := Time.get_ticks_usec()
-	if img != null and job.get("half_mips", false): img = height_float(img)
-	if img != null and not img.has_mipmaps(): img.generate_mipmaps()
+	# PNG keeps the original packed height bytes, even when written after the upload.
+	if half_mips: img = height_float(img.duplicate() if save_image != null else img)
+	if not img.has_mipmaps(): img.generate_mipmaps()
 	if not stages.is_empty(): stages["mips"] = (Time.get_ticks_usec() - tm) / 1000
+	if bc7 and _compress_bc7(img, stages):
+		save_image = _save_or_defer(key, img, keep, stages, job)
 	work_stage = 0
-	return {"image": img, "source": source, "error": error, "stages": stages,
-		"unsaved": source == "baked" and img != null and job.get("defer_save", false)}
+	return {"image": img, "save_image": save_image}
 
 
-# The PNG write and the cache prune of one baked map, each timed (stages "save" and "prune", with their wall-clock start).
+static func _save_or_defer(key: String, img: Image, keep: Dictionary, stages: Dictionary, job: Dictionary) -> Image:
+	if job.get("defer_save", false):
+		stages["save"] = "deferred (a load is running)"
+		return img
+	_save(key, img, keep, stages, str(job.get("folder", _folder())))
+	return null
+
+
+# Cache file write and prune, each timed. BC7 arrives already encoded so the same image can be uploaded before a save.
 static func _save(key: String, img: Image, keep: Dictionary, stages: Dictionary, folder: String) -> bool:
-	var path := folder.path_join(key + ".png")
+	var bc7 := img.get_format() == Image.FORMAT_BPTC_RGBA
+	var path := folder.path_join(key + (".bc7" if bc7 else ".png"))
 	if DirAccess.make_dir_recursive_absolute(folder) != OK:
 		return false
 	work_stage = 3
 	var t := Time.get_ticks_usec()
 	stages["save_began"] = Time.get_ticks_msec()
 	var tmp := path + ".tmp"
-	var ok := img.save_png(tmp) == OK and DirAccess.rename_absolute(tmp, path) == OK
+	var wrote := false
+	if bc7:
+		var file := FileAccess.open(tmp, FileAccess.WRITE)
+		if file != null:
+			wrote = file.store_buffer(img.get_data())
+			file.close()
+	else:
+		wrote = img.save_png(tmp) == OK
+	var ok := wrote and DirAccess.rename_absolute(tmp, path) == OK
 	stages["save"] = (Time.get_ticks_usec() - t) / 1000
 	if ok:
 		work_stage = 4
@@ -534,16 +578,11 @@ static func _authored_tiles(path: String, size: Vector2i) -> Image:
 		image.blit_rect(tile, Rect2i(Vector2i.ZERO, tile_size), pos)
 	return image
 
-static func _finish_image(key: String, img: Image, keep: Dictionary = {}, half_mips := false) -> Dictionary:
-	if img != null:
-		var folder := _folder()
-		if DirAccess.make_dir_recursive_absolute(folder) == OK:
-			var path := folder.path_join(key + ".png")
-			if img.save_png(path + ".tmp") == OK and DirAccess.rename_absolute(path + ".tmp", path) == OK:
-				prune(folder, CACHE_CAP_BYTES, keep, key)
-		if half_mips: img = height_float(img)
-		img.generate_mipmaps()
-	return {"image": img, "source": "baked"}
+static func _finish_image(key: String, img: Image, keep: Dictionary = {}, job: Dictionary = {}) -> Dictionary:
+	var stages := {}
+	var finished := _prepare_bake(key, img, keep, stages, job, true)
+	finished.merge({"source": "baked", "stages": stages})
+	return finished
 
 # Issue 1265. The index maps a cache key to the unix time a battle last loaded or saved it. A missing stamp (older
 # bakes, a lost write) falls back to the newer of the file's modified and access times. Runs on the bake worker only.
@@ -760,12 +799,8 @@ static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictio
 # loading cover; mipmaps and PNG work still go through the worker.
 func _canvas(code: String, params: Dictionary, size: Vector2i) -> Image:
 	var strips := maxi(2, ceili(size.y / 32.0))
-	if not _raster_shaders.has(code):
-		var shader := Shader.new()
-		shader.code = code
-		_raster_shaders[code] = shader
 	var mat := ShaderMaterial.new()
-	mat.shader = _raster_shaders[code]
+	mat.shader = SKEEP.of(code)
 	for k in params:
 		mat.set_shader_parameter(k, params[k])
 	var sh_h := int(ceil(float(size.y) / strips))

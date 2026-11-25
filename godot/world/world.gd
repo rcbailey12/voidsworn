@@ -128,8 +128,7 @@ func prepare_sector(env: Environment, run: Dictionary, q: String) -> void:
 func surface_material(sun: Vector3) -> ShaderMaterial:
 	var P: Dictionary = setting["planet"]
 	var m := ShaderMaterial.new()
-	var sh: Shader = SKEEP.of(PL.SPHERE)   # issue 1434: one compiled shader per code
-	m.shader = sh
+	m.shader = PL.SPHERE
 	m.set_shader_parameter("sun", sun)
 	m.set_shader_parameter("atmo", P["atmo"])
 	m.set_shader_parameter("flat_col", P["a"])
@@ -353,7 +352,7 @@ func set_look() -> void:
 		var radius := 170.0
 		if is_instance_valid(_terrain_camera) and "r" in _terrain_camera:
 			radius = float(_terrain_camera.get("r"))
-		LIV.apply_fog(get_parent(), _terrain_env, radius, _living != null and _living.has_visible_fog())
+		LIV.apply_fog(get_parent(), _terrain_env, radius, quality, _living != null and _living.has_visible_fog())
 
 
 # ---------------------------------------------------------------- the run 5 finale (R78 Q18)
@@ -505,8 +504,7 @@ func build_gallery(env: Environment, cam: Camera3D, opts: Dictionary) -> void:
 
 func _make_sky(env: Environment) -> void:
 	var m := ShaderMaterial.new()
-	var sh: Shader = SKEEP.of(SKY.SKY)   # issue 1434: one compiled shader per code
-	m.shader = sh
+	m.shader = SKY.SKY
 	var lamps: Array = SKY.lamps(SKY.bake_view(setting))   # issue 1272: bake inputs stay the sector's own
 	var lc: Array = []
 	var lr := RandomNumberGenerator.new()
@@ -573,7 +571,7 @@ func _load_sky(lamps: Array) -> void:
 		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(bs))}
 	var code := SKY.bake_code()
 	var mat := _sky_mat
-	var img: Image = await _baker.bake(key, code, params, size, 32)
+	var img: Image = await _baker.bake(key, code, params, size, 32, false, false, true)
 	if not is_inside_tree() or img == null or not is_instance_valid(mat) or mat != _sky_mat: return
 	var tex := BAKER.texture(img)
 	mat.set_shader_parameter("neb_tex", tex)
@@ -685,8 +683,7 @@ func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int
 	sm.rings = 64 if main else 24
 	mi.mesh = sm
 	var m := ShaderMaterial.new()
-	var sh: Shader = SKEEP.of(PL.SPHERE)   # issue 1434: one compiled shader per code
-	m.shader = sh
+	m.shader = PL.SPHERE
 	m.set_shader_parameter("flat_col", (P["a"] as Vector3) * 0.6)
 	m.set_shader_parameter("sun", _body_sun(pos))
 	var atmo: Vector3 = P.get("atmo", Vector3.ZERO)
@@ -713,8 +710,7 @@ func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int
 		sm2.rings = 48
 		sh2.mesh = sm2
 		var am := ShaderMaterial.new()
-		var ash: Shader = SKEEP.of(PL.ATMO)   # issue 1434: one compiled shader per code
-		am.shader = ash
+		am.shader = PL.ATMO
 		am.set_shader_parameter("atmo", atmo)
 		am.set_shader_parameter("sun", _body_sun(pos))
 		am.set_shader_parameter("shell", 1.035)
@@ -740,7 +736,7 @@ func _bake_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int,
 func _load_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int, size: Vector2i) -> void:
 	var params := {"seed": float(bake_seed % 997) * 0.71, "kind": int(P["kind"]), "ca": P["a"], "cb": P["b"], "cc": P["c"], "pass_id": 0}
 	var code := PL.bake_code()
-	var a: Image = await _baker.bake(key + "|a", code, params, size, 16)
+	var a: Image = await _baker.bake(key + "|a", code, params, size, 16, false, false, true)
 	if not is_inside_tree() or a == null or not is_instance_valid(m) or not is_instance_valid(_baker): return
 	params["pass_id"] = 1
 	var b: Image = await _baker.bake(key + "|b", code, params, size, 16)
@@ -755,8 +751,7 @@ func _rings(pos: Vector3, R: float, basis: Basis, P: Dictionary, r: RandomNumber
 	var mi := MeshInstance3D.new()
 	mi.mesh = _annulus(1.3, 2.3, 256, 1)
 	var m := ShaderMaterial.new()
-	var sh: Shader = SKEEP.of(PL.RING)   # issue 1434: one compiled shader per code
-	m.shader = sh
+	m.shader = PL.RING
 	m.set_shader_parameter("sun", _body_sun(pos))
 	m.set_shader_parameter("col_a", (P["c"] as Vector3) * 0.9)
 	m.set_shader_parameter("col_b", (P["b"] as Vector3) * 1.2)
@@ -799,8 +794,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	var disc := MeshInstance3D.new()
 	disc.mesh = _annulus(Rsh * 1.2, Rsh * 3.8, 192, 16)
 	var dm := ShaderMaterial.new()
-	var dsh: Shader = SKEEP.of(WS.DISC)   # issue 1434: one compiled shader per code
-	dm.shader = dsh
+	dm.shader = WS.DISC
 	dm.set_shader_parameter("r_in", Rsh * 1.2)
 	dm.set_shader_parameter("r_out", Rsh * 3.8)
 	dm.set_shader_parameter("spin", 0.35)
@@ -814,8 +808,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	var disc2 := MeshInstance3D.new()
 	disc2.mesh = disc.mesh
 	var dm2 := ShaderMaterial.new()
-	var dsh2: Shader = SKEEP.of(WS.disc_soft())   # issue 1434: one compiled shader per code
-	dm2.shader = dsh2
+	dm2.shader = WS.DISC_SOFT
 	for pn in ["r_in", "r_out", "spin", "gain"]:
 		dm2.set_shader_parameter(pn, dm.get_shader_parameter(pn))
 	_disc_mats.append({"mat": dm2, "key": "gain", "gain": 0.62})
@@ -825,7 +818,6 @@ func dead_star(c: Vector3, s: float) -> void:
 	tilt.add_child(disc2)
 	# r18: thin glowing haze just above and below the disc, so it has thickness up close (Muse audit B4.5)
 	if quality != "low":
-		var hsh: Shader = SKEEP.of(WS.DISC_HAZE)   # issue 1434: one compiled shader per code
 		for k in 2:
 			var hz := MeshInstance3D.new()
 			hz.mesh = _annulus(Rsh * 1.15, Rsh * 4.2, 128, 10)
@@ -846,8 +838,7 @@ func dead_star(c: Vector3, s: float) -> void:
 		qm.size = Vector2(1, 1)
 		lens.mesh = qm
 		var lm := ShaderMaterial.new()
-		var lsh: Shader = SKEEP.of(WS.LENS)   # issue 1434: one compiled shader per code
-		lm.shader = lsh
+		lm.shader = WS.LENS
 		var half := Rsh * 5.0
 		lm.set_shader_parameter("r_shadow", Rsh * 1.0 / half)
 		lm.set_shader_parameter("r_einstein", Rsh * 1.6 / half)
@@ -1157,7 +1148,7 @@ func fields(mk: String, kind: String) -> void:
 			nm = nm if s > 22.0 else nm + "_lo"
 			s = _backdrop_scale(nm, s, p, 30.0)
 			_batch.add(nm, mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r),
-				r.randf_range(0.004, 0.03), r.randf(), fade_belt and s <= 22.0 and p.distance_squared_to(_center) > 1500.0 * 1500.0)
+				r.randf_range(0.004, 0.03), r.randf(), false, fade_belt and s <= 22.0 and p.distance_squared_to(_center) > 1500.0 * 1500.0)
 			belt += 1
 	# 4. mountains: a few huge rocks far out, below the horizon, clear of the planet and of the board's footprint
 	var mts := 0
@@ -1278,8 +1269,7 @@ func wisps() -> void:
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	var sh: Shader = SKEEP.of(WISP_SHADER)   # issue 1434: one compiled shader per code
-	m.shader = sh
+	m.shader = WISP_SHADER
 	m.set_shader_parameter("noise", _wisp_noise())
 	m.set_shader_parameter("c_a", setting["c1"])
 	m.set_shader_parameter("c_b", setting["c2"])
@@ -1338,8 +1328,7 @@ func underlay() -> void:
 	pm.size = Vector2(ext.x * 2.0 + 260.0, ext.z * 2.0 + 260.0)
 	mi.mesh = pm
 	var m := ShaderMaterial.new()
-	var sh: Shader = SKEEP.of(UNDERLAY_SHADER)   # issue 1434: one compiled shader per code
-	m.shader = sh
+	m.shader = UNDERLAY_SHADER
 	m.set_shader_parameter("half_ext", Vector2(ext.x + 10.0, ext.z + 10.0))
 	m.set_shader_parameter("centre", _center)
 	# a hint of the setting's own colour, so it reads as deep space and not a black sheet
@@ -1365,32 +1354,7 @@ func underlay() -> void:
 
 const CLOUD_SHADER := preload("res://shaders/world_cloud.gdshader")
 
-const DUST_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform vec3 col = vec3(0.6, 0.58, 0.55);
-const float px_1080 = """ + SKY.ANGULAR_PIXEL_1080 + """;
-varying float vA;
-varying vec2 vQ;
-void vertex() {
-	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
-	float size = INSTANCE_CUSTOM.x;
-	float depth = max(-c.z, 1.0);
-	float fr = VIEWPORT_SIZE.y / 1080.0;
-	float px = px_1080 / fr;
-	float mins = depth * (px * fr) * 1.6;
-	float s = max(size, mins);
-	float k = clamp(size / mins, 0.0, 1.0);
-	vA = k * k * INSTANCE_CUSTOM.y * smoothstep(1600.0, 600.0, depth);
-	vQ = VERTEX.xy * 2.0;
-	c.xy += VERTEX.xy * s;
-	POSITION = PROJECTION_MATRIX * c;
-}
-void fragment() {
-	float r = length(vQ);
-	ALBEDO = col * exp(-r * r * 4.0) * vA;
-}
-"""
+const DUST_SHADER := preload("res://shaders/world_dust.gdshader")
 
 
 func _quad_mm(n: int) -> MultiMesh:
@@ -1419,8 +1383,7 @@ func cloud_hexes(ps: Array, t: String, fac: String) -> void:
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	var sh: Shader = SKEEP.of(CLOUD_SHADER.replace("%NOISE%", WS.NOISE))   # issue 1434: one compiled shader per code
-	m.shader = sh
+	m.shader = CLOUD_SHADER
 	var b: Array = FLOOK.of(fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
 	if t == "storm":
 		m.set_shader_parameter("c_dark", Vector3(0.008, 0.004, 0.018))
@@ -1463,8 +1426,7 @@ func dust(mk: String) -> void:
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	var sh: Shader = SKEEP.of(DUST_SHADER)   # issue 1434: one compiled shader per code
-	m.shader = sh
+	m.shader = DUST_SHADER
 	m.set_shader_parameter("col", Vector3(0.55, 0.52, 0.48).lerp(setting.get("c1", Vector3(0.5, 0.5, 0.5)), 0.25) * 0.9)
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

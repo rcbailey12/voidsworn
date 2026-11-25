@@ -1,5 +1,4 @@
 extends RefCounted
-const SKEEP := preload("res://render/shader_keep.gd")
 # F4 asteroids: the rock library (world/rocks/*.glb, made by world/tools/rockgen.py), a material per rock kind, and
 # instanced layers. Every rock of a layer that shares a mesh is one MultiMesh (one draw), with a fixed seeded pose in
 # the vertex shader (axis and seed in the instance's custom data). Time and camera movement never turn its geometry.
@@ -206,8 +205,7 @@ static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") ==
 static func material(kind: String, look: Dictionary) -> ShaderMaterial:
 	var K: Dictionary = KINDS.get(kind, KINDS["stone"])
 	var m := ShaderMaterial.new()
-	var sh: Shader = SKEEP.of(ROCK_SHADER)   # issue 1434: one compiled shader per code
-	m.shader = sh
+	m.shader = ROCK_SHADER
 	m.set_shader_parameter("kind", int(K["k"]))
 	m.set_shader_parameter("base", K["base"])
 	m.set_shader_parameter("fresh", K["fresh"])
@@ -239,7 +237,8 @@ class Batch:
 	var legacy_debris_materials := {}
 	var _marked: Array[Dictionary] = []
 
-	func add(mesh_name: String, mat: Material, shadow: bool, xf: Transform3D, spin_axis: Vector3, rate: float, seed_v: float, scorch := false) -> void:
+	func add(mesh_name: String, mat: Material, shadow: bool, xf: Transform3D, spin_axis: Vector3, rate: float, seed_v: float,
+			scorch := false, distant_belt := false) -> void:
 		# Dust-size rocks keep rockgen's light meshes. Large silhouettes use the
 		# scans, at the same radius as the old library, so blocker rules stay put.
 		if mesh_name.begins_with("scan_"):
@@ -253,8 +252,11 @@ class Batch:
 					dust_materials[mat_id] = dust_mat
 				mat = dust_materials[mat_id]
 		var key := "%s|%d|%d%s" % [mesh_name, mat.get_instance_id(), 1 if shadow else 0, "|scorch" if scorch else ""]
+		# The visibility range applies to the whole MultiMesh, so distant groups must be local.
+		if distant_belt:
+			key += "|belt:" + str((xf.origin / 800.0).floor())
 		if not groups.has(key):
-			groups[key] = {"mesh": mesh_name, "mat": mat, "shadow": shadow, "xf": [], "cd": [], "scorch": scorch}
+			groups[key] = {"mesh": mesh_name, "mat": mat, "shadow": shadow, "xf": [], "cd": [], "scorch": scorch, "distant_belt": distant_belt}
 		groups[key]["xf"].append(xf)
 		var a := spin_axis.normalized() * rate
 		groups[key]["cd"].append(Color(a.x, a.y, a.z, seed_v))

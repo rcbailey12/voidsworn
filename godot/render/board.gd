@@ -1,6 +1,5 @@
 extends Node3D
 const SV := preload("res://render/ship_view.gd")   # issue 1434: retire_build collects a terrain load left running
-const SKEEP := preload("res://render/shader_keep.gd")
 # The hex board at the game's scale: pointy-top hexes of corner radius 10 (HEX_S), laid out as scene3d.js hexWorld does,
 # with the world's z mirrored for Godot. One MultiMesh for the hex fills and one for the outlines (two draws for the
 # whole board); overlays (move range, targets, hover, zones) only change instance colours.
@@ -14,7 +13,6 @@ const BattleLook := preload("res://render/look.gd")
 const BV := preload("res://world/blocker_visuals.gd")
 const PL := preload("res://world/world_planet.gd")   # issue 1765: the board planet's surfaces
 const LS := preload("res://render/line_style.gd")   # issue 1374 (R362): the one line style (width, glow, fade, role colours)
-const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const HS := 10.0
 var HW := HS * sqrt(3.0)
 # The one scale table's board-side sizes (issue 710, R247; docs/playbooks/scale.md). All in world units, HEX_S = 10.
@@ -140,7 +138,7 @@ func build(rules, slice := false) -> void:
 	outline = MeshInstance3D.new()
 	outline.name = "ReachOutline"
 	var om := ShaderMaterial.new()
-	om.shader = SHADER_CACHE.for_code(OUTLINE_SHADER)
+	om.shader = OUTLINE_SHADER
 	outline.material_override = om
 	outline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(outline)
@@ -314,7 +312,7 @@ func _mm(mesh: Mesh, shader: Shader) -> MultiMeshInstance3D:
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	m.shader = SHADER_CACHE.for_code(code)
+	m.shader = shader
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mi)

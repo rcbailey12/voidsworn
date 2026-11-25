@@ -37,6 +37,10 @@ func _run() -> void:
 		printerr("FAIL: an old Temporal AA preference did not carry over to Battle AA")
 		quit(1)
 		return
+	if bool(mig.settings.get("world_bc7", true)):
+		printerr("FAIL: an old profile enabled BC7 by default")
+		quit(1)
+		return
 	mig.free()
 	var f := FileAccess.open(Main.SETTINGS_PATH, FileAccess.WRITE)
 	if f == null:

@@ -151,6 +151,7 @@ func _run() -> void:
 		for k in ["render_scale", "fps_cap", "vsync", "quality", "taa"]:
 			tm.settings[k] = {"render_scale": 1.0, "fps_cap": 0.0, "vsync": true, "quality": "max", "taa": false}[k]
 		tm.settings["battle_aa"] = "default"
+		tm.settings["world_bc7"] = false
 		tm.show_title()
 		tm.title._settings()
 		for i in 3: await process_frame
@@ -169,6 +170,15 @@ func _run() -> void:
 			_check(is_equal_approx(float(back.settings["render_scale"]), 0.85) and is_equal_approx(float(back.settings["fps_cap"]), 60.0) and not bool(back.settings["vsync"]), "6: the three survive a restart (%s, %s, %s)" % [back.settings["render_scale"], back.settings["fps_cap"], back.settings["vsync"]])
 			back.free()
 		var have_q: bool = rows.has("quality") and rows.has("battle_aa")
+		_check(rows.has("world_bc7") and rows["world_bc7"].text == "Off", "6: World texture compression starts Off")
+		if rows.has("world_bc7"):
+			rows["world_bc7"].pressed.emit()
+			var compressed_profile := MAIN.new()
+			compressed_profile._load_settings()
+			_check(rows["world_bc7"].text == "BC7" and compressed_profile.settings.get("world_bc7") == true,
+				"6: BC7 is opt-in and survives a restart")
+			compressed_profile.free()
+			rows["world_bc7"].pressed.emit()
 		if have_q:
 			tm.armed = true
 			tm.starts = 0

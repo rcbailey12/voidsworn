@@ -10,7 +10,6 @@ extends RefCounted
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
-const SKEEP := preload("res://render/shader_keep.gd")   # issue 1434: one Shader per code for the session
 const BEATS := preload("res://fx/fx_death_beats.gd")   # issue 1586: cause, faction, archetype and afterlife beats
 
 const HULL_LAYER := 1
@@ -175,10 +174,6 @@ static func setup_physics(fx) -> void:
 	st["bounce"] = PhysicsMaterial.new()
 	(st["bounce"] as PhysicsMaterial).bounce = 0.4
 	(st["bounce"] as PhysicsMaterial).friction = 0.4
-	# issue 1434 (LOAD17: made again at every title backdrop): one Shader for the session
-	var fresh: bool = not SKEEP.has(DEBRIS_BODY)
-	var sh: Shader = SKEEP.of(DEBRIS_BODY)
-	if fresh: HULL.note_late("death debris body")
 	var m = ShaderMaterial.new()
 	m.shader = DEBRIS_BODY
 	st["debris_mat"] = m

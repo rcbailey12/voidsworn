@@ -127,8 +127,13 @@ func _shader_cache() -> void:
 	var breathing := LINE_STYLE.material(true)
 	_check(steady != breathing and steady.shader == breathing.shader, "line materials share shader code and own their uniforms")
 	_check(steady.get_shader_parameter("breath") != breathing.get_shader_parameter("breath"), "sharing keeps each line's breath setting")
+	var cache := preload("res://render/shader_cache.gd")
+	var source := "shader_type spatial;\nvoid fragment() { ALBEDO = vec3(0.123); }"
+	var generated: Shader = cache.for_code(source)
+	_check(cache.for_code(source) == generated, "generated variants share the session cache")
 	STATIC_CACHES.clear_all()
-	_check(LINE_STYLE.material().shader != steady.shader, "the shutdown registry clears the shader cache")
+	_check(cache.for_code(source) != generated, "the shutdown registry clears generated shaders")
+	_check(LINE_STYLE.material().shader == steady.shader, "preloaded shaders stay shared without a second cache")
 
 
 func _run() -> void:

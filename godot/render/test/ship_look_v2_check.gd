@@ -103,8 +103,8 @@ func _run() -> void:
 	OS.add_logger(_shader_errors)
 	# 0. every shader V2 touches compiles (the battle sky, the dead-star panorama, the hull exterior and its alpha twin)
 	var SKY = load("res://world/world_sky.gd")
-	check(_compiles(SKY.SKY), "the battle sky shader compiles")
-	check(_compiles(SKY.PANORAMA_SKY), "the panorama sky shader compiles")
+	check(_compiles(SKY.SKY.code), "the battle sky shader compiles")
+	check(_compiles(SKY.PANORAMA_SKY.code), "the panorama sky shader compiles")
 	check(_compiles(HULL.EXTERIOR), "the hull exterior shader compiles")
 	check(_compiles(HULL.exterior_alpha_code()), "the see-through hull exterior shader compiles")
 	# 1. off

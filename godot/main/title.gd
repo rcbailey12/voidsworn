@@ -302,8 +302,8 @@ func _dialog_box() -> StyleBoxFlat:
 # names wrap. Esc or Done saves and closes. Changing the UI scale rebuilds the panel and keeps focus on that row.
 const SETTINGS_LAYOUT := [   # [section, column, rows]
 	["Sound and music", 0, [["toggle", "Sound", "sound"], ["slider", "Volume", "volume"], ["toggle", "Music", "music"], ["slider", "Music volume", "music_volume"]]],
-	["Display", 0, [["choice", "UI scale", "ui_scale"], ["toggle", "Full screen", "fullscreen"], ["choice", "Graphics", "quality"], ["choice", "Battle AA", "battle_aa"], ["toggle", "Nebula wakes (ships stir the clouds)", "nebula_wake_on"], ["choice", "Render scale", "render_scale"], ["choice", "Frame cap", "fps_cap"], ["toggle", "V-Sync", "vsync"]]],
-	["Battle", 1, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Brisk camera", "brisk_camera"], ["toggle", "Teaching tips", "tips"]]],
+	["Display", 0, [["choice", "UI scale", "ui_scale"], ["toggle", "Full screen", "fullscreen"], ["choice", "Graphics", "quality"], ["choice", "World texture compression", "world_bc7"], ["toggle", "Nebula wakes (ships stir the clouds)", "nebula_wake_on"], ["choice", "Render scale", "render_scale"], ["choice", "Frame cap", "fps_cap"], ["toggle", "V-Sync", "vsync"]]],
+	["Battle", 1, [["choice", "Speed", "speed"], ["choice", "Movement", "movement"], ["choice", "Enemy AI", "ai"], ["toggle", "Follow enemy activations", "follow"], ["choice", "Cut-ins", "cine"], ["toggle", "Brisk camera", "brisk_camera"], ["choice", "Battle AA", "battle_aa"], ["toggle", "Teaching tips", "tips"]]],
 	["Comfort", 1, [["toggle", "Reduce motion", "reduce_motion"], ["toggle", "Reduce flashing", "reduce_flashing"], ["choice", "Screen shake", "shake"]]],
 ]
 const SETTINGS_CHOICES := {
@@ -315,6 +315,7 @@ const SETTINGS_CHOICES := {
 	"cine": [["key", "Key moments"], ["all", "Every attack"], ["off", "Off"]],
 	"quality": [["max", "Max"], ["high", "High"], ["low", "Low"]],
 	"battle_aa": [["default", "Default"], ["taa", "Temporal AA"], ["fsr2_native", "FSR 2.2 Native AA"], ["fsr2_quality", "FSR 2.2 Quality"]],
+	"world_bc7": [[false, "Off"], [true, "BC7"]],
 	# issue 1437: performance options, today's game first (full scale, no cap)
 	"render_scale": [[1.0, "100%"], [0.85, "85%"], [0.7, "70%"]],
 	"fps_cap": [[0.0, "Off"], [60.0, "60"], [120.0, "120"], [144.0, "144"]],

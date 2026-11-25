@@ -1,5 +1,4 @@
 extends RefCounted
-const SKEEP := preload("res://render/shader_keep.gd")
 # Issue 1374 (Ryan, Nov 20 2026, R362; docs/playbooks/scale.md section 6): one line style for everything drawn as a line
 # on or over the battle board. Callers name a role, and its colour comes from ROLE below. The line_style shader include
 # owns the shared width, glow and fade. The strip mesh uses the matching world widths below.
@@ -11,7 +10,6 @@ const SKEEP := preload("res://render/shader_keep.gd")
 #   the grid and the target rings are core only (no glow), so the board stays quiet (RULEBOOK 10.1);
 # - breath: terrain and hazard edges shimmer slowly (BREATH deep), everything the player acts on stays steady.
 
-const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const CORE_W := 0.32
 const GLOW_W := 1.9
 
@@ -98,28 +96,12 @@ const SHADER := preload("res://shaders/board_line.gdshader")
 # issue 1582: a straight line drawn on its own quad (the drop-line under an off-plane hull). UV.x runs across the quad,
 # qw world units wide; the line sits in the middle at the shared core width with its pixel floor and widen-dim, so it
 # never breaks up when zoomed out. col is the role's colour and strength, wide a hover widening (1 = normal).
-const QUAD_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform vec4 col = vec4(1.0);
-uniform float qw = 3.0;
-uniform float wide = 1.0;
-""" + GLSL + """
-void fragment() {
-	float x = abs(UV.x - 0.5) * qw;
-	float fw = max(fwidth(x), 0.0001);
-	float w = ls_core_w(fw) * wide;
-	float l = (1.0 - smoothstep(0.5 * w - 0.5 * fw, 0.5 * w + 0.5 * fw, x)) * ls_dim(w / wide);
-	ALBEDO = col.rgb * col.a * l;
-}
-"""
+const QUAD_SHADER := preload("res://shaders/board_quad_line.gdshader")
 
 
 static func quad_material() -> ShaderMaterial:
 	var m := ShaderMaterial.new()
-	var sh := Shader.new()
-	sh.code = QUAD_SHADER
-	m.shader = sh
+	m.shader = QUAD_SHADER
 	return m
 
 
@@ -131,7 +113,7 @@ const STRIP_IN := 4.4
 
 static func material(breath := false) -> ShaderMaterial:
 	var m := ShaderMaterial.new()
-	m.shader = SHADER_CACHE.for_code(SHADER)
+	m.shader = SHADER
 	m.set_shader_parameter("breath", 1.0 if breath else 0.0)
 	return m
 

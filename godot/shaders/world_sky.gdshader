@@ -1,5 +1,5 @@
 shader_type sky;
-uniform sampler2D neb_tex : filter_linear, repeat_enable;
+uniform sampler2D neb_tex : filter_linear, repeat_enable;   // no mips: a sky has no smooth derivative at the longitude wrap
 uniform float has_neb = 0.0;
 uniform float neb_gain = 1.0;
 uniform vec3 mood_tint = vec3(1.0);   // issue 1272: a stop's mood on the sector's baked gas (defaults change nothing)
@@ -15,7 +15,7 @@ uniform vec4 lamp[6];
 uniform vec3 lamp_col[6];
 uniform vec3 sun_dir = vec3(0.45, 0.7, 0.55);
 uniform vec3 sun_col = vec3(1.0, 0.93, 0.82);
-uniform float px = 0.0008;   // one screen pixel in radians (fov / height)
+uniform float px = 0.000727220521664304;   // 1080-line angular size; the sky shader has no VIEWPORT_SIZE
 uniform mat3 turn = mat3(1.0); // the battle's small turn of the whole sky
 // the dead-star board's painted sky (R2: its backdrop; A3's 8K dead-star panorama, with its dim red dead sun where the
 // key light comes from), under the gas; and how bright this sky's own sun is (none on the dead-star board)
@@ -24,9 +24,7 @@ uniform float has_pano = 0.0;
 uniform float sun_k = 1.0;
 uniform float dawn = 0.0;
 uniform vec3 dawn_dir = vec3(-0.6, 0.7, -0.2);
-
 #include "res://shaders/sky_fleet_reflections.gdshaderinc"
-
 
 float sh31(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
 vec3 sh33(vec3 p) { p = fract(p * vec3(0.1031, 0.103, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }

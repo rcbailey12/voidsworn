@@ -102,12 +102,12 @@ func _world(height: float) -> void:
 	var ratio := height / HEIGHT_1080
 	var angle_1080 := deg_to_rad(45.0) / HEIGHT_1080  # The value set by main's world builder.
 	var angle_per_px := angle_1080 / ratio
-	var star_px := _value(_rhs(SKY.SKY, "px"), {})
-	var star_sigma := _value(_rhs(SKY.SKY, "sig"), {"px": star_px, "m": 0.5})
+	var star_px := _value(_rhs(SKY.SKY.code, "px"), {})
+	var star_sigma := _value(_rhs(SKY.SKY.code, "sig"), {"px": star_px, "m": 0.5})
 	_near(star_px / angle_per_px, ratio, "sky lamp size at %dp" % height)
 	_near(star_sigma / angle_per_px, (0.65 + 0.9 * 0.5) * ratio, "star sigma at %dp" % height)
 	var depth := 500.0
-	var dust: String = WORLD.DUST_SHADER
+	var dust: String = WORLD.DUST_SHADER.code
 	var dust_inputs := {"height": height, "depth": depth, "px_1080": _value(_rhs(dust, "px_1080"), {})}
 	dust_inputs["fr"] = _value(_rhs(dust, "fr"), dust_inputs)
 	dust_inputs["px"] = _value(_rhs(dust, "px"), dust_inputs)
@@ -117,7 +117,7 @@ func _world(height: float) -> void:
 	var attenuation := _value(_rhs(dust, "k"), {"size": 0.25, "mins": dust_floor})
 	_near(attenuation, 0.25 / (depth * angle_1080 * 1.6), "dust attenuation at %dp" % height)
 
-	var well: String = LIVING.WELL_SHADER
+	var well: String = LIVING.WELL_SHADER.code
 	# Sample an axis-aligned shift at full rim, with the screen texture matching the viewport.
 	var shift := _rhs(well, "shift").replace(
 		"normalize(dv + vec2(0.000001)) / vec2(textureSize(screen_tex, 0))", "1.0 / height")

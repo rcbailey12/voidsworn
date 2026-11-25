@@ -6,6 +6,7 @@ const BAKES := preload("res://world/world_bake.gd")
 const STATIC_CACHES := preload("res://render/static_caches.gd")
 const PICTURES := preload("res://tools/picture_provenance.gd")
 const MODES := ["default", "fsr2_native", "fsr2_quality"]
+const BC7_MODES := ["off", "on"]
 const SIZE_4K := Vector2i(3840, 2160)
 const SIZE_1080P := Vector2i(1920, 1080)
 const WARM_FRAMES := 160
@@ -53,6 +54,17 @@ func _argument(name: String, fallback: String) -> String:
 
 func _run() -> void:
 	var out := _argument("--out", "")
+	var bc7 := _argument("--bc7", "off")
+	if bc7 not in BC7_MODES:
+		_fail("Pass --bc7 off or --bc7 on.")
+		return
+	if bc7 == "on":
+		# The same bench script must parse when run against a baseline without this setting.
+		var bake_script: Script = BAKES
+		if not bake_script.has_method("set_bc7_enabled"):
+			_fail("BC7 is not available on this revision.")
+			return
+		bake_script.call("set_bc7_enabled", true)
 	if OS.get_cmdline_user_args().has("--dry-run"):
 		print("1780 benchmark loaded (", RenderingServer.get_current_rendering_method(), ")")
 		quit(0)
@@ -61,7 +73,12 @@ func _run() -> void:
 		_fail("Pass --out with a run directory.")
 		return
 	if OS.get_cmdline_user_args().has("--sheet"):
-		_sheet(out, _argument("--shots", out))
+		if _sheet(out, _argument("--shots", out), MODES, "MSAA_FSR2-Native_FSR2-Quality"):
+			quit(0)
+		return
+	if OS.get_cmdline_user_args().has("--bc7-sheet"):
+		if _sheet(out, _argument("--shots", out), BC7_MODES, "BC7-Off_BC7-On"):
+			quit(0)
 		return
 	if DisplayServer.get_name() == "headless" or RenderingServer.get_current_rendering_method() != "forward_plus" \
 			or not RenderingServer.get_video_adapter_name().contains("5080"):
@@ -177,13 +194,15 @@ func _run() -> void:
 	var planet_code := ""
 	if is_instance_valid(b.board.planet_node):
 		planet_code = str(b.board.planet_node.get_meta("planet_code", ""))
+	var bake_stats := _world_bakes()
 	var result := {
 		"engine": Engine.get_version_info(), "gpu": RenderingServer.get_video_adapter_name(),
 		"driver": OS.get_video_adapter_driver_info(), "resolution": [actual_size.x, actual_size.y],
 		"aa": aa, "msaa": view.msaa_3d, "scale": view.scaling_3d_scale, "map": map,
 		"ship_manifest_sha256": FileAccess.get_sha256(GATE.SV.manifest_path),
 		"battle_load_ms": fixture.build_ms, "frame_ms": _summary(frames), "gpu_ms": _summary(gpu_frames),
-		"peak_vram_bytes": peak_vram, "peak_texture_bytes": peak_texture, "world_bakes": _world_bakes(),
+		"peak_vram_bytes": peak_vram, "peak_texture_bytes": peak_texture, "world_bakes": bake_stats,
+		"bc7": bc7,
 		"fog_enabled": b.env.volumetric_fog_enabled, "fog_volumes": fogs.size(), "planet_code": planet_code,
 		"first_death_ship": kill_id, "kill_call_ms": kill_ms, "first_death_trace": trace,
 		"late_shader_names": GATE.HULL.late_shader_names(),
@@ -198,6 +217,18 @@ func _run() -> void:
 			or (map == "storm" and (fogs.is_empty() or not b.env.volumetric_fog_enabled)):
 		_fail("The fixture did not draw its expected terrain. See timing.json.")
 		return
+	var compressed: int = bake_stats.images.filter(func(row): return row.format == Image.FORMAT_BPTC_RGBA).size()
+	if (compressed > 0) != (bc7 == "on"):
+		_fail("World bakes did not use the requested BC7 setting. See timing.json.")
+		return
+	if map == "planet":
+		var mat := b.board.planet_node.material_override as ShaderMaterial
+		var albedo := mat.get_shader_parameter("colour_map") as ImageTexture
+		var relief := mat.get_shader_parameter("surface_data") as ImageTexture
+		if albedo == null or relief == null or (albedo.get_format() == Image.FORMAT_BPTC_RGBA) != (bc7 == "on") \
+				or relief.get_format() != Image.FORMAT_RGBAF:
+			_fail("The R01 albedo or relief did not use the expected format. See timing.json.")
+			return
 	for i in shots.size():
 		if preload("res://tools/picture_provenance.gd").save_png(shots[i], out.path_join("frame_%d.png" % i), PICTURES.capture_stage()) != OK:
 			_fail("Cannot save the native 4K comparison frame.")
@@ -233,30 +264,33 @@ func _world_bakes() -> Dictionary:
 	return {"bytes": bytes, "images": rows}
 
 
-func _sheet(out: String, shots: String) -> void:
+func _sheet(out: String, shots: String, modes: Array, label: String) -> bool:
 	if DirAccess.make_dir_recursive_absolute(shots) != OK:
 		_fail("Cannot create " + shots)
-		return
+		return false
+	var width := 420 if modes.size() == 3 else 630
+	var preview_height := roundi(width * 9.0 / 16.0)
+	var crop_height := 300
 	for frame in 3:
-		var sheet := Image.create_empty(1280, 580, false, Image.FORMAT_RGB8)
+		var sheet := Image.create_empty(1280, preview_height + crop_height + 44, false, Image.FORMAT_RGB8)
 		sheet.fill(Color("#10151e"))
-		for column in MODES.size():
-			var path := out.path_join(MODES[column]).path_join("warm").path_join("frame_%d.png" % frame)
+		for column in modes.size():
+			var path := out.path_join(modes[column]).path_join("warm").path_join("frame_%d.png" % frame)
 			var img := Image.load_from_file(path)
 			if img == null or img.get_size() != SIZE_4K or not FileAccess.file_exists(path + ".provenance.json"):
 				_fail("Missing native 4K frame or its sidecar: " + path)
-				return
+				return false
 			img.convert(Image.FORMAT_RGB8)
-			var native_crop := img.get_region(Rect2i(1710, 930, 420, 300))
-			img.resize(420, 236, Image.INTERPOLATE_LANCZOS)
-			var left := 4 + column * 426
+			var native_crop := img.get_region(Rect2i((SIZE_4K.x - width) / 2, 930, width, crop_height))
+			img.resize(width, preview_height, Image.INTERPOLATE_LANCZOS)
+			var left := (1280 - (width + 6) * modes.size() + 6) / 2 + column * (width + 6)
 			sheet.blit_rect(img, Rect2i(Vector2i.ZERO, img.get_size()), Vector2i(left, 14))
-			sheet.blit_rect(native_crop, Rect2i(Vector2i.ZERO, native_crop.get_size()), Vector2i(left, 256))
-		var name := "1780-frame-%d-4K-MSAA_FSR2-Native_FSR2-Quality.png" % (frame + 1)
+			sheet.blit_rect(native_crop, Rect2i(Vector2i.ZERO, native_crop.get_size()), Vector2i(left, preview_height + 20))
+		var name := "1780-frame-%d-4K-%s.png" % [frame + 1, label]
 		if preload("res://tools/picture_provenance.gd").save_png(sheet, shots.path_join(name), "sheet built", true) != OK:
 			_fail("Cannot write " + name)
-			return
-	quit(0)
+			return false
+	return true
 
 
 func _fail(message: String) -> void:
