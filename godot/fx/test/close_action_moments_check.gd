@@ -6,8 +6,8 @@ extends SceneTree
 #            the target); the hold after it stays 500 ms of battle pace.
 #   board:   fx.board plays on the same frame as board_grapple (the boarder's faction variant, so Chorus stays wet);
 #            the hold is the breach look's (fx.board_hold_ms, issue 1547), so the player sees it before the next event.
-#   command: the flagship pulse plays under the banner; no sound of its own (the warning's ui_alert is
-#            the command's cue, audio README item 4); the hold stays the banner pace plus 140 ms.
+#   command: the flagship pulse plays under the banner with the approved player cue ui_command_issue;
+#            the hold stays the banner pace plus 140 ms.
 # Headless:  godot --headless --path godot --script res://fx/test/close_action_moments_check.gd
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const BattleScene := preload("res://scenes/battle/battle.tscn")
@@ -218,7 +218,7 @@ func _run() -> void:
 	held = await _play(b, {"t": "command", "side": "player", "id": cmd, "tier": 0, "unit": null}, "command")
 	var cm := _first("fx", "command")
 	_check(not cm.is_empty() and (cm[4] as Array).slice(0, 2) == [flag, cmd], "the command pulses the player's flagship (%s)" % (str(cm[4]) if not cm.is_empty() else "none"))
-	_check(_sounds().is_empty(), "the command adds no sound of its own (%s)" % str(_sounds()))
+	_check(_sounds() == ["ui_command_issue"], "the player command plays only its approved cue (%s)" % str(_sounds()))
 	var want := (float(b.PACE["banner"]) + 140.0) * SPEED
 	_check(_held_ok(held, want), "the command keeps its banner hold (%.1f game ms, want %.0f to %.0f)" % [held, want, want + 2.0 * clock.max_dt])
 

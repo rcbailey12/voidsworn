@@ -334,8 +334,7 @@
 ],
 "wep_directorate_hturbo": [
 "wep_directorate_hturbo_0.ogg",
-"wep_directorate_hturbo_more_0.ogg",
-"wep_directorate_hturbo_more_1.ogg"
+"wep_directorate_hturbo_more_0.ogg"
 ],
 "wep_flak_airburst": [
 "wep_flak_airburst_0.ogg",
@@ -353,8 +352,7 @@
 "wep_eclipse_gsentry_0.ogg"
 ],
 "wep_hullbreaker_junk_gun": [
-"wep_hullbreaker_junk_gun_0.ogg",
-"wep_hullbreaker_junk_gun_more_0.ogg"
+"wep_hullbreaker_junk_gun_0.ogg"
 ],
 "wep_hullbreaker_scatter": [
 "wep_hullbreaker_scatter_0.ogg",
@@ -445,9 +443,7 @@
 "imp_glass_armor_more_1.ogg"
 ],
 "imp_obsidian_eclipse": [
-"imp_obsidian_eclipse_0.ogg",
-"imp_obsidian_eclipse_more_0.ogg",
-"imp_obsidian_eclipse_more_1.ogg"
+"imp_obsidian_eclipse_0.ogg"
 ],
 "shd_hit_absorb": [
 "shd_hit_absorb_0.ogg",
@@ -562,15 +558,9 @@
 "ship_power_charge": [
 "ship_power_charge_0.ogg"
 ],
-"death_metal_powerdown": [
-"death_metal_powerdown_0.ogg"
-],
 "death_metal_vent": [
 "death_metal_vent_0.ogg",
 "death_metal_vent_1.ogg"
-],
-"death_metal_crack": [
-"death_metal_crack_0.ogg"
 ],
 "death_debris_cool": [
 "death_debris_cool_0.ogg"
@@ -626,17 +616,11 @@
 "dmg_engine_fail_long": [
 "dmg_engine_fail_long_0.ogg"
 ],
-"evt_ram_impact": [
-"evt_ram_impact_0.ogg"
-],
 "shd_raise": [
 "shd_raise_0.ogg"
 ],
 "evt_gravity_well": [
 "evt_gravity_well_0.ogg"
-],
-"evt_nebula_bed": [
-"evt_nebula_bed_0.ogg"
 ],
 "evt_asteroid_scrape": [
 "evt_asteroid_scrape_0.ogg",
@@ -665,9 +649,6 @@
 "ui_relic_socket": [
 "ui_relic_socket_0.ogg",
 "ui_relic_socket_1.ogg"
-],
-"ui_rank_up": [
-"ui_rank_up_0.ogg"
 ],
 "ui_event_comm": [
 "ui_event_comm_0.ogg",

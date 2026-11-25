@@ -55,7 +55,7 @@ func start(m: Node, o: Dictionary) -> void:
 	C.battle_restore = _restore_battle   # issue 1451: Continue into the saved round
 	C.battle_requested.connect(_on_battle)
 	if not bot:
-		C.fleet_results.connect(_on_fleet_results)
+		C.ships_lost.connect(_on_ships_lost)
 	# the campaign's random stream: the browser seeds it at random on every load (core.js RNG_S, nothing saved), so a new
 	# or continued run gets fresh draws each launch; bot runs seed it from --seed so each run differs and repeats exactly
 	if o.has("player_path_seed"):
@@ -147,18 +147,8 @@ func _on_changed() -> void:
 		run_over.emit({"result": "title"})
 
 
-func _on_fleet_results(lost: bool, ranked_up: bool) -> void:
-	if lost:
-		Kit.play("ui_ship_lost")
-	if ranked_up:
-		if lost:
-			get_tree().create_timer(1.8).timeout.connect(_play_rank_up)
-		else:
-			_play_rank_up()
-
-
-func _play_rank_up() -> void:
-	Kit.play("ui_rank_up")
+func _on_ships_lost() -> void:
+	Kit.play("ui_ship_lost")
 
 
 # The enemy AI level from the settings ("standard" or "veteran"; bot runs default to Veteran in main.gd), issue 1336.

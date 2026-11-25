@@ -1,5 +1,5 @@
 {
- "note": "Neon Wave F and Wave A extras. Each approved take is a separate round-robin clip.",
+ "note": "Neon Wave F and Wave A extras after Ryan's picks. Each approved take is a separate round-robin clip.",
  "targets_db": {
   "weapon": -12,
   "impact": -14,
@@ -160,15 +160,6 @@
    "hp": 40
   },
   {
-   "id": "death_metal_powerdown",
-   "wave": "F",
-   "take": "t1",
-   "cat": "death",
-   "src": "fold",
-   "out": "death_metal_powerdown_0",
-   "hp": 40
-  },
-  {
    "id": "death_metal_vent",
    "wave": "F",
    "take": "t1",
@@ -184,15 +175,6 @@
    "cat": "death",
    "src": "fold",
    "out": "death_metal_vent_1",
-   "hp": 40
-  },
-  {
-   "id": "death_metal_crack",
-   "wave": "F",
-   "take": "t2",
-   "cat": "death",
-   "src": "fold",
-   "out": "death_metal_crack_0",
    "hp": 40
   },
   {
@@ -385,15 +367,6 @@
    "hp": 40
   },
   {
-   "id": "evt_ram_impact",
-   "wave": "F",
-   "take": "t1",
-   "cat": "event",
-   "src": "fold",
-   "out": "evt_ram_impact_0",
-   "hp": 40
-  },
-  {
    "id": "shd_raise",
    "wave": "F",
    "take": "t2",
@@ -414,17 +387,6 @@
    "hp": 35,
    "notrim": true,
    "gain_db": 8
-  },
-  {
-   "id": "evt_nebula_bed",
-   "wave": "F",
-   "take": "t1",
-   "cat": "amb",
-   "src": "stereo",
-   "out": "evt_nebula_bed_0",
-   "hp": 40,
-   "notrim": true,
-   "gain_db": 23
   },
   {
    "id": "evt_asteroid_scrape",
@@ -539,16 +501,6 @@
    "trim_ms": 90
   },
   {
-   "id": "ui_rank_up",
-   "wave": "F",
-   "take": "t2",
-   "cat": "ui",
-   "src": "stereo",
-   "out": "ui_rank_up_0",
-   "hp": 40,
-   "trim_ms": 50
-  },
-  {
    "id": "ui_event_comm",
    "wave": "F",
    "take": "t1",
@@ -644,26 +596,6 @@
    "eq": "presence"
   },
   {
-   "id": "imp_obsidian_eclipse_more",
-   "wave": "F",
-   "take": "t1",
-   "cat": "impact",
-   "src": "fold",
-   "out": "imp_obsidian_eclipse_more_0",
-   "hp": 40,
-   "trim_ms": 27
-  },
-  {
-   "id": "imp_obsidian_eclipse_more",
-   "wave": "F",
-   "take": "t2",
-   "cat": "impact",
-   "src": "fold",
-   "out": "imp_obsidian_eclipse_more_1",
-   "hp": 40,
-   "trim_ms": 0
-  },
-  {
    "id": "shd_hit_absorb_more",
    "wave": "F",
    "take": "t1",
@@ -704,9 +636,9 @@
   {
    "id": "wep_directorate_turbo_more",
    "wave": "F",
-   "take": "t2",
+   "take": "t1",
    "cat": "weapon",
-   "src": "L",
+   "src": "fold",
    "out": "wep_directorate_turbo_more_0",
    "hp": 40
   },
@@ -717,16 +649,6 @@
    "cat": "weapon",
    "src": "fold",
    "out": "wep_directorate_hturbo_more_0",
-   "hp": 40,
-   "eq": "presence"
-  },
-  {
-   "id": "wep_directorate_hturbo_more",
-   "wave": "F",
-   "take": "t2",
-   "cat": "weapon",
-   "src": "fold",
-   "out": "wep_directorate_hturbo_more_1",
    "hp": 40,
    "eq": "presence"
   },
@@ -746,15 +668,6 @@
    "cat": "weapon",
    "src": "fold",
    "out": "wep_hullbreaker_scatter_more_0",
-   "hp": 40
-  },
-  {
-   "id": "wep_hullbreaker_junk_gun_more",
-   "wave": "F",
-   "take": "t1",
-   "cat": "weapon",
-   "src": "fold",
-   "out": "wep_hullbreaker_junk_gun_more_0",
    "hp": 40
   },
   {

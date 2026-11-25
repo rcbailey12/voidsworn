@@ -931,9 +931,6 @@ func _begin(a) -> void:
 		sfx.ambient_start()
 		if well is Dictionary or (well is bool and well):
 			sfx.terrain_bed("evt_gravity_well")
-		var terrain: Dictionary = V.get("terrain", {})
-		if "neb" in terrain.values() or "storm" in terrain.values():
-			sfx.terrain_bed("evt_nebula_bed")
 	_refresh_ui()
 	_legend()
 	# story hook (story stream, godot/story/README.md): admiral, enemy flagship and Nemesis lines in the battle log
@@ -2280,7 +2277,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			await wait(200.0)
 		"ram":
 			await _play_move(e["unit"], e["path"], true)
-			sfx.play("evt_ram_impact", {"pos": _pos(e["target"]), "gain": 0.8})
+			sfx.boom(0.8, _pos(e["target"]))
 			# issue 1524 (fx/API.md 11): the approved ram look: the crumple on the target's struck section, a smaller one on
 			# the rammer's bow, the biggest shove and the zoom punch. The generic pop stays only when the fx layer drew nothing.
 			var rammed := false

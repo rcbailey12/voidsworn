@@ -97,7 +97,14 @@
    "wep_sunward_autocannon_more_f2",
    "wep_sunward_turret_more_f2",
    "wep_eclipse_gsentry_more_f2",
-   "wep_craft_guns_more_f2"
+   "wep_craft_guns_more_f2",
+   "death_metal_powerdown_f2",
+   "death_metal_crack_f2",
+   "evt_ram_impact_f2",
+   "evt_nebula_bed_f2",
+   "ui_rank_up_f2",
+   "imp_obsidian_eclipse_more_f2",
+   "wep_hullbreaker_junk_gun_more_f2"
   ],
   "M1": [
    "mus_voidsworn_calm",
@@ -1777,6 +1784,93 @@
    "prompt": "A tight three-round rapid fighter cannon burst lasting about 200 ms. Three close distinct mechanical reports in quick succession with sharp midrange cracks, a dry firing action, and a short clean decay.",
    "model": "eleven_text_to_sound_v2",
    "reroll_of": "wep_craft_guns_more"
+  },
+  {
+   "id": "death_metal_powerdown_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: death_powerdown base (a steel ship's reactor dying)",
+   "today": "death_powerdown",
+   "group": "death",
+   "seconds": 1.8,
+   "influence": 0.6,
+   "takes": 2,
+   "prompt": "A steel starship reactor winding down close and centered. A deep steady electrical hum slows and sinks as the reactor loses power. Thick metal supports groan once under the fading load, then the last low hum dies away. Smooth, grounded and dry.",
+   "reroll_of": "death_metal_powerdown"
+  },
+  {
+   "id": "death_metal_crack_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: death_crack base (the hull's spine cracking)",
+   "today": "death_crack",
+   "group": "death",
+   "seconds": 1.5,
+   "influence": 0.6,
+   "takes": 2,
+   "prompt": "The heavy steel spine of a starship gives way under load. Deep metal stress builds into one low, blunt crack, followed by a brief grinding shudder from the thick frame. Strong low-mid body, close and centered, with a short dry decay.",
+   "reroll_of": "death_metal_crack"
+  },
+  {
+   "id": "evt_ram_impact_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: new: Hullbreaker ram (RAM_FAC) hull-on-hull collision",
+   "today": "boom_s",
+   "group": "new_moment",
+   "seconds": 1.6,
+   "influence": 0.6,
+   "takes": 2,
+   "prompt": "Two armored starship hulls collide. One low, heavy hull-on-hull crunch leads, followed by a short grinding crush as thick plates buckle together. Dense low-mid weight, close and centered, with a short dry decay.",
+   "reroll_of": "evt_ram_impact"
+  },
+  {
+   "id": "evt_nebula_bed_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: new: nebula or ion cloud terrain bed, loops",
+   "today": "",
+   "group": "new_moment",
+   "seconds": 8.0,
+   "influence": 0.5,
+   "takes": 2,
+   "prompt": "A starship coasts through a quiet nebula. Soft, low gaseous hum in a smooth continuous layer with slow, shallow swells. Dark and even, with a soft top and a seamless return to the opening tone for looping.",
+   "loop": true,
+   "reroll_of": "evt_nebula_bed"
+  },
+  {
+   "id": "ui_rank_up_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: new: a captain or ship ranks up",
+   "today": "ui_reward",
+   "group": "new_moment",
+   "seconds": 1.8,
+   "influence": 0.5,
+   "takes": 2,
+   "prompt": "A short, bright brass promotion signal for a fleet officer. Two clear rising trumpet notes resolve into one warm, firm final note. A compact acoustic cue with a clean attack and a quick natural ring.",
+   "reroll_of": "ui_rank_up"
+  },
+  {
+   "id": "imp_obsidian_eclipse_more_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: variety: 2 more takes of keeper imp_obsidian_eclipse (C t1) for the round robin",
+   "today": "hit_rail",
+   "group": "impact",
+   "seconds": 1,
+   "influence": 0.65,
+   "takes": 2,
+   "prompt": "A heavy projectile strikes thick Eclipse obsidian armor. One low, hard volcanic-glass crack lands over a deep hollow stone knock, with a brief coarse fracture at the edge. Cold and dense like the keeper, close and dry with a quick low-mid decay.",
+   "model": "eleven_text_to_sound_v3",
+   "reroll_of": "imp_obsidian_eclipse_more"
+  },
+  {
+   "id": "wep_hullbreaker_junk_gun_more_f2",
+   "kind": "sfx",
+   "cue": "F2 re-roll: variety: 2 more takes of keeper wep_hullbreaker_junk_gun (D t2) for the round robin",
+   "today": "gun_shell",
+   "group": "weapon_hullbreakers",
+   "seconds": 0.6,
+   "influence": 0.65,
+   "takes": 2,
+   "prompt": "One crude Hullbreaker scrap cannon fires. An immediate dry propellant bang lands with a solid recoil punch, followed by a tight rattle of loose scrap plates on the gun housing. Close and centered, with the bang up front and a short mechanical tail.",
+   "model": "eleven_text_to_sound_v2",
+   "reroll_of": "wep_hullbreaker_junk_gun_more"
   }
  ],
  "M2_mastering": {

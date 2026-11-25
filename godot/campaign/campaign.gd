@@ -12,7 +12,7 @@ extends RefCounted
 
 signal changed            # the page or the modal changed
 signal battle_requested   # a battle page is up (external mode): the battle side reads pending_battle and calls finish_battle()
-signal fleet_results(lost: bool, ranked_up: bool)  # one report per settled battle, never on a reopened reward panel
+signal ships_lost         # one report per settled battle with losses, never on a reopened reward panel
 
 const BattleAPI = preload("res://rules/battle_api.gd")   # the rules are reached only through the battle API (rules/API.md)
 const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and the campaign both draw from
@@ -4181,7 +4181,8 @@ func finishBattle(result: String) -> void:
 	if msg.size() > 0: toast(" ".join(PackedStringArray(msg)))
 	tel("battle_end", {"result": result, "kind": cfg.get("kind"), "fac": cfg.get("fac"), "rounds": B["round"], "kills": kills, "lost": summary["lost"].size()})
 	B = null
-	fleet_results.emit(not summary["lost"].is_empty(), summary["xp"].any(func(entry): return entry["up"]))
+	if not summary["lost"].is_empty():
+		ships_lost.emit()
 	if result == "win" and RUN["fleet"].size() == 0:
 		var sh2 = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh2); ensureFlagship()
 		var p_line: String = str({"chorus": "Your surviving spores coalesce into a fresh " + ship_bare(str(sh2["name"])) + " to carry the brood.", "deathless": "An automated reserve berth dispatches " + ship_with_article(str(sh2["name"])) + " to hold the uplink.", "corsair": "A straggling raider from the outer belt joins your pack to carry the flag: " + ship_with_article(str(sh2["name"])) + ".", "ithar": "A distant picket answers your distress pulse to carry the standard: " + ship_with_article(str(sh2["name"])) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(str(sh2["name"])) + " to carry the flag."))

@@ -1,5 +1,5 @@
 {
- "note": "Wave F plus Wave A extras, from Neon issue 1947. Hold means catalogued but no game event yet.",
+ "note": "Wave F and Wave A extras after Ryan's picks. Hold means catalogued but no game event yet.",
  "wires": [
   {
    "id": "wep_ithar_flak",
@@ -125,15 +125,6 @@
    "cue": "charge"
   },
   {
-   "id": "death_metal_powerdown",
-   "group": "Placeholder",
-   "takes": 1,
-   "pick": "t1",
-   "note": "A sinking reactor hum and relays clunking off.",
-   "today": "death_powerdown",
-   "cue": "death_powerdown"
-  },
-  {
    "id": "death_metal_vent",
    "group": "Placeholder",
    "takes": 2,
@@ -141,15 +132,6 @@
    "note": "A forceful hull vent. The second take is a little warmer.",
    "today": "death_vent",
    "cue": "death_vent"
-  },
-  {
-   "id": "death_metal_crack",
-   "group": "Placeholder",
-   "takes": 1,
-   "pick": "t2",
-   "note": "Snapping girders and rivets, with a clear steel split.",
-   "today": "death_crack",
-   "cue": "death_crack"
   },
   {
    "id": "death_debris_cool",
@@ -310,16 +292,6 @@
    "cue": "dmg_engine_fail"
   },
   {
-   "id": "evt_ram_impact",
-   "group": "New moment",
-   "takes": 1,
-   "pick": "t1",
-   "note": "An immediate armored prow collision with buckling plates and a heavy crunch.",
-   "today": "boom_m",
-   "cue": "evt_ram_impact",
-   "template": "boom_m"
-  },
-  {
    "id": "shd_raise",
    "group": "New moment",
    "takes": 1,
@@ -339,17 +311,6 @@
    "note": "A slow, ominous pulse with faint metal strain and a clean wrap.",
    "today": "",
    "cue": "evt_gravity_well",
-   "template": "patter_hull",
-   "bed": true
-  },
-  {
-   "id": "evt_nebula_bed",
-   "group": "New moment",
-   "takes": 1,
-   "pick": "t1",
-   "note": "An airy wash with soft static crackle and a clean wrap.",
-   "today": "",
-   "cue": "evt_nebula_bed",
    "template": "patter_hull",
    "bed": true
   },
@@ -439,17 +400,6 @@
    "template": "ui_reward"
   },
   {
-   "id": "ui_rank_up",
-   "group": "New moment",
-   "takes": 1,
-   "pick": "t2",
-   "note": "A crisp case snap followed by a dignified brass and timpani flourish.",
-   "today": "ui_reward",
-   "cue": "ui_rank_up",
-   "template": "ui_reward",
-   "reference": true
-  },
-  {
    "id": "ui_event_comm",
    "group": "New moment",
    "takes": 2,
@@ -522,16 +472,6 @@
    "append": "imp_glass_armor"
   },
   {
-   "id": "imp_obsidian_eclipse_more",
-   "group": "Variety",
-   "takes": 2,
-   "pick": "t1 and t2",
-   "note": "Two cold, brittle obsidian cracks that match the old hit.",
-   "today": "hit_rail",
-   "cue": "hit_rail",
-   "append": "imp_obsidian_eclipse"
-  },
-  {
    "id": "shd_hit_absorb_more",
    "group": "Variety",
    "takes": 1,
@@ -575,8 +515,8 @@
    "id": "wep_directorate_turbo_more",
    "group": "Variety",
    "takes": 1,
-   "pick": "channel L of t2",
-   "note": "A close plasma match. The left channel keeps the attack intact.",
+   "pick": "t1",
+   "note": "Ryan picked take 1 for this close plasma match.",
    "today": "gun_plasma",
    "cue": "gun_plasma",
    "append": "wep_directorate_turbo"
@@ -584,9 +524,9 @@
   {
    "id": "wep_directorate_hturbo_more",
    "group": "Variety",
-   "takes": 2,
-   "pick": "t1 and t2",
-   "note": "Two close heavy plasma blasts, each with a slightly fuller tail.",
+   "takes": 1,
+   "pick": "t1 only",
+   "note": "Ryan picked take 1 only for the heavy plasma blast.",
    "today": "gun_plasma",
    "cue": "gun_plasma",
    "append": "wep_directorate_hturbo"
@@ -610,16 +550,6 @@
    "today": "gun_shell",
    "cue": "gun_shell",
    "append": "wep_hullbreaker_scatter"
-  },
-  {
-   "id": "wep_hullbreaker_junk_gun_more",
-   "group": "Variety",
-   "takes": 1,
-   "pick": "t1",
-   "note": "A rough clanking scrap turret with no high whine.",
-   "today": "gun_shell",
-   "cue": "gun_shell",
-   "append": "wep_hullbreaker_junk_gun"
   },
   {
    "id": "wep_chorus_spines_more",
