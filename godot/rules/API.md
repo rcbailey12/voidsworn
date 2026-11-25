@@ -30,6 +30,14 @@ api.new_battle(run, cfg)              # run = the campaign run dict (admiral, fa
 
 ## The turn flow (alternating activations, as the game plays by default)
 
+`view().units[].captain` is a copy of CaptainData for a fleet ship, or null. `combat_report()` returns a separate copy of
+`combat_events`, `ship_rollups` (keyed by battle unit ID), and `lost_ship_records`. A CombatEvent is one landed hit or
+separate damage effect. Its timestamp is the 1-based event order in that battle. Applied damage is actual shield spend
+plus applied hull, including temporary grown hull. A hull section shutting down the shield is not a second hit. Carrier
+ships get credit for their wings' attacks, with the wing retained as the source unit. Hazards have no attacker ID.
+The campaign records the captain XP earned at settlement without changing how XP is awarded. A fleet ship's killmail
+is also copied into `RUN.timeline` at the kill.
+
 `api.phase` is one of:
 - `"deployment"`: waiting for a deployment skill choice before round one;
 - `"player"`: waiting for the player;
