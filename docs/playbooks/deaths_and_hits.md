@@ -78,12 +78,12 @@ small fragments; `death_plane_check.gd` protects the existing behavior.
 **Wreck breaks (issue 2022, Ryan Nov 24).** The four metal factions share a bent lip, a thin seam in their own death
 colour and a cold cap sooted from their own hull pigment. The seam cools in about three effect seconds from release,
 independent of the outer scorch. A tear exposes the ship's kit interiors and fills unmodeled space with a hull-fitted
-bulkhead, decks and frame ribs. Glasswrights keep their shatter dust and stored-light glass edges with recessed glass
-instead of metal kit fill. Chorus keeps torn flesh and a cold membrane backing. Compare the six labeled
+bulkhead, decks and frame ribs. Glasswrights keep their shatter dust and stored-light edges with frosted pearl glass
+instead of metal kit fill. Chorus keeps torn crimson-umber flesh and a cold membrane backing. Compare the six labeled
 `godot/bench/look_moments_wreck_2022.json` rows at the opening, exposed interior and cold wreck. Use camera 170 first.
-For the matched bench, set `LB_TOOL_REF` to the reviewed head and
-`LB_ARGS=--part moments --moments res://bench/look_moments_wreck_2022.json` so the baseline uses the same rows.
-Use a fresh `LB_HOME` for this row set so the launcher does not reuse a run made with different rows.
+Once checks and review pass, run `tools/pc/jobs/look_bench_2022.bat` for the matched bench. Its six strict rows fail on
+missing frames. When PR 2007 lands, replace the old `SLAG` string assertions in `faction_fx_1991_check.gd` with the
+cold pigment and cooling seam checks already covered by `faction_death_style_check.gd`.
 
 The kill camera holds through the core flash on cruiser, capital and flagship kills, with a short skippable slow beat
 (R193 (2)). Reduce flashing keeps every size and swaps each white flash for the

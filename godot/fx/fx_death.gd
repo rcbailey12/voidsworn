@@ -139,6 +139,7 @@ uniform float heat = 0.0;
 uniform int cap_kind = 0; // 0: metal, 1: glass, 2: flesh
 uniform float section_scale = 1.0;
 uniform vec3 scorch_tint = vec3(0.20, 0.21, 0.22);
+uniform vec3 cap_albedo = vec3(0.32);
 // R367: the seam's heat in the faction's death colours (defaults for an unstyled hull).
 uniform vec3 heat_cool = vec3(0.38, 0.035, 0.018);
 uniform vec3 heat_hot = vec3(0.95, 0.40, 0.09);
@@ -161,12 +162,12 @@ void fragment() {
 	float edge = smoothstep(0.78, 1.0, slag_band.y);
 	if (cap_kind == 2) {
 		float fibre = pow(abs(sin(dot(p, vec3(41.0, 67.0, 29.0)) + coarse * 8.0)), 6.0);
-		vec3 flesh = mix(vec3(0.025, 0.005, 0.013), vec3(0.085, 0.018, 0.031), coarse * 0.7 + fibre * 0.3);
+		vec3 flesh = cap_albedo * mix(0.40, 1.20, coarse * 0.7 + fibre * 0.3);
 		ALBEDO = rib ? vec3(0.095, 0.070, 0.040) * (0.65 + coarse * 0.35) : flesh;
 		ROUGHNESS = 0.74;
 	} else if (cap_kind == 1) {
-		// Clearcoat and stored light, not metal panels or a hot steel rim. Shatter dust is a separate effect.
-		ALBEDO = scorch_tint * (lip ? 0.12 : 0.052) * (0.72 + coarse * 0.28);
+		// Frosted pearl glass keeps its colour even after the stored light fades.
+		ALBEDO = cap_albedo * (lip ? 1.0 : 0.86) * (0.88 + coarse * 0.12);
 		ROUGHNESS = lip ? 0.30 : 0.48;
 		CLEARCOAT = lip ? 0.68 : 0.32;
 		CLEARCOAT_ROUGHNESS = 0.28;
@@ -1574,7 +1575,7 @@ static func precompute(fx, s, cause := "blast", under_cover := false, shared_cut
 				sd["tur"] = tk
 				sd["anchor"] = inv * (s.hull.turrets[tk]["node"] as Node3D).global_transform.origin
 			surfs.append(sd)
-	var inputs := {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus",
+	var inputs := {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "faction": s.faction, "L": s.hull.L,
 		"cap_kind": CAP_GLASS if s.faction == "ithar" else (CAP_FLESH if s.faction == "chorus" else CAP_METAL),
 		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan, "authored": s.hull.authored,
 		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
@@ -1788,13 +1789,23 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, 
 	if pc.has("cap"):
 		var mat := ShaderMaterial.new()
 		mat.shader = HULL.shared_shader(SLAG, "death piece slag")
-		mat.set_shader_parameter("cap_kind", pc.get("cap_kind", CAP_METAL))
+		var kind := int(pc.get("cap_kind", CAP_METAL))
+		mat.set_shader_parameter("cap_kind", kind)
 		mat.set_shader_parameter("scorch_tint", pc.get("scorch_tint", Color(0.20, 0.21, 0.22)))
+		if kind == CAP_GLASS:
+			mat.set_shader_parameter("cap_albedo", _cap_albedo("ithar", "glass", Vector3(0.32, 0.32, 0.32)))
+		elif kind == CAP_FLESH:
+			mat.set_shader_parameter("cap_albedo", _cap_albedo("chorus", "organ", Vector3(0.07, 0.035, 0.028)))
 		mat.set_shader_parameter("section_scale", pc.get("section_scale", 1.0))
 		_style_heat(mat, pc.get("dstyle", {}), "heat_")
 		am.surface_set_material(mini(si, am.get_surface_count() - 1), mat)
 		pc["cap_mat"] = mat
 	return am
+
+
+static func _cap_albedo(faction: String, role: String, fallback: Vector3) -> Vector3:
+	var rgb = FLOOK_W.of(faction).get("interior", {}).get("roles", {}).get(role)
+	return Vector3(float(rgb[0]), float(rgb[1]), float(rgb[2])) if rgb is Array and rgb.size() >= 3 else fallback
 
 
 # Issue 600 (R186, RULEBOOK 5.17): an authored hull's insides were whole slabs (an A16 deck is a few triangles up to half
@@ -2075,7 +2086,8 @@ static func _blank_pieces(job: Dictionary, plan: Dictionary, ns: int, n_main: in
 	for c in ns:
 		pieces.append({"surfs": [], "pts": PackedVector3Array(), "edge": PackedVector3Array(), "n": 0, "organic": job.get("organic", false),
 			"cap_kind": job.get("cap_kind", CAP_FLESH if job.get("organic", false) else CAP_METAL),
-			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan, "authored": job.get("authored", false)})
+			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan, "authored": job.get("authored", false),
+			"faction": job.get("faction", ""), "L": job.get("L", 1.0)})
 	return pieces
 
 

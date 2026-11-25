@@ -202,6 +202,7 @@ func _kill(fac: String, cold := false) -> Dictionary:
 						res["heat"] = "styled" if hh is Vector3 or (hh is Color and not (hh as Color).is_equal_approx(Color(0.95, 0.40, 0.09))) else "today"
 						res["cap_kind"] = sm.get_shader_parameter("cap_kind")
 						res["scorch_tint"] = _rgb(sm.get_shader_parameter("scorch_tint"))
+						res["cap_albedo"] = _rgb(sm.get_shader_parameter("cap_albedo"))
 						res["rim_hot"] = _rgb(hh)
 						res["rim_cool"] = _rgb(sm.get_shader_parameter("heat_cool"))
 	print("FACTION_DEATH ", JSON.stringify(res))
@@ -245,8 +246,17 @@ func _wreck_caps(metal: Array, glass: Dictionary, flesh: Dictionary) -> void:
 	check(paints.size() == metal.size(), "2022: all four metal caps have distinct pigments")
 	check(glass.get("cap_kind") == DEATH.CAP_GLASS and glass["seam_hot"] and glass["seam_cold"] and not glass["seam_overrun"],
 		"ithar: stored light fades without a metal rim. Shatter dust stays separate.")
+	var pearl: Vector3 = glass.get("cap_albedo", Vector3.ZERO)
+	var glass_inside: Dictionary = LOOK.of("ithar")["interior"]
+	check(pearl.is_equal_approx(_rgb(glass_inside["roles"]["glass"])) and pearl[pearl.min_axis_index()] >= 0.26
+		and pearl[pearl.max_axis_index()] <= float(glass_inside["wall_max"]) and slag.contains("ALBEDO = cap_albedo * (lip"),
+		"ithar: the unlit lip and bulkhead use pale pearl glass, not the scorched hull tint")
 	check(flesh.get("cap_kind") == DEATH.CAP_FLESH and not flesh["seam_hot"] and not flesh["seam_overrun"],
 		"chorus: ruptured caps keep flesh and no hot seam")
+	var organ: Vector3 = flesh.get("cap_albedo", Vector3.ZERO)
+	check(organ.is_equal_approx(_rgb(LOOK.of("chorus")["interior"]["roles"]["organ"])) and organ.x > organ.y and organ.y > organ.z
+		and slag.contains("flesh = cap_albedo * mix(") and slag.contains(": flesh;"),
+		"chorus: fibres shade crimson-umber organ tissue, with red above green above blue")
 
 
 func _rgb(v: Variant) -> Vector3:

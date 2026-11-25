@@ -6,6 +6,7 @@
  "rows": [
   {
    "id": "wreck2022_h4_11",
+   "strict": true,
    "group": "Wreck breaks 2022",
    "label": "H4_11 Meridian Directorate break: opening, exposed structure, cold",
    "att": ["voidsworn", "Cruiser"],
@@ -18,6 +19,7 @@
   },
   {
    "id": "wreck2022_v1b_r_23",
+   "strict": true,
    "group": "Wreck breaks 2022",
    "label": "V1b_r_23 Sunward Crusade break: opening, exposed structure, cold",
    "att": ["voidsworn", "Cruiser"],
@@ -30,6 +32,7 @@
   },
   {
    "id": "wreck2022_c19_51",
+   "strict": true,
    "group": "Wreck breaks 2022",
    "label": "C19_51 Ashfall Hullbreakers break: opening, exposed structure, cold",
    "att": ["voidsworn", "Cruiser"],
@@ -42,6 +45,7 @@
   },
   {
    "id": "wreck2022_d22_23",
+   "strict": true,
    "group": "Wreck breaks 2022",
    "label": "D22_23 Eclipse break: opening, exposed structure, cold",
    "att": ["voidsworn", "Cruiser"],
@@ -54,6 +58,7 @@
   },
   {
    "id": "wreck2022_i15_11",
+   "strict": true,
    "group": "Wreck breaks 2022",
    "label": "I15_11 Glasswrights break: opening, exposed structure, cold",
    "att": ["voidsworn", "Cruiser"],
@@ -66,6 +71,7 @@
   },
   {
    "id": "wreck2022_b21_11",
+   "strict": true,
    "group": "Wreck breaks 2022",
    "label": "B21_11 Chorus break: opening, exposed structure, cold",
    "att": ["voidsworn", "Cruiser"],
