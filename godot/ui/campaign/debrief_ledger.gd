@@ -1,8 +1,10 @@
 extends Control
 # DB1, The Ledger Page. Presentation only: the paid receipt remains the source.
 const GS = preload("res://ui/theme/glass_shell.gd")
+const Kit = preload("res://ui/theme/orders_kit.gd")
 const Portraits = preload("res://portraits/portraits.gd")
 const ShipPortrait = preload("res://ui/campaign/ledger_ship.gd")
+const Killmail = preload("res://ui/campaign/killmail.gd")
 const FIT_H := 1080.0   # issue 1559 item 3: the design sheet the fixed layout needs (height, and width before columns meet)
 const FIT_W := 1800.0
 const KEYS := {KEY_S: "cores", KEY_L: "nemesis", KEY_R: "record", KEY_P: "spend", KEY_B: "renown", KEY_V: "hulls", KEY_A: "lineage", KEY_F: "fleet"}
@@ -20,6 +22,7 @@ var primary: Button
 var overlay: Control
 var section := ""
 var timeline: Array = []
+var loss_records: Array = []
 var flagship: Dictionary = {}
 var ship_portrait: Control
 
@@ -129,6 +132,7 @@ func _run_events() -> Array:
 func _build_timeline(w: float) -> void:
 	words("THE RUN", Rect2(72, 369, w, 28), 17, GS.TEXT3)
 	timeline = _run_events()
+	loss_records = R.get("timeline", []).filter(func(event): return event is Dictionary and event.get("kind") == "lost_ship")
 	var chart = Control.new(); chart.mouse_filter = MOUSE_FILTER_PASS; chart.name = "RunTimeline"
 	var tips = []
 	for event in timeline: tips.append("Sector " + C.roman(event.get("sector", 1)) + ": " + str(event.get("kind", "battle")) + ", " + str(event.get("result", "")) + "; " + C.numstr(event.get("lost", 0)) + " ships lost.")
@@ -157,7 +161,17 @@ func _build_timeline(w: float) -> void:
 				chart.draw_line(Vector2(x - 5 * k, 36 * k), Vector2(x + 5 * k, 26 * k), GS.HULL_LOW, maxf(1, k)))
 	var legend = "Battle |   Flagship kill O   Loss x   " + ("HOME" if d["victory"] else ("STOOD DOWN" if d["abandoned"] else "FLEET LOST"))
 	if timeline.is_empty(): legend = "Battle sequence unavailable for this older run. Saved totals above."
-	words(legend, Rect2(72, 459, w, 27), 17)
+	words(legend, Rect2(72, 459, w - (218 if not loss_records.is_empty() else 0), 27), 17)
+	if not loss_records.is_empty():
+		var open_losses := func():
+			if loss_records.size() == 1: _open_killmail(loss_records[0])
+			else: open_detail("losses")
+		var tip := str(loss_records[0]["ship_name"]) if loss_records.size() == 1 else "Open the record of each lost ship."
+		var losses := link("Loss records (%d)" % loss_records.size(), Rect2(72 + w - 206, 454, 206, 34), open_losses, tip)
+		losses.name = "TimelineLossRecords"
+
+func _open_killmail(record: Dictionary) -> void:
+	Killmail.open(self, record, k, C.clsName)
 
 func _build_renown(w: float) -> void:
 	heading("What it bought", Rect2(72, 507, w, 41))
@@ -336,10 +350,15 @@ func open_detail(which: String) -> void:
 	var col = ui.vbox(16); panel.add_child(col)
 	var close = link("Close   Esc", Rect2(0, 0, 160, 34), close_detail, "", col)
 	close.custom_minimum_size.y = px(40)
-	var titles = {"cores": "Core sync", "nemesis": "Nemesis lesson", "record": "The record", "renown": "What it bought", "lineage": "Admiral line", "fleet": "The fleet", "admirals": "Admiral rewards"}
+	var titles = {"cores": "Core sync", "nemesis": "Nemesis lesson", "record": "The record", "renown": "What it bought", "lineage": "Admiral line", "fleet": "The fleet", "admirals": "Admiral rewards", "losses": "Run timeline / Ship losses"}
 	var title = ui.lbl(str(titles.get(which, which)).to_upper(), 32, GS.TEXT, GS.sheet_name()); col.add_child(title)
 	var sc = ScrollContainer.new(); sc.size_flags_vertical = SIZE_EXPAND_FILL; sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; col.add_child(sc)
-	var body = ui._end_detail_body(d, which); body.size_flags_horizontal = SIZE_EXPAND_FILL; sc.add_child(body)
+	var body = ui.vbox(8) if which == "losses" else ui._end_detail_body(d, which)
+	body.size_flags_horizontal = SIZE_EXPAND_FILL; sc.add_child(body)
+	if which == "losses":
+		for record in loss_records:
+			var label := "Battle %d  |  %s" % [int(record["battle"]), record["ship_name"]]
+			body.add_child(Kit.button(label, k, "quiet", _open_killmail.bind(record), 17))
 	if which == "fleet" and R["fleet"].is_empty(): body.add_child(ui.lbl("No ships still flying.", 18, GS.TEXT2))
 	close.grab_focus()
 	# issue 1559 item 16: modal for the keyboard (Tab cannot reach the heir cards or Confirm behind the shade)

@@ -271,6 +271,7 @@ gpu|fx/test/ship_fire_probe.gd|env:VENT_OUT|-|a recipe ship firing its broadside
 gpu|fx/test/squadron_probe.gd|env:SQUADRON_OUT|-|squadron close, reverse and battle camera evidence: needs the live renderer
 gpu|fx/test/vent_look_probe.gd|env:VENT_OUT|-|muzzle and vent gas recordings (issue 281): needs the GPU and the ship files
 headless|ui/campaign/test/debrief_ledger_test.gd|-|-|issue 805: DB1 receipt reachability, heir gating, real run timeline, read-only drawing, 17 px floor and contrast over black and white at 1080 and 1440
+headless|ui/campaign/test/after_action_report_test.gd|-|-|issue 2082: Spotlight MVP, settled XP, battle and timeline killmail fields, and Eclipse reassembly
 headless|ui/campaign/test/fleet_manifest_test.gd|-|-|issue 868: FL5 read-only screen, real refit fit move remove, compatibility, promotion, doctrine and return routes, twelve ships without scrolling and long fleets at 1080 1440 and 2160
 headless|ui/campaign/test/reward_flow_test.gd|-|-|issues 1905 and 1402: wreck payout text and credits, quick-fit and manifest agreement, full slots, cancel and one grant across Continue, saved captain fates and promotion wording
 headless|ui/campaign/test/hull_text_test.gd|-|-|issue 932: a hull figure reads as a whole number rounded up, so 25.5 / 40 reads 26 / 40 and 0.5 / 40 reads 1 / 40, while numstr keeps the browser's 25.5
