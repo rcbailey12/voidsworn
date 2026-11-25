@@ -1,6 +1,7 @@
 # Shared PC runner steps (issue 687; issue 722 adds space, hashwrite, hashcheck and model). PowerShell 5.1.
 # No model calls except preflight.
 # init <out> <branch>; wait <out>; checkout <repo> <out> <branch> <sparse>;
+# look-bench-checkout <pins file>: prepare LB_HOME's tool and write the two exact game pins.
 # preflight <out> <repo> <opencode|kimi|codex> <exe> <model> <variant>;
 # scratch <out> [repo]: create and record the run's private TEMP directory and profile cache redirects.
 # finish <out> <exit> <partial> <push mode> <checks ok> [repo].
@@ -107,6 +108,10 @@ function Git([string[]]$words) {
   if ($test -and $env:PC_TEST_GIT) { $exe = $env:PC_TEST_GIT }
   $lines = @(& $exe @words 2>&1); $script:gitExit = $LASTEXITCODE
   $ErrorActionPreference = $ea
+  Write-GitLog $lines
+  return @($lines | ForEach-Object { [string]$_ })
+}
+function Write-GitLog($lines) {
   # Writing the log must never fail the job (Nov 16: four starts died when another process briefly held git_log.txt,
   # 'The process cannot access the file because it is being used by another process'). One append, retried, never thrown.
   $text = (@($lines | ForEach-Object { [string]$_ }) -join "`r`n")
@@ -114,15 +119,18 @@ function Git([string[]]$words) {
     $gl = Join-Path $script:out 'git_log.txt'
     for ($t = 0; $t -lt 40; $t++) { try { [IO.File]::AppendAllText($gl, $text + "`r`n", $utf8); break } catch { Start-Sleep -Milliseconds 500 } }
   }
-  return @($lines | ForEach-Object { [string]$_ })
 }
 function Read-CleanupGit([string[]]$words) {
   # Status must neither refresh the index nor start a filesystem monitor in the checkout.
   Git (@('--no-optional-locks','-c','core.fsmonitor=false') + $words)
 }
 function Must-Git([string[]]$words) {
-  $null = Git $words
-  if ($script:gitExit -ne 0) { throw "git $($words[0]) failed (exit $script:gitExit); see git_log.txt" }
+  $lines = @(Git $words)
+  if ($script:gitExit -ne 0) {
+    if ($script:out) { throw "git $($words[0]) failed (exit $script:gitExit); see git_log.txt" }
+    $lines | ForEach-Object { Write-Host $_ }
+    throw "git $($words[0]) failed (exit $script:gitExit)"
+  }
 }
 function Retry-Git($label, [string[]]$words) {
   $delay = 120
@@ -347,7 +355,15 @@ function Get-RepoCleanupStatus($repo) {
 function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWork = $false, $forRemoval = $false) {
   foreach ($line in $status) {
     # These installer leftovers can be untracked or ignored, depending on the checkout's ignore rules.
+    # PR 2077 ignores flat ships manifest backups (manifest.json.bak_<stamp>) beside the older manifest.bak_* folders.
     if ($line -match '^(?:!!|\?\?) ("?)(godot/(?:\.stage7-replaced-[^/"\\:\r\n]+|assets/ships/manifest\.bak_[^/"\\:\r\n]+)/[^"\\:\r\n]+)(?<!/)\1$' -and
+        (Test-Path -LiteralPath (Join-Path $repo $Matches[2]) -PathType Leaf)) {
+      $Matches[2]
+      continue
+    }
+    # Issue 2091: a flat manifest backup is unique, so reuse may leave it in place but the janitor must keep its checkout.
+    if (-not $forRemoval -and
+        $line -match '^(?:!!|\?\?) ("?)(godot/assets/ships/manifest\.json\.bak_[^/"\\:\r\n]+)(?<!/)\1$' -and
         (Test-Path -LiteralPath (Join-Path $repo $Matches[2]) -PathType Leaf)) {
       $Matches[2]
       continue
@@ -833,21 +849,59 @@ function Open-CleanupLock($path, $existingOnly = $false) {
   if ($existingOnly) { return [IO.File]::Open($path, 'Open', 'Read', 'None') }
   return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None')
 }
-function Open-MirrorWriterLock($mirror) {
-  # Issue 1396 (Artoo on PR 1592): every writer of the shared mirror (lane fetch and clone, the job head, helper_clone,
-  # ship_job, look_bench) holds <mirror>.lock alone. A live removal holds it from its last mirror proof through the
-  # delete, so no fetch or prune can drop the ref that proved the removal in between. Waits up to 10 minutes
-  # (PC_MIRROR_LOCK_WAIT_SECONDS), then keeps the candidate.
-  $wait = 600; if ("$env:PC_MIRROR_LOCK_WAIT_SECONDS" -match '\A[0-9]{1,5}\z') { $wait = [int]$env:PC_MIRROR_LOCK_WAIT_SECONDS }
+function Get-MirrorProcessStart([int]$processId) {
+  if ($IsLinux) {
+    # .NET converts Linux start ticks to wall time using a boot-time estimate that can differ by reader.
+    $stat = [IO.File]::ReadAllText("/proc/$processId/stat")
+    $fields = $stat.Substring($stat.LastIndexOf(')') + 2) -split ' '
+    # Fields after the parenthesized process name start at field 3. Field 22 is the start tick.
+    if ($fields[0] -in @('Z', 'X') -or $fields[19] -notmatch '\A[0-9]+\z') { throw 'no live process start tick' }
+    $boot = [IO.File]::ReadAllText('/proc/sys/kernel/random/boot_id').Trim()
+    return "$boot/$($fields[19])"
+  }
+  return [string](Get-Process -Id $processId -ErrorAction Stop).StartTime.ToUniversalTime().Ticks
+}
+function Read-MirrorLockOwner($mirror) {
+  try {
+    $owner = Get-Content -LiteralPath "$mirror.lock.owner" -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($owner.pid -gt 0 -and (Get-MirrorProcessStart $owner.pid) -ceq $owner.processStart) {
+      $since = $owner.since
+      if ($since -is [DateTime]) { $since = $since.ToUniversalTime().ToString('o') }
+      return "PID $($owner.pid), job $($owner.job), command $($owner.command), since $since"
+    }
+  } catch { }
+  return 'holder PID, job, command and start unavailable (no live owner record)'
+}
+function Open-MirrorWriterLock($mirror, $job = 'cleanup', $command = 'verify and remove kept checkout', $wait = 600, [switch]$ReportWait) {
+  # Live removal still holds the same file lock from proof through removal (issue 1396). Ordinary fetches FROM
+  # the mirror do not write to it. Local hardlink clones still serialize with writers.
+  if ("$env:PC_MIRROR_LOCK_WAIT_SECONDS" -match '\A[0-9]{1,5}\z') { $wait = [int]$env:PC_MIRROR_LOCK_WAIT_SECONDS }
   if (-not (Test-Path -LiteralPath (Split-Path -Parent $mirror) -PathType Container)) { throw "no folder for the shared repo copy lock: $mirror" }
-  $deadline = [DateTime]::UtcNow.AddSeconds($wait)
+  $clock = [Diagnostics.Stopwatch]::StartNew()
   while ($true) {
-    try { return [IO.File]::Open("$mirror.lock", 'OpenOrCreate', 'ReadWrite', 'None') }
+    try { $lock = [IO.File]::Open("$mirror.lock", 'OpenOrCreate', 'ReadWrite', 'None'); break }
     catch [IO.IOException] {
-      if ([DateTime]::UtcNow -ge $deadline) { throw "shared repo copy stayed locked for $wait s (a mirror fetch is running)" }
+      if ($clock.Elapsed.TotalSeconds -ge $wait) { throw "shared repo copy stayed locked for $wait s; $(Read-MirrorLockOwner $mirror)" }
+      if ($ReportWait) { Log 'waiting for the shared repo copy'; $ReportWait = $false }
       Start-Sleep -Milliseconds 500
     }
   }
+  try {
+    $owner = @{
+      pid = $PID
+      processStart = Get-MirrorProcessStart $PID
+      job = $job -replace '[\r\n]', ' '
+      command = $command -replace '[\r\n]', ' '
+      since = [DateTime]::UtcNow.ToString('o')
+    }
+    Put "$mirror.lock.owner" ($owner | ConvertTo-Json -Compress)
+    # Clear while still holding the mutex, not after release. Old installed tools still contend on the same file.
+    $lease = [pscustomobject]@{ Stream = $lock; OwnerPath = "$mirror.lock.owner" }
+    $lease | Add-Member -MemberType ScriptMethod -Name Dispose -Value {
+      try { [IO.File]::WriteAllText($this.OwnerPath, '') } finally { $this.Stream.Dispose() }
+    }
+    return $lease
+  } catch { $lock.Dispose(); throw }
 }
 function Assert-NoGitLocalState($candidate) {
   $gitDir = Join-Path $candidate '.git'
@@ -967,6 +1021,180 @@ function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false, $now = [DateTi
 }
 # Windows command line quoting, including trailing backslashes. Inputs are argument values, never shell snippets.
 function Quote($value) { return '"' + ([regex]::Replace(([string]$value), '(\\*)"', '$1$1\"') -replace '(\\+)$', '$1$1') + '"' }
+function Invoke-BoundedMirrorGit([string[]]$words, $seconds, $step = 'mirror fetch', [switch]$NativeGit) {
+  $exe = 'git.exe'
+  $windows = [Environment]::OSVersion.Platform -eq 'Win32NT'
+  if (-not $windows) { $exe = @(Get-Command git -CommandType Application -ErrorAction Stop)[0].Source }
+  if ($test -and $env:PC_TEST_GIT -and -not $NativeGit) { $exe = $env:PC_TEST_GIT }
+  $argLine = ($words | ForEach-Object { Quote $_ }) -join ' '
+  if ($windows) {
+    # The existing watchdog's Job Object stops Git and its children before unlocking.
+    . (Join-Path $PSScriptRoot 'run_timeout.ps1') -LibraryOnly
+    Initialize-RunTree
+    $target = (Get-Command -Name $exe -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
+    $command = (Quote $target) + ' ' + $argLine
+    if ($target -match '\.(bat|cmd)$') { $command = (Quote $env:ComSpec) + ' /d /s /c "' + $command + '"' }
+    $spool = Join-Path (Get-ScratchParent) ('mirror-git-' + [guid]::NewGuid().ToString('N'))
+    $stdout = "$spool.stdout"
+    $stderr = "$spool.stderr"
+    $tree = [RunnerStep]::new($command, (Get-Location).Path, $stdout, $stderr)
+    $proc = $null
+    try {
+      $proc = [Diagnostics.Process]::GetProcessById($tree.Pid)
+      $null = $proc.Handle
+      $clock = [Diagnostics.Stopwatch]::StartNew()
+      $tree.Resume()
+      while ($tree.ReadUsage().Active -and $clock.Elapsed.TotalSeconds -lt $seconds) { Start-Sleep -Milliseconds 50 }
+    } finally {
+      try {
+        $stopped = [bool]$tree.ReadUsage().Active
+        if ($stopped) { Stop-StepTree $tree "$spool.kill" $step | ForEach-Object { Write-Host $_ } }
+        $code = if ($stopped) { 124 } else { $proc.ExitCode }
+      } finally {
+        $tree.Dispose()
+        if ($proc) { $proc.Dispose() }
+      }
+    }
+    return @{ Code = $code; Lines = @(Get-Content -LiteralPath $stdout, $stderr) }
+  }
+  $start = New-Object Diagnostics.ProcessStartInfo
+  $start.FileName = $exe; $start.Arguments = $argLine; $start.UseShellExecute = $false
+  $start.RedirectStandardOutput = $true; $start.RedirectStandardError = $true
+  $proc = [Diagnostics.Process]::Start($start)
+  try {
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    $stdout = $proc.StandardOutput.ReadToEndAsync()
+    $stderr = $proc.StandardError.ReadToEndAsync()
+    if (-not $proc.WaitForExit($seconds * 1000)) {
+      $proc.Kill($true)
+      if (-not $proc.WaitForExit(5000)) { throw "could not stop timed-out $step" }
+      return @{ Code = 124; Lines = @() }
+    }
+    $left = [int][Math]::Max(0, $seconds * 1000 - $clock.ElapsedMilliseconds)
+    if (-not [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]@($stdout, $stderr), $left)) {
+      return @{ Code = 124; Lines = @() }
+    }
+    return @{ Code = $proc.ExitCode; Lines = @($stdout.Result, $stderr.Result) }
+  } finally { $proc.Dispose() }
+}
+function Update-SharedMirror($mirror, $source, $job, $attempts = 1, $wait = 1800, [switch]$ReportWait) {
+  $seconds = 180; $delay = 120
+  if ($test -and $env:PC_TEST_MIRROR_FETCH_SECONDS) { $seconds = [int]$env:PC_TEST_MIRROR_FETCH_SECONDS }
+  if ($test -and $env:PC_TEST_RETRY_SECONDS) { $delay = [int]$env:PC_TEST_RETRY_SECONDS }
+  for ($attempt = 1; $attempt -le $attempts; $attempt++) {
+    $lock = Open-MirrorWriterLock $mirror $job 'git fetch --prune origin' $wait -ReportWait:$ReportWait
+    try {
+      if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) {
+        Must-Git @('init','-q','--bare',$mirror)
+        Must-Git @('--git-dir',$mirror,'remote','add','--mirror=fetch','origin',$source)
+      }
+      $url = @(Git @('--git-dir',$mirror,'remote','get-url','origin'))
+      if ($gitExit -ne 0 -or $url[0] -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }
+      $fetch = Invoke-BoundedMirrorGit @('--git-dir',$mirror,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60',
+        '-c','fetch.writeCommitGraph=false','fetch','--no-auto-maintenance','--prune','origin') $seconds
+      if ($fetch.Code -eq 0) { Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main') }
+    } finally { $lock.Dispose() }
+    Write-GitLog $fetch.Lines
+    if ($fetch.Code -eq 0) { return }
+    $reason = if ($fetch.Code -eq 124) { "timed out after $seconds s" } else { "exit $($fetch.Code)" }
+    if ($attempt -lt $attempts) {
+      Log "mirror fetch attempt $attempt/$attempts failed ($reason); lock released, retry in $delay seconds"
+      Start-Sleep -Seconds $delay
+    } else {
+      if (-not $script:out) { $fetch.Lines | ForEach-Object { Write-Host $_ } }
+      if ($attempts -eq 1) { throw "mirror fetch failed ($reason)" }
+      throw "mirror fetch failed after $attempts attempts ($reason); see git_log.txt"
+    }
+  }
+}
+function Initialize-LookBenchCheckout($checkout, $mirror, $source) {
+  $gitDir = Join-Path $checkout '.git'
+  $alternate = Join-Path $gitDir 'objects/info/alternates'
+  if ((Test-Path -LiteralPath $gitDir) -and -not (Test-Path -LiteralPath $alternate)) { return }
+
+  # Stage beside the checkout so a failed or interrupted clone never becomes the active repo.
+  $checkout = [IO.Path]::GetFullPath($checkout)
+  $null = [IO.Directory]::CreateDirectory((Split-Path -Parent $checkout))
+  $stage = "$checkout-seed-$([guid]::NewGuid().ToString('N'))"
+  $hasMirror = Test-Path -LiteralPath (Join-Path $mirror 'HEAD')
+  if ($hasMirror) {
+    $step = 'look bench local clone'
+    $lock = Open-MirrorWriterLock $mirror 'look bench' $step
+    try {
+      $hasMirror = Test-Path -LiteralPath (Join-Path $mirror 'HEAD')
+      if ($hasMirror) {
+        # Explicit --local hardlinks the immutable objects. Bound the locked step even if disk I/O hangs.
+        $clone = Invoke-BoundedMirrorGit @('-c','core.autocrlf=false','clone','-q','--local','--no-checkout',
+          '--no-tags','--single-branch','--origin','origin',$mirror,$stage) 180 $step -NativeGit
+      }
+    } finally { $lock.Dispose() }
+  }
+  if ($hasMirror) {
+    $clone.Lines | ForEach-Object { Write-Host $_ }
+    if ($clone.Code -eq 124) { throw "$step timed out after 180 s" }
+    if ($clone.Code -ne 0) { throw "$step failed (git exit $($clone.Code))" }
+    if (Test-Path -LiteralPath (Join-Path $stage '.git/objects/info/alternates')) {
+      throw 'the shared mirror has alternates; the staged bench checkout was not installed'
+    }
+    # Keep the objects, not the mirror's branch refs. Only the requested bench pins will be stored.
+    Must-Git @('-C',$stage,'remote','remove','origin')
+    Must-Git @('-C',$stage,'update-ref','-d','HEAD')
+  } else {
+    # The bench can still run before any lane has built the mirror.
+    Must-Git @('init','-q',$stage)
+  }
+  Must-Git @('-C',$stage,'config','core.autocrlf','false')
+  Must-Git @('-C',$stage,'config','remote.origin.url',$source)
+  if (Test-Path -LiteralPath $checkout) {
+    # Keep the old alternate-based checkout and its worktree intact. Never use it for new pins.
+    $kept = "$checkout-kept-$([guid]::NewGuid().ToString('N'))"
+    [IO.Directory]::Move($checkout, $kept)
+    Write-Host "kept previous look bench checkout at $kept"
+  }
+  [IO.Directory]::Move($stage, $checkout)
+}
+function Get-LookBenchPin($ref, $checkout, $source) {
+  if ($ref -match '\A[0-9a-fA-F]{4,40}\z') {
+    $sha = @(Git @('-C',$checkout,'rev-parse','--verify','--quiet',"${ref}^{commit}"))
+    if ($gitExit -eq 0) { return $sha[0] }
+    if ($ref.Length -eq 40) { return $ref.ToLowerInvariant() }
+  }
+  # Refresh just the requested names against origin. The bench deliberately never updates the shared mirror.
+  $refs = if ($ref -match '\A(?:refs/remotes/)?origin/(.+)\z') { @("refs/heads/$($Matches[1])") }
+          elseif ($ref -match '\Arefs/(?:heads|tags)/') { @($ref) }
+          else { @("refs/heads/$ref","refs/tags/$ref") }
+  foreach ($name in $refs) { Must-Git @('check-ref-format',$name) }
+  $names = @($refs) + @($refs | Where-Object { $_.StartsWith('refs/tags/') } | ForEach-Object { "${_}^{}" })
+  $rows = @(Git (@('-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60','ls-remote','--exit-code',$source) + $names))
+  if ($gitExit -ne 0) { throw "cannot resolve look bench ref $ref at origin (git exit $gitExit)" }
+  foreach ($name in $refs) {
+    foreach ($wanted in @("${name}^{}", $name)) {
+      foreach ($row in $rows) {
+        $sha, $advertised = $row -split "`t", 2
+        if ($advertised -ceq $wanted -and $sha -match '\A[0-9a-f]{40}\z') { return $sha }
+      }
+    }
+  }
+  throw "origin did not report an exact match for look bench ref $ref"
+}
+function Fetch-LookBenchPin($checkout, $mirror, $source, $pin, $slot) {
+  $destination = "refs/look-bench/$slot"
+  $null = Git @('--git-dir',$mirror,'cat-file','-e',"${pin}^{commit}")
+  if ($gitExit -eq 0) { $from = $mirror }
+  else {
+    $null = Git @('-C',$checkout,'cat-file','-e',"${pin}^{commit}")
+    if ($gitExit -eq 0) {
+      Must-Git @('-C',$checkout,'update-ref',$destination,$pin)
+      return
+    }
+    $from = $source
+  }
+  # A mirror miss fetches only this pin into the bench checkout. It never becomes a shared writer.
+  Write-Host "look bench $slot $pin from $from"
+  Must-Git @('-C',$checkout,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60','fetch',
+    '--no-tags','--no-prune','--no-prune-tags','--no-auto-maintenance','--no-write-fetch-head',$from,"+${pin}:${destination}")
+  Must-Git @('-C',$checkout,'cat-file','-e',"${pin}^{commit}")
+}
 # Final reporting is best effort. Start validation and claiming must fail closed.
 function Invoke-Gh($method, $endpoint, $payload = $null, $pages = $false) {
   $script:ghOK = $false
@@ -1305,6 +1533,36 @@ try {
       Start-Sleep -Milliseconds 500
     }
   }
+  elseif ($mode -eq 'look-bench-checkout') {
+    $mirror = Repo-Mirror
+    $source = 'https://github.com/rcbailey12/voidsworn'
+    if ($test) {
+      if (-not $env:PC_TEST_SOURCE -or -not $mirror) { throw 'test checkout requires PC_TEST_SOURCE and PC_TEST_MIRROR (no live network)' }
+      $source = $env:PC_TEST_SOURCE
+    }
+    $tool = Join-Path $env:LB_HOME 'tool'
+    $repo = Join-Path $env:LB_HOME 'repo'
+    Initialize-LookBenchCheckout $tool $mirror $source
+    $toolPin = Get-LookBenchPin $env:LB_TOOL_REF $tool $source
+    Fetch-LookBenchPin $tool $mirror $source $toolPin 'tool'
+    Must-Git @('-C',$tool,'checkout','-f','--detach',$toolPin)
+    $before = $env:BEFORE
+    if (-not $before) {
+      $baseline = @(Git @('-C',$tool,'show','HEAD:docs/shots/look_bench/BASELINE.txt'))
+      if ($gitExit -ne 0 -or -not $baseline.Count -or -not $baseline[0].Trim()) { throw 'the selected bench tool has no baseline pin' }
+      $before = $baseline[0].Trim()
+    }
+    Initialize-LookBenchCheckout $repo $mirror $source
+    $afterPin = if ($env:AFTER -ceq $env:LB_TOOL_REF) { $toolPin } else { Get-LookBenchPin $env:AFTER $repo $source }
+    Fetch-LookBenchPin $repo $mirror $source $afterPin 'after'
+    $beforePin = 'none'
+    if ($before -ne 'none') {
+      $beforePin = if ($before -ceq $env:AFTER) { $afterPin } elseif ($before -ceq $env:LB_TOOL_REF) { $toolPin }
+                   else { Get-LookBenchPin $before $repo $source }
+      if ($beforePin -ne $afterPin) { Fetch-LookBenchPin $repo $mirror $source $beforePin 'before' }
+    }
+    Put $args[1] "$afterPin $beforePin`r`n"
+  }
   elseif ($mode -eq 'checkout') {
     $repo = $args[1]; $script:out = $args[2]; $br = $args[3]
     if ([IO.Path]::GetFileName([IO.Path]::GetFullPath($repo).TrimEnd('\','/')) -ne 'repo') { throw "unexpected checkout path $repo" }
@@ -1327,31 +1585,12 @@ try {
     }
     $parent = Split-Path -Parent $mirror
     $null = New-Item -ItemType Directory -Force -Path $parent
-    $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30); $said = $false
-    while (-not $lock) {
-      try { $lock = [IO.File]::Open("$mirror.lock", 'OpenOrCreate', 'ReadWrite', 'None') }
-      catch [IO.IOException] {
-        if (-not $said) { Log 'waiting for the shared repo copy'; $said = $true }
-        if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }
-        Start-Sleep -Milliseconds 500
-      }
+    Update-SharedMirror $mirror $source $br 3 -ReportWait
+    $reuse = Can-ReuseRepo $repo $mirror $patterns
+    if ($reuse) {
+      # --prune: a reused slot must drop a branch GitHub deleted, or a rerun would continue its stale tip (PR 1804).
+      Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags','--no-auto-maintenance','--prune',$mirror,'+refs/heads/*:refs/remotes/origin/*')
     }
-    try {
-      if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) {
-        Must-Git @('init','--bare',$mirror)
-        Must-Git @('--git-dir',$mirror,'remote','add','--mirror=fetch','origin',$source)
-      }
-      $url = @(Git @('--git-dir',$mirror,'remote','get-url','origin'))
-      if ($gitExit -ne 0 -or $url[0] -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }
-      Retry-Git 'mirror fetch' @('--git-dir',$mirror,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60','fetch','--prune','origin')
-      # The remote default branch may not yet be set by init --bare.
-      Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main')
-      $reuse = Can-ReuseRepo $repo $mirror $patterns
-      if ($reuse) {
-        # --prune: a reused slot must drop a branch GitHub deleted, or a rerun would continue its stale tip (Artoo on PR 1804).
-        Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags','--prune',$mirror,'+refs/heads/*:refs/remotes/origin/*')
-      }
-    } finally { $lock.Dispose() }
     # A pinned lane must not hold the shared mirror lock for the ten-minute preservation wait.
     if (-not $reuse) { Keep-Repo $repo 'kept' }
     Warn-KeptRepos $repo
@@ -1359,14 +1598,7 @@ try {
     for ($attempt = 1; -not $reuse -and $attempt -le 3; $attempt++) {
         Log "local clone attempt $attempt/3"
         # Reacquire around each local clone: mirror fetch and hardlink cloning must still serialize.
-        $lock = $null
-        while (-not $lock) {
-          try { $lock = [IO.File]::Open("$mirror.lock", 'OpenOrCreate', 'ReadWrite', 'None') }
-          catch [IO.IOException] {
-            if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }
-            Start-Sleep -Milliseconds 500
-          }
-        }
+        $lock = Open-MirrorWriterLock $mirror $br 'git clone --local --no-checkout' 1800 -ReportWait
         try { $null = Git @('clone','-q','-c','core.autocrlf=false','--local','--no-checkout',$mirror,$repo) }
         finally { $lock.Dispose() }
         if ($gitExit -eq 0) { break }

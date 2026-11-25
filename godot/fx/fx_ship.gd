@@ -207,6 +207,20 @@ func build_shield_later(fx) -> void:
 		_build_shield(fx)
 
 
+static func _new_hull(fx, r: Node3D, sid: String, squad: bool):
+	var analysis := HULL.new()
+	analysis.stb_z = float(fx.starboard_z)
+	analysis.code = str(r.get("code")) if r.get("code") != null else sid
+	analysis.formation = squad
+	analysis.cache_geometry = true
+	return analysis
+
+
+static func prime_hull(fx, r: Node3D, sid: String, squad: bool, parts: Array) -> bool:
+	var analysis = _new_hull(fx, r, sid, squad)
+	return analysis.prime(r, parts if not parts.is_empty() else _find_meshes(r))
+
+
 func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	id = sid
 	root = r
@@ -231,11 +245,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	if meshes.is_empty():
 		meshes = _find_meshes(root)
 	_seed = hash(sid)
-	hull = HULL.new()
-	hull.stb_z = float(fx.starboard_z)
-	hull.code = str(root.get("code")) if root.get("code") != null else sid
-	hull.formation = squadron
-	hull.shared = fx.get("hull_shared")
+	hull = _new_hull(fx, root, sid, squadron)
 	var t_a := Time.get_ticks_usec()   # issue 1289: an arriving ship's parts, named in fx.prof (the arrival bench reads them)
 	hull.analyse(root, meshes, _seed)
 	t_a = fx.pend("add:analyse", t_a)
