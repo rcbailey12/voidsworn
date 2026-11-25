@@ -1,0 +1,49 @@
+{
+ "batch": "elevenlabs_1877_thorns",
+ "gate": 2,
+ "made_for": "issue 1877 (Ryan, Nov 24 2026 12:34 UTC: \"Yes bone bolts ... ensure we have new sound for it\"; name Acid Thorns, 12:55 UTC). The Chorus close-in weapon is a built bone thorn: the gland snaps it out, it bites into the plating and sticks, acid sheets down, then it crumbles.",
+ "note": "Three new cues, four takes each (RULEBOOK 8.4: four takes is the starting count), written the Gate 3 way (contrib/opus/plans/cohesive_audio_v2.md sections 2 to 8: identity first, one size word, no banned words, dry weapons). Today the thorn plays gun_shell (the tendril look is not in battle.gd's style list), a metal gun sound: the wiring after Ryan's pick adds tendril to the spine style with a chorus.tendril variant on gun_spine, a chorus.tendril hit variant, and the crumble on the thorn's own crumble time.",
+ "sfx_model": "eleven_text_to_sound_v3",
+ "waves": {
+  "T": [
+   "wep_chorus_thorn",
+   "imp_chorus_thorn",
+   "imp_chorus_thorn_crumble"
+  ]
+ },
+ "items": [
+  {
+   "id": "wep_chorus_thorn",
+   "kind": "sfx",
+   "cue": "gun_spine variant chorus.tendril (Acid Thorns: one thorn leaving the gland)",
+   "today": "gun_shell",
+   "group": "weapon_chorus",
+   "seconds": 0.8,
+   "influence": 0.65,
+   "takes": 4,
+   "prompt": "Living bone starship snapping one heavy bone thorn out of a fleshy gland: a deep wet muscular thunk, a hard tendon snap, and a short dense push of air as the thorn leaves. Organic and heavy, close and dry, one point source, firm clean attack, no reverb."
+  },
+  {
+   "id": "imp_chorus_thorn",
+   "kind": "sfx",
+   "cue": "hit variant chorus.tendril (Acid Thorns: the thorn bites into armour plate)",
+   "today": "hit_acid",
+   "group": "impact",
+   "seconds": 1.0,
+   "influence": 0.6,
+   "takes": 4,
+   "prompt": "A thick bone thorn driving into armored starship plating: a hard bone crack and a heavy dull punch into steel, then a short wet splash and a sharp acid hiss as it starts to eat the metal. Heavy, close and dry, one point source, firm clean attack, no reverb."
+  },
+  {
+   "id": "imp_chorus_thorn_crumble",
+   "kind": "sfx",
+   "cue": "new moment: the stuck thorn crumbles (fx_acid_thorn.gd, 1.15 s after the hit)",
+   "today": "none",
+   "group": "impact",
+   "seconds": 1.2,
+   "influence": 0.55,
+   "takes": 4,
+   "prompt": "A large dried bone thorn stuck in metal crumbling apart: brittle dry bone cracking into chips and grit that patter softly on a steel plate, with a faint acid fizz under it. Medium size, close and dry, one point source, soft clean attack, no reverb."
+  }
+ ]
+}

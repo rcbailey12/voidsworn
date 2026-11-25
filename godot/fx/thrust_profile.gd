@@ -1,4 +1,5 @@
 extends RefCounted
+const FLOOK := preload("res://fx/faction_look.gd")
 # Issue 1582 item 5: six faction movement personalities. One table, read by ShipView for its manoeuvring jets and its
 # ignition beat. Colours come from fx/faction_looks.json (the one faction colour file, R367) where a jet takes the drive's
 # colour; the jet tints here are the gas or light a faction's jets give off, not new faction colours.
@@ -45,3 +46,38 @@ static func of(faction: String) -> Dictionary:
 	var p: Dictionary = DEFAULT.duplicate()
 	p.merge(TABLE.get(faction, {}), true)
 	return p
+
+
+# Issue 2042: faction-tinted RCS cone-jet palette from fx/faction_looks.json (never hardcoded per-ship overrides).
+# Returns {"core": Color, "wash": Color, "kind": int, "style": String}.
+# kind: 0 directional cone jet (gas), 1 Glasswright prismatic vane flare, 2 Chorus organic pulse, 3 Eclipse null ripple.
+static func palette(faction: String) -> Dictionary:
+	var fid := faction.to_lower()
+	var profile := of(fid)
+	var style := str(profile.get("style", "gas"))
+	var info := FLOOK.of(fid)
+	var eng: Color = FLOOK.engine(fid)
+	var acc = info.get("accent")
+	match style:
+		"glint":
+			# Glasswrights: pale crystal core + stored violet edge, no white cold gas.
+			return {"core": FLOOK.weapon(fid), "wash": eng, "kind": 1, "style": style}
+		"pulse":
+			# Chorus: organic bioluminescent vent pulse from faction_looks.json.
+			var dmg: Color = info.get("damage_glow", eng) if info.get("damage_glow") is Color else eng
+			return {"core": dmg.lerp(Color(0.92, 1.0, 0.68), 0.25), "wash": eng, "kind": 2, "style": style}
+		"ripple":
+			# Eclipse: cold violet null ripple, strictly violet (no green, no orange).
+			var wc: Color = info.get("weapon_core", eng) if info.get("weapon_core") is Color else eng
+			return {"core": eng.lerp(Color(0.92, 0.86, 1.0), 0.3), "wash": wc, "kind": 3, "style": style}
+		_:
+			# Mechanical gas factions: hot core + faction-tinted conical wash from faction_looks.json.
+			var core: Color = eng.lerp(Color.WHITE, 0.62)
+			var wash: Color = eng.lerp(Color.WHITE, 0.28)
+			if fid == "voidsworn" and acc is Color:
+				core = (acc as Color).lerp(Color(1.0, 0.94, 0.86), 0.45)
+				wash = eng.lerp(acc as Color, 0.52)
+			elif fid == "corsair" and acc is Color:
+				core = eng.lerp(Color(1.0, 0.92, 0.78), 0.5)
+				wash = eng.lerp(acc as Color, 0.25)
+			return {"core": core, "wash": wash, "kind": 0, "style": style}

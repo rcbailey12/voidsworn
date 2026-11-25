@@ -23,6 +23,7 @@
 #     The clone itself stays for reuse. On FAILED nothing is removed, so the Board can read it.
 # Writes and removes only under <job folder>, plus the mirror refresh.
 param([Parameter(Mandatory)][string]$JobDir, [string]$Branch = '', [string]$Ships = '', [string]$Steps = '', [switch]$Release)
+. (Join-Path $PSScriptRoot 'runner_common.ps1') cleanup-library
 $ErrorActionPreference = 'Stop'
 $test = [bool]$env:PC_TEST_HELPER
 $sep = [IO.Path]::DirectorySeparatorChar
@@ -64,21 +65,6 @@ function Find-Link($dir) {
     }
   }
   return $null
-}
-function Refresh-Mirror {
-  $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
-  while (-not $lock) {
-    try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }
-    catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 }
-  }
-  try {
-    if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) { Run-Git init -q --bare $mirror | Out-Null; Run-Git --git-dir $mirror remote add --mirror=fetch origin $source | Out-Null }
-    if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }
-    Write-Output "refreshing shared mirror $mirror"
-    Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
-    Run-Git --git-dir $mirror symbolic-ref HEAD refs/heads/main | Out-Null
-    & $args[0]
-  } finally { $lock.Dispose() }
 }
 function Get-ShipSources {
   # Exactly what get_ship_files.bat copies: all of gen, and assets\ships without manifest.json, README.md, a4_props.gd,
@@ -205,7 +191,9 @@ $attempt = $null; $code = 1; $stepsRan = $false
 try {
   if ($release) {
     if (-not (Test-Path -LiteralPath (Join-Path $repo '.git'))) { throw "no clone in $job; nothing to release" }
-    Refresh-Mirror { Assert-Relayed }
+    Update-SharedMirror $mirror $source $job
+    $lock = Open-MirrorWriterLock $mirror $job 'verify relayed helper outputs' 1800
+    try { Assert-Relayed } finally { $lock.Dispose() }
     Release-Copies
     Write-Output "release done; the clone stays for reuse: $repo"
     exit 0
@@ -217,18 +205,20 @@ try {
   if (Test-Path -LiteralPath $attemptResult) { [IO.File]::Delete($attemptResult) }
   [IO.File]::WriteAllText((Join-Path $job 'attempt.txt'), "$attempt`n")
   Write-Output "attempt $attempt"
-  $script:fresh = $false
-  Refresh-Mirror {
-    $script:fresh = -not (Test-Path -LiteralPath (Join-Path $repo '.git'))
-    if ($script:fresh) {
+  Update-SharedMirror $mirror $source $job
+  $fresh = -not (Test-Path -LiteralPath (Join-Path $repo '.git'))
+  if ($fresh) {
+    $lock = Open-MirrorWriterLock $mirror $job 'git clone --local --no-checkout' 1800
+    try {
       Write-Output "local clone $repo (objects shared with the mirror)"
       Run-Git -c core.autocrlf=false clone --local -q --no-checkout $mirror $repo | Out-Null
-    }
-    $depth = @(); if ((Run-Git -C $repo rev-parse --is-shallow-repository) -eq 'true') { $depth = @('--unshallow') }
-    Run-Git -C $repo fetch -q --no-tags @depth $mirror "+refs/heads/${Branch}:refs/remotes/origin/$Branch" | Out-Null
+    } finally { $lock.Dispose() }
   }
+  # Fetching INTO this job checkout is a mirror read, even if unshallowing takes a while.
+  $depth = @(); if ((Run-Git -C $repo rev-parse --is-shallow-repository) -eq 'true') { $depth = @('--unshallow') }
+  Run-Git -C $repo fetch -q --no-tags --no-auto-maintenance @depth $mirror "+refs/heads/${Branch}:refs/remotes/origin/$Branch" | Out-Null
   # Never reset someone's work: stop if the clone has tracked edits, staged changes or commits not on any mirror branch.
-  if (-not $script:fresh) {
+  if (-not $fresh) {
     $dirty = @(Run-Git -C $repo status --porcelain --untracked-files=no)
     if ($dirty.Count) { throw "clone has local changes, kept as is: $($dirty -join '; ')" }
     $local = @(Run-Git -C $repo rev-list HEAD --not --remotes=origin)
