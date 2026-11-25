@@ -1,0 +1,54 @@
+{
+  "source_commit": "1c3f2fd0859381a51ab5d033e0df4d58776efb30",
+  "source_diff_sha256": "49b159a2a597a9241ee93f172de2bc748df35263b3ca60894e82e3c8cc38afc1",
+  "source_dirty": true,
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "AR-A_spotlight-report.png",
+  "date": "2026-11-24T23:27:49Z",
+  "sources": [
+    {
+      "source_commit": "1c3f2fd0859381a51ab5d033e0df4d58776efb30",
+      "source_diff_sha256": "49b159a2a597a9241ee93f172de2bc748df35263b3ca60894e82e3c8cc38afc1",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "V1177_victory.png",
+      "source_commit": "1c3f2fd0859381a51ab5d033e0df4d58776efb30",
+      "source_dirty": true,
+      "source_diff_sha256": "49b159a2a597a9241ee93f172de2bc748df35263b3ca60894e82e3c8cc38afc1",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:59:08Z",
+      "image_sha256": "ae57219a18050caa42707f9a616f8cd0ea946d4fc900f30971200ae705cc0bc1",
+      "sources": [
+        {
+          "source_commit": "1c3f2fd0859381a51ab5d033e0df4d58776efb30",
+          "source_diff_sha256": "49b159a2a597a9241ee93f172de2bc748df35263b3ca60894e82e3c8cc38afc1",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "949117bef2fb6312e47d7dd44f6c2fc28621e2413645647631e58b8884769605"
+  ],
+  "stamp_template_sha256": "949117bef2fb6312e47d7dd44f6c2fc28621e2413645647631e58b8884769605",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABm0lEQVR4nO3XMREAIAADMWAF/NtFBT8lBjr+de57BgDw3wo2AADRBYCOpwsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAIzGA3bMAOjbHqLUAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "73b01a4ea0cbfd0f2a7c692794a94db94d4cea91a12607c78ddfb367074addb0"
+}
