@@ -96,9 +96,10 @@ function Assert-BackfillSource($parent) {
   }
 }
 
-if ($Mode -and $Mode -notin @('dry', 'leftovers')) { throw "the third argument may only be dry or leftovers, got: $Mode" }
+if ($Mode -and $Mode -notin @('dry', 'leftovers', 'results')) { throw "the third argument may only be dry, leftovers or results, got: $Mode" }
 $dry = $Mode -eq 'dry'
 $leftovers = $Mode -eq 'leftovers'
+$allResults = $Mode -eq 'results'
 if (($TreePath -or $ProvenTip) -and -not $leftovers) { throw 'TreePath and ProvenTip require leftovers mode' }
 if ($ProvenTip -and $ProvenTip -cnotmatch '\A[0-9a-f]{40}\z') { throw 'invalid proven relay tip' }
 if ($Job -notmatch '\A[A-Za-z0-9._-]{1,80}\z' -or $Job.Contains('..')) { throw "not a job name: $Job" }
@@ -141,7 +142,11 @@ foreach ($e in @($at.EnumerateFiles())) {
     if ($ProvenTip) { continue }
     if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
     $originals.Add($e)
-  } elseif ($e.Extension -in @('.txt', '.log', '.json', '.csv', '.md') -and -not ($e.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $files.Add($e) }
+  } elseif ($allResults -or $e.Extension -in @('.txt', '.log', '.json', '.csv', '.md')) {
+    if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+      if ($allResults) { throw "a link in the results: $($e.FullName)" }
+    } else { $files.Add($e) }
+  }
 }
 if ($ProvenTip) { $roots = @($at.EnumerateDirectories('out_*')) }
 else {
@@ -151,7 +156,7 @@ else {
     if ($leftovers -and ($d.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "a link in the results: $($d.FullName)" }
     $skippedCaches.Add($d.Name)
   }
-  $useSubfolders = $leftovers -or $at.Name -eq 'out' -or $at.Name -like 'out_*'
+  $useSubfolders = $leftovers -or $allResults -or $at.Name -eq 'out' -or $at.Name -like 'out_*'
   $roots = @($top | Where-Object { $_.Name -notin $cacheNames -and
     ($useSubfolders -or $_.Name -eq 'out' -or $_.Name -like 'out_*') })
 }
@@ -167,7 +172,7 @@ foreach ($d in $roots) {
   } else { $pending.Push($d) }
   while ($pending.Count) {
     $dir = $pending.Pop()
-    if (-not $leftovers -and ($dir.Name -in $leftoverNames -or (Test-CheckoutRoot $dir))) { continue }
+    if (-not $leftovers -and ((-not $allResults -and $dir.Name -in $leftoverNames) -or (Test-CheckoutRoot $dir))) { continue }
     $relDir = $dir.FullName.Substring($full.Length + 1).Replace('\', '/')
     $savedFiles = $relDir -match '\Aout_[^/]+/checkout_leftovers(?:/|\z)'
     if ($leftovers -and -not $savedFiles -and (Test-Path -LiteralPath (Join-Path $dir.FullName '.git') -PathType Container)) { continue }

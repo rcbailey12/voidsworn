@@ -181,11 +181,9 @@ goto oj_tail_end
 call "%JW%" fail "Ryan's real options changed during the job"
 :oj_tail_end
 rem The job's own pinned checkouts are rebuildable from their pins (RULEBOOK 3.3, R326) and run to 22 GB each. They go
-rem once the attempt passed and its results are relayed (issue 1497, Artoo on PR 1498): the Board runs
-rem "opus_job_head.ps1 dropcheckouts <attempt>" right after the relay (this attempt only; earlier attempts go through
-rem their own waiter or the janitor, review of PR 1644). Any small file the job left in a checkout is saved first into out_<name>\checkout_leftovers. Here the
-rem result is not relayed yet, so this attempt's checkouts stay and the log says so. A failed attempt is never touched
-rem here. OJ_KEEP_CHECKOUTS=1 skips the step (logged).
+rem once the attempt passed and its results are relayed (issue 1497, Artoo on PR 1498). Relay first, then use the
+rem existing checkout proof. Logs for this tail sit outside the attempt so the relayed files stop changing.
+rem OJ_KEEP_CHECKOUTS=1 skips the drop. Failed attempts stay local.
 rem It runs after job_wrap end has written the done line, so a slow or stuck step can never delay or lose the result.
 set "OJ_DROP=1"
 if "%OJ_KEEP_CHECKOUTS%"=="1" (>> "%OJ_ST%" echo checkouts kept: OJ_KEEP_CHECKOUTS=1& set "OJ_DROP=")
@@ -193,18 +191,26 @@ rem Issue 1659: a slot job has no checkout of its own to remove; its slot is let
 if "%OJ_SLOTS%"=="1" set "OJ_DROP="
 call "%JW%" end
 set "OJ_RC=%ERRORLEVEL%"
-if defined OJ_DROP powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1
 if "%OJ_SLOTS%"=="1" powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" slotrelease "%OJ_OUT%" >> "%OJ_ST%" 2>&1
-rem Issue 1396 (Board, Nov 22; review of PR 1644): the relay lands after this tail, so a hidden waiter (dropwait) asks
+if not "%OJ_RC%"=="0" exit /b %OJ_RC%
+set "OJ_RELAY_LOG=%OJ_VT%\%OJ_JOB%\relay_%OJ_LEAF%.txt"
+set "OJ_SENT="
+if "%OJ_PRE%"=="1" goto oj_relay_done
+if defined PC_TEST_HELPER goto oj_relay_done
+powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_HERE%..\relay_push.ps1" "%OJ_JOB%" "%OJ_OUT%" results > "%OJ_RELAY_LOG%" 2>&1
+if not errorlevel 1 set "OJ_SENT=1"
+:oj_relay_done
+if defined OJ_DROP powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_RELAY_LOG%" 2>&1
+rem Issue 1396: if the automatic relay fails, a hidden waiter (dropwait) asks
 rem origin for the relay branch every 5 minutes for up to 12 hours, then takes the job lease and issue lock, runs the
 rem janitor's checks and the same proof and drop for this attempt only. The attempt goes in OJ_DROPWAIT_ATTEMPT, not on
 rem the command line, so no process check ever reads the waiter as a user of the job folder. Its log is
 rem <job>\dropwait_<attempt>.txt. A launch that fails is logged as such; the job's own result and exit code stand.
 rem OJ_NO_DROPWAIT=1 skips the waiter (tests).
 set "OJ_WAIT="
-if defined OJ_DROP if not "%OJ_NO_DROPWAIT%"=="1" set "OJ_WAIT=1"
+if not defined OJ_SENT if defined OJ_DROP if not "%OJ_NO_DROPWAIT%"=="1" set "OJ_WAIT=1"
 set "OJ_DROPWAIT_ATTEMPT=%OJ_OUT%"
 set "OJ_DROPWAIT_LOG=1"
 if defined OJ_WAIT powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; Start-Process -WindowStyle Hidden -FilePath powershell.exe -ArgumentList ('-NoProfile -ExecutionPolicy Bypass -File \"{0}\" dropwait' -f $env:OJ_PS)" > nul 2>&1
-if defined OJ_WAIT if errorlevel 1 (>> "%OJ_ST%" echo checkouts: the relay waiter could not be started; the janitor's relay sweep clears them later) else (>> "%OJ_ST%" echo checkouts: a hidden waiter clears them once the relay is on origin; log in the job folder, dropwait_*.txt)
+if defined OJ_WAIT if errorlevel 1 (>> "%OJ_RELAY_LOG%" echo checkouts: the relay waiter could not be started; the janitor's relay sweep clears them later) else (>> "%OJ_RELAY_LOG%" echo checkouts: a hidden waiter clears them once the relay is on origin; log in the job folder, dropwait_*.txt)
 exit /b %OJ_RC%

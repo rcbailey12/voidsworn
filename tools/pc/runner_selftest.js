@@ -360,7 +360,7 @@ function gitEnvironment(env) {
 // runner_stall_tests row still exercise the real timeout code.
 function fixtureTools(name, scenario = '') {
   const dir = path.join(root, name);
-  for (const file of ['codex_issue.bat', 'codex_issue.ps1', 'work_issue.bat', 'work_issue.ps1', 'runner_common.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor.bat']) {
+  for (const file of ['codex_issue.bat', 'codex_issue.ps1', 'work_issue.bat', 'work_issue.ps1', 'runner_common.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor_neon.ps1', 'janitor_relay.ps1', 'neon_idle_threads.js', 'janitor.bat']) {
     let body = read(path.join(here, file));
     if (file.endsWith('.bat')) {
       body = body.replace(/powershell -NoProfile (?:-ExecutionPolicy Bypass )?(?=-File |-Command "(?:\(Get-Date\)|Get-Date -Format))/g,
@@ -1510,7 +1510,7 @@ async function testRunnerStartChecks() {
   pass('a low-disk run stops before the mirror, the model probe and the agent');
   // The Board writes work217\runner_hashes.txt with hashwrite after copying the runner and watchdog files; hashcheck then
   // guards the running copies. A mismatch or a missing file is a warning, never a stop.
-  const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor.bat'];
+  const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor_neon.ps1', 'janitor_relay.ps1', 'neon_idle_threads.js', 'janitor.bat'];
   const hashesGood = path.join(root, 'board_hashes_good.txt');
   write(hashesGood, runnerFiles.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(here, n))).digest('hex') + '  ' + n).join('\n') + '\n');
   const hashOut = path.join(root, 'hashcheck'); fs.mkdirSync(hashOut); write(path.join(hashOut, 'result.txt'), '');

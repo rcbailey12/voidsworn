@@ -53,11 +53,11 @@ for (const step of ['oj_checkout', 'oj_ships']) {
 }
 assert(!/^\s*(del|erase|rd|rmdir)\b|\/MIR|\/PURGE|\/MOV/im.test(headCode), 'the head deletes nothing');
 assert(!/tmo\.bat"\s|%TMO%/.test(headCode), 'the head starts nothing outside job_wrap');
-assert(/fc \/b "%OJ_OUT%\\real_options_before\.txt"[\s\S]*:oj_tail_end\n[\s\S]*call "%JW%" end\nset "OJ_RC=%ERRORLEVEL%"\nif defined OJ_DROP powershell [^\n]*dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1\n(?:[^\n]*\n)*?exit \/b %OJ_RC%/.test(tail), 'the tail runs the checkout step after job_wrap end has written the result, and keeps its exit code');
+assert(/:oj_tail_end\n[\s\S]*call "%JW%" end\nset "OJ_RC=%ERRORLEVEL%"[\s\S]*if not "%OJ_RC%"=="0" exit \/b %OJ_RC%[\s\S]*relay_push\.ps1" "%OJ_JOB%" "%OJ_OUT%" results[^\n]*\n[\s\S]*dropcheckouts "%OJ_OUT%" >> "%OJ_RELAY_LOG%"[\s\S]*exit \/b %OJ_RC%/.test(tail), 'the tail relays the finished attempt before checkout trim and preserves the job exit code');
 assert(/shiprecord "%OJ_REPO%" "%OJ_SIDE%_ships_copied\.txt" "%LB_SHIPS%"/.test(ships) && ships.indexOf('shiprecord') > ships.indexOf('shipcheck "%OJ_REPO%"'), 'the ships step records what it copied, after the cache check (issue 1497)');
 assert(/if "%OJ_KEEP_CHECKOUTS%"=="1"/.test(tail), 'OJ_KEEP_CHECKOUTS=1 keeps them');
 // Issue 1396 (Board, Nov 22): the tail starts the relay waiter hidden, after the result, only with the drop step on.
-assert(/if defined OJ_DROP if not "%OJ_NO_DROPWAIT%"=="1" set "OJ_WAIT=1"\nset "OJ_DROPWAIT_ATTEMPT=%OJ_OUT%"\n[\s\S]*if defined OJ_WAIT powershell [^\n]*\$ErrorActionPreference = 'Stop'; Start-Process -WindowStyle Hidden [^\n]*dropwait' -f \$env:OJ_PS\)"/.test(tail) && tail.indexOf('dropwait') > tail.indexOf('dropcheckouts "%OJ_OUT%"'), 'the tail starts the relay waiter after its own drop step, the attempt in its environment, not on its command line');
+assert(/if not defined OJ_SENT if defined OJ_DROP if not "%OJ_NO_DROPWAIT%"=="1" set "OJ_WAIT=1"\nset "OJ_DROPWAIT_ATTEMPT=%OJ_OUT%"\n[\s\S]*if defined OJ_WAIT powershell [^\n]*\$ErrorActionPreference = 'Stop'; Start-Process -WindowStyle Hidden [^\n]*dropwait' -f \$env:OJ_PS\)"/.test(tail) && tail.indexOf('dropwait') > tail.indexOf('dropcheckouts "%OJ_OUT%"'), 'only an unrelayed drop candidate still starts the relay waiter');
 assert(/if defined OJ_WAIT if errorlevel 1 \([^\n]*could not be started[^\n]*\) else \([^\n]*hidden waiter clears them/.test(tail) && !/-RedirectStandard/.test(tail), 'a failed launch is logged as one, and the start is never redirected (review of PR 1644)');
 console.log('PASS head: tools_live only, new attempt folder, job_wrap init, watchdog hashes, throwaway profile, options hash, safe ships copy, honest tail');
 

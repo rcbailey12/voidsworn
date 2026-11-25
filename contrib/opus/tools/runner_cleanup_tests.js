@@ -89,6 +89,45 @@ function scratch(parent, name, hours) {
   dateTree(dir, hours);
   return dir;
 }
+function checkSandboxAcl() {
+  if (!windows) return;
+  const folder = path.join(root, 'sandbox-acl-handoff');
+  write(path.join(folder, 'protected', 'private.bin'), 'retry scratch');
+  const code = `
+    $ErrorActionPreference = 'Stop'
+    . (Join-Path $env:ACL_TEST_TOOLS 'sandbox_handoff.ps1') -LibraryOnly
+    $owner = [Security.Principal.WindowsIdentity]::GetCurrent().User
+    $runner = [Security.Principal.SecurityIdentifier]::new('S-1-5-19')
+    $dir = Get-Item -LiteralPath (Join-Path $env:ACL_TEST_ROOT 'protected')
+    $file = Get-Item -LiteralPath (Join-Path $dir.FullName 'private.bin')
+    $link = New-Item -ItemType HardLink -Path (Join-Path $env:ACL_TEST_ROOT 'pack.link') -Target $file.FullName
+    $original = $dir.GetAccessControl()
+    try {
+      $acl = $dir.GetAccessControl()
+      $acl.SetAccessRuleProtection($true,$true)
+      $dir.SetAccessControl($acl)
+      $before = $file.GetAccessControl().Sddl
+      Grant-SandboxCleanupAcl $dir $owner $runner
+      Grant-SandboxCleanupAcl $file $owner $runner
+      if ($file.GetAccessControl().Sddl -cne $before) { throw 'shared file ACL was changed' }
+      $after = $dir.GetAccessControl()
+      if (-not $after.AreAccessRulesProtected -or $after.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $owner.Value) {
+        throw 'handoff changed ownership or inheritance'
+      }
+      $grant = $after.GetAccessRules($true,$false,[Security.Principal.SecurityIdentifier]) | Where-Object { $_.IdentityReference -eq $runner }
+      if (-not ($grant.FileSystemRights -band [Security.AccessControl.FileSystemRights]::Delete)) { throw 'runner delete right not granted' }
+      'sandbox ACL handoff verified'
+    } finally {
+      $restore = $dir.GetAccessControl()
+      $restore.SetSecurityDescriptorSddlForm($original.Sddl, [Security.AccessControl.AccessControlSections]::Access)
+      $dir.SetAccessControl($restore)
+    }
+  `;
+  assert.match(execute(shellName(), ['-NoProfile', '-Command', code], undefined, {
+    ACL_TEST_ROOT: folder, ACL_TEST_TOOLS: path.dirname(common)
+  }), /sandbox ACL handoff verified/);
+}
+function shellName() { return windows ? 'powershell.exe' : 'pwsh'; }
 function checkProfileCache() {
   const slot = path.join(root, 'work217', 'slot_sonnet', 'repo');
   const out = path.join(root, 'profile-cache-checkout');
@@ -190,6 +229,7 @@ try {
   git(['--git-dir', mirror, 'update-ref', 'refs/heads/main', main]);
   git(['--git-dir', mirror, 'symbolic-ref', 'HEAD', 'refs/heads/main']);
   checkProfileCache();
+  checkSandboxAcl();
   makeCopy('repo', 1);
   const rebuildable = makeCopy('repo-kept-caches', 1);
   write(path.join(rebuildable, '.git', 'info', 'exclude'), '/godot/.godot/\n');

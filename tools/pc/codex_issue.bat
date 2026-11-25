@@ -134,6 +134,7 @@ for /f "usebackq tokens=1,* delims==" %%V in ("%O%\profile_env.txt") do set "%%V
 set "TEMP=%PC_RUN_SCRATCH%"
 set "TMP=%PC_RUN_SCRATCH%"
 set "TMPDIR=%PC_RUN_SCRATCH%"
+if defined PYTHONPATH (set "PYTHONPATH=%TP%pysite;%PYTHONPATH%") else set "PYTHONPATH=%TP%pysite"
 cd /d "%R%" || goto :probefail
 %PS% prep %N% "%R%" "%O%"
 if errorlevel 1 goto :prepfail
@@ -163,6 +164,8 @@ set "TMO_FATAL_PATTERN="
 set "TMO_OUT="
 set "TMO_LOG="
 echo codex exit %CX% >> "%O%\result.txt"
+rem Codex has stopped, but this wrapper still holds the lane and issue. Use the same sandbox to hand back protected ACLs.
+if "%PUSHMODE%"=="real" if not "%PC_RUNNER_TEST%"=="1" call :scratch_handoff
 rem Usage limit: leave the issue for the board to retry on a later poll instead of marking it done.
 rem Nov 3 fix: look only at the last 40 lines. Codex often prints this script while it works, so a whole-log
 rem search matched its own text and threw away three finished jobs (66, 75, 78).
@@ -214,6 +217,8 @@ if errorlevel 1 goto :pushfail
 set "SX=%ERRORLEVEL%"
 if not "%SX%"=="0" goto :stopped
 if "%PUSHMODE%"=="dry" (echo dry run: push to %PB% would work, nothing pushed >> "%O%\result.txt") else (echo pushed %PB% >> "%O%\result.txt")
+if not defined PARTIAL if "%PUSHMODE%"=="real" if not "%PC_RUNNER_TEST%"=="1" if exist "%O%\shots\" call :relayshots
+if not defined PARTIAL if "%CHECKS_OK%"=="1" call :scratch_handoff -RemoveScratch
 %COMMON% finish "%O%" 0 "%PARTIAL%" "%PUSHMODE%" "%CHECKS_OK%" "%R%"
 if errorlevel 1 (popd & exit /b 14)
 popd
@@ -222,7 +227,7 @@ exit /b 0
 set /p PRE=<"%O%\pre_commit.txt"
 git diff --binary --output="%B%\cx_issue%N%.patch" %PRE% HEAD
 echo push failed, patch saved as build_b\cx_issue%N%.patch >> "%O%\result.txt"
-%COMMON% finish "%O%" 8 "%PARTIAL%" "%PUSHMODE%" 0
+%COMMON% finish "%O%" 8 "%PARTIAL%" "%PUSHMODE%" 0 "%R%"
 popd
 exit /b 8
 :testfinish
@@ -232,26 +237,28 @@ popd
 exit /b 0
 :stopped
 echo push stopped, the runner's check failed with code %SX%: read the lines above >> "%O%\result.txt"
-%COMMON% finish "%O%" "%SX%" "%PARTIAL%" "%PUSHMODE%" 0
+%COMMON% finish "%O%" "%SX%" "%PARTIAL%" "%PUSHMODE%" 0 "%R%"
 popd
 exit /b %SX%
 :guardfail
 echo the refuse step failed: nothing committed, nothing pushed >> "%O%\result.txt"
-%COMMON% finish "%O%" 13 "%PARTIAL%" "%PUSHMODE%" 0
+%COMMON% finish "%O%" 13 "%PARTIAL%" "%PUSHMODE%" 0 "%R%"
 popd
 exit /b 13
 :nochange
 echo Codex made no changes >> "%O%\result.txt"
-%COMMON% finish "%O%" 7 "%PARTIAL%" "%PUSHMODE%" 0
+if not defined PARTIAL call :scratch_handoff -RemoveScratch
+%COMMON% finish "%O%" 7 "%PARTIAL%" "%PUSHMODE%" 0 "%R%"
 popd
 exit /b 7
 :prepfail
 echo could not read the issue >> "%O%\result.txt"
-%COMMON% finish "%O%" 6 "" "%PUSHMODE%" 0
+%COMMON% finish "%O%" 6 "" "%PUSHMODE%" 0 "%R%"
 popd
 exit /b 6
 :probefail
-%COMMON% finish "%O%" 14 "" "%PUSHMODE%" 0
+if defined PC_RUN_SCRATCH if "%PUSHMODE%"=="real" if not "%PC_RUNNER_TEST%"=="1" call :scratch_handoff
+%COMMON% finish "%O%" 14 "" "%PUSHMODE%" 0 "%R%"
 popd
 exit /b 14
 :limit
@@ -262,10 +269,33 @@ git add -A
 git diff --cached --binary > "%O%\limit_wip.patch"
 git reset -q
 rem Keep the checkout too. The patch and files can be salvaged without deleting anything.
-%COMMON% finish "%O%" 9 "usage limit" "%PUSHMODE%" 0
+%COMMON% finish "%O%" 9 "usage limit" "%PUSHMODE%" 0 "%R%"
 powershell -NoProfile -Command "$f=Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\board\queued.txt'; (Get-Content $f) -ne '%N%' | Set-Content $f"
 popd
 exit /b 9
+
+:scratch_handoff
+if not "%PUSHMODE%"=="real" exit /b 0
+if "%PC_RUNNER_TEST%"=="1" exit /b 0
+if not defined PC_HANDOFF_SID exit /b 0
+if not exist "%PC_RUN_SCRATCH%\" exit /b 0
+setlocal
+rem The watchdog must not hold logs open inside the scratch its child is removing.
+if "%~1"=="-RemoveScratch" set "PC_STEP_SCRATCH_PARENT=%PC_RUN_TEMP%"
+call "%TP%tmo.bat" 300 "%APPDATA%\npm\codex.cmd" sandbox windows -- powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%TP%sandbox_handoff.ps1" "%O%" "%R%" "%PC_HANDOFF_SID%" %~1 >> "%O%\result.txt" 2>&1
+if errorlevel 1 echo sandbox cleanup or ACL handoff incomplete, read the lines above >> "%O%\result.txt"
+endlocal
+if not exist "%PC_RUN_SCRATCH%\" (
+  set "TEMP=%PC_RUN_TEMP%"
+  set "TMP=%PC_RUN_TEMP%"
+  set "TMPDIR=%PC_RUN_TEMP%"
+)
+exit /b 0
+
+:relayshots
+call "%TP%tmo.bat" 300 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%TP%relay_push.ps1" "codex-%BOARD%-%N%" "%O%\shots" results >> "%O%\result.txt" 2>&1
+if errorlevel 1 echo review pictures not relayed, kept locally >> "%O%\result.txt"
+exit /b 0
 
 :checks_only
 if "%~2"=="" exit /b 2

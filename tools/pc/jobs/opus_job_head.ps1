@@ -632,6 +632,9 @@ function Drop-Attempt($attempt, $place = $null) {
   # only after the same fresh proof) and every removal.
   $state = Get-AttemptState $attempt
   if ($state -ne 'PASS') { Write-Output "checkouts kept: $attempt $(if ($state) { 'failed' } else { 'has no result yet' }) (the janitor handles old failures)"; return }
+  try { $keep = Get-JobKeepReason $attempt }
+  catch { $keep = 'the Board keep list could not be read' }
+  if ($keep) { Write-Output "checkouts kept: $attempt ($keep)"; return }
   $list = Join-Path $attempt 'checkouts.txt'
   if (-not (Test-Path -LiteralPath $list -PathType Leaf)) { Write-Output "no checkouts listed in $attempt"; return }
   $pins = @{}
@@ -717,11 +720,7 @@ function Open-PlainLock($path) {
   if ($item -and ($item -isnot [IO.FileInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint))) { throw "lock is not a plain file: $path" }
   return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None')
 }
-function Get-WaitGuard($attempt) {
-  # The janitor's checks before it removes anything from a job folder (Artoo and review of PR 1644): the Board keep list,
-  # read fresh each time, no running process naming the job folder (the janitor's own whole-folder match; the waiter
-  # names its attempt only in its environment, so it never matches itself), and no Board PC pause. '' when clear, else
-  # why: the waiter keeps everything and tries again at its next look. The caller holds the job lease and the issue lock.
+function Get-JobKeepReason($attempt) {
   $jobDir = Split-Path -Parent $attempt
   $keepFile = Join-Path $vt 'janitor_keep.txt'
   $keepItem = Get-Item -LiteralPath $keepFile -Force -ErrorAction SilentlyContinue
@@ -737,6 +736,13 @@ function Get-WaitGuard($attempt) {
       }
     }
   }
+  return ''
+}
+function Get-WaitGuard($attempt) {
+  # The caller holds the job lease and issue lock. The waiter's own command line never names the attempt.
+  $jobDir = Split-Path -Parent $attempt
+  $keepReason = Get-JobKeepReason $attempt
+  if ($keepReason) { return $keepReason }
   $lines = $null
   if ($test -and $null -ne $env:PC_TEST_COMMAND_LINES) { $lines = @($env:PC_TEST_COMMAND_LINES -split "`n" | Where-Object { $_ } | ForEach-Object { [pscustomobject]@{ Id = 0; Line = $_ } }) }
   else {
@@ -1456,7 +1462,10 @@ switch ($Action) {
         Drop-Attempt $att.FullName
       }
     }
-    if (-not $script:dropDry) { Write-Free $script:freed }
+    if (-not $script:dropDry) {
+      Write-Free $script:freed
+      Write-Output "relay trim freed bytes: $($script:freed)"
+    }
   }
   'relayfind' {
     # Issue 1695 (Board, Nov 22): attempts relayed before PR 1644 under another branch name or folder (board/pc-out-1547c

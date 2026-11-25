@@ -5,7 +5,7 @@ rem   look_bench.bat AFTER            bench AFTER (a commit, branch or origin/br
 rem   look_bench.bat AFTER BEFORE     bench both and compare them side by side (BEFORE "none": AFTER's sheets only)
 rem   add "go" as a third word to wait for Downloads\voidsworn_test\look_bench\go.txt first (the Board's GPU window file)
 rem Each commit is benched once (runs\<commit>\, reused next time). Sheets land in sheets\<before>_vs_<after>\ and the
-rem folder opens when it is done. Nothing on the PC is deleted. The watchdog takes a shared GPU
+rem folder opens when it is done. Finished results at the default home are relayed for the janitor. The watchdog takes a shared GPU
 rem claim for each capture run and obeys gpu_go.txt. Frame-time measurements take solo.
 rem Settings a job may set first (all optional):
 rem   LB_HOME      the bench folder (default Downloads\voidsworn_test\look_bench)
@@ -66,7 +66,11 @@ if exist "%~dp0..\scratch_done.ps1" powershell -NoProfile -ExecutionPolicy Bypas
 exit /b %RUN_EL%
 
 :run_tools
+rem Keep the result folders out of the janitor while the bench is using or relaying them.
+call :run_locked 8>"%LB_HOME%\.voidsworn-run-active"
+exit /b %ERRORLEVEL%
 
+:run_locked
 if /i not "%GOWAIT%"=="go" goto gook
 echo waiting for %VT%\look_bench\go.txt >> "%ST%"
 :gowait
@@ -121,6 +125,12 @@ if not exist "%S%" mkdir "%S%"
 set "JW_STEP=sheets" & call "%JW%" run 1800 "%PY%" "%TOOL%\tools\pc\jobs\look_bench_sheets.py" %SARGS% > "%S%\sheets_log.txt" 2>&1
 if errorlevel 1 goto finish
 echo sheets exit %ERRORLEVEL% %date% %time% %S% >> "%ST%"
+> "%S%\DONE.txt" echo PASS
+if /i "%LB_HOME%"=="%VT%\look_bench" (
+  call :relay look-bench-runs "%RUN_A%"
+  if defined RUN_B if /i not "%RUN_B%"=="%RUN_A%" call :relay look-bench-runs "%RUN_B%"
+  call :relay look-bench-sheets "%S%"
+)
 if exist "%S%\summary.txt" type "%S%\summary.txt"
 if not "%LB_QUIET%"=="1" start "" explorer "%S%"
 
@@ -129,6 +139,11 @@ echo look bench done %date% %time% >> "%ST%"
 rem done PASS or done FAILED: <steps>, then all done, in status.txt and done.txt; the exit code follows.
 call "%JW%" end
 exit /b %ERRORLEVEL%
+
+:relay
+powershell -NoProfile -ExecutionPolicy Bypass -File "%JW_TOOLS%\relay_push.ps1" "%~1" "%~2" results >> "%ST%" 2>&1
+if errorlevel 1 echo relay failed, kept locally: %~2 >> "%ST%"
+exit /b 0
 
 rem ---------------------------------------------------------------- one bench run: :bench REF [RUNNAME] [PRE_RUN]
 :bench

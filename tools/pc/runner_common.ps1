@@ -692,7 +692,10 @@ function Complete-RunScratch($record, $keepFailed) {
   try {
     $dir = Get-OwnedScratch $record $env:PC_RUN_SCRATCH
     if (-not $dir) { return }
+    if (Get-BoardKeepReason $dir.FullName) { throw 'on the Board keep list' }
     if (-not $keepFailed) {
+      $stats = Measure-CleanupDirectory $dir -AllowLinks
+      Remove-CleanupLinks $stats.Links
       Assert-NoLinkedChildren $dir.FullName
       Remove-CleanupDirectory $dir
       Log "run scratch removed: $($dir.FullName)"
@@ -712,6 +715,7 @@ function Complete-RunScratch($record, $keepFailed) {
       if ($old.FullName -eq $dir.FullName -or $old.Name -notmatch "^voidsworn-run-$issue-[0-9a-f]{32}$") { continue }
       try {
         Assert-PlainDirectory $old
+        if (Get-BoardKeepReason $old.FullName) { continue }
         if (-not (Get-FailedScratchMarker $old)) { continue }
         $null = Read-ScratchOwner $old.FullName
         Assert-NoLinkedChildren $old.FullName
@@ -799,6 +803,9 @@ function Add-WouldFree($stats) {
   if ($script:plannedFreeTally -and $stats.FreeTally) { Merge-FreeTally $script:plannedFreeTally $stats.FreeTally }
   else { $script:wouldFreeBytes += [long]$stats.FreeBytes }
   $script:wouldFreeCount++
+  if ($script:freedByKind -and $script:cleanupKind) {
+    $script:freedByKind[$script:cleanupKind] += [long]$stats.FreeBytes
+  }
 }
 function Get-LinkTarget($link) {
   # Where a link points, for the log only: it is never followed.
@@ -1001,10 +1008,17 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
   } catch { Log "kept checkout retained: $candidate ($size; $($_.Exception.Message))" }
   finally { if ($mirrorLock) { $mirrorLock.Dispose() } }
 }
-function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false, $now = [DateTime]::UtcNow, $salvageRoot = '') {
+function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false, $now = [DateTime]::UtcNow, $salvageRoot = '', [switch]$ownLane) {
   Assert-PlainDirectory (Get-Item -LiteralPath $board -Force)
-  $lock = $null
-  try { $lock = Open-CleanupLock (Join-Path $board 'repo.cleanup.lock') $dryRun } catch { Log "kept checkout scan kept: $board ($($_.Exception.Message))"; return }
+  $lock = $null; $laneLock = $null
+  try {
+    if (-not $ownLane) { $laneLock = Open-CleanupLock (Join-Path $board 'repo.checkout.lock') $dryRun }
+    $lock = Open-CleanupLock (Join-Path $board 'repo.cleanup.lock') $dryRun
+  } catch {
+    if ($laneLock) { $laneLock.Dispose() }
+    Log "kept checkout scan kept: $board ($($_.Exception.Message))"
+    return
+  }
   try {
     $copies = @(Get-ChildItem -LiteralPath $board -Directory -Force |
       Where-Object { $_.Name -like 'repo-kept-*' } | Sort-Object LastWriteTimeUtc, CreationTimeUtc, Name -Descending)
@@ -1017,7 +1031,7 @@ function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false, $now = [DateTi
       }
       Clear-KeptCheckout $copy $mirror $dryRun $now $salvageRoot "$(Split-Path -Leaf $board)_$($copy.Name)"
     }
-  } finally { if ($lock) { $lock.Dispose() } }
+  } finally { if ($lock) { $lock.Dispose() }; if ($laneLock) { $laneLock.Dispose() } }
 }
 # Windows command line quoting, including trailing backslashes. Inputs are argument values, never shell snippets.
 function Quote($value) { return '"' + ([regex]::Replace(([string]$value), '(\\*)"', '$1$1\"') -replace '(\\+)$', '$1$1') + '"' }
@@ -2245,13 +2259,13 @@ try {
         if (Cleanup-Paused) { Log 'run cleanup skipped during the PC pause' }
         else {
           Complete-RunScratch $old.scratch ($status -notin @('checked_push','no_changes'))
-          if ($status -eq 'checked_push' -and $args[6]) {
+          if ($args[6]) {
             $repo = [IO.Path]::GetFullPath($args[6])
             $board = Split-Path -Parent $repo
             $lane = Split-Path -Leaf $board
             if ($test -or ((Split-Path -Leaf $repo) -eq 'repo' -and $lane -match '\Aboard(?:_[b-f])?\z' -and
                 (Split-Path -Parent $board) -eq (Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'))) {
-              Remove-OlderKeptRepos $board (Repo-Mirror $lane)
+              Remove-OlderKeptRepos $board (Repo-Mirror $lane) -ownLane
             }
           }
         }
