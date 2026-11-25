@@ -1,10 +1,9 @@
 extends SceneTree
-# Issue 1877 (Artoo on PR 1904): the Acid Thorn (fx/fx_acid_thorn.gd) rides the ship it is stuck in and goes when that ship
-# dies; a missed thorn flies on past. Headless: two box ships, one Chorus volley (one hit, one miss), then the target is
-# moved and turned while the thorn is stuck, then killed. Exit 0 and ACID_THORN_CHECK PASS, or exit 1 with the reason
-# (run: godot --headless --path godot --script res://fx/test/acid_thorn_check.gd).
+# Issue 1877: the Acid Thorn uses its built body, and a miss flies on past without a jump.
+# Impact and the removal of the old embedded pose are covered by projectile_contact_check.gd.
 
 const FX := preload("res://fx/fx.gd")
+const GUARD := preload("res://tools/ci/check_guard.gd")
 
 var fx
 var fails: Array = []
@@ -26,6 +25,7 @@ func _box(name: String, pos: Vector3, L: float) -> Node3D:
 
 
 func _init() -> void:
+	GUARD.arm(self, "acid_thorn_check")
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 
@@ -58,28 +58,12 @@ func _run() -> void:
 		fails.append("expected 2 thorns, got %d" % list.size())
 		_end()
 		return
-	var hit: Dictionary = list[0] if bool(list[0]["stuck"]) else list[1]
-	var miss: Dictionary = list[1] if bool(list[0]["stuck"]) else list[0]
-	if not bool(miss["miss"]):
-		fails.append("no missed thorn")
+	var hit: Dictionary = list[0]
+	var miss: Dictionary = list[1]
+	if bool(hit["miss"]) or not bool(miss["miss"]):
+		fails.append("expected a hit followed by a miss")
 	if (hit["node"] as Node3D).get_node_or_null("kit_body") == null:
 		fails.append("the thorn has no built body (fx/munition_bodies/chorus_bolt.glb)")
-	# run to just after the hit lands, then keep the thorn's pose in the target's frame
-	while fx.now < float(hit["t1"]) + 0.1:
-		fx.step(1.0 / 60.0)
-	var hn := hit["node"] as Node3D
-	if not hn.visible:
-		fails.append("the stuck thorn is not shown")
-	var rel0: Transform3D = tgt.global_transform.affine_inverse() * hn.global_transform
-	# move and turn the target while the thorn is stuck: the thorn keeps its place on the hull
-	tgt.position += Vector3(6, 0, 3)
-	tgt.rotate_y(0.6)
-	for i in 20:
-		fx.step(1.0 / 60.0)
-	var rel1: Transform3D = tgt.global_transform.affine_inverse() * hn.global_transform
-	var drift := rel1.origin.distance_to(rel0.origin)
-	if drift > 0.15:
-		fails.append("the stuck thorn left the moving hull by %.2f" % drift)
 	# the missed thorn flew on past its aim point
 	# no jump where the flight ends and the pass-through begins (Artoo on PR 1904): one frame either side of t1
 	var mn := miss["node"] as Node3D
@@ -100,13 +84,6 @@ func _run() -> void:
 		var past: float = (mn.global_position - (miss["b"] as Vector3)).dot(miss["dir"])
 		if past <= 0.0:
 			fails.append("the missed thorn did not fly on past (%.2f)" % past)
-	# the target dies: the stuck thorn goes with it
-	fx.death("hegemony_0", "blast")
-	for i in 3:
-		fx.step(1.0 / 60.0)
-	if is_instance_valid(hn) and hn.visible:
-		fails.append("the stuck thorn stayed after its ship died")
-	print("ACID_THORN_CHECK drift=%.3f" % drift)
 	_end()
 
 

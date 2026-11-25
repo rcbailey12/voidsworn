@@ -261,6 +261,7 @@ varying vec4 vCol;
 varying vec4 vInfo;
 varying float vLife;
 varying float vDepth;
+varying float vPastContact;
 #ifdef SOFT
 """ + DEPTH + """
 #endif
@@ -269,8 +270,8 @@ void vertex() {
 	float a = scene_t - a0.w;
 	float age = pAge(a, a4.x);
 	float life = a1.w;
-	vUv = vec2(0.0); vCol = vec4(0.0); vInfo = vec4(0.0); vLife = life;
-	if (a < 0.0 || age >= life || gate <= 0.0 || a2.a <= 0.0) {
+	vUv = vec2(0.0); vCol = vec4(0.0); vInfo = vec4(0.0); vLife = life; vPastContact = 0.0;
+	if (a < 0.0 || age >= life || (a4.x < 0.0 && scene_t >= -a4.x) || gate <= 0.0 || a2.a <= 0.0) {
 		""" + HIDE + """
 	} else {
 		float t = age / life;
@@ -348,6 +349,12 @@ void vertex() {
 			q = vec2(cs * VERTEX.x - sn * VERTEX.y, sn * VERTEX.x + cs * VERTEX.y);
 		}
 		vp.xy += q * size;
+		if (a4.x < 0.0) {
+			// Clip the billboard as well as its centre: pixel floors can put its nose ahead of contact.
+			vec3 stop = (VIEW_MATRIX * MODEL_MATRIX * vec4(a0.xyz + a1.xyz * life, 1.0)).xyz;
+			vec3 axis = (VIEW_MATRIX * MODEL_MATRIX * vec4(a1.xyz, 0.0)).xyz;
+			vPastContact = dot(vp.xyz - stop, axis);
+		}
 		POSITION = PROJECTION_MATRIX * vp;
 		vUv = VERTEX.xy * 2.0;
 		float power = a2.a;
@@ -363,7 +370,7 @@ void fragment() {
 	float t = vInfo.x; int k = int(vInfo.y + 0.5); float seed = vInfo.z; float age = vInfo.w; float I = vCol.a;
 	vec2 p = vUv;
 	float r = length(p);
-	if (r > 1.0) { discard; }
+	if (r > 1.0 || vPastContact > 0.0) { discard; }
 	vec3 add = vec3(0.0); vec3 base = vec3(0.0); float alpha = 0.0;
 	float star = exp(-abs(p.x) * 40.0) * exp(-abs(p.y) * 3.0) + exp(-abs(p.y) * 40.0) * exp(-abs(p.x) * 3.0);
 	if (k == 0) {
@@ -505,7 +512,7 @@ void vertex() {
 	float age = pAge(a, a4.x);
 	float life = a1.w;
 	vUv = vec2(0.0); vCol = vec3(0.0); vK = 0.0; vU = 0.0;
-	if (a < 0.0 || age >= life || gate <= 0.0) {
+	if (a < 0.0 || age >= life || (a4.x < 0.0 && scene_t >= -a4.x) || gate <= 0.0) {
 		""" + HIDE + """
 	} else {
 		vec3 v = a1.xyz;
@@ -540,6 +547,7 @@ void vertex() {
 			fade = 1.0;
 		} else {
 			float tr = sp * age + 0.5 * a4.y * age * age;
+			if (a4.x < 0.0) { tr = min(tr, sp * life); }
 			head = a0.xyz + dir * tr;
 			tail = head - dir * min(a3.x, tr);
 		}
@@ -1007,6 +1015,9 @@ static func kit_trail_code(points: int) -> String:
 	c = c.replace("w = max(w, trail_floor);", "w = i < n ? max(w, trail_floor) : 0.0;")
 	c = c.replace("float seed = CUSTOM1.z;", "float seed = widths.z;")
 	c = c.replace("vCol = CUSTOM0;", "vCol = eng;")
+	c = c.replace("varying vec4 vInfo;", "varying vec4 vInfo;\nuniform vec4 contact_plane = vec4(0.0);")
+	c = c.replace("VERTEX = (VIEW_MATRIX * vec4(wp, 1.0)).xyz;",
+		"wp -= contact_plane.xyz * max(dot(wp, contact_plane.xyz) - contact_plane.w, 0.0);\n\tVERTEX = (VIEW_MATRIX * vec4(wp, 1.0)).xyz;")
 	assert(c.contains("uniform vec4 pts[") and c.contains("vCol = eng;") and c.contains("float seed = widths.z;") and c.contains("i < n ? max(w"))
 	return c
 
@@ -1104,9 +1115,13 @@ void fragment() {
 	METALLIC = 0.5;
 	ROUGHNESS = 0.45;
 	EMISSION = vec3(1.0, 0.33, 0.06) * vHeat * 1.2 * fx_gain;
-	if ((vTint > 1.5 && vTint < 2.5) || vTint > 3.5) {
+	if ((vTint > 1.5 && vTint < 2.5) || (vTint > 3.5 && vTint < 4.5)) {
 		ALBEDO = vec3(0.3, 0.45, 0.6); METALLIC = 0.1; ROUGHNESS = 0.08;
 		EMISSION = mix(vec3(0.2, 0.8, 1.0), vec3(0.9, 0.3, 1.0), abs(dot(NORMAL, VIEW))) * (0.08 + vHeat * 0.3) * fx_gain;
+	} else if (vTint >= 4.5) {
+		// The Acid Thorn breaks into matte bone and dark horn, not hull plating.
+		ALBEDO = (vTint < 5.5 ? vec3(0.48, 0.34, 0.19) : vec3(0.14, 0.08, 0.04)) * (0.75 + 0.35 * vSeed);
+		METALLIC = 0.0; ROUGHNESS = 0.82; EMISSION = vec3(0.0);
 	}
 }
 """
@@ -2476,7 +2491,7 @@ void vertex() {
 	if (age < 0.0 || age >= a1.w || gate <= 0.0) {
 		""" + HIDE + """
 	} else {
-		float flight = max(a3.z, 0.016667);
+		float flight = max(a3.z, a4.x < 0.0 ? 0.0001 : 0.016667);
 		float head_s = clamp(age / flight, 0.0, 1.0);
 		vec3 dir = snorm(a1.xyz);
 		vec3 tail = (MODEL_MATRIX * vec4(a0.xyz, 1.0)).xyz;
@@ -2492,12 +2507,13 @@ void vertex() {
 		POSITION = PROJECTION_MATRIX * VIEW_MATRIX * vec4(p, 1.0);
 		float along = mix(-du * 12.0, a3.x * head_s + du * 12.0, VERTEX.x) / max(a3.x, 0.001);
 		vTrace = vec4(along, VERTEX.y * width / du, age, flight);
-		vShape = vec3(head_s, a3.x / du, a1.w);
+		vShape = vec3(head_s, a3.x / du, -a4.x);
 		vTint = vec4(a2.rgb, a2.a * gate);
 	}
 }
 void fragment() {
 	float s = vTrace.x; float y = vTrace.y; float age = vTrace.z; float flight = vTrace.w;
+	if (vShape.z > 0.0 && s > 1.0) { discard; }
 	float lag = max(age - s * flight, 0.0);
 	float end_age = max(age - flight, 0.0);
 	float rear = smoothstep(0.0, 0.14, s);
@@ -2511,7 +2527,7 @@ void fragment() {
 	float hx = head_x / 5.0;
 	float hy = y / 3.5;
 	float head = exp(-(hx * hx) - (hy * hy));
-	head *= 1.0 - smoothstep(flight, flight + 0.018, age);
+	head *= vShape.z > 0.0 ? (scene_t < vShape.z ? 1.0 : 0.0) : 1.0 - smoothstep(flight, flight + 0.018, age);
 	float yw = y / 4.6;
 	float wake = exp(-(yw * yw)) * rear * exp(-lag * 3.0) * passed;
 	wake *= 1.0 - smoothstep(0.45, 0.70, end_age);
