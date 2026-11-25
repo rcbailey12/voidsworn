@@ -2,7 +2,7 @@
  "batch": "elevenlabs_gate3",
  "gate": 3,
  "made_for": "issue 1752 Gate 3 (Ryan, Nov 23 2026 11:02 PM and 11:09 PM CT: more music, more variety, use the credits, prompts shaped by past waves, music on theme for each faction, new sound effects)",
- "note": "Wave F: every sound still on an old placeholder, the Gate 3 re-rolls, 16 new moments the game has no sound for yet, and 2 more takes of 27 most-heard keepers re-made from each keeper's exact recorded parameters (relay manifests) for the round robin. Wave M (run as M1, one calm and intense pair plus the stem test, measured for beat and loop alignment before M2, Artoo on PR 1942): a full soundtrack (calm and intense battle layers per faction from the sound playbook's faction voices, title, 6 map, 2 boss, nemesis, shop, 3 reward, 7 stings) plus one stem split test. Prompts follow plan sections 2 to 8 (identity first, one size word, banned-word list, no negative nouns, deaths centered and midrange, UI acoustic and mechanical). M2_test4 stages the Glasswrights redo. Review that stem split before selecting the remaining M2 ids. No live run without Ryan typing go.",
+ "note": "Wave F: every sound still on an old placeholder, the Gate 3 re-rolls, 16 new moments the game has no sound for yet, and 2 more takes of 27 most-heard keepers re-made from each keeper's exact recorded parameters (relay manifests) for the round robin. Wave M (run as M1, one calm and intense pair plus the stem test, measured for beat and loop alignment before M2, Artoo on PR 1942): a full soundtrack (calm and intense battle layers per faction from the sound playbook's faction voices, title, 6 map, 2 boss, nemesis, shop, 3 reward, 7 stings) plus one stem split test. Prompts follow plan sections 2 to 8 (identity first, one size word, banned-word list, no negative nouns, deaths centered and midrange, UI acoustic and mechanical). M2_test5 stages the Glasswrights redo. Review that stem split before selecting the remaining M2 ids. No live run without Ryan typing go.",
  "sfx_model": "eleven_text_to_sound_v3",
  "music_model": "music_v2",
  "waves": {
@@ -161,6 +161,9 @@
   ],
   "M2_test4": [
    "mus_ithar_loop_a_test4"
+  ],
+  "M2_test5": [
+   "mus_ithar_loop_a_test5"
   ]
  },
  "items": [
@@ -1997,14 +2000,32 @@
     "click_guard_ms": 25
    },
    "reroll_of": "mus_ithar_loop_a_test3"
+  },
+  {
+   "id": "mus_ithar_loop_a_test5",
+   "kind": "music",
+   "cue": "Glasswrights battle loop A, with stems: calm layer = all but drums, intense = full mix",
+   "today": null,
+   "group": "music",
+   "seconds": 65.454545,
+   "takes": 1,
+   "prompt": "Elite Glasswright fleet battle music, precise and luminous like light through a prism. Instrumental acoustic orchestra, 88 BPM, 4/4, F sharp minor home key, exactly 24 bars. Start at a clear playing level on bar 1 beat 1 with the lead already playing. Rhythm comes only from unpitched percussion: a prominent, clearly audible kit of orchestral bass drum, frame drums, low toms and shakers, with a different groove in every section. No timpani and no tuned drums. No ostinato, no repeated two-note figure, no drone and no pedal tone in any part. Every pitched part moves with the chords and never repeats the same bar twice in a row. Bars 1 to 6, opening: warm mid-register glass harmonica plays a rising and falling legato melody in F sharp minor, answered by celesta over high harp, with a steady bass drum and frame drum groove. Bars 7 to 12, build: struck crystal bells and celesta take over an octave higher with short staccato notes and modulate to A major over syncopated harp, with driving toms. Bars 13 to 18, contrast: low bowed crystal takes over in long, changing notes with harp harmonics, turning from D major to B minor, with sparse shakers and soft offbeat frame drum. Bars 19 to 24, return: a brighter upper-middle glass harmonica recasts the opening melody in accented, detached notes with celesta replies and a full bass drum and tom groove, with a new descending ending over C sharp major resolving to F sharp minor at the wrap. Keep the tempo steady and the opening and ending at comparable levels. End just before the first downbeat repeats. No vocals or choir.",
+   "stems": true,
+   "loop_grid": {
+    "bpm": 88,
+    "beats_per_bar": 4,
+    "bars": 24,
+    "click_guard_ms": 25
+   },
+   "reroll_of": "mus_ithar_loop_a_test4"
   }
  ],
  "M2_mastering": {
   "run_order": [
-   "M2_test4",
+   "M2_test5",
    "M2"
   ],
-  "review_gate": "Review the M2_test4 Glasswrights split by ear before the remaining M2 tracks. Verify that the core tone changes colour, register or harmony in every section. Listen in both mixes for four distinct sections and no constant held tone. Check for timpani from bar 1 in the full mix and at least 2.5 dB of contrast between mixes. The calm mix must stand on its own with no missing tonal parts. If it fails, revise the arrangement or the calm treatment before the remainder.",
+  "review_gate": "Review the M2_test5 Glasswrights split by ear before the remaining M2 tracks. Verify that the core tone changes colour, register or harmony in every section. Listen in both mixes for four distinct sections and no constant held tone, and check that no two-note figure repeats through the loop. Check that there is no timpani or tuned drum in the full mix and that the calm mix is 1 to 12 dB under the full mix. The calm mix must stand on its own with no missing tonal parts. If it fails, revise the arrangement or the calm treatment before the remainder.",
   "loop": "Trim MP3 padding to the exact bar grid in samples. Apply a 20 to 30 ms click guard without removing samples. Never fold 0.5 s into an exact-bar loop. Check sample joins and listen across the downbeat.",
   "boss_nemesis": "Use their own aligned calm and intense stems. Never layer either over another faction calm track."
  }
