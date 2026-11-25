@@ -208,6 +208,92 @@ void fragment() {
 }
 """
 
+# Issue 2044: cold density and hot thickness from the same baked vent, with separate clocks and footprints.
+const DAMAGE_PLUME := """
+shader_type spatial;
+render_mode unshaded, cull_disabled, depth_draw_never, shadows_disabled, fog_disabled;
+""" + COMMON + """
+uniform sampler2D colour_atlas : filter_linear, repeat_disable;
+uniform sampler2D heat_atlas : filter_linear, repeat_disable;
+#ifndef COMPAT
+uniform sampler2D plume_depth : hint_depth_texture, filter_nearest;
+#endif
+uniform vec3 axis_local = vec3(0.0, 1.0, 0.0);
+uniform vec2 dimensions = vec2(1.0);
+uniform vec3 colour_core = vec3(1.0);
+uniform vec3 colour_sheath = vec3(0.12);
+uniform float born = 0.0;
+uniform float phase = 0.0;
+uniform float period = 1.8;
+uniform float life_s = 0.0;
+uniform float core_clip = 0.62;
+uniform float core_power = 0.0;
+uniform float density = 0.0;
+uniform float gate = 1.0;
+varying float plume_depth_v;
+
+vec4 vent_cell(sampler2D sheet, vec2 uv, float frame) {
+	float f = floor(frame);
+	vec2 a = vec2(mod(f, 4.0), floor(f / 4.0));
+	vec2 b = vec2(mod(f + 1.0, 4.0), floor((f + 1.0) / 4.0));
+	return mix(texture(sheet, (a + uv) * 0.25), texture(sheet, (b + uv) * 0.25), fract(frame));
+}
+
+void vertex() {
+	vec3 root = MODELVIEW_MATRIX[3].xyz;
+	vec3 outwards = mat3(MODELVIEW_MATRIX) * axis_local;
+	float scale_k = max(length(outwards), 0.0001);
+	outwards /= scale_k;
+	vec2 axis = outwards.xy;
+	float visible_length = length(axis);
+	axis = visible_length > 0.0001 ? axis / visible_length : vec2(0.0, 1.0);
+	vec2 across = vec2(axis.y, -axis.x);
+	float s = VERTEX.y + 0.44;
+	vec2 xy = across * VERTEX.x * dimensions.x + axis * s * dimensions.y * max(0.52, visible_length);
+	vec3 view_p = root + vec3(xy, outwards.z * s * dimensions.y) * scale_k;
+	plume_depth_v = -view_p.z;
+	POSITION = PROJECTION_MATRIX * vec4(view_p, 1.0);
+}
+
+void fragment() {
+	float age = max(scene_t - born, 0.0);
+	float s = 1.0 - UV.y;
+	float x = UV.x - 0.5;
+	float curl = sin(s * 4.6 - age * 1.7 + phase * 6.2832) * s * s * 0.14;
+	float a = fract(age / period + phase);
+	float b = fract(a + 0.5);
+	vec2 uv = vec2(0.5 + (x - curl) * 0.26, mix(0.82, 0.47, s));
+	vec4 sheet = mix(vent_cell(colour_atlas, uv, b * 10.0), vent_cell(colour_atlas, uv, a * 10.0), sin(a * 3.14159265));
+	float sheath = sheet.a * density * smoothstep(0.01, 0.12, s) * (1.0 - smoothstep(0.87, 1.0, s));
+	float core = 0.0;
+	if (core_power > 0.0) {
+		float t = mod(age + phase * period, period);
+		if (t < core_clip) {
+			vec2 hot_uv = vec2(0.5 + x * 0.31, mix(0.83, 0.54, clamp(s * 2.5, 0.0, 1.0)));
+			float heat = vent_cell(heat_atlas, hot_uv, t / core_clip * 9.0).b;
+			float pulse = smoothstep(0.0, 0.10, t) * (1.0 - smoothstep(0.19, core_clip, t));
+			core = smoothstep(0.08, 0.76, heat) * pulse * (1.0 - smoothstep(0.24, 0.47, s));
+		}
+	}
+	float soft = 1.0;
+#ifndef COMPAT
+	float z = texture(plume_depth, SCREEN_UV).r;
+	vec4 hit = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, z, 1.0);
+	float depth = -hit.z / max(hit.w, 0.000001);
+	soft = smoothstep(0.0, max(dimensions.y * 0.08, 0.035), depth - plume_depth_v);
+#endif
+	float live = smoothstep(0.0, 0.16, age);
+	if (life_s > 0.0) {
+		live *= 1.0 - smoothstep(life_s * 0.42, life_s, age);
+	}
+	float core_cover = core * mix(0.88, 0.42, fx_calm);
+	float cover = core_cover + sheath * (1.0 - core_cover);
+	ALBEDO = (colour_core * core_cover * core_power * 2.2 * fx_gain
+		+ colour_sheath * sheath * (1.0 - core_cover) * (0.68 + sheet.g * 0.6)) / max(cover, 0.0001);
+	ALPHA = cover * live * gate * soft * (1.0 - smoothstep(0.36, 0.50, abs(x)));
+}
+"""
+
 const DEATH_PARTICLES := """
 shader_type particles;
 uniform vec3 axis = vec3(0.0, 1.0, 0.0);

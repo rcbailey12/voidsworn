@@ -124,6 +124,7 @@ headless|audio/test/sound_weight_check.gd|-|-|issue 771: death bed length from t
 headless|audio/test/faction_death_check.gd|-|-|issue 1238: Chorus cruiser and Bio-Titan rupture at their class time with the kill beat and Chorus sounds only; a Glasswright breaks with a glass shatter, no steel; prints the cue timing trace
 headless|fx/test/attach_check.gd|-|-|issue 370: every attach point (authored, surface ray) lies on the hull within 0.012 of its length; stand-in slab, ring and tower here, every ship file present on the PC; skips counted
 headless|fx/test/damage_surface_check.gd|-|-|R80 damage contracts on box ships: stages, emitters and their caps, marks
+headless|fx/test/damage_plume_check.gd|-|-|issue 2044: baked wound and wisp layers, wing exhaust attachment, cold hulk lifetime, clean faction crits and flash budget
 headless|fx/test/graphics_correctness_check.gd|-|-|issue 1955: missing damage anchors, rim and fog on mesh-surface wrecks, five live point-defense pops, quality downgrade and shader cache teardown
 headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanup and drift (issue 137)
 headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battle.gd marks a ship dead; box ships

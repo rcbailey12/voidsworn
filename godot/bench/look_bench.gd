@@ -121,10 +121,11 @@ func _warn(s: String) -> void:
 
 func _run() -> void:
 	# issue 370: --moments FILE reads another rows file (a job's own rows, e.g. bench/look_moments_attach.json)
-	var f := FileAccess.get_file_as_string(str(args.get("moments", MOMENTS)))
+	var moments_path := str(args.get("moments", MOMENTS))
+	var f := FileAccess.get_file_as_string(moments_path)
 	var parsed = JSON.parse_string(f)
 	if not (parsed is Dictionary):
-		_log("ERROR cannot read " + MOMENTS)
+		_log("ERROR cannot read " + moments_path)
 		get_tree().quit(2)
 		return
 	cfg = parsed
@@ -148,7 +149,7 @@ func _run() -> void:
 	report["adapter"] = RenderingServer.get_video_adapter_name()
 	report["fixed_fps"] = Engine.get_physics_ticks_per_second()
 	report["fleet_lighting"] = LOOK.fleet_lighting_enabled()   # issue 1679: which lighting this run drew (VS_FLEET_LIGHTING)
-	report["moments_sha256"] = FileAccess.get_sha256(MOMENTS)
+	report["moments_sha256"] = FileAccess.get_sha256(moments_path)
 	report["bench_sha256"] = FileAccess.get_sha256("res://bench/look_bench.gd")
 	headless = DisplayServer.get_name() == "headless"
 	if headless:
@@ -714,6 +715,33 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	elif what == "wounds":
 		fx.sync_ship("A", {"hp": 25.0, "maxHp": 100.0, "burning": false, "sh": [5, 5, 5, 5],
 			"sec": {"eng": {"hp": 10, "max": 100}, "mid": {"hp": 10, "max": 100}, "prow": {"hp": 10, "max": 100}}})
+	elif what == "wisp":
+		# Isolate the real turret/mount/nozzle picture without a nearby full wound or a spark hiding it.
+		var target = fx.ship("T")
+		var e := {"id": "bench_wisp"}
+		if not target.hull.turrets.is_empty():
+			e["tur"] = 0
+		elif not target.hull.nozzles.is_empty():
+			e["mp"] = target.hull.nozzles[0]["p"]
+		else:
+			var anchor: Dictionary = target._anchor(1, "a")
+			if anchor.is_empty():
+				_warn(id + ": no wisp source")
+				return false
+			e["mp"] = anchor.p
+		target._build_wisp(fx, e)
+		_cam(target.to_world(e.source), r)
+	# Issue 2044: frame the same existing source in both revisions, rather than picking a screen offset per hull.
+	match str(row.get("focus_site", "")):
+		"mid_wound":
+			var target = fx.ship("T")
+			var anchor: Dictionary = target._anchor(1, "a")
+			if not anchor.is_empty():
+				focus = target.to_world(anchor.p)
+			_cam(focus, r)
+		"wing_lead":
+			if not T.hull.craft.is_empty():
+				_cam(T.hull.craft[0].global_position, r)
 	var anchors := {"fire": t_ev, "event": t_ev, "impact": t_ev + (float(impacts[0]) if impacts.size() > 0 else 0.6)}
 	# Issue 504: a row may fire a second volley from A at T during the event ("also": [seconds after the event, kind,
 	# weapon]), for example a torpedo landing on a dying capital; the "also" anchor is that volley's first impact.
@@ -749,9 +777,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		else:
 			take = steps >= int(w["next"])
 		if take:
-			var img := _grab()
-			if img != null:
-				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
+			if not headless:
+				var img := _grab()
+				if img != null:
+					strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
 			ci += 1
 			w["got"] = int(w["got"]) + 1
@@ -766,13 +795,18 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if not keep:
 		return true
 	var name := "%s__c%d.png" % [id, int(r)]
-	preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
+	if not headless:
+		preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
 	# issue 1777 (Artoo on PR 1786): record the hull the target resolved to; a row naming "expect_code" says loudly when
 	# the faction and class drew a different hull (a later remap), so a capture bat can fail on it
 	var tcode := str(T.code) if is_instance_valid(T) else ""
 	if row.has("expect_code") and tcode != str(row["expect_code"]):
 		_warn("%s: target drew %s, the row expects %s" % [id, tcode, str(row["expect_code"])])
 		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
+	if row.has("expect_craft") and not args.has("allow-blocks"):
+		var craft_code := str(T.hull.craft[0].get_meta("model_code", "")) if not T.hull.craft.is_empty() else ""
+		if craft_code != str(row.expect_craft):
+			_warn("%s: wing drew %s, the row expects %s" % [id, craft_code, row.expect_craft])
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts, "code": tcode})
 	_log("%s at %d: %d cells" % [id, int(r), ci])
