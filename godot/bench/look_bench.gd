@@ -850,7 +850,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var name := "%s__c%d.png" % [id, int(r)]
 	if not headless:
 		var picture := preload("res://tools/picture_provenance.gd")
-		var saved := picture.save_png(strip, d.path_join(name), picture.capture_stage(), true)
+		var saved := preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), picture.capture_stage(), true)
 		if saved != OK and args.has("strict-moments"):
 			_warn("%s: could not save the stamped strip" % id)
 			moments_failed = true
