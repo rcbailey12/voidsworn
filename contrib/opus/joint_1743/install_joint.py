@@ -3,12 +3,15 @@
 usage: install_joint.py RELAY_FOLDER GODOT_PROJECT
 
 RELAY_FOLDER is the joint1743 folder of the voidsworn-relay checkout. Every file must match SHA256SUMS.txt beside this
-script (the copy pinned in the job's commit), and no file may be missing or extra, or nothing is copied. For each hull it
+script (the copy pinned in the job's commit), and no file may be missing or extra, and every map
+a glb names must be in the list, or nothing is copied. For each hull it
 moves an older <CODE>_damage.glb and <CODE>_wreck.glb aside into assets/ships_aside_joint1743/ (they belong to the old
 hull, as stage 7 does), copies the glb and its maps into assets/ships/<CODE>/ and merges the export's manifest entry
 with tools/recipe/manifest_merge.py. It deletes nothing. Prints JOINT INSTALL PASS or exits non-zero.
 """
 import hashlib
+import json
+import struct
 import shutil
 import sys
 from pathlib import Path
@@ -29,6 +32,13 @@ def sha(path):
     return h.hexdigest()
 
 
+def glb_maps(path):
+    """the image files a glb names by uri (its own maps beside it)"""
+    b = path.read_bytes()
+    n = struct.unpack('<I', b[12:16])[0]
+    return [im['uri'] for im in json.loads(b[20:20 + n]).get('images', []) if 'uri' in im]
+
+
 def main(relay, project):
     relay, project = Path(relay).resolve(), Path(project).resolve()
     want = {}
@@ -45,6 +55,9 @@ def main(relay, project):
         sys.exit(f'JOINT INSTALL FAILED: hash mismatch {bad}')
     if sorted({n.split('/')[0] for n in want}) != sorted(CODES):
         sys.exit('JOINT INSTALL FAILED: the hash list does not name the six hulls')
+    unlisted = [f'{c}/{u}' for c in CODES for u in glb_maps(relay / c / f'{c}.glb') if f'{c}/{u}' not in want]
+    if unlisted:
+        sys.exit(f'JOINT INSTALL FAILED: a glb names maps the relay does not carry {unlisted}')
     ships = project / 'assets' / 'ships'
     aside = project / 'assets' / 'ships_aside_joint1743'
     for code in CODES:
