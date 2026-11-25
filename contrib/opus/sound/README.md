@@ -4,6 +4,8 @@ Ryan, Nov 22 2026: ElevenLabs Creator, monthly ($11 first month, then $22), for 
 (issue 1585, Neon's pre-flight on PR 1577): hold the blind Batch 1, run a small Gate 1 pilot first, pick by ear, then
 Gate 2 production and Gate 3 stems. Nothing is wired into godot/ until Ryan picks.
 
+The prompts follow sections 2 to 8 of the [sound plan](../plans/cohesive_audio_v2.md), including the section 2 banned-word list.
+
 ## The three gates
 
 - **Gate 1, calibration pilot** (`elevenlabs_pilot.json`, about 2,840 credits, under 3% of 121,000): one take each of
@@ -71,8 +73,14 @@ Gate 2 production and Gate 3 stems. Nothing is wired into godot/ until Ryan pick
 - The shipped F3 picks are `death_metal_crack_f3` t1, `ship_thruster_puff_f3` t1 and
   `wep_eclipse_gsentry_more_f3` t1. `mus_chorus_loop_a_test2` t1 is the Chorus battle pair. Its calm mix is all stems
   except drums, and its intense mix is the full song. `wire_gate3.py --chorus-music` adds both listening previews.
-- `M2_test3` stages `mus_ithar_loop_a_test3` with a moving lead and four distinct sections. The new ID keeps its receipt
-  separate from the rejected test2. Use the named wave's IDs with the generator's `--only` flag. No paid request without Ryan's go.
+- `M2_test4` stages only `mus_ithar_loop_a_test4`, a re-roll of test3 with its own receipt. Test3 varied the parts around
+  a held tone. Test4 drops that tone and gives the lead a different colour, register and phrasing in each section. It
+  moves from F sharp minor to A major, then through a darker turn and back home at the wrap. Use the wave's ID with the
+  generator's `--only` flag. No paid request without Ryan's go.
+- Review gate: the core tone changes colour, register or harmony in every section. Compare test3 with test4 on the
+  listening page once the Board has the new take. Listen in both mixes for a held tone, and check that the calm mix
+  still carries the whole melody without drums. Check for timpani from bar 1 in the full mix and at least 2.5 dB
+  of contrast between mixes.
 - Run `stem_loop_check.py` with the planned BPM and bar count. The source MP3 may be 50 ms short or 120 ms long,
   but the mastered loop uses the exact bar grid and the 25 ms click guard. Listen across the wrap and compare calm and
-  full at the switch points. Review the Glasswrights test3 by ear before starting the rest of M2. The remaining M2 rows are unchanged.
+  full at the switch points. Review the Glasswrights test4 by ear before starting the rest of M2. The remaining M2 rows are unchanged.
