@@ -517,7 +517,7 @@ Rules:
 - GPU work must use tools/pc/tmo.bat <seconds> <exe> [args]. Shared capacity comes from Downloads\voidsworn_test\gpu_slots.json (default 2).
   Captures weigh 1, Blender weighs 2; set PC_GPU_WEIGHT=2 for other heavy bakes, or the Board's chosen weight;
   frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
-  gpu_go.txt must say GPU cleared. Lane C is code only. Never launch GPU executables directly.
+  gpu_go.txt must say GPU cleared. Codex lanes C to F are code only. Never launch GPU executables directly.
 - Keep scratch output (logs, temp files) out of this folder, in the system temp folder.
 - Save review pictures and their .provenance.json sidecars in $out\shots (create it). Link them as shots/<file> so the
   runner can copy them into docs/shots/issue-$n-$arm and rewrite the links before publishing.

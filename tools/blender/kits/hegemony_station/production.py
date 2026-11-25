@@ -81,7 +81,7 @@ def tile_maps(out, reference_length):
         # A repeating coupon is a part tile, not a complete ship hull. The
         # faction's part path draws the same ordered grid without requesting
         # ship-wide module-band boxes. Actual station joints remain geometry.
-        mat = PS.zone_material(H, zone, 'P', masks, tiles, [], None)
+        mat = PS.zone_material(H, zone, 'P', masks, tiles, [], None, ())
         plane.data.materials.clear()
         plane.data.materials.append(mat)
         maps = {}
