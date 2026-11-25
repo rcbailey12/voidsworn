@@ -122,10 +122,11 @@ assert.match(script, /if \(\$seat -eq 'work217'\) \{ \$checkoutLock = @\(Lock-Wo
     try {
       assert.ok(!fs.existsSync(workRoot), 'the slot folder does not exist when the refresh starts');
       refresh = spawn(shell, ['-NoProfile', '-Command', `${fn[0]}\n$h = @(Lock-WorkhorseSlots $env:FIX_ROOT)\n` +
-        `[IO.File]::WriteAllText($env:FIX_READY, [string]$h.Count)\n` +
+        `$tmp = $env:FIX_READY + '.tmp'\n[IO.File]::WriteAllText($tmp, [string]$h.Count)\n[IO.File]::Move($tmp, $env:FIX_READY)\n` +
         `$end = [DateTime]::UtcNow.AddSeconds(60); while (-not (Test-Path -LiteralPath $env:FIX_RELEASE) -and [DateTime]::UtcNow -lt $end) { Start-Sleep -Milliseconds 50 }\n` +
         `foreach ($x in $h) { $x.Dispose() }\n[IO.File]::WriteAllText($env:FIX_DONE, 'released')`], { env: { ...process.env, FIX_ROOT: workRoot, FIX_READY: ready, FIX_RELEASE: release, FIX_DONE: done }, stdio: 'ignore' });
       assert.ok(until(() => fs.existsSync(ready), 30000), 'paused refresh never took the slot locks');
+      assert.ok(until(() => { try { return fs.readFileSync(ready, 'utf8').length > 0; } catch { return false; } }, 30000), 'ready file stayed empty');
       assert.equal(fs.readFileSync(ready, 'utf8'), '14', 'seven arms, live and dry run');
       const first = launch();
       assert.equal(first.status, 14, first.stdout + first.stderr);
