@@ -4,7 +4,7 @@ rem Queue on Ryan's PC only after CI checks are green and review passes at PIN_N
 rem Produces four Ryan-ready <= 720 px comparison sheets (N2035_NEB_C170, N2035_NEB_C26,
 rem N2035_STORM_C170, N2035_STORM_C26) plus solo 1080p/4K frame-time gate JSONs.
 setlocal EnableExtensions
-set "JOB=neon2035"
+set "JOB=neon2035gas3"
 set "LABEL=2035"
 set "TOOLS=godot pil"
 set "PIN_NEW=601af634d5a892dcbcd0d4dd8bc4bfcf6ac7d766"
