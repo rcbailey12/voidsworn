@@ -30,9 +30,16 @@ function Get-NeonRemote($workspace) {
   return $refs
 }
 function Clear-NeonThreadData($thread, $data, $now, $dryRun) {
+  # The Board can relay a staged copy with relay_push.ps1 <neon-issue-N> <thread UUID folder> results.
+  # Use the thread's delivery branch name (slash changed to hyphen), including any run suffix.
+  $relayBranch = $thread.branch.Replace('/', '-')
+  $relayMirror = Join-Path $root 'relay-mirror.git'
   foreach ($id in $thread.ids) {
+    if ($id -notmatch '\A[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\z') { continue }
     foreach ($rel in @("attachments/$id", "logs/provider/events.$id.log")) {
+      $relayLock = $null
       try {
+        $attachment = $rel -ceq "attachments/$id"
         $parentPath = Join-Path $data.FullName (Split-Path -Parent $rel)
         $parent = Get-Item -LiteralPath $parentPath -Force -ErrorAction SilentlyContinue
         if (-not $parent) { continue }
@@ -41,27 +48,36 @@ function Clear-NeonThreadData($thread, $data, $now, $dryRun) {
         $item = Get-Item -LiteralPath (Join-Path $data.FullName $rel) -Force -ErrorAction SilentlyContinue
         if (-not $item) { continue }
         if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or (Get-BoardKeepReason $item.FullName)) { continue }
+        if ($attachment) { Assert-PlainDirectory $item }
+        elseif ($item -isnot [IO.FileInfo]) { throw 'provider log is not a plain file' }
         Assert-NoProcessUses $parent
-        if ($item -is [IO.DirectoryInfo]) { $stats = Measure-CleanupDirectory $item }
+        if ($attachment) { $stats = Measure-CleanupDirectory $item }
         else {
           $tally = New-FreeTally
           Add-FreeTally $tally $item
           $stats = @{ Latest = $item.LastWriteTimeUtc; FreeBytes = (Complete-FreeTally $tally).Free; FreeTally = $tally }
         }
         if ($stats.Latest -ge $now.AddDays(-1)) { continue }
+        if ($attachment) {
+          if (-not $dryRun) { $relayLock = Open-CleanupLock ($relayMirror + '.lock') }
+          # A published code branch does not back up T3 attachments. Require an exact copy of every file.
+          Assert-DirectRelayProof $item $relayBranch $relayMirror -RequireAllFiles
+        }
         Assert-GpuQuiet -SoloOnly
         if (Cleanup-Paused) { throw 'PC pause is active' }
         if (-not $dryRun) {
           Assert-NeonClosed
           if (Cleanup-Paused) { throw 'PC pause is active' }
-          if ($item -is [IO.DirectoryInfo]) {
-            Assert-NoLinkedChildren $item.FullName
+          if ($attachment) {
+            $current = Measure-CleanupDirectory (Get-Item -LiteralPath $item.FullName -Force)
+            if ($current.Latest -ne $stats.Latest -or $current.Bytes -ne $stats.Bytes) { throw 'attachments changed during relay proof' }
             Remove-CleanupDirectory $item
           } else { Remove-Item -LiteralPath $item.FullName -Force -ErrorAction Stop }
         }
         Add-WouldFree $stats
         Log "Neon thread data $(if ($dryRun) { 'would remove' } else { 'removed' }): $($item.FullName)"
       } catch { Log "Neon thread data kept: $rel ($($_.Exception.Message))" }
+      finally { if ($relayLock) { $relayLock.Dispose() } }
     }
   }
 }

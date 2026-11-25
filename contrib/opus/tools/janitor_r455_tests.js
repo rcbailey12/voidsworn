@@ -63,6 +63,11 @@ function attempt(issue, suffix, shot = 'saved picture') {
 function publish(branch, dir) {
   assert.match(ps('relay_push.ps1', branch, dir, 'results'), /relayed:/);
 }
+function publishAttachment(t) {
+  const stage = path.join(root, 'neon-relay-stage', t.id);
+  put(path.join(stage, path.basename(t.attachment)), fs.readFileSync(t.attachment));
+  publish(t.branch.replace('/', '-'), stage);
+}
 function thread(issue, state, finished, pushed = true) {
   const branch = `neon/issue-${issue}`;
   const local = path.join(t3, 'worktrees', 't3_neon', `neon-issue-${issue}-${sha}`);
@@ -75,7 +80,7 @@ function thread(issue, state, finished, pushed = true) {
   }
   dateTree(local, new Date(old));
   const id = `12345678-1234-4567-89ab-${String(issue).padStart(12, '0')}`;
-  const attachment = put(path.join(t3, 'userdata', 'attachments', id, 'attachment.bin'), 'thread attachment');
+  const attachment = put(path.join(t3, 'userdata', 'attachments', id, 'attachment.png'), `thread ${issue} picture`);
   dateTree(path.dirname(attachment), new Date(old));
   const log = put(path.join(t3, 'userdata', 'logs', 'provider', `events.${id}.log`), 'thread log');
   dateTree(log, new Date(old));
@@ -129,11 +134,26 @@ try {
   publish('look-bench-runs', bench);
 
   const eligible = thread(455, 'completed', old);
+  publishAttachment(eligible);
   const busy = thread(456, 'running', old);
   const fresh = thread(457, 'completed', recent);
   const unpushed = thread(458, 'completed', old, false);
   const dirty = thread(459, 'completed', old);
   put(path.join(dirty.local, 'untracked.txt'), 'keep');
+  const notRelayed = thread(460, 'completed', old);
+  const changedAttachment = thread(461, 'completed', old);
+  publishAttachment(changedAttachment);
+  put(changedAttachment.attachment, 'different local picture');
+  dateTree(path.dirname(changedAttachment.attachment), new Date(old));
+  const partialAttachment = thread(462, 'completed', old);
+  publishAttachment(partialAttachment);
+  const extraPicture = put(path.join(path.dirname(partialAttachment.attachment), 'nested', 'extra.png'), 'local only');
+  dateTree(path.dirname(partialAttachment.attachment), new Date(old));
+  const staleAttachment = thread(463, 'completed', old);
+  publishAttachment(staleAttachment);
+  git('--git-dir', relay, 'update-ref', '-d', 'refs/heads/pc-out-neon-issue-463');
+  git('--git-dir', path.join(root, 'relay-mirror.git'), 'rev-parse', '--verify', 'refs/heads/pc-out-neon-issue-463');
+  const threads = [eligible, busy, fresh, unpushed, dirty, notRelayed, changedAttachment, partialAttachment, staleAttachment];
   const settings = put(path.join(t3, 'userdata', 'settings.json'), 'settings stay');
   const signIn = put(path.join(t3, 'userdata', 'secrets', 'fixture'), 'sign-in stays');
   run(process.execPath, [...sqliteArgs, '-e', `
@@ -158,7 +178,7 @@ try {
         t.state === 'running' ? null : t.finished);
     }
     d.close();
-  `, db], JSON.stringify({ workspace, threads: [eligible, busy, fresh, unpushed, dirty] }));
+  `, db], JSON.stringify({ workspace, threads }));
 
   const scratch = path.join(temp, 'voidsworn-run-2144-' + 'c'.repeat(32));
   put(path.join(scratch, '.voidsworn-run-owner'), 'a'.repeat(32));
@@ -174,17 +194,23 @@ try {
   assert.match(log, /ElevenLabs take folder is kept/);
 
   log = run(shell, [...janitorArgs, '--nightly']);
-  for (const removed of [eligible.local, eligible.attachment, eligible.log]) assert(!fs.existsSync(removed), `expected nightly removal ${removed}\n${log}`);
-  for (const kept of [busy.local, fresh.local, unpushed.local, dirty.local, settings, signIn, db, workspace, mirror, runnerStatus]) {
+  for (const removed of [path.dirname(eligible.attachment), ...[eligible, notRelayed, changedAttachment, partialAttachment, staleAttachment]
+    .flatMap(t => [t.local, t.log])]) assert(!fs.existsSync(removed), `expected nightly removal ${removed}\n${log}`);
+  for (const kept of [busy.local, fresh.local, unpushed.local, dirty.local, settings, signIn, db, workspace, mirror, runnerStatus,
+    notRelayed.attachment, changedAttachment.attachment, partialAttachment.attachment, extraPicture, staleAttachment.attachment]) {
     assert(fs.existsSync(kept), `expected nightly keep ${kept}\n${log}`);
   }
+  assert.match(log, /Neon thread data kept: attachments\/.*no matching relay branch/);
+  assert.match(log, /Neon thread data kept: attachments\/.*result differs on the relay/);
+  assert.match(log, /Neon thread data kept: attachments\/.*unproven result stays local/);
+  assert.match(log, /Neon thread data kept: attachments\/.*origin does not confirm this relay tip/);
   const totals = fs.readFileSync(path.join(root, 'board1119', 'janitor_log.txt'), 'utf8');
   for (const kind of ['relayed jobs and pictures', 'Neon T3', 'Codex sandbox']) {
     assert.match(totals, new RegExp(`cleanup freed - ${kind} - .+ GB \\([1-9][0-9]* bytes\\)`));
   }
   assert.match(totals, /--low-space/);
   assert.match(totals, /--nightly/);
-  console.log('PASS janitor_r455_tests: scheduled and low-space cleanup, fresh relays, skipped media, live/dirty Neon work, scratch and per-kind totals');
+  console.log('PASS janitor_r455_tests: scheduled and low-space cleanup, fresh relays, skipped media, Neon attachment proof, live/dirty Neon work, scratch and per-kind totals');
 } finally {
   // Only the isolated fixture from mkdtemp. Windows Git worktree roots here are plain directories.
   assert.equal(path.dirname(fixture), os.tmpdir());

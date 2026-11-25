@@ -33,12 +33,12 @@ function Get-DirectRelayTree($branch, $leaf, $relayMirror) {
   }
   return ,$tree
 }
-function Assert-DirectRelayProof($dir, $branch, $relayMirror) {
+function Assert-DirectRelayProof($dir, $branch, $relayMirror, [switch]$RequireAllFiles) {
   $leaf = $dir.Name
   $tree = Get-DirectRelayTree $branch $leaf $relayMirror
   $listed = @()
   $key = "$leaf/relay_manifest/skipped_cache_folders.txt"
-  if ($tree.ContainsKey($key) -and $tree[$key]) {
+  if (-not $RequireAllFiles -and $tree.ContainsKey($key) -and $tree[$key]) {
     $listed = @(Read-CleanupGit @('--git-dir',$relayMirror,'cat-file','blob',$tree[$key]))
     if ($gitExit -ne 0) { throw 'cache manifest could not be read' }
   }
