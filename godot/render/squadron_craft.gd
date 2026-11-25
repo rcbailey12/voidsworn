@@ -1,4 +1,5 @@
 extends RefCounted
+const SKEEP := preload("res://render/shader_keep.gd")
 # Small craft built in the game frame: bow +X, up +Y. Parts are merged by
 # material, so a whole detailed craft is one mesh with five surfaces.
 const LOOK := preload("res://fx/faction_look.gd")

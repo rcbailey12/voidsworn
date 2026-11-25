@@ -1,4 +1,5 @@
 extends Node3D
+const SKEEP := preload("res://render/shader_keep.gd")
 # B "living terrain" for the board look trial (world/board_look.gd): each kind of special hex becomes a thing in space
 # rather than a tinted hex (the board draws only a faint edge round it).
 #   nebula      soft gas: billboards that sample one continuous 3D noise field in world space, so neighbouring puffs read
@@ -443,10 +444,28 @@ func build(world) -> void:
 			var broad := (patches[j] as Array).size() / 3 if j < patches.size() - 1 else broad_left
 			_gas(patches[j], kind == "storm", broad)
 			broad_left -= broad
+			# issue 1434 (LOAD25 warm title: every gas patch in one 650 ms frame, 463 ms of it before the draw): a sliced
+			# load builds one patch a frame
+			if bool(W.get("slice_yield")):
+				await get_tree().process_frame
+				if not is_inside_tree():
+					return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
+	if bool(W.get("slice_yield")):
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	if not (pts["storm"] as Array).is_empty():
 		_bolts(pts["storm"])
+	if bool(W.get("slice_yield")):
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	if not (pts["debris"] as Array).is_empty():
 		_debris(pts["debris"])
+	if bool(W.get("slice_yield")):
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	if W._well != Vector3.INF:
 		_well(W._well)
 
@@ -744,10 +763,12 @@ func _bolts(ps: Array) -> void:
 	var bm := ShaderMaterial.new()
 	bm.shader = SHADER_CACHE.for_code(BOLT_SHADER)
 	var lit := 0
+	var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+	var storm_start: float = float(effects.now) if is_instance_valid(effects) else clock
 	for patch in _patches(ps):
 		var center := Vector3.ZERO
 		for point in patch: center += point
-		var burst := {"center": center / float(patch.size()), "bolts": [], "next": rng.randf_range(0.3, 3.5)}
+		var burst := {"center": center / float(patch.size()), "bolts": [], "next": storm_start + rng.randf_range(0.3, 3.5)}
 		_storm_bursts.append(burst)
 		var count := clampi(ceili(float(patch.size()) / 2.0), 2, 4)
 		var anchors: Array = []
@@ -872,8 +893,8 @@ static func _flash(t: float, soft := false) -> float:
 	return smoothstep(0.0, 0.018, t) * (1.0 - smoothstep(0.055, 0.52, t)) * exp(-t * 1.8)
 
 
-func _start_storm_burst(burst: Dictionary) -> void:
-	var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+# The caller passes the storm clock so the bolt, its light and its flash booking use the same time.
+func _start_storm_burst(burst: Dictionary, clock: float, effects) -> void:
 	for index in burst.bolts.size():
 		var bolt: Dictionary = burst.bolts[index]
 		var delay := float(index) * 0.075
@@ -882,7 +903,7 @@ func _start_storm_burst(burst: Dictionary) -> void:
 		if is_instance_valid(effects):
 			# Book the lit gas and bloom as a conservative 48-unit disc. Storms
 			# share the real fight's area counter, including other weapon effects.
-			bolt.soft = not effects.flash_at(bolt.pos, effects.now + delay, 48.0, 0.0, 0.52)
+			bolt.soft = not effects.flash_at(bolt.pos, bolt.start, 48.0, 0.0, 0.52)
 	burst.next = clock + rng.randf_range(2.2, 6.5)
 
 
@@ -952,15 +973,19 @@ func _process(dt: float) -> void:
 		_wake.apply(_wake_mats)
 	var reduced := is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))
 	_present_storm_ticks(reduced)
+	var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+	var storm_time: float = float(effects.now) if is_instance_valid(effects) else clock
 	for burst in _storm_bursts:
-		if clock >= float(burst.next): _start_storm_burst(burst)
+		if storm_time >= float(burst.next): _start_storm_burst(burst, storm_time, effects)
 	var fs: Array = []
 	for b in bolts:
-		var v := _flash(clock - float(b["start"]), bool(b.get("soft", false)) or reduced)
+		var age: float = storm_time - float(b.start)
+		var soft: bool = bool(b.get("soft", false)) or reduced
+		var v := _flash(age, soft)
 		var mi := b["mi"] as MeshInstance3D
 		if _instance_shader_ready(mi):
 			mi.set_instance_shader_parameter("flash", v)
-			mi.set_instance_shader_parameter("branch_flash", _flash((clock - float(b["start"])) * 1.6, bool(b.get("soft", false)) or reduced))
+			mi.set_instance_shader_parameter("branch_flash", _flash(age * 1.6, soft))
 		if b["light"] != null:
 			(b["light"] as OmniLight3D).light_energy = v * 1.2
 		if v > 0.0:
@@ -1398,13 +1423,27 @@ func use_ship_debris(ships: Array) -> void:
 	_chunk_task = WorkerThreadPool.add_task(func() -> void: job.chunks = HD.cut(job.sources))
 	_install_chunks()
 
+# issue 1434 (LOAD29 cold s25: the 7 chunk meshes landed in one prepare_hulls draw, 83 pipelines and 7 s): true while the
+# chunks are still being cut on the worker, so the battle's load waits and stages them in with the rest
+func debris_pending() -> bool:
+	return _chunk_task >= 0 or _installing
+
+
+# issue 1434 (LOAD30d cold s25: the 7 chunks added in one frame compiled 59 surface pipelines in its draw, 5.7 s; a
+# mesh's surface pipelines are made when it joins the scene, whatever layer it draws on): while a battle is loading
+# the chunks join one a frame
+var _installing := false
+
+
 func _install_chunks() -> void:
 	while not WorkerThreadPool.is_task_completed(_chunk_task):
 		await get_tree().process_frame
 		if not is_inside_tree() or _chunk_task < 0: return
 	WorkerThreadPool.wait_for_task_completion(_chunk_task)
 	_chunk_task = -1
+	var t_meshes := Time.get_ticks_usec()
 	var meshes := HD.meshes(_chunk_job.chunks)
+	SKEEP.event("debris meshes made (%d, %d ms)" % [meshes.size(), (Time.get_ticks_usec() - t_meshes) / 1000])
 	# These are old, weathered board wrecks, not fresh deaths. Keep their cut caps
 	# cold; only the kit's three bounded torn-edge points carry residual heat.
 	for chunk in _chunk_job.chunks:
@@ -1415,12 +1454,18 @@ func _install_chunks() -> void:
 	var holder := Node3D.new()
 	holder.name = "HullDebris"
 	add_child(holder)
+	# issue 1434 (LOAD32): one chunk alone still made 59 surface pipelines in a 5.9 s frame (cold and warm), all of its
+	# materials' shaders at once. While a battle loads, its first mesh joins once per surface, the other surfaces on a
+	# plain material, so each shader's pipelines land in a frame of their own.
+	if not _wreck_slots.is_empty() and not get_tree().get_nodes_in_group("battle_loading").is_empty():
+		if not await _warm_surfaces(holder, meshes[0], (_wreck_slots[0].xf as Transform3D).origin):
+			return
 	var index := 0
 	var replaced := {}
 	var radii := {}
 	# Replace one existing kit slot per hex, preserving its size, pose and total
 	# count. Keep the other kit shapes visible alongside the painted fleet chunks.
-	for slot in _wreck_slots:
+	for slot in _wreck_slots.duplicate():   # issue 1434: the loop may span frames
 		var mi := MeshInstance3D.new()
 		mi.mesh = meshes[index % meshes.size()]
 		index += 1
@@ -1436,13 +1481,21 @@ func _install_chunks() -> void:
 		var pivot := Node3D.new()
 		pivot.transform = Transform3D((slot.xf as Transform3D).basis.orthonormalized(), slot.xf.origin)
 		holder.add_child(pivot)
-		pivot.add_child(mi)
 		mi.scale = Vector3.ONE * scale_v
 		mi.position = -box.get_center() * scale_v
+		pivot.add_child(mi)
+		SKEEP.event("debris chunk joined")
 		var id: int = slot.mmi.get_instance_id()
 		if not replaced.has(id): replaced[id] = {"mmi": slot.mmi, "indices": []}
 		replaced[id].indices.append(int(slot.index))
 		_hull_spin.append([pivot, Vector3.UP if slot.get("orbiting", false) else (slot.axis as Vector3).normalized(), float(slot.get("rate", tumble_rate(float(slot.scale))))])
+		if not get_tree().get_nodes_in_group("battle_loading").is_empty():
+			_installing = true
+			await get_tree().process_frame
+			if not is_inside_tree() or not is_instance_valid(holder):
+				_installing = false
+				return
+	_installing = false
 	# Compact each affected draw once. Do not hide a replaced slot with a zero
 	# scale: a singular normal matrix can feed NaNs into lighting and bloom.
 	for group in replaced.values():
@@ -1461,6 +1514,42 @@ func _install_chunks() -> void:
 		group.mmi.multimesh = mm
 	_wreck_slots.clear()
 	W.notes.append("painted hull debris: %d cached chunks, %d instances" % [meshes.size(), index])
+
+# Joins `mesh` once per surface at `at`, a speck the size of a dust grain, the other surfaces on one plain material,
+# a frame apart; false when the world left the tree meanwhile. LOAD33c: one surface alone still made 73 pipelines in a
+# 5.7 s cold frame, so each surface first joins without shadows (its colour passes) and casts them a frame later (its
+# shadow passes).
+func _warm_surfaces(holder: Node3D, mesh: Mesh, at: Vector3) -> bool:
+	var plain := StandardMaterial3D.new()
+	var mi := MeshInstance3D.new()
+	mi.name = "SurfaceWarm"
+	mi.mesh = mesh
+	mi.scale = Vector3.ONE * 0.001
+	mi.position = at
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for s in mesh.get_surface_count():
+		mi.set_surface_override_material(s, plain)
+	holder.add_child(mi)
+	_installing = true
+	var steps: Array = [[-1, true]]   # the plain material's shadow pass first
+	for k in mesh.get_surface_count():
+		steps.append([k, false])
+		steps.append([k, true])
+	for st in steps:
+		await get_tree().process_frame
+		if not is_inside_tree() or not is_instance_valid(mi):
+			_installing = false
+			return false
+		var k: int = st[0]
+		for s in mesh.get_surface_count():
+			mi.set_surface_override_material(s, null if s == k else plain)
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if st[1] else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		SKEEP.event("debris warm surface %d of %d%s" % [k, mesh.get_surface_count(), " with shadows" if st[1] else ""])
+	await get_tree().process_frame
+	_installing = false
+	if not is_inside_tree() or not is_instance_valid(mi): return false
+	mi.queue_free()
+	return true
 
 func _exit_tree() -> void:
 	for mat in _legacy_debris_mats:

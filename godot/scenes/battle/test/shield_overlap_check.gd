@@ -1,13 +1,15 @@
 extends SceneTree
 # Issue 1211 follow-up (Artoo's review of PRs 1170 and 1220): two enemy volleys overlap on one shield, on the fitted skin
-# and on the egg, with Reduced Flashing off and on. Under a quarter-speed hit pause the first (long) volley lets go before
-# its hits land; the second volley (one quick shot, hull only) lands between its first hit and its draining second hit,
+# and on the egg, with Reduced Flashing off and on. Both volleys play under a quarter-speed hit pause.
+# The round budget shortens the first volley's wait so its draining hit is still in flight when the second volley starts.
+# The second volley (one quick shot, hull only) lands between the first volley's two hits,
 # and the check asserts that order. The clean collapse (R340) must start once, on the draining hit, from the shared
 # shield code (the ship's brk_t is that hit's effect time), never on a hit that leaves shield standing, never twice.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const API := preload("res://rules/battle_api.gd")
 const LOOK := preload("res://world/board_look.gd")
+const Battle := preload("res://scenes/battle/battle.gd")
 const SHIP := preload("res://fx/fx_ship.gd")
 
 class Probe extends "res://scenes/battle/battle.gd":
@@ -119,6 +121,7 @@ func _case(shape: String, calm: bool) -> void:
 	_check(S._fail_look == 2, "%s: the clean collapse is the failure look (R340)" % name)
 	var brk0 := _brk(S)
 	var brk_seen: Array = []
+	b.speed *= Battle._round_budget_k(Battle.BUDGET_FULL)
 	b.gfx._pause_depth = 0.25
 	b.gfx._pause_until = float(b.gfx.now) + 1000.0
 	# volley 1 drains the shield on its second hit; volley 2 fires while volley 1's hits are still in flight
