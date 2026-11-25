@@ -513,7 +513,7 @@ func _unhandled_input(e: InputEvent) -> void:
 func credits_bbcode() -> String:
 	var text_hex := GS.TEXT.to_html(false)
 	var detail_hex := GS.TEXT2.to_html(false)
-	var out := "[b][color=#%s]%s[/color][/b]\nA game by Ryan Bailey. Made with the Godot Engine (MIT licence, godotengine.org).\nFonts: %s (SIL Open Font Licence).\n\n[b][color=#%s]Music[/color][/b]\nEvery track comes from OpenGameArt.org. The game plays edited versions (cut, looped, levelled, re-encoded).\n" % [text_hex, Brand.TITLE, Kit.credits_fonts(), text_hex]
+	var out := "[b][color=#%s]%s[/color][/b]\nA game by Ryan Bailey. Made with the Godot Engine (MIT licence, godotengine.org).\nFonts: %s (SIL Open Font Licence).\n\n[b][color=#%s]Music[/color][/b]\nLegacy tracks come from OpenGameArt.org. The Sunward battle pair was made on the paid ElevenLabs plan. The game plays edited versions.\n" % [text_hex, Brand.TITLE, Kit.credits_fonts(), text_hex]
 	var p := "res://music/music.json"
 	var d = JSON.parse_string(FileAccess.get_file_as_string(p)) if FileAccess.file_exists(p) else null
 	if not (d is Dictionary) or not (d.get("tracks") is Dictionary):

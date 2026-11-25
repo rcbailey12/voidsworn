@@ -339,7 +339,8 @@ is a candidate when the shared build holds the same file written strictly later;
 those files once each into `salvage\superseded_store\<sha256>.bin`, reads each back by size and SHA-256, lists them in
 `salvage\<lane>_<name>_superseded\superseded_manifest.txt`, and only then removes the copy;
 any failed check keeps it (issue 1180 run 7, Board Nov 20; Artoo on PR 1260). The safe list also includes stage 7 leftovers in `godot/.stage7-replaced-*`
-and `godot/assets/ships/manifest.bak_*`. The runner fetches and switches to the new branch with those files in place. A collision or an
+and the `godot/assets/ships/manifest.bak_*` folders. A flat `godot/assets/ships/manifest.json.bak_<stamp>` file is
+accepted for reuse only: it is unique, so in removal mode the janitor keeps its checkout (PR 2077; issue 2091). The runner fetches and switches to the new branch with those files in place. A collision or an
 uncertain check keeps the earlier checkout beside repo. More than two `repo-kept-*` copies triggers a warning naming each
 copy and its size. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
 unique ignored work (issue 860, run 2, Board Nov 16).
@@ -542,7 +543,7 @@ rendering, ship import, audio, or battle-feel PR." (Ryan, Nov 22 2026, 16:48 UTC
 3.14 **One global look and sound standard; no subsystem is tuned alone.** Every ship exterior and interior, weapon effect,
 wound, death, hulk, debris piece, station, planet, rock, sky and sound follows the six laws of
 `contrib/opus/plans/global_cohesion_standard.md`: (1) one value ladder (deep space near black; ship interiors and wreck cavities
-darker than lit armor, walls at most 0.11 linear; full glow only on cores, weapons and small accent strips, non-core interior
+darker than lit armor, walls at most 0.11 linear (the Glasswrights 0.45: pale pearl glass insides, never dark grey, R448); full glow only on cores, weapons and small accent strips, non-core interior
 emission at most 0.25); (2) interior materials come from each faction's own role table, never from the `kit.py` diagram
 colours, with structure (bone, frame, truss) kept apart from wall and flesh finishes; (3) one identity per faction across
 hull, interior, weapons, wounds, deaths, hulks and sound; (4) the world and audio tracks (10.11, the sound plan using Godot

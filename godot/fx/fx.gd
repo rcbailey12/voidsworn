@@ -15,6 +15,8 @@ const SHIP := preload("res://fx/fx_ship.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 
+signal torpedo_shot_down(pos: Vector3)
+
 # Faction colours and styles come from data (fx/faction_looks.json via fx/faction_look.gd; API.md 15), so a faction's
 # palette can change without touching code. Styles are Claude's calls (vetoable).
 const FLOOK := preload("res://fx/faction_look.gd")
@@ -1190,8 +1192,9 @@ func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 
 	_lev.append([p, t, life, peak, col, shape, reach, false])
 
 
-func light_source(node: Node3D, off: Vector3, col: Color, base: float, flick := 0.3) -> Dictionary:
-	var s = {"node": node, "off": off, "col": col, "base": base, "flick": flick, "seed": rng.randf() * 10.0, "on": true}
+# reach: the light's range in world units over unit (0: the standing LIGHT_REACH); R416 cavity lights keep it short.
+func light_source(node: Node3D, off: Vector3, col: Color, base: float, flick := 0.3, reach := 0.0) -> Dictionary:
+	var s = {"node": node, "off": off, "col": col, "base": base, "flick": flick, "seed": rng.randf() * 10.0, "on": true, "reach": reach}
 	_lsrc.append(s)
 	return s
 
@@ -1244,7 +1247,7 @@ func _update_lights() -> void:
 		var fl = 1.0 - float(s["flick"]) * (0.5 + 0.5 * sin(now * 23.0 + float(s["seed"])) * sin(now * 7.1 + float(s["seed"]) * 2.0))
 		if reduce_flashing:
 			fl = 1.0 - float(s["flick"]) * 0.3 * (0.5 + 0.5 * sin(now * 2.0 + float(s["seed"])))
-		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"], 0.0])
+		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"], float(s.get("reach", 0.0))])
 	_lsrc = ks
 	# brightest first, nearer lights count more when the pool is short
 	for e in ev:
@@ -1502,8 +1505,21 @@ func dark_interior(source: Material) -> Material:
 
 # Issue 1077 (prototype): a strained wreck's insides, powered down and sooted (the dark copy, its colour a third as bright
 # and fully rough), so torn decks read as burnt metal in the gap, not as flat grey panels. One copy per source material.
-func wreck_interior(source: Material) -> Material:
+# R416 5.3 (issue 1741, Wounds V2 on): instead, the faction's own interior shader settled into its wreck look (sooted iron
+# for the metal factions, pale bone and wet tissue for the Chorus, frosted glass for the Glasswrights, cold obsidian for
+# Eclipse), the same shader the live breach used, so the inside reads the same from the live hole into the wreck.
+func wreck_interior(source: Material, faction := "", L := 1.0) -> Material:
 	if source == null: return source
+	if faction != "" and BREACH.v2_on():
+		# Fable review M2: the wreck look settles in over WRECK_SETTLE seconds from the death, not in one step, so the
+		# material is kept per death moment (a tenth of a second) as well as per surface, faction and length
+		var t0 := snappedf(now, 0.1)
+		var key := [source, faction, snappedf(L, 0.01), t0]
+		if not _wreck_interiors.has(key):
+			var m := HULL.interior_material_v2(source, Transform3D.IDENTITY, {}, BREACH.wound_of(faction), L, 1.0)
+			m.set_shader_parameter("fx_wreck_t0", t0)
+			_wreck_interiors[key] = m
+		return _wreck_interiors[key]
 	if not _wreck_interiors.has(source):
 		var dark: Material = (dark_interior(source) as Material).duplicate()
 		if dark is BaseMaterial3D:
@@ -2503,4 +2519,18 @@ func _warm_hull_meshes(tmp: Node3D, sh: SHIP, seen: Dictionary, hk: int) -> int:
 		pm.position = dm.position + Vector3.RIGHT * unit
 		tmp.add_child(dm)
 		tmp.add_child(pm)
+		# R416 (Wounds V2): the interior shader in this hull's vertex format, once per format, before the first breach
+		var ikey := "interior_warm_%d" % smi.mesh.surface_get_format(0) if smi.mesh.get_surface_count() > 0 else "interior_warm_none"
+		if BREACH.v2_on() and sh.hull.authored and not _warm_seen.has(ikey):
+			_warm_seen[ikey] = true
+			var im := MeshInstance3D.new()
+			im.mesh = smi.mesh
+			im.material_override = HULL.interior_material_v2(null, Transform3D.IDENTITY, {"count": -1}, BREACH.wound_of(sh.faction), sh.hull.L)
+			# kept for the battle (the shader cache is weak): freed with the stand-in, the shader was made again on the
+			# first breach and compiled late (V2B PC run, Nov 22: "late shader: interior v2")
+			_damage_templates["interior_v2_" + ikey] = im.material_override
+			im.scale = dm.scale
+			im.position = dm.position + Vector3.LEFT * unit
+			tmp.add_child(im)
+			stats["interior_warm_draws"] = int(stats.get("interior_warm_draws", 0)) + 1
 	return hk

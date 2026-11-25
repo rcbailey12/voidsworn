@@ -107,6 +107,7 @@ var wrecked := {}
 # both ships survived must not turn a later torpedo kill into a ram death). The marks are read once from the whole batch
 # when it starts (view_causes), so no playback branch (the grouped volley path skips _play_event) can miss an action.
 var _view_cause := {}      # dying unit id -> "ram" | "board", for the batch being played
+var _flag_hull_warned := false
 const VIEW_CAUSE_ACTIONS := ["fire", "move", "ram", "board", "ability", "blink", "activation", "command", "order", "tick", "round", "wing", "pulled", "burning"]
 var board: Node3D
 var cam: Camera3D
@@ -526,6 +527,7 @@ func _build_world() -> void:
 		gfx = load("res://fx/fx.gd").new()
 		gfx.name = "GFx"
 		add_child(gfx)
+		gfx.torpedo_shot_down.connect(_on_torpedo_shot_down)
 	cam = CamRig.new()
 	cam.name = "Camera"
 	add_child(cam)
@@ -539,6 +541,11 @@ func _build_world() -> void:
 	tw = Time.get_ticks_usec()
 	_build_arrow()
 	_bw_us["arrow"] = Time.get_ticks_usec() - tw
+
+
+func _on_torpedo_shot_down(pos: Vector3) -> void:
+	if sfx != null:
+		sfx.play("evt_torp_intercept", {"pos": pos})
 
 
 # the Graphics setting: max (everything but SSIL since issue 1262), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
@@ -718,6 +725,7 @@ func start_battle(run: Dictionary, cfg: Dictionary) -> void:
 
 # A battle with its rules initialized, including one handed over by the campaign.
 func begin_with(a) -> void:
+	_flag_hull_warned = false
 	if a.phase == "deployment":
 		_deployment_api = a
 		cam.keyboard_enabled = false
@@ -950,6 +958,11 @@ func _begin(a) -> void:
 	batches.append({"events": api.take_events(), "view": api.view()})
 	if not showcase:
 		sfx.ambient_start()
+		if well is Dictionary or (well is bool and well):
+			sfx.terrain_bed("evt_gravity_well")
+		var terrain: Array = (V.get("terrain", {}) as Dictionary).values()
+		if "neb" in terrain or "storm" in terrain:
+			sfx.terrain_bed("evt_nebula_bed")
 	_refresh_ui()
 	_legend()
 	# story hook (story stream, godot/story/README.md): admiral, enemy flagship and Nemesis lines in the battle log
@@ -2039,6 +2052,8 @@ func _play_batch(bt: Dictionary) -> void:
 		i += 1
 	if not arrivals.is_empty():
 		await _arrive(arrivals)
+	if not bot and not showcase and not _flag_hull_warned:
+		_flag_hull_warned = _flagship_hull_alarm(bt["view"])
 	if enemy:
 		tip_enemy_done = true
 		var ta := game_t
@@ -2088,6 +2103,22 @@ func _command_ship(e: Dictionary) -> String:
 		if spare == "" and bool(u.get("flagship", false)):
 			spare = str(id)
 	return spare
+
+
+# Warn once per battle, when the presented flagship first survives below a quarter hull.
+func _flagship_hull_alarm(view: Dictionary) -> bool:
+	if api == null or not api.has_method("unit"):
+		return false
+	for u in view.get("units", []):
+		if u["side"] != "player" or u.get("dead", false):
+			continue
+		var raw = api.unit(str(u["id"]))
+		if raw is Dictionary and _jt(raw.get("pflag")):
+			var hp := float(u.get("hp", 0.0))
+			if hp > 0.0 and hp <= 0.25 * float(u.get("maxHp", 0.0)):
+				sfx.play("evt_hull_alarm")
+				return true
+	return false
 
 
 func _side(id) -> String:
@@ -2304,7 +2335,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			await wait(200.0)
 		"ram":
 			await _play_move(e["unit"], e["path"], true)
-			sfx.boom(0.8, _pos(e["target"]))
+			sfx.play("evt_ram_impact", {"pos": _pos(e["target"]), "gain": 0.8})
 			# issue 1524 (fx/API.md 11): the approved ram look: the crumple on the target's struck section, a smaller one on
 			# the rammer's bow, the biggest shove and the zoom punch. The generic pop stays only when the fx layer drew nothing.
 			var rammed := false
@@ -2365,6 +2396,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			await wait(float(PACE["banner"]) + 140.0)
 		"command":
 			var C = _command(str(e["id"]))
+			if e["side"] == "player":
+				sfx.play("ui_command_issue")
 			_log("%s: %s!" % [_name(e["unit"]), str(C.get("n", e["id"]))], "e" if e["side"] == "enemy" else "p")
 			hud.banner(str(C.get("n", e["id"])), Color("#ff8a6a") if e["side"] == "enemy" else Color("#ff8a3a"))
 			# issue 1524 (fx/API.md 11): the flagship's command pulse under the banner
@@ -2521,6 +2554,7 @@ func _play_move(id, path: Array, charge: bool) -> void:
 			var ov := float(st.get("over", 0)) if st.get("over") != null else 0.0
 			alts.append({"s": s, "y": (9.0 if ov > 0 else -7.5) if ov != 0.0 else 0.0})
 		la = a
+	var turns_only := keys.size() == 1
 	if float(keys[-1]["s"]) < s:
 		keys.append({"s": s, "pos": keys[-1]["pos"]})
 	var t_move := game_t
@@ -2538,7 +2572,10 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	var per := lerpf(MOVE_HEX[0], MOVE_HEX[1], sk) * fk * (MOVE_SQUAD if bool(u.get("squadron", false)) else 1.0)
 	if cin:
 		per *= _escort_k(sk, MOVE_ESCORT_PACE)
-	var gsteps: Array = _glide_steps(sv, path, sk) if cin else []
+	var has_ship_sound := size > 0.3
+	# Use the same slide and back-off classification for sound even when the ship does not play the glide.
+	var gsteps: Array = _glide_steps(sv, path, sk) if cin or (has_ship_sound and not turns_only) else []
+	var jets_only := not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("thrusters", false))
 	var mv_s := s
 	if cin:
 		mv_s = 0.0
@@ -2557,7 +2594,6 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		# the glide sets its own length from its physics at this pace (cruise MOVE_CRUISE of the hex time; ramps, corners
 		# and spins add to it), capped
 		# issue 521: a move flown only on thrusters (a one-hex slide, a straight back-off) is slower and gentler than a burn
-		var jets_only: bool = not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("thrusters", false))
 		# issue 1581: the glide is told which moves are flown on thrusters (the drive stays cold) and which nose first (it
 		# rests at each corner to turn); NF_POINT and NF_TRAIL, which overlapped the turns with the burn, are gone
 		var gopts := {"mass": sk, "cap": MOVE_CAP / 1000.0 * mv_speed, "thrusters": jets_only,
@@ -2572,8 +2608,13 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		for st in path:
 			n_rot += 1 if _jt(st.get("rot")) else 0
 		print("[move] %s %s %s size %.2f hexes %d turns %d dur %.2f s, %.0f ms a hex, speed %.2f" % [str(id), _side(id), str(u.get("cls", "")), size, path.size() - n_rot, n_rot, dur * mv_speed, per * mv_speed, mv_speed])
-	if size > 0.3:
-		sfx.play("engine", {"pos": sv.visual_position(), "gain": minf(1.0, 0.55 + size * 0.6)})
+	if has_ship_sound:
+		# A slide or a turn in place uses the maneuvering jets, not a sustained drive burn.
+		if jets_only or turns_only:
+			sfx.play("puff", {"pos": sv.visual_position()})
+		else:
+			sfx.play("engine", {"pos": sv.visual_position(), "gain": minf(1.0, 0.55 + size * 0.6),
+				"duration": dur, "tag": "engine_%s" % str(id)})
 	var eng_on: bool = gfx != null and gfx.has_method("set_engine")
 	# issue 1581 item 5: Burn and fire. The guns that will fire when the hull settles start turning toward the target
 	# while it brakes, so the opening volley leaves on the beat the hull stops (the fire still follows the move: RULEBOOK
@@ -2616,6 +2657,7 @@ func _play_move(id, path: Array, charge: bool) -> void:
 			await get_tree().process_frame
 	if not is_instance_valid(sv):
 		return   # a new battle owns the board and the counters now
+	sfx.stop_tag("engine_%s" % str(id), false)
 	if eng_on:
 		gfx.set_engine(str(id), ENGINE_IDLE if cin else 1.0)
 	burns_live -= 1
@@ -7039,11 +7081,11 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 	# class line: the template name, elite captain; then the captain and perks
 	if not _jt(ru.get("isSq")):
 		info["cls"] = str(T.get("n", _class_label(u["cls"]))) + (", elite captain" if _jt(ru.get("elite")) else "")
-	var cap = ru.get("ship", {}).get("cap") if ru.get("ship") is Dictionary else null
+	var cap = u.get("captain")
 	if cap is Dictionary:
 		var ranks: Array = TBL.get("CAPTAINS", {}).get(str(cap.get("fac", "voidsworn")), TBL.get("CAPTAINS", {}).get("voidsworn", {})).get("ranks", [])
 		var rk := str(ranks[clampi(int(_z0(cap.get("rank"))), 0, ranks.size() - 1)]) if not ranks.is_empty() else ""
-		var line := "%s %s" % [rk, str(cap.get("name", ""))]
+		var line := "%s %s" % [rk, str(cap.get("full_name", ""))]
 		info["cap_name"] = line.strip_edges()
 		for pk in cap.get("perks", []):
 			var P = TBL.get("PERKS", {}).get(str(pk))
