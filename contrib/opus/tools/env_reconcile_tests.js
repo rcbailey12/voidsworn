@@ -74,7 +74,7 @@ for (const row of [
 check(has(spec, 'sampled at 0.075 cycles per unit'), 'nebula_motion_spec.md section 0 states the 0.075 sample rate');
 check(has(spec, 'plus or minus 0.025') && has(spec, '`sin(gas_time * 0.785398 + phase)`'), 'nebula_motion_spec.md section 3 states the body breathing');
 check(has(spec, 'Shipped play never sets it.'), 'nebula_motion_spec.md section 2 states the flat-rate variant is off in play');
-check(has(spec, 'a patch burst waits 2.2 to 6.5 s') && has(liv, 'burst.next = clock + rng.randf_range(2.2, 6.5)'), 'nebula_motion_spec.md section 4 states the patch burst cadence');
+check(has(spec, 'a patch burst waits 2.2 to 6.5 s') && has(liv, 'burst.next = now + rng.randf_range(2.2, 6.5)'), 'nebula_motion_spec.md section 4 states the patch burst cadence');
 check(has(spec, 'fades linearly over 0.45 s (`tick` decays by dt / 0.45)'), 'nebula_motion_spec.md section 4 states the shield-tick flare');
 check(has(rec, 'rocks 5.6, wrecks 7.6, plain path 3.9'), 'environment_reconciliation.md section 2 states the AS18 piece sizes');
 check(has(rec, 'VS_TUMBLE=periods'), 'environment_reconciliation.md states the periods capture variant');

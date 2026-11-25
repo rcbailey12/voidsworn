@@ -3,7 +3,7 @@ extends SceneTree
 #   - the board's and the battle's line colours (grid per look, move hexes, hover, threat, targets, terrain and hazard
 #     edges, solid rim) are the role table's (render/line_style.gd ROLE), not their own numbers;
 #   - every line shader carries the shared code (width by camera distance, glow and fade): the hex fill (move hex rims),
-#     the grid rings, the terrain edges, the battle's path line and the storm bolts (colours, until issue 1360);
+#     the grid rings, the terrain edges, the battle's path line and the storm bolts (colours: the old ribbon and issue 1360's baked bolts);
 #   - a shared strip is one quad of six vertices, its distance runs from just outside the line to past the glow band, and
 #     a centred half starts at the middle; core-only roles (grid, targets, hover) carry no glow.
 
@@ -44,16 +44,15 @@ func _run() -> void:
 		_check(LS.ROLE.has(same[name][1]), "%s: no role %s in the table" % [name, same[name][1]])
 		_check(same[name][0] == LS.col(same[name][1]), "%s is not the role table's %s" % [name, same[name][1]])
 	# shaders: the shared code in each
-	var shaders := {"board FILL (move hex rims)": BOARD.FILL_SHADER.code, "board RING (grid)": BOARD.RING_SHADER.code,
-		"board EDGE (terrain and hazard edges)": BOARD.EDGE_SHADER.code, "shared line (path)": LS.SHADER.code, "storm bolts": LIVING.BOLT_SHADER.code}
+	var shaders := {"board FILL (move hex rims)": BOARD.FILL_SHADER, "board RING (grid)": BOARD.RING_SHADER,
+		"board EDGE (terrain and hazard edges)": BOARD.EDGE_SHADER, "shared line (path)": LS.SHADER, "storm bolts": LIVING.BOLT_SHADER,
+		"storm bolts, baked (issue 1360)": LIVING.BOLT_FLIP_SHADER}
 	for name in shaders:
-		_check(str(shaders[name]).contains('#include "res://shaders/line_style.gdshaderinc"'), "%s does not use the shared line include" % name)
-	var shared := FileAccess.get_file_as_string("res://shaders/line_style.gdshaderinc")
-	_check(shared.contains("const float LS_CORE_W = %s;" % LS.CORE_W) and shared.contains("const float LS_GLOW_W = %s;" % LS.GLOW_W),
-		"the strip mesh and shader use the same world widths")
-	_check(BOARD.FILL_SHADER.code.contains("ls_line("), "the move hex rim does not draw through ls_line")
-	_check(BOARD.RING_SHADER.code.contains("ls_core_w(") and BOARD.RING_SHADER.code.contains("ls_dim("), "the grid does not use the shared width and fade")
-	_check(LIVING.BOLT_SHADER.code.contains("LS_BOLT_CORE") and LIVING.BOLT_SHADER.code.contains("LS_BOLT_CORONA"), "the storm bolts keep their own colours")
+		_check(str(shaders[name]).contains("const float LS_CORE_PX"), "%s does not carry the shared line code" % name)
+	_check(BOARD.FILL_SHADER.contains("ls_line("), "the move hex rim does not draw through ls_line")
+	_check(BOARD.RING_SHADER.contains("ls_core_w(") and BOARD.RING_SHADER.contains("ls_dim("), "the grid does not use the shared width and fade")
+	for code in [LIVING.BOLT_SHADER, LIVING.BOLT_FLIP_SHADER]:
+		_check(code.contains("LS_BOLT_CORE") and code.contains("LS_BOLT_SKIRT") and code.contains("LS_BOLT_CORONA"), "the storm bolts keep their own colours")
 	var src := FileAccess.get_file_as_string("res://scenes/battle/battle.gd")
 	_check(src.contains("path_line.material_override = Board.LS.material()"), "the path line does not use the shared line material")
 	# strips

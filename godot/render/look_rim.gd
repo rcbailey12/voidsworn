@@ -114,8 +114,8 @@ static func _is_soft(g: GeometryInstance3D) -> bool:
 	var mi := g as MeshInstance3D
 	if mi == null or mi.mesh == null:
 		return false
-	for i in mi.get_surface_override_material_count():
-		if _soft_mat(mi.get_surface_override_material(i)):
+	for i in mi.mesh.get_surface_count():
+		if _soft_mat(mi.get_active_material(i)):
 			return true
 	return false
 
@@ -137,8 +137,8 @@ static func _has_mark(g: GeometryInstance3D, key: String) -> bool:
 	var mi := g as MeshInstance3D
 	if mi == null or mi.mesh == null:
 		return false
-	for i in mi.get_surface_override_material_count():
-		if _mark_mat(mi.get_surface_override_material(i), key):
+	for i in mi.mesh.get_surface_count():
+		if _mark_mat(mi.get_active_material(i), key):
 			return true
 	return false
 
@@ -149,7 +149,7 @@ static func _is_hull(g: GeometryInstance3D) -> bool:
 	var mi := g as MeshInstance3D
 	if mi == null or mi.mesh == null:
 		return false
-	for i in mi.get_surface_override_material_count():
-		if _hull_mat(mi.get_surface_override_material(i)):
+	for i in mi.mesh.get_surface_count():
+		if _hull_mat(mi.get_active_material(i)):
 			return true
 	return false

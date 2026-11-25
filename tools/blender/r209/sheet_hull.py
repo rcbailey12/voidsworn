@@ -32,6 +32,10 @@ def build_geometry(hero=(), G=None):
     sp = importlib.util.spec_from_file_location(code, os.path.join(SHEETS, 'ships', code + '.py'))
     design = importlib.util.module_from_spec(sp); sp.loader.exec_module(design)
     K = variants.build(design, ship.get('game_ship')); bpy.context.view_layer.update()
+    if code.startswith('ithar_'):   # R431: no Glasswright hull exports with more bare glass than the kit allows
+        hp = importlib.util.spec_from_file_location('ithar_hull', os.path.join(SHEETS, '..', 'kits', 'ithar', 'hull.py'))
+        hm = importlib.util.module_from_spec(hp); hp.loader.exec_module(hm)
+        hm.mosaic_gate(K, code)
     rec = contract.to_recipe(K, ship); RECORD.clear(); RECORD.update(rec)
     sc = bpy.context.scene
     GUNS[:] = [tuple(g) for g in json.loads(sc['r209_guns'])]

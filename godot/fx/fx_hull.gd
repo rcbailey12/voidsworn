@@ -1,4 +1,5 @@
 extends RefCounted
+const SKEEP := preload("res://render/shader_keep.gd")
 # Where effects sit on a hull, found from the hull's own triangles (in the ship root's frame: bow +X, up +Y, port +Z).
 #
 # The triangles go into a TriangleMesh (Godot's native BVH), so a ray against the real hull costs microseconds:
@@ -10,6 +11,8 @@ extends RefCounted
 #   - impact points: a ray from the attacker toward a sample in the struck section lands on the real surface;
 #   - the attach point service (issue 370, at the end of this file): where an effect starts on the ship, from the
 #     authored hard points first (docs/ship_pipeline/HARDPOINTS.md), else a surface ray, else nowhere (skipped, counted).
+
+const SH := preload("res://fx/fx_shaders.gd")
 
 const SEC_ENG := 0
 const SEC_MID := 1
@@ -89,8 +92,30 @@ uniform bool hull_has_normal = false;
 uniform bool hull_has_orm = false;
 uniform bool hull_vertex_color = false;
 uniform bool hull_emission_multiply = false;
+// Issue 1777 (Ship Look V2): the faction micro-detail layer, the same object-space triplanar sum, multiply grain and
+// normal mix as Godot's own detail layer on the undamaged hull (render/look.gd _detail_layer), so a first hit never pops it off
+uniform bool hull_detail = false;
+uniform sampler2D hull_detail_albedo : source_color, hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D hull_detail_normal : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform vec3 hull_detail_scale = vec3(1.0);
+uniform float hull_detail_sharpness = 4.0;
+// Issue 1777: the V2 faction material channels (render/look.gd V2 "pbr"), zero when the hull has none (zero adds nothing)
+uniform float hull_aniso = 0.0;
+uniform float hull_coat = 0.0;
+uniform float hull_coat_rough = 0.3;
+uniform vec4 hull_back : source_color = vec4(0.0);
 varying vec4 hull_color_v;
-void vertex() { UV = UV * hull_uv_scale.xy + hull_uv_offset.xy; hull_color_v = COLOR; }
+varying vec3 hull_tp_pos;
+varying vec3 hull_tp_w;
+vec4 hull_triplanar(sampler2D s, vec3 w, vec3 p) {
+	return texture(s, p.xy) * w.z + texture(s, p.xz) * w.y + texture(s, p.zy * vec2(-1.0, 1.0)) * w.x;
+}
+void vertex() {
+	UV = UV * hull_uv_scale.xy + hull_uv_offset.xy; hull_color_v = COLOR;
+	hull_tp_w = pow(abs(NORMAL), vec3(hull_detail_sharpness));
+	hull_tp_w /= max(dot(hull_tp_w, vec3(1.0)), 0.0001);
+	hull_tp_pos = VERTEX * hull_detail_scale * vec3(1.0, -1.0, 1.0);
+}
 void fragment() {
 	ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;
 	if (hull_vertex_color) { ALBEDO *= hull_color_v.rgb; }
@@ -102,6 +127,16 @@ void fragment() {
 	AO_LIGHT_AFFECT = hull_ao_light;
 	RIM = hull_rim; RIM_TINT = hull_rim_tint;
 	if (hull_has_normal) { NORMAL_MAP = texture(hull_normal, UV).rgb; NORMAL_MAP_DEPTH = hull_normal_scale; }
+	if (hull_detail) {
+		vec4 dt = hull_triplanar(hull_detail_albedo, hull_tp_w, hull_tp_pos);
+		vec3 dn = hull_triplanar(hull_detail_normal, hull_tp_w, hull_tp_pos).rgb;
+		ALBEDO = mix(ALBEDO, ALBEDO * dt.rgb, dt.a);
+		NORMAL_MAP = mix(hull_has_normal ? NORMAL_MAP : vec3(0.5, 0.5, 1.0), dn, dt.a);
+		NORMAL_MAP_DEPTH = hull_normal_scale;
+	}
+	if (hull_aniso > 0.0) { ANISOTROPY = hull_aniso; ANISOTROPY_FLOW = vec2(1.0, 0.0); }
+	if (hull_coat > 0.0) { CLEARCOAT = hull_coat; CLEARCOAT_ROUGHNESS = hull_coat_rough; }
+	BACKLIGHT = hull_back.rgb;
 	vec3 em = texture(hull_emission, UV).rgb;
 	EMISSION = (hull_emission_multiply ? hull_emission_color.rgb * em : hull_emission_color.rgb + em) * hull_emission_energy;
 }
@@ -178,7 +213,7 @@ static var _shared_shaders: Dictionary[String, Shader] = {}
 # derived from this code, so it keeps the alpha.
 static func exterior_alpha_code() -> String:
 	if not _ext_codes.has("exterior_alpha"):
-		_ext_codes["exterior_alpha"] = EXTERIOR.replace("ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;",
+		_ext_codes["exterior_alpha"] = SH.patch(EXTERIOR, "ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;",
 			"ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;\n\tALPHA = hull_albedo.a * texture(hull_color, UV).a;")
 	return _ext_codes["exterior_alpha"]
 
@@ -186,6 +221,7 @@ static func exterior_alpha_code() -> String:
 # per name, with the frame and the time. A name in this list is a miss in the warm-up list. The flag is off during a
 # warm-up (a bench may warm more than once), and logging is once per name so a hot path cannot flood the log.
 static var late_watch := false
+static var late_stacks := false   # issue 1434: bench/load_1434.gd turns it on, so each late shader names its caller
 static var _late := {}   # not GPU: shader names -> frame and time
 static var _late_lines: Array = []   # not GPU: log lines
 
@@ -219,16 +255,28 @@ static func note_late(name: String) -> void:
 	var ms := Time.get_ticks_usec() / 1000.0
 	_late[name] = [frame, ms]
 	var line := "%s frame %d %.1f ms" % [name, frame, ms]
+	if late_stacks:
+		# issue 1434: name the caller (a debug build has the stack; an export prints nothing more)
+		var at := PackedStringArray()
+		for fr in get_stack().slice(1, 7):
+			at.append("%s:%d %s" % [str(fr["source"]).get_file(), int(fr["line"]), str(fr["function"])])
+		if not at.is_empty():
+			line += " from " + " < ".join(at)
 	_late_lines.append(line)
 	print("[fx] late shader: " + line)
 
 
 static func shared_shader(code: String, label := "") -> Shader:
-	var shader: Shader = _shared_shaders.get(code)
+	var shader: Shader = _shader_refs[code].get_ref() if _shader_refs.has(code) else null
+	if shader == null and SKEEP.has(code):
+		# issue 1434: kept for the session (render/shader_keep.gd), so a later battle or the title does not compile it again
+		shader = SKEEP.get_kept(code)
+		_shader_refs[code] = weakref(shader)
 	if shader == null:
 		shader = Shader.new()
 		shader.code = code
-		_shared_shaders[code] = shader
+		_shader_refs[code] = weakref(shader)
+		SKEEP.keep(code, shader)
 		note_late(label if label != "" else "hull shader " + str(code.hash()))
 	return shader
 
@@ -393,6 +441,19 @@ static func _exterior(src: Material) -> ShaderMaterial:
 		["ao_light", m.ao_light_affect], ["emission_multiply", m.emission_operator == BaseMaterial3D.EMISSION_OP_MULTIPLY]]:
 		mat.set_shader_parameter("hull_" + pair[0], pair[1])
 	mat.set_shader_parameter("hull_emission_color", m.emission if m.emission_enabled else Color.BLACK)
+	if m.detail_enabled and m.uv2_triplanar and m.detail_albedo != null and m.detail_normal != null:   # issue 1777
+		mat.set_shader_parameter("hull_detail", true)
+		mat.set_shader_parameter("hull_detail_albedo", m.detail_albedo)
+		mat.set_shader_parameter("hull_detail_normal", m.detail_normal)
+		mat.set_shader_parameter("hull_detail_scale", m.uv2_scale)
+		mat.set_shader_parameter("hull_detail_sharpness", m.uv2_triplanar_sharpness)
+	if m.anisotropy_enabled: mat.set_shader_parameter("hull_aniso", m.anisotropy)
+	if m.clearcoat_enabled:
+		mat.set_shader_parameter("hull_coat", m.clearcoat)
+		mat.set_shader_parameter("hull_coat_rough", m.clearcoat_roughness)
+	# subsurface scattering is not mirrored (small at 0.25, and the burnt pass sets its own); a wounded Chorus keeps its
+	# backlight and coat
+	if m.backlight_enabled: mat.set_shader_parameter("hull_back", m.backlight)
 	mat.set_shader_parameter("hull_emission_energy", m.emission_energy_multiplier)
 	var textures := {"color": BaseMaterial3D.TEXTURE_ALBEDO, "normal": BaseMaterial3D.TEXTURE_NORMAL,
 		"orm": BaseMaterial3D.TEXTURE_ORM, "rough": BaseMaterial3D.TEXTURE_ROUGHNESS,
@@ -581,6 +642,9 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	# arriving A16 spent about 270 ms here on the PC. Read only after this; each ship keeps its own samples and points.
 	var geo_key: String = _geo_key(root, meshes) if shared is Dictionary else ""
 	var geo = (shared as Dictionary).get(geo_key) if geo_key != "" else null
+	if geo == null and geo_key != "":
+		geo = build_geo(root, meshes)   # issue 1434: a sliced load builds it a frame earlier (prime), so this is a hit
+		shared[geo_key] = geo
 	var faces: PackedVector3Array
 	if geo is Dictionary:
 		faces = geo["faces"]
@@ -600,16 +664,6 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 			tm.create_from_faces(faces)
 		else:
 			tm = null
-		if geo_key != "":
-			var keep: Array = []
-			for r in bvh_ranges:
-				var e: Dictionary = r.duplicate()
-				e["mi_index"] = meshes.find(r["mi"])
-				e.erase("mi")
-				e.erase("paint")
-				keep.append(e)
-			geo = {"faces": faces, "tm": tm, "ranges": keep}
-			shared[geo_key] = geo
 	tri_count = faces.size() / 3
 	_samples(900)
 	_find_bow()
@@ -635,12 +689,41 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 			geo["turrets"] = reach
 
 
+# The shared geometry entry for one hull pose: its triangles, the hit BVH and the per-surface ranges (meshes by index).
+static func build_geo(root: Node3D, meshes: Array) -> Dictionary:
+	var ranges: Array = []
+	var faces := faces_of(root, meshes, ranges)
+	var tm2: TriangleMesh = TriangleMesh.new()
+	if faces.size() >= 3:
+		tm2.create_from_faces(faces)
+	else:
+		tm2 = null
+	var keep: Array = []
+	for r in ranges:
+		var e: Dictionary = r.duplicate()
+		e["mi_index"] = meshes.find(r["mi"])
+		e.erase("mi")
+		e.erase("paint")
+		keep.append(e)
+	return {"faces": faces, "tm": tm2, "ranges": keep}
+
+
+# Issue 1434: the sliced battle load builds a new hull's geometry in its own frame before the ship's effects are
+# registered (on the PC a first hull's analyse took 100 to 450 ms, most of it here). True when it built one.
+static func prime(root: Node3D, meshes: Array, shared: Dictionary) -> bool:
+	var key := _geo_key(root, meshes)
+	if key == "" or shared.has(key):
+		return false
+	shared[key] = build_geo(root, meshes)
+	return true
+
+
 var shared = null   # issue 1289: the battle's per-hull geometry (fx.hull_shared), or null to analyse alone
 
 
 # The hull's geometry and pose: each mesh resource and its frame in the ship's root. Same key, same triangles.
 # The frames are composed from local transforms (not world ones), so the key does not depend on where the ship stands.
-func _geo_key(root: Node3D, meshes: Array) -> String:
+static func _geo_key(root: Node3D, meshes: Array) -> String:
 	var parts := PackedStringArray()
 	for m in meshes:
 		var mi := m as MeshInstance3D
@@ -1849,9 +1932,9 @@ func _read_doors(root: Node3D) -> void:
 			"deg": float(ex.get("open_deg", -100.0)), "lobes": lobes, "wins": [], "f": 0.0})
 
 
-# The door a node hangs under (its nearest door ancestor below the root), or -1: a lobe turns, so the damage never rides it.
+# The door a node belongs to (itself or its nearest door ancestor below the root), or -1.
 func _door_above(n: Node, root: Node) -> int:
-	var p := n.get_parent()
+	var p := n
 	while p != null and p != root:
 		if _door_of.has(p.get_instance_id()):
 			return int(_door_of[p.get_instance_id()])

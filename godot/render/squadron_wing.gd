@@ -1,8 +1,10 @@
 extends Node3D
+const SKEEP := preload("res://render/shader_keep.gd")
 # Local flight stays around the wing's anchor. Only ShipView moves the rules unit.
 # Each ribbon samples its own craft's stern in world space, including turns.
 const CRAFT := preload("res://render/squadron_craft.gd")
 const LOOK := preload("res://fx/faction_look.gd")
+const SHADER_CACHE := preload("res://render/shader_cache.gd")
 static var ship_manifest_path := "res://assets/ships/manifest.json"
 static var ship_cache_dir := "res://gen/ships"
 static var _model_codes: Dictionary = {}   # not GPU: model code strings
@@ -51,12 +53,18 @@ var _stern := Vector3(-0.47, 0.0, 0.0)
 # not every frame. Same maths as the old per-frame GDScript build.
 const TRAIL := preload("res://shaders/squadron_trail.gdshader")
 
+# issue 1434 (Artoo on PR 1445): setup's main-thread time by stage in microseconds (load, instance, finish, copies), copied
+# into ShipView.stage_us for the load bench
+var stage_us := {}
+
+
 func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0) -> void:
+	stage_us = {}
 	faction = fac
 	length = size
 	phase = seed_value
 	trail_mat = ShaderMaterial.new()
-	trail_mat.shader = TRAIL
+	trail_mat.shader = SHADER_CACHE.for_code(TRAIL)
 	trail_mat.set_shader_parameter("trail_len", size)
 	# Ryan (Nov 20 2026, issue 1373): the long wide Chorus wake made each spore read as a tadpole ("comes off looking like
 	# sperm"); a spore now leaves only a short faint shimmer that is gone within a craft length or two
@@ -66,8 +74,13 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	trail_mat.set_shader_parameter("life", trail_life)
 	if count <= 0:
 		return
+	var t_make := Time.get_ticks_usec()
 	var lead := _make_craft(fac, kind)
+	var t_fin := Time.get_ticks_usec()
 	finish(lead, fac)
+	stage_us["wing_finish"] = Time.get_ticks_usec() - t_fin
+	stage_us["wing_make"] = t_fin - t_make
+	var t_copies := Time.get_ticks_usec()
 	for i in count:
 		var n: Node3D = lead if i == 0 else lead.duplicate()
 		add_child(n)
@@ -83,6 +96,7 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 		add_child(ribbon)
 		ribbon.global_transform = Transform3D.IDENTITY
 		trails.append({"node": ribbon, "hist": []})
+	stage_us["wing_copies"] = Time.get_ticks_usec() - t_copies
 	fit_formation()
 	_patrol_blend = patrol_target
 	step(0.0)
@@ -141,15 +155,26 @@ static func _model_code(fac: String, kind: String) -> String:
 const CRAFT_K := {"corsair_KF1": 0.7}
 
 
+# the installed model scene for this faction and role, or "" (the procedural craft); issue 1434: the battle preloads it
+static func model_res(fac: String, kind: String) -> String:
+	var code := _model_code(fac, kind)
+	var path := ship_cache_dir.path_join(code + ".scn")
+	return path if not code.is_empty() and ResourceLoader.exists(path, "PackedScene") else ""
+
+
 func _make_craft(fac: String, kind: String) -> Node3D:
 	var code := _model_code(fac, kind)
 	var path := ship_cache_dir.path_join(code + ".scn")
 	if code.is_empty() or not ResourceLoader.exists(path, "PackedScene"):
 		return CRAFT.make(fac, kind)
+	var t_load := Time.get_ticks_usec()
 	_model_scene = ResourceLoader.load(path, "PackedScene") as PackedScene
+	stage_us["wing_load"] = Time.get_ticks_usec() - t_load
 	if _model_scene == null:
 		return CRAFT.make(fac, kind)
+	var t_inst := Time.get_ticks_usec()
 	var model := _model_scene.instantiate()
+	stage_us["wing_inst"] = Time.get_ticks_usec() - t_inst
 	if not model is Node3D:
 		model.free()
 		return CRAFT.make(fac, kind)
@@ -351,9 +376,13 @@ func _patrol_attitude(i: int, pos: Vector3) -> Quaternion:
 func _process(dt: float) -> void:
 	step(dt)
 
+
+# Battle wings are stepped by ShipView and attack runs by FX, both in effect seconds.
 func step(dt: float) -> void:
 	clock += dt
 	sample_t += dt
+	# Issue 1467: cap the pose correction on a slow frame. Weave and trail age keep the full effect time.
+	var pose_dt := minf(dt, 1.0 / 30.0)
 	var sample := sample_t >= 1.0 / 30.0
 	if sample: sample_t = 0.0
 	trail_mat.set_shader_parameter("clock_now", clock)
@@ -376,12 +405,12 @@ func step(dt: float) -> void:
 				pos = pos.lerp(parked, gain)
 				attitude = attitude.slerp(_patrol_attitude(i, parked), gain)
 				# Filter the hand-off when a craft turns through the travel pose's back side.
-				if dt > 0.0:
+				if pose_dt > 0.0:
 					var last := _attitudes[i]
-					var weight := 1.0 - exp(-24.0 * dt)
+					var weight := 1.0 - exp(-24.0 * pose_dt)
 					if gain < 1.0:
 						var turn := 2.0 * acos(clampf(absf(last.dot(attitude)), 0.0, 1.0))
-						weight = minf(weight, 12.0 * dt / maxf(turn, 0.001))
+						weight = minf(weight, 12.0 * pose_dt / maxf(turn, 0.001))
 					attitude = last.slerp(attitude, weight).normalized()
 				facing = Basis(attitude)
 			if _patrol_span > 0.0:

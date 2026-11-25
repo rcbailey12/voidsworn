@@ -1,4 +1,5 @@
 extends Node3D
+const SKEEP := preload("res://render/shader_keep.gd")
 # The battle world (API in godot/fx/API.md section 9). F4 feel pass rebuild (Ryan, Nov 1: "Background asteroids and
 # imagery still needs a serious upgrade"), to the grand space-opera bar:
 #   - the setting (world_sky.gd): the sector's region of space and the enemy faction pick the sky and the planet, so the
@@ -38,6 +39,7 @@ var setting := {}
 var nebula_wake := false   # issue 1079 prototype, off by default (world_living.gd, nebula_wake.gd)
 var _spin: Array = []        # [node, axis, rate]
 var _well := Vector3.INF
+var _well_radius := 0.0
 var _rng := RandomNumberGenerator.new()
 var _planet_dir := Vector3.ZERO
 var _planet_ang := 0.0
@@ -54,6 +56,7 @@ var _sky_mat: ShaderMaterial = null
 var _look := {}
 var _mats := {}
 var _batch = null
+var _scorched_rocks_left := 0
 var _center := Vector3.ZERO
 var _lo := Vector3.ZERO
 var _hi := Vector3.ZERO
@@ -87,6 +90,9 @@ var _dawn_to := 0.0
 var _disc_mats: Array = []      # [{mat, key, gain}] the Hollow Sun's disc, haze and lens, for the dawn ramp
 var _disc_light: OmniLight3D = null
 var pending_bakes := 0
+# Issue 1434: the battle's sliced load sets this for build(), which then yields a frame between its big steps (and the
+# living terrain's); every other caller leaves it off and build() runs straight through in one call, as before.
+var slice_yield := false
 
 
 # A sector's map and battles use the same inputs, including rival encounters and
@@ -122,7 +128,8 @@ func prepare_sector(env: Environment, run: Dictionary, q: String) -> void:
 func surface_material(sun: Vector3) -> ShaderMaterial:
 	var P: Dictionary = setting["planet"]
 	var m := ShaderMaterial.new()
-	m.shader = PL.SPHERE
+	var sh: Shader = SKEEP.of(PL.SPHERE)   # issue 1434: one compiled shader per code
+	m.shader = sh
 	m.set_shader_parameter("sun", sun)
 	m.set_shader_parameter("atmo", P["atmo"])
 	m.set_shader_parameter("flat_col", P["a"])
@@ -140,7 +147,8 @@ func _planet_size() -> Vector2i:
 func wait_ready() -> void:
 	# Hard cap (Opus review, Nov 3): a bake that never finishes must never hold the loading cover.
 	var t0 := Time.get_ticks_msec()
-	while pending_bakes > 0 and Time.get_ticks_msec() - t0 < 20000: await get_tree().process_frame
+	while is_inside_tree() and pending_bakes > 0 and Time.get_ticks_msec() - t0 < 20000:
+		await get_tree().process_frame
 
 
 func _sky_into(m: ShaderMaterial) -> void:
@@ -155,7 +163,13 @@ func well_position() -> Vector3:
 	return _well
 
 
+func well_radius() -> float:
+	return _well_radius
+
+
 func step(dt: float) -> void:
+	if _batch != null:
+		_batch.step(dt)
 	for s in _spin:
 		var n: Node3D = s[0]
 		if is_instance_valid(n):
@@ -163,6 +177,9 @@ func step(dt: float) -> void:
 
 
 # ---------------------------------------------------------------- battle build (API.md 9)
+
+var load_step := ""   # issue 1434: where build() is, for the frame log before a close
+
 
 func build(view: Dictionary, opts: Dictionary) -> void:
 	var t0 := Time.get_ticks_usec()
@@ -226,6 +243,11 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		_pano = (env.sky.sky_material as ShaderMaterial).get_shader_parameter("pano")
 	if env != null:
 		_make_sky(env)
+	load_step = "sky done"   # issue 1434: for the frame log before a close (main.gd)
+	if slice_yield:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	if deadstar:
 		var ds: Dictionary = map["deadstar"]
 		dead_star(hw.call(int(ds["q"]), int(ds["r"])) + Vector3(0, -10, 0), 1.0)
@@ -237,7 +259,13 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		_look["rim_pos"] = _well
 	if not deadstar:
 		system(mk != "planet")
+	load_step = "system done"   # issue 1434: for the frame log before a close (main.gd)
+	if slice_yield:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	_batch = WR.Batch.new()
+	_scorched_rocks_left = 8 if LOOK.post_fx_enabled("DECALS") else 0
 	var rock_kind := String(setting["rock"])
 	var counts := {"rock": 0, "debris": 0, "neb": 0, "storm": 0}
 	var clouds := {"neb": [], "storm": []}
@@ -258,12 +286,32 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	for t in clouds:
 		if not (clouds[t] as Array).is_empty():
 			cloud_hexes(clouds[t], t, fac)
+	load_step = "terrain done"   # issue 1434: for the frame log before a close (main.gd)
+	if slice_yield:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	fields(mk, rock_kind)
+	load_step = "fields done"   # issue 1434: for the frame log before a close (main.gd)
+	if slice_yield:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	_report_backdrop_scale()
 	var n_rocks: int = _batch.build(self, Callable(WR, "mesh"))
+	load_step = "rocks done"   # issue 1434: for the frame log before a close (main.gd)
+	if slice_yield:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	dust(mk)
 	wisps()
 	underlay()
+	load_step = "dust done"   # issue 1434: for the frame log before a close (main.gd)
+	if slice_yield:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	notes.append("setting: %s region, %s map, %s rock, planet %d (%s), sky for %s" % [setting["region"], mk, rock_kind, int(setting["planet_i"]),
 		["gas giant", "ice giant", "terran", "volcanic", "barren", "ice world"][int(setting["planet"]["kind"])], str(setting["fac"])])
 	notes.append("rocks: %d in all (%d rock hexes, %d debris hexes); clouds on %d nebula and %d storm hexes; built in %.0f ms" % [n_rocks,
@@ -271,7 +319,9 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	_rock_kind = rock_kind
 	_fac = fac
 	add_to_group("vs_world")
-	set_look()
+	load_step = "look"
+	await set_look()
+	load_step = ""
 	if finale:
 		_build_dawn(env)
 
@@ -293,7 +343,7 @@ func set_look() -> void:
 		_living = LIV.new()
 		_living.name = "Living"
 		add_child(_living)
-		_living.build(self)
+		await _living.build(self)
 		if not _debris_ships.is_empty(): _living.use_ship_debris(_debris_ships)
 		notes.append("living terrain built in %.0f ms" % ((Time.get_ticks_usec() - t0) / 1000.0))
 	if _living != null:
@@ -455,7 +505,8 @@ func build_gallery(env: Environment, cam: Camera3D, opts: Dictionary) -> void:
 
 func _make_sky(env: Environment) -> void:
 	var m := ShaderMaterial.new()
-	m.shader = SKY.SKY
+	var sh: Shader = SKEEP.of(SKY.SKY)   # issue 1434: one compiled shader per code
+	m.shader = sh
 	var lamps: Array = SKY.lamps(SKY.bake_view(setting))   # issue 1272: bake inputs stay the sector's own
 	var lc: Array = []
 	var lr := RandomNumberGenerator.new()
@@ -477,6 +528,7 @@ func _make_sky(env: Environment) -> void:
 	m.set_shader_parameter("sun_dir", SUN.normalized())
 	if LOOK.fleet_lighting_enabled():
 		m.set_shader_parameter("fleet_reflections", true)
+		m.set_shader_parameter("fleet_reflections_v2", LOOK.ship_look_v2_enabled())   # issue 1777: the extra lobes
 		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	m.set_shader_parameter("turn", Basis(Vector3.UP, -_yaw))
 	# the panorama always rides on the sky material (shown only on the dead-star board): the battle keeps one Environment
@@ -490,15 +542,14 @@ func _make_sky(env: Environment) -> void:
 		if _pano != null:
 			m.set_shader_parameter("has_pano", 1.0)
 			m.set_shader_parameter("neb_gain", 0.55)
-	var h := float(ProjectSettings.get_setting("display/window/size/viewport_height", 1080))
-	if is_inside_tree():
-		h = maxf(h, float(get_viewport().get_visible_rect().size.y))
-	m.set_shader_parameter("px", deg_to_rad(45.0) / h)
 	var s := Sky.new()
 	s.sky_material = m
 	s.radiance_size = Sky.RADIANCE_SIZE_256
-	s.process_mode = Sky.PROCESS_MODE_QUALITY
+	# issue 1434 (LOAD33c): the same importance-sampled radiance as QUALITY, spread over a few frames (the roughness
+	# layers) instead of all in the one frame the sky or its nebula map changes; the finished reflections are the same
+	s.process_mode = Sky.PROCESS_MODE_INCREMENTAL
 	env.sky = s
+	SKEEP.event("world sky made")
 	env.background_mode = Environment.BG_SKY
 	_sky_mat = m
 	_bake_sky(lamps)
@@ -521,11 +572,13 @@ func _load_sky(lamps: Array) -> void:
 		"band_n": bs["band_n"], "feature": bs["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
 		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(bs))}
 	var code := SKY.bake_code()
-	var img: Image = await _baker.bake(key, code, params, size, 32, false, false, true)
-	if img == null or _sky_mat == null: return
+	var mat := _sky_mat
+	var img: Image = await _baker.bake(key, code, params, size, 32)
+	if not is_inside_tree() or img == null or not is_instance_valid(mat) or mat != _sky_mat: return
 	var tex := BAKER.texture(img)
-	_sky_mat.set_shader_parameter("neb_tex", tex)
-	_sky_mat.set_shader_parameter("has_neb", 1.0)
+	mat.set_shader_parameter("neb_tex", tex)
+	SKEEP.event("sky nebula map set (%dx%d)" % [img.get_width(), img.get_height()])
+	mat.set_shader_parameter("has_neb", 1.0)
 	_sky_tex = tex
 	for k in _mats: _sky_into(_mats[k])
 
@@ -632,7 +685,8 @@ func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int
 	sm.rings = 64 if main else 24
 	mi.mesh = sm
 	var m := ShaderMaterial.new()
-	m.shader = PL.SPHERE
+	var sh: Shader = SKEEP.of(PL.SPHERE)   # issue 1434: one compiled shader per code
+	m.shader = sh
 	m.set_shader_parameter("flat_col", (P["a"] as Vector3) * 0.6)
 	m.set_shader_parameter("sun", _body_sun(pos))
 	var atmo: Vector3 = P.get("atmo", Vector3.ZERO)
@@ -659,7 +713,8 @@ func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int
 		sm2.rings = 48
 		sh2.mesh = sm2
 		var am := ShaderMaterial.new()
-		am.shader = PL.ATMO
+		var ash: Shader = SKEEP.of(PL.ATMO)   # issue 1434: one compiled shader per code
+		am.shader = ash
 		am.set_shader_parameter("atmo", atmo)
 		am.set_shader_parameter("sun", _body_sun(pos))
 		am.set_shader_parameter("shell", 1.035)
@@ -685,21 +740,23 @@ func _bake_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int,
 func _load_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int, size: Vector2i) -> void:
 	var params := {"seed": float(bake_seed % 997) * 0.71, "kind": int(P["kind"]), "ca": P["a"], "cb": P["b"], "cc": P["c"], "pass_id": 0}
 	var code := PL.bake_code()
-	var a: Image = await _baker.bake(key + "|a", code, params, size, 16, false, false, true)
-	if a == null: return
+	var a: Image = await _baker.bake(key + "|a", code, params, size, 16)
+	if not is_inside_tree() or a == null or not is_instance_valid(m) or not is_instance_valid(_baker): return
 	params["pass_id"] = 1
 	var b: Image = await _baker.bake(key + "|b", code, params, size, 16)
-	if b == null: return
+	if not is_inside_tree() or b == null or not is_instance_valid(m): return
 	m.set_shader_parameter("tex_a", BAKER.texture(a))
 	m.set_shader_parameter("tex_b", BAKER.texture(b))
 	m.set_shader_parameter("has_tex", 1.0)
+	SKEEP.event("backdrop planet maps set")
 
 
 func _rings(pos: Vector3, R: float, basis: Basis, P: Dictionary, r: RandomNumberGenerator) -> void:
 	var mi := MeshInstance3D.new()
 	mi.mesh = _annulus(1.3, 2.3, 256, 1)
 	var m := ShaderMaterial.new()
-	m.shader = PL.RING
+	var sh: Shader = SKEEP.of(PL.RING)   # issue 1434: one compiled shader per code
+	m.shader = sh
 	m.set_shader_parameter("sun", _body_sun(pos))
 	m.set_shader_parameter("col_a", (P["c"] as Vector3) * 0.9)
 	m.set_shader_parameter("col_b", (P["b"] as Vector3) * 1.2)
@@ -722,6 +779,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	root.position = c
 	add_child(root)
 	var Rsh := 15.0 * s
+	_well_radius = Rsh
 	# the black core (writes depth: ships behind it are hidden, as they would be)
 	var core := MeshInstance3D.new()
 	var sm := SphereMesh.new()
@@ -741,7 +799,8 @@ func dead_star(c: Vector3, s: float) -> void:
 	var disc := MeshInstance3D.new()
 	disc.mesh = _annulus(Rsh * 1.2, Rsh * 3.8, 192, 16)
 	var dm := ShaderMaterial.new()
-	dm.shader = WS.DISC
+	var dsh: Shader = SKEEP.of(WS.DISC)   # issue 1434: one compiled shader per code
+	dm.shader = dsh
 	dm.set_shader_parameter("r_in", Rsh * 1.2)
 	dm.set_shader_parameter("r_out", Rsh * 3.8)
 	dm.set_shader_parameter("spin", 0.35)
@@ -755,7 +814,8 @@ func dead_star(c: Vector3, s: float) -> void:
 	var disc2 := MeshInstance3D.new()
 	disc2.mesh = disc.mesh
 	var dm2 := ShaderMaterial.new()
-	dm2.shader = WS.DISC_SOFT
+	var dsh2: Shader = SKEEP.of(WS.disc_soft())   # issue 1434: one compiled shader per code
+	dm2.shader = dsh2
 	for pn in ["r_in", "r_out", "spin", "gain"]:
 		dm2.set_shader_parameter(pn, dm.get_shader_parameter(pn))
 	_disc_mats.append({"mat": dm2, "key": "gain", "gain": 0.62})
@@ -765,6 +825,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	tilt.add_child(disc2)
 	# r18: thin glowing haze just above and below the disc, so it has thickness up close (Muse audit B4.5)
 	if quality != "low":
+		var hsh: Shader = SKEEP.of(WS.DISC_HAZE)   # issue 1434: one compiled shader per code
 		for k in 2:
 			var hz := MeshInstance3D.new()
 			hz.mesh = _annulus(Rsh * 1.15, Rsh * 4.2, 128, 10)
@@ -785,7 +846,8 @@ func dead_star(c: Vector3, s: float) -> void:
 		qm.size = Vector2(1, 1)
 		lens.mesh = qm
 		var lm := ShaderMaterial.new()
-		lm.shader = WS.LENS
+		var lsh: Shader = SKEEP.of(WS.LENS)   # issue 1434: one compiled shader per code
+		lm.shader = lsh
 		var half := Rsh * 5.0
 		lm.set_shader_parameter("r_shadow", Rsh * 1.0 / half)
 		lm.set_shader_parameter("r_einstein", Rsh * 1.6 / half)
@@ -899,8 +961,11 @@ func blocker(p: Vector3, kind: String) -> void:
 	var s := _rng.randf_range(BLOCKER_SCALE_MIN, BLOCKER_SCALE_MAX)
 	var b := _rand_basis(_rng)
 	var crystal := kind == "crystal"
+	var scorch := _scorched_rocks_left > 0
+	if scorch:
+		_scorched_rocks_left -= 1
 	_batch.add(name, mat, true, Transform3D(b.scaled(Vector3.ONE * s), p + Vector3(0, _rng.randf_range(0.5, 2.5), 0)),
-		_rand_axis(_rng), 0.0 if crystal else _rng.randf_range(0.004, 0.012), _rng.randf())
+		_rand_axis(_rng), 0.0 if crystal else _rng.randf_range(0.004, 0.012), _rng.randf(), scorch)
 	for i in _rng.randi_range(2, 4):
 		var a := _rng.randf() * TAU
 		var rr := _rng.randf_range(4.5, 6.2)
@@ -1213,7 +1278,8 @@ func wisps() -> void:
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	m.shader = WISP_SHADER
+	var sh: Shader = SKEEP.of(WISP_SHADER)   # issue 1434: one compiled shader per code
+	m.shader = sh
 	m.set_shader_parameter("noise", _wisp_noise())
 	m.set_shader_parameter("c_a", setting["c1"])
 	m.set_shader_parameter("c_b", setting["c2"])
@@ -1272,7 +1338,8 @@ func underlay() -> void:
 	pm.size = Vector2(ext.x * 2.0 + 260.0, ext.z * 2.0 + 260.0)
 	mi.mesh = pm
 	var m := ShaderMaterial.new()
-	m.shader = UNDERLAY_SHADER
+	var sh: Shader = SKEEP.of(UNDERLAY_SHADER)   # issue 1434: one compiled shader per code
+	m.shader = sh
 	m.set_shader_parameter("half_ext", Vector2(ext.x + 10.0, ext.z + 10.0))
 	m.set_shader_parameter("centre", _center)
 	# a hint of the setting's own colour, so it reads as deep space and not a black sheet
@@ -1298,7 +1365,32 @@ func underlay() -> void:
 
 const CLOUD_SHADER := preload("res://shaders/world_cloud.gdshader")
 
-const DUST_SHADER := preload("res://shaders/world_dust.gdshader")
+const DUST_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform vec3 col = vec3(0.6, 0.58, 0.55);
+const float px_1080 = """ + SKY.ANGULAR_PIXEL_1080 + """;
+varying float vA;
+varying vec2 vQ;
+void vertex() {
+	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
+	float size = INSTANCE_CUSTOM.x;
+	float depth = max(-c.z, 1.0);
+	float fr = VIEWPORT_SIZE.y / 1080.0;
+	float px = px_1080 / fr;
+	float mins = depth * (px * fr) * 1.6;
+	float s = max(size, mins);
+	float k = clamp(size / mins, 0.0, 1.0);
+	vA = k * k * INSTANCE_CUSTOM.y * smoothstep(1600.0, 600.0, depth);
+	vQ = VERTEX.xy * 2.0;
+	c.xy += VERTEX.xy * s;
+	POSITION = PROJECTION_MATRIX * c;
+}
+void fragment() {
+	float r = length(vQ);
+	ALBEDO = col * exp(-r * r * 4.0) * vA;
+}
+"""
 
 
 func _quad_mm(n: int) -> MultiMesh:
@@ -1327,7 +1419,8 @@ func cloud_hexes(ps: Array, t: String, fac: String) -> void:
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	m.shader = CLOUD_SHADER
+	var sh: Shader = SKEEP.of(CLOUD_SHADER.replace("%NOISE%", WS.NOISE))   # issue 1434: one compiled shader per code
+	m.shader = sh
 	var b: Array = FLOOK.of(fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
 	if t == "storm":
 		m.set_shader_parameter("c_dark", Vector3(0.008, 0.004, 0.018))
@@ -1370,16 +1463,18 @@ func dust(mk: String) -> void:
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	m.shader = DUST_SHADER
+	var sh: Shader = SKEEP.of(DUST_SHADER)   # issue 1434: one compiled shader per code
+	m.shader = sh
 	m.set_shader_parameter("col", Vector3(0.55, 0.52, 0.48).lerp(setting.get("c1", Vector3(0.5, 0.5, 0.5)), 0.25) * 0.9)
-	var h := float(ProjectSettings.get_setting("display/window/size/viewport_height", 1080))
-	if is_inside_tree():
-		h = maxf(h, float(get_viewport().get_visible_rect().size.y))
-	m.set_shader_parameter("px", deg_to_rad(45.0) / h)
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.extra_cull_margin = 100.0
 	add_child(mi)
+
+
+# issue 1434: true while the board's hull-debris chunks are still being cut (world_living.gd debris_pending)
+func ship_debris_pending() -> bool:
+	return _living != null and is_instance_valid(_living) and _living.debris_pending()
 
 
 # ShipView scenes are already loaded by the battle; no asset path or GLB import.

@@ -8,12 +8,18 @@ extends Node
 #                            battles) with both sides on AI; prints one JSON line per run and a summary, and writes
 #                            --report <file> (JSON). --fast K speeds the clock K times (default 40).
 
-const BattleScene := preload("res://scenes/battle/battle.tscn")
+# issue 1518 (LOAD29 warm: a close 5 s after launch was seen only after 7.7 s, before the game's first frame): the
+# battle scene and the campaign host are not preloaded with this script, since compiling them held the window unanswered
+# at the start; the battle scene is read on a worker after launch (_battle_packed) and the host is loaded when needed
+const BATTLE_SCENE := "res://scenes/battle/battle.tscn"
+const BATTLE_SCRIPT := "res://scenes/battle/battle.gd"
+const HOST_SCRIPT := "res://main/campaign_host.gd"
+const Sfx := preload("res://audio/sfx.gd")   # light: its sound prefetch at launch
 const Title := preload("res://main/title.gd")
-const Host := preload("res://main/campaign_host.gd")
 const OrdersKit := preload("res://ui/theme/orders_kit.gd")
 const CAMPAIGN_SCRIPT := "res://campaign/campaign.gd"
 const SETTINGS_PATH := "user://settings.json"
+const WORLD_BAKE := preload("res://world/world_bake.gd")   # issue 1434: bakes handed back, for the close frame log
 
 signal battle_done(result: Dictionary)
 
@@ -34,6 +40,51 @@ var quitting := false
 var quit_route := ""   # what started the quit ("menu" or "window"), for logs and the quit route check
 
 
+# issue 1434 (LOAD13 cold title_load_5s: the window hid 5.2 s after the close): the last frames before a close, each
+# with what was loading, so a close that waited on one long frame names it. A few numbers a frame, kept for 8 frames.
+var _frame_t := 0
+var _frames: Array = []
+# issue 1434 (LOAD17 cold title_load_5s: one 5.35 s frame, cause not split): the renderer's draw time since the last
+# _process (frame_pre_draw to frame_post_draw), and the world bakes handed back meanwhile, kept with each frame
+var _draw_pre := 0
+var _draw_acc := 0
+
+
+func _on_frame_pre_draw() -> void:
+	_draw_pre = Time.get_ticks_usec()
+
+
+func _on_frame_post_draw() -> void:
+	if _draw_pre > 0:
+		_draw_acc += Time.get_ticks_usec() - _draw_pre
+	_draw_pre = 0
+
+
+func _frame_parts() -> String:
+	var parts := "draw %d ms" % (_draw_acc / 1000)
+	_draw_acc = 0
+	var back: String = WORLD_BAKE.take_handed_back()
+	return parts + (", bake handed back " + back if back != "" else "")
+
+
+func _process(_dt: float) -> void:
+	var now := Time.get_ticks_usec()
+	if _frame_t > 0:
+		var parts := _frame_parts()
+		var what := ""
+		if battle != null and is_instance_valid(battle) and battle.get("warming") == true:
+			what += "battle " + str(battle.get("load_phase"))
+		elif showcase != null and is_instance_valid(showcase) and showcase.get("showcase_ready") == false:
+			what += "backdrop " + str(showcase.get("load_phase"))
+			var w = showcase.get("world")
+			if w != null and is_instance_valid(w) and str(w.get("load_step")) != "":
+				what += ", world " + str(w.get("load_step"))
+		_frames.append("%d ms (%s; %s)" % [(now - _frame_t) / 1000, what if what != "" else "-", parts])
+		if _frames.size() > 8:
+			_frames.pop_front()
+	_frame_t = now
+
+
 func quit_clean(code := 0, route := "menu") -> void:
 	if quitting:
 		return
@@ -41,18 +92,48 @@ func quit_clean(code := 0, route := "menu") -> void:
 	quit_route = route
 	var t0 := Time.get_ticks_msec()
 	print("[main] quit (%s) at %d ms" % [route, t0])
+	if _frame_t > 0:
+		_frames.append("%d ms so far (this frame; %s)" % [(Time.get_ticks_usec() - _frame_t) / 1000, _frame_parts()])
+	print("[main] frames before the close, oldest first: %s" % ", ".join(_frames))
+	# issue 1518 (Artoo on PR 1445): what was loading when the close came, so a close timed "during a load" is proven
+	var loading := PackedStringArray()
+	if battle != null and is_instance_valid(battle) and battle.get("warming") == true:
+		loading.append("battle %s" % str(battle.get("load_phase")))
+	if showcase != null and is_instance_valid(showcase) and showcase.get("showcase_ready") == false:
+		loading.append("backdrop %s" % str(showcase.get("load_phase")))
+	var svc := get_tree().root.get_node_or_null("WorldBakes")
+	# a world bake still to run belongs to a load; the deferred PNG write ("#save") runs once loads are over, so it is not
+	if svc != null and ((str(svc.get("_active")) != "" and str(svc.get("_active")) != "#save") or not (svc.get("_queue") as Array).is_empty()):
+		loading.append("world bake %s" % str(svc.get("_active")).left(12))
+	print("[main] loading at the close: %s" % (", ".join(loading) if not loading.is_empty() else "nothing"))
 	# Issue 1435: the player asked to close, so the window goes at once; the clean-up below still runs to the end
 	if route == "window" and DisplayServer.get_name() != "headless":
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
 	for n in [battle, showcase]:
 		if n != null and is_instance_valid(n):
+			if n.has_method("stop_build"):
+				n.stop_build()   # issue 1518: a load under way stops at its next step and starts no more work
 			if "quitting" in n:
 				n.quitting = true   # issue 521: an awaiting command must not draw on the freed HUD
 			n.queue_free()
 	if campaign != null and is_instance_valid(campaign):
 		campaign.queue_free()
+	if _retired != null and is_instance_valid(_retired) and _retired.get_parent() == null:
+		_retired.free()   # issue 1519: a battle left for the title and not yet freed goes before the statics are cleared
 	if music != null and is_instance_valid(music) and music.has_method("release"):
 		music.release()
+	if ResourceLoader.has_cached(BATTLE_SCRIPT):
+		load(BATTLE_SCRIPT).drop_sky_pending()   # a battle script never read has no sky read to drop
+	if _scene_reading and ResourceLoader.load_threaded_get_status(BATTLE_SCENE) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		ResourceLoader.load_threaded_get(BATTLE_SCENE)
+		_scene_reading = false
+	if _fx_reading and ResourceLoader.load_threaded_get_status(FX_SCRIPT) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		ResourceLoader.load_threaded_get(FX_SCRIPT)
+		_fx_reading = false
+	if _host_reading and ResourceLoader.load_threaded_get_status(HOST_SCRIPT) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		_host_script = ResourceLoader.load_threaded_get(HOST_SCRIPT)
+		_host_reading = false
+	Sfx.drop_pending()
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var t1 := Time.get_ticks_msec()
@@ -106,7 +187,21 @@ var ui_sound: Node           # issue 1217: the front-end sound (godot/audio/sfx.
 func _ready() -> void:
 	name = "Main"
 	get_tree().set_auto_accept_quit(false)   # issue 1435: the window close runs quit_clean (see _notification)
+	RenderingServer.frame_pre_draw.connect(_on_frame_pre_draw)   # issue 1434: the close's frame log splits the draw
+	RenderingServer.frame_post_draw.connect(_on_frame_post_draw)
 	_args()
+	if DisplayServer.get_name() != "headless":
+		print("[main] ready at %d ms after the engine started" % Time.get_ticks_msec())   # issue 1518 (LOAD29): the launch's own share
+		# issue 1518: the sound clips and the battle scene start loading on worker threads now, so the frame that builds the
+		# first battle only collects them
+		# the campaign host first: the title waits on it alone (Fable on 98926849)
+		if not ResourceLoader.has_cached(HOST_SCRIPT) and ResourceLoader.load_threaded_request(HOST_SCRIPT) == OK:
+			_host_reading = true   # read on a worker; a load() of it meanwhile waits only for what is not read yet
+		Sfx.prefetch()
+		if ResourceLoader.load_threaded_request(BATTLE_SCENE) == OK:
+			_scene_reading = true   # the sky read starts once the battle script is read (battle_parts_ready)
+		if ResourceLoader.load_threaded_request(FX_SCRIPT) == OK:
+			_fx_reading = true
 	if args.has("player-path"):
 		var recorder = load("res://main/player_path.gd")
 		var profile_error: String = recorder.prepare_profile()
@@ -153,13 +248,17 @@ func _ready() -> void:
 		_bot_runs.call_deferred()
 	elif args.has("battle") or args.has("scenario") or args.has("shots") or args.has("bot") or args.has("seed"):
 		# straight into a battle (test jobs, screenshot jobs): the battle reads the same arguments
-		quick_battle()
+		if DisplayServer.get_name() != "headless":
+			_quick_battle_after_first_frame()
+		else:
+			quick_battle()
 	else:
 		show_title()
 
 
 # --check-export (run on the exported build): no test trees in the package, and the real parts of the game are in it
-# (not the fallbacks). Prints [export-check] OK or FAIL with the reasons; exit code 0 or 1.
+# (not the fallbacks), and every ship file the game loads (main/export_ship_check.gd, issue 1438). Prints [export-check] OK
+# or FAIL with the reasons; exit code 0 or 1.
 func _check_export() -> void:
 	var bad: Array = []
 	for d in ["res://rules/test", "res://campaign/test", "res://fx/test", "res://music/test", "res://story/test", "res://portraits/test", "res://audio/build"]:
@@ -174,6 +273,12 @@ func _check_export() -> void:
 			bad.append("missing: " + f)
 	if not DirAccess.dir_exists_absolute("res://gen"):
 		bad.append("missing: res://gen (the built assets)")
+	else:
+		# issue 1438: every manifest row loads with its maps, the wing selector's models load, no source ship GLB shipped
+		var ships: Dictionary = load("res://main/export_ship_check.gd").check()
+		bad.append_array(ships["fails"])
+		for line in ships["notes"]:
+			print("[export-check] ", line)
 	if not FileAccess.file_exists("res://music/music.json"):
 		bad.append("note: no music content yet (res://music/music.json)")
 	var fails := bad.filter(func(x): return not str(x).begins_with("note:"))
@@ -346,18 +451,44 @@ func _on_battle_option(key: String, value) -> void:
 
 # ---------------------------------------------------------------- screens
 
-func show_title() -> void:
+func show_title(music_after_draw := false) -> void:
+	# issue 1518 (Artoo on PR 1445, cc4a63ce): the title asks the campaign host whether a run is saved (Continue or New
+	# run), so while the launch's worker still reads the host the title waits for it a frame at a time, the window
+	# drawing and answering a close meanwhile, instead of compiling the host inside the first frame
+	if _host_reading and _host_still_reading():
+		_title_wait += 1
+		var wait := _title_wait
+		while not quitting and wait == _title_wait and _host_still_reading():
+			await get_tree().process_frame
+		if quitting or wait != _title_wait:
+			return   # closed, or another screen was asked for meanwhile
+	if _host_reading:
+		_host_reading = false
+		if ResourceLoader.load_threaded_get_status(HOST_SCRIPT) != ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+			_host_script = ResourceLoader.load_threaded_get(HOST_SCRIPT)   # read by now: no wait; held, so load() finds it cached
 	_clear()
 	if music != null:
-		music.play_title()
+		if music_after_draw and DisplayServer.window_can_draw():
+			_title_music_after_draw()   # issue 1519: the music starts after the title's first frame, not inside it
+		else:
+			music.play_title()
 	title = Title.new()
 	title.main = self
 	add_child(title)
+	if not _title_painted_said and DisplayServer.window_can_draw():
+		_title_painted_said = true
+		_say_title_painted(title)
 	# the decorative battle behind the menu, built once the title has painted, then faded in over the sky picture
 	if _showcase_wanted():
 		get_tree().create_timer(0.5).timeout.connect(_start_showcase)
 	if args.has("career-shot"):
 		_career_shot.call_deferred(str(args["career-shot"]))
+
+
+func _title_music_after_draw() -> void:
+	await RenderingServer.frame_post_draw
+	if music != null and is_instance_valid(music) and not quitting and title != null and is_instance_valid(title):
+		music.play_title()   # still on the title (a click that left it at once has started its own music)
 
 
 # --career-shot <png>: open the Career screen from the title as its button does, save a shot, quit (screenshot jobs)
@@ -414,8 +545,15 @@ static func next_showcase_fac() -> String:
 func _start_showcase() -> void:
 	if quitting or title == null or not is_instance_valid(title) or showcase != null or not _showcase_wanted():
 		return
-	showcase = BattleScene.instantiate()
+	if _fx_reading or _scene_reading:
+		var t_wait: Node = title
+		if not await battle_parts_ready():
+			return
+		if title != t_wait or showcase != null or title == null or not is_instance_valid(title):
+			return   # the title was left, or a backdrop started, meanwhile
+	showcase = _battle_packed().instantiate()
 	showcase.showcase = true
+	showcase.title_backdrop = true   # issue 1434: capped at High, silent, no combat warm-up
 	showcase.args["quality"] = str(settings["quality"])
 	showcase.args["taa"] = bool(settings.get("taa", false))
 	_set_battle_display_args(showcase)
@@ -423,9 +561,15 @@ func _start_showcase() -> void:
 	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
 	add_child(showcase)
 	move_child(showcase, 0)
-	while is_instance_valid(showcase) and not showcase.showcase_ready:
+	# issue 1434: the backdrop builds a few ships per frame behind the live menu; this wait belongs to this title and this
+	# backdrop only (leaving the menu calls stop_build in _clear, and a later title starts its own)
+	var sc: Node = showcase
+	var t0: Node = title
+	while is_instance_valid(sc) and not sc.showcase_ready:
 		await get_tree().process_frame
-	if is_instance_valid(showcase) and title != null and is_instance_valid(title) and title.has_method("reveal_showcase"):
+	if not is_instance_valid(sc) or sc != showcase or t0 != title:
+		return
+	if title != null and is_instance_valid(title) and title.has_method("reveal_showcase"):
 		title.reveal_showcase()
 	if args.has("title-shot"):
 		# --title-shot <png>: the title with its showcase faded in (screenshot jobs), then quit; --title-open settings opens
@@ -448,6 +592,8 @@ var _showcase_gen := 0   # bumped by each rebuild request, so only the newest pe
 func restart_showcase() -> void:
 	_showcase_gen += 1
 	if showcase != null and is_instance_valid(showcase):
+		if showcase.has_method("stop_build"):
+			showcase.stop_build()   # Fable on PR 1445: the backdrop's viewport settings go back before its free
 		showcase.queue_free()
 	showcase = null
 	if title != null and is_instance_valid(title) and title.has_method("cover_showcase"):
@@ -471,11 +617,18 @@ func _showcase_wanted() -> bool:
 	return not bot_mode and DisplayServer.get_name() != "headless" and str(settings.get("quality", "max")) != "low" and not args.has("no-showcase")
 
 
+func _host_still_reading() -> bool:
+	return hold_host_read or ResourceLoader.load_threaded_get_status(HOST_SCRIPT) == ResourceLoader.THREAD_LOAD_IN_PROGRESS
+
+
 func _clear() -> void:
+	_title_wait += 1   # a title still waiting on the host read is not shown over the new screen
 	if title != null and is_instance_valid(title):
 		title.queue_free()
 	title = null
 	if showcase != null and is_instance_valid(showcase):
+		if showcase.has_method("stop_build"):
+			showcase.stop_build()   # issue 1434: no more backdrop build work, and the menu's viewport settings back
 		showcase.queue_free()
 	showcase = null
 	_restore_render_scale()
@@ -496,7 +649,7 @@ func new_run(opts := {}) -> void:
 		return
 	_clear()
 	# campaign_host.gd runs G3's campaign (rules and screens as data) with real battles; README.md is the contract
-	campaign = Host.new()
+	campaign = load(HOST_SCRIPT).new()
 	add_child(campaign)
 	campaign.run_over.connect(func(_summary) -> void:
 		campaign.queue_free()
@@ -509,12 +662,86 @@ func new_run(opts := {}) -> void:
 
 
 static func campaign_has_save() -> bool:
-	return Host.has_save()
+	return load(HOST_SCRIPT).has_save()
+
+
+# issue 1518 (LOAD22 warm: a close during the start hid after 2.7 s, before the game's first frame): the window draws
+# and answers its messages once before the battle is built, so a close that comes during that build is seen at once
+func _quick_battle_after_first_frame() -> void:
+	await RenderingServer.frame_post_draw
+	if await battle_parts_ready():
+		quick_battle()
+
+
+# issue 1518 (cloud trace: a battle's first setup spent 0.4 s compiling the effects script, inside one frame): the game
+# starts reading res://fx/fx.gd on a worker when it starts, and every way into a battle (the test battle, the title's
+# backdrop, play_api for the campaign) waits here, a frame at a time, until it is read, so no battle's setup compiles it
+# in a frame. A close meanwhile ends the wait (false: the caller builds nothing). No time limit: the read ends.
+const FX_SCRIPT := "res://fx/fx.gd"
+var _fx_reading := false
+var _fx_script: Resource = null   # held, so the battles' load() finds it cached
+var hold_fx_read := false         # prefetch_wait_check only: the read counts as still running
+
+
+func battle_parts_ready() -> bool:
+	while not quitting and ((_fx_reading and (hold_fx_read or ResourceLoader.load_threaded_get_status(FX_SCRIPT) == ResourceLoader.THREAD_LOAD_IN_PROGRESS))
+			or (_scene_reading and ResourceLoader.load_threaded_get_status(BATTLE_SCENE) == ResourceLoader.THREAD_LOAD_IN_PROGRESS)):
+		await get_tree().process_frame
+	if quitting:
+		return false
+	if _fx_reading:
+		_fx_reading = false
+		_fx_script = ResourceLoader.load_threaded_get(FX_SCRIPT)   # read by now: no wait
+	if _scene_reading:
+		_battle_packed()   # read by now: no wait
+		if DisplayServer.get_name() != "headless":
+			load(BATTLE_SCRIPT).prefetch_sky()   # issue 1518: the battle's sky starts reading on a worker now
+	return true
+
+
+# issue 1518: the battle scene, from the launch's worker read when it ran (it waits only for what is not read yet)
+var _scene_reading := false
+var _host_reading := false
+var _host_script: Resource = null   # held, as _fx_script, so the title's load() of it never compiles it again
+var hold_host_read := false   # prefetch_wait_check only: the host read counts as still running
+var _title_painted_said := false
+
+
+# issue 1518 (Artoo on PR 1445, 6784b6b1): the launch to the first painted title menu, on a line of its own, once per run
+func _say_title_painted(t: Node) -> void:
+	await RenderingServer.frame_post_draw
+	if is_instance_valid(t) and t == title:
+		print("[main] title menu painted at %d ms after the engine started (first button: %s)" % [Time.get_ticks_msec(), str(t.get("first_label"))])
+
+
+var _title_wait := 0   # bumped by each show_title that waits on the host read, and by _clear, so only the newest goes on
+var _battle_scene: PackedScene = null
+
+
+func _battle_packed() -> PackedScene:
+	if _battle_scene == null:
+		if _scene_reading:
+			_scene_reading = false
+			_battle_scene = ResourceLoader.load_threaded_get(BATTLE_SCENE)
+		if _battle_scene == null:
+			_battle_scene = load(BATTLE_SCENE)
+	return _battle_scene
+
+
+# the title's Quick battle (Fable on PR 1445, 98926849): waits a frame at a time for the battle scene's launch read, so
+# a click while it is still read never holds the window; the title must still be the screen when it ends
+func quick_battle_from_title() -> void:
+	var t0: Node = title
+	if not await battle_parts_ready():
+		return
+	if title != t0 or title == null or not is_instance_valid(title) or battle != null:
+		return
+	quick_battle()
 
 
 func quick_battle() -> void:
 	_clear()
-	var b = BattleScene.instantiate()
+	var b = _battle_packed().instantiate()
 	b.external = true
 	b.args["quality"] = str(settings["quality"])
 	# Issue 1079: on by default (Ryan, Nov 20). A capture that needs the old look passes --nebula_wake false (Artoo, PR 1330).
@@ -528,29 +755,113 @@ func quick_battle() -> void:
 	_settings_to_battle(b)
 	battle = b
 	b.start_default()
-	b.finished.connect(func(_r) -> void:
+	b.finished.connect(func(r: Dictionary) -> void:
+		# The screenshot sequence saves its last frame and quits itself. A finish signal here means it was interrupted.
+		if args.has("shots"):
+			push_error("Battle screenshot run ended before capture completed: %s" % r.get("result", "unknown"))
+			quit_clean(1)
+			return
+		if args.has("bot") and OS.has_feature("movie"):
+			quit_clean(1 if r.get("result") == "softlock" else 0)
+			return
 		var t_leave := Time.get_ticks_usec()
-		b.queue_free()
+		var parts := {}
 		battle = null
-		show_title()
-		_time_title_return(t_leave), CONNECT_ONE_SHOT)
+		_retire_battle(b, parts)
+		var t_q := Time.get_ticks_usec()
+		show_title(true)
+		parts["title_build"] = Time.get_ticks_usec() - t_q
+		_time_title_return(t_leave, parts), CONNECT_ONE_SHOT)
 	# --title-after S (issue 1435 PC proof): leave the quick battle for the title after S seconds, as the menu's "to title"
 	if args.has("title-after"):
-		get_tree().create_timer(float(args["title-after"]), true, false, true).timeout.connect(func() -> void:
+		# counted from the game's start (LOAD25: a slow start began the battle late, so "5 s" came after the close)
+		var after := maxf(0.05, float(args["title-after"]) - Time.get_ticks_msec() / 1000.0)
+		get_tree().create_timer(after, true, false, true).timeout.connect(func() -> void:
 			if is_instance_valid(b) and battle == b:
 				print("[main] leaving the battle for the title at %d ms" % Time.get_ticks_msec())
 				b._on_action("to_title", null))
 
 
+# Issue 1519 (CLOSE5: battle to title about 0.55 s): the battle used to be freed in the same frame the title was built, so
+# the player saw neither until both were done. Now the battle leaves the tree at once (nothing of it draws or runs), the
+# title is drawn on that frame, and the battle is freed after the title's second draw (_free_after_draws). Its awaiting
+# load code may resume out of the tree in between, so every load wait returns once is_inside_tree() is false (LOAD29).
+# Hiding it in the tree instead cost more (the hidden scene still drew its sky and world).
+# Only the quick battle's way back to the title uses this; the campaign's battles still free at once.
+func _retire_battle(b: Node, parts: Dictionary) -> void:
+	if b == null or not is_instance_valid(b):
+		return
+	var t := Time.get_ticks_usec()
+	if b.has_method("stop_build"):
+		b.stop_build()
+	if "quitting" in b:
+		b.quitting = true   # issue 521: nothing awaiting in it draws again
+	if b.get_parent() != null:
+		b.get_parent().remove_child(b)   # its _exit_tree runs here (load hand-off, worker joins, look cache)
+	parts["battle_out"] = Time.get_ticks_usec() - t
+	if not DisplayServer.window_can_draw():
+		b.queue_free()   # headless or minimised: no frame is drawn to wait for, so it goes at the end of this one as before
+		return
+	_retired = b
+	_free_after_draws(b, parts, 2)
+
+
+# issue 1519 (LOAD22 cold: first title frame 284 ms, 90 of it the free just after that frame's draw): the battle out of
+# the tree is freed after the title's second draw, so its free never shares the first title frame
+func _free_after_draws(b: Node, parts: Dictionary, draws: int) -> void:
+	for i in draws:
+		await RenderingServer.frame_post_draw
+	if is_instance_valid(b) and b.get_parent() == null:
+		var t1 := Time.get_ticks_usec()
+		b.free()
+		parts["battle_free"] = Time.get_ticks_usec() - t1
+
+
+var _retired: Node = null   # the battle out of the tree waiting for its free (quit_clean frees it if a close comes first)
+
+
 # Issue 1435: how long leaving a battle holds the player: the leave frame itself (the battle is freed at its end, which
 # retires any running cut) and the first title frame after it.
-func _time_title_return(t_leave: int) -> void:
+func _time_title_return(t_leave: int, parts := {}) -> void:
+	# issue 1519: where the time goes, frame by frame: the end of each frame's draw and the start of the next process step
+	var marks: Array = []
+	# a draw counts as a title frame only with the title in the tree (Fable on PR 1445: show_title may wait on the host read)
+	var on_draw := func() -> void: marks.append(["draw" if title != null and is_instance_valid(title) and title.is_inside_tree() else "draw_no_title", Time.get_ticks_usec() - t_leave])
+	RenderingServer.frame_post_draw.connect(on_draw)
+	RenderingServer.frame_pre_draw.connect(func() -> void: marks.append(["pre", Time.get_ticks_usec() - t_leave]), CONNECT_ONE_SHOT)
 	await get_tree().process_frame
 	var t_free := Time.get_ticks_usec()
+	marks.append(["step", t_free - t_leave])
 	await get_tree().process_frame
 	var t_title := Time.get_ticks_usec()
+	marks.append(["step", t_title - t_leave])
+	# then the rest of the first second, so a cost moved behind the title still shows (worst frame below)
+	while Time.get_ticks_usec() - t_leave < 1000000 and not quitting:
+		await get_tree().process_frame
+		marks.append(["step", Time.get_ticks_usec() - t_leave])
+	RenderingServer.frame_post_draw.disconnect(on_draw)
+	# issue 1519: the first title frame is the first frame drawn after the leave with the title in the tree (from the leave
+	# on, unless the title waited on the host read); before, this line gave the second process step, which also held the
+	# battle's free. The worst frame counts every draw.
+	var first_draw := -1
+	var worst := 0
+	var prev := 0
+	for m in marks:
+		if m[0] == "draw" or m[0] == "draw_no_title":
+			if first_draw < 0 and m[0] == "draw":
+				first_draw = int(m[1])
+			worst = maxi(worst, int(m[1]) - prev)
+			prev = int(m[1])
 	print("[main] battle to title: leave frame %.1f ms, first title frame %.1f ms after the leave" % [
-		float(t_free - t_leave) / 1000.0, float(t_title - t_leave) / 1000.0])
+		float(t_free - t_leave) / 1000.0, float(first_draw if first_draw >= 0 else (t_title - t_leave if not DisplayServer.window_can_draw() else 9999000)) / 1000.0])   # 9999: no draw with the title in its first second
+	var bits: Array = []
+	for k in parts:
+		bits.append("%s %.1f" % [k, float(parts[k]) / 1000.0])
+	bits.append("battle exit_tree %.1f" % (float(load("res://scenes/battle/battle.gd").last_exit_us) / 1000.0))
+	for m in marks.slice(0, 10):
+		bits.append("%s@%.1f" % [m[0], float(m[1]) / 1000.0])
+	print("[main] battle to title parts (ms): %s" % ", ".join(bits))
+	print("[main] battle to title: worst frame in the first second %.1f ms" % (float(worst) / 1000.0))
 
 
 # The campaign hands a battle over and gets the result back (README.md). run = the campaign run dictionary, cfg = the
@@ -565,7 +876,7 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 			elif c is CanvasLayer and (c as CanvasLayer).visible:
 				(c as CanvasLayer).visible = false
 				hidden.append(c)
-	var b = BattleScene.instantiate()
+	var b = _battle_packed().instantiate()
 	b.external = true
 	b.bot = bot_mode or bool(opts.get("bot", false))
 	b.in_campaign = campaign != null
@@ -593,7 +904,9 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 
 # A battle already set up by the campaign host (its rules API, built in battle_setup).
 func play_api(a, opts := {}) -> Dictionary:
-	var b = BattleScene.instantiate()
+	if not await battle_parts_ready():
+		return {"result": "closing"}   # the game is closing before the battle began: not a result (campaign_host.gd)
+	var b = _battle_packed().instantiate()
 	b.external = true
 	b.bot = bot_mode or bool(opts.get("bot", false))
 	b.can_retreat = bool(opts.get("can_retreat", false))
@@ -714,7 +1027,7 @@ func _hang_check(report: Dictionary) -> void:
 
 
 func _bot_battle(seed: int) -> Dictionary:
-	var b = BattleScene.instantiate()
+	var b = _battle_packed().instantiate()
 	b.external = true
 	b.bot = true
 	add_child(b)
@@ -731,7 +1044,7 @@ func _bot_battle(seed: int) -> Dictionary:
 
 
 func _bot_campaign(seed: int) -> Dictionary:
-	campaign = Host.new()
+	campaign = load(HOST_SCRIPT).new()
 	add_child(campaign)
 	campaign.start(self, {"bot": true, "seed": seed, "policy": str(args.get("bot-policy", "smart"))})
 	var summary = await campaign.run_over

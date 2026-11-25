@@ -11,6 +11,13 @@ extends RefCounted
 # Brightness: every effect colour is multiplied by the global fx_gain (look.gd sets it per tonemapper; 0.5556 matches
 # the A3 proof under Godot's ACES, which applies an exposure bias of 1.8 that Babylon's curve does not).
 
+static func patch(code: String, target: String, replacement: String) -> String:
+	if not code.contains(target):
+		push_error("FX shader patch target missing: " + target)
+		return code
+	return code.replace(target, replacement)
+
+
 const COMMON := """
 global uniform float scene_t;
 global uniform float fx_gain;
@@ -815,7 +822,12 @@ void vertex() {
 			p += (n1 * j + n2 * j2) * pin * L * 0.06;
 		}
 		if (k == 9) {
-			p += (n1 * sin(s * 9.0 - scene_t * 8.0 + seed) + n2 * cos(s * 7.0 - scene_t * 6.0)) * sin(3.14159 * s) * 1.2;
+			// A broad bend runs out to the tip, snaps taut on contact, then curls back.
+			// Keep both ends on the firing line while the middle sweeps across it.
+			float slack = 1.0 - 0.8 * smoothstep(0.16, 0.25, age) * (1.0 - smoothstep(0.28, 0.57, age));
+			float bend = sin(3.14159265 * s) * min(L * 0.18, a3.x * 7.0) * slack;
+			float wave = s * 7.0 - age * 12.0 + seed * 6.2831853;
+			p += (n1 * sin(wave) + n2 * (0.5 * cos(wave * 0.75))) * bend;
 		}
 		float w = mix(a3.x, a3.y, s);
 		if (k == 2 || k == 5 || k == 8) { w *= 0.92 + 0.08 * sin(scene_t * 90.0 + s * 40.0); }
@@ -843,11 +855,16 @@ void fragment() {
 	float s = vInfo.x; int k = int(vInfo.y + 0.5); float seed = vInfo.z;
 	float life = max(vAge.y, 0.001); float age = vAge.x;
 	float x = abs(vSide);
-	float px = x * vPixels * 0.5;
-	// issue 1211: the crackle's fixed core and sheath are 1080-line pixels, so the arc keeps its shape at 4K
+	// Fixed beam details use 1080-line pixels (issue 1211).
 	float fr = max(VIEWPORT_SIZE.y / 1080.0, 0.0001);
-	float hot_width = k == 6 ? 3.0 * fr : max(k == 8 ? 2.0 : 3.0, vPixels * 0.17);
-	float glow_width = k == 6 ? 11.0 * fr : max(7.0, vPixels * 0.48);
+	float beam_pixels = vPixels;
+	if (k == 5 || k == 8 || k == 11) {
+		beam_pixels /= fr;
+	}
+	float px = x * beam_pixels * 0.5;
+	float hot_floor = k == 8 ? 2.0 : 3.0;
+	float hot_width = k == 6 ? 3.0 * fr : max(hot_floor, beam_pixels * 0.17);
+	float glow_width = k == 6 ? 11.0 * fr : max(7.0, beam_pixels * 0.48);
 	float core = exp(-2.772589 * px * px / (hot_width * hot_width));
 	float sheath = exp(-2.772589 * px * px / (glow_width * glow_width));
 	float fast = texture(kit_flow, vec2(fract(s * 3.0 - age * 2.4 + seed), vSide * 0.5 + 0.5)).g;
@@ -888,7 +905,7 @@ void fragment() {
 	} else if (k == 5) {
 		// Broken crawling filaments, replacing the regular diagonal bands.
 		float arc = sin(s * 27.0 - age * 17.0 + seed) * 0.55;
-		float d = (vSide - arc) * vPixels * 0.5;
+		float d = (vSide - arc) * beam_pixels * 0.5;
 		fork_hot = exp(-2.772589 * d*d / 4.0) * smoothstep(0.45, 0.7, fast);
 	} else if (k == 7) {
 		float pulse = spow(0.5 + 0.5 * sin(s * 30.0 - age * 25.0), 3.0);
@@ -940,7 +957,8 @@ void vertex() {
 	vec3 side = snorm(cross(wd, CAMERA_POSITION_WORLD - wp));
 	float seed = CUSTOM1.z;
 	float du = frame_world(1.0, max(-(VIEW_MATRIX * vec4(wp, 1.0)).z, 0.01), PROJECTION_MATRIX, VIEWPORT_SIZE.y);
-	w = max(w, du * 10.0);
+	float trail_floor = du * 10.0 * (VIEWPORT_SIZE.y / 1080.0);
+	w = max(w, trail_floor);
 	wp += side * UV.y * w;
 	VERTEX = (VIEW_MATRIX * vec4(wp, 1.0)).xyz;
 	vCol = CUSTOM0;
@@ -986,7 +1004,7 @@ static func kit_trail_code(points: int) -> String:
 	vec3 wd = snorm(pts[min(k + 1, n - 1)].xyz - pts[max(k - 1, 0)].xyz);
 	float s = clamp((scene_t - pts[k].w) / max(life, 0.001), 0.0, 1.0);
 	float w = i < n ? mix(widths.x, widths.y, s) : 0.0;""")
-	c = c.replace("w = max(w, du * 10.0);", "w = i < n ? max(w, du * 10.0) : 0.0;")
+	c = c.replace("w = max(w, trail_floor);", "w = i < n ? max(w, trail_floor) : 0.0;")
 	c = c.replace("float seed = CUSTOM1.z;", "float seed = widths.z;")
 	c = c.replace("vCol = CUSTOM0;", "vCol = eng;")
 	assert(c.contains("uniform vec4 pts[") and c.contains("vCol = eng;") and c.contains("float seed = widths.z;") and c.contains("i < n ? max(w"))
@@ -1285,6 +1303,7 @@ uniform bool fitted_shape = false;
 uniform int style = 0;
 uniform vec4 hits[6];
 uniform vec4 hitw[6];
+uniform vec2 ion_arc = vec2(-100.0, 0.0); // start time and azimuth in the shield's frame
 uniform float brk_t = -100.0;
 uniform vec3 brk_dir = vec3(1.0, 0.0, 0.0);
 uniform float regen_t = -100.0;
@@ -1341,6 +1360,7 @@ void fragment() {
 	float I = 0.0;
 	float maxR = length(rad);
 	float web = 0.0;
+	float strain = 0.0;
 	// F3: hits read at distance and on small ships: the hot core, the ripple and its spread never shrink below a few
 	// pixels (wpx = world units per pixel here), and every hit lights the whole bubble faintly in the faction's colour
 	// and pattern for half a second (more when the camera is far out), so a shield hit reads as that ship's shield
@@ -1372,6 +1392,12 @@ void fragment() {
 		float glow_all = (1.0 - ga) * (1.0 - ga) * smoothstep(0.0, 0.04, age) * (0.10 + 0.22 * far) * mix(1.0, 0.5, fx_calm);
 		float ripple_fade = pow(1.0 - f, 1.3) * smoothstep(0.0, 0.025, age);
 		I += (core * fade + rg * mask * (0.6 + 0.4 * S) * ripple_fade + glow_all) * S;
+		if (hitw[i].w > 0.5) {
+			// Two uneven surges on the edge near this contact. A single soft lift under reduce flashing.
+			float beat = 0.3 + 0.7 * pow(0.5 + 0.5 * cos(age * 28.0), 2.0);
+			float side = smoothstep(0.45, 0.8, dot(snorm(vL), snorm(h.xyz / rad)));
+			strain = max(strain, side * mask * fade * mix(beat, 0.55, fx_calm));
+		}
 		// shear look: each hit briefly lights the crack network round it, so the hit already shows how this shield fails
 		web += mask * (1.0 - f) * (1.0 - f) * S;
 	}
@@ -1383,6 +1409,7 @@ void fragment() {
 	}
 	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
 	float fres = spow(1.0 - abs(dot(normalize(vN), V)), 4.0);
+	I += strain * (0.25 + 2.0 * fres);
 	if (dot(route_on, route_on) > 0.0) {
 		vec3 un = normalize(vL);
 		float side = 0.0;
@@ -1553,10 +1580,23 @@ void fragment() {
 		if (style != 2) { add += alive * 0.3 * pat * (0.3 + 0.7 * fres); }
 		total = total * alive + add * life * (0.55 + 0.45 * fres);
 	}
-	if (total < 0.002) { discard; }
+	float ion = 0.0;
+	float ia = scene_t - ion_arc.x;
+	if (!breaking && ia >= 0.0 && ia < 0.45) {
+		// A short jagged filament across this flank, in the same coordinates on the egg and the fitted skin.
+		vec3 un = snorm(vL);
+		vec2 axis = vec2(cos(ion_arc.y), sin(ion_arc.y));
+		float along = dot(un.xz, vec2(-axis.y, axis.x));
+		float jag = vnoise(vec2(along * 21.0, ion_arc.x + floor(ia * mix(8.0, 0.0, fx_calm))));
+		float line = un.y - (0.48 + along * 0.20 + (jag - 0.5) * 0.20);
+		float width = max(fwidth(line), 0.018);
+		ion = (1.0 - smoothstep(0.0, width * 1.5, abs(line))) * smoothstep(0.50, 0.76, dot(un.xz, axis));
+		ion *= smoothstep(0.0, 0.07, ia) * (1.0 - smoothstep(0.23, 0.45, ia)) * 0.85;
+	}
+	if (total + ion < 0.002) { discard; }
 	// the shear's running crack and the collapse's band burn toward white (zero in today's look)
 	C = mix(C, vec3(length(col)) * 0.62, clamp(hot, 0.0, 0.75));
-	ALBEDO = clamp(C * total * fx_gain, 0.0, 512.0);
+	ALBEDO = clamp((C * total + vec3(0.52, 0.73, 1.0) * ion) * fx_gain, 0.0, 512.0);
 }
 """
 
@@ -2236,14 +2276,13 @@ vec3 fx_strain_offset(vec3 p, vec3 n, float t) {
 # material moves it (plus a hair outward, so the additive overlay never loses its depth test), and hairline stress
 # cracks along every break line, broken into dashes and flickering, that appear while the hull strains.
 static func tear_strain_code() -> String:
-	var c: String = TEAR.replace("uniform mat4 frame;", "uniform mat4 frame;\n" + STRAIN_FN + "uniform vec3 fx_hair = vec3(0.02, 1.0, 0.0);\n" + JAG_FN)
+	var c := patch(TEAR, "uniform mat4 frame;", "uniform mat4 frame;\n" + STRAIN_FN + "uniform vec3 fx_hair = vec3(0.02, 1.0, 0.0);\n" + JAG_FN)
 	# Ryan on pass 4B: "the two straight clean lines of the glow and break". The tear and the hairlines run on a ragged,
 	# stepped line across the plates (fx_jag: its reach and its plate size), not on the straight cut plane
-	c = c.replace("\tfloat d = abs(dot(cut_p - at, axis) + wig * w * 0.9);", "\tfloat d = abs(dot(cut_p - at, axis) + wig * w * 0.9 + fx_jag_offset(cut_p, axis));")
-	assert(c.contains("fx_jag_offset(cut_p, axis)"))
-	c = c.replace("\tcut_p = (frame * vec4(VERTEX, 1.0)).xyz;\n",
+	c = patch(c, "\tfloat d = abs(dot(cut_p - at, axis) + wig * w * 0.9);", "\tfloat d = abs(dot(cut_p - at, axis) + wig * w * 0.9 + fx_jag_offset(cut_p, axis));")
+	c = patch(c, "\tcut_p = (frame * vec4(VERTEX, 1.0)).xyz;\n",
 		"\tcut_p = (frame * vec4(VERTEX, 1.0)).xyz;\n\tvec3 sn = normalize(mat3(frame) * NORMAL);\n\tvec3 so = fx_strain_offset(cut_p, sn, scene_t);\n\tVERTEX += inverse(mat3(frame)) * (so * 1.08 + sn * fx_strain_k.x * 0.04 * fx_strain_amount(scene_t));\n")
-	c = c.replace("\tif (dot(col, col) < 1e-6) { discard; }",
+	c = patch(c, "\tif (dot(col, col) < 1e-6) { discard; }",
 		"""\tfloat amt = fx_strain_amount(scene_t);
 	if (amt > 0.0) {
 		float hw = max(fx_hair.x, pxw * 1.3);

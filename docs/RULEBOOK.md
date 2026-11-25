@@ -129,7 +129,7 @@ R194); and "you own the codebase and github. you are my orchestrator and control
 2.2 **Nobody grades their own work.** Workers never merge their own pull requests. An Opus-built, game-facing change gets an
 outside check (Muse, issue 256) before or straight after merge; a tools-only pull request that other jobs wait on may merge on
 the Board's diff review while Muse is idle, with the check still asked for. Set: Ryan (R119, R132, R133, R167); the exception
-Board (R162). Ids: agents-13, claude-04, R132c, R162b.
+Board (R162). The Board may merge its own pull requests once checks are green (Ryan, Nov 24 2026 6:48 PM CT, R452); visual and gameplay changes still go to Ryan's pictures or an outside review first. Ids: agents-13, claude-04, R132c, R162b, R452.
 
 2.3 **Review every pull request by its diff, never its title, then sweep its impact** (every caller, saves and old profiles,
 the Godot rules and their saved results, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
@@ -181,9 +181,10 @@ those old jobs were already merged? That's a big miss."). Set: Board (R288).
 | Board: reviews, merges, specs, visual calls, picks put to Ryan | One Claude thread, Opus 5.5 | judgement is the bottleneck (R128, R194) |
 | Every ship model in Blender (blockouts, build sheets, hulls, kits, the station); hard or open-ended builds; read-only code audits | Opus 5.5 workers; not capped while Ryan's ultra plan clears the backlog (Ryan, Nov 19), back to two or three at once when it ends | Ryan: "I think builds in blender should come from Opus" (R205); the earlier "keep it to 2 or 3 threads at once, and propose big threads before starting them" (project instructions) is lifted for the backlog push (Ryan, Nov 19) |
 | Well-specified code: rules, tests, scripts, screens to a spec | DeepSeek V4.1 Flash workhorse on the PC | merged on one review pass for nine cents (R127, R134) |
-| Pipeline and engine jobs that need Codex's depth (export, import, effects plumbing); captures and benches only when no cheaper seat can run them | Codex on the PC, up to four local lanes, one job per lane (lanes C and D code only; R268, R301), while its weekly usage lasts | "Codex and deepseek should do other work to free you up on these crucial items" (R206); "We're starting to run low on codex usage ... We may just need to move other things to opus instead of codex being the workhorse with DeepSeek" (R219) |
+| Pipeline and engine jobs that need Codex's depth (export, import, effects plumbing); captures and benches only when no cheaper seat can run them | Codex on the PC, up to six local lanes, one job per lane (lanes C to F code only; 2.7), while its weekly usage lasts | "Codex and deepseek should do other work to free you up on these crucial items" (R206); "We're starting to run low on codex usage ... We may just need to move other things to opus instead of codex being the workhorse with DeepSeek" (R219) |
 | Checks of a seat's own work: a different model checks it (Codex's pipeline work is traced or checked by Opus or Muse) | Opus worker or Muse | "It feels like that makes sense to be checked by a different model" (R219) |
-| Concept pictures by image to image, research, design text, outside checks | Muse (Rey chairs); Ryan starts every run | several models, an outside view (R128) |
+| Research, design ideas and recommendations, design text, outside checks (no concept pictures) | Muse (Rey chairs) | several models, an outside view (R128); Ryan, Nov 24 (R451): "muse should have ideas for designs and recommendations but it shouldn't actually concept it, leave that to codex and its better image gen. muse does the research and views" |
+| Concept and mock pictures (screens, ships, portraits) from a written design | Codex image generation | better image gen (R451, R444) |
 | Ideation and legs | Grok and Google Flash, through Muse: a leg in every Muse action, beside DeepSeek and Qwen (R231) | free and broad; Qwen's daily cap emptied three seats on Nov 12 |
 
 The standing seat rules (rewritten Nov 15 from Muse's opus_check_719; dated seat state, such as whether this month's API
@@ -194,8 +195,7 @@ credit is live, is status and lives in LOOP.md "The seats"):
 - Codex only for what no other seat can do (R234: "use it when it can only do something others can't"); GPT 6.1 Sol (2.7).
 - Kimi is no longer a seat (R257, Ryan, Nov 15: "Kimi is maxed out until 12/12. I just cancelled. I don't think it's worth
   continuing given the usage issues"). Its jobs go to DeepSeek (mid-size code) or an Opus worker; nothing is sent to Kimi.
-- Codex is on the Pro plan (R264, Ryan, Nov 15: "it's on the pro plan, so significant usage upgrade") and runs up to four local
-  lanes (R268; the fourth, lane D, is code only: R301, Nov 16). SUPERSEDED, kept so nobody follows it: "Codex is near its weekly limit ... the Board runs the PC GPU steps" (R257,
+- Codex is on the Pro plan (R264, Ryan, Nov 15: "it's on the pro plan, so significant usage upgrade"). SUPERSEDED, kept so nobody follows it: "Codex is near its weekly limit ... the Board runs the PC GPU steps" (R257,
   ended by R264 the same day).
 - The API arms (opus, sonnet) run on the Max plan's monthly API credit (Ryan, Nov 12); same model family as the Board, so never
   the different-model check of Opus work (R219).
@@ -208,8 +208,11 @@ included" (Nov 14; SUPERSEDED by R253). Ids: R128, R180e, R205, R206, R219, R234
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
 model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews,
-because a cloud task runs the default model OpenAI picks and cannot be pinned (OpenAI's Codex models page, Nov 2026). Code-only
-jobs run on a third local lane on the PC instead (lane C, R268, Ryan Nov 15: "yeah lane c is fine"), pinned like the others.
+because a cloud task runs the default model OpenAI picks and cannot be pinned (OpenAI's Codex models page, Nov 2026). Codex
+runs up to six local lanes on the PC, one job per lane. Lanes C to F are code only, with no GPU work (R268, R301, issue 2057).
+"Are we able to add another codex lane or two without breaking anything" (Ryan, Nov 24 2026 4:33 PM CT). The PC check found
+room for two more code lanes after cleanup, with 270 GB free, 12 GB RAM free with four lanes and a GPU job running, and no
+rate-limit lines in the lane logs.
 If OpenAI lets cloud tasks pin a model, this can be asked again.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
 use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R268). Ids: R75b, R268, agents-07.
@@ -347,7 +350,7 @@ The arm's slot lock (`repo.checkout.lock` beside it) and the issue lock are inhe
 tree, so they stay held until every process of that run has exited, even if the PowerShell that took them dies; the
 Codex lane lock works the same way (Artoo on PR 1250). A work217 tools refresh takes every supported arm's slot lock,
 live and dry run, creating any that do not exist yet, so a fresh arm cannot start mid-refresh (Artoo on PR 1334). Logs and results stay in each run's own `out/` folder. The old
-`remove_repo_copy_after_push` setting no longer applies. Code-only lanes C and D and the Workhorse slots omit
+`remove_repo_copy_after_push` setting no longer applies. Code-only lanes C to F and the Workhorse slots omit
 `docs/shots/`, `docs/ship_pipeline/build_sheets/`, `contrib/muse/design/`, `hulls_hi/` and `rocks_hi/` unless the opening
 fixed block's Brief or Deliver to line names a path there. A checkout on the same runner-managed sparse profile is reused;
 a profile change sets the previous checkout aside beside the slot. A left-out file that is on disk while Git marks it
@@ -377,7 +380,7 @@ Parity removes its own default temp folder when it finishes, pass or fail. After
 its own recorded scratch at every ending. It keeps the newest failed, timed-out or cancelled run's scratch for one day for
 a retry. The janitor runs from the queue watcher between 3:00 and 6:00 AM Central and at runner start when C: is under `janitor_free_gb`
 (default 150 GB), at most once an hour across all lanes for low space. The runner then checks its 60 GB floor.
-The janitor keeps the newest `repo-kept-*` copy in each of `board`, `board_b`, `board_c` and `board_d`. Older copies and
+The janitor keeps the newest `repo-kept-*` copy in each of `board` and `board_b` through `board_f`. Older copies and
 finished `work217/issue-<N>-<arm>/<stamp>/repo` folders must be untouched for at least three hours and pass the same
 rebuildable-file, Git history and lock checks. Workhorse `out/` folders and runner settings and hashes stay in place.
 The checkout age uses the newest working file write time and skips `.git`. Git checks use `--no-optional-locks` with the
@@ -454,7 +457,7 @@ Ship a safe double-click Windows `.bat` script (dry-run default first) ... to pr
 `board/pin-*` branches" (12:09 UTC). Set: Ryan, Nov 22 (R410).
 
 3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
-solo. Lanes C and D stay code only.** The Board decides per job how many share the card: light captures and probes can run side by
+solo. Lanes C to F stay code only.** The Board decides per job how many share the card: light captures and probes can run side by
 side, heavy bakes and Blender renders take more of it, and nothing is started that would run the card out of its 16 GB of
 graphics memory. The launchers take and release claims themselves through tools/pc/gpu_slots.js (shared capacity from
 Downloads\voidsworn_test\gpu_slots.json, {"sharedSlots":2} by default, raised by the Board; captures weigh 1, Blender and heavy
@@ -503,7 +506,7 @@ R216).
 (now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the Board's own AI
 processes (only those whose command line names the voidsworn_test job folders; never Ryan's own apps), so
 each running job's runner commits and pushes its work to the issue's -partial branch; job windows mid-run are never closed and
-nothing is deleted. The pause waits for each lane's runner (main, B, C, D and DeepSeek work217) to leave running, then checks
+nothing is deleted. The pause waits for each lane's runner (main, B to F and DeepSeek work217) to leave running, then checks
 its status.json, run_commit.txt and confirmed_commit.txt against GitHub with git ls-remote. pc_pause.txt reports each job as
 done (finished and its delivery branch holds its confirmed commit), checkpoint verified (its -partial branch holds the
 runner's confirmed commit), or unresolved (anything else, including checks still running, a failed verification or a timeout).
@@ -560,6 +563,20 @@ reflection lobe is desaturated to a neutral warm-white so Eclipse stays obsidian
 the #1786 lighting. The world PRs fold in the audit cleanups before merge: an obsidian Eclipse hulk finish (#1772), a
 procedural planet fallback when the remix is off (#1776), crystal `_lo` LODs (#1782); the planet relief map's VRAM is
 budgeted in #1780.
+R423 (Ryan, Nov 23 2026, decision card on PR 1772's hulk pictures; its 0.04 and 0.025 floors were replaced by R425 below): hulks sat in band 3 at 0.04 to 0.045 linear base
+(burnt, dull, Eclipse obsidian at the floor), with one exception: Chorus hulks only go below the band 3 floor, to about
+0.025 (0.025 to 0.03, the low end of Eclipse's interior range), because at the floor the tan chitin wrecks were still the
+lightest shapes in a hulk field at camera 170. Eclipse hulks are unchanged. Code: `godot/assets/ships/a4_props.gd`
+HULK_BAND and CHORUS_HULK_BAND, checked by station_size_check and unwired_station_hulk_check.
+R425 (Ryan, Nov 23 2026, on the Chorus material probe for PR 1772): a wreck is never lighter than its own live paint
+dimmed to 60 percent; the hulk floor only stops pure black (0.005 linear). The 0.04 floor (R420) and R423's 0.025 for
+Chorus had lifted dark paint back up: the Chorus body (about 0.021 live) rendered undimmed and the Hullbreaker hull went
+from 0.027 live to 0.040 dead. Ceilings stay (0.045, Chorus 0.03); Eclipse obsidian keeps its 0.04 floor (R421). The
+60 percent (and the 40 percent cap on dead metal, Wave 0 on Sheet M) scale the encoded paint tint, so in linear light a
+wreck keeps about a third (dead metal about a seventh) of its paint; the band and ceilings are measured in linear light.
+R426 (Ryan, Nov 23 2026 03:22 UTC, on the #1777 before and after sheets): Ship Look V2 is the default look for every
+hull, the darker Hullbreaker red included; `VS_SHIP_LOOK_V2=0` keeps the old look for A/B captures only, and new ship
+work is judged under V2 (`look.gd` `ship_look_v2_enabled()`, guarded by `ship_look_v2_check`).
 
 ## 4. Ships and concepts
 

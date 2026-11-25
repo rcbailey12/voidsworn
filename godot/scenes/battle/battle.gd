@@ -26,6 +26,7 @@ const Board := preload("res://render/board.gd")
 const BL := preload("res://world/board_look.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const CamRig := preload("res://render/camera_rig.gd")
+const StageIn := preload("res://render/stage_in.gd")   # issue 1434 (LOAD22): new meshes' first draws spread over the load
 const HT := preload("res://render/hull_table.gd")
 const FLOOK := preload("res://fx/faction_look.gd")   # issue 1205: faction colours come from fx/faction_looks.json only
 const WEAPON_FX := preload("res://fx/fx_weapons.gd")
@@ -38,6 +39,8 @@ const Backdrop := preload("res://render/backdrop.gd")
 const PG := preload("res://render/placeholder_guard.gd")
 const LOOK := preload("res://render/look.gd")
 const WORLD_SKY := preload("res://world/world_sky.gd")
+const BattleLens := preload("res://fx/battle_lens.gd")
+const LIVING := preload("res://world/world_living.gd")
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const KEY_COL := Color(1.0, 0.96, 0.90)
@@ -72,6 +75,7 @@ const MOVE_CRUISE := 0.8      # a hull cruises a hex in this share of its hex ti
 # firmer. Its hex time grows by up to 14 percent (a frigate's peak burn about 36 to 31 units a second) and its turn
 # weight by up to 30 percent (about 123 to 95 degrees a second), easing to nothing at battleship size, so nothing from a
 # battleship up changes. Cinematic flown moves only.
+const ALT_BAND := preload("res://render/altitude_band.gd")   # issue 1582
 const MOVE_ESCORT_PACE := 1.14
 const MOVE_ESCORT_TURN := 1.3
 const NO_READY_GUN_IN_RANGE := "No ready gun can reach it."
@@ -115,7 +119,6 @@ var env: Environment
 var batches: Array = []
 var busy := false
 var think_task := -1
-var think_out = null
 var thinking := false
 var speed := 1.0           # the game's SPEED (duration multiplier)
 var user_speed := 1.0      # Speed: normal (1) or fast (0.45)
@@ -195,6 +198,9 @@ var can_retreat := false   # campaign battles (not against a sector flagship): t
 var round_save_cb: Callable = Callable()   # issue 1451: campaign battles save each round start once it has settled (main.play_api)
 var round_saved := 0                       # the newest round handed to round_save_cb
 var round_on_disk := 0                     # the newest round round_save_cb reported written (0: only the pre-fight save)
+# Issue 1434: the title's own backdrop (main.gd sets it with showcase). Tests and benches set showcase alone for a battle
+# that takes no turns; only the title backdrop is capped at High, silent and skips the combat warm-up.
+var title_backdrop := false
 var showcase := false     # the title screen's decorative battle (campaign3d.js setupShowcase): no HUD, no turns, no input, slow orbit
 var music_hits := 0        # issue 1448: hits landed this round by either side, fed to the music as `shots`
 var boss_fight := false    # a sector flagship fight or the finale (battle kind "boss"): boss music and the champion fanfare
@@ -223,8 +229,21 @@ var tail_round := -1          # the round whose enemy tail (every one of your sh
 var chime_round := -1         # the round whose first hand-over played the "your turn" cue
 
 
+# issue 1434 (LOAD29 warm title: a 1043 ms main-thread step in the backdrop's start, nothing named): when this node was
+# made, so the ready line says how long instancing the scene and its children's _ready took
+var made_us := Time.get_ticks_usec()
+
+
 func _ready() -> void:
-	_args()
+	# The title backdrop has its own args from Main. A finished quick battle can open the title in the same process.
+	# Reading the process args again there would run its capture a second time on the title viewport.
+	if not showcase:
+		_args()
+	if _sliced():
+		stage.start(self)   # issue 1434 (LOAD22): from the first mesh on, so the effect pools and the board are spread too
+	var t_ready := Time.get_ticks_usec()
+	if title_backdrop and str(args.get("quality", "max")) == "max":
+		args["quality"] = "high"   # issue 1434 (item 10): the title's backdrop is capped at High (its MSAA stays the menu's, LOAD34b)
 	t_start = Time.get_ticks_msec() / 1000.0
 	bot = bot or args.has("bot")
 	shots_dir = str(args.get("shots", ""))
@@ -247,16 +266,31 @@ func _ready() -> void:
 		movement = str(args["movement"])
 	if args.has("reduce-motion"):
 		reduce_motion = true
+	var rp := {"args": Time.get_ticks_usec() - t_ready}   # issue 1434 (LOAD22 warm: 1.8 to 2 s, not split): _ready's parts
+	var t_p := Time.get_ticks_usec()
 	_build_world()
+	StageIn.hide_layer_from(cam, [key_light])
+	stage.cam = cam
+	rp["world"] = Time.get_ticks_usec() - t_p
+	var bw_sum := 0
+	for k in _bw_us:
+		rp["world:" + str(k)] = _bw_us[k]
+		bw_sum += int(_bw_us[k])
+	rp["world:other"] = int(rp["world"]) - bw_sum
+	t_p = Time.get_ticks_usec()
 	sfx = Sfx.new()
 	sfx.name = "Sfx"
+	sfx.silent = title_backdrop   # issue 1434 (W4): the backdrop loads no sound bank and never writes the shared sfx bus
 	add_child(sfx)
 	sfx.cam = cam
 	death_audio = DeathAudio.new()
 	death_audio.sfx = sfx
 	add_child(death_audio)
+	rp["sound"] = Time.get_ticks_usec() - t_p
+	t_p = Time.get_ticks_usec()
 	hud = HUD.new()
 	add_child(hud)
+	rp["hud"] = Time.get_ticks_usec() - t_p
 	hud.action.connect(_on_action)
 	hud.rescaled.connect(_refresh_ui)   # UI pass: the HUD was rebuilt for a new window size
 	if showcase:
@@ -264,6 +298,8 @@ func _ready() -> void:
 		cam.input_enabled = false
 		set_process_unhandled_input(false)
 		tips_off = true
+	if DisplayServer.get_name() != "headless":
+		print("[load] battle scene ready in %d ms%s (%s; made %d ms before its ready: the scene's instancing and its children's ready)" % [(Time.get_ticks_usec() - t_ready) / 1000, " (title backdrop)" if title_backdrop else "", _us_ms(rp), (t_ready - made_us) / 1000])
 	if not external:
 		start_default()
 	if args.has("breach-shots"):
@@ -309,24 +345,110 @@ func _args() -> void:
 
 # ---------------------------------------------------------------- setup
 
+# issue 1518 (LOAD25 cold: a close during the battle's first frame waited on its 0.7 s world setup, most of it the 8K
+# sky): the game starts reading the sky on a worker when it starts (main.gd), and the battle only collects it
+static var _sky_pending := ""
+
+
+static func prefetch_sky() -> void:
+	var sky_res := str(ShipView.manifest().get("sky", ""))
+	if sky_res == "" or _sky_pending != "" or ResourceLoader.has_cached(sky_res) or not ResourceLoader.exists(sky_res):
+		return
+	if ResourceLoader.load_threaded_request(sky_res) == OK:
+		_sky_pending = sky_res
+
+
+# true once the prefetched sky is read (or none was asked for)
+static func sky_ready() -> bool:
+	return _sky_pending == "" or not _still_reading(_sky_pending)
+
+
+static var hold_sky := false   # prefetch_wait_check only: the sky read counts as still running
+
+
+static func _still_reading(p: String) -> bool:
+	return hold_sky or ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS
+
+
+var _sky_late: Array = []   # [sky material, path] while the prefetched sky is still being read (Artoo on PR 1445)
+
+
+# the sky now if it can be had without waiting on a worker; null while the prefetch still reads it
+static func _sky_texture_now(p: String) -> Resource:
+	if _sky_pending == p and _still_reading(p):
+		return null
+	return _sky_texture(p)
+
+
+# the battle's start waits here, a frame at a time, for a sky still being read; false when the build was stopped
+func _sky_wait(gen: int) -> bool:
+	while not _sky_late.is_empty():
+		var p: String = _sky_late[1]
+		if _sky_pending == p and _still_reading(p):
+			if not _sliced() and not hold_sky:
+				pass   # a headless run has no frames to spare the wait for: it collects (waits) below
+			else:
+				await get_tree().process_frame
+				if gen != _build_gen or not is_inside_tree():
+					return false
+				continue
+		(_sky_late[0] as ShaderMaterial).set_shader_parameter("pano", _sky_texture(p))
+		_sky_late = []
+	return true
+
+
+static func _sky_texture(p: String) -> Resource:
+	if _sky_pending == p:
+		_sky_pending = ""
+		return ResourceLoader.load_threaded_get(p)   # waits only for what the worker has not read yet
+	return load(p)
+
+
+static func drop_sky_pending() -> void:
+	if _sky_pending != "" and ResourceLoader.load_threaded_get_status(_sky_pending) == ResourceLoader.THREAD_LOAD_LOADED:
+		ResourceLoader.load_threaded_get(_sky_pending)
+	_sky_pending = ""
+
+
+var _bw_us := {}   # issue 1518: _build_world's parts (the [load] battle scene ready line)
+
+
 func _build_world() -> void:
+	var tw := Time.get_ticks_usec()
 	env = Environment.new()
 	var man := ShipView.manifest()
 	var sky_res := str(man.get("sky", ""))
 	if sky_res != "" and ResourceLoader.exists(sky_res):
 		# the dead-star sky (A3), mipmapped so the 8K star field does not alias into speckle, and kept dim and subtle
 		var pano := ShaderMaterial.new()
-		pano.shader = WORLD_SKY.PANORAMA_SKY
-		pano.set_shader_parameter("pano", load(sky_res))
+		pano.shader = sh
+		_bw_us["sky shader"] = Time.get_ticks_usec() - tw
+		tw = Time.get_ticks_usec()
+		var sky_tex = _sky_texture_now(sky_res)
+		_bw_us["sky read"] = Time.get_ticks_usec() - tw
+		tw = Time.get_ticks_usec()
+		pano.set_shader_parameter("pano", sky_tex)
+		if sky_tex == null and _sky_pending == sky_res:
+			_sky_late = [pano, sky_res]   # still being read: _begin waits for it a frame at a time, under the cover
 		if LOOK.fleet_lighting_enabled():
 			pano.set_shader_parameter("sun_dir", -LOOK.KEY_DIR.normalized())
 			pano.set_shader_parameter("fleet_reflections", true)
+			pano.set_shader_parameter("fleet_reflections_v2", LOOK.ship_look_v2_enabled())   # issue 1777
 		var sky := Sky.new()
 		sky.sky_material = pano
 		sky.radiance_size = Sky.RADIANCE_SIZE_256
-		env.background_mode = Environment.BG_SKY
 		env.sky = sky
-		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+		if ResourceLoader.exists("res://world/world.gd") and not args.has("noworld"):
+			# issue 1434 (LOAD17 and LOAD19: the title's first frame 720 to 800 ms in the draw, no pipelines): the world
+			# replaces this sky with its own a few frames later (world.gd _make_sky, which turns the sky background on),
+			# so this one is never drawn and its radiance never made; it only hands the world its panorama. The
+			# background reflection follows the world's sky once it is up.
+			env.background_mode = Environment.BG_COLOR
+			env.background_color = Color(0.01, 0.012, 0.02)
+			env.reflected_light_source = Environment.REFLECTION_SOURCE_BG
+		else:
+			env.background_mode = Environment.BG_SKY
+			env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	else:
 		env.background_mode = Environment.BG_COLOR
 		env.background_color = Color(0.01, 0.012, 0.02)
@@ -343,7 +465,18 @@ func _build_world() -> void:
 		env.set_glow_level(lv, [0.0, 0.6, 1.0, 0.5, 0.0, 0.0, 0.0][lv])
 	var we := WorldEnvironment.new()
 	we.environment = env
+	_death_dof = LOOK.post_fx_enabled("DOF")
+	_lens_well = LOOK.post_fx_enabled("LENSING")
+	_lens_shock = LOOK.post_fx_enabled("SHOCKWAVE")
+	if _lens_well or _lens_shock:
+		_battle_lens = BattleLens.new()
+		_battle_lens.warm()
+		var compositor := Compositor.new()
+		compositor.compositor_effects = [_battle_lens]
+		we.compositor = compositor
 	add_child(we)
+	_bw_us["environment"] = Time.get_ticks_usec() - tw
+	tw = Time.get_ticks_usec()
 	var key := DirectionalLight3D.new()
 	key_light = key
 	key.transform = Transform3D(Basis.looking_at(KEY_DIR.normalized(), Vector3.UP), Vector3.ZERO)
@@ -359,9 +492,15 @@ func _build_world() -> void:
 	fill.light_color = FILL_COL
 	fill.light_energy = 0.5
 	add_child(fill)
+	_bw_us["lights"] = Time.get_ticks_usec() - tw
+	tw = Time.get_ticks_usec()
 	_apply_quality(str(args.get("quality", "max")))
+	_bw_us["quality"] = Time.get_ticks_usec() - tw
+	tw = Time.get_ticks_usec()
 	LOOK.apply(env, key, fill, {"quality": str(args.get("quality", "max"))})
 	key.directional_shadow_max_distance = 600.0
+	_bw_us["look"] = Time.get_ticks_usec() - tw
+	tw = Time.get_ticks_usec()
 	board = Board.new()
 	board.name = "Board"
 	board.grid_button_enabled = false   # KEEL exposes the grid in the menu and on Z
@@ -375,6 +514,8 @@ func _build_world() -> void:
 	fx = Fx.new()
 	fx.name = "Fx"
 	add_child(fx)
+	_bw_us["board"] = Time.get_ticks_usec() - tw
+	tw = Time.get_ticks_usec()
 	# the G4 effects system (godot/fx/API.md) when it is in the build; the placeholder stays for anything it lacks
 	if ResourceLoader.exists("res://fx/fx.gd") and not args.has("nofx"):
 		gfx = load("res://fx/fx.gd").new()
@@ -384,21 +525,40 @@ func _build_world() -> void:
 	cam.name = "Camera"
 	add_child(cam)
 	cam.current = true
+	if _battle_lens != null:
+		cam.pose_applied.connect(_step_battle_lens)
 	if gfx != null and gfx.has_method("setup"):
 		gfx.setup({"camera": cam, "quality": str(args.get("quality", "max")), "reduce_flashing": reduce_flashing, "shake": shake_scale, "unit": 1.0})
+		gfx.reduce_motion = reduce_motion   # issue 1582: gentle wing dives, no bank
+	_bw_us["effects and camera"] = Time.get_ticks_usec() - tw
+	tw = Time.get_ticks_usec()
 	_build_arrow()
+	_bw_us["arrow"] = Time.get_ticks_usec() - tw
 
 
 # the Graphics setting: max (everything but SSIL since issue 1262), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
 func _apply_quality(q: String) -> void:
-	apply_quality_to(get_viewport(), q, _jt(args.get("taa", false)), str(args.get("battle_aa", "default")),
-		float(args.get("render_scale", get_viewport().scaling_3d_scale)))
+	var vp := get_viewport()
+	if title_backdrop and _vp_saved.is_empty():
+		# issue 1434 (item 10): the backdrop shares the root viewport with the menu; stop_build() puts these back
+		_vp_saved = {"msaa_3d": vp.msaa_3d, "screen_space_aa": vp.screen_space_aa, "use_taa": vp.use_taa}
+	var aa_was := [vp.msaa_3d, vp.screen_space_aa, vp.use_taa]
+	# LOAD34b: the backdrop's own 2X (from the menu's 4X) cost the next title draw 847 ms warm (render cpu 846 ms, no
+	# pipelines: the render buffers and their passes made again), so the backdrop leaves the viewport's AA as the menu
+	# had it (no write at all; Artoo on b21535a6), and stop_build still puts the saved state back
+	if title_backdrop:
+		RenderingServer.directional_shadow_atlas_set_size(2048 if q == "low" else 4096, true)   # the rest of apply_quality_to
+	else:
+		apply_quality_to(vp, q, _jt(args.get("taa", false)))
+	if aa_was != [vp.msaa_3d, vp.screen_space_aa, vp.use_taa]:
+		SKEEP.event("viewport AA changed %s to %s" % [str(aa_was), str([vp.msaa_3d, vp.screen_space_aa, vp.use_taa])])
 
 
-static func apply_quality_to(vp: Viewport, q: String, taa: bool, aa := "default", render_scale := 1.0) -> void:
-	var fsr2 := RenderingServer.get_current_rendering_method() == "forward_plus" and aa in ["fsr2_native", "fsr2_quality"]
-	vp.msaa_3d = Viewport.MSAA_DISABLED if fsr2 else LOOK.msaa_for_quality(q)
-	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if q == "low" and not fsr2 else Viewport.SCREEN_SPACE_AA_DISABLED
+static func apply_quality_to(vp: Viewport, q: String, taa: bool, msaa := -1) -> void:
+	vp.msaa_3d = LOOK.msaa_for_quality(q) if msaa < 0 else msaa as Viewport.MSAA
+	# issue 1437 (item 8): the whole AA state every time (the viewport is the game's own, shared by every later screen
+	# and battle), so Low then Max no longer leaves FXAA on
+	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if q == "low" else Viewport.SCREEN_SPACE_AA_DISABLED
 	RenderingServer.directional_shadow_atlas_set_size(2048 if q == "low" else 4096, true)
 	vp.use_taa = taa and q != "low" and not fsr2
 	if fsr2:
@@ -407,6 +567,25 @@ static func apply_quality_to(vp: Viewport, q: String, taa: bool, aa := "default"
 	else:
 		vp.scaling_3d_scale = render_scale
 		vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR if render_scale >= 1.0 else Viewport.SCALING_3D_MODE_FSR
+
+
+# Issue 1434: the title backdrop no longer sets its own anti-aliasing (item 10's 2X switch cost a whole title draw,
+# LOAD34b); it draws with the viewport's AA as the menu had it.
+var _vp_saved := {}
+# Issue 1434: each _begin takes a build number; stop_build() (main.gd, leaving the title) moves it on, so a build still
+# under way stops at its next frame and does no more work.
+var _build_gen := 0
+
+
+func stop_build() -> void:
+	_build_gen += 1
+	stage.stop()
+	if not _vp_saved.is_empty():
+		var vp := get_viewport()
+		if vp != null:
+			for k in _vp_saved:
+				vp.set(k, _vp_saved[k])
+		_vp_saved.clear()
 
 
 func _post_quality(q: String) -> void:
@@ -551,34 +730,82 @@ func begin_with(a) -> void:
 		_begin(a)
 
 
+# true when a battle view has station terrain or a station hole (the board then draws station_T2)
+static func _has_station(v: Dictionary) -> bool:
+	var t = v.get("terrain", {})
+	if t is Dictionary and "station" in (t as Dictionary).values():
+		return true
+	var m = v.get("map", {})
+	if m is Dictionary:
+		for h in m.get("holes", []):
+			if h is Dictionary and str(h.get("kind", "")) == "station":
+				return true
+	return false
+
+
 func _begin(a) -> void:
 	_gen += 1   # issue 1433: work still awaiting from the last battle on this node is stale now
 	_api_join()
+	_join_think()
 	retiring = false
 	opening = false
 	_skipped_camera_kinds.clear()
 	_shot_cut_timer = null
 	_cine_release()
+	_reset_battle_lens()
 	_end_enemy_follow()
 	_click_q = {}
 	_threat_version = -1
 	_threat_one_ver = -1
 	api = a
+	_build_gen += 1
+	var gen := _build_gen
+	load_phase = "start"
 	warming = true
+	add_to_group("battle_loading")   # issue 1434: world bakes keep their disk writes until no battle is loading
 	hud.loading(true)
-	var obj0 = api.view().get("obj")
+	var sliced := _sliced()
+	if sliced:
+		stage.start(self)   # a no-op when _ready already started it; a battle begun again on this node starts it here
+	var v0 = api.view()
+	var obj0 = v0.get("obj") if v0 is Dictionary else null
 	if obj0 is Dictionary and str(obj0.get("type", "")) == "hold":
 		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
+	# PR 1772 (Fable, item 2): station_T2 reads on a worker too when the board has station hexes or a station hole
+	if v0 is Dictionary and _has_station(v0):
+		# the big cluster draws station_T2, smaller clusters and holes the outpost (issue 1791)
+		var spots := A4P.station_spots(v0)
+		A4P.prefetch_station(spots.x == 1, spots.y == 1)
 	if gfx != null:
 		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
+		if "passive" in gfx:
+			gfx.passive = title_backdrop   # issue 1434: the backdrop takes no death cuts
+		if "defer_shields" in gfx:
+			gfx.defer_shields = gfx.defer_initial_cuts   # issue 1434: shields wait for prepare_battle_hulls, sliced
+		if "warmup_batch" in gfx:
+			gfx.warmup_batch = 2 if gfx.defer_initial_cuts else 0   # issue 1434: warm pipelines a few per frame (LOAD20: 4 cost up to 0.8 s)
 	# Neon (PR 1776 review, item 1): maps a freed title showcase, sector map or earlier battle left waiting would run
 	# ahead of this battle's board planet; drop them before the frames below let the bake worker take one
 	if ResourceLoader.exists("res://world/world_bake.gd"):
 		load("res://world/world_bake.gd").drop_waiting(get_tree())
-	if DisplayServer.get_name() != "headless":
+	var pre := {}   # issue 1434 (LOAD29): the start's own steps, kept in begin_us
+	if sliced:
+		# issue 1434: the hull files start loading on worker threads now, while the board and the world are built
+		var tp := Time.get_ticks_usec()
+		_preload_hulls(a.view())
+		pre["preload_hulls"] = Time.get_ticks_usec() - tp
 		await get_tree().process_frame
 		await get_tree().process_frame
+		if gen != _build_gen:
+			return
+	var ts := Time.get_ticks_usec()
+	if not await _sky_wait(gen):
+		return
+	pre["sky_wait"] = Time.get_ticks_usec() - ts
+	var tb0 := Time.get_ticks_usec()
+	begin_us = pre
 	TBL = _api_tables()
+	begin_us["tables"] = Time.get_ticks_usec() - tb0
 	if ai_level != "":
 		_api_set_ai(ai_level)
 	PACE = TBL.get("PACE", {})
@@ -627,12 +854,30 @@ func _begin(a) -> void:
 	hud.hide_tipcard()
 	adaptation_heard = false
 	_ghost_clear()
+	begin_us["reset"] = Time.get_ticks_usec() - tb0 - int(begin_us["tables"])
+	var tb1 := Time.get_ticks_usec()
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
+	board.title_backdrop = title_backdrop   # issue 1434 (LOAD32): no 8K planet upload behind the title menu
 	if key_light != null:
 		board.sun_dir = key_light.global_transform.basis.z   # a directional light shines along its -Z: the sun is +Z
-	board.build(api)
+	await board.build(api, sliced)   # issue 1434: sliced, the board's steps take a frame each
+	if gen != _build_gen:
+		return
 	cam.bounds = board.bounds()
+	begin_us["board"] = Time.get_ticks_usec() - tb1
+	for k in board.build_us:
+		begin_us["board:" + str(k)] = board.build_us[k]
+	if sliced:
+		load_phase = "board_build"
+		await get_tree().process_frame   # issue 1434 (LOAD6: start to board 1.4 to 1.6 s): the board, then the look
+		if gen != _build_gen:
+			return
 	_post_quality(str(args.get("quality", "max")))
+	if sliced:
+		load_phase = "board"
+		await get_tree().process_frame   # issue 1434: the board's frame, then the world's steps
+		if gen != _build_gen:
+			return
 	if world != null:
 		world.queue_free()
 		world = null
@@ -651,16 +896,36 @@ func _begin(a) -> void:
 			"nebula_wake": args.has("nebula-wake") or str(args.get("nebula_wake", "false")) == "true"}
 		if args.has("sector_setting"): world_opts["sector_setting"] = args["sector_setting"]
 		if args.get("stop") is Dictionary: world_opts["stop"] = args["stop"]   # issue 1272: the stop's sky mood
-		world.build(vb, world_opts)
+		if sliced:
+			# issue 1434 (LOAD5: one 1.5 to 2 s frame between the cover and the ships): the world builds over a few frames
+			load_phase = "world_build"
+			world.slice_yield = true
+			var wnode = world
+			await world.build(vb, world_opts)
+			if not is_instance_valid(wnode) or gen != _build_gen:
+				return
+			wnode.slice_yield = false
+		else:
+			world.build(vb, world_opts)
 		for c in backdrop.get_children():
 			c.queue_free()
 	else:
-		env.volumetric_fog_enabled = false
-		backdrop.build(cam.bounds)
+		backdrop.build(cam.bounds, env)
+	var grade_region := "frontier"
+	if world != null:
+		grade_region = "deadstar" if world.setting["deadstar"] else str(world.setting["region"])
+	LOOK.battle_grade(env, grade_region)
 	V = api.view()
 	_index_view()
-	for u in V["units"]:
-		_make_view(u)
+	if sliced:
+		load_phase = "ships"
+		var built: bool = await _make_views_sliced(gen)
+		load_phase = "after_ships"
+		if not built:
+			return
+	else:
+		for u in V["units"]:
+			_make_view(u)
 	_sync(V)
 	if world != null: world.use_ship_debris(views.values())
 	# open on your fleet, looking toward the enemy (the browser game's camera starts over the player's side)
@@ -679,7 +944,7 @@ func _begin(a) -> void:
 	_log("Contact: %s. %d ship%s on the scanners." % [str(F.get("n", _enemy_fac())), ne, "s" if ne > 1 else ""], "s")
 	var well = api.world_info().get("well")
 	if well is Dictionary or (well is bool and well):
-		_log("The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "s")
+		_log("The %s warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim." % api.R.dead_star_name(api.R.RUN, true), "s")
 	batches.append({"events": api.take_events(), "view": api.view()})
 	if not showcase:
 		sfx.ambient_start()
@@ -703,6 +968,8 @@ func _begin(a) -> void:
 		var A = TBL.get("ADMIRALS", {}).get(adm, {})
 		hud.set_crest(load("res://portraits/portraits.gd").crest(adm), str(A.get("n", adm)) if A is Dictionary else adm)
 	await _warmup()
+	if gen != _build_gen:
+		return
 	if music != null:
 		var pf := "voidsworn"
 		for u in V["units"]:
@@ -725,6 +992,7 @@ func _begin(a) -> void:
 				if n != null:
 					n.visible = false
 		showcase_ready = true
+		remove_from_group("battle_loading")
 		return
 	if not bot and not args.has("shots") and not args.has("breach-shots"):
 		_start_opening()
@@ -828,15 +1096,32 @@ func _pipe_count() -> int:
 
 var warming := false
 const ArrivalWarm := preload("res://render/arrival_warm.gd")
+const SKEEP := preload("res://render/shader_keep.gd")   # issue 1434: render events for the load bench
 const A4P := preload("res://assets/ships/a4_props.gd")   # issue 1536: the Hold relay beacon prefetch
 var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arrive mid-battle (render/arrival_warm.gd)
+
+
+# issue 1434: what the load is doing now (bench/load_1434.gd names the phase of the worst frame under the cover)
+var load_phase := ""
+var stage := StageIn.new()   # issue 1434 (LOAD22): holds each new mesh's first draw until the load gives it back
+
+
+# --sliced-load: the windowed path in a headless check (main/test/showcase_quiet_check.gd)
+func _sliced() -> bool:
+	return DisplayServer.get_name() != "headless" or args.has("sliced-load")
+var begin_us := {}   # issue 1434 (LOAD9: start to board 1 to 3 s of process step): _begin's parts before the board's frame
 
 
 func _warmup() -> void:
 	warming = true
 	hud.loading(true)
+	load_phase = "world"
 	if world != null: await world.wait_ready()
+	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	load_phase = "planet"
 	await board.wait_planet()   # issue 1765: the board planet's maps load or bake behind the cover
+	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	load_phase = "pull_back"
 	var keep := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
 	cam.b = 0.6
 	cam.r = maxf(cam.bounds.x, cam.bounds.y) * 2.4
@@ -844,14 +1129,35 @@ func _warmup() -> void:
 	cam.snap()
 	for i in 3:
 		await get_tree().process_frame
-	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless":
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	# issue 1434 (LOAD22): with the whole board in view, the meshes held back since the load began get their first draw a
+	# few new materials a frame (render/stage_in.gd); the effect warm-up below spreads its own
+	# issue 1434 (LOAD29 cold s25: 7 hull-debris chunks installed during prepare_hulls, after the drain stopped watching,
+	# drew 83 pipelines and 7 s in one frame): the chunks are cut on a worker, so wait for them here (at most 15 s) and the
+	# drain below stages them in with the rest
+	if world != null and world.has_method("ship_debris_pending") and world.ship_debris_pending():
+		load_phase = "hull_debris"
+		var td := Time.get_ticks_msec()
+		while world.ship_debris_pending() and Time.get_ticks_msec() - td < 15000:
+			await get_tree().process_frame
+			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	load_phase = "stage_in"
+	await stage.drain(get_tree())
+	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	# issue 1434 (item 10): the title backdrop never fights, so it skips the death cuts, shield skins and effect warm-up
+	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless" and not title_backdrop:
 		# issue 1289: the reinforcement's hull is built, cut and drawn here with the others, then hidden until it arrives
 		if api != null and api.has_method("arrival_previews"):
+			load_phase = "arrival_warm"
 			arrival_warm = ArrivalWarm.new()
 			arrival_warm.prepare(self, gfx, api.arrival_previews(), Vector3.ZERO)
 			for i in 2:
 				await get_tree().process_frame
+				if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		load_phase = "prepare_hulls"
 		await gfx.prepare_battle_hulls()
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		load_phase = "fx_warmup"
 		# at most 20 s: a warm-up that never returns must never hold the battle (Opus review, Nov 3)
 		var done := [false]
 		var run := func() -> void:
@@ -861,20 +1167,28 @@ func _warmup() -> void:
 		var t0 := Time.get_ticks_msec()
 		while not done[0] and Time.get_ticks_msec() - t0 < 20000:
 			await get_tree().process_frame
+			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 		if arrival_warm != null:
 			arrival_warm.park()
+	load_phase = "camera_back"
 	for i in 2:
 		await get_tree().process_frame
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	cam.a = keep["a"]
 	cam.b = keep["b"]
 	cam.r = keep["r"]
 	cam.t = keep["t"]
 	cam.snap()
 	await get_tree().process_frame
+	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	load_phase = "settle"
 	await load("res://main/load_screen.gd").settle(get_tree())
+	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	load_phase = ""
 	pipe_base = _pipe_count()
 	hud.loading(false)
 	warming = false
+	remove_from_group("battle_loading")
 
 
 func _enemy_fac_of(v: Dictionary) -> String:
@@ -898,8 +1212,15 @@ func _index_view() -> void:
 
 
 func _make_view(u: Dictionary) -> void:
+	var sv = _make_view_node(u)
+	if sv != null:
+		_register_fx_ship(u, sv)
+
+
+# the ship's node, hull and marker (no effects registration yet)
+func _make_view_node(u: Dictionary) -> ShipView:
 	if views.has(u["id"]):
-		return
+		return null
 	var sv = ShipView.new()
 	sv.name = "ship_" + str(u["id"])
 	add_child(sv)
@@ -908,12 +1229,250 @@ func _make_view(u: Dictionary) -> void:
 	views[u["id"]] = sv
 	sv.calm = reduce_motion   # issue 1581: Reduce motion per view (no drift, bob or nod; half the ignition beat)
 	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
-	_register_fx_ship(u, sv)
+	return sv
+
+
+# Issue 1434 (Astra item 2): a cold 24-ship load spent about 5 s building every ship in one main-thread call under the
+# cover (worst ship 679 ms). Now the hull files load on worker threads from the moment the roster is known
+# (_preload_hulls), and the ships are built here a few per frame: the cover draws between them with a count, and no
+# stretch runs past LOAD_SLICE_MS except one ship's own build. Scene attachment, the look overrides and the effects
+# registration stay on the main thread, in that order, as _make_view does them. The log line names the stage that costs
+# most, so the next slice goes where the time is.
+const LOAD_SLICE_MS := 40.0
+var load_stats := {}   # issue 1434: the last sliced build's timings (bench/load_1434.gd)
+var _preload := {}   # hull resource path -> the loaded resource (null while its threaded load runs)
+
+
+func _preload_hulls(v: Dictionary) -> void:
+	_drop_preload(false)
+	for u in v.get("units", []):
+		var p := ShipView.hull_path(u)
+		if p == "":
+			p = ShipView.wing_res(u)   # issue 1434: a strike craft wing's model scene loads on a worker too
+		if p == "" or _preload.has(p) or not ResourceLoader.exists(p):
+			continue
+		if ResourceLoader.load_threaded_request(p) == OK:
+			_preload[p] = null
+
+
+# issue 1434 (LOAD30d warm title: a 1131 ms draw in the backdrop's start with one pipeline and no viewport time, just
+# after the hull reads were asked for): how many of this load's hull reads have finished, so the load bench can put a
+# long draw against the reads (and the textures they upload) that landed before it
+func hull_reads_done() -> int:
+	var n := 0
+	for p in _preload:
+		if _preload[p] != null or ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_LOADED:
+			n += 1
+	return n
+
+
+# every threaded request is collected once (an uncollected one keeps its resource alive to the end of the process), and
+# every worker instantiation is waited for; an instance never handed to a ship is freed. wait false (leaving the tree,
+# Artoo on PR 1445): what is still running is handed to ShipView.retire_build and collected over the next frames, so a
+# click that leaves the title never waits here for a hull load or a worker instance.
+func _drop_preload(wait := true) -> void:
+	var loads: Array = []
+	for p in _preload:
+		if _preload[p] == null:
+			if wait or ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+				ResourceLoader.load_threaded_get(p)
+			else:
+				loads.append(p)
+	_preload.clear()
+	var insts: Array = []
+	for k in _inst_tasks:
+		var e: Dictionary = _inst_tasks[k]
+		if wait or WorkerThreadPool.is_task_completed(int(e["tid"])):
+			WorkerThreadPool.wait_for_task_completion(int(e["tid"]))
+			var n = e["out"][0]
+			if n != null and is_instance_valid(n) and (n as Node).get_parent() == null:
+				(n as Node).free()
+		else:
+			insts.append(e)
+	_inst_tasks.clear()
+	if not loads.is_empty() or not insts.is_empty():
+		ShipView.retire_build(loads, insts)
+
+
+# Issue 1434, PC run 1 (OPUS1434_LOAD2): one ship's build still took up to 566 ms (V16_37 setup, about 520 ms in every
+# battle) and one effects registration up to 518 ms. So a kit hull is now instantiated on a worker thread (a node that is
+# not in the tree yet; it joins the tree on the main thread in setup_begin), a few ships ahead of the build; setup is
+# split in two (setup_begin: the hull node; setup_end: look, fit, engines, ring) with a frame between them when the
+# stretch is long; and the worst ship's stages and effects parts are logged.
+const INST_AHEAD := 3
+var _inst_tasks := {}   # unit index -> {"tid", "out": [instance]}
+var _ls := {}           # the sliced build's stats in progress
+var _ls_t := 0          # start of the current main-thread stretch
+
+
+func _start_inst(units: Array, from: int) -> void:
+	for j in range(from, mini(from + INST_AHEAD, units.size())):
+		if _inst_tasks.has(j):
+			continue
+		var p := ShipView.hull_path(units[j])
+		if not _preload.has(p) or not ShipView.is_kit_res(p):
+			continue
+		if _preload[p] == null:
+			if ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_LOADED:
+				continue
+			_preload[p] = ResourceLoader.load_threaded_get(p)
+		var ps = _preload[p]
+		if not (ps is PackedScene):
+			continue
+		var out := [null]
+		var tid := WorkerThreadPool.add_task(func() -> void: out[0] = (ps as PackedScene).instantiate())
+		_inst_tasks[j] = {"tid": tid, "out": out}
+
+
+# a frame for the cover when the current stretch has run past LOAD_SLICE_MS; false when the build was stopped
+func _ls_yield(gen: int, force := false) -> bool:
+	var now := Time.get_ticks_usec()
+	if not force and now - _ls_t <= LOAD_SLICE_MS * 1000.0:
+		return true
+	_ls["worst_stretch"] = maxi(_ls["worst_stretch"], now - _ls_t)
+	await get_tree().process_frame
+	_ls["frames"] += 1
+	_ls_t = Time.get_ticks_usec()
+	return gen == _build_gen
+
+
+func _make_views_sliced(gen: int) -> bool:
+	var units: Array = V["units"]
+	var total := units.size()
+	var t0 := Time.get_ticks_usec()
+	_ls_t = t0
+	_ls = {"worst_stretch": 0, "frames": 0, "wait": 0, "setup": 0, "fx": 0, "worst_setup": 0, "worst_fx": 0, "worst_code": "",
+		"worst_stages": {}, "worst_fx_code": "", "worst_fx_parts": {}, "worker_insts": 0}
+	var ok := true
+	hud.loading_count(0, total)
+	for i in total:
+		var u: Dictionary = units[i]
+		if views.has(u["id"]):
+			continue
+		_start_inst(units, i)
+		var p := ShipView.hull_path(u)
+		if p == "":
+			p = ShipView.wing_res(u)   # issue 1434: wait for a wing's model on the worker, never load it here
+		var tw := Time.get_ticks_usec()
+		# the hull file, then its worker instance (the cover keeps drawing while either is still running)
+		while (_preload.has(p) and _preload[p] == null and ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS) \
+				or (_inst_tasks.has(i) and not WorkerThreadPool.is_task_completed(int(_inst_tasks[i]["tid"]))):
+			ok = await _ls_yield(gen, true)
+			if not ok:
+				return false
+			_start_inst(units, i)
+		if _preload.has(p) and _preload[p] == null:
+			_preload[p] = ResourceLoader.load_threaded_get(p)   # held until the views are built, so setup's load() is a cache hit
+		var inst: Node3D = null
+		if _inst_tasks.has(i):
+			WorkerThreadPool.wait_for_task_completion(int(_inst_tasks[i]["tid"]))
+			inst = _inst_tasks[i]["out"][0]
+			_inst_tasks.erase(i)
+			if inst != null:
+				_ls["worker_insts"] += 1
+		_ls["wait"] += Time.get_ticks_usec() - tw
+		var ts := Time.get_ticks_usec()
+		var sv = ShipView.new()
+		sv.name = "ship_" + str(u["id"])
+		add_child(sv)
+		sv.pre_inst = inst
+		sv.setup_begin(u, board.hex_world(u["q"], u["r"]), true)
+		var used := Time.get_ticks_usec() - ts
+		ok = await _ls_yield(gen)
+		if not ok:
+			return false
+		# the look a few surfaces per frame (LOAD9: one hull's 17 took up to 840 ms in one go)
+		while true:
+			var tl := Time.get_ticks_usec()
+			var looked: bool = sv.setup_look(int(LOAD_SLICE_MS * 1000.0))
+			used += Time.get_ticks_usec() - tl
+			ok = await _ls_yield(gen, true)
+			if not ok:
+				return false
+			if looked:
+				break
+		var te := Time.get_ticks_usec()
+		sv.setup_end()
+		sv.set_marker(u["side"] == "player")
+		views[u["id"]] = sv
+		disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
+		used += Time.get_ticks_usec() - te
+		_ls["setup"] += used
+		if used > _ls["worst_setup"]:
+			_ls["worst_setup"] = used
+			_ls["worst_code"] = sv.code
+			_ls["worst_stages"] = sv.stage_us.duplicate()
+		# issue 1434 (LOAD5: a first hull's analyse took up to 450 ms): a new hull's triangles and hit BVH get their own
+		# frame. The view holds still until its effects are registered, so the pose (and the geometry key) is the same.
+		# the whole view (its hull node bobs on its own) holds still, so the geometry key matches at registration
+		var pm_was: Node.ProcessMode = sv.process_mode
+		sv.process_mode = Node.PROCESS_MODE_DISABLED
+		ok = await _ls_yield(gen)
+		if not ok:
+			return false
+		if gfx != null and "hull_shared" in gfx:
+			var tg := Time.get_ticks_usec()
+			var ms_list: Array = sv.meshes if not sv.a4 else load("res://fx/fx_ship.gd")._find_meshes(sv)
+			if load("res://fx/fx_hull.gd").prime(sv, ms_list, gfx.hull_shared):
+				var g_us := Time.get_ticks_usec() - tg
+				_ls["geo"] = int(_ls.get("geo", 0)) + g_us
+				if g_us > int(_ls.get("worst_geo", 0)):
+					_ls["worst_geo"] = g_us
+					_ls["worst_geo_code"] = sv.code
+				ok = await _ls_yield(gen, true)
+				if not ok:
+					return false
+		var prof0: Dictionary = (gfx.prof as Dictionary).duplicate() if gfx != null and "prof" in gfx else {}
+		var tr := Time.get_ticks_usec()
+		_register_fx_ship(u, sv)
+		sv.process_mode = pm_was
+		var fx_us := Time.get_ticks_usec() - tr
+		_ls["fx"] += fx_us
+		if fx_us > _ls["worst_fx"]:
+			_ls["worst_fx"] = fx_us
+			_ls["worst_fx_code"] = sv.code
+			var parts := {}
+			if gfx != null and "prof" in gfx:
+				for k in gfx.prof:
+					if str(k).begins_with("add:"):
+						var d := int(gfx.prof[k]) - int(prof0.get(k, 0))
+						if d > 0:
+							parts[k] = d
+			_ls["worst_fx_parts"] = parts
+		hud.loading_count(i + 1, total)
+		ok = await _ls_yield(gen)
+		if not ok:
+			return false
+	_ls["worst_stretch"] = maxi(_ls["worst_stretch"], Time.get_ticks_usec() - _ls_t)
+	_ls["ships"] = total
+	_ls["ms"] = (Time.get_ticks_usec() - t0) / 1000
+	load_stats = _ls   # read by bench/load_1434.gd (times in microseconds, ms in milliseconds)
+	_drop_preload()
+	hud.loading_count(0, 0)
+	print("[load] %d ships built in %d ms over %d frames%s: longest stretch %d ms; ship setup %d ms (worst %d ms, %s: %s), effects registration %d ms (worst %d ms, %s: %s), hull geometry %d ms (worst %d ms, %s), waiting on hull files and worker instances %d ms; %d hulls instanced on workers" % [
+		total, _ls["ms"], _ls["frames"], " (title backdrop)" if title_backdrop else "", _ls["worst_stretch"] / 1000,
+		_ls["setup"] / 1000, _ls["worst_setup"] / 1000, _ls["worst_code"], _us_ms(_ls["worst_stages"]),
+		_ls["fx"] / 1000, _ls["worst_fx"] / 1000, _ls["worst_fx_code"], _us_ms(_ls["worst_fx_parts"]),
+		int(_ls.get("geo", 0)) / 1000, int(_ls.get("worst_geo", 0)) / 1000, str(_ls.get("worst_geo_code", "-")), _ls["wait"] / 1000, _ls["worker_insts"]])
+	return true
+
+
+# {"inst": 412345, ...} in microseconds -> "inst 412, ..." in milliseconds (the load log)
+static func _us_ms(d: Dictionary) -> String:
+	var parts := PackedStringArray()
+	for k in d:
+		parts.append("%s %d" % [str(k).trim_prefix("add:"), int(d[k]) / 1000])
+	return ", ".join(parts) if not parts.is_empty() else "-"
 
 
 func _register_fx_ship(u: Dictionary, sv: ShipView) -> void:
+	# issue 1582: the class altitude band and drop-line, set here so every way a view is built (the opening roster,
+	# reinforcements, a revived or captured hull) gets it before its effects are registered. Same height every call.
+	sv.set_band(ALT_BAND.height(u))
 	if gfx != null and gfx.has_method("add_ship"):
 		var info := {"faction": str(u["fac"]), "cls": str(u["cls"]), "size": float(u["size"]), "squadron": bool(u["squadron"]), "flagship": bool(u["flagship"]), "code": sv.code}
+		if title_backdrop:
+			info["shielded"] = false   # issue 1434 (item 10): the backdrop never takes a hit, so it builds no shield skin
 		if not sv.a4:
 			info["meshes"] = sv.meshes   # A4 ships: fx finds the hull and its skin_<n> patches itself
 		gfx.add_ship(str(u["id"]), sv, info)
@@ -961,6 +1520,7 @@ static func hex_distance(a: Dictionary, b: Dictionary) -> int:
 
 
 func _sync(v: Dictionary) -> void:
+	LOOK.battle_ssr(env, str(args.get("quality", "max")), v.get("units", []))
 	V = v
 	_index_view()
 	_music_feed()
@@ -1005,7 +1565,7 @@ func _runner() -> void:
 				if _stale(g):
 					return
 				var b = await _think()
-				if _stale(g):
+				if _stale(g) or quitting:
 					return
 				if b != null:
 					batches.append(b)
@@ -1029,24 +1589,30 @@ func _runner() -> void:
 		_refresh_ui()
 
 
-func _think():
-	# the enemy's activation runs on a worker thread, so the frame never stalls while it decides
-	think_out = null
+func _think() -> Variant:
+	var rules = api
+	return await _think_batch(func() -> Dictionary:
+		return {"events": rules.step(), "view": rules.view()})
+
+
+# The enemy and the replay bot use the same worker slot. The main thread plays the completed batch.
+func _think_batch(collect: Callable) -> Variant:
+	var gen := _gen
+	var out := [null]
 	thinking = true
-	var tid := WorkerThreadPool.add_task(func() -> void:
-		var ev = api.step()
-		think_out = {"events": ev, "view": api.view()})
+	var tid := WorkerThreadPool.add_task(func() -> void: out[0] = collect.call())
 	_think_tid = tid
-	while not WorkerThreadPool.is_task_completed(tid):
+	while _think_tid == tid and not WorkerThreadPool.is_task_completed(tid):
 		await get_tree().process_frame
-	if _think_tid == tid:
-		WorkerThreadPool.wait_for_task_completion(tid)
-		_think_tid = -1
-	thinking = false
+	if _think_tid != tid:
+		return null
+	_join_think()
+	if _stale(gen) or quitting:
+		return null
 	var np := _api_not_ported()
 	if np != "":
 		_error("NOT PORTED: " + np)
-	return think_out
+	return out[0]
 
 
 func _cmd(f: Callable) -> bool:
@@ -1061,20 +1627,30 @@ func _cmd(f: Callable) -> bool:
 		_error("NOT PORTED: " + np)
 	if ev.is_empty() and not ok:
 		return false
-	_plan_clear()   # issue 1589: once the rules have acted, a plan made before is stale
-	batches.append({"events": ev, "view": api.view()})
-	_clear_overlay()
-	_runner()
-	_refresh_ui()   # issue 1589 (Ryan, Nov 22): the runner is now busy, so the card leaves while the event plays
+	_play_command_batch({"events": ev, "view": api.view()})
 	return bool(ok)
 
 
-# Threads (the scene enforces this; the rules API locks only step()): the rules are never used by two threads at once.
-# The enemy's step() and the threat map run on worker threads. Every main-thread path that reads or changes the rules
+func _play_command_batch(batch: Dictionary) -> void:
+	_plan_clear()   # issue 1589: once the rules have acted, a plan made before is stale
+	batches.append(batch)
+	_clear_overlay()
+	_runner()
+	_refresh_ui()   # issue 1589 (Ryan, Nov 22): the runner is now busy, so the card leaves while the event plays
+
+
+# The enemy's step(), replay bot and threat map run on worker threads. A main-thread path that reads or changes the rules
 # first calls _api_join(): it finishes a running threat map at once (its result is kept) and answers false while the enemy
-# is thinking, so the caller skips the rules and draws from the last view instead. _exit_tree drains both tasks.
+# or bot is thinking, so the caller draws from the last view. _exit_tree drains both tasks.
 var _think_tid := -1
 var _threat_tid := -1
+
+
+func _join_think() -> void:
+	if _think_tid >= 0:
+		WorkerThreadPool.wait_for_task_completion(_think_tid)
+		_think_tid = -1
+	thinking = false
 
 
 # The rules only through battle_api.gd (the verifier's rule, Oct 26): the wrappers below are the API's; until each lands
@@ -1207,6 +1783,9 @@ func _stale(g: int) -> bool:
 # mark the battle retired before finished goes out: post-await work from it is rejected from here on
 func _retire() -> void:
 	retiring = true
+	_reset_battle_lens()
+	if _death_dof and cam != null:
+		cam.set_close_dof(false)
 	_deployment_api = null
 	_gen += 1
 	_click_q = {}
@@ -1217,7 +1796,18 @@ func _finish(r: Dictionary) -> void:
 	finished.emit(r)
 
 
+# issue 1434: how long the last battle's _exit_tree took on the main thread, and whether it left a build part way
+static var last_exit_us := 0
+static var last_exit_mid_build := false
+static var last_exit_id := 0   # which battle the two above belong to (the bench ties them to the backdrop it clicked away from)
+
+
 func _exit_tree() -> void:
+	var t_exit := Time.get_ticks_usec()
+	stage.stop()
+	_build_gen += 1   # issue 1518: a build still awaiting stops at its next step (quit or leave mid-load)
+	last_exit_mid_build = not _inst_tasks.is_empty() or _preload.values().has(null)
+	_drop_preload(false)   # issue 1434: a build stopped part way hands its running loads and instances on, no wait
 	# exit synchronisation stays: drain both tasks, then clear the flags they own
 	retiring = true
 	_gen += 1
@@ -1225,12 +1815,11 @@ func _exit_tree() -> void:
 		WorkerThreadPool.wait_for_task_completion(_threat_tid)
 		_threat_tid = -1
 	_threat_busy = false
-	if _think_tid >= 0:
-		WorkerThreadPool.wait_for_task_completion(_think_tid)
-		_think_tid = -1
-	thinking = false
+	_join_think()
 	# issue 1204: the per-hull look copies are keyed by this battle's materials; drop them so a run does not grow them
 	ShipView.clear_look_cache()
+	last_exit_us = Time.get_ticks_usec() - t_exit
+	last_exit_id = get_instance_id()
 
 
 # Reduce flashing and Screen shake (settings, and the battle menu): reach G4's fx live
@@ -1283,6 +1872,23 @@ func wait(ms: float, skippable_cut := false) -> void:
 	await timer.timeout
 	if _shot_cut_timer == timer:
 		_shot_cut_timer = null
+
+
+# Leave room for hit pauses, kill slow-mo and a late death cut, even if FX stops stepping.
+const FX_WAIT_GRACE_S := 6.0
+
+
+func _await_fx(at: float, settled := Callable()) -> bool:
+	var effects = gfx
+	var gen := _gen
+	var deadline := Time.get_ticks_msec() + ceili((maxf(at - float(effects.now), 0.0) + FX_WAIT_GRACE_S) * 1000.0)
+	while not _stale(gen) and is_instance_valid(effects) and gfx == effects:
+		if float(effects.now) >= at and (not settled.is_valid() or bool(settled.call())):
+			return true
+		if Time.get_ticks_msec() >= deadline:
+			break
+		await get_tree().process_frame
+	return false
 
 
 # The round budget (presentation only, outcomes unchanged): past 5 s of a round's enemy time the rest of its turn speeds
@@ -1531,7 +2137,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				await wait(float(PACE["banner"]) + 140.0)
 		"regen_unlock":
 			if disp.has(e["unit"]):
-				disp[e["unit"]]["regenLock"] = false
+				_show_regen_lock(e["unit"], false)
 				regen_unlocks[e["unit"]] = int(regen_unlocks.get(e["unit"], 0)) + 1
 		"log":
 			hud.add_log(str(e.get("text", "")), str(e.get("kind", "")) if e.get("kind") != null else "")
@@ -1691,7 +2297,6 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				d2["hp"] = float(d2["hp"]) - float(e["recoil"])
 			await wait(500.0)
 		"board":
-			sfx.play("board_grapple", {"pos": _pos(e["target"]), "variant": str(VU.get(e["unit"], {}).get("fac", ""))})
 			var res := str(e["result"])
 			var who := _who(e["unit"])
 			if res == "capture":
@@ -1711,9 +2316,11 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			var bsv = views.get(e["unit"])
 			var btv = views.get(e["target"])
 			if bsv != null and btv != null and not bsv.dead and not reduce_motion:
-				bsv.elev_target = clampf(float(btv.hull_lift) - float(bsv.hull_lift), -4.0, 4.0)
+				bsv.elev_target = clampf(float(btv.hull_lift) + float(btv.band_y) - float(bsv.hull_lift) - float(bsv.band_y), -9.0, 9.0)
 				if absf(float(bsv.elev_target)) > 0.2:
 					await wait(450.0)
+			# the grapple sounds on the breach's frame, after any height trim (issue 1582: hulls now sit at their bands)
+			sfx.play("board_grapple", {"pos": _pos(e["target"]), "variant": str(VU.get(e["unit"], {}).get("fac", ""))})
 			if gfx != null and gfx.has_method("board"):
 				boarded = float(gfx.board(str(e["unit"]), str(e["target"]), res, speed))
 			if boarded <= 0.0:
@@ -1777,22 +2384,31 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 
 
 const WRECK_LEASH_K := 0.8      # issue 1236: a blocking wreck's pieces rest within this share of the hex radius
-const WRECK_CHECK_S := 4.0      # seconds after a wreck's death plays: no pieces on the board by then lays the burnt hulk
+const WRECK_CHECK_S := 4.0      # effect seconds before the board checks a new wreck for missing pieces
 
 
 # issue 1236: the board marks a wreck's hex, and lays the burnt hulk there if the death left nothing to see
 func _lay_wreck(unit) -> void:
 	var at: Vector2i = wrecked[unit]
 	var id := str(unit)
-	var fx_pieces: bool = gfx != null and gfx.has_method("wreck_pieces")
+	var effects = gfx
+	var first: bool = not board.wrecks.has(id)
 	board.add_wreck(id, at.x, at.y)
-	if not fx_pieces:
+	if not is_instance_valid(effects) or not effects.has_method("wreck_settled"):
 		return   # no effects: the ship view keeps its own darkened hull in place (ShipView.die)
-	var gen: int = board.built
-	get_tree().create_timer(WRECK_CHECK_S).timeout.connect(func() -> void:
-		if not is_instance_valid(board) or board.built != gen or board.wrecks.get(id, "") != board.key(at.x, at.y): return
-		if gfx == null or int(gfx.wreck_pieces(id)) > 0: return
-		board.add_wreck(id, at.x, at.y, true))
+	var built: int = board.built
+	var ship = effects.ship(id)
+	# the dead ship's own faction from its live view (the board's build-time view misses reinforcements: Artoo on PR 1772)
+	var sv = views.get(unit)
+	var fac: String = str(sv.fac) if sv != null and is_instance_valid(sv) else ""
+	# A recheck of an established wreck can run immediately if its death has already settled.
+	var check_at: float = float(effects.now) + (WRECK_CHECK_S if first or not effects.wreck_settled(id) else 0.0)
+	if not await _await_fx(check_at, effects.wreck_settled.bind(id)):
+		return
+	if not is_instance_valid(board) or board.built != built or not wrecked.has(unit) or wrecked[unit] != at:
+		return
+	if board.wrecks.get(id, "") == board.key(at.x, at.y) and effects.ship(id) == ship and int(effects.wreck_pieces(id)) == 0:
+		board.add_wreck(id, at.x, at.y, true, fac)
 
 
 func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
@@ -1963,7 +2579,7 @@ func _play_move(id, path: Array, charge: bool) -> void:
 			# G4 fx engine level: idle, 2 full burn)
 			# issue 1581: a cold drive (a slide, a back-off, braking) is fed below fx_ship's trail threshold, so no bright
 			# core or exhaust ribbon is laid while the thrusters do the work
-			gfx.set_engine(str(id), (ENGINE_COLD if bool(sv.drive_cold) else _drive_level(float(sv.thrust))) if cin else clampf(1.0 + float(sv.thrust), 0.5, 2.2))
+			gfx.set_engine(str(id), (ENGINE_COLD if bool(sv.drive_cold) else _drive_level(float(sv.thrust)) * float(sv.drive_swell())) if cin else clampf(1.0 + float(sv.thrust), 0.5, 2.2))
 		if args.has("speed-trace"):   # the hull's speed (hexes a second), spin (degrees a second), drive and jets
 			print("[speed] %s %.3f %.2f %.0f %.2f retro %.2f side %.2f aft %.2f turn %.2f" % [str(id), game_t - t_move, sv._vel.length() / board.HW, rad_to_deg(sv._yaw_v), float(sv.thrust), sv.jet_retro, sv.jet_side, sv.jet_aft, sv.jet_turn])
 		if move_frames != "":
@@ -2347,6 +2963,8 @@ func _cine_frame(a_id, t_id) -> void:
 
 
 func _cine_release() -> void:
+	if _death_dof and cam != null:
+		cam.set_close_dof(false)
 	if cine_saved.is_empty():
 		return
 	_routine_shot_cut = ""
@@ -2398,6 +3016,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var L: float = tsv.L if tsv != null else 10.0
 	var shield_col: Color = FLOOK.shield(str(VU.get(t_id, {}).get("fac", "hegemony")))
 	var total := 0.0
+	var fx_start := -1.0
 	var hi := 0
 	# the browser's own length for this volley (fx3d.js timing), the cap for a paced wait
 	var btot := (0.32 + n * 0.25 + 0.15) if fam in ["lance", "ion"] else ((0.32 + n * 0.12 + 0.84) if fam == "torp" else (n * 0.07 + 0.49))
@@ -2434,9 +3053,11 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 					var at := 0.5 + fi * 0.2
 					_at_fx(at, func() -> void: _snap("tp_%s_%02d" % [tag, fi]))
 	if gfx != null and gfx.has_method("volley"):
+		fx_start = float(gfx.now)
 		var hl: Array = []
 		for h in hits:
-			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
+			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"],
+				"shieldFraction": h.get("shieldFraction", -1.0)})
 		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0)),
 			"break_k": int(land["break_k"]) if not (land["downs"] as Array).is_empty() else -1})
 		land["pts"] = r.get("hit_pts", [])   # issue 1239: each hit's shield point, so the failure aims at the breaking shot
@@ -2507,13 +3128,21 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			if shots[i] and hi < hits.size():
 				_schedule_impact(t_id, hits[hi], dl + 0.24 * sp, L, shield_col, fam, hi, land, fac)
 				hi += 1
+	var hold := total * sp
+	var capture_at := 0.0
+	var reached_capture := true
 	if shots_dir != "" and fire_shots < 4 and bot:
 		fire_shots += 1
-		await get_tree().create_timer(total * sp * 0.55).timeout
-		_snap("fire_%d" % fire_shots)
-		await get_tree().create_timer(total * sp * 0.45).timeout
-	else:
-		await get_tree().create_timer(total * sp).timeout
+		capture_at = hold * 0.55
+		reached_capture = await _wait_volley(fx_start, capture_at)
+		if _stale(gen):
+			return
+		if reached_capture:
+			_snap("fire_%d" % fire_shots)
+	if reached_capture:
+		await _wait_volley(fx_start, hold, capture_at)
+	if _stale(gen):
+		return
 	# the log line and the floating numbers (battle.js fireWeapon)
 	var sh_sum := 0.0
 	var hull_sum := 0.0
@@ -2563,6 +3192,15 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	land["ended"] = true
 	if int(land["left"]) <= 0:
 		_aim_off(land)
+
+
+func _wait_volley(start: float, target: float, elapsed := 0.0) -> bool:
+	if start >= 0.0:
+		if not is_instance_valid(gfx):
+			return false
+		return await _await_fx(start + target)
+	await get_tree().create_timer(target - elapsed).timeout
+	return true
 
 
 # Issue 1211: the arrival time of each hit. The fx returns one time per shot, misses included; the k-th hit rides the
@@ -2777,11 +3415,19 @@ func _apply_hit(h: Dictionary, show_regen_lock := true) -> void:
 		return
 	var d: Dictionary = disp[t_id]
 	if show_regen_lock and bool(h.get("regenLock", false)):
-		d["regenLock"] = true
+		_show_regen_lock(t_id, true)
 	d["hp"] = maxf(0.0, float(d["hp"]) - float(h["hull"]))
 	var q := int(h.get("quad", 0))
 	if d["sh"] is Array and q < (d["sh"] as Array).size():
 		d["sh"][q] = maxf(0.0, float(d["sh"][q]) - float(h["shield"]))
+
+
+func _show_regen_lock(id: String, active: bool) -> void:
+	disp[id]["regenLock"] = active
+	if gfx != null and gfx.has_method("ship"):
+		var ship = gfx.ship(id)
+		if ship != null:
+			ship.set_regen_lock(active)
 
 
 func _impact(t_id, h: Dictionary, col: Color) -> void:
@@ -2802,6 +3448,53 @@ var shot_at := {}             # issue 1581: unit id -> effect-clock time of its 
 var reduce_motion := false    # settings key reduce_motion (ui_spec.md 7.6; the switch sits in Settings and this menu)
 var kill_hold_until := -1.0   # game_t when the kill cut-in lets go; -1 when none holds
 var _kill_hold_n := 0
+var _death_dof := false
+var _battle_lens: CompositorEffect
+var _lens_well := false
+var _lens_shock := false
+var _shock_deaths := {}
+const SHOCKWAVE_S := 0.62
+
+
+func _reset_battle_lens() -> void:
+	_shock_deaths.clear()
+	if _battle_lens != null:
+		_battle_lens.set_lenses(Vector4.ZERO, 0.0, Vector4.ZERO)
+
+
+func _track_capital_shockwave(id: String, center: Vector3, length: float) -> void:
+	if not _lens_shock or reduce_motion or reduce_flashing:
+		return
+	var ship = gfx.ship(id)
+	if ship != null and (ship.death_core_pending or gfx.death_core_at(id) >= 0.0):
+		_shock_deaths[id] = [center, length]
+
+
+func _step_battle_lens() -> void:
+	if retiring or warming:
+		return
+	var well := Vector4.ZERO
+	var well_depth := 0.0
+	if _lens_well and is_instance_valid(world) and world.well_position() != Vector3.INF:
+		var center: Vector3 = world.well_position()
+		well = BattleLens.project_lens(cam, center, 2.0 * world.well_radius(), -1.0)
+		var depth: float = -(cam.get_camera_transform().affine_inverse() * center).z
+		well_depth = clampf(cam.near * (cam.far - depth) / (maxf(depth, cam.near) * (cam.far - cam.near)), 0.0, 1.0)
+	var shock := Vector4.ZERO
+	var newest := -INF
+	for id in _shock_deaths.keys():
+		var ship = gfx.ship(id)
+		if ship != null and ship.death_core_pending:
+			continue
+		var core: float = gfx.death_core_at(id)
+		var age: float = (gfx.now - core) / SHOCKWAVE_S
+		if core < 0.0 or age >= 1.0 or reduce_motion or reduce_flashing:
+			_shock_deaths.erase(id)
+		elif age >= 0.0 and core >= newest:
+			newest = core
+			var source: Array = _shock_deaths[id]
+			shock = BattleLens.project_lens(cam, source[0], float(source[1]) * lerpf(0.3, 1.6, age), age)
+	_battle_lens.set_lenses(well, well_depth, shock)
 
 
 # Issue 521 (Board review of PR 525): while a kill cut-in holds, the camera frames the DYING ship, not the attacker and
@@ -2851,6 +3544,8 @@ func _kill_frame(id) -> void:
 	cam.r = rr
 	cam.t = tp
 	cam.slow_until = cam._clock + 1.2
+	if _death_dof and not reduce_motion and rr < CamRig.DOF_CLOSE_LIMIT:
+		cam.set_close_dof(true, float(sv.L))
 	hud.letterbox(true)
 
 
@@ -2964,6 +3659,9 @@ func _play_death(e: Dictionary) -> void:
 		if "kill_slowmo" in gfx:
 			gfx.kill_slowmo = not reduce_motion
 		var t: float = float(gfx.death(str(id), cause))
+		var unit: Dictionary = VU.get(id, {})
+		if not skip and (float(unit.get("size", 0.0)) > 0.8 or bool(unit.get("flagship", false))) and cause not in ["dark", "hulk", "board"]:
+			_track_capital_shockwave(str(id), p, L)
 		if skip and gfx.has_method("hurry_death"):
 			gfx.hurry_death()
 		if cined:
@@ -3030,8 +3728,42 @@ func _end_sound(win: bool) -> String:
 	return "sting"
 
 
+func _end_cause_line() -> String:
+	match V.get("endCause", ""):
+		"enemy_gone": return "No enemy ships remain in the fight."
+		"rout": return "Their fleet broke and fled."
+		"boss", "flagship": return "The enemy flagship is out of the fight."
+		"flagship_escaped": return "The flagship escaped, and its escorts withdrew."
+		"convoy_broken": return "You stopped enough transports to break the convoy."
+		"convoy_escaped": return "Too many transports escaped. The escorts broke off."
+		"breakthrough": return "Enough of your ships broke through and jumped clear."
+		"breakthrough_short": return "Too few of your ships could still break through."
+		"station_held": return "You held the station until the enemy withdrew."
+		"station_lost": return "The enemy destroyed the station."
+		"relay_held": return "You held the relay for three rounds."
+		"relay_lost": return "The enemy secured the relay."
+		"fleet_lost":
+			var objective = V.get("obj")
+			if objective is Dictionary and objective.get("type") == "hold":
+				return "Your last ship was destroyed with the relay at %d/3." % int(objective["score"])
+			return "Your last ship was destroyed."
+	return ""
+
+
+func _continue_label(outcome: String) -> String:
+	if not in_campaign:
+		return "Continue to title"
+	match outcome:
+		"win": return "Continue to battle rewards"
+		"retreat": return "Return to campaign map"
+		_: return "Continue to run debrief"
+
+
 func _end_flow() -> void:
 	ended = true
+	inspect = ""
+	hud.set_panel({})
+	hud.set_target({})
 	if board != null:
 		board.set_process_unhandled_input(false)
 	# issue 1559 item 8: Fight again (the menu) during the victory beat starts a new battle while this one still waits; its
@@ -3061,15 +3793,18 @@ func _end_flow() -> void:
 		# --pace-report (with --bot): the battle's report with the enemy's time per round by event kind, then quit
 		_quit_report()
 		return
-	if bot or args.has("bot-runs"):
+	if (bot and not _taking_shots) or args.has("bot-runs"):
 		_finish(result)
 		return
+	var cause := _end_cause_line()
+	if cause != "":
+		body = cause + "\n" + body
 	if voice != null and not withdrawal:   # story hook: your admiral's last word (or the Nemesis's gloat) on the end card
 		var vl: String = voice.closing(win)
 		if vl != "":
 			body += "\n\n" + vl
 			recording_cue.emit("voice", vl)
-	hud.show_end(heading, body, win, external)
+	hud.show_end(heading, body, win, external, _continue_label(outcome))
 
 
 # ---------------------------------------------------------------- selection, overlays, tips
@@ -3118,7 +3853,7 @@ func _sel_unit() -> Dictionary:
 
 
 func _can_act() -> bool:
-	return not busy and not warming and not _threat_busy and not ended and api != null and api.phase == "player"
+	return not busy and not thinking and not warming and not _threat_busy and not ended and api != null and api.phase == "player"
 
 
 func _usable(u: Dictionary) -> bool:
@@ -4040,19 +4775,20 @@ func _nova_tip(q: int, r: int) -> String:
 	return t
 
 
-# the Hollow Sun's pull on a hex, as one line for the move tip ("" away from it or on a board without it)
+# the dead star's pull on a hex, as one line for the move tip ("" away from it or on a board without it)
 func _well_line(q: int, r: int) -> String:
 	var W = api.world_info().get("well") if api != null else null
 	if not W is Dictionary:
 		return ""
 	var R = api.R
 	var d := _hex_d(q, r, int(W["q"]), int(W["r"]))
+	var star: String = R.dead_star_name(R.RUN)
 	if d <= int(R.WELL_RIM):
-		return "[color=#ff8a72]Hollow Sun rim: %d hull damage to a ship here at each round start (it still gets +1 movement).[/color]" % int(R.WELL_DMG)
+		return "[color=#ff8a72]%s rim: %d hull damage to a ship here at each round start (it still gets +1 movement).[/color]" % [star, int(R.WELL_DMG)]
 	if d <= int(R.WELL_PULL):
-		return "[color=#c79bff]Hollow Sun pull: a ship here is dragged 1 hex inward at each round start, with +1 movement.[/color]"
+		return "[color=#c79bff]%s pull: a ship here is dragged 1 hex inward at each round start, with +1 movement.[/color]" % star
 	if d <= int(R.WELL_ASSIST):
-		return "[color=#9fd4ff]Hollow Sun slingshot: +1 movement at each round start, no pull.[/color]"
+		return "[color=#9fd4ff]%s slingshot: +1 movement at each round start, no pull.[/color]" % star
 	return ""
 
 
@@ -4474,11 +5210,60 @@ func _ray_hex(p: Vector2) -> Vector2i:
 	var t := -o.y / d.y
 	if t < 0:
 		return Vector2i(99999, 99999)
+	# issue 1582: a hull lifted or lowered off the plane draws away from its hex; a pointer on the middle of that hull
+	# picks the hull's own hex, so clicking the ship you see never lands on the hex beside it
+	var lifted := _lifted_hull_hex(p)
+	if lifted.x != 99999:
+		return lifted
 	var h: Vector2i = board.world_hex(o + d * t)
 	return h if board.on_board(h.x, h.y) or (board.blocker_visuals != null and board.blocker_visuals.visuals.has(board.key(h.x, h.y))) else Vector2i(99999, 99999)
 
 
 var _hover_uid := ""
+
+
+# issue 1582: the hex of an off-plane hull whose middle is under the pointer, else none. Every drawn ship, raised or on
+# the plane, takes part by camera depth: the hull nearest the eye whose body covers the pointer wins, so a lower escort
+# behind a foreground capital never steals its click (Artoo on PR 1874). Only a raised winner's middle (a third of its
+# length across) overrides the plane pick; an on-plane winner, or a pointer off the middle, keeps the plane pick.
+const PICK_MID := 0.17    # half the picked middle, in hull lengths
+const PICK_BODY := 0.3    # half the body that hides what is behind it, in hull lengths
+const PICK_WING := 5.0    # a wing patrols its whole hex: its picked middle and body are this far round it (world units)
+
+
+func _lifted_hull_hex(p: Vector2) -> Vector2i:
+	var none := Vector2i(99999, 99999)
+	if cam == null or not is_instance_valid(cam):
+		return none
+	var best_id = null
+	var best_d := INF
+	var best_mid := false
+	for id in views:
+		var sv = views[id]
+		if not is_instance_valid(sv) or sv.dead or not sv.visible:
+			continue
+		if not VU.has(id):
+			continue
+		# wings sit highest of all, so their picture is furthest from their hex: they pick too (Fable, PR 1874 item 2)
+		var wing := bool(VU[id].get("squadron", false))
+		var c: Vector3 = sv.visual_position()
+		if cam.is_position_behind(c):
+			continue
+		var sc: Vector2 = cam.unproject_position(c)
+		var reach: float = PICK_WING if wing else float(sv.L) * PICK_BODY
+		var mid: float = PICK_WING if wing else float(sv.L) * PICK_MID
+		var unit: float = sc.distance_to(cam.unproject_position(c + cam.global_basis.x))
+		var dd := sc.distance_to(p)
+		if dd > unit * reach:
+			continue
+		var eye := cam.global_position.distance_to(c)
+		if eye < best_d:
+			best_d = eye
+			best_id = id
+			best_mid = dd <= unit * mid and absf(float(sv.band_y)) >= ShipView.DROP_MIN
+	if best_id == null or not best_mid:
+		return none
+	return Vector2i(int(VU[best_id]["q"]), int(VU[best_id]["r"]))
 
 
 func _on_hover(p: Vector2) -> void:
@@ -4494,6 +5279,11 @@ func _on_hover(p: Vector2) -> void:
 		var hu := _unit_at(h.x, h.y)
 		var hid := str(hu["id"]) if not hu.is_empty() else ""
 		if hid != _hover_uid:
+			# issue 1582: the hovered hull's drop-line brightens
+			if views.has(_hover_uid) and is_instance_valid(views[_hover_uid]):
+				views[_hover_uid].set_hot(false)
+			if views.has(hid) and is_instance_valid(views[hid]):
+				views[hid].set_hot(true)
 			_hover_uid = hid
 			if api != null and api.phase == "player" and not busy and target == "" and sel != "":
 				if _api_free():
@@ -5061,7 +5851,7 @@ func _blocker_text(t: Dictionary) -> String:
 	var counts := {}
 	var order: Array = []
 	for h in _shot_blockers(t):
-		var label: String = {"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(h.kind, h.kind)
+		var label: String = {"rock": "asteroid", "hulk": "wreck", "deadstar": api.R.dead_star_name(api.R.RUN, true)}.get(h.kind, h.kind)
 		if not counts.has(label):
 			counts[label] = 0
 			order.append(label)
@@ -5157,7 +5947,8 @@ func _legend() -> void:
 	var desc := str(E.get("d", "")) if E is Dictionary else ""
 	var shape = api.world_info().get("shape")
 	if shape != null and str(shape) != "open" and TBL.get("SHAPES", {}).has(str(shape)):
-		desc += " Board: %s." % str(TBL["SHAPES"][str(shape)]).to_lower()
+		var board_name: String = api.R.dead_star_name(api.R.RUN) if shape == "deadstar" else str(TBL["SHAPES"][str(shape)]).to_lower()
+		desc += " Board: %s." % board_name
 	var mods: Array = api.R.storyModifierLines()
 	if not mods.is_empty(): desc += "\n" + " ".join(PackedStringArray(mods))
 	hud.set_legend(title, desc.strip_edges(), rows)
@@ -5640,6 +6431,8 @@ func _toggle_opt(k: String) -> void:
 			for vv in views.values():   # issue 1581: no idle drift, bob or trim nod with Reduce motion
 				if is_instance_valid(vv):
 					vv.calm = reduce_motion
+			if gfx != null and "reduce_motion" in gfx:
+				gfx.reduce_motion = reduce_motion
 			option_changed.emit("reduce_motion", reduce_motion)
 		"uiscale":
 			var i := 0
@@ -5691,8 +6484,8 @@ func _sync_arrival() -> void:
 func _refresh_ui() -> void:
 	if _deployment_api != null or api == null or V.is_empty() or quitting or not is_instance_valid(hud):
 		return
-	if _worker_owns_rules():
-		return   # issue 1433: every read below locks the rules; the publish runs this pass (_threat_done)
+	if thinking or _worker_owns_rules():
+		return   # Reads below lock the rules. Refresh when the worker publishes its result.
 	_sync_ask()
 	if sel != "" and (not VU.has(sel) or VU[sel]["dead"]):
 		sel = ""
@@ -6019,6 +6812,8 @@ func _objective() -> String:
 
 
 func _panel_info() -> Dictionary:
+	if ended:
+		return {}
 	var id := sel if sel != "" else inspect
 	if id == "" or not VU.has(id):
 		return {}
@@ -6372,6 +7167,21 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 var showcase_ready := false
 
 
+# Issue 1777: how far the farthest board hex lies from a point (the shadow reach must cover the whole board at any zoom)
+var _board_cells_xz := PackedVector2Array()
+func _board_far(p: Vector3) -> float:
+	if _board_cells_xz.size() != board.cells.size():
+		_board_cells_xz.clear()
+		for c in board.cells:
+			var w: Vector3 = board.hex_world(float(c["q"]), float(c["r"]))
+			_board_cells_xz.append(Vector2(w.x, w.z))
+	var far := 0.0
+	var p2 := Vector2(p.x, p.z)
+	for c in _board_cells_xz:
+		far = maxf(far, p2.distance_squared_to(c))
+	return sqrt(far)
+
+
 func _process(dt: float) -> void:
 	if _deployment_api != null:
 		return
@@ -6381,12 +7191,16 @@ func _process(dt: float) -> void:
 	cam.keyboard_enabled = not warming and not ended and (hud == null or (hud.menu == null and hud.get("endcard") == null))
 	if showcase_ready:
 		cam.a += dt * 0.035
+	# issue 1777 (Ship Look V2): the key light's shadow reach follows the zoom, so its cascades spend their texels on the
+	# ships in view (the fixed 600 spread them over empty space: soft, blocky hull shadows)
+	if key_light != null and board != null and LOOK.ship_look_v2_enabled():
+		key_light.directional_shadow_max_distance = LOOK.shadow_reach(float(cam.r), _board_far(cam.t))
 	if world != null and world.has_method("step"):
 		world.step(dt)
 	if api == null:
 		return
 	# issue 1451: the rules packed this round's start; save it once its animations have played and the player has the turn
-	if round_save_cb.is_valid() and int(api.round_snap_round) > round_saved and _can_act():
+	if round_save_cb.is_valid() and _can_act() and int(api.round_snap_round) > round_saved:
 		round_saved = int(api.round_snap_round)
 		if bool(round_save_cb.call()):
 			round_on_disk = round_saved
@@ -6394,11 +7208,12 @@ func _process(dt: float) -> void:
 	# issue 1437 (item 9): with the HUD hidden or behind the title (showcase) no plate shows, so the plate, priority and
 	# declutter work is skipped; the gold ring still breathes
 	var plates_on := not showcase and hud != null and hud.visible
+	var show_up: bool = not bot and not thinking and not ended and api.phase == "player"
 	for id in views:
 		var sv = views[id]
 		var u: Dictionary = VU.get(id, {})
 		if not plates_on:
-			_breathe_ring(sv, not u.is_empty() and str(id) == sel and api.phase == "player" and not ended and not bot and u["side"] == "player")
+			_breathe_ring(sv, show_up and not u.is_empty() and str(id) == sel and u["side"] == "player")
 			continue
 		# a cut-in hides the names, except the attacker and the target of the enemy volley playing (issue 1211)
 		var aimed := not aim.is_empty() and (str(id) == str(aim["t"]) or str(id) == str(aim["a"]))
@@ -6413,7 +7228,7 @@ func _process(dt: float) -> void:
 		var shs := 0.0
 		for x in d["sh"]:
 			shs += float(x)
-		var is_up: bool = str(id) == sel and api.phase == "player" and not ended and not bot and u["side"] == "player"
+		var is_up: bool = show_up and str(id) == sel and u["side"] == "player"
 		var px := {"nem": bool(u.get("nemesis", false)) and u["side"] == "enemy", "target": str(id) == target or aimed,
 			"regenLock": bool(d.get("regenLock", false))}
 		if _tgt_plate.has(str(id)):
@@ -6481,7 +7296,7 @@ func _float_step(dt: float) -> void:
 		if f.t > f_end:
 			lbl.queue_free()
 			floats.remove_at(i)
-	if bot and not busy and not warming and not _threat_busy and not ended and api.phase == "player" and Engine.get_process_frames() % 2 == 0:
+	if bot and not busy and not thinking and not warming and not _threat_busy and not ended and api.phase == "player" and Engine.get_process_frames() % 2 == 0:
 		bot_t += dt
 		if bot_t > 0.05:
 			bot_t = 0.0
@@ -6806,6 +7621,7 @@ var bot_tried := {}          # ship id -> round the bot last handed it to the AI
 
 
 func _bot_step() -> void:
+	var rules = api
 	var u_id := ""
 	for u in V["units"]:
 		if u["active"]:
@@ -6817,29 +7633,41 @@ func _bot_step() -> void:
 				break
 	if u_id == "":
 		if _classic():
-			_cmd(func(): api.end_turn(); return true)
+			_bot_command(rules.end_turn)
 		else:
-			_cmd(func(): api.end_activation(); return true)
+			_bot_command(rules.end_activation)
 		return
 	sel = u_id
-	var ru = api.unit(u_id)
 	# the game's own player-side AI (sim3d.js botUnit, G1 ai_activate) when the rules have it
-	if api.has_method("ai_activate"):
+	if rules.has_method("ai_activate"):
 		var aid := u_id
 		bot_tried[aid] = V.get("round")
-		_cmd(func():
-			var r0 = api.R.B["round"]
-			api.ai_activate(aid)
+		_bot_command(func() -> void:
+			var r0 = rules.R.B["round"]
+			rules.ai_activate(aid)
 			# a ship the AI leaves idle (nothing in reach, nothing to launch) never starts its activation: pass it, as the
 			# player's Pass does, or the bot would pick it forever (a Corsair carrier fleet softlocked the battle at round 1).
 			# Only in the same round: if the AI's action ended the round, the rules reset every activation flag and gave the
 			# turn back to the player, so a pass now would spend this ship's first move of the new round (issue 1499)
-			if api.R.B["round"] == r0 and api.phase == "player" and api.unit(aid) != null and _jt(api.unit(aid).get("activated")) == false:
-				api.end_activation(aid)
-			return true)
+			if rules.R.B["round"] == r0 and rules.phase == "player":
+				var unit = rules.unit(aid)
+				if unit != null and not _jt(unit.get("activated")):
+					rules.end_activation(aid))
 		return
 	# (rules without ai_activate: just end the activation)
-	_cmd(func(): api.end_activation(); return true)
+	_bot_command(rules.end_activation)
+
+
+func _bot_command(action: Callable) -> void:
+	if not _api_join() or busy or ended or api.phase != "player":
+		return
+	_click_q = {}
+	var rules = api
+	var batch = await _think_batch(func() -> Dictionary:
+		action.call()
+		return {"events": rules.take_events(), "view": rules.view()})
+	if batch != null:
+		_play_command_batch(batch)
 
 
 static func _z0(x) -> Variant:
@@ -6860,6 +7688,7 @@ func _alive_active(id: String) -> bool:
 
 var shot_n := 0
 var fire_shots := 0
+var _taking_shots := false
 
 
 func _snap(name: String) -> void:
@@ -6896,6 +7725,7 @@ func _hover_unit(id: String) -> void:
 func _shots() -> void:
 	# fixed moments for the screenshot-verdict skill: the opening board, a selected ship with its move range, the move
 	# preview, the attack tip on an enemy, the threat map, top-down, mid-battle fire, and the end card
+	_taking_shots = true
 	while busy or warming or api == null:
 		await get_tree().process_frame
 	await get_tree().create_timer(2.5).timeout
@@ -6939,7 +7769,8 @@ func _shots() -> void:
 	_refresh_ui()
 	await get_tree().create_timer(1.0).timeout
 	bot = true
-	while not ended:
+	# _end_flow sets ended before the final banner. Wait for the settled result and end card before the last still.
+	while result.is_empty():
 		await get_tree().process_frame
 	await get_tree().create_timer(2.0).timeout
 	await _snap("end")
@@ -7213,12 +8044,17 @@ func _closeups(id: String, tag: String) -> void:
 	var yaw: float = sv.rotation.y
 	var rr := clampf(float(sv.L) * 1.5, cam.min_r, 140.0)
 	var nm := "%s_%s_%s" % [tag, str(VU.get(id, {}).get("cls", "ship")).replace(" ", ""), id]
+	var use_dof := _death_dof and not reduce_motion and rr < CamRig.DOF_CLOSE_LIMIT
+	if use_dof:
+		cam.set_close_dof(true, float(sv.L))
 	for v in [[yaw + PI / 2.0, 0.35, "port"], [yaw - PI / 2.0, 0.35, "starboard"], [yaw + PI * 0.75, 0.9, "above"]]:
 		cam.a = float(v[0]); cam.b = float(v[1]); cam.r = rr; cam.t = sv.visual_position()
 		cam.snap()
 		await get_tree().create_timer(0.5).timeout
 		await _snap(nm + "_" + str(v[2]))
 	cam.a = save[0]; cam.b = save[1]; cam.r = save[2]; cam.t = save[3]
+	if use_dof:
+		cam.set_close_dof(false)
 	cam.snap()
 
 

@@ -11,8 +11,8 @@
 # cancelled (a script that does not compile makes several checks sit until their limit: commit 138ff38, 1020 s).
 # SHARD=i/n (issue 1430) runs only shard i of n. Every shard makes the same plan: the headless lines, slowest first by
 # godot/tools/ci/godot_check_times.txt (10 s when a check is not there), each given to the shard with the least time so
-# far, so every headless check lands in exactly one shard. Shard 1 also runs the list proof. GitHub runs 3 shards in
-# parallel, each with its own budget. GODOT_CHECKS_PLAN=1 prints the plan and stops (no Godot needed).
+# far, so every headless check lands in exactly one shard. Shard 1 also runs the list proof. GitHub runs the shard matrix
+# in parallel, each with its own budget. GODOT_CHECKS_PLAN=1 prints the plan and stops (no Godot needed).
 cd "$(dirname "$0")/../.." || exit 1
 P=$(pwd)            # godot/
 ROOT=$(cd .. && pwd)

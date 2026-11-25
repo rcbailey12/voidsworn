@@ -6,10 +6,15 @@ extends RefCounted
 # The standing check contrib/opus/tools/gpu_statics_tests.js fails on a GPU-holding static that is not cleared here.
 
 const SCRIPTS := [
+	"res://assets/ships/a4_props.gd",
 	"res://render/ship_view.gd",
+	"res://render/shader_keep.gd",
+	"res://render/board.gd",
+	"res://render/look.gd",
+	"res://render/shader_cache.gd",
 	"res://scenes/battle/fx_stub.gd",
 	"res://fx/fx.gd",
-	"res://fx/fx_hull.gd",
+	"res://fx/terrain_scorch.gd",
 	"res://portraits/portraits.gd",
 	"res://world/world.gd",
 	"res://world/world_bake.gd",

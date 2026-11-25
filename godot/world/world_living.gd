@@ -1,4 +1,5 @@
 extends Node3D
+const SKEEP := preload("res://render/shader_keep.gd")
 # B "living terrain" for the board look trial (world/board_look.gd): each kind of special hex becomes a thing in space
 # rather than a tinted hex (the board draws only a faint edge round it).
 #   nebula      soft gas: billboards that sample one continuous 3D noise field in world space, so neighbouring puffs read
@@ -21,6 +22,7 @@ const NEBULA_HULLS := preload("res://world/nebula_hulls.gd")
 const WAKE := preload("res://world/nebula_wake.gd")
 const LS := preload("res://render/line_style.gd")   # issue 1374: the one line style (storm bolt colours)
 const LOOK := preload("res://render/look.gd")
+const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const STORM_TICK_LIFE := 0.45
 
 const HD := preload("res://world/hull_debris.gd")
@@ -35,9 +37,22 @@ var gas_mats: Array = []     # [ShaderMaterial, base alpha gain]
 var storm_mats: Array[ShaderMaterial] = []
 var _storm_patches: Array = []
 var _tick_presenter: Node = null
-var bolts: Array = []        # {mi, light, pos, next, start}
+var bolts: Array = []        # {mi, light, pos, next, start, soft, variant, strikes, frame, gain}
 var _storm_bursts: Array = []
 var clock := 0.0
+# Issue 1360: "baked" plays the Blender flipbooks; "ribbon" (VS_STORM_BOLTS=ribbon) the old ribbon, for before shots.
+var bolt_style := selected_bolt_style()
+var _bolt_mats: Array[ShaderMaterial] = []   # one per BOLT_VARIANTS entry
+static var _bolt_card: QuadMesh = null
+
+
+static func selected_bolt_style() -> String:
+	return "ribbon" if OS.get_environment("VS_STORM_BOLTS") == "ribbon" else "baked"
+
+
+static func bolt_atlas(variant: String) -> Texture2D:
+	var path: String = BOLT_ATLAS_DIR + "bolt_%s.png" % variant
+	return load(path) as Texture2D if ResourceLoader.exists(path) else null
 # Issue 1079 prototype (off by default): ships disturb the calm nebula as they pass. Storm gas is never touched.
 var _wake = null
 var _wake_mats: Array[ShaderMaterial] = []
@@ -281,9 +296,143 @@ void fragment() {
 
 const BOLT_SHADER := preload("res://shaders/storm_bolt.gdshader")
 
-const DUST_SHADER := preload("res://shaders/debris_dust.gdshader")
+# Issue 1360 (Ryan's pick B, Nov 20 2026): storm lightning plays a strike baked in Blender
+# (tools/blender/vfx/bake_storm_bolts.py) instead of the ribbon above. Each atlas is 4x4 frames of one variant:
+# R main channel core, G fork core, B near glow, A far glow (linear data, not colour). The colours stay the one line
+# style's storm roles, so PR 1299's cyan-white look is unchanged. The ribbon stays for before shots: VS_STORM_BOLTS=ribbon.
+const BOLT_ATLAS_DIR := "res://fx/atlases/storm/"
+const BOLT_VARIANTS := ["a", "b", "c"]     # STB-A Forked, STB-B Branched, STB-C Twin strike
+const BOLT_FRAMES := 16
+const BOLT_GRID := 4
+const BOLT_LIFE := 0.56                    # one strike, 35 ms a frame; the old flash envelope ends by 0.52 s
+const BOLT_FILL := 0.80                    # the main channel runs from tile row 0.10 to 0.90 (BOLT_TOP, BOLT_BOTTOM)
+const BOLT_PEAK := {"a": 2, "b": 3, "c": 1}   # each variant's return-stroke frame (bake_manifest.json main_brightness)
+const BOLT_FLIP_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform sampler2D atlas : filter_linear_mipmap, repeat_disable, hint_default_black;
+instance uniform float frame = -1.0;
+instance uniform float gain = 0.0;
+instance uniform float mirror = 0.0;
+""" + LS.GLSL + """
+void vertex() {
+	// A card turned about the bolt's own axis to face the camera: MODEL_MATRIX's y column runs from the bolt's end to
+	// its start (the tile's height), x carries the width, the origin is the tile's centre.
+	vec3 centre = MODEL_MATRIX[3].xyz;
+	vec3 up = MODEL_MATRIX[1].xyz;
+	float width = length(MODEL_MATRIX[0].xyz);
+	vec3 side = cross(up, CAMERA_POSITION_WORLD - centre);
+	side = length(side) > 0.0001 ? normalize(side) : normalize(MODEL_MATRIX[0].xyz);
+	vec3 world = centre + side * VERTEX.x * width + up * VERTEX.y;
+	POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(world, 1.0));
+}
+void fragment() {
+	if (gain <= 0.0 || frame < 0.0) { discard; }
+	float f = floor(frame);
+	vec2 uv = vec2(mix(UV.x, 1.0 - UV.x, mirror), UV.y);
+	vec2 cell = vec2(mod(f, 4.0), floor(f / 4.0));
+	vec4 s = texture(atlas, (cell + clamp(uv, 0.004, 0.996)) / 4.0);
+	// Issue 1374 (R362): colours from the one line style (render/line_style.gd bolt_*). The hot channel is the core
+	// colour, the near glow the cyan skirt, and the cyan-white corona sits outside the skirt, never on the hot tube.
+	float core = max(s.r, s.g * 0.85);
+	float corona = max(s.a - s.b * 0.5, 0.0);
+	vec3 col = LS_BOLT_CORE * core + LS_BOLT_SKIRT * s.b * 0.30 + LS_BOLT_CORONA * corona * 0.22;
+	ALBEDO = col * gain;
+}
+"""
 
-const WELL_SHADER := preload("res://shaders/gravity_well.gdshader")
+const DUST_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+// Linear #d4bf86, with actual alpha rather than the old grey additive specks.
+uniform vec3 col = vec3(0.658, 0.521, 0.238);
+varying vec2 vQ;
+varying vec3 vW;
+varying flat vec2 vHex;
+varying flat float vA;
+void vertex() {
+	vHex = INSTANCE_CUSTOM.zw;
+	vec3 origin = MODEL_MATRIX[3].xyz;
+	// 20 percent of the recorded gas drift (0.193 u/s). Wrap only behind a faded footprint edge.
+	origin.xz = vHex + mod(origin.xz - vHex + vec2(0.032, 0.018667) * TIME + 10.0, 20.0) - 10.0;
+	origin.y = mod(origin.y + 0.010667 * TIME + 5.0, 7.0) - 5.0;
+	vec4 c = VIEW_MATRIX * vec4(origin, 1.0);
+	vA = INSTANCE_CUSTOM.y;
+	vQ = VERTEX.xy * 2.0;
+	c.xy += VERTEX.xy * INSTANCE_CUSTOM.x;
+	vW = (INV_VIEW_MATRIX * c).xyz;
+	POSITION = PROJECTION_MATRIX * c;
+}
+void fragment() {
+	float r = length(vQ);
+	if (r > 1.0) { discard; }
+	vec2 p = abs(vW.xz - vHex);
+	float edge = 8.660254 - max(p.x, p.x * 0.5 + p.y * 0.8660254);
+	if (edge <= 0.0) { discard; }
+	float high = smoothstep(-4.0, 2.0, vW.y);
+	ALBEDO = col * mix(0.38, 0.85, high);
+	ALPHA = vA * exp(-r * r * 4.0) * smoothstep(0.0, 0.9, edge) * mix(1.0, 0.25, high);
+}
+"""
+
+const WELL_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap, repeat_disable;
+uniform sampler2D depth_tex : hint_depth_texture, filter_nearest;
+uniform vec3 well = vec3(0.0);
+uniform float r_in = 60.0;
+uniform float r_out = 120.0;
+uniform float k = 1.0;
+uniform float chroma_px = 1.5;
+varying vec3 vW;
+varying vec4 vWell;
+void vertex() {
+	vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	vWell = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(well, 1.0));
+}
+// Test the destination AND all three source samples. A ship must neither bend nor be copied into the background.
+bool foreground(vec2 uv, mat4 inv_projection, mat4 inv_view) {
+	float depth = texture(depth_tex, uv).r;
+	vec4 v = inv_projection * vec4(uv * 2.0 - 1.0, depth, 1.0);
+	vec3 world = (inv_view * vec4(v.xyz / v.w, 1.0)).xyz;
+	return depth > 0.000001 && world.y > -20.0;
+}
+void fragment() {
+	float d = distance(vW.xz, well.xz);
+	float w = smoothstep(r_in, r_in + 22.0, d) * (1.0 - smoothstep(r_out - 34.0, r_out, d));
+	float rim = 1.0 - smoothstep(0.25, 0.65, abs(d - r_in - 2.0));
+	float age = mod(TIME, 3.5);
+	float travel = clamp(age / 2.0, 0.0, 1.0);
+	float ripple = (1.0 - smoothstep(0.4, 1.15, abs(d - mix(r_out, r_in, travel)))) * (1.0 - travel);
+	vec2 radial = vW.xz - well.xz;
+	float angle = atan(radial.y, radial.x) - TIME * 0.13962634; // 45 s per turn
+	float acc = smoothstep(22.0, 28.0, d) * (1.0 - smoothstep(54.0, r_in, d));
+	acc *= 0.55 + 0.45 * sin(angle * 3.0 + d * 0.16);
+	if (max(w, max(rim, max(ripple, acc))) <= 0.001 || foreground(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX)) { discard; }
+	vec2 cs = vWell.xy / vWell.w * 0.5 + 0.5;
+	vec2 dv = SCREEN_UV - cs;
+	// pushed outward like a lens, and dragged slowly round
+	float s = 0.075 * w * (r_in + 22.0) / max(d, 1.0);
+	float an = 0.06 * w + 0.04 * w * sin(TIME * 0.20943951); // 30 s slow twist
+	mat2 R = mat2(vec2(cos(an), sin(an)), vec2(-sin(an), cos(an)));
+	vec2 suv = clamp(cs + R * dv * (1.0 - s), vec2(0.001), vec2(0.999));
+	float fr = VIEWPORT_SIZE.y / 1080.0;
+	vec2 shift = normalize(dv + vec2(0.000001)) / vec2(textureSize(screen_tex, 0)) * chroma_px * rim * fr;
+	vec2 red_uv = clamp(suv + shift, vec2(0.001), vec2(0.999));
+	vec2 blue_uv = clamp(suv - shift, vec2(0.001), vec2(0.999));
+	if (foreground(suv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX) || foreground(red_uv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX) || foreground(blue_uv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX)) {
+		suv = SCREEN_UV; red_uv = SCREEN_UV; blue_uv = SCREEN_UV;
+	}
+	vec3 c = vec3(textureLod(screen_tex, red_uv, 0.0).r, textureLod(screen_tex, suv, 0.0).g, textureLod(screen_tex, blue_uv, 0.0).b);
+	vec3 warm = mix(vec3(0.15, 0.012, 0.005), vec3(0.55, 0.25, 0.10), 1.0 - smoothstep(24.0, r_in, d));
+	c += warm * acc * 0.15;
+	c += vec3(0.18, 0.085, 0.045) * ripple * 0.12;
+	c += vec3(0.32, 0.40, 0.48) * rim;
+	ALBEDO = c;
+	ALPHA = max(w, max(rim * 0.35, max(ripple * 0.12, acc * 0.15))) * k;
+}
+"""
 
 const INFALL_SHADER := preload("res://shaders/gravity_infall.gdshader")
 
@@ -311,10 +460,28 @@ func build(world) -> void:
 			var broad := (patches[j] as Array).size() / 3 if j < patches.size() - 1 else broad_left
 			_gas(patches[j], kind == "storm", broad)
 			broad_left -= broad
+			# issue 1434 (LOAD25 warm title: every gas patch in one 650 ms frame, 463 ms of it before the draw): a sliced
+			# load builds one patch a frame
+			if bool(W.get("slice_yield")):
+				await get_tree().process_frame
+				if not is_inside_tree():
+					return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
+	if bool(W.get("slice_yield")):
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	if not (pts["storm"] as Array).is_empty():
 		_bolts(pts["storm"])
+	if bool(W.get("slice_yield")):
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	if not (pts["debris"] as Array).is_empty():
 		_debris(pts["debris"])
+	if bool(W.get("slice_yield")):
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	if W._well != Vector3.INF:
 		_well(W._well)
 
@@ -439,7 +606,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	if _wake != null and not storm:
 		code = WAKE.into_cards(code, _wake.points)
 		_wake_mats.append(m)
-	m.shader = _shared_gas_shader(code)
+	m.shader = SHADER_CACHE.for_code(code)
 	if cached_noise:
 		m.set_shader_parameter("gas_hash_lattice", _gas_lattice)
 		m.set_shader_parameter("gas_hash_origin", _gas_lattice_origin)
@@ -496,7 +663,7 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 	if _wake != null and not storm:
 		code = WAKE.into_fog(code, _wake.points)
 		_wake_mats.append(mat)
-	mat.shader = _shared_gas_shader(code)
+	mat.shader = SHADER_CACHE.for_code(code)
 	if _fog_noise == null:
 		_fog_noise = load(NOISE_PATH).texture()
 	mat.set_shader_parameter("noise_tex", _fog_noise)
@@ -623,12 +790,16 @@ func _set_flashes(fs: Array) -> void:
 # Reuse the accepted cloud and scene bloom. Geometry lives inside the gas.
 func _bolts(ps: Array) -> void:
 	var bm := ShaderMaterial.new()
-	bm.shader = BOLT_SHADER
+	bm.shader = SHADER_CACHE.for_code(BOLT_SHADER)
+	var baked := bolt_style == "baked" and _bolt_materials()
+	if not baked:
+		bolt_style = "ribbon"
 	var lit := 0
+	var now := _bolt_now()
 	for patch in _patches(ps):
 		var center := Vector3.ZERO
 		for point in patch: center += point
-		var burst := {"center": center / float(patch.size()), "bolts": [], "next": rng.randf_range(0.3, 3.5)}
+		var burst := {"center": center / float(patch.size()), "bolts": [], "next": now + rng.randf_range(0.3, 3.5)}
 		_storm_bursts.append(burst)
 		var count := clampi(ceili(float(patch.size()) / 2.0), 2, 4)
 		var anchors: Array = []
@@ -648,8 +819,10 @@ func _bolts(ps: Array) -> void:
 			var z := a + Vector3(cos(angle + 1.0) * 10.0, rng.randf_range(-10.0, -5.0), sin(angle + 1.0) * 10.0)
 			var st := SurfaceTool.new()
 			st.begin(Mesh.PRIMITIVE_TRIANGLES)
+			# The ribbon paths are drawn by the random stream either way, so the baked bolts leave every later layout
+			# (the debris after the storm) exactly where it was.
 			var path := _jag(a, z, 9, 0.09)
-			_ribbon(st, path, 0.20, 1.15)
+			if not baked: _ribbon(st, path, 0.20, 1.15)
 			var forks := rng.randi_range(2, 4)
 			var fork_paths: Array = []
 			for k in forks:
@@ -660,11 +833,18 @@ func _bolts(ps: Array) -> void:
 				var direction := (z - a).normalized().rotated(Vector3.UP, turn)
 				var tip := start + direction * rng.randf_range(7.0, 11.0) + Vector3(0, rng.randf_range(0.0, 5.0), 0)
 				var fork := _jag(start, tip, 6, 0.11)
-				_ribbon(st, fork, 0.115, 0.85, true)
+				if not baked: _ribbon(st, fork, 0.115, 0.85, true)
 				fork_paths.append(fork)
+			var variant := bolts.size() % BOLT_VARIANTS.size()
 			var mi := MeshInstance3D.new()
-			mi.mesh = st.commit()
-			mi.material_override = bm
+			if baked:
+				mi.mesh = _bolt_card_mesh()
+				mi.transform = bolt_card_transform(a, z)
+				mi.custom_aabb = AABB(Vector3(-0.5, -0.5, -0.5), Vector3.ONE)
+				mi.material_override = _bolt_mats[variant]
+			else:
+				mi.mesh = st.commit()
+				mi.material_override = bm
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			add_child(mi)
 			var light: OmniLight3D = null
@@ -680,9 +860,68 @@ func _bolts(ps: Array) -> void:
 				add_child(light)
 				lit += 1
 			var bolt := {"mi": mi, "light": light, "pos": (a + z) * 0.5,
-				"next": burst.next, "start": -10.0, "soft": false, "fork_paths": fork_paths, "path": path}
+				"next": burst.next, "start": -1e9, "soft": false, "fork_paths": fork_paths, "path": path,
+				"variant": variant, "strikes": 0, "frame": -1.0, "gain": 0.0}
 			bolts.append(bolt)
 			burst.bolts.append(bolt)
+
+
+# Issue 1360: one material per baked variant; false (and the ribbon) when an atlas is missing.
+func _bolt_materials() -> bool:
+	if not _bolt_mats.is_empty():
+		return true
+	var shader := SHADER_CACHE.for_code(BOLT_FLIP_SHADER)
+	for key in BOLT_VARIANTS:
+		var tex := bolt_atlas(key)
+		if tex == null:
+			push_warning("Issue 1360: storm bolt atlas %s is missing; storms fall back to the ribbon" % key)
+			_bolt_mats.clear()
+			return false
+		var m := ShaderMaterial.new()
+		m.shader = shader
+		m.set_shader_parameter("atlas", tex)
+		_bolt_mats.append(m)
+	return true
+
+
+static func _bolt_card_mesh() -> QuadMesh:
+	if _bolt_card == null:
+		_bolt_card = QuadMesh.new()
+		_bolt_card.size = Vector2.ONE
+	return _bolt_card
+
+
+# The card for a bolt from a to z: its origin is the tile's centre, its y column runs from z up to a over the whole tile
+# height (the main channel fills BOLT_FILL of it), and its x and z columns are the same length, square to it. The shader
+# turns the card about that axis to face the camera, so the bolt keeps the ribbon's start, end and storm footprint.
+static func bolt_card_transform(a: Vector3, z: Vector3) -> Transform3D:
+	var h := a.distance_to(z) / BOLT_FILL
+	var up := (a - z).normalized()
+	var side := up.cross(Vector3.UP)
+	if side.length() < 0.1: side = up.cross(Vector3.RIGHT)
+	side = side.normalized()
+	var depth := side.cross(up).normalized()
+	return Transform3D(Basis(side * h, up * h, depth * h), (a + z) * 0.5)
+
+
+# Bolts run on the effects clock (fx.now): a hit pause or a slow death slows the strike with every other effect.
+# Without a battle presenter (a bench world) they run on this node's own clock.
+func _bolt_now() -> float:
+	var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+	return float(effects.now) if is_instance_valid(effects) else clock
+
+
+# Issue 1360: which baked frame a strike shows and how bright, age seconds after it starts. A reduced or refused strike
+# holds the variant's return-stroke frame (no flicker) and eases through the old soft envelope's lower peak.
+static func bolt_frame(age: float, soft: bool, variant: int) -> Vector2:
+	if age < 0.0:
+		return Vector2(-1.0, 0.0)
+	if soft:
+		var g := _flash(age, true)
+		return Vector2(float(BOLT_PEAK[BOLT_VARIANTS[variant]]), g) if g > 0.0 else Vector2(-1.0, 0.0)
+	if age >= BOLT_LIFE:
+		return Vector2(-1.0, 0.0)
+	return Vector2(floorf(age / BOLT_LIFE * BOLT_FRAMES), 1.0)
 
 
 func _jag(a: Vector3, z: Vector3, n: int, amp: float) -> Array:
@@ -755,16 +994,23 @@ static func _flash(t: float, soft := false) -> float:
 
 func _start_storm_burst(burst: Dictionary) -> void:
 	var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+	var now := _bolt_now()
 	for index in burst.bolts.size():
 		var bolt: Dictionary = burst.bolts[index]
 		var delay := float(index) * 0.075
-		bolt.start = clock + delay
+		bolt.start = now + delay
 		bolt.soft = false
 		if is_instance_valid(effects):
 			# Book the lit gas and bloom as a conservative 48-unit disc. Storms
 			# share the real fight's area counter, including other weapon effects.
-			bolt.soft = not effects.flash_at(bolt.pos, effects.now + delay, 48.0, 0.0, 0.52)
-	burst.next = clock + rng.randf_range(2.2, 6.5)
+			bolt.soft = not effects.flash_at(bolt.pos, now + delay, 48.0, 0.0, 0.52)
+		if bolt_style == "baked":
+			# Issue 1360: each strike plays the next variant, mirrored every other time, so a storm never repeats a shape
+			# twice running (no random draws: the layout stream stays as it was).
+			bolt.strikes = int(bolt.strikes) + 1
+			bolt.variant = (int(bolt.variant) + 1) % BOLT_VARIANTS.size()
+			(bolt.mi as MeshInstance3D).material_override = _bolt_mats[bolt.variant]
+	burst.next = now + rng.randf_range(2.2, 6.5)
 
 
 static func _instance_shader_ready(mi: MeshInstance3D) -> bool:
@@ -833,15 +1079,28 @@ func _process(dt: float) -> void:
 		_wake.apply(_wake_mats)
 	var reduced := is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))
 	_present_storm_ticks(reduced)
+	var now := _bolt_now()
 	for burst in _storm_bursts:
-		if clock >= float(burst.next): _start_storm_burst(burst)
+		if now >= float(burst.next): _start_storm_burst(burst)
 	var fs: Array = []
+	var baked := bolt_style == "baked"
 	for b in bolts:
-		var v := _flash(clock - float(b["start"]), bool(b.get("soft", false)) or reduced)
+		var age := now - float(b["start"])
+		var soft := bool(b.get("soft", false)) or reduced
+		# The light on the gas and ships keeps the old envelope; the baked strike draws the bolt itself.
+		var v := _flash(age, soft)
 		var mi := b["mi"] as MeshInstance3D
-		if _instance_shader_ready(mi):
+		if baked:
+			var fg := bolt_frame(age, soft, int(b["variant"]))
+			b["frame"] = fg.x
+			b["gain"] = fg.y
+			if _instance_shader_ready(mi):
+				mi.set_instance_shader_parameter("frame", fg.x)
+				mi.set_instance_shader_parameter("gain", fg.y)
+				mi.set_instance_shader_parameter("mirror", float(int(b["strikes"]) % 2))
+		elif _instance_shader_ready(mi):
 			mi.set_instance_shader_parameter("flash", v)
-			mi.set_instance_shader_parameter("branch_flash", _flash((clock - float(b["start"])) * 1.6, bool(b.get("soft", false)) or reduced))
+			mi.set_instance_shader_parameter("branch_flash", _flash(age * 1.6, soft))
 		if b["light"] != null:
 			(b["light"] as OmniLight3D).light_energy = v * 1.2
 		if v > 0.0:
@@ -906,9 +1165,9 @@ func _debris(ps: Array) -> void:
 	var low: bool = W.quality == "low"
 	var shard_meshes := _shard_meshes()
 	var metal := ShaderMaterial.new()
-	metal.shader = WRECK_SHADER
+	metal.shader = SHADER_CACHE.for_code(WRECK_SHADER.replace("%NOISE%", WS.NOISE))
 	var hot := ShaderMaterial.new()
-	hot.shader = WRECK_SHADER
+	hot.shader = metal.shader
 	hot.set_shader_parameter("hot", 1.0)
 	for wm in [metal, hot]:
 		(wm as ShaderMaterial).set_shader_parameter("tumble_k", TUMBLE_K if tumble_mode == "cap" else 1000.0)
@@ -1021,7 +1280,7 @@ func _debris(ps: Array) -> void:
 		mi.name = "DebrisDust"
 		mi.multimesh = mm
 		var m := ShaderMaterial.new()
-		m.shader = DUST_SHADER
+		m.shader = SHADER_CACHE.for_code(DUST_SHADER)
 		mi.material_override = m
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		mi.extra_cull_margin = 10.0
@@ -1078,6 +1337,7 @@ static func clear_static() -> void:
 	_gas_shaders.clear()
 	_wreck_mesh_cache = []
 	_piece_radii.clear()   # keyed by those meshes' instance ids
+	_bolt_card = null   # issue 1360: the shared bolt card
 
 
 # Issue #230 AS14: the one tumble figure of record (contrib/opus/briefs/environment_reconciliation.md section 1). A
@@ -1179,7 +1439,7 @@ func _well(c: Vector3) -> void:
 	pm.size = Vector2(250, 250)
 	mi.mesh = pm
 	var m := ShaderMaterial.new()
-	m.shader = WELL_SHADER
+	m.shader = SHADER_CACHE.for_code(WELL_SHADER)
 	m.set_shader_parameter("well", c)
 	# the pull reaches five hexes (about 87 units); the dead star's own lens and disc fill the middle
 	m.set_shader_parameter("r_in", 58.0)
@@ -1200,7 +1460,7 @@ func _well(c: Vector3) -> void:
 	dust.name = "WellInfall"
 	dust.multimesh = mm
 	var dm := ShaderMaterial.new()
-	dm.shader = INFALL_SHADER
+	dm.shader = SHADER_CACHE.for_code(INFALL_SHADER)
 	dm.set_shader_parameter("well", c)
 	dm.render_priority = -24
 	dust.material_override = dm
@@ -1219,13 +1479,27 @@ func use_ship_debris(ships: Array) -> void:
 	_chunk_task = WorkerThreadPool.add_task(func() -> void: job.chunks = HD.cut(job.sources))
 	_install_chunks()
 
+# issue 1434 (LOAD29 cold s25: the 7 chunk meshes landed in one prepare_hulls draw, 83 pipelines and 7 s): true while the
+# chunks are still being cut on the worker, so the battle's load waits and stages them in with the rest
+func debris_pending() -> bool:
+	return _chunk_task >= 0 or _installing
+
+
+# issue 1434 (LOAD30d cold s25: the 7 chunks added in one frame compiled 59 surface pipelines in its draw, 5.7 s; a
+# mesh's surface pipelines are made when it joins the scene, whatever layer it draws on): while a battle is loading
+# the chunks join one a frame
+var _installing := false
+
+
 func _install_chunks() -> void:
 	while not WorkerThreadPool.is_task_completed(_chunk_task):
 		await get_tree().process_frame
 		if not is_inside_tree() or _chunk_task < 0: return
 	WorkerThreadPool.wait_for_task_completion(_chunk_task)
 	_chunk_task = -1
+	var t_meshes := Time.get_ticks_usec()
 	var meshes := HD.meshes(_chunk_job.chunks)
+	SKEEP.event("debris meshes made (%d, %d ms)" % [meshes.size(), (Time.get_ticks_usec() - t_meshes) / 1000])
 	# These are old, weathered board wrecks, not fresh deaths. Keep their cut caps
 	# cold; only the kit's three bounded torn-edge points carry residual heat.
 	for chunk in _chunk_job.chunks:
@@ -1236,12 +1510,18 @@ func _install_chunks() -> void:
 	var holder := Node3D.new()
 	holder.name = "HullDebris"
 	add_child(holder)
+	# issue 1434 (LOAD32): one chunk alone still made 59 surface pipelines in a 5.9 s frame (cold and warm), all of its
+	# materials' shaders at once. While a battle loads, its first mesh joins once per surface, the other surfaces on a
+	# plain material, so each shader's pipelines land in a frame of their own.
+	if not _wreck_slots.is_empty() and not get_tree().get_nodes_in_group("battle_loading").is_empty():
+		if not await _warm_surfaces(holder, meshes[0], (_wreck_slots[0].xf as Transform3D).origin):
+			return
 	var index := 0
 	var replaced := {}
 	var radii := {}
 	# Replace one existing kit slot per hex, preserving its size, pose and total
 	# count. Keep the other kit shapes visible alongside the painted fleet chunks.
-	for slot in _wreck_slots:
+	for slot in _wreck_slots.duplicate():   # issue 1434: the loop may span frames
 		var mi := MeshInstance3D.new()
 		mi.mesh = meshes[index % meshes.size()]
 		index += 1
@@ -1257,13 +1537,21 @@ func _install_chunks() -> void:
 		var pivot := Node3D.new()
 		pivot.transform = Transform3D((slot.xf as Transform3D).basis.orthonormalized(), slot.xf.origin)
 		holder.add_child(pivot)
-		pivot.add_child(mi)
 		mi.scale = Vector3.ONE * scale_v
 		mi.position = -box.get_center() * scale_v
+		pivot.add_child(mi)
+		SKEEP.event("debris chunk joined")
 		var id: int = slot.mmi.get_instance_id()
 		if not replaced.has(id): replaced[id] = {"mmi": slot.mmi, "indices": []}
 		replaced[id].indices.append(int(slot.index))
 		_hull_spin.append([pivot, Vector3.UP if slot.get("orbiting", false) else (slot.axis as Vector3).normalized(), float(slot.get("rate", tumble_rate(float(slot.scale))))])
+		if not get_tree().get_nodes_in_group("battle_loading").is_empty():
+			_installing = true
+			await get_tree().process_frame
+			if not is_inside_tree() or not is_instance_valid(holder):
+				_installing = false
+				return
+	_installing = false
 	# Compact each affected draw once. Do not hide a replaced slot with a zero
 	# scale: a singular normal matrix can feed NaNs into lighting and bloom.
 	for group in replaced.values():
@@ -1282,6 +1570,42 @@ func _install_chunks() -> void:
 		group.mmi.multimesh = mm
 	_wreck_slots.clear()
 	W.notes.append("painted hull debris: %d cached chunks, %d instances" % [meshes.size(), index])
+
+# Joins `mesh` once per surface at `at`, a speck the size of a dust grain, the other surfaces on one plain material,
+# a frame apart; false when the world left the tree meanwhile. LOAD33c: one surface alone still made 73 pipelines in a
+# 5.7 s cold frame, so each surface first joins without shadows (its colour passes) and casts them a frame later (its
+# shadow passes).
+func _warm_surfaces(holder: Node3D, mesh: Mesh, at: Vector3) -> bool:
+	var plain := StandardMaterial3D.new()
+	var mi := MeshInstance3D.new()
+	mi.name = "SurfaceWarm"
+	mi.mesh = mesh
+	mi.scale = Vector3.ONE * 0.001
+	mi.position = at
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for s in mesh.get_surface_count():
+		mi.set_surface_override_material(s, plain)
+	holder.add_child(mi)
+	_installing = true
+	var steps: Array = [[-1, true]]   # the plain material's shadow pass first
+	for k in mesh.get_surface_count():
+		steps.append([k, false])
+		steps.append([k, true])
+	for st in steps:
+		await get_tree().process_frame
+		if not is_inside_tree() or not is_instance_valid(mi):
+			_installing = false
+			return false
+		var k: int = st[0]
+		for s in mesh.get_surface_count():
+			mi.set_surface_override_material(s, null if s == k else plain)
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if st[1] else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		SKEEP.event("debris warm surface %d of %d%s" % [k, mesh.get_surface_count(), " with shadows" if st[1] else ""])
+	await get_tree().process_frame
+	_installing = false
+	if not is_inside_tree() or not is_instance_valid(mi): return false
+	mi.queue_free()
+	return true
 
 func _exit_tree() -> void:
 	for mat in _legacy_debris_mats:

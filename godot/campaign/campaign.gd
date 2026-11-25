@@ -2638,6 +2638,8 @@ func ensureNemesis() -> Variant: return nemActive()   # B4 saves get an R42 iden
 func nemGender(fac, name: String) -> String:
 	var F = NEM_FAC.get(fac, {}) if fac != null else {}
 	if jt(F.get("g")): return str(F["g"])
+	# Saves from before the name pool changed may still need a pronoun for Maren.
+	if fac == "hegemony" and name.get_slice(" ", 0) == "Maren": return "f"
 	for p in or_(F.get("fem"), []):
 		if name.begins_with(str(p)): return "f"
 	return "m"
@@ -3543,9 +3545,15 @@ func _heavy_wreck_cause(unit: Dictionary, log: Array) -> String:
 	var ram_recoil := target + " rams " + str(unit.get("killedBy", "")) + " at full speed:"
 	var torp_hit := " reach " + target
 	var direct_hit := " at " + target + ":"
+	# Spread Pattern: the burst line names the ship that was aimed at, never the neighbours it kills,
+	# so a splash kill is credited to the torpedo that killedBy names, not to an earlier gun hit.
+	var splash_from := " from " + str(unit.get("killedBy", "")) + " burst against "
+	var splash_miss := " burst against " + target + ","
 	for i in range(log.size() - 1, -1, -1):
 		var line: String = log[i].get("m", "")
 		if line.contains(ram_hit) or line.begins_with(ram_recoil): return "Rammed"
+		if unit.get("killedBy", "") != "" and line.contains(splash_from) and line.contains(", catching ") and not line.contains(splash_miss):
+			return "Torpedo strike"
 		if line.begins_with("Torpedoes from ") and (line.contains(torp_hit + ":") or line.contains(torp_hit + " (a stray hit in the lane):")):
 			return "Torpedo strike"
 		var gun := line.find(" fires ")
@@ -3657,6 +3665,18 @@ func victoryCard() -> void:
 	var data: Dictionary = stored.duplicate() if stored is Dictionary else {}
 	data.merge({"wrecks": ws, "rw": W["rw"], "kind": RUN["reward"]["kind"]}, true)
 	show_modal("victory", data, acts)
+
+func loss_captain_escaped(loss: Dictionary) -> bool:
+	if loss.has("escaped"): return jt(loss["escaped"])
+	# Legacy reward saves have the names and the roster, but a prize may already have used the reserve captain.
+	for entry in or_(RUN.get("reserve"), []):
+		if entry.get("from") == loss.get("ship") and entry["cap"].get("name") == loss.get("cap"):
+			return true
+	for entry in or_(RUN.get("fallen"), []):
+		if entry.get("ship") == loss.get("ship") and entry.get("name") == loss.get("cap"):
+			return false
+	return true
+
 func wreck_tow_over_cap(w: Dictionary) -> bool:
 	var hull = HULLS.get(w.get("tpl"))
 	return hull != null and fleetCP() + float(or_(hull.get("cp"), 1)) > float(RUN["cpCap"])
@@ -4098,9 +4118,11 @@ func finishBattle(result: String) -> void:
 			if ship.get("car") == null: ship["car"] = {"dealt": 0, "kills": 0, "battles": 0}
 			var c = ship["car"]; c["dealt"] = float(c["dealt"]) + jsround(float(z0(u.get("dealt")))); c["kills"] = float(c["kills"]) + float(z0(u.get("kills"))); c["battles"] = float(c["battles"]) + 1
 		if jt(u.get("dead")) and not jt(u.get("exited")):
-			summary["lost"].append({"ship": ship["name"], "cap": ship["cap"]["name"], "tpl": ship["tpl"]}); RUN["stats"]["lost"] = float(z0(RUN["stats"].get("lost"))) + 1
+			var loss := {"ship": ship["name"], "cap": ship["cap"]["name"], "tpl": ship["tpl"], "escaped": false}
+			summary["lost"].append(loss); RUN["stats"]["lost"] = float(z0(RUN["stats"].get("lost"))) + 1
 			RUN["fleet"] = RUN["fleet"].filter(func(x): return not is_same(x, ship))
 			if rnd() < 0.6:
+				loss["escaped"] = true
 				RUN["reserve"] = or_(RUN.get("reserve"), []); RUN["reserve"].append({"cap": ship["cap"], "from": ship["name"]})
 				summary["escaped"] = or_(summary.get("escaped"), []); summary["escaped"].append(ship["cap"]["name"])
 			else: RUN["fallen"].append({"name": ship["cap"]["name"], "rank": ship["cap"]["rank"], "fac": ship["cap"]["fac"], "ship": ship["name"], "sector": RUN["sector"]})
