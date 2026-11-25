@@ -43,6 +43,7 @@ var cells: Array = []        # [{q, r}]
 var index := {}              # "q,r" -> instance index
 var fills: MultiMeshInstance3D
 var rings: MultiMeshInstance3D
+var cut_overlay_alpha := 1.0
 var base_fill := {}          # "q,r" -> Color (terrain zone tints)
 var overlay := {}            # "q,r" -> Color
 var ring_over := {}          # "q,r" -> Color
@@ -84,6 +85,7 @@ varying vec2 wpos;
 // Ryan (Nov 20, issue 1359 thread, picked "Only with Z"): the reach hatching covered the whole board and read as random
 // far-off grid lines. hatch_hidden 1 (the normal view) draws none; Z and the other looks keep it board-wide.
 uniform float hatch_hidden = 0.0;
+uniform float cut_overlay_alpha = 1.0;
 void vertex() { vcol = COLOR; vp = VERTEX.xz; style = INSTANCE_CUSTOM.r; band = INSTANCE_CUSTOM.g; wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xz; }
 void fragment() {
 	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
@@ -132,7 +134,7 @@ void fragment() {
 		a = A;
 	}
 	ALBEDO = c;
-	ALPHA = clamp(a, 0.0, 1.0);
+	ALPHA = clamp(a, 0.0, 1.0) * cut_overlay_alpha;
 }
 """
 const RING_SHADER := """
@@ -144,6 +146,7 @@ render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabl
 uniform int mode = 0;
 uniform vec3 focus = vec3(0.0);
 uniform vec3 cursor = vec3(100000.0);
+uniform float cut_overlay_alpha = 1.0;
 uniform float near_r = 70.0;
 uniform float far_r = 190.0;
 // the gravity well: xyz its centre, w how deep the holo grid dips toward it (0: flat)
@@ -200,7 +203,7 @@ void fragment() {
 		if (k <= 0.0) { discard; }
 	}
 	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
-	ALBEDO = vcol.rgb * vcol.a * k * thin;
+	ALBEDO = vcol.rgb * vcol.a * k * thin * cut_overlay_alpha;
 	ALPHA = 1.0; // Draw after opaque hulls, with depth testing, just like the fill.
 }
 """
@@ -603,6 +606,15 @@ func set_focus(p: Vector3) -> void:
 		(rings.material_override as ShaderMaterial).set_shader_parameter("focus", p)
 
 
+func set_cut_overlay_alpha(alpha: float) -> void:
+	if alpha == cut_overlay_alpha:
+		return
+	cut_overlay_alpha = alpha
+	for mesh in [fills, rings, edges, gas_edges, hazard_edges, solid_edges, cover_edges, _hover_shown, arrival_edge, reach_edge]:
+		if is_instance_valid(mesh):
+			(mesh.material_override as ShaderMaterial).set_shader_parameter("cut_overlay_alpha", alpha)
+
+
 # F1: one bright line around the whole area a ship can reach (keys: "q,r" -> anything), drawn on the board just inside
 # the outer hex edges, with a soft glow band; an empty dictionary clears it
 var outline: MeshInstance3D
@@ -801,6 +813,7 @@ func _show_hover_edge(raw: String) -> void:
 	_hover_shown = mi
 	if mi != null:
 		(mi.material_override as ShaderMaterial).set_shader_parameter("gain", float(_hover_gain.get(str(mi.get_meta("edge_kind")), 0.0)))
+		(mi.material_override as ShaderMaterial).set_shader_parameter("cut_overlay_alpha", cut_overlay_alpha)
 		mi.visible = fills == null or fills.visible
 
 
@@ -809,6 +822,7 @@ func _edge_mesh(parent: Node, nm: String, em: ShaderMaterial, keys: Dictionary, 
 	mi.name = nm
 	mi.set_meta("edge_kind", nm)
 	mi.material_override = em.duplicate()
+	(mi.material_override as ShaderMaterial).set_shader_parameter("cut_overlay_alpha", cut_overlay_alpha)
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	parent.add_child(mi)
 	var st := SurfaceTool.new()

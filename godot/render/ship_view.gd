@@ -754,6 +754,8 @@ func _ring() -> void:
 # the footprint under every ship (B1 markers): a mint ring under yours, a broken violet hex under the enemy's
 var marker: MeshInstance3D
 var marker_friend := -1
+var _cut_overlay_alpha := 1.0
+var _ring_col := EMBER
 
 
 func set_marker(friend: bool) -> void:
@@ -792,11 +794,34 @@ func set_marker(friend: bool) -> void:
 	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	m.cull_mode = BaseMaterial3D.CULL_DISABLED
 	# your ring is the HUD's FRIEND mint (glass_shell.gd, R149: moved off green so it never reads as the lime accent)
-	m.albedo_color = Color(0.32, 0.94, 0.77, 0.85) if friend else Color(0.62, 0.22, 1.0, 0.9)
+	_color_marker(m)
 	marker.material_override = m
 	marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	marker.position.y = hull_lift - 0.25
 	add_child(marker)
+
+
+func _color_marker(mat: StandardMaterial3D) -> void:
+	var col := Color(0.32, 0.94, 0.77, 0.85) if marker_friend == 1 else Color(0.62, 0.22, 1.0, 0.9)
+	col.a *= _cut_overlay_alpha
+	mat.albedo_color = col
+
+
+func _color_ring(mat: StandardMaterial3D) -> void:
+	var col := _ring_col
+	col.a *= _cut_overlay_alpha
+	mat.albedo_color = col
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if _cut_overlay_alpha < 1.0 else BaseMaterial3D.TRANSPARENCY_DISABLED
+
+
+func set_cut_overlay_alpha(alpha: float) -> void:
+	if _cut_overlay_alpha == alpha:
+		return
+	_cut_overlay_alpha = alpha
+	if ring != null:
+		_color_ring(ring.material_override)
+	if marker != null:
+		_color_marker(marker.material_override)
 
 
 var wreck := false
@@ -892,7 +917,8 @@ func set_selected(on: bool, col := EMBER) -> void:   # the ship that is up: embe
 	_drop_sel = on
 	drop_hot_target = 1.0 if (_drop_hover or _drop_sel) else 0.0
 	ring.visible = on
-	(ring.material_override as StandardMaterial3D).albedo_color = col
+	_ring_col = col
+	_color_ring(ring.material_override)
 	ring.rotation.y = -rotation.y
 
 

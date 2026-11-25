@@ -108,6 +108,7 @@ uniform float ignition = 0.0;
 uniform vec4 atlas_rect = vec4(0.0, 0.0, 1.0, 1.0);
 uniform float min_pixels = 0.0;
 uniform float size_divisor = 1.0;
+uniform float read_pixels = 0.0;
 uniform float soft_flash = 0.0;
 // Opt-in for a weapon flash or its body. A setting change can dim an existing picture without restarting its clock.
 uniform float calm_intensity = 0.0;
@@ -135,6 +136,9 @@ void vertex() {
 	particle_depth = -view_c.z;
 	float size = max(extent, px_world(min_pixels, -view_c.z, PROJECTION_MATRIX));
 	size /= size_divisor;
+	if (read_pixels > 0.0) {
+		size = max(size, px_world(read_pixels, -view_c.z, PROJECTION_MATRIX));
+	}
 	vec2 axis = (VIEW_MATRIX * vec4(tear_normal, 0.0)).xy;
 	axis = length(axis) > 0.01 ? normalize(axis) : vec2(0.0, 1.0);
 	vec2 up = mix(vec2(0.0, 1.0), axis, directional);
@@ -675,7 +679,7 @@ void fragment() {
 
 # Oriented rings. a1 = (normal, life); a3 = (size0, size1, kind, seed); a4 = (period, speed, drag, 0).
 # kinds: 0 smoke ring (alpha)   1 shockwave   2 soft pop ring (reduce-flashing replacement)   3 thin pale ring (gauss
-#        muzzle shock, sonic boom)   4 hex-cell ring (Hegemony shield shatter)
+#        muzzle shock, sonic boom)   4 hex-cell ring (Hegemony shield shatter)   5 soft death front (camera-facing)
 const RING := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -716,8 +720,15 @@ void vertex() {
 				size = mn;
 			}
 		}
-		vec3 p = c + (t1 * VERTEX.x + t2 * VERTEX.y) * size;
-		POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * (MODEL_MATRIX * vec4(p, 1.0)));
+		if (rk == 5) {
+			// Read at a low angle too. The noise breaks the front up instead of drawing a clean circle.
+			vec3 centre_view = (VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).xyz;
+			size = max(size, px_world(a4.w, -centre_view.z, PROJECTION_MATRIX) * mix(0.24, 1.0, g));
+			POSITION = PROJECTION_MATRIX * vec4(centre_view + vec3(VERTEX.xy * size, 0.0), 1.0);
+		} else {
+			vec3 p = c + (t1 * VERTEX.x + t2 * VERTEX.y) * size;
+			POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * (MODEL_MATRIX * vec4(p, 1.0)));
+		}
 		vUv = VERTEX.xy * 2.0;
 		vCol = vec4(a2.rgb, a2.a * rb);
 		vInfo = vec4(t, a3.z, a3.w, age);
@@ -753,6 +764,13 @@ void fragment() {
 	} else if (k == 3) {
 		float d1 = (r - 0.93) / 0.03;
 		add = vCol.rgb * exp(-d1 * d1) * spow(1.0 - t, 2.0) * vCol.a;
+	} else if (k == 5) {
+		float n = fbm(p * 4.5 + vec2(seed * 8.0, t * 1.8));
+		float ragged = (r - mix(0.77, 0.94, n)) / mix(0.07, 0.13, t);
+		float envelope = smoothstep(0.03, 0.38, t) * (1.0 - smoothstep(0.45, 1.0, t));
+		// A slow, bounded colour wash, not a second flash. Premultiplied so the front cannot go HDR.
+		alpha = min(0.18, exp(-ragged * ragged) * smoothstep(0.28, 0.70, n) * vCol.a * envelope);
+		base = clamp(vCol.rgb, 0.0, 1.0);
 	} else {
 		// a ring of hex cells that flies apart (shield shatter)
 		vec2 q = p * 7.0;
