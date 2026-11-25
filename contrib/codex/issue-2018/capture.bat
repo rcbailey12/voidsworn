@@ -4,7 +4,7 @@ rem Issue 2018. Run on the Board GPU line after green checks and review.
 rem Optional: capture.bat AFTER BEFORE. --plan validates the rows without running Godot.
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "SPARK_MOMENTS=%~dp0look_moments.json"
-set "SPARK_BASE=dc3bff4a6e5d625d8b19423db2a18b4b777d559a"
+set "SPARK_BASE=757ffd0e646fc00efe58965ed5e618cd4c91ff02"
 set "SPARK_JOB=%VT%\board\issue-2018"
 set "SPARK_SHOTS=%SPARK_JOB%\shots"
 set "SPARK_AFTER=%~1"
