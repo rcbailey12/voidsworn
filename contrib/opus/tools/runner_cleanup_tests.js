@@ -361,6 +361,11 @@ try {
   dateTree(edited, 8);
   const laneNewest = makeCopy('repo-kept-newest', 30, laneB);
   fs.utimesSync(laneNewest, new Date(2030, 0, 1), new Date(2030, 0, 1));
+  const newLaneKeeps = ['board_e', 'board_f'].map(lane => {
+    const dir = path.join(pc, lane, 'repo-kept-newest');
+    write(path.join(dir, 'tracked.txt'), lane);
+    return dir;
+  });
 
   const ownerName = (issue, char) => `voidsworn-run-${issue}-${char.repeat(32)}`;
   const oldOwned = scratch(temp, ownerName(301, 'a'), 4);
@@ -652,6 +657,7 @@ try {
     assert.equal(decision(secondDry, dir, 'would remove'), decision(dry, dir, 'would remove'));
   }
   for (const dir of remove) decision(dry, dir, 'would remove');
+  for (const dir of newLaneKeeps) assert(dry.includes(`kept checkout retained (newest): ${dir} (`), `janitor skipped ${dir}`);
   for (const dir of preserve) decision(dry, dir, dir.startsWith(temp + path.sep) || /[\\/](?:opus\d+|pt\d{4})[^\\/]*$/.test(dir) ? 'would keep' : (jobCheckoutsKept.includes(dir) ? 'retained' : 'kept'));
   for (const dir of lookalikes) {
     assert.match(decision(dry, dir, 'would keep'), /name match without owner record/);

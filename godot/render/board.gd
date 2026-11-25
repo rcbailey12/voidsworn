@@ -18,7 +18,7 @@ const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const HS := 10.0
 var HW := HS * sqrt(3.0)
 # The one scale table's board-side sizes (issue 710, R247; docs/playbooks/scale.md). All in world units, HEX_S = 10.
-const STATION_BASE_LEN := 22.0     # a small station cluster: 22, then 4 more per hex
+const STATION_BASE_LEN := 22.0     # a small station cluster: 22, then 4 more per hex (the O1_37 fallback only; T2 is fitted to its hexes)
 const STATION_PER_HEX := 4.0
 const STATION_BIG_LEN := A4P.LARGE_STATION_SIZE  # a cluster of 5 or more station hexes
 const STATION_BIG_HEXES := 5
@@ -425,10 +425,11 @@ func _terrain_files() -> Array:
 		for code in ["H8_23", "V15_37", "C14s_23", "D20_23"]:
 			if ships.has(code):
 				out.append(str(ships[code]["res"]))
+	var spots := A4P.station_spots({"terrain": T, "map": VW.get("map", {})})
+	if spots != Vector2i.ZERO:
+		# the same station files the battle prefetches: T2 for the big cluster, the outpost for small ones and holes (1791)
+		out += A4P.station_files(spots.x == 1, spots.y == 1)
 	if kinds.has("station"):
-		for p in ["res://gen/ships/station_T2.scn", "res://gen/ships/station_T2_debris.scn"]:
-			if ResourceLoader.exists(p):
-				out.append(p)
 		if ships.has("O1_37"):
 			out.append(str(ships["O1_37"]["res"]))
 	var keep := []
@@ -1047,7 +1048,10 @@ func _terrain() -> void:
 			clearance = maxf(clearance, cen.distance_to(p) + HS)
 		var size := STATION_BIG_LEN if cl.size() >= STATION_BIG_HEXES else STATION_BASE_LEN + STATION_PER_HEX * cl.size()
 		var teaching: bool = cl.size() == 3 and VW.get("map", {}).get("stationR", 0) == 1
-		_station(cen, rng, size, teaching, clearance)
+		var rel: Array = []
+		for p in centres:
+			rel.append(Vector2(p.x - cen.x, p.z - cen.z))
+		_station(cen, rng, size, teaching, clearance, rel)
 
 
 # Issue 1582 item 4: a few small loose fragments hang below the plane round each rock and debris hex, so a field has
@@ -1116,9 +1120,10 @@ func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float
 		props.add_child(mi)
 
 
-func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
-	var codes := ["H8_23", "V15_37", "C14s_23", "D20_23"]
-	var code: String = codes[rng.randi() % codes.size()]
+func _hulk(c: Vector3, rng: RandomNumberGenerator, own := "") -> void:
+	# issue 1767 (R419): all six factions' derelicts, mostly the factions in this battle, so a Chorus or Glasswright
+	# graveyard shows their own dead. One draw, as before, so the rest of the board's props do not shift.
+	var code := A4P.pick_hulk(rng.randi(), _battle_factions(), own)
 	# A4's painted hull, burnt (same random draws as the old path, so the rest of the board does not shift)
 	var a4 := A4P.hulk(code)
 	if a4 != null:
@@ -1142,18 +1147,48 @@ func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 	BV.fit_hulk(mi, c)
 
 
-func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, teaching := false, clearance := 0.0) -> void:
-	# The painted station for this cluster size, with the original hull below as a fallback.
-	var a4 := A4P.station(size, clearance)
+# the faction of unit `id` ("" when the view has no such unit), so a ship that dies leaves its own faction's hulk
+func _unit_faction(id: String) -> String:
+	for u in VW.get("units", []):
+		if u is Dictionary and str(u.get("id", "")) == id and u.get("fac") != null:
+			return str(u["fac"])
+	return ""
+
+
+# the factions with ships in this battle (both sides), for the hulk draw
+func _battle_factions() -> Array:
+	var out: Array = []
+	for u in VW.get("units", []):
+		if u is Dictionary and u.get("fac") != null and not out.has(str(u["fac"])):
+			out.append(str(u["fac"]))
+	return out
+
+
+# the biome's station kind (rules REGION_BIOME: rig, ring or spire), "" when the battle rolled none
+func station_kind() -> String:
+	var biome = WI.get("biome")
+	return str(biome.get("station", "")) if biome is Dictionary else ""
+
+
+func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, teaching := false, clearance := 0.0, cells: Array = []) -> void:
+	# The painted station for this cluster size, with the original hull below as a fallback. issue 1767: station_T2 on
+	# every cluster, fitted inside the cluster's own hexes at its bearing (A4P.fit_scale), level and lifted in proportion.
+	# The bearing is drawn first (A4P draws nothing, so the board's random stream is as before).
+	var bearing := rng.randf() * 6.0
+	var a4 := A4P.station(size, clearance, station_kind(), true, cells, HS, bearing)
 	if a4 != null:
-		var bearing := rng.randf() * 6.0
-		var attitude := Vector3(0, bearing, 0) if a4.has_meta("station_T2") else Vector3(0.06, bearing, 0.04)
-		var offset := Vector3(0, 3, 0)
-		if teaching:
+		var t2 := a4.has_meta("station_T2")
+		bearing = float(a4.get_meta("station_bearing", bearing))   # a fitted T2's best turn (A4P.best_bearing)
+		var attitude := Vector3(0, bearing, 0) if t2 else Vector3(0.06, bearing, 0.04)
+		var k: float = a4.scale.x
+		var offset := Vector3(0, 3, 0) * k
+		if bool(a4.get_meta("station_outpost", false)):
+			offset.y = A4P.lift_outpost(a4)
+		if teaching and not t2:
 			# Bank O1_37 into the triangular cluster at full scale and lift its low edge above the grid.
 			attitude = Vector3(deg_to_rad(-63.0), deg_to_rad(65.0), 0.0)
 			offset = Vector3(2.0, 13.0, 1.5)
-		a4.transform = Transform3D(Basis.from_euler(attitude), c + offset)
+		a4.transform = Transform3D(Basis.from_euler(attitude).scaled(Vector3.ONE * k), c + offset)
 		props.add_child(a4)
 		if a4.has_meta("station_T2") and BattleLook.post_fx_enabled("DECALS"):
 			TerrainScorch.station(a4)
@@ -1176,7 +1211,7 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 		m.ao_texture = (src as StandardMaterial3D).ao_texture
 		m.ao_texture_channel = (src as StandardMaterial3D).ao_texture_channel
 	mi.material_override = m
-	mi.transform = Transform3D(Basis.from_euler(Vector3(0.06, rng.randf() * 6.0, 0.04)).scaled(Vector3(size, size, -size)), c + Vector3(0, 3, 0))
+	mi.transform = Transform3D(Basis.from_euler(Vector3(0.06, bearing, 0.04)).scaled(Vector3(size, size, -size)), c + Vector3(0, 3, 0))
 	props.add_child(mi)
 
 
@@ -1343,7 +1378,7 @@ func wait_planet() -> void:
 # a wreck the map started with: the hex joins the blocked terrain (its edge shows with the grid, Z, as every rock and
 # hulk hex does), with the same scatter of torn rock and plate, and the ship's own pieces settle inside it (fx_death
 # _leash). hull: also lay the map's burnt hulk there, for a death that left no pieces (or a battle without the effects).
-func add_wreck(id: String, q: int, r: int, hull := false) -> void:
+func add_wreck(id: String, q: int, r: int, hull := false, fac := "") -> void:
 	var k := key(q, r)
 	if not index.has(k):
 		return
@@ -1359,7 +1394,7 @@ func add_wreck(id: String, q: int, r: int, hull := false) -> void:
 		_rocks(c, rng, 2, 1.5, 3.0)
 	if hull and not wreck_hulls.has(id):
 		wreck_hulls[id] = true
-		_hulk(c, rng)
+		_hulk(c, rng, fac if fac != "" else _unit_faction(id))   # the caller's live faction first (a late reinforcement: Artoo)
 	if fresh:
 		_rebuild_edges()
 
