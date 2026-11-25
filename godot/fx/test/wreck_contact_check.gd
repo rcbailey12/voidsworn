@@ -4,9 +4,8 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #   1. settled plates: with every plate at rest the physics space sleeps (issue 1279's gate); a hull collider moving
 #      through the plates wakes it and shoves a plate aside (Astra's probe: 0 units with the gate, 4 with the space
 #      awake); a hull moving far from every plate, and a lone hull on an empty board, leave the space asleep;
-#   2. a shrinking wreck: once its pieces start to draw together (issue 1236), a released section leaves Jolt for the
-#      scripted drift, so no full-size collider sits round shrunk metal; a section released after the shrink began
-#      goes straight onto the drift; a wreck that fits its hex without shrinking keeps its section in Jolt;
+#   2. a wreck's main pieces in a blocked hex (issue 1236, Ryan Nov 22): kept at real size, never pulled together or
+#      removed, braked to rest close to where they parted;
 #   3. the kill slow motion: plates thrown during it launch at the effect clock's speed, and plates in flight slow and
 #      speed back up with the clock by the same ratio as a released wreck section.
 const FX := preload("res://fx/fx.gd")
@@ -110,7 +109,7 @@ func _contact(world: Node3D) -> void:
 	await process_frame
 
 
-func _section(fx, at: Vector3) -> RigidBody3D:
+func _section(fx, at: Vector3, length := 6.0) -> RigidBody3D:
 	var rb := RigidBody3D.new()
 	rb.gravity_scale = 0.0
 	rb.axis_lock_linear_y = true
@@ -119,13 +118,13 @@ func _section(fx, at: Vector3) -> RigidBody3D:
 	rb.freeze = true
 	var cs := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(6, 2, 3)
+	box.size = Vector3(length, 2, 3)
 	cs.shape = box
 	rb.add_child(cs)
 	var mi := MeshInstance3D.new()
 	mi.name = "mesh"
 	var bm := BoxMesh.new()
-	bm.size = Vector3(6, 2, 3)
+	bm.size = Vector3(length, 2, 3)
 	mi.mesh = bm
 	rb.add_child(mi)
 	fx.phys_root.add_child(rb)
@@ -137,39 +136,41 @@ func _in_jolt(rb: RigidBody3D) -> bool:
 	return not rb.freeze and rb.process_mode != Node.PROCESS_MODE_DISABLED
 
 
-# 2. a shrinking wreck's released sections leave Jolt as the meshes shrink
-func _shrink(world: Node3D) -> void:
+# 2. a wreck's main pieces in a blocked hex (Ryan, Nov 22: no shrinking, no folding one half into the other, nothing
+# vanishing): two halves parting at 3 units a second, and spinning, keep their real size, are not pulled together or removed, and come
+# to rest a short way from where they parted
+func _brake(world: Node3D) -> void:
 	var fx = _fx(world)
 	var c := Vector3(50, 0, 50)
 	DEATH.anchor_wreck(fx, "w1", c, 8.0)
-	DEATH.anchor_wreck(fx, "w2", c + Vector3(100, 0, 0), 8.0)
-	var a := _section(fx, c + Vector3(-2, 0, 0))
-	var b := _section(fx, c + Vector3(2, 0, 0))
+	var a := _section(fx, c + Vector3(-6, 0, 0), 12.0)
+	var b := _section(fx, c + Vector3(6, 0, 0), 12.0)
 	var wk := {"id": "w1", "t0": fx.now, "nodes": [a, b], "mats": [], "lights": [], "fires": [], "speed": 1.0, "frags": [], "heat_births": {}, "cut_events": []}
-	var fit := _section(fx, c + Vector3(100, 0, 0))
-	var wfit := {"id": "w2", "t0": fx.now, "nodes": [fit], "mats": [], "lights": [], "fires": [], "speed": 1.0, "frags": [], "heat_births": {}, "cut_events": []}
 	fx.dstate["wrecks"].append(wk)
-	fx.dstate["wrecks"].append(wfit)
-	DEATH._release_section(fx, wk, a, Vector3(1, 0, 0), Vector3.ZERO, [], 6.0, true, 0)
-	DEATH._release_section(fx, wfit, fit, Vector3(1, 0, 0), Vector3.ZERO, [], 6.0, true, 0)
-	check(_in_jolt(a), "a section released before the shrink is in Jolt")
-	wk["leash_target"] = 0.5   # as _leash measures it for a hull longer than its hex
-	wfit["leash_target"] = 1.0  # fits its hex: never shrinks
-	var mi := a.get_node("mesh") as MeshInstance3D
-	var end_t: float = fx.now + DEATH.LEASH_SHRINK_FROM + 0.4
+	DEATH._release_section(fx, wk, a, Vector3(-3, 0, 0), Vector3(0.4, 1.5, 0.8), [], 24.0, true, 0)
+	DEATH._release_section(fx, wk, b, Vector3(3, 0, 0), Vector3(0.6, -1.2, 0.0), [], 24.0, true, 1)
+	var gap0: float = DEATH.leash_centre(a).distance_to(DEATH.leash_centre(b))
+	var end_t: float = fx.now + DEATH.LEASH_SETTLED + 2.0
 	while fx.now < end_t:
 		await _frames(fx, 1)
-	var k := mi.transform.basis.get_scale().x
-	print("WRECK_CONTACT shrink: mesh scale %.2f, in Jolt %s, drift entries %d" % [k, _in_jolt(a), wk["fires"].size()])
-	check(k < 0.99, "the wreck has started to shrink (mesh scale %.2f)" % k)
-	check(not _in_jolt(a), "a released section leaves Jolt as its mesh shrinks (no full-size collider round it)")
-	var drifting := false
+	var gap: float = DEATH.leash_centre(a).distance_to(DEATH.leash_centre(b))
+	var spd := 0.0
+	var turn := 0.0   # Artoo on PR 1737: they start turning (no story damping here) and must stop turning too
+	for nd in [a, b]:
+		if not (nd as RigidBody3D).freeze:
+			spd = maxf(spd, (nd as RigidBody3D).linear_velocity.length())
+			turn = maxf(turn, (nd as RigidBody3D).angular_velocity.length())
 	for f in wk["fires"]:
-		drifting = drifting or (f.get("node") == a and (f["vel"] as Vector3).length() > 0.0)
-	check(drifting, "it drifts on the scripted path with its speed kept")
-	DEATH._release_section(fx, wk, b, Vector3(-1, 0, 0), Vector3.ZERO, [], 6.0, true, 1)
-	check(not _in_jolt(b), "a section released after the shrink began goes straight onto the scripted drift")
-	check(_in_jolt(fit), "a section of a wreck that fits its hex stays in Jolt until WRECK_PHYS_S")
+		if f.has("vel"): spd = maxf(spd, (f["vel"] as Vector3).length())
+		if f.has("ang"): turn = maxf(turn, (f["ang"] as Vector3).length())
+	var k: float = (a.get_node("mesh") as MeshInstance3D).transform.basis.get_scale().x
+	print("WRECK_CONTACT brake: gap %.2f to %.2f, fastest %.2f, turn %.2f, scale %.2f, both kept %s" % [gap0, gap, spd, turn, k, is_instance_valid(a) and is_instance_valid(b)])
+	check(is_instance_valid(a) and is_instance_valid(b) and wk["nodes"].size() == 2, "both halves are kept")
+	check(is_equal_approx(k, 1.0), "at their real size (scale %.2f)" % k)
+	check(gap >= gap0, "they are never pulled toward each other (gap %.2f, at the part %.2f)" % [gap, gap0])
+	check(gap <= gap0 + 8.0, "a brake stops them close to where they parted (gap %.2f)" % gap)
+	check(spd < 0.3, "and they come to rest (fastest %.2f)" % spd)
+	check(turn < 0.3, "and stop turning, though released spinning (fastest turn %.2f rad/s)" % turn)
 	fx.queue_free()
 	await process_frame
 
@@ -237,7 +238,7 @@ func _run() -> void:
 	var world := Node3D.new()
 	root.add_child(world)
 	await _contact(world)
-	await _shrink(world)
+	await _brake(world)
 	await _slowmo(world)
 	world.queue_free()
 	await process_frame

@@ -10,6 +10,7 @@ extends RefCounted
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const SKEEP := preload("res://render/shader_keep.gd")   # issue 1434: one Shader per code for the session
 const BEATS := preload("res://fx/fx_death_beats.gd")   # issue 1586: cause, faction, archetype and afterlife beats
 
 const HULL_LAYER := 1
@@ -206,9 +207,10 @@ static func setup_physics(fx) -> void:
 	st["bounce"] = PhysicsMaterial.new()
 	(st["bounce"] as PhysicsMaterial).bounce = 0.4
 	(st["bounce"] as PhysicsMaterial).friction = 0.4
-	var sh = Shader.new()
-	sh.code = DEBRIS_BODY
-	HULL.note_late("death debris body")
+	# issue 1434 (LOAD17: made again at every title backdrop): one Shader for the session
+	var fresh: bool = not SKEEP.has(DEBRIS_BODY)
+	var sh: Shader = SKEEP.of(DEBRIS_BODY)
+	if fresh: HULL.note_late("death debris body")
 	var m = ShaderMaterial.new()
 	m.shader = sh
 	st["debris_mat"] = m
@@ -706,8 +708,10 @@ static var _dirs: PackedVector3Array = PackedVector3Array()
 
 # F3 perf: each piece's centre and its collider points (at most _HULL_DIRS extreme points), worked out on the cut's
 # worker thread; the break-up used to do this in GDScript on the main thread for every vertex of every piece.
-static func _piece_hulls(pieces: Array) -> void:
+static func _piece_hulls(pieces: Array, abort: CutAbort = null) -> void:
 	for pc in pieces:
+		if abort != null and abort.cancelled():
+			return
 		var pts: PackedVector3Array = pc["pts"]
 		var cen := Vector3.ZERO
 		for p in pts:
@@ -719,14 +723,14 @@ static func _piece_hulls(pieces: Array) -> void:
 			hp[i] -= cen
 		pc["hull"] = hp
 		var tr := Time.get_ticks_usec()
-		pc["reach"] = _piece_reach(pc)
+		pc["reach"] = _piece_reach(pc, abort)
 		pc["reach_usec"] = Time.get_ticks_usec() - tr   # issue 1395: the worker's share, printed by fx/test/death_cost_check.gd
 
 
 # Issue 1395 (Neon F9): the piece's reach for the leash (see _measure_reach), worked out here on the cut's worker from
 # the very vertex arrays its mesh is built from, so the wreck's draw-in reads no faces on the main thread. The middle is
 # the middle of the mesh's box (every surface and the cap), the reach the farthest vertex from it on the board plane.
-static func _piece_reach(pc: Dictionary) -> float:
+static func _piece_reach(pc: Dictionary, abort: CutAbort = null) -> float:
 	var lists: Array = []
 	for sd in pc["surfs"]:
 		var v = (sd["arrays"] as Array)[Mesh.ARRAY_VERTEX]
@@ -737,14 +741,18 @@ static func _piece_reach(pc: Dictionary) -> float:
 	if lists.is_empty(): return -1.0
 	var lo := Vector3.INF
 	var hi := -Vector3.INF
-	for vs in lists:
-		for v in (vs as PackedVector3Array):
+	for verts: PackedVector3Array in lists:
+		for i in verts.size():
+			if (i & 1023) == 0 and abort != null and abort.cancelled(): return -1.0
+			var v := verts[i]
 			lo = lo.min(v)
 			hi = hi.max(v)
 	var mid := (lo + hi) * 0.5
 	var far := 0.0
-	for vs in lists:
-		for v in (vs as PackedVector3Array):
+	for verts: PackedVector3Array in lists:
+		for i in verts.size():
+			if (i & 1023) == 0 and abort != null and abort.cancelled(): return -1.0
+			var v := verts[i]
 			far = maxf(far, (v.x - mid.x) * (v.x - mid.x) + (v.z - mid.z) * (v.z - mid.z))
 	return sqrt(far)
 
@@ -1131,14 +1139,30 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	# death frame; the break nearest the beam lies on it, square-ish to the beam, with no kink and almost no teeth.
 	var lance = s.get_meta("lance_line", [])
 	var lance_on: bool = lance is Array and lance.size() >= 2
-	if story and transverse.size() > 1:
-		# one crack: the authored joint nearest the core (the core goes off on it); on a lance kill, the joint nearest the
-		# beam (issue 1385: the recut then picks the crack, rather than being thrown away)
-		var near_x: float = (lance[0] as Vector3).x if lance_on else h.core.x
-		var keep = transverse[0]
-		for t in transverse:
-			if absf(float(t["at"].x) - near_x) < absf(float(keep["at"].x) - near_x): keep = t
-		transverse = [keep]
+	var primary_b := 0
+	var breakup_ok := false
+	# only a big metal hull breaks up (audit: a small hull's pop and a Chorus rupture keep one crack); a lance cuts in two
+	var big_metal: bool = story and not lance_on and s.death_big and s.faction != "chorus"
+	if story and (transverse.size() > 1 or big_metal):
+		# one crack: on a lance kill, the joint nearest the beam (issue 1385: the recut then picks the crack, rather than
+		# being thrown away). Issue 1236 round 4 (Ryan, Nov 23: "every ship is breaking at the same spot"): otherwise the
+		# joint nearest where the hull was last hit, or a per-ship pick when it has not been hit, no longer always the
+		# joint nearest the core.
+		var near: Vector3 = lance[0] if lance_on else _crack_near(s, x0, L, r, h.c.z)
+		if big_metal:
+			# and a second joint, so the wreck can break in three (Ryan's "break up a bit more into 3 pieces"). Whether it
+			# parts at the death, a beat later or never is the death's breakup (_pick_breakup).
+			var pick: Array = _breakup_joints(s, transverse, near, x0, L)
+			if not pick.is_empty():
+				transverse = [pick[0], pick[1]]
+				primary_b = transverse.find(pick[2])
+				breakup_ok = true
+		if not breakup_ok and transverse.size() > 1:
+			var keep = transverse[0]
+			for t in transverse:
+				if _joint_gap(t, near) < _joint_gap(keep, near): keep = t
+			transverse = [keep]
+			primary_b = 0
 	if not transverse.is_empty():
 		sizes.clear()
 		var prev := x0
@@ -1215,7 +1239,8 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 		breaks.append({"at": Vector3(x0 + u * L - mean_off, h.c.y, h.c.z), "n": n, "side": side,
 			"zk": zk, "k": k, "waves": _waves(r, L, amp, 3)})
 		if not transverse.is_empty():
-			# Authored joints are weaknesses, with an irregular tear close to the authored plane.
+			# Authored joints are weaknesses, with an irregular tear close to the authored plane. An added joint
+			# (_breakup_joints) is a plain plane turned a little, kept clear of the machines by its own margin.
 			breaks[-1]["at"] = transverse[i]["at"]
 			breaks[-1]["n"] = transverse[i]["n"]
 			breaks[-1]["k"] = k * 0.25
@@ -1259,8 +1284,12 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 			"waves": _waves(r, L, L * 0.008, 3), "parent": parent, "piece": piece})
 	# 3. the bite: on the core's break (a capital: the break beside its biggest piece), on the side that was hit
 	var bi := 0
-	if breaks.size() > 1 and authored.is_empty():
+	if breakup_ok:
+		bi = mini(primary_b, breaks.size() - 1)   # issue 1236 round 4: the core goes off on the first crack
+	elif breaks.size() > 1 and authored.is_empty():
 		bi = 0 if float(sizes[0]) + float(sizes[1]) >= float(sizes[1]) + float(sizes[2]) else 1
+	elif story and not authored.is_empty():
+		bi = mini(primary_b, breaks.size() - 1)   # issue 1236 round 4: the core goes off on the first crack
 	var rx: float = L * (0.09 if capital else 0.12) * (0.6 if lance_on else 1.0)
 	# centred a little into the bigger of the two pieces, so the bite eats mostly into it and the small one stays small
 	var bat: Vector3 = (breaks[bi]["at"] as Vector3) + Vector3.RIGHT * rx * 0.5 * (-1.0 if float(sizes[bi]) > float(sizes[bi + 1]) else 1.0)
@@ -1318,7 +1347,8 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 		chips = {}
 		n_frag = 0
 	var plan := {"L": L, "seeds": seeds, "sizes": sizes, "breaks": breaks, "bite": bite, "chips": chips, "n_main": n_main,
-		"n_frag": n_frag, "bite_break": bi, "scorch": scorch, "authored": not authored.is_empty()}
+		"n_frag": n_frag, "bite_break": bi, "scorch": scorch, "authored": not authored.is_empty(),
+		"breakup": breakup_ok}
 	# 6. issue 600 (R226, RULEBOOK 5.17): the machines ride whole, each with the main piece its box centre lies in. Their boxes
 	# come from the export (fx_hull machines); bins along the length keep the lookup short.
 	var mlist: Array = h.get("machines") if h.get("machines") is Array else []
@@ -1348,6 +1378,94 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	return plan
 
 
+# Issue 1236 round 4: where a strained hull's first crack runs. The joint nearest the hull's last hit (hull space, as
+# fracture_plan reads it), or with no hit on record a per-ship point along the middle of the hull.
+# Issue 1236 round 4 (WRECK5c, Nov 24: most real hulls kept two pieces; SEAMS1 read their joints): the two joints a big
+# metal hull breaks on, and which of them cracks first (the one nearest the hit), as [low x, high x, first]; [] for none.
+# Authored joints first, any pair leaving every piece at least BREAKUP_MIN of the length, preferring a pair with the
+# joint nearest the hit. Where the authored joints cannot (too few, or too near an end: H4_11 0.13, V16_37 0.08, V15_37
+# 0.83) an added plain joint stands in, never through a machine (RULEBOOK 5.17) nor beside an authored one; a hull
+# with no joints at all (H9_23, V17_37, V18_51) gets two.
+static func _breakup_joints(s, transverse: Array, near: Vector3, x0: float, L: float) -> Array:
+	var h = s.hull
+	var lo := x0 + L * BREAKUP_MIN
+	var hi := x0 + L * (1.0 - BREAKUP_MIN)
+	var auth: Array = transverse.filter(func(t): return float(t["at"].x) >= lo and float(t["at"].x) <= hi)
+	var nearest = null
+	for t in auth:
+		if nearest == null or _joint_gap(t, near) < _joint_gap(nearest, near): nearest = t
+	var best: Array = []
+	var best_score := -INF
+	for i in auth.size():
+		for j in range(i + 1, auth.size()):
+			var sc := _pair_score(auth[i], auth[j], nearest, near, x0, L)
+			if sc > best_score:
+				best_score = sc
+				best = [auth[i], auth[j]]
+	if best.is_empty():
+		# a plain joint between the authored ones: off every machine, a tenth of the length clear of an authored joint,
+		# jittered per ship so a fleet of one class does not all break alike
+		var jit := (float(posmod(hash(str(s.id)), 1000)) / 1000.0 - 0.5) * 0.06
+		var cands: Array = []
+		var f := BREAKUP_MIN
+		while f <= 1.0 - BREAKUP_MIN + 1e-4:
+			var x := x0 + L * clampf(f + jit, BREAKUP_MIN, 1.0 - BREAKUP_MIN)
+			var ok := true
+			var clear: float = tan(deg_to_rad(SYNTH_YAW)) * maxf(h.W, L * 0.06) * 0.5 + L * 0.03
+			for m in h.machines:
+				var bb: AABB = m["box"]
+				if x > bb.position.x - clear and x < bb.end.x + clear: ok = false
+			for t in transverse:
+				if absf(float(t["at"].x) - x) < L * 0.1: ok = false
+			if ok:
+				var yw := deg_to_rad(SYNTH_YAW) * (1.0 if posmod(hash(str(s.id)) + int(f * 40.0), 2) == 0 else -1.0)
+				cands.append({"at": Vector3(x, h.c.y, h.c.z), "n": Vector3(cos(yw), 0.0, sin(yw)), "synthetic": true})
+			f += 0.025
+		var pool: Array = auth + cands
+		for i in pool.size():
+			for j in range(i + 1, pool.size()):
+				if bool(pool[i].get("synthetic", false)) and bool(pool[j].get("synthetic", false)) and not auth.is_empty(): continue
+				var sc := _pair_score(pool[i], pool[j], nearest, near, x0, L)
+				if sc > best_score:
+					best_score = sc
+					best = [pool[i], pool[j]]
+	if best.is_empty(): return []
+	if float(best[0]["at"].x) > float(best[1]["at"].x): best = [best[1], best[0]]
+	var first = best[0] if _joint_gap(best[0], near) <= _joint_gap(best[1], near) else best[1]
+	return [best[0], best[1], first]
+
+
+# a pair's worth: -INF when a piece would be under BREAKUP_MIN; otherwise the smallest piece, plus a bonus for holding
+# the authored joint nearest the hit, less how far its own nearer joint is from the hit
+static func _pair_score(a: Dictionary, b: Dictionary, nearest, near: Vector3, x0: float, L: float) -> float:
+	var xa := float(a["at"].x)
+	var xb := float(b["at"].x)
+	if xa > xb:
+		var t := xa
+		xa = xb
+		xb = t
+	var small: float = minf(minf(xa - x0, xb - xa), x0 + L - xb)
+	if small < BREAKUP_MIN * L - 1e-4: return -INF
+	var sc: float = small / L
+	if nearest != null and (a == nearest or b == nearest): sc += 1.0
+	sc -= 0.5 * minf(_joint_gap(a, near), _joint_gap(b, near)) / L
+	return sc
+
+
+static func _crack_near(s, x0: float, L: float, r: RandomNumberGenerator, cz: float) -> Vector3:
+	var last = s.get_meta("last_hit", [])
+	if last is Array and last.size() >= 1 and last[0] is Vector3:
+		return last[0]
+	return Vector3(x0 + L * r.randf_range(0.25, 0.75), 0.0, cz)
+
+
+# How far a hull-space point is from a joint along the length, measured on the struck side: a seam that kinks round a
+# machine is read at the point's own z (Artoo on fbceb98a: at the centre line a side hit near a kink could pick the
+# other joint).
+static func _joint_gap(b: Dictionary, p: Vector3) -> float:
+	return absf(_break_x(b, p.z) - p.x)
+
+
 # Issue 461 (carried from 484: "the cut is prepared before the killing weapon is known"). A lance kill re-cuts the hull on
 # the death frame along the beam's line (fracture_plan reads "lance_line"). The cut runs on a worker during the tell
 # (1.38 s on a cruiser, 2.0 s on a capital); if it is not done by the break, the ship breaks along the cut it already had
@@ -1362,6 +1480,7 @@ static func _lance_recut(fx, s) -> void:
 		var tid: int = s.get_meta("cut_task")
 		if not finish_precompute(fx, s):
 			s.remove_meta("cut_job")  # the detached worker still owns this result
+			s.remove_meta("cut_work")
 			fx.collect_death_cut(tid)
 			s.remove_meta("cut_task")
 	var h = s.hull
@@ -1385,8 +1504,10 @@ static func _lance_recut(fx, s) -> void:
 
 
 # Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
-static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
+static func precompute(fx, s, cause := "blast", under_cover := false, shared_cuts: Variant = null) -> void:
 	if fx.get("closed") == true:   # issue 1435: a released fx takes no new cuts
+		return
+	if fx.get("passive") == true:   # issue 1434: the title backdrop never dies
 		return
 	if s.weight <= 0 or s.gone or s.has_meta("cut_task") or s.has_meta("cut_job"):
 		return
@@ -1431,41 +1552,88 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 				sd["tur"] = tk
 				sd["anchor"] = inv * (s.hull.turrets[tk]["node"] as Node3D).global_transform.origin
 			surfs.append(sd)
-	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "out": null,
+	var inputs := {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus",
 		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan, "authored": s.hull.authored,
 		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
-		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn,
-		# the worker's results (its timings, and the uploaded geometry on a windowed run), keyed here before the job is
-		# shared: the worker only overwrites these values and never adds a key while the main thread may read the
-		# dictionary (a cold kill reads it before "out" is set; issue 1395 review)
-		"cut_usec": 0, "hulls_usec": 0, "geo": []}
+		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn}
+	var cut: CutWork
+	var matches: Array = []
+	if shared_cuts != null:
+		# Ship IDs still seed the break. Same class and seeds narrow the search, and every input must still match.
+		var key := [s.faction, s.get_meta("cut_class", ""), seeds]
+		matches = shared_cuts.get_or_add(key, [])
+		for candidate: CutWork in matches:
+			if inputs == candidate.inputs:
+				cut = candidate
+				break
+	if cut == null:
+		cut = CutWork.new()
+		cut.inputs = inputs
+		_init_dirs()
+		var share_lanes: bool = under_cover and fx.ships.size() > 1
+		cut.task = fx.submit_death_cut(_run_cut.bind(cut, fx.cut_abort, share_lanes))
+		if shared_cuts != null:
+			matches.append(cut)
+	var job := inputs.duplicate()
+	job["out"] = null
 	s.set_meta("cut_job", job)
-	_init_dirs()
-	var tid: int = fx.submit_death_cut(func() -> void:
-		var tc := Time.get_ticks_usec()
-		var pieces := _cut(job)
-		var cut_usec := Time.get_ticks_usec() - tc
-		var th := Time.get_ticks_usec()
-		_piece_hulls(pieces)
-		var hulls_usec := Time.get_ticks_usec() - th   # issue 1395: includes each piece's reach (_piece_reach)
-		if bool(job.get("sites", false)):
-			var n_main: int = int(job["plan"]["n_main"]) if not (job["plan"] as Dictionary).is_empty() else pieces.size()
-			for i in mini(n_main, pieces.size()):
-				pieces[i]["sec_sites"] = _piece_sites_in(job["sp"], job["sn"], job["seeds"], pieces[i]["cen"], 5, job["plan"], i)
-		# issue 220: the pieces' geometry is uploaded here on the worker (as the hull rebuild's meshes are, fx_breach
-		# compute): on the main thread it cost 20 to 85 ms frames in battle, once per ship and after every cut refresh.
-		# Materials stay on the main thread (_prebuild). A headless run builds it all in _prebuild instead.
-		if bool(job["mesh_on_worker"]):
-			var geo: Array = []
-			for pc in pieces:
-				geo.append(_piece_geometry(pc))
-			job["geo"] = geo
-		job["cut_usec"] = cut_usec   # handed over with the result, on keys that already exist
-		job["hulls_usec"] = hulls_usec
-		job["out"] = pieces)
-	s.set_meta("cut_task", tid)
+	s.set_meta("cut_work", cut)
+	s.set_meta("cut_task", cut.task)
 	if not under_cover:
 		fx.later(fx.now + 0.5, func l_prebuild() -> void: _prebuild(fx, s))
+
+
+class CutWork extends RefCounted:
+	var task := -1
+	var inputs: Dictionary
+	# Read the worker's results only after joining the task.
+	var pieces: Array
+	var geo: Array
+	var cut_usec := 0
+	var hulls_usec := 0
+
+
+class CutAbort extends RefCounted:
+	var _lock := Mutex.new()
+	var _cancelled := false
+
+	func cancel() -> void:
+		_lock.lock()
+		_cancelled = true
+		_lock.unlock()
+
+	func cancelled() -> bool:
+		_lock.lock()
+		var stopped := _cancelled
+		_lock.unlock()
+		return stopped
+
+
+static func _run_cut(work: CutWork, abort: CutAbort, share_lanes: bool) -> void:
+	var job := work.inputs
+	var tc := Time.get_ticks_usec()
+	var pieces := _cut(job, abort, share_lanes)
+	if abort.cancelled():
+		return
+	work.cut_usec = Time.get_ticks_usec() - tc
+	var th := Time.get_ticks_usec()
+	_piece_hulls(pieces, abort)
+	if abort.cancelled():
+		return
+	work.hulls_usec = Time.get_ticks_usec() - th   # issue 1395: includes each piece's reach (_piece_reach)
+	if bool(job["sites"]):
+		var n_main: int = int(job["plan"]["n_main"]) if not (job["plan"] as Dictionary).is_empty() else pieces.size()
+		for i in mini(n_main, pieces.size()):
+			if abort.cancelled():
+				return
+			pieces[i]["sec_sites"] = _piece_sites_in(job["sp"], job["sn"], job["seeds"], pieces[i]["cen"], 5, job["plan"], i)
+	# Issue 220: upload geometry on the worker; the piece's materials are set on the main thread.
+	if bool(job["mesh_on_worker"]):
+		for pc in pieces:
+			if abort.cancelled():
+				return
+			work.geo.append(_piece_geometry(pc))
+	work.pieces = pieces
 
 
 # When the cut is done, upload the pieces' meshes while the battle is quiet, so the break-up itself only shows them
@@ -1479,11 +1647,22 @@ static func finish_precompute(fx, s) -> bool:
 	if not s.has_meta("cut_task") or s.has_meta("death_hidden"):
 		return true
 	var tid: int = s.get_meta("cut_task")
-	if not WorkerThreadPool.is_task_completed(tid):
+	if not fx.finish_death_cut(tid):
 		return false
-	fx.join_death_cut(tid)
 	s.remove_meta("cut_task")
 	var job: Dictionary = s.get_meta("cut_job", {})
+	if s.has_meta("cut_work"):
+		var cut: CutWork = s.get_meta("cut_work")
+		s.remove_meta("cut_work")
+		# Each wreck's materials, shapes and motion are set independently. The cut arrays stay shared.
+		var pieces: Array = []
+		for piece: Dictionary in cut.pieces:
+			pieces.append(piece.duplicate())
+		job["out"] = pieces
+		job["cut_usec"] = cut.cut_usec
+		job["hulls_usec"] = cut.hulls_usec
+		job["geo"] = cut.geo
+		cut.geo = []  # ArrayMesh receives this ship's materials, so only one ship takes the worker's upload.
 	if not job.has("meshes"):
 		job["meshes"] = []
 		fx.queue_death_pieces(s, job)
@@ -1588,7 +1767,7 @@ const REFINE_EPS_SKIN := 0.02
 const REFINE_CAP := 200000   # new points per surface at most (a guard; A16 needs a few thousand)
 
 
-static func _refine(plan: Dictionary, vl_in: PackedVector3Array, arr: Array, idx: PackedInt32Array, eps: float, interior: bool) -> Dictionary:
+static func _refine(plan: Dictionary, vl_in: PackedVector3Array, arr: Array, idx: PackedInt32Array, eps: float, interior: bool, abort: CutAbort = null) -> Dictionary:
 	var vl := vl_in.duplicate()   # the source arrays are shared with the live ship: never grown in place
 	var n0 := vl.size()
 	var nrm := PackedVector3Array()
@@ -1611,7 +1790,9 @@ static func _refine(plan: Dictionary, vl_in: PackedVector3Array, arr: Array, idx
 	var out_piece := PackedInt32Array()
 	var stack := PackedInt32Array()
 	var m := PackedInt32Array([-1, -1, -1])
+	var refined := 0
 	for t in range(0, idx.size() - 2, 3):
+		if (t & 255) == 0 and abort != null and abort.cancelled(): return {}
 		var a0 := idx[t]
 		var b0 := idx[t + 1]
 		var c0 := idx[t + 2]
@@ -1634,6 +1815,8 @@ static func _refine(plan: Dictionary, vl_in: PackedVector3Array, arr: Array, idx
 		stack.append(c0)
 		stack.append(0)
 		while not stack.is_empty():
+			refined += 1
+			if (refined & 255) == 0 and abort != null and abort.cancelled(): return {}
 			var n := stack.size()
 			var a := stack[n - 4]
 			var b := stack[n - 3]
@@ -1751,22 +1934,46 @@ static func _torn(plan: Dictionary, vl: PackedVector3Array, vp: PackedInt32Array
 
 static var cut_serial := false   # issue 1232: the one-thread cut, for fx/test/cold_kill_check.gd to compare against
 
-# Issue 1279: Jolt's physics jobs queue on the same high-priority worker lanes as the cut's side-by-side work. Two cuts
-# at once (an arrival's cut beside another), each on every lane but two, left the physics jobs waiting until Jolt's job
-# table filled and the step stalled. One cut runs side by side at a time, and it leaves two lanes free beyond every lane
-# low-priority work can hold (the cut's own waiting task is one of those), so the physics step always finds a lane.
-static var _lanes_lock := Mutex.new()
+# Issue 1279: Jolt's physics jobs use the same high-priority lanes. Reserve two beyond the low-priority cap across
+# all cuts, including cuts from another battle. The mutex only guards the count. A cut that finds no room works
+# on its own low-priority worker, which the budget already accounts for.
+static var _lane_budget_lock := Mutex.new()
+static var _lanes_in_use := 0
 
 
-static func cut_lanes(work: int) -> int:
+static func _cut_lane_budget() -> int:
 	var threads := int(ProjectSettings.get_setting("threading/worker_pool/max_threads", -1))
-	if threads <= 0:
+	if threads < 0:
 		threads = OS.get_processor_count()
 	var ratio := float(ProjectSettings.get_setting("threading/worker_pool/low_priority_thread_ratio", 0.3))
 	var low := clampi(int(threads * ratio), 1, maxi(threads - 1, 1))
-	return clampi(threads - 2 - low, 1, maxi(work, 1))
+	return maxi(threads - 2 - low, 0)
 
-static func _cut(job: Dictionary) -> Array:
+
+static func cut_lanes(work: int) -> int:
+	return mini(_cut_lane_budget(), work)
+
+
+static func _reserve_cut_lanes(work: int, share_lanes: bool) -> int:
+	var total := _cut_lane_budget()
+	var limit := mini(work, (total + 1) / 2 if share_lanes else total)
+	_lane_budget_lock.lock()
+	var lanes := mini(limit, maxi(total - _lanes_in_use, 0))
+	_lanes_in_use += lanes
+	_lane_budget_lock.unlock()
+	return lanes
+
+
+static func _run_cut_group(work: Callable, count: int, lanes: int, label: String) -> void:
+	var group := WorkerThreadPool.add_group_task(work, count, lanes, true, label)
+	WorkerThreadPool.wait_for_group_task_completion(group)
+	_lane_budget_lock.lock()
+	_lanes_in_use -= lanes
+	_lane_budget_lock.unlock()
+
+
+static func _cut(job: Dictionary, abort: CutAbort = null, share_lanes := false) -> Array:
+	if abort != null and abort.cancelled(): return []
 	var seeds: PackedVector3Array = job["seeds"]
 	var plan: Dictionary = job.get("plan", {})
 	var warp: Array = job.get("warp", [])
@@ -1780,21 +1987,20 @@ static func _cut(job: Dictionary) -> Array:
 	# cut. A16's headless cut was 2.8 s, about 1 s of it one plating surface cut after all the others; on the PC it was
 	# 5.4 s, longer than a capital's 2.67 s death, so a kill before the cut was ready lost its pieces.
 	var surfs: Array = job["surfs"]
-	if plan.is_empty() or surfs.size() < 2 or cut_serial:
+	var lanes := 0 if plan.is_empty() or surfs.size() < 2 or cut_serial else _reserve_cut_lanes(surfs.size(), share_lanes)
+	if lanes == 0:
 		for sd in surfs:
-			_cut_surface(job, sd, pieces, ns, plan, warp, seeds)
+			if abort != null and abort.cancelled(): return []
+			_cut_surface(job, sd, pieces, ns, plan, warp, seeds, abort)
 	else:
-		# leave lanes to the game and to Jolt (Board on PR 1240, issue 1279)
-		var lanes := cut_lanes(surfs.size())
 		var parts: Array = []
 		for i in surfs.size():
 			parts.append({"pieces": _blank_pieces(job, plan, ns, n_main)})
-		_lanes_lock.lock()
-		var gid := WorkerThreadPool.add_group_task(func(i: int) -> void:
-			_cut_surface(job, surfs[i], (parts[i] as Dictionary)["pieces"], ns, plan, warp, seeds), surfs.size(), lanes, true, "death cut surfaces")
-		WorkerThreadPool.wait_for_group_task_completion(gid)
-		_lanes_lock.unlock()
+		_run_cut_group(func(i: int) -> void:
+			_cut_surface(job, surfs[i], (parts[i] as Dictionary)["pieces"], ns, plan, warp, seeds, abort),
+			surfs.size(), lanes, "death cut surfaces")
 		for part in parts:
+			if abort != null and abort.cancelled(): return []
 			var own: Array = part["pieces"]
 			for c in ns:
 				var src: Dictionary = own[c]
@@ -1806,14 +2012,14 @@ static func _cut(job: Dictionary) -> Array:
 				pts.append_array(src["pts"])
 				pc["pts"] = pts
 	# each piece seals its own boundary loops (no shared state), so the pieces seal side by side too
-	if pieces.size() < 2 or cut_serial:
+	if abort != null and abort.cancelled(): return []
+	lanes = 0 if pieces.size() < 2 or cut_serial else _reserve_cut_lanes(pieces.size(), share_lanes)
+	if lanes == 0:
 		for pc in pieces:
-			_seal_piece(pc)
+			if abort != null and abort.cancelled(): return []
+			_seal_piece(pc, abort)
 	else:
-		_lanes_lock.lock()
-		var sid := WorkerThreadPool.add_group_task(func(i: int) -> void: _seal_piece(pieces[i]), pieces.size(), cut_lanes(pieces.size()), true, "death cut seals")
-		WorkerThreadPool.wait_for_group_task_completion(sid)
-		_lanes_lock.unlock()
+		_run_cut_group(func(i: int) -> void: _seal_piece(pieces[i], abort), pieces.size(), lanes, "death cut seals")
 	return pieces
 
 
@@ -1826,7 +2032,8 @@ static func _blank_pieces(job: Dictionary, plan: Dictionary, ns: int, n_main: in
 
 
 # One surface of the hull, cut into the given pieces (issue 1232: on its own worker when the cut has a plan).
-static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int, plan: Dictionary, warp: Array, seeds: PackedVector3Array) -> void:
+static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int, plan: Dictionary, warp: Array, seeds: PackedVector3Array, abort: CutAbort) -> void:
+	if abort != null and abort.cancelled(): return
 	var arr: Array = sd["arrays"]
 	var xf: Transform3D = sd["xf"]
 	var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
@@ -1856,7 +2063,8 @@ static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int
 			if (inside or bool(sd.get("skin", false))) and plan.has("mach"):
 				sp = plan.duplicate()
 				sp.erase("mach")
-			var rf := _refine(sp, vl, arr, idx, float(plan["L"]) * (REFINE_EPS if inside else REFINE_EPS_SKIN), inside)
+			var rf := _refine(sp, vl, arr, idx, float(plan["L"]) * (REFINE_EPS if inside else REFINE_EPS_SKIN), inside, abort)
+			if rf.is_empty(): return
 			vl = rf["vl"]
 			arr = rf["arr"]
 			idx = rf["idx"]
@@ -1866,6 +2074,7 @@ static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int
 	for c in ns:
 		buckets.append(PackedInt32Array())
 	for t in range(0, idx.size() - 2, 3):
+		if (t & 1023) == 0 and abort != null and abort.cancelled(): return
 		var a = idx[t]
 		var b = idx[t + 1]
 		var cc = idx[t + 2]
@@ -1898,6 +2107,7 @@ static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int
 			edge.append(q)
 			pc["edge"] = edge
 	for c in ns:
+		if abort != null and abort.cancelled(): return
 		var tri: PackedInt32Array = buckets[c]
 		if tri.is_empty():
 			continue
@@ -1970,15 +2180,18 @@ static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int
 
 # Trace the actual welded boundary loops. Ear clipping uses boundary vertices only:
 # no centre vertex, radial bands or centre-point ribs can show through as spokes.
-static func _seal_piece(pc: Dictionary) -> void:
+static func _seal_piece(pc: Dictionary, abort: CutAbort = null) -> void:
 	var all_edges := {}
 	var welds := {}
 	var positions := PackedVector3Array()
 	var bounds := AABB()
 	var first := true
 	for sd in pc["surfs"]:
-		for p in sd["arrays"][Mesh.ARRAY_VERTEX]:
-			if not (p as Vector3).is_finite(): continue
+		var verts: PackedVector3Array = sd["arrays"][Mesh.ARRAY_VERTEX]
+		for i in verts.size():
+			if (i & 1023) == 0 and abort != null and abort.cancelled(): return
+			var p := verts[i]
+			if not p.is_finite(): continue
 			if first:
 				bounds = AABB(p, Vector3.ZERO)
 				first = false
@@ -1995,6 +2208,7 @@ static func _seal_piece(pc: Dictionary) -> void:
 		ids.resize(pts.size())
 		ids.fill(-1)
 		for i in pts.size():
+			if (i & 1023) == 0 and abort != null and abort.cancelled(): return
 			if not pts[i].is_finite(): continue
 			var key := Vector3i((pts[i] / quantum).round())
 			if not welds.has(key):
@@ -2002,6 +2216,7 @@ static func _seal_piece(pc: Dictionary) -> void:
 				positions.append(pts[i])
 			ids[i] = int(welds[key])
 		for t in range(0, idx.size() - 2, 3):
+			if (t & 1023) == 0 and abort != null and abort.cancelled(): return
 			for j in 3:
 				var ka := ids[idx[t + j]]
 				var kb := ids[idx[t + (j + 1) % 3]]
@@ -2011,7 +2226,10 @@ static func _seal_piece(pc: Dictionary) -> void:
 				else: all_edges[key] = true
 	pc["boundary_edges"] = all_edges.size()
 	var adj := {}
+	var edge_count := 0
 	for key in all_edges:
+		if (edge_count & 255) == 0 and abort != null and abort.cancelled(): return
+		edge_count += 1
 		for j in 2:
 			if not adj.has(key[j]): adj[key[j]] = []
 			adj[key[j]].append(key[1 - j])
@@ -2019,9 +2237,13 @@ static func _seal_piece(pc: Dictionary) -> void:
 	var cap := {"v": PackedVector3Array(), "n": PackedVector3Array(), "c": PackedColorArray()}
 	pc["cap_loops"] = 0
 	pc["cap_fallbacks"] = 0
+	var walked := 0
 	for start in adj:
+		if abort != null and abort.cancelled(): return
 		var walk: Array = [start]
 		while not walk.is_empty():
+			if (walked & 255) == 0 and abort != null and abort.cancelled(): return
+			walked += 1
 			var at: int = walk.back()
 			var next := -1
 			for other in adj[at]:
@@ -2038,7 +2260,7 @@ static func _seal_piece(pc: Dictionary) -> void:
 				var outline := PackedVector3Array()
 				for j in range(seen, walk.size()): outline.append(positions[walk[j]])
 				if outline.size() >= 3:
-					_cap_outline(cap, outline, bounds, quantum, pc)
+					_cap_outline(cap, outline, bounds, quantum, pc, abort)
 				walk.resize(seen + 1)
 			else: walk.append(next)
 	if not (cap["v"] as PackedVector3Array).is_empty():
@@ -2050,7 +2272,8 @@ static func _seal_piece(pc: Dictionary) -> void:
 		pc["cap"] = arr
 
 
-static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: AABB, quantum: float, pc: Dictionary) -> void:
+static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: AABB, quantum: float, pc: Dictionary, abort: CutAbort = null) -> void:
+	if abort != null and abort.cancelled(): return
 	var centre := Vector3.ZERO
 	for p in outline: centre += p
 	centre /= outline.size()
@@ -2077,6 +2300,7 @@ static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: A
 		var rough := sin(p.dot(Vector3(3.1, 5.7, 2.3))) * sin(p.dot(Vector3(8.3, 2.1, 4.7)))
 		inset.append(p + (centre - p) * 0.018 + inward * depth * (1.0 + rough * 0.12))
 	var indices := Geometry2D.triangulate_polygon(polygon)
+	if abort != null and abort.cancelled(): return
 	if indices.is_empty():
 		# Imported non-planar/self-overlapping loops can fail 2D ear clipping.
 		# A boundary-only zipper still seals them without a hub or radial spokes.
@@ -2339,7 +2563,15 @@ static func _death_inner(fx, s, cause: String) -> float:
 	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
 	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else s.hull.core   # issue 370: the core, never the box centre
 	var axis: Vector3 = (seeds[1] - seeds[0]).normalized() if seeds.size() >= 2 else Vector3.RIGHT
-	var lines := _break_lines(job)
+	# issue 1236 round 4 (Ryan, Nov 23: "we want variety"): a big strained hull breaks in two, in three, or in two and
+	# then again a beat later. Only the joints that part at the death strain and tear.
+	s.remove_meta("death_crack")
+	s.remove_meta("death_glued_break")   # Neon's audit (PR 1902): set only by this death's layout, never carried over
+	s.remove_meta("death_gap")           # Fable on 33561155: likewise
+	var breakup := _pick_breakup(fx, s, cause, job)
+	s.set_meta("death_breakup", breakup)
+	var lines := _break_lines(job, _first_crack(s, job.get("plan", {})))
+	if breakup in ["two", "late"]: lines = lines.slice(0, 1)
 	if not lines.is_empty():
 		at = lines[0][0]
 		axis = lines[0][1]
@@ -2714,7 +2946,10 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 	m.set_shader_parameter("open_a", Vector2(T + tl.tear_open, T + tl.tear_full))
 	m.set_shader_parameter("cut_at", at)
 	m.set_shader_parameter("cut_axis", axis)
-	if seeds.size() >= 3:
+	s.remove_meta("death_line_b")
+	# Fable on 33561155: a two or late breakup tears only its first joint, so the second line (and the chain blasts sent
+	# to it) is drawn only when that joint parts at the death too, or on an old seed cut with no plan lines
+	if seeds.size() >= 3 and (lines.is_empty() or lines.size() >= 2):
 		# the second line of a capital opens a little later and finishes with the first
 		var at_b: Vector3 = (seeds[1] + seeds[2]) * 0.5
 		var axis_b: Vector3 = (seeds[2] - seeds[1]).normalized()
@@ -2755,12 +2990,12 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 
 
 # The fracture plan's breaks as [at, normal] lines, the bite's break first; empty for the old seed cut.
-static func _break_lines(job: Dictionary) -> Array:
+static func _break_lines(job: Dictionary, first := -1) -> Array:
 	var plan: Dictionary = job.get("plan", {})
 	if plan.is_empty(): return []
 	var brs: Array = plan["breaks"]
 	var out: Array = []
-	var first := int(plan["bite_break"])
+	if first < 0: first = int(plan["bite_break"])
 	if first < brs.size(): out.append([brs[first]["at"], brs[first]["n"]])
 	for i in brs.size():
 		if i != first: out.append([brs[i]["at"], brs[i]["n"]])
@@ -2791,11 +3026,12 @@ const STORY_DEBRIS_DAMP := 0.8
 
 # One warm light in each break's gap, riding the piece nearest it; the wreck fades it with its fires (update: 0.7 of the
 # fire gate) and frees it with the wreck.
-static func _gap_lights(fx, s, wreck: Dictionary, plan: Dictionary, xf: Transform3D) -> void:
+static func _gap_lights(fx, s, wreck: Dictionary, plan: Dictionary, xf: Transform3D, only := -1) -> void:
 	if fx.quality == "low" or wreck["nodes"].is_empty(): return
 	var spots: Array = []
 	if not plan.is_empty():
-		for b in plan["breaks"]: spots.append(b["at"])
+		for bi in (plan["breaks"] as Array).size():
+			if only < 0 or bi == only: spots.append(plan["breaks"][bi]["at"])   # issue 1236: only a joint that parted
 	elif s.has_meta("death_strain"):
 		for line in s.get_meta("death_strain")["lines"]: spots.append(line[0])
 	for at in spots.slice(0, 3):
@@ -3245,6 +3481,14 @@ static func _arcs(fx, s) -> void:
 	for nd in wreck.get("nodes", []):
 		if is_instance_valid(nd) and (nd as Node3D).has_meta("arc_sites"): nodes.append(nd)
 	if nodes.size() < 2: return
+	if s.has_meta("death_gap"):
+		# issue 1236 round 4 (audit): across the crack that opened, not the joint a breakup keeps glued
+		var gap: Array = s.get_meta("death_gap")
+		var pair: Array = []
+		for k in gap:
+			for nd in nodes:
+				if int(nd.get_meta("piece_i", -1)) == int(k): pair.append(nd)
+		if pair.size() == 2: nodes = pair
 	var n := 14 if s.death_tier == "capital" else (10 if s.death_big else 4)
 	s.set_meta("death_arcs", [])
 	for j in n:
@@ -3499,6 +3743,8 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 			main_n = int(pieces[i]["n"])
 			main_i = i
 	var phys = bool(fx.dstate.get("physics_on", false))
+	# issue 1236 round 4: how this wreck breaks up (two, three or a late snap) and where each piece comes to rest
+	var bu := _breakup_layout(fx, s, plan, pieces, n_main, xf, cause, inherited) if story else {}
 	wreck["frags"] = []
 	wreck["scorch_mats"] = []
 	if melting(s):
@@ -3554,6 +3800,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		fx.phys_root.add_child(node)
 		node.global_transform = Transform3D(xf.basis, xf * cen)
 		node.set_meta("piece_cen", cen)
+		node.set_meta("piece_i", i)   # issue 1236 round 4: the plan's piece, whatever pieces were skipped (audit)
 		if float(pc.get("reach", -1.0)) >= 0.0: node.set_meta("reach_pre", float(pc["reach"]))   # issue 1395, _measure_reach
 		if s.death_big and not organic:
 			node.set_meta("sec_sites", pc["sec_sites"] if pc.has("sec_sites") else _piece_sites(h, seeds, cen, 5, plan, i))
@@ -3561,7 +3808,8 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		if not plan.is_empty() and not (plan["breaks"] as Array).is_empty():
 			# issue 484: the seam this piece's torn face belongs to (the bite's break where it has one)
 			var brs: Array = plan["breaks"]
-			var seam_b: int = clampi(int(plan["bite_break"]) if i in [int(plan["bite_break"]), int(plan["bite_break"]) + 1] else mini(i, brs.size() - 1), 0, brs.size() - 1)
+			var fc := _first_crack(s, plan)
+			var seam_b: int = clampi(fc if i in [fc, fc + 1] else mini(i, brs.size() - 1), 0, brs.size() - 1)
 			pc["split_at"] = brs[seam_b]["at"]
 			pc["split_axis"] = brs[seam_b]["n"]
 			pc["split_width"] = h.L * 0.12
@@ -3618,6 +3866,23 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		if s.death_big and not organic:
 			var timeline: DeathTimeline = s.get_meta("death_timeline")
 			release_delay = mini(i, n_main - 2) * timeline.spacing
+		if not bu.is_empty():
+			# issue 1236 round 4: each piece is sent just hard enough that the brakes stop it on its planned rest spot,
+			# turned to its planned angle (some lie diagonal), so the pieces spread across the hex and never run together
+			# Fable on 33561155: the dying hull's own drift carries on and dies away with the rest (capped at a tenth of
+			# the length, so a ship killed mid-move still settles in its hex)
+			var disp_i: Vector3 = bu["disp"][i]   # the drift is in it (_breakup_layout), so the hex bound holds for it too
+			vel = disp_i * BREAKUP_K_LIN
+			# a pure turn on the board plane: any roll or pitch would lift a glued piece's end off the wreck's altitude
+			ang = Vector3(0.0, float(bu["yaw"][i]) * BREAKUP_K_ANG, 0.0)
+			release_delay = 0.0
+			if i != int(bu["child"]): _set_rest(node, disp_i, float(bu["yaw"][i]))
+			if i == int(bu["child"]):
+				# glued to its neighbour across the joint that has not broken: it rides on that piece (two) until it
+				# snaps (late); nothing is released for it here
+				bu["child_node"] = node
+				bu["child_mats"] = piece_mats
+				continue
 		var release_t := T + release_delay
 		if node is RigidBody3D:
 			if release_delay <= 0.0:
@@ -3638,8 +3903,10 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 
 	if not organic and s.has_meta("death_timeline"):
 		wreck["cool"] = (s.get_meta("death_timeline") as DeathTimeline).cool
+	if not bu.is_empty() and bu.has("child_node"):
+		_glue(fx, s, wreck, bu)
 	if story:
-		_gap_lights(fx, s, wreck, plan, xf)
+		_gap_lights(fx, s, wreck, plan, xf, -1 if bu.is_empty() or bu["kind"] == "three" else _first_crack(s, plan))
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
 	BEATS.on_break(fx, s, wreck, cause, center, xf)
@@ -3716,6 +3983,9 @@ static func _make_frags(fx, s, wreck: Dictionary, job: Dictionary, pieces: Array
 		node.global_transform = Transform3D(xf.basis, xf * cen)
 		node.set_meta("piece_cen", cen)
 		node.set_meta("chip", i >= n_main + int(job.get("plan", {}).get("bite", {}).get("subs", PackedVector3Array()).size()))
+		var chips_d: Dictionary = job.get("plan", {}).get("chips", {})
+		if bool(node.get_meta("chip")) and not chips_d.is_empty():
+			node.set_meta("chip_break", (i - int(chips_d["first"])) / maxi(int(chips_d["per"]), 1))
 		var mi := MeshInstance3D.new()
 		mi.mesh = am
 		mi.position = -cen
@@ -3734,6 +4004,25 @@ static func _make_frags(fx, s, wreck: Dictionary, job: Dictionary, pieces: Array
 		wreck["fires"].append({"node": node, "vel": inherited, "ang": Vector3.ZERO, "until": hold_until})
 
 
+static func _hold_chip(fx, wreck: Dictionary, nd: Node3D) -> void:
+	var best: Node3D = null
+	var bd := INF
+	for m in wreck["nodes"]:
+		if not is_instance_valid(m): continue
+		var dd: float = (m as Node3D).global_position.distance_to(nd.global_position)
+		if dd < bd:
+			bd = dd
+			best = m
+	if best == null: return
+	for f in wreck["fires"]:
+		if f.get("node") == nd: f["until"] = fx.now
+	wreck["frags"].erase(nd)
+	nd.reparent(best, true)
+	nd.set_meta("glued", true)
+	if not wreck.has("held_chips"): wreck["held_chips"] = []
+	wreck["held_chips"].append(nd)
+
+
 static func _throw_frags(fx, s, wreck: Dictionary, plan: Dictionary, lip_ref: WeakRef, tl: DeathTimeline) -> void:
 	var lip := lip_ref.get_ref() as Node3D
 	if not is_instance_valid(lip) or lip.is_queued_for_deletion(): return
@@ -3743,8 +4032,13 @@ static func _throw_frags(fx, s, wreck: Dictionary, plan: Dictionary, lip_ref: We
 	var out_l: Vector3 = bite["out"]
 	var L: float = s.hull.L
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-	for nd in wreck["frags"]:
+	var held := int(s.get_meta("death_glued_break", -1))
+	for nd in (wreck["frags"] as Array).duplicate():
 		if not is_instance_valid(nd): continue
+		if held >= 0 and int(nd.get_meta("chip_break", -1)) == held:
+			# issue 1236 round 4 (audit): a chip on the joint that held stays in its notch, riding on the nearest main piece
+			_hold_chip(fx, wreck, nd)
+			continue
 		var cen: Vector3 = nd.get_meta("piece_cen", Vector3.ZERO)
 		var chip: bool = nd.get_meta("chip", false)
 		var d: Vector3 = (cen - bc).normalized() * 0.6 + out_l * (0.5 if chip else 1.0)
@@ -3835,6 +4129,318 @@ static func _core_flash_inner(fx, p: Vector3, R: float, px: float, tint: Color, 
 
 # A released section has its own cooling clock. Neighbouring sections remain
 # attached until their cut beat. The last cut releases the final pair together.
+# ---------------------------------------------------------------- issue 1236 round 4: breakups (Ryan, Nov 23)
+# "have the hulks break up a bit more into 3 pieces and spread them across the hex a bit, so some go more horizontal and
+# diagonal to use the hex space more"; "it shouldn't always be the same 'scene' or event. we want variety". A strained big
+# hull cut on two joints (fracture_plan) breaks one of three ways, picked from the ship, the cause and where it was hit, so
+# a replay breaks the same way:
+#   two:   one crack; the piece across the other joint stays glued on, a clean break in two
+#   three: both joints part at the death
+#   late:  one crack at the death, then the glued pair snaps BREAKUP_SNAP_S later with sparks at the joint
+# Each released piece is sent so that the brakes (story damping plus MAIN_BRAKE) stop it on a planned rest spot: the end
+# pieces out along the hull's line and to one side, the middle one sideways, each turned to its own angle, so the wreck
+# fills the hex instead of sitting in one line, and the gaps open before the turns can swing a corner into a neighbour.
+const BREAKUP_MIN_PART := 0.6   # the least share of its parting a planned piece keeps in a tight hex
+const BREAKUP_HEX_REACH := 1.75  # rest radii: the farthest a planned piece's middle rests from its anchored hex
+const SYNTH_YAW := 12.0         # degrees: how far an added breakup joint is turned off square
+const BREAKUP_MIN := 0.15       # of the length: the smallest piece a breakup may leave (0.2 left most real hulls in two)
+const BREAKUP_SNAP_S := 0.95    # seconds after the split: a late snap
+const BREAKUP_K_LIN := STORY_DAMP + MAIN_BRAKE          # per second, how fast a planned piece's drift dies away
+const BREAKUP_K_ANG := (STORY_DAMP + MAIN_BRAKE) * 0.5  # ... and its turn
+const BREAKUP_WEIGHTS := {"cruiser": [0.35, 0.30, 0.35], "capital": [0.20, 0.40, 0.40]}   # two, three, late
+
+
+static func _pick_breakup(fx, s, cause: String, job: Dictionary) -> String:
+	var plan: Dictionary = job.get("plan", {})
+	if not (fx.death_story and s.death_big and s.faction != "chorus") or plan.is_empty(): return ""
+	if int(plan.get("n_main", 0)) != 3 or not bool(plan.get("breakup", false)): return ""
+	# Artoo on PR 1737: the cut is made ahead (on load, then at most every CUT_REFRESH seconds as the hull takes damage),
+	# so its bite follows an earlier hit. When the killing hit is nearer the other cut joint, that joint cracks first
+	# (death_crack) and the bite's joint is the one that holds; no death-frame cut is ever added for it. The Board on
+	# e26dab6c: forcing three there would have made three the most common breakup in a real fight.
+	var last = s.get_meta("last_hit", [])
+	if last is Array and last.size() >= 1 and last[0] is Vector3:
+		var brs: Array = plan["breaks"]
+		var nb := 0
+		for bi in brs.size():
+			if _joint_gap(brs[bi], last[0]) < _joint_gap(brs[nb], last[0]): nb = bi
+		if nb != int(plan["bite_break"]): s.set_meta("death_crack", nb)
+	if s.has_meta("breakup_force"): return str(s.get_meta("breakup_force"))   # breakup_check and the look bench only
+	# a ram's spin and the dead star's pull part all three at once (Fable on 33561155: the layout bails for both, so a
+	# rolled two would strain one joint and part at both); a lance recut and a burnt-out hulk never get here
+	if cause == "ram" or cause == "tidal": return "three"
+	var kind := _pick_breakup_for(str(s.id), str(s.death_tier), s.get_meta("last_hit", []), cause)
+	# Fable on 33561155: when the crack moved off the bite, the bite (its core flash, thrown fragments and plates) is on
+	# the joint that holds, so that joint must give way too: a moved crack breaks late or in three, never in two
+	if kind == "two" and s.has_meta("death_crack"): kind = "late"
+	return kind
+
+
+# The joint that cracks first: the bite's, or the joint nearest a killing hit that came after the cut (death_crack).
+static func _first_crack(s, plan: Dictionary) -> int:
+	if plan.is_empty(): return 0
+	var c := int(s.get_meta("death_crack", -1))
+	if c >= 0 and c < (plan["breaks"] as Array).size() and int(plan.get("n_main", 0)) == 3: return c
+	return int(plan["bite_break"])
+
+
+# the seeded pick itself: the ship, the cause and where it was last hit (a quarter-unit grid), so a replay matches
+static func _pick_breakup_for(id: String, tier: String, last, cause: String) -> String:
+	var r := RandomNumberGenerator.new()
+	var hx := 0
+	if last is Array and last.size() >= 1 and last[0] is Vector3:
+		hx = int(round((last[0] as Vector3).x * 4.0)) * 131 + int(round((last[0] as Vector3).z * 4.0))
+	r.seed = hash(id + "|" + cause + "|" + str(hx))
+	var w: Array = BREAKUP_WEIGHTS["capital" if tier == "capital" else "cruiser"]
+	var u := r.randf()
+	return "two" if u < float(w[0]) else ("three" if u < float(w[0]) + float(w[1]) else "late")
+
+
+# The rest spots, as displacements on the board plane from where each piece broke, and the turn about the vertical each
+# piece makes on the way. disp and yaw are per main piece (x order); child is the piece glued across the unbroken joint.
+static func _breakup_layout(fx, s, plan: Dictionary, pieces: Array, n_main: int, xf: Transform3D, cause := "blast", inherited := Vector3.ZERO) -> Dictionary:
+	if n_main != 3 or plan.is_empty() or not bool(plan.get("breakup", false)): return {}
+	# a ram's hard spin and the dead star's pull keep their own motion (audit: the plan overwrote them); three pieces part
+	if s.has_meta("death_spin") or cause == "tidal": return {}
+	var kind := str(s.get_meta("death_breakup", ""))
+	# a late lance recut breaks on the cut it already had (cut_prev), which may hold three pieces: they part at once
+	if kind == "": kind = "three"
+	var L: float = s.hull.L
+	var ax: Vector3 = xf.basis.x
+	ax.y = 0.0
+	ax = ax.normalized() if ax.length() > 0.01 else Vector3.RIGHT
+	var lat := Vector3.UP.cross(ax).normalized()
+	var r := RandomNumberGenerator.new()
+	r.seed = hash(str(s.id) + "|layout|" + kind)
+	var side := 1.0 if r.randf() < 0.5 else -1.0
+	var d_ax := L * r.randf_range(0.09, 0.13)
+	var d_lat := L * r.randf_range(0.07, 0.11)
+	var disp: Array = [Vector3.ZERO, Vector3.ZERO, Vector3.ZERO]
+	var yaw: Array = [0.0, 0.0, 0.0]
+	var p := _first_crack(s, plan)                # the first crack: between pieces p and p + 1
+	var lone := 0 if p == 0 else 2                # the piece the first crack frees
+	var pair: Array = [1, 2] if p == 0 else [0, 1]
+	var sizes: Array = plan["sizes"]
+	var parent: int = pair[0] if float(sizes[pair[0]]) >= float(sizes[pair[1]]) else pair[1]
+	var child: int = pair[1] if parent == pair[0] else pair[0]
+	var out_lone := -ax if lone == 0 else ax
+	if kind == "three":
+		disp[0] = -ax * d_ax * 1.2 + lat * d_lat * side
+		disp[2] = ax * d_ax * 1.2 + lat * d_lat * side * 0.6
+		disp[1] = -lat * d_lat * 1.3 * side
+		yaw[0] = r.randf_range(0.25, 0.45) * side
+		yaw[1] = -r.randf_range(0.45, 0.70) * side
+		yaw[2] = r.randf_range(0.20, 0.40) * -side
+		child = -1
+	else:
+		# the lone piece goes out along the line and to one side; the glued pair backs off the other way and turns less
+		disp[lone] = out_lone * d_ax * 1.3 + lat * d_lat * side
+		yaw[lone] = r.randf_range(0.35, 0.60) * side
+		disp[parent] = -out_lone * d_ax * 0.5 - lat * d_lat * 0.5 * side
+		yaw[parent] = -r.randf_range(0.15, 0.30) * side
+	var glued_b := 1 - p   # the joint that holds (two) or holds a beat (late)
+	s.set_meta("death_gap", [p, p + 1])   # the pieces either side of the first crack (the Navy arcs jump that gap)
+	if kind != "three": s.set_meta("death_glued_break", glued_b)
+	var out := {"kind": kind, "disp": disp, "yaw": yaw, "child": child, "parent": parent, "lone": lone, "side": side,
+		"glued_at": plan["breaks"][glued_b]["at"],
+		"snap_disp": Vector3.ZERO,
+		"snap_yaw": r.randf_range(0.30, 0.55) * -side, "d_ax": d_ax}
+	if kind == "late" and child >= 0:
+		# the snapped piece leaves the pair away from its parent, along the line
+		var away := ax if child > parent else -ax
+		out["snap_disp"] = away * d_ax * 1.1 + lat * d_lat * 0.7 * -side
+	# Fable on 33561155: the dying hull's own drift carries on and dies away with the rest (capped at a twentieth of the
+	# length, so a ship killed mid-move still settles in its hex). It is the same for every piece, so it never parts them.
+	var drift: Vector3 = inherited / BREAKUP_K_LIN
+	drift.y = 0.0
+	drift = drift.limit_length(L * 0.05)
+	# a long hull's end pieces already start far out of an anchored hex: their parting is shortened so no piece's middle
+	# rests more than BREAKUP_HEX_REACH rest radii from the hex (wreck_hex_check, a dreadnought in a real battle)
+	var an = (fx.dstate.get("anchors", {}) as Dictionary).get(s.id)
+	if an != null:
+		var reach: float = float(an["r"]) * BREAKUP_HEX_REACH
+		var c0: Vector3 = an["c"]
+		var bases: Array = []
+		for i in n_main: bases.append(xf * _piece_cen(pieces[i]) - c0 + drift)
+		# one shrink for every piece, turns included: shortening one piece's parting while it still turns in full swung
+		# it into its neighbour (breakup_check, tight hex)
+		var k := 1.0
+		for i in n_main:
+			if i != child: k = minf(k, _within_k(bases[i], disp[i], reach))
+		if k < 1.0:
+			for i in n_main:
+				disp[i] = (disp[i] as Vector3) * k
+				yaw[i] = float(yaw[i]) * k
+		# Artoo on db791b40: where even the least parting leaves a middle out of reach (a piece starting near the edge,
+		# the drift, or a late snap), the whole wreck's rest spots move in together, which keeps every gap between pieces.
+		# Artoo on 951623ce: the move is found from the smallest circle round the rest spots, so it always fits when the
+		# spots can fit at all: the least share of the way to that circle's centre on the hex; a wreck too long to fit
+		# at all ends centred on its hex, as far out at each end.
+		var spots: Array = []
+		for i in n_main:
+			var at: Vector3 = bases[i]
+			if i == child:
+				# it rides its parent, turning with it, then (late) snaps on from there
+				var off: Vector3 = (bases[i] as Vector3) - (bases[parent] as Vector3)
+				at = (bases[parent] as Vector3) + (disp[parent] as Vector3) + Basis(Vector3.UP, float(yaw[parent])) * off
+				if kind == "late": at += out["snap_disp"]
+			else: at += disp[i]
+			spots.append(Vector2(at.x, at.z))
+		var fit: Vector2 = _hex_fit(spots, reach)
+		var shift := Vector3(fit.x, 0.0, fit.y)
+		if shift != Vector3.ZERO: out["hex_shift"] = shift
+		drift += shift
+	for i in n_main: disp[i] = (disp[i] as Vector3) + drift
+	return out
+
+
+static func _piece_cen(pc: Dictionary) -> Vector3:
+	if pc.has("cen"): return pc["cen"]
+	var c := Vector3.ZERO
+	var pts: PackedVector3Array = pc.get("pts", PackedVector3Array())
+	for p in pts: c += p
+	return c / maxf(pts.size(), 1)
+
+
+# the share of the displacement d from base (BREAKUP_MIN_PART at least, so the pieces still clear each other) that keeps base + d within reach on the board plane
+# the one move on the board plane that brings every spot within reach of the hex centre (the origin): none when they
+# already are, else the least share of the way to the centre of the smallest circle round them; centred when they cannot fit
+static func _hex_fit(spots: Array, reach: float) -> Vector2:
+	if _farthest(spots, Vector2.ZERO) <= reach: return Vector2.ZERO
+	var circ: Vector3 = _enclosing_circle(spots)   # x, y: the centre; z: the radius
+	var to := -Vector2(circ.x, circ.y)
+	if circ.z > reach: return to
+	var lo := 0.0
+	var t := 1.0
+	for it in 24:
+		var m := (lo + t) * 0.5
+		if _farthest(spots, to * m) <= reach: t = m
+		else: lo = m
+	return to * t
+
+
+# the farthest of the spots, each moved by d, from the hex centre (the origin)
+static func _farthest(spots: Array, d: Vector2) -> float:
+	var f := 0.0
+	for p in spots: f = maxf(f, ((p as Vector2) + d).length())
+	return f
+
+
+# the smallest circle round two or three spots, as Vector3(centre x, centre y, radius)
+static func _enclosing_circle(spots: Array) -> Vector3:
+	var best := Vector3(0.0, 0.0, INF)
+	for a in spots.size():
+		for b in range(a + 1, spots.size()):
+			var c: Vector2 = ((spots[a] as Vector2) + (spots[b] as Vector2)) * 0.5
+			var r: float = ((spots[a] as Vector2) - c).length()
+			if r < best.z and _farthest(spots, -c) <= r + 0.0001: best = Vector3(c.x, c.y, r)
+	if spots.size() == 3:
+		var A: Vector2 = spots[0]
+		var B: Vector2 = spots[1]
+		var C: Vector2 = spots[2]
+		var dd := 2.0 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y))
+		if absf(dd) > 0.000001:
+			var ux := (A.length_squared() * (B.y - C.y) + B.length_squared() * (C.y - A.y) + C.length_squared() * (A.y - B.y)) / dd
+			var uy := (A.length_squared() * (C.x - B.x) + B.length_squared() * (A.x - C.x) + C.length_squared() * (B.x - A.x)) / dd
+			var r := (A - Vector2(ux, uy)).length()
+			if r < best.z: best = Vector3(ux, uy, r)
+	if best.z == INF and not spots.is_empty(): best = Vector3((spots[0] as Vector2).x, (spots[0] as Vector2).y, 0.0)
+	return best
+
+
+static func _within_k(base: Vector3, d: Vector3, reach: float) -> float:
+	var b2 := Vector2(base.x, base.z)
+	var d2 := Vector2(d.x, d.z)
+	if (b2 + d2).length() <= reach: return 1.0
+	var lo := BREAKUP_MIN_PART
+	var hi := 1.0
+	if (b2 + d2 * lo).length() > reach: return lo
+	for k in 12:
+		var m := (lo + hi) * 0.5
+		if (b2 + d2 * m).length() <= reach: lo = m
+		else: hi = m
+	return lo
+
+
+# A planned piece's rest spot (board plane) and heading. _leash steers it there every frame: it moves at BREAKUP_K_LIN
+# times what it has still to go and turns at BREAKUP_K_ANG times what it has still to turn, the same ease-out a drifting
+# piece with drag has, but it ends on its spot whatever the slow motion, the physics step or the quality tier.
+static func _set_rest(node: Node3D, disp: Vector3, yaw: float) -> void:
+	var at: Vector3 = node.global_position + disp
+	node.set_meta("rest_at", Vector2(at.x, at.z))
+	node.set_meta("rest_yaw", heading(node) + yaw)
+
+
+static func heading(node: Node3D) -> float:
+	var x := node.global_basis.x
+	return atan2(-x.z, x.x)
+
+
+# The piece across the joint that did not break rides on its neighbour: a child of that piece's node, still frozen, so it
+# moves and turns with it. A late breakup lets it go BREAKUP_SNAP_S later.
+static func _glue(fx, s, wreck: Dictionary, bu: Dictionary) -> void:
+	var child: Node3D = bu["child_node"]
+	var parent: Node3D = null
+	for nd in wreck["nodes"]:
+		if is_instance_valid(nd) and int(nd.get_meta("piece_i", -1)) == int(bu["parent"]): parent = nd
+	if not is_instance_valid(child) or not is_instance_valid(parent) or parent == child: return
+	child.reparent(parent, true)
+	child.set_meta("glued", true)
+	# its torn face on the open crack heats with the rest (audit: it stayed dark and kept the wreck warm for good)
+	for m in bu.get("child_mats", []): wreck["heat_births"][m] = fx.now
+	# the snap spits from the joint that held, not the open crack's lip (audit)
+	child.set_meta("snap_site", (bu["glued_at"] as Vector3) - (child.get_meta("piece_cen", Vector3.ZERO) as Vector3))
+	if bu["kind"] != "late": return
+	fx.later(fx.now + BREAKUP_SNAP_S, _snap.bind(fx, s, wreck, child, bu))
+
+
+static func _snap(fx, s, wreck: Dictionary, child, bu: Dictionary) -> void:
+	if not is_instance_valid(child) or child.is_queued_for_deletion() or not child.has_meta("glued"): return
+	if not fx.dstate["wrecks"].has(wreck): return
+	# Artoo on db791b40: the parent may still be on its way when the joint lets go (a long move in to the hex), so the
+	# snapped piece's rest is taken from where it would ride to with its parent, not from where it is at the snap
+	var disp: Vector3 = bu["snap_disp"]
+	var yaw := float(bu["snap_yaw"])
+	var pn = child.get_parent()
+	if pn is Node3D and (pn as Node3D).has_meta("rest_at"):
+		var ra: Vector2 = pn.get_meta("rest_at")
+		var rem := wrapf(float(pn.get_meta("rest_yaw")) - heading(pn), -PI, PI)
+		var off: Vector3 = child.global_position - (pn as Node3D).global_position
+		off.y = 0.0
+		var planned: Vector3 = Vector3(ra.x, 0.0, ra.y) + Basis(Vector3.UP, rem) * off
+		disp += planned - Vector3(child.global_position.x, 0.0, child.global_position.z)
+		yaw += rem
+	child.reparent(fx.phys_root, true)
+	child.remove_meta("glued")
+	var L: float = s.hull.L
+	var vel: Vector3 = disp * BREAKUP_K_LIN
+	var ang := Vector3(0.0, yaw * BREAKUP_K_ANG, 0.0)
+	_set_rest(child, disp, yaw)
+	_release_section(fx, wreck, child, vel, ang, bu.get("child_mats", []), L, true, int(bu["child"]), s)
+	# Neon's audit (PR 1902, item 12): the chips held in the joint's notch let go with it, thrown slow and settling round
+	# the snap like the death's own chips (the leash keeps them in the hex), instead of riding a piece for good
+	var site: Vector3 = child.to_global(child.get_meta("snap_site", child.get_meta("tear_site", Vector3.ZERO)))
+	for nd in wreck.get("held_chips", []):
+		if not is_instance_valid(nd) or nd.is_queued_for_deletion(): continue
+		nd.reparent(fx.phys_root, true)
+		nd.remove_meta("glued")
+		var dw: Vector3 = (nd.global_position - site)
+		dw.y = 0.0
+		dw = (dw.normalized() if dw.length() > 0.01 else fx.rdir()) * 0.6 + vel.normalized() * 0.4
+		dw.y *= 0.25
+		wreck["frags"].append(nd)
+		wreck["fires"].append({"node": nd, "vel": dw.normalized() * L * fx.rng.randf_range(0.06, 0.12), "ang": fx.rdir() * fx.rng.randf_range(0.8, 1.8),
+			"until": fx.now + 8.0, "frag": true, "damp": STORY_FRAG_DAMP, "adamp": 0.35})
+	wreck["held_chips"] = []
+	# the joint lets go: a spit of sparks in the faction's colour and a short warm light at the torn face, no smoke
+	var p: Vector3 = child.to_global(child.get_meta("snap_site", child.get_meta("tear_site", Vector3.ZERO)))
+	if fx.quality != "low":
+		for j in 10:
+			fx.stk(p, fx.now + fx.rng.randf() * 0.06, 0.5 + fx.rng.randf() * 0.4, boom_col(s, "spark", Color(1.0, 0.62, 0.3)), 5.0, 0.05, maxf(L * 0.004, 0.05), 1, fx.rdir() * L * fx.rng.randf_range(0.3, 0.8), 0.8, 0.0, 2.0, 10.0)
+	wreck["lights"].append(fx.light_source(child, child.get_meta("snap_site", child.get_meta("tear_site", Vector3.ZERO)), boom_col(s, "rim", Color(1.0, 0.52, 0.22)), 0.6, 0.3))   # one lookup with the sparks (Fable)
+	fx.shake(fx.now, 0.12, p)
+
+
 static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, ang: Vector3, mats: Array, L: float, big: bool, index: int, src = null) -> void:
 	if not is_instance_valid(node) or node.is_queued_for_deletion(): return
 	if node is RigidBody3D:
@@ -3842,11 +4448,7 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 		node.freeze = false
 		node.linear_velocity = vel * fx.anim_speed()
 		node.angular_velocity = ang * fx.anim_speed()
-		if float(wreck.get("leash_s", 1.0)) < 0.999:
-			# issue 1466: released after its wreck began to shrink, so straight onto the scripted drift (see _leash)
-			_wreck_leave_physics(fx, wreck, node)
-		else:
-			fx.later(fx.now + WRECK_PHYS_S, _wreck_leave_physics.bind(fx, wreck, node))
+		fx.later(fx.now + WRECK_PHYS_S, _wreck_leave_physics.bind(fx, wreck, node))
 	elif node.has_meta("story_damp"):
 		var dmp: float = node.get_meta("story_damp")
 		wreck["fires"].append({"node": node, "vel": vel, "ang": ang, "damp": dmp, "adamp": dmp * 0.5})
@@ -3867,7 +4469,7 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 # Issue 1237 (Neon F7.1): WRECK_PHYS_S after its release a wreck section leaves Jolt (it never slept: no damping) and
 # drifts on with the velocity and turn it had, on the effect clock, as the kinematic tiers do. A strained wreck's pieces
 # keep their damping. It no longer bounces off a hull it drifts into after that.
-static func _wreck_leave_physics(fx, wreck: Dictionary, node: Node3D) -> void:
+static func _wreck_leave_physics(fx, wreck: Dictionary, node) -> void:   # untyped: a piece may be freed before its timer
 	if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is RigidBody3D): return
 	var rb := node as RigidBody3D
 	if rb.process_mode == Node.PROCESS_MODE_DISABLED: return
@@ -4037,18 +4639,18 @@ static func update(fx, dt: float) -> void:
 # across the board. A piece's middle brakes from LEASH_SOFT of its rest limit and never drifts past it; a piece past it
 # (a long hull overhangs its hex) is drawn back in, and nothing is ever farther out than where it was born or the rest
 # radius. The rest radius (0.8 of the hex radius) is inside the hex's flat edges (0.87).
-# Ryan, Nov 20 00:45 UTC (option 1 on 1236): a dreadnought's wreck sits inside its one hex. A hull longer than the hex
-# (a cruiser is 23 units, a dreadnought 34, the hex 17 across) settles into tighter pieces: from LEASH_SHRINK_FROM
-# seconds after the break the wreck shrinks about the hex centre, pieces and the gaps between them alike, to the size at
-# which the pieces as they broke (each one's place plus its reach, from its real mesh) fit inside the rest radius; a
-# piece that drifted farther is drawn in until its whole footprint is inside, and from LEASH_SETTLED it is held there.
-# The break plays at full size.
+# Ryan, Nov 20 00:45 UTC (option 1 on 1236): a dreadnought's wreck sits inside its one hex, done by shrinking the wreck.
+# Nov 22 he saw it and called it bad, then saw the next try (the biggest piece drawn to the hex centre, the rest
+# crumbling) fold one half into the other and called that cheesy and broken. Now the hull's main pieces are never pulled,
+# shrunk or removed: they part as they broke and MAIN_BRAKE brings them to rest close together, as in the approved
+# one-crack death (issue 1077); on a cruiser or capital they overlap the next hexes, which the rules do not block. The
+# small fragments and thrown plates still settle inside the hex (LEASH_*).
 const LEASH_SOFT := 0.6        # share of the rest limit where a piece's brake starts
 const LEASH_BRAKE := 4.0       # per second, the brake at the rest limit (it ramps up from zero at LEASH_SOFT)
 const LEASH_PULL := 1.5        # per second: a piece past its rest limit comes back in at this share of the gap
-const LEASH_SHRINK_FROM := 1.5 # seconds after the break: the wreck starts to draw together
-const LEASH_SHRINK_RATE := 1.2 # per second: how fast the pieces close on the size that fits (most of it in about 2.5 s)
-const LEASH_SETTLED := 5.5     # seconds after the break: each main piece is held hard inside the rest radius
+const LEASH_SHRINK_FROM := 1.5 # seconds after the break: the fragments start to draw in
+const MAIN_BRAKE := 1.2        # per second: the hull's main pieces slow to rest where they parted (a part speed of v stops in about v / 1.2)
+const LEASH_SETTLED := 5.5     # seconds after the break: each fragment is held hard inside the rest radius
 
 
 # The battle calls this on the rules "wreck" event, before the death plays. radius: the hex's rest radius in world units.
@@ -4099,52 +4701,46 @@ static func _leash_mark(fx) -> void:
 
 
 static func _leash(fx, dt: float) -> void:
+	if dt <= 0.0: return
 	var anchors: Dictionary = fx.dstate.get("anchors", {})
-	if anchors.is_empty() or dt <= 0.0: return
+	# Ryan, Nov 22 (third look): the hull's main pieces are never pulled, shrunk or removed. They part as they broke and a
+	# brake brings them to rest close together where they are (MAIN_BRAKE), so nothing slides into anything. Issue 1236
+	# round 4: a planned breakup's pieces are steered to their rest spots (_steer) anchored or not; any other main piece
+	# brakes only on an anchored wreck, so an unanchored small hull's approved calm parting is unchanged.
+	var brake := exp(-MAIN_BRAKE * dt)
+	var abrake := exp(-MAIN_BRAKE * 0.5 * dt)   # Artoo on PR 1737: the halves stop turning too, a little slower
 	for w in fx.dstate["wrecks"]:
 		var an = anchors.get(w["id"])
-		if an == null: continue
-		var prev: float = w.get("leash_s", 1.0)
-		var sc := prev
 		var drawing: bool = fx.now >= float(w["t0"]) + LEASH_SHRINK_FROM
-		if drawing:
-			# the size the wreck settles at: the pieces as they broke (each one's distance from the hex centre where it
-			# was made, plus its reach from its real mesh), scaled about the hex centre until the farthest point is a hair
-			# inside the rest radius. The layout keeps its shape, so the pieces fit without piling on each other.
-			if not w.has("leash_target"):
-				var far := 0.0
-				var measured := true
-				for nd in w["nodes"]:
-					if not is_instance_valid(nd): continue
-					if not nd.has_meta("leash_rad"):
-						_measure_reach(nd)
-						measured = false
-						break   # one piece's faces a frame, so a big wreck never costs one long frame
-					far = maxf(far, float(nd.get_meta("leash_off0", 0.0)) + leash_half(nd) / maxf(prev, 0.001))
-				if measured:
-					w["leash_target"] = minf(1.0, float(an["r"]) * 0.95 / maxf(far, 0.001))
-			if w.has("leash_target"):
-				sc = lerpf(prev, float(w["leash_target"]), 1.0 - exp(-LEASH_SHRINK_RATE * dt))
-				if absf(sc - float(w["leash_target"])) < 0.002: sc = float(w["leash_target"])
-		w["leash_s"] = sc
-		var pieces: Array = w["nodes"] + w.get("frags", [])
-		if sc != prev:
-			for nd in pieces:
-				if not is_instance_valid(nd): continue
-				# Issue 1466 (Astra pass 2, finding 1): only the meshes shrink, so a released section still in Jolt would keep
-				# its full-size collider and be shoved by a hull short of the visible metal. As it starts to shrink it leaves
-				# Jolt for the scripted drift it takes at WRECK_PHYS_S anyway (same speed and turn, leash and damping kept).
-				if sc < 0.999 and nd is RigidBody3D and not (nd as RigidBody3D).freeze:
-					_wreck_leave_physics(fx, w, nd)
-				_draw_in(nd, an, sc, prev)
-		# the kinematic tiers (and a frozen physics piece before its release) move by their fire entries
 		for f in w["fires"]:
-			if f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF)):
+			if not (f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF))): continue
+			if (f["node"] as Node).has_meta("rest_at"):
+				var st := _steer(f["node"])
+				f["vel"] = st[0]
+				var fa: Vector3 = f.get("ang", Vector3.ZERO)
+				f["ang"] = Vector3(fa.x * abrake, st[1], fa.z * abrake)
+				continue
+			if w["nodes"].has(f["node"]):
+				if an == null: continue   # an unanchored wreck without a planned breakup drifts as before (audit)
+				f["vel"] = (f["vel"] as Vector3) * brake
+				if f.has("ang"): f["ang"] = (f["ang"] as Vector3) * abrake
+			elif an != null:
 				f["vel"] = _leash_vel(f["node"], f["vel"], an, dt, drawing)
-		# once the wreck has drawn together, each piece is held hard at its rest limit (a physics piece jostled past it
-		# by its neighbours is put back), so the settled wreck sits inside the hex's edges
+		for nd in w["nodes"]:
+			if is_instance_valid(nd) and nd is RigidBody3D and not (nd as RigidBody3D).freeze:
+				var rb := nd as RigidBody3D
+				if rb.has_meta("rest_at"):
+					var st := _steer(rb)
+					var spd: float = fx.anim_speed()
+					rb.linear_velocity = (st[0] as Vector3) * spd
+					rb.angular_velocity = Vector3(rb.angular_velocity.x * abrake, float(st[1]) * spd, rb.angular_velocity.z * abrake)
+				elif an != null:
+					rb.linear_velocity *= brake
+					rb.angular_velocity *= abrake
+		if an == null: continue
+		# the small fragments still settle inside the hex, as the thrown plates do
 		var settled: bool = fx.now >= float(w["t0"]) + LEASH_SETTLED
-		for nd in pieces:
+		for nd in w.get("frags", []):
 			if not is_instance_valid(nd): continue
 			if nd is RigidBody3D and not (nd as RigidBody3D).freeze:
 				var body := nd as RigidBody3D
@@ -4159,25 +4755,11 @@ static func _leash(fx, dt: float) -> void:
 		_leash_clamp(b, an)
 
 
-# one step of the wreck drawing together: the piece's place about the hex centre and its meshes about its own origin,
-# both from scale prev to sc (the meshes keep their first local transforms, so steps never add up drift)
-static func _draw_in(nd: Node3D, an: Dictionary, sc: float, prev: float) -> void:
-	var c: Vector3 = an["c"]
-	var f := sc / maxf(prev, 0.001)
-	if nd.has_meta("leash_born"):
-		nd.set_meta("leash_born", maxf(float(an["r"]), float(nd.get_meta("leash_born")) * sc / maxf(prev, 0.001)))
-	var p := leash_centre(nd)
-	for ch in nd.get_children():
-		if not (ch is MeshInstance3D): continue
-		if not ch.has_meta("leash_t0"): ch.set_meta("leash_t0", (ch as Node3D).transform)
-		(ch as Node3D).transform = (ch.get_meta("leash_t0") as Transform3D).scaled(Vector3.ONE * sc)
-	# then the piece's middle (where it was before this step) moves in about the hex centre by the same step
-	var now := leash_centre(nd)
-	var want := Vector3(c.x + (p.x - c.x) * f, p.y, c.z + (p.z - c.z) * f)
-	nd.global_position += Vector3(want.x - now.x, 0.0, want.z - now.z)
-	# pieces drawn together must not shove each other apart again
-	if nd is RigidBody3D and sc < 0.999:
-		(nd as RigidBody3D).collision_mask = HULL_LAYER
+# issue 1236 round 4: a planned piece's drift and turn rate toward its rest spot and heading (_set_rest)
+static func _steer(nd: Node3D) -> Array:
+	var to: Vector2 = (nd.get_meta("rest_at") as Vector2) - Vector2(nd.global_position.x, nd.global_position.z)
+	var dyaw := wrapf(float(nd.get_meta("rest_yaw")) - heading(nd), -PI, PI)
+	return [Vector3(to.x, 0.0, to.y) * BREAKUP_K_LIN, dyaw * BREAKUP_K_ANG]
 
 
 # where a piece is, for the leash: the middle of its mesh's box (a piece's origin is the mean of its points, which on a

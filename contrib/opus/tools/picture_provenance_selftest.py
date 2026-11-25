@@ -331,6 +331,14 @@ script = ExtResource("1")
             assert ImageChops.difference(stamped.crop((0, 0, 1920, 216)).convert('RGB'), expected_pixels).getbbox() is None
     print('PASS headless moments stamp distinguishes pre-merge and main, preserves all cell pixels, and keeps schema 1')
 
+    # Issue 2025 (Artoo 7123643915): the commit is on main here, but the working tree is dirty, so it is never "installed in game"
+    (bench / 'dirty_fixture.py').write_text('# a source edit that main does not have\n')
+    record = verify(invoke(editor, 'moments dirty on main', bench_env, moments=True))
+    assert record['source_dirty'] and record['source_commit'] == head, record
+    assert record['stage'] == record['sources'][0]['stage'] == 'pre-merge capture', record['stage']
+    (bench / 'dirty_fixture.py').unlink()
+    print('PASS a dirty source on main is stamped pre-merge capture, never installed in game')
+
     def check_build(records):
         for record in records:
             for source in [record, *record['sources']]:

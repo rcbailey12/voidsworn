@@ -463,6 +463,8 @@ function Refuse-Reason($st, $p, $repo, $maxMb) {
   $lp = $p.ToLower()
   if ($lp.StartsWith('godot/gen/')) { return 'under godot/gen (built on the PC, never committed)' }
   if ($lp.StartsWith('godot/.godot/')) { return "under godot/.godot (Godot's import cache)" }
+  # Issue 2025: the API arms twice committed a stray Microsoft/Windows/PowerShell/ModuleAnalysisCache (PR 2020).
+  if ($lp.StartsWith('microsoft/')) { return 'under Microsoft/ (a PowerShell cache written into the checkout, never committed)' }
   if ($p -match '^godot/assets/ships/([^/]+)/' -and $Matches[1] -notin @('previews', 'test')) { return "ship files under godot/assets/ships/$($Matches[1])/ (PC-built, never committed)" }
   if ($lp.EndsWith('.uid') -and $st -eq 'A') { return 'a new .uid file (Godot makes these)' }
   if ($lp.EndsWith('.import') -and ($st -eq 'A' -or $st -eq 'M')) {

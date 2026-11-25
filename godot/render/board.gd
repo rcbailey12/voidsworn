@@ -1,4 +1,6 @@
 extends Node3D
+const SV := preload("res://render/ship_view.gd")   # issue 1434: retire_build collects a terrain load left running
+const SKEEP := preload("res://render/shader_keep.gd")
 # The hex board at the game's scale: pointy-top hexes of corner radius 10 (HEX_S), laid out as scene3d.js hexWorld does,
 # with the world's z mirrored for Godot. One MultiMesh for the hex fills and one for the outlines (two draws for the
 # whole board); overlays (move range, targets, hover, zones) only change instance colours.
@@ -55,6 +57,7 @@ var wrecks := {}             # issue 1236: unit id -> "q,r" of each wreck the ru
 var wreck_hulls := {}        # issue 1236: unit id -> true where the board laid the burnt hulk (the death left no pieces)
 var built := 0               # how many times build() ran (a late wreck check knows its battle is gone)
 var props_world := false     # G4 world draws the rocks, debris and nebula; the board keeps hulks, stations and the planet
+var title_backdrop := false   # issue 1434: set by the battle for the title menu's backdrop (see _planet)
 
 # The board plane passes through the lower half of tall hulls. Depth-test alone
 # cannot protect those pixels, so mask opaque ship/terrain surfaces near the board.
@@ -250,7 +253,14 @@ func key(q, r) -> String:
 	return str(int(q)) + "," + str(int(r))
 
 
-func build(rules) -> void:
+# issue 1434 (LOAD13: start to board 0.9 to 1.4 s in one frame): the battle load passes slice, so each step below gets
+# its own frame; build_us names each step's main-thread time for the load bench
+var build_us := {}
+
+
+func build(rules, slice := false) -> void:
+	build_us = {}
+	var t := Time.get_ticks_usec()
 	api = rules
 	VW = api.view()
 	wrecks.clear()
@@ -275,6 +285,7 @@ func build(rules) -> void:
 	index.clear()
 	for i in cells.size():
 		index[key(cells[i].q, cells[i].r)] = i
+	t = _step("cells", t)
 	fills = _mm(_hex_mesh(HS * 0.985, false), FILL_SHADER)
 	rings = _mm(_hex_mesh(HS, true), RING_SHADER)
 	outline = MeshInstance3D.new()
@@ -288,7 +299,55 @@ func build(rules) -> void:
 	props = Node3D.new()
 	props.name = "Terrain"
 	add_child(props)
+	t = _step("grid", t)
+	if slice:
+		# issue 1434 (LOAD14: terrain 0.9 s in one frame): the rock, hulk and station files load on worker threads first.
+		# Every request is collected once or handed on (_drop_terrain_loads), also when the board leaves the tree mid-wait
+		_drop_terrain_loads(false)
+		for p in _terrain_files():
+			if _terrain_keep.has(p):
+				continue   # loaded by an earlier battle or the title this session: load() is a cache hit
+			if ResourceLoader.load_threaded_request(p) == OK:
+				_terrain_loads.append(p)
+		t = _step("terrain_request", t)
+		# the cover stays up and frames keep drawing while this waits, so the wait is long; only a load that never ends
+		# (60 s) goes on without it, logged, and then _terrain() loads that file itself
+		var w0 := Time.get_ticks_msec()
+		while Time.get_ticks_msec() - w0 < TERRAIN_WAIT_MS:
+			await get_tree().process_frame
+			if not is_inside_tree():
+				return   # _exit_tree handed the loads on
+			var busy := false
+			for p in _terrain_loads:
+				if ResourceLoader.load_threaded_get_status(p) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+					busy = true
+					break
+			if not busy:
+				break
+		# each request classified once (Artoo on PR 1445): a finished or failed one is collected here, an unfinished one
+		# is handed on with no second status read in between
+		var running := []
+		for p in _terrain_loads:
+			var st := ResourceLoader.load_threaded_get_status(p)
+			if st == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+				running.append(p)
+			else:
+				var res = ResourceLoader.load_threaded_get(p)
+				if res != null:
+					_terrain_keep[p] = res   # kept for the session, so load() finds it cached in this battle and the next
+		_terrain_loads.clear()
+		if not running.is_empty():
+			printerr("[board] %d terrain file(s) still loading after %d ms; the terrain loads them itself: %s" % [running.size(), TERRAIN_WAIT_MS, ", ".join(running)])
+			SV.retire_build(running, [])
+		build_us["terrain_wait"] = (Time.get_ticks_msec() - w0) * 1000
+		t = Time.get_ticks_usec()
 	_terrain()
+	t = _step("terrain", t)
+	if slice:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
+		t = Time.get_ticks_usec()
 	blocker_visuals = BV.new()
 	props.add_child(blocker_visuals)
 	blocker_visuals.build(VW, hex_world)
@@ -297,8 +356,92 @@ func build(rules) -> void:
 	add_child(blocker_highlights)
 	_zones()
 	_well_info()
+	t = _step("blockers", t)
+	if slice:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
+		t = Time.get_ticks_usec()
 	_terrain_edges()
+	t = _step("edges", t)
+	if slice:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
+		t = Time.get_ticks_usec()
 	apply_look(false)
+	_step("look", t)
+
+
+# issue 1434 (LOAD15: b2 and b2r each waited 1.4 s for the same terrain files): every terrain file loaded once for the
+# session. GPU-holding static: render/static_caches.gd clears it before the engine exits.
+static var _terrain_keep := {}
+
+
+static func clear_static() -> void:
+	_terrain_keep.clear()
+var _terrain_loads := []   # threaded requests not collected yet
+const TERRAIN_WAIT_MS := 60000
+
+
+# collect every terrain request once; wait false: one still running goes to ShipView.retire_build, collected over the
+# next frames (the same hand-off as the battle's hull loads), so a close or a leave never waits on it
+func _drop_terrain_loads(wait := true) -> void:
+	var running := []
+	for p in _terrain_loads:
+		if wait or ResourceLoader.load_threaded_get_status(p) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			ResourceLoader.load_threaded_get(p)
+		else:
+			running.append(p)
+	_terrain_loads.clear()
+	if not running.is_empty():
+		SV.retire_build(running, [])
+
+
+func _exit_tree() -> void:
+	_drop_terrain_loads(false)
+
+
+# every file _terrain may load for this view: the rock set, the hulks' painted hulls and the station
+func _terrain_files() -> Array:
+	var out := []
+	var man = JSON.parse_string(FileAccess.get_file_as_string("res://gen/manifest.json")) if FileAccess.file_exists("res://gen/manifest.json") else null
+	if not (man is Dictionary):
+		return out
+	var T: Dictionary = VW.get("terrain", {})
+	var kinds := {}
+	for k in T:
+		kinds[str(T[k])] = true
+	var set_name := "RST"
+	var biome = WI.get("biome")
+	if biome is Dictionary and HT.ROCK_SET.has(biome.get("rock", "")):
+		set_name = HT.ROCK_SET[biome["rock"]]
+	if man.has("rocks"):
+		for code in man["rocks"]:
+			if man["rocks"][code]["set"] == set_name:
+				out.append(str(man["rocks"][code]["res"]))
+	var ships: Dictionary = man.get("ships", {}) if man.get("ships") is Dictionary else {}
+	if kinds.has("hulk"):
+		for code in ["H8_23", "V15_37", "C14s_23", "D20_23"]:
+			if ships.has(code):
+				out.append(str(ships[code]["res"]))
+	if kinds.has("station"):
+		for p in ["res://gen/ships/station_T2.scn", "res://gen/ships/station_T2_debris.scn"]:
+			if ResourceLoader.exists(p):
+				out.append(p)
+		if ships.has("O1_37"):
+			out.append(str(ships["O1_37"]["res"]))
+	var keep := []
+	for p in out:
+		if ResourceLoader.exists(p) and not keep.has(p):
+			keep.append(p)
+	return keep
+
+
+func _step(name: String, t0: int) -> int:
+	var t1 := Time.get_ticks_usec()
+	build_us[name] = int(build_us.get(name, 0)) + t1 - t0
+	return t1
 
 
 func bounds() -> Vector2:
@@ -1144,6 +1287,16 @@ func _planet() -> void:
 	# relief map. The campaign map's icon shader is no longer used here.
 	var seed_v := int(WI.get("seed", 1)) if WI.get("seed") != null else 1
 	var look_kind: int = PLANET_LOOKS[posmod(seed_v, PLANET_LOOKS.size())]
+	# Issue 1434 (LOAD32): the rocky and barren looks draw the two 8K R01 maps, 853 MB with mips, uploaded in one frame
+	# whatever thread asks (682 ms of a 910 ms cold title frame, 914 ms warm). Under the title menu there is no loading
+	# cover to hide that, so the title's board takes the next baked look (4K maps) unless this run already holds R01.
+	if title_backdrop and not PL.r01_uploaded():
+		var at := posmod(seed_v, PLANET_LOOKS.size())
+		for i in PLANET_LOOKS.size():
+			var k: int = PLANET_LOOKS[(at + i) % PLANET_LOOKS.size()]
+			if PL.uses_r01(k): continue
+			look_kind = k
+			break
 	var sun := mi.position + sun_dir.normalized() * 100000.0
 	var shell := MeshInstance3D.new()
 	var ss := SphereMesh.new()
@@ -1173,6 +1326,7 @@ func _planet() -> void:
 func wait_planet() -> void:
 	while planet_pending and Time.get_ticks_msec() - planet_t0 < 20000:
 		await get_tree().process_frame
+		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	if planet_pending and is_instance_valid(planet_node):
 		planet_node.set_meta("planet_frozen", true)
 		push_warning("[planet] board planet maps missed the loading cover; the stand-in stays for this battle")

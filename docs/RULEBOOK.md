@@ -129,7 +129,7 @@ R194); and "you own the codebase and github. you are my orchestrator and control
 2.2 **Nobody grades their own work.** Workers never merge their own pull requests. An Opus-built, game-facing change gets an
 outside check (Muse, issue 256) before or straight after merge; a tools-only pull request that other jobs wait on may merge on
 the Board's diff review while Muse is idle, with the check still asked for. Set: Ryan (R119, R132, R133, R167); the exception
-Board (R162). Ids: agents-13, claude-04, R132c, R162b.
+Board (R162). The Board may merge its own pull requests once checks are green (Ryan, Nov 24 2026 6:48 PM CT, R452); visual and gameplay changes still go to Ryan's pictures or an outside review first. Ids: agents-13, claude-04, R132c, R162b, R452.
 
 2.3 **Review every pull request by its diff, never its title, then sweep its impact** (every caller, saves and old profiles,
 the Godot rules and their saved results, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
@@ -183,7 +183,8 @@ those old jobs were already merged? That's a big miss."). Set: Board (R288).
 | Well-specified code: rules, tests, scripts, screens to a spec | DeepSeek V4.1 Flash workhorse on the PC | merged on one review pass for nine cents (R127, R134) |
 | Pipeline and engine jobs that need Codex's depth (export, import, effects plumbing); captures and benches only when no cheaper seat can run them | Codex on the PC, up to four local lanes, one job per lane (lanes C and D code only; R268, R301), while its weekly usage lasts | "Codex and deepseek should do other work to free you up on these crucial items" (R206); "We're starting to run low on codex usage ... We may just need to move other things to opus instead of codex being the workhorse with DeepSeek" (R219) |
 | Checks of a seat's own work: a different model checks it (Codex's pipeline work is traced or checked by Opus or Muse) | Opus worker or Muse | "It feels like that makes sense to be checked by a different model" (R219) |
-| Concept pictures by image to image, research, design text, outside checks | Muse (Rey chairs); Ryan starts every run | several models, an outside view (R128) |
+| Research, design ideas and recommendations, design text, outside checks (no concept pictures) | Muse (Rey chairs) | several models, an outside view (R128); Ryan, Nov 24 (R451): "muse should have ideas for designs and recommendations but it shouldn't actually concept it, leave that to codex and its better image gen. muse does the research and views" |
+| Concept and mock pictures (screens, ships, portraits) from a written design | Codex image generation | better image gen (R451, R444) |
 | Ideation and legs | Grok and Google Flash, through Muse: a leg in every Muse action, beside DeepSeek and Qwen (R231) | free and broad; Qwen's daily cap emptied three seats on Nov 12 |
 
 The standing seat rules (rewritten Nov 15 from Muse's opus_check_719; dated seat state, such as whether this month's API
