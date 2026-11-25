@@ -56,8 +56,8 @@ const S_DENT := 12
 const S_PATCH := 14
 const S_FISSURE := 15
 const S_SCORCH := 13      # the stage ladder's spreading scorch (fx_ship._plan)
-# R416 (issue 1741, folded 1692 item d), Wounds V2 only: a prism hit's crystal star fracture, a star lance's white-gold
-# heat sear, a null lance's three parallel violet-black cuts
+# R416 (issue 1741, folded 1692 item d): a prism hit's crystal star fracture, a star lance's white-gold heat sear,
+# a null lance's three parallel violet-black cuts. Build F also uses S_NLANCE for the single sealed cut with V2 off.
 const S_PRISM := 16
 const S_STAR := 17
 const S_NLANCE := 18
@@ -1879,11 +1879,14 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 					e3.style = S_NLANCE
 					out.append(e3)
 	match look if out.is_empty() else "":
-		"lance", "needle", "pulsar", "las":
+		"lance", "nlance", "needle", "pulsar", "las":
 			# the beam drags across the plate: the cut runs across the line of fire; repeats lengthen it
 			var cut_dir := n.cross(tang)
 			var R: float = L * 0.0045 * wk * (0.6 if look in ["needle", "las"] else 1.0) * sqrt(g)
-			out.append(slot(hull, p, n, cut_dir, R, L * 0.035 * wk * g, seed_v))
+			var e := slot(hull, p, n, cut_dir, R, L * 0.035 * wk * g, seed_v)
+			if look == "nlance":
+				e.style = S_NLANCE
+			out.append(e)
 		"ion", "doom":
 			out.append(surface(p, n, L * 0.06 * wk * g, seed_v, S_ION))
 		"macro", "battery", "auto", "scatter", "prism", "guns":
