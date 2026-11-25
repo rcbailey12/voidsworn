@@ -1910,36 +1910,43 @@ static func _craft_update(fx, dt: float) -> void:
 		_wing_trail_update(fx, node)
 
 
-# Use the real wing's history and engine point. The old wing shader made a
-# .65-second ruler behind a fast craft; the kit clips its centreline at 24 px.
+# Issue 2042 item 4: squadron_wing.gd now natively owns SH.CRAFT_TRAIL and updates its uniforms in step().
+# Keep this hook for kit_trails discovery and any non-native fallback without duplicating per-step uniform writes.
 static func _wing_trail_update(fx, wing) -> void:
 	if wing == null or not is_instance_valid(wing):
 		return
 	if not wing.has_meta("kit_trails"):
 		var materials: Array = []
+		var fallback := false
 		for trail in wing.trails:
-			var material: ShaderMaterial = fx.mat(SH.CRAFT_TRAIL, 1)
-			material.set_shader_parameter("trail_len", wing.length)
-			material.set_shader_parameter("width_k", 0.065 if wing.faction == "chorus" else 0.026)
-			material.set_shader_parameter("alpha_k", 0.22 if wing.faction == "chorus" else 0.56)
-			trail.node.material_override = material
+			var material: ShaderMaterial = trail.get("mat") as ShaderMaterial
+			if material == null:
+				fallback = true
+				material = fx.mat(SH.CRAFT_TRAIL, 1)
+				material.set_shader_parameter("trail_len", wing.length)
+				material.set_shader_parameter("width_k", 0.048 if wing.faction == "chorus" else 0.026)
+				material.set_shader_parameter("alpha_k", 0.22 if wing.faction == "chorus" else 0.56)
+				material.set_shader_parameter("life", wing.trail_life)
+				material.set_shader_parameter("trail_style", 1.0 if wing.faction == "chorus" else (2.0 if wing.faction == "ithar" else 0.0))
+				trail.node.material_override = material
+				trail["mat"] = material
 			materials.append(material)
 		wing.set_meta("kit_trails", materials)
+		wing.set_meta("kit_trails_fallback", fallback)
+	if not bool(wing.get_meta("kit_trails_fallback", false)):
+		return
 	var materials: Array = wing.get_meta("kit_trails")
 	for i in mini(materials.size(), wing.craft.size()):
 		var material: ShaderMaterial = materials[i]
 		material.set_shader_parameter("clock_now", wing.clock)
+		var stern: Vector3 = wing.craft[i].to_global(wing._stern)
+		material.set_shader_parameter("head_world", stern)
 		var history: Array = wing.trails[i].hist
 		if not history.is_empty():
-			var born := float(history[0][1])
-			# The wing owns the stern anchor. Recover its local point from a
-			# fresh sample, then follow that point between samples.
-			if absf(float(wing.clock) - born) < 0.001:
-				material.set_meta("kit_anchor", wing.craft[i].to_local(history[0][0]))
-				material.set_shader_parameter("anchor_ready", 1.0)
-			if material.has_meta("kit_anchor"):
-				material.set_shader_parameter("head_world", wing.craft[i].to_global(material.get_meta("kit_anchor")))
-			material.set_shader_parameter("newest_birth", born)
+			material.set_shader_parameter("newest_birth", float(history[0][1]))
+			material.set_shader_parameter("anchor_ready", 1.0)
+		else:
+			material.set_shader_parameter("anchor_ready", 0.0)
 
 
 # Issue 1528: the first torpedo or rocket salvo of a battle stalled 135 to 145 ms on the PC (1379 RUN8). Its first round

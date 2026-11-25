@@ -185,12 +185,8 @@ const LOAD_CUT_LIMIT := 8
 
 
 static func register_globals() -> void:
-	if _globals_added:
-		return
 	_globals_added = true
-	for g in [[&"scene_t", 0.0], [&"fx_gain", 0.5556], [&"fx_calm", 0.0], [&"fx_px", 1.0]]:
-		if not ProjectSettings.has_setting("shader_globals/" + String(g[0])):
-			RenderingServer.global_shader_parameter_add(g[0], RenderingServer.GLOBAL_VAR_TYPE_FLOAT, g[1])
+	SH.ensure_globals()
 
 
 func _ready() -> void:
@@ -2185,7 +2181,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
 		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), pools["nlance"].mi.material_override,
-		mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(DEATH.SLAG, 0)]
+		mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(SH.RCS_JET, 1), mat(DEATH.SLAG, 0)]
 	# Warm the PBR fallbacks for late arrivals and generated pieces as well as the
 	# actual hull formats below. Glasswright sails blend, and nebula hulls ignore fog.
 	for fog_disabled in [false, true]:

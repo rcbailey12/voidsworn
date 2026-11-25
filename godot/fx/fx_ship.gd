@@ -425,6 +425,43 @@ func scale_k() -> float:
 
 # ---------------------------------------------------------------- engines
 
+# Issue 2042 item 3: per-faction main plume palette (bright core + soft outer wash + style) derived from faction_looks.json.
+# style: 0 Sunward ember/frost, 1 Meridian ion spear, 2 Hullbreaker rough overburn, 3 Chorus organic pulse,
+#        4 Glasswright crystal violet (no white cold gas), 5 Eclipse violet/white-gold (no green, no orange).
+static func plume_palette(fac_id: String, fac_info: Dictionary) -> Dictionary:
+	var fid := fac_id.to_lower()
+	var eng: Color = fac_info.get("engine", Color(1.0, 0.55, 0.18))
+	var acc = fac_info.get("accent")
+	var weap: Color = fac_info.get("weapon", eng) if fac_info.get("weapon") is Color else eng
+	var dmg: Color = fac_info.get("damage_glow", eng) if fac_info.get("damage_glow") is Color else eng
+	match fid:
+		"hegemony":
+			return {"core": eng.lerp(Color.WHITE, 0.72), "wash": eng.lerp(weap, 0.35), "style": 1}
+		"corsair":
+			var cw: Color = (acc as Color).lerp(eng, 0.45) if acc is Color else eng
+			return {"core": eng.lerp(Color(1.0, 0.94, 0.8), 0.55), "wash": cw, "style": 2}
+		"chorus":
+			return {"core": dmg.lerp(Color(0.95, 1.0, 0.76), 0.35), "wash": eng * 0.88, "style": 3}
+		"ithar":
+			return {"core": eng.lerp(weap, 0.58), "wash": eng, "style": 4}
+		"deathless":
+			var wcore: Color = fac_info.get("weapon_core", eng) if fac_info.get("weapon_core") is Color else eng
+			var ew: Color = wcore.lerp(acc as Color, 0.22) if acc is Color else wcore
+			return {"core": eng.lerp(Color(0.94, 0.88, 1.0), 0.45), "wash": ew, "style": 5}
+		_:
+			var vw: Color = (acc as Color).lerp(eng, 0.58) if acc is Color else eng
+			return {"core": Color(1.0, 0.96, 0.86).lerp(eng, 0.18), "wash": vw, "style": 0}
+
+
+static func _apply_plume_palette(mat: ShaderMaterial, fac_id: String, fac_info: Dictionary) -> void:
+	var pal := plume_palette(fac_id, fac_info)
+	var pc: Color = pal["core"]
+	var pw: Color = pal["wash"]
+	mat.set_shader_parameter("plume_core", Vector3(pc.r, pc.g, pc.b))
+	mat.set_shader_parameter("plume_wash", Vector3(pw.r, pw.g, pw.b))
+	mat.set_shader_parameter("plume_style", float(int(pal["style"])))
+
+
 func _build_engines(fx) -> void:
 	if is_instance_valid(_eng_node):
 		_eng_node.queue_free()
@@ -466,8 +503,10 @@ func _build_engines(fx) -> void:
 			# a corona round the core in the faction's second colour (faction look data, accent; three factions set one)
 			b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0), Vector4(0, 0, 0, 1.0), Vector4(acc.r, acc.g, acc.b, 0.9),
 				Vector4(r * 5.0, r * 5.0, 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
-		rb.add(rs, POOLS.pack(Vector4(np.x, np.y, np.z, 3 if corsair else 0), Vector4(nd.x, nd.y, nd.z, plume), Vector4(eng.r, eng.g, eng.b, 0.9),
-			Vector4(r * 1.3, r * 0.5, fx.rng.randf(), 0), Vector4(-20.0, 1.0, 1.0, 0)))
+		# Issue 2042 item 3: tuck root slightly into the nozzle bell and widen quad for soft outer wash around the bright core.
+		var rp: Vector3 = np - nd * (r * 0.12)
+		rb.add(rs, POOLS.pack(Vector4(rp.x, rp.y, rp.z, 3 if corsair else 0), Vector4(nd.x, nd.y, nd.z, plume), Vector4(eng.r, eng.g, eng.b, 0.92),
+			Vector4(r * 2.15, r * 0.82, fx.rng.randf(), 0), Vector4(-20.0, 1.0, 1.0, 0)))
 		if corsair:
 			# soot coughs (the Corsair exception: haphazard, junky)
 			for k in 9:
@@ -489,6 +528,7 @@ func _build_engines(fx) -> void:
 					Vector4(ec.r, ec.g, ec.b, 2.2), Vector4(r * 0.2, r * 0.1, 19, fx.rng.randf()), Vector4(3.9, 0, 0.5, 0)))
 	_eng_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 	_eng_rib_mat = fx.mat(SH.RIBBON, 1)
+	_apply_plume_palette(_eng_rib_mat, faction, fac)
 	var holder = MeshInstance3D.new()
 	holder.name = "fx_engines"
 	_attach(holder)
@@ -500,6 +540,7 @@ func _build_engines(fx) -> void:
 	if sick_nozzle >= 0:
 		_sick_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 		_sick_rib_mat = fx.mat(SH.RIBBON, 1)
+		_apply_plume_palette(_sick_rib_mat, faction, fac)
 		sb.build(_sick_mat, holder, "fx_eng_sick_core")
 		srb.build(_sick_rib_mat, holder, "fx_eng_sick_plume")
 
@@ -557,14 +598,18 @@ func update(fx, dt: float) -> void:
 			# a heavy hit makes the drive stumble: the plume gutters and catches again
 			var flick := 1.0 if fposmod(sin(fx.now * 37.0 + float(_seed)) * 43758.5, 1.0) > 0.45 else 0.0
 			g *= 0.3 + 0.7 * maxf(flick, smoothstep(_stutter_until - 0.25, _stutter_until, fx.now))
+		var tk := clampf(_eng_cur / 1.4, 0.15, 1.4)
 		_eng_mat.set_shader_parameter("gate", g)
 		_eng_rib_mat.set_shader_parameter("gate", g)
 		_eng_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8))
+		_eng_rib_mat.set_shader_parameter("throttle_k", tk)
 		if _sick_mat != null:
-			var sg := g * sick_gate(fx.now, fx.reduce_flashing)
+			var sk: float = sick_gate(fx.now, fx.reduce_flashing)
+			var sg := g * sk
 			_sick_mat.set_shader_parameter("gate", sg)
 			_sick_rib_mat.set_shader_parameter("gate", sg)
 			_sick_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8) * _sick_len)
+			_sick_rib_mat.set_shader_parameter("throttle_k", tk * sk)
 	var moving_now: bool = _moving > 0.0 and not dead
 	if moving_now and not _was_moving and sick_nozzle >= 0 and fx.now >= _cough_next:
 		_cough(fx)
@@ -593,7 +638,6 @@ func _update_trails(fx, _moved: bool) -> void:
 		xfm = root.global_transform * (get_meta("death_motion") as Transform3D) * (get_meta("death_hull_motion", Transform3D.IDENTITY) as Transform3D)
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
-	var plume = clampf(1.5 * hull.W, 2.0, 32.0)
 	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or (_eng_sputter and not wounds_v2)) else int(fac["trail"])
 	for ti in _trails.size():
 		var t: Dictionary = _trails[ti]
@@ -604,11 +648,14 @@ func _update_trails(fx, _moved: bool) -> void:
 		var lvl_t: float = lvl * (sick_gate(fx.now, fx.reduce_flashing) if ti == sick_nozzle else 1.0)
 		if dead_nozzles.has(ti):
 			lvl_t = 0.0   # issue 1741: a dead nozzle lays no fresh trail (the dim samples let the old ribbon fade out)
-		var start: Vector3 = xfm * (t["p"] as Vector3) + (xfm.basis * (t["d"] as Vector3)).normalized() * (0.3 * plume)
+		# Issue 2042 item 2: anchor the trail root directly to the live nozzle (no 0.3 * plume stern gap).
+		var start: Vector3 = xfm * (t["p"] as Vector3)
+		var back_dir: Vector3 = (xfm.basis * (t["d"] as Vector3)).normalized()
 		# Each sample belongs to world space for its entire life. Turning, stopping
 		# or throttling down never drags old exhaust along with the nozzle.
 		# (issue 1581, OpenAI review F4: no fresh exhaust while the battle has the drive cold, even as the plume eases down)
-		if (not dead or flaring) and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12):
+		var active_burn: bool = (not dead or flaring) and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12)
+		if active_burn:
 			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (_tclock - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
 				hist.push_front([start, _tclock, lvl_t])
 				changed = true
@@ -624,6 +671,10 @@ func _update_trails(fx, _moved: bool) -> void:
 			t["mesh_time"] = _tclock
 			_trail_mesh(fx, t, eng)
 		mat.set_shader_parameter("trail_elapsed", (_tclock - float(t["mesh_time"])) / TRAIL_LIFE)
+		mat.set_shader_parameter("use_strip_taper", 1.0)
+		mat.set_shader_parameter("anchor_head", 1.0 if (active_burn and not dead_nozzles.has(ti)) else 0.0)
+		mat.set_shader_parameter("head_world", start)
+		mat.set_shader_parameter("head_dir", back_dir)
 		if int(t["style"]) != style:
 			t["style"] = style
 			mat.set_shader_parameter("trail_style", float(style))
@@ -640,16 +691,19 @@ func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 	var c0 = PackedFloat32Array()
 	var c1 = PackedFloat32Array()
 	var r: float = t["r"]
-	var w0 = r * 1.1
-	var w1 = r * 2.4 * clampf(scale_k(), 0.6, 1.6)
+	# Issue 2042 item 2: start at nozzle width and taper cleanly down to a slender tail (never a wide rectangle).
+	var w0 := r * 1.25
+	var w1 := r * 0.18 * clampf(scale_k(), 0.7, 1.3)
+	var denom := maxf(float(n - 1), 1.0)
 	for i in n:
 		var d = (hist[mini(i + 1, n - 1)][0] - hist[maxi(i - 1, 0)][0]).normalized()
+		var along := float(i) / denom
 		for sd in [-0.5, 0.5]:
 			verts.append(hist[i][0])
 			nrm.append(d)
 			uv.append(Vector2(clampf((_tclock - float(hist[i][1])) / TRAIL_LIFE, 0.0, 1.0), sd))
-			c0.append_array([eng.r, eng.g, eng.b, 0.28 * clampf(float(hist[i][2]), 0.0, 1.5)])
-			c1.append_array([w0, w1, float(t["seed"]), 0.0])
+			c0.append_array([eng.r, eng.g, eng.b, 0.34 * clampf(float(hist[i][2]), 0.0, 1.5)])
+			c1.append_array([w0, w1, float(t["seed"]), along])
 	if not _trail_indices.has(n):
 		var idx := PackedInt32Array()
 		for i in n - 1:

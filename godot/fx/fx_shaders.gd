@@ -11,6 +11,19 @@ extends RefCounted
 # Brightness: every effect colour is multiplied by the global fx_gain (look.gd sets it per tonemapper; 0.5556 matches
 # the A3 proof under Godot's ACES, which applies an exposure bias of 1.8 that Babylon's curve does not).
 
+static var _globals_added := false
+
+
+static func ensure_globals() -> void:
+	if _globals_added:
+		return
+	_globals_added = true
+	var existing: PackedStringArray = RenderingServer.global_shader_parameter_get_list()
+	for g in [[&"scene_t", 0.0], [&"fx_gain", 0.5556], [&"fx_calm", 0.0], [&"fx_px", 1.0]]:
+		if not ProjectSettings.has_setting("shader_globals/" + String(g[0])) and not existing.has(String(g[0])):
+			RenderingServer.global_shader_parameter_add(g[0], RenderingServer.GLOBAL_VAR_TYPE_FLOAT, g[1])
+
+
 static func patch(code: String, target: String, replacement: String) -> String:
 	if not code.contains(target):
 		push_error("FX shader patch target missing: " + target)
@@ -892,6 +905,10 @@ uniform vec3 eclipse_core;
 #endif
 varying float vPixels;
 uniform float lenk = 1.0;
+uniform vec3 plume_core = vec3(0.0);
+uniform vec3 plume_wash = vec3(0.0);
+uniform float plume_style = 0.0;
+uniform float throttle_k = 1.0;
 varying vec4 vCol;
 varying vec3 vInfo;
 varying vec2 vInfo2;
@@ -1077,13 +1094,41 @@ void fragment() {
 		vec3 tint = vCol.rgb;
 		float motion = 0.75 + 0.5 * fast;
 		float fork_hot = 0.0; float fork_glow = 0.0;
+		vec3 colour = vec3(0.0);
+		bool custom_plume = false;
 		if (k == 0 || k == 3) {
-			float turbulence = fbm(vec2(s * 9.0 - age * 8.0, vSide * 3.0 + seed));
-			float shape = spow(1.0 - s, 1.25) * smoothstep(0.22, 0.65, turbulence + 0.2);
-			core *= shape * (0.8 + 0.3 * sin(s * 29.0 - age * 9.0));
-			sheath *= shape;
-			if (k == 3) { motion *= mix(cough(scene_t - s * 0.2, seed), 0.8, fx_calm); }
-			ends = 1.0 - smoothstep(0.72, 1.0, s);
+			// Issue 2042 item 3: layered main engine plume (bright core + Mach shimmer + turbulent mid + soft outer wash)
+			// with smooth nozzle-bell entry (no flat square edge at c60/c26) and faction palettes from faction_looks.json.
+			custom_plume = true;
+			int pstyle = int(plume_style + 0.5);
+			float tk = clamp(throttle_k, 0.15, 1.5);
+			float bell_in = smoothstep(0.0, 0.06 + x * 0.16, s);
+			float turbulence = fbm(vec2(s * 9.0 - scene_t * 9.5, vSide * 3.0 + seed));
+			float flow_fast = texture(kit_flow, vec2(fract(s * 3.0 - scene_t * 2.8 + seed), vSide * 0.5 + 0.5)).g;
+			float flow_slow = texture(kit_flow, vec2(fract(s * 2.0 - scene_t * 1.1 + seed), vSide * 0.5 + 0.5)).b;
+			float core_taper = mix(0.34, 0.07, spow(s, 0.72));
+			float xc = x / max(core_taper, 0.05);
+			float mach = pstyle == 3
+				? (0.85 + 0.25 * sin(s * 14.0 - scene_t * 7.0 + seed * 5.0))
+				: (0.78 + 0.44 * spow(0.5 + 0.5 * sin(s * 26.0 - scene_t * 14.0 + seed * 4.0), 3.0) * (1.0 - s));
+			float inner_core = exp(-xc * xc * 2.4) * spow(1.0 - s, 1.45) * bell_in * mix(1.0, mach, 1.0 - fx_calm * 0.7) * (0.72 + 0.55 * tk);
+			float mid_taper = mix(0.58, 0.16, spow(s, 0.85));
+			float xm = x / max(mid_taper, 0.08);
+			float mid_stream = exp(-xm * xm * 2.3) * spow(1.0 - s, 1.2) * smoothstep(0.18, 0.68, turbulence + 0.22) * bell_in;
+			float wash_taper = mix(0.95, 0.42, spow(s, 0.9));
+			float xw = x / max(wash_taper, 0.15);
+			float outer_wash = exp(-xw * xw * 2.5) * spow(1.0 - s, 1.35) * (0.45 + 0.55 * flow_fast) * bell_in * (0.38 + 0.24 * tk);
+			vec3 core_col = length(plume_core) > 0.001 ? plume_core : hot;
+			vec3 wash_col = length(plume_wash) > 0.001 ? plume_wash : tint;
+			if (pstyle == 4) {
+				vec3 prism = clamp(abs(fract(vSide * 0.35 + s * 0.5 - scene_t * 0.4 + seed + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+				wash_col = mix(wash_col, prism, smoothstep(0.25, 0.85, x) * 0.28);
+			} else if (pstyle == 3) {
+				outer_wash *= 0.8 + 0.35 * flow_slow;
+			}
+			float sputter = k == 3 ? mix(cough(scene_t - s * 0.2, seed), 0.8, fx_calm) : 1.0;
+			float plume_end = 1.0 - smoothstep(0.72, 1.0, s);
+			colour = (core_col * inner_core * 1.65 + tint * mid_stream * (0.75 + 0.45 * flow_fast) + wash_col * outer_wash * 0.95) * sputter * plume_end;
 		} else if (k == 1) {
 			float fade = spow(1.0 - s, 1.5);
 			core *= fade * 0.4;
@@ -1110,8 +1155,12 @@ void fragment() {
 			sheath *= smoothstep(0.2, 0.7, tissue + 0.2);
 			hot = mix(hot, tint, 0.5);
 		}
-		vec3 colour = hot * (core * 1.35 + fork_hot) + tint * (sheath * (0.55 + slow * 0.7) + fork_glow * 0.5);
-		ALBEDO = clamp(colour * vCol.a * motion * env * ends * fx_gain, 0.0, 512.0);
+		if (custom_plume) {
+			ALBEDO = clamp(colour * vCol.a * fx_gain, 0.0, 512.0);
+		} else {
+			colour = hot * (core * 1.35 + fork_hot) + tint * (sheath * (0.55 + slow * 0.7) + fork_glow * 0.5);
+			ALBEDO = clamp(colour * vCol.a * motion * env * ends * fx_gain, 0.0, 512.0);
+		}
 	}
 }
 """
@@ -1120,6 +1169,123 @@ void fragment() {
 static func null_lance_code() -> String:
 	# The same beam recipe, with an occluding violet body instead of an additive-only sheath.
 	return patch(RIBBON, "blend_add,", "blend_premul_alpha,")
+
+# Directional RCS thruster cone-jet shader (issue 2042): replaces round Gaussian billboard dots with a short
+# nozzle-anchored directional cone jet (hot core, soft wash, quick fade) for mechanical gas factions, plus
+# faction-native non-mechanical modes for Glasswrights (prismatic vane flare), Chorus (organic vent pulse),
+# and Eclipse (cold violet null ripple). VERTEX.x in 0..1 along jet axis, VERTEX.y in -0.5..0.5 across width.
+# One shared ShaderMaterial per jet_kind; per-puff state rides in instance uniforms.
+const RCS_JET := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+""" + COMMON + """
+uniform float jet_kind = 0.0;
+instance uniform vec3 jet_dir = vec3(-1.0, 0.0, 0.0);
+instance uniform float jet_len = 1.6;
+instance uniform float w_root = 0.28;
+instance uniform float w_tip = 1.15;
+instance uniform float age_u = 0.0;
+instance uniform float alpha_k = 1.0;
+instance uniform float jet_seed = 0.0;
+instance uniform vec3 core_col = vec3(1.0, 0.96, 0.88);
+instance uniform vec3 wash_col = vec3(0.85, 0.9, 1.0);
+varying vec2 vUv;
+void vertex() {
+	vec3 origin = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+	vec3 wdir = snorm(jet_dir);
+	float u = clamp(age_u, 0.0, 1.0);
+	int kind = int(jet_kind + 0.5);
+	float s = VERTEX.x;
+	vec3 wp = origin;
+	if (kind == 3) {
+		// Eclipse null ripple: symmetric precision ring opening about the emitter, no flame or gas.
+		float depth = max(-(VIEW_MATRIX * vec4(origin, 1.0)).z, 0.01);
+		float px1 = max(px_world(1.0, depth, PROJECTION_MATRIX), frame_world(1.0, depth, PROJECTION_MATRIX, VIEWPORT_SIZE.y));
+		float rad = max(w_tip * (0.55 + 1.35 * (1.0 - spow(1.0 - u, 2.5))), 8.0 * px1);
+		vec3 right_cam = snorm(INV_VIEW_MATRIX[0].xyz);
+		vec3 up_cam = snorm(INV_VIEW_MATRIX[1].xyz);
+		wp = origin + (right_cam * (VERTEX.x - 0.5) + up_cam * VERTEX.y) * rad * 2.0;
+	} else {
+		float ext = jet_len;
+		if (kind == 0) {
+			ext = jet_len * (0.62 + 0.48 * smoothstep(0.0, 0.22, u)) * (1.0 - 0.14 * u);
+		} else if (kind == 1) {
+			ext = jet_len * 0.72;
+		} else {
+			ext = jet_len * (0.48 + 0.52 * sin(3.14159265 * clamp(u * 0.85 + 0.15, 0.0, 1.0)));
+		}
+		wp = origin + wdir * (s * ext);
+		vec3 c = cross(wdir, CAMERA_POSITION_WORLD - wp);
+		if (dot(c, c) < 1e-6) {
+			vec3 up = abs(wdir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+			c = cross(wdir, up);
+		}
+		vec3 side = snorm(c);
+		float depth = max(-(VIEW_MATRIX * vec4(wp, 1.0)).z, 0.01);
+		float px1 = max(px_world(1.0, depth, PROJECTION_MATRIX), frame_world(1.0, depth, PROJECTION_MATRIX, VIEWPORT_SIZE.y));
+		float w = w_root;
+		if (kind == 0) {
+			w = mix(w_root, w_tip * (1.0 + 0.32 * u), spow(s, 0.85));
+			w = max(w, mix(4.0, 9.5, s) * px1);
+		} else if (kind == 1) {
+			w = mix(w_root * 0.85, w_tip * 0.45, s);
+			w = max(w, 6.0 * px1);
+		} else {
+			float swell = 0.7 + 0.65 * sin(3.14159265 * s);
+			w = max(w_tip * 0.85 * swell * (0.75 + 0.45 * u), 7.0 * px1);
+		}
+		wp += side * VERTEX.y * w;
+	}
+	POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(wp, 1.0));
+	vUv = VERTEX.xy;
+}
+void fragment() {
+	float s = clamp(vUv.x, 0.0, 1.0);
+	float x = abs(vUv.y * 2.0);
+	float u = clamp(age_u, 0.0, 1.0);
+	int kind = int(jet_kind + 0.5);
+	vec3 col = vec3(0.0);
+	if (kind == 0) {
+		// Short directional cone jet: hot nozzle core, soft turbulent conical wash, quick fade.
+		float root_in = smoothstep(0.0, 0.08, s);
+		float tip_out = spow(1.0 - s, 1.35);
+		float turb = fbm(vec2(s * 7.0 - scene_t * 14.0 + jet_seed * 5.0, vUv.y * 4.0 + jet_seed * 3.0));
+		float core_r = x / mix(0.28, 0.08, spow(s, 0.6));
+		float core = exp(-core_r * core_r * 2.2) * spow(1.0 - clamp(s * 1.85, 0.0, 1.0), 1.5) * root_in;
+		float wash_r = x / mix(0.72, 0.96, s);
+		float wash = exp(-wash_r * wash_r * 2.6) * tip_out * root_in * (0.55 + 0.65 * turb);
+		float env = spow(1.0 - u, 1.65);
+		col = (core_col * core * 2.1 + wash_col * wash * 1.15) * env;
+	} else if (kind == 1) {
+		// Glasswrights: prismatic crystal vane shimmer, no white cold gas.
+		float diamond = exp(-abs(s - 0.22) * 5.5 - x * 6.5);
+		float sheen = exp(-x * x * 5.0) * smoothstep(0.0, 0.12, s) * spow(1.0 - s, 1.5);
+		vec3 prism = clamp(abs(fract(s * 0.75 + vUv.y * 0.55 + u * 0.65 + jet_seed + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+		float env = spow(1.0 - u, 1.4);
+		col = (mix(core_col, prism, 0.35) * diamond * 2.2 + mix(wash_col, prism, 0.55) * sheen * 1.15) * env;
+	} else if (kind == 2) {
+		// Chorus: organic bioluminescent vent pulse breathing softly outward.
+		vec2 p = vec2((s - 0.35) * 1.4, vUv.y * 2.0);
+		float r = length(p);
+		float cell = fbm(p * 2.6 + vec2(-u * 2.2 + jet_seed * 4.0, jet_seed * 7.0));
+		float body = exp(-r * r * 2.6) * (0.55 + 0.75 * cell);
+		float heart = exp(-r * r * 11.0);
+		float pulse_env = mix(0.45, 1.0, sin(3.14159265 * u)) * spow(1.0 - u, 0.85);
+		float throb = 1.0 - 0.14 * (1.0 - fx_calm) * sin(scene_t * 10.0 + jet_seed * 6.0);
+		col = (core_col * heart * 1.6 + wash_col * body * 1.05) * pulse_env * throb;
+	} else {
+		// Eclipse: cold violet null ripple, zero green and zero orange.
+		vec2 p = vec2(s * 2.0 - 1.0, vUv.y * 2.0);
+		float r = length(p);
+		if (r > 1.0) { discard; }
+		float r1 = exp(-spow((r - 0.78) / 0.08, 2.0));
+		float r2 = exp(-spow((r - 0.56) / 0.05, 2.0)) * 0.55;
+		float env = spow(1.0 - u, 1.8);
+		col = (core_col * r1 * 1.5 + wash_col * r2 * 1.2) * env;
+	}
+	ALBEDO = clamp(col * alpha_k * fx_gain, 0.0, 512.0);
+}
+"""
 
 # Engine exhaust trails that follow a moving ship: a strip through the nozzle's recent positions (world space).
 # VERTEX = centre point; NORMAL = the path's direction there; UV = (s along 0..1, side -0.5..0.5);
@@ -1131,13 +1297,25 @@ render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabl
 """ + COMMON + """
 uniform float trail_elapsed = 0.0;
 uniform float trail_style = 0.0;
+uniform float anchor_head = 0.0;
+uniform vec3 head_world = vec3(0.0);
+uniform vec3 head_dir = vec3(-1.0, 0.0, 0.0);
+uniform float use_strip_taper = 0.0;
 varying vec4 vCol;
 varying vec4 vInfo;
+varying float vAlong;
 void vertex() {
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	vec3 wd = snorm((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	float s = clamp(UV.x + trail_elapsed, 0.0, 1.0);
 	float w = mix(CUSTOM1.x, CUSTOM1.y, s);
+	float along = use_strip_taper > 0.5 ? CUSTOM1.w : s;
+	if (use_strip_taper > 0.5 && anchor_head > 0.5 && along < 0.001) {
+		wp = head_world;
+		wd = snorm(head_dir);
+		s = 0.0;
+		w = CUSTOM1.x;
+	}
 	vec3 side = snorm(cross(wd, CAMERA_POSITION_WORLD - wp));
 	float seed = CUSTOM1.z;
 	float du = frame_world(1.0, max(-(VIEW_MATRIX * vec4(wp, 1.0)).z, 0.01), PROJECTION_MATRIX, VIEWPORT_SIZE.y);
@@ -1147,16 +1325,34 @@ void vertex() {
 	VERTEX = (VIEW_MATRIX * vec4(wp, 1.0)).xyz;
 	vCol = CUSTOM0;
 	vInfo = vec4(s, UV.y * 2.0, seed, trail_style);
+	vAlong = along;
 }
 void fragment() {
 	float s = vInfo.x; float x = abs(vInfo.y); float seed = vInfo.z; int st = int(vInfo.w + 0.5);
+	float along = clamp(vAlong, 0.0, 1.0);
 	float n = fbm(vec2(s * 14.0 - scene_t * 0.6, vInfo.y * 1.2 + seed * 3.0));
 	float n2 = fbm(vec2(s * 40.0 - scene_t * 0.5, vInfo.y * 2.0 + seed * 3.0));
 	n = 0.5 * n + 0.5 * n2;
+	float m = smoothstep(0.25, 0.75, n + 0.15);
 	float across = exp(-x * x * 2.2);
 	float fade = spow(1.0 - s, 1.8);
 	vec3 col = mix(vCol.rgb, vec3(0.30, 0.38, 0.60), smoothstep(0.0, 0.55, s));
-	float m = smoothstep(0.25, 0.75, n + 0.15);
+	float root = smoothstep(0.0, 0.025, s);
+	vec3 hot = vec3(0.0);
+	float col_gain = 1.4;
+	if (use_strip_taper > 0.5) {
+		float taper = mix(1.0, 0.22, spow(max(s, along), 0.8));
+		float xt = x / max(taper, 0.14);
+		across = exp(-xt * xt * 2.6);
+		float core_across = exp(-xt * xt * 15.0);
+		float tail_end = 1.0 - smoothstep(0.78, 1.0, along);
+		fade = spow(1.0 - s, 1.65) * tail_end;
+		float lum = dot(vCol.rgb, vec3(0.2126, 0.7152, 0.0722));
+		col = mix(vCol.rgb, vCol.rgb * 0.55 + vec3(lum * 0.25), smoothstep(0.0, 0.65, s));
+		root = anchor_head > 0.5 ? smoothstep(0.0, 0.05, along) : smoothstep(0.0, 0.18, along);
+		hot = mix(vCol.rgb, vec3(1.0, 0.97, 0.92), 0.55) * core_across * (0.65 * (1.0 - 0.55 * s));
+		col_gain = 1.45;
+	}
 	if (st == 1) {
 		col = mix(col, vec3(0.35, 0.25, 0.18), 0.5) * (0.5 + 0.5 * mix(cough(scene_t - s * 3.0, seed), 0.7, fx_calm));
 	} else if (st == 2) {
@@ -1165,9 +1361,10 @@ void fragment() {
 		col *= 0.55 + 0.45 * vnoise(vec2(s * 9.0 - scene_t * 2.0, seed));
 		col += vec3(1.0, 0.5, 0.15) * spow(vnoise(vec2(s * 60.0 - scene_t, seed * 3.0)), 12.0) * 2.0;
 	}
-	float root = smoothstep(0.0, 0.025, s);
-	vec3 hot = mix(col, vec3(1.0, 0.94, 0.82), 0.6) * exp(-x*x*16.0) * 0.5;
-	ALBEDO = clamp((col * across * m * 1.4 + hot) * root * fade * vCol.a * fx_gain, 0.0, 512.0);
+	if (use_strip_taper <= 0.5) {
+		hot = mix(col, vec3(1.0, 0.94, 0.82), 0.6) * exp(-x*x*16.0) * 0.5;
+	}
+	ALBEDO = clamp((col * across * m * col_gain + hot) * root * fade * vCol.a * fx_gain, 0.0, 512.0);
 }
 """
 
@@ -1181,17 +1378,25 @@ static func kit_trail_code(points: int) -> String:
 	c = c.replace("""	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	vec3 wd = snorm((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	float s = clamp(UV.x + trail_elapsed, 0.0, 1.0);
-	float w = mix(CUSTOM1.x, CUSTOM1.y, s);""", """	int n = max(count, 1);
+	float w = mix(CUSTOM1.x, CUSTOM1.y, s);
+	float along = use_strip_taper > 0.5 ? CUSTOM1.w : s;
+	if (use_strip_taper > 0.5 && anchor_head > 0.5 && along < 0.001) {
+		wp = head_world;
+		wd = snorm(head_dir);
+		s = 0.0;
+		w = CUSTOM1.x;
+	}""", """	int n = max(count, 1);
 	int i = int(VERTEX.x + 0.5);
 	int k = min(i, n - 1);
 	vec3 wp = pts[k].xyz;
 	vec3 wd = snorm(pts[min(k + 1, n - 1)].xyz - pts[max(k - 1, 0)].xyz);
 	float s = clamp((scene_t - pts[k].w) / max(life, 0.001), 0.0, 1.0);
-	float w = i < n ? mix(widths.x, widths.y, s) : 0.0;""")
+	float w = i < n ? mix(widths.x, widths.y, s) : 0.0;
+	float along = s;""")
 	c = c.replace("w = max(w, trail_floor);", "w = i < n ? max(w, trail_floor) : 0.0;")
 	c = c.replace("float seed = CUSTOM1.z;", "float seed = widths.z;")
 	c = c.replace("vCol = CUSTOM0;", "vCol = eng;")
-	assert(c.contains("uniform vec4 pts[") and c.contains("vCol = eng;") and c.contains("float seed = widths.z;") and c.contains("i < n ? max(w"))
+	assert(c.contains("uniform vec4 pts[") and c.contains("vCol = eng;") and c.contains("float seed = widths.z;") and c.contains("i < n ? max(w") and not c.contains("CUSTOM1"))
 	return c
 
 
@@ -1207,6 +1412,8 @@ uniform float newest_birth = 0.0;
 uniform float trail_len = 1.0;
 uniform float width_k = 0.026;
 uniform float alpha_k = 0.56;
+uniform float life = 0.65;
+uniform float trail_style = 0.0;
 uniform float anchor_ready = 0.0;
 uniform vec3 head_world = vec3(0.0);
 varying vec2 vFromHead;
@@ -1233,13 +1440,22 @@ void vertex() {
 }
 void fragment() {
 	float distance_px = length(vFromHead);
-	if (anchor_ready < 0.5 || distance_px >= 24.0 || vAge >= 0.65) { discard; }
-	float fade = spow(1.0 - distance_px / 24.0, 1.35) * (1.0 - vAge / 0.65);
+	float max_life = max(life, 0.05);
+	if (anchor_ready < 0.5 || distance_px >= 24.0 || vAge >= max_life) { discard; }
+	float fade = spow(1.0 - distance_px / 24.0, 1.35) * (1.0 - vAge / max_life);
 	float flow = texture(kit_flow, vec2(fract(distance_px / 18.0 - clock_now * 1.4), vSide * 0.5 + 0.5)).g;
 	float core = exp(-vSide * vSide * 16.0);
 	float sheath = exp(-vSide * vSide * 2.4);
-	vec3 hot = mix(vTint, vec3(1.0, 0.96, 0.86), 0.65);
-	ALBEDO = (hot * core * 1.4 + vTint * sheath * (0.6 + flow)) * fade * alpha_k * 2.0 * fx_gain;
+	int st = int(trail_style + 0.5);
+	float bead = st == 1 ? 0.0 : exp(-distance_px * distance_px * 0.14) * exp(-vSide * vSide * 6.5);
+	vec3 sheath_col = vTint;
+	if (st == 2) {
+		vec3 prism = clamp(abs(fract(vSide * 0.4 + distance_px * 0.05 - clock_now * 0.5 + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+		sheath_col = mix(vTint, prism, smoothstep(0.2, 0.85, abs(vSide)) * 0.35);
+	}
+	vec3 hot = mix(vTint, vec3(1.0, 0.96, 0.88), st == 1 ? 0.25 : 0.68);
+	float core_k = st == 1 ? 0.55 : 1.45;
+	ALBEDO = clamp((hot * (core * core_k + bead * 1.15) + sheath_col * sheath * (0.6 + flow)) * fade * alpha_k * 2.0 * fx_gain, 0.0, 512.0);
 }
 """
 
