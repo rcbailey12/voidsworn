@@ -43,12 +43,23 @@ var stb_z = 1.0                    # +1: root +Z is starboard (G2), -1: +Z is po
 # the attach point service (issue 370)
 var code := ""                     # the hull's code (ShipView.code), for the log lines
 var formation := false             # a squadron's wing of craft: no hull of its own, so no core to miss
+var cache_geometry := false         # FxShip opts in. Standalone analysers do not keep installed meshes alive.
 var points := {}                   # point type -> Array of {name, p, n (+Y), f (-Z), i, and for guns slot, weapon, arc}
 var core := Vector3.ZERO           # hp_core; else the triangles' centre of volume (a load error, logged); see _find_core
 var core_authored := false
 var attach_counts := {}            # point type -> {"hp", "ray", "centre", "skip"}: what every request was answered with
 var _attach_logged := {}
 var _gun_turn := {}                # per slot: the rotating first point (HARDPOINTS.md "When shots outnumber points" 2)
+
+# LOAD38: keep only seed-free geometry across battles and title backdrops. Mesh references
+# keep the key's resource identities alive. Bound the cache so old installed kits can age out.
+const GEO_LIMIT := 32
+static var _hull_geometry := {}
+
+
+static func clear_static() -> void:
+	_hull_geometry.clear()
+
 
 # Shared by live hulls, wreck backs and slag. Stable embers, never lit compartments.
 const BURNT := """
@@ -300,7 +311,7 @@ static func clear_shader_cache() -> void:
 	_ext_codes.clear()
 
 
-static func damage_material(src: Material, frame: Transform3D, mouths: Dictionary, L: float, organic := false) -> ShaderMaterial:
+static func damage_material(src: Material, frame: Transform3D, mouths: Dictionary, L: float, organic := false, fixed_wreck := false) -> ShaderMaterial:
 	if src != null and src.has_meta("fx_hull_source"):
 		src = src.get_meta("fx_hull_source")
 	if src == null:
@@ -309,7 +320,7 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 	var mat := ShaderMaterial.new()
 	# The fog policy has already marked the painted source by the time this
 	# adapter is drawn. Compile with that mode on the first assignment.
-	var dmg := _damage_code(base.shader.code, src is BaseMaterial3D and src.disable_fog)
+	var dmg := _damage_code(base.shader.code, src is BaseMaterial3D and src.disable_fog, fixed_wreck)
 	mat.shader = shared_shader(dmg, "damage " + str(dmg.hash()))
 	for param in _uniforms_of(base.shader):
 		var value = base.get_shader_parameter(param)
@@ -318,7 +329,8 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 	mat.set_meta("fx_hull_source", src)
 	mat.set_shader_parameter("fx_organic", organic)
 	mat.set_shader_parameter("fx_burnt_cell", Vector3.ONE * maxf(L * 0.05, 0.001))
-	set_damage_pose(mat, frame, mouths)
+	if not fixed_wreck:
+		set_damage_pose(mat, frame, mouths)
 	return mat
 
 
@@ -391,8 +403,8 @@ static func _uniforms_of(shader: Shader) -> Array:
 	return _uniform_names[key]
 
 
-static func _damage_code(source: String, disable_fog := false) -> String:
-	var key := [source, disable_fog]
+static func _damage_code(source: String, disable_fog := false, fixed_wreck := false) -> String:
+	var key := [source, disable_fog, fixed_wreck]
 	if _dmg_code.has(key):
 		return _dmg_code[key]
 	var code: String = source
@@ -402,13 +414,18 @@ static func _damage_code(source: String, disable_fog := false) -> String:
 	if not code.contains("cull_disabled"):
 		code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode cull_disabled;")
 	code = code.replace("shader_type spatial;", "shader_type spatial;\n" + BURNT + DAMAGE_UNIFORMS)
-	code = _inject(code, "vertex", "", "\nfx_hull_p = (fx_hull_frame * vec4(VERTEX, 1.0)).xyz;\nfx_hull_n = mat3(fx_hull_frame) * NORMAL;\n")
-	code = _inject(code, "fragment", """
+	# Board chunks are already cut and never get mouths. Keeping the discard in their shader
+	# makes Forward+ compile material-specific depth and shadow shaders for a path that cannot run.
+	var hull_pos := "VERTEX" if fixed_wreck else "(fx_hull_frame * vec4(VERTEX, 1.0)).xyz"
+	code = _inject(code, "vertex", "", "\nfx_hull_p = %s;\nfx_hull_n = mat3(fx_hull_frame) * NORMAL;\n" % hull_pos)
+	var soot := """
 float fx_soot = 0.0;
 float fx_near = 0.0;   // R416: how close this pixel is to an open mouth (the V2 back-face look stays at the wounds)
 // cull_disabled flips back-facing normals in the renderer, including mirrored exteriors.
 if (determinant(mat3(MODEL_MATRIX)) < 0.0) { NORMAL = -NORMAL; }
-for (int i = 0; i < 64; i++) {
+"""
+	if not fixed_wreck:
+		soot += """for (int i = 0; i < 64; i++) {
 	if (i >= fx_mouth_count) { break; }
 	float h = dot(fx_hull_p - fx_mouths[i].xyz, fx_axes[i].xyz);
 	float R = max(fx_mouths[i].w, 0.0001);
@@ -422,7 +439,8 @@ for (int i = 0; i < 64; i++) {
 	if (edge < -R * 0.035) { discard; }
 	fx_soot = max(fx_soot, 1.0 - smoothstep(0.0, R * 0.65, max(edge, 0.0)));
 }
-""", """
+"""
+	var inside := """
 ALBEDO *= (1.0 - fx_soot * 0.94 * (fx_v2 >= 0 ? clamp(fx_v2_soot, 0.0, 1.0) : 1.0)) * (1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)));
 EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0) * fx_flick;
 if (fx_v2 == 4 || fx_v2 == 5) { EMISSION += fx_v2_accent * pow(fx_soot, 3.0) * 0.18; }   // R416: a lit glass or violet seam edge, no soot
@@ -466,7 +484,12 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 		EMISSION = mix(EMISSION, fx_v2_lift * 0.03 + fx_v2_accent * (fx_v2 == 4 ? 0.05 : 0.01), fx_near);
 	}
 }
-""")
+"""
+	# A write of zero still flags SSS in the renderer, multiplying the PSOs for every
+	# already-instanced mesh. Only zero the back face when the source actually writes SSS.
+	if not source.contains("SSS_STRENGTH"):
+		inside = inside.replace(" SSS_STRENGTH = 0.0;", "")
+	code = _inject(code, "fragment", soot, inside)
 	if disable_fog and not code.contains("fog_disabled"):
 		code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
 	_dmg_code[key] = code
@@ -761,6 +784,8 @@ static func face_corners(triangle: int, strip: bool) -> Vector3i:
 
 func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	_rng.seed = seed_v
+	if code == "" and root.get("code") != null:
+		code = str(root.get("code"))
 	_authored(root)
 	var inv = root.global_transform.affine_inverse()
 	var first = true
@@ -779,16 +804,9 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	H = maxf(box.size.y, 0.05)
 	c = box.get_center()
 	bvh_ranges.clear()
-	# Issue 1289: the triangles, the hit BVH and the turret reach depend only on the hull's meshes and their pose, so the
-	# battle's effects keep them per hull (shared, set by fx_ship.setup) and a later ship of the same hull reuses them: an
-	# arriving A16 spent about 270 ms here on the PC. Read only after this; each ship keeps its own samples and points.
-	var geo_key: String = _geo_key(root, meshes) if shared is Dictionary else ""
-	var geo = (shared as Dictionary).get(geo_key) if geo_key != "" else null
-	if geo == null and geo_key != "":
-		geo = build_geo(root, meshes)   # issue 1434: a sliced load builds it a frame earlier (prime), so this is a hit
-		shared[geo_key] = geo
+	var geo := _geometry(root, meshes)
 	var faces: PackedVector3Array
-	if geo is Dictionary:
+	if not geo.is_empty():
 		faces = geo["faces"]
 		tm = geo["tm"]
 		for r in geo["ranges"]:
@@ -809,22 +827,25 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	tri_count = faces.size() / 3
 	_samples(900)
 	_find_bow()
-	_find_nozzles()
+	if geo.has("nozzles"):
+		nozzles = (geo["nozzles"] as Array).duplicate(true)
+	else:
+		_find_nozzles()
+		if not geo.is_empty():
+			geo["nozzles"] = nozzles.duplicate(true)
 	_kit_nozzles(root)
 	for side in ["port", "stb", "top"]:
 		mounts[side] = _mount_row(side)
-	if code == "" and root.get("code") != null:
-		code = str(root.get("code"))
 	_read_turrets(root)
 	_read_doors(root)
 	_read_points(root)
-	_find_core(faces)
-	if geo is Dictionary and geo.has("turrets") and (geo["turrets"] as Array).size() == turrets.size():
+	_find_core(faces, geo)
+	if geo.has("turrets") and (geo["turrets"] as Array).size() == turrets.size():
 		for k in turrets.size():
-			(turrets[k] as Dictionary).merge(geo["turrets"][k], true)
+			(turrets[k] as Dictionary).merge((geo["turrets"][k] as Dictionary).duplicate(true), true)
 	else:
 		_turret_clearance(root, meshes)
-		if geo is Dictionary:
+		if not geo.is_empty():
 			var reach: Array = []
 			for t in turrets:
 				reach.append({"full": t.get("full"), "ymin": t.get("ymin"), "ymax": t.get("ymax"), "blocked": t.get("blocked", [])})
@@ -850,39 +871,67 @@ static func build_geo(root: Node3D, meshes: Array) -> Dictionary:
 	return {"faces": faces, "tm": tm2, "ranges": keep}
 
 
-# Issue 1434: the sliced battle load builds a new hull's geometry in its own frame before the ship's effects are
-# registered (on the PC a first hull's analyse took 100 to 450 ms, most of it here). True when it built one.
-static func prime(root: Node3D, meshes: Array, shared: Dictionary) -> bool:
+# Issue 1434: the sliced load builds the BVH in a separate frame from seeded analysis.
+func prime(root: Node3D, meshes: Array) -> bool:
 	var key := _geo_key(root, meshes)
-	if key == "" or shared.has(key):
+	if key.is_empty() or _hull_geometry.has(key):
 		return false
-	shared[key] = build_geo(root, meshes)
+	_authored(root)   # mark interior faces before building the outside BVH
+	_geometry(root, meshes)
 	return true
 
 
-var shared = null   # issue 1289: the battle's per-hull geometry (fx.hull_shared), or null to analyse alone
-
-
-# The hull's geometry and pose: each mesh resource and its frame in the ship's root. Same key, same triangles.
-# The frames are composed from local transforms (not world ones), so the key does not depend on where the ship stands.
-static func _geo_key(root: Node3D, meshes: Array) -> String:
-	var parts := PackedStringArray()
+func _geometry(root: Node3D, meshes: Array) -> Dictionary:
+	var key := _geo_key(root, meshes)
+	if key.is_empty():
+		return {}
+	if _hull_geometry.has(key):
+		var cached: Dictionary = _hull_geometry[key]
+		_hull_geometry.erase(key)
+		_hull_geometry[key] = cached
+		return cached
+	if _hull_geometry.size() >= GEO_LIMIT:
+		_hull_geometry.erase(_hull_geometry.keys()[0])
+	var geo := build_geo(root, meshes)
+	var resources: Array[Mesh] = []
 	for m in meshes:
+		if not is_instance_valid(m):
+			continue
 		var mi := m as MeshInstance3D
-		if mi == null or not is_instance_valid(mi) or mi.mesh == null:
-			parts.append("-")
+		if mi != null and mi.mesh != null:
+			resources.append(mi.mesh)
+	geo["resources"] = resources
+	_hull_geometry[key] = geo
+	return geo
+
+
+# Only installed hulls have a stable kit contract. The local frames keep world
+# position and facing out of the key, but a different mesh set or pose misses.
+func _geo_key(root: Node3D, meshes: Array) -> Array:
+	var path = root.get("hull_res")
+	if not cache_geometry or code.is_empty() or formation or not path is String or path.is_empty():
+		return []
+	var parts: Array = [code, path, stb_z]
+	for m in meshes:
+		if not is_instance_valid(m):
+			parts.append(null)
+			continue
+		var mi := m as MeshInstance3D
+		if mi == null or mi.mesh == null:
+			parts.append(null)
 			continue
 		var frame := Transform3D.IDENTITY
 		var part: Node3D = mi
 		while part != null and part != root:
 			if part.top_level:
-				return ""   # placed in the world, not under the ship: no sharing
+				return []   # placed in the world, not under the ship: no sharing
 			frame = part.transform * frame
 			part = part.get_parent_node_3d()
 		if part != root:
-			return ""
-		parts.append("%d@%s" % [mi.mesh.get_instance_id(), str(frame)])
-	return "|".join(parts)
+			return []
+		parts.append(mi.mesh.get_instance_id())
+		parts.append(frame)
+	return parts
 
 
 func section_of(x: float) -> int:
@@ -1222,7 +1271,7 @@ func _read_points(root: Node3D) -> void:
 # The core: hp_core when the hull has one. The contract gives the core no ray fallback (the death explosion has to start
 # inside the hull) and calls a missing core a load error; an old hull without one still plays, from the centre of volume
 # of its own triangles (never the box centre), and says so once.
-func _find_core(faces: PackedVector3Array) -> void:
+func _find_core(faces: PackedVector3Array, geo: Dictionary) -> void:
 	var pts: Array = points.get("core", [])
 	core_authored = not pts.is_empty()
 	if core_authored:
@@ -1231,6 +1280,17 @@ func _find_core(faces: PackedVector3Array) -> void:
 	core = c
 	if faces.size() < 3:
 		return
+	if geo.has("fallback_core"):
+		core = geo["fallback_core"]
+	else:
+		core = _volume_center(faces)
+		if not geo.is_empty():
+			geo["fallback_core"] = core
+	if not formation:
+		_attach_note("core", "load", "hp_core missing on %s (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles" % _who())
+
+
+func _volume_center(faces: PackedVector3Array) -> Vector3:
 	var vol := 0.0
 	var acc := Vector3.ZERO
 	var area := 0.0
@@ -1248,11 +1308,8 @@ func _find_core(faces: PackedVector3Array) -> void:
 		aacc += (a + b + d) * (ar / 3.0)
 		i += 3
 	if absf(vol) > 1e-6 * maxf(L * W * H, 1e-6):
-		core = c + acc / vol
-	elif area > 0.0:
-		core = c + aacc / area
-	if not formation:
-		_attach_note("core", "load", "hp_core missing on %s (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles" % _who())
+		return c + acc / vol
+	return c + aacc / area if area > 0.0 else c
 
 
 func _who() -> String:
