@@ -1509,7 +1509,7 @@ static func _lance_recut(fx, s) -> void:
 	fx.pend("lance_recut", t0)
 
 
-# Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
+# Gather the drawn hull on the main thread, even if a newer damage rebuild is in flight, then cut on a worker.
 static func precompute(fx, s, cause := "blast", under_cover := false, shared_cuts: Variant = null) -> void:
 	if fx.get("closed") == true:   # issue 1435: a released fx takes no new cuts
 		return
@@ -2680,6 +2680,8 @@ static func _small_trail(fx, s, age: float, motion: Transform3D) -> void:
 # capital deck by deck from the top), death_steps holds (bands, delay per band, fade).
 static func power_material(mat: ShaderMaterial, strain := false) -> ShaderMaterial:
 	var code: String = mat.shader.code
+	# The power-down beat starts at full light, even when its mesh still holds a live flicker or hit brownout.
+	code = SH.patch(code, " * fx_flick;", ";")
 	code = SH.patch(code, "uniform float fx_power = 1.0;", "uniform float fx_power = 1.0;\nuniform float death_age = 0.0;\nuniform float death_start = 0.0;\nuniform vec2 death_span = vec2(0.0, 1.0);\nuniform vec3 death_axis = vec3(1.0, 0.0, 0.0);\nuniform vec3 death_steps = vec3(3.0, 0.055, 0.18);\nuniform float death_hold = 0.0;" + (SH.STRAIN_FN if strain else ""))
 	if strain:
 		# Issue 1077 (prototype): the plating along the break lines bulges as the hull strains (death_age is the shader's
@@ -2787,9 +2789,6 @@ static func _power_surface(fx, s, mi: MeshInstance3D, i: int, pose: Transform3D)
 	if source is ShaderMaterial and source.has_meta("fx_hull_source"):
 		mat = source.duplicate()
 		mat.shader = template.shader
-		# Fable audit Nov 22, finding 1: the live surface may hold a hit brownout or the wound flicker (fx_flick); the death
-		# copy starts at full light so the power-down beat, not a frozen dip, darkens the hull
-		mat.set_shader_parameter("fx_flick", 1.0)
 	else:
 		mat = template.duplicate()
 		HULL.set_damage_pose(mat, pose, {})

@@ -854,7 +854,33 @@ static func _edge_key(a: Vector3, b: Vector3, q: float) -> Array:
 	return [ka, kb] if ka < kb else [kb, ka]
 
 
-# job: {surfs: [{arrays, xf, aabb}], ents, q (weld size), cell (grid cell), ovl (overlay lift)}. Returns {surfs: [new
+class RebuildWork extends RefCounted:
+	# The worker owns out until the ship joins the task. It never writes into the inputs.
+	var out: Dictionary
+
+
+static func rebuild(work: RebuildWork, job: Dictionary) -> void:
+	work.out = compute(job)
+
+
+# The ship prepares only the surfaces the rebuild will touch. Once the job is submitted, both threads only read them.
+static func prepare_surfaces(surfs: Array, ents: Array, cell: float) -> PackedInt32Array:
+	var active := PackedInt32Array()
+	for k in surfs.size():
+		var sd: Dictionary = surfs[k]
+		if bool(sd.get("interior", false)):
+			continue
+		var aabb: AABB = sd["aabb"]
+		for e: Ent in ents:
+			if aabb.grow(sqrt(e.inf2) + e.ov).has_point(e.c):
+				if not sd.has("grid"):
+					_prepare_surface(sd, cell)
+				active.append(k)
+				break
+	return active
+
+
+# job: {surfs: [{arrays, xf, aabb}], active, ents, q (weld size), cell (grid cell), ovl (overlay lift)}. Returns {surfs: [new
 # arrays or null], parts: [Part per entry], ms}.
 static func compute(job: Dictionary) -> Dictionary:
 	var t_ms := Time.get_ticks_msec()
@@ -863,23 +889,22 @@ static func compute(job: Dictionary) -> Dictionary:
 	var parts: Array = []
 	for e in ents:
 		parts.append(Part.new())
+	var surfs: Array = job["surfs"]
+	var cell := float(job.get("cell", 1.0))
+	var active: PackedInt32Array
+	if job.has("active"):
+		active = job["active"]
+	else:
+		# Standalone checks and probes can supply raw surfaces. Prepare private copies for those calls.
+		surfs = surfs.duplicate()
+		for k in surfs.size():
+			surfs[k] = surfs[k].duplicate()
+		active = prepare_surfaces(surfs, ents, cell)
 	var out_s: Array = []
+	out_s.resize(surfs.size())
 	var edges := {}
-	for sd in job["surfs"]:
-		if bool(sd.get("interior", false)):
-			out_s.append(null)
-			continue
-		var aabb: AABB = sd["aabb"]
-		var hit := false
-		for x in ents:
-			var E: Ent = x
-			if aabb.grow(sqrt(E.inf2) + E.ov).has_point(E.c):
-				hit = true
-				break
-		if not hit:
-			out_s.append(null)
-			continue
-		out_s.append(_surface(sd, ents, parts, edges, q, float(job.get("cell", 1.0)), float(job.get("ovl", 0.02)), q * 8.0))
+	for k in active:
+		out_s[k] = _surface(surfs[k], ents, parts, edges, q, cell, float(job.get("ovl", 0.02)), q * 8.0)
 	var t_surf := Time.get_ticks_msec() - t_ms
 	# the cut edge: the skin's thickness along every edge between a kept and a removed triangle
 	for key in edges:
@@ -928,7 +953,6 @@ static func compute(job: Dictionary) -> Dictionary:
 		ends_by.append([ends, r.state])
 	var t_parts := Time.get_ticks_msec() - t_ms
 	var mesh_src := {}
-	var surfs: Array = job["surfs"]
 	var groups := {}
 	for k in surfs.size():
 		var key: int = int(surfs[k]["mid"])
@@ -987,61 +1011,59 @@ static func _mesh_of(arr) -> ArrayMesh:
 	return am
 
 
-# One surface: displace the skin near the damage, mark removed triangles zero-area, collect cavities and overlay skins.
-# Only triangles in grid cells near the damage are visited (the grid and the ship-frame positions are built once per
-# surface and kept in sd), so an 8K hull costs about what a game hull does.
-static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionary, q: float, cell: float, ovl: float, tess_min := 0.0):
+# Cache the ship-frame positions and triangle grid once per touched surface, before the worker gets the job.
+static func _prepare_surface(sd: Dictionary, cell: float) -> void:
 	var arr: Array = sd["arrays"]
 	var xf: Transform3D = sd["xf"]
-	var V: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
-	var N := PackedVector3Array()
-	if arr[Mesh.ARRAY_NORMAL] != null:
-		N = arr[Mesh.ARRAY_NORMAL]
-	var has_n := N.size() == V.size()
-	var nv := V.size()
-	if not sd.has("P"):
-		sd["P"] = xf * V
-	var P: PackedVector3Array = sd["P"]
+	var P: PackedVector3Array = xf * (arr[Mesh.ARRAY_VERTEX] as PackedVector3Array)
 	var idx := PackedInt32Array()
 	if arr[Mesh.ARRAY_INDEX] != null:
 		idx = arr[Mesh.ARRAY_INDEX]
 	if idx.is_empty():
-		if not sd.has("ident"):
-			var ident := PackedInt32Array()
-			ident.resize(nv)
-			for i in nv:
-				ident[i] = i
-			sd["ident"] = ident
-		idx = sd["ident"]
-	var nt := idx.size() / 3
-	if not sd.has("grid"):
-		# every triangle goes into each cell its box overlaps (r4: a big kit plate's centroid can sit cells away from a
-		# mark on it, so centroid bucketing missed it), up to 64 cells; past that, its centroid's cell
-		var grid := {}
-		var big := PackedInt32Array()
-		for t in nt:
-			var a0 := P[idx[t * 3]] / cell
-			var a1 := P[idx[t * 3 + 1]] / cell
-			var a2 := P[idx[t * 3 + 2]] / cell
-			var lo := Vector3i(floori(minf(a0.x, minf(a1.x, a2.x))), floori(minf(a0.y, minf(a1.y, a2.y))), floori(minf(a0.z, minf(a1.z, a2.z))))
-			var hi := Vector3i(floori(maxf(a0.x, maxf(a1.x, a2.x))), floori(maxf(a0.y, maxf(a1.y, a2.y))), floori(maxf(a0.z, maxf(a1.z, a2.z))))
-			var span := (hi - lo) + Vector3i.ONE
-			if span.x * span.y * span.z > 64:
-				# r13: a plate this big goes on a list every mark checks (centroid bucketing left whole kit plates out of
-				# the overlay inside a mark's halo: hard-edged gaps and stray glowing triangles on the PC frigate)
-				big.append(t)
-				continue
-			for gx in range(lo.x, hi.x + 1):
-				for gy in range(lo.y, hi.y + 1):
-					for gz in range(lo.z, hi.z + 1):
-						var key := Vector3i(gx, gy, gz)
-						if not grid.has(key):
-							grid[key] = []
-						(grid[key] as Array).append(t)
-		sd["grid"] = grid
-		sd["big"] = big
+		idx.resize(P.size())
+		for i in idx.size():
+			idx[i] = i
+	# Every triangle goes into each cell its box overlaps, up to 64 cells. Larger plates go in the always-check list:
+	# a plate's centroid can be cells away from a mark that still touches the plate (r4, r13).
+	var grid := {}
+	var big := PackedInt32Array()
+	for t in idx.size() / 3:
+		var a0 := P[idx[t * 3]] / cell
+		var a1 := P[idx[t * 3 + 1]] / cell
+		var a2 := P[idx[t * 3 + 2]] / cell
+		var lo := Vector3i(floori(minf(a0.x, minf(a1.x, a2.x))), floori(minf(a0.y, minf(a1.y, a2.y))), floori(minf(a0.z, minf(a1.z, a2.z))))
+		var hi := Vector3i(floori(maxf(a0.x, maxf(a1.x, a2.x))), floori(maxf(a0.y, maxf(a1.y, a2.y))), floori(maxf(a0.z, maxf(a1.z, a2.z))))
+		var span := (hi - lo) + Vector3i.ONE
+		if span.x * span.y * span.z > 64:
+			big.append(t)
+			continue
+		for gx in range(lo.x, hi.x + 1):
+			for gy in range(lo.y, hi.y + 1):
+				for gz in range(lo.z, hi.z + 1):
+					var key := Vector3i(gx, gy, gz)
+					if not grid.has(key):
+						grid[key] = []
+					(grid[key] as Array).append(t)
+	sd["P"] = P
+	sd["idx"] = idx
+	sd["grid"] = grid
+	sd["big"] = big
+
+
+# Displace the skin near the damage, mark removed triangles zero-area and collect cavities and overlay skins.
+static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionary, q: float, cell: float, ovl: float, tess_min := 0.0):
+	var arr: Array = sd["arrays"]
+	var xf: Transform3D = sd["xf"]
+	var P: PackedVector3Array = sd["P"]
+	var idx: PackedInt32Array = sd["idx"]
 	var grid: Dictionary = sd["grid"]
-	var big_t: PackedInt32Array = sd.get("big", PackedInt32Array())
+	var big_t: PackedInt32Array = sd["big"]
+	var N := PackedVector3Array()
+	if arr[Mesh.ARRAY_NORMAL] != null:
+		N = arr[Mesh.ARRAY_NORMAL]
+	var nv := P.size()
+	var nt := idx.size() / 3
+	var has_n := N.size() == nv
 	var tmark := PackedByteArray()
 	tmark.resize(nt)
 	var cand := PackedInt32Array()
@@ -1757,6 +1779,7 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 		var frame: Transform3D = s._dmg_root.global_transform.affine_inverse() * mi.global_transform
 		var override: Material = mi.material_override
 		mi.material_override = null
+		var has_damage := false
 		for si in mi.mesh.get_surface_count():
 			var src: Material = override if override != null else mi.get_active_material(si)
 			if HULL.interior_material(mi.mesh.surface_get_material(si)) and not mi.mesh.surface_get_material(si).resource_name.ends_with("_inside_skin"):
@@ -1777,6 +1800,9 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 				HULL.set_wear(surface, float(s.hull_wear), wear_p)   # issue 1235: wear as HP falls
 			mi.set_surface_override_material(si, surface)
 			s._damage_surfaces_assigned = true
+			has_damage = true
+		if has_damage:
+			s.track_damage_mesh(mi)
 		if mi.has_meta("fx_inside"):
 			mi.material_overlay = null
 			mi.remove_meta("fx_inside")
