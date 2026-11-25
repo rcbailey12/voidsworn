@@ -131,7 +131,8 @@ headless|fx/test/attach_check.gd|-|-|issue 370: every attach point (authored, su
 headless|fx/test/damage_surface_check.gd|-|-|R80 damage contracts on box ships: stages, emitters and their caps, marks
 headless|fx/test/graphics_correctness_check.gd|-|-|issue 1955: missing damage anchors, rim and fog on mesh-surface wrecks, five live point-defense pops, quality downgrade and shader cache teardown
 headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanup and drift (issue 137)
-headless|fx/test/acid_thorn_check.gd|-|-|issue 1877: the Acid Thorn has its built body, a missed thorn flies on past, a stuck thorn rides the ship it hit when that ship moves and turns, and goes when it dies
+headless|fx/test/acid_thorn_check.gd|-|-|issues 1877 and 2142: the built Acid Thorn ends at hull contact and a miss flies past without a jump
+headless|tools/ci/test/projectile_contact_check.gd|-|-|issue 2142: every travelling shot ends at the shield or hull contact on the effect clock, with its own pop and no live body beyond it
 headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battle.gd marks a ship dead; box ships
 headless|fx/test/destruction_staging_check.gd|-|-|staged deaths, class gating, flash limits and the hurry key
 headless|fx/test/kill_slowmo_check.gd|-|-|issue 521: the kill slow-motion beat starts at the core flash of cruiser and capital kills, never for small hulls or under reduce motion, and a key or click ends it
