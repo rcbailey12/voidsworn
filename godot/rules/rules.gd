@@ -2377,7 +2377,7 @@ func legionRise(u, quiet = false) -> bool:
 		u["riseAt"] = null
 		if not quiet: logm(String(u["name"]) + " cannot find room to reassemble and stays dark.", "x")
 		return false
-	u["q"] = h.q; u["r"] = h.r; u["dead"] = false; u["riseAt"] = null; u["hp"] = max(1, JSM.jsround(u["maxHp"] * TB.LEGION_HP)); u["st"] = {"fire": 0, "shieldOff": 0, "engine": 0}; u["shredded"] = 0
+	u["q"] = h.q; u["r"] = h.r; u["dead"] = false; u["riseAt"] = null; u["hp"] = max(1, JSM.jsround(u["maxHp"] * TB.LEGION_HP)); u["st"] = {"fire": 0, "shieldOff": 0, "engine": 0}; u["shredded"] = 0; u.erase("splashKill")
 	CombatRecords.ship_returned(B, RUN, u["id"])
 	if jt(u.get("sec")):
 		for k in u["sec"].keys():
