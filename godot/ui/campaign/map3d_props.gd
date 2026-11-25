@@ -266,14 +266,18 @@ func rock_mat(kind: int) -> ShaderMaterial:
 	return sys.mat("ROCK_HI", {"tint": tints[kind % 3], "kind": float(kind % 3), "q": q})
 
 # Region scenery reuses the same plated parts and displaced rock meshes as stops.
-func region_rocks(parent: Node3D, count: int, spread: float) -> void:
+# Issue 2029: the three rock finishes (rock_mat 0 to 2) are spread over the meshes by a stable rule, finish_of(k, field_seed),
+# so each field shows all three and no two neighbouring fields line up; it draws nothing from sys.rng, so positions are as before.
+static func finish_of(mesh_index: int, field_seed: int) -> int:
+	return posmod(mesh_index + field_seed, 3)
+func region_rocks(parent: Node3D, count: int, spread: float, field_seed: int = 0) -> void:
 	var meshes = rock_meshes()
 	for k in meshes.size():
 		var items: Array = []
 		for i in maxi(1, count / meshes.size()):
 			var at = Vector3(sys.rng.randfn() * spread, sys.rng.randfn() * 0.8, sys.rng.randfn() * spread)
 			items.append([Transform3D(sys.rand_basis(sys.rng.randf_range(0.3, 1.15)), at), 0.0])
-		sys.scatter(parent, meshes[k], rock_mat(0), items)
+		sys.scatter(parent, meshes[k], rock_mat(finish_of(k, field_seed)), items)
 
 func mining_rig(parent: Node3D, scale_value: float) -> Node3D:
 	var rig = Node3D.new(); parent.add_child(rig); rig.scale = Vector3.ONE * scale_value

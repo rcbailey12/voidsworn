@@ -1,16 +1,17 @@
 extends SceneTree
-# Issues 1524 and 1461: the close-action effects fire at their battle moment, with their approved sound, and keep the
+# Issues 1524, 1461 and 2039: the close-action effects fire at their battle moment, with their approved sound, and keep the
 # moment's pace. The live battle scene (test battle s1) plays a ram (with a one-hex charge), a boarding and an admiral's
 # command through its own _play_event, with a recording fx stand-in and a recording sound layer:
-#   ram:     the move finishes first; the ram volley (weapon_id ram) lands on the same frame as the ram's boom (gain 0.8 at
+#   ram:     the move finishes first; the ram volley (weapon_id ram) lands on the same frame as evt_ram_impact (gain 0.8 at
 #            the target); the hold after it stays 500 ms of battle pace.
 #   board:   fx.board plays on the same frame as board_grapple (the boarder's faction variant, so Chorus stays wet);
 #            the hold is the breach look's (fx.board_hold_ms, issue 1547), so the player sees it before the next event.
-#   command: the flagship pulse plays under the banner; no sound of its own (the warning's ui_alert is
-#            the command's cue, audio README item 4); the hold stays the banner pace plus 140 ms.
+#   command: the flagship pulse plays under the banner with the approved player cue ui_command_issue;
+#            the hold stays the banner pace plus 140 ms.
 # Headless:  godot --headless --path godot --script res://fx/test/close_action_moments_check.gd
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const BattleScene := preload("res://scenes/battle/battle.tscn")
+const WEAP := preload("res://fx/fx_weapons.gd")
 const SPEED := 0.25
 var failures := 0
 var log: Array = []   # [frame, ms, who, name, args, game clock ms]
@@ -186,16 +187,29 @@ func _run() -> void:
 	print("-- ram (a one-hex charge, then the hit)")
 	var held := await _play(b, {"t": "ram", "unit": mine, "target": foe, "path": [step], "dmg": 1, "section": "mid", "recoil": 1}, "volley")
 	var v := _first("fx", "volley")
-	var bm := _first("sfx", "boom")
+	var ram := _first("sfx", "evt_ram_impact")
 	var eng := _last("fx", "set_engine")
 	_check(not v.is_empty() and str((v[4] as Array)[1]) == "torp" and str(((v[4] as Array)[3] as Dictionary).get("weapon_id", "")) == "ram", "the ram plays volley(torp, weapon_id ram)")
 	_check(not eng.is_empty(), "the ram's charge moved the ship (its drive was driven)")
 	_check(not v.is_empty() and not eng.is_empty() and int(v[0]) >= int(eng[0]), "the hit lands after the charge (volley frame %s, last drive frame %s)" % [str(v[0]) if not v.is_empty() else "-", str(eng[0]) if not eng.is_empty() else "-"])
-	_check(not bm.is_empty() and is_equal_approx(float((bm[4] as Array)[0]), 0.8), "the ram's approved sound: boom at 0.8")
-	_check(not bm.is_empty() and not v.is_empty() and int(bm[0]) == int(v[0]), "the boom and the crumple land on the same frame")
+	var ram_opts: Dictionary = {} if ram.is_empty() else ram[4][0]
+	_check(is_equal_approx(float(ram_opts.get("gain", 0.0)), 0.8) and ram_opts.get("pos") == b._pos(foe),
+		"the ram's approved impact plays at the target at gain 0.8")
+	_check(not ram.is_empty() and not v.is_empty() and int(ram[0]) == int(v[0]), "the impact and the crumple land on the same frame")
 	_check(_first("fx", "pop").is_empty(), "no placeholder pop")
 	_check(_held_ok(held, 500.0 * SPEED), "the ram keeps its 500 ms hold (%.1f game ms at pace %.2f, want %.0f to %.0f)" % [held, SPEED, 500.0 * SPEED, 500.0 * SPEED + 2.0 * clock.max_dt])
-	_check(_sounds() == ["boom"], "the ram plays only its boom (%s)" % str(_sounds()))
+	_check(_sounds() == ["evt_ram_impact"], "the ram plays only its approved impact (%s)" % str(_sounds()))
+	_check(not _first("sfx", "engine").is_empty(), "a forward ram still starts the main drive loop")
+
+	print("-- torpedo shot down")
+	log.clear()
+	var now: float = real_fx.now
+	var stopped := {"a": Vector3.ZERO, "b": Vector3(5, 0, 0), "c": Vector3(10, 0, 0),
+		"t0": now - 0.5, "t1": now + 0.5, "dead_at": now, "k": 1.0, "mesh": null}
+	WEAP._shot_down(real_fx, stopped)
+	var intercept := _first("sfx", "evt_torp_intercept")
+	_check(not intercept.is_empty() and intercept[4][0].get("pos") == stopped.get("down_p")
+		and _sounds() == ["evt_torp_intercept"], "the real shot-down starts only the intercept cue at the destroy point")
 
 	print("-- board")
 	held = await _play(b, {"t": "board", "unit": mine, "target": foe, "result": "repelled", "kill": 1, "loss": 1}, "board")
@@ -218,9 +232,40 @@ func _run() -> void:
 	held = await _play(b, {"t": "command", "side": "player", "id": cmd, "tier": 0, "unit": null}, "command")
 	var cm := _first("fx", "command")
 	_check(not cm.is_empty() and (cm[4] as Array).slice(0, 2) == [flag, cmd], "the command pulses the player's flagship (%s)" % (str(cm[4]) if not cm.is_empty() else "none"))
-	_check(_sounds().is_empty(), "the command adds no sound of its own (%s)" % str(_sounds()))
+	_check(_sounds() == ["ui_command_issue"], "the player command plays only its approved cue (%s)" % str(_sounds()))
 	var want := (float(b.PACE["banner"]) + 140.0) * SPEED
 	_check(_held_ok(held, want), "the command keeps its banner hold (%.1f game ms, want %.0f to %.0f)" % [held, want, want + 2.0 * clock.max_dt])
+
+	print("-- maneuvering thrusters")
+	var sv = b.views[mine]
+	var q := int(step["q"])
+	var r := int(step["r"])
+	var facing := f
+	for mode in ["cinematic", "brisk"]:
+		b.movement = mode
+		facing = (facing + 1) % 6
+		var pos: Vector3 = sv.visual_position()
+		log.clear()
+		await b._play_move(mine, [{"f": facing, "rot": true}], false)
+		var puff := _first("sfx", "puff")
+		_check(_sounds() == ["puff"] and not puff.is_empty() and puff[4][0].get("pos") == pos
+			and _first("sfx", "engine").is_empty(), "%s: a turn in place plays one puff at the ship with no drive loop" % mode)
+
+		var slide_dir: Array = R.DIRS[(facing + 1) % 6]
+		q += int(slide_dir[0])
+		r += int(slide_dir[1])
+		log.clear()
+		await b._play_move(mine, [{"q": q, "r": r, "f": facing, "slip": true}], false)
+		_check(_sounds() == ["puff"] and _first("sfx", "engine").is_empty(),
+			"%s: a one-hex slide plays one puff with no drive loop" % mode)
+
+		var forward_dir: Array = R.DIRS[facing]
+		q += int(forward_dir[0])
+		r += int(forward_dir[1])
+		log.clear()
+		await b._play_move(mine, [{"q": q, "r": r, "f": facing}], false)
+		_check(_sounds().is_empty() and not _first("sfx", "engine").is_empty(),
+			"%s: a forward move starts the main drive with no puff" % mode)
 
 	b.gfx = real_fx
 	b.sfx = real_sfx

@@ -4,6 +4,8 @@ Ryan, Nov 22 2026: ElevenLabs Creator, monthly ($11 first month, then $22), for 
 (issue 1585, Neon's pre-flight on PR 1577): hold the blind Batch 1, run a small Gate 1 pilot first, pick by ear, then
 Gate 2 production and Gate 3 stems. Nothing is wired into godot/ until Ryan picks.
 
+The prompts follow sections 2 to 8 of the [sound plan](../plans/cohesive_audio_v2.md), including the section 2 banned-word list.
+
 ## The three gates
 
 - **Gate 1, calibration pilot** (`elevenlabs_pilot.json`, about 2,840 credits, under 3% of 121,000): one take each of
@@ -57,3 +59,28 @@ Gate 2 production and Gate 3 stems. Nothing is wired into godot/ until Ryan pick
   terms in godot/audio/SFX_CREDITS.md or godot/music/CREDITS.md and docs/playbooks/sound.md.
 - The playbook line "Free tools and free sources only" (docs/playbooks/sound.md) predates Ryan's Nov 22 buy; the Board
   updates it with the first wired pick.
+
+## Gate 3 listening and staged waves (issue 2039)
+
+- Ryan can open [Sound Gate 3](listen_gate3/index.html) with `listen_gate3/LISTEN.bat`. The clips that play in game
+  are on the page, with the three Wave F3 picks and the full Chorus calm and intense loops first. The sound effect previews
+  use the cue levels without battle bus effects or distance.
+- The list has 80 SFX keeper IDs including the two Wave A extras. Godot plays 78. Asteroid scrape and shield raise remain
+  catalogued but do not fire until their triggers are decided. Wreck settle stays as it is.
+- `keepers_gate3.json` records the source take, channel and mastering edits. `wiring_gate3.json` records the runtime
+  cue and the original keeper for variety additions. Rebuild from clean pre-Gate-3 cue tables with `master_keepers.py`
+  and `wire_gate3.py`. The latter also renders shipped cues for the listening page.
+- The shipped F3 picks are `death_metal_crack_f3` t1, `ship_thruster_puff_f3` t1 and
+  `wep_eclipse_gsentry_more_f3` t1. `mus_chorus_loop_a_test2` t1 is the Chorus battle pair. Its calm mix is all stems
+  except drums, and its intense mix is the full song. `wire_gate3.py --chorus-music` adds both listening previews.
+- `M2_test4` stages only `mus_ithar_loop_a_test4`, a re-roll of test3 with its own receipt. Test3 varied the parts around
+  a held tone. Test4 drops that tone and gives the lead a different colour, register and phrasing in each section. It
+  moves from F sharp minor to A major, then through a darker turn and back home at the wrap. Use the wave's ID with the
+  generator's `--only` flag. No paid request without Ryan's go.
+- Review gate: the core tone changes colour, register or harmony in every section. Compare test3 with test4 on the
+  listening page once the Board has the new take. Listen in both mixes for a held tone, and check that the calm mix
+  still carries the whole melody without drums. Check for timpani from bar 1 in the full mix and at least 2.5 dB
+  of contrast between mixes.
+- Run `stem_loop_check.py` with the planned BPM and bar count. The source MP3 may be 50 ms short or 120 ms long,
+  but the mastered loop uses the exact bar grid and the 25 ms click guard. Listen across the wrap and compare calm and
+  full at the switch points. Review the Glasswrights test4 by ear before starting the rest of M2. The remaining M2 rows are unchanged.
