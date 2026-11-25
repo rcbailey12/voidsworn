@@ -198,7 +198,10 @@ the assigned branch. GitHub's runner comment says `finished` only after `checked
 Lane tools refresh (issue 1018). Before each job, after any predecessor has finished, run
 `powershell -NoProfile -File "%V%\lane_tools_refresh.ps1" -Build build_c` followed by `if errorlevel 1 exit /b 1`.
 Here `%V%` is `%USERPROFILE%\Downloads\voidsworn_test` and `lane_tools_refresh.ps1` is the Board's launcher copy
-outside the folder being refreshed. Use `build_b`, `build_c`, `build_d`, `build_e` or `work217` for the runner being called.
+outside the folder being refreshed. Use `build_b` through `build_g` or `work217` for the runner being called.
+Lane E uses `build_f\tools`, `board_e\repo`, `repo-mirror-e.git` and `codex_lane_e*.txt`. Lane F uses
+`build_g\tools`, `board_f\repo`, `repo-mirror-f.git` and `codex_lane_f*.txt`. The Board sets up both lanes after merge.
+Refresh `tools_live` before starting either lane so the shared watchdog enforces the code-only rule there.
 The command checks that seat's issue status, fetches public `origin/main` through `lane_tools_source`, and keeps the previous
 tools in `runner_backups\<build>_<yyyyMMdd_HHmmss>\tools` when it installs a change. Matching tools use no backup slot.
 A running job stops the refresh. Older backups rotate instead of stopping it (issue 1194): the newest three stay, and an
@@ -213,10 +216,10 @@ start time, mode, token); `gpu_solo` reserves priority for a solo waiter. Empty 
 reclaimed, and files are never deleted. A short exclusive localhost bind on port 47847 serializes updates across tools
 copies; no client connects or sends data, and the OS releases it on process exit. A busy port waits rather than overbooking.
 The go file accepts `GPU cleared` or `GPU cleared: reason` on its first line; anything else waits. GPU waits do not spend
-the child timeout, and a one-minute heartbeat keeps the outer agent's stall watch informed. Lane C refuses GPU work.
+the child timeout, and a one-minute heartbeat keeps the outer agent's stall watch informed. Codex lanes C to F refuse GPU work.
 Deploy the changed `jobs\` and `tools\recipe\` launchers too. Run jobs from this installed tools tree with its adjacent
 watchdog and helper; do not borrow a watchdog from an old benchmark checkout. No real GPU run or deployment is part of
-lane C's code-only check: the Board does that only when every lane is idle.
+the code-only lane checks: the Board does that only when every lane is idle.
 
 Free proof: double-click `tools\pc\runner_selftest.bat`. It makes tiny Git fixture data and stub agents under TEMP, runs all
 OpenAI, Opus, Sonnet, DeepSeek, legacy Kimi, Kimi Code and Codex, and prints its evidence folder. It makes no commits, pushes

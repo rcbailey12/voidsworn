@@ -39,7 +39,7 @@ live constants and the glbs, not estimated). "Target" is the R247 range the chec
 | Ship | Tomb-ark | 44.80 | 8.00 to 100.00 | a dreadnought-weight tomb-ark |
 | Squadron | Fighter | 3.84 | 2.00 to 6.00 | tiny beside a frigate (under half its length, 5.20) |
 | Squadron | Bomber | 3.84 | 2.00 to 6.00 | same wing frame as a fighter, only its load differs |
-| Station | Station, one hex | 26.00 | 99.20 to 297.60 | must dwarf every ship class, so at least twice the super-dreadnought |
+| Outpost | Station outpost, one hex (a station hole) or the 3-hex teaching spot | fitted | inside its own hexes | a different, smaller kind of station from the same kit, sized to fit its hexes, so it may be smaller than a cruiser (Ryan, Nov 24 2026, issue 1791; replaces "must dwarf every ship class" for these spots) |
 | Station | Station, five or more hexes | 46.00 | 99.20 to 297.60 | the big cluster must dwarf the fleet too |
 | Terrain | Nebula, one-hex cloud | 83.00 | 74.40 to 297.60 | much larger than any ship and spilling past its hex |
 | Terrain | Nebula, tying veil | 138.00 | 20.00 to 297.60 | the faint high veil still spans more than a hex |
@@ -81,7 +81,10 @@ How today's values are read (the check reads the same constants):
 
 - Ships: `length_for(code, class) * SHIP_K`; fighters and bombers `CLS_LEN["Squadron"] * SHIP_K * SQUADRON_K`
   (godot/render/hull_table.gd, godot/render/ship_view.gd).
-- Station: `STATION_BASE_LEN + STATION_PER_HEX * hexes` or `STATION_BIG_LEN` (godot/render/board.gd).
+- Station: `STATION_BIG_LEN` (godot/render/board.gd), station_T2 at unit scale on the big cluster.
+- Outpost: `station_outpost` on any cluster under 19 hexes and on every station hole, fitted inside its own hexes at its
+  best turn (godot/assets/ships/a4_props.gd `station()`, checked by station_size_check: zero points outside its hexes);
+  station_T2 fitted the same way stands in until the outpost is installed.
 - Nebula and storm: `cloud_span()` samples the actual isolated-hex soft footprint at mask alpha above 0.001,
   rather than the enclosing card rectangle. Default max volumes and high/low cards share this 83-unit mask.
   `GAS_VEIL_MAX * GAS_CLOUD_SCALE` is the enclosing veil width (godot/world/world_living.gd).
@@ -106,7 +109,6 @@ naming its job), so the check stays green and guards every other row; every othe
 
 | Object | Today | Target | Waiting on |
 |---|---|---|---|
-| Station, one hex | 26.00 | 99.20 to 297.60 | issue 373 (the station) |
 | Station, five or more hexes | 46.00 | 99.20 to 297.60 | issue 373 (the station) |
 | Asteroid field, biggest rock | 15.20 | 20.80 to 83.20 | issue 369 (planet and rocks) |
 | Map station node, shipyard | 6.40 | 12.75 to 51.00 | issue 373 (the station) |
@@ -151,7 +153,9 @@ Ryan, Nov 20 01:11 UTC ("Picks ok", Board thread), on the backdrop audit check
 
 Every line drawn on or over the battle board shares one style: one helper owns width by camera distance, glow and fade,
 and callers pass only a role (grid, move, terrain or hazard edge, torpedo lane, target marker); the role sets the colour
-from one table. Storm lightning follows the same family until its baked bolts land (issue 1360). The picks above still
+from one table. Storm lightning plays baked bolt flipbooks (issue 1360: `tools/blender/vfx/bake_storm_bolts.py`, atlases
+in `godot/fx/atlases/storm/`) and keeps only its colours from this table (`bolt_core`, `bolt_skirt`, `bolt_corona`);
+`VS_STORM_BOLTS=ribbon` brings back the old ribbon for before shots. The picks above still
 hold (faint grid near ships, hazard outline in cine, debris rims on hover). Why: the grid, terrain edges, torpedo lanes
 and lightning each chose their own width, glow and colour, so the board read as four different games. Job: issue 1374.
 
