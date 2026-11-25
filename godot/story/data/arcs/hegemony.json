@@ -1,0 +1,136 @@
+{
+  "_about": "Faction story arc, beats 1 and 2, from godot/story/outlines.md (issue 1990). Beat 3 is STORY_BEAT3 in campaign_tables.json; the run ending is RUN_ENDING. Shapes: godot/story/arc.gd.",
+  "fac": "hegemony",
+  "arc": "Registry Order 41",
+  "charge": "Secure the Hollow Sun orbital perimeter and catalog all surviving Lattice cores. Projection: favorable. Attrition: acceptable.",
+  "prior_loss": "Order 41 previously belonged to another commander whose serial has already been closed out of your copy.",
+  "prior_win": "",
+  "beats": {
+    "1": {
+      "A": {
+        "id": "m14",
+        "title": "Listening Post M-14",
+        "rival_line": "",
+        "skim": "",
+        "text": [
+          "Your sealed dispatch arrives after the standard two-note chime: Registry Order 41, accompanied by an eight-page appendix defining acceptable casualty limits for this deployment.",
+          "Attached is a secondary notice regarding Listening Post M-14, fourteen personnel, telemetry overdue by six hours. {rival} reached the station first. {rival_deed} Meridian's projection classifies an unscheduled detour as suboptimal and instructs you to proceed directly along the primary lane. Your intelligence officer switches her cortical link off for ten seconds and asks quietly whether you want to recover M-14's encrypted black box on your own authority."
+        ],
+        "options": [
+          {
+            "k": "offbook",
+            "l": "Recover the black box off the record",
+            "s": "Gain a random refit from the station's locker. The detour trips local relays: clock moves on 1.",
+            "out": "The black box arrives inside a crate labeled galley stock, taped beside a handwritten list of fourteen names.",
+            "r": {
+              "mod": 1,
+              "nemClock": 1
+            },
+            "flag": "hg_offbook"
+          },
+          {
+            "k": "orders",
+            "l": "Execute Order 41 strictly",
+            "s": "Registry compliance bonus: +50 credits.",
+            "out": "Meridian transfers the commendation within the hour and closes M-14's personnel ledger cleanly.",
+            "r": {
+              "cred": 50
+            },
+            "flag": "hg_orders"
+          }
+        ]
+      }
+    },
+    "2": {
+      "A": {
+        "id": "limits",
+        "title": "Acceptable Limits",
+        "rival_line": "open",
+        "skim": "",
+        "text": [
+          "A Directorate bulk supply column, eleven freighters and one battered picket, has been herded against a dense gravity shoal along the outer lane. {rival} seals the only safe jump exit and hasn't fired yet.",
+          "{rival_line}",
+          "Meridian's directive is unambiguous: the convoy's replacement cost falls within projected tolerances; stay on schedule. Then your flag captain hands over a raw unlinked hail from the picket's nineteen-year-old lieutenant promising to hold the shoal as long as her shields last.",
+          {
+            "t": "M-14's logs contain {his} patrol timing, and {he} knows the drive is missing.",
+            "if": "flag:hg_offbook"
+          },
+          {
+            "t": "{rival} bounced a copy of your compliance bonus straight onto your bridge display.",
+            "if": "flag:hg_orders"
+          },
+          "Breaking them out means overruling the Registry in front of every linked officer in your column."
+        ],
+        "options": [
+          {
+            "k": "broke",
+            "l": "Overrule the Registry and break them out",
+            "s": "A Directorate picket with a veteran lieutenant joins your fleet. No bonus, and clock moves on 1.",
+            "out": "All eleven freighters slip clear behind your guns while the Registry logs your breach of orders without a single word of comment.",
+            "r": {
+              "ship": "h_picket",
+              "vet": 1,
+              "nemClock": 1
+            },
+            "flag": "hg_broke",
+            "fl": {
+              "mercy": 1,
+              "loud": 1
+            }
+          },
+          {
+            "k": "left",
+            "l": "Stay on schedule",
+            "s": "Meridian efficiency allocation: +80 credits.",
+            "out": "The picket's transponder cuts out at 0340. Your flag captain signs the shift log without looking up.",
+            "r": {
+              "cred": 80
+            },
+            "flag": "hg_left",
+            "fl": {
+              "greed": 1
+            }
+          },
+          {
+            "k": "gap",
+            "l": "Slip through {his} patrol gap",
+            "s": "The convoy escapes and the picket joins cleanly with no clock advance; every ship takes 10% hull abrasion cutting the rocks.",
+            "out": "You thread the gravity ridge at tolerances the Directorate manual prohibits, and the young lieutenant calls it the cleanest flying she's ever watched.",
+            "r": {
+              "ship": "h_picket",
+              "vet": 1,
+              "dmgAll": 0.1
+            },
+            "flag": "hg_broke",
+            "fl": {
+              "mercy": 1
+            },
+            "if": "flag:hg_offbook",
+            "need": {
+              "flag": "hg_offbook",
+              "say": "M-14's black box"
+            }
+          },
+          {
+            "k": "split",
+            "l": "File a priority exception (50 credits)",
+            "s": "Six haulers are reclassified as essential and towed clear: every ship repairs 15%. Five are left behind.",
+            "out": "Meridian approves salvage coverage for six hull numbers and transmits a formal closure notice to the remaining five.",
+            "r": {
+              "cost": 50,
+              "healAll": 0.15
+            },
+            "flag": "hg_split",
+            "if": "flag:hg_orders",
+            "need": {
+              "flag": "hg_orders",
+              "say": "the compliance bonus"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "win": [],
+  "loss": []
+}

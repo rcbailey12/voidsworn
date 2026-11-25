@@ -73,7 +73,16 @@ func battle_shot(api, ui, name_: String) -> void:
 	await shot(name_ + "_status")
 	scene.queue_free(); await settle(); ui.show()
 
+# Issue 1990: no beat 3 choice gives a story modifier or a core offer any more, but a run saved before it can still carry
+# one (storyNext, a story reward), so these checks fly the options that played before (STORY_BEAT3 legacy_o).
 func reward_checks(c, ui) -> void:
+	var kept := {}
+	for fac in c.TB.STORY_BEAT3:
+		kept[fac] = c.TB.STORY_BEAT3[fac]["o"]; c.TB.STORY_BEAT3[fac]["o"] = c.TB.STORY_BEAT3[fac]["legacy_o"]
+	await legacy_reward_checks(c, ui)
+	for fac in kept: c.TB.STORY_BEAT3[fac]["o"] = kept[fac]
+
+func legacy_reward_checks(c, ui) -> void:
 	var api = BattleAPI.new()
 	check(api.load_rules() == "", "battle rules load")
 	for row in [["voidsworn", 0, 1.25, "+25%"], ["chorus", 0, 0.9, "-10%"], ["chorus", 1, 1.1, "+10%"]]:
@@ -166,7 +175,7 @@ func _initialize() -> void:
 			await settle()
 			var text := text_of(ui)
 			check(text.contains(row["spotlights"][id]), str(id) + " spotlight renders")
-			for line in row["lines"]: check(text.contains(line), str(id) + " spoken line renders")
+			for line in row["lines"]: check(text.contains(c.beat3Text(line)), str(id) + " spoken line renders")
 			check(not text.contains("{rival}") and not text.contains("undefined"), str(id) + " no placeholder")
 			if count == 1: await shot(str(fac) + "_decision")
 		check(count == 4, str(fac) + " four admirals")
@@ -174,13 +183,15 @@ func _initialize() -> void:
 			var id = row["spotlights"].keys()[0]
 			c.META["admirals"][id] = true  # the harness owns the admiral it flies
 			c.newRun(id, fac); c.RUN["sector"] = 3; c.mapScreen(); c.showBeat3()
+			var card: Dictionary = c.cur_event   # issue 1990: the outlines.md choices a run without beat 1 and 2 flags is offered
+			check(card["o"].size() >= 2, str(fac) + " fallback card offers two choices")
 			c.act("eventChoice", str(i))
-			check(c.RUN["flags"].get(row["id"]) == str(i), str(fac) + " shipped choice id")
+			check(c.RUN["flags"].get(row["id"]) == card["o"][i]["k"], str(fac) + " shipped choice id")
 			c.RUN = c.clone(c.SAVED_RUN)
 			check(c.beat3Card().is_empty(), str(fac) + " saved choice does not replay")
 			check(c.beat3Debrief() == row["debrief"], str(fac) + " battle debrief text")
 			await settle()
-			check(text_of(ui).contains(c.beat3Text(row["o"][i]["tx"])), str(fac) + " result text renders")
+			check(text_of(ui).contains(card["outs"][card["o"][i]["k"]]), str(fac) + " result text renders")
 			if i == 0: await shot(str(fac) + "_result")
 			c.rewardFlow({"cfg": {"kind": "battle", "fac": "hegemony"}, "kills": 2, "rounds": 4, "lost": [], "xp": []})
 			await settle()

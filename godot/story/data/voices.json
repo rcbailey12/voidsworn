@@ -1251,78 +1251,96 @@
     }
   },
   "factions": {
-    "_about": "Enemy sector flagship lines (boss_hail/boss_down kept as strings for story_test.gd compatibility; boss_hail_pool/boss_down_pool add multi-run variety).",
+    "_about": "Enemy sector flagship lines, one flagship per faction (FACTIONS[fac].boss). boss_ship is the name every hail says; boss_hail_pool holds three or four hails naming that ship (issue 1990), boss_hail its first line and boss_down kept as strings for story_test.gd compatibility; boss_down_pool adds multi-run variety.",
     "voidsworn": {
-      "boss_hail": "We didn't drag these hulls out of Vesper just to let you block the lane! Clear out or burn!",
+      "boss_hail": "This is the Daybreak, flagship of the Crusade. We didn't drag these hulls out of Vesper to let you block the lane!",
       "boss_down": "Reactor's going... get our names back to Vesper...",
       "boss_hail_pool": [
-        "We didn't drag these hulls out of Vesper just to let you block the lane! Clear out or burn!",
-        "Forty worlds are freezing behind us! Stand aside or take every flank gun we've got!"
+        "This is the Daybreak, flagship of the Crusade. We didn't drag these hulls out of Vesper to let you block the lane!",
+        "Daybreak to every gun deck: forty worlds are freezing behind us. Clear that lane or burn with it!",
+        "Every name chalked on the Daybreak's hull came sunward to stop you. Stand aside, or we add yours underneath!",
+        "The Daybreak carried Vesper's chalk across three sectors. Turn back now, or we chalk your hull code beside them."
       ],
       "boss_down_pool": [
         "Reactor's going... get our names back to Vesper...",
         "Bulkheads gone... tell the Reach we fought all the way to the rim..."
-      ]
+      ],
+      "boss_ship": "Daybreak"
     },
     "hegemony": {
-      "boss_hail": "Unregistered fleet, you have entered a closed Directorate security corridor. Power down weapons or be removed.",
+      "boss_hail": "Unregistered fleet, this is the Iron Mandate. You have entered a closed Directorate corridor. Power down weapons or be removed.",
       "boss_down": "Primary command hull failing. Transmit final engagement telemetry to Meridian.",
       "boss_hail_pool": [
-        "Unregistered fleet, you have entered a closed Directorate security corridor. Power down weapons or be removed.",
-        "Meridian authorizes lethal interdiction across this sector. Stand down for inspection or engage."
+        "Unregistered fleet, this is the Iron Mandate. You have entered a closed Directorate corridor. Power down weapons or be removed.",
+        "The Iron Mandate is authorized for lethal interdiction across this sector. Stand down for inspection or engage.",
+        "Iron Mandate to unregistered vessels: your hull numbers are logged. Meridian has already filed your fleet as an acceptable loss.",
+        "This is the Iron Mandate. The projection gives you four minutes. Comply, or be cataloged with the debris."
       ],
       "boss_down_pool": [
         "Primary command hull failing. Transmit final engagement telemetry to Meridian.",
         "Flagship offline. Seal cipher cores and log casualty timestamp."
-      ]
+      ],
+      "boss_ship": "Iron Mandate"
     },
     "corsair": {
-      "boss_hail": "Tracked your hot drive wake across two systems! Thanks for hauling shiny hull plate straight to us!",
+      "boss_hail": "The Pyre-Barge tracked your hot drive wake across two systems! Thanks for hauling shiny hull plate straight to us!",
       "boss_down": "Damn it... reactor's blowing... alright, you earned the scrap...",
       "boss_hail_pool": [
-        "Tracked your hot drive wake across two systems! Thanks for hauling shiny hull plate straight to us!",
-        "Look at all that clean armor drifting into my kill-box! Claws out, pack!"
+        "The Pyre-Barge tracked your hot drive wake across two systems! Thanks for hauling shiny hull plate straight to us!",
+        "Look at all that clean armor drifting into the Pyre-Barge's kill-box! Claws out, pack!",
+        "Every plate on the Pyre-Barge came off a captain like you. Plenty of room on the bow for one more!",
+        "Pyre-Barge to the whole belt: fresh hulls inbound! First claw to crack their flagship gets the best weld!"
       ],
       "boss_down_pool": [
         "Damn it... reactor's blowing... alright, you earned the scrap...",
         "Bow's splitting wide open... bolt my good plate onto your hull..."
-      ]
+      ],
+      "boss_ship": "Pyre-Barge"
     },
     "chorus": {
-      "boss_hail": "Your reactors burn bright against the cold. Memory knows your hull-shapes; Hunger wants the heat inside.",
+      "boss_hail": "The Ninefold Maw tastes your reactors against the cold. Memory knows your hull-shapes; Hunger wants the heat inside.",
       "boss_down": "Primary core ruptured... pull surviving spores back into the dark...",
       "boss_hail_pool": [
-        "Your reactors burn bright against the cold. Memory knows your hull-shapes; Hunger wants the heat inside.",
-        "Warm metal sliding straight into our feeding pocket. Open every brood-sac!"
+        "The Ninefold Maw tastes your reactors against the cold. Memory knows your hull-shapes; Hunger wants the heat inside.",
+        "Warm metal sliding straight into the Ninefold Maw. Open every brood-sac!",
+        "Nine mouths, one hunger. The Ninefold Maw has not fed since Ardent's rim. You will do.",
+        "We are the Ninefold Maw. Your hulls ring hollow and warm. We will keep the warm parts."
       ],
       "boss_down_pool": [
         "Primary core ruptured... pull surviving spores back into the dark...",
         "Central cluster cooling... other broods will finish the hunt..."
-      ]
+      ],
+      "boss_ship": "Ninefold Maw"
     },
     "ithar": {
-      "boss_hail": "Turn your ships around while your hulls stay whole. We've buried enough crews in these lanes.",
+      "boss_hail": "This is the Unfinished. Turn your ships around while your hulls stay whole. We've buried enough crews in these lanes.",
       "boss_down": "Primary mirror shattering... let the remaining vessels jump clear.",
       "boss_hail_pool": [
-        "Turn your ships around while your hulls stay whole. We've buried enough crews in these lanes.",
-        "You cross an old graveyard chasing Starwright fire. Stand down before we cut your drives."
+        "This is the Unfinished. Turn your ships around while your hulls stay whole. We've buried enough crews in these lanes.",
+        "The Unfinished has crossed this graveyard for three centuries. Stand down before we cut your drives.",
+        "Our grandmothers began the Unfinished and never saw it done. Do not make us finish it on you.",
+        "The Unfinished carries every family line still flying. Break off, and we let your escorts pass unburned."
       ],
       "boss_down_pool": [
         "Primary mirror shattering... let the remaining vessels jump clear.",
         "Three centuries of light going dark... save the escorts..."
-      ]
+      ],
+      "boss_ship": "Unfinished"
     },
     "deathless": {
-      "boss_hail": "You are delaying the ignition of Ardent's successor. Clear the vector or be dismantled.",
+      "boss_hail": "The Unsetting addresses you. You are delaying the ignition of Ardent's successor. Clear the vector or be dismantled.",
       "boss_down": "Frame integrity lost. Upload final combat stamp before cutoff...",
       "boss_hail_pool": [
-        "You are delaying the ignition of Ardent's successor. Clear the vector or be dismantled.",
-        "We waited ten centuries for this rim. A short-lived fleet won't halt the Homecoming."
+        "The Unsetting addresses you. You are delaying the ignition of Ardent's successor. Clear the vector or be dismantled.",
+        "The Unsetting waited ten centuries for this rim. A short-lived fleet won't halt the Homecoming.",
+        "This is the Unsetting. Your crews are logged. The Archive will keep a record of how briefly you lasted.",
+        "The Unsetting does not set. Stand aside, or your chassis joins the stellar frame as raw metal."
       ],
       "boss_down_pool": [
         "Frame integrity lost. Upload final combat stamp before cutoff...",
         "Chassis dark... Archive, wake the next frame..."
-      ]
+      ],
+      "boss_ship": "Unsetting"
     }
   }
 }

@@ -1,0 +1,111 @@
+{
+  "_about": "Faction story arc, beats 1 and 2, from godot/story/outlines.md (issue 1990). Beat 3 is STORY_BEAT3 in campaign_tables.json; the run ending is RUN_ENDING. Shapes: godot/story/arc.gd.",
+  "fac": "deathless",
+  "arc": "The Homecoming",
+  "charge": "Recover the scattered Lattice cores, guard the siphon corridors, and ignite Ardent's successor at the heart of the dead system.",
+  "prior_loss": "The Archive logs an earlier Homecoming attempt without listing your failure code, a rare gesture of restraint.",
+  "prior_win": "",
+  "beats": {
+    "1": {
+      "A": {
+        "id": "broken_frame",
+        "title": "The Broken Frame",
+        "rival_line": "",
+        "skim": "",
+        "text": [
+          "Your fleet cycles awake on schedule, chassis by chassis, just as Eclipse has done every century since Ardent collapsed. The Archive tracks all six cores: Kovar is ours, Calyx feeds the Chorus, and four drift through contested lanes. The stellar frame waits dark.",
+          "One urgent alert breaks the routine. An outer siphon relay was boarded before your jump, its keeper's chassis carefully stripped for its access ciphers. The keeper's last clean Archive stamp is eight years old. {rival} took the codes. {rival_deed} Your Shades urge immediate pursuit before the ciphers spread; your Umbras advise repairing hulls while dissecting what {he} left behind."
+        ],
+        "options": [
+          {
+            "k": "writ",
+            "l": "Pursue immediately",
+            "s": "Combat routines sharpen: every captain gains 20 XP. {He} reads your high-burn intercept: clock moves on 1.",
+            "out": "Your pursuit order streams to every hull as the restored keeper wakes missing eight years and wondering why the fleet is armed.",
+            "r": {
+              "xp": 20,
+              "nemClock": 1
+            },
+            "flag": "dd_writ",
+            "fl": {
+              "loud": 1
+            }
+          },
+          {
+            "k": "patient",
+            "l": "Repair and analyze the dismantled frame",
+            "s": "Repair swarms restore 15% hull across the fleet while your Umbras examine the tool marks.",
+            "out": "Your Umbras lay the stripped chassis across a quiet maintenance bay and trace every cut to find the cipher flaw.",
+            "r": {
+              "healAll": 0.15
+            },
+            "flag": "dd_patient"
+          }
+        ]
+      }
+    },
+    "2": {
+      "A": {
+        "id": "ciphers",
+        "title": "Stolen Ciphers",
+        "rival_line": "open",
+        "skim": "",
+        "text": [
+          "The stolen siphon codes resurface across sector II as {rival}'s flagship broadcasts them openly, tripping Eclipse relay locks one by one.",
+          "{rival_line}",
+          "Directly beneath your jump lane hangs a sealed pre-collapse hull yard full of uncrewed flare frames. You could upload fresh copies from the Archive to crew them immediately, yet every active mind in the Archive is already running somewhere; running two copies of a living mind simultaneously is the single prohibition the Upload never broke.",
+          {
+            "t": "Your Umbras isolated a checksum flaw buried inside the stolen codes.",
+            "if": "flag:dd_patient"
+          },
+          {
+            "t": "{rival} anticipated your chase and already tagged your hull codes across {his} net.",
+            "if": "flag:dd_writ"
+          },
+          "Choose whether to keep the Upload's one law or break it for extra hulls."
+        ],
+        "options": [
+          {
+            "k": "broke",
+            "l": "Break the law and upload duplicate minds",
+            "s": "An Eclipse flare joins your fleet, though the breach trips security alerts: clock moves on 1, and the sector III guard frames will refuse your hail.",
+            "out": "The newly awakened flare crews check the fleet roster, spot their own originals three hexes over, and cut open comms completely.",
+            "r": {
+              "ship": "d_jackal",
+              "nemClock": 1
+            },
+            "flag": "dd_broke"
+          },
+          {
+            "k": "lawful",
+            "l": "Keep the Upload's prohibition",
+            "s": "No hull gained; the Archive logs your restraint cleanly.",
+            "out": "You leave the storage racks dark while your Umbras record the timestamp and the decision.",
+            "r": {},
+            "flag": "dd_lawful"
+          },
+          {
+            "k": "flaw",
+            "l": "Trigger the checksum flaw (costs one spare refit)",
+            "s": "Every stolen relay slams shut in front of {his} fleet: Nemesis weakness revealed and clock back 1.",
+            "out": "Half a dozen hijacked arrays lock {his} fleet out simultaneously, scattering {his} pickets in confusion.",
+            "r": {
+              "payMod": 1,
+              "nemIntel": 1,
+              "nemClock": -1
+            },
+            "flag": "dd_flaw",
+            "if": "flag:dd_patient",
+            "need": {
+              "flag": "dd_patient",
+              "say": "the analyzed frame",
+              "mod": 1
+            }
+          }
+        ]
+      }
+    }
+  },
+  "win": [],
+  "loss": []
+}

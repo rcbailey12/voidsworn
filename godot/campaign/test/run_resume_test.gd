@@ -124,10 +124,14 @@ func _story_boss() -> void:
 	c.showBeat3()
 	c.act("eventChoice", "0")
 	c.act("closeModal")
+	# Issue 1990: no beat 3 choice gives a battle modifier any more, so a run carries one only when it was saved with it
+	# (the old flagship power choice). Put that saved modifier in the run, as an older save holds it.
+	c.RUN["storyNext"] = {"power": true}
+	c.saveRun()
 	_external(c)
 	c.act("enterNode", id)
 	var cfg: Dictionary = c.B["cfg"]
-	assert(cfg["storyMods"]["power"])
+	assert(cfg.get("storyMods", {}).get("power", false))
 	var d = _load(FileAccess.get_file_as_string(c.save_path))
 	_external(d)
 	d.act("continueRun")
@@ -139,6 +143,23 @@ func _story_boss() -> void:
 	d.act("continueRun")
 	_check(d.B != null and d.B["cfg"].get("node") == id and d.B["cfg"].get("storyMods", {}).get("power", false),
 		"1 legacy: an already stranded story boss reopens with the chosen power")
+	# Issue 1990: today's beat 3 choice gives no battle modifier; the boss and its resumed copy carry none and still reopen.
+	c = _campaign(3)
+	c.save_path = scratch.path_join("plain.json")
+	c.persist_on = true
+	id = _boss_approach(c)
+	c.showBeat3()
+	c.act("eventChoice", "0")
+	c.act("closeModal")
+	_external(c)
+	c.act("enterNode", id)
+	var plain: bool = c.B != null and not c.jt(c.B["cfg"].get("storyMods"))
+	d = _load(FileAccess.get_file_as_string(c.save_path))
+	_external(d)
+	d.act("continueRun")
+	if d.page["kind"] == "map" and d.availableNodes().has(id): d.act("enterNode", id)
+	_check(plain and d.B != null and d.B["cfg"].get("node") == id and not d.jt(d.B["cfg"].get("storyMods")),
+		"1 current: a beat 3 choice without a modifier reopens its boss with none")
 
 func _breakthrough() -> void:
 	var c = _campaign()

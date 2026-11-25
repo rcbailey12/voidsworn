@@ -252,7 +252,11 @@ func run() -> void:
 			var adm = ""
 			for id in C.ADMIRALS:
 				if C.ADMIRALS[id].get("fac", "voidsworn") == fac and (adm == "" or str(C.ADMIRALS[id]["n"]).length() > str(C.ADMIRALS[adm]["n"]).length()): adm = id
-			fixture("win", fac, adm); await frames(); readability(str(sz) + " " + fac)
+			for state in ["win", "loss"]:   # issue 1990: each faction's two-sentence ending shows under the title, and fits
+				fixture(state, fac, adm); await frames(); readability(str(sz) + " " + fac + " " + state)
+				var ending: String = C.runEnding({"fac": fac}, state == "win")
+				check(ending.count(". ") + 1 == 2 and ending.ends_with("."), fac + " " + state + " ending is two sentences")
+				check(all_text(ui).contains(ending), fac + " " + state + " ending shows on the end-of-run page")
 	print("DB1: " + ("PASS" if failures == 0 else "FAIL " + str(failures)))
 	ui.queue_free(); await frames(); preload("res://render/ship_view.gd").clear_static()
 	quit(0 if failures == 0 else 1)

@@ -1,0 +1,135 @@
+{
+  "_about": "Faction story arc, beats 1 and 2, from godot/story/outlines.md (issue 1990). Beat 3 is STORY_BEAT3 in campaign_tables.json; the run ending is RUN_ENDING. Shapes: godot/story/arc.gd.",
+  "fac": "voidsworn",
+  "arc": "The Oath at the Hollow Sun",
+  "charge": "Push sunward, burn out whatever's draining Vesper's stars, and make sure the people who paid for the jump aren't forgotten.",
+  "prior_loss": "Two captains chalk {fallen_name} from the last expedition lost.",
+  "prior_win": "",
+  "beats": {
+    "1": {
+      "A": {
+        "id": "ember_shard",
+        "title": "The Ember Shard",
+        "rival_line": "",
+        "skim": "",
+        "text": [
+          "Your fleet holds orbit over Vesper's outer belt, where the core Seren drifted after the collapse and gave the Reach its first real plasma coils. Before the jump clocks hit zero, every captain chalks one name on the flagship's outer hull so nobody gets erased like Meridian erased the Reach. {best_captain} steps up first.",
+          "Then the belt wardens hail with worse news: {rival} hit their forge station six hours ago. {rival_deed} They left one warm shard of Seren's casing sitting untouched on the loading bay, like a dare. The wardens want it carried sunward; your quartermasters want it sold before it pulls {rival} straight onto your wake."
+        ],
+        "options": [
+          {
+            "k": "carry",
+            "l": "Carry the shard sunward",
+            "s": "Gain salvage: the ember shard. {rival} tracks its thermal ping: Nemesis clock moves on 1.",
+            "out": "The wardens seal the warm shard inside a lead quench-box and bolt it into your flagship's bay.",
+            "r": {
+              "relic": 1,
+              "nemClock": 1
+            },
+            "flag": "vs_hand"
+          },
+          {
+            "k": "sell",
+            "l": "Sell it to the foundries",
+            "s": "+60 credits. The wardens scrape your name off the hull until you earn it back.",
+            "out": "The foundry transfers hard credits within ten minutes. None of the belt wardens wave as you break orbit.",
+            "r": {
+              "cred": 60
+            },
+            "flag": "vs_sold",
+            "fl": {
+              "greed": 1
+            }
+          }
+        ]
+      }
+    },
+    "2": {
+      "A": {
+        "id": "dawn_horn",
+        "title": "The Dawn Horn",
+        "rival_line": "open",
+        "skim": "",
+        "text": [
+          "A shattered bastion from an older crusade tumbles out of the dark, its hull frozen solid while an automated dawn-watch beacon still broadcasts jump coordinates toward the Hollow Sun on an emergency battery. {rival} towed the wreck straight across your lane and waits behind the debris field.",
+          "{rival_line}",
+          "Your signals officer says pulling the full route table will buy clean lanes, though sitting still gives {him} time to form up. Your captains want to burn in hard right now and skip the codes.",
+          {
+            "t": "Seren's casing is pulsing hot inside the bay, and {rival}'s scopes already have it tagged.",
+            "if": "flag:vs_hand"
+          },
+          {
+            "t": "The foundry money's spent, and {rival} just beamed a mocking receipt across open comms.",
+            "if": "flag:vs_sold"
+          },
+          "Every chalked name on that frozen bastion is still readable through the ice."
+        ],
+        "options": [
+          {
+            "k": "codes",
+            "l": "Pull the route codes",
+            "s": "Clean jump paths save fuel: +50 credits. {He} tightens {his} screen while you wait: clock moves on 1.",
+            "out": "The coordinates finish downloading right as the bastion's dying battery finally cuts out.",
+            "r": {
+              "cred": 50,
+              "nemClock": 1
+            },
+            "flag": "vs_code",
+            "fl": {
+              "mercy": 1
+            }
+          },
+          {
+            "k": "burn",
+            "l": "Burn in now",
+            "s": "Every captain gains 15 XP.",
+            "out": "You hit {his} outer pickets mid-turn while the dead bastion keeps broadcasting into empty space behind you.",
+            "r": {
+              "xp": 15
+            },
+            "flag": "vs_strike",
+            "fl": {
+              "loud": 1
+            }
+          },
+          {
+            "k": "ring",
+            "l": "Overcharge the beacon with Seren's shard",
+            "s": "Lose salvage; the shard cracks inside the dead reactor, yet the blast jams {his} grid: clock goes back 2 and every captain gains 15 XP.",
+            "out": "The surge blasts clean route tables across the whole sector and scrambles {his} pickets before the shard splits cold.",
+            "r": {
+              "payRelic": 1,
+              "nemClock": -2,
+              "xp": 15
+            },
+            "flag": "vs_rang",
+            "if": "flag:vs_hand",
+            "need": {
+              "flag": "vs_hand",
+              "say": "Seren's shard",
+              "relic": 1
+            }
+          },
+          {
+            "k": "cutter",
+            "l": "Hire a belt salvage cutter to pull the codes (40 credits)",
+            "s": "They cut the drive loose while you attack: every captain gains 15 XP.",
+            "out": "The belt cutters weld onto the frozen hulk under fire and copy every crew name off its flank before jumping out.",
+            "r": {
+              "cost": 40,
+              "xp": 15
+            },
+            "flag": "vs_pilgrims",
+            "if": "flag:vs_sold",
+            "need": {
+              "flag": "vs_sold",
+              "say": "the foundry sale"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "win": [],
+  "loss": []
+}

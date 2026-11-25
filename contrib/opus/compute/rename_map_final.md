@@ -516,7 +516,7 @@ L rewrites `godot/story/` to round 8 in Job 2 (arcs, outlines, titles, unlocks, 
 | `Lances and gauss guns make up` | Lances and null guns make up | applied: godot/story/data/titles.json:10 | L | Title rule text. |
 | `"Warlord Grax Ironjaw` | "Warlord Grax Steelgrin | applied (now "Warlord Grax Ironmaw", section 16) | L | Test fixtures and README sample. |
 | `Admiral Castellan Vex` | Admiral Roderic Vex | applied: data.js:205; tools/portraits/make_batches.py:41; godot/story/story.gd:155,181; godot/story/test/story_test.gd:233,235 | B, P, L | Test fixtures and comments (data.js row is in 6). |
-| `const FEMININE := [` | (list rewritten to the new pools) | godot/story/tokens.gd:19 | L | tokens.gd pronoun fallback: drop Isolde, Mireille, Serafine, Maren, Ilsa, Aelith, Ilyra, Nyssa, Saelune, Eluned, Faewyn, Liraen, Ysolde, Tauret, Nefrah, Khepset; add Mathilde, Sabine, Rosalind, Margery, Clemence, Marit, Margit, Ida, Hedda, Agathe, Edda, Tamsa, Ilvy, Ressa, Nell, Sefa, Orra, Desmae, Imra, Rhosse, Altheve, plus the Nemesis prefixes from NEM_FAC fem lists. |
+| the FEMININE name list (tokens.gd) | (list rewritten to the new pools) | godot/story/tokens.gd:19 | L | tokens.gd pronoun fallback: drop Isolde, Mireille, Serafine, Maren, Ilsa, Aelith, Ilyra, Nyssa, Saelune, Eluned, Faewyn, Liraen, Ysolde, Tauret, Nefrah, Khepset; add Mathilde, Sabine, Rosalind, Margery, Clemence, Marit, Margit, Ida, Hedda, Agathe, Edda, Tamsa, Ilvy, Ressa, Nell, Sefa, Orra, Desmae, Imra, Rhosse, Altheve, plus the Nemesis prefixes from NEM_FAC fem lists. |
 
 ## 12. Portraits (P)
 

@@ -1,0 +1,135 @@
+{
+  "_about": "Faction story arc, beats 1 and 2, from godot/story/outlines.md (issue 1990). Beat 3 is STORY_BEAT3 in campaign_tables.json; the run ending is RUN_ENDING. Shapes: godot/story/arc.gd.",
+  "fac": "corsair",
+  "arc": "Rook's Trail",
+  "charge": "R-5 Rook's pulsing somewhere inside the Hollow Sun wreck field. Track it down, crack whoever's guarding it, and keep it.",
+  "prior_loss": "Gossip in the dock bars says the last pack that chased Rook is still welded into the ice near the rim.",
+  "prior_win": "",
+  "beats": {
+    "1": {
+      "A": {
+        "id": "torn_den",
+        "title": "The Torn Den",
+        "rival_line": "",
+        "skim": "",
+        "text": [
+          "Word across the Ashfall dens says the core R-5 Rook has started pinging from the wreck belt around the Hollow Sun, throwing a steady thermal tick where no live reactor should sit. Your lead howler swears whoever bolts Rook into their flagship won't ever lose a fight again, the same boast heard over every third bottle. Either way, half the belt's spinning up drives, so you jump first or pick through someone else's scraps.",
+          "Before you clear orbit, word hits that {rival} raided your forward fuel depot. {rival_deed} Half your captains want to send back a booby-trapped trophy crate; the rest want a loud pre-hunt brawl and feast first."
+        ],
+        "options": [
+          {
+            "k": "rigged",
+            "l": "Send a rigged trophy back",
+            "s": "The dock bookies start taking bets on your pack: +40 credits. {rival} takes it personally: clock moves on 1.",
+            "out": "The charge goes out bolted inside a stolen hull plate, and the odds Rattlehold posts on your survival are flat-out insulting.",
+            "r": {
+              "cred": 40,
+              "nemClock": 1
+            },
+            "flag": "cs_rigged",
+            "fl": {
+              "loud": 1
+            }
+          },
+          {
+            "k": "feast",
+            "l": "Throw a loud pre-hunt feast",
+            "s": "Every captain gains 15 XP.",
+            "out": "Two loud days of brawling where your howler brags about his eighth challenger, slips up mentioning an old Rattlehold broker, and passes out on a cargo crate.",
+            "r": {
+              "xp": 15
+            },
+            "flag": "cs_party"
+          }
+        ]
+      }
+    },
+    "2": {
+      "A": {
+        "id": "auction",
+        "title": "The Rattlehold Auction",
+        "rival_line": "open",
+        "skim": "",
+        "text": [
+          "The full wake-log mapping Rook's drift sits inside Rattlehold, the meanest rock-den in sector II, and the den-boss holding it will hand it over to whoever pays top scrap or breaks his champion. Every pack with two guns and a grudge packed the docks. {rival} didn't bother coming inside; {his} fleet hangs cold off the outer rocks waiting to jump whoever walks out with the chart.",
+          "{rival_line}",
+          "Your breach gangs want to smash the docking bays and run dark under the chaos. Your quartermaster says pay the scrap price clean and avoid starting a three-way war.",
+          {
+            "t": "Your howler already knows the broker keeping the log and looks distinctly uncomfortable about it.",
+            "if": "flag:cs_party"
+          },
+          {
+            "t": "Word of the rigged crate kept {rival}'s escorts holding extra distance.",
+            "if": "flag:cs_rigged"
+          }
+        ],
+        "options": [
+          {
+            "k": "smash",
+            "l": "Smash the docks and snatch the log",
+            "s": "Grab the chart plus loose hardware on the clamps: gain salvage. Your next fight starts as an ambush.",
+            "out": "Rattlehold's outer bays burn for four days, and three rival packs put bounties on your hull before the smoke clears.",
+            "r": {
+              "relic": 1,
+              "ambush": 1
+            },
+            "flag": "cs_stole",
+            "fl": {
+              "greed": 1,
+              "loud": 1
+            }
+          },
+          {
+            "k": "pay",
+            "l": "Pay the asking price (80 credits)",
+            "s": "Paying fair at Rattlehold turns heads: a Hullbreaker raider crew signs onto your pack.",
+            "out": "Your quartermaster dumps counted scrap straight onto the counter, and an impressed raider captain asks to fly on your flank.",
+            "r": {
+              "cost": 80,
+              "ship": "c_raider"
+            },
+            "flag": "cs_paid"
+          },
+          {
+            "k": "howler",
+            "l": "Send your howler in to lean on the broker (30 credits)",
+            "s": "You get the log plus a Nemesis weakness; your flagship captain loses 15 XP to a brutal hangover.",
+            "out": "Your howler and the broker ran the same belt twenty years back, and whatever they drank settling old business leaves your flag captain useless till morning.",
+            "r": {
+              "cost": 30,
+              "nemIntel": 1,
+              "payXp": 15
+            },
+            "flag": "cs_mott",
+            "if": "flag:cs_party",
+            "need": {
+              "flag": "cs_party",
+              "say": "the feast"
+            }
+          },
+          {
+            "k": "fear",
+            "l": "Remind the hall what happened to your last rival (20 credits)",
+            "s": "Nobody bids against you and you get the log, though word reaches {rival}: clock moves on 1.",
+            "out": "You drop one scorched rivet on the table, and every rival captain suddenly remembers an urgent hull repair.",
+            "r": {
+              "cost": 20,
+              "nemClock": 1
+            },
+            "flag": "cs_feared",
+            "fl": {
+              "loud": 1
+            },
+            "if": "flag:cs_rigged",
+            "need": {
+              "flag": "cs_rigged",
+              "say": "the rigged crate"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "win": [],
+  "loss": []
+}

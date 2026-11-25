@@ -106,6 +106,11 @@ class and faction (issue 363), never from a constant.
 
 **In one line:** a lopsided brick of rust and stolen plate that runs dark.
 
+- **Body (the beings, issue 1990):** say "plate-faced and furred" in every text, never only "plate-faced". Huge, hunched
+  alien hunters: a face armoured in overlapping horn plates, a coarse fur mane over the hump, neck and shoulders, a row of
+  small red-shining eyes, heavy claws. The Sable portrait is the reference. Full description: lore bible section on the
+  Hullbreaker beings (`contrib/opus/compute/lore_bible_r8.md`).
+
 - **Silhouette:** blunt, heavy-bowed, uneven. Bigger on one side than the other. Listening dishes and wake-sniffer scoops at
   the bow, boarding claws under it. The one faction allowed to be junky.
 - **Shape language:** bolted, patched. Hull plates torn from every other faction, kept in their old colours. Nothing hangs

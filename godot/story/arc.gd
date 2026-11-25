@@ -1,5 +1,5 @@
 extends RefCounted
-# Faction arc engine (plumbing for step 3; the arc text itself waits for Ryan's approval of outlines.md).
+# Faction arc engine. Beats 1 and 2 play from these files (issue 1990); beat 3 and the ending come from campaign_tables.json.
 #
 # An arc file (res://story/data/arcs/<faction>.json) holds:
 #   {fac, arc, charge, prior_loss, prior_win,

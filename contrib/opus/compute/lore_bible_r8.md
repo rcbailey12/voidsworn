@@ -22,7 +22,7 @@ Your nine round 7 comments are folded in, each with a reply in its thread. Round
 |---|---|---|
 | **The Sunward Crusade** | The Vesper Reach, a whole frontier the Hegemony wrote off. No implants, no AI, names chalked by hand. Sworn to stop the Siphoning. | Black iron, frost-white markings, ember-orange radiator spires. |
 | **Hegemony Navy** | The core human state, run by the Registry, proudly cybernetic. Wants the cores as power. | Pale grey and steel blue, implant-blue lights, drone escorts. |
-| **The Ashfall Hullbreakers** | Huge, hunched alien void hunters with plated faces and a coarse mane, who track by trail and sound, hunt in packs, live for the fight and strip every wreck. | Ships that run dark: soot, rust, red running lights, trophy plates. |
+| **The Ashfall Hullbreakers** | Huge, hunched, plate-faced and furred alien void hunters (plated faces, a coarse mane), who track by trail and sound, hunt in packs, live for the fight and strip every wreck. | Ships that run dark: soot, rust, red running lights, trophy plates. |
 | **The Chorus** | A living weapon the Fleshwrights grew to fight Eclipse. It consumed its makers. One hungry swarm, coming to the Sun. | Dark olive flesh, ochre chitin, bile yellow-green light. |
 | **The Glasswrights** | The Starwrights who stayed flesh and worked in glass. Few, long-lived, grieving masters of light, optics and crystal. | Clear crystal and silver, prism light, mirrors. |
 | **Eclipse** (was Deathless) | The Starwrights who uploaded into machines. Building a new sun from stolen stellar energy; doubting the Upload was worth it. | Dark violet-black plates, a white-gold eclipse corona. |
