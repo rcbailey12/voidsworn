@@ -1,3 +1,7 @@
 @echo off
-rem Issue 633: queue the A18, A19 and A20 recipe run (A18_A20_RUN_633.bat) in its own minimised window. The Board queues it.
-start "a633run" /min cmd /c "%USERPROFILE%\Downloads\voidsworn_test\A18_A20_RUN_633.bat"
+rem Board queue entry. Wait for the job and return its watchdog exit code.
+setlocal
+set "V=%USERPROFILE%\Downloads\voidsworn_test"
+if not exist "%V%\A18_A20_RUN_633.bat" exit /b 2
+call "%V%\work217\tools\tmo.bat" 10800 "%ComSpec%" /d /s /c ""%V%\A18_A20_RUN_633.bat""
+exit /b %ERRORLEVEL%
