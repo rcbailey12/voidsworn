@@ -235,6 +235,12 @@ func _run() -> void:
 		_check(b.hud.menu == null and fo != null and card.is_ancestor_of(fo), "item 13: after a menu over the end card closes%s, the card has the keyboard again" % (" (opened inside the first beat)" if early else ""))
 		b.hud.hide_end()
 		await _frames(3)
+	# issue 2172: Fight again while the enemy turn is still playing (busy true) must start a live battle
+	b.busy = true
+	b._on_action("restart", null)
+	await create_timer(2.5).timeout
+	await _wait_idle(20000)
+	_check(not b.busy and b.api != null and not b.ended, "issue 2172: Fight again mid-turn leaves no stuck busy flag in the new battle")
 	# item 8: Fight again during the victory beat; the old battle's end card must not land in the new fight
 	b._end_flow()
 	await create_timer(0.3).timeout

@@ -68,6 +68,7 @@ func _init() -> void:
 		["grax: ram recoil is cut in half", c_grax],
 		["razormaw: a ship next to a wounded enemy gains +1 movement", c_razormaw],
 		["thorne: turning in place costs no movement or turns this round", c_thorne],
+		["thorne: a turn keeps a tree free turn until the rider ends (issue 2172)", c_thorne_keeps_tree],
 		["enemy side: a boss Command never carries a rider", c_enemy],
 	]
 	var fails := 0
@@ -382,6 +383,22 @@ func c_thorne() -> Array:
 	R.UNDO_ON = false
 	if not ok or int(u["facing"]) != 4: return [false, "a free turn could not be undone (facing %s)" % str(u["facing"])]
 	return [true, ""]
+
+func c_thorne_keeps_tree() -> Array:
+	fresh("thorne", "ithar", ["i_carrier"], "voidsworn", ["penitent"])
+	var u = P[0]
+	u["treeFreeTurn"] = 1
+	R.useCommand("player")
+	var mp0 = u["mp"]; var t0 = u["turnsLeft"]
+	R.rotateUnit(u, 1)
+	var kept: bool = R.z0(u.get("treeFreeTurn")) == 1 and u["mp"] == mp0 and u["turnsLeft"] == t0
+	u.erase("riderFace")
+	R.rotateUnit(u, 1)
+	var used: bool = R.z0(u.get("treeFreeTurn")) == 0 and u["mp"] == mp0 and u["turnsLeft"] == t0
+	R.rotateUnit(u, 1)
+	var charged: bool = u["mp"] == mp0 - 1 and u["turnsLeft"] == t0 - 1
+	return [kept and used and charged, "kept %s, tree %s after the rider, mp %s turns %s after both" % [str(kept), str(u.get("treeFreeTurn")), str(u["mp"] - mp0), str(u["turnsLeft"] - t0)]]
+
 
 func c_enemy() -> Array:
 	fresh("vex", "voidsworn", ["penitent"], "hegemony", ["h_picket"])

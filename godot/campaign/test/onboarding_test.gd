@@ -56,6 +56,11 @@ func _run() -> void:
 	Teaching.set_off(true)
 	var o := Teaching.load_opts()
 	check(o.speed == 0.45 and o.extra == "preserved" and o.tips.has("threat") and o.tips.has("start") and o.tips.has("turns"), "shared options preserve history, speed and unrelated fields")
+	# issue 2172: an unchanged save never rewrites the file, and every write goes through a temporary file
+	var writes: int = Teaching._opts_writes
+	Teaching.save_opts({})
+	check(Teaching._opts_writes == writes and not FileAccess.file_exists(Teaching.OPTS + ".tmp"),
+		"an unchanged options save writes nothing and leaves no temporary file")
 	Teaching.set_off(false)
 	var b = Battle.new()
 	b.hud = FakeHUD.new()
@@ -167,6 +172,7 @@ func _run() -> void:
 	var t = Teaching.new(); root.add_child(t); t.bind(c)
 	# Start with clean teaching history, retaining the same isolated profile.
 	var f := FileAccess.open(Teaching.OPTS, FileAccess.WRITE); f.store_string('{"speed":0.45,"tipsOff":false,"tips":{}}'); f.close()
+	Teaching._opts_loaded = false   # issue 2172: a direct file write, as an old build makes, asks the cache for a fresh read
 	t.open_screen("map|1", ["c_map", "c_clock"])
 	check(t.current == "c_map", "first map opens one card")
 	t._action("tip_ok", "c_map")
@@ -186,6 +192,7 @@ func _run() -> void:
 	t.queue_free(); await process_frame
 	var f2 := FileAccess.open(Teaching.OPTS, FileAccess.WRITE)
 	f2.store_string('{"tipsOff":false,"tips":{"c_map":true,"c_clock":true,"c_tree":true}}'); f2.close()
+	Teaching._opts_loaded = false   # issue 2172: fresh read of the old profile written above
 	c.META = c.defaultMeta(); c.newRun("vex", "voidsworn")
 	root.size = Vector2i(1920, 1080)
 	var ui := CampaignUI.new(); root.add_child(ui); ui.bind(c); ui.set_process(false); ui.use_3d_map = false

@@ -2115,9 +2115,11 @@ func canRotate(u) -> bool: return not jt(u.get("dead")) and not jt(u.get("isSq")
 # else one movement and one turn. The battle screen's turn planner (battle.gd _turns_ok) runs this same function on a copy,
 # so the preview can never charge differently from the real turn (Artoo on PR 1876). Returns true for a free turn.
 func spendTurn(u) -> bool:
+	# issue 2172: the Thorne rider's free turn comes first and keeps any tree free turn for later
+	if riderFace(u):
+		return true   # issue 1651 Thorne rider: the turn costs nothing and keeps any tree free turn (not counted in B.rider.fired, so the turn can still be undone)
 	var freeTurn = z0(u.get("treeFreeTurn")) > 0
-	if not freeTurn and riderFace(u): freeTurn = true   # issue 1651 Thorne rider: the turn costs nothing and keeps any tree free turn (not counted in B.rider.fired, so the turn can still be undone)
-	elif freeTurn: u["treeFreeTurn"] = 0
+	if freeTurn: u["treeFreeTurn"] = 0
 	elif freePivot(u): u["pivotUsed"] = true
 	else:
 		u["mp"] = u["mp"] - 1

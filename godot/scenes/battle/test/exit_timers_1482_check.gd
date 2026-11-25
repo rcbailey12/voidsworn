@@ -69,6 +69,19 @@ func _run() -> void:
 	b.hud.show_end("Withdrawal", "Test", false)   # the end card's 0.75 s focus beat, then the battle goes before it fires
 	await process_frame
 	_check(b.cmd_armed_t > 0.0 and b.kill_hold_until > 0.0, "the Command timer and the kill hold are running when the battle goes")
+	# issue 2172: Quit to title while an event still waits stops that event and the rest of its batch
+	var foe = api.R.alive("enemy")[0]
+	var sv = b.views[str(foe["id"])]
+	var at: Vector3 = sv.position
+	var quit_timer := create_timer(0.05)
+	b._play_batch({"events": [
+		{"t": "blink", "unit": str(foe["id"]), "to": {"q": int(foe["q"]) + 1, "r": int(foe["r"])}},
+		{"t": "log", "text": "issue 2172 after quit", "kind": "x"}], "view": b.V})
+	await quit_timer.timeout
+	b._retire()
+	await create_timer(0.6).timeout
+	_check(sv.position.distance_to(at) < 0.5 and not b.hud.log_text.get_parsed_text().contains("issue 2172 after quit"),
+		"Quit to title during an event await leaves the ship and the log alone")
 	b.ended = true   # the retreat: the battle is over and main.gd frees it
 	b.queue_free()
 	await create_timer(4.0).timeout

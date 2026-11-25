@@ -698,8 +698,19 @@ func later(t: float, f: Callable) -> void:
 	if t <= now:
 		f.call()
 		return
-	_later.append([t, f, _later_serial])
+	# issue 2172: keep the queue ordered as it is filled, so the frame loop never rescans or resorts it
+	var entry := [t, f, _later_serial]
 	_later_serial += 1
+	var lo := 0
+	var hi := _later.size()
+	while lo < hi:
+		var mid := (lo + hi) >> 1
+		var e: Array = _later[mid]
+		if float(e[0]) < t or (float(e[0]) == t and int(e[2]) < int(entry[2])):
+			lo = mid + 1
+		else:
+			hi = mid
+	_later.insert(lo, entry)
 
 
 func free_effect(ref: WeakRef) -> void:
@@ -731,19 +742,9 @@ func free_picture(ref: WeakRef, gen: int) -> void:
 func _run_later() -> void:
 	if _later.is_empty():
 		return
-	var keep: Array = []
-	var due: Array = []
-	for e in _later:
-		if float(e[0]) <= now:
-			due.append(e)
-		else:
-			keep.append(e)
-	_later = keep
-	due.sort_custom(func(a: Array, b: Array) -> bool:
-		if a[0] == b[0]:
-			return int(a[2]) < int(b[2])
-		return float(a[0]) < float(b[0]))
-	for e in due:
+	var done := 0
+	while done < _later.size() and float(_later[done][0]) <= now:
+		var e: Array = _later[done]
 		var t0 := Time.get_ticks_usec()
 		(e[1] as Callable).call()
 		# issue 220: which deferred step a long frame spent its time in (named lambdas and bound functions)
@@ -751,6 +752,9 @@ func _run_later() -> void:
 		if us > 300:
 			var key := "L:" + String((e[1] as Callable).get_method())
 			prof[key] = int(prof.get(key, 0)) + us
+		done += 1
+	if done > 0:
+		_later = _later.slice(done)
 
 
 # ---------------------------------------------------------------- emit helpers (t = absolute effect-clock time)
