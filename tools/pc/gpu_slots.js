@@ -340,10 +340,10 @@ function modeFor(exe, args, cwd = process.cwd(), requested = '') {
   return resources.some(measures) ? 'solo' : 'shared';
 }
 
-// Lanes C (board_c) and D (board_d) are code only (R268, R301). The runner flag or the working folder is enough (issue 947).
+// Lanes C to F are code only (R268, R301, issue 2057). The runner flag or the working folder is enough (issue 947).
 function codeOnlyLane(flag, cwd) {
-  if (flag === 'C' || flag === 'D') return flag;
-  const m = /(?:^|[\\/])board_([cd])(?:[\\/]|$)/i.exec(cwd || '');
+  if (/^[C-F]$/.test(flag)) return flag;
+  const m = /(?:^|[\\/])board_([c-f])(?:[\\/]|$)/i.exec(cwd || '');
   return m ? m[1].toUpperCase() : '';
 }
 

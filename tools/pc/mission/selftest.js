@@ -488,7 +488,26 @@ async function test(){
     assert(!JSON.stringify(failed).includes('private-folder'));
   });
   check('output paths refuse job roots and junctions',()=>{
-    for(const folder of ['board','board_c/issue-1','queue','build_b/tools','work217'])assert.throws(()=>p.options(['--root',base,'--out',path.join(base,folder)]));const link=path.join(base,'link');fs.symlinkSync(root,link,process.platform==='win32'?'junction':'dir');assert.throws(()=>p.writeSnapshot(link,real.snapshot));
+    for(const folder of ['board','board_c/issue-1','board_e','board_f/issue-1','queue','build_b/tools','work217'])assert.throws(()=>p.options(['--root',base,'--out',path.join(base,folder)]));const link=path.join(base,'link');fs.symlinkSync(root,link,process.platform==='win32'?'junction':'dir');assert.throws(()=>p.writeSnapshot(link,real.snapshot));
+  });
+  check('Codex E and F publish separate jobs and chain logs',()=>{
+    const r = path.join(base,'extra-lanes');
+    const at = NOW-60000;
+    for (const [id,issue,next] of [['e',2057,2058],['f',2059,2060]]) {
+      const stem = path.join(r,`codex_lane_${id}1`);
+      write(stem+'.bat',`for %%N in (${issue} ${next}) do call :one %%N`,at);
+      write(stem+'.txt',`${issue} start ${new Date(at).toTimeString().slice(0,8)}`,at);
+      write(path.join(r,`board_${id}/issue-${issue}/status.json`),JSON.stringify({run:RUN,status:'running',
+        title:`Job on lane ${id}`,started:iso(at)}),at);
+    }
+    const data = p.snapshot(r,NOW);
+    for (const [id,issue,next] of [['e',2057,2058],['f',2059,2060]]) {
+      const row = lane(data,id);
+      assert.equal(row.current.title,`Job on lane ${id}`);
+      assert.equal(row.current.issue,issue);
+      assert.deepEqual(row.next.map(job=>job.issue),[next]);
+      assert.deepEqual(row.source.lanes,[`codex_lane_${id}1.txt`]);
+    }
   });
   await startupTests(check,base);
   await httpTests(check,base);
