@@ -18,7 +18,7 @@ extends RefCounted
 #            small sooty rockets)   star (Ithar star torpedo: a little sun)
 #   flak:    airbursts in the faction's style (Hegemony picket lasers, Chorus spores, Ithar mirror glints, Deathless
 #            gauss shredder streaks, Corsair chaff)
-#   bio:     spine (bioplasma: wobbling globs that splash and corrode)   tendril (boarding tendrils: an organic lash)
+#   bio:     spine (bioplasma: wobbling globs that splash and corrode)   tendril (Acid Thorns: a built bone thorn that sticks, then crumbles)
 #   gauss:   coil charge, a visible null slug, a punch-through with an exit spray
 #   sq:      guns, bombs, sporeb: craft on a strafing run
 
@@ -31,6 +31,7 @@ const WING := preload("res://render/squadron_wing.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
+const THORN := preload("res://fx/fx_acid_thorn.gd")   # issue 1877: Acid Thorns, the Chorus close-in weapon
 
 const LOOK_BY_ID := {
 	"battery": "macro", "hbattery": "macro", "autocannon": "auto", "turret": "las", "laser": "plasma_cannon", "turbo": "plasma",
@@ -601,16 +602,12 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			fx.light(from + dir, tf, ft, 1.6, col, 1)
 			ti = tf + ft
 		"tendril":
-			tf = T0 + 0.2 + beat * 0.2
-			ti = tf + 0.25
-			tend = tf + 0.9
-			fx.rib(from, dir, dist, tf, tend - tf, col, 1.4, 1.6 * ka, 0.35 * ka, 9)
-			# The advancing tip sheds spores. Use the ribbon's eased reach so haze never leads it.
-			for j in 5:
-				var u: float = (float(j) + fx.rng.randf_range(0.2, 0.8)) / 5.0
-				var tip := from.lerp(to, smoothstep(0.0, 1.0, u))
-				var drift: Vector3 = (Vector3.UP + fx.rdir()) * 2.0 * ka
-				fx.spr(tip, lerpf(tf, ti, u), 0.52, col, 0.48, 0.5 * ka, 2.0 * ka, 20, drift, 0.8, 0.0, 0.0, 14.0 * size)
+			# Acid Thorns (issue 1877, R437): one built bone thorn a shot (fx_acid_thorn.gd); the old tendril lash is gone
+			tg["mark_look"] = "thorn"  # the etched burn, no drawn spines: the built thorn is the spine (issue 1877)
+			var cr: Array = THORN.shot(fx, from, mn, to, T0, beat, col, ka, A, tg, Tg)
+			tf = cr[0]
+			ti = cr[1]
+			tend = cr[2]
 		"gauss":
 			var heavy = w >= 3
 			var wind = 0.75 if heavy else 0.25
@@ -1301,6 +1298,7 @@ static func _bez(a: Vector3, b: Vector3, c: Vector3, u: float) -> Vector3:
 
 static func update(fx, dt: float) -> void:
 	_craft_update(fx, dt)
+	THORN.update(fx, dt)
 	for ship in fx.ships.values():
 		if is_instance_valid(ship.root):
 			var squad = ship.root.get("squad_kind")
@@ -2738,8 +2736,8 @@ const TURRET_LIGHT_KICK := 0.14   # a turreted gun outside SHOOTER_RECOIL: its b
 
 static func _miss_fade(fx, lk: String, Tg, tg: Dictionary, from: Vector3, fire_at: float, T: float, col: Color, dir: Vector3, k: float) -> float:
 	var exit: Vector3 = tg["p"]
-	if family_of(lk) == "lance" or lk == "tendril":
-		if lk not in ["needle", "tendril"]:
+	if family_of(lk) == "lance":
+		if lk != "needle":
 			fx.spr(exit, T, 0.4, col, 2.0, 2.0 * k, 3.0 * k, 18)
 		return T
 	if lk == "ram":
@@ -2752,7 +2750,8 @@ static func _miss_fade(fx, lk: String, Tg, tg: Dictionary, from: Vector3, fire_a
 		if Tg != null and Tg.shielded:
 			fx.later(pass_at, func l_graze() -> void: _shield_graze(fx, Tg, from, dir, fx.now, k))
 	# Gauss has its own cooling wake. Guided rounds and craft leave persistent exhaust, and flak bursts in the air.
-	if lk in ["gauss", "torp", "star", "rockets", "guns", "bombs", "sporeb"] or family_of(lk) == "flak":
+	# The Acid Thorn draws its own built body flying on past (fx_acid_thorn.gd), so no streak over it (Artoo on PR 1904).
+	if lk in ["gauss", "torp", "star", "rockets", "guns", "bombs", "sporeb", "tendril"] or family_of(lk) == "flak":
 		return T
 	var speed := from.distance_to(exit) / flight
 	var life := clampf(14.0 * k / maxf(speed, 1.0), 0.08, 0.18)
