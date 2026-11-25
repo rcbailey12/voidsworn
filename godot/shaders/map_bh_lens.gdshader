@@ -36,11 +36,11 @@ void fragment() {
 	float src_z = -vsrc.z / vsrc.w;
 	if (src_z < hole_z * 0.98) { suv = SCREEN_UV + dir * 0.02 * edge; }
 	vec3 col = textureLod(screen_tex, suv, 0.0).rgb;
-	float mag = 1.0 + 0.6 * exp(-pow((th - r_einstein) / (r_einstein * 0.35), 2.0)) * edge;
+	float mag = 1.0 + 0.6 * exp(-(((th - r_einstein) / (r_einstein * 0.35)) * ((th - r_einstein) / (r_einstein * 0.35)))) * edge;
 	col *= mag;
 	float sh = smoothstep(r_shadow * 1.02, r_shadow * 0.98, th);
-	float ring = exp(-pow((th - r_shadow * 1.05) / (r_shadow * 0.035), 2.0)) * photon;
-	float ring2 = exp(-pow((th - r_shadow * 1.12) / (r_shadow * 0.08), 2.0)) * photon * 0.35;
+	float ring = exp(-(((th - r_shadow * 1.05) / (r_shadow * 0.035)) * ((th - r_shadow * 1.05) / (r_shadow * 0.035)))) * photon;
+	float ring2 = exp(-(((th - r_shadow * 1.12) / (r_shadow * 0.08)) * ((th - r_shadow * 1.12) / (r_shadow * 0.08)))) * photon * 0.35;
 	col = mix(col, vec3(0.0), sh) + ring_col * (ring * 6.0 + ring2 * 2.0) * (0.92 + 0.08 * sin(TIME * 0.7));
 	ALBEDO = col;
 	ALPHA = smoothstep(1.0, 0.85, r);

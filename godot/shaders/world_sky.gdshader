@@ -91,7 +91,7 @@ void sky() {
 		col += sun_k * sun_col * (smoothstep(0.012, 0.009, sa) * 30.0 + exp(-sa * sa / 0.0012) * 1.2 + 0.002 / (0.001 + sa * sa) * 0.12);
 	}
 	// A broad warm halo in the new sun's direction. Zero keeps every normal battle exactly as before.
-	float catch_light = pow(max(0.0, 0.5 + 0.5 * dot(EYEDIR, normalize(dawn_dir))), 2.0);
+	float catch_light = ((max(0.0, 0.5 + 0.5 * dot(EYEDIR, normalize(dawn_dir)))) * (max(0.0, 0.5 + 0.5 * dot(EYEDIR, normalize(dawn_dir)))));
 	col = mix(col, col * vec3(1.18, 1.03, 0.84), dawn * 0.55);
 	col += vec3(0.10, 0.047, 0.016) * catch_light * dawn;
 	if (AT_CUBEMAP_PASS && fleet_reflections) {

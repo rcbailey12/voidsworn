@@ -284,14 +284,16 @@ float craters_r(vec3 d, float scale, float dens, inout float ray) {
 		float size = hh(c + 7.7);
 		float r = (0.18 + 0.3 * size) / scale;
 		float u = acos(clamp(dot(d, cp), -1.0, 1.0)) / r;
-		h += (u < 1.0 ? -(1.0 - u * u) : 0.0) * 0.6 + exp(-pow((u - 1.0) / 0.2, 2.0)) * 0.25;
+		float uc = (u - 1.0) / 0.2;
+		h += (u < 1.0 ? -(1.0 - u * u) : 0.0) * 0.6 + exp(-(uc * uc)) * 0.25;
 		h += exp(-pow(u / 0.16, 2.0)) * 0.3 * smoothstep(0.5, 0.9, size);
 		if (hh(c + 9.3) < 0.18 && u > 0.9 && u < 2.4) {
 			vec3 e1 = normalize(cross(abs(cp.y) > 0.95 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0), cp));
 			vec3 e2 = cross(cp, e1);
 			float ang = atan(dot(d, e2), dot(d, e1));
 			float streak = smoothstep(0.62, 0.92, wvn3(vec3(cos(ang) * 5.0, sin(ang) * 5.0, hh(c + 3.7) * 40.0)));
-			ray += streak * exp(-pow((u - 1.0) / 0.55, 2.0)) * smoothstep(0.9, 1.1, u);
+			float ur = (u - 1.0) / 0.55;
+			ray += streak * exp(-(ur * ur)) * smoothstep(0.9, 1.1, u);
 		}
 	}
 	return h;

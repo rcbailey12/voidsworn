@@ -16,7 +16,7 @@ void fragment() {
 	float tick = smoothstep(0.03, 0.0, abs(fract(ang / 6.28318 * 24.0) - 0.5) - 0.44) * step(r - 0.07, d) * step(d, r - 0.025);
 	float dsh = dash * step(0.5, fract(ang / 6.28318 * 18.0 - TIME * 0.25)) * smoothstep(0.016, 0.0, abs(d - r - 0.045));
 	float inner = smoothstep(r, r * 0.2, d) * (0.06 + fill * 0.1);
-	float glow = exp(-pow((d - r) / 0.09, 2.0)) * (0.25 + hot * 0.4);
+	float glow = exp(-(((d - r) / 0.09) * ((d - r) / 0.09))) * (0.25 + hot * 0.4);
 	float a = ring * 1.4 + tick * 0.6 + dsh * 1.5 + inner + glow + outer * 0.5 * (0.4 + hot);
 	ALBEDO = col.rgb * a * col.a * 1.6;
 }

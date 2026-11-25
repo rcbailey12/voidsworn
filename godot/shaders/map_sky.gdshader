@@ -39,7 +39,7 @@ void sky() {
 	float neb = smoothstep(0.42, 0.85, n1) * (0.55 + 0.6 * band);
 	col += c1 * neb * 0.32;
 	col += c2 * smoothstep(0.5, 0.95, n2) * neb * 0.5;
-	col += c3 * pow(smoothstep(0.62, 1.0, n2 * n1 * 1.9), 2.0) * 0.18;
+	col += c3 * ((smoothstep(0.62, 1.0, n2 * n1 * 1.9)) * (smoothstep(0.62, 1.0, n2 * n1 * 1.9))) * 0.18;
 	// dark dust lanes
 	float dust = smoothstep(0.48, 0.72, mfbm(d * 5.3 + vec3(2.0, seed, 7.0), oct));
 	col *= 1.0 - dust * 0.75 * (0.4 + band);

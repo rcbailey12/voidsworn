@@ -66,7 +66,7 @@ vec3 craters(vec3 p, float dens) {
 				float d = length(c - f) / rad;
 				if (d < 1.8) {
 					float bowl = d < 1.0 ? d * d - 1.0 : 0.0;
-					float rim = exp(-pow((d - 1.0) / 0.2, 2.0));
+					float rim = exp(-(((d - 1.0) / 0.2) * ((d - 1.0) / 0.2)));
 					float ej = d > 1.0 ? exp(-(d - 1.0) * 4.0) * 0.12 : 0.0;
 					o.x += (bowl * 0.55 + rim * 0.22 + ej) * rad * (0.6 + 0.6 * hs.y);
 					o.y = max(o.y, d < 1.0 ? 1.0 - d * d : 0.0);

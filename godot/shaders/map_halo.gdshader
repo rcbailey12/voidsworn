@@ -11,7 +11,7 @@ void fragment() {
 	vec2 p = (UV - 0.5) * 2.0;
 	float d = length(p);
 	float ang = atan(p.y, p.x);
-	float band = smoothstep(0.03, 0.0, abs(d - r)) * 1.2 + exp(-pow((d - r) / 0.08, 2.0)) * 0.4;
+	float band = smoothstep(0.03, 0.0, abs(d - r)) * 1.2 + exp(-(((d - r) / 0.08) * ((d - r) / 0.08))) * 0.4;
 	vec3 c = mix(col.rgb, col2.rgb, 0.5 + 0.5 * sin(ang * 3.0 + TIME * 0.4));
 	if (look > 1.5 && look < 2.5) c = hue(ang / 6.28318 + TIME * 0.05) * 1.2;
 	float pl = (look > 0.5 && look < 1.5) ? 0.65 + 0.45 * sin(TIME * 2.4) : 1.0;

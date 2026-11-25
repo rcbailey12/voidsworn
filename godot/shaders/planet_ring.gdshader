@@ -29,7 +29,7 @@ void fragment() {
 	dens = clamp(dens / 1.9, 0.0, 1.0);
 	dens *= smoothstep(0.0, 0.04, u) * (1.0 - smoothstep(0.94, 1.0, u));
 	// a dark gap two thirds of the way out (Cassini-like) and a thin faint inner ring
-	dens *= 1.0 - 0.9 * exp(-pow((u - 0.66) / 0.018, 2.0));
+	dens *= 1.0 - 0.9 * exp(-(((u - 0.66) / 0.018) * ((u - 0.66) / 0.018)));
 	dens *= mix(0.35, 1.0, smoothstep(0.08, 0.2, u));
 	vec3 L = normalize(sun);
 	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);

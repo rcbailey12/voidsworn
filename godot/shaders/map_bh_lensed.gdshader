@@ -36,7 +36,7 @@ void fragment() {
 	c = mix(c, c * vec3(0.85, 0.97, 1.2), clamp(beam, 0.0, 1.0) * 0.35);
 	c = mix(c, c * vec3(1.1, 0.8, 0.65), clamp(-beam, 0.0, 1.0) * 0.35);
 	// the photon ring: thin, sharp, hugging the shadow, a little brighter on the approaching side
-	float ring = exp(-pow((th - 1.02) / 0.011, 2.0)) * 3.2 * (1.0 + 0.25 * beam) + exp(-pow((th - 1.06) / 0.05, 2.0)) * 0.35;
+	float ring = exp(-(((th - 1.02) / 0.011) * ((th - 1.02) / 0.011))) * 3.2 * (1.0 + 0.25 * beam) + exp(-(((th - 1.06) / 0.05) * ((th - 1.06) / 0.05))) * 0.35;
 	ALBEDO = (c * arc + vec3(1.0, 0.88, 0.68) * ring) * gain;
 	ALBEDO *= exposure_gain;
 }

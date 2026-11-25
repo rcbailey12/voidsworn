@@ -9,8 +9,8 @@ void vertex() {
 void fragment() {
 	float th = length(UV - 0.5) * 2.0;
 	float sh = smoothstep(r_shadow * 1.02, r_shadow * 0.98, th);
-	float ring = exp(-pow((th - r_shadow * 1.05) / (r_shadow * 0.035), 2.0));
-	float ring2 = exp(-pow((th - r_shadow * 1.2) / (r_shadow * 0.15), 2.0)) * 0.25;
+	float ring = exp(-(((th - r_shadow * 1.05) / (r_shadow * 0.035)) * ((th - r_shadow * 1.05) / (r_shadow * 0.035))));
+	float ring2 = exp(-(((th - r_shadow * 1.2) / (r_shadow * 0.15)) * ((th - r_shadow * 1.2) / (r_shadow * 0.15)))) * 0.25;
 	ALBEDO = ring_col * (ring * 6.0 + ring2 * 2.0) * (1.0 - sh);
 	ALPHA = clamp(sh + ring + ring2, 0.0, 1.0);
 }

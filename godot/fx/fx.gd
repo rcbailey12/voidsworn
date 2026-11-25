@@ -1729,17 +1729,17 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 	pend("add:collider", t_col)
 	if defer_initial_cuts:
 		return
-	# cut the hull for its death on a worker thread, staggered so a battle start does not stall. Issue 1232: the stagger
-	# counts the cuts still waiting to start, not every ship in the battle (a reinforcement in a 20 ship battle waited
-	# 5.4 s before its cut began, and the cut itself takes seconds), so a late arrival is ready for its death sooner.
-	var n := _arrival_cuts
-	_arrival_cuts += 1
-	later(now + 0.1 + 0.25 * n, func l_cut_first() -> void:
-		_arrival_cuts = maxi(_arrival_cuts - 1, 0)
-		if ships.get(id) == s and not s.dead and not s.gone:
-			var t_c := Time.get_ticks_usec()
-			DEATH.precompute(self, s)
-			pend("cut_first", t_c))
+	# Issue 2087: a scripted look bench row knows which ship will die. Battles still prepare every arrival.
+	if bool(info.get("cut_on_arrival", true)):
+		# Issue 1232: stagger only the cuts still waiting to start, so a late arrival is ready sooner.
+		var n := _arrival_cuts
+		_arrival_cuts += 1
+		later(now + 0.1 + 0.25 * n, func l_cut_first() -> void:
+			_arrival_cuts = maxi(_arrival_cuts - 1, 0)
+			if ships.get(id) == s and not s.dead and not s.gone:
+				var t_c := Time.get_ticks_usec()
+				DEATH.precompute(self, s)
+				pend("cut_first", t_c))
 	if warmed and DisplayServer.get_name() != "headless":
 		warm_arrival.call_deferred(s)
 
