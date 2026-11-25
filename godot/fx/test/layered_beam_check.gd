@@ -122,7 +122,9 @@ func _beam(weapon: String, faction: String, kind: int, expected_lenses: int, cal
 	await _release()
 
 
-func _null_contact(absorbed: bool, faction := "hegemony") -> void:
+func _null_contact(absorbed: bool, faction := "hegemony", v2 := false) -> void:
+	var old_v2 := OS.get_environment("VS_WOUNDS_V2")
+	OS.set_environment("VS_WOUNDS_V2", "1" if v2 else "0")
 	_setup(false)
 	for a in [["A", SOURCE, "deathless"], ["T", TARGET, faction]]:
 		var ship := Node3D.new()
@@ -148,16 +150,36 @@ func _null_contact(absorbed: bool, faction := "hegemony") -> void:
 		for flare in flares:
 			_check(flare[14] > flare[12] and flare[14] > flare[13], "null lance contact flares stay violet on tissue")
 	await _advance(1.3)
-	_check(target._marks.size() == (0 if absorbed else 1), "only hull contact leaves a null lance scar")
-	if not target._marks.is_empty():
-		var mark: BREACH.Ent = target._marks[0]
-		_check(mark.look == "nlance" and mark.style == BREACH.S_NULL_BURN and mark.kind == BREACH.K_SLOT,
-			"null lance leaves its own sealed trench on " + faction)
+	var label := "%s Null Lance on %s" % ["V2" if v2 else "legacy", faction]
+	var parts := {}
+	for mark: BREACH.Ent in target._marks:
+		_check(mark.look == "nlance" and mark.style == BREACH.S_NLANCE and mark.kind == BREACH.K_SLOT and not mark.has_cut(),
+			label + " uses the shared sealed Null Lance style")
+		_check((mark.v2 >= 0) == v2, label + " keeps the Wounds V2 gate")
+		parts[mark.part_i] = true
+	var count := 0 if absorbed else (3 if v2 else 1)
+	_check(target._marks.size() == count and parts.size() == count,
+		label + " leaves %d distinct cuts (got %d)" % [count, target._marks.size()])
+	if not absorbed:
 		_check(not fx.dstate.has("heat_spot_mat"), "null lance does not apply the orange heat overlay")
 	await _release()
+	if old_v2.is_empty():
+		OS.unset_environment("VS_WOUNDS_V2")
+	else:
+		OS.set_environment("VS_WOUNDS_V2", old_v2)
 
 
 func _run() -> void:
+	_check(SH.RING_HARMONIC == 6 and SH.RIB_NULL_LANCE == 11 and SH.DISTORT_BEAM == 2,
+		"Build F uses its assigned ring, ribbon and distortion IDs")
+	_check(BREACH.S_PRISM == 16 and BREACH.S_STAR == 17 and BREACH.S_NLANCE == 18,
+		"Wounds V2 styles stay on their assigned IDs")
+	var ring_vertex: String = SH.RING.get_slice("void vertex()", 1).get_slice("void fragment()", 0)
+	var ring_fragment: String = SH.RING.get_slice("void fragment()", 1)
+	_check(ring_vertex.contains("if (rk == 6)") and ring_fragment.contains("if (k == 6)"),
+		"both ring shader stages use the harmonic ID")
+	_check(ring_vertex.contains("px_world(36.0, dv, PROJECTION_MATRIX)"),
+		"the harmonic ring floor follows fx_px and turns off with the other floors")
 	for calm in [false, true]:
 		await _beam("lance", "voidsworn", SH.RIB_LANCE, 3, calm)
 		await _beam("lance", "corsair", SH.RIB_LANCE, 3, calm)
@@ -168,6 +190,8 @@ func _run() -> void:
 	await _null_contact(false)
 	await _null_contact(true)
 	await _null_contact(false, "chorus")
+	await _null_contact(false, "hegemony", true)
+	await _null_contact(true, "hegemony", true)
 	if failures == 0:
 		print("PASS: layered beam routing, charge, timing, harmonics, lenses, Glasswright no-refraction and null contact")
 	quit(1 if failures else 0)

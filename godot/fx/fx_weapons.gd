@@ -30,7 +30,6 @@ const DEATH := preload("res://fx/fx_death.gd")
 const WING := preload("res://render/squadron_wing.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
-const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const THORN := preload("res://fx/fx_acid_thorn.gd")   # issue 1877: Acid Thorns, the Chorus close-in weapon
 
 const LOOK_BY_ID := {
@@ -2261,6 +2260,8 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var ld: Vector3 = (Tg.xf().basis.inverse() * dir).normalized()
 		var lp0: Vector3 = tg["lp"]
 		var ln0: Vector3 = tg["ln"]
+		# Send the null lance's own look in both modes. marks_for keeps R416's three cuts with V2 on
+		# and makes Build F's single sealed trench with V2 off. Explicit mark overrides still win.
 		var wound_look: String = tg.get("mark_look", {"plasma_cannon": "plasma", "gsentry": "gflak", "junk": "auto"}.get(lk, lk))
 		fx.later(T, func l_mark() -> void: Tg.add_mark(fx, wound_look, w, lp0, ln0, ld))
 	var matter_k: float = k * sqrt(float(tg.get("gk", 1.0)))

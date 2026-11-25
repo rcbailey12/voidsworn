@@ -54,10 +54,9 @@ const S_HATCH := 11
 const S_DENT := 12
 const S_PATCH := 14
 const S_FISSURE := 15
-const S_NULL_BURN := 16
 const S_SCORCH := 13      # the stage ladder's spreading scorch (fx_ship._plan)
-# R416 (issue 1741, folded 1692 item d), Wounds V2 only: a prism hit's crystal star fracture, a star lance's white-gold
-# heat sear, a null lance's three parallel violet-black cuts
+# R416 (issue 1741, folded 1692 item d): a prism hit's crystal star fracture, a star lance's white-gold heat sear,
+# a null lance's three parallel violet-black cuts. Build F also uses S_NLANCE for the single sealed cut with V2 off.
 const S_PRISM := 16
 const S_STAR := 17
 const S_NLANCE := 18
@@ -70,8 +69,8 @@ const SEC_MARK_CAP := 8   # ... and per hull section; past it a repeat grows an 
 const GROW_MAX := 1.6     # how far repeats can grow a mark (lance slots lengthen, craters widen, ion trees spread)
 # The smallest halo per mark style, in world units (the game's scale: hexes 17.3 across; the battle camera sits 170 away,
 # about 7.7 pixels a unit at 1080p). Claude's picks, vetoable; tuned on the r5 battle-distance stills.
-const HALO_MIN := {S_BURN: 1.1, S_NULL_BURN: 1.1, S_SHELL: 1.3, S_PLASMA: 1.6, S_GAUSS_IN: 1.1, S_GAUSS_OUT: 1.4, S_BLAST: 2.8,
-	S_FLAK: 2.4, S_ACID: 1.7, S_ION: 2.3, S_RAM: 2.6, S_HATCH: 1.6}
+const HALO_MIN := {S_BURN: 1.1, S_SHELL: 1.3, S_PLASMA: 1.6, S_GAUSS_IN: 1.1, S_GAUSS_OUT: 1.4, S_BLAST: 2.8,
+	S_FLAK: 2.4, S_ACID: 1.7, S_ION: 2.3, S_RAM: 2.6, S_HATCH: 1.6, S_PRISM: 1.6, S_STAR: 2.6, S_NLANCE: 1.4}
 # Issue 1235 (F1.1): the smallest a weapon mark gets on a healthy section, as a share of its full (broken-section) size
 const MARK_FLOOR := 0.7
 # Issue 1235 (F1.2): a stage 4 breach hole's radius as a share of the ship's length (was 0.032: 5 to 16 px at camera 170)
@@ -1853,14 +1852,31 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 	if tang.length_squared() < 0.01:
 		tang = n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT)
 	tang = tang.normalized()
-	match look:
+	# R416 (issue 1741), Wounds V2 on: the target faction's wound kind, and three weapons get marks of their own
+	var v2k := -1
+	if WOUNDS.v2():
+		v2k = int(wound_of(faction).get("kind", 0))
+		match look:
+			"prism":
+				out.append(crater(p, n, L * 0.018 * wk * g, L * 0.004 * wk, seed_v, S_PRISM))
+			"star":
+				out.append(crater(p, n, L * 0.04 * wk * g, L * 0.006 * wk, seed_v, S_STAR))
+			"nlance":
+				var cut_dir := n.cross(tang)
+				var side := n.cross(cut_dir).normalized()
+				var R0: float = L * 0.003 * wk * sqrt(g)
+				for k in 3:
+					var e3 := slot(hull, p + side * R0 * 3.2 * (k - 1), n, cut_dir, R0, L * 0.03 * wk * g * (1.0 - 0.15 * absf(k - 1)), seed_v + k * 0.31)
+					e3.style = S_NLANCE
+					out.append(e3)
+	match look if out.is_empty() else "":
 		"lance", "nlance", "needle", "pulsar", "las":
 			# the beam drags across the plate: the cut runs across the line of fire; repeats lengthen it
 			var cut_dir := n.cross(tang)
 			var R: float = L * 0.0045 * wk * (0.6 if look in ["needle", "las"] else 1.0) * sqrt(g)
 			var e := slot(hull, p, n, cut_dir, R, L * 0.035 * wk * g, seed_v)
 			if look == "nlance":
-				e.style = S_NULL_BURN
+				e.style = S_NLANCE
 			out.append(e)
 		"ion", "doom":
 			out.append(surface(p, n, L * 0.06 * wk * g, seed_v, S_ION))

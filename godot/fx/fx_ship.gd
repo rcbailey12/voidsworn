@@ -2401,6 +2401,9 @@ func _place_mark(fx, e) -> void:
 		var o = _marks[j]
 		if o.style != e.style or o.sec != e.sec or o.style in [BREACH.S_GAUSS_IN, BREACH.S_GAUSS_OUT]:
 			continue
+		# The three V2 Null Lance cuts overlap the repeat radius. Reheat the matching cut, not its neighbour.
+		if e.style == BREACH.S_NLANCE and e.v2 >= 0 and o.part_i != e.part_i:
+			continue
 		if whole_sec or o.c.distance_to(e.c) < o.R * 0.8 + e.R * 0.5 + o.hl:
 			var g: float = minf(o.grow * 1.2, BREACH.GROW_MAX)
 			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.hit_origin, o.hit_normal, o.ldir, o.seed_v, faction, g, 1.0 - section_fraction[o.sec], o.hatch_k)

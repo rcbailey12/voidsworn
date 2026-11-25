@@ -675,8 +675,7 @@ void fragment() {
 
 # Oriented rings. a1 = (normal, life); a3 = (size0, size1, kind, seed); a4 = (period, speed, drag, 0).
 # kinds: 0 smoke ring (alpha)   1 shockwave   2 soft pop ring (reduce-flashing replacement)   3 thin pale ring (gauss
-#        muzzle shock, sonic boom)   4 hex-cell ring (Hegemony shield shatter)   5 crystalline pulse
-const RING_HARMONIC := 5
+#        muzzle shock, sonic boom)   4 hex-cell ring (Hegemony shield shatter)
 const RING := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -703,9 +702,15 @@ void vertex() {
 		vec3 t2 = cross(n, t1);
 		float g = a3.z < 0.5 ? 1.0 - spow(1.0 - t, 2.0) : 1.0 - spow(1.0 - t, 3.0);
 		float size = mix(a3.x, a3.y, g);
+		int rk = int(a3.z + 0.5);
+		if (rk == 6) {
+			// Tilt the facet plane a little so its edges still read from the side.
+			t2 = snorm(t2 + n * 0.32);
+			float dv = max(-(VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).z, 0.01);
+			size = max(size, px_world(36.0, dv, PROJECTION_MATRIX));
+		}
 		// F3: shock fronts, soft pops and pale shock rings keep at least 12 px across (1080 lines), dimming as they grow
 		float rb = 1.0;
-		int rk = int(a3.z + 0.5);
 		if (rk >= 1 && rk <= 3) {
 			// round 2: a4.w is this ring's own final size in pixels (kill shock rings, shield ripples): the floor grows with
 			// the ring's own easing (15% to 100% of it), so a far ring still visibly expands; grown to it, it dims as f^-0.5
@@ -716,12 +721,6 @@ void vertex() {
 				rb = clamp(spow(mn / max(size, 1e-5), a4.w > 12.0 ? -0.5 : -1.0), 0.05, 1.0);
 				size = mn;
 			}
-		}
-		if (rk == 5) {
-			// Tilt the facet plane a little so its edges still read from the side.
-			t2 = snorm(t2 + n * 0.32);
-			float dv = max(-(VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).z, 0.01);
-			size = max(size, frame_world(36.0, dv, PROJECTION_MATRIX, 1080.0));
 		}
 		vec3 p = c + (t1 * VERTEX.x + t2 * VERTEX.y) * size;
 		POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * (MODEL_MATRIX * vec4(p, 1.0)));
@@ -737,7 +736,17 @@ void fragment() {
 	if (r > 1.0) { discard; }
 	float ang = atan(p.y, p.x);
 	vec3 add = vec3(0.0); vec3 base = vec3(0.0); float alpha = 0.0;
-	if (k == 0) {
+	if (k == 6) {
+		// Two bevel edges on a hexagon, not a round bead or a screen lens.
+		vec2 a = abs(p);
+		float facet = max(a.y, dot(a, vec2(0.8660254, 0.5)));
+		float aa = clamp(fwidth(facet) * 0.55, 0.018, 0.12);
+		float face = 1.0 - smoothstep(0.035, 0.035 + aa, abs(facet - 0.68));
+		float bevel = 1.0 - smoothstep(0.014, 0.014 + aa, abs(facet - 0.79));
+		vec3 prism = mix(vec3(0.34, 0.83, 1.0), vec3(0.82, 0.48, 1.0), smoothstep(-0.7, 0.7, p.x));
+		float envelope = smoothstep(0.0, mix(0.15, 0.28, fx_calm), t) * (1.0 - smoothstep(0.54, 1.0, t));
+		add = (vCol.rgb * face * 0.72 + prism * bevel * 0.48) * envelope * vCol.a;
+	} else if (k == 0) {
 		float n = fbm(vec2(ang * 1.6 + seed * 7.0, r * 3.0 + age * 0.3));
 		float w = 0.15 + 0.12 * t;
 		float rq = (r - 0.62) / w;
@@ -760,16 +769,6 @@ void fragment() {
 	} else if (k == 3) {
 		float d1 = (r - 0.93) / 0.03;
 		add = vCol.rgb * exp(-d1 * d1) * spow(1.0 - t, 2.0) * vCol.a;
-	} else if (k == 5) {
-		// Two bevel edges on a hexagon, not a round bead or a screen lens.
-		vec2 a = abs(p);
-		float facet = max(a.y, dot(a, vec2(0.8660254, 0.5)));
-		float aa = clamp(fwidth(facet) * 0.55, 0.018, 0.12);
-		float face = 1.0 - smoothstep(0.035, 0.035 + aa, abs(facet - 0.68));
-		float bevel = 1.0 - smoothstep(0.014, 0.014 + aa, abs(facet - 0.79));
-		vec3 prism = mix(vec3(0.34, 0.83, 1.0), vec3(0.82, 0.48, 1.0), smoothstep(-0.7, 0.7, p.x));
-		float envelope = smoothstep(0.0, mix(0.15, 0.28, fx_calm), t) * (1.0 - smoothstep(0.54, 1.0, t));
-		add = (vCol.rgb * face * 0.72 + prism * bevel * 0.48) * envelope * vCol.a;
 	} else {
 		// a ring of hex cells that flies apart (shield shatter)
 		vec2 q = p * 7.0;
@@ -786,6 +785,8 @@ void fragment() {
 	ALPHA = clamp(alpha, 0.0, 1.0);
 }
 """
+
+const RING_HARMONIC := 6   # crystalline pulse (5 reserved for the death front)
 
 # Ribbons along a straight line: plumes, beams, arcs. VERTEX = (s along 0..1, side -0.5..0.5).
 # a0 = (origin, kind); a1 = (dir, length); a2 = (colour, intensity); a3 = (width0, width1, seed, 0);
@@ -1956,8 +1957,47 @@ vec2 ionTree(vec2 q, float seed) {
 uniform int wound_kind = 0;
 uniform vec3 glow = vec3(1.0, 0.45, 0.12);
 uniform vec3 weapon = vec3(1.0, 0.6, 0.3);
+uniform int wound_v2 = -1;   // R416 Wounds V2 faction kind (0 Sunward .. 5 Eclipse); -1 off (the old look)
+uniform vec3 v2_scorch_col = vec3(0.1);
+uniform vec3 v2_rim_metal = vec3(0.6);
+uniform vec3 v2_interior_lift = vec3(0.3);
+uniform vec3 v2_interior_accent = vec3(1.0, 0.5, 0.15);
+uniform float v2_rough = 0.6;
+uniform float v2_soot = 1.0;
+uniform float v2_wreck_soot = 0.3;
 uniform vec3 eclipse_core;
 uniform vec3 eclipse_sheath;
+// Straight-edged cells (Voronoi): x the distance to the nearest cell edge in cells, y the cell's own random value.
+vec2 v2cells(vec2 p) {
+	vec2 g = floor(p);
+	vec2 f = fract(p);
+	float d1 = 8.0, d2 = 8.0;
+	float id = 0.0;
+	for (int j = -1; j <= 1; j++) {
+		for (int i = -1; i <= 1; i++) {
+			vec2 o = vec2(float(i), float(j));
+			vec2 c = o + vec2(h21(g + o), h21(g + o + 17.3)) - f;
+			float d = dot(c, c);
+			if (d < d1) { d2 = d1; d1 = d; id = h21(g + o + 5.1); } else if (d < d2) { d2 = d; }
+		}
+	}
+	return vec2(sqrt(d2) - sqrt(d1), id);
+}
+// Straight radial cracks from the strike point: n of them, each a straight line (no sine waves).
+float v2rays(vec2 q, float n, float seed, float w) {
+	float best = 1.0;
+	for (int i = 0; i < 9; i++) {
+		if (float(i) >= n) { break; }
+		float an = (float(i) + h21(vec2(float(i), seed)) * 0.7) * 6.2831853 / n;
+		vec2 dir = vec2(cos(an), sin(an));
+		float along = dot(q, dir);
+		float len = 0.7 + 0.9 * h21(vec2(seed, float(i) + 3.0));
+		float side = abs(dot(q, vec2(-dir.y, dir.x)));
+		float on = step(0.0, along) * (1.0 - smoothstep(len * 0.8, len, along));
+		best = min(best, mix(1.0, side / w, on));
+	}
+	return 1.0 - smoothstep(0.4, 1.0, best);
+}
 varying vec3 vL;
 varying vec4 vA;
 varying vec4 vB;
@@ -1985,7 +2025,20 @@ void fragment() {
 	vec3 em = vec3(0.0);
 	float rough = 0.85;
 	float hd = u;
-	if (style == 1) {
+	bool null_fallback = style == 18 && wound_v2 < 0;
+	if (null_fallback) {
+		// Build F: with V2 off, a single violet trench, without the target's legacy burn or soot halo.
+		vec2 dd = vec2(dot(vE.xyz, t1), dot(vE.xyz, t2));
+		float along = clamp(dot(q, dd), -vE.w, vE.w);
+		float trench = length(q - dd * along) / R;
+		float edge = (trench - 0.91) / 0.42;
+		float lip = exp(-edge * edge) * (0.6 + 0.4 * n1);
+		float cool = exp(-age / 4.0);
+		alb = eclipse_sheath * (0.38 + lip * 0.44);
+		em = eclipse_core * lip * (0.08 + 1.15 * cool) * smoothstep(0.0, 0.18, age);
+		a = 1.0 - smoothstep(0.72, 2.5 + n1, trench);
+		rough = 0.52;
+	} else if (style == 1) {
 		vec2 dd = vec2(dot(vE.xyz, t1), dot(vE.xyz, t2));
 		float al = clamp(dot(q, dd), -vE.w, vE.w);
 		float s = length(q - dd * al) / R;
@@ -2159,7 +2212,7 @@ void fragment() {
 	// scorched fern field round ion burns; bright scraped metal round a ram; a pale spalled field round a gauss exit.
 	float H = vH;
 	float hs = 0.0;   // the halo's share of this pixel (soot is matte: no metal, little specular; r13)
-	if (H > 0.05) {
+	if (H > 0.05 && !null_fallback) {
 		float hb = fbm(q / R * (0.55 / max(H * 0.25, 0.5)) + seed * 1.7);
 		float hn = fbm(q / R * (2.2 / max(H * 0.25, 0.5)) + seed * 3.1);
 		float hu = hd / H + (hb - 0.5) * 0.35;
@@ -2340,8 +2393,10 @@ void fragment() {
 		float td = (trench - 0.9) / 0.2;
 		em = glow * 0.06 * exp(-(td * td));
 	}
-	if (style != 16 && a < 0.003 && dot(em, vec3(1.0)) < 0.003) { discard; }
-	if (wound_kind == 1) {
+	if (a < 0.003 && dot(em, vec3(1.0)) < 0.003) { discard; }
+	if (wound_v2 >= 0 || null_fallback) {
+		// R416 and the Build F fallback replace the old faction looks.
+	} else if (wound_kind == 1) {
 		float vein = pow(abs(sin(q.x / R * 28.0 + n1 * 6.0)), 12.0);
 		alb = mix(vec3(0.06, 0.012, 0.07), vec3(0.12, 0.025, 0.045), n1);
 		rough = style == 13 ? 0.55 : 0.2;
@@ -2426,20 +2481,6 @@ void fragment() {
 			float reboot = smoothstep(panel * 0.3, panel * 0.3 + 0.5, age);
 			em += glow * ridge * reboot * 0.05;
 		}
-	}
-	if (style == 16) {
-		// The cut stays violet on every target material and never takes the orange burn or its soot halo.
-		vec2 dd = vec2(dot(vE.xyz, t1), dot(vE.xyz, t2));
-		float along = clamp(dot(q, dd), -vE.w, vE.w);
-		float trench = length(q - dd * along) / R;
-		float lip = exp(-pow(abs(trench - 0.91) / 0.42, 2.0)) * (0.6 + 0.4 * n1);
-		float cool = exp(-age / 4.0);
-		alb = eclipse_sheath * (0.38 + lip * 0.44);
-		em = eclipse_core * lip * (0.08 + 1.15 * cool) * smoothstep(0.0, 0.18, age);
-		a = 1.0 - smoothstep(0.72, 2.5 + n1, trench);
-		if (a < 0.003) { discard; }
-		rough = 0.52;
-		hs = 0.0;
 	}
 	ALBEDO = alb;
 	ALPHA = clamp(a, 0.0, 1.0);
