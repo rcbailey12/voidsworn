@@ -287,7 +287,7 @@ static func clear_shader_cache() -> void:
 	_ext_codes.clear()
 
 
-static func damage_material(src: Material, frame: Transform3D, mouths: Dictionary, L: float, organic := false) -> ShaderMaterial:
+static func damage_material(src: Material, frame: Transform3D, mouths: Dictionary, L: float, organic := false, fixed_wreck := false) -> ShaderMaterial:
 	if src != null and src.has_meta("fx_hull_source"):
 		src = src.get_meta("fx_hull_source")
 	if src == null:
@@ -296,7 +296,7 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 	var mat := ShaderMaterial.new()
 	# The fog policy has already marked the painted source by the time this
 	# adapter is drawn. Compile with that mode on the first assignment.
-	var dmg := _damage_code(base.shader.code, src is BaseMaterial3D and src.disable_fog)
+	var dmg := _damage_code(base.shader.code, src is BaseMaterial3D and src.disable_fog, fixed_wreck)
 	mat.shader = shared_shader(dmg, "damage " + str(dmg.hash()))
 	for param in _uniforms_of(base.shader):
 		var value = base.get_shader_parameter(param)
@@ -305,7 +305,8 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 	mat.set_meta("fx_hull_source", src)
 	mat.set_shader_parameter("fx_organic", organic)
 	mat.set_shader_parameter("fx_burnt_cell", Vector3.ONE * maxf(L * 0.05, 0.001))
-	set_damage_pose(mat, frame, mouths)
+	if not fixed_wreck:
+		set_damage_pose(mat, frame, mouths)
 	return mat
 
 
@@ -365,8 +366,8 @@ static func _uniforms_of(shader: Shader) -> Array:
 	return _uniform_names[key]
 
 
-static func _damage_code(source: String, disable_fog := false) -> String:
-	var key := [source, disable_fog]
+static func _damage_code(source: String, disable_fog := false, fixed_wreck := false) -> String:
+	var key := [source, disable_fog, fixed_wreck]
 	if _dmg_code.has(key):
 		return _dmg_code[key]
 	var code: String = source
@@ -376,12 +377,17 @@ static func _damage_code(source: String, disable_fog := false) -> String:
 	if not code.contains("cull_disabled"):
 		code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode cull_disabled;")
 	code = code.replace("shader_type spatial;", "shader_type spatial;\n" + BURNT + DAMAGE_UNIFORMS)
-	code = _inject(code, "vertex", "", "\nfx_hull_p = (fx_hull_frame * vec4(VERTEX, 1.0)).xyz;\n")
-	code = _inject(code, "fragment", """
+	# Board chunks are already cut and never get mouths. Keeping the discard in their shader
+	# makes Forward+ compile material-specific depth and shadow shaders for a path that cannot run.
+	var hull_pos := "VERTEX" if fixed_wreck else "(fx_hull_frame * vec4(VERTEX, 1.0)).xyz"
+	code = _inject(code, "vertex", "", "\nfx_hull_p = %s;\n" % hull_pos)
+	var soot := """
 float fx_soot = 0.0;
 // cull_disabled flips back-facing normals in the renderer, including mirrored exteriors.
 if (determinant(mat3(MODEL_MATRIX)) < 0.0) { NORMAL = -NORMAL; }
-for (int i = 0; i < 64; i++) {
+"""
+	if not fixed_wreck:
+		soot += """for (int i = 0; i < 64; i++) {
 	if (i >= fx_mouth_count) { break; }
 	float h = dot(fx_hull_p - fx_mouths[i].xyz, fx_axes[i].xyz);
 	float R = max(fx_mouths[i].w, 0.0001);
@@ -390,7 +396,8 @@ for (int i = 0; i < 64; i++) {
 	if (edge < -R * 0.035) { discard; }
 	fx_soot = max(fx_soot, 1.0 - smoothstep(0.0, R * 0.65, max(edge, 0.0)));
 }
-""", """
+"""
+	var inside := """
 ALBEDO *= (1.0 - fx_soot * 0.94) * (1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)));
 EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0) * fx_flick;
 if (fx_scorch_count > 0) {
@@ -418,7 +425,12 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 	}
 	EMISSION = max(EMISSION, structure);
 }
-""")
+"""
+	# A write of zero still flags SSS in the renderer, multiplying the PSOs for every
+	# already-instanced mesh. Only zero the back face when the source actually writes SSS.
+	if not source.contains("SSS_STRENGTH"):
+		inside = inside.replace(" SSS_STRENGTH = 0.0;", "")
+	code = _inject(code, "fragment", soot, inside)
 	if disable_fog and not code.contains("fog_disabled"):
 		code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
 	_dmg_code[key] = code
