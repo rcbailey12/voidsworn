@@ -103,9 +103,13 @@ func _world(height: float) -> void:
 	var angle_1080 := deg_to_rad(45.0) / HEIGHT_1080  # The value set by main's world builder.
 	var angle_per_px := angle_1080 / ratio
 	var star_px := _value(_rhs(SKY.SKY, "px"), {})
-	var star_sigma := _value(_rhs(SKY.SKY, "sig"), {"px": star_px, "m": 0.5})
-	_near(star_px / angle_per_px, ratio, "sky lamp size at %dp" % height)
-	_near(star_sigma / angle_per_px, (0.65 + 0.9 * 0.5) * ratio, "star sigma at %dp" % height)
+	var star_sig := _rhs(SKY.SKY, "sig").replace("mix(", "lerpf(")
+	var faint_sigma := _value(star_sig, {"px": star_px, "m": 0.0})
+	var bright_sigma := _value(star_sig, {"px": star_px, "m": 1.0})
+	_near(star_px / angle_per_px, ratio, "sky reference pixel at %dp" % height)
+	_check(faint_sigma / angle_per_px >= 0.7 * ratio, "faint star still lights adjacent pixels at %dp" % height)
+	_check(bright_sigma / angle_per_px <= 1.0 * ratio and bright_sigma > faint_sigma,
+		"bright stars are still pinpoints at %dp" % height)
 	var depth := 500.0
 	var dust: String = WORLD.DUST_SHADER
 	var dust_inputs := {"height": height, "depth": depth, "px_1080": _value(_rhs(dust, "px_1080"), {})}

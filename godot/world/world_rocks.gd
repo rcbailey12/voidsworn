@@ -100,7 +100,8 @@ uniform vec3 rim_pos = vec3(0.0);
 uniform vec3 rim_col = vec3(1.0, 0.6, 0.3);
 uniform float rim_k = 0.0;
 uniform vec3 glow_col = vec3(0.25, 0.75, 1.0);
-uniform sampler2D sky_tex : filter_linear_mipmap, repeat_enable;
+uniform sampler2D sky_tex : filter_linear, repeat_enable;
+uniform bool sky_gamma = false;
 uniform float has_sky = 0.0;
 uniform float sky_gain = 1.0;
 uniform mat3 turn = mat3(1.0);
@@ -324,7 +325,8 @@ void fragment() {
 		vec2 uv = vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359);
 		// r8: a darkened, blurred sky colour (a full-strength sky picture made far rocks look see-through: the fog painted
 		// the nebula's own pattern onto them); far rocks now read as dimmer solid shapes against the gas
-		hc = pow(textureLod(sky_tex, uv, 4.0).rgb, vec3(2.2)) * sky_gain * 0.4 + haze_col * 0.5;
+		vec3 sky_rgb = texture(sky_tex, uv).rgb;
+		hc = (sky_gamma ? pow(sky_rgb, vec3(2.2)) : sky_rgb) * sky_gain * 0.4 + haze_col * 0.5;
 	}
 	FOG = vec4(hc, clamp(hz, 0.0, 1.0) * haze_max);
 	// lifted rocks (the board's blockers) catch a soft cool rim from the sky, which separates them from the dark board
