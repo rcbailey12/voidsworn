@@ -102,10 +102,15 @@ function checkProfileCache() {
   const exclude = path.join(slot, '.git', 'info', 'exclude');
   checkout();
   assert.match(read(exclude), /^\/Microsoft\/\r?$/m);
+  // Issue 2091: reuse accepts a unique flat manifest backup and leaves it in place (removal keeps the checkout instead).
+  const flatBackup = path.join(slot, 'godot', 'assets', 'ships', 'manifest.json.bak_20261116_120000');
+  write(flatBackup, 'installer backup');
   const existing = '# keep this comment\r\n/my-local-pattern/';
   write(exclude, existing);
   checkout();
   assert.match(read(path.join(out, 'result.txt')), /earlier checkout reused in place/);
+  assert(fs.existsSync(flatBackup), 'reuse leaves the flat manifest backup in place');
+  fs.rmSync(flatBackup, { force: true });
   assert.equal(read(exclude), `${existing}\r\n/Microsoft/\r\n`);
   checkout();
   assert.equal(read(exclude), `${existing}\r\n/Microsoft/\r\n`, 'reused slot appends the pattern only once');
@@ -266,6 +271,12 @@ try {
   write(path.join(caches, '.git', 'info', 'exclude'), rules.join('\n') + '\n');
   for (const file of ignored) write(path.join(caches, file), 'generated cache');
   write(path.join(pc, 'build', generatedShip), 'generated cache');
+  // Issue 2091: the repo .gitignore ignores a flat manifest backup, and it is unique, so the janitor keeps that checkout.
+  // Reuse accepts the same file (the profile cache check above covers that).
+  const flatBackup = makeCopy('repo-kept-flat-backup', 2, laneB);
+  write(path.join(flatBackup, '.git', 'info', 'exclude'), 'godot/assets/ships/manifest.json.bak_*\n');
+  write(path.join(flatBackup, 'godot/assets/ships/manifest.json.bak_20261116_120000'), 'installer backup');
+  dateTree(flatBackup, 26);
   // parity_campaign.bat sends each seed to golden_campaign.js and writes the log itself.
   // Test the two outputs separately, using the actual checkout's ignore rules as evidence.
   const checkout = path.resolve(__dirname, '../../..');
@@ -633,7 +644,7 @@ try {
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
   const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, shipNoTwin, genNoTwin, worktreeStale, oldOwned, oldRetry, tokenOnly, recordedFull, opus, helperRelayed,
     legacyOld, legacyIssue, legacyParity, legacyStage7, legacyLinked, ownedLinked, legacyNear, oldStage7, workClean, suffixRelayed, ...jobCheckoutsGone, ...recover];
-  const preserve = [boardKept, worktreeLive, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, nestDirty, nestLocal, nestDirtyRepo, nestLocalRepo, shipJob, shipClone, jobKeptOut, playtest, jobRecent, jobWork, ...jobCheckoutsKept, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+  const preserve = [boardKept, worktreeLive, flatBackup, helperLeased, helperUnrelayed, helperLoose, helperSibling, helperShip, helperWorktree, helperNoOut, nestDirty, nestLocal, nestDirtyRepo, nestLocalRepo, shipJob, shipClone, jobKeptOut, playtest, jobRecent, jobWork, ...jobCheckoutsKept, legacyRecent, legacyLocked, legacyProcess, legacyLookalike, edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -683,6 +694,8 @@ try {
   assert.match(decision(dry, shipOldTime, 'retained'), /shared ship copy could not be verified/);
   assert.match(dry, /shared copy time not trusted, kept: godot\/assets\/ships\/T4_11\/T4_11\.glb/);
   assert.match(decision(dry, wrongGen, 'retained'), /shared generated copy could not be verified/);
+  // Issue 2091: in removal mode a unique flat manifest backup is not rebuildable cache, so its checkout is kept.
+  assert.match(decision(dry, flatBackup, 'kept'), /working tree needs keeping: !! godot\/assets\/ships\/manifest\.json\.bak_/);
   assert.match(decision(dry, helperUnrelayed, 'would keep'), /results not all relayed: 2 of 3 out files are not on a relay branch/);
   assert(dry.includes(`helper file not on a relay branch: ${helperHuge} (105906176 bytes; over GitHub's 100 MB file limit, not read)`), 'a huge file is not hashed: ' + dry);
   assert(dry.includes(`helper file not on a relay branch: ${path.join(helperUnrelayed, 'out', 'shot.png')} (`), 'unrelayed file is listed');

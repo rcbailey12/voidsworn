@@ -326,7 +326,7 @@ func full_reward_check() -> void:
 	C.RUN["reward"]["modOffer"] = [REFIT]
 	C.act("takeSalvage", "0:cred")
 	await frames()
-	check(control("fitRewardRefit", REFIT + ":" + uid) == null and words().contains("No free compatible slot."), "a full fleet sees why it cannot fit a won refit")
+	check(control("fitRewardRefit", REFIT + ":" + uid) == null and words().contains(C.fitBlock(ship, REFIT)) and C.fitBlock(ship, REFIT).contains("taken by"), "a full fleet sees why it cannot fit a won refit (names what fills the slot)")
 	C.act("fitRewardRefit", REFIT + ":" + uid)
 	check(kind() == "mod" and C.W["modOffer"] == [REFIT] and C.RUN["inventory"].is_empty(), "a rejected fit leaves the offer available")
 	await reload()
@@ -360,7 +360,7 @@ func bought_checks() -> void:
 		var fitted: int = ship["mods"].size()
 		check(kind() == "bought_refit" and C.RUN["inventory"] == [REFIT, REFIT], "Continue restores the paid refit card and one new copy")
 		if keep:
-			check(control("fitBoughtRefit", uid) == null and words().contains("No free compatible slot."), "a full fleet can keep the purchased module")
+			check(control("fitBoughtRefit", uid) == null and words().contains(C.fitBlock(ship, REFIT)), "a full fleet can keep the purchased module and sees what fills the slot")
 			C.act("fitBoughtRefit", uid)
 			check(kind() == "bought_refit" and ship["mods"].size() == fitted, "a full slot cannot consume the purchase")
 			var escape := InputEventKey.new()

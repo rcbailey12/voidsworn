@@ -186,7 +186,7 @@ func select_ship(uid: String) -> void:
 		if source != null and target != null and int(held["slot"]) < source["mods"].size():
 			var m = source["mods"][held["slot"]]
 			if not C.canFitModule(target, m):
-				state["move_error"] = str(target["name"]) + " has no free compatible slot for this refit."
+				state["move_error"] = str(target["name"]) + ": " + C.fitBlock(target, m)
 				refresh()
 				return
 			var inventory_index = C.RUN["inventory"].size()
@@ -344,7 +344,7 @@ func hold(ship: Dictionary) -> void:
 	for i in C.RUN["inventory"].size():
 		var m = C.RUN["inventory"][i]
 		v.add_child(body(C.modName(m), 20, GS.TEXT, GS.sheet_medium())); v.add_child(body(C.MODULES[m]["d"]))
-		var b = Button.new(); b.text = "Fit refit" if C.canFitModule(ship, m) else "Needs a free compatible slot"
+		var b = Button.new(); b.text = "Fit refit" if C.canFitModule(ship, m) else C.fitBlock(ship, m)
 		b.disabled = not C.canFitModule(ship, m); style_link(b); b.alignment = HORIZONTAL_ALIGNMENT_LEFT; b.set_meta("inventory_index", i)
 		b.pressed.connect(func(): state["mode"] = ""; C.act("equip", str(i) + ":" + ship["uid"])); v.add_child(b)
 
