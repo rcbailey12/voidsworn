@@ -90,7 +90,7 @@ var _wound := {}   # issue 1741 (Artoo on 6fbf60fe): a wound-aimed row's open cu
 var cfg := {}
 var steps := 0
 var headless := false
-var failed := ""   # issue 1877 (Artoo on PR 1904): a failed clip row fails the whole run (no LOOK_BENCH_DONE, exit 4)
+var failed := ""   # issue 1877 (Artoo on PR 1904): a failed clip or strict row fails the run (no LOOK_BENCH_DONE, exit 4)
 var sfx: Node = null          # --sound only
 var death_audio: Node = null
 
@@ -133,10 +133,11 @@ func _warn(s: String) -> void:
 
 func _run() -> void:
 	# issue 370: --moments FILE reads another rows file (a job's own rows, e.g. bench/look_moments_attach.json)
-	var f := FileAccess.get_file_as_string(str(args.get("moments", MOMENTS)))
+	var moments_path := str(args.get("moments", MOMENTS))
+	var f := FileAccess.get_file_as_string(moments_path)
 	var parsed = JSON.parse_string(f)
 	if not (parsed is Dictionary):
-		_log("ERROR cannot read " + MOMENTS)
+		_log("ERROR cannot read " + moments_path)
 		get_tree().quit(2)
 		return
 	cfg = parsed
@@ -160,7 +161,7 @@ func _run() -> void:
 	report["adapter"] = RenderingServer.get_video_adapter_name()
 	report["fixed_fps"] = Engine.get_physics_ticks_per_second()
 	report["fleet_lighting"] = LOOK.fleet_lighting_enabled()   # issue 1679: which lighting this run drew (VS_FLEET_LIGHTING)
-	report["moments_sha256"] = FileAccess.get_sha256(MOMENTS)
+	report["moments_sha256"] = FileAccess.get_sha256(moments_path)
 	report["bench_sha256"] = FileAccess.get_sha256("res://bench/look_bench.gd")
 	headless = DisplayServer.get_name() == "headless"
 	if headless:
@@ -613,8 +614,46 @@ func _hits(n: int, shield: bool, crit: bool) -> Array:
 	return h
 
 
+# The shared capture script runs on both revisions. New captures use the same camera poses as battle.
+# On the pinned earlier revision, reproduce its wide shot and its existing three-quarter kill hold.
+func _moment_cut(kind: String) -> void:
+	var pa: Vector3 = A.visual_position()
+	var pt: Vector3 = T.visual_position()
+	var is_kill := kind == "kill"
+	var capital: bool = float(T.L) >= 20.0
+	if cam.has_method("enter_cut"):
+		var pose: Dictionary
+		if is_kill:
+			pose = cam.impact_cut(pt, T.L, capital, [[pa, A.L]], false, T.cur_yaw)
+		else:
+			pose = cam.shot_cut(kind, pa, pt, A.L, T.L, false)
+		cam.enter_cut(pose, is_kill)
+		return
+	var cur: float = cam.a
+	if is_kill:
+		var best := INF
+		for q in [PI / 4.0, 3.0 * PI / 4.0, -PI / 4.0, -3.0 * PI / 4.0]:
+			var d := angle_difference(cur, float(T.cur_yaw) + float(q))
+			if absf(d) < best:
+				best = absf(d)
+				cam.a = cur + d
+		cam.b = 1.12
+		cam.r = clampf(maxf(float(T.L), 6.0) / ((1.0 if capital else 0.85) * 2.0 * tan(deg_to_rad(cam.fov) * 0.5)), cam.min_r, 200.0)
+		cam.t = pt
+		cam.slow_until = cam._clock + 1.2
+		return
+	var base := atan2(-(pt.z - pa.z), pt.x - pa.x)
+	var left := angle_difference(cur, base + PI / 2.0)
+	var right := angle_difference(cur, base - PI / 2.0)
+	cam.a = cur + (left if absf(left) < absf(right) else right)
+	cam.b = 1.02
+	cam.r = clampf(Vector2(pt.x - pa.x, pt.z - pa.z).length() * 1.25 + 34.0, 60.0, 200.0)
+	cam.t = (pa + pt) * 0.5
+
+
 func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: String, keep := true) -> bool:
 	var id := str(row["id"])
+	var strict := bool(row.get("strict", false)) or args.has("strict-moments")
 	_clear()
 	_make_fx()
 	# Issue 462: a row may set effect switches (for example reduce flashing). Set by
@@ -637,7 +676,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	# issue 370: a row may place the target ("tgt_at": [x, z]), for a broadside or a shot from behind
 	var tat: Array = row.get("tgt_at", [34, 0])
 	# Only the target of a death row can die. Hull and shader warm-up still runs for every ship.
-	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2, "", row.get("do") == "death")
+	var fatal := str(row.get("fatal", ""))
+	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2, "", row.get("do") == "death" or fatal != "")
 	if T == null:
 		return false
 	if row.has("shield_left"):
@@ -653,6 +693,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		for sid in fx.ships.keys():
 			fx.set_engine(str(sid), float(row["engine"]))
 	var focus: Vector3 = (A if str(row.get("focus", "target")) == "attacker" else T).global_position
+	if row.get("focus") == "pair":
+		focus = (A.global_position + T.global_position) * 0.5
 	# Issue 461: "attacker_engines" centres on the mean of the attacker's engine nozzles (the engine flicker rows)
 	if str(row.get("focus", "")) == "attacker_engines" and fx.ship("A") != null:
 		var sa = fx.ship("A")
@@ -690,10 +732,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.sync_ship("T", row["sync_t"])
 		for k in 30:
 			await _step()
-		# Issue 1741 (JOINT_B, Nov 23: the breached rows showed no cutout and logged no wound pose): a ship still taking
-		# a pre shot (a torpedo in flight) holds its new hull stages until that impact lands (fx_ship.sync, busy_until),
-		# so wait for it (at most 8 s), then finish the hull rebuild, so the still and the wound camera see the stages
-		# the row sets
+		# Issue 1741: a shot still in flight can defer the hull stages. Finish the rebuild before aiming at a wound.
 		var ts = fx.ship("T")
 		if ts != null:
 			for k in 480:
@@ -701,27 +740,26 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 					break
 				await _step()
 			if fx.now <= float(ts.busy_until) + 0.1:
-				_warn("%s at %d: the target was still waiting on a pre shot after 8 s" % [str(row.get("id", "")), int(r)])
+				_warn("%s at %d: the target was still waiting on a pre shot after 8 s" % [id, int(r)])
 			for k in 3:
 				ts.flush_damage(fx)
 				await _step()
-	# Issue 1741 (V2B PC run, Nov 22: most Wounds V2 cutouts fell outside the close frame or on the far side): "focus":
-	# "wound" turns a close camera (under 100) to face the target's biggest open cutout, centred on it; camera 170 keeps
-	# the battle angle on the ship's centre (RULEBOOK 6.1). A ship with no open cutout keeps the usual view. The pose
-	# depends on the run's own cutouts, so it is logged and such a row is a detail, never a before/after pair (Artoo).
+	# Close wound details face the largest open cutout. Camera 170 keeps the board angle. Log the actual pose so these
+	# rows are details, not before/after pairs. The shared bench also loads on revisions without the Wounds V2 API.
 	_wound = {}
-	if str(row.get("focus", "")) == "wound" and r < 100.0 and fx.ship("T") != null:
+	var breach: Variant = BREACH
+	if str(row.get("focus", "")) == "wound" and r < 100.0 and fx.ship("T") != null and breach.has_method("open_mouths"):
 		var st = fx.ship("T")
 		var best: Dictionary = {}
-		var mouths: Array = BREACH.open_mouths(st)
+		var mouths: Array = breach.open_mouths(st)
 		for mo in mouths:
 			if best.is_empty() or float(mo["R"]) > float(best["R"]):
 				best = mo
-		# a wound detail with no open cutout is not proof of anything: the still is kept, but its report entry says
-		# incomplete and the log carries one LOOK_BENCH WOUND MISSING line (a run with V2 off expects none)
-		_wound = {"mouths": mouths.size(), "v2": BREACH.v2_on(), "complete": not best.is_empty()}
-		if best.is_empty() and BREACH.v2_on():
-			_warn("LOOK_BENCH WOUND MISSING %s at %d: no open cutout, default camera kept" % [str(row.get("id", "")), int(r)])
+		# No open cutout means the detail is incomplete, even though its still is kept. V2 off expects none.
+		var v2: bool = breach.v2_on()
+		_wound = {"mouths": mouths.size(), "v2": v2, "complete": not best.is_empty()}
+		if best.is_empty() and v2:
+			_warn("LOOK_BENCH WOUND MISSING %s at %d: no open cutout, default camera kept" % [id, int(r)])
 		if not best.is_empty():
 			var wc: Vector3 = st.to_world(best["c"])
 			var wn: Vector3 = (st.to_world(best["c"] + best["n"]) - wc).normalized()
@@ -731,9 +769,16 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			cam.t = wc
 			cam.snap()
 			_wound["pose"] = [cam.a, cam.b, cam.r, wc.x, wc.y, wc.z]
-			_log("%s wound pose at %d: a %.4f b %.4f r %.1f t (%.2f, %.2f, %.2f)" % [str(row.get("id", "")), int(r), cam.a, cam.b, cam.r, wc.x, wc.y, wc.z])
+			_log("%s wound pose at %d: a %.4f b %.4f r %.1f t (%.2f, %.2f, %.2f)" % [id, int(r), cam.a, cam.b, cam.r, wc.x, wc.y, wc.z])
 			for k in 6:
 				await _step()
+	var cut := str(row.get("cutin", ""))
+	if cut != "":
+		_moment_cut(cut)
+		if cut != "kill":
+			for k in 19:   # same 320 ms lead as battle's shot cut
+				await _step()
+		crop = Vector2i(W, H)   # a cut-in cell shows the whole composition
 	fx.rng.seed = 11
 	seed(2070)
 	var t_ev: float = fx.now
@@ -752,6 +797,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			"hits": _hits(n, str(row.get("on", "hull")) == "shield", bool(row.get("crit", false)))})
 		impacts = res.get("impacts", [])
 		if impacts.is_empty():
+			if strict:
+				return _fail_moment(id, r, "the volley reported no impact time")
 			_warn("%s: the volley reported no impact time; impact anchor set to fire + 0.6 s" % id)
 	elif what == "break":
 		# a hit first, so the bubble is up, then the collapse half a second later
@@ -795,6 +842,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.sync_ship("A", {"hp": 25.0, "maxHp": 100.0, "burning": false, "sh": [5, 5, 5, 5],
 			"sec": {"eng": {"hp": 10, "max": 100}, "mid": {"hp": 10, "max": 100}, "prow": {"hp": 10, "max": 100}}})
 	var anchors := {"fire": t_ev, "event": t_ev, "impact": t_ev + (float(impacts[0]) if impacts.size() > 0 else 0.6)}
+	var fatal_at := float(anchors["impact"]) + 0.90 if fatal != "" else INF
 	# Issue 504: a row may fire a second volley from A at T during the event ("also": [seconds after the event, kind,
 	# weapon]), for example a torpedo landing on a dying capital; the "also" anchor is that volley's first impact.
 	var also: Array = row.get("also", [])
@@ -810,13 +858,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var clip_bad: Array = []   # frames that failed to save (a clip row with any missing frame fails, Artoo on PR 1904)
 	# a "strict" still row fails the same way on a blank cell, a window that never opened or a strip that did not save
 	# (Artoo on PR 1904: the acid colour proof rows must not pass with a blank cell)
-	var strict := bool(row.get("strict", false))
 	if clip and keep:
 		var mk := DirAccess.make_dir_recursive_absolute(clip_dir)
 		if mk != OK or not DirAccess.dir_exists_absolute(clip_dir):
-			failed = "%s at %d: clip folder %s could not be made (error %d)" % [id, int(r), clip_dir, mk]
-			_warn("LOOK_BENCH " + failed)
-			return false
+			return _fail_moment(id, r, "clip folder %s could not be made (error %d)" % [clip_dir, mk])
 	var strip := Image.create_empty(1 if clip else cell.x * total, cell.y, false, Image.FORMAT_RGB8)
 	var ci := 0
 	var cells: Array = []
@@ -824,6 +869,16 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var wi := 0
 	while wi < wins.size() and guard < 900:
 		var w: Dictionary = wins[wi]
+		if fx.now + 1e-4 >= fatal_at:
+			fatal_at = INF
+			if cut != "":
+				_moment_cut("kill")
+			fx.death("T", fatal)
+			if death_audio != null:
+				death_audio.watch("T", T.global_position)
+		if w["anchor"] == "core":
+			var core: float = fx.death_core_at("T")
+			anchors["core"] = core if core >= 0.0 else INF
 		if w["anchor"] == "split":
 			var sh = fx.ships.get("T")
 			var split_t: float = float(sh.get_meta("death_split", t_ev + 1.0)) if sh != null else t_ev + 1.0
@@ -843,7 +898,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		else:
 			take = steps >= int(w["next"])
 		if take:
-			var img := _grab()
+			var img := _grab() if keep and not headless else null
 			if clip:
 				if keep:
 					var fp := clip_dir.path_join("f%03d.png" % ci)
@@ -869,43 +924,50 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		guard += 1
 	if wi < wins.size():
 		_warn("%s at %d: only %d of %d cells (a window never opened)" % [id, int(r), ci, total])
+		if strict and not keep:
+			return _fail_moment(id, r, "warm pass took %d of %d cells" % [ci, total])
 	if not keep:
 		return true
-	var name := "%s__c%d.png" % [id, int(r)]
-	if clip:
-		# every numbered frame 0 .. total-1 must be on disk, or the row fails (and with it the run: no LOOK_BENCH_DONE)
-		for fi in total:
-			var fn := "f%03d.png" % fi
-			if not FileAccess.file_exists(clip_dir.path_join(fn)) and not clip_bad.any(func(b): return str(b).begins_with(fn)):
-				clip_bad.append(fn + " (missing)")
-		if ci != total or not clip_bad.is_empty():
-			failed = "%s at %d: clip row failed: %d of %d frames taken; bad: %s" % [id, int(r), ci, total, ", ".join(clip_bad)]
-			_warn("LOOK_BENCH " + failed)
-			return false
-		report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/%s__c%d/" % [id, int(r)],
-			"cells": cells, "impacts": impacts, "clip": true})
-		_log("%s at %d: %d clip frames" % [id, int(r), ci])
-		return true
-	var sv: Error = preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
-	if strict:
-		if sv != OK or not FileAccess.file_exists(d.path_join(name)):
-			clip_bad.append("%s (save error %d)" % [name, sv])
-		if ci != total or not clip_bad.is_empty():
-			failed = "%s at %d: strict row failed: %d of %d cells taken; bad: %s" % [id, int(r), ci, total, ", ".join(clip_bad)]
-			_warn("LOOK_BENCH " + failed)
-			return false
 	# issue 1777 (Artoo on PR 1786): record the hull the target resolved to; a row naming "expect_code" says loudly when
 	# the faction and class drew a different hull (a later remap), so a capture bat can fail on it
 	var tcode := str(T.code) if is_instance_valid(T) else ""
 	if row.has("expect_code") and tcode != str(row["expect_code"]):
 		_warn("%s: target drew %s, the row expects %s" % [id, tcode, str(row["expect_code"])])
 		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
+		if strict:
+			return _fail_moment(id, r, "target drew %s, expected %s" % [tcode, str(row["expect_code"])])
+	if clip:
+		# Every numbered frame must be on disk, and a stale frame cannot cover a failed read or save this run.
+		for fi in total:
+			var fn := "f%03d.png" % fi
+			if not FileAccess.file_exists(clip_dir.path_join(fn)) and not clip_bad.any(func(b): return str(b).begins_with(fn)):
+				clip_bad.append(fn + " (missing)")
+		if ci != total or not clip_bad.is_empty():
+			return _fail_moment(id, r, "clip row failed: %d of %d frames taken; bad: %s" % [ci, total, ", ".join(clip_bad)])
+		report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/%s__c%d/" % [id, int(r)],
+			"cells": cells, "impacts": impacts, "clip": true})
+		_log("%s at %d: %d clip frames" % [id, int(r), ci])
+		return true
+	var name := "%s__c%d.png" % [id, int(r)]
+	if strict and (ci != total or not clip_bad.is_empty()):
+		return _fail_moment(id, r, "strict row failed: %d of %d cells taken; bad: %s" % [ci, total, ", ".join(clip_bad)])
+	if not headless:
+		var picture := preload("res://tools/picture_provenance.gd")
+		var saved := preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), picture.capture_stage(), true)
+		if strict and (saved != OK or not FileAccess.file_exists(d.path_join(name))):
+			return _fail_moment(id, r, "strict row failed: %s (save error %d)" % [name, saved])
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts, "code": tcode})
 	if not _wound.is_empty():
 		report["stills"][-1]["wound"] = _wound.duplicate()
 	_log("%s at %d: %d cells" % [id, int(r), ci])
 	return true
+
+
+func _fail_moment(id: String, r: float, why: String) -> bool:
+	failed = "%s at %d: %s" % [id, int(r), why]
+	_warn("LOOK_BENCH " + failed)
+	return false
 
 
 # ---------------------------------------------------------------- props (issue 1767): stations and hulks on the live board
