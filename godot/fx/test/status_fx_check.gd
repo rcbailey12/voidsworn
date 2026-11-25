@@ -76,7 +76,7 @@ func _run() -> void:
 	check(s._acid_mist == null and s._acid_next > fx.now, "an in-flight shot delays the first acid puff")
 	fx.sync_ship(s.id, inactive)
 	fx.step(0.05)
-	check(s._acid_next == 0.0 and s._acid_fallback.is_empty() and s._sizzle_count == 0 and s._sizzle_next == 0.0,
+	check(s._acid_next == 0.0 and s._acid_mist_start < 0.0 and s._acid_fallback.is_empty() and s._sizzle_count == 0 and s._sizzle_next == 0.0,
 		"acid expiry resets the episode even when no mist spawned")
 	s.busy_until = fx.now
 	# Start with a restored view, then let an actual bio hull hit supply a new local source.
@@ -134,14 +134,24 @@ func _run() -> void:
 		fx.step(0.05)
 		check(sizzles.size() == 1 and sizzles[0].get("pos") == s.to_world(spots.back()[0]),
 			"the sizzle rearms and follows the recorded spot on a moved hull")
+	var settled_count := 0
 	for i in 40:
 		sfx.last.erase("acid_sizzle")
 		fx.sync_ship(s.id, empty)
 		fx.step(0.30)
+		if i == 6 and s._acid_mist != null:
+			settled_count = s._acid_mist.emitted
 	check(sizzles.size() == 2 and float(sizzles[1].get("gain", 1.0)) < float(sizzles[0].get("gain", 1.0)),
 		"a long acid episode plays just two sizzles, with the second quieter")
-	check(s._acid_mist != null and s._acid_mist.emitted > 2 and s._acid_mist.mi.get_parent() == s._dmg_root,
-		"one hull-attached mist pool keeps emitting while idle")
+	check(s._acid_mist != null and settled_count > 2 and s._acid_mist.emitted == settled_count
+		and s._acid_mist.mi.get_parent() == s._dmg_root,
+		"the attached mist settles by two seconds even if acid stays active across syncs")
+	var next_hit := fx.volley(attacker.id, "bio", s.id, {"weapon_id": "bioplasma", "shots": [true], "hits": [{"shield": 0, "hull": 2}]})
+	if next_hit.impacts.size() == 1:
+		fx.step(float(next_hit.impacts[0]) + 0.05)
+		fx.step(0.30)
+	check(s._acid_mist != null and s._acid_mist.emitted > settled_count and sizzles.size() == 2,
+		"another hull hit renews the mist without rearming the sizzles")
 	fx.sync_ship(s.id, {"st": {"acid": 0}, "regenLock": false})
 	fx.step(0.05)
 	check(s._acid_mist == null and not s._shield_mi.visible, "both effects stop when their status expires")
@@ -168,27 +178,41 @@ func _run() -> void:
 	check(sounds.count("shield_sputter") == 1, "one sputter plays for the strained hit")
 	s.shield_hit(fx, Vector3.RIGHT, fx.now, 1.0, 5.0, 0.5, 0.0)
 	check(s._hitw[s._hit_i].w == 0.0, "an empty pool leaves the collapse unstrained")
-	_check_eclipse_acid(fx.ship(attacker.id), s, world, box)
+	_check_bio_palettes(fx.ship(attacker.id), s, world, box)
 	world.free()
 	print("status_fx_check: %d failures" % failures)
 	quit(1 if failures else 0)
 
 
-func _check_eclipse_acid(eclipse: SHIP, control: SHIP, world: Node3D, box: BoxMesh) -> void:
-	var chorus := Node3D.new()
-	world.add_child(chorus)
-	chorus.position = Vector3(-70, 4, 1)
+func _add_test_hull(id: String, faction: String, at: Vector3, world: Node3D, box: BoxMesh) -> SHIP:
+	var body := Node3D.new()
+	world.add_child(body)
+	body.position = at
 	var mesh := MeshInstance3D.new()
 	mesh.mesh = box
-	chorus.add_child(mesh)
-	fx.add_ship("chorus", chorus, {"faction": "chorus", "meshes": [mesh]})
+	body.add_child(mesh)
+	fx.add_ship(id, body, {"faction": faction, "meshes": [mesh]})
+	return fx.ship(id)
+
+
+func _check_bio_palettes(eclipse: SHIP, control: SHIP, world: Node3D, box: BoxMesh) -> void:
+	_add_test_hull("chorus", "chorus", Vector3(-70, 4, 1), world, box)
+	var targets: Array[SHIP] = [eclipse, control]
+	for faction in ["chorus", "voidsworn", "corsair", "ithar"]:
+		targets.append(_add_test_hull(faction + "_target", faction, Vector3(8, 4, targets.size() * 14), world, box))
 	fx.quality = "max" # Low skips the impact fume.
 	var violet: Color = eclipse.fac.damage_glow
 	var green: Color = fx.faction_info("chorus").weapon
 	check(eclipse.acid_colour() == violet and violet.b > maxf(violet.r, violet.g), "Eclipse idle and tick acid use its violet damage glow")
 	check(SH.BIO_CONTACT_GLOB == 29, "the bio contact glob uses kind 29, clear of the thrust sprite")
-	for ship in [eclipse, control]:
-		var expected := violet if ship == eclipse else green
+	for ship in targets:
+		var expected := ship.acid_colour()
+		var flash: Color = eclipse.fac.accent if ship == eclipse else expected
+		var flash_rgb := Vector3(flash.r, flash.g, flash.b)
+		if ship != eclipse:
+			var no_lime := expected.g < 0.14 and expected.r < 0.14 and expected.b < 0.14
+			var local_colour := expected.g > expected.r if ship.faction == "chorus" else expected.g <= expected.r
+			check(no_lime and local_colour, "only Chorus uses dark bile on contact, checked on " + ship.faction)
 		var smoke: POOLS.Pool = fx.pools["smk"]
 		var streaks: POOLS.Pool = fx.pools["stk"]
 		smoke.flush()
@@ -204,6 +228,8 @@ func _check_eclipse_acid(eclipse: SHIP, control: SHIP, world: Node3D, box: BoxMe
 		var fumes := 0
 		var glob_ok := false
 		var colours_ok := true
+		var short_lived := true
+		var dim := true
 		for offset in range(0, smoke.pending.size(), POOLS.STRIDE * smoke.vpp):
 			# Read the submitted vertices, one per sprite. The flight glob precedes the impact.
 			var rgb := Vector3(smoke.pending[offset + 12], smoke.pending[offset + 13], smoke.pending[offset + 14])
@@ -214,29 +240,56 @@ func _check_eclipse_acid(eclipse: SHIP, control: SHIP, world: Node3D, box: BoxMe
 				continue
 			if kind == 20:
 				fumes += 1
-			elif kind == (SH.BIO_CONTACT_GLOB if ship == eclipse else 15):
+				dim = dim and smoke.pending[offset + 15] < 0.25
+			elif kind == SH.BIO_CONTACT_GLOB:
 				drops += 1
-				colours_ok = colours_ok and _same_hue(rgb, contact)
-			colours_ok = colours_ok and (rgb.z > maxf(rgb.x, rgb.y) if ship == eclipse else rgb.y > maxf(rgb.x, rgb.z))
+				dim = dim and smoke.pending[offset + 15] < 1.0 and maxf(maxf(rgb.x, rgb.y), rgb.z) <= 0.25
+			else:
+				colours_ok = false
+			colours_ok = colours_ok and _same_hue(rgb, contact)
+			short_lived = short_lived and smoke.pending[offset + 7] + smoke.pending[offset + 11] <= impact_at + 2.0
 		check(glob_ok, "Chorus retains its green flight glob toward " + ship.faction)
 		check(drops == 8 and fumes > 0 and colours_ok, "bioplasma droplets and fume use the contact palette on " + ship.faction)
+		check(dim and short_lived, "contact droplets and fume are dim and gone within two seconds on " + ship.faction)
 		var contact_streaks := 0
 		for offset in range(0, streaks.pending.size(), POOLS.STRIDE * streaks.vpp):
 			if streaks.pending[offset + 7] >= impact_at - 0.0001:
 				contact_streaks += 1
 		check(not fx.spr_kinds.has(19) and contact_streaks == 0, "bioplasma contact emits no warm vent sparks on " + ship.faction)
 		var light: Color = fx._lev.back()[4]
-		check(_same_hue(Vector3(light.r, light.g, light.b), contact), "bioplasma impact light uses the contact palette on " + ship.faction)
+		check(_same_hue(Vector3(light.r, light.g, light.b), flash_rgb), "bioplasma impact light uses the hull's flash palette on " + ship.faction)
 		fx.step(float(volley.impacts[0]) + 0.15)
 		var heat_pools: Dictionary = fx.dstate.get("heat_pools", {})
 		check(not heat_pools.has(ship.id) and not fx.spr_kinds.has(21), "bioplasma leaves no orange heat spot on " + ship.faction)
 		ship.flush_damage(fx)
 		var splash := fx.get_node_or_null("fx_weapon_flash") as MeshInstance3D
-		check(splash != null and _same_hue(splash.material_override.get_shader_parameter("weapon_tint"), contact),
-			"bioplasma splash uses the contact palette on " + ship.faction)
+		check(splash != null and _same_hue(splash.material_override.get_shader_parameter("weapon_tint"), flash_rgb),
+			"bioplasma splash uses the hull's flash palette on " + ship.faction)
+		var vent := fx.get_node_or_null("fx_weapon_vent") as MeshInstance3D
+		check(vent != null and _same_hue(vent.material_override.get_shader_parameter("weapon_tint"), contact),
+			"bioplasma pressure puff uses the contact palette on " + ship.faction)
 		if ship == eclipse:
 			check(not eclipse._marks.is_empty() and eclipse._marks.back().wound_kind == 3,
 				"the lingering bioplasma scar uses the Eclipse wound kind")
+		_check_mist_submission(ship, contact)
+
+
+func _check_mist_submission(ship: SHIP, expected: Vector3) -> void:
+	# Emit through the status path and inspect the submitted particles before the frame flush.
+	ship._emit_acid(fx)
+	var mist := ship._acid_mist
+	var eclipse: bool = ship.faction == "deathless"
+	var expected_count := 1 if eclipse else 2
+	check(mist != null and mist.n_pending == expected_count, "status mist produces its local puffs on " + ship.faction)
+	if mist == null: return
+	var ok := true
+	for offset in range(0, mist.pending.size(), POOLS.STRIDE * mist.vpp):
+		var rgb := Vector3(mist.pending[offset + 12], mist.pending[offset + 13], mist.pending[offset + 14])
+		ok = ok and _same_hue(rgb, expected) and mist.pending[offset + 7] + mist.pending[offset + 11] <= fx.now + 2.0
+		if not eclipse:
+			ok = ok and int(mist.pending[offset + 18]) == 7 and mist.pending[offset + 15] < 0.18
+	check(ok, "status mist uses the local palette and a short fade, with no non-Eclipse emission on " + ship.faction)
+	mist.flush()
 
 
 func _same_hue(rgb: Vector3, expected: Vector3) -> bool:
