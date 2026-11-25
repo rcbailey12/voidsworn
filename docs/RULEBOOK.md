@@ -129,7 +129,7 @@ R194); and "you own the codebase and github. you are my orchestrator and control
 2.2 **Nobody grades their own work.** Workers never merge their own pull requests. An Opus-built, game-facing change gets an
 outside check (Muse, issue 256) before or straight after merge; a tools-only pull request that other jobs wait on may merge on
 the Board's diff review while Muse is idle, with the check still asked for. Set: Ryan (R119, R132, R133, R167); the exception
-Board (R162). Ids: agents-13, claude-04, R132c, R162b.
+Board (R162). The Board may merge its own pull requests once checks are green (Ryan, Nov 24 2026 6:48 PM CT, R452); visual and gameplay changes still go to Ryan's pictures or an outside review first. Ids: agents-13, claude-04, R132c, R162b, R452.
 
 2.3 **Review every pull request by its diff, never its title, then sweep its impact** (every caller, saves and old profiles,
 the Godot rules and their saved results, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
@@ -563,6 +563,17 @@ reflection lobe is desaturated to a neutral warm-white so Eclipse stays obsidian
 the #1786 lighting. The world PRs fold in the audit cleanups before merge: an obsidian Eclipse hulk finish (#1772), a
 procedural planet fallback when the remix is off (#1776), crystal `_lo` LODs (#1782); the planet relief map's VRAM is
 budgeted in #1780.
+R423 (Ryan, Nov 23 2026, decision card on PR 1772's hulk pictures; its 0.04 and 0.025 floors were replaced by R425 below): hulks sat in band 3 at 0.04 to 0.045 linear base
+(burnt, dull, Eclipse obsidian at the floor), with one exception: Chorus hulks only go below the band 3 floor, to about
+0.025 (0.025 to 0.03, the low end of Eclipse's interior range), because at the floor the tan chitin wrecks were still the
+lightest shapes in a hulk field at camera 170. Eclipse hulks are unchanged. Code: `godot/assets/ships/a4_props.gd`
+HULK_BAND and CHORUS_HULK_BAND, checked by station_size_check and unwired_station_hulk_check.
+R425 (Ryan, Nov 23 2026, on the Chorus material probe for PR 1772): a wreck is never lighter than its own live paint
+dimmed to 60 percent; the hulk floor only stops pure black (0.005 linear). The 0.04 floor (R420) and R423's 0.025 for
+Chorus had lifted dark paint back up: the Chorus body (about 0.021 live) rendered undimmed and the Hullbreaker hull went
+from 0.027 live to 0.040 dead. Ceilings stay (0.045, Chorus 0.03); Eclipse obsidian keeps its 0.04 floor (R421). The
+60 percent (and the 40 percent cap on dead metal, Wave 0 on Sheet M) scale the encoded paint tint, so in linear light a
+wreck keeps about a third (dead metal about a seventh) of its paint; the band and ceilings are measured in linear light.
 R426 (Ryan, Nov 23 2026 03:22 UTC, on the #1777 before and after sheets): Ship Look V2 is the default look for every
 hull, the darker Hullbreaker red included; `VS_SHIP_LOOK_V2=0` keeps the old look for A/B captures only, and new ship
 work is judged under V2 (`look.gd` `ship_look_v2_enabled()`, guarded by `ship_look_v2_check`).

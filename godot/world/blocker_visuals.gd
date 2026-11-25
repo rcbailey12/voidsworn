@@ -67,10 +67,13 @@ func build(view: Dictionary, hw: Callable) -> void:
 			if kind == "hulk":
 				visuals[key] = hulk_fallback(self, p, rng)
 			elif kind == "station":
-				var station := A4P.station(14.0)
+				# issue 1767: station_T2 fitted inside its one hex at its best turn (A4P.best_bearing), no drifting debris
+				var hex_r: float = p.distance_to(hw.call(int(cell[0]) + 1, int(cell[1]))) / sqrt(3.0)
+				var station := A4P.station(14.0, hex_r, str(biome.get("station", "")), false, [Vector2.ZERO], hex_r, 0.0)
 				if station != null:
 					add_child(station)
-					station.position = p + Vector3.UP * 3.0
+					station.position = p + Vector3.UP * 3.0 * station.scale.x
+					station.rotation.y = float(station.get_meta("station_bearing", 0.0))
 					visuals[key] = station
 				else:
 					visuals[key] = station_fallback(self, p)
