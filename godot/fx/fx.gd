@@ -764,8 +764,9 @@ const SMOKY := {3: true, 7: true, 8: true, 15: true, 20: true, 23: true, 27: tru
 
 # `px` (F3 round 2): this sprite's own minimum size on screen, in pixels on a 1080-line screen (0: the kind's floor).
 # Used for the moments that must read from the battle camera: impact, muzzle, shield and kill flashes.
+# A linear projectile can pack its absolute contact time into the negative side of a4.x. Positive values still loop.
 func spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,
-		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
+		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0, contact_at := 0.0) -> void:
 	# every bright, short, flash-like sprite goes through the flash budget here, whoever calls it (muzzle cores, beam
 	# contact, secondary pops, death flames): refused or in reduce-flashing mode it becomes a soft lift with no peak
 	# Issue 504: the counter adds this sprite's lit area to the bright ones around it (flash_at).
@@ -775,7 +776,7 @@ func spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1:
 			kind = 18
 			i = minf(i, 3.0) * 0.4
 			life = maxf(life * 3.0, 0.4)
-	_emit_spr(p, t, life, col, i, s0, s1, kind, vel, drag, spin, acc, px)
+	_emit_spr(p, t, life, col, i, s0, s1, kind, vel, drag, spin, acc, px, contact_at)
 
 
 # The sprite itself, after the flash decision. Pop and shield crackle book their own pictures.
@@ -784,12 +785,12 @@ var rib_log = null     # checks only (issue 1586): an Array here logs every ribb
 
 
 func _emit_spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,
-		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
+		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0, contact_at := 0.0) -> void:
 	if spr_kinds != null:
 		spr_kinds[kind] = int(spr_kinds.get(kind, 0)) + 1
 	var pool: POOLS.Pool = pools["smk"] if SMOKY.has(kind) else pools["spr"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life), Vector4(col.r, col.g, col.b, i),
-		Vector4(s0 * unit, s1 * unit, kind, minf(rng.randf(), 0.999) + floorf(clampf(px, 0.0, 4000.0))), Vector4(0.0, acc, drag, spin)))
+		Vector4(s0 * unit, s1 * unit, kind, minf(rng.randf(), 0.999) + floorf(clampf(px, 0.0, 4000.0))), Vector4(-contact_at, acc, drag, spin)))
 
 
 # A sprite with its own pixel floor (the same as spr with px; shorter to call).
@@ -800,10 +801,10 @@ func sprx(px: float, p: Vector3, t: float, life: float, col: Color, i: float, s0
 
 # `wpx`, `lpx` (F3 round 2): this streak's own minimum width and length on screen (pixels at 1080 lines; 0: the kind's).
 func stk(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
-		drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
+		drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0, contact_at := 0.0) -> void:
 	var pool: POOLS.Pool = pools["null"] if kind == 5 else pools["stk"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
-		Vector4(col.r, col.g, col.b, i), Vector4(length, w * unit, drag, kind), Vector4(0.0, acc, wpx, lpx)))
+		Vector4(col.r, col.g, col.b, i), Vector4(length, w * unit, drag, kind), Vector4(-contact_at, acc, wpx, lpx)))
 
 
 func shot_pass_by(at: float, p: Vector3) -> void:
@@ -825,12 +826,12 @@ func sound():
 
 # One head follows the real gauss flight; its deposited light cools for 0.70 s.
 # Unlike ordinary capped streaks, this history is measured against shot length.
-func null_trace(from: Vector3, to: Vector3, t: float, flight: float, col: Color, k: float) -> void:
+func null_trace(from: Vector3, to: Vector3, t: float, flight: float, col: Color, k: float, contact_at := 0.0) -> void:
 	var dv := to - from
 	var axis := dv.normalized()
 	(pools["null"] as POOLS.Pool).emit(POOLS.pack(Vector4(from.x, from.y, from.z, t),
 		Vector4(axis.x, axis.y, axis.z, flight + 0.70), Vector4(col.r, col.g, col.b, 5.0),
-		Vector4(dv.length(), 0.4 * k * unit, flight, 5.0), Vector4.ZERO))
+		Vector4(dv.length(), 0.4 * k * unit, flight, 5.0), Vector4(-contact_at, 0.0, 0.0, 0.0)))
 
 
 # `px` (F3 round 2): the ring's own final size on screen in pixels (shock rings and ripples, kinds 1 to 3); the floor
