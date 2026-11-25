@@ -72,7 +72,7 @@
 #   survey                                     read only: every job attempt and ship clone under voidsworn_test with its
 #                                              size and what the rules above would do with it. Deletes nothing.
 # Nothing else is deleted. Test settings (helper_clone's): PC_TEST_HELPER=1, PC_TEST_HELPER_VT, PC_TEST_SOURCE, PC_TEST_REALU.
-param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'relayfind', 'dropcache', 'droprepo', 'survey', 'slot', 'slothold', 'slotrelease', 'slotcheck')][string]$Action,
+param([Parameter(Mandatory)][ValidateSet('live', 'bundle', 'watchdog', 'checkout', 'tracked', 'shipcheck', 'hashes', 'shiprecord', 'dropcheckouts', 'dropwait', 'dropjobs', 'relayfind', 'dropcache', 'droprepo', 'survey', 'slot', 'slothold', 'slotrelease', 'slotcheck', 'slotrehabilitate')][string]$Action,
       [string]$A = '', [string]$B = '', [string]$C = '', [string]$D = '', [string]$Folder = '')
 $ErrorActionPreference = 'Stop'
 # Git emits the relay tree paths and manifest as UTF-8, even under Windows PowerShell 5.1.
@@ -149,7 +149,7 @@ function Test-Paused {
   if (-not (Test-Path -LiteralPath $flag -PathType Leaf)) { return $false }
   return [string](Get-Content -LiteralPath $flag -TotalCount 1) -match '^GPU not cleared: paused by the Board\b'
 }
-function Get-KeptWork($repo, $src, $rec, $codeDir, $export) {
+function Get-KeptWork($repo, $src, $rec, $codeDir, $export, [switch]$Slot) {
   # Every tracked change (staged or not) and every untracked or ignored path that is not proven rebuildable:
   #  - godot/.godot/ (Godot's import cache and editor state);
   #  - a file under godot/gen/ or godot/assets/ships/ whose sha256 matches the ships step's copy-time record ($rec,
@@ -163,7 +163,7 @@ function Get-KeptWork($repo, $src, $rec, $codeDir, $export) {
   # before any removal (Save-Leftovers) or keeps the checkout.
   $ErrorActionPreference = 'Continue'
   if ($null -eq $rec) { $rec = @{} }
-  $raw = (& $gitExe -C $repo -c core.quotepath=false status --porcelain=v1 -z --untracked-files=all --ignored=traditional 2>$null) -join "`n"
+  $raw = (& $gitExe --no-optional-locks -C $repo -c core.quotepath=false status --porcelain=v1 -z --untracked-files=all --ignored=traditional 2>$null) -join "`n"
   if ($LASTEXITCODE -ne 0) { return @('git status failed') }
   $keep = @(); $copies = @(); $sidecars = @(); $proven = @{}
   foreach ($e in ($raw -split "`0")) {
@@ -187,7 +187,7 @@ function Get-KeptWork($repo, $src, $rec, $codeDir, $export) {
     if ($code -ne '??' -and $code -ne '!!') { $keep += "changed: $rel"; continue }
     if ($rel.StartsWith('godot/.godot/', [StringComparison]::Ordinal)) { continue }
     if ($rel.EndsWith('/')) { $keep += "new: $rel"; continue }
-    if ($rel.EndsWith('.import', [StringComparison]::Ordinal) -or $rel.EndsWith('.uid', [StringComparison]::Ordinal)) { $sidecars += $rel; continue }
+    if (-not $Slot -and $rel -cmatch '\.(?:import|uid)\z') { $sidecars += $rel; continue }
     $from = $null; $shipCopy = $false
     foreach ($pre in 'gen/', 'assets/ships/') {
       if ($rel.StartsWith('godot/' + $pre, [StringComparison]::Ordinal)) {
@@ -206,11 +206,15 @@ function Get-KeptWork($repo, $src, $rec, $codeDir, $export) {
         if ($h -and $from) {
           $theirs = Get-Item -LiteralPath $from -Force -ErrorAction SilentlyContinue
           $same = $false
-          if ($theirs -is [IO.FileInfo] -and $mine.Length -eq $theirs.Length) { try { $same = (Hash $theirs.FullName) -eq $h } catch { $same = $false } }
+          if ($theirs -is [IO.FileInfo] -and -not ($theirs.Attributes -band [IO.FileAttributes]::ReparsePoint) -and $mine.Length -eq $theirs.Length) { try { $same = (Hash $theirs.FullName) -eq $h } catch { $same = $false } }
           if ($same) { $proven[$rel] = $true; continue }
         }
       }
     }
+    if ($rel -cmatch '\.(?:import|uid)\z') { $sidecars += $rel; continue }
+    # gen is the generated ship cache, not a source directory. Elsewhere a .scn or .res can be unique work.
+    if ($Slot -and $rel -cmatch '\Agodot/gen/.+\.(?:scn|res)\z' -and (& $mineFile)) { continue }
+    if ($Slot -and $rel -cmatch '\Agodot/assets/ships/.+\.(?:scn|res)\z') { $sidecars += $rel; continue }
     if ($code -eq '??') { $copies += $rel } else { $keep += "new: $rel" }
   }
   $tracked = @{}; $paths = @{}
@@ -225,15 +229,20 @@ function Get-KeptWork($repo, $src, $rec, $codeDir, $export) {
   }
   foreach ($rel in $sidecars) {
     $own = $rel -replace '\.(import|uid)\z', ''
+    if ($Slot -and $rel -cmatch '\.(?:scn|res)\z') { $own = ($rel -replace '\.(?:scn|res)\z', '') + '.glb' }
     if (-not ($paths.ContainsKey($own) -or $proven.ContainsKey($own))) { $keep += "new: $rel" }
   }
   return $keep
 }
-function Read-ShipRecord($file) {
+function Read-ShipRecord($file, $lastUseHash = '') {
   # shiprecord's lines: "<sha256> <bytes> <path>"; a missing file is an empty record (jobs from before issue 1497)
   $rec = @{}
-  if ($file -and (Test-Path -LiteralPath $file -PathType Leaf)) {
-    foreach ($line in [IO.File]::ReadAllLines($file)) { if ($line -match '\A([0-9a-f]{64}) \d+ (.+)\z') { $rec[$Matches[2]] = $Matches[1] } }
+  if ($file) {
+    $item = Get-Item -LiteralPath $file -Force -ErrorAction SilentlyContinue
+    if ($item -isnot [IO.FileInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $rec }
+    $lines = [IO.File]::ReadAllLines($item.FullName)
+    if ($lastUseHash -and (-not $lines.Count -or $lines[0] -cne "last use $lastUseHash")) { return $rec }
+    foreach ($line in $lines) { if ($line -match '\A([0-9a-f]{64}) \d+ (.+)\z') { $rec[$Matches[2]] = $Matches[1] } }
   }
   return $rec
 }
@@ -720,8 +729,7 @@ function Open-PlainLock($path) {
   if ($item -and ($item -isnot [IO.FileInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint))) { throw "lock is not a plain file: $path" }
   return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None')
 }
-function Get-JobKeepReason($attempt) {
-  $jobDir = Split-Path -Parent $attempt
+function Get-JobKeepReason($attempt, $jobDir = (Split-Path -Parent $attempt)) {
   $keepFile = Join-Path $vt 'janitor_keep.txt'
   $keepItem = Get-Item -LiteralPath $keepFile -Force -ErrorAction SilentlyContinue
   if ($keepItem) {
@@ -896,7 +904,7 @@ function Invoke-WithPinnedMirror($pin, [scriptblock]$then) {
 # reset, anything the last job left in the slot that is not proven rebuildable is saved into that job's attempt
 # (Get-KeptWork and Save-Leftovers, as dropcheckouts does); when that cannot be done the slot is set aside with hold.txt
 # for the Board and another slot is used. The reset is a forced checkout of the pin and `git clean -ffdx` that keeps only
-# godot\.godot (the warm import cache) and *.import sidecars; it deletes only inside voidsworn_test\slots.
+# godot\.godot (the warm import cache) and non-ship *.import sidecars; it deletes only inside voidsworn_test\slots.
 $slotsRoot = Join-Path $vt 'slots'
 function Get-SlotNames($kind) {
   if ($kind -eq 'gpu') { return @('slot_gpu_1', 'slot_gpu_2') }
@@ -1063,6 +1071,66 @@ function Reset-Slot($dir, $attempt, $name, $pin) {
     if (-not (Test-SlotHeld $dir $token)) { throw "the lease on $dir was lost during the reset; this checkout is not used" }
   } finally { $lock.Dispose() }
 }
+function Get-SlotLastUse($dir) {
+  $last = Get-Item -LiteralPath (Join-Path $dir 'last_use.txt') -Force -ErrorAction SilentlyContinue
+  $u = @{}
+  if ($last) {
+    if ($last -isnot [IO.FileInfo] -or ($last.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'slot last_use.txt is not a plain file' }
+    foreach ($l in [IO.File]::ReadAllLines($last.FullName)) { if ($l -match '\A(attempt|name) (.+)\z') { $u[$Matches[1]] = $Matches[2] } }
+  }
+  return $u
+}
+function Get-SlotWork($repo, $u) {
+  $ri = Get-Item -LiteralPath $repo -Force
+  if (-not ($ri -is [IO.DirectoryInfo]) -or ($ri.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "the slot repo is not a plain folder: $repo" }
+  if (-not (Test-PlainDir (Get-Item -LiteralPath (Join-Path $repo '.git') -Force))) { throw 'slot .git is not a plain directory' }
+  $origin = ''
+  try { $origin = (Run-Git -C $repo config --get remote.origin.url) | Select-Object -Last 1 } catch { $origin = '' }
+  if ($origin -ne $mirror) { throw "the slot repo $repo does not come from the shared mirror" }
+  $nested = @(Get-ChildItem -LiteralPath $repo -Recurse -Force -Filter '.git' | Where-Object { $_.FullName -ne (Join-Path $repo '.git') } | Select-Object -First 1)
+  if ($nested.Count) { throw "a repo inside the slot repo: $($nested[0].FullName)" }
+  $dir = Split-Path -Parent $repo
+  $last = Join-Path $dir 'last_use.txt'
+  $src = Join-Path $vt 'build/godot'; $rec = @{}
+  if (Test-Path -LiteralPath $last -PathType Leaf) {
+    $rec = Read-ShipRecord (Join-Path $dir 'ships_copied.txt') (Hash $last)
+  }
+  if ($u.attempt -and $u.name -match '\A[A-Za-z0-9_-]+\z' -and -not (Get-AttemptProblem $u.attempt)) {
+    if (-not $rec.Count) { $rec = Read-ShipRecord (Join-Path $u.attempt "$($u.name)_ships_copied.txt") }
+    $sf = Join-Path $u.attempt 'ships_source.txt'
+    if (Test-Path -LiteralPath $sf -PathType Leaf) { $src = ([IO.File]::ReadAllText($sf)).Trim() }
+  }
+  # a commit, branch or stash the last job made in the slot is never reset away: the slot is set aside instead
+  $own = @()
+  $heads = @(Run-Git -C $repo for-each-ref '--format=%(objectname) %(refname)' refs/heads refs/stash)
+  $headSha = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
+  foreach ($h in (@("$headSha HEAD") + $heads)) {
+    $parts = "$h".Split(' ')
+    if ($parts[1] -eq 'refs/stash') { $own += 'a stash'; continue }
+    if (-not (Test-InMirror $parts[0])) { $own += "$($parts[1]) at $($parts[0]), which no mirror branch holds" }
+  }
+  if ($own.Count) { throw "the last job left $($own -join '; ') in $repo; the slot is kept as it is" }
+  $work = @(Get-KeptWork $repo $src $rec $null $null -Slot)
+  return $work
+}
+function Save-SlotShipRecord($repo, $out, [string[]]$lines) {
+  $dir = Split-Path -Parent $repo
+  if ((Split-Path -Leaf $repo) -ne 'repo' -or (Split-Path -Parent $dir) -ne $slotsRoot -or
+      (Split-Path -Leaf $dir) -notin ((Get-SlotNames gpu) + (Get-SlotNames cpu))) { return }
+  Assert-SlotDir $dir
+  $u = Get-SlotLastUse $dir
+  if (-not $u.attempt -or (Get-AttemptProblem $u.attempt) -or $u.name -notmatch '\A[A-Za-z0-9_-]+\z' -or
+      [IO.Path]::GetFullPath($out) -ne (Join-Path $u.attempt "$($u.name)_ships_copied.txt")) { throw 'ship record does not name the current slot attempt' }
+  $held = Get-HeldSlot $u.attempt
+  if (-not $held -or $held.Dir -ne $dir) { throw 'cannot record ships without the current slot lease' }
+  # The attempt can be relayed and removed while the slot still holds its copies. Keep the same evidence with the slot,
+  # tied to the exact reset receipt so a later reset never inherits an earlier install's proof.
+  $receipt = Join-Path $dir 'ships_copied.txt'
+  $item = Get-Item -LiteralPath $receipt -Force -ErrorAction SilentlyContinue
+  if ($item -and ($item -isnot [IO.FileInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint))) { throw 'slot ship record is not a plain file' }
+  $stamp = Hash (Join-Path $dir 'last_use.txt')
+  [IO.File]::WriteAllLines($receipt, [string[]](@("last use $stamp") + $lines))
+}
 function Reset-SlotInner($dir, $attempt, $name, $pin) {
   # The slot's repo at exactly $pin, the last job's own leftovers saved first, ready for the ships step.
   Assert-SlotDir $dir
@@ -1070,35 +1138,11 @@ function Reset-SlotInner($dir, $attempt, $name, $pin) {
   $last = Join-Path $dir 'last_use.txt'
   if (Test-Path -LiteralPath $repo) {
     $u = @{}
-    if (Test-Path -LiteralPath $last -PathType Leaf) { foreach ($l in [IO.File]::ReadAllLines($last)) { if ($l -match '\A(attempt|name|src) (.+)\z') { $u[$Matches[1]] = $Matches[2] } } }
-    $ri = Get-Item -LiteralPath $repo -Force
-    if (-not ($ri -is [IO.DirectoryInfo]) -or ($ri.Attributes -band [IO.FileAttributes]::ReparsePoint)) { Set-SlotHold $dir "the slot repo is not a plain folder: $repo" $u }
-    $origin = ''
-    try { $origin = (Run-Git -C $repo config --get remote.origin.url) | Select-Object -Last 1 } catch { $origin = '' }
-    if ($origin -ne $mirror) { Set-SlotHold $dir "the slot repo $repo does not come from the shared mirror" $u }
-    $nested = @(Get-ChildItem -LiteralPath $repo -Recurse -Force -Filter '.git' -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne (Join-Path $repo '.git') } | Select-Object -First 1)
-    if ($nested.Count) { Set-SlotHold $dir "a repo inside the slot repo: $($nested[0].FullName)" $u }
-    # the last job's leftovers go to its own attempt before anything is reset
-    $src = $null; $rec = @{}
-    if ($u.attempt -and $u.name) {
-      $rec = Read-ShipRecord (Join-Path $u.attempt "$($u.name)_ships_copied.txt")
-      $sf = Join-Path $u.attempt 'ships_source.txt'
-      if (Test-Path -LiteralPath $sf -PathType Leaf) { $src = ([IO.File]::ReadAllText($sf)).Trim() }
-    }
-    # a commit, branch or stash the last job made in the slot is never reset away: the slot is set aside instead
-    $own = @()
-    $heads = @(Run-Git -C $repo for-each-ref '--format=%(objectname) %(refname)' refs/heads refs/stash)
-    $headSha = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
-    foreach ($h in (@("$headSha HEAD") + $heads)) {
-      $parts = "$h".Split(' ')
-      if ($parts[1] -eq 'refs/stash') { $own += 'a stash'; continue }
-      if (-not (Test-InMirror $parts[0])) { $own += "$($parts[1]) at $($parts[0]), which no mirror branch holds" }
-    }
-    if ($own.Count) { Set-SlotHold $dir "the last job left $($own -join '; ') in $repo; the slot is kept as it is" $u }
-    $work = @(Get-KeptWork $repo $src $rec $null $null)
+    try { $u = Get-SlotLastUse $dir; $work = @(Get-SlotWork $repo $u) }
+    catch { Set-SlotHold $dir $_.Exception.Message $u }
     if ($work.Count) {
       $dest = $null
-      if ($u.attempt -and (Test-Path -LiteralPath $u.attempt -PathType Container)) { $dest = Join-Path (Join-Path $u.attempt "out_$($u.name)") 'slot_leftovers' }
+      if ($u.attempt -and $u.name -match '\A[A-Za-z0-9_-]+\z' -and -not (Get-AttemptProblem $u.attempt)) { $dest = Join-Path (Join-Path $u.attempt "out_$($u.name)") 'slot_leftovers' }
       else { $dest = Join-Path $dir ('leftovers_' + [DateTime]::UtcNow.ToString('yyyyMMdd_HHmmss')) }
       if (Test-Path -LiteralPath $dest) { $dest = $dest + '_' + [DateTime]::UtcNow.ToString('HHmmssfff') }
       try { Write-Output (Save-Leftovers $repo $work $dest) }
@@ -1112,12 +1156,65 @@ function Reset-SlotInner($dir, $attempt, $name, $pin) {
   Run-Git -C $repo cat-file -e "$pin^{commit}" | Out-Null
   [IO.File]::WriteAllLines($last, [string[]]@("attempt $attempt", "name $name", "pin $pin", "at $([DateTime]::UtcNow.ToString('o'))"))
   Run-Git -C $repo -c core.autocrlf=false -c advice.detachedHead=false checkout -q -f --detach $pin | Out-Null
-  Run-Git -C $repo clean -q -ffdx -e /godot/.godot/ -e '*.import' | Out-Null
+  Run-Git -C $repo clean -q -ffdx -e /godot/.godot/ -e '*.import' -e '!/godot/gen/**/*.import' -e '!/godot/assets/ships/**/*.import' | Out-Null
   $head = (Run-Git -C $repo rev-parse HEAD) | Select-Object -Last 1
   if ($head -ne $pin) { throw "slot repo $repo is at $head, not the pin $pin" }
   $changed = @(Run-Git -C $repo status --porcelain --untracked-files=no | Where-Object { $_ })
   if ($changed.Count) { throw "slot repo $repo still differs from the pin after the reset: $($changed[0])" }
   return $repo
+}
+function Open-SlotReviewLock($path, $dryRun) {
+  $file = Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+  if ($file -and ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint))) {
+    throw 'slot lock is not a plain file'
+  }
+  if ($dryRun) {
+    if ($file) { return [IO.File]::Open($path, 'Open', 'Read', 'None') }
+  } else { return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None') }
+}
+function Clear-RebuildableSlotHold($name, $dryRun) {
+  if ($name -cnotin (Get-SlotNames gpu)) { throw 'not a warm GPU slot' }
+  $dir = Join-Path $slotsRoot $name
+  Assert-SlotDir $dir
+  $lease = $null; $reset = $null; $mirrorLock = $null
+  try {
+    $lease = Open-SlotReviewLock (Join-Path $dir '.slot-lease') $dryRun
+    $reset = Open-SlotReviewLock (Join-Path $dir '.slot-reset') $dryRun
+    $owner = Get-Item -LiteralPath (Join-Path $dir 'owner.txt') -Force -ErrorAction SilentlyContinue
+    if ($owner) {
+      if ($owner -isnot [IO.FileInfo] -or ($owner.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'slot owner record is not a plain file' }
+      $txt = [IO.File]::ReadAllText($owner.FullName)
+      if ($txt -notmatch '(?m)^released ' -and ($txt -notmatch '(?m)^job process ([0-9]+) ([0-9]+)\r?$' -or
+          (Test-SameProcess ([int]$Matches[1]) ([long]$Matches[2])))) { throw 'the previous slot owner may still run' }
+    }
+    if (Get-ChildItem -LiteralPath $dir -Force -Filter 'hold.txt.*.clearing') { throw 'a slot hold review is already in flight' }
+    $hold = Get-Item -LiteralPath (Join-Path $dir 'hold.txt') -Force
+    if ($hold -isnot [IO.FileInfo] -or ($hold.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'slot hold is not a plain file' }
+    $u = Get-SlotLastUse $dir
+    $repo = Join-Path $dir 'repo'
+    $text = [IO.File]::ReadAllText($hold.FullName)
+    $reason = [regex]::Escape("the last job's leftovers in $repo could not be saved (")
+    $lastUse = [regex]::Escape("last use: $($u.attempt) $($u.name)")
+    if ($text -cnotmatch ('\A' + $reason + '[^\r\n]+\); the slot is kept as it is\r?\n' + $lastUse +
+        '\r?\nThe Board removes this file once it has looked\.\r?\n\z')) { throw 'not an automatic leftovers hold' }
+    $mirrorLock = Open-SlotReviewLock ($mirror + '.lock') $dryRun
+    $work = @(Get-SlotWork $repo $u)
+    if ($work.Count) { throw "$($work.Count) leftover(s) not proven rebuildable" }
+    $keep = Get-JobKeepReason $dir $dir
+    if ($keep) { throw $keep }
+    if (Test-Paused) { throw 'PC pause is active' }
+    if ($dryRun) { Write-Output "GPU slot hold would release: $name (only rebuildable leftovers)"; return }
+    $current = Get-Item -LiteralPath $hold.FullName -Force
+    if ($current -isnot [IO.FileInfo] -or ($current.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+        [IO.File]::ReadAllText($current.FullName) -cne $text) { throw 'slot hold changed during proof' }
+    # Leave the checkout alone. The next claimant still proves it again under its own lease before reset.
+    [IO.File]::Delete($hold.FullName)
+    Write-Output "GPU slot hold released: $name (only rebuildable leftovers)"
+  } finally {
+    if ($mirrorLock) { $mirrorLock.Dispose() }
+    if ($reset) { $reset.Dispose() }
+    if ($lease) { $lease.Dispose() }
+  }
 }
 function Write-Free($freed) {
   $root = [IO.Path]::GetPathRoot($vt)
@@ -1250,6 +1347,10 @@ switch ($Action) {
     $h = Get-HeldSlot ([IO.Path]::GetFullPath($A).TrimEnd('\', '/'))
     if (-not $h) { throw "no slot recorded for $A" }
     Write-Output "held $($h.Dir)|$($h.Token)"
+  }
+  'slotrehabilitate' {
+    try { Clear-RebuildableSlotHold $A ($B -eq 'dry') }
+    catch { Write-Output "GPU slot hold kept: $A ($($_.Exception.Message))" }
   }
 
   'tracked' {
@@ -1655,6 +1756,7 @@ switch ($Action) {
       }
     }
     [IO.File]::WriteAllLines($B, [string[]]$lines)
+    Save-SlotShipRecord $root $B $lines.ToArray()
     Write-Output "ships copy recorded: $($lines.Count) file(s) matching $C in $B; $skipped untracked file(s) there did not match the source and are not recorded"
   }
   'hashes' {

@@ -743,10 +743,11 @@ function Get-FailedScratchMarker($dir) {
   }
   return $marker
 }
-function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowLinks, [switch]$allowUnreadable) {
+function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowLinks, [switch]$allowUnreadable, [switch]$snapshot) {
   Assert-PlainDirectory $directory
   $bytes = 0L; $latest = $directory.LastWriteTimeUtc; $links = @(); $unreadable = @()
   $fileLatest = [DateTime]::MinValue; $worktreeLatest = [DateTime]::MinValue
+  $entriesByPath = if ($snapshot) { ,([Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)) }
   # Issue 1739: FreeBytes is what removing the folder would give back. A hard link shared with a file outside it frees
   # nothing, and a folder another account owns cannot be removed by this one, so neither counts.
   $tally = $null
@@ -775,6 +776,11 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
         continue
       }
       if ($item.LastWriteTimeUtc -gt $latest) { $latest = $item.LastWriteTimeUtc }
+      if ($snapshot) {
+        $rel = $item.FullName.Substring($directory.FullName.Length + 1)
+        $length = if ($item -is [IO.DirectoryInfo]) { -1 } else { $item.Length }
+        $entriesByPath.Add($rel, "$length $($item.LastWriteTimeUtc.Ticks)")
+      }
       if ($item -is [IO.DirectoryInfo]) {
         if ($tally) { $folders.Add($item) } else { $pending.Push($item) }
         continue
@@ -803,7 +809,8 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
   $free = $bytes; $shared = 0L; $unchecked = 0L
   if ($tally) { $sum = Complete-FreeTally $tally; $free = $sum.Free; $shared = $sum.SharedOutside; $unchecked = $sum.Unchecked }
   return [pscustomobject]@{ Bytes = $bytes; Latest = $latest; FileLatest = $fileLatest; WorktreeLatest = $worktreeLatest
-    Links = $links; Unreadable = $unreadable; FreeBytes = $free; SharedBytes = $shared; UncheckedBytes = $unchecked; FreeTally = $tally }
+    Links = $links; Unreadable = $unreadable; FreeBytes = $free; SharedBytes = $shared; UncheckedBytes = $unchecked; FreeTally = $tally
+    EntriesByPath = $entriesByPath }
 }
 function Format-CleanupSize($stats) {
   if (Get-Command Format-FreeBytes -ErrorAction SilentlyContinue) { return (Format-FreeBytes $stats) }

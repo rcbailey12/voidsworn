@@ -1139,6 +1139,38 @@ async function testNoEditRerun() {
     pass(arm + ': no-edit rerun delivers the runner merge and runs both checks; another unchanged rerun exits 7');
   });
 }
+async function testCodexPushExits() {
+  const branch = 'refs/heads/codex/issue-687';
+  await parallel([false, true], async reject => {
+    const scenario = reject ? 'codex-push-rejected' : 'codex-push-accepted';
+    const remote = fixtureSource(scenario);
+    if (reject) {
+      const hooks = path.join(remote, 'hooks');
+      write(path.join(hooks, 'pre-receive'), '#!/bin/sh\necho fixture-rejected-push >&2\nexit 1\n');
+      assert.equal(run('git', ['--git-dir', remote, 'config', 'core.hooksPath', hooks]).code, 0);
+    }
+    const r = await job('codex', scenario, { STUB_RUNNER_TOOLS: deliveryTools,
+      PC_TEST_STOP_BEFORE_PUBLISH: '0', PC_TEST_SOURCE: remote });
+    const patch = path.join(r.out, 'push_failed.patch');
+    const tip = run('git', ['--git-dir', remote, 'rev-parse', '--verify', branch]);
+    const confirmed = read(path.join(r.out, 'confirmed_commit.txt')).trim();
+    assert.equal(r.code, reject ? 8 : 0, r.text + r.result);
+    if (reject) {
+      assert.notEqual(tip.code, 0);
+      assert.equal(confirmed, '');
+      assert.equal(r.state.status, 'failed', r.result);
+      assert.match(read(path.join(r.out, 'push.txt')), /fixture-rejected-push/);
+      assert.match(read(patch), /\+resumed work verified/);
+      assert(fs.existsSync(path.join(r.repo, 'agent_started.txt')), 'failed push keeps the checkout');
+    } else {
+      assert.equal(tip.code, 0, tip.text);
+      assert.equal(confirmed, tip.text.trim());
+      assert.equal(r.state.status, 'checked_push', r.result);
+      assert(!fs.existsSync(patch));
+    }
+  });
+  pass('both Codex push exits use the merged runner tail: success confirms HEAD, failure saves the patch by the job');
+}
 async function testWorkhorseSlots() {
   const workRoot = path.join(root, 'workhorse slots');
   const hold = path.join(root, 'workhorse-agent-hold');
@@ -1537,6 +1569,7 @@ async function testRunnerStartChecks() {
 (async () => { try {
   testLaneRouting();
   shell = await require('./runner_selftest_shell')(root, concurrency, [here, tools, faultTools, deliveryTools]);
+  if (process.argv.includes('--push-exits')) { await testCodexPushExits(); shell.assertHealthy(); return; }
   // The held runner and its contenders must be able to reach the fixture shell without waiting on unrelated cases.
   await testLaneOwnership();
   await testWorkhorseSlots();
@@ -1546,7 +1579,7 @@ async function testRunnerStartChecks() {
     testAccounting, testAccountingFaults,
     testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testCampaignParityCleanup, testLateCheckoutEdits,
     testIncomingCheckoutCollisions, testKeptCheckoutHistory,
-    testClaimRules, testClaimFailures, testAssignedBranch, testDeliveryCleanup, testNoEditRerun, testResumeAndFailures, testGitRetries,
+    testClaimRules, testClaimFailures, testAssignedBranch, testDeliveryCleanup, testNoEditRerun, testCodexPushExits, testResumeAndFailures, testGitRetries,
     testHeldCheckout, testMergedPartial, testResumeConflict, testChainRelease, testProbeTimeout,
     testMirrorAndConfirmation, testRunnerStartChecks
   ], check => check());

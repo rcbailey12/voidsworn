@@ -1,7 +1,6 @@
 # R455. Only registered, published Neon worktrees and their exact per-thread artifacts.
-function Assert-NeonClosed {
+function Assert-NeonClosed($processes = (Get-CommandLines)) {
   # The SQLite projection is read-only. Do not race the app or a headless T3 server re-opening a thread.
-  $processes = Get-CommandLines
   if ($null -eq $processes) { throw 'T3 processes could not be checked' }
   if (@($processes | Where-Object { $_.Name -match '^(T3 Code\b|t3(?:\.exe|\.cmd|$))' -or
       $_.Line -match '(?i)([\\/]t3code[\\/]|[\\/]\.t3[\\/]|[\\/]t3\.cmd\b|[\\/]server\.asar[\\/])' }).Count) {
@@ -36,49 +35,37 @@ function Clear-NeonThreadData($thread, $data, $now, $dryRun) {
   $relayMirror = Join-Path $root 'relay-mirror.git'
   foreach ($id in $thread.ids) {
     if ($id -notmatch '\A[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\z') { continue }
-    foreach ($rel in @("attachments/$id", "logs/provider/events.$id.log")) {
-      $relayLock = $null
-      try {
-        $attachment = $rel -ceq "attachments/$id"
-        $parentPath = Join-Path $data.FullName (Split-Path -Parent $rel)
-        $parent = Get-Item -LiteralPath $parentPath -Force -ErrorAction SilentlyContinue
-        if (-not $parent) { continue }
-        Assert-PlainDirectory $parent
-        Assert-PlainDirectory $parent.Parent
-        $item = Get-Item -LiteralPath (Join-Path $data.FullName $rel) -Force -ErrorAction SilentlyContinue
-        if (-not $item) { continue }
-        if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or (Get-BoardKeepReason $item.FullName)) { continue }
-        if ($attachment) { Assert-PlainDirectory $item }
-        elseif ($item -isnot [IO.FileInfo]) { throw 'provider log is not a plain file' }
-        Assert-NoProcessUses $parent
-        if ($attachment) { $stats = Measure-CleanupDirectory $item }
-        else {
-          $tally = New-FreeTally
-          Add-FreeTally $tally $item
-          $stats = @{ Latest = $item.LastWriteTimeUtc; FreeBytes = (Complete-FreeTally $tally).Free; FreeTally = $tally }
-        }
-        if ($stats.Latest -ge $now.AddDays(-1)) { continue }
-        if ($attachment) {
-          if (-not $dryRun) { $relayLock = Open-CleanupLock ($relayMirror + '.lock') }
-          # A published code branch does not back up T3 attachments. Require an exact copy of every file.
-          Assert-DirectRelayProof $item $relayBranch $relayMirror -RequireAllFiles
-        }
-        Assert-GpuQuiet -SoloOnly
+    # Provider event logs are not backed up by the attachment relay and stay on disk.
+    $rel = "attachments/$id"
+    $relayLock = $null
+    try {
+      $parent = Get-Item -LiteralPath (Join-Path $data.FullName 'attachments') -Force -ErrorAction SilentlyContinue
+      if (-not $parent) { continue }
+      Assert-PlainDirectory $parent
+      Assert-PlainDirectory $parent.Parent
+      $item = Get-Item -LiteralPath (Join-Path $parent.FullName $id) -Force -ErrorAction SilentlyContinue
+      if (-not $item -or (Get-BoardKeepReason $item.FullName)) { continue }
+      Assert-PlainDirectory $item
+      Assert-NoProcessUses $parent
+      $stats = Measure-CleanupDirectory $item -Snapshot:(-not $dryRun)
+      if ($stats.Latest -ge $now.AddDays(-1)) { continue }
+      if (-not $dryRun) { $relayLock = Open-CleanupLock ($relayMirror + '.lock') }
+      # A published code branch does not back up T3 attachments. Require an exact copy of every file.
+      Assert-DirectRelayProof $item $relayBranch $relayMirror $dryRun -RequireAllFiles
+      Assert-GpuQuiet -SoloOnly
+      if (Cleanup-Paused) { throw 'PC pause is active' }
+      if (-not $dryRun) {
+        Assert-CleanupSnapshot $item $stats
+        $processes = Get-CommandLines
+        Assert-NeonClosed $processes
+        Assert-NoProcessUses $parent $processes
         if (Cleanup-Paused) { throw 'PC pause is active' }
-        if (-not $dryRun) {
-          Assert-NeonClosed
-          if (Cleanup-Paused) { throw 'PC pause is active' }
-          if ($attachment) {
-            $current = Measure-CleanupDirectory (Get-Item -LiteralPath $item.FullName -Force)
-            if ($current.Latest -ne $stats.Latest -or $current.Bytes -ne $stats.Bytes) { throw 'attachments changed during relay proof' }
-            Remove-CleanupDirectory $item
-          } else { Remove-Item -LiteralPath $item.FullName -Force -ErrorAction Stop }
-        }
-        Add-WouldFree $stats
-        Log "Neon thread data $(if ($dryRun) { 'would remove' } else { 'removed' }): $($item.FullName)"
-      } catch { Log "Neon thread data kept: $rel ($($_.Exception.Message))" }
-      finally { if ($relayLock) { $relayLock.Dispose() } }
-    }
+        Remove-CleanupDirectory $item
+      }
+      Add-WouldFree $stats
+      Log "Neon thread data $(if ($dryRun) { 'would remove' } else { 'removed' }): $($item.FullName)"
+    } catch { Log "Neon thread data kept: $rel ($($_.Exception.Message))" }
+    finally { if ($relayLock) { $relayLock.Dispose() } }
   }
 }
 function Clear-NeonThreads($now, $dryRun, $start, $limit) {
@@ -144,10 +131,12 @@ function Clear-NeonThreads($now, $dryRun, $start, $limit) {
           if ($stats.WorktreeLatest -ge $now.AddDays(-1)) { throw 'worktree files changed in the last day' }
           if (Cleanup-Paused) { throw 'PC pause is active' }
           if (-not $dryRun) {
-            Assert-NeonClosed
             $head = @(Read-CleanupGit @('-C',$full,'rev-parse','HEAD'))
             if ($gitExit -ne 0 -or $head.Count -ne 1 -or $head[0] -ne $git.Head) { throw 'worktree HEAD changed' }
             Assert-GpuQuiet -SoloOnly
+            $processes = Get-CommandLines
+            Assert-NeonClosed $processes
+            Assert-NoProcessUses $dir $processes
             if (Cleanup-Paused) { throw 'PC pause is active' }
             # Never --force: Git checks for new edits and removes its own worktree registration.
             $null = Read-CleanupGit @('-C',$workspace.FullName,'worktree','remove','--',$full)
