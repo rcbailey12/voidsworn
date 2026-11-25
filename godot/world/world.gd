@@ -1522,7 +1522,10 @@ uniform vec3 col = vec3(0.6, 0.58, 0.55);
 const float px_1080 = """ + SKY.ANGULAR_PIXEL_1080 + """;
 varying float vA;
 varying vec2 vQ;
+varying flat float vSeed;
 void vertex() {
+	vec3 world_pos = MODEL_MATRIX[3].xyz;
+	vSeed = fract(sin(dot(world_pos, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
 	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
 	float size = INSTANCE_CUSTOM.x;
 	float depth = max(-c.z, 1.0);
@@ -1538,7 +1541,16 @@ void vertex() {
 }
 void fragment() {
 	float r = length(vQ);
-	ALBEDO = col * exp(-r * r * 4.0) * vA;
+	if (r > 1.0) { discard; }
+	// Issue 2048: layered dust core + soft halo + gentle individual starlight glint (keeps 1080p/2160p pixel scale).
+	float core = exp(-r * r * 11.0);
+	float halo = exp(-r * r * 3.2) * 0.42;
+	float glint_p = pow(0.5 + 0.5 * sin(TIME * (0.65 + fract(vSeed * 9.7) * 1.1) + vSeed * 37.0), 8.0);
+	float sparkle = glint_p * step(0.55, fract(vSeed * 23.1));
+	float cross_glint = (exp(-abs(vQ.x) * 14.0) * exp(-abs(vQ.y) * 2.6) + exp(-abs(vQ.y) * 14.0) * exp(-abs(vQ.x) * 2.6)) * sparkle;
+	vec3 tint = mix(col * vec3(0.92, 0.96, 1.08), col * vec3(1.10, 0.98, 0.84), fract(vSeed * 5.3));
+	vec3 glint_c = mix(tint, vec3(1.0, 0.97, 0.92), 0.65);
+	ALBEDO = (tint * (core + halo) + glint_c * (core * 0.55 * sparkle + cross_glint * 0.65)) * vA;
 }
 """
 

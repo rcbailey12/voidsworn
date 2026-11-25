@@ -20,6 +20,7 @@ headless|world/test/max_4k_cost_check.gd|-|-|issue 1262: Max skips SSIL, the zer
 headless|world/test/bake_cache_cap_check.gd|-|-|issue 1265: the planet bake cache on disk keeps under its cap, least recently used first, never the running battle's maps or the map just saved; stale .tmp files go
 headless|world/test/rock_scan_check.gd|-|-|issue 1361 (R419, R420 section 6.2): every shipped rock scan keeps a usable COLOR_0.b facet range, a closed surface, its triangle and shape minimums and its scans.json hash; each kind draws on its own scans; no crystal cluster ships (Ryan scrapped them Nov 22; the kind is ice comets)
 headless|render/test/battle_post_fx_check.gd|-|-|issue 1779: regional Texture3D imports, selective SSR, compositor idle state, terrain surface placement, headless guards and tactical DoF reset
+headless|fx/test/terrain_polish_2048_check.gd|-|-|issue 2048: terrain polish for Dead Star INFALL_SHADER stretched tidal embers, terrain_scorch.gd 256px crater albedo/normal/ORM/light-blue plasma decals, and layered glinting DUST_SHADERs
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/boon_fleet_test.gd|-|-|issues 1075 and 1147: protocol cards explain fleet fit, caps, refits and Brace eligibility without changing offers, RNG or saves
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
