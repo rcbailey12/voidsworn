@@ -970,6 +970,24 @@ func canFitModule(sh, m) -> bool:
 			if W_.has(pair[0]) and W_[pair[0]].get("k") == kind: return true
 		return false
 	return not jt(need)
+# Issue 2029 item 8: why a refit cannot go on a ship, in words ("" when it fits). The item that fills the slot is named, or
+# the class is said to have no slot of the kind the refit needs. Never changes what canFitModule answers.
+func fitBlock(sh, m) -> String:
+	if canFitModule(sh, m): return ""
+	var t = HULLS.get(sh.get("tpl")) if sh is Dictionary else null
+	if t == null or not (m is String) or not MODULES.has(m): return "That refit cannot go there."
+	var cls = str(t.get("n", "ship")); cls = cls if cls.begins_with("The ") else "The " + cls
+	if int(z0(t.get("slots"))) <= 0: return cls + " has no refit slot."
+	var probe = sh.duplicate(); probe["mods"] = []   # the same ship with every slot free: what is left in the way is the class itself
+	if not canFitModule(probe, m):
+		var md = MODULES[m]; var need = MOD_NEED.get(m)
+		if jt(md.get("only")) and t.get("ab") != md["only"]: return cls + " has no " + {"launch": "launch bay"}.get(md["only"], "slot of that kind") + " for this refit."
+		if need == "brace": return cls + " cannot brace, so this refit has nothing to do."
+		var what = {"shields": "shield", "carrier": "hangar", "chaser": "fore or flank gun to swivel", "batt": "battery", "lance": "lance", "torp": "torpedo tube", "flak": "flak gun"}.get(need, "slot of that kind")
+		return cls + " has no " + what + " for this refit."
+	var held = []
+	for x in sh["mods"]: held.append(modName(x) if MODULES.has(x) else str(x))
+	return ("Slot taken by " if held.size() == 1 else "Slots taken by ") + " and ".join(held) + "."
 func randomRelic() -> Variant:
 	var pool = []
 	for r in RELICS.keys():
@@ -2205,9 +2223,9 @@ func shipyardScreen(n) -> void:
 	for o in lateShopOffers():
 		if not jt(o["done"]) and not jt(o.get("full")): A(acts, "lateBuy", o["id"], o["ok"])
 	for s in RUN["fleet"]:
-		var d = derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var rc = ceil(miss / 2.0 * pm); var mc = mkCost(s)
+		var d = derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var mc = mkCost(s)
 		shipCardActs(acts, s, false)
-		A(acts, "repair", s["uid"], miss > 0 and hullFunds() >= rc)
+		A(acts, "repair", s["uid"], repairPoints(miss, pm, hullFunds()) > 0.0)
 		A(acts, "upgradeMk", s["uid"], float(s["mk"]) < 3 and hullFunds() >= mc)
 		A(acts, "sellShip", s["uid"], RUN["fleet"].size() > 1)
 	for h in st["hulls"]:
@@ -2292,12 +2310,24 @@ func ACT_finishBoughtRefit(uid := "") -> void:
 		toast(modName(offer["module"]) + " stowed in the hold.")
 	RUN.erase("boughtRefit")
 	shipyardScreen(yard_node)
+# Issue 2029 item 7: a yard repair buys as many hull points as the purse allows, at the price of a full repair per point
+# (priceMult / 2 each, the whole bill rounded up as ever). repairPoints is how many of the `miss` missing points `funds` pays
+# for; repairBill is what those points cost. A purse that covers everything pays exactly the old bill; one that cannot buy a
+# single point gets 0 (the button stays off). repairAll stays all or nothing.
+func repairBill(points: float, pm: float) -> float: return ceil(points / 2.0 * pm)
+func repairPoints(miss: float, pm: float, funds: float) -> float:
+	if miss <= 0.0: return 0.0
+	if repairBill(miss, pm) <= funds: return miss
+	var pts = floor(funds * 2.0 / maxf(pm, 0.0001) + 0.000001)
+	while pts > 0.0 and repairBill(pts, pm) > funds: pts -= 1.0
+	return clampf(pts, 0.0, miss)
 func ACT_repair(uid: String) -> void:
 	var s = _ship(uid)
 	if s == null: return   # issue 1556
-	var d = derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var c = ceil(miss / 2.0 * priceMult())
-	if hullFunds() < c: return
-	hullPay(c); s["hp"] = d["maxHp"]; shipyardScreen(yard_node)
+	var d = derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var pm = priceMult()
+	var pts = repairPoints(miss, pm, hullFunds())
+	if pts <= 0.0: return
+	hullPay(repairBill(pts, pm)); s["hp"] = d["maxHp"] if pts >= miss else float(s["hp"]) + pts; shipyardScreen(yard_node)
 func ACT_repairAll() -> void:
 	var pm = priceMult(); var miss = 0.0
 	for s in RUN["fleet"]: miss += float(derive(s)["maxHp"]) - float(s["hp"])
@@ -3545,15 +3575,13 @@ func _heavy_wreck_cause(unit: Dictionary, log: Array) -> String:
 	var ram_recoil := target + " rams " + str(unit.get("killedBy", "")) + " at full speed:"
 	var torp_hit := " reach " + target
 	var direct_hit := " at " + target + ":"
-	# Spread Pattern: the burst line names the ship that was aimed at, never the neighbours it kills,
-	# so a splash kill is credited to the torpedo that killedBy names, not to an earlier gun hit.
-	var splash_from := " from " + str(unit.get("killedBy", "")) + " burst against "
-	var splash_miss := " burst against " + target + ","
+	# Spread Pattern marks the hull it actually kills at the moment of death (rules.gd torpImpact).
+	# The burst summary names only the ship that was aimed at, so it cannot identify the victims;
+	# the mark does, and a hull killed by the same attacker elsewhere in the fight has no mark.
+	if jt(unit.get("splashKill")): return "Torpedo strike"
 	for i in range(log.size() - 1, -1, -1):
 		var line: String = log[i].get("m", "")
 		if line.contains(ram_hit) or line.begins_with(ram_recoil): return "Rammed"
-		if unit.get("killedBy", "") != "" and line.contains(splash_from) and line.contains(", catching ") and not line.contains(splash_miss):
-			return "Torpedo strike"
 		if line.begins_with("Torpedoes from ") and (line.contains(torp_hit + ":") or line.contains(torp_hit + " (a stray hit in the lane):")):
 			return "Torpedo strike"
 		var gun := line.find(" fires ")
