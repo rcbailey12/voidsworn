@@ -1,5 +1,5 @@
 extends SceneTree
-# Issues 1524 and 1461: the close-action effects fire at their battle moment, with their approved sound, and keep the
+# Issues 1524, 1461 and 2039: the close-action effects fire at their battle moment, with their approved sound, and keep the
 # moment's pace. The live battle scene (test battle s1) plays a ram (with a one-hex charge), a boarding and an admiral's
 # command through its own _play_event, with a recording fx stand-in and a recording sound layer:
 #   ram:     the move finishes first; the ram volley (weapon_id ram) lands on the same frame as evt_ram_impact (gain 0.8 at
@@ -238,16 +238,34 @@ func _run() -> void:
 
 	print("-- maneuvering thrusters")
 	var sv = b.views[mine]
-	var pos: Vector3 = sv.visual_position()
-	log.clear()
-	await b._play_move(mine, [{"f": (f + 1) % 6, "rot": true}], false)
-	var puff := _first("sfx", "puff")
-	_check(_sounds() == ["puff"] and not puff.is_empty() and puff[4][0].get("pos") == pos
-		and _first("sfx", "engine").is_empty(), "a turn in place plays one thruster puff at the ship, with no drive loop")
-	log.clear()
-	await b._play_move(mine, [{"q": u0["q"], "r": u0["r"], "f": (f + 1) % 6, "slip": true}], false)
-	_check(_sounds() == ["puff"] and _first("sfx", "engine").is_empty(),
-		"a one-hex slide plays one thruster puff without the drive loop")
+	var q := int(step["q"])
+	var r := int(step["r"])
+	var facing := f
+	for mode in ["cinematic", "brisk"]:
+		b.movement = mode
+		facing = (facing + 1) % 6
+		var pos: Vector3 = sv.visual_position()
+		log.clear()
+		await b._play_move(mine, [{"f": facing, "rot": true}], false)
+		var puff := _first("sfx", "puff")
+		_check(_sounds() == ["puff"] and not puff.is_empty() and puff[4][0].get("pos") == pos
+			and _first("sfx", "engine").is_empty(), "%s: a turn in place plays one puff at the ship with no drive loop" % mode)
+
+		var slide_dir: Array = R.DIRS[(facing + 1) % 6]
+		q += int(slide_dir[0])
+		r += int(slide_dir[1])
+		log.clear()
+		await b._play_move(mine, [{"q": q, "r": r, "f": facing, "slip": true}], false)
+		_check(_sounds() == ["puff"] and _first("sfx", "engine").is_empty(),
+			"%s: a one-hex slide plays one puff with no drive loop" % mode)
+
+		var forward_dir: Array = R.DIRS[facing]
+		q += int(forward_dir[0])
+		r += int(forward_dir[1])
+		log.clear()
+		await b._play_move(mine, [{"q": q, "r": r, "f": facing}], false)
+		_check(_sounds().is_empty() and not _first("sfx", "engine").is_empty(),
+			"%s: a forward move starts the main drive with no puff" % mode)
 
 	b.gfx = real_fx
 	b.sfx = real_sfx

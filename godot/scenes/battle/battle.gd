@@ -2570,7 +2570,10 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	var per := lerpf(MOVE_HEX[0], MOVE_HEX[1], sk) * fk * (MOVE_SQUAD if bool(u.get("squadron", false)) else 1.0)
 	if cin:
 		per *= _escort_k(sk, MOVE_ESCORT_PACE)
-	var gsteps: Array = _glide_steps(sv, path, sk) if cin else []
+	var has_ship_sound := size > 0.3
+	# Use the same slide and back-off classification for sound even when the ship does not play the glide.
+	var gsteps: Array = _glide_steps(sv, path, sk) if cin or (has_ship_sound and not turns_only) else []
+	var jets_only := not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("thrusters", false))
 	var mv_s := s
 	if cin:
 		mv_s = 0.0
@@ -2583,14 +2586,12 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		dur = minf((per * maxf(s, 0.001) + 260.0) * (0.72 if charge else 1.0) * float(PACE["move"]), 3600.0) / 1000.0
 		mv_speed = speed
 	sv.speed_k = 1.0
-	var jets_only := false
 	if movement == "segments" and not bool(u.get("squadron", false)):
 		sv.play_moves(_move_segments(sv, path, mass, args.has("flip-burn") and str(u.get("cls", "")) in FLIP_CLASSES), dur * mv_speed, {"mass": mass})
 	elif cin:
 		# the glide sets its own length from its physics at this pace (cruise MOVE_CRUISE of the hex time; ramps, corners
 		# and spins add to it), capped
 		# issue 521: a move flown only on thrusters (a one-hex slide, a straight back-off) is slower and gentler than a burn
-		jets_only = not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("thrusters", false))
 		# issue 1581: the glide is told which moves are flown on thrusters (the drive stays cold) and which nose first (it
 		# rests at each corner to turn); NF_POINT and NF_TRAIL, which overlapped the turns with the burn, are gone
 		var gopts := {"mass": sk, "cap": MOVE_CAP / 1000.0 * mv_speed, "thrusters": jets_only,
@@ -2605,9 +2606,9 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		for st in path:
 			n_rot += 1 if _jt(st.get("rot")) else 0
 		print("[move] %s %s %s size %.2f hexes %d turns %d dur %.2f s, %.0f ms a hex, speed %.2f" % [str(id), _side(id), str(u.get("cls", "")), size, path.size() - n_rot, n_rot, dur * mv_speed, per * mv_speed, mv_speed])
-	if size > 0.3:
+	if has_ship_sound:
 		# A slide or a turn in place uses the maneuvering jets, not a sustained drive burn.
-		if cin and movement != "segments" and (jets_only or turns_only):
+		if jets_only or turns_only:
 			sfx.play("puff", {"pos": sv.visual_position()})
 		else:
 			sfx.play("engine", {"pos": sv.visual_position(), "gain": minf(1.0, 0.55 + size * 0.6),
