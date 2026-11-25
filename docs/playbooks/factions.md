@@ -25,7 +25,9 @@ Ryan, Nov 10 2026 (R164), on hard points: "It should vary by size of ship, facti
   only shows up close is a bonus, never the identity.
 - Ship effects follow the owning hull's palette in `godot/fx/faction_looks.json` (issue 1991, Ryan's Nov 24 pick).
   Eclipse damage and death light is violet-white, and its drive accents keep their white-gold. Glasswrights throw
-  stored white light and crystal glints. Chorus fire ticks and strike-craft deaths shed bile-coloured spores.
+  stored white light and crystal glints, including at a boarding breach. Their correction jets stay pale gold (R412)
+  pending Ryan's pick. Chorus fire ticks, tidal damage, boarding hatches and strike-craft deaths shed bile-coloured spores.
+  Only Hullbreakers cough black soot from the drive, even when another faction's drive sputters.
   Cooled wreck caps keep a dark version of the faction's torn-edge colour, with dull red-brown on warm metal.
 - Every hull has real thickness and comprehensive insides through the whole hull: decks, frames, spaces and machinery, so a
   hit, break or death never shows an empty husk (R98, R209, R215). Ryan, Nov 11: "Let's ensure we're keeping in mind the

@@ -92,12 +92,89 @@ func _check_directorate_hits(fx: FX, s) -> void:
 	_check(body != null and body.material_override.get_shader_parameter("impact_tinted") == 1.0 and body.material_override.get_shader_parameter("impact_tint").is_equal_approx(_rgb(glow)), "Directorate shell fire body uses the same cool glow")
 
 
+func _check_thrusters(world: Node3D, fx: FX) -> void:
+	for faction in ["voidsworn", "corsair"]:
+		var s = _ship(world, fx, faction, "Cruiser")
+		s.wounds_v2 = false
+		s._eng_sputter = true
+		s._build_engines(fx)
+		_check(s.sick_nozzle >= 0 and s.eng_soot == (faction == "corsair"),
+			faction + " keeps its own exhaust when a legacy drive sputters")
+	var glass = fx.ship("ithar")
+	fx.pools["spr"].flush()
+	glass._rv.x = 0.07
+	glass._rcs(fx)
+	var rcs := _particles(fx, "spr")
+	_check(rcs.size() == 2, "Glasswright hit reaction fires two correction glints")
+	for row in rcs:
+		_check(row.w == 16 and Vector3(row.x, row.y, row.z).is_equal_approx(Vector3(1.0, 0.86, 0.57)),
+			"Glasswright correction glints keep their R412 pale gold")
+	fx.pools["spr"].flush()
+
+
+func _check_chorus_tidal_and_boarding(fx: FX) -> void:
+	var sparks: int = fx.pools["stk"].emitted
+	fx.tick("chorus", "tidal")
+	_check(fx.pools["stk"].emitted == sparks, "tidal damage never throws metal sparks off the Chorus")
+	var bile: Color = fx.ship("chorus").fac.damage_glow
+	var spores := _particles(fx, "smk")
+	_check(not spores.is_empty(), "tidal damage still shows on the Chorus")
+	for row in spores:
+		_check(row.w == 20 and Vector3(row.x, row.y, row.z).is_equal_approx(_rgb(bile)),
+			"Chorus tidal damage sheds bile-coloured spores")
+	fx.pools["smk"].flush()
+	fx.pools["stk"].flush()
+	fx.ship("chorus").root.position = Vector3(0, 0, 36)
+	_check(fx.board("chorus", "ithar") > 0.0, "Chorus boards the Glasswright hull")
+	var hatch := _particles(fx, "smk")
+	_check(hatch.size() == 1 and hatch[0].w == 20 and Vector3(hatch[0].x, hatch[0].y, hatch[0].z).is_equal_approx(_rgb(bile)),
+		"the Chorus attacker hatch releases a bile spore puff, not a fireball or vent gas")
+	var glass_glow: Color = fx.ship("ithar").fac.damage_glow
+	var glints := 0
+	for row in _particles(fx, "spr"):
+		if row.w == 16 and Vector3(row.x, row.y, row.z).is_equal_approx(_rgb(glass_glow * 0.55)):
+			glints += 1
+	_check(glints == 14, "the Glasswright breach vents stored-light glints, not gas")
+	for pool in ["smk", "spr", "stk"]:
+		fx.pools[pool].flush()
+	fx._lev.clear()
+
+
+func _check_death_overlays(fx: FX, s) -> void:
+	var mesh: MeshInstance3D = s.meshes[0]
+	var parent := mesh.get_parent()
+	var timeline := DEATH.DeathTimeline.new(true, 1, "cruiser", "cut")
+	DEATH._tell(fx, s, fx.now, timeline, "cut", PackedVector3Array())
+	_check(mesh.material_overlay != null, s.faction + " tell installs a tear overlay")
+	parent.remove_child(mesh)
+	_check(mesh.material_overlay == null, s.faction + " tear detaches on tree exit before the split")
+	parent.add_child(mesh)
+	s.set_meta("death_melt", true)
+	s.set_meta("last_hit", [s.hull.core])
+	DEATH._melt_glow(fx, s, fx.now, timeline)
+	_check(mesh.material_overlay != null, "melt installs a hull glow overlay")
+	parent.remove_child(mesh)
+	_check(mesh.material_overlay == null, "melt glow detaches on tree exit before the split")
+	parent.add_child(mesh)
+	s.remove_meta("death_melt")
+	DEATH._tell(fx, s, fx.now, timeline, "melt", PackedVector3Array())
+	var tear := mesh.material_overlay as ShaderMaterial
+	_check(tear != null and tear.get_shader_parameter("tip").is_equal_approx(_rgb(DEATH.dstyle(s).fire)),
+		"a tear reads its death style rather than picking green from the kill cause")
+	var restored := StandardMaterial3D.new()
+	mesh.material_overlay = restored
+	parent.remove_child(mesh)
+	_check(mesh.material_overlay == restored, "tree exit leaves replacement paint alone")
+	parent.add_child(mesh)
+
+
 func _check_wreck(world: Node3D) -> void:
-	var outline := BLOCKERS.outline(world, Vector3.ZERO, Color(0.58, 0.39, 0.16), 0.25)
-	_check(outline.get_child_count() == 6 and outline.position.y > 0.0, "blocker keeps six visible segments above the board")
-	for segment in outline.get_children():
-		var mat := (segment as MeshInstance3D).material_override as StandardMaterial3D
-		_check(not mat.no_depth_test and mat.emission_enabled, "blocker segment depth-tests and keeps its emission")
+	for on_top in [true, false]:
+		var outline := BLOCKERS.outline(world, Vector3.ZERO, Color(0.58, 0.39, 0.16), 0.25, on_top)
+		_check(outline.get_child_count() == 6 and outline.position.y > 0.0, "blocker keeps six visible segments above the board")
+		for segment in outline.get_children():
+			var mat := (segment as MeshInstance3D).material_override as StandardMaterial3D
+			_check(not mat.no_depth_test and mat.emission_enabled, "blocker segment depth-tests and keeps its emission")
 	var cap := BoxMesh.new().get_mesh_arrays()
 	for faction in ["corsair", "deathless"]:
 		var look: Dictionary = LOOK.of(faction)
@@ -134,6 +211,7 @@ func _run() -> void:
 		var mat: ShaderMaterial = trail.mi.material_override
 		_check(mat.get_shader_parameter("trail_ember").is_equal_approx(_rgb(violet)), "Eclipse trail embers use its damage glow")
 	_check(SH.TRAIL.contains("col += trail_ember * spow") and SH.TRAIL.contains("mix(col, vec3(1.0)"), "trail shader uses the palette and a neutral core")
+	_check(SH.TRAIL.contains("uniform vec3 trail_ember = vec3(0.0);"), "a trail with no palette has no embers")
 	DEATH.BEATS._implode(fx, eclipse, Vector3.ZERO, fx.now)
 	var implosion := _particles(fx, "smk")
 	_check(implosion.size() == 1 and implosion[0].w == 8 and implosion[0].z > implosion[0].x, "Eclipse implosion ends in a violet puff without an orange birth flash")
@@ -148,6 +226,10 @@ func _run() -> void:
 		and fx._later.size() == before_callbacks, "Chorus wing releases spores and wet flecks without metal or a delayed fire picture")
 	for row in spores:
 		_check(row.w == 20 and row.y > row.x and row.x > row.z, "Chorus wing spills bile-coloured organic sprites")
+	fx.pools["smk"].flush()
+	_check_thrusters(world, fx)
+	_check_chorus_tidal_and_boarding(fx)
+	_check_death_overlays(fx, fx.ship("voidsworn"))
 	_check_directorate_hits(fx, fx.ship("hegemony"))
 	_check_wreck(world)
 	world.free()

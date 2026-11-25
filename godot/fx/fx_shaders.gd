@@ -948,7 +948,7 @@ render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabl
 """ + COMMON + """
 uniform float trail_elapsed = 0.0;
 uniform float trail_style = 0.0;
-uniform vec3 trail_ember;
+uniform vec3 trail_ember = vec3(0.0);
 varying vec4 vCol;
 varying vec4 vInfo;
 void vertex() {

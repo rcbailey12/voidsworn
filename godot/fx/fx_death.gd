@@ -2972,10 +2972,7 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 	m.set_shader_parameter("width", maxf(h.L * 0.010, 0.02))
 	if cause == "cut":
 		m.set_shader_parameter("straight", 1.0)
-	if cause == "melt":
-		m.set_shader_parameter("tip", Vector3(0.62, 0.85, 0.18))
-		m.set_shader_parameter("ember", Vector3(0.45, 0.62, 0.10))
-	elif not dstyle(s).is_empty():
+	if not dstyle(s).is_empty():
 		# R367: the tear and its hairlines glow in the faction's death colour, white at the running tip
 		var rim := dcol(s, "rim", Color(1.0, 0.36, 0.07))
 		var tip := dcol(s, "fire", Color(1.0, 0.94, 0.82))
@@ -2983,26 +2980,30 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 		m.set_shader_parameter("tip", Vector3(tip.r, tip.g, tip.b))
 	elif cause == "cut":
 		m.set_shader_parameter("ember", Vector3(1.0, 0.72, 0.45))
-	for mm in s.meshes:
-		if is_instance_valid(mm):
-			var mi := mm as MeshInstance3D
-			var local: ShaderMaterial = m.duplicate()
-			local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
-			mi.material_overlay = local
-			if s.faction == "deathless":
-				# If the mesh leaves before a rise, detach the tear before the renderer frees the mesh.
-				var tear_id := local.get_instance_id()
-				var detach_tear := func() -> void:
-					var overlay := mi.material_overlay
-					if overlay != null and overlay.get_instance_id() == tear_id:
-						mi.material_overlay = null
-				mi.tree_exiting.connect(detach_tear, CONNECT_ONE_SHOT)
+	_set_death_overlays(s, m)
 	for i in tl.chain.size():
 		fx.later(T + float(tl.chain[i]), _chain_blast.bind(fx, s, i, tl, cause, T))
 	if not strain.is_empty():
 		var groans: Array = strain["groans"]
 		for i in groans.size():
 			fx.later(T + float(groans[i]), _groan.bind(fx, s, i))
+
+
+# A ship may leave the tree before its split or rise. Detach only our overlay, not any restored paint.
+static func _set_death_overlays(s, mat: ShaderMaterial) -> void:
+	for mm in s.meshes:
+		if not is_instance_valid(mm):
+			continue
+		var mi := mm as MeshInstance3D
+		var local: ShaderMaterial = mat.duplicate()
+		local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
+		mi.material_overlay = local
+		var overlay_id := local.get_instance_id()
+		var detach_overlay := func() -> void:
+			var overlay := mi.material_overlay
+			if overlay != null and overlay.get_instance_id() == overlay_id:
+				mi.material_overlay = null
+		mi.tree_exiting.connect(detach_overlay, CONNECT_ONE_SHOT)
 
 
 # The fracture plan's breaks as [at, normal] lines, the bite's break first; empty for the old seed cut.
@@ -3396,12 +3397,7 @@ static func _melt_glow(fx, s, T: float, tl: DeathTimeline) -> void:
 	m.set_shader_parameter("n_spots", mini(spots.size(), 6))
 	m.set_shader_parameter("rise", Vector2(T - 0.05, T + maxf(tl.cut, 0.3)))
 	s.set_meta("death_melt_spots", spots)
-	for mm in s.meshes:
-		if is_instance_valid(mm):
-			var mi := mm as MeshInstance3D
-			var local: ShaderMaterial = m.duplicate()
-			local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
-			mi.material_overlay = local
+	_set_death_overlays(s, m)
 
 
 static func _fac_pop(fx, s, p: Vector3, L: float) -> void:

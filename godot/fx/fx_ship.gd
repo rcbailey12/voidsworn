@@ -68,7 +68,7 @@ var wounds_v2 := wounds_v2_setting()
 var eng_tier := 0               # 0 healthy, 1 engine hit or eng stage 2, 2 eng stage 3, 3 engines crippled (stage 4)
 var dead_nozzles: Array = []    # nozzles dark at tiers 2 and 3 (never every nozzle: one always gutters on)
 var _sick_len := SICK_LEN
-var eng_soot := false           # the drive's last build coughs black soot (the Hullbreakers only, under Wounds V2)
+var eng_soot := false           # the drive's last build coughs black soot (Hullbreakers only)
 var _want_off := {}             # weapon slot -> true: the slots the last view held off
 var _exact_slots := false       # the last view carried a weapons list (the old section turret picker stays off)
 var _slot_off := {}             # weapon slot -> true, as shown
@@ -421,9 +421,8 @@ func _build_engines(fx) -> void:
 	var rb = POOLS.Batch.new()
 	var eng: Color = fac["engine"]
 	var extra := String(fac.get("engine_extra", "none"))
-	# issue 1741 (R416): under Wounds V2 a damaged drive keeps its own faction's exhaust; only the Hullbreakers cough soot
-	# (main: any sputtering drive took the Hullbreaker soot, on glass, flesh and obsidian too)
-	var corsair = extra == "soot" or (_eng_sputter and not wounds_v2 and faction == "voidsworn")
+	# A damaged drive still uses its faction's exhaust. Only the Hullbreakers cough black soot.
+	var corsair := extra == "soot"
 	eng_soot = corsair
 	var q = POOLS.quad_shape()
 	var rs = POOLS.ribbon_shape(14)
@@ -1539,7 +1538,8 @@ func _rcs(fx) -> void:
 		fx.record_spawn(self, wp)
 		match faction:
 			"ithar":
-				fx.spr(wp, fx.now, 0.14, fac.damage_glow, 1.5, 0.65 * k, 0.18 * k, 16, axis * k, 0.0, 0.0, 0.0, 13.0)
+				# R412: keep the pale-gold correction glints until Ryan picks a new jet colour.
+				fx.spr(wp, fx.now, 0.14, Color(1.0, 0.86, 0.57), 1.5, 0.65 * k, 0.18 * k, 16, axis * k, 0.0, 0.0, 0.0, 13.0)
 			"deathless":
 				fx.ring(wp, axis, fx.now, 0.2, Color(0.59, 0.38, 1.0), 0.75, 0.20 * k, 0.9 * k, 3)
 			_:
@@ -3058,8 +3058,13 @@ func tick_flare(fx, kind: String) -> void:
 			for i in 6:
 				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, _acid_colour(), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
 		"tidal":
-			for i in 20:
-				fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
+			if faction == "chorus":
+				var glow: Color = fac.damage_glow
+				for i in 8:
+					fx.spr(wp + fx.rdir() * 3.0 * k, T + i * 0.04, 0.5, glow, 0.8, 0.8 * k, 2.4 * k, 20, wn * 2.0 + fx.rdir())
+			else:
+				for i in 20:
+					fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
 		"storm":
 			if _shield_mat != null:
 				shield_hit(fx, shield_point(wp + wn * 30.0)["local"], T, 0.6, 14.0, 0.8)
