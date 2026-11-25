@@ -4,6 +4,8 @@ extends SceneTree
 
 
 class TimedBattle extends "res://scenes/battle/battle.gd":
+	const FRAME_BUDGET_MS := 1000.0 / 60.0
+
 	var _last_frame := 0
 	var _last_pipes := 0
 	var _last_battle_usec := 0
@@ -86,7 +88,7 @@ class TimedBattle extends "res://scenes/battle/battle.gd":
 			_known_stage[ship.id] = stage
 			events.append({"ship": ship.id, "hull": ship.hull.code, "stage": stage,
 				"cause": ship.get_meta("death_cause", ""), "cut_built": ship.get_meta("cut_job", {}).get("built", false)})
-		if wall_ms < 1000.0 / 60.0 and events.is_empty() and not round_2_compile:
+		if wall_ms < FRAME_BUDGET_MS and events.is_empty() and not round_2_compile:
 			return
 		var row := {"frame": Engine.get_process_frames(), "round": round_no, "draw_round": drawn_round, "salvo": frame_tag,
 			"wall_ms": wall_ms, "process_delta_ms": dt * 1000.0, "draw_and_specialization_pipelines": pipes,
@@ -96,10 +98,13 @@ class TimedBattle extends "res://scenes/battle/battle.gd":
 			"fx_usec": profile, "deaths": events}
 		if not events.is_empty():
 			_events.append(row)
-		if wall_ms >= 1000.0 / 60.0:
+		if wall_ms >= FRAME_BUDGET_MS:
 			_spikes.append(row)
 		if round_2_compile:
 			_round_2_compile_frames.append(row)
+
+	func _has_round_2_hitch() -> bool:
+		return _round_2_compile_frames.any(func(row: Dictionary) -> bool: return row["wall_ms"] >= FRAME_BUDGET_MS)
 
 	func _quit_report() -> void:
 		var output := FileAccess.open(str(args.get("kill-frame-report", "")), FileAccess.WRITE)
@@ -119,15 +124,21 @@ class TimedBattle extends "res://scenes/battle/battle.gd":
 		output.close()
 		print("KILL_FRAME deaths=%d long_frames=%d" % [_events.size(), _spikes.size()])
 		print("KILL_FRAME round_2_frames=%d compile_frames=%d" % [_round_2_frames, _round_2_compile_frames.size()])
-		if args.has("require-no-round-2-compiles"):
+		var expect_hitch := args.has("require-round-2-hitch")
+		var expect_no_compiles := args.has("require-no-round-2-compiles")
+		if expect_hitch or expect_no_compiles:
 			if DisplayServer.get_name() == "headless" or report["renderer"] != "forward_plus":
 				push_error("KILL_FRAME round 2 check needs a windowed Forward+ replay")
 				_quit(1)
 				return
-			if not _round_2_compile_frames.is_empty():
-				push_error("KILL_FRAME round 2 compiled pipelines after the load cover")
-				_quit(1)
-				return
+		if expect_hitch and not _has_round_2_hitch():
+			push_error("KILL_FRAME control did not reproduce a round 2 compile hitch")
+			_quit(1)
+			return
+		if expect_no_compiles and not _round_2_compile_frames.is_empty():
+			push_error("KILL_FRAME round 2 compiled pipelines after the load cover")
+			_quit(1)
+			return
 		super._quit_report()
 
 
