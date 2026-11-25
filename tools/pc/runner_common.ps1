@@ -837,12 +837,25 @@ function Open-CleanupLock($path, $existingOnly = $false) {
   if ($existingOnly) { return [IO.File]::Open($path, 'Open', 'Read', 'None') }
   return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None')
 }
+function Get-MirrorProcessStart([int]$processId) {
+  if ($IsLinux) {
+    # .NET converts Linux start ticks to wall time using a boot-time estimate that can differ by reader.
+    $stat = [IO.File]::ReadAllText("/proc/$processId/stat")
+    $fields = $stat.Substring($stat.LastIndexOf(')') + 2) -split ' '
+    # Fields after the parenthesized process name start at field 3. Field 22 is the start tick.
+    if ($fields[0] -in @('Z', 'X') -or $fields[19] -notmatch '\A[0-9]+\z') { throw 'no live process start tick' }
+    $boot = [IO.File]::ReadAllText('/proc/sys/kernel/random/boot_id').Trim()
+    return "$boot/$($fields[19])"
+  }
+  return [string](Get-Process -Id $processId -ErrorAction Stop).StartTime.ToUniversalTime().Ticks
+}
 function Read-MirrorLockOwner($mirror) {
   try {
     $owner = Get-Content -LiteralPath "$mirror.lock.owner" -Raw -Encoding UTF8 | ConvertFrom-Json
-    $process = Get-Process -Id $owner.pid -ErrorAction Stop
-    if ([string]$process.StartTime.ToUniversalTime().Ticks -eq $owner.processStart) {
-      return "PID $($owner.pid), job $($owner.job), command $($owner.command), since $($owner.since)"
+    if ($owner.pid -gt 0 -and (Get-MirrorProcessStart $owner.pid) -ceq $owner.processStart) {
+      $since = $owner.since
+      if ($since -is [DateTime]) { $since = $since.ToUniversalTime().ToString('o') }
+      return "PID $($owner.pid), job $($owner.job), command $($owner.command), since $since"
     }
   } catch { }
   return 'holder PID, job, command and start unavailable (no live owner record)'
@@ -864,7 +877,7 @@ function Open-MirrorWriterLock($mirror, $job = 'cleanup', $command = 'verify and
   try {
     $owner = @{
       pid = $PID
-      processStart = [string](Get-Process -Id $PID).StartTime.ToUniversalTime().Ticks
+      processStart = Get-MirrorProcessStart $PID
       job = $job -replace '[\r\n]', ' '
       command = $command -replace '[\r\n]', ' '
       since = [DateTime]::UtcNow.ToString('o')

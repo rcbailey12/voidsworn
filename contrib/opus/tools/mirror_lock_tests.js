@@ -35,9 +35,9 @@ function git(...args) {
   assert.equal(r.status, 0, `git ${args.join(' ')}: ${r.stderr || r.error}`);
   return r.stdout.trim();
 }
-function ps(script, args, extra = {}) {
+function ps(script, args, extra = {}, timeout = 60000) {
   const p = spawn(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(pc, script), ...args], {
-    env: { ...env, ...extra }, cwd: tmp, windowsHide: true, timeout: 60000,
+    env: { ...env, ...extra }, cwd: tmp, windowsHide: true, timeout,
   });
   const state = { text: '', finished: false };
   p.stdout.on('data', b => state.text += b);
@@ -48,11 +48,11 @@ function ps(script, args, extra = {}) {
   });
   return state;
 }
-function lane(name, extra) {
+function lane(name, extra, timeout) {
   const folder = path.join(tmp, name);
   const out = path.join(folder, 'out');
   fs.mkdirSync(out, { recursive: true });
-  return ps('runner_common.ps1', ['checkout', path.join(folder, 'repo'), out, 'fixture/' + name], extra);
+  return ps('runner_common.ps1', ['checkout', path.join(folder, 'repo'), out, 'fixture/' + name], extra, timeout);
 }
 function helper(name, extra) {
   return ps('helper_clone.ps1', ['-JobDir', path.join(tmp, name), '-Branch', 'main'],
@@ -131,10 +131,11 @@ const { spawnSync } = require('node:child_process');
 const args = process.argv.slice(2);
 const gate = process.env.FETCH_GATE;
 if (args.includes('fetch') && (process.env.FETCH_KIND === 'writer' ? args[0] === '--git-dir' : args.some(x => x.endsWith(':refs/look-bench/after')))) {
-  fs.writeFileSync(gate + '.entered', JSON.stringify({ args, pid: process.pid }));
+  fs.writeFileSync(gate + '.entering', JSON.stringify({ args, pid: process.pid }));
+  fs.renameSync(gate + '.entering', gate + '.entered');
   const deadline = Date.now() + 40000;
   while (!fs.existsSync(gate + '.release')) {
-    if (Date.now() >= deadline) process.exit(55);
+    if (!process.env.FETCH_HOLD_UNTIL_RELEASE && Date.now() >= deadline) process.exit(55);
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 25);
   }
 }
@@ -178,13 +179,19 @@ process.exit(result.status ?? 99);
   console.log('PASS a mirror miss fetches only the selected pin from origin into the bench checkout');
 
   const writerGate = path.join(tmp, 'writer');
-  const writer = lane('held-writer', { PC_TEST_GIT: shim, FETCH_GATE: writerGate, FETCH_KIND: 'writer' });
+  // The writer reaches the gate only after recording its owner. Keep it there until both waiters finish.
+  // Give the holder more time than gate discovery plus the two concurrently started waiters.
+  const writer = lane('held-writer', {
+    PC_TEST_GIT: shim, FETCH_GATE: writerGate, FETCH_KIND: 'writer', FETCH_HOLD_UNTIL_RELEASE: '1',
+  }, 120000);
   try {
     await waitFor(writerGate + '.entered', writer);
     const owner = JSON.parse(read(mirror + '.lock.owner'));
     const waiting = { PC_MIRROR_LOCK_WAIT_SECONDS: '0' };
-    for (const blocked of [lane('blocked-waiter', waiting), helper('blocked-helper', waiting)]) {
-      const result = await blocked.done;
+    const results = await Promise.all([lane('blocked-waiter', waiting).done, helper('blocked-helper', waiting).done]);
+    assert(!writer.finished, 'writer has not exited before the waiters read its owner');
+    assert.deepEqual(JSON.parse(read(mirror + '.lock.owner')), owner, 'writer still holds the recorded lock');
+    for (const result of results) {
       assert.notEqual(result.code, 0, result.text);
       assert(result.text.includes(`PID ${owner.pid}, job fixture/held-writer, command git fetch --prune origin, since ${owner.since}`), result.text);
     }
