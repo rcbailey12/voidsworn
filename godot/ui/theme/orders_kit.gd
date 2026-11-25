@@ -153,12 +153,7 @@ static func section(text: String, k: float) -> Control:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", px(4, k))
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var l := label(text.to_upper(), 17, k, GS.TEXT3, medium_font(), false)
-	var sp := maxi(1, int(round(17.0 * 0.12 * k)))
-	var fv := FontVariation.new()
-	fv.base_font = medium_font()
-	fv.spacing_glyph = sp
-	l.add_theme_font_override("font", fv)
+	var l := label(text.to_upper(), 17, k, GS.TEXT3, GS.caps(k), false)
 	v.add_child(l)
 	var r := ColorRect.new()
 	r.color = GS.SHEET_HAIR

@@ -4,6 +4,8 @@ Ryan, Nov 22 2026: ElevenLabs Creator, monthly ($11 first month, then $22), for 
 (issue 1585, Neon's pre-flight on PR 1577): hold the blind Batch 1, run a small Gate 1 pilot first, pick by ear, then
 Gate 2 production and Gate 3 stems. Nothing is wired into godot/ until Ryan picks.
 
+The prompts follow sections 2 to 8 of the [sound plan](../plans/cohesive_audio_v2.md), including the section 2 banned-word list.
+
 ## The three gates
 
 - **Gate 1, calibration pilot** (`elevenlabs_pilot.json`, about 2,840 credits, under 3% of 121,000): one take each of
@@ -71,8 +73,15 @@ Gate 2 production and Gate 3 stems. Nothing is wired into godot/ until Ryan pick
 - The shipped F3 picks are `death_metal_crack_f3` t1, `ship_thruster_puff_f3` t1 and
   `wep_eclipse_gsentry_more_f3` t1. `mus_chorus_loop_a_test2` t1 is the Chorus battle pair. Its calm mix is all stems
   except drums, and its intense mix is the full song. `wire_gate3.py --chorus-music` adds both listening previews.
-- `M2_test3` stages `mus_ithar_loop_a_test3` with a moving lead and four distinct sections. The new ID keeps its receipt
-  separate from the rejected test2. Use the named wave's IDs with the generator's `--only` flag. No paid request without Ryan's go.
+- `M2_test5` stages only `mus_ithar_loop_a_test5`, a re-roll of test4 with its own receipt. Every take since test2 asked
+  for a steady timpani pulse from bar 1, and because timpani are tuned drums that pulse is two pitches repeated for the
+  whole loop and it lands outside the drums stem, which left test4's calm mix only 0.7 dB under the full mix. Test5
+  removes timpani and tuned drums, gives every section its own unpitched groove, and bans ostinato, drone, pedal tone and
+  a repeated two-note figure. Use the wave's ID with the generator's `--only` flag. No paid request without Ryan's go.
+- Review gate: the core tone changes colour, register or harmony in every section. Compare test4 with test5 on the
+  listening page once the Board has the new take. Listen in both mixes for a held tone or a repeated two-note figure,
+  and check that the calm mix still carries the whole melody without drums. Check that there is no timpani or tuned
+  drum in the full mix and that the calm mix is 1 to 12 dB under the full mix.
 - Run `stem_loop_check.py` with the planned BPM and bar count. The source MP3 may be 50 ms short or 120 ms long,
   but the mastered loop uses the exact bar grid and the 25 ms click guard. Listen across the wrap and compare calm and
-  full at the switch points. Review the Glasswrights test3 by ear before starting the rest of M2. The remaining M2 rows are unchanged.
+  full at the switch points. Review the Glasswrights test5 by ear before starting the rest of M2. The remaining M2 rows are unchanged.

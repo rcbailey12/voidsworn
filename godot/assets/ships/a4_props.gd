@@ -659,7 +659,9 @@ static func derelict(src: BaseMaterial3D, fac: String) -> BaseMaterial3D:
 		b.roughness = minf(1.0, b.roughness * 1.2)
 		return b
 	var w := wound_of(fac)
-	var soot := clampf(float(w.get("wreck_soot", 0.0)), 0.0, 1.0)
+	# issue 2125: a faction may keep a station hulk burn ("hulk_soot") apart from its in-battle wreck soot; the Directorate
+	# has no soot on its battle wrecks but keeps the cool grey hulk burn approved on Nov 22
+	var soot := clampf(float(w.get("hulk_soot", w.get("wreck_soot", 0.0))), 0.0, 1.0)
 	var sc: Array = w.get("scorch_col", [0.1, 0.1, 0.1])
 	var c := src.albedo_color
 	var mean := texture_mean(src)

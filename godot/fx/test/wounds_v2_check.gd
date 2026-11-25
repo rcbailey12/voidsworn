@@ -19,6 +19,7 @@ const BREACH := preload("res://fx/fx_breach.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
+const DEATH := preload("res://fx/fx_death.gd")
 const FL := preload("res://fx/faction_look.gd")
 var failures := 0
 var fx
@@ -61,7 +62,7 @@ func _hull_of(faces: PackedVector3Array, L: float):
 
 
 # A box ship; authored: a second, inner surface flagged as built interior, and the hull marked authored.
-func _ship(faction: String, authored: bool, shielded := false):
+func _ship(faction: String, authored: bool, shielded := false, separate_deck := false):
 	nship += 1
 	var body := Node3D.new()
 	world.add_child(body)
@@ -84,11 +85,23 @@ func _ship(faction: String, authored: bool, shielded := false):
 		im.resource_name = "deck_interior"
 		im.albedo_color = Color(0.02, 0.02, 0.02)
 		im.set_meta("fx_authored_interior", true)
+		if faction == "ithar": im.set_meta("interior_role", "wall")  # use the dark baked trim, not the legacy fallback
 		am.surface_set_material(1, im)
 	mi.mesh = am
 	body.add_child(mi)
+	var meshes: Array = [mi]
+	if separate_deck:
+		var deck := MeshInstance3D.new()
+		var deck_mesh := ArrayMesh.new()
+		deck_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, am.surface_get_arrays(1))
+		deck_mesh.surface_set_material(0, am.surface_get_material(1))
+		deck.mesh = deck_mesh
+		deck.position.y = -0.2
+		deck.lod_bias = 0.75
+		body.add_child(deck)
+		meshes.append(deck)
 	var sid := "v2_%s_%d" % [faction, nship]
-	fx.add_ship(sid, body, {"faction": faction, "cls": "Cruiser", "size": 0.8, "meshes": [mi], "shielded": shielded})
+	fx.add_ship(sid, body, {"faction": faction, "cls": "Cruiser", "size": 0.8, "meshes": meshes, "shielded": shielded})
 	fx._later.clear()
 	var s = fx.ship(sid)
 	s.hull.authored = authored
@@ -127,6 +140,77 @@ func _lights(s) -> Array:
 		if bool(src["on"]) and is_instance_valid(src["node"]) and s._dmg_root.is_ancestor_of(src["node"]):
 			out.append(src)
 	return out
+
+
+func _half_hull_openings() -> void:
+	for faction in ["voidsworn", "corsair", "deathless", "ithar"]:
+		var s = _ship(faction, true)
+		s.sync(fx, _state(50, 50, 50))
+		flush(s)
+		var mi: MeshInstance3D = s.meshes[0]
+		var hull_tris := TriangleMesh.new()
+		hull_tris.create_from_faces(mi.mesh.get_faces())
+		var real_opening := false
+		for e: BREACH.Ent in s._dmg_job["ents"]:
+			if not e.has_cut() or e.thin_shear:
+				continue
+			# The rebuilt skin has a gap at the cut, and a deck further in. A surface mark cannot pass this.
+			var ray := hull_tris.intersect_segment(e.c + e.n * e.R, e.c - e.n * 3.0)
+			if not ray.is_empty() and (e.c - (ray["position"] as Vector3)).dot(e.n) > e.R * 0.3:
+				real_opening = true
+				if faction == "ithar": _glass_mouth_check(s, e, ray["position"])
+				break
+		check(real_opening, "%s: at 50%% hull the rebuilt skin opens onto its real deck" % faction)
+		fx.remove_ship(s.id)
+
+
+func _glass_mouth_check(s, e: BREACH.Ent, deck_point: Vector3) -> void:
+	var job: Dictionary = s._dmg_job
+	var part = job["out"]["parts"][job["ents"].find(e)]
+	var seams := [0, 0]
+	var radii := [0.0, 0.0]
+	var rim := false
+	var clear := true
+	var depth: float = minf(e.cut * 0.88, e.R * 0.9)
+	for k in range(0, part.pos.size(), 3):
+		var a: Vector3 = part.pos[k]
+		var b: Vector3 = part.pos[k + 1]
+		var c: Vector3 = part.pos[k + 2]
+		var col: Color = part.col[k]
+		var d: Vector3 = (a + b + c) / 3.0 - e.c
+		var down: float = -d.dot(e.n)
+		var r: float = (d + e.n * down).length() / e.R
+		if is_equal_approx(col.b, BREACH.GLASS_SEAM):
+			var layer := 0 if down < depth * 0.75 else 1
+			seams[layer] += 1
+			radii[layer] += r
+		rim = rim or (is_equal_approx(col.r, BREACH.PART_LIP) and is_equal_approx(col.b, 0.75))
+		for direction in [Vector3.ZERO, e.t1, -e.t1, e.t2, -e.t2]:
+			var centre: Vector3 = e.c + direction * e.R * 0.22
+			clear = clear and Geometry3D.segment_intersects_triangle(centre + e.n * e.R, centre - e.n * e.cut, a, b, c) == null
+	check(seams.min() >= e.facets and radii[0] / maxf(seams[0], 1) > radii[1] / maxf(seams[1], 1) + 0.17 and rim,
+		"2125: Glasswright opening has a fractured rim and two lit seam bands stepping inward (%s triangles)" % str(seams))
+	check(clear, "2125: five rays through the Glasswright centre miss all synthetic dressing")
+	var mi: MeshInstance3D = s.meshes[0]
+	var interior := mi.get_surface_override_material(1) as ShaderMaterial
+	# Headless does not shade pixels. Use the actual deck hit and the live shader's bounds to check the pearl floor.
+	var floor_re := RegEx.create_from_string("glass_pearl = v2_interior_lift \\* \\(([0-9.]+) \\+ [0-9.]+ \\* r.x\\);")
+	var reveal_re := RegEx.create_from_string("fx_wreck == 0.0 \\? smoothstep\\(([0-9.]+), ([0-9.]+), open_f\\)")
+	var code := interior.shader.code if interior != null else ""
+	var floor_match := floor_re.search(code)
+	var reveal_match := reveal_re.search(code)
+	var lift: Vector3 = interior.get_shader_parameter("v2_interior_lift") if interior != null else Vector3.ZERO
+	var open_f := 1.0 - smoothstep(1.4, 5.5, e.c.distance_to(deck_point) / e.R)
+	var reveal := smoothstep(reveal_match.get_string(1).to_float(), reveal_match.get_string(2).to_float(), open_f) if reveal_match != null else 0.0
+	var floor_value := lift.dot(Vector3.ONE) / 3.0 * float(floor_match.get_string(1)) * reveal * maxf(reveal, open_f) if floor_match != null else 0.0
+	var hole_node := s._dmg_root.get_node_or_null("fx_damage_inside") as MeshInstance3D
+	var hole := hole_node.material_override as ShaderMaterial if hole_node != null else null
+	check(floor_value >= 0.20 and hole != null and is_equal_approx(float(interior.get_shader_parameter("v2_wall_max")), 0.45)
+		and is_equal_approx(float(hole.get_shader_parameter("v2_wall_max")), 0.45)
+		and bool(interior.get_shader_parameter("trusted")) and (interior.get_shader_parameter("base_albedo") as Color).r < 0.03
+		and code.contains("lit = mix(lit, glass_pearl * value, glass_reveal);")
+		and code.contains("em += glass_pearl * 0.24 * glass_reveal;"),
+		"2125: the centre ray hits a dark deck lifted to pearl (at least %.3f linear), below the 0.45 wall cap" % floor_value)
 
 
 func _run() -> void:
@@ -205,7 +289,7 @@ func _run() -> void:
 
 	# 4. mid-battle cutouts on an authored hull, sealed legacy hull
 	for faction in ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
-		var s = _ship(faction, true)
+		var s = _ship(faction, true, false, faction == "hegemony")
 		s.sync(fx, _state(100, 100, 100))
 		flush(s)
 		check(_holes(s).is_empty() and _lights(s).is_empty(), "%s: a healthy authored hull has no cutout and no inside light" % faction)
@@ -235,6 +319,11 @@ func _run() -> void:
 				var im: ShaderMaterial = mi1.get_surface_override_material(1)
 				int_ok = im.shader.code == SH.INTERIOR and int(im.get_shader_parameter("wound_v2")) == kind and int(im.get_shader_parameter("fx_mouth_count")) >= 1
 		check(int_ok, "%s: the built interior takes the faction interior shader once open" % faction)
+		if faction == "hegemony":
+			var deck: MeshInstance3D = s.meshes[1]
+			var deck_mat := deck.get_surface_override_material(0) as ShaderMaterial
+			check(is_equal_approx(deck.lod_bias, 0.75) and deck_mat != null and deck_mat.shader.code == SH.INTERIOR,
+				"2125: an interior-only mesh keeps its own LOD and still receives the V2 wound light")
 		var v2_ok := true
 		for key in s._damage_surfaces:
 			v2_ok = v2_ok and int((s._damage_surfaces[key][1] as ShaderMaterial).get_shader_parameter("fx_v2")) == kind
@@ -284,6 +373,7 @@ func _run() -> void:
 	sl.sync(fx, _state(100, 30, 100))
 	flush(sl)
 	check(_holes(sl).is_empty(), "a legacy hollow hull stays sealed at stage 3")
+	_half_hull_openings()
 
 	# 5. shaders parse; dressing per faction stays below the plating; faction colours
 	for pair in [["INTERIOR", SH.INTERIOR], ["HOLE", SH.HOLE], ["MARK", SH.MARK]]:
@@ -298,7 +388,7 @@ func _run() -> void:
 	for u in dm.shader.get_shader_uniform_list():
 		dn.append(u["name"])
 	check(dn.has("fx_v2") and dn.has("fx_v2_soot"), "the hull damage shader parses with its V2 uniforms")
-	check(dm.shader.code.contains("(fx_v2 == 0 || fx_v2 == 2) ? smoothstep(0.65, 1.0, fx_sc) * step(0.95,") and dm.shader.code.contains("float fx_sw = fx_v2 >= 0 ? clamp(fx_v2_soot, 0.0, 1.0) : 1.0;"), "JOINT_B: with V2 the scorch keeps the faction soot weight and only steel keeps sparse embers")
+	check(dm.shader.code.contains("(fx_v2 == 0 || fx_v2 == 2) ? smoothstep(0.65, 1.0, fx_sc) * step(0.95,") and dm.shader.code.contains("float fx_sw = clamp(fx_v2_soot, 0.0, 1.0);"), "JOINT_B: with V2 the scorch keeps the faction soot weight and only steel keeps sparse embers")
 	var want_b := {0: 0.25, 1: 0.25, 2: 0.25, 3: 0.5, 4: 0.75, 5: 1.0}
 	for faction in ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
 		var eh = BREACH.place_hole(slab, Vector3(0, 3, 0), Vector3.UP, 1.0, 2.0, faction)
@@ -314,8 +404,10 @@ func _run() -> void:
 			has_b = has_b or is_equal_approx(pt.col[k].b, float(want_b[eh.v2]))
 		check(not pt.pos.is_empty() and has_b, "%s: the mouth dressing is the faction's own (kind %d)" % [faction, eh.v2])
 		check(below, "%s: the mouth dressing stays below the plating and inside the rim" % faction)
-	for faction in ["chorus", "ithar", "deathless"]:
-		check(float(FL.of(faction)["wound"]["soot_weight"]) == 0.0, "%s: no soot" % faction)
+	for faction in ["hegemony", "chorus", "ithar", "deathless"]:
+		check(float(FL.of(faction)["wound"]["soot_weight"]) == 0.0, "%s: no soot on wounds" % faction)
+	for faction in ["hegemony", "chorus", "ithar"]:
+		check(float(FL.of(faction)["wound"]["wreck_soot"]) == 0.0, "%s: no soot on wreck interiors" % faction)
 	# R420 (global cohesion law 2): an open wound's inside sits under the interior ceiling, glow capped
 	for faction in ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
 		var lift: Array = FL.of(faction)["wound"]["interior_lift"]
@@ -374,12 +466,14 @@ func _run() -> void:
 
 	# 8. live to wreck, through the game's own death (audit on PR 1755: fx_death threads the faction and length)
 	fx.death_story = true
-	for faction in ["chorus", "ithar"]:
+	for faction in ["chorus", "ithar", "hegemony"]:
 		var sd = _ship(faction, true)
 		sd.sync(fx, _state(20, 15, 20))
 		flush(sd)
+		var death_request: float = fx.now
 		fx.death(sd.id, "blast")
 		var found := 0
+		var timed := true
 		var plating: Array = []
 		for k in 600:
 			fx.step(0.05)
@@ -394,11 +488,15 @@ func _run() -> void:
 							var sm = m.surface_get_material(j)
 							if sm is ShaderMaterial and (sm as ShaderMaterial).shader.code == SH.INTERIOR and float(sm.get_shader_parameter("fx_wreck")) == 1.0:
 								found += 1
+								var stamp := float(sm.get_shader_parameter("fx_wreck_t0"))
+								timed = timed and stamp >= death_request - 0.06 and stamp <= fx.now + 0.06
 							elif sm is ShaderMaterial and (sm as ShaderMaterial).shader.code.contains("uniform int fx_v2"):
 								plating.append(int(sm.get_shader_parameter("fx_v2")))
 			if found > 0:
 				break
 		check(found > 0, "%s: the wreck pieces from a real death carry the faction interior shader (%d surfaces)" % [faction, found])
+		if faction in ["chorus", "hegemony"]:
+			check(found > 0 and timed, "%s: actual wreck pieces settle their interior on the death clock" % faction)
 		# JOINT_B (Nov 23): the wreck plating carries the faction's wound kind, so its scorch keeps the faction soot
 		# weight and only steel keeps embers (no glitter of rim-coloured dots)
 		var kind: int = int(BREACH.wound_of(faction).get("kind", -9))
@@ -443,10 +541,28 @@ func _run() -> void:
 	for faction in ["ithar", "chorus"]:
 		var wm = fx.wreck_interior(src, faction, 24.0)
 		check(wm is ShaderMaterial and (wm as ShaderMaterial).shader.code == SH.INTERIOR and float((wm as ShaderMaterial).get_shader_parameter("fx_wreck")) == 1.0, "%s: the wreck keeps the faction interior shader" % faction)
+		if faction == "chorus" and wm is ShaderMaterial:
+			# Headless does not render fragments. Check the final outputs of the actual wreck shader, not the ORM inputs.
+			var finish := RegEx.create_from_string("if \\(wound_v2 == 3\\) \\{\\s*ROUGHNESS = role == 1 \\? ([0-9.]+) : ([0-9.]+);\\s*METALLIC = ([0-9.]+);")
+			var finish_match := finish.search((wm as ShaderMaterial).shader.code)
+			check(int((wm as ShaderMaterial).get_shader_parameter("wound_v2")) == 3 and finish_match != null
+				and minf(float(finish_match.get_string(1)), float(finish_match.get_string(2))) >= 0.7
+				and is_zero_approx(float(finish_match.get_string(3))), "chorus: wreck bone and tissue are rough (at least 0.7) and non-metallic")
+	var white_panel := StandardMaterial3D.new()
+	white_panel.set_meta("extras", {"interior_role": "core"})
+	white_panel.emission_enabled = true
+	white_panel.emission = Color.WHITE
+	white_panel.emission_energy_multiplier = 4.0
+	var directorate := fx.wreck_interior(white_panel, "hegemony", 24.0) as ShaderMaterial
+	check(int(directorate.get_shader_parameter("role")) == 2 and float(directorate.get_shader_parameter("base_emission_energy")) > 1.0
+		and directorate.shader.code.contains("bool directorate_wreck = wound_v2 == 1 && fx_wreck > 0.0;")
+		and directorate.shader.code.contains("vec3 bem = vec3(0.0);\n\tif (!directorate_wreck) {"),
+		"2125: the first Directorate wreck frame cuts the full-face white emission even on a bright authored core")
 	OS.set_environment("VS_WOUNDS_V2", "0")
 	var old = fx.wreck_interior(src, "ithar", 24.0)
 	check(old is BaseMaterial3D and (old as BaseMaterial3D).roughness == 1.0, "switch off: the wreck keeps the old sooted copy")
 	OS.unset_environment("VS_WOUNDS_V2")
+	_retired_looks()
 	_review_fixes()
 	print("wounds_v2_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)
 	quit(0 if failures == 0 else 1)
@@ -463,9 +579,9 @@ func _review_fixes() -> void:
 	cg.wounds_v2 = false
 	check(gas_on.is_equal_approx(Color(0.6, 0.52, 0.14)) and cg.chorus_gas(lime) == lime and gas_on.g < lime.g * 0.6, "JOINT_C: Chorus gas is ochre with V2 on (%s), the old bile with it off" % str(gas_on))
 	fx.remove_ship(cg.id)
-	# JOINT_D (Wave 0, Nov 23): a Glasswright cut is glass panes (straight-edged cells, popped panes, stored light from
-	# inside), never the old charcoal disc or grey bands
-	check(SH.HOLE.contains("vec3 gw_cells(vec2 p)") and SH.HOLE.contains("if (wound_v2 == 4 && part < 0.95") and SH.HOLE.contains("bool popped = gq.y > 0.8") and not SH.HOLE.contains("float sheet = pow("), "JOINT_D: the Glasswright cut is straight-edged glass panes with popped panes and inner light")
+	# JOINT_D's straight-edged fracture cue is still on sealed skin. Actual apertures are checked by _glass_mouth_check.
+	check(SH.MARK.contains("vec2 vc = v2cells(q / R * 3.0 + seed);") and not SH.HOLE.contains("bool popped"),
+		"JOINT_D / 2125: fracture facets stay on sealed skin, not as dark tiles across an opening")
 	# Wave 0 regression set: a shield-only hit leaves no hull mark; a ship removed and added again (revive) starts clean
 	var sq = _ship("hegemony", true, true)
 	sq.sync(fx, {"hp": 100, "maxHp": 100, "sh": [10, 10, 10, 10], "sec": {}})
@@ -602,3 +718,19 @@ func _review_fixes() -> void:
 	check(kept >= 1, "the warm-up keeps its interior material, so the interior shader is not made again late (%d kept)" % kept)
 	check(tried > 0 and opened == tried, "H5: midship cutouts on the real hull open into the ship, not chip (%d of %d)" % [opened, tried])
 	OS.unset_environment("VS_WOUNDS_V2")
+
+
+# Nov 24 (Ryan's yes, Morning Pick Sheet item 5): V2 is on by default and the old wound looks are gone from the code
+func _retired_looks() -> void:
+	OS.unset_environment("VS_WOUNDS_V2")
+	check(WOUNDS.v2(), "default: Wounds V2 is on with the switch unset")
+	OS.set_environment("VS_WOUNDS_V2", "0")
+	check(not WOUNDS.v2(), "default: VS_WOUNDS_V2=0 still turns it off")
+	OS.unset_environment("VS_WOUNDS_V2")
+	check(not SH.HOLE.contains("muscle") and not SH.HOLE.contains("float bus ="), "retired: HOLE has no old Chorus flesh or Eclipse bus look")
+	check(not SH.MARK.contains("float circuit") and not SH.MARK.contains("float web ="), "retired: MARK has no Eclipse square grid or Glasswright sine web")
+	var dc: String = HULL._damage_code(HULL.EXTERIOR)
+	check(not dc.contains("fx_v2 >= 0 ? clamp(fx_v2_soot"), "retired: the 94% soot collar always follows the faction soot weight")
+	check(not dc.contains("vec3(0.018, 0.003, 0.009)"), "retired: no magenta flesh on the back of the plating")
+	check(dc.contains("(fx_v2 == 0 || fx_v2 == 2) ? 0.35 : 0.0"), "retired: orange backface embers on steel only")
+	check(not DEATH.SLAG.contains("vec3(0.025, 0.005, 0.013)"), "retired: SLAG has no magenta organic face")
