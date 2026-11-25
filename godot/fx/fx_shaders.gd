@@ -510,6 +510,170 @@ void fragment() {
 }
 """
 
+# Issue 2048: layered faction idle motion pieces (fx/fx_idle.gd, off by default until Ryan picks).
+# One draw call per ship: each spot packs Layer 0 (emitter anchor/core) and Layer 1 (faction motion piece),
+# aligned to the hull normal in view space, using a smooth sin(PI * t) comfort envelope (zero hard peak).
+# style: 0 Hegemony radar sweep, 1 Crusade furnace breath, 2 Hullbreaker smelter flicker,
+#        3 Glasswright optic shimmer, 4 Eclipse violet corona pulse, 5 Chorus bio-sac swell.
+const IDLE_MOTION := """
+shader_type spatial;
+render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+""" + COMMON + """
+uniform float gate = 1.0;
+varying vec2 vUv;
+varying vec4 vCol;
+varying vec4 vInfo;
+varying vec4 vStyle;
+void vertex() {
+	vec4 a0 = CUSTOM0; vec4 a1 = CUSTOM1; vec4 a2 = CUSTOM2; vec4 a3 = CUSTOM3; vec4 a4 = vec4(UV, UV2);
+	float a = scene_t - a0.w;
+	float age = pAge(a, a4.x);
+	float life = max(a1.w, 1e-3);
+	vUv = vec2(0.0); vCol = vec4(0.0); vInfo = vec4(0.0); vStyle = vec4(0.0);
+	if (a < 0.0 || age >= life || gate <= 0.0 || a2.a <= 0.0) {
+		""" + HIDE + """
+	} else {
+		float t = age / life;
+		float g = sqrt(t);
+		float size = mix(a3.x, a3.y, g);
+		float layer = a3.z;
+		float sd = fract(a3.w);
+		vec3 c = (MODEL_MATRIX * vec4(a0.xyz, 1.0)).xyz;
+		vec4 vp = VIEW_MATRIX * vec4(c, 1.0);
+		// Keep the same 10 px comfort floor and dimming curve as SPRITE kind 18.
+		float mn = px_world(10.0, -vp.z, PROJECTION_MATRIX);
+		float boost = 1.0;
+		if (size < mn) {
+			float gf = mn / max(size, 1e-5);
+			boost = clamp(spow(gf, -1.2), 0.03, 1.0);
+			size = mn;
+		}
+		// Align +y of the piece to the ship's local surface normal projected into view space.
+		vec3 nw = (MODEL_MATRIX * vec4(a1.xyz, 0.0)).xyz;
+		vec2 sv = (VIEW_MATRIX * vec4(nw, 0.0)).xy;
+		float sl = length(sv);
+		vec2 up_ax = sl > 1e-3 ? sv / sl : vec2(0.0, 1.0);
+		vec2 rt_ax = vec2(up_ax.y, -up_ax.x);
+		vec2 q = rt_ax * VERTEX.x + up_ax * VERTEX.y;
+		vp.xy += q * size;
+		POSITION = PROJECTION_MATRIX * vp;
+		vUv = VERTEX.xy * 2.0;
+		vCol = vec4(a2.rgb, a2.a * gate * boost);
+		vInfo = vec4(t, layer, sd, age);
+		vStyle = vec4(a4.y, a4.z, a4.w, 0.0);
+	}
+}
+void fragment() {
+	vec2 p = vUv;
+	float r = length(p);
+	if (r > 1.0) { discard; }
+	float t = vInfo.x;
+	float layer = vInfo.y;
+	float seed = vInfo.z;
+	float I = vCol.a;
+	int st = int(vStyle.x + 0.5);
+	float still = vStyle.y;
+	float slot = vStyle.z;
+	float env = sin(3.14159265 * t) * I;
+	float ang = atan(p.y, p.x);
+	vec3 add = vec3(0.0);
+	if (st == 0) {
+		// Hegemony radar sweep: Layer 0 sensor beacon + range tick; Layer 1 rotating directional sweep cone.
+		if (layer < 0.5) {
+			float pip = exp(-r * r * 16.0) * 1.15;
+			float ring = exp(-pow((r - 0.52) / 0.075, 2.0)) * 0.55;
+			add = (vCol.rgb * (pip + ring) + vec3(0.85, 0.95, 1.0) * pip * 0.35) * env;
+		} else {
+			if (still > 0.5) {
+				float steady_ring = exp(-pow((r - 0.68) / 0.08, 2.0)) * 0.65 + exp(-r * r * 5.0) * 0.30;
+				add = vCol.rgb * steady_ring * env;
+			} else {
+				float sweep_a = scene_t * 1.8 + slot * 6.2831853;
+				float da = mod(sweep_a - ang + 6.2831853, 6.2831853);
+				float cone = exp(-da * 2.4) * smoothstep(0.08, 0.25, r) * (1.0 - smoothstep(0.65, 1.0, r));
+				float lead = exp(-da * 14.0) * smoothstep(0.10, 0.85, r) * (1.0 - smoothstep(0.85, 1.0, r));
+				float ticks = exp(-pow((r - 0.72) / 0.055, 2.0)) * (0.35 + 0.65 * cone);
+				add = (vCol.rgb * (cone * 0.85 + ticks * 0.50) + vec3(0.82, 0.94, 1.0) * lead * 0.75) * env;
+			}
+		}
+	} else if (st == 1) {
+		// Sunward Crusade furnace-vent ember breath: Layer 0 glowing louver grate; Layer 1 rising ember shimmer.
+		if (layer < 0.5) {
+			float ribs = 0.55 + 0.45 * cos(p.x * 16.0 + seed * 6.0);
+			float bed = exp(-r * r * 4.5) * ribs;
+			vec3 warm = mix(vCol.rgb, vec3(1.0, 0.86, 0.62), bed * 0.45);
+			add = warm * bed * 1.15 * env;
+		} else {
+			float rise = p.y - (t - 0.35) * 0.75;
+			float n = fbm(vec2(p.x * 3.0 + seed * 9.0, rise * 2.6 - scene_t * 0.55));
+			float plume = exp(-p.x * p.x * 4.8) * exp(-rise * rise * 2.4) * (0.45 + 0.85 * n);
+			float mote = pow(clamp(fbm(vec2(p.x * 9.0 + seed * 13.0, p.y * 9.0 - t * 3.2)), 0.0, 1.0), 4.0) * (1.0 - r);
+			add = (vCol.rgb * plume * 0.95 + mix(vCol.rgb, vec3(1.0, 0.92, 0.75), 0.5) * mote * 1.6) * env;
+		}
+	} else if (st == 2) {
+		// Ashfall Hullbreakers smelter flicker: Layer 0 rough slag mouth; Layer 1 turbulent heat-haze + ash flecks.
+		if (layer < 0.5) {
+			float n = fbm(p * 3.2 + vec2(seed * 11.0, scene_t * 1.1));
+			float core = exp(-r * r * 5.2) * (0.60 + 0.75 * n);
+			add = vCol.rgb * core * 1.2 * env;
+		} else {
+			float n = fbm(vec2(p.x * 3.8 + seed * 7.0, p.y * 3.4 - t * 2.4));
+			float haze = exp(-r * r * 2.6) * smoothstep(0.28, 0.82, n);
+			float fleck = pow(clamp(fbm(vec2(p.x * 10.0 - seed * 5.0, p.y * 10.0 - t * 3.6)), 0.0, 1.0), 5.0) * (1.0 - r);
+			add = (vCol.rgb * haze * 0.9 + mix(vCol.rgb, vec3(1.0, 0.65, 0.30), 0.45) * fleck * 1.8) * env;
+		}
+	} else if (st == 3) {
+		// Glasswrights optic shimmer: Layer 0 faceted crystal star; Layer 1 pale rainbow dispersion halo.
+		if (layer < 0.5) {
+			float s4 = exp(-abs(p.x) * 18.0) * exp(-abs(p.y) * 2.8) + exp(-abs(p.y) * 18.0) * exp(-abs(p.x) * 2.8);
+			vec2 dp = vec2(p.x + p.y, p.x - p.y) * 0.7071;
+			float s45 = exp(-abs(dp.x) * 22.0) * exp(-abs(dp.y) * 3.5) + exp(-abs(dp.y) * 22.0) * exp(-abs(dp.x) * 3.5);
+			float core = exp(-r * r * 14.0);
+			add = mix(vCol.rgb, vec3(1.0), 0.45) * (core * 1.1 + s4 * 0.7 + s45 * 0.45) * env;
+		} else {
+			float hue = fract(ang / 6.2831853 + r * 0.65 + t * 0.45 + seed);
+			vec3 prism = clamp(abs(fract(hue + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+			vec3 pale = mix(vCol.rgb, mix(vec3(0.95), prism, 0.42), 0.55);
+			float band = exp(-pow((r - mix(0.22, 0.76, t)) / 0.16, 2.0));
+			float glint = (0.65 + 0.35 * cos(ang * 6.0 + seed * 12.0)) * band;
+			add = pale * (glint * 0.85 + exp(-r * r * 3.5) * 0.25) * env;
+		}
+	} else if (st == 4) {
+		// Eclipse corona pulse (R372 all violet, zero green/orange): Layer 0 violet null ring; Layer 1 twisting violet arcs.
+		vec3 v_deep = vec3(vCol.r * 0.72, vCol.g * 0.45, max(vCol.b, vCol.r * 1.15));
+		vec3 v_pale = mix(vCol.rgb, vec3(0.86, 0.74, 1.0), 0.45);
+		if (layer < 0.5) {
+			float ring = exp(-pow((r - 0.38) / 0.16, 2.0)) * 0.95;
+			float inner = exp(-r * r * 9.0) * 0.55;
+			add = (v_deep * ring + v_pale * inner) * env;
+		} else {
+			float n = fbm(p * 2.8 + vec2(scene_t * 0.35 + seed * 9.0, -scene_t * 0.25));
+			float arc_band = exp(-pow((r - 0.62 - (n - 0.5) * 0.22) / 0.12, 2.0));
+			float curl = pow(0.5 + 0.5 * sin(ang * 3.0 + r * 5.0 - scene_t * 1.4 + seed * 11.0), 2.0);
+			add = mix(v_deep, v_pale, curl) * (arc_band * (0.45 + 0.75 * curl) + exp(-r * r * 3.0) * 0.20) * env;
+		}
+	} else {
+		// Chorus spore-sac swell: Layer 0 pulsing bioluminescent sac; Layer 1 branching veins & spore motes (no metal sparks).
+		if (layer < 0.5) {
+			float n = fbm(p * 2.6 + vec2(seed * 8.0, t * 0.8));
+			float sac = smoothstep(0.82, 0.35, r + (n - 0.5) * 0.28);
+			float heart = exp(-r * r * 8.5);
+			float wall = exp(-pow((r - 0.54 + (n - 0.5) * 0.14) / 0.11, 2.0));
+			add = vCol.rgb * (heart * 0.95 + wall * 0.60 + sac * 0.22) * env;
+		} else {
+			float vein_n = 1.0 - abs(fbm(p * 4.2 + vec2(seed * 13.0, -t * 0.6)) * 2.0 - 1.0);
+			float veins = pow(clamp(vein_n, 0.0, 1.0), 5.0) * (1.0 - smoothstep(0.35, 0.95, r));
+			float spores = pow(clamp(fbm(p * 9.5 + vec2(-seed * 7.0, t * 1.4)), 0.0, 1.0), 5.0) * (1.0 - r);
+			add = vCol.rgb * (veins * 1.15 + spores * 1.35 + exp(-r * r * 3.2) * 0.25) * env;
+		}
+	}
+	float win = 1.0 - r * r;
+	add *= win * win;
+	ALBEDO = clamp(add * fx_gain, 0.0, 512.0);
+	ALPHA = 0.0;
+}
+"""
+
 # Camera-facing textured heads and tails. a3 = (length or blur seconds, width, drag, kind).
 # kinds: 0 shell/tracer   1 spark   3 flame tongue   4 textured las dart
 # Kind 5 now routes to NULL_SLUG; its old vertex branch below is unused there.
