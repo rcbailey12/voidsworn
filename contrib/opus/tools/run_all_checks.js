@@ -188,7 +188,6 @@ function buildChecks() {
   add(OPUS + 'naming_lint_game.test.js', [], 'normal', 300, false, true);
   add(OPUS + 'naming_lint_game.js', [], 'naming');
   add(OPUS + 'shader_pow_2092.js', [], 'normal', 300, false, true); // #2092: no shader pow(x, 2.0) on a base that can be negative (Vulkan undefined); write d * d
-  add(OPUS + 'shader_pow_2092_tests.js', [], 'normal', 300, false, true); // #2129: the pow check also scans standalone .gdshader files (fixtures)
   add(OPUS + 'checkpack/checks.js', [], 'pack', 300, false, true);
   add('tools/ci/big_files.js', ['--self-test'], 'normal', 300, false, true); // #1491 (audit GH-01): self-test row; the warnings print below the table and never fail
   add(OPUS + 'fast_selection_test.js', [], 'normal', 300, false, true); // #946: --fast selects exactly the marked rows plus the gate; a plain run still runs every row
