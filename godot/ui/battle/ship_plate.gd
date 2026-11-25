@@ -3,6 +3,7 @@ extends Control
 
 const GS = preload("res://ui/theme/glass_shell.gd")
 const Sections = preload("res://ui/battle/ship_section_state.gd")
+const PANEL := Color(0.064, 0.042, 0.032, 0.96)
 const LOW := Color("#ffab75")
 const LOST := Color("#ffb4a3")
 const LOST_TRACK := Color("#74382f")
@@ -83,7 +84,7 @@ func _draw() -> void:
 	var bounds := Rect2(Vector2.ZERO, size)
 	var is_up: bool = state["up"]
 	var edge := GS.MAP_EMBER if is_up else (GS.TEXT3 if state["friend"] else GS.TEXT2)
-	draw_rect(bounds, Color(0.064, 0.042, 0.032, 0.96))
+	draw_rect(bounds, PANEL)
 	draw_rect(Rect2(0, 0, maxf(1.0, _px(2)), size.y), Color(edge, 1.0 if is_up else 0.60))
 	if expanded:
 		draw_rect(bounds, Color(edge, 0.32), false, 1.0)

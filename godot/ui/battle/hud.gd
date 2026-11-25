@@ -887,21 +887,6 @@ func hud_blockers() -> Array:
 	return out
 
 
-# for the trace: visible plates that overlap another visible plate (0 after the declutter)
-func plate_name_overlaps() -> int:
-	var rs: Array = []
-	for id in plates:
-		var c: Control = plates[id]
-		if c.visible:
-			rs.append(c.get_rect())
-	var n := 0
-	for i in rs.size():
-		for j in range(i + 1, rs.size()):
-			if (rs[i] as Rect2).intersects(rs[j]):
-				n += 1
-	return n
-
-
 # for the trace: visible ship plates that sit under a HUD panel
 func plate_names_under_panels() -> int:
 	var blockers := hud_blockers()

@@ -147,7 +147,7 @@ func _round_three(b) -> void:
 	for id in layer.plates:
 		shown += int(layer.plates[id].visible)
 	_check(shown == ships and layer.hidden_count == 0, "packed fleet places all %d recorded ships' plates" % shown)
-	_check(b.hud.plate_name_overlaps() == 0 and b.hud.plate_names_under_panels() == 0, "camera 170 has no plate or HUD intersections")
+	_check(layer.overlap_count() == 0 and b.hud.plate_names_under_panels() == 0, "camera 170 has no plate or HUD intersections")
 	_check(_visible_crossings(b) == 0, "adjacent ships %s no longer have crossing visible marks" % str(pair))
 	var selected: Plate = layer.plates.get(b.sel)
 	if selected != null and selected.visible:
@@ -174,7 +174,7 @@ func _round_three(b) -> void:
 		if standing != null:
 			var point := standing.get_rect().get_center()
 			b._ship_plates(vs, point, true)
-			_check(standing.expanded and not standing.collapsed and b.hud.plate_name_overlaps() == 0,
+			_check(standing.expanded and not standing.collapsed and layer.overlap_count() == 0,
 				"pointing at the actual plate expands it without overlap")
 	else:
 		_check(false, "round 3 has a visible selected plate")

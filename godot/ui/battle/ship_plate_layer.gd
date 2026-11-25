@@ -61,6 +61,19 @@ func hovered_ship(at: Vector2) -> String:
 	return _hover_id
 
 
+func overlap_count() -> int:
+	var rects: Array[Rect2] = []
+	for p: Plate in plates.values():
+		if p.visible:
+			rects.append(p.get_rect())
+	var count := 0
+	for i in rects.size():
+		for j in range(i + 1, rects.size()):
+			if rects[i].intersects(rects[j]):
+				count += 1
+	return count
+
+
 func place(blockers: Array, viewport_size: Vector2, k: float, target_box := Rect2()) -> void:
 	var gap := maxf(3.0, 5.0 * k)
 	var area := Rect2(Vector2.ONE * gap, viewport_size - Vector2.ONE * gap * 2.0)
