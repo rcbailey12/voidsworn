@@ -1,4 +1,5 @@
 extends RefCounted
+const SKEEP := preload("res://render/shader_keep.gd")
 # Issue 1434 (LOAD22): a mesh's first draw makes its pipelines ("mesh" pipelines, up to 40 ms each on a cold profile),
 # so a load that adds a station and its 34 debris pieces, or a battle's effect pools, pays all of them in one draw (the
 # title backdrop's 852 ms warm and 1651 ms cold frames). While a sliced load runs, every new mesh under `root` is put on
@@ -7,8 +8,8 @@ extends RefCounted
 # pipelines. The battle drains the queue while its camera is pulled back over the whole board (scenes/battle/battle.gd
 # _warmup), so each mesh's first draw is in view, and stops watching before the effect warm-up, which spreads its own.
 #
-# Only the instance ids are held; a mesh freed while waiting simply drops out. Nothing in a battle sets `layers`
-# (the campaign map does, but it never runs under a battle), so a staged mesh's layers are its own until given back.
+# Only the instance ids are held; a mesh freed while waiting simply drops out. The rim watcher changes
+# the saved layers, not the staging mask, so it cannot make a waiting painted mesh draw early.
 
 const BIT := 1 << 19          # render layer 20: never drawn by the battle camera or its lights
 const META := &"stage_in_layers"
@@ -21,6 +22,7 @@ var active := false
 var paused := false           # true while the effect warm-up runs (it spreads its own meshes)
 var step := 1                 # new-material meshes given back after the next draw (LOAD23: starting at 2 and growing on
                               # empty draws let all four effect pools out at once, 36 pipelines in a 1.3 s title frame)
+var max_step := MAX_STEP
 var cam: Camera3D = null      # Artoo on PR 1445: a new material comes back only on a mesh the camera sees, so it is drawn
 var draining := false         # in the drain (camera pulled back over the board) every waiting mesh may come back
 var _fresh_last := 0          # new-material meshes the last draw showed for the first time
@@ -31,6 +33,156 @@ var _queue: Array = []        # instance ids, oldest first
 var _seen := {}               # material and format key -> true, already given back once
 var _pre_us := 0
 var _draw_ms := 0.0
+var _warmed := {}            # shader variant, vertex layout and pass, local to this build
+
+
+# Forward+ prepares surface pipelines even outside a camera's layers. Present a tiny triangle with
+# the real vertex layout and material before the real mesh enters the scenario.
+func warm_meshes(host: Node3D, nodes: Array, label: String, keep_going := Callable(), lit := false) -> bool:
+	if DisplayServer.get_name() == "headless" or RenderingServer.get_current_rendering_method() != "forward_plus":
+		return true
+	# Directional shadow culling also checks the drawing camera's mask in Godot 4.7. Use
+	# a private viewport whose camera and light both see layer 20. The live camera and
+	# shadow atlas never see these triangles, and regular stage-in stays untouched.
+	var viewport: SubViewport = _warm_viewport(host) if lit else null
+	var warm := MeshInstance3D.new()
+	warm.name = "PipelineWarm"
+	warm.layers = BIT
+	warm.scale = Vector3.ONE * (0.3 if lit else 0.001)
+	warm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if lit else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	warm.set_meta(&"pipeline_warm", true)
+	if viewport != null:
+		viewport.add_child(warm)
+	else:
+		host.add_child(warm)
+	var cleanup: Node = viewport if viewport != null else warm
+	var tree := host.get_tree()
+	for source in nodes:
+		var mi := source as MeshInstance3D
+		var mesh := (mi.mesh if mi != null else source) as ArrayMesh
+		if mesh == null or (mi != null and mi.skin != null) or mesh.get_blend_shape_count() > 0:
+			continue
+		for surface in mesh.get_surface_count():
+			var fmt := mesh.surface_get_format(surface)
+			if mesh.surface_get_primitive_type(surface) != Mesh.PRIMITIVE_TRIANGLES:
+				continue
+			var mat := mi.get_active_material(surface) if mi != null else mesh.surface_get_material(surface)
+			if mat == null:
+				continue
+			var key := "%s:%d:%s" % [_warm_material_key(mat), fmt, lit]
+			if _warmed.has(key):
+				continue
+			var proxy := _triangle(fmt)
+			if proxy == null:
+				continue
+			warm.mesh = proxy
+			warm.material_override = mat
+			if viewport != null:
+				viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+			SKEEP.event("%s warm %s surface %d/%d (%s fmt %x)" % [
+				label, mi.name if mi != null else mesh.resource_name, surface, mesh.get_surface_count(), _warm_shader_name(mat), fmt])
+			await tree.process_frame
+			if (not is_instance_valid(warm) or not is_instance_valid(host) or not host.is_inside_tree() or not host.can_process()
+					or host.is_queued_for_deletion() or (keep_going.is_valid() and not keep_going.call())):
+				if is_instance_valid(cleanup):
+					cleanup.queue_free()
+				return false
+			_warmed[key] = true
+	cleanup.queue_free()
+	return true
+
+
+static func _warm_viewport(host: Node3D) -> SubViewport:
+	var source := host.get_viewport()
+	var vp := SubViewport.new()
+	vp.size = Vector2i(64, 64)
+	vp.world_3d = World3D.new()
+	vp.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	vp.msaa_3d = source.msaa_3d
+	vp.screen_space_aa = source.screen_space_aa
+	vp.use_taa = source.use_taa
+	vp.scaling_3d_mode = source.scaling_3d_mode
+	vp.scaling_3d_scale = source.scaling_3d_scale
+	host.add_child(vp)
+	var camera := Camera3D.new()
+	camera.cull_mask = BIT
+	camera.environment = host.get_world_3d().environment
+	camera.position = Vector3(0, 0, 2)
+	vp.add_child(camera)
+	camera.make_current()
+	var light := DirectionalLight3D.new()
+	light.set_meta(&"pipeline_warm", true)
+	light.light_cull_mask = BIT
+	light.shadow_caster_mask = BIT
+	light.shadow_enabled = true
+	vp.add_child(light)
+	return vp
+
+
+# The PSO needs the vertex layout, not the authored data. Skip unusual formats instead of
+# guessing at skin, custom attribute or 2D layouts. Those meshes still go through stage-in.
+static func _triangle(fmt: int) -> ArrayMesh:
+	var supported := (Mesh.ARRAY_FORMAT_VERTEX | Mesh.ARRAY_FORMAT_NORMAL | Mesh.ARRAY_FORMAT_TANGENT
+		| Mesh.ARRAY_FORMAT_COLOR | Mesh.ARRAY_FORMAT_TEX_UV | Mesh.ARRAY_FORMAT_TEX_UV2 | Mesh.ARRAY_FORMAT_INDEX)
+	if (fmt & ((1 << Mesh.ARRAY_MAX) - 1) & ~supported) or (fmt & Mesh.ARRAY_FLAG_USE_2D_VERTICES):
+		return null
+	var a := []
+	a.resize(Mesh.ARRAY_MAX)
+	a[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3.ZERO, Vector3.RIGHT, Vector3(0, 1, 0.1)])
+	if fmt & Mesh.ARRAY_FORMAT_NORMAL:
+		a[Mesh.ARRAY_NORMAL] = PackedVector3Array([Vector3.BACK, Vector3.BACK, Vector3.BACK])
+	if fmt & Mesh.ARRAY_FORMAT_TANGENT:
+		a[Mesh.ARRAY_TANGENT] = PackedFloat32Array([1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1])
+	if fmt & Mesh.ARRAY_FORMAT_COLOR:
+		a[Mesh.ARRAY_COLOR] = PackedColorArray([Color.WHITE, Color.WHITE, Color.WHITE])
+	for slot in [Mesh.ARRAY_TEX_UV, Mesh.ARRAY_TEX_UV2]:
+		if fmt & (1 << slot):
+			a[slot] = PackedVector2Array([Vector2.ZERO, Vector2.RIGHT, Vector2.DOWN])
+	if fmt & Mesh.ARRAY_FORMAT_INDEX:
+		a[Mesh.ARRAY_INDEX] = PackedInt32Array([0, 1, 2])
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a, [], {}, fmt & Mesh.ARRAY_FLAG_COMPRESS_ATTRIBUTES)
+	return mesh if mesh.get_surface_count() == 1 else null
+
+
+static func _warm_material_key(m: Material) -> String:
+	var key := shader_sig(m) if m is BaseMaterial3D else _mat_key(m)
+	if m is BaseMaterial3D and m.next_pass != null:
+		key += "+" + _warm_material_key(m.next_pass)
+	return key
+
+
+static func _warm_shader_name(m: Material) -> String:
+	if m is ShaderMaterial and m.shader != null:
+		return "%s %08x" % [m.resource_name, m.shader.code.hash() & 0xffffffff]
+	if not m is BaseMaterial3D:
+		return m.get_class()
+	var bits := PackedStringArray()
+	for f in ["normal", "ao", "emission", "rim", "detail", "anisotropy", "clearcoat", "subsurf_scatter", "backlight"]:
+		if m.get(f + "_enabled") == true:
+			bits.append(f)
+	return "%s [%s] alpha %d" % [m.resource_name, ",".join(bits), m.transparency]
+
+
+# Material parameters (including fitted UV scale) don't make pipelines. The modes, features,
+# flags and texture presence do. This only deduplicates warm jobs, never replaces live materials.
+static func shader_sig(bm: BaseMaterial3D) -> String:
+	var p := PackedStringArray([bm.get_class(), str(bm.transparency), str(bm.blend_mode), str(bm.cull_mode),
+		str(bm.depth_draw_mode), str(bm.shading_mode), str(bm.diffuse_mode), str(bm.specular_mode), str(bm.texture_filter),
+		str(bm.billboard_mode), str(bm.detail_blend_mode), str(bm.detail_uv_layer), str(bm.distance_fade_mode),
+		str(bm.alpha_antialiasing_mode), str(bm.emission_operator), str(bm.texture_repeat),
+		str(bm.stencil_mode), str(bm.stencil_flags), str(bm.stencil_compare)])
+	var bits := ""
+	for f in BaseMaterial3D.FEATURE_MAX:
+		bits += "1" if bm.get_feature(f) else "0"
+	bits += "|"
+	for f in BaseMaterial3D.FLAG_MAX:
+		bits += "1" if bm.get_flag(f) else "0"
+	bits += "|"
+	for t in BaseMaterial3D.TEXTURE_MAX:
+		bits += "1" if bm.get_texture(t) != null else "0"
+	p.append(bits)
+	return ",".join(p)
 
 
 func start(r: Node) -> void:
@@ -55,6 +207,17 @@ static func hide_layer_from(cam: Camera3D, lights: Array) -> void:
 		if l is Light3D:
 			(l as Light3D).light_cull_mask &= ~BIT
 			(l as Light3D).shadow_caster_mask &= ~BIT
+
+
+static func visible_layers(g: GeometryInstance3D) -> int:
+	return int(g.get_meta(META)) if g.has_meta(META) and g.layers == BIT else g.layers
+
+
+static func add_visible_layer(g: GeometryInstance3D, mask: int) -> void:
+	if g.has_meta(META) and g.layers == BIT:
+		g.set_meta(META, visible_layers(g) | mask)
+	else:
+		g.layers |= mask
 
 
 # stop watching new meshes and give every waiting one back now (a load that ends or is stopped)
@@ -108,7 +271,7 @@ func _unhook() -> void:
 
 
 func _added(n: Node) -> void:
-	if root == null or not is_instance_valid(root) or not root.is_ancestor_of(n):
+	if root == null or not is_instance_valid(root) or not root.is_ancestor_of(n) or n.has_meta(&"pipeline_warm"):
 		return
 	if n is Light3D:
 		hide_layer_from(null, [n])   # a light added during the load (the world's) never draws a waiting mesh either
@@ -136,7 +299,7 @@ func _on_post() -> void:
 		if _draw_ms > SLOW_MS:
 			step = 1
 		elif _draw_ms < QUICK_MS:
-			step = mini(MAX_STEP, step + 1)
+			step = mini(max_step, step + 1)
 	var fresh := 0
 	var keep: Array = []
 	for id in _queue:

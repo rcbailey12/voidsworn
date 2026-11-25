@@ -467,15 +467,41 @@ we don't run into the issues of before with just empty looking husks". What he w
   layered glass and light.
 - Hits, wounds, breaks and deaths use the insides where they exist (RULEBOOK 5.4, RULEBOOK 6.14, R416; `contrib/opus/plans/cohesive_damage_v2.md`).
   To keep the whole chain from ship build through weapons, hit wounds, capability losses and destruction singular and cohesive:
-  (1) **Blender Interior Kit V2 (issue 1743, R416 Layer 3):** upgrade `tools/blender/build_sheets/kit.py` (`K.room`, `K.deck`,
-  `K.bulkhead`, `K.organ_room`, `K.hoop`, `K.septum`) and `tools/blender/kits/ithar/hull.py` (`insides`) from plain untextured
-  chamfered boxes and flat slabs to modeled machinery, girdered decks, framed arch bulkheads, sculpted organic sacs/bone ribs,
-  and collared crystal waveguides, UV-mapped onto one shared per-faction interior trim atlas (`albedo`, `normal`, `orm`,
-  optional `emission`, reusing `tools/recipe/export7.py` shared trim support), verified by a cutaway review view in
-  `tools/blender/build_sheets/layout.py` and `tools/recipe/check_export.py` while keeping `surface_check.py` at 0 outside room
-  pixels; (2) **Active rebake contrast and palette fixes:** raise `INSIDE_TINT` from 0.18 toward 0.55 across `voidsworn`,
-  `hegemony`, `hullbreakers` and `eclipse` (`#1422`, `#1681`, `#1684`) and flip Eclipse `CORE_RGB` to violet (`#1422`, zero
-  green inside); runtime Wounds V2 (`#1741` Layers 1 + 2) immediately upgrades all 45 already-installed ships with a faction
+  (1) **Blender Interior Kit V2 (issue 1743, R416 Layer 3), built:** `Kit.finish()` runs
+  `tools/blender/build_sheets/interior_kit.py` on every sheet, so a rebake upgrades its insides with no sheet edit: reactor
+  vessels with containment rings, headers and core slits (`core`, `ecore`; the room around a reactor stops glowing all over),
+  turbine drums and manifolds (`engroom`), tube racks in retaining frames (`magazine`), equipment rack rows and risers
+  (`hrack`, `machinery`), gantry rails and roof trusses (`hangar`), ribbed bays with consoles, archive stacks or crates (every
+  other room; Eclipse bays take truss braces, never ribs), I-section girders and edge flanges under every deck, a collar,
+  stanchions and a framed arch on every bulkhead, and for the Chorus vascular ridges and sac lobes on organs, knobbed bone
+  struts between hoops and fibrous ridges on septa (no metal). The Glasswrights' prism nodes and lens collars are built in
+  `tools/blender/kits/ithar/hull.py` `insides()`. A piece furnishing a room stays inside the room's box; any other piece is
+  dropped whole when it comes within 0.006 of the ship's length of the skin; long pieces are cut into short runs so the death
+  cut tears them (R226). Every inside gets box UVs (one trim tile per 0.055 of the ship's length) and the mark `interior_kit = 2`.
+  Paint (stage 5) then gives each zone its role's material (R420, Ryan Nov 22; contrib/opus/plans/global_cohesion_standard.md
+  sections 3 and 6.1): the kit's zone colours and lights in `kit.py` (engroom orange, magazine red, vat lime and the rest) are
+  role tags only. `interior_trim.ZONE_ROLE` maps every zone to a role (wall, deck, frame, machinery, core, organ, gland, bone,
+  glass, glass_strut; an unknown zone stops the paint), and the faction's `interior` block in `godot/fx/faction_looks.json`
+  (one table for Blender and the game) gives each role's colour, which roles stay unlit, the strip strength, the core light,
+  the glow and the area light budget; the stack only picks the trim set per role (`interior_trim.py`: panels, flesh, bone,
+  glass; albedo, ORM, normal, emission). Rooms
+  differ by their modeled pieces, roughness and panel contrast, and a fixed per-zone shift of at most 15 percent, never by
+  colour coding. Shared budgets: every role but bone and glass at most 0.11 linear albedo (`WALL_MAX`), trim light at most
+  0.25 area weighted (`EMISSION_AREA_MAX`), and only the core keeps a constant light. The values match the 1741 breach interior
+  (faction_looks.json `wound`). Chorus bone is dry ochre-ivory with no glow and its tissue deep wet crimson-umber with a few
+  dim olive-amber pores (Ryan, Nov 22, insides only; the hull keeps its olive hide); the Directorate is cool brushed steel-slate
+  with blue strips. Stage 7 writes one `<CODE>_inside_<style>_<key>_*` set per trim style, records each interior map's
+  measured mean and copies each room material's role into the contract as `interior_roles` (Godot's glTF import drops material
+  extras; the game's breach shader reads this, PR 1755), and `check_export.py` fails a V2 export with a room surface without UVs, a painted room material without the
+  trim maps or without its `interior_role`, a role that does not match its zone, a room off its faction's table, a wall over the
+  ceiling, a non-core constant light, a lit unlit role or trim light over the faction's budget, a Chorus room with metal,
+  magenta, neon lime or glowing bone, a Glasswright room with metal, or an Eclipse room whose green is not its lowest channel;
+  interior triangles over 45 percent of the ship are reported, never a fail (rule 3.9). Review the result with
+  `python tools/blender/build_sheets/cutaway.py <blend> <out> "<title>"` (centreline section, plan section, close cutaway;
+  stamped with revision and stage), on the stage 4 build or the painted stage 5 blend; the build sheet's own cutaway view shows
+  the modeled pieces too; `cutaway_lineup.py OUT "<title>" <blends>` puts the six reference ships on one strip at one exposure (R420). (2) **Palette
+  and core:** a legacy (non-V2) paint keeps its old `INSIDE_TINT`; the Eclipse inside core takes violet-white from
+  `faction_looks.json` (zero green inside), and `#1422` flips `CORE_RGB` itself for the hull; runtime Wounds V2 (`#1741` Layers 1 + 2) immediately upgrades all 45 already-installed ships with a faction
   triplanar PBR interior shader and breach-mouth 3D dressing without waiting on rebakes; (3) **Exact hardpoint/slot tags:**
   keep weapon hard points (`hp_w<slot>_*`), turning turret nodes (`turret_*`), engine nozzles (`hp_eng_*`) and bay doors
   (`door_*`) accurately tagged by slot and section, because live capability-loss damage reads those exact nodes when weapons,
