@@ -830,7 +830,7 @@ static func _old_look(fx) -> bool:
 # keeps a bright forward flash and a few sparks with almost no ball, and a hull hit is a tight jet on the surface normal.
 # w is the weapon weight (1 light, 2 medium, 3 heavy), kept so the muzzle callers pass one shape.
 static func _vent(fx, p: Vector3, axis: Vector3, T: float, size: float, life: float, col: Color, strength := 0.8,
-		velocity := Vector3.ZERO, opacity := 0.55, aspect := 1.0, w := 2, src = null, hull_contact := false) -> void:
+		velocity := Vector3.ZERO, opacity := 0.55, aspect := 1.0, w := 2, src = null, hull_contact := false, with_sparks := true) -> void:
 	fx.record_spawn(src, p, true)
 	if String(fx.vent_look) == "today":
 		_burst(fx, p, axis, T, size, "vent", life, col, strength, 0.0, velocity, opacity, aspect)
@@ -844,8 +844,9 @@ static func _vent(fx, p: Vector3, axis: Vector3, T: float, size: float, life: fl
 		_burst(fx, p + axis * reach * u, axis, T + u * 0.02, size * (0.06 + 0.27 * taper), "vent",
 			life * (0.45 + 0.20 * u), col, strength * (0.80 - 0.25 * u), 0.0, velocity * (1.0 + 0.5 * u),
 			opacity * (0.45 - 0.25 * u), 2.0 + u * 2.0)
-	_impact_sparks(fx, p, axis, T + 0.02, size * 0.35, _spark_faction(src), 10, 18.0,
-		fx.SparkRole.HULL if hull_contact else fx.SparkRole.WEAPON)
+	if with_sparks:
+		_impact_sparks(fx, p, axis, T + 0.02, size * 0.35, _spark_faction(src), 10, 18.0,
+			fx.SparkRole.HULL if hull_contact else fx.SparkRole.WEAPON)
 
 
 # Without a ship (for example a bench world-point impact), use the default faction palette.
@@ -2126,7 +2127,7 @@ static func _embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, 
 		var d := _outward(n, fx.rcone(n, 0.85), 0.2)
 		var v: Vector3 = d * fx.rng.randf_range(0.6, 3.2) * k * fx.unit
 		var life: float = fx.rng.randf_range(EMBER_LIFE.x, EMBER_LIFE.y)
-		fx.spr(p, T + fx.rng.randf() * 0.12, life, col, 1.6, 0.18 * k, 0.09 * k, 19, v, 0.5, 0.0, 0.0, 6.0)
+		fx.spr(p, T + fx.rng.randf() * 0.12, life, col, 1.6, 0.18 * k, 0.09 * k, fx.HOT_FLECK_SPRITE, v, 0.5, 0.0, 0.0, 6.0)
 		_note(fx, "ember", fam, v, n, life)
 
 
@@ -2243,7 +2244,7 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		_energy_hit(fx, lk, w, Tg, tg, T, col, dir, matter_k)
 	else:
 		_shell_hit(fx, lk, w, Tg, tg, T, col, dir, matter_k)
-	if crit: _crit(fx, Tg, tg, T + CRIT_BEAT, k, col, w)
+	if crit: _crit(fx, Tg, tg, T + CRIT_BEAT, k, col, w, not bio)
 
 
 # Issue 461, the shell row (macro, autocannon, scatter, strike craft guns, flak): a short white bite on the plate, then a
@@ -2293,6 +2294,11 @@ static func _energy_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 	var run: Vector3 = (dir - n * dir.dot(n))
 	run = run.normalized() if run.length() > 0.05 else t1
 	if response.fire_body or response.debris == "glass":
+		# Plasma leaves blue slag on metal. Obsidian and glass keep their own response.
+		var slag_tint := Color.TRANSPARENT
+		if response.get("hot_plate", false):
+			if lk == "plasma": slag_tint = PLASMA_HOT
+			elif lk == "plasma_cannon": slag_tint = col
 		var scale := _spark_size(k)
 		for j in _amount(fx, roundi((9 + 4 * w) * scale)):
 			var a: float = fx.rng.randf() * TAU
@@ -2301,7 +2307,7 @@ static func _energy_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 			var v: Vector3 = d * fx.rng.randf_range(5.0, 13.0) * k * fx.unit
 			var life: float = clampf(fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y) * scale, SPARK_LIFE.x, SPARK_LIFE.y)
 			fx.spark(p + n * 0.05 * k, T + fx.rng.randf() * 0.03, life, _spark_faction(Tg),
-				2.0, 0.12 * scale, 0.045 * k, v, 1.8, 2.0, 5.0)
+				2.0, 0.12 * scale, 0.045 * k, v, 1.8, 2.0, 5.0, fx.SparkRole.HULL, slag_tint)
 			_note(fx, "spark", "energy", v, n, life)
 	_impact_embers(fx, p + n * 0.1 * k, n, T + 0.08, k, 4 + w, "energy", response, Tg, col * 0.35)
 	if lk in ["prism", "mflak"] and response.debris != "drop":
@@ -2526,7 +2532,7 @@ static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, l
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	var px: float = 28.0 * float(tg.get("gk", 1.0)) * float(tg.get("tk", 1.0))
 	_burst(fx,p+n*0.3*k,n,T,4.5*k,"flash",0.35,col,1.4,px)
-	_vent(fx,p+n*0.4*k,n,T,5.0*k,0.65,col,0.8,n*3.0*k,0.65,1.0,w,Tg,true)
+	_vent(fx,p+n*0.4*k,n,T,5.0*k,0.65,col,0.8,n*3.0*k,0.65,1.0,w,Tg,true,false)
 	for j in 8:
 		var d := _outward(n, fx.rcone(n,0.9), 0.2)
 		var v: Vector3 = d*fx.rng.randf_range(3.0,7.0)*k
@@ -2718,18 +2724,18 @@ static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, sta
 	fx.shake(T,0.4,p); fx.hit_pause(T,4); fx.punch(T,0.012,p)
 
 
-static func _crit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, w := 2) -> void:
+static func _crit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, w := 2, with_sparks := true) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	var response := _impact_response(Tg)
 	var faction_glow: Color = Tg.fac.damage_glow if Tg != null else col
 	var glow := _impact_color(response, Tg, faction_glow)
 	_impact_flash(fx, Tg, p, n, T, k, 6.0 * k, 0.25, glow, 40.0, response, 0.5 * k)
 	if response.get("hot_plate", false):
-		_vent(fx,p+n*k,n,T+0.05,6.0*k,0.45,glow,0.8,n*5.0*k,0.6,1.0,w,Tg,true)
+		_vent(fx,p+n*k,n,T+0.05,6.0*k,0.45,glow,0.8,n*5.0*k,0.6,1.0,w,Tg,true,with_sparks)
 	elif response.debris == "drop":
 		_impact_gas(fx, p + n * k, n, T + 0.05, k, Color.BLACK, 2, 2.4, "shell", 0.3, response)
 	fx.spr(p + n * 0.75 * k, T + 0.04, 0.34, glow, 2.1, 2.0 * k, 0.7 * k, 13, n * 2.0 * k, 0.0, 0.0, 0.0, 25.0)
-	if response.debris != "drop":
+	if with_sparks and response.debris != "drop":
 		_throw_sparks(fx, p, n, n, T, k * 1.2, _spark_faction(Tg), 10, 18.0, 0.8, "shell")
 	_throw_debris(fx,p,n,n,T,k,3,8.0,0.2,0.8,"shell",Tg.faction if Tg != null else "metal",false,Tg)
 	fx.light(p+n*2.0*k,T,0.3,7.5,glow,0)

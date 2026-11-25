@@ -3126,7 +3126,7 @@ static func _groan(fx, s, i: int) -> void:
 	if fx.quality != "low":
 		for k in 5:
 			var d: Vector3 = (nw + fx.rdir() * 0.6).normalized()
-			fx.spark(p, fx.now, 0.32 + 0.1 * fx.rng.randf(), s.faction, 2.6, L * 0.018, 0.035, inherited + d * L * fx.rng.randf_range(0.25, 0.45), 1.6, 1.5, 6.0, fx.SparkRole.DEATH)
+			fx.spark(p, fx.now, 0.32 + 0.1 * fx.rng.randf(), s.faction, 2.6, 0.045, 0.035, inherited + d * L * fx.rng.randf_range(0.25, 0.45), 1.6, 1.5, 6.0, fx.SparkRole.DEATH)
 		# (Ryan on pass 4B, "way too much smoke": the groans keep their sparks, the breath of gas is gone)
 	if i % 2 == 1:
 		_spawn_ship_debris(fx, s, p + nw * L * 0.015, inherited + nw * L * 0.05, 1, L * 0.008, 0.9)
@@ -3972,7 +3972,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		# without buckets, or a cut job not ready) still throws one pooled physical shard and a visible ember, never light
 		# and smoke alone.
 		_spawn_ship_debris(fx, s, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0)
-		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, 19, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
+		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, fx.HOT_FLECK_SPRITE, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
 
 
 # Issue 484: the bite's fragments and the chips along the break, as real pieces of the hull (capped, glowing faces,
@@ -4083,7 +4083,7 @@ static func _organic_spill(fx, p: Vector3, L: float, tint: Color) -> void:
 		var dir := Vector3(cos(angle), fx.rng.randf_range(0.0, 0.12), sin(angle))
 		var speed: float = L * fx.rng.randf_range(0.2, 0.45)
 		fx.spr(p, fx.now, 1.0 + fx.rng.randf() * 0.8, tint, 1.5,
-			L * 0.018, L * 0.006, 19, dir * speed, 0.5, 0.0, 0.0, 6.0)
+			L * 0.018, L * 0.006, 15, dir * speed, 0.5, 0.0, 0.0, 6.0)
 		if i % 2 == 0:
 			fx.spr(p, fx.now, 1.4, tint * Color(0.24, 0.3, 0.18), 0.65,
 				L * 0.025, L * 0.06, 20, dir * speed * 0.65, 0.7)

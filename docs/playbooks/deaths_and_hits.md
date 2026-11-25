@@ -416,9 +416,11 @@ longer-lived sparks. Tune on the 170 battle camera first, then check that the ma
 tapered at camera 26.
 
 Use the struck hull's look for hull damage and the shooter's look for discharge or flak. Sunward,
-the Directorate and the Hullbreakers keep their own colours. Eclipse sparks in its damage violet.
+the Directorate and the Hullbreakers keep their own colours. Eclipse sparks in its damage violet,
+with white-gold embers on its engines. Plasma throws blue slag off metal plates.
 Glasswrights throw compact cool glints, never orange sparks or red embers. Chorus wounds and
-weapons keep their wet flecks and spores. A shield that holds keeps the ripple and local electrical
+weapons keep their wet flecks and spores. A bio hit does not throw metal sparks, even on a crit.
+A shield that holds keeps the ripple and local electrical
 response, with no thrown spark spray. This does not change the flash budget, weapon tracers,
 hull fragments or lingering coals.
 

@@ -380,7 +380,7 @@ static func roll_end(fx, s, p: Vector3, inherited: Vector3) -> void:
 	# a short counted flash (the staging rule's core beat, small), refused in calm mode like every other
 	if fx.flash_at(p, fx.now, L * 0.45, 40.0, 0.10):
 		fx.light(p, fx.now, 0.10, 2.5, col, 1)
-		fx.spr(p, fx.now, 0.12, col.lerp(Color.WHITE, 0.5), 2.0, L * 0.05, L * 0.12, 19)
+		fx.spr(p, fx.now, 0.12, col.lerp(Color.WHITE, 0.5), 2.0, L * 0.05, L * 0.12, fx.HOT_FLECK_SPRITE)
 	note(s, "roll_end")
 
 

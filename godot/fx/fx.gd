@@ -811,13 +811,26 @@ func flight_streak(p: Vector3, t: float, life: float, col: Color, i: float, leng
 enum SparkRole { HULL, DEATH, SHIELD, ENGINE, WEAPON }
 
 const SPARK_KIND := 8
+# Reserved sprite for cooling coals and stationary glow, not thrown sparks.
+const HOT_FLECK_SPRITE := 19
+
+
+# Keep older callers working. Flight kinds keep their own path, but retired spark
+# kinds use the shared spark mask with the caller's original tint and blur time.
+func stk(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
+		drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
+	if kind in [1, 7, SPARK_KIND]:
+		spark(p, t, life, FLOOK.FALLBACK, i, length, w, vel, drag, wpx, lpx, SparkRole.HULL, col)
+	else:
+		flight_streak(p, t, life, col, i, length, w, kind, vel, drag, acc, wpx, lpx)
 
 
 static func spark_colour(faction: String, role := SparkRole.HULL) -> Color:
 	var look := FLOOK.of(faction)
 	match int(look.get("wound_kind", 0)):
 		1: return Color.TRANSPARENT # Living tissue throws droplets and spores, never sparks.
-		3: return look["damage_glow"]
+		3:
+			return look.get("accent", look["damage_glow"]) if role == SparkRole.ENGINE else look["damage_glow"]
 		2: return FLOOK.death_spark(faction)
 	match role:
 		SparkRole.DEATH: return FLOOK.death_spark(faction)
@@ -830,20 +843,23 @@ static func spark_colour(faction: String, role := SparkRole.HULL) -> Color:
 # Shutter is a length of motion history in effect seconds. Velocity is in world units/s.
 # Pixel floors describe the whole soft mask, not the hot core.
 func spark(p: Vector3, t: float, life: float, faction: String, intensity: float, shutter: float, width: float,
-		vel: Vector3, drag := 0.0, wpx := 0.0, lpx := 0.0, role := SparkRole.HULL) -> void:
+		vel: Vector3, drag := 0.0, wpx := 0.0, lpx := 0.0, role := SparkRole.HULL, tint := Color.TRANSPARENT) -> void:
 	if closed or not p.is_finite() or not vel.is_finite() or life <= 0.0 or intensity <= 0.0:
 		return
-	var data := spark_particle(p, t, life, faction, intensity, shutter, width * unit, vel, drag, wpx, lpx, role)
+	var data := spark_particle(p, t, life, faction, intensity, shutter, width * unit, vel, drag, wpx, lpx, role, 0.0, tint)
 	if not data.is_empty():
 		(pools["stk"] as POOLS.Pool).emit(data)
 
 
 # The idle drive uses these same attributes in a looping hull-local batch.
 static func spark_particle(p: Vector3, t: float, life: float, faction: String, intensity: float, shutter: float,
-		width: float, vel: Vector3, drag: float, wpx: float, lpx: float, role: int, period := 0.0) -> PackedFloat32Array:
+		width: float, vel: Vector3, drag: float, wpx: float, lpx: float, role: int, period := 0.0,
+		tint := Color.TRANSPARENT) -> PackedFloat32Array:
 	var col := spark_colour(faction, role)
 	if col.a <= 0.0:
 		return PackedFloat32Array()
+	if tint.a > 0.0:
+		col = tint
 	var glass := 1.0 if int(FLOOK.of(faction).get("wound_kind", 0)) == 2 else 0.0
 	return POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
 		Vector4(col.r, col.g, col.b, intensity), Vector4(clampf(shutter, 0.015, 0.20), width, maxf(drag, 0.0), SPARK_KIND),
@@ -851,8 +867,8 @@ static func spark_particle(p: Vector3, t: float, life: float, faction: String, i
 
 
 # ShipView supplies the existing movement scatter, on this same battle clock and pool.
-func _thrust_spark(p: Vector3, life: float, faction: String, width: float, vel: Vector3) -> void:
-	spark(p, now, life, faction, 2.0, 0.045, width, vel, 2.0, 0.0, 0.0, SparkRole.ENGINE)
+func _thrust_spark(p: Vector3, life: float, faction: String, world_width: float, vel: Vector3) -> void:
+	spark(p, now, life, faction, 2.0, 0.045, world_width / maxf(unit, 1e-4), vel, 2.0, 0.0, 0.0, SparkRole.ENGINE)
 
 
 func shot_pass_by(at: float, p: Vector3) -> void:

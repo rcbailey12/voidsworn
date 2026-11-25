@@ -29,16 +29,19 @@ func _scan(folder: String, legacy: RegEx) -> void:
 			continue
 		var path := folder.path_join(file)
 		var lines := FileAccess.get_file_as_string(path).split("\n")
-		var found := PackedStringArray()
 		for i in lines.size():
-			# Comments may mention migration history.
-			if legacy.search(lines[i].get_slice("#", 0)) != null:
-				found.append(str(i + 1))
+			lines[i] = lines[i].get_slice("#", 0) # Comments may mention migration history.
+		var source := "\n".join(lines)
+		var found := PackedStringArray()
+		for hit in legacy.search_all(source):
+			found.append(str(source.left(hit.get_start()).count("\n") + 1))
 		_check(found.is_empty(), "%s:%s still uses a retired spark path" % [path, ",".join(found)])
 
 
 func _run() -> void:
-	var legacy := RegEx.create_from_string("\\bstk\\s*[(]|fx_tear_sparks|death_spark_mesh|\"style\"\\s*:\\s*\"spark\"")
+	# Sprite kind 19 is reserved for the existing slow coals and stationary glow.
+	var legacy := RegEx.create_from_string("fx_tear_sparks|death_spark_mesh|\"style\"\\s*:\\s*\"spark\""
+		+ "|\\bsprx?\\s*[(](?:[^\\n]*,[ \\t\\r]*\\n)*[^\\n]*,\\s*19\\s*[,)]")
 	if legacy == null:
 		printerr("FAIL shared sparks: cannot build source guard")
 		quit(1)
@@ -65,6 +68,8 @@ func _run() -> void:
 			var raw: Array = look["damage_glow"]
 			if faction == "ithar" or (role == FX.SparkRole.DEATH and faction != "deathless"):
 				raw = look["death"]["spark"]
+			elif faction == "deathless" and role == FX.SparkRole.ENGINE:
+				raw = look["accent"]
 			elif faction != "deathless":
 				match role:
 					FX.SparkRole.SHIELD: raw = look["shield"]
@@ -83,6 +88,9 @@ func _run() -> void:
 			_check(is_equal_approx(a[7], 1.5) and is_equal_approx(a[11], 0.7) and is_equal_approx(a[17], 0.12),
 				label + " uses effect seconds and world units")
 	_check(glow.emitted == 0, "shared sparks do not add a second sprite")
+	_check_compatibility(fx, streaks, p, v)
+	_check_hull_hits(fx, streaks, p)
+	_check_chorus_wound(fx, streaks)
 	var small := _shell_burst(fx, streaks, p, 0.5)
 	var heavy := _shell_burst(fx, streaks, p, 1.75)
 	_check(heavy.x > small.x and heavy.y > small.y and heavy.z > small.z,
@@ -98,6 +106,59 @@ func _run() -> void:
 	FX.clear_static()
 	print("SHARED_SPARK %s: %d checks, %d failures" % ["PASS" if failures == 0 else "FAIL", checks, failures])
 	quit(0 if failures == 0 else 1)
+
+
+func _check_compatibility(fx, pool: POOLS.Pool, p: Vector3, v: Vector3) -> void:
+	var start: int = pool.pending.size()
+	var col := Color(0.3, 0.5, 0.7)
+	fx.stk(p, 1.5, 0.7, col, 2.0, 0.08, 0.07, 1, v)
+	_check(pool.pending[start + 19] == FX.SPARK_KIND
+		and Vector3(pool.pending[start + 12], pool.pending[start + 13], pool.pending[start + 14]).is_equal_approx(Vector3(col.r, col.g, col.b)),
+		"legacy spark uses the shared mask and keeps its tint")
+	start = pool.pending.size()
+	fx.stk(p, 1.5, 0.7, col, 2.0, 4.8, 0.07, 0, v)
+	_check(pool.pending[start + 19] == 0.0 and is_equal_approx(pool.pending[start + 16], 4.8),
+		"legacy Nova and warp flight kind keeps its world length and mask")
+	start = pool.pending.size()
+	fx._thrust_spark(p, 0.5, "corsair", 0.28, v)
+	_check(is_equal_approx(pool.pending[start + 17], 0.28), "ShipView grit width is already in world units")
+
+
+func _check_hull_hits(fx, pool: POOLS.Pool, p: Vector3) -> void:
+	var contact := {"p": p, "n": Vector3.UP}
+	var ship := FX.SHIP.new()
+	ship.root = Node3D.new()
+	root.add_child(ship.root)
+	ship.fac = fx.faction_info(ship.faction)
+	ship.hull = FX.SHIP.HULL.new()
+	var before: int = pool.emitted
+	for crit in [false, true]:
+		WEAP._impact(fx, "spine", 2, ship, contact, 1.0, Color.GREEN, Vector3.RIGHT, {"hull": 8, "crit": crit}, 1.0, 0.15)
+		_check(pool.emitted == before, "bio hull hit (crit=%s) has no metal spark spray" % crit)
+	var start: int = pool.pending.size()
+	WEAP._energy_hit(fx, "plasma", 2, ship, contact, 2.0, Color.WHITE, Vector3.RIGHT, 1.0)
+	var slag := WEAP.PLASMA_HOT
+	_check(pool.emitted > before and pool.pending[start + 19] == FX.SPARK_KIND
+		and Vector3(pool.pending[start + 12], pool.pending[start + 13], pool.pending[start + 14]).is_equal_approx(Vector3(slag.r, slag.g, slag.b)),
+		"plasma on metal uses the shared mask with blue slag tint")
+	ship.root.free()
+
+
+func _check_chorus_wound(fx, pool: POOLS.Pool) -> void:
+	var ship := FX.SHIP.new()
+	ship.root = Node3D.new()
+	root.add_child(ship.root)
+	ship.faction = "chorus"
+	ship.wounds_v2 = false
+	ship.hull = FX.SHIP.HULL.new()
+	ship.hull.turrets.append({"xf": Transform3D.IDENTITY})
+	ship._jammed[1] = {"k": 0, "next": fx.now}
+	var sparks: int = pool.emitted
+	var lights: int = fx._lev.size()
+	ship._wound_step(fx)
+	_check(ship._jammed[1]["next"] > fx.now and pool.emitted == sparks and fx._lev.size() == lights,
+		"Chorus jammed turret throws no sparks or spark light with Wounds V2 off")
+	ship.root.free()
 
 
 func _shell_burst(fx, pool: POOLS.Pool, p: Vector3, scale: float) -> Vector3:

@@ -2814,7 +2814,7 @@ func _gen_crackle(fx) -> void:
 	var p := p0
 	for j in 5:
 		var jag: Vector3 = (wt + wn * (fx.rng.randf() - 0.3) * 0.8).normalized()
-		fx.spark(p, fx.now + j * 0.02, 0.12 + 0.06 * fx.rng.randf(), faction, 4.0, step * 1.2, 0.05, jag * step * 6.0, 0.5, 0.0, 0.0, fx.SparkRole.SHIELD)
+		fx.spark(p, fx.now + j * 0.02, 0.12 + 0.06 * fx.rng.randf(), faction, 4.0, 0.05, 0.05, jag * step * 6.0, 0.5, 0.0, 0.0, fx.SparkRole.SHIELD)
 		p += jag * step
 	if not fx.reduce_flashing:
 		fx.light(p0, fx.now, 0.12, 0.9, col, 1)
@@ -2959,13 +2959,13 @@ func _wound_step(fx) -> void:
 			continue
 		jm["next"] = fx.now + 2.0 + fx.rng.randf() * 2.0
 		var k: int = jm["k"]
+		if faction == "chorus":
+			_wlog(["spark", k, fx.now])   # Flesh has no metal spark or spark light. The wisp carries the damage.
+			continue
 		var p := to_world((hull.turrets[k]["xf"] as Transform3D).origin)
 		var sc := Color(0.75, 0.85, 1.0)
 		if wounds_v2 and faction == "deathless":
 			sc = (fac["damage_glow"] as Color).lerp(Color.WHITE, 0.4)   # issue 1741: Eclipse sparks in its own violet
-		if wounds_v2 and faction == "chorus":
-			_wlog(["spark", k, fx.now])   # issue 1741 (R416 trap 2): flesh does not throw metal sparks; the wisp carries it
-			continue
 		for j in 4:
 			fx.spark(p, fx.now + fx.rng.randf() * 0.05, 0.2 + fx.rng.randf() * 0.15, faction, 4.0, 0.05, 0.08,
 				(fx.rdir() + Vector3.UP * 0.6).normalized() * hull.L * (0.08 + 0.06 * fx.rng.randf()), 2.0)

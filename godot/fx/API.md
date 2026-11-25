@@ -405,11 +405,12 @@ attached engine batches; they do not allocate textures per shot.
 
 ### Shared sparks (issue 2018)
 
-Use `fx.spark(p, t, life, faction, intensity, shutter, width, velocity, drag, wpx, lpx, role)` for thrown
+Use `fx.spark(p, t, life, faction, intensity, shutter, width, velocity, drag, wpx, lpx, role, tint)` for thrown
 sparks. `t` and `life` are effect seconds. `shutter` is how many seconds of motion the tapered tail can
 show, shortened as the spark cools. `p` and `velocity` are world-space. `width` uses the same `fx.unit`
 convention as the other primitives. `drag` defaults to zero and is in inverse seconds. Optional pixel
-floors describe the whole mask at 1080 lines, not the hot core.
+floors describe the whole mask at 1080 lines, not the hot core. The optional `tint` is for an approved
+effect colour such as plasma's blue slag on metal. It does not bypass the Chorus no-spark rule.
 
 The shared shader draws one camera-facing HDR streak with a small hot head, fading to the faction
 tint. Its tail samples the same gravity-free, drag-only path as the head. There is no floor or bounce.
@@ -420,12 +421,13 @@ existing nozzle power gates. They keep the original hull-local motion.
 
 The faction producing the spark owns its colour. For a hull hit pass the struck faction, and for a
 muzzle or airburst pass the firing faction. `SparkRole` defaults to `HULL` (`damage_glow`). The other
-roles use the matching death, shield, engine or weapon tint in `faction_looks.json`. Eclipse always
-uses `damage_glow`. The Glasswrights always use their stored-light tint and a compact, faceted glint.
-The Chorus throws no sparks. A shield that holds still gives its ripple and local arcs, with no
+roles use the matching death, shield, engine or weapon tint in `faction_looks.json`. Eclipse uses
+`damage_glow` except for its white-gold engine accent. The Glasswrights use their stored-light tint and a compact, faceted glint.
+Chorus tissue and bio splashes throw no metal sparks. A shield that holds still gives its ripple and local arcs, with no
 thrown spark spray. Shield breaks can throw sparks. No spark books a flash or spawns a light.
 
-Use `fx.flight_streak` for shot tracers and the separate organic droplet trail. Those still use their
+`fx.stk` remains a compatibility wrapper. Its retired spark kinds route to `fx.spark`, and its other
+kinds route to `fx.flight_streak`. Use `fx.flight_streak` for new shot tracers and organic droplet trails. Those still use their
 own baked mask and timing:
 
 | Streak kind | Default maximum projected length at 1080 | Default quad width floor at 1080 |
@@ -436,7 +438,7 @@ own baked mask and timing:
 | Las and prism dart | 32 px | 7 px |
 
 The geometry caps apply before bloom. `fx/test/shared_spark_check.gd` checks the live pool's faction
-colours, shield behaviour, and the absence of legacy flat spark calls.
+colours, shield behaviour, and guards against reintroducing low-res spark sprites.
 
 Both gauss emitters use `_gauss_wake`. Its tracer lasts `(2 - 0.001) / 60`
 seconds: two drawn samples on the 60 Hz clock, with the small epsilon preventing

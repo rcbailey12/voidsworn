@@ -12,6 +12,7 @@ rem   LB_HOME      the bench folder (default Downloads\voidsworn_test\look_bench
 rem   LB_TOOL_REF  where the bench script itself comes from (default origin/main): the bench runs from that version on
 rem                every commit, so commits made before the bench existed can be benched too
 rem   LB_ARGS      extra bench words, e.g. --part moments --moments res://bench/look_moments_acid_thorn.json (issue 1877)
+rem   LB_MOMENTS   full path to a rows file, runs only those moments on both revisions (overrides LB_ARGS)
 rem   LB_SHIPS     a godot folder that has the PC-built hulls (gen, assets\ships, .godot) to copy from (copy only)
 rem   LB_PRE_RUN   a .bat called with the game checkout's folder after checkout (bench proofs: change one number)
 rem   LB_RUN_NAME  the run folder name for AFTER instead of its commit (use with LB_PRE_RUN)
@@ -23,6 +24,13 @@ setlocal enabledelayedexpansion
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 if "%LB_HOME%"=="" set "LB_HOME=%VT%\look_bench"
 if "%LB_TOOL_REF%"=="" set "LB_TOOL_REF=origin/main"
+if defined LB_MOMENTS (
+  if not exist "%LB_MOMENTS%" (
+    echo FAILED: look bench rows file missing: "%LB_MOMENTS%"
+    exit /b 2
+  )
+  set LB_ARGS=--part moments --moments "%LB_MOMENTS%"
+)
 rem Built ships: the shared PC build (build\godot), else the old audit2 checkout. LB_SHIPS overrides both (issue 1223).
 if "%LB_SHIPS%"=="" if exist "%VT%\build\godot\gen" set "LB_SHIPS=%VT%\build\godot"
 if "%LB_SHIPS%"=="" set "LB_SHIPS=%VT%\audit2\repo\godot"
