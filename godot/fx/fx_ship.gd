@@ -115,6 +115,7 @@ var _ion_next := 0.0
 var _ion_until := -1.0
 var _acid_active := false
 var _acid_mist: POOLS.Pool
+var _acid_mist_start := -1.0
 var _acid_next := 0.0
 const ACID_SIZZLE_GAINS := [0.25, 0.125]
 var _sizzle_count := 0
@@ -1803,12 +1804,15 @@ func _status_step(fx) -> void:
 			_acid_mist.mi.queue_free()
 			_acid_mist = null
 		_acid_fallback.clear()
+		_acid_mist_start = -1.0
 		_acid_next = 0.0
 		_sizzle_count = 0
 		_sizzle_next = 0.0
 	elif fx.now >= _acid_next:
 		_acid_next = fx.now + 0.30
 		_emit_acid(fx)
+		if _acid_mist != null:
+			_acid_mist.flush()
 	if dead or not _ion_locked or _shield_fraction <= 0.0 or fx.now < _brk_until:
 		if _ion_until >= 0.0:
 			_shield_mat.set_shader_parameter("ion_arc", Vector2(-100.0, 0.0))
@@ -1846,6 +1850,23 @@ func _emit_acid(fx) -> void:
 		_acid_spot_index += 1
 		p = spot[0]
 		if spot.size() > 2: n = spot[2]
+	# The rules status can outlast the visible reaction. Only a fresh contact or a new
+	# status episode starts another mist, not repeated view syncs or the sizzle cadence.
+	if _acid_mist_start < 0.0:
+		_acid_mist_start = fx.now
+	elif not spots.is_empty():
+		_acid_mist_start = maxf(_acid_mist_start, float(spots.back()[1]))
+	var remaining: float = _acid_mist_start + 2.0 - fx.now
+	if remaining > 0.25:
+		_emit_acid_mist(fx, p, n, remaining)
+	if _sizzle_count < ACID_SIZZLE_GAINS.size() and fx.now >= _sizzle_next:
+		_sizzle_next = fx.now + fx.rng.randf_range(1.7, 2.8)
+		if fx.sound() != null:
+			fx.sound().play("acid_sizzle", {"pos": to_world(p), "gain": ACID_SIZZLE_GAINS[_sizzle_count]})
+		_sizzle_count += 1
+
+
+func _emit_acid_mist(fx, p: Vector3, n: Vector3, remaining: float) -> void:
 	var eclipse: bool = faction == "deathless"
 	if _acid_mist == null:
 		var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
@@ -1855,9 +1876,11 @@ func _emit_acid(fx) -> void:
 	var lift := maxf(0.65, hull.L * 0.02) if eclipse else maxf(0.9, hull.L * 0.04)
 	var origin := p + n * lift
 	var drift: Vector3 = (n + Vector3.UP * 0.70) * hull.L * 0.065
+	var fade := smoothstep(0.25, 1.7, remaining)
+	var life := minf(1.35, remaining)
 	if eclipse:
-		_acid_mist.emit(POOLS.pack(Vector4(origin.x, origin.y, origin.z, fx.now), Vector4(drift.x, drift.y, drift.z, 1.9),
-			Vector4(col.r, col.g, col.b, 0.68), Vector4(hull.L * 0.08, hull.L * 0.23, 20, noise), Vector4(0, 0, 0.3, 0.15)))
+		_acid_mist.emit(POOLS.pack(Vector4(origin.x, origin.y, origin.z, fx.now), Vector4(drift.x, drift.y, drift.z, life),
+			Vector4(col.r, col.g, col.b, 0.68 * fade), Vector4(hull.L * 0.08, hull.L * 0.23, 20, noise), Vector4(0, 0, 0.3, 0.15)))
 	else:
 		# Split the mist along the plating and lift it so the hull doesn't slice one broad quad into a band.
 		var side := n.cross(Vector3.UP)
@@ -1869,19 +1892,16 @@ func _emit_acid(fx) -> void:
 			var at := origin + side * spread * 0.025
 			var vel := drift + side * spread * 0.018
 			var variation := fposmod(noise + float(i) * 0.5, 1.0)
-			_acid_mist.emit(POOLS.pack(Vector4(at.x, at.y, at.z, fx.now), Vector4(vel.x, vel.y, vel.z, 1.9),
-				Vector4(col.r, col.g, col.b, lerpf(0.35, 0.40, variation)),
-				Vector4(hull.L * 0.04, hull.L * lerpf(0.10, 0.12, variation), 20, variation), Vector4(0, 0, 0.3, 0.15)))
-	_acid_mist.flush()
-	if _sizzle_count < ACID_SIZZLE_GAINS.size() and fx.now >= _sizzle_next:
-		_sizzle_next = fx.now + fx.rng.randf_range(1.7, 2.8)
-		if fx.sound() != null:
-			fx.sound().play("acid_sizzle", {"pos": to_world(p), "gain": ACID_SIZZLE_GAINS[_sizzle_count]})
-		_sizzle_count += 1
+			_acid_mist.emit(POOLS.pack(Vector4(at.x, at.y, at.z, fx.now), Vector4(vel.x, vel.y, vel.z, life),
+				Vector4(col.r, col.g, col.b, lerpf(0.13, 0.17, variation) * fade),
+				Vector4(hull.L * 0.035, hull.L * lerpf(0.08, 0.10, variation), 7, variation), Vector4(0, 0, 0.3, 0.15)))
 
 
 func acid_colour() -> Color:
-	return fac["damage_glow"] if faction == "deathless" else Color(0.5, 0.9, 0.2)
+	match faction:
+		"deathless": return fac["damage_glow"]
+		"chorus": return Color(0.09, 0.105, 0.04)
+		_: return Color(0.09, 0.08, 0.06) # Neutral umber corrosion, not Chorus bile.
 
 
 # Issue 1446: the routed sides into the bubble's rim pulse (quad order prow, starboard, rear, port, as the rules)

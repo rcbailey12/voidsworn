@@ -2096,14 +2096,14 @@ static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 # R303: compact soot peels away from the blast. It never grows into a long-lived pale cloud.
 # Chorus fumes keep kind 20; physical smoke uses the unlit, torn kind 27.
 static func _gas_cloud(fx, p: Vector3, n: Vector3, T: float, k: float, col: Color, count: int, size: float, fam: String,
-		alpha := 0.3, kind := 7, axis := Vector3.ZERO) -> void:
+		alpha := 0.3, kind := 7, axis := Vector3.ZERO, lifetime := GAS_LIFE) -> void:
 	if fx.quality == "low":
 		return
 	var aim: Vector3 = n if axis.length_squared() < 0.01 else _outward(n, axis)
 	for j in _amount(fx, count + 1):
 		var d := _outward(n, fx.rcone(aim, 0.65), 0.2)
 		var v: Vector3 = d * fx.rng.randf_range(1.8, 4.2) * k * fx.unit
-		var life: float = fx.rng.randf_range(GAS_LIFE.x, GAS_LIFE.y)
+		var life: float = fx.rng.randf_range(lifetime.x, lifetime.y)
 		var s0: float = size * k * fx.rng.randf_range(0.6, 1.0)
 		var organic: bool = kind == 20
 		var soot: Color = col if organic else col * 0.20
@@ -2225,7 +2225,7 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 	if beam:
 		_beam_burn(fx, lk, Tg, tg, T, sustain, col, matter_k, w, dir)
 	elif bio:
-		_bio_splat(fx, Tg, tg, T, col, matter_k, lk == "tendril", w)
+		_bio_splat(fx, Tg, tg, T, matter_k, lk == "tendril", w)
 	elif lk == "gauss":
 		_gauss_punch(fx, Tg, tg, T, dir, col, matter_k, w)
 	elif torp:
@@ -2513,28 +2513,27 @@ static func _ion_crawl(fx, Tg, p: Vector3, n: Vector3, T: float, col: Color, k: 
 	# one transient dip for an ion hit, so the two never multiply on the hull's lights.
 
 
-# The Chorus row: a dim pressure burst and drifting bile droplets (no metal fireball), and an acid fume that hangs over
-# the wound for a few seconds while the acid keeps eating (fx_breach style 8). No molten metal (R398).
-static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, lash: bool, w := 2) -> void:
+# Flight keeps the weapon colour. On contact, use the struck hull's palette for the pressure puff and wet residue.
+# The short splat gives way to the local acid mark, never to molten metal (R398).
+static func _bio_splat(fx, Tg, tg: Dictionary, T: float, k: float, lash: bool, w := 2) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	var eclipse: bool = Tg != null and Tg.faction == "deathless"
-	if eclipse:
-		col = Tg.acid_colour()
-	var drop_kind := SH.BIO_CONTACT_GLOB if eclipse else 15
-	var fume := col * 0.65 if eclipse else col.lerp(Color(0.3, 0.32, 0.18), 0.5)
+	var col: Color = Tg.acid_colour() if Tg != null else Color(0.1, 0.1, 0.1)
+	var flash_col: Color = Tg.fac.accent if eclipse else col
+	var drop := col * 0.25 if eclipse else col
 	var px: float = 28.0 * float(tg.get("gk", 1.0)) * float(tg.get("tk", 1.0))
-	_burst(fx,p+n*0.3*k,n,T,4.5*k,"flash",0.35,col,1.4,px)
+	_burst(fx,p+n*0.3*k,n,T,4.5*k,"flash",0.35,flash_col,1.4,px)
 	# Keep the pressure puff without the hot birth sparks used by weapon vents.
 	_vent(fx, p + n * 0.4 * k, n, T, 5.0 * k, 0.65, col, 0.8, n * 3.0 * k, 0.65, 1.0, w, Tg, false)
 	for j in 8:
 		var d := _outward(n, fx.rcone(n,0.9), 0.2)
 		var v: Vector3 = d*fx.rng.randf_range(3.0,7.0)*k
-		var life: float = fx.rng.randf_range(1.8, 3.6)
-		fx.spr(p,T+j*0.015,life,col,1.2,0.42*k,0.22*k,drop_kind,v,0.35)
+		var life: float = fx.rng.randf_range(0.65, 1.35)
+		fx.spr(p,T+j*0.015,life,drop,0.75,0.42*k,0.22*k,SH.BIO_CONTACT_GLOB,v,0.35)
 		_note(fx, "drop", "bio", v, n, life)
 	_burst(fx,p+n*k,n,T+0.12,4.5*k,"cool",0.8,col,0.5,0.0,n*k,0.45)
-	_gas_cloud(fx, p + n * 0.4 * k, n, T + 0.1, k, fume, 2, 2.4, "bio", 0.30, 20)
-	fx.light(p+n*2.0*k,T,0.55,3.0,col,1)
+	_gas_cloud(fx, p + n * 0.4 * k, n, T + 0.1, k, col * 0.65, 2, 2.4, "bio", 0.18, 20, Vector3.ZERO, Vector2(0.8, 1.55))
+	fx.light(p+n*2.0*k,T,0.55,3.0,flash_col,1)
 	fx.shake(T,0.1 if lash else 0.05,p)
 
 

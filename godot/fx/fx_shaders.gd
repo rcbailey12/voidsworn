@@ -242,7 +242,7 @@ void process() {
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
-#  29 bio contact glob with its body tinted to match the impact
+#  29 wet, non-emissive bio contact glob tinted to match the impact
 const BIO_CONTACT_GLOB := 29
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
@@ -277,7 +277,8 @@ void vertex() {
 	} else {
 		float t = age / life;
 		int k = int(a3.z + 0.5);
-		if (k == 29) { k = 15; } // same motion and pixel floor as the bio glob
+		bool wet_drop = k == 29;
+		if (wet_drop) { k = 15; } // share the flight glob's motion, not its bright pixel floor
 		float g = t;
 		if (k == 1 || k == 20 || k == 25 || k == 26) { g = 1.0 - spow(1.0 - t, 2.2); }
 		else if (k == 2 || k == 5 || k == 18) { g = sqrt(t); }
@@ -315,6 +316,7 @@ void vertex() {
 		else if (k == 22) { flo = 6.0; }
 		else if (k == 19 || k == 21) { flo = 4.5; }
 		else if (k == 4 || k == 11) { flo = 3.0; }
+		if (wet_drop) { flo = 3.0; }
 		bool own = fpx > flo;
 		flo = max(flo, fpx);
 		float boost = 1.0;
@@ -327,7 +329,7 @@ void vertex() {
 				// must land) dims only as f^-0.5, so a far hit is a big bright flash, not a big faint one.
 				float dimx = (k == 0 || k == 2 || k == 5 || k == 13 || k == 14 || k == 16 || k == 17) ? -1.0 : -1.2;
 				if (own) { dimx = -0.5; }
-				boost = (k == 15 || k == 23) ? 1.0 : clamp(spow(gf, dimx), 0.03, 1.0);
+				boost = ((k == 15 && !wet_drop) || k == 23) ? 1.0 : clamp(spow(gf, dimx), 0.03, 1.0);
 				size = mn;
 			}
 		}
@@ -435,14 +437,19 @@ void fragment() {
 		vec3 hot = mix(vCol.rgb, vec3(0.88, 0.96, 1.0), core * core * 0.6);
 		add = (hot * core * 1.8 + vCol.rgb * corona * 1.1) * I;
 	} else if (k == 15 || k == 29) {
-		// bio glob: a wet, dark-skinned body with a bioluminescent heart and a wobbling rim
+		// Both globs wobble, but only the flying glob has a bioluminescent heart.
 		float n = fbm(p * 2.0 + vec2(seed * 5.0, age * 2.0));
 		float body = smoothstep(0.85, 0.55, r + (n - 0.5) * 0.45);
 		float heart = exp(-r * r * 6.0) * (0.6 + 0.4 * sin(age * 11.0 + seed * 9.0));
 		float rim = smoothstep(0.45, 0.8, r + (n - 0.5) * 0.3) * body;
-		alpha = body * I * 0.9;
-		base = (k == 29 ? vCol.rgb * 0.06 : vec3(0.05, 0.06, 0.03)) * (0.6 + n);
-		add = vCol.rgb * (heart * 1.8 + rim * 0.6) * I;
+		if (k == 29) {
+			alpha = body * I * (1.0 - smoothstep(0.15, 1.0, t));
+			base = vCol.rgb * (0.65 + n * 0.35 + rim * 0.22);
+		} else {
+			alpha = body * I * 0.9;
+			base = vec3(0.05, 0.06, 0.03) * (0.6 + n);
+			add = vCol.rgb * (heart * 1.8 + rim * 0.6) * I;
+		}
 	} else if (k == 16) {
 		// A filled tumbling chip, with broad facets rather than thin cross arms.
 		vec3 facet = texture(kit_flake, p * 0.5 + 0.5).rgb;
