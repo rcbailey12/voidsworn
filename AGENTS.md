@@ -33,7 +33,7 @@ and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R29
   checks; a docs-only push skips the Godot jobs, "All checks" is the one mark to read, a conflict with main fails, RULEBOOK
   12.3, R386). A branch with any other name gets no automatic checks: open its pull request by hand, then start them by hand
   (Actions tab, "checks", "Run workflow"; or `gh workflow run checks.yml --ref <branch>`). The Board reviews and merges;
-  nobody merges their own pull request (RULEBOOK 2.2).
+  nobody merges their own pull request except the Board (R452; RULEBOOK 2.2).
 - Codex runs locally on the PC only, in up to four lanes (RULEBOOK 2.7, R301; no cloud tasks: their model cannot be pinned, R268). The Board launches each Codex job itself through the PC queue (LOOP.md
   "The seats" says how), and every `codex` issue also carries `blocked`, so the old board watcher (tools/pc/codex_board.bat)
   cannot run it a second time.
