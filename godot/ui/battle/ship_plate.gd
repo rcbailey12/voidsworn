@@ -109,7 +109,7 @@ func _draw() -> void:
 	var parts: Array[Dictionary] = state["sections"]
 	if parts.is_empty():
 		var f: float = state["hull_fraction"]
-		_bar(Rect2(x, y, w, _px(6)), f, GS.MAP_EMBER if f < 0.3 else GS.TEXT, GS.BAR_TRACK)
+		_bar(Rect2(x, y, w, _px(6)), f, _hull_bar_color(f), GS.BAR_TRACK)
 	else:
 		var step_gap := _px(GAP)
 		var remaining := w - 2.0 * step_gap
@@ -124,7 +124,7 @@ func _draw() -> void:
 			if part["lost"]:
 				draw_rect(bar, LOST_TRACK, false, 1.0)
 			else:
-				_bar(bar, fraction, GS.MAP_EMBER if fraction < 0.3 else GS.TEXT, GS.BAR_TRACK)
+				_bar(bar, fraction, _hull_bar_color(fraction), GS.BAR_TRACK)
 			if not collapsed:
 				var col := LOST if part["lost"] else (LOW if fraction < 1.0 else GS.TEXT2)
 				_word(part["cell"], _medium, 17, Vector2(bx, y + _px(7)), cw, col)
@@ -135,6 +135,10 @@ func _draw() -> void:
 	for paragraph in _loss_rows:
 		paragraph.draw(get_canvas_item(), Vector2(x, y), LOST)
 		y += ceilf(paragraph.get_size().y) + _px(3)
+
+
+func _hull_bar_color(fraction: float) -> Color:
+	return GS.HULL_LOW if fraction < 0.35 else GS.TEXT
 
 
 func _word(value: String, font: Font, nominal: int, at: Vector2, width: float, col: Color) -> void:
