@@ -14,7 +14,11 @@ const HULL := preload("res://fx/fx_hull.gd")
 const SHIP := preload("res://fx/fx_ship.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const DEATH := preload("res://fx/fx_death.gd")
+const BOARDING := preload("res://fx/fx_boarding.gd")
+const EVENT_PATHS := preload("res://fx/fx_event_paths.gd")
 const DAMAGE_PLUME := preload("res://fx/fx_damage_plume.gd")
+
+signal torpedo_shot_down(pos: Vector3)
 
 # Faction colours and styles come from data (fx/faction_looks.json via fx/faction_look.gd; API.md 15), so a faction's
 # palette can change without touching code. Styles are Claude's calls (vetoable).
@@ -1193,10 +1197,11 @@ func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 
 	_lev.append([p, t, life, peak, col, shape, reach, false])
 
 
-func light_source(node: Node3D, off: Vector3, col: Color, base: float, flick := 0.3, local_reach := 0.0,
-		phase := -1.0) -> Dictionary:
+# Reach is in world units over unit (0 uses LIGHT_REACH). Keep cavity falloff and fog unless the caller opts out.
+func light_source(node: Node3D, off: Vector3, col: Color, base: float, flick := 0.3, reach := 0.0,
+		phase := -1.0, local_only := false) -> Dictionary:
 	var s = {"node": node, "off": off, "col": col, "base": base, "flick": flick, "on": true,
-		"seed": rng.randf() * 10.0 if phase < 0.0 else phase, "local_reach": local_reach}
+		"seed": rng.randf() * 10.0 if phase < 0.0 else phase, "reach": reach, "local_only": local_only}
 	_lsrc.append(s)
 	return s
 
@@ -1249,15 +1254,18 @@ func _update_lights() -> void:
 		var fl = 1.0 - float(s["flick"]) * (0.5 + 0.5 * sin(now * 23.0 + float(s["seed"])) * sin(now * 7.1 + float(s["seed"]) * 2.0))
 		if reduce_flashing:
 			fl = 1.0 - float(s["flick"]) * 0.3 * (0.5 + 0.5 * sin(now * 2.0 + float(s["seed"])))
-		var reach: float = s["local_reach"]
-		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"], reach, reach > 0.0])
+		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"], s["reach"], s["local_only"]])
 	_lsrc = ks
 	# brightest first, nearer lights count more when the pool is short
 	for e in ev:
 		e.append(float(e[1]) / (1.0 + (e[0] as Vector3).distance_to(cp) / (200.0 * unit)))
 	ev.sort_custom(func(a: Array, b: Array) -> bool: return float(a[5]) > float(b[5]))
-	var fog_lights := 0
+	var fog_rank := 0
 	for k in _lpool.size():
+		var scatters := false
+		if k < ev.size() and not ev[k][4]:
+			scatters = fog_rank < 2
+			fog_rank += 1
 		var l: OmniLight3D = _lpool[k]
 		if k < ev.size() and float(ev[k][1]) > 0.03:
 			l.position = ev[k][0]
@@ -1267,9 +1275,7 @@ func _update_lights() -> void:
 			l.omni_attenuation = REACH_ATTEN if float(ev[k][3]) > 0.0 and not ev[k][4] else LIGHT_ATTEN
 			# Issue 1237 (Neon F7.4): only the two strongest event lights scatter into volumetric fog (all 64 did,
 			# each one a pass over the fog froxels); the rest light hulls only.
-			var scatters: bool = fog_lights < 2 and not ev[k][4]
 			l.light_volumetric_fog_energy = 1.0 if scatters else 0.0
-			if scatters: fog_lights += 1
 			l.visible = true
 		else:
 			l.visible = false
@@ -2182,7 +2188,8 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var box = BoxMesh.new()
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
-		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(DEATH.SLAG, 0)]
+		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), pools["nlance"].mi.material_override,
+		mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(SH.RCS_JET, 1), mat(DEATH.SLAG, 0)]
 	mats.append(DAMAGE_PLUME.material(self))
 	# Warm the PBR fallbacks for late arrivals and generated pieces as well as the
 	# actual hull formats below. Glasswright sails blend, and nebula hulls ignore fog.

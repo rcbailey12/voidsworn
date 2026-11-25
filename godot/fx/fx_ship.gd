@@ -12,6 +12,7 @@ const BREACH := preload("res://fx/fx_breach.gd")
 const SHIELD_CACHE := preload("res://fx/fx_shield_cache.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const IDLE := preload("res://fx/fx_idle.gd")
+const STATUS_TICK := preload("res://fx/fx_status_tick.gd")
 const DAMAGE_PLUME := preload("res://fx/fx_damage_plume.gd")
 const SHIP_VIEW := preload("res://render/ship_view.gd")
 
@@ -2685,17 +2686,36 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	elif e.st == 1:
 		form = DAMAGE_PLUME.Form.SCORCH
 		length = hull.L * 0.075
+	elif faction == "deathless" and e.st == 2:
+		# Keep main's narrow, outward ion vent on shallow Eclipse wounds.
+		length = hull.L * 0.055
+		axis = n
 	_attach_damage_plume(fx, e, p, axis, length, form)
 	if form == DAMAGE_PLUME.Form.WOUND:
 		var light_pos: Vector3 = a.p + n * hull.L * 0.025
-		e["light"] = fx.light_source(e.node, light_pos - p, fac.damage_glow, 0.32,
-			0.20, hull.L * 0.13 / fx.unit, e.phase * TAU)
+		e["light"] = fx.light_source(e.node, light_pos - p, _plume_glow(), 0.32,
+			0.20, hull.L * 0.13 / fx.unit, e.phase * TAU, true)
 	return true
+
+
+func _plume_glow() -> Color:
+	var glow: Color = fac.damage_glow
+	if faction == "chorus":
+		return chorus_gas(glow)
+	if wounds_v2 and faction in ["hegemony", "deathless"]:
+		return BREACH.wound_col(fac["wound"], "interior_accent", glow)
+	return glow
 
 
 func _attach_damage_plume(fx, e: Dictionary, p: Vector3, axis: Vector3, length: float, form: DAMAGE_PLUME.Form) -> void:
 	var phase := float(posmod(hash(e.id) + _seed, 127)) / 127.0
-	var plume := DAMAGE_PLUME.build(fx, _dmg_root, p, axis, length, form, fac, phase, "fx_damage_" + e.id)
+	var glow := _plume_glow()
+	var profile := DAMAGE_PLUME.Profile.BASE
+	if wounds_v2:
+		match faction:
+			"hegemony": profile = DAMAGE_PLUME.Profile.ELECTRIC
+			"deathless": profile = DAMAGE_PLUME.Profile.VIOLET
+	var plume := DAMAGE_PLUME.build(fx, _dmg_root, p, axis, length, form, fac, phase, "fx_damage_" + e.id, glow, profile)
 	e["node"] = plume
 	e["mat"] = plume.material_override
 	e["particles"] = 1

@@ -449,13 +449,14 @@ func _clear() -> void:
 
 
 # One ship as the battle draws it (G2's ShipView, added to G4's effects as the battle does), or null when it is a block.
-func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code := "", cut_on_arrival := false):
+func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code := "", cut_on_arrival := false,
+		squad_tpl := ""):
 	var sv = SV.new()
 	sv.name = "ship_" + id
 	world.add_child(sv)
 	var u := {"id": id, "fac": fac, "cls": cls, "facing": facing, "hp": 100, "maxHp": 100, "size": 1.0}
 	if cls == "Squadron":
-		u["tpl"] = "spore" if fac == "chorus" else "fighter"
+		u["tpl"] = squad_tpl if squad_tpl != "" else ("spore" if fac == "chorus" else "fighter")
 	if code != "":
 		u["code"] = code
 		u["L"] = float(OBJ_LEN.get(code, 10.0))
@@ -738,7 +739,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var tat: Array = row.get("tgt_at", [34, 0])
 	# Only the target of a death row can die. Hull and shader warm-up still runs for every ship.
 	var fatal := str(row.get("fatal", ""))
-	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2, "", row.get("do") == "death" or fatal != "")
+	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2, "",
+		row.get("do") == "death" or fatal != "", str(row.get("tgt_tpl", "")))
 	if T == null:
 		return false
 	if row.has("shield_left"):
@@ -984,6 +986,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var move_dur := float(row.get("move_dur", 0.75))
 	var brake_at := float(row.get("brake_at", 0.55))
 	var focus_mode := str(row.get("focus", "target"))
+	var track_hulk := bool(row.get("seek_hulk", false))
 	while wi < wins.size() and guard < 900:
 		var w: Dictionary = wins[wi]
 		if step_jets and is_instance_valid(A):
@@ -1033,16 +1036,40 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		var start: float = float(anchors.get(w["anchor"], t_ev)) + float(w["at"])
 		if w["anchor"] == "also" and not anchors.has("also"):
 			start = INF
+		# Long hulk rows step to the next sample after the death beat, then follow the same drifting wreck in both runs.
+		if track_hulk and ci > 0 and int(w["got"]) == 0 and start - fx.now > 4.0:
+			fx.step(start - fx.now - STEP)
 		var take := false
 		if int(w["got"]) == 0:
 			take = fx.now + 1e-4 >= start
 		else:
 			take = steps >= int(w["next"])
 		if take:
-			if not headless:
-				var img := _grab()
-				if img != null:
-					strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
+			if track_hulk:
+				var hulk: Node3D
+				for wreck in fx.dstate.get("wrecks", []):
+					if wreck.id == "T" and wreck.get("hulk", false) and not wreck.nodes.is_empty():
+						hulk = wreck.nodes[0]
+						break
+				if not is_instance_valid(hulk):
+					return _fail_moment(id, r, "no target hulk at %.2f s" % (fx.now - t_ev))
+				_cam(hulk.global_position, r)
+				await _step()
+			var img := _grab() if keep and not headless else null
+			if clip:
+				if keep:
+					var fp := clip_dir.path_join("f%03d.png" % ci)
+					if img == null:
+						clip_bad.append("f%03d.png (no frame grabbed)" % ci)
+					else:
+						var se: Error = preload("res://tools/picture_provenance.gd").save_png(_crop(img, crop, cell), fp,
+							preload("res://tools/picture_provenance.gd").capture_stage(), true)
+						if se != OK:
+							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
+			elif img != null:
+				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
+			elif strict and keep:
+				clip_bad.append("cell %d (no frame grabbed)" % ci)
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
 			ci += 1
 			w["got"] = int(w["got"]) + 1
@@ -1058,9 +1085,6 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			return _fail_moment(id, r, "warm pass took %d of %d cells" % [ci, total])
 	if not keep:
 		return true
-	var name := "%s__c%d.png" % [id, int(r)]
-	if not headless:
-		preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), preload("res://tools/picture_provenance.gd").capture_stage(), true)
 	# issue 1777 (Artoo on PR 1786): record the hull the target resolved to; a row naming "expect_code" says loudly when
 	# the faction and class drew a different hull (a later remap), so a capture bat can fail on it
 	var tcode := str(T.code) if is_instance_valid(T) else ""
@@ -1068,10 +1092,38 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if row.has("expect_code") and tcode != str(row["expect_code"]):
 		_warn("%s: target drew %s, the row expects %s" % [id, tcode, str(row["expect_code"])])
 		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
+		if strict:
+			return _fail_moment(id, r, "target drew %s, expected %s" % [tcode, str(row["expect_code"])])
 	if row.has("expect_craft") and not args.has("allow-blocks"):
-		var craft_code := str(T.hull.craft[0].get_meta("model_code", "")) if not T.hull.craft.is_empty() else ""
+		var craft_code := ""
+		if is_instance_valid(T) and is_instance_valid(T.hull):
+			var craft = T.hull.get("craft")
+			if craft is Array and not craft.is_empty() and is_instance_valid(craft[0]):
+				craft_code = str(craft[0].get_meta("model_code", ""))
 		if craft_code != str(row.expect_craft):
 			_warn("%s: wing drew %s, the row expects %s" % [id, craft_code, row.expect_craft])
+			if strict:
+				return _fail_moment(id, r, "wing drew %s, expected %s" % [craft_code, str(row.expect_craft)])
+	if clip:
+		# Every numbered frame must be on disk, and a stale frame cannot cover a failed read or save this run.
+		for fi in total:
+			var fn := "f%03d.png" % fi
+			if not FileAccess.file_exists(clip_dir.path_join(fn)) and not clip_bad.any(func(b): return str(b).begins_with(fn)):
+				clip_bad.append(fn + " (missing)")
+		if ci != total or not clip_bad.is_empty():
+			return _fail_moment(id, r, "clip row failed: %d of %d frames taken; bad: %s" % [ci, total, ", ".join(clip_bad)])
+		report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/%s__c%d/" % [id, int(r)],
+			"cells": cells, "impacts": impacts, "clip": true})
+		_log("%s at %d: %d clip frames" % [id, int(r), ci])
+		return true
+	var name := "%s__c%d.png" % [id, int(r)]
+	if strict and (ci != total or not clip_bad.is_empty()):
+		return _fail_moment(id, r, "strict row failed: %d of %d cells taken; bad: %s" % [ci, total, ", ".join(clip_bad)])
+	if not headless:
+		var picture := preload("res://tools/picture_provenance.gd")
+		var saved := preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), picture.capture_stage(), true)
+		if strict and (saved != OK or not FileAccess.file_exists(d.path_join(name))):
+			return _fail_moment(id, r, "strict row failed: %s (save error %d)" % [name, saved])
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts, "code": tcode, "attacker_code": acode})
 	if not _wound.is_empty():

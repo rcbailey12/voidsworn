@@ -2,6 +2,7 @@ extends SceneTree
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const FX := preload("res://fx/fx.gd")
+const BREACH := preload("res://fx/fx_breach.gd")
 const PLUME := preload("res://fx/fx_damage_plume.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const VIEW := preload("res://render/ship_view.gd")
@@ -78,20 +79,25 @@ func _check_wounds(faction: String) -> void:
 	var dent: Dictionary = s._damage_emitters[0]
 	m = _material(dent)
 	_check(dent.form == PLUME.Form.DENT and m.get_shader_parameter("core_power") == 0.0, "stage 2 has a sheath, no flame")
+	var glow: Color = s.fac.damage_glow
+	var accent: Color = BREACH.wound_col(s.fac.wound, "interior_accent", glow)
+	var core_tint := accent if faction in ["hegemony", "deathless", "chorus"] else glow
 	for st in [3, 4]:
 		s.stage = [0, st, 0]
 		s._refresh_damage_emitters(fx)
 		var wound: Dictionary = s._damage_emitters[0]
 		m = _material(wound)
-		var glow: Color = s.fac.damage_glow
 		var core: Vector3 = m.get_shader_parameter("colour_core")
 		var sheath: Vector3 = m.get_shader_parameter("colour_sheath")
 		var power: float = m.get_shader_parameter("core_power")
-		_check(core.is_equal_approx(Vector3(glow.r, glow.g, glow.b)), faction + " uses its existing wound colour")
+		_check(core.is_equal_approx(Vector3(core_tint.r, core_tint.g, core_tint.b)), faction + " uses its existing wound colour")
 		_check(power == 0.0 if faction == "ithar" else power > 0.0, faction + " only has its permitted core")
 		_check(faction != "ithar" or sheath.x > 0.20 and sheath.z >= sheath.x, "glass sheath is pale, not soot")
 		_check(faction != "deathless" or (core.z > core.x and sheath.z > sheath.x), "Eclipse core and sheath stay violet")
-		_check(faction != "chorus" or (core.y > core.x and sheath.y > sheath.x and power < 0.6), "Chorus is organic mist and faint green light")
+		_check(faction != "hegemony" or (core.z > core.y and core.y > core.x and sheath.z > sheath.x),
+			"Meridian wounds use cold blue ionisation and vapour, not gold fire or soot")
+		_check(faction != "chorus" or (core.x > core.y and sheath.x > sheath.y and sheath.y > sheath.z and power < 0.6),
+			"Chorus keeps ochre wound gas and a faint organic pulse")
 		_check(m.get_shader_parameter("core_clip") <= 0.70 and m.get_shader_parameter("period") > 0.70,
 			"hot core goes out before 0.70 seconds with cold time between pulses")
 		_check(wound.form == PLUME.Form.WOUND and s.damage_counts().fire == 1 and s.damage_counts().smoke == 0,
@@ -99,7 +105,7 @@ func _check_wounds(faction: String) -> void:
 		var anchor: Dictionary = s._anchor(1, "a")
 		var offset: Vector3 = wound.source - anchor.p
 		_check(offset.dot(anchor.n) < 0.0 if st == 4 else offset.is_zero_approx(), "previous wound placement is preserved")
-		_check(wound.light.col == glow and is_equal_approx(wound.light.local_reach * fx.unit, s.hull.L * 0.13),
+		_check(wound.light.col == core_tint and wound.light.local_only and is_equal_approx(wound.light.reach * fx.unit, s.hull.L * 0.13),
 			"wound light is local, follows the hull, and uses its existing colour")
 		var vent: Dictionary = s._damage_emitters[1]
 		_check(vent.form == PLUME.Form.VENT and _material(vent).get_shader_parameter("core_power") == 0.0, "heavy vent stays cold")
@@ -107,17 +113,27 @@ func _check_wounds(faction: String) -> void:
 	var mount := Vector3(2, 3, 1)
 	var e := {"id": "mount", "mp": mount}
 	s._build_wisp(fx, e)
-	_check(e.form == PLUME.Form.WISP and e.source == mount and _material(e) != null, "wisp starts at its own hard point")
+	var wisp := _material(e)
+	_check(e.form == PLUME.Form.WISP and e.source == mount, "wisp starts at its own hard point")
+	var wisp_sheath: Vector3 = wisp.get_shader_parameter("colour_sheath")
+	_check(faction != "chorus" or (wisp_sheath.x > wisp_sheath.y and wisp_sheath.y > wisp_sheath.z), "Chorus mount wisp stays ochre")
+	_check(faction != "hegemony" or (wisp_sheath.z > wisp_sheath.y and wisp_sheath.y > wisp_sheath.x), "Meridian mount wisp stays cold blue")
 	await process_frame
 	fx.step(0.1)
 	var lamp: OmniLight3D = fx._lpool[0]
 	_check(lamp.visible and lamp.omni_range < s.hull.L * 0.14 and lamp.light_volumetric_fog_energy == 0.0,
 		"wound light uses the bounded pool, with no fog scattering")
-	fx.light(Vector3.LEFT * 2.0, fx.now, 0.5, 0.12, Color.WHITE, 1)
+	var cavity: Dictionary = fx.light_source(s.root, Vector3.LEFT * 2.0, Color.WHITE, 0.12, 0.0, 1.7)
 	fx.light(Vector3.RIGHT * 2.0, fx.now, 0.5, 0.12, Color.WHITE, 1)
 	fx.step(0.1)
-	_check(fx._lpool[1].light_volumetric_fog_energy == 1.0 and fx._lpool[2].light_volumetric_fog_energy == 1.0,
-		"local wound light does not use either event light's existing fog slot")
+	var found_cavity := false
+	for i in [1, 2]:
+		var other: OmniLight3D = fx._lpool[i]
+		_check(other.light_volumetric_fog_energy == 1.0, "local wound light does not use either fog slot")
+		if other.global_position.is_equal_approx(Vector3.LEFT * 2.0):
+			found_cavity = is_equal_approx(other.omni_range, 1.7 * fx.unit) and is_equal_approx(other.omni_attenuation, fx.REACH_ATTEN)
+	_check(found_cavity, "the cavity light keeps main's range, reach falloff and fog with the six-argument call")
+	cavity.on = false
 	fx._lev.clear()
 	fx.reduce_flashing = true
 	fx.step(0.1)
@@ -168,14 +184,30 @@ func _check_hulk(faction: String) -> void:
 	var m := vent.material_override as ShaderMaterial
 	_check(vent.mesh is QuadMesh and m.get_shader_parameter("colour_atlas") is Texture2D, "hulk owns one baked vent")
 	_check(m.get_shader_parameter("core_power") == 0.0 and wreck.lights.is_empty() and fx.flash_log.is_empty(), "hulk is cold and unlit")
+	var start: float = m.get_shader_parameter("density")
+	_check(is_equal_approx(start, PLUME.HULK_DENSITY), "hulk starts at full density")
 	var stem: Vector3 = vent.position
 	fx.remove_ship("T")
 	s.root.queue_free()
 	fx.step(2.0)
 	_check(is_instance_valid(vent) and vent.position == stem, "vent follows the drifting wreck after live ship removal")
-	fx.step(PLUME.HULK_LIFE)
+	fx.step(28.0)
 	await process_frame
-	_check(not is_instance_valid(vent) and is_instance_valid(hulk), "cold vent expires without removing the wreck")
+	var middle: float = m.get_shader_parameter("density")
+	_check(is_instance_valid(vent) and middle < start and middle > PLUME.HULK_WISP_DENSITY,
+		"cold vent is still attached and thinning at 30 seconds")
+	fx.step(31.0)
+	var settled: float = m.get_shader_parameter("density")
+	fx.step(60.0)
+	await process_frame
+	_check(is_instance_valid(vent) and vent.is_visible_in_tree() and vent.get_parent() == hulk
+		and fx.now - float(wreck.t0) >= 120.0, "hulk still emits after 120 seconds")
+	_check(settled > 0.0 and settled < middle and is_equal_approx(settled, m.get_shader_parameter("density"))
+		and m.get_shader_parameter("life_s") == 0.0 and not wreck.has("vent_material"),
+		"the thin lasting wisp settles after a minute without an expiry or further density updates")
+	fx.clear_wreck("T")
+	await process_frame
+	_check(not is_instance_valid(vent), "clearing the wreck also clears its vent")
 	await _end()
 
 
@@ -211,6 +243,7 @@ func _end() -> void:
 
 
 func _run() -> void:
+	OS.set_environment("VS_WOUNDS_V2", "1")
 	for faction in FACTIONS:
 		await _check_wounds(faction)
 	await _check_wing()
