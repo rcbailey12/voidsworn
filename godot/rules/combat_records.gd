@@ -28,7 +28,8 @@ static func rollups(battle: Dictionary) -> Dictionary:
 		var ship = unit.get("ship")
 		row.merge({"ship_uid": ship["uid"] if ship is Dictionary else "", "ship_name": unit["name"],
 			"ship_class": unit.get("cls"), "ship_template": unit["tpl"], "side": unit["side"],
-			"hull_remaining": maxf(0.0, float(unit["hp"])), "lost": unit.get("dead") and not unit.get("fled"),
+			"hull_remaining": maxf(0.0, float(unit["hp"])), "hull_max": unit["maxHp"],
+			"flagship": bool(unit.get("pflag", false)), "lost": bool(unit.get("dead")) and not (unit.get("fled") or unit.get("exited")),
 			"captain": ship["cap"].duplicate(true) if ship is Dictionary else null})
 		rows[unit["id"]] = row
 	return rows
