@@ -968,7 +968,7 @@ func _begin(a) -> void:
 	if ResourceLoader.exists("res://portraits/portraits.gd") and adm != "":
 		var A = TBL.get("ADMIRALS", {}).get(adm, {})
 		hud.set_crest(load("res://portraits/portraits.gd").crest(adm), str(A.get("n", adm)) if A is Dictionary else adm)
-	await _warmup()
+	await _warmup(gen)
 	if gen != _build_gen:
 		return
 	if music != null:
@@ -1120,15 +1120,15 @@ func _sliced() -> bool:
 var begin_us := {}   # issue 1434 (LOAD9: start to board 1 to 3 s of process step): _begin's parts before the board's frame
 
 
-func _warmup() -> void:
+func _warmup(gen: int) -> void:
 	warming = true
 	hud.loading(true)
 	load_phase = "world"
 	if world != null: await world.wait_ready()
-	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	load_phase = "planet"
 	await board.wait_planet()   # issue 1765: the board planet's maps load or bake behind the cover
-	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	load_phase = "pull_back"
 	var keep := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
 	cam.b = 0.6
@@ -1137,7 +1137,7 @@ func _warmup() -> void:
 	cam.snap()
 	for i in 3:
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	# issue 1434 (LOAD22): with the whole board in view, the meshes held back since the load began get their first draw a
 	# few new materials a frame (render/stage_in.gd); the effect warm-up below spreads its own
 	# issue 1434 (LOAD29 cold s25: 7 hull-debris chunks installed during prepare_hulls, after the drain stopped watching,
@@ -1148,10 +1148,10 @@ func _warmup() -> void:
 		var td := Time.get_ticks_msec()
 		while world.ship_debris_pending() and Time.get_ticks_msec() - td < 15000:
 			await get_tree().process_frame
-			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+			if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	load_phase = "stage_in"
 	await stage.drain(get_tree())
-	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	# issue 1434 (item 10): the title backdrop never fights, so it skips the death cuts, shield skins and effect warm-up
 	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless" and not title_backdrop:
 		# issue 1289: the reinforcement's hull is built, cut and drawn here with the others, then hidden until it arrives
@@ -1161,10 +1161,10 @@ func _warmup() -> void:
 			arrival_warm.prepare(self, gfx, api.arrival_previews(), Vector3.ZERO)
 			for i in 2:
 				await get_tree().process_frame
-				if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+				if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 		load_phase = "prepare_hulls"
 		await gfx.prepare_battle_hulls()
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 		load_phase = "fx_warmup"
 		# at most 20 s: a warm-up that never returns must never hold the battle (Opus review, Nov 3)
 		var done := [false]
@@ -1175,23 +1175,23 @@ func _warmup() -> void:
 		var t0 := Time.get_ticks_msec()
 		while not done[0] and Time.get_ticks_msec() - t0 < 20000:
 			await get_tree().process_frame
-			if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+			if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 		if arrival_warm != null:
 			arrival_warm.park()
 	load_phase = "camera_back"
 	for i in 2:
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	cam.a = keep["a"]
 	cam.b = keep["b"]
 	cam.r = keep["r"]
 	cam.t = keep["t"]
 	cam.snap()
 	await get_tree().process_frame
-	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	load_phase = "settle"
 	await load("res://main/load_screen.gd").settle(get_tree())
-	if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+	if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 	load_phase = ""
 	pipe_base = _pipe_count()
 	hud.loading(false)
@@ -1803,6 +1803,13 @@ func _api_join() -> bool:
 
 func _stale(g: int) -> bool:
 	return retiring or g != _gen or not is_inside_tree()
+
+
+# issue 1519: the load's warm-up after an await: a newer build or a stop_build (leaving, main.gd _retire_battle) moved
+# _build_gen on, or the battle is out of the tree, or it is parked switched off in the tree while main.gd frees it in
+# slices behind the title (its awaits still wake there)
+func _left(build_gen: int) -> bool:
+	return build_gen != _build_gen or not is_inside_tree() or not can_process()
 
 
 # mark the battle retired before finished goes out: post-await work from it is rejected from here on

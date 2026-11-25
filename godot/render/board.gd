@@ -318,7 +318,7 @@ func build(rules, slice := false) -> void:
 		var w0 := Time.get_ticks_msec()
 		while Time.get_ticks_msec() - w0 < TERRAIN_WAIT_MS:
 			await get_tree().process_frame
-			if not is_inside_tree():
+			if _parked():
 				return   # _exit_tree handed the loads on
 			var busy := false
 			for p in _terrain_loads:
@@ -350,14 +350,14 @@ func build(rules, slice := false) -> void:
 		var pieces := station.find_children("*", "MeshInstance3D", true, false)
 		if station is MeshInstance3D:
 			pieces.push_front(station)
-		if not await _station_warm.warm_meshes(self, pieces, "title station") or not is_inside_tree():
+		if not await _station_warm.warm_meshes(self, pieces, "title station") or _parked():
 			return
 		_station_pending.pop_front()
 		_put_station(station)
 	t = _step("terrain", t)
 	if slice:
 		await get_tree().process_frame
-		if not is_inside_tree():
+		if _parked():
 			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
 		t = Time.get_ticks_usec()
 	blocker_visuals = BV.new()
@@ -371,14 +371,14 @@ func build(rules, slice := false) -> void:
 	t = _step("blockers", t)
 	if slice:
 		await get_tree().process_frame
-		if not is_inside_tree():
+		if _parked():
 			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
 		t = Time.get_ticks_usec()
 	_terrain_edges()
 	t = _step("edges", t)
 	if slice:
 		await get_tree().process_frame
-		if not is_inside_tree():
+		if _parked():
 			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
 		t = Time.get_ticks_usec()
 	apply_look(false)
@@ -1381,6 +1381,12 @@ func _planet() -> void:
 		planet_ready_ms = Time.get_ticks_msec() - planet_t0   # Neon item 7: when the planet itself finished
 
 
+# issue 1519: a left battle stays in the tree switched off (PROCESS_MODE_DISABLED) while main.gd frees it in slices
+# behind the title; its awaits still wake there, so a build or wait under way stops as it would out of the tree
+func _parked() -> bool:
+	return not is_inside_tree() or not can_process()
+
+
 # Issue 1765: the battle's loading cover waits for the board planet's maps. The maps start loading when the board is
 # built, alongside the world's bakes, so the 20 s cap counts from then, not after the world is ready (Artoo, PR 1776).
 # Maps that miss the cover are never swapped in mid-battle (a late 4K or 8K upload would hitch the first turns): the
@@ -1388,7 +1394,7 @@ func _planet() -> void:
 func wait_planet() -> void:
 	while planet_pending and Time.get_ticks_msec() - planet_t0 < 20000:
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _parked(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	if planet_pending and is_instance_valid(planet_node):
 		planet_node.set_meta("planet_frozen", true)
 		push_warning("[planet] board planet maps missed the loading cover; the stand-in stays for this battle")
