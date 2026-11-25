@@ -29,6 +29,10 @@ const data = {
     { name: 'codex/issue-501-partial', sha: 'p2', date: t(48) },  // finished later on the full branch
     { name: 'codex/issue-501', sha: 'p3', date: t(30) },
     { name: 'codex/issue-502-partial', sha: 'p4', date: t(3) },   // too fresh to call stale
+    { name: 'codex/issue-503-partial', sha: 'p5', date: t(48) },  // PR was edited but the full head did not move
+    { name: 'codex/issue-503', sha: 'p6', date: t(72) },
+    { name: 'codex/issue-504-partial', sha: 'p7', date: t(48) },
+    { name: 'codex/issue-504', sha: 'p7', date: t(48) },          // exact same tip is enough
   ],
   pulls: [
     { number: 2166, state: 'open', merged_at: null, updated_at: t(1), head: 'codex/issue-2142', head_sha: 'a2', title: 'Issue 2142: x', checks: 'success' },
@@ -38,6 +42,8 @@ const data = {
     { number: 803, state: 'open', merged_at: null, updated_at: t(10), head: 'codex/issue-803', head_sha: 'z3', title: 'Issue 803: red but fresh', checks: 'failure' },
     { number: 810, state: 'closed', merged_at: t(40), updated_at: t(40), head: 'codex/issue-810', head_sha: 'm1', title: 'Issue 810: merged', body: 'Refs #811' },
     { number: 501, state: 'closed', merged_at: t(28), updated_at: t(28), head: 'codex/issue-501', head_sha: 'p3', title: 'Issue 501: done' },
+    { number: 503, state: 'open', updated_at: t(1), head: 'codex/issue-503', head_sha: 'p6', title: 'Issue 503: edited' },
+    { number: 504, state: 'open', updated_at: t(48), head: 'codex/issue-504', head_sha: 'p7', title: 'Issue 504: same tip' },
   ],
   issues: [
     { number: 810, title: 'merged one', state_reason: 'completed', closed_at: t(39), labels: ['codex'] },
@@ -55,7 +61,7 @@ const data = {
 const { out } = analyze(data, patterns, now);
 assert.deepEqual(out.noPr.map(x => x.branch), ['codex/issue-2148', 'opus/issue-777']);
 assert.deepEqual(out.unseen.map(x => x.branch), ['neon/holistic-and-looks-1123']);
-assert.deepEqual(out.partial.map(x => x.branch), ['codex/issue-500-partial']);
+assert.deepEqual(out.partial.map(x => x.branch), ['codex/issue-500-partial', 'codex/issue-503-partial']);
 assert.deepEqual(out.green.map(x => x.pr), [801]);
 assert.deepEqual(out.red.map(x => x.pr), [802]);
 assert.deepEqual(out.closedNoPr.map(x => x.issue), [812]);
@@ -74,12 +80,21 @@ const fake = args => {
   if (endpoint.includes('/branches?')) return [
     { name: 'codex/issue-2148', sha: 'a1' },
     { name: 'codex/issue-2149', sha: 'a0' },
+    { name: 'codex/issue-505-partial', sha: 'q1' },
+    { name: 'codex/issue-505', sha: 'q2' },
+    { name: 'codex/issue-506-partial', sha: 'q3' },
+    { name: 'codex/issue-506', sha: 'q4' },
   ].map(x => JSON.stringify(x)).join('\n');
   if (endpoint.includes('/pulls?')) return [
     { state: 'closed', head: 'codex/issue-2000', head_sha: 'a1', local_head: true },
     { state: 'closed', head: 'codex/issue-2148', head_sha: 'a1', local_head: false },
+    { state: 'closed', head: 'codex/issue-505', head_sha: 'q2', local_head: true },
+    { state: 'closed', head: 'codex/issue-506', head_sha: 'q4', local_head: true },
   ].map(x => JSON.stringify(x)).join('\n');
   if (endpoint.endsWith('/commits/a1') || endpoint.endsWith('/commits/a0')) return t(2);
+  if (/\/commits\/q[1-4]$/.test(endpoint)) return t(48); // Commit timestamps alone cannot decide.
+  if (endpoint.includes('/compare/q1...q2?')) return 'ahead';
+  if (endpoint.includes('/compare/q3...q4?')) return 'diverged';
   if (endpoint.includes('/compare/main...a1?')) return '1';
   if (endpoint.includes('/compare/main...a0?')) return '0';
   if (endpoint.includes('/issues?') || endpoint.includes('/issues/comments?')) return '';
@@ -88,6 +103,7 @@ const fake = args => {
 const live = fetchGithub('acme/game', now, fake);
 assert.ok(calls.every(args => args[0] === 'api' && args[1].startsWith('repos/acme/game')));
 assert.deepEqual(live.out.noPr.map(x => x.branch), ['codex/issue-2148']);
+assert.deepEqual(live.out.partial.map(x => x.branch), ['codex/issue-506-partial']);
 const queued = dispatch('acme/game', live.defaultBranch, live.out.noPr, args => {
   assert.deepEqual(args, ['api', '-X', 'POST', 'repos/acme/game/actions/workflows/auto_pr.yml/dispatches',
     '-f', 'ref=main', '-f', 'inputs[branch]=codex/issue-2148', '--silent']);

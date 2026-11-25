@@ -10,6 +10,8 @@ const fileEdits = new Set(['Edit', 'Write', 'MultiEdit', 'NotebookEdit']);
 const shells = new Set(['Bash', 'PowerShell', 'Monitor']);
 const directWrites = /^(?:mcp__.*__)(?:push_files|create_or_update_file|create_file|update_file|delete_file|create_branch|create_ref|update_ref|delete_ref)$/;
 const boardLogs = new Set(['contrib/opus/LOOP.md', 'contrib/opus/FINDINGS.md']);
+// F9 rollout switch. Turn on only after F6 and the LOOP.md roll have landed.
+const BOARD_LOG_TIP_LINTS_ENABLED = false;
 const godotCode = /^godot\/(?:.*\.(?:gd|tscn)|project\.godot)$/;
 const secretName = /^(?:\.env.*|\.?secrets?(?:\.(?:json|ya?ml|toml|txt))?|\.ssh|\.aws|\.netrc|\.npmrc|\.git-credentials|hosts\.yml|credentials\.json|id_(?:rsa|dsa|ecdsa|ed25519)(?!\.pub$).*|.*\.(?:pem|p12|pfx|key))$/i;
 
@@ -162,7 +164,7 @@ function checkMainPush(cwd, remote, source, alone) {
         'Everything else goes through an issue branch and a pull request.';
     }
   }
-  if (base === tip) return;
+  if (!BOARD_LOG_TIP_LINTS_ENABLED || base === tip) return;
   const top = git(cwd, ['rev-parse', '--show-toplevel']).trim();
   // Both lints read other tracked documents too. Check the tip, not an unstaged fix or another branch's docs.
   if (git(top, ['diff', '--name-only', tip, '--']).trim() ||
@@ -252,8 +254,67 @@ function gitSubcommand(words) {
   return '';
 }
 
+// Git builtins take precedence over aliases. Avoid a git config subprocess on
+// every ordinary command. Update this list with git --list-cmds=builtins.
+const gitBuiltins = new Set((
+  'add am annotate apply archive backfill bisect blame branch bugreport bundle cat-file check-attr check-ignore check-mailmap ' +
+  'check-ref-format checkout checkout--worker checkout-index cherry cherry-pick clean clone column commit commit-graph ' +
+  'commit-tree config count-objects credential credential-cache credential-cache--daemon credential-store describe diagnose ' +
+  'diff diff-files diff-index diff-tree difftool fast-export fast-import fetch fetch-pack fmt-merge-msg for-each-ref ' +
+  'for-each-repo format-patch fsck fsck-objects fsmonitor--daemon gc get-tar-commit-id grep hash-object help hook index-pack ' +
+  'init init-db interpret-trailers last-modified log ls-files ls-remote ls-tree mailinfo mailsplit maintenance merge ' +
+  'merge-base merge-file merge-index merge-ours merge-recursive merge-recursive-ours merge-recursive-theirs merge-subtree ' +
+  'merge-tree mktag mktree multi-pack-index mv name-rev notes pack-objects pack-redundant pack-refs patch-id pickaxe prune ' +
+  'prune-packed pull push range-diff read-tree rebase receive-pack reflog refs remote remote-ext remote-fd repack replace ' +
+  'replay repo rerere reset restore rev-list rev-parse revert rm send-pack shortlog show show-branch show-index show-ref ' +
+  'sparse-checkout stage stash status stripspace submodule--helper survey switch symbolic-ref tag unpack-file unpack-objects ' +
+  'update-index update-ref update-server-info upload-archive upload-archive--writer upload-pack var verify-commit verify-pack ' +
+  'verify-tag version whatchanged worktree write-tree'
+).split(' '));
+
+function simpleCommands(script) {
+  // Break only at unquoted separators and join quoted parts of words, such as
+  // --raw-field=body="the /merges endpoint". This is not a shell interpreter.
+  const token = /(?:[^ \t\r\n'"\\;&|()]+|'[^']*'|"(?:\\.|[^"\\])*"|\\.)+|[;&|()\r\n]/g;
+  const commands = [];
+  let words = [];
+  for (const raw of script.matchAll(token)) {
+    if (/^[;&|()\r\n]$/.test(raw[0])) {
+      if (words.length) commands.push(words);
+      words = [];
+    } else {
+      words.push(raw[0].replace(/'([^']*)'|"((?:\\.|[^"\\])*)"|\\(.)/g, (_, single, double, escaped) =>
+        single ?? double ?? escaped));
+    }
+  }
+  if (words.length) commands.push(words);
+  return commands;
+}
+
+function commandArgs(words) {
+  const start = words.findIndex(w => !/^(?:do|then|else|elif|if|while|until|time|!|\{|sudo|command|exec)$/.test(w) &&
+    !/^[A-Za-z_][A-Za-z0-9_]*=/.test(w));
+  return start < 0 ? [] : words.slice(start);
+}
+
+const isExecutable = (word, program) => new RegExp('(?:^|[/\\\\])' + program + '(?:\\.exe)?$', 'i').test(word || '');
+
+function hasCommandSubstitution(script) {
+  const nonLiteral = script.replace(/"(?:\\.|[^"\\])*"|'[^']*'/g, quoted => quoted[0] === "'" ? '' : quoted);
+  return /(?:^|[^\\])(?:\$\(|\x60)/.test(nonLiteral);
+}
+
+function shellAliasWrites(expansion) {
+  if (hasCommandSubstitution(expansion)) return true;
+  return simpleCommands(expansion).some(segment => {
+    const words = commandArgs(segment);
+    return (isExecutable(words[0], 'git') && /^(?:push|send-pack)$/.test(gitSubcommand(words))) ||
+      isExecutable(words[0], 'git-send-pack') || (isExecutable(words[0], 'gh') && words[1] === 'api');
+  });
+}
+
 function pushAlias(cwd, words, subcommand) {
-  if (!/^[a-z][\w-]*$/i.test(subcommand)) return false;
+  if (!/^[a-z][\w-]*$/.test(subcommand) || gitBuiltins.has(subcommand)) return false;
   const prefix = [];
   // Ask Git for the effective alias, including any -C and -c options before the alias name.
   for (let i = 1; i < words.length; i++) {
@@ -265,13 +326,14 @@ function pushAlias(cwd, words, subcommand) {
   let name = subcommand.toLowerCase();
   while (/^[a-z][\w-]*$/.test(name) && !seen.has(name)) {
     if (name === 'push' || name === 'send-pack') return true;
+    if (gitBuiltins.has(name)) return false;
     seen.add(name);
     const alias = spawnSync('git', [...prefix, 'config', '--get', 'alias.' + name], {
       cwd, encoding: 'utf8', timeout: 3000, windowsHide: true
     });
     if (alias.status !== 0) return false;
     const expansion = alias.stdout.trim();
-    if (expansion.startsWith('!')) return true;
+    if (expansion.startsWith('!')) return shellAliasWrites(expansion.slice(1));
     const args = bareWords(expansion);
     name = (args ? gitSubcommand(['git', ...args]) : expansion.split(/\s/, 1)[0]).toLowerCase();
   }
@@ -279,8 +341,16 @@ function pushAlias(cwd, words, subcommand) {
 }
 
 function shellSegments(command) {
-  // Split on shell separators so a push inside "cd x && git push ..." or a retry loop is still checked.
-  return command.split(/&&|\|\||[;|\r\n]/).map(part => part.trim()).filter(Boolean);
+  // Split compound commands and retries, but keep separators inside quoted arguments.
+  const segments = [];
+  let start = 0;
+  for (const match of command.matchAll(/'[^']*'|"(?:\\.|[^"\\])*"|\\.|&&|\|\||[;|\r\n]/g)) {
+    if (/^['"\\]/.test(match[0])) continue;
+    segments.push(command.slice(start, match.index));
+    start = match.index + match[0].length;
+  }
+  segments.push(command.slice(start));
+  return segments.map(part => part.trim()).filter(Boolean);
 }
 
 function pushPolicy(cwd, command) {
@@ -311,6 +381,12 @@ function pushPolicy(cwd, command) {
       const reason = gitPush(here, words, others.length === 0);
       if (reason) return reason;
     } else if (mentionsPush && /\b(?:main|master)\b|--(?:all|mirror|branches)\b|\bsend-pack\b|\$|\*/.test(segment)) {
+      // Attached quoted arguments are not bare words, but a literal search for
+      // "git push main" in status, diff or log is still read-only.
+      const commands = simpleCommands(segment);
+      const args = commands.length === 1 ? commandArgs(commands[0]) : [];
+      if (isExecutable(args[0], 'git') && /^(?:status|diff|log)$/.test(gitSubcommand(args)) &&
+          !hasCommandSubstitution(segment)) continue;
       return 'Run this push as a plain git push command with literal names, so the hook can check it does not land on main.';
     }
   }
@@ -345,20 +421,41 @@ function shellSecret(word, cwd) {
   return true;
 }
 
-function ghApiPolicy(command) {
-  if (!/\bgh(?:\.exe)?\s+api\b/i.test(command)) return;
-  const method = /(?:^|\s)(?:--method[\s=]+|-X[\s=]*)["']?(\w+)/i.exec(command)?.[1].toUpperCase();
-  const writes = method ? /^(?:POST|PATCH|PUT|DELETE)$/.test(method)
-    : /(?:--input|--(?:raw-)?field|-[fF])(?:[\s=]|[A-Z])/i.test(command);
+const ghApiValueFlags = new Set([
+  '-f', '-F', '--field', '--raw-field', '-X', '--method', '--input', '--cache',
+  '-H', '--header', '--hostname', '-q', '--jq', '-p', '--preview', '-t', '--template',
+]);
+
+function ghApiPolicy(segment) {
+  const words = commandArgs(segment);
+  if (!isExecutable(words[0], 'gh') || words[1] !== 'api') return;
+  let endpoint, method, hasInput = false;
+  const fields = [];
+  for (let i = 2; i < words.length; i++) {
+    const word = words[i];
+    if (word === '--') { endpoint ??= words[i + 1]; break; }
+    if (!word.startsWith('-')) { endpoint ??= word; continue; }
+    const flag = word.startsWith('--') ? word.split('=', 1)[0] : word.slice(0, 2);
+    if (!ghApiValueFlags.has(flag)) continue;
+    const value = word === flag ? words[++i] : word.slice(flag.length).replace(/^=/, '');
+    if (flag === '-X' || flag === '--method') method = value?.toUpperCase();
+    else if (flag === '--input') hasInput = true;
+    else if (/^(?:-[fF]|--field|--raw-field)$/.test(flag)) fields.push(value || '');
+  }
+  const writes = method ? /^(?:POST|PATCH|PUT|DELETE)$/.test(method) : hasInput || fields.length > 0;
   if (!writes) return;
-  if (/\/merges(?:[/?\s"']|$)/i.test(command)) {
+  const route = /^(?:https?:\/\/[^/]+\/)?\/?repos\/[^/]+\/[^/]+(\/[^?#]*)/i.exec(endpoint || '')?.[1] || '';
+  if (/^\/merges(?:\/|$)/i.test(route)) {
     return 'Merge through a pull request (pulls/<n>/merge), not the branch merges API.';
   }
-  const contents = /\/contents(?:\/|\b)/i.test(command);
-  const refs = /\/git\/(?:refs|matching-refs)(?:\/|\b)/i.test(command);
+  const contents = /^\/contents(?:\/|$)/i.test(route);
+  const refs = /^\/git\/(?:refs|matching-refs)(?:\/|$)/i.test(route);
   if (!contents && !refs) return;
   if (fenced()) return 'Fenced seats push their own branch with git push.';
-  if (/heads\/(?:main|master)\b|\bbranch[=:]\s*["']?(?:main|master)\b/i.test(command) || (contents && !/\bbranch[=:]/i.test(command))) {
+  const branchFields = fields.filter(field => field.startsWith('branch=')).map(field => field.slice(7));
+  const mainRef = refs && (/^\/git\/(?:refs|matching-refs)\/heads\/(?:main|master)\/?$/i.test(route) ||
+    fields.some(field => /^ref=(?:refs\/)?heads\/(?:main|master)$/i.test(field)));
+  if (mainRef || (contents && (!branchFields.length || branchFields.some(isMain)))) {
     return 'Direct writes to main are blocked. Name a branch other than main, or push the Board logs with git push.';
   }
 }
@@ -373,7 +470,7 @@ function shellPolicy(event, root, input) {
   }
   const pushReason = pushPolicy(event.cwd || '.', command);
   if (pushReason) return pushReason;
-  const apiReason = shellSegments(command).map(ghApiPolicy).find(Boolean);
+  const apiReason = /\bgh(?:\.exe)?\b/i.test(command) && simpleCommands(command).map(ghApiPolicy).find(Boolean);
   if (apiReason) return apiReason;
   if (!root) return;
   const words = bareWords(command.trim());

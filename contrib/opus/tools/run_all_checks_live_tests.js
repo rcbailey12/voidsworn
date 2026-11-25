@@ -132,6 +132,22 @@ const ciMissing = run(['--only', optional.name], false, true);
 assert.equal(ciMissing.status, 1, ciMissing.output);
 assert.match(ciMissing.output, /FAIL: check could not run in CI: SKIP: Cannot find module/);
 
+write(failFile, "console.log('PASS: static fixture'); console.log('SKIP fixture: no pwsh');\n");
+const localSkip = run(['--only', failName]);
+assert.equal(localSkip.status, 0, localSkip.output);
+assert.match(localSkip.output, new RegExp('SKIP: ' + failName));
+const ciSkip = run(['--only', failName], false, true);
+assert.equal(ciSkip.status, 1, ciSkip.output);
+assert.match(ciSkip.output, /FAIL: check could not run in CI: SKIP fixture: no pwsh/);
+const windowsOnly = 'tools/pc/g2_export_selftest.js';
+const windowsMessage = 'SKIP: playtest export fixture needs Windows cmd.exe';
+write(path.join(root, windowsOnly), 'console.log(' + JSON.stringify(windowsMessage) + ');\n');
+const ciWindows = run(['--only', windowsOnly], false, true);
+assert.equal(ciWindows.status, process.platform === 'win32' ? 1 : 0, ciWindows.output);
+const { windowsSkipAllowed } = require(runner);
+assert.equal(windowsSkipAllowed(windowsOnly, windowsMessage, 'linux'), true);
+assert.equal(windowsSkipAllowed(windowsOnly, windowsMessage + '\nSKIP no pwsh', 'linux'), false);
+
 const work = fs.readFileSync(path.join(ROOT, 'tools/pc/work_issue.bat'), 'utf8');
 assert(/call :checks "%O%"/.test(codex));
 assert(/call "%TP%tmo\.bat" 5400 node contrib\\opus\\tools\\run_all_checks\.js/.test(codex));

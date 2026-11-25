@@ -5,8 +5,10 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { workflowTexts } = require('./workflow_patch_fixture');
 
-const workflow = fs.readFileSync(path.join(__dirname, '../../../.github/workflows/auto_pr.yml'), 'utf8');
+const workflow = workflowTexts().get('auto_pr.yml');
+const duet = /^  workflow_dispatch:/m.test(workflow);
 const run = /^        run: \|\r?\n((?: {10}[^\n]*\n|\r?\n)*)/m.exec(workflow);
 assert.ok(run, 'auto_pr.yml is missing its Bash step');
 const step = run[1].replace(/\r\n/g, '\n').replace(/^ {10}/gm, '');
@@ -15,6 +17,8 @@ const bash = windows ? path.join(process.env.ProgramFiles, 'Git', 'bin', 'bash.e
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'auto-pr-1098-'));
 const event = path.join(tmp, 'event.json');
 const branch = 'work/issue-1098-openai';
+const branchSha = '1111111111111111111111111111111111111111';
+const pushSha = '2222222222222222222222222222222222222222';
 // The test runs with the workflow's own STANDING list, so a change there is exercised here (issue 1488 added 906).
 const standingMatch = /^ +STANDING: '([0-9 ]+)'/m.exec(workflow);
 assert.ok(standingMatch, 'auto_pr.yml is missing its STANDING list');
@@ -35,13 +39,17 @@ const fakeGh = [
   '    "repos/example/voidsworn/pulls?state=open&head=example:$BRANCH --jq .[0].number") echo 42 ;;',
   '    "repos/example/voidsworn/issues/1098 --jq .title") echo "Fixture title" ;;',
   '    "repos/example/voidsworn/pulls/42 --jq .body") printf "%s\\n" "$EXISTING_PR_BODY" ;;',
+  '    \'repos/example/voidsworn/pulls/42 --jq .body // ""\') printf "%s\\n" "$EXISTING_PR_BODY" ;;',
+  '    "repos/example/voidsworn/commits/$BRANCH --jq .sha") echo "$BRANCH_SHA" ;;',
+  '    "repos/example/voidsworn/commits/$BRANCH_SHA --jq .commit.message") cat dispatch-message.txt ;;',
+  '    "repos/example/voidsworn/commits/$GITHUB_SHA --jq .parents | length") echo "$HEAD_PARENTS" ;;',
   '    "repos/example/voidsworn/pulls -f base=main")',
   '      [ "$5 $6" = "-f head=$BRANCH" ] && [ "$body_arg" = body.md ] && [ "${!#}" = --silent ] || return 2',
   // race and down (PR 1492): the create fails; then the lookup sees another run's PR (race) or fails too (down).
   '      if [ "$PR_ACTION" != create ]; then : > created; return 1; fi',
   '      [ "$(wc -c < "$body_arg")" -le 65536 ] || { echo "Body is too long" >&2; return 1; }',
   '      echo "sent create" ;;',
-  '    "repos/example/voidsworn/compare/main...$BRANCH --jq .ahead_by") echo 3 ;;',
+  '    "repos/example/voidsworn/compare/main...$BRANCH --jq .ahead_by") echo "$AHEAD" ;;',
   '    "-X PATCH repos/example/voidsworn/pulls/42")',
   '      [ "$PR_ACTION" = edit ] && [ "$body_arg" = body.md ] && [ "${!#}" = --silent ] || return 2',
   '      [ "$(wc -c < "$body_arg")" -le 65536 ] || { echo "Body is too long" >&2; return 1; }',
@@ -63,18 +71,22 @@ const windowsSetup = [
   'fi',
 ].join('\n');
 
-function send(action, message, head = branch, existingBody = '') {
-  const payload = JSON.stringify({ head_commit: { message } });
-  fs.writeFileSync(event, payload);
-  const result = spawnSync(bash, ['--noprofile', '--norc', '-e', '-s'], {
-    cwd: tmp,
-    input: [windows ? windowsSetup : '', fakeGh, step].join('\n'),
-    encoding: 'utf8',
+function launch(action, head, existingBody, extra = {}) {
+  return spawnSync(bash, ['--noprofile', '--norc', '-e', '-s'], {
+    cwd: tmp, input: [windows ? windowsSetup : '', fakeGh, step].join('\n'),
+    encoding: 'utf8', windowsHide: true, timeout: 30000,
     env: { ...process.env, PR_ACTION: action, BRANCH: head, REPO: 'example/voidsworn',
-      STANDING: standingList, GITHUB_EVENT_PATH: 'event.json', EXISTING_PR_BODY: existingBody },
-    timeout: 30000,
-    windowsHide: true,
+      STANDING: standingList, GITHUB_EVENT_PATH: 'event.json', GITHUB_EVENT_NAME: 'push',
+      GITHUB_SHA: pushSha, BRANCH_SHA: branchSha, EXISTING_PR_BODY: existingBody, HEAD_PARENTS: '1', AHEAD: '3', ...extra },
   });
+}
+
+function send(action, message, head = branch, existingBody = '', dispatch = false) {
+  fs.rmSync(path.join(tmp, 'created'), { force: true });
+  const payload = JSON.stringify(dispatch ? { inputs: { branch: head } } : { head_commit: { message } });
+  fs.writeFileSync(event, payload);
+  if (dispatch) fs.writeFileSync(path.join(tmp, 'dispatch-message.txt'), message);
+  const result = launch(action, head, existingBody, dispatch ? { GITHUB_EVENT_NAME: 'workflow_dispatch' } : {});
   assert.ifError(result.error);
   assert.equal(result.status, 0, action + '\n' + result.stdout + result.stderr);
   assert.match(result.stdout, new RegExp('^sent ' + action + '$', 'm'));
@@ -188,12 +200,7 @@ for (const action of ['create', 'edit']) {
 function failedCreate(mode) {
   fs.writeFileSync(event, JSON.stringify({ head_commit: { message: `${title}\n\n${report}` } }));
   fs.rmSync(path.join(tmp, 'created'), { force: true });
-  return spawnSync(bash, ['--noprofile', '--norc', '-e', '-s'], {
-    cwd: tmp, input: [windows ? windowsSetup : '', fakeGh, step].join('\n'), encoding: 'utf8',
-    env: { ...process.env, PR_ACTION: mode, BRANCH: branch, REPO: 'example/voidsworn', STANDING: standingList,
-      GITHUB_EVENT_PATH: 'event.json', EXISTING_PR_BODY: '' },
-    timeout: 30000, windowsHide: true,
-  });
+  return launch(mode, branch, '');
 }
 const race = failedCreate('race');
 assert.equal(race.status, 0, race.stdout + race.stderr);
@@ -201,5 +208,31 @@ assert.match(race.stdout, /was opened by another run/);
 const down = failedCreate('down');
 assert.notEqual(down.status, 0, 'create and lookup both failed: the run must fail, not report a race');
 assert.doesNotMatch(down.stdout, /was opened by another run/);
+
+if (duet) {
+  const dispatched = send('create', refreshMessage, 'codex/issue-1098', '', true);
+  assert.match(dispatched, /Summary of the job/);
+  assert.match(dispatched, /Opened automatically from branch codex\/issue-1098/);
+  const wrong = launch('create', 'muse/folder/branch', '', { GITHUB_EVENT_NAME: 'workflow_dispatch' });
+  assert.equal(wrong.status, 0, wrong.stderr);
+  assert.match(wrong.stdout, /not a job branch/);
+  assert.doesNotMatch(wrong.stdout, /sent create/);
+  fs.writeFileSync(event, JSON.stringify({ head_commit: { message: refreshMessage } }));
+  const zero = launch('create', branch, '', { AHEAD: '0' });
+  assert.equal(zero.status, 0, zero.stderr);
+  assert.match(zero.stdout, /has no commits ahead of main/);
+  assert.doesNotMatch(zero.stdout, /sent create/);
+  const merged = launch('edit', branch, 'Previous report', { HEAD_PARENTS: '2' });
+  assert.equal(merged.status, 0, merged.stderr);
+  assert.match(merged.stdout, /is a merge commit: PR 42 text kept/);
+  assert.doesNotMatch(merged.stdout, /sent edit/);
+  const suffix = '<!-- kept on refresh: notes and evidence below -->\n' + 'Board note '.repeat(500) + '\n';
+  const kept = send('edit', messageWithChecks(70000).message, branch, 'Discarded summary\n' + suffix);
+  assert.ok(kept.endsWith(suffix), 'keep the complete note even when the new report has to be cut');
+  assert.ok(!kept.includes('Discarded summary'));
+  const refreshedAgain = send('edit', refreshMessage, branch, 'First refresh\n' + suffix);
+  assert.ok(refreshedAgain.endsWith(suffix), 'repeated refresh must not add blank lines');
+  console.log('PASS auto_pr handoff: dispatch, invalid branch and zero-ahead guards, merge-main text, and kept notes');
+}
 
 console.log('PASS auto_pr_body_tests: create and edit bound long bodies, and no PR body carries a closing word (Refs only)');

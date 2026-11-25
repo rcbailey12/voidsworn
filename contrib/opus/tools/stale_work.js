@@ -52,7 +52,7 @@ const hrs = h => (h < 48 ? `${Math.round(h)} h` : `${Math.round(h / 24)} days`);
 
 // data: { branches: [{name, sha, date}], pulls: [{number, state, merged_at, updated_at, head, head_sha, title, checks}],
 //         issues: [{number, state_reason, closed_at, labels, title}], comments: [{issue, user, created_at, body}] }
-function analyze(data, patterns, now) {
+function analyze(data, patterns, now, containsPartial = () => false) {
   const localPulls = data.pulls.filter(p => p.local_head !== false);
   const prHeads = new Set(localPulls.map(p => p.head + ':' + p.head_sha));
   const openHeads = new Set(localPulls.filter(p => p.state === 'open').map(p => p.head));
@@ -61,10 +61,12 @@ function analyze(data, patterns, now) {
   for (const b of data.branches) {
     const a = age(now, b.date);
     if (b.name.endsWith('-partial')) {
+      if (!SEAT_PREFIX.test(b.name) || !(a > 24)) continue;
       const full = byName.get(b.name.slice(0, -8));
-      const fullNewer = full && (full.sha === b.sha || Date.parse(full.date) > Date.parse(b.date));
-      const prLater = localPulls.some(p => p.head === b.name.slice(0, -8) && Date.parse(p.updated_at) > Date.parse(b.date));
-      if (SEAT_PREFIX.test(b.name) && a > 24 && !fullNewer && !prLater) out.partial.push({ branch: b.name, age: a });
+      // A PR edit does not move the head. Use the actual head's SHA, date or ancestry.
+      const recovered = full && (full.sha === b.sha || Date.parse(full.date) > Date.parse(b.date) ||
+        containsPartial(b, full));
+      if (!recovered) out.partial.push({ branch: b.name, age: a });
       continue;
     }
     if (prHeads.has(b.name + ':' + b.sha) || openHeads.has(b.name)) continue;
@@ -148,7 +150,15 @@ function fetchGithub(repo, now, request = gh) {
     '.[] | select(.pull_request == null) | {number, title, state_reason, closed_at, labels: [.labels[].name]}']));
   const comments = jsonLines(request(['api', `repos/${repo}/issues/comments?since=${since}&per_page=100`, '--paginate', '--jq',
     '.[] | {issue: (.issue_url | split("/") | last), user: .user.login, created_at, body}']));
-  const r = analyze({ branches, pulls, issues, comments }, patterns, now);
+  const r = analyze({ branches, pulls, issues, comments }, patterns, now, (partial, full) => {
+    // Compare immutable SHAs in this order: an "ahead" full head contains the partial tip.
+    // If the compare cannot establish that, keep the partial visible.
+    try {
+      return request(['api', `repos/${repo}/compare/${partial.sha}...${full.sha}?per_page=1`, '--jq', '.status']).trim() === 'ahead';
+    } catch {
+      return false;
+    }
+  });
   const base = encodeURIComponent(defaultBranch);
   const compare = x => {
     const raw = request(['api', `repos/${repo}/compare/${base}...${x.sha}?per_page=1`, '--jq', '.ahead_by']).trim();

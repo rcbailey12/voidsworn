@@ -115,7 +115,30 @@ function classifyGeneric(run) {
   if (run.code !== 0 || failLine) {
     return { result: 'FAIL', detail: failLine || (v && /^FAIL\b/.test(v) ? v : 'FAIL: exit ' + run.code) };
   }
+  const skip = skipLines(out)[0];
+  if (skip) return { result: 'SKIP', detail: skip };
   return { result: 'PASS', detail: v && /^PASS\b/.test(v) ? v : 'PASS: exit 0' };
+}
+
+const skipLines = out => out.split(/\r?\n/).map(line => line.trim()).filter(line => /^SKIP\b/.test(line));
+
+// Hosted CI is Linux. Allow only these Windows-only probes to skip there,
+// not a missing cross-platform dependency in a row that also tests Windows.
+const WINDOWS_ONLY_SKIPS = new Map([
+  ['tools/pc/g2_export_selftest.js', /^SKIP: playtest export fixture needs Windows cmd\.exe$/],
+  ['tools/pc/pause_all_selftest.js', /^SKIP Windows pause fixtures:/],
+  ['tools/pc/runner_selftest.js', /^SKIP Windows fault matrix:/],
+  ['tools/recipe/stage5_fail_selftest.js', /^SKIP Windows fault matrix:/],
+  ['contrib/opus/tools/godot_profile_tests.js', /^SKIP: Godot profile launch test needs the Windows watchdog$/],
+  ['contrib/opus/tools/gpu_slots_tests.js', /^SKIP Windows watchdog integration \(/],
+  ['contrib/opus/tools/pc_jobs_1194_tests.js', /^SKIP Windows job_wrap, preflight, hand-off and doctor runs \(/],
+  ['contrib/opus/tools/runner_stall_tests.js', /^SKIP Windows process and file probes:/],
+]);
+
+function windowsSkipAllowed(file, output, platform = process.platform) {
+  const allowed = WINDOWS_ONLY_SKIPS.get(file);
+  const skips = skipLines(output);
+  return platform !== 'win32' && Boolean(allowed) && skips.length > 0 && skips.every(line => allowed.test(line));
 }
 
 function exitCodeFor(report) {
@@ -277,7 +300,8 @@ async function execute(c, baseline) {
       return row;
     }
     let verdict;
-    if (c.kind === 'naming') verdict = classifyNaming(run, baseline);
+    if (run.code === 0 && skipLines(run.output).length) verdict = classifyGeneric(run);
+    else if (c.kind === 'naming') verdict = classifyNaming(run, baseline);
     else if (c.kind === 'pack') verdict = classifyPack(run, baseline);
     else if (c.kind === 'findings') verdict = classifyFindings(run, baseline);
     else if (c.kind === 'drift') verdict = classifyDrift(run, baseline);
@@ -329,7 +353,7 @@ async function main() {
     }
     console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
     const row = await execute(c, baseline);
-    if (row.result === 'SKIP' && (c.gate || process.env.CI)) {
+    if (row.result === 'SKIP' && (c.gate || (process.env.CI && !windowsSkipAllowed(c.file, row.output)))) {
       row.result = 'FAIL';
       row.detail = 'FAIL: ' + (c.gate ? 'gating row would skip' : 'check could not run in CI') + ': ' + row.detail;
     }
@@ -364,4 +388,4 @@ if (require.main === module) {
   main().catch(e => { console.error(ascii(e.stack)); process.exitCode = 1; });
 }
 
-module.exports = { rowEnv, classifyFindings, classifyPack, classifyDrift, classifyNaming, classifyGeneric, verdictLine, parseFindings, exitCodeFor, ROOT, buildChecks, fastSelected };
+module.exports = { rowEnv, classifyFindings, classifyPack, classifyDrift, classifyNaming, classifyGeneric, verdictLine, parseFindings, exitCodeFor, ROOT, buildChecks, fastSelected, windowsSkipAllowed };

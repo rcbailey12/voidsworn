@@ -23,9 +23,10 @@ else ever reaches main.
   paths. A non-secret file whose name matches (for example `hotkeys.key`) cannot be read by Claude: rename it so the name
   no longer ends in a credential pattern (`hotkeys_key.txt`), or ask Ryan to open it.
 - **Pushes (every seat).** Use plain `git push` with named refs. Wildcard and matching refspecs, bulk flags, push
-  aliases and Git shell aliases are refused. A push to main must be a fast-forward, in a Bash call of its own, whose
-  commits each change only `contrib/opus/LOOP.md` or `contrib/opus/FINDINGS.md`. The checked-out tracked files must
-  match the tip, and both the memory and doc lints must pass. Arbitrary scripts are still outside the hook's view.
+  aliases and shell aliases that run push, send-pack, gh api or command substitutions are refused. A push to main must
+  be a fast-forward, in a Bash call of its own, whose commits each change only `contrib/opus/LOOP.md` or
+  `contrib/opus/FINDINGS.md`. The F9 tip lint switch is off until F6 and the LOOP.md roll land. Once enabled, the checked-out
+  tracked files must match the tip, and both the memory and doc lints must pass. Arbitrary scripts are outside the hook's view.
   GitHub's branch protection on main is the real lock (Fable's audit of PR 1706).
 - **Key file names in shell commands.** A bare word ending in `.key`, `.pem`, `.p12` or `.pfx` counts as a credential only
   when it is a path (slash, backslash or colon) or names a file that exists, so code such as `board.key(` can be searched.

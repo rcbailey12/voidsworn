@@ -5,11 +5,14 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { workflowTexts } = require('./workflow_patch_fixture');
 
 const dir = path.join(__dirname, '../../../.github/workflows');
-const read = name => fs.readFileSync(path.join(dir, name), 'utf8').replace(/\r\n/g, '\n');
+const workflows = workflowTexts();
+const read = name => workflows.get(name);
 const autoPr = read('auto_pr.yml');
 const checks = read('checks.yml');
+const duet = workflows.has('main_checks.yml');
 
 // A newly downloaded tool must be checked before it can be extracted or put in main's shared cache.
 for (const [tool, command] of [['godot', 'unzip -q '], ['blender', 'tar -xJf ']]) {
@@ -17,6 +20,7 @@ for (const [tool, command] of [['godot', 'unzip -q '], ['blender', 'tar -xJf ']]
   const verification = action.indexOf('sha256sum --check -');
   assert.ok(verification > action.indexOf('curl -fsSL ') && verification < action.indexOf(command), tool + ': verify before extraction');
   assert.ok(action.includes('curl -fsSL '), tool + ': fail on an HTTP error');
+  assert.match(action, /[a-f0-9]{64} "[^"]+" \| sha256sum --check -/, tool + ': pin the release digest before extraction');
   const keys = [...action.matchAll(/^\s+key: (\S+)\s*$/gm)].map(m => m[1]);
   assert.equal(keys.length, 2, tool + ': expected restore and save cache keys');
   assert.equal(keys[0], keys[1], tool + ': cache key mismatch');
@@ -61,7 +65,7 @@ const cases = [
   ['neon/issue-12-partial', false, false],
   // A nested Muse branch gets checks but no pull request (auto_pr.yml opens PRs for one-level muse/<name> only).
   ['muse/a/b', false, true],
-  ['claude/project-thread-x', false, false],
+  ['claude/project-thread-x', false, duet],
   ['main', false, false],
 ];
 for (const [branch, wantPr, wantChecks] of cases) {
@@ -75,11 +79,37 @@ for (const [branch] of cases) if (triggers(pr, branch)) assert.ok(triggers(ck, b
 assert.match(checks, /^permissions:\n  contents: read\n(?!  \S)/m, 'checks.yml needs a top-level permissions: contents: read');
 // auto_pr.yml has a short job timeout and uses REST only (RULEBOOK 2.5).
 assert.match(autoPr, /^    timeout-minutes: 5$/m, 'auto_pr.yml needs timeout-minutes: 5 on its job');
-for (const name of fs.readdirSync(dir).filter(f => /\.ya?ml$/.test(f))) {
+for (const name of workflows.keys()) {
   const text = read(name).split('\n').filter(l => !/^\s*#/.test(l)).join('\n');
   assert.doesNotMatch(text, /\bgh (pr|issue) |graphql/i, `${name} must use gh api REST calls, not gh pr/issue (GraphQL)`);
 }
 // Standing issues 256 (outside check) and 906 (Artoo's sweep) never close on a merge.
 assert.match(autoPr, /^ +STANDING: '256 906'/m);
+
+if (duet) {
+  // Before rollout these are the actual files produced by applying the Board patch to a scratch copy.
+  assert.match(autoPr, /^  workflow_dispatch:\n    inputs:\n      branch:\n        description: .+\n        required: true\n        type: string$/m);
+  assert.match(autoPr, /BRANCH: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.branch \|\| github\.ref_name \}\}/);
+  assert.match(autoPr, /!cancelled\(\) && !github\.event\.deleted/);
+  const stale = read('stale_work.yml');
+  assert.match(stale, /workflow_dispatch:/);
+  assert.match(stale, /args=\(--github --dispatch\)/);
+  assert.match(stale, /^  checks: read\b/m);
+  assert.match(stale, /STALE_ISSUE: \$\{\{ vars\.STALE_ISSUE \}\}/);
+  const main = read('main_checks.yml');
+  assert.match(main, /push:\n    branches: \[main\]\n    paths-ignore:\n      - 'contrib\/opus\/LOOP\.md'\n      - 'contrib\/opus\/FINDINGS\.md'/);
+  assert.match(main, /uses: \.\/\.github\/workflows\/checks\.yml/);
+  assert.match(checks, /^  workflow_call:/m);
+  const logs = read('board_logs.yml');
+  assert.match(logs, /push:\n    branches: \[main\]\n    paths:\n      - 'contrib\/opus\/LOOP\.md'\n      - 'contrib\/opus\/FINDINGS\.md'/);
+  assert.match(logs, /node contrib\/opus\/tools\/memory_lint_tests\.js\n +node contrib\/opus\/tools\/doc_check_tests\.js/);
+  assert.match(checks, /shard: \[1, 2, 3, 4, 5\]/);
+  assert.match(checks, /SHARD: \$\{\{ matrix\.shard \}\}\/5/);
+  assert.match(checks, /name: All checks\n(?:    #[^\n]+\n)+    if: \$\{\{ !cancelled\(\) && !github\.event\.deleted \}\}/);
+  assert.match(checks, /git merge-tree --write-tree HEAD origin\/main/);
+  assert.match(checks, /git rev-list -1 "\$base"\.\.HEAD/);
+  assert.match(checks, /^ +seed=(359|360|361)$/m);
+  assert.doesNotMatch(checks, /date -u/);
+}
 
 console.log('PASS workflow_config_tests: auto_pr and checks branch lists agree, read-only checks token, REST only, 5 min auto_pr timeout');

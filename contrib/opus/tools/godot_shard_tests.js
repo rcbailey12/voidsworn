@@ -7,11 +7,11 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { workflowTexts } = require('./workflow_patch_fixture');
 
 const ROOT = path.resolve(__dirname, '../../..');
 const SCRIPT = path.join(ROOT, 'godot/tools/ci/run_checks.sh');
 const LIST = path.join(ROOT, 'godot/tools/ci/godot_checks.txt');
-const WORKFLOW = path.join(ROOT, '.github/workflows/checks.yml');
 const windows = process.platform === 'win32';
 const sh = windows ? path.join(process.env.ProgramFiles, 'Git', 'bin', 'bash.exe') : 'sh';
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'godot-shard-1430-'));
@@ -29,7 +29,7 @@ const stepLines = headless.filter(l => l.split('|')[2].startsWith('step:')).map(
 assert.ok(headless.length > 50, 'godot_checks.txt has fewer headless lines than expected');
 
 // The workflow's shard count, read from its matrix, so a change there is exercised here.
-const wf = fs.readFileSync(WORKFLOW, 'utf8');
+const wf = workflowTexts().get('checks.yml');
 const m = /shard: \[([0-9, ]+)\]/.exec(wf);
 assert.ok(m, 'checks.yml godot-game has no shard matrix');
 const shards = m[1].split(',').map(s => Number(s.trim()));
@@ -101,6 +101,42 @@ for (const file of unionFiles) {
 const conflictLeft = treeCommit(['ordinary.txt'], 'left', base);
 const conflictRight = treeCommit(['ordinary.txt'], 'right', base);
 assert.match(fixtureGit(1, 'merge-tree', '--write-tree', conflictLeft, conflictRight), /CONFLICT.*ordinary\.txt/);
+if (wf.includes('git merge-tree --write-tree HEAD origin/main')) {
+  // Execute the proposed changes job against real refs, including one that is
+  // behind main rather than exactly at its tip.
+  const step = /        id: classify\n[\s\S]*?        run: \|\n((?: {10}[^\n]*\n)+)/.exec(wf);
+  assert.ok(step, 'changes job is missing its Bash step');
+  fixtureGit(0, 'read-tree', '--reset', '-u', base);
+  const docs = treeCommit(['Docs.md'], 'docs only', base);
+  fixtureGit(0, 'remote', 'add', 'origin', '.');
+  fixtureGit(0, 'update-ref', 'refs/heads/main', conflictRight);
+  fs.mkdirSync(path.join(mergeFixture, 'tools/ci'), { recursive: true });
+  fs.copyFileSync(path.join(ROOT, 'tools/ci/docs_only.js'), path.join(mergeFixture, 'tools/ci/docs_only.js'));
+  function classify(commit, ref, status, output, detail) {
+    fixtureGit(0, 'checkout', '-q', '--detach', '-f', commit);
+    const outputFile = path.join(tmp, 'changes-output.txt');
+    fs.writeFileSync(outputFile, '');
+    const r = spawnSync(sh, ['-e', '-s'], {
+      cwd: mergeFixture, encoding: 'utf8', windowsHide: true, timeout: 20000,
+      // The docs_only self-test checks live YAML wiring separately in its real
+      // checkout. The fixture uses the real classifier for changed paths.
+      input: 'node() { if [ "$2" = --self-test ]; then return 0; fi; command node "$@"; }\n' +
+        step[1].replace(/^ {10}/gm, ''),
+      env: { ...process.env, EVENT: 'push', BASE: '', GITHUB_REF: ref, RUNNER_TEMP: shellPath(tmp),
+        GITHUB_STEP_SUMMARY: shellPath(path.join(tmp, 'changes-summary.txt')), GITHUB_OUTPUT: shellPath(outputFile) },
+    });
+    assert.ifError(r.error);
+    assert.equal(r.status, status, r.stdout + r.stderr);
+    assert.match(r.stdout, detail);
+    assert.equal(fs.readFileSync(outputFile, 'utf8').trim(), output);
+  }
+  const branch = 'refs/heads/codex/issue-2179';
+  classify(conflictRight, 'refs/heads/main', 0, 'godot=true', /Running on main/);
+  classify(base, branch, 0, 'godot=false', /Nothing ahead/);
+  classify(docs, branch, 0, 'godot=false', /Docs-only change/);
+  classify(left, branch, 0, 'godot=true', /Code changed/);
+  classify(conflictLeft, branch, 1, '', /CONFLICT.*ordinary\.txt/);
+}
 // No recorded times at all (a fresh check, or the file gone): still every check exactly once.
 cover(wfCount, { GODOT_CHECKS_TIMES: shellPath(path.join(tmp, 'missing_times.txt')) });
 
