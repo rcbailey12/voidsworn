@@ -11,7 +11,12 @@ const { spawn } = require('child_process');
 const d = require('./pc_daemon');
 
 const SHA = 'a'.repeat(40), OLD = 'b'.repeat(40);
-const tmp = () => fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'pcd-test-')));
+const tempDirs = [];
+function tmp() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pcd-test-'));
+  tempDirs.push(dir);
+  return fs.realpathSync.native(dir);
+}
 const goText = (extra = '', sha = SHA) => `PC go: ${sha}
 reviewed: Artoo and Board audit at ${sha.slice(0, 8)}
 job: lb_1777
@@ -767,4 +772,12 @@ spawn(process.execPath, ['-e', 'setTimeout(() => require("fs").writeFileSync(' +
     });
   }
   console.log(`PASS: pc_daemon ${passed} checks (go comment, gate, step runner, watchdog contract, lease, paths, daemon order, recheck, failures, quarantine, delivery, commands, gh calls)`);
-})().catch(e => { console.error('FAIL: ' + (e.stack || e.message)); process.exit(1); });
+})().catch(e => {
+  console.error('FAIL: ' + (e.stack || e.message));
+  process.exitCode = 1;
+}).finally(() => {
+  for (const dir of tempDirs.reverse()) {
+    try { fs.rmSync(dir, { recursive: true, force: true, maxRetries: 3 }); }
+    catch (e) { console.error('FAIL: could not clean test folder ' + dir + ': ' + e.message); process.exitCode = 1; }
+  }
+});

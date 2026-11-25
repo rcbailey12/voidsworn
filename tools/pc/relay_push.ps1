@@ -249,7 +249,7 @@ try {
   for ($b = 0; $b -lt $batches.Count; $b++) {
     $part = @($batches[$b]); $last = $b -eq $batches.Count - 1
     for ($try = 0; $try -lt 2; $try++) {
-      Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+      Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune --no-auto-maintenance --no-tags --refmap= origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' | Out-Null
       $ErrorActionPreference = 'Continue'
       $parent = (& $gitExe @gitLongPaths --git-dir $relayMirror rev-parse --verify -q "refs/heads/$branch^{commit}" 2>$null) | Select-Object -Last 1
       $ErrorActionPreference = 'Stop'

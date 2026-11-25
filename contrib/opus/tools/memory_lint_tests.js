@@ -160,6 +160,7 @@ function scanRanges(root) {
 
 // Check 5: a row from R281 on names the document it landed in, or says it was a one-off job call.
 function scanLandings(root, findingsText) {
+  const { exists } = require('./sparse_check_inputs')(root);
   const fails = [];
   let checked = 0;
   const lines = findingsText.split(/\r?\n/);
@@ -172,7 +173,7 @@ function scanLandings(root, findingsText) {
     if (/one-off job decision/i.test(line)) continue;
     const landed = /landed in ([^|]*)/i.exec(line);
     const paths = landed ? [...landed[1].matchAll(/[\w./-]+\.(?:md|js|ps1|bat|yml|gd|py|json)\b/g)].map(p => p[0]) : [];
-    if (paths.some(p => fs.existsSync(path.join(root, p)))) continue;
+    if (paths.some(p => exists(path.join(root, p)))) continue;
     const why = paths.length
       ? 'its "landed in" path (' + paths.join(', ') + ') is not a file in the repo'
       : 'it names no document it landed in';

@@ -274,7 +274,7 @@ function Write-RunnerHashes {
   # Issue 1739: a refreshed lane's runner checks itself against the hash file this writes, so the hashes always name the
   # copy just installed. One shared work217 file served every lane before, and went stale on each refresh (lane D,
   # Nov 23: codex_issue.bat and six others "differ from the Board-copied hashes" after the c9596825 refresh).
-  # runner_common.ps1 hashwrite owns the file list. A failure is logged and leaves the run's hashcheck to warn.
+  # runner_common.ps1 hashwrite owns the file list. Codex refuses to start until the lane hashes match.
   if ($seat -notlike 'board*' -and $seat -ne 'work217') { return }
   $runnerDir = if ($Build -eq 'work217') { $liveTools } else { Join-Path $liveTools 'pc' }
   $hashFile = Join-Path $root "$Build\runner_hashes.txt"

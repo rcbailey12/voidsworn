@@ -2,6 +2,8 @@
 # (rcbailey12/voidsworn: 22.66 GB and 701 branches on Nov 22, 316 pc-out and 133 pin). Results now go to the private
 # relay repo (relay_push.ps1), so these branches only bloat the code repo.
 #   prune_relay_branches.ps1            dry run (the default): writes the list it would delete, deletes nothing
+#   prune_relay_branches.ps1 audit      compares live GitHub tips, prints results only
+#   prune_relay_branches.ps1 audit-cached   compares local mirrors only, never gives permission to delete
 #   prune_relay_branches.ps1 live       deletes only branches in the newest dry-run list that are still at the commit the
 #                                       list names AND still pass every keep rule below, checked again now; asks Ryan
 #                                       to type YES first
@@ -13,14 +15,23 @@
 #   5. board/pc-out-<job> while voidsworn_test\<job> still holds a checkout (repo folder, or a checkouts.txt entry that
 #      still exists) or an attempt there names the branch in relay_branch.txt, relay_receipt.txt or relay_found.txt with a checkout left,
 #      because the job's cleanup proves its relay from that branch before it frees the disk.
+#   6. its tip's tracked paths, modes and object IDs are not all proven on the private relay.
 # It deletes branches on GitHub only, never a file on this PC. Every run is logged in voidsworn_test\prune\.
 param([string]$Mode = '')
 $ErrorActionPreference = 'Stop'
+$env:GIT_TERMINAL_PROMPT = '0'
 $test = [bool]$env:PC_TEST_HELPER
 if ($test) { $vt = $env:PC_TEST_HELPER_VT } else { $vt = Join-Path (Join-Path $env:USERPROFILE 'Downloads') 'voidsworn_test' }
 $vt = [IO.Path]::GetFullPath($vt).TrimEnd('\', '/')
 $source = 'https://github.com/rcbailey12/voidsworn'
-if ($test) { $source = $env:PC_TEST_SOURCE }
+$relaySource = 'https://github.com/rcbailey12/voidsworn-relay'
+if ($test) {
+  $source = $env:PC_TEST_SOURCE
+  $relaySource = $env:PC_TEST_RELAY_SOURCE
+  if (-not $source -or -not $relaySource) { throw 'test requires both Git sources' }
+}
+$mirror = Join-Path $vt 'repo-mirror.git'
+$relayMirror = Join-Path $vt 'relay-mirror.git'
 $unix = $PSVersionTable.Platform -eq 'Unix'
 $gitExe = 'git.exe'; if ($unix) { $gitExe = @(Get-Command git -CommandType Application)[0].Source }
 $days = 3
@@ -28,7 +39,20 @@ function Run-Git {
   $ErrorActionPreference = 'Continue'
   $out = & $gitExe @args 2>&1 | ForEach-Object { "$_" }
   if ($LASTEXITCODE -ne 0) { throw ('git failed: ' + ($args -join ' ') + ': ' + ($out -join ' ')) }; $out }
-if ($Mode -and $Mode -ne 'live') { throw "the only mode is live (no argument is a dry run), got: $Mode" }
+. (Join-Path $PSScriptRoot 'relay_branch_proof.ps1')
+if ($Mode -and $Mode -notin @('live', 'audit', 'audit-cached')) { throw "unknown mode: $Mode" }
+$legacyPattern = 'refs/heads/board/pc-out-*'
+$relayPattern = 'refs/heads/pc-out-*'
+if ($Mode -in @('audit','audit-cached')) {
+  $cached = $Mode -eq 'audit-cached'
+  $mainTips = Read-BranchTips $source $(if ($cached) { $mirror }) @($legacyPattern)
+  $relayTips = Read-BranchTips $relaySource $(if ($cached) { $relayMirror }) @($relayPattern)
+  Write-Output "$(if ($cached) { 'CACHE ONLY (not live proof)' } else { 'LIVE TIPS' }): $($mainTips.Count) legacy branches, $($relayTips.Count) relay branches"
+  foreach ($name in ($mainTips.Keys | Sort-Object)) {
+    Write-RelayProof $name $mainTips[$name] (Get-RelayProof $name $mainTips[$name] $relayTips $mirror $relayMirror)
+  }
+  exit 0
+}
 $live = $Mode -eq 'live'
 $home1657 = Join-Path $vt 'prune'
 if (-not (Test-Path -LiteralPath $home1657)) { $null = New-Item -ItemType Directory -Path $home1657 }
@@ -37,10 +61,7 @@ $log = Join-Path $home1657 "prune_$(if ($live) { 'live' } else { 'dry' })_$stamp
 function Say($t) { Write-Output $t; Add-Content -LiteralPath $log -Value $t }
 
 # What GitHub holds now: name -> commit
-$remote = @{}
-foreach ($l in @(Run-Git ls-remote $source 'refs/heads/board/pc-out-*' 'refs/heads/board/pin-*')) {
-  if ("$l" -match '\A([0-9a-f]{40})\trefs/heads/(board/(?:pc-out|pin)-[A-Za-z0-9._-]+)\z') { $remote[$Matches[2]] = $Matches[1] }
-}
+$remote = Read-BranchTips $source $null @($legacyPattern,'refs/heads/board/pin-*')
 Say ("{0}: {1} board/pc-out and board/pin branches on GitHub" -f $stamp, $remote.Count)
 
 # Decide each branch from the PC's state now. The dry run writes this; the live run decides again after Ryan types YES,
@@ -73,7 +94,6 @@ function Get-Decision {
   } elseif (-not $test) { throw 'gh is not installed: nothing decided' }
   if ($test -and $env:PC_TEST_OPEN_HEADS) { foreach ($h in $env:PC_TEST_OPEN_HEADS.Split(',')) { $openHeads[$h] = 1 } }
   # commit dates from the shared repo mirror (no download); a branch the mirror lacks is kept
-  $mirror = Join-Path $vt 'repo-mirror.git'
   $dates = @{}
   if (Test-Path -LiteralPath (Join-Path $mirror 'HEAD')) {
     foreach ($l in @(Run-Git --git-dir $mirror for-each-ref '--format=%(refname:lstrip=2) %(objectname) %(committerdate:unix)' 'refs/heads/board/')) {
@@ -104,18 +124,30 @@ function Get-Decision {
     }
     if ($held) { $busy["board/pc-out-$($job.Name)"] = "job folder $($job.FullName) still holds a checkout" }
   }
+  $relayError = ''
+  try { $relayTips = Read-BranchTips $relaySource $null @($relayPattern) }
+  catch { $relayError = "live relay unavailable: $($_.Exception.Message)" }
   $prune = @(); $why = @{}
+  $proofs = [Collections.Generic.Dictionary[string,object]]::new([StringComparer]::Ordinal)
   foreach ($name in ($remote.Keys | Sort-Object)) {
     $sha = $remote[$name]
+    if ($name.StartsWith('board/pc-out-', [StringComparison]::Ordinal) -and (-not $live -or $liveNames.Contains($name))) {
+      $proofs[$name] = if ($relayError) { @{ State = 'unverified'; Detail = $relayError } }
+                       else { Get-RelayProof $name $sha $relayTips $mirror $relayMirror }
+      if (-not $live) { Write-RelayProof $name $sha $proofs[$name] | Add-Content -LiteralPath $log }
+    }
     if ($keep[$name]) { $why[$name] = $keep[$name]; continue }
     if ($openHeads[$name]) { $why[$name] = 'an open pull request uses it'; continue }
     if ($busy[$name]) { $why[$name] = $busy[$name]; continue }
     $d = $dates[$name]
     if (-not $d -or $d.Sha -ne $sha) { $why[$name] = 'not in the PC repo mirror at this commit (age unknown)'; continue }
     if ($now - $d.At -lt $days * 86400) { $why[$name] = "newer than $days days"; continue }
+    if ($name.StartsWith('board/pc-out-', [StringComparison]::Ordinal) -and $proofs[$name].State -ne 'covered') {
+      $why[$name] = 'relay content not proven'; continue
+    }
     $prune += "$name $sha"
   }
-  return @{ Prune = $prune; Why = $why }
+  return @{ Prune = $prune; Why = $why; Proofs = $proofs }
 }
 
 
@@ -124,6 +156,8 @@ if ($live) {
   if (-not $lists.Count) { throw 'no dry-run list yet: run PRUNE_RELAY_BRANCHES_DRY.bat first' }
   $list = $lists[-1]
   $rows = @(foreach ($l in [IO.File]::ReadAllLines($list.FullName)) { if ($l -match '\A(board/(?:pc-out|pin)-[A-Za-z0-9._-]+) ([0-9a-f]{40})\z') { @{ Name = $Matches[1]; Sha = $Matches[2] } } })
+  $liveNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+  foreach ($r in $rows) { $null = $liveNames.Add($r.Name) }
   Say "list: $($list.Name), $($rows.Count) branch(es)"
   if (-not $rows.Count) { Say 'nothing to delete'; exit 0 }
   if (-not $test) {
@@ -142,7 +176,14 @@ if ($live) {
     $local = Get-LocalKeep
     if ($local[$r.Name]) { Say "kept (now protected: $($local[$r.Name])): $($r.Name)"; $kept++; continue }
     if ($fresh.Why[$r.Name]) { Say "kept (now protected: $($fresh.Why[$r.Name])): $($r.Name)"; $kept++; continue }
-    if ($fresh.Prune -notcontains "$($r.Name) $($r.Sha)") { Say "kept (no longer on a fresh dry-run list): $($r.Name)"; $kept++; continue }
+    if ($fresh.Prune -cnotcontains "$($r.Name) $($r.Sha)") { Say "kept (no longer on a fresh dry-run list): $($r.Name)"; $kept++; continue }
+    if ($fresh.Proofs[$r.Name]) {
+      $paired = $r.Name.Substring('board/'.Length)
+      $relayNow = Read-BranchTips $relaySource $null @("refs/heads/$paired")
+      if ($relayNow[$paired] -cne $fresh.Proofs[$r.Name].Tip) {
+        Say "kept (relay tip moved since proof): $($r.Name)"; $kept++; continue
+      }
+    }
     # only if GitHub still has it at the listed commit (a lease, so a branch a job pushed again since stays)
     $ErrorActionPreference = 'Continue'
     $o = & $gitExe push -q "--force-with-lease=refs/heads/$($r.Name):$($r.Sha)" $source ":refs/heads/$($r.Name)" 2>&1 | ForEach-Object { "$_" }

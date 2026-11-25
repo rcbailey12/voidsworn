@@ -673,6 +673,31 @@ if ($args.Count -gt 1 -or $trigger -notin @($null,'--dry-run','--nightly','--low
 }
 $dryRun = $trigger -eq '--dry-run'
 $automatic = $trigger -in @('--nightly','--low-space','--after-job')
+function Invoke-StorageUpkeep($root, $now, $dryRun) {
+  foreach ($file in (Get-Item -LiteralPath $root -Force).EnumerateFiles('janitor_*.txt')) {
+    if ($file.Name -cnotmatch '\Ajanitor_[0-9]{8}-[0-9]{4}\.txt\z' -or
+        ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -or $file.LastWriteTimeUtc -ge $now.AddDays(-30)) { continue }
+    if (Get-BoardKeepReason $file.FullName) { continue }
+    if ($dryRun) { Log "would remove old janitor log: $($file.Name)"; continue }
+    if (Cleanup-Paused) { return }
+    try { [IO.File]::Delete($file.FullName); Log "removed old janitor log: $($file.Name)" }
+    catch { Log "kept old janitor log $($file.Name) : $($_.Exception.Message)" }
+  }
+  foreach ($mirror in @(Get-PcStorageMirrors $root)) {
+    if ($dryRun) { Log "would run nightly git gc under the mirror lock: $mirror"; continue }
+    if (Cleanup-Paused) { break }
+    Assert-GpuQuiet -SoloOnly
+    $lock = $null
+    try {
+      $lock = Open-MirrorWriterLock $mirror 'janitor' 'nightly git gc' 0
+      $result = Invoke-BoundedMirrorGit (Get-MirrorGcArgs $mirror) 180 'nightly git gc' -NativeGit
+      if ($result.Code -ne 0) { throw "git gc exit $($result.Code): $($result.Lines -join ' ')" }
+      Log "nightly git gc done: $mirror"
+    } catch { Log "nightly git gc skipped $mirror : $($_.Exception.Message)" }
+    finally { if ($lock) { $lock.Dispose() } }
+  }
+}
+
 $root = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'
 $temp = [IO.Path]::GetFullPath((Runner-Temp)).TrimEnd('\','/')
 $now = [DateTime]::UtcNow
@@ -739,6 +764,7 @@ try {
   if ($dryRun) { Write-LegacyJobRepos $root }
   $script:boardKeep = Read-BoardKeepList (Join-Path $root 'janitor_keep.txt')
   Log "Board keep list: $($script:boardKeep.Count) paths"
+  if ($dryRun) { Invoke-StorageUpkeep $root $now $true }
   $mirror = Repo-Mirror
   # Issue 1186: each Workhorse arm's slot folder keeps its set-aside copies beside its one checkout, like a board lane.
   $slots = @()
@@ -818,6 +844,8 @@ try {
   if (-not $dryRun) {
     $lines = @(foreach ($k in @('lane','temp','root')) { if ($script:resume[$k]) { "$k $($script:resume[$k])" } })
     Write-JanitorResume $resumePath ([string[]]$lines)
+    # Keep mirror GC out of the timed lane, TEMP and job scans. The normal resume point is already saved.
+    if ($trigger -eq '--nightly') { Invoke-StorageUpkeep $root $now $false }
   }
 } catch {
   if ($script:log) { Log "janitor stopped: $($_.Exception.Message)" }
