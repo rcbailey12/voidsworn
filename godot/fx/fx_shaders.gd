@@ -2268,7 +2268,8 @@ void fragment() {
 		float trench = length(q - dd * along) / R;
 		alb = vec3(0.008, 0.006, 0.009);
 		a = 1.0 - smoothstep(0.7, 1.5, trench);
-		em = glow * 0.06 * exp(-pow((trench - 0.9) / 0.2, 2.0));
+		float td = (trench - 0.9) / 0.2;
+		em = glow * 0.06 * exp(-(td * td));
 	}
 	if (a < 0.003 && dot(em, vec3(1.0)) < 0.003) { discard; }
 	if (wound_v2 >= 0) {
@@ -2294,7 +2295,8 @@ void fragment() {
 		em = glow * circuit * 0.22 * flick(0.7 + n1 * 0.3, scene_t, seed);
 		if (vD.y > 0.3) {
 			float jagged = u - 0.72 + 0.07 * sin(ang * 13.0 + seed);
-			float arc = exp(-pow(jagged / 0.018, 2.0)) * smoothstep(0.1, 0.4, sin(ang * 6.0 + scene_t * 1.6 + seed));
+			float ja = jagged / 0.018;
+			float arc = exp(-(ja * ja)) * smoothstep(0.1, 0.4, sin(ang * 6.0 + scene_t * 1.6 + seed));
 			em += mix(glow, vec3(0.9, 0.85, 1.0), 0.4) * arc * 0.65 * flick(0.6 + 0.4 * n1, scene_t, seed);
 		}
 	}
@@ -2347,7 +2349,8 @@ void fragment() {
 		if (v2_soot <= 0.01) { hs = 0.0; }
 	}
 	if (style == 14) {
-		float ridge = exp(-pow((u - 0.9) / 0.05, 2.0));
+		float rg = (u - 0.9) / 0.05;
+		float ridge = exp(-(rg * rg));
 		alb = wound_kind == 1 ? vec3(0.24, 0.21, 0.12) : (wound_kind == 2 ? vec3(0.5, 0.55, 0.64) : vec3(0.16, 0.18, 0.2));
 		a = (1.0 - smoothstep(0.88, 1.0, u)) * (wound_kind == 1 ? smoothstep(0.0, 3.0, age) : 0.7);
 		em = glow * ridge * 0.035;
@@ -2868,19 +2871,23 @@ void fragment() {
 	float f0 = centre + sin(twist) * spread;
 	float f1 = centre + sin(twist * 1.13 + 2.094) * spread * 0.82 + (wisps - 0.5) * 2.0;
 	float f2 = centre + sin(twist * 0.91 + 4.189) * spread * 1.12 - (grain - 0.5) * 1.8;
-	float hot0 = exp(-pow((y-f0) / 0.95, 2.0));
-	float hot1 = exp(-pow((y-f1) / 0.75, 2.0));
-	float hot2 = exp(-pow((y-f2) / 0.85, 2.0));
+	float d0 = y - f0;
+	float d1 = y - f1;
+	float d2 = y - f2;
+	float hot0 = exp(-((d0 / 0.95) * (d0 / 0.95)));
+	float hot1 = exp(-((d1 / 0.75) * (d1 / 0.75)));
+	float hot2 = exp(-((d2 / 0.85) * (d2 / 0.85)));
 	float filaments = hot0 + hot1 * 0.85 + hot2 * 0.7;
-	float glow = exp(-pow((y-f0) / 2.7, 2.0)) + exp(-pow((y-f1) / 2.2, 2.0)) * 0.6;
-	float white = exp(-pow((y-f0) / 0.28, 2.0));
+	float glow = exp(-((d0 / 2.7) * (d0 / 2.7))) + exp(-((d1 / 2.2) * (d1 / 2.2))) * 0.6;
+	float white = exp(-((d0 / 0.28) * (d0 / 0.28)));
 	// A fork's tip expires within 3 to 5 frames. Clocks are staggered by root.
 	float lane = floor(s * 13.0); float q = fract(s * 13.0);
 	float beat = fract(t * 10.0 + h21(vec2(lane, vSeed)));
 	float alive = smoothstep(0.0, 0.10, beat) * (1.0 - smoothstep(0.26, 0.55, beat));
 	float branch = (mod(lane, 2.0) * 2.0 - 1.0) * (3.0 + sqrt(q) * 25.0);
 	branch += sin(q * 27.0 + lane) * 1.5;
-	float fork = exp(-pow((y - branch) / 0.65, 2.0)) * (1.0 - smoothstep(0.32, 0.65, q)) * alive;
+	float fb = (y - branch) / 0.65;
+	float fork = exp(-(fb * fb)) * (1.0 - smoothstep(0.32, 0.65, q)) * alive;
 	vec3 core_col = vCol.rgb;
 	// The weapon_core colour (deep violet since issue 1503) stays on the hot strands; the surrounding flow is violet.
 	vec3 violet = eclipse_sheath / max(max(eclipse_sheath.r, eclipse_sheath.g), max(eclipse_sheath.b, 0.0001));
@@ -2937,14 +2944,18 @@ void fragment() {
 	float end_age = max(age - flight, 0.0);
 	float rear = smoothstep(0.0, 0.14, s);
 	float taper = mix(0.28, 1.0, smoothstep(0.0, 0.30, s));
-	float streak = exp(-pow(y / (1.8 * taper), 2.0)) * rear;
+	float ys = y / (1.8 * taper);
+	float streak = exp(-(ys * ys)) * rear;
 	float passed = 1.0 - smoothstep(vShape.x, vShape.x + 0.003, s);
 	streak *= passed;
 	streak *= exp(-lag * 4.8) * (1.0 - smoothstep(0.32, 0.52, end_age));
 	float head_x = (vShape.x - s) * vShape.y;
-	float head = exp(-pow(head_x / 5.0, 2.0) - pow(y / 3.5, 2.0));
+	float hx = head_x / 5.0;
+	float hy = y / 3.5;
+	float head = exp(-(hx * hx) - (hy * hy));
 	head *= 1.0 - smoothstep(flight, flight + 0.018, age);
-	float wake = exp(-pow(y / 4.6, 2.0)) * rear * exp(-lag * 3.0) * passed;
+	float yw = y / 4.6;
+	float wake = exp(-(yw * yw)) * rear * exp(-lag * 3.0) * passed;
 	wake *= 1.0 - smoothstep(0.45, 0.70, end_age);
 	float ions = 0.7 + 0.3 * sin(s * 85.0 - age * 5.0);
 	vec3 violet = vTint.rgb;
