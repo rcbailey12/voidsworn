@@ -30,7 +30,7 @@
 #   craft, issue 1680); maps=N overrides it for a test or a hand run and the log says so.
 #   unbaked=1 is for testing the geometry and hard points on a build that has not been baked (no maps are written and the
 #   export json says so; check_export.py fails such a folder unless it is told the same).
-import os, sys, json, math, struct, hashlib, shutil, time, random
+import os, sys, json, math, struct, hashlib, shutil, time, random, re
 import bpy, bmesh
 import numpy as np
 from mathutils import Vector, Matrix
@@ -368,6 +368,15 @@ TURN_OBJS = [join([prep(o) for o in ms], f'turret_{k}_turn') for k, (pv, ms) in 
 DOOR_OBJS = [[join([prep(o)], f'door_{n}_lobe_{k}_mesh') for k, o in enumerate(obs)] for n, (fid, obs) in enumerate(DOORS)]
 used_materials = {slot.material.name for o in [J] + TURN_OBJS + [d for ds in DOOR_OBJS for d in ds] for slot in o.material_slots if slot.material}
 destruction['interior_materials'] = [m for m in destruction['interior_materials'] if m in used_materials]
+# Interior Kit V2 (issue 1743, R416 Layer 3): insides built by the kit carry its mark; check_export.py then holds a painted export
+# to the shared interior trim maps (albedo, ORM, normal) and its interior UVs
+# R420: each room material's role for the game (Godot's glTF import drops material extras; fx_hull reads this, PR 1755)
+_roles = {m.name: str(m['interior_role']) for m in inside_mats.values() if m.get('interior_role') and m.name in destruction['interior_materials']}
+if _roles:      # the liner keeps its own dark colour in the game as a trusted wall (PR 1755 note)
+    for m in destruction['interior_materials']:
+        if m == CODE + '_inside_skin': _roles[m] = 'wall'
+    destruction['interior_roles'] = _roles
+destruction['interior_kit'] = 2 if any(o.get('role') == 'interior' and o.get('interior_kit', 0) >= 2 for o in src) else 0
 J.data.calc_loop_triangles(); TRIS = len(J.data.loop_triangles)
 TURRET_TRIS = 0
 for t in TURN_OBJS:
@@ -574,7 +583,11 @@ files = {}
 role = {}
 def use(mat, slot, tex):
     if tex is None: return
-    i = g['textures'][tex['index']]['source']; pre = CODE if mat['name'] == CODE + '_hull' else mat['name']; nm = f'{pre}_{slot}'
+    i = g['textures'][tex['index']]['source']; pre = CODE if mat['name'] == CODE + '_hull' else mat['name']
+    if mat['name'] in destruction['interior_materials']:      # issue 1743: one shared trim set per style (R420: panels, flesh, gland, bone, glass)
+        st = re.match(r'trim_[a-z]+_([a-z]+)_[0-9a-f]{8}_', str(g['images'][i].get('name', '')))
+        pre = CODE + '_inside_' + (st.group(1) + '_' + st.group(0).split('_')[-2] if st else 'trim')
+    nm = f'{pre}_{slot}'
     if mat['name'] in destruction['interior_materials'] and i in role: return  # authored trim maps may be shared
     if i in role and role[i][0] != nm: die(f'one image does two jobs ({role[i][0]} and {nm}): the ORM map must hold occlusion, roughness and metal together')
     role[i] = (nm, slot)
@@ -618,6 +631,18 @@ for i, im in enumerate(g.get('images', [])):
     im['name'] = image_name
     if 'mimeType' in im:
         im['mimeType'] = 'image/png' if lossless else 'image/jpeg'
+# R420 (global_cohesion_standard.md 6.1): the interior maps' linear means, measured from the files as written, so
+# check_export.py can hold every room to the wall ceiling and the emission budget (base colour factor x the map's mean)
+imaps = {}
+for im in g.get('images', []):
+    if im['name'].startswith(CODE + '_inside_') and im['name'].rsplit('_', 1)[-1] in ('base', 'emission', 'orm'):
+        with Image.open(os.path.join(OUT, im['uri'])) as image:
+            a = np.asarray(image.convert('RGB'), dtype=np.float64) / 255.0
+        lin = a if im['name'].endswith('_orm') else np.where(a <= 0.04045, a / 12.92, ((a + 0.055) / 1.055) ** 2.4)
+        imaps[im['uri']] = [round(float(v), 5) for v in lin.reshape(-1, 3).mean(0)]
+if imaps:
+    root_ex = next(n for n in g['nodes'] if n.get('name') == CODE).setdefault('extras', {})
+    root_ex.setdefault('voidsworn_destruct', {})['interior_map_means'] = imaps
 if not UNBAKED:
     need = {CODE + '_base', CODE + '_orm', CODE + '_normal', CODE + '_parts_base', CODE + '_parts_orm'}
     if ship.get('bake') == 'stack':

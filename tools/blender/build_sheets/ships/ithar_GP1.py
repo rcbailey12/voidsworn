@@ -151,6 +151,8 @@ def build(K):
     for side, tag in ((1, 'port'), (-1, 'stbd')):
         hl.insides(K, lambda x: 0.70 * radius(x), lambda x: 0.60 * radius(x), XS + 0.9, XB - 0.9, breaks, breach_x,
                    decks=(-0.35, 0.25), frames=9, y0=side * YP, tag='_' + tag)
+        hk('rooms').rooms(K, lambda x: 0.70 * radius(x), lambda x: 0.60 * radius(x), XS + 0.9, XB - 0.9, breaks, breach_x,
+                          decks=(-0.35, 0.25), frames=9, y0=side * YP, tag='_' + tag, heart=side > 0)   # rooms (Ryan, Nov 23)
     K.armour('annealed outer glass', 0.04, 'actual shell thickness; layered blown glass, no armour plates')
     hl.ragged_break(K, 'B1', breaks[0], 2 * (YP + R) + 0.6, 'ragged shatter path through both hulls aft of the aft bridge; the stern optics stay whole')
     hl.ragged_break(K, 'B2', breaks[1], 2 * (YP + R) + 0.6, 'ragged shatter path through both hulls forward of the forward bridge; the bow lances stay whole')
