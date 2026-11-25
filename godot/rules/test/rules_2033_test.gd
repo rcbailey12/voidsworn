@@ -45,6 +45,7 @@ func _init() -> void:
 		["Veteran calls Engines on a ship under Full Ahead", c_vet_runner],
 		["Veteran calls Engines on a Breakthrough fleet", c_vet_break],
 		["Veteran calls Weapons on the top threat, nothing on the others", c_vet_threat],
+		["AI volleys route to Engines or Weapons only on Veteran", c_ai_fire],
 		["Veteran never calls on a shot that should kill", c_vet_kill],
 		["Veteran never calls a destroyed section", c_vet_broken],
 	]
@@ -79,7 +80,7 @@ func c_fire() -> Array:
 	t["hp"] = 99999; t["maxHp"] = 99999; t["shp"] = 0; R.syncShields(t); t["ev"] = 0
 	for k in R.CALLED_SECS: t["sec"][k]["hp"] = 99999
 	var crit0 = u["crit"]
-	var ok = R.fireWeapon(u, 0, t, {"called": "eng"})
+	var ok = api.fire(u["id"], 0, t["id"], "eng")
 	var eng = 99999 - float(t["sec"]["eng"]["hp"]); var prow = 99999 - float(t["sec"]["prow"]["hp"]); var mid = 99999 - float(t["sec"]["mid"]["hp"])
 	return [ok and eng > 0.0 and prow == 0.0 and mid == 0.0 and u["crit"] == crit0 and t.get("_calledSec") == null,
 		"fired " + str(ok) + ", eng " + str(eng) + ", prow " + str(prow) + ", mid " + str(mid) + ", crit " + str(crit0) + " -> " + str(u["crit"])]
@@ -119,6 +120,26 @@ func c_vet_threat() -> Array:
 	var s = _vet_setup("veteran")
 	var a = R.aiCalledSec(s[0], s[1], P[0]); var b = R.aiCalledSec(s[0], s[1], P[1])
 	return [a == "prow" and b == null, str(a) + ", " + str(b)]
+
+func c_ai_fire() -> Array:
+	var results := []
+	for c in [["standard", true], ["veteran", true], ["veteran", false]]:
+		fresh(["penitent"], "hegemony", ["h_dominion"]); var u = E[0]; var t = P[0]
+		R.AI_LEVEL = c[0]; t["fullAhead"] = c[1]
+		gun(u, 6); u["aim"] = 200
+		t["hp"] = 99999; t["maxHp"] = 99999; t["shp"] = 0; R.syncShields(t); t["ev"] = 0
+		for k in R.CALLED_SECS: t["sec"][k]["hp"] = 99999
+		for f in range(6):
+			t["facing"] = f
+			if R.SEC_OF_QUAD[R.shieldQuad(t, u)] == "mid": break
+		R.events.clear()
+		R.aiVolley(u, func(): return true)
+		var secs := []
+		for e in R.events:
+			if e["t"] == "hit" and e["target"] == t["id"] and e["section"] not in secs:
+				secs.append(e["section"])
+		results.append(secs)
+	return [results == [["mid"], ["eng"], ["prow"]], str(results)]
 
 func c_vet_kill() -> Array:
 	var s = _vet_setup("veteran"); P[0]["hp"] = 1; P[0]["shp"] = 0; R.syncShields(P[0]); P[0]["ev"] = 0

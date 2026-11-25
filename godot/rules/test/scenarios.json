@@ -3261,7 +3261,7 @@
   "kind": "battle",
   "rounds": 5,
   "bot": "full",
-  "seed": 37101,
+  "seed": 37114,
   "admiral": "thale",
   "fleet": [
    "warden",
@@ -3550,7 +3550,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31900,
+  "seed": 31901,
   "admiral": "sekhmar",
   "fleet": [
    "d_harvester",
@@ -4206,7 +4206,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31828,
+  "seed": 31829,
   "admiral": "nekhet",
   "fleet": [
    "d_harvester",
@@ -4885,7 +4885,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 31721,
+  "seed": 31727,
   "admiral": "voice",
   "fleet": [
    "b_spitter",
@@ -6828,7 +6828,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 15840,
+  "seed": 15844,
   "admiral": "vorn",
   "fleet": [
    "h_dominion",
@@ -7645,7 +7645,7 @@
   ],
   "cmdRound": 2,
   "note": "Tree fixture: Saro Light Arrives Together (vaelen:A:1:0) pays shots on a target hit this round",
-  "seed": 8,
+  "seed": 19,
   "lineage": {
    "id": "vaelen",
    "picks": [
@@ -8509,7 +8509,7 @@
   ],
   "cmdRound": 3,
   "rounds": 5,
-  "seed": 38216,
+  "seed": 38222,
   "lineage": {
    "id": "nekhet",
    "picks": [
@@ -8692,7 +8692,7 @@
   ],
   "cmdRound": 2,
   "rounds": 5,
-  "seed": 38202,
+  "seed": 38205,
   "lineage": {
    "id": "voice",
    "picks": [

@@ -1,0 +1,107 @@
+{
+  "source_commit": "e6e1fbc3df43892e2acfb245ac544f79ffa393b3",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "source_dirty_files": {},
+  "stage": "cloud direction check",
+  "schema": 1,
+  "picture_name": "CS-2033-target-bar.png",
+  "date": "2026-11-25T06:06:01Z",
+  "sources": [
+    {
+      "source_commit": "e6e1fbc3df43892e2acfb245ac544f79ffa393b3",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "source_dirty_files": {},
+      "stage": "cloud direction check"
+    },
+    {
+      "source_commit": "054ca1e473a05526b3b89fa7d2b80a1483d6c459",
+      "source_dirty": true,
+      "source_diff_sha256": "fe8868bb4171b86bf050f1db1475ba28fff5021fcd552d678845f06c32a50751",
+      "source_dirty_files": {
+        "godot/rules/test/rules_2033_test.gd": "080aa767e63ec6179de391a3314e36bbbf92d9a8",
+        "godot/rules/test/saved/changes.txt": "7fc897901e985888070f2bfabd424dd3fb971c30",
+        "godot/rules/test/saved/records/t7a_lighttogether.jsonl.br": "10973b791b0dbc3ca5f8ec9c8cb24d1f12cbfdb3",
+        "godot/rules/test/saved/records/t7b_ch_spat.jsonl.br": "20ff51ac9a9bf213e52729f33c24447783ec13ad",
+        "godot/rules/test/saved/records/t7b_ecl_triage.jsonl.br": "8e654a49e360742b565720740c20dcaa8ebe9881",
+        "godot/rules/test/saved/records/t_ecl_copyfires.jsonl.br": "f72faedca3f4b8e14528c8ef3dabc1e294209101",
+        "godot/rules/test/saved/records/t_ecl_flagshipindex.jsonl.br": "09043d6129109a3b9fad4a3df62b044d74868779",
+        "godot/rules/test/saved/records/t_heg_permanentfile.jsonl.br": "6835d1e8d972aa62685014a879aaa49704393399",
+        "godot/rules/test/saved/records/t_manymouths.jsonl.br": "10ef32aea0f368c181777bf4fa9874f8e0b3a344",
+        "godot/rules/test/saved/records/t_wallanswers.jsonl.br": "7db6488f42dfad598ba354310e21265cb8b401d8",
+        "godot/rules/test/saved/results.json": "8ccb4e43ecd49737f03eb0df4182dc47c0f153b5",
+        "godot/rules/test/scenarios.json": "8b339a60ef131ea56975f92dd2b6913ec3072eca",
+        "godot/scenes/battle/test/plan_commit_check.gd": "1c22e374b38754496e9696a92346bcf3f27c652c",
+        "godot/scenes/battle/test/round4_hullbreaker_check.gd": "8e675d064e97978dda62fad78e599e89bc01a460",
+        "godot/ui/battle/ledger.gd": "fb3d87cb4d2688036228bbca1ca3400049883acf",
+        "godot/ui/battle/test/ledger_readability_test.gd": "09a2c2f1eb5202db142ade4f11c15e25a58accdd",
+        "godot/ui/campaign/campaign_ui.gd": "1bd4a4c41c5f930e496ea8b9b458fff571b16bcc"
+      },
+      "stage": "cloud direction check"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "Godot target block layout (before and after)",
+      "source_commit": "e6e1fbc3df43892e2acfb245ac544f79ffa393b3",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "cloud direction check",
+      "date": "",
+      "image_sha256": "",
+      "sources": [
+        {
+          "source_commit": "e6e1fbc3df43892e2acfb245ac544f79ffa393b3",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        },
+        {
+          "source_commit": "054ca1e473a05526b3b89fa7d2b80a1483d6c459",
+          "source_dirty": true,
+          "source_diff_sha256": "fe8868bb4171b86bf050f1db1475ba28fff5021fcd552d678845f06c32a50751",
+          "source_dirty_files": {
+            "godot/rules/test/rules_2033_test.gd": "080aa767e63ec6179de391a3314e36bbbf92d9a8",
+            "godot/rules/test/saved/changes.txt": "7fc897901e985888070f2bfabd424dd3fb971c30",
+            "godot/rules/test/saved/records/t7a_lighttogether.jsonl.br": "10973b791b0dbc3ca5f8ec9c8cb24d1f12cbfdb3",
+            "godot/rules/test/saved/records/t7b_ch_spat.jsonl.br": "20ff51ac9a9bf213e52729f33c24447783ec13ad",
+            "godot/rules/test/saved/records/t7b_ecl_triage.jsonl.br": "8e654a49e360742b565720740c20dcaa8ebe9881",
+            "godot/rules/test/saved/records/t_ecl_copyfires.jsonl.br": "f72faedca3f4b8e14528c8ef3dabc1e294209101",
+            "godot/rules/test/saved/records/t_ecl_flagshipindex.jsonl.br": "09043d6129109a3b9fad4a3df62b044d74868779",
+            "godot/rules/test/saved/records/t_heg_permanentfile.jsonl.br": "6835d1e8d972aa62685014a879aaa49704393399",
+            "godot/rules/test/saved/records/t_manymouths.jsonl.br": "10ef32aea0f368c181777bf4fa9874f8e0b3a344",
+            "godot/rules/test/saved/records/t_wallanswers.jsonl.br": "7db6488f42dfad598ba354310e21265cb8b401d8",
+            "godot/rules/test/saved/results.json": "8ccb4e43ecd49737f03eb0df4182dc47c0f153b5",
+            "godot/rules/test/scenarios.json": "8b339a60ef131ea56975f92dd2b6913ec3072eca",
+            "godot/scenes/battle/test/plan_commit_check.gd": "1c22e374b38754496e9696a92346bcf3f27c652c",
+            "godot/scenes/battle/test/round4_hullbreaker_check.gd": "8e675d064e97978dda62fad78e599e89bc01a460",
+            "godot/ui/battle/ledger.gd": "fb3d87cb4d2688036228bbca1ca3400049883acf",
+            "godot/ui/battle/test/ledger_readability_test.gd": "09a2c2f1eb5202db142ade4f11c15e25a58accdd",
+            "godot/ui/campaign/campaign_ui.gd": "1bd4a4c41c5f930e496ea8b9b458fff571b16bcc"
+          },
+          "stage": "cloud direction check"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    454,
+    684,
+    578
+  ],
+  "strip_size": [
+    684,
+    124
+  ],
+  "strip_sha256": [
+    "790fc5c549bfb709148801006671c693dc3c7092f7843d6efa258e83abe9588b"
+  ],
+  "stamp_template_sha256": "790fc5c549bfb709148801006671c693dc3c7092f7843d6efa258e83abe9588b",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAqwAAAB8CAIAAAAjAXVhAAACH0lEQVR4nO3WIQEAIADAMMAhMPQPSwzEtwSXn/vcAQD0rN8BAMAfJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAESZAACIMgEAEGUCACDKBABAlAkAgCgTAABRJgAAokwAAIymBxTSASAw91gnAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "8b4958c612ef0c1b13586d05ced5437c2627c260d2c9130d6c13bca2ced9f882"
+}

@@ -1,5 +1,5 @@
 Saved manifest before: 4fcf972525e3d7fd79e6e2bdd39d7bfcf2d0afaf4d7dc0635fe40d69685d089c
-Saved manifest after: 0ed790958abf2d267a392017a143879c29f12747492f2ee60f72fec37aa84eff
+Saved manifest after: 0511661a906d9bee58aa1eae74d8ea1d2983eccc84106d26e36975ef2ddca916
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
@@ -304,9 +304,9 @@ FAIL battle t_unpaid
   state.units[1].sec.mid.hp: 23 -> 25
   later changed records: 12; total records: 123 -> 123
 FAIL battle t_wallanswers
-  turn 29, round 2, after fire x05; unit x03 (player warden)
-  state.units[0].crew: 37 -> 38
-  later changed records: 55; total records: 85 -> 81
+  turn 0, round 1, after tick player; unit x03 (player warden)
+  state.units[0].name: "Unpaid Debt" -> "Resolve of the Reach"
+  later changed records: 84; total records: 85 -> 85
 FAIL battle t_irontestament
   turn 33, round 3, after activation x05; unit x03 (player cathedral)
   state.units[0].sec.mid.hp: 107 -> 109
@@ -336,9 +336,9 @@ FAIL battle t_ecl_arcswarm
   state.units[0].crew: 44 -> 43
   later changed records: 11; total records: 74 -> 74
 FAIL battle t_ecl_copyfires
-  turn 33, round 2, after fire x011; unit x05 (player d_harvester)
-  state.units[0].hp: 137 -> 133
-  later changed records: 42; total records: 57 -> 76
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].name: "Cold Archive" -> "The Unbroken"
+  later changed records: 69; total records: 57 -> 70
 FAIL battle t_ecl_everyframe
   turn 37, round 2, after activation x08; unit x04 (player d_harvester)
   state.units[0].hp: 140 -> 138
@@ -396,9 +396,9 @@ FAIL battle t_ecl_restoredfleet
   state.units[0].crew: 44 -> 45
   later changed records: 83; total records: 108 -> 116
 FAIL battle t_ecl_flagshipindex
-  turn 15, round 1, after activation x08; unit x04 (player d_harvester)
-  state.units[0].hp: 124 -> 121
-  later changed records: 49; total records: 65 -> 65
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].facing: 4 -> 0
+  later changed records: 99; total records: 65 -> 100
 FAIL battle t_ecl_framezero
   turn 34, round 2, after fire x07; unit x05 (player d_jackal)
   state.units[1].hp: 84 -> 88
@@ -464,9 +464,9 @@ FAIL battle t_burnstays
   state.units[0].crew: 36 -> 38
   later changed records: 9; total records: 85 -> 85
 FAIL battle t_manymouths
-  turn 10, round 1, after fire x09; unit x05 (player b_spitter)
-  state.units[0].crew: 36 -> 38
-  later changed records: 55; total records: 66 -> 64
+  turn 0, round 1, after tick player; unit x05 (player b_spitter)
+  state.units[0].name: "Spine Gullet" -> "Crawling Gut"
+  later changed records: 65; total records: 66 -> 62
 FAIL battle t_volleygrows
   turn 31, round 2, after fire x05; unit x03 (player b_spitter)
   state.units[0].crew: 35 -> 34
@@ -624,9 +624,9 @@ FAIL battle t_heg_filedbefore
   state.units[0].hp: 228 -> 227
   later changed records: 86; total records: 122 -> 122
 FAIL battle t_heg_permanentfile
-  turn 49, round 2, after fire x011; unit x05 (player h_dominion)
-  state.units[0].sh[0]: 43 -> 50
-  later changed records: 18; total records: 68 -> 60
+  turn 0, round 1, after tick player; unit x05 (player h_dominion)
+  state.units[0].q: 0 -> 1
+  later changed records: 70; total records: 68 -> 71
 FAIL battle t_heg_fullgroup
   turn 87, round 6, after fire x03; unit x02 (player h_dominion)
   state.units[0].weapons[0].off: 0 -> 2
@@ -668,9 +668,9 @@ FAIL battle t7a_flightcast
   state.units[0].sec.mid.hp: 70 -> 76
   later changed records: 19; total records: 95 -> 95
 FAIL battle t7a_lighttogether
-  turn 8, round 1, after fire x07; unit x04 (player i_song)
-  state.units[0].crew: 30 -> 33
-  later changed records: 22; total records: 31 -> 30
+  turn 0, round 1, after tick player; unit x04 (player i_song)
+  state.units[0].name: "Glass Heron" -> "Clear Whisper"
+  later changed records: 32; total records: 31 -> 33
 FAIL battle t7a_sunlens
   turn 11, round 1, after fire x07; unit x04 (player i_song)
   state.units[0].crew: 33 -> 32
@@ -748,9 +748,9 @@ FAIL battle t7b_ecl_iterfire
   state.units[0].sec.mid.hp: 57 -> 65
   later changed records: 57; total records: 108 -> 108
 FAIL battle t7b_ecl_triage
-  turn 24, round 2, after fire x09; unit x04 (player d_harvester)
-  state.units[0].hp: 130 -> 126
-  later changed records: 94; total records: 119 -> 118
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].facing: 0 -> 1
+  later changed records: 118; total records: 119 -> 109
 FAIL battle t7b_ch_nine
   turn 43, round 2, after activation x06; unit x04 (player b_drone)
   state.units[1].crew: 30 -> 29
@@ -768,9 +768,9 @@ FAIL battle t7b_ch_growth
   state.units[0].hp: 115 -> 112
   later changed records: 68; total records: 109 -> 101
 FAIL battle t7b_ch_spat
-  turn 28, round 2, after fire x06; unit x03 (player b_spitter)
-  state.units[0].crew: 37 -> 36
-  later changed records: 56; total records: 84 -> 85
+  turn 0, round 1, after tick player; unit x04 (player b_spitter)
+  state.units[1].name: "Mawling" -> "Shrieker"
+  later changed records: 83; total records: 84 -> 84
 FAIL battle t7b_ecl_targetarchived
   turn 45, round 3, after activation x07; unit x04 (player d_harvester)
   state.units[0].sec.eng.hp: 19 -> 36
@@ -1109,4 +1109,4 @@ FAIL battle r1651_cmdoverride
   later changed records: 80; total records: 88 -> 89
 FAIL file threat_s4.json
   map.3.-1,10: "405e28f5c28f5c28" -> "4065e51eb851eb85"
-FAIL: saved Godot results; 379 battles checked, 276 changed, 1 other files changed, 277 failures; 43.370 s
+FAIL: saved Godot results; 379 battles checked, 276 changed, 1 other files changed, 277 failures; 54.141 s

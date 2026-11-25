@@ -1,5 +1,5 @@
 extends SceneTree
-# Issue 1982: keep round 4 of the seed 7 Hullbreaker replay off the frame thread.
+# Issue 1982: keep round 4 of the Hullbreaker replay off the frame thread.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 
@@ -12,8 +12,9 @@ class Replay extends "res://scenes/battle/battle.gd":
 	var salvos := {}
 
 	func _args() -> void:
+		# Issue 2033: Veteran called shots changed seed 7. Seed 16 still plays an evasive action and a screened salvo in round 4.
 		args = {"bot": true, "fac": "corsair", "obj": "ambush", "map": "open",
-			"seed": 7, "movement": "brisk", "no-tips": true, "noworld": true}
+			"seed": 16, "movement": "brisk", "no-tips": true, "noworld": true}
 
 	func _bot_step() -> void:
 		var round4 := int(V.get("round", 0)) == 4
@@ -50,7 +51,7 @@ func _run() -> void:
 	root.add_child(battle)
 	while int(battle.V.get("round", 0)) < 5 and battle.errors.is_empty() and not battle.ended:
 		await process_frame
-	var expected := {"x05": ["x08", 1, 0], "x09": ["x06", 3, 2]}
+	var expected := {"x011": ["x04", 3, 0], "x05": ["x08", 1, 0], "x08": ["x06", 3, 2]}
 	var on_worker := battle.round4_steps > 0 and battle.round4_steps == battle.round4_worker_steps and battle.round4_sync_commands == 0
 	var reached_round5 := battle.errors.is_empty() and int(battle.V.get("round", 0)) >= 5
 	var ok := on_worker and reached_round5 and battle.salvos == expected and battle.evasive

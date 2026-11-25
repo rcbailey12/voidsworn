@@ -299,6 +299,7 @@ func _run() -> void:
 		if sz.y == 1080:
 			_log_settings(h)
 			_interaction_states(h)
+		_called_states(h, tag)
 		var bare := target()
 		bare.exp_shields = 0
 		bare.exp_hull = 16
@@ -469,6 +470,45 @@ func _interaction_states(h) -> void:
 	button.free()
 	h.set_roster(rows())
 	h.set_retreat(false, false)
+
+
+func _called_states(h, tag: String) -> void:
+	var t := target()
+	var called := {"sec": "eng", "aim": 10, "crit": 15, "secs": [
+		{"id": "prow", "name": "Weapons", "ok": true},
+		{"id": "mid", "name": "Midship", "ok": false},
+		{"id": "eng", "name": "Engines", "ok": true}]}
+	t["called"] = called
+	t["hit"] = 82
+	t["exp_shields"] = 135
+	t["exp_hull"] = 104
+	h.set_target(t)
+	measure(h, tag + " called shot")
+	var ledger = h.ledger
+	var words := " ".join(ledger.items.map(func(it): return it.t))
+	check("82%" in words and "-10 to hit" in words and "+15 crit" in words,
+		"%s: called odds and their cost are readable without a hover" % tag)
+	var picks: Array = []
+	var on_action := func(act: String, arg: Variant) -> void:
+		if act == "called":
+			picks.append(arg)
+	h.action.connect(on_action)
+	for hit in ledger.hits.duplicate():
+		if hit.act == "called" or str(hit.tip).begins_with("Midship: already destroyed"):
+			ledger._gui_input(_click(Rect2(hit.r).get_center()))
+	h.action.disconnect(on_action)
+	check(picks == ["", "prow", "eng"], "%s: Any, Weapons, and Engines can be clicked, but destroyed Midship cannot" % tag)
+	check(ledger.items.any(func(it): return it.t == "Engines" and it.col == GS.MAP_EMBER), "%s: Engines is marked as selected" % tag)
+	if tag == "1152x1024":
+		var scale: float = ledger.k
+		ledger.k = 1.3
+		ledger.layout()
+		check(ledger.items.any(func(it): return it.t in ["-10 to hit, +15 crit", "-10 aim, +15 crit"]),
+			"%s: Larger keeps both parts of the aim cost visible" % tag)
+		ledger.k = scale
+	h.set_target(target())
+	ledger.ensure_layout()
+	check(not acts(h).has("called"), "%s: unaimed targets have no called-shot actions" % tag)
 
 
 func _check_hit_feedback(ledger, act: String) -> void:

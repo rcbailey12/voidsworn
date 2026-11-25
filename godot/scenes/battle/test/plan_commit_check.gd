@@ -122,6 +122,36 @@ func _burn_hotkey() -> void:
 		"one Backspace undoes only the Burn and fire step")
 
 
+func _called_volley() -> void:
+	var tid := await _last_enemy()
+	var foe: Dictionary = b.api.unit(tid)
+	var shooter: Dictionary = b.api.unit(b.sel)
+	foe["hp"] = foe["maxHp"]
+	shooter["aim"] = 45
+	b.V = b.api.view()
+	b._index_view()
+	_click_unit(tid)
+	var before := _rules()
+	var plain: int = b._target_info().hit
+	_check(plain > 15 and b._aim_sec(tid) == "", "a planned volley starts on Any")
+	b.hud.action.emit("called", "eng")
+	_check(b._aim_sec(tid) == "eng" and b._target_info().hit == plain - 10 and _rules() == before,
+		"Engines changes the preview without changing the battle")
+	b._on_key(KEY_BACKSPACE)
+	_check(b._aim_sec(tid) == "" and b._target_info().hit == plain, "Backspace restores the plain volley")
+	b.hud.action.emit("called", "eng")
+	b.hold = true
+	b._on_key(KEY_ENTER)
+	var hits := []
+	for batch in b.batches:
+		for e in batch.events:
+			if e.get("t") == "hit" and e.get("target") == tid and e.get("hull", 0) > 0:
+				hits.append(e.get("section"))
+	_check(not hits.is_empty() and hits.all(func(sec): return sec == "eng"), "Enter sends hull hits to Engines")
+	b.hold = false
+	await _wait_idle(30000)
+
+
 func _winning_volley() -> void:
 	var last := await _last_enemy()
 	_click_unit(last)
@@ -465,6 +495,7 @@ func _run() -> void:
 	await _last_enemy()
 	await _click_then_enter(b.sel)
 	await _burn_hotkey()
+	await _called_volley()
 	await _winning_volley()
 	print("plan commit check: ", "PASS" if fails == 0 else "FAIL (%d)" % fails)
 	quit(0 if fails == 0 else 1)
