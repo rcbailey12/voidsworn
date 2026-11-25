@@ -205,12 +205,23 @@ func _glass_mouth_check(s, e: BREACH.Ent, deck_point: Vector3) -> void:
 	var floor_value := lift.dot(Vector3.ONE) / 3.0 * float(floor_match.get_string(1)) * reveal * maxf(reveal, open_f) if floor_match != null else 0.0
 	var hole_node := s._dmg_root.get_node_or_null("fx_damage_inside") as MeshInstance3D
 	var hole := hole_node.material_override as ShaderMaterial if hole_node != null else null
-	check(floor_value >= 0.20 and hole != null and is_equal_approx(float(interior.get_shader_parameter("v2_wall_max")), 0.45)
+	check(floor_value >= 0.08 and floor_value <= 0.16 and hole != null and is_equal_approx(float(interior.get_shader_parameter("v2_wall_max")), 0.45)
 		and is_equal_approx(float(hole.get_shader_parameter("v2_wall_max")), 0.45)
 		and bool(interior.get_shader_parameter("trusted")) and (interior.get_shader_parameter("base_albedo") as Color).r < 0.03
-		and code.contains("lit = mix(lit, glass_pearl * value, glass_reveal);")
-		and code.contains("em += glass_pearl * 0.24 * glass_reveal;"),
-		"2125: the centre ray hits a dark deck lifted to pearl (at least %.3f linear), below the 0.45 wall cap" % floor_value)
+		and code.contains("lit = mix(lit, glass_pearl, glass_reveal);")
+		and code.contains("em += glass_pearl * 0.08 * glass_reveal;"),
+		"2175: centre ray hits a shaded pearl deck (%.3f linear), darker than both visible wall steps" % floor_value)
+
+
+func _glass_layer_check() -> void:
+	# Two close pearl layers above a recessed room. The first inward ray hits the second layer, not the room.
+	var faces := _box_faces(Vector3(9.0, 0.01, 9.0), Vector3(0, -0.005, 0))
+	faces.append_array(_box_faces(Vector3(9.0, 0.01, 9.0), Vector3(0, -0.255, 0)))
+	faces.append_array(_box_faces(Vector3(9.0, 0.01, 9.0), Vector3(0, -2.005, 0)))
+	var stack = _hull_of(faces, 24.0)
+	var glass := BREACH.place_hole(stack, Vector3.ZERO, Vector3.UP, 1.1, 3.0, "ithar")
+	check(glass.has_cut() and not glass.thin_shear and glass.cut > 0.26 and glass.cut < 2.0,
+		"2175: the faceted cut opens through stacked shell layers without puncturing the room deck (depth %.3f)" % glass.cut)
 
 
 func _run() -> void:
@@ -373,6 +384,7 @@ func _run() -> void:
 	sl.sync(fx, _state(100, 30, 100))
 	flush(sl)
 	check(_holes(sl).is_empty(), "a legacy hollow hull stays sealed at stage 3")
+	_glass_layer_check()
 	_half_hull_openings()
 
 	# 5. shaders parse; dressing per faction stays below the plating; faction colours
