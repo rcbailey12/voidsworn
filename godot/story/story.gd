@@ -279,7 +279,7 @@ func arc_context(run = null) -> Dictionary:
 	for s in run.get("fleet", []):
 		if s is Dictionary and s.get("cap") is Dictionary and float(s["cap"].get("xp", 0)) > bx:
 			bx = float(s["cap"].get("xp", 0))
-			best = str(s["cap"].get("name", ""))
+			best = str(s["cap"].get("full_name", ""))
 	var first_lost := str(L.get("first_lost", ""))
 	if first_lost == "" and run.get("fallen") is Array and run["fallen"].size() > 0:
 		first_lost = str(run["fallen"][0].get("ship", ""))
@@ -289,7 +289,7 @@ func arc_context(run = null) -> Dictionary:
 		for i in range(C.META["fallen"].size() - 1, -1, -1):
 			var f = C.META["fallen"][i]
 			if f is Dictionary and str(f.get("fac", "")) == fac and not cur.has(f):
-				fallen = str(f.get("name", ""))
+				fallen = str(f.get("cap", {}).get("full_name", ""))
 				break
 	var last: Dictionary = career.last_run_of(fac)
 	return {"nem": C.nemRead(run) if C != null else run.get("nem"), "flags": run.get("flags", {}) if run.get("flags") is Dictionary else {}, "seed": int(float(run.get("t0", 0))) % 100000,
