@@ -2989,6 +2989,14 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 			var local: ShaderMaterial = m.duplicate()
 			local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
 			mi.material_overlay = local
+			if s.faction == "deathless":
+				# If the mesh leaves before a rise, detach the tear before the renderer frees the mesh.
+				var tear_id := local.get_instance_id()
+				var detach_tear := func() -> void:
+					var overlay := mi.material_overlay
+					if overlay != null and overlay.get_instance_id() == tear_id:
+						mi.material_overlay = null
+				mi.tree_exiting.connect(detach_tear, CONNECT_ONE_SHOT)
 	for i in tl.chain.size():
 		fx.later(T + float(tl.chain[i]), _chain_blast.bind(fx, s, i, tl, cause, T))
 	if not strain.is_empty():
@@ -3638,9 +3646,9 @@ static func _secondary_on(fx, s, node_ref: WeakRef, ship_p: Vector3) -> void:
 
 
 static func _hide_ship(s) -> void:
-	# The tear and melt overlays belong to the live hull, not its wreck. Detach them while
-	# the meshes still exist so the renderer doesn't query a freed overlay material on removal.
-	if s.has_meta("death_grow") or s.has_meta("death_melt_spots"):
+	# Eclipse keeps the tear paint on its hidden original hull until ShipView restores the live paint on a rise.
+	# Detach the other tear overlays and all melt overlays before the renderer tears down the hull.
+	if s.has_meta("death_melt_spots") or (s.has_meta("death_grow") and s.faction != "deathless"):
 		for mesh in s.meshes:
 			if is_instance_valid(mesh):
 				(mesh as MeshInstance3D).material_overlay = null
