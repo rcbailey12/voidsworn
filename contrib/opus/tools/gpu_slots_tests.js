@@ -365,19 +365,23 @@ async function main() {
   assert.notEqual(badWeight.code, 0); assert(/positive integer/.test(badWeight.error));
   pass('real concurrent clients: mixed weights fill capacity, a setting increase admits a waiter, solo drains every slot');
 
-  // Issue 947: the four production lanes. Main and B may take GPU work; C and D refuse by flag or by folder.
+  // Issues 947 and 2057: main and B may take GPU work; C to F refuse by flag or by folder.
   const lanes = [['', 'C:\\v\\board\\repo', ''], ['B', 'C:\\v\\board_b\\repo', ''], ['', 'C:\\v\\board_c\\repo', 'C'],
-    ['', 'C:\\v\\board_d\\repo', 'D'], ['C', '/tmp/x', 'C'], ['D', '/tmp/x', 'D'], ['', '/home/v/board_d/repo/sub', 'D'], ['', '/tmp/board_dx', '']];
+    ['', 'C:\\v\\board_d\\repo', 'D'], ['', 'C:\\v\\board_e\\repo', 'E'], ['', 'C:\\v\\board_f\\repo', 'F'],
+    ['C', '/tmp/x', 'C'], ['D', '/tmp/x', 'D'], ['E', '/tmp/x', 'E'], ['F', '/tmp/x', 'F'],
+    ['', '/home/v/board_f/repo/sub', 'F'], ['', '/tmp/board_fx', '']];
   for (const [flag, cwd, want] of lanes) assert.equal(codeOnlyLane(flag, cwd), want, `lane ${flag || '-'} at ${cwd}`);
   const codex = fs.readFileSync(path.join(pc, 'codex_issue.bat'), 'utf8');
-  for (const [dir, board] of [['build_b', 'board'], ['build_c', 'board_b'], ['build_d', 'board_c'], ['build_e', 'board_d']]) {
+  for (const [dir, board] of [['build_b', 'board'], ['build_c', 'board_b'], ['build_d', 'board_c'], ['build_e', 'board_d'],
+    ['build_f', 'board_e'], ['build_g', 'board_f']]) {
     assert(codex.includes(`if /i "%LANEDIR%"=="${dir}" set "BOARD=${board}"`), `runner maps ${dir} to ${board}`);
   }
-  pass('lane selection: main and B take GPU work, C and D refuse; each tools copy maps to its own board folder');
+  pass('lane selection: main and B take GPU work, C to F refuse; each tools copy maps to its own board folder');
 
   for (const name of ['codex_issue', 'work_issue']) {
     const bat = fs.readFileSync(path.join(pc, name + '.bat'), 'utf8');
-    assert(bat.includes('PC_GPU_ISSUE=%N%')); assert(bat.includes('PC_GPU_LANE=C')); assert(bat.includes('PC_GPU_LANE=D'));
+    assert(bat.includes('PC_GPU_ISSUE=%N%'));
+    for (const lane of 'CDEF') assert(bat.includes('PC_GPU_LANE=' + lane));
     assert(fs.readFileSync(path.join(pc, name + '.ps1'), 'utf8').includes('tmo.bat'));
     assert(fs.readFileSync(path.join(pc, name + '.ps1'), 'utf8').includes('PC_GPU_WEIGHT=2'));
   }
