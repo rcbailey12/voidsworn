@@ -2008,7 +2008,8 @@ void fragment() {
 		a = 1.0 - smoothstep(0.8, 1.6, s);
 		alb = vec3(0.012, 0.008, 0.02);
 		rough = 0.4;
-		em = vec3(0.62, 0.5, 1.0) * exp(-pow((s - 1.0) / 0.22, 2.0)) * (0.15 + 1.2 * exp(-age / 3.0));
+		float sd = (s - 1.0) / 0.22;   // issue 2092: d * d, never pow of a possibly negative base
+		em = vec3(0.62, 0.5, 1.0) * exp(-(sd * sd)) * (0.15 + 1.2 * exp(-age / 3.0));
 	} else if (style == 12) {
 		a = 0.4 * (1.0 - smoothstep(0.3, 1.0, u + (n1 - 0.5) * 0.4));
 	} else {
