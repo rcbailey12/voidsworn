@@ -95,7 +95,7 @@ var fac_of := {}
 var shadow_scan := 0
 var kill_shadows := false
 var build_ms := 0.0
-var build_wait_usec := 60_000_000
+var build_wait_usec := 180_000_000
 var vol_looks: Array = []   # --trace: the volleys fired this frame (faction:kind:weapon)
 var film_focus: Array = [] # issue 538: actual impact positions and times, for the proof camera only
 
@@ -167,6 +167,11 @@ func _volley() -> void:
 
 
 func _run() -> void:
+	# --build-wait-s (issue 1079): how long one battle build may take. A fresh clone bakes its skies cold (about 40 s
+	# each on the RTX 5080, several at once), which passed the 60 s default before the first base build finished.
+	# Nov 25 2026: 60 s timed out the 2035 gas bench and STB clips while four Codex lanes loaded the CPU; 180 s by
+	# default, read before the still and flash branches so they get it too.
+	build_wait_usec = int(float(args.get("build-wait-s", 180)) * 1000000.0)
 	if args.has("still"):
 		await _still_run()
 		PG.finish(0)
@@ -177,10 +182,6 @@ func _run() -> void:
 		PG.finish(0)
 		return
 	var sessions := int(args.get("sessions", 3))
-	# --build-wait-s (issue 1079): how long one battle build may take. A fresh clone bakes its skies cold (about 40 s
-	# each on the RTX 5080, several at once), which passed the 60 s default before the first base build finished.
-	# Nov 25 2026: 60 s timed out the 2035 gas bench and STB clips while four Codex lanes loaded the CPU; 180 s by default.
-	build_wait_usec = int(float(args.get("build-wait-s", 180)) * 1000000.0)
 	var modes: Array = MODES.duplicate()
 	if args.has("modes"):
 		modes = Array(str(args["modes"]).split(",", false))
