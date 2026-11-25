@@ -129,7 +129,7 @@ R194); and "you own the codebase and github. you are my orchestrator and control
 2.2 **Nobody grades their own work.** Workers never merge their own pull requests. An Opus-built, game-facing change gets an
 outside check (Muse, issue 256) before or straight after merge; a tools-only pull request that other jobs wait on may merge on
 the Board's diff review while Muse is idle, with the check still asked for. Set: Ryan (R119, R132, R133, R167); the exception
-Board (R162). Ids: agents-13, claude-04, R132c, R162b.
+Board (R162). The Board may merge its own pull requests once checks are green (Ryan, Nov 24 2026 6:48 PM CT, R452); visual and gameplay changes still go to Ryan's pictures or an outside review first. Ids: agents-13, claude-04, R132c, R162b, R452.
 
 2.3 **Review every pull request by its diff, never its title, then sweep its impact** (every caller, saves and old profiles,
 the Godot rules and their saved results, every UI path, which tests really ran), then the pictures. Merge only on green, and only after every check
