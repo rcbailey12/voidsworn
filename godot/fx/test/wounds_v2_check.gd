@@ -62,7 +62,7 @@ func _hull_of(faces: PackedVector3Array, L: float):
 
 
 # A box ship; authored: a second, inner surface flagged as built interior, and the hull marked authored.
-func _ship(faction: String, authored: bool, shielded := false):
+func _ship(faction: String, authored: bool, shielded := false, separate_deck := false):
 	nship += 1
 	var body := Node3D.new()
 	world.add_child(body)
@@ -88,8 +88,19 @@ func _ship(faction: String, authored: bool, shielded := false):
 		am.surface_set_material(1, im)
 	mi.mesh = am
 	body.add_child(mi)
+	var meshes: Array = [mi]
+	if separate_deck:
+		var deck := MeshInstance3D.new()
+		var deck_mesh := ArrayMesh.new()
+		deck_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, am.surface_get_arrays(1))
+		deck_mesh.surface_set_material(0, am.surface_get_material(1))
+		deck.mesh = deck_mesh
+		deck.position.y = -0.2
+		deck.lod_bias = 0.75
+		body.add_child(deck)
+		meshes.append(deck)
 	var sid := "v2_%s_%d" % [faction, nship]
-	fx.add_ship(sid, body, {"faction": faction, "cls": "Cruiser", "size": 0.8, "meshes": [mi], "shielded": shielded})
+	fx.add_ship(sid, body, {"faction": faction, "cls": "Cruiser", "size": 0.8, "meshes": meshes, "shielded": shielded})
 	fx._later.clear()
 	var s = fx.ship(sid)
 	s.hull.authored = authored
@@ -206,7 +217,7 @@ func _run() -> void:
 
 	# 4. mid-battle cutouts on an authored hull, sealed legacy hull
 	for faction in ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
-		var s = _ship(faction, true)
+		var s = _ship(faction, true, false, faction == "hegemony")
 		s.sync(fx, _state(100, 100, 100))
 		flush(s)
 		check(_holes(s).is_empty() and _lights(s).is_empty(), "%s: a healthy authored hull has no cutout and no inside light" % faction)
@@ -236,6 +247,11 @@ func _run() -> void:
 				var im: ShaderMaterial = mi1.get_surface_override_material(1)
 				int_ok = im.shader.code == SH.INTERIOR and int(im.get_shader_parameter("wound_v2")) == kind and int(im.get_shader_parameter("fx_mouth_count")) >= 1
 		check(int_ok, "%s: the built interior takes the faction interior shader once open" % faction)
+		if faction == "hegemony":
+			var deck: MeshInstance3D = s.meshes[1]
+			var deck_mat := deck.get_surface_override_material(0) as ShaderMaterial
+			check(is_equal_approx(deck.lod_bias, 0.75) and deck_mat != null and deck_mat.shader.code == SH.INTERIOR,
+				"2125: an interior-only mesh keeps its own LOD and still receives the V2 wound light")
 		var v2_ok := true
 		for key in s._damage_surfaces:
 			v2_ok = v2_ok and int((s._damage_surfaces[key][1] as ShaderMaterial).get_shader_parameter("fx_v2")) == kind
@@ -315,8 +331,10 @@ func _run() -> void:
 			has_b = has_b or is_equal_approx(pt.col[k].b, float(want_b[eh.v2]))
 		check(not pt.pos.is_empty() and has_b, "%s: the mouth dressing is the faction's own (kind %d)" % [faction, eh.v2])
 		check(below, "%s: the mouth dressing stays below the plating and inside the rim" % faction)
-	for faction in ["chorus", "ithar", "deathless"]:
-		check(float(FL.of(faction)["wound"]["soot_weight"]) == 0.0, "%s: no soot" % faction)
+	for faction in ["hegemony", "chorus", "ithar", "deathless"]:
+		check(float(FL.of(faction)["wound"]["soot_weight"]) == 0.0, "%s: no soot on wounds" % faction)
+	for faction in ["hegemony", "chorus", "ithar"]:
+		check(float(FL.of(faction)["wound"]["wreck_soot"]) == 0.0, "%s: no soot on wreck interiors" % faction)
 	# R420 (global cohesion law 2): an open wound's inside sits under the interior ceiling, glow capped
 	for faction in ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
 		var lift: Array = FL.of(faction)["wound"]["interior_lift"]

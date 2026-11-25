@@ -1692,7 +1692,10 @@ void fragment() {
 	vec3 Nl = snorm(vNl) * (FRONT_FACING ? 1.0 : -1.0);
 	float lam = 0.25 + 0.75 * max(dot(Nl, toF / max(length(toF), 1e-4)), 0.0);
 	float fall = 1.0 / (1.0 + dist * dist * 5.0);
-	float emb = smoothstep(0.66, 0.88, fbm(p.xy * 6.0 + p.zx * 4.0 + vec2(seed, scene_t * 0.12))) * (part < 0.3 ? 1.0 : 0.3);
+	float emb = 0.0;
+	if (wound_v2 <= 2 && hot > 0.0 && dist < 1.4) {
+		emb = smoothstep(0.66, 0.88, fbm(p.xy * 6.0 + p.zx * 4.0 + vec2(seed, scene_t * 0.12))) * (part < 0.3 ? 1.0 : 0.3);
+	}
 	vec3 gc = glow;
 	if (style == 8) { gc = vec3(0.62, 0.95, 0.14); hot *= 0.35; }
 	if (style == 4 || style == 11) { hot *= 0.3; }
@@ -1718,7 +1721,7 @@ void fragment() {
 		base = v2_interior_lift * (0.35 + 0.5 * n1) * (part < 0.3 ? 0.6 : 1.0) * (0.75 + 0.5 * vC.g);
 		rough = v2_rough;
 		metal = metalk ? 0.55 : (wound_v2 == 5 ? 0.6 : 0.0);
-		if (part > 0.95) { base = v2_rim_metal * (0.75 + 0.35 * n2); rough = metalk ? 0.38 : 0.2; metal = metalk ? 0.85 : 0.1; ao = 1.0; }
+		if (part > 0.95) { base = v2_rim_metal * (0.75 + 0.35 * n2); rough = metalk ? 0.38 : (wound_v2 == 5 ? 0.44 : 0.2); metal = metalk ? 0.85 : (wound_v2 == 5 ? 0.5 : 0.1); ao = 1.0; }
 		if (dress > 0.2 && dress < 0.3) { base = v2_rim_metal * (0.35 + 0.3 * vC.g); metal = wound_v2 == 5 ? 0.5 : 0.75; rough = 0.45; ao = 0.9; }
 		if (part > 0.8 && part < 0.9) {
 			// R420: wet crimson-umber tendon; dry weathered ochre-ivory bone (0.14 to 0.18 linear, no glow)
@@ -1729,7 +1732,13 @@ void fragment() {
 		float v2hot = metalk ? hot : 0.0;
 		em = v2_interior_accent * (lam * fall * 0.45 * (0.6 + 0.4 * fl) * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)));
 		em_hdr += gc * emb * 0.5 * (0.6 + 0.4 * fl) * (1.0 - smoothstep(0.3, 1.4, dist)) * v2hot;
-		if (dress > 0.9) { em_hdr += v2_interior_accent * (0.9 + 0.3 * flick(0.7 + n2 * 0.3, scene_t, seed)); base *= 0.5; }
+		if (wound_v2 == 5) { em *= 0.38; }   // obsidian stays dark; the bus is the violet accent, not the whole wall
+		if (dress > 0.9) {
+			float bus_pulse = flick(0.7 + n2 * 0.3, scene_t, seed);
+			if (wound_v2 == 5) { em += v2_interior_accent * (0.32 + 0.16 * bus_pulse); }
+			else { em_hdr += v2_interior_accent * (0.9 + 0.3 * bus_pulse); }
+			base *= 0.5;
+		}
 		if (dress > 0.7 && dress < 0.8) { em += v2_interior_accent * 0.22 * (0.6 + 0.4 * vC.g); }
 		if (wound_v2 == 3) { em += v2_interior_accent * 0.05 * pow(abs(sin(p.x * 22.0 + n1 * 5.0)), 8.0) * (0.8 + 0.2 * sin(scene_t * 2.3 + seed)); }
 		if (wound_v2 == 4 && part < 0.95 && !(dress > 0.7 && dress < 0.8)) {
@@ -2383,6 +2392,12 @@ float inz(vec2 p) {
 }
 // 1 on a seam line (within w of a whole number of x), 0 across the panel (Fable review B2: it was inverted)
 float line(float x, float w) { return smoothstep(0.0, w, abs(fract(x) - 0.5) * 2.0 - (1.0 - w * 2.0)); }
+// Filter narrow seams before they become single-pixel glints, then fade the pattern below pixel scale.
+float filtered_line(float x, float w, float span) {
+	float aa = max(0.5 * span, 0.001);
+	return (1.0 - smoothstep(max(0.0, w - aa), w + aa, abs(fract(x + 0.5) - 0.5)))
+		* (1.0 - smoothstep(0.16, 0.5, span));
+}
 vec2 icells(vec2 p) {
 	vec2 g = floor(p);
 	vec2 f = fract(p);
@@ -2398,10 +2413,10 @@ vec2 icells(vec2 p) {
 	return vec2(sqrt(d2) - sqrt(d1), id);
 }
 // One plane of the pattern: x shade, y groove (1 deep in a seam), z glowing line, w roughness offset.
-vec4 pat(vec2 uv, bool flat_f) {
+vec4 pat(vec2 uv, vec2 span, bool flat_f) {
 	vec4 r = vec4(1.0, 0.0, 0.0, 0.0);
-	float n = inz(uv * 3.0);
 	if (wound_v2 == 0) {
+		float n = inz(uv * 3.0);
 		if (flat_f) { float slat = line(uv.x * 4.0, 0.25); float bar = line(uv.y * 0.5, 0.06); r.y = max(slat, bar) * 0.8; r.x = 0.85 + 0.3 * n; }
 		else {
 			vec2 pc = fract(uv * vec2(1.0, 1.6));
@@ -2411,13 +2426,18 @@ vec4 pat(vec2 uv, bool flat_f) {
 			r.y = max(seam, rib * 0.7); r.x = 0.8 + 0.4 * n + rivet * 0.5; r.z = seam * step(0.85, inz(uv * 0.7)) * 0.6;
 		}
 	} else if (wound_v2 == 1) {
-		if (flat_f) { r.y = max(line(uv.x, 0.03), line(uv.y, 0.03)); r.x = 1.05 + 0.1 * n; r.w = -0.1; }
-		else {
-			vec2 pc = fract(uv * vec2(1.0, 0.5));
-			float louver = step(0.2, pc.x) * step(pc.x, 0.8) * step(0.3, pc.y) * step(pc.y, 0.7) * line(uv.y * 8.0, 0.3);
-			r.y = max(max(line(uv.x, 0.03), line(uv.y * 0.5, 0.03)), louver * 0.6);
-			r.x = 1.05 + 0.1 * n;
-			r.z = line(uv.y * 0.5 + 0.5, 0.025) * 1.2;
+		// Larger clean bays and recessed louvers, not triplanar micro-grain across every wall.
+		vec2 scale = flat_f ? vec2(0.48, 0.48) : vec2(0.48, 0.28);
+		vec2 bay = uv * scale;
+		vec2 dx = span * scale;
+		float seam = max(filtered_line(bay.x, 0.036, dx.x), filtered_line(bay.y, 0.042, dx.y));
+		r.x = 1.03 - seam * 0.14;
+		r.y = seam * 0.45;
+		if (!flat_f) {
+			vec2 pc = abs(fract(bay) - 0.5);
+			float rack = (1.0 - smoothstep(0.22, 0.28, pc.x)) * (1.0 - smoothstep(0.18, 0.24, pc.y));
+			r.y = max(r.y, rack * filtered_line(bay.y * 5.0, 0.16, dx.y * 5.0) * 0.24);
+			r.z = filtered_line(bay.y + 0.12, 0.035, dx.y) * 0.42;
 		}
 	} else if (wound_v2 == 2) {
 		vec2 sz = vec2(0.7 + ih(floor(uv * 0.5)) * 0.8, 0.5 + ih(floor(uv * 0.5) + 3.1) * 0.7);
@@ -2428,12 +2448,12 @@ vec4 pat(vec2 uv, bool flat_f) {
 		r.y = max(edge, bolt * 0.5); r.x = (0.7 + 0.5 * ih(floor(uv / sz))) * (1.0 - rust * 0.3); r.w = 0.1 + rust * 0.15;
 		r.z = edge * step(0.8, inz(uv * 0.5 + 3.0)) * 0.7;
 	} else if (wound_v2 == 3) {
-		float wv = uv.x * 5.0 + sin(uv.y * 1.3 + n * 2.0) * 1.2;
-		float fibre = pow(abs(sin(wv)), 6.0);
-		vec2 cc = icells(uv * 2.2);
-		float bump = smoothstep(0.0, 0.25, cc.x);
-		float vein = 1.0 - smoothstep(0.0, 0.04, abs(sin(uv.y * 0.9 + inz(uv * 0.8) * 4.0)) - 0.0);
-		r.x = 0.7 + 0.4 * fibre + 0.2 * bump; r.y = (1.0 - fibre) * 0.4 + (1.0 - bump) * 0.4; r.z = vein * 0.9; r.w = -0.1;
+		// Broad muscle bundles and sparse winding veins. No cell-edge bump on the wet tissue.
+		float fibre = 0.5 + 0.5 * sin(uv.x * 1.75 + sin(uv.y * 0.52) * 1.05);
+		float detail = 1.0 - smoothstep(0.3, 1.25, dot(span, vec2(1.75, 0.55)));
+		float fold = (fibre - 0.5) * detail;
+		float vein = filtered_line(uv.y * 0.14 + sin(uv.x * 0.44) * 0.24, 0.06, dot(span, vec2(0.11, 0.14)));
+		r.x = 1.0 + 0.42 * fold; r.y = (0.5 - fold) * 0.36; r.z = vein * 0.55; r.w = 0.04;
 	} else if (wound_v2 == 4) {
 		vec2 cc = icells(uv * 1.6);
 		float edge = 1.0 - smoothstep(0.0, 0.05, cc.x);
@@ -2441,6 +2461,7 @@ vec4 pat(vec2 uv, bool flat_f) {
 		// sanity frame (Nov 22): the braid at 0.8 lit the whole wall as a lattice; a faint thread, the cell edges carry it
 		r.x = 0.75 + 0.5 * cc.y; r.y = edge * 0.5; r.z = edge * 0.35 + braid * 0.2; r.w = -0.2;
 	} else {
+		float n = inz(uv * 3.0);
 		float rib = line(uv.y * 6.0, 0.18);
 		vec2 g = fract(uv * 1.5);
 		float chan = max(line(uv.x * 1.5, 0.03) * step(0.3, inz(uv * 2.0)), line(uv.y * 1.5, 0.03) * step(0.6, inz(uv * 2.0 + 4.0)));
@@ -2453,13 +2474,6 @@ void vertex() {
 	vN = normalize(mat3(fx_hull_frame) * NORMAL);
 }
 void fragment() {
-	vec3 w = pow(abs(vN), vec3(4.0));
-	w /= max(w.x + w.y + w.z, 1e-4);
-	vec3 p = vP * tri_scale;
-	bool flat_f = abs(vN.y) > 0.7;
-	vec4 r = pat(p.zy, false) * w.x + pat(p.xz, flat_f) * w.y + pat(p.xy, false) * w.z;
-	if (role == 1 || role == 2 || role == 3) { r.z = 0.0; }   // bone, cores and glass carry no glowing pattern lines
-	if (role == 1) { r.y *= 0.4; }
 	// how open this spot is to the outside: near an open mouth and below it
 	float open_f = fx_mouth_count < 0 ? 1.0 : 0.0;
 	float near = 0.0;
@@ -2467,11 +2481,33 @@ void fragment() {
 		if (i >= fx_mouth_count) { break; }
 		vec3 d = vP - fx_mouths[i].xyz;
 		float R = max(fx_mouths[i].w, 1e-4);
+		float d2 = dot(d, d);
+		if (d2 >= (5.5 * R) * (5.5 * R)) { continue; }
+		float dist = sqrt(d2);
 		float h = dot(d, fx_axes[i].xyz);
-		float o = (1.0 - smoothstep(R * 1.4, R * 5.5, length(d))) * (1.0 - smoothstep(R * 0.2, R * 0.6, h));
+		float o = (1.0 - smoothstep(R * 1.4, R * 5.5, dist)) * (1.0 - smoothstep(R * 0.2, R * 0.6, h));
 		open_f = max(open_f, o);
-		near = max(near, 1.0 - smoothstep(0.0, R * 3.0, length(d)));
+		near = max(near, 1.0 - smoothstep(0.0, R * 3.0, dist));
 	}
+	vec3 p = vP * tri_scale;
+	vec3 span = fwidth(p);
+	vec4 r = vec4(1.0, 0.0, 0.0, 0.0);
+	// Behind closed plating, keep the unlit trim without running the procedural material.
+	// A short blend keeps the edge of the mouth's influence from tracing a new seam.
+	if (open_f > 0.0) {
+		vec3 w = vN * vN;
+		w *= w;
+		w /= max(w.x + w.y + w.z, 1e-4);
+		// Ignore projections contributing under 0.4 percent, then re-normalize the survivors.
+		w *= step(vec3(0.004), w);
+		vec4 pattern = vec4(0.0);
+		if (w.x > 0.0) { pattern += pat(p.zy, span.zy, false) * w.x; }
+		if (w.y > 0.0) { pattern += pat(p.xz, span.xz, abs(vN.y) > 0.7) * w.y; }
+		if (w.z > 0.0) { pattern += pat(p.xy, span.xy, false) * w.z; }
+		r = mix(r, pattern / max(w.x + w.y + w.z, 1e-4), smoothstep(0.0, 0.08, open_f));
+	}
+	if (role == 1 || role == 2 || role == 3) { r.z = 0.0; }   // bone, cores and glass carry no glowing pattern lines
+	if (role == 1) { r.y *= 0.4; }
 	vec3 tex = texture(base_tex, UV).rgb;
 	vec3 baked = base_albedo.rgb * tex;
 	float ao = 1.0 - r.y * 0.65;
@@ -2479,9 +2515,12 @@ void fragment() {
 	// Fable review B3: the pattern multiplies over the surface instead of replacing it. A role-table surface keeps its own
 	// colour and trim; an older diagram-coloured surface keeps only its texture's light and dark (luma against the
 	// texture's own mean, its last mip), in the faction's interior colour, so no diagram hue leaks into a breach
-	float tl = dot(tex, vec3(0.2126, 0.7152, 0.0722));
-	float tm = dot(textureLod(base_tex, UV, 14.0).rgb, vec3(0.2126, 0.7152, 0.0722));
-	float detail = clamp(tl / max(tm, 0.02), 0.4, 1.8);
+	float detail = 1.0;
+	if (!trusted) {
+		float tl = dot(tex, vec3(0.2126, 0.7152, 0.0722));
+		float tm = dot(textureLod(base_tex, UV, 14.0).rgb, vec3(0.2126, 0.7152, 0.0722));
+		detail = clamp(tl / max(tm, 0.02), 0.4, 1.8);
+	}
 	vec3 hue = v2_interior_lift;
 	if (role == 1) { hue = vec3(0.17, 0.15, 0.11); }                       // dry weathered bone, never flesh
 	else if (role == 2) { hue = v2_interior_lift * 0.6; }                  // a core's housing is dark; its light does the work
@@ -2489,7 +2528,11 @@ void fragment() {
 	vec3 surf = trusted ? baked : hue * detail;
 	vec3 lit = surf * mix(1.0, r.x * ao, trusted ? 0.5 : 1.0);
 	vec3 wreck = lit * (1.0 - v2_wreck_soot);
-	if (wound_v2 == 3) { wreck = mix(lit, vec3(0.1, 0.09, 0.07) * r.x, 0.35); }    // dull pale bone and wet dark tissue
+	if (wound_v2 == 3) {
+		// Keep the actual bone distinct from the wet tissue and collapsed glands behind it.
+		vec3 settled = role == 1 ? vec3(0.12, 0.10, 0.075) : vec3(0.046, 0.024, 0.016);
+		wreck = mix(lit, settled * r.x, 0.35);
+	}
 	if (wound_v2 == 4) { wreck = mix(lit, v2_rim_metal * vec3(1.0, 0.97, 0.93) * 0.4 * (0.6 + 0.4 * r.x), 0.4); }   // pale frosted pearl glass, never dark grey (Ryan Nov 24)
 	lit = mix(lit, wreck, wr);
 	// R420: walls at most the faction's ceiling (0.11 linear mean; Glasswrights 0.45), held by scaling the colour so the
@@ -2510,12 +2553,13 @@ void fragment() {
 	float metal = (role == 1 || role == 4) ? 0.0 : ((wound_v2 <= 2 || wound_v2 == 5) ? 0.45 : 0.0);
 	if (has_orm) { metal = mix(metal, orm.b, 0.5); }
 	METALLIC = mix(base_metal, metal, open_f);
-	SPECULAR = 0.5 * ao;
+	SPECULAR = mix(0.5, 0.26, (wound_v2 == 1 || wound_v2 == 3) ? wr : 0.0) * ao;
 	AO = ao * (has_orm ? orm.r : 1.0);
 	AO_LIGHT_AFFECT = 0.6;
 	// bump from the pattern's grooves (screen-space derivatives: no tangents needed), over the trim's own normal map
 	if (has_normal) { NORMAL_MAP = texture(base_normal, UV).rgb; }
-	float hgt = -r.y * 0.6;
+	float bump = (wound_v2 == 1 || wound_v2 == 3) ? mix(0.32, 0.10, wr) : 0.6;
+	float hgt = -r.y * bump;
 	vec3 sx = dFdx(VERTEX);
 	vec3 sy = dFdy(VERTEX);
 	vec3 r1 = cross(sy, NORMAL);
@@ -2537,11 +2581,16 @@ void fragment() {
 	float am = max(v2_interior_accent.r, max(v2_interior_accent.g, v2_interior_accent.b));
 	vec3 bem = (trusted ? bsrc : v2_interior_accent / max(am, 1e-3) * bl) * pw * (1.0 - wr);
 	bem *= mix(0.15, 1.0, open_f);
+	// Once a Directorate room tears open, its full faces lose power. The authored emission can cover a whole
+	// rectangular panel (including a legacy surface inferred to be a core). Leave the narrow blue strips, not HDR panels.
+	bool directorate_wreck = wound_v2 == 1 && fx_wreck > 0.0;
+	if (directorate_wreck) { bem *= fx_wreck_t0 < 0.0 ? 0.0 : 1.0 - smoothstep(0.0, 0.8, scene_t - fx_wreck_t0); }
+	bool hdr_core = role == 2 && !directorate_wreck;
 	// R420: non-core light at most 0.25, held by scaling (Fable review H2); a core is the HDR band and passes
-	vec3 soft = em + (role == 2 ? vec3(0.0) : bem);
+	vec3 soft = em + (hdr_core ? vec3(0.0) : bem);
 	float pk = max(soft.r, max(soft.g, soft.b));
 	soft *= pk > 0.25 ? 0.25 / pk : 1.0;
-	EMISSION = soft + (role == 2 ? bem : vec3(0.0));
+	EMISSION = soft + (hdr_core ? bem : vec3(0.0));
 }
 """
 

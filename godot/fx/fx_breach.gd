@@ -1663,7 +1663,13 @@ static func apply(fx, s, job: Dictionary) -> void:
 		# the meshes a damage entry reaches; every other mesh of the ship keeps its own LOD for the rest of the battle.
 		if not mi.has_meta("fx_lod0"):
 			mi.set_meta("fx_lod0", mi.lod_bias)
-		mi.lod_bias = 128.0 if _reaches(sd0["aabb"], job["ents"]) else float(mi.get_meta("fx_lod0"))
+		# Authored interior-only meshes never carry copied overlays or rebuilt cuts. Keep their imported LOD.
+		var carries_skin := false
+		for k in ks:
+			if not bool(orig[k].get("interior", false)):
+				carries_skin = true
+				break
+		mi.lod_bias = 128.0 if carries_skin and _reaches(sd0["aabb"], job["ents"]) else float(mi.get_meta("fx_lod0"))
 		var am = meshes.get(int(sd0["mid"]))
 		if am == null:
 			if mi.mesh != sd0["mesh"]:
