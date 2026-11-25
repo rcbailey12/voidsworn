@@ -520,16 +520,24 @@ func _write_atomic(path: String, text: String) -> bool:
 static func _json_quiet(t: String) -> Variant:   # a damaged save is expected now and then: parse without an engine error
 	var j = JSON.new()
 	return j.data if j.parse(t) == OK else null
-# A valid primary wins even if it is profile-only. If neither copy is sound, keep the sound half of the primary.
+# A valid primary wins even if it is profile-only. If neither copy is sound, recover the profile from either copy.
 static func _resolve_save(primary, backup) -> Dictionary:
 	if saneSave(primary): return primary
 	if saneSave(backup): return backup
-	if not (primary is Dictionary): return {}
-	if not saneRun(primary.get("run")):
-		primary.erase("run")
-		primary["brokenRun"] = true
-	if not saneMeta(primary.get("meta")): primary.erase("meta")
-	return primary
+	var resolved: Dictionary = primary if primary is Dictionary else {}
+	if not saneMeta(resolved.get("meta")):
+		resolved.erase("meta")
+		if backup is Dictionary and saneMeta(backup.get("meta")):
+			# Keep a usable primary run. Otherwise take the backup profile and its telemetry together.
+			var run = resolved.get("run")
+			if run == null or not saneRun(run):
+				resolved = backup
+			else:
+				resolved["meta"] = backup["meta"]
+	if not saneRun(resolved.get("run")):
+		resolved.erase("run")
+		resolved["brokenRun"] = true
+	return resolved
 
 static func _read_save(path: String) -> Dictionary:
 	var primary = _dec(_json_quiet(FileAccess.get_file_as_string(path)))

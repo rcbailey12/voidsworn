@@ -76,4 +76,35 @@ func _init() -> void:
 		check(fresh.SAVED_RUN == null and not Campaign.has_saved_run(path) and fresh.META["renown"] == 37
 			and fresh.META["stats"] == stats, "discard clears only the broken run and keeps profile progress")
 		check(broken.page.get("kind") == "admiral", "discard returns to new-run setup without a debrief")
+
+	var recovery_path := "user://recovery_2171_backup_%d.json" % OS.get_process_id()
+	entry["run"] = "damaged checkpoint"
+	entry["meta"]["renown"] = 53
+	entry["meta"]["stats"]["wins"] = 8
+	var primary_write := FileAccess.open(recovery_path, FileAccess.WRITE)
+	var backup_write := FileAccess.open(recovery_path + ".bak", FileAccess.WRITE)
+	assert(primary_write != null and backup_write != null)
+	primary_write.store_string("{")
+	backup_write.store_string(JSON.stringify(entry))
+	primary_write.close()
+	backup_write.close()
+
+	var recovered = campaign(recovery_path)
+	recovered.persist_load()
+	recovered.titleScreen()
+	check(Campaign.has_saved_run(recovery_path), "the damaged save offers Continue for recovery")
+	recovered.act("continueRun")
+	check(recovered.modal_d is Dictionary and recovered.modal_d.get("kind") == "brokenRun",
+		"an unreadable primary and broken backup run offer Discard")
+	check(recovered.META["renown"] == 53 and recovered.META["stats"]["wins"] == 8,
+		"recovery loads the backup profile even though its run is broken")
+	recovered.act("discardBrokenRun")
+	for suffix in ["", ".bak"]:
+		var copy: String = recovery_path + suffix
+		var reloaded = campaign(copy)
+		# Read each file on its own so fallback cannot hide a bad write to either copy.
+		reloaded.load_save_text(FileAccess.get_file_as_string(copy))
+		check(reloaded.SAVED_RUN == null and not Campaign.has_saved_run(copy) and reloaded.META["renown"] == 53
+			and reloaded.META["stats"]["wins"] == 8,
+			"Discard keeps the recovered profile in the " + ("primary" if suffix.is_empty() else "backup"))
 	quit(0 if failures == 0 else 1)
