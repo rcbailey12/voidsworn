@@ -97,7 +97,7 @@ pass('look bench: the marker stays open for every step, and a failed bench ends 
 for (const [name, q, dir] of [['watcher.bat', 'queue', 'build'], ['watcher_b.bat', 'queue_b', 'build_b']]) {
   const w = read(path.join(PC, name)).replace(/\r\n/g, '\n');
   assert(w.includes(`if not exist ${q}\\failed mkdir ${q}\\failed`), name + ' makes the failed folder');
-  assert(w.includes(`call "%~dp0${q}\\running\\%J%" >> "%~dp0${q}\\logs\\%J%.log" 2>&1\nset "JX=%ERRORLEVEL%"`), name + ' keeps the job exit code');
+  assert(w.includes(`"%ComSpec%" /d /c call "%~dp0${q}\\running\\%J%" >> "%~dp0${q}\\logs\\%J%.log" 2>&1\nset "JX=%ERRORLEVEL%"`), name + ' keeps the job exit code');
   assert(w.includes(`echo [%date% %time%] finished, exit %JX% >> "${q}\\logs\\%J%.log"`), name + ' logs the exit code');
   assert(w.includes(`if "%JX%"=="0" (move /y "${q}\\running\\%J%" "${q}\\done\\%J%" >nul) else (move /y "${q}\\running\\%J%" "${q}\\failed\\%J%" >nul)`), name + ' files failed jobs apart');
   assert(w.includes(`pushd ${dir}`));

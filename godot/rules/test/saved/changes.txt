@@ -1,10 +1,14 @@
-Saved manifest before: 0d9420f884f9ead96d7da348c273a0b1398db9689d89d182a58a694adf5be82c
-Saved manifest after: 16675d25392c1d73e07c43ffa8297d2bb13a1d50151f3521f7e160916daa2129
+Saved manifest before: 5ff4444344ae9cedaebe963ed5338f9f5b3041bdd6fb71806663a67f17337e45
+Saved manifest after: f11b6c79cf7f29fde65fa26c3198a6bc22292fe165dca354707771130d31f3eb
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t_ecl_iterationswap
-  turn 0, round 1, after tick player; unit x05 (player d_harvester)
-  state.units[0].q: 2 -> 1
-  later changed records: 49; total records: 49 -> 50
-FAIL: saved Godot results; 354 battles checked, 1 changed, 0 other files changed, 1 failures; 27.201 s
+FAIL battle t_throatspits
+  turn 89, round 6, after fire x02; unit x02 (player b_brood)
+  state.units[0].facing: 4 -> 5
+  later changed records: 0; total records: 141 -> 141
+FAIL battle t_heg_secondvolley
+  turn 79, round 4, after fire x04; unit x04 (player h_dominion)
+  state.units[0].sureUsed: 4 -> 5
+  later changed records: 51; total records: 121 -> 131
+FAIL: saved Godot results; 379 battles checked, 2 changed, 0 other files changed, 2 failures; 47.583 s
