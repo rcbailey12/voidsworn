@@ -75,6 +75,7 @@ var dtip_text: RichTextLabel
 var aichip: Label
 const PlateLayer = preload("res://ui/battle/ship_plate_layer.gd")
 var plates_root: PlateLayer
+var floats_root: Control
 var plates: Dictionary:
 	get:
 		return plates_root.plates
@@ -132,6 +133,11 @@ func _build_all() -> void:
 	if plates_root == null:
 		plates_root = PlateLayer.new()
 	root.add_child(plates_root)
+	if floats_root == null:
+		floats_root = Control.new()
+		floats_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+		floats_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(floats_root)
 	_build_log()
 	_build_ledger()
 	_build_banner()
@@ -177,6 +183,7 @@ func _rebuild() -> void:
 		var mfo := get_viewport().gui_get_focus_owner()
 		if mfo != null and menu.is_ancestor_of(mfo): keep_row = maxi(0, mfo.get_index() - 1)
 	plates_root.get_parent().remove_child(plates_root)
+	floats_root.get_parent().remove_child(floats_root)
 	log_text.get_parent().remove_child(log_text)
 	remove_child(root)
 	root.queue_free()
@@ -881,7 +888,7 @@ func hud_blockers() -> Array:
 	if ledger != null and ledger.is_visible_in_tree() and ledger.modulate.a > 0.5:
 		ledger.ensure_layout()
 		out.append_array(ledger.blockers)
-	for p in [log_panel, tipcard, legend]:
+	for p in [log_panel, tipcard, legend] + bars:
 		if p != null and is_instance_valid(p) and (p as Control).is_visible_in_tree():
 			out.append((p as Control).get_global_rect())
 	return out
@@ -902,7 +909,7 @@ func plate_names_under_panels() -> int:
 func make_float(text: String, col: Color) -> Label:
 	var l := _label(text, 19, col_of(col), font_semi)
 	_halo(l)
-	plates_root.add_child(l)
+	floats_root.add_child(l)
 	l.reset_size()
 	return l
 

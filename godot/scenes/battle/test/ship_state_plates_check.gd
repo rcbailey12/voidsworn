@@ -63,7 +63,7 @@ func _run() -> void:
 	while b.warming or b.opening or b.busy:
 		await process_frame
 	b.select(str(units[0]["id"]))
-	_round_three(b)
+	await _round_three(b)
 
 
 func _recorded_formation() -> Dictionary:
@@ -191,6 +191,7 @@ func _round_three(b) -> void:
 			break
 	_check_rail(layer, vs)
 	_check_losses(b)
+	await _check_playback(b, vs)
 	quit(1 if fails else 0)
 
 
@@ -225,3 +226,136 @@ func _check_losses(b) -> void:
 	var drawn: Array = b.hud.ledger.items
 	_check(drawn.any(func(item): return str(item["t"]).begins_with("Mid lost")),
 		"the KEEL loss is drawn standing, not only in a tip")
+
+
+func _check_playback(b, vs: Vector2) -> void:
+	var attacker: String = b.sel
+	var target: String = ""
+	for id in b.VU:
+		if b.VU[id]["side"] == "enemy":
+			target = id
+			break
+	var unit: Dictionary = b.api.unit(target)
+	unit["fac"] = "deathless"
+	unit["hp"] = unit["maxHp"]
+	unit["shMax"] = 100.0
+	unit["shp"] = unit["shMax"]
+	b.api.R.syncShields(unit)
+	b._sync(b.api.view())
+	b.api.take_events()
+	var full_hull := float(unit["hp"])
+	var max_hp := float(unit["maxHp"])
+	var key := "prow"
+	unit["_calledSec"] = key
+	var full_section := float(unit["sec"][key]["hp"])
+	var groups: Array = []
+	var hits: Array[Dictionary] = []
+	var expected: Array[Vector3] = []
+	for damage in [16.0, 24.0]:
+		b.api.R.applyHit(b.api.unit(attacker), {"k": "lance", "pierce": 0.6, "crit": -100}, unit, damage, 0)
+		for event in b.api.take_events():
+			if event["t"] in ["hit", "section_down", "shield_down"]:
+				groups.append(event)
+			if event["t"] == "hit":
+				hits.append(event)
+		expected.append(Vector3(float(unit["hp"]), float(unit["shp"]), float(unit["sec"][key]["hp"]) / float(unit["sec"][key]["max"])))
+	unit.erase("_calledSec")
+	_check(hits.size() == 2 and expected[0].x < full_hull and expected[0].x > expected[1].x
+		and expected[0].y < 100.0 and expected[0].y > expected[1].y
+		and float(unit["sec"][key]["max"]) * expected[0].z < full_section and expected[0].z > expected[1].z,
+		"the fixture records two distinct real hull, shield and section impacts")
+	if hits.size() != 2:
+		return
+	b.cine = "off"
+	var fire := {"t": "fire", "unit": attacker, "target": target, "kind": "lance", "weapon_id": "lance",
+		"name": "Playback probe", "shots": [true, true], "quad": 0}
+	b._play_fire(fire, groups)
+	var layer: PlateLayer = b.hud.plates_root
+	var kept: Plate = layer.plates[target]
+	for i in expected.size():
+		var want := expected[i]
+		var started := Time.get_ticks_msec()
+		while float(b.disp[target]["hp"]) > want.x and Time.get_ticks_msec() - started < 3000:
+			await process_frame
+		b._ship_plates(vs, Vector2(-10, -10), false)
+		var meter := Vector3(float(kept.state["hull_fraction"]) * max_hp,
+			float(kept.state["shield"]), float(kept.state["sections"][0]["fraction"]))
+		_check(meter.is_equal_approx(want) and float(b.VU[target]["hp"]) == full_hull,
+			"impact %d updates the actual plate before the next impact or final sync (got %s, wanted %s)" % [i + 1, meter, want])
+
+	b.api.R.damageSection(unit, "mid", unit["sec"]["mid"]["max"], null)
+	for event in b.api.take_events():
+		if event["t"] in ["section_down", "shield_down"]:
+			await b._play_event(event)
+	b._ship_plates(vs, Vector2(-10, -10), false)
+	_check(kept.state["generator_lost"] and kept.state["sections"][1]["lost"] and kept.state["shield"] == 0.0,
+		"the generator loss hatches and empties the displayed shared pool before sync")
+
+	unit["dead"] = true
+	unit["hp"] = 0
+	unit["riseAt"] = int(b.V["round"]) + 1
+	b.cine = "all"
+	b._play_death({"unit": target, "by": attacker, "cause": "blast"}, b.api.view())
+	var sv: ShipView = b.views[target]
+	sv.hide()   # The effect may hide the destroyed model before the hold releases.
+	b._step_cut_overlays(1.0)
+	b._ship_plates(vs, Vector2(-10, -10), false)
+	var visible_ids := []
+	for id in layer.plates:
+		var p: Plate = layer.plates[id]
+		if p.is_visible_in_tree() and p.modulate.a > 0.99 and layer.modulate.a > 0.99:
+			visible_ids.append(id)
+	_check(sv.dead and not b.cine_saved.is_empty() and b._cut_overlay_alpha == 0.0,
+		"the real death handler runs with a fully faded board overlay")
+	_check(visible_ids.size() == 2 and attacker in visible_ids and target in visible_ids
+		and layer.plates[target] == kept and kept.state["hull_fraction"] == 0.0
+		and b.hud.plate_names_under_panels() == 0,
+		"only the attacker and killed target plates remain readable through the cut-in")
+	b.hud.show_tip("Cut-in board hover", vs * 0.5)
+	b.hud._ledger_tip("Cut-in shelf hover", vs * 0.5)
+	_check(not b.hud.tip.visible and not b.hud.dtip.visible, "main's cut-in tip guards still hold")
+
+	var readable_throughout := true
+	var hold_frames := 0
+	while not b.cine_saved.is_empty():
+		await process_frame
+		if not b.cine_saved.is_empty():
+			b._ship_plates(vs, Vector2(-10, -10), false)
+			var source: Plate = layer.plates.get(attacker)
+			readable_throughout = readable_throughout and layer.modulate.a == 1.0 \
+				and kept.visible and source != null and source.visible
+			hold_frames += 1
+	_check(hold_frames > 0 and readable_throughout, "both plates stay visible as the kill camera settles and holds")
+	_check(not layer.plates.has(target) and sv.has_meta("plate_off"),
+		"the target's plate is removed as the kill hold releases")
+
+	b._sync(b.api.view())   # The view is dead until the next batch ends, even as the rise plays.
+	b.api.take_events()
+	if not b.api.R.legionRise(unit, true):
+		_check(false, "the killed Eclipse ship finds a hex to reassemble")
+		return
+	var risen: Array = b.api.take_events().filter(func(e): return e["t"] == "risen")
+	if risen.is_empty():
+		_check(false, "the rules emit the Eclipse rise")
+		return
+	b._reassemble(risen[0], b.api.view())
+	b.cam.t = sv.visual_position()
+	b.cam.r = 170.0
+	b.cam.snap()
+	b._step_cut_overlays(1.0)
+	b._ship_plates(vs, Vector2(-10, -10), false)
+	var new_plate: Plate = layer.plates.get(target)
+	_check(new_plate != null and new_plate.visible and not sv.has_meta("plate_off")
+		and is_equal_approx(float(new_plate.state["hull_fraction"]), float(unit["hp"]) / max_hp)
+		and is_equal_approx(float(new_plate.state["sections"][1]["fraction"]), float(unit["sec"]["mid"]["hp"]) / float(unit["sec"]["mid"]["max"]))
+		and not new_plate.state["generator_lost"] and new_plate.state["shield"] == 0.0,
+		"Eclipse reassembly recreates the plate with restored hull and sections before sync")
+	if new_plate == null:
+		return
+	var old_display: Dictionary = b.disp[target]
+	b._sync(b.api.view())
+	b._land_hit(target, hits[0], 0, {"t_id": target, "display": old_display, "left": 1,
+		"ended": false, "numbers": false, "break_k": -1})
+	b._ship_plates(vs, Vector2(-10, -10), false)
+	_check(is_equal_approx(float(new_plate.state["hull_fraction"]), float(unit["hp"]) / max_hp)
+		and new_plate.state["shield"] == 0.0, "an old volley cannot apply its damage again after sync")

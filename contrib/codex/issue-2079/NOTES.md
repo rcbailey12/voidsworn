@@ -12,6 +12,16 @@ Run `godot --headless --path godot --script res://scenes/battle/test/ship_state_
 
 The headless fixture placed all four recorded ships' plates at camera 170 with zero intersections between plates, HUD or visible footprints. The hit timing, HUD overlap, KEEL readability, plan commit and camera input checks also passed locally. This checks layout and state, not the look of the installed hulls.
 
+## Run 4 review findings
+
+- **Fixed, Codex sweep, Artoo, Neon and Duet (R458):** The actual kill cut-in keeps only the attacker and target plates readable, including after the target dies or its model hides. Cut exit retires the dead plate immediately. Ordinary dead and fled plates still retire, hidden plates do not allocate, and cut-in tooltips stay suppressed.
+- **Fixed, Codex sweep, Artoo and Neon:** The plate reads hull and the shared shield pool from impact playback. The hit event now carries the rules' resulting section fraction for the affected cell. A section loss uses the same loss projection as KEEL, and a rise restores the plate before the final batch sync. A late impact cannot apply damage a second time after sync.
+- **Fixed, published shard 1:** The death view retirement check now exercises the replacement plate layer. Its no-allocation, retirement and Eclipse rise assertions still run.
+- **Not reproduced, older Artoo CI findings:** The replacement plate is already used by the KEEL readability test and the HD9 standing check. The new cut-in and meter cases are in the existing ship plate check.
+- **Merge repair:** Audited the two files from the actual pre-merge base to the Board's main parent. Main's dead-plate cleanup and cut-in fade now run through the new plate layer. Main's cut-in tip guards were already present, and the old hidden-plate no-allocation change is already covered by the replacement layer. PR #2225 is still separate and was not merged here.
+
+The final Windows game pass covered all 254 listed checks, including two environment-only reruns. The formation test used the tracked SF3 and SB4 measurements in scratch. The unchanged prefetch test passed with CI-style audio imports omitted in a disposable copy. The separate seed-361 bot battle passed. All 379 saved battles, 30 seeded campaigns and the Nemesis scenarios matched.
+
 ## Visual handoff
 
 The [ST-0 reference](../../../docs/shots/issue-2036-codex/ST-0_crossing-rings.png) is from Battle 2, part 2 at 00:25.000, seed 10, round 3. The [ST-A concept](../../../docs/shots/issue-2036-codex/ST-A_stacked-plates.png) is the approved layout, not current game art.
