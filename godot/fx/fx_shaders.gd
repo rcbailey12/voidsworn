@@ -346,6 +346,7 @@ void process() {
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
 #  40 directional hull-rupture vent jet (VENT_JET: tapered hot root + sheared gas cone)
+#  41 legacy Nova Cannon shell (SPR_NOVA_LEGACY)
 const TICK_EMBER := 38
 const TICK_DROPLET := 39
 const VENT_JET := 40
@@ -359,7 +360,7 @@ static func flash_sprite_floor(kind: int, px: float) -> float:
 
 const WEAPON_MASKS := preload("res://render/weapon_layer_masks.gd")
 const ROCKET_SMOKE := 37
-const SPR_NOVA_LEGACY := 40
+const SPR_NOVA_LEGACY := 41
 const SPRITE := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;

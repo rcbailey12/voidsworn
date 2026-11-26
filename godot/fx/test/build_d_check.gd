@@ -70,6 +70,7 @@ func _nova() -> void:
 		_step_to(at + 0.015)
 		if style.is_empty():
 			_check(warm.has(SH.SPR_NOVA_LEGACY) and not warm.has(12) and not fx.spr_kinds.has(26), "legacy Nova remains the live look")
+			_check(SH.SPR_NOVA_LEGACY != SH.VENT_JET and SH.SPR_NOVA_LEGACY != SH.TICK_DROPLET and SH.SPR_NOVA_LEGACY != SH.TICK_EMBER and SH.SPR_NOVA_LEGACY != SH.ROCKET_SMOKE, "legacy Nova sprite kind is its own, not the hull vent jet (Artoo, PR 2222)")
 		else:
 			_check(warm.has(12) and warm.has(14 if style == "ember_hammer" else 17), style + " has charge and its own shell")
 			_check(_count("stk") > sticks and _count("smk") > smoke and _count("rng") > rings + 3 and fx.spr_kinds.has(26),
