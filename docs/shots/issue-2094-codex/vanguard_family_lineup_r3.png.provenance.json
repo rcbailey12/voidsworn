@@ -1,0 +1,167 @@
+{
+  "source_commit": "f7782a2f74a3eb315a24b447803350bbbb58b21a",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "source_dirty_files": {},
+  "stage": "cloud direction check",
+  "schema": 1,
+  "picture_name": "vanguard_family_lineup_r3.png",
+  "date": "2026-11-26T00:47:27Z",
+  "sources": [
+    {
+      "source_commit": "f7782a2f74a3eb315a24b447803350bbbb58b21a",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "source_dirty_files": {},
+      "stage": "cloud direction check"
+    },
+    {
+      "source_commit": "8f347164e19508295dcd0c6d52bdad27213577de",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "source_dirty_files": {},
+      "stage": "cloud direction check"
+    },
+    {
+      "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "source_dirty_files": {},
+      "stage": "cloud direction check"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "spineguard_views.png",
+      "source_commit": "f7782a2f74a3eb315a24b447803350bbbb58b21a",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "cloud direction check",
+      "date": "2026-11-26T00:47:25Z",
+      "image_sha256": "3d2ecfd041c009b09e12a4231469ce5f3e9580e43dc35991c6bfd47e9ade26f5",
+      "sources": [
+        {
+          "source_commit": "f7782a2f74a3eb315a24b447803350bbbb58b21a",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        },
+        {
+          "source_commit": "8f347164e19508295dcd0c6d52bdad27213577de",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        },
+        {
+          "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        }
+      ]
+    },
+    {
+      "picture_name": "cheekguard_views.png",
+      "source_commit": "f7782a2f74a3eb315a24b447803350bbbb58b21a",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "cloud direction check",
+      "date": "2026-11-26T00:47:25Z",
+      "image_sha256": "8ad23cb7137979d9355eca4c37bc60a48c48696e7a5964423c72efe9de3651e5",
+      "sources": [
+        {
+          "source_commit": "f7782a2f74a3eb315a24b447803350bbbb58b21a",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        },
+        {
+          "source_commit": "8f347164e19508295dcd0c6d52bdad27213577de",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        },
+        {
+          "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        }
+      ]
+    },
+    {
+      "picture_name": "vanguard_family_lineup.png",
+      "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "cloud direction check",
+      "date": "2026-11-25T13:39:42Z",
+      "image_sha256": "6c5cde38a84183ce4acefbb06e9314e454e8661ed9058d5e554ff2fe867f2d2d",
+      "sources": [
+        {
+          "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        },
+        {
+          "source_commit": "8f347164e19508295dcd0c6d52bdad27213577de",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        }
+      ]
+    },
+    {
+      "picture_name": "vanguard_silhouette_check.png",
+      "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "cloud direction check",
+      "date": "2026-11-25T13:39:42Z",
+      "image_sha256": "51b905c220c6bd678347c3b713d328d4a3da3d3187ff5545a72018e0bffa5e3b",
+      "sources": [
+        {
+          "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        },
+        {
+          "source_commit": "8f347164e19508295dcd0c6d52bdad27213577de",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    570,
+    552,
+    720
+  ],
+  "strip_size": [
+    552,
+    150
+  ],
+  "strip_sha256": [
+    "9799ca3c907adce8b6ad83078865eda3c2ac57d23e3b2afaccf503080e3c0d15"
+  ],
+  "stamp_template_sha256": "9799ca3c907adce8b6ad83078865eda3c2ac57d23e3b2afaccf503080e3c0d15",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAigAAACWCAIAAAB7MOT+AAACQUlEQVR4nO3XMREAIBADwQcJ1AjAv0JcXLVrIOVN1rlvAKCysyUAEB4Aah4PACnhASAlPACkhAeAlPAAkBIeAFLCA0BKeABICQ8AKeEBICU8AKSEB4CU8ACQEh4AUsIDQEp4AEgJDwAp4QEgJTwApIQHgJTwAJASHgBSwgNASngASAkPACnhASAlPACkhAeAlPAAkBIeAFLCA0BKeABICQ8AKeEBICU8AKSEB4CU8ACQEh4AUsIDQEp4AEgJDwAp4QEgJTwApIQHgJTwAJASHgBSwgNASngASAkPACnhASAlPACkhAeAlPAAkBIeAFLCA0BKeABICQ8AKeEBICU8AKSEB4CU8ACQEh4AUsIDQEp4AEgJDwAp4QEgJTwApIQHgJTwAJASHgBSwgNASngASAkPACnhASAlPACkhAeAlPAAkBIeAFLCA0BKeABICQ8AKeEBICU8AKSEB4CU8ACQEh4AUsIDQEp4AEgJDwAp4QEgJTwApIQHgJTwAJASHgBSwgNASngASAkPACnhASAlPACkhAeAlPAAkBIeAFLCA0BKeABICQ8AKeEBICU8AKSEB4CU8ACQEh4AUsIDQEp4AEgJDwAp4QEgJTwApIQHgJTwAJASHgBSwgNASngASAkPACnhASAlPACkhAeAlPAAkBIeAFLCA0BKeABICQ8AKeEBICU8AKSEB4CU8ACQEh4AUsIDQEp4AEgJDwAp4QEgJTwApIQHgJTwAJASHgBSwgNASngASAkPACnhASAlPABM6QMK2QGCYR8dtgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "d9dfff5fde036b646be078b33f0cee3e97afa116b25aab3951046f2f84f7f00b"
+}

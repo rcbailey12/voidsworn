@@ -4,6 +4,7 @@ extends SceneTree
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const FX := preload("res://fx/fx.gd")
 var failures := 0
 
 
@@ -81,7 +82,7 @@ func _run() -> void:
 		"without a usable socket or plating, both effects are skipped and counted")
 	_check_turret(ship, body)
 	ship.free()
-	print("PASS broadside muzzles face the target" if failures == 0 else "FAIL broadside mounts: %d" % failures)
+	print("PASS broadside muzzles face the target and jammed volleys still have a shot" if failures == 0 else "FAIL broadside mounts: %d" % failures)
 	quit(0 if failures == 0 else 1)
 
 
@@ -106,5 +107,51 @@ func _check_turret(ship: Node3D, body: MeshInstance3D) -> void:
 			"tier %s uses the turret when the target is in reach from its pivot" % str(request))
 		_check(outside.get("src") == "ray", "tier %s falls back when the target is outside the turret's reach" % str(request))
 	hull.jam_turret(0, 0.0, 12.0, 0.0)
-	_check(hull.guns(2, "lance", in_arc, 2) == [{}, {}], "an all-jammed tier has no shot origins")
+	var fallback := hull.guns(2, "lance", in_arc, 2)
+	_check(fallback.size() == 2, "an all-jammed tier keeps the shot count")
+	for muzzle: Dictionary in fallback:
+		_check(muzzle.get("src") == "ray" and not muzzle.has("tur") and (muzzle["p"] as Vector3).z < 0.0,
+			"an all-jammed tier sends the shot from the target-facing hull, not the frozen turret")
 	_check(hull.gun_turrets(2, "lance", in_arc, 2).is_empty(), "an all-jammed tier does not pre-train")
+	hull.mounts["stb"] = []
+	var plate: Dictionary = hull.guns(2, "lance", in_arc, 1)[0]
+	_check(plate.get("src") == "ray" and is_equal_approx((plate["p"] as Vector3).z, -1.5),
+		"without a station hit, the jammed volley casts directly to the hull plating")
+	var bare := HULL.new()
+	bare.analyse(ship, [], 0)
+	bare.jam_turret(0, 0.0, 12.0, 0.0)
+	var centre: Dictionary = bare.guns(2, "lance", in_arc, 1)[0]
+	_check(centre.get("src") == "centre" and centre.get("p") == bare.core and not centre.has("tur"),
+		"without triangles, a known frozen battery falls back to the hull core")
+	_check_jammed_volley(ship, body, socket)
+
+
+func _check_jammed_volley(ship: Node3D, body: MeshInstance3D, socket: Node3D) -> void:
+	socket.name = "hp_w2_battery_T_0"
+	var fx := FX.new()
+	root.add_child(fx)
+	fx.manual = true
+	fx.setup({"quality": "low", "shake": 0.0})
+	var target := Node3D.new()
+	root.add_child(target)
+	target.position = Vector3(1.5, 1.0, -12.0)
+	var target_body := MeshInstance3D.new()
+	target_body.mesh = body.mesh
+	target.add_child(target_body)
+	fx.add_ship("gun", ship, {"meshes": [body], "shielded": false, "cut_on_arrival": false})
+	fx.add_ship("target", target, {"meshes": [target_body], "shielded": false, "cut_on_arrival": false})
+	var h = fx.ship("gun").hull
+	var opts := {"slot": 2, "weapon_id": "battery", "shots": [true], "hits": [{"hull": 1, "shield": 0, "section": "mid"}]}
+	var normal := fx.volley("gun", "battery", "target", opts)
+	_check(normal.get("muzzles", []).size() == 1 and int(normal["muzzles"][0]["tur"]) == 0,
+		"the live battery would normally fire from this turret")
+	h.jam_turret(0, 0.0, 12.0, fx.now)
+	var result := fx.volley("gun", "battery", "target", opts)
+	_check(result["fires"].size() == 1 and result["impacts"].size() == 1,
+		"the jammed battery's legal hit still has one visible shot and impact")
+	_check(result.get("muzzles", []).size() == 1 and int(result["muzzles"][0]["tur"]) == -1,
+		"the fallback shot never fires or recoils from the jammed turret")
+	fx.remove_ship("gun")
+	fx.remove_ship("target")
+	fx.free()
+	target.free()
