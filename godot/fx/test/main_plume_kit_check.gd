@@ -78,6 +78,8 @@ func _run() -> void:
 		_check(burn_gate > idle_gate * 3.0 and burn_lenk > idle_lenk + 0.4 and burn_tk > idle_tk * 2.5,
 			"%s keeps stage-2 throttle response across gate, lenk and throttle_k (idle %.2f/%.2f/%.2f -> burn %.2f/%.2f/%.2f)"
 			% [fac, idle_gate, idle_lenk, idle_tk, burn_gate, burn_lenk, burn_tk])
+		if fac == "deathless":
+			_check_sick_drive(fx, s)
 
 		fx.remove_ship("plume_" + fac)
 		body.free()
@@ -99,3 +101,34 @@ func _run() -> void:
 	FX.clear_static()
 	print("MAIN_PLUME_KIT_CHECK %s: %d checks, %d failures" % ["PASS" if failures == 0 else "FAIL", checks, failures])
 	quit(1 if failures > 0 else 0)
+
+
+func _check_sick_drive(fx: FX, s: SHIP) -> void:
+	s.wounds_v2 = true
+	s.eng_tier = 1
+	s._build_engines(fx)
+	_check(s._sick_rib_mat != null, "damaged drive builds a separate sick plume")
+	if s._sick_rib_mat == null:
+		return
+	for param in ["plume_core", "plume_wash", "plume_style"]:
+		_check(s._sick_rib_mat.get_shader_parameter(param) == s._eng_rib_mat.get_shader_parameter(param),
+			"sick drive keeps the faction %s" % param)
+
+	fx.reduce_flashing = true
+	s._eng_cur = 1.12
+	s.update(fx, 0.0)
+	var factor := s.sick_gate(fx.now, true)
+	var writes := [
+		[s._eng_mat, "gate", 1.12], [s._eng_rib_mat, "gate", 1.12],
+		[s._eng_rib_mat, "lenk", 1.06], [s._eng_rib_mat, "throttle_k", 0.8],
+		[s._sick_mat, "gate", 1.12 * factor], [s._sick_rib_mat, "gate", 1.12 * factor],
+		[s._sick_rib_mat, "lenk", 1.06 * s._sick_len], [s._sick_rib_mat, "throttle_k", 0.8 * factor],
+	]
+	for write in writes:
+		var mat: ShaderMaterial = write[0]
+		_check(is_equal_approx(float(mat.get_shader_parameter(write[1])), write[2]),
+			"drive writes %s at the live throttle, including the sick drive factor where used" % write[1])
+		mat.set_shader_parameter(write[1], 0.25)
+	s.update(fx, 0.0)
+	for write in writes:
+		_check(write[0].get_shader_parameter(write[1]) == 0.25, "unchanged drive %s is not rewritten" % write[1])

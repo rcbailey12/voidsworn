@@ -209,7 +209,7 @@ func combat() -> void:
 	var quad := 0 # Avoid a mid-section break draining the remaining pool outside the shot.
 	var res := {"hull": 0, "shield": 0, "hits": 0, "misses": 0, "crits": 0, "sys": null}
 	r.landVolley(enemies[2], gun, target, {"shots": [true, false, true], "quad": quad,
-		"called": null, "res": res, "shBefore": shield_left, "per": func(_rear): return 1000.0, "torp": true})
+		"called": null, "res": res, "shBefore": shield_left, "per": func(_rear, _first_rear): return 1000.0, "torp": true})
 	var report := api.combat_report()
 	var events: Array = report["combat_events"]
 	check(events.size() == before + 2, "only the two landed volley hits are recorded once")

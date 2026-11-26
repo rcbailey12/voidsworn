@@ -113,14 +113,14 @@ func _check_sparks(fx) -> void:
 	var streaks: POOLS.Pool = fx.pools["stk"]
 	var glow: POOLS.Pool = fx.pools["spr"]
 	var glow_before: int = glow.emitted
-	WEAP._throw_sparks(fx, Vector3.ZERO, Vector3.UP, Vector3.UP, 1.0, 1.0, Color.CORAL, 4, 28.0, 0.45, "shell")
+	WEAP._throw_sparks(fx, Vector3.ZERO, Vector3.UP, Vector3.UP, 1.0, 1.0, "voidsworn", 4, 28.0, 0.45, "shell")
 	_check(streaks.emitted == 6 and glow.emitted == glow_before, "Each hull spark uses one analytic streak")
 	var stride: int = POOLS.STRIDE * streaks.vpp
 	_check(streaks.pending[19] == 8.0 and streaks.pending[stride + 19] == 8.0
 		and streaks.pending[16] != streaks.pending[stride + 16], "Hull sparks use distinct motion-trail lengths")
-	WEAP._throw_sparks(fx, Vector3.ZERO, Vector3.UP, Vector3.UP, 1.0, 1.0, Color.CORAL, 4, 28.0, 0.45, "shield")
-	_check(glow.emitted == glow_before + 6 and streaks.pending[6 * stride + 19] == 1.0,
-		"Shield sparks retain their existing sprite and streak")
+	WEAP._throw_sparks(fx, Vector3.ZERO, Vector3.UP, Vector3.UP, 1.0, 1.0, "voidsworn", 4, 28.0, 0.45, "shield")
+	_check(glow.emitted == glow_before and streaks.emitted == 12 and streaks.pending[6 * stride + 19] == 8.0,
+		"Shield breakup spray uses the same analytic streak without a duplicate sprite")
 
 
 func _swatch(color: Color) -> ImageTexture:
