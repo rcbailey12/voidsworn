@@ -43,12 +43,20 @@ var death_tier = ""       # issue 462: "cruiser" or "capital" (deaths_and_hits.m
 var hull: HULL
 var dead = false
 var gone = false
+var death_fx_done := false
+var _death_draining := false
 var busy_until = -1.0
 var engine_level = 1.0
 var _eng_cur = 1.0
 var _eng_node: MeshInstance3D = null
 var _eng_mat: ShaderMaterial
 var _eng_rib_mat: ShaderMaterial
+var _eng_gate_written := -1.0
+var _sick_gate_written := -1.0
+var _eng_length_written := -1.0
+var _sick_length_written := -1.0
+var _eng_throttle_written := -1.0
+var _sick_throttle_written := -1.0
 # Issue 1587: with the engine section at stage 3+, one nozzle (sick_nozzle) is built into its own batches so it can gutter
 # on its own: a shorter plume with gaps, and a cough of smoke as the ship starts to move.
 var sick_nozzle := -1
@@ -375,6 +383,7 @@ func hide_live_hull() -> void:
 
 
 func teardown(fx, wait_for_damage := true) -> void:
+	clear_rift_pose()
 	gone = true
 	end_brownout()
 	if is_instance_valid(root) and root.get("fx_clock") == fx:
@@ -531,6 +540,12 @@ func _build_engines(fx) -> void:
 	_eng_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 	_eng_rib_mat = fx.mat(SH.RIBBON, 1)
 	_apply_plume_palette(_eng_rib_mat, faction, fac)
+	_eng_gate_written = -1.0
+	_sick_gate_written = -1.0
+	_eng_length_written = -1.0
+	_sick_length_written = -1.0
+	_eng_throttle_written = -1.0
+	_sick_throttle_written = -1.0
 	var holder = MeshInstance3D.new()
 	holder.name = "fx_engines"
 	_attach(holder)
@@ -562,12 +577,17 @@ func _build_trails(fx) -> void:
 
 
 func update(fx, dt: float) -> void:
-	if gone or not is_instance_valid(root):
+	if gone or death_fx_done or not is_instance_valid(root):
 		return
-	if not hull.turrets.is_empty():
-		hull.turret_step(fx.now)    # issue 560: each turret's node at its pose for the effect clock
-	if not hull.doors.is_empty():
-		hull.door_step(fx.now)      # issue 1543: each launch mouth's door lobes at their pose for the effect clock
+	if dead and has_meta("death_hidden"):
+		_update_hidden_death(fx)
+		return
+	_step_rift_pose(fx.now)
+	if not dead:
+		if not hull.turrets.is_empty():
+			hull.turret_step(fx.now)    # issue 560: each turret's node at its pose for the effect clock
+		if not hull.doors.is_empty():
+			hull.door_step(fx.now)      # issue 1543: each launch mouth's door lobes at their pose for the effect clock
 	_update_damage_emitters(fx)
 	if idle_on:
 		_idle_step(fx)
@@ -600,18 +620,7 @@ func update(fx, dt: float) -> void:
 			# a heavy hit makes the drive stumble: the plume gutters and catches again
 			var flick := 1.0 if fposmod(sin(fx.now * 37.0 + float(_seed)) * 43758.5, 1.0) > 0.45 else 0.0
 			g *= 0.3 + 0.7 * maxf(flick, smoothstep(_stutter_until - 0.25, _stutter_until, fx.now))
-		var tk := clampf(_eng_cur / 1.4, 0.15, 1.4)
-		_eng_mat.set_shader_parameter("gate", g)
-		_eng_rib_mat.set_shader_parameter("gate", g)
-		_eng_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8))
-		_eng_rib_mat.set_shader_parameter("throttle_k", tk)
-		if _sick_mat != null:
-			var sk: float = sick_gate(fx.now, fx.reduce_flashing)
-			var sg := g * sk
-			_sick_mat.set_shader_parameter("gate", sg)
-			_sick_rib_mat.set_shader_parameter("gate", sg)
-			_sick_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8) * _sick_len)
-			_sick_rib_mat.set_shader_parameter("throttle_k", tk * sk)
+		_write_engine_gate(fx, g)
 	var moving_now: bool = _moving > 0.0 and not dead
 	if moving_now and not _was_moving and sick_nozzle >= 0 and fx.now >= _cough_next:
 		_cough(fx)
@@ -628,14 +637,64 @@ func update(fx, dt: float) -> void:
 		_shield_mi.visible = fx.now < _shield_until or fx.now < _ion_until or (_route_on != Vector4.ZERO and not dead and not gone)
 
 
-func _update_trails(fx, _moved: bool) -> void:
+func _write_engine_gate(fx, gate: float) -> void:
+	if _eng_mat == null:
+		return
+	if gate != _eng_gate_written:
+		_eng_gate_written = gate
+		_eng_mat.set_shader_parameter("gate", gate)
+		_eng_rib_mat.set_shader_parameter("gate", gate)
+	var length := clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8)
+	if length != _eng_length_written:
+		_eng_length_written = length
+		_eng_rib_mat.set_shader_parameter("lenk", length)
+	var throttle := clampf(_eng_cur / 1.4, 0.15, 1.4)
+	if throttle != _eng_throttle_written:
+		_eng_throttle_written = throttle
+		_eng_rib_mat.set_shader_parameter("throttle_k", throttle)
+	if _sick_mat != null:
+		var sick_factor := sick_gate(fx.now, fx.reduce_flashing)
+		var sick_drive_gate := gate * sick_factor
+		if sick_drive_gate != _sick_gate_written:
+			_sick_gate_written = sick_drive_gate
+			_sick_mat.set_shader_parameter("gate", sick_drive_gate)
+			_sick_rib_mat.set_shader_parameter("gate", sick_drive_gate)
+		var sick_length := length * _sick_len
+		if sick_length != _sick_length_written:
+			_sick_length_written = sick_length
+			_sick_rib_mat.set_shader_parameter("lenk", sick_length)
+		var sick_throttle := throttle * sick_factor
+		if sick_throttle != _sick_throttle_written:
+			_sick_throttle_written = sick_throttle
+			_sick_rib_mat.set_shader_parameter("throttle_k", sick_throttle)
+
+
+func _update_hidden_death(fx) -> void:
+	if not _death_draining:
+		_death_draining = true
+		_update_damage_emitters(fx)
+		_status_step(fx)
+		_wound_step(fx)
+		_eng_cur = 0.0
+		_write_engine_gate(fx, 0.0)
+	# A shield collapse and world-space ribbons can outlast the last visible frame of the hull.
+	var trails_on := _update_trails(fx, false)
+	var shield_on := false
+	if is_instance_valid(_shield_mi):
+		shield_on = fx.now < _shield_until or fx.now < _ion_until
+		_shield_mi.visible = shield_on
+	death_fx_done = not trails_on and not shield_on
+
+
+func _update_trails(fx, _moved: bool) -> bool:
 	var _tclock: float = fx.now + _trail_extra   # the trails' clock (issue 1581)
 	if _trails.is_empty():
-		return
+		return false
+	var visible_tail := false
 	var xfm = xf()
 	# issue 1586 (Neon on PR 1666): a torch death's over-flaring drive keeps its exhaust while the flare runs, from the
 	# nozzles where the spiralling hull really is
-	var flaring: bool = dead and not death_big and fx.now < float(get_meta("death_flare_until", -1.0)) and has_meta("death_motion")
+	var flaring: bool = dead and not _death_draining and not death_big and fx.now < float(get_meta("death_flare_until", -1.0)) and has_meta("death_motion")
 	if flaring:   # the same pose fx_death._small_pose gives the dying hull
 		xfm = root.global_transform * (get_meta("death_motion") as Transform3D) * (get_meta("death_hull_motion", Transform3D.IDENTITY) as Transform3D)
 	var eng: Color = fac["engine"]
@@ -668,6 +727,7 @@ func _update_trails(fx, _moved: bool) -> void:
 		mi.visible = hist.size() >= 2
 		if not mi.visible:
 			continue
+		visible_tail = true
 		var mat := mi.material_override as ShaderMaterial
 		if changed:
 			t["mesh_time"] = _tclock
@@ -680,6 +740,7 @@ func _update_trails(fx, _moved: bool) -> void:
 		if int(t["style"]) != style:
 			t["style"] = style
 			mat.set_shader_parameter("trail_style", float(style))
+	return visible_tail
 
 
 func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
@@ -1551,7 +1612,7 @@ func _react_apply(fx, wi: int) -> void:
 		_show_rcs = false
 	if hull_pivot != null:
 		hull_pivot.rotation = angles + Vector3(_list, 0.0, 0.0)
-		hull_pivot.position = _pd
+		hull_pivot.position = _pd + _rift_offset
 	else:
 		# Bare hulls use the root. Subtract the applied yaw to keep their drift in the base heading.
 		var base_yaw := root.rotation.y - _app_yaw
@@ -2725,12 +2786,16 @@ func _attach_damage_plume(fx, e: Dictionary, p: Vector3, axis: Vector3, length: 
 
 
 func _update_damage_emitters(fx) -> void:
-	if dead or gone:
-		for e in _damage_emitters + _fading_emitters:
-			if is_instance_valid(e.get("node")):
-				e.node.visible = false
+	if gone or (dead and has_meta("death_hidden")):
+		for emitters in [_damage_emitters, _fading_emitters]:
+			for e in emitters:
+				if is_instance_valid(e.get("node")):
+					e.node.hide()
+					e.node.queue_free()
+			emitters.clear()
 		_clear_wing_smoke()
 		return
+	# R459: attached fire and smoke stay on the hull through the tell. Already fading emitters finish normally.
 	for j in range(_fading_emitters.size() - 1, -1, -1):
 		var e: Dictionary = _fading_emitters[j]
 		if not is_instance_valid(e.get("node")):
@@ -2743,7 +2808,7 @@ func _update_damage_emitters(fx) -> void:
 		if gate <= 0.0:
 			e.node.queue_free()
 			_fading_emitters.remove_at(j)
-	if squadron:
+	if not dead and squadron:
 		if not _squad_smoke or fx.compat:
 			_clear_wing_smoke()
 		elif not is_instance_valid(_wing_smoke):
@@ -3215,16 +3280,65 @@ func _blowout(fx, i: int) -> void:
 
 # ---------------------------------------------------------------- small events
 
-func pulse(fx, strength: float) -> void:
+var _rift_start := -1.0
+var _rift_life := 1.0
+var _rift_in := false
+var _rift_calm := false
+var _rift_offset := Vector3.ZERO
+
+
+func start_rift_pose(at: float, life: float, entering: bool, calm: bool) -> void:
+	if not is_instance_valid(hull_pivot) or dead or gone:
+		return
+	_rift_start = at
+	_rift_life = life
+	_rift_in = entering
+	_rift_calm = calm
+	if entering:
+		# Hide before the first drawn frame, even for a staggered arrival.
+		_apply_rift_pose(0.0, false)
+
+
+func _step_rift_pose(at: float) -> void:
+	if _rift_start < 0.0:
+		return
+	if dead or at >= _rift_start + _rift_life:
+		clear_rift_pose()
+		return
+	if at < _rift_start:
+		return
+	var u := smoothstep(0.0, 1.0, (at - _rift_start) / maxf(_rift_life, 0.001))
+	_apply_rift_pose(u if _rift_in else 1.0 - u, true)
+
+
+func _apply_rift_pose(open: float, show_hull: bool) -> void:
+	if not is_instance_valid(hull_pivot):
+		return
+	var pinch := 1.0 - open if not _rift_calm else 0.0
+	var off: Vector3 = Vector3.RIGHT * hull.L * pinch * (-0.32 if _rift_in else 0.43)
+	hull_pivot.position += off - _rift_offset
+	_rift_offset = off
+	hull_pivot.scale = Vector3(1.0 + 0.54 * pinch, 1.0 - 0.84 * pinch, 1.0 - 0.91 * pinch)
+	hull_pivot.visible = show_hull
+
+
+func clear_rift_pose() -> void:
+	if _rift_start < 0.0:
+		return
+	_apply_rift_pose(1.0, true)
+	_rift_start = -1.0
+
+
+# The live Nova stays on its current charge cue until Ryan selects an option.
+func legacy_pulse(fx) -> void:
 	var c: Color = fac["weapon"]
 	var cp: Dictionary = hull.core_point()   # issue 370: the ship's own pulse starts at its core
 	if cp.is_empty():
 		return
 	var p = to_world(cp["p"])
-	var k = scale_k()
-	fx.ring(p, dir_world(Vector3.UP), fx.now, 0.9, c, 1.2 * strength, hull.L * 0.3, hull.L * 0.9, 2)
-	fx.spr(p, fx.now, 0.8, c, 1.0 * strength, hull.L * 0.4, hull.L * 0.8, 18)
-	fx.light(p, fx.now, 0.7, 3.0 * strength, c, 1)
+	fx.ring(p, dir_world(Vector3.UP), fx.now, 0.9, c, 1.2, hull.L * 0.3, hull.L * 0.9, 2)
+	fx.spr(p, fx.now, 0.8, c, 1.0, hull.L * 0.4, hull.L * 0.8, 18)
+	fx.light(p, fx.now, 0.7, 3.0, c, 1)
 
 
 func tick_flare(fx, kind: String) -> void:
@@ -3250,25 +3364,6 @@ func tick_flare(fx, kind: String) -> void:
 		var T: float = fx.now
 		for i in 20:
 			fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
-
-
-func jump_out(fx) -> void:
-	if dead or gone:
-		return
-	var T: float = fx.now
-	var bow = dir_world(Vector3(1, 0, 0))
-	var c: Color = fac["engine"]
-	var p = to_world(hull.core)   # issue 370: the jump flash at the core (hp_core, else the centre of volume)
-	for t in hull.nozzles:
-		var np = to_world(t["p"])
-		fx.spr(np, T, 0.5, c, 6.0, 2.0, 8.0, 2)
-	fx.light(p, T, 0.6, 6.0, c, 0)
-	fx.stk(p, T + 0.35, 0.4, c.lerp(Color.WHITE, 0.5), 10.0, hull.L * 3.0, hull.W * 0.4, 0, bow * hull.L * 20.0)
-	fx.ring(p, bow, T + 0.35, 0.6, c, 1.5, hull.L * 0.2, hull.L * 1.2, 1)
-	fx.later(T + 0.4, func l_jump() -> void:
-		if fx.ships.get(id) == self and not dead and not gone:
-			_hide_meshes()
-			teardown(fx, false))  # damage polling can finish its own job; do not block the jump frame
 
 
 # A mark's geometry follows the section's actual damage, including repairs.
