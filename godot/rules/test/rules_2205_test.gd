@@ -67,6 +67,13 @@ func move_to(u: Dictionary, q: int, y: int) -> bool:
 	return false
 
 
+func api_move_to(u: Dictionary, q: int, y: int) -> bool:
+	for state in api.reach(u.id):
+		if state.q == q and state.r == y and not state.path.is_empty():
+			return api.move(u.id, state)
+	return false
+
+
 func _offers() -> void:
 	c.newRun("aelith", "ithar", {})
 	var good := true
@@ -112,10 +119,10 @@ func _warlord() -> void:
 	at(e[1], 11, 8, 3)
 	p.crew = 100; p.crewMax = 100
 	e[0].crew = 100; e[1].crew = 100
-	var used := r.useCommand("player")
-	var first := move_to(p, 9, 8) and r.boardUnit(p, e[0])
+	var used := api.command()
+	var first := api_move_to(p, 9, 8) and api.board(p.id, e[0].id)
 	var blocked := r.boardTargets(p).is_empty()
-	var second := move_to(p, 10, 8) and not r.boardTargets(p).has(e[0]) and r.boardUnit(p, e[1])
+	var second := api_move_to(p, 10, 8) and not r.boardTargets(p).has(e[0]) and api.board(p.id, e[1].id)
 	var exhausted := r.boardTargets(p).is_empty()
 	r.B.round += 1
 	r.startSideTurn("player")
@@ -211,15 +218,19 @@ func _ledger() -> void:
 
 
 func _bonus_salvo() -> void:
-	setup("voice", "chorus", ["b_drone"], [], 0)
-	var p: Dictionary = r.caps("player")[0]
-	var e: Dictionary = r.caps("enemy")[0]
-	at(p, 8, 8); at(e, 10, 8, 3)
-	p.weapons = [r.mkWeapon("bioplasma", "T", {})]
-	p.weapons[0].merge({"fired": true, "cdLeft": 2, "off": 0}, true)
-	var used := r.useCommand("player")
-	check(used and r.B.usage.kind.get("bio", 0) > 0 and p.weapons[0].fired and p.weapons[0].cdLeft == 2,
-		"M2 barrage follow-up can fire a spent mount without reloading it")
+	for row in [["voice", "chorus", "b_drone", [], 0, "voice:cap:0"],
+			["vorn", "hegemony", "h_picket", [], 1, "vorn:cap:1"],
+			["vesh", "corsair", "c_hulk", ["A:1:1"], null, "vesh:A:1:1"]]:
+		setup(row[0], row[1], [row[2]], row[3], row[4])
+		var p: Dictionary = r.caps("player")[0]
+		var e: Dictionary = r.caps("enemy")[0]
+		at(p, 8, 8); at(e, 10, 8, 3)
+		p.hp *= 0.5   # Welded Fight needs a successful repair before its shot.
+		p.weapons = [r.mkWeapon("bioplasma", "T", {})]
+		p.weapons[0].merge({"fired": true, "cdLeft": 2, "off": 0, "acc": 500, "dmg": 1}, true)
+		var used := r.useCommand("player")
+		check(used and r.B.get("treeStats", {}).get(row[5], 0) > 0 and p.weapons[0].fired and p.weapons[0].cdLeft == 2,
+			"M2 %s's follow-up can fire a spent mount without reloading it" % row[0])
 
 
 func _bot_defense() -> void:
@@ -279,6 +290,14 @@ func _h5() -> void:
 func _shields() -> void:
 	var sim := SimBattle.new()
 	check(sim._shield_total({"shp": 12, "sh": [10, 8, 5, 8]}) == 12.0, "H3 sim telemetry reads the shield pool")
+	setup("mirelle", "ithar", ["i_carrier", "i_wisp"], ["A:0:0"])
+	var p := r.caps("player")
+	p[0].shMax = 20.0; p[1].shMax = 20.1
+	p[0].shp = p[0].shMax; p[1].shp = p[1].shMax
+	for ship in p: r.syncShields(ship)
+	var catches := func(ship): return ship.sh.reduce(func(total, v): return total + v, 0)
+	check(catches.call(p[0]) > catches.call(p[1]) and r.useCommand("player") and r.B.treeWeakShip.id == p[0].id,
+		"H3 the Weak Side chooses by pool even when side catches disagree")
 
 
 func _determinism() -> void:
@@ -294,5 +313,6 @@ func _determinism() -> void:
 func _kill_and_arc() -> void:
 	check(r.killCauseOf(r.mkWeapon("bombs", "T", {}), null) == "big", "M1 bomber deaths use a bomb blast")
 	var mounts: Array = r.HULLS.c_reaver.w
-	check(mounts.any(func(w): return w == ["scatter", "F"]) and not r.inArc({"q": 8, "r": 8, "facing": 0}, {"q": 7, "r": 8}, "R"),
-		"M5 Reaver keeps one symmetric fore Scatter and no rear mount")
+	check(mounts == [["torp", "F"], ["scatter", "T"]] and c.HULLS.c_reaver.w == mounts
+		and not r.inArc({"q": 8, "r": 8, "facing": 0}, {"q": 7, "r": 8}, "R"),
+		"M5 the Reaver's spine turrets share one symmetric Scatter mount")

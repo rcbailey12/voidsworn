@@ -19,6 +19,17 @@ static func identity_hash(value: String) -> int:
 	return hash_word
 
 
+static func perk_pool(known: Array, owned: Array, ship: Dictionary, can_brace: bool, cooldown: float, launches_wings: bool) -> Array:
+	var available := known.filter(func(perk): return not owned.has(perk))
+	if ship.shMax <= 0: available.erase("deflector")
+	if not can_brace: available.erase("stubborn")
+	if cooldown <= 1: available.erase("rapid")
+	if not launches_wings: available.erase("wing")
+	if not ship.weapons.any(func(w): return w.arc in ["P", "S"]): available.erase("broad")
+	if not ship.weapons.any(func(w): return w.k in ["lance", "torp"]): available.erase("lanceadept")
+	return available
+
+
 static func make(id: String, fac: String, full_name: String, xp = 0, rank = 0, perks: Array = []) -> Dictionary:
 	var pool: Array = CALLSIGNS.get(fac, CALLSIGNS["voidsworn"])
 	# Identity draws use the captain's key, not the run's rules random stream.

@@ -7,7 +7,9 @@ t_inheritedaim - seed 31503 to 31504, Command round 4 to 4
 t_wallanswers - seed 37101 to 37104, Command round 2 to 2
 t_ecl_stillness - seed 37113 to 37116, Command round 2 to 2
 t_hb_retasked - seed 37107 to 37105, Command round 2 to 2
+t_hb_knifeback - seed 37102 to 37103, the Reaver turret changes the first legal rear attack
 t_hb_scrapfront - seed 33027 to 33026, Command round 5 to 5
+t_hb_weldedwhole - seed 37102 to 37103, the Reaver turret changes whether the fleet reaches the repair trigger
 t7a_lensrotates - seed 37118 to 37118, Command round 1 to 2
 t_ecl_twicerestored - seed 31823 to 31824, Command round 3 to 3
 t7a_lastaccount - seed 37112 to 37113, Command round 3 to 3

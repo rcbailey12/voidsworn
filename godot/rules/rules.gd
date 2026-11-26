@@ -352,11 +352,20 @@ func shipName(fac) -> String:
 	for n in (base if base.size() > 0 else SHIP_NAMES):
 		if not used.has(n): pool.append(n)
 	return pick(pool if pool.size() > 0 else SHIP_NAMES)
-func newCaptain(vet, fac, uid: String) -> Dictionary:
+func newCaptain(vet, fac, ship: Dictionary) -> Dictionary:
 	var faction := str(fac) if jt(fac) else "voidsworn"
 	var name := capName(fac)
-	var perks: Array = [pick(_sorted_keys(PERKS))] if jt(vet) else []
-	var c := CaptainData.make("captain:" + uid, faction, name, RANK_XP[1] if jt(vet) else 0, 1 if jt(vet) else 0, perks)
+	var c := CaptainData.make("captain:" + str(ship["uid"]), faction, name, RANK_XP[1] if jt(vet) else 0, 1 if jt(vet) else 0)
+	if jt(vet):
+		ship["cap"] = c
+		var hull: Dictionary = HULLS[ship["tpl"]]
+		var d := derive(ship)
+		var ab = hull.get("ab")
+		var cooldown: float = ABILITIES.get(ab, {}).get("cd", 0) - z0(d["fx"].get("cdMod"))
+		if ab != "launch" and rfx("coolant") > 0: cooldown -= 1
+		var pool := CaptainData.perk_pool(_sorted_keys(PERKS), c.perks, d, not jt(TB.FAC_GATES.get(fac, {}).get("noBrace")),
+			cooldown, ab == "launch" and d.hangar > 0)
+		if not pool.is_empty(): c.perks.append(pick(pool))
 	CaptainData.update_trait(c, PERKS)
 	CaptainData.assign_portrait(c, CaptainData.used_portraits(RUN))
 	return c
@@ -364,7 +373,7 @@ func newCaptain(vet, fac, uid: String) -> Dictionary:
 func newShip(tpl, vet) -> Dictionary:
 	var fac = factionOfTpl(tpl)
 	var s = {"uid": new_id(), "tpl": tpl}
-	s["name"] = shipName(fac); s["mk"] = 1; s["hp"] = 0; s["mods"] = []; s["cap"] = newCaptain(vet, fac, s["uid"])
+	s["name"] = shipName(fac); s["mk"] = 1; s["hp"] = 0; s["mods"] = []; s["cap"] = newCaptain(vet, fac, s)
 	s["hp"] = derive(s)["maxHp"]
 	return s
 func sumFx(list: Array) -> Dictionary:
@@ -6450,7 +6459,7 @@ func runCommand(side, c, tier) -> bool:
 				var bwOO = -1; var btOO = null; var bvOO = -1.0
 				for iOO in range(uOO["weapons"].size()):
 					var wOO = uOO["weapons"][iOO]
-					if wOO["k"] == "flak" or jt(wOO.get("off")) or z0(wOO.get("cdLeft")) > 0: continue
+					if wOO["k"] == "flak" or jt(wOO.get("off")): continue
 					for tOO in alive("enemy"):
 						if jt(tOO.get("isSq")): continue
 						if not _can_bonus_shot(uOO, wOO, tOO): continue
@@ -6619,7 +6628,7 @@ func runCommand(side, c, tier) -> bool:
 		if contribute != null and flag != null and chosen != null and not is_same(chosen, flag): flagShare = JSM.jsround(flag["maxHp"] * rp)
 		var chosenBroken = null
 		if tenth != null and chosen != null and jt(chosen.get("sec")):
-			for k in chosen["sec"].keys():
+			for k in _sorted_keys(chosen["sec"]):
 				if jt(chosen["sec"][k].get("broken")): chosenBroken = k; break
 		var firedNinth = false; var firedTenth = false; var firedEarlier = false; var firedContrib = false
 		var mendBest = 0.0; var mendShip = null   # issue 1651 Mending rider
@@ -6757,7 +6766,7 @@ func runCommand(side, c, tier) -> bool:
 			for uV in caps("player"):
 				if not jt(uV.get("sec")): continue
 				var kV = null; var brV = 1.0
-				for kS in uV["sec"].keys():
+				for kS in _sorted_keys(uV["sec"]):
 					var sV = uV["sec"][kS]; var rrV = 0.0 if jt(sV.get("broken")) else float(sV["hp"]) / max(1.0, float(sV["max"]))
 					if rrV < brV: brV = rrV; kV = kS
 				if kV != null: repairSection(uV, kV, 1.0); riderFx(uV, "Section patched")

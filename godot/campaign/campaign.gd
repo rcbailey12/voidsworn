@@ -19,7 +19,7 @@ signal battle_requested   # a battle page is up (external mode): the battle side
 signal fleet_results(lost: bool, ranked_up: bool)  # one report per settled battle, never on a reopened reward panel
 
 const BattleAPI = preload("res://rules/battle_api.gd")   # the rules are reached only through the battle API (rules/API.md)
-const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and the campaign both draw from
+const JSM = BattleAPI.JSM   # shared JS maths and PRNG algorithm, with a separate stream per campaign
 const TABLES_PATH := "res://campaign/data/campaign_tables.json"
 
 # ---------------- tables ----------------
@@ -2266,17 +2266,12 @@ func promoteModal(uid: String, after: Callable) -> void:
 func _captain_perk_pool(ship: Dictionary) -> Array:
 	var hull: Dictionary = HULLS[ship["tpl"]]
 	var d: Dictionary = derive(ship)
-	var kit := _ship_kit(hull, d)
-	return PERKS.keys().filter(func(perk):
-		if ship["cap"]["perks"].has(perk): return false
-		match perk:
-			"broad": return kit.has("broad")
-			"lanceadept": return kit.has("lance") or kit.has("torp")
-			"deflector": return d["shMax"] > 0
-			"stubborn": return _boon_can_brace(ship["tpl"])
-			"rapid": return TB.ABILITIES.get(hull.get("ab"), {}).get("cd", 0) - z0(d["fx"].get("cdMod")) > 1
-			"wing": return kit.has("carrier")
-		return true)
+	var ab = hull.get("ab")
+	var cooldown: float = TB.ABILITIES.get(ab, {}).get("cd", 0) - z0(d["fx"].get("cdMod"))
+	if ab != "launch" and z0(runFx().get("coolant")) > 0: cooldown -= 1
+	var known: Array = PERKS.keys()
+	known.sort()
+	return CaptainData.perk_pool(known, ship.cap.perks, d, _hull_can_brace(hull), cooldown, ab == "launch" and d.hangar > 0)
 
 func _roll_captain_perk(ship: Dictionary) -> void:
 	var pool := _captain_perk_pool(ship)

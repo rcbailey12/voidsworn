@@ -29,10 +29,6 @@ func reset_timing() -> void:
 	categories = {}
 
 
-func startBattle(cfg: Dictionary, pick_skills := false) -> void:
-	super.startBattle(cfg, pick_skills)
-
-
 func start_campaign(run: Dictionary, cfg: Dictionary) -> Dictionary:
 	RUN = run
 	not_ported = ""

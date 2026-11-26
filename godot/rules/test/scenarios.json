@@ -5325,7 +5325,7 @@
   "kind": "battle",
   "rounds": 7,
   "bot": "full",
-  "seed": 37102,
+  "seed": 37103,
   "admiral": "sable",
   "fleet": [
    "c_reaver",
@@ -6014,7 +6014,7 @@
   "kind": "battle",
   "rounds": 10,
   "bot": "full",
-  "seed": 37102,
+  "seed": 37103,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
