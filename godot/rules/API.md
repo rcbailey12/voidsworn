@@ -46,7 +46,7 @@ is also copied into `RUN.timeline` at the kill.
 - `"halted"`: a hard stop (see "Errors and the hard stop" below); nothing more happens until the next `new_battle`.
 
 1. **Player phase.** The player picks one of their ships that has not yet acted this round. The first command a ship receives makes it the active ship.
-   - Ships move, then fire (the game's v54 doctrine): once a ship has fired it cannot move, except Ithar hulls (and any ship with the Slip the Net boon), which may still use half the movement they had left, without climbing over or diving under. `reach()` and `view().units[].moveLeft` already account for it.
+   - Ships move, then fire: once a ship has fired it cannot move, except Glasswright hulls, which may still use half the movement they had left, without climbing over or diving under. `reach()` and `view().units[].moveLeft` already account for it.
    - The active ship can move, fire each ready gun, use its ability and give an order until it is done.
    - The activation ends by itself when the ship has no movement left and no gun that can fire, or when it dies. Otherwise call `end_activation()` ("End activation").
    - With no ship active, `end_activation(id)` passes that ship ("holds position"). `end_activation()` with no id passes the turn when nothing is pending.

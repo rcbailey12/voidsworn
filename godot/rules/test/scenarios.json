@@ -969,7 +969,7 @@
   "rounds": 12,
   "bot": "full",
   "map": "open",
-  "note": "The Nemesis (stream B step 2): a Hegemony elite fleet with weaknesses flank and anchor (escorts flee under 60%), adaptations armor and point defense, one scar; torpedoes, lances and the new boons (Slip the Net, Spread Pattern, Marked for Death, Shield Wall, Chain Lightning, One Clean Line)",
+  "note": "The Nemesis (stream B step 2): a Hegemony elite fleet with weaknesses flank and anchor (escorts flee under 60%), adaptations armor and point defense, one scar; torpedoes, lances and the boons Spread Pattern, Marked for Death, Shield Wall, Chain Lightning, and One Clean Line",
   "seed": 29029,
   "sector": 2,
   "admiral": "vex",
@@ -1003,10 +1003,6 @@
    "scars": 1
   },
   "boons": [
-   {
-    "id": "r_slip",
-    "r": 0
-   },
    {
     "id": "e_spread",
     "r": 0
@@ -7705,7 +7701,7 @@
   ],
   "cmdRound": 2,
   "note": "Tree fixture: Vell The Mirror Steps Aside (thorne:A:1:0) dives under one enemy hex free",
-  "seed": 1,
+  "seed": 9,
   "lineage": {
    "id": "thorne",
    "picks": [

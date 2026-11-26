@@ -413,14 +413,17 @@ func _fmatrix(count: int) -> void:
 			_fail("Unknown FROWS faction: " + faction)
 			return
 	var result := {}
+	var exchanges := {}
 	battle.matrix = true
 	var no_admiral := not OS.get_environment("NOADM").is_empty()
 	for player in player_factions:
 		var row := {}
 		result[player] = row
+		exchanges[player] = {}
 		var admirals: Array = battle.ADMIRALS.keys().filter(func(id): return battle.ADMIRALS[id].get("fac", "voidsworn") == player)
 		for enemy in factions:
 			var wins := 0
+			var damage := Vector2.ZERO
 			for trial in range(count):
 				_next_pair()
 				var admiral: String = "none" if no_admiral else battle.pick(admirals)
@@ -440,10 +443,14 @@ func _fmatrix(count: int) -> void:
 					"shape": shape, "map": "random", "enemies": enemies.map(func(tpl): return {"tpl": tpl})})
 				battle.fight(bot, alternating)
 				battle.collect_matrix()
-				wins += int(battle.B.over == "win")
+				for unit in battle.B.units:
+					if unit.side == "player": damage.x += float(unit.dealt)
+					else: damage.y += float(unit.dealt)
+				wins += int(battle.js_eq(battle.B.over, "win"))
 			row[enemy] = JSM.jsround(float(wins) / count * 100)
+			exchanges[player][enemy] = {"dealt": damage.x, "taken": damage.y}
 	print("FM " + JSON.stringify({"out": result, "st": battle.matrix_stats, "hull": battle.hulls,
-		"weap": battle.weapons, "ab": battle.abilities}, "", false))
+		"weap": battle.weapons, "ab": battle.abilities, "exchange": exchanges}, "", false))
 	print("FID " + JSON.stringify(battle.faction_report(), "", false))
 
 
