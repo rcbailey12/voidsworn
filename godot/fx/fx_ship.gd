@@ -224,9 +224,10 @@ static func _new_hull(fx, r: Node3D, sid: String, squad: bool):
 	return analysis
 
 
-static func prime_hull(fx, r: Node3D, sid: String, squad: bool, parts: Array) -> bool:
+static func begin_hull_analysis(fx, r: Node3D, sid: String, squad: bool, parts: Array) -> Dictionary:
+	var meshes := parts if not parts.is_empty() else _find_meshes(r)
 	var analysis = _new_hull(fx, r, sid, squad)
-	return analysis.prime(r, parts if not parts.is_empty() else _find_meshes(r))
+	return {"analysis": analysis, "meshes": meshes, "geometry": analysis.begin_geometry(r, meshes)}
 
 
 func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
@@ -249,13 +250,18 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	weight = 0 if squadron else (1 if sz < 0.65 else (2 if sz < 0.9 else (3 if sz < 1.1 else 4)))
 	if flagship:
 		weight = maxi(weight, 3)
-	meshes = info.get("meshes", [])
-	if meshes.is_empty():
-		meshes = _find_meshes(root)
+	var prepared: Dictionary = info.get("hull_analysis", {})
+	if prepared.is_empty():
+		meshes = info.get("meshes", [])
+		if meshes.is_empty():
+			meshes = _find_meshes(root)
+		hull = _new_hull(fx, root, sid, squadron)
+	else:
+		meshes = prepared["meshes"]
+		hull = prepared["analysis"]
 	_seed = hash(sid)
-	hull = _new_hull(fx, root, sid, squadron)
 	var t_a := Time.get_ticks_usec()   # issue 1289: an arriving ship's parts, named in fx.prof (the arrival bench reads them)
-	hull.analyse(root, meshes, _seed)
+	hull.analyse(root, meshes, _seed, prepared.get("geometry", {}))
 	t_a = fx.pend("add:analyse", t_a)
 	# issue 370: ShipView's movement jets (braking, side, turning) ask the same attach point service
 	if "attach" in root:
