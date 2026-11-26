@@ -338,18 +338,6 @@ void process() {
 }
 """
 
-# Sprites (camera-facing). kinds:
-#  0 flash   1 flame   2 fireball core   3 smoke   4 engine core   5 squib   7 vent gas   8 soot   11 sputtering core
-#  12 beam charge   13 beam impact flare   14 plasma bolt   15 bio glob   16 prism glint   17 star ball
-#  18 soft lift (reduce-flashing pop: a gentle glow, no peak)   19 ember   20 acid fume   21 heat glow (cooling metal)
-#  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
-#  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
-#  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
-#  40 directional hull-rupture vent jet (VENT_JET: tapered hot root + sheared gas cone)
-const TICK_EMBER := 38
-const TICK_DROPLET := 39
-const VENT_JET := 40
-
 # Camera-facing sprite ids. See API.md section 20 for owners and reserved slots.
 const SPR_FLASH := 0
 const SPR_FLAME := 1
@@ -376,22 +364,22 @@ const SPR_DEATH_CORE := 24
 const SPR_DEATH_FIRE := 25
 const SPR_FACTION_PLASMA_FIRE := 26
 const SPR_HIT_GAS := 27
+const SPR_BOLT_PLASMA := 30
+const SPR_BOLT_BIO := 31
+const SPR_BOLT_BOMB := 32
+const SPR_MUZZLE_BALLISTIC := 33
+const SPR_MUZZLE_ENERGY := 34
+const SPR_MUZZLE_CRYSTAL := 35
+const SPR_MUZZLE_BIO := 36
+const ROCKET_SMOKE := 37
+const TICK_EMBER := 38
+const TICK_DROPLET := 39
+const VENT_JET := 40
 
 # Reserved only. These do not add shader branches or emitters.
 const SPR_PALETTE_EMBER := 28
 const SPR_BIO_CONTACT_GLOB := 29
-const SPR_BOLT_PLASMA := 38
-const SPR_BOLT_BIO := 39
-const SPR_BOLT_BOMB := 40
-const SPR_MUZZLE_BALLISTIC := 41
-const SPR_MUZZLE_ENERGY := 42
-const SPR_MUZZLE_CRYSTAL := 43
-const SPR_MUZZLE_BIO := 44
-const SPR_ROCKET_SMOKE := 45
-const SPR_TICK_EMBER := 46
-const SPR_TICK_DROPLET := 47
-const SPR_RUPTURE_JET := 48
-const SPR_NOVA_LEGACY := 49
+const SPR_NOVA_LEGACY := 41
 
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
@@ -402,7 +390,6 @@ static func flash_sprite_floor(kind: int, px: float) -> float:
 
 
 const WEAPON_MASKS := preload("res://render/weapon_layer_masks.gd")
-const ROCKET_SMOKE := 37
 const SPRITE := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -500,7 +487,7 @@ void vertex() {
 			q = k == 27 ? dx * VERTEX.x * 1.85 + dy * VERTEX.y * 0.62 : dx * VERTEX.x * st + dy * VERTEX.y;
 			if (k == 40) {
 				q = dx * (VERTEX.x + 0.45) * 2.3 + dy * VERTEX.y * 0.50;
-			} else if (k >= 30) {
+			} else if (k >= 30 && k <= 37) {
 				float stretch = k == 37 ? 2.35 : (k == 30 ? 1.95 : (k == 32 ? 1.38 : 1.62));
 				q = dx * VERTEX.x * stretch + dy * VERTEX.y * (k == 37 ? 0.78 : 1.0);
 			}

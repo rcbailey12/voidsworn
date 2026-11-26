@@ -62,9 +62,6 @@ const S_PRISM := 16
 const S_STAR := 17
 const S_NLANCE := 18
 
-# Reserved for PR #2136. No mark uses this style yet.
-const S_NULL_BURN := 19
-
 # Issue 461 (audit item 4, "scorch that stays"): doubled from 12 and 4, so a ship that has been in a fight keeps its scars
 # instead of losing the oldest after a dozen hits. Cost reported, never capped (R111): the gate's frame intervals and the
 # hull rebuild time are in contrib/opus/reviews/hits_report.md.
