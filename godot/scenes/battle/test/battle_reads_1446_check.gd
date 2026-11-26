@@ -68,6 +68,24 @@ func _frames(n: int) -> void:
 		await process_frame
 
 
+func _check_arc_cancel(detach: bool) -> void:
+	b._warmup(b._build_gen)
+	var deadline := Time.get_ticks_msec() + 10000
+	while b.load_phase != "camera_back" and Time.get_ticks_msec() < deadline:
+		await process_frame
+	var arc := b.get_node_or_null("WarmFiringArc") as MeshInstance3D
+	var path := "tree exit" if detach else "stop_build while still in the tree"
+	var found := arc != null
+	_check(found, "ARC-0: cancel during the covered draw for " + path)
+	if detach:
+		root.remove_child(b)
+	else:
+		b.stop_build()
+	await _frames(3)
+	_check(found and not is_instance_valid(arc) and b.warming and b.load_phase == "camera_back",
+		"ARC-0: %s frees the outline and never resumes the old warm-up" % path)
+
+
 # the rules moved under the scene: bump the version, take the new view and redraw
 func _resync() -> void:
 	b.api.version += 1
@@ -253,5 +271,11 @@ func _run() -> void:
 	_check(b.board.arrival_edge == null, "REINF-1: no strip before the warning round")
 	R.B["event"] = null
 	_resync()
+	if DisplayServer.get_name() == "headless":
+		await _check_arc_cancel(false)
+		# Wait for the next generation's covered draw, not the cancelled one's phase.
+		b.load_phase = ""
+		await _check_arc_cancel(true)
+		b.free()
 	print("BATTLE_READS_1446 fails=%d" % fails)
 	quit(1 if fails else 0)
