@@ -18,8 +18,31 @@ P=$(pwd)            # godot/
 ROOT=$(cd .. && pwd)
 G="${GODOT:-godot}"
 LIST="$P/tools/ci/godot_checks.txt"
-T="${RUNNER_TEMP:-/tmp}/godot_checks"
-rm -rf "$T"; mkdir -p "$T/logs" "$T/fixtures" "$T/xdg"
+# Issue 2174: make the temp folder with Node's Windows path APIs, not Git's mkdir. A Codex sandbox set RUNNER_TEMP to a
+# USERPROFILE style path such as "C:/Users/rcbai" with doubled backslashes, Git's mkdir was denied, plan.txt was never
+# written and every Godot check was skipped. path.join and path.resolve fold the slashes; fs makes the folders. The base is
+# the first of RUNNER_TEMP, TEMP, TMP or USERPROFILE\AppData\Local\Temp (on Linux, /tmp) that can actually be written.
+T=$(node -e '
+  const fs = require("fs"), path = require("path");
+  const win = process.platform === "win32";
+  const native = p => p && (win ? /^[A-Za-z]:[\\/]/.test(p) || /^\\\\/.test(p) : p.charAt(0) === "/");
+  const bases = [process.env.RUNNER_TEMP, process.env.TEMP, process.env.TMP];
+  if (win && process.env.USERPROFILE) bases.push(path.join(process.env.USERPROFILE, "AppData", "Local", "Temp"));
+  bases.push(win ? null : "/tmp");
+  let out = null;
+  for (const b of bases) {
+    if (!native(b)) continue;
+    const t = path.join(path.resolve(b), "godot_checks");
+    try {
+      fs.rmSync(t, { recursive: true, force: true });
+      for (const d of ["", "logs", "fixtures", "xdg"]) fs.mkdirSync(path.join(t, d), { recursive: true });
+      out = t;
+      break;
+    } catch (e) {}
+  }
+  if (!out) process.exit(1);
+  process.stdout.write(out);
+') || { echo "FAIL: the shard temp folder could not be made, so this shard is a failed check (not a skip)."; exit 1; }
 F=0
 BUDGET="${GODOT_CHECKS_BUDGET:-1080}"
 TIMES="${GODOT_CHECKS_TIMES:-$P/tools/ci/godot_check_times.txt}"
@@ -51,7 +74,7 @@ if ! cmp -s "$T/plan_want.txt" "$T/plan_got.txt" || [ -n "$badshard" ] || [ ! -s
   echo "  shard: FAIL, the shard plan does not hold every headless line exactly once:"
   diff "$T/plan_want.txt" "$T/plan_got.txt" | head -8 | sed 's/^/    /'
   [ -n "$badshard" ] && echo "$badshard" | sed 's/^/    bad shard: /'
-  echo "FAIL: the shard plan is broken; no check was run."; exit 1
+  echo "FAIL: the shard plan is broken, so this shard is a failed check (not a skip); no Godot check ran here."; exit 1
 fi
 mine=$(awk -F'|' -v i="$si" '$1 == i' "$T/plan.txt" | grep -vc '|step:')
 est=$(awk -F'|' -v i="$si" '$2 == i {print $3}' "$T/loads.txt")
