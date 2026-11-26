@@ -13,6 +13,7 @@ var teaching: Node
 const Map3D = preload("res://ui/campaign/map3d.gd")
 const ChoiceScript = preload("res://ui/campaign/choice_button.gd")
 const Crest = preload("res://ui/campaign/crest.gd")
+const CaptainFace := preload("res://ui/captain_face.gd")
 const UiScale = preload("res://ui/ui_scale.gd")
 const ModalFocus = preload("res://ui/theme/modal_focus.gd")   # issue 1559
 
@@ -2128,9 +2129,54 @@ func _legacy() -> Control:
 			else:
 				var fc2 = flow()
 				for f in fallen:
-					var cv = card(false, 260); cv[1].add_child(lbl(f["cap"]["full_name"], 18, BONE, font_semi)); cv[1].add_child(lbl(C.rankName(f["cap"]) + ", " + str(f.get("ship", "")), 17, BONE2)); cv[1].add_child(lbl("Lost in sector " + C.roman(f.get("sector", 1)), 17, BONE3)); fc2.add_child(cv[0])
+					fc2.add_child(_fallen_card(f))
 				v.add_child(fc2)
 	return v   # Back sits in the page's fixed bar (_kit_page)
+
+
+func _fallen_card(entry: Dictionary) -> Control:
+	var cap: Dictionary = entry["cap"]
+	var cv := card(false, 320)
+	var row := hbox(12)
+	cv[1].add_child(row)
+	var portrait := TextureRect.new()
+	portrait.texture = CaptainFace.memorial(cap)
+	portrait.custom_minimum_size = Vector2.ONE * px(60)
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	portrait.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(portrait)
+	var identity := vbox(2)
+	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(identity)
+	identity.add_child(lbl(str(cap["full_name"]), 19, BONE, font_semi))
+	var call := str(cap.get("callsign", ""))
+	if call != "":
+		identity.add_child(lbl(call, 17, BONE2))
+	var trait_line := str(cap.get("trait_line", ""))
+	if trait_line != "":
+		cv[1].add_child(lbl(trait_line, 17, BONE2))
+	cv[1].add_child(lbl(C.rankName(cap) + ", " + str(entry.get("ship", "")), 17, BONE))
+	cv[1].add_child(lbl(_fallen_loss_line(entry), 17, BONE2))
+	return cv[0]
+
+
+func _fallen_loss_line(entry: Dictionary) -> String:
+	var record = entry.get("loss")
+	if not record is Dictionary or not record.has("battle") or not record.has("round"):
+		return "Lost in sector " + C.roman(entry.get("sector", 1))
+	var line := "Battle %d, round %d" % [int(record["battle"]), int(record["round"])]
+	var killer := str(record.get("killer_ship_name", ""))
+	var weapon := str(record.get("weapon_name", ""))
+	var hazard := str(record.get("hazard_name", ""))
+	if killer != "":
+		line += " | " + killer + (" with " + weapon if weapon != "" else "")
+	elif hazard != "":
+		line += " | " + hazard
+	return line
+
+
 const HELP := [
 	["", "Embers of the Hollow Sun is a hex fleet-tactics roguelite. Lead your ships across three contested sectors toward the Hollow Sun, fighting a sector flagship at the end of each map. Any hull or captain lost in battle stays lost for the rest of the run."],
 	["", "Between runs, check Progression on the title screen: spend renown to unlock hull variants and permanent legacy upgrades, level up admirals to open branch skills and Command evolutions, and raise sync with Lattice cores so they offer rarer protocols (and eventually a starting gift). Finishing your first run unlocks Threat modifiers for extra difficulty and renown."],

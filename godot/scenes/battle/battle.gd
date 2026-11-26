@@ -60,6 +60,9 @@ const TARGET_PLAN: Color = Board.LS.ROLE["target_plan"]
 const TARGET_ON: Color = Board.LS.ROLE["target_on"]
 const QUAD_NAME := ["prow", "starboard", "rear", "port"]
 const SEC_NAME := {"prow": "fore", "mid": "core", "eng": "engines"}
+const CommsKind := preload("res://ui/battle/comms_banner.gd").Kind
+const CommsFaces := preload("res://ui/captain_face.gd")
+const CommsPortraits := preload("res://portraits/portraits.gd")
 const MOVE_PER := {"voidsworn": 1.25, "hegemony": 0.75, "corsair": 0.85, "chorus": 1.1, "ithar": 1.0, "deathless": 0.6}
 # F2 move pace (R64, Nov 1: about twice as slow, one ship at a time): ms per hex for an escort and for a battleship or
 # bigger (in between by size; the faction factor above enters as its square root), the build-and-bleed allowance, the cap
@@ -725,6 +728,7 @@ func start_battle(run: Dictionary, cfg: Dictionary) -> void:
 
 # A battle with its rules initialized, including one handed over by the campaign.
 func begin_with(a) -> void:
+	_clear_comms()
 	_flag_hull_warned = false
 	if a.phase == "deployment":
 		_deployment_api = a
@@ -755,6 +759,7 @@ static func _has_station(v: Dictionary) -> bool:
 
 func _begin(a) -> void:
 	_gen += 1   # issue 1433: work still awaiting from the last battle on this node is stale now
+	_clear_comms()
 	_api_join()
 	_join_think()
 	retiring = false
@@ -968,6 +973,7 @@ func _begin(a) -> void:
 	_legend()
 	# story hook (story stream, godot/story/README.md): admiral, enemy flagship and Nemesis lines in the battle log
 	voice = null
+	var opening_hail := ""
 	if not bot and not showcase and ResourceLoader.exists("res://story/battle_voice.gd"):
 		voice = load("res://story/battle_voice.gd").new()
 		if voice.has_method("setup_from_api"):
@@ -979,6 +985,8 @@ func _begin(a) -> void:
 			for l in opening_lines:
 				hud.add_log(l["text"], l["kind"])
 				recording_cue.emit("voice", l["text"])
+				if l.get("who") == "admiral":
+					opening_hail = str(l["text"])
 	var adm := _api_admiral()
 	if ResourceLoader.exists("res://portraits/portraits.gd") and adm != "":
 		var A = TBL.get("ADMIRALS", {}).get(adm, {})
@@ -1010,6 +1018,8 @@ func _begin(a) -> void:
 		showcase_ready = true
 		remove_from_group("battle_loading")
 		return
+	if opening_hail != "":
+		_comms_hail(opening_hail)
 	if not bot and not args.has("shots") and not args.has("breach-shots"):
 		_start_opening()
 	var story_lines: Array = api.R.storyModifierLines()
@@ -1836,6 +1846,7 @@ func _left(build_gen: int) -> bool:
 # mark the battle retired before finished goes out: post-await work from it is rejected from here on
 func _retire() -> void:
 	retiring = true
+	_clear_comms()
 	_reset_battle_lens()
 	if _death_dof and cam != null:
 		cam.set_close_dof(false)
@@ -1927,6 +1938,7 @@ func _show_rules_halt() -> bool:
 		return false
 	if not _rules_halt_shown:
 		_rules_halt_shown = true
+		_clear_comms()
 		var reason := "Rules error: " + str(api.halted)
 		_error(reason)
 		hud.add_log(reason, "s")
@@ -2161,6 +2173,80 @@ func _who(id) -> String:
 var voice = null   # story hook: godot/story/battle_voice.gd (null when the story folder is missing)
 
 
+func _clear_comms() -> void:
+	if is_instance_valid(hud) and hud is HUD and is_instance_valid(hud.comms):
+		hud.comms.clear()
+
+
+func _captain_comms(id: String) -> Dictionary:
+	var cap = VU.get(id, {}).get("captain")
+	if not cap is Dictionary or cap.is_empty():
+		return {}
+	return {"id": str(cap.get("captain_id", id)), "name": str(cap.get("full_name", "Captain")),
+		"callsign": str(cap.get("callsign", "")), "face": CommsFaces.captain(cap)}
+
+
+func _admiral_comms() -> Dictionary:
+	var id := _api_admiral()
+	if id.is_empty():
+		return {}
+	var adm: Dictionary = TBL.get("ADMIRALS", {}).get(id, {})
+	return {"id": id, "name": str(adm.get("n", id)), "callsign": str(adm.get("callsign", "")),
+		"face": CommsPortraits.face(id)}
+
+
+func _send_comms(kind: int, speaker: Dictionary, line: String) -> bool:
+	if showcase or retiring or ended or speaker.is_empty() or line.is_empty():
+		return false
+	if not (is_instance_valid(hud) and hud is HUD and is_instance_valid(hud.comms)):
+		return false
+	hud.comms_still = reduce_motion
+	hud.comms.enqueue(kind, speaker, line)
+	return true
+
+
+func _comms_hail(text: String) -> void:
+	var start := text.find(': "')
+	var line := text.substr(start + 3).trim_suffix('"') if start >= 0 else text
+	_send_comms(CommsKind.HAIL, _admiral_comms(), line)
+
+
+func _comms_section_losses(events: Array) -> void:
+	var losses := {}
+	for e in events:
+		if e.get("t") != "section_down":
+			continue
+		var id := str(e["unit"])
+		var names: Array = losses.get_or_add(id, [])
+		var label := str({"prow": "prow", "mid": "midsection", "eng": "engines"}.get(e["section"], ""))
+		if label != "" and not names.has(label):
+			names.append(label)
+	var selected := sel if sel != "" else inspect
+	for id in losses:
+		var names: Array = losses[id]
+		if names.is_empty():
+			continue
+		var line := " and ".join(PackedStringArray(names)) if names.size() < 3 else "prow, midsection and engines"
+		_send_comms(CommsKind.SELECTED_LOSS if id == selected else CommsKind.OTHER_LOSS, _captain_comms(id),
+			line.left(1).to_upper() + line.substr(1) + " destroyed.")
+
+
+func _comms_kill(e: Dictionary, batch_view: Dictionary) -> void:
+	var by = e.get("by")
+	if by == null or _side(by) != "player":
+		return
+	var target_id := str(e["unit"])
+	var target: Dictionary = VU.get(target_id, {})
+	# Use the completed batch's view for the victim. A Legion ship that will rise is a knockdown, not a kill.
+	for u in batch_view.get("units", []):
+		if u.get("id") == target_id:
+			target = u
+			break
+	if target.get("side") != "enemy" or target.get("squadron", false) or target.get("rising") != null:
+		return
+	_send_comms(CommsKind.KILL, _captain_comms(str(by)), "%s destroyed." % str(target.get("name", "Enemy ship")))
+
+
 # story hook: every rules event reaches battle voice exactly once, including a volley's fire and its grouped hits,
 # which _play_batch plays through _play_fire and never hands to _play_event (Artoo on PR 1552, issue 1551)
 func _voice_event(e: Dictionary) -> void:
@@ -2199,7 +2285,8 @@ func _merge_nemesis_opening(lines: Array) -> bool:
 		else:
 			at = hail + 1
 	for l in lines:
-		evs.insert(at, {"t": "log", "text": str(l["text"]), "kind": str(l["kind"]), "voice": true})
+		evs.insert(at, {"t": "log", "text": str(l["text"]), "kind": str(l["kind"]), "voice": true,
+			"comms_hail": l.get("who") == "admiral"})
 		at += 1
 	return true
 
@@ -2231,6 +2318,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			hud.add_log(str(e.get("text", "")), str(e.get("kind", "")) if e.get("kind") != null else "")
 			if e.get("voice", false):
 				recording_cue.emit("voice", str(e.get("text", "")))   # a story opening line merged into the opening batch (C27)
+			if e.get("comms_hail", false):
+				_comms_hail(str(e["text"]))
 		"float":
 			# rules.gd flt(): the boon and lineage callout over a ship (issue #305)
 			var dyv = e.get("dy")
@@ -2310,6 +2399,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			if gfx != null and gfx.has_method("shield_break"):
 				gfx.shield_break(str(e["unit"]), int(e["quad"]))
 		"section_down":
+			_comms_section_losses([e])
 			var sec := str(e["section"])
 			_log("%s: %s destroyed. %s" % [_name(e["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Flank guns and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(e["unit"]) == "player" else "p")
 		"system":
@@ -2425,10 +2515,14 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			await wait(float(PACE["banner"]) + 140.0)
 		"command":
 			var C = _command(str(e["id"]))
+			var command_name := str(C.get("n", e["id"]))
+			var shown := false
 			if e["side"] == "player":
 				sfx.play("ui_command_issue")
-			_log("%s: %s!" % [_name(e["unit"]), str(C.get("n", e["id"]))], "e" if e["side"] == "enemy" else "p")
-			hud.banner(str(C.get("n", e["id"])), Color("#ff8a6a") if e["side"] == "enemy" else Color("#ff8a3a"))
+				shown = _send_comms(CommsKind.COMMAND, _admiral_comms(), "%s is active." % command_name)
+			_log("%s: %s!" % [_name(e["unit"]), command_name], "e" if e["side"] == "enemy" else "p")
+			if not shown:
+				hud.banner(command_name, Color("#ff8a6a") if e["side"] == "enemy" else Color("#ff8a3a"))
 			# issue 1524 (fx/API.md 11): the flagship's command pulse under the banner
 			# (the player's command names no unit: it pulses that side's living flagship)
 			var cmd_ship := _command_ship(e)
@@ -2443,6 +2537,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				gfx.anchor_wreck(str(e["unit"]), board.hex_world(int(e["q"]), int(e["r"])), board.HS * WRECK_LEASH_K)
 			_log("The wreck of %s breaks into tumbling wreckage, blocking movement and line of fire." % _name(e["unit"]), "x")
 		"death":
+			_comms_kill(e, batch_view)
 			await _play_death(e)
 			if wrecked.has(e["unit"]):
 				_lay_wreck(e["unit"])
@@ -3275,6 +3370,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	_log("%s fires %s at %s: %s.%s" % [_name(a_id), str(e["name"]), _name(t_id), ", ".join(parts), " " + sys_txt + "!" if sys_txt != "" else ""], _who(a_id))
 	if hits.is_empty():
 		_shield_downs(land)   # (a break with no hit to carry it: as before, at the end)
+	_comms_section_losses(grp)
 	for g in grp:
 		if g["t"] == "burning":
 			_float(g["unit"], "Fire on deck", Color("#f08a4b"), -24)
@@ -3828,6 +3924,7 @@ func _continue_label(outcome: String) -> String:
 
 func _end_flow() -> void:
 	ended = true
+	_clear_comms()
 	inspect = ""
 	hud.set_panel({})
 	hud.set_target({})
@@ -6496,6 +6593,8 @@ func _toggle_opt(k: String) -> void:
 			option_changed.emit("reduce_flashing", reduce_flashing)
 		"motion":
 			reduce_motion = not reduce_motion
+			if hud is HUD:
+				hud.comms_still = reduce_motion
 			for vv in views.values():   # issue 1581: no idle drift, bob or trim nod with Reduce motion
 				if is_instance_valid(vv):
 					vv.calm = reduce_motion
@@ -7083,6 +7182,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 		info["cls"] = str(T.get("n", _class_label(u["cls"]))) + (", elite captain" if _jt(ru.get("elite")) else "")
 	var cap = u.get("captain")
 	if cap is Dictionary:
+		info["captain_data"] = cap
 		var ranks: Array = TBL.get("CAPTAINS", {}).get(str(cap.get("fac", "voidsworn")), TBL.get("CAPTAINS", {}).get("voidsworn", {})).get("ranks", [])
 		var rk := str(ranks[clampi(int(_z0(cap.get("rank"))), 0, ranks.size() - 1)]) if not ranks.is_empty() else ""
 		var line := "%s %s" % [rk, str(cap.get("full_name", ""))]
