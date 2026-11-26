@@ -1,15 +1,13 @@
 @echo off
 rem Issue 2134 LOAD39, copied from the all arm of OPUS2085_ARMS4.bat.
-rem Board: bake the exact reviewed issue-2134 commit into PIN_NEW before queuing.
-rem Starting base: 1623f92336a6bbaa0852dcdd07c5fd8358f2cb29. Do not run that base as proof.
+rem Queue only after green checks and passed review. The pin contains the exact game and bench source.
+rem The delivery commit only updates this launcher and drops the runner task file.
 rem Keep the cold/warm load and close suite, windowed quick battle and all-arm extras.
 setlocal EnableExtensions
 set "JOB=opus2134load39"
 set "LABEL=2134"
 set "TOOLS=godot"
-set "PIN_NEW=REPLACE_WITH_REVIEWED_ISSUE_2134_SHA"
-powershell.exe -NoProfile -Command "if ($env:PIN_NEW -notmatch '^[0-9a-f]{40}$' -or $env:PIN_NEW -eq '1623f92336a6bbaa0852dcdd07c5fd8358f2cb29') { exit 2 }"
-if errorlevel 1 (echo FAILED: bake the reviewed issue 2134 commit into PIN_NEW before queuing & exit /b 2)
+set "PIN_NEW=6d8b49bf65d91ba225b392aab1ff1618e62e7ee6"
 set "OJ_SLOTS=1"
 set "OJ_SLOT_KIND=gpu"
 
