@@ -1,0 +1,46 @@
+{
+  "source_commit": "d5b1fad3a19ca2dec9f53ebd6856132d8bcde9b4",
+  "source_dirty": true,
+  "source_diff_sha256": "b5e48d5aecd32fe1688021a29985864bd3ce49ee90bb292558ca9333177619b6",
+  "source_dirty_files": {
+    "contrib/codex/portraits_v1/NOTES.md": "a73c904badfec5d62a03a3c593632fdfa94b455d",
+    "contrib/codex/portraits_v1/anuket.png": "8a544f35092113bba3879d6ca66ccf43d6024a9a",
+    "contrib/codex/portraits_v1/contact_sheet.jpg": "541ae2cf892b79f4df073bc8e61e2cd4d17fc98b"
+  },
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "admiral_portraits_run4.jpg",
+  "date": "2026-11-25T23:35:32Z",
+  "sources": [
+    {
+      "source_commit": "d5b1fad3a19ca2dec9f53ebd6856132d8bcde9b4",
+      "source_dirty": true,
+      "source_diff_sha256": "b5e48d5aecd32fe1688021a29985864bd3ce49ee90bb292558ca9333177619b6",
+      "source_dirty_files": {
+        "contrib/codex/portraits_v1/NOTES.md": "a73c904badfec5d62a03a3c593632fdfa94b455d",
+        "contrib/codex/portraits_v1/anuket.png": "8a544f35092113bba3879d6ca66ccf43d6024a9a",
+        "contrib/codex/portraits_v1/contact_sheet.jpg": "541ae2cf892b79f4df073bc8e61e2cd4d17fc98b"
+      },
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    562,
+    564,
+    660
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "af9e8e9b77e1d3605c3f5e399d705ea2152eb2adf7ad76204e489a6d4a3dae40"
+  ],
+  "stamp_template_sha256": "8784a227f16a2f91b3bef4e64f2b64e3d7afda1ecb960d45ba0ff24c85c2f329",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkklEQVR4nO3VMRHAIADAQKgH7ljxb7I7BsjwryBb5tpnAEDJ9zoAAG7mBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTAKPmBzOSARJ+zUZoAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "668d94d22a503bf8a73951e0d6a70cdf4bbf4c1252d799fa2cc81dc9d99146bf"
+}
