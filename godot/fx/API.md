@@ -61,13 +61,14 @@ Call it after the events that changed a ship have been animated (or simply after
 | Stage | When (per section, hp fraction) | Look |
 |---|---|---|
 | 0 intact | above 0.8 | clean hull |
-| 1 scorched | 0.6 < f <= 0.8 | spreading scorch and secondary burns, up to 2 surface marks; transition sparks, no persistent emitter |
-| 2 dented | 0.4 < f <= 0.6 | an anchor dent or material-specific concavity, wider surface damage, up to 3 marks; smoke starts |
+| 1 scorched | 0.6 < f <= 0.8 | spreading scorch and secondary burns, up to 2 surface marks. Transition sparks and a brief cold puff, no persistent emitter |
+| 2 dented | 0.4 < f <= 0.6 | an anchor dent or material-specific concavity, wider surface damage, up to 3 marks and a steady smoke sheath |
 | 3 fissured | 0.2 < f <= 0.4 | a deep crater and buckled sealed fissure over intact dark skin; up to 4 marks, fire and smoke, a slow vent on heavy hulls |
 | 4 hull breach | f <= 0.2, or broken | open break with throat radius 0.048 L, stepped torn collar, recess 0.17 L, three cross members and seated fire; medium hulls up get a second break; transition sparks and debris |
 | 5 wreck | `dead` (after `death`) | see section 5 |
 
-- R80 owner rulings govern this ladder. Stage 3 and every weapon mark stay sealed. Squadrons keep stage 0 surfaces and trail pooled smoke below half total HP.
+- R80 owner rulings govern this ladder. Stage 3 and every weapon mark stay sealed. Squadrons keep stage 0 surfaces and trail a baked ribbon from one craft's exhaust below half total HP.
+- Issue 2044 uses one shared baked vent for wound, wisp, wing and hulk plumes. A wound combines a short core and a longer sheath with a small nearby light that does not scatter into fog. Wounds V2 keeps its separate cavity lights and their fog and falloff. Meridian vents cold blue, Eclipse stays violet, Chorus vents ochre organic mist and Glasswrights get pale vapour without fire or soot. Hulk smoke thins for about a minute and stays as a cold wisp until the wreck is cleared (R458).
 - A stage that goes up while shots are still flying at that ship waits until they land, so holes open when the hit lands, not before.
 - Repair seals a stage 4 break with a material-specific patch and keeps dents, scorch and weapon scars. Removed emitters fade within 0.8 effect seconds. Chorus knits over 3 seconds.
 - `burning` shares the section emitter allocator. The per-ship caps for fire and smoke/vent are 4 and 8 for light hulls, 8 and 12 for medium hulls, and 12 and 16 for heavy and capital hulls. Persistent emission spends zero counted flashes. Safe mode keeps flat marks and drops deformation, breaks and emitters. A broken `eng` section makes the engines sputter. Shields rising play a short faction-coloured regen shimmer.

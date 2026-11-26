@@ -477,10 +477,11 @@ func quietBlocks(u, t) -> bool: return B != null and u != null and t != null and
 # Swivel Arc Mounts: a non-turret fore or flank weapon reaches one arc wider (30 degrees each side), at -20% damage
 func chaserArc(u, w, t) -> bool:
 	if u == null or not jt(g(u.get("fx"), "chaser")) or w.get("k") == "turret" or w["arc"] == "T" or w["arc"] == "R": return false
-	var a = relAng(u, t)
-	if w["arc"] == "F": return absf(a) <= 90.5
-	if w["arc"] == "S": return a >= -0.5 and a <= 180.5
-	if w["arc"] == "P": return a <= 0.5 and a >= -180.5
+	return _wide_fixed_arc(relAng(u, t), w["arc"])
+func _wide_fixed_arc(a: float, arc) -> bool:
+	if arc == "F": return absf(a) <= 90.5
+	if arc == "S": return a >= -0.5 and a <= 180.5
+	if arc == "P": return a <= 0.5 and a >= -180.5
 	return false
 # Sinking Standard: once the flagship drops below 30% hull or falls, every other ship deals +20% damage for the battle
 func lastLightCheck(t, fell := false) -> void:
@@ -5317,17 +5318,20 @@ func treeMoveTowardFlag(u, path, d0) -> bool:
 	if steps > 0: treeFx(u, "standardForward", "the standard carries the line")
 	return steps > 0
 func treeSecondVolleyOK(u, w, t) -> bool:
-	if treeSkill("secondVolley") == null or u == null or jt(u.get("isSq")) or jt(u.get("dead")) or t == null or jt(t.get("dead")) or u["side"] != "player" or w["k"] == "flak": return false
+	if treeSkill("secondVolley") == null or u == null or t == null or jt(u.get("isSq")) or u["side"] != "player": return false
 	if not inSync(u): return false
 	var sf = B["tr"]["syncFirst"].get("player") if (B != null and B.get("tr") != null and B["tr"].get("syncFirst") != null) else null
 	if sf == null or sf["r"] != B["round"] or sf["id"] != t["id"] or jt(B["tr"].get("secondVolleyUsed")): return false
-	var d = hdist(u, t)
-	if d < 1 or d > w["r"] or treeDeepBlocks(u, t) or not los(u, t): return false
-	return not inArc(u, t, w["arc"])
+	return treeArcLegal(u, w, t) and not inArc(u, t, w["arc"])
+func _tree_mount_bears(u, w, t) -> bool:
+	var a := relAng(u, t)
+	if _in_arc_angle(a, w["arc"]): return true
+	# R456: tree shots can reach farther forward on their own side, but only the mount's own arc permits aft fire.
+	return w.get("k") != "turret" and absf(a) <= 90.5 and _wide_fixed_arc(a, w["arc"])
 func treeArcLegal(u, w, t) -> bool:
 	if u == null or jt(u.get("dead")) or t == null or jt(t.get("dead")) or u["side"] == t["side"] or jt(u.get("braced")) or w["k"] == "flak" or not weaponReady(w): return false
 	var d = hdist(u, t)
-	return d >= 1 and d <= w["r"] and not treeDeepBlocks(u, t) and los(u, t)
+	return d >= 1 and d <= w["r"] and _tree_mount_bears(u, w, t) and not treeDeepBlocks(u, t) and los(u, t)
 func treeRangeLegal(u, w, t) -> bool:
 	if u == null or jt(u.get("dead")) or t == null or jt(t.get("dead")) or u["side"] == t["side"] or jt(u.get("braced")) or w["k"] == "flak" or not weaponReady(w): return false
 	return not treeDeepBlocks(u, t) and los(u, t)
@@ -5889,7 +5893,7 @@ func treeExtraShot(u, wi, t, opts) -> bool:   # H4: one weapon fired again, then
 	if canFire(u, w, t) or (opts != null and jt(opts.get("forceArc")) and treeArcLegal(u, w, t)) or (opts != null and jt(opts.get("forceRange")) and treeRangeLegal(u, w, t)): ok = fireWeapon(u, wi, t, opts if opts != null else {})
 	w["fired"] = keep[0]; w["cdLeft"] = keep[1]
 	return ok
-func treeSpit(u) -> bool:   # Voice T1b: a ship whose guns cannot bear spits once at the nearest enemy in range, ignoring arc
+func treeSpit(u) -> bool:   # Voice T1b: a ship that did not fire can spit once from a live mount that can reach the target
 	var s = treeSkill("throatSpits")
 	if s == null or B == null or u == null or jt(u.get("dead")) or jt(u.get("isSq")) or u["side"] != "player": return false
 	var foes = []
@@ -5903,17 +5907,14 @@ func treeSpit(u) -> bool:   # Voice T1b: a ship whose guns cannot bear spits onc
 	var wi = -1; var bv = -1.0
 	for i in range(u["weapons"].size()):
 		var w = u["weapons"][i]
-		if w["k"] == "flak": continue
-		if td > w["r"]: continue
+		if w["k"] == "flak" or not eqn(w.get("off"), 0): continue
+		if td > w["r"] or not _tree_mount_bears(u, w, tt): continue
 		var v = w["dmg"] * w["shots"]
 		if v > bv: bv = v; wi = i
 	if wi < 0: return false
-	var w2 = u["weapons"][wi]; var wf = w2.get("fired"); var wc = w2.get("cdLeft"); var wo = w2.get("off")
-	var pf = [u.get("postFire"), u.get("postMp")]; var old = u["facing"]
-	u["facing"] = treeFacingTo(u, tt); w2["fired"] = false; w2["cdLeft"] = 0; w2["off"] = 0
-	var ok = false
-	if canFire(u, w2, tt): ok = fireWeapon(u, wi, tt, {"half": true})
-	w2["fired"] = wf; w2["cdLeft"] = wc; w2["off"] = wo; u["facing"] = old; u["postFire"] = pf[0]; u["postMp"] = pf[1]
+	var pf = [u.get("postFire"), u.get("postMp")]
+	var ok = treeExtraShot(u, wi, tt, {"half": true, "forceArc": true})
+	u["postFire"] = pf[0]; u["postMp"] = pf[1]
 	if ok: treeFx(u, "throatSpits", "a throat spits without a bearing")
 	return ok
 func treeWallAnswer(t, att) -> bool:

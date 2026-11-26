@@ -1910,36 +1910,43 @@ static func _craft_update(fx, dt: float) -> void:
 		_wing_trail_update(fx, node)
 
 
-# Use the real wing's history and engine point. The old wing shader made a
-# .65-second ruler behind a fast craft; the kit clips its centreline at 24 px.
+# Issue 2042 item 4: squadron_wing.gd now natively owns SH.CRAFT_TRAIL and updates its uniforms in step().
+# Keep this hook for kit_trails discovery and any non-native fallback without duplicating per-step uniform writes.
 static func _wing_trail_update(fx, wing) -> void:
 	if wing == null or not is_instance_valid(wing):
 		return
 	if not wing.has_meta("kit_trails"):
 		var materials: Array = []
+		var fallback := false
 		for trail in wing.trails:
-			var material: ShaderMaterial = fx.mat(SH.CRAFT_TRAIL, 1)
-			material.set_shader_parameter("trail_len", wing.length)
-			material.set_shader_parameter("width_k", 0.065 if wing.faction == "chorus" else 0.026)
-			material.set_shader_parameter("alpha_k", 0.22 if wing.faction == "chorus" else 0.56)
-			trail.node.material_override = material
+			var material: ShaderMaterial = trail.get("mat") as ShaderMaterial
+			if material == null:
+				fallback = true
+				material = fx.mat(SH.CRAFT_TRAIL, 1)
+				material.set_shader_parameter("trail_len", wing.length)
+				material.set_shader_parameter("width_k", 0.048 if wing.faction == "chorus" else 0.026)
+				material.set_shader_parameter("alpha_k", 0.22 if wing.faction == "chorus" else 0.56)
+				material.set_shader_parameter("life", wing.trail_life)
+				material.set_shader_parameter("trail_style", 1.0 if wing.faction == "chorus" else (2.0 if wing.faction == "ithar" else 0.0))
+				trail.node.material_override = material
+				trail["mat"] = material
 			materials.append(material)
 		wing.set_meta("kit_trails", materials)
+		wing.set_meta("kit_trails_fallback", fallback)
+	if not bool(wing.get_meta("kit_trails_fallback", false)):
+		return
 	var materials: Array = wing.get_meta("kit_trails")
 	for i in mini(materials.size(), wing.craft.size()):
 		var material: ShaderMaterial = materials[i]
 		material.set_shader_parameter("clock_now", wing.clock)
+		var stern: Vector3 = wing.craft[i].to_global(wing._stern)
+		material.set_shader_parameter("head_world", stern)
 		var history: Array = wing.trails[i].hist
 		if not history.is_empty():
-			var born := float(history[0][1])
-			# The wing owns the stern anchor. Recover its local point from a
-			# fresh sample, then follow that point between samples.
-			if absf(float(wing.clock) - born) < 0.001:
-				material.set_meta("kit_anchor", wing.craft[i].to_local(history[0][0]))
-				material.set_shader_parameter("anchor_ready", 1.0)
-			if material.has_meta("kit_anchor"):
-				material.set_shader_parameter("head_world", wing.craft[i].to_global(material.get_meta("kit_anchor")))
-			material.set_shader_parameter("newest_birth", born)
+			material.set_shader_parameter("newest_birth", float(history[0][1]))
+			material.set_shader_parameter("anchor_ready", 1.0)
+		else:
+			material.set_shader_parameter("anchor_ready", 0.0)
 
 
 # Issue 1528: the first torpedo or rocket salvo of a battle stalled 135 to 145 ms on the PC (1379 RUN8). Its first round
@@ -2716,9 +2723,10 @@ uniform vec3 impact_tint = vec3(1.0);""")
 # The resolved weapon rung includes gun and target bands. The target band also places the fire just off its hull. Both pictures use the lopsided baked seed (s0) turned at random: the round seeds (s1, s2) drew
 # the "flower" of equal puffs Ryan called "too even and weird" on the deaths (issue 484), and they did the same here.
 static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0, n := Vector3.UP, rung := 0.0,
-		tint := Color(1, 0.55, 0.15), energy := false, flash_life := 0.0, flash_lift := 0.0) -> void:
+		tint := Color(1, 0.55, 0.15), energy := false, flash_life := 0.0, flash_lift := 0.0,
+		use_contact_tint := false) -> void:
 	var response := _impact_response(src)
-	var contact := _impact_color(response, src, tint)
+	var contact := tint if use_contact_tint else _impact_color(response, src, tint)
 	var clean: bool = not response.get("hot_plate", false)
 	var tinted := energy or clean
 	var flash_only := flash_life > 0.0
@@ -2824,13 +2832,16 @@ static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, sta
 static func _crit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, w := 2) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	var response := _impact_response(Tg)
-	var faction_glow: Color = Tg.fac.damage_glow if Tg != null else col
-	var glow := _impact_color(response, Tg, faction_glow)
-	_impact_flash(fx, Tg, p, n, T, k, 6.0 * k, 0.25, glow, 40.0, response, 0.5 * k)
+	# This extra beat belongs to the opened target, not the incoming round. Non-metal crits only use the clean,
+	# tinted contact pass, never the raw orange bake, the warm glass ricochet tint, or the heated metal vent.
+	var glow: Color = Tg.fac.damage_glow if Tg != null else col
 	if response.get("hot_plate", false):
+		_impact_flash(fx, Tg, p, n, T, k, 6.0 * k, 0.25, glow, 40.0, response, 0.5 * k)
 		_vent(fx,p+n*k,n,T+0.05,6.0*k,0.45,glow,0.8,n*5.0*k,0.6,1.0,w,Tg)
-	elif response.debris == "drop":
-		_impact_gas(fx, p + n * k, n, T + 0.05, k, Color.BLACK, 2, 2.4, "shell", 0.3, response)
+	else:
+		_staged_hit(fx, Tg, p, T, false, k, n, 40.0 / BURST_PX_K, glow, true, 0.25, 0.5 * k, true)
+		if response.debris == "drop":
+			_impact_gas(fx, p + n * k, n, T + 0.05, k, Color.BLACK, 2, 2.4, "shell", 0.3, response)
 	fx.spr(p + n * 0.75 * k, T + 0.04, 0.34, glow, 2.1, 2.0 * k, 0.7 * k, 13, n * 2.0 * k, 0.0, 0.0, 0.0, 25.0)
 	if response.debris != "drop":
 		_throw_sparks(fx,p,n,n,T,k,glow,10,18.0,0.8,"shell")

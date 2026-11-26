@@ -449,20 +449,25 @@ func _clear() -> void:
 
 
 # One ship as the battle draws it (G2's ShipView, added to G4's effects as the battle does), or null when it is a block.
-func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code := "", cut_on_arrival := false):
+func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code := "", cut_on_arrival := false,
+		squad_tpl := ""):
 	var sv = SV.new()
 	sv.name = "ship_" + id
 	world.add_child(sv)
 	var u := {"id": id, "fac": fac, "cls": cls, "facing": facing, "hp": 100, "maxHp": 100, "size": 1.0}
+	if cls == "Squadron":
+		u["tpl"] = squad_tpl if squad_tpl != "" else ("spore" if fac == "chorus" else "fighter")
 	if code != "":
 		u["code"] = code
 		u["L"] = float(OBJ_LEN.get(code, 10.0))
 	sv.setup(u, pos, true)
 	sv.set_process(false)   # its bob and idle jets run on the wall clock (see the header)
-	if _is_block(sv) and not args.has("allow-blocks"):
+	if not sv.squad_kind.is_empty() and sv.hull != null:
+		sv.hull.set_process(false)
+	if sv.squad_kind.is_empty() and _is_block(sv) and not args.has("allow-blocks"):
 		_placeholder("%s %s drew a block (code %s)" % [fac, cls, str(sv.code)])
 		return null
-	var info := {"faction": fac, "cls": cls, "size": 1.0, "squadron": false, "flagship": false, "code": sv.code,
+	var info := {"faction": fac, "cls": cls, "size": 1.0, "squadron": cls == "Squadron", "flagship": false, "code": sv.code,
 		"cut_on_arrival": cut_on_arrival}
 	if not sv.a4:
 		info["meshes"] = sv.meshes
@@ -734,7 +739,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var tat: Array = row.get("tgt_at", [34, 0])
 	# Only the target of a death row can die. Hull and shader warm-up still runs for every ship.
 	var fatal := str(row.get("fatal", ""))
-	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2, "", row.get("do") == "death" or fatal != "")
+	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2, "",
+		row.get("do") == "death" or fatal != "", str(row.get("tgt_tpl", "")))
 	if T == null:
 		return false
 	if row.has("shield_left"):
@@ -891,11 +897,26 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.launch("A", "T")
 	elif what == "jets":
 		# every movement jet ShipView fires, at once; the bench keeps ShipView's processing off, so each puff stays where
-		# it started (that start is what this row shows)
+		# it started unless step_jets is set (issue 2042: steps puffs and fires repeat bursts so motion strings show)
 		A._retro_puffs(1.0)
 		A._aft_puffs(1.0)
 		A._side_puffs(1.0, 1.0)
 		A._couple_puffs(1.0, 1.0)
+	elif what == "move":
+		# issue 2042: drive A forward along +X so moving nozzle trails build and taper cleanly behind the stern
+		fx.set_engine("A", float(row.get("engine", 1.6)))
+	elif what == "wing":
+		# issue 2042: step a live patrol SquadronWing so its craft weave and draw trails on the shared kit
+		if A.hull != null and A.hull.has_method("step"):
+			A.hull.patrol_limit = 7.5
+			A.hull.patrol_target = 1.0
+			A.hull.fit_formation()
+			A.hull.step(0.0)
+			for wk in 24:
+				A.hull.step(STEP)
+				if fx.has_method("step"):
+					await _step()
+			t_ev = fx.now
 	elif what == "sync":
 		# issue 1587: the event is a hull state change ("sync_ev", a unit view as the game's sync sends), for a section
 		# crossing into stage 3 or 4 (the one-shot blowout); a commit without this key shows the ship unchanged
@@ -904,6 +925,33 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	elif what == "wounds":
 		fx.sync_ship("A", {"hp": 25.0, "maxHp": 100.0, "burning": false, "sh": [5, 5, 5, 5],
 			"sec": {"eng": {"hp": 10, "max": 100}, "mid": {"hp": 10, "max": 100}, "prow": {"hp": 10, "max": 100}}})
+	elif what == "wisp":
+		# Isolate the real turret/mount/nozzle picture without a nearby full wound or a spark hiding it.
+		var target = fx.ship("T")
+		var e := {"id": "bench_wisp"}
+		if not target.hull.turrets.is_empty():
+			e["tur"] = 0
+		elif not target.hull.nozzles.is_empty():
+			e["mp"] = target.hull.nozzles[0]["p"]
+		else:
+			var anchor: Dictionary = target._anchor(1, "a")
+			if anchor.is_empty():
+				_warn(id + ": no wisp source")
+				return false
+			e["mp"] = anchor.p
+		target._build_wisp(fx, e)
+		_cam(target.to_world(e.source), r)
+	# Issue 2044: frame the same existing source in both revisions, rather than picking a screen offset per hull.
+	match str(row.get("focus_site", "")):
+		"mid_wound":
+			var target = fx.ship("T")
+			var anchor: Dictionary = target._anchor(1, "a")
+			if not anchor.is_empty():
+				focus = target.to_world(anchor.p)
+			_cam(focus, r)
+		"wing_lead":
+			if not T.hull.craft.is_empty():
+				_cam(T.hull.craft[0].global_position, r)
 	var anchors := {"fire": t_ev, "event": t_ev, "impact": t_ev + (float(impacts[0]) if impacts.size() > 0 else 0.6)}
 	var fatal_at := float(anchors["impact"]) + 0.90 if fatal != "" else INF
 	# Issue 504: a row may fire a second volley from A at T during the event ("also": [seconds after the event, kind,
@@ -932,8 +980,39 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var cells: Array = []
 	var guard := 0
 	var wi := 0
+	var step_jets := what == "jets" and bool(row.get("step_jets", false))
+	var jet_burst_t := 0.0
+	var move_speed := float(row.get("move_speed", 22.0))
+	var move_dur := float(row.get("move_dur", 0.75))
+	var brake_at := float(row.get("brake_at", 0.55))
+	var focus_mode := str(row.get("focus", "target"))
+	var track_hulk := bool(row.get("seek_hulk", false))
 	while wi < wins.size() and guard < 900:
 		var w: Dictionary = wins[wi]
+		if step_jets and is_instance_valid(A):
+			A._puffs_step(STEP)
+			jet_burst_t += STEP
+			if jet_burst_t >= 0.075:
+				jet_burst_t = 0.0
+				A._retro_puffs(1.0)
+				A._couple_puffs(1.0, 1.0)
+		elif what == "move" and is_instance_valid(A):
+			var elapsed: float = float(fx.now) - t_ev
+			if elapsed <= move_dur:
+				A.position.x += move_speed * STEP
+			if elapsed >= brake_at:
+				fx.set_engine("A", 0.0)
+			var track_p: Vector3 = A.global_position
+			if focus_mode == "attacker_engines" and fx.ship("A") != null:
+				var sa2 = fx.ship("A")
+				if sa2.hull.nozzles.size() > 0:
+					var sum2 := Vector3.ZERO
+					for nz in sa2.hull.nozzles:
+						sum2 += sa2.to_world(nz["p"])
+					track_p = sum2 / float(sa2.hull.nozzles.size())
+			_cam(track_p + Vector3(float(fo[0]), 0.0, float(fo[1])), r)
+		elif what == "wing" and is_instance_valid(A) and A.hull != null and A.hull.has_method("step"):
+			A.hull.step(STEP)
 		if fx.now + 1e-4 >= fatal_at:
 			fatal_at = INF
 			if cut != "":
@@ -957,12 +1036,25 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		var start: float = float(anchors.get(w["anchor"], t_ev)) + float(w["at"])
 		if w["anchor"] == "also" and not anchors.has("also"):
 			start = INF
+		# Long hulk rows step to the next sample after the death beat, then follow the same drifting wreck in both runs.
+		if track_hulk and ci > 0 and int(w["got"]) == 0 and start - fx.now > 4.0:
+			fx.step(start - fx.now - STEP)
 		var take := false
 		if int(w["got"]) == 0:
 			take = fx.now + 1e-4 >= start
 		else:
 			take = steps >= int(w["next"])
 		if take:
+			if track_hulk:
+				var hulk: Node3D
+				for wreck in fx.dstate.get("wrecks", []):
+					if wreck.id == "T" and wreck.get("hulk", false) and not wreck.nodes.is_empty():
+						hulk = wreck.nodes[0]
+						break
+				if not is_instance_valid(hulk):
+					return _fail_moment(id, r, "no target hulk at %.2f s" % (fx.now - t_ev))
+				_cam(hulk.global_position, r)
+				await _step()
 			var img := _grab() if keep and not headless else null
 			if clip:
 				if keep:
@@ -1002,6 +1094,16 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
 		if strict:
 			return _fail_moment(id, r, "target drew %s, expected %s" % [tcode, str(row["expect_code"])])
+	if row.has("expect_craft") and not args.has("allow-blocks"):
+		var craft_code := ""
+		if is_instance_valid(T) and is_instance_valid(T.hull):
+			var craft = T.hull.get("craft")
+			if craft is Array and not craft.is_empty() and is_instance_valid(craft[0]):
+				craft_code = str(craft[0].get_meta("model_code", ""))
+		if craft_code != str(row.expect_craft):
+			_warn("%s: wing drew %s, the row expects %s" % [id, craft_code, row.expect_craft])
+			if strict:
+				return _fail_moment(id, r, "wing drew %s, expected %s" % [craft_code, str(row.expect_craft)])
 	if clip:
 		# Every numbered frame must be on disk, and a stale frame cannot cover a failed read or save this run.
 		for fi in total:
