@@ -3,6 +3,7 @@ extends Node
 # including ships added after battle warmup. No assets or saved resources are rewritten.
 const RIM := preload("res://render/look_rim.gd")
 const MESH_WATCH := preload("res://render/mesh_watch.gd")
+const HULL := preload("res://fx/fx_hull.gd")
 
 var _fog_variants: Dictionary[Shader, Shader] = {}
 

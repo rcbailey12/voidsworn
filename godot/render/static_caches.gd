@@ -19,7 +19,6 @@ const SCRIPTS := [
 	"res://portraits/portraits.gd",
 	"res://world/world.gd",
 	"res://world/world_bake.gd",
-	"res://world/world_planet.gd",
 	"res://world/world_rocks.gd",
 	"res://world/world_living.gd",
 	"res://world/blocker_visuals.gd",

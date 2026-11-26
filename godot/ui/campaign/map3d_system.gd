@@ -66,7 +66,7 @@ func set_sector(sector: int) -> void:
 # Reuse the world's baked nebula, with a map-only shader variant. Battle skies are unchanged.
 func approach_sky(env: Environment) -> void:
 	var m: ShaderMaterial = env.sky.sky_material
-	var sh := Shader.new(); sh.code = SH.map_sky(); m.shader = sh
+	m.shader = SH.MAP_SKY
 	m.set_shader_parameter("neb_gain", 0.0 if region == "deep" else approach["nebula"])
 	m.set_shader_parameter("map_saturation", approach["saturation"])
 	m.set_shader_parameter("map_heat", approach["heat"])
@@ -112,23 +112,19 @@ var q := 1.0                 # 1 high quality, 0 low
 var backdrop_k := 1.0        # the backdrop's strength (near stars, embers in the debris ring); map3d sets 0.5 for the Briefing build
 var rng: RandomNumberGenerator
 var sun_pos := Vector3(0, 1.0, 0)
-var _shaders := {}
 var _rock_meshes: Array = []
 var sector_world: Node3D
 
 static func look(fac) -> Dictionary: return LOOKS.get(str(fac), LOOKS["voidsworn"])
 static func text_col(fac) -> Color: return look(fac)["text"]
 
-func _sh(name: String) -> Shader:
-	if not _shaders.has(name):
-		var codes = {"SKY": SH.SKY, "INFALL": SH.INFALL, "STARPTS": SH.STARPTS, "NEB_SHEET": SH.NEB_SHEET, "GLOW": SH.GLOW,
-			"PLANET": SH.PLANET, "ATMO": SH.ATMO, "ROCK": SH.ROCK, "ORBIT": SH.ORBIT, "LANE": SH.LANE, "LANE_FLAT": SH.LANE_FLAT, "RING": SH.RING, "CLOUD": SH.CLOUD,
-			"HULL": SH.HULL, "SOLAR": SH.SOLAR, "RADIATOR": SH.RADIATOR, "ROCK_HI": SH.ROCK_HI, "CLOUDS": SH.CLOUDS,
-			"HALO": SH.HALO, "TERR": SH.TERR, "BH_DISC": SH.BH_DISC, "BH_FRONT": SH.BH_FRONT, "BH_LENS": SH.BH_LENS, "BH_SHADOW": SH.BH_SHADOW, "BH_LENSED": SH.BH_LENSED, "THREAT": SH.THREAT}
-		var s = Shader.new(); s.code = codes[name]; _shaders[name] = s
-	return _shaders[name]
+const SHADERS := {"SKY": SH.SKY, "INFALL": SH.INFALL, "STARPTS": SH.STARPTS, "NEB_SHEET": SH.NEB_SHEET, "GLOW": SH.GLOW,
+	"PLANET": SH.PLANET, "ATMO": SH.ATMO, "ROCK": SH.ROCK, "ORBIT": SH.ORBIT, "LANE": SH.LANE, "LANE_FLAT": SH.LANE_FLAT, "RING": SH.RING, "CLOUD": SH.CLOUD,
+	"HULL": SH.HULL, "SOLAR": SH.SOLAR, "RADIATOR": SH.RADIATOR, "ROCK_HI": SH.ROCK_HI, "CLOUDS": SH.CLOUDS,
+	"HALO": SH.HALO, "TERR": SH.TERR, "BH_DISC": SH.BH_DISC, "BH_FRONT": SH.BH_FRONT, "BH_LENS": SH.BH_LENS, "BH_SHADOW": SH.BH_SHADOW, "BH_LENSED": SH.BH_LENSED, "THREAT": SH.THREAT}
+
 func mat(name: String, params: Dictionary = {}) -> ShaderMaterial:
-	var m = ShaderMaterial.new(); m.shader = _sh(name)
+	var m = ShaderMaterial.new(); m.shader = SHADERS[name]
 	for k in params: m.set_shader_parameter(k, params[k])
 	m.set_meta("map_mat", true)   # one of the map's own shaders: map3d dims a stop's by "gain", "light" or "ember"
 	return m
@@ -344,9 +340,7 @@ func planet(parent: Node3D, pal: Array, radius: float, at: Vector3, with_atmo: b
 	var p = mi(sphere(radius, seg, seg / 2), mat("PLANET", {"a": pal[1], "b": pal[2], "atmo": pal[3], "kind": float(pal[0]), "seed": rng.randf() * 40.0, "q": q, "sun_pos": sun_pos}))
 	if sector_world != null:
 		p.material_override = sector_world.surface_material((sun_pos - parent.global_position - at).normalized())
-		var shader := Shader.new()
-		shader.code = preload("res://world/world_planet.gd").SPHERE.replace("uniform float light = 1.0;", "uniform float light = 1.0;\nuniform float map_floor = 0.0;").replace("ALBEDO = col * light;", "ALBEDO = (col + ground * map_floor) * light;")
-		p.material_override.shader = shader
+		p.material_override.shader = SH.BAKED_PLANET
 		p.material_override.set_shader_parameter("map_floor", approach["planet_floor"])
 		p.material_override.set_shader_parameter("sun_col", approach["sun_color"])
 		p.material_override.set_meta("map_mat", true)   # its "light" follows the stop's tier (map3d _set_tier)

@@ -33,7 +33,7 @@ const SKEEP = preload("res://render/shader_keep.gd")
 
 
 func _stage_name(w: int) -> String:
-	return ["idle", "disk check", "compute", "png save", "prune", "mips"][w] if w >= 0 and w < 6 else str(w)
+	return ["idle", "disk check", "compute", "save", "prune", "mips", "BC7 encode"][w] if w >= 0 and w < 7 else str(w)
 const LIMIT_MS := 500
 var out_dir := ""
 var lines: Array = []

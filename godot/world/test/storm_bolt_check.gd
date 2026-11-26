@@ -156,7 +156,7 @@ func _in_battle() -> void:
 		ribbon.free()
 		return
 	var rb: Dictionary = old_living.bolts[0]
-	_check(rb.mi.mesh is ArrayMesh and (rb.mi.material_override as ShaderMaterial).shader.code == LIVING.BOLT_SHADER, "the ribbon draws its own mesh and shader")
+	_check(rb.mi.mesh is ArrayMesh and (rb.mi.material_override as ShaderMaterial).shader == LIVING.BOLT_SHADER, "the ribbon draws its own mesh and shader")
 	var before := _layout(old_living)
 	var count: int = old_living.bolts.size()
 	ribbon.free()
@@ -173,7 +173,7 @@ func _in_battle() -> void:
 	for b in living.bolts:
 		var mi: MeshInstance3D = b.mi
 		var m := mi.material_override as ShaderMaterial
-		_check(mi.mesh is QuadMesh and m != null and m.shader.code == LIVING.BOLT_FLIP_SHADER and m.get_shader_parameter("atlas") is Texture2D,
+		_check(mi.mesh is QuadMesh and m != null and m.shader == LIVING.BOLT_FLIP_SHADER and m.get_shader_parameter("atlas") is Texture2D,
 			"bolt %s is a card on the flipbook shader with an atlas" % mi.name)
 		_check(mi.is_visible_in_tree() and mi.custom_aabb.size != Vector3.ZERO, "the card is drawn and has bounds")
 	# One strike on every storm patch, on the effects clock.

@@ -48,10 +48,10 @@ func _run() -> void:
 		"board EDGE (terrain and hazard edges)": BOARD.EDGE_SHADER, "shared line (path)": LS.SHADER, "storm bolts": LIVING.BOLT_SHADER,
 		"storm bolts, baked (issue 1360)": LIVING.BOLT_FLIP_SHADER}
 	for name in shaders:
-		_check(str(shaders[name]).contains("const float LS_CORE_PX"), "%s does not carry the shared line code" % name)
-	_check(BOARD.FILL_SHADER.contains("ls_line("), "the move hex rim does not draw through ls_line")
-	_check(BOARD.RING_SHADER.contains("ls_core_w(") and BOARD.RING_SHADER.contains("ls_dim("), "the grid does not use the shared width and fade")
-	for code in [LIVING.BOLT_SHADER, LIVING.BOLT_FLIP_SHADER]:
+		_check(shaders[name].code.contains('#include "res://shaders/line_style.gdshaderinc"'), "%s does not include the shared line code" % name)
+	_check(BOARD.FILL_SHADER.code.contains("ls_line("), "the move hex rim does not draw through ls_line")
+	_check(BOARD.RING_SHADER.code.contains("ls_core_w(") and BOARD.RING_SHADER.code.contains("ls_dim("), "the grid does not use the shared width and fade")
+	for code in [LIVING.BOLT_SHADER.code, LIVING.BOLT_FLIP_SHADER.code]:
 		_check(code.contains("LS_BOLT_CORE") and code.contains("LS_BOLT_SKIRT") and code.contains("LS_BOLT_CORONA"), "the storm bolts keep their own colours")
 	var src := FileAccess.get_file_as_string("res://scenes/battle/battle.gd")
 	_check(src.contains("path_line.material_override = Board.LS.material()"), "the path line does not use the shared line material")

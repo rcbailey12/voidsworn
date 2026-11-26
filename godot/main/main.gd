@@ -25,7 +25,7 @@ const StaticCaches := preload("res://render/static_caches.gd")
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "brisk_camera": false, "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true, "render_scale": 1.0, "fps_cap": 0.0, "vsync": true}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "brisk_camera": false, "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true, "render_scale": 1.0, "fps_cap": 0.0, "vsync": true, "world_bc7": false}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -323,6 +323,8 @@ func _load_settings() -> void:
 	# Issue 1079: the nebula wake went on by default (Ryan, Nov 20) under a new key, so the "nebula_wake": false that the
 	# off-by-default build saved with every settings file never keeps it off.
 	settings.erase("nebula_wake")
+	if not settings.has("battle_aa"):
+		settings["battle_aa"] = "taa" if bool(settings.get("taa", false)) else "default"
 
 
 func save_settings() -> void:
@@ -349,6 +351,7 @@ func _capture_window(spec: String) -> void:
 
 
 func _apply_settings() -> void:
+	WORLD_BAKE.set_bc7_enabled(bool(settings.get("world_bc7", false)))
 	# the player's UI scale (R2, ui_spec.md 4.4): the Settings entry writes settings["ui_scale"], a missing key reads as 1.0
 	load("res://ui/ui_scale.gd").set_player(settings.get("ui_scale", 1.0))
 	# screenshot and capture jobs keep the window the command line asked for (--resolution), so every frame is one size
@@ -382,7 +385,11 @@ func _apply_display() -> void:
 	# the battle draws in the game's own viewport; the sector map draws in its own full-screen one (map3d.gd), which
 	# reads the same value when it is built. Small portraits and podiums stay at full scale.
 	Engine.set_meta("render_scale", rs)
-	apply_render_scale(get_viewport(), rs)
+	if is_instance_valid(battle):
+		_set_battle_display_args(battle)
+		battle._apply_quality(str(battle.args.get("quality", "max")))
+	else:
+		apply_render_scale(get_viewport(), rs)
 	for vp in get_tree().get_nodes_in_group("player_3d_viewport"):
 		apply_render_scale(vp, rs)
 	Engine.max_fps = maxi(0, int(settings.get("fps_cap", 0)))
@@ -404,6 +411,14 @@ func apply_volumes() -> void:
 static func apply_render_scale(vp: Viewport, rs: float) -> void:
 	vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR if rs >= 1.0 else Viewport.SCALING_3D_MODE_FSR
 	vp.scaling_3d_scale = rs
+
+
+func _set_battle_display_args(b: Node) -> void:
+	if not player_launch(): return
+	var mode := str(settings.get("battle_aa", "default"))
+	b.args["battle_aa"] = mode
+	b.args["taa"] = mode == "taa"
+	b.args["render_scale"] = clampf(float(settings.get("render_scale", 1.0)), 0.5, 1.0)
 
 
 # Issue 1437 (review on PR 1607): the player's Render scale, Frame cap and V-Sync apply only to a plain launch, the way
@@ -560,6 +575,7 @@ func _start_showcase() -> void:
 	showcase.title_backdrop = true   # issue 1434: capped at High, silent, no combat warm-up
 	showcase.args["quality"] = str(settings["quality"])
 	showcase.args["taa"] = bool(settings.get("taa", false))
+	_set_battle_display_args(showcase)
 	showcase.args["fac"] = next_showcase_fac()
 	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
 	add_child(showcase)
@@ -634,6 +650,12 @@ func _clear() -> void:
 			showcase.stop_build()   # issue 1434: no more backdrop build work, and the menu's viewport settings back
 		showcase.queue_free()
 	showcase = null
+	_restore_render_scale()
+
+
+func _restore_render_scale() -> void:
+	if player_launch():
+		apply_render_scale(get_viewport(), float(Engine.get_meta("render_scale", 1.0)))
 
 
 func has_campaign() -> bool:
@@ -750,6 +772,7 @@ func quick_battle() -> void:
 		wake = str(args["nebula_wake"]) == "true"
 	b.args["nebula_wake"] = str(wake)
 	b.args["taa"] = bool(settings.get("taa", false))
+	_set_battle_display_args(b)
 	add_child(b)
 	_settings_to_battle(b)
 	battle = b
@@ -971,6 +994,7 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 	b.args["quality"] = str(settings["quality"])
 	b.args["nebula_wake"] = str(bool(settings.get("nebula_wake_on", true)))   # issue 1079: on by default (Ryan, Nov 20)
 	b.args["taa"] = bool(settings.get("taa", false))
+	_set_battle_display_args(b)
 	add_child(b)
 	_settings_to_battle(b)
 	battle = b
@@ -979,6 +1003,7 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 	r["api"] = b.api
 	battle = null
 	b.queue_free()
+	_restore_render_scale()
 	for c in hidden:
 		if is_instance_valid(c):
 			c.visible = true
@@ -1005,6 +1030,7 @@ func play_api(a, opts := {}) -> Dictionary:
 	b.args["quality"] = str(settings["quality"])
 	b.args["nebula_wake"] = str(bool(settings.get("nebula_wake_on", true)))   # issue 1079: on by default (Ryan, Nov 20)
 	b.args["taa"] = bool(settings.get("taa", false))
+	_set_battle_display_args(b)
 	add_child(b)
 	_settings_to_battle(b)
 	battle = b
@@ -1014,6 +1040,7 @@ func play_api(a, opts := {}) -> Dictionary:
 	var r: Dictionary = await b.finished
 	battle = null
 	b.queue_free()
+	_restore_render_scale()
 	return r
 
 

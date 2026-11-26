@@ -1,12 +1,8 @@
 extends Node3D
-const SKEEP := preload("res://render/shader_keep.gd")
 # Local flight stays around the wing's anchor. Only ShipView moves the rules unit.
 # Each ribbon samples its own craft's stern in world space, including turns.
 const CRAFT := preload("res://render/squadron_craft.gd")
 const LOOK := preload("res://fx/faction_look.gd")
-const SH := preload("res://fx/fx_shaders.gd")
-const SHADER_CACHE := preload("res://render/shader_cache.gd")
-const FLOW_TEX_PATH := "res://fx/textures/beam_flow.png"
 static var ship_manifest_path := "res://assets/ships/manifest.json"
 static var ship_cache_dir := "res://gen/ships"
 static var _model_codes: Dictionary = {}   # not GPU: model code strings
@@ -50,9 +46,10 @@ const TRAIL_LIFE_CHORUS := 0.2
 var trail_life := TRAIL_LIFE
 var _model_scene: PackedScene
 var _stern := Vector3(-0.47, 0.0, 0.0)
-# Issue 2042 item 4: unified strike craft trail shader. Patrol wings, attack runs, launches and
-# standalone previews all draw through the shared SH.CRAFT_TRAIL kit (no separate flat fallback).
-const TRAIL := SH.CRAFT_TRAIL
+# issue 221: the ribbon's ageing (drift back along the craft's wake, widening, fading) runs in the vertex shader from
+# each sample's birth time (UV2.x) and the wing's clock, so the mesh is rebuilt only when a sample is added or dropped,
+# not every frame. Same maths as the old per-frame GDScript build.
+const TRAIL := preload("res://shaders/squadron_trail.gdshader")
 
 # issue 1434 (Artoo on PR 1445): setup's main-thread time by stage in microseconds (load, instance, finish, copies), copied
 # into ShipView.stage_us for the load bench
@@ -66,10 +63,7 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	phase = seed_value
 	SH.ensure_globals()
 	trail_mat = ShaderMaterial.new()
-	trail_mat.shader = SHADER_CACHE.for_code(SH.CRAFT_TRAIL)
-	trail_mat.render_priority = 1
-	if ResourceLoader.exists(FLOW_TEX_PATH):
-		trail_mat.set_shader_parameter("kit_flow", ResourceLoader.load(FLOW_TEX_PATH))
+	trail_mat.shader = TRAIL
 	trail_mat.set_shader_parameter("trail_len", size)
 	# Ryan (Nov 20 2026, issue 1373): the long wide Chorus wake made each spore read as a tadpole ("comes off looking like
 	# sperm"); a spore now leaves only a short faint shimmer that is gone within a craft length or two

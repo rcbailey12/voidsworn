@@ -307,8 +307,6 @@ func release(wait := true) -> void:
 	dstate.clear()
 	pools.clear()
 	_live_ids.erase(get_instance_id())
-	if _live_ids.is_empty():
-		HULL.clear_shader_cache()
 
 
 static func _retire(tids: Array, keep: Array) -> void:

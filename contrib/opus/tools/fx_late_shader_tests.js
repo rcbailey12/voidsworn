@@ -52,7 +52,8 @@ ok(/tmp\.queue_free\(\)\n\tHULL\.start_late_watch\(\)/.test(warmBody), 'the warm
 ok(/static func shared_shader\(code: String, label := ""\)/.test(hull), 'the shared shader cache takes no label');
 ok(/note_late\(label if label != "" else/.test(hull), 'the shared shader cache does not note a late build');
 ok(/shared_shader\(dmg, "damage " \+ str\(dmg\.hash\(\)\)\)/.test(hull), 'the hull damage helper does not name its shader');
-ok(/HULL\.note_late\("death debris body"\)/.test(death), 'the death debris shader is not named');
+ok(/DEBRIS_BODY := preload\("res:\/\/shaders\/death_debris\.gdshader"\)/.test(death) && /m\.shader = DEBRIS_BODY/.test(death),
+  'the death debris material does not use the preloaded shader');
 ok(/fx\.mat\(SH\.DEATH_FLIPBOOK, 2, .*"flipbook " \+ band \+ "\/" \+ kind\)/.test(death), 'the death flipbook helper does not name its shader');
 ok(/fx\.mat\(code, 2, .*"route " \+ rel\)/.test(death), 'the death route helper does not name its shader');
 

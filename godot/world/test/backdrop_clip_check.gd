@@ -11,11 +11,12 @@ extends SceneTree
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const WORLD := preload("res://world/world.gd")
+const ROCKS := preload("res://world/world_rocks.gd")
 const SKY := preload("res://world/world_sky.gd")
 const RIG := preload("res://render/camera_rig.gd")
 
 class StubBaker extends Node:
-	func bake(_key, _code, _params, _size, _n) -> Image:
+	func bake(_key, _code, _params, _size, _n, _height := false, _urgent := false, _color := false) -> Image:
 		return null
 
 var failures := 0
@@ -116,10 +117,9 @@ func _run() -> void:
 	_check(worst > 0.5, "the far check saw no backdrop (deepest %.2f of far)" % worst)
 
 	# 2. near fade
-	var src: String = FileAccess.get_file_as_string("res://world/world_rocks.gd")
-	# every rock shader in the file (one since Ryan scrapped the crystal clusters, issue 1361)
+	var src: String = ROCKS.ROCK_SHADER.code
 	var shaders := src.count("shader_type spatial")
-	_check(shaders >= 1, "world_rocks.gd holds no rock shader")
+	_check(shaders == 1, "the asteroid resource must be a spatial shader")
 	var fades := src.count("camera_cover = smoothstep(cam_near + 1.5, cam_near + 1.5 + max(1.0, radius * 0.25), min(clearance, depth_clear));")
 	_check(fades == shaders, "every rock shader must fade from the live near plane (found %d of %d)" % [fades, shaders])
 	_check(src.count("global uniform float cam_near;") == shaders, "every rock shader must read the cam_near global")

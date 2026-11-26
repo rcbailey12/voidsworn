@@ -101,6 +101,26 @@ func _look_fog() -> void:
 	look.world.add_child(hull)
 	await process_frame
 	_check(mat.disable_fog, "the look bench applies the battle hull fog policy")
+	BL.set_look("holo", false)
+	look.wld.set_look()
+	_check(not look.env.volumetric_fog_enabled, "hidden storm volumes stop volumetric fog")
+	BL.set_look("cine", false)
+	look.wld.set_look()
+	_check(look.env.volumetric_fog_enabled, "showing storm terrain restores its fog")
+	for tier in ["high", "low"]:
+		look.wld.quality = tier
+		look.wld.set_look()
+		_check(not look.env.volumetric_fog_enabled, "%s never enables volumetric fog, even with visible volumes" % tier)
+	look.wld.quality = "max"
+	var prior_route := OS.get_environment("VS_NEBULA_ROUTE")
+	OS.set_environment("VS_NEBULA_ROUTE", "today")
+	look.wld.set_look()
+	_check(not look.env.volumetric_fog_enabled, "the Today route never enables volumetric fog, even with visible volumes")
+	if prior_route.is_empty(): OS.unset_environment("VS_NEBULA_ROUTE")
+	else: OS.set_environment("VS_NEBULA_ROUTE", prior_route)
+	await look._world(LookBench.SKIES[-1][1], {}, [{"q": 0, "r": 0}])
+	_check(not look.env.volumetric_fog_enabled and look.wld.find_children("*", "FogVolume", true, false).is_empty(),
+		"a clear world clears the fog pass after a storm")
 	look.free()
 
 

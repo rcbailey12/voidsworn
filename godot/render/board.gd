@@ -1,7 +1,5 @@
 extends Node3D
 const SV := preload("res://render/ship_view.gd")   # issue 1434: retire_build collects a terrain load left running
-const SKEEP := preload("res://render/shader_keep.gd")
-const STAGE_IN := preload("res://render/stage_in.gd")
 # The hex board at the game's scale: pointy-top hexes of corner radius 10 (HEX_S), laid out as scene3d.js hexWorld does,
 # with the world's z mirrored for Godot. One MultiMesh for the hex fills and one for the outlines (two draws for the
 # whole board); overlays (move range, targets, hover, zones) only change instance colours.
@@ -15,7 +13,6 @@ const BattleLook := preload("res://render/look.gd")
 const BV := preload("res://world/blocker_visuals.gd")
 const PL := preload("res://world/world_planet.gd")   # issue 1765: the board planet's surfaces
 const LS := preload("res://render/line_style.gd")   # issue 1374 (R362): the one line style (width, glow, fade, role colours)
-const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const HS := 10.0
 var HW := HS * sqrt(3.0)
 # The one scale table's board-side sizes (issue 710, R247; docs/playbooks/scale.md). All in world units, HEX_S = 10.
@@ -65,163 +62,10 @@ var title_backdrop := false   # issue 1434: set by the battle for the title menu
 
 # The board plane passes through the lower half of tall hulls. Depth-test alone
 # cannot protect those pixels, so mask opaque ship/terrain surfaces near the board.
-const HULL_MASK := """
-uniform sampler2D board_depth : hint_depth_texture, filter_nearest, repeat_disable;
-void under_hulls(vec2 screen_uv, mat4 inv_projection, mat4 inv_view) {
-	float z = texture(board_depth, screen_uv).r;
-	if (z <= 0.000001) { return; }
-	vec4 p = inv_projection * vec4(screen_uv * 2.0 - 1.0, z, 1.0);
-	vec3 world = (inv_view * vec4(p.xyz / p.w, 1.0)).xyz;
-	if (world.y > -20.0) { discard; }
-}
-"""
 
-const FILL_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + HULL_MASK + LS.GLSL + """
-varying vec4 vcol;
-varying vec2 vp;
-varying float style;
-varying float band;
-varying vec2 wpos;
-// Ryan (Nov 20, issue 1359 thread, picked "Only with Z"): the reach hatching covered the whole board and read as random
-// far-off grid lines. hatch_hidden 1 (the normal view) draws none; Z and the other looks keep it board-wide.
-uniform float hatch_hidden = 0.0;
-uniform float cut_overlay_alpha = 1.0;
-void vertex() { vcol = COLOR; vp = VERTEX.xz; style = INSTANCE_CUSTOM.r; band = INSTANCE_CUSTOM.g; wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xz; }
-void fragment() {
-	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
-	// soft inner falloff so a lit hex reads as a glow, not a flat plate
-	float r = length(vp) / 10.0;
-	float k = mix(0.75, 1.0, smoothstep(0.2, 0.95, r));
-	vec3 c = vcol.rgb;
-	float a = vcol.a * k;
-	if (style > 0.5) {
-		// F1: a hex the ship can move to. Terrain tints are flat; a reach hex has a lit inner edge and breathes slowly,
-		// so it never reads as terrain (style 2: the hovered or planned hex, brighter and steady)
-		vec2 q = abs(vp);
-		float d = max(q.x, 0.5 * q.x + 0.8660254 * q.y) / 8.53;
-		float hot = style > 1.5 ? 1.0 : 0.0;
-		// Every board look: a narrow lit edge and barely tinted space, no scanning blue plate. Issue 1374: the edge is the
-		// shared line (render/line_style.gd), a core just inside the hex edge and its glow band inward
-		float e = (1.0 - d) * 8.53 - 0.12;
-		float rim = ls_line(e, max(fwidth(e), 0.0001), 1.0);
-		a = mix(0.012, 0.032, hot) + rim * mix(0.24, 0.5, hot);
-		c = mix(LS_MOVE_RIM, LS_MOVE_RIM_HOT, hot);
-	}
-	if (band > 0.5) {
-		// #271 reach hatching, in the threat colour (bone, issue 271 step 2: not red, which is the Nemesis alarm, and not
-		// lavender or purple, an AI tell on Ryan's list, R174): how many enemies can bring guns on this hex next turn,
-		// carried by the pattern as well as the colour (ui_spec.md 5.2): sparse lines for 1, closer for 2, crossed for 3+.
-		// Drawn in board space so the lines run on across hexes.
-		// line width: about one pixel at any zoom (screen-space), never thicker than a tenth of the gap between lines
-		// R148 (calmer, as the mockup): about three lines across a hex for 1, four for 2 and 3+, and light
-		float per = band > 1.5 ? 5.7 : 8.5;
-		float d1 = abs(fract((wpos.x + wpos.y) / per) - 0.5) * per;
-		float w1 = fwidth(wpos.x + wpos.y);
-		float hw1 = min(0.55 * w1, 0.1 * per);
-		float l = 1.0 - smoothstep(hw1, hw1 + w1, d1);
-		if (band > 2.5) {
-			float d2 = abs(fract((wpos.x - wpos.y) / per) - 0.5) * per;
-			float w2 = fwidth(wpos.x - wpos.y);
-			float hw2 = min(0.55 * w2, 0.1 * per);
-			l = max(l, 1.0 - smoothstep(hw2, hw2 + w2, d2));
-		}
-		// alphas are blended in linear light, so a small number already reads clearly on the dark board (0.03 shows
-		// about as bright as 0.2 would in screen colour)
-		float h = l * (band > 2.5 ? 0.034 : (band > 1.5 ? 0.028 : 0.022));
-		h *= 1.0 - hatch_hidden;
-		float A = h + a * (1.0 - h);
-		c = (LS_THREAT * h + c * a * (1.0 - h)) / max(A, 0.0001);
-		a = A;
-	}
-	ALBEDO = c;
-	ALPHA = clamp(a, 0.0, 1.0) * cut_overlay_alpha;
-}
-"""
-const RING_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-// F1: the plain grid (style 0) fades with distance from the ship that is up, so the board is quiet away from the action
-// board look trial: mode 0 today, 1 holo (corner ticks and faint edges near the ship that is up and the cursor, nothing
-// far away), 2 ghost (only round the cursor), 3 tactical (the whole grid, even)
-uniform int mode = 0;
-uniform vec3 focus = vec3(0.0);
-uniform vec3 cursor = vec3(100000.0);
-uniform float cut_overlay_alpha = 1.0;
-uniform float near_r = 70.0;
-uniform float far_r = 190.0;
-// the gravity well: xyz its centre, w how deep the holo grid dips toward it (0: flat)
-uniform vec4 well = vec4(0.0);
-""" + HULL_MASK + LS.GLSL + """
-varying vec4 vcol;
-varying float style;
-varying vec3 wp;
-varying vec2 vuv;
-varying float thin;
-void vertex() {
-	vcol = COLOR;
-	style = INSTANCE_CUSTOM.r;
-	vuv = UV;
-	// step 2: a line never thinner than the shared pixel floor (render/line_style.gd, issue 1374), so the tactical grid
-	// stays whole and crisp when zoomed out (it broke up into dashes); the inner edge (UV.y 1) moves in toward the hex
-	// centre, and the line dims to match (the shared fade law)
-	thin = 1.0;
-	if (UV.y > 0.5) {
-		vec3 wv = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-		float dist = length((VIEW_MATRIX * vec4(wv, 1.0)).xyz);
-		float px = 2.0 * dist / (PROJECTION_MATRIX[1][1] * VIEWPORT_SIZE.y);
-		float w = ls_core_w(px);
-		vec2 dir = normalize(VERTEX.xz);
-		VERTEX.xz -= dir * (w - LS_CORE_W) * 1.1547;
-		thin = ls_dim(w);
-	}
-	wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	if (well.w > 0.0 && style < 0.5) {
-		float d = distance(wp.xz, well.xz);
-		float f = 1.0 - smoothstep(10.0, 105.0, d);
-		float dy = -well.w * f * f;
-		VERTEX.y += dy;
-		wp.y += dy;
-	}
-}
-void fragment() {
-	float k = 1.0;
-	if (style < 0.5) {
-		if (mode == 0) {
-			k = 1.0 - smoothstep(near_r, far_r, distance(wp.xz, focus.xz));
-		} else if (mode == 1) {
-			// Look C lights the action, not the whole camera view. Panning or
-			// zooming out should not make distant hexes light up again.
-			float kf = 1.0 - smoothstep(28.0, 118.0, distance(wp.xz, focus.xz));
-			float kc = 1.0 - smoothstep(12.0, 52.0, distance(wp.xz, cursor.xz));
-			float e = min(vuv.x, 1.0 - vuv.x);
-			float tick = 1.0 - smoothstep(0.07, 0.2, e);
-			k = max(kf, 0.85 * kc) * mix(0.3, 1.0, tick);
-			k *= 1.0 + 0.9 * smoothstep(0.95, 1.0, sin(dot(wp.xz, vec2(0.018, 0.03)) - TIME * 0.9));
-		} else if (mode == 2) {
-			k = (1.0 - smoothstep(9.0, 30.0, distance(wp.xz, cursor.xz))) * 0.9;
-		}
-		if (k <= 0.0) { discard; }
-	}
-	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
-	ALBEDO = vcol.rgb * vcol.a * k * thin * cut_overlay_alpha;
-	ALPHA = 1.0; // Draw after opaque hulls, with depth testing, just like the fill.
-}
-"""
-const OUTLINE_SHADER := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + HULL_MASK + """
-varying vec4 vcol;
-void vertex() { vcol = COLOR; }
-void fragment() {
-	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
-	ALBEDO = vcol.rgb * vcol.a;
-	ALPHA = 1.0;
-}
-"""
+const FILL_SHADER := preload("res://shaders/board_fill.gdshader")
+const RING_SHADER := preload("res://shaders/board_ring.gdshader")
+const OUTLINE_SHADER := preload("res://shaders/board_outline.gdshader")
 # board look trial: the edge round each patch of terrain (nebula, storm, debris, rock, zones, the well's rim and pull);
 # issue 1374: the shared line shader (render/line_style.gd), its slow shimmer on (LS.material(true))
 const EDGE_SHADER := LS.SHADER
@@ -297,7 +141,7 @@ func build(rules, slice := false) -> void:
 	outline = MeshInstance3D.new()
 	outline.name = "ReachOutline"
 	var om := ShaderMaterial.new()
-	om.shader = SHADER_CACHE.for_code(OUTLINE_SHADER)
+	om.shader = OUTLINE_SHADER
 	outline.material_override = om
 	outline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(outline)
@@ -472,7 +316,7 @@ func bounds() -> Vector2:
 	return m + Vector2(HS, HS)
 
 
-func _mm(mesh: Mesh, code: String) -> MultiMeshInstance3D:
+func _mm(mesh: Mesh, shader: Shader) -> MultiMeshInstance3D:
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.use_colors = true
@@ -484,7 +328,7 @@ func _mm(mesh: Mesh, code: String) -> MultiMeshInstance3D:
 	var mi := MultiMeshInstance3D.new()
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
-	m.shader = SHADER_CACHE.for_code(code)
+	m.shader = shader
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mi)

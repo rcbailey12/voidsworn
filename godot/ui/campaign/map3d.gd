@@ -349,7 +349,7 @@ func _dead_hull(parent: Node3D, length: float, split: bool = false, fac: String 
 		var hull = _hull(fac, cls, length)
 		if hull == null: continue
 		body.add_child(hull); hull.position.x = half * gap
-		var shader = Shader.new(); shader.code = System.SH.dead_hull(split)
+		var shader: Shader = System.SH.WRECK_SPLIT if split else System.SH.HULL
 		var material = ShaderMaterial.new(); material.shader = shader
 		var graveyard = sys.region == "boneyard"
 		var base = Color(0.4, 0.39, 0.37) if fac == "hegemony" else Color(0.36, 0.3, 0.25)
@@ -410,10 +410,10 @@ func _build_region() -> void:
 			# The contested planet uses the shared procedural surface with visible night settlements.
 			planet.get_node("spin").material_override = sys.mat("PLANET", {"a": Color(0.25, 0.3, 0.23), "b": Color(0.045, 0.09, 0.16), "atmo": Color(0.25, 0.38, 0.52), "kind": 1.0, "seed": 17.0, "sun_pos": sys.sun_pos, "night": 0.12})
 			var surface = planet.get_node("spin").material_override
-			var shader = Shader.new(); shader.code = System.SH.briefing_world()
+			var shader: Shader = System.SH.BRIEFING_WORLD
 			surface.shader = shader
 			for cloud in planet.get_node("spin").get_children():
-				var cloud_shader = Shader.new(); cloud_shader.code = System.SH.CLOUDS.replace("vec3(0.95)", "vec3(0.22, 0.25, 0.28)")
+				var cloud_shader: Shader = System.SH.BRIEFING_CLOUDS
 				cloud.material_override.shader = cloud_shader
 			for i in 3:
 				var station = props.station(landmark, grey, lamp); station.scale = Vector3.ONE * 0.36

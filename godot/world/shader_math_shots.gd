@@ -85,7 +85,7 @@ func _run() -> void:
 	var env := Environment.new()
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	sh.code = SKY.SKY
+	sh.code = SKY.SKY.code
 	m.shader = sh
 	m.set_shader_parameter("lamp", PackedVector4Array(lamps))
 	m.set_shader_parameter("seed", float(int(st["seed"]) % 997))
@@ -133,7 +133,7 @@ func _run() -> void:
 	sm.rings = 96
 	mi.mesh = sm
 	scene.add_child(mi)
-	var looks := {"game": PL.SPHERE, "relief": PL.SPHERE.replace("alb *= tint;", "alb = vec3(0.6);")}
+	var looks := {"game": PL.SPHERE.code, "relief": PL.SPHERE.code.replace("alb *= tint;", "alb = vec3(0.6);")}
 	for look in looks:
 		var pm := ShaderMaterial.new()
 		var psh := Shader.new()

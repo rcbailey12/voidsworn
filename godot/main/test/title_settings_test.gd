@@ -25,12 +25,20 @@ func _run() -> void:
 	# Issue 1079 (Artoo on PR 1330): a settings file saved by the off-by-default build carries "nebula_wake": false;
 	# loading it must leave the wake on and drop the old key.
 	var old := FileAccess.open(Main.SETTINGS_PATH, FileAccess.WRITE)
-	old.store_string('{"quality":"max","nebula_wake":false}')
+	old.store_string('{"quality":"max","nebula_wake":false,"taa":true}')
 	old.close()
 	var mig := TestMain.new()
 	mig._load_settings()
 	if mig.settings.has("nebula_wake") or not bool(mig.settings.get("nebula_wake_on", false)):
 		printerr("FAIL: an old saved nebula_wake false kept the wake off (%s)" % [mig.settings])
+		quit(1)
+		return
+	if mig.settings.get("battle_aa") != "taa":
+		printerr("FAIL: an old Temporal AA preference did not carry over to Battle AA")
+		quit(1)
+		return
+	if bool(mig.settings.get("world_bc7", true)):
+		printerr("FAIL: an old profile enabled BC7 by default")
 		quit(1)
 		return
 	mig.free()

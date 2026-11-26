@@ -49,7 +49,6 @@ const HT := preload("res://render/hull_table.gd")
 const LOOK := preload("res://render/look.gd")
 const CAMRIG := preload("res://render/camera_rig.gd")
 const BL := preload("res://world/board_look.gd")
-const LIVING := preload("res://world/world_living.gd")
 const WORLD_PATH := "res://world/world.gd"
 const MOMENTS := "res://bench/look_moments.json"
 const HEX_S := 10.0
@@ -308,7 +307,6 @@ func _setup_view() -> void:
 	cam.input_enabled = false
 	cam.keyboard_enabled = false
 	cam.current = true
-	LIVING.apply_fog(world, env, cam.r, "max")
 	_make_fx()
 
 

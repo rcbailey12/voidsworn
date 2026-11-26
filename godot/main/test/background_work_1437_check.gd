@@ -97,6 +97,18 @@ func _run() -> void:
 	BATTLE.apply_quality_to(vp, "low", true)
 	BATTLE.apply_quality_to(vp, "high", true)
 	_check(vp.screen_space_aa == Viewport.SCREEN_SPACE_AA_DISABLED and vp.use_taa, "2: Low then High: FXAA off, the player's TAA back on")
+	for mode in ["fsr2_native", "fsr2_quality"]:
+		BATTLE.apply_quality_to(vp, "max", true, mode, 0.7)
+		if RenderingServer.get_current_rendering_method() == "forward_plus":
+			var scale := 1.0 if mode == "fsr2_native" else 0.8
+			_check(vp.scaling_3d_mode == Viewport.SCALING_3D_MODE_FSR2 and is_equal_approx(vp.scaling_3d_scale, scale)
+				and vp.msaa_3d == Viewport.MSAA_DISABLED and not vp.use_taa, "2: FSR2 owns AA and uses its fixed scale in " + mode)
+		else:
+			_check(vp.scaling_3d_mode == Viewport.SCALING_3D_MODE_FSR and vp.msaa_3d == Viewport.MSAA_4X,
+				"2: unsupported FSR2 falls back to the player's existing render scale and AA")
+	BATTLE.apply_quality_to(vp, "max", true, "default", 0.85)
+	_check(vp.msaa_3d == Viewport.MSAA_4X and vp.use_taa and is_equal_approx(vp.scaling_3d_scale, 0.85),
+		"2: Default restores the chosen render scale and the legacy AA settings")
 	vp.free()
 	# 3. shadow splits
 	var env := Environment.new()
@@ -138,6 +150,8 @@ func _run() -> void:
 		# earlier check saved
 		for k in ["render_scale", "fps_cap", "vsync", "quality", "taa"]:
 			tm.settings[k] = {"render_scale": 1.0, "fps_cap": 0.0, "vsync": true, "quality": "max", "taa": false}[k]
+		tm.settings["battle_aa"] = "default"
+		tm.settings["world_bc7"] = false
 		tm.show_title()
 		tm.title._settings()
 		for i in 3: await process_frame
@@ -155,18 +169,32 @@ func _run() -> void:
 			back._load_settings()
 			_check(is_equal_approx(float(back.settings["render_scale"]), 0.85) and is_equal_approx(float(back.settings["fps_cap"]), 60.0) and not bool(back.settings["vsync"]), "6: the three survive a restart (%s, %s, %s)" % [back.settings["render_scale"], back.settings["fps_cap"], back.settings["vsync"]])
 			back.free()
-		var have_q: bool = rows.has("quality") and rows.has("taa")
+		var have_q: bool = rows.has("quality") and rows.has("battle_aa")
+		_check(rows.has("world_bc7") and rows["world_bc7"].text == "Off", "6: World texture compression starts Off")
+		if rows.has("world_bc7"):
+			rows["world_bc7"].pressed.emit()
+			var compressed_profile := MAIN.new()
+			compressed_profile._load_settings()
+			_check(rows["world_bc7"].text == "BC7" and compressed_profile.settings.get("world_bc7") == true,
+				"6: BC7 is opt-in and survives a restart")
+			compressed_profile.free()
+			rows["world_bc7"].pressed.emit()
 		if have_q:
 			tm.armed = true
 			tm.starts = 0
 			rows["quality"].pressed.emit()   # Max to High
 			tm.fire()
 			var one: int = tm.starts
-			rows["taa"].pressed.emit()
+			rows["battle_aa"].pressed.emit()
 			tm.fire()
 			var two: int = tm.starts
+			_check(rows["battle_aa"].text == "Temporal AA" and tm.settings["taa"], "6: Default can still switch to Temporal AA")
 			rows["quality"].pressed.emit()   # High to Low
-			rows["taa"].pressed.emit()
+			rows["battle_aa"].pressed.emit()
+			var back := MAIN.new()
+			back._load_settings()
+			_check(back.settings.get("battle_aa") == "fsr2_native", "6: FSR2 Native AA survives a restart")
+			back.free()
 			rows["quality"].pressed.emit()   # quickly: back to Max ...
 			rows["quality"].pressed.emit()   # ... and on to High
 			rows["quality"].pressed.emit()   # ... then Low, before any rebuild is due
@@ -177,7 +205,7 @@ func _run() -> void:
 			_check(one == 1 and two == 2, "6: a new Graphics or TAA setting rebuilds the battle behind the menu (%d, %d)" % [one, two])
 			_check(low_starts == 0 and str(tm.settings["quality"]) == "max" and tm.starts == two + 1, "6: a quick switch to Low cancels every pending rebuild; Max again builds one (%d during Low, %d after)" % [low_starts, tm.starts - two])
 		else:
-			_check(false, "6: the Graphics and TAA rows are on the panel")
+			_check(false, "6: the Graphics and Battle AA rows are on the panel")
 		tm.free()
 		var sv := SubViewport.new()
 		MAIN.apply_render_scale(sv, 0.7)
