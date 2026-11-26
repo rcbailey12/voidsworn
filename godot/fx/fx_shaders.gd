@@ -1227,18 +1227,16 @@ const RING_HARMONIC := 6   # crystalline pulse (5 reserved for the death front)
 # Ribbons along a straight line: plumes, beams, arcs. VERTEX = (s along 0..1, side -0.5..0.5).
 # a0 = (origin, kind); a1 = (dir, length); a2 = (colour, intensity); a3 = (width0, width1, seed, 0);
 # a4 = (tStart, life, period, 0)
-# Kinds 0 and 3 are engine plumes. The weapon beams share a separate fragment recipe.
+# Kinds 0/1/3/6/9 are the legacy plume, trail, spark and lash. The weapon beams share a separate fragment recipe.
 const RIB_LANCE := 2
 const RIB_ION := 5
 const RIB_PULSAR := 7
 const RIB_NEEDLE := 8
 const RIB_NULL_LANCE := 11
-const RIB_DEATH_BEAM := 12
 const RIBBON := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 """ + COMMON + """
-const int RIB_DEATH_BEAM = 12;
 uniform float gate = 1.0;
 uniform sampler2D kit_flow : filter_linear, repeat_enable;
 #ifdef NULL_LANCE
@@ -1275,7 +1273,6 @@ void vertex() {
 		vec3 dir = snorm(a1.xyz);
 		float seed = a3.z;
 		float L = a1.w * (k == 0 || k == 3 ? lenk : 1.0);
-		bool narrow_ribbon = k == 0 || k == 3 || k == RIB_DEATH_BEAM;
 		if (k == 9) { L *= smoothstep(0.0, 0.25, age) * (1.0 - smoothstep(a4.y - 0.25, a4.y, age)); }
 		vec3 p = a0.xyz + dir * s * L;
 		vec3 up = abs(dir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
@@ -1284,7 +1281,7 @@ void vertex() {
 		if (k == 1) {
 			p += (n1 * sin(s * 7.0 - scene_t * 1.3 + seed * 6.0) * 0.9 + n2 * sin(s * 5.0 - scene_t * 0.9 + seed * 3.0) * 0.7) * s * s * 2.2;
 		}
-		if (narrow_ribbon) {
+		if (k == 0 || k == 3) {
 			p += (n1 * (vnoise(vec2(s * 6.0 - scene_t * 18.0, seed)) - 0.5) + n2 * (vnoise(vec2(s * 6.0 - scene_t * 17.0, seed + 3.0)) - 0.5)) * s * a3.x * 0.5;
 		}
 		if (k == 6) {
@@ -1310,7 +1307,7 @@ void vertex() {
 		// Screen-resolved hot core and sheath, including at camera 170.
 		// Fragment widths below are FWHM in render-target pixels.
 		// Doom's wider quad is room for forks, not a wider white trunk.
-		float rf = k == 6 ? 64.0 : (k == 8 ? 12.0 : (k == 1 ? 10.0 : (narrow_ribbon ? 12.0 : 16.0)));
+		float rf = k == 6 ? 64.0 : (k == 8 ? 12.0 : (k == 1 ? 10.0 : ((k == 0 || k == 3) ? 12.0 : 16.0)));
 		if (layered_beam(k)) {
 			// Padding is independent of the hot width: the thin core does not grow just to make room for its edges.
 			rf = k == 5 ? 56.0 : (k == 8 ? 26.0 : (k == 7 ? 38.0 : 60.0));
@@ -1438,10 +1435,11 @@ void fragment() {
 		float motion = 0.75 + 0.5 * fast;
 		float fork_hot = 0.0; float fork_glow = 0.0;
 		vec3 colour = vec3(0.0);
-		bool custom_plume = k == 0 || k == 3;
-		if (custom_plume) {
+		bool custom_plume = false;
+		if (k == 0 || k == 3) {
 			// Issue 2042 item 3: layered main engine plume (bright core + Mach shimmer + turbulent mid + soft outer wash)
 			// with smooth nozzle-bell entry (no flat square edge at c60/c26) and faction palettes from faction_looks.json.
+			custom_plume = true;
 			int pstyle = int(plume_style + 0.5);
 			float tk = clamp(throttle_k, 0.15, 1.5);
 			float bell_in = smoothstep(0.0, 0.06 + x * 0.16, s);
@@ -1471,13 +1469,6 @@ void fragment() {
 			float sputter = k == 3 ? mix(cough(scene_t - s * 0.2, seed), 0.8, fx_calm) : 1.0;
 			float plume_end = 1.0 - smoothstep(0.72, 1.0, s);
 			colour = (core_col * inner_core * 1.65 + tint * mid_stream * (0.75 + 0.45 * flow_fast) + wash_col * outer_wash * 0.95) * sputter * plume_end;
-		} else if (k == RIB_DEATH_BEAM) {
-			// Keep the tether and shafts on the pre-2042 core and sheath, with their lifetime fade.
-			float turbulence = fbm(vec2(s * 9.0 - age * 8.0, vSide * 3.0 + seed));
-			float shape = spow(1.0 - s, 1.25) * smoothstep(0.22, 0.65, turbulence + 0.2);
-			core *= shape * (0.8 + 0.3 * sin(s * 29.0 - age * 9.0));
-			sheath *= shape;
-			ends = 1.0 - smoothstep(0.72, 1.0, s);
 		} else if (k == 1) {
 			float fade = spow(1.0 - s, 1.5);
 			core *= fade * 0.4;

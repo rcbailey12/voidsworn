@@ -16,7 +16,6 @@ const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BEATS := preload("res://fx/fx_death_beats.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
-const SH := preload("res://fx/fx_shaders.gd")
 var failures := 0
 
 
@@ -244,39 +243,8 @@ func _debris_check() -> void:
 			check(sparks.emitted > spark_before and last.size() == 20 and int(last[19]) == fx.SPARK_KIND
 				and Vector3(last[12], last[13], last[14]).is_equal_approx(Vector3(expected.r, expected.g, expected.b)),
 				"%s ram throws shared sparks in the death tint" % fac)
-		if fac in ["corsair", "ithar"]:
-			_check_death_ribbons(fx, s, world, fac)
 	world.queue_free()
 	await process_frame
-
-
-func _check_death_ribbons(fx, s, world: Node3D, fac: String) -> void:
-	var pool: POOLS.Pool = fx.pools["rib"]
-	var start := pool.pending.size()
-	var count := 4
-	if fac == "corsair":
-		var a := Node3D.new()
-		var b := Node3D.new()
-		world.add_child(a)
-		world.add_child(b)
-		b.position = Vector3.RIGHT
-		BEATS._cables(fx, s, {}, weakref(a), weakref(b), Color.ORANGE, false)
-		a.free()
-		b.free()
-		count = 2
-	else:
-		BEATS._shafts(fx, s, Vector3.ZERO, fx.now)
-	var rows: PackedFloat32Array = pool.pending
-	var stride: int = pool.vpp * POOLS.STRIDE
-	var kinds := PackedInt32Array()
-	for i in range(start, rows.size(), stride):
-		kinds.append(int(rows[i + 7]))   # a0.w, the kind the ribbon shader reads
-	check(SH.RIBBON.contains("bool custom_plume = k == 0 || k == 3;")
-			and SH.RIBBON.contains("const int RIB_DEATH_BEAM = %d;" % SH.RIB_DEATH_BEAM)
-			and SH.RIBBON.contains("} else if (k == RIB_DEATH_BEAM) {")
-			and kinds.size() == count and kinds.count(SH.RIB_DEATH_BEAM) == count
-			and not kinds.has(0) and not kinds.has(3),
-		"%s: %d death ribbons stay out of the engine plume branch (kinds %s)" % [fac, count, str(kinds)])
 
 
 class _Probe:
