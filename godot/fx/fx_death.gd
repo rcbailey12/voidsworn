@@ -33,6 +33,7 @@ const WRECK_PHYS_S := 4.0
 const DEBRIS_WOKEN_S := 1.5   # a plate a wreck section knocks awake is at rest again this long after
 const DEBRIS_VARIANTS := 4
 const WRECK_COOL := 14.0
+const HULK_VENT_TICK := 0.1
 const SEAM_COOL := 3.0        # effect-clock seconds from each section's release, not from the killing blow
 const CAP_METAL := 0
 const CAP_GLASS := 1
@@ -454,57 +455,68 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 	return mi
 
 
-# Two bounded GPU emitters. Each particle is born in world space, with zero drag,
-# zero acceleration and a cone centred on the sampled thermal-tear normal.
+# The thermal tear throws shared sparks off its normal. The GPU emitter below is only gas.
 static func tear_particles(fx, p: Vector3, n: Vector3, L: float, inherited: Vector3, sparks_only := false, src = null) -> void:
-	if fx.quality == "low" or DisplayServer.get_name() == "headless": return
-	for sparks in ([true] if sparks_only else [false, true]):
-		var emitter := GPUParticles3D.new()
-		emitter.name = "fx_tear_sparks" if sparks else "fx_vent_cone"
-		emitter.amount = 32 if sparks else 12
-		emitter.lifetime = 0.65 if sparks else 0.45
-		emitter.one_shot = true
-		emitter.explosiveness = 0.95
-		emitter.local_coords = false
-		emitter.visibility_aabb = AABB(Vector3.ONE * -L, Vector3.ONE * L * 2.0)
-		var proc: ShaderMaterial = fx.mat(SH.DEATH_PARTICLES)
-		proc.set_shader_parameter("axis", n)
-		proc.set_shader_parameter("seed_value", fx.rng.randf() * 100.0)
-		proc.set_shader_parameter("inherited", inherited)
-		proc.set_shader_parameter("spread", 0.38 if sparks else 0.20)
-		proc.set_shader_parameter("speed", L * (0.6 if sparks else 0.25))
-		proc.set_shader_parameter("size", L * (0.003 if sparks else 0.009))
-		var spk := dcol(src, "spark", Color(0.93, 0.63, 0.26))
-		proc.set_shader_parameter("tint", Color(spk.r, spk.g, spk.b, 0.9) if sparks else Color(0.53, 0.46, 0.64, 0.2 * clampf(dsmoke(src), 0.0, 1.0)))
-		emitter.process_material = proc
-		# R367: a styled faction's sparks draw on a neutral quad, so its own colour is not warmed by today's albedo
-		var styled := not dstyle(src).is_empty()
-		var mesh_key: String = ("death_spark_mesh" if sparks else "death_cone_mesh") + ("_styled" if styled else "")
-		if not fx.dstate.has(mesh_key):
-			var mesh := QuadMesh.new(); mesh.size = Vector2(0.28, 1.2) if sparks else Vector2.ONE
-			var mat := StandardMaterial3D.new()
-			mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-			mat.disable_fog = true   # issue 1558 item 3: a nebula never dulls a blast (effects.md section 1)
-			mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-			mat.vertex_color_use_as_albedo = true
-			mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
-			if not fx.dstate.has("tear_falloff"):
-				var gradient := Gradient.new()
-				gradient.set_color(0, Color(0.95, 0.95, 0.95, 0.95))
-				gradient.set_color(1, Color(0.95, 0.95, 0.95, 0.0))
-				var texture := GradientTexture2D.new()
-				texture.gradient = gradient
-				texture.fill = GradientTexture2D.FILL_RADIAL
-				texture.fill_from = Vector2(0.5, 0.5)
-				texture.fill_to = Vector2(0.5, 1.0)
-				fx.dstate["tear_falloff"] = texture
-			mat.albedo_texture = fx.dstate["tear_falloff"]
-			mat.albedo_color = Color(0.9, 0.9, 0.9) if styled and sparks else Color(0.45, 0.45, 0.45, 0.3) if styled else Color(0.9, 0.75, 0.48) if sparks else Color(0.4, 0.34, 0.5, 0.3)
-			mesh.material = mat
-			fx.dstate[mesh_key] = mesh
-		emitter.draw_pass_1 = fx.dstate[mesh_key]
-		fx.add_child(emitter); emitter.global_position = p
-		fx.later(fx.now + 0.9, fx.free_effect.bind(weakref(emitter)))
+	if fx.quality == "low":
+		return
+	var faction: String = src.faction if src != null else "voidsworn"
+	# Separate seeded stream, so the visual scatter does not move subsequent death beats.
+	var r := RandomNumberGenerator.new()
+	r.seed = hash(Vector4(p.x, p.y, p.z, fx.now))
+	var tangent := n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
+	var bitangent := n.cross(tangent)
+	for j in (32 if fx.quality == "max" else 16):
+		var ang := r.randf() * TAU
+		var spread := r.randf_range(0.0, 0.38)
+		var d := (n + (tangent * cos(ang) + bitangent * sin(ang)) * spread).normalized()
+		fx.spark(p, fx.now + r.randf_range(0.0, 0.04), r.randf_range(0.36, 0.65), faction, 2.6, 0.045,
+			L * 0.003, inherited + d * L * r.randf_range(0.36, 0.60), 0.6, 0.0, 0.0, fx.SparkRole.DEATH)
+	if sparks_only or DisplayServer.get_name() == "headless":
+		return
+	var emitter := GPUParticles3D.new()
+	emitter.name = "fx_vent_cone"
+	emitter.amount = 12
+	emitter.lifetime = 0.45
+	emitter.one_shot = true
+	emitter.explosiveness = 0.95
+	emitter.local_coords = false
+	emitter.visibility_aabb = AABB(Vector3.ONE * -L, Vector3.ONE * L * 2.0)
+	var proc: ShaderMaterial = fx.mat(SH.DEATH_PARTICLES)
+	proc.set_shader_parameter("axis", n)
+	proc.set_shader_parameter("seed_value", fx.rng.randf() * 100.0)
+	proc.set_shader_parameter("inherited", inherited)
+	proc.set_shader_parameter("spread", 0.20)
+	proc.set_shader_parameter("speed", L * 0.25)
+	proc.set_shader_parameter("size", L * 0.009)
+	proc.set_shader_parameter("tint", Color(0.53, 0.46, 0.64, 0.2 * clampf(dsmoke(src), 0.0, 1.0)))
+	emitter.process_material = proc
+	var styled := not dstyle(src).is_empty()
+	var mesh_key: String = "death_cone_mesh" + ("_styled" if styled else "")
+	if not fx.dstate.has(mesh_key):
+		var mesh := QuadMesh.new(); mesh.size = Vector2.ONE
+		var mat := StandardMaterial3D.new()
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		mat.disable_fog = true   # issue 1558 item 3: a nebula never dulls a blast (effects.md section 1)
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.vertex_color_use_as_albedo = true
+		mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+		if not fx.dstate.has("tear_falloff"):
+			var gradient := Gradient.new()
+			gradient.set_color(0, Color(0.95, 0.95, 0.95, 0.95))
+			gradient.set_color(1, Color(0.95, 0.95, 0.95, 0.0))
+			var texture := GradientTexture2D.new()
+			texture.gradient = gradient
+			texture.fill = GradientTexture2D.FILL_RADIAL
+			texture.fill_from = Vector2(0.5, 0.5)
+			texture.fill_to = Vector2(0.5, 1.0)
+			fx.dstate["tear_falloff"] = texture
+		mat.albedo_texture = fx.dstate["tear_falloff"]
+		mat.albedo_color = Color(0.45, 0.45, 0.45, 0.3) if styled else Color(0.4, 0.34, 0.5, 0.3)
+		mesh.material = mat
+		fx.dstate[mesh_key] = mesh
+	emitter.draw_pass_1 = fx.dstate[mesh_key]
+	fx.add_child(emitter); emitter.global_position = p
+	fx.later(fx.now + 0.9, fx.free_effect.bind(weakref(emitter)))
 
 
 # ---------------------------------------------------------------- debris bodies (Jolt)
@@ -624,6 +636,7 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			b.add_child(mi)
 			b.set_meta("debris_sc", sc)
 			fx.phys_root.add_child(b)
+			b.sleeping_state_changed.connect(_remember_woken_plate.bind(fx, b))
 			pool.append(b)
 		else:
 			var slot := int(st["debris_next"])
@@ -637,6 +650,9 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 				(b.get_node("mesh") as MeshInstance3D).mesh = st["debris_meshes"][sc][vi]
 				b.mass = 0.3 + 0.4 * sc
 				b.set_meta("debris_sc", sc)
+		if not b.has_meta("leash_offset") or int(b.get_meta("leash_mesh_size", -1)) != sc:
+			_cache_leash_geometry(b)
+			b.set_meta("leash_mesh_size", sc)
 		var d: Vector3 = fx.rdir()
 		d.y = 0.0
 		d = d.normalized()
@@ -653,6 +669,8 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 		# A reused plate takes this throw's leash and rim, even after the live hull is gone.
 		b.set_meta("debris_piece", piece)
 		b.remove_meta("leash_born")
+		var anchor = st.get("anchors", {}).get(piece.get("leash", ""))
+		if anchor != null: _born(b, anchor)
 		b.sleeping = false
 		b.visible = true
 		awake[b] = fx.now
@@ -663,23 +681,29 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			mesh.set_instance_shader_parameter("rim_col", _debris_rim(piece))
 
 
+static func _remember_woken_plate(fx, b) -> void:
+	if not _moving_plate(b) or not fx.dstate.has("debris_awake"): return
+	var awake: Dictionary = fx.dstate["debris_awake"]
+	if awake.has(b): return
+	awake[b] = fx.now - (DEBRIS_REST_S - DEBRIS_WOKEN_S)
+	b.set_meta("debris_spd", maxf(fx.anim_speed(), 0.01))   # knocked at today's clock (_debris_speed)
+
+
 # Issue 1237: the plates still flying. Past DEBRIS_FREE_S a plate takes the settle damping (or keeps a stronger one it was
 # thrown with); once Jolt has put it to sleep it leaves the list, and at DEBRIS_REST_S it is stopped and put to sleep. A
 # hull or wreck section that knocks a sleeping plate wakes it in Jolt; it is back at rest DEBRIS_WOKEN_S later.
 static func _settle_debris(fx) -> void:
 	var awake: Dictionary = fx.dstate.get("debris_awake", {})
-	# A sleeping plate a wreck section knocks wakes in Jolt: four times a second the pool is looked over for those.
+	# A Jolt wake is signalled. A slower scan also catches state changes set directly, which do not emit that signal.
 	if fx.now >= float(fx.dstate.get("debris_scan", -INF)):
 		fx.dstate["debris_scan"] = fx.now + 0.25
-		for b in fx.dstate.get("debris", []):
-			if is_instance_valid(b) and not awake.has(b) and not (b as RigidBody3D).sleeping:
-				awake[b] = fx.now - (DEBRIS_REST_S - DEBRIS_WOKEN_S)
-				(b as Node).set_meta("debris_spd", maxf(fx.anim_speed(), 0.01))   # knocked at today's clock (_debris_speed)
 		fx.dstate["debris_awake"] = awake
+		for b in fx.dstate.get("debris", []):
+			_remember_woken_plate(fx, b)
 	if awake.is_empty(): return
 	var done: Array = []
 	for b in awake:
-		if not is_instance_valid(b):
+		if not is_instance_valid(b) or b.freeze or not b.visible:
 			done.append(b)
 			continue
 		var age: float = fx.now - float(awake[b])
@@ -710,11 +734,11 @@ static func _debris_speed(fx) -> void:
 	fx.dstate["debris_speed"] = speed
 	if absf(speed - last) < 1e-6: return
 	for b in fx.dstate.get("debris_awake", {}):
-		if not is_instance_valid(b): continue
+		if not _moving_plate(b): continue
 		var rb := b as RigidBody3D
 		var was: float = float(rb.get_meta("debris_spd", speed))
 		rb.set_meta("debris_spd", speed)
-		if rb.sleeping or absf(speed - was) < 1e-6: continue
+		if absf(speed - was) < 1e-6: continue
 		rb.linear_velocity *= speed / was
 		rb.angular_velocity *= speed / was
 
@@ -2821,13 +2845,13 @@ static func _wing_death(fx, s) -> float:
 	if not hit.is_empty():
 		var p: Vector3 = s.to_world(hit["p"])
 		# Birth on the next FX step: a one-frame picture born between steps could expire before its first draw.
-		fx.later(fx.now + 0.000001, _wing_spark.bind(fx, s, p, s.xf()))
+		fx.later(fx.now + 0.000001, _wing_flash.bind(fx, s, p, s.xf()))
 		BEATS.corkscrew(fx, s, p, s.xf())   # issue 1586
 	_hide_ship(s)
 	return 1.0 / 60.0
 
 
-static func _wing_spark(fx, s, p: Vector3, frame: Transform3D) -> void:
+static func _wing_flash(fx, s, p: Vector3, frame: Transform3D) -> void:
 	var soft: bool = fx.reduce_flashing or not fx.flash_at(p, fx.now, 28.0 * STAGING_UNITS_PER_PIXEL, 28.0, 1.0 / 60.0)
 	_pic(fx, s, p, "weapons/impact/flash_", 28.0, 0.20 if soft else 1.0 / 60.0, 3.2, 1.25 if soft else 5.2, soft, "flash", frame, Vector3.ZERO, {"seed": 0})
 	if not melting(s):
@@ -3045,7 +3069,7 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 				s.hull.L * 0.05, s.hull.L * 0.02, 16, sv, 1.2)
 	# Layer 3: tight breach-mouth ignition ember and faction light when the flash counter permits.
 	if ignited:
-		fx.spr(p + n * s.hull.L * 0.02, fx.now, 0.20, core_col, 2.4, s.hull.L * 0.09, s.hull.L * 0.18, 19, inherited + n * s.hull.L * 0.15, 3.0)
+		fx.spr(p + n * s.hull.L * 0.02, fx.now, 0.20, core_col, 2.4, s.hull.L * 0.09, s.hull.L * 0.18, fx.HOT_FLECK_SPRITE, inherited + n * s.hull.L * 0.15, 3.0)
 		fx.light(p + n * s.hull.L * 0.06, fx.now, 0.10, 4.5, light_col, 0)
 	# Keep #2018 tear sparks intact; skip the old round fx_vent_cone dots.
 	tear_particles(fx, p, n, s.hull.L, inherited, true, s)
@@ -3351,7 +3375,7 @@ static func _groan(fx, s, i: int) -> void:
 	if fx.quality != "low":
 		for k in 5:
 			var d: Vector3 = (nw + fx.rdir() * 0.6).normalized()
-			fx.stk(p, fx.now, 0.32 + 0.1 * fx.rng.randf(), dcol(s, "spark", Color(1.0, 0.66, 0.32)), 2.6, L * 0.018, 0.035, 1, inherited + d * L * fx.rng.randf_range(0.25, 0.45), 1.6, 0.0, 1.5, 6.0)
+			fx.spark(p, fx.now, 0.32 + 0.1 * fx.rng.randf(), s.faction, 2.6, 0.045, 0.035, inherited + d * L * fx.rng.randf_range(0.25, 0.45), 1.6, 1.5, 6.0, fx.SparkRole.DEATH)
 		# (Ryan on pass 4B, "way too much smoke": the groans keep their sparks, the breath of gas is gone)
 	if i % 2 == 1:
 		_spawn_ship_debris(fx, s, p + nw * L * 0.015, inherited + nw * L * 0.05, 1, L * 0.008, 0.9)
@@ -3461,7 +3485,7 @@ static func _blast_inner(fx, src, p: Vector3, n: Vector3, px: float, tint: Color
 	if fx.quality != "low":
 		var k: float = px * STAGING_UNITS_PER_PIXEL / 10.0
 		for j in 5:
-			fx.stk(p + n * 0.1, fx.now, 0.35 + fx.rng.randf() * 0.25, tint.lerp(Color(1, 0.9, 0.6), 0.4), 5.0, 0.05, 0.10, 1, fx.rcone(n, 0.7) * (8.0 + fx.rng.randf() * 10.0) * k, 2.0)
+			fx.spark(p + n * 0.1, fx.now, 0.35 + fx.rng.randf() * 0.25, src.faction, 5.0, 0.05, 0.10, fx.rcone(n, 0.7) * (8.0 + fx.rng.randf() * 10.0) * k, 2.0, 0.0, 0.0, fx.SparkRole.DEATH)
 
 
 # Issue 484 (owner, Nov 11, on the secondaries: "the secondary explosion smoke looks a little too even and weird"). One
@@ -3563,7 +3587,7 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 			else:
 				d = fx.rdir()
 				d = (d - axis_w * d.dot(axis_w)).normalized()
-			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.6 + fx.rng.randf() * 0.5, boom_col(s, "spark", Color(1.0, 0.62, 0.3)), 6.0, 0.06, maxf(L * 0.004, 0.05), 1, d * L * fx.rng.randf_range(0.6, 1.3), 0.8, 0.0, 2.0, 10.0)
+			fx.spark(p, fx.now + fx.rng.randf() * 0.05, 0.6 + fx.rng.randf() * 0.5, s.faction, 6.0, 0.06, maxf(L * 0.004, 0.05), d * L * fx.rng.randf_range(0.6, 1.3), 0.8, 2.0, 10.0, fx.SparkRole.DEATH)
 	# R367 (issue 1399): a Glasswright's stored light spills as glittering dust; Eclipse's core gutters out and the scene
 	# dims for an instant on every big Eclipse death (Eclipse only, R389: no other faction dims the scene)
 	var style := str(dstyle(s).get("style", ""))
@@ -3575,13 +3599,12 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 # (deaths_and_hits.md, "How each faction dies": no fire and no smoke, glittering dust).
 static func _glitter(fx, s, p: Vector3, L: float) -> void:
 	if fx.quality == "low": return
-	var col := dcol(s, "spark", Color(0.86, 0.93, 1.0))
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	for j in 36:
 		var d: Vector3 = fx.rdir()
 		d.y *= 0.4
-		fx.stk(p + d * L * 0.04, fx.now + fx.rng.randf() * 0.35, 1.4 + fx.rng.randf() * 1.6, col, 4.0, 0.02, maxf(L * 0.002, 0.03), 1,
-			inherited + d.normalized() * L * fx.rng.randf_range(0.04, 0.22), 0.7, 0.0, 1.5, 3.0)
+		fx.spark(p + d * L * 0.04, fx.now + fx.rng.randf() * 0.35, 1.4 + fx.rng.randf() * 1.6, s.faction, 4.0, 0.02, maxf(L * 0.002, 0.03),
+			inherited + d.normalized() * L * fx.rng.randf_range(0.04, 0.22), 0.7, 1.5, 3.0, fx.SparkRole.DEATH)
 
 
 # R367 (issue 1399, Ryan's look pass): a styled faction's small hull has no smoke body, so its pop needs its own light: a
@@ -3641,12 +3664,11 @@ static func _fac_pop_inner(fx, s, p: Vector3, L: float) -> void:
 		life = 0.96
 	fx._emit_spr(p, fx.now, life, dcol(s, "light", Color(0.9, 0.9, 1.0)), i, L * 0.25, L * 1.1, kind, inherited, 0.0, 0.0, 0.0, 64.0)
 	if fx.quality == "low": return
-	var col := dcol(s, "spark", Color(0.86, 0.93, 1.0))
 	for j in 18:
 		var d: Vector3 = fx.rdir()
 		d.y *= 0.5
-		fx.stk(p, fx.now + fx.rng.randf() * 0.04, 0.45 + fx.rng.randf() * 0.35, col, 5.0, 0.03, maxf(L * 0.004, 0.04), 1,
-			inherited + d.normalized() * L * fx.rng.randf_range(0.5, 1.1), 0.9, 0.0, 1.5, 5.0)
+		fx.spark(p, fx.now + fx.rng.randf() * 0.04, 0.45 + fx.rng.randf() * 0.35, s.faction, 5.0, 0.03, maxf(L * 0.004, 0.04),
+			inherited + d.normalized() * L * fx.rng.randf_range(0.5, 1.1), 0.9, 1.5, 5.0, fx.SparkRole.DEATH)
 
 
 # R367 round 2 (issue 1399): the Sunward Crusade's magazines go off as an even row down the broadside during the tell, a
@@ -3676,9 +3698,8 @@ static func _drum_pop(fx, s, b: int, n: int, side: float) -> void:
 	if sx != null:
 		sx.play("death_magazine", {"pos": pw, "death": true})
 	fx.spr(pw + nw * h.L * 0.015, fx.now, 0.3, dcol(s, "light", Color(1.0, 0.78, 0.5)), 3.6, h.L * 0.04, h.L * 0.13, 0, inherited, 0.0, 0.0, 0.0, 24.0)
-	var col := dcol(s, "spark", Color(1.0, 0.62, 0.3))
 	for j in 8:
-		fx.stk(pw, fx.now, 0.5, col, 4.0, 0.05, maxf(h.L * 0.004, 0.04), 1, inherited + (nw + fx.rdir() * 0.6).normalized() * h.L * 0.3, 0.8, 0.0, 1.5, 6.0)
+		fx.spark(pw, fx.now, 0.5, s.faction, 4.0, 0.05, maxf(h.L * 0.004, 0.04), inherited + (nw + fx.rdir() * 0.6).normalized() * h.L * 0.3, 0.8, 1.5, 6.0, fx.SparkRole.DEATH)
 
 
 # R367 round 2: the Hullbreakers' patch plates tear loose during the tell, four to six of them spinning off from scattered
@@ -3701,7 +3722,7 @@ static func _patch_plate(fx, s) -> void:
 	var nw: Vector3 = (s.xf().basis * (hit.get("n", Vector3.UP) as Vector3)).normalized()
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	_spawn_ship_debris(fx, s, pw + nw * h.L * 0.01, inherited + (nw + fx.rdir() * 0.4).normalized() * h.L * 0.09, 1, h.L * 0.035, STORY_DEBRIS_DAMP)
-	fx.stk(pw, fx.now, 0.35, dcol(s, "spark", Color(1.0, 0.5, 0.2)), 3.0, 0.04, maxf(h.L * 0.003, 0.03), 1, nw * h.L * 0.15, 0.8, 0.0, 1.5, 5.0)
+	fx.spark(pw, fx.now, 0.35, s.faction, 3.0, 0.04, maxf(h.L * 0.003, 0.03), nw * h.L * 0.15, 0.8, 1.5, 5.0, fx.SparkRole.DEATH)
 
 
 # R367 round 2: the Hegemony Navy breaks with no fire in the gap: blue-white arcs jump it for a third of a second as the
@@ -3773,7 +3794,7 @@ static func _peel_band(fx, s, b: int, bands: int) -> void:
 		var pw: Vector3 = s.to_world(hit["p"])
 		var nw: Vector3 = (s.xf().basis * (hit.get("n", Vector3.UP) as Vector3)).normalized()
 		_spawn_ship_debris(fx, s, pw + nw * h.L * 0.01, inherited + nw * h.L * 0.06, 1, h.L * 0.03, STORY_DEBRIS_DAMP)
-		fx.stk(pw, fx.now, 0.35, dcol(s, "spark", Color(1.0, 0.62, 0.3)), 3.0, 0.04, maxf(h.L * 0.003, 0.03), 1, nw * h.L * 0.15, 0.8, 0.0, 1.5, 5.0)
+		fx.spark(pw, fx.now, 0.35, s.faction, 3.0, 0.04, maxf(h.L * 0.003, 0.03), nw * h.L * 0.15, 0.8, 1.5, 5.0, fx.SparkRole.DEATH)
 
 
 # Beat 3: secondaries on each piece, each lighting its own piece. They go off in groups, one per piece, 0.05 s apart,
@@ -3909,18 +3930,30 @@ static func _hulk(fx, s) -> void:
 	drift.y = 0.0
 	# issue 1586: a burnout drifts dead with a gentle pitch and roll
 	var dead_drift: bool = str(s.get_meta("death_cause", "dark")) == "dark"
-	var wreck := {"id": s.id, "t0": fx.now, "nodes": [node], "mats": [], "lights": [],
+	_cache_leash_geometry(node)
+	var wreck := {"id": s.id, "t0": fx.now, "nodes": [node], "mats": [], "lights": [], "settled": false,
 		"fires": [{"node": node, "vel": drift, "ang": Vector3(0.05, 0.035, 0.04) if dead_drift else Vector3(0.01, 0.035, 0.015)}], "speed": 1.0, "hulk": true}
+	# The vent keeps looping on the shader clock. Its density ticks separately from the wreck's motion (R458).
 	var hit: Dictionary = s.hull.ray(s.hull.c + Vector3.UP * maxf(s.hull.L, 1.0), Vector3.DOWN)
 	var p: Vector3 = hit.get("p", s.hull.core)   # issue 370: a missed ray falls back to the core, never a box point
 	var n: Vector3 = hit.get("n", Vector3.UP)
 	var vent := DAMAGE_PLUME.build(fx, node, p, (n + Vector3.UP * 0.3).normalized(), maxf(s.hull.L * 0.20, 0.12),
 		DAMAGE_PLUME.Form.HULK, s.fac, 0.12, "fx_hulk_vent")
-	wreck["vent_material"] = vent.material_override
-	wreck["vent_next"] = fx.now
+	fx.later(fx.now + HULK_VENT_TICK, _thin_hulk_vent.bind(fx, weakref(vent), fx.now))
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
 	BEATS.on_hulk(fx, s, node, str(s.get_meta("death_cause", "dark")))
+
+
+static func _thin_hulk_vent(fx, ref: WeakRef, born: float) -> void:
+	var vent := ref.get_ref() as MeshInstance3D
+	if not is_instance_valid(vent) or not vent.is_inside_tree() or vent.get_parent().is_queued_for_deletion():
+		return
+	var end := born + DAMAGE_PLUME.HULK_SETTLE_S
+	var age: float = DAMAGE_PLUME.HULK_SETTLE_S if fx.now >= end else fx.now - born
+	# Keep only one pending tick. A long frame updates once, and the final tick lands at the exact floor.
+	if not DAMAGE_PLUME.thin_hulk(vent.material_override, age):
+		fx.later(minf(fx.now + HULK_VENT_TICK, end), _thin_hulk_vent.bind(fx, ref, born))
 
 
 static func _break_up(fx, s, cause: String, tint: Color, job := {}) -> void:
@@ -3967,7 +4000,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 	fx.punch(T, 0.018 if s.death_big else 0.006, center)
 	fx.shake(T, 0.45 if s.death_big else 0.18, center)
 	# the pieces: real parts of the hull, as rigid bodies that drift and burn
-	var wreck = {"id": s.id, "t0": T, "nodes": [], "mats": [], "lights": [], "fires": [], "speed": 1.0, "organic": organic, "heat_births": {}, "cut_events": []}
+	var wreck = {"id": s.id, "t0": T, "nodes": [], "mats": [], "lights": [], "fires": [], "speed": 1.0, "organic": organic, "heat_births": {}, "cut_events": [], "settled": false}
 	var main_i = -1
 	var main_n = -1
 	for i in n_main:
@@ -4055,6 +4088,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		mi.mesh = am
 		mi.position = -cen
 		node.add_child(mi)
+		_cache_leash_geometry(node)
 		var piece_mats: Array = []
 		if pc.has("cap_mat"):
 			(pc["cap_mat"] as ShaderMaterial).set_shader_parameter("heat", 0.0)
@@ -4195,7 +4229,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		# without buckets, or a cut job not ready) still throws one pooled physical shard and a visible ember, never light
 		# and smoke alone.
 		_spawn_ship_debris(fx, s, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0)
-		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, 19, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
+		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, fx.HOT_FLECK_SPRITE, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
 
 
 # Issue 484: the bite's fragments and the chips along the break, as real pieces of the hull (capped, glowing faces,
@@ -4223,6 +4257,7 @@ static func _make_frags(fx, s, wreck: Dictionary, job: Dictionary, pieces: Array
 		mi.position = -cen
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		node.add_child(mi)
+		_cache_leash_geometry(node)
 		if pc.has("cap_mat"):
 			var cm := pc["cap_mat"] as ShaderMaterial
 			cm.set_shader_parameter("heat", 0.0)
@@ -4306,7 +4341,7 @@ static func _organic_spill(fx, p: Vector3, L: float, tint: Color) -> void:
 		var dir := Vector3(cos(angle), fx.rng.randf_range(0.0, 0.12), sin(angle))
 		var speed: float = L * fx.rng.randf_range(0.2, 0.45)
 		fx.spr(p, fx.now, 1.0 + fx.rng.randf() * 0.8, tint, 1.5,
-			L * 0.018, L * 0.006, 19, dir * speed, 0.5, 0.0, 0.0, 6.0)
+			L * 0.018, L * 0.006, 15, dir * speed, 0.5, 0.0, 0.0, 6.0)
 		if i % 2 == 0:
 			fx.spr(p, fx.now, 1.4, tint * Color(0.24, 0.3, 0.18), 0.65,
 				L * 0.025, L * 0.06, 20, dir * speed * 0.65, 0.7)
@@ -4677,7 +4712,7 @@ static func _snap(fx, s, wreck: Dictionary, child, bu: Dictionary) -> void:
 	var p: Vector3 = child.to_global(child.get_meta("snap_site", child.get_meta("tear_site", Vector3.ZERO)))
 	if fx.quality != "low":
 		for j in 10:
-			fx.stk(p, fx.now + fx.rng.randf() * 0.06, 0.5 + fx.rng.randf() * 0.4, boom_col(s, "spark", Color(1.0, 0.62, 0.3)), 5.0, 0.05, maxf(L * 0.004, 0.05), 1, fx.rdir() * L * fx.rng.randf_range(0.3, 0.8), 0.8, 0.0, 2.0, 10.0)
+			fx.spark(p, fx.now + fx.rng.randf() * 0.06, 0.5 + fx.rng.randf() * 0.4, s.faction, 5.0, 0.05, maxf(L * 0.004, 0.05), fx.rdir() * L * fx.rng.randf_range(0.3, 0.8), 0.8, 2.0, 10.0, fx.SparkRole.DEATH)
 	wreck["lights"].append(fx.light_source(child, child.get_meta("snap_site", child.get_meta("tear_site", Vector3.ZERO)), boom_col(s, "rim", Color(1.0, 0.52, 0.22)), 0.6, 0.3))   # one lookup with the sparks (Fable)
 	fx.shake(fx.now, 0.12, p)
 
@@ -4707,7 +4742,7 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * (0.35 if big else 0.5), "cool", 1.1, vel * 0.65, 0.4 if big else 0.7, atlas_band(L), src)
 	if not big and src != null and fx.quality != "low":
 		var p: Vector3 = node.to_global(node.get_meta("tear_site", Vector3.ZERO))
-		fx.stk(p, fx.now, 0.65, boom_col(src, "spark", Color(1.0, 0.62, 0.30)), 4.0, 0.05, 0.08, 1, vel + fx.rdir() * L * 0.55, 0.8, 0.0, 2.0, 8.0)
+		fx.spark(p, fx.now, 0.65, src.faction, 4.0, 0.05, 0.08, vel + fx.rdir() * L * 0.55, 0.8, 2.0, 8.0, fx.SparkRole.DEATH)
 	# Big hulls' secondaries are scheduled once per kill (_schedule_secondaries), never a per-piece fire loop.
 
 
@@ -4818,31 +4853,29 @@ static func update(fx, dt: float) -> void:
 		return
 	# issue 1236: a blocking wreck's new pieces are measured where they were made, before anything below moves them
 	_leash_mark(fx)
-	for ship in fx.ships.values(): _update_dying(fx, ship)
+	for id in fx.ships:
+		var ship = fx.ships[id]
+		if ship.dead and not ship.death_fx_done: _update_dying(fx, ship)
 	_settle_debris(fx)
 	_debris_speed(fx)
+	var speed: float = maxf(fx.anim_speed(), 0.01)
 	for w in fx.dstate["wrecks"]:
-		var speed: float = maxf(fx.anim_speed(), 0.01)
+		if w.get("settled", false): continue
 		var prev: float = float(w.get("speed", 1.0))
+		var ratio := speed / prev
 		for nd in w["nodes"]:
-			if is_instance_valid(nd) and nd is RigidBody3D:
-				var f := speed / prev
-				var fa := f
-				if nd.has_meta("story_damp") and not (nd as RigidBody3D).freeze:
-					# issue 1077 (prototype): a strained wreck's physics pieces slow and settle where it broke
-					var dmp: float = nd.get_meta("story_damp")
-					f *= exp(-dmp * dt)
-					fa *= exp(-dmp * 0.5 * dt)
-				(nd as RigidBody3D).linear_velocity *= f
-				(nd as RigidBody3D).angular_velocity *= fa
+			if not is_instance_valid(nd) or not nd is RigidBody3D or nd.freeze or nd.sleeping: continue
+			var f := ratio
+			var fa := ratio
+			if nd.has_meta("story_damp"):
+				# issue 1077 (prototype): a strained wreck's physics pieces slow and settle where it broke
+				var dmp: float = nd.get_meta("story_damp")
+				f *= exp(-dmp * dt)
+				fa *= exp(-dmp * 0.5 * dt)
+			if f != 1.0: nd.linear_velocity *= f
+			if fa != 1.0: nd.angular_velocity *= fa
 		w["speed"] = speed
 		var age: float = fx.now - float(w["t0"])
-		if w.has("vent_material") and fx.now >= float(w["vent_next"]):
-			if DAMAGE_PLUME.thin_hulk(w["vent_material"], age):
-				w.erase("vent_material")
-				w.erase("vent_next")
-			else:
-				w["vent_next"] = fx.now + 0.1
 		# Heat fades over a few seconds. The cold opaque cap remains.
 		# Issue 484 profiling: a wreck now has up to a dozen glowing faces and its scorched plating. Heat falls by about a
 		# tenth a second, so faces are set 15 times a second, not every frame, and a wreck that has gone cold is never
@@ -4863,26 +4896,47 @@ static func update(fx, dt: float) -> void:
 				(m as ShaderMaterial).set_shader_parameter("fx_scorch_heat", scorch_heat)
 			# cold for good once every face has cooled and nothing is still waiting for its release
 			if not any_warm and scorch_heat == 0.0 and age > 1.0: w["cold"] = true
-		var gate = exp(-maxf(age, 0.0) / 3.5)
-		for f in w["fires"]:
-			if f.has("mat"):
-				(f["mat"] as ShaderMaterial).set_shader_parameter("gate", exp(-maxf(age, 0.0) / maxf(float(f.get("cool", 3.5)), 0.01)))
-			elif f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF)):
-				# Kinematic tiers retain the same constant momentum as physics tiers.
-				var n: Node3D = f["node"]
-				if f.has("damp"):
-					# issue 1077 (prototype): a strained wreck's pieces slow and settle where it broke
-					f["vel"] = (f["vel"] as Vector3) * exp(-float(f["damp"]) * dt)
-					f["ang"] = (f["ang"] as Vector3) * exp(-float(f["adamp"]) * dt)
-				var v: Vector3 = f["vel"]
-				n.global_position += v * dt
-				var a: Vector3 = f["ang"]
-				if a.length() > 1e-5:
-					n.global_rotate(a.normalized(), a.length() * dt)
-		for l in w["lights"]:
-			l["base"] = 0.7 * gate
+		_step_wreck_fires(w["fires"], fx.now, age, dt)
+		if not w["lights"].is_empty():
+			var gate := exp(-maxf(age, 0.0) / 3.5) * (1.0 - smoothstep(WRECK_SETTLE_AGE - 1.5, WRECK_SETTLE_AGE, age))
+			for l in w["lights"]:
+				l["base"] = 0.7 * gate
+				if gate == 0.0: l["on"] = false
+			if gate == 0.0: w["lights"].clear()
 	# issue 1236: a wreck that blocks its hex stays in it
 	_leash(fx, dt)
+
+
+static func _step_wreck_fires(fires: Array, now: float, age: float, dt: float) -> void:
+	# Compact in place, retaining the order of the remaining movement entries.
+	var keep := 0
+	for f in fires:
+		var until: float = f.get("until", INF)
+		if f.has("mat"):
+			var gate := exp(-maxf(age, 0.0) / maxf(float(f.get("cool", 3.5)), 0.01))
+			if now >= until or gate < 0.001:
+				(f["mat"] as ShaderMaterial).set_shader_parameter("gate", 0.0)
+				continue
+			(f["mat"] as ShaderMaterial).set_shader_parameter("gate", gate)
+		else:
+			var n = f.get("node")
+			if now >= until or not is_instance_valid(n): continue
+			var v: Vector3 = f["vel"]
+			var a: Vector3 = f["ang"]
+			if until == INF and age > WRECK_SETTLE_AGE and v.length_squared() < WRECK_REST_SPEED_SQ and a.length_squared() < WRECK_REST_SPIN_SQ:
+				continue
+			if f.has("damp"):
+				# issue 1077 (prototype): a strained wreck's pieces slow and settle where it broke
+				v *= exp(-float(f["damp"]) * dt)
+				a *= exp(-float(f["adamp"]) * dt)
+				f["vel"] = v
+				f["ang"] = a
+			n.global_position += v * dt
+			if a.length_squared() > 1e-10:
+				n.global_rotate(a.normalized(), a.length() * dt)
+		fires[keep] = f
+		keep += 1
+	if keep < fires.size(): fires.resize(keep)
 
 
 # ---------------------------------------------------------------- wrecks that block their hex (issue 1236)
@@ -4903,6 +4957,9 @@ const LEASH_PULL := 1.5        # per second: a piece past its rest limit comes b
 const LEASH_SHRINK_FROM := 1.5 # seconds after the break: the fragments start to draw in
 const MAIN_BRAKE := 1.2        # per second: the hull's main pieces slow to rest where they parted (a part speed of v stops in about v / 1.2)
 const LEASH_SETTLED := 5.5     # seconds after the break: each fragment is held hard inside the rest radius
+const WRECK_SETTLE_AGE := LEASH_SETTLED + 8.0
+const WRECK_REST_SPEED_SQ := 0.01 * 0.01     # world units per effect second
+const WRECK_REST_SPIN_SQ := 0.005 * 0.005    # radians per effect second
 
 
 # The battle calls this on the rules "wreck" event, before the death plays. radius: the hex's rest radius in world units.
@@ -4938,16 +4995,24 @@ static func _debris_leash(body: RigidBody3D) -> String:
 	return body.get_meta("debris_piece", {}).get("leash", "")
 
 
+static func _moving_plate(b) -> bool:
+	return is_instance_valid(b) and b.visible and not b.freeze and not b.sleeping
+
+
 static func _leash_mark(fx) -> void:
 	var anchors: Dictionary = fx.dstate.get("anchors", {})
 	if anchors.is_empty(): return
 	for w in fx.dstate["wrecks"]:
+		if w.get("settled", false): continue
 		var an = anchors.get(w["id"])
 		if an == null: continue
-		for nd in w["nodes"] + w.get("frags", []):
+		for nd in w["nodes"]:
 			if is_instance_valid(nd): _born(nd, an)
-	for b in fx.dstate.get("debris", []):
-		if not is_instance_valid(b) or not b.visible: continue
+		for nd in w.get("frags", []):
+			if is_instance_valid(nd): _born(nd, an)
+	# New plates are marked at birth. The awake list also picks up plates knocked back into motion by Jolt.
+	for b in fx.dstate.get("debris_awake", {}):
+		if not _moving_plate(b) or b.has_meta("leash_born"): continue
 		var an = anchors.get(_debris_leash(b))
 		if an != null: _born(b, an)
 
@@ -4958,14 +5023,17 @@ static func _leash(fx, dt: float) -> void:
 	# Ryan, Nov 22 (third look): the hull's main pieces are never pulled, shrunk or removed. They part as they broke and a
 	# brake brings them to rest close together where they are (MAIN_BRAKE), so nothing slides into anything. Issue 1236
 	# round 4: a planned breakup's pieces are steered to their rest spots (_steer) anchored or not; any other main piece
-	# brakes only on an anchored wreck, so an unanchored small hull's approved calm parting is unchanged.
+	# brakes early only on an anchored wreck. Unanchored pieces and hulks keep their parting or drift before braking.
 	var brake := exp(-MAIN_BRAKE * dt)
 	var abrake := exp(-MAIN_BRAKE * 0.5 * dt)   # Artoo on PR 1737: the halves stop turning too, a little slower
 	for w in fx.dstate["wrecks"]:
+		if w.get("settled", false): continue
 		var an = anchors.get(w["id"])
-		var drawing: bool = fx.now >= float(w["t0"]) + LEASH_SHRINK_FROM
+		var age: float = fx.now - float(w["t0"])
+		var drawing := age >= LEASH_SHRINK_FROM
+		var braking := an != null or age >= LEASH_SETTLED
 		for f in w["fires"]:
-			if not (f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF))): continue
+			if not f.has("vel"): continue
 			if (f["node"] as Node).has_meta("rest_at"):
 				var st := _steer(f["node"])
 				f["vel"] = st[0]
@@ -4973,34 +5041,39 @@ static func _leash(fx, dt: float) -> void:
 				f["ang"] = Vector3(fa.x * abrake, st[1], fa.z * abrake)
 				continue
 			if w["nodes"].has(f["node"]):
-				if an == null: continue   # an unanchored wreck without a planned breakup drifts as before (audit)
+				if not braking: continue
 				f["vel"] = (f["vel"] as Vector3) * brake
 				if f.has("ang"): f["ang"] = (f["ang"] as Vector3) * abrake
 			elif an != null:
 				f["vel"] = _leash_vel(f["node"], f["vel"], an, dt, drawing)
+		var bodies_at_rest := true
 		for nd in w["nodes"]:
-			if is_instance_valid(nd) and nd is RigidBody3D and not (nd as RigidBody3D).freeze:
+			if is_instance_valid(nd) and nd is RigidBody3D and not nd.freeze and not nd.sleeping:
+				bodies_at_rest = false
 				var rb := nd as RigidBody3D
 				if rb.has_meta("rest_at"):
 					var st := _steer(rb)
 					var spd: float = fx.anim_speed()
 					rb.linear_velocity = (st[0] as Vector3) * spd
 					rb.angular_velocity = Vector3(rb.angular_velocity.x * abrake, float(st[1]) * spd, rb.angular_velocity.z * abrake)
-				elif an != null:
+				elif braking:
 					rb.linear_velocity *= brake
 					rb.angular_velocity *= abrake
-		if an == null: continue
-		# the small fragments still settle inside the hex, as the thrown plates do
-		var settled: bool = fx.now >= float(w["t0"]) + LEASH_SETTLED
 		for nd in w.get("frags", []):
 			if not is_instance_valid(nd): continue
-			if nd is RigidBody3D and not (nd as RigidBody3D).freeze:
-				var body := nd as RigidBody3D
-				if body.sleeping: continue
-				body.linear_velocity = _leash_vel(body, body.linear_velocity, an, dt, drawing)
-			_leash_clamp(nd, an, _rest_limit(nd, an, true) if settled else -1.0)
-	for b in fx.dstate.get("debris", []):
-		if not is_instance_valid(b) or not b.visible or b.sleeping: continue
+			if nd is RigidBody3D and not nd.freeze:
+				if nd.sleeping: continue
+				bodies_at_rest = false
+				if an != null: nd.linear_velocity = _leash_vel(nd, nd.linear_velocity, an, dt, drawing)
+			# The small fragments still settle inside the hex, as the thrown plates do.
+			if an != null:
+				_leash_clamp(nd, an, _rest_limit(nd, an, true) if age >= LEASH_SETTLED else -1.0)
+		if age > WRECK_SETTLE_AGE and bodies_at_rest and w["fires"].is_empty() and w.get("cold", false):
+			w["settled"] = true
+	# Pooled plates have their own lifetime. A hull can knock one awake long after its wreck has settled.
+	if anchors.is_empty(): return
+	for b in fx.dstate.get("debris_awake", {}):
+		if not _moving_plate(b): continue
 		var an = anchors.get(_debris_leash(b))
 		if an == null: continue
 		b.linear_velocity = _leash_vel(b, b.linear_velocity, an, dt)
@@ -5017,23 +5090,29 @@ static func _steer(nd: Node3D) -> Array:
 # where a piece is, for the leash: the middle of its mesh's box (a piece's origin is the mean of its points, which on a
 # lopsided chunk of hull can sit far from what the eye reads as the piece), else its origin
 static func leash_centre(nd: Node3D) -> Vector3:
-	for ch in nd.get_children():
-		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
-			return nd.global_transform * ((ch as MeshInstance3D).transform * (ch as MeshInstance3D).mesh.get_aabb().get_center())
-	return nd.global_position
+	if not nd.has_meta("leash_offset"): _cache_leash_geometry(nd)
+	return nd.global_transform * (nd.get_meta("leash_offset") as Vector3)
 
 
 # how far the piece reaches from its middle as drawn now, as it turns about the vertical: the farthest point of its real
 # mesh from its box middle on the board plane (measured once, unscaled, and kept on the piece; the drift brake uses half the box's longest side until then)
 static func leash_half(nd: Node3D) -> float:
+	if not nd.has_meta("leash_offset"): _cache_leash_geometry(nd)
+	var extent: Vector2 = nd.get_meta("leash_extent")   # half the box's longest side, and the mesh scale
+	return float(nd.get_meta("leash_rad", extent.x)) * extent.y
+
+
+static func _cache_leash_geometry(nd: Node3D) -> void:
 	for ch in nd.get_children():
 		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
 			var mi := ch as MeshInstance3D
-			var k: float = mi.transform.basis.get_scale().x
-			if nd.has_meta("leash_rad"): return float(nd.get_meta("leash_rad")) * k
-			var sz: Vector3 = mi.mesh.get_aabb().size
-			return 0.5 * maxf(sz.x, maxf(sz.y, sz.z)) * k
-	return 0.0
+			var box := mi.mesh.get_aabb()
+			var sz := box.size
+			nd.set_meta("leash_offset", mi.transform * box.get_center())
+			nd.set_meta("leash_extent", Vector2(0.5 * maxf(sz.x, maxf(sz.y, sz.z)), mi.transform.basis.get_scale().x))
+			return
+	nd.set_meta("leash_offset", Vector3.ZERO)
+	nd.set_meta("leash_extent", Vector2.ZERO)
 
 
 # measure a piece's real reach once (leash_half); a big piece's faces are read only when its wreck starts to draw in

@@ -23,6 +23,7 @@ signal torpedo_shot_down(pos: Vector3)
 # Faction colours and styles come from data (fx/faction_looks.json via fx/faction_look.gd; API.md 15), so a faction's
 # palette can change without touching code. Styles are Claude's calls (vetoable).
 const FLOOK := preload("res://fx/faction_look.gd")
+const SPECIAL := preload("res://fx/fx_special.gd")
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const LIGHT_K := 0.9
 const LIGHT_REACH := 30.0   # an event light's standing reach in world units (hexes are 17.3 across)
@@ -97,6 +98,8 @@ var timing := {"ripple": 0.08, "shell_speed": 160.0, "lance": 0.7, "charge": 0.2
 # Issue 281 vent gas: the shipped look is Cone B, a tight forward cone of gas and sparks along the barrel. "today" draws
 # the pre-Cone-B baked gas cell and is only set by the review capture to shoot the before stills; the game leaves it "".
 var vent_look := ""
+# Bench options only. An unset or unknown name keeps the pre-pick Nova look.
+var nova_look := ""
 # Optional comparison folder (VS_FX_ATLAS). The production macro, torpedo and death cores load the picked B atlases
 # directly from fx/atlases/rebake; they require no environment switch.
 var fx_atlas := ""
@@ -149,7 +152,7 @@ var _refused: PackedFloat64Array = []    # flashes the budget turned down (their
 # that refused a flash in a field already holding FLASH_CAP flashes in the last second; the caller then draws no peak at all.
 var _soft_mem: Array = []
 var flash_lift := false
-var _later: Array = []      # [t, callable, insertion order]
+var _later: Array = []      # min-heap of [t, callable, insertion order]
 var _later_serial := 0
 var _shake_off = Vector2.ZERO
 var _punches: Array = []    # [t, amount] (F3 zoom punch)
@@ -262,6 +265,8 @@ func release(wait := true) -> void:
 	_shield_jobs.clear()
 	for id in ships:
 		var s = ships[id]
+		_clear_thrust_spark_sink(s.root)
+		s.clear_rift_pose()
 		s.end_brownout()
 		if not wait and s._dmg_task >= 0 and not WorkerThreadPool.is_task_completed(s._dmg_task):
 			tids.append(s._dmg_task)
@@ -700,8 +705,41 @@ func later(t: float, f: Callable) -> void:
 	if t <= now:
 		f.call()
 		return
-	_later.append([t, f, _later_serial])
+	var entry := [t, f, _later_serial]
 	_later_serial += 1
+	var i := _later.size()
+	_later.append(entry)
+	while i > 0:
+		var parent := (i - 1) >> 1
+		if not _later_before(entry, _later[parent]):
+			break
+		_later[i] = _later[parent]
+		i = parent
+	_later[i] = entry
+
+
+static func _later_before(a: Array, b: Array) -> bool:
+	return int(a[2]) < int(b[2]) if a[0] == b[0] else float(a[0]) < float(b[0])
+
+
+func _pop_later() -> Array:
+	var first: Array = _later[0]
+	var last: Array = _later.pop_back()
+	var size := _later.size()
+	if size == 0:
+		return first
+	var i := 0
+	var child := 1
+	while child < size:
+		if child + 1 < size and _later_before(_later[child + 1], _later[child]):
+			child += 1
+		if not _later_before(_later[child], last):
+			break
+		_later[i] = _later[child]
+		i = child
+		child = 2 * i + 1
+	_later[i] = last
+	return first
 
 
 func free_effect(ref: WeakRef) -> void:
@@ -731,21 +769,9 @@ func free_picture(ref: WeakRef, gen: int) -> void:
 
 
 func _run_later() -> void:
-	if _later.is_empty():
-		return
-	var keep: Array = []
-	var due: Array = []
-	for e in _later:
-		if float(e[0]) <= now:
-			due.append(e)
-		else:
-			keep.append(e)
-	_later = keep
-	due.sort_custom(func(a: Array, b: Array) -> bool:
-		if a[0] == b[0]:
-			return int(a[2]) < int(b[2])
-		return float(a[0]) < float(b[0]))
-	for e in due:
+	var cutoff: float = now
+	while not _later.is_empty() and float(_later[0][0]) <= cutoff:
+		var e := _pop_later()
 		var t0 := Time.get_ticks_usec()
 		(e[1] as Callable).call()
 		# issue 220: which deferred step a long frame spent its time in (named lambdas and bound functions)
@@ -802,11 +828,77 @@ func sprx(px: float, p: Vector3, t: float, life: float, col: Color, i: float, s0
 
 
 # `wpx`, `lpx` (F3 round 2): this streak's own minimum width and length on screen (pixels at 1080 lines; 0: the kind's).
-func stk(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
+func flight_streak(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
 		drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
+	assert(kind not in [1, 7, SPARK_KIND], "Sparks must use fx.spark")
 	var pool: POOLS.Pool = pools["null"] if kind == 5 else pools["stk"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
 		Vector4(col.r, col.g, col.b, i), Vector4(length, w * unit, drag, kind), Vector4(0.0, acc, wpx, lpx)))
+
+
+# All thrown sparks use the analytic streak, including crystal glints. This enum selects the
+# colour source within the faction palette, not a different renderer.
+enum SparkRole { HULL, DEATH, SHIELD, ENGINE, WEAPON }
+
+const SPARK_KIND := 8
+# Reserved sprite for cooling coals and stationary glow, not thrown sparks.
+const HOT_FLECK_SPRITE := 19
+
+
+# Keep older callers working. Flight kinds keep their own path, but retired spark
+# kinds use the shared spark mask with the caller's original tint and blur time.
+func stk(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
+		drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
+	if kind in [1, 7, SPARK_KIND]:
+		spark(p, t, life, FLOOK.FALLBACK, i, length, w, vel, drag, wpx, lpx, SparkRole.HULL, col)
+	else:
+		flight_streak(p, t, life, col, i, length, w, kind, vel, drag, acc, wpx, lpx)
+
+
+static func spark_colour(faction: String, role := SparkRole.HULL) -> Color:
+	var look := FLOOK.of(faction)
+	match int(look.get("wound_kind", 0)):
+		1: return Color.TRANSPARENT # Living tissue throws droplets and spores, never sparks.
+		3:
+			return look.get("accent", look["damage_glow"]) if role == SparkRole.ENGINE else look["damage_glow"]
+		2: return FLOOK.death_spark(faction)
+	match role:
+		SparkRole.DEATH: return FLOOK.death_spark(faction)
+		SparkRole.SHIELD: return FLOOK.shield(faction)
+		SparkRole.ENGINE: return FLOOK.engine(faction)
+		SparkRole.WEAPON: return FLOOK.weapon(faction)
+	return look["damage_glow"]
+
+
+# Shutter is a length of motion history in effect seconds. Velocity is in world units/s.
+# Pixel floors describe the whole soft mask, not the hot core.
+func spark(p: Vector3, t: float, life: float, faction: String, intensity: float, shutter: float, width: float,
+		vel: Vector3, drag := 0.0, wpx := 0.0, lpx := 0.0, role := SparkRole.HULL, tint := Color.TRANSPARENT) -> void:
+	if closed or not p.is_finite() or not vel.is_finite() or life <= 0.0 or intensity <= 0.0:
+		return
+	var data := spark_particle(p, t, life, faction, intensity, shutter, width * unit, vel, drag, wpx, lpx, role, 0.0, tint)
+	if not data.is_empty():
+		(pools["stk"] as POOLS.Pool).emit(data)
+
+
+# The idle drive uses these same attributes in a looping hull-local batch.
+static func spark_particle(p: Vector3, t: float, life: float, faction: String, intensity: float, shutter: float,
+		width: float, vel: Vector3, drag: float, wpx: float, lpx: float, role: int, period := 0.0,
+		tint := Color.TRANSPARENT) -> PackedFloat32Array:
+	var col := spark_colour(faction, role)
+	if col.a <= 0.0:
+		return PackedFloat32Array()
+	if tint.a > 0.0:
+		col = tint
+	var glass := 1.0 if int(FLOOK.of(faction).get("wound_kind", 0)) == 2 else 0.0
+	return POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
+		Vector4(col.r, col.g, col.b, intensity), Vector4(clampf(shutter, 0.015, 0.20), width, maxf(drag, 0.0), SPARK_KIND),
+		Vector4(period, glass, wpx, lpx))
+
+
+# ShipView supplies the existing movement scatter, on this same battle clock and pool.
+func _thrust_spark(p: Vector3, life: float, faction: String, world_width: float, vel: Vector3) -> void:
+	spark(p, now, life, faction, 2.0, 0.045, world_width / maxf(unit, 1e-4), vel, 2.0, 0.0, 0.0, SparkRole.ENGINE)
 
 
 func shot_pass_by(at: float, p: Vector3) -> void:
@@ -1752,6 +1844,8 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 		remove_ship(id)
 	var s = SHIP.new()
 	s.setup(self, id, root, info)
+	if root.has_method("set_thrust_spark_sink"):
+		root.set_thrust_spark_sink(_thrust_spark)
 	s.set_meta("cut_class", String(info.get("cls", "")))
 	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
 	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
@@ -1842,8 +1936,14 @@ func remove_ship(id: String) -> void:
 	if not ships.has(id):
 		return
 	attach_report(true, id)
+	_clear_thrust_spark_sink(ships[id].root)
 	(ships[id] as SHIP).teardown(self)
 	ships.erase(id)
+
+
+func _clear_thrust_spark_sink(ship_root) -> void:
+	if is_instance_valid(ship_root) and ship_root.has_method("set_thrust_spark_sink"):
+		ship_root.set_thrust_spark_sink(Callable())
 
 
 func set_engine(id: String, level: float) -> void:
@@ -1951,6 +2051,8 @@ func death(id: String, cause := "blast") -> float:
 	var s: SHIP = ships.get(id)
 	if s == null or s.dead or s.gone:
 		return 0.0
+	# Death must sample the real hull, never the transient rift stretch.
+	s.clear_rift_pose()
 	s.end_brownout()
 	stats["deaths"] += 1
 	var t0 := Time.get_ticks_usec()
@@ -1987,14 +2089,35 @@ func wreck_settled(id: String) -> bool:
 	return s == null or s.has_meta("death_hidden") or not is_instance_valid(s.root)
 
 
-func jump_out(id: String) -> void:
-	if ships.has(id):
-		(ships[id] as SHIP).jump_out(self)
+func _special_ship(id: String) -> SHIP:
+	var s: SHIP = ships.get(id)
+	return s if s != null and not s.dead and not s.gone and is_instance_valid(s.root) else null
+
+
+func nova(id: String, target: Vector3, pace := 1.0) -> float:
+	var s := _special_ship(id)
+	return SPECIAL.nova(self, s, target, maxf(pace, 0.01), nova_look) if s != null else -1.0
+
+
+func rift_in(id: String, pace := 1.0, delay := 0.0, risen := false) -> float:
+	var s := _special_ship(id)
+	return SPECIAL.arrive(self, s, maxf(pace, 0.01), delay, risen) if s != null else -1.0
+
+
+func fold(id: String, pace := 1.0, transfer := Callable()) -> float:
+	var s := _special_ship(id)
+	return SPECIAL.fold(self, s, maxf(pace, 0.01), transfer) if s != null else -1.0
+
+
+func jump_out(id: String, pace := 1.0) -> float:
+	var s := _special_ship(id)
+	return SPECIAL.jump(self, s, maxf(pace, 0.01)) if s != null else -1.0
 
 
 func ability(id: String, _ab := "") -> void:
-	if ships.has(id):
-		(ships[id] as SHIP).pulse(self, 1.0)
+	var s := _special_ship(id)
+	if s != null:
+		SPECIAL.pulse(self, s, false)
 
 
 # A weapon mark on a ship's hull without a volley (API.md 14): look as in volley's looks plus "board" (a blown boarding
@@ -2072,10 +2195,9 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 	var recipe := BOARDING.skin(a if a != null else s)
 	BOARDING.breach(self, s, h, T, recipe)
 	var bk: float = float(bl["burst"])
-	var spark_tint: Color = s.fac.damage_glow
 	var metal_sparks: bool = recipe.style == 0 and s.faction != "chorus"
 	for j in (int(18 * sqrt(bk)) if metal_sparks else 0):
-		stk(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, spark_tint, 4.0, 0.05 * bk, 0.08 * k * bk, 1,
+		spark(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, s.faction, 4.0, 0.05 * bk, 0.08 * k * bk,
 			(wn + rdir() * 0.6).normalized() * (5 + rng.randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
 	shake(T, 0.06, wp)
 	board_lines_s = 0.0
@@ -2094,8 +2216,9 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 
 
 func command(id: String, _cmd := "") -> void:
-	if ships.has(id):
-		(ships[id] as SHIP).pulse(self, 1.6)
+	var s := _special_ship(id)
+	if s != null:
+		SPECIAL.pulse(self, s, true)
 
 
 func launch(carrier_id: String, squadron_id := "") -> void:
@@ -2162,8 +2285,10 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var c = Color(1, 0.6, 0.3)
 	for k in [0, 1, 2, 3, 4, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]:
 		spr(at + rdir(), T, 0.5, c, 0.02, 0.5, 0.5, k)
-	for k in [0, 1, 3, 4, 5, 6, 7]:
-		stk(at, T, 0.5, c, 0.02, 1.0, 0.1, k, Vector3(1, 0, 0))
+	for k in [0, 3, 4, 5, 6, WEAP.BOLT_SHELL, WEAP.BOLT_ENERGY, WEAP.BOLT_CRYSTAL, WEAP.BOLT_SCRAP]:
+		flight_streak(at, T, 0.5, c, 0.02, 1.0, 0.1, k, Vector3(1, 0, 0))
+	spark(at, T, 0.5, "voidsworn", 0.02, 0.06, 0.1, Vector3.RIGHT)
+	spark(at, T, 0.5, "ithar", 0.02, 0.06, 0.1, Vector3.RIGHT)
 	for k in [0, 1, 2, 3, 4, SH.RING_HARMONIC]:
 		ring(at, Vector3.UP, T, 0.5, c, 0.02, 0.5, 1.0, k)
 	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10, SH.RIB_NULL_LANCE]:
@@ -2190,6 +2315,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
 		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), pools["nlance"].mi.material_override,
 		mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(SH.RCS_JET, 1), mat(DEATH.SLAG, 0)]
+	mats.append(mat(SPECIAL.GHOST, -2))
 	mats.append(DAMAGE_PLUME.material(self))
 	# Warm the PBR fallbacks for late arrivals and generated pieces as well as the
 	# actual hull formats below. Glasswright sails blend, and nebula hulls ignore fog.

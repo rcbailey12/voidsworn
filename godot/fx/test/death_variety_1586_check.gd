@@ -201,7 +201,6 @@ func _debris_check() -> void:
 	fx.manual = true
 	fx.setup({"quality": "high", "camera": cam, "shake": 0.0})
 	fx.spr_kinds = {}
-	var brass := Color(1.0, 0.82, 0.55)
 	var want := {"voidsworn": [1, 0.0], "hegemony": [1, 0.0], "corsair": [1, 0.0], "ithar": [1, 2.0], "deathless": [1, 0.0], "chorus": [0, -1.0]}
 	for fac in want:
 		var holder := Node3D.new()
@@ -234,9 +233,17 @@ func _debris_check() -> void:
 			check((heat == 0.0) == (fac == "deathless"), "%s: shard heat %.2f (Eclipse cold, the rest glow)" % [fac, heat])
 		else:
 			check(int((fx.spr_kinds as Dictionary).get(20, 0)) > k0, "%s: a wet fleck in place of the shard" % fac)
-		var sc: Color = BEATS.spark_col(s, brass)
-		var metal: bool = fac in ["voidsworn", "hegemony", "corsair"]
-		check(sc.is_equal_approx(brass) == metal, "%s: crush spark colour %s (brass on metal hulls only)" % [fac, str(sc)])
+		var sparks = fx.pools["stk"]
+		var spark_before: int = sparks.emitted
+		BEATS._ram(fx, s, fx.now)
+		if fac == "chorus":
+			check(sparks.emitted == spark_before, "Chorus ram throws wet flecks, no sparks")
+		else:
+			var last: PackedFloat32Array = sparks.pending.slice(sparks.pending.size() - 20)
+			var expected: Color = fx.spark_colour(fac, fx.SparkRole.DEATH)
+			check(sparks.emitted > spark_before and last.size() == 20 and int(last[19]) == fx.SPARK_KIND
+				and Vector3(last[12], last[13], last[14]).is_equal_approx(Vector3(expected.r, expected.g, expected.b)),
+				"%s ram throws shared sparks in the death tint" % fac)
 		if fac in ["corsair", "ithar"]:
 			_check_death_ribbons(fx, s, world, fac)
 	world.queue_free()
