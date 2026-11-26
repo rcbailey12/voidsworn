@@ -4335,21 +4335,25 @@ static func _core_flash_inner(fx, p: Vector3, R: float, px: float, tint: Color, 
 	# Pixel targets, normal/soft life, then normal/soft size calibration including the battle look's bloom.
 	var row: Array = {"small": [CORE_FLASH_PX["small"], 0.18, 0.55, 2.45, 0.884], "destroyer": [CORE_FLASH_PX["destroyer"], 0.19, 0.575, 2.31, 0.9175], "cruiser": [CORE_FLASH_PX["cruiser"], 0.20, 0.60, 1.97, 0.96], "capital": [CORE_FLASH_PX["capital"], 0.22, 0.65, 1.37, 0.96]}[band]
 	if staged: px = float(row[0])
-	var allowed: bool = fx.flash_ok(fx.now, p, px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, px, float(row[1]))
+	var bright_divisor := float(row[3])
+	var read_px := float(CORE_READ_PX[band])
+	# The shader applies the readability floor to the pre-bloom card after dividing by bright_divisor.
+	# Book the floor with that bloom margin, without changing the card's size or the soft variant.
+	var booked_px := maxf(px, read_px * bright_divisor) if staged else px
+	var allowed: bool = fx.flash_ok(fx.now, p, px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, booked_px, float(row[1]))
 	if staged:
 		var soft: bool = fx.reduce_flashing or not allowed
 		var life: float = float(row[2] if soft else row[1])
-		var divisor: float = float(row[4] if soft else row[3])
+		var divisor: float = float(row[4]) if soft else bright_divisor
 		var flash := flipbook(fx, p, Vector3.UP, 0.0, "flash", life, Vector3.ZERO, 1.25 if soft else 6.0, band, src, false, true, frame)
 		var mat := flash.material_override as ShaderMaterial
-		# The approved counted diameter above already bounds this floor, including room for bloom.
 		mat.set_shader_parameter("min_pixels", px)
-		mat.set_shader_parameter("read_pixels", CORE_READ_PX[band])
+		mat.set_shader_parameter("read_pixels", read_px)
 		mat.set_shader_parameter("extent", px * STAGING_UNITS_PER_PIXEL)
 		mat.set_shader_parameter("size_divisor", divisor)
 		mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
 		# This soft front mints no flash token, adds no light and does not touch the faction's fire or break.
-		var ring_px: float = float(CORE_READ_PX[band]) * 1.45
+		var ring_px: float = read_px * 1.45
 		var ring_col := dcol(src, "light", tint)
 		var ring_size := ring_px * STAGING_UNITS_PER_PIXEL
 		var ring_seed := fposmod(p.dot(Vector3(0.173, 0.371, 0.227)), 1.0)

@@ -17,6 +17,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const BOARDING := preload("res://fx/fx_boarding.gd")
 const EVENT_PATHS := preload("res://fx/fx_event_paths.gd")
 const DAMAGE_PLUME := preload("res://fx/fx_damage_plume.gd")
+const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 signal torpedo_shot_down(pos: Vector3)
 
@@ -2189,7 +2190,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
 		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), pools["nlance"].mi.material_override,
-		mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(SH.RCS_JET, 1), mat(DEATH.SLAG, 0)]
+		mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(DEATH.SLAG, 0)]
 	mats.append(DAMAGE_PLUME.material(self))
 	# Warm the PBR fallbacks for late arrivals and generated pieces as well as the
 	# actual hull formats below. Glasswright sails blend, and nebula hulls ignore fog.
@@ -2262,6 +2263,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		mi.material_override = mats[i]
 		mi.position = Vector3((i % 4 - 1.5) * 2.5, (i / 4 - 1.0) * 2.5, 0) * unit
 		tmp.add_child(mi)
+	# Use the same indexed strip and material setup as the live thrusters, not the box vertex format.
+	var jet := SHIP_VIEW.build_rcs_jet("voidsworn", Vector3.RIGHT, 1.0, 0.2, 0.5, 0.01, 0.5)
+	tmp.add_child(jet)
 	# Warm the boarding and tick current shader in its indexed tube format, not the primitive box format.
 	var conduit := EVENT_PATHS.TUBE.make(self, PackedVector3Array([Vector3.LEFT, Vector3.RIGHT]),
 		PackedFloat32Array([0.1, 0.1]), Color.WHITE, Color.WHITE, 0, 0.0)

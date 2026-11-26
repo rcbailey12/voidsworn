@@ -30,6 +30,11 @@ func _run() -> void:
 		"SH.RIBBON exposes plume_style and throttle_k uniforms")
 	_check(SH.RIBBON.contains("inner_core") and SH.RIBBON.contains("outer_wash") and SH.RIBBON.contains("bell_in"),
 		"SH.RIBBON layers bright inner_core, outer_wash and smooth bell_in root blend")
+	var fragment := SH.RIBBON.get_slice("void fragment()", 1)
+	_check(fragment.contains("if (engine_plume && (k == 0 || k == 3))")
+		and fragment.contains("else if (k == 0 || k == 3)")
+		and fragment.contains("vCol.a * motion * env * ends * fx_gain"),
+		"H1: pooled light shafts and wreck tethers use the legacy ribbon shape and lifetime fade")
 
 	# 2. All 6 factions get distinct faction_looks.json plume palettes and respect approved faction looks.
 	var world := Node3D.new()
@@ -38,6 +43,8 @@ func _run() -> void:
 	world.add_child(fx)
 	fx.manual = true
 	fx.setup({"quality": "high", "shake": 0.0})
+	_check(fx.pools.rib.mi.material_override.get_shader_parameter("engine_plume") != true,
+		"H1: the one-shot ribbon pool does not opt into the main plume")
 
 	var styles := {}
 	var cores := {}
@@ -53,6 +60,9 @@ func _run() -> void:
 		fx.add_ship("plume_" + fac, body, {"meshes": [mi], "shielded": false, "faction": fac})
 		var s = fx.ships["plume_" + fac]
 		_check(s._eng_rib_mat != null, "%s builds main plume ribbon material" % fac)
+		_check(s._eng_rib_mat.get_shader_parameter("engine_plume") == true
+			and (s._sick_rib_mat == null or s._sick_rib_mat.get_shader_parameter("engine_plume") == true),
+			"H1: %s keeps its main and damaged engines on the layered plume path" % fac)
 		var st := int(roundf(float(s._eng_rib_mat.get_shader_parameter("plume_style"))))
 		var pc: Vector3 = s._eng_rib_mat.get_shader_parameter("plume_core")
 		var pw: Vector3 = s._eng_rib_mat.get_shader_parameter("plume_wash")

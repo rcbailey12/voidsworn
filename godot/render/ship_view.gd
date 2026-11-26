@@ -35,7 +35,11 @@ var ring: MeshInstance3D
 var engines: Array = []
 var speed_k := 1.0          # the battle's SPEED (Enter or Space hurries a burn already under way)
 var cur_yaw := 0.0
-var dead := false
+var dead := false:
+	set(value):
+		dead = value
+		if dead:
+			clear_rcs_puffs()
 var bob_seed := 0.0
 var meshes: Array = []
 var fade := 1.0
@@ -2279,6 +2283,16 @@ static func _puff_mat() -> StandardMaterial3D:
 	_pm.no_depth_test = false
 	_pm.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
 	return _pm
+
+
+func clear_rcs_puffs() -> void:
+	for puff in puffs:
+		var node := puff.n as Node3D
+		if is_instance_valid(node):
+			# These jets are top-level. Hide them now rather than waiting for the queued free.
+			node.hide()
+			node.queue_free()
+	puffs.clear()
 
 
 func _puffs_step(dt: float) -> void:
