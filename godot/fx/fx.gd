@@ -16,6 +16,7 @@ const WEAP := preload("res://fx/fx_weapons.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BOARDING := preload("res://fx/fx_boarding.gd")
 const EVENT_PATHS := preload("res://fx/fx_event_paths.gd")
+const DAMAGE_PLUME := preload("res://fx/fx_damage_plume.gd")
 
 signal torpedo_shot_down(pos: Vector3)
 
@@ -1196,9 +1197,11 @@ func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 
 	_lev.append([p, t, life, peak, col, shape, reach, false])
 
 
-# reach: the light's range in world units over unit (0: the standing LIGHT_REACH); R416 cavity lights keep it short.
-func light_source(node: Node3D, off: Vector3, col: Color, base: float, flick := 0.3, reach := 0.0) -> Dictionary:
-	var s = {"node": node, "off": off, "col": col, "base": base, "flick": flick, "seed": rng.randf() * 10.0, "on": true, "reach": reach}
+# Reach is in world units over unit (0 uses LIGHT_REACH). Keep cavity falloff and fog unless the caller opts out.
+func light_source(node: Node3D, off: Vector3, col: Color, base: float, flick := 0.3, reach := 0.0,
+		phase := -1.0, local_only := false) -> Dictionary:
+	var s = {"node": node, "off": off, "col": col, "base": base, "flick": flick, "on": true,
+		"seed": rng.randf() * 10.0 if phase < 0.0 else phase, "reach": reach, "local_only": local_only}
 	_lsrc.append(s)
 	return s
 
@@ -1238,7 +1241,7 @@ func _update_lights() -> void:
 			1: I = smoothstep(0.0, 0.08, u) * (1.0 - smoothstep(0.85, 1.0, u)) * (1.0 if reduce_flashing else 0.88 + 0.12 * sin(now * 50.0))
 			2: I = u * u
 			3: I = smoothstep(0.0, 0.25, u) if u < 0.25 else pow(1.0 - (u - 0.25) / 0.75, 2.0)   # issue 504: soft rise
-		ev.append([e[0], I * float(e[3]), e[4], float(e[6]) if e.size() > 6 else 0.0])
+		ev.append([e[0], I * float(e[3]), e[4], float(e[6]) if e.size() > 6 else 0.0, false])
 	_lev = keep
 	var ks: Array = []
 	for s in _lsrc:
@@ -1251,23 +1254,28 @@ func _update_lights() -> void:
 		var fl = 1.0 - float(s["flick"]) * (0.5 + 0.5 * sin(now * 23.0 + float(s["seed"])) * sin(now * 7.1 + float(s["seed"]) * 2.0))
 		if reduce_flashing:
 			fl = 1.0 - float(s["flick"]) * 0.3 * (0.5 + 0.5 * sin(now * 2.0 + float(s["seed"])))
-		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"], float(s.get("reach", 0.0))])
+		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"], s["reach"], s["local_only"]])
 	_lsrc = ks
 	# brightest first, nearer lights count more when the pool is short
 	for e in ev:
 		e.append(float(e[1]) / (1.0 + (e[0] as Vector3).distance_to(cp) / (200.0 * unit)))
-	ev.sort_custom(func(a: Array, b: Array) -> bool: return float(a[4]) > float(b[4]))
+	ev.sort_custom(func(a: Array, b: Array) -> bool: return float(a[5]) > float(b[5]))
+	var fog_rank := 0
 	for k in _lpool.size():
+		var scatters := false
+		if k < ev.size() and not ev[k][4]:
+			scatters = fog_rank < 2
+			fog_rank += 1
 		var l: OmniLight3D = _lpool[k]
 		if k < ev.size() and float(ev[k][1]) > 0.03:
 			l.position = ev[k][0]
 			l.light_energy = float(ev[k][1]) * LIGHT_K
 			l.light_color = ev[k][2]
 			l.omni_range = (float(ev[k][3]) if float(ev[k][3]) > 0.0 else LIGHT_REACH) * unit
-			l.omni_attenuation = REACH_ATTEN if float(ev[k][3]) > 0.0 else LIGHT_ATTEN
+			l.omni_attenuation = REACH_ATTEN if float(ev[k][3]) > 0.0 and not ev[k][4] else LIGHT_ATTEN
 			# Issue 1237 (Neon F7.4): only the two strongest event lights scatter into volumetric fog (all 64 did,
 			# each one a pass over the fog froxels); the rest light hulls only.
-			l.light_volumetric_fog_energy = 1.0 if k < 2 else 0.0
+			l.light_volumetric_fog_energy = 1.0 if scatters else 0.0
 			l.visible = true
 		else:
 			l.visible = false
@@ -2182,6 +2190,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
 		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), pools["nlance"].mi.material_override,
 		mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(SH.RCS_JET, 1), mat(DEATH.SLAG, 0)]
+	mats.append(DAMAGE_PLUME.material(self))
 	# Warm the PBR fallbacks for late arrivals and generated pieces as well as the
 	# actual hull formats below. Glasswright sails blend, and nebula hulls ignore fog.
 	for fog_disabled in [false, true]:

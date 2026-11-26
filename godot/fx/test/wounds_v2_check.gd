@@ -136,8 +136,9 @@ func _holes(s) -> Array:
 
 func _lights(s) -> Array:
 	var out: Array = []
-	for src in fx._lsrc:
-		if bool(src["on"]) and is_instance_valid(src["node"]) and s._dmg_root.is_ancestor_of(src["node"]):
+	# The V2 cap is for cavity lights. Build C's local plume lights share the pool but are not inside the cutout.
+	for src in s._hole_lights:
+		if bool(src["on"]) and is_instance_valid(src["node"]) and s._dmg_root.is_ancestor_of(src["node"]) and fx._lsrc.has(src):
 			out.append(src)
 	return out
 
@@ -310,7 +311,7 @@ func _run() -> void:
 		var acc := BREACH.wound_col(FL.of(faction)["wound"], "interior_accent", Color.BLACK)
 		var l_ok := ls.size() >= 1 and ls.size() <= BREACH.INSIDE_LIGHTS
 		for src in ls:
-			l_ok = l_ok and (src["col"] as Color).is_equal_approx(acc) and float(src["reach"]) > 0.0
+			l_ok = l_ok and (src["col"] as Color).is_equal_approx(acc) and float(src["reach"]) > 0.0 and not src["local_only"]
 		check(l_ok, "%s: the open cutout lights its inside softly in the faction accent (%d lights)" % [faction, ls.size()])
 		var int_ok := false
 		for m in s.meshes:
