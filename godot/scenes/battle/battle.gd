@@ -2461,7 +2461,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				gfx.anchor_wreck(str(e["unit"]), board.hex_world(int(e["q"]), int(e["r"])), board.HS * WRECK_LEASH_K)
 			_log("The wreck of %s breaks into tumbling wreckage, blocking movement and line of fire." % _name(e["unit"]), "x")
 		"death":
-			await _play_death(e)
+			await _play_death(e, batch_view)
 			if wrecked.has(e["unit"]):
 				_lay_wreck(e["unit"])
 		"fled":
@@ -2538,7 +2538,11 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 		gfx.clear_wreck(id)
 		gfx.remove_ship(id)
 	wrecked.erase(id)
+	sv.remove_meta("plate_off")
 	sv.revive()
+	if sv.has_meta("death_view_parked"):
+		sv.remove_meta("death_view_parked")
+		sv.set_process(true)
 	var yaw := ShipView.yaw_of(ru["facing"]) if ru.has("facing") else sv.cur_yaw
 	sv.snap_to(board.hex_world(int(e["q"]), int(e["r"])), yaw)
 	if not ru.is_empty():
@@ -3752,7 +3756,7 @@ func view_cause(cause: String, id: String) -> String:
 	return cause
 
 
-func _play_death(e: Dictionary) -> void:
+func _play_death(e: Dictionary, batch_view := {}) -> void:
 	var id = e["unit"]
 	var sv = views.get(id)
 	_deaths_left = maxi(_deaths_left - 1, 0)
@@ -3817,6 +3821,63 @@ func _play_death(e: Dictionary) -> void:
 	_retire_dead_plate(str(id))
 	var dk := _enemy_pace_k() if not friend else 1.0
 	await wait((0.68 if not sq else 0.25) * 1000.0 * maxf(0.4, dk))
+	if is_instance_valid(sv) and sv.dead and not wrecked.has(id):
+		_park_dead_view(sv)
+
+
+func _death_can_rise(id: String, unit: Dictionary, batch_view: Dictionary) -> bool:
+	if unit.get("fac") != "deathless":
+		return false
+	# VU still holds the preceding view while a batch plays. Only the batch's view may know this kill scheduled a rise.
+	for row in batch_view.get("units", []):
+		if row["id"] == id:
+			return row.get("rising") != null
+	return unit.get("rising") != null
+
+
+func _retire_dead_plate(id: String, sv: ShipView) -> void:
+	if hud != null and not sv.has_meta("plate_off"):
+		hud.remove_plate(id)
+		sv.set_meta("plate_off", true)
+
+
+func _park_dead_view(sv: ShipView) -> void:
+	if sv.is_processing():
+		sv.set_meta("death_view_parked", true)
+		sv.set_process(false)
+	# Removing a ship clears its FX clock, which hands detailed wings back to their own _process.
+	if not sv.squad_kind.is_empty() and is_instance_valid(sv.hull):
+		sv.hull.set_process(false)
+
+
+func _retire_death_view(id: String, effects, ship, keep_fx: bool) -> void:
+	var sv: ShipView = views.get(id)
+	if gfx != effects or not is_instance_valid(sv) or not sv.dead or effects.ship(id) != ship:
+		return
+	# The nominal death time can come before a cold cut, a late core or the last visible or audible tail.
+	if not ship.death_fx_done or ship.death_core_pending or _death_view_has_tail(sv) or (not keep_fx and _death_audio_pending(ship)):
+		effects.later(float(effects.now) + 0.1, _retire_death_view.bind(id, effects, ship, keep_fx))
+		return
+	if not keep_fx:
+		effects.remove_ship(id)
+	_park_dead_view(sv)
+
+
+func _death_audio_pending(ship) -> bool:
+	for cue in death_audio.deaths:
+		if cue.ship == ship:
+			return true
+	return false
+
+
+func _death_view_has_tail(sv: ShipView) -> bool:
+	if not sv.puffs.is_empty():
+		return true
+	if not sv.squad_kind.is_empty():
+		for trail in sv.hull.trails:
+			if trail.hist.size() >= 2:
+				return true
+	return false
 
 
 # ---------------------------------------------------------------- end of battle
@@ -7337,6 +7398,10 @@ func _process(dt: float) -> void:
 	var show_up: bool = not bot and not thinking and not ended and api.phase == "player"
 	for id in views:
 		var sv = views[id]
+		if sv.dead:
+			if not sv.has_meta("plate_off"):
+				_retire_dead_plate(str(id), sv)
+			continue
 		var u: Dictionary = VU.get(id, {})
 		var aimed := not aim.is_empty() and (str(id) == str(aim["t"]) or str(id) == str(aim["a"]))
 		# issue 2194 (1211): the cut-in's two ships keep their plates readable while the rest hide; a dead target

@@ -35,7 +35,11 @@ var ring: MeshInstance3D
 var engines: Array = []
 var speed_k := 1.0          # the battle's SPEED (Enter or Space hurries a burn already under way)
 var cur_yaw := 0.0
-var dead := false
+var dead := false:
+	set(value):
+		dead = value
+		if dead:
+			clear_rcs_puffs()
 var bob_seed := 0.0
 var meshes: Array = []
 var fade := 1.0
@@ -1036,6 +1040,7 @@ var _puff_cd := {}
 var _idle_time := 0.0
 var _bob_time := 0.0
 var puffs: Array = []
+var _thrust_spark_sink := Callable()
 
 
 # segments: [{"kind": "turn", "a0", "a1", "w"} | {"kind": "run", "pts": [Vector3 incl. height], "yaw", "w"}]; dur is the
@@ -2162,6 +2167,10 @@ static func build_rcs_jet(fac_id: String, dir: Vector3, length: float, w_root: f
 	return mi
 
 
+func set_thrust_spark_sink(sink: Callable) -> void:
+	_thrust_spark_sink = sink
+
+
 func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 	var style := str(tp.get("style", "gas"))
 	if fac == "chorus" and style == "gas":
@@ -2219,20 +2228,10 @@ func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 # Isolated nozzle-grit seam for issue 2018 / PR #2049 shared sparks integration (no new sparks added here).
 func _emit_thrust_grit(origin: Vector3, vw: Vector3, spark_px: float, n_sp: int) -> void:
 	for i in n_sp:
-		var g := Sprite3D.new()
-		g.texture = _glow_tex()
-		g.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		g.shaded = false
-		g.transparent = true
-		g.material_override = _puff_mat()
-		g.modulate = Color(1.0, 0.72, 0.35, 0.95)
-		g.pixel_size = spark_px * 0.16
-		g.top_level = true
-		add_child(g)
-		g.global_position = origin
 		var gv := (vw + Vector3(_jet_rng.randf() - 0.5, _jet_rng.randf() - 0.5, _jet_rng.randf() - 0.5) * 0.9).normalized() * maxf(L, 6.0) * (1.6 + _jet_rng.randf())
-		puffs.append({"n": g, "t": 0.0, "v": gv + _vel * 0.6, "s": g.pixel_size, "a": 0.95, "life": 0.3 + _jet_rng.randf() * 0.2,
-			"spread": 0.0, "style": "spark"})
+		var spark_life := 0.3 + _jet_rng.randf() * 0.2
+		if _thrust_spark_sink.is_valid():
+			_thrust_spark_sink.call(origin, spark_life, fac, spark_px * 64.0 * 0.16, gv + _vel * 0.6)
 
 
 static var _rt: Texture2D = null
@@ -2279,6 +2278,16 @@ static func _puff_mat() -> StandardMaterial3D:
 	_pm.no_depth_test = false
 	_pm.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
 	return _pm
+
+
+func clear_rcs_puffs() -> void:
+	for puff in puffs:
+		var node := puff.n as Node3D
+		if is_instance_valid(node):
+			# These jets are top-level. Hide them now rather than waiting for the queued free.
+			node.hide()
+			node.queue_free()
+	puffs.clear()
 
 
 func _puffs_step(dt: float) -> void:

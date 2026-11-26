@@ -129,17 +129,30 @@ func _flash_checks(viewport: SubViewport, cam: Camera3D) -> void:
 		var bright := float(mat.get_shader_parameter("soft_flash")) == 0.0
 		_check(floor_px >= float(DEATH.CORE_READ_PX["small"]) - 0.01 and life <= 0.70, "post-calibration core floor and flame cap")
 		_check(bright == (i < 3) and (not bright or life <= 0.25), "refusal softens the core, bright phase stays short")
-	_check(float(fx.flash_area_log[0][3]) >= float(DEATH.CORE_READ_PX["small"]), "the flash counter accounts for the enlarged core")
+	for band in DEATH.CORE_READ_PX:
+		fx.now += 1.0
+		var first: int = fx.flash_area_log.size()
+		DEATH._core_flash(fx, p, 2.0, 70.0, tint, null, Vector3.ZERO, null, band)
+		var mat := _core_cards(fx).back() as ShaderMaterial
+		var px := float(mat.get_shader_parameter("min_pixels"))
+		var extent := float(mat.get_shader_parameter("extent"))
+		var read_px := float(mat.get_shader_parameter("read_pixels"))
+		var divisor := float(mat.get_shader_parameter("size_divisor"))
+		var expected: float = fx._flash_disc(p, extent, maxf(px, read_px * divisor))[2]
+		_check(fx.flash_area_log[first][6] == 1 and is_equal_approx(float(fx.flash_area_log[first][3]), expected),
+			"M1: the %s bright core books its full screen diameter, including bloom on the read floor" % band)
 	# One instance uses five packed vec4s. Verify the new ring is the sub-flash, bounded kind with a screen floor.
 	_check(rings.pending.size() >= 20 and is_equal_approx(rings.pending[11], DEATH.CORE_RING_S)
 		and rings.pending[15] <= 0.30 and rings.pending[18] == SH.RING_DEATH_FRONT
 		and rings.pending[3] > float(DEATH.CORE_READ_PX["small"]),
 		"the core emits a short, low-contrast screen-sized front")
 	fx.reduce_flashing = true
-	fx.now = 2.0
+	fx.now += 1.0
+	var counted := fx.flash_log.size()
+	var ring_count: int = rings.emitted
 	DEATH._core_flash(fx, p, 2.0, 70.0, tint, null, Vector3.ZERO, null, "capital")
 	cards = _core_cards(fx)
-	_check(fx.flash_log.size() == 3 and rings.emitted == 5 and cards.back().get_shader_parameter("soft_flash") == 1.0,
+	_check(fx.flash_log.size() == counted and rings.emitted == ring_count + 1 and cards.back().get_shader_parameter("soft_flash") == 1.0,
 		"reduce flashing keeps the soft read without counting an extra flash")
 	FX.clear_static()
 
