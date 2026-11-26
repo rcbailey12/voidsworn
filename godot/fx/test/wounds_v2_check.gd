@@ -220,10 +220,8 @@ func _glass_layer_check() -> void:
 	var offset := Vector3(0.30, 0.0, 0.20)
 	var deep := 1.5
 	var shelf := 0.64
-	var depths := [0.0, 0.25, deep, shelf]
 	var mesh := ArrayMesh.new()
-	var surfs: Array = []
-	for depth: float in depths:
+	for depth: float in [0.0, 0.25, deep, shelf]:
 		var interior := depth == shelf
 		var box := BoxMesh.new()
 		box.size = Vector3(0.25, 0.01, 0.22) if interior else Vector3(9.0, 0.01, 9.0)
@@ -232,29 +230,56 @@ func _glass_layer_check() -> void:
 		arrays[Mesh.ARRAY_VERTEX] = xf * (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array)
 		var si := mesh.get_surface_count()
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-		surfs.append({"arrays": arrays, "xf": Transform3D.IDENTITY, "aabb": xf * box.get_aabb(),
-			"mid": 0, "n": depths.size(), "fmt": mesh.surface_get_format(si), "mat": null, "interior": interior})
-	var stack = _hull_of(mesh.get_faces(), 24.0)
-	stack.authored = true
-	var glass := BREACH.place_hole(stack, Vector3.ZERO, Vector3.UP, 1.1, 3.0, "ithar")
-	var rebuilt := BREACH.compute({"surfs": surfs, "ents": [glass], "q": 0.001, "hull": stack})
-	var skin := rebuilt["meshes"].get(0) as ArrayMesh
-	check(glass.has_cut() and not glass.thin_shear and skin != null, "2175: a real faceted cut rebuilds the layered hull")
+		if interior:
+			var mat := StandardMaterial3D.new()
+			mat.set_meta("fx_authored_interior", true)
+			mesh.surface_set_material(si, mat)
+	var body := Node3D.new()
+	world.add_child(body)
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	body.add_child(mi)
+	var sid := "v2_ithar_layers"
+	fx.add_ship(sid, body, {"faction": "ithar", "cls": "Cruiser", "shielded": false, "cut_on_arrival": false})
+	var s = fx.ship(sid)
+	s.hull.authored = true
+	var glass := BREACH.place_hole(s.hull, Vector3.ZERO, Vector3.UP, 1.1, 3.0, "ithar")
+	check(glass.has_cut() and not glass.thin_shear, "2175: the layered hull takes a real faceted cut")
+
+	# Leave out active so the standalone call prepares its own copies.
+	var rebuilt := BREACH.compute({"surfs": BREACH.gather(s), "ents": [glass], "q": 0.001, "hull": s.hull})
+	_check_glass_layers(rebuilt["meshes"].get(mi.get_instance_id()) as ArrayMesh, glass, offset, deep, shelf, "standalone")
+
+	# Let the ship gather, prepare and submit the live job, then test the mesh actually swapped onto it.
+	s._ents[1] = [glass]
+	s._dmg_request(fx)
+	var active: PackedInt32Array = s._dmg_job.get("active", PackedInt32Array())
+	check(s._dmg_task >= 0 and active.has(0) and active.has(1) and not active.has(3),
+		"2175 (live worker): the job prepares both shells but skips the authored deck")
+	s.flush_damage(fx)
+	var live_skin := mi.mesh as ArrayMesh if mi.mesh != mesh else null
+	_check_glass_layers(live_skin, glass, offset, deep, shelf, "live worker")
+	fx.remove_ship(sid)
+	body.queue_free()
+
+
+func _check_glass_layers(skin: ArrayMesh, glass: BREACH.Ent, offset: Vector3, deep: float, shelf: float, path: String) -> void:
+	check(skin != null, "2175 (%s): the layered hull has a rebuilt mesh" % path)
 	if skin == null:
 		return
 	var tris := TriangleMesh.new()
 	tris.create_from_faces(skin.get_faces())
 	var centre_hit := tris.intersect_segment(Vector3.UP, Vector3.DOWN * 3.0)
 	check(deep * deep < glass.cutr2 and not centre_hit.is_empty() and is_equal_approx((centre_hit["position"] as Vector3).y, -deep),
-		"2175: the centre ray passes through both shell layers and hits the deep deck")
+		"2175 (%s): the centre ray passes through both shell layers and hits the deep deck" % path)
 	var offset_hit := tris.intersect_segment(offset + Vector3.UP, offset + Vector3.DOWN * 3.0)
 	check(BREACH.removed_by(offset + Vector3.DOWN * shelf, [glass]) == 0 and not offset_hit.is_empty()
 		and is_equal_approx((offset_hit["position"] as Vector3).y, -shelf),
-		"2175: the rebuilt skin preserves the offset authored deck inside the cut volume")
+		"2175 (%s): the rebuilt skin preserves the offset authored deck inside the cut volume" % path)
 	var flank := Vector3.RIGHT * 2.0
 	var flank_hit := tris.intersect_segment(flank + Vector3.UP, flank + Vector3.DOWN * 3.0)
 	check(not flank_hit.is_empty() and absf((flank_hit["position"] as Vector3).y) < 0.03,
-		"2175: plating outside the opening stays intact")
+		"2175 (%s): plating outside the opening stays intact" % path)
 
 
 func _run() -> void:
