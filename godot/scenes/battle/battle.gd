@@ -2479,19 +2479,28 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			if wrecked.has(e["unit"]):
 				_lay_wreck(e["unit"])
 		"fled":
-			var sv = views.get(e["unit"])
-			var at: float = gfx.jump_out(str(e["unit"]), speed) if gfx != null else -1.0
-			if at >= 0.0:
-				if sv != null:
+			var id := str(e["unit"])
+			var sv: ShipView = views.get(id)
+			var at: float = gfx.jump_out(id, speed) if gfx != null else -1.0
+			if sv != null:
+				if at >= 0.0:
 					sv.dead = true
 					if sv.marker != null:
 						sv.marker.visible = false
 					sv.ring.visible = false
-			elif sv != null:
-				sv.flee()
-			_log("%s leaves the battle." % _name(e["unit"]), "e" if _side(e["unit"]) == "player" else "s")
+				else:
+					sv.flee()
+					# The fallback flies longer than the event hold. Park it when it hides, not when the hold ends.
+					var park := _park_dead_view.bind(sv)
+					if not sv.visible:
+						_park_dead_view(sv)
+					elif not sv.visibility_changed.is_connected(park):
+						sv.visibility_changed.connect(park, CONNECT_ONE_SHOT)
+				_retire_dead_plate(id, sv)
+			_log("%s leaves the battle." % _name(id), "e" if _side(id) == "player" else "s")
 			if at >= 0.0:
-				await _await_fx(at)
+				if await _await_fx(at) and is_instance_valid(sv) and views.get(id) == sv and sv.dead:
+					_park_dead_view(sv)
 			else:
 				await wait(300.0)
 		"end":
