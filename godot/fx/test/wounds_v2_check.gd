@@ -215,14 +215,46 @@ func _glass_mouth_check(s, e: BREACH.Ent, deck_point: Vector3) -> void:
 
 
 func _glass_layer_check() -> void:
-	# Two close pearl layers above a recessed room. The first inward ray hits the second layer, not the room.
-	var faces := _box_faces(Vector3(9.0, 0.01, 9.0), Vector3(0, -0.005, 0))
-	faces.append_array(_box_faces(Vector3(9.0, 0.01, 9.0), Vector3(0, -0.255, 0)))
-	faces.append_array(_box_faces(Vector3(9.0, 0.01, 9.0), Vector3(0, -2.005, 0)))
-	var stack = _hull_of(faces, 24.0)
+	# The small authored deck is inside the cut radius and above its depth limit, but off the five thickness rays.
+	# The deeper, untagged deck tests the depth limit itself. Both must survive the same rebuild that opens the shells.
+	var offset := Vector3(0.30, 0.0, 0.20)
+	var deep := 1.5
+	var shelf := 0.64
+	var depths := [0.0, 0.25, deep, shelf]
+	var mesh := ArrayMesh.new()
+	var surfs: Array = []
+	for depth: float in depths:
+		var interior := depth == shelf
+		var box := BoxMesh.new()
+		box.size = Vector3(0.25, 0.01, 0.22) if interior else Vector3(9.0, 0.01, 9.0)
+		var arrays := box.get_mesh_arrays()
+		var xf := Transform3D(Basis.IDENTITY, (offset if interior else Vector3.ZERO) - Vector3.UP * (depth + 0.005))
+		arrays[Mesh.ARRAY_VERTEX] = xf * (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array)
+		var si := mesh.get_surface_count()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		surfs.append({"arrays": arrays, "xf": Transform3D.IDENTITY, "aabb": xf * box.get_aabb(),
+			"mid": 0, "n": depths.size(), "fmt": mesh.surface_get_format(si), "mat": null, "interior": interior})
+	var stack = _hull_of(mesh.get_faces(), 24.0)
+	stack.authored = true
 	var glass := BREACH.place_hole(stack, Vector3.ZERO, Vector3.UP, 1.1, 3.0, "ithar")
-	check(glass.has_cut() and not glass.thin_shear and glass.cut > 0.26 and glass.cut < 2.0,
-		"2175: the faceted cut opens through stacked shell layers without puncturing the room deck (depth %.3f)" % glass.cut)
+	var rebuilt := BREACH.compute({"surfs": surfs, "ents": [glass], "q": 0.001, "hull": stack})
+	var skin := rebuilt["meshes"].get(0) as ArrayMesh
+	check(glass.has_cut() and not glass.thin_shear and skin != null, "2175: a real faceted cut rebuilds the layered hull")
+	if skin == null:
+		return
+	var tris := TriangleMesh.new()
+	tris.create_from_faces(skin.get_faces())
+	var centre_hit := tris.intersect_segment(Vector3.UP, Vector3.DOWN * 3.0)
+	check(deep * deep < glass.cutr2 and not centre_hit.is_empty() and is_equal_approx((centre_hit["position"] as Vector3).y, -deep),
+		"2175: the centre ray passes through both shell layers and hits the deep deck")
+	var offset_hit := tris.intersect_segment(offset + Vector3.UP, offset + Vector3.DOWN * 3.0)
+	check(BREACH.removed_by(offset + Vector3.DOWN * shelf, [glass]) == 0 and not offset_hit.is_empty()
+		and is_equal_approx((offset_hit["position"] as Vector3).y, -shelf),
+		"2175: the rebuilt skin preserves the offset authored deck inside the cut volume")
+	var flank := Vector3.RIGHT * 2.0
+	var flank_hit := tris.intersect_segment(flank + Vector3.UP, flank + Vector3.DOWN * 3.0)
+	check(not flank_hit.is_empty() and absf((flank_hit["position"] as Vector3).y) < 0.03,
+		"2175: plating outside the opening stays intact")
 
 
 func _run() -> void:
