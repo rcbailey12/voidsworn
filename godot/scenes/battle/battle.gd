@@ -169,6 +169,10 @@ var cmd_armed_t := -9.0
 var cine := "key"          # cut-ins: "key" moments, "all" attacks, "off" (settings)
 var brisk_camera := false
 var cine_saved := {}
+# issue 2194 (1211): the two ships a cut-in is about; their name plates stay readable through the cut
+var _cut_plates: Array = []
+# issue 2194: a dead ship's plate waits for the cut-in that still shows it to end
+var _deferred_dead_plates: Array = []
 var _cut_overlay_alpha := 1.0
 var follow := true          # follow enemy activations with the camera (settings)
 var cam_saved := {}
@@ -762,6 +766,8 @@ func _begin(a) -> void:
 	_skipped_camera_kinds.clear()
 	_shot_cut_timer = null
 	_cine_release()
+	_cut_plates = []
+	_deferred_dead_plates.clear()
 	_reset_battle_lens()
 	_end_enemy_follow()
 	_click_q = {}
@@ -3058,6 +3064,7 @@ func _cine_frame(a_id, t_id, kind := "volley") -> void:
 	var victim = views.get(t_id)
 	var source_len: float = attacker.L if is_instance_valid(attacker) else 6.0
 	var target_len: float = victim.L if is_instance_valid(victim) else 6.0
+	_cut_plates = [str(a_id), str(t_id)]
 	_cine_enter(cam.shot_cut(kind, _pos(a_id), _pos(t_id), source_len, target_len, reduce_motion))
 
 
@@ -3076,6 +3083,10 @@ func _cine_release() -> void:
 	_routine_shot_cut = ""
 	cam.return_from_cut(cine_saved)
 	cine_saved = {}
+	_cut_plates = []
+	if is_instance_valid(hud) and hud.has_method("set_cut_participants"):
+		hud.set_cut_participants([])
+	_release_deferred_dead_plates()
 	hud.letterbox(false)
 	recording_cue.emit("cut_end", "")
 
@@ -3090,6 +3101,8 @@ func _step_cut_overlays(dt: float) -> void:
 		board.set_cut_overlay_alpha(alpha)
 	if is_instance_valid(hud.plates_root):
 		hud.plates_root.modulate.a = alpha
+	if is_instance_valid(hud) and hud.has_method("set_cut_participants"):
+		hud.set_cut_participants(_cut_plates if not board_view else [])
 	for sv in views.values():
 		if is_instance_valid(sv):
 			sv.set_cut_overlay_alpha(alpha)
@@ -3616,10 +3629,11 @@ func _step_battle_lens() -> void:
 
 
 # Keep the kill hold and slow beat. Frame only the dying hull and avoid a quarter blocked by another ship.
-func _kill_frame(id) -> void:
+func _kill_frame(id, by := "") -> void:
 	var sv = views.get(id)
 	if sv == null:
 		return
+	_cut_plates = [str(by), str(id)]
 	var cap: bool = float(VU.get(id, {}).get("size", 0.6)) > 0.8 or bool(VU.get(id, {}).get("flagship", false))
 	var blockers := []
 	for other in views:
@@ -3668,6 +3682,26 @@ func _kill_skip() -> void:
 	if gfx != null and gfx.has_method("skip_death_slowmo"):
 		gfx.skip_death_slowmo()
 	_kill_let_go()
+
+
+# issue 2194: a ship that dies inside its own cut-in keeps its plate (the hit that killed it still reads) until the
+# cut-in lets go; every other dead plate goes at once.
+func _retire_dead_plate(id: String) -> void:
+	if not cine_saved.is_empty() and _cut_plates.has(str(id)):
+		if not _deferred_dead_plates.has(str(id)):
+			_deferred_dead_plates.append(str(id))
+		return
+	if is_instance_valid(hud):
+		hud.remove_plate(str(id))
+
+
+func _release_deferred_dead_plates() -> void:
+	if is_instance_valid(hud):
+		for id in _deferred_dead_plates:
+			var sv = views.get(id)
+			if not is_instance_valid(sv) or bool(sv.dead):
+				hud.remove_plate(str(id))
+	_deferred_dead_plates.clear()
 
 
 # issue 1586: walks a batch's events in order. A ram marks both ships, a boarding scuttle its target, each with the two
@@ -3724,7 +3758,7 @@ func _play_death(e: Dictionary) -> void:
 	_deaths_left = maxi(_deaths_left - 1, 0)
 	var cined := false
 	if sv != null and _cine_wants("kill", e.get("by"), id) and cine_saved.is_empty():
-		_kill_frame(id)
+		_kill_frame(id, str(e.get("by", "")))
 		recording_cue.emit("cut_start", "kill: %s" % _name(id))
 		cined = true
 	var cause := view_cause(str(e.get("cause", "blast")), str(id))
@@ -3753,7 +3787,7 @@ func _play_death(e: Dictionary) -> void:
 		if sv.marker != null:
 			sv.marker.visible = false
 		sv.ring.visible = false
-		hud.remove_plate(str(id))
+		_retire_dead_plate(str(id))
 		# a death is a key moment: it follows the pace only gently (half its hold at most on the enemy's turn, a quarter on
 		# hurry) and a big hull always gets 0.8 s; G4's effect plays on either way
 		var pk := clampf(speed, 0.25 if skip else 0.5, 1.0)
@@ -3780,7 +3814,7 @@ func _play_death(e: Dictionary) -> void:
 	else:
 		sfx.boom(0.22 + minf(0.3, L / 90.0) if sq else (1.2 if big else 0.6), p)
 	sv.die(wrecked.has(id))
-	hud.remove_plate(str(id))
+	_retire_dead_plate(str(id))
 	var dk := _enemy_pace_k() if not friend else 1.0
 	await wait((0.68 if not sq else 0.25) * 1000.0 * maxf(0.4, dk))
 
@@ -4920,6 +4954,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		_end_opening()
 	if kill_hold_until > 0.0 and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed and (e as InputEventMouseButton).button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]) or (e is InputEventKey and (e as InputEventKey).pressed and not (e as InputEventKey).echo)):
 		_kill_skip()
+		if e is InputEventMouseButton:
+			# issue 2194: the skip click must not also start an orbit drag and cancel the smooth return
+			get_viewport().set_input_as_handled()
+			return
 		if e is InputEventKey and e.keycode == KEY_K:
 			return
 	if e is InputEventMouseButton:
@@ -7300,11 +7338,18 @@ func _process(dt: float) -> void:
 	for id in views:
 		var sv = views[id]
 		var u: Dictionary = VU.get(id, {})
+		var aimed := not aim.is_empty() and (str(id) == str(aim["t"]) or str(id) == str(aim["a"]))
+		# issue 2194 (1211): the cut-in's two ships keep their plates readable while the rest hide; a dead target
+		# keeps its own plate until the cut-in ends (its killing hit still reads), then _cine_release retires it
+		var cut_on := not cine_saved.is_empty()
+		var in_cut: bool = cut_on and (_cut_plates.has(str(id)) or aimed)
+		if sv.dead and not in_cut:
+			_retire_dead_plate(str(id))
+			continue
 		if not plates_on:
 			_breathe_ring(sv, show_up and not u.is_empty() and str(id) == sel and u["side"] == "player")
 			continue
-		var aimed := not aim.is_empty() and (str(id) == str(aim["t"]) or str(id) == str(aim["a"]))
-		if u.is_empty() or sv.dead or not sv.visible or _cut_overlay_alpha <= 0.0:
+		if u.is_empty() or (not in_cut and (not sv.visible or cut_on)):
 			hud.set_plate(str(id), Vector2.ZERO, false, "", true, false, 0, 1, 0, 0)
 			continue
 		var wp: Vector3 = sv.visual_position() + Vector3(0, 3.0 + sv.L * 0.18, 0)
@@ -7316,7 +7361,7 @@ func _process(dt: float) -> void:
 		for x in d["sh"]:
 			shs += float(x)
 		var is_up: bool = show_up and str(id) == sel and u["side"] == "player"
-		var px := {"nem": bool(u.get("nemesis", false)) and u["side"] == "enemy", "target": str(id) == target or aimed,
+		var px := {"nem": bool(u.get("nemesis", false)) and u["side"] == "enemy", "target": str(id) == target or in_cut,
 			"regenLock": bool(d.get("regenLock", false))}
 		if _tgt_plate.has(str(id)):
 			px["odds"] = _tgt_plate[str(id)]["odds"]
@@ -7379,7 +7424,7 @@ func _float_step(dt: float) -> void:
 		else:
 			lbl.position = fp - lbl.size * 0.5 + Vector2(0, f.dy)
 		var f_end := float(f.get("end", 1.6))
-		lbl.modulate.a = clampf(f_end - f.t, 0.0, 1.0) * _cut_overlay_alpha
+		lbl.modulate.a = clampf(f_end - f.t, 0.0, 1.0)
 		if f.t > f_end:
 			lbl.queue_free()
 			floats.remove_at(i)

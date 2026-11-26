@@ -75,6 +75,9 @@ var dtip: PanelContainer            # the "more on hover" layer of the ship that
 var dtip_text: RichTextLabel
 var aichip: Label
 var plates_root: Control
+# issue 2194: the cut-in's participant plates sit above the faded board; the hit callouts never take the cut's fade
+var cut_plates_root: Control
+var floats_root: Control
 var plates := {}                    # unit id -> Control
 var tipcard: PanelContainer
 var endcard: PanelContainer
@@ -129,6 +132,16 @@ func _build_all() -> void:
 		plates_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 		plates_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(plates_root)
+	if cut_plates_root == null:
+		cut_plates_root = Control.new()
+		cut_plates_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+		cut_plates_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(cut_plates_root)
+	if floats_root == null:
+		floats_root = Control.new()
+		floats_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+		floats_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(floats_root)
 	_build_log()
 	_build_ledger()
 	_build_banner()
@@ -173,7 +186,9 @@ func _rebuild() -> void:
 	if menu != null and is_instance_valid(menu):
 		var mfo := get_viewport().gui_get_focus_owner()
 		if mfo != null and menu.is_ancestor_of(mfo): keep_row = maxi(0, mfo.get_index() - 1)
-	plates_root.get_parent().remove_child(plates_root)
+	for node in [plates_root, cut_plates_root, floats_root]:
+		if node != null and node.get_parent() != null:
+			node.get_parent().remove_child(node)
 	for id in plates:
 		(plates[id] as Control).queue_free()
 	plates.clear()
@@ -1123,11 +1138,12 @@ func plate_names_under_panels() -> int:
 	return n
 
 
-# a floating callout over a ship ("-12 shield", "Miss", "Critical"); the battle scene moves and fades it
+# a floating callout over a ship ("-12 shield", "Miss", "Critical"); the battle scene moves and fades it.
+# issue 2194: callouts live above the plate fade, so a lance or torpedo cut-in still shows its hit numbers
 func make_float(text: String, col: Color) -> Label:
 	var l := _label(text, 19, col_of(col), font_semi)
 	_halo(l)
-	plates_root.add_child(l)
+	(floats_root if floats_root != null else plates_root).add_child(l)
 	l.reset_size()
 	return l
 
@@ -1136,6 +1152,22 @@ func remove_plate(id: String) -> void:
 	if plates.has(id):
 		(plates[id] as Control).queue_free()
 		plates.erase(id)
+
+
+# issue 2194: a cut-in's participants draw above the faded plate root; every other plate stays in it
+func set_cut_participants(ids: Array) -> void:
+	if cut_plates_root == null or plates_root == null:
+		return
+	var want := {}
+	for id in ids:
+		want[str(id)] = true
+	for id in plates:
+		var c: Control = plates[id]
+		if not is_instance_valid(c):
+			continue
+		var into: Control = cut_plates_root if want.has(str(id)) else plates_root
+		if c.get_parent() != into:
+			c.reparent(into, false)
 
 
 # ---------------------------------------------------------------- onboarding tip card and end card

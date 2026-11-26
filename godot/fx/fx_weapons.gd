@@ -777,14 +777,23 @@ static func _weapon_shader(fx, routed := false) -> Shader:
 
 
 static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: String, life: float, col: Color,
-		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0, gun := true) -> void:
+		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0, gun := true,
+		book := true) -> void:
 	var seed: float = fx.rng.randf()
 	fx.later(T, func l_burst() -> void:
 		var power := strength
 		var duration := life
 		var is_flash: bool = kind == "flash" and strength >= fx.FLASH_I
 		# Book the drawn envelope with bloom, at the camera the player has when the burst appears.
-		if is_flash and not fx.flash_at(p, T, size / BURST_PX_K, px / BURST_PX_K, life, gun):
+		var refused := false
+		if is_flash:
+			if book:
+				refused = not fx.flash_at(p, T, size / BURST_PX_K, px / BURST_PX_K, life, gun)
+			else:
+				# issue 2194: a pulse kept out of the budget still softens under Reduce Flashing
+				fx.flash_lift = false
+				refused = fx.reduce_flashing
+		if refused:
 			power = FLASH_LIFT_POWER if fx.flash_lift else SOFT_FLASH_POWER
 			duration = maxf(life, 1.2 if fx.flash_lift else 0.4)
 		var node := DEATH.flipbook(fx, p, axis, size * fx.unit, kind, duration, velocity, power, "small", null, false, false, null, "weapon") as MeshInstance3D
@@ -929,8 +938,10 @@ static func _muzzle(fx, p: Vector3, dir: Vector3, t: float, col: Color, k: float
 	var lifetime := 0.23 if organic else 0.16
 	var core_life := 0.12 if forward else 0.15
 	fx.record_spawn(src, p, true)
+	# issue 2194: keep the bright core, but a light gun's muzzle pulse must not spend the flash budget that the
+	# impact and death cores need (autocannon and flak fired four to six pulses a volley against a cap of three)
 	_burst(fx, p + dir * k * 0.28 * fx.unit, dir, t, 1.55 * k, "flash", core_life, col,
-		2.5 if organic else 4.2, px)
+		2.5 if organic else 4.2, px, Vector3.ZERO, 1.0, 1.0, true, false)
 	fx.spr(p + offset, t, lifetime, col, 1.15, 1.65 * k, 2.55 * k, profile,
 		dir * (2.0 * k * fx.unit if forward else 0.0), 0.0, 0.0, 0.0, px)
 	if profile != MUZZLE_BALLISTIC:

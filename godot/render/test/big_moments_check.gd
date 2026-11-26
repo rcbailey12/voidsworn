@@ -10,6 +10,11 @@ const GUARD := preload("res://tools/ci/check_guard.gd")
 var failures := 0
 
 
+class ApiStub extends RefCounted:
+	var phase := "player"
+	var round_snap_round := -1
+
+
 func _initialize() -> void:
 	GUARD.arm(self, "big_moments_check")
 	_run.call_deferred()
@@ -34,8 +39,9 @@ func _run() -> void:
 	_flash_checks(viewport, cam)
 	viewport.free()
 	await _overlay_checks()
+	await _cut_plate_checks()
 	if failures == 0:
-		print("PASS: shot framing, eased return, overlay restoration and counted death readability at camera 170")
+		print("PASS: shot framing, eased return, overlay restoration, counted death readability and cut-in plates at camera 170")
 	quit(0 if failures == 0 else 1)
 
 
@@ -54,14 +60,16 @@ func _camera_checks(cam: Camera3D) -> void:
 	for pose in [chase, broad]:
 		cam.enter_cut(pose)
 		cam.snap()
-		_check(cam.sees(source, 0.08) and cam.sees(target, 0.08), "keep both shot subjects inside the letterbox")
+		# the letterbox bars cover the top and bottom 9 percent of the screen
+		_check(cam.sees(source, 0.09) and cam.sees(target, 0.09), "keep both shot subjects inside the letterbox")
 		var eye: Vector3 = cam.position - cam.t
 		var shoulder := Vector3(eye.x, 0, eye.z).normalized().dot(shot_dir)
 		_check(shoulder < (-0.75 if pose == chase else -0.30), "look from the attacker's shoulder")
-	cam.return_from_cut(board_pose)
+	# issue 2194: the drawn radius must be read before the return starts, or the check compares the value with itself
 	var cut_radius: float = cam._cr
 	var cut_target: Vector3 = cam._ct
-	_check(cam._cr == cut_radius and cam.t == board_pose["t"], "return changes the desired pose before changing the drawn pose")
+	cam.return_from_cut(board_pose)
+	_check(cam._cr == cut_radius and cam._ct == cut_target and cam.t == board_pose["t"], "return changes the desired pose before changing the drawn pose")
 	cam._process(RIG.CUT_RETURN_S * 0.25)
 	var early: float = cam._cr
 	cam._process(RIG.CUT_RETURN_S * 0.5)
@@ -184,5 +192,102 @@ func _overlay_checks() -> void:
 	_check(ship.drop.visible and ship.drop_dot.visible and blockers.visible
 		and is_equal_approx(ship.drop_dot.material_override.albedo_color.a, drop_alpha), "the board brings back the live drop and blocker overlays")
 	_check(ring_mat.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA, "the ring stays on the same pipeline after the cut")
+	battle.queue_free()
+	await process_frame
+
+
+# issue 2194: the cut-in's two ships keep readable plates at the settled fade, a killed target keeps its plate until
+# the hold ends, every other plate hides, hit numbers stay out of the fade, and a skip click starts no orbit drag.
+func _cut_plate_checks() -> void:
+	var battle = BATTLE.instantiate()
+	battle.external = true
+	root.add_child(battle)
+	battle.set_process(false)
+	var ships := {}
+	for id in ["att", "tgt", "oth"]:
+		var ship := SHIP.new()
+		battle.add_child(ship)
+		ship.set_process(false)
+		ship._ring()
+		ships[id] = ship
+	battle.views = ships
+	battle.VU = {
+		"att": {"name": "Attacker", "side": "player", "flagship": false, "hp": 80.0, "maxHp": 100.0,
+			"sh": [10.0, 10.0, 10.0, 10.0], "shMax": 10.0, "size": 0.6},
+		"tgt": {"name": "Target", "side": "enemy", "flagship": false, "hp": 60.0, "maxHp": 90.0,
+			"sh": [8.0, 8.0, 8.0, 8.0], "shMax": 8.0, "size": 0.6},
+		"oth": {"name": "Other", "side": "enemy", "flagship": false, "hp": 40.0, "maxHp": 60.0,
+			"sh": [4.0, 4.0, 4.0, 4.0], "shMax": 4.0, "size": 0.6},
+	}
+	battle.disp = {
+		"att": {"hp": 80.0, "sh": [10.0, 10.0, 10.0, 10.0]},
+		"tgt": {"hp": 60.0, "sh": [8.0, 8.0, 8.0, 8.0]},
+		"oth": {"hp": 40.0, "sh": [4.0, 4.0, 4.0, 4.0]},
+	}
+	battle.V = {"units": [
+		{"id": "att", "side": "player", "active": false, "dead": false, "q": 0, "r": 0},
+		{"id": "tgt", "side": "enemy", "active": false, "dead": false, "q": 1, "r": 0},
+		{"id": "oth", "side": "enemy", "active": false, "dead": false, "q": 2, "r": 0}]}
+	battle.api = ApiStub.new()
+	battle.sel = "att"
+	battle.target = "tgt"
+	battle.cam.snap()
+	battle._cine_frame("att", "tgt", "lance")
+	battle._step_cut_overlays(0.20)
+	battle._process(0.0)
+	battle._process(0.0)
+	_check(battle.hud.plates_root.modulate.a == 0.0, "the shared plate root settles at zero during the cut")
+	_check(battle.hud.plates.has("att") and battle.hud.plates["att"].visible
+		and battle.hud.plates["att"].get_parent() == battle.hud.cut_plates_root,
+		"the attacker's plate stays up above the cut fade")
+	_check(battle.hud.plates.has("tgt") and battle.hud.plates["tgt"].visible
+		and battle.hud.plates["tgt"].get_parent() == battle.hud.cut_plates_root,
+		"the target's plate stays up above the cut fade")
+	_check(not battle.hud.plates["oth"].visible, "every other plate hides during the cut")
+	battle._float("tgt", "Miss", Color(1.0, 1.0, 1.0))
+	var lbl: Label = battle.floats[-1]["lbl"]
+	battle._float_step(0.0)
+	_check(lbl.get_parent() == battle.hud.floats_root and lbl.visible and lbl.modulate.a > 0.9,
+		"a hit number stays readable at the settled cut fade")
+	battle._cine_frame("att", "tgt", "torp")
+	battle._step_cut_overlays(0.20)
+	battle._float("tgt", "Critical", Color(1.0, 1.0, 1.0))
+	var crit: Label = battle.floats[-1]["lbl"]
+	battle._float_step(0.0)
+	_check(crit.get_parent() == battle.hud.floats_root and crit.visible and crit.modulate.a > 0.9,
+		"a critical stays readable during a torpedo cut-in")
+	# the killing shot: the target is dead and the death path retires its plate, but the cut must finish first
+	ships["tgt"].dead = true
+	battle._retire_dead_plate("tgt")
+	battle._process(0.0)
+	_check(battle.hud.plates.has("tgt") and battle.hud.plates["tgt"].visible,
+		"the killed target keeps its plate through the kill cut-in")
+	ships["oth"].dead = true
+	battle._retire_dead_plate("oth")
+	_check(not battle.hud.plates.has("oth"), "a dead ship outside the cut retires its plate at once")
+	battle._cine_release()
+	battle._step_cut_overlays(0.70)
+	battle._process(0.0)
+	_check(not battle.hud.plates.has("tgt"), "the dead target's plate retires when the cut-in ends")
+	_check(battle.hud.plates["att"].get_parent() == battle.hud.plates_root and battle.hud.plates_root.modulate.a == 1.0,
+		"the attacker returns to the normal plate layer after the cut")
+	# issue 2194 item 3: the skip click ends the hold and must not also start a drag that cancels the smooth return
+	battle._cine_frame("att", "tgt", "lance")
+	battle.cam.snap()
+	battle.cam.input_enabled = true
+	battle.kill_hold_until = battle.game_t + 5.0
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_RIGHT
+	press.pressed = true
+	press.position = Vector2(760, 500)
+	battle._unhandled_input(press)
+	_check(battle.kill_hold_until < 0.0, "the skip click ends the kill hold")
+	_check(battle.cam._drag == 0, "the skip click starts no orbit drag")
+	var held_a: float = battle.cam.a
+	var motion := InputEventMouseMotion.new()
+	motion.relative = Vector2(20, 4)
+	battle.cam.handle_input(motion)
+	_check(battle.cam._drag == 0 and battle.cam.a == held_a and battle.cam._cut_return_elapsed < RIG.CUT_RETURN_S,
+		"the skip click leaves the smooth return running")
 	battle.queue_free()
 	await process_frame
