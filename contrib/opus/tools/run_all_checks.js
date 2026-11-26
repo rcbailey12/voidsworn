@@ -147,7 +147,7 @@ function buildChecks() {
     'lineage_tests', 'main_commit_lint_tests', 'memory_lint_tests', 'montecarlo_bot_tests', 'nemesis_121_tests', 'nemesis_122_tests',
     'nemesis_395_tests', 'nemesis_clash_tests', 'nemesis_teach_tests',
     'paint_sheet_camera_tests', 'relic_trade_1449_tests', 'retreat_nemesis_1480_tests', 'event_fight_retreat_1628_tests', 'eclipse_violet_1641_tests', 'reporting_238_tests', 'rules_1479_tests', 'rules_1481_tests', 'rules_1560_tests', 'runner_stall_tests',
-    'shadow_xp_tests', 'shield_pool_tests', 'ship_job_tests', 'squadron_auto_tests', 'story_beat3_tests',
+    'seat_facts_tests', 'shadow_xp_tests', 'shield_pool_tests', 'ship_job_tests', 'squadron_auto_tests', 'story_beat3_tests',
     'ui_spec_tests', 'weapon_match_tests', 'workflow_config_tests',
   ]);
   // Every *_tests.js here runs as a row, among them build_manifest_tests.js (#550, R214: each build sheet manifest's routes,
@@ -188,6 +188,7 @@ function buildChecks() {
   add(OPUS + 'naming_lint_game.test.js', [], 'normal', 300, false, true);
   add(OPUS + 'naming_lint_game.js', [], 'naming');
   add(OPUS + 'shader_pow_2092.js', [], 'normal', 300, false, true); // #2092: no shader pow(x, 2.0) on a base that can be negative (Vulkan undefined); write d * d
+  add(OPUS + 'wired_check.js', ['--list', '8'], 'normal', 300, false, true); // #2180 (Duet W2): report row only, built-but-off features; without --strict it never fails a check
   add(OPUS + 'checkpack/checks.js', [], 'pack', 300, false, true);
   add('tools/ci/big_files.js', ['--self-test'], 'normal', 300, false, true); // #1491 (audit GH-01): self-test row; the warnings print below the table and never fail
   add(OPUS + 'fast_selection_test.js', [], 'normal', 300, false, true); // #946: --fast selects exactly the marked rows plus the gate; a plain run still runs every row

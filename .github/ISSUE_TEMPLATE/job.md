@@ -6,7 +6,7 @@ labels: ''
 assignees: ''
 ---
 
-Owner: codex | muse | opus
+Owner: codex | muse | opus | neon
 Brief: <path to the brief, or "below">
 Deliver to: <folder or files>
 Branch: <agent>/issue-<number>

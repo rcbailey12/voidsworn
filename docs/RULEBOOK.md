@@ -76,7 +76,7 @@ that stretches his words past what he named says so and asks him. Board choices 
 wrappers, which seat took a job) are operating notes in LOOP.md, never rules. A new ruling names what it replaces and the old row is
 marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, what is open and who has it on GitHub itself
 (checked live before any dispatch), what runs on the PC in LOOP.md's newest LATEST lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
-LOOP.md's LATEST lines roll into a dated summary once they pass about 15. Muse audits for stale or conflicting docs now and then.
+LOOP.md's LATEST lines roll into contrib/opus/LOOP_LOG.md (newest first, history only) with node contrib/opus/tools/loop_roll.js once they pass about 15; the memory lint fails past 25. Muse audits for stale or conflicting docs now and then.
 Why: several models and fresh chats read the repo cold; on Nov 14 a one-day choice nearly became a rule, an A20 note was stretched to
 every ship before Ryan ratified it (R244), and a summary line inverted Ryan's call on A18 and A19.
 
@@ -147,7 +147,7 @@ passed fit, weapon match, triangles and density while missing their rulings, and
 
 2.4 **The job board is GitHub issues with owner labels, each opening with the fixed block** (Owner, Brief, Deliver to, Branch,
 Effort or Models, Done when; optional `Base: <branch>`; ship builds add Route per part, Inside, Paint stack, Budget, R214). Agents deliver on
-`codex/`, `muse/`, `work/` or `opus/issue-N` branches; nobody pushes to main except LOOP.md and FINDINGS. Why: any agent can
+`codex/`, `muse/`, `work/`, `opus/issue-N` or `neon/` branches; nobody pushes to main except LOOP.md and FINDINGS. Why: any agent can
 pick up a job without asking, and main stays reviewed. Set: Ryan, Nov 2 and 4 (R75, R102). Ids: agents-04, agents-05,
 agents-09. A run brief for a PC job goes into the issue body (under the fixed block, marked as the job now): the runner
 builds the task from the body only and never reads comments (R281).
@@ -192,7 +192,7 @@ credit is live, is status and lives in LOOP.md "The seats"):
 - Seat order (R242): "DeepSeek for cheap, sonnet for mid size, opus via api or helpers for blender or other large work. Codex
   for others that only it can do and then Kimi depending on results."
 - Blender ship builds are Opus's (R205: "I think builds in blender should come from Opus"), back on from Nov 14 evening (R253).
-- Codex only for what no other seat can do (R234: "use it when it can only do something others can't"); GPT 6.1 Sol (2.7).
+- Codex only for what no other seat can do (R234: "use it when it can only do something others can't"); GPT 6.2 Sol (2.7).
 - Kimi is no longer a seat (R257, Ryan, Nov 15: "Kimi is maxed out until 12/12. I just cancelled. I don't think it's worth
   continuing given the usage issues"). Its jobs go to DeepSeek (mid-size code) or an Opus worker; nothing is sent to Kimi.
 - Codex is on the Pro plan (R264, Ryan, Nov 15: "it's on the pro plan, so significant usage upgrade"). SUPERSEDED, kept so nobody follows it: "Codex is near its weekly limit ... the Board runs the PC GPU steps" (R257,
@@ -206,7 +206,7 @@ arm; it stays (R250 item 4)" (SUPERSEDED by R257); "the Kimi Code plan holds abo
 short reviews only, never builds" (Nov 12, the OpenCode route; SUPERSEDED by R250) and "Codex is the main builder, Blender builds
 included" (Nov 14; SUPERSEDED by R253). Ids: R128, R180e, R205, R206, R219, R234, R238, R242, R250, R252, R253, R257, agents-12.
 
-2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
+2.7 **Codex runs the model Ryan picked: GPT 6.2 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
 model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews,
 because a cloud task runs the default model OpenAI picks and cannot be pinned (OpenAI's Codex models page, Nov 2026). Codex
 runs up to six local lanes on the PC, one job per lane. Lanes C to F are code only, with no GPU work (R268, R301, issue 2057).

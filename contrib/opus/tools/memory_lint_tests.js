@@ -11,7 +11,7 @@
 //   3. no scanned file names a ruling range such as "R236 to R257" (the old HANDOFF trap:
 //      a range goes stale as soon as the next ruling lands);
 //   4. report only, never FAIL: HANDOFF section 0 line count (target about one page) and
-//      LOOP.md's number of LATEST lines (target 15 or fewer).
+//      LOOP.md's number of LATEST lines (target 15 or fewer; main() FAILs past LOOP_HARD, 25).
 //   5. every FINDINGS row from R281 on says where the ruling landed: "landed in <repo path>"
 //      naming a file that exists (docs/RULEBOOK.md, AGENTS.md, a playbook, contrib/opus/LOOP.md),
 //      or the words "one-off job decision" (issue 890, Ryan R291: global fixes).
@@ -33,6 +33,9 @@ const FIXTURES = path.join(__dirname, 'fixtures', 'memory_lint');
 const FINDINGS = 'contrib/opus/FINDINGS.md';
 const HANDOFF_TARGET = 50; // "about one page" of markdown
 const LOOP_TARGET = 15;
+// Ways-of-working audit (Nov 25 2026): LOOP.md is read on every Board turn, so past this many LATEST lines the
+// lint FAILs. node contrib/opus/tools/loop_roll.js moves the older lines to contrib/opus/LOOP_LOG.md.
+const LOOP_HARD = 25;
 const LANDING_FROM = 281; // check 5 starts at R281 (issue 890)
 
 // Empty: the five known items were cleared by issue 865 (Nov 16 2026). A baseline entry
@@ -335,7 +338,13 @@ function main() {
   for (const f of known) console.log('KNOWN ' + f.message);
   for (const r of result.reports) console.log('NOTE ' + r.text);
 
-  const problems = unexpected.length + stale.length;
+  const loopNow = result.reports.find(r => r.name === 'loop-latest');
+  const loopOver = loopNow && loopNow.value > LOOP_HARD ? 1 : 0;
+  if (loopOver) {
+    console.log('FAIL LOOP.md holds ' + loopNow.value + ' LATEST lines (limit ' + LOOP_HARD
+      + '); run node contrib/opus/tools/loop_roll.js');
+  }
+  const problems = unexpected.length + stale.length + loopOver;
   for (const f of unexpected) console.log('FAIL ' + f.message);
   for (const k of stale) {
     console.log('FAIL the baseline entry "' + k + '" no longer fires; take it off KNOWN_BASELINE');
