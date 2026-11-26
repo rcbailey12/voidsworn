@@ -2097,6 +2097,72 @@ func jet_point(aim: Vector3, out: Vector3) -> Vector3:
 	return hull_pivot.transform * p if hull_pivot != null else p
 
 
+static var _rcs_mesh: ArrayMesh = null
+static var _rcs_mats: Dictionary = {}   # int jet_kind -> shared ShaderMaterial
+
+
+# Shared axial ribbon strip (VERTEX.x in 0..1 along jet axis, VERTEX.y in -0.5..0.5 across width) for SH.RCS_JET.
+static func _rcs_quad_mesh() -> ArrayMesh:
+	if _rcs_mesh != null:
+		return _rcs_mesh
+	var segs := 4
+	var verts := PackedVector3Array()
+	var idx := PackedInt32Array()
+	for i in segs + 1:
+		var s := float(i) / float(segs)
+		verts.append(Vector3(s, -0.5, 0.0))
+		verts.append(Vector3(s, 0.5, 0.0))
+	for i in segs:
+		var q := i * 2
+		idx.append_array(PackedInt32Array([q, q + 1, q + 3, q, q + 3, q + 2]))
+	var arr := []
+	arr.resize(Mesh.ARRAY_MAX)
+	arr[Mesh.ARRAY_VERTEX] = verts
+	arr[Mesh.ARRAY_INDEX] = idx
+	_rcs_mesh = ArrayMesh.new()
+	_rcs_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+	_rcs_mesh.custom_aabb = AABB(Vector3(-32, -32, -32), Vector3(64, 64, 64))
+	return _rcs_mesh
+
+
+# Shared ShaderMaterial per RCS jet_kind; per-puff parameters go through instance uniforms.
+static func _rcs_jet_mat(kind: int) -> ShaderMaterial:
+	var mat := _rcs_mats.get(kind) as ShaderMaterial
+	if mat != null:
+		return mat
+	mat = ShaderMaterial.new()
+	mat.shader = SHADER_CACHE.for_code(SH.RCS_JET)
+	mat.render_priority = 1
+	mat.set_shader_parameter("jet_kind", float(kind))
+	_rcs_mats[kind] = mat
+	return mat
+
+
+# Issue 2042: shared directional RCS cone-jet builder (hot core, soft wash, quick fade) tinted from faction_looks.json.
+static func build_rcs_jet(fac_id: String, dir: Vector3, length: float, w_root: float, w_tip: float, alpha: float, seed_val: float) -> MeshInstance3D:
+	SH.ensure_globals()
+	var pal: Dictionary = THRUST.palette(fac_id)
+	var core: Color = pal["core"]
+	var wash: Color = pal["wash"]
+	var kind := int(pal["kind"])
+	var nd := dir.normalized() if dir.length() > 1e-5 else Vector3(-1, 0, 0)
+	var mi := MeshInstance3D.new()
+	mi.mesh = _rcs_quad_mesh()
+	mi.material_override = _rcs_jet_mat(kind)
+	mi.set_instance_shader_parameter("jet_dir", nd)
+	mi.set_instance_shader_parameter("jet_len", maxf(length, 0.1))
+	mi.set_instance_shader_parameter("w_root", maxf(w_root, 0.05))
+	mi.set_instance_shader_parameter("w_tip", maxf(w_tip, 0.08))
+	mi.set_instance_shader_parameter("age_u", 0.0)
+	mi.set_instance_shader_parameter("alpha_k", clampf(alpha, 0.0, 2.5))
+	mi.set_instance_shader_parameter("jet_seed", seed_val)
+	mi.set_instance_shader_parameter("core_col", Vector3(core.r, core.g, core.b))
+	mi.set_instance_shader_parameter("wash_col", Vector3(wash.r, wash.g, wash.b))
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.extra_cull_margin = 16.0
+	return mi
+
+
 func set_thrust_spark_sink(sink: Callable) -> void:
 	_thrust_spark_sink = sink
 
@@ -2161,7 +2227,7 @@ func _emit_thrust_grit(origin: Vector3, vw: Vector3, spark_px: float, n_sp: int)
 		var gv := (vw + Vector3(_jet_rng.randf() - 0.5, _jet_rng.randf() - 0.5, _jet_rng.randf() - 0.5) * 0.9).normalized() * maxf(L, 6.0) * (1.6 + _jet_rng.randf())
 		var spark_life := 0.3 + _jet_rng.randf() * 0.2
 		if _thrust_spark_sink.is_valid():
-			_thrust_spark_sink.call(sp.global_position, spark_life, fac, sp.pixel_size * 64.0 * 0.16, gv + _vel * 0.6)
+			_thrust_spark_sink.call(origin, spark_life, fac, spark_px * 64.0 * 0.16, gv + _vel * 0.6)
 
 
 static var _rt: Texture2D = null

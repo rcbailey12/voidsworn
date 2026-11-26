@@ -804,7 +804,7 @@ func sprx(px: float, p: Vector3, t: float, life: float, col: Color, i: float, s0
 # `wpx`, `lpx` (F3 round 2): this streak's own minimum width and length on screen (pixels at 1080 lines; 0: the kind's).
 func flight_streak(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
 		drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
-	assert(kind in [0, 3, 4, 5, 6], "Sparks must use fx.spark")
+	assert(kind not in [1, 7, SPARK_KIND], "Sparks must use fx.spark")
 	var pool: POOLS.Pool = pools["null"] if kind == 5 else pools["stk"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
 		Vector4(col.r, col.g, col.b, i), Vector4(length, w * unit, drag, kind), Vector4(0.0, acc, wpx, lpx)))
@@ -2134,31 +2134,14 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 	var wp: Vector3 = s.to_world(lp)
 	var wn: Vector3 = s.dir_world(ln)
 	var k: float = s.scale_k()
-	var T: float = now + 0.1
-	var bk: float = float(bl["burst"])
-	var vk: float = float(bl["vent"])
-	# a pried-open hatch: a short, dull blast (not a counted flash), then gas venting and sparks from inside
-	sprx(float(bl["burst_px"]), wp + wn * 0.3 * k * bk, T, 0.4 * sqrt(bk), Color(1, 0.65, 0.35), 2.5, 0.6 * k * bk, 1.8 * k * bk, 2)
-	for j in 14:
-		spr(wp + wn * 0.2 * k * vk, T + 0.15 + j * 0.2, 1.4, Color(0.62, 0.66, 0.74), 0.25 * sqrt(vk), 0.3 * k * vk, 2.2 * k * vk, 7,
-			(wn + rdir() * 0.25).normalized() * 4.0 * k * vk, 0.8, 0.0, 0.0, float(bl["vent_px"]))
-	for j in int(18 * sqrt(bk)):
-		spark(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, s.faction, 4.0, 0.05 * bk, 0.08 * k * bk,
-			(wn + rdir() * 0.6).normalized() * (5 + rng.randf() * 8) * k * bk, 2.0, float(bl["spark_px"]))
-	# a soft pop ring on the plating round the hatch, sized to hold at camera 170 (issue 1547)
-	ring(wp + wn * 0.05 * k, wn, T, 0.7, Color(1, 0.62, 0.3), 1.4, 0.4 * k * bk, 2.4 * k * bk, 2, 0.0, 0.0, float(bl["ring_px"]))
-	# the inside light in the boarding amber (render/line_style.gd "board"), not explosion orange (Muse council)
-	light(wp + wn * 0.6 * k * bk, T, 3.0, float(bl["light"]), Color(1, 0.75, 0.3), 1, float(bl["reach"]))
-	shake(T, 0.06, wp)
 	var hold: float = float(bl["hold"]) / 1000.0 * pace
 	var T: float = now + hold * 0.67 if a != null else now + 0.1
 	var recipe := BOARDING.skin(a if a != null else s)
 	BOARDING.breach(self, s, h, T, recipe)
 	var bk: float = float(bl["burst"])
-	var spark_tint: Color = s.fac.damage_glow
 	var metal_sparks: bool = recipe.style == 0 and s.faction != "chorus"
 	for j in (int(18 * sqrt(bk)) if metal_sparks else 0):
-		stk(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, spark_tint, 4.0, 0.05 * bk, 0.08 * k * bk, 1,
+		spark(wp, T + 0.3 + rng.randf() * 2.6, 0.3 + rng.randf() * 0.3, s.faction, 4.0, 0.05 * bk, 0.08 * k * bk,
 			(wn + rdir() * 0.6).normalized() * (5 + rng.randf() * 8) * k * bk, 2.0, 0.0, float(bl["spark_px"]))
 	shake(T, 0.06, wp)
 	board_lines_s = 0.0
@@ -2245,11 +2228,11 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var c = Color(1, 0.6, 0.3)
 	for k in [0, 1, 2, 3, 4, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]:
 		spr(at + rdir(), T, 0.5, c, 0.02, 0.5, 0.5, k)
-	for k in [0, 3, 4, 5, 6]:
+	for k in [0, 3, 4, 5, 6, WEAP.BOLT_SHELL, WEAP.BOLT_ENERGY, WEAP.BOLT_CRYSTAL, WEAP.BOLT_SCRAP]:
 		flight_streak(at, T, 0.5, c, 0.02, 1.0, 0.1, k, Vector3(1, 0, 0))
 	spark(at, T, 0.5, "voidsworn", 0.02, 0.06, 0.1, Vector3.RIGHT)
 	spark(at, T, 0.5, "ithar", 0.02, 0.06, 0.1, Vector3.RIGHT)
-	for k in [0, 1, 2, 3, 4]:
+	for k in [0, 1, 2, 3, 4, SH.RING_HARMONIC]:
 		ring(at, Vector3.UP, T, 0.5, c, 0.02, 0.5, 1.0, k)
 	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10, SH.RIB_NULL_LANCE]:
 		rib(at, Vector3(1, 0, 0), 2.0, T, 0.5, c, 0.02, 0.2, 0.2, k)

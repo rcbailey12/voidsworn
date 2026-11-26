@@ -533,6 +533,7 @@ void fragment() {
 # kinds: 0 shell/tracer   3 flame tongue   4 textured las dart
 # Kind 5 now routes to NULL_SLUG; its old vertex branch below is unused there.
 #        6 droplet (bio, falls off a glob)   8 shared analytic spark (a4.y selects crystal)
+#        9 shell   10 energy dart   11 crystal dart   12 scrap
 const STREAK_VERTEX := """
 uniform float gate = 1.0;
 uniform sampler2D kit_tail : filter_linear, repeat_disable;
@@ -722,6 +723,12 @@ void fragment() {
 		vec3 core = mix(cool, vec3(energy), white);
 		vec3 edge = mix(cool, cool.brg * 0.24 + cool * 0.76, vGlass * smoothstep(0.06, 0.2, y));
 		ALBEDO = clamp((mix(core, edge, smoothstep(0.045, 0.22, y)) * thread + edge * halo) * fx_gain, 0.0, 512.0);
+	} else if (k >= 9 && k <= 12) {
+		vec2 bolt = bolt_streak(vUv, k, vU);
+		float peak = max(vCol.r, max(vCol.g, vCol.b));
+		vec3 hot = mix(vCol, vec3(peak), 0.84);
+		vec3 sheath = k == 11 ? vCol * vec3(0.72, 0.90, 1.0) : vCol;
+		ALBEDO = clamp((hot * bolt.x * 0.27 + sheath * bolt.y * 0.16) * fx_gain, 0.0, 512.0);
 	} else {
 		// The baked tail is displaced across its quad to curve the cooling
 		// history. The hot head stays on the true ballistic position.

@@ -451,7 +451,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 					dir * 1.4 * ka, 0.5, 1.0, 14.0 * size, A)
 			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * fx.unit
 			ti = tf + dist / spd
-			fx.flight_streak(from, tf, dist / spd, col.lerp(Color.WHITE, 0.3), 8.0 * power, 3.2 * ka, 0.60 * ka * (1.2 if w >= 3 else 1.0), 0, dir * spd, 0.0, 0.0, (4.0 if w >= 3 else 3.4) * size, 26.0 * size)
+			fx.flight_streak(from, tf, dist / spd, col, 8.0 * power, 3.2 * ka, 0.60 * ka * (1.2 if w >= 3 else 1.0), BOLT_SHELL, dir * spd, 0.0, 0.0, (4.0 if w >= 3 else 3.4) * size, 26.0 * size)
 			fx.light(from + mn * 1.5 * ka, tf, 0.22, 7.8, col.lerp(Color.WHITE, 0.4), 0)
 			fx.shake(tf, 0.03, from)
 		"auto":
@@ -464,8 +464,8 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				var tb = tf + float(pulse["phase"]) * 0.05
 				var jit = fx.rdir() * 0.3 * kt * spread
 				# Four short tracers in a tight line give the autocannon its chatter.
-				_burst(fx, from + dir * 0.4 * ka, dir, tb, 1.8 * bk, "flash", 0.12, col, 3.8 * power * float(pulse["power"]), 14.0 * size * float(pulse["size"]))
-				fx.flight_streak(from, tb, dist / spd, col.lerp(Color.WHITE, 0.22), 13.0 * power * float(pulse["power"]), 4.0 * bk, 0.4 * bk, 0, (dir + jit / dist) * spd, 0.0, 0.0, 3.6 * size * float(pulse["size"]), 18.0 * size * float(pulse["size"]))
+				_muzzle(fx, from, dir, tb, col, bk, 14.0 * size * float(pulse["size"]), MUZZLE_BALLISTIC, A)
+				fx.flight_streak(from, tb, dist / spd, col, 9.0 * power * float(pulse["power"]), 4.0 * bk, 0.4 * bk, BOLT_SHELL, (dir + jit / dist) * spd, 0.0, 0.0, 3.6 * size * float(pulse["size"]), 18.0 * size * float(pulse["size"]))
 				if faction == "corsair":
 					_burst(fx, from + dir * 0.8 * ka, dir, tb + 0.02, 2.0 * ka, "cool", 0.4, col, 0.5, 0.0, dir * 2.0, 0.4)
 			fx.light(from + mn * 1.2 * ka, tf, 0.25, 5.5, col, 1)
@@ -475,14 +475,14 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			var spd: float = 145.0 * fx.unit
 			_muzzle(fx, from, dir, tf, col, ka, 21.0 * size, MUZZLE_BALLISTIC, A, true, w)
 			_burst(fx, from + dir * ka, dir, tf + 0.035, 2.6 * ka, "cool", 0.52, col.darkened(0.65), 0.65, 0.0, dir * 2.0)
-			fx.flight_streak(from, tf, dist / spd, col, 11.0, 2.1 * ka, 0.65 * ka, 0, dir * spd, 0.0, 0.0, 4.8 * size, 13.0 * size)
+			fx.flight_streak(from, tf, dist / spd, col, 9.0, 2.1 * ka, 0.65 * ka, BOLT_SCRAP, dir * spd, 0.0, 0.0, 4.8 * size, 13.0 * size)
 			ti = tf + dist / spd
 		"las":
 			tf = T0 + 0.05 + beat * 0.12
 			var spd = 280.0 * fx.unit
 			# round 2: a hard, faction-coloured bolt with a white core, long and fat enough to read as a laser at battle zoom
-			_muzzle(fx, from, dir, mn, tf, col, ka, (MUZ_PX[1] + 2.0) * size, 0, 6.5, 0.16, w, A)
-			fx.flight_streak(from, tf, dist / spd, col, 16.0, 5.5 * ka, 0.7 * ka, 4, dir * spd, 0.0, 0.0, 4.6 * size, 30.0 * size)
+			_muzzle(fx, from, dir, tf, col, ka, (MUZ_PX[1] + 2.0) * size, MUZZLE_ENERGY, A)
+			fx.flight_streak(from, tf, dist / spd, col, 11.0, 5.5 * ka, 0.7 * ka, BOLT_ENERGY, dir * spd, 0.0, 0.0, 4.6 * size, 30.0 * size)
 			ti = tf + dist / spd
 		"plasma_cannon":
 			tf = T0 + 0.06 + beat * 0.085
@@ -494,9 +494,8 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			tf = T0 + 0.12 + beat * 0.24
 			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * 0.55 * fx.unit
 			var sz = (1.9 if w >= 3 else 1.5) * ka
-			_burst(fx, from + dir * 0.6 * ka, dir, tf, sz * 2.4, "flash", 0.22, col, 4.0, (30.0 if w >= 3 else 24.0) * size)
-			fx.spr(from, tf, dist / spd, col, 2.0, sz * 1.6, sz * 1.6, 14, dir * spd, 0.0, 0.0, 0.0, (24.0 if w >= 3 else 19.0) * size)
-			fx.flight_streak(from, tf, dist / spd, col, 3.0, 4.0 * ka, sz * 0.7, 0, dir * spd)
+			_muzzle(fx, from, dir, tf, col, sz, (30.0 if w >= 3 else 24.0) * size, MUZZLE_ENERGY, A)
+			_sprite_bolt(fx, from, tf, dist / spd, col, 2.8, sz * 1.4, BOLT_PLASMA, dir * spd, (24.0 if w >= 3 else 19.0) * size)
 			# heat shimmer trailing the bolt
 			for s in 3:
 				fx.spr(from + dir * dist * (0.25 + s * 0.25), tf + dist / spd * (0.25 + s * 0.25), 0.4, col, 0.3, sz * 0.6, sz * 1.4, 18)
@@ -512,7 +511,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				var pulse: Dictionary = burst[b]
 				var bk: float = ka * float(pulse["size"])
 				var d2 = (dir + fx.rdir() * 0.06 * spread).normalized()
-				fx.flight_streak(from, tf + float(pulse["phase"]) * 0.006, dist / spd, col, 10.0 * power * float(pulse["power"]), 3.0 * bk, 0.38 * bk, 0, d2 * spd, 0.0, 0.0, 2.8 * size * float(pulse["size"]), 12.0 * size * float(pulse["size"]))
+				fx.flight_streak(from, tf + float(pulse["phase"]) * 0.006, dist / spd, col, 9.0 * power * float(pulse["power"]), 3.0 * bk, 0.38 * bk, BOLT_SCRAP, d2 * spd, 0.0, 0.0, 2.8 * size * float(pulse["size"]), 12.0 * size * float(pulse["size"]))
 			ti = tf + dist / spd
 		"prism":
 			tf = T0 + 0.08 + beat * 0.1
@@ -523,8 +522,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				var pulse: Dictionary = burst[b]
 				var bk: float = ka * float(pulse["size"])
 				var d2 = (dir + fx.rdir() * 0.02 * spread).normalized()
-				fx.flight_streak(from, tf + float(pulse["phase"]) * 0.03, dist / spd, col.lerp(Color.WHITE, 0.4), 12.0 * float(pulse["power"]), 3.5 * bk, 0.32 * bk, 4, d2 * spd, 0.0, 0.0, 3.2 * size * float(pulse["size"]), 24.0 * size * float(pulse["size"]))
-				fx.spr(from, tf + float(pulse["phase"]) * 0.03, dist / spd, col, 2.2, 0.7 * ka, 0.7 * ka, 16, d2 * spd, 0.0, 0.0, 0.0, 12.0)
+				fx.flight_streak(from, tf + float(pulse["phase"]) * 0.03, dist / spd, col, 8.5 * float(pulse["power"]), 3.5 * bk, 0.32 * bk, BOLT_CRYSTAL, d2 * spd, 0.0, 0.0, 3.2 * size * float(pulse["size"]), 24.0 * size * float(pulse["size"]))
 			ti = tf + dist / spd
 		"needle":
 			tf = T0 + 0.1 + beat * 0.25
@@ -567,6 +565,8 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			fx.light(from + dir * 1.5 + mn * ka, tf, dur, 6.0, col, 1)
 			if lk == "doom":
 				_doom_shed(fx, from, to, tf, dur, faction, ka)
+			elif lk == "pulsar":
+				_harmonics(fx, from, dir, dist, tf, dur, col, ka)
 			else:
 				_beam_lenses(fx, from, dir, dist, tf, dur, ka, false)
 			fx.shake(tf, 0.08, from)
@@ -591,7 +591,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"flak", "pflak", "spores", "mflak", "gflak", "gsentry":
 			var cadence := 0.19 if lk == "gsentry" else 0.12 if lk == "flak" else 0.07
 			tf = T0 + 0.03 + beat * cadence
-			ti = _flak(fx, lk, from, dir, dist, to, tf, col, ka, kt, i, tg, rhythm, spread, faction)
+			ti = _flak(fx, lk, from, dir, to, tf, col, ka, kt, rhythm, spread, A)
 			tend = ti + 0.4
 		"spine":
 			var wind = 0.3
@@ -1646,7 +1646,7 @@ static func _pd_fire(fx, p: Dictionary) -> void:
 		var aim: Vector3 = pp + fx.rdir() * (0.5 if j < 3 else 0.05) * k
 		var ft := maxf(src.distance_to(aim) / (260.0 * fx.unit), 0.05)
 		var tb := float(p["dead_at"]) - ft - (3 - j) * 0.07
-		fx.flight_streak(src, tb, ft, PD_TRACER, 6.0, 5.0 * k, 0.12 * k, 4, (aim - src) / ft, 0.0, 0.0, 1.6, 18.0)
+		fx.flight_streak(src, tb, ft, PD_TRACER, 7.0, 5.0 * k, 0.22 * k, BOLT_ENERGY, (aim - src) / ft, 0.0, 0.0, 3.0, 18.0)
 
 
 static func _shot_down(fx, p: Dictionary) -> void:
@@ -1655,6 +1655,8 @@ static func _shot_down(fx, p: Dictionary) -> void:
 	var now: float = fx.now
 	var k: float = p["k"]
 	var d: Vector3 = ((p["c"] as Vector3) - (p["a"] as Vector3)).normalized()
+	_burst(fx, pp, -d, now, 0.9 * k, "flash", 0.10, PD_TRACER, 4.2, 11.0)
+	fx.ring(pp, -d if d.length_squared() > 0.01 else Vector3.UP, now, 0.23, PD_TRACER, 0.8, 0.4 * k, 3.6 * k, 3, 0.0, 0.0, 22.0)
 	# Small sparks off the intercepted round, in the round's faction colour.
 	_impact_sparks(fx, pp, -d, now, k * 0.7, str(p.get("faction", FLOOK.FALLBACK)), 5, 14.0, fx.SparkRole.WEAPON)
 	for j in 5:
@@ -1719,7 +1721,8 @@ static func _ease(u: float) -> float:
 
 
 # Flak: proximity-fused shells bursting around the target; returns the last burst time.
-static func _flak(fx, lk: String, from: Vector3, dir: Vector3, dist: float, to: Vector3, tf: float, col: Color, ka: float, kt: float, i: int, tg: Dictionary, rhythm: RandomNumberGenerator = null, spread := 1.0, faction := "voidsworn") -> float:
+static func _flak(fx, lk: String, from: Vector3, dir: Vector3, to: Vector3, tf: float, col: Color, ka: float, kt: float, rhythm: RandomNumberGenerator, spread: float, src) -> float:
+	var faction := _spark_faction(src)
 	var spd = 220.0 * fx.unit
 	var last = tf
 	var nb := 2 if lk == "gsentry" else 3 if lk == "flak" else 4
@@ -1737,24 +1740,20 @@ static func _flak(fx, lk: String, from: Vector3, dir: Vector3, dist: float, to: 
 		_muzzle(fx, from, dir, tb, col, bk, 12.0 * float(pulse["size"]), muzzle_profile, src)
 		match lk:
 			"pflak":
-				fx.flight_streak(from, tb, ft, col.lerp(Color.WHITE, 0.4), 9.0 * pk, 3.5 * bk, 0.32 * bk, 4, (bp - from).normalized() * spd, 0.0, 0.0, 3.2 * float(pulse["size"]), 18.0 * float(pulse["size"]))
+				fx.flight_streak(from, tb, ft, col, 9.0 * pk, 3.5 * bk, 0.32 * bk, BOLT_ENERGY, (bp - from).normalized() * spd, 0.0, 0.0, 3.2 * float(pulse["size"]), 18.0 * float(pulse["size"]))
 			"gflak":
 				_gauss_wake(fx, from, bp, tb, col * pk, bk, 0.02)
 				ft = 0.02
 			"gsentry":
 				ft = 0.055
-				fx.flight_streak(from, tb, ft, col, 7.0 * pk, 7.0 * bk, 0.18 * bk, 4, (bp - from) / ft, 0.0, 0.0, 2.0, 32.0)
+				fx.flight_streak(from, tb, ft, col, 7.0 * pk, 7.0 * bk, 0.18 * bk, BOLT_ENERGY, (bp - from) / ft, 0.0, 0.0, 2.0, 32.0)
 			"spores":
 				ft *= 2.2
 				_sprite_bolt(fx, from, tb, ft, col, 1.8 * pk, 0.85 * bk, BOLT_BIO, (bp - from) / ft, 11.0)
 			"mflak":
-				fx.spr(from, tb, 0.15, col, 3.2 * pk, 0.75 * bk, 0.40 * bk,
-					16, Vector3.ZERO, 0.0, 0.0, 0.0, 14.0)
-				fx.light(from + dir * bk, tb, 0.12, 4.0, col, 1)
-				fx.flight_streak(from, tb, ft, col, 8.0 * pk, 4.5 * bk, 0.24 * bk, 4, (bp - from) / ft, 0.0, 0.0, 2.4, 22.0)
+				fx.flight_streak(from, tb, ft, col, 8.0 * pk, 4.5 * bk, 0.24 * bk, BOLT_CRYSTAL, (bp - from) / ft, 0.0, 0.0, 2.4, 22.0)
 			_:
-				_burst(fx, from + dir * 0.4 * ka, dir, tb, 1.8 * bk, "flash", 0.14, col, 3.4 * pk, 12.0 * float(pulse["size"]))
-				fx.flight_streak(from, tb, ft, col.lerp(Color.WHITE, 0.18), 8.0 * pk, 1.5 * bk, 0.55 * bk, 0, (bp - from) / ft, 0.0, 0.0, 4.0, 9.0)
+				fx.flight_streak(from, tb, ft, col, 8.0 * pk, 1.5 * bk, 0.55 * bk, BOLT_SHELL, (bp - from) / ft, 0.0, 0.0, 4.0, 9.0)
 		var t_b = tb + ft
 		last = maxf(last, t_b)
 		if lk == "mflak" or lk == "gsentry":
@@ -1828,7 +1827,7 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 					if s == 0:
 						_sprite_bolt(fx, ps, tsh, (aim - ps).length() / 45.0, col, 1.8, 0.7, BOLT_BIO, dd * 45.0, 10.0)
 				_:
-					fx.flight_streak(ps, tsh, (aim - ps).length() / 260.0, col.lerp(Color.WHITE, 0.3), 10.0 * float(pulse["power"]), 3.5 * ka, 0.35 * ka * float(pulse["size"]), 0, dd * 260.0)
+					fx.flight_streak(ps, tsh, (aim - ps).length() / 260.0, col, 8.0 * float(pulse["power"]), 3.5 * ka, 0.35 * ka * float(pulse["size"]), BOLT_SHELL, dd * 260.0)
 	return timp + (0.3 if lk == "bombs" else 0.1)
 
 
@@ -2585,8 +2584,10 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 				_impact_flash(fx, Tg, pj, nj, at, k, 4.0 * k, 0.16, flash, px * BURST_PX_K, response, 0.3 * k, 4.2)
 			_note(fx, "flash", "lance", Vector3.ZERO, nj, 0.16, px)
 		fx.spr(pj + nj * 0.2 * k, at, 0.18, contact, 3.0, 1.2 * k, 1.6 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.45)
-		_heat_spot(fx, pj + nj * 0.1 * k, at, k, 0.55, "lance", 5.0, 1.5, Tg)
-		if not ion and (response.fire_body or response.debris == "glass"):
+		# The null trench carries its own violet heat, with no orange plate spot or molten metal.
+		if not null_lance:
+			_heat_spot(fx, pj + nj * 0.1 * k, at, k, 0.55, "lance", 5.0, 1.5, Tg)
+		if not ion and not null_lance and (response.fire_body or response.debris == "glass"):
 			# molten metal sprays off the plate: drips with a short trail, and sparks
 			var scale := _spark_size(k)
 			for s in _amount(fx, roundi(5.0 * scale)):

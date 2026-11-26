@@ -430,6 +430,19 @@ core/sheath flow mask, and a filled faceted chip. There are no downloaded sprite
 packs. Materials share the imported textures through `_mat`, including the
 attached engine batches; they do not allocate textures per shot.
 
+Build B (issue 2043) uses separate hot-core and tapered-sheath masks in the
+existing streak and sprite pools. The shooter palette normally tints the
+sheath, but plasma stays light blue from muzzle to impact (R46). Bombs have
+their own capsule mask. The shared muzzle kit keeps the approved gas on
+cartridge blasts and uses clean apertures for energy and crystal and a wet
+plume for bio. Bright muzzle and intercept cores still use the flash counter.
+Spark recipes stay separate (issue 2018).
+
+Star corona rays follow the original body after ignition and turn off on
+intercept. Rockets add a cold, short smoke layer over the nozzle wake with
+its own small pixel floor. A torpedo without its kit model uses the same
+tapered wake as a kit round.
+
 ### Shared sparks (issue 2018)
 
 Use `fx.spark(p, t, life, faction, intensity, shutter, width, velocity, drag, wpx, lpx, role, tint)` for thrown
@@ -455,7 +468,8 @@ thrown spark spray. Shield breaks can throw sparks. No spark books a flash or sp
 
 `fx.stk` remains a compatibility wrapper. Its retired spark kinds route to `fx.spark`, and its other
 kinds route to `fx.flight_streak`. Use `fx.flight_streak` for new shot tracers and organic droplet trails. Those still use their
-own baked mask and timing:
+own masks and timing. The projected-length caps use 1080-line pixels and scale with the render target,
+even with `min_px` set to zero.
 
 | Streak kind | Default maximum projected length at 1080 | Default quad width floor at 1080 |
 |---|---|---|
