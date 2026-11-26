@@ -23,7 +23,7 @@ static func play(fx, ship, kind: String, hit: Dictionary) -> void:
 
 static func _fire(fx, ship, p: Vector3, n: Vector3, k: float) -> void:
 	var t: float = fx.now
-	var col: Color = ship.fac.weapon if ship.faction == "hegemony" else ship.fac.damage_glow
+	var col: Color = ship.fac.damage_glow
 	var hot := col.lerp(Color.WHITE, 0.48)
 	# Reuse the directional baked vent (colour, flow and thickness), with its hot pass enabled.
 	# The plume stays below the intensity that counts as a flash and is in its own picture pool.
@@ -35,7 +35,7 @@ static func _fire(fx, ship, p: Vector3, n: Vector3, k: float) -> void:
 	mat.set_shader_parameter("min_pixels", 31.0)
 	mat.set_shader_parameter("fac_fire", hot)
 	mat.set_shader_parameter("fac_mid", col)
-	var sooty: bool = ship.faction not in ["ithar", "chorus"]
+	var sooty: bool = ship.faction in ["voidsworn", "corsair"]
 	mat.set_shader_parameter("fac_smoke", 0.12 if sooty else 0.0)
 	mat.set_shader_parameter("calm_intensity", 1.2)
 	if sooty:
@@ -43,9 +43,10 @@ static func _fire(fx, ship, p: Vector3, n: Vector3, k: float) -> void:
 			var flow: Vector3 = fx.rcone(n, 0.38)
 			fx.sprx(16.0, p, t + i * 0.07, 0.9 + i * 0.10, Color(0.17, 0.16, 0.20), 0.69,
 				0.55 * k, 3.1 * k, 8, flow * (2.4 * k), 0.75)
+	var mote_kind := 20 if ship.faction == "chorus" else SH.TICK_EMBER
 	for i in 9:
 		fx.sprx(4.0, p, t + i * 0.037, 0.48 + i * 0.046, col, 2.3,
-			0.16 * k, 0.055 * k, SH.TICK_EMBER, fx.rcone(n, 0.70) * (3.5 * k), 1.3)
+			0.16 * k, 0.055 * k, mote_kind, fx.rcone(n, 0.70) * (3.5 * k), 1.3)
 	fx.light(p + n * k, t, 0.58, 2.7, col, 1, 11.0 * k)
 
 
@@ -76,6 +77,9 @@ static func _tidal(fx, ship, local: Vector3, p: Vector3, n: Vector3, k: float) -
 	var inward := pull.normalized()
 	var reach := minf(pull.length(), 21.0 * k)
 	var across := inward.cross(Vector3.UP).normalized()
+	var organic: bool = ship.faction == "chorus"
+	var mote_col: Color = ship.fac.damage_glow if organic else TIDAL_COLOUR
+	var mote_kind := 20 if organic else SH.TICK_EMBER
 	var at_hull := PATHS.anchor(ship, local)
 	for lane in 3:
 		var pts := PackedVector3Array()
@@ -90,8 +94,8 @@ static func _tidal(fx, ship, local: Vector3, p: Vector3, n: Vector3, k: float) -
 	# Soft stress on the plating, not a shield ring or an extra shield pool.
 	fx.ring(p + n * 0.12 * k, n, t, 0.69, TIDAL_COLOUR, 1.35, 0.5 * k, 2.3 * k, 2, 0.0, 0.0, 35.0)
 	for i in 8:
-		fx.sprx(4.0, p + n * 0.16 * k, t + i * 0.045, 0.5, TIDAL_COLOUR, 2.0,
-			0.22 * k, 0.10 * k, SH.TICK_EMBER, (inward * 16.0 + n * 4.0 + fx.rdir() * 1.8) * k, 0.6)
+		fx.sprx(4.0, p + n * 0.16 * k, t + i * 0.045, 0.5, mote_col, 2.0,
+			0.22 * k, 0.10 * k, mote_kind, (inward * 16.0 + n * 4.0 + fx.rdir() * 1.8) * k, 0.6)
 
 
 static func _storm(fx, ship, sample: Dictionary) -> void:
