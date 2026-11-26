@@ -317,3 +317,4 @@ headless|fx/test/trail_kit_isolation_check.gd|-|-|issue 2042 item 6: TRAIL taper
 headless|fx/test/main_plume_kit_check.gd|-|-|issue 2042 item 3: main engine plumes with bright core, soft outer wash, smooth bell root blend, 6 faction palettes from faction_looks.json, and stage-2 throttle response
 headless|render/test/craft_trail_unify_check.gd|-|-|issue 2042 item 4: squadron_wing.gd unified directly with SH.CRAFT_TRAIL (no flat fallback), live stern head_world tracking, and per-faction life/style
 headless|main/test/export_ship_check_test.gd|-|-|issue 1438: the export ship check passes a complete package and fails a missing damage scene, a lost texture, an unpainted ship, a non-mesh row and a shipped source GLB
+headless|fx/test/shared_spark_check.gd|-|-|issue 2018: shared spark packing, faction palette, quiet shield blocks and no low-res spark sprites

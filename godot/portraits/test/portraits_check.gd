@@ -7,6 +7,11 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # factions ignore it. Prints PORTRAITS CHECK PASS or FAIL.
 
 const Portraits := preload("res://portraits/portraits.gd")
+const RUN4_ADMIRALS := [
+	"vex", "kassar", "grax", "aelith", "nekhet", "matriarch",
+	"ashgrove", "maren", "sable", "vaelen", "anuket", "mending",
+]
+const FIRST_PAINTINGS := ["ashgrove", "maren", "anuket"]
 var fails: Array = []
 
 
@@ -19,16 +24,21 @@ func _ok(c: bool, msg: String) -> void:
 func _init() -> void:
 	GUARD.arm(self, "portraits_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	var crests = JSON.parse_string(FileAccess.get_file_as_string("res://portraits/crests/index.json"))
+	var picks: Dictionary = Portraits._index().get("painted", {})
 	var painted := 0
 	for id in crests:
 		var t: Texture2D = Portraits.face(id)
+		var crest: Texture2D = Portraits.crest(id)
 		_ok(t != null, "no face for " + id)
-		_ok(Portraits.crest(id) != null, "no crest for " + id)
-		if Portraits.has_painting(id):
+		_ok(crest != null, "no crest for " + id)
+		if picks.has(id):
 			painted += 1
+			_ok(Portraits.has_painting(id) and t != crest, "picked painting for %s fell back to its crest" % id)
 			_ok(t != null and t.get_width() >= 512, "painting for %s is too small" % id)
+		else:
+			_ok(not Portraits.has_painting(id) and t == crest, "unpainted admiral %s did not get its crest" % id)
 	print("  admirals %d, painted %d" % [crests.size(), painted])
-	_ok(painted >= 7, "expected at least 7 painted admirals, got %d" % painted)
+	_run4_check(picks, crests)
 	var sc = JSON.parse_string(FileAccess.get_file_as_string("res://portraits/nemesis/scars/scars.json"))
 	var nem := 0
 	for fac in ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
@@ -48,6 +58,23 @@ func _init() -> void:
 	Portraits.clear_static()
 	print("PORTRAITS CHECK ", "PASS" if fails.is_empty() else "FAIL (%d)" % fails.size())
 	quit(0 if fails.is_empty() else 1)
+
+
+func _run4_check(picks: Dictionary, crests: Dictionary) -> void:
+	for id in RUN4_ADMIRALS:
+		var entry: Dictionary = picks.get(id, {})
+		_ok(entry.get("faction", "") == crests[id]["faction"], "%s changed faction in the portrait index" % id)
+		var run4 := "painted/%s.webp" % id
+		var painting := Portraits._tex("res://portraits/" + run4)
+		_ok(painting != null and painting.get_size() == Vector2(1024, 1024), "%s is missing its 1024 px run 4 painting" % id)
+		var alts: Array = entry.get("alts", [])
+		# Keep both versions selectable even if Ryan later swaps which one is picked.
+		var choices: Array = alts + [entry.get("pick", "")]
+		_ok(run4 in choices, "%s has no run 4 painting in its portrait choices" % id)
+		if id not in FIRST_PAINTINGS:
+			var previous := "alts/%s_pre1897.webp" % id
+			_ok(previous in choices and FileAccess.file_exists("res://portraits/" + previous), "%s is missing its previous pick" % id)
+	print("  run 4 portraits checked")
 
 
 # Restoration frames (R78 Q17, issue 43): Eclipse portraits change with mastery level, every other

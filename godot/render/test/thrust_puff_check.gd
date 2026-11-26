@@ -58,6 +58,11 @@ func _run() -> void:
 	cam.look_at(Vector3(30, 0, 0))
 	cam.current = true
 	SV._manifest = {"ships": {"H9_23": {"res": _fixture()}}}
+	var fx = preload("res://fx/fx.gd").new()
+	world.add_child(fx)
+	fx.manual = true
+	fx.setup({"camera": cam})
+	fx.defer_initial_cuts = true
 	var views := {}
 	var x := 0.0
 	for f in TP.TABLE:
@@ -68,17 +73,16 @@ func _run() -> void:
 		sv.set_marker(f != "corsair")
 		sv.set_band(3.0)   # a drop-line too, so the shared line shader compiles in a real renderer
 		x += 30.0
+		fx.add_ship("jet_" + f, sv, {"faction": f})
 		views[f] = sv
 	for calm in [false, true]:
 		for f in views:
 			var sv = views[f]
 			sv.calm = calm
+			var before: int = fx.pools["stk"].emitted
 			for i in 4:
 				sv._puff(Vector3(-4, 0, 0), Vector3(-1, 0, 0.2 * i), 1.0)
-			var sparks := 0
-			for pf in sv.puffs:
-				if str(pf.get("style", "")) == "spark":
-					sparks += 1
+			var sparks: int = fx.pools["stk"].emitted - before
 			check(sv.puffs.size() >= 4, "%s throws its jets (calm %s): %d" % [f, str(calm), sv.puffs.size()])
 			var want_sparks: bool = int(TP.of(f)["sparks"]) > 0 and not calm
 			check((sparks > 0) == want_sparks, "%s grit %s (calm %s): %d sparks" % [f, "thrown" if want_sparks else "not thrown", str(calm), sparks])
@@ -89,6 +93,7 @@ func _run() -> void:
 		for k in 240:
 			for f in views:
 				views[f]._puffs_step(1.0 / 60.0)
+			fx.step(1.0 / 60.0)
 			if k % 30 == 0:
 				await process_frame
 		for f in views:
