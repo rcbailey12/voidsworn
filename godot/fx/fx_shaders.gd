@@ -815,9 +815,9 @@ void fragment() {
 """
 
 # Camera-facing textured heads and tails. a3 = (length or blur seconds, width, drag, kind).
-# kinds: 0 shell/tracer   1 spark   3 flame tongue   4 textured las dart
+# kinds: 0 shell/tracer   3 flame tongue   4 textured las dart
 # Kind 5 now routes to NULL_SLUG; its old vertex branch below is unused there.
-#        6 droplet (bio, falls off a glob)   7 molten drip (lance trench)   8 hull-hit spark
+#        6 droplet (bio, falls off a glob)   8 shared analytic spark (a4.y selects crystal)
 #        9 shell   10 energy dart   11 crystal dart   12 scrap
 const STREAK_VERTEX := """
 uniform float gate = 1.0;
@@ -826,6 +826,7 @@ varying vec2 vUv;
 varying vec3 vCol;
 varying float vK;
 varying float vU;
+varying float vGlass;
 void vertex() {
 	vec4 a0 = CUSTOM0; vec4 a1 = CUSTOM1; vec4 a2 = CUSTOM2; vec4 a3 = CUSTOM3; vec4 a4 = vec4(UV, UV2);
 	float a = scene_t - a0.w;
@@ -834,7 +835,7 @@ void vertex() {
 	if (int(a3.w + 0.5) == 5 && a > -0.0001) { a = max(a, 0.0); }
 	float age = pAge(a, a4.x);
 	float life = a1.w;
-	vUv = vec2(0.0); vCol = vec3(0.0); vK = 0.0; vU = 0.0;
+	vUv = vec2(0.0); vCol = vec3(0.0); vK = 0.0; vU = 0.0; vGlass = 0.0;
 	if (a < 0.0 || age >= life || gate <= 0.0) {
 		""" + HIDE + """
 	} else {
@@ -845,12 +846,14 @@ void vertex() {
 		int k = int(a3.w + 0.5);
 		vec3 head; vec3 tail; float fade = 1.0; float u = age / life;
 		if (k == 8) {
-			float last = max(0.0, age - a3.x * mix(1.0, 0.37, u));
-			head = a0.xyz + pDisp(v, dr, 0.0, age) - vec3(0.0, 1.2 * age * age, 0.0);
-			tail = a0.xyz + pDisp(v, dr, 0.0, last) - vec3(0.0, 1.2 * last * last, 0.0);
-			dir = snorm(v * exp(-dr * age) - vec3(0.0, 2.4 * age, 0.0));
+			// Evaluate both ends on the same drag curve. No gravity or bounce.
+			float shutter = a3.x * mix(1.0, 0.37, u) * mix(1.0, 0.52, a4.y);
+			float last = max(0.0, age - shutter);
+			head = a0.xyz + pDisp(v, dr, 0.0, age);
+			tail = a0.xyz + pDisp(v, dr, 0.0, last);
+			dir = snorm(v);
 			fade = mix(1.0, 0.62, fx_calm) * spow(1.0 - u, 1.5);
-		} else if (k == 1 || k == 6 || k == 7) {
+		} else if (k == 6) {
 			float e = exp(-dr * age);
 			head = a0.xyz + pDisp(v, dr, 0.0, age);
 			head.y -= 1.2 * age * age;
@@ -895,20 +898,25 @@ void vertex() {
 			} else if (motion_length > 1e-5) {
 				axis = screen_motion / motion_length;
 			}
-			float cap_px = mix(20.0, 49.0, clamp(a3.x * 6.5, 0.0, 1.0)) * frame_ratio;
+			float form = clamp(a3.x * 6.5, 0.0, 1.0);
+			float glass = a4.y;
+			float length_floor = max(a4.w, mix(mix(5.0, 9.0, form), 4.2, glass));
+			float cap_px = max(length_floor, mix(mix(20.0, 42.0, form), 15.0, glass)) * frame_ratio;
 			if (len > cap_px) {
 				float ratio = cap_px / len;
 				float f = ratio * hc.w / max(tc.w * (1.0 - ratio) + ratio * hc.w, 1e-4);
 				t = mix(h, t, clamp(f, 0.0, 1.0));
 			}
-			float min_len = max(2.5 * pixel, px_world(mix(5.0, 9.0, clamp(a3.x * 6.5, 0.0, 1.0)), dv, PROJECTION_MATRIX));
+			float min_len = max(2.5 * pixel, px_world(length_floor, dv, PROJECTION_MATRIX));
 			t.xy -= axis * max(min_len - min(len, cap_px) * pixel, 0.0);
-			float width = max(a3.y * 2.8, max(3.0 * pixel, px_world(3.8, dv, PROJECTION_MATRIX)));
+			float mask_floor = max(3.0 * pixel, px_world(max(3.8, a4.z), dv, PROJECTION_MATRIX));
+			float width = clamp(a3.y * 2.8, mask_floor, max(mask_floor, 11.0 * pixel * frame_ratio));
 			vec3 p = mix(t, h, VERTEX.x);
 			p.xy += vec2(-axis.y, axis.x) * VERTEX.y * width;
 			vUv = VERTEX.xy;
 			vK = a3.w;
 			vU = u;
+			vGlass = glass;
 			vCol = a2.rgb * a2.a * fade * clamp(gate, 0.0, 1.0);
 			POSITION = PROJECTION_MATRIX * vec4(p, 1.0);
 		} else {
@@ -917,7 +925,7 @@ void vertex() {
 			float wf = k == 4 || k == 10 || k == 11 ? 7.0 : (k == 5 ? 22.0 : (k == 0 || k == 9 || k == 12 ? 8.0 : 6.0));
 			float lf = (k == 0 || k == 4 || k == 5 || k >= 9) ? 14.0 : 5.0;
 			// round 2: a4.z and a4.w carry this streak's own width and length floors (pixels), for fatter tracer cores and
-			// bolder sparks; a line grown to its own floor dims only as f^-0.3
+			// bolder flight streaks; a line grown to its own floor dims only as f^-0.3
 			bool own = a4.z > wf;
 			wf = max(wf, a4.z);
 			lf = max(lf, a4.w);
@@ -981,18 +989,25 @@ void fragment() {
 		// Analytic coverage of a tapered trail and rounded hot head. The small
 		// halo is confined to the head; the rest is a crisp cooling thread.
 		float x = vUv.x;
-		float bend = sin(x * 3.14159265) * 0.055 * vU;
-		float radius = mix(0.038, 0.19, sqrt(clamp(x, 0.0, 1.0)));
-		float y = abs(vUv.y - bend);
+		float radius = mix(0.026, 0.19, sqrt(clamp(x, 0.0, 1.0)));
+		// Same spark, tighter faceted head on crystal instead of a glowing wire.
+		float facet = max(0.015, 0.27 * (1.0 - abs(x - 0.79) * 4.5));
+		radius = mix(radius, facet, vGlass);
+		// A slight curl in the cooling mask leaves the head and motion axis untouched.
+		float curl = sin(x * 3.14159265) * 0.045 * vU * (1.0 - vGlass);
+		float y = abs(vUv.y - curl);
 		float edge_aa = clamp(fwidth(vUv.y) * 0.62, 0.012, 0.29);
 		float head = 1.0 - smoothstep(0.84, 0.995, x);
 		float thread = (1.0 - smoothstep(radius - edge_aa, radius + edge_aa, y)) * smoothstep(0.015, 0.68, x) * head;
 		float heat = 1.0 - smoothstep(0.06, 0.72, vU);
-		float white = heat * smoothstep(0.45, 0.90, x) * 0.93;
+		float white = heat * smoothstep(0.50, 0.96, x) * mix(0.62, 0.96, vGlass);
 		float energy = max(vCol.r, max(vCol.g, vCol.b));
 		float halo_x = (x - 0.86) * 2.1;
 		float halo = exp(-13.0 * halo_x * halo_x - 17.0 * y * y) * head * heat * 0.13;
-		ALBEDO = (mix(vCol, vec3(energy), white) * thread + vCol * halo) * fx_gain;
+		vec3 cool = vCol * mix(0.65, 1.0, heat);
+		vec3 core = mix(cool, vec3(energy), white);
+		vec3 edge = mix(cool, cool.brg * 0.24 + cool * 0.76, vGlass * smoothstep(0.06, 0.2, y));
+		ALBEDO = clamp((mix(core, edge, smoothstep(0.045, 0.22, y)) * thread + edge * halo) * fx_gain, 0.0, 512.0);
 	} else if (k >= 9 && k <= 12) {
 		vec2 bolt = bolt_streak(vUv, k, vU);
 		float peak = max(vCol.r, max(vCol.g, vCol.b));
@@ -1002,7 +1017,8 @@ void fragment() {
 	} else {
 		// The baked tail is displaced across its quad to curve the cooling
 		// history. The hot head stays on the true ballistic position.
-		float bend = (k == 1 || k == 6 || k == 7) ? sin(vUv.x * 3.14159265) * 0.18 : 0.0;
+		if (k != 0 && k != 3 && k != 4 && k != 6) { discard; }
+		float bend = (k == 6) ? sin(vUv.x * 3.14159265) * 0.18 : 0.0;
 		vec2 uv = vec2(vUv.x, vUv.y + 0.5 + bend);
 		vec3 mask = texture(kit_tail, uv).rgb;
 		float crawl = 0.85 + 0.15 * sin(vUv.x * 23.0 - scene_t * 19.0);
@@ -1013,10 +1029,10 @@ void fragment() {
 			float x = abs(vUv.y * 2.0);
 			float ends = smoothstep(0.0, 0.13, vUv.x) * (1.0 - smoothstep(0.90, 1.0, vUv.x));
 			c += (hot * exp(-x*x*12.0) * 0.18 + vCol * exp(-x*x*2.8) * 0.22) * ends * crawl;
-	} else if (k == 3) {
-		c *= 0.65 + 0.35 * sin(vUv.x * 13.0 - scene_t * 8.0);
-	}
-	ALBEDO = clamp(c * fx_gain, 0.0, 512.0);
+		} else if (k == 3) {
+			c *= 0.65 + 0.35 * sin(vUv.x * 13.0 - scene_t * 8.0);
+		}
+		ALBEDO = clamp(c * fx_gain, 0.0, 512.0);
 	}
 }
 """
