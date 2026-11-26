@@ -82,8 +82,8 @@ bulkhead, decks and frame ribs. Glasswrights keep their shatter dust and stored-
 instead of metal kit fill. Chorus keeps torn crimson-umber flesh and a cold membrane backing. Compare the six labeled
 `godot/bench/look_moments_wreck_2022.json` rows at the opening, exposed interior and cold wreck. Use camera 170 first.
 Once checks and review pass, run `tools/pc/jobs/look_bench_2022.bat` for the matched bench. Its six strict rows fail on
-missing frames. When PR 2007 lands, replace the old `SLAG` string assertions in `faction_fx_1991_check.gd` with the
-cold pigment and cooling seam checks already covered by `faction_death_style_check.gd`.
+missing frames. The faction FX check guards against a hot cap face, and `faction_death_style_check.gd` checks the cold
+pigments and seam cooling on the actual wreck pieces.
 
 The kill camera holds through the core flash on cruiser, capital and flagship kills, with a short skippable slow beat
 (R193 (2)). Reduce flashing keeps every size and swaps each white flash for the

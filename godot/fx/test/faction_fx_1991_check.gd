@@ -52,24 +52,37 @@ func _particles(fx: FX, pool_name: String) -> Array[Vector4]:
 	return rows
 
 
-func _check_fire(fx: FX, s, kind: int) -> void:
+func _check_fire(fx: FX, s) -> void:
 	var glow: Color = s.fac.damage_glow
 	fx.tick(s.id, "fire")
-	var fire := _particles(fx, "spr") + _particles(fx, "smk")
-	_check(fire.size() == 8, s.faction + " tick emits eight flame or vapour sprites")
-	for row in fire:
-		_check(int(row.w) == kind and Vector3(row.x, row.y, row.z).is_equal_approx(_rgb(glow)), s.faction + " tick uses its damage glow and safe sprite kind")
+	var flame: MeshInstance3D
+	for child in fx.get_children():
+		if child is MeshInstance3D and child.material_override is ShaderMaterial and child.has_meta("gas_root"):
+			flame = child
+	_check(flame != null, s.faction + " uses the layered fire tick")
+	if flame != null:
+		var tick_mat := flame.material_override as ShaderMaterial
+		_check(tick_mat.get_shader_parameter("plasma") == 1.0 and tick_mat.get_shader_parameter("fac_mid") == glow
+			and tick_mat.get_shader_parameter("fac_smoke") == 0.0, s.faction + " tick plume uses faction glow and no soot")
+	var motes := _particles(fx, "spr") + _particles(fx, "smk")
+	_check(motes.size() == 9, s.faction + " tick emits palette-coloured motes")
+	var mote_kind := 20 if s.faction == "chorus" else SH.TICK_EMBER
+	for row in motes:
+		_check(int(row.w) == mote_kind and Vector3(row.x, row.y, row.z).is_equal_approx(_rgb(glow)), s.faction + " tick mote uses its damage glow")
 	_check(fx._lev.size() == 1 and (fx._lev[0][4] as Color).is_equal_approx(glow), s.faction + " tick light uses its damage glow")
 	fx.pools["spr"].flush()
 	fx.pools["smk"].flush()
 	fx._lev.clear()
 	s._anchors["a1"] = {"p": Vector3(0, 2.5, 0), "n": Vector3.UP, "t": {}}
 	var emitter := {"kind": "fire", "sec": 1, "st": 4, "id": "check"}
-	_check(s._build_damage_emitter(fx, emitter) and emitter.get("sprite_kind") == kind, s.faction + " breach fire shares the tick's sprite kind")
-	if emitter.has("node"):
-		var mi: MeshInstance3D = emitter.node.get_child(0)
-		var rgb: PackedFloat32Array = mi.mesh.surface_get_arrays(0)[Mesh.ARRAY_CUSTOM2]
-		_check(Vector3(rgb[0], rgb[1], rgb[2]).is_equal_approx(_rgb(glow)), s.faction + " breach fire uses its damage glow")
+	_check(s._build_damage_emitter(fx, emitter) and emitter.has("mat"), s.faction + " breach keeps the attached damage plume")
+	if emitter.has("mat"):
+		var core: Vector3 = emitter.mat.get_shader_parameter("colour_core")
+		_check(core.is_equal_approx(_rgb(s._plume_glow())), s.faction + " breach plume matches its damage profile")
+		if s.faction == "hegemony":
+			_check(core.z > core.y and core.y > core.x, "Directorate breach is blue, not amber")
+		elif s.faction == "ithar":
+			_check(emitter.mat.get_shader_parameter("core_power") == 0.0, "Glasswright breach has no thermal core")
 
 
 func _check_directorate_hits(fx: FX, s) -> void:
@@ -114,6 +127,7 @@ func _check_thrusters(world: Node3D, fx: FX) -> void:
 
 func _check_chorus_tidal_and_boarding(fx: FX) -> void:
 	var sparks: int = fx.pools["stk"].emitted
+	fx.well = Vector3(60, -4, 30)
 	fx.tick("chorus", "tidal")
 	_check(fx.pools["stk"].emitted == sparks, "tidal damage never throws metal sparks off the Chorus")
 	var bile: Color = fx.ship("chorus").fac.damage_glow
@@ -124,6 +138,7 @@ func _check_chorus_tidal_and_boarding(fx: FX) -> void:
 			"Chorus tidal damage sheds bile-coloured spores")
 	fx.pools["smk"].flush()
 	fx.pools["stk"].flush()
+	fx.spr_kinds.clear()
 	fx.ship("chorus").root.position = Vector3(0, 0, 36)
 	_check(fx.board("chorus", "ithar") > 0.0, "Chorus boards the Glasswright hull")
 	var hatch := _particles(fx, "smk")
@@ -134,7 +149,7 @@ func _check_chorus_tidal_and_boarding(fx: FX) -> void:
 	for row in _particles(fx, "spr"):
 		if row.w == 16 and Vector3(row.x, row.y, row.z).is_equal_approx(_rgb(glass_glow * 0.55)):
 			glints += 1
-	_check(glints == 14, "the Glasswright breach vents stored-light glints, not gas")
+	_check(glints == 10 and not fx.spr_kinds.has(7), "the Glasswright breach vents stored-light glints, not gas")
 	for pool in ["smk", "spr", "stk"]:
 		fx.pools[pool].flush()
 	fx._lev.clear()
@@ -169,22 +184,22 @@ func _check_death_overlays(fx: FX, s) -> void:
 
 
 func _check_wreck(world: Node3D) -> void:
-	for on_top in [true, false]:
-		var outline := BLOCKERS.outline(world, Vector3.ZERO, Color(0.58, 0.39, 0.16), 0.25, on_top)
-		_check(outline.get_child_count() == 6 and outline.position.y > 0.0, "blocker keeps six visible segments above the board")
+	var blockers := BLOCKERS.new()
+	world.add_child(blockers)
+	var view := {"map": {"holes": [{"kind": "deadstar", "cells": [[0, 0]]}]}, "terrain": {"1,0": "planet", "2,0": "station"}}
+	blockers.build(view, func(q: int, r: int) -> Vector3: return Vector3(q * 17.0, 0, r * 17.0))
+	for key in ["0,0", "1,0", "2,0"]:
+		var outline: Node3D = blockers.visuals.get(key)
+		_check(outline != null and outline.get_child_count() == 6 and outline.position.y > 0.0,
+			key + " keeps six visible segments above the board")
+		if outline == null:
+			continue
 		for segment in outline.get_children():
 			var mat := (segment as MeshInstance3D).material_override as StandardMaterial3D
-			_check(not mat.no_depth_test and mat.emission_enabled, "blocker segment depth-tests and keeps its emission")
-	var cap := BoxMesh.new().get_mesh_arrays()
-	for faction in ["corsair", "deathless"]:
-		var look: Dictionary = LOOK.of(faction)
-		var rim: Color = Color(look.death.rim[0], look.death.rim[1], look.death.rim[2])
-		var mesh := DEATH._piece_mesh({"surfs": [], "cap": cap, "dstyle": {"rim": rim}})
-		var mat := mesh.surface_get_material(0) as ShaderMaterial
-		var shade = mat.get_shader_parameter("heat_cool") if mat != null else null
-		var cool := _rgb(shade) if shade is Color else Vector3.ZERO
-		_check(cool.length() < _rgb(rim).length() * 0.2 and cool.normalized().is_equal_approx(_rgb(rim).normalized()), faction + " cooled cap keeps its rim hue at low strength")
-	_check(DEATH.SLAG.contains("base = heat_cool * 0.46") and DEATH.SLAG.contains("rim * rim_power"), "wreck cap shader uses the cool palette for ribs and dims the cooling rim")
+			_check(not mat.no_depth_test and mat.emission_enabled, key + " segment depth-tests and keeps its emission")
+	# faction_death_style_check also advances the real seam clock and checks the six material families.
+	_check(DEATH.SLAG.contains("base = scorch_tint") and DEATH.SLAG.contains("hot * seam * temperature * temperature")
+		and not DEATH.SLAG.contains("face_glow"), "cold caps take dark hull pigment and emit heat only along the cooling seam")
 
 
 func _run() -> void:
@@ -195,9 +210,9 @@ func _run() -> void:
 	fx.manual = true
 	fx.setup({"quality": "high"})
 	fx.compat = false
-	var kinds := {"deathless": 26, "ithar": 7, "chorus": 20, "hegemony": 26}
-	for faction in kinds:
-		_check_fire(fx, _ship(world, fx, faction, "Cruiser"), kinds[faction])
+	fx.spr_kinds = {}
+	for faction in ["deathless", "ithar", "chorus", "hegemony"]:
+		_check_fire(fx, _ship(world, fx, faction, "Cruiser"))
 	var glass: Color = fx.ship("ithar").fac.damage_glow
 	var bile: Color = fx.ship("chorus").fac.damage_glow
 	_check(glass.b >= glass.g and glass.g >= glass.r, "Glasswright damage light is stored white light")
@@ -210,8 +225,8 @@ func _run() -> void:
 	for trail in eclipse._trails:
 		var mat: ShaderMaterial = trail.mi.material_override
 		_check(mat.get_shader_parameter("trail_ember").is_equal_approx(_rgb(violet)), "Eclipse trail embers use its damage glow")
-	_check(SH.TRAIL.contains("col += trail_ember * spow") and SH.TRAIL.contains("mix(col, vec3(1.0)"), "trail shader uses the palette and a neutral core")
-	_check(SH.TRAIL.contains("uniform vec3 trail_ember = vec3(0.0);"), "a trail with no palette has no embers")
+	_check(SH.TRAIL.contains("col += trail_ember * spow") and SH.TRAIL.contains("st == 3 ? vec3(1.0)"), "ship trail keeps the palette and a neutral core")
+	_check(FX.spark_colour("deathless", FX.SparkRole.ENGINE).is_equal_approx(eclipse.fac.accent), "Eclipse drive sparks keep their white-gold accent")
 	DEATH.BEATS._implode(fx, eclipse, Vector3.ZERO, fx.now)
 	var implosion := _particles(fx, "smk")
 	_check(implosion.size() == 1 and implosion[0].w == 8 and implosion[0].z > implosion[0].x, "Eclipse implosion ends in a violet puff without an orange birth flash")

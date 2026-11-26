@@ -486,7 +486,10 @@ func _build_engines(fx) -> void:
 	var rb = POOLS.Batch.new()
 	var eng: Color = fac["engine"]
 	var extra := String(fac.get("engine_extra", "none"))
-	# A damaged drive still uses its faction's exhaust. Only the Hullbreakers cough black soot.
+	var drive_sparks := POOLS.Batch.new() if extra == "embers" else null
+	var sick_sparks := POOLS.Batch.new() if extra == "embers" else null
+	var qs := POOLS.streak_shape() if extra == "embers" else []
+	# Issue 1991: the legacy wound switch must not change the drive's faction exhaust either.
 	var corsair := extra == "soot"
 	eng_soot = corsair
 	var q = POOLS.quad_shape()
@@ -536,11 +539,13 @@ func _build_engines(fx) -> void:
 				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 0.6), Vector4(v1.x, v1.y, v1.z, 2.0),
 					Vector4(eng.r * 0.4, eng.g * 0.4, eng.b * 0.3, 0.35), Vector4(r * 0.8, r * 3.0, 20, fx.rng.randf()), Vector4(2.4, 0, 0.6, 0)))
 		elif extra == "embers":
-			var ec: Color = acc if acc is Color else eng
+			# A looping local batch shares the same spark as burst and hit effects.
+			var sparks := sick_sparks if ni == sick_nozzle else drive_sparks
 			for k in 3:
 				var v2 := rot * Vector3(-6, fx.rng.randf() - 0.5, fx.rng.randf() - 0.5)
-				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 1.3), Vector4(v2.x, v2.y, v2.z, 0.9),
-					Vector4(ec.r, ec.g, ec.b, 2.2), Vector4(r * 0.2, r * 0.1, 28, fx.rng.randf()), Vector4(3.9, 0, 0.5, 0)))
+				var shutter := lerpf(0.035, 0.065, fx.rng.randf())
+				sparks.add(qs, fx.spark_particle(np, -20.0 + k * 1.3, 0.9, faction, 2.2, shutter,
+					r * 0.14, v2, 0.5, 0.0, 0.0, fx.SparkRole.ENGINE, 3.9))
 	_eng_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 	_eng_rib_mat = fx.mat(SH.RIBBON, 1)
 	_apply_plume_palette(_eng_rib_mat, faction, fac)
@@ -583,7 +588,7 @@ func _build_trails(fx) -> void:
 		mi.top_level = true
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var mat: ShaderMaterial = fx.mat(SH.TRAIL, 1)
-		var ember: Color = fac.damage_glow
+		var ember: Color = fac.damage_glow if faction == "deathless" else Color(1.0, 0.5, 0.15)
 		mat.set_shader_parameter("trail_ember", Vector3(ember.r, ember.g, ember.b))
 		mi.material_override = mat
 		mi.extra_cull_margin = 16384.0
@@ -720,7 +725,6 @@ func _update_trails(fx, _moved: bool) -> bool:
 		xfm = root.global_transform * (get_meta("death_motion") as Transform3D) * (get_meta("death_hull_motion", Transform3D.IDENTITY) as Transform3D)
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
-	var plume = clampf(1.5 * hull.W, 2.0, 32.0)
 	var style: int = 1 if eng_soot else int(fac["trail"])
 	for ti in _trails.size():
 		var t: Dictionary = _trails[ti]
@@ -2748,14 +2752,6 @@ func _refresh_damage_emitters(fx) -> void:
 	_damage_emitters = keep
 
 
-func _fire_kind() -> int:
-	match faction:
-		"deathless", "hegemony": return 26
-		"chorus": return 20
-		"ithar": return 7
-	return 25
-
-
 func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	if e.has("tur") or e.has("mp"):
 		_build_wisp(fx, e)
@@ -2764,36 +2760,13 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	if a.is_empty(): return false
 	var p: Vector3 = a.p
 	var n: Vector3 = a.n
-	var glow: Color = fac.damage_glow
-	var b := POOLS.Batch.new()
-	var kind := 3
-	var color := Color(0.13, 0.12, 0.11)
-	var intensity := 0.36
-	var size0: float = hull.L * 0.014
-	var size1: float = hull.L * 0.065
-	var life := 2.5
-	var count := 5
-	var velocity: Vector3 = (n * 0.7 + Vector3.UP * 0.3) * hull.L * 0.10
-	if faction == "deathless": color = Color(0.055, 0.025, 0.09); kind = 8
-	if faction == "deathless" and e.st == 2:
-		kind = 7; color = glow * 0.55
-		size0 = hull.L * 0.004; size1 = hull.L * 0.018
-		velocity = n * hull.L * 0.045
-	if faction == "chorus": color = glow * 0.45; kind = 20
-	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.24
-	if faction == "hegemony": color = glow * 0.35; kind = 7
+	var form := DAMAGE_PLUME.Form.DENT
+	var length: float = hull.L * 0.12
+	var axis := (n + Vector3.UP * 0.45).normalized()
 	if e.kind == "fire":
-		kind = _fire_kind()
-		color = glow
-		count = 8
-		life = 1.0
-		intensity = 0.8
-		size0 = hull.L * 0.009
-		size1 = hull.L * 0.04
-		velocity = (n * 0.7 + Vector3.UP * 0.3) * hull.L * 0.06
+		form = DAMAGE_PLUME.Form.WOUND
+		length = hull.L * (0.19 if e.st == 4 else 0.15)
 		if e.st == 4: p -= n * hull.L * 0.018
-		if faction == "chorus": intensity = 0.35
-		if faction == "ithar": intensity = 0.3
 	elif e.kind == "vent":
 		form = DAMAGE_PLUME.Form.VENT
 		length = hull.L * 0.19
@@ -2826,10 +2799,10 @@ func _attach_damage_plume(fx, e: Dictionary, p: Vector3, axis: Vector3, length: 
 	var phase := float(posmod(hash(e.id) + _seed, 127)) / 127.0
 	var glow := _plume_glow()
 	var profile := DAMAGE_PLUME.Profile.BASE
-	if wounds_v2:
-		match faction:
-			"hegemony": profile = DAMAGE_PLUME.Profile.ELECTRIC
-			"deathless": profile = DAMAGE_PLUME.Profile.VIOLET
+	if faction == "hegemony":
+		profile = DAMAGE_PLUME.Profile.ELECTRIC
+	elif wounds_v2 and faction == "deathless":
+		profile = DAMAGE_PLUME.Profile.VIOLET
 	var plume := DAMAGE_PLUME.build(fx, _dmg_root, p, axis, length, form, fac, phase, "fx_damage_" + e.id, glow, profile)
 	e["node"] = plume
 	e["mat"] = plume.material_override
@@ -2862,18 +2835,38 @@ func _update_damage_emitters(fx) -> void:
 		if gate <= 0.0:
 			e.node.queue_free()
 			_fading_emitters.remove_at(j)
-	if squadron and _squad_smoke and not fx.compat and fx.now >= _smoke_next:
-		_smoke_next = fx.now + 0.12
-		# World-space pooled samples form a short ribbon that stays behind a wing.
-		var smoke := Color(0.12, 0.12, 0.13)
-		var kind := 3
-		match faction:
-			"chorus": smoke = fac.damage_glow * 0.45; kind = 20
-			"ithar", "hegemony": smoke = fac.damage_glow * 0.7; kind = 7
-			"deathless": smoke = fac.damage_glow * 0.18; kind = 8
-		fx.spr(to_world(hull.c - Vector3.RIGHT * hull.L * 0.2), fx.now, 1.2,
-			smoke, 0.32, hull.L * 0.015, hull.L * 0.10, kind,
-			dir_world(Vector3.LEFT) * hull.L * 0.20)
+	if not dead and squadron:
+		if not _squad_smoke or fx.compat:
+			_clear_wing_smoke()
+		elif not is_instance_valid(_wing_smoke):
+			_build_wing_smoke(fx)
+
+
+func _build_wing_smoke(fx) -> void:
+	var visual = root.get("hull")
+	var exhaust: Dictionary = visual.damage_exhaust() if is_instance_valid(visual) and visual.has_method("damage_exhaust") else {}
+	var parent: Node3D = exhaust.get("parent", _dmg_root)
+	var length: float = 1.65
+	var p: Vector3
+	if exhaust.is_empty():
+		# Minimal or legacy wings use their analysed stern, rather than a point between the craft.
+		var aft: Dictionary = hull.surface(hull.c, Vector3.LEFT)
+		if aft.is_empty():
+			return
+		p = aft.p
+		length = hull.L * 0.55
+	else:
+		p = exhaust.p
+	var phase := float(posmod(_seed, 127)) / 127.0
+	_wing_smoke = DAMAGE_PLUME.build(fx, parent, p, Vector3.LEFT, length, DAMAGE_PLUME.Form.WING,
+		fac, phase, "fx_wing_damage_smoke")
+
+
+func _clear_wing_smoke() -> void:
+	if is_instance_valid(_wing_smoke):
+		_wing_smoke.hide()
+		_wing_smoke.queue_free()
+	_wing_smoke = null
 
 
 # ---------------------------------------------------------------- live wounds (issue 1587)
@@ -2926,9 +2919,9 @@ func _cough(fx) -> void:
 		for j in 4:
 			fx.spr(p + d * r * 0.5, fx.now + j * 0.06, 0.9 + 0.2 * fx.rng.randf(), col, 0.55, r * 1.1, r * 4.2, kind,
 				fx.rcone(d, 0.35) * r * (5.0 + 3.0 * fx.rng.randf()), 2.0)
-	for j in (0 if faction == "chorus" else 5):   # a Chorus drive coughs spores
-		fx.stk(p + d * r * 0.4, fx.now + fx.rng.randf() * 0.12, 0.18 + 0.12 * fx.rng.randf(), eng.lerp(Color.WHITE, 0.3), 3.0,
-			0.06, 0.08, 1, fx.rcone(d, 0.6) * r * (8.0 + 6.0 * fx.rng.randf()), 2.0)
+	for j in (0 if faction == "chorus" else 5):   # issue 1741: a Chorus drive coughs spores, no sparks
+		fx.spark(p + d * r * 0.4, fx.now + fx.rng.randf() * 0.12, 0.18 + 0.12 * fx.rng.randf(), faction, 3.0,
+			0.06, 0.08, fx.rcone(d, 0.6) * r * (8.0 + 6.0 * fx.rng.randf()), 2.0, 0.0, 0.0, fx.SparkRole.ENGINE)
 	_wlog(["cough", sick_nozzle, fx.now])
 
 
@@ -3216,32 +3209,7 @@ func jammed_turrets() -> Array:
 # Jammed turrets and dead mounts/nozzles hand their existing attachment to the shared thin plume.
 func _build_wisp(fx, e: Dictionary) -> void:
 	var p: Vector3 = (e["mp"] as Vector3) if e.has("mp") else (hull.turrets[int(e["tur"])]["xf"] as Transform3D).origin + Vector3.UP * hull.L * 0.01
-	var glow: Color = fac.damage_glow
-	var kind := 3
-	var color := Color(0.15, 0.14, 0.13)
-	var intensity := 0.26
-	if faction == "deathless": color = Color(0.055, 0.025, 0.09); kind = 8
-	if faction == "chorus": color = glow * 0.45; kind = 20
-	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.18
-	if faction == "hegemony": color = glow * 0.35; kind = 7
-	var life := 2.2
-	var count := 3
-	var v: Vector3 = Vector3.UP * hull.L * 0.05
-	var b := POOLS.Batch.new()
-	for j in count:
-		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, fx.now - life + float(j) / count * life),
-			Vector4(v.x, v.y, v.z, life), Vector4(color.r, color.g, color.b, intensity),
-			Vector4(hull.L * 0.004, hull.L * 0.022, kind, j * 0.211), Vector4(life, 0, 0, 0.1)))
-	var holder := Node3D.new()
-	holder.name = "fx_damage_" + String(e.id)
-	_dmg_root.add_child(holder)
-	var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
-	b.build(material, holder, "fx_turret_wisp")
-	e["node"] = holder
-	e["mat"] = material
-	e["particles"] = b.particle_count
-	e["sprite_kind"] = kind
-	e["source"] = p
+	_attach_damage_plume(fx, e, p, Vector3.UP, hull.L * 0.095, DAMAGE_PLUME.Form.WISP)
 
 
 # Every frame: spark pops on jammed turrets and the hull's uneven power (fx_flick: the damage shader multiplies it onto
@@ -3412,53 +3380,16 @@ func tick_flare(fx, kind: String) -> void:
 		h = hull.surface_sample(-1, 0.65, "flare")
 	if h.is_empty():
 		return
-	var wp = to_world(h["p"])
-	var wn = dir_world(h["n"])
-	var k = scale_k()
-	var T: float = fx.now
-	match kind:
-		"acid":
-			for i in 6:
-				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, _acid_colour(), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
-		"tidal":
-			if faction == "chorus":
-				var glow: Color = fac.damage_glow
-				for i in 8:
-					fx.spr(wp + fx.rdir() * 3.0 * k, T + i * 0.04, 0.5, glow, 0.8, 0.8 * k, 2.4 * k, 20, wn * 2.0 + fx.rdir())
-			else:
-				for i in 20:
-					fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
-		"storm":
-			if _shield_mat != null:
-				shield_hit(fx, shield_point(wp + wn * 30.0)["local"], T, 0.6, 14.0, 0.8)
-		_:
-			var glow: Color = fac.damage_glow
-			var sprite := _fire_kind()
-			# Preserve the short tick's size and strength for the two ember factions.
-			if sprite == 25: sprite = 1
-			var intensity := 0.8 if sprite == 7 or sprite == 20 else 2.4
-			for i in 8:
-				fx.spr(wp, T + i * 0.05, 0.7, glow, intensity, 0.8 * k, 2.4 * k, sprite, wn * 2.0 + fx.rdir(), 0.0)
-			fx.light(wp + wn, T, 0.6, 3.0, glow, 1)
-
-
-func jump_out(fx) -> void:
-	if dead or gone:
-		return
-	var T: float = fx.now
-	var bow = dir_world(Vector3(1, 0, 0))
-	var c: Color = fac["engine"]
-	var p = to_world(hull.core)   # issue 370: the jump flash at the core (hp_core, else the centre of volume)
-	for t in hull.nozzles:
-		var np = to_world(t["p"])
-		fx.spr(np, T, 0.5, c, 6.0, 2.0, 8.0, 2)
-	fx.light(p, T, 0.6, 6.0, c, 0)
-	fx.stk(p, T + 0.35, 0.4, c.lerp(Color.WHITE, 0.5), 10.0, hull.L * 3.0, hull.W * 0.4, 0, bow * hull.L * 20.0)
-	fx.ring(p, bow, T + 0.35, 0.6, c, 1.5, hull.L * 0.2, hull.L * 1.2, 1)
-	fx.later(T + 0.4, func l_jump() -> void:
-		if fx.ships.get(id) == self and not dead and not gone:
-			_hide_meshes()
-			teardown(fx, false))  # damage polling can finish its own job; do not block the jump frame
+	STATUS_TICK.play(fx, self, kind, h)
+	# Living and glass hulls keep the motes from the tick, not metal sparks.
+	if kind == "tidal" and faction not in ["chorus", "ithar"]:
+		var wp := to_world(h["p"])
+		var k := scale_k()
+		var T: float = fx.now
+		var tint: Color = fac.damage_glow if faction == "deathless" else Color(0.7, 0.8, 1.0)
+		for i in 20:
+			fx.spark(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, faction, 4.0, 0.15, 0.1, fx.rdir() * 6.0, 0.5,
+				0.0, 0.0, fx.SparkRole.HULL, tint)
 
 
 # A mark's geometry follows the section's actual damage, including repairs.

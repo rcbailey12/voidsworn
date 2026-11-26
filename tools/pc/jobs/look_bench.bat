@@ -17,7 +17,6 @@ rem   LB_SHIPS     a godot folder that has the PC-built hulls (gen, assets\ships
 rem   LB_PRE_RUN   a .bat called with the game checkout's folder after checkout (bench proofs: change one number)
 rem   LB_RUN_NAME  the run folder name for AFTER instead of its commit (use with LB_PRE_RUN)
 rem   LB_QUIET     1: do not open the sheets folder at the end
-rem   LB_MOMENTS   full path to a job rows file. Both revisions run those moments only.
 rem   LB_SHEETS    optional parent folder for the revision-labelled sheets
 rem Issue 1194: every step runs through job_wrap.bat (the installed main watchdog in tools_live, a GPU label on each claim,
 rem PC_GPU_ISSUE, default look_bench). Godot and a Python with Pillow are checked before any clone; a failed step stops it.

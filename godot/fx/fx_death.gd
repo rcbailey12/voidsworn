@@ -144,8 +144,9 @@ global uniform float fx_gain;
 uniform float heat = 0.0;
 uniform int cap_kind = 0; // 0: metal, 1: glass, 2: flesh
 uniform float section_scale = 1.0;
-uniform float face_glow = 0.0;
-// R367 (issue 1399): the torn face's heat in the faction's death colours (defaults: today's metal, red to orange to white)
+uniform vec3 scorch_tint = vec3(0.20, 0.21, 0.22);
+uniform vec3 cap_albedo = vec3(0.32);
+// R367: the seam's heat in the faction's death colours (defaults for an unstyled hull).
 uniform vec3 heat_cool = vec3(0.12, 0.025, 0.013);
 uniform vec3 heat_hot = vec3(0.95, 0.40, 0.09);
 uniform vec3 heat_white = vec3(0.94, 0.84, 0.64);
@@ -159,13 +160,13 @@ float bends(vec3 p) {
 }
 void fragment() {
 	vec3 p = slag_p / max(section_scale, 0.001);
-	float n = grain(p * 160.0);
-	float coarse = 0.5 + 0.25 * sin(dot(p, vec3(38.7, 13.1, 26.3))) * sin(dot(p, vec3(12.3, 52.1, 24.7)));
-	float band = clamp(slag_band.x, 0.0, 1.0);
-	bool rib = band > 0.4 && band < 0.6;
-	vec3 base = mix(heat_cool * 0.32, vec3(0.014, 0.010, 0.011), band);
-	if (rib) { base = heat_cool * 0.46; }
-	if (organic) {
+	float coarse = bends(p);
+	bool rib = slag_band.x > 0.4 && slag_band.x < 0.53;
+	bool deck = slag_band.x >= 0.53 && slag_band.x < 0.68;
+	bool lip = slag_band.x < 0.4;
+	float temperature = clamp(heat, 0.0, 1.0);
+	float edge = smoothstep(0.78, 1.0, slag_band.y);
+	if (cap_kind == 2) {
 		float fibre = pow(abs(sin(dot(p, vec3(41.0, 67.0, 29.0)) + coarse * 8.0)), 6.0);
 		vec3 flesh = cap_albedo * mix(0.40, 1.20, coarse * 0.7 + fibre * 0.3);
 		ALBEDO = rib ? vec3(0.095, 0.070, 0.040) * (0.65 + coarse * 0.35) : flesh;
@@ -188,20 +189,8 @@ void fragment() {
 		float seam = edge * mix(0.06, 1.0, smoothstep(0.27, 0.68, coarse));
 		EMISSION = hot * seam * temperature * temperature * 0.90 * fx_gain;
 	}
-	base *= 0.65 + coarse * 0.55 + n * 0.2;
-	float rim = clamp(slag_band.y, 0.0, 1.0) * smoothstep(0.25, 0.75, n);
-	float hot = clamp(heat, 0.0, 1.0);
-	float temperature = hot * hot;
-	vec3 metal = mix(heat_cool, heat_hot, smoothstep(0.2, 0.65, temperature));
-	metal = mix(metal, heat_white, smoothstep(0.65, 1.0, temperature));
-	// Issue 462: with face_glow on (a big hull's death) the torn face glows as it cools: white, orange, dull red, dark.
-	// Issue 484 (the Board, Nov 11: a capital's middle piece showed a big flat tan grid face, a clean slab again): the face
-	// is charred black and the heat sits in its cracks and seams, never as an even bright panel.
-	float vein = pow(1.0 - abs(sin(dot(p, vec3(23.1, 9.7, 17.3)) + coarse * 7.0)), 10.0)
-		+ pow(1.0 - abs(sin(dot(p, vec3(-7.9, 29.3, 11.1)) + n * 1.5)), 14.0) * 0.6;
-	float face = face_glow * (rib ? 0.45 : vein * 1.4) * smoothstep(0.0, 0.08, temperature);
-	float rim_power = mix(0.95, 3.2, smoothstep(0.35, 0.9, temperature));
-	ALBEDO = base + (organic ? vec3(0.0) : metal * (rim * rim_power + face) * temperature * fx_gain);
+	// A dim read on structure in deep shadow. It does not turn a cold wall into a light source.
+	EMISSION += ALBEDO * 0.08;
 }
 """
 
@@ -2862,7 +2851,7 @@ static func _wing_death(fx, s) -> float:
 				BEATS.debris(fx, s, p, fx.now, 1.2, fx.rdir() * L * 0.8, L * 0.04, 0.0)
 		else:
 			# Birth on the next FX step: a one-frame picture born between steps could expire before its first draw.
-			fx.later(fx.now + 0.000001, _wing_spark.bind(fx, s, p, s.xf()))
+			fx.later(fx.now + 0.000001, _wing_flash.bind(fx, s, p, s.xf()))
 			BEATS.corkscrew(fx, s, p, s.xf())   # issue 1586
 	_hide_ship(s)
 	return 1.0 / 60.0
@@ -3512,7 +3501,7 @@ static func _blast_inner(fx, src, p: Vector3, n: Vector3, px: float, tint: Color
 	if fx.quality != "low":
 		var k: float = px * STAGING_UNITS_PER_PIXEL / 10.0
 		for j in 5:
-			fx.stk(p + n * 0.1, fx.now, 0.35 + fx.rng.randf() * 0.25, tint.lerp(Color.WHITE, 0.4), 5.0, 0.05, 0.10, 1, fx.rcone(n, 0.7) * (8.0 + fx.rng.randf() * 10.0) * k, 2.0)
+			fx.spark(p + n * 0.1, fx.now, 0.35 + fx.rng.randf() * 0.25, src.faction, 5.0, 0.05, 0.10, fx.rcone(n, 0.7) * (8.0 + fx.rng.randf() * 10.0) * k, 2.0, 0.0, 0.0, fx.SparkRole.DEATH)
 
 
 # Issue 484 (owner, Nov 11, on the secondaries: "the secondary explosion smoke looks a little too even and weird"). One
@@ -3533,8 +3522,9 @@ static func _core_gas_veil(fx, s, node_ref: WeakRef, local: Vector3, capital: bo
 		return
 	var p: Vector3 = node.to_global(local)
 	var frame: Transform3D = node.global_transform * Transform3D(Basis.IDENTITY, -(node.get_meta("piece_cen", Vector3.ZERO) as Vector3))
-	flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0,
-		vel, 0.38, atlas_band(s.hull.L), s, false, false, frame)
+	var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, vel, 0.38, atlas_band(s.hull.L), null)
+	gas.set_meta("spawn_frame", frame)
+	fx.record_spawn(s, p, false, frame)
 
 
 static func _death_rng(s) -> RandomNumberGenerator:
@@ -4257,7 +4247,8 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		# without buckets, or a cut job not ready) still throws one pooled physical shard and a visible ember, never light
 		# and smoke alone.
 		_spawn_ship_debris(fx, s, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0)
-		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, 28, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
+		var kind: int = fx.HOT_FLECK_SPRITE if s.faction in ["voidsworn", "corsair"] else SH.TICK_EMBER
+		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, kind, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
 
 
 # Issue 484: the bite's fragments and the chips along the break, as real pieces of the hull (capped, glowing faces,
@@ -4369,7 +4360,7 @@ static func _organic_spill(fx, p: Vector3, L: float, tint: Color) -> void:
 		var dir := Vector3(cos(angle), fx.rng.randf_range(0.0, 0.12), sin(angle))
 		var speed: float = L * fx.rng.randf_range(0.2, 0.45)
 		fx.spr(p, fx.now, 1.0 + fx.rng.randf() * 0.8, tint, 1.5,
-			L * 0.018, L * 0.006, 28, dir * speed, 0.5, 0.0, 0.0, 6.0)
+			L * 0.018, L * 0.006, 15, dir * speed, 0.5, 0.0, 0.0, 6.0)
 		if i % 2 == 0:
 			fx.spr(p, fx.now, 1.4, tint * Color(0.24, 0.3, 0.18), 0.65,
 				L * 0.025, L * 0.06, 20, dir * speed * 0.65, 0.7)

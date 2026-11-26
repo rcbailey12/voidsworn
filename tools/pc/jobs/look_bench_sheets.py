@@ -128,7 +128,7 @@ def main():
     la = a.label_after or (after[0].get("commit", "")[:8] or "after")
     lb = (a.label_before or (before[0].get("commit", "")[:8] or "before")) if before else ""
     mom = after[1]
-    cameras = [c for c in CAMS if c in mom.get("cameras", CAMS)]
+    cams = [int(c) for c in mom.get("cameras", CAMS)]
     cell = tuple(mom.get("cell", [384, 216]))
     rows = mom["rows"]
     rows_by_id = {r["id"]: r for r in rows}
@@ -139,7 +139,7 @@ def main():
     # ---- per-moment strip pages
     for r in rows:
         rid = r["id"]
-        have = [c for c in cameras if (rid, c) in A]
+        have = [c for c in cams if (rid, c) in A]
         if not have:
             continue
         n = max(len(A[(rid, c)][0]) for c in have)
@@ -185,15 +185,15 @@ def main():
         if r["group"] not in groups:
             groups.append(r["group"])
     for g in groups:
-        grow = [r for r in rows if r["group"] == g and any((r["id"], c) in A for c in cameras)]
+        grow = [r for r in rows if r["group"] == g and any((r["id"], c) in A for c in cams)]
         if not grow:
             continue
-        cols = len(cameras) * (2 if before else 1)
-        W = cols * cell[0] + (8 if before else 0) * len(cameras)
+        cols = len(cams) * (2 if before else 1)
+        W = cols * cell[0] + (8 if before else 0) * len(cams)
         H = 40 + len(grow) * (cell[1] + LABEL_H + 4)
         sheet = Image.new("RGB", (W, H), BG)
         dr = ImageDraw.Draw(sheet)
-        hdr = "Look bench: %s.  Columns: camera %s%s" % (g, ", ".join(str(c) for c in cameras),
+        hdr = "Look bench: %s.  Columns: camera %s%s" % (g, ", ".join(str(c) for c in cams),
                                                          ("  (each: before %s | after %s)" % (lb, la)) if before else ("   " + la))
         text(dr, (8, 8), hdr, FB)
         y = 40
@@ -203,7 +203,7 @@ def main():
             text(dr, (6, y + 2), r["label"], F)
             y += LABEL_H
             x = 0
-            for c in cameras:
+            for c in cams:
                 for which, src in ([("b", B), ("a", A)] if before else [("a", A)]):
                     cells = src.get((r["id"], c), ([], []))[0]
                     if cells:

@@ -28,7 +28,7 @@ Ryan, Nov 10 2026 (R164), on hard points: "It should vary by size of ship, facti
   stored white light and crystal glints, including at a boarding breach. Their correction jets stay pale gold (R412)
   pending Ryan's pick. Chorus fire ticks, tidal damage, boarding hatches and strike-craft deaths shed bile-coloured spores.
   Only Hullbreakers cough black soot from the drive, even when another faction's drive sputters.
-  Cooled wreck caps keep a dark version of the faction's torn-edge colour, with dull red-brown on warm metal.
+  Cooled metal wreck caps use dark hull pigment. Only the seam stays briefly lit in the faction's torn-edge colour.
 - Every hull has real thickness and comprehensive insides through the whole hull: decks, frames, spaces and machinery, so a
   hit, break or death never shows an empty husk (R98, R209, R215). Ryan, Nov 11: "Let's ensure we're keeping in mind the
   hits, the breaks, the deaths and everything that affects the internals of the ship so we don't run into the issues of before

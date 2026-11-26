@@ -19,6 +19,7 @@ extends RefCounted
 #
 # Each beat that fires is noted on the ship (meta "death_beats"; a few short strings a death) for the checks.
 
+const SH := preload("res://fx/fx_shaders.gd")
 const ARCH_TORCH := 0      # about 25%: the drive over-flares for 0.6 s and drives the hull into an arcing spiral
 const ARCH_SNAP := 1       # about 30%: a sharp mid-hull flash and 2 or 3 spinning pieces thrown clean apart
 const ARCH_ROLL := 2       # about 25%: a hard roll, a bright flank vent jet, a dead tumble, no big fireball
@@ -181,14 +182,6 @@ static func debris(fx, s, p: Vector3, t: float, life: float, vel: Vector3, size:
 			fx.shd(p, t, life, vel, size, 0.0 if s.faction == "hegemony" else heat, spin, drag, tint)
 
 
-# The spark colour of a hull's crush or tear follows the material and faction.
-static func spark_col(s, metal: Color) -> Color:
-	if s.faction == "hegemony": return s.fac.damage_glow as Color
-	match int(s.fac.get("wound_kind", 0)):
-		1: return s.fac.damage_glow as Color
-		2, 3: return _death().boom_col(s, "spark", s.fac.damage_glow as Color)
-	return metal
-
 
 # a ram kill: the crush at the struck point throws sparks along the plating, and the pieces will spin off centre
 static func _ram(fx, s, T: float) -> void:
@@ -326,7 +319,7 @@ static func _beacon(fx, s, ref: WeakRef) -> void:
 	if fx.reduce_flashing:
 		fx.spr(p, fx.now, 0.9, col, 0.6, h.L * 0.008, h.L * 0.010, 18)   # a slow soft pulse
 	else:
-		fx.spr(p, fx.now, 0.22, col, 1.4, h.L * 0.008, h.L * 0.010, 18)
+		fx.spr(p, fx.now, 0.22, col, 1.4, h.L * 0.008, h.L * 0.012, 18)
 	note(s, "beacon")
 
 
@@ -347,7 +340,6 @@ static func corkscrew(fx, s, p: Vector3, frame: Transform3D) -> void:
 			var kind := 8 if s.faction == "deathless" else (7 if s.faction == "hegemony" else 3)
 			var smoke: Color = Color(0.12, 0.11, 0.1) if kind == 3 else s.fac.damage_glow * 0.18
 			fx.spr(q, fx.now + u * 0.35, 0.6, smoke, 0.4, L * 0.04, L * 0.14, kind, Vector3.ZERO, 0.5)
-	var tint: Color = s.fac.damage_glow
 	for j in 2:
 		debris(fx, s, p, fx.now, 1.2, (fwd + fx.rdir() * 0.6).normalized() * L * 0.8, L * 0.04, 0.4, 6.0, 0.3, 0.6)
 		fx.spark(p, fx.now, 0.35, s.faction, 2.0, 0.04, L * 0.02, fx.rdir() * L * 0.7, 1.0, 0.0, 0.0, fx.SparkRole.DEATH)
@@ -393,7 +385,8 @@ static func roll_end(fx, s, p: Vector3, inherited: Vector3) -> void:
 	# a short counted flash (the staging rule's core beat, small), refused in calm mode like every other
 	if fx.flash_at(p, fx.now, L * 0.45, 40.0, 0.10):
 		fx.light(p, fx.now, 0.10, 2.5, col, 1)
-		fx.spr(p, fx.now, 0.12, col.lerp(Color.WHITE, 0.5), 2.0, L * 0.05, L * 0.12, 28)
+		var kind: int = fx.HOT_FLECK_SPRITE if s.faction in ["voidsworn", "corsair"] else SH.TICK_EMBER
+		fx.spr(p, fx.now, 0.12, col.lerp(Color.WHITE, 0.5), 2.0, L * 0.05, L * 0.12, kind)
 	note(s, "roll_end")
 
 

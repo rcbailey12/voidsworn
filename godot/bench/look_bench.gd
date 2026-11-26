@@ -92,6 +92,7 @@ var cfg := {}
 var steps := 0
 var headless := false
 var moment_deadstar := false
+var failed := ""   # issue 1877 (Artoo on PR 1904): a failed clip or strict row fails the run (no LOOK_BENCH_DONE, exit 4)
 var sfx: Node = null          # --sound only
 var death_audio: Node = null
 var _build_d_stub: Node = null   # only used when comparing Nova on a pre-2045 checkout
@@ -683,15 +684,118 @@ func _hits(n: int, shield: bool, crit: bool) -> Array:
 	return h
 
 
+# The shared capture script runs on both revisions. New captures use the same camera poses as battle.
+# On the pinned earlier revision, reproduce its wide shot and its existing three-quarter kill hold.
+func _moment_cut(kind: String) -> void:
+	var pa: Vector3 = A.visual_position()
+	var pt: Vector3 = T.visual_position()
+	var is_kill := kind == "kill"
+	var capital: bool = float(T.L) >= 20.0
+	if cam.has_method("enter_cut"):
+		var pose: Dictionary
+		if is_kill:
+			pose = cam.impact_cut(pt, T.L, capital, [[pa, A.L]], false, T.cur_yaw)
+		else:
+			pose = cam.shot_cut(kind, pa, pt, A.L, T.L, false)
+		cam.enter_cut(pose, is_kill)
+		return
+	var cur: float = cam.a
+	if is_kill:
+		var best := INF
+		for q in [PI / 4.0, 3.0 * PI / 4.0, -PI / 4.0, -3.0 * PI / 4.0]:
+			var d := angle_difference(cur, float(T.cur_yaw) + float(q))
+			if absf(d) < best:
+				best = absf(d)
+				cam.a = cur + d
+		cam.b = 1.12
+		cam.r = clampf(maxf(float(T.L), 6.0) / ((1.0 if capital else 0.85) * 2.0 * tan(deg_to_rad(cam.fov) * 0.5)), cam.min_r, 200.0)
+		cam.t = pt
+		cam.slow_until = cam._clock + 1.2
+		return
+	var base := atan2(-(pt.z - pa.z), pt.x - pa.x)
+	var left := angle_difference(cur, base + PI / 2.0)
+	var right := angle_difference(cur, base - PI / 2.0)
+	cam.a = cur + (left if absf(left) < absf(right) else right)
+	cam.b = 1.02
+	cam.r = clampf(Vector2(pt.x - pa.x, pt.z - pa.z).length() * 1.25 + 34.0, 60.0, 200.0)
+	cam.t = (pa + pt) * 0.5
+
+
+# The effect-only replay of the battle events. The bench runs on both revisions, so the before frames use
+# the actual old FX methods or the old battle cue, not a look-alike built on the new kit.
+func _build_d(row: Dictionary, event: String) -> void:
+	var t: float = fx.now
+	var p: Vector3 = T.visual_position() + Vector3.UP * 2.0
+	var from: Vector3 = A.visual_position() + Vector3.UP * 2.0
+	var dest: Vector3 = T.position + Vector3(-24.0, 0.0, -7.0)
+	var shared: bool = fx.has_method("rift_in")
+	report["build_d"] = "shared" if shared else "legacy"
+	match event:
+		"nova":
+			var impact: Vector3 = T.position + Vector3.UP * 2.0
+			if shared:
+				fx.nova("A", impact)
+			else:
+				fx.ability("A", "nova")
+				_build_d_stub = load("res://scenes/battle/fx_stub.gd").new()
+				fx.add_child(_build_d_stub)
+				_build_d_stub.set_process(false)
+				fx.later(t + 0.50, func legacy_shell() -> void:
+					_build_d_stub.bolt(from, impact, Color(1.0, 0.8, 0.5), 0.35, 0.0, 3.0))
+				fx.later(t + 0.85, _build_d_pop.bind(impact, Color(1.0, 0.7, 0.4), 60.0, 0.8))
+		"arrival":
+			if shared:
+				fx.rift_in("T")
+			else:
+				_build_d_pop(p, Color(1.0, 0.5, 0.4), 24.0, 0.6)
+		"risen":
+			if shared:
+				fx.rift_in("T", 1.0, 0.0, true)
+			else:
+				_build_d_pop(p, FX.FLOOK.engine("deathless"), 16.0, 0.8)
+		"blink":
+			if shared:
+				fx.fold("T", 1.0, func bench_blink() -> void: T.position = dest)
+			else:
+				var c := FX.FLOOK.engine("ithar")
+				# The explicit-hex ability moved the view before the separate blink event on the old branch.
+				fx.ability("T", "blink")
+				T.position = dest
+				_build_d_pop(T.visual_position() + Vector3.UP * 2.0, c, 18.0, 0.5)
+				fx.later(t + 0.30, func legacy_blink() -> void:
+					_build_d_pop(T.visual_position() + Vector3.UP * 2.0, c, 18.0, 0.5))
+				fx.later(t + 0.55, func legacy_blink_end() -> void:
+					_build_d_pop(T.visual_position() + Vector3.UP * 2.0, c, 18.0, 0.5))
+		"phase":
+			if shared:
+				fx.fold("T")
+			else:
+				fx.ability("T", "phase")
+				_build_d_pop(p, Color("#ddc4ff"), 22.0, 0.9)
+		"jump":
+			fx.jump_out("T")
+		"ability":
+			fx.ability("T", str(row.get("ability", "")))
+		"command":
+			fx.command("T")
+		"bay":
+			fx.launch("A", "T")
+
+
+func _build_d_pop(p: Vector3, c: Color, size: float, life: float) -> void:
+	fx.pop(p, fx.now, c, size * 0.5, 3.0, Vector3.UP, clampf(life * 0.5, 0.1, 0.4))
+	fx.light(p, fx.now, life, 2.0, c)
+
+
 func _moment_world(deadstar: bool) -> void:
 	moment_deadstar = deadstar
-	var units := [{"q": -3, "r": -2}, {"q": 3, "r": 2}]
+	var terrain := {"0,-4": "rock", "-5,3": "rock", "4,3": "debris", "-1,5": "rock"} if not deadstar else {}
+	terrain.merge(cfg.get("terrain", {}), true)
+	var map := {}
 	if deadstar:
 		var cells := [[0, 0], [1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1], [1, -1]]
-		await _world({"rock": "stone", "planet": 4}, {}, units,
-			{"deadstar": {"q": 0, "r": 0}, "holes": [{"kind": "deadstar", "cells": cells}]})
-	else:
-		await _world({"rock": "stone", "planet": 4}, {"0,-4": "rock", "-5,3": "rock", "4,3": "debris", "-1,5": "rock"}, units)
+		map = {"deadstar": {"q": 0, "r": 0}, "holes": [{"kind": "deadstar", "cells": cells}]}
+	await _world({"rock": "stone", "planet": 4}, terrain, [{"q": -3, "r": -2}, {"q": 3, "r": 2}], map)
 
 
 func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: String, keep := true) -> bool:
@@ -880,24 +984,25 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.board("A", "T")
 	elif what == "launch":
 		fx.launch("A", "T")
-	elif what == "fire_tick":
-		fx.tick("T", "fire")
-	elif what == "board":
-		fx.board("A", "T")
 	elif what == "jets":
 		# every movement jet ShipView fires, at once; the bench keeps ShipView's processing off, so each puff stays where
-		# it started (that start is what this row shows)
-		# Issue 1991: the optional pale swatch changes only this bench ship's copy of the thrust profile.
-		if row.get("jet_tint", "") == "damage_glow":
-			var profile = A.get("tp")
-			if profile is Dictionary:
-				profile["tint"] = fx.faction_info(str(att[0])).damage_glow
-			else:
-				_warn("%s: this revision has no thrust profile to tint" % id)
+		# it started unless step_jets is set (issue 2042: steps puffs and fires repeat bursts so motion strings show)
+		var first_puff: int = A.puffs.size()
 		A._retro_puffs(1.0)
 		A._aft_puffs(1.0)
 		A._side_puffs(1.0, 1.0)
 		A._couple_puffs(1.0, 1.0)
+		# The directional jets read their instance uniforms, not the old sprite tint.
+		if row.get("jet_tint", "") == "damage_glow" and not headless:
+			if A.puffs.size() <= first_puff:
+				return _fail_moment(id, r, "no movement jets to tint")
+			var glow: Color = fx.faction_info(str(att[0])).damage_glow
+			for i in range(first_puff, A.puffs.size()):
+				var puff: Dictionary = A.puffs[i]
+				var jet := puff.n as MeshInstance3D
+				if jet == null or not bool(puff.get("rcs", false)):
+					return _fail_moment(id, r, "movement jet has no directional shader")
+				jet.set_instance_shader_parameter("core_col", Vector3(glow.r, glow.g, glow.b))
 	elif what == "move":
 		# issue 2042: drive A forward along +X so moving nozzle trails build and taper cleanly behind the stern
 		fx.set_engine("A", float(row.get("engine", 1.6)))
@@ -980,6 +1085,13 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var event_target: Vector3 = Vector3(float(tat[0]), 0, float(tat[1]))
 	var guard := 0
 	var wi := 0
+	var step_jets := what == "jets" and bool(row.get("step_jets", false))
+	var jet_burst_t := 0.0
+	var move_speed := float(row.get("move_speed", 22.0))
+	var move_dur := float(row.get("move_dur", 0.75))
+	var brake_at := float(row.get("brake_at", 0.55))
+	var focus_mode := str(row.get("focus", "target"))
+	var track_hulk := bool(row.get("seek_hulk", false))
 	var start_pos: Vector3 = T.global_position
 	var travel: Vector3 = T.global_basis.x.normalized() * 12.0 if what == "drive" else Vector3.ZERO
 	while wi < wins.size() and guard < 900:
@@ -1071,7 +1183,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
 			elif img != null:
 				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
-			elif strict and keep:
+			elif strict and keep and not headless:
 				clip_bad.append("cell %d (no frame grabbed)" % ci)
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
 			ci += 1

@@ -353,7 +353,12 @@ void process() {
 #  18 soft lift (reduce-flashing pop: a gentle glow, no peak)   19 ember   20 acid fume   21 heat glow (cooling metal)
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
-#  26 faction-coloured plasma fire   27 directional hit gas (no emission)   28 palette-coloured embers and spores
+#  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
+#  40 directional hull-rupture vent jet (VENT_JET: tapered hot root + sheared gas cone)
+#  41 legacy Nova Cannon shell (SPR_NOVA_LEGACY)
+const TICK_EMBER := 38
+const TICK_DROPLET := 39
+const VENT_JET := 40
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
 
@@ -394,7 +399,7 @@ void vertex() {
 		if (k == 1 || k == 20 || k == 25 || k == 26) { g = 1.0 - spow(1.0 - t, 2.2); }
 		else if (k == 2 || k == 5 || k == 18) { g = sqrt(t); }
 		else if (k == 3 || k == 7 || k == 8) { g = 1.0 - spow(1.0 - t, 1.6); }
-		else if (k == 4 || k == 11 || k == 13 || k == 14 || k == 15 || k == 16 || k == 17 || k == 19 || k == 21 || k == 22 || k == 23 || k == 28) { g = 0.0; }
+		else if (k == 4 || k == 11 || k == 13 || k == 14 || k == 15 || k == 16 || k == 17 || k == 19 || k == 21 || k == 22 || k == 23) { g = 0.0; }
 		else if (k == 12) { g = t * t; }
 		else if (k >= 30 && k <= 32) { g = 0.0; }
 		else if (k == 37) { g = 1.0 - spow(1.0 - t, 2.2); }
@@ -428,7 +433,7 @@ void vertex() {
 		else if (k == 5 || k == 16 || k == 23) { flo = 9.0; }
 		else if (k == 1) { flo = 8.0; }
 		else if (k == 22) { flo = 6.0; }
-		else if (k == 19 || k == 21 || k == 28) { flo = 4.5; }
+		else if (k == 19 || k == 21 || k == 38) { flo = 4.5; }
 		else if (k == 4 || k == 11) { flo = 3.0; }
 		bool own = fpx > flo;
 		bool glob = k == 15 || k == 39; // Bio globs and acid droplets have the same vertex motion and floor response.
@@ -617,9 +622,9 @@ void fragment() {
 	} else if (k == 18) {
 		float f = sin(3.14159 * t) * I;
 		add = vCol.rgb * exp(-r * r * 2.5) * f;
-	} else if (k == 19 || k == 28) {
+	} else if (k == 19 || k == 38) {
 		float f = spow(1.0 - t, 1.2) * I;
-		vec3 c = k == 28 ? vCol.rgb * (1.4 - 0.4 * t) : mix(vec3(1.0, 0.85, 0.5), vCol.rgb, t);
+		vec3 c = k == 38 ? mix(vCol.rgb, vec3(1.0), (1.0 - t) * 0.25) : mix(vec3(1.0, 0.85, 0.5), vCol.rgb, t);
 		add = c * (exp(-r * r * 18.0) * 1.5 + exp(-r * r * 4.0) * 0.25) * f;
 	} else if (k == 21) {
 		float f = I * (1.0 - t);
@@ -1518,77 +1523,79 @@ void fragment() {
 			ALBEDO = clamp(colour * vCol.a * motion * env * ends * fx_gain, 0.0, 512.0);
 		}
 	}
-	float px = x * beam_pixels * 0.5;
-	float hot_floor = k == 8 ? 2.0 : 3.0;
-	float hot_width = k == 6 ? 3.0 * fr : max(hot_floor, beam_pixels * 0.17);
-	float glow_width = k == 6 ? 11.0 * fr : max(7.0, beam_pixels * 0.48);
-	float core = exp(-2.772589 * px * px / (hot_width * hot_width));
-	float sheath = exp(-2.772589 * px * px / (glow_width * glow_width));
-	float fast = texture(kit_flow, vec2(fract(s * 3.0 - age * 2.4 + seed), vSide * 0.5 + 0.5)).g;
-	float slow = texture(kit_flow, vec2(fract(s * 2.0 + age * 0.7 + seed), vSide * 0.5 + 0.5)).b;
-	float env = smoothstep(0.0, mix(0.025, 0.12, fx_calm), age) * (1.0 - smoothstep(max(life - 0.16, 0.0), life, age));
-	float ends = smoothstep(0.0, 0.025, s) * (1.0 - smoothstep(0.95, 1.0, s));
-	vec3 hot = mix(vec3(1.0, 0.97, 0.92), vCol.rgb, 0.14);
-	vec3 tint = vCol.rgb;
-	float motion = 0.75 + 0.5 * fast;
-	float fork_hot = 0.0; float fork_glow = 0.0;
-	if (k == 0 || k == 3) {
-		hot = mix(vec3(1.0), tint, 0.14);
-		float turbulence = fbm(vec2(s * 9.0 - age * 8.0, vSide * 3.0 + seed));
-		float shape = spow(1.0 - s, 1.25) * smoothstep(0.22, 0.65, turbulence + 0.2);
-		core *= shape * (0.8 + 0.3 * sin(s * 29.0 - age * 9.0));
-		sheath *= shape;
-		if (k == 3) { motion *= mix(cough(scene_t - s * 0.2, seed), 0.8, fx_calm); }
-		ends = 1.0 - smoothstep(0.72, 1.0, s);
-	} else if (k == 1) {
-		float fade = spow(1.0 - s, 1.5);
-		core *= fade * 0.4;
-		sheath *= fade * (0.4 + slow);
-	} else if (k == 6) {
-		// Keep the faction hue in the sheath without whitening it into the
-		// trunk. Forks reach outside the trunk's bloom footprint.
-		tint /= max(max(tint.r, tint.g), max(tint.b, 0.0001));
-		tint = mix(tint, tint * tint * tint * tint, 0.8);
-		float strike = floor(age / mix(0.07, 0.23, fx_calm));
-		motion = flick(0.75 + 0.25 * h21(vec2(strike, seed)), age, seed);
-		// Forks grow from the live jagged path. They occupy distinct filled
-		// pixels inside the wider sheath, and never detach from the trunk.
-		float q = fract(s * 4.0 + seed);
-		float sign_side = mod(floor(s * 4.0 + seed), 2.0) * 2.0 - 1.0;
-		float target = sign_side * q * 1.7;
-		float d = (vSide - target) * vPixels * 0.5 / fr;
-		float window = smoothstep(0.0, 0.04, q) * (1.0 - smoothstep(0.32, 0.55, q));
-		fork_hot = exp(-2.772589 * d*d / 4.0) * window;
-		fork_glow = exp(-2.772589 * d*d / 25.0) * window;
-	} else if (k == 5) {
-		// Broken crawling filaments, replacing the regular diagonal bands.
-		float arc = sin(s * 27.0 - age * 17.0 + seed) * 0.55;
-		float d = (vSide - arc) * beam_pixels * 0.5;
-		fork_hot = exp(-2.772589 * d*d / 4.0) * smoothstep(0.45, 0.7, fast);
-	} else if (k == 7) {
-		float pulse = spow(0.5 + 0.5 * sin(s * 30.0 - age * 25.0), 3.0);
-		motion *= 0.35 + pulse;
-		vec3 rainbow = clamp(abs(fract(x * 0.45 + s * 0.6 - age * 0.4 + seed + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
-		tint = mix(tint, rainbow, 0.65);
-	} else if (k == 8) {
-		motion *= 0.7 + 0.5 * spow(0.5 + 0.5 * sin(s * 63.0 - age * 28.0), 6.0);
-		// A white needle with a thin, moving spectrum along either edge.
-		vec3 rainbow = clamp(abs(fract(vSide * 0.30 + s * 0.45 - age * 0.35 + seed + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
-		tint = mix(tint, rainbow, smoothstep(1.1, 3.0, px) * 0.90);
-	} else if (k == 9) {
-		float tissue = fbm(vec2(s * 14.0 - age * 3.0, vSide * 2.0 + seed));
-		core *= 0.5 + tissue;
-		sheath *= smoothstep(0.2, 0.7, tissue + 0.2);
-		hot = mix(hot, tint, 0.5);
-	} else if (k == 11) {
-		// Null lance: two pinched rails around a violet-white core.
-		float pinch = 2.0 + 3.5 * sin(s * 3.14159);
-		float d = (px - pinch) / 1.15;
-		float rails = exp(-d*d) * (0.75 + 0.25 * fast);
-		hot = mix(hot, tint, 0.45);
-		core *= 0.8;
-		sheath = sheath * 0.30 + rails * 1.35;
-		motion = 1.0;
+}
+"""
+
+
+static func null_lance_code() -> String:
+	# The same beam recipe, with an occluding violet body instead of an additive-only sheath.
+	return patch(RIBBON, "blend_add,", "blend_premul_alpha,")
+
+# Directional RCS thruster cone-jet shader (issue 2042): replaces round Gaussian billboard dots with a short
+# nozzle-anchored directional cone jet (hot core, soft wash, quick fade) for mechanical gas factions, plus
+# faction-native non-mechanical modes for Glasswrights (prismatic vane flare), Chorus (organic vent pulse),
+# and Eclipse (cold violet null ripple). VERTEX.x in 0..1 along jet axis, VERTEX.y in -0.5..0.5 across width.
+# One shared ShaderMaterial per jet_kind; per-puff state rides in instance uniforms.
+const RCS_JET := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+""" + COMMON + """
+uniform float jet_kind = 0.0;
+instance uniform vec3 jet_dir = vec3(-1.0, 0.0, 0.0);
+instance uniform float jet_len = 1.6;
+instance uniform float w_root = 0.28;
+instance uniform float w_tip = 1.15;
+instance uniform float age_u = 0.0;
+instance uniform float alpha_k = 1.0;
+instance uniform float jet_seed = 0.0;
+instance uniform vec3 core_col = vec3(1.0, 0.96, 0.88);
+instance uniform vec3 wash_col = vec3(0.85, 0.9, 1.0);
+varying vec2 vUv;
+void vertex() {
+	vec3 origin = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+	vec3 wdir = snorm(jet_dir);
+	float u = clamp(age_u, 0.0, 1.0);
+	int kind = int(jet_kind + 0.5);
+	float s = VERTEX.x;
+	vec3 wp = origin;
+	if (kind == 3) {
+		// Eclipse null ripple: symmetric precision ring opening about the emitter, no flame or gas.
+		float depth = max(-(VIEW_MATRIX * vec4(origin, 1.0)).z, 0.01);
+		float px1 = max(px_world(1.0, depth, PROJECTION_MATRIX), frame_world(1.0, depth, PROJECTION_MATRIX, VIEWPORT_SIZE.y));
+		float rad = max(w_tip * (0.55 + 1.35 * (1.0 - spow(1.0 - u, 2.5))), 8.0 * px1);
+		vec3 right_cam = snorm(INV_VIEW_MATRIX[0].xyz);
+		vec3 up_cam = snorm(INV_VIEW_MATRIX[1].xyz);
+		wp = origin + (right_cam * (VERTEX.x - 0.5) + up_cam * VERTEX.y) * rad * 2.0;
+	} else {
+		float ext = jet_len;
+		if (kind == 0) {
+			ext = jet_len * (0.62 + 0.48 * smoothstep(0.0, 0.22, u)) * (1.0 - 0.14 * u);
+		} else if (kind == 1) {
+			ext = jet_len * 0.72;
+		} else {
+			ext = jet_len * (0.48 + 0.52 * sin(3.14159265 * clamp(u * 0.85 + 0.15, 0.0, 1.0)));
+		}
+		wp = origin + wdir * (s * ext);
+		vec3 c = cross(wdir, CAMERA_POSITION_WORLD - wp);
+		if (dot(c, c) < 1e-6) {
+			vec3 up = abs(wdir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+			c = cross(wdir, up);
+		}
+		vec3 side = snorm(c);
+		float depth = max(-(VIEW_MATRIX * vec4(wp, 1.0)).z, 0.01);
+		float px1 = max(px_world(1.0, depth, PROJECTION_MATRIX), frame_world(1.0, depth, PROJECTION_MATRIX, VIEWPORT_SIZE.y));
+		float w = w_root;
+		if (kind == 0) {
+			w = mix(w_root, w_tip * (1.0 + 0.32 * u), spow(s, 0.85));
+			w = max(w, mix(4.0, 9.5, s) * px1);
+		} else if (kind == 1) {
+			w = mix(w_root * 0.85, w_tip * 0.45, s);
+			w = max(w, 6.0 * px1);
+		} else {
+			float swell = 0.7 + 0.65 * sin(3.14159265 * s);
+			w = max(w_tip * 0.85 * swell * (0.75 + 0.45 * u), 7.0 * px1);
+		}
+		wp += side * VERTEX.y * w;
 	}
 	POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(wp, 1.0));
 	vUv = VERTEX.xy;
@@ -1651,6 +1658,10 @@ render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabl
 """ + COMMON + """
 uniform float trail_elapsed = 0.0;
 uniform float trail_style = 0.0;
+uniform float anchor_head = 0.0;
+uniform vec3 head_world = vec3(0.0);
+uniform vec3 head_dir = vec3(-1.0, 0.0, 0.0);
+uniform float use_strip_taper = 0.0;
 uniform vec3 trail_ember = vec3(0.0);
 varying vec4 vCol;
 varying vec4 vInfo;
@@ -1701,7 +1712,8 @@ void fragment() {
 		float lum = dot(vCol.rgb, vec3(0.2126, 0.7152, 0.0722));
 		col = mix(vCol.rgb, vCol.rgb * 0.55 + vec3(lum * 0.25), smoothstep(0.0, 0.65, s));
 		root = anchor_head > 0.5 ? smoothstep(0.0, 0.05, along) : smoothstep(0.0, 0.18, along);
-		hot = mix(vCol.rgb, vec3(1.0, 0.97, 0.92), 0.55) * core_across * (0.65 * (1.0 - 0.55 * s));
+		vec3 core_col = st == 3 ? vec3(1.0) : vec3(1.0, 0.97, 0.92);
+		hot = mix(vCol.rgb, core_col, 0.55) * core_across * (0.65 * (1.0 - 0.55 * s));
 		col_gain = 1.45;
 	}
 	if (st == 1) {
@@ -1710,11 +1722,16 @@ void fragment() {
 		m *= 0.6 + 0.8 * smoothstep(0.55, 0.8, fbm(vec2(s * 22.0 - scene_t * 0.4, seed)));
 	} else if (st == 3) {
 		col *= 0.55 + 0.45 * vnoise(vec2(s * 9.0 - scene_t * 2.0, seed));
-		col += trail_ember * spow(vnoise(vec2(s * 60.0 - scene_t, seed * 3.0)), 12.0) * 2.0;
+		if (use_strip_taper > 0.5) {
+			col += trail_ember * spow(vnoise(vec2(s * 60.0 - scene_t, seed * 3.0)), 12.0) * 2.0;
+		} else {
+			col += vec3(1.0, 0.5, 0.15) * spow(vnoise(vec2(s * 60.0 - scene_t, seed * 3.0)), 12.0) * 2.0;
+		}
 	}
-	float root = smoothstep(0.0, 0.025, s);
-	vec3 hot = mix(col, vec3(1.0), 0.6) * exp(-x*x*16.0) * 0.5;
-	ALBEDO = clamp((col * across * m * 1.4 + hot) * root * fade * vCol.a * fx_gain, 0.0, 512.0);
+	if (use_strip_taper <= 0.5) {
+		hot = mix(col, vec3(1.0, 0.94, 0.82), 0.6) * exp(-x*x*16.0) * 0.5;
+	}
+	ALBEDO = clamp((col * across * m * col_gain + hot) * root * fade * vCol.a * fx_gain, 0.0, 512.0);
 }
 """
 

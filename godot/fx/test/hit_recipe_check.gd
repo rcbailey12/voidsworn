@@ -258,7 +258,7 @@ func _eclipse_ejecta(fx: FX, glow: Color) -> bool:
 		return false
 	for pool in [streaks, sprites]:
 		for i in range(0, pool.pending.size(), POOLS.STRIDE * pool.vpp):
-			if pool == sprites and int(pool.pending[i + 18]) != 28:
+			if pool == sprites and int(pool.pending[i + 18]) != SH.TICK_EMBER:
 				continue
 			var tint := Vector3(pool.pending[i + 12], pool.pending[i + 13], pool.pending[i + 14])
 			if not tint.is_equal_approx(expected) and not tint.is_equal_approx(expected * 0.35):

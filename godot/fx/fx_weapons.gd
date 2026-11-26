@@ -915,10 +915,9 @@ static func _impact_sparks(fx, p: Vector3, axis: Vector3, T: float, k: float, fa
 		var drag: float = fx.rng.randf_range(2.0, 5.0)
 		var life: float = fx.rng.randf_range(0.25, 0.60) * scale
 		var t: float = T + fx.rng.randf() * 0.035
-		# a soft glowing point that cools white to the weapon colour as it slows (additive, no line)
-		fx.spr(p, t, life, col, 2.0, 0.07 * k, 0.035 * k, 28, v, drag)
-		# a short soft trail behind it, shrinking as it slows so it never reads as a straight ruler line
-		fx.stk(p, t, life * 0.7, col, 1.8, 0.14 * k, 0.03 * k, 1, v, drag, 0.0, 0.0, 3.0)
+		# Keep the old point's variation draw in the stream, now for shutter instead of a second sprite.
+		var shutter: float = lerpf(0.05, 0.105, fx.rng.randf()) * scale
+		fx.spark(p, t, life, faction, 2.1, shutter, 0.04 * k, v, drag, 0.0, 0.0, role)
 
 
 # ---------------------------------------------------------------- fire
@@ -2029,7 +2028,7 @@ static func warm_craft_trail(fx, parent: Node3D) -> void:
 # The weapon sets the size, timing and direction. The target sets what comes off the hull (R412).
 const IMPACT_RESPONSE := {
 	"metal": {"fire_body": true, "gas_kind": 7, "debris": "plate", "hot_plate": true},
-	"hegemony": {"fire_body": true, "gas_kind": 7, "debris": "plate", "hot_plate": true, "faction_glow": true},
+	"hegemony": {"fire_body": true, "gas_kind": 7, "debris": "plate", "faction_glow": true},
 	"glass": {"fire_body": false, "gas_kind": 0, "debris": "glass", "faction_glow": true, "prism": 1.0},
 	"bio": {"fire_body": false, "gas_kind": 20, "debris": "drop", "tint": Color(0.72, 0.86, 0.27),
 		"mist": Color(0.32, 0.38, 0.15)},
@@ -2070,9 +2069,8 @@ static func _impact_gas(fx, p: Vector3, n: Vector3, T: float, k: float, col: Col
 static func _impact_embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, fam: String,
 		response: Dictionary, target, col := METAL_EMBER) -> void:
 	if response.fire_body:
-		var faction_glow: bool = response.get("faction_glow", false)
-		var ember: Color = target.fac.damage_glow * 0.35 if faction_glow else col
-		_embers(fx, p, n, T, k, count, fam, ember, 28 if faction_glow else 19)
+		var ember: Color = target.fac.damage_glow * 0.35 if response.get("faction_glow", false) else col
+		_embers(fx, p, n, T, k, count, fam, ember, SH.TICK_EMBER if response.get("faction_glow", false) else fx.HOT_FLECK_SPRITE)
 
 
 # Issue 461: the weapon family whose hit recipe a look uses (deaths_and_hits.md "The hits, upgraded"). Shell: a spark
@@ -2144,14 +2142,9 @@ static func _throw_sparks(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 		var drag: float = fx.rng.randf_range(0.45, 1.4) if shield else fx.rng.randf_range(0.25, 0.75)
 		var life: float = clampf(fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y) * scale, SPARK_LIFE.x, SPARK_LIFE.y)
 		var t: float = T + fx.rng.randf() * 0.04
-		if shield:
-			fx.spr(p, t, life, col, 2.0, 0.16 * k, 0.06 * k, 28, v, drag, 0.0, 0.0, 6.0)
-			fx.stk(p, t, life * 0.75, col, 1.6, 0.20 * k, 0.055 * k, 1, v, drag, 0.0, 2.2, 10.0)
-		else:
-			# The old sprite used one random draw. Use it for the streak length and width.
-			var form: float = fx.rng.randf()
-			fx.stk(p, t, life, col, lerpf(1.55, 2.75, form), lerpf(0.040, 0.125, form) * k,
-				lerpf(0.023, 0.041, form) * k, 8, v, drag)
+		var form: float = fx.rng.randf()
+		fx.spark(p, t, life, faction, lerpf(1.55, 2.75, form), lerpf(0.040, 0.125, form) * scale,
+			lerpf(0.023, 0.041, form) * k, v, drag, 0.0, 0.0, role)
 		_note(fx, "spark", fam, v, n, life)
 
 
@@ -2171,7 +2164,7 @@ static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 		return
 	var paint: Color = fx.faction_info(faction).fragment_paint
 	# The fragment shader's heated edge is always orange. Glass already has spectral glints.
-	var fragment_heat := heat if response.get("hot_plate", false) and not response.get("faction_glow", false) else 0.0
+	var fragment_heat := heat if response.get("hot_plate", false) else 0.0
 	var original := _amount(fx, int(ceil(count * 1.75))) if fx.quality != "low" else mini(count, 3)
 	var extra := ceili(original * 0.3) if macro and fx.quality != "low" else 0
 	var pieces := original + extra
@@ -2240,7 +2233,7 @@ static func _gas_cloud(fx, p: Vector3, n: Vector3, T: float, k: float, col: Colo
 		_note(fx, "gas", fam, v, n, life)
 
 
-# Embers: small sparks of hot metal that hang near the plate and cool yellow-white to dark red, with no flicker.
+# Embers: slow cooling flecks that hang near the plate and cool yellow-white to dark red, with no flicker.
 static func _embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, fam: String, col: Color, kind: int) -> void:
 	for j in _amount(fx, int(ceil(count * 1.5))):
 		var d := _outward(n, fx.rcone(n, 0.85), 0.2)
@@ -2265,7 +2258,7 @@ static func _heat_spot(fx, p: Vector3, T: float, k: float, size: float, fam: Str
 	var lp: Vector3 = src.xf().affine_inverse() * p
 	var faction_glow: bool = _impact_response(src).get("faction_glow", false)
 	var col: Color = src.fac.damage_glow if faction_glow else Color(1, 0.5, 0.15)
-	var kind := 28 if faction_glow else 21
+	var kind := SH.TICK_EMBER if faction_glow else 21
 	fx.later(T + 0.04, func l_hull_heat() -> void:
 		if src.dead or src.gone or not is_instance_valid(src._dmg_root): return
 		# Issue 1558 item 10: a small ring of heat spots on each hull (fx_pool Pool), written in place, instead of a new
@@ -2417,17 +2410,21 @@ static func _energy_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 	var t2: Vector3 = n.cross(t1)
 	var run: Vector3 = (dir - n * dir.dot(n))
 	run = run.normalized() if run.length() > 0.05 else t1
-	if response.fire_body:
-		var c := _impact_color(response, Tg, PLASMA_HOT if lk == "plasma" else col)
-		var kind := 28 if response.get("faction_glow", false) else 19
-		for j in _amount(fx, 9 + 4 * w):
+	if response.fire_body or response.debris == "glass":
+		# Plasma leaves blue slag on metal. Obsidian and glass keep their own response.
+		var slag_tint := Color.TRANSPARENT
+		if response.get("hot_plate", false):
+			if lk == "plasma": slag_tint = PLASMA_HOT
+			elif lk == "plasma_cannon": slag_tint = col
+		var scale := _spark_size(k)
+		for j in _amount(fx, roundi((9 + 4 * w) * scale)):
 			var a: float = fx.rng.randf() * TAU
 			var tang: Vector3 = (t1 * cos(a) + t2 * sin(a) + run * 0.8).normalized()
 			var d := _outward(n, tang + n * 0.12, 0.08)
 			var v: Vector3 = d * fx.rng.randf_range(5.0, 13.0) * k * fx.unit
-			var life: float = fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y)
-			fx.spr(p + n * 0.05 * k, T + fx.rng.randf() * 0.03, life, c, 1.8, 0.14 * k, 0.06 * k, kind, v, 1.8, 0.0, 0.0, 6.0)
-			fx.stk(p + n * 0.05 * k, T, life * 0.6, c, 1.4, 0.16 * k, 0.045 * k, 1, v, 1.8, 0.0, 2.0, 9.0)
+			var life: float = clampf(fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y) * scale, SPARK_LIFE.x, SPARK_LIFE.y)
+			fx.spark(p + n * 0.05 * k, T + fx.rng.randf() * 0.03, life, _spark_faction(Tg),
+				2.0, 0.12 * scale, 0.045 * k, v, 1.8, 2.0, 5.0, fx.SparkRole.HULL, slag_tint)
 			_note(fx, "spark", "energy", v, n, life)
 	_impact_embers(fx, p + n * 0.1 * k, n, T + 0.08, k, 4 + w, "energy", response, Tg, col * 0.35)
 	if lk in ["prism", "mflak"] and response.debris != "drop":
@@ -2450,9 +2447,8 @@ static func _impact_old(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 	var tint: Color = col if lk in ["las", "prism", "plasma", "pflak", "mflak", "gflak"] else Color(0.94, 0.67, 0.33)
 	tint = _impact_color(_impact_response(Tg), Tg, tint)
 	_burst(fx, p+n*0.35*k, n, T, size, "flash", 0.24 if light else 0.32, tint, 4.2, HIT_PX[clampi(w,1,3)])
-	_vent(fx, p+n*0.5*k, n, T+0.025, size*0.85, 0.38, tint, 0.9, n*4.0*k, 0.55, 1.0, w, Tg)
-	if _impact_response(Tg).debris != "drop":
-		_impact_sparks(fx,p+n*0.15*k,(n-dir*0.25).normalized(),T,k,tint,7 if light else 12)
+	_vent(fx, p+n*0.5*k, n, T+0.025, size*0.85, 0.38, tint, 0.9, n*4.0*k, 0.55, 1.0, w, Tg, true)
+	_impact_sparks(fx, p + n * 0.15 * k, (n - dir * 0.25).normalized(), T, k, _spark_faction(Tg), 7 if light else 12)
 	_afterglow(fx,p+n*0.25*k,T,tint,size*0.45,light)
 	fx.light(p+n*2.0*k,T,0.22,5.0 if light else HULL_LIGHT,tint,0)
 
@@ -2757,7 +2753,7 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0,
 	var response := _impact_response(src)
 	var contact := tint if use_contact_tint else _impact_color(response, src, tint)
 	var clean: bool = not response.get("hot_plate", false)
-	var tinted: bool = energy or clean or response.get("faction_glow", false)
+	var tinted := energy or clean
 	var flash_only := flash_life > 0.0
 	var band := DEATH.atlas_band(float(src.hull.L)) if src != null else "cruiser"
 	var target_scale: float = {"small": 0.8, "cruiser": 1.0, "capital": 1.2}[band]

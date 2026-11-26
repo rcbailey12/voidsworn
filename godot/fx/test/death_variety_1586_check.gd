@@ -237,12 +237,17 @@ func _debris_check() -> void:
 			check(is_equal_approx(heat, want_heat), "%s: shard heat %.2f (want %.2f)" % [fac, heat, want_heat])
 		else:
 			check(int((fx.spr_kinds as Dictionary).get(20, 0)) > k0, "%s: a wet fleck in place of the shard" % fac)
-		var sc: Color = BEATS.spark_col(s, brass)
-		if fac == "hegemony":
-			check(sc.is_equal_approx(s.fac.damage_glow) and not sc.is_equal_approx(brass), "hegemony: crush spark uses blue-white damage glow, not brass (%s)" % str(sc))
+		var sparks = fx.pools["stk"]
+		var spark_before: int = sparks.emitted
+		BEATS._ram(fx, s, fx.now)
+		if fac == "chorus":
+			check(sparks.emitted == spark_before, "Chorus ram throws wet flecks, no sparks")
 		else:
-			var brass_sparks: bool = fac in ["voidsworn", "corsair"]
-			check(sc.is_equal_approx(brass) == brass_sparks, "%s: crush spark colour %s (brass on Sunward and Hullbreakers only)" % [fac, str(sc)])
+			var last: PackedFloat32Array = sparks.pending.slice(sparks.pending.size() - 20)
+			var expected: Color = fx.spark_colour(fac, fx.SparkRole.DEATH)
+			check(sparks.emitted > spark_before and last.size() == 20 and int(last[19]) == fx.SPARK_KIND
+				and Vector3(last[12], last[13], last[14]).is_equal_approx(Vector3(expected.r, expected.g, expected.b)),
+				"%s ram throws shared sparks in the death tint" % fac)
 	world.queue_free()
 	await process_frame
 
