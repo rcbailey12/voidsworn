@@ -57,6 +57,8 @@ func _added(n: Node) -> void:
 
 
 func _queue(n: Node) -> void:
+	if n.has_meta(&"pipeline_warm"):
+		return   # off-screen PSO probes are not live hulls or fog/rim inputs
 	_pending[n.get_instance_id()] = true
 	if not _flush_queued:
 		_flush_queued = true

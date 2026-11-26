@@ -24,6 +24,7 @@ var on := true
 var max_voices := 34
 var _amb: AudioStreamPlayer
 var _bed: AudioStreamPlayer
+var _terrain_beds := {}
 const BED_GAIN := 0.0411      # render_ambient_bed.py prints it: the browser's bed level (0.065) over the file's normalising
 var cam: Camera3D
 var _pending_generation := 0
@@ -566,10 +567,14 @@ func death_beat(enabled: bool) -> void:
 		AudioServer.set_bus_send(music, "music_duck")
 
 
-func stop_tag(tag: String) -> void:
-	_cancelled_tags[tag] = true
+func stop_tag(tag: String, cancel_pending := true) -> void:
+	if cancel_pending:
+		_cancelled_tags[tag] = true
 	for v in active.duplicate():
 		if v.get("tag") == tag:
+			if not cancel_pending:
+				_steal(v)
+				continue
 			_drop(v)
 			for p in v.players:
 				if is_instance_valid(p):
@@ -613,6 +618,9 @@ func stop_all() -> void:
 	_cancelled_tags.clear()   # issue 1237 (Neon F7.5): the battle's cancelled death tags no longer pile up
 	for v in active.duplicate():
 		_steal(v)
+	for player in _terrain_beds.values():
+		player.queue_free()
+	_terrain_beds.clear()
 
 
 # ---- the game's cue helpers (sfx.js) ----
@@ -636,8 +644,9 @@ func gun(k: String, sq: bool, style, pos = null, delay := 0.0, fac := "", wid :=
 		play("gun_flak", {"pos": pos, "delay": delay, "variant": weapon_variant("gun_flak", fac, wid)})
 		return
 	if style == "twin":
-		play("gun_shell", {"pos": pos, "gain": 0.8, "delay": delay})
-		play("gun_shell", {"pos": pos, "gain": 0.6, "delay": delay + 0.05})
+		var variant := weapon_variant("gun_shell", fac, wid)
+		play("gun_shell", {"pos": pos, "gain": 0.8, "delay": delay, "variant": variant})
+		play("gun_shell", {"pos": pos, "gain": 0.6, "delay": delay + 0.05, "variant": variant})
 		return
 	var n := "gun_" + (str(style) if style != null else "shell")
 	n = n if cues.has(n) else "gun_shell"
@@ -754,11 +763,15 @@ func impact(fam: String, target_fac: String, pos, heavy: bool, sched: Callable, 
 	if heavy and HIT_BY_TARGET.has(target_fac):
 		# Issue 1238 (F5.4): the heavy tail under a Chorus or Glasswright hit keeps the target's material (its variant)
 		sched.call(CRIT_BEAT, func() -> void: play("hit_heavy", {"pos": pos, "gain": 0.55, "variant": target_fac}))
+	elif heavy and shooter != "chorus" and fam in ["shell", "rail", "gauss"]:
+		sched.call(CRIT_BEAT, func() -> void: play("patter_hull", {"pos": pos, "gain": 0.42}))
 
 
 # Issue 1752: fac is the shielded ship's faction (the Glasswright prismatic barrier has its own break).
 func shield(pos = null, big := false, fac := "") -> void:
 	play("shield_break" if big else "shield", {"pos": pos, "variant": fac})
+	if big and not HIT_BY_TARGET.has(fac):
+		play("patter_shield", {"pos": pos, "delay": CRIT_BEAT, "gain": 0.35})
 
 
 func boom(s := 1.0, pos = null) -> void:
@@ -815,3 +828,23 @@ func ambient_start() -> void:
 	_amb.play(randf() * st.get_length() * 0.5)
 	# Issue 1752: the bridge bed (amb_bridge_bed) replaces the room tone; 0.113 matches the old 0.032 tone's level
 	create_tween().tween_property(_amb, "volume_db", linear_to_db(0.113), 5.0)
+
+
+# Terrain is fixed for a battle. The beds sit under the bridge on the same ducked, muted bus.
+func terrain_bed(name: String) -> void:
+	if silent or _terrain_beds.has(name) or not cues.has(name):
+		return
+	var c: Dictionary = cues[name]
+	var layers := _layers(name, c)
+	if layers.is_empty() or not layers[0].st is AudioStreamOggVorbis:
+		return
+	var stream := (layers[0].st as AudioStreamOggVorbis).duplicate() as AudioStreamOggVorbis
+	stream.loop = true
+	var player := AudioStreamPlayer.new()
+	player.stream = stream
+	player.bus = c["bus"]
+	add_child(player)
+	_terrain_beds[name] = player
+	player.volume_db = -60.0
+	player.play()
+	create_tween().tween_property(player, "volume_db", linear_to_db(float(c["g"]) * float(layers[0].g)), 4.0)

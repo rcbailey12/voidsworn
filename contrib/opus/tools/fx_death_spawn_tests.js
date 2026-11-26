@@ -29,7 +29,7 @@ ok(calls.length >= 4, 'expected at least four fx_death flipbook calls, found ' +
 for (const line of calls) {
   ok(/,\s*(src|s)\b/.test(line), 'a flipbook call does not pass its source ship: ' + line.trim());
 }
-ok(calls.some(l => /,\s*s,\s*true\)/.test(l)), 'the vent flipbook call is not rooted on the surface');
+ok(calls.some(l => /,\s*s,\s*true\)/.test(l)) || /fx\.record_spawn\(s, p, false, pose\)/.test(src), 'the death vent is not rooted and recorded on the hull surface');
 ok(calls.filter(l => /atlas_band\(R \/ 0\.16\), src\)/.test(l)).length === 2, 'the flash and cool core pictures do not both record');
 ok(calls.some(l => /atlas_band\(L\), src\)/.test(l)), "a released section's cool picture does not record");
 

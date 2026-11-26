@@ -203,7 +203,6 @@ func _debris_check() -> void:
 	fx.manual = true
 	fx.setup({"quality": "high", "camera": cam, "shake": 0.0})
 	fx.spr_kinds = {}
-	var brass := Color(1.0, 0.82, 0.55)
 	var want := {"voidsworn": [1, 0.0], "hegemony": [1, 0.0], "corsair": [1, 0.0], "ithar": [1, 2.0], "deathless": [1, 0.0], "chorus": [0, -1.0]}
 	for fac in want:
 		var holder := Node3D.new()

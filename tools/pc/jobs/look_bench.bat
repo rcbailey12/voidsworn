@@ -12,6 +12,7 @@ rem   LB_HOME      the bench folder (default Downloads\voidsworn_test\look_bench
 rem   LB_TOOL_REF  where the bench script itself comes from (default origin/main): the bench runs from that version on
 rem                every commit, so commits made before the bench existed can be benched too
 rem   LB_ARGS      extra bench words, e.g. --part moments --moments res://bench/look_moments_acid_thorn.json (issue 1877)
+rem   LB_MOMENTS   full path to a rows file, runs only those moments on both revisions (overrides LB_ARGS)
 rem   LB_SHIPS     a godot folder that has the PC-built hulls (gen, assets\ships, .godot) to copy from (copy only)
 rem   LB_PRE_RUN   a .bat called with the game checkout's folder after checkout (bench proofs: change one number)
 rem   LB_RUN_NAME  the run folder name for AFTER instead of its commit (use with LB_PRE_RUN)
