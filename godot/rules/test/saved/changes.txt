@@ -1,14 +1,242 @@
-Saved manifest before: 5ff4444344ae9cedaebe963ed5338f9f5b3041bdd6fb71806663a67f17337e45
-Saved manifest after: f11b6c79cf7f29fde65fa26c3198a6bc22292fe165dca354707771130d31f3eb
+Saved manifest before: 9332e6dba44a7f292f10c3c35693f1c78e2eea75e50ab3854292a6e29b5f60a3
+Saved manifest after: ea6a46459a58e492bcadfdf9e07a11b107996b2cf4e4680bf05ff5d70705c067
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t_throatspits
-  turn 89, round 6, after fire x02; unit x02 (player b_brood)
-  state.units[0].facing: 4 -> 5
-  later changed records: 0; total records: 141 -> 141
-FAIL battle t_heg_secondvolley
-  turn 79, round 4, after fire x04; unit x04 (player h_dominion)
-  state.units[0].sureUsed: 4 -> 5
-  later changed records: 51; total records: 121 -> 131
-FAIL: saved Godot results; 379 battles checked, 2 changed, 0 other files changed, 2 failures; 47.583 s
+FAIL battle s8
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.enemy: 11 -> 15
+  later changed records: 128; total records: 129 -> 90
+FAIL battle s10
+  turn 0, round 1, after tick player; unit x09 (enemy b_spitter)
+  state.units[4].aim: 0 -> 6
+  later changed records: 346; total records: 347 -> 182
+FAIL battle s14
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.enemy: 10 -> 14
+  later changed records: 135; total records: 134 -> 136
+FAIL battle s25
+  turn 0, round 1, after tick player; unit x012 (enemy h_interdictor)
+  state.units[6].aim: 0 -> 6
+  later changed records: 354; total records: 334 -> 355
+FAIL battle s27
+  turn 0, round 1, after tick player; unit x010 (player i_wisp)
+  state.units[4].shHit[0]: 0 -> 1
+  later changed records: 246; total records: 240 -> 247
+FAIL battle s29
+  turn 0, round 1, after tick player; unit x06 (player cathedral)
+  state.units[0].fx.fade: 0.5 [d:3fe0000000000000] -> <missing>
+  later changed records: 162; total records: 163 -> 163
+FAIL battle s33
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 1 -> -1
+  later changed records: 243; total records: 244 -> 168
+FAIL battle s35
+  turn 0, round 1, after tick player; unit x015 (enemy c_raider)
+  state.units[9].aim: 8 -> 14
+  later changed records: 249; total records: 215 -> 250
+FAIL battle s36
+  turn 0, round 1, after tick player; unit x08 (player penitent)
+  state.units[1].q: 0 -> 1
+  later changed records: 272; total records: 273 -> 270
+FAIL battle s39
+  turn 0, round 1, after tick player; unit x013 (enemy d_scythe)
+  state.units[6].aim: 0 -> 6
+  later changed records: 456; total records: 366 -> 457
+FAIL battle s43
+  turn 0, round 1, after tick player; unit x05 (player b_drone)
+  state.units[1].q: 3 -> 0
+  later changed records: 147; total records: 148 -> 133
+FAIL battle s45
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.enemy: 8 -> 10
+  later changed records: 128; total records: 129 -> 124
+FAIL battle s55
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 11 -> 12
+  later changed records: 148; total records: 149 -> 149
+FAIL battle s56
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 11 -> 12
+  later changed records: 206; total records: 205 -> 207
+FAIL battle t_casttwice
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 89; total records: 90 -> 87
+FAIL battle t_flakskip
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 110; total records: 106 -> 111
+FAIL battle t_lensaloft
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 50; total records: 51 -> 51
+FAIL battle t_recordedangle
+  turn 43, round 3, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 23
+  later changed records: 10; total records: 54 -> 54
+FAIL battle t_burnflaw
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 10 -> 11
+  later changed records: 33; total records: 34 -> 34
+FAIL battle t_longlight
+  turn 34, round 3, after fire x03; unit x03 (player i_song)
+  state.units[0].shHit[0]: 0 -> 1
+  later changed records: 4; total records: 39 -> 39
+FAIL battle t_flawforever
+  turn 40, round 3, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 16
+  later changed records: 9; total records: 50 -> 50
+FAIL battle t_twoimages
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 76; total records: 70 -> 77
+FAIL battle t_angles
+  turn 0, round 1, after tick player; unit x07 (enemy d_boss)
+  state.units[3].hp: 132 -> 240
+  later changed records: 77; total records: 78 -> 78
+FAIL battle t_refraction
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 2 -> 4
+  later changed records: 82; total records: 83 -> 83
+FAIL battle t_mirrorturns
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 2 -> 4
+  later changed records: 57; total records: 57 -> 58
+FAIL battle t_falsehulls
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 71; total records: 72 -> 72
+FAIL battle t_rechargelit
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 38; total records: 39 -> 39
+FAIL battle t_glasscorrected
+  turn 0, round 1, after tick player; unit x05 (enemy h_boss)
+  state.units[2].hp: 154 -> 187
+  later changed records: 111; total records: 112 -> 106
+FAIL battle t_hardlight
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 70; total records: 71 -> 71
+FAIL battle t_wardglass
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 70; total records: 71 -> 71
+FAIL battle t_deployread
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 23; total records: 24 -> 24
+FAIL battle t_castcorrected
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 33; total records: 33 -> 34
+FAIL battle t_firstlight
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 65; total records: 66 -> 66
+FAIL battle t7a_flightpaths
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 92; total records: 89 -> 93
+FAIL battle t7a_replay
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 109; total records: 110 -> 93
+FAIL battle t7a_starlings
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 103; total records: 104 -> 103
+FAIL battle t7a_flightcast
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 95; total records: 95 -> 96
+FAIL battle t7a_forgeahead
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 122; total records: 103 -> 123
+FAIL battle t7a_onelens
+  turn 29, round 2, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 14
+  later changed records: 11; total records: 41 -> 41
+FAIL battle t7a_lighttogether
+  turn 21, round 2, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 15
+  later changed records: 9; total records: 31 -> 31
+FAIL battle t7a_mirroraside
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].name: "Starfall" -> "Glass Heron"
+  later changed records: 77; total records: 67 -> 78
+FAIL battle t7a_splitthree
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 72; total records: 64 -> 73
+FAIL battle t7a_fleetelsewhere
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 71; total records: 72 -> 72
+FAIL battle t7a_weakside
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 38; total records: 39 -> 39
+FAIL battle t7a_prismsface
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 38; total records: 39 -> 39
+FAIL battle t7a_lensrotates
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 37; total records: 38 -> 38
+FAIL battle t7a_facetlit
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 35; total records: 35 -> 36
+FAIL battle t7a_flightcast_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 96; total records: 97 -> 95
+FAIL battle t7a_forgeahead_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 113; total records: 102 -> 114
+FAIL battle t529_nostop_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.enemy: 6 -> 12
+  later changed records: 87; total records: 88 -> 88
+FAIL battle t_wardglass_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 70; total records: 71 -> 71
+FAIL battle t7a_facetlit_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 35; total records: 35 -> 36
+FAIL battle t7a_fleetelsewhere_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 71; total records: 72 -> 65
+FAIL battle t_falsehulls_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 106; total records: 96 -> 107
+FAIL battle t_flawforever_m3
+  turn 40, round 3, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 16
+  later changed records: 9; total records: 50 -> 50
+FAIL battle r1651_aelith
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 102; total records: 91 -> 103
+FAIL battle r1651_vaelen
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 68; total records: 66 -> 69
+FAIL battle r1651_thorne
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 10
+  later changed records: 155; total records: 156 -> 137
+FAIL battle r1651_mirelle
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 8
+  later changed records: 112; total records: 108 -> 113
+FAIL: saved Godot results; 379 battles checked, 59 changed, 0 other files changed, 59 failures; 41.871 s

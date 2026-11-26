@@ -19,6 +19,8 @@ also reports what it carried from earlier stops. The player ability line shows u
 ability id, including automatic replacement launches. An omitted ability fired zero times in that row. Faction
 matrix prints the `FM` and `FID` JSON lines for existing report consumers. The default activation
 schedule is alternating. In the battle modes, pass `--classic` after the count to exercise the classic bot.
+`FM.exchange` records the total credited hull damage dealt by each side, including wings, for each ordered matchup.
+Divide `dealt` by `taken` for the player-side damage exchange ratio.
 
 - Each campaign battle prints a `TRIAL` JSON line before its cell summary. The record carries the player faction,
   difficulty, cell (mode, sector, encounter kind, and column), seed, arm, and player `abilities_fired` by id.
