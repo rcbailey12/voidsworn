@@ -142,6 +142,11 @@ vec2 cell_uv(vec2 uv, float frame) {
 	// Half-texel gutter prevents neighbouring cells bleeding under interpolation.
 	return (vec2(mod(frame, 4.0), floor(frame / 4.0)) + clamp(uv, vec2(0.001), vec2(0.999))) / 4.0;
 }
+vec3 prism_edge(vec3 colour, float lum, vec2 uv) {
+	vec2 c = uv - 0.5;
+	vec3 bow = 0.55 + 0.45 * cos(6.2831853 * (atan(c.y, c.x) / 6.2831853 + vec3(0.0, 0.33, 0.67)));
+	return mix(colour, bow * lum * 1.7, fac_prism * smoothstep(0.12, 0.42, length(c)) * 0.85);
+}
 void vertex() {
 	elapsed = max(scene_t - born, 0.0);
 	vec3 centre = MODEL_MATRIX[3].xyz + velocity * elapsed;
@@ -189,6 +194,12 @@ void fragment() {
 	vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);
 	vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);
 	core = mix(core, mix(fac_fire.rgb, fac_mid, age), fac_fire.a);
+#ifndef ROUTE_BAKED
+	// The stock atlas still needs the spectral edge on hot gas, including fire ticks without a route override.
+	if (fac_prism > 0.0) {
+		core = prism_edge(core, dot(core, vec3(0.3, 0.55, 0.15)), UV);
+	}
+#endif
 	ALBEDO = smoke * (1.0 - plasma) * power * fx_gain;
 	// One fast ignition, then only cool gas. The caller books both bright
 	// phases through flash_ok; an unbooked vent has no emissive pulse.
@@ -205,9 +216,7 @@ void fragment() {
 		// loses the baked fire's warm cast (issue 1399 round 2: a Hegemony break bloomed rose-pink), so it reads as soot
 		float lum = dot(ALBEDO, vec3(0.3, 0.55, 0.15));
 		vec3 ramp = mix(fac_mid, fac_fire.rgb, smoothstep(0.12, 1.1, lum)) * lum * 1.5;
-		vec2 c = UV - 0.5;
-		vec3 bow = 0.55 + 0.45 * cos(6.2831853 * (atan(c.y, c.x) / 6.2831853 + vec3(0.0, 0.33, 0.67)));
-		ramp = mix(ramp, bow * lum * 1.7, fac_prism * smoothstep(0.12, 0.42, length(c)) * 0.85);
+		ramp = prism_edge(ramp, lum, UV);
 		vec3 soot = mix(ALBEDO, vec3(lum), 0.85);
 		ALBEDO = mix(ALBEDO, mix(soot, ramp, keep), fac_fire.a);
 	}
@@ -427,6 +436,7 @@ void vertex() {
 		else if (k == 19 || k == 21 || k == 38) { flo = 4.5; }
 		else if (k == 4 || k == 11) { flo = 3.0; }
 		bool own = fpx > flo;
+		bool glob = k == 15 || k == 39; // Bio globs and acid droplets have the same vertex motion and floor response.
 		flo = max(flo, fpx);
 		float boost = 1.0;
 		if (flo > 0.0) {
@@ -438,7 +448,7 @@ void vertex() {
 				// must land) dims only as f^-0.5, so a far hit is a big bright flash, not a big faint one.
 				float dimx = (k == 0 || k == 2 || k == 5 || k == 13 || k == 14 || k == 16 || k == 17) ? -1.0 : -1.2;
 				if (own) { dimx = -0.5; }
-				boost = (k == 15 || k == 23) ? 1.0 : clamp(spow(gf, dimx), 0.03, 1.0);
+				boost = (glob || k == 23) ? 1.0 : clamp(spow(gf, dimx), 0.03, 1.0);
 				size = mn;
 			}
 		}
@@ -447,7 +457,7 @@ void vertex() {
 		// Explicit smoke/gas floors preserve opacity, without adding any light.
 		if (k == 24 || k == 25 || k == 26 || k == 37 || (own && (k == 3 || k == 7 || k == 8))) { boost = 1.0; }
 		vec2 q = VERTEX.xy;
-		if (k == 14 || k == 15 || k == 23 || k == 27 || (k >= 30 && k <= 33) || k == 36 || k == 37 || k == 40) {
+		if (k == 14 || glob || k == 23 || k == 27 || (k >= 30 && k <= 33) || k == 36 || k == 37 || k == 40) {
 			// stretched along the screen-space motion (bolts, globs and directional jets read as moving, not as dots)
 			vec3 vw = (MODEL_MATRIX * vec4(a1.xyz, 0.0)).xyz;
 			vec2 sv = (VIEW_MATRIX * vec4(vw, 0.0)).xy;
@@ -458,7 +468,7 @@ void vertex() {
 			q = k == 27 ? dx * VERTEX.x * 1.85 + dy * VERTEX.y * 0.62 : dx * VERTEX.x * st + dy * VERTEX.y;
 			if (k == 40) {
 				q = dx * (VERTEX.x + 0.45) * 2.3 + dy * VERTEX.y * 0.50;
-			} else if (k >= 30) {
+			} else if (k >= 30 && k <= 37) {
 				float stretch = k == 37 ? 2.35 : (k == 30 ? 1.95 : (k == 32 ? 1.38 : 1.62));
 				q = dx * VERTEX.x * stretch + dy * VERTEX.y * (k == 37 ? 0.78 : 1.0);
 			}
@@ -1095,7 +1105,9 @@ void vertex() {
 			// Tilt the facet plane a little so its edges still read from the side.
 			t2 = snorm(t2 + n * 0.32);
 			float dv = max(-(VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).z, 0.01);
-			size = max(size, px_world(36.0, dv, PROJECTION_MATRIX));
+			// Floor only the widest point at 36 pixels. Charges and moving fronts keep their size curve at range.
+			float profile = size / max(max(a3.x, a3.y), 1e-4);
+			size = max(size, px_world(36.0 * profile, dv, PROJECTION_MATRIX));
 		}
 		// F3: shock fronts, soft pops and pale shock rings keep at least 12 px across (1080 lines), dimming as they grow
 		float rb = 1.0;
@@ -1245,6 +1257,7 @@ uniform vec3 eclipse_core;
 #endif
 varying float vPixels;
 uniform float lenk = 1.0;
+uniform bool engine_plume = false;
 uniform vec3 plume_core = vec3(0.0);
 uniform vec3 plume_wash = vec3(0.0);
 uniform float plume_style = 0.0;
@@ -1436,7 +1449,7 @@ void fragment() {
 		float fork_hot = 0.0; float fork_glow = 0.0;
 		vec3 colour = vec3(0.0);
 		bool custom_plume = false;
-		if (k == 0 || k == 3) {
+		if (engine_plume && (k == 0 || k == 3)) {
 			// Issue 2042 item 3: layered main engine plume (bright core + Mach shimmer + turbulent mid + soft outer wash)
 			// with smooth nozzle-bell entry (no flat square edge at c60/c26) and faction palettes from faction_looks.json.
 			custom_plume = true;
@@ -1469,6 +1482,14 @@ void fragment() {
 			float sputter = k == 3 ? mix(cough(scene_t - s * 0.2, seed), 0.8, fx_calm) : 1.0;
 			float plume_end = 1.0 - smoothstep(0.72, 1.0, s);
 			colour = (core_col * inner_core * 1.65 + tint * mid_stream * (0.75 + 0.45 * flow_fast) + wash_col * outer_wash * 0.95) * sputter * plume_end;
+		} else if (k == 0 || k == 3) {
+			// One-shot light shafts and tethers keep the original ribbon profile and lifetime envelope.
+			float turbulence = fbm(vec2(s * 9.0 - age * 8.0, vSide * 3.0 + seed));
+			float shape = spow(1.0 - s, 1.25) * smoothstep(0.22, 0.65, turbulence + 0.2);
+			core *= shape * (0.8 + 0.3 * sin(s * 29.0 - age * 9.0));
+			sheath *= shape;
+			if (k == 3) { motion *= mix(cough(scene_t - s * 0.2, seed), 0.8, fx_calm); }
+			ends = 1.0 - smoothstep(0.72, 1.0, s);
 		} else if (k == 1) {
 			float fade = spow(1.0 - s, 1.5);
 			core *= fade * 0.4;

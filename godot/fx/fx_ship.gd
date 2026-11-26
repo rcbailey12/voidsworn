@@ -382,6 +382,9 @@ func hide_live_hull() -> void:
 			_shield_mi.reparent(parent)
 	_hide_meshes()
 	_hide_attachments()
+	var view := root as SHIP_VIEW
+	if is_instance_valid(view):
+		view.clear_rcs_puffs()
 
 
 func teardown(fx, wait_for_damage := true) -> void:
@@ -470,6 +473,7 @@ static func _apply_plume_palette(mat: ShaderMaterial, fac_id: String, fac_info: 
 	var pal := plume_palette(fac_id, fac_info)
 	var pc: Color = pal["core"]
 	var pw: Color = pal["wash"]
+	mat.set_shader_parameter("engine_plume", true)
 	mat.set_shader_parameter("plume_core", Vector3(pc.r, pc.g, pc.b))
 	mat.set_shader_parameter("plume_wash", Vector3(pw.r, pw.g, pw.b))
 	mat.set_shader_parameter("plume_style", float(int(pal["style"])))
@@ -3374,11 +3378,12 @@ func tick_flare(fx, kind: String) -> void:
 	if h.is_empty():
 		return
 	STATUS_TICK.play(fx, self, kind, h)
-	# Keep the tidal spark site for the shared spark upgrade. Living hulls shed glowing organic motes only.
-	if kind == "tidal" and faction != "chorus":
+	# Living and glass hulls keep the motes from the tick, not metal sparks.
+	if kind == "tidal" and faction not in ["chorus", "ithar"]:
 		var wp := to_world(h["p"])
 		var k := scale_k()
 		var T: float = fx.now
+		var tint: Color = fac.damage_glow if faction == "deathless" else Color(0.7, 0.8, 1.0)
 		for i in 20:
 			fx.spark(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, faction, 4.0, 0.15, 0.1, fx.rdir() * 6.0, 0.5)
 
