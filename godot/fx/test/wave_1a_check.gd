@@ -289,7 +289,6 @@ func _miss() -> void:
 	_check((aimed.p as Vector3).z > centre.z and s.hull.ray(s.xf().affine_inverse() * from,
 		s.xf().basis.inverse() * ((aimed.p as Vector3) - from)).is_empty(), "a miss clears the hull and extends beyond the target plane")
 	fx._later.clear()
-	var sprites: int = fx.pools["spr"].emitted
 	var streaks: int = fx.pools["stk"].emitted
 	var n := cues.size()
 	var end := WEAP._miss_fade(fx, "macro", s, {"p": exit, "pass": point}, from, fx.now, fx.now + 0.50, Color.WHITE, Vector3.BACK, 1.0)
@@ -302,11 +301,11 @@ func _miss() -> void:
 	_check(int(row[19]) == 4, "a laser miss streaks in the laser kind (%d)" % int(row[19]))
 	fx.now += 0.30
 	fx._run_later()
-	_check(cues.size() == n and fx.pools["spr"].emitted == sprites, "pass-by cue and graze wait for the projectile")
+	_check(cues.size() == n and fx.pools["stk"].emitted == streaks + 2, "pass-by cue and graze wait for the projectile")
 	fx.now += 0.12
 	fx._run_later()
 	_check(cues.size() == n + 1 and cues[-1] == "shot_pass_by", "pass-by cue plays at the target plane")
-	_check(fx.pools["spr"].emitted == sprites + 1 and s._hit_i == 0, "close shield graze sparks without triggering shield damage FX")
+	_check(fx.pools["stk"].emitted == streaks + 3 and int(_last_stk()[19]) == 8 and s._hit_i == 0, "close shield graze sparks without triggering shield damage FX")
 
 
 # Artoo on PR 1699: the battle sets up its effects before it builds its Sfx node, so fx.setup sees no sound; a miss's

@@ -24,9 +24,11 @@ static func gather(ships: Array) -> Array:
 		sources.append({"faction": faction, "surfs": surfaces})
 	return sources
 
-static func cut(sources: Array) -> Array:
+static func cut(sources: Array, abort: DEATH.CutAbort = null) -> Array:
 	var chunks: Array = []
 	for source in sources:
+		if abort != null and abort.cancelled():
+			return []
 		var box := AABB()
 		var first := true
 		for sd in source.surfs:
@@ -37,15 +39,11 @@ static func cut(sources: Array) -> Array:
 		var seeds := PackedVector3Array()
 		for j in 4:
 			seeds.append(box.position + box.size * Vector3((j + 0.5) / 4.0, 0.5, 0.5))
-		for pc in DEATH._cut({"surfs": source.surfs, "seeds": seeds}):
+		for pc in DEATH._cut({"surfs": source.surfs, "seeds": seeds}, abort):
 			if pc.n > 0:
 				pc["faction"] = source.faction
 				chunks.append(pc)
 	return chunks
 
-static func meshes(chunks: Array) -> Array:
-	var out: Array = []
-	for pc in chunks:
-		var mesh := DEATH._piece_mesh(pc, true)
-		if mesh.get_surface_count() > 0: out.append(mesh)
-	return out
+static func build_mesh(chunk: Dictionary) -> ArrayMesh:
+	return DEATH._piece_mesh(chunk, true)

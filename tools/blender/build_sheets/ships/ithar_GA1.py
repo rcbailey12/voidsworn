@@ -169,6 +169,8 @@ def build(K):
     breach_x = (4.6, 3.6, 1.6, -2.2, -6.0)
     hl.insides(K, lambda x: 0.66 * width(x), lambda x: 0.66 * height(x), XS + 1.0, XB - 0.9, breaks, breach_x,
                decks=(-0.35, 0.25), frames=10)
+    hk('rooms').rooms(K, lambda x: 0.66 * width(x), lambda x: 0.66 * height(x), XS + 1.0, XB - 0.9, breaks, breach_x,
+                      decks=(-0.35, 0.25), frames=10)      # the rooms (Ryan, Nov 23): kits/ithar/rooms.py
     K.armour('annealed outer glass', 0.05, 'actual shell thickness; layered blown glass, no armour plates')
     hl.ragged_break(K, 'B1', breaks[0], 2 * W + 2, 'ragged shatter path forward of the stern optic; the drive stays whole')
     hl.ragged_break(K, 'B2', breaks[1], 2 * W + 2, 'ragged shatter path aft of the hangar lenses, forward of the turret blister')

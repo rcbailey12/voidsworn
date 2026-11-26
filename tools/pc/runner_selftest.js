@@ -1393,9 +1393,10 @@ async function testChainRelease() {
     assert.equal((await ps(['finish', stateOut, code, partialReason, push, checks], defaults)).code, 0);
     assert.equal(JSON.parse(read(path.join(stateOut, 'status.json'))).status, expected);
     const wait = await ps(['wait', consumerOut], { ...defaults, PC_WAIT_FOR: path.join(stateOut, 'status.json') });
-    assert.equal(wait.code, expected === 'checked_push' ? 0 : 14, wait.text);
+    // issue 2098 (PR 2113): a confirmed real push releases the chain even when local checks failed (unverified)
+    assert.equal(wait.code, expected === 'checked_push' || (expected === 'unverified' && push === 'real') ? 0 : 14, wait.text);
   }
-  pass('only a confirmed non-partial real push with passing checks releases a chain');
+  pass('only a confirmed non-partial real push releases a chain (checked or unverified)');
   assert.equal((await ps(['init', stateOut, 'fixture/issue-687'], defaults)).code, 0);
   write(path.join(stateOut, 'run_commit.txt'), partial);
   assert.equal((await ps(['finish', stateOut, '0', '', 'real', '1'], defaults)).code, 0);

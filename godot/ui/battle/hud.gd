@@ -691,7 +691,7 @@ func _build_tip() -> void:
 
 # Keep detail tips off the controls. Shelf tips open upward; corner tips face the board.
 func _ledger_tip(t: String, at: Vector2) -> void:
-	if t == "":
+	if t == "" or bool(_last.get("letterbox", false)):
 		dtip.visible = false
 		return
 	dtip_text.text = recol(t)
@@ -713,7 +713,7 @@ func _ledger_tip(t: String, at: Vector2) -> void:
 
 
 func show_tip(bb: String, at: Vector2) -> void:
-	if bb == "":
+	if bb == "" or bool(_last.get("letterbox", false)):
 		tip.visible = false
 		return
 	var rb := recol(bb)

@@ -47,8 +47,8 @@ func _run() -> void:
 	c.titleScreen()
 	c.act("newRunScreen")
 	c.act("startRun")
-	if c.modal_d != null and c.modal_d.get("kind") == "aspect":
-		c.act("pickAspect", c.W["aspOffer"][0])
+	_check(c.page.get("kind") == "aspect", "the migration fixture reaches the aspect page")
+	c.act("pickAspect", c.W["aspOffer"][0])   # the map fixture has finished flagship setup
 	c.act("saveQuit")
 	var old: Dictionary = JSON.parse_string(c.save_text())
 	old["run"].erase("v")

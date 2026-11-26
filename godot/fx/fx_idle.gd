@@ -1,27 +1,26 @@
 extends RefCounted
-# Issue 1685 (R411, Priority 3): one small idle motion per faction, behind a flag, default off until Ryan picks.
-#   Hegemony    radar sweep: four small blips in turn round a spot on the top plating
-#   Crusade     furnace-vent ember breath: a slow swell at the broadside vents
-#   Hullbreaker smelter flicker: short uneven glows at the smelter vents
-#   Glasswright optic shimmer: a pale prism glint travelling over the lens bays
-#   Eclipse     corona pulse: one slow all-violet swell above the core and two at the shade bands (R372)
-#   Chorus      spore-sac swell: slow green-yellow swells at the sacs and flanks
-# How it is built: no new geometry and no per-frame work. One batch of looping soft sprites (sprite kind 18, a sine
-# envelope with no peak) per ship, hung under the ship's damage root so it rides the hull, at points the hull already
-# has (hp_breach_* hard points, else plating found by a ray from the core; RULEBOOK 6.7). The GPU repeats each sprite
-# by its period, so a ship costs one draw call and nothing on the CPU while it plays. A part that should really move
-# would be a named node from the kit export (issue 1685 brief); no kit export carries one yet, so nothing here moves
-# a mesh.
-# Comfort (RULEBOOK 6.2, checked by fx/test/idle_motion_check.gd): every sprite sits under the flash counter's
-# brightness line, none lasts under MIN_LIFE, one ship starts at most MAX_STARTS_PER_S of them a second, and the whole
-# thing spends no counted flash. Reduce flashing softens it (longer, dimmer, same size); Reduce motion stops the
-# radar sweep (one steady blip) and nothing else, because a swell is not movement.
+# Issue 1685 (R411, Priority 3) & Issue 2048: layered faction idle motion pieces, behind a flag, default off until Ryan picks.
+#   Hegemony    radar sweep: sensor beacon + rotating directional radar sweep wedge on top plating
+#   Crusade     furnace-vent ember breath: glowing louver grate + rising warm thermal ember shimmer
+#   Hullbreaker smelter flicker: rough smelter slag core + billowing heat haze & ash flecks
+#   Glasswright optic shimmer: faceted crystal star + sweeping pale rainbow prism halo
+#   Eclipse     corona pulse: all-violet null ring + twisting concentric violet corona arcs (R372)
+#   Chorus      spore-sac swell: pulsing bioluminescent sac + branching vein glow & spore motes (no metal sparks)
+# How it is built: no new geometry and no per-frame CPU work. One batch (one draw call, SH.IDLE_MOTION) per ship,
+# hung under the ship's damage root so it rides the hull, at points the hull already has (hp_breach_* hard points,
+# else plating found by a ray from the core; RULEBOOK 6.7). Each scheduled spot packs LAYERS_PER_SPOT (2) synchronized
+# layered pieces (core anchor + outer animated faction motion) sharing one smooth sin(pi t) pulse window.
+# Comfort (RULEBOOK 6.2, checked by fx/test/idle_motion_check.gd and idle_layers_2048_check.gd): every sprite sits
+# under the flash counter's brightness line, none lasts under MIN_LIFE, one ship starts at most MAX_STARTS_PER_S of
+# them a second, and the whole thing spends no counted flash. Reduce flashing softens it (longer, dimmer, same size);
+# Reduce motion stops the radar sweep (one steady ring) and nothing else, because a swell is not movement.
 # Colours come from fx/faction_looks.json (fac["damage_glow"], Hegemony fac["weapon"]), the one faction colour file.
 
 const POOLS := preload("res://fx/fx_pool.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 
-const KIND := 18                 # sprite kind: soft lift, sin(pi t) envelope, never a peak
+const KIND := 18                 # comfort class: soft lift, sin(pi t) envelope, never a peak
+const LAYERS_PER_SPOT := 2       # core emitter anchor (layer 0) + faction animated motion piece (layer 1)
 const FLASH_I_LINE := 4.0        # fx.gd FLASH_I: the intensity a short sprite would have to reach to count as a flash
 const MAX_I := 3.0               # the brightest idle sprite (well under the counter's line)
 const MIN_LIFE := 0.5            # no pulse is shorter than this many seconds (the sin envelope rises for half of it)
@@ -29,7 +28,16 @@ const MAX_STARTS_PER_S := 2.0    # most pulses one ship starts in a second (the 
 const SOFT_LIFE := 1.6           # Reduce flashing: every life is this many times longer ...
 const SOFT_I := 0.6              # ... and every brightness this share, sizes kept
 const SOFT_PERIOD := 1.4         # ... and every gap this many times longer, so the start rate falls
-const MAX_SPRITES := 8           # most sprites one ship carries (the batch is one draw call)
+const MAX_SPRITES := 8           # most scheduled spots one ship carries (the batch is one draw call)
+
+const STYLE_ID := {
+	"hegemony": 0,
+	"voidsworn": 1,
+	"corsair": 2,
+	"ithar": 3,
+	"deathless": 4,
+	"chorus": 5,
+}
 
 # from: where the sprites sit ("top" plating rays, "breach" hard points with a top fallback). count: how many spots.
 # life and period in seconds. size: Vector2 of start and end sprite size as a share of the hull length. i: brightness.
@@ -126,9 +134,9 @@ static func spots(h, m: Dictionary, still: bool) -> Array:
 	return out
 
 
-# Every sprite of a ship, as rows {p, t (start offset, 0 to period), life, period, i, s0, s1, col, kind}: the table and the
-# comfort check both read these. `seed_v` is the ship's own hash (its phase, so a fleet does not pulse together);
-# `softened` is Reduce flashing, `still` is Reduce motion.
+# Every scheduled pulse spot of a ship, as rows {p, n, t (start offset, 0 to period), life, period, i, s0, s1, col, kind,
+# style, layers, still}: the table and the comfort check both read these. `seed_v` is the ship's own hash (its phase,
+# so a fleet does not pulse together); `softened` is Reduce flashing, `still` is Reduce motion.
 static func rows(h, faction: String, fac: Dictionary, seed_v: int, softened: bool, still: bool) -> Array:
 	var m := motion_of(faction)
 	if m.is_empty() or h == null:
@@ -139,6 +147,7 @@ static func rows(h, faction: String, fac: Dictionary, seed_v: int, softened: boo
 	var period: float = float(m["period"]) * (SOFT_PERIOD if softened else 1.0)
 	var bright: float = minf(float(m["i"]) * (SOFT_I if softened else 1.0), MAX_I)
 	var col: Color = fac["weapon"] if faction == "hegemony" else fac["damage_glow"]
+	var style_id: int = int(STYLE_ID.get(faction, 0))
 	var per := int(m["per"])
 	var phase0 := float(posmod(seed_v, 997)) / 997.0 * period
 	var n := mini(sp.size() * per, MAX_SPRITES)
@@ -162,10 +171,11 @@ static func rows(h, faction: String, fac: Dictionary, seed_v: int, softened: boo
 				tint = col.lerp(Color.from_hsv(fmod(0.52 + 0.13 * float(si), 1.0), 0.45, 1.0), 0.5)
 			var s0: float = h.L * float((m["size"] as Vector2).x)
 			var s1: float = h.L * float((m["size"] as Vector2).y)
+			var normal: Vector3 = (sp[si]["n"] as Vector3).normalized()
 			# set a little off the plating along its normal, so the glow is not cut by the hull it sits on
-			var pos: Vector3 = (sp[si]["p"] as Vector3) + (sp[si]["n"] as Vector3) * s1 * 0.2
-			out.append({"p": pos, "t": off, "life": minf(l, period * 0.95), "period": period, "i": bright, "s0": s0, "s1": s1,
-				"col": tint, "kind": KIND})
+			var pos: Vector3 = (sp[si]["p"] as Vector3) + normal * s1 * 0.2
+			out.append({"p": pos, "n": normal, "t": off, "life": minf(l, period * 0.95), "period": period, "i": bright,
+				"s0": s0, "s1": s1, "col": tint, "kind": KIND, "style": style_id, "layers": LAYERS_PER_SPOT, "still": still})
 			j += 1
 	return out
 
@@ -221,26 +231,43 @@ static func stats(r: Array) -> Dictionary:
 	return {"sprites": r.size(), "starts_per_s": float(worst_starts_per_s(r)), "max_i": max_i, "min_life": min_life}
 
 
-# Build the ship's batch under `parent` (its damage root). Returns {} (nothing built) when the ship has no motion;
-# else {node, mat, rows, motion}. `fx` supplies the material and the clock.
+# Build the ship's layered batch under `parent` (its damage root). Returns {} (nothing built) when the ship has no motion;
+# else {node, mat, rows, motion, layers, particles}. `fx` supplies the shared IDLE_MOTION material and the clock.
 static func build(fx, parent: Node3D, h, faction: String, fac: Dictionary, seed_v: int, softened: bool, still: bool) -> Dictionary:
 	var r := rows(h, faction, fac, seed_v, softened, still)
 	if r.is_empty():
 		return {}
 	var b := POOLS.Batch.new()
+	var total := maxf(float(r.size()), 1.0)
 	var j := 0
 	for row in r:
 		var p: Vector3 = row["p"]
+		var n: Vector3 = row["n"]
 		var c: Color = row["col"]
-		var t: float = fx.now - float(row["period"]) + float(row["t"])
+		var life := float(row["life"])
+		var period := float(row["period"])
+		var t: float = fx.now - period + float(row["t"])
+		var style_f := float(row["style"])
+		var still_f := 1.0 if bool(row["still"]) else 0.0
+		var slot_f := float(j) / total
+		var s0 := float(row["s0"])
+		var s1 := float(row["s1"])
+		var bright := float(row["i"])
+		# Layer 0: emitter anchor / core piece.
 		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, t),
-			Vector4(0.0, 0.0, 0.0, float(row["life"])), Vector4(c.r, c.g, c.b, float(row["i"])),
-			Vector4(float(row["s0"]), float(row["s1"]), float(row["kind"]), float(j) * 0.137),
-			Vector4(float(row["period"]), 0.0, 0.0, 0.0)))
+			Vector4(n.x, n.y, n.z, life), Vector4(c.r, c.g, c.b, bright),
+			Vector4(s0, s1, 0.0, fmod(float(j) * 0.137, 0.99)),
+			Vector4(period, style_f, still_f, slot_f)))
+		# Layer 1: animated faction motion piece, synchronized to the same pulse window (zero extra flash starts).
+		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, t),
+			Vector4(n.x, n.y, n.z, life), Vector4(c.r, c.g, c.b, bright * 0.62),
+			Vector4(s0 * 1.35, s1 * 1.55, 1.0, fmod(float(j) * 0.137 + 0.5, 0.99)),
+			Vector4(period, style_f, still_f, slot_f)))
 		j += 1
 	var holder := Node3D.new()
 	holder.name = "fx_idle"
 	parent.add_child(holder)
-	var material: ShaderMaterial = fx.mat(SH.SPRITE, 1)
+	var material: ShaderMaterial = fx.mat(SH.IDLE_MOTION, 1)
 	b.build(material, holder, "fx_idle_sprites")
-	return {"node": holder, "mat": material, "rows": r, "motion": String(motion_of(faction)["name"])}
+	return {"node": holder, "mat": material, "rows": r, "motion": String(motion_of(faction)["name"]),
+		"layers": LAYERS_PER_SPOT, "particles": b.particle_count}
