@@ -20,7 +20,13 @@ class RecordFX extends "res://fx/fx.gd":
 			drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
 		streaks.append(kind)
 		streak_cols.append({"kind": kind, "col": col})
-		if kind == 1 or kind == 8:
+		super.flight_streak(p, t, life, col, i, length, w, kind, vel, drag, acc, wpx, lpx)
+
+	func spark(p: Vector3, t: float, life: float, faction: String, intensity: float, shutter: float, width: float,
+			vel: Vector3, drag := 0.0, wpx := 0.0, lpx := 0.0, role := SparkRole.HULL, tint := Color.TRANSPARENT) -> void:
+		var before: int = pools["stk"].emitted
+		super.spark(p, t, life, faction, intensity, shutter, width, vel, drag, wpx, lpx, role, tint)
+		if pools["stk"].emitted > before:
 			spark_times.append(t)
 
 	func _emit_spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,

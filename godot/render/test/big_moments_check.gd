@@ -245,6 +245,7 @@ func _cut_plate_checks() -> void:
 	battle.sel = "att"
 	battle.target = "tgt"
 	battle.cam.snap()
+	battle._process(0.0)   # make the normal plate set first, so the cut hides an existing other plate
 	battle._cine_frame("att", "tgt", "lance")
 	battle._step_cut_overlays(0.20)
 	battle._process(0.0)
@@ -262,6 +263,11 @@ func _cut_plate_checks() -> void:
 	battle._float_step(0.0)
 	_check(lbl.get_parent() == battle.hud.floats_root and lbl.visible and lbl.modulate.a > 0.9,
 		"a hit number stays readable at the settled cut fade")
+	battle._float("tgt", "-8 shield", Color(0.55, 0.85, 1.0))
+	var shield_lbl: Label = battle.floats[-1]["lbl"]
+	battle._float_step(0.0)
+	_check(shield_lbl.get_parent() == battle.hud.floats_root and shield_lbl.visible and shield_lbl.modulate.a > 0.9,
+		"a shield hit stays readable at the settled cut fade")
 	battle._cine_frame("att", "tgt", "torp")
 	battle._step_cut_overlays(0.20)
 	battle._float("tgt", "Critical", Color(1.0, 1.0, 1.0))
@@ -270,18 +276,25 @@ func _cut_plate_checks() -> void:
 	_check(crit.get_parent() == battle.hud.floats_root and crit.visible and crit.modulate.a > 0.9,
 		"a critical stays readable during a torpedo cut-in")
 	# the killing shot: the target is dead and the death path retires its plate, but the cut must finish first
+	battle._kill_frame("tgt", "att")
+	battle._step_cut_overlays(0.20)
 	ships["tgt"].dead = true
-	battle._retire_dead_plate("tgt")
+	battle._retire_dead_plate("tgt", ships["tgt"])
 	battle._process(0.0)
 	_check(battle.hud.plates.has("tgt") and battle.hud.plates["tgt"].visible,
 		"the killed target keeps its plate through the kill cut-in")
+	ships["tgt"].visible = false
+	battle._process(0.0)
+	_check(battle.hud.plates.has("tgt") and battle.hud.plates["tgt"].visible,
+		"a dead cut-in target keeps its plate even when its view is hidden")
 	ships["oth"].dead = true
-	battle._retire_dead_plate("oth")
+	battle._retire_dead_plate("oth", ships["oth"])
 	_check(not battle.hud.plates.has("oth"), "a dead ship outside the cut retires its plate at once")
 	battle._cine_release()
 	battle._step_cut_overlays(0.70)
 	battle._process(0.0)
-	_check(not battle.hud.plates.has("tgt"), "the dead target's plate retires when the cut-in ends")
+	_check(not battle.hud.plates.has("tgt") and ships["tgt"].has_meta("plate_off"),
+		"the dead target's plate retires when the cut-in ends and stays retired")
 	_check(battle.hud.plates["att"].get_parent() == battle.hud.plates_root and battle.hud.plates_root.modulate.a == 1.0,
 		"the attacker returns to the normal plate layer after the cut")
 	# issue 2194 item 3: the skip click ends the hold and must not also start a drag that cancels the smooth return

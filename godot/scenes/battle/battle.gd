@@ -3689,22 +3689,23 @@ func _kill_skip() -> void:
 
 
 # issue 2194: a ship that dies inside its own cut-in keeps its plate (the hit that killed it still reads) until the
-# cut-in lets go; every other dead plate goes at once.
-func _retire_dead_plate(id: String) -> void:
+# cut-in lets go; every other dead plate goes at once. The sv argument carries issue 2215's one-shot plate removal.
+func _retire_dead_plate(id: String, sv: ShipView = null) -> void:
 	if not cine_saved.is_empty() and _cut_plates.has(str(id)):
 		if not _deferred_dead_plates.has(str(id)):
 			_deferred_dead_plates.append(str(id))
 		return
-	if is_instance_valid(hud):
-		hud.remove_plate(str(id))
+	if hud != null and (sv == null or not sv.has_meta("plate_off")):
+		hud.remove_plate(id)
+		if sv != null:
+			sv.set_meta("plate_off", true)
 
 
 func _release_deferred_dead_plates() -> void:
-	if is_instance_valid(hud):
-		for id in _deferred_dead_plates:
-			var sv = views.get(id)
-			if not is_instance_valid(sv) or bool(sv.dead):
-				hud.remove_plate(str(id))
+	for id in _deferred_dead_plates:
+		var sv = views.get(id)
+		if not is_instance_valid(sv) or bool(sv.dead):
+			_retire_dead_plate(str(id), sv if is_instance_valid(sv) else null)
 	_deferred_dead_plates.clear()
 
 
@@ -3791,7 +3792,12 @@ func _play_death(e: Dictionary, batch_view := {}) -> void:
 		if sv.marker != null:
 			sv.marker.visible = false
 		sv.ring.visible = false
-		_retire_dead_plate(str(id))
+		_retire_dead_plate(str(id), sv)
+		if gfx.has_method("ship"):
+			var ship = gfx.ship(str(id))
+			if ship != null and t > 0.0:
+				var keep_fx: bool = not sq and (wrecked.has(id) or _death_can_rise(id, unit, batch_view))
+				gfx.later(float(gfx.now) + t, _retire_death_view.bind(str(id), gfx, ship, keep_fx))
 		# a death is a key moment: it follows the pace only gently (half its hold at most on the enemy's turn, a quarter on
 		# hurry) and a big hull always gets 0.8 s; G4's effect plays on either way
 		var pk := clampf(speed, 0.25 if skip else 0.5, 1.0)
@@ -3818,7 +3824,7 @@ func _play_death(e: Dictionary, batch_view := {}) -> void:
 	else:
 		sfx.boom(0.22 + minf(0.3, L / 90.0) if sq else (1.2 if big else 0.6), p)
 	sv.die(wrecked.has(id))
-	_retire_dead_plate(str(id))
+	_retire_dead_plate(str(id), sv)
 	var dk := _enemy_pace_k() if not friend else 1.0
 	await wait((0.68 if not sq else 0.25) * 1000.0 * maxf(0.4, dk))
 	if is_instance_valid(sv) and sv.dead and not wrecked.has(id):
@@ -3833,12 +3839,6 @@ func _death_can_rise(id: String, unit: Dictionary, batch_view: Dictionary) -> bo
 		if row["id"] == id:
 			return row.get("rising") != null
 	return unit.get("rising") != null
-
-
-func _retire_dead_plate(id: String, sv: ShipView) -> void:
-	if hud != null and not sv.has_meta("plate_off"):
-		hud.remove_plate(id)
-		sv.set_meta("plate_off", true)
 
 
 func _park_dead_view(sv: ShipView) -> void:
@@ -7398,10 +7398,6 @@ func _process(dt: float) -> void:
 	var show_up: bool = not bot and not thinking and not ended and api.phase == "player"
 	for id in views:
 		var sv = views[id]
-		if sv.dead:
-			if not sv.has_meta("plate_off"):
-				_retire_dead_plate(str(id), sv)
-			continue
 		var u: Dictionary = VU.get(id, {})
 		var aimed := not aim.is_empty() and (str(id) == str(aim["t"]) or str(id) == str(aim["a"]))
 		# issue 2194 (1211): the cut-in's two ships keep their plates readable while the rest hide; a dead target
@@ -7409,12 +7405,13 @@ func _process(dt: float) -> void:
 		var cut_on := not cine_saved.is_empty()
 		var in_cut: bool = cut_on and (_cut_plates.has(str(id)) or aimed)
 		if sv.dead and not in_cut:
-			_retire_dead_plate(str(id))
+			if not sv.has_meta("plate_off"):
+				_retire_dead_plate(str(id), sv)
 			continue
 		if not plates_on:
 			_breathe_ring(sv, show_up and not u.is_empty() and str(id) == sel and u["side"] == "player")
 			continue
-		if u.is_empty() or (not in_cut and (not sv.visible or cut_on)):
+		if u.is_empty() or (not in_cut and (sv.dead or not sv.visible or _cut_overlay_alpha <= 0.0 or cut_on)):
 			hud.set_plate(str(id), Vector2.ZERO, false, "", true, false, 0, 1, 0, 0)
 			continue
 		var wp: Vector3 = sv.visual_position() + Vector3(0, 3.0 + sv.L * 0.18, 0)
