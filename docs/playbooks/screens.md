@@ -256,8 +256,9 @@ Ryan picked these from the Council triage sheet on Nov 23 2026 (board/review_112
   numbers, Michroma for the wordmark only. Oxanium, Chakra Petch and Barlow Semi Condensed leave the screens as each one is
   next touched. "VICTORY" and every other card title use one face.
 - **Title (C4).** The title backdrop frames the Hollow Sun, not a ship. The gold wordmark stays (R327).
-- **Flagship pick (C37).** Three-quarter key light, a slow turn, the ship about twice today's size, engines lit, fins never
-  glowing (R347, R360), on a better background. Ryan picks that background from the C37 options sheet before it is built.
+- **Flagship pick (C37 A, issue 1406).** Three-quarter key light, a slow turn, a hull that reads about twice as large, lit
+  engines and dark fins (R347, R360), over the live Hollow Sun. Reuse the battle world's core, disc and lens, not a painted
+  image. Reduce motion holds the hull at the starting angle.
 - **Reward card (C12).** Rebuilt in the orders style (square near-black, Big Shoulders title, key after the words, a hull
   picture per wreck). A mock-up goes to Ryan first (9.10).
 - **Game icon (C26).** A Hollow Sun mark. Ryan picks one of the themed variations (C26b sheet) before the exe icon and boot

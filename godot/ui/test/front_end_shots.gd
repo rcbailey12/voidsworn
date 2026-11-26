@@ -4,6 +4,7 @@ extends SceneTree
 # godot --path godot --resolution 1920x1080 --script res://ui/test/front_end_shots.gd -- <out dir> [tag] [--no-showcase]
 #   [--only=F5] [--expect=1920x1080]   (--expect: every frame must be that size before the shrink, or the run fails)
 # In the cloud run it under xvfb-run with --rendering-driver opengl3. Each picture is 1280x720 with its code name on it.
+# C37: pass the captured commit as [tag], --no-showcase --only=C37 --expect=1920x1080. Needs an installed hull and Forward+.
 
 const UiScale := preload("res://ui/ui_scale.gd")
 var out := ""
@@ -47,7 +48,7 @@ func _shot(name: String, caption: String) -> void:
 	var cap := CanvasLayer.new()
 	cap.layer = 120
 	var l := Label.new()
-	l.text = name + "   " + caption + ("   " + tag if tag != "" else "")
+	l.text = "C37, run 2, " + tag if name == "C37" else name + "   " + caption + ("   " + tag if tag != "" else "")
 	l.add_theme_font_size_override("font_size", 22)
 	l.add_theme_color_override("font_color", Color(1, 1, 1))
 	l.add_theme_color_override("font_outline_color", Color(0, 0, 0))
@@ -89,6 +90,35 @@ func _hold_window() -> void:
 var _expect := Vector2i.ZERO
 
 
+func _capture_flagship_c37() -> void:
+	var commit := RegEx.create_from_string("^[0-9a-f]{7,64}$")
+	if commit.search(tag) == null or RenderingServer.get_current_rendering_method() != "forward_plus":
+		printerr("[front-end-shots] FAIL C37 needs a commit tag and Forward+")
+		main.quit_clean(1)
+		return
+	main.new_run({})
+	await _wait(0.3)
+	var host = main.campaign
+	if host != null and host.ui != null:
+		host.C.act("pickFaction", "voidsworn")
+		host.C.act("startRun")
+		await _wait(0.8)
+		var podium = host.ui.podium
+		if podium != null and podium.installed:
+			await _shot("C37", "")
+		else:
+			_failed += 1
+			printerr("[front-end-shots] FAIL C37 needs the installed Sunward flagship")
+	else:
+		_failed += 1
+		printerr("[front-end-shots] FAIL C37 could not open the campaign")
+	var now = FileAccess.get_file_as_string("user://settings.json") if FileAccess.file_exists("user://settings.json") else null
+	if now != _saved_settings:
+		_failed += 1
+		printerr("[front-end-shots] FAIL the settings file changed during the capture")
+	main.quit_clean(0 if _failed == 0 else 1)
+
+
 func _scale(v: float) -> void:
 	main.settings["ui_scale"] = v
 	UiScale.set_player(v)
@@ -105,6 +135,9 @@ func _run() -> void:
 			if parts.size() == 2: _expect = Vector2i(int(parts[0]), int(parts[1]))
 	await _wait(1.5)
 	await _hold_window()
+	if _only == "C37":
+		await _capture_flagship_c37()
+		return
 	# with the showcase battle (the PC, built ships): wait for it to load and fade in behind the title
 	if not main.args.has("no-showcase"):
 		var t0 := Time.get_ticks_msec()
