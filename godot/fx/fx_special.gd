@@ -222,7 +222,7 @@ static func jump(fx, ship, pace: float) -> float:
 		if fx.ship(ship.id) == ship and not ship.dead and not ship.gone and is_instance_valid(ship.root):
 			ship.clear_rift_pose()
 			ship.hide_live_hull()
-			ship.teardown(fx, false))
+			fx.remove_ship(ship.id, false))
 	return t + depart
 
 

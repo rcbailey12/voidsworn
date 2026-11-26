@@ -127,7 +127,7 @@ static func station_fallback(parent: Node3D, p: Vector3) -> Node3D:
 		mi.position.y = 1.2 if tier == 0 else 3.5
 	return node
 
-static func outline(parent: Node3D, p: Vector3, col: Color, width: float, on_top := true) -> Node3D:
+static func outline(parent: Node3D, p: Vector3, col: Color, width: float, _on_top := true) -> Node3D:
 	var node := Node3D.new()
 	node.name = "BlockedFootprint"
 	parent.add_child(node)
@@ -137,9 +137,9 @@ static func outline(parent: Node3D, p: Vector3, col: Color, width: float, on_top
 	mat.emission_enabled = true
 	mat.emission = col * 0.65
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	# A station's rim lies on the grid under the station (Ryan, Nov 24, issue 1791: the outpost looked "below the grid and
-	# hexes" with its rim drawn across it); other rims still draw over everything
-	mat.no_depth_test = on_top
+	# Issue 1991: every rim lies on the grid, behind ships, stations and the Dead Star.
+	# Keep the old on_top argument so both call forms still work.
+	mat.no_depth_test = false
 	for i in 6:
 		var a := Vector3(cos(PI / 6.0 + i * TAU / 6.0), 0, sin(PI / 6.0 + i * TAU / 6.0)) * 9.6
 		var b := Vector3(cos(PI / 6.0 + (i + 1) * TAU / 6.0), 0, sin(PI / 6.0 + (i + 1) * TAU / 6.0)) * 9.6
