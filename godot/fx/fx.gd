@@ -2037,6 +2037,15 @@ func volley(attacker_id: String, kind: String, target_id: String, opts := {}) ->
 
 
 # Fire at a point in space (gallery, misses, station guns with no attacker ship): from and to in world space.
+func pd_flak(ship_id: String, toward: Vector3) -> void:
+	var defender = ship(ship_id)
+	if defender == null or defender.dead or not is_instance_valid(defender.root):
+		return
+	var muzzle := WEAP._pd_origin(defender, toward)
+	if muzzle.is_finite():
+		WEAP.pd_flak(self, muzzle, toward, now, defender.faction)
+
+
 func volley_at(from: Vector3, kind: String, to: Vector3, opts := {}) -> Dictionary:
 	return WEAP.volley_points(self, from, kind, to, opts)
 

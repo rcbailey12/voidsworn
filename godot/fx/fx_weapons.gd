@@ -293,6 +293,9 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	# Battle events carry an aggregate PD count, while intercepted entries
 	# remain false in shots. Never turn a rolled hit into an interception.
 	var pd_left := maxi(int(opts.get("pd", 0)), 0)
+	var pd_ships: Array = opts.get("pd_ships", [])
+	var pd_index := 0
+	var pd_cued := {}
 	var tur_last := {}    # turret -> its last shot's fire time: it holds its aim through that, then trains back to rest
 	var froms: Array = []   # each shot's muzzle (world) and turret (-1 for a fixed gun), for the checks
 	# issue 1239: each hit's point on the target's shield (shield frame; INF when it never touched the shield), so the
@@ -310,6 +313,12 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 			hj += 1
 		elif pd_left > 0 and lk in ["torp", "rockets", "star"]:
 			hd = {"pd": true}
+			if pd_index < pd_ships.size():
+				var id := str(pd_ships[pd_index])
+				hd["pd_ship"] = id
+				hd["pd_cue"] = not pd_cued.has(id)
+				pd_cued[id] = true
+			pd_index += 1
 			pd_left -= 1
 		var m: Dictionary = mounts[i % mounts.size()]
 		var from: Vector3 = m["p"]
@@ -587,7 +596,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				var spd = (62.0 if lk == "torp" else (85.0 if lk == "rockets" else 55.0)) * fx.unit
 				var tt = dist / spd + 0.25
 				ti = tf + tt
-				ti = _launch(fx, lk, from, mn, to, tf, ti, col, fac, ka, i, bool(hd.get("pd", false)), A, rhythm, spread, faction)
+				ti = _launch(fx, lk, from, mn, to, tf, ti, col, fac, ka, i, bool(hd.get("pd", false)), A, rhythm, spread, faction, str(hd.get("pd_ship", "")), bool(hd.get("pd_cue", false)))
 				tend = ti
 		"flak", "pflak", "spores", "mflak", "gflak", "gsentry":
 			var cadence := 0.19 if lk == "gsentry" else 0.12 if lk == "flak" else 0.07
@@ -637,6 +646,9 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"guns", "bombs", "sporeb":
 			tf = T0 + beat * 0.15
 			ti = _strafe(fx, lk, from, to, tf, col, fac, ka, kt, i, faction, rhythm, spread, tg.get("pass", null))
+			if A != null and A.squadron and A.root.has_method("hold_wing_orbit"):
+				var tail: Dictionary = fx.dstate["craft_runs"].back()
+				A.root.hold_wing_orbit(float(tail.t0) + float(tail.life))
 		_:
 			tf = T0 + 0.3
 			ti = T0 + 0.3
@@ -777,8 +789,8 @@ static func _weapon_shader(fx, routed := false) -> Shader:
 
 
 static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: String, life: float, col: Color,
-		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0, gun := true) -> void:
-	var seed: float = fx.rng.randf()
+		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0, gun := true, seed_override := -1.0) -> void:
+	var seed: float = seed_override if seed_override >= 0.0 else fx.rng.randf()
 	fx.later(T, func l_burst() -> void:
 		var power := strength
 		var duration := life
@@ -995,7 +1007,7 @@ static func _launch_dir(mn: Vector3, from: Vector3, to: Vector3) -> Vector3:
 	return d
 
 
-static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf: float, ti: float, col: Color, fac: Dictionary, k: float, i: int, intercept: bool, src = null, rhythm: RandomNumberGenerator = null, spread := 1.0, faction := "") -> float:
+static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf: float, ti: float, col: Color, fac: Dictionary, k: float, i: int, intercept: bool, src = null, rhythm: RandomNumberGenerator = null, spread := 1.0, faction := "", pd_ship := "", pd_cue := false) -> float:
 	var eng: Color = fac["engine"]
 	var old := _old_launch   # the launch before this change, for before shots only
 	var ed := _launch_dir(mn, from, to)
@@ -1049,7 +1061,7 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 				_kit_trail_start(fx, p, fac)
 		if intercept:
 			p["dead_at"] = lerpf(t0, float(p["t1"]), 0.62)
-			_pd_fire(fx, p)
+			_pd_fire(fx, p, fx.ship(pd_ship) if pd_ship != "" else null, pd_cue and j == 0)
 		var list: Array = fx.dstate.get("proj", [])
 		list.append(p)
 		fx.dstate["proj"] = list
@@ -1630,6 +1642,9 @@ static func _kit_trail_upload(t: Dictionary) -> void:
 # and the round goes dead (drive out) and tumbles away trailing grey smoke.
 const PD_TRACER := Color(0.72, 0.88, 1.0)
 const PD_TUMBLE_S := 0.9
+const PD_PUFFS_PER_BURST := 3
+const PD_PUFF_CAP := 12
+const PD_PUFF_LIFE := 0.42
 
 
 static func _down_point(p: Dictionary) -> Vector3:
@@ -1637,16 +1652,58 @@ static func _down_point(p: Dictionary) -> Vector3:
 	return _bez(p["a"], p["b"], p["c"], _ease(u0))
 
 
-static func _pd_fire(fx, p: Dictionary) -> void:
+static func _pd_origin(defender, toward: Vector3) -> Vector3:
+	var inv: Transform3D = defender.xf().affine_inverse()
+	var center: Vector3 = defender.hull.c
+	var out := ((inv * toward - center).normalized() + Vector3.UP * 0.38).normalized()
+	var hit: Dictionary = defender.hull.ray(center + out * (defender.hull.box.size.length() + 1.0), -out)
+	if hit.is_empty():
+		var mounts: Array = defender.hull.mounts_for(inv * toward, 1)
+		if mounts.is_empty():
+			return Vector3.INF
+		hit = mounts[0]
+	return defender.to_world(hit["p"])
+
+
+static func pd_flak(fx, muzzle: Vector3, toward: Vector3, at: float, faction: String) -> void:
+	# A single firing cue per defender in a salvo. Bound the live and pending puffs across overlapping salvos, too.
+	var ends: Array = fx.dstate.get_or_add("pd_puff_ends", [])
+	for i in range(ends.size() - 1, -1, -1):
+		if float(ends[i]) <= fx.now:
+			ends.remove_at(i)
+	var dir := muzzle.direction_to(toward)
+	if dir.is_zero_approx():
+		dir = Vector3.UP
+	var side := dir.cross(Vector3.UP).normalized()
+	if side.is_zero_approx():
+		side = Vector3.RIGHT
+	var tint := Color(0.24, 0.25, 0.27).lerp(FLOOK.weapon(faction), 0.22)
+	var spark_tint := PD_TRACER.lerp(FLOOK.weapon(faction), 0.28)
+	var count := mini(PD_PUFFS_PER_BURST, PD_PUFF_CAP - ends.size())
+	for j in count:
+		var start := at + 0.045 * j
+		var p: Vector3 = muzzle + (dir * (1.4 + 0.4 * j) + side * float(j - 1) * 1.3 + Vector3.UP * 0.55) * fx.unit
+		ends.append(start + PD_PUFF_LIFE)
+		# These extra puffs must not change the seeded paths of later rounds.
+		var seed := float(posmod(hash(Vector4(p.x, p.y, p.z, start)), 4096)) / 4096.0
+		_burst(fx, p, dir, start, 1.15, "cool", PD_PUFF_LIFE, tint, 0.65, 13.0, Vector3.ZERO, 0.72, 1.0, true, seed)
+		fx.spark(p, start, 0.14, faction, 1.6, 0.035, 0.13, (dir + side * float(j - 1) * 0.5) * 9.0 * fx.unit,
+			2.0, 2.0, 5.0, fx.SparkRole.WEAPON, spark_tint)
+
+
+static func _pd_fire(fx, p: Dictionary, defender = null, cue := false) -> void:
 	var pp := _down_point(p)
-	var c: Vector3 = p["c"]
+	var muzzle := _pd_origin(defender, pp) if defender != null and not defender.dead and is_instance_valid(defender.root) else Vector3.INF
+	var c: Vector3 = muzzle if muzzle.is_finite() else p["c"]
 	var k: float = p["k"]
-	# four short dashes from the target's side, a little spread, the last one arriving as the round dies
+	# Four short dashes from the firing ship (the old target-side cue if none was named). The last arrives as the round dies.
 	for j in 4:
 		var src: Vector3 = c + fx.rdir() * 0.8 * k + (pp - c).normalized() * 0.6 * k
 		var aim: Vector3 = pp + fx.rdir() * (0.5 if j < 3 else 0.05) * k
 		var ft := maxf(src.distance_to(aim) / (260.0 * fx.unit), 0.05)
 		var tb := float(p["dead_at"]) - ft - (3 - j) * 0.07
+		if j == 0 and cue and muzzle.is_finite():
+			pd_flak(fx, muzzle, pp, maxf(tb, float(fx.now)), defender.faction)
 		fx.flight_streak(src, tb, ft, PD_TRACER, 7.0, 5.0 * k, 0.22 * k, BOLT_ENERGY, (aim - src) / ft, 0.0, 0.0, 3.0, 18.0)
 
 

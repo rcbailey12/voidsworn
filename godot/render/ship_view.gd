@@ -10,6 +10,7 @@ const FLOOK := preload("res://fx/faction_look.gd")   # issue 1205: the one sourc
 const ATTACH := preload("res://fx/fx_hull.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const WING := preload("res://render/squadron_wing.gd")
+const ALT_BAND := preload("res://render/altitude_band.gd")
 const PG := preload("res://render/placeholder_guard.gd")
 const THRUST := preload("res://fx/thrust_profile.gd")   # issue 1582: the six faction movement personalities
 const LINE_STYLE := preload("res://render/line_style.gd")   # issue 1582: the drop-line takes the one line style (R362)
@@ -28,6 +29,16 @@ var fx_clock: Node:
 		if not squad_kind.is_empty() and is_instance_valid(hull):
 			hull.set_process(value == null)
 var _motion_fx_step := -1
+# Issue 2249: only the visual wing anchor leaves its rules hex.
+const GUARD_ORBIT_PERIOD := 16.0
+const GUARD_ORBIT_CLEARANCE := 6.0
+var guard_carrier: Node3D
+var guard_has_target := false
+var _guard_phase := 0.0
+var _guard_attack_until := 0.0
+var _guard_mix := 0.0
+var _guard_world_offset := Vector3.ZERO
+var _guard_local_offset := Vector3.ZERO
 var L := 10.0
 var fac := "hegemony"
 var code := ""
@@ -307,12 +318,14 @@ func setup_begin(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 		squad_kind = CRAFT.kind_for(u)
 		code = fac + "|" + squad_kind
 		L = HT.CLS_LEN["Squadron"] * HT.SHIP_K * HT.SQUADRON_K
-		bob_seed = float(posmod(hash(str(u.get("id", "wing"))), 10000)) / 1000.0
+		var wing_id := str(u.get("id", "wing"))
+		bob_seed = float(posmod(hash(wing_id), 10000)) / 1000.0
 		hull = WING.new()
 		hull.name = "hull"
 		hull_pivot.add_child(hull)
 		# Battle units carry the squadron flag; class-only portraits have no hex to patrol.
 		if battle_wing:
+			_guard_phase = ALT_BAND.seed_of(wing_id) * TAU
 			hull.patrol_limit = HT.HEX_S * sqrt(3.0) * 0.5
 			hull.patrol_target = 1.0
 		hull.setup(fac, squad_kind, L, 6 if fac == "chorus" else 3, bob_seed)
@@ -557,7 +570,34 @@ func _fit() -> void:
 # The ship's visual centre in the board's frame, for camera targets, labels and fallback effects.
 # Keep the rules root on its hex so a flown path, revive or hit reaction cannot reset the lift.
 func visual_position() -> Vector3:
-	return position + Vector3.UP * (hull_lift + band_y)
+	return position + Vector3.UP * (hull_lift + band_y) + basis * _guard_local_offset
+
+
+func hold_wing_orbit(until: float) -> void:
+	_guard_attack_until = maxf(_guard_attack_until, until)
+
+
+func _step_guard_orbit(dt: float) -> void:
+	var has_carrier := is_instance_valid(guard_carrier) and not bool(guard_carrier.get("dead")) and guard_carrier.visible
+	var flying := busy() or fleeing > 0.0
+	if calm or dead or not is_instance_valid(fx_clock):
+		_guard_mix = 0.0
+		_guard_world_offset = Vector3.ZERO
+	elif has_carrier and not flying and float(fx_clock.now) < _guard_attack_until:
+		pass   # let the dive leave the last drawn pose without also circling the carrier
+	elif has_carrier and not guard_has_target and not flying:
+		_guard_mix = move_toward(_guard_mix, 1.0, dt * 1.6)
+		var angle := _guard_phase + float(fx_clock.now) * TAU / GUARD_ORBIT_PERIOD
+		var radius := float(guard_carrier.L) * 0.55 + GUARD_ORBIT_CLEARANCE
+		var center := guard_carrier.global_position - global_position
+		center.y = 0.0
+		_guard_world_offset = (center + Vector3(cos(angle), 0.0, sin(angle)) * radius) * smoothstep(0.0, 1.0, _guard_mix)
+	else:
+		var mix_next := move_toward(_guard_mix, 0.0, dt * 2.5)
+		if _guard_mix > 0.0:
+			_guard_world_offset *= smoothstep(0.0, 1.0, mix_next) / smoothstep(0.0, 1.0, _guard_mix)
+		_guard_mix = mix_next
+	_guard_local_offset = global_basis.inverse() * _guard_world_offset
 
 
 # ---------------------------------------------------------------- issue 1582: altitude band and drop-line
@@ -657,8 +697,8 @@ func _draw_drop() -> void:
 		return
 	var on := not dead and visible and not wreck and _cut_overlay_alpha > 0.001
 	var top := hull_pivot.transform * hull.position if hull_pivot != null and hull != null else Vector3(0, band_y, 0)
-	top.x = 0.0
-	top.z = 0.0
+	top.x = _guard_local_offset.x
+	top.z = _guard_local_offset.z
 	var plane := -position.y + 0.05   # the battle plane in this node's frame (a move over a rock lifts the root)
 	var h := top.y - plane
 	drop.visible = on and absf(h) >= DROP_MIN * 0.5
@@ -677,7 +717,17 @@ func _draw_drop() -> void:
 		var to_cam := cam.global_position - global_position
 		yaw = atan2(to_cam.x, to_cam.z) - rotation.y
 	# the quad's own height axis stretches (not the parent's x), so it never shears with heading (Fable, PR 1874 item 10)
-	drop.transform = Transform3D(Basis(Vector3.UP, yaw) * Basis.from_scale(Vector3(1.0, absf(h), 1.0)), Vector3(0, plane + h * 0.5, 0))
+	if _guard_local_offset.is_zero_approx():
+		drop.transform = Transform3D(Basis(Vector3.UP, yaw) * Basis.from_scale(Vector3(1.0, absf(h), 1.0)), Vector3(0, plane + h * 0.5, 0))
+	else:
+		var foot := Vector3(0, plane, 0)
+		var along := top - foot
+		var eye := to_local(cam.global_position) - (foot + along * 0.5) if cam != null else Vector3.FORWARD
+		var side := along.cross(eye).normalized()
+		if side.is_zero_approx():
+			side = along.cross(Vector3.RIGHT).normalized()
+		var face := side.cross(along).normalized()
+		drop.transform = Transform3D(Basis(side, along, face), foot + along * 0.5)
 	drop_dot.transform = Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * (1.0 + drop_hot * 0.5)), Vector3(0, plane, 0))
 
 
@@ -2385,6 +2435,8 @@ func _step_motion(dt: float) -> void:
 		return
 	var prior_bob_time := _bob_time
 	_bob_time = float(fx_clock.now) if is_instance_valid(fx_clock) else _bob_time + dt
+	if not squad_kind.is_empty() and (is_instance_valid(guard_carrier) or _guard_mix > 0.0):
+		_step_guard_orbit(dt)
 	# Let a battle ship settle before it vents a small pair. Each ship has its own cadence.
 	if not campaign_map and not dead and visible and path_dur <= 0.0 and squad_kind.is_empty():
 		_idle_time += maxf(_bob_time - prior_bob_time, 0.0)
@@ -2397,7 +2449,7 @@ func _step_motion(dt: float) -> void:
 	# A slow idle drift, separate from the cinematic flight bank. Issue 1581: at rest in battle the hull also wanders a
 	# little on station (a slow drift across the beam and along the keel); Reduce motion holds it still.
 	var tt := _bob_time
-	var bob := Vector3.ZERO if calm else Vector3(0, sin(tt * 0.6 + bob_seed) * 0.25, 0)
+	var bob := Vector3.ZERO if calm or _guard_mix > 0.0 else Vector3(0, sin(tt * 0.6 + bob_seed) * 0.25, 0)
 	if not calm and not campaign_map and squad_kind.is_empty():
 		bob += Vector3(sin(tt * 0.21 + bob_seed * 1.7) * 0.14, 0, sin(tt * 0.17 + bob_seed * 2.3) * 0.12)
 	# a boarding ship trims its height toward its target's hull before the breach (issue 1581 item 4)
@@ -2411,7 +2463,7 @@ func _step_motion(dt: float) -> void:
 		else:
 			if hull.transform.basis != hull_basis and squad_kind.is_empty():
 				hull.transform.basis = hull_basis
-			hull.position = hull_base + bob
+			hull.position = hull_base + bob + _guard_local_offset
 	if not campaign_map:
 		set_fallback_drive(thrust)
 	if drop != null:

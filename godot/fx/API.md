@@ -202,7 +202,7 @@ Tonemapper, exposure, bloom threshold and the dark-hull lift are chosen in look.
 |---|---|
 | (battle start) | `add_ship` for every unit, `world.build(view(), ...)` |
 | `move` | animate the root along the path (G2); optional `set_engine(id, 2)` during it, then `set_engine(id, 1)` |
-| `fire` + its `hit`s | `volley(unit, kind, target, {weapon_id, shots, hits, quad, pd, late})` |
+| `fire` + its `hit`s | `volley(unit, kind, target, {weapon_id, shots, hits, quad, pd, pd_ships, late})` |
 | `shield_down` | `shield_break(unit, quad)` |
 | `section_down`, `system`, `burning`, `tick` | `sync_ship` after it (and `tick(id, kind)` for `tick`) |
 | `death` | `death(unit, cause)` |
@@ -212,6 +212,10 @@ Tonemapper, exposure, bloom threshold and the dark-hull lift are chosen in look.
 | `ram` | `volley(unit, "torp", target, {weapon_id: "ram", hits: [...]})`: the ram's crumple on the target, a smaller one on the rammer, the biggest shove |
 | `board` | `board(unit, target, result)` |
 | any batch end | `sync_ship(id, unit)` for the units that changed |
+
+Issue 2249: `pd_ships` lists the firing ship for each munition it intercepted, not the ships protected by the salvo.
+The volley plays one near-ship PD-C cue per defender. On a wing death tagged `pd_craft`, battle also calls
+`pd_flak(by, toward)` at the firing ship. These cues do not decide any hits or damage.
 
 ## 12. Cost
 

@@ -2795,6 +2795,7 @@ func rocketDefense(w, t, shots: Array, res, mult = null) -> void:
 		while i < shots.size() and d["intercepts"] > 0:
 			if shots[i] and rnd() < 0.55 * im:
 				shots[i] = false; d["intercepts"] = d["intercepts"] - 1; shot += 1
+				if events_on: res.get_or_add("pd_ships", []).append(d["id"])   # presentation only: the actual escort that fired
 			i += 1
 	if shot != 0:
 		res["pd"] = shot; flt(t, ns(shot) + " rocket" + ("s" if shot > 1 else "") + " shot down", "#bfe3ff", 30)
@@ -2855,7 +2856,7 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 		m3Fx(t, "falseHulls", "the torpedoes chase a false image")   # issue 1650 Mastery III
 	foldMiss(t, shots)   # issue 1649: Fold skip
 	var shooter = real if real != null else gh
-	emit({"t": "fire", "unit": shooter["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "quad": quad}); hook("fire", shooter)
+	emit({"t": "fire", "unit": shooter["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "pd_ships": res.get("pd_ships", []), "quad": quad}); hook("fire", shooter)
 	B["prog"] = z0(B.get("prog")) + 1
 	if not live.call():
 		if is_same(B, b0) and real != null:
@@ -3827,7 +3828,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 			if jt(shots[mi2]): halfShot = mi2
 			treeFx(u, "frameZero", "the frame zero shot is recorded")   # Eclipse shared C1b
 	if not jt(opts.get("intercept")) and t["side"] != u["side"] and foldMiss(t, shots): halfShot = -1   # issue 1649: Fold skip
-	emit({"t": "fire", "unit": u["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "quad": quad}); hook("fire", u)
+	emit({"t": "fire", "unit": u["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "pd_ships": res.get("pd_ships", []), "quad": quad}); hook("fire", u)
 	if B != null: B["prog"] = z0(B.get("prog")) + 1
 	if not live.call():
 		if not jt(opts.get("intercept")) and is_same(B, b0):
@@ -4207,7 +4208,7 @@ func _landVolley_raw(u, w, t, o) -> bool: # the shots of one weapon land (direct
 			t["dealt"] = z0(t.get("dealt")) + rp; _quietHit(t, u, rp); boonFx(u, "i_brace", "−" + ns(rp), -40)
 			if u["hp"] <= 0: killUnit(u, t, false, reply)
 	if t["hp"] <= 0:
-		t["killCause"] = killCauseOf(w, t); killUnit(t, o["by"] if o.get("by") != null else u, false, fatal)
+		t["killCause"] = killCauseOf(w, t); killUnit(t, o["by"] if o.get("by") != null else u, false, fatal, w["k"] == "flak" and jt(t.get("isSq")) and not jt(u.get("isSq")))
 	return true
 func ramInfo(u) -> Variant:
 	if u == null or jt(u.get("isSq")) or jt(u.get("braced")) or jt(u.get("dead")) or jt(u.get("rammed")) or (jt(u.get("crewMax")) and u["crew"] <= 0): return null
@@ -4401,7 +4402,7 @@ func killCauseOf(w, t) -> String:
 		for i in range(s.length()): h = JSM.to_i32(h * 31 + s.unicode_at(i))
 		if JSM.to_u32(h) % 10 < 3: return "dark"
 	return "blast"
-func killUnit(t, by, defer_tail: bool = false, fatal: Dictionary = {}) -> void:
+func killUnit(t, by, defer_tail: bool = false, fatal: Dictionary = {}, pd_craft := false) -> void:
 	lastLightCheck(t, true)   # issue 1653: a flagship that falls outright also lights Sinking Standard
 	if t != null and by != null and not jt(t.get("killedBy")):
 		if jt(by.get("isSq")):
@@ -4493,7 +4494,9 @@ func killUnit(t, by, defer_tail: bool = false, fatal: Dictionary = {}) -> void:
 			if x["id"] == by.get("parent") and not jt(x.get("dead")): p = x; break
 		if p != null and jt(p.get("fx")) and jt(p["fx"].get("feast")):
 			p["spare"] = z0(p.get("spare")) + 1; var h = JSM.jsround(p["maxHp"] * p["fx"]["feast"]); p["hp"] = min(p["maxHp"], p["hp"] + h); boonFx(p, "h_feast", "+" + ns(h) + " hull, +1 wing", -30)
-	emit({"t": "death", "unit": t["id"], "cause": t.get("killCause") if t.get("killCause") != null else "blast", "by": _uid(by)}); hook("death", t)
+	var death_event := {"t": "death", "unit": t["id"], "cause": t.get("killCause") if t.get("killCause") != null else "blast", "by": _uid(by)}
+	if pd_craft: death_event["pd_craft"] = true   # visual cue only, after Last Stand and other death guards
+	emit(death_event); hook("death", t)
 	var tail = func():
 		var cb = ownerFx(by).get("chainBoom") if (by != null and not jt(t.get("isSq")) and by["side"] != t["side"]) else 0
 		if jt(cb):

@@ -109,6 +109,67 @@ func _flak_pops(world: Node3D, fx) -> void:
 	_check(starts == [0, 45, 90, 135, 180], "all five point-defense pops are alive on cue: %s ms" % str(starts))
 
 
+func _defender_flak(world: Node3D, fx) -> void:
+	var toward := Vector3(85, 5, 18)
+	var body := Node3D.new()
+	world.add_child(body)
+	var part := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(24, 5, 8)
+	part.mesh = box
+	body.add_child(part)
+	var core := Marker3D.new()
+	core.name = "hp_core"
+	body.add_child(core)
+	fx.add_ship("escort", body, {"faction": "voidsworn", "cls": "Frigate", "meshes": [part], "shielded": false})
+	var defender = fx.ship("escort")
+	var muzzle := WEAP._pd_origin(defender, Vector3(-85, 0, 4))
+	_check(muzzle.is_finite(), "the firing ship gives PD a real surface point")
+	# A salvo's many visible rocket bodies must not each spawn a cue. The defender is not the target.
+	var shots := [false, false]
+	var opts := {"weapon_id": "htorp", "shots": shots, "pd": 2}
+	fx.volley_at(Vector3(-85, 0, 4), "torp", toward, opts)
+	_check(not fx.dstate.has("pd_puff_ends"), "an interception with no ship attributed adds no near-ship puffs")
+	opts["pd_ships"] = ["escort", "escort"]
+	fx.volley_at(Vector3(-85, 0, 4), "torp", toward, opts)
+	var ends: Array = fx.dstate.get("pd_puff_ends", [])
+	_check(ends.size() == 3, "two intercepted rocket groups make only one three-puff cue at their defender")
+	var seen := 0
+	var near := true
+	for i in 150:
+		fx.step(0.02)
+		for node in world.find_children("*", "MeshInstance3D", true, false):
+			if node.get_meta("fx_picture_kind", "") != "cool" or node.has_meta("seen_2249"):
+				continue
+			var mat := node.material_override as ShaderMaterial
+			if not is_equal_approx(float(mat.get_shader_parameter("lifetime")), WEAP.PD_PUFF_LIFE):
+				continue
+			node.set_meta("seen_2249", true)
+			seen += 1
+			near = near and node.global_position.distance_to(muzzle) < 8.0
+		if seen >= 3:
+			break
+	_check(seen == 3 and near, "the PD-C puffs appear at the firing ship, away from the incoming target (%d seen, near: %s)" % [seen, near])
+	fx.step(WEAP.PD_PUFF_LIFE + 0.2)
+	var stress_start: float = fx.now
+	var rng_before: int = fx.rng.state
+	for i in 30:
+		fx.pd_flak("escort", toward)
+	_check(fx.rng.state == rng_before, "extra puffs leave the seeded paths of later rounds alone")
+	fx.step(0.1)
+	var live := 0
+	for node in world.find_children("*", "MeshInstance3D", true, false):
+		if node.get_meta("fx_picture_kind", "") != "cool":
+			continue
+		var mat := node.material_override as ShaderMaterial
+		if is_equal_approx(float(mat.get_shader_parameter("lifetime")), WEAP.PD_PUFF_LIFE) and float(mat.get_shader_parameter("born")) >= stress_start - 0.001:
+			live += 1
+	_check(ends.size() == 12 and live == 12, "overlapping point-defence cues cap live and pending puffs at twelve")
+	fx.step(WEAP.PD_PUFF_LIFE + 0.2)
+	fx.pd_flak("escort", toward)
+	_check(ends.size() == 3, "the cap gives the slots back after the puffs expire")
+
+
 func _quality_downgrade() -> void:
 	var env := Environment.new()
 	# Enable the old Max SSIL option so the downgrade must turn off both passes.
@@ -142,6 +203,7 @@ func _run() -> void:
 	_damage_emitters(world, fx)
 	_wreck_materials(world)
 	_flak_pops(world, fx)
+	_defender_flak(world, fx)
 	_quality_downgrade()
 	world.free()
 	_shader_cache()

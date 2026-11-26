@@ -13,6 +13,8 @@
     {"ruling": "R392", "what": "a torpedo stopped by point defence is shot down short of the hull and tumbles away (PD-C; torpedoes played, rockets not)", "probe": "pd_shot_down", "want": "marked true, shot down true, body turns true"}
   ],
   "covered": [
+    {"ruling": "issue 2249 / R392", "what": "point defence adds capped PD-C puffs at the ship that fired", "check": "fx/test/graphics_correctness_check.gd"},
+    {"ruling": "issue 2249", "what": "an idle strike craft wing with no target orbits its carrier on the wing band", "check": "scenes/battle/test/movement_stage2_check.gd"},
     {"ruling": "R392 R362", "what": "kit-built torpedo bodies VT-A (Sunward) and KR-B (Hullbreaker rockets) with the hull finish", "check": "fx/test/munition_body_check.gd"},
     {"ruling": "issue 1235", "what": "damaged ships look damaged from the first hit (first-hit scars, stage 4 holes, LOD)", "check": "fx/test/first_hit_scars_check.gd",
       "merged": "PR 1245, 2533b90e", "proof": "PC run FIRSTHIT PASS; sheets in project files board/1235/sheets"},

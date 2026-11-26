@@ -1583,6 +1583,15 @@ func _sync(v: Dictionary) -> void:
 			var want: Vector3 = board.hex_world(u["q"], u["r"])
 			if Vector2(sv.position.x - want.x, sv.position.z - want.z).length() > 0.5 or absf(angle_difference(sv.cur_yaw, ShipView.yaw_of(u["facing"]))) > 0.05:
 				sv.snap_to(want, ShipView.yaw_of(u["facing"]))
+	# Link after all views exist, including wings restored from a round snapshot.
+	for u in V["units"]:
+		if not bool(u["squadron"]):
+			continue
+		var wing: ShipView = views[u["id"]]
+		var carrier: Dictionary = VU.get(u.get("wing_parent", ""), {})
+		wing.guard_carrier = views.get(carrier.get("id")) if carrier.get("side") == u["side"] and not bool(carrier.get("dead", false)) else null
+		var wing_target: Dictionary = VU.get(u.get("wing_target", ""), {})
+		wing.guard_has_target = not wing_target.is_empty() and not bool(wing_target.get("dead", false))
 
 
 # ---------------------------------------------------------------- the player loop: play batches, let the enemy think
@@ -3180,7 +3189,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		for h in hits:
 			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"],
 				"shieldFraction": h.get("shieldFraction", -1.0)})
-		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0)),
+		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0)), "pd_ships": e.get("pd_ships", []),
 			"break_k": int(land["break_k"]) if not (land["downs"] as Array).is_empty() else -1})
 		land["pts"] = r.get("hit_pts", [])   # issue 1239: each hit's shield point, so the failure aims at the breaking shot
 		# issue 1211: lance and torpedo cues on the effect's own fire times, on the effect clock (they played at 0 before)
@@ -3743,6 +3752,8 @@ func _play_death(e: Dictionary, batch_view := {}) -> void:
 	if gfx != null and gfx.has_method("death"):
 		if "kill_slowmo" in gfx:
 			gfx.kill_slowmo = not reduce_motion
+		if bool(e.get("pd_craft", false)):
+			gfx.pd_flak(str(e["by"]), sv.hull.global_position if is_instance_valid(sv.hull) else sv.global_position)
 		var t: float = float(gfx.death(str(id), cause))
 		var unit: Dictionary = VU.get(id, {})
 		if not skip and (float(unit.get("size", 0.0)) > 0.8 or bool(unit.get("flagship", false))) and cause not in ["dark", "hulk", "board"]:
