@@ -30,6 +30,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const WING := preload("res://render/squadron_wing.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
+const THORN := preload("res://fx/fx_acid_thorn.gd")   # issue 1877: Acid Thorns, the Chorus close-in weapon
 const SPECIAL := preload("res://fx/fx_special.gd")
 
 const LOOK_BY_ID := {

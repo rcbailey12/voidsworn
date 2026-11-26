@@ -2208,7 +2208,8 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var box = BoxMesh.new()
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
-		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(DEATH.SLAG, 0)]
+		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), pools["nlance"].mi.material_override,
+		mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(SH.RCS_JET, 1), mat(DEATH.SLAG, 0)]
 	mats.append(mat(SPECIAL.GHOST, -2))
 	# Warm the PBR fallbacks for late arrivals and generated pieces as well as the
 	# actual hull formats below. Glasswright sails blend, and nebula hulls ignore fog.

@@ -271,10 +271,11 @@ static func flash_sprite_floor(kind: int, px: float) -> float:
 
 const WEAPON_MASKS := preload("res://render/weapon_layer_masks.gd")
 const ROCKET_SMOKE := 37
+const SPR_NOVA_LEGACY := 40
 const SPRITE := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + WEAPON_MASKS.SPRITE + """
+""" + COMMON + WEAPON_MASKS.SPRITE + ("\nconst int SPR_NOVA_LEGACY = %d;\n" % SPR_NOVA_LEGACY) + """
 uniform float gate = 1.0;
 uniform sampler2D kit_flake : filter_linear, repeat_disable;
 varying vec2 vUv;
@@ -396,7 +397,7 @@ void fragment() {
 	if (k == 0) {
 		float f = (1.0 - t) * (1.0 - t) * I;
 		add = vCol.rgb * exp(-r * r * 5.0) * f + vec3(exp(-r * r * 30.0)) * f * 0.8 + vCol.rgb * f * 0.5 * star;
-	} else if (k == 34) {
+	} else if (k == SPR_NOVA_LEGACY) {
 		// Temporary Nova default, equivalent to the legacy moving glow until the bench pick.
 		add = vCol.rgb * min(exp(-r * r * 4.0) * 0.7 + exp(-r * r * 24.0) * 0.6, 1.0) * I;
 	} else if (k == 24) {
@@ -761,13 +762,18 @@ void fragment() {
 # kinds: 0 smoke ring (alpha)   1 shockwave   2 soft pop ring (reduce-flashing replacement)   3 thin pale ring (gauss
 #        muzzle shock, sonic boom)   4 hex-cell ring (Hegemony shield shatter)   5 soft death front (camera-facing)
 const RING_DEATH_FRONT := 5
+const RING_RIFT_ARCH := 11
+const RING_RIFT_SCAN := 12
 const RING := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + ("\nconst int RING_DEATH_FRONT = %d;\n" % RING_DEATH_FRONT) + """
+""" + COMMON + ("\nconst int RING_DEATH_FRONT = %d;\nconst int RING_RIFT_ARCH = %d;\nconst int RING_RIFT_SCAN = %d;\n" % [RING_DEATH_FRONT, RING_RIFT_ARCH, RING_RIFT_SCAN]) + """
 varying vec2 vUv;
 varying vec4 vCol;
 varying vec4 vInfo;
+bool is_rift_ring(int k) {
+	return k >= 7 && k <= RING_RIFT_SCAN;
+}
 void vertex() {
 	vec4 a0 = CUSTOM0; vec4 a1 = CUSTOM1; vec4 a2 = CUSTOM2; vec4 a3 = CUSTOM3; vec4 a4 = vec4(UV, UV2);
 	float a = scene_t - a0.w;
@@ -796,8 +802,7 @@ void vertex() {
 		}
 		// F3: shock fronts, soft pops and pale shock rings keep at least 12 px across (1080 lines), dimming as they grow
 		float rb = 1.0;
-		int rk = int(a3.z + 0.5);
-		if ((rk >= 1 && rk <= 3) || (rk >= 5 && rk <= 10)) {
+		if ((rk >= 1 && rk <= 3) || is_rift_ring(rk)) {
 			// round 2: a4.w is this ring's own final size in pixels (kill shock rings, shield ripples): the floor grows with
 			// the ring's own easing (15% to 100% of it), so a far ring still visibly expands; grown to it, it dims as f^-0.5
 			float dv = max(-(VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).z, 0.01);
@@ -862,14 +867,21 @@ void fragment() {
 	} else if (k == 3) {
 		float d1 = (r - 0.93) / 0.03;
 		add = vCol.rgb * exp(-d1 * d1) * spow(1.0 - t, 2.0) * vCol.a;
-	} else if (k >= 5 && k <= 10) {
+	} else if (k == RING_DEATH_FRONT) {
+		float n = fbm(p * 4.5 + vec2(seed * 8.0, t * 1.8));
+		float ragged = (r - mix(0.77, 0.94, n)) / mix(0.07, 0.13, t);
+		float envelope = smoothstep(0.03, 0.38, t) * (1.0 - smoothstep(0.45, 1.0, t));
+		// A slow, bounded colour wash, not a second flash. Premultiplied so the front cannot go HDR.
+		alpha = min(0.18, exp(-ragged * ragged) * smoothstep(0.28, 0.70, n) * vCol.a * envelope);
+		base = clamp(vCol.rgb, 0.0, 1.0);
+	} else if (is_rift_ring(k)) {
 		// Shared rift/pulse edge: contour, soft membrane and a slow moving filament on the same plane.
 		float d = r;
 		float gaps = 1.0;
-		if (k == 5) {
+		if (k == RING_RIFT_ARCH) {
 			// Sunward's pointed double arch.
 			d = length(vec2(p.x * 1.45, p.y)) + 0.24 * abs(p.x);
-		} else if (k == 6) {
+		} else if (k == RING_RIFT_SCAN) {
 			// Meridian's interrupted six-sided scan.
 			float sector = mod(ang + 0.523599, 1.047198) - 0.523599;
 			d = r * cos(sector) * 1.16;

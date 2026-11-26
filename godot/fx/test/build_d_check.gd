@@ -2,6 +2,7 @@ extends SceneTree
 
 const FX := preload("res://fx/fx.gd")
 const SPECIAL := preload("res://fx/fx_special.gd")
+const SH := preload("res://fx/fx_shaders.gd")
 
 var fx: FX
 var bad := 0
@@ -68,7 +69,7 @@ func _nova() -> void:
 		_check(not fx.spr_kinds.has(26), style + " fire tail does not start before impact")
 		_step_to(at + 0.015)
 		if style.is_empty():
-			_check(warm.has(34) and not warm.has(12) and not fx.spr_kinds.has(26), "legacy Nova remains the live look")
+			_check(warm.has(SH.SPR_NOVA_LEGACY) and not warm.has(12) and not fx.spr_kinds.has(26), "legacy Nova remains the live look")
 		else:
 			_check(warm.has(12) and warm.has(14 if style == "ember_hammer" else 17), style + " has charge and its own shell")
 			_check(_count("stk") > sticks and _count("smk") > smoke and _count("rng") > rings + 3 and fx.spr_kinds.has(26),
@@ -146,7 +147,7 @@ func _pulses_and_bay() -> void:
 		_fixture(id, f, Vector3.ZERO)
 		var row: Dictionary = FX.FLOOK.of(f)
 		var shape: int = SPECIAL.RIFT_SHAPES.get(row.get("rift_shape"), -1)
-		_check(shape >= 0 and not seen.has(shape), str(f) + " has its own named shape")
+		_check(shape >= 0 and shape not in [SH.RING_DEATH_FRONT, SH.RING_HARMONIC] and not seen.has(shape), str(f) + " has its own named shape")
 		seen[shape] = true
 		var ring := _count("rng")
 		fx.ability(id)

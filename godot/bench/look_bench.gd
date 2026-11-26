@@ -678,6 +678,43 @@ func _hits(n: int, shield: bool, crit: bool) -> Array:
 	return h
 
 
+# The shared capture script runs on both revisions. New captures use the same camera poses as battle.
+# On the pinned earlier revision, reproduce its wide shot and its existing three-quarter kill hold.
+func _moment_cut(kind: String) -> void:
+	var pa: Vector3 = A.visual_position()
+	var pt: Vector3 = T.visual_position()
+	var is_kill := kind == "kill"
+	var capital: bool = float(T.L) >= 20.0
+	if cam.has_method("enter_cut"):
+		var pose: Dictionary
+		if is_kill:
+			pose = cam.impact_cut(pt, T.L, capital, [[pa, A.L]], false, T.cur_yaw)
+		else:
+			pose = cam.shot_cut(kind, pa, pt, A.L, T.L, false)
+		cam.enter_cut(pose, is_kill)
+		return
+	var cur: float = cam.a
+	if is_kill:
+		var best := INF
+		for q in [PI / 4.0, 3.0 * PI / 4.0, -PI / 4.0, -3.0 * PI / 4.0]:
+			var d := angle_difference(cur, float(T.cur_yaw) + float(q))
+			if absf(d) < best:
+				best = absf(d)
+				cam.a = cur + d
+		cam.b = 1.12
+		cam.r = clampf(maxf(float(T.L), 6.0) / ((1.0 if capital else 0.85) * 2.0 * tan(deg_to_rad(cam.fov) * 0.5)), cam.min_r, 200.0)
+		cam.t = pt
+		cam.slow_until = cam._clock + 1.2
+		return
+	var base := atan2(-(pt.z - pa.z), pt.x - pa.x)
+	var left := angle_difference(cur, base + PI / 2.0)
+	var right := angle_difference(cur, base - PI / 2.0)
+	cam.a = cur + (left if absf(left) < absf(right) else right)
+	cam.b = 1.02
+	cam.r = clampf(Vector2(pt.x - pa.x, pt.z - pa.z).length() * 1.25 + 34.0, 60.0, 200.0)
+	cam.t = (pa + pt) * 0.5
+
+
 # The effect-only replay of the battle events. The bench runs on both revisions, so the before frames use
 # the actual old FX methods or the old battle cue, not a look-alike built on the new kit.
 func _build_d(row: Dictionary, event: String) -> void:
@@ -769,7 +806,9 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		return false
 	# issue 370: a row may place the target ("tgt_at": [x, z]), for a broadside or a shot from behind
 	var tat: Array = row.get("tgt_at", [34, 0])
-	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), int(row.get("tgt_facing", 2)))
+	# Only the target of a death row can die. Hull and shader warm-up still runs for every ship.
+	var fatal := str(row.get("fatal", ""))
+	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), int(row.get("tgt_facing", 2)), "", row.get("do") == "death" or fatal != "")
 	if T == null:
 		return false
 	if row.has("shield_left"):
@@ -1055,8 +1094,18 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 					"blink_end": shot_focus = event_target + Vector3(-24.0, 0.0, -7.0)
 				_cam(shot_focus, r)
 				await RenderingServer.frame_post_draw
-			var img: Image = _grab() if not headless else null
-			if img != null:
+			var img := _grab() if keep and not headless else null
+			if clip:
+				if keep:
+					var fp := clip_dir.path_join("f%03d.png" % ci)
+					if img == null:
+						clip_bad.append("f%03d.png (no frame grabbed)" % ci)
+					else:
+						var se: Error = preload("res://tools/picture_provenance.gd").save_png(_crop(img, crop, cell), fp,
+							preload("res://tools/picture_provenance.gd").capture_stage(), true)
+						if se != OK:
+							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
+			elif img != null:
 				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
 			elif strict and keep:
 				clip_bad.append("cell %d (no frame grabbed)" % ci)
@@ -1082,9 +1131,33 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	if row.has("expect_code") and tcode != str(row["expect_code"]):
 		_warn("%s: target drew %s, the row expects %s" % [id, tcode, str(row["expect_code"])])
 		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
+		if strict:
+			return _fail_moment(id, r, "target drew %s, expected %s" % [tcode, str(row["expect_code"])])
 	if row.has("expect_att_code") and str(A.code) != str(row["expect_att_code"]):
 		_warn("%s: attacker drew %s, the row expects %s" % [id, str(A.code), str(row["expect_att_code"])])
 		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, str(A.code), str(row["expect_att_code"])])
+		if strict:
+			return _fail_moment(id, r, "attacker drew %s, expected %s" % [acode, str(row["expect_att_code"])])
+	if clip:
+		# Every numbered frame must be on disk, and a stale frame cannot cover a failed read or save this run.
+		for fi in total:
+			var fn := "f%03d.png" % fi
+			if not FileAccess.file_exists(clip_dir.path_join(fn)) and not clip_bad.any(func(b): return str(b).begins_with(fn)):
+				clip_bad.append(fn + " (missing)")
+		if ci != total or not clip_bad.is_empty():
+			return _fail_moment(id, r, "clip row failed: %d of %d frames taken; bad: %s" % [ci, total, ", ".join(clip_bad)])
+		report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/%s__c%d/" % [id, int(r)],
+			"cells": cells, "impacts": impacts, "clip": true})
+		_log("%s at %d: %d clip frames" % [id, int(r), ci])
+		return true
+	var name := "%s__c%d.png" % [id, int(r)]
+	if strict and (ci != total or not clip_bad.is_empty()):
+		return _fail_moment(id, r, "strict row failed: %d of %d cells taken; bad: %s" % [ci, total, ", ".join(clip_bad)])
+	if not headless:
+		var picture := preload("res://tools/picture_provenance.gd")
+		var saved := preload("res://tools/picture_provenance.gd").save_png(strip, d.path_join(name), picture.capture_stage(), true)
+		if strict and (saved != OK or not FileAccess.file_exists(d.path_join(name))):
+			return _fail_moment(id, r, "strict row failed: %s (save error %d)" % [name, saved])
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
 		"impacts": impacts, "code": tcode, "attacker_code": acode})
 	if not _wound.is_empty():

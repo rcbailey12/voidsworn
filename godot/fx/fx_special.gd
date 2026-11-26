@@ -2,11 +2,12 @@ extends RefCounted
 # Build D: the FX clock owns charge, rift and pulse layers. Callers still own rules positions and damage.
 
 const LOOK := preload("res://fx/faction_look.gd")
+const SH := preload("res://fx/fx_shaders.gd")
 const BAKE := preload("res://fx/fx_death.gd")
 const NOVA_CHARGE := 0.50
 const NOVA_FLIGHT := 0.35
 const NOVA_STYLES := ["ember_hammer", "crown_lance"]
-const RIFT_SHAPES := {"arch": 5, "scan": 6, "vent": 7, "bloom": 8, "facet": 9, "fold": 10}
+const RIFT_SHAPES := {"arch": SH.RING_RIFT_ARCH, "scan": SH.RING_RIFT_SCAN, "vent": 7, "bloom": 8, "facet": 9, "fold": 10}
 const GHOST := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, shadows_disabled, fog_disabled;
@@ -37,7 +38,7 @@ static func nova(fx, ship, target: Vector3, pace: float, style: String) -> float
 		var shell := Color(1.0, 0.8, 0.5) if ship.faction == "voidsworn" else LOOK.weapon(ship.faction)
 		var blast := Color(1.0, 0.7, 0.4) if ship.faction == "voidsworn" else shell
 		ship.legacy_pulse(fx)
-		fx.spr(legacy_from, fire, flight, shell, 4.0, 6.6, 6.6, 34, (target - legacy_from) / flight)
+		fx.spr(legacy_from, fire, flight, shell, 4.0, 6.6, 6.6, SH.SPR_NOVA_LEGACY, (target - legacy_from) / flight)
 		fx.later(impact, func nova_legacy_land() -> void:
 			fx.pop(target, impact, blast, 30.0, 3.0, Vector3.UP, 0.4)
 			fx.light(target, impact, 0.8, 2.0, blast))
