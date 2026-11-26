@@ -224,6 +224,12 @@ func _nova() -> void:
 	var b := _battle(api)
 	_sync(b)
 	b.sel = me["id"]
+	var order_tip := ""
+	for order in b._panel_info().get("orders", []):
+		if order.get("ability") == "nova":
+			order_tip = str(order.get("tip", ""))
+	_check("hover a marked hex" in order_tip and "friendly fire" in order_tip and not ("40 damage" in order_tip or "20 to adjacent" in order_tip),
+		"NOVA-1 the order hover sends players to the live damage and friendly-fire forecast")
 	b._on_action("ability", null)
 	var hs := b._ability_hexes()
 	_check(b.mode == "nova" and not hs.is_empty(), "NOVA-1 fixture: nova aim mode with target hexes")

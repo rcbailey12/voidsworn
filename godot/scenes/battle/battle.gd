@@ -6933,7 +6933,7 @@ const ABILITY_ORDER_HINTS := {
 	"reload": "Use after launching torpedoes to ready the tubes again immediately.",
 	"focus": "Use before a volley to deal 30% more weapon damage this turn.",
 	"surge": "Use after taking shield damage to refill all shield charge.",
-	"nova": "Use against grouped enemies: pick a hex 3 to 9 ahead for 40 damage, 20 to adjacent ships, including yours.",
+	"nova": "Use against grouped enemies: hover a marked hex 3 to 9 ahead to see damage and friendly fire.",
 	"ionpulse": "Use near shielded enemies: every enemy ship within 4 hexes loses half its shield charge.",
 	"overburn": "Use to close the gap or set up a ram: gain 3 movement and hit 50% harder with a ram this turn.",
 	"frenzy": "Use before firing on exposed hull: deal 20% more damage and heal 30% of hull damage dealt, up to 12% hull per round.",
