@@ -11,6 +11,7 @@ rem Settings a job may set first (all optional):
 rem   LB_HOME      the bench folder (default Downloads\voidsworn_test\look_bench)
 rem   LB_TOOL_REF  where the bench script itself comes from (default origin/main): the bench runs from that version on
 rem                every commit, so commits made before the bench existed can be benched too
+rem   LB_MOMENTS   rows file for a moments-only run, overriding LB_ARGS when set
 rem   LB_ARGS      extra bench words, e.g. --part moments --moments res://bench/look_moments_acid_thorn.json (issue 1877)
 rem   LB_MOMENTS   full path to a rows file, runs only those moments on both revisions (overrides LB_ARGS)
 rem   LB_SHIPS     a godot folder that has the PC-built hulls (gen, assets\ships, .godot) to copy from (copy only)
@@ -21,6 +22,7 @@ rem Issue 1194: every step runs through job_wrap.bat (the installed main watchdo
 rem PC_GPU_ISSUE, default look_bench). Godot and a Python with Pillow are checked before any clone; a failed step stops it.
 rem LB_HOME\done.txt says PASS or FAILED: <steps> and the exit code is 0 only on PASS.
 setlocal enabledelayedexpansion
+if defined LB_MOMENTS set LB_ARGS=--part moments --moments "%LB_MOMENTS%"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 if "%LB_HOME%"=="" set "LB_HOME=%VT%\look_bench"
 if "%LB_TOOL_REF%"=="" set "LB_TOOL_REF=origin/main"

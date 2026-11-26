@@ -1717,11 +1717,11 @@ static func apply(fx, s, job: Dictionary) -> void:
 		mo.mesh = skin
 		var m2: ShaderMaterial = fx.mat(SH.MARK, 1)
 		var wc: Color = s.fac.get("weapon", Color(1, 0.6, 0.3))
+		var acid: Color = s.acid_colour()
 		m2.set_shader_parameter("wound_kind", int(s.fac.get("wound_kind", 0)))
 		m2.set_shader_parameter("glow", Vector3(glow.r, glow.g, glow.b))
 		m2.set_shader_parameter("weapon", Vector3(wc.r, wc.g, wc.b))
-		if v2k >= 0:
-			set_v2_look(m2, wv)
+		m2.set_shader_parameter("acid_tint", Vector3(acid.r, acid.g, acid.b))
 		mo.material_override = m2
 		mo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		s._dmg_root.add_child(mo)

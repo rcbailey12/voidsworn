@@ -354,11 +354,8 @@ void process() {
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
-#  40 directional hull-rupture vent jet (VENT_JET: tapered hot root + sheared gas cone)
-#  41 legacy Nova Cannon shell (SPR_NOVA_LEGACY)
-const TICK_EMBER := 38
-const TICK_DROPLET := 39
-const VENT_JET := 40
+#  29 wet, non-emissive bio contact glob tinted to match the impact
+const BIO_CONTACT_GLOB := 29
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
 
@@ -395,6 +392,8 @@ void vertex() {
 	} else {
 		float t = age / life;
 		int k = int(a3.z + 0.5);
+		bool wet_drop = k == 29;
+		if (wet_drop) { k = 15; } // share the flight glob's motion, not its bright pixel floor
 		float g = t;
 		if (k == 1 || k == 20 || k == 25 || k == 26) { g = 1.0 - spow(1.0 - t, 2.2); }
 		else if (k == 2 || k == 5 || k == 18) { g = sqrt(t); }
@@ -435,6 +434,7 @@ void vertex() {
 		else if (k == 22) { flo = 6.0; }
 		else if (k == 19 || k == 21 || k == 38) { flo = 4.5; }
 		else if (k == 4 || k == 11) { flo = 3.0; }
+		if (wet_drop) { flo = 3.0; }
 		bool own = fpx > flo;
 		bool glob = k == 15 || k == 39; // Bio globs and acid droplets have the same vertex motion and floor response.
 		flo = max(flo, fpx);
@@ -448,7 +448,7 @@ void vertex() {
 				// must land) dims only as f^-0.5, so a far hit is a big bright flash, not a big faint one.
 				float dimx = (k == 0 || k == 2 || k == 5 || k == 13 || k == 14 || k == 16 || k == 17) ? -1.0 : -1.2;
 				if (own) { dimx = -0.5; }
-				boost = (glob || k == 23) ? 1.0 : clamp(spow(gf, dimx), 0.03, 1.0);
+				boost = ((k == 15 && !wet_drop) || k == 23) ? 1.0 : clamp(spow(gf, dimx), 0.03, 1.0);
 				size = mn;
 			}
 		}
@@ -581,15 +581,20 @@ void fragment() {
 		float corona = exp(-r * r * 2.2) * (0.55 + 0.6 * n2) * smoothstep(1.0, 0.6, r + (n2 - 0.5) * 0.4);
 		vec3 hot = mix(vCol.rgb, vec3(0.88, 0.96, 1.0), core * core * 0.6);
 		add = (hot * core * 1.8 + vCol.rgb * corona * 1.1) * I;
-	} else if (k == 15 || k == 39) {
-		// bio glob: a wet, dark-skinned body with a bioluminescent heart and a wobbling rim
+	} else if (k == 15 || k == 29) {
+		// Both globs wobble, but only the flying glob has a bioluminescent heart.
 		float n = fbm(p * 2.0 + vec2(seed * 5.0, age * 2.0));
 		float body = smoothstep(0.85, 0.55, r + (n - 0.5) * 0.45);
 		float heart = exp(-r * r * 6.0) * (0.6 + 0.4 * sin(age * 11.0 + seed * 9.0));
 		float rim = smoothstep(0.45, 0.8, r + (n - 0.5) * 0.3) * body;
-		alpha = body * I * 0.9;
-		base = (k == 39 ? vCol.rgb * 0.075 : vec3(0.05, 0.06, 0.03)) * (0.6 + n);
-		add = vCol.rgb * (heart * 1.8 + rim * 0.6) * I;
+		if (k == 29) {
+			alpha = body * I * (1.0 - smoothstep(0.15, 1.0, t));
+			base = vCol.rgb * (0.65 + n * 0.35 + rim * 0.22);
+		} else {
+			alpha = body * I * 0.9;
+			base = vec3(0.05, 0.06, 0.03) * (0.6 + n);
+			add = vCol.rgb * (heart * 1.8 + rim * 0.6) * I;
+		}
 	} else if (k == 16) {
 		// A filled tumbling chip, with broad facets rather than thin cross arms.
 		vec3 facet = texture(kit_flake, p * 0.5 + 0.5).rgb;
@@ -2592,47 +2597,7 @@ vec2 ionTree(vec2 q, float seed) {
 uniform int wound_kind = 0;
 uniform vec3 glow = vec3(1.0, 0.45, 0.12);
 uniform vec3 weapon = vec3(1.0, 0.6, 0.3);
-uniform int wound_v2 = -1;   // R416 Wounds V2 faction kind (0 Sunward .. 5 Eclipse); -1 off (the old look)
-uniform vec3 v2_scorch_col = vec3(0.1);
-uniform vec3 v2_rim_metal = vec3(0.6);
-uniform vec3 v2_interior_lift = vec3(0.3);
-uniform vec3 v2_interior_accent = vec3(1.0, 0.5, 0.15);
-uniform float v2_rough = 0.6;
-uniform float v2_soot = 1.0;
-uniform float v2_wreck_soot = 0.3;
-uniform vec3 eclipse_core;
-uniform vec3 eclipse_sheath;
-// Straight-edged cells (Voronoi): x the distance to the nearest cell edge in cells, y the cell's own random value.
-vec2 v2cells(vec2 p) {
-	vec2 g = floor(p);
-	vec2 f = fract(p);
-	float d1 = 8.0, d2 = 8.0;
-	float id = 0.0;
-	for (int j = -1; j <= 1; j++) {
-		for (int i = -1; i <= 1; i++) {
-			vec2 o = vec2(float(i), float(j));
-			vec2 c = o + vec2(h21(g + o), h21(g + o + 17.3)) - f;
-			float d = dot(c, c);
-			if (d < d1) { d2 = d1; d1 = d; id = h21(g + o + 5.1); } else if (d < d2) { d2 = d; }
-		}
-	}
-	return vec2(sqrt(d2) - sqrt(d1), id);
-}
-// Straight radial cracks from the strike point: n of them, each a straight line (no sine waves).
-float v2rays(vec2 q, float n, float seed, float w) {
-	float best = 1.0;
-	for (int i = 0; i < 9; i++) {
-		if (float(i) >= n) { break; }
-		float an = (float(i) + h21(vec2(float(i), seed)) * 0.7) * 6.2831853 / n;
-		vec2 dir = vec2(cos(an), sin(an));
-		float along = dot(q, dir);
-		float len = 0.7 + 0.9 * h21(vec2(seed, float(i) + 3.0));
-		float side = abs(dot(q, vec2(-dir.y, dir.x)));
-		float on = step(0.0, along) * (1.0 - smoothstep(len * 0.8, len, along));
-		best = min(best, mix(1.0, side / w, on));
-	}
-	return 1.0 - smoothstep(0.4, 1.0, best);
-}
+uniform vec3 acid_tint = vec3(0.09, 0.08, 0.06);
 varying vec3 vL;
 varying vec4 vA;
 varying vec4 vB;
@@ -2709,15 +2674,10 @@ void fragment() {
 		float bub = smoothstep(0.72, 0.9, vnoise(q / R * 14.0 + vec2(scene_t * 0.7, -scene_t * 0.5) + seed)) * exp(-age / 8.0);
 		float fall = 1.0 - smoothstep(0.55, 1.3, ue + (n1 - 0.5) * 0.4);
 		float wet = exp(-age / 9.0);
-		// issue 1877 (Ryan, Nov 24: the flat lime slab "looks a bit cheesy"): an etched burn, not a glowing patch. Dark
-		// eaten pits in a crazed, ochre-brown corroded skin; only the wet rims of fresh pits keep a faint bile glow, and
-		// that is gone in a few seconds
-		float craze = 1.0 - smoothstep(0.0, 0.06, abs(fbm(q / R * 9.0 + seed * 1.3) - 0.5));
-		float rimp = smoothstep(0.5, 0.6, etch) * (1.0 - pits);
-		a = fall * (0.55 + 0.45 * max(pits, craze * 0.8));
-		alb = mix(vec3(0.034, 0.027, 0.012), vec3(0.004, 0.0035, 0.002), max(pits, craze * 0.7));
-		rough = mix(0.85, 0.35, wet * smoothstep(1.0, 0.4, ue) * pits);
-		em = vec3(0.42, 0.46, 0.08) * (rimp * 0.35 + bub * 0.3) * fall * exp(-age / 2.5);
+		a = fall * (0.5 + 0.5 * pits);
+		alb = acid_tint * mix(0.65, 0.14, pits);
+		rough = mix(0.8, 0.25, wet * smoothstep(1.0, 0.4, ue));
+		em = acid_tint * (pits * 0.25 + bub * 1.2) * fall * mix(0.15, 1.0, exp(-age / 6.0));
 	} else if (style == 9) {
 		// ion: a branching electrical burn; fresh, arcs crawl it blue-white, then it sets as a dark etched fern
 #if CURRENT_RENDERER == RENDERER_COMPATIBILITY
@@ -2843,7 +2803,7 @@ void fragment() {
 	}
 	// The halo (r4 review): every mark carries a wide, broken field in its own signature so it reads from the battle
 	// camera, 170 units away, where the mark's own detail is a few pixels: soot round shells, torpedo holes and lance
-	// cuts; dark blue glass freckles round plasma; a grey rash round flak; green-black etch round acid; a blue-black
+	// cuts; dark blue glass freckles round plasma; a grey rash round flak; dark etch round acid; a blue-black
 	// scorched fern field round ion burns; bright scraped metal round a ram; a pale spalled field round a gauss exit.
 	float H = vH;
 	float hs = 0.0;   // the halo's share of this pixel (soot is matte: no metal, little specular; r13)
@@ -2898,10 +2858,10 @@ void fragment() {
 			hem += vec3(1.0, 0.42, 0.1) * cdot * step(0.78, cv) * (0.3 * exp(-age / 300.0) + 0.9 * live);
 		} else if (style == 8) {
 			float pit = smoothstep(0.58, 0.72, hn);
-			hc = mix(vec3(0.026, 0.021, 0.01), vec3(0.005, 0.004, 0.002), pit);
-			hr = mix(0.9, 0.4, exp(-age / 9.0) * pit);
-			hem = vec3(0.42, 0.46, 0.08) * pit * 0.12 * exp(-age / 2.5);
-			// r18 (Muse audit B4.3): the signature is a green stain with drips running off it, down the hull side (or
+			hc = acid_tint * mix(0.42, 0.09, pit);
+			hr = mix(0.85, 0.3, exp(-age / 9.0) * pit);
+			hem = acid_tint * pit * (0.04 + 0.4 * exp(-age / 6.0));
+			// r18 (Muse audit B4.3): the signature is a stain with drips running off it, down the hull side (or
 			// aft along a deck), long enough to read as streaks from the battle camera
 			vec3 dn = vec3(0.0, -1.0, 0.0);
 			vec2 gd = vec2(dot(dn, t1), dot(dn, t2));
@@ -2913,10 +2873,9 @@ void fragment() {
 			float drip = smoothstep(0.55, 0.75, lane) * smoothstep(-0.05, 0.1, along) * (1.0 - smoothstep(0.35 + 0.6 * lane, 1.1, along)) * (1.0 - smoothstep(0.3, 0.55, abs(acr)));
 			float stain = 1.0 - smoothstep(0.12, 0.42, length(hq) + (hn - 0.5) * 0.25);
 			float ac2 = max(drip, stain);
-			// issue 1877: the stain and drips are dark corroded runs, not a lasting lime glow
-			hc = mix(hc, vec3(0.012, 0.009, 0.004), ac2 * 0.85);
+			hc = mix(hc, acid_tint * 0.35, ac2 * 0.85);
 			ha = max(ha, max(drip * 0.9, stain));
-			hem += vec3(0.42, 0.46, 0.08) * drip * 0.15 * exp(-age / 2.5);
+			hem += acid_tint * (drip * 0.6 + stain * 0.45) * (0.28 * exp(-age / 300.0) + 0.6 * exp(-age / 6.0));
 		} else if (style == 9) {
 			hc = vec3(0.012, 0.015, 0.03);
 			hem = vec3(0.3, 0.5, 1.0) * smoothstep(0.62, 0.8, hn) * (0.03 + 0.5 * live);
@@ -2968,7 +2927,7 @@ void fragment() {
 		float sk = 1.0;
 		if (style == 1) { sc = vec3(1.0, 0.48, 0.14); scl = 5.0; }
 		else if (style == 3) { sc = vec3(0.35, 0.65, 1.0); scl = 6.0; }
-		else if (style == 8) { sc = vec3(0.42, 0.46, 0.08); scl = 2.5; sk = 0.45; }
+		else if (style == 8) { sc = acid_tint; scl = 8.0; sk = 1.3; }
 		else if (style == 9) { sc = vec3(0.45, 0.65, 1.0); scl = 6.0; sk = 1.3; }
 		else if (style == 7) { sk = 1.0; scl = 6.0; }
 		else if (style == 6 || style == 11) { scl = 9.0; sk = 1.2; }

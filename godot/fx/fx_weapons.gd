@@ -114,7 +114,7 @@ const DEBRIS_LIFE := Vector2(3.5, 6.0)     # torn plates tumble and drift well p
 const GAS_LIFE := Vector2(2.0, 2.6)        # compact soot clears quickly
 const EMBER_LIFE := Vector2(3.5, 7.0)      # cooling coals, no flicker
 # How long the hot spot on the plate glows and cools before the mark (fx_breach) is all that is left, by family.
-const HEAT_LIFE := {"energy": 1.5, "shell": 2.5, "lance": 3.0, "torp": 4.0, "bio": 2.0}
+const HEAT_LIFE := {"energy": 1.5, "shell": 2.5, "lance": 3.0, "torp": 4.0}
 const FLAME_CAP := 0.70                    # owner ruling: no flame lives longer (deaths_and_hits.md rule 2)
 # How far a torpedo hit's light carries (world units; hexes are 17.3 across): about two hexes, so the hulls near it are
 # lit for the length of the flash (audit item 11).
@@ -876,7 +876,7 @@ static func _old_look(fx) -> bool:
 # keeps a bright forward flash and a few sparks with almost no ball, and a hull hit is a tight jet on the surface normal.
 # w is the weapon weight (1 light, 2 medium, 3 heavy), kept so the muzzle callers pass one shape.
 static func _vent(fx, p: Vector3, axis: Vector3, T: float, size: float, life: float, col: Color, strength := 0.8,
-		velocity := Vector3.ZERO, opacity := 0.55, aspect := 1.0, w := 2, src = null, hull_contact := false, with_sparks := true) -> void:
+		velocity := Vector3.ZERO, opacity := 0.55, aspect := 1.0, w := 2, src = null, sparks := true) -> void:
 	fx.record_spawn(src, p, true)
 	if String(fx.vent_look) == "today":
 		_burst(fx, p, axis, T, size, "vent", life, col, strength, 0.0, velocity, opacity, aspect)
@@ -890,9 +890,8 @@ static func _vent(fx, p: Vector3, axis: Vector3, T: float, size: float, life: fl
 		_burst(fx, p + axis * reach * u, axis, T + u * 0.02, size * (0.06 + 0.27 * taper), "vent",
 			life * (0.45 + 0.20 * u), col, strength * (0.80 - 0.25 * u), 0.0, velocity * (1.0 + 0.5 * u),
 			opacity * (0.45 - 0.25 * u), 2.0 + u * 2.0)
-	if with_sparks:
-		_impact_sparks(fx, p, axis, T + 0.02, size * 0.35, _spark_faction(src), 10, 18.0,
-			fx.SparkRole.HULL if hull_contact else fx.SparkRole.WEAPON)
+	if sparks:
+		_impact_sparks(fx, p, axis, T + 0.02, size * 0.35, col, 10, 18.0)
 
 
 # Without a ship (for example a bench world-point impact), use the default faction palette.
@@ -2211,14 +2210,14 @@ static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 # R303: compact soot peels away from the blast. It never grows into a long-lived pale cloud.
 # Chorus fumes keep kind 20; physical smoke uses the unlit, torn kind 27.
 static func _gas_cloud(fx, p: Vector3, n: Vector3, T: float, k: float, col: Color, count: int, size: float, fam: String,
-		alpha := 0.3, kind := 7, axis := Vector3.ZERO) -> void:
+		alpha := 0.3, kind := 7, axis := Vector3.ZERO, lifetime := GAS_LIFE) -> void:
 	if fx.quality == "low":
 		return
 	var aim: Vector3 = n if axis.length_squared() < 0.01 else _outward(n, axis)
 	for j in _amount(fx, count + 1):
 		var d := _outward(n, fx.rcone(aim, 0.65), 0.2)
 		var v: Vector3 = d * fx.rng.randf_range(1.8, 4.2) * k * fx.unit
-		var life: float = fx.rng.randf_range(GAS_LIFE.x, GAS_LIFE.y)
+		var life: float = fx.rng.randf_range(lifetime.x, lifetime.y)
 		var s0: float = size * k * fx.rng.randf_range(0.6, 1.0)
 		var organic: bool = kind == 20
 		var soot: Color = col if organic else col * 0.20
@@ -2311,7 +2310,7 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 			Tg.hit_react(fx, imp, lhp, ldr, "shield" if absorbed and not breaking else "hull")
 			Tg.hit_power(fx, felt and (hull_damage or breaking or crit or ion), dip, duration))
 		if bio and not shield_only:
-			# R398 (issue 1394): where acid ate into the hull, so an acid kill glows green only there
+			# R398 (issue 1394): remember where acid ate into the hull so an acid kill glows only there.
 			var normal: Vector3 = tg.get("ln", Vector3.UP)
 			fx.later(T, func l_acid_spot() -> void:
 				var sp: Array = Tg.get_meta("acid_spots", [])
@@ -2342,7 +2341,7 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 	if beam:
 		_beam_burn(fx, lk, Tg, tg, T, sustain, col, matter_k, w, dir)
 	elif bio:
-		_bio_splat(fx, Tg, tg, T, col, matter_k, lk == "tendril", w)
+		_bio_splat(fx, Tg, tg, T, matter_k, lk == "tendril", w)
 	elif lk == "gauss":
 		_gauss_punch(fx, Tg, tg, T, dir, col, matter_k, w)
 	elif torp:
@@ -2353,7 +2352,14 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		_energy_hit(fx, lk, w, Tg, tg, T, col, dir, matter_k)
 	else:
 		_shell_hit(fx, lk, w, Tg, tg, T, col, dir, matter_k)
-	if crit: _crit(fx, Tg, tg, T + CRIT_BEAT, k, col, w, not bio)
+	if crit:
+		if bio:
+			# Keep the critical beat without layering a generic hot impact over the wet splat.
+			fx.shake(T + CRIT_BEAT, 0.15, p)
+			fx.hit_pause(T + CRIT_BEAT, 2)
+			fx.punch(T + CRIT_BEAT, 0.006, p)
+		else:
+			_crit(fx, Tg, tg, T + CRIT_BEAT, k, col, w)
 
 
 # Issue 461, the shell row (macro, autocannon, scatter, strike craft guns, flak): a short white bite on the plate, then a
@@ -2644,23 +2650,27 @@ static func _ion_crawl(fx, Tg, p: Vector3, n: Vector3, T: float, col: Color, k: 
 	# one transient dip for an ion hit, so the two never multiply on the hull's lights.
 
 
-# The Chorus row: a dim pressure burst and drifting bile droplets (no metal fireball), and an acid fume that hangs over
-# the wound for a few seconds while the acid keeps eating (fx_breach style 8).
-static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, lash: bool, w := 2) -> void:
+# Flight keeps the weapon colour. On contact, use the struck hull's palette for the pressure puff and wet residue.
+# The short splat gives way to the local acid mark, never to molten metal (R398).
+static func _bio_splat(fx, Tg, tg: Dictionary, T: float, k: float, lash: bool, w := 2) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
+	var eclipse: bool = Tg != null and Tg.faction == "deathless"
+	var col: Color = Tg.acid_colour() if Tg != null else Color(0.1, 0.1, 0.1)
+	var flash_col: Color = Tg.fac.accent if eclipse else col
+	var drop := col * 0.25 if eclipse else col
 	var px: float = 28.0 * float(tg.get("gk", 1.0)) * float(tg.get("tk", 1.0))
-	_burst(fx,p+n*0.3*k,n,T,4.5*k,"flash",0.35,col,1.4,px)
-	_vent(fx,p+n*0.4*k,n,T,5.0*k,0.65,col,0.8,n*3.0*k,0.65,1.0,w,Tg,true,false)
+	_burst(fx,p+n*0.3*k,n,T,4.5*k,"flash",0.35,flash_col,1.4,px)
+	# Keep the pressure puff without the hot birth sparks used by weapon vents.
+	_vent(fx, p + n * 0.4 * k, n, T, 5.0 * k, 0.65, col, 0.8, n * 3.0 * k, 0.65, 1.0, w, Tg, false)
 	for j in 8:
 		var d := _outward(n, fx.rcone(n,0.9), 0.2)
 		var v: Vector3 = d*fx.rng.randf_range(3.0,7.0)*k
-		var life: float = fx.rng.randf_range(1.8, 3.6)
-		fx.spr(p,T+j*0.015,life,col,1.2,0.42*k,0.22*k,15,v,0.35)
+		var life: float = fx.rng.randf_range(0.65, 1.35)
+		fx.spr(p,T+j*0.015,life,drop,0.75,0.42*k,0.22*k,SH.BIO_CONTACT_GLOB,v,0.35)
 		_note(fx, "drop", "bio", v, n, life)
 	_burst(fx,p+n*k,n,T+0.12,4.5*k,"cool",0.8,col,0.5,0.0,n*k,0.45)
-	_gas_cloud(fx, p + n * 0.4 * k, n, T + 0.1, k, col.lerp(Color(0.3, 0.32, 0.18), 0.5), 2, 2.4, "bio", 0.30, 20)
-	_heat_spot(fx, p + n * 0.1 * k, T, k, 0.7, "bio", 5.0, 0.6, Tg)
-	fx.light(p+n*2.0*k,T,0.55,3.0,col,1)
+	_gas_cloud(fx, p + n * 0.4 * k, n, T + 0.1, k, col * 0.65, 2, 2.4, "bio", 0.18, 20, Vector3.ZERO, Vector2(0.8, 1.55))
+	fx.light(p+n*2.0*k,T,0.55,3.0,flash_col,1)
 	fx.shake(T,0.1 if lash else 0.05,p)
 
 

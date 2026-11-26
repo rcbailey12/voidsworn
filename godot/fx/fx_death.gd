@@ -326,8 +326,8 @@ static func route_material(fx, code: String, rel: String, production := false, s
 static var _styles: Dictionary = {}   # not GPU: per-faction death colours and numbers only
 # R398 (issue 1394, Ryan Nov 21, option B: "B but why is there smoke and haze?", then "No vapour. The whole hull shouldn't
 # glow green either. Just specific affected areas"): a metal hull killed by acid or spines (rules killCause "melt") dies
-# in the acid's colour whatever its faction: no tear, no strain crack, no faction break, the green only where the acid
-# hit (MELT_GLOW), a soft pale bloom (never the hard white core), no fire, no smoke, no vapour. Chorus hulls keep their
+# in the acid's look: no tear, no strain crack, no faction break, the glow only where the acid hit (MELT_GLOW),
+# a soft pale bloom (never the hard white core), no fire, no smoke, no vapour. Chorus hulls keep their
 # own rupture.
 const MELT_STYLE := {"style": "melt", "fire": Color(0.80, 0.95, 0.55), "fire_mid": Color(0.45, 0.70, 0.12),
 	"rim": Color(0.45, 0.62, 0.10), "spark": Color(0.55, 0.65, 0.12), "light": Color(0.70, 0.85, 0.45), "smoke": 0.0, "prism": 0.0}
@@ -335,8 +335,8 @@ const MELT_STYLE := {"style": "melt", "fire": Color(0.80, 0.95, 0.55), "fire_mid
 
 # Ryan, Nov 22 2026 5:39 AM CT, on the 1394D sheets: "I like everything about it except I think it might still be good
 # to have the faction specific explosion when it breaks off. Like the engines and weapons are cooking off." While a
-# cook-off blast is drawn (_core_flash, _blast, _fac_pop) an acid kill reads its faction's own colours; the green glow,
-# the green wreck heat and the missing smoke, haze and vapour stay.
+# cook-off blast is drawn (_core_flash, _blast, _fac_pop) an acid kill reads its faction's own colours. Eclipse also
+# uses its own violet on the melt overlay and wreck heat.
 static var _boom := 0
 
 
@@ -353,7 +353,14 @@ static func melting(src) -> bool:
 
 static func dstyle(src) -> Dictionary:
 	if not (src is Object) or not is_instance_valid(src): return {}
-	if src.has_meta("death_melt") and _boom == 0: return MELT_STYLE
+	if src.has_meta("death_melt") and _boom == 0:
+		if src.faction == "deathless":
+			return _faction_style(src).merged({"style": "melt", "smoke": 0.0}, true)
+		return MELT_STYLE
+	return _faction_style(src)
+
+
+static func _faction_style(src) -> Dictionary:
 	if not ("fac" in src) or not ("faction" in src) or not (src.fac is Dictionary): return {}
 	var key := str(src.faction)
 	if _styles.has(key): return _styles[key]
@@ -3612,7 +3619,7 @@ static func _glitter(fx, s, p: Vector3, L: float) -> void:
 # (2.4) is under fx.FLASH_I, so fx.spr would not book it: it books itself (Artoo on PR 1400), and with reduce flashing or
 # a full flash budget it becomes the same soft lift fx.spr gives a refused flash.
 # R398: the acid's tell. Only where the acid hit (fx_weapons keeps the last MELT_SPOTS hull hits as "acid_spots"; the
-# last hit, then a surface point, when none is recent), the plating glows sick green in a ragged patch that spreads until
+# last hit, then a surface point, when none is recent), a ragged patch of glowing plating spreads until
 # the hull parts. One overlay per mesh (the tear is not drawn on a melt death, so the overlay slot is free).
 static func _melt_glow(fx, s, T: float, tl: DeathTimeline) -> void:
 	var spots: Array = []
@@ -3635,6 +3642,11 @@ static func _melt_glow(fx, s, T: float, tl: DeathTimeline) -> void:
 		var v: Vector3 = spots[spots.size() - 1 - i] if i < spots.size() else Vector3.ZERO
 		arr.append(Vector4(v.x, v.y, v.z, rad * (1.0 if i == 0 else 0.8)))
 	var m: ShaderMaterial = fx.mat(SH.MELT_GLOW, 1)
+	if s.faction == "deathless":
+		var col: Color = s.acid_colour()
+		var rgb := Vector3(col.r, col.g, col.b)
+		m.set_shader_parameter("hot", rgb * 0.85)
+		m.set_shader_parameter("deep", rgb * 0.40)
 	m.set_shader_parameter("spots", arr)
 	m.set_shader_parameter("n_spots", mini(spots.size(), 6))
 	m.set_shader_parameter("rise", Vector2(T - 0.05, T + maxf(tl.cut, 0.3)))
@@ -4014,11 +4026,13 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 	wreck["scorch_mats"] = []
 	if melting(s):
 		# R398 (1394 PC run): the main pieces' torn faces and scorched plating were built before the kill in the
-		# faction's fire colours and showed orange embers where the acid hit. An acid wreck keeps the acid's green there.
+		# faction's fire colours and showed orange embers where the acid hit. Use the melt palette when the hull breaks.
+		var style := dstyle(s)
+		var rim: Color = style.get("rim", MELT_STYLE["rim"])
 		for i in n_main:
 			var mp: Dictionary = pieces[i]
-			if mp.has("cap_mat"): _style_heat(mp["cap_mat"], MELT_STYLE, "heat_")
-			for hm in mp.get("hull_mats", []): (hm as ShaderMaterial).set_shader_parameter("fx_scorch_col", MELT_STYLE["rim"])
+			if mp.has("cap_mat"): _style_heat(mp["cap_mat"], style, "heat_")
+			for hm in mp.get("hull_mats", []): (hm as ShaderMaterial).set_shader_parameter("fx_scorch_col", rim)
 	for i in n_main:
 		var pc: Dictionary = pieces[i]
 		if (pc["surfs"] as Array).is_empty():

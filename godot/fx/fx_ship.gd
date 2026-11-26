@@ -125,8 +125,11 @@ var _shield_fraction := -1.0
 var _ion_locked := false
 var _ion_next := 0.0
 var _ion_until := -1.0
+const ACID_MIST_LIFE := 2.0
+const ACID_MIST_TAIL := 0.25
 var _acid_active := false
 var _acid_mist: POOLS.Pool
+var _acid_fallback_start := -1.0
 var _acid_next := 0.0
 const ACID_SIZZLE_GAINS := [0.25, 0.125]
 var _sizzle_count := 0
@@ -1889,9 +1892,10 @@ func sync(fx, u: Dictionary) -> void:
 	var status = u.get("st")
 	_acid_active = status is Dictionary and status.get("acid") != null and float(status["acid"]) > 0.0
 	set_regen_lock(u.get("regenLock") != null and float(u["regenLock"]) > 0.0)
-	_shield_fraction = -1.0
-	if u.get("shp") != null and u.get("shMax") != null and float(u["shMax"]) > 0.0:
-		_shield_fraction = float(u["shp"]) / float(u["shMax"])
+	if u.has("shp") and u.has("shMax"):
+		_shield_fraction = -1.0
+		if u["shp"] != null and u["shMax"] != null and float(u["shMax"]) > 0.0:
+			_shield_fraction = float(u["shp"]) / float(u["shMax"])
 	# view() sends null for fields a unit does not have (sec and sh for squadrons): treat them as absent
 	var sec: Dictionary = u["sec"] if u.get("sec") is Dictionary else {}
 	var maxhp = maxf(float(u["maxHp"]) if u.get("maxHp") != null else 1.0, 1.0)
@@ -1953,13 +1957,16 @@ func _status_step(fx) -> void:
 			_acid_mist.mi.hide()
 			_acid_mist.mi.queue_free()
 			_acid_mist = null
-			_acid_fallback.clear()
-			_acid_next = 0.0
-			_sizzle_count = 0
-			_sizzle_next = 0.0
+		_acid_fallback.clear()
+		_acid_fallback_start = -1.0
+		_acid_next = 0.0
+		_sizzle_count = 0
+		_sizzle_next = 0.0
 	elif fx.now >= _acid_next:
 		_acid_next = fx.now + 0.30
 		_emit_acid(fx)
+		if _acid_mist != null:
+			_acid_mist.flush()
 	if dead or not _ion_locked or _shield_fraction <= 0.0 or fx.now < _brk_until:
 		if _ion_until >= 0.0:
 			_shield_mat.set_shader_parameter("ion_arc", Vector2(-100.0, 0.0))
@@ -1980,6 +1987,7 @@ func _emit_acid(fx) -> void:
 	var spots: Array = get_meta("acid_spots", [])
 	var p: Vector3
 	var n := Vector3.UP
+	var start: float
 	if spots.is_empty():
 		if fx.now < busy_until: return  # an in-flight shot can still supply its actual contact
 		# A restored ship has its rules status but no FX hit history. Find real plating once.
@@ -1992,21 +2000,23 @@ func _emit_acid(fx) -> void:
 		if _acid_fallback.is_empty(): return
 		p = _acid_fallback["p"]
 		n = _acid_fallback["n"]
+		if _acid_fallback_start < 0.0:
+			_acid_fallback_start = fx.now
+		start = _acid_fallback_start
 	else:
-		var spot: Array = spots[_acid_spot_index % spots.size()]
+		# Old contacts remain for scars and melt deaths, but a new hit must not reheat them.
+		var first_fresh := spots.size()
+		while first_fresh > 0 and fx.now - float(spots[first_fresh - 1][1]) < ACID_MIST_LIFE - ACID_MIST_TAIL:
+			first_fresh -= 1
+		var first := first_fresh if first_fresh < spots.size() else 0
+		var spot: Array = spots[first + _acid_spot_index % (spots.size() - first)]
 		_acid_spot_index += 1
 		p = spot[0]
+		start = spot[1]
 		if spot.size() > 2: n = spot[2]
-	if _acid_mist == null:
-		var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
-		_acid_mist = POOLS.Pool.new(8, material, _dmg_root, "fx_acid_mist", POOLS.quad_shape())
-	var col := _acid_colour()
-	# Lift the expanding mist off the plating so the hull and soft depth fade leave it room to show.
-	var origin := p + n * maxf(0.65, hull.L * 0.02)
-	var drift: Vector3 = (n + Vector3.UP * 0.70) * hull.L * 0.065
-	_acid_mist.emit(POOLS.pack(Vector4(origin.x, origin.y, origin.z, fx.now), Vector4(drift.x, drift.y, drift.z, 1.9),
-		Vector4(col.r, col.g, col.b, 0.68), Vector4(hull.L * 0.08, hull.L * 0.23, 20, fx.rng.randf()), Vector4(0, 0, 0.3, 0.15)))
-	_acid_mist.flush()
+	var remaining: float = start + ACID_MIST_LIFE - fx.now
+	if remaining > ACID_MIST_TAIL:
+		_emit_acid_mist(fx, p, n, remaining)
 	if _sizzle_count < ACID_SIZZLE_GAINS.size() and fx.now >= _sizzle_next:
 		_sizzle_next = fx.now + fx.rng.randf_range(1.7, 2.8)
 		if fx.sound() != null:
@@ -2014,8 +2024,42 @@ func _emit_acid(fx) -> void:
 		_sizzle_count += 1
 
 
-func _acid_colour() -> Color:
-	return fac["damage_glow"] if faction == "deathless" else Color(0.5, 0.9, 0.2)
+func _emit_acid_mist(fx, p: Vector3, n: Vector3, remaining: float) -> void:
+	var eclipse: bool = faction == "deathless"
+	if _acid_mist == null:
+		var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
+		_acid_mist = POOLS.Pool.new(8 if eclipse else 16, material, _dmg_root, "fx_acid_mist", POOLS.quad_shape())
+	var col := acid_colour()
+	var noise: float = fx.rng.randf()
+	var lift := maxf(0.65, hull.L * 0.02) if eclipse else maxf(0.9, hull.L * 0.04)
+	var origin := p + n * lift
+	var drift: Vector3 = (n + Vector3.UP * 0.70) * hull.L * 0.065
+	var fade := smoothstep(ACID_MIST_TAIL, 1.7, remaining)
+	var life := minf(1.35, remaining)
+	if eclipse:
+		_acid_mist.emit(POOLS.pack(Vector4(origin.x, origin.y, origin.z, fx.now), Vector4(drift.x, drift.y, drift.z, life),
+			Vector4(col.r, col.g, col.b, 0.68 * fade), Vector4(hull.L * 0.08, hull.L * 0.23, 20, noise), Vector4(0, 0, 0.3, 0.15)))
+	else:
+		# Split the mist along the plating and lift it so the hull doesn't slice one broad quad into a band.
+		var side := n.cross(Vector3.UP)
+		if side.length_squared() < 0.01:
+			side = n.cross(Vector3.FORWARD)
+		side = side.normalized()
+		for i in 2:
+			var spread: float = float(i * 2 - 1) * hull.L
+			var at := origin + side * spread * 0.025
+			var vel := drift + side * spread * 0.018
+			var variation := fposmod(noise + float(i) * 0.5, 1.0)
+			_acid_mist.emit(POOLS.pack(Vector4(at.x, at.y, at.z, fx.now), Vector4(vel.x, vel.y, vel.z, life),
+				Vector4(col.r, col.g, col.b, lerpf(0.13, 0.17, variation) * fade),
+				Vector4(hull.L * 0.035, hull.L * lerpf(0.08, 0.10, variation), 7, variation), Vector4(0, 0, 0.3, 0.15)))
+
+
+func acid_colour() -> Color:
+	match faction:
+		"deathless": return fac["damage_glow"]
+		"chorus": return Color(0.09, 0.105, 0.04)
+		_: return Color(0.09, 0.08, 0.06) # Neutral umber corrosion, not Chorus bile.
 
 
 # Issue 1446: the routed sides into the bubble's rim pulse (quad order prow, starboard, rear, port, as the rules)
@@ -3377,15 +3421,43 @@ func tick_flare(fx, kind: String) -> void:
 		h = hull.surface_sample(-1, 0.65, "flare")
 	if h.is_empty():
 		return
-	STATUS_TICK.play(fx, self, kind, h)
-	# Living and glass hulls keep the motes from the tick, not metal sparks.
-	if kind == "tidal" and faction not in ["chorus", "ithar"]:
-		var wp := to_world(h["p"])
-		var k := scale_k()
-		var T: float = fx.now
-		var tint: Color = fac.damage_glow if faction == "deathless" else Color(0.7, 0.8, 1.0)
-		for i in 20:
-			fx.spark(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, faction, 4.0, 0.15, 0.1, fx.rdir() * 6.0, 0.5)
+	var wp = to_world(h["p"])
+	var wn = dir_world(h["n"])
+	var k = scale_k()
+	var T: float = fx.now
+	match kind:
+		"acid":
+			for i in 6:
+				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, acid_colour(), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
+		"tidal":
+			for i in 20:
+				fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
+		"storm":
+			if _shield_mat != null:
+				shield_hit(fx, shield_point(wp + wn * 30.0)["local"], T, 0.6, 14.0, 0.8)
+		_:
+			for i in 8:
+				fx.spr(wp, T + i * 0.05, 0.7, Color(1, 0.5, 0.15), 2.4, 0.8 * k, 2.4 * k, 1, wn * 2.0 + fx.rdir(), 0.0)
+			fx.light(wp + wn, T, 0.6, 3.0, Color(1, 0.5, 0.15), 1)
+
+
+func jump_out(fx) -> void:
+	if dead or gone:
+		return
+	var T: float = fx.now
+	var bow = dir_world(Vector3(1, 0, 0))
+	var c: Color = fac["engine"]
+	var p = to_world(hull.core)   # issue 370: the jump flash at the core (hp_core, else the centre of volume)
+	for t in hull.nozzles:
+		var np = to_world(t["p"])
+		fx.spr(np, T, 0.5, c, 6.0, 2.0, 8.0, 2)
+	fx.light(p, T, 0.6, 6.0, c, 0)
+	fx.stk(p, T + 0.35, 0.4, c.lerp(Color.WHITE, 0.5), 10.0, hull.L * 3.0, hull.W * 0.4, 0, bow * hull.L * 20.0)
+	fx.ring(p, bow, T + 0.35, 0.6, c, 1.5, hull.L * 0.2, hull.L * 1.2, 1)
+	fx.later(T + 0.4, func l_jump() -> void:
+		if fx.ships.get(id) == self and not dead and not gone:
+			_hide_meshes()
+			teardown(fx, false))  # damage polling can finish its own job; do not block the jump frame
 
 
 # A mark's geometry follows the section's actual damage, including repairs.

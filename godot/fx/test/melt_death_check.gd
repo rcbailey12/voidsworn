@@ -53,6 +53,8 @@ func _run() -> void:
 		check(m["overlay"] == "melt" and m["overlay_all"], "%s: every mesh glows with the melt overlay, no tear (%s)" % [tag, m["overlay"]])
 		check(m["spot_err"] < 0.01, "%s: the glow sits on the acid hit (off by %.3f)" % [tag, m["spot_err"]])
 		check(m["radius_L"] > 0.0 and m["radius_L"] <= 0.3, "%s: only the hit area glows (radius %.2f of the length)" % [tag, m["radius_L"]])
+		if c[0] == "deathless":
+			check(m["violet_overlay"] and m["violet_rim"], "%s: acid spots and wreck heat use the Eclipse palette" % tag)
 		check(int(m["haze"]) == 0, "%s: no smoke, haze or vapour (%d pictures; blast drew %d)" % [tag, m["haze"], b["haze"]])
 		check(int(m["flash"]) > 0, "%s: the faction's own cook-off flash still plays as it breaks (%d; blast drew %d)" % [tag, m["flash"], b["flash"]])
 		check(int(m["green_spark"]) == 0, "%s: no acid-green cook-off sparks (%d)" % [tag, m["green_spark"]])
@@ -110,8 +112,11 @@ func _kill(faction: String, cls: String, cause: String, acid_age := 0.0) -> Dict
 	var before := {}
 	for n in _pics(world): before[n.get_instance_id()] = float((n as MeshInstance3D).material_override.get_shader_parameter("born")) if (n as MeshInstance3D).material_override is ShaderMaterial else 0.0
 	fx.death("k", cause)
-	var res := {"style": str(DEATH.dstyle(s).get("style", "")), "strain": s.has_meta("death_strain"), "overlay": "none", "overlay_all": true,
-		"spot_err": INF, "radius_L": 0.0, "haze": 0, "hard": 0, "flash": 0, "green_flash": 0, "green_light": 0, "green_spark": 0}
+	var style := DEATH.dstyle(s)
+	var rim: Color = style.get("rim", Color.BLACK)
+	var res := {"style": str(style.get("style", "")), "strain": s.has_meta("death_strain"), "overlay": "none", "overlay_all": true,
+		"spot_err": INF, "radius_L": 0.0, "haze": 0, "hard": 0, "flash": 0, "green_flash": 0, "green_light": 0, "green_spark": 0,
+		"violet_overlay": true, "violet_rim": rim.b > maxf(rim.r, rim.g)}
 	var first := true
 	for mm in s.meshes:
 		var ov = (mm as MeshInstance3D).material_overlay
@@ -119,6 +124,10 @@ func _kill(faction: String, cls: String, cause: String, acid_age := 0.0) -> Dict
 		if ov is ShaderMaterial and (ov as ShaderMaterial).shader != null:
 			var code: String = (ov as ShaderMaterial).shader.code
 			kind = "melt" if code.contains("uniform vec4 spots[6]") else ("tear" if code.contains("uniform vec2 open_a") else "other")
+			if kind == "melt":
+				for param in ["hot", "deep"]:
+					var rgb = ov.get_shader_parameter(param)
+					res["violet_overlay"] = res["violet_overlay"] and rgb is Vector3 and rgb.z > maxf(rgb.x, rgb.y)
 			if kind == "melt" and first:
 				var sp: PackedVector4Array = ov.get_shader_parameter("spots")
 				if sp.size() > 0 and int(ov.get_shader_parameter("n_spots")) > 0:

@@ -788,7 +788,7 @@ func _p(a0: Vector4, a1: Vector4, a2: Vector4, a3: Vector4, a4: Vector4) -> Pack
 	return POOLS.pack(a0, a1, a2, a3, a4)
 
 
-const SMOKY := {3: true, 7: true, 8: true, 15: true, 20: true, 23: true, 27: true, SH.TICK_DROPLET: true}
+const SMOKY := {3: true, 7: true, 8: true, 15: true, 20: true, 23: true, 27: true, SH.BIO_CONTACT_GLOB: true}
 
 
 # `px` (F3 round 2): this sprite's own minimum size on screen, in pixels on a 1080-line screen (0: the kind's floor).
