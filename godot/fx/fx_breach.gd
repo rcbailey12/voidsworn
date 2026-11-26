@@ -30,6 +30,7 @@ const PART_WALL := 0.5
 const PART_PIPE := 0.75
 const PART_BONE := 0.85
 const PART_LIP := 1.0
+const GLASS_SEAM := 0.625  # COLOR.b, read by HOLE below the existing 0.75 shard channel
 
 const K_DENT := 0
 const K_HOLE := 1
@@ -55,8 +56,8 @@ const S_DENT := 12
 const S_PATCH := 14
 const S_FISSURE := 15
 const S_SCORCH := 13      # the stage ladder's spreading scorch (fx_ship._plan)
-# R416 (issue 1741, folded 1692 item d), Wounds V2 only: a prism hit's crystal star fracture, a star lance's white-gold
-# heat sear, a null lance's three parallel violet-black cuts
+# R416 (issue 1741, folded 1692 item d): a prism hit's crystal star fracture, a star lance's white-gold heat sear,
+# a null lance's three parallel violet-black cuts. Build F also uses S_NLANCE for the single sealed cut with V2 off.
 const S_PRISM := 16
 const S_STAR := 17
 const S_NLANCE := 18
@@ -907,7 +908,7 @@ static func compute(job: Dictionary) -> Dictionary:
 		var authored := bool(job.get("hull").get("authored")) if job.get("hull") is Object else false
 		if E.walls and E.style != S_BREACH and not E.through and not job.get("organic", false) and not authored:
 			_walls(parts[i], E)
-		if E.kind == K_HOLE and not authored and not E.thin_shear:
+		if E.kind == K_HOLE and not authored and not E.thin_shear and E.v2 != 4:
 			_throat(parts[i], E, int(job.get("wound_kind", 0)))
 		elif E.style == S_PATCH and not job.get("flat", false):
 			_patch(parts[i], E, job.get("hull"))
@@ -1666,7 +1667,13 @@ static func apply(fx, s, job: Dictionary) -> void:
 		# the meshes a damage entry reaches; every other mesh of the ship keeps its own LOD for the rest of the battle.
 		if not mi.has_meta("fx_lod0"):
 			mi.set_meta("fx_lod0", mi.lod_bias)
-		mi.lod_bias = 128.0 if _reaches(sd0["aabb"], job["ents"]) else float(mi.get_meta("fx_lod0"))
+		# Authored interior-only meshes never carry copied overlays or rebuilt cuts. Keep their imported LOD.
+		var carries_skin := false
+		for k in ks:
+			if not bool(orig[k].get("interior", false)):
+				carries_skin = true
+				break
+		mi.lod_bias = 128.0 if carries_skin and _reaches(sd0["aabb"], job["ents"]) else float(mi.get_meta("fx_lod0"))
 		var am = meshes.get(int(sd0["mid"]))
 		if am == null:
 			if mi.mesh != sd0["mesh"]:
@@ -1680,7 +1687,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 	var ends_by: Array = res.get("ends", [])
 	var glow: Color = s.fac.get("damage_glow", Color(1.0, 0.45, 0.12))
 	# R416 (issue 1741): with Wounds V2 on, every wound shader reads the faction's own profile (faction_looks.json "wound")
-	var wv: Dictionary = wound_of(String(s.get("faction"))) if WOUNDS.v2() else {}
+	var wv: Dictionary = wound_of("" if s.get("faction") == null else str(s.get("faction"))) if WOUNDS.v2() else {}
 	var v2k: int = int(wv.get("kind", 0)) if not wv.is_empty() else -1
 	if v2k >= 0:
 		glow = wound_col(wv, "interior_accent", glow)
@@ -1698,6 +1705,8 @@ static func apply(fx, s, job: Dictionary) -> void:
 		m.set_shader_parameter("wound_kind", int(s.fac.get("wound_kind", 0)))
 		if v2k >= 0:
 			set_v2_look(m, wv)
+			if v2k == 4:
+				m.set_shader_parameter("v2_wall_max", float(wv.get("wall_max", 0.11)))
 		mi.material_override = m
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		s._dmg_root.add_child(mi)
@@ -1741,7 +1750,7 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 	if s.dead or (fx != null and fx.compat):
 		return
 	var mouths := _mouth_uniforms(ents)
-	var wv: Dictionary = wound_of(String(s.get("faction"))) if WOUNDS.v2() else {}
+	var wv: Dictionary = wound_of("" if s.get("faction") == null else str(s.get("faction"))) if WOUNDS.v2() else {}
 	var wear_on: bool = "hull_wear" in s
 	var wear_p: Array = s.wear_patches() if wear_on else []
 	for m in mis:
@@ -1873,11 +1882,14 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 					e3.style = S_NLANCE
 					out.append(e3)
 	match look if out.is_empty() else "":
-		"lance", "needle", "pulsar", "las":
+		"lance", "nlance", "needle", "pulsar", "las":
 			# the beam drags across the plate: the cut runs across the line of fire; repeats lengthen it
 			var cut_dir := n.cross(tang)
 			var R: float = L * 0.0045 * wk * (0.6 if look in ["needle", "las"] else 1.0) * sqrt(g)
-			out.append(slot(hull, p, n, cut_dir, R, L * 0.035 * wk * g, seed_v))
+			var e := slot(hull, p, n, cut_dir, R, L * 0.035 * wk * g, seed_v)
+			if look == "nlance":
+				e.style = S_NLANCE
+			out.append(e)
 		"ion", "doom":
 			out.append(surface(p, n, L * 0.06 * wk * g, seed_v, S_ION))
 		"macro", "battery", "auto", "scatter", "prism", "guns":
@@ -2240,6 +2252,43 @@ static func _shard(pt: Part, base: Vector3, tip: Vector3, side: Vector3, w: floa
 	_tri(pt, a, b, tip, -nm, -nm, -nm, -nm, col)
 
 
+# Issue 2125: follow the polygon cut, then step inward through two broken glass walls. No face spans the centre.
+static func _glass_mouth(pt: Part, E: Ent, r: RandomNumberGenerator) -> Array:
+	var ends: Array = []
+	var depth := minf(E.cut * 0.88, E.R * 0.9)
+	var start := minf(E.th * 0.9, depth * 0.25)
+	var seg := TAU / float(E.facets)
+	var rows: Array[PackedVector3Array] = []
+	for j in E.facets:
+		var a := E.p[5] + seg * j
+		var radial := (E.t1 * cos(a) + E.t2 * sin(a)) * E.R
+		var chip := r.randf_range(-0.055, 0.055)
+		var step_depth := lerpf(start, depth, r.randf_range(0.32, 0.52))
+		rows.append(PackedVector3Array([
+			E.c + radial * (1.0 + chip * 0.4) - E.n * start,
+			E.c + radial * (0.81 + chip) - E.n * step_depth,
+			E.c + radial * (0.74 + chip) - E.n * (step_depth + depth * 0.06),
+			E.c + radial * (0.51 + chip) - E.n * (depth * r.randf_range(0.86, 1.0)),
+			E.c + radial * (0.47 + chip) - E.n * depth,
+		]))
+	for j in E.facets:
+		var a := rows[j]
+		var b := rows[(j + 1) % E.facets]
+		for k in 4:
+			var normal := (b[k] - a[k]).cross(a[k + 1] - a[k]).normalized()
+			if normal.dot(E.n) < 0.0: normal = -normal
+			var tone := r.randf_range(0.72, 1.0) if k < 2 else r.randf_range(0.24, 0.56)
+			var seam := GLASS_SEAM if k % 2 == 1 else 0.0
+			_quad(pt, a[k], b[k], b[k + 1], a[k + 1], normal, Color(PART_WALL, tone, seam, 1))
+		# A splinter on an uneven edge breaks up the polygon without blocking the sightline in.
+		var base := a[0].lerp(b[0], r.randf_range(0.22, 0.78))
+		var tip := base.lerp((a[2] + b[2]) * 0.5, r.randf_range(0.58, 1.0))
+		_shard(pt, base, tip, (b[0] - a[0]).normalized(), E.R * r.randf_range(0.09, 0.19), Color(PART_LIP, 0.9, 0.75, 1))
+		if r.randf() < 0.3:
+			ends.append([tip, (tip - base).normalized()])
+	return ends
+
+
 # R416 5.2: the faction's 3D dressing just inside an open V2 mouth, all of it below the plating (never standing proud
 # of the intact skin): snapped I-beams and hanging cables (Sunward, Directorate, Hullbreakers), snapped bone ribs and wet
 # tendons across the lip (Chorus), crystal shards round the pane edge (Glasswrights), an obsidian truss with severed
@@ -2258,6 +2307,8 @@ static func dress(hull, pt: Part, E: Ent, r: RandomNumberGenerator) -> Array:
 			var d := (E.t1 if j == 0 else E.t2)
 			_beam(pt, E.c - d * R * 1.2 - n * E.cut * 0.9, E.c + d * R * 1.2 - n * E.cut * 0.9, R * 0.14, E.th * 0.8, n, Color(PART_WALL, 0.6, 0.25, 1))
 		return ends
+	if E.v2 == 4 and E.facets > 2:
+		return _glass_mouth(pt, E, r)
 	# how open it is behind the rim: a deep gap gets a collar of ribs just inside the lip (R416 5.2, grazing views)
 	var deep := 1e9
 	if hull != null:
@@ -2312,16 +2363,6 @@ static func dress(hull, pt: Part, E: Ent, r: RandomNumberGenerator) -> Array:
 					var tt := k / 6.0
 					cp.append(p0.lerp(p1, tt) - n * R * 0.35 * sin(tt * PI))
 				_tube(pt, cp, R * 0.022, R * 0.016, Color(PART_BONE, 0.3, 0.5, 1))
-		4:
-			var ns := 7 + int(r.randf() * 4.0)
-			for j in ns:
-				var an := TAU * (j + r.randf() * 0.6) / float(ns)
-				var rd := E.t1 * cos(an) + E.t2 * sin(an)
-				var base := E.c + rd * R * (0.98 + r.randf() * 0.06) - n * E.th * 0.5
-				var tip := base - rd * R * (0.18 + r.randf() * 0.3) - n * R * (0.05 + r.randf() * 0.25)
-				_shard(pt, base, tip, n.cross(rd), R * (0.08 + r.randf() * 0.08), Color(PART_WALL, 0.5 + 0.5 * r.randf(), 0.75, 1))
-				if r.randf() < 0.3:
-					ends.append([tip, (tip - base).normalized()])
 		5:
 			var d := E.t1
 			var side := E.t2
@@ -2346,7 +2387,7 @@ static func dress(hull, pt: Part, E: Ent, r: RandomNumberGenerator) -> Array:
 			for k in 6:
 				var an := a0 + k * 0.28
 				cp.append(E.c + (E.t1 * cos(an) + E.t2 * sin(an)) * R * 1.05 - n * (lid + R * 0.15))
-			var col := Color(PART_BONE, 0.6, 0.0, 1) if E.v2 == 3 else (Color(PART_WALL, 0.6, 0.75, 1) if E.v2 == 4 else Color(PART_WALL, 0.4, 0.25, 1))
+			var col := Color(PART_BONE, 0.6, 0.0, 1) if E.v2 == 3 else Color(PART_WALL, 0.4, 0.25, 1)
 			_tube(pt, cp, R * 0.06, R * 0.06, col)
 	return ends
 
