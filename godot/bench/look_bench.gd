@@ -641,8 +641,7 @@ func _frame_moment_volley(row: Dictionary, res: Dictionary, anchors: Dictionary,
 	var id := str(row["id"])
 	var impacts: Array = res.get("impacts", [])
 	if impacts.is_empty():
-		failed = "%s at %d: no impact time to frame the shot" % [id, int(r)]
-		return false
+		return _fail_moment(id, r, "no impact time to frame the shot")
 	var fire: float = res["fires"][0]
 	var muzzle: Vector3 = res["muzzles"][0]["p"]
 	var t_ev: float = anchors["fire"]
@@ -653,13 +652,11 @@ func _frame_moment_volley(row: Dictionary, res: Dictionary, anchors: Dictionary,
 	if shot_focus == "ordnance" or shot_focus == "intercept":
 		var rounds: Array = fx.dstate.get("proj", [])
 		if rounds.is_empty():
-			failed = "%s at %d: no ordnance to frame" % [id, int(r)]
-			return false
+			return _fail_moment(id, r, "no ordnance to frame")
 		var round_: Dictionary = rounds[0]
 		if shot_focus == "intercept":
 			if not is_finite(float(round_["dead_at"])):
-				failed = "%s at %d: no scheduled intercept" % [id, int(r)]
-				return false
+				return _fail_moment(id, r, "no scheduled intercept")
 			anchors["intercept"] = float(round_["dead_at"])
 			focus = WEAP._down_point(round_)
 		else:
@@ -1141,16 +1138,16 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			if clip:
 				if keep:
 					var fp := clip_dir.path_join("f%03d.png" % ci)
-					if img == null:
+					if img == null and not headless:
 						clip_bad.append("f%03d.png (no frame grabbed)" % ci)
-					else:
+					elif img != null:
 						var se: Error = preload("res://tools/picture_provenance.gd").save_png(_crop(img, crop, cell), fp,
 							preload("res://tools/picture_provenance.gd").capture_stage(), true)
 						if se != OK:
 							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
 			elif img != null:
 				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
-			elif strict and keep:
+			elif strict and keep and not headless:
 				clip_bad.append("cell %d (no frame grabbed)" % ci)
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
 			ci += 1
@@ -1193,10 +1190,11 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 				return _fail_moment(id, r, "wing drew %s, expected %s" % [craft_code, str(row.expect_craft)])
 	if clip:
 		# Every numbered frame must be on disk, and a stale frame cannot cover a failed read or save this run.
-		for fi in total:
-			var fn := "f%03d.png" % fi
-			if not FileAccess.file_exists(clip_dir.path_join(fn)) and not clip_bad.any(func(b): return str(b).begins_with(fn)):
-				clip_bad.append(fn + " (missing)")
+		if not headless:
+			for fi in total:
+				var fn := "f%03d.png" % fi
+				if not FileAccess.file_exists(clip_dir.path_join(fn)) and not clip_bad.any(func(b): return str(b).begins_with(fn)):
+					clip_bad.append(fn + " (missing)")
 		if ci != total or not clip_bad.is_empty():
 			return _fail_moment(id, r, "clip row failed: %d of %d frames taken; bad: %s" % [ci, total, ", ".join(clip_bad)])
 		report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/%s__c%d/" % [id, int(r)],

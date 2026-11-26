@@ -955,10 +955,20 @@ void vertex() {
 		if (k >= 9 && k <= 12) {
 			vec3 h = (VIEW_MATRIX * vec4(head, 1.0)).xyz;
 			vec3 t = (VIEW_MATRIX * vec4(tail, 1.0)).xyz;
-			vec2 delta = h.xy - t.xy;
-			float screen_length = length(delta);
-			vec2 axis = screen_length > 1e-4 ? delta / screen_length : vec2(1.0, 0.0);
-			t.xy -= axis * max(lmin - screen_length, 0.0);
+			float pixel = frame_world(1.0, dv, PROJECTION_MATRIX, VIEWPORT_SIZE.y);
+			vec4 hc = PROJECTION_MATRIX * vec4(h, 1.0);
+			vec4 tc = PROJECTION_MATRIX * vec4(t, 1.0);
+			vec2 projected = (hc.xy / max(hc.w, 1e-4) - tc.xy / max(tc.w, 1e-4)) * VIEWPORT_SIZE * 0.5;
+			float screen_length = length(projected);
+			vec2 screen_motion = (VIEW_MATRIX * vec4(wdir, 0.0)).xy;
+			float motion_length = length(screen_motion);
+			vec2 axis = vec2(1.0, 0.0);
+			if (screen_length > 1e-3) {
+				axis = projected / screen_length;
+			} else if (motion_length > 1e-5) {
+				axis = screen_motion / motion_length;
+			}
+			t.xy -= axis * max(lmin - screen_length * pixel, 0.0);
 			vec3 view_pos = mix(t, h, VERTEX.x);
 			view_pos.xy += vec2(-axis.y, axis.x) * VERTEX.y * sw;
 			POSITION = PROJECTION_MATRIX * vec4(view_pos, 1.0);
