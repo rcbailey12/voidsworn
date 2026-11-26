@@ -256,7 +256,8 @@ func _play_battle() -> void:
 			ui.visible = true
 		in_battle = false
 		_music_page = ""   # issue 1482
-		_save_round()   # the newest round start the rules packed, if the scene had not written it yet
+		if a.phase != "halted":
+			_save_round()   # keep the last safe checkpoint if the rules stopped with an error
 		C.leave_battle_saved()
 		return
 	battles += 1

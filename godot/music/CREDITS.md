@@ -333,3 +333,12 @@ Both Chorus mixes come from the owner's paid ElevenLabs take `mus_chorus_loop_a_
 Both are cut to 24 bars at 76 BPM with a 25 ms click guard and the same 6 dB mastering gain.
 The Vorbis quality 8 encodes keep both decoded wrap jumps below 0.001 without changing the sample count.
 The same ElevenLabs paid self-serve indie game music terms apply. No attribution is required.
+
+## Gate 3 Glasswright battle pair (issue 2187, Nov 25 2026 UTC)
+
+`glasswright_combo2_calm.ogg` and `glasswright_combo2_full.ogg` are the owner's approved test5 and test6 combo from
+the paid ElevenLabs music plan. Source: `rcbailey12/voidsworn-relay` branch `pc-out-m2combo2` at `85f97ef8`.
+Both mixes retain the approved 42-bar arrangement at 88 BPM, encoded as 48 kHz stereo Vorbis quality 8 with
+the same 3.7 dB trim to match the Chorus pair's playback level without changing the calm-to-full balance.
+The same ElevenLabs paid self-serve indie game music terms apply.
+No attribution is required.
