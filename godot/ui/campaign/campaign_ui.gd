@@ -2414,6 +2414,9 @@ func _modal(md: Dictionary) -> void:
 		"abandon":
 			h2.call("Abandon the current run?"); p.call("Starting over ends your saved run. Your best result so far is kept either way.", BONE2)
 			v.add_child(foot([abtn("Keep it", "closeModal", "", false, false, acts), fin("Abandon and start over", "abandonRun", "", acts)]))
+		"brokenRun":
+			h2.call("This run cannot continue"); p.call("The saved run could not be loaded. You can discard it and start again. Any recoverable profile progress stays.", BONE2)
+			v.add_child(foot([abtn("Keep the save", "closeModal", "", false, false, acts), fin("Discard the broken run", "discardBrokenRun", "", acts)]))
 		"sell":
 			var _s_fac := str(R.get("fac", "")); var _s_nm := str(d["ship"]["name"])
 			h2.call(("Reabsorb " if _s_fac == "chorus" else "Decommission ") + _s_nm + "?")
