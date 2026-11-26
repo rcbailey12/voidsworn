@@ -2255,15 +2255,22 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 		"stance":
 			_float(e["unit"], "Wings: %s" % str(e["stance"]), Color("#9fd4ff"), -24)
 		"blink":
-			var sv = views.get(e["unit"])
+			var id := str(e["unit"])
+			var sv: ShipView = views.get(id)
 			if sv != null:
-				var c: Color = FLOOK.engine(str(VU.get(e["unit"], {}).get("fac", "ithar")))
-				_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
+				var dst: Vector3 = board.hex_world(int(e["to"]["q"]), int(e["to"]["r"]))
 				sfx.play("phase", {"pos": sv.visual_position()})
-				await wait(250.0)
-				sv.position = board.hex_world(int(e["to"]["q"]), int(e["to"]["r"]))
-				_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
-				await wait(250.0)
+				var at: float = gfx.fold(id, speed, func blink_snap() -> void: sv.position = dst) if gfx != null else -1.0
+				if at >= 0.0:
+					await _await_fx(at)
+				else:
+					var c := FLOOK.engine(str(VU.get(id, {}).get("fac", "ithar")))
+					_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
+					await wait(250.0)
+					if is_instance_valid(sv):
+						sv.position = dst
+						_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
+					await wait(250.0)
 		"side":
 			if e["side"] == "player":
 				hud.set_chip("")
@@ -2329,31 +2336,36 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			await wait(120.0)
 		"ability":
 			var ab := str(e["ab"])
+			var id := str(e["unit"])
 			var A = TBL.get("ABILITIES", {}).get(ab, {})
 			if ab != "launch":
-				_log("%s: %s." % [_name(e["unit"]), str(A.get("n", ab))], _who(e["unit"]))
-			var c: Color = FLOOK.engine(str(VU.get(e["unit"], {}).get("fac", "hegemony")))
-			if gfx != null and gfx.has_method("ability"):
-				gfx.ability(str(e["unit"]), ab)
-			else:
-				_flash(_pos(e["unit"]) + Vector3(0, 2, 0), 18.0, c, 0.5)
-			if ab == "phase":   # issue 1649: Fold skip leaves a violet after-image where the ship stood (Eclipse violet, never green)
-				_flash(_pos(e["unit"]) + Vector3(0, 2, 0), 22.0, Color("#ddc4ff"), 0.9)
-				sfx.play("phase", {"pos": _pos(e["unit"])})
-			if ab == "blink" and e.get("hex") != null:
-				sfx.play("phase", {"pos": _pos(e["unit"])})
-				var sv = views.get(e["unit"])
-				if sv != null:
-					sv.position = board.hex_world(e["hex"]["q"], e["hex"]["r"])
-					_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
+				_log("%s: %s." % [_name(id), str(A.get("n", ab))], _who(id))
+			if ab == "blink":
+				# Rules emit the authoritative blink event next, for player and AI alike.
+				return
+			if ab == "phase":
+				sfx.play("phase", {"pos": _pos(id)})
+				var at: float = gfx.fold(id, speed) if gfx != null else -1.0
+				if at >= 0.0:
+					await _await_fx(at)
+					return
+				_flash(_pos(id) + Vector3(0, 2, 0), 22.0, Color("#ddc4ff"), 0.9)
 			elif ab == "nova" and e.get("hex") != null:
-				sfx.play("charge", {"pos": _pos(e["unit"])})
-				await wait(500.0)
+				sfx.play("charge", {"pos": _pos(id)})
 				var p: Vector3 = board.hex_world(e["hex"]["q"], e["hex"]["r"], 2.0)
-				fx.bolt(_pos(e["unit"]) + Vector3(0, 2, 0), p, Color(1, 0.8, 0.5), 0.35 * speed, 0.0, 3.0)
-				await wait(350.0)
-				_flash(p, 60.0, Color(1, 0.7, 0.4), 0.8)
+				var at: float = gfx.nova(id, p, speed) if gfx != null else -1.0
+				if at >= 0.0:
+					if not await _await_fx(at):
+						return
+				else:
+					_flash(_pos(id) + Vector3(0, 2, 0), 18.0, Color(1, 0.8, 0.5), 0.5)
+					await wait(850.0)
+					_flash(p, 60.0, Color(1, 0.7, 0.4), 0.8)
 				sfx.boom(1.0, p)
+			elif gfx != null:
+				gfx.ability(id, ab)
+			else:
+				_flash(_pos(id) + Vector3(0, 2, 0), 18.0, FLOOK.engine(str(VU.get(id, {}).get("fac", "hegemony"))), 0.5)
 			await wait(300.0)
 		"order":
 			var O = TBL.get("ORDERS", {}).get(str(e["order"]), {})
@@ -2448,8 +2460,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				_lay_wreck(e["unit"])
 		"fled":
 			var sv = views.get(e["unit"])
-			if gfx != null and gfx.has_method("jump_out"):
-				gfx.jump_out(str(e["unit"]))
+			var at: float = gfx.jump_out(str(e["unit"]), speed) if gfx != null else -1.0
+			if at >= 0.0:
 				if sv != null:
 					sv.dead = true
 					if sv.marker != null:
@@ -2458,7 +2470,10 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			elif sv != null:
 				sv.flee()
 			_log("%s leaves the battle." % _name(e["unit"]), "e" if _side(e["unit"]) == "player" else "s")
-			await wait(300.0)
+			if at >= 0.0:
+				await _await_fx(at)
+			else:
+				await wait(300.0)
 		"end":
 			pass
 		_:
@@ -2535,9 +2550,8 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 					var cap := float(ru["sec"][key]["max"])
 					sec[key] = {"hp": maxf(1.0, JSM.jsround(cap * frac)), "max": cap, "broken": false}
 			gfx.sync_ship(id, {"hp": hp, "maxHp": ru["maxHp"], "sec": sec, "sh": sh, "burning": false})
-	# issue 1460: the revival flash is the faction's own colour from fx/faction_looks.json (Eclipse is all violet, R372),
-	# not the old lime green
-	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, FLOOK.engine(str(ru.get("fac", "deathless"))), 0.8)
+	if gfx == null or gfx.rift_in(id, speed, 0.0, true) < 0.0:
+		_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, FLOOK.engine(str(ru.get("fac", "deathless"))), 0.8)
 
 
 # the battle log: the rules' own log lines (G1 log events, word for word as the game); the scene's own lines are kept
@@ -5844,7 +5858,7 @@ func _enemy_phase(uid: String) -> void:
 	hud.set_phase("enemy", "[b][color=#c4a4ff]ENEMY TURN[/color][/b]  ·  %s%s  ·  [color=#8d86a0]Enter hurries[/color]" % [fname, who], float(done) / maxf(1.0, float(total)))
 
 
-# F1: reinforcements arrive with a flash, a banner, a toast naming them and a camera nudge.
+# F1: reinforcements arrive through a rift, with a banner, names and a camera nudge.
 func _arrive(list: Array) -> void:
 	for u in list:
 		_make_view(u)
@@ -5860,7 +5874,8 @@ func _arrive(list: Array) -> void:
 		sfx.play("arrive_jump", {"pos": p, "rate": 0.92 if u["side"] == "enemy" else 1.0, "delay": arrival_index * 0.14})
 		arrival_index += 1
 		c += p
-		_flash(p + Vector3(0, 2, 0), 24.0, Color(0.6, 0.9, 1.0) if u["side"] == "player" else Color(1.0, 0.5, 0.4), 0.6)
+		if gfx == null or gfx.rift_in(str(u["id"]), 1.0, minf((arrival_index - 1) * 0.14, 0.56)) < 0.0:
+			_flash(p + Vector3(0, 2, 0), 24.0, Color(0.6, 0.9, 1.0) if u["side"] == "player" else Color(1.0, 0.5, 0.4), 0.6)
 		_float(u["id"], "Arrived", Color("#52f0c4") if u["side"] == "player" else Color("#ff8a72"), -30)
 	c /= float(list.size())
 	var names := " and ".join(PackedStringArray(list.map(func(x): return Campaign.ship_with_article(str(x["name"])))))
