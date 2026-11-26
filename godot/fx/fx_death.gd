@@ -12,6 +12,7 @@ const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const FLOOK_W := preload("res://fx/faction_look.gd")
+const DAMAGE_PLUME := preload("res://fx/fx_damage_plume.gd")
 const SKEEP := preload("res://render/shader_keep.gd")   # issue 1434: one Shader per code for the session
 const BEATS := preload("res://fx/fx_death_beats.gd")   # issue 1586: cause, faction, archetype and afterlife beats
 
@@ -3024,13 +3025,42 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	var p: Vector3 = pose * (hit["p"] as Vector3)
 	var n: Vector3 = (pose.basis * (hit["n"] as Vector3)).normalized()
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-	var jet := flipbook(fx, p, n, s.hull.L * (0.35 if s.death_big else 0.85), "vent", 0.65 if s.death_big else 0.30, inherited + n * s.hull.L * 0.12, 1.3, atlas_band(s.hull.L), s, true)
-	# The ignition and its light share one booking. Calm mode keeps dark gas. On a big hull the vent opens 0.04 s
-	# before the first chain blast, so the two are one counted flash (FLASH_WINDOW).
-	if fx.flash_at(p, fx.now, s.hull.L * 0.85, 44.0, 0.10):
-		(jet.material_override as ShaderMaterial).set_shader_parameter("ignition", 1.0)
-		fx.light(p, fx.now, 0.10, 5.0, Color(0.7, 0.81, 1.0), 0)
-	tear_particles(fx, p, n, s.hull.L, inherited, false, s)
+	# Issue 2048: replace the round white small-death bow vent flipbook puff with a layered directional rupture jet
+	# rooted on the real plating (p, outward normal n), faction-coloured from faction_looks.json, keeping R186/R193 caps.
+	# Preserve fx.rng state across both the directional jet and GPU tear_particles so visual vent pieces
+	# never perturb downstream breakup/wreck physics randomness on either headless or windowed runs.
+	var saved_rng_state: int = fx.rng.state
+	fx.record_spawn(s, p, false, pose)
+	s.set_meta("death_vent_style", "directional_jet")
+	var ignited: bool = fx.flash_at(p, fx.now, s.hull.L * 0.55, 44.0, 0.10)
+	var fire_col: Color = dcol(s, "fire_mid", s.fac.damage_glow)
+	var core_col: Color = dcol(s, "fire", fire_col.lerp(Color.WHITE, 0.45))
+	var light_col: Color = dcol(s, "light", fire_col.lerp(Color.WHITE, 0.35))
+	var smoke_k: float = dsmoke(s)
+	var jet_vel: Vector3 = inherited + n * s.hull.L * 0.95
+	# Layer 1: primary directional supersonic vent jet (SH.SPRITE SH.VENT_JET=40; core fades inside 0.22 s, total life 0.30 s).
+	fx.spr(p, fx.now, 0.30, fire_col, 2.2 if ignited else 0.45, s.hull.L * 0.28, s.hull.L * 0.52, SH.VENT_JET, jet_vel, 1.8)
+	# Layer 2: staggered sheared directional gas sheets (k=27) for smoky factions, or pale crystal shards (k=16) for Glasswrights.
+	if smoke_k > 0.01:
+		var soot_col: Color = Color(0.11, 0.08, 0.16) if s.faction == "deathless" else Color(0.16, 0.15, 0.14)
+		for j in 3:
+			var jf := float(j)
+			var gv: Vector3 = inherited + fx.rcone(n, 0.14) * s.hull.L * (0.75 + jf * 0.22)
+			fx.spr(p + n * s.hull.L * (0.04 + jf * 0.06), fx.now + jf * 0.03, 0.32 + jf * 0.06, soot_col,
+				clampf(0.45 + 0.35 * smoke_k, 0.22, 0.78) * (1.0 - jf * 0.16), s.hull.L * (0.14 + jf * 0.05),
+				s.hull.L * (0.34 + jf * 0.08), 27, gv, 1.4)
+	else:
+		for j in 4:
+			var sv: Vector3 = inherited + fx.rcone(n, 0.22) * s.hull.L * (0.55 + float(j) * 0.15)
+			fx.spr(p + n * s.hull.L * 0.04, fx.now + float(j) * 0.025, 0.40, core_col, 1.6 if ignited else 0.8,
+				s.hull.L * 0.05, s.hull.L * 0.02, 16, sv, 1.2)
+	# Layer 3: tight breach-mouth ignition ember and faction light when the flash counter permits.
+	if ignited:
+		fx.spr(p + n * s.hull.L * 0.02, fx.now, 0.20, core_col, 2.4, s.hull.L * 0.09, s.hull.L * 0.18, 19, inherited + n * s.hull.L * 0.15, 3.0)
+		fx.light(p + n * s.hull.L * 0.06, fx.now, 0.10, 4.5, light_col, 0)
+	# Keep #2018 tear sparks intact; skip the old round fx_vent_cone dots.
+	tear_particles(fx, p, n, s.hull.L, inherited, true, s)
+	fx.rng.state = saved_rng_state
 
 
 static func _update_dying(fx, s) -> void:
@@ -3850,7 +3880,7 @@ static func _hide_ship(s) -> void:
 	s.hide_live_hull()
 
 
-# One independent copy of the damaged hull, no fracture upload, fire or lights.
+# One independent copy of the damaged hull and a cold vent, no fracture upload, fire or lights.
 # G2 may release its live ship root as soon as death()'s returned time expires.
 static func _hulk(fx, s) -> void:
 	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s or s.has_meta("death_hidden"): return
@@ -3892,14 +3922,10 @@ static func _hulk(fx, s) -> void:
 	var hit: Dictionary = s.hull.ray(s.hull.c + Vector3.UP * maxf(s.hull.L, 1.0), Vector3.DOWN)
 	var p: Vector3 = hit.get("p", s.hull.core)   # issue 370: a missed ray falls back to the core, never a box point
 	var n: Vector3 = hit.get("n", Vector3.UP)
-	var b := POOLS.Batch.new()
-	var size: float = maxf(s.hull.L * 0.025, 0.06)
-	for j in 9:
-		var v := n * size * 8.0
-		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, fx.now + j * 0.13),
-			Vector4(v.x, v.y, v.z, 1.7), Vector4(0.22, 0.32, 0.06, 0.3) if s.faction == "chorus" else Vector4(0.42, 0.46, 0.5, 0.5),
-			Vector4(size * 0.4, size * 3.2, 20 if s.faction == "chorus" else 7, 16.3), Vector4(0, 0, 0.5, 0)))
-	b.build(fx.mat(SH.SPRITE, 1), node, "fx_hulk_vent")
+	var vent := DAMAGE_PLUME.build(fx, node, p, (n + Vector3.UP * 0.3).normalized(), maxf(s.hull.L * 0.20, 0.12),
+		DAMAGE_PLUME.Form.HULK, s.fac, 0.12, "fx_hulk_vent")
+	wreck["vent_material"] = vent.material_override
+	wreck["vent_next"] = fx.now
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
 	BEATS.on_hulk(fx, s, node, str(s.get_meta("death_cause", "dark")))
@@ -4819,6 +4845,12 @@ static func update(fx, dt: float) -> void:
 				(nd as RigidBody3D).angular_velocity *= fa
 		w["speed"] = speed
 		var age: float = fx.now - float(w["t0"])
+		if w.has("vent_material") and fx.now >= float(w["vent_next"]):
+			if DAMAGE_PLUME.thin_hulk(w["vent_material"], age):
+				w.erase("vent_material")
+				w.erase("vent_next")
+			else:
+				w["vent_next"] = fx.now + 0.1
 		# Heat fades over a few seconds. The cold opaque cap remains.
 		# Issue 484 profiling: a wreck now has up to a dozen glowing faces and its scorched plating. Heat falls by about a
 		# tenth a second, so faces are set 15 times a second, not every frame, and a wreck that has gone cold is never

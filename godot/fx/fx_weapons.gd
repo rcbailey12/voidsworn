@@ -2738,9 +2738,10 @@ uniform vec3 impact_tint = vec3(1.0);""")
 # The resolved weapon rung includes gun and target bands. The target band also places the fire just off its hull. Both pictures use the lopsided baked seed (s0) turned at random: the round seeds (s1, s2) drew
 # the "flower" of equal puffs Ryan called "too even and weird" on the deaths (issue 484), and they did the same here.
 static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0, n := Vector3.UP, rung := 0.0,
-		tint := Color(1, 0.55, 0.15), energy := false, flash_life := 0.0, flash_lift := 0.0) -> void:
+		tint := Color(1, 0.55, 0.15), energy := false, flash_life := 0.0, flash_lift := 0.0,
+		use_contact_tint := false) -> void:
 	var response := _impact_response(src)
-	var contact := _impact_color(response, src, tint)
+	var contact := tint if use_contact_tint else _impact_color(response, src, tint)
 	var clean: bool = not response.get("hot_plate", false)
 	var tinted := energy or clean
 	var flash_only := flash_life > 0.0
@@ -2844,13 +2845,16 @@ static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, sta
 static func _crit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, w := 2, with_sparks := true) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	var response := _impact_response(Tg)
-	var faction_glow: Color = Tg.fac.damage_glow if Tg != null else col
-	var glow := _impact_color(response, Tg, faction_glow)
-	_impact_flash(fx, Tg, p, n, T, k, 6.0 * k, 0.25, glow, 40.0, response, 0.5 * k)
+	# This extra beat belongs to the opened target, not the incoming round. Non-metal crits only use the clean,
+	# tinted contact pass, never the raw orange bake, the warm glass ricochet tint, or the heated metal vent.
+	var glow: Color = Tg.fac.damage_glow if Tg != null else col
 	if response.get("hot_plate", false):
+		_impact_flash(fx, Tg, p, n, T, k, 6.0 * k, 0.25, glow, 40.0, response, 0.5 * k)
 		_vent(fx,p+n*k,n,T+0.05,6.0*k,0.45,glow,0.8,n*5.0*k,0.6,1.0,w,Tg,true,with_sparks)
-	elif response.debris == "drop":
-		_impact_gas(fx, p + n * k, n, T + 0.05, k, Color.BLACK, 2, 2.4, "shell", 0.3, response)
+	else:
+		_staged_hit(fx, Tg, p, T, false, k, n, 40.0 / BURST_PX_K, glow, true, 0.25, 0.5 * k, true)
+		if response.debris == "drop":
+			_impact_gas(fx, p + n * k, n, T + 0.05, k, Color.BLACK, 2, 2.4, "shell", 0.3, response)
 	fx.spr(p + n * 0.75 * k, T + 0.04, 0.34, glow, 2.1, 2.0 * k, 0.7 * k, 13, n * 2.0 * k, 0.0, 0.0, 0.0, 25.0)
 	if with_sparks and response.debris != "drop":
 		_throw_sparks(fx, p, n, n, T, k * 1.2, _spark_faction(Tg), 10, 18.0, 0.8, "shell")
