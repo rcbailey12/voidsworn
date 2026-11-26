@@ -1,0 +1,91 @@
+{
+  "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+  "source_commit_date": "2026-11-24T20:59:08Z",
+  "source_diff_sha256": "",
+  "source_dirty": false,
+  "stage": "cloud direction check",
+  "schema": 1,
+  "picture_name": "moon-0.png",
+  "date": "2026-11-24T21:31:45Z",
+  "sources": [
+    {
+      "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+      "source_commit_date": "2026-11-24T20:59:08Z",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "cloud direction check"
+    },
+    {
+      "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+      "source_diff_sha256": "4e2b601a95d042c90aec7d1a040ffce68d0837bb94ece8ebcfcd9c35a90447e4",
+      "source_dirty": true,
+      "source_dirty_files": {
+        "godot/world/test/planet_v2_check.gd": "41e693a304e06b116f1a41101d71971be36d388c",
+        "godot/world/world_bake.gd": "fc2df5892a3487e63f99429dfbae95088875c8a0",
+        "godot/world/world_planet.gd": "2c9b61df2087475d4e9803f93590e67ca8c783f2"
+      },
+      "stage": "cloud direction check"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "moon_0_before.png",
+      "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "cloud direction check",
+      "date": "2026-11-24T21:30:40Z",
+      "image_sha256": "b98dd058396649d00fb3920f89d9633c8163057d0004328eef9256ed41943031",
+      "sources": [
+        {
+          "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+          "source_commit_date": "2026-11-24T20:59:08Z",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "cloud direction check"
+        }
+      ],
+      "source_commit_date": "2026-11-24T20:59:08Z"
+    },
+    {
+      "picture_name": "moon_0_after.png",
+      "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+      "source_dirty": true,
+      "source_diff_sha256": "4e2b601a95d042c90aec7d1a040ffce68d0837bb94ece8ebcfcd9c35a90447e4",
+      "stage": "cloud direction check",
+      "date": "2026-11-24T21:31:16Z",
+      "image_sha256": "6bae20e0bc801f41f6eac73977c3ddb6edd9b904ff1af0d70823dc952a2e04f1",
+      "sources": [
+        {
+          "source_commit": "ee398fcf4f12b4f2408d6b0dee87a404dce9ef12",
+          "source_diff_sha256": "4e2b601a95d042c90aec7d1a040ffce68d0837bb94ece8ebcfcd9c35a90447e4",
+          "source_dirty": true,
+          "source_dirty_files": {
+            "godot/world/test/planet_v2_check.gd": "41e693a304e06b116f1a41101d71971be36d388c",
+            "godot/world/world_bake.gd": "fc2df5892a3487e63f99429dfbae95088875c8a0",
+            "godot/world/world_planet.gd": "2c9b61df2087475d4e9803f93590e67ca8c783f2"
+          },
+          "stage": "cloud direction check"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    684,
+    720
+  ],
+  "strip_size": [
+    684,
+    124
+  ],
+  "strip_sha256": [
+    "d0e05fa4fb6c063848b81517b384b367f807aab9d5b449d4007bfd935d778a50"
+  ],
+  "stamp_template_sha256": "d0e05fa4fb6c063848b81517b384b367f807aab9d5b449d4007bfd935d778a50",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAqwAAAB8CAIAAAAjAXVhAAACH0lEQVR4nO3WIQEAIADAMCABBkv/mMRAfEtw+bnPHQBAz/odAAD8YQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAECUCQCAKBMAAFEmAACiTAAARJkAAIgyAQAQZQIAIMoEAMBoevwTATsWivZ5AAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "25081c676344e3d53fb372fbe98fee2a4de8d77e9cfb3b4968553d3f95ea2a6f"
+}

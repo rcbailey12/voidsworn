@@ -496,6 +496,17 @@ class Kit:
         for name, rings, spec in self._pending:
             self._plates(name, rings, spec)
         self._pending = []
+        # Interior Kit V2 (issue 1743, R416 Layer 3, RULEBOOK 5.4): the modeled interior around every inside the sheet built,
+        # box-projected UVs for the faction's shared interior trim maps, and the V2 mark the export records
+        if any(o.type == 'MESH' for o in self.cin.objects) and not getattr(self, 'interior_kit_off', False):
+            import importlib.util
+            sp = importlib.util.spec_from_file_location('interior_kit', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'interior_kit.py'))
+            ik = importlib.util.module_from_spec(sp); sp.loader.exec_module(ik)
+            s_ = ik.dress(self, KIT_NAME)
+            self.interior_summary = s_
+            self.inside.append(dict(kind='note', name='interior kit v2', note='Modeled interior (issue 1743): %d pieces of machinery, ribs, '
+                                    'girders and frames inside the rooms, decks and bulkheads (%d left out at the skin); box UVs for the %s '
+                                    'interior trim maps, one tile per %.2f units.' % (s_['pieces'], s_['dropped_outside'], s_['faction'], s_['tile'])))
 
     def box(self, name, x0, x1, y0, y1, z0, z1, m, ch=0.0, inside=False, taper=0.0, plates=None, grp=None):
         """axis box from x0 (aft) to x1 (fore), y0 (stbd) to y1 (port); taper shrinks the fore end"""
