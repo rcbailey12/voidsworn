@@ -143,10 +143,16 @@ func _planet_size() -> Vector2i:
 	return BAKER.PLANET_SIZE
 
 
+# issue 1519: a left battle stays in the tree switched off (PROCESS_MODE_DISABLED) while main.gd frees it in slices
+# behind the title; its awaits still wake there, so a build or wait under way stops as it would out of the tree
+func _parked() -> bool:
+	return not is_inside_tree() or not can_process()
+
+
 func wait_ready() -> void:
 	# Hard cap (Opus review, Nov 3): a bake that never finishes must never hold the loading cover.
 	var t0 := Time.get_ticks_msec()
-	while is_inside_tree() and pending_bakes > 0 and Time.get_ticks_msec() - t0 < 20000:
+	while not _parked() and pending_bakes > 0 and Time.get_ticks_msec() - t0 < 20000:
 		await get_tree().process_frame
 
 
@@ -245,7 +251,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	load_step = "sky done"   # issue 1434: for the frame log before a close (main.gd)
 	if slice_yield:
 		await get_tree().process_frame
-		if not is_inside_tree():
+		if _parked():
 			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	if deadstar:
 		var ds: Dictionary = map["deadstar"]
@@ -261,7 +267,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	load_step = "system done"   # issue 1434: for the frame log before a close (main.gd)
 	if slice_yield:
 		await get_tree().process_frame
-		if not is_inside_tree():
+		if _parked():
 			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	_batch = WR.Batch.new()
 	_scorched_rocks_left = 8 if LOOK.post_fx_enabled("DECALS") else 0
@@ -288,20 +294,20 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	load_step = "terrain done"   # issue 1434: for the frame log before a close (main.gd)
 	if slice_yield:
 		await get_tree().process_frame
-		if not is_inside_tree():
+		if _parked():
 			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	fields(mk, rock_kind)
 	load_step = "fields done"   # issue 1434: for the frame log before a close (main.gd)
 	if slice_yield:
 		await get_tree().process_frame
-		if not is_inside_tree():
+		if _parked():
 			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	_report_backdrop_scale()
 	var n_rocks: int = _batch.build(self, Callable(WR, "mesh"))
 	load_step = "rocks done"   # issue 1434: for the frame log before a close (main.gd)
 	if slice_yield:
 		await get_tree().process_frame
-		if not is_inside_tree():
+		if _parked():
 			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	dust(mk)
 	wisps()
@@ -309,7 +315,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	load_step = "dust done"   # issue 1434: for the frame log before a close (main.gd)
 	if slice_yield:
 		await get_tree().process_frame
-		if not is_inside_tree():
+		if _parked():
 			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
 	notes.append("setting: %s region, %s map, %s rock, planet %d (%s), sky for %s" % [setting["region"], mk, rock_kind, int(setting["planet_i"]),
 		["gas giant", "ice giant", "terran", "volcanic", "barren", "ice world"][int(setting["planet"]["kind"])], str(setting["fac"])])

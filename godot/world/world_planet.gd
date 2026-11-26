@@ -11,6 +11,7 @@ const SKEEP := preload("res://render/shader_keep.gd")
 # tinted and turned its own way (never two that look alike).
 
 const NOISE := preload("res://world/world_shaders.gd")
+const BK := preload("res://world/world_bake.gd")
 const R01_DIR := "res://world/rocks/r01/"
 const R01_SIZE := Vector2i(8192, 4096)
 
@@ -107,7 +108,7 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 		await install_rocky(planet, air, sun_position, opts)
 		return
 	planet.set_meta("planet_code", "BAKE%d" % int(L["bake"]))
-	var baker = preload("res://world/world_bake.gd").service(planet.get_tree())
+	var baker = BK.service(planet.get_tree())
 	var job := board_job(look_kind, seed_v)
 	var params: Dictionary = job.params
 	var key: String = job.key
@@ -163,20 +164,22 @@ static func _board_air(air: MeshInstance3D, L: Dictionary, light_dir: Vector3) -
 static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_position: Vector3, opts := {}) -> void:
 	if not rocky_available(): return
 	var started := Time.get_ticks_msec()
-	var baker = preload("res://world/world_bake.gd").service(planet.get_tree())
+	var baker = BK.service(planet.get_tree())
 	var urgent := bool(opts.get("urgent", false))
 	var kc: String = baker.request_authored(R01_DIR + "colour.json", R01_SIZE, false, urgent, true)
 	var kd: String = baker.request_authored(R01_DIR + "relief.json", R01_SIZE, true, urgent)
 	var colour: Image = await baker.result(kc)
-	var data: Image = await baker.result(kd)
-	if not is_instance_valid(planet) or colour == null or data == null: return
+	var relief: BK.RockyRelief = await baker.relief_result(kd)
+	if not is_instance_valid(planet) or colour == null or relief == null: return
 	if planet.get_meta("planet_frozen", false): return   # the loading cover already lifted (board.gd wait_planet)
 	var light_dir := (sun_position - planet.global_position).normalized()
 	var clouds := bool(opts.get("clouds", true))
 	var ground := ShaderMaterial.new()
 	ground.shader = ROCKY_SURFACE
 	ground.set_shader_parameter("colour_map", baker.texture(colour))
-	ground.set_shader_parameter("surface_data", baker.texture(data))
+	ground.set_shader_parameter("relief_height", baker.texture(relief.height))
+	var masks: Texture2D = baker.texture(relief.masks)
+	ground.set_shader_parameter("surface_masks", masks)
 	ground.set_shader_parameter("sun", light_dir)
 	_remix(ground, opts)
 	if not clouds: ground.set_shader_parameter("shadow_strength", 0.0)
@@ -196,7 +199,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 			atmosphere.set_shader_parameter("k", atmo_k)
 			air.material_override = atmosphere
 	if not clouds:
-		print("[R01] material install including map readiness: %d ms; two shared 8K maps, no clouds" % (Time.get_ticks_msec() - started))
+		print("[R01] material install including map readiness: %d ms; three shared 8K textures, no clouds" % (Time.get_ticks_msec() - started))
 		return
 	var cloud := MeshInstance3D.new()
 	cloud.name = "R01Clouds"
@@ -212,7 +215,7 @@ static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_posit
 	cloud.material_override = cloud_material
 	cloud.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	planet.add_child(cloud)
-	print("[R01] material install including map readiness: %d ms; two shared 8K maps" % (Time.get_ticks_msec() - started))
+	print("[R01] material install including map readiness: %d ms; three shared 8K textures" % (Time.get_ticks_msec() - started))
 
 
 static func _remix(m: ShaderMaterial, opts: Dictionary) -> void:

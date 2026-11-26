@@ -49,6 +49,11 @@ static var _pending_tree: SceneTree = null
 # evicts them, so a map that finished first can never push out a later map of the same set before its caller reads it.
 static var _pins := {}
 
+# The two R01 relief images are decoded and cached as one job. Neither half can be evicted on its own.
+class RockyRelief extends RefCounted:
+	var height: Image
+	var masks: Image
+
 static func service(tree: SceneTree) -> Node:
 	var node := tree.root.get_node_or_null("WorldBakes")
 	if node == null and is_instance_valid(_pending) and not _pending.is_inside_tree():
@@ -64,7 +69,7 @@ static func service(tree: SceneTree) -> Node:
 	return node
 
 static func _attach(node) -> void:
-	if not is_instance_valid(node) or node.is_inside_tree(): return
+	if not is_instance_valid(node) or node.is_inside_tree() or node._exiting: return
 	var tree := Engine.get_main_loop() as SceneTree
 	if tree == null or tree.root.get_node_or_null("WorldBakes") != null: return
 	tree.root.add_child(node)
@@ -98,17 +103,18 @@ static func cache_key(key: String, code: String, params: Dictionary, size: Vecto
 
 static func cached(key: String) -> Image:
 	# Disk hits also use the worker, never PNG decode on the caller's thread.
-	return _cache.get(key)
+	var entry: RefCounted = _cache.get(key)
+	return entry.height if entry is RockyRelief else entry as Image
 
 static func texture(img: Image) -> Texture2D:
 	var id := img.get_instance_id()
 	if not _textures.has(id): _textures[id] = ImageTexture.create_from_image(img)
 	return _textures[id]
 
-static func remember(key: String, img: Image) -> void:
+static func remember(key: String, entry: RefCounted) -> void:
 	if _cache.has(key): return
 	_trim(CACHE_MAX - 1)
-	_cache[key] = img
+	_cache[key] = entry
 
 # Drops the oldest maps nobody is still waiting to collect (item 2) until at most `cap` remain. With every slot pinned
 # the cache runs over CACHE_MAX for a while; each later add and each released pin trims it back (Artoo, PR 1776).
@@ -117,16 +123,21 @@ static func _trim(cap: int) -> void:
 	for oldest in _cache.keys():
 		if _cache.size() <= cap: return
 		if _pins.has(oldest): continue
-		_textures.erase(_cache[oldest].get_instance_id())
+		var entry: RefCounted = _cache[oldest]
+		if entry is RockyRelief:
+			_textures.erase(entry.height.get_instance_id())
+			_textures.erase(entry.masks.get_instance_id())
+		else:
+			_textures.erase(entry.get_instance_id())
 		_cache.erase(oldest)
 
 static func _pin(key: String) -> void:
 	_pins[key] = int(_pins.get(key, 0)) + 1
 	if _cache.has(key):
 		# a hit counts as a fresh use: it moves to the young end of the eviction order
-		var img: Image = _cache[key]
+		var entry: RefCounted = _cache[key]
 		_cache.erase(key)
-		_cache[key] = img
+		_cache[key] = entry
 
 static func _unpin(key: String) -> void:
 	var n := int(_pins.get(key, 0)) - 1
@@ -137,12 +148,12 @@ static func _unpin(key: String) -> void:
 
 static func clear_static() -> void:
 	_old_swept = false
-	_textures.clear()
-	_cache.clear()
 	# issue 1434 (Artoo on PR 1445): quit_clean clears statics before the tree quits, while the root service's worker can
 	# still be inside a bake. Stop the worker here first (a compute bake leaves at its next strip and frees its own
 	# device), then forget the pins and free a service whose deferred add never landed (issue 1765).
 	_stop_worker()
+	_textures.clear()
+	_cache.clear()
 	_pins.clear()
 	# Issue 1765 (Artoo, PR 1776): a service whose deferred add never landed (its tree quit first) belongs to nobody
 	# else, so it is freed here; one already in a tree is owned by that tree's root and only forgotten. Its queued add
@@ -155,11 +166,28 @@ static func clear_static() -> void:
 static var _abort := false   # set while shutting down: a running compute bake stops at its next strip
 
 
+static func begin_shutdown(tree: SceneTree) -> void:
+	var node := tree.root.get_node_or_null("WorldBakes")
+	if node == null and is_instance_valid(_pending):
+		node = _pending
+	if node == null:
+		return
+	# Stop submitting work as soon as the window closes, before scene disposal and the join.
+	# In particular, a cut-short battle must not start a deferred 4K PNG write during those frames.
+	node._exiting = true
+	_abort = node._thread != null
+	drop_waiting(tree)
+	node._unsaved.clear()
+
+
 static func _stop_worker() -> void:
 	var tree := Engine.get_main_loop() as SceneTree
 	var node: Node = tree.root.get_node_or_null("WorldBakes") if tree != null and tree.root != null else null
 	if node == null or node.get("_thread") == null:
 		return
+	var t0 := Time.get_ticks_usec()
+	var stage := work_stage
+	var active: String = node._active
 	_abort = true
 	var th: Thread = node._thread
 	if th.is_started():
@@ -172,11 +200,13 @@ static func _stop_worker() -> void:
 		node._jobs[act].done = true
 		node._jobs.erase(act)
 	node._active = ""
+	print("[world] quit bake join %.1f ms (job %s, worker stage %d)" % [
+		(Time.get_ticks_usec() - t0) / 1000.0, active.left(12), stage])
 
 # Authored R01 maps use the same shared worker and texture cache as the GPU
 # bakes. Decode and mip generation never block the battle's main thread.
-func authored(path: String, size: Vector2i, float_mips := false, urgent := false) -> Image:
-	return await result(request_authored(path, size, float_mips, urgent))
+func authored(path: String, size: Vector2i, split_relief := false, urgent := false) -> Image:
+	return await result(request_authored(path, size, split_relief, urgent))
 
 # Queues an authored map without waiting; returns its key for result(). A caller with several maps requests them all
 # first, so nothing else can slip in between them (Artoo, PR 1776).
@@ -207,8 +237,15 @@ func request_authored(path: String, size: Vector2i, float_mips := false, urgent 
 # The image is read before the pin is released: the last release trims the cache, and with every slot pinned the map
 # just collected can be the only one it may drop (Artoo, PR 1776).
 func result(key: String) -> Image:
+	var entry := await _result(key)
+	return entry.height if entry is RockyRelief else entry as Image
+
+func relief_result(key: String) -> RockyRelief:
+	return (await _result(key)) as RockyRelief
+
+func _result(key: String) -> RefCounted:
 	if _cache.has(key):
-		var hit: Image = _cache[key]
+		var hit: RefCounted = _cache[key]
 		_unpin(key)
 		return hit
 	var tree := _tree()
@@ -218,7 +255,7 @@ func result(key: String) -> Image:
 	var owner := service(tree)
 	var job = owner._jobs.get(key)
 	if job == null:
-		var late: Image = _cache.get(key)
+		var late: RefCounted = _cache.get(key)
 		_unpin(key)
 		return late
 	while not job.done:
@@ -288,6 +325,8 @@ func _enter_tree() -> void:
 	_exiting = false
 
 func _process(_dt: float) -> void:
+	if _exiting:
+		return
 	if _thread != null:
 		if _thread.is_alive(): return
 		var result: Dictionary = _thread.wait_to_finish()
@@ -351,7 +390,11 @@ func _process(_dt: float) -> void:
 func _exit_tree() -> void:
 	# Deleting a world does not cancel its shared job. Only shutdown joins it.
 	_exiting = true
-	if _thread != null: _thread.wait_to_finish()
+	if _thread != null:
+		_abort = true
+		_thread.wait_to_finish()
+		_thread = null
+		_abort = false
 	for job in _jobs.values(): job.done = true
 	_jobs.clear()
 	_queue.clear()
@@ -534,21 +577,47 @@ static func _save_later(key: String, img: Image, keep: Dictionary, folder: Strin
 # word and looked up in a 64K table of the exact heights: about half the time of the per-byte loop, same values.
 static var _height_lut := PackedFloat32Array()
 
-static func height_float(img: Image) -> Image:
+static func _height_table() -> PackedFloat32Array:
 	if _height_lut.is_empty():
 		var lut := PackedFloat32Array()
 		lut.resize(65536)
 		for v in 65536: lut[v] = float((v & 255) * 256 + (v >> 8)) / 65535.0   # the word reads low byte first: R is v & 255
 		_height_lut = lut
+	return _height_lut
+
+static func height_float(img: Image) -> Image:
 	if img.get_format() != Image.FORMAT_RG8: img.convert(Image.FORMAT_RG8)
 	var src := img.get_data()
 	var n := img.get_width() * img.get_height()
 	var out := PackedFloat32Array()
 	out.resize(n)
-	var lut := _height_lut
+	var lut := _height_table()
 	for i in n:
 		out[i] = lut[src.decode_u16(i * 2)]
 	return Image.create_from_data(img.get_width(), img.get_height(), false, Image.FORMAT_RF, out.to_byte_array())
+
+# R01's source RGBA8 is height (R high, G low), roughness (B), and cloud coverage (A). Decode the height before
+# filtering to avoid seams at byte carries. The other two channels are linear masks, not a stored normal.
+static func split_rocky_relief(img: Image) -> RockyRelief:
+	if img.get_format() != Image.FORMAT_RGBA8: img.convert(Image.FORMAT_RGBA8)
+	var size := img.get_size()
+	var count := size.x * size.y
+	var heights := PackedFloat32Array()
+	heights.resize(count)
+	var masks := PackedByteArray()
+	masks.resize(count * 2)
+	var lut := _height_table()
+	var src := img.get_data()
+	for i in count:
+		var rgba := src.decode_u32(i * 4)
+		heights[i] = lut[rgba & 0xffff]
+		masks.encode_u16(i * 2, rgba >> 16)
+	var relief := RockyRelief.new()
+	relief.height = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RF, heights.to_byte_array())
+	relief.masks = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RG8, masks)
+	relief.height.generate_mipmaps()
+	relief.masks.generate_mipmaps()
+	return relief
 
 
 static func _authored_tiles(path: String, size: Vector2i) -> Image:

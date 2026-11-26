@@ -120,7 +120,7 @@ func kit_checks(snd: FakeSound) -> void:
 	snd.heard.clear()
 	var l := Kit.link("Credits", 1.0)
 	l.mouse_entered.emit(); l.pressed.emit()
-	check(snd.heard == ["ui_select", "ui_click"], "a kit link plays the hover cue, then the press cue")
+	check(snd.heard == ["ui_hover", "ui_click"], "a kit link plays the hover cue, then the press cue")
 	l.free()
 
 

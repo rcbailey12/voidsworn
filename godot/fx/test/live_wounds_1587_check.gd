@@ -20,6 +20,9 @@ var world: Node3D
 
 
 func _init() -> void:
+	# Issue 1741 (Nov 24): Wounds V2 is on by default and its tiered drive (more than one nozzle dims, engine_tier_for) is
+	# checked by capability_loss_check.gd; this check keeps the one-sick-nozzle path that V2 off still uses
+	OS.set_environment("VS_WOUNDS_V2", "0")
 	GUARD.arm(self, "live_wounds_1587_check")
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 

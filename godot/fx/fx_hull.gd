@@ -1,4 +1,5 @@
 extends RefCounted
+const SHD := preload("res://fx/fx_shaders.gd")
 const SKEEP := preload("res://render/shader_keep.gd")
 # Where effects sit on a hull, found from the hull's own triangles (in the ship root's frame: bow +X, up +Y, port +Z).
 #
@@ -42,12 +43,23 @@ var stb_z = 1.0                    # +1: root +Z is starboard (G2), -1: +Z is po
 # the attach point service (issue 370)
 var code := ""                     # the hull's code (ShipView.code), for the log lines
 var formation := false             # a squadron's wing of craft: no hull of its own, so no core to miss
+var cache_geometry := false         # FxShip opts in. Standalone analysers do not keep installed meshes alive.
 var points := {}                   # point type -> Array of {name, p, n (+Y), f (-Z), i, and for guns slot, weapon, arc}
 var core := Vector3.ZERO           # hp_core; else the triangles' centre of volume (a load error, logged); see _find_core
 var core_authored := false
 var attach_counts := {}            # point type -> {"hp", "ray", "centre", "skip"}: what every request was answered with
 var _attach_logged := {}
 var _gun_turn := {}                # per slot: the rotating first point (HARDPOINTS.md "When shots outnumber points" 2)
+
+# LOAD38: keep only seed-free geometry across battles and title backdrops. Mesh references
+# keep the key's resource identities alive. Bound the cache so old installed kits can age out.
+const GEO_LIMIT := 32
+static var _hull_geometry := {}
+
+
+static func clear_static() -> void:
+	_hull_geometry.clear()
+
 
 # Shared by live hulls, wreck backs and slag. Stable embers, never lit compartments.
 const BURNT := """
@@ -159,25 +171,35 @@ uniform int fx_scorch_count = 0;
 uniform vec4 fx_scorch[8]; // issue 484: a death's wound (centre, reach) on a wreck piece
 uniform float fx_scorch_heat = 0.0;
 uniform vec3 fx_scorch_col = vec3(1.0, 0.30, 0.05);   // R367: the scorch heat in the faction's death colour
+uniform int fx_v2 = -1;   // R416 Wounds V2: the faction's wound kind (0 Sunward .. 5 Eclipse); -1 off
+uniform float fx_v2_soot = 1.0;
+uniform vec3 fx_v2_lift = vec3(0.3);
+uniform vec3 fx_v2_accent = vec3(1.0, 0.5, 0.15);
 varying vec3 fx_hull_p;
+varying vec3 fx_hull_n;
 float fx_scorch_at(vec3 p) {
 	float s = 0.0;
 	for (int i = 0; i < 8; i++) {
 		if (i >= fx_scorch_count) { break; }
 		float R = max(fx_scorch[i].w, 0.0001);
-		vec3 q = (p - fx_scorch[i].xyz) / R;
+		vec3 d = p - fx_scorch[i].xyz;
+		// The three wobble terms can move the stain out by at most 0.37 R.
+		if (dot(d, d) >= (1.38 * R) * (1.38 * R)) { continue; }
+		vec3 q = d / R;
 		float wob = 0.20 * sin(dot(q, vec3(7.1, 3.3, 5.9))) + 0.12 * sin(dot(q, vec3(-4.3, 13.7, 9.1))) + 0.10 * (burnt_hash(floor(q * 14.0)) - 0.5);
 		s = max(s, 1.0 - smoothstep(0.2, 1.0, length(q) + wob));
 	}
 	return s;
 }
-float fx_mouth_edge(int i, vec3 p) {
-	vec3 d = p - fx_mouths[i].xyz;
-	vec3 n = fx_axes[i].xyz;
-	float R = max(fx_mouths[i].w, 0.0001);
-	float x = dot(d, fx_tangents[i].xyz);
-	float y = dot(d, cross(n, fx_tangents[i].xyz));
+float fx_mouth_edge(int i, float x, float y, float R) {
 	vec4 s = fx_shapes[i];
+	if (s.x > 3.5) {
+		// R416: a straight-edged glass pane (fx_tears.w sides, turned by fx_tears.x), as fx_breach Ent.edge
+		float seg = 6.2831853 / max(fx_tears[i].w, 3.0);
+		float a = length(vec2(x, y)) > 0.00001 ? atan(y, x) : 0.0;
+		float a2 = mod(a - fx_tears[i].x, seg) - seg * 0.5;
+		return length(vec2(x, y)) * cos(a2) - R * cos(seg * 0.5);
+	}
 	if (s.x > 2.5) {
 		float a = length(vec2(x, y)) > 0.00001 ? atan(y, x) : 0.0;
 		return length(vec2(x, y)) - R * (1.0 + 0.2 * sin(a * 5.0 + s.w));
@@ -271,7 +293,7 @@ static func shared_shader(code: String, label := "") -> Shader:
 	_ext_codes.clear()
 
 
-static func damage_material(src: Material, frame: Transform3D, mouths: Dictionary, L: float, organic := false) -> ShaderMaterial:
+static func damage_material(src: Material, frame: Transform3D, mouths: Dictionary, L: float, organic := false, fixed_wreck := false) -> ShaderMaterial:
 	if src != null and src.has_meta("fx_hull_source"):
 		src = src.get_meta("fx_hull_source")
 	if src == null:
@@ -280,7 +302,7 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 	var mat := ShaderMaterial.new()
 	# The fog policy has already marked the painted source by the time this
 	# adapter is drawn. Compile with that mode on the first assignment.
-	var dmg := _damage_code(base.shader.code, src is BaseMaterial3D and src.disable_fog)
+	var dmg := _damage_code(base.shader.code, src is BaseMaterial3D and src.disable_fog, fixed_wreck)
 	mat.shader = shared_shader(dmg, "damage " + str(dmg.hash()))
 	for param in _uniforms_of(base.shader):
 		var value = base.get_shader_parameter(param)
@@ -289,7 +311,8 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 	mat.set_meta("fx_hull_source", src)
 	mat.set_shader_parameter("fx_organic", organic)
 	mat.set_shader_parameter("fx_burnt_cell", Vector3.ONE * maxf(L * 0.05, 0.001))
-	set_damage_pose(mat, frame, mouths)
+	if not fixed_wreck:
+		set_damage_pose(mat, frame, mouths)
 	return mat
 
 
@@ -323,6 +346,20 @@ static func set_wear(mat: ShaderMaterial, wear: float, patches: Array) -> void:
 	mat.set_shader_parameter("fx_scorch_heat", 0.0)
 
 
+# R416 (issue 1741): the faction's Wounds V2 profile on a hull damage surface; an empty profile turns it off.
+static func set_v2(mat: ShaderMaterial, wv: Dictionary) -> void:
+	if wv.is_empty():
+		mat.set_shader_parameter("fx_v2", -1)
+		mat.set_shader_parameter("fx_v2_soot", 1.0)
+		return
+	mat.set_shader_parameter("fx_v2", int(wv.get("kind", 0)))
+	mat.set_shader_parameter("fx_v2_soot", float(wv.get("soot_weight", 1.0)))
+	for k in [["interior_lift", "fx_v2_lift"], ["interior_accent", "fx_v2_accent"]]:
+		var v = wv.get(k[0])
+		if v is Array and (v as Array).size() >= 3:
+			mat.set_shader_parameter(k[1], Vector3(float(v[0]), float(v[1]), float(v[2])))
+
+
 static func set_damage_pose(mat: ShaderMaterial, frame: Transform3D, mouths: Dictionary) -> void:
 	mat.set_shader_parameter("fx_hull_frame", frame)
 	mat.set_shader_parameter("fx_mouth_count", int(mouths.get("count", 0)))
@@ -349,8 +386,8 @@ static func _uniforms_of(shader: Shader) -> Array:
 	return _uniform_names[key]
 
 
-static func _damage_code(source: String, disable_fog := false) -> String:
-	var key := [source, disable_fog]
+static func _damage_code(source: String, disable_fog := false, fixed_wreck := false) -> String:
+	var key := [source, disable_fog, fixed_wreck]
 	if _dmg_code.has(key):
 		return _dmg_code[key]
 	var code: String = source
@@ -360,49 +397,103 @@ static func _damage_code(source: String, disable_fog := false) -> String:
 	if not code.contains("cull_disabled"):
 		code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode cull_disabled;")
 	code = code.replace("shader_type spatial;", "shader_type spatial;\n" + BURNT + DAMAGE_UNIFORMS)
-	code = _inject(code, "vertex", "", "\nfx_hull_p = (fx_hull_frame * vec4(VERTEX, 1.0)).xyz;\n")
-	code = _inject(code, "fragment", """
+	# Board chunks are already cut and never get mouths. Keeping the discard in their shader
+	# makes Forward+ compile material-specific depth and shadow shaders for a path that cannot run.
+	var hull_pos := "VERTEX" if fixed_wreck else "(fx_hull_frame * vec4(VERTEX, 1.0)).xyz"
+	code = _inject(code, "vertex", "", "\nfx_hull_p = %s;\nfx_hull_n = mat3(fx_hull_frame) * NORMAL;\n" % hull_pos)
+	var soot := """
 float fx_soot = 0.0;
+float fx_near = 0.0;   // R416: how close this pixel is to an open mouth (the V2 back-face look stays at the wounds)
 // cull_disabled flips back-facing normals in the renderer, including mirrored exteriors.
-if (determinant(mat3(MODEL_MATRIX)) < 0.0) { NORMAL = -NORMAL; }
-for (int i = 0; i < 64; i++) {
+bool fx_mirrored = determinant(mat3(MODEL_MATRIX)) < 0.0;
+bool fx_back_face = FRONT_FACING == fx_mirrored;
+if (fx_mirrored) { NORMAL = -NORMAL; }
+"""
+	if not fixed_wreck:
+		soot += """for (int i = 0; i < 64; i++) {
 	if (i >= fx_mouth_count) { break; }
-	float h = dot(fx_hull_p - fx_mouths[i].xyz, fx_axes[i].xyz);
+	vec3 d = fx_hull_p - fx_mouths[i].xyz;
 	float R = max(fx_mouths[i].w, 0.0001);
+	float d2 = dot(d, d);
+	if (fx_v2 >= 0 && fx_back_face && d2 < (3.0 * R) * (3.0 * R)) {
+		fx_near = max(fx_near, 1.0 - smoothstep(R * 1.2, R * 3.0, sqrt(d2)));
+	}
+	float h = dot(d, fx_axes[i].xyz);
 	if (h < -fx_axes[i].w || h > R * 0.8) { continue; }
-	float edge = fx_mouth_edge(i, fx_hull_p);
+	float x = dot(d, fx_tangents[i].xyz);
+	float y = dot(d, cross(fx_axes[i].xyz, fx_tangents[i].xyz));
+	float plane2 = x * x + y * y;
+	// Even the square corners are within sqrt(2) * (1.10 + 0.65) R, including the soot rim.
+	// A slot can extend its half-length beyond that. Far plating needs none of the cut's trig.
+	float reach = 2.5 * R + (fx_shapes[i].x == 2.0 ? fx_tangents[i].w : 0.0);
+	if (plane2 >= reach * reach) { continue; }
+	// R416 4.2: only plating facing along the cut (or straight against it: the inner liner) is cut, never a wall at
+	// right angles or a face standing above the hole. The facing test holds only out past 0.6 R from the centre, so the
+	// side faces of raised plates inside the mouth are cut with it, not left as strips across it (Fable review M3)
+	vec3 plane_d = d - fx_axes[i].xyz * h;
+	if (fx_v2 >= 0 && (h > R * 0.45 || (dot(plane_d, plane_d) > (R * 0.6) * (R * 0.6) && abs(dot(normalize(fx_hull_n), fx_axes[i].xyz)) < 0.25))) { continue; }
+	float edge = fx_mouth_edge(i, x, y, R);
 	if (edge < -R * 0.035) { discard; }
 	fx_soot = max(fx_soot, 1.0 - smoothstep(0.0, R * 0.65, max(edge, 0.0)));
 }
-""", """
-ALBEDO *= (1.0 - fx_soot * 0.94) * (1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)));
+"""
+	var inside := """
+float fx_surface_tone = 1.0 - fx_soot * 0.94 * clamp(fx_v2_soot, 0.0, 1.0);
+if (fx_weather > 0.0 && fx_v2 != 1) { fx_surface_tone *= 1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)); }
+ALBEDO *= fx_surface_tone;
 EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0) * fx_flick;
+if (fx_v2 == 4 || fx_v2 == 5) {
+	// Colour stays on the cut lip. A broad sheen makes a pearl opening read flat and obsidian read lilac.
+	EMISSION += fx_v2_accent * smoothstep(0.83, 1.0, fx_soot) * (fx_v2 == 5 ? 0.12 : 0.05);
+}
 if (fx_scorch_count > 0) {
 	// issue 484: soot black at the wound, heat-stained bronze further out, embers that cool with the torn faces
 	float fx_sc = fx_scorch_at(fx_hull_p);
 	// bench round 1: a strong bronze ring read as brown cardboard on a white hull; keep the stain faint and the soot dark
-	ALBEDO *= mix(vec3(1.0), vec3(0.80, 0.72, 0.70), smoothstep(0.0, 0.35, fx_sc)) * (1.0 - 0.9 * smoothstep(0.25, 0.75, fx_sc));
-	ROUGHNESS = mix(ROUGHNESS, 1.0, fx_sc);
+	// R416 / R420 (Wounds V2): the stain and soot follow the faction's soot weight (none on Chorus, Glasswrights, Eclipse)
+	float fx_sw = clamp(fx_v2_soot, 0.0, 1.0);
+	ALBEDO *= mix(vec3(1.0), vec3(0.80, 0.72, 0.70), smoothstep(0.0, 0.35, fx_sc) * fx_sw) * (1.0 - 0.9 * smoothstep(0.25, 0.75, fx_sc) * fx_sw);
+	ROUGHNESS = mix(ROUGHNESS, 1.0, fx_sc * fx_sw);
 	float fx_em = smoothstep(0.65, 1.0, fx_sc) * step(0.72, burnt_hash(floor(fx_hull_p / max(fx_burnt_cell, vec3(0.001)) * 5.0)));
+	// issue 1741 (JOINT_B): a quarter of tiny cells lit read as glitter at camera 26 and 170; with V2, embers stay only
+	// on steel (Sunward, Hullbreakers), one cell in twenty, each cell two and a half times bigger
+	if (fx_v2 >= 0) { fx_em = (fx_v2 == 0 || fx_v2 == 2) ? smoothstep(0.65, 1.0, fx_sc) * step(0.95, burnt_hash(floor(fx_hull_p / max(fx_burnt_cell, vec3(0.001)) * 2.0))) * 0.6 : 0.0; }
 	EMISSION += fx_scorch_col * fx_em * clamp(fx_scorch_heat, 0.0, 1.0) * 2.0;
 }
 // Mirrored ship models reverse raster winding; keep their outside as the outside.
-if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
+if (fx_back_face) {
 	ALBEDO = vec3(0.0); METALLIC = 0.0; SPECULAR = 0.0; ROUGHNESS = 1.0;
 	RIM = 0.0; CLEARCOAT = 0.0; SSS_STRENGTH = 0.0; BACKLIGHT = vec3(0.0);
-	EMISSION = hull_inside(fx_hull_p, vec3(0.0), 0.0, fx_burnt_cell, 0.35, vec3(1.0), 0.0);
+	// R416 (Nov 24, Ryan's yes): the orange ember speckle on the back of the plating stays on steel only (Sunward,
+	// Hullbreakers); every other faction's backface is its own matter, never orange
+	EMISSION = hull_inside(fx_hull_p, vec3(0.0), 0.0, fx_burnt_cell, (fx_v2 == 0 || fx_v2 == 2) ? 0.35 : 0.0, vec3(1.0), 0.0);
 	vec3 section = fx_hull_p / max(fx_burnt_cell, vec3(0.001));
 	float rib = 1.0 - smoothstep(0.02, 0.065, abs(fract(section.y * 0.65) - 0.5));
 	float beam = 1.0 - smoothstep(0.015, 0.045, abs(fract(section.z * 0.5) - 0.5));
 	vec3 structure = mix(vec3(0.008, 0.006, 0.007), vec3(0.032, 0.025, 0.021), max(rib, beam));
 	if (fx_organic) {
+		// R416: umber, never magenta (the old magenta flesh is retired, Nov 24)
 		float fibre = pow(abs(sin(section.x * 6.0 + sin(section.y * 3.0))), 8.0);
-		structure = mix(vec3(0.018, 0.003, 0.009), vec3(0.042, 0.009, 0.017), fibre);
+		structure = mix(vec3(0.016, 0.008, 0.004), vec3(0.036, 0.016, 0.008), fibre);
 		structure = mix(structure, vec3(0.085, 0.062, 0.033), rib * 0.7);
 	}
 	EMISSION = max(EMISSION, structure);
+	if (fx_v2 >= 0 && fx_near > 0.0) {
+		// R416: the back of the plating seen through a cut is the faction's own lit matter, never a flat black (only
+		// round the wounds: a single-sided fin or sail seen from behind keeps its old look)
+		ALBEDO = mix(ALBEDO, fx_v2_lift * (0.45 + 0.55 * max(rib, beam)), fx_near);
+		ROUGHNESS = mix(ROUGHNESS, fx_v2 == 4 ? 0.1 : (fx_v2 == 3 ? 0.25 : 0.6), fx_near);
+		METALLIC = mix(METALLIC, (fx_v2 <= 2 || fx_v2 == 5) ? 0.4 : 0.0, fx_near);   // mixed, so no ring at 3 R (M3)
+		SPECULAR = 0.4 * fx_near;
+		EMISSION = mix(EMISSION, fx_v2_lift * 0.03 + fx_v2_accent * (fx_v2 == 4 ? 0.05 : 0.01), fx_near);
+	}
 }
-""")
+"""
+	# A write of zero still flags SSS in the renderer, multiplying the PSOs for every
+	# already-instanced mesh. Only zero the back face when the source actually writes SSS.
+	if not source.contains("SSS_STRENGTH"):
+		inside = inside.replace(" SSS_STRENGTH = 0.0;", "")
+	code = _inject(code, "fragment", soot, inside)
 	if disable_fog and not code.contains("fog_disabled"):
 		code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
 	_dmg_code[key] = code
@@ -475,6 +566,96 @@ static func interior_material(mat: Material) -> bool:
 	return mat != null and bool(mat.get_meta("fx_authored_interior", false))
 
 
+# R416 5.3 (issue 1741, Wounds V2): the shared interior shader (fx_shaders INTERIOR) for one authored inside surface,
+# with the source's own colour and glow kept underneath. It keeps the source as fx_hull_source, so interior_material()
+# still knows it for an inside surface. wreck 1: a dead hull's piece (every surface open, settled into the wreck look).
+static func interior_material_v2(src: Material, frame: Transform3D, mouths: Dictionary, wv: Dictionary, L: float, wreck := 0.0) -> ShaderMaterial:
+	if src != null and src.has_meta("fx_hull_source"):
+		src = src.get_meta("fx_hull_source")
+	var m := ShaderMaterial.new()
+	m.shader = shared_shader(SHD.INTERIOR, "interior v2")
+	var rl := interior_role(src)
+	m.set_shader_parameter("role", int(rl[0]))
+	m.set_shader_parameter("trusted", bool(rl[1]))
+	if src is BaseMaterial3D:
+		var b := src as BaseMaterial3D
+		m.set_shader_parameter("base_albedo", b.albedo_color)
+		if b.albedo_texture != null:
+			m.set_shader_parameter("base_tex", b.albedo_texture)
+		m.set_shader_parameter("base_rough", b.roughness)
+		m.set_shader_parameter("base_metal", b.metallic)
+		# Fable review B3: the trim's own maps are read, not dropped (glTF packs occlusion, roughness, metal in one map)
+		if b.normal_enabled and b.normal_texture != null:
+			m.set_shader_parameter("base_normal", b.normal_texture)
+			m.set_shader_parameter("has_normal", true)
+		var orm: Texture2D = b.roughness_texture if b.roughness_texture != null else b.metallic_texture
+		if orm != null:
+			m.set_shader_parameter("base_orm", orm)
+			m.set_shader_parameter("has_orm", true)
+		if b.emission_enabled:
+			m.set_shader_parameter("base_emission", b.emission)
+			m.set_shader_parameter("base_emission_energy", b.emission_energy_multiplier)
+			if b.emission_texture != null:
+				m.set_shader_parameter("base_em_tex", b.emission_texture)
+	m.set_shader_parameter("tri_scale", 1.0 / maxf(L * 0.012, 1e-3))
+	m.set_shader_parameter("wound_v2", int(wv.get("kind", 0)))
+	for key in ["scorch_col", "rim_metal", "interior_lift", "interior_accent"]:
+		var v = wv.get(key)
+		if v is Array and (v as Array).size() >= 3:
+			m.set_shader_parameter("v2_" + key, Vector3(float(v[0]), float(v[1]), float(v[2])))
+	m.set_shader_parameter("v2_rough", float(wv.get("interior_rough", 0.6)))
+	m.set_shader_parameter("v2_soot", float(wv.get("soot_weight", 1.0)))
+	m.set_shader_parameter("v2_wreck_soot", float(wv.get("wreck_soot", 0.3)))
+	m.set_shader_parameter("v2_wall_max", float(wv.get("wall_max", 0.11)))
+	m.set_shader_parameter("fx_wreck", wreck)
+	if wreck > 0.0:
+		mouths = {"count": -1}
+	set_interior_pose(m, frame, mouths)
+	if src != null:
+		m.set_meta("fx_hull_source", src)
+	return m
+
+
+# Fable review B3: an inside surface's role for the interior shader, [role, trusted]: 0 wall (deck, frame, machinery),
+# 1 bone, 2 core, 3 glass, 4 organ or gland. A surface from the Interior Kit V2 (PR 1763) names its role in the glTF
+# material extras (interior_role), and its colour came from the faction role table, so it is trusted and kept; an older
+# surface is read from its name and light, and only its texture's light and dark are kept. Godot does not import glTF
+# material extras, so _authored copies the role from the hull contract's interior_roles {material name: role} as meta.
+const INTERIOR_ROLES := {"bone": 1, "core": 2, "glass": 3, "glass_strut": 3, "organ": 4, "gland": 4}
+
+
+static func interior_role(src: Material) -> Array:
+	if src == null:
+		return [0, false]
+	var ex = src.get_meta("extras", {})
+	var named := str(src.get_meta("interior_role", ex.get("interior_role", "") if ex is Dictionary else ""))
+	if named != "":
+		return [int(INTERIOR_ROLES.get(named, 0)), true]
+	var nm := src.resource_name.to_lower()
+	if nm.contains("bone") or nm.contains("rib"):
+		return [1, false]
+	if nm.contains("core") or nm.contains("reactor"):
+		return [2, false]
+	if src is BaseMaterial3D:
+		var b := src as BaseMaterial3D
+		var e := b.emission * b.emission_energy_multiplier
+		if b.emission_enabled and maxf(e.r, maxf(e.g, e.b)) >= 1.0:
+			return [2, false]
+	if nm.contains("vat") or nm.contains("organ") or nm.contains("gland"):
+		return [4, false]
+	if nm.contains("glass") or nm.contains("gw_in"):
+		return [3, false]
+	return [0, false]
+
+
+static func set_interior_pose(m: ShaderMaterial, frame: Transform3D, mouths: Dictionary) -> void:
+	m.set_shader_parameter("fx_hull_frame", frame)
+	m.set_shader_parameter("fx_mouth_count", int(mouths.get("count", 0)))
+	for key in ["mouths", "axes"]:
+		if mouths.has(key):
+			m.set_shader_parameter("fx_" + key, mouths[key])
+
+
 func _authored(root: Node3D) -> void:
 	authored = false
 	seams.clear()
@@ -491,7 +672,12 @@ func _authored(root: Node3D) -> void:
 			if not part is MeshInstance3D or part.mesh == null: continue
 			for si in part.mesh.get_surface_count():
 				var mat: Material = part.mesh.surface_get_material(si)
-				if mat != null and mat.resource_name in contract.get("interior_materials", []): mat.set_meta("fx_authored_interior", true)
+				if mat != null and mat.resource_name in contract.get("interior_materials", []):
+					mat.set_meta("fx_authored_interior", true)
+					# Interior Kit V2 (PR 1763): Godot drops glTF material extras, so each inside material's role
+					# (wall, deck, frame, machinery, bone, core, glass, organ, gland) rides in the hull contract
+					var roles = contract.get("interior_roles", {})
+					if roles is Dictionary and roles.has(mat.resource_name): mat.set_meta("interior_role", str(roles[mat.resource_name]))
 		var xf: Transform3D = root.global_transform.affine_inverse() * nd.global_transform
 		for seam in contract.get("seams", []):
 			var p: Array = seam["p"]
@@ -602,6 +788,8 @@ static func face_corners(triangle: int, strip: bool) -> Vector3i:
 
 func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	_rng.seed = seed_v
+	if code == "" and root.get("code") != null:
+		code = str(root.get("code"))
 	_authored(root)
 	var inv = root.global_transform.affine_inverse()
 	var first = true
@@ -620,16 +808,9 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	H = maxf(box.size.y, 0.05)
 	c = box.get_center()
 	bvh_ranges.clear()
-	# Issue 1289: the triangles, the hit BVH and the turret reach depend only on the hull's meshes and their pose, so the
-	# battle's effects keep them per hull (shared, set by fx_ship.setup) and a later ship of the same hull reuses them: an
-	# arriving A16 spent about 270 ms here on the PC. Read only after this; each ship keeps its own samples and points.
-	var geo_key: String = _geo_key(root, meshes) if shared is Dictionary else ""
-	var geo = (shared as Dictionary).get(geo_key) if geo_key != "" else null
-	if geo == null and geo_key != "":
-		geo = build_geo(root, meshes)   # issue 1434: a sliced load builds it a frame earlier (prime), so this is a hit
-		shared[geo_key] = geo
+	var geo := _geometry(root, meshes)
 	var faces: PackedVector3Array
-	if geo is Dictionary:
+	if not geo.is_empty():
 		faces = geo["faces"]
 		tm = geo["tm"]
 		for r in geo["ranges"]:
@@ -650,22 +831,25 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	tri_count = faces.size() / 3
 	_samples(900)
 	_find_bow()
-	_find_nozzles()
+	if geo.has("nozzles"):
+		nozzles = (geo["nozzles"] as Array).duplicate(true)
+	else:
+		_find_nozzles()
+		if not geo.is_empty():
+			geo["nozzles"] = nozzles.duplicate(true)
 	_kit_nozzles(root)
 	for side in ["port", "stb", "top"]:
 		mounts[side] = _mount_row(side)
-	if code == "" and root.get("code") != null:
-		code = str(root.get("code"))
 	_read_turrets(root)
 	_read_doors(root)
 	_read_points(root)
-	_find_core(faces)
-	if geo is Dictionary and geo.has("turrets") and (geo["turrets"] as Array).size() == turrets.size():
+	_find_core(faces, geo)
+	if geo.has("turrets") and (geo["turrets"] as Array).size() == turrets.size():
 		for k in turrets.size():
-			(turrets[k] as Dictionary).merge(geo["turrets"][k], true)
+			(turrets[k] as Dictionary).merge((geo["turrets"][k] as Dictionary).duplicate(true), true)
 	else:
 		_turret_clearance(root, meshes)
-		if geo is Dictionary:
+		if not geo.is_empty():
 			var reach: Array = []
 			for t in turrets:
 				reach.append({"full": t.get("full"), "ymin": t.get("ymin"), "ymax": t.get("ymax"), "blocked": t.get("blocked", [])})
@@ -691,39 +875,67 @@ static func build_geo(root: Node3D, meshes: Array) -> Dictionary:
 	return {"faces": faces, "tm": tm2, "ranges": keep}
 
 
-# Issue 1434: the sliced battle load builds a new hull's geometry in its own frame before the ship's effects are
-# registered (on the PC a first hull's analyse took 100 to 450 ms, most of it here). True when it built one.
-static func prime(root: Node3D, meshes: Array, shared: Dictionary) -> bool:
+# Issue 1434: the sliced load builds the BVH in a separate frame from seeded analysis.
+func prime(root: Node3D, meshes: Array) -> bool:
 	var key := _geo_key(root, meshes)
-	if key == "" or shared.has(key):
+	if key.is_empty() or _hull_geometry.has(key):
 		return false
-	shared[key] = build_geo(root, meshes)
+	_authored(root)   # mark interior faces before building the outside BVH
+	_geometry(root, meshes)
 	return true
 
 
-var shared = null   # issue 1289: the battle's per-hull geometry (fx.hull_shared), or null to analyse alone
-
-
-# The hull's geometry and pose: each mesh resource and its frame in the ship's root. Same key, same triangles.
-# The frames are composed from local transforms (not world ones), so the key does not depend on where the ship stands.
-static func _geo_key(root: Node3D, meshes: Array) -> String:
-	var parts := PackedStringArray()
+func _geometry(root: Node3D, meshes: Array) -> Dictionary:
+	var key := _geo_key(root, meshes)
+	if key.is_empty():
+		return {}
+	if _hull_geometry.has(key):
+		var cached: Dictionary = _hull_geometry[key]
+		_hull_geometry.erase(key)
+		_hull_geometry[key] = cached
+		return cached
+	if _hull_geometry.size() >= GEO_LIMIT:
+		_hull_geometry.erase(_hull_geometry.keys()[0])
+	var geo := build_geo(root, meshes)
+	var resources: Array[Mesh] = []
 	for m in meshes:
+		if not is_instance_valid(m):
+			continue
 		var mi := m as MeshInstance3D
-		if mi == null or not is_instance_valid(mi) or mi.mesh == null:
-			parts.append("-")
+		if mi != null and mi.mesh != null:
+			resources.append(mi.mesh)
+	geo["resources"] = resources
+	_hull_geometry[key] = geo
+	return geo
+
+
+# Only installed hulls have a stable kit contract. The local frames keep world
+# position and facing out of the key, but a different mesh set or pose misses.
+func _geo_key(root: Node3D, meshes: Array) -> Array:
+	var path = root.get("hull_res")
+	if not cache_geometry or code.is_empty() or formation or not path is String or path.is_empty():
+		return []
+	var parts: Array = [code, path, stb_z]
+	for m in meshes:
+		if not is_instance_valid(m):
+			parts.append(null)
+			continue
+		var mi := m as MeshInstance3D
+		if mi == null or mi.mesh == null:
+			parts.append(null)
 			continue
 		var frame := Transform3D.IDENTITY
 		var part: Node3D = mi
 		while part != null and part != root:
 			if part.top_level:
-				return ""   # placed in the world, not under the ship: no sharing
+				return []   # placed in the world, not under the ship: no sharing
 			frame = part.transform * frame
 			part = part.get_parent_node_3d()
 		if part != root:
-			return ""
-		parts.append("%d@%s" % [mi.mesh.get_instance_id(), str(frame)])
-	return "|".join(parts)
+			return []
+		parts.append(mi.mesh.get_instance_id())
+		parts.append(frame)
+	return parts
 
 
 func section_of(x: float) -> int:
@@ -1063,7 +1275,7 @@ func _read_points(root: Node3D) -> void:
 # The core: hp_core when the hull has one. The contract gives the core no ray fallback (the death explosion has to start
 # inside the hull) and calls a missing core a load error; an old hull without one still plays, from the centre of volume
 # of its own triangles (never the box centre), and says so once.
-func _find_core(faces: PackedVector3Array) -> void:
+func _find_core(faces: PackedVector3Array, geo: Dictionary) -> void:
 	var pts: Array = points.get("core", [])
 	core_authored = not pts.is_empty()
 	if core_authored:
@@ -1072,6 +1284,17 @@ func _find_core(faces: PackedVector3Array) -> void:
 	core = c
 	if faces.size() < 3:
 		return
+	if geo.has("fallback_core"):
+		core = geo["fallback_core"]
+	else:
+		core = _volume_center(faces)
+		if not geo.is_empty():
+			geo["fallback_core"] = core
+	if not formation:
+		_attach_note("core", "load", "hp_core missing on %s (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles" % _who())
+
+
+func _volume_center(faces: PackedVector3Array) -> Vector3:
 	var vol := 0.0
 	var acc := Vector3.ZERO
 	var area := 0.0
@@ -1089,11 +1312,8 @@ func _find_core(faces: PackedVector3Array) -> void:
 		aacc += (a + b + d) * (ar / 3.0)
 		i += 3
 	if absf(vol) > 1e-6 * maxf(L * W * H, 1e-6):
-		core = c + acc / vol
-	elif area > 0.0:
-		core = c + aacc / area
-	if not formation:
-		_attach_note("core", "load", "hp_core missing on %s (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles" % _who())
+		return c + acc / vol
+	return c + aacc / area if area > 0.0 else c
 
 
 func _who() -> String:
@@ -1159,10 +1379,13 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 	var pts := _gun_points(slot, weapon, target_local, d)
 	var out: Array = []
 	if not pts.is_empty():
-		# issue 1587: a jammed turret (a wounded section, see jam_turret) sits out while another muzzle bears
-		var free_pts := pts.filter(func(q: Dictionary) -> bool: return not (q.has("tur") and turret_jammed(int(q["tur"]))))
-		if not free_pts.is_empty():
-			pts = free_pts
+		pts = _unjammed_points(pts)
+		if pts.is_empty():
+			# A known battery is jammed, not missing its mounts. Do not draw a shot from its barrels or the plating.
+			for i in n:
+				out.append({})
+				_took("gun", "skip")
+			return out
 		var key := "%d|%s" % [slot, weapon]
 		var off: int = int(_gun_turn.get(key, posmod(hash(code + key), pts.size())))
 		var aims := {}     # issue 560: each turret this volley uses turns once, toward the target, before its shots
@@ -1191,6 +1414,10 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 			out.append({"p": m["p"], "n": m["n"], "f": d, "src": "bow" if from_bow else "ray"})
 			_took("gun", "ray")
 	return out
+
+
+func _unjammed_points(pts: Array) -> Array:
+	return pts.filter(func(pt: Dictionary) -> bool: return not (pt.has("tur") and turret_jammed(int(pt["tur"]))))
 
 
 # Every tier checks bearing and reach. The exact slot and weapon win among usable muzzles, followed by the weapon on
@@ -1598,14 +1825,10 @@ func _want_yaw(k: int, target_local: Vector3) -> float:
 func gun_turrets(slot: int, weapon: String, target_local: Vector3, n: int) -> Array:
 	var d := target_local - core
 	d = d.normalized() if d.length() > 1e-4 else Vector3(1, 0, 0)
-	var pts := _gun_points(slot, weapon, target_local, d)
+	var pts := _unjammed_points(_gun_points(slot, weapon, target_local, d))
 	var out: Array = []
 	if pts.is_empty():
 		return out
-	# Neon on PR 1631: the same jammed-turret filter as guns(), so a Burn and fire never trains a jammed turret
-	var free_pts := pts.filter(func(q: Dictionary) -> bool: return not (q.has("tur") and turret_jammed(int(q["tur"]))))
-	if not free_pts.is_empty():
-		pts = free_pts
 	var key := "%d|%s" % [slot, weapon]
 	var off: int = int(_gun_turn.get(key, posmod(hash(code + key), pts.size())))
 	for i in maxi(n, 1):

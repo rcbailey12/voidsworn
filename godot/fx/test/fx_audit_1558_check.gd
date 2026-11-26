@@ -120,7 +120,8 @@ func _fog() -> void:
 	var text := FileAccess.get_file_as_string("res://fx/fx_death.gd")
 	var at := text.find("static func tear_particles(")
 	var block := text.substr(at, text.find("\nstatic func ", at + 10) - at)
-	_check(block.contains("mat.disable_fog = true"), "3: tear sparks and vents ignore fog")
+	_check(block.contains("mat.disable_fog = true"), "3: tear vents ignore fog")
+	_check(preload("res://fx/fx_shaders.gd").STREAK.contains("fog_disabled"), "3: shared sparks ignore fog")
 
 
 # Real seconds the clock spends under half speed, and effect seconds lost, after a 3-frame hit pause.

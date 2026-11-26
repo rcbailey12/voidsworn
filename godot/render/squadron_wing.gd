@@ -61,15 +61,17 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 	faction = fac
 	length = size
 	phase = seed_value
+	SH.ensure_globals()
 	trail_mat = ShaderMaterial.new()
 	trail_mat.shader = TRAIL
 	trail_mat.set_shader_parameter("trail_len", size)
 	# Ryan (Nov 20 2026, issue 1373): the long wide Chorus wake made each spore read as a tadpole ("comes off looking like
 	# sperm"); a spore now leaves only a short faint shimmer that is gone within a craft length or two
 	trail_life = TRAIL_LIFE_CHORUS if fac == "chorus" else TRAIL_LIFE
-	trail_mat.set_shader_parameter("width_k", 0.022 if fac == "chorus" else 0.026)
-	trail_mat.set_shader_parameter("alpha_k", 0.14 if fac == "chorus" else 0.56)
+	trail_mat.set_shader_parameter("width_k", 0.048 if fac == "chorus" else 0.026)
+	trail_mat.set_shader_parameter("alpha_k", 0.22 if fac == "chorus" else 0.56)
 	trail_mat.set_shader_parameter("life", trail_life)
+	trail_mat.set_shader_parameter("trail_style", 1.0 if fac == "chorus" else (2.0 if fac == "ithar" else 0.0))
 	if count <= 0:
 		return
 	var t_make := Time.get_ticks_usec()
@@ -88,12 +90,14 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 		ribbon.name = "fx_craft_trail_%d" % i
 		ribbon.top_level = true
 		ribbon.mesh = ImmediateMesh.new()
-		ribbon.material_override = trail_mat
+		var mat := trail_mat.duplicate() as ShaderMaterial
+		ribbon.material_override = mat
 		ribbon.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		ribbon.extra_cull_margin = 20.0
 		add_child(ribbon)
-		ribbon.global_transform = Transform3D.IDENTITY
-		trails.append({"node": ribbon, "hist": []})
+		if ribbon.is_inside_tree():
+			ribbon.global_transform = Transform3D.IDENTITY
+		trails.append({"node": ribbon, "mat": mat, "hist": []})
 	stage_us["wing_copies"] = Time.get_ticks_usec() - t_copies
 	fit_formation()
 	_patrol_blend = patrol_target
@@ -193,6 +197,13 @@ func _make_craft(fac: String, kind: String) -> Node3D:
 	craft_root.set_meta("model_code", code)   # issue 1373: acceptance runs assert the installed model, never the code fallback
 	craft_root.add_child(body)
 	return craft_root
+
+
+# Only one distressed craft needs the wing's smoke ribbon. Use its real exhaust and moving local frame.
+func damage_exhaust() -> Dictionary:
+	if craft.is_empty() or not is_instance_valid(craft[0]):
+		return {}
+	return {"parent": craft[0], "p": _stern}
 
 
 func _engine_origin(model: Node3D) -> Vector3:
@@ -418,7 +429,7 @@ func step(dt: float) -> void:
 			n.transform = Transform3D(facing.scaled(Vector3.ONE * size), pos)
 		var tr: Dictionary = trails[i]
 		var hist: Array = tr.hist
-		var stern := n.to_global(_stern)
+		var stern := n.to_global(_stern) if n.is_inside_tree() else Vector3.ZERO
 		var changed := false
 		if not hist.is_empty() and stern.distance_to(hist[0][0]) > length * 8.0:
 			hist.clear()
@@ -431,6 +442,15 @@ func step(dt: float) -> void:
 		while not hist.is_empty() and (sample or not active) and (clock - float(hist[-1][1]) > trail_life or hist.size() > 20):
 			hist.pop_back()
 			changed = true
+		var mat: ShaderMaterial = tr.get("mat") as ShaderMaterial
+		if mat != null:
+			mat.set_shader_parameter("clock_now", clock)
+			mat.set_shader_parameter("head_world", stern)
+			if not hist.is_empty():
+				mat.set_shader_parameter("newest_birth", float(hist[0][1]))
+				mat.set_shader_parameter("anchor_ready", 1.0)
+			else:
+				mat.set_shader_parameter("anchor_ready", 0.0)
 		# issue 221: the shader ages the ribbon; the mesh only changes with its samples
 		if changed or not tr.get("built", false):
 			_draw_trail(tr)

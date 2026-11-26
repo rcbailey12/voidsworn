@@ -273,6 +273,19 @@ func _i_unit(id: String) -> Variant:
 func view() -> Dictionary:
 	_enter()
 	var r = _i_view(); _leave(false); return r
+
+# Kept out of view() so drawing the HUD does not copy the hit history on every call.
+func combat_report() -> Dictionary:
+	_enter()
+	var out := {}
+	if R != null and R.B != null:
+		var battle: Dictionary = R.B
+		out = {"combat_events": battle.get("combat_events", []).duplicate(true),
+			"ship_rollups": R.CombatRecords.rollups(battle),
+			"lost_ship_records": battle.get("lost_ship_records", []).duplicate(true)}
+	_leave(false)
+	return out
+
 func _i_view() -> Dictionary:
 	var B = R.B; var us := []
 	for u in B["units"]:
@@ -282,6 +295,7 @@ func _i_view() -> Dictionary:
 			var w = u["weapons"][i]
 			ws.append({"i": i, "id": w["id"], "name": w.get("n"), "kind": w["k"], "arc": w["arc"], "range": w["r"], "ready": R.weaponReady(w), "cd": w.get("cdLeft"), "off": w.get("off")})   # get(): B-20 refits lack them
 		us.append({"id": u["id"], "side": u["side"], "tpl": u["tpl"], "name": u["name"], "cls": u.get("cls"), "fac": u["fac"], "size": u["size"], "squadron": R.jt(u.get("isSq")),
+			"captain": u["ship"]["cap"].duplicate(true) if u.get("ship") is Dictionary else null,
 			"q": int(u["q"]), "r": int(u["r"]), "facing": int(u["facing"]), "hp": u["hp"], "maxHp": u["maxHp"], "sh": u["sh"].duplicate(), "shMax": u["shMax"], "shp": u.get("shp"),
 			"route": u["route"].duplicate() if u.get("route") is Array else [0, 0, 0, 0], "cov": u["cov"].duplicate() if u.get("cov") is Array else null,   # issue 1446: R246 shield routing for the HUD and the bubble
 			"regenLock": R.jt(u.get("regenLock")), "st": {"acid": R.z0(u["st"].get("acid"))},
@@ -1173,7 +1187,8 @@ func take_round_snapshot() -> Dictionary:
 static func snapshot_fingerprint() -> String:
 	if _fp_cache != "": return _fp_cache
 	var parts := ["snap%d" % SNAP_V]
-	for f in ["res://rules/data/tables.json", "res://rules/rules.gd", "res://rules/battle_api.gd", "res://rules/battle_snapshot.gd", "res://rules/jsm.gd"]:
+	for f in ["res://rules/data/tables.json", "res://rules/rules.gd", "res://rules/battle_api.gd", "res://rules/battle_snapshot.gd",
+			"res://rules/jsm.gd", "res://rules/combat_records.gd", "res://rules/captain_data.gd"]:
 		if FileAccess.file_exists(f): parts.append(FileAccess.get_file_as_string(f).md5_text().left(12))
 	if FileAccess.file_exists("res://build_info.json"):
 		var bi = JSON.parse_string(FileAccess.get_file_as_string("res://build_info.json"))

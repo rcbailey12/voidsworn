@@ -1,0 +1,47 @@
+{
+  "about": "Issue 2018. Same 24 live moments on both revisions. At 170 the crop is one to one. At 26 the wider crop keeps the hull contact in frame. Hit and crit vary the target; weapon varies the attacker.",
+  "cameras": [
+    170,
+    26
+  ],
+  "cell": [
+    288,
+    126
+  ],
+  "crop": {
+    "170": [
+      288,
+      126
+    ],
+    "26": [
+      704,
+      308
+    ]
+  },
+  "rows": [
+    {"id": "voidsworn_hit", "group": "voidsworn", "label": "V16_37 hit", "att": ["hegemony", "Cruiser"], "tgt": ["voidsworn", "Cruiser"], "expect_code": "V16_37", "key": 2, "kind": "battery", "weapon": "battery", "shots": 1, "windows": [["impact", 0.02, 2], ["impact", 0.16, 2]]},
+    {"id": "voidsworn_crit", "group": "voidsworn", "label": "V16_37 crit", "att": ["hegemony", "Cruiser"], "tgt": ["voidsworn", "Cruiser"], "expect_code": "V16_37", "key": 2, "kind": "battery", "weapon": "hbattery", "shots": 1, "windows": [["impact", 0.14, 2], ["impact", 0.32, 2]], "crit": true},
+    {"id": "voidsworn_death", "group": "voidsworn", "label": "V16_37 death", "att": ["hegemony", "Cruiser"], "tgt": ["voidsworn", "Cruiser"], "expect_code": "V16_37", "key": 2, "do": "death", "cause": "blast", "windows": [["split", -0.01, 2], ["split", 0.34, 2]]},
+    {"id": "voidsworn_weapon", "group": "voidsworn", "label": "V16_37 weapon (hbattery)", "att": ["voidsworn", "Cruiser"], "tgt": ["hegemony", "Cruiser"], "expect_code": "H9_23", "key": 2, "kind": "battery", "weapon": "hbattery", "shots": 1, "windows": [["impact", 0.02, 2], ["impact", 0.16, 2]]},
+    {"id": "hegemony_hit", "group": "hegemony", "label": "H9_23 hit", "att": ["voidsworn", "Cruiser"], "tgt": ["hegemony", "Cruiser"], "expect_code": "H9_23", "key": 2, "kind": "battery", "weapon": "battery", "shots": 1, "windows": [["impact", 0.02, 2], ["impact", 0.16, 2]]},
+    {"id": "hegemony_crit", "group": "hegemony", "label": "H9_23 crit", "att": ["voidsworn", "Cruiser"], "tgt": ["hegemony", "Cruiser"], "expect_code": "H9_23", "key": 2, "kind": "battery", "weapon": "hbattery", "shots": 1, "windows": [["impact", 0.14, 2], ["impact", 0.32, 2]], "crit": true},
+    {"id": "hegemony_death", "group": "hegemony", "label": "H9_23 death", "att": ["voidsworn", "Cruiser"], "tgt": ["hegemony", "Cruiser"], "expect_code": "H9_23", "key": 2, "do": "death", "cause": "blast", "windows": [["split", -0.01, 2], ["split", 0.34, 2]]},
+    {"id": "hegemony_weapon", "group": "hegemony", "label": "H9_23 weapon (ion)", "att": ["hegemony", "Cruiser"], "tgt": ["voidsworn", "Cruiser"], "expect_code": "V16_37", "key": 2, "kind": "lance", "weapon": "ion", "shots": 1, "windows": [["impact", 0.02, 2], ["impact", 0.16, 2]]},
+    {"id": "corsair_hit", "group": "corsair", "label": "C15s_23 hit", "att": ["voidsworn", "Cruiser"], "tgt": ["corsair", "Cruiser"], "expect_code": "C15s_23", "key": 2, "kind": "battery", "weapon": "battery", "shots": 1, "windows": [["impact", 0.02, 2], ["impact", 0.16, 2]]},
+    {"id": "corsair_crit", "group": "corsair", "label": "C15s_23 crit", "att": ["voidsworn", "Cruiser"], "tgt": ["corsair", "Cruiser"], "expect_code": "C15s_23", "key": 2, "kind": "battery", "weapon": "hbattery", "shots": 1, "windows": [["impact", 0.14, 2], ["impact", 0.32, 2]], "crit": true},
+    {"id": "corsair_death", "group": "corsair", "label": "C15s_23 death", "att": ["voidsworn", "Cruiser"], "tgt": ["corsair", "Cruiser"], "expect_code": "C15s_23", "key": 2, "do": "death", "cause": "blast", "windows": [["split", -0.01, 2], ["split", 0.34, 2]]},
+    {"id": "corsair_weapon", "group": "corsair", "label": "C15s_23 weapon (htorp)", "att": ["corsair", "Cruiser"], "tgt": ["hegemony", "Cruiser"], "expect_code": "H9_23", "key": 2, "kind": "torp", "weapon": "htorp", "shots": 1, "windows": [["impact", 0.02, 2], ["impact", 0.16, 2]]},
+    {"id": "ithar_hit", "group": "ithar", "label": "I15_11 hit", "att": ["voidsworn", "Cruiser"], "tgt": ["ithar", "Cruiser"], "expect_code": "I15_11", "key": 2, "kind": "battery", "weapon": "battery", "shots": 1, "windows": [["impact", 0.02, 2], ["impact", 0.16, 2]]},
+    {"id": "ithar_crit", "group": "ithar", "label": "I15_11 crit", "att": ["voidsworn", "Cruiser"], "tgt": ["ithar", "Cruiser"], "expect_code": "I15_11", "key": 2, "kind": "battery", "weapon": "hbattery", "shots": 1, "windows": [["impact", 0.14, 2], ["impact", 0.32, 2]], "crit": true},
+    {"id": "ithar_death", "group": "ithar", "label": "I15_11 death", "att": ["voidsworn", "Cruiser"], "tgt": ["ithar", "Cruiser"], "expect_code": "I15_11", "key": 2, "do": "death", "cause": "blast", "windows": [["split", -0.01, 2], ["split", 0.34, 2]]},
+    {"id": "ithar_weapon", "group": "ithar", "label": "I15_11 weapon (shard)", "att": ["ithar", "Cruiser"], "tgt": ["hegemony", "Cruiser"], "expect_code": "H9_23", "key": 2, "kind": "battery", "weapon": "shard", "shots": 1, "windows": [["impact", 0.02, 2], ["impact", 0.16, 2]]},
+    {"id": "deathless_hit", "group": "deathless", "label": "D21_23 hit", "att": ["voidsworn", "Cruiser"], "tgt": ["deathless", "Cruiser"], "expect_code": "D21_23", "key": 2, "kind": "battery", "weapon": "battery", "shots": 1, "windows": [["impact", 0.02, 2], ["impact", 0.16, 2]]},
+    {"id": "deathless_crit", "group": "deathless", "label": "D21_23 crit", "att": ["voidsworn", "Cruiser"], "tgt": ["deathless", "Cruiser"], "expect_code": "D21_23", "key": 2, "kind": "battery", "weapon": "hbattery", "shots": 1, "windows": [["impact", 0.14, 2], ["impact", 0.32, 2]], "crit": true},
+    {"id": "deathless_death", "group": "deathless", "label": "D21_23 death", "att": ["voidsworn", "Cruiser"], "tgt": ["deathless", "Cruiser"], "expect_code": "D21_23", "key": 2, "do": "death", "cause": "blast", "windows": [["split", -0.01, 2], ["split", 0.34, 2]]},
+    {"id": "deathless_weapon", "group": "deathless", "label": "D21_23 weapon (gauss)", "att": ["deathless", "Cruiser"], "tgt": ["hegemony", "Cruiser"], "expect_code": "H9_23", "key": 2, "kind": "gauss", "weapon": "gauss", "shots": 1, "windows": [["impact", 0.02, 2], ["impact", 0.16, 2]]},
+    {"id": "chorus_hit", "group": "chorus", "label": "B21_11 hit", "att": ["voidsworn", "Cruiser"], "tgt": ["chorus", "Cruiser"], "expect_code": "B21_11", "key": 2, "kind": "battery", "weapon": "battery", "shots": 1, "windows": [["impact", 0.02, 2], ["impact", 0.16, 2]]},
+    {"id": "chorus_crit", "group": "chorus", "label": "B21_11 crit", "att": ["voidsworn", "Cruiser"], "tgt": ["chorus", "Cruiser"], "expect_code": "B21_11", "key": 2, "kind": "battery", "weapon": "hbattery", "shots": 1, "windows": [["impact", 0.14, 2], ["impact", 0.32, 2]], "crit": true},
+    {"id": "chorus_death", "group": "chorus", "label": "B21_11 death", "att": ["voidsworn", "Cruiser"], "tgt": ["chorus", "Cruiser"], "expect_code": "B21_11", "key": 2, "do": "death", "cause": "blast", "windows": [["split", -0.01, 2], ["split", 0.34, 2]]},
+    {"id": "chorus_weapon", "group": "chorus", "label": "B21_11 weapon (bioplasma)", "att": ["chorus", "Cruiser"], "tgt": ["hegemony", "Cruiser"], "expect_code": "H9_23", "key": 2, "kind": "bio", "weapon": "bioplasma", "shots": 1, "windows": [["impact", 0.02, 2], ["impact", 0.16, 2]]}
+  ]
+}
