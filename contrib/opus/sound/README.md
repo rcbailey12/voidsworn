@@ -63,7 +63,7 @@ The prompts follow sections 2 to 8 of the [sound plan](../plans/cohesive_audio_v
 ## Gate 3 listening and staged waves (issue 2039)
 
 - Ryan can open [Sound Gate 3](listen_gate3/index.html) with `listen_gate3/LISTEN.bat`. The clips that play in game
-  are on the page, with the three Wave F3 picks and the full Chorus calm and intense loops first. The sound effect previews
+  are on the page, with the three Wave F3 picks and the full Chorus and Glasswright loops first. The sound effect previews
   use the cue levels without battle bus effects or distance.
 - The list has 80 SFX keeper IDs including the two Wave A extras. Godot plays 78. Asteroid scrape and shield raise remain
   catalogued but do not fire until their triggers are decided. Wreck settle stays as it is.
@@ -73,14 +73,24 @@ The prompts follow sections 2 to 8 of the [sound plan](../plans/cohesive_audio_v
 - The shipped F3 picks are `death_metal_crack_f3` t1, `ship_thruster_puff_f3` t1 and
   `wep_eclipse_gsentry_more_f3` t1. `mus_chorus_loop_a_test2` t1 is the Chorus battle pair. Its calm mix is all stems
   except drums, and its intense mix is the full song. `wire_gate3.py --chorus-music` adds both listening previews.
-- `M2_test4` stages only `mus_ithar_loop_a_test4`, a re-roll of test3 with its own receipt. Test3 varied the parts around
-  a held tone. Test4 drops that tone and gives the lead a different colour, register and phrasing in each section. It
-  moves from F sharp minor to A major, then through a darker turn and back home at the wrap. Use the wave's ID with the
-  generator's `--only` flag. No paid request without Ryan's go.
-- Review gate: the core tone changes colour, register or harmony in every section. Compare test3 with test4 on the
-  listening page once the Board has the new take. Listen in both mixes for a held tone, and check that the calm mix
-  still carries the whole melody without drums. Check for timpani from bar 1 in the full mix and at least 2.5 dB
-  of contrast between mixes.
+- `glasswright_combo2` is the Glasswright battle pair (issue 2187). Ryan called it "perfect" on Nov 25, 2026 at
+  20:00 UTC. Source: `rcbailey12/voidsworn-relay`, `pc-out-m2combo2` at `85f97ef81729e9d3ee50dae1ebaf70c448bebab3`,
+  `m2combo2_stage/out_m2combo2/` (calm and full MP3s plus `combo2_check.txt`). It joins test5 bars 1 to 20 to
+  test6 bars 1 to 24 with a two-bar crossfade. Both mixes loop from zero on the same 42-bar grid at 88 BPM
+  (5,498,182 samples at 48 kHz, 114.545 s). The Glasswright row plays both complete mixes. Non-boss battles use
+  the same calm-to-full switch as the Chorus, while the old Glasswright bed stays for boss fights and faction previews.
+
+### Standalone Glasswright tests (before the keeper)
+
+- `M2_test5` stages only `mus_ithar_loop_a_test5`, a re-roll of test4 with its own receipt. Every take since test2 asked
+  for a steady timpani pulse from bar 1, and because timpani are tuned drums that pulse is two pitches repeated for the
+  whole loop and it lands outside the drums stem, which left test4's calm mix only 0.7 dB under the full mix. Test5
+  removes timpani and tuned drums, gives every section its own unpitched groove, and bans ostinato, drone, pedal tone and
+  a repeated two-note figure. Use the wave's ID with the generator's `--only` flag. No paid request without Ryan's go.
+- Review gate: the core tone changes colour, register or harmony in every section. Compare test4 with test5 on the
+  listening page once the Board has the new take. Listen in both mixes for a held tone or a repeated two-note figure,
+  and check that the calm mix still carries the whole melody without drums. Check that there is no timpani or tuned
+  drum in the full mix and that the calm mix is 1 to 12 dB under the full mix.
 - Run `stem_loop_check.py` with the planned BPM and bar count. The source MP3 may be 50 ms short or 120 ms long,
   but the mastered loop uses the exact bar grid and the 25 ms click guard. Listen across the wrap and compare calm and
-  full at the switch points. Review the Glasswrights test4 by ear before starting the rest of M2. The remaining M2 rows are unchanged.
+  full at the switch points. Review the Glasswrights test5 by ear before starting the rest of M2. The remaining M2 rows are unchanged.

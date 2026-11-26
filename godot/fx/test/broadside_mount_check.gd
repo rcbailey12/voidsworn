@@ -105,3 +105,6 @@ func _check_turret(ship: Node3D, body: MeshInstance3D) -> void:
 		_check(inside.get("tur") == 0 and not inside.get("clamped", true),
 			"tier %s uses the turret when the target is in reach from its pivot" % str(request))
 		_check(outside.get("src") == "ray", "tier %s falls back when the target is outside the turret's reach" % str(request))
+	hull.jam_turret(0, 0.0, 12.0, 0.0)
+	_check(hull.guns(2, "lance", in_arc, 2) == [{}, {}], "an all-jammed tier has no shot origins")
+	_check(hull.gun_turrets(2, "lance", in_arc, 2).is_empty(), "an all-jammed tier does not pre-train")
