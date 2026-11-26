@@ -121,7 +121,7 @@ func _run() -> void:
 
 	# 2b. A wounded reserve captain with a stat perk (Artoo on PR 1458): buying installs them (newShip), so the preview shows
 	# their perks too, names them, and never takes them from the reserve
-	var vet = {"name": "Reserve Tester", "rank": 1, "xp": 30, "perks": ["helm"]}
+	var vet = Campaign.CaptainData.make("captain:test:reserve", "voidsworn", "Reserve Tester", 30, 1, ["helm"])
 	campaign.RUN["reserve"] = [{"cap": vet.duplicate(true)}]
 	var bare = campaign.derive(FleetManifest.preview_ship(campaign, h, false, 1))   # nth past the reserve: a fresh lieutenant
 	var pv = FleetManifest.preview_ship(campaign, h)
@@ -139,7 +139,7 @@ func _run() -> void:
 	if campaign.RUN["fleet"].size() != n_before + 1: _fail("buying the previewed hull failed"); return
 	var got = campaign.RUN["fleet"][campaign.RUN["fleet"].size() - 1]
 	var gd = campaign.derive(got)
-	if str(got["cap"]["name"]) != "Reserve Tester" or float(gd["speed"]) != float(pd["speed"]) or float(gd["maxHp"]) != float(pd["maxHp"]) or float(gd["shMax"]) != float(pd["shMax"]): _fail("the bought ship differs from its preview"); return
+	if str(got["cap"]["full_name"]) != "Reserve Tester" or float(gd["speed"]) != float(pd["speed"]) or float(gd["maxHp"]) != float(pd["maxHp"]) or float(gd["shMax"]) != float(pd["shMax"]): _fail("the bought ship differs from its preview"); return
 	if not campaign.RUN["reserve"].is_empty(): _fail("buying did not take the reserve captain"); return
 	print("PASS: with a reserve captain the preview shows their perks and matches the ship you buy; previewing never spends them")
 

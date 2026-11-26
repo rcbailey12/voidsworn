@@ -4,6 +4,9 @@ extends SceneTree
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
 const PG := preload("res://render/placeholder_guard.gd")
+const SH := preload("res://fx/fx_shaders.gd")
+const WOUNDS_P99_LIMIT_MS := 12.5
+const PROFILE_FLAT := "shader_type spatial; render_mode cull_disabled, fog_disabled; void fragment() { ALBEDO = vec3(0.06); }"
 const CASES := [["hegemony", "Cruiser", 0.8], ["deathless", "Battleship", 1.0],
 	["chorus", "Cruiser", 0.8], ["ithar", "Cruiser", 0.8], ["voidsworn", "Cruiser", 0.8]]
 var vp: SubViewport
@@ -52,8 +55,9 @@ func _run() -> void:
 	world.add_child(fx)
 	fx.manual = true
 	fx.setup({"camera": cam, "quality": "max", "shake": 0.0, "seed": 66080})
+	var passed := true
 	if OS.get_environment("DAMAGE_MODE") == "fleet":
-		await _fleet()
+		passed = await _fleet()
 	else:
 		await _capture()
 	fx.release()
@@ -61,7 +65,7 @@ func _run() -> void:
 	await process_frame
 	SV.clear_static()
 	FX.clear_static()
-	PG.finish(0)
+	PG.finish(0 if passed else 1)
 
 func _ship(sid: String, c: Array, pos: Vector3):
 	var sv := SV.new()
@@ -138,7 +142,7 @@ func _capture() -> void:
 		await process_frame
 	print("DAMAGE_CAPTURE_COMPLETE " + out)
 
-func _fleet() -> void:
+func _fleet() -> bool:
 	var ships: Array = []
 	for i in 20:
 		var c: Array = CASES[i % CASES.size()].duplicate()
@@ -148,6 +152,9 @@ func _fleet() -> void:
 		ships.append(_ship(str(i), c, Vector3((i % 5 - 2) * 29, 0, (i / 5 - 1.5) * 24)))
 	cam.look_at_from_position(Vector3(0, 115, 125), Vector3.ZERO)
 	var results := {}
+	var passed := true
+	var enforce_wounds_gate := OS.get_environment("DAMAGE_GATE_WOUNDS") == "1"
+	var profile_wounds := OS.get_environment("DAMAGE_PROFILE_WOUNDS") == "1"
 	for st in [0, 3, 4]:
 		var transition := Time.get_ticks_usec()
 		for s in ships:
@@ -175,9 +182,75 @@ func _fleet() -> void:
 		cpu.sort()
 		var row := {"avg_ms": total / times.size(), "p99_ms": times[237], "fx_cpu_p99_ms": cpu[237], "build_ms": build_ms, "prof": fx.prof_take()}
 		if fx.has_method("damage_counts"): row["emitters"] = fx.damage_counts()
+		row["visible_draws"] = vp.get_render_info(Viewport.RENDER_INFO_TYPE_VISIBLE, Viewport.RENDER_INFO_DRAW_CALLS_IN_FRAME)
+		row["visible_triangles"] = vp.get_render_info(Viewport.RENDER_INFO_TYPE_VISIBLE, Viewport.RENDER_INFO_PRIMITIVES_IN_FRAME)
 		results[str(st)] = row
 		print("DAMAGE_FLEET stage=%d %s" % [st, JSON.stringify(row)])
 		await _still("fleet_stage%d" % st)
+		if st != 0 and enforce_wounds_gate and float(row["p99_ms"]) > WOUNDS_P99_LIMIT_MS:
+			passed = false
+			printerr("DAMAGE_FLEET stage %d p99 %.3f ms exceeds %.1f ms" % [st, row["p99_ms"], WOUNDS_P99_LIMIT_MS])
+		if st == 4 and profile_wounds:
+			# Diagnostic only. Both stages' gate samples and stills were taken with the real materials.
+			results["wound_profile"] = await _profile_wounds(ships)
+			passed = passed and not results["wound_profile"].is_empty()
 	results["renderer"] = RenderingServer.get_current_rendering_method()
 	results["adapter"] = RenderingServer.get_video_adapter_name()
 	FileAccess.open(out.path_join("fleet.json"), FileAccess.WRITE).store_string(JSON.stringify(results, "\t"))
+	return passed
+
+
+# Keep the exact same stage-4 geometry, camera and FX clock. Replace only the named shader pass with an
+# opaque, two-sided constant material. The GPU time delta isolates its shading cost, not the cost of its meshes.
+func _profile_wounds(ships: Array) -> Dictionary:
+	var interiors: Array = []
+	var mouths: Array = []
+	for s in ships:
+		for mi: MeshInstance3D in s.meshes:
+			for i in mi.get_surface_override_material_count():
+				var mat := mi.get_surface_override_material(i) as ShaderMaterial
+				if mat != null and mat.shader.code == SH.INTERIOR:
+					interiors.append([mi, i, mat])
+		for node in s._hole_nodes:
+			var mi := node as MeshInstance3D
+			var mat := mi.material_override as ShaderMaterial if mi != null else null
+			if mat != null and mat.shader.code == SH.HOLE:
+				mouths.append([mi, -1, mat])
+	if interiors.is_empty() or mouths.is_empty():
+		push_error("DAMAGE_PROFILE requires the real Wounds V2 interior and mouth passes")
+		return {}
+	var shader := Shader.new()
+	shader.code = PROFILE_FLAT
+	var flat := ShaderMaterial.new()
+	flat.shader = shader
+	var rid := vp.get_viewport_rid()
+	RenderingServer.viewport_set_measure_render_time(rid, true)
+	var rows := {}
+	for run in [["full_before", []], ["plain_interiors", interiors], ["plain_mouths", mouths], ["full_after", []]]:
+		for entry in run[1]:
+			_profile_material(entry, flat)
+		for i in 60:
+			await RenderingServer.frame_post_draw
+		var gpu := PackedFloat32Array()
+		for i in 120:
+			await RenderingServer.frame_post_draw
+			gpu.append(RenderingServer.viewport_get_measured_render_time_gpu(rid))
+		for entry in run[1]:
+			_profile_material(entry, entry[2])
+		gpu.sort()
+		rows[run[0]] = {"gpu_median_ms": gpu[60], "gpu_p99_ms": gpu[118], "overrides": run[1].size()}
+		print("DAMAGE_PROFILE stage=4 %s %s" % [run[0], JSON.stringify(rows[run[0]])])
+	RenderingServer.viewport_set_measure_render_time(rid, false)
+	if float(rows["full_after"]["gpu_median_ms"]) <= 0.0:
+		push_error("DAMAGE_PROFILE viewport GPU timestamps were unavailable")
+		return {}
+	return rows
+
+
+func _profile_material(entry: Array, mat: Material) -> void:
+	var mi: MeshInstance3D = entry[0]
+	var surface: int = entry[1]
+	if surface < 0:
+		mi.material_override = mat
+	else:
+		mi.set_surface_override_material(surface, mat)

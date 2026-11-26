@@ -27,6 +27,7 @@ class Stepper extends Node:
 
 class TestDeathAudio extends Node:
 	var fx
+	var deaths: Array = []
 	func watch(_id: String, _pos: Vector3) -> void:
 		pass
 
@@ -84,8 +85,10 @@ func _run() -> void:
 	battle._deaths_left = ids.size()
 	var t0 := Time.get_ticks_msec()
 	for id in ids:
+		# A settled kill may retire its FX ship inside _play_death (issue 2198), so read the timeline from the same node.
+		var ship = fx.ship(id)
 		await battle._play_death({"unit": id})
-		reported = maxf(reported, float(fx.ship(id).get_meta("death_timeline").end))
+		reported = maxf(reported, float(ship.get_meta("death_timeline").end))
 	var spent := (Time.get_ticks_msec() - t0) / 1000.0
 	var full := reported * 0.6
 	var stacked := full * ids.size()

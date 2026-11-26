@@ -30,6 +30,7 @@ SHIP_JSON = 'tools/recipe/ships/corsair_A16.json'
 FILES = (
     'tools/blender/build_sheets/ships/corsair_A16.py',
     'tools/blender/build_sheets/kit.py',
+    'tools/blender/build_sheets/interior_kit.py',   # issue 1743: Kit.finish() runs it, so it shapes the fixture's insides
     'tools/blender/kits/hullbreakers/parts.py',
     'tools/blender/build_sheets/contract.py',
     'tools/blender/build_sheets/variants.py',
