@@ -2462,10 +2462,16 @@ void fragment() {
 		float v2hot = metalk ? hot : 0.0;
 		em = v2_interior_accent * (lam * fall * 0.45 * (0.6 + 0.4 * fl) * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)));
 		em_hdr += gc * emb * 0.5 * (0.6 + 0.4 * fl) * (1.0 - smoothstep(0.3, 1.4, dist)) * v2hot;
-		if (wound_v2 == 5) { em *= 0.38; }   // obsidian stays dark; the bus is the violet accent, not the whole wall
+		if (wound_v2 == 5) {
+			// Bare obsidian on the chip and frames. Only the actual plate edge catches violet.
+			base *= 0.42;
+			rough = 0.66;
+			ao = 0.65;
+			em = part > 0.95 ? v2_interior_accent * 0.16 : em * 0.08;
+		}
 		if (dress > 0.9) {
 			float bus_pulse = flick(0.7 + n2 * 0.3, scene_t, seed);
-			if (wound_v2 == 5) { em += v2_interior_accent * (0.32 + 0.16 * bus_pulse); }
+			if (wound_v2 == 5) { em += v2_interior_accent * (0.12 + 0.08 * bus_pulse); }
 			else { em_hdr += v2_interior_accent * (0.9 + 0.3 * bus_pulse); }
 			base *= 0.5;
 		}
@@ -2475,13 +2481,13 @@ void fragment() {
 			// Issue 2125 / R431: the facets are geometry, not dark tiles painted over the floor. Colour lives on seams.
 			bool rim = part > 0.95;
 			bool seam = dress > 0.60 && dress < 0.65; // fx_breach GLASS_SEAM
-			base = min(v2_interior_lift * mix(0.72, 1.25, vC.g), vec3(v2_wall_max));
-			if (rim) { base = v2_rim_metal * mix(0.72, 1.0, n2); }
-			rough = rim || seam ? 0.15 : 0.32;
+			base = min(v2_interior_lift * mix(0.48, 1.30, vC.g), vec3(v2_wall_max));
+			if (rim) { base = min(v2_rim_metal * mix(0.38, 0.50, n2), vec3(v2_wall_max)); }
+			rough = seam ? 0.25 : 0.65;
 			metal = 0.0;
-			ao = rim ? 1.0 : mix(0.74, 1.0, vC.g);
-			em = rim ? v2_rim_metal * 0.42 : base * 0.42;
-			if (seam) { em += mix(v2_interior_accent, vec3(0.63, 0.49, 1.0), vC.g) * 0.46; }
+			ao = rim ? 0.9 : mix(0.45, 0.9, vC.g);
+			em = base * 0.16;
+			if (seam) { em += mix(v2_interior_accent, vec3(0.63, 0.49, 1.0), vC.g) * 0.25; }
 			em_hdr = vec3(0.0);
 		}
 		if (style == 1 && wound_v2 != 4) {
@@ -3034,22 +3040,24 @@ void fragment() {
 			float gone = step(0.8, vc.y) * (1.0 - smoothstep(0.2, 0.7, u));
 			float m = max(max(cr, plane), gone * 0.8);
 			alb = mix(v2_rim_metal * 0.55, vec3(0.9, 0.94, 1.0), max(cr, plane));
-			a *= 0.12 + 0.88 * m;
-			rough = 0.06;
+			// Show the fracture lines, not a translucent frosted sheet across the recessed pearl.
+			a *= m * m;
+			rough = 0.30;
 			vec3 spec = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + vc.y));
 			em = (v2_interior_accent * (cr * 0.35 + gone * 0.25) + spec * plane * 0.06) * a;
 			hs = 0.0;
 		} else if (wound_v2 == 5) {
 			float st = max(abs(q.x), abs(q.y)) / R;
-			float step3 = floor(st * 3.0 + n1 * 0.4);
-			float seam = 1.0 - smoothstep(0.0, 0.06, abs(fract(st * 3.0 + n1 * 0.4) - 0.5) * 2.0 - 0.88);
-			alb = mix(vec3(0.05, 0.04, 0.07), vec3(0.012, 0.008, 0.02), clamp(step3 / 3.0, 0.0, 1.0));
-			a = max(a * 0.5, (1.0 - smoothstep(0.85, 1.05, st)) * 0.85);
-			rough = 0.32;
-			em = v2_interior_accent * seam * 0.12 * (1.0 - smoothstep(0.6, 1.05, st)) * flick(0.7 + n1 * 0.3, scene_t, seed);
-			hs = 0.0;
+			st += (n1 - 0.5) * 0.13;
+			float step3 = floor(st * 3.0);
+			float lip = smoothstep(0.68, 0.76, st) * (1.0 - smoothstep(0.79, 0.89, st));
+			alb = v2_interior_lift * mix(0.36, 0.70, clamp(step3 / 2.0, 0.0, 1.0));
+			a *= 1.0 - smoothstep(0.82, 0.94, st);
+			rough = 0.68;
+			em = v2_interior_accent * lip * 0.16;
+			hs = 1.0; // low reflectance for the chip, not a soot mask
 		}
-		if (v2_soot <= 0.01) { hs = 0.0; }
+		if (v2_soot <= 0.01 && wound_v2 != 5) { hs = 0.0; }
 	}
 	if (style == 14) {
 		float rg = (u - 0.9) / 0.05;
@@ -3264,13 +3272,12 @@ void fragment() {
 	else if (role == 4 && wound_v2 == 3) { hue = vec3(0.075, 0.03, 0.022); }   // wet crimson-umber organ
 	vec3 surf = trusted ? baked : hue * detail;
 	vec3 lit = surf * mix(1.0, r.x * ao, trusted ? 0.5 : 1.0);
-	// Light the real surfaces behind a live Glasswright opening. Dark baked trim must not fill the centre with black.
+	// Keep a little pearl in the deep room, below the brighter shell steps. Full-face fill reads as a solid pane.
 	float glass_reveal = wound_v2 == 4 && fx_wreck == 0.0 ? smoothstep(0.04, 0.32, open_f) : 0.0;
 	vec3 glass_pearl = vec3(0.0);
 	if (glass_reveal > 0.0) {
-		glass_pearl = v2_interior_lift * (0.72 + 0.16 * r.x);
-		float value = clamp(dot(lit, vec3(1.0)) / max(dot(glass_pearl, vec3(1.0)), 1e-3), 1.0, 1.4);
-		lit = mix(lit, glass_pearl * value, glass_reveal);
+		glass_pearl = v2_interior_lift * (0.32 + 0.12 * r.x);
+		lit = mix(lit, glass_pearl, glass_reveal);
 		open_f = max(open_f, glass_reveal);
 	}
 	vec3 wreck = lit * (1.0 - v2_wreck_soot);
@@ -3310,7 +3317,7 @@ void fragment() {
 		float metal = (role == 1 || role == 4) ? 0.0 : ((wound_v2 <= 2 || wound_v2 == 5) ? 0.45 : 0.0);
 		if (has_orm) { metal = mix(metal, orm.b, 0.5); }
 		METALLIC = mix(base_metal, metal, open_f) * (1.0 - glass_reveal);
-		SPECULAR = mix(0.5, 0.26, wound_v2 == 1 ? wr : 0.0) * ao;
+		SPECULAR = mix(0.5 - 0.40 * glass_reveal, 0.26, wound_v2 == 1 ? wr : 0.0) * ao;
 	}
 	AO = ao * (has_orm ? orm.r : 1.0);
 	AO_LIGHT_AFFECT = 0.6;
@@ -3332,7 +3339,7 @@ void fragment() {
 	float pw = clamp(fx_power, 0.0, 1.0);
 	vec3 em = v2_interior_accent * r.z * pulse * fade * open_f * 0.35 * pw;
 	em += v2_interior_accent * near * 0.04 * (1.0 - wr);
-	em += glass_pearl * 0.24 * glass_reveal;
+	em += glass_pearl * 0.08 * glass_reveal;
 	// Cut full-face Directorate emission on the first wreck frame. A 0.8 s fade could still light the entire box.
 	// Keep the narrow blue strips above, which still pulse and fade on the death clock.
 	bool directorate_wreck = wound_v2 == 1 && fx_wreck > 0.0;
