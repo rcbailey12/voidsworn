@@ -22,6 +22,8 @@ const FLEET_SLOT_W := 84.0
 const FLEET_PAGING_W := 59.0
 const COMPACT_MARGIN := 20.0
 const MARGIN := 40.0
+const ORDER_SLOTS := ["brace", "ability", "turn", "ram", "board", "command",
+	"strike", "screen", "hunt", "role", "undo", "cancel"]
 
 var k := 1.0
 var top := {}
@@ -220,12 +222,6 @@ func _action() -> Dictionary:
 			label = "Fire the " + gun
 			glyph = Icons.weapon(str(target.get("kind", "")))
 		return {"label": label, "act": "confirm", "glyph": glyph, "tip": str(card.get("hint", "")) + "\nEsc cancels."}
-	b = _button_data("end")
-	if bool(b.get("on", false)):
-		return {"label": "End ship", "act": "end", "glyph": "end", "tip": str(b.get("tip", ""))}
-	b = _button_data("next")
-	if bool(b.get("on", false)):
-		return {"label": "Next ship", "act": "next", "glyph": "next", "tip": str(b.get("tip", "Switch to another ready ship."))}
 	if card.is_empty() and bool(top.get("end_on", false)) and top.get("end_text", "") == "End turn":
 		return {"label": "End turn", "act": "end", "glyph": "end", "tip": "End your turn; the enemy moves."}
 	return {}
@@ -291,18 +287,18 @@ func layout() -> void:
 	var after_odds := _target_block(target_x, y, target_w, compact)
 	_status(gun_x, maxf(after_guns, after_odds) + px(3), gun_w + gap + target_w, foot)
 	var primary := _action()
-	var orders_y := y + px(62)
+	# Give the fixed cells room without shrinking the 56 px action or the plan's dedicated key row.
+	var action_y := shelf_y + px(10)
 	if not primary.is_empty():
-		_action_box(Rect2(action_x, y, action_w, px(56)), primary)
+		_action_box(Rect2(action_x, action_y, action_w, px(56)), primary)
 		# issue 1589 (Ryan, Nov 22; Artoo on PR 1643): an open plan's keys get their own row under the action, so no
 		# odds or status height can push them off the sheet
 		var keys := plain(str(card.get("keys", "")))
 		if keys != "" and str(primary.get("act", "")) == "confirm":
 			var kl := _trim(keys, f_body, 16, action_w)
-			_text(roundf(action_x + (action_w - _width(kl, f_body, 16)) * 0.5), y + px(57), kl, f_body, 16, TEXT2, "keys")
-			orders_y += px(20)
+			_text(roundf(action_x + (action_w - _width(kl, f_body, 16)) * 0.5), action_y + px(57), kl, f_body, 16, TEXT2, "keys")
 	if mine_turn() and ask.is_empty():
-		_orders(action_x, orders_y, action_w, foot, primary, compact)
+		_orders(action_x, action_y + px(77), action_w, foot, primary)
 	_fleet(pad, foot, usable)
 	_log(vs.x - pad, shelf_y - px(12), minf(px(540), usable * 0.58))
 	_hover = hit_at(get_local_mouse_position()) if is_inside_tree() else -1
@@ -566,9 +562,23 @@ func _guns(x: float, y: float, w: float) -> float:
 		var max_dist := int(gun.get("range", 1))
 		var active := bool(gun.get("armed", false))
 		var col := TEXT if hit_v >= 0 or (dist < 0 and bool(gun.get("ready", false))) else TEXT2
-		# Council 7 (issue 1401): flak is point defense and never aims at a ship, so it never reads "Out" or "No shot"
-		var flak_idle: bool = str(gun.get("kind", "")) == "flak" and hit_v < 0 and bool(gun.get("ready", false))
-		var result := "%d%%" % hit_v if hit_v >= 0 else ("Defense" if flak_idle else ("Out" if dist > max_dist else ("Ready" if why in ["", "ready"] else ("CD %s" % why.get_slice(" ", 1) if why.begins_with("reloading ") else ("No shot" if dist >= 0 else why.capitalize())))))
+		# Point defense never aims at a ship. Offline, spent and reload states also take priority over target range.
+		var is_flak := str(gun.get("kind", "")) == "flak"
+		var result := "Ready"
+		if why == "offline":
+			result = "Offline"
+		elif why.begins_with("reloading "):
+			result = "CD " + why.get_slice(" ", 1)
+		elif why == "fired":
+			result = "Fired"
+		elif is_flak:
+			result = "Defense"
+		elif hit_v >= 0:
+			result = "%d%%" % hit_v
+		elif dist > max_dist:
+			result = "Out"
+		elif why not in ["", "ready"]:
+			result = "No shot" if dist >= 0 else why.capitalize()
 		var rw := maxf(_width(result, f_num, 17), px(46))
 		var band_w := clampf(w * 0.25, px(40), px(170))
 		var band_x := x + w - rw - band_w - px(19)
@@ -583,7 +593,7 @@ func _guns(x: float, y: float, w: float) -> float:
 		_range_band(band_x, cy, band_w, max_dist, dist, col, hit_v >= 0)
 		_right(x + w, ty, result, f_num, 17, EMBER if hit_v >= 0 and int(gun.get("i", -1)) == int(target.get("gun_index", -2)) else col)
 		var tip := nm + ": " + plain(str(gun.get("desc", "")))
-		if dist >= 0:
+		if dist >= 0 and not is_flak:
 			tip += "\nTarget %d hexes away%s." % [dist, "" if hit_v >= 0 or why == "" else ": " + why]
 		if int(gun.get("dmg", -1)) >= 0:
 			tip += "\nExpected about %d damage at %d%% to hit." % [int(gun.dmg), hit_v]
@@ -594,7 +604,6 @@ func _guns(x: float, y: float, w: float) -> float:
 		var wi := int(gun.get("i", 0))
 		# Artoo on PR 1873: flak never fires at a ship (rules canFire refuses it); it shoots down torpedoes and strike craft
 		# on its own, so its row offers no arm action
-		var is_flak: bool = str(gun.get("kind", "")) == "flak"
 		if is_flak:
 			tip += "\nPoint defense: it fires on its own at incoming torpedoes and strike craft in range. It never aims at a ship."
 		elif mine:
@@ -621,7 +630,13 @@ func _target_block(x: float, y: float, w: float, compact: bool) -> float:
 		return y
 	var nm := str(target.get("name", ""))
 	var col := NEM if bool(target.get("nem", false)) or _is_nem(nm) else TEXT
-	_text(x, y, "Target", f_body, 17, TEXT3, "join")
+	var burn_line := str(target.get("burn_line", ""))
+	if burn_line == "":
+		_text(x, y, "Target", f_body, 17, TEXT3, "join")
+	else:
+		var full := str(target.get("line", burn_line))
+		var header := full if _width(full, f_body, 17) <= w else burn_line
+		_text(x, y, _trim(header, f_body, 17, w), f_body, 17, TEXT2)
 	_name(Rect2(x, y + px(22), w, px(33)), nm, 30, col)
 	_hit(Rect2(x, y, w, px(54)), "", null, _target_tip())
 	var bearing := int(target.get("bearing", 0))
@@ -679,9 +694,9 @@ func _target_tip() -> String:
 		var routed: Array = target.get("routed", [])
 		for i in mini(sh.size(), 4):
 			parts.append("%s %d%s" % [words[i], int(sh[i]), " (routed)" if i in routed else ""])
-		s += "\nShield pool %d of %d. Sides catch: %s." % [int(target.get("shp", 0)), int(target.shMax), ", ".join(parts)]
+		s += "\nShared shield charge %d of %d. Damage each side can absorb per hit: %s." % [int(target.get("shp", 0)), int(target.shMax), ", ".join(parts)]
 		if bool(target.get("struck_routed", false)):
-			s += "\nThis volley hits its %s side, where it routed power: that side catches more, but each hit drains the pool 30%% faster." % words[int(target.get("quad", 0))]
+			s += "\nThis volley hits its %s side, where power is routed. That side absorbs more, but blocked damage drains 30%% more charge." % words[int(target.get("quad", 0))]
 	if str(target.get("line", "")) != "":
 		s += "\n" + plain(str(target.line))
 	return s
@@ -700,10 +715,9 @@ func _action_box(r: Rect2, a: Dictionary) -> void:
 	_hit(r, a.act, null, str(a.tip), true)
 
 
-func _orders(x: float, y: float, w: float, foot: float, primary: Dictionary, compact: bool) -> void:
-	var orders: Array[Dictionary] = []
+func _orders(x: float, y: float, w: float, foot: float, primary: Dictionary) -> void:
+	var orders := {}
 	var turn := {}
-	var mode := str(primary.get("act", ""))
 	if not card.is_empty():
 		for o in ship.get("orders", []):
 			var id := str(o.act)
@@ -719,40 +733,44 @@ func _orders(x: float, y: float, w: float, foot: float, primary: Dictionary, com
 				label = "Focus fire"
 			elif key == "reload":
 				label = "Reload"   # Council 13 (issue 1401): "Reload torpedoes" was cut off in its order cell; the hover keeps the full name
-			orders.append({"act": id, "arg": o.get("arg"), "on": o.get("on", false), "label": label,
+			var slot := str(o.get("arg")) if id == "stance" else id
+			orders[slot] = {"act": id, "arg": o.get("arg"), "on": o.get("on", false), "label": label,
 				"tip": original + "\n" + str(o.get("tip", "")), "glyph": Icons.order(key),
-				"active": bool(o.get("active", false)), "cooldown": int(o.get("cooldown", 0))})
+				"active": bool(o.get("active", false)), "cooldown": int(o.get("cooldown", 0))}
 	if not turn.is_empty():
-		orders.insert(mini(2, orders.size()), {"act": "turn", "left": turn.get("rotl", false), "right": turn.get("rotr", false)})
+		orders["turn"] = {"act": "turn", "left": turn.get("rotl", false), "right": turn.get("rotr", false)}
 	if bool(cmd.get("available", false)) or bool(cmd.get("ready", false)):
 		var tip := "Your Admiral's Command, once per battle: %s." % str(cmd.get("label", "Command"))
 		var details := str(cmd.get("tip", ""))
 		if details != "": tip += "\n" + details
 		if cmd.get("ready", false): tip += "\nPress the order twice to give it (click or use C)."
-		orders.append({"act": "command", "label": str(cmd.get("label", "Command")), "on": bool(cmd.get("ready", false)), "glyph": Icons.order(str(cmd.get("id", "command"))),
-			"tip": tip, "active": cmd.get("active", false)})
-	for id in ["end", "undo", "next", "cancel"]:   # issue 1450: Undo move sits next to End ship
+		orders["command"] = {"act": "command", "label": str(cmd.get("label", "Command")), "on": bool(cmd.get("ready", false)), "glyph": Icons.order(str(cmd.get("id", "command"))),
+			"tip": tip, "active": cmd.get("active", false)}
+	for id in ["undo", "cancel"]:
 		var b := _button_data(id)
-		if id != mode and bool(b.get("on", false)):
-			orders.append({"act": id, "label": _without_key(str(b.text)), "on": true, "glyph": id, "tip": b.get("tip", "Cancel the current plan.")})
-	if orders.is_empty():
-		return
-	var cols := 3 if not compact or w >= px(320) else 2
-	# Dense order lists get a third column and smaller glyphs.
-	var n_rows := int(ceilf(float(orders.size()) / cols))
-	if n_rows > 4:
-		cols = 3
-		n_rows = int(ceilf(float(orders.size()) / cols))
-	var dy := minf(px(53), floorf((foot - y - px(5)) / n_rows))
-	var glyph_h := 32 if dy >= px(40) and w / cols >= px(110) else 20
+		if bool(b.get("on", false)):
+			orders[id] = {"act": id, "label": _without_key(str(b.text)), "on": true, "glyph": id, "tip": b.get("tip", "Cancel the current plan.")}
+	# Council 13: unavailable orders leave their cells empty. The two ship controls are always just above the fleet.
+	var footer_y := foot - px(28)
+	var cols := 3
+	var dy := floorf((footer_y - y) / (float(ORDER_SLOTS.size()) / cols))
 	var cell_w := w / cols
-	for i in orders.size():
+	for i in ORDER_SLOTS.size():
+		var o: Dictionary = orders.get(ORDER_SLOTS[i], {})
+		if o.is_empty():
+			continue
 		var r := Rect2(x + float(i % cols) * cell_w, y + floorf(float(i) / cols) * dy, cell_w, dy)
-		var o := orders[i]
 		if o.act == "turn":
 			_turn_order(r, o)
 		else:
-			_order(r, o, glyph_h)
+			_order(r, o, 20)
+	for i in 2:
+		var id := "end" if i == 0 else "next"
+		var b := _button_data(id)
+		if bool(b.get("on", false)):
+			_order(Rect2(x + i * w * 0.5, footer_y, w * 0.5, px(26)), {
+				"act": id, "label": _without_key(str(b.text)), "on": true, "glyph": id, "tip": b.get("tip", ""),
+				"active": primary.is_empty() and (id == "end" or not bool(_button_data("end").get("on", false)))}, 20)
 
 
 func _turn_order(r: Rect2, order: Dictionary) -> void:
@@ -863,7 +881,7 @@ func _fleet_slot(r: Rect2, row: Dictionary) -> void:
 	if st != "Lost":
 		tip += " Hull %s / %s." % [Campaign.hull_text(hp), Campaign.hull_text(row.get("maxHp", 0))]
 		if float(row.get("shMax", 0)) > 0.0:
-			tip += " Shield pool %d / %d." % [int(row.get("shp", 0)), int(row.shMax)]
+			tip += " Shield charge %d / %d." % [int(row.get("shp", 0)), int(row.shMax)]
 		if int(row.get("danger", 0)) > 0:
 			tip += "\nThe enemy can reach it first (%d guns)." % int(row.danger)
 		if bool(row.get("new", false)):
@@ -883,20 +901,34 @@ func _log(right: float, bottom: float, w: float) -> void:
 	log_r = Rect2()
 	if not log_enabled:
 		return
-	var h := px(31 if log_collapsed else 119)
+	var entries := log_lines.slice(maxi(0, log_lines.size() - (1 if log_collapsed else 3)))
+	var latest := _lines(str(entries[-1]), f_body, 17, w - px(24)) if not log_collapsed and not entries.is_empty() else PackedStringArray()
+	var wrapped := latest.size() > 1
+	var h := px(31 if log_collapsed else (145 if wrapped else 119))
 	log_r = Rect2(right - w, bottom - h, w, h)
 	var x := log_r.position.x + px(12)
 	var y := log_r.position.y + px(5)
 	_veil(log_r.grow_individual(px(9), px(7), px(9), px(7)), Brand.KEEL_LOG_VEIL, Vector4.ONE * px(9))
 	var lw := _text(x, y, "Log", f_med, 17, TEXT, "log", true)
 	_glyph("expand" if log_collapsed else "collapse", Vector2(right - px(30), y), 20, TEXT)
-	var entries := log_lines.slice(maxi(0, log_lines.size() - (1 if log_collapsed else 3)))
 	for i in entries.size():
 		var tx := x + (lw + px(14) if log_collapsed else 0.0)
 		var ty := y if log_collapsed else y + px(28 + i * 26)
 		var col := TEXT if i == entries.size() - 1 else TEXT2
 		var entry := str(entries[i])
-		var caption := _trim(entry, f_body, 17, right - tx - px(41 if log_collapsed else 12))
+		var room := right - tx - px(41 if log_collapsed else 12)
+		if wrapped and i == entries.size() - 1:
+			_text(tx, ty, _trim(latest[0], f_body, 17, room), f_body, 17, col, "log", true)
+			var tail := " ".join(latest.slice(1))
+			# If even two lines cannot fit, keep the end where the damage and remaining defenses are reported.
+			if _width(tail, f_body, 17) > room:
+				while not tail.is_empty() and _width("..." + tail, f_body, 17) > room:
+					tail = tail.substr(1).strip_edges()
+				tail = "..." + tail
+				_hit(Rect2(tx, ty, right - tx, px(49)), "", null, entry)
+			_text(tx, ty + px(24), tail, f_body, 17, col, "log", true)
+			continue
+		var caption := _trim(entry, f_body, 17, room)
 		_text(tx, ty, caption, f_body, 17, col, "log", true)
 		if not log_collapsed and caption != entry:
 			_hit(Rect2(tx, ty, right - tx, px(25)), "", null, entry)

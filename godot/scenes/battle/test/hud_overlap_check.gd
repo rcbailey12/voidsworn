@@ -15,6 +15,7 @@ extends SceneTree
 # Run: godot --headless --path godot --script res://scenes/battle/test/hud_overlap_check.gd
 const BattleScene = preload("res://scenes/battle/battle.tscn")
 const UiScale = preload("res://ui/ui_scale.gd")
+const Board = preload("res://render/board.gd")
 var b
 var fails := 0
 var shots := ""
@@ -104,6 +105,22 @@ func _run() -> void:
 		cover.add_child(bg)
 		root.add_child(cover)
 	var hud = b.hud
+	# Council 24: build the real key from a battlefield with a nebula.
+	var terrain = b.V["terrain"]
+	b.V["terrain"] = {"0,0": "neb"}
+	b._legend()
+	var key_labels := PackedStringArray()
+	for label in hud.legend.find_children("*", "Label", true, false):
+		key_labels.append(label.text)
+	var swatches: Array = hud.legend.find_children("*", "ColorRect", true, false)
+	var rose := Color(Board.EDGE_C["neb"], 1.0)
+	var rose_matches: bool = swatches.any(func(swatch): return swatch.color.is_equal_approx(Color.html(rose.to_html(false))))
+	_check("Terrain key" in key_labels and "Nebula" in key_labels and hud.legend.get_theme_stylebox("panel") is StyleBoxFlat,
+		"Council 24: closed terrain key names the swatches on a dark panel")
+	_check(rose.r > rose.b and rose.b > rose.g and rose_matches and Board.ZONE_TINT["neb"].is_equal_approx(Color(rose, 0.075)),
+		"Council 24: key, edge and fill agree on the rose nebula")
+	b.V["terrain"] = terrain
+	b._legend()
 	# the plain Battle 1 HUD at Normal and Larger (the ledger hit areas changed here and in #1610; Artoo on PR 1601)
 	if shots != "":
 		await _frames(3)
@@ -174,9 +191,16 @@ func _run() -> void:
 	# 11
 	hud.banner("Reinforcements", Color.WHITE, 1.6)
 	hud.toast("Two Hullbreaker raiders join the enemy line from the north edge.")
+	hud._process(0.016)
+	_check(hud.banner_lbl.modulate.a > 0.0 and hud.toast_lbl.get_global_rect().position.y >= hud.banner_lbl.get_global_rect().end.y,
+		"Council 14: first visible banner frame already reserves room for the notice")
 	for i in 4:
 		await process_frame
 	_check(hud.banner_lbl.modulate.a > 0.0 and not hud.toast_lbl.get_global_rect().intersects(hud.banner_lbl.get_global_rect()), "item 11: the toast sits clear of the big banner (%s vs %s)" % [str(hud.toast_lbl.get_global_rect()), str(hud.banner_lbl.get_global_rect())])
+	hud.letterbox(true)
+	_check(not hud.banner_lbl.visible and not hud.toast_lbl.visible, "Council 14: banner and notice both hide during a cut-in")
+	hud.letterbox(false)
+	_check(hud.banner_lbl.visible and hud.toast_lbl.visible, "Council 14: both message lanes return after the cut-in")
 	await _shot("banner_and_toast")
 	# 17: Larger (and 29: a rebuild keeps the banner's fitted size)
 	hud.banner("Victory", Color.WHITE, 3.0)

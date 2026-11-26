@@ -81,7 +81,7 @@ const MOVE_ESCORT_TURN := 1.3
 const NO_READY_GUN_IN_RANGE := "No ready gun can reach it."
 const TIPS := [
 	["select", "Moving and facing", "Click a blue hex to plan a move. Turn with Q and E before you confirm. Staying in place gives enemies +10 to hit; moving 3 or more hexes normally gives them -5. Most ships can Brace instead of firing: this cuts hull damage and removes the +10, but ends the ship's turn. Glasswright ships cannot Brace."],
-	["target", "Firing", "The red ring means this enemy can be hit from where your ship sits. Click it once to see the hit chance and the damage expected. Click again to fire every gun that bears. Keys 1 to 6 fire one gun at a time."],
+	["target", "Firing", "A red ring marks an enemy your ship can aim at. Click it to see the hit chance and expected damage. Click again or press Enter to fire. Use keys 1 to 6 to arm just one gun."],
 	["fired", "Taking turns", "Sides take turns, one ship at a time, until every ship has acted. That is one round. Press Space to end this ship early, or Tab for the next ship. A ship with nothing left to do ends itself."],
 	["move", "Shields and hull", "The blue bar shows your shield pool. All four sides share it. Sides with more coverage block more damage while shields hold. Shields recharge each round. The pale bar shows hull. Hull damage needs repairs."],
 	["threat", "Threat map", "Press R for the threat map. It shades every hex enemy guns can reach next turn. Darker means more damage waiting there."],
@@ -4026,8 +4026,31 @@ func _firing_set(t_id: String, free_only := true, pick = null) -> Array:
 	return out
 
 
-# the guns the card and odds show for an enemy: its pick's guns when it is aimed, else the free guns that bear
+# The card, shelf and hover use the same shot source, including the stop of a Burn and fire plan.
+func _shot_state(t_id: String) -> Variant:
+	return atk["st"] if atk != null and target == t_id else plan
+
+
+func _red_ring_guns() -> int:
+	if not _can_act() or not _usable(_sel_unit()) or mode in ["nova", "blink", "ram", "board"]:
+		return 0
+	var guns := {}
+	for e in V["units"]:
+		var tid := str(e["id"])
+		if e["side"] == "enemy" and not e["dead"] and tid != target and not _aimed(tid):
+			for wi in _firing_set(tid):
+				guns[wi] = true
+	return guns.size()
+
+
 func _shown_set(t_id: String) -> Array:
+	if atk != null and target == t_id:
+		var out := []
+		for w in _sel_unit().get("weapons", []):
+			var i := int(w["i"])
+			if w["kind"] != "flak" and w["ready"] and (atk["weapons"] == null or i in atk["weapons"]) and api.in_reach(sel, i, t_id, atk["st"]):
+				out.append(i)
+		return out
 	for a in aims:
 		if str(a["tid"]) == t_id:
 			return (a["guns"] as Array).duplicate()
@@ -4043,6 +4066,14 @@ func _attack_move(t_id: String):
 	if am == null:
 		return null
 	return {"st": am["state"], "n": int(am["guns"]), "of": int(am["of"]), "weapons": weapons}
+
+
+func _burn_summary() -> String:
+	var hexes := 0
+	for step in atk["st"]["path"]:
+		if not bool(step.get("rot", false)):
+			hexes += 1
+	return "%d-hex burn: %d of %d guns" % [hexes, int(atk["n"]), int(atk["of"])]
 
 
 # firing arcs as fans on the board under the selected ship (the game's arc fans): one per ready gun, its range and arc
@@ -5507,6 +5538,7 @@ func _target(tid: String) -> void:
 		plan_k = ""
 		_update_target_plan(tid, allow_stationary)
 		if target != "":
+			_clear_fire_feedback()
 			sfx.play("ui_confirm", {"gain": 0.707946})
 		else:
 			var previous: Dictionary = plan_steps.pop_back()
@@ -5514,12 +5546,19 @@ func _target(tid: String) -> void:
 			plan_k = previous.k
 			target = previous.target
 			atk = previous.atk
-			hud.toast(("No ready gun bears on %s from the planned hex." % _name(tid)) if plan != null else _cant_fire_reason(tid))
+			_report_no_shot(tid)
 	elif _firing_set(tid, false).is_empty():
-		hud.toast(("No ready gun bears on %s from the planned hex." % _name(tid)) if plan != null else _cant_fire_reason(tid))
+		_report_no_shot(tid)
 	else:
 		hud.toast("Every gun that bears on %s is already aimed. Backspace takes the last pick back." % _name(tid))
 	_refresh_ui()
+
+
+func _report_no_shot(tid: String) -> void:
+	# A hovered enemy already gets the reason in its target box. Only toast if that box is showing something else.
+	if target == tid or (target == "" and str(_unit_at(hover.x, hover.y).get("id", "")) == tid):
+		return
+	hud.toast(("No ready gun bears on %s from the planned hex." % _name(tid)) if plan != null else _cant_fire_reason(tid))
 
 
 func _gun_aimed(i: int) -> bool:
@@ -5893,7 +5932,7 @@ func _cant_fire_reason(t_id: String) -> String:
 	var in_range := false
 	var in_arc := false
 	for w in u["weapons"]:
-		if w["kind"] == "flak" or not w["ready"]:
+		if w["kind"] == "flak" or not w["ready"] or (armed >= 0 and int(w["i"]) != armed):
 			continue
 		any_ready = true
 		var t := _wtarget(sel, int(w["i"]), t_id)
@@ -6007,7 +6046,8 @@ func _legend() -> void:
 			if block_col == "":
 				block_col = str(info.get("col", "#bda088"))
 			continue
-		rows.append([str(info.get("n", k)), str(info.get("col", "#888888")), str(info.get("fx", ""))])
+		var swatch := Color(Board.EDGE_C[k], 1.0).to_html(false) if Board.ZONE_TINT.has(k) else str(info.get("col", "#888888"))
+		rows.append([str(info.get("n", k)), swatch, str(info.get("fx", ""))])
 	if not blockers.is_empty():
 		rows.insert(rows.size(), [", ".join(blockers), block_col, "Blocks movement and line of fire."])
 	var o = V.get("obj")
@@ -6052,15 +6092,17 @@ func _attack_tip(t_id: String) -> String:
 	var hull := 0.0
 	var sh := 0.0
 	var n := 0
-	# The same weapon set as the activation card: from the ghost when a move is planned (issue 1589).
+	var shot = _shot_state(t_id)
+	var burn := atk != null and target == t_id
+	# The same weapon set and position as the activation card and target box.
 	var firing := _shown_set(t_id)
-	var volley := _volley_preview(sel, firing, t_id, plan)
+	var volley := _volley_preview(sel, firing, t_id, shot)
 	var idx: Array = [armed] if armed >= 0 else range(su["weapons"].size())
 	for i in idx:
 		var vw: Dictionary = su["weapons"][i]
 		var w = ru["weapons"][i]
 		var tg := _wtarget(sel, i, t_id)
-		if plan == null:
+		if shot == null:
 			quad = int(tg.get("quad", quad))
 			rear = bool(tg.get("rear", rear))
 		var right := ""
@@ -6081,7 +6123,7 @@ func _attack_tip(t_id: String) -> String:
 			right = "[color=#7c8674]point defense[/color]"
 		elif su["braced"]:
 			right = "[color=#7c8674]braced[/color]"
-		elif plan != null:
+		elif shot != null:
 			right = "[color=#7c8674]%s[/color]" % ("aimed at another target" if _gun_aimed(i) else "no shot from the ghost")
 		elif not tg.get("inRange", false):
 			right = "[color=#7c8674]out of range (%d/%d)[/color]" % [int(tg.get("range", 0)), int(vw["range"])]
@@ -6090,33 +6132,34 @@ func _attack_tip(t_id: String) -> String:
 		elif not tg.get("los", false):
 			right = "[color=#7c8674]blocked[/color]"
 		rows += "%s  %s\n" % [str(vw["name"]), right]
-	if plan != null:
+	if shot != null:
 		# Codex on PR 1643: the side it hits and the rear arc are read from the ghost, as the damage is
-		var gsrc = api.R.stateView(ru, plan)
+		var gsrc = api.R.stateView(ru, shot)
 		quad = int(api.R.shieldQuad(tu, gsrc))
 		rear = bool(api.R.treeIsRear(gsrc, tu, quad))
 	var t := "[b][color=#ff8a72]%s[/color][/b]\n[color=#a7b09d]Hull %s/%s, %s[/color]\n" % [str(tv["name"]), Campaign.hull_text(tv["hp"]), Campaign.hull_text(tv["maxHp"]), _target_defenses(tu)]
 	if float(tv["shMax"]) > 0:
-		t += "Hits the [color=#92b8e8][b]%s shield[/b][/color] (pool [color=#92b8e8]%d[/color]/%d, this side catches %d)%s." % [QUAD_NAME[quad], int(_z0(tu.get("shp"))), int(tv["shMax"]), int(tv["sh"][quad]), " [color=#ffad3b]down, straight to hull[/color]" if float(_z0(tu.get("shp"))) < 1 else ""]
+		if float(_z0(tu.get("shp"))) < 1:
+			t += "[color=#ffad3b]Shields down. Hits go straight to the hull.[/color]"
+		else:
+			t += "Hits the [color=#92b8e8][b]%s shield[/b][/color]. Its shields share [color=#92b8e8]%d[/color]/%d charge. This side can absorb up to %d damage per hit." % [QUAD_NAME[quad], int(_z0(tu.get("shp"))), int(tv["shMax"]), int(tv["sh"][quad])]
 		if quad in _routed_sides(tv) and float(_z0(tu.get("shp"))) >= 1:
-			t += " [color=#9fd4ff]Its power is routed to this side: it catches more, but each hit drains the pool 30% faster.[/color]"   # issue 1446 (R246)
+			t += " [color=#9fd4ff]Power is routed here: it absorbs more, but blocked damage drains 30% more charge.[/color]"   # issue 1446 (R246)
 	else:
 		t += "Target is unshielded: [color=#ffad3b]every hit lands on the hull[/color]."
 	if rear:
 		t += " [color=#ffb23e]Rear arc: armor halved, +15% crit.[/color]"
-	if plan != null:
-		t += "\n[color=#7fc4ff]From the ghost (nothing has moved yet).[/color]"
+	if shot != null:
+		t += "\n[color=#7fc4ff]From the marked hex (nothing has moved yet).[/color]"
 	t += "\n" + rows
-	if not _shot_blockers(tv).is_empty(): t += "[color=#ffb875]%s[/color]\n" % _blocker_text(tv)
+	if shot == null and not _shot_blockers(tv).is_empty(): t += "[color=#ffb875]%s[/color]\n" % _blocker_text(tv)
 	if n > 0:
 		t += "Expected: about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage.\n[color=#ff8a3a]%s[/color]" % [int(round(sh)), int(round(hull)),
-			("Aimed. Click again or Enter to play the plan (%d weapon%s here)." % [n, "s" if n > 1 else ""]) if _aimed(t_id) else "Click to aim (nothing fires yet)."]
+			("Click again or press Enter to burn to the marked hex and fire.") if burn else (("Aimed. Click again or Enter to play the plan (%d weapon%s here)." % [n, "s" if n > 1 else ""]) if _aimed(t_id) else "Click to aim (nothing fires yet).")]
 	else:
-		var am = (atk if (target == t_id and atk != null) else (_attack_move(t_id) if int(su.get("moveLeft", 0)) > 0 else null))
+		var am = _attack_move(t_id) if int(su.get("moveLeft", 0)) > 0 else null
 		if am != null:
-			t += "[color=#ff8a3a]Out of reach from here. %s[/color]" % (("Planned: burn %d movement to the ghost and fire %d weapon%s on the way. Click again or Enter to go." % [int(am["st"].cost), int(am["n"]), "s" if int(am["n"]) > 1 else ""]) if target == t_id else "Click to see the attack-move: where the ship would stop and what would fire.")
-		else:
-			t += "[color=#7c8674]No ready weapon can reach this target.[/color]"
+			t += "[color=#ff8a3a]Click to plan a burn to a hex where your guns can fire.[/color]"
 	return t
 
 
@@ -6649,17 +6692,11 @@ func _plan_text(id: String) -> Dictionary:
 			hl += float((volley.get(i, {}) as Dictionary).get("hull", 0))
 		rows.append("[color=#ff8a6a]%d gun%s at %s:[/color] about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage." % [set.size(), "" if set.size() == 1 else "s", _name(str(a["tid"])), int(round(sh)), int(round(hl))])
 		says.append("%d gun%s at %s." % [set.size(), "" if set.size() == 1 else "s", _name(str(a["tid"]))])
-	var free := 0
-	var seen := {}
-	for e in V["units"]:
-		if e["side"] == "enemy" and not e["dead"]:
-			for i in _firing_set(str(e["id"])):
-				seen[int(i)] = true
-	free = seen.size()
+	var free := _red_ring_guns()
 	if free > 0:
 		rows.append("%d more gun%s bear%s %s: click an enemy with a red ring to aim %s." % [free, "" if free == 1 else "s", "s" if free == 1 else "", "from the ghost" if plan != null else "from here", "it" if free == 1 else "them"])
 	elif aims.is_empty():
-		rows.append("No gun bears from the ghost yet. Move or turn it until an enemy gets a red ring.")
+		rows.append("No gun can fire from the marked hex yet. Move or turn to line up a shot.")
 	rows.append("[b]Enter, or click the hex or a target again, plays it all out.[/b] Backspace steps back, Esc clears the plan.")
 	var turn_only: bool = plan != null and plan.has("rot")
 	var go := ("Turn and fire (Enter)" if turn_only else "Move and fire (Enter)") if moves and guns > 0 else ("Fire %d gun%s (Enter)" % [guns, "" if guns == 1 else "s"] if guns > 0 else ("Turn here (Enter)" if plan != null and int(plan.q) == int(u["q"]) and int(plan.r) == int(u["r"]) else "Move here (Enter)"))
@@ -6688,18 +6725,13 @@ func _card_info() -> Dictionary:
 	var fired := bool(u.get("fired", false))
 	var guns := 0
 	var ready := 0
-	var bear := 0
 	for w in u["weapons"]:
 		if w["kind"] == "flak":
 			continue
 		guns += 1
 		if w["ready"]:
 			ready += 1
-	for w in ui.get("weapons", []):
-		for t in w.get("targets", []):
-			if t.get("can", false):
-				bear += 1
-				break
+	var bear := _red_ring_guns()
 	var nothing := _nothing_left(id)
 	var braced: bool = u["braced"]
 	var can_brace := bool(ui.get("orders", {}).get("brace", false))
@@ -6731,12 +6763,12 @@ func _card_info() -> Dictionary:
 	var say := ""   # issue 271: the sheet's one short sentence for what to do now (the full hint is on the action's hover)
 	var keys := ""   # issue 1589 (Ryan, Nov 22): the keys of an open plan, always on screen beside what it does
 	var btns: Array = []
-	if nothing or ending:
+	if braced:
+		hint = "Braced: hull damage −40% until its next turn." + (" Handing over to the next ship." if nothing or ending else " End the ship (Space).")
+		say = "Braced: hull damage -40% until its next turn."
+	elif nothing or ending:
 		hint = "[color=#a7b09d]Nothing left to do this round: handing over to the next ship.[/color]"
 		say = "Nothing left to do: handing over."
-	elif braced:
-		hint = "Braced: hull damage −40% until its next turn. End the ship (Space)."
-		say = "Braced: hull damage -40% until its next turn."
 	elif mode == "ram" and ui.get("ram") is Dictionary:
 		# issue 1444: the armed ram's forecast; nothing happens until the second press
 		hint = _ram_forecast(id)
@@ -6754,8 +6786,8 @@ func _card_info() -> Dictionary:
 		say = "Board: click a gold-ringed enemy."
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif target != "" and atk != null:
-		hint = "[color=#ffb23e]%s is out of reach from here.[/color] The ghost shows where the ship would stop: it burns %d movement and fires %d of %d guns on the way. [b]Click it again or press Enter to go.[/b] Esc cancels." % [_name(target), int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
-		say = "Out of reach: it burns %d movement and fires %d of %d guns on the way." % [int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
+		say = "In reach after a " + _burn_summary() + "."
+		hint = say + " Uses %d movement. The ghost marks the stop. [b]Click again or press Enter to go.[/b] Esc cancels." % int(atk["st"].cost)
 		btns.append({"text": "Burn and fire (Enter)", "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 		keys = "Enter goes · Backspace undoes · Esc cancels"
@@ -6780,7 +6812,7 @@ func _card_info() -> Dictionary:
 		hint = "No movement left. Click an enemy with a red ring to target it, " + ("brace (B), " if can_brace else "") + "or end the ship (Space)."
 		say = "No movement left. Click an enemy with a red ring to target it."
 	elif mleft > 0:
-		hint = "Click a blue hex to plan a move. No gun bears from here yet: an orange ring on an enemy means it would from the planned hex." + (" B braces instead." if can_brace else "")
+		hint = "Click a blue hex to plan a move. The aim rings update for the marked hex." + (" B braces instead." if can_brace else "")
 		say = "Click a blue hex to move. No gun bears from here yet."
 	else:
 		hint = "No movement left and no gun bears. Turn with Q/E" + (", brace (B)" if can_brace else "") + " or end the ship (Space)."
@@ -6881,6 +6913,22 @@ func _objective() -> String:
 	return "Objective: break their fleet"
 
 
+const ABILITY_ORDER_HINTS := {
+	"evasive": "Use before a risky move: gain 2 movement and 25 evasion until your next turn.",
+	"reload": "Use after launching torpedoes to ready the tubes again immediately.",
+	"focus": "Use before a volley to deal 30% more weapon damage this turn.",
+	"surge": "Use after taking shield damage to refill all shield charge.",
+	"nova": "Use against grouped enemies: pick a hex 3 to 9 ahead for 40 damage, 20 to adjacent ships, including yours.",
+	"ionpulse": "Use near shielded enemies: every enemy ship within 4 hexes loses half its shield charge.",
+	"overburn": "Use to close the gap or set up a ram: gain 3 movement and hit 50% harder with a ram this turn.",
+	"frenzy": "Use before firing on exposed hull: deal 20% more damage and heal 30% of hull damage dealt, up to 12% hull per round.",
+	"regrow": "Use after taking hull damage to regrow 25% of this ship's hull.",
+	"blink": "Use to bypass obstacles: pick an open hex within 3 to jump there through rocks and ships.",
+	"phase": "Use before enemy fire: the next weapon attack before your next turn misses, and you gain 1 movement now.",
+	"reclaim": "Use near a damaged ally: restore 20% hull to the most damaged ship within 3 hexes, including this ship."
+}
+
+
 func _panel_info() -> Dictionary:
 	if ended:
 		return {}
@@ -6897,7 +6945,7 @@ func _panel_info() -> Dictionary:
 		"routed": _routed_sides(u)}
 	var mleft := int(u.get("moveLeft", u["mp"])) if u.get("moveLeft") != null else int(u["mp"])
 	var stats := "Hull [color=#ffad3b]%s/%s[/color]   Armor %d%%   Evasion %d\nMovement %d of %d   Turns %d" % [Campaign.hull_text(d["hp"]), Campaign.hull_text(u["maxHp"]), int(round(float(ru.get("armor", 0)) * 100.0)), int(_z0(ru.get("ev"))), mleft, int(_z0(ru.get("speed"))), int(u["turnsLeft"])]
-	if u.get("fired", false) and mleft < int(u["mp"]):
+	if not u["braced"] and u.get("fired", false) and mleft < int(u["mp"]):
 		stats += "\n[color=#7c8674]Fired.%s[/color]" % (" Movement left: %d." % mleft if mleft > 0 else "")
 	if u.get("crew") != null:
 		stats += "   Crew %d/%d" % [int(u["crew"]), int(u["crewMax"])]
@@ -6917,7 +6965,8 @@ func _panel_info() -> Dictionary:
 		tgt = hu["id"]
 	# #271: odds from the planned hex when a move is planned (the rules' own preview at that state), else from here
 	var mine_up: bool = u["side"] == "player" and id == sel and api.phase == "player"
-	var pst = plan if (plan != null and mine_up) else null
+	var pst = _shot_state(tgt) if mine_up else null
+	var burn_volley := _volley_preview(id, _shown_set(tgt), tgt, pst) if mine_up and atk != null and target == tgt else {}
 	var distance := int(api.R.hdist(pst if pst != null else u, VU[tgt])) if VU.has(tgt) else -1
 	for w in u["weapons"]:
 		var wi := int(w["i"])
@@ -6938,14 +6987,14 @@ func _panel_info() -> Dictionary:
 			hit = int(pv["hit"])
 			dmg = int(round(float(pv.get("shield", 0)) + float(pv.get("hull", 0))))
 		elif tgt != "" and pst != null:
-			var pa := _fire_preview_at(id, wi, tgt, pst)
-			if bool(pa.get("bears", false)):
+			var pa := burn_volley.get(wi, {}) as Dictionary if atk != null and target == tgt else _fire_preview_at(id, wi, tgt, pst)
+			if not pa.is_empty():
 				right = "%d%%" % int(pa["hit"])
 				hit = int(pa["hit"])
 				dmg = int(round(float(pa.get("shield", 0)) + float(pa.get("hull", 0))))
 			else:
 				right = "ready"
-				why = "won't bear"
+				why = "can't fire from the marked hex"
 		elif tgt != "" and u["side"] == "player" and mine_up:
 			right = "ready"
 			var wt := _wtarget(id, wi, tgt)
@@ -6987,7 +7036,7 @@ func _panel_info() -> Dictionary:
 		fl.append("[color=#9fd4ff]Braced: hull damage −40% until its next turn.[/color]")
 	if u["burning"]:
 		fl.append("[color=#f08a4b]On fire.[/color]")
-	if u.get("fired", false) and mleft < int(u["mp"]):
+	if not u["braced"] and u.get("fired", false) and mleft < int(u["mp"]):
 		fl.append("[color=#7c8674]Fired.%s[/color]" % (" Movement left: %d." % mleft if mleft > 0 else ""))
 	var Bs0 = api.R.B
 	if Bs0.get("aiFocus") is Dictionary and Bs0["aiFocus"].get("id") == ru.get("id") and not u["dead"]:
@@ -7000,8 +7049,9 @@ func _panel_info() -> Dictionary:
 		var ui := _ui(id)
 		orders.append({"text": "Brace (B)", "act": "brace", "on": can and bool(ui.get("orders", {}).get("brace", false)), "active": u["braced"], "tip": _brace_tip(ru)})
 		if u.get("ab") != null and u.get("ab") != "launch":
-			var A = TBL.get("ABILITIES", {}).get(str(u["ab"]), {})
-			orders.append({"text": str(A.get("n", u["ab"])), "act": "ability", "ability": str(u["ab"]), "cooldown": int(_z0(u.get("abCd"))), "active": mode == u["ab"], "on": can and u["abReady"], "tip": str(A.get("d", ""))})
+			var ab := str(u["ab"])
+			var A = TBL.get("ABILITIES", {}).get(ab, {})
+			orders.append({"text": str(A.get("n", ab)), "act": "ability", "ability": ab, "cooldown": int(_z0(u.get("abCd"))), "active": mode == ab, "on": can and u["abReady"], "tip": str(ABILITY_ORDER_HINTS.get(ab, A.get("d", "")))})
 		# issue 1444: the Ram and Board tips carry the forecast; Ram arms on the first press and rams on the second
 		var ram_tip := "Charge the first enemy dead ahead (needs a run-up)."
 		if ui.get("ram") is Dictionary:
@@ -7539,7 +7589,8 @@ func _target_info() -> Dictionary:
 	var d: Dictionary = disp.get(tid, {"hp": tu["hp"], "sh": tu["sh"]})
 	# with a move planned, the odds are read as the ship would stand at the planned hex (the Fire block does the same)
 	var set: Array = _shown_set(tid)
-	var volley := _volley_preview(sel, set, tid, plan)
+	var shot = _shot_state(tid)
+	var volley := _volley_preview(sel, set, tid, shot)
 	var es := 0.0
 	var eh := 0.0
 	var best := -1
@@ -7562,18 +7613,22 @@ func _target_info() -> Dictionary:
 	# issue 1446: the side this volley strikes (the best gun's), and whether the rules have routed power to it
 	var quad := int(volley[best_index].get("quad", -1)) if best_index >= 0 and volley.has(best_index) else -1
 	var routed := _routed_sides(tu)
+	var burn_line := _burn_summary() if atk != null and target == tid else ""
 	var line := ""
 	if set.is_empty():
 		line = "[color=#a7b09d]%s[/color]" % ("No ready gun bears on it from the planned hex." if plan != null else _cant_fire_reason(tid))
 	else:
-		var who := ("Both bearing guns" if set.size() == 2 else ("%d bearing guns" % set.size() if set.size() > 2 else "The bearing gun"))
-		line = "%s%s: about %d damage" % [who, " from the planned hex" if plan != null else "", total]
-		line += ": %d to shields, %d to hull." % [shields, hull] if shields > 0 else ", all to hull."
+		if burn_line != "":
+			line = "In reach after a " + burn_line + "."
+		else:
+			var who := ("Both bearing guns" if set.size() == 2 else ("%d bearing guns" % set.size() if set.size() > 2 else "The bearing gun"))
+			line = "%s%s: about %d damage" % [who, " from the planned hex" if plan != null else "", total]
+			line += ": %d to shields, %d to hull." % [shields, hull] if shields > 0 else ", all to hull."
 		# no kill prediction (ui_spec S1 board ruling on the #314 check): the expected value only; the hatched ghost on the
 		# target's hull bar already shows the hull reaching zero
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]), "shp": float(_z0(tu.get("shp"))),
-		"defenses": _target_defenses(foe), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind,
+		"defenses": _target_defenses(foe), "exp_hull": hull, "exp_shields": shields, "line": line, "burn_line": burn_line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind,
 		"quad": quad, "routed": routed, "struck_routed": quad >= 0 and quad in routed}
 
 
@@ -7630,12 +7685,8 @@ func _tutorial() -> void:
 	if tips_off or bot or showcase or ended or not tip_handed or hud.tipcard != null or V.is_empty() or not _api_join(): return
 	var info: Dictionary = api.teaching_info()
 	var battle_n := int(info.get("battle", 1))
-	var targets := false
-	for u in V.get("units", []):
-		if u["side"] != "player" or u["dead"] or u.get("squadron", false) or u["activated"]: continue
-		for w in _ui(str(u["id"])).get("weapons", []):
-			for t in w.get("targets", []):
-				if t.get("can", false): targets = true
+	var targets := _red_ring_guns() > 0
+	if tip_pending == "target" and not targets: tip_pending = ""
 	var close := false
 	if sel != "" and not _sel_unit().is_empty():
 		var cu := _ui(sel)

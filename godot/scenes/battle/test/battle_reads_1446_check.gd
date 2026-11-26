@@ -147,10 +147,10 @@ func _run() -> void:
 	_check(bool(ti.get("struck_routed", false)) and int(ti.get("quad", -1)) >= 0, "ROUTE-1: the target sheet knows the struck side is routed (quad %d)" % int(ti.get("quad", -1)))
 	b.hud.ledger.target = ti
 	var tt: String = b.hud.ledger._target_tip()
-	_check(tt.contains("(routed)") and tt.contains("drains the pool 30% faster"), "ROUTE-1: the attack tip names the routed side and its cost")
+	_check(tt.contains("(routed)") and tt.contains("Shared shield charge") and tt.contains("drains 30% more charge"), "ROUTE-1: the attack tip names the routed side and its cost")
 	var gun_tip: String = b._attack_tip(foe) if b.has_method("_attack_tip") else ""
 	if gun_tip != "":
-		_check(gun_tip.contains("routed to this side"), "ROUTE-1: the per-gun attack tip says the struck side is routed")
+		_check(gun_tip.contains("Power is routed here"), "ROUTE-1: the per-gun attack tip says the struck side is routed")
 	# the ship tip and the KEEL readout, for the inspected enemy
 	b.target = ""
 	b.sel = ""

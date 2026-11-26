@@ -27,6 +27,8 @@ class FakeAPI extends RefCounted:
 	var event = null
 	func teaching_info() -> Dictionary: return {"battle": n, "event": event, "arrived": arrived}
 	func can_command() -> bool: return command
+	func unit(id: String) -> Dictionary: return {"id": id, "weapons": [{}] if id == "p1" else []}
+	func can_fire(_id: String, _wi: int, _target: String) -> bool: return target
 	func ui_info(_id: String) -> Dictionary:
 		return {"weapons": [{"targets": [{"can": target}]}], "board": [1] if close else [], "ram": null}
 
@@ -66,8 +68,10 @@ func _run() -> void:
 	b.args["no-tips"] = true; b._sync_teaching_switch()
 	check(b.tips_off, "capture and test no-tips override still wins")
 	b.args.erase("no-tips"); b._sync_teaching_switch()
-	b.V = {"round": 1, "obj": {"type": "rout"}, "units": [{"id": "p1", "side": "player", "dead": false, "squadron": false, "activated": false, "active": false}]}
-	b.VU = {"p1": b.V.units[0]}
+	b.V = {"round": 1, "obj": {"type": "rout"}, "units": [
+		{"id": "p1", "side": "player", "dead": false, "squadron": false, "activated": false, "active": false},
+		{"id": "e1", "side": "enemy", "dead": false, "active": false}]}
+	b.VU = {"p1": b.V.units[0], "e1": b.V.units[1]}
 	b.sel = "p1"
 	b.tips = {"start": true, "turns": true}
 	b.api.target = true; b._tutorial()
@@ -82,6 +86,10 @@ func _run() -> void:
 	b.api.target = true; b.api.version += 1
 	b._tutorial()
 	check(b.hud.tipcard == null and b.tip_pending == "target", "same activation holds just one pending card")
+	b.api.target = false
+	b._tutorial()
+	check(b.hud.tipcard == null and b.tip_pending == "", "queued firing lesson waits again if no red-ring target remains")
+	b.api.target = true
 	b.tip_slot = "1:player:p2"
 	b._tutorial()
 	check(b.hud.last == "target", "pending target card shows on next activation")
