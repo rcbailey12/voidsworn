@@ -13,6 +13,15 @@
 # godot/tools/ci/godot_check_times.txt (10 s when a check is not there), each given to the shard with the least time so
 # far, so every headless check lands in exactly one shard. Shard 1 also runs the list proof. GitHub runs the shard matrix
 # in parallel, each with its own budget. GODOT_CHECKS_PLAN=1 prints the plan and stops (no Godot needed).
+run_godot() {
+  XDG_DATA_HOME="$xdg" APPDATA="$xdg" timeout -k 10 "$@"
+}
+
+scratch() {
+  # On the Windows sandbox, realpath cannot stat some ancestors of the checkout.
+  node --preserve-symlinks-main "$P/tools/ci/check_scratch.js" "$@"
+}
+
 failure_excerpt() {
   awk '
     tolower($0) ~ /placeholder hull:/ { next }
@@ -63,14 +72,21 @@ run_check() {
       fi ;;
     userdir)
       # Onboarding accepts an explicit profile only at <Godot temp>/voidsworn-onboarding-*/profile.
-      # Give it that spelling while keeping the actual data with the other per-check user dirs.
-      if ! alias_dir=$(mktemp -d /tmp/voidsworn-onboarding-ci.XXXXXX); then
+      # Ask the engine instead of assuming /tmp. The profile still points to this check's own data.
+      probe="$T/logs/$name.temp.log"
+      [ "$left" -le 20 ] || left=20
+      if ! run_godot "$left" "$G" --headless --path "$P" --script res://tools/ci/print_temp_dir.gd > "$probe" 2>&1 < /dev/null ||
+        grep -q 'SCRIPT ERROR' "$probe"; then
+        echo "  $name: FAIL (could not read Godot's temp dir)"
+        failure_excerpt "$probe"
+        return 1
+      fi
+      godot_temp=$(tr -d '\r' < "$probe" | sed -n 's/^GODOT_TEMP_DIR=//p')
+      if ! profile=$(GODOT_TEMP_DIR="$godot_temp" CHECK_USER_DIR="$xdg" scratch onboarding); then
         echo "  $name: FAIL (could not create its onboarding profile alias)"
         return 1
       fi
-      profile="$alias_dir/profile"
-      trap 'rm -f "$profile"; rmdir "$alias_dir"' EXIT
-      if ! ln -s "$xdg" "$profile"; then echo "  $name: FAIL (could not link its onboarding profile)"; return 1; fi
+      trap 'CHECK_PROFILE_ALIAS="$profile" scratch unlink-onboarding' EXIT
       xdg="$profile"
       set -- "$profile" ;;
     -) ;;
@@ -99,7 +115,7 @@ run_check() {
   lim=300; [ "$left" -lt "$lim" ] && lim=$left
   [ "$#" -eq 0 ] || set -- -- "$@"
   log="$T/logs/$name.log"
-  XDG_DATA_HOME="$xdg" timeout -k 10 "$lim" "$G" --headless --path "$P" --script "res://$script" "$@" > "$log" 2>&1 < /dev/null
+  run_godot "$lim" "$G" --headless --path "$P" --script "res://$script" "$@" > "$log" 2>&1 < /dev/null
   code=$?
   se=$(grep -c 'SCRIPT ERROR' "$log")
   s=$(( $(date +%s) - t0 ))
@@ -126,11 +142,8 @@ P=$(pwd)            # godot/
 ROOT=$(cd .. && pwd)
 G="${GODOT:-godot}"
 LIST="$P/tools/ci/godot_checks.txt"
-# Resolve the temp root for the onboarding link and for the shard plan tests under Git Bash.
-temp_root=$(cd "${RUNNER_TEMP:-/tmp}" && pwd) || exit 1
-T="$temp_root/godot_checks"
 BUDGET="${GODOT_CHECKS_BUDGET:-1080}"
-(cd "$temp_root" && rm -rf godot_checks && mkdir -p godot_checks/logs godot_checks/fixtures godot_checks/xdg) || exit 1
+case "$BUDGET" in ""|0*|*[!0-9]*) echo "FAIL: GODOT_CHECKS_BUDGET must be a positive whole number of seconds."; exit 2 ;; esac
 F=0
 TIMES="${GODOT_CHECKS_TIMES:-$P/tools/ci/godot_check_times.txt}"
 SHARD="${SHARD:-1/1}"
@@ -140,10 +153,14 @@ case "$si" in ""|*[!0-9]*) si=x ;; esac
 case "$sn" in ""|*[!0-9]*) si=x ;; esac
 if [ "$si" = x ]; then echo "FAIL: SHARD must be i/n with whole numbers, got '$SHARD'."; exit 2; fi
 if [ "$si" -lt 1 ] || [ "$si" -gt "$sn" ]; then echo "FAIL: SHARD $SHARD is outside 1/$sn to $sn/$sn."; exit 2; fi
+if ! T=$(scratch shard); then
+  echo "FAIL: could not prepare Godot check scratch space."; exit 1
+fi
 
 # 0. the shard plan: same on every shard. Lines: shard|class|script|setup|args|reason, in list order.
-grep '^headless|' "$LIST" | awk -F'|' -v tf="$TIMES" '
-  BEGIN { while ((getline l < tf) > 0) { if (l ~ /^#/ || l == "") continue; split(l, a, " "); t[a[1]] = a[2] + 0 } }
+# Use ENVIRON so awk does not interpret backslashes in a native Windows path as escapes.
+grep '^headless|' "$LIST" | TIMES="$TIMES" awk -F'|' '
+  BEGIN { tf = ENVIRON["TIMES"]; while ((getline l < tf) > 0) { if (l ~ /^#/ || l == "") continue; split(l, a, " "); t[a[1]] = a[2] + 0 } }
   { nm = $2; sub(/.*\//, "", nm); sub(/\.gd$/, "", nm); w = ($3 ~ /^step:/) ? 0 : ((nm in t) ? t[nm] : 10)
     printf "%d|%07d|%s|%s\n", w, NR, nm, $0 }' | sort -t'|' -k1,1nr -k3,3 -k2,2n | awk -F'|' -v n="$sn" '
   { best = 1; for (k = 2; k <= n; k++) if (load[k] < load[best]) best = k
@@ -161,11 +178,21 @@ if ! cmp -s "$T/plan_want.txt" "$T/plan_got.txt" || [ -n "$badshard" ] || [ ! -s
   echo "  shard: FAIL, the shard plan does not hold every headless line exactly once:"
   diff "$T/plan_want.txt" "$T/plan_got.txt" | head -8 | sed 's/^/    /'
   [ -n "$badshard" ] && echo "$badshard" | sed 's/^/    bad shard: /'
-  echo "FAIL: the shard plan is broken; no check was run."; exit 1
+  echo "FAIL: the shard plan is broken, so this shard is a failed check (not a skip); no Godot check ran here."; exit 1
 fi
 mine=$(awk -F'|' -v i="$si" '$1 == i' "$T/plan.txt" | grep -vc '|step:')
 est=$(awk -F'|' -v i="$si" '$2 == i {print $3}' "$T/loads.txt")
 echo "  shard: $si of $sn, $mine checks, about $est s by the recorded times"
+# A branch can still use an older shard count after CI merges in main's longer check list.
+# Allow 15 percent above the plan, capped at the normal single-job budget.
+need=$(( (${est:-0} * 115 + 99) / 100 ))
+[ "$need" -le 1080 ] || need=1080
+if [ "$need" -gt "$BUDGET" ]; then
+  echo "  shard: WARN, $est s planned for a $BUDGET s budget; budget raised to $need s. Update the branch's shard count."
+  BUDGET=$need
+elif [ $(( ${est:-0} * 100 )) -gt $(( BUDGET * 80 )) ]; then
+  echo "  shard: WARN, $est s planned is over 80 percent of the $BUDGET s budget."
+fi
 if [ "${GODOT_CHECKS_PLAN:-0}" = 1 ]; then cat "$T/plan.txt"; exit 0; fi
 
 # 1. the list is whole (shard 1 only: the list and the plan are the same on every shard)

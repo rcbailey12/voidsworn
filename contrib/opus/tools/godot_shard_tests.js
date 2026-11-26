@@ -18,8 +18,12 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'godot-shard-1430-'));
 
 function plan(shard, extra) {
   const env = Object.assign({}, process.env, { SHARD: shard, GODOT_CHECKS_PLAN: '1', RUNNER_TEMP: tmp }, extra || {});
+  const before = new Set(fs.readdirSync(tmp));
   const r = spawnSync(sh, [SCRIPT], { cwd: ROOT, env, encoding: 'utf8', windowsHide: true, timeout: 60000 });
-  return { status: r.status, out: (r.stdout || '') + (r.stderr || '') };
+  const dirs = fs.readdirSync(tmp).filter(d => d.startsWith('godot_checks-') && !before.has(d));
+  const out = (r.stdout || '') + (r.stderr || '');
+  if (r.status === 0) assert.equal(dirs.length, 1, 'a successful plan must create its own scratch under RUNNER_TEMP:\n' + out);
+  return { status: r.status, out, scratch: dirs.length === 1 ? path.join(tmp, dirs[0]) : null };
 }
 
 const headless = fs.readFileSync(LIST, 'utf8').split(/\r?\n/).filter(l => l.startsWith('headless|'));
@@ -65,11 +69,21 @@ function cover(n, extra) {
 cover(wfCount, { GODOT_CHECKS_TIMES: path.join(tmp, 'missing_times.txt') });
 
 // Balance at the workflow's count by the recorded times: no shard more than 25% over the even share.
-plan('1/' + wfCount);
-const est = fs.readFileSync(path.join(tmp, 'godot_checks', 'loads.txt'), 'utf8').trim().split(/\r?\n/).map(l => Number(l.split('|')[2]));
+const first = plan('1/' + wfCount);
+assert.equal(first.status, 0, first.out);
+const est = fs.readFileSync(path.join(first.scratch, 'loads.txt'), 'utf8').trim().split(/\r?\n/).map(l => Number(l.split('|')[2]));
 const total = est.reduce((a, b) => a + b, 0);
 assert.ok(est.length === wfCount && total > 0, 'no load estimate was written');
 est.forEach((t, i) => assert.ok(t <= 1.25 * total / wfCount, 'shard ' + (i + 1) + ' is planned for ' + t + ' s of ' + total + ' s'));
+
+const repeat = plan('1/' + wfCount, { GODOT_CHECKS_BUDGET: '1' });
+assert.equal(repeat.status, 0, repeat.out);
+assert.match(repeat.out, new RegExp('budget raised to ' + Math.min(1080, Math.ceil(est[0] * 1.15)) + ' s'));
+assert.notEqual(first.scratch, repeat.scratch);
+assert.deepEqual(fs.readFileSync(path.join(first.scratch, 'plan.txt')), fs.readFileSync(path.join(repeat.scratch, 'plan.txt')));
+const rolled = plan('1/1', { GODOT_CHECKS_BUDGET: '600' });
+assert.equal(rolled.status, 0, rolled.out);
+assert.match(rolled.out, new RegExp('budget raised to ' + Math.min(1080, Math.ceil(total * 1.15)) + ' s'));
 
 // Bad SHARD values fail before anything runs.
 ['0/3', '4/3', 'x/3', '2', '1/', '/3'].forEach(v => {
@@ -77,6 +91,12 @@ est.forEach((t, i) => assert.ok(t <= 1.25 * total / wfCount, 'shard ' + (i + 1) 
   assert.notEqual(r.status, 0, 'SHARD=' + v + ' must fail');
   assert.match(r.out, /FAIL: SHARD/);
 });
+for (const budget of ['0', 'oops']) {
+  const r = plan('1/' + wfCount, { GODOT_CHECKS_BUDGET: budget });
+  assert.equal(r.status, 2, r.out);
+  assert.match(r.out, /FAIL: GODOT_CHECKS_BUDGET/);
+  assert.equal(r.scratch, null);
+}
 
 // Artoo on PR 1615: a short, doubled or out-of-range plan stops the run before any check, and never reads as PASS.
 [['$d', 'a dropped line'], ['1d', 'a dropped first line'], ['1p', 'a doubled line'], ['1s/^[0-9]*|/9|/', 'shard 9 of ' + wfCount],
@@ -88,6 +108,34 @@ est.forEach((t, i) => assert.ok(t <= 1.25 * total / wfCount, 'shard ' + (i + 1) 
     assert.doesNotMatch(r.out, /^PASS/m);
   }
 });
+
+// PR 2220: native Windows APIs must fold the doubled backslashes before opening a new scratch folder.
+if (windows) {
+  const mangled = tmp.replace(/\\/g, '\\\\').replace(/\\\\/, '/');
+  const r = plan('1/' + wfCount, { RUNNER_TEMP: mangled });
+  assert.equal(r.status, 0, r.out);
+  assert.deepEqual(fs.readFileSync(path.join(r.scratch, 'plan.txt')), fs.readFileSync(path.join(first.scratch, 'plan.txt')));
+}
+
+// The standing checks do not install Godot. With GODOT set, --onboarding also runs the real engine against a custom temp.
+if (process.argv.includes('--onboarding')) {
+  assert.ok(process.env.GODOT, 'set GODOT to the Godot console executable for --onboarding');
+  const customTemp = fs.mkdtempSync(path.join(tmp, 'custom engine temp '));
+  const env = { ...process.env, SHARD: '1/1', GODOT_CHECKS_PLAN: '0', RUNNER_TEMP: tmp, TMPDIR: customTemp };
+  if (windows) Object.assign(env, { TEMP: customTemp, TMP: customTemp });
+  const r = spawnSync(sh, [SCRIPT, 'onboarding_test'], { cwd: ROOT, env, encoding: 'utf8', windowsHide: true, timeout: 120000 });
+  const out = (r.stdout || '') + (r.stderr || '');
+  assert.equal(r.status, 0, out || String(r.error));
+  assert.match(out, /^  onboarding_test: PASS/m);
+  const logs = /^Ran 1 headless Godot checks .* \(logs: (.+)\)\./m.exec(out);
+  assert.ok(logs, out);
+  const probe = fs.readFileSync(path.join(logs[1], 'onboarding_test.temp.log'), 'utf8');
+  const actual = /^GODOT_TEMP_DIR=(.+)\r?$/m.exec(probe);
+  assert.ok(actual, probe);
+  assert.equal(path.normalize(actual[1].trimEnd()), path.normalize(customTemp));
+  assert.ok(!fs.readdirSync(customTemp).some(entry => entry.startsWith('voidsworn-onboarding-ci-')), 'profile alias was left behind');
+  console.log('PASS godot_shard_tests: real onboarding check with a non-default TMPDIR');
+}
 
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log('PASS godot_shard_tests: ' + headless.length + ' headless checks, each in exactly one of 1, 2, ' + wfCount + ' and 5 shards; ' + wfCount + ' shards planned at ' + est.join(', ') + ' s');
