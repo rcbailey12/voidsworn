@@ -383,6 +383,7 @@ func hide_live_hull() -> void:
 
 
 func teardown(fx, wait_for_damage := true) -> void:
+	clear_rift_pose()
 	gone = true
 	end_brownout()
 	if is_instance_valid(root) and root.get("fx_clock") == fx:
@@ -581,6 +582,7 @@ func update(fx, dt: float) -> void:
 	if dead and has_meta("death_hidden"):
 		_update_hidden_death(fx)
 		return
+	_step_rift_pose(fx.now)
 	if not dead:
 		if not hull.turrets.is_empty():
 			hull.turret_step(fx.now)    # issue 560: each turret's node at its pose for the effect clock
@@ -1610,7 +1612,7 @@ func _react_apply(fx, wi: int) -> void:
 		_show_rcs = false
 	if hull_pivot != null:
 		hull_pivot.rotation = angles + Vector3(_list, 0.0, 0.0)
-		hull_pivot.position = _pd
+		hull_pivot.position = _pd + _rift_offset
 	else:
 		# Bare hulls use the root. Subtract the applied yaw to keep their drift in the base heading.
 		var base_yaw := root.rotation.y - _app_yaw
@@ -3278,16 +3280,65 @@ func _blowout(fx, i: int) -> void:
 
 # ---------------------------------------------------------------- small events
 
-func pulse(fx, strength: float) -> void:
+var _rift_start := -1.0
+var _rift_life := 1.0
+var _rift_in := false
+var _rift_calm := false
+var _rift_offset := Vector3.ZERO
+
+
+func start_rift_pose(at: float, life: float, entering: bool, calm: bool) -> void:
+	if not is_instance_valid(hull_pivot) or dead or gone:
+		return
+	_rift_start = at
+	_rift_life = life
+	_rift_in = entering
+	_rift_calm = calm
+	if entering:
+		# Hide before the first drawn frame, even for a staggered arrival.
+		_apply_rift_pose(0.0, false)
+
+
+func _step_rift_pose(at: float) -> void:
+	if _rift_start < 0.0:
+		return
+	if dead or at >= _rift_start + _rift_life:
+		clear_rift_pose()
+		return
+	if at < _rift_start:
+		return
+	var u := smoothstep(0.0, 1.0, (at - _rift_start) / maxf(_rift_life, 0.001))
+	_apply_rift_pose(u if _rift_in else 1.0 - u, true)
+
+
+func _apply_rift_pose(open: float, show_hull: bool) -> void:
+	if not is_instance_valid(hull_pivot):
+		return
+	var pinch := 1.0 - open if not _rift_calm else 0.0
+	var off: Vector3 = Vector3.RIGHT * hull.L * pinch * (-0.32 if _rift_in else 0.43)
+	hull_pivot.position += off - _rift_offset
+	_rift_offset = off
+	hull_pivot.scale = Vector3(1.0 + 0.54 * pinch, 1.0 - 0.84 * pinch, 1.0 - 0.91 * pinch)
+	hull_pivot.visible = show_hull
+
+
+func clear_rift_pose() -> void:
+	if _rift_start < 0.0:
+		return
+	_apply_rift_pose(1.0, true)
+	_rift_start = -1.0
+
+
+# The live Nova stays on its current charge cue until Ryan selects an option.
+func legacy_pulse(fx) -> void:
 	var c: Color = fac["weapon"]
 	var cp: Dictionary = hull.core_point()   # issue 370: the ship's own pulse starts at its core
 	if cp.is_empty():
 		return
 	var p = to_world(cp["p"])
-	var k = scale_k()
-	fx.ring(p, dir_world(Vector3.UP), fx.now, 0.9, c, 1.2 * strength, hull.L * 0.3, hull.L * 0.9, 2)
-	fx.spr(p, fx.now, 0.8, c, 1.0 * strength, hull.L * 0.4, hull.L * 0.8, 18)
-	fx.light(p, fx.now, 0.7, 3.0 * strength, c, 1)
+	fx.ring(p, dir_world(Vector3.UP), fx.now, 0.9, c, 1.2, hull.L * 0.3, hull.L * 0.9, 2)
+	fx.spr(p, fx.now, 0.8, c, 1.0, hull.L * 0.4, hull.L * 0.8, 18)
+	fx.light(p, fx.now, 0.7, 3.0, c, 1)
 
 
 func tick_flare(fx, kind: String) -> void:
@@ -3313,25 +3364,6 @@ func tick_flare(fx, kind: String) -> void:
 		var T: float = fx.now
 		for i in 20:
 			fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
-
-
-func jump_out(fx) -> void:
-	if dead or gone:
-		return
-	var T: float = fx.now
-	var bow = dir_world(Vector3(1, 0, 0))
-	var c: Color = fac["engine"]
-	var p = to_world(hull.core)   # issue 370: the jump flash at the core (hp_core, else the centre of volume)
-	for t in hull.nozzles:
-		var np = to_world(t["p"])
-		fx.spr(np, T, 0.5, c, 6.0, 2.0, 8.0, 2)
-	fx.light(p, T, 0.6, 6.0, c, 0)
-	fx.stk(p, T + 0.35, 0.4, c.lerp(Color.WHITE, 0.5), 10.0, hull.L * 3.0, hull.W * 0.4, 0, bow * hull.L * 20.0)
-	fx.ring(p, bow, T + 0.35, 0.6, c, 1.5, hull.L * 0.2, hull.L * 1.2, 1)
-	fx.later(T + 0.4, func l_jump() -> void:
-		if fx.ships.get(id) == self and not dead and not gone:
-			_hide_meshes()
-			teardown(fx, false))  # damage polling can finish its own job; do not block the jump frame
 
 
 # A mark's geometry follows the section's actual damage, including repairs.
