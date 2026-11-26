@@ -12,7 +12,7 @@
 //   1 job branch, no PR: a branch that auto_pr.yml's own patterns cover, whose tip commit is the head of no pull request
 //     on that branch in any state, with a tip dated 15 minutes to 14 days ago (REST exposes commit time, not push time).
 //     Live mode confirms the tip is ahead of the default branch before reporting or dispatching it.
-//   2 partial runs: <branch>-partial older than 24 hours with no full branch pushed since.
+//   2 partial runs: <branch>-partial older than 24 hours whose full branch does not contain the partial tip.
 //   3 open PRs: green and untouched for 12 hours (waiting on a merge), red for 24 hours (waiting on a fix).
 //   4 job issues closed as done in the last 7 days that no merged pull request names.
 //   5 comments posted on a pull request after it merged (review findings that may never land), last 7 days.
@@ -63,9 +63,8 @@ function analyze(data, patterns, now, containsPartial = () => false) {
     if (b.name.endsWith('-partial')) {
       if (!SEAT_PREFIX.test(b.name) || !(a > 24)) continue;
       const full = byName.get(b.name.slice(0, -8));
-      // A PR edit does not move the head. Use the actual head's SHA, date or ancestry.
-      const recovered = full && (full.sha === b.sha || Date.parse(full.date) > Date.parse(b.date) ||
-        containsPartial(b, full));
+      // Timestamps and PR edits do not prove that the full branch contains the work.
+      const recovered = full && (full.sha === b.sha || containsPartial(b, full));
       if (!recovered) out.partial.push({ branch: b.name, age: a });
       continue;
     }
@@ -131,11 +130,10 @@ function fetchGithub(repo, now, request = gh) {
     `.[] | {number, state, merged_at, updated_at, head: .head.ref, head_sha: .head.sha, title, body, local_head: (((.head.repo.full_name // "") | ascii_downcase) == ${JSON.stringify(repo.toLowerCase())})}`]));
   const patterns = branchPatterns(fs.readFileSync(autoPrPath, 'utf8'));
   const coveredHeads = new Set(pulls.filter(p => p.local_head).map(p => p.head + ':' + (p.state === 'open' ? '' : p.head_sha)));
-  const partialBases = new Set(refs.filter(r => r.name.endsWith('-partial')).map(r => r.name.slice(0, -8)));
-  // Dates only where a rule needs one: branches with no PR at their tip, partial branches and the branches they came from.
+  // Dates only where a rule needs one: branches with no PR at their tip, and partial branches.
   const branches = [];
   for (const r of refs) {
-    const need = r.name.endsWith('-partial') || partialBases.has(r.name) || (SEAT_PREFIX.test(r.name) &&
+    const need = r.name.endsWith('-partial') || (SEAT_PREFIX.test(r.name) &&
       !coveredHeads.has(r.name + ':') && !coveredHeads.has(r.name + ':' + r.sha));
     // A branch no rule needs a date for gets "now"; no rule reads it.
     r.date = need ? request(['api', `repos/${repo}/commits/${r.sha}`, '--jq', '.commit.committer.date']).trim() : new Date(now).toISOString();

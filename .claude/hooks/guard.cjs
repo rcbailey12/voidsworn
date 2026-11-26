@@ -20,12 +20,12 @@ function block(message) {
   process.exitCode = 2;
 }
 
-function git(cwd, args) {
+function git(cwd, args, allowed = [0]) {
   const result = spawnSync('git', args, {
     cwd, encoding: 'utf8', timeout: 12000, windowsHide: true,
     env: { ...process.env, GIT_TERMINAL_PROMPT: '0', GIT_NO_REPLACE_OBJECTS: '1' }
   });
-  if (result.status !== 0) throw new Error('Git could not verify ' + args[0] + '.');
+  if (!allowed.includes(result.status)) throw new Error('Git could not verify ' + args[0] + '.');
   return result.stdout;
 }
 
@@ -130,14 +130,6 @@ function bareWords(command) {
 const isMain = name => /^(?:refs\/heads\/)?(?:main|master)$/i.test(name || '');
 const branchName = ref => String(ref || '').replace(/^\+/, '').replace(/^refs\/heads\//, '');
 
-function currentBranch(cwd) {
-  try {
-    return git(cwd, ['branch', '--show-current']).trim();
-  } catch {
-    return '';
-  }
-}
-
 function checkMainPush(cwd, remote, source, alone) {
   // A push that lands on main must be a fast-forward whose commits each change only the two Board logs (R102).
   if (fenced()) return 'Only a main seat can push the Board logs to main. Push your issue branch.';
@@ -182,73 +174,86 @@ function checkMainPush(cwd, remote, source, alone) {
   }
 }
 
-// git push options that take a separate value.
-const pushValueOptions = new Set(['--repo', '-o', '--push-option', '--receive-pack', '--exec']);
+// Only these flags leave the destination and transport unchanged.
+const pushFlags = new Set([
+  '-q', '--quiet', '-v', '--verbose', '-u', '--set-upstream', '-n', '--dry-run',
+  '--porcelain', '--progress', '--no-progress', '--atomic', '--no-atomic',
+  '-d', '--delete', '-f', '--force', '--force-with-lease', '--force-if-includes', '--no-verify',
+]);
+const literalPush = 'Use plain git push with an explicit remote and named branch or refspec.';
+const fullPushRef = /^(?:refs\/heads\/|refs\/tags\/).+/;
+
+function resolvePushSource(cwd, source) {
+  if (!/^[A-Za-z0-9_][A-Za-z0-9_./-]*$/.test(source)) return '';
+  return git(cwd, ['rev-parse', '--symbolic-full-name', '--verify', '--end-of-options', source], [0, 1, 128]).trim();
+}
 
 function gitPush(cwd, words, alone) {
-  // Require concrete destinations before deciding whether a push can land on main.
+  // Don't guess a destination from Git's defaults, configuration overrides or partial ref names.
   let index = 1;
   while (index < words.length && words[index] !== 'push') {
-    if (words[index] === '-C') cwd = path.resolve(cwd, words[++index] || '.');
-    else if (words[index] === '-c') index++;
-    index++;
+    if (/^--(?:no-pager|paginate|no-optional-locks)$/.test(words[index])) { index++; continue; }
+    if (words[index] !== '-C' || !words[index + 1]) return literalPush;
+    cwd = path.resolve(cwd, words[index + 1]);
+    index += 2;
   }
   const options = [];
   const positional = [];
-  let namedRepo;
   for (index++; index < words.length; index++) {
     const word = words[index];
     if (word === '--') {
       positional.push(...words.slice(index + 1));
       break;
     }
-    if (word.startsWith('-') && word !== '-') {
-      options.push(word);
-      if (word === '--repo') namedRepo = words[++index];
-      else if (word.startsWith('--repo=')) namedRepo = word.slice('--repo='.length);
-      else if (pushValueOptions.has(word)) index++;
-    } else {
+    if (!word.startsWith('-')) {
       positional.push(word);
+      continue;
     }
+    if (/^--(?:all|mirror|branches)$/.test(word)) {
+      return 'Push named branches instead of --all, --mirror or --branches.';
+    }
+    if (!pushFlags.has(word) && !/^--force-with-lease=/.test(word) && !/^-[quvnfd]{2,}$/.test(word)) return literalPush;
+    options.push(word);
   }
-  if (options.some(option => /^--(?:all|mirror|branches)$/.test(option)) ||
-      positional.some(spec => spec.includes('*') || /^\+?:$/.test(spec))) {
-    return 'Push named branches instead of --all, --mirror, --branches or a wildcard or matching refspec, so main cannot move by accident.';
+  const [remote, ...specs] = positional;
+  if (!remote || remote.startsWith('-') || !specs.length) return literalPush;
+  if (specs.some(spec => spec.includes('*') || /^\+?:$/.test(spec))) {
+    return 'Push named branches instead of a wildcard or matching refspec.';
   }
-  const deleting = options.some(option => option === '--delete' || option === '-d');
-  const forced = options.some(option => /^(?:-f|--force|--force-with-lease(?:=.*)?|--force-if-includes)$/.test(option) ||
-    /^-[a-zA-Z]*f[a-zA-Z]*$/.test(option));
-  const [remote = 'origin', ...specs] = namedRepo ? [namedRepo, ...positional] : positional;
-  const targets = [];
-  if (!specs.length) {
-    const current = currentBranch(cwd);
-    targets.push({ source: 'HEAD', destination: current, force: forced });
-  }
+  const shortFlag = flag => options.some(option => /^-[quvnfd]+$/.test(option) && option.includes(flag));
+  const deleting = shortFlag('d') || options.includes('--delete');
+  const forced = shortFlag('f') || options.some(option => /^--(?:force|force-with-lease(?:=.*)?|force-if-includes)$/.test(option));
+  let configured;
   for (const spec of specs) {
     const force = forced || spec.startsWith('+');
     const body = spec.replace(/^\+/, '');
     const colon = body.indexOf(':');
-    let source = colon < 0 ? body : body.slice(0, colon);
+    let source = deleting ? '' : colon < 0 ? body : body.slice(0, colon);
     let destination = colon < 0 ? body : body.slice(colon + 1);
-    if (colon < 0 && source === 'HEAD') destination = currentBranch(cwd);
-    if (deleting) {
-      destination = body;
-      source = '';
+    if (colon < 0 && !deleting) {
+      // Git also applies remote.<name>.push mappings to source-only refspecs.
+      configured ??= git(cwd, ['config', '--null', '--get-all', 'remote.' + remote + '.push'], [0, 1]);
+      if (configured || source === 'HEAD') return literalPush;
+      source = destination = resolvePushSource(cwd, source);
     }
-    targets.push({ source, destination: branchName(destination), force });
-  }
-  for (const { source, destination, force } of targets) {
-    if (!isMain(destination)) continue;
-    if (!source) return 'Main cannot be deleted.';
-    if (force) return 'Main takes fast-forward pushes only. Drop the force flag.';
-    const reason = checkMainPush(cwd, remote, source, alone);
-    if (reason) return reason;
+    if (!fullPushRef.test(destination) && !isMain(destination)) return literalPush;
+    if (isMain(destination)) {
+      if (!source) return 'Main cannot be deleted.';
+      if (force) return 'Main takes fast-forward pushes only. Drop the force flag.';
+      if (!/^(?:refs\/heads\/)?main$/i.test(destination)) return 'Only main has the Board log exception.';
+      if (source !== 'HEAD') source = resolvePushSource(cwd, source);
+      if (!fullPushRef.test(source) && source !== 'HEAD') return literalPush;
+      const reason = checkMainPush(cwd, remote, source, alone);
+      if (reason) return reason;
+    } else {
+      git(cwd, ['check-ref-format', destination]);
+    }
   }
 }
 
 function gitSubcommand(words) {
   for (let index = 1; index < words.length; index++) {
-    if (words[index] === '-C' || words[index] === '-c' || words[index] === '--config-env') index++;
+    if (/^(?:-C|-c|--config-env|--git-dir|--work-tree|--namespace|--super-prefix|--attr-source)$/.test(words[index])) index++;
     else if (!words[index].startsWith('-')) return words[index];
   }
   return '';
@@ -360,8 +365,10 @@ function pushPolicy(cwd, command) {
     // Output redirections do not change what is pushed.
     const segment = raw.replace(/(?:^|\s)(?:\d?>>?|&>)\s*(?:&\d|[^\s]+)/g, ' ').trim();
     let words = bareWords(segment);
+    let hasEnvironment = false;
     if (words) {
       while (words.length && (/^(?:do|then|else|time|!|\{|\(|sudo)$/.test(words[0]) || /^[A-Za-z_][A-Za-z0-9_]*=/.test(words[0]))) {
+        hasEnvironment ||= /^[A-Za-z_][A-Za-z0-9_]*=/.test(words[0]);
         words = words.slice(1);
       }
       if (words[0] === 'cd' && words.length === 2) {
@@ -377,17 +384,19 @@ function pushPolicy(cwd, command) {
         continue;
       }
       if (subcommand === 'send-pack') return 'Use plain git push with named branches instead of git send-pack.';
-      const others = segments.filter(part => part !== raw && !/^cd\s/.test(part));
-      const reason = gitPush(here, words, others.length === 0);
+      if (hasEnvironment) return literalPush;
+      const others = segments.filter(part => !/^cd\s/.test(part));
+      const reason = gitPush(here, words, others.length === 1);
       if (reason) return reason;
-    } else if (mentionsPush && /\b(?:main|master)\b|--(?:all|mirror|branches)\b|\bsend-pack\b|\$|\*/.test(segment)) {
-      // Attached quoted arguments are not bare words, but a literal search for
-      // "git push main" in status, diff or log is still read-only.
-      const commands = simpleCommands(segment);
-      const args = commands.length === 1 ? commandArgs(commands[0]) : [];
-      if (isExecutable(args[0], 'git') && /^(?:status|diff|log)$/.test(gitSubcommand(args)) &&
-          !hasCommandSubstitution(segment)) continue;
-      return 'Run this push as a plain git push command with literal names, so the hook can check it does not land on main.';
+    } else if (mentionsPush) {
+      // A literal search for "git push main" is not a push. A push whose
+      // arguments cannot be parsed as literal words must be written plainly.
+      const push = simpleCommands(segment).map(commandArgs).some(args =>
+        (isExecutable(args[0], 'git') && /^(?:push|send-pack)$/.test(gitSubcommand(args))) ||
+        isExecutable(args[0], 'git-send-pack'));
+      if (push || hasCommandSubstitution(segment)) {
+        return 'Run this push as a plain git push command with literal names, so the hook can check it does not land on main.';
+      }
     }
   }
 }

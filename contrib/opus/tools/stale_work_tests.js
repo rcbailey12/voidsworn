@@ -26,7 +26,7 @@ const data = {
     { name: 'neon/holistic-and-looks-1123', sha: 'n1', date: t(40) }, // a seat branch auto_pr never sees
     { name: 'muse/wip-scratch', sha: 'n2', date: t(4) },           // opted out on purpose
     { name: 'codex/issue-500-partial', sha: 'p1', date: t(48) },  // rule 2: nobody finished it
-    { name: 'codex/issue-501-partial', sha: 'p2', date: t(48) },  // finished later on the full branch
+    { name: 'codex/issue-501-partial', sha: 'p2', date: t(48) },  // newer full tip, but no recovery proof
     { name: 'codex/issue-501', sha: 'p3', date: t(30) },
     { name: 'codex/issue-502-partial', sha: 'p4', date: t(3) },   // too fresh to call stale
     { name: 'codex/issue-503-partial', sha: 'p5', date: t(48) },  // PR was edited but the full head did not move
@@ -61,7 +61,7 @@ const data = {
 const { out } = analyze(data, patterns, now);
 assert.deepEqual(out.noPr.map(x => x.branch), ['codex/issue-2148', 'opus/issue-777']);
 assert.deepEqual(out.unseen.map(x => x.branch), ['neon/holistic-and-looks-1123']);
-assert.deepEqual(out.partial.map(x => x.branch), ['codex/issue-500-partial', 'codex/issue-503-partial']);
+assert.deepEqual(out.partial.map(x => x.branch), ['codex/issue-500-partial', 'codex/issue-501-partial', 'codex/issue-503-partial']);
 assert.deepEqual(out.green.map(x => x.pr), [801]);
 assert.deepEqual(out.red.map(x => x.pr), [802]);
 assert.deepEqual(out.closedNoPr.map(x => x.issue), [812]);
@@ -92,7 +92,8 @@ const fake = args => {
     { state: 'closed', head: 'codex/issue-506', head_sha: 'q4', local_head: true },
   ].map(x => JSON.stringify(x)).join('\n');
   if (endpoint.endsWith('/commits/a1') || endpoint.endsWith('/commits/a0')) return t(2);
-  if (/\/commits\/q[1-4]$/.test(endpoint)) return t(48); // Commit timestamps alone cannot decide.
+  if (/\/commits\/q[13]$/.test(endpoint)) return t(48);
+  if (/\/commits\/q[24]$/.test(endpoint)) return t(30); // Both full tips are newer, but only one contains its partial.
   if (endpoint.includes('/compare/q1...q2?')) return 'ahead';
   if (endpoint.includes('/compare/q3...q4?')) return 'diverged';
   if (endpoint.includes('/compare/main...a1?')) return '1';

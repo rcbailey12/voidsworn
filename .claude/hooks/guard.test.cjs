@@ -148,7 +148,17 @@ try {
   permit(shell('git push --force-with-lease origin opus/issue-1660', main));
   permit(shell('cd ' + work + ' && git push -u origin opus/issue-1660', main));
   permit(shell('for i in 1 2 3; do git push -u origin opus/issue-1660 && break; sleep 2; done', main));
-  permit(shell('git push', main));
+  deny(shell('git push origin', main), /explicit remote/);
+  deny(shell('git push origin HEAD', main), /named branch or refspec/);
+  deny(shell('git --git-dir .git push origin', main), /explicit remote/);
+  deny(shell('git push origin "$BRANCH"', main), /plain git push/);
+  deny(shell('git push origin HEAD:heads/main', main), /named branch or refspec/);
+  git('config', 'push.default', 'upstream');
+  deny(shell('git push', main), /explicit remote/);
+  git('config', 'remote.origin.push', 'refs/heads/opus/issue-1660:refs/heads/board/fixture');
+  deny(shell('git push origin opus/issue-1660', main), /named branch or refspec/);
+  permit(shell('git push origin HEAD:refs/heads/opus/issue-1660', main));
+  git('config', '--unset', 'remote.origin.push');
   permit(shell('git push relay HEAD:refs/heads/pc-out-proof', main));
   permit(shell('git push -q origin opus/issue-1660', fence));
   permit(shell('git commit -m "main menu push fix"', main));
@@ -158,7 +168,7 @@ try {
   deny(shell('git push --mirror origin', main), /named branches/);
   deny(shell("git push origin 'refs/heads/*:refs/heads/*'", main), /wildcard/);
   deny(shell('git push origin :', main), /matching refspec/);
-  deny(shell('git push --repo origin +HEAD:main', main), /fast-forward/);
+  deny(shell('git push --repo origin +HEAD:main', main), /explicit remote/);
   deny(shell('git -c alias.ship=push ship origin opus/issue-1660:main', main), /not through an alias/);
   git('config', 'alias.ship', 'push');
   deny(shell('git ship origin opus/issue-1660:main', main), /not through an alias/);
@@ -220,7 +230,7 @@ try {
   git('commit', '-m', 'Change only both Board logs');
   permit(shell('git push origin main', main));
   permit(shell('git push origin HEAD:refs/heads/main', main));
-  permit(shell('git push', main));
+  deny(shell('git push', main), /explicit remote/);
   permit(shell('cd ' + work + ' && git push origin main 2>&1', main));
   const goodLogTip = git('rev-parse', 'HEAD');
   for (const log of ['FINDINGS.md', 'LOOP.md']) {
@@ -237,7 +247,7 @@ try {
   git('add', 'README.md');
   git('commit', '-m', 'Plant a disallowed change');
   deny(shell('git push origin main', main), /Each commit/);
-  deny(shell('git push', main), /Each commit/);
+  deny(shell('git push', main), /explicit remote/);
   deny(shell('git status && git push origin main', main), /Bash call of its own/);
   deny(shell("git commit -qam 'x' && git push origin main 2>&1", main), /Bash call of its own/);
   deny(shell('git push origin main 2>&1', main), /Each commit/);

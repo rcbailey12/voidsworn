@@ -141,8 +141,12 @@ if (wf.includes('git merge-tree --write-tree HEAD origin/main')) {
 cover(wfCount, { GODOT_CHECKS_TIMES: shellPath(path.join(tmp, 'missing_times.txt')) });
 
 // Balance at the workflow's count by the recorded times: no shard more than 25% over the even share.
-plan('1/' + wfCount);
-const est = fs.readFileSync(path.join(tmp, 'godot_checks', 'loads.txt'), 'utf8').trim().split(/\r?\n/).map(l => Number(l.split('|')[2]));
+const loadsRoot = path.join(tmp, 'loads');
+fs.mkdirSync(loadsRoot);
+const loadsPlan = plan('1/' + wfCount, { RUNNER_TEMP: shellPath(loadsRoot) });
+assert.equal(loadsPlan.status, 0, loadsPlan.out);
+const [loadScratch] = fs.readdirSync(loadsRoot);
+const est = fs.readFileSync(path.join(loadsRoot, loadScratch, 'godot_checks', 'loads.txt'), 'utf8').trim().split(/\r?\n/).map(l => Number(l.split('|')[2]));
 const total = est.reduce((a, b) => a + b, 0);
 assert.ok(est.length === wfCount && total > 0, 'no load estimate was written');
 est.forEach((t, i) => assert.ok(t <= 1.25 * total / wfCount, 'shard ' + (i + 1) + ' is planned for ' + t + ' s of ' + total + ' s'));
@@ -164,6 +168,34 @@ est.forEach((t, i) => assert.ok(t <= 1.25 * total / wfCount, 'shard ' + (i + 1) 
     assert.doesNotMatch(r.out, /^PASS/m);
   }
 });
+
+// Overlap two real planners in one temp root. Both must leave an intact plan and their own directories.
+const shared = path.join(tmp, 'shared scratch');
+fs.mkdirSync(shared);
+const sharedEnv = windows ? shared.replace(/\\/g, () => '\\\\') : shared;
+const concurrent = spawnSync(sh, ['-c',
+  'SHARD=1/5 "$1" "$2" & first=$!; SHARD=2/5 "$1" "$2" & second=$!; wait "$first"; a=$?; wait "$second"; b=$?; [ "$a" -eq 0 ] && [ "$b" -eq 0 ]',
+  'sh', windows ? shellPath(sh) : sh, shellPath(SCRIPT)], {
+  cwd: ROOT, env: { ...process.env, GODOT_CHECKS_PLAN: '1', RUNNER_TEMP: sharedEnv },
+  encoding: 'utf8', windowsHide: true, timeout: 60000,
+});
+assert.ifError(concurrent.error);
+assert.equal(concurrent.status, 0, concurrent.stdout + concurrent.stderr);
+const scratchDirs = fs.readdirSync(shared);
+assert.equal(scratchDirs.length, 2, 'each concurrent invocation must have its own scratch');
+const plans = scratchDirs.map(dir => {
+  const root = path.join(shared, dir, 'godot_checks');
+  for (const child of ['logs', 'fixtures', 'xdg']) assert.ok(fs.statSync(path.join(root, child)).isDirectory());
+  return fs.readFileSync(path.join(root, 'plan.txt'), 'utf8');
+});
+assert.equal(plans[0], plans[1]);
+assert.equal(plans[0].trim().split(/\r?\n/).length, headless.length);
+const notDirectory = path.join(tmp, 'not-a-directory');
+fs.writeFileSync(notDirectory, '');
+const noScratch = plan('1/5', { RUNNER_TEMP: shellPath(notDirectory) });
+assert.equal(noScratch.status, 1, noScratch.out);
+assert.match(noScratch.out, /^FAIL: could not prepare Godot check scratch space\./m);
+assert.doesNotMatch(noScratch.out, /^PASS/m);
 
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log('PASS godot_shard_tests: ' + headless.length + ' headless checks, including the 5-shard plan and old-branch budget; workflow uses ' + wfCount + ' shards at ' + est.join(', ') + ' s');

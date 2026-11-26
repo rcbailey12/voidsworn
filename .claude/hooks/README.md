@@ -22,7 +22,9 @@ else ever reaches main.
 - **Before a tool call (every seat).** Project read-deny permissions and the credential guard cover named credential
   paths. A non-secret file whose name matches (for example `hotkeys.key`) cannot be read by Claude: rename it so the name
   no longer ends in a credential pattern (`hotkeys_key.txt`), or ask Ryan to open it.
-- **Pushes (every seat).** Use plain `git push` with named refs. Wildcard and matching refspecs, bulk flags, push
+- **Pushes (every seat).** Use plain `git push` with a remote and named refs. A source-only ref must resolve locally
+  and have no configured push mapping. Use an explicit destination such as `HEAD:refs/heads/opus/issue-1660` if Git
+  would otherwise infer it. Wildcard and matching refspecs, bulk flags, push
   aliases and shell aliases that run push, send-pack, gh api or command substitutions are refused. A push to main must
   be a fast-forward, in a Bash call of its own, whose commits each change only `contrib/opus/LOOP.md` or
   `contrib/opus/FINDINGS.md`. The F9 tip lint switch is off until F6 and the LOOP.md roll land. Once enabled, the checked-out

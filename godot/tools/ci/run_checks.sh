@@ -18,11 +18,25 @@ P=$(pwd)            # godot/
 ROOT=$(cd .. && pwd)
 G="${GODOT:-godot}"
 LIST="$P/tools/ci/godot_checks.txt"
-T="${RUNNER_TEMP:-/tmp}/godot_checks"
-rm -rf "$T"
-if ! mkdir "$T" || ! mkdir "$T/logs" "$T/fixtures" "$T/xdg"; then
-  echo "FAIL: could not prepare Godot check scratch space under ${RUNNER_TEMP:-/tmp}."; exit 1
+# Native paths fold doubled Windows separators. Each invocation owns its scratch and never removes a shared path.
+if command -v cygpath > /dev/null 2>&1; then
+  case "${RUNNER_TEMP:-}" in
+    //*) ;;
+    /*) RUNNER_TEMP=$(cygpath -m "$RUNNER_TEMP") || { echo "FAIL: could not resolve RUNNER_TEMP."; exit 1; }
+        export RUNNER_TEMP ;;
+  esac
 fi
+SCRATCH=$(node -e '
+  const fs = require("node:fs"), os = require("node:os"), path = require("node:path");
+  const base = path.resolve(process.env.RUNNER_TEMP || os.tmpdir());
+  const dir = fs.mkdtempSync(path.join(base, "godot_checks-"));
+  // Save and settings checks require the /godot_checks/xdg/ profile marker.
+  const work = path.join(dir, "godot_checks");
+  fs.mkdirSync(work);
+  for (const child of ["logs", "fixtures", "xdg"]) fs.mkdirSync(path.join(work, child));
+  process.stdout.write(process.platform === "win32" ? dir.replace(/\\/g, "/") : dir);
+') || { echo "FAIL: could not prepare Godot check scratch space."; exit 1; }
+T="$SCRATCH/godot_checks"
 F=0
 BUDGET="${GODOT_CHECKS_BUDGET:-1080}"
 TIMES="${GODOT_CHECKS_TIMES:-$P/tools/ci/godot_check_times.txt}"
@@ -54,7 +68,7 @@ if ! cmp -s "$T/plan_want.txt" "$T/plan_got.txt" || [ -n "$badshard" ] || [ ! -s
   echo "  shard: FAIL, the shard plan does not hold every headless line exactly once:"
   diff "$T/plan_want.txt" "$T/plan_got.txt" | head -8 | sed 's/^/    /'
   [ -n "$badshard" ] && echo "$badshard" | sed 's/^/    bad shard: /'
-  echo "FAIL: the shard plan is broken; no check was run."; exit 1
+  echo "FAIL: the shard plan is broken; this shard failed before running Godot."; exit 1
 fi
 mine=$(awk -F'|' -v i="$si" '$1 == i' "$T/plan.txt" | grep -vc '|step:')
 est=$(awk -F'|' -v i="$si" '$2 == i {print $3}' "$T/loads.txt")
@@ -108,14 +122,18 @@ while IFS='|' read -r cls script setup args reason; do
       if ! node "$ROOT/contrib/opus/tools/${setup#fixture:}" "$fx" > "$T/logs/$name.fixture.log" 2>&1 < /dev/null; then
         echo "  $name: FAIL (fixtures: node contrib/opus/tools/${setup#fixture:})"; tail -5 "$T/logs/$name.fixture.log" | sed 's/^/    /'; F=$((F+1)); continue
       fi ;;
-    userdir) xdg="$ROOT/.onboarding_checks/xdg"; mkdir -p "$xdg" ;;
+    userdir)
+      # The onboarding test checks that this profile lives under the checkout's .onboarding_checks.
+      xdg="$ROOT/.onboarding_checks/${SCRATCH##*/}/xdg"
+      if ! mkdir -p "$xdg"; then echo "  $name: FAIL (could not make isolated user directory)"; F=$((F+1)); continue; fi
+      if command -v cygpath > /dev/null 2>&1; then xdg=$(cygpath -m "$xdg") || exit 1; fi ;;
     -) ;;
     *) echo "  $name: FAIL (unknown setup $setup)"; F=$((F+1)); continue ;;
   esac
   [ "$args" != "-" ] && a=$(printf '%s' "$args" | sed "s|{fixture}|$T/fixtures/$name.json|g; s|{repo}|$ROOT|g")
   t0=$(date +%s)
   # shellcheck disable=SC2086
-  XDG_DATA_HOME="$xdg" timeout -k 10 $lim "$G" --headless --path "$P" --script "res://$script" ${a:+--} $a > "$T/logs/$name.log" 2>&1 < /dev/null
+  XDG_DATA_HOME="$xdg" APPDATA="$xdg" timeout -k 10 $lim "$G" --headless --path "$P" --script "res://$script" ${a:+--} $a > "$T/logs/$name.log" 2>&1 < /dev/null
   code=$?
   se=$(grep -c 'SCRIPT ERROR' "$T/logs/$name.log")
   s=$(( $(date +%s) - t0 )); ran=$((ran+1))
