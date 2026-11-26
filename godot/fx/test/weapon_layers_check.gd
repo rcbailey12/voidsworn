@@ -15,12 +15,17 @@ class RecordFX extends "res://fx/fx.gd":
 	var rings: Array = []
 	var flashes: Array = []
 
-	func stk(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
+	func flight_streak(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
 			drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
 		streaks.append(kind)
-		if kind == 1 or kind == 8:
+		super.flight_streak(p, t, life, col, i, length, w, kind, vel, drag, acc, wpx, lpx)
+
+	func spark(p: Vector3, t: float, life: float, faction: String, intensity: float, shutter: float, width: float,
+			vel: Vector3, drag := 0.0, wpx := 0.0, lpx := 0.0, role := SparkRole.HULL, tint := Color.TRANSPARENT) -> void:
+		var before: int = pools["stk"].emitted
+		super.spark(p, t, life, faction, intensity, shutter, width, vel, drag, wpx, lpx, role, tint)
+		if pools["stk"].emitted > before:
 			spark_times.append(t)
-		super.stk(p, t, life, col, i, length, w, kind, vel, drag, acc, wpx, lpx)
 
 	func _emit_spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,
 			drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
@@ -34,9 +39,9 @@ class RecordFX extends "res://fx/fx.gd":
 		return allowed
 
 	func ring(p: Vector3, n: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int,
-			speed := 0.0, drag := 0.0, px := 0.0) -> void:
+			speed := 0.0, drag := 0.0, px := 0.0, seed_override := -1.0) -> void:
 		rings.append([p, kind])
-		super.ring(p, n, t, life, col, i, s0, s1, kind, speed, drag, px)
+		super.ring(p, n, t, life, col, i, s0, s1, kind, speed, drag, px, seed_override)
 
 
 func _init() -> void:
