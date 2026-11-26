@@ -23,7 +23,7 @@ func fresh(admiral := "vex", faction := "voidsworn") -> Campaign:
 	c.fixed_clock = true
 	c.persist_on = false
 	c.META = c.defaultMeta()
-	API.JSM.rnd_seed(2078)
+	c.rng.rnd_seed(2078)
 	c.newRun(admiral, faction, {})
 	return c
 
@@ -112,9 +112,9 @@ func shipyard() -> void:
 	c.shipyardScreen({"type": "shipyard", "stock": {"hulls": ["warden"], "cap": [], "mods": [], "sold": []}})
 	sh["hp"] -= 13
 	var before: Dictionary = c.RUN.duplicate(true)
-	var rng: int = API.JSM.rng_s
+	var rng: int = c.rng.rng_s
 	var repair := c.preview_op("repair", uid)
-	check(c.RUN == before and API.JSM.rng_s == rng, "preview does not write run state or spend RNG")
+	check(c.RUN == before and c.rng.rng_s == rng, "preview does not write run state or spend RNG")
 	check(row(repair, "hull")["delta"] == 13 and row(repair, "hull")["is_better"], "repair previews 13 hull")
 	var money: float = c.RUN["credits"]
 	c.ACT_repair(uid)

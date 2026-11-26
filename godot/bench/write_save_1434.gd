@@ -24,7 +24,7 @@ func _run() -> void:
 		return
 	c.persist_on = true
 	c.fixed_clock = true
-	preload("res://rules/jsm.gd").rnd_seed(1124)
+	c.seed_rng(1124)
 	c.titleScreen()
 	c.act("newRunScreen")
 	c.act("startRun")

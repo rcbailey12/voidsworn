@@ -64,7 +64,7 @@ func ready_target(target: Dictionary) -> void:
 func damage_shots(ship: Dictionary, target: Dictionary, kind: String, shots: int) -> Array:
 	var from: int = battle.get("combat_events", []).size()
 	ship["weapons"] = [weapon(kind, shots)]
-	JSM.rnd_seed(7)
+	rules.rng.rnd_seed(7)
 	rules.fireWeapon(ship, 0, target)
 	return battle.get("combat_events", []).slice(from).map(func(e): return e["damage_applied"])
 
@@ -131,7 +131,7 @@ func test_many_mouths() -> void:
 	for i in ships.size():
 		place(ships[i], hexes[i].x, hexes[i].y)
 		ships[i]["weapons"] = [weapon("autocannon", 4, 1)]
-	JSM.rnd_seed(7)
+	rules.rng.rnd_seed(7)
 	rules.useCommand("player")
 	start_next_round()
 	var w := weapon("autocannon", 1)
@@ -163,7 +163,7 @@ func test_private_wing() -> void:
 
 func torpedo_pd(ship: Dictionary, target: Dictionary, seed: int) -> int:
 	ship["weapons"] = [weapon("torp", 1, 1)]
-	JSM.rnd_seed(seed)
+	rules.rng.rnd_seed(seed)
 	var from: int = rules.events.size()
 	rules.fireWeapon(ship, 0, target)
 	for event in rules.events.slice(from):

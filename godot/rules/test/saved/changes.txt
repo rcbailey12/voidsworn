@@ -1,14 +1,1594 @@
-Saved manifest before: 5ff4444344ae9cedaebe963ed5338f9f5b3041bdd6fb71806663a67f17337e45
-Saved manifest after: f11b6c79cf7f29fde65fa26c3198a6bc22292fe165dca354707771130d31f3eb
+Saved manifest before: 9332e6dba44a7f292f10c3c35693f1c78e2eea75e50ab3854292a6e29b5f60a3
+Saved manifest after: 64936a037bdbaf67ea03206b9732c8b724c868a1104358bef7d6da89d01a5f70
+
+Issue 2205 reasons
+M4 gives random table choices and ties a stable order and assigns new captain
+identities by a fixed hash. M5 removes two dead trace fields from each battle
+and makes the Reaver's Scatter a fore mount. H1 and H5 make wing choice,
+replacement timing and spawn clearance the same on both sides. W10 and B3
+make the bots brace under heavy fire, conserve Shield Surge, and use
+short-range abilities after closing. The changed fleet positions and wings
+also change the s19 and s23 threat maps. The Iron Ram fixture now requires
+and records a player ram.
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
+FAIL battle s1
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 169; total records: 170 -> 170
+FAIL battle s2
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 158; total records: 159 -> 159
+FAIL battle s3
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "F"
+  later changed records: 117; total records: 118 -> 106
+FAIL battle s4
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 271; total records: 272 -> 272
+FAIL battle s5
+  turn 0, round 1, after tick player; unit x024 (enemy c_reaver)
+  state.units[13].weapons[1].arc: "S" -> "F"
+  later changed records: 398; total records: 323 -> 399
+FAIL battle s6
+  turn 0, round 1, after tick player; unit x013 (enemy c_reaver)
+  state.units[7].weapons[1].arc: "S" -> "F"
+  later changed records: 222; total records: 198 -> 223
+FAIL battle s7
+  turn 0, round 1, after tick player; unit x022 (enemy bomber)
+  state.units[17].ev: 35 -> 25
+  later changed records: 383; total records: 356 -> 384
+FAIL battle s8
+  turn 0, round 1, after tick player; unit x05 (player cathedral)
+  state.units[0].aim: 10 -> 0
+  later changed records: 128; total records: 129 -> 123
+FAIL battle s9
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 381; total records: 339 -> 382
+FAIL battle s10
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 346; total records: 347 -> 334
+FAIL battle s11
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[9].ev: 35 -> 25
+  later changed records: 131; total records: 131 -> 132
+FAIL battle s12
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 167; total records: 168 -> 120
+FAIL battle s13
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 246; total records: 247 -> 247
+FAIL battle s14
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 143; total records: 134 -> 144
+FAIL battle s15
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 175; total records: 173 -> 176
+FAIL battle s16
+  turn 0, round 1, after tick player; unit x017 (enemy bomber)
+  state.units[12].ev: 35 -> 25
+  later changed records: 323; total records: 324 -> 301
+FAIL battle s17
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "F"
+  later changed records: 132; total records: 98 -> 133
+FAIL battle s18
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 273; total records: 274 -> 254
+FAIL battle s19
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 197; total records: 179 -> 198
+FAIL battle s20
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 141; total records: 140 -> 142
+FAIL battle s21
+  turn 0, round 1, after tick player; unit x016 (enemy bomber)
+  state.units[11].ev: 35 -> 25
+  later changed records: 256; total records: 199 -> 257
+FAIL battle s22
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "F"
+  later changed records: 114; total records: 110 -> 115
+FAIL battle s23
+  turn 0, round 1, after tick player; unit x040 (enemy bomber)
+  state.units[29].ev: 35 -> 25
+  later changed records: 653; total records: 654 -> 585
+FAIL battle s24
+  turn 0, round 1, after tick player; unit x032 (enemy bomber)
+  state.units[25].ev: 35 -> 25
+  later changed records: 647; total records: 498 -> 648
+FAIL battle s25
+  turn 0, round 1, after tick player; unit x09 (player c_reaver)
+  state.units[3].weapons[1].arc: "S" -> "F"
+  later changed records: 481; total records: 334 -> 482
+FAIL battle s26
+  turn 0, round 1, after tick player; unit x017 (enemy bomber)
+  state.units[11].ev: 35 -> 25
+  later changed records: 229; total records: 230 -> 191
+FAIL battle s27
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 239; total records: 240 -> 225
+FAIL battle s28
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 340; total records: 341 -> 336
+FAIL battle s29
+  turn 0, round 1, after tick player; unit x016 (enemy bomber)
+  state.units[10].ev: 35 -> 25
+  later changed records: 198; total records: 163 -> 199
+FAIL battle s30
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 319; total records: 320 -> 285
+FAIL battle s31
+  turn 0, round 1, after tick player; unit x015 (enemy bomber)
+  state.units[9].ev: 35 -> 25
+  later changed records: 164; total records: 165 -> 164
+FAIL battle s32
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "F"
+  later changed records: 115; total records: 116 -> 88
+FAIL battle s33
+  turn 0, round 1, after tick player; unit x018 (enemy bomber)
+  state.units[13].ev: 35 -> 25
+  later changed records: 309; total records: 244 -> 310
+FAIL battle s34
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 186; total records: 179 -> 187
+FAIL battle s35
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "F"
+  later changed records: 214; total records: 215 -> 199
+FAIL battle s36
+  turn 0, round 1, after tick player; unit x027 (enemy bomber)
+  state.units[12].ev: 35 -> 25
+  later changed records: 272; total records: 273 -> 196
+FAIL battle s37
+  turn 0, round 1, after tick player; unit x017 (enemy bomber)
+  state.units[12].ev: 35 -> 25
+  later changed records: 297; total records: 298 -> 275
+FAIL battle s38
+  turn 0, round 1, after tick player; unit x020 (enemy bomber)
+  state.units[14].ev: 35 -> 25
+  later changed records: 252; total records: 151 -> 253
+FAIL battle s39
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 420; total records: 366 -> 421
+FAIL battle s40
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 291; total records: 271 -> 292
+FAIL battle s41
+  turn 0, round 1, after tick player; unit x018 (enemy bomber)
+  state.units[13].ev: 35 -> 25
+  later changed records: 333; total records: 334 -> 311
+FAIL battle s42
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "F"
+  later changed records: 193; total records: 141 -> 194
+FAIL battle s43
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[10].ev: 35 -> 25
+  later changed records: 147; total records: 148 -> 121
+FAIL battle s44
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 157; total records: 123 -> 158
+FAIL battle s45
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[10].ev: 35 -> 25
+  later changed records: 128; total records: 129 -> 125
+FAIL battle s46
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 208; total records: 209 -> 114
+FAIL battle s47
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 51; total records: 52 -> 52
+FAIL battle s48
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 143; total records: 144 -> 139
+FAIL battle s49
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 196; total records: 197 -> 197
+FAIL battle s50
+  turn 0, round 1, after tick player; unit x05 (enemy c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "F"
+  later changed records: 158; total records: 101 -> 159
+FAIL battle s51
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 137; total records: 138 -> 138
+FAIL battle s52
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 156; total records: 157 -> 157
+FAIL battle s53
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 86; total records: 87 -> 87
+FAIL battle s54
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 55; total records: 56 -> 56
+FAIL battle s55
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[10].ev: 35 -> 25
+  later changed records: 195; total records: 149 -> 196
+FAIL battle s56
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[10].ev: 35 -> 25
+  later changed records: 204; total records: 205 -> 202
+FAIL battle s57
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 71; total records: 72 -> 70
+FAIL battle t_casttwice
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 89; total records: 90 -> 89
+FAIL battle t_flakskip
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 105; total records: 106 -> 106
+FAIL battle t_lensaloft
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 50; total records: 51 -> 51
+FAIL battle t_longfocus
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 39; total records: 40 -> 37
+FAIL battle t_recordedangle
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 53; total records: 54 -> 51
+FAIL battle t_burnflaw
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 33; total records: 34 -> 32
+FAIL battle t_longlight
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 38; total records: 39 -> 37
+FAIL battle t_flawforever
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 49; total records: 50 -> 47
+FAIL battle t_twoimages
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 69; total records: 70 -> 68
+FAIL battle t_angles
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 77; total records: 78 -> 77
+FAIL battle t_refraction
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 82; total records: 83 -> 82
+FAIL battle t_mirrorturns
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 56; total records: 57 -> 57
+FAIL battle t_falsehulls
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 71; total records: 72 -> 70
+FAIL battle t_rechargelit
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 38; total records: 39 -> 38
+FAIL battle t_glasscorrected
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 111; total records: 112 -> 112
+FAIL battle t_hardlight
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 70; total records: 71 -> 61
+FAIL battle t_wardglass
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 70; total records: 71 -> 69
+FAIL battle t_deployread
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 23; total records: 24 -> 23
+FAIL battle t_castcorrected
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 32; total records: 33 -> 32
+FAIL battle t_flagshiplens
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 36; total records: 37 -> 35
+FAIL battle t_firstlight
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 65; total records: 66 -> 54
+FAIL battle t_heldaccount
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 41; total records: 42 -> 42
+FAIL battle t_namedledger
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 57; total records: 58 -> 56
+FAIL battle t_inheritedaim
+  turn 0, round 1, after tick player; unit x04 (enemy bomber)
+  state.units[2].ev: 35 -> 25
+  later changed records: 84; total records: 85 -> 79
+FAIL battle t_everygun
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 101; total records: 81 -> 102
+FAIL battle t_sworndeploy
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 39; total records: 40 -> 33
+FAIL battle t_debtsreserve
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 27; total records: 28 -> 28
+FAIL battle t_flagshipLedger
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 33; total records: 34 -> 34
+FAIL battle t_standardreroll
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 77; total records: 53 -> 78
+FAIL battle t_preyname
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 63; total records: 55 -> 64
+FAIL battle t_salvotwohands
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 64; total records: 63 -> 65
+FAIL battle t_debthunts
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 52; total records: 53 -> 52
+FAIL battle t_twosalvos
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 62; total records: 63 -> 62
+FAIL battle t_namedprey
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 61; total records: 62 -> 62
+FAIL battle t_escortname
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 36; total records: 37 -> 36
+FAIL battle t_firstwave
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 45; total records: 46 -> 45
+FAIL battle t_wingreserve
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 59; total records: 60 -> 60
+FAIL battle t_generation
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 28; total records: 29 -> 28
+FAIL battle t_wingsdebt
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 88; total records: 89 -> 72
+FAIL battle t_rollwings
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 81; total records: 80 -> 82
+FAIL battle t_oathwings
+  turn 0, round 1, after tick player; unit x06 (enemy c_reaver)
+  state.units[3].weapons[1].arc: "S" -> "F"
+  later changed records: 71; total records: 70 -> 72
+FAIL battle t_holdcounted
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 39; total records: 40 -> 40
+FAIL battle t_oathstillness
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 40; total records: 41 -> 35
+FAIL battle t_unpaid
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 122; total records: 123 -> 120
+FAIL battle t_wallanswers
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 84; total records: 85 -> 84
+FAIL battle t_irontestament
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 44; total records: 45 -> 38
+FAIL battle t_ecl_restoreninth
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 81; total records: 82 -> 82
+FAIL battle t_ecl_restoredbeyond
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 133; total records: 134 -> 119
+FAIL battle t_ecl_copiescontribute
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 69; total records: 70 -> 70
+FAIL battle t_ecl_tenthframe
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 115; total records: 116 -> 111
+FAIL battle t_ecl_earliercopy
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 80; total records: 81 -> 81
+FAIL battle t_ecl_arcswarm
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 73; total records: 74 -> 74
+FAIL battle t_ecl_noonchoice
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 86; total records: 87 -> 87
+FAIL battle t_ecl_copyfires
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 62; total records: 57 -> 63
+FAIL battle t_ecl_coronashadow
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 55; total records: 56 -> 56
+FAIL battle t_ecl_everyframe
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 73; total records: 74 -> 74
+FAIL battle t_ecl_noonrepeat
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t_ecl_onesuncopy
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 62; total records: 63 -> 63
+FAIL battle t_ecl_copiedbehind
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 123; total records: 124 -> 124
+FAIL battle t_ecl_unseenarchive
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 59; total records: 60 -> 60
+FAIL battle t_ecl_uncopiedtarget
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 79; total records: 80 -> 80
+FAIL battle t_ecl_iterationkill
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 94; total records: 95 -> 95
+FAIL battle t_ecl_silentarchive
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 93; total records: 94 -> 94
+FAIL battle t_ecl_outshadow
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 73; total records: 74 -> 74
+FAIL battle t_ecl_longcopy
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_ecl_platesshadow
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 83; total records: 84 -> 84
+FAIL battle t_ecl_twicerestored
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 109; total records: 110 -> 103
+FAIL battle t_ecl_layersshift
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 75; total records: 76 -> 76
+FAIL battle t_ecl_nolayer
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 105; total records: 106 -> 98
+FAIL battle t_ecl_stillness
+  turn 0, round 1, after tick player; unit x012 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 154; total records: 133 -> 155
+FAIL battle t_ecl_tenthousand
+  turn 0, round 1, after tick player; unit x012 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 169; total records: 169 -> 170
+FAIL battle t_ecl_restoredfleet
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 107; total records: 108 -> 108
+FAIL battle t_ecl_iterationswap
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 49; total records: 50 -> 50
+FAIL battle t_ecl_flagshipindex
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 64; total records: 65 -> 65
+FAIL battle t_ecl_framezero
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 116; total records: 61 -> 117
+FAIL battle t_choosebrood
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 52; total records: 53 -> 53
+FAIL battle t_sporetide
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 34; total records: 35 -> 35
+FAIL battle t_everythroat
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 48; total records: 49 -> 49
+FAIL battle t_secondthroat
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 104; total records: 101 -> 105
+FAIL battle t_rundown
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 86; total records: 78 -> 87
+FAIL battle t_razorprey
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 93; total records: 94 -> 91
+FAIL battle t_frenzyfeeds
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 135; total records: 125 -> 136
+FAIL battle t_breathbite
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 154; total records: 139 -> 155
+FAIL battle t_throatred
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 66; total records: 67 -> 66
+FAIL battle t_preyeverymouth
+  turn 0, round 1, after tick player; unit x08 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 108; total records: 108 -> 109
+FAIL battle t_growhurts
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 103; total records: 104 -> 95
+FAIL battle t_skinthick
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 67; total records: 68 -> 67
+FAIL battle t_fleshknit
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 53; total records: 54 -> 53
+FAIL battle t_refuseholes
+  turn 0, round 1, after tick player; unit x08 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 137; total records: 93 -> 138
+FAIL battle t_tideend
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 42; total records: 43 -> 43
+FAIL battle t_tornback
+  turn 0, round 1, after tick player; unit x08 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 133; total records: 134 -> 119
+FAIL battle t_acidbeforeaim
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 61; total records: 62 -> 62
 FAIL battle t_throatspits
-  turn 89, round 6, after fire x02; unit x02 (player b_brood)
-  state.units[0].facing: 4 -> 5
-  later changed records: 0; total records: 141 -> 141
+  turn 0, round 1, after tick player; unit x07 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 163; total records: 141 -> 164
+FAIL battle t_burnstays
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 84; total records: 85 -> 82
+FAIL battle t_acidseams
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 47; total records: 48 -> 48
+FAIL battle t_manymouths
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 73; total records: 66 -> 74
+FAIL battle t_volleygrows
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 88; total records: 89 -> 88
+FAIL battle t_mouthdeep
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 85; total records: 86 -> 81
+FAIL battle t_broodreserve
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 40; total records: 41 -> 41
+FAIL battle t_firstthroat
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 63; total records: 61 -> 64
+FAIL battle t_throatdeep
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 31; total records: 32 -> 32
+FAIL battle t_hb_runbigger
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 46; total records: 47 -> 41
+FAIL battle t_hb_railboarding
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "F"
+  later changed records: 81; total records: 82 -> 76
+FAIL battle t_hb_packcloses
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 45; total records: 46 -> 46
+FAIL battle t_hb_rushrail
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 85; total records: 73 -> 86
+FAIL battle t_hb_allscars
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 68; total records: 62 -> 69
+FAIL battle t_hb_mawopens
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 54; total records: 54 -> 55
+FAIL battle t_hb_burncarry
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 71; total records: 72 -> 60
+FAIL battle t_hb_warlordrun
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 56; total records: 56 -> 57
+FAIL battle t_hb_knifeback
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 39; total records: 40 -> 38
+FAIL battle t_hb_darktorps
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 68; total records: 68 -> 69
+FAIL battle t_hb_cutturn
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 73; total records: 70 -> 74
+FAIL battle t_hb_secondknife
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 74; total records: 75 -> 74
+FAIL battle t_hb_smilecut
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 36; total records: 37 -> 37
+FAIL battle t_hb_everyknife
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 43; total records: 44 -> 44
+FAIL battle t_hb_darkknives
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 126; total records: 76 -> 127
+FAIL battle t_hb_cutfeeds
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 78; total records: 75 -> 79
+FAIL battle t_hb_patchedwing
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 56; total records: 57 -> 47
+FAIL battle t_hb_hulkmore
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 30; total records: 31 -> 31
+FAIL battle t_hb_retasked
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 90; total records: 87 -> 91
+FAIL battle t_hb_wreckline
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 27; total records: 28 -> 28
+FAIL battle t_hb_wholeyard
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 65; total records: 58 -> 66
+FAIL battle t_hb_screaming
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 174; total records: 115 -> 175
+FAIL battle t_hb_swarmscrap
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 69; total records: 66 -> 70
+FAIL battle t_hb_privatewing
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 59; total records: 60 -> 60
+FAIL battle t_hb_weldmatters
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 158; total records: 109 -> 159
+FAIL battle t_hb_patchguns
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 154; total records: 155 -> 140
+FAIL battle t_hb_scrapfront
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 155; total records: 144 -> 156
+FAIL battle t_hb_weldedfight
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 152; total records: 106 -> 153
+FAIL battle t_hb_doublebolted
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 159; total records: 148 -> 160
+FAIL battle t_hb_packbites
+  turn 0, round 1, after tick player; unit x03 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 134; total records: 135 -> 118
+FAIL battle t_hb_weldedwhole
+  turn 0, round 1, after tick player; unit x03 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 105; total records: 106 -> 100
+FAIL battle t_hb_nothingbroken
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 91; total records: 92 -> 81
+FAIL battle t_hb_preyscent
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 54; total records: 55 -> 47
+FAIL battle t_hb_loosepack
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 29; total records: 30 -> 30
+FAIL battle t_hb_firstscar
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "F"
+  later changed records: 47; total records: 48 -> 48
+FAIL battle t_hb_trophystandard
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 34; total records: 35 -> 35
+FAIL battle t_heg_widenet
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 67; total records: 68 -> 61
 FAIL battle t_heg_secondvolley
-  turn 79, round 4, after fire x04; unit x04 (player h_dominion)
-  state.units[0].sureUsed: 4 -> 5
-  later changed records: 51; total records: 121 -> 131
-FAIL: saved Godot results; 379 battles checked, 2 changed, 0 other files changed, 2 failures; 47.583 s
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 130; total records: 131 -> 131
+FAIL battle t_heg_sharedsolution
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 53; total records: 54 -> 54
+FAIL battle t_heg_colddrill
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 80; total records: 52 -> 81
+FAIL battle t_heg_rollingfire
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 57; total records: 58 -> 58
+FAIL battle t_heg_irontempo
+  turn 0, round 1, after tick player; unit x011 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 220; total records: 193 -> 221
+FAIL battle t_heg_livingrelay
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 80; total records: 81 -> 57
+FAIL battle t_heg_onevoice
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 69; total records: 70 -> 68
+FAIL battle t_heg_formation
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 57; total records: 58 -> 49
+FAIL battle t_heg_drill
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_heg_beacon
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 43; total records: 43 -> 44
+FAIL battle t_heg_stdforward
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 43; total records: 43 -> 44
+FAIL battle t_heg_filedtriplicate
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 55; total records: 56 -> 55
+FAIL battle t_heg_strikebook
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 82; total records: 83 -> 78
+FAIL battle t_heg_crossfire
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 66; total records: 67 -> 59
+FAIL battle t_heg_filedbefore
+  turn 0, round 1, after tick player; unit x012 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 121; total records: 122 -> 112
+FAIL battle t_heg_totalinterdiction
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 123; total records: 114 -> 124
+FAIL battle t_heg_sevenbreach
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 116; total records: 117 -> 104
+FAIL battle t_heg_permanentfile
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t_heg_oneorder
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 77; total records: 72 -> 78
+FAIL battle t_heg_cruisers
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "F"
+  later changed records: 81; total records: 82 -> 74
+FAIL battle t_heg_launchorder
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "F"
+  later changed records: 50; total records: 51 -> 51
+FAIL battle t_heg_secondwave
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "F"
+  later changed records: 74; total records: 70 -> 75
+FAIL battle t_heg_rehearsed
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "F"
+  later changed records: 96; total records: 97 -> 83
+FAIL battle t_heg_fullgroup
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 118; total records: 119 -> 119
+FAIL battle t_heg_escorts
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "F"
+  later changed records: 91; total records: 91 -> 92
+FAIL battle t_heg_onetarget
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "F"
+  later changed records: 52; total records: 53 -> 53
+FAIL battle t_heg_standinggroup
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "F"
+  later changed records: 72; total records: 73 -> 72
+FAIL battle t_heg_columnstraight
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 124; total records: 125 -> 125
+FAIL battle t_heg_overflow
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 154; total records: 130 -> 155
+FAIL battle t_heg_bell
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 133; total records: 134 -> 107
+FAIL battle t_heg_rotation
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 158; total records: 145 -> 159
+FAIL battle t_heg_columnendures
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 106; total records: 98 -> 107
+FAIL battle t_heg_filedarmor
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 149; total records: 136 -> 150
+FAIL battle t_heg_standardcovers
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 124; total records: 125 -> 125
+FAIL battle t_heg_flagshipstandard
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 135; total records: 136 -> 136
+FAIL battle t7a_flightpaths
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 88; total records: 89 -> 89
+FAIL battle t7a_replay
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 109; total records: 110 -> 110
+FAIL battle t7a_starlings
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 103; total records: 104 -> 104
+FAIL battle t7a_flightcast
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 109; total records: 95 -> 110
+FAIL battle t7a_forgeahead
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 102; total records: 103 -> 100
+FAIL battle t7a_onelens
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 40; total records: 41 -> 38
+FAIL battle t7a_lighttogether
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 30; total records: 31 -> 28
+FAIL battle t7a_sunlens
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 40; total records: 41 -> 38
+FAIL battle t7a_mirroraside
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 66; total records: 67 -> 65
+FAIL battle t7a_splitthree
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 63; total records: 64 -> 62
+FAIL battle t7a_fleetelsewhere
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 71; total records: 72 -> 70
+FAIL battle t7a_weakside
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 38; total records: 39 -> 38
+FAIL battle t7a_prismsface
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 38; total records: 39 -> 38
+FAIL battle t7a_lensrotates
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 37; total records: 38 -> 37
+FAIL battle t7a_facetlit
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 34; total records: 35 -> 34
+FAIL battle t7a_ledgerarcs
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 34; total records: 34 -> 35
+FAIL battle t7a_debtdue
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 50; total records: 51 -> 51
+FAIL battle t7a_grandledger
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 56; total records: 57 -> 56
+FAIL battle t7a_lastaccount
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 55; total records: 45 -> 56
+FAIL battle t7a_torpfirst
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 64; total records: 64 -> 65
+FAIL battle t7a_rearreckoning
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 35; total records: 36 -> 36
+FAIL battle t7a_salvoend
+  turn 0, round 1, after tick player; unit x07 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 76; total records: 77 -> 75
+FAIL battle t7a_accountsplits
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 98; total records: 99 -> 98
+FAIL battle t7a_screensshift
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 46; total records: 47 -> 41
+FAIL battle t7a_wallearly
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 40; total records: 41 -> 34
+FAIL battle t7a_wallmoves
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 46; total records: 47 -> 47
+FAIL battle t7b_ecl_formation_a
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 94; total records: 95 -> 95
+FAIL battle t7b_ecl_formation_b
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 81; total records: 82 -> 82
+FAIL battle t7b_ecl_formation_c
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 56; total records: 57 -> 57
+FAIL battle t7b_ecl_formation_d
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 59; total records: 60 -> 60
+FAIL battle t7b_ecl_shadow
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 52; total records: 53 -> 53
+FAIL battle t7b_ecl_wall
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 112; total records: 112 -> 113
+FAIL battle t7b_ecl_archive
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 77; total records: 78 -> 78
+FAIL battle t7b_ecl_iterfire
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 107; total records: 108 -> 108
+FAIL battle t7b_ecl_triage
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 118; total records: 119 -> 117
+FAIL battle t7b_ch_broodsplits
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 60; total records: 61 -> 61
+FAIL battle t7b_ch_nine
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 58; total records: 59 -> 59
+FAIL battle t7b_ch_teeth
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 96; total records: 97 -> 83
+FAIL battle t7b_ch_tideearly
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 98; total records: 99 -> 69
+FAIL battle t7b_ch_growth
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 108; total records: 109 -> 100
+FAIL battle t7b_ch_spat
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 85; total records: 84 -> 86
+FAIL battle t7b_ecl_targetarchived
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 49; total records: 50 -> 50
+FAIL battle t529_roles_strike
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t529_roles_screen
+  turn 0, round 1, after tick player; unit x07 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 83; total records: 76 -> 84
+FAIL battle t529_roles_mend
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 80; total records: 81 -> 80
+FAIL battle t529_roles_change
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 88; total records: 89 -> 86
+FAIL battle t529_spawned
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t529_nostop
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 98; total records: 99 -> 99
+FAIL battle t529_scent
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 52; total records: 53 -> 49
+FAIL battle t529_may_debt_no
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 44; total records: 45 -> 45
+FAIL battle t529_may_grow_no
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 98; total records: 99 -> 94
+FAIL battle s983_station_defend
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[9].ev: 35 -> 25
+  later changed records: 123; total records: 124 -> 119
+FAIL battle s983_station_plain
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "F"
+  later changed records: 86; total records: 87 -> 84
+FAIL battle s983_teaching_station_defend
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 66; total records: 67 -> 67
+FAIL battle s1450_undo
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 277; total records: 278 -> 278
+FAIL battle s1450_undo_chorus
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 156; total records: 157 -> 157
+FAIL battle s1450_undo_classic
+  turn 0, round 1, after tick player; unit x016 (enemy bomber)
+  state.units[11].ev: 35 -> 25
+  later changed records: 426; total records: 349 -> 427
+FAIL battle s1447_ion_pulse
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 165; total records: 157 -> 166
+FAIL battle s1480
+  turn 0, round 1, after tick player; unit x021 (enemy bomber)
+  state.units[15].ev: 35 -> 25
+  later changed records: 217; total records: 218 -> 195
+FAIL battle r1653_gunnery
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 193; total records: 194 -> 178
+FAIL battle r1653_afterburn
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 202; total records: 203 -> 180
+FAIL battle r1653_flankmark
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 174; total records: 135 -> 175
+FAIL battle r1653_spotter
+  turn 0, round 1, after tick player; unit x019 (enemy bomber)
+  state.units[14].ev: 35 -> 25
+  later changed records: 187; total records: 188 -> 166
+FAIL battle r1653_lastlight
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 193; total records: 194 -> 176
+FAIL battle r1653_coolant
+  turn 0, round 1, after tick player; unit x011 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 170; total records: 171 -> 166
+FAIL battle r1653_spare
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 199; total records: 200 -> 175
+FAIL battle r1653_ram
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "F"
+  later changed records: 166; total records: 167 -> 117
+FAIL battle r1653_mirror
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 152; total records: 153 -> 150
+FAIL battle r1653_beacon
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 188; total records: 144 -> 189
+FAIL battle r1653_quiet
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 190; total records: 191 -> 153
+FAIL battle r1653_locker
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "F"
+  later changed records: 159; total records: 160 -> 138
+FAIL battle r1653_chaser
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 183; total records: 184 -> 179
+FAIL battle r1653_spill
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "F"
+  later changed records: 133; total records: 125 -> 134
+FAIL battle r1653_relay
+  turn 0, round 1, after tick player; unit x012 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 201; total records: 202 -> 197
+FAIL battle s1649_fold
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 108; total records: 109 -> 109
+FAIL battle s1649_frenzy
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 141; total records: 119 -> 142
+FAIL battle t7a_flightcast_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 102; total records: 97 -> 103
+FAIL battle t7a_forgeahead_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 101; total records: 102 -> 94
+FAIL battle t_ecl_outshadow_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 73; total records: 74 -> 74
+FAIL battle t_ecl_longcopy_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_rollwings_m3
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 76; total records: 77 -> 75
+FAIL battle t_oathwings_m3
+  turn 0, round 1, after tick player; unit x06 (enemy c_reaver)
+  state.units[3].weapons[1].arc: "S" -> "F"
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_hb_burncarry_m3
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 49; total records: 50 -> 39
+FAIL battle t_hb_warlordrun_m3
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 75; total records: 69 -> 76
+FAIL battle t_heg_livingrelay_m3
+  turn 0, round 1, after tick player; unit x019 (enemy c_reaver)
+  state.units[10].weapons[1].arc: "S" -> "F"
+  later changed records: 72; total records: 72 -> 73
+FAIL battle t_heg_onevoice_m3
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t_ecl_tenthousand_m3
+  turn 0, round 1, after tick player; unit x012 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 166; total records: 167 -> 164
+FAIL battle t_ecl_restoredfleet_m3
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 107; total records: 107 -> 108
+FAIL battle t7a_salvoend_m3
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 115; total records: 99 -> 116
+FAIL battle t_namedprey_m3
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 61; total records: 62 -> 62
+FAIL battle t_heg_standardcovers_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 118; total records: 119 -> 119
+FAIL battle t_heg_flagshipstandard_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 119; total records: 120 -> 120
+FAIL battle t7b_ch_nine_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 105; total records: 106 -> 106
+FAIL battle t529_nostop_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 87; total records: 88 -> 64
+FAIL battle t_tideend_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 25; total records: 26 -> 26
+FAIL battle t_tornback_m3
+  turn 0, round 1, after tick player; unit x08 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 133; total records: 134 -> 119
+FAIL battle t_wardglass_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 70; total records: 71 -> 69
+FAIL battle t7a_facetlit_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 34; total records: 35 -> 34
+FAIL battle t_hb_swarmscrap_m3
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 71; total records: 68 -> 72
+FAIL battle t_hb_privatewing_m3
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 110; total records: 111 -> 103
+FAIL battle t_ecl_tenthframe_m3
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 115; total records: 116 -> 114
+FAIL battle t_ecl_earliercopy_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 81; total records: 82 -> 82
+FAIL battle t_throatred_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 55; total records: 56 -> 50
+FAIL battle t_preyeverymouth_m3
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 125; total records: 100 -> 126
+FAIL battle t_heg_onetarget_m3
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "F"
+  later changed records: 50; total records: 51 -> 51
+FAIL battle t_heg_standinggroup_m3
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "F"
+  later changed records: 78; total records: 70 -> 79
+FAIL battle t_hb_darkknives_m3
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 93; total records: 59 -> 94
+FAIL battle t_hb_cutfeeds_m3
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 64; total records: 65 -> 64
+FAIL battle t_ecl_noonrepeat_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 52; total records: 53 -> 53
+FAIL battle t_ecl_onesuncopy_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_irontestament_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 44; total records: 45 -> 38
+FAIL battle t7a_wallmoves_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 46; total records: 47 -> 47
+FAIL battle t7a_fleetelsewhere_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 71; total records: 72 -> 70
+FAIL battle t_falsehulls_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 95; total records: 96 -> 94
+FAIL battle t7a_sunlens_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 40; total records: 41 -> 38
+FAIL battle t_flawforever_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 49; total records: 50 -> 47
+FAIL battle t_hb_weldedwhole_m3
+  turn 0, round 1, after tick player; unit x03 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 115; total records: 116 -> 105
+FAIL battle t_hb_nothingbroken_m3
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 91; total records: 92 -> 72
+FAIL battle t7a_grandledger_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 56; total records: 57 -> 56
+FAIL battle t7a_lastaccount_m3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 82; total records: 80 -> 83
+FAIL battle t_volleygrows_m3
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 86; total records: 87 -> 84
+FAIL battle t_mouthdeep_m3
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 85; total records: 86 -> 80
+FAIL battle t_heg_permanentfile_m3
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 155; total records: 132 -> 156
+FAIL battle t_heg_oneorder_m3
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "F"
+  later changed records: 181; total records: 182 -> 163
+FAIL battle r1651_vex
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 124; total records: 125 -> 87
+FAIL battle r1651_malek
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 109; total records: 110 -> 110
+FAIL battle r1651_ashgrove
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 103; total records: 103 -> 104
+FAIL battle r1651_thale
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 78; total records: 79 -> 70
+FAIL battle r1651_kassar
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 119; total records: 120 -> 120
+FAIL battle r1651_vorn
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 114; total records: 113 -> 115
+FAIL battle r1651_reyes
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 101; total records: 102 -> 101
+FAIL battle r1651_maren
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 134; total records: 135 -> 135
+FAIL battle r1651_grax
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 142; total records: 118 -> 143
+FAIL battle r1651_sable
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "F"
+  later changed records: 132; total records: 97 -> 133
+FAIL battle r1651_mott
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 94; total records: 95 -> 89
+FAIL battle r1651_vesh
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "F"
+  later changed records: 193; total records: 134 -> 194
+FAIL battle r1651_matriarch
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 59; total records: 60 -> 60
+FAIL battle r1651_razormaw
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 112; total records: 107 -> 113
+FAIL battle r1651_mending
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 121; total records: 87 -> 122
+FAIL battle r1651_voice
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 67; total records: 66 -> 68
+FAIL battle r1651_aelith
+  turn 0, round 1, after tick player; unit x06 (enemy c_reaver)
+  state.units[3].weapons[1].arc: "S" -> "F"
+  later changed records: 90; total records: 91 -> 91
+FAIL battle r1651_vaelen
+  turn 0, round 1, after tick player; unit x06 (enemy c_reaver)
+  state.units[3].weapons[1].arc: "S" -> "F"
+  later changed records: 65; total records: 66 -> 65
+FAIL battle r1651_thorne
+  turn 0, round 1, after tick player; unit x010 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "F"
+  later changed records: 155; total records: 156 -> 149
+FAIL battle r1651_mirelle
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "F"
+  later changed records: 107; total records: 108 -> 83
+FAIL battle r1651_nekhet
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 63; total records: 64 -> 64
+FAIL battle r1651_sekhmar
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 39; total records: 40 -> 40
+FAIL battle r1651_anuket
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 62; total records: 63 -> 63
+FAIL battle r1651_khepra
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 103; total records: 92 -> 104
+FAIL battle r1651_cmdoverride
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 91; total records: 88 -> 92
+FAIL file threat_s19.json
+  map.3.10,16: "4067eccccccccccc" -> "406550a3d70a3d70"
+FAIL file threat_s23.json
+  map.1.10,11: "406bd70a3d70a3d7" -> "4072200000000000"
+FAIL: saved Godot results; 379 battles checked, 379 changed, 2 other files changed, 381 failures; 148.643 s
+
+Final replays for the 13 proof fixtures
+See tree_fixtures_2205.txt for the setup and reason for each.
+
+Later differences count changed records after the first, aligned by turn index.
+FAIL battle t_inheritedaim
+  turn 0, round 1, after tick player; unit x02 (player penitent)
+  state.units[0].name: "Long Watch" -> "Pale Sentinel"
+  later changed records: 78; total records: 79 -> 74
+FAIL battle t_wallanswers
+  turn 0, round 1, after tick player; unit x03 (player warden)
+  state.units[0].name: "Unpaid Debt" -> "Resolve of the Reach"
+  later changed records: 83; total records: 84 -> 76
+FAIL battle t_ecl_twicerestored
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].name: "Ninth Shade" -> "Silent Heir"
+  later changed records: 104; total records: 103 -> 105
+FAIL battle t_ecl_stillness
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].facing: 3 -> 5
+  later changed records: 154; total records: 155 -> 89
+FAIL battle t_breathbite
+  turn 0, round 1, after tick player; unit x06 (player b_razor)
+  state.units[0].q: 1 -> 5
+  later changed records: 154; total records: 155 -> 117
+FAIL battle t_throatspits
+  turn 0, round 1, after tick player; unit x02 (player b_brood)
+  state.units[0].name: "Shrieking Coil" -> "Sour Gut"
+  later changed records: 163; total records: 164 -> 149
+FAIL battle t_manymouths
+  turn 0, round 1, after tick player; unit x05 (player b_spitter)
+  state.units[0].facing: 1 -> 0
+  later changed records: 90; total records: 74 -> 91
+FAIL battle t_hb_retasked
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].name: "Bad Omen" -> "Bent Crown"
+  later changed records: 90; total records: 91 -> 76
+FAIL battle t_hb_scrapfront
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].name: "Cold Trail" -> "Cinder Wolf"
+  later changed records: 155; total records: 156 -> 147
+FAIL battle t7a_lensrotates
+  turn 3, round 1, after move x03; unit x03 (player i_song)
+  state.units[0].sh[0]: 33 -> 29
+  later changed records: 33; total records: 37 -> 37
+FAIL battle t7a_lastaccount
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].name: "Burning Spire" -> "Merciless Frost"
+  later changed records: 55; total records: 56 -> 38
+FAIL battle t7b_ch_tideearly
+  turn 3, round 1, after damaged fleet fixture; unit x04 (player b_drone)
+  state.units[0].hp: 46 -> 13
+  later changed records: 79; total records: 69 -> 83
+FAIL battle t529_scent
+  turn 0, round 1, after tick player; unit x04 (player b_razor)
+  state.units[0].name: "Sour Gut" -> "Tidehunger"
+  later changed records: 53; total records: 49 -> 54
+FAIL: saved Godot results; 379 battles checked, 13 changed, 0 other files changed, 13 failures; 94.826 s

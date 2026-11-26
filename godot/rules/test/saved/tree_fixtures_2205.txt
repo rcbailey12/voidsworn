@@ -1,0 +1,18 @@
+Issue 2205 targeted proof fixtures
+
+The new wing, spawn and bot rules changed when some seeded battles met a skill prerequisite.
+These fixtures keep the same activation and numeric checks. Only their setup has changed.
+
+t_inheritedaim - seed 31503 to 31504, Command round 4 to 4
+t_wallanswers - seed 37101 to 37104, Command round 2 to 2
+t_ecl_stillness - seed 37113 to 37116, Command round 2 to 2
+t_hb_retasked - seed 37107 to 37105, Command round 2 to 2
+t_hb_scrapfront - seed 33027 to 33026, Command round 5 to 5
+t7a_lensrotates - seed 37118 to 37118, Command round 1 to 2
+t_ecl_twicerestored - seed 31823 to 31824, Command round 3 to 3
+t7a_lastaccount - seed 37112 to 37113, Command round 3 to 3
+t_manymouths - seed 31721 to 31720, Command round 3 to 5
+t_throatspits - seed 37104 to 37102, Command round 6 to 6
+t529_scent - seed 37102 to 37107, Command round 2 to 2
+t_breathbite - seed 37129 to 37129, Command round 5 to 3, line to ambush deployment
+t7b_ch_tideearly - begins with an injured flagship, then restores before further hull damage to preserve the 10-point repair bonus proof.

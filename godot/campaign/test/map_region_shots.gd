@@ -15,7 +15,7 @@ class Driver extends Scene:
 		seed_now = seed_value
 		C.UID = 1; C.RUN = null; C.B = null; C.SAVED_RUN = null; C.META = C.defaultMeta()
 		C.picked_admiral = "vex"; C.picked_faction = "voidsworn"; C.run_opt = {"alt": false, "cmdAlt": false, "heat": []}; C.ended = false
-		JSM.rnd_seed(seed_value); C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
+		C.rng.rnd_seed(seed_value); C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
 		if C.page.get("kind") == "aspect": C.act("pickAspect", C.W["aspOffer"][0])
 		C.act("closeModal"); _ro_seen = {"fleet": true, "retreat": true}
 	func first_stop() -> bool:
