@@ -6,11 +6,12 @@
    "alts": [
     "alts/matriarch_pre68.webp",
     "alts/matriarch_r8alt1.webp",
-    "alts/matriarch_r7.webp"
+    "alts/matriarch_r7.webp",
+    "alts/matriarch_pre1897.webp"
    ],
-   "source": "e64/matriarch_v64_s11_00001_.png",
+   "source": "contrib/codex/portraits_v1/matriarch.png",
    "crop": null,
-   "note": "R68: the Matriarch above a planet it is consuming, spores falling into the air."
+   "note": "1897 run 4 (Codex image gen), Ryan approved Nov 26"
   },
   "mending": {
    "faction": "chorus",
@@ -18,11 +19,12 @@
    "alts": [
     "alts/mending_pre68.webp",
     "alts/mending_r8alt1.webp",
-    "alts/mending_r7.webp"
+    "alts/mending_r7.webp",
+    "alts/mending_pre1897.webp"
    ],
-   "source": "e64/mending_v64_s11_00001_.png",
+   "source": "contrib/codex/portraits_v1/mending.png",
    "crop": null,
-   "note": "R68: the Mending nested in the gutted hull of a captured warship."
+   "note": "1897 run 4 (Codex image gen), Ryan approved Nov 26"
   },
   "vex": {
    "faction": "voidsworn",
@@ -30,15 +32,12 @@
    "alts": [
     "alts/vex_pre68.webp",
     "alts/vex_r8alt1.webp",
-    "alts/vex_r7.webp"
+    "alts/vex_r7.webp",
+    "alts/vex_pre1897.webp"
    ],
-   "source": "e64/vex_v64_s51_00001_.png",
-   "crop": [
-    0.5,
-    0.42,
-    0.84
-   ],
-   "note": "R68: Vex in a frost-rimed war room, fists on a table lit by an ember star chart (e64c)."
+   "source": "contrib/codex/portraits_v1/vex.png",
+   "crop": null,
+   "note": "1897 run 4 (Codex image gen), Ryan approved Nov 26"
   },
   "kassar": {
    "faction": "hegemony",
@@ -46,15 +45,12 @@
    "alts": [
     "alts/kassar_pre68.webp",
     "alts/kassar_r8alt1.webp",
-    "alts/kassar_r7.webp"
+    "alts/kassar_r7.webp",
+    "alts/kassar_pre1897.webp"
    ],
-   "source": "e64/kassar_v64_s83_00001_.png",
-   "crop": [
-    0.5,
-    0.36,
-    0.62
-   ],
-   "note": "R68: Kassar in a white council chamber high in orbit, hands behind her back before a ringed gas giant (e64e s83)."
+   "source": "contrib/codex/portraits_v1/kassar.png",
+   "crop": null,
+   "note": "1897 run 4 (Codex image gen), Ryan approved Nov 26"
   },
   "grax": {
    "faction": "corsair",
@@ -62,15 +58,12 @@
    "alts": [
     "alts/grax_pre68.webp",
     "alts/grax_p64alt1.webp",
-    "alts/grax_r8.webp"
+    "alts/grax_r8.webp",
+    "alts/grax_pre1897.webp"
    ],
-   "source": "v64b/corsair_grax_nohorn_s11_00001_.png",
-   "crop": [
-    0.55,
-    0.37,
-    0.72
-   ],
-   "note": "R68: Grax slumped on a scrap throne under hanging trophies (v64h5 s11)."
+   "source": "contrib/codex/portraits_v1/grax.png",
+   "crop": null,
+   "note": "1897 run 4 (Codex image gen), Ryan approved Nov 26"
   },
   "aelith": {
    "faction": "ithar",
@@ -79,15 +72,12 @@
     "alts/aelith_r68.webp",
     "alts/aelith_pre68.webp",
     "alts/aelith_r8alt1.webp",
-    "alts/aelith_r7.webp"
+    "alts/aelith_r7.webp",
+    "alts/aelith_pre1897.webp"
    ],
-   "source": "docs/shots/portraits/glasswright_species/round_4_loom/loom_admiral.jpg",
-   "crop": [
-    0.5,
-    0.375,
-    0.75
-   ],
-   "note": "Issue 1217 (Nov 19): the Loom body plan (R252, Muse round 4) replaces the R68 crystal-head painting, kept as alts/aelith_r68.webp. Framed crop of loom_admiral.jpg."
+   "source": "contrib/codex/portraits_v1/aelith.png",
+   "crop": null,
+   "note": "1897 run 4 (Codex image gen), Ryan approved Nov 26"
   },
   "nekhet": {
    "faction": "deathless",
@@ -95,26 +85,24 @@
    "alts": [
     "alts/nekhet_pre68.webp",
     "alts/nekhet_r8alt1.webp",
-    "alts/nekhet_r7.webp"
+    "alts/nekhet_r7.webp",
+    "alts/nekhet_pre1897.webp"
    ],
-   "source": "e64/nekhet_v64_s11_00001_.png",
+   "source": "contrib/codex/portraits_v1/nekhet.png",
    "crop": null,
-   "note": "R68: Nekhet in a machine hall of siphon arrays draining a star."
+   "note": "1897 run 4 (Codex image gen), Ryan approved Nov 26"
   },
   "sable": {
    "faction": "corsair",
    "pick": "painted/sable.webp",
    "alts": [
     "alts/sable_pre68.webp",
-    "alts/sable_p64alt1.webp"
+    "alts/sable_p64alt1.webp",
+    "alts/sable_pre1897.webp"
    ],
-   "source": "v64b/corsair_sable_nohorn_s23_00001_.png",
-   "crop": [
-    0.71,
-    0.33,
-    0.58
-   ],
-   "note": "R68: Sable in a red-lit airlock corridor with a long knife (v64h5 s23)."
+   "source": "contrib/codex/portraits_v1/sable.png",
+   "crop": null,
+   "note": "1897 run 4 (Codex image gen), Ryan approved Nov 26"
   },
   "mott": {
    "faction": "corsair",
@@ -178,15 +166,36 @@
    "faction": "ithar",
    "pick": "painted/vaelen.webp",
    "alts": [
-    "alts/vaelen_r68.webp"
+    "alts/vaelen_r68.webp",
+    "alts/vaelen_pre1897.webp"
    ],
-   "source": "docs/shots/portraits/glasswright_species/round_4_loom/loom_bench.jpg",
-   "crop": [
-    0.5,
-    0.42,
-    0.86
-   ],
-   "note": "Issue 1217 (Nov 19): the Loom body plan (R252, Muse round 4) replaces the R68 crystal-head painting, kept as alts/vaelen_r68.webp. Framed crop of loom_bench.jpg."
+   "source": "contrib/codex/portraits_v1/vaelen.png",
+   "crop": null,
+   "note": "1897 run 4 (Codex image gen), Ryan approved Nov 26"
+  },
+  "ashgrove": {
+   "faction": "voidsworn",
+   "pick": "painted/ashgrove.webp",
+   "alts": [],
+   "source": "contrib/codex/portraits_v1/ashgrove.png",
+   "crop": null,
+   "note": "1897 run 4 (Codex image gen), Ryan approved Nov 26"
+  },
+  "maren": {
+   "faction": "hegemony",
+   "pick": "painted/maren.webp",
+   "alts": [],
+   "source": "contrib/codex/portraits_v1/maren.png",
+   "crop": null,
+   "note": "1897 run 4 (Codex image gen), Ryan approved Nov 26"
+  },
+  "anuket": {
+   "faction": "deathless",
+   "pick": "painted/anuket.webp",
+   "alts": [],
+   "source": "contrib/codex/portraits_v1/anuket.png",
+   "crop": null,
+   "note": "1897 run 4 (Codex image gen), Ryan approved Nov 26"
   }
  },
  "nemesis": {

@@ -2,6 +2,7 @@
   "_doc": "Per-faction colours and styles for effects, hulls and backdrops (G4). Linear RGB. Read by fx/faction_look.gd. Change a faction's look here, not in code. See fx/API.md section 15. Lore round 8 palettes (approved Oct 27): Sunward Crusade (voidsworn) black iron, frost white, bright ember; Hegemony pale grey, steel blue, implant blue; Ashfall Hullbreakers (corsair) soot, rust, red running lights; the Chorus dark olive, ochre, bile yellow-green; the Glasswrights (ithar) clear crystal, silver, rainbow edge, stored light; Eclipse (deathless) violet-black, white-gold corona, violet-white inner glow in the base fields. Doom uses weapon_core deep violet (Ryan Nov 21, issue 1503; was R263 green) and weapon_sheath violet-black. The R271 null tracer uses the existing violet-white weapon colour.",
   "_fields": "All fields are in use. interior (R420, issue 1743): the modeled interior's role table, inner skin role and roughness, linear albedo per role (wall, deck, frame, machinery, core; Chorus organ, gland, bone; Glasswright glass, glass_strut, and since Ryan's Nov 23 pick their rooms too; since his Nov 24 pick in pale pearl glass under their own wall_max, with crystal_glow the leaf colour each lit crystal zone glows in), the unlit roles, trim strip strength, core light, glow and the area light budget; read by the Blender paint stacks through tools/blender/kits/shared/interior_trim.py and by tools/recipe/check_export.py, one table for Blender and the game. weapon_core and weapon_sheath: Eclipse weapon-only core (deep violet since Nov 21, issue 1503) and dark sheath (R263), independent of the ship and engine palettes. wound_kind: 0 metal, 1 living tissue, 2 crystal, 3 Eclipse machine (breach geometry only; the old faction wound looks are retired). wound (R416, issue 1741, on by default since Nov 24; VS_WOUNDS_V2=0 turns it off): kind 0 to 5 one per faction (Sunward, Directorate, Hullbreakers, Chorus, Glasswrights, Eclipse); rim_style the cut edge (curled, modular, ragged, chitin, facet, stepped); scorch_col the mark colour round a hit; rim_metal the bare cut edge; interior_lift and interior_accent the lit inside of an open wound (R420: at most 0.11 linear, about 0.03 to 0.10, the same law as the built interiors of issue 1743; wall_max the interior wall ceiling, 0.11 unless set: the Glasswrights 0.45, pale pearl glass, Ryan Nov 24, and an interior.wall_max of issue 1743 must match it) and its glow; interior_pattern the interior shader pattern; interior_rough its roughness; soot_weight how much soot a hit leaves (0 none: Chorus, Glasswrights, Eclipse); wreck_soot how sooted the inside gets once dead; hulk_soot (optional, issue 2125) the station hulk burn when it differs from wreck_soot (the Directorate: no battle-wreck soot, the Nov 22 cool grey hulk burn kept). damage_glow: the fire and lit conduits inside hull damage, per faction (Crusade ember, Hegemony white-gold, Hullbreakers dirty red, Chorus bile, Glasswrights stored white light, Eclipse violet-white). accent: a corona round each engine core in a second colour (Crusade frost white, Hullbreakers red running lights, Eclipse white-gold; Eclipse's engine embers take it too); null where a faction has none (Hegemony, Chorus, and the Glasswrights since issue 1316: a violet drive glow with no white corona). shield_edge: the shield bubble's rim (Crusade frost white, Glasswrights rainbow); null for the others. death (R367, issue 1399): a faction's own ship death, read by fx_death.gd; style drumbeat (Sunward Crusade: magazines pop down the broadside), arc (Hegemony: lightning jumps the gap), patch (Hullbreakers: patch plates tear loose), shatter (Glasswrights) or peel (Eclipse), fire and fire_mid the hot and cooler colours the death's fire pictures take, prism the rainbow edge on them (0 to 1), smoke the share of their smoke kept (0 none), spark the sparks and embers, light the core flash light, rim the glowing torn edges (round 2 sets every metal faction; the Chorus has its own organic death and no entry); a faction without one keeps the shared orange fire. Ids never change.",
   "voidsworn": {
+    "rift_shape": "arch",
     "death": {"style": "drumbeat", "fire": [1.0, 0.9, 0.7], "fire_mid": [1.0, 0.48, 0.12], "prism": 0.0, "smoke": 0.1, "spark": [1.0, 0.72, 0.36], "light": [1.0, 0.8, 0.55], "rim": [1.0, 0.5, 0.12]},
     "fragment_paint": [0.20, 0.21, 0.22],
     "wound_kind": 0,
@@ -21,6 +22,7 @@
     "shield_edge": [0.82, 0.92, 1.0]
   },
   "hegemony": {
+    "rift_shape": "scan",
     "death": {"style": "arc", "fire": [0.88, 0.94, 1.0], "fire_mid": [0.36, 0.6, 1.0], "prism": 0.0, "smoke": 0.25, "spark": [0.72, 0.88, 1.0], "light": [0.62, 0.8, 1.0], "rim": [0.5, 0.72, 1.0]},
     "fragment_paint": [0.36, 0.42, 0.49],
     "wound_kind": 0,
@@ -40,6 +42,7 @@
     "shield_edge": null
   },
   "corsair": {
+    "rift_shape": "vent",
     "death": {"style": "patch", "fire": [1.0, 0.78, 0.55], "fire_mid": [0.95, 0.2, 0.06], "prism": 0.0, "smoke": 0.55, "spark": [1.0, 0.45, 0.18], "light": [1.0, 0.5, 0.28], "rim": [1.0, 0.24, 0.06]},
     "fragment_paint": [0.35, 0.105, 0.065],
     "wound_kind": 0,
@@ -59,6 +62,7 @@
     "shield_edge": null
   },
   "chorus": {
+    "rift_shape": "bloom",
     "wound_kind": 1,
     "interior": {"skin": {"role": "organ", "roughness": 0.35}, "roles": {"organ": [0.07, 0.035, 0.028], "gland": [0.06, 0.03, 0.024], "bone": [0.17, 0.15, 0.11]}, "unlit": ["organ", "bone"], "glow": {"rgb": [0.6, 0.52, 0.14], "strength": 0.25, "share": 0.08}, "light_area_max": 0.02},
     "wound": {"kind": 3, "rim_style": "chitin", "scorch_col": [0.2, 0.13, 0.07], "rim_metal": [0.17, 0.15, 0.11], "interior_lift": [0.07, 0.035, 0.028], "interior_accent": [0.6, 0.52, 0.14], "interior_pattern": 3, "interior_rough": 0.3, "soot_weight": 0.0, "wreck_soot": 0.0},
@@ -76,6 +80,7 @@
     "shield_edge": null
   },
   "ithar": {
+    "rift_shape": "facet",
     "fragment_paint": [0.53, 0.61, 0.66],
     "wound_kind": 2,
     "interior": {"skin": {"role": "glass", "roughness": 0.32}, "roles": {"glass": [0.32, 0.32, 0.32], "glass_strut": [0.36, 0.37, 0.36], "wall": [0.40, 0.38, 0.35], "deck": [0.34, 0.33, 0.31], "frame": [0.30, 0.31, 0.30], "machinery": [0.30, 0.29, 0.28], "core": [0.06, 0.075, 0.07]}, "wall_max": 0.45, "unlit": ["frame"], "core_rgb": [0.35, 1.0, 0.64], "core_strength": 3.0, "zone_tint": {"gw_in_amber": [1.5, 1.0, 0.45], "gw_in_green": [0.6, 1.35, 0.85], "gw_in_violet": [1.15, 0.65, 1.5], "cd5_amber": [1.5, 1.0, 0.45], "cd5_green": [0.6, 1.35, 0.85], "cd5_violet": [1.15, 0.65, 1.5]}, "crystal_glow": {"gw_in_amber": [1.0, 0.55, 0.12], "gw_in_green": [0.25, 1.0, 0.55], "gw_in_violet": [0.6, 0.25, 1.0], "cd5_amber": [1.0, 0.55, 0.12], "cd5_green": [0.25, 1.0, 0.55], "cd5_violet": [0.6, 0.25, 1.0]}, "glow": {"rgb": [0.35, 1.0, 0.64], "strength": 0.6, "share": 0.35}, "light_area_max": 0.25},
@@ -95,6 +100,7 @@
     "shield_edge": "rainbow"
   },
   "deathless": {
+    "rift_shape": "fold",
     "fragment_paint": [0.16, 0.12, 0.21],
     "weapon_core": [0.5, 0.2, 1.0],
     "weapon_sheath": [0.035, 0.008, 0.075],

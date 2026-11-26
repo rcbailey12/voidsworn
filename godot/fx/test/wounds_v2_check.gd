@@ -136,8 +136,9 @@ func _holes(s) -> Array:
 
 func _lights(s) -> Array:
 	var out: Array = []
-	for src in fx._lsrc:
-		if bool(src["on"]) and is_instance_valid(src["node"]) and s._dmg_root.is_ancestor_of(src["node"]):
+	# The V2 cap is for cavity lights. Build C's local plume lights share the pool but are not inside the cutout.
+	for src in s._hole_lights:
+		if bool(src["on"]) and is_instance_valid(src["node"]) and s._dmg_root.is_ancestor_of(src["node"]) and fx._lsrc.has(src):
 			out.append(src)
 	return out
 
@@ -205,12 +206,55 @@ func _glass_mouth_check(s, e: BREACH.Ent, deck_point: Vector3) -> void:
 	var floor_value := lift.dot(Vector3.ONE) / 3.0 * float(floor_match.get_string(1)) * reveal * maxf(reveal, open_f) if floor_match != null else 0.0
 	var hole_node := s._dmg_root.get_node_or_null("fx_damage_inside") as MeshInstance3D
 	var hole := hole_node.material_override as ShaderMaterial if hole_node != null else null
-	check(floor_value >= 0.20 and hole != null and is_equal_approx(float(interior.get_shader_parameter("v2_wall_max")), 0.45)
+	check(floor_value >= 0.08 and floor_value <= 0.16 and hole != null and is_equal_approx(float(interior.get_shader_parameter("v2_wall_max")), 0.45)
 		and is_equal_approx(float(hole.get_shader_parameter("v2_wall_max")), 0.45)
 		and bool(interior.get_shader_parameter("trusted")) and (interior.get_shader_parameter("base_albedo") as Color).r < 0.03
-		and code.contains("lit = mix(lit, glass_pearl * value, glass_reveal);")
-		and code.contains("em += glass_pearl * 0.24 * glass_reveal;"),
-		"2125: the centre ray hits a dark deck lifted to pearl (at least %.3f linear), below the 0.45 wall cap" % floor_value)
+		and code.contains("lit = mix(lit, glass_pearl, glass_reveal);")
+		and code.contains("em += glass_pearl * 0.08 * glass_reveal;"),
+		"2175: centre ray hits a shaded pearl deck (%.3f linear), darker than both visible wall steps" % floor_value)
+
+
+func _glass_layer_check() -> void:
+	# The small authored deck is inside the cut radius and above its depth limit, but off the five thickness rays.
+	# The deeper, untagged deck tests the depth limit itself. Both must survive the same rebuild that opens the shells.
+	var offset := Vector3(0.30, 0.0, 0.20)
+	var deep := 1.5
+	var shelf := 0.64
+	var depths := [0.0, 0.25, deep, shelf]
+	var mesh := ArrayMesh.new()
+	var surfs: Array = []
+	for depth: float in depths:
+		var interior := depth == shelf
+		var box := BoxMesh.new()
+		box.size = Vector3(0.25, 0.01, 0.22) if interior else Vector3(9.0, 0.01, 9.0)
+		var arrays := box.get_mesh_arrays()
+		var xf := Transform3D(Basis.IDENTITY, (offset if interior else Vector3.ZERO) - Vector3.UP * (depth + 0.005))
+		arrays[Mesh.ARRAY_VERTEX] = xf * (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array)
+		var si := mesh.get_surface_count()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		surfs.append({"arrays": arrays, "xf": Transform3D.IDENTITY, "aabb": xf * box.get_aabb(),
+			"mid": 0, "n": depths.size(), "fmt": mesh.surface_get_format(si), "mat": null, "interior": interior})
+	var stack = _hull_of(mesh.get_faces(), 24.0)
+	stack.authored = true
+	var glass := BREACH.place_hole(stack, Vector3.ZERO, Vector3.UP, 1.1, 3.0, "ithar")
+	var rebuilt := BREACH.compute({"surfs": surfs, "ents": [glass], "q": 0.001, "hull": stack})
+	var skin := rebuilt["meshes"].get(0) as ArrayMesh
+	check(glass.has_cut() and not glass.thin_shear and skin != null, "2175: a real faceted cut rebuilds the layered hull")
+	if skin == null:
+		return
+	var tris := TriangleMesh.new()
+	tris.create_from_faces(skin.get_faces())
+	var centre_hit := tris.intersect_segment(Vector3.UP, Vector3.DOWN * 3.0)
+	check(deep * deep < glass.cutr2 and not centre_hit.is_empty() and is_equal_approx((centre_hit["position"] as Vector3).y, -deep),
+		"2175: the centre ray passes through both shell layers and hits the deep deck")
+	var offset_hit := tris.intersect_segment(offset + Vector3.UP, offset + Vector3.DOWN * 3.0)
+	check(BREACH.removed_by(offset + Vector3.DOWN * shelf, [glass]) == 0 and not offset_hit.is_empty()
+		and is_equal_approx((offset_hit["position"] as Vector3).y, -shelf),
+		"2175: the rebuilt skin preserves the offset authored deck inside the cut volume")
+	var flank := Vector3.RIGHT * 2.0
+	var flank_hit := tris.intersect_segment(flank + Vector3.UP, flank + Vector3.DOWN * 3.0)
+	check(not flank_hit.is_empty() and absf((flank_hit["position"] as Vector3).y) < 0.03,
+		"2175: plating outside the opening stays intact")
 
 
 func _run() -> void:
@@ -310,7 +354,7 @@ func _run() -> void:
 		var acc := BREACH.wound_col(FL.of(faction)["wound"], "interior_accent", Color.BLACK)
 		var l_ok := ls.size() >= 1 and ls.size() <= BREACH.INSIDE_LIGHTS
 		for src in ls:
-			l_ok = l_ok and (src["col"] as Color).is_equal_approx(acc) and float(src["reach"]) > 0.0
+			l_ok = l_ok and (src["col"] as Color).is_equal_approx(acc) and float(src["reach"]) > 0.0 and not src["local_only"]
 		check(l_ok, "%s: the open cutout lights its inside softly in the faction accent (%d lights)" % [faction, ls.size()])
 		var int_ok := false
 		for m in s.meshes:
@@ -373,6 +417,7 @@ func _run() -> void:
 	sl.sync(fx, _state(100, 30, 100))
 	flush(sl)
 	check(_holes(sl).is_empty(), "a legacy hollow hull stays sealed at stage 3")
+	_glass_layer_check()
 	_half_hull_openings()
 
 	# 5. shaders parse; dressing per faction stays below the plating; faction colours

@@ -63,7 +63,7 @@ The prompts follow sections 2 to 8 of the [sound plan](../plans/cohesive_audio_v
 ## Gate 3 listening and staged waves (issue 2039)
 
 - Ryan can open [Sound Gate 3](listen_gate3/index.html) with `listen_gate3/LISTEN.bat`. The clips that play in game
-  are on the page, with the three Wave F3 picks and the full Chorus calm and intense loops first. The sound effect previews
+  are on the page, with the three Wave F3 picks and the full Chorus and Glasswright loops first. The sound effect previews
   use the cue levels without battle bus effects or distance.
 - The list has 80 SFX keeper IDs including the two Wave A extras. Godot plays 78. Asteroid scrape and shield raise remain
   catalogued but do not fire until their triggers are decided. Wreck settle stays as it is.
@@ -73,6 +73,15 @@ The prompts follow sections 2 to 8 of the [sound plan](../plans/cohesive_audio_v
 - The shipped F3 picks are `death_metal_crack_f3` t1, `ship_thruster_puff_f3` t1 and
   `wep_eclipse_gsentry_more_f3` t1. `mus_chorus_loop_a_test2` t1 is the Chorus battle pair. Its calm mix is all stems
   except drums, and its intense mix is the full song. `wire_gate3.py --chorus-music` adds both listening previews.
+- `glasswright_combo2` is the Glasswright battle pair (issue 2187). Ryan called it "perfect" on Nov 25, 2026 at
+  20:00 UTC. Source: `rcbailey12/voidsworn-relay`, `pc-out-m2combo2` at `85f97ef81729e9d3ee50dae1ebaf70c448bebab3`,
+  `m2combo2_stage/out_m2combo2/` (calm and full MP3s plus `combo2_check.txt`). It joins test5 bars 1 to 20 to
+  test6 bars 1 to 24 with a two-bar crossfade. Both mixes loop from zero on the same 42-bar grid at 88 BPM
+  (5,498,182 samples at 48 kHz, 114.545 s). The Glasswright row plays both complete mixes. Non-boss battles use
+  the same calm-to-full switch as the Chorus, while the old Glasswright bed stays for boss fights and faction previews.
+
+### Standalone Glasswright tests (before the keeper)
+
 - `M2_test5` stages only `mus_ithar_loop_a_test5`, a re-roll of test4 with its own receipt. Every take since test2 asked
   for a steady timpani pulse from bar 1, and because timpani are tuned drums that pulse is two pitches repeated for the
   whole loop and it lands outside the drums stem, which left test4's calm mix only 0.7 dB under the full mix. Test5
