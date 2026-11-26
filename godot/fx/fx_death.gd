@@ -3056,7 +3056,7 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 				s.hull.L * 0.05, s.hull.L * 0.02, 16, sv, 1.2)
 	# Layer 3: tight breach-mouth ignition ember and faction light when the flash counter permits.
 	if ignited:
-		fx.spr(p + n * s.hull.L * 0.02, fx.now, 0.20, core_col, 2.4, s.hull.L * 0.09, s.hull.L * 0.18, 19, inherited + n * s.hull.L * 0.15, 3.0)
+		fx.spr(p + n * s.hull.L * 0.02, fx.now, 0.20, core_col, 2.4, s.hull.L * 0.09, s.hull.L * 0.18, fx.HOT_FLECK_SPRITE, inherited + n * s.hull.L * 0.15, 3.0)
 		fx.light(p + n * s.hull.L * 0.06, fx.now, 0.10, 4.5, light_col, 0)
 	# Keep #2018 tear sparks intact; skip the old round fx_vent_cone dots.
 	tear_particles(fx, p, n, s.hull.L, inherited, true, s)
