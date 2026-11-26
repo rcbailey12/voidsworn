@@ -626,211 +626,211 @@
       ]
     },
     "matriarch": {
-      "pick": "Nine brood-chambers swell inside our hull, stirring whenever a warm reactor jumps into range.",
+      "pick": "Nine brood-chambers swell. The young stir when a warm reactor jumps near.",
       "sector": [
-        "Fresh thermal plumes across the dark. Open the nursery valves and let the young stir.",
-        "Denser metal fleets cross these lanes. Richer hulls, hotter cores, heavier clutches to grow.",
-        "Ardent's dead halo warms every brood-sac inside us. The surviving cores wait just ahead."
+        "Fresh heat on the dark. Open the nursery valves. Let the young stir.",
+        "Thicker hulls cross here. Hotter cores. Bigger clutches.",
+        "Ardent's dead halo warms our brood-sacs. The surviving cores are close."
       ],
       "start": [
-        "Release the broods. Crack the outer metal and carry the warm cores back to the sacs.",
-        "The young press hard against the membranes. Open the pores and let them feed.",
-        "Spread the spore swarms wide around their slow hulls until their shields fail.",
-        "Close slowly behind the broods; let our young peel their outer plating first."
+        "Loose the broods. Crack their plating. Bring the warm cores home.",
+        "The young press against our membranes. Open the pores. Let them feed.",
+        "Spread the young around those slow hulls. Feed when their shields fail.",
+        "Follow the young slowly. Let them peel the hot shells first."
       ],
       "boss": [
-        "Such a huge metal shell humming with reactor heat. Our young will peel it layer by layer.",
-        "A vast core sealed behind heavy bulkheads. Swarm its seams until the armor parts."
+        "That huge shell hums with heat. Our young will peel it layer by layer.",
+        "Deep heat behind thick bulkheads. Swarm the seams. Split the armor."
       ],
       "nemesis": [
-        "Your drive-burn reaches our pits, {rival}. You scorched brood-fields on your way here; now you feed the next.",
-        "Your thermal spike arrives, {rival}, and our chambers have hatched thicker shells for your guns."
+        "We taste your drive-burn, {rival}. You scorched our brood-fields. Feed the next clutch.",
+        "We taste your heat, {rival}. We hatched thicker shells for those guns."
       ],
       "kill_flag": [
-        "The great shell splits open. Swarm into the warm hull and waste nothing.",
-        "Their lead reactor cools into our sacs. Sweep the smaller hulls before they jump.",
-        "Massive alloy mass freed. Pull every surviving spore cluster onto the wreckage."
+        "The great shell cracks. Swarm the warm hull. Waste nothing.",
+        "Their lead core cools in our sacs. Catch the little hulls before they jump.",
+        "A feast of loose alloy. Bring every surviving spore to the wreck."
       ],
       "lost": [
-        "One brood-hull went cold. Reabsorb its spores and grow the next clutch thicker.",
-        "A sister hull ruptured into vacuum. Close the swarm tighter around the gap.",
-        "Our tissue cools on the flank. Feed faster to replace what tore."
+        "A brood-hull went cold. Take its spores back. Hatch thicker shells.",
+        "A sister hull burst into the cold. Close the brood around the gap.",
+        "Our flank tissue cools. Feed faster. Grow back what tore."
       ],
       "flag_hurt": [
-        "{flagship}'s outer chitin is torn open! Close the sacs and rush the ships cutting us!",
-        "Deep burns along {flagship}'s nurseries! Surge forward and silence their guns!",
-        "{flagship} bleeds warm ichor into space! Swarm their flagship before they fire again!"
+        "{flagship}'s chitin tears. Seal the sacs. Rush the burning guns!",
+        "{flagship}'s nurseries burn. Surge in. Silence those guns!",
+        "{flagship} spills warm ichor. Swarm their flagship before they fire again!"
       ],
       "command": [
-        "Every chamber, open at once! Flood the dark with young!",
-        "Spawning surge across all broods! Overwhelm their defenses together!",
-        "Empty the nursery sacs! Let the young swarm every hull on the plot!"
+        "Open all chambers at once. Flood the cold with young!",
+        "Every brood spawns now. Let the young eat through their defenses together!",
+        "Empty the warm nursery sacs. Swarm every hull we can see!"
       ],
       "win": [
-        "Our sacs grow heavy with refined metal and heat. The next brood hatches larger.",
-        "Nothing warm remains outside our hulls. Absorb the slag and drift onward.",
-        "Rich harvest across the debris field. Seal the chambers for the jump.",
-        "Every young swarm returns fed and heavier. Move deeper toward the cores."
+        "Our sacs are heavy with hot alloy. The next brood hatches larger.",
+        "Nothing warm outside our hulls. Swallow the slag. Drift on.",
+        "Rich pickings in the wreckage. Seal the warm chambers for the jump.",
+        "The young come home full and heavy. Follow the heat toward the cores."
       ],
       "loss": [
-        "Too many chambers torn cold. Drift dark, seal surviving spores, and wait for warmer prey.",
-        "The nurseries rupture under heavy fire. Scatter our spores into the dust belt."
+        "Too many chambers went cold. Seal the spores. Drift dark for warmer prey.",
+        "The nurseries burst under fire. Scatter our spores into the cold dust."
       ]
     },
     "razormaw": {
-      "pick": "We feel their engine burn across the grid. Turn into their wake and tear the sterns.",
+      "pick": "We taste their engine burn. Turn into the wake. Bite the sterns.",
       "sector": [
-        "Hot drive trails crossing this lane. We accelerate before they settle into formation.",
-        "Faster prey deeper in these lanes. Good; slow meat leaves weak shells.",
-        "The dead star's heat pulls every thruster sac redline. We tear through whoever stands ahead."
+        "Hot drive trails ahead. Close before they form up.",
+        "Prey moves faster here. Good. Slow meat has thin shells.",
+        "Dead-star heat drives our thruster sacs red. Tear through anything ahead."
       ],
       "start": [
-        "Burn straight for their slowest hull and strip its armor down to bare ribs.",
-        "Watch their turn vector, cut inside the arc, and bite straight through aft plating.",
-        "Push propulsion sacs past safe heat and slam into their flank before they form.",
-        "Don't circle at range. Close inside one hex and rip their engines open."
+        "Burn for the slowest hull. Strip its armor to bare ribs.",
+        "Taste the turn. Cut inside it. Bite through the aft plates.",
+        "Run the sacs too hot. Hit their flank before they form up.",
+        "Don't circle. Close inside one hex. Rip out the hot engines."
       ],
       "boss": [
-        "Massive target turning too slowly to guard its own tail. We slip behind it and tear.",
-        "Heavy shell, bright engines. Shred its rear plating before its big guns swing around."
+        "Too big to turn in time. Slip behind it. Bite through the tail.",
+        "Thick shell. Bright heat. Tear the stern before its guns swing around."
       ],
       "nemesis": [
-        "Your heat spike just hit our pits, {rival}. We're already cutting off your escape vector.",
-        "We've tracked how fast you run, {rival}. Won't outrun us this time."
+        "We taste your heat, {rival}. Your way out is already closing.",
+        "We know how fast your drives burn, {rival}. Not fast enough now."
       ],
       "kill_flag": [
-        "Their big shell broke apart. Strip the hot wreckage and chase the runners.",
-        "Lead hull torn clean in half! Surge onto the escorts before they jump!",
-        "Big reactor cooled fast. Keep burning while our sacs are hot."
+        "The big shell broke. Strip the hot wreck. Chase the runners.",
+        "Their lead hull split in two. Catch the escorts before they jump!",
+        "Their big core went cold. Our sacs are hot. Keep burning."
       ],
       "lost": [
-        "One hunter went cold. We close faster before they finish reloading.",
-        "A flank hull shattered. Turn harder into their fire and split their line.",
-        "Torn away on the burn. We bite deeper to answer."
+        "A hunter went cold. Close before they reload.",
+        "A flank hull shattered. Turn into the heat. Split their line.",
+        "Torn off at full burn. Bite deeper."
       ],
       "flag_hurt": [
-        "{flagship} bleeds ichor into vacuum, and the burn only drives our pulse faster!",
-        "Deep gashes across {flagship}'s spine! Keep accelerating straight into their guns!",
-        "{flagship}'s chitin cracks! Close the distance so our tendrils seal the gap!"
+        "{flagship} bleeds into the cold. The burn quickens our pulse!",
+        "{flagship}'s spine is gashed. Burn straight into their guns!",
+        "{flagship}'s chitin cracks. Close on the heat. Seal the gap with tendrils!"
       ],
       "command": [
-        "Full surge through every thruster sac! Close the gap and tear them apart!",
-        "Push every hunter past redline! Surround their flanks and shred them!",
-        "All broods, full burn! Let our speed break their targeting locks!"
+        "Every thruster sac at full burn. Close and tear!",
+        "Run every hunter red hot. Close around their flanks. Shred them!",
+        "All broods, full burn. Run too fast for their guns to lock!"
       ],
       "win": [
-        "Nothing left moving on the plot. Absorb the hot slag and move on.",
-        "Fast hunt, clean cuts, hot metal. Ready for the next jump.",
-        "Every runner caught and cracked. Drain the cores and drift dark.",
-        "Their formation collapsed before round four. Rich fuel for the next chase."
+        "Nothing moves. Swallow the hot slag. Move on.",
+        "Fast hunt. Clean cuts. Hot metal. Ready to jump.",
+        "We caught every runner. Drain the hot cores. Drift dark.",
+        "They broke before round four. Rich fuel for the next chase."
       ],
       "loss": [
-        "Our outer hunters are shredded. Scatter into the debris belt and regrow.",
-        "Too much fire on our lead cluster. Break dark before the rest cool."
+        "Our outer hunters tore. Scatter into the cold wreckage. Regrow.",
+        "Too much fire on the lead cluster. Break dark before the rest cool."
       ]
     },
     "mending": {
-      "pick": "Every breach in armor is an opening where living tissue takes hold and grows back thicker.",
+      "pick": "Armor splits. Warm tissue takes hold. The scar grows thicker.",
       "sector": [
-        "So many brittle metal fleets cracking under their own heat. We will knit them into us.",
-        "Heavier weapons wait in sector two, and every wound they carve hardens our outer hide.",
-        "Ardent's rim pulls our cells taut. Even the broken ships around the dead star can mend us."
+        "Brittle hulls crack in their own heat. Knit their metal into us.",
+        "Heavier guns in sector two. Each hot cut leaves a harder hide.",
+        "Ardent's rim pulls our cells taut. Its wrecks can feed our wounds."
       ],
       "start": [
-        "Advance gently through their fire. Every cut across our hide only thickens the scar.",
-        "Let them drain their batteries on our outer chitin while our tissues close the wounds.",
-        "Hold steady inside their range; metal ships bleed permanently while we grow whole.",
-        "Press close and let our regrowth outlast their ammunition."
+        "Move slowly through their fire. Each hot cut thickens the scar.",
+        "Let them empty their batteries on our chitin. Our warm wounds close.",
+        "Hold inside their range. Metal bleeds for good. We knit warm again.",
+        "Press close. Our warm flesh will outlast their ammunition."
       ],
       "boss": [
-        "Their flagship is rigid, bolted metal that cannot heal itself. We will soften every seam.",
-        "A vast dead shell held together by welds. Wear it down while we keep knitting."
+        "Cold bolted metal never heals. Soften each seam on their flagship.",
+        "A dead shell held by welds. Wear it down. Keep knitting warm."
       ],
       "nemesis": [
-        "You cut through our cousins to reach us, {rival}, and we grew back shaped around your guns.",
-        "Bringing the same sharp metal you used on our cousins, {rival}? Our scars already know how to seal it."
+        "You cut through our kin, {rival}. Our scars grew around your guns.",
+        "The same sharp metal, {rival}? Our scars know its heat. They'll seal."
       ],
       "kill_flag": [
-        "Their flagship splits along its bulkheads. Send tendrils into the breach and graft what holds.",
-        "Their command shell cannot mend. Pull its alloys into our outer ribs.",
-        "Big metal hull broken for good. Sweep the wounded escorts cleanly."
+        "Their flagship splits at the seams. Send in tendrils. Graft the warm pieces that hold.",
+        "Their command shell can't heal. Feed its alloy to our ribs.",
+        "Their big hull broke for good. Now strip the wounded escorts while they're warm."
       ],
       "lost": [
-        "One hull tore faster than tissue could knit. Draw its surviving cells back into us.",
-        "Lost a cluster to focused fire. Thicken the hides around our remaining hulls.",
-        "That break ran too deep. Absorb its minerals and keep advancing."
+        "One hull tore too fast to knit. Draw its warm cells back.",
+        "Their fire burned through one cluster. Thicken the hide on the rest.",
+        "That cut ran too deep. Swallow its minerals. Keep closing."
       ],
       "flag_hurt": [
-        "{flagship} is split down the spine! Flood the fractures with regrowth cells now!",
-        "Heavy burns across {flagship}'s hide! Keep the mending sacs pumping!",
-        "{flagship} tears open under fire! Draw fresh tissue over the breach immediately!"
+        "{flagship} splits down the spine. Flood the gaps with warm cells!",
+        "{flagship}'s hide burns. Keep the mending sacs pumping!",
+        "{flagship} tears under fire. Pull fresh warm tissue over the breach!"
       ],
       "command": [
-        "Surge every mending gland across the swarm! Close every wound at once!",
-        "Regrowth tide active! Seal the torn chitin and rebuild every crippled sac!",
-        "Flood the whole swarm with repair tissue! Nothing stays broken this round!"
+        "Open every mending gland. Seal every warm wound at once!",
+        "Regrowth floods the brood. Seal the chitin. Rebuild each torn sac!",
+        "Flood the swarm with warm tissue. Nothing stays broken this round!"
       ],
       "win": [
-        "All hulls knit whole, heavier with their alloys and heat. Onward.",
-        "They ran out of hull while our scars were already closing.",
-        "Clean assimilation. Every ship stronger than when the fight began.",
-        "The debris settles and our membranes shine intact. Ready to jump."
+        "Our hulls knit whole on hot alloy. Move on.",
+        "Their hulls ran out. Our scars were still warm and knitting.",
+        "A clean meal. Every hull grows back stronger.",
+        "The wreckage cools. Our membranes shine whole. Ready to jump."
       ],
       "loss": [
-        "Too much burned away at once; even our deepest tissue cannot bridge this gap.",
-        "Fire outpaced regrowth. Go dormant in the cold dust and wait."
+        "Too much burned away at once. Even deep tissue can't knit this gap.",
+        "Fire outran regrowth. Sleep in the cold dust. Wait."
       ]
     },
     "voice": {
-      "pick": "Under our acid glands, our makers still whisper star-coordinates from the vats where they grew us.",
+      "pick": "Under our bile sacs, we still hear old star coordinates. They come from the vats that grew us.",
       "sector": [
-        "Memory recognizes dead Fleshwright beacons here; Hunger only cares that warm hulls cross them.",
-        "Old Starwright relay noise ticks beneath the dust. Memory listens while our acid sacs swell.",
-        "Ardent's dead halo floods Memory with forgotten names, and Hunger opens every sac at once."
+        "Memory knows these dead Fleshwright beacons. Hunger tastes only passing warmth.",
+        "Old Starwright relays tick beneath the dust. Memory listens. Our bile sacs swell.",
+        "Ardent's cold halo fills Memory with old names. Hunger opens every sac at once."
       ],
       "start": [
-        "Open the bile sacs and wash their shields clean off the plating.",
-        "We know the alloy tolerances our makers taught us, and our acid dissolves every one.",
-        "Drench their forward armor first; once the seams blister, pour spines straight inside.",
-        "Memory maps their weapon arcs while our corrosive volleys strip their hulls bare."
+        "Open the bile sacs. Wash their shields off the plating.",
+        "Our makers taught us what alloy can take. Our acid eats it all.",
+        "Soak the bow plates in acid. When the seams blister, drive spines inside.",
+        "Memory maps their firing arcs. Our acid strips the hulls bare."
       ],
       "boss": [
-        "A proud reactor behind thick bulkheads. Drench the seams in corrosive spray until it vents.",
-        "Memory recognizes designs like that flagship; Hunger only wants to dissolve its bridge."
+        "A bright core behind thick bulkheads. Soak the seams until it vents heat.",
+        "Memory knows that flagship's shape. Hunger wants to melt its bridge."
       ],
       "nemesis": [
-        "Memory remembers faces like yours from before the fall, {rival}, yet Hunger dissolves you anyway.",
-        "Your hull codes echo inside our old maker logs, {rival}. Open the acid sacs."
+        "Memory knows faces like yours, {rival}. From before the fall. Hunger will melt you anyway.",
+        "Your hull codes echo in old maker logs, {rival}. Open the acid sacs."
       ],
       "kill_flag": [
-        "Their flagship softens and collapses inward. Drink the warm slurry before it freezes.",
-        "Command bulkheads dissolved cleanly. Wash the surviving escorts off the plot.",
-        "Acid reached their core. Absorb the hot soup and quiet the static."
+        "Their flagship softens and folds. Drink the warm slurry before it freezes.",
+        "The command bulkheads melted clean. Wash the remaining escorts off the plot.",
+        "Acid found the core. Drink the hot slurry. Quiet the static."
       ],
       "lost": [
-        "One acid hull burst silent. The rest open wider to answer.",
-        "A cluster silenced; Memory records the loss while Hunger surges harder.",
-        "Hull lost to heavy fire. Drown whoever fired in corrosive spray."
+        "An acid hull burst silent. Open the rest wider.",
+        "A cluster went cold. Memory marks the loss. Hunger surges harder.",
+        "Heavy fire took a hull. Drown whoever fired in bile."
       ],
       "flag_hurt": [
-        "{flagship} is ruptured and venting live bile! Turn the breach toward them and spray!",
-        "Heavy hits tearing {flagship}'s sacs! Answer with double corrosive volleys!",
-        "{flagship}'s outer skin blisters! Flood their bows before they fire again!"
+        "{flagship} splits and vents bile. Turn the breach on them. Spray!",
+        "Heavy hits tear {flagship}'s sacs. Answer with twice the bile!",
+        "{flagship}'s skin blisters. Flood their bows before they fire again!"
       ],
       "command": [
-        "Open every acid sac across the swarm and drown their formation!",
-        "All clusters, discharge together! Dissolve their shields and plating in one wash!",
-        "Spitting volley across every hull! Let nothing stay sealed!"
+        "Open every acid sac. Drown their line.",
+        "All clusters, spit together. Melt shields and plating in one wash!",
+        "Every hull spits now. Let bile find every seam!"
       ],
       "win": [
-        "Hull metal dissolved, heat absorbed, and Memory quiets for another hour.",
-        "Nothing left but cooling slurry and silence across the jump lane.",
-        "Every alloy stripped clean. Memory dims while the swarm grows full.",
-        "Clean melt. Gather the dissolved metals and move toward Ardent."
+        "The hulls melted. We took the heat. Memory quiets for another hour.",
+        "Only cooling slurry in the jump lane. Not a sound.",
+        "We stripped every alloy clean. Memory dims. The swarm feeds full.",
+        "A clean melt. Gather the warm metals. Move toward Ardent."
       ],
       "loss": [
-        "The sacs seal shut and the voices recede into the cold. We surface elsewhere.",
-        "Too much burned clean away. Drift quiet until Memory wakes a new cluster."
+        "The sacs shut. Voices sink into the cold. We surface elsewhere.",
+        "Too much burned away. Drift quiet until Memory wakes a new cluster."
       ]
     },
     "aelith": {
@@ -1289,15 +1289,15 @@
       ]
     },
     "chorus": {
-      "boss_hail": "Your reactors burn bright against the cold. Memory knows your hull-shapes; Hunger wants the heat inside.",
-      "boss_down": "Primary core ruptured... pull surviving spores back into the dark...",
+      "boss_hail": "We taste your reactors in the cold. Memory knows your shapes. Hunger wants what's hot inside.",
+      "boss_down": "The main core burst. Pull the spores back into the cold.",
       "boss_hail_pool": [
-        "Your reactors burn bright against the cold. Memory knows your hull-shapes; Hunger wants the heat inside.",
-        "Warm metal sliding straight into our feeding pocket. Open every brood-sac!"
+        "We taste your reactors in the cold. Memory knows your shapes. Hunger wants what's hot inside.",
+        "Warm metal in our feeding pocket. Open every brood-sac!"
       ],
       "boss_down_pool": [
-        "Primary core ruptured... pull surviving spores back into the dark...",
-        "Central cluster cooling... other broods will finish the hunt..."
+        "The main core burst. Pull the spores back into the cold.",
+        "The central cluster cools. Other broods will finish the hunt."
       ]
     },
     "ithar": {

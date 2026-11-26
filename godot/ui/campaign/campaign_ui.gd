@@ -2417,7 +2417,7 @@ func _end_detail_body(d: Dictionary, section: String) -> Control:
 		v.add_child(lbl(_story_text(), 18, _story_col()))
 		var payoff: String = C.beat3Payoff(R)
 		if payoff != "": v.add_child(lbl(payoff, 18, GS.TEXT))
-		if C.jt(R.get("eatenCore")) and C.PATRONS.has(R["eatenCore"]): v.add_child(lbl("The swarm ate " + str(C.PATRONS[R["eatenCore"]]["n"]) + ".", 18, GS.TEXT2))
+		if C.jt(R.get("eatenCore")) and C.PATRONS.has(R["eatenCore"]): v.add_child(lbl("The swarm ate " + str(C.PATRONS[R["eatenCore"]]["n"]) + ". Its heat stays with us.", 18, GS.TEXT2))
 		if first: v.add_child(lbl("Your first expedition did not reach the rim, and Vesper always knew it might take more than one push. Every credit of renown, every admiral XP point, and every enemy weakness you exposed carries straight into the next fleet." if crusade else "Your fleet fell short, though the effort stays with you. Keep the renown you earned, the admiral XP you banked, and the tactical weaknesses you uncovered, and take a sharper build into the next run.", 18, GS.TEXT))
 		if victory:
 			var wf = []
@@ -2459,7 +2459,7 @@ func _lineage(id) -> Control:
 	var v = vbox(12); var tree = C.LINEAGE_TREES[id]; var build = C.lineageBuild(id); var nodes = C.lineageNodes(id); var level = C.masteryLevel(id)
 	v.add_child(Kit.section("Lineage", k))
 	v.add_child(Kit.heading(str(C.ADMIRALS[id]["n"]), 44, k))
-	var _lin_lead: String = {"voidsworn": "Chalked into Vesper's fleet doctrine.", "hegemony": "Logged into Meridian command doctrine.", "corsair": "Passed down through the Ashfall dens.", "chorus": "Encoded into the next brood's neural sacs.", "ithar": "Recorded in optical glass.", "deathless": "Committed permanently to the Archive."}.get(str(C.ADMIRALS[id].get("fac", "")), "Recorded in fleet doctrine.")
+	var _lin_lead: String = {"voidsworn": "Chalked into Vesper's fleet doctrine.", "hegemony": "Logged into Meridian command doctrine.", "corsair": "Passed down through the Ashfall dens.", "chorus": "The next brood keeps the taste in its neural sacs.", "ithar": "Recorded in optical glass.", "deathless": "Committed permanently to the Archive."}.get(str(C.ADMIRALS[id].get("fac", "")), "Recorded in fleet doctrine.")
 	v.add_child(lbl(_lin_lead + " Pick one branch skill at levels 5, 6, and 7; its partner locks until you reset this line.", 17, BONE2))
 	v.add_child(_mastery_bar(id))
 	v.add_child(lbl(str(maxi(0, mini(3, level - 4) - build["picks"].size())) + " branch picks ready. Capstone at level 8 (230 XP).", 17, BONE2))
@@ -2609,7 +2609,7 @@ func _modal(md: Dictionary) -> void:
 				var lost := PackedStringArray()
 				var survivors := PackedStringArray()
 				var escape_line: String = {
-					"chorus": "Captain %s survived in a detached spore-node.",
+					"chorus": "Captain %s survived in a warm, detached spore-node.",
 					"deathless": "Captain %s streamed their backup clear before hull loss."
 				}.get(str(R["fac"]), "Captain %s escaped, wounded.")
 				for loss in sm["lost"]:
@@ -2703,7 +2703,7 @@ func _modal(md: Dictionary) -> void:
 				abtn("Decline: take " + C.numstr(d.get("declineCred", 0)) + " credits", "boonDecline", "", false, false, acts)]))
 		"eatCore":
 			h2.call("The swarm hungers.")
-			p.call("A core you have not synced with lies within reach. Eat one now, or refuse.", BONE2)
+			p.call("We taste heat close by. These cores are not synced with us. Eat one, or leave them.", BONE2)
 			for core in d["cores"]:
 				var P = C.PATRONS[core]; var pc = Color(P["col"])
 				add(v, choice("Eat " + str(P["n"]), "every ship +10% hull for this run; lose its protocols for this run", "eatCore", core, acts, pc, str(P["glyph"])))

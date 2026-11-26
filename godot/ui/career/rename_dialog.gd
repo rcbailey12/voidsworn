@@ -123,7 +123,7 @@ func _build(name_text: String) -> void:
 		"voidsworn": "This hull leads the push toward the Hollow Sun. Your crews are chalking its name along the flank plating before jump.",
 		"hegemony": "Your command vessel anchors every synchronized volley this campaign. Confirm its official Directorate designation before departure.",
 		"corsair": "Every pack in the belt will know this flagship by its transponder and bow plate. Stamp the name you want them cursing.",
-		"chorus": "This primary brood-hull guides the swarm's thermal pulse across the dark. Set the designation Memory keeps for it.",
+		"chorus": "This brood-hull leads our heat through the dark. Give Memory its name.",
 		"ithar": "Your flagship carries your family's optical standard toward Ardent. Confirm the name etched into its forward crystal spine.",
 		"deathless": "This chassis anchors the Homecoming and holds your command uplink. Register its vessel name in the Archive."
 	}
