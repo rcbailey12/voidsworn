@@ -656,3 +656,89 @@ giving a 5.417 ms ceiling. GPU deltas are also reported against a fresh matching
 round-2 control, with a 0.300 ms allowance at each resolution. The unchanged
 12.5 ms #207 scene gate remains binding. REPORT.md records measured results;
 neither these tools nor their pictures replace the accepted look-bench baseline.
+
+## 20. Sprite kind and wound style ids (issue 2148)
+
+`SPR_*` in `fx_shaders.gd` and `S_*` in `fx_breach.gd` hold the numbers. Use
+those constants in GDScript emitters and tests. Keep the shader selectors in
+step, including pixel floors, pool routing and any separate masks that read the
+same id. Register a new id here and in its script before using it. The headless
+FX id check rejects duplicate ids within either namespace and keeps this table
+in step with both scripts. It also flags bare sprite selectors that have no
+registered id. Streak, ring, ribbon, breach geometry and shield ids are
+separate and are not listed here.
+
+The rows marked reserved do not add shader paths. For new sprites, use exact
+ids or bounded ranges so one PR's shader cannot pick up another PR's kinds.
+Sprite slots 6, 9, 10 and 30 to 37 are unassigned. Leave 30 to 37 empty while
+the old branch numbers are being replaced. Do not renumber a merged id.
+
+<!-- fx-ids:begin -->
+| Namespace | ID | Constant | Owner |
+| --- | --- | --- | --- |
+| Sprite kind | 0 | `SPR_FLASH` | G4 sprites (5f81ddb16) |
+| Sprite kind | 1 | `SPR_FLAME` | G4 sprites (5f81ddb16) |
+| Sprite kind | 2 | `SPR_FIREBALL_CORE` | G4 sprites (5f81ddb16) |
+| Sprite kind | 3 | `SPR_SMOKE` | G4 sprites (5f81ddb16) |
+| Sprite kind | 4 | `SPR_ENGINE_CORE` | G4 sprites (5f81ddb16) |
+| Sprite kind | 5 | `SPR_SQUIB` | G4 sprites (5f81ddb16) |
+| Sprite kind | 7 | `SPR_VENT_GAS` | G4 sprites (5f81ddb16) |
+| Sprite kind | 8 | `SPR_SOOT` | G4 sprites (5f81ddb16) |
+| Sprite kind | 11 | `SPR_SPUTTERING_CORE` | G4 sprites (5f81ddb16) |
+| Sprite kind | 12 | `SPR_BEAM_CHARGE` | G4 sprites (5f81ddb16) |
+| Sprite kind | 13 | `SPR_BEAM_IMPACT` | G4 sprites (5f81ddb16) |
+| Sprite kind | 14 | `SPR_PLASMA_BOLT` | G4 sprites (5f81ddb16) |
+| Sprite kind | 15 | `SPR_BIO_GLOB` | G4 sprites (5f81ddb16) |
+| Sprite kind | 16 | `SPR_PRISM_GLINT` | G4 sprites (5f81ddb16) |
+| Sprite kind | 17 | `SPR_STAR_BALL` | G4 sprites (5f81ddb16) |
+| Sprite kind | 18 | `SPR_SOFT_LIFT` | G4 sprites (5f81ddb16) |
+| Sprite kind | 19 | `SPR_EMBER` | G4 sprites (5f81ddb16) |
+| Sprite kind | 20 | `SPR_ACID_FUME` | G4 sprites (5f81ddb16) |
+| Sprite kind | 21 | `SPR_HEAT_GLOW` | G4 sprites (5f81ddb16) |
+| Sprite kind | 22 | `SPR_COIL_GLOW` | G4 sprites (5f81ddb16) |
+| Sprite kind | 23 | `SPR_CRAFT` | G4 sprites (5f81ddb16) |
+| Sprite kind | 24 | `SPR_DEATH_CORE` | Destruction round 3 (8a6e6b98c) |
+| Sprite kind | 25 | `SPR_DEATH_FIRE` | Destruction round 3 (8a6e6b98c) |
+| Sprite kind | 26 | `SPR_FACTION_PLASMA_FIRE` | Hits pass 2 (issue #538) |
+| Sprite kind | 27 | `SPR_HIT_GAS` | Hits pass 2 (issue #538) |
+| Sprite kind | 28 | `SPR_PALETTE_EMBER` | Reserved, faction palette embers and spores (PR #2007) |
+| Sprite kind | 29 | `SPR_BIO_CONTACT_GLOB` | Reserved, wet contact glob (PR #2021) |
+| Sprite kind | 38 | `SPR_BOLT_PLASMA` | Reserved, layered ordnance (PR #2133) |
+| Sprite kind | 39 | `SPR_BOLT_BIO` | Reserved, layered ordnance (PR #2133) |
+| Sprite kind | 40 | `SPR_BOLT_BOMB` | Reserved, layered ordnance (PR #2133) |
+| Sprite kind | 41 | `SPR_MUZZLE_BALLISTIC` | Reserved, layered muzzles (PR #2133) |
+| Sprite kind | 42 | `SPR_MUZZLE_ENERGY` | Reserved, layered muzzles (PR #2133) |
+| Sprite kind | 43 | `SPR_MUZZLE_CRYSTAL` | Reserved, layered muzzles (PR #2133) |
+| Sprite kind | 44 | `SPR_MUZZLE_BIO` | Reserved, layered muzzles (PR #2133) |
+| Sprite kind | 45 | `SPR_ROCKET_SMOKE` | Reserved, layered ordnance (PR #2133) |
+| Sprite kind | 46 | `SPR_TICK_EMBER` | Reserved, status ticks (PR #2132) |
+| Sprite kind | 47 | `SPR_TICK_DROPLET` | Reserved, status ticks (PR #2132) |
+| Sprite kind | 48 | `SPR_RUPTURE_JET` | Reserved, small-death bow vent (PR #2084) |
+| Sprite kind | 49 | `SPR_NOVA_LEGACY` | Reserved, legacy Nova shell (PR #2069) |
+| Wound style | 0 | `S_BREACH` | G4 hull marks (28de0a9c4) |
+| Wound style | 1 | `S_BURN` | G4 hull marks (28de0a9c4) |
+| Wound style | 2 | `S_SHELL` | G4 hull marks (28de0a9c4) |
+| Wound style | 3 | `S_PLASMA` | G4 hull marks (28de0a9c4) |
+| Wound style | 4 | `S_GAUSS_IN` | G4 hull marks (28de0a9c4) |
+| Wound style | 5 | `S_GAUSS_OUT` | G4 hull marks (28de0a9c4) |
+| Wound style | 6 | `S_BLAST` | G4 hull marks (28de0a9c4) |
+| Wound style | 7 | `S_FLAK` | G4 hull marks (28de0a9c4) |
+| Wound style | 8 | `S_ACID` | G4 hull marks (28de0a9c4) |
+| Wound style | 9 | `S_ION` | G4 hull marks (28de0a9c4) |
+| Wound style | 10 | `S_RAM` | G4 hull marks (28de0a9c4) |
+| Wound style | 11 | `S_HATCH` | G4 hull marks (28de0a9c4) |
+| Wound style | 12 | `S_DENT` | G4 hull marks (28de0a9c4) |
+| Wound style | 13 | `S_SCORCH` | G4 hull marks (28de0a9c4) |
+| Wound style | 14 | `S_PATCH` | Staged surface damage (issue #66) |
+| Wound style | 15 | `S_FISSURE` | Staged surface damage (issue #66) |
+| Wound style | 16 | `S_PRISM` | Wounds V2 (PR #1755) |
+| Wound style | 17 | `S_STAR` | Wounds V2 (PR #1755) |
+| Wound style | 18 | `S_NLANCE` | Wounds V2 (PR #1755) |
+| Wound style | 19 | `S_NULL_BURN` | Reserved, layered null beam trench (PR #2136) |
+<!-- fx-ids:end -->
+
+Bio spark handoff for PRs #2049 and #2021: use #2049's `_vent` argument tail
+`src = null, hull_contact := false, with_sparks := true`. Hull contact and
+spark permission are independent. PR #2021 passes `Tg, true, false` for the
+wet pressure puff. Its bio critical hits keep their feel beat without a
+generic hot impact or metal fragments. PR #2049 takes no sprite or wound id.

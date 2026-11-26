@@ -349,6 +349,50 @@ void process() {
 const TICK_EMBER := 38
 const TICK_DROPLET := 39
 const VENT_JET := 40
+
+# Camera-facing sprite ids. See API.md section 20 for owners and reserved slots.
+const SPR_FLASH := 0
+const SPR_FLAME := 1
+const SPR_FIREBALL_CORE := 2
+const SPR_SMOKE := 3
+const SPR_ENGINE_CORE := 4
+const SPR_SQUIB := 5
+const SPR_VENT_GAS := 7
+const SPR_SOOT := 8
+const SPR_SPUTTERING_CORE := 11
+const SPR_BEAM_CHARGE := 12
+const SPR_BEAM_IMPACT := 13
+const SPR_PLASMA_BOLT := 14
+const SPR_BIO_GLOB := 15
+const SPR_PRISM_GLINT := 16
+const SPR_STAR_BALL := 17
+const SPR_SOFT_LIFT := 18
+const SPR_EMBER := 19
+const SPR_ACID_FUME := 20
+const SPR_HEAT_GLOW := 21
+const SPR_COIL_GLOW := 22
+const SPR_CRAFT := 23
+const SPR_DEATH_CORE := 24
+const SPR_DEATH_FIRE := 25
+const SPR_FACTION_PLASMA_FIRE := 26
+const SPR_HIT_GAS := 27
+
+# Reserved only. These do not add shader branches or emitters.
+const SPR_PALETTE_EMBER := 28
+const SPR_BIO_CONTACT_GLOB := 29
+const SPR_BOLT_PLASMA := 38
+const SPR_BOLT_BIO := 39
+const SPR_BOLT_BOMB := 40
+const SPR_MUZZLE_BALLISTIC := 41
+const SPR_MUZZLE_ENERGY := 42
+const SPR_MUZZLE_CRYSTAL := 43
+const SPR_MUZZLE_BIO := 44
+const SPR_ROCKET_SMOKE := 45
+const SPR_TICK_EMBER := 46
+const SPR_TICK_DROPLET := 47
+const SPR_RUPTURE_JET := 48
+const SPR_NOVA_LEGACY := 49
+
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
 
