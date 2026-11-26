@@ -214,11 +214,12 @@ const OUTLINE_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 """ + HULL_MASK + """
+uniform float cut_overlay_alpha = 1.0;
 varying vec4 vcol;
 void vertex() { vcol = COLOR; }
 void fragment() {
 	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
-	ALBEDO = vcol.rgb * vcol.a;
+	ALBEDO = vcol.rgb * vcol.a * cut_overlay_alpha;
 	ALPHA = 1.0;
 }
 """
@@ -298,6 +299,7 @@ func build(rules, slice := false) -> void:
 	outline.name = "ReachOutline"
 	var om := ShaderMaterial.new()
 	om.shader = SHADER_CACHE.for_code(OUTLINE_SHADER)
+	om.set_shader_parameter("cut_overlay_alpha", cut_overlay_alpha)
 	outline.material_override = om
 	outline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(outline)
@@ -626,7 +628,7 @@ func set_cut_overlay_alpha(alpha: float) -> void:
 	if alpha == cut_overlay_alpha:
 		return
 	cut_overlay_alpha = alpha
-	for mesh in [fills, rings, edges, gas_edges, hazard_edges, solid_edges, cover_edges, _hover_shown, arrival_edge, reach_edge]:
+	for mesh in [fills, rings, edges, gas_edges, hazard_edges, solid_edges, cover_edges, _hover_shown, arrival_edge, reach_edge, outline]:
 		if is_instance_valid(mesh):
 			(mesh.material_override as ShaderMaterial).set_shader_parameter("cut_overlay_alpha", alpha)
 	if is_instance_valid(blocker_highlights):

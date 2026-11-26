@@ -4335,14 +4335,19 @@ static func _core_flash_inner(fx, p: Vector3, R: float, px: float, tint: Color, 
 	# Pixel targets, normal/soft life, then normal/soft size calibration including the battle look's bloom.
 	var row: Array = {"small": [CORE_FLASH_PX["small"], 0.18, 0.55, 2.45, 0.884], "destroyer": [CORE_FLASH_PX["destroyer"], 0.19, 0.575, 2.31, 0.9175], "cruiser": [CORE_FLASH_PX["cruiser"], 0.20, 0.60, 1.97, 0.96], "capital": [CORE_FLASH_PX["capital"], 0.22, 0.65, 1.37, 0.96]}[band]
 	if staged: px = float(row[0])
-	var allowed: bool = fx.flash_ok(fx.now, p, px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, px, float(row[1]))
+	# The staged shader divides the quad by the bright divisor and then floors it to CORE_READ_PX; express that
+	# floor back in pre-divisor units so flash_ok books the bright diameter the bloom actually draws, not a smaller one.
+	var booked_px: float = px
+	if staged:
+		booked_px = maxf(px, float(CORE_READ_PX[band]) * float(row[3]))
+	var allowed: bool = fx.flash_ok(fx.now, p, booked_px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, booked_px, float(row[1]))
 	if staged:
 		var soft: bool = fx.reduce_flashing or not allowed
 		var life: float = float(row[2] if soft else row[1])
 		var divisor: float = float(row[4] if soft else row[3])
 		var flash := flipbook(fx, p, Vector3.UP, 0.0, "flash", life, Vector3.ZERO, 1.25 if soft else 6.0, band, src, false, true, frame)
 		var mat := flash.material_override as ShaderMaterial
-		# The approved counted diameter above already bounds this floor, including room for bloom.
+		# The booked diameter above now counts the floored floor, with room for bloom.
 		mat.set_shader_parameter("min_pixels", px)
 		mat.set_shader_parameter("read_pixels", CORE_READ_PX[band])
 		mat.set_shader_parameter("extent", px * STAGING_UNITS_PER_PIXEL)
