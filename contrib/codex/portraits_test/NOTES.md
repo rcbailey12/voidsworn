@@ -1,0 +1,28 @@
+# Admiral portrait test
+
+Tool used: Codex built-in ImageGen (`image_gen`). Both portraits are native 1254 × 1254 PNGs. The tool calls used text prompts alone and required no API key or paid API call.
+
+I reviewed Neon's run 2 contact sheet and its Grax and Nekhet images at `cc683e37` for faction appearance. The prompts follow the Sable and Anuket entries in the run 3 brief at that revision.
+
+## Sable the Smiling Knife (`sable`)
+
+Create one 1024 by 1024 square, full-bleed PNG game portrait of Sable the Smiling Knife, an Ashfall Hullbreaker ambush admiral. Grounded, realistic painterly dark sci-fi concept art. Tangible surfaces, selective sharp detail on the subject, soft depth aboard a real working ship. Place the face near center, readable in a tight square card crop, and keep the outer edges clean. No frame, border, writing, numbers, watermark or holographic UI. Create the scene from this text alone.
+
+Look slightly down in a tight three-quarter view over the near corner of a shadowed listening console. Sable is very low and diagonally coiled close to the deck, with her massive shoulders held down, head craned forward and tipped a little as if she has just heard a wake nobody else can detect. Angle her head just enough for all four eyes to be plainly visible. A massive clawed hand rests quietly beside the console, open and loose, touching no controls. The posture is a silent ambush hunter's, with the weight in the sloping shoulder hump and thick forearms.
+
+Give her exactly four small distinct eyes in one horizontal row across a single brow, two to either side of the middle, never two rows. The heat-sensing pits beside the eyes are dark and unlit. Her bare, short, blunt face has overlapping dull horn plates grown from dark leathery hide, no fur on the face, no snout or projecting nose, no metal mask or helmet. Show a clear vertical split through the middle of the lower jaw and chin. The two separate tooth-lined lower jaw halves part slightly sideways in a quiet hunting smile. Give her a sleek coarse black mane on the hump, neck and shoulders only, protective ridges on the back and thick clawed forearms. Keep the body heavy-gravity alien, without a human bodybuilder torso or a recognizable bear, wolf or reptile face.
+
+She wears a dark bolted leather-and-iron void harness with exactly one trophy, a flat matte dark stripped sensor-array housing bolted onto one strap. A small scrap-tooth ring enclosing three claw slashes is gouged into a background bulkhead. Use soot black, dark salvaged grey metal, restrained brick rust and dried-blood red. The location is the cramped forward nose listening bridge of a Pack Hunter cruiser, with close curved soot-black bulkhead ribs, passive acoustic-dish cables and tiny crimson wake-tracker scope dials. A single low deep-crimson glow from the scope at lower left grazes her eyes, horn and split chin. Hold near-black deck shadows and keep the anatomy readable. No overhead lamp, vivid haze, shiny plastic, cel-shading, tusks, dreadlocks, skulls, bones, chains, cages, crystals or chalky white patches.
+
+## Ostrel of the Long Copy (`anuket`)
+
+Create one 1024 by 1024 square, full-bleed PNG game portrait of Ostrel of the Long Copy (anuket), an Eclipse reconnaissance admiral. Grounded, realistic painterly dark sci-fi concept art with tactile matte precision-machined alloy, restrained detail, dramatic directional light and soft background depth. Center the mind-core for a tight square card crop and leave clean dark outer margins. No frame, border, writing, numbers, watermark or holographic UI. Create the scene from this text alone.
+
+The entire admiral is one small transportable mind-core. Give it a compact, narrow, horizontal faceted prism-spindle silhouette, tapered at both ends and slightly canted in its slim deck-rail cradle, about the size of a small equipment chest that two small drones could carry. Show the entire core, its two practical quick-release lock pins and inset machined transport handles, and how the cradle clamps it directly to the ship's deck rails. It must read as a detachable piece of shipboard machinery with a mind inside it. Wrap it in overlapping, sharply angled light-baffle sunshade plates of matte violet-black alloy. The dead-even recessed panel seams have small pale-violet worn bevels. Add one faint, small etched Eclipse crest on a flank panel, a black disk inside a thin pale white-gold ring. The crest is a flat maker's mark and gives off no light.
+
+Shoot from a tight high diagonal three-quarter angle, looking slightly down along the spindle and deck rail. The surrounding conduits give it real equipment scale. It sits inside a cramped, unlit fold-drive spar corridor aboard an Eclipse scout. Close curved violet-black bulkhead ribs, a dark octagonal maintenance hatch receding behind, and a hexagonal floor grate below establish the compartment. Extreme stealth chiaroscuro. The only light is a whisper-thin white-gold optical slit running lengthwise along one upper bevel and the faintest cold violet bleeding upward through the distant floor grate. Make the body of the machine subdued but readable at card size, with no blown highlights or haze. No green anywhere. No person, humanoid silhouette, head, face, eyes, mouth, limbs, armor shaped for a body, skull, bones, ornament, rust, soot, flames, smoke, circular core, portal or room-filling vortex.
+
+## Visual check
+
+- Sable's body and console are angled, while her face is closer to front-on so all four eyes are visible. The jaw split is clear and the sideways opening is slight.
+- Anuket's spindle is fully visible in the square, with the tips close to the side edges. A tighter crop can clip the tips while retaining the optical slit, handles and cradle.

@@ -10,6 +10,8 @@ const SV := preload("res://render/ship_view.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 const TP := preload("res://fx/thrust_profile.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
+const FX := preload("res://fx/fx.gd")
+const FX_SHIP := preload("res://fx/fx_ship.gd")
 
 var failures := 0
 var checks := 0
@@ -25,6 +27,57 @@ func _check(ok: bool, msg: String) -> void:
 	if not ok:
 		failures += 1
 		printerr("FAIL: " + msg)
+
+
+func _live_jet(view: SV) -> MeshInstance3D:
+	# The emitter skips allocations in headless, so attach the same live jet and its regular puff entry.
+	var jet := SV.build_rcs_jet("voidsworn", Vector3.RIGHT, 2.0, 0.4, 1.1, 0.8, 0.5)
+	jet.top_level = true
+	view.add_child(jet)
+	view.puffs.append({"n": jet, "rcs": true, "t": 0.0, "life": 0.35,
+		"local_at": Vector3.ZERO, "local_dir": Vector3.RIGHT})
+	return jet
+
+
+func _death_and_warmup(world: Node3D, view: SV) -> void:
+	view.ring = MeshInstance3D.new()
+	view.add_child(view.ring)
+	view.hull = Node3D.new()
+	view.add_child(view.hull)
+	var jet := _live_jet(view)
+	var ship := FX_SHIP.new()
+	ship.root = view
+	ship.hide_live_hull()
+	_check(view.visible and view.puffs.is_empty() and not jet.visible and jet.is_queued_for_deletion(),
+		"M3: hiding a broken hull removes its top-level jet before the next draw")
+	await process_frame
+	view.puffs.clear()
+	jet = _live_jet(view)
+	view.die(true)
+	_check(view.visible and view.puffs.is_empty() and not jet.visible and jet.is_queued_for_deletion(),
+		"M3: the fallback wreck never keeps a live jet")
+	view.dead = false
+	await process_frame
+	view.puffs.clear()
+	jet = _live_jet(view)
+	view.dead = true
+	_check(view.puffs.is_empty() and not jet.visible and jet.is_queued_for_deletion(),
+		"M3: direct battle death flags clear the live jet immediately")
+
+	var cam := Camera3D.new()
+	world.add_child(cam)
+	var fx := FX.new()
+	fx.manual = true
+	world.add_child(fx)
+	fx.setup({"quality": "low", "seed": 2214, "camera": cam})
+	await fx.warmup(cam, 0)
+	var warm := fx.get_node_or_null("fx_warmup")
+	var jet_meshes: Array[Mesh] = []
+	if warm != null:
+		for node in warm.get_children():
+			if node is MeshInstance3D and node.material_override is ShaderMaterial and node.material_override.shader.code == SH.RCS_JET:
+				jet_meshes.append(node.mesh)
+	_check(jet_meshes == [SV._rcs_quad_mesh()], "M3: warmup submits the live indexed RCS mesh, not a BoxMesh")
 
 
 func _run() -> void:
@@ -133,10 +186,12 @@ func _run() -> void:
 		"cone jet direction rotates with the hull via instance uniform")
 	sv._puffs_step(0.35)
 	_check(sv.puffs.is_empty(), "cone jets free cleanly once their quick fade finishes")
+	await _death_and_warmup(world, sv)
 
 	world.queue_free()
 	await process_frame
 	kind_mats.clear()
+	FX.clear_static()
 	var mesh_ref := weakref(SV._rcs_quad_mesh())
 	var mat_ref := weakref(SV._rcs_jet_mat(0))
 	SV.clear_static()
