@@ -31,6 +31,7 @@ const WING := preload("res://render/squadron_wing.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const THORN := preload("res://fx/fx_acid_thorn.gd")   # issue 1877: Acid Thorns, the Chorus close-in weapon
+const SPECIAL := preload("res://fx/fx_special.gd")
 
 const LOOK_BY_ID := {
 	"battery": "macro", "hbattery": "macro", "autocannon": "auto", "turret": "las", "laser": "plasma_cannon", "turbo": "plasma",
@@ -2938,16 +2939,19 @@ static func launch(fx, cid: String, sid: String) -> void:
 		C.hull.door_cycle(int(bay["bay"]), T, T + 0.3 + 5 * 0.25 + 0.35)
 	var from: Vector3 = C.to_world(bay["p"])
 	var to: Vector3 = S.to_world(S.hull.core) if S != null else from + C.dir_world(Vector3(1, 0, 0)) * 20.0
-	var eng: Color = C.fac["engine"]
 	var k: float = C.scale_k()
-	fx.spr(from, T, 0.8, eng, 1.5, 1.0 * k, 2.5 * k, 18)
-	fx.light(from, T, 1.0, 3.0, eng, 1)
+	var axis := (to - from).normalized()
+	var normal: Vector3 = C.dir_world(bay["n"])
+	if axis == Vector3.ZERO:
+		axis = normal
+	SPECIAL.bay(fx, C, from, normal, axis, T)
 	for i in 6:
 		var t0 = T + 0.3 + i * 0.25
 		var d = (to - from)
 		var life = maxf(d.length() / 60.0, 0.05)
 		var kind: String = str(S.root.get("squad_kind")) if S != null and S.root.get("squad_kind") != null else CRAFT.DEFAULT_KIND.get(C.faction, "fighter")
 		var off := Vector3(0, (i % 2) * 0.3, (i % 3 - 1) * 0.65)
+		SPECIAL.bay_ignite(fx, C.faction, from + off, axis, t0, k)
 		_craft_run(fx, C.faction, kind, from + off, to + off, t0, life, 2.4)
 
 
