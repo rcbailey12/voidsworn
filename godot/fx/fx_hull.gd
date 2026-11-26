@@ -182,18 +182,16 @@ float fx_scorch_at(vec3 p) {
 	for (int i = 0; i < 8; i++) {
 		if (i >= fx_scorch_count) { break; }
 		float R = max(fx_scorch[i].w, 0.0001);
-		vec3 q = (p - fx_scorch[i].xyz) / R;
+		vec3 d = p - fx_scorch[i].xyz;
+		// The three wobble terms can move the stain out by at most 0.37 R.
+		if (dot(d, d) >= (1.38 * R) * (1.38 * R)) { continue; }
+		vec3 q = d / R;
 		float wob = 0.20 * sin(dot(q, vec3(7.1, 3.3, 5.9))) + 0.12 * sin(dot(q, vec3(-4.3, 13.7, 9.1))) + 0.10 * (burnt_hash(floor(q * 14.0)) - 0.5);
 		s = max(s, 1.0 - smoothstep(0.2, 1.0, length(q) + wob));
 	}
 	return s;
 }
-float fx_mouth_edge(int i, vec3 p) {
-	vec3 d = p - fx_mouths[i].xyz;
-	vec3 n = fx_axes[i].xyz;
-	float R = max(fx_mouths[i].w, 0.0001);
-	float x = dot(d, fx_tangents[i].xyz);
-	float y = dot(d, cross(n, fx_tangents[i].xyz));
+float fx_mouth_edge(int i, float x, float y, float R) {
 	vec4 s = fx_shapes[i];
 	if (s.x > 3.5) {
 		// R416: a straight-edged glass pane (fx_tears.w sides, turned by fx_tears.x), as fx_breach Ent.edge
@@ -368,6 +366,7 @@ static func set_wear(mat: ShaderMaterial, wear: float, patches: Array) -> void:
 static func set_v2(mat: ShaderMaterial, wv: Dictionary) -> void:
 	if wv.is_empty():
 		mat.set_shader_parameter("fx_v2", -1)
+		mat.set_shader_parameter("fx_v2_soot", 1.0)
 		return
 	mat.set_shader_parameter("fx_v2", int(wv.get("kind", 0)))
 	mat.set_shader_parameter("fx_v2_soot", float(wv.get("soot_weight", 1.0)))
@@ -422,34 +421,50 @@ static func _damage_code(source: String, disable_fog := false, fixed_wreck := fa
 float fx_soot = 0.0;
 float fx_near = 0.0;   // R416: how close this pixel is to an open mouth (the V2 back-face look stays at the wounds)
 // cull_disabled flips back-facing normals in the renderer, including mirrored exteriors.
-if (determinant(mat3(MODEL_MATRIX)) < 0.0) { NORMAL = -NORMAL; }
+bool fx_mirrored = determinant(mat3(MODEL_MATRIX)) < 0.0;
+bool fx_back_face = FRONT_FACING == fx_mirrored;
+if (fx_mirrored) { NORMAL = -NORMAL; }
 """
 	if not fixed_wreck:
 		soot += """for (int i = 0; i < 64; i++) {
 	if (i >= fx_mouth_count) { break; }
-	float h = dot(fx_hull_p - fx_mouths[i].xyz, fx_axes[i].xyz);
+	vec3 d = fx_hull_p - fx_mouths[i].xyz;
 	float R = max(fx_mouths[i].w, 0.0001);
-	if (fx_v2 >= 0) { fx_near = max(fx_near, 1.0 - smoothstep(R * 1.2, R * 3.0, length(fx_hull_p - fx_mouths[i].xyz))); }
+	float d2 = dot(d, d);
+	if (fx_v2 >= 0 && fx_back_face && d2 < (3.0 * R) * (3.0 * R)) {
+		fx_near = max(fx_near, 1.0 - smoothstep(R * 1.2, R * 3.0, sqrt(d2)));
+	}
+	float h = dot(d, fx_axes[i].xyz);
 	if (h < -fx_axes[i].w || h > R * 0.8) { continue; }
+	float x = dot(d, fx_tangents[i].xyz);
+	float y = dot(d, cross(fx_axes[i].xyz, fx_tangents[i].xyz));
+	float plane2 = x * x + y * y;
+	// Even the square corners are within sqrt(2) * (1.10 + 0.65) R, including the soot rim.
+	// A slot can extend its half-length beyond that. Far plating needs none of the cut's trig.
+	float reach = 2.5 * R + (fx_shapes[i].x == 2.0 ? fx_tangents[i].w : 0.0);
+	if (plane2 >= reach * reach) { continue; }
 	// R416 4.2: only plating facing along the cut (or straight against it: the inner liner) is cut, never a wall at
 	// right angles or a face standing above the hole. The facing test holds only out past 0.6 R from the centre, so the
 	// side faces of raised plates inside the mouth are cut with it, not left as strips across it (Fable review M3)
-	if (fx_v2 >= 0 && (h > R * 0.45 || (length(fx_hull_p - fx_mouths[i].xyz - fx_axes[i].xyz * h) > R * 0.6 && abs(dot(normalize(fx_hull_n), fx_axes[i].xyz)) < 0.25))) { continue; }
-	float edge = fx_mouth_edge(i, fx_hull_p);
+	vec3 plane_d = d - fx_axes[i].xyz * h;
+	if (fx_v2 >= 0 && (h > R * 0.45 || (dot(plane_d, plane_d) > (R * 0.6) * (R * 0.6) && abs(dot(normalize(fx_hull_n), fx_axes[i].xyz)) < 0.25))) { continue; }
+	float edge = fx_mouth_edge(i, x, y, R);
 	if (edge < -R * 0.035) { discard; }
 	fx_soot = max(fx_soot, 1.0 - smoothstep(0.0, R * 0.65, max(edge, 0.0)));
 }
 """
 	var inside := """
-ALBEDO *= (1.0 - fx_soot * 0.94 * (fx_v2 >= 0 ? clamp(fx_v2_soot, 0.0, 1.0) : 1.0)) * (1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)));
+float fx_surface_tone = 1.0 - fx_soot * 0.94 * clamp(fx_v2_soot, 0.0, 1.0);
+if (fx_weather > 0.0 && fx_v2 != 1) { fx_surface_tone *= 1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)); }
+ALBEDO *= fx_surface_tone;
 EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0) * fx_flick;
-if (fx_v2 == 4 || fx_v2 == 5) { EMISSION += fx_v2_accent * pow(fx_soot, 3.0) * 0.18; }   // R416: a lit glass or violet seam edge, no soot
+if (fx_v2 == 4 || fx_v2 == 5) { EMISSION += fx_v2_accent * (fx_soot * fx_soot * fx_soot) * (fx_v2 == 5 ? 0.08 : 0.18); }   // R416: lit glass or violet seams, no soot
 if (fx_scorch_count > 0) {
 	// issue 484: soot black at the wound, heat-stained bronze further out, embers that cool with the torn faces
 	float fx_sc = fx_scorch_at(fx_hull_p);
 	// bench round 1: a strong bronze ring read as brown cardboard on a white hull; keep the stain faint and the soot dark
 	// R416 / R420 (Wounds V2): the stain and soot follow the faction's soot weight (none on Chorus, Glasswrights, Eclipse)
-	float fx_sw = fx_v2 >= 0 ? clamp(fx_v2_soot, 0.0, 1.0) : 1.0;
+	float fx_sw = clamp(fx_v2_soot, 0.0, 1.0);
 	ALBEDO *= mix(vec3(1.0), vec3(0.80, 0.72, 0.70), smoothstep(0.0, 0.35, fx_sc) * fx_sw) * (1.0 - 0.9 * smoothstep(0.25, 0.75, fx_sc) * fx_sw);
 	ROUGHNESS = mix(ROUGHNESS, 1.0, fx_sc * fx_sw);
 	float fx_em = smoothstep(0.65, 1.0, fx_sc) * step(0.72, burnt_hash(floor(fx_hull_p / max(fx_burnt_cell, vec3(0.001)) * 5.0)));
@@ -459,19 +474,21 @@ if (fx_scorch_count > 0) {
 	EMISSION += fx_scorch_col * fx_em * clamp(fx_scorch_heat, 0.0, 1.0) * 2.0;
 }
 // Mirrored ship models reverse raster winding; keep their outside as the outside.
-if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
+if (fx_back_face) {
 	ALBEDO = vec3(0.0); METALLIC = 0.0; SPECULAR = 0.0; ROUGHNESS = 1.0;
 	RIM = 0.0; CLEARCOAT = 0.0; SSS_STRENGTH = 0.0; BACKLIGHT = vec3(0.0);
-	EMISSION = hull_inside(fx_hull_p, vec3(0.0), 0.0, fx_burnt_cell, 0.35, vec3(1.0), 0.0);
+	// R416 (Nov 24, Ryan's yes): the orange ember speckle on the back of the plating stays on steel only (Sunward,
+	// Hullbreakers); every other faction's backface is its own matter, never orange
+	EMISSION = hull_inside(fx_hull_p, vec3(0.0), 0.0, fx_burnt_cell, (fx_v2 == 0 || fx_v2 == 2) ? 0.35 : 0.0, vec3(1.0), 0.0);
 	vec3 section = fx_hull_p / max(fx_burnt_cell, vec3(0.001));
 	float rib = 1.0 - smoothstep(0.02, 0.065, abs(fract(section.y * 0.65) - 0.5));
 	float beam = 1.0 - smoothstep(0.015, 0.045, abs(fract(section.z * 0.5) - 0.5));
 	vec3 structure = mix(vec3(0.008, 0.006, 0.007), vec3(0.032, 0.025, 0.021), max(rib, beam));
 	if (fx_organic) {
+		// R416: umber, never magenta (the old magenta flesh is retired, Nov 24)
 		float fibre = pow(abs(sin(section.x * 6.0 + sin(section.y * 3.0))), 8.0);
-		structure = mix(vec3(0.018, 0.003, 0.009), vec3(0.042, 0.009, 0.017), fibre);
+		structure = mix(vec3(0.016, 0.008, 0.004), vec3(0.036, 0.016, 0.008), fibre);
 		structure = mix(structure, vec3(0.085, 0.062, 0.033), rib * 0.7);
-		if (fx_v2 == 3) { structure = mix(vec3(0.016, 0.008, 0.004), vec3(0.036, 0.016, 0.008), fibre); structure = mix(structure, vec3(0.085, 0.062, 0.033), rib * 0.7); }   // R416: umber, never magenta
 	}
 	EMISSION = max(EMISSION, structure);
 	if (fx_v2 >= 0 && fx_near > 0.0) {
@@ -1375,10 +1392,13 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 	var pts := _gun_points(slot, weapon, target_local, d)
 	var out: Array = []
 	if not pts.is_empty():
-		# issue 1587: a jammed turret (a wounded section, see jam_turret) sits out while another muzzle bears
-		var free_pts := pts.filter(func(q: Dictionary) -> bool: return not (q.has("tur") and turret_jammed(int(q["tur"]))))
-		if not free_pts.is_empty():
-			pts = free_pts
+		pts = _unjammed_points(pts)
+		if pts.is_empty():
+			# A known battery is jammed, not missing its mounts. Do not draw a shot from its barrels or the plating.
+			for i in n:
+				out.append({})
+				_took("gun", "skip")
+			return out
 		var key := "%d|%s" % [slot, weapon]
 		var off: int = int(_gun_turn.get(key, posmod(hash(code + key), pts.size())))
 		var aims := {}     # issue 560: each turret this volley uses turns once, toward the target, before its shots
@@ -1407,6 +1427,10 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 			out.append({"p": m["p"], "n": m["n"], "f": d, "src": "bow" if from_bow else "ray"})
 			_took("gun", "ray")
 	return out
+
+
+func _unjammed_points(pts: Array) -> Array:
+	return pts.filter(func(pt: Dictionary) -> bool: return not (pt.has("tur") and turret_jammed(int(pt["tur"]))))
 
 
 # Every tier checks bearing and reach. The exact slot and weapon win among usable muzzles, followed by the weapon on
@@ -1814,14 +1838,10 @@ func _want_yaw(k: int, target_local: Vector3) -> float:
 func gun_turrets(slot: int, weapon: String, target_local: Vector3, n: int) -> Array:
 	var d := target_local - core
 	d = d.normalized() if d.length() > 1e-4 else Vector3(1, 0, 0)
-	var pts := _gun_points(slot, weapon, target_local, d)
+	var pts := _unjammed_points(_gun_points(slot, weapon, target_local, d))
 	var out: Array = []
 	if pts.is_empty():
 		return out
-	# Neon on PR 1631: the same jammed-turret filter as guns(), so a Burn and fire never trains a jammed turret
-	var free_pts := pts.filter(func(q: Dictionary) -> bool: return not (q.has("tur") and turret_jammed(int(q["tur"]))))
-	if not free_pts.is_empty():
-		pts = free_pts
 	var key := "%d|%s" % [slot, weapon]
 	var off: int = int(_gun_turn.get(key, posmod(hash(code + key), pts.size())))
 	for i in maxi(n, 1):
