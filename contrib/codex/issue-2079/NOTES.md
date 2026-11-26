@@ -27,3 +27,19 @@ The final Windows game pass covered all 254 listed checks, including two environ
 The [ST-0 reference](../../../docs/shots/issue-2036-codex/ST-0_crossing-rings.png) is from Battle 2, part 2 at 00:25.000, seed 10, round 3. The [ST-A concept](../../../docs/shots/issue-2036-codex/ST-A_stacked-plates.png) is the approved layout, not current game art.
 
 The Board queues the matched real captures at camera 170 and 26 after review and green checks. Use a capture path that includes the battle HUD, since the effects-only look bench does not draw it. No GPU work ran in lane F.
+
+## Run 5: combine #2104 and #2253
+
+Tested the working tree on checkout head `fd1eb43ae7d0f23a18b302cb3d362729cc7bf8b8`, which already includes `origin/main`. Ported the compatible hunks from #2253 at `2856c8e8439a98a099a2842ffa6ade7850ccb1b4`. No merge, commit, or push in this run.
+
+- **Kept ST-A:** Its plate layer, overlap and ring handling, and the kill cut-in that keeps both participants readable until the target can retire. The existing `floats_root` in `godot/ui/battle/hud.gd` already provides the separate callout layer.
+- **Kept hit callouts:** `godot/scenes/battle/battle.gd` applies the label's own lifetime fade once, without the board fade. `godot/render/test/big_moments_check.gd` checks Miss, Critical, and shield numbers at full and partial alpha during lance and torpedo cuts.
+- **Kept camera skip:** A left or right click ends the kill hold without starting a drag or board gesture. The big-moments check also snapshots the drawn pose before starting the return and checks the shot against the 9 percent letterbox.
+- **Kept muzzle pulses:** `godot/fx/fx_weapons.gd` keeps muzzle pulses out of the flash budget while still softening them under Reduce Flashing. `godot/fx/test/weapon_layers_check.gd` keeps the upstream budget, tracer tint, rocket soot, and nonzero-clock checks. Torpedo intercepts still book a flash.
+- **Dropped the competing plate hunks:** No new participant or deferred-death state in battle setup, shot and kill framing, cut release, overlay stepping, death retirement, or per-frame plate updates. No `cut_plates_root`, HUD rebuild changes, reparenting, or second `floats_root` in the HUD. Removed the upstream plate-specific assertions, including zero plate-root alpha and reparenting. The unchanged ST-A check owns participant visibility and dead-target retirement.
+
+The new callout, skip click, and muzzle checks failed before the fixes and passed after. The seed-10 Battle 2 round-3 check placed all four plates with no overlaps and no crossing visible rings. The load check passed for 488 scripts and 17 scenes. The seed-361 bot battle passed.
+
+All 254 listed headless game checks passed locally across the full run and eight environment-only reruns. Six needed the CI profile path, prefetch needed CI-style audio imports omitted, and formation needed the tracked SF3 and SB4 measurements missing from the sparse checkout. Standing checks exited 0 with the recorded KNOWN rows. All 379 saved Godot battles, 30 seeded campaign runs, Nemesis scenarios, and the tree hand-off passed. The rules cache on/off records matched for all 379 battles, and all 15 ruled-number checks passed. The checked-in A16 death fixture is stale on the unchanged inputs. A fresh A16 bake is left to CI, as this lane is code only.
+
+PR #2253 can close as included once the runner publishes the combined changes on #2104 and GitHub's All checks is green. The Board owns the real ST-0 before and after captures at cameras 170 and 26 after review.

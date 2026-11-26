@@ -5089,6 +5089,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		_end_opening()
 	if kill_hold_until > 0.0 and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed and (e as InputEventMouseButton).button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]) or (e is InputEventKey and (e as InputEventKey).pressed and not (e as InputEventKey).echo)):
 		_kill_skip()
+		if e is InputEventMouseButton:
+			# The skip click must not start a camera drag and cancel the smooth return (issue 2194).
+			get_viewport().set_input_as_handled()
+			return
 		if e is InputEventKey and e.keycode == KEY_K:
 			return
 	if e is InputEventMouseButton:
@@ -7601,7 +7605,8 @@ func _float_step(dt: float) -> void:
 		else:
 			lbl.position = fp - lbl.size * 0.5 + Vector2(0, f.dy)
 		var f_end := float(f.get("end", 1.6))
-		lbl.modulate.a = clampf(f_end - f.t, 0.0, 1.0) * _cut_overlay_alpha
+		# The HUD's separate callout layer stays outside the cut fade (issue 2194).
+		lbl.modulate.a = clampf(f_end - f.t, 0.0, 1.0)
 		if f.t > f_end:
 			lbl.queue_free()
 			floats.remove_at(i)
