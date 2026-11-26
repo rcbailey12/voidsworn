@@ -1,6 +1,8 @@
 # R336 PC cleanup. PowerShell 5.1. The Board reads --dry-run before the first live run.
 . (Join-Path $PSScriptRoot 'runner_common.ps1') cleanup-library
 . (Join-Path $PSScriptRoot 'janitor_salvage.ps1')
+. (Join-Path $PSScriptRoot 'janitor_neon.ps1')
+. (Join-Path $PSScriptRoot 'janitor_relay.ps1')
 
 function Log($line) {
   if ($script:log) { $script:log.WriteLine($line) }
@@ -178,7 +180,7 @@ function Open-JanitorLock($path, $wait) {
   }
 }
 function Get-CommandLines {
-  # Every running process's command line, read once per janitor run. $null means the list could not be read: callers keep.
+  # $null means the list could not be read: callers keep. Relay removals refresh this list after proof.
   # Command lines stay internal: only a process ID and name ever reach the log, which may be relayed (Artoo, PR 1266).
   if ($test -and $null -ne $env:PC_TEST_COMMAND_LINES) {
     return ,@($env:PC_TEST_COMMAND_LINES -split "`n" | Where-Object { $_ } | ForEach-Object { [pscustomobject]@{ Id = 0; Name = 'fixture'; Line = $_ } })
@@ -189,47 +191,50 @@ function Get-CommandLines {
   }
   catch { return $null }
 }
-function Assert-NoProcessUses($dir) {
-  if ($null -eq $script:commandLines) { throw 'running processes could not be checked' }
+function Assert-NoProcessUses($dir, $processes = $script:commandLines) {
+  if ($null -eq $processes) { throw 'running processes could not be checked' }
   # The whole folder name only: opus121 must not match a command line that names opus1211 (R8 dry run).
-  $needle = [regex]::Escape($dir.FullName.TrimEnd('\','/')) + '(?=$|[\\/"''\s])'
-  foreach ($process in $script:commandLines) {
-    if ($process.Line -match $needle) { throw "a running process names this folder (process $($process.Id) $($process.Name))" }
+  $needle = [regex]::Escape($dir.FullName.TrimEnd('\','/').Replace('\','/')) + '(?=$|[/"''\s])'
+  # A job can launch its namesake bat from a checkout, then wait on a file in its output folder without naming that folder.
+  $batch = '(?:^|[/"''\s])' + [regex]::Escape($dir.Name) + '\.bat(?=$|["''\s])'
+  foreach ($process in $processes) {
+    $line = $process.Line.Replace('\','/')
+    if ($line -match $needle -or $line -match $batch) { throw "a running process names this folder (process $($process.Id) $($process.Name))" }
   }
 }
 # Issue 1180 run 8 (Board, Nov 20): names only our tools create. A runner GUID, run_parity.js mkdtemp (6 characters) and
 # manifest_merge.py mkdtemp (8 characters). Agent-chosen names never match; they go to Ryan as a one-off list.
 $legacyScratch = '\A(?:voidsworn-run-(?:(?<issue>[1-9][0-9]*)-)?[0-9a-f]{32}|voidsworn-parity-[A-Za-z0-9]{6}|stage7-checked-[A-Za-z0-9_][A-Za-z0-9_-]*-[a-z0-9_]{8})\z'
-function Get-RelayReceipts($mirror) {
-  # Objects reachable from the relay branches (board/pc-out-* here, pc-out-* in the relay repo's mirror): a committed receipt, not a loose blob (Artoo, PR 1266).
+function Get-RelayReceipts($mirror, $dryRun) {
+  # Receipts are committed blobs, not loose objects. Live cleanup counts only tips still advertised by their origin.
   # Read again whenever the relay refs differ from the last read (review of PR 1592: the relay sweep's child or another
   # runner can fetch and prune the mirror between two folders).
   $refs = @(Read-CleanupGit @('--git-dir',$mirror,'for-each-ref','--format=%(objectname) %(refname)','refs/heads/board/pc-out-*'))
   if ($gitExit -ne 0) { throw 'relay branches could not be read' }
+  if ($refs.Count -and -not $dryRun) {
+    $live = Read-OriginRelayRefs 'refs/heads/board/pc-out-*' -Legacy
+    $refs = @(Select-ConfirmedRelayRefs $refs $live)
+  }
   # Issue 1657: the private relay repo's own mirror (relay-mirror.git beside the shared one), branches pc-out-*.
   $relayMirror = Join-Path (Split-Path -Parent $mirror) 'relay-mirror.git'
   $relayRefs = @()
   if (Test-Path -LiteralPath (Join-Path $relayMirror 'HEAD')) {
+    Assert-PlainDirectory (Get-Item -LiteralPath $relayMirror -Force)
     $relayRefs = @(Read-CleanupGit @('--git-dir',$relayMirror,'for-each-ref','--format=%(objectname) %(refname)','refs/heads/pc-out-*'))
     if ($gitExit -ne 0) { throw 'relay repo branches could not be read' }
+    if ($relayRefs.Count -and -not $dryRun) {
+      # Confirm every local ref against one fresh origin advertisement under the private relay writers' lock.
+      $live = Read-OriginRelayRefs 'refs/heads/pc-out-*'
+      $relayRefs = @(Select-ConfirmedRelayRefs $relayRefs $live)
+    }
   }
   $key = ($refs + @('relay') + $relayRefs) -join "`n"
-  if ($script:relayReceipts -and $script:relayReceiptsKey -ceq $key) { return $script:relayReceipts }
+  if ($null -ne $script:relayReceipts -and $script:relayReceiptsKey -ceq $key) { return ,$script:relayReceipts }
   $set = New-Object 'Collections.Generic.HashSet[string]'
-  if ($refs.Count) {
-    foreach ($line in @(Read-CleanupGit @('--git-dir',$mirror,'rev-list','--objects','--glob=refs/heads/board/pc-out-*'))) {
-      $null = $set.Add(($line -split ' ', 2)[0])
-    }
-    if ($gitExit -ne 0) { throw 'relay branches could not be read' }
-  }
-  if ($relayRefs.Count) {
-    foreach ($line in @(Read-CleanupGit @('--git-dir',$relayMirror,'rev-list','--objects','--glob=refs/heads/pc-out-*'))) {
-      $null = $set.Add(($line -split ' ', 2)[0])
-    }
-    if ($gitExit -ne 0) { throw 'relay repo branches could not be read' }
-  }
+  Add-RelayReceiptObjects $set $mirror $refs
+  Add-RelayReceiptObjects $set $relayMirror $relayRefs
   $script:relayReceipts = $set; $script:relayReceiptsKey = $key
-  return $set
+  return ,$set
 }
 # helper_clone.ps1's own small files at the top of a helper folder (lease, attempt ID, commit, ship copy record): they
 # describe the folder and hold no results, so they never keep it (issue 1180, PR 1275).
@@ -260,13 +265,13 @@ function Get-ShipCloneReason($jobDir, $checkout) {
   if ($first -match '\Astart \S+ \S+ \S+') { return 'a ship clone waits for its publish (publish_ship.bat removes it; the janitor never does)' }
   return ''
 }
-function Test-RelayedResults($dir, $mirror) {
+function Test-RelayedResults($dir, $mirror, $finishedHelper, $dryRun) {
   # A helper folder goes only when (1) every file in its out folders is a blob committed on a board/pc-out relay branch
   # and (2) everything else in it is a checkout Git shows as rebuildable with all history pushed. Anything else keeps the
   # folder and is listed for the Board.
-  $receipts = Get-RelayReceipts $mirror
   $whole = $dir.Name -match '^opus[1-9][0-9]*out'
-  $outFiles = @(); $other = @(); $checkouts = @()
+  $outFiles = @(); $topFiles = @(); $other = @(); $checkouts = @()
+  Assert-NotPaidTakes $dir
   $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
   # A Git checkout inside an out folder (job_head attempts keep theirs in out_*) is not a result: it gets the same Git
   # proof as a checkout beside out, and its files and pack are never hashed as output (DRY2 on the PC hashed a 16.25 GB
@@ -276,6 +281,7 @@ function Test-RelayedResults($dir, $mirror) {
     $files = @(); $walk = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'; $walk.Push($top)
     while ($walk.Count) {
       $d = $walk.Pop()
+      Assert-NotPaidTakes $d
       foreach ($item in $d.EnumerateFileSystemInfos()) {
         if ($item -is [IO.DirectoryInfo]) {
           if (Test-Path -LiteralPath (Join-Path $item.FullName '.git') -PathType Container) { $script:outCheckouts += $item }
@@ -295,10 +301,12 @@ function Test-RelayedResults($dir, $mirror) {
       if ($item -is [IO.DirectoryInfo] -and $item.Name -like 'out*') { $outFiles += @(& $collectOut $item) }
       elseif ($item -is [IO.DirectoryInfo]) { $pending.Push($item) }
       elseif ($helperBookkeeping -contains $item.Name) { continue }
+      elseif ($finishedHelper) { $topFiles += $item }
       else { $other += $item }
     }
     while ($pending.Count) {
       $sub = $pending.Pop()
+      Assert-NotPaidTakes $sub
       if (Test-Path -LiteralPath (Join-Path $sub.FullName '.git') -PathType Container) { $checkouts += $sub; continue }
       foreach ($item in $sub.EnumerateFileSystemInfos()) {
         if ($item -is [IO.DirectoryInfo]) { $pending.Push($item) } else { $other += $item }
@@ -307,6 +315,7 @@ function Test-RelayedResults($dir, $mirror) {
   }
   $checkouts += $script:outCheckouts
   if (-not $outFiles.Count) { throw 'no out folder to prove the results were relayed' }
+  $outFiles += $topFiles
   # A file over GitHub's 100 MB limit can never be a blob on a relay branch, so it counts as not relayed without being read
   # (DRY3 on the PC spent about 250 s per opus1434 folder hashing 2 GB videos that keep the folder anyway).
   $missing = 0; $all = $outFiles.Count
@@ -315,6 +324,7 @@ function Test-RelayedResults($dir, $mirror) {
     Log "helper file not on a relay branch: $($file.FullName) ($($file.Length) bytes; over GitHub's 100 MB file limit, not read)"
   }
   $outFiles = @($outFiles | Where-Object { $_.Length -le 100MB })
+  $receipts = Get-RelayReceipts $mirror $dryRun
   $hashes = @()
   if ($outFiles.Count) { $hashes = @(Salvage-Git @('--git-dir',$mirror,'hash-object','--no-filters','--stdin-paths') @($outFiles | ForEach-Object { $_.FullName })) }
   if ($hashes.Count -ne $outFiles.Count) { throw 'result hashes could not be read' }
@@ -342,7 +352,7 @@ function Assert-HelperScratchInactive($dir) {
   if ($lease) { $lease.Dispose() }
 }
 function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $activeLegacy, [switch]$tempScratch, $records, $hasOwner, [switch]$legacy, [switch]$helper, $mirror) {
-  $size = 'size unavailable'; $issueLock = $null; $helperLease = $null; $leaseBusy = $false; $mirrorLock = $null
+  $size = 'size unavailable'; $issueLock = $null; $helperLease = $null; $leaseBusy = $false; $mirrorLock = $null; $relayLock = $null
   try {
     if ($helper) {
       # Taken first and held through the decision and the deletion, so helper_clone cannot start a run here meanwhile
@@ -382,11 +392,18 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     if ($dir.FullName -eq $env:PC_RUN_SCRATCH) { throw 'current runner scratch' }
     if ($busy) { throw $busy }
     if ($legacy -or $helper) { Assert-NoProcessUses $dir }
+    $finishedHelper = $false
     if ($helper) {
+      $done = Get-Item -LiteralPath (Join-Path $dir.FullName 'done.txt') -Force -ErrorAction SilentlyContinue
+      $finishedHelper = $done -is [IO.FileInfo] -and -not ($done.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
+        ([IO.File]::ReadAllText($done.FullName).Trim() -ceq 'PASS')
       # A live run holds the mirror writers' lock from the relay and history proof through the removal, so no lane's
       # fetch or prune changes the refs that proof read (Artoo on PR 1592, 905a8504).
-      if (-not $dryRun) { $mirrorLock = Open-MirrorWriterLock $mirror }
-      Test-RelayedResults $dir $mirror
+      if (-not $dryRun) {
+        $mirrorLock = Open-MirrorWriterLock $mirror
+        $relayLock = Open-CleanupLock (Join-Path $root 'relay-mirror.git.lock')
+      }
+      Test-RelayedResults $dir $mirror $finishedHelper $dryRun
     }
     if ($legacy) {
       Assert-HelperScratchInactive $dir
@@ -410,7 +427,7 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       $retry = Get-FailedScratchMarker $dir
       if ($retry -and $retry.LastWriteTimeUtc -gt $now.AddDays(-1)) { throw 'newest failed scratch kept for a retry for one day' }
     }
-    if ($stats.Latest -gt $now.AddHours(-$hours)) { throw "touched in the last $hours hours" }
+    if (-not $finishedHelper -and $stats.Latest -gt $now.AddHours(-$hours)) { throw "touched in the last $hours hours" }
     if (Cleanup-Paused) { throw 'PC pause is active' }
     if ($dryRun) { $action = 'would remove' }
     else {
@@ -423,17 +440,23 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       if ($stats.Unreadable.Count) {
         Remove-CleanupReadable $dir $stats.Unreadable
         $action = "removed all but $($stats.Unreadable.Count) folders another account owns:"
-      } elseif ($helper) { Remove-HelperFolder $dir $helperLease; $helperLease = $null; $action = 'removed' }
+      } elseif ($helper) {
+        Assert-NoProcessUses $dir (Get-CommandLines)
+        Assert-GpuQuiet
+        Remove-HelperFolder $dir $helperLease; $helperLease = $null; $action = 'removed'
+      }
       else { Remove-CleanupDirectory $dir; $action = 'removed' }
     }
     Add-WouldFree $stats
-    Log "$action $($dir.FullName) ($size; $why, untouched for at least $hours hours)"
+    $ageProof = if ($finishedHelper) { 'marked PASS' } else { "untouched for at least $hours hours" }
+    Log "$action $($dir.FullName) ($size; $why, $ageProof)"
     if ($helper) { $script:helperGone = $true }
   } catch {
     $action = if ($dryRun) { 'would keep' } else { 'kept' }
     Log "$action $($dir.FullName) ($size; $($_.Exception.Message))"
   }
   finally {
+    if ($relayLock) { $relayLock.Dispose() }
     if ($mirrorLock) { $mirrorLock.Dispose() }
     if ($issueLock) { $issueLock.Dispose() }
     if ($helperLease) { $helperLease.Dispose() }
@@ -579,6 +602,10 @@ function Invoke-JobRelayCleanup($dir, $issue, $temp, $dryRun, $activeLegacy) {
     $code = $LASTEXITCODE
     $ErrorActionPreference = 'Stop'
     foreach ($line in $out) { if ($line.Trim()) { Log "job relay: $line" } }
+    if (-not $dryRun -and $code -eq 0) {
+      $freed = @($out | Where-Object { $_ -match '\Arelay trim freed bytes: [1-9][0-9]{0,17}\z' })
+      if ($freed.Count -eq 1) { Add-WouldFree @{ FreeBytes = [long]($freed[0] -replace '^relay trim freed bytes: ', '') } }
+    }
     Log "job relay check exit $code in $($dir.FullName)"
   } catch {
     $action = if ($dryRun) { 'would keep' } else { 'kept' }
@@ -601,11 +628,11 @@ function Test-PlainResumeFile($path) {
   return ($item -is [IO.FileInfo]) -and -not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)
 }
 function Read-JanitorResume($path) {
-  $resume = @{ lane = ''; temp = ''; root = '' }
+  $resume = @{ lane = ''; temp = ''; neon = ''; bench = ''; shots = ''; root = '' }
   if (-not (Test-PlainResumeFile $path)) { Log "resume file ignored: $path is not a plain file"; return $resume }
   try {
     foreach ($line in [IO.File]::ReadAllLines($path)) {
-      if ($line -match '\A(lane|temp|root) (.+)\z') { $resume[$Matches[1]] = $Matches[2] }
+      if ($line -match '\A(lane|temp|neon|bench|shots|root) (.+)\z') { $resume[$Matches[1]] = $Matches[2] }
     }
   } catch {}
   return $resume
@@ -620,7 +647,10 @@ function Write-JanitorResume($path, [string[]]$lines) {
     [IO.File]::Delete($fresh)
   }
   [IO.File]::WriteAllLines($fresh, $lines)
-  if (Test-Path -LiteralPath $path -PathType Leaf) { [IO.File]::Replace($fresh, $path, $null) } else { [IO.File]::Move($fresh, $path) }
+  # Windows PowerShell 5.1 turns $null into an empty backup path. This overload needs an actual null string.
+  if (Test-Path -LiteralPath $path -PathType Leaf) {
+    [IO.File]::Replace($fresh, $path, [NullString]::Value)
+  } else { [IO.File]::Move($fresh, $path) }
 }
 function Get-Rotated($items, [string[]]$names, $start) {
   # One ordering for the walk and the lookup (ordinal, case blind), and an exact name wins (review of PR 1592: Sort-Object
@@ -656,23 +686,62 @@ function Write-FolderTime($dir, $since) {
   $s = [int]($script:clock.Elapsed.TotalSeconds - $since)
   if ($s -ge 10 -or $test) { Log "folder time: $($dir.FullName) $s s" }
 }
-
-$trigger = $args[0]
-if ($trigger -eq '--install-task') {
-  if ($args.Count -gt 2 -or ($args.Count -eq 2 -and $args[1] -ne '--dry-run')) {
-    Write-Host 'usage: janitor_task.bat [--dry-run]'
-    exit 2
+function Write-CleanupKinds($mode) {
+  $rows = @(foreach ($kind in @('relayed jobs and pictures','Neon T3','Codex sandbox','other existing cleanup')) {
+    "cleanup $mode - $kind - {0:N3} GB ($([long]$script:freedByKind[$kind]) bytes)" -f ([long]$script:freedByKind[$kind] / 1GB)
+  })
+  foreach ($row in $rows) { Log $row }
+  if ($dryRun) { return }
+  try {
+    $board = [IO.Directory]::CreateDirectory((Join-Path $root 'board1119'))
+    Assert-PlainDirectory $board
+    $path = Join-Path $board.FullName 'janitor_log.txt'
+    if (-not (Test-PlainResumeFile $path)) { throw 'janitor_log.txt is not a plain file' }
+    [IO.File]::AppendAllLines($path, [string[]]@("$($now.ToString('o')) $trigger" + "`n" + ($rows -join "`n")), $utf8)
+  } catch { Log "janitor summary not written: $($_.Exception.Message)" }
+}
+function Clear-BenchResults($now, $dryRun, $temp, $limit) {
+  $bench = Get-Item -LiteralPath (Join-Path $root 'look_bench') -Force -ErrorAction SilentlyContinue
+  if (-not $bench) { return }
+  try {
+    Assert-PlainDirectory $bench
+    $results = @(foreach ($part in @('runs','sheets')) {
+      $parent = Get-Item -LiteralPath (Join-Path $bench.FullName $part) -Force -ErrorAction SilentlyContinue
+      if (-not $parent) { continue }
+      Assert-PlainDirectory $parent
+      foreach ($d in $parent.EnumerateDirectories()) {
+        if ($d.Name -match '\A[A-Za-z0-9_-]+\z') { $d }
+      }
+    })
+    foreach ($d in (Get-Rotated $results @($results | ForEach-Object { $_.FullName }) $resumeAt.bench)) {
+      if (Test-JanitorCap 'bench' $d.FullName $limit) { break }
+      Assert-GpuQuiet
+      $part = $d.Parent.Name
+      $donePattern = if ($part -eq 'runs') { '\A[0-9a-f]{8}\z' } else { '\APASS\z' }
+      Clear-DirectRelayResult $d $bench "look-bench-$part" $donePattern '' $dryRun @() $temp -DoneName 'DONE.txt'
+    }
+  } catch { Log "look bench kept: $($_.Exception.Message)" }
+}
+function Clear-CodexShots($runs, $dryRun, $temp, $limit) {
+  $ready = @($runs | Where-Object { $_.Lane -ne 'work217' -and $_.State.finished -and
+    $_.State.status -in @('checked_push','unverified','no_changes') -and
+    (Test-Path -LiteralPath (Join-Path $_.Out 'shots') -PathType Container) })
+  foreach ($run in (Get-Rotated $ready @($ready | ForEach-Object { $_.Out }) $resumeAt.shots)) {
+    if (Test-JanitorCap 'shots' $run.Out $limit) { break }
+    if (Test-JanitorGpuClaim) { $script:resume.shots = $run.Out; break }
+    $laneLock = $null
+    try {
+      $guard = Get-Item -LiteralPath $run.Out -Force
+      Assert-PlainDirectory $guard
+      Assert-PlainDirectory $guard.Parent
+      $laneLock = Open-CleanupLock ($run.Repo + '.checkout.lock') $dryRun
+      $shots = Get-Item -LiteralPath (Join-Path $guard.FullName 'shots') -Force
+      Clear-DirectRelayResult $shots $guard "codex-$($run.Lane)-$($run.Issue)" '' $run.Issue $dryRun $activeLegacy $temp -RecordedRunner
+    } catch { Log "Codex pictures kept: $($run.Out) ($($_.Exception.Message))" }
+    finally { if ($laneLock) { $laneLock.Dispose() } }
   }
-  try { Install-JanitorTask ($args.Count -eq 2) }
-  catch { Write-Host "janitor task setup failed: $($_.Exception.Message)"; exit 1 }
-  exit 0
 }
-if ($args.Count -gt 1 -or $trigger -notin @($null,'--dry-run','--nightly','--low-space','--after-job')) {
-  Write-Host 'usage: janitor.bat [--dry-run | --nightly | --low-space | --after-job]'
-  exit 2
-}
-$dryRun = $trigger -eq '--dry-run'
-$automatic = $trigger -in @('--nightly','--low-space','--after-job')
+
 function Invoke-StorageUpkeep($root, $now, $dryRun) {
   foreach ($file in (Get-Item -LiteralPath $root -Force).EnumerateFiles('janitor_*.txt')) {
     if ($file.Name -cnotmatch '\Ajanitor_[0-9]{8}-[0-9]{4}\.txt\z' -or
@@ -698,6 +767,24 @@ function Invoke-StorageUpkeep($root, $now, $dryRun) {
   }
 }
 
+$trigger = $args[0]
+if ($trigger -eq '--install-task') {
+  if ($args.Count -gt 2 -or ($args.Count -eq 2 -and $args[1] -ne '--dry-run')) {
+    Write-Host 'usage: janitor_task.bat [--dry-run]'
+    exit 2
+  }
+  try { Install-JanitorTask ($args.Count -eq 2) }
+  catch { Write-Host "janitor task setup failed: $($_.Exception.Message)"; exit 1 }
+  exit 0
+}
+if ($args.Count -gt 1 -or $trigger -notin @($null,'--dry-run','--nightly','--low-space','--after-job')) {
+  Write-Host 'usage: janitor.bat [--dry-run | --nightly | --low-space | --after-job]'
+  exit 2
+}
+$dryRun = $trigger -eq '--dry-run'
+$automatic = $trigger -in @('--nightly','--low-space','--after-job')
+$env:GIT_TERMINAL_PROMPT = '0'
+$env:GCM_INTERACTIVE = 'never'
 $root = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'
 $temp = [IO.Path]::GetFullPath((Runner-Temp)).TrimEnd('\','/')
 $now = [DateTime]::UtcNow
@@ -750,6 +837,7 @@ try {
   if ($deferJobs) { Log 'deferred after-job job-folder pass: a GPU claim is active' }
   $drive = New-Object IO.DriveInfo([IO.Path]::GetPathRoot($root))
   $script:wouldFreeBytes = 0L; $script:wouldFreeCount = 0; $script:cannotRemoveCount = 0
+  $script:freedByKind = @{}
   $script:plannedFreeTally = if ($dryRun) { New-FreeTally }
   $script:clock = [Diagnostics.Stopwatch]::StartNew()
   # Dry runs only (Artoo on PR 1592): a live removal reads the mirror's history fresh for each checkout, as before.
@@ -758,8 +846,8 @@ try {
   if ($env:PC_JANITOR_CAP_SECONDS -match '\A[0-9]{1,6}\z') { $capSeconds = [int]$env:PC_JANITOR_CAP_SECONDS }
   $resumePath = Join-Path $root 'janitor_resume.txt'
   $script:resume = Read-JanitorResume $resumePath
-  $resumeAt = @{ lane = $script:resume.lane; temp = $script:resume.temp; root = $script:resume.root }
-  $script:resume.lane = ''; $script:resume.temp = ''; $script:resume.root = ''
+  $resumeAt = $script:resume.Clone()
+  foreach ($key in $resumeAt.Keys) { $script:resume[$key] = '' }
   Log "free space before: $($drive.AvailableFreeSpace) bytes"
   if ($dryRun) { Write-LegacyJobRepos $root }
   $script:boardKeep = Read-BoardKeepList (Join-Path $root 'janitor_keep.txt')
@@ -785,6 +873,7 @@ try {
   foreach ($lane in (Get-Rotated $lanes $lanes $resumeAt.lane)) {
     if (Test-JanitorCap 'lane' $lane ([int]($capSeconds / 4))) { break }
     Assert-GpuQuiet -SoloOnly
+    $script:cleanupKind = if ($lane -like 'work217*') { 'other existing cleanup' } else { 'Codex sandbox' }
     if ($lane -eq 'work217-runs') {
       Clear-WorkRunRepos @($runs | Where-Object { $_.Lane -eq 'work217' }) $mirror $dryRun $now $temp $salvageRoot $activeLegacy
       continue
@@ -800,6 +889,8 @@ try {
     $since = $script:clock.Elapsed.TotalSeconds
     Assert-GpuQuiet -SoloOnly
     $records = $recordedScratch[$dir.FullName]
+    $script:cleanupKind = if (@($records | Where-Object { $_ -and $_.Lane -ne 'work217' }).Count -or
+      (-not $records -and $dir.Name -match '^voidsworn-run-[1-9][0-9]*-')) { 'Codex sandbox' } else { 'other existing cleanup' }
     $hasOwner = -not ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
       (Test-Path -LiteralPath (Join-Path $dir.FullName $scratchOwnerFile))
     if (-not $hasOwner -and -not ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) -and $dir.Name -match $legacyScratch) {
@@ -815,6 +906,16 @@ try {
     Write-FolderTime $dir $since
   }
   Log "time: TEMP folders done at $([int]$script:clock.Elapsed.TotalSeconds) s"
+  $script:cleanupKind = 'Neon T3'
+  Clear-NeonThreads $now $dryRun $resumeAt.neon ([int]($capSeconds * 0.7))
+  $script:cleanupKind = 'relayed jobs and pictures'
+  if (-not $deferJobs) {
+    Clear-BenchResults $now $dryRun $temp ([int]($capSeconds * 0.78))
+    Clear-CodexShots $runs $dryRun $temp ([int]($capSeconds * 0.84))
+  } else {
+    $script:resume.bench = $resumeAt.bench
+    $script:resume.shots = $resumeAt.shots
+  }
   $jobFolders = if (-not $deferJobs) { Get-RotatedFolders $root $resumeAt.root }
   if ($deferJobs) { $script:resume.root = $resumeAt.root }
   foreach ($dir in $jobFolders) {
@@ -836,15 +937,23 @@ try {
     Clear-ScratchFolder $dir $issue 'helper folder with its results relayed' 24 $temp $now $dryRun $activeLegacy -Helper -Mirror $mirror
     if (-not $script:helperGone) {
       Invoke-JobRelayCleanup $dir $issue $temp $dryRun $activeLegacy
+      if ($issue) {
+        foreach ($attempt in $dir.EnumerateDirectories('out_*')) {
+          if ($attempt.Name -notmatch '\Aout_\d{8}_\d{6}_\d+\z') { continue }
+          Clear-DirectRelayResult $attempt $dir $dir.Name '\APASS\z' $issue $dryRun $activeLegacy $temp
+        }
+      }
+      $script:cleanupKind = 'other existing cleanup'
       Clear-JobCheckouts $dir $issue $temp $now $dryRun $activeLegacy $mirror
+      $script:cleanupKind = 'relayed jobs and pictures'
     }
     Write-FolderTime $dir $since
   }
   if (-not $deferJobs) { Log "time: job folders done at $([int]$script:clock.Elapsed.TotalSeconds) s" }
   if (-not $dryRun) {
-    $lines = @(foreach ($k in @('lane','temp','root')) { if ($script:resume[$k]) { "$k $($script:resume[$k])" } })
+    $lines = @(foreach ($k in @('lane','temp','neon','bench','shots','root')) { if ($script:resume[$k]) { "$k $($script:resume[$k])" } })
     Write-JanitorResume $resumePath ([string[]]$lines)
-    # Keep mirror GC out of the timed lane, TEMP and job scans. The normal resume point is already saved.
+    # Save every scan cursor before doing mirror maintenance outside the scan budget.
     if ($trigger -eq '--nightly') { Invoke-StorageUpkeep $root $now $false }
   }
 } catch {
@@ -855,6 +964,7 @@ try {
   if ($drive) {
     if ($script:plannedFreeTally) { $script:wouldFreeBytes += (Complete-FreeTally $script:plannedFreeTally).Free }
     $verb = if ($dryRun) { 'would be freed' } else { 'freed' }
+    Write-CleanupKinds $verb
     Log ("space ${verb}: $($script:wouldFreeBytes) bytes ({0:N1} GB) by $($script:wouldFreeCount) removals; hard links shared outside the removal set are not counted; $($script:cannotRemoveCount) folders another account owns cannot be removed and are not counted" -f ($script:wouldFreeBytes / 1GB))
     Log "free space after: $($drive.AvailableFreeSpace) bytes"
     Log 'all done'

@@ -140,6 +140,21 @@ Mirror writers fetch heads and tags only. A new or reused agent lane does not fe
 janitor runs Git GC under each available mirror's writer lock with a two-week grace
 period and leaves reflogs intact. It drops only its own timestamped logs older than
 30 days, respecting the keep list. Preview both with `janitor.bat --dry-run`.
+The nightly pass saves its lane, TEMP, Neon, bench, Codex shots and job cursors
+before storage upkeep starts. GC skips a mirror another writer holds.
+
+For live helper cleanup, a legacy code-mirror relay tip also has to match the
+current tip on the game repo. The private relay requires the same check against
+its own origin. A mirror-only tip is useful to inspect in a dry run, not authority
+to remove a result. For an approved result folder with top-level media, the Board
+can use `relay_push.bat <job> <result folder> results` to relay it to the private
+repo. A missing file or unproved change keeps the local copy.
+
+For CI, apply PR 2196's workflow patch first, then
+`contrib/codex/issue-2181/w11-after-2196.patch`. Standing checks use the lane
+sparse inputs and read omitted tracked paths through the index. A16 retains
+`.github/actions`, `tools` and `godot` so both fresh and stale fixture paths can
+run. Re-run Standing checks and A16 on GitHub after the Board applies both patches.
 
 The Board can run `prune_relay_branches.ps1 audit` to list every legacy relay head
 and its proof against the live private relay. `audit-cached` is read-only and does

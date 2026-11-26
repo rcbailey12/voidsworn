@@ -756,10 +756,11 @@ function Get-FailedScratchMarker($dir) {
   }
   return $marker
 }
-function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowLinks, [switch]$allowUnreadable) {
+function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowLinks, [switch]$allowUnreadable, [switch]$snapshot) {
   Assert-PlainDirectory $directory
   $bytes = 0L; $latest = $directory.LastWriteTimeUtc; $links = @(); $unreadable = @()
   $fileLatest = [DateTime]::MinValue; $worktreeLatest = [DateTime]::MinValue
+  $entriesByPath = if ($snapshot) { ,([Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)) }
   # Issue 1739: FreeBytes is what removing the folder would give back. A hard link shared with a file outside it frees
   # nothing, and a folder another account owns cannot be removed by this one, so neither counts.
   $tally = $null
@@ -788,6 +789,11 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
         continue
       }
       if ($item.LastWriteTimeUtc -gt $latest) { $latest = $item.LastWriteTimeUtc }
+      if ($snapshot) {
+        $rel = $item.FullName.Substring($directory.FullName.Length + 1)
+        $length = if ($item -is [IO.DirectoryInfo]) { -1 } else { $item.Length }
+        $entriesByPath.Add($rel, "$length $($item.LastWriteTimeUtc.Ticks)")
+      }
       if ($item -is [IO.DirectoryInfo]) {
         if ($tally) { $folders.Add($item) } else { $pending.Push($item) }
         continue
@@ -816,7 +822,8 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
   $free = $bytes; $shared = 0L; $unchecked = 0L
   if ($tally) { $sum = Complete-FreeTally $tally; $free = $sum.Free; $shared = $sum.SharedOutside; $unchecked = $sum.Unchecked }
   return [pscustomobject]@{ Bytes = $bytes; Latest = $latest; FileLatest = $fileLatest; WorktreeLatest = $worktreeLatest
-    Links = $links; Unreadable = $unreadable; FreeBytes = $free; SharedBytes = $shared; UncheckedBytes = $unchecked; FreeTally = $tally }
+    Links = $links; Unreadable = $unreadable; FreeBytes = $free; SharedBytes = $shared; UncheckedBytes = $unchecked; FreeTally = $tally
+    EntriesByPath = $entriesByPath }
 }
 function Format-CleanupSize($stats) {
   if (Get-Command Format-FreeBytes -ErrorAction SilentlyContinue) { return (Format-FreeBytes $stats) }
@@ -827,6 +834,9 @@ function Add-WouldFree($stats) {
   if ($script:plannedFreeTally -and $stats.FreeTally) { Merge-FreeTally $script:plannedFreeTally $stats.FreeTally }
   else { $script:wouldFreeBytes += [long]$stats.FreeBytes }
   $script:wouldFreeCount++
+  if ($script:freedByKind -and $script:cleanupKind) {
+    $script:freedByKind[$script:cleanupKind] += [long]$stats.FreeBytes
+  }
 }
 function Get-LinkTarget($link) {
   # Where a link points, for the log only: it is never followed.
@@ -1544,7 +1554,8 @@ function Invoke-LockedRunner($start, $issue) {
 }
 function Runner-HashFiles {
   @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1','review_evidence.ps1',
-    'run_timeout.ps1','tmo.bat','gpu_slots.js','janitor.ps1','janitor_salvage.ps1','janitor.bat')
+    'run_timeout.ps1','tmo.bat','gpu_slots.js','disk_space.ps1','janitor.ps1','janitor_salvage.ps1',
+    'janitor_neon.ps1','janitor_relay.ps1','neon_idle_threads.js','janitor.bat')
 }
 if ($mode -eq 'cleanup-library') { return }
 function End-Announcement($s) {

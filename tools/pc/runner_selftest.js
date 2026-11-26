@@ -362,9 +362,11 @@ function gitEnvironment(env) {
 // Copy the launchers and run their real helpers through the warm fixture shell.
 // Only the agent watchdog is replaced. Its preflight kill path and the separate
 // runner_stall_tests row still exercise the real timeout code.
+const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js', 'disk_space.ps1', 'janitor.ps1', 'janitor_salvage.ps1',
+    'janitor_neon.ps1', 'janitor_relay.ps1', 'neon_idle_threads.js', 'janitor.bat'];
 function fixtureTools(name, scenario = '') {
   const dir = path.join(root, name);
-  for (const file of ['codex_issue.bat', 'codex_issue.ps1', 'work_issue.bat', 'work_issue.ps1', 'runner_common.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor.bat']) {
+  for (const file of runnerFiles.filter(name => name !== 'tmo.bat')) {
     let body = read(path.join(here, file));
     if (file.endsWith('.bat')) {
       body = body.replace(/powershell -NoProfile (?:-ExecutionPolicy Bypass )?(?=-File |-Command "(?:\(Get-Date\)|Get-Date -Format))/g,
@@ -418,10 +420,8 @@ const deliveryTools = fixtureTools('delivery runner', 'delivery');
 const fixtureManifests = new Map();
 function fixtureManifest(dir) {
   if (!fixtureManifests.has(dir)) {
-    const names = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1',
-      'review_evidence.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor.bat'];
     const file = path.join(dir, 'fixture_hashes.txt');
-    write(file, names.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, n))).digest('hex') + '  ' + n).join('\n') + '\n');
+    write(file, runnerFiles.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, n))).digest('hex') + '  ' + n).join('\n') + '\n');
     fixtureManifests.set(dir, file);
   }
   return fixtureManifests.get(dir);
@@ -1527,7 +1527,6 @@ async function testRunnerStartChecks() {
   pass('a low-disk run stops before the mirror, the model probe and the agent');
   // The Board writes work217\runner_hashes.txt with hashwrite after copying the runner and watchdog files; hashcheck then
   // guards the running copies. A mismatch or a missing file is a warning, never a stop.
-  const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor.bat'];
   const hashesGood = path.join(root, 'board_hashes_good.txt');
   write(hashesGood, runnerFiles.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(here, n))).digest('hex') + '  ' + n).join('\n') + '\n');
   const hashOut = path.join(root, 'hashcheck'); fs.mkdirSync(hashOut); write(path.join(hashOut, 'result.txt'), '');
@@ -1547,6 +1546,17 @@ async function testRunnerStartChecks() {
   assert(read(path.join(hashOut, 'result.txt')).includes('WARNING: no Board hashes file'));
   pass('a hash mismatch and a missing hashes file warn without stopping');
   const laneManifest = read(fixtureManifest(tools));
+  for (const [label, lines, reason] of [
+    ['missing', laneManifest.split('\n').filter(l => !l.endsWith('disk_space.ps1')), /leaves out: disk_space\.ps1/],
+    ['changed', laneManifest.split('\n').map(l => l.endsWith('disk_space.ps1') ? '0'.repeat(64) + '  disk_space.ps1' : l),
+      /lane runner files differ.*disk_space\.ps1/],
+  ]) {
+    const file = path.join(root, 'disk-helper-' + label + '.txt');
+    write(file, lines.join('\n'));
+    assert.equal((await ps(['hashcheck', hashOut, here, file, 'strict-runner'], defaults)).code, 14);
+    assert.match(read(path.join(hashOut, 'result.txt')), reason);
+  }
+  pass('strict-runner rejects an omitted or changed disk-space helper');
   const hashCases = [
     ['missing', null, /no hashes file/],
     ['incomplete', laneManifest.split('\n').filter(l => !l.endsWith('runner_common.ps1')).join('\n'), /leaves out: runner_common\.ps1/],

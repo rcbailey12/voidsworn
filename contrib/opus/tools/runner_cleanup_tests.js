@@ -16,8 +16,9 @@ const childTimeout = 65000;
 const janitorTimeout = windows ? 240000 : childTimeout;
 const temp = path.join(root, 'temp'), board = path.join(root, 'board');
 const mirror = path.join(root, 'mirror.git'), repo = path.join(board, 'repo');
+const legacyOrigin = path.join(root, 'legacy-origin.git');
 const profile = path.join(root, 'profile'), flag = path.join(profile, 'Downloads', 'voidsworn_test', 'gpu_go.txt');
-const env = { ...process.env, USERPROFILE: profile, PC_RUNNER_TEST: '1', PC_RUN_TEMP: temp, PC_TEST_MIRROR: mirror, PC_TEST_GIT: '' };
+const env = { ...process.env, USERPROFILE: profile, PC_RUNNER_TEST: '1', PC_RUN_TEMP: temp, PC_TEST_MIRROR: mirror, PC_TEST_SOURCE: legacyOrigin, PC_TEST_GIT: '' };
 const fixtureNow = new Date();
 function write(file, value) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -433,6 +434,7 @@ try {
   markOwned(recent, 2);
   // Issue 1180 run 8: a helper folder goes after a day only when every out file is a blob committed on a board/pc-out
   // relay branch (a loose blob is not a receipt, Artoo on PR 1266) and everything else is a rebuildable checkout.
+  git(['init', '-q', '--bare', legacyOrigin]);
   let relays = 0;
   const relay = (...files) => {
     const entries = files.map((file, i) =>
@@ -440,7 +442,9 @@ try {
     const tree = git(['--git-dir', mirror, 'mktree'], entries);
     const receipt = git(['--git-dir', mirror, 'hash-object', '-t', 'commit', '-w', '--stdin'],
       `tree ${tree}\nauthor relay <relay@example.invalid> 0 +0000\ncommitter relay <relay@example.invalid> 0 +0000\n\nrelay\n`);
-    git(['--git-dir', mirror, 'update-ref', `refs/heads/board/pc-out-fixture${relays++}`, receipt]);
+    const ref = 'refs/heads/board/pc-out-fixture' + relays++;
+    git(['--git-dir', mirror, 'update-ref', ref, receipt]);
+    git(['--git-dir', mirror, 'push', '-q', legacyOrigin, ref]);
   };
   const opus = scratch(pc, 'opus901out1', 73);
   relay(path.join(opus, 'nested', 'proof.txt'));
