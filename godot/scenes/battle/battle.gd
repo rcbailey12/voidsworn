@@ -202,6 +202,7 @@ var round_saved := 0                       # the newest round handed to round_sa
 var round_on_disk := 0                     # the newest round round_save_cb reported written (0: only the pre-fight save)
 # Issue 1434: the title's own backdrop (main.gd sets it with showcase). Tests and benches set showcase alone for a battle
 # that takes no turns; only the title backdrop is capped at High, silent and skips the combat warm-up.
+const TITLE_SUN_SHIFT := 0.23   # screen width to the right of centre, clear of the title's left column
 var title_backdrop := false
 var showcase := false     # the title screen's decorative battle (campaign3d.js setupShowcase): no HUD, no turns, no input, slow orbit
 var music_hits := 0        # issue 1448: hits landed this round by either side, fed to the music as `shots`
@@ -650,6 +651,11 @@ func _build_arrow() -> void:
 # A sector 1 fight like the campaign's first battles (Vex's starting fleet against a sector 1 Hegemony or Corsair group),
 # or a fixed test battle with --scenario. The campaign (godot/main) calls start_battle instead.
 func start_default() -> void:
+	if title_backdrop:
+		# C4/R436: the title is the Hollow Sun every time, with only two distant hulls for scale.
+		start_scenario({"seed": 1405, "sector": 3, "admiral": "vex", "fleet": ["penitent"], "fac": "deathless",
+			"enemies": ["d_scythe"], "obj": "rout", "shape": "deadstar", "map": "open", "dep": "line", "kind": "battle"})
+		return
 	var seed := int(args.get("seed", randi() % 1000000 + 1))
 	if args.has("scenario") and not FileAccess.file_exists("res://rules/test/scenarios.json"):
 		# an exported build has no test folders: play the default battle instead of halting
@@ -773,16 +779,17 @@ func _begin(a) -> void:
 	load_phase = "start"
 	warming = true
 	add_to_group("battle_loading")   # issue 1434: world bakes keep their disk writes until no battle is loading
-	hud.loading(true)
+	var v0: Dictionary = api.view()
+	if not showcase:
+		hud.loading(true, _loading_briefing(v0, _api_tables().get("FACTIONS", {})))
 	var sliced := _sliced()
 	if sliced:
 		stage.start(self)   # a no-op when _ready already started it; a battle begun again on this node starts it here
-	var v0 = api.view()
-	var obj0 = v0.get("obj") if v0 is Dictionary else null
+	var obj0 = v0.get("obj")
 	if obj0 is Dictionary and str(obj0.get("type", "")) == "hold":
 		A4P.prefetch_beacon()   # issue 1536 (PR 1561 review): the relay beacon reads on a worker while the cover shows
 	# PR 1772 (Fable, item 2): station_T2 reads on a worker too when the board has station hexes or a station hole
-	if v0 is Dictionary and _has_station(v0):
+	if _has_station(v0):
 		# the big cluster draws station_T2, smaller clusters and holes the outpost (issue 1791)
 		var spots := A4P.station_spots(v0)
 		A4P.prefetch_station(spots.x == 1, spots.y == 1)
@@ -802,7 +809,7 @@ func _begin(a) -> void:
 	if sliced:
 		# issue 1434: the hull files start loading on worker threads now, while the board and the world are built
 		var tp := Time.get_ticks_usec()
-		_preload_hulls(a.view())
+		_preload_hulls(v0)
 		pre["preload_hulls"] = Time.get_ticks_usec() - tp
 		await get_tree().process_frame
 		await get_tree().process_frame
@@ -994,15 +1001,21 @@ func _begin(a) -> void:
 				break
 		music.play_battle(pf, _enemy_fac(), boss_fight)
 	if showcase:
-		# the fleets hold their line; the camera drifts round the board from high up, as the browser's title does
-		# no board grid behind the menu (the hex fills and outlines), only the ships, rocks and sky; framed low and close
-		# on your line with the enemy beyond it
+		# Keep the board markers out of the decorative shot. The title frames the well, while a bench showcase
+		# without it keeps the fleet framing.
 		board.fills.visible = false
 		board.rings.visible = false
 		cam.reset_view()
 		cam.t = cam.home
-		cam.r = clampf(cam.home_r * 0.95, 120.0, 210.0)
-		cam.b = 1.05
+		if title_backdrop and world != null and world.well_position() != Vector3.INF:
+			cam.t = world.well_position()
+			cam.r = world.well_radius() * 5.5
+			cam.b = 1.35
+			cam.screen_shift = get_viewport().get_visible_rect().size.x * TITLE_SUN_SHIFT
+			cam.snap()
+		else:
+			cam.r = clampf(cam.home_r * 0.95, 120.0, 210.0)
+			cam.b = 1.05
 		for id in views:
 			for n in [views[id].ring, views[id].marker]:
 				if n != null:
@@ -1137,7 +1150,6 @@ var begin_us := {}   # issue 1434 (LOAD9: start to board 1 to 3 s of process ste
 
 func _warmup(gen: int) -> void:
 	warming = true
-	hud.loading(true)
 	load_phase = "world"
 	if world != null: await world.wait_ready()
 	if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
@@ -6860,18 +6872,22 @@ func _class_label(cls) -> String:
 
 
 func _objective() -> String:
-	var o = V.get("obj")
+	return _objective_for(V)
+
+
+static func _objective_for(v: Dictionary) -> String:
+	var o = v.get("obj")
 	if o == null or o.get("type") in ["rout", "ambush"]:
 		return "Objective: break their fleet"
 	match str(o["type"]):
 		"flagship":
-			for u in V["units"]:
+			for u in v["units"]:
 				if u["flagship"] and u["side"] == "enemy":
 					return "Objective: destroy the flagship %s" % u["name"]
 		"hunt":
-			return "Objective: catch the flagship before it jumps (round %d/%d)" % [mini(int(V["round"]), int(o.get("rounds", 0))), int(o.get("rounds", 0))]
+			return "Objective: catch the flagship before it jumps (round %d/%d)" % [mini(int(v["round"]), int(o.get("rounds", 0))), int(o.get("rounds", 0))]
 		"defend":
-			return "Objective: hold the station (round %d/%d), integrity %d/%d" % [mini(int(V["round"]), int(o.get("rounds", 0))), int(o.get("rounds", 0)), int(o.get("hp", 0)), int(o.get("hpMax", 0))]
+			return "Objective: hold the station (round %d/%d), integrity %d/%d" % [mini(int(v["round"]), int(o.get("rounds", 0))), int(o.get("rounds", 0)), int(o.get("hp", 0)), int(o.get("hpMax", 0))]
 		"intercept":
 			return "Objective: destroy %d of %d transports (%d/%d)" % [int(o.get("need", 0)), int(o.get("total", 0)), int(o.get("kill", 0)), int(o.get("need", 0))]
 		"break":
@@ -6879,6 +6895,21 @@ func _objective() -> String:
 		"hold":
 			return "Objective: hold the relay %d/3 (them %d/3)" % [int(o.get("score", 0)), int(o.get("escore", 0))]
 	return "Objective: break their fleet"
+
+
+func _loading_briefing(v: Dictionary, factions: Dictionary) -> Dictionary:
+	var counts := {}
+	for u in v.get("units", []):
+		if u["side"] != "enemy" or u.get("dead", false) or u.get("squadron", false):
+			continue
+		var fac := str(u["fac"])
+		counts[fac] = int(counts.get(fac, 0)) + 1
+	var fleet := PackedStringArray()
+	for fac in counts:
+		var n: int = counts[fac]
+		fleet.append("%s (%d %s)" % [factions.get(fac, {}).get("n", "Unknown fleet"), n, "ship" if n == 1 else "ships"])
+	return {"title": "Battle briefing", "enemy": "Enemy fleet: " + ", ".join(fleet) if not fleet.is_empty() else "",
+		"objective": _objective_for(v), "tip": "Tip: Press R to see where enemy guns can reach next turn.", "reduce_motion": reduce_motion}
 
 
 func _panel_info() -> Dictionary:
@@ -7260,7 +7291,10 @@ func _process(dt: float) -> void:
 		_torp_ft_step(dt)
 	cam.keyboard_enabled = not warming and not ended and (hud == null or (hud.menu == null and hud.get("endcard") == null))
 	if showcase_ready:
-		cam.a += dt * 0.035
+		if title_backdrop and world != null and world.well_position() != Vector3.INF:
+			cam.screen_shift = get_viewport().get_visible_rect().size.x * TITLE_SUN_SHIFT
+		if not title_backdrop or not reduce_motion:
+			cam.a += dt * 0.035
 	# issue 1777 (Ship Look V2): the key light's shadow reach follows the zoom, so its cascades spend their texels on the
 	# ships in view (the fixed 600 spread them over empty space: soft, blocky hull shadows)
 	if key_light != null and board != null and LOOK.ship_look_v2_enabled():

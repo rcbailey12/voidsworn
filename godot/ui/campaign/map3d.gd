@@ -198,6 +198,9 @@ func sync() -> void:
 func _load_sector(sig: String) -> void:
 	loading = true
 	var cover := Loading.new()
+	cover.briefing = _sector_briefing()
+	var main := get_node_or_null("/root/Main")
+	cover.reduce_motion = main != null and "settings" in main and bool(main.settings.get("reduce_motion", false))
 	add_child(cover)
 	# Paint the cover before building models or uploading textures.
 	await get_tree().process_frame
@@ -216,6 +219,17 @@ func _load_sector(sig: String) -> void:
 	loading = false
 	# Changes made during loading get their own covered rebuild.
 	sync()
+
+
+func _sector_briefing() -> Dictionary:
+	var C = _C()
+	var faction = C.FACTIONS.get(C.RUN["map"].get("fac", ""), {})
+	var name := str(faction.get("n", ""))
+	return {"title": "Sector %d briefing" % int(C.RUN["sector"]),
+		"enemy": "Enemy fleet in this sector: " + name if not name.is_empty() else "",
+		"objective": "Objective: reach and defeat the sector flagship.",
+		"tip": "Tip: Select a stop to read its briefing before you jump."}
+
 
 func _cancel_sector_load(cover: CanvasLayer) -> bool:
 	var C = _C()

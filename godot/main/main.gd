@@ -368,6 +368,8 @@ func _apply_settings() -> void:
 		_apply_display()
 	if battle != null and is_instance_valid(battle):
 		_settings_to_battle(battle)
+	if is_instance_valid(showcase):
+		showcase.reduce_motion = bool(settings.get("reduce_motion", false))
 	if music != null:
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
@@ -463,6 +465,12 @@ func show_title(music_after_draw := false) -> void:
 		if ResourceLoader.load_threaded_get_status(HOST_SCRIPT) != ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
 			_host_script = ResourceLoader.load_threaded_get(HOST_SCRIPT)   # read by now: no wait; held, so load() finds it cached
 	_clear()
+	# C32: set the title's AA before its first draw. The deferred backdrop must not rebuild live render buffers.
+	var vp := get_viewport()
+	if vp.msaa_3d != Viewport.MSAA_DISABLED:
+		vp.msaa_3d = Viewport.MSAA_DISABLED
+	if vp.use_taa:
+		vp.use_taa = false
 	if music != null:
 		if music_after_draw and DisplayServer.window_can_draw():
 			_title_music_after_draw()   # issue 1519: the music starts after the title's first frame, not inside it
@@ -505,39 +513,6 @@ func _career_shot(path: String) -> void:
 var showcase: Node = null
 
 
-# Issue 1217 phase 2: the title's battle cycles the enemy through every faction that has built ships (your side is the
-# Sunward line, so all six show over a few visits), starting at a random one each launch. Built ships are listed in
-# res://gen/manifest.json on the PC; a build without it falls back to the repo's ship list.
-static var _showcase_i := -1
-
-static func showcase_factions() -> Array:
-	var out: Array = []
-	for path in ["res://gen/manifest.json", "res://assets/ships/manifest.json"]:
-		if not FileAccess.file_exists(path):
-			continue
-		var m = JSON.parse_string(FileAccess.get_file_as_string(path))
-		if not (m is Dictionary) or not (m.get("ships") is Dictionary):
-			continue
-		for id in m["ships"]:
-			var e = m["ships"][id]
-			var f := str(e.get("faction", "")) if e is Dictionary else ""
-			if f != "" and f != "voidsworn" and not out.has(f):
-				out.append(f)
-		if not out.is_empty():
-			break
-	out.sort()
-	return out if not out.is_empty() else ["hegemony", "corsair"]
-
-
-static func next_showcase_fac() -> String:
-	var facs := showcase_factions()
-	if _showcase_i < 0:
-		_showcase_i = randi() % facs.size()
-	else:
-		_showcase_i = (_showcase_i + 1) % facs.size()
-	return str(facs[_showcase_i])
-
-
 func _start_showcase() -> void:
 	if quitting or title == null or not is_instance_valid(title) or showcase != null or not _showcase_wanted():
 		return
@@ -545,8 +520,8 @@ func _start_showcase() -> void:
 		var t_wait: Node = title
 		if not await battle_parts_ready():
 			return
-		if title != t_wait or showcase != null or title == null or not is_instance_valid(title):
-			return   # the title was left, or a backdrop started, meanwhile
+		if title != t_wait or showcase != null or title == null or not is_instance_valid(title) or not _showcase_wanted():
+			return   # the title was left, a backdrop started, or Low was selected meanwhile
 	# issue 1519: a battle just left is still being freed in slices behind this title: the backdrop's build waits for
 	# that to end, so the two never share a frame and the 3D is back on (off while the old battle is parked)
 	if retire_pending():
@@ -558,10 +533,8 @@ func _start_showcase() -> void:
 	showcase = _battle_packed().instantiate()
 	showcase.showcase = true
 	showcase.title_backdrop = true   # issue 1434: capped at High, silent, no combat warm-up
-	showcase.args["quality"] = str(settings["quality"])
-	showcase.args["taa"] = bool(settings.get("taa", false))
-	showcase.args["fac"] = next_showcase_fac()
-	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
+	showcase.args["quality"] = "high"
+	showcase.reduce_motion = bool(settings.get("reduce_motion", false))
 	add_child(showcase)
 	move_child(showcase, 0)
 	# issue 1434: the backdrop builds a few ships per frame behind the live menu; this wait belongs to this title and this
@@ -587,12 +560,13 @@ func _start_showcase() -> void:
 		quit_clean(0)
 
 
-# Issue 1437 (review on PR 1607): Graphics or TAA changed on the title: the battle behind the menu is rebuilt with the new
-# setting (Low has none), so what shows is what the setting gives
+# Graphics changed on the title: Low has no 3D backdrop, High and Max both use the same High backdrop.
 var _showcase_gen := 0   # bumped by each rebuild request, so only the newest pending one starts a battle
 
 
 func restart_showcase() -> void:
+	if is_instance_valid(showcase) and _showcase_wanted():
+		return   # switching between High and Max never changes the backdrop or rebuilds it
 	_showcase_gen += 1
 	if showcase != null and is_instance_valid(showcase):
 		if showcase.has_method("stop_build"):

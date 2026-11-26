@@ -727,16 +727,18 @@ func _title() -> Control:
 # Built from the orders kit (godot/ui/theme/orders_kit.gd). Top: the six faction crests in one strip (the picked one carries
 # its faction accent, from fx/faction_looks.json, as an underline) and its music plays. Then the faction in two columns:
 # who they are (blurb) and the battle rule. Then the faction's four admirals as four cards of one height (painted portrait,
-# doctrine, bonus, mastery, Command, the starting fleet as silhouettes, Lineage and Select at the bottom of every card).
+# doctrine, passive, earned mastery, short Command, the starting fleet as silhouettes, Lineage and Select at the bottom).
 # The bottom bar is fixed: Back, Run options (a drawer from the right), and the one ember action, Launch.
 # Moved to a hover (R177, listed in the pull request): the starting fleet's hull names (on the silhouettes), the
-# heir or shadow XP line (on the mastery bar) and "Gets stronger each round you hold it" (on Command, as before).
+# heir or shadow XP line (on the mastery bar) and the full Command (also on keyboard focus).
 const DESK_PAD := 56.0
 const DESK_GAP := 16.0
 var desk_opts_open := false         # the Run options drawer stays open across re-renders until closed
 var _desk_cards: Array = []         # the admiral cards of the last render (front_end_test checks their bottoms)
 var _preview_fac := ""
-var _desk_compact := false          # under 960 design pixels of height (Larger at 16:9): smaller portraits, Command text on hover
+var _desk_compact := false          # under 960 design pixels of height (Larger at 16:9): smaller portraits
+const COMMAND_BRIEFS := {"barrage": "Free fleet volley", "hunt": "More damage this round", "scramble": "Launch and strike",
+	"iron": "Reduce hull damage", "surge": "Move farther, dodge fire", "restore": "Repair the fleet"}
 func kbtn(text: String, act: String, arg = "", role: String = "quiet", size: float = 18) -> Button:   # a kit button for an allowed action
 	var found = _find(_acts, act, arg)
 	if found.is_empty(): return null
@@ -765,7 +767,7 @@ func _desk() -> Control:
 	var cw = minf(vs.x - px(DESK_PAD) * 2, float(px(1640)))
 	var left = (vs.x - cw) * 0.5
 	# the scrolling part (only scrolls when a window's shape leaves no room); the action bar below it never moves
-	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; sc.follow_focus = true
 	sc.anchor_right = 1.0; sc.anchor_bottom = 1.0; sc.offset_top = px(28); sc.offset_bottom = -px(96)
 	host.add_child(sc)
 	var row = HBoxContainer.new(); row.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(row)
@@ -870,17 +872,32 @@ func _admiral_card(id, w: float, accent: Color) -> Control:
 	var dl = Kit.label(str(a["doc"]), 18, k, GS.TEXT2, null, true, (inner - fs - px(12)) / k); dl.size_flags_horizontal = Control.SIZE_EXPAND_FILL; nv.add_child(dl)
 	if picked: nv.add_child(Kit.label("SELECTED", 17, k, accent, Kit.medium_font(), false))
 	elif not un: nv.add_child(Kit.label("LOCKED", 17, k, GS.TEXT3, Kit.medium_font(), false))
-	var d = Kit.label(str(a["d"]), 18, k, GS.TEXT, null, true, inner / k); d.size_flags_horizontal = Control.SIZE_EXPAND_FILL; body.add_child(d)
-	var mb = _mastery_bar(id, _desk_compact)
-	var tips = [str(mb.get_meta("next_line", ""))]
-	if mb.get_child_count() >= 3:   # the heir or shadow line moves to the bar's hover
-		var hl = mb.get_child(2); tips.append((hl as Label).text); hl.queue_free(); mb.remove_child(hl)
-	mb.tooltip_text = "\n".join(PackedStringArray(tips.filter(func(t): return t != ""))); mb.mouse_filter = Control.MOUSE_FILTER_PASS
-	body.add_child(mb)
+	var d = Kit.label(str(a["d"]), 20, k, GS.TEXT, Kit.medium_font(), true, inner / k); d.name = "Passive"; d.size_flags_horizontal = Control.SIZE_EXPAND_FILL; body.add_child(d)
+	if C.masteryXP(id) > 0:
+		var mb = _mastery_bar(id, _desk_compact)
+		mb.name = "EarnedMastery"
+		var tips = [str(mb.get_meta("next_line", ""))]
+		if mb.get_child_count() >= 3:   # the heir or shadow line moves to the bar's hover
+			var hl = mb.get_child(2); tips.append((hl as Label).text); hl.queue_free(); mb.remove_child(hl)
+		mb.tooltip_text = "\n".join(PackedStringArray(tips.filter(func(t): return t != ""))); mb.mouse_filter = Control.MOUSE_FILTER_PASS
+		body.add_child(mb)
 	if C.jt(a.get("cmd")):
-		var ct = _cmd_text(a["cmd"], C.picked_faction)
-		var cmd_l = rich(c("Command:", BONE3) + " [b]" + esc(a["cmd"]["n"]) + "[/b]" + ("" if _desk_compact else ". " + c(esc(ct), GS.TEXT2)), 17)
-		cmd_l.tooltip_text = (ct + "\n" if _desk_compact else "") + "Gets stronger each round you hold it."; body.add_child(cmd_l)
+		var cmd: Dictionary = a["cmd"]
+		var summary := str(COMMAND_BRIEFS.get(str(cmd["id"]), ""))
+		var line := str(cmd["n"]) + (" · " + summary if not summary.is_empty() else "")
+		var full := _cmd_text(cmd, C.picked_faction) + "\nGets stronger each round you hold it."
+		var cmd_row := Kit.link(line, k, Callable(), 17)
+		cmd_row.name = "CommandBrief"
+		cmd_row.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		cmd_row.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		cmd_row.tooltip_text = full
+		body.add_child(cmd_row)
+		var cmd_detail := Kit.label(full, 17, k, GS.TEXT2, null, true, inner / k)
+		cmd_detail.name = "CommandDetail"
+		cmd_detail.hide()
+		body.add_child(cmd_detail)
+		cmd_row.focus_entered.connect(cmd_detail.show)
+		cmd_row.focus_exited.connect(cmd_detail.hide)
 	# the starting fleet as silhouettes; the names on hover
 	var names = []; var sil = HBoxContainer.new(); sil.add_theme_constant_override("separation", px(10))
 	var n_ships = maxi(1, a["start"].size())

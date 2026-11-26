@@ -32,6 +32,7 @@ func _bus() -> Array:
 
 
 func _run() -> void:
+	root.size = Vector2i(1920, 1080)
 	# the title's own sound node, as main.gd makes it
 	var ui := Sfx.new()
 	ui.only = "ui_"
@@ -72,10 +73,21 @@ func _run() -> void:
 	var sc2 = BattleScene.instantiate()
 	sc2.showcase = true
 	sc2.title_backdrop = true
-	sc2.args["noworld"] = true
+	sc2.args["sliced-load"] = true
+	sc2.reduce_motion = true
 	root.add_child(sc2)
-	await process_frame
+	var title_start := Time.get_ticks_msec()
+	while not sc2.showcase_ready and Time.get_ticks_msec() - title_start < 20000:
+		await process_frame
 	_check(vp.msaa_3d == Viewport.MSAA_8X, "backdrop leaves the menu's MSAA alone while it shows (%d)" % vp.msaa_3d)
+	var well: Vector3 = sc2.world.well_position() if is_instance_valid(sc2.world) else Vector3.INF
+	var camera_center: Vector2 = sc2.cam.unproject_position(well) if well != Vector3.INF else Vector2.ZERO
+	var frame_x := camera_center.x / root.get_visible_rect().size.x
+	_check(sc2.showcase_ready and well != Vector3.INF and sc2.cam.t.is_equal_approx(well) and frame_x > 0.69 and frame_x < 0.77,
+		"C4 the Hollow Sun is the actual subject of the title camera, framed clear of the wordmark (x=%.2f)" % frame_x)
+	var azimuth: float = sc2.cam.a
+	await process_frame
+	_check(is_equal_approx(sc2.cam.a, azimuth), "C4 reduce motion stops the title camera drift")
 	sc2.stop_build()
 	_check(vp.msaa_3d == Viewport.MSAA_8X, "stop_build restored the menu's MSAA (%d)" % vp.msaa_3d)
 	sc2.queue_free()
@@ -94,14 +106,24 @@ func _run() -> void:
 	var b = BattleScene.instantiate()
 	b.args["sliced-load"] = true
 	b.args["noworld"] = true
+	b.args["nofx"] = true   # this fixture measures hull staging, not the cost of building battle shields
 	b.args["seed"] = 7
 	b.bot = true
 	root.add_child(b)
 	var units: int = (b.api.view()["units"] as Array).size() if b.api != null else -1
+	var brief: Dictionary = b.hud.load_cover.details if b.hud.load_cover != null else {}
+	_check(str(brief.get("enemy", "")).contains("ships") and brief.get("objective", "") == b._objective_for(b.api.view())
+		and str(brief.get("tip", "")).contains("Press R"), "C9 the battle cover briefs the actual enemy fleet and objective, with a tip")
 	var t0 := Time.get_ticks_msec()
+	var steps := {}
 	while b.views.size() < units and Time.get_ticks_msec() - t0 < 20000:
 		await process_frame
+		if b.hud.load_cover != null:
+			var count: Vector2i = b.hud.load_cover.ships
+			if count.y > 0:
+				steps[count.x] = true
 	_check(units > 0 and b.views.size() == units, "sliced build made every ship (%d of %d)" % [b.views.size(), units])
+	_check(steps.size() > 1, "C34 the cover reports more than one ship count while the build yields across frames")
 	# the same fight with every hull a kit ship (a stand-in scene): threaded load, worker instances, setup in two steps
 	var codes := {}
 	var hulls_n := 0
@@ -137,6 +159,7 @@ func _run() -> void:
 	var k = BattleScene.instantiate()
 	k.args["sliced-load"] = true
 	k.args["noworld"] = true
+	k.args["nofx"] = true
 	k.args["seed"] = 7
 	k.bot = true
 	root.add_child(k)
