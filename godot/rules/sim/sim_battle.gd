@@ -17,6 +17,7 @@ var matrix_stats := {"rounds": 0, "n": 0, "timeout": 0, "rams": {"player": 0, "e
 var hulls := {}
 var weapons := {}
 var abilities := {}
+var fades := {}
 var _player_launches := 0
 var _identity := {}
 var _speed := 1.0
@@ -67,6 +68,17 @@ func launchWing(u, h, kind) -> void:
 	# Replacement wings use this path without calling useAbility. Initial wings use makeWing.
 	if u.side == "player":
 		_player_launches += 1
+
+
+func fadeMove(u) -> bool:
+	var count: bool = matrix and u != null and canFade(u) and not jt(u.get("dead")) \
+		and not jt(u.get("isSq")) and jt(u.get("postFire")) and postFireMp(u) >= 1
+	var moved := super.fadeMove(u)
+	if count:
+		var side: Dictionary = fades.get_or_add(u.fac, {}).get_or_add(u.side, {"chances": 0, "moved": 0})
+		side.chances += 1
+		side.moved += int(moved)
+	return moved
 
 
 func player_abilities_fired() -> Dictionary:

@@ -363,6 +363,9 @@ func repairRunIds(r) -> Variant:
 	for b in r["boons"]:
 		if b is Dictionary: bs.append(b)
 	r["boons"] = _keep(bs, BOONS, "boon", rep, func(b): return b.get("id"))
+	var reward = r.get("reward")
+	if reward is Dictionary and reward.get("boonOffer") is Array:
+		reward["boonOffer"] = reward["boonOffer"].filter(func(o): return o is Dictionary and BOONS.has(o.get("id")))
 	r["patrons"] = _keep(r["patrons"], PATRONS, "patron", rep)
 	if r.get("aspect") != null and not ASPECTS.has(r["aspect"]): rep.append("aspect " + str(r["aspect"])); r["aspect"] = null
 	if r.get("giftBoon") != null and not BOONS.has(r["giftBoon"]): r["giftBoon"] = null

@@ -45,9 +45,16 @@ func _shields() -> void:
 	_start("ithar", "vaelen", ["i_song"])
 	var ship: Dictionary = rules.caps("player")[0]
 	var foe: Dictionary = rules.caps("enemy")[0]
+	var weapon: Dictionary = rules.mkWeapon("laser", "F", {})
+	ship.shp = 10
+	rules.syncShields(ship)
+	rules.applyHit(foe, weapon, ship, 4.0, 0)
+	var after_strike: float = ship.shp
+	rules.startSideTurn("player")
+	_check(after_strike < 10.0 and ship.shp == after_strike + ship.regen and ship.shp < ship.shMax,
+		"C1 a shield hit allows normal regen only")
 	ship.shp = 0
 	rules.syncShields(ship)
-	var weapon: Dictionary = rules.mkWeapon("laser", "F", {})
 	rules.applyHit(foe, weapon, ship, 1.0, 0)
 	rules.startSideTurn("player")
 	_check(ship.shp == ship.regen and ship.shp < ship.shMax, "C1 a hull hit allows normal regen only")
@@ -127,6 +134,12 @@ func _boon() -> void:
 	var error: String = campaign.load_tables()
 	_check(error == "" and not campaign.BOONS.has("r_slip") and not campaign.BOON_FX.has("r_slip") and not campaign.BOON_D.has("r_slip"),
 		"C3 the campaign cannot offer the retired boon or show its effect text")
+	var existing := {"id": "e_spread", "r": 0}
+	var retired := {"id": "r_slip", "r": 0}
+	var run: Dictionary = campaign.normalizeRun({"boons": [retired, existing], "giftBoon": "r_slip",
+		"reward": {"boonOffer": [retired, existing]}})
+	_check(run.boons == [existing] and run.giftBoon == null and run.reward.boonOffer == [existing],
+		"C3 continuing an old save drops the retired boon from its inventory, gift and pending offer only")
 	_check(error == "" and campaign.effArch("swarm", "ithar") == "heavy", "H4 the campaign previews the real Glasswright formation")
 
 
@@ -143,10 +156,19 @@ func _deploy() -> void:
 		_check(not spots.is_empty() and not api.pick_skill_hex(spots.back().q, spots.back().r), "C4 choose a ship before the hex")
 		if spots.is_empty(): continue
 		var spot: Dictionary = spots.back()
-		_check(api.pick_skill_target(ship.id) and not api.pick_skill_hex(ship.q, ship.r) and not api.pick_skill_hex(-999, -999),
-			"C4 occupied and off-zone destinations are rejected")
+		var outside: Dictionary = api.view().hexes.filter(func(h):
+			return not pick.hexes.any(func(zone): return h.q == zone.q and h.r == zone.r))[0]
+		_check(api.pick_skill_target(ship.id) and not api.pick_skill_hex(ship.q, ship.r) and not api.pick_skill_hex(outside.q, outside.r),
+			"C4 occupied and on-board but out-of-zone destinations are rejected")
+		var key: String = rules.hkey(spot.q, spot.r)
+		var terrain = rules.B.terrain.get(key)
+		rules.B.terrain[key] = "rock"
+		_check(not api.pick_skill_hex(spot.q, spot.r), "C4 blocking terrain cannot be picked")
+		if terrain == null: rules.B.terrain.erase(key)
+		else: rules.B.terrain[key] = terrain
 		_check(api.pick_skill_hex(spot.q, spot.r) and api.phase == "player" and api.unit(ship.id).q == spot.q and api.unit(ship.id).r == spot.r,
 			"C4 chosen ally starts on the chosen open hex")
+		_check(not api.pick_skill_hex(spot.q, spot.r), "C4 placement can only be spent once")
 		var initial: Array = pick.targets
 		api.interactive_deployment = false
 		api.new_battle_scenario(scenario)

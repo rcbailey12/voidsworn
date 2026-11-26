@@ -6391,7 +6391,7 @@ func _show_skill_picker() -> void:
 		if not is_instance_valid(_deploy_grid):
 			_deploy_grid = DeployGrid.new()
 			hud.add_child(_deploy_grid)
-		_deploy_grid.show_zone(picker, v["units"])
+		_deploy_grid.show_zone(picker, v)
 	var candidates := {}
 	for t in picker["targets"]:
 		candidates[t["id"]] = true

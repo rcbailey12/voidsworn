@@ -5846,7 +5846,7 @@ func skillTargetView() -> Dictionary:
 			targets.append(target)
 	var key: String = treeSkill(pending["kind"])["key"]
 	if pending.get("move", false):
-		var move_prompt := "Pick a ship from your fleet." if picked.is_empty() else "Place %s on a lit hex." % picked["name"]
+		var move_prompt := "Pick a fleet ship below. Rings mark enemy ships." if picked.is_empty() else "Place %s on a lit hex." % picked["name"]
 		return {"key": key, "n": treeName(key), "q": move_prompt, "targets": targets, "picked": picked, "hexes": _deploy_choices()}
 	var prompt := "Pick the first ship to swap." if picked.is_empty() else "Pick a second ship to swap with %s." % picked["name"]
 	return {"key": key, "n": treeName(key), "q": prompt, "targets": targets, "picked": picked}

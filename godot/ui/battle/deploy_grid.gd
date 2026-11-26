@@ -6,6 +6,7 @@ const HEX := [Vector2(0, -1), Vector2(0.866, -0.5), Vector2(0.866, 0.5),
 	Vector2(0, 1), Vector2(-0.866, 0.5), Vector2(-0.866, -0.5)]
 
 var cells: Array = []
+var landings: Dictionary = {}
 var ships: Dictionary = {}
 var selected := ""
 var hover: Variant = null
@@ -19,14 +20,16 @@ func _ready() -> void:
 	resized.connect(queue_redraw)
 
 
-func show_zone(picker: Dictionary, units: Array) -> void:
-	cells = picker.get("hexes", [])
+func show_zone(picker: Dictionary, battle_view: Dictionary) -> void:
+	cells = battle_view["hexes"]
 	selected = picker["picked"].get("id", "")
+	landings.clear()
+	for h in picker["hexes"]:
+		landings[Vector2i(h.q, h.r)] = h.open
 	ships.clear()
-	for unit in units:
-		if unit["side"] == "player":
-			ships[Vector2i(unit["q"], unit["r"])] = unit["id"]
-	visible = not cells.is_empty() and not selected.is_empty()
+	for unit in battle_view["units"]:
+		ships[Vector2i(unit["q"], unit["r"])] = unit
+	visible = not cells.is_empty()
 	hover = null
 	queue_redraw()
 
@@ -59,12 +62,11 @@ func _outline(at: Vector2) -> PackedVector2Array:
 
 
 func open_at(screen: Vector2) -> Variant:
-	if not visible: return null
+	if not visible or selected.is_empty(): return null
 	_fit()
 	var p := get_global_transform_with_canvas().affine_inverse() * screen
-	for h in cells:
-		if not h.open: continue
-		var cell := Vector2i(h.q, h.r)
+	for cell: Vector2i in landings:
+		if not landings[cell]: continue
 		if Geometry2D.is_point_in_polygon(p, _outline(_origin + _axial(cell) * _radius)):
 			return cell
 	return null
@@ -83,14 +85,18 @@ func _draw() -> void:
 	for h in cells:
 		var cell := Vector2i(h.q, h.r)
 		var at := _origin + _axial(cell) * _radius
-		var filled := Color(0.08, 0.17, 0.17, 0.95) if h.open else Color(0.07, 0.08, 0.08, 0.9)
-		var edge := GS.GLACIER.darkened(0.35) if h.open else GS.TEXT3.darkened(0.4)
+		var open: bool = landings.get(cell, false)
+		var in_zone := landings.has(cell)
+		var filled := Color(GS.TEXT2, 0.14 if open else 0.03)
+		var edge := Color(GS.TEXT2, 0.50 if open else (0.22 if in_zone else 0.08))
 		if hover == cell:
-			filled = GS.GLACIER.darkened(0.45)
-			edge = GS.GLACIER
+			filled = Color(GS.MAP_EMBER, 0.28)
+			edge = GS.MAP_EMBER
 		var polygon := _outline(at)
 		draw_colored_polygon(polygon, filled)
 		polygon.append(polygon[0])
 		draw_polyline(polygon, edge, 1.0, true)
 		if ships.has(cell):
-			draw_circle(at, _radius * 0.24, GS.MAP_EMBER if ships[cell] == selected else GS.TEXT2, true, -1.0, true)
+			var ship: Dictionary = ships[cell]
+			var ink := GS.MAP_EMBER if ship.id == selected else GS.TEXT2
+			draw_circle(at, _radius * 0.32, ink, ship.side == "player", 1.5, true)

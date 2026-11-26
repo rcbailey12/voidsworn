@@ -161,6 +161,9 @@ func _placement_picker() -> void:
 	var picker: Dictionary = api.view()["skill_target"]
 	var ships: Array = picker.get("targets", [])
 	var open: Array = picker.get("hexes", []).filter(func(h): return h.open)
+	var grid = b._deploy_grid
+	_check(grid.visible and grid.ships.values().any(func(unit): return unit.side == "enemy"),
+		"Sworn Deployment shows enemy positions before the ship pick")
 	_check(not ships.is_empty() and not open.is_empty(), "Sworn Deployment shows the initial fleet and legal landing hexes")
 	if ships.is_empty() or open.is_empty():
 		b.free()
@@ -168,7 +171,6 @@ func _placement_picker() -> void:
 	var chosen: Dictionary = ships.back()
 	var destination: Vector2i = _hex(open.back())
 	_check(_click_hud(b, "pick", chosen.id) and b._deploy_grid.visible, "fleet click opens the deployment hex preview")
-	var grid = b._deploy_grid
 	var clicked: Vector2 = grid.get_global_transform_with_canvas() * grid.centre(destination)
 	_click_at(clicked)
 	_check(api.phase == "player" and _hex(api.unit(chosen.id)) == destination, "clicking a lit hex places the chosen ship and starts the battle")
