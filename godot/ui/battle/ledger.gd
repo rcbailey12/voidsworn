@@ -694,9 +694,9 @@ func _target_tip() -> String:
 		var routed: Array = target.get("routed", [])
 		for i in mini(sh.size(), 4):
 			parts.append("%s %d%s" % [words[i], int(sh[i]), " (routed)" if i in routed else ""])
-		s += "\nShared shield charge %d of %d. Damage each side can absorb per hit: %s." % [int(target.get("shp", 0)), int(target.shMax), ", ".join(parts)]
+		s += "\nShield pool %d of %d. Sides catch: %s." % [int(target.get("shp", 0)), int(target.shMax), ", ".join(parts)]
 		if bool(target.get("struck_routed", false)):
-			s += "\nThis volley hits its %s side, where power is routed. That side absorbs more, but blocked damage drains 30%% more charge." % words[int(target.get("quad", 0))]
+			s += "\nThis volley hits its %s side, where it routed power: that side catches more, but each hit drains the pool 30%% faster." % words[int(target.get("quad", 0))]
 	if str(target.get("line", "")) != "":
 		s += "\n" + plain(str(target.line))
 	return s
@@ -881,7 +881,7 @@ func _fleet_slot(r: Rect2, row: Dictionary) -> void:
 	if st != "Lost":
 		tip += " Hull %s / %s." % [Campaign.hull_text(hp), Campaign.hull_text(row.get("maxHp", 0))]
 		if float(row.get("shMax", 0)) > 0.0:
-			tip += " Shield charge %d / %d." % [int(row.get("shp", 0)), int(row.shMax)]
+			tip += " Shield pool %d / %d." % [int(row.get("shp", 0)), int(row.shMax)]
 		if int(row.get("danger", 0)) > 0:
 			tip += "\nThe enemy can reach it first (%d guns)." % int(row.danger)
 		if bool(row.get("new", false)):

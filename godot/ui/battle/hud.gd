@@ -798,8 +798,7 @@ func set_chip(txt: String) -> void:
 
 
 # ---------------------------------------------------------------- terrain legend (ui3d.js refreshLegend)
-# Only what is on this battlefield: the encounter, its zones and its terrain. Closed it is one line under the Nemesis, top
-# right: a named swatch per terrain; a click opens the encounter and what each terrain does.
+# The closed key shows named swatches for this battlefield under the Nemesis. A click opens the encounter and terrain effects.
 
 func _build_legend() -> void:
 	legend = PanelContainer.new()
@@ -849,7 +848,7 @@ func _draw_legend() -> void:
 		var key := VBoxContainer.new()
 		key.add_theme_constant_override("separation", s(2))
 		key.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		key.add_child(_label("Terrain key", 19, S_TEXT, font_semi))
+		key.add_child(_label("Terrain key", 19, S_TEXT, font_name))
 		for r in rows:
 			var h := HBoxContainer.new()
 			h.add_theme_constant_override("separation", s(8))

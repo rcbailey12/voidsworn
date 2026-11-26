@@ -93,7 +93,7 @@ func _run() -> void:
 		ok = ok and shown and fired
 	b.sfx.free()
 	b.free()
-	if ok and words_ok: print("PASS: Burn and fire odds agree, red-ring and blocked-shot text match the board, Brace reads as Braced, and the flak key keeps the plan")
+	if ok and words_ok: print("PASS: Burn and fire odds agree, red-ring and blocked-shot text match the board, and the flak key keeps the plan")
 	quit(0 if ok and words_ok else 1)
 
 
@@ -117,10 +117,6 @@ func _check_words(b: TestBattle, ship: Dictionary, foe: Dictionary) -> bool:
 		and b.api.entry_reason(ship.id, 3, 6) == "Blocked by the asteroid on this hex."
 	b.api.R.B["terrain"] = terrain
 	if not blocked: printerr("FAIL: Council 29: blockers are named and counted without hex numbers")
-	u.merge({"braced": true, "fired": true, "mp": 1}, true)
-	var flags := str(b._panel_info().get("flags", ""))
-	var braced := str(b._card_info().get("say", "")).begins_with("Braced") and flags.contains("Braced") and not flags.contains("Fired")
-	if not braced: printerr("FAIL: Council 33: a braced ship reads as Braced, not Fired")
 	b.V = b.api.view()
 	b._index_view()
-	return clear_reason and blocked and braced
+	return clear_reason and blocked

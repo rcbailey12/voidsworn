@@ -1054,7 +1054,7 @@ func _run_options() -> Control:
 # ---------------- aspect ----------------
 # ---------------- the flagship podium (issue 1217 phase 4; Ryan: its own screen with a big live 3D ship) ----------------
 # Left: the flagship, big, turning slowly (still under Reduce motion), with its name plate. Right: the aspect offers as
-# cards you pick, then what rides along (a patron's gift and Threat). The bar: Back (the rules action
+# cards you pick, then what rides along (a patron's gift, Heat, the cores in range). The bar: Back (the rules action
 # backToSetup, both twins) and one ember Launch that takes the picked aspect.
 const Podium = preload("res://ui/campaign/flagship_podium.gd")
 var aspect_pick := ""               # the aspect card picked on this page; Launch takes it
@@ -1112,6 +1112,12 @@ func _podium() -> Control:
 		var hn = []
 		for kk in R["heat"]: hn.append(C.HEAT[kk]["n"])
 		v.add_child(Kit.label("Threat " + C.numstr(C.heatLevel(R["heat"])) + ": " + ", ".join(PackedStringArray(hn)) + ".", 17, k, BLOOD, null, true, (col_w - px(4)) / k))
+	var ps = []
+	for p in R["patrons"]: ps.append("[b]" + c(esc(C.PATRONS[p]["n"]), Color(C.PATRONS[p]["col"])) + "[/b]")
+	var pl = rich(c("Cores in range: ", BONE3) + ", ".join(PackedStringArray(ps)) + c(". Win battles carrying their signal to earn their protocols.", BONE3), 17)
+	var pt = []
+	for p in R["patrons"]: pt.append(str(C.PATRONS[p]["n"]) + ": " + str(C.PATRONS[p]["theme"]).to_lower())
+	pl.tooltip_text = "\n".join(PackedStringArray(pt)); pl.mouse_filter = Control.MOUSE_FILTER_PASS; v.add_child(pl)
 	# the bar
 	var back = kbtn("Back", "backToSetup", "", "back")
 	var go: Button
@@ -2555,8 +2561,7 @@ func _modal(md: Dictionary) -> void:
 				v.add_child(aw[0])
 			if d["cond"] != null: v.add_child(rich(c("Sector condition: [b]" + esc(d["cond"]["n"]) + "[/b].", EMBER) + " " + c(esc(d["cond"]["d"]), BONE2), 17))
 			if md["kind"] == "sector": p.call(F.get("blurb", ""), BONE2)
-			if md["kind"] == "intro":
-				p.call("Pick a route across the sector map. A signal on a battle marks a Lattice core. Win that battle to choose one of its protocols, an upgrade that lasts for this run. The sector flagship waits at the far end.", BONE2)
+			if md["kind"] == "intro": p.call("Pick a route across the sector map. Battles carrying a core’s signal pay out that core’s protocols, so the route you choose shapes your build. The flagship of the sector waits at the far end.", BONE2)
 			_story_line(v)
 			v.add_child(foot([fin("Plot a course", "beat3" if float(R["sector"]) == 3 else "closeModal", "", acts)]))
 		"abandon":
