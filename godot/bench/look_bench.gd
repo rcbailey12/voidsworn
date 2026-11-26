@@ -93,6 +93,7 @@ var headless := false
 var failed := ""   # issue 1877 (Artoo on PR 1904): a failed clip or strict row fails the run (no LOOK_BENCH_DONE, exit 4)
 var sfx: Node = null          # --sound only
 var death_audio: Node = null
+var _build_d_stub: Node = null   # only used when comparing Nova on a pre-2045 checkout
 
 
 func _ready() -> void:
@@ -337,6 +338,7 @@ func _sound_setup() -> void:
 # A fresh effects system: every moment starts from the same empty state (no smoke, wrecks or debris left over from the
 # moment before, the effect clock at 0).
 func _make_fx() -> void:
+	_build_d_stub = null
 	if fx != null and is_instance_valid(fx):
 		world.remove_child(fx)   # _exit_tree releases its GPU resources and waits for its worker jobs
 		fx.queue_free()
@@ -404,6 +406,8 @@ func _grid() -> void:
 func _step() -> void:
 	_settle()
 	fx.step(STEP)
+	if is_instance_valid(_build_d_stub):
+		_build_d_stub._process(STEP)
 	if wld != null and is_instance_valid(wld) and wld.has_method("step"):
 		wld.step(STEP)
 	steps += 1
@@ -712,6 +716,72 @@ func _moment_cut(kind: String) -> void:
 	cam.t = (pa + pt) * 0.5
 
 
+# The effect-only replay of the battle events. The bench runs on both revisions, so the before frames use
+# the actual old FX methods or the old battle cue, not a look-alike built on the new kit.
+func _build_d(row: Dictionary, event: String) -> void:
+	var t: float = fx.now
+	var p: Vector3 = T.visual_position() + Vector3.UP * 2.0
+	var from: Vector3 = A.visual_position() + Vector3.UP * 2.0
+	var dest: Vector3 = T.position + Vector3(-24.0, 0.0, -7.0)
+	var shared: bool = fx.has_method("rift_in")
+	report["build_d"] = "shared" if shared else "legacy"
+	match event:
+		"nova":
+			var impact: Vector3 = T.position + Vector3.UP * 2.0
+			if shared:
+				fx.nova("A", impact)
+			else:
+				fx.ability("A", "nova")
+				_build_d_stub = load("res://scenes/battle/fx_stub.gd").new()
+				fx.add_child(_build_d_stub)
+				_build_d_stub.set_process(false)
+				fx.later(t + 0.50, func legacy_shell() -> void:
+					_build_d_stub.bolt(from, impact, Color(1.0, 0.8, 0.5), 0.35, 0.0, 3.0))
+				fx.later(t + 0.85, _build_d_pop.bind(impact, Color(1.0, 0.7, 0.4), 60.0, 0.8))
+		"arrival":
+			if shared:
+				fx.rift_in("T")
+			else:
+				_build_d_pop(p, Color(1.0, 0.5, 0.4), 24.0, 0.6)
+		"risen":
+			if shared:
+				fx.rift_in("T", 1.0, 0.0, true)
+			else:
+				_build_d_pop(p, FX.FLOOK.engine("deathless"), 16.0, 0.8)
+		"blink":
+			if shared:
+				fx.fold("T", 1.0, func bench_blink() -> void: T.position = dest)
+			else:
+				var c := FX.FLOOK.engine("ithar")
+				# The explicit-hex ability moved the view before the separate blink event on the old branch.
+				fx.ability("T", "blink")
+				T.position = dest
+				_build_d_pop(T.visual_position() + Vector3.UP * 2.0, c, 18.0, 0.5)
+				fx.later(t + 0.30, func legacy_blink() -> void:
+					_build_d_pop(T.visual_position() + Vector3.UP * 2.0, c, 18.0, 0.5))
+				fx.later(t + 0.55, func legacy_blink_end() -> void:
+					_build_d_pop(T.visual_position() + Vector3.UP * 2.0, c, 18.0, 0.5))
+		"phase":
+			if shared:
+				fx.fold("T")
+			else:
+				fx.ability("T", "phase")
+				_build_d_pop(p, Color("#ddc4ff"), 22.0, 0.9)
+		"jump":
+			fx.jump_out("T")
+		"ability":
+			fx.ability("T", str(row.get("ability", "")))
+		"command":
+			fx.command("T")
+		"bay":
+			fx.launch("A", "T")
+
+
+func _build_d_pop(p: Vector3, c: Color, size: float, life: float) -> void:
+	fx.pop(p, fx.now, c, size * 0.5, 3.0, Vector3.UP, clampf(life * 0.5, 0.1, 0.4))
+	fx.light(p, fx.now, life, 2.0, c)
+
+
 func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: String, keep := true) -> bool:
 	var id := str(row["id"])
 	var strict := bool(row.get("strict", false)) or args.has("strict-moments")
@@ -739,7 +809,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var tat: Array = row.get("tgt_at", [34, 0])
 	# Only the target of a death row can die. Hull and shader warm-up still runs for every ship.
 	var fatal := str(row.get("fatal", ""))
-	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2, "",
+	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), int(row.get("tgt_facing", 2)), "",
 		row.get("do") == "death" or fatal != "", str(row.get("tgt_tpl", "")))
 	if T == null:
 		return false
@@ -925,6 +995,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	elif what == "wounds":
 		fx.sync_ship("A", {"hp": 25.0, "maxHp": 100.0, "burning": false, "sh": [5, 5, 5, 5],
 			"sec": {"eng": {"hp": 10, "max": 100}, "mid": {"hp": 10, "max": 100}, "prow": {"hp": 10, "max": 100}}})
+	elif what == "build_d":
+		_build_d(row, str(row["event"]))
 	elif what == "wisp":
 		# Isolate the real turret/mount/nozzle picture without a nearby full wound or a spark hiding it.
 		var target = fx.ship("T")
@@ -978,6 +1050,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var strip := Image.create_empty(1 if clip else cell.x * total, cell.y, false, Image.FORMAT_RGB8)
 	var ci := 0
 	var cells: Array = []
+	var focus_by_window: Array = row.get("focus_by_window", [])
+	var event_target: Vector3 = Vector3(float(tat[0]), 0, float(tat[1]))
 	var guard := 0
 	var wi := 0
 	var step_jets := what == "jets" and bool(row.get("step_jets", false))
@@ -1045,6 +1119,14 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		else:
 			take = steps >= int(w["next"])
 		if take:
+			if not headless and int(w["got"]) == 0 and wi < focus_by_window.size():
+				var shot_focus: Vector3 = focus
+				match str(focus_by_window[wi]):
+					"flight": shot_focus = A.position.lerp(event_target, 0.52)
+					"target": shot_focus = event_target
+					"blink_end": shot_focus = event_target + Vector3(-24.0, 0.0, -7.0)
+				_cam(shot_focus, r)
+				await RenderingServer.frame_post_draw
 			if track_hulk:
 				var hulk: Node3D
 				for wreck in fx.dstate.get("wrecks", []):
@@ -1094,6 +1176,11 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
 		if strict:
 			return _fail_moment(id, r, "target drew %s, expected %s" % [tcode, str(row["expect_code"])])
+	if row.has("expect_att_code") and str(A.code) != str(row["expect_att_code"]):
+		_warn("%s: attacker drew %s, the row expects %s" % [id, str(A.code), str(row["expect_att_code"])])
+		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, str(A.code), str(row["expect_att_code"])])
+		if strict:
+			return _fail_moment(id, r, "attacker drew %s, expected %s" % [acode, str(row["expect_att_code"])])
 	if row.has("expect_craft") and not args.has("allow-blocks"):
 		var craft_code := ""
 		if is_instance_valid(T) and is_instance_valid(T.hull):

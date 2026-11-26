@@ -346,6 +346,7 @@ void process() {
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
 #  40 directional hull-rupture vent jet (VENT_JET: tapered hot root + sheared gas cone)
+#  41 legacy Nova Cannon shell (SPR_NOVA_LEGACY)
 const TICK_EMBER := 38
 const TICK_DROPLET := 39
 const VENT_JET := 40
@@ -359,10 +360,11 @@ static func flash_sprite_floor(kind: int, px: float) -> float:
 
 const WEAPON_MASKS := preload("res://render/weapon_layer_masks.gd")
 const ROCKET_SMOKE := 37
+const SPR_NOVA_LEGACY := 41
 const SPRITE := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + WEAPON_MASKS.SPRITE + """
+""" + COMMON + WEAPON_MASKS.SPRITE + ("\nconst int SPR_NOVA_LEGACY = %d;\n" % SPR_NOVA_LEGACY) + """
 uniform float gate = 1.0;
 uniform sampler2D kit_flake : filter_linear, repeat_disable;
 varying vec2 vUv;
@@ -487,6 +489,9 @@ void fragment() {
 	if (k == 0) {
 		float f = (1.0 - t) * (1.0 - t) * I;
 		add = vCol.rgb * exp(-r * r * 5.0) * f + vec3(exp(-r * r * 30.0)) * f * 0.8 + vCol.rgb * f * 0.5 * star;
+	} else if (k == SPR_NOVA_LEGACY) {
+		// Temporary Nova default, equivalent to the legacy moving glow until the bench pick.
+		add = vCol.rgb * min(exp(-r * r * 4.0) * 0.7 + exp(-r * r * 24.0) * 0.6, 1.0) * I;
 	} else if (k == 24) {
 		float f = (1.0 - smoothstep(0.18, 1.0, t)) * I;
 		add = (vCol.rgb * exp(-r * r * 5.0) + vec3(1.0, 0.88, 0.65) * exp(-r * r * 22.0) * 0.7) * f;
@@ -1038,13 +1043,18 @@ void fragment() {
 # kinds: 0 smoke ring (alpha)   1 shockwave   2 soft pop ring (reduce-flashing replacement)   3 thin pale ring (gauss
 #        muzzle shock, sonic boom)   4 hex-cell ring (Hegemony shield shatter)   5 soft death front (camera-facing)
 const RING_DEATH_FRONT := 5
+const RING_RIFT_ARCH := 11
+const RING_RIFT_SCAN := 12
 const RING := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + ("\nconst int RING_DEATH_FRONT = %d;\n" % RING_DEATH_FRONT) + """
+""" + COMMON + ("\nconst int RING_DEATH_FRONT = %d;\nconst int RING_RIFT_ARCH = %d;\nconst int RING_RIFT_SCAN = %d;\n" % [RING_DEATH_FRONT, RING_RIFT_ARCH, RING_RIFT_SCAN]) + """
 varying vec2 vUv;
 varying vec4 vCol;
 varying vec4 vInfo;
+bool is_rift_ring(int k) {
+	return k >= 7 && k <= RING_RIFT_SCAN;
+}
 void vertex() {
 	vec4 a0 = CUSTOM0; vec4 a1 = CUSTOM1; vec4 a2 = CUSTOM2; vec4 a3 = CUSTOM3; vec4 a4 = vec4(UV, UV2);
 	float a = scene_t - a0.w;
@@ -1073,7 +1083,7 @@ void vertex() {
 		}
 		// F3: shock fronts, soft pops and pale shock rings keep at least 12 px across (1080 lines), dimming as they grow
 		float rb = 1.0;
-		if (rk >= 1 && rk <= 3) {
+		if ((rk >= 1 && rk <= 3) || is_rift_ring(rk)) {
 			// round 2: a4.w is this ring's own final size in pixels (kill shock rings, shield ripples): the floor grows with
 			// the ring's own easing (15% to 100% of it), so a far ring still visibly expands; grown to it, it dims as f^-0.5
 			float dv = max(-(VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).z, 0.01);
@@ -1145,6 +1155,40 @@ void fragment() {
 		// A slow, bounded colour wash, not a second flash. Premultiplied so the front cannot go HDR.
 		alpha = min(0.18, exp(-ragged * ragged) * smoothstep(0.28, 0.70, n) * vCol.a * envelope);
 		base = clamp(vCol.rgb, 0.0, 1.0);
+	} else if (is_rift_ring(k)) {
+		// Shared rift/pulse edge: contour, soft membrane and a slow moving filament on the same plane.
+		float d = r;
+		float gaps = 1.0;
+		if (k == RING_RIFT_ARCH) {
+			// Sunward's pointed double arch.
+			d = length(vec2(p.x * 1.45, p.y)) + 0.24 * abs(p.x);
+		} else if (k == RING_RIFT_SCAN) {
+			// Meridian's interrupted six-sided scan.
+			float sector = mod(ang + 0.523599, 1.047198) - 0.523599;
+			d = r * cos(sector) * 1.16;
+			gaps = 0.12 + 0.88 * smoothstep(0.025, 0.075, 0.523599 - abs(sector));
+		} else if (k == 7) {
+			// Ashfall's uneven furnace vents, not a clean ring.
+			d = r + 0.09 * sin(ang * 5.0 + seed * 2.0) + 0.036 * sin(ang * 11.0);
+			gaps = 0.16 + 0.84 * smoothstep(-0.35, 0.16, sin(ang * 3.0 + 1.3));
+		} else if (k == 8) {
+			// Chorus's soft breathing lobes.
+			d = r + 0.085 * cos(ang * 5.0 - t * 2.0) + 0.045 * sin(ang * 3.0 + t * 3.0);
+		} else if (k == 9) {
+			// Glasswrights' pale, crisp beveled facets.
+			d = max(abs(p.x), abs(p.y)) + min(abs(p.x), abs(p.y)) * 0.72;
+		} else {
+			// Eclipse's paired fold slits.
+			d = length(vec2(p.x * 2.7, p.y));
+			gaps = 0.35 + smoothstep(0.08, 0.22, abs(p.x)) * 0.65;
+		}
+		float edge = d - 0.75;
+		float core = exp(-spow(abs(edge) / (k == 8 ? 0.067 : 0.031), 2.0));
+		float sheath = exp(-spow(abs(edge) / 0.14, 2.0));
+		float thread = exp(-spow(abs(d - 0.60) / 0.031, 2.0));
+		float flow = 0.60 + 0.40 * cos(ang * 2.0 - t * 4.0 + seed);
+		float f = smoothstep(0.0, 0.22, t) * (1.0 - smoothstep(0.38, 1.0, t));
+		add = vCol.rgb * (core * gaps * flow + sheath * 0.24 + thread * gaps * 0.27) * f * vCol.a;
 	} else {
 		// a ring of hex cells that flies apart (shield shatter)
 		vec2 q = p * 7.0;
