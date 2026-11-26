@@ -31,6 +31,7 @@ func _run() -> void:
 	await _no_lost_triangles("Frigate", "deathless", false)
 	await _no_lost_triangles("Cruiser", "chorus", false)
 	await _no_lost_triangles("Cruiser", "corsair", true)
+	_tapered_section_kit()
 	await _lance_joint()
 	await _leave_physics_damp()
 	print("DEATH_AUTHORED failures=%d" % failures)
@@ -118,6 +119,11 @@ func _no_lost_triangles(cls: String, fac: String, throws: bool) -> void:
 		var tb: float = 1.0 if absf(b - 1.5) < 0.05 else 1.5
 		var ok: bool = _tris(pieces[i]) > 0 and hi <= b + tb and lo >= a - ta
 		check(ok, "%s: main piece %d holds its own stretch of the hull (x %.2f to %.2f)" % [tag, i, lo, hi])
+		var roles := _cap_roles(pieces[i])
+		check(roles.has(DEATH.CAP_WALL.r), "%s: piece %d has a recessed backing despite being authored" % [tag, i])
+		if fac != "chorus":
+			check(roles.has(DEATH.CAP_DECK.r) and roles.has(DEATH.CAP_RIB.r),
+				"%s: piece %d carries decks and ribs in the break" % [tag, i])
 	if n_main < 0: n_main = pieces.size()
 	var on_main := 0
 	var on_frags := 0
@@ -131,6 +137,62 @@ func _no_lost_triangles(cls: String, fac: String, throws: bool) -> void:
 		check(on_main > 0 and on_frags == 0, "%s: no triangles on fragments it never throws (%d lost)" % [tag, on_frags])
 	world.queue_free()
 	await process_frame
+
+
+func _cap_roles(piece: Dictionary) -> Dictionary:
+	var colors := {}
+	if not piece.has("cap"): return colors
+	for c: Color in piece["cap"][Mesh.ARRAY_COLOR]:
+		colors[c.r] = true
+	return colors
+
+
+# A sharply tapering closed end with its other end torn off. The original skin, not a hull-wide bounding box,
+# decides how deep the bulkhead and the deck and rib profiles can sit.
+func _tapered_section_kit() -> void:
+	var v := PackedVector3Array([Vector3(0, -2, -3), Vector3(0, 2, -3), Vector3(0, 2, 3), Vector3(0, -2, 3),
+		Vector3(1.5, -0.2, -0.3), Vector3(1.5, 0.2, -0.3), Vector3(1.5, 0.2, 0.3), Vector3(1.5, -0.2, 0.3)])
+	var ids := PackedInt32Array([4, 5, 6, 4, 6, 7])
+	for i in 4:
+		var j := (i + 1) % 4
+		ids.append_array(PackedInt32Array([i, j, j + 4, i, j + 4, i + 4]))
+	var arr := []
+	arr.resize(Mesh.ARRAY_MAX)
+	arr[Mesh.ARRAY_VERTEX] = v
+	arr[Mesh.ARRAY_INDEX] = ids
+	var surf := {"arrays": arr, "skin": true}
+	for kind in [DEATH.CAP_METAL, DEATH.CAP_GLASS, DEATH.CAP_FLESH]:
+		var pc := {"surfs": [surf], "authored": true, "ragged": true, "cap_kind": kind}
+		DEATH._seal_piece(pc)
+		var roles := _cap_roles(pc)
+		var tag := ["metal", "glass", "flesh"][kind] as String
+		check(roles.has(DEATH.CAP_WALL.r), tag + ": a tapered tear has a backing")
+		var metal: bool = kind == DEATH.CAP_METAL
+		check(roles.has(DEATH.CAP_DECK.r) == metal and roles.has(DEATH.CAP_RIB.r) == metal,
+			tag + ": only metal gets the deck and frame profiles")
+		if not pc.has("cap"): continue
+		var verts: PackedVector3Array = pc["cap"][Mesh.ARRAY_VERTEX]
+		var cols: PackedColorArray = pc["cap"][Mesh.ARRAY_COLOR]
+		var leaks := 0
+		var gradients := 0
+		var glowing_structures := 0
+		for i in verts.size():
+			var p := verts[i]
+			if cols[i].r >= DEATH.CAP_RIB.r:
+				var taper := lerpf(1.0, 0.1, p.x / 1.5)
+				if p.x <= 0.0 or p.x >= 1.5 or absf(p.y) > 2.0 * taper or absf(p.z) > 3.0 * taper: leaks += 1
+				if cols[i].g > 0.78: glowing_structures += 1
+			if i % 3 == 0 and cols[i].g == DEATH.CAP_LIP.g and cols[i + 2].g == DEATH.CAP_LIP_INSET.g:
+				gradients += 1
+		check(leaks == 0, "%s: no interior vertices protrude through tapered skin (%d outside)" % [tag, leaks])
+		check((gradients > 0) == (kind != DEATH.CAP_FLESH) and glowing_structures == 0, tag + ": light is graded across the lip only")
+
+	var old_opening := {"surfs": [surf], "authored": true, "ragged": true,
+		"plan": {"L": 1.5, "breaks": [], "bite": {}}}
+	DEATH._seal_piece(old_opening)
+	var old_lip: PackedColorArray = old_opening["cap"][Mesh.ARRAY_COLOR]
+	check(not old_lip.is_empty() and old_lip.count(DEATH.CAP_LIP_INSET) == old_lip.size(),
+		"an existing kit opening is neither filled nor heated")
 
 
 func _lance_joint() -> void:

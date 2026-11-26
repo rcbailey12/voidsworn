@@ -87,9 +87,10 @@ func _run() -> void:
 			_count_edges(edges, chunk.cap)
 			_check(edges.values().all(func(n): return int(n) % 2 == 0), "thin shell and internal structure have no open edges")
 			var mesh := DEATH._piece_mesh(chunk)
-			_check(chunk.cap_mat.get_shader_parameter("organic") == organic, "Chorus cap uses flesh and bone")
+			var cap_kind := DEATH.CAP_FLESH if organic else DEATH.CAP_METAL
+			_check(chunk.cap_mat.get_shader_parameter("cap_kind") == cap_kind, "Chorus cap uses flesh and bone")
 			_check(mesh.surface_get_material(0).get_shader_parameter("fx_organic") == organic, "cap and hull backs agree on interior type")
-			_check(float(chunk.cap_mat.get_shader_parameter("section_scale")) > 1.0, "interior grain follows hull scale")
+			_check(float(chunk.cap_mat.get_shader_parameter("section_scale")) > 1.0, "interior texture follows hull scale")
 	# The material keeps actual imported texture resources and never nests wrappers.
 	var material := ORMMaterial3D.new()
 	material.albedo_color = Color(0.2, 0.3, 0.4)

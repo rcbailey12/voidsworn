@@ -1,3 +1,7 @@
 @echo off
-rem Issue 1153: queue the C12 recipe run (C12_RUN_1153.bat, stages 1 to 4 by default) in its own minimised window.
-start "c1153run" /min cmd /c "%USERPROFILE%\Downloads\voidsworn_test\C12_RUN_1153.bat"
+rem Board queue entry. Wait for the job and return its watchdog exit code.
+setlocal
+set "V=%USERPROFILE%\Downloads\voidsworn_test"
+if not exist "%V%\C12_RUN_1153.bat" exit /b 2
+call "%V%\work217\tools\tmo.bat" 10800 "%ComSpec%" /d /s /c ""%V%\C12_RUN_1153.bat""
+exit /b %ERRORLEVEL%

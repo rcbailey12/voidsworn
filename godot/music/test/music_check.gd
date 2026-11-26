@@ -57,6 +57,8 @@ func _run() -> void:
 	_step(m, 4.0)
 	var st: Dictionary = m.call("state")
 	_ok(st["mode"] == "map" and st["single"] != "", "map loop playing")
+	var stem_by_faction := {"": "sunward_stemloop", "voidsworn": "sunward_stemloop",
+		"chorus": "chorus_loop_a", "ithar": "glasswright_combo2"}
 	for fac in ["", "voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]:
 		m.call("play_battle", "voidsworn", fac)
 		_step(m, 3.0)
@@ -68,8 +70,8 @@ func _run() -> void:
 		var b: Dictionary = m.call("state")
 		_ok(float(b["hot_db"]) > -12.0, "intense layer up under heavy fire (%s): %.1f dB" % [fac, b["hot_db"]])
 		_ok(float(b["calm_db"]) < float(a["calm_db"]), "calm layer down under heavy fire (%s)" % fac)
-		if fac in ["", "voidsworn", "chorus"]:
-			var stem := "chorus_loop_a" if fac == "chorus" else "sunward_stemloop"
+		if stem_by_faction.has(fac):
+			var stem: String = stem_by_faction[fac]
 			_check_pair(m, tracks, stem)
 			_ok(float(b["calm_db"]) <= -79.0, stem + " calm is fully out at full intensity")
 		else:
@@ -78,6 +80,7 @@ func _run() -> void:
 		_step(m, 25.0)
 		var c: Dictionary = m.call("state")
 		_ok(float(c["hot_db"]) < -30.0, "intense layer back down when quiet (%s): %.1f dB" % [fac, c["hot_db"]])
+		_ok(float(c["calm_db"]) > -20.0, "calm layer back up when quiet (%s): %.1f dB" % [fac, c["calm_db"]])
 	m.call("victory")
 	_step(m, 3.0)
 	_ok(String(m.call("state")["mode"]) == "sting", "victory sting")
