@@ -459,7 +459,10 @@ float fx_surface_tone = 1.0 - fx_soot * 0.94 * clamp(fx_v2_soot, 0.0, 1.0);
 if (fx_weather > 0.0 && fx_v2 != 1) { fx_surface_tone *= 1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)); }
 ALBEDO *= fx_surface_tone;
 EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0) * fx_flick;
-if (fx_v2 == 4 || fx_v2 == 5) { EMISSION += fx_v2_accent * (fx_soot * fx_soot * fx_soot) * (fx_v2 == 5 ? 0.08 : 0.18); }   // R416: lit glass or violet seams, no soot
+if (fx_v2 == 4 || fx_v2 == 5) {
+	// Colour stays on the cut lip. A broad sheen makes a pearl opening read flat and obsidian read lilac.
+	EMISSION += fx_v2_accent * smoothstep(0.83, 1.0, fx_soot) * (fx_v2 == 5 ? 0.12 : 0.05);
+}
 if (fx_scorch_count > 0) {
 	// issue 484: soot black at the wound, heat-stained bronze further out, embers that cool with the torn faces
 	float fx_sc = fx_scorch_at(fx_hull_p);

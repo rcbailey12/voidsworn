@@ -346,6 +346,7 @@ void process() {
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
 #  40 directional hull-rupture vent jet (VENT_JET: tapered hot root + sheared gas cone)
+#  41 legacy Nova Cannon shell (SPR_NOVA_LEGACY)
 const TICK_EMBER := 38
 const TICK_DROPLET := 39
 const VENT_JET := 40
@@ -359,10 +360,11 @@ static func flash_sprite_floor(kind: int, px: float) -> float:
 
 const WEAPON_MASKS := preload("res://render/weapon_layer_masks.gd")
 const ROCKET_SMOKE := 37
+const SPR_NOVA_LEGACY := 41
 const SPRITE := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + WEAPON_MASKS.SPRITE + """
+""" + COMMON + WEAPON_MASKS.SPRITE + ("\nconst int SPR_NOVA_LEGACY = %d;\n" % SPR_NOVA_LEGACY) + """
 uniform float gate = 1.0;
 uniform sampler2D kit_flake : filter_linear, repeat_disable;
 varying vec2 vUv;
@@ -487,6 +489,9 @@ void fragment() {
 	if (k == 0) {
 		float f = (1.0 - t) * (1.0 - t) * I;
 		add = vCol.rgb * exp(-r * r * 5.0) * f + vec3(exp(-r * r * 30.0)) * f * 0.8 + vCol.rgb * f * 0.5 * star;
+	} else if (k == SPR_NOVA_LEGACY) {
+		// Temporary Nova default, equivalent to the legacy moving glow until the bench pick.
+		add = vCol.rgb * min(exp(-r * r * 4.0) * 0.7 + exp(-r * r * 24.0) * 0.6, 1.0) * I;
 	} else if (k == 24) {
 		float f = (1.0 - smoothstep(0.18, 1.0, t)) * I;
 		add = (vCol.rgb * exp(-r * r * 5.0) + vec3(1.0, 0.88, 0.65) * exp(-r * r * 22.0) * 0.7) * f;
@@ -810,9 +815,9 @@ void fragment() {
 """
 
 # Camera-facing textured heads and tails. a3 = (length or blur seconds, width, drag, kind).
-# kinds: 0 shell/tracer   1 spark   3 flame tongue   4 textured las dart
+# kinds: 0 shell/tracer   3 flame tongue   4 textured las dart
 # Kind 5 now routes to NULL_SLUG; its old vertex branch below is unused there.
-#        6 droplet (bio, falls off a glob)   7 molten drip (lance trench)   8 hull-hit spark
+#        6 droplet (bio, falls off a glob)   8 shared analytic spark (a4.y selects crystal)
 #        9 shell   10 energy dart   11 crystal dart   12 scrap
 const STREAK_VERTEX := """
 uniform float gate = 1.0;
@@ -821,6 +826,7 @@ varying vec2 vUv;
 varying vec3 vCol;
 varying float vK;
 varying float vU;
+varying float vGlass;
 void vertex() {
 	vec4 a0 = CUSTOM0; vec4 a1 = CUSTOM1; vec4 a2 = CUSTOM2; vec4 a3 = CUSTOM3; vec4 a4 = vec4(UV, UV2);
 	float a = scene_t - a0.w;
@@ -829,7 +835,7 @@ void vertex() {
 	if (int(a3.w + 0.5) == 5 && a > -0.0001) { a = max(a, 0.0); }
 	float age = pAge(a, a4.x);
 	float life = a1.w;
-	vUv = vec2(0.0); vCol = vec3(0.0); vK = 0.0; vU = 0.0;
+	vUv = vec2(0.0); vCol = vec3(0.0); vK = 0.0; vU = 0.0; vGlass = 0.0;
 	if (a < 0.0 || age >= life || gate <= 0.0) {
 		""" + HIDE + """
 	} else {
@@ -840,12 +846,14 @@ void vertex() {
 		int k = int(a3.w + 0.5);
 		vec3 head; vec3 tail; float fade = 1.0; float u = age / life;
 		if (k == 8) {
-			float last = max(0.0, age - a3.x * mix(1.0, 0.37, u));
-			head = a0.xyz + pDisp(v, dr, 0.0, age) - vec3(0.0, 1.2 * age * age, 0.0);
-			tail = a0.xyz + pDisp(v, dr, 0.0, last) - vec3(0.0, 1.2 * last * last, 0.0);
-			dir = snorm(v * exp(-dr * age) - vec3(0.0, 2.4 * age, 0.0));
+			// Evaluate both ends on the same drag curve. No gravity or bounce.
+			float shutter = a3.x * mix(1.0, 0.37, u) * mix(1.0, 0.52, a4.y);
+			float last = max(0.0, age - shutter);
+			head = a0.xyz + pDisp(v, dr, 0.0, age);
+			tail = a0.xyz + pDisp(v, dr, 0.0, last);
+			dir = snorm(v);
 			fade = mix(1.0, 0.62, fx_calm) * spow(1.0 - u, 1.5);
-		} else if (k == 1 || k == 6 || k == 7) {
+		} else if (k == 6) {
 			float e = exp(-dr * age);
 			head = a0.xyz + pDisp(v, dr, 0.0, age);
 			head.y -= 1.2 * age * age;
@@ -890,20 +898,25 @@ void vertex() {
 			} else if (motion_length > 1e-5) {
 				axis = screen_motion / motion_length;
 			}
-			float cap_px = mix(20.0, 49.0, clamp(a3.x * 6.5, 0.0, 1.0)) * frame_ratio;
+			float form = clamp(a3.x * 6.5, 0.0, 1.0);
+			float glass = a4.y;
+			float length_floor = max(a4.w, mix(mix(5.0, 9.0, form), 4.2, glass));
+			float cap_px = max(length_floor, mix(mix(20.0, 42.0, form), 15.0, glass)) * frame_ratio;
 			if (len > cap_px) {
 				float ratio = cap_px / len;
 				float f = ratio * hc.w / max(tc.w * (1.0 - ratio) + ratio * hc.w, 1e-4);
 				t = mix(h, t, clamp(f, 0.0, 1.0));
 			}
-			float min_len = max(2.5 * pixel, px_world(mix(5.0, 9.0, clamp(a3.x * 6.5, 0.0, 1.0)), dv, PROJECTION_MATRIX));
+			float min_len = max(2.5 * pixel, px_world(length_floor, dv, PROJECTION_MATRIX));
 			t.xy -= axis * max(min_len - min(len, cap_px) * pixel, 0.0);
-			float width = max(a3.y * 2.8, max(3.0 * pixel, px_world(3.8, dv, PROJECTION_MATRIX)));
+			float mask_floor = max(3.0 * pixel, px_world(max(3.8, a4.z), dv, PROJECTION_MATRIX));
+			float width = clamp(a3.y * 2.8, mask_floor, max(mask_floor, 11.0 * pixel * frame_ratio));
 			vec3 p = mix(t, h, VERTEX.x);
 			p.xy += vec2(-axis.y, axis.x) * VERTEX.y * width;
 			vUv = VERTEX.xy;
 			vK = a3.w;
 			vU = u;
+			vGlass = glass;
 			vCol = a2.rgb * a2.a * fade * clamp(gate, 0.0, 1.0);
 			POSITION = PROJECTION_MATRIX * vec4(p, 1.0);
 		} else {
@@ -912,7 +925,7 @@ void vertex() {
 			float wf = k == 4 || k == 10 || k == 11 ? 7.0 : (k == 5 ? 22.0 : (k == 0 || k == 9 || k == 12 ? 8.0 : 6.0));
 			float lf = (k == 0 || k == 4 || k == 5 || k >= 9) ? 14.0 : 5.0;
 			// round 2: a4.z and a4.w carry this streak's own width and length floors (pixels), for fatter tracer cores and
-			// bolder sparks; a line grown to its own floor dims only as f^-0.3
+			// bolder flight streaks; a line grown to its own floor dims only as f^-0.3
 			bool own = a4.z > wf;
 			wf = max(wf, a4.z);
 			lf = max(lf, a4.w);
@@ -976,18 +989,25 @@ void fragment() {
 		// Analytic coverage of a tapered trail and rounded hot head. The small
 		// halo is confined to the head; the rest is a crisp cooling thread.
 		float x = vUv.x;
-		float bend = sin(x * 3.14159265) * 0.055 * vU;
-		float radius = mix(0.038, 0.19, sqrt(clamp(x, 0.0, 1.0)));
-		float y = abs(vUv.y - bend);
+		float radius = mix(0.026, 0.19, sqrt(clamp(x, 0.0, 1.0)));
+		// Same spark, tighter faceted head on crystal instead of a glowing wire.
+		float facet = max(0.015, 0.27 * (1.0 - abs(x - 0.79) * 4.5));
+		radius = mix(radius, facet, vGlass);
+		// A slight curl in the cooling mask leaves the head and motion axis untouched.
+		float curl = sin(x * 3.14159265) * 0.045 * vU * (1.0 - vGlass);
+		float y = abs(vUv.y - curl);
 		float edge_aa = clamp(fwidth(vUv.y) * 0.62, 0.012, 0.29);
 		float head = 1.0 - smoothstep(0.84, 0.995, x);
 		float thread = (1.0 - smoothstep(radius - edge_aa, radius + edge_aa, y)) * smoothstep(0.015, 0.68, x) * head;
 		float heat = 1.0 - smoothstep(0.06, 0.72, vU);
-		float white = heat * smoothstep(0.45, 0.90, x) * 0.93;
+		float white = heat * smoothstep(0.50, 0.96, x) * mix(0.62, 0.96, vGlass);
 		float energy = max(vCol.r, max(vCol.g, vCol.b));
 		float halo_x = (x - 0.86) * 2.1;
 		float halo = exp(-13.0 * halo_x * halo_x - 17.0 * y * y) * head * heat * 0.13;
-		ALBEDO = (mix(vCol, vec3(energy), white) * thread + vCol * halo) * fx_gain;
+		vec3 cool = vCol * mix(0.65, 1.0, heat);
+		vec3 core = mix(cool, vec3(energy), white);
+		vec3 edge = mix(cool, cool.brg * 0.24 + cool * 0.76, vGlass * smoothstep(0.06, 0.2, y));
+		ALBEDO = clamp((mix(core, edge, smoothstep(0.045, 0.22, y)) * thread + edge * halo) * fx_gain, 0.0, 512.0);
 	} else if (k >= 9 && k <= 12) {
 		vec2 bolt = bolt_streak(vUv, k, vU);
 		float peak = max(vCol.r, max(vCol.g, vCol.b));
@@ -997,7 +1017,8 @@ void fragment() {
 	} else {
 		// The baked tail is displaced across its quad to curve the cooling
 		// history. The hot head stays on the true ballistic position.
-		float bend = (k == 1 || k == 6 || k == 7) ? sin(vUv.x * 3.14159265) * 0.18 : 0.0;
+		if (k != 0 && k != 3 && k != 4 && k != 6) { discard; }
+		float bend = (k == 6) ? sin(vUv.x * 3.14159265) * 0.18 : 0.0;
 		vec2 uv = vec2(vUv.x, vUv.y + 0.5 + bend);
 		vec3 mask = texture(kit_tail, uv).rgb;
 		float crawl = 0.85 + 0.15 * sin(vUv.x * 23.0 - scene_t * 19.0);
@@ -1008,10 +1029,10 @@ void fragment() {
 			float x = abs(vUv.y * 2.0);
 			float ends = smoothstep(0.0, 0.13, vUv.x) * (1.0 - smoothstep(0.90, 1.0, vUv.x));
 			c += (hot * exp(-x*x*12.0) * 0.18 + vCol * exp(-x*x*2.8) * 0.22) * ends * crawl;
-	} else if (k == 3) {
-		c *= 0.65 + 0.35 * sin(vUv.x * 13.0 - scene_t * 8.0);
-	}
-	ALBEDO = clamp(c * fx_gain, 0.0, 512.0);
+		} else if (k == 3) {
+			c *= 0.65 + 0.35 * sin(vUv.x * 13.0 - scene_t * 8.0);
+		}
+		ALBEDO = clamp(c * fx_gain, 0.0, 512.0);
 	}
 }
 """
@@ -1038,13 +1059,18 @@ void fragment() {
 # kinds: 0 smoke ring (alpha)   1 shockwave   2 soft pop ring (reduce-flashing replacement)   3 thin pale ring (gauss
 #        muzzle shock, sonic boom)   4 hex-cell ring (Hegemony shield shatter)   5 soft death front (camera-facing)
 const RING_DEATH_FRONT := 5
+const RING_RIFT_ARCH := 11
+const RING_RIFT_SCAN := 12
 const RING := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + ("\nconst int RING_DEATH_FRONT = %d;\n" % RING_DEATH_FRONT) + """
+""" + COMMON + ("\nconst int RING_DEATH_FRONT = %d;\nconst int RING_RIFT_ARCH = %d;\nconst int RING_RIFT_SCAN = %d;\n" % [RING_DEATH_FRONT, RING_RIFT_ARCH, RING_RIFT_SCAN]) + """
 varying vec2 vUv;
 varying vec4 vCol;
 varying vec4 vInfo;
+bool is_rift_ring(int k) {
+	return k >= 7 && k <= RING_RIFT_SCAN;
+}
 void vertex() {
 	vec4 a0 = CUSTOM0; vec4 a1 = CUSTOM1; vec4 a2 = CUSTOM2; vec4 a3 = CUSTOM3; vec4 a4 = vec4(UV, UV2);
 	float a = scene_t - a0.w;
@@ -1073,7 +1099,7 @@ void vertex() {
 		}
 		// F3: shock fronts, soft pops and pale shock rings keep at least 12 px across (1080 lines), dimming as they grow
 		float rb = 1.0;
-		if (rk >= 1 && rk <= 3) {
+		if ((rk >= 1 && rk <= 3) || is_rift_ring(rk)) {
 			// round 2: a4.w is this ring's own final size in pixels (kill shock rings, shield ripples): the floor grows with
 			// the ring's own easing (15% to 100% of it), so a far ring still visibly expands; grown to it, it dims as f^-0.5
 			float dv = max(-(VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).z, 0.01);
@@ -1145,6 +1171,40 @@ void fragment() {
 		// A slow, bounded colour wash, not a second flash. Premultiplied so the front cannot go HDR.
 		alpha = min(0.18, exp(-ragged * ragged) * smoothstep(0.28, 0.70, n) * vCol.a * envelope);
 		base = clamp(vCol.rgb, 0.0, 1.0);
+	} else if (is_rift_ring(k)) {
+		// Shared rift/pulse edge: contour, soft membrane and a slow moving filament on the same plane.
+		float d = r;
+		float gaps = 1.0;
+		if (k == RING_RIFT_ARCH) {
+			// Sunward's pointed double arch.
+			d = length(vec2(p.x * 1.45, p.y)) + 0.24 * abs(p.x);
+		} else if (k == RING_RIFT_SCAN) {
+			// Meridian's interrupted six-sided scan.
+			float sector = mod(ang + 0.523599, 1.047198) - 0.523599;
+			d = r * cos(sector) * 1.16;
+			gaps = 0.12 + 0.88 * smoothstep(0.025, 0.075, 0.523599 - abs(sector));
+		} else if (k == 7) {
+			// Ashfall's uneven furnace vents, not a clean ring.
+			d = r + 0.09 * sin(ang * 5.0 + seed * 2.0) + 0.036 * sin(ang * 11.0);
+			gaps = 0.16 + 0.84 * smoothstep(-0.35, 0.16, sin(ang * 3.0 + 1.3));
+		} else if (k == 8) {
+			// Chorus's soft breathing lobes.
+			d = r + 0.085 * cos(ang * 5.0 - t * 2.0) + 0.045 * sin(ang * 3.0 + t * 3.0);
+		} else if (k == 9) {
+			// Glasswrights' pale, crisp beveled facets.
+			d = max(abs(p.x), abs(p.y)) + min(abs(p.x), abs(p.y)) * 0.72;
+		} else {
+			// Eclipse's paired fold slits.
+			d = length(vec2(p.x * 2.7, p.y));
+			gaps = 0.35 + smoothstep(0.08, 0.22, abs(p.x)) * 0.65;
+		}
+		float edge = d - 0.75;
+		float core = exp(-spow(abs(edge) / (k == 8 ? 0.067 : 0.031), 2.0));
+		float sheath = exp(-spow(abs(edge) / 0.14, 2.0));
+		float thread = exp(-spow(abs(d - 0.60) / 0.031, 2.0));
+		float flow = 0.60 + 0.40 * cos(ang * 2.0 - t * 4.0 + seed);
+		float f = smoothstep(0.0, 0.22, t) * (1.0 - smoothstep(0.38, 1.0, t));
+		add = vCol.rgb * (core * gaps * flow + sheath * 0.24 + thread * gaps * 0.27) * f * vCol.a;
 	} else {
 		// a ring of hex cells that flies apart (shield shatter)
 		vec2 q = p * 7.0;
@@ -2402,10 +2462,16 @@ void fragment() {
 		float v2hot = metalk ? hot : 0.0;
 		em = v2_interior_accent * (lam * fall * 0.45 * (0.6 + 0.4 * fl) * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)));
 		em_hdr += gc * emb * 0.5 * (0.6 + 0.4 * fl) * (1.0 - smoothstep(0.3, 1.4, dist)) * v2hot;
-		if (wound_v2 == 5) { em *= 0.38; }   // obsidian stays dark; the bus is the violet accent, not the whole wall
+		if (wound_v2 == 5) {
+			// Bare obsidian on the chip and frames. Only the actual plate edge catches violet.
+			base *= 0.42;
+			rough = 0.66;
+			ao = 0.65;
+			em = part > 0.95 ? v2_interior_accent * 0.16 : em * 0.08;
+		}
 		if (dress > 0.9) {
 			float bus_pulse = flick(0.7 + n2 * 0.3, scene_t, seed);
-			if (wound_v2 == 5) { em += v2_interior_accent * (0.32 + 0.16 * bus_pulse); }
+			if (wound_v2 == 5) { em += v2_interior_accent * (0.12 + 0.08 * bus_pulse); }
 			else { em_hdr += v2_interior_accent * (0.9 + 0.3 * bus_pulse); }
 			base *= 0.5;
 		}
@@ -2415,13 +2481,13 @@ void fragment() {
 			// Issue 2125 / R431: the facets are geometry, not dark tiles painted over the floor. Colour lives on seams.
 			bool rim = part > 0.95;
 			bool seam = dress > 0.60 && dress < 0.65; // fx_breach GLASS_SEAM
-			base = min(v2_interior_lift * mix(0.72, 1.25, vC.g), vec3(v2_wall_max));
-			if (rim) { base = v2_rim_metal * mix(0.72, 1.0, n2); }
-			rough = rim || seam ? 0.15 : 0.32;
+			base = min(v2_interior_lift * mix(0.48, 1.30, vC.g), vec3(v2_wall_max));
+			if (rim) { base = min(v2_rim_metal * mix(0.38, 0.50, n2), vec3(v2_wall_max)); }
+			rough = seam ? 0.25 : 0.65;
 			metal = 0.0;
-			ao = rim ? 1.0 : mix(0.74, 1.0, vC.g);
-			em = rim ? v2_rim_metal * 0.42 : base * 0.42;
-			if (seam) { em += mix(v2_interior_accent, vec3(0.63, 0.49, 1.0), vC.g) * 0.46; }
+			ao = rim ? 0.9 : mix(0.45, 0.9, vC.g);
+			em = base * 0.16;
+			if (seam) { em += mix(v2_interior_accent, vec3(0.63, 0.49, 1.0), vC.g) * 0.25; }
 			em_hdr = vec3(0.0);
 		}
 		if (style == 1 && wound_v2 != 4) {
@@ -2974,22 +3040,24 @@ void fragment() {
 			float gone = step(0.8, vc.y) * (1.0 - smoothstep(0.2, 0.7, u));
 			float m = max(max(cr, plane), gone * 0.8);
 			alb = mix(v2_rim_metal * 0.55, vec3(0.9, 0.94, 1.0), max(cr, plane));
-			a *= 0.12 + 0.88 * m;
-			rough = 0.06;
+			// Show the fracture lines, not a translucent frosted sheet across the recessed pearl.
+			a *= m * m;
+			rough = 0.30;
 			vec3 spec = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + vc.y));
 			em = (v2_interior_accent * (cr * 0.35 + gone * 0.25) + spec * plane * 0.06) * a;
 			hs = 0.0;
 		} else if (wound_v2 == 5) {
 			float st = max(abs(q.x), abs(q.y)) / R;
-			float step3 = floor(st * 3.0 + n1 * 0.4);
-			float seam = 1.0 - smoothstep(0.0, 0.06, abs(fract(st * 3.0 + n1 * 0.4) - 0.5) * 2.0 - 0.88);
-			alb = mix(vec3(0.05, 0.04, 0.07), vec3(0.012, 0.008, 0.02), clamp(step3 / 3.0, 0.0, 1.0));
-			a = max(a * 0.5, (1.0 - smoothstep(0.85, 1.05, st)) * 0.85);
-			rough = 0.32;
-			em = v2_interior_accent * seam * 0.12 * (1.0 - smoothstep(0.6, 1.05, st)) * flick(0.7 + n1 * 0.3, scene_t, seed);
-			hs = 0.0;
+			st += (n1 - 0.5) * 0.13;
+			float step3 = floor(st * 3.0);
+			float lip = smoothstep(0.68, 0.76, st) * (1.0 - smoothstep(0.79, 0.89, st));
+			alb = v2_interior_lift * mix(0.36, 0.70, clamp(step3 / 2.0, 0.0, 1.0));
+			a *= 1.0 - smoothstep(0.82, 0.94, st);
+			rough = 0.68;
+			em = v2_interior_accent * lip * 0.16;
+			hs = 1.0; // low reflectance for the chip, not a soot mask
 		}
-		if (v2_soot <= 0.01) { hs = 0.0; }
+		if (v2_soot <= 0.01 && wound_v2 != 5) { hs = 0.0; }
 	}
 	if (style == 14) {
 		float rg = (u - 0.9) / 0.05;
@@ -3204,13 +3272,12 @@ void fragment() {
 	else if (role == 4 && wound_v2 == 3) { hue = vec3(0.075, 0.03, 0.022); }   // wet crimson-umber organ
 	vec3 surf = trusted ? baked : hue * detail;
 	vec3 lit = surf * mix(1.0, r.x * ao, trusted ? 0.5 : 1.0);
-	// Light the real surfaces behind a live Glasswright opening. Dark baked trim must not fill the centre with black.
+	// Keep a little pearl in the deep room, below the brighter shell steps. Full-face fill reads as a solid pane.
 	float glass_reveal = wound_v2 == 4 && fx_wreck == 0.0 ? smoothstep(0.04, 0.32, open_f) : 0.0;
 	vec3 glass_pearl = vec3(0.0);
 	if (glass_reveal > 0.0) {
-		glass_pearl = v2_interior_lift * (0.72 + 0.16 * r.x);
-		float value = clamp(dot(lit, vec3(1.0)) / max(dot(glass_pearl, vec3(1.0)), 1e-3), 1.0, 1.4);
-		lit = mix(lit, glass_pearl * value, glass_reveal);
+		glass_pearl = v2_interior_lift * (0.32 + 0.12 * r.x);
+		lit = mix(lit, glass_pearl, glass_reveal);
 		open_f = max(open_f, glass_reveal);
 	}
 	vec3 wreck = lit * (1.0 - v2_wreck_soot);
@@ -3250,7 +3317,7 @@ void fragment() {
 		float metal = (role == 1 || role == 4) ? 0.0 : ((wound_v2 <= 2 || wound_v2 == 5) ? 0.45 : 0.0);
 		if (has_orm) { metal = mix(metal, orm.b, 0.5); }
 		METALLIC = mix(base_metal, metal, open_f) * (1.0 - glass_reveal);
-		SPECULAR = mix(0.5, 0.26, wound_v2 == 1 ? wr : 0.0) * ao;
+		SPECULAR = mix(0.5 - 0.40 * glass_reveal, 0.26, wound_v2 == 1 ? wr : 0.0) * ao;
 	}
 	AO = ao * (has_orm ? orm.r : 1.0);
 	AO_LIGHT_AFFECT = 0.6;
@@ -3272,7 +3339,7 @@ void fragment() {
 	float pw = clamp(fx_power, 0.0, 1.0);
 	vec3 em = v2_interior_accent * r.z * pulse * fade * open_f * 0.35 * pw;
 	em += v2_interior_accent * near * 0.04 * (1.0 - wr);
-	em += glass_pearl * 0.24 * glass_reveal;
+	em += glass_pearl * 0.08 * glass_reveal;
 	// Cut full-face Directorate emission on the first wreck frame. A 0.8 s fade could still light the entire box.
 	// Keep the narrow blue strips above, which still pulse and fade on the death clock.
 	bool directorate_wreck = wound_v2 == 1 && fx_wreck > 0.0;
