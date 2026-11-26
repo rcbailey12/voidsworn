@@ -26,7 +26,7 @@ func _run() -> void:
 	var err: String = campaign.load_tables()
 	if err != "": _fail(err); return
 	campaign.fixed_clock = true
-	JSM.rnd_seed(1484)
+	campaign.rng.rnd_seed(1484)
 	campaign.META["admirals"]["matriarch"] = true
 	campaign.newRun("matriarch", "chorus")
 	ui = CampaignUI.new()

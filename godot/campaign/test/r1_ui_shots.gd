@@ -40,7 +40,7 @@ func _shot(name: String) -> void:
 
 func _run() -> void:
 	await _frames(4)
-	BattleAPI.JSM.rnd_seed(4242)
+	C.rng.rnd_seed(4242)
 	var M = C.META
 	M["renown"] = 100; M["admirals"] = {"vex": true}; M["unlocked"] = {"chest1": true}
 	if C.has_method("set_playtest_all"):   # Ryan's Nov 1 playtest switch: first with it on (the game's default), then off for the progression shots

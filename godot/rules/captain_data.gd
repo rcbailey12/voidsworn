@@ -12,11 +12,18 @@ const CALLSIGNS := {
 }
 
 
+static func identity_hash(value: String) -> int:
+	var hash_word := 0x811c9dc5
+	for byte in value.to_utf8_buffer():
+		hash_word = ((hash_word ^ byte) * 0x01000193) & 0xffffffff
+	return hash_word
+
+
 static func make(id: String, fac: String, full_name: String, xp = 0, rank = 0, perks: Array = []) -> Dictionary:
 	var pool: Array = CALLSIGNS.get(fac, CALLSIGNS["voidsworn"])
 	# Identity draws use the captain's key, not the run's rules random stream.
 	return {"captain_id": id, "portrait_id": "", "full_name": full_name,
-		"callsign": pool[posmod((id + "|" + full_name).hash(), pool.size())], "rank": rank, "xp": xp,
+		"callsign": pool[posmod(identity_hash(id + "|" + full_name), pool.size())], "rank": rank, "xp": xp,
 		"trait_line": "", "fac": fac, "perks": perks, "pending": 0}
 
 
@@ -54,7 +61,7 @@ static func assign_portrait(c: Dictionary, used: Dictionary) -> void:
 	if not pool.has(id) or used.has(id):
 		id = ""
 		for i in range(pool.size()):
-			var candidate: String = pool[posmod(c["captain_id"].hash() + i, pool.size())]
+			var candidate: String = pool[posmod(identity_hash(c["captain_id"]) + i, pool.size())]
 			if not used.has(candidate):
 				id = candidate
 				break

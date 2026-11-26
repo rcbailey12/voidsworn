@@ -1,0 +1,129 @@
+Issue 2205 campaign records
+
+W1 selects only usable captain perks. W6 excludes Nemesis offers that cannot matter,
+and W7 excludes Brace boons when no ship can Brace. M4 makes new captain callsigns
+and portraits independent of Godot String.hash(). A changed offer can alter later
+bot picks in that run. Each entry below lists the first changed step and field.
+
+c1.jsonl FAIL at step 12 (after help title newRunScreen pickFaction:hegemony pickFaction:corsair pickAdmiral:mott startRun): state "run" differs at run.fleet[0].cap.perks[0]
+  Before: "deflector"
+  After:  "killer"
+
+c2.jsonl FAIL at step 10 (after buyVariant:b_spitter_s progTab:variants title newRunScreen pickFaction:voidsworn pickFaction:voidsworn startRun): state "run" differs at run.fleet[0].cap.portrait_id
+  Before: "vex"
+  After:  "nem_voidsworn_3"
+
+c3.jsonl FAIL at step 5 (after start legacy title newRunScreen pickFaction:hegemony startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Compass"
+  After:  "Relay"
+
+c4.jsonl FAIL at step 8 (after progTab:variants title help title newRunScreen pickFaction:deathless startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Echo"
+  After:  "Archive"
+
+c5.jsonl FAIL at step 15 (after progTab:favour title help title newRunScreen optAlt:0 startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Trace"
+  After:  "Relay"
+
+c6.jsonl FAIL at step 10 (after help title newRunScreen optHeat:h_elite optHeat:h_flag pickFaction:ithar startRun): state "run" differs at run.fleet[0].cap.portrait_id
+  Before: "nem_ithar_1"
+  After:  "nem_ithar_5"
+
+c7.jsonl FAIL at step 12 (after progTab:favour progTab:legacy buyLegacy:u_carrier progTab:fallen title newRunScreen startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Needle"
+  After:  "Abacus"
+
+c8.jsonl FAIL at step 9 (after progTab:mastery progTab:variants title newRunScreen pickFaction:voidsworn pickFaction:voidsworn startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Reliquary"
+  After:  "Flint"
+
+c9.jsonl FAIL at step 14 (after newRunScreen pickAdmiral:mending optAlt:1 pickAdmiral:matriarch optCmd:1 pickFaction:deathless startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Echo"
+  After:  "Null"
+
+c10.jsonl FAIL at step 20 (after optAlt:0 pickAdmiral:mirelle optHeat:h_cmd pickAdmiral:aelith optHeat:h_flag pickFaction:ithar startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Shard"
+  After:  "Mirage"
+
+c11.jsonl FAIL at step 14 (after optHeat:h_repair optHeat:h_undying optHeat:h_hunted pickFaction:deathless pickFaction:chorus pickAdmiral:voice startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Thorn"
+  After:  "Drift"
+
+c12.jsonl FAIL at step 5 (after start legacy progTab:variants title newRunScreen startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Cinder"
+  After:  "Vesper"
+
+c13.jsonl FAIL at step 15 (after progTab:favour title newRunScreen optAlt:1 optCmd:1 pickFaction:deathless startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Cipher"
+  After:  "Echo"
+
+c14.jsonl FAIL at step 14 (after pickFaction:ithar pickAdmiral:aelith pickFaction:corsair optHeat:h_cmd optHeat:h_flag pickAdmiral:sable startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Maw"
+  After:  "Jackal"
+
+c15.jsonl FAIL at step 7 (after legacy buyVariant:vs_penitent_g buyVariant:i_wisp_l title newRunScreen pickAdmiral:matriarch startRun): state "run" differs at run.fleet[0].cap.portrait_id
+  Before: "matriarch"
+  After:  "nem_chorus_5"
+
+c16.jsonl FAIL at step 7 (after legacy progTab:heat progTab:mastery progTab:variants title newRunScreen startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Afterlight"
+  After:  "Facet"
+
+c17.jsonl FAIL at step 19 (after pickFaction:voidsworn optAlt:0 pickAdmiral:ashgrove pickAdmiral:vex pickFaction:ithar pickFaction:hegemony startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Relay"
+  After:  "Ledger"
+
+c18.jsonl FAIL at step 6 (after start legacy title help title newRunScreen startRun): state "run" differs at run.fleet[0].cap.portrait_id
+  Before: "vex"
+  After:  "nem_voidsworn_3"
+
+c19.jsonl FAIL at step 10 (after buyLegacy:vets buyLegacy:cmd1 title newRunScreen optCmd:1 pickAdmiral:maren startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Ledger"
+  After:  "Relay"
+
+c20.jsonl FAIL at step 8 (after progTab:variants title newRunScreen pickFaction:corsair pickAdmiral:grax pickFaction:deathless startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Null"
+  After:  "Archive"
+
+c21.jsonl FAIL at step 7 (after legacy buyVariant:i_song_w title help title newRunScreen startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Tendril"
+  After:  "Hush"
+
+c22.jsonl FAIL at step 18 (after optHeat:h_elite pickAdmiral:sable pickFaction:corsair pickFaction:voidsworn pickAdmiral:malek optHeat:h_elite startRun): state "run" differs at run.flagUid
+  Before: "x02"
+  After:  "x01"
+
+c23.jsonl FAIL at step 8 (after buyVariant:c_hulk_g progTab:heat title newRunScreen pickFaction:chorus pickFaction:hegemony startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Vector"
+  After:  "Grid"
+
+c24.jsonl FAIL at step 10 (after progTab:variants title help title newRunScreen pickAdmiral:vex startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Penance"
+  After:  "Cinder"
+
+c25.jsonl FAIL at step 12 (after progTab:fallen progTab:favour progTab:legacy title newRunScreen optCmd:1 startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Compass"
+  After:  "Relay"
+
+c26.jsonl FAIL at step 18 (after optHeat:h_flag optHeat:h_coffers optHeat:h_elite pickFaction:ithar optHeat:h_coffers pickFaction:voidsworn startRun): state "run" differs at run.fleet[0].cap.perks[0]
+  Before: "hunter"
+  After:  "laststand"
+
+c27.jsonl FAIL at step 12 (after title newRunScreen optHeat:h_hunted optCmd:1 pickAdmiral:matriarch pickFaction:deathless startRun): state "run" differs at run.fleet[0].cap.portrait_id
+  Before: "nem_deathless_6"
+  After:  "nem_deathless_2"
+
+c28.jsonl FAIL at step 12 (after newRunScreen pickFaction:ithar pickFaction:ithar pickFaction:corsair pickAdmiral:grax pickFaction:ithar startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Prism"
+  After:  "Facet"
+
+c29.jsonl FAIL at step 13 (after pickAdmiral:reyes pickFaction:deathless pickAdmiral:sekhmar pickAdmiral:khepra pickFaction:voidsworn pickAdmiral:ashgrove startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Reliquary"
+  After:  "Vigil"
+
+c30.jsonl FAIL at step 12 (after optHeat:h_cmd optHeat:h_cmd pickAdmiral:ashgrove pickFaction:ithar optHeat:h_coffers pickAdmiral:vaelen startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Facet"
+  After:  "Afterlight"
+
+nem.txt - W6 player kit and rival capability filters change the weakness and adaptation choices.
+14 of 223 Nemesis scenario records changed.

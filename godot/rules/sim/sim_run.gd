@@ -45,7 +45,7 @@ func play(row: Dictionary) -> void:
 	campaign.toasts.clear()
 	campaign.tel_log.clear()
 	battle.AI_LEVEL = row.difficulty
-	Campaign.JSM.rnd_seed(row.seed)
+	campaign.rng.rnd_seed(row.seed)
 	campaign.picked_faction = row.faction
 	campaign.picked_admiral = row.admiral
 	campaign.act("startRun")

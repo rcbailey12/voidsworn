@@ -133,7 +133,9 @@ static func jt(x) -> bool: # JS truthiness
 	return true
 func z0(x) -> Variant: return x if jt(x) else 0
 func or_(a, b) -> Variant: return a if jt(a) else b
-func rnd() -> float: return JSM.rnd()
+var rng := JSM.RandomStream.new()
+func seed_rng(seed: int) -> void: rng.rnd_seed(seed)
+func rnd() -> float: return rng.rnd()
 func ri(a, b) -> float: return float(a) + floor(rnd() * (float(b) - float(a) + 1.0))
 func pick(a: Array) -> Variant:
 	var i = int(floor(rnd() * a.size()))
@@ -616,11 +618,14 @@ func shipName(fac) -> String:
 	for n in (base if base.size() > 0 else SHIP_NAMES):
 		if not used.has(n): pool.append(n)
 	return pick(pool if pool.size() > 0 else SHIP_NAMES)
-func newCaptain(vet, fac, uid: String) -> Dictionary:
+func newCaptain(vet, fac, uid: String, ship: Dictionary = {}) -> Dictionary:
 	var faction := str(fac) if jt(fac) else "voidsworn"
 	var name := capName(fac)
-	var perks: Array = [pick(PERKS.keys())] if jt(vet) else []
+	var perks: Array = []
 	var c := CaptainData.make("captain:" + uid, faction, name, RANK_XP[1] if jt(vet) else 0, 1 if jt(vet) else 0, perks)
+	if jt(vet) and not ship.is_empty():
+		ship["cap"] = c
+		_roll_captain_perk(ship)
 	CaptainData.update_trait(c, PERKS)
 	CaptainData.assign_portrait(c, CaptainData.used_portraits(RUN))
 	return c
@@ -628,7 +633,8 @@ func newCaptain(vet, fac, uid: String) -> Dictionary:
 func _newShip(tpl, vet) -> Dictionary:
 	var fac = factionOfTpl(tpl)
 	var uid := new_id()
-	var s = {"uid": uid, "tpl": tpl, "name": shipName(fac), "mk": 1, "hp": 0, "mods": [], "cap": newCaptain(vet, fac, uid)}
+	var s = {"uid": uid, "tpl": tpl, "name": shipName(fac), "mk": 1, "hp": 0, "mods": []}
+	s["cap"] = newCaptain(vet, fac, uid, s)
 	s["hp"] = derive(s)["maxHp"]
 	return s
 # campaign3d.js: wounded captains take the next hull (not during a battle, not a veteran hire)
@@ -688,7 +694,7 @@ func rollRarity(minR, s, p = null) -> int:
 	return max(int(z0(minR)), r)
 func fleetKit() -> Dictionary:
 	var k = {}
-	for sh in (RUN["fleet"] if RUN != null else []):
+	for sh in (RUN.get("fleet", []) if RUN != null else []):
 		k.merge(_ship_kit(HULLS[sh["tpl"]], derive(sh)))
 	return k
 func _ship_kit(hull: Dictionary, d: Dictionary) -> Dictionary:
@@ -696,11 +702,13 @@ func _ship_kit(hull: Dictionary, d: Dictionary) -> Dictionary:
 	for w in d["weapons"]:
 		if w["k"] == "torp": k["torp"] = 1
 		if w["k"] == "lance": k["lance"] = 1
+		if jt(w.get("ion")): k["ion"] = 1
 		if w["k"] == "battery": k["batt"] = 1
 		if w["k"] == "flak": k["flak"] = 1
 		if w["arc"] == "P" or w["arc"] == "S": k["broad"] = 1
 		if w["arc"] == "P" or w["arc"] == "S" or w["k"] == "battery": k["still"] = 1
-	if float(z0(hull.get("sh"))) > 0: k["shields"] = 1
+	if d["shMax"] > 0: k["shields"] = 1
+	if _hull_can_brace(hull): k["brace"] = 1
 	if jt(hull.get("hangar")): k["carrier"] = 1
 	if jt(d["hangar"]): k["sq"] = 1
 	return k
@@ -709,7 +717,7 @@ func _ship_kit(hull: Dictionary, d: Dictionary) -> Dictionary:
 # caps and possible future fits here never add, remove or reweight an offer.
 func boonFleetRelevance(id: String, rarity: int) -> Dictionary:
 	if RUN == null: return {}
-	# These three protocols only act when a hull braces. This read does not feed the offer pool.
+	# These three protocols only act when a hull braces.
 	var brace := id in ["d_bastion", "i_brace", "i_wall"]
 	var need: String = "brace" if brace else BOON_NEED.get(id, "")
 	if need == "": return {}
@@ -750,7 +758,10 @@ func _boon_fits_ship(ship: Dictionary, need: String, fx: Dictionary) -> bool:
 	return (need == "brace" or _ship_kit(HULLS[ship["tpl"]], d).has(need)) and _boon_has_room(d, fx)
 
 func _boon_can_brace(tpl) -> bool:
-	return not jt(HULLS[tpl].get("sq")) and not jt(FAC_GATES.get(factionOfTpl(tpl), {}).get("noBrace"))
+	return _hull_can_brace(HULLS[tpl])
+
+func _hull_can_brace(hull: Dictionary) -> bool:
+	return not jt(hull.get("sq")) and not jt(FAC_GATES.get(hull.get("fac"), {}).get("noBrace"))
 
 func _boon_has_room(derived: Dictionary, fx: Dictionary) -> bool:
 	var current: Dictionary = derived["fx"]
@@ -764,6 +775,7 @@ func _boon_has_room(derived: Dictionary, fx: Dictionary) -> bool:
 	return false
 
 func boonUseful(id, kit: Dictionary) -> bool:
+	if id in ["i_brace", "i_wall", "d_bastion"] and not kit.has("brace"): return false
 	var n = BOON_NEED.get(id)
 	return not jt(n) or jt(kit.get(n))
 # R1 (Nov 1, Codex PR #1 boon fix, Ryan's ruling R64; port of core.js): one pool of useful ordinary protocols from the offering core and the run's
@@ -1506,7 +1518,7 @@ func newRun(admiralId, fac, opt = {}, checkpoint := true) -> void:
 		var f = flagshipOf()
 		if f != null:
 			f["mk"] = max(float(or_(f.get("mk"), 1)), 2); f["cap"]["rank"] = max(float(f["cap"]["rank"]), 2); f["cap"]["xp"] = max(float(f["cap"]["xp"]), float(RANK_XP[2]))
-			if f["cap"]["perks"].size() < 2: f["cap"]["perks"].append(pick(PERKS.keys().filter(func(p): return not f["cap"]["perks"].has(p))))
+			if f["cap"]["perks"].size() < 2: _roll_captain_perk(f)
 			f["hp"] = derive(f)["maxHp"]
 		CaptainData.update_trait(f["cap"], PERKS)
 	var lb = lineageBuild(admiralId)   # issue #305: a run snapshots the flown admiral's tree, because picks can only change between runs
@@ -1792,8 +1804,8 @@ func ACT_startRun() -> void:
 	# Issue 1217 phase 4: a Launch after Back reuses the random state the dropped run started from, so Back then Launch
 	# cannot reroll patrons, founder relic, map or the aspect offer. Twin: ACT.startRun in campaign_meta.js.
 	if META.has("parkedRng"):
-		JSM.rnd_seed(int(META["parkedRng"])); META.erase("parkedRng")
-	_launch_rng = JSM.to_u32(JSM.rng_s)
+		rng.rnd_seed(int(META["parkedRng"])); META.erase("parkedRng")
+	_launch_rng = JSM.to_u32(rng.rng_s)
 	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3,
 		"heat": run_opt["heat"].duplicate() if heatUnlocked() else [], "mapTrial": map_trial_choice}, false)
 	map_trial_choice = false
@@ -2129,6 +2141,8 @@ func _resume_saved_battle() -> bool:
 		if why == "the snapshot is from other rules": toast("The game was updated since this save, so the run goes back to its last checkpoint before this fight.")
 		return false
 	RUN = res["run"]; B = res["B"]
+	if sb.get("campaignRng") is int or sb.get("campaignRng") is float:
+		rng.rng_s = int(sb["campaignRng"])
 	var c = B["cfg"]
 	tel("battle_resume", {"round": B["round"], "kind": c.get("kind"), "fac": c.get("fac")})
 	var acts = []
@@ -2142,7 +2156,7 @@ func _resume_saved_battle() -> bool:
 func save_battle_round(snap: Dictionary) -> bool:
 	if snap.is_empty() or RUN == null or B == null or SAVED_RUN == null or jt(B.get("over")) or jt(B.get("finished")) or not jt(RUN.get("curNode")): return false
 	var prev = saved_battle
-	saved_battle = {"node": RUN["curNode"], "t0": str(RUN.get("t0")), "round": snap["round"], "fp": snap["fp"], "size": snap["size"], "data": Marshalls.raw_to_base64(snap["bytes"])}
+	saved_battle = {"campaignRng": rng.rng_s, "node": RUN["curNode"], "t0": str(RUN.get("t0")), "round": snap["round"], "fp": snap["fp"], "size": snap["size"], "data": Marshalls.raw_to_base64(snap["bytes"])}
 	persist_save()
 	if not last_save_ok: saved_battle = prev   # keep memory equal to the disk: a later write never jumps to a round the player was not told about
 	return last_save_ok
@@ -2249,9 +2263,29 @@ func promoteModal(uid: String, after: Callable) -> void:
 	var acts = []
 	for p in s["cap"]["offer"]: A(acts, "takePerk", uid + ":" + p)
 	show_modal("promote", {"ship": s}, acts)
+func _captain_perk_pool(ship: Dictionary) -> Array:
+	var hull: Dictionary = HULLS[ship["tpl"]]
+	var d: Dictionary = derive(ship)
+	var kit := _ship_kit(hull, d)
+	return PERKS.keys().filter(func(perk):
+		if ship["cap"]["perks"].has(perk): return false
+		match perk:
+			"broad": return kit.has("broad")
+			"lanceadept": return kit.has("lance") or kit.has("torp")
+			"deflector": return d["shMax"] > 0
+			"stubborn": return _boon_can_brace(ship["tpl"])
+			"rapid": return TB.ABILITIES.get(hull.get("ab"), {}).get("cd", 0) - z0(d["fx"].get("cdMod")) > 1
+			"wing": return kit.has("carrier")
+		return true)
+
+func _roll_captain_perk(ship: Dictionary) -> void:
+	var pool := _captain_perk_pool(ship)
+	if not pool.is_empty(): ship["cap"]["perks"].append(pick(pool))
+
 func _offer_perks(s: Dictionary) -> void:
-	if not jt(s["cap"].get("offer")):
-		var pool = PERKS.keys().filter(func(p): return not s["cap"]["perks"].has(p) and (p != "wing" or HULLS[s["tpl"]].get("ab") == "launch"))
+	var pool := _captain_perk_pool(s)
+	var offer: Array = or_(s["cap"].get("offer"), [])
+	if offer.is_empty() or offer.any(func(perk): return not pool.has(perk)):
 		s["cap"]["offer"] = shuffle(pool).slice(0, 2)
 func _take_perk(sh, perk) -> void:
 	sh["cap"]["perks"].append(perk); sh["cap"]["pending"] = float(sh["cap"]["pending"]) - 1; sh["cap"]["offer"] = null
@@ -2673,6 +2707,20 @@ func nemName(fac) -> String:
 				clash = true; break
 		if not clash: return n
 	var p1 = str(pick(F["pre"])); return p1 + " " + str(pick(F["post"]))
+# Capabilities come from the actual refitted fleet and the rival's hull roster.
+func _nem_kit_fit(key: String, fac: String, kit: Dictionary) -> bool:
+	# Legacy summaries can describe an opponent without a player fleet to inspect.
+	if not RUN.has("fleet"): return true
+	match key:
+		"ion", "shields":
+			return (kit.has("lance") or kit.has("ion")) and HULLS.values().any(func(h): return h.get("fac") == fac and z0(h.get("sh")) > 0)
+		"torp": return kit.has("torp")
+		"pd": return (kit.has("torp") or kit.has("sq")) and HULLS.values().any(func(h):
+			return h.get("fac") == fac and not h.get("w", []).any(func(w): return W_[w[0]]["k"] == "flak"))
+		"board", "armor": return not RUN.get("fleet", []).is_empty()
+		"evasion", "aim", "flank", "brawl", "slow": return not RUN.get("fleet", []).is_empty()
+	return true
+
 func newNemesis(fac0 = null) -> Dictionary:
 	var fac = fac0 if jt(fac0) else RUN["foes"][3] if (RUN.get("foes") is Array and RUN["foes"].size() > 3 and jt(RUN["foes"][3])) else pick(RUN_FACTIONS.filter(func(f): return f != RUN["fac"]))
 	var F = NEM_FAC[fac]; var beh = F["beh"]
@@ -2680,9 +2728,10 @@ func newNemesis(fac0 = null) -> Dictionary:
 	var title = pick(F["titles"]); var persona = pick(F["personas"]); var traits = shuffle(F["traits"].duplicate()).slice(0, 2)
 	var portrait = "nem_" + str(fac) + "_" + numstr(1 + floor(rnd() * 6))
 	var clash = {"slow": "swift", "board": "boarders", "ion": "shielded"}   # no strength and weakness that cancel out
+	var kit := fleetKit()
 	var weakPool = NEM_WEAK.keys().filter(func(k): return not (k == "anchor" and (jt(beh.get("noFlee")) or jt(beh.get("revive")))) and not (clash.has(k) and traits.has(clash[k])))   # zealots and the Deathless never break
 	var g = nemGender(fac, name)
-	var weak = shuffle(weakPool).slice(0, 2)
+	var weak = shuffle(weakPool).filter(func(k): return _nem_kit_fit(k, fac, kit)).slice(0, 2)
 	return {"fac": fac, "name": name, "g": g, "title": title, "persona": persona, "traits": traits, "portrait": portrait, "weak": weak, "revealed": [], "adapt": [], "adaptSector": 0, "met": 0,
 		"beaten": 0, "scars": 0, "scarKinds": [], "epithets": [], "epithet": null, "last_beat": null, "fed": 0, "riches": 0, "loot": 0, "held": null, "gloat": null, "honed": 0,
 		"revived": false, "dead": false, "seen": {}, "signatures": [], "lessons": []}   # #121: no clock or strike here (they are the run's)
@@ -2950,11 +2999,13 @@ func nemAdapt(force: bool = false, N0 = null) -> Variant:
 	var blocked = []   # R1 (NEM-2, R63 clash check, Codex PR #1): never a direct counter to a known weakness
 	if or_(N.get("revealed"), []).has("ion"): blocked.append("shields")
 	if or_(N.get("revealed"), []).has("torp"): blocked.append("pd")
-	var ks = ssort(score.keys().filter(func(k): return not blocked.has(k) and not N["adapt"].has(k) and score[k] > 0), func(a, b): return score[b] - score[a])
+	var kit := fleetKit()
+	var eligible := score.keys().filter(func(k): return not blocked.has(k) and not N["adapt"].has(k) and _nem_kit_fit(k, N["fac"], kit))
+	var ks = ssort(eligible.filter(func(k): return score[k] > 0), func(a, b): return score[b] - score[a])
 	var pickA = ks[0] if ks.size() > 0 else null
 	if pickA == null and jt(sp) and not N["adapt"].has(sp["id"]): pickA = sp["id"]
 	if pickA == null:
-		var rest = score.keys().filter(func(k): return not blocked.has(k) and not N["adapt"].has(k))
+		var rest = eligible
 		if rest.size() > 0: pickA = rest[0]
 	if pickA == null: return null
 	N["adapt"].append(pickA); N["adaptSector"] = RUN["sector"]; N["seen"] = {}; return pickA
@@ -4140,7 +4191,7 @@ func battleScreen(cfg: Dictionary) -> void:
 		if sn.get("seed") != null and cfg.get("seed") == null:
 			var sd = float((int(sn["seed"]) ^ 0x27d4eb2f) & 0xFFFFFFFF) if jt(cfg.get("eventRelic")) else float(sn["seed"])
 			cfg = cfg.duplicate(); cfg["seed"] = sd
-			JSM.rnd_seed((int(sd) ^ 0x5bd1e995) & 0xFFFFFFFF)
+			rng.rnd_seed((int(sd) ^ 0x5bd1e995) & 0xFFFFFFFF)
 	if RUN["fleet"].size() <= 1 and float(z0(RUN.get("reinf"))) < float(RUN["sector"]):
 		RUN["reinf"] = RUN["sector"]; var sh = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh)
 		var r_line: String = str({"chorus": "Your surviving spores coalesce into a fresh " + ship_bare(str(sh["name"])) + ".", "deathless": "An automated reserve berth dispatches " + ship_with_article(str(sh["name"])) + " to reinforce you.", "corsair": "A straggling raider from the outer belt joins your pack: " + ship_with_article(str(sh["name"])) + ".", "ithar": "A distant picket answers your distress pulse: " + ship_with_article(str(sh["name"])) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(str(sh["name"])) + " to reinforce you."))
@@ -4190,13 +4241,14 @@ func _nem_reinforce(c) -> bool:
 	var nm = c.get("nemesis")
 	return jt(nm) and NEM_FAC.has(nm.get("fac")) and NEM_FAC[nm["fac"]]["beh"].get("strike") == "reinforce"
 # The one place a battle starts. External mode: battle_setup(run, cfg) builds the real battle (the rules' startBattle, which reseeds
-# the shared PRNG from cfg.seed) and returns its B; the battle scene then plays it and calls finish_battle(result).
+# its PRNG from cfg.seed) and returns its B; the battle scene then plays it and calls finish_battle(result).
 var battle_setup: Callable = Callable()
 func start_battle(c: Dictionary) -> void:
 	if battle_mode == "external" and battle_setup.is_valid():
 		var c2 = c.duplicate(); c2["campaign"] = true   # the rules roll the mid-battle event right after setup, as campaign3d.js does
 		var sc = sectorCond()
 		if sc != null and jt(sc.get("war")) and c["kind"] != "boss": c2["event_war"] = true   # sectors at war force reinforcements (G1: draw it after setup)
+		if c2.get("seed") == null: c2["seed"] = int(floor(rnd() * 4294967296.0))
 		B = battle_setup.call(RUN, c2)
 	else: stub_start(c)
 # External mode: the battle scene reports the end. result is "win", "loss" or "retreat"; battle is the rules' B (units with the JS field names).
@@ -4381,7 +4433,7 @@ func finishBattle(result: String) -> void:
 # ---------------- the stub battle (test/node/golden_campaign.js has the same, line for line) ----------------
 func stub_start(cfg: Dictionary) -> void:
 	var seed = float(int(cfg["seed"]) & 0xFFFFFFFF) if cfg.get("seed") != null else floor(rnd() * 4294967296.0)
-	JSM.rnd_seed(int(seed))
+	rng.rnd_seed(int(seed))
 	var enc = cfg["obj"] if ENCOUNTERS.has(cfg.get("obj")) else "rout"
 	B = {"seed": seed, "cfg": cfg, "units": [], "round": 1, "obj": {"type": enc}, "shape": or_(cfg.get("shape"), "open"), "map": {"map": or_(cfg.get("map"), "random")}, "deployMode": or_(cfg.get("dep"), "line"),
 		"alt": true, "boonStats": {}, "usage": {}, "partial": false, "over": false, "busy": false, "sector": RUN["sector"], "log": []}
