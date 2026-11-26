@@ -26,6 +26,9 @@ const SHADER_CACHE := preload("res://render/shader_cache.gd")
 const STORM_TICK_LIFE := 0.45
 
 const HD := preload("res://world/hull_debris.gd")
+const DEATH := preload("res://fx/fx_death.gd")
+const SV := preload("res://render/ship_view.gd")
+const STAGE_IN := preload("res://render/stage_in.gd")
 var _chunk_task := -1
 var _chunk_job := {}
 var _wreck_slots: Array = []  # one replaceable kit slot per hex for issue 49's painted hull chunks
@@ -359,22 +362,28 @@ void fragment() {
 const DUST_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+// Issue 2048: layered debris dust flecks with slow tumble and warm sun glints, plus wispy tan haze clouds.
 // Linear #d4bf86, with actual alpha rather than the old grey additive specks.
 uniform vec3 col = vec3(0.658, 0.521, 0.238);
 varying vec2 vQ;
 varying vec3 vW;
 varying flat vec2 vHex;
 varying flat float vA;
+varying flat float vSize;
+varying flat float vSeed;
 void vertex() {
 	vHex = INSTANCE_CUSTOM.zw;
-	vec3 origin = MODEL_MATRIX[3].xyz;
+	vec3 base_pos = MODEL_MATRIX[3].xyz;
+	vSeed = fract(sin(dot(base_pos, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+	vec3 origin = base_pos;
 	// 20 percent of the recorded gas drift (0.193 u/s). Wrap only behind a faded footprint edge.
 	origin.xz = vHex + mod(origin.xz - vHex + vec2(0.032, 0.018667) * TIME + 10.0, 20.0) - 10.0;
 	origin.y = mod(origin.y + 0.010667 * TIME + 5.0, 7.0) - 5.0;
 	vec4 c = VIEW_MATRIX * vec4(origin, 1.0);
 	vA = INSTANCE_CUSTOM.y;
+	vSize = INSTANCE_CUSTOM.x;
 	vQ = VERTEX.xy * 2.0;
-	c.xy += VERTEX.xy * INSTANCE_CUSTOM.x;
+	c.xy += VERTEX.xy * vSize;
 	vW = (INV_VIEW_MATRIX * c).xyz;
 	POSITION = PROJECTION_MATRIX * c;
 }
@@ -385,8 +394,29 @@ void fragment() {
 	float edge = 8.660254 - max(p.x, p.x * 0.5 + p.y * 0.8660254);
 	if (edge <= 0.0) { discard; }
 	float high = smoothstep(-4.0, 2.0, vW.y);
-	ALBEDO = col * mix(0.38, 0.85, high);
-	ALPHA = vA * exp(-r * r * 4.0) * smoothstep(0.0, 0.9, edge) * mix(1.0, 0.25, high);
+	float edge_fade = smoothstep(0.0, 0.9, edge) * mix(1.0, 0.25, high);
+	vec3 base_c = col * mix(0.38, 0.85, high);
+	if (vSize < 1.5) {
+		// Fine suspended mineral and metal flecks: tumbling micro-flake core, soft dust halo and subtle individual sun glint.
+		float ang = vSeed * 6.2831853 + TIME * (0.25 + 0.40 * fract(vSeed * 13.7));
+		float cs = cos(ang);
+		float sn = sin(ang);
+		vec2 rq = vec2(cs * vQ.x - sn * vQ.y, sn * vQ.x + cs * vQ.y);
+		float flake_r = length(vec2(rq.x * 0.82, rq.y * 1.48));
+		float flake = 1.0 - smoothstep(0.28, 0.72, flake_r);
+		float halo = exp(-r * r * 3.6);
+		float glint_wave = 0.5 + 0.5 * sin(TIME * (0.85 + fract(vSeed * 7.3) * 1.35) + vSeed * 43.0);
+		float glint = pow(glint_wave, 10.0) * step(0.45, fract(vSeed * 19.3)) * exp(-flake_r * flake_r * 7.5);
+		ALBEDO = base_c * (0.85 + 0.35 * flake) + vec3(1.0, 0.92, 0.76) * glint * 1.15;
+		ALPHA = clamp(vA * (halo * 0.65 + flake * 0.75 + glint * 0.85) * edge_fade, 0.0, 1.0);
+	} else {
+		// Broad sparse tan haze clouds: organic multi-lobe wisp instead of a plain Gaussian circle.
+		float ang = atan(vQ.y, vQ.x) + vSeed * 6.2831853;
+		float wisp = 0.68 + 0.20 * sin(ang * 3.0 + r * 2.4) + 0.12 * cos(ang * 5.0 - vSeed * 9.0);
+		float body = exp(-r * r * 3.2) * wisp * (1.0 - smoothstep(0.70, 1.0, r));
+		ALBEDO = base_c * (0.88 + 0.22 * wisp);
+		ALPHA = vA * body * edge_fade;
+	}
 }
 """
 
@@ -452,10 +482,13 @@ void fragment() {
 const INFALL_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+// Issue 2048: motion-stretched tidal embers spiralling into the Dead Star accretion disc (core + ember tail + tidal heat).
 uniform vec3 well = vec3(0.0);
 uniform float r_out = 87.0;
 varying vec2 vQ;
 varying float fade;
+varying float vHeat;
+varying float vSeed;
 void vertex() {
 	float inner = 20.0;
 	float cycle = r_out * 0.5 * log((3.0 * r_out - 2.0 * inner) / r_out);
@@ -463,18 +496,44 @@ void vertex() {
 	float radius = r_out * 1.5 - r_out * 0.5 * exp(2.0 * phase * cycle / r_out);
 	// dr/dt = -(3 - 2r/R); the tangential speed is one fifth of the inward speed.
 	float angle = INSTANCE_CUSTOM.z * 6.2831853 + 0.2 * log(r_out / radius);
-	vec3 p = well + vec3(cos(angle) * radius, 9.0 + INSTANCE_CUSTOM.w * 3.0, sin(angle) * radius);
+	vec2 rad_dir = vec2(cos(angle), sin(angle));
+	vec2 tan_dir = vec2(-rad_dir.y, rad_dir.x);
+	vec3 p = well + vec3(rad_dir.x * radius, 9.0 + INSTANCE_CUSTOM.w * 3.0, rad_dir.y * radius);
+	// Analytical inward-spiral velocity projected into view space to stretch each ember along its plunge.
+	vec3 vel_w = vec3(-rad_dir.x + 0.2 * tan_dir.x, -0.06, -rad_dir.y + 0.2 * tan_dir.y);
+	vec2 sv = (VIEW_MATRIX * vec4(vel_w, 0.0)).xy;
+	float sl = length(sv);
+	vec2 ax = sl > 0.0001 ? sv / sl : vec2(1.0, 0.0);
+	vec2 ay = vec2(-ax.y, ax.x);
+	float heat = clamp((r_out - radius) / max(r_out - inner, 1.0), 0.0, 1.0);
+	float stretch = mix(2.2, 5.2, heat * heat);
+	float width = mix(0.48, 0.34, heat);
 	vec4 c = VIEW_MATRIX * vec4(p, 1.0);
 	vQ = VERTEX.xy * 2.0;
-	c.xy += VERTEX.xy * INSTANCE_CUSTOM.x;
+	c.xy += (ax * VERTEX.x * stretch + ay * VERTEX.y * width) * INSTANCE_CUSTOM.x;
 	POSITION = PROJECTION_MATRIX * c;
-	fade = smoothstep(0.0, 0.08, phase) * (1.0 - smoothstep(0.85, 1.0, phase));
+	fade = smoothstep(0.0, 0.08, phase) * (1.0 - smoothstep(0.86, 1.0, phase));
+	vHeat = heat;
+	vSeed = INSTANCE_CUSTOM.z;
 }
 void fragment() {
-	float r = length(vQ);
-	if (r > 1.0) { discard; }
-	ALBEDO = vec3(0.32, 0.17, 0.12);
-	ALPHA = 0.15 * fade * exp(-r * r * 4.0);
+	// vQ.x runs -1 (trailing tail) to +1 (leading plunge head); vQ.y is transverse.
+	if (abs(vQ.x) > 1.0 || abs(vQ.y) > 1.0) { discard; }
+	float head_d = length(vec2((vQ.x - 0.32) * 1.45, vQ.y * 1.55));
+	float core = exp(-head_d * head_d * 3.2);
+	// Tapered ember tail behind the leading head.
+	float along = clamp((vQ.x + 1.0) * 0.5, 0.0, 1.0);
+	float tail_w = mix(0.18, 0.78, along) * (1.0 - smoothstep(0.72, 1.0, along));
+	float td = abs(vQ.y) / max(tail_w, 0.08);
+	float sheath = exp(-td * td * 2.6) * smoothstep(0.0, 0.35, along) * (1.0 - smoothstep(0.78, 1.0, along));
+	float twinkle = 0.80 + 0.20 * sin(TIME * (2.6 + fract(vSeed * 17.3) * 2.0) + vSeed * 41.0);
+	vec3 outer_c = vec3(0.38, 0.20, 0.13);
+	vec3 hot_c = vec3(0.95, 0.54, 0.22);
+	vec3 ember_c = mix(outer_c, hot_c, smoothstep(0.15, 0.92, vHeat));
+	vec3 core_c = mix(ember_c, vec3(1.0, 0.88, 0.66), 0.35 + 0.50 * vHeat);
+	float body = max(core * 0.95, sheath * 0.55);
+	ALBEDO = mix(ember_c, core_c, core) * (0.9 + 0.45 * vHeat) * twinkle;
+	ALPHA = clamp(mix(0.16, 0.46, vHeat) * fade * body, 0.0, 0.85);
 }
 """
 
@@ -1563,10 +1622,12 @@ func use_ship_debris(ships: Array) -> void:
 	if W._terr_pts.debris.is_empty() or _chunk_task >= 0 or has_node("HullDebris"): return
 	var sources := HD.gather(ships)
 	if sources.is_empty(): return  # keep current debris when assets are absent
-	_chunk_job = {"sources": sources, "chunks": []}
-	var job := _chunk_job
-	_chunk_task = WorkerThreadPool.add_task(func() -> void: job.chunks = HD.cut(job.sources))
+	_chunk_job = {"sources": sources, "chunks": [], "abort": DEATH.CutAbort.new()}
+	_chunk_task = WorkerThreadPool.add_task(_cut_chunks.bind(_chunk_job), false, "board debris cut")
 	_install_chunks()
+
+static func _cut_chunks(job: Dictionary) -> void:
+	job.chunks = HD.cut(job.sources, job.abort)
 
 # issue 1434 (LOAD29 cold s25: the 7 chunk meshes landed in one prepare_hulls draw, 83 pipelines and 7 s): true while the
 # chunks are still being cut on the worker, so the battle's load waits and stages them in with the rest
@@ -1586,24 +1647,39 @@ func _install_chunks() -> void:
 		if not is_inside_tree() or _chunk_task < 0: return
 	WorkerThreadPool.wait_for_task_completion(_chunk_task)
 	_chunk_task = -1
-	var t_meshes := Time.get_ticks_usec()
-	var meshes := HD.meshes(_chunk_job.chunks)
-	SKEEP.event("debris meshes made (%d, %d ms)" % [meshes.size(), (Time.get_ticks_usec() - t_meshes) / 1000])
-	# These are old, weathered board wrecks, not fresh deaths. Keep their cut caps
-	# cold; only the kit's three bounded torn-edge points carry residual heat.
-	for chunk in _chunk_job.chunks:
+	var chunks: Array = _chunk_job.chunks
+	_chunk_job = {}
+	var meshes := []
+	var sliced := not get_tree().get_nodes_in_group("battle_loading").is_empty()
+	_installing = true
+	for chunk in chunks:
+		var t_mesh := Time.get_ticks_usec()
+		var mesh := HD.build_mesh(chunk)
+		if mesh.get_surface_count() == 0:
+			continue
+		# These are old wrecks, not fresh deaths. Only the kit's torn-edge points carry residual heat.
 		if chunk.get("cap_mat") is ShaderMaterial:
 			(chunk.cap_mat as ShaderMaterial).set_shader_parameter("heat", 0.0)
-	_chunk_job = {}
-	if meshes.is_empty(): return
+		mesh.resource_name = "chunk %d" % meshes.size()
+		meshes.append(mesh)
+		SKEEP.event("debris %s buffers made (%d ms)" % [mesh.resource_name, (Time.get_ticks_usec() - t_mesh) / 1000])
+		if sliced:
+			await get_tree().process_frame
+			if not is_inside_tree():
+				_installing = false
+				return
+	if meshes.is_empty():
+		_installing = false
+		return
 	var holder := Node3D.new()
 	holder.name = "HullDebris"
 	add_child(holder)
-	# issue 1434 (LOAD32): one chunk alone still made 59 surface pipelines in a 5.9 s frame (cold and warm), all of its
-	# materials' shaders at once. While a battle loads, its first mesh joins once per surface, the other surfaces on a
-	# plain material, so each shader's pipelines land in a frame of their own.
-	if not _wreck_slots.is_empty() and not get_tree().get_nodes_in_group("battle_loading").is_empty():
-		if not await _warm_surfaces(holder, meshes[0], (_wreck_slots[0].xf as Transform3D).origin):
+	# LOAD38: give each material/layout pair a lit draw and a shadow pass before
+	# the real chunk joins, without showing the proxy in the live scene.
+	if not _wreck_slots.is_empty() and sliced:
+		var stage := STAGE_IN.new()
+		if not await stage.warm_meshes(holder, meshes, "debris", Callable(), true):
+			_installing = false
 			return
 	var index := 0
 	var replaced := {}
@@ -1660,48 +1736,15 @@ func _install_chunks() -> void:
 	_wreck_slots.clear()
 	W.notes.append("painted hull debris: %d cached chunks, %d instances" % [meshes.size(), index])
 
-# Joins `mesh` once per surface at `at`, a speck the size of a dust grain, the other surfaces on one plain material,
-# a frame apart; false when the world left the tree meanwhile. LOAD33c: one surface alone still made 73 pipelines in a
-# 5.7 s cold frame, so each surface first joins without shadows (its colour passes) and casts them a frame later (its
-# shadow passes).
-func _warm_surfaces(holder: Node3D, mesh: Mesh, at: Vector3) -> bool:
-	var plain := StandardMaterial3D.new()
-	var mi := MeshInstance3D.new()
-	mi.name = "SurfaceWarm"
-	mi.mesh = mesh
-	mi.scale = Vector3.ONE * 0.001
-	mi.position = at
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	for s in mesh.get_surface_count():
-		mi.set_surface_override_material(s, plain)
-	holder.add_child(mi)
-	_installing = true
-	var steps: Array = [[-1, true]]   # the plain material's shadow pass first
-	for k in mesh.get_surface_count():
-		steps.append([k, false])
-		steps.append([k, true])
-	for st in steps:
-		await get_tree().process_frame
-		if not is_inside_tree() or not is_instance_valid(mi):
-			_installing = false
-			return false
-		var k: int = st[0]
-		for s in mesh.get_surface_count():
-			mi.set_surface_override_material(s, null if s == k else plain)
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if st[1] else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		SKEEP.event("debris warm surface %d of %d%s" % [k, mesh.get_surface_count(), " with shadows" if st[1] else ""])
-	await get_tree().process_frame
-	_installing = false
-	if not is_inside_tree() or not is_instance_valid(mi): return false
-	mi.queue_free()
-	return true
-
 func _exit_tree() -> void:
 	for mat in _legacy_debris_mats:
 		mat.set_shader_parameter("living_terrain", false)
 	if _chunk_task >= 0:
-		WorkerThreadPool.wait_for_task_completion(_chunk_task)
+		_chunk_job.abort.cancel()
+		# The worker only owns data. Reap it after leaving the tree, not on the first title frame.
+		SV.retire_build([], [{"tid": _chunk_task, "keep": _chunk_job}])
 		_chunk_task = -1
+		_chunk_job = {}
 
 
 # Issue 1268: capture-only colour options for Ryan's sky sheet. Off unless a capture sets the env vars;

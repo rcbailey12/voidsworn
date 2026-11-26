@@ -319,12 +319,18 @@ agents-02, R312, R405.
 3.2 **Heavy work runs on Ryan's PC (RTX 5080) through the queue; the cloud sandbox is for editing.** Why: the sandbox has about
 8 GB and no GPU and runs out of memory on full meshes. Set: Ryan, Oct 21. Id: agents-23.
 
-3.3 **Jobs and the janitor may remove only the leftovers covered here.** Everything else stays until Ryan says yes. Keep every job's PC folder lean, and the Board lists the PC folder sizes at each disk check.
+3.3 **Jobs, the janitor and the Board keep the PC disk clear on their own, within the kinds covered here.** Anything outside them stays until Ryan says yes. Keep every job's PC folder lean, and the Board lists the PC folder sizes at each disk check.
 Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voidsworn_test, mostly old run copies), the queue
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). On Nov 18 the drive fell under the 60 GB job floor from about 45 kept workspace copies and 390 GB of job scratch in the temp folder; Ryan chose (Nov 18 20:46 UTC) to let jobs clean up after themselves (R326).
 On Nov 19, about 350 GB disappeared overnight (392 GB free after the Nov 18 cleanup, 41 GB the next morning). The hand cleanup removed 173 folders and raised free space to 199 GB. It kept 42 checkout copies, 26 because generated campaign outputs, audio UIDs or onboarding output were outside the safe list.
 Set: Ryan, Nov 18 (R326) and Nov 19, 16:30 UTC (R336); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
-Ryan's yes to a delete counts when he gives it in the Board thread himself, typed in his own words. The Board passes it to the PC session with his message id as the receipt and the PC acts on it; nobody asks him to repeat it or to go to the PC just to say yes. A note from the coordinator, a helper or another agent is still not his yes. Why: on Nov 21 he typed "Yes remove saved runs" three times from his phone and the PC refused each as a relay, so the cleanup nearly waited a night with C: under the job floor. Set: Ryan, Nov 22, 04:35 UTC, "Yes fix that" (R400).
+Standing OK for storage cleanup (R455): without asking Ryan, the janitor, the runners and the Board remove (a) finished job folders and old job pictures once every picture in them passes the relay-proof check, at any age; (b) Neon T3 thread data and t3_neon worktrees for threads that finished and have been idle more than a day, never a running thread and never T3 settings or sign-in; (c) Codex sandbox leftovers (kept lane checkouts and TEMP run scratch) for finished, non-running jobs, under the safe rules below. They still keep the keep list, live claims, running lanes, ElevenLabs take folders, models, trellis2, repo-mirror.git, and anything not proven on the relay. There is no fresh OK for each new kind of delete. A kind outside this list that is rebuildable is the Board's call; only unique files wait on Ryan. Why: on Nov 25 C: fell to 111 GB of a 2 TB drive, the janitor freed 0.6 GB, and every further cleanup waited on Ryan typing go phrases. Set: Ryan, Nov 25, 14:06 UTC, "That is not my rule? I think it's one you assumed. I want you cleaning these up" and "But yes standing okay" (R455).
+
+Standing OK for paid sound runs (R457): any ElevenLabs sound or music run Ryan has agreed to, in his own words anywhere (the Board thread, the project chat, or a decision card), runs without a typed go phrase and with no credit cap. The PC session starts it when the Board passes on his message id and quote; it does not wait for him to retype. Every run still keeps its own hard stop in the wave file and reports the credits used. Why: on Nov 25 the PC refused his project-chat go twice and he had to retype "go wave test 6", which he had asked not to do. Set: Ryan, Nov 25 2026, 19:49 UTC, decision card "Let paid sound retakes run without a typed go each time?": "Standing OK, any amount" (R457).
+
+Standing OK for pushing approved work branches (R461): when Ryan has approved a piece of work in his own words anywhere (the Board thread, the project chat, or a decision card), the PC session pushes the job branch that carries it (art, portraits, job saves, partial work) without asking him to retype a go phrase, and it counts his approval inside a longer message, as long as it is an affirmative yes to that job and that push (a quoted, negated or unrelated mention does not count). It pushes only job branches (codex/, neon/, opus/, work/, muse/ shapes), fast-forward only, never to main and never with force. Why: on Nov 25 he had to retype go phrases three times ("go wave test 6", "push portraits" twice), which he had asked not to do. Set: Ryan, Nov 25 2026, 23:22 UTC, decision card "Give the PC a standing OK to push work branches you've approved?": "Standing OK" (R461).
+Ryan's yes counts wherever he types it in his own words: the Board thread, or the project chat, where the coordinator's relay carries his message id. The Board passes it to the PC session with his message id as the receipt. Nobody sends him to another thread to repeat it.
+Ryan's yes to a delete outside the standing OK counts when he gives it in his own words (see above). The Board passes it to the PC session with his message id as the receipt and the PC acts on it; nobody asks him to repeat it or to go to the PC just to say yes. A note from the coordinator, a helper or another agent is still not his yes. Why: on Nov 21 he typed "Yes remove saved runs" three times from his phone and the PC refused each as a relay, so the cleanup nearly waited a night with C: under the job floor. Set: Ryan, Nov 22, 04:35 UTC, "Yes fix that" (R400).
 An install or refresh that deletes nothing is already approved: a tools_live install, a lane runner refresh, a watcher swap or a playtest promotion that keeps the old copy runs without asking Ryan again (`lane_tools_refresh.ps1 -NoRotate`; on the PC, `ALLOW_NODELETE_INSTALLS.bat` lets Claude run exactly that command without a prompt). Anything that deletes or rotates away a file still needs his own yes, as above. Why: on Nov 22 the PC refused two tools_live installs until he typed an OK himself, holding the Codex lane fix and the relay re-proof. Set: Ryan, Nov 22, 20:13 UTC, "alos yes any install that deletes nothing is approved" (R417).
 
 Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
@@ -339,7 +345,8 @@ is a candidate when the shared build holds the same file written strictly later;
 those files once each into `salvage\superseded_store\<sha256>.bin`, reads each back by size and SHA-256, lists them in
 `salvage\<lane>_<name>_superseded\superseded_manifest.txt`, and only then removes the copy;
 any failed check keeps it (issue 1180 run 7, Board Nov 20; Artoo on PR 1260). The safe list also includes stage 7 leftovers in `godot/.stage7-replaced-*`
-and `godot/assets/ships/manifest.bak_*`. The runner fetches and switches to the new branch with those files in place. A collision or an
+and the `godot/assets/ships/manifest.bak_*` folders. A flat `godot/assets/ships/manifest.json.bak_<stamp>` file is
+accepted for reuse only: it is unique, so in removal mode the janitor keeps its checkout (PR 2077; issue 2091). The runner fetches and switches to the new branch with those files in place. A collision or an
 uncertain check keeps the earlier checkout beside repo. More than two `repo-kept-*` copies triggers a warning naming each
 copy and its size. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
 unique ignored work (issue 860, run 2, Board Nov 16).
@@ -489,6 +496,9 @@ limit, and 3600 seconds in the shared ship runner. Why: a Jolt stall in the issu
 almost an hour and queued work timed out behind it (Board, Nov 19, issue 1192).
 
 3.5 to 3.7 **PC harness.** See the [PC harness rules](../.claude/rules/pc-harness.md) for queue and watchdog jobs, Board PC control and PC clones.
+**A confirmed real, non-partial push releases the next lane job even if local checks fail.** The status comment stays
+`unverified` when local checks fail. Failed, partial, unchanged, dry/test and unconfirmed runs still stop the chain.
+Why: GitHub's "All checks" is the merge gate (12.3). A local check failure should not idle a lane after a confirmed push (issue 2098).
 
 3.8 **Free tools and sources, local first; a paid service only with Ryan's yes, for that one evaluation.** Why: money is his.
 Set: Ryan (AGENTS.md; R110). Ids: R110b, agents-20, audit-02.
@@ -539,7 +549,7 @@ rendering, ship import, audio, or battle-feel PR." (Ryan, Nov 22 2026, 16:48 UTC
 3.14 **One global look and sound standard; no subsystem is tuned alone.** Every ship exterior and interior, weapon effect,
 wound, death, hulk, debris piece, station, planet, rock, sky and sound follows the six laws of
 `contrib/opus/plans/global_cohesion_standard.md`: (1) one value ladder (deep space near black; ship interiors and wreck cavities
-darker than lit armor, walls at most 0.11 linear; full glow only on cores, weapons and small accent strips, non-core interior
+darker than lit armor, walls at most 0.11 linear (the Glasswrights 0.45: pale pearl glass insides, never dark grey, R448); full glow only on cores, weapons and small accent strips, non-core interior
 emission at most 0.25); (2) interior materials come from each faction's own role table, never from the `kit.py` diagram
 colours, with structure (bone, frame, truss) kept apart from wall and flesh finishes; (3) one identity per faction across
 hull, interior, weapons, wounds, deaths, hulks and sound; (4) the world and audio tracks (10.11, the sound plan using Godot

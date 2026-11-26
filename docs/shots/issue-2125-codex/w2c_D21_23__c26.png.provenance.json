@@ -1,0 +1,38 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAPwAAAAxCAYAAAD+3cQNAAAAAXNSR0IArs4c6QAAAK9JREFUeJzt0zEBwCAAwLAxBTy8+HfJXIyjiYI+HXPt8wAJ7+0A4D+GhxDDQ4jhIcTwEGJ4CDE8hBgeQgwPIYaHEMNDiOEhxPAQYngIMTyEGB5CDA8hhocQw0OI4SHE8BBieAgxPIQYHkIMDyGGhxDDQ4jhIcTwEGJ4CDE8hBgeQgwPIYaHEMNDiOEhxPAQYngIMTyEGB5CDA8hhocQw0OI4SHE8BBieAgxPIQYHkI+r8wBpFyO4gMAAAAASUVORK5CYII="
+	],
+	"date": "2026-11-25T07:49:47Z",
+	"image_sha256": "55c80d86191c1425bdc48640ba7d5b8d1c474b409529439f6345c15f4b51bf3b",
+	"inputs": [],
+	"picture_name": "w2c_D21_23__c26.png",
+	"schema": 1,
+	"source_commit": "2a479682cc591c483aed1540a3517635a718c2a6",
+	"source_diff_sha256": "",
+	"source_dirty": false,
+	"source_dirty_files": {},
+	"sources": [
+		{
+			"source_commit": "2a479682cc591c483aed1540a3517635a718c2a6",
+			"source_diff_sha256": "",
+			"source_dirty": false,
+			"source_dirty_files": {},
+			"stage": "pre-merge capture"
+		}
+	],
+	"stage": "pre-merge capture",
+	"stamp_box": [
+		0,
+		216,
+		252,
+		265
+	],
+	"stamp_template_sha256": "51152769cf9d833de567e23ad3842bea8a609bcc30a73907b291c994ee9e6d5e",
+	"strip_sha256": [
+		"51152769cf9d833de567e23ad3842bea8a609bcc30a73907b291c994ee9e6d5e"
+	],
+	"strip_size": [
+		252,
+		49
+	]
+}
