@@ -1954,6 +1954,9 @@ static func _wing_trail_update(fx, wing) -> void:
 # read the kit body glb from disk, built its hull-finish materials and nozzle copies, and compiled their pipelines and the
 # kit trail's, all in the fight. Load every body the fleets on the board can fire and draw it once in the warm-up grid
 # (lit and nozzle-dark surfaces both), with a kit trail strip in its own vertex format. Returns the bodies warmed.
+# Issue 2200 (Duet FX and battle perf audit F5): the Chorus Acid Thorn bolt is one of these kit bodies too (a built bone
+# thorn, fx_acid_thorn.gd), so it belongs in the warm list; without it the first Chorus volley read and built it in the
+# fight. Every look under fx/munition_bodies/ is named here, and the issue 2200 check proves the list covers the folder.
 static func warm_munitions(fx, parent: Node3D) -> int:
 	var factions := {}
 	for s in fx.ships.values():
@@ -1961,7 +1964,7 @@ static func warm_munitions(fx, parent: Node3D) -> int:
 	var warmed := 0
 	var slot := 0
 	for faction in factions:
-		for lk in ["torp", "rockets"]:
+		for lk in ["torp", "rockets", "bolt"]:
 			var path: String = MUNITIONS_DIR + "%s_%s.glb" % [faction, lk]
 			if not (ResourceLoader.exists(path) or FileAccess.file_exists(path)):
 				continue

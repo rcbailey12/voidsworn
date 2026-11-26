@@ -18,6 +18,7 @@ extends RefCounted
 # Palette (factions.md, The Chorus): bone to horn, olive-brown tissue, the faction's bile light from inside only; no lime
 # surfaces, no eyes, no metal.
 
+const FXW := preload("res://fx/fx_weapons.gd")   # the kit body loader, preloaded so no shot reads it in the fight
 const BONE := Color(0.66, 0.55, 0.38)       # pale bone chips
 const HORN := Color(0.22, 0.16, 0.10)       # dark horn chips (the splints)
 const ACID := Color(0.30, 0.32, 0.07)       # the acid on the plate: a dark bile wet, never a flat lime glow (Ryan, Nov 24)
@@ -34,7 +35,6 @@ const SLAM := 0.05       # seconds the point takes to drive in once it strikes: 
 
 
 static func _body(fx, k: float) -> Node3D:
-	var FXW = load("res://fx/fx_weapons.gd")
 	var node := Node3D.new()
 	node.name = "fx_acid_thorn"
 	var kit: Node3D = FXW._kit_body(fx, "bolt", "chorus")
@@ -115,7 +115,6 @@ static func _hit_matter(fx, tg: Dictionary, T: float, col: Color, k: float, Tg =
 	# struck hull's own finish, fx_weapons._throw_debris) and a ring and puff of bone dust. No spark lines (Ryan, Nov 24:
 	# "random low quality sparks that shoot out that don't fit the quality bar"). The flash takes the struck hull's own hit
 	# palette (fx_weapons._impact_response and _impact_color; Artoo on PR 1904, issue 1991).
-	var FXW = load("res://fx/fx_weapons.gd")
 	var response = FXW._impact_response(Tg)
 	fx.spr(p + n * 0.15 * k, T, 0.08, FXW._impact_color(response, Tg, Color(1.0, 0.95, 0.82)), 6.0, 0.5 * k, 1.4 * k, 0)
 	if Tg != null and response.debris != "drop" and not response.fire_body:
