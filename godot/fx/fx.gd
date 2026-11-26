@@ -2216,8 +2216,9 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 			var hi: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05 + dx, 0, 0), side) if dx != 0.0 else h
 			ends.append(hi["p"] if not hi.is_empty() else lp)
 		BOARDING.crossing(self, a, launch, s, ends, hold, recipe)
-		var launch_col: Color = recipe.core
-		sprx(18.0, toward, now + hold * 0.12, minf(0.3, hold * 0.2), launch_col, 2.0, 0.3 * k, 0.8 * k, 18)
+		var organic: bool = a.faction == "chorus"
+		var launch_col: Color = a.fac.damage_glow if organic else recipe.core
+		sprx(18.0, toward, now + hold * 0.12, minf(0.3, hold * 0.2), launch_col, 2.0, 0.3 * k, 0.8 * k, 20 if organic else 18)
 		board_lines_s = hold
 	return maxf(3.2, hold)
 
