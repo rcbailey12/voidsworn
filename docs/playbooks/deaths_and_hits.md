@@ -54,7 +54,7 @@ The rest of this page is the Nov 11 morning design; where it disagrees with the 
    longer lives, and scorch stays (see "The hits, upgraded"). Ryan's reason (R187): the old guidance made battles "more
    restricted and less realistic and cinematic than it should be".
 3. **A bigger ship dies longer, not just larger.** A frigate is gone in under a second. A cruiser takes about three and a
-   half. A capital takes about four and a half and leaves a wreck that glows for a quarter of a minute.
+   half. A capital takes about four and a half. Its outer scorch and coals can linger after the seams cool.
 4. **It starts on the ship.** Every jet, tear, flash and blast sits on a hard point, a breach anchor or the surface the shot
    hit. Nothing floats beside the hull.
 5. **Read it at the battle camera.** Each beat must be told apart at camera 170 without zooming. Detail for camera 26 is a
@@ -75,6 +75,16 @@ that record keeps the #167 fallback. Main wreck bodies retain their split altitu
 velocity), while tumbling freely, so physics cannot push the readable wreck under the board. This does not constrain all
 small fragments; `death_plane_check.gd` protects the existing behavior.
 
+**Wreck breaks (issue 2022, Ryan Nov 24).** The four metal factions share a bent lip, a thin seam in their own death
+colour and a cold cap sooted from their own hull pigment. The seam cools in about three effect seconds from release,
+independent of the outer scorch. A tear exposes the ship's kit interiors and fills unmodeled space with a hull-fitted
+bulkhead, decks and frame ribs. Glasswrights keep their shatter dust and stored-light edges with frosted pearl glass
+instead of metal kit fill. Chorus keeps torn crimson-umber flesh and a cold membrane backing. Compare the six labeled
+`godot/bench/look_moments_wreck_2022.json` rows at the opening, exposed interior and cold wreck. Use camera 170 first.
+Once checks and review pass, run `tools/pc/jobs/look_bench_2022.bat` for the matched bench. Its six strict rows fail on
+missing frames. When PR 2007 lands, replace the old `SLAG` string assertions in `faction_fx_1991_check.gd` with the
+cold pigment and cooling seam checks already covered by `faction_death_style_check.gd`.
+
 The kill camera holds through the core flash on cruiser, capital and flagship kills, with a short skippable slow beat
 (R193 (2)). Reduce flashing keeps every size and swaps each white flash for the
 softer rise and fall the staging table gives.
@@ -94,7 +104,7 @@ Times are seconds from the killing blow. Sizes are at 1080 at the battle camera.
 | | 1.66 | The core flash: 302 px for 0.20 s, at the lip of the torn face, and it lights every hull within about two hexes. |
 | | 1.66 to about 5 | The body: 260 px. Fire shows through the gas for at most 0.70 s, then gas alone thins and drifts. Shrapnel streamers leave along the plane of the break. |
 | 3. The wreck | 2.1 to 4.9 | Five secondaries on each half, each at least 75 px, staggered, each lighting its own half. |
-| | to about 10 | The torn faces show their decks, glowing white, then orange, then dull red, then dark. Gas trails thin out. The halves stay on the board as wreckage. |
+| | after release | The thin torn seam cools in about 3 s. Sooted decks stay visible, and the outer scorch and gas fade separately. The halves stay on the board as wreckage. |
 
 ### Capital, carrier, barge (and the biggest flagships)
 
@@ -303,7 +313,7 @@ Three upgrades run through all of them:
    (`wound_kind` 0 for metal on Sunward, Directorate and Hullbreakers, 1 for Chorus tissue, 2 for Glasswright crystal,
    and 3 for Eclipse machine wounds). The 2D painted concept sheet
    (`opus1235wd`) was rejected ("it almost looks like a random portal... there's a reason we did the interior work on the
-   ships"): visual review uses real 3D in-engine look-bench captures behind `VS_WOUNDS_V2=1` (camera 170 and camera 26,
+   ships"): visual review uses real 3D in-engine look-bench captures (Wounds V2, on by default since Nov 24; camera 170 and camera 26,
    1 hit, 50% hull, 20% hull, capability loss and death transition) instead of 2D paint-overs. Six rules govern the build:
    (a) **Real mid-battle cutouts into authored interiors (RULEBOOK 6.14):** light grazes and healthy armor take surface marks
    only; heavy hits on weakened sections and Stage 2+ section wear (~55% section HP) cut real 3D openings through outer

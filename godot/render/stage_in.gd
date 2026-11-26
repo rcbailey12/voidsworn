@@ -82,7 +82,7 @@ func warm_meshes(host: Node3D, nodes: Array, label: String, keep_going := Callab
 			SKEEP.event("%s warm %s surface %d/%d (%s fmt %x)" % [
 				label, mi.name if mi != null else mesh.resource_name, surface, mesh.get_surface_count(), _warm_shader_name(mat), fmt])
 			await tree.process_frame
-			if (not is_instance_valid(warm) or not is_instance_valid(host) or not host.is_inside_tree()
+			if (not is_instance_valid(warm) or not is_instance_valid(host) or not host.is_inside_tree() or not host.can_process()
 					or host.is_queued_for_deletion() or (keep_going.is_valid() and not keep_going.call())):
 				if is_instance_valid(cleanup):
 					cleanup.queue_free()

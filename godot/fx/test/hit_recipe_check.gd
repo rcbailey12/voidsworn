@@ -204,9 +204,10 @@ func _substance_hits() -> void:
 			var kinds: Dictionary = fx.spr_kinds
 			var lamp: Color = fx._lev[-1][4] if not fx._lev.is_empty() else Color.BLACK
 			if faction == "ithar":
-				_check(lamp.r >= lamp.g and lamp.g > 0.9 and lamp.b > 0.7
-					and not kinds.has(27) and not kinds.has(19) and _glass_shards(plate),
-					label + ": white-gold light and unheated crystal shards")
+				var glass_light: bool = lamp.is_equal_approx(target.fac.damage_glow) if look == "crit" \
+					else lamp.r >= lamp.g and lamp.g > 0.9 and lamp.b > 0.7
+				_check(glass_light and not kinds.has(27) and not kinds.has(19) and _glass_shards(plate),
+					label + ": glass light and unheated crystal shards")
 			elif faction == "chorus":
 				_check(plate.emitted == 0 and kinds.has(15) and kinds.has(20) and not kinds.has(27) and not kinds.has(19)
 					and lamp.g > lamp.r and lamp.r > lamp.b,

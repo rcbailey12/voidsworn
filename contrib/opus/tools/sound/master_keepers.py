@@ -19,6 +19,7 @@ EQ = {
     "air": "highshelf=f=2000:g=2",
     "mid": "equalizer=f=1200:t=q:w=1:g=4",
     "bio": "lowshelf=f=200:g=-6,highshelf=f=1500:g=6",
+    "shield_presence": "highshelf=f=800:g=3",
 }
 
 def load(path):
@@ -103,6 +104,8 @@ def master(k, srcdirs, targets):
     gain = targets[k["cat"]] - loud_db(x)
     if k["cat"] == "amb":
         gain = targets["amb"] - 10 * np.log10((x ** 2).mean() + 1e-12)
+    if "gain_db" in k:
+        gain = float(k["gain_db"])
     peak = np.abs(x).max() * 10 ** (gain / 20)
     limited = False
     if peak > 10 ** (-1 / 20):
@@ -111,7 +114,7 @@ def master(k, srcdirs, targets):
     x = x * 10 ** (gain / 20)
     # Looping ambience keeps its edges: a fade to zero would dip at every loop seam.
     if k["cat"] != "amb":
-        fi, fo = int(0.001 * SR), int(0.015 * SR)
+        fi, fo = int(0.001 * SR), int(k.get("tail_ms", 15) / 1000 * SR)
         x[:fi] *= np.linspace(0, 1, fi)[:, None]
         x[-fo:] *= np.linspace(1, 0, fo)[:, None]
     return x, {"corr": round(c, 2), "src": used, "gain_db": round(float(gain), 1), "limited": limited,

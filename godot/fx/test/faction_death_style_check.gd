@@ -1,6 +1,6 @@
 extends SceneTree
 const GUARD = preload("res://tools/ci/check_guard.gd")
-# Issue 1399 (R367, Ryan's "Full faction deaths"): every metal faction dies in its own colours and break, from
+# Issue 1399 (R367, Ryan's "Full faction deaths"): every faction dies in its own colours and break, from
 # faction_looks.json "death". A box cruiser of each is killed with the strained death on (the game's default), at quality
 # high with physics plates, against a plain control (corsair's look with its death entry removed: today's shared fire):
 #   plain: its death pictures keep the baked colours (fac_fire off), it smokes, its torn faces glow orange;
@@ -39,6 +39,7 @@ func _run() -> void:
 	var sun := await _kill("voidsworn")
 	var heg := await _kill("hegemony")
 	var ash := await _kill("corsair")
+	var flesh := await _kill("chorus")
 	# Artoo on 1399: a cold cut that finishes well after the nominal split (held 1.5 s here) must still get its arcs
 	var heg_cold := await _kill("hegemony", true)
 	LOOK.reload()
@@ -75,6 +76,7 @@ func _run() -> void:
 	check((heg["ember"] as Vector3).z > 0.9 if heg.get("ember") is Vector3 else false, "hegemony: its tear is blue-white")
 	# Hullbreakers
 	check(int(ash["plates_before_split"]) > int(today["plates_before_split"]), "corsair: patch plates tear loose before the split (%d against plain %d)" % [ash["plates_before_split"], today["plates_before_split"]])
+	_wreck_caps([ecl, sun, heg, ash], glass, flesh)
 	print("FACTION_DEATH failures=%d" % failures)
 	quit(1 if failures else 0)
 
@@ -132,7 +134,8 @@ func _kill(fac: String, cold := false) -> Dictionary:
 	var t_kill: float = fx.now
 	var seen := {}
 	var res := {"fac": fac, "pics": 0, "styled": 0, "prism": false, "smoke": 0, "n_frag": int(plan.get("n_frag", 0)),
-		"plates_before_split": 0, "dimmed": false, "heat": "none", "streaks": 0, "sprites_before_split": 0, "ribbons": 0}
+		"plates_before_split": 0, "dimmed": false, "heat": "none", "streaks": 0, "sprites_before_split": 0, "ribbons": 0,
+		"seam_hot": false, "seam_cold": false, "seam_overrun": false, "scorch_after_seam": false}
 	var split_seen := false
 	var arcs_seen := 0
 	var arcs_pinned := 0
@@ -154,6 +157,8 @@ func _kill(fac: String, cold := false) -> Dictionary:
 			res["plates_before_split"] = (fx.dstate.get("debris_awake", {}) as Dictionary).size()
 			res["sprites_before_split"] = _emitted(fx, "spr") - spr0
 			split_seen = s.has_meta("death_hidden")
+		for w in fx.dstate.get("wrecks", []):
+			if w["id"] == "k": _read_seam_clock(res, w, fx.now)
 		# each new arc's two ends sit on two different pieces' torn faces in the frame it strikes (within 5 percent of the length)
 		var live: Array = s.get_meta("death_arcs", [])
 		while arcs_seen < live.size():
@@ -195,10 +200,69 @@ func _kill(fac: String, cold := false) -> Dictionary:
 					if sm is ShaderMaterial and (sm as ShaderMaterial).shader != null and (sm as ShaderMaterial).shader.code.contains("heat_hot"):
 						var hh = (sm as ShaderMaterial).get_shader_parameter("heat_hot")
 						res["heat"] = "styled" if hh is Vector3 or (hh is Color and not (hh as Color).is_equal_approx(Color(0.95, 0.40, 0.09))) else "today"
+						res["cap_kind"] = sm.get_shader_parameter("cap_kind")
+						res["scorch_tint"] = _rgb(sm.get_shader_parameter("scorch_tint"))
+						res["cap_albedo"] = _rgb(sm.get_shader_parameter("cap_albedo"))
+						res["rim_hot"] = _rgb(hh)
+						res["rim_cool"] = _rgb(sm.get_shader_parameter("heat_cool"))
 	print("FACTION_DEATH ", JSON.stringify(res))
 	world.queue_free()
 	await process_frame
 	return res
+
+
+func _read_seam_clock(res: Dictionary, wreck: Dictionary, now: float) -> void:
+	for m: ShaderMaterial in wreck["mats"]:
+		var birth := float(wreck["heat_births"].get(m, INF))
+		var heat := float(m.get_shader_parameter("heat"))
+		var age := now - birth
+		if age > 0.08 and age < 0.25 and heat > 0.8: res["seam_hot"] = true
+		if age >= 3.2:
+			if is_zero_approx(heat):
+				res["seam_cold"] = true
+				for hm: ShaderMaterial in wreck.get("scorch_mats", []):
+					if float(hm.get_shader_parameter("fx_scorch_heat")) > 0.0: res["scorch_after_seam"] = true
+			else:
+				res["seam_overrun"] = true
+
+
+func _wreck_caps(metal: Array, glass: Dictionary, flesh: Dictionary) -> void:
+	# Issue 1991's dark-cap intent: the cold paint is independent of the heat palette and only the lip emits heat.
+	var slag: String = DEATH.SLAG
+	check(slag.contains("base = scorch_tint") and slag.contains("hot * seam * temperature * temperature")
+		and not slag.contains("grain(") and not slag.contains("face_glow"), "2022: dark hull pigment and a continuous lip-only seam, no hash glitter or hot face")
+	var paints := {}
+	for r in metal:
+		var fac: String = r["fac"]
+		var paint: Vector3 = r.get("scorch_tint", Vector3.ZERO)
+		var hot: Vector3 = r.get("rim_hot", Vector3.ZERO)
+		var cool: Vector3 = r.get("rim_cool", Vector3.ZERO)
+		paints[paint] = true
+		check(r.get("cap_kind") == DEATH.CAP_METAL and paint.is_equal_approx(_rgb(LOOK.of(fac).fragment_paint)), fac + ": cap uses its own hull pigment")
+		check(hot.is_equal_approx(_rgb(LOOK.of(fac).death.rim)) and cool.length() < hot.length() * 0.2
+			and cool.normalized().is_equal_approx(hot.normalized()), fac + ": the seam keeps its faction heat hue and dims as it cools")
+		check(r["seam_hot"] and r["seam_cold"] and not r["seam_overrun"] and r["scorch_after_seam"],
+			fac + ": seam is hot on release and cold by 3.2 s while the outer plating is still cooling")
+	check(paints.size() == metal.size(), "2022: all four metal caps have distinct pigments")
+	check(glass.get("cap_kind") == DEATH.CAP_GLASS and glass["seam_hot"] and glass["seam_cold"] and not glass["seam_overrun"],
+		"ithar: stored light fades without a metal rim. Shatter dust stays separate.")
+	var pearl: Vector3 = glass.get("cap_albedo", Vector3.ZERO)
+	var glass_inside: Dictionary = LOOK.of("ithar")["interior"]
+	check(pearl.is_equal_approx(_rgb(glass_inside["roles"]["glass"])) and pearl[pearl.min_axis_index()] >= 0.26
+		and pearl[pearl.max_axis_index()] <= float(glass_inside["wall_max"]) and slag.contains("ALBEDO = cap_albedo * (lip"),
+		"ithar: the unlit lip and bulkhead use pale pearl glass, not the scorched hull tint")
+	check(flesh.get("cap_kind") == DEATH.CAP_FLESH and not flesh["seam_hot"] and not flesh["seam_overrun"],
+		"chorus: ruptured caps keep flesh and no hot seam")
+	var organ: Vector3 = flesh.get("cap_albedo", Vector3.ZERO)
+	check(organ.is_equal_approx(_rgb(LOOK.of("chorus")["interior"]["roles"]["organ"])) and organ.x > organ.y and organ.y > organ.z
+		and slag.contains("flesh = cap_albedo * mix(") and slag.contains(": flesh;"),
+		"chorus: fibres shade crimson-umber organ tissue, with red above green above blue")
+
+
+func _rgb(v: Variant) -> Vector3:
+	if v is Color: return Vector3(v.r, v.g, v.b)
+	if v is Array and v.size() >= 3: return Vector3(v[0], v[1], v[2])
+	return v if v is Vector3 else Vector3.ZERO
 
 
 # sprites, streaks or ribbons drawn so far (a pool's emitted count)

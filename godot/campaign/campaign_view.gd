@@ -82,7 +82,7 @@ static func fleet_rows(C) -> Array:
 			"hp": hp, "max_hp": float(d["maxHp"]), "frac": hp / mx,
 			"cls": str(C.clsName(T["cls"])),
 			"mk": C.roman(s["mk"]),
-			"captain": str(C.rankName(s["cap"])) + " " + str(s["cap"]["name"]),
+			"captain": str(C.rankName(s["cap"])) + " " + str(s["cap"]["full_name"]),
 			"promotion": _jt(s["cap"].get("pending")),
 			"free_slots": int(T["slots"]) - int(s["mods"].size()),
 			"hold": hold,

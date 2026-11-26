@@ -1,4 +1,8 @@
 extends RefCounted
+
+const PreviewOp = preload("res://campaign/preview_op.gd")
+const CombatRecords = preload("res://rules/combat_records.gd")
+const CaptainData = preload("res://rules/captain_data.gd")
 # Voidsworn campaign (G3): the rules of a run and its screen flow, a GDScript port of the browser game's core.js (run parts),
 # campaign_run.js, campaign_meta.js and campaign3d.js (the root game files). Same names, same order, same maths as the JS.
 #
@@ -12,6 +16,7 @@ extends RefCounted
 
 signal changed            # the page or the modal changed
 signal battle_requested   # a battle page is up (external mode): the battle side reads pending_battle and calls finish_battle()
+signal fleet_results(lost: bool, ranked_up: bool)  # one report per settled battle, never on a reopened reward panel
 
 const BattleAPI = preload("res://rules/battle_api.gd")   # the rules are reached only through the battle API (rules/API.md)
 const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and the campaign both draw from
@@ -33,6 +38,8 @@ var NEM_WEAK; var NEM_ADAPT; var NEM_CLOCK; var FAC_VERBS; var WING_PERKS; var W
 var META: Dictionary = {}
 var RUN = null          # the run (Dictionary) or null
 var SAVED_RUN = null    # the last saved copy of the run
+var _broken_run := false
+var _aspect_setup: Dictionary = {}   # the offer and launch RNG while the flagship choice is pending
 # Issue 1451 (R378): the battle in progress, saved at the start of its newest round: {"node", "round", "fp", "size", "data"} (data:
 # the rules snapshot, base64), or null. It belongs with SAVED_RUN (the last checkpoint, usually the map before the stop; kept as the fallback) and clears
 # when the battle is settled. Continue resumes that round when the snapshot fits the game's rules (battle_restore).
@@ -274,6 +281,7 @@ func migrateMeta(m: Dictionary, log: Array = []) -> Dictionary:
 	for k in ["mastery", "favour", "variants", "heatBest"]: m[k] = or_(m.get(k), {})
 	if not jt(m.get("backfilled")): m["backfilled"] = 1
 	if not jt(m.get("wonFix41")): m["wonFix41"] = 1
+	m["fallen"] = _migrate_fallen(m["fallen"], "voidsworn", "hall")
 	return m
 func migrateRun(r) -> Variant:
 	if r != null and not jt(r.get("fac")): r["fac"] = "voidsworn"
@@ -282,7 +290,7 @@ func migrateRun(r) -> Variant:
 	return normalizeRun(r)
 func runDefaults() -> Dictionary:
 	return {"fac": "voidsworn", "foes": null, "admiral": "vex", "credits": 0, "cpCap": 10, "sector": 1, "relics": [], "inventory": [], "fleet": [], "pos": null,
-		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": 0, "fallen": [], "ambush": false, "over": false, "boons": [], "patrons": [],
+		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": 0, "fallen": [], "timeline": [], "ambush": false, "over": false, "boons": [], "patrons": [],
 		"aspect": null, "flagUid": null, "heat": [], "mastery": 0, "ransoms": 0, "altFleet": false, "cmdOverride": null, "giftBoon": null, "reserve": [], "seenEvents": [],
 		"regionsUsed": [], "condsUsed": [], "curNode": null, "reinf": 0, "flags": {}, "nem": null, "verbUsed": 0, "verbNext": null, "classTrack": {}, "boonRerolls": 0,
 		"eatenCore": null, "eatCoreSeen": false}
@@ -291,7 +299,7 @@ func normalizeRun(r) -> Variant:
 	var d = runDefaults()
 	for k in d.keys():
 		if r.get(k) == null: r[k] = d[k]
-	for k in ["relics", "inventory", "fleet", "fallen", "boons", "patrons", "heat", "reserve", "seenEvents", "regionsUsed", "condsUsed"]:
+	for k in ["relics", "inventory", "fleet", "fallen", "timeline", "boons", "patrons", "heat", "reserve", "seenEvents", "regionsUsed", "condsUsed"]:
 		if not (r[k] is Array): r[k] = []
 	if not (r["stats"] is Dictionary): r["stats"] = {}
 	for k in d["stats"].keys():
@@ -304,8 +312,6 @@ func normalizeRun(r) -> Variant:
 	for s in r["fleet"]:
 		if not (s.get("mods") is Array): s["mods"] = []
 		if not jt(s.get("mk")): s["mk"] = 1
-		if not (s.get("cap") is Dictionary): s["cap"] = {"fac": r["fac"], "name": "Captain", "xp": 0, "rank": 0, "perks": [], "pending": 0}
-		if not (s["cap"].get("perks") is Array): s["cap"]["perks"] = []
 	return repairRunIds(r)
 func _keep(arr: Array, T: Dictionary, kind: String, rep: Array, get_id: Callable = Callable()) -> Array:
 	var out = []
@@ -314,16 +320,31 @@ func _keep(arr: Array, T: Dictionary, kind: String, rep: Array, get_id: Callable
 		if id != null and (id is String) and T.has(id): out.append(x)
 		else: rep.append(kind + " " + str(id).substr(0, 40))
 	return out
-func _capFix(c, r) -> Dictionary:
-	if not (c is Dictionary): return {"fac": r["fac"], "name": "Captain", "xp": 0, "rank": 0, "perks": [], "pending": 0}
-	if not (c.get("name") is String) or String(c["name"]).strip_edges() == "": c["name"] = "Captain"
-	if not (c.get("perks") is Array): c["perks"] = []
-	c["perks"] = _keep(c["perks"], PERKS, "perk", [])
-	if not (c.get("xp") is int or c.get("xp") is float): c["xp"] = 0
-	if not (c.get("rank") is int or c.get("rank") is float): c["rank"] = 0
-	if not (c.get("pending") is int or c.get("pending") is float): c["pending"] = 0
-	if not jt(c.get("fac")): c["fac"] = r["fac"]
-	return c
+func _migrate_fallen(rows: Array, fac: String, scope: String) -> Array:
+	var out := []
+	for f in rows:
+		if not (f is Dictionary): continue
+		if not (f.get("cap") is Dictionary) and not (f.get("name") is String): continue
+		if not (f.get("cap") is Dictionary):
+			var legacy := {}
+			for key in ["name", "rank", "xp", "fac", "perks"]:
+				if f.has(key): legacy[key] = f[key]; f.erase(key)
+			f["cap"] = legacy
+		f["cap"] = CaptainData.migrate(f["cap"], "captain:legacy:%s:%d" % [scope, out.size()], fac, PERKS)
+		out.append(f)
+	return out
+
+func _migrate_report(summary: Dictionary, r: Dictionary) -> void:
+	for key in ["lost", "xp"]:
+		var rows = summary.get(key)
+		if not (rows is Array): continue
+		for i in range(rows.size()):
+			var row = rows[i]
+			if not (row is Dictionary) or row.get("cap") is Dictionary: continue
+			var legacy := {"name": row.get("cap"), "rank": row.get("rank", 0)}
+			row["cap"] = CaptainData.migrate(legacy, "captain:legacy:report:%s:%d" % [key, i], r["fac"], PERKS)
+			row.erase("rank")
+
 func repairRunIds(r) -> Variant:
 	if not (r is Dictionary) or jt(r.get("none")): return r
 	var rep = []
@@ -347,18 +368,23 @@ func repairRunIds(r) -> Variant:
 	if r.get("giftBoon") != null and not BOONS.has(r["giftBoon"]): r["giftBoon"] = null
 	var before = r["fleet"].size()
 	r["fleet"] = _keep(r["fleet"], HULLS, "ship hull", rep, func(s): return s.get("tpl"))
-	for s in r["fleet"]:
-		s["cap"] = _capFix(s.get("cap"), r); s["mods"] = _keep(s["mods"], MODULES, "refit", rep)
+	var active_captains := []
+	for i in range(r["fleet"].size()):
+		var s: Dictionary = r["fleet"][i]
+		s["cap"] = CaptainData.migrate(s.get("cap"), "captain:" + str(s.get("uid", i)), r["fac"], PERKS)
+		active_captains.append(s["cap"])
+		s["mods"] = _keep(s["mods"], MODULES, "refit", rep)
 		if not (s.get("name") is String): s["name"] = HULLS[s["tpl"]]["n"]
 		if not (s.get("hp") is int or s.get("hp") is float) or not (float(s["hp"]) > 0): s["hp"] = 1
 	var res = []
 	for x in r["reserve"]:
-		if x is Dictionary: x["cap"] = _capFix(x.get("cap"), r); res.append(x)
+		if not (x is Dictionary): continue
+		x["cap"] = CaptainData.migrate(x.get("cap"), "captain:legacy:reserve:%d" % res.size(), r["fac"], PERKS)
+		active_captains.append(x["cap"])
+		res.append(x)
+	CaptainData.restore_portraits(active_captains)
 	r["reserve"] = res
-	var fal = []
-	for f in r["fallen"]:
-		if f is Dictionary and f.get("name") is String: fal.append(f)
-	r["fallen"] = fal
+	r["fallen"] = _migrate_fallen(r["fallen"], r["fac"], "fallen")
 	if r.get("flagUid") != null:
 		var ok = false
 		for s in r["fleet"]:
@@ -377,6 +403,8 @@ func repairRunIds(r) -> Variant:
 				for p in R["prizes"]:
 					if p is Dictionary and HULLS.has(p.get("tpl")): pz.append(p)
 			R["prizes"] = pz
+			if R.get("victory") is Dictionary and R["victory"].get("summary") is Dictionary:
+				_migrate_report(R["victory"]["summary"], r)
 			if not (R.get("rw") is Dictionary): R["rw"] = {}
 			R["relics"] = _keep(R["relics"], RELICS, "relic", rep) if R.get("relics") is Array else []
 			var wr = []
@@ -444,10 +472,15 @@ func _enc(v):
 	return v
 func save_text() -> String:
 	# storyGuard (issue 1338): saves from this build on never need the old story-buff repair (_restore_legacy_story_modifier)
-	return JSON.stringify(_enc({"format": "voidsworn-godot-campaign", "v": 1, "uid": UID, "meta": META, "run": SAVED_RUN if SAVED_RUN != null else {"none": true}, "yard": saved_in_yard, "tel": tel_log,
-		"battle": saved_battle if SAVED_RUN != null else null, "storyGuard": true}))
+	var data = {"format": "voidsworn-godot-campaign", "v": 1, "uid": UID, "meta": META, "run": SAVED_RUN if SAVED_RUN != null else {"none": true}, "yard": saved_in_yard, "tel": tel_log,
+		"battle": saved_battle if SAVED_RUN != null else null, "storyGuard": true}
+	if _broken_run: data["brokenRun"] = true
+	if not _aspect_setup.is_empty() and _aspect_pending(SAVED_RUN): data["aspectSetup"] = _aspect_setup
+	return JSON.stringify(_enc(data))
 var last_save_ok := true   # issue 1451: did the newest persist_save reach the disk (true while saves are off)
 func persist_save(meta_only: bool = false) -> void:
+	_persist_save(meta_only, false)
+func _persist_save(meta_only: bool, cleared_run: bool) -> void:
 	var now = now_ms()
 	META["updated"] = now
 	if not meta_only: META["runAt"] = now
@@ -456,6 +489,18 @@ func persist_save(meta_only: bool = false) -> void:
 	var data = save_text()
 	# Atomic: the new save is written whole to a temp file, flushed and checked, then renamed over the old one, so a crash or a
 	# power cut mid-write leaves either the old save or the new one, never half a file. The save before it becomes the .bak.
+	if cleared_run:
+		# Prepare a profile-only backup first so a successful abandon cannot be undone by a damaged primary later.
+		# Until the primary write succeeds it still takes precedence over the staged backup.
+		var backup := save_path + ".bak"
+		var prior := FileAccess.get_file_as_string(backup)
+		if _write_atomic(backup, data):
+			if _write_atomic(save_path, data): return
+			if prior.is_empty(): prior = FileAccess.get_file_as_string(save_path)
+			if not prior.is_empty() and not _write_atomic(backup, prior):
+				push_warning("campaign: could not restore the prior backup after the failed write")
+		last_save_ok = false; toast("This computer could not save the game (is the disk full?).")
+		return
 	if FileAccess.file_exists(save_path):
 		var prev = FileAccess.get_file_as_string(save_path)
 		if prev != data and saneSave(_dec(_json_quiet(prev))):
@@ -475,22 +520,36 @@ func _write_atomic(path: String, text: String) -> bool:
 static func _json_quiet(t: String) -> Variant:   # a damaged save is expected now and then: parse without an engine error
 	var j = JSON.new()
 	return j.data if j.parse(t) == OK else null
-# A valid primary wins even if it is profile-only. If neither copy is sound, keep the sound half of the primary.
+# A valid primary wins even if it is profile-only. If neither copy is sound, recover the profile from either copy.
 static func _resolve_save(primary, backup) -> Dictionary:
 	if saneSave(primary): return primary
 	if saneSave(backup): return backup
-	if not (primary is Dictionary): return {}
-	if not saneRun(primary.get("run")): primary.erase("run")
-	if not saneMeta(primary.get("meta")): primary.erase("meta")
-	return primary
+	var resolved: Dictionary = primary if primary is Dictionary else {}
+	if not saneMeta(resolved.get("meta")):
+		resolved.erase("meta")
+		if backup is Dictionary and saneMeta(backup.get("meta")):
+			# Keep a usable primary run. Otherwise take the backup profile and its telemetry together.
+			var run = resolved.get("run")
+			if run == null or not saneRun(run):
+				resolved = backup
+			else:
+				resolved["meta"] = backup["meta"]
+	if not saneRun(resolved.get("run")):
+		resolved.erase("run")
+		resolved["brokenRun"] = true
+	return resolved
 
 static func _read_save(path: String) -> Dictionary:
 	var primary = _dec(_json_quiet(FileAccess.get_file_as_string(path)))
 	if saneSave(primary): return primary
-	return _resolve_save(primary, _dec(_json_quiet(FileAccess.get_file_as_string(path + ".bak"))))
+	var resolved := _resolve_save(primary, _dec(_json_quiet(FileAccess.get_file_as_string(path + ".bak"))))
+	if resolved.is_empty() and (FileAccess.file_exists(path) or FileAccess.file_exists(path + ".bak")):
+		resolved["brokenRun"] = true
+	return resolved
 
 static func has_saved_run(path: String = SAVE_PATH) -> bool:
-	return _has_run(_read_save(path).get("run"))
+	var data := _read_save(path)
+	return _has_run(data.get("run")) or jt(data.get("brokenRun"))
 
 func _apply_save(o: Dictionary) -> void:
 	tel_log = o["tel"] if o.get("tel") is Array else []
@@ -500,12 +559,15 @@ func _apply_save(o: Dictionary) -> void:
 		META = migrateMeta(m, tel_log)
 	var r = o.get("run")
 	SAVED_RUN = migrateRun(r) if _has_run(r) else null
+	_broken_run = jt(o.get("brokenRun")) or _unplayable_run(SAVED_RUN)
+	_aspect_setup = o["aspectSetup"] if _aspect_pending(SAVED_RUN) and o.get("aspectSetup") is Dictionary else {}
+	_launch_rng = int(z0(_aspect_setup.get("launchRng"))) if _aspect_setup.has("launchRng") else -1
 	var sb = o.get("battle")
 	saved_battle = sb if (SAVED_RUN != null and sb is Dictionary and sb.get("data") is String and sb.get("node") is String and sb.get("fp") is String) else null
 	# Issue 1338: only a save written before storyGuard may be missing a story buff the old mid-battle checkpoint erased
 	if SAVED_RUN != null and o.get("storyGuard") != true: SAVED_RUN["storyLegacy"] = true
 	# Older builds showed the line on every Sector III win. Use the saved log when it can prove it already appeared.
-	if SAVED_RUN != null and not SAVED_RUN.has("beat3DebriefSeen") and _beat3_line(SAVED_RUN, "debrief") != "":
+	if SAVED_RUN != null and not _broken_run and not SAVED_RUN.has("beat3DebriefSeen") and _beat3_line(SAVED_RUN, "debrief") != "":
 		var started: float = float(z0(SAVED_RUN.get("t0")))
 		if started > 0 and tel_log.any(func(e): return e is Dictionary and e.get("ev") == "battle_end" and e.get("result") == "win" and e.get("sector") == 3 and float(z0(e.get("t"))) >= started):
 			SAVED_RUN["beat3DebriefSeen"] = true
@@ -522,7 +584,7 @@ func capName(fac) -> String:
 	var C = CAPTAINS.get(fac) if CAPTAINS.has(fac) else CAPTAINS["voidsworn"]
 	var used = {}
 	if RUN != null and RUN.get("fleet") != null:
-		for s in RUN["fleet"]: used[String(s["cap"]["name"]).split(" ")[0]] = true
+		for s in RUN["fleet"]: used[String(s["cap"]["full_name"]).split(" ")[0]] = true
 	var n = ""
 	for i in range(8):
 		if jt(C.get("names")):
@@ -554,15 +616,19 @@ func shipName(fac) -> String:
 	for n in (base if base.size() > 0 else SHIP_NAMES):
 		if not used.has(n): pool.append(n)
 	return pick(pool if pool.size() > 0 else SHIP_NAMES)
-func newCaptain(vet, fac) -> Dictionary:
-	var c = {"fac": fac if jt(fac) else "voidsworn"}
-	c["name"] = capName(fac); c["xp"] = 0; c["rank"] = 0; c["perks"] = []; c["pending"] = 0
-	if jt(vet):
-		c["xp"] = RANK_XP[1]; c["rank"] = 1; c["perks"] = [pick(PERKS.keys())]
+func newCaptain(vet, fac, uid: String) -> Dictionary:
+	var faction := str(fac) if jt(fac) else "voidsworn"
+	var name := capName(fac)
+	var perks: Array = [pick(PERKS.keys())] if jt(vet) else []
+	var c := CaptainData.make("captain:" + uid, faction, name, RANK_XP[1] if jt(vet) else 0, 1 if jt(vet) else 0, perks)
+	CaptainData.update_trait(c, PERKS)
+	CaptainData.assign_portrait(c, CaptainData.used_portraits(RUN))
 	return c
+
 func _newShip(tpl, vet) -> Dictionary:
 	var fac = factionOfTpl(tpl)
-	var s = {"uid": new_id(), "tpl": tpl, "name": shipName(fac), "mk": 1, "hp": 0, "mods": [], "cap": newCaptain(vet, fac)}
+	var uid := new_id()
+	var s = {"uid": uid, "tpl": tpl, "name": shipName(fac), "mk": 1, "hp": 0, "mods": [], "cap": newCaptain(vet, fac, uid)}
 	s["hp"] = derive(s)["maxHp"]
 	return s
 # campaign3d.js: wounded captains take the next hull (not during a battle, not a veteran hire)
@@ -571,7 +637,7 @@ func newShip(tpl, vet = false) -> Dictionary:
 	if B == null and not jt(vet) and RUN != null and RUN.get("reserve") is Array and RUN["reserve"].size() > 0:
 		var r = RUN["reserve"].pop_front(); var f = float(sh["hp"]) / max(1.0, float(derive(sh)["maxHp"]))
 		sh["cap"] = r["cap"]; sh["hp"] = max(1.0, jsround(float(derive(sh)["maxHp"]) * f))
-		toast(str(r["cap"]["name"]) + " recovers and takes command of " + ship_with_article(str(sh["name"])) + ".")
+		toast(str(r["cap"]["full_name"]) + " recovers and takes command of " + ship_with_article(str(sh["name"])) + ".")
 	return sh
 func sumFx(list: Array) -> Dictionary:
 	var o = {}
@@ -1393,16 +1459,17 @@ func altCommand(admiralId) -> Variant:
 		var c = ADMIRALS[ids[(i + k) % ids.size()]].get("cmd")
 		if jt(c) and jt(a.get("cmd")) and c["id"] != a["cmd"]["id"]: return c
 	return null
-func newRun(admiralId, fac, opt = {}) -> void:
+func newRun(admiralId, fac, opt = {}, checkpoint := true) -> void:
 	if not ADMIRALS.has(admiralId): return
 	# R1 (PROG-6): an admiral you do not own cannot launch. The screen checks this too; the rules function is the gate now.
 	# Harnesses that start a run with an admiral they have not bought grant that ownership in their own setup first.
 	if not admiralOwned(admiralId): RUN = null; return
 	var adm = ADMIRALS[admiralId]
+	_aspect_setup.clear()
 	fac = fac if RUN_FACTIONS.has(fac) else "voidsworn"
 	var foes = shuffle(RUN_FACTIONS.filter(func(f): return f != fac))
 	RUN = {"fac": fac, "foes": foes, "admiral": admiralId, "credits": 120, "cpCap": 10, "sector": 1, "relics": [], "inventory": [], "fleet": [], "pos": null,
-		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": now_ms(), "fallen": [], "ambush": false, "over": false, "boons": [], "eatenCore": null, "eatCoreSeen": false}
+		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": now_ms(), "fallen": [], "timeline": [], "ambush": false, "over": false, "boons": [], "eatenCore": null, "eatCoreSeen": false}
 	RUN["encounterCurve"] = BattleAPI.RulesScript.ENCOUNTER_CURVE_V1
 	# Missing means off, so old saves and default runs keep their existing save format.
 	if opt.get("mapTrial") == true: RUN["mapTrial"] = true
@@ -1441,6 +1508,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 			f["mk"] = max(float(or_(f.get("mk"), 1)), 2); f["cap"]["rank"] = max(float(f["cap"]["rank"]), 2); f["cap"]["xp"] = max(float(f["cap"]["xp"]), float(RANK_XP[2]))
 			if f["cap"]["perks"].size() < 2: f["cap"]["perks"].append(pick(PERKS.keys().filter(func(p): return not f["cap"]["perks"].has(p))))
 			f["hp"] = derive(f)["maxHp"]
+		CaptainData.update_trait(f["cap"], PERKS)
 	var lb = lineageBuild(admiralId)   # issue #305: a run snapshots the flown admiral's tree, because picks can only change between runs
 	RUN["lineage"] = {"id": admiralId, "picks": lb["picks"].duplicate(), "capstone": lb["capstone"]}
 	var cmL = capstoneMasteryLevel(admiralId) if lb["capstone"] != null else 0
@@ -1455,7 +1523,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	RUN["map"] = genSector(1)
 	RUN["flags"] = {}; RUN["nems"] = {}; RUN["nemAssign"] = drawNemAssign(); RUN["nemClock"] = 0; RUN["nemStrike"] = false; RUN["nemEscapes"] = 0; RUN["nem"] = newNemesis(RUN["nemAssign"][0])   # B4: the first hunter is ready, the rest are created lazily
 	META["stats"]["runs"] = float(META["stats"]["runs"]) + 1
-	saveRun()
+	if checkpoint: saveRun()
 func saveRun() -> void:
 	SAVED_RUN = clone(RUN) if (RUN != null and not jt(RUN.get("over"))) else null
 	if B == null: saved_battle = null   # a new checkpoint outside a battle replaces any battle save
@@ -1496,7 +1564,10 @@ func act(name: String, arg = "") -> void:
 		"continueRun": ACT_continueRun()
 		"newRunScreen": ACT_newRunScreen()
 		"abandonRun":
-			RUN = clone(SAVED_RUN); endRun(false, true)
+			if _needs_run_recovery(): _show_run_recovery()
+			elif SAVED_RUN != null:
+				RUN = clone(SAVED_RUN); endRun(false, true)
+		"discardBrokenRun": ACT_discardBrokenRun()
 		"legacy": legacyScreen()
 		"help": helpScreen()
 		"progTab":
@@ -1601,12 +1672,49 @@ func titleScreen() -> void:
 	RUN = null; B = null
 	map_trial_choice = false
 	var acts = []
-	if SAVED_RUN != null: A(acts, "continueRun")
+	var saved = SAVED_RUN != null or _broken_run
+	if saved: A(acts, "continueRun")
 	A(acts, "newRunScreen"); A(acts, "legacy"); A(acts, "help")
-	show_page("title", {"saved": SAVED_RUN != null, "renown_dot": float(z0(META.get("renown"))) >= 15, "best": META["stats"].get("best"), "wins": META["stats"].get("wins")}, acts)
+	show_page("title", {"saved": saved, "renown_dot": float(z0(META.get("renown"))) >= 15, "best": META["stats"].get("best"), "wins": META["stats"].get("wins")}, acts)
+func _unplayable_run(run) -> bool:
+	return run != null and (not saneRun(run) or run["fleet"].is_empty()
+		or not FACTIONS.has(run["map"].get("fac")) or not (run["sector"] is int or run["sector"] is float)
+		or not run["fleet"].all(func(s): return s is Dictionary and s.has("uid")))
+func _needs_run_recovery() -> bool:
+	return _broken_run or _unplayable_run(SAVED_RUN)
+func _show_run_recovery() -> void:
+	var acts = []; A(acts, "discardBrokenRun"); A(acts, "closeModal")
+	show_modal("brokenRun", {}, acts)
+func ACT_discardBrokenRun() -> void:
+	if not _needs_run_recovery(): return
+	var old = [SAVED_RUN, saved_battle, saved_in_yard, _broken_run, META.duplicate(true)]
+	SAVED_RUN = null; saved_battle = null; saved_in_yard = false; _broken_run = false
+	_persist_save(false, true)
+	if not last_save_ok:
+		SAVED_RUN = old[0]; saved_battle = old[1]; saved_in_yard = old[2]; _broken_run = old[3]; META = old[4]
+		changed.emit()
+		return
+	RUN = null; B = null
+	admiralScreen()
+func _aspect_pending(run) -> bool:
+	if not (run is Dictionary) or jt(run.get("aspect")) or run.get("sector") != 1 or run.get("pos") != null \
+			or run.get("curNode") != null or run.get("reward") != null or not (run.get("stats") is Dictionary) \
+			or z0(run["stats"].get("battles")) != 0 or not saneRun(run):
+		return false
+	# Old pre-pick checkpoints have no setup record. Opening the map seeds its stops, even before the first jump.
+	for col in run["map"]["cols"]:
+		if col.any(func(n): return n.get("seed") != null): return false
+	return true
 func ACT_continueRun() -> void:
+	if _needs_run_recovery(): _show_run_recovery(); return
 	if SAVED_RUN == null: return
 	if saved_battle != null and _resume_saved_battle(): return
+	if _aspect_pending(SAVED_RUN):
+		RUN = clone(SAVED_RUN)
+		picked_admiral = RUN["admiral"]; picked_faction = RUN["fac"]
+		run_opt = {"alt": jt(RUN.get("altFleet")), "cmdAlt": jt(RUN.get("cmdOverride")), "heat": RUN.get("heat", []).duplicate()}
+		aspectScreen()
+		return
 	RUN = clone(SAVED_RUN)
 	ensureFlagship()
 	if RUN.get("reward") != null:
@@ -1623,6 +1731,7 @@ func ACT_continueRun() -> void:
 		RUN.erase("_repairs"); RUN.erase("_shipsDropped")
 		if page.get("kind") != "battle": saveRun()
 func ACT_newRunScreen() -> void:
+	if _needs_run_recovery(): _show_run_recovery(); return
 	if SAVED_RUN != null:
 		var acts = []; A(acts, "abandonRun"); A(acts, "closeModal")
 		show_modal("abandon", {}, acts); return
@@ -1686,13 +1795,20 @@ func ACT_startRun() -> void:
 		JSM.rnd_seed(int(META["parkedRng"])); META.erase("parkedRng")
 	_launch_rng = JSM.to_u32(JSM.rng_s)
 	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3,
-		"heat": run_opt["heat"].duplicate() if heatUnlocked() else [], "mapTrial": map_trial_choice})
+		"heat": run_opt["heat"].duplicate() if heatUnlocked() else [], "mapTrial": map_trial_choice}, false)
 	map_trial_choice = false
 	tel("run_start", {"fac": RUN["fac"], "admiral": picked_admiral})
+	_aspect_setup = {"offer": _roll_aspect_offer(), "launchRng": _launch_rng}
+	saveRun()
 	aspectScreen()
+func _roll_aspect_offer() -> Array:
+	return shuffle(ASPECTS.keys()).slice(0, 4 if float(z0(RUN.get("mastery"))) >= 2 else 3)
 func aspectScreen() -> void:
 	var f = ensureFlagship()
-	var opts = shuffle(ASPECTS.keys()).slice(0, 4 if float(z0(RUN.get("mastery"))) >= 2 else 3)
+	var opts = _aspect_setup.get("offer")
+	if not (opts is Array) or opts.is_empty() or not opts.all(func(k): return ASPECTS.has(k)):
+		opts = _roll_aspect_offer()
+		_aspect_setup = {"offer": opts, "launchRng": _launch_rng}
 	W["aspOffer"] = opts
 	var acts = []
 	for k in opts: A(acts, "pickAspect", k)
@@ -1865,6 +1981,11 @@ func ACT_nameHeir(id) -> void:
 	show_page("end", d, endActions(run, d["next"]))
 func endRun(victory: bool, abandoned: bool = false) -> void:
 	if RUN == null or jt(RUN.get("over")): return
+	# Clear the old checkpoint before staging its earnings. Commit both changes together or leave the run as it was.
+	var old = []
+	if abandoned:
+		old = [SAVED_RUN, saved_battle, saved_in_yard, META.duplicate(true), tel_log.duplicate()]
+		SAVED_RUN = null; saved_battle = null; saved_in_yard = false
 	var s = RUN["stats"]
 	if META["stats"].has("finishedRuns") and not jt(RUN.get("over")): META["stats"]["finishedRuns"] += 1
 	var prevBest = float(z0(META["stats"].get("best"))); META["stats"]["best"] = max(prevBest, float(RUN["sector"]))
@@ -1892,7 +2013,14 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 	RUN["carry"].merge(earnings)
 	if arcs_on and not abandoned and arc_end_cb is Callable and (arc_end_cb as Callable).is_valid() and _arc_played(3): arc_end_cb.call(victory)
 	RUN["carry"]["inheritance"] = inheritanceSummary(RUN)
-	RUN["over"] = true; SAVED_RUN = null; saved_battle = null; persist_save()
+	RUN["over"] = true; SAVED_RUN = null; saved_battle = null
+	if abandoned: _persist_save(false, true)
+	else: persist_save()
+	if abandoned and not last_save_ok:
+		SAVED_RUN = old[0]; saved_battle = old[1]; saved_in_yard = old[2]; META = old[3]; tel_log = old[4]
+		RUN = null
+		changed.emit()
+		return
 	var nf = nextFacPick() if victory else null
 	var acts = endActions(RUN, nf)
 	var mins = null
@@ -2093,10 +2221,8 @@ func _fit_module(ship, module_id) -> bool:
 	return true
 
 func _fit_from_hold(index: int, ship) -> bool:
-	if index < 0 or index >= RUN["inventory"].size(): return false
-	if not _fit_module(ship, RUN["inventory"][index]): return false
-	RUN["inventory"].remove_at(index)
-	return true
+	if ship == null: return false
+	return not _apply_preview_op("refit", ship["uid"], index).is_empty()
 
 func ACT_equip(arg: String) -> void:   # R1 (MOD-3, Codex PR #1): only a well-formed index and a fit that can do something
 	if RUN == null: return
@@ -2129,6 +2255,7 @@ func _offer_perks(s: Dictionary) -> void:
 		s["cap"]["offer"] = shuffle(pool).slice(0, 2)
 func _take_perk(sh, perk) -> void:
 	sh["cap"]["perks"].append(perk); sh["cap"]["pending"] = float(sh["cap"]["pending"]) - 1; sh["cap"]["offer"] = null
+	CaptainData.update_trait(sh["cap"], PERKS)
 func ACT_takePerk(arg: String) -> void:
 	var p = arg.split(":"); var s = _ship(p[0])
 	if s == null or p.size() != 2 or not jt(s["cap"].get("pending")) or not or_(s["cap"].get("offer"), []).has(p[1]): return
@@ -2213,30 +2340,23 @@ func shipyardScreen(n) -> void:
 	var st = shipyardStock(n); var pm = priceMult(); var cp = fleetCP()
 	var acts = []
 	A(acts, "yardFleet"); A(acts, "leaveYard")
-	var allMiss = 0.0
-	for s in RUN["fleet"]: allMiss += float(derive(s)["maxHp"]) - float(s["hp"])
-	var allCost = ceil(allMiss / 2.0 * pm)
-	A(acts, "repairAll", "", allMiss > 0 and hullFunds() >= allCost)
+	A(acts, "repairAll", "", preview_op("repairAll")[0]["disabled_reason"].is_empty())
 	var cores = or_(RUN.get("cores"), [])
 	for i in range(cores.size()):
 		A(acts, "restoreCore", i, float(RUN["credits"]) >= coreCost(cores[i]) and cp + float(or_(HULLS[cores[i]].get("cp"), 1)) <= float(RUN["cpCap"]))
 	for o in lateShopOffers():
 		if not jt(o["done"]) and not jt(o.get("full")): A(acts, "lateBuy", o["id"], o["ok"])
 	for s in RUN["fleet"]:
-		var d = derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var mc = mkCost(s)
 		shipCardActs(acts, s, false)
-		A(acts, "repair", s["uid"], repairPoints(miss, pm, hullFunds()) > 0.0)
-		A(acts, "upgradeMk", s["uid"], float(s["mk"]) < 3 and hullFunds() >= mc)
+		A(acts, "repair", s["uid"], preview_op("repair", s["uid"])[0]["disabled_reason"].is_empty())
+		A(acts, "upgradeMk", s["uid"], preview_op("upgradeMk", s["uid"])[0]["disabled_reason"].is_empty())
 		A(acts, "sellShip", s["uid"], RUN["fleet"].size() > 1)
 	for h in st["hulls"]:
-		var t = HULLS[h]; var cost = jsround(float(t["cost"]) * pm); var fits = cp + float(t["cp"]) <= float(RUN["cpCap"])
-		var uniq = jt(t.get("unique")) and RUN["fleet"].any(func(s): return s["tpl"] == h)
-		A(acts, "buyHull", h, hullFunds() >= cost and fits and not uniq)
+		A(acts, "buyHull", h, preview_op("buyHull", h)[0]["disabled_reason"].is_empty())
 	for h in (st["cap"] if st.get("cap") is Array else []):
-		var ct = HULLS[h]; var ccost = capturedHullPrice(ct); var cfits = cp + float(ct["cp"]) <= float(RUN["cpCap"])
-		A(acts, "buyHull", h, hullFunds() >= ccost and cfits)
+		A(acts, "buyHull", h, preview_op("buyHull", h)[0]["disabled_reason"].is_empty())
 	for i in range(st["mods"].size()):
-		if not _has_num(st["sold"], i): A(acts, "buyMod", i, shopCan(jsround(float(MODULES[st["mods"][i]]["cost"]) * pm)))
+		if not _has_num(st["sold"], i): A(acts, "buyMod", i, preview_op("buyMod", "", i)[0]["disabled_reason"].is_empty())
 	for cls in fleetClasses():
 		A(acts, "buyTrack", cls, classTrack(cls) < float(CLASS_TRACK_MAX) and shopCan(classTrackCost(cls)))
 	show_page("shipyard", {"node": n, "pm": pm}, acts)
@@ -2257,27 +2377,18 @@ func ACT_buyTrack(cls: String) -> void:
 	tel("shop", {"k": "track", "id": cls, "lv": classTrack(cls)})
 	toast(clsName(cls) + " refit level " + numstr(classTrack(cls)) + ": every " + clsName(cls).to_lower() + " gains."); shipyardScreen(yard_node)
 func ACT_buyHull(h: String) -> void:
-	if yard_node == null or not HULLS.has(h): return
-	var st = yard_node["stock"]; var cap = st["cap"] if st.get("cap") is Array else []
-	var t = HULLS[h]
-	if not st["hulls"].has(h) and not cap.has(h): return   # issue 1556: only a hull this yard sells
-	if not cap.has(h) and jt(t.get("unique")) and RUN["fleet"].any(func(s): return s["tpl"] == h): return   # one of a unique hull, as the button says
-	var captured = cap.has(h); var cost = capturedHullPrice(t) if captured else jsround(float(t["cost"]) * priceMult())
-	if hullFunds() < cost or fleetCP() + float(t["cp"]) > float(RUN["cpCap"]): return
-	hullPay(cost)
-	tel("shop", {"k": "hull", "id": h, "cost": cost})
-	var s = newShip(h); if captured: s["ripped"] = true
-	RUN["fleet"].append(s); toast(ship_with_article(s["name"], true) + " joins the fleet."); shipyardScreen(yard_node)
+	var p := _apply_preview_op("buyHull", h)
+	if p.is_empty(): return
+	tel("shop", {"k": "hull", "id": h, "cost": p["price"]})
+	toast(ship_with_article(p["ship"]["name"], true) + " joins the fleet.")
+	shipyardScreen(yard_node)
 func ACT_buyMod(a: String, show_fit := false) -> void:
 	if yard_node == null or not str(a).is_valid_int(): return
 	if show_fit and (page.get("kind") != "shipyard" or modal_d != null): return
-	var i = int(a); var st = yard_node["stock"]
-	if i < 0 or i >= st["mods"].size(): return   # issue 1556: bounds first
-	var m = st["mods"][i]; var cost = jsround(float(MODULES[m]["cost"]) * priceMult())
-	if _has_num(st["sold"], i) or not shopCan(cost): return
-	shopPay(cost)
-	tel("shop", {"k": "mod", "id": m, "cost": cost})
-	st["sold"].append(i); RUN["inventory"].append(m)
+	var p := _apply_preview_op("buyMod", "", int(a))
+	if p.is_empty(): return
+	var m: String = p["key"]
+	tel("shop", {"k": "mod", "id": m, "cost": p["price"]})
 	if show_fit:
 		RUN["boughtRefit"] = {"yard": yard_node.get("id"), "module": m, "index": RUN["inventory"].size() - 1}
 		saveRun()
@@ -2321,32 +2432,61 @@ func repairPoints(miss: float, pm: float, funds: float) -> float:
 	var pts = floor(funds * 2.0 / maxf(pm, 0.0001) + 0.000001)
 	while pts > 0.0 and repairBill(pts, pm) > funds: pts -= 1.0
 	return clampf(pts, 0.0, miss)
+func preview_op(action: String, key := "", slot := -1) -> Array:
+	return PreviewOp.plan(self, action, key, slot)["rows"]
+
+# An incoming hull starts at full derived hull. A recovered captain's perks apply before that derivation.
+func incoming_ship(tpl: String, captured := false, nth := 0) -> Dictionary:
+	var cap := CaptainData.make("", factionOfTpl(tpl), "")
+	var reserve_present: bool = B == null and RUN != null and RUN.get("reserve") is Array and nth >= 0 and nth < RUN["reserve"].size()
+	if reserve_present: cap = RUN["reserve"][nth]["cap"].duplicate(true)
+	var ship := {"uid": "", "tpl": tpl, "mk": 1, "mods": [], "cap": cap, "hp": 0}
+	if captured: ship["ripped"] = true
+	ship["hp"] = derive(ship)["maxHp"]
+	return ship
+
+func _apply_preview_op(action: String, key := "", slot := -1) -> Dictionary:
+	var p := PreviewOp.plan(self, action, key, slot)
+	if not p["reason"].is_empty(): return {}
+	var purse: String = p["purse"]
+	if purse in ["bio", "credits"]: RUN[purse] = float(z0(RUN.get(purse))) - p["price"]
+	if action == "buyHull":
+		var ship: Dictionary = p["ship"]
+		var fac := factionOfTpl(key)
+		ship["uid"] = new_id()
+		ship["name"] = shipName(fac)
+		var fresh := newCaptain(false, fac, ship["uid"]) # Keep the same seeded name draw even if the reserve takes command.
+		if ship["cap"]["full_name"].is_empty():
+			ship["cap"] = fresh
+		else:
+			var recovered: Dictionary = RUN["reserve"].pop_front()
+			toast(str(recovered["cap"]["full_name"]) + " recovers and takes command of " + ship_with_article(ship["name"]) + ".")
+		RUN["fleet"].append(ship)
+	elif action == "buyMod":
+		yard_node["stock"]["sold"].append(slot)
+		RUN["inventory"].append(p["key"])
+	else:
+		for entry in p["entries"]:
+			var live: Dictionary = entry["before"]; var after: Dictionary = entry["after"]
+			live["hp"] = after["hp"]
+			if action == "refit" or action == "upgradeMk":
+				live["mk"] = after["mk"]; live["mods"] = after["mods"]
+				if after.has("hpOwed"): live["hpOwed"] = after["hpOwed"]
+				else: live.erase("hpOwed")
+		if action == "refit": RUN["inventory"].remove_at(slot)
+	return p
+
 func ACT_repair(uid: String) -> void:
-	var s = _ship(uid)
-	if s == null: return   # issue 1556
-	var d = derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var pm = priceMult()
-	var pts = repairPoints(miss, pm, hullFunds())
-	if pts <= 0.0: return
-	hullPay(repairBill(pts, pm)); s["hp"] = d["maxHp"] if pts >= miss else float(s["hp"]) + pts; shipyardScreen(yard_node)
+	if not _apply_preview_op("repair", uid).is_empty(): shipyardScreen(yard_node)
 func ACT_repairAll() -> void:
-	var pm = priceMult(); var miss = 0.0
-	for s in RUN["fleet"]: miss += float(derive(s)["maxHp"]) - float(s["hp"])
-	var c = ceil(miss / 2.0 * pm)
-	if hullFunds() < c: return
-	hullPay(c)
-	for s in RUN["fleet"]: s["hp"] = derive(s)["maxHp"]
-	shipyardScreen(yard_node)
-func _mk_up(sh) -> void: sh["mk"] = float(sh["mk"]) + 1
+	if not _apply_preview_op("repairAll").is_empty(): shipyardScreen(yard_node)
 func _mk_up3(sh) -> void:
 	if float(sh["mk"]) < 3: sh["mk"] = float(sh["mk"]) + 1
 func ACT_upgradeMk(uid: String) -> void:
-	var s = _ship(uid)
-	if s == null: return   # issue 1556
-	var c = mkCost(s)
-	if float(s["mk"]) >= 3 or hullFunds() < c: return
-	hullPay(c)
-	tel("shop", {"k": "mk", "id": s["tpl"], "cost": c})
-	changeShip(s, _mk_up)
+	var p := _apply_preview_op("upgradeMk", uid)
+	if p.is_empty(): return
+	var s: Dictionary = p["ship"]
+	tel("shop", {"k": "mk", "id": s["tpl"], "cost": p["price"]})
 	toast(str(s["name"]) + " refitted to Mk " + roman(s["mk"]) + "."); shipyardScreen(yard_node)
 func ACT_sellShip(uid: String) -> void:
 	if RUN["fleet"].size() <= 1: return
@@ -2930,7 +3070,10 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 		if jt(N.get("dead")) and jt(N.get("loot")):
 			RUN["credits"] = float(RUN["credits"]) + float(N["loot"]); out.append(nemSay("You take back " + numstr(N["loot"]) + " credits from his hold.", N)); N["loot"] = 0
 		if jt(N.get("dead")) and jt(N.get("held")):
-			RUN["fleet"].append(N["held"]); out.append("You take back " + str(N["held"]["name"]) + "."); N["held"] = null
+			var held: Dictionary = N["held"]
+			held["cap"] = CaptainData.migrate(held.get("cap"), "captain:" + str(held["uid"]), RUN["fac"], PERKS)
+			CaptainData.assign_portrait(held["cap"], CaptainData.used_portraits(RUN))
+			RUN["fleet"].append(held); out.append("You take back " + str(N["held"]["name"]) + "."); N["held"] = null
 		if float(RUN["sector"]) >= 3 and not back:   # R41: the last meeting won (dead, fled or withdrawn) ends the arc
 			var u = arcComplete(RUN["fac"])
 			if u != "": out.append(u)
@@ -3217,7 +3360,7 @@ func applyOutcome(r) -> Array:
 			out.append("Every captain gains " + numstr(r["xp"]) + " experience.")
 	if jt(r.get("xpLow")):
 		var s = ssort(RUN["fleet"].duplicate(), func(a, b): return float(a["cap"]["xp"]) - float(b["cap"]["xp"]))[0]
-		addXp(s, r["xpLow"]); out.append(str(s["cap"]["name"]) + " of the " + str(s["name"]) + " gains " + numstr(r["xpLow"]) + " experience.")
+		addXp(s, r["xpLow"]); out.append(str(s["cap"]["full_name"]) + " of the " + str(s["name"]) + " gains " + numstr(r["xpLow"]) + " experience.")
 	if jt(r.get("loseMod")):
 		var withMod = RUN["fleet"].filter(func(s): return s["mods"].size() > 0)
 		if withMod.size() > 0:
@@ -3243,7 +3386,7 @@ func applyOutcome(r) -> Array:
 		var tp = equivHull(r["ship"], RUN["fac"])
 		if fleetCP() + float(HULLS[tp]["cp"]) <= float(RUN["cpCap"]):
 			var s = newShip(tp, r.get("vet")); RUN["fleet"].append(s)
-			out.append(ship_with_article(s["name"], true) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["name"]) + ".")
+			out.append(ship_with_article(s["name"], true) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["full_name"]) + ".")
 		else:
 			RUN["credits"] = float(RUN["credits"]) + float(z0(r.get("cost"))); out.append("You don’t have the command points to add this ship. Your credits are returned.")
 	var upgraded_uid = null   # R1 (TXT-2, Codex PR #1): the shipwright's repair goes to the next most damaged ship, not back to the one he upgraded
@@ -3273,7 +3416,7 @@ func applyOutcome(r) -> Array:
 		var f = flagshipOf()
 		if f == null and RUN["fleet"].size() > 0: f = RUN["fleet"][0]
 		if f != null:
-			f["cap"]["xp"] = max(float(z0(RANK_XP[int(f["cap"]["rank"])])), float(f["cap"]["xp"]) - float(r["payXp"])); out.append(str(f["cap"]["name"]) + " loses " + numstr(r["payXp"]) + " experience.")
+			f["cap"]["xp"] = max(float(z0(RANK_XP[int(f["cap"]["rank"])])), float(f["cap"]["xp"]) - float(r["payXp"])); out.append(str(f["cap"]["full_name"]) + " loses " + numstr(r["payXp"]) + " experience.")
 	if jt(r.get("payRelic")):
 		if RUN["relics"].size() > 0:
 			var at: int = int(r["payRelicAt"]) if r.get("payRelicAt") != null and int(r["payRelicAt"]) >= 0 and int(r["payRelicAt"]) < RUN["relics"].size() else RUN["relics"].size() - 1
@@ -3293,13 +3436,13 @@ func applyOutcome(r) -> Array:
 	if jt(r.get("xpTop")):
 		var srt = ssort(RUN["fleet"].duplicate(), func(a, b): return float(b["cap"]["xp"]) - float(a["cap"]["xp"]))
 		if srt.size() > 0:
-			var s = srt[0]; addXp(s, r["xpTop"]); out.append(str(s["cap"]["name"]) + " of the " + str(s["name"]) + " gains " + numstr(r["xpTop"]) + " experience.")
+			var s = srt[0]; addXp(s, r["xpTop"]); out.append(str(s["cap"]["full_name"]) + " of the " + str(s["name"]) + " gains " + numstr(r["xpTop"]) + " experience.")
 	if jt(r.get("modId")) and MODULES.has(r["modId"]):
 		RUN["inventory"].append(r["modId"]); out.append("Found: " + modName(r["modId"]) + ". It’s in the hold.")
 	if jt(r.get("shipRaw")) and HULLS.has(r["shipRaw"]):
 		if fleetCP() + float(or_(HULLS[r["shipRaw"]].get("cp"), 1)) <= float(RUN["cpCap"]):
 			var s = newShip(r["shipRaw"], r.get("vet")); RUN["fleet"].append(s)
-			out.append(ship_with_article(s["name"], true) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["name"]) + ".")
+			out.append(ship_with_article(s["name"], true) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["full_name"]) + ".")
 		else:
 			RUN["credits"] = float(RUN["credits"]) + 40; out.append("No command points to add this ship. You sell the berth for 40 credits.")
 	if jt(r.get("wingPerk")):
@@ -3548,6 +3691,8 @@ func rewardFlow(summary: Dictionary) -> void:
 	RUN["reward"]["victory"] = {"summary": {"kills": summary["kills"], "rounds": summary["rounds"], "lost": summary["lost"], "xp": summary["xp"],
 		"boonStats": summary.get("boonStats", {}), "treeStats": summary.get("treeStats", {})}, "credits": credits, "econ": econ, "extra": extra,
 		"flagName": flagMoved["name"] if flagMoved != null else "", "beat3Debrief": debrief}
+	for key in ["ship_rollups", "lost_ship_records"]:
+		if summary.has(key): RUN["reward"]["victory"]["summary"][key] = summary[key]
 	var confirmed: Array = summary.get("nem", []).filter(func(line): return line.begins_with("Weakness confirmed: "))
 	if summary.has("nemFound"): confirmed.append(summary["nemFound"])
 	if not confirmed.is_empty(): RUN["reward"]["victory"]["weaknessConfirmed"] = confirmed
@@ -3698,10 +3843,10 @@ func loss_captain_escaped(loss: Dictionary) -> bool:
 	if loss.has("escaped"): return jt(loss["escaped"])
 	# Legacy reward saves have the names and the roster, but a prize may already have used the reserve captain.
 	for entry in or_(RUN.get("reserve"), []):
-		if entry.get("from") == loss.get("ship") and entry["cap"].get("name") == loss.get("cap"):
+		if entry.get("from") == loss.get("ship") and entry["cap"]["full_name"] == loss["cap"]["full_name"]:
 			return true
 	for entry in or_(RUN.get("fallen"), []):
-		if entry.get("ship") == loss.get("ship") and entry.get("name") == loss.get("cap"):
+		if entry.get("ship") == loss.get("ship") and entry["cap"]["full_name"] == loss["cap"]["full_name"]:
 			return false
 	return true
 
@@ -3942,7 +4087,7 @@ func nodeSeeds(nodes: Array) -> int:
 func initFinishedRuns() -> void:
 	# Only the real host opts in to tracking. Old profiles counted launches, including one saved active run.
 	if not META["stats"].has("finishedRuns"):
-		var active = (RUN != null and not jt(RUN.get("over"))) or (SAVED_RUN != null and not jt(SAVED_RUN.get("over")))
+		var active = (RUN != null and not jt(RUN.get("over"))) or (SAVED_RUN != null and not jt(SAVED_RUN.get("over"))) or _broken_run
 		META["stats"]["finishedRuns"] = max(0, float(z0(META["stats"].get("runs"))) - (1 if active else 0))
 func set_teaching_tips(on: bool) -> void:
 	teaching_tips = on
@@ -4146,21 +4291,24 @@ func finishBattle(result: String) -> void:
 			if ship.get("car") == null: ship["car"] = {"dealt": 0, "kills": 0, "battles": 0}
 			var c = ship["car"]; c["dealt"] = float(c["dealt"]) + jsround(float(z0(u.get("dealt")))); c["kills"] = float(c["kills"]) + float(z0(u.get("kills"))); c["battles"] = float(c["battles"]) + 1
 		if jt(u.get("dead")) and not jt(u.get("exited")):
-			var loss := {"ship": ship["name"], "cap": ship["cap"]["name"], "tpl": ship["tpl"], "escaped": false}
+			var loss := {"ship": ship["name"], "cap": ship["cap"].duplicate(true), "tpl": ship["tpl"], "escaped": false}
 			summary["lost"].append(loss); RUN["stats"]["lost"] = float(z0(RUN["stats"].get("lost"))) + 1
 			RUN["fleet"] = RUN["fleet"].filter(func(x): return not is_same(x, ship))
 			if rnd() < 0.6:
 				loss["escaped"] = true
 				RUN["reserve"] = or_(RUN.get("reserve"), []); RUN["reserve"].append({"cap": ship["cap"], "from": ship["name"]})
-				summary["escaped"] = or_(summary.get("escaped"), []); summary["escaped"].append(ship["cap"]["name"])
-			else: RUN["fallen"].append({"name": ship["cap"]["name"], "rank": ship["cap"]["rank"], "fac": ship["cap"]["fac"], "ship": ship["name"], "sector": RUN["sector"]})
+				summary["escaped"] = or_(summary.get("escaped"), []); summary["escaped"].append(ship["cap"]["full_name"])
+			else: RUN["fallen"].append({"cap": ship["cap"].duplicate(true), "ship": ship["name"], "sector": RUN["sector"]})
 			continue
 		ship["hp"] = clampv(jsround(float(u["hp"])), 1, derive(ship)["maxHp"])
 		if result == "retreat":
 			ship["hp"] = max(1.0, float(ship["hp"]) - jsround(float(u["maxHp"]) * 0.1)); continue
 		if result == "win":
 			var xp = min(60.0, jsround(8.0 + float(z0(u.get("dealt"))) / 4.0 + float(z0(u.get("kills"))) * 12.0)); var rk = ship["cap"]["rank"]
-			addXp(ship, xp); summary["xp"].append({"ship": ship["name"], "cap": ship["cap"]["name"], "xp": xp, "up": float(ship["cap"]["rank"]) > float(rk), "rank": ship["cap"]["rank"]})
+			var xp_before: float = ship["cap"]["xp"]
+			addXp(ship, xp)
+			CombatRecords.ship_rollup(B, u["id"])["captain_xp"] = float(ship["cap"]["xp"]) - xp_before
+			summary["xp"].append({"ship": ship["name"], "cap": ship["cap"].duplicate(true), "xp": xp, "up": float(ship["cap"]["rank"]) > float(rk)})
 	if result == "win":
 		for sh in RUN["fleet"]:
 			var mx = float(derive(sh)["maxHp"]); sh["hp"] = min(mx, float(sh["hp"]) + jsround(mx * 0.15))
@@ -4196,6 +4344,12 @@ func finishBattle(result: String) -> void:
 	if summary.get("escaped") != null:
 		var esc_tail: String = {"chorus": " survived in a detached spore-node and bonds to your next hull.", "deathless": " streamed its backup clear before hull loss and awaits a fresh frame."}.get(str(RUN["fac"]), " escaped in a life pod and will take command of your next hull.")
 		toast(" and ".join(PackedStringArray(summary["escaped"])) + esc_tail)
+	if B.has("combat_events") or battle_mode == "external":
+		summary["ship_rollups"] = CombatRecords.rollups(B)
+		summary["lost_ship_records"] = B.get("lost_ship_records", []).duplicate(true)
+		# The defeat and retreat paths do not open the victory reward, so keep their data on the run too.
+		RUN["last_battle_report"] = {"result": result, "rounds": B["round"], "ship_rollups": summary["ship_rollups"],
+			"lost_ship_records": summary["lost_ship_records"]}
 	var msg = []
 	for x in or_(summary.get("nem"), []): msg.append(x)
 	if jt(summary.get("nemWarn")): msg.append(summary["nemWarn"])
@@ -4208,6 +4362,7 @@ func finishBattle(result: String) -> void:
 	if msg.size() > 0: toast(" ".join(PackedStringArray(msg)))
 	tel("battle_end", {"result": result, "kind": cfg.get("kind"), "fac": cfg.get("fac"), "rounds": B["round"], "kills": kills, "lost": summary["lost"].size()})
 	B = null
+	fleet_results.emit(not summary["lost"].is_empty(), summary["xp"].any(func(entry): return entry["up"]))
 	if result == "win" and RUN["fleet"].size() == 0:
 		var sh2 = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh2); ensureFlagship()
 		var p_line: String = str({"chorus": "Your surviving spores coalesce into a fresh " + ship_bare(str(sh2["name"])) + " to carry the brood.", "deathless": "An automated reserve berth dispatches " + ship_with_article(str(sh2["name"])) + " to hold the uplink.", "corsair": "A straggling raider from the outer belt joins your pack to carry the flag: " + ship_with_article(str(sh2["name"])) + ".", "ithar": "A distant picket answers your distress pulse to carry the standard: " + ship_with_article(str(sh2["name"])) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(str(sh2["name"])) + " to carry the flag."))
