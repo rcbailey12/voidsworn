@@ -19,6 +19,7 @@ extends RefCounted
 #
 # Each beat that fires is noted on the ship (meta "death_beats"; a few short strings a death) for the checks.
 
+const SH := preload("res://fx/fx_shaders.gd")
 const ARCH_TORCH := 0      # about 25%: the drive over-flares for 0.6 s and drives the hull into an arcing spiral
 const ARCH_SNAP := 1       # about 30%: a sharp mid-hull flash and 2 or 3 spinning pieces thrown clean apart
 const ARCH_ROLL := 2       # about 25%: a hard roll, a bright flank vent jet, a dead tumble, no big fireball
@@ -473,7 +474,7 @@ static func _cables(fx, s, wreck: Dictionary, ra: WeakRef, rb: WeakRef, col: Col
 			for k in 8:
 				fx.stk(mid, fx.now, 0.3, col.lerp(Color.WHITE, 0.4), 4.0, 0.05, maxf(L * 0.003, 0.03), 1, fx.rdir() * L * 0.5, 1.5)
 		else:
-			fx.rib(pa, d.normalized(), d.length(), fx.now, 0.07, col, 1.2, L * 0.002 / maxf(fx.unit, 1e-4), L * 0.002 / maxf(fx.unit, 1e-4), 0)
+			fx.rib(pa, d.normalized(), d.length(), fx.now, 0.07, col, 1.2, L * 0.002 / maxf(fx.unit, 1e-4), L * 0.002 / maxf(fx.unit, 1e-4), SH.RIB_DEATH_BEAM)
 	if snap:
 		note(s, "tether_snap")
 
@@ -505,7 +506,7 @@ static func _shafts(fx, s, center: Vector3, T: float) -> void:
 	var cols := [Color(1.0, 0.75, 0.8), Color(0.75, 1.0, 0.85), Color(0.75, 0.82, 1.0), Color(1.0, 0.95, 0.75)]
 	for j in 4:
 		var d: Vector3 = (fx.rdir() + Vector3.UP * 0.8).normalized()
-		fx.rib(center, d, L * 0.5, T + j * 0.05, 0.9, cols[j], 0.6, L * 0.02 / maxf(fx.unit, 1e-4), L * 0.002 / maxf(fx.unit, 1e-4), 0)
+		fx.rib(center, d, L * 0.5, T + j * 0.05, 0.9, cols[j], 0.6, L * 0.02 / maxf(fx.unit, 1e-4), L * 0.002 / maxf(fx.unit, 1e-4), SH.RIB_DEATH_BEAM)
 
 
 # Eclipse: the violet core gutters and snaps inward, a tight dark implosion (the scene dim stays in fx_death, Eclipse only).
