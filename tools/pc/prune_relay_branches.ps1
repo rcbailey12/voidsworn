@@ -34,10 +34,13 @@ $mirror = Join-Path $vt 'repo-mirror.git'
 $relayMirror = Join-Path $vt 'relay-mirror.git'
 $unix = $PSVersionTable.Platform -eq 'Unix'
 $gitExe = 'git.exe'; if ($unix) { $gitExe = @(Get-Command git -CommandType Application)[0].Source }
+. (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
+Set-PCGitNonInteractive
+$net = @(PCGitNetworkOptions)
 $days = 3
 function Run-Git {
   $ErrorActionPreference = 'Continue'
-  $out = & $gitExe @args 2>&1 | ForEach-Object { "$_" }
+  $out = & $gitExe @net @args 2>&1 | ForEach-Object { "$_" }
   if ($LASTEXITCODE -ne 0) { throw ('git failed: ' + ($args -join ' ') + ': ' + ($out -join ' ')) }; $out }
 . (Join-Path $PSScriptRoot 'relay_branch_proof.ps1')
 if ($Mode -and $Mode -notin @('live', 'audit', 'audit-cached')) { throw "unknown mode: $Mode" }
@@ -186,7 +189,7 @@ if ($live) {
     }
     # only if GitHub still has it at the listed commit (a lease, so a branch a job pushed again since stays)
     $ErrorActionPreference = 'Continue'
-    $o = & $gitExe push -q "--force-with-lease=refs/heads/$($r.Name):$($r.Sha)" $source ":refs/heads/$($r.Name)" 2>&1 | ForEach-Object { "$_" }
+    $o = & $gitExe @net push -q "--force-with-lease=refs/heads/$($r.Name):$($r.Sha)" $source ":refs/heads/$($r.Name)" 2>&1 | ForEach-Object { "$_" }
     $ok = $LASTEXITCODE -eq 0; $ErrorActionPreference = 'Stop'
     if ($ok) { $done++; Add-Content -LiteralPath $log -Value "deleted $($r.Name) $($r.Sha)" } else { $kept++; Say "kept (GitHub refused: $($o -join ' ')): $($r.Name)" }
   }

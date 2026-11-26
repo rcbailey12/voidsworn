@@ -458,7 +458,10 @@ float fx_surface_tone = 1.0 - fx_soot * 0.94 * clamp(fx_v2_soot, 0.0, 1.0);
 if (fx_weather > 0.0 && fx_v2 != 1) { fx_surface_tone *= 1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)); }
 ALBEDO *= fx_surface_tone;
 EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0) * fx_flick;
-if (fx_v2 == 4 || fx_v2 == 5) { EMISSION += fx_v2_accent * (fx_soot * fx_soot * fx_soot) * (fx_v2 == 5 ? 0.08 : 0.18); }   // R416: lit glass or violet seams, no soot
+if (fx_v2 == 4 || fx_v2 == 5) {
+	// Colour stays on the cut lip. A broad sheen makes a pearl opening read flat and obsidian read lilac.
+	EMISSION += fx_v2_accent * smoothstep(0.83, 1.0, fx_soot) * (fx_v2 == 5 ? 0.12 : 0.05);
+}
 if (fx_scorch_count > 0) {
 	// issue 484: soot black at the wound, heat-stained bronze further out, embers that cool with the torn faces
 	float fx_sc = fx_scorch_at(fx_hull_p);
@@ -1392,10 +1395,13 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 	var pts := _gun_points(slot, weapon, target_local, d)
 	var out: Array = []
 	if not pts.is_empty():
-		# issue 1587: a jammed turret (a wounded section, see jam_turret) sits out while another muzzle bears
-		var free_pts := pts.filter(func(q: Dictionary) -> bool: return not (q.has("tur") and turret_jammed(int(q["tur"]))))
-		if not free_pts.is_empty():
-			pts = free_pts
+		pts = _unjammed_points(pts)
+		if pts.is_empty():
+			# A known battery is jammed, not missing its mounts. Do not draw a shot from its barrels or the plating.
+			for i in n:
+				out.append({})
+				_took("gun", "skip")
+			return out
 		var key := "%d|%s" % [slot, weapon]
 		var off: int = int(_gun_turn.get(key, posmod(hash(code + key), pts.size())))
 		var aims := {}     # issue 560: each turret this volley uses turns once, toward the target, before its shots
@@ -1424,6 +1430,10 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 			out.append({"p": m["p"], "n": m["n"], "f": d, "src": "bow" if from_bow else "ray"})
 			_took("gun", "ray")
 	return out
+
+
+func _unjammed_points(pts: Array) -> Array:
+	return pts.filter(func(pt: Dictionary) -> bool: return not (pt.has("tur") and turret_jammed(int(pt["tur"]))))
 
 
 # Every tier checks bearing and reach. The exact slot and weapon win among usable muzzles, followed by the weapon on
@@ -1831,14 +1841,10 @@ func _want_yaw(k: int, target_local: Vector3) -> float:
 func gun_turrets(slot: int, weapon: String, target_local: Vector3, n: int) -> Array:
 	var d := target_local - core
 	d = d.normalized() if d.length() > 1e-4 else Vector3(1, 0, 0)
-	var pts := _gun_points(slot, weapon, target_local, d)
+	var pts := _unjammed_points(_gun_points(slot, weapon, target_local, d))
 	var out: Array = []
 	if pts.is_empty():
 		return out
-	# Neon on PR 1631: the same jammed-turret filter as guns(), so a Burn and fire never trains a jammed turret
-	var free_pts := pts.filter(func(q: Dictionary) -> bool: return not (q.has("tur") and turret_jammed(int(q["tur"]))))
-	if not free_pts.is_empty():
-		pts = free_pts
 	var key := "%d|%s" % [slot, weapon]
 	var off: int = int(_gun_turn.get(key, posmod(hash(code + key), pts.size())))
 	for i in maxi(n, 1):

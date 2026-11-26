@@ -5,6 +5,7 @@
 # preflight <out> <repo> <opencode|kimi|codex> <exe> <model> <variant>;
 # scratch <out> [repo]: create and record the run's private TEMP directory and profile cache redirects.
 # finish <out> <exit> <partial> <push mode> <checks ok> [repo].
+# push <repo> <branch> <real|dry|test>: non-interactive push with HTTP and hard ceilings.
 # space <out> <settings file> <target path>: refuse to start when the target's drive has less than min_free_gb
 #   (default 60) free; one line in result.txt, status failed. Test knobs: PC_TEST_SETTINGS, PC_TEST_SPACE_FREE_MB.
 # hashwrite <tools dir> <hash file>: the Board writes SHA-256 of the runner and watchdog files after copying them.
@@ -66,6 +67,16 @@ function Public-RunnerText($status, $reason, $code, $folder) {
 # file (a test fixture, hashwrite) still runs; without it sizes count every listed byte, as before.
 $diskSpaceHelpers = Join-Path $PSScriptRoot 'disk_space.ps1'
 if (Test-Path -LiteralPath $diskSpaceHelpers) { . $diskSpaceHelpers }
+function Set-PCGitNonInteractive {
+  $env:GIT_TERMINAL_PROMPT = '0'
+  $env:GCM_INTERACTIVE = 'never'
+  $env:GIT_ASKPASS = ''
+  $env:SSH_ASKPASS = ''
+  $env:SSH_ASKPASS_REQUIRE = 'never'
+}
+function PCGitNetworkOptions {
+  '-c','credential.interactive=false','-c','core.askPass=','-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60'
+}
 if ($args[0] -eq 'publication-library') { return }
 $ErrorActionPreference = 'Stop'
 $mode = $args[0]
@@ -1445,6 +1456,64 @@ function Issue-Lock($issue) {
     }
   }
 }
+function Read-ClaimReceipt($issue) {
+  $path = "$(Issue-LockPath $issue).claim.json"
+  if (-not (Test-Path -LiteralPath $path)) { return $null }
+  $item = Get-Item -LiteralPath $path -Force
+  if ($item -isnot [IO.FileInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'claim receipt is not a plain file' }
+  return (Get-Content -LiteralPath $path -Raw | ConvertFrom-Json)
+}
+function Save-ClaimReceipt($issue, $receipt) {
+  # Only the issue lock holder writes this receipt. Replace it atomically so a dead writer cannot leave partial proof.
+  $path = "$(Issue-LockPath $issue).claim.json"
+  $tmp = "$path.$([guid]::NewGuid().ToString('N')).tmp"
+  Put $tmp ($receipt | ConvertTo-Json -Compress)
+  if (Test-Path -LiteralPath $path) { [IO.File]::Replace($tmp, $path, [NullString]::Value) }
+  else { [IO.File]::Move($tmp, $path) }
+}
+function Test-ClaimComment($comment, $receipt) {
+  $lines = [string]$comment.body -split '\r?\n'
+  return ($comment.id -eq $receipt.comment -and $lines[0] -ceq "<!-- voidsworn-runner-status branch=$($receipt.branch) -->" -and
+    $lines -ccontains "- Run: $($receipt.run)")
+}
+function Find-DeadClaim($issue, $state, $comments) {
+  # The caller holds the same exclusive issue lock the runner and its child processes hold for the whole run.
+  # A public comment alone is not ownership proof: it must also match this PC's receipt for the same issue and branch.
+  $receipt = Read-ClaimReceipt $issue
+  # Before receipts were added, the old run's local status.json was the only ownership record.
+  if ($null -eq $receipt -and $state.prior_claim.issue -eq $issue) { $receipt = $state.prior_claim }
+  if ($null -eq $receipt -or $receipt.branch -cne $state.branch -or $receipt.run -cnotmatch '\A[0-9a-f]{32}\z' -or
+      $receipt.comment -notmatch '\A[1-9][0-9]*\z') { return $null }
+  $mine = @($comments | Where-Object { Test-ClaimComment $_ $receipt })
+  if ($mine.Count -ne 1 -or @($comments | Where-Object {
+    $_.id -ne $receipt.comment -and $_.body -cmatch '(?m)^Runner status: running\r?$'
+  }).Count) { return $null }
+  $current = Require-Gh 'GET' "issues/comments/$($receipt.comment)"
+  if (-not (Test-ClaimComment $current $receipt)) { return $null }
+  return $receipt
+}
+function Archive-CodexRecord($folder) {
+  # Keep each prior record separately, including a failed push patch. Clear stale current output only after all copies land.
+  Assert-PlainDirectory (Get-Item -LiteralPath $folder -Force)
+  $names = @('last.md','result.txt','log.txt','status.json','CODEX_TASK.md','push.txt','push_failed.patch','limit_wip.patch',
+    'resume.txt','stop_reason.txt','confirmed_commit.txt','run_commit.txt','checks_node.txt','checks_parity.txt')
+  $files = @(foreach ($name in $names) {
+    $file = Get-Item -LiteralPath (Join-Path $folder $name) -Force -ErrorAction SilentlyContinue
+    if ($file) {
+      if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "run record is not a plain file: $name" }
+      $file
+    }
+  })
+  if (-not $files.Count) { return }
+  $runs = [IO.Directory]::CreateDirectory((Join-Path $folder 'runs'))
+  Assert-PlainDirectory $runs
+  $stamp = [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss')
+  $previous = $runs.CreateSubdirectory("previous-$stamp-$([guid]::NewGuid().ToString('N'))")
+  foreach ($file in $files) { $null = $file.CopyTo((Join-Path $previous.FullName $file.Name)) }
+  foreach ($file in $files) {
+    if ($file.Name -in @('last.md','log.txt','CODEX_TASK.md','push.txt','push_failed.patch','limit_wip.patch')) { $file.Delete() }
+  }
+}
 function Open-HeldLock($path) {
   # An exclusive lock that child processes inherit. Windows releases it only when every process holding the handle has
   # exited, so a run whose waiting PowerShell dies keeps its lock while the batch and its tools still work (Artoo, PR 1250).
@@ -1494,13 +1563,29 @@ function End-Announcement($s) {
     if ($g.comment) { $null = Invoke-Gh 'PATCH' "issues/comments/$($g.comment)" @{ body = (Status-Body $s $label $code) } }
     # Clearing the owned label must still be attempted when editing the comment fails.
     $null = Invoke-Gh 'DELETE' "issues/$($g.issue)/labels/running"
-    if ($ghOK) { $g.claimed = $false; Save-State $s }
+    if ($ghOK) {
+      $g.claimed = $false; Save-State $s
+      $receipt = Read-ClaimReceipt $g.issue
+      if ($receipt.run -ceq $s.run) { Save-ClaimReceipt $g.issue @{} }
+    }
   } catch { Log "WARNING: GitHub final status failed: $($_.Exception.Message)" }
 }
 try {
   if ($mode -eq 'init') {
     $script:out = $args[1]
+    if ($args[3] -eq 'archive-codex') { Archive-CodexRecord $out }
     $s = @{ run = [guid]::NewGuid().ToString('N'); branch = $args[2]; status = 'running'; reason = ''; commit = ''; started = [DateTime]::UtcNow.ToString('o'); finished = '' }
+    $oldState = Join-Path $out 'status.json'
+    if (Test-Path -LiteralPath $oldState -PathType Leaf) {
+      try {
+        $old = Get-Content -LiteralPath $oldState -Raw | ConvertFrom-Json
+        if ($old.branch -ceq $s.branch) {
+          if ($old.github.claimed) {
+            $s.prior_claim = @{ issue = $old.github.issue; run = $old.run; branch = $old.branch; comment = $old.github.comment }
+          } elseif ($old.prior_claim) { $s.prior_claim = $old.prior_claim }
+        }
+      } catch { Log 'prior run status unreadable; no local claim recovered from it' }
+    }
     Put (Join-Path $out 'status.json') ($s | ConvertTo-Json)
     # Keep any earlier resume note aside. The current run writes a note only when it has resume context.
     $resumePath = Join-Path $out 'resume.txt'
@@ -1757,19 +1842,32 @@ try {
     if ($issue -notmatch '^[1-9][0-9]*$') { throw 'invalid job issue number; no agent started' }
     if ($test -and (-not $env:PC_TEST_GH -or -not $env:PC_TEST_GH_DB)) { throw 'test claim requires fake gh and PC_TEST_GH_DB (no live GitHub); no agent started' }
     $lock = $null
-    if (($args[7] -eq 'real' -or $test) -and $env:PC_RUNNER_LOCKED_ISSUE -ne $issue) { $lock = Issue-Lock $issue }
+    $canClaim = $args[7] -eq 'real' -or $test
+    $holdsRunLock = $env:PC_RUNNER_LOCKED_ISSUE -eq $issue
+    if ($canClaim -and -not $holdsRunLock) { $lock = Issue-Lock $issue }
     try {
       $s = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
       $repo = $args[4]
       $i = Require-Gh 'GET' "issues/$issue"
       if ($i.state -ne 'open' -or $i.pull_request) { throw "job refused: issue #$issue is not an open job (state: $($i.state)); no agent started" }
-      if (@($i.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count) { throw "job refused: issue #$issue already carries running; another run owns the claim; no agent started" }
       $launchBranch = $args[8]
       if (-not $launchBranch) { $launchBranch = $s.branch }
+      $comments = $null
+      $stale = $null
+      if (@($i.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count) {
+        # A lock held only for this announce step does not prove the old agent has stopped.
+        if ($canClaim -and $holdsRunLock) {
+          $comments = @(Gh-Pages "issues/$issue/comments?per_page=100")
+          $stale = Find-DeadClaim $issue $s $comments
+        }
+        if (-not $stale) { throw "job refused: issue #$issue already carries running; another run owns the claim; no agent started" }
+        # Validate the new assignment before changing the stale claim. Keep every other label intact.
+        $i.labels = @($i.labels | Where-Object { $_.name -ne 'running' -and $_ -ne 'running' })
+      }
       $pulls = @(Gh-Pages 'pulls?state=open&per_page=100')
       $branches = @(Gh-Pages 'branches?per_page=100')
       $body = Validate-Job $i $issue $args[3] $pulls $branches $launchBranch
-      $comments = @(Gh-Pages "issues/$issue/comments?per_page=100")
+      if ($null -eq $comments) { $comments = @(Gh-Pages "issues/$issue/comments?per_page=100") }
       # Snapshot exactly what was validated. Prep must never re-fetch a possibly changed or older brief.
       Put (Join-Path $out 'validated_issue.json') (@{ number = $issue; title = $i.title; body = $body; run = $s.run } | ConvertTo-Json)
       $s | Add-Member -NotePropertyName instruction_run -NotePropertyValue $s.run -Force
@@ -1789,6 +1887,18 @@ try {
         start_commit = $head; claimed = $false; marker = "<!-- voidsworn-runner-status branch=$($s.branch) -->" }
       $s | Add-Member -NotePropertyName github -NotePropertyValue $g -Force
       Save-State $s
+      if ($stale) {
+        # Re-read under the lock after validation. A comment replaced by another run is not ours to clear.
+        $comments = @(Gh-Pages "issues/$issue/comments?per_page=100")
+        $checked = Find-DeadClaim $issue $s $comments
+        if (-not $checked -or $checked.run -cne $stale.run -or $checked.comment -ne $stale.comment) {
+          throw 'job refused: stale claim changed during validation; no agent started'
+        }
+        $null = Invoke-Gh 'DELETE' "issues/$issue/labels/running"
+        if (-not $ghOK) { throw 'could not clear this PC''s dead claim; no agent started' }
+        Save-ClaimReceipt $issue @{}
+        Log "cleared this PC's dead claim for issue #$issue, run $($stale.run)"
+      }
       $null = Invoke-Gh 'GET' 'labels/running'
       if (-not $ghOK) { $null = Require-Gh 'POST' 'labels' @{ name = 'running'; color = '1D76DB'; description = 'An agent is working this issue' } }
       $null = Require-Gh 'POST' "issues/$issue/labels" @{ labels = @('running') }
@@ -1800,6 +1910,7 @@ try {
         if ($g.comment) { $null = Require-Gh 'PATCH' "issues/comments/$($g.comment)" $payload }
         else { $reply = Require-Gh 'POST' "issues/$issue/comments" $payload; $g.comment = $reply.id }
         if (-not $g.comment) { throw 'claim comment has no id; no agent started' }
+        if ($holdsRunLock) { Save-ClaimReceipt $issue @{ run = $s.run; branch = $s.branch; comment = $g.comment } }
         $claimedIssue = Require-Gh 'GET' "issues/$issue"
         $claimedComment = Require-Gh 'GET' "issues/comments/$($g.comment)"
         if (-not @($claimedIssue.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count -or
@@ -1810,6 +1921,7 @@ try {
       } catch {
         # Still under the issue lock: no other local seat can have acquired this label in between.
         $null = Invoke-Gh 'DELETE' "issues/$issue/labels/running"
+        if ($ghOK -and $holdsRunLock) { Save-ClaimReceipt $issue @{} }
         $g.claimed = $false; Save-State $s
         throw
       }
@@ -1819,7 +1931,20 @@ try {
   }
   elseif ($mode -eq 'fetch') {
     $repo = $args[1]; $script:out = $args[2]
-    Retry-Git 'branch fetch' @('-C',$repo,'fetch','-q','origin',$args[3])
+    Set-PCGitNonInteractive
+    Retry-Git 'branch fetch' (@(PCGitNetworkOptions) + @('-C',$repo,'fetch','-q','origin',$args[3]))
+  }
+  elseif ($mode -eq 'push') {
+    $repo = $args[1]; $branch = $args[2]; $pushMode = $args[3]
+    if ($pushMode -notin @('real','dry','test')) { throw 'invalid push mode' }
+    Set-PCGitNonInteractive
+    $words = @(PCGitNetworkOptions) + @('-C',$repo,'push')
+    if ($pushMode -eq 'dry') { $words += '--dry-run' }
+    $words += @('origin',"HEAD:refs/heads/$branch")
+    $result = Invoke-BoundedMirrorGit $words 900 'branch push'
+    $result.Lines | Write-Output
+    if ($result.Code -eq 124) { Write-Output 'push timed out after 900 seconds' }
+    exit $result.Code
   }
   elseif ($mode -eq 'preflight') {
     $script:out = $args[1]; $repo = $args[2]; $kind = $args[3]; $exe = $args[4]; $model = $args[5]; $variant = $args[6]

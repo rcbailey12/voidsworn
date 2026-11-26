@@ -56,8 +56,8 @@ const S_DENT := 12
 const S_PATCH := 14
 const S_FISSURE := 15
 const S_SCORCH := 13      # the stage ladder's spreading scorch (fx_ship._plan)
-# R416 (issue 1741, folded 1692 item d), Wounds V2 only: a prism hit's crystal star fracture, a star lance's white-gold
-# heat sear, a null lance's three parallel violet-black cuts
+# R416 (issue 1741, folded 1692 item d): a prism hit's crystal star fracture, a star lance's white-gold heat sear,
+# a null lance's three parallel violet-black cuts. Build F also uses S_NLANCE for the single sealed cut with V2 off.
 const S_PRISM := 16
 const S_STAR := 17
 const S_NLANCE := 18
@@ -1879,11 +1879,14 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 					e3.style = S_NLANCE
 					out.append(e3)
 	match look if out.is_empty() else "":
-		"lance", "needle", "pulsar", "las":
+		"lance", "nlance", "needle", "pulsar", "las":
 			# the beam drags across the plate: the cut runs across the line of fire; repeats lengthen it
 			var cut_dir := n.cross(tang)
 			var R: float = L * 0.0045 * wk * (0.6 if look in ["needle", "las"] else 1.0) * sqrt(g)
-			out.append(slot(hull, p, n, cut_dir, R, L * 0.035 * wk * g, seed_v))
+			var e := slot(hull, p, n, cut_dir, R, L * 0.035 * wk * g, seed_v)
+			if look == "nlance":
+				e.style = S_NLANCE
+			out.append(e)
 		"ion", "doom":
 			out.append(surface(p, n, L * 0.06 * wk * g, seed_v, S_ION))
 		"macro", "battery", "auto", "scatter", "prism", "guns":
@@ -2137,6 +2140,9 @@ static func place_hole(hull, c: Vector3, n: Vector3, R: float, seed_v: float, fa
 		"facet":
 			e.facets = 6 + int(e.p[6] / TAU * 3.0)
 			e.k = 1.0
+			# The first inward hit can be another pearl-shell layer. Use the validated stack depth so the
+			# collar isn't hidden behind that layer. The thin-plate guard below still owns real chips.
+			e.cut = minf(e.D, Dt * 0.8)
 		"ragged":
 			e.k = 7.0
 		"chitin":
@@ -2257,13 +2263,13 @@ static func _glass_mouth(pt: Part, E: Ent, r: RandomNumberGenerator) -> Array:
 		var a := E.p[5] + seg * j
 		var radial := (E.t1 * cos(a) + E.t2 * sin(a)) * E.R
 		var chip := r.randf_range(-0.055, 0.055)
-		var step_depth := lerpf(start, depth, r.randf_range(0.32, 0.52))
+		var step_depth := lerpf(start, depth, r.randf_range(0.24, 0.40))
 		rows.append(PackedVector3Array([
 			E.c + radial * (1.0 + chip * 0.4) - E.n * start,
-			E.c + radial * (0.81 + chip) - E.n * step_depth,
-			E.c + radial * (0.74 + chip) - E.n * (step_depth + depth * 0.06),
-			E.c + radial * (0.51 + chip) - E.n * (depth * r.randf_range(0.86, 1.0)),
-			E.c + radial * (0.47 + chip) - E.n * depth,
+			E.c + radial * (0.79 + chip) - E.n * step_depth,
+			E.c + radial * (0.70 + chip) - E.n * (step_depth + depth * 0.04),
+			E.c + radial * (0.50 + chip) - E.n * (depth * r.randf_range(0.86, 1.0)),
+			E.c + radial * (0.43 + chip) - E.n * depth,
 		]))
 	for j in E.facets:
 		var a := rows[j]
@@ -2271,7 +2277,7 @@ static func _glass_mouth(pt: Part, E: Ent, r: RandomNumberGenerator) -> Array:
 		for k in 4:
 			var normal := (b[k] - a[k]).cross(a[k + 1] - a[k]).normalized()
 			if normal.dot(E.n) < 0.0: normal = -normal
-			var tone := r.randf_range(0.72, 1.0) if k < 2 else r.randf_range(0.24, 0.56)
+			var tone := r.randf_range(0.78, 1.0) if k < 2 else r.randf_range(0.20, 0.46)
 			var seam := GLASS_SEAM if k % 2 == 1 else 0.0
 			_quad(pt, a[k], b[k], b[k + 1], a[k + 1], normal, Color(PART_WALL, tone, seam, 1))
 		# A splinter on an uneven edge breaks up the polygon without blocking the sightline in.
@@ -2418,7 +2424,9 @@ static func inside_lights(fx, s, mi: Node3D, ents: Array, accent: Color) -> int:
 		var E: Ent = e
 		var off := E.c - E.n * (E.R * 0.25 + E.th)
 		var flick: float = [0.3, 0.12, 0.35, 0.18, 0.04, 0.15][clampi(E.v2, 0, 5)]
-		s._hole_lights.append(fx.light_source(mi, off, accent, INSIDE_LIGHT_E, flick, E.R * 2.2 * mi.global_transform.basis.get_scale().x / maxf(float(fx.unit), 1e-3)))
+		# Fill the pearl shadow without washing out the steps. Eclipse puts the light on the lip and bus, not the wall.
+		var energy := INSIDE_LIGHT_E * (0.45 if E.v2 == 4 else (0.18 if E.v2 == 5 else 1.0))
+		s._hole_lights.append(fx.light_source(mi, off, accent, energy, flick, E.R * 2.2 * mi.global_transform.basis.get_scale().x / maxf(float(fx.unit), 1e-3)))
 		k += 1
 	return k
 
