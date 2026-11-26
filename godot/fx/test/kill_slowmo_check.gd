@@ -22,6 +22,7 @@ class TestHud extends CanvasLayer:
 
 class TestDeathAudio extends Node:
 	var fx
+	var deaths: Array = []
 	func watch(_id: String, _pos: Vector3) -> void:
 		pass
 

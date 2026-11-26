@@ -12,6 +12,7 @@ const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const FLOOK_W := preload("res://fx/faction_look.gd")
+const DAMAGE_PLUME := preload("res://fx/fx_damage_plume.gd")
 const SKEEP := preload("res://render/shader_keep.gd")   # issue 1434: one Shader per code for the session
 const BEATS := preload("res://fx/fx_death_beats.gd")   # issue 1586: cause, faction, archetype and afterlife beats
 
@@ -32,6 +33,16 @@ const WRECK_PHYS_S := 4.0
 const DEBRIS_WOKEN_S := 1.5   # a plate a wreck section knocks awake is at rest again this long after
 const DEBRIS_VARIANTS := 4
 const WRECK_COOL := 14.0
+const HULK_VENT_TICK := 0.1
+const SEAM_COOL := 3.0        # effect-clock seconds from each section's release, not from the killing blow
+const CAP_METAL := 0
+const CAP_GLASS := 1
+const CAP_FLESH := 2
+const CAP_LIP := Color(0.25, 1.0, 0, 1)
+const CAP_LIP_INSET := Color(0.25, 0.30, 0, 1)
+const CAP_RIB := Color(0.45, 0, 0, 1)
+const CAP_DECK := Color(0.60, 0, 0, 1)
+const CAP_WALL := Color(0.75, 0, 0, 1)
 
 # Issue 462 (docs/playbooks/deaths_and_hits.md, "A death in three beats"): times are seconds from the killing blow.
 # A cruiser: the tell to 1.38 (lights die, engines flare and go black, a tear opens from the hit side with three chain
@@ -53,7 +64,7 @@ class DeathTimeline:
 	var secondaries := 0
 	var sec_from := 0.0       # the secondaries' window, after the break
 	var sec_to := 0.0
-	var cool := 14.0          # how long the torn faces take to go dark
+	var cool := 14.0          # how long the scorch on the outer plating takes to go dark
 	func _init(big: bool, cut_count: int, tier_name := "", cause := "blast", organic := false) -> void:
 		tier = tier_name
 		cuts = cut_count if big else 1
@@ -85,7 +96,7 @@ class DeathTimeline:
 			cool = 8.6
 		if big:
 			end = cut + 0.67
-			# A lance cut: the tear is the beam's straight line, drawn fast; its faces glow longest.
+			# A lance cut: the tear is the beam's straight line, drawn fast; its outer scorch lasts longest.
 			tear_full = 0.62 if cause == "cut" else cut - 0.05
 			if cause == "cut": cool *= 1.4
 		beats = [{"name": "power_loss", "at": 0.0}, {"name": "vent", "at": vent}]
@@ -111,6 +122,10 @@ const ATLAS_DIR := "res://fx/atlases/death/"
 const STAGING_UNITS_PER_PIXEL := 2.0 * 170.0 * tan(PI / 8.0) / 1080.0
 # The one scale table's death core flash (issue 710, R247; docs/playbooks/scale.md), pixels at the staging camera.
 const CORE_FLASH_PX := {"small": 216.0, "destroyer": 255.0, "cruiser": 302.0, "capital": 423.0}
+# Minimum core card and final shock-front diameter on a 1080-line view. The card floor is after the
+# atlas calibration, so that divisor cannot shrink the far shot below the intended read.
+const CORE_READ_PX := {"small": 112.0, "destroyer": 135.0, "cruiser": 178.0, "capital": 330.0}
+const CORE_RING_S := 0.64
 
 # Issue 354: where the visible gas starts inside the baked vent picture. Measured on today's pictures
 # (godot/fx/atlases/death/{small,cruiser,capital}/vent_color.png): in frame 0 the gas runs down to row 0.90 of the crop,
@@ -124,46 +139,58 @@ const VENT_ROOT_FRAC := 0.40
 
 const SLAG := """
 shader_type spatial;
-render_mode unshaded, cull_disabled, depth_draw_opaque, fog_disabled;
+render_mode cull_disabled, depth_draw_opaque, fog_disabled;
 global uniform float fx_gain;
-uniform float heat = 1.0;
-uniform bool organic = false;
+uniform float heat = 0.0;
+uniform int cap_kind = 0; // 0: metal, 1: glass, 2: flesh
 uniform float section_scale = 1.0;
-uniform float face_glow = 0.0;
-// R367 (issue 1399): the torn face's heat in the faction's death colours (defaults: today's metal, red to orange to white)
+uniform vec3 scorch_tint = vec3(0.20, 0.21, 0.22);
+uniform vec3 cap_albedo = vec3(0.32);
+// R367: the seam's heat in the faction's death colours (defaults for an unstyled hull).
 uniform vec3 heat_cool = vec3(0.38, 0.035, 0.018);
 uniform vec3 heat_hot = vec3(0.95, 0.40, 0.09);
 uniform vec3 heat_white = vec3(0.94, 0.84, 0.64);
 varying vec3 slag_p;
 varying vec2 slag_band;
 void vertex() { slag_p = VERTEX; slag_band = COLOR.rg; }
-float grain(vec3 p) { return fract(sin(dot(floor(p), vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
+// Continuous waves break the seam into runs. No per-cell noise on the light.
+float bends(vec3 p) {
+	return 0.5 + 0.3 * sin(dot(p, vec3(19.0, 11.0, 23.0)))
+		+ 0.2 * sin(dot(p, vec3(-31.0, 21.0, 9.0)) + 1.7);
+}
 void fragment() {
 	vec3 p = slag_p / max(section_scale, 0.001);
-	float n = grain(p * 160.0);
-	float coarse = 0.5 + 0.25 * sin(dot(p, vec3(38.7, 13.1, 26.3))) * sin(dot(p, vec3(12.3, 52.1, 24.7)));
-	float band = clamp(slag_band.x, 0.0, 1.0);
-	bool rib = band > 0.4 && band < 0.6;
-	vec3 base = mix(vec3(0.045, 0.032, 0.026), vec3(0.014, 0.011, 0.012), band);
-	if (rib) { base = vec3(0.068, 0.056, 0.048); }
-	if (organic) {
+	float coarse = bends(p);
+	bool rib = slag_band.x > 0.4 && slag_band.x < 0.53;
+	bool deck = slag_band.x >= 0.53 && slag_band.x < 0.68;
+	bool lip = slag_band.x < 0.4;
+	float temperature = clamp(heat, 0.0, 1.0);
+	float edge = smoothstep(0.78, 1.0, slag_band.y);
+	if (cap_kind == 2) {
 		float fibre = pow(abs(sin(dot(p, vec3(41.0, 67.0, 29.0)) + coarse * 8.0)), 6.0);
-		base = mix(vec3(0.03, 0.015, 0.007), vec3(0.085, 0.04, 0.018), coarse * 0.7 + fibre * 0.3);   // R416: umber hide, never magenta (Nov 24)
-		if (rib) { base = vec3(0.20, 0.15, 0.085) * (0.65 + coarse * 0.35); }
+		vec3 flesh = cap_albedo * mix(0.40, 1.20, coarse * 0.7 + fibre * 0.3);
+		ALBEDO = rib ? vec3(0.095, 0.070, 0.040) * (0.65 + coarse * 0.35) : flesh;
+		ROUGHNESS = 0.74;
+	} else if (cap_kind == 1) {
+		// Frosted pearl glass keeps its colour even after the stored light fades.
+		ALBEDO = cap_albedo * (lip ? 1.0 : 0.86) * (0.88 + coarse * 0.12);
+		ROUGHNESS = lip ? 0.30 : 0.48;
+		CLEARCOAT = lip ? 0.68 : 0.32;
+		CLEARCOAT_ROUGHNESS = 0.28;
+		EMISSION = heat_hot * edge * (0.24 + 0.38 * coarse) * temperature * temperature * fx_gain;
+	} else {
+		// Cold metal takes the hull pigment, never the hot rim colour. Recessed walls stay darker than the bent lip.
+		vec3 base = scorch_tint * (lip ? 0.17 : (rib ? 0.14 : (deck ? 0.11 : 0.065)));
+		ALBEDO = base * (0.58 + 0.42 * coarse);
+		ROUGHNESS = mix(0.95, 0.67, coarse);
+		METALLIC = lip ? 0.46 : 0.23;
+		vec3 hot = mix(heat_cool, heat_hot, smoothstep(0.10, 0.72, temperature));
+		hot = mix(hot, heat_white, 0.30 * smoothstep(0.82, 1.0, temperature));
+		float seam = edge * mix(0.06, 1.0, smoothstep(0.27, 0.68, coarse));
+		EMISSION = hot * seam * temperature * temperature * 0.90 * fx_gain;
 	}
-	base *= 0.65 + coarse * 0.55 + n * 0.2;
-	float rim = clamp(slag_band.y, 0.0, 1.0) * smoothstep(0.25, 0.75, n);
-	float hot = clamp(heat, 0.0, 1.0);
-	float temperature = hot * hot;
-	vec3 metal = mix(heat_cool, heat_hot, smoothstep(0.2, 0.65, temperature));
-	metal = mix(metal, heat_white, smoothstep(0.65, 1.0, temperature));
-	// Issue 462: with face_glow on (a big hull's death) the torn face glows as it cools: white, orange, dull red, dark.
-	// Issue 484 (the Board, Nov 11: a capital's middle piece showed a big flat tan grid face, a clean slab again): the face
-	// is charred black and the heat sits in its cracks and seams, never as an even bright panel.
-	float vein = pow(1.0 - abs(sin(dot(p, vec3(23.1, 9.7, 17.3)) + coarse * 7.0)), 10.0)
-		+ pow(1.0 - abs(sin(dot(p, vec3(-7.9, 29.3, 11.1)) + n * 1.5)), 14.0) * 0.6;
-	float face = face_glow * (rib ? 0.45 : vein * 1.4) * smoothstep(0.0, 0.08, temperature);
-	ALBEDO = base + (organic ? vec3(0.0) : metal * (rim * 3.2 + face) * temperature * fx_gain);
+	// A dim read on structure in deep shadow. It does not turn a cold wall into a light source.
+	EMISSION += ALBEDO * 0.08;
 }
 """
 
@@ -356,7 +383,7 @@ static func dsmoke(src) -> float:
 static func _style_heat(m: ShaderMaterial, st: Dictionary, prefix: String) -> void:
 	var rim = st.get("rim")
 	if not (rim is Color): return
-	m.set_shader_parameter(prefix + "cool", (rim as Color) * 0.32)
+	m.set_shader_parameter(prefix + "cool", (rim as Color) * 0.14)
 	m.set_shader_parameter(prefix + "hot", rim)
 	m.set_shader_parameter(prefix + "white", (rim as Color).lerp(Color(1, 1, 1), 0.7))
 
@@ -598,6 +625,7 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			b.add_child(mi)
 			b.set_meta("debris_sc", sc)
 			fx.phys_root.add_child(b)
+			b.sleeping_state_changed.connect(_remember_woken_plate.bind(fx, b))
 			pool.append(b)
 		else:
 			var slot := int(st["debris_next"])
@@ -611,6 +639,9 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 				(b.get_node("mesh") as MeshInstance3D).mesh = st["debris_meshes"][sc][vi]
 				b.mass = 0.3 + 0.4 * sc
 				b.set_meta("debris_sc", sc)
+		if not b.has_meta("leash_offset") or int(b.get_meta("leash_mesh_size", -1)) != sc:
+			_cache_leash_geometry(b)
+			b.set_meta("leash_mesh_size", sc)
 		var d: Vector3 = fx.rdir()
 		d.y = 0.0
 		d = d.normalized()
@@ -627,6 +658,8 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 		# A reused plate takes this throw's leash and rim, even after the live hull is gone.
 		b.set_meta("debris_piece", piece)
 		b.remove_meta("leash_born")
+		var anchor = st.get("anchors", {}).get(piece.get("leash", ""))
+		if anchor != null: _born(b, anchor)
 		b.sleeping = false
 		b.visible = true
 		awake[b] = fx.now
@@ -637,23 +670,29 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			mesh.set_instance_shader_parameter("rim_col", _debris_rim(piece))
 
 
+static func _remember_woken_plate(fx, b) -> void:
+	if not _moving_plate(b) or not fx.dstate.has("debris_awake"): return
+	var awake: Dictionary = fx.dstate["debris_awake"]
+	if awake.has(b): return
+	awake[b] = fx.now - (DEBRIS_REST_S - DEBRIS_WOKEN_S)
+	b.set_meta("debris_spd", maxf(fx.anim_speed(), 0.01))   # knocked at today's clock (_debris_speed)
+
+
 # Issue 1237: the plates still flying. Past DEBRIS_FREE_S a plate takes the settle damping (or keeps a stronger one it was
 # thrown with); once Jolt has put it to sleep it leaves the list, and at DEBRIS_REST_S it is stopped and put to sleep. A
 # hull or wreck section that knocks a sleeping plate wakes it in Jolt; it is back at rest DEBRIS_WOKEN_S later.
 static func _settle_debris(fx) -> void:
 	var awake: Dictionary = fx.dstate.get("debris_awake", {})
-	# A sleeping plate a wreck section knocks wakes in Jolt: four times a second the pool is looked over for those.
+	# A Jolt wake is signalled. A slower scan also catches state changes set directly, which do not emit that signal.
 	if fx.now >= float(fx.dstate.get("debris_scan", -INF)):
 		fx.dstate["debris_scan"] = fx.now + 0.25
-		for b in fx.dstate.get("debris", []):
-			if is_instance_valid(b) and not awake.has(b) and not (b as RigidBody3D).sleeping:
-				awake[b] = fx.now - (DEBRIS_REST_S - DEBRIS_WOKEN_S)
-				(b as Node).set_meta("debris_spd", maxf(fx.anim_speed(), 0.01))   # knocked at today's clock (_debris_speed)
 		fx.dstate["debris_awake"] = awake
+		for b in fx.dstate.get("debris", []):
+			_remember_woken_plate(fx, b)
 	if awake.is_empty(): return
 	var done: Array = []
 	for b in awake:
-		if not is_instance_valid(b):
+		if not is_instance_valid(b) or b.freeze or not b.visible:
 			done.append(b)
 			continue
 		var age: float = fx.now - float(awake[b])
@@ -684,11 +723,11 @@ static func _debris_speed(fx) -> void:
 	fx.dstate["debris_speed"] = speed
 	if absf(speed - last) < 1e-6: return
 	for b in fx.dstate.get("debris_awake", {}):
-		if not is_instance_valid(b): continue
+		if not _moving_plate(b): continue
 		var rb := b as RigidBody3D
 		var was: float = float(rb.get_meta("debris_spd", speed))
 		rb.set_meta("debris_spd", speed)
-		if rb.sleeping or absf(speed - was) < 1e-6: continue
+		if absf(speed - was) < 1e-6: continue
 		rb.linear_velocity *= speed / was
 		rb.angular_velocity *= speed / was
 
@@ -1555,6 +1594,7 @@ static func precompute(fx, s, cause := "blast", under_cover := false, shared_cut
 				sd["anchor"] = inv * (s.hull.turrets[tk]["node"] as Node3D).global_transform.origin
 			surfs.append(sd)
 	var inputs := {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "faction": s.faction, "L": s.hull.L,
+		"cap_kind": CAP_GLASS if s.faction == "ithar" else (CAP_FLESH if s.faction == "chorus" else CAP_METAL),
 		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan, "authored": s.hull.authored,
 		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
 		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn}
@@ -1687,6 +1727,7 @@ static func build_pieces(fx, s, job: Dictionary, deadline: int) -> bool:
 		var i := meshes.size()
 		var pc: Dictionary = pieces[i]
 		pc["dstyle"] = dstyle(s)
+		pc["scorch_tint"] = s.fac.get("fragment_paint", Color(0.20, 0.21, 0.22))
 		meshes.append(_piece_materials(geo[i], pc, false, fx) if i < geo.size() else _piece_mesh(pc, false, fx))
 		if pc.has("hull"): pc["shape"] = safe_convex(pc["hull"])
 		if Time.get_ticks_usec() >= deadline: break
@@ -1766,12 +1807,23 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, 
 	if pc.has("cap"):
 		var mat := ShaderMaterial.new()
 		mat.shader = HULL.shared_shader(SLAG, "death piece slag")
-		mat.set_shader_parameter("organic", pc.get("organic", false))
+		var kind := int(pc.get("cap_kind", CAP_METAL))
+		mat.set_shader_parameter("cap_kind", kind)
+		mat.set_shader_parameter("scorch_tint", pc.get("scorch_tint", Color(0.20, 0.21, 0.22)))
+		if kind == CAP_GLASS:
+			mat.set_shader_parameter("cap_albedo", _cap_albedo("ithar", "glass", Vector3(0.32, 0.32, 0.32)))
+		elif kind == CAP_FLESH:
+			mat.set_shader_parameter("cap_albedo", _cap_albedo("chorus", "organ", Vector3(0.07, 0.035, 0.028)))
 		mat.set_shader_parameter("section_scale", pc.get("section_scale", 1.0))
 		_style_heat(mat, pc.get("dstyle", {}), "heat_")
 		am.surface_set_material(mini(si, am.get_surface_count() - 1), mat)
 		pc["cap_mat"] = mat
 	return am
+
+
+static func _cap_albedo(faction: String, role: String, fallback: Vector3) -> Vector3:
+	var rgb = FLOOK_W.of(faction).get("interior", {}).get("roles", {}).get(role)
+	return Vector3(float(rgb[0]), float(rgb[1]), float(rgb[2])) if rgb is Array and rgb.size() >= 3 else fallback
 
 
 # Issue 600 (R186, RULEBOOK 5.17): an authored hull's insides were whole slabs (an A16 deck is a few triangles up to half
@@ -2034,13 +2086,16 @@ static func _cut(job: Dictionary, abort: CutAbort = null, share_lanes := false) 
 				pc["pts"] = pts
 	# each piece seals its own boundary loops (no shared state), so the pieces seal side by side too
 	if abort != null and abort.cancelled(): return []
+	# Read-only fit reference, including the plating taken away by the cut. A piece on its own can have
+	# gaps on both sides of a narrow shelf, so its shell alone cannot tell an inside point from an outside one.
+	var envelope := _section_envelope(pieces, abort) if bool(job.get("authored", false)) else null
 	lanes = 0 if pieces.size() < 2 or cut_serial else _reserve_cut_lanes(pieces.size(), share_lanes)
 	if lanes == 0:
 		for pc in pieces:
 			if abort != null and abort.cancelled(): return []
-			_seal_piece(pc, abort)
+			_seal_piece(pc, abort, envelope)
 	else:
-		_run_cut_group(func(i: int) -> void: _seal_piece(pieces[i], abort), pieces.size(), lanes, "death cut seals")
+		_run_cut_group(func(i: int) -> void: _seal_piece(pieces[i], abort, envelope), pieces.size(), lanes, "death cut seals")
 	return pieces
 
 
@@ -2048,6 +2103,7 @@ static func _blank_pieces(job: Dictionary, plan: Dictionary, ns: int, n_main: in
 	var pieces: Array = []
 	for c in ns:
 		pieces.append({"surfs": [], "pts": PackedVector3Array(), "edge": PackedVector3Array(), "n": 0, "organic": job.get("organic", false),
+			"cap_kind": job.get("cap_kind", CAP_FLESH if job.get("organic", false) else CAP_METAL),
 			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan, "authored": job.get("authored", false),
 			"faction": job.get("faction", ""), "L": job.get("L", 1.0)})
 	return pieces
@@ -2202,9 +2258,10 @@ static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int
 
 # Trace the actual welded boundary loops. Ear clipping uses boundary vertices only:
 # no centre vertex, radial bands or centre-point ribs can show through as spokes.
-static func _seal_piece(pc: Dictionary, abort: CutAbort = null) -> void:
+static func _seal_piece(pc: Dictionary, abort: CutAbort = null, envelope: TriangleMesh = null) -> void:
 	var all_edges := {}
 	var welds := {}
+	var skin_points := {}
 	var positions := PackedVector3Array()
 	var bounds := AABB()
 	var first := true
@@ -2222,7 +2279,7 @@ static func _seal_piece(pc: Dictionary, abort: CutAbort = null) -> void:
 	pc["section_scale"] = bounds.size.length()
 	var quantum := maxf(bounds.size.length() * 0.000001, 0.000001)
 	for sd in pc["surfs"]:
-		# Authored decks and machinery have their own thickness and paint. Only the exterior gets a procedural torn rim.
+		# The actual hull skin supplies the tear outlines. Authored insides keep their own thickness and paint.
 		if bool(pc.get("authored", false)) and bool(sd.get("interior", false)): continue
 		var pts: PackedVector3Array = sd["arrays"][Mesh.ARRAY_VERTEX]
 		var idx: PackedInt32Array = sd["arrays"][Mesh.ARRAY_INDEX]
@@ -2237,6 +2294,7 @@ static func _seal_piece(pc: Dictionary, abort: CutAbort = null) -> void:
 				welds[key] = positions.size()
 				positions.append(pts[i])
 			ids[i] = int(welds[key])
+			if bool(sd.get("skin", false)): skin_points[ids[i]] = true
 		for t in range(0, idx.size() - 2, 3):
 			if (t & 1023) == 0 and abort != null and abort.cancelled(): return
 			for j in 3:
@@ -2256,7 +2314,7 @@ static func _seal_piece(pc: Dictionary, abort: CutAbort = null) -> void:
 			if not adj.has(key[j]): adj[key[j]] = []
 			adj[key[j]].append(key[1 - j])
 	var remaining := all_edges.duplicate()
-	var cap := {"v": PackedVector3Array(), "n": PackedVector3Array(), "c": PackedColorArray()}
+	var cap := {"v": PackedVector3Array(), "n": PackedVector3Array(), "c": PackedColorArray(), "envelope": envelope}
 	pc["cap_loops"] = 0
 	pc["cap_fallbacks"] = 0
 	var walked := 0
@@ -2280,9 +2338,13 @@ static func _seal_piece(pc: Dictionary, abort: CutAbort = null) -> void:
 			var seen := walk.find(next)
 			if seen >= 0:
 				var outline := PackedVector3Array()
-				for j in range(seen, walk.size()): outline.append(positions[walk[j]])
+				var skin_count := 0
+				for j in range(seen, walk.size()):
+					outline.append(positions[walk[j]])
+					if skin_points.has(walk[j]): skin_count += 1
 				if outline.size() >= 3:
-					_cap_outline(cap, outline, bounds, quantum, pc, abort)
+					var hull_opening := skin_points.is_empty() or skin_count * 4 >= outline.size() * 3
+					_cap_outline(cap, outline, bounds, quantum, pc, hull_opening, abort)
 				walk.resize(seen + 1)
 			else: walk.append(next)
 	if not (cap["v"] as PackedVector3Array).is_empty():
@@ -2294,7 +2356,8 @@ static func _seal_piece(pc: Dictionary, abort: CutAbort = null) -> void:
 		pc["cap"] = arr
 
 
-static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: AABB, quantum: float, pc: Dictionary, abort: CutAbort = null) -> void:
+static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: AABB, quantum: float,
+		pc: Dictionary, hull_opening := true, abort: CutAbort = null) -> void:
 	if abort != null and abort.cancelled(): return
 	var centre := Vector3.ZERO
 	for p in outline: centre += p
@@ -2312,15 +2375,19 @@ static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: A
 	normal = normal.normalized()
 	var inward := normal if normal.dot(bounds.get_center() - centre) >= 0.0 else -normal
 	var x := normal.cross(Vector3.UP if absf(normal.y) < 0.9 else Vector3.RIGHT).normalized()
-	var y := normal.cross(x)
+	var y := x.cross(normal)
 	var polygon := PackedVector2Array()
 	var inset := PackedVector3Array()
 	var depth := minf(radius * 0.075, bounds.size.length() * 0.035)
+	var kind := int(pc.get("cap_kind", CAP_METAL))
+	var torn := hull_opening and _loop_torn(pc.get("plan", {}), outline)
+	var authored := bool(pc.get("authored", false))
 	for p in outline:
 		polygon.append(Vector2((p - centre).dot(x), (p - centre).dot(y)))
-		# Only the narrow torn lip slopes. The whole face has one material band.
+		# Keep the outside welded to the skin. Bend the inside of the broken edge, not the whole section.
 		var rough := sin(p.dot(Vector3(3.1, 5.7, 2.3))) * sin(p.dot(Vector3(8.3, 2.1, 4.7)))
-		inset.append(p + (centre - p) * 0.018 + inward * depth * (1.0 + rough * 0.12))
+		var bend := 0.42 if torn and kind == CAP_METAL else 0.12
+		inset.append(p + (centre - p) * 0.018 + inward * depth * (1.0 + rough * bend))
 	var indices := Geometry2D.triangulate_polygon(polygon)
 	if abort != null and abort.cancelled(): return
 	if indices.is_empty():
@@ -2335,23 +2402,22 @@ static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: A
 			if hi - lo > 1:
 				indices.append_array(PackedInt32Array([lo, hi - 1, hi]))
 				hi -= 1
-	if not bool(pc.get("authored", false)):
+	var kit := false
+	if authored and torn and not bool(pc.get("frag", false)) and pc.has("surfs"):
+		kit = _section_kit(cap, pc, outline, indices, polygon, centre, x, y, inward, depth, bounds, quantum, abort)
+	if not kit and (torn or not authored):
+		# Legacy shells are sealed at the lip. It also closes slivers that cannot fit any interior relief.
 		for i in range(0, indices.size(), 3):
-			_cap_tri(cap, inset[indices[i]], inset[indices[i + 1]], inset[indices[i + 2]], Color(0.9, 0.015, 0, 1))
+			_cap_tri(cap, inset[indices[i]], inset[indices[i + 1]], inset[indices[i + 2]], Color(0.9, 0, 0, 1))
+	if not authored and torn and not bool(pc.get("frag", false)) and pc.has("surfs"):
+		_section_kit(cap, pc, outline, indices, polygon, centre, x, y, inward, depth, bounds, quantum, abort)
+	var edge_col := CAP_LIP if torn and kind != CAP_FLESH else CAP_LIP_INSET
 	for i in outline.size():
 		var j := (i + 1) % outline.size()
-		_cap_tri(cap, outline[i], outline[j], inset[j], Color(0.25, 1.0, 0, 1))
-		_cap_tri(cap, outline[i], inset[j], inset[i], Color(0.25, 1.0, 0, 1))
-		# Sparse short, offset spars. Never connect them all to a common centre.
-		if i % maxi(1, outline.size() / 4) == 0 and outline[i].distance_to(outline[j]) > quantum * 3.0:
-			var a := outline[i].lerp(outline[j], 0.42) + inward * depth * 0.45
-			var tangent := (outline[j] - outline[i]).normalized()
-			_cap_rib(cap, a, a + tangent * radius * 0.12 + inward * depth * 0.35, -inward, maxf(radius * 0.012, quantum * 2.0))
-	# Short cross members sit on the solid face. Clip each one to the real
-	# outline so decks and bone ribs cannot stick outside a narrow fragment.
-	# Bench round 2: the hull's own open edges (kit parts, old holes) are capped too; only loops on the new break or the
-	# bite get the torn rim, or every kit seam sprouted petals.
-	var ragged := bool(pc.get("ragged", false)) and _loop_torn(pc.get("plan", {}), outline)
+		_cap_tri(cap, outline[i], outline[j], inset[j], edge_col, edge_col, CAP_LIP_INSET)
+		_cap_tri(cap, outline[i], inset[j], inset[i], edge_col, CAP_LIP_INSET, CAP_LIP_INSET)
+	# Only new tears get bent plates or fire sites, not existing kit openings.
+	var ragged := torn and bool(pc.get("ragged", false))
 	if ragged:
 		# issue 484: the real torn rim, for the flash and fire sites (the cap also holds petals and long ribs that stick
 		# out past the hull, and a site there floats beside the wreck)
@@ -2359,11 +2425,9 @@ static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: A
 		for i in range(0, outline.size(), maxi(1, outline.size() / 48)):
 			if lip.size() < 512: lip.append(inset[i])
 		pc["lip"] = lip
-		if not bool(pc.get("authored", false)):
-			_section_structure(cap, polygon, centre, x, y, inward, depth, radius, bool(pc.get("organic", false)), ragged)
-	# Issue 484: a torn rim, not a clean outline: plating peeled outward in bent petals, some still glowing.
-	if ragged and outline.size() >= 6 and radius > bounds.size.length() * 0.05:
-		_cap_petals(cap, outline, centre, inward, radius, quantum, bool(pc.get("organic", false)), bounds.size.length())
+	# Issue 484: a torn rim, not a clean outline: peel dark plates or skin outward from the real break.
+	if ragged and kind != CAP_GLASS and outline.size() >= 6 and radius > bounds.size.length() * 0.05:
+		_cap_petals(cap, outline, centre, inward, radius, quantum, bounds.size.length())
 	pc["cap_loops"] = int(pc["cap_loops"]) + 1
 
 
@@ -2394,9 +2458,9 @@ static func _rand01(p: Vector3, k: float) -> float:
 
 
 # Bent plates peeled out from the torn rim: each spans a stretch of the outline, leans out of the face and away from
-# its middle, and ends in a torn tooth. Half keep a hot rim (the slag rim glow), half are scorched dark plate. A Chorus
+# its middle, and ends in a torn tooth. The peeled plates stay dark, leaving the heat on the welded edge. A Chorus
 # rim gets torn flaps of skin instead (the organic slag colour).
-static func _cap_petals(cap: Dictionary, outline: PackedVector3Array, centre: Vector3, inward: Vector3, radius: float, quantum: float, organic: bool, span_len: float) -> void:
+static func _cap_petals(cap: Dictionary, outline: PackedVector3Array, centre: Vector3, inward: Vector3, radius: float, quantum: float, span_len: float) -> void:
 	var m := outline.size()
 	var step := maxi(1, m / 26)
 	var i := 0
@@ -2422,74 +2486,208 @@ static func _cap_petals(cap: Dictionary, outline: PackedVector3Array, centre: Ve
 			var a2 := a + out * reach * lerpf(0.55, 1.0, _rand01(a, 6.0)) + along * 0.12
 			var b2 := b + out * reach * lerpf(0.35, 0.85, _rand01(b, 7.0)) - along * 0.18
 			var tooth := (a2 + b2) * 0.5 + out * reach * lerpf(0.15, 0.45, _rand01(mid, 8.0)) + along * (_rand01(mid, 9.0) - 0.5) * 0.4
-			var col := Color(0.3, 1.0 if _rand01(mid, 10.0) < 0.3 else 0.2, 0, 1)
-			if organic: col = Color(0.3, 0.0, 0, 1)
-			_cap_tri(cap, a, b, b2, col)
-			_cap_tri(cap, a, b2, a2, col)
-			_cap_tri(cap, a2, b2, tooth, col)
+			_cap_tri(cap, a, b, b2, CAP_LIP_INSET)
+			_cap_tri(cap, a, b2, a2, CAP_LIP_INSET)
+			_cap_tri(cap, a2, b2, tooth, CAP_LIP_INSET)
 			made += 1
 		i += maxi(span, 1)
 
 
-static func _section_structure(cap: Dictionary, polygon: PackedVector2Array, centre: Vector3, x: Vector3, y: Vector3, inward: Vector3, depth: float, radius: float, organic: bool, ragged := false) -> void:
-	var lo := polygon[0]
-	var hi := lo
-	for p in polygon:
-		lo = lo.min(p); hi = hi.max(p)
-	for vertical in ([false] if organic else [false, true]):
-		for row in 3:
-			var level := lerpf(lo.x if vertical else lo.y, hi.x if vertical else hi.y, float(row + 1) / 4.0)
-			var hits: Array[float] = []
-			for i in polygon.size():
-				var a := polygon[i]
-				var b := polygon[(i + 1) % polygon.size()]
-				var av := a.x if vertical else a.y
-				var bv := b.x if vertical else b.y
-				if (av <= level and bv > level) or (bv <= level and av > level):
-					var p := a.lerp(b, (level - av) / (bv - av))
-					hits.append(p.y if vertical else p.x)
-			hits.sort()
-			for i in range(0, hits.size() - 1, 2):
-				var a := Vector2(level, hits[i]) if vertical else Vector2(hits[i], level)
-				var b := Vector2(level, hits[i + 1]) if vertical else Vector2(hits[i + 1], level)
-				a = a.lerp(b, 0.08); b = b.lerp(a, 0.08)
-				var pa := centre + x * a.x * 0.982 + y * a.y * 0.982 + inward * depth * 0.72
-				var pb := centre + x * b.x * 0.982 + y * b.y * 0.982 + inward * depth * 0.72
-				var width := minf(radius * 0.018, a.distance_to(b) * 0.045)
-				if ragged:
-					# issue 484: some decks and ribs run long, bent out past the torn skin
-					var r1 := _rand01(pa, 11.0)
-					if r1 < 0.55:
-						var dir := (pb - pa).normalized()
-						var ext := radius * lerpf(0.10, 0.28, _rand01(pb, 12.0))
-						if ext < STAGING_UNITS_PER_PIXEL * 1.5: ext = 0.0
-						if r1 < 0.27: pb += dir * ext - inward * ext * 0.55
-						else: pa += -dir * ext - inward * ext * 0.55
-				if organic:
-					var mid := pa.lerp(pb, 0.5) - inward * radius * 0.035
-					_cap_bone(cap, pa, mid, -inward, width, width * 1.3)
-					_cap_bone(cap, mid, pb, -inward, width * 1.3, width * 0.65)
-				else: _cap_rib(cap, pa, pb, -inward, width)
+# An opening's fit in the ship frame. Sample the real ragged surface at each kit vertex, then stop short of the
+# first skin hit behind it. Fitting each vertex matters on tapered bows and on the edges of a long oblique seam.
+class SectionFit:
+	var centre: Vector3
+	var x: Vector3
+	var y: Vector3
+	var inward: Vector3
+	var bounds: AABB
+	var opening: TriangleMesh
+	var shell: TriangleMesh
+	var envelope: TriangleMesh
+	var depth: float
+	var quantum: float
+	var samples := {}
+	var enclosed := {}
+
+	func point(p: Vector2, at: float) -> Vector3:
+		if not samples.has(p):
+			var mid := centre + x * p.x + y * p.y
+			var span := bounds.size.length()
+			var h := opening.intersect_segment(mid - inward * span, mid + inward * span)
+			var front: Vector3 = h.get("position", mid)
+			var room := depth
+			for axis in 3:
+				if absf(inward[axis]) < 0.0001: continue
+				var stop := bounds.end[axis] if inward[axis] > 0.0 else bounds.position[axis]
+				room = minf(room, (stop - front[axis]) / inward[axis])
+			room = maxf(0.0, room)
+			if shell != null and room > quantum * 2.0:
+				var hit := shell.intersect_segment(front + inward * quantum * 2.0, front + inward * room)
+				if not hit.is_empty(): room = front.distance_to(hit["position"]) * 0.78
+			samples[p] = Vector4(front.x, front.y, front.z, room)
+		var sample: Vector4 = samples[p]
+		return Vector3(sample.x, sample.y, sample.z) + inward * sample.w * at
+
+	func inside(p: Vector3) -> bool:
+		if envelope == null: return true
+		if not enclosed.has(p):
+			# The tear can leave a hole in one axis. Two opposing hits on either section axis still enclose the point.
+			enclosed[p] = (not envelope.intersect_ray(p, y).is_empty() and not envelope.intersect_ray(p, -y).is_empty()
+				or not envelope.intersect_ray(p, x).is_empty() and not envelope.intersect_ray(p, -x).is_empty())
+		return enclosed[p]
 
 
-static func _cap_tri(cap: Dictionary, a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
-	var n := (b - a).cross(c - a)
+static func _section_envelope(pieces: Array, abort: CutAbort) -> TriangleMesh:
+	var faces := PackedVector3Array()
+	for pc in pieces:
+		for sd in pc["surfs"]:
+			if not bool(sd.get("skin", false)): continue
+			_section_faces(sd, faces, abort)
+			if abort != null and abort.cancelled(): return null
+	return _section_trimesh(faces)
+
+
+static func _section_faces(sd: Dictionary, faces: PackedVector3Array, abort: CutAbort) -> void:
+	var verts: PackedVector3Array = sd["arrays"][Mesh.ARRAY_VERTEX]
+	var idx: PackedInt32Array = sd["arrays"][Mesh.ARRAY_INDEX]
+	for i in idx.size():
+		if (i & 1023) == 0 and abort != null and abort.cancelled(): return
+		faces.append(verts[idx[i]])
+
+
+static func _section_trimesh(faces: PackedVector3Array) -> TriangleMesh:
+	if faces.is_empty(): return null
+	var mesh := TriangleMesh.new()
+	return mesh if mesh.create_from_faces(faces) else null
+
+
+static func _section_shell(pc: Dictionary, abort: CutAbort) -> TriangleMesh:
+	var skin_only: bool = pc["surfs"].any(func(sd: Dictionary) -> bool: return bool(sd.get("skin", false)))
+	var faces := PackedVector3Array()
+	for sd in pc["surfs"]:
+		if bool(sd.get("interior", false)) or int(sd.get("tur", -1)) >= 0: continue
+		if skin_only and not bool(sd.get("skin", false)): continue
+		_section_faces(sd, faces, abort)
+		if abort != null and abort.cancelled(): return null
+	return _section_trimesh(faces)
+
+
+# Runtime fit of the part kit in build_sheets/kit.py: a hull-following bulkhead loft, flat deck lofts and raised
+# frame bars. Authored kit surfaces remain in front when present. No diagram paints or bright cross-section grid.
+static func _section_kit(cap: Dictionary, pc: Dictionary, outline: PackedVector3Array, indices: PackedInt32Array,
+		polygon: PackedVector2Array, centre: Vector3, x: Vector3, y: Vector3, inward: Vector3, lip_depth: float,
+		bounds: AABB, quantum: float, abort: CutAbort) -> bool:
+	var rect := Rect2(polygon[0], Vector2.ZERO)
+	for p in polygon: rect = rect.expand(p)
+	var narrow := minf(rect.size.x, rect.size.y)
+	# A slot narrower than three pixels at the battle camera only needs the cold cut face.
+	# Hundreds of hairline plating loops on a high-detail hull otherwise get invisible deck meshes.
+	if narrow <= maxf(quantum * 8.0, STAGING_UNITS_PER_PIXEL * 3.0) or indices.is_empty(): return false
+	var inset := Geometry2D.offset_polygon(polygon, -narrow * 0.04, Geometry2D.JOIN_MITER)
+	if inset.is_empty(): return false
+	var faces := PackedVector3Array()
+	for i in indices: faces.append(outline[i])
+	var fit := SectionFit.new()
+	fit.opening = TriangleMesh.new()
+	if not fit.opening.create_from_faces(faces): return false
+	fit.centre = centre
+	fit.x = x
+	fit.y = y
+	fit.inward = inward
+	fit.bounds = bounds
+	fit.quantum = quantum
+	var authored := bool(pc.get("authored", false))
+	# On older shells the detail sits in front of the already sealed backing, not behind it.
+	fit.depth = minf(lip_depth * (4.0 if authored else 0.56), narrow * 0.52)
+	fit.envelope = cap.get("envelope")
+	if not cap.has("shell"): cap["shell"] = _section_shell(pc, abort)
+	fit.shell = cap["shell"]
+	var kind := int(pc.get("cap_kind", CAP_METAL))
+	var covered := false
+	for footprint in inset:
+		if abort != null and abort.cancelled(): return covered
+		if not authored and kind == CAP_GLASS: continue
+		if authored and not _section_loft(cap, fit, footprint, 0.83, 0.97, CAP_WALL): continue
+		covered = true
+		if kind == CAP_GLASS: continue   # a recessed pane behind the authored glass rooms, never metal decks
+		if kind == CAP_FLESH:
+			# The old hulls have no authored bone; put two curved struts in the membrane opening.
+			if not authored: _section_bone(cap, fit, footprint, rect, narrow)
+			continue
+		var t := narrow * 0.035
+		for level in [0.29, 0.67]:
+			var h := rect.position.y + rect.size.y * float(level)
+			var deck := Rect2(Vector2(rect.position.x, h - t), Vector2(rect.size.x, 2.0 * t))
+			_section_members(cap, fit, footprint, deck, 0.29, 0.88, CAP_DECK)
+		for level in [0.23, 0.54, 0.78]:
+			var w := rect.position.x + rect.size.x * float(level)
+			var rib := Rect2(Vector2(w - t * 0.62, rect.position.y), Vector2(t * 1.24, rect.size.y))
+			_section_members(cap, fit, footprint, rib, 0.54, 0.88, CAP_RIB)
+	return covered
+
+
+static func _section_members(cap: Dictionary, fit: SectionFit, footprint: PackedVector2Array, strip: Rect2,
+		front: float, back: float, role: Color) -> void:
+	var corners := PackedVector2Array([strip.position, Vector2(strip.end.x, strip.position.y),
+		strip.end, Vector2(strip.position.x, strip.end.y)])
+	for clipped in Geometry2D.intersect_polygons(footprint, corners):
+		_section_loft(cap, fit, clipped, front, back, role)
+
+
+static func _section_loft(cap: Dictionary, fit: SectionFit, ring: PackedVector2Array, front: float, back: float, role: Color) -> bool:
+	var tris := Geometry2D.triangulate_polygon(ring)
+	if tris.is_empty(): return false
+	var a := PackedVector3Array()
+	var b := PackedVector3Array()
+	for p in ring:
+		a.append(fit.point(p, front))
+		b.append(fit.point(p, back))
+	var first: int = cap["v"].size()
+	for i in range(0, tris.size(), 3):
+		_section_tri(cap, fit, a[tris[i]], a[tris[i + 1]], a[tris[i + 2]], role)
+		_section_tri(cap, fit, b[tris[i]], b[tris[i + 2]], b[tris[i + 1]], role)
+	if cap["v"].size() == first: return false
+	for i in ring.size():
+		var j := (i + 1) % ring.size()
+		_section_tri(cap, fit, a[i], b[i], b[j], role)
+		_section_tri(cap, fit, a[i], b[j], a[j], role)
+	return true
+
+
+static func _section_tri(cap: Dictionary, fit: SectionFit, a: Vector3, b: Vector3, c: Vector3, role: Color) -> void:
+	if fit.inside(a) and fit.inside(b) and fit.inside(c) and fit.inside((a + b + c) / 3.0):
+		_cap_tri(cap, a, b, c, role)
+
+
+static func _section_bone(cap: Dictionary, fit: SectionFit, polygon: PackedVector2Array, rect: Rect2, narrow: float) -> void:
+	for level in [0.32, 0.62]:
+		var h := rect.position.y + rect.size.y * float(level)
+		var crossings := PackedFloat32Array()
+		for i in polygon.size():
+			var a := polygon[i]
+			var b := polygon[(i + 1) % polygon.size()]
+			if (a.y <= h and b.y > h) or (b.y <= h and a.y > h):
+				crossings.append(lerpf(a.x, b.x, (h - a.y) / (b.y - a.y)))
+		crossings.sort()
+		for i in range(0, crossings.size() - 1, 2):
+			var lo := crossings[i]
+			var hi := crossings[i + 1]
+			var wa := minf(narrow * 0.024, minf((hi - lo) * 0.045, fit.depth * 0.08))
+			var a := fit.point(Vector2(lerpf(lo, hi, 0.13), h), 0.65)
+			var m := fit.point(Vector2(lerpf(lo, hi, 0.48), h), 0.38)
+			var b := fit.point(Vector2(lerpf(lo, hi, 0.87), h), 0.72)
+			_cap_bone(cap, a, m, -fit.inward, wa, wa * 1.22)
+			_cap_bone(cap, m, b, -fit.inward, wa * 1.22, wa * 0.64)
+
+
+static func _cap_tri(cap: Dictionary, a: Vector3, b: Vector3, c: Vector3, color: Color,
+		color_b := Color.TRANSPARENT, color_c := Color.TRANSPARENT) -> void:
+	var n := (c - a).cross(b - a)   # Godot's front face is clockwise.
 	if not a.is_finite() or not b.is_finite() or not c.is_finite() or n.length_squared() < 1e-20: return
 	n = n.normalized()
 	cap["v"].append_array(PackedVector3Array([a, b, c]))
 	cap["n"].append_array(PackedVector3Array([n, n, n]))
-	cap["c"].append_array(PackedColorArray([color, color, color]))
-
-
-static func _cap_rib(cap: Dictionary, a: Vector3, b: Vector3, n: Vector3, width: float) -> void:
-	var along := b - a
-	if along.length_squared() < 1e-12: return
-	var side := along.normalized().cross(n) * width
-	var lift := n * width * 1.8
-	var p := [a - side, a + side, b + side, b - side, a - side + lift, a + side + lift, b + side + lift, b - side + lift]
-	for f in [[0, 1, 2, 3], [4, 7, 6, 5], [0, 4, 5, 1], [1, 5, 6, 2], [2, 6, 7, 3], [3, 7, 4, 0]]:
-		_cap_tri(cap, p[f[0]], p[f[1]], p[f[2]], Color(0.45, 0.1, 0, 1))
-		_cap_tri(cap, p[f[0]], p[f[2]], p[f[3]], Color(0.45, 0.1, 0, 1))
+	cap["c"].append_array(PackedColorArray([color, color if color_b.a == 0.0 else color_b, color if color_c.a == 0.0 else color_c]))
 
 
 static func _cap_bone(cap: Dictionary, a: Vector3, b: Vector3, n: Vector3, wa: float, wb: float) -> void:
@@ -2498,7 +2696,7 @@ static func _cap_bone(cap: Dictionary, a: Vector3, b: Vector3, n: Vector3, wa: f
 	var up := side.cross((b - a).normalized())
 	var ra := PackedVector3Array()
 	var rb := PackedVector3Array()
-	var col := Color(0.45, 0.0, 0.0, 1.0)
+	var col := CAP_RIB
 	for i in 6:
 		var radial := side * cos(TAU * i / 6.0) + up * sin(TAU * i / 6.0)
 		ra.append(a + radial * wa)
@@ -2829,13 +3027,42 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	var p: Vector3 = pose * (hit["p"] as Vector3)
 	var n: Vector3 = (pose.basis * (hit["n"] as Vector3)).normalized()
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-	var jet := flipbook(fx, p, n, s.hull.L * (0.35 if s.death_big else 0.85), "vent", 0.65 if s.death_big else 0.30, inherited + n * s.hull.L * 0.12, 1.3, atlas_band(s.hull.L), s, true)
-	# The ignition and its light share one booking. Calm mode keeps dark gas. On a big hull the vent opens 0.04 s
-	# before the first chain blast, so the two are one counted flash (FLASH_WINDOW).
-	if fx.flash_at(p, fx.now, s.hull.L * 0.85, 44.0, 0.10):
-		(jet.material_override as ShaderMaterial).set_shader_parameter("ignition", 1.0)
-		fx.light(p, fx.now, 0.10, 5.0, Color(0.7, 0.81, 1.0), 0)
-	tear_particles(fx, p, n, s.hull.L, inherited, false, s)
+	# Issue 2048: replace the round white small-death bow vent flipbook puff with a layered directional rupture jet
+	# rooted on the real plating (p, outward normal n), faction-coloured from faction_looks.json, keeping R186/R193 caps.
+	# Preserve fx.rng state across both the directional jet and GPU tear_particles so visual vent pieces
+	# never perturb downstream breakup/wreck physics randomness on either headless or windowed runs.
+	var saved_rng_state: int = fx.rng.state
+	fx.record_spawn(s, p, false, pose)
+	s.set_meta("death_vent_style", "directional_jet")
+	var ignited: bool = fx.flash_at(p, fx.now, s.hull.L * 0.55, 44.0, 0.10)
+	var fire_col: Color = dcol(s, "fire_mid", s.fac.damage_glow)
+	var core_col: Color = dcol(s, "fire", fire_col.lerp(Color.WHITE, 0.45))
+	var light_col: Color = dcol(s, "light", fire_col.lerp(Color.WHITE, 0.35))
+	var smoke_k: float = dsmoke(s)
+	var jet_vel: Vector3 = inherited + n * s.hull.L * 0.95
+	# Layer 1: primary directional supersonic vent jet (SH.SPRITE SH.VENT_JET=40; core fades inside 0.22 s, total life 0.30 s).
+	fx.spr(p, fx.now, 0.30, fire_col, 2.2 if ignited else 0.45, s.hull.L * 0.28, s.hull.L * 0.52, SH.VENT_JET, jet_vel, 1.8)
+	# Layer 2: staggered sheared directional gas sheets (k=27) for smoky factions, or pale crystal shards (k=16) for Glasswrights.
+	if smoke_k > 0.01:
+		var soot_col: Color = Color(0.11, 0.08, 0.16) if s.faction == "deathless" else Color(0.16, 0.15, 0.14)
+		for j in 3:
+			var jf := float(j)
+			var gv: Vector3 = inherited + fx.rcone(n, 0.14) * s.hull.L * (0.75 + jf * 0.22)
+			fx.spr(p + n * s.hull.L * (0.04 + jf * 0.06), fx.now + jf * 0.03, 0.32 + jf * 0.06, soot_col,
+				clampf(0.45 + 0.35 * smoke_k, 0.22, 0.78) * (1.0 - jf * 0.16), s.hull.L * (0.14 + jf * 0.05),
+				s.hull.L * (0.34 + jf * 0.08), 27, gv, 1.4)
+	else:
+		for j in 4:
+			var sv: Vector3 = inherited + fx.rcone(n, 0.22) * s.hull.L * (0.55 + float(j) * 0.15)
+			fx.spr(p + n * s.hull.L * 0.04, fx.now + float(j) * 0.025, 0.40, core_col, 1.6 if ignited else 0.8,
+				s.hull.L * 0.05, s.hull.L * 0.02, 16, sv, 1.2)
+	# Layer 3: tight breach-mouth ignition ember and faction light when the flash counter permits.
+	if ignited:
+		fx.spr(p + n * s.hull.L * 0.02, fx.now, 0.20, core_col, 2.4, s.hull.L * 0.09, s.hull.L * 0.18, 19, inherited + n * s.hull.L * 0.15, 3.0)
+		fx.light(p + n * s.hull.L * 0.06, fx.now, 0.10, 4.5, light_col, 0)
+	# Keep #2018 tear sparks intact; skip the old round fx_vent_cone dots.
+	tear_particles(fx, p, n, s.hull.L, inherited, true, s)
+	fx.rng.state = saved_rng_state
 
 
 static func _update_dying(fx, s) -> void:
@@ -3658,7 +3885,7 @@ static func _hide_ship(s) -> void:
 	s.hide_live_hull()
 
 
-# One independent copy of the damaged hull, no fracture upload, fire or lights.
+# One independent copy of the damaged hull and a cold vent, no fracture upload, fire or lights.
 # G2 may release its live ship root as soon as death()'s returned time expires.
 static func _hulk(fx, s) -> void:
 	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s or s.has_meta("death_hidden"): return
@@ -3695,22 +3922,30 @@ static func _hulk(fx, s) -> void:
 	drift.y = 0.0
 	# issue 1586: a burnout drifts dead with a gentle pitch and roll
 	var dead_drift: bool = str(s.get_meta("death_cause", "dark")) == "dark"
-	var wreck := {"id": s.id, "t0": fx.now, "nodes": [node], "mats": [], "lights": [],
+	_cache_leash_geometry(node)
+	var wreck := {"id": s.id, "t0": fx.now, "nodes": [node], "mats": [], "lights": [], "settled": false,
 		"fires": [{"node": node, "vel": drift, "ang": Vector3(0.05, 0.035, 0.04) if dead_drift else Vector3(0.01, 0.035, 0.015)}], "speed": 1.0, "hulk": true}
+	# The vent keeps looping on the shader clock. Its density ticks separately from the wreck's motion (R458).
 	var hit: Dictionary = s.hull.ray(s.hull.c + Vector3.UP * maxf(s.hull.L, 1.0), Vector3.DOWN)
 	var p: Vector3 = hit.get("p", s.hull.core)   # issue 370: a missed ray falls back to the core, never a box point
 	var n: Vector3 = hit.get("n", Vector3.UP)
-	var b := POOLS.Batch.new()
-	var size: float = maxf(s.hull.L * 0.025, 0.06)
-	for j in 9:
-		var v := n * size * 8.0
-		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, fx.now + j * 0.13),
-			Vector4(v.x, v.y, v.z, 1.7), Vector4(0.22, 0.32, 0.06, 0.3) if s.faction == "chorus" else Vector4(0.42, 0.46, 0.5, 0.5),
-			Vector4(size * 0.4, size * 3.2, 20 if s.faction == "chorus" else 7, 16.3), Vector4(0, 0, 0.5, 0)))
-	b.build(fx.mat(SH.SPRITE, 1), node, "fx_hulk_vent")
+	var vent := DAMAGE_PLUME.build(fx, node, p, (n + Vector3.UP * 0.3).normalized(), maxf(s.hull.L * 0.20, 0.12),
+		DAMAGE_PLUME.Form.HULK, s.fac, 0.12, "fx_hulk_vent")
+	fx.later(fx.now + HULK_VENT_TICK, _thin_hulk_vent.bind(fx, weakref(vent), fx.now))
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
 	BEATS.on_hulk(fx, s, node, str(s.get_meta("death_cause", "dark")))
+
+
+static func _thin_hulk_vent(fx, ref: WeakRef, born: float) -> void:
+	var vent := ref.get_ref() as MeshInstance3D
+	if not is_instance_valid(vent) or not vent.is_inside_tree() or vent.get_parent().is_queued_for_deletion():
+		return
+	var end := born + DAMAGE_PLUME.HULK_SETTLE_S
+	var age: float = DAMAGE_PLUME.HULK_SETTLE_S if fx.now >= end else fx.now - born
+	# Keep only one pending tick. A long frame updates once, and the final tick lands at the exact floor.
+	if not DAMAGE_PLUME.thin_hulk(vent.material_override, age):
+		fx.later(minf(fx.now + HULK_VENT_TICK, end), _thin_hulk_vent.bind(fx, ref, born))
 
 
 static func _break_up(fx, s, cause: String, tint: Color, job := {}) -> void:
@@ -3757,7 +3992,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 	fx.punch(T, 0.018 if s.death_big else 0.006, center)
 	fx.shake(T, 0.45 if s.death_big else 0.18, center)
 	# the pieces: real parts of the hull, as rigid bodies that drift and burn
-	var wreck = {"id": s.id, "t0": T, "nodes": [], "mats": [], "lights": [], "fires": [], "speed": 1.0, "organic": organic, "heat_births": {}, "cut_events": []}
+	var wreck = {"id": s.id, "t0": T, "nodes": [], "mats": [], "lights": [], "fires": [], "speed": 1.0, "organic": organic, "heat_births": {}, "cut_events": [], "settled": false}
 	var main_i = -1
 	var main_n = -1
 	for i in n_main:
@@ -3845,11 +4080,10 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		mi.mesh = am
 		mi.position = -cen
 		node.add_child(mi)
+		_cache_leash_geometry(node)
 		var piece_mats: Array = []
 		if pc.has("cap_mat"):
 			(pc["cap_mat"] as ShaderMaterial).set_shader_parameter("heat", 0.0)
-			# Issue 462: a big hull's torn face shows its decks glowing, not only the rim.
-			(pc["cap_mat"] as ShaderMaterial).set_shader_parameter("face_glow", 1.0 if not organic and (s.death_big or is_main) else 0.0)
 			if fx.quality != "low" and not organic and (s.death_big or is_main): piece_mats.append(pc["cap_mat"])
 		wreck["mats"].append_array(piece_mats)
 		wreck["nodes"].append(node)
@@ -4015,14 +4249,14 @@ static func _make_frags(fx, s, wreck: Dictionary, job: Dictionary, pieces: Array
 		mi.position = -cen
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		node.add_child(mi)
+		_cache_leash_geometry(node)
 		if pc.has("cap_mat"):
 			var cm := pc["cap_mat"] as ShaderMaterial
 			cm.set_shader_parameter("heat", 0.0)
-			cm.set_shader_parameter("face_glow", 0.5)
 			if fx.quality != "low":
 				wreck["mats"].append(cm)
-				# small fragments start past white heat and go dark in about half the big pieces' time
-				wreck["heat_births"][cm] = T - float(wreck.get("cool", WRECK_COOL)) * 0.35
+				# Small fragments start past white heat and cool before the main seams do.
+				wreck["heat_births"][cm] = T - _seam_cool(wreck) * 0.35
 		wreck["scorch_mats"].append_array(pc.get("hull_mats", []))
 		wreck["frags"].append(node)
 		wreck["fires"].append({"node": node, "vel": inherited, "ang": Vector3.ZERO, "until": hold_until})
@@ -4132,12 +4366,22 @@ static func _core_flash_inner(fx, p: Vector3, R: float, px: float, tint: Color, 
 	if staged:
 		var soft: bool = fx.reduce_flashing or not allowed
 		var life: float = float(row[2] if soft else row[1])
+		var divisor: float = float(row[4] if soft else row[3])
 		var flash := flipbook(fx, p, Vector3.UP, 0.0, "flash", life, Vector3.ZERO, 1.25 if soft else 6.0, band, src, false, true, frame)
 		var mat := flash.material_override as ShaderMaterial
+		# The approved counted diameter above already bounds this floor, including room for bloom.
 		mat.set_shader_parameter("min_pixels", px)
+		mat.set_shader_parameter("read_pixels", CORE_READ_PX[band])
 		mat.set_shader_parameter("extent", px * STAGING_UNITS_PER_PIXEL)
-		mat.set_shader_parameter("size_divisor", float(row[4] if soft else row[3]))
+		mat.set_shader_parameter("size_divisor", divisor)
 		mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
+		# This soft front mints no flash token, adds no light and does not touch the faction's fire or break.
+		var ring_px: float = float(CORE_READ_PX[band]) * 1.45
+		var ring_col := dcol(src, "light", tint)
+		var ring_size := ring_px * STAGING_UNITS_PER_PIXEL
+		var ring_seed := fposmod(p.dot(Vector3(0.173, 0.371, 0.227)), 1.0)
+		fx.ring(p, Vector3.UP, fx.now, CORE_RING_S, ring_col, 0.26, ring_size * 0.22, ring_size,
+			SH.RING_DEATH_FRONT, 0.0, 0.0, ring_px, ring_seed)
 		# Issue 461 (audit item 11): the core flash lights the hulls round it, about two hexes for a cruiser and three for
 		# a capital, for the length of the flash (deaths_and_hits.md, beat 2)
 		if not fx.reduce_flashing: fx.light(p, fx.now, float(row[1]), 9.0, dcol(src, "light", Color(0.65, 0.75, 0.91)), 0, CORE_LIGHT_REACH[band])
@@ -4465,6 +4709,10 @@ static func _snap(fx, s, wreck: Dictionary, child, bu: Dictionary) -> void:
 	fx.shake(fx.now, 0.12, p)
 
 
+static func _seam_cool(wreck: Dictionary) -> float:
+	return minf(float(wreck.get("cool", WRECK_COOL)), SEAM_COOL)
+
+
 static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, ang: Vector3, mats: Array, L: float, big: bool, index: int, src = null) -> void:
 	if not is_instance_valid(node) or node.is_queued_for_deletion(): return
 	if node is RigidBody3D:
@@ -4597,23 +4845,27 @@ static func update(fx, dt: float) -> void:
 		return
 	# issue 1236: a blocking wreck's new pieces are measured where they were made, before anything below moves them
 	_leash_mark(fx)
-	for ship in fx.ships.values(): _update_dying(fx, ship)
+	for id in fx.ships:
+		var ship = fx.ships[id]
+		if ship.dead and not ship.death_fx_done: _update_dying(fx, ship)
 	_settle_debris(fx)
 	_debris_speed(fx)
+	var speed: float = maxf(fx.anim_speed(), 0.01)
 	for w in fx.dstate["wrecks"]:
-		var speed: float = maxf(fx.anim_speed(), 0.01)
+		if w.get("settled", false): continue
 		var prev: float = float(w.get("speed", 1.0))
+		var ratio := speed / prev
 		for nd in w["nodes"]:
-			if is_instance_valid(nd) and nd is RigidBody3D:
-				var f := speed / prev
-				var fa := f
-				if nd.has_meta("story_damp") and not (nd as RigidBody3D).freeze:
-					# issue 1077 (prototype): a strained wreck's physics pieces slow and settle where it broke
-					var dmp: float = nd.get_meta("story_damp")
-					f *= exp(-dmp * dt)
-					fa *= exp(-dmp * 0.5 * dt)
-				(nd as RigidBody3D).linear_velocity *= f
-				(nd as RigidBody3D).angular_velocity *= fa
+			if not is_instance_valid(nd) or not nd is RigidBody3D or nd.freeze or nd.sleeping: continue
+			var f := ratio
+			var fa := ratio
+			if nd.has_meta("story_damp"):
+				# issue 1077 (prototype): a strained wreck's physics pieces slow and settle where it broke
+				var dmp: float = nd.get_meta("story_damp")
+				f *= exp(-dmp * dt)
+				fa *= exp(-dmp * 0.5 * dt)
+			if f != 1.0: nd.linear_velocity *= f
+			if fa != 1.0: nd.angular_velocity *= fa
 		w["speed"] = speed
 		var age: float = fx.now - float(w["t0"])
 		# Heat fades over a few seconds. The cold opaque cap remains.
@@ -4625,9 +4877,10 @@ static func update(fx, dt: float) -> void:
 			w["heat_next"] = fx.now + 1.0 / 15.0
 			var births: Dictionary = w.get("heat_births", {})
 			var any_warm := false
+			var seam_t := _seam_cool(w)
 			for m in w["mats"]:
 				var birth: float = births.get(m, INF)
-				var heat := 0.0 if birth == INF else clampf(1.0 - (fx.now - birth) / cool_t, 0.0, 1.0)
+				var heat := 0.0 if birth == INF else clampf(1.0 - (fx.now - birth) / seam_t, 0.0, 1.0)
 				(m as ShaderMaterial).set_shader_parameter("heat", heat)
 				if heat > 0.0 or birth == INF: any_warm = true
 			var scorch_heat := clampf(1.0 - age / cool_t, 0.0, 1.0)
@@ -4635,26 +4888,47 @@ static func update(fx, dt: float) -> void:
 				(m as ShaderMaterial).set_shader_parameter("fx_scorch_heat", scorch_heat)
 			# cold for good once every face has cooled and nothing is still waiting for its release
 			if not any_warm and scorch_heat == 0.0 and age > 1.0: w["cold"] = true
-		var gate = exp(-maxf(age, 0.0) / 3.5)
-		for f in w["fires"]:
-			if f.has("mat"):
-				(f["mat"] as ShaderMaterial).set_shader_parameter("gate", exp(-maxf(age, 0.0) / maxf(float(f.get("cool", 3.5)), 0.01)))
-			elif f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF)):
-				# Kinematic tiers retain the same constant momentum as physics tiers.
-				var n: Node3D = f["node"]
-				if f.has("damp"):
-					# issue 1077 (prototype): a strained wreck's pieces slow and settle where it broke
-					f["vel"] = (f["vel"] as Vector3) * exp(-float(f["damp"]) * dt)
-					f["ang"] = (f["ang"] as Vector3) * exp(-float(f["adamp"]) * dt)
-				var v: Vector3 = f["vel"]
-				n.global_position += v * dt
-				var a: Vector3 = f["ang"]
-				if a.length() > 1e-5:
-					n.global_rotate(a.normalized(), a.length() * dt)
-		for l in w["lights"]:
-			l["base"] = 0.7 * gate
+		_step_wreck_fires(w["fires"], fx.now, age, dt)
+		if not w["lights"].is_empty():
+			var gate := exp(-maxf(age, 0.0) / 3.5) * (1.0 - smoothstep(WRECK_SETTLE_AGE - 1.5, WRECK_SETTLE_AGE, age))
+			for l in w["lights"]:
+				l["base"] = 0.7 * gate
+				if gate == 0.0: l["on"] = false
+			if gate == 0.0: w["lights"].clear()
 	# issue 1236: a wreck that blocks its hex stays in it
 	_leash(fx, dt)
+
+
+static func _step_wreck_fires(fires: Array, now: float, age: float, dt: float) -> void:
+	# Compact in place, retaining the order of the remaining movement entries.
+	var keep := 0
+	for f in fires:
+		var until: float = f.get("until", INF)
+		if f.has("mat"):
+			var gate := exp(-maxf(age, 0.0) / maxf(float(f.get("cool", 3.5)), 0.01))
+			if now >= until or gate < 0.001:
+				(f["mat"] as ShaderMaterial).set_shader_parameter("gate", 0.0)
+				continue
+			(f["mat"] as ShaderMaterial).set_shader_parameter("gate", gate)
+		else:
+			var n = f.get("node")
+			if now >= until or not is_instance_valid(n): continue
+			var v: Vector3 = f["vel"]
+			var a: Vector3 = f["ang"]
+			if until == INF and age > WRECK_SETTLE_AGE and v.length_squared() < WRECK_REST_SPEED_SQ and a.length_squared() < WRECK_REST_SPIN_SQ:
+				continue
+			if f.has("damp"):
+				# issue 1077 (prototype): a strained wreck's pieces slow and settle where it broke
+				v *= exp(-float(f["damp"]) * dt)
+				a *= exp(-float(f["adamp"]) * dt)
+				f["vel"] = v
+				f["ang"] = a
+			n.global_position += v * dt
+			if a.length_squared() > 1e-10:
+				n.global_rotate(a.normalized(), a.length() * dt)
+		fires[keep] = f
+		keep += 1
+	if keep < fires.size(): fires.resize(keep)
 
 
 # ---------------------------------------------------------------- wrecks that block their hex (issue 1236)
@@ -4675,6 +4949,9 @@ const LEASH_PULL := 1.5        # per second: a piece past its rest limit comes b
 const LEASH_SHRINK_FROM := 1.5 # seconds after the break: the fragments start to draw in
 const MAIN_BRAKE := 1.2        # per second: the hull's main pieces slow to rest where they parted (a part speed of v stops in about v / 1.2)
 const LEASH_SETTLED := 5.5     # seconds after the break: each fragment is held hard inside the rest radius
+const WRECK_SETTLE_AGE := LEASH_SETTLED + 8.0
+const WRECK_REST_SPEED_SQ := 0.01 * 0.01     # world units per effect second
+const WRECK_REST_SPIN_SQ := 0.005 * 0.005    # radians per effect second
 
 
 # The battle calls this on the rules "wreck" event, before the death plays. radius: the hex's rest radius in world units.
@@ -4710,16 +4987,24 @@ static func _debris_leash(body: RigidBody3D) -> String:
 	return body.get_meta("debris_piece", {}).get("leash", "")
 
 
+static func _moving_plate(b) -> bool:
+	return is_instance_valid(b) and b.visible and not b.freeze and not b.sleeping
+
+
 static func _leash_mark(fx) -> void:
 	var anchors: Dictionary = fx.dstate.get("anchors", {})
 	if anchors.is_empty(): return
 	for w in fx.dstate["wrecks"]:
+		if w.get("settled", false): continue
 		var an = anchors.get(w["id"])
 		if an == null: continue
-		for nd in w["nodes"] + w.get("frags", []):
+		for nd in w["nodes"]:
 			if is_instance_valid(nd): _born(nd, an)
-	for b in fx.dstate.get("debris", []):
-		if not is_instance_valid(b) or not b.visible: continue
+		for nd in w.get("frags", []):
+			if is_instance_valid(nd): _born(nd, an)
+	# New plates are marked at birth. The awake list also picks up plates knocked back into motion by Jolt.
+	for b in fx.dstate.get("debris_awake", {}):
+		if not _moving_plate(b) or b.has_meta("leash_born"): continue
 		var an = anchors.get(_debris_leash(b))
 		if an != null: _born(b, an)
 
@@ -4730,14 +5015,17 @@ static func _leash(fx, dt: float) -> void:
 	# Ryan, Nov 22 (third look): the hull's main pieces are never pulled, shrunk or removed. They part as they broke and a
 	# brake brings them to rest close together where they are (MAIN_BRAKE), so nothing slides into anything. Issue 1236
 	# round 4: a planned breakup's pieces are steered to their rest spots (_steer) anchored or not; any other main piece
-	# brakes only on an anchored wreck, so an unanchored small hull's approved calm parting is unchanged.
+	# brakes early only on an anchored wreck. Unanchored pieces and hulks keep their parting or drift before braking.
 	var brake := exp(-MAIN_BRAKE * dt)
 	var abrake := exp(-MAIN_BRAKE * 0.5 * dt)   # Artoo on PR 1737: the halves stop turning too, a little slower
 	for w in fx.dstate["wrecks"]:
+		if w.get("settled", false): continue
 		var an = anchors.get(w["id"])
-		var drawing: bool = fx.now >= float(w["t0"]) + LEASH_SHRINK_FROM
+		var age: float = fx.now - float(w["t0"])
+		var drawing := age >= LEASH_SHRINK_FROM
+		var braking := an != null or age >= LEASH_SETTLED
 		for f in w["fires"]:
-			if not (f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF))): continue
+			if not f.has("vel"): continue
 			if (f["node"] as Node).has_meta("rest_at"):
 				var st := _steer(f["node"])
 				f["vel"] = st[0]
@@ -4745,34 +5033,39 @@ static func _leash(fx, dt: float) -> void:
 				f["ang"] = Vector3(fa.x * abrake, st[1], fa.z * abrake)
 				continue
 			if w["nodes"].has(f["node"]):
-				if an == null: continue   # an unanchored wreck without a planned breakup drifts as before (audit)
+				if not braking: continue
 				f["vel"] = (f["vel"] as Vector3) * brake
 				if f.has("ang"): f["ang"] = (f["ang"] as Vector3) * abrake
 			elif an != null:
 				f["vel"] = _leash_vel(f["node"], f["vel"], an, dt, drawing)
+		var bodies_at_rest := true
 		for nd in w["nodes"]:
-			if is_instance_valid(nd) and nd is RigidBody3D and not (nd as RigidBody3D).freeze:
+			if is_instance_valid(nd) and nd is RigidBody3D and not nd.freeze and not nd.sleeping:
+				bodies_at_rest = false
 				var rb := nd as RigidBody3D
 				if rb.has_meta("rest_at"):
 					var st := _steer(rb)
 					var spd: float = fx.anim_speed()
 					rb.linear_velocity = (st[0] as Vector3) * spd
 					rb.angular_velocity = Vector3(rb.angular_velocity.x * abrake, float(st[1]) * spd, rb.angular_velocity.z * abrake)
-				elif an != null:
+				elif braking:
 					rb.linear_velocity *= brake
 					rb.angular_velocity *= abrake
-		if an == null: continue
-		# the small fragments still settle inside the hex, as the thrown plates do
-		var settled: bool = fx.now >= float(w["t0"]) + LEASH_SETTLED
 		for nd in w.get("frags", []):
 			if not is_instance_valid(nd): continue
-			if nd is RigidBody3D and not (nd as RigidBody3D).freeze:
-				var body := nd as RigidBody3D
-				if body.sleeping: continue
-				body.linear_velocity = _leash_vel(body, body.linear_velocity, an, dt, drawing)
-			_leash_clamp(nd, an, _rest_limit(nd, an, true) if settled else -1.0)
-	for b in fx.dstate.get("debris", []):
-		if not is_instance_valid(b) or not b.visible or b.sleeping: continue
+			if nd is RigidBody3D and not nd.freeze:
+				if nd.sleeping: continue
+				bodies_at_rest = false
+				if an != null: nd.linear_velocity = _leash_vel(nd, nd.linear_velocity, an, dt, drawing)
+			# The small fragments still settle inside the hex, as the thrown plates do.
+			if an != null:
+				_leash_clamp(nd, an, _rest_limit(nd, an, true) if age >= LEASH_SETTLED else -1.0)
+		if age > WRECK_SETTLE_AGE and bodies_at_rest and w["fires"].is_empty() and w.get("cold", false):
+			w["settled"] = true
+	# Pooled plates have their own lifetime. A hull can knock one awake long after its wreck has settled.
+	if anchors.is_empty(): return
+	for b in fx.dstate.get("debris_awake", {}):
+		if not _moving_plate(b): continue
 		var an = anchors.get(_debris_leash(b))
 		if an == null: continue
 		b.linear_velocity = _leash_vel(b, b.linear_velocity, an, dt)
@@ -4789,23 +5082,29 @@ static func _steer(nd: Node3D) -> Array:
 # where a piece is, for the leash: the middle of its mesh's box (a piece's origin is the mean of its points, which on a
 # lopsided chunk of hull can sit far from what the eye reads as the piece), else its origin
 static func leash_centre(nd: Node3D) -> Vector3:
-	for ch in nd.get_children():
-		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
-			return nd.global_transform * ((ch as MeshInstance3D).transform * (ch as MeshInstance3D).mesh.get_aabb().get_center())
-	return nd.global_position
+	if not nd.has_meta("leash_offset"): _cache_leash_geometry(nd)
+	return nd.global_transform * (nd.get_meta("leash_offset") as Vector3)
 
 
 # how far the piece reaches from its middle as drawn now, as it turns about the vertical: the farthest point of its real
 # mesh from its box middle on the board plane (measured once, unscaled, and kept on the piece; the drift brake uses half the box's longest side until then)
 static func leash_half(nd: Node3D) -> float:
+	if not nd.has_meta("leash_offset"): _cache_leash_geometry(nd)
+	var extent: Vector2 = nd.get_meta("leash_extent")   # half the box's longest side, and the mesh scale
+	return float(nd.get_meta("leash_rad", extent.x)) * extent.y
+
+
+static func _cache_leash_geometry(nd: Node3D) -> void:
 	for ch in nd.get_children():
 		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
 			var mi := ch as MeshInstance3D
-			var k: float = mi.transform.basis.get_scale().x
-			if nd.has_meta("leash_rad"): return float(nd.get_meta("leash_rad")) * k
-			var sz: Vector3 = mi.mesh.get_aabb().size
-			return 0.5 * maxf(sz.x, maxf(sz.y, sz.z)) * k
-	return 0.0
+			var box := mi.mesh.get_aabb()
+			var sz := box.size
+			nd.set_meta("leash_offset", mi.transform * box.get_center())
+			nd.set_meta("leash_extent", Vector2(0.5 * maxf(sz.x, maxf(sz.y, sz.z)), mi.transform.basis.get_scale().x))
+			return
+	nd.set_meta("leash_offset", Vector3.ZERO)
+	nd.set_meta("leash_extent", Vector2.ZERO)
 
 
 # measure a piece's real reach once (leash_half); a big piece's faces are read only when its wreck starts to draw in
