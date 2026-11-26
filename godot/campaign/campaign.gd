@@ -520,8 +520,27 @@ func _write_atomic(path: String, text: String) -> bool:
 static func _json_quiet(t: String) -> Variant:   # a damaged save is expected now and then: parse without an engine error
 	var j = JSON.new()
 	return j.data if j.parse(t) == OK else null
-# A valid primary wins even if it is profile-only. If neither copy is sound, recover the profile from either copy.
+# Issue 2217: the profile may come from the other copy only when both copies are the same save. A backup
+# is the same save when it holds no run (the profile-only save from before this run started) or when it
+# holds this same run. A run copied in from a different save keeps its own profile.
+static func _same_save(primary: Dictionary, backup) -> bool:
+	if not (backup is Dictionary): return false
+	var p_run = primary.get("run")
+	var b_run = backup.get("run")
+	if not _has_run(b_run): return true
+	return _has_run(p_run) and str(p_run.get("t0")) == str(b_run.get("t0")) \
+		and str(p_run.get("fac")) == str(b_run.get("fac")) and str(p_run.get("admiral")) == str(b_run.get("admiral"))
+# A complete primary wins even if it is profile-only. A readable primary that kept its run but lost its
+# profile takes the profile from the backup of the same save (issue 2217), never from a different save.
+# If neither copy is sound, recover the profile from either copy.
 static func _resolve_save(primary, backup) -> Dictionary:
+	var borrow: bool = primary is Dictionary and _has_run(primary.get("run")) and saneRun(primary.get("run")) \
+		and not saneMeta(primary.get("meta")) and backup is Dictionary and saneMeta(backup.get("meta")) \
+		and _same_save(primary, backup)
+	if borrow:
+		var merged: Dictionary = primary.duplicate(true)
+		merged["meta"] = backup["meta"]
+		return merged
 	if saneSave(primary): return primary
 	if saneSave(backup): return backup
 	var resolved: Dictionary = primary if primary is Dictionary else {}
@@ -541,7 +560,6 @@ static func _resolve_save(primary, backup) -> Dictionary:
 
 static func _read_save(path: String) -> Dictionary:
 	var primary = _dec(_json_quiet(FileAccess.get_file_as_string(path)))
-	if saneSave(primary): return primary
 	var resolved := _resolve_save(primary, _dec(_json_quiet(FileAccess.get_file_as_string(path + ".bak"))))
 	if resolved.is_empty() and (FileAccess.file_exists(path) or FileAccess.file_exists(path + ".bak")):
 		resolved["brokenRun"] = true
